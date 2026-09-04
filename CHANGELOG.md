@@ -8,39 +8,28 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
 
 **Đã xong — Auth/SSO cơ bản (Giai đoạn 2 [H]):**
 
-- Bật `spring-boot-starter-security` + `jjwt` (đã stub sẵn trong `pom.xml`/`application.yaml` từ
-  trước, giờ mới dùng thật): JWT stateless (HS256), không session/cookie.
-- `User` entity với 3 role `FARMER`/`ENGINEER`/`ADMIN`; seed đúng 1 tài khoản `ADMIN` lúc khởi
-  động từ `SUPER_ADMIN_USERNAME`/`SUPER_ADMIN_PASSWORD` nếu bảng `users` còn rỗng — không có
-  đăng ký công khai, chỉ `ADMIN` tạo được user mới (`POST /api/v1/users`).
-- `POST /api/v1/auth/login` trả JWT + role. Toàn bộ API nghiệp vụ yêu cầu đăng nhập
-  (`anyRequest().authenticated()`), trừ danh mục tham chiếu (đọc), `/auth/**`, swagger và
-  `/uploads/**` (ảnh phục vụ trực tiếp qua HTTP, `<img>` ở FE không gửi kèm token).
-- **Thay field tên tự do bằng danh tính đã xác thực** — điểm mấu chốt của tính năng: bỏ hẳn
-  `reportedBy`/`approvedBy`/`rejectedBy` khỏi request body, backend tự lấy từ
-  `SecurityContextHolder` (qua `CurrentUserService`) thay vì tin client gửi lên. Duyệt/từ
-  chối/ghi nhận chẩn đoán giờ yêu cầu role `ENGINEER`/`ADMIN` (`@PreAuthorize`), enforce ở
-  backend chứ không chỉ ẩn nút ở FE — đúng tinh thần poka-yoke 2 tầng đã áp dụng cho PHI.
-  `Parcel.farmerName` giữ nguyên dạng text tự do vì đây là thuộc tính mô tả chủ thửa, không
-  phải actor gọi API.
-- 401 (chưa đăng nhập/token sai) và 403 (đủ đăng nhập nhưng sai role) trả đúng khuôn
-  `ApiResponse` hiện có, qua `RestAuthenticationEntryPoint`/`RestAccessDeniedHandler` (tầng
-  filter chain) và `GlobalExceptionHandler` (tầng controller, cho lỗi từ `@PreAuthorize`).
-- Đã build + chạy thử thật qua `deploy` (login → tạo user kỹ sư/nông dân → full spine flow
-  theo từng role, xác nhận 401/403 đúng chỗ qua curl và qua trình duyệt) không chỉ build suông.
-- `User` implement thẳng `UserDetails` thay vì bọc qua 
-  `org.springframework.security.core.userdetails.User` — `CurrentUserService` giờ lấy actor
-  thẳng từ principal trong `SecurityContext`, bớt 1 query DB thừa mỗi lần cần biết ai đang thao
-  tác (report/approve/reject).
+- JWT stateless (HS256, `spring-security` + `jjwt`), không session/cookie. `User` có 3 role
+  `FARMER`/`ENGINEER`/`ADMIN`; seed đúng 1 `ADMIN` lúc khởi động từ biến môi trường, không có
+  đăng ký công khai — chỉ `ADMIN` tạo user mới.
+- `POST /api/v1/auth/login` trả JWT + role. Mọi API nghiệp vụ yêu cầu đăng nhập, trừ danh mục
+  tham chiếu (đọc), `/auth/**`, swagger, `/uploads/**`.
+- Điểm mấu chốt: bỏ hẳn field tên tự do (`reportedBy`/`approvedBy`/`rejectedBy`) khỏi request
+  body — backend tự lấy actor từ `SecurityContextHolder`, không tin client gửi lên. Duyệt/từ
+  chối/chẩn đoán giờ yêu cầu role `ENGINEER`/`ADMIN` (`@PreAuthorize`), enforce ở backend chứ
+  không chỉ ẩn nút FE — cùng tinh thần poka-yoke 2 tầng như PHI.
+- 401/403 trả đúng khuôn `ApiResponse` sẵn có, qua `RestAuthenticationEntryPoint`/
+  `RestAccessDeniedHandler`/`GlobalExceptionHandler`.
+- `User` implement thẳng `UserDetails` (thay vì bọc qua Spring's `User`) — bớt 1 query DB thừa
+  mỗi lần cần biết actor đang thao tác.
+- Đã build + test thật qua `deploy` (login, tạo user, full flow theo từng role, xác nhận
+  401/403 qua curl và trình duyệt).
 
 **Đã xong — M7 (Giai đoạn 1):**
 
 - `GET /api/v1/crop-seasons/{id}/isolation-status` — trả lời "ruộng này còn cách ly không?"
-  bằng SQL context deterministic: tái dùng chính truy vấn
-  `findTopByCropSeasonIdOrderByHarvestLockedUntilDesc` mà `harvest()` đã dùng để chặn
-  poka-yoke, đảm bảo một nguồn sự thật duy nhất giữa "hỏi" và "chặn". Trả về
-  `isolated`, `harvestLockedUntil`, `daysRemaining`, `pesticideCode`, kèm câu trả lời tiếng
-  Việt diễn đạt lại facts (`message`) — không qua LLM, đúng nguyên tắc deterministic-first.
+  bằng cách tái dùng đúng truy vấn mà `harvest()` dùng để chặn poka-yoke (một nguồn sự thật
+  duy nhất giữa "hỏi" và "chặn"). Trả `isolated`, `harvestLockedUntil`, `daysRemaining`,
+  `pesticideCode` + câu trả lời tiếng Việt diễn giải facts — không qua LLM.
 
 ### 2026-09-08
 
@@ -79,42 +68,27 @@ Chưa bắt đầu.
 
 **Đã xong — Demo UI cho Phase 0 spine flow (M1–M6):**
 
-- React 18 + TypeScript + Vite, không dùng router/state library ngoài — một trang duy nhất
-  theo đúng thứ tự spine flow: chọn/tạo thửa ruộng → chọn/tạo vụ mùa → gửi báo cáo sâu bệnh
-  kèm ảnh → chẩn đoán (nhập tay giả lập AI Service) → kỹ sư duyệt/từ chối → ghi nhận đã phun
-  thuốc → khai báo thu hoạch (thấy rõ banner khi bị poka-yoke chặn, HTTP 422).
-- Tab phụ "Danh mục tham chiếu" hiển thị read-only Disease/Pesticide/TreatmentRule (Structured
-  Knowledge).
-- Nút "Hỏi: ruộng này còn cách ly không? (M7)" ở panel Vụ mùa, gọi
-  `GET /crop-seasons/{id}/isolation-status`, hiển thị câu trả lời bằng banner xanh/đỏ theo
-  đúng trạng thái cách ly hiện tại.
-- `src/api.ts` bọc toàn bộ `ApiResponse<T>` envelope của backend, ném `ApiError` (status + data)
-  để UI phân biệt lỗi validate (400), state machine (409) và poka-yoke (422).
-- Đã chạy thử full flow qua trình duyệt thật (parcel → crop season → upload ảnh → diagnosis →
-  approve → apply → harvest bị khoá đúng theo PHI) trên backend thật, không chỉ build/typecheck.
+- React 18 + TypeScript + Vite, một trang duy nhất theo đúng spine flow: chọn/tạo thửa ruộng →
+  vụ mùa → báo sâu bệnh kèm ảnh → chẩn đoán (nhập tay giả lập AI Service) → kỹ sư duyệt/từ chối
+  → ghi nhận đã phun thuốc → khai báo thu hoạch (banner rõ khi bị poka-yoke chặn, HTTP 422).
+- Tab "Danh mục tham chiếu" (read-only Disease/Pesticide/TreatmentRule) và nút hỏi "ruộng còn
+  cách ly không? (M7)" ở panel Vụ mùa, gọi `GET /crop-seasons/{id}/isolation-status`.
+- `src/api.ts` bọc `ApiResponse<T>` envelope, ném `ApiError` để UI phân biệt lỗi 400/409/422.
+- Đã chạy full flow qua trình duyệt thật trên backend thật, không chỉ build/typecheck.
 
-**Thay đổi kèm theo ở backend để FE chạy được:**
+**Thay đổi kèm theo ở backend để FE chạy được:** thêm `WebConfig` (CORS cho `/api/**`, static
+handler `/uploads/**`).
 
-- Thêm `WebConfig` (CORS cho `/api/**` từ localhost, static resource handler `/uploads/**` trỏ
-  vào `app.upload-dir`) vì trước đó chưa có cấu hình CORS và ảnh upload chưa được serve qua HTTP.
-
-**Chưa làm:**
-
-- Chưa có low-code frontend (ToolJet/Appsmith) theo Giai đoạn 1 — đây vẫn là bản tự viết tối
-  giản cho demo Phase 0.
+**Chưa làm:** low-code frontend (ToolJet/Appsmith) — đây vẫn là bản tự viết tối giản cho demo.
 
 **Đã xong — Đăng nhập + role, thay input tên tự do bằng danh tính đã xác thực:**
 
-- `LoginPanel` mới, gate toàn bộ app sau màn đăng nhập; header hiện tên + vai trò người đang
-  dùng kèm nút đăng xuất. `src/auth.ts` lưu `{token, username, fullName, role}` ở
-  `localStorage`.
-- `src/api.ts` tự gắn `Authorization: Bearer <token>` vào mọi request; gặp 401 (token hết
-  hạn/thu hồi) thì tự xoá phiên và đưa người dùng quay lại màn đăng nhập.
-- Bỏ hẳn input "Người báo cáo" (báo bệnh) và "Tên kỹ sư nông nghiệp" (duyệt/từ chối) — backend
-  giờ tự lấy từ user đã đăng nhập. Nút duyệt/từ chối/ghi nhận chẩn đoán chỉ hiện với role
-  `ENGINEER`/`ADMIN` (ẩn ở FE là UX, chặn thật vẫn ở backend qua `@PreAuthorize`).
-- Đã test qua trình duyệt thật: đăng nhập admin mặc định → tạo tài khoản kỹ sư + nông dân qua
-  API → đăng nhập lại bằng từng role, xác nhận UI ẩn/hiện đúng và backend trả 401/403 đúng chỗ.
+- `LoginPanel` mới gate toàn app; header hiện tên/vai trò + nút đăng xuất. `src/auth.ts` lưu
+  `{token, username, fullName, role}` ở `localStorage`.
+- `src/api.ts` tự gắn Bearer token; gặp 401 thì tự xoá phiên, quay lại màn đăng nhập.
+- Bỏ input "Người báo cáo"/"Tên kỹ sư" — backend tự lấy từ user đã đăng nhập. Nút duyệt/từ
+  chối/chẩn đoán chỉ hiện với role `ENGINEER`/`ADMIN` (ẩn FE là UX, chặn thật ở backend).
+- Đã test qua trình duyệt thật với từng role, xác nhận UI và 401/403 đúng chỗ.
 
 ## Deploy (`deploy`)
 
@@ -122,22 +96,15 @@ Chưa bắt đầu.
 
 **Đã xong — đóng gói Postgres + backend + frontend chạy một lệnh:**
 
-- `deploy/docker-compose.yml`: build backend từ `backend/DX-Farm/Dockerfile` (đã có sẵn),
-  build frontend qua `frontend/Dockerfile` mới (multi-stage: `npm run build` rồi serve bằng
-  nginx). Expose ra host: `${POSTGRES_PORT:-5432}` (để còn chạy `mvn spring-boot:run` local
-  khi cần hot reload), `${BACKEND_PORT:-8081}`, `${FRONTEND_PORT:-8082}`.
-- Frontend production build gọi API cùng-origin (`frontend/.env.production` để trống
-  `VITE_API_BASE_URL`) — nginx (`frontend/nginx.conf`) reverse-proxy `/api/` và `/uploads/`
-  sang container backend, nên môi trường deploy không cần CORS.
-- Dữ liệu Postgres và ảnh upload persist qua bind mount `deploy/data/` (đã có sẵn trong
-  `.gitignore` từ trước, không mất khi `docker compose down`).
-- Đã build + chạy thử thật bằng `docker compose up -d --build` từ thư mục `deploy`, không chỉ
-  viết cấu hình suông.
-- Xoá `backend/DX-Farm/docker-compose.yml` (chỉ chạy Postgres riêng cho dev cũ) — giờ
-  `deploy/docker-compose.yml` là docker-compose file duy nhất trong repo, dùng chung cho cả
-  demo full-stack lẫn Postgres khi dev thủ công.
-
-**Đã xong (bổ sung) — truyền secret cho auth:**
-
-- Service `backend` nhận thêm `JWT_SECRET`, `JWT_EXPIRATION`, `SUPER_ADMIN_USERNAME`,
-  `SUPER_ADMIN_PASSWORD` từ `deploy/.env` (mẫu ở `deploy/.env.example`).
+- `deploy/docker-compose.yml`: build backend (`backend/DX-Farm/Dockerfile`) + frontend
+  (`frontend/Dockerfile` mới, multi-stage `npm run build` → serve bằng nginx). Expose
+  `${POSTGRES_PORT:-5432}`, `${BACKEND_PORT:-8081}`, `${FRONTEND_PORT:-8082}`.
+- Frontend production gọi API cùng-origin — nginx reverse-proxy `/api/` và `/uploads/` sang
+  backend, nên deploy không cần CORS.
+- Postgres + ảnh upload persist qua bind mount `deploy/data/` (không mất khi `docker compose
+  down`).
+- Đã build + chạy thử thật bằng `docker compose up -d --build`.
+- Xoá `backend/DX-Farm/docker-compose.yml` cũ — `deploy/docker-compose.yml` giờ là compose
+  file duy nhất trong repo (dùng chung cho demo full-stack lẫn Postgres khi dev thủ công).
+- Service `backend` nhận thêm secret cho auth (`JWT_SECRET`, `JWT_EXPIRATION`,
+  `SUPER_ADMIN_USERNAME/PASSWORD`) từ `deploy/.env` (mẫu ở `.env.example`).

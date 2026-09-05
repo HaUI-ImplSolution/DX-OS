@@ -28,6 +28,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
   filter chain) và `GlobalExceptionHandler` (tầng controller, cho lỗi từ `@PreAuthorize`).
 - Đã build + chạy thử thật qua `deploy` (login → tạo user kỹ sư/nông dân → full spine flow
   theo từng role, xác nhận 401/403 đúng chỗ qua curl và qua trình duyệt) không chỉ build suông.
+- `User` implement thẳng `UserDetails` thay vì bọc qua 
+  `org.springframework.security.core.userdetails.User` — `CurrentUserService` giờ lấy actor
+  thẳng từ principal trong `SecurityContext`, bớt 1 query DB thừa mỗi lần cần biết ai đang thao
+  tác (report/approve/reject).
 
 **Đã xong — M7 (Giai đoạn 1):**
 

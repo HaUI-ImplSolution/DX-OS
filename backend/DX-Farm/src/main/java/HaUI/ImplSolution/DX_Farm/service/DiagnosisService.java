@@ -1,7 +1,6 @@
 package HaUI.ImplSolution.DX_Farm.service;
 
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisApplyRequest;
-import HaUI.ImplSolution.DX_Farm.dto.DiagnosisApproveRequest;
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisCreateRequest;
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisRejectRequest;
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisResponse;
@@ -33,16 +32,19 @@ public class DiagnosisService {
   private final DiseaseRepository diseaseRepository;
   private final TreatmentRuleService treatmentRuleService;
   private final TreatmentApplicationRepository treatmentApplicationRepository;
+  private final CurrentUserService currentUserService;
 
   public DiagnosisService(DiagnosisRepository diagnosisRepository,
       DiseaseReportRepository diseaseReportRepository, DiseaseRepository diseaseRepository,
       TreatmentRuleService treatmentRuleService,
-      TreatmentApplicationRepository treatmentApplicationRepository) {
+      TreatmentApplicationRepository treatmentApplicationRepository,
+      CurrentUserService currentUserService) {
     this.diagnosisRepository = diagnosisRepository;
     this.diseaseReportRepository = diseaseReportRepository;
     this.diseaseRepository = diseaseRepository;
     this.treatmentRuleService = treatmentRuleService;
     this.treatmentApplicationRepository = treatmentApplicationRepository;
+    this.currentUserService = currentUserService;
   }
 
   @Transactional
@@ -65,11 +67,11 @@ public class DiagnosisService {
   }
 
   @Transactional
-  public DiagnosisResponse approve(Long reportId, DiagnosisApproveRequest request) {
+  public DiagnosisResponse approve(Long reportId) {
     Diagnosis diagnosis = findByReportIdOrThrow(reportId);
     requirePending(diagnosis);
     diagnosis.setApprovalStatus(ApprovalStatus.APPROVED);
-    diagnosis.setDecidedBy(request.approvedBy());
+    diagnosis.setDecidedBy(currentUserService.currentFullName());
     diagnosis.setDecidedAt(Instant.now());
     return toResponse(diagnosisRepository.save(diagnosis));
   }
@@ -79,7 +81,7 @@ public class DiagnosisService {
     Diagnosis diagnosis = findByReportIdOrThrow(reportId);
     requirePending(diagnosis);
     diagnosis.setApprovalStatus(ApprovalStatus.REJECTED);
-    diagnosis.setDecidedBy(request.rejectedBy());
+    diagnosis.setDecidedBy(currentUserService.currentFullName());
     diagnosis.setDecidedAt(Instant.now());
     diagnosis.setRejectionReason(request.reason());
     return toResponse(diagnosisRepository.save(diagnosis));

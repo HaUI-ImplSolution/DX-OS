@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { applyDiagnosis, approveDiagnosis, createDiagnosis, rejectDiagnosis } from "../api";
-import type { Diagnosis, Disease, DiseaseReport, TreatmentApplication } from "../types";
+import type { Diagnosis, Disease, DiseaseReport, Role, TreatmentApplication } from "../types";
 import Badge from "./Badge";
 import Section from "./Section";
 
 interface DiagnosisPanelProps {
   report: DiseaseReport;
   diseases: Disease[];
+  currentRole: Role;
   onUpdated: (diagnosis: Diagnosis) => void;
   onError: (message: string) => void;
 }
@@ -96,19 +97,14 @@ function ApprovalActions({
   onUpdated: (diagnosis: Diagnosis) => void;
   onError: (message: string) => void;
 }) {
-  const [engineer, setEngineer] = useState("");
   const [reason, setReason] = useState("");
   const [showReject, setShowReject] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const approve = async () => {
-    if (!engineer) {
-      onError("Nhập tên kỹ sư trước khi duyệt");
-      return;
-    }
     setBusy(true);
     try {
-      onUpdated(await approveDiagnosis(reportId, { approvedBy: engineer }));
+      onUpdated(await approveDiagnosis(reportId));
     } catch (err) {
       onError(err instanceof Error ? err.message : "Không duyệt được");
     } finally {
@@ -120,7 +116,7 @@ function ApprovalActions({
     e.preventDefault();
     setBusy(true);
     try {
-      onUpdated(await rejectDiagnosis(reportId, { rejectedBy: engineer, reason }));
+      onUpdated(await rejectDiagnosis(reportId, { reason }));
     } catch (err) {
       onError(err instanceof Error ? err.message : "Không từ chối được");
     } finally {
@@ -130,10 +126,6 @@ function ApprovalActions({
 
   return (
     <div className="approval-box">
-      <label className="field-label">
-        Tên kỹ sư nông nghiệp
-        <input value={engineer} onChange={(e) => setEngineer(e.target.value)} placeholder="vd. Kỹ sư Lan" />
-      </label>
       {!showReject && (
         <div className="form-actions">
           <button className="btn btn-primary" onClick={approve} disabled={busy}>
@@ -211,8 +203,17 @@ function ApplyTreatmentBox({ reportId, onError }: { reportId: number; onError: (
   );
 }
 
-export default function DiagnosisPanel({ report, diseases, onUpdated, onError }: DiagnosisPanelProps) {
+export default function DiagnosisPanel({
+  report,
+  diseases,
+  currentRole,
+  onUpdated,
+  onError,
+}: DiagnosisPanelProps) {
   const diagnosis = report.diagnosis;
+  // Backend đã chặn cứng bằng @PreAuthorize - ẩn nút ở đây chỉ là defense-in-depth cho UX,
+  // không phải điểm chặn thật (giống nguyên tắc poka-yoke 2 tầng đã áp dụng cho PHI).
+  const canDecide = currentRole === "ENGINEER" || currentRole === "ADMIN";
 
   return (
     <Section
@@ -220,13 +221,16 @@ export default function DiagnosisPanel({ report, diseases, onUpdated, onError }:
       title="Chẩn đoán, duyệt & xử lý"
       subtitle="Tra cứu deterministic (M3) → diễn đạt khuyến nghị (M4) → kỹ sư duyệt (M5) → ghi nhận đã phun (M6)"
     >
-      {!diagnosis && (
+      {!diagnosis && canDecide && (
         <CreateDiagnosisForm
           reportId={report.id}
           diseases={diseases}
           onUpdated={onUpdated}
           onError={onError}
         />
+      )}
+      {!diagnosis && !canDecide && (
+        <p className="empty-hint">Chỉ kỹ sư nông nghiệp mới ghi nhận được chẩn đoán.</p>
       )}
 
       {diagnosis && (
@@ -278,11 +282,14 @@ export default function DiagnosisPanel({ report, diseases, onUpdated, onError }:
             </table>
           )}
 
-          {diagnosis.approvalStatus === "PENDING" && (
+          {diagnosis.approvalStatus === "PENDING" && canDecide && (
             <ApprovalActions reportId={report.id} onUpdated={onUpdated} onError={onError} />
           )}
+          {diagnosis.approvalStatus === "PENDING" && !canDecide && (
+            <p className="empty-hint">Chỉ kỹ sư nông nghiệp mới được duyệt/từ chối khuyến nghị.</p>
+          )}
 
-          {diagnosis.approvalStatus === "APPROVED" && (
+          {diagnosis.approvalStatus === "APPROVED" && canDecide && (
             <ApplyTreatmentBox reportId={report.id} onError={onError} />
           )}
 

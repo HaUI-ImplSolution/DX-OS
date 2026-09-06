@@ -6,6 +6,29 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
 
 ### 2026-09-09
 
+**Đã xong — Auth/SSO cơ bản (Giai đoạn 2 [H]):**
+
+- Bật `spring-boot-starter-security` + `jjwt` (đã stub sẵn trong `pom.xml`/`application.yaml` từ
+  trước, giờ mới dùng thật): JWT stateless (HS256), không session/cookie.
+- `User` entity với 3 role `FARMER`/`ENGINEER`/`ADMIN`; seed đúng 1 tài khoản `ADMIN` lúc khởi
+  động từ `SUPER_ADMIN_USERNAME`/`SUPER_ADMIN_PASSWORD` nếu bảng `users` còn rỗng — không có
+  đăng ký công khai, chỉ `ADMIN` tạo được user mới (`POST /api/v1/users`).
+- `POST /api/v1/auth/login` trả JWT + role. Toàn bộ API nghiệp vụ yêu cầu đăng nhập
+  (`anyRequest().authenticated()`), trừ danh mục tham chiếu (đọc), `/auth/**`, swagger và
+  `/uploads/**` (ảnh phục vụ trực tiếp qua HTTP, `<img>` ở FE không gửi kèm token).
+- **Thay field tên tự do bằng danh tính đã xác thực** — điểm mấu chốt của tính năng: bỏ hẳn
+  `reportedBy`/`approvedBy`/`rejectedBy` khỏi request body, backend tự lấy từ
+  `SecurityContextHolder` (qua `CurrentUserService`) thay vì tin client gửi lên. Duyệt/từ
+  chối/ghi nhận chẩn đoán giờ yêu cầu role `ENGINEER`/`ADMIN` (`@PreAuthorize`), enforce ở
+  backend chứ không chỉ ẩn nút ở FE — đúng tinh thần poka-yoke 2 tầng đã áp dụng cho PHI.
+  `Parcel.farmerName` giữ nguyên dạng text tự do vì đây là thuộc tính mô tả chủ thửa, không
+  phải actor gọi API.
+- 401 (chưa đăng nhập/token sai) và 403 (đủ đăng nhập nhưng sai role) trả đúng khuôn
+  `ApiResponse` hiện có, qua `RestAuthenticationEntryPoint`/`RestAccessDeniedHandler` (tầng
+  filter chain) và `GlobalExceptionHandler` (tầng controller, cho lỗi từ `@PreAuthorize`).
+- Đã build + chạy thử thật qua `deploy` (login → tạo user kỹ sư/nông dân → full spine flow
+  theo từng role, xác nhận 401/403 đúng chỗ qua curl và qua trình duyệt) không chỉ build suông.
+
 **Đã xong — M7 (Giai đoạn 1):**
 
 - `GET /api/v1/crop-seasons/{id}/isolation-status` — trả lời "ruộng này còn cách ly không?"
@@ -38,9 +61,9 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
 - Chưa gọi AI Service Python thật (vision-api CV + LLM) — `Diagnosis` nhận sẵn
   `disease_id/confidence/model_version` qua API như thể AI Service gửi vào, nhưng chưa có HTTP
   client nối sang AI Service vì service đó chưa tồn tại trong repo.
-- Chưa có auth/SSO — tên nông dân/kỹ sư hiện là chuỗi tự do, chưa có `User`/`Farmer` entity.
-- Chưa có RAG, Carbon/AWD Estimator, IoT simulator, BI dashboard (Superset/Metabase) — thuộc
-  Giai đoạn 1–3 theo roadmap trong `README.md`.
+- Chưa có RAG, Carbon/AWD Estimator, IoT simulator, BI dashboard (Superset/Metabase), SSO nặng
+  (Keycloak/Authentik) hay kênh chat nội bộ (Mattermost) — thuộc Giai đoạn 1–3 theo roadmap
+  trong `README.md`. Auth/role cơ bản (JWT, FARMER/ENGINEER/ADMIN) đã xong ở trên.
 
 ## AI Service (Python)
 
@@ -73,9 +96,21 @@ Chưa bắt đầu.
 
 **Chưa làm:**
 
-- Chưa có auth/SSO nên tên nông dân/kỹ sư vẫn là input tự do (khớp với hiện trạng backend).
 - Chưa có low-code frontend (ToolJet/Appsmith) theo Giai đoạn 1 — đây vẫn là bản tự viết tối
   giản cho demo Phase 0.
+
+**Đã xong — Đăng nhập + role, thay input tên tự do bằng danh tính đã xác thực:**
+
+- `LoginPanel` mới, gate toàn bộ app sau màn đăng nhập; header hiện tên + vai trò người đang
+  dùng kèm nút đăng xuất. `src/auth.ts` lưu `{token, username, fullName, role}` ở
+  `localStorage`.
+- `src/api.ts` tự gắn `Authorization: Bearer <token>` vào mọi request; gặp 401 (token hết
+  hạn/thu hồi) thì tự xoá phiên và đưa người dùng quay lại màn đăng nhập.
+- Bỏ hẳn input "Người báo cáo" (báo bệnh) và "Tên kỹ sư nông nghiệp" (duyệt/từ chối) — backend
+  giờ tự lấy từ user đã đăng nhập. Nút duyệt/từ chối/ghi nhận chẩn đoán chỉ hiện với role
+  `ENGINEER`/`ADMIN` (ẩn ở FE là UX, chặn thật vẫn ở backend qua `@PreAuthorize`).
+- Đã test qua trình duyệt thật: đăng nhập admin mặc định → tạo tài khoản kỹ sư + nông dân qua
+  API → đăng nhập lại bằng từng role, xác nhận UI ẩn/hiện đúng và backend trả 401/403 đúng chỗ.
 
 ## Deploy (`deploy`)
 
@@ -97,3 +132,8 @@ Chưa bắt đầu.
 - Xoá `backend/DX-Farm/docker-compose.yml` (chỉ chạy Postgres riêng cho dev cũ) — giờ
   `deploy/docker-compose.yml` là docker-compose file duy nhất trong repo, dùng chung cho cả
   demo full-stack lẫn Postgres khi dev thủ công.
+
+**Đã xong (bổ sung) — truyền secret cho auth:**
+
+- Service `backend` nhận thêm `JWT_SECRET`, `JWT_EXPIRATION`, `SUPER_ADMIN_USERNAME`,
+  `SUPER_ADMIN_PASSWORD` từ `deploy/.env` (mẫu ở `deploy/.env.example`).

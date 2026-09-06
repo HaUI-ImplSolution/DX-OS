@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,11 +31,11 @@ public class DiseaseReportController {
   @PostMapping(value = "/crop-seasons/{cropSeasonId}/disease-reports",
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(summary = "Report a disease sighting with a photo")
+  @Operation(summary = "Report a disease sighting with a photo (reportedBy = logged-in user)")
   public ApiResponse<DiseaseReportResponse> create(@PathVariable Long cropSeasonId,
-      @RequestPart("image") MultipartFile image, @RequestParam String reportedBy) {
+      @RequestPart("image") MultipartFile image) {
     return ApiResponse.success("Disease report created",
-        diseaseReportService.create(cropSeasonId, image, reportedBy));
+        diseaseReportService.create(cropSeasonId, image));
   }
 
   @GetMapping("/crop-seasons/{cropSeasonId}/disease-reports")

@@ -149,6 +149,10 @@ Các phần chưa đạt được:
 - Backend hiện chỉ lấy tối đa một rule cho mỗi disease dù DTO có dạng danh sách.
 - Chưa benchmark concurrency, cold start và yêu cầu RAM/CPU.
 - API key và tài khoản mẫu chỉ dùng local, chưa có secret management production.
+- CV không có ngưỡng confidence tối thiểu; mọi ảnh đều đi hết pipeline kể cả confidence rất thấp hoặc ảnh không phải lá cây bị bệnh.
+- Frontend không tự phát hiện diagnosis đã được tạo khi request `/diagnosis/ai` bị rớt giữa chừng; phải tự reload trang để thấy trạng thái mới nhất.
+- Chưa validate kích thước ảnh ở phía client trước khi upload; vượt giới hạn 10MB chỉ báo lỗi sau khi đã upload xong.
+- Chưa có phản hồi tiến trình khi chờ AI xử lý (có thể tới 120 giây); chỉ có spinner tĩnh, không có bước trung gian.
 
 Ngày 21/09/2026, database Docker local đã được nạp trực tiếp rule Tomato___Early_blight → Ortiva 600SC, liều 1.50 L/ha, PHI 7 ngày, version 2026.09.10-mvp-reviewed-v1; internal API đã trả đúng rule. Dữ liệu này không nằm trong commit. Máy clone mới vẫn đi theo review_required cho tới khi Backend seed rule. Diagnosis cũ có treatment_rule_id rỗng không tự cập nhật; phải tạo báo cáo mới để test nhánh treatment.
 

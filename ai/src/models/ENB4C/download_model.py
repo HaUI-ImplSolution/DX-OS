@@ -2,9 +2,11 @@ import torch
 from huggingface_hub import hf_hub_download
 from pathlib import Path
 
-from .model_ENB4C import EfficientNetB4Classifier
+from .model import EfficientNetB4Classifier
 
-MODEL_DIR = Path("weights")
+BASE_DIR = Path(__file__).resolve().parents[2]
+
+MODEL_DIR = BASE_DIR / "weights"
 MODEL_PATH = MODEL_DIR / "best_model.pth"
 
 

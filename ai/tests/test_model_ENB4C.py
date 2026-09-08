@@ -1,35 +1,80 @@
+"""Unit tests for EfficientNet-B4 model wrapper."""
+
+from pathlib import Path
+from types import SimpleNamespace
+
+import pytest
 import torch
-from PIL import Image
-from torchvision import transforms
 
-from src.models.download_model_ENB4C import download_model
+from src.models.ENB4C.class_names import CLASS_NAMES
 
 
-# 1. Load model
-model = download_model()
+def test_class_names_contains_38_classes():
+    """Class mapping should contain exactly 38 classes."""
 
-# 2. Load ảnh test
-image = Image.open("test_image.jpg").convert("RGB")
+    assert len(CLASS_NAMES) == 38
 
-# 3. Preprocess ảnh
-transform = transforms.Compose([
-    transforms.Resize((380, 380)),
-    transforms.ToTensor(),
-    transforms.Normalize(
-        mean=[0.485, 0.456, 0.406],
-        std=[0.229, 0.224, 0.225],
-    ),
-])
-
-image_tensor = transform(image).unsqueeze(0)
+    assert set(CLASS_NAMES.keys()) == set(range(38))
 
 
-# 4. Inference
-with torch.no_grad():
+def test_class_names_contains_tomato_classes():
+    """Tomato disease classes should be mapped correctly."""
+
+    assert CLASS_NAMES[28] == "Tomato___Bacterial_spot"
+    assert CLASS_NAMES[29] == "Tomato___Early_blight"
+    assert CLASS_NAMES[30] == "Tomato___Late_blight"
+    assert CLASS_NAMES[37] == "Tomato___healthy"
+
+
+class FakeModel:
+    """Small fake model returning deterministic logits."""
+
+    def __call__(self, x):
+        output = torch.zeros((x.shape[0], 38))
+
+        # Class 29 has the highest score
+        output[:, 29] = 10.0
+
+        return output
+
+
+def test_model_prediction_returns_expected_class():
+    """Prediction should select the class with the highest logit."""
+
+    model = FakeModel()
+
+    image_tensor = torch.zeros((1, 3, 380, 380))
+
+    with torch.no_grad():
+        output = model(image_tensor)
+
+    predicted_class = output.argmax(dim=1).item()
+
+    assert predicted_class == 29
+    assert CLASS_NAMES[predicted_class] == "Tomato___Early_blight"
+
+
+def test_model_output_shape():
+    """Model output should contain 38 class logits."""
+
+    model = FakeModel()
+
+    image_tensor = torch.zeros((1, 3, 380, 380))
+
     output = model(image_tensor)
 
-# 5. Lấy class có xác suất cao nhất
-predicted_class = output.argmax(dim=1).item()
+    assert output.shape == (1, 38)
 
-print("Predicted class:", predicted_class)
-print("Output shape:", output.shape)
+
+def test_model_prediction_is_valid_class():
+    """Prediction should always map to a known class."""
+
+    model = FakeModel()
+
+    image_tensor = torch.zeros((1, 3, 380, 380))
+
+    output = model(image_tensor)
+
+    predicted_class = output.argmax(dim=1).item()
+
+    assert predicted_class in CLASS_NAMES

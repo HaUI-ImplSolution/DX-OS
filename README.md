@@ -11,6 +11,14 @@ MVP dự thi **OLP Phần mềm nguồn mở 2026** (khối thi DX-OS, VFOSSA). 
 - Chủ đề chính thức: https://vfossa.vn/tin-tuc/gioi-thieu-mo-hinh-dx-os-va-chu-de-cuoc-thi-phan-mem-nguon-mo-olp-2026-761.html
 - Giáo trình DX-OS: https://opendigitransform.gitbook.io/dx-os
 
+## Kiến trúc dịch vụ (tóm tắt)
+
+Hai service tách biệt, giao tiếp qua HTTP:
+
+- **Backend (Java/Spring Boot)** — sở hữu Single Source of Truth: API nghiệp vụ, PostgreSQL (Operational Data + Structured Knowledge), state machine duyệt (Approve/Reject), enforce poka-yoke (khoá PHI/thu hoạch), auth. Đây là nơi mọi ghi nhận cuối cùng xảy ra.
+- **AI Service (Python)** — stateless theo hướng advisory: vision-api (CV chẩn đoán bệnh), LangGraph điều phối bước lookup + sinh khuyến nghị, LLM nhỏ (Qwen2.5-1.5B qua Ollama), RAG. Chỉ trả đề xuất/kết quả phân tích; không tự ghi dữ liệu nghiệp vụ, không tự quyết định thay kỹ sư.
+- Backend gọi AI Service qua contract API (xem mục "Việc cần chốt cùng Lead"); AI Service không truy cập trực tiếp PostgreSQL nghiệp vụ trừ khi cần đọc RAG Knowledge (pgvector) riêng.
+
 ## Nguyên tắc kiến trúc (bất biến qua mọi giai đoạn)
 
 1. **Deterministic-first**: số liệu kỹ thuật (thuốc, liều lượng, PHI, công thức carbon) luôn lấy từ dữ liệu có cấu trúc / lookup xác định — LLM không được tự sinh con số.
@@ -31,10 +39,10 @@ Luồng: nông dân báo bệnh bằng ảnh → CV chẩn đoán → tra cứu 
 - [ ] M2 — Vision API trả `disease_id/confidence/model_version`, lưu lại được
 - [ ] M3 — Lookup Disease → TreatmentRule → Pesticide deterministic (SQL/JSON, không qua LLM)
 - [ ] M4 — LLM chỉ diễn đạt lại facts đã tra được, không tự sinh số liệu
-- [ ] M5 — Kỹ sư Approve/Reject trong flow (LangGraph interrupt node)
-- [ ] M6 — Khi xác nhận đã phun (APPLIED): ghi `TreatmentApplication`, tính `harvest_locked_until`, poka-yoke 2 tầng (backend 422 + UI disable) chặn thu hoạch sớm
+- [ ] M5 — Kỹ sư Approve/Reject trong flow (trạng thái duyệt lưu & kiểm soát ở Spring Boot backend; AI Service chỉ đề xuất, không tự quyết)
+- [ ] M6 — Khi xác nhận đã phun (APPLIED): backend ghi `TreatmentApplication`, tính `harvest_locked_until`, poka-yoke 2 tầng (Spring Boot API trả 422 + UI disable) chặn thu hoạch sớm
 
-Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, một vision-api (MobileNetV3), một backend orchestrator (LangGraph), một LLM nhỏ chạy local (Qwen2.5-1.5B qua Ollama). Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
+Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot (API nghiệp vụ, duyệt, poka-yoke), AI Service Python riêng (vision-api MobileNetV3 + LangGraph điều phối + LLM nhỏ Qwen2.5-1.5B qua Ollama) gọi qua HTTP. Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
 
 ### Giai đoạn 1 — Hoàn thiện trải nghiệm & truy vấn (Should)
 
@@ -81,10 +89,11 @@ Một PostgreSQL vật lý, ba nguồn logic:
 - [ ] Quyết định dứt khoát về n8n (giữ/bỏ) vì lý do license
 - [ ] Schema operational + structured knowledge (entity, field bắt buộc)
 - [ ] Contract `vision-api` (request/response JSON)
+- [ ] Contract giữa backend Spring Boot và AI Service Python (REST, base URL, timeout/retry, ai-service base URL cấu hình ở đâu)
 - [ ] Thời điểm PHI bắt đầu: khi `TreatmentApplication = APPLIED` (không phải khi Approve)
 - [ ] Cấu trúc monorepo và quyền sở hữu từng thư mục/module
 - [ ] Chính sách repo Private trong lúc phát triển, thời điểm public trước khi nộp bài
 
 ## Trạng thái hiện tại
 
-Đang ở bước lên kế hoạch/khoá kiến trúc — chưa có code. Bước tiếp theo: dựng khung repo (Giai đoạn 0), chốt schema, dựng vision-api trước, sau đó mới ghép LangGraph.
+Đang ở bước lên kế hoạch/khoá kiến trúc — chưa có code. Bước tiếp theo: dựng khung repo (Giai đoạn 0) gồm khởi tạo backend Spring Boot, chốt schema, dựng vision-api (Python), sau đó nối AI Service (LangGraph) với backend qua contract API.

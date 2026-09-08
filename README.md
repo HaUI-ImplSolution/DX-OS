@@ -96,4 +96,4 @@ Một PostgreSQL vật lý, ba nguồn logic:
 
 ## Trạng thái hiện tại
 
-Đang ở bước lên kế hoạch/khoá kiến trúc — chưa có code. Bước tiếp theo: dựng khung repo (Giai đoạn 0) gồm khởi tạo backend Spring Boot, chốt schema, dựng vision-api (Python), sau đó nối AI Service (LangGraph) với backend qua contract API.
+Backend Spring Boot đã khởi tạo (`backend/DX-Farm`, kết nối PostgreSQL qua `.env`) và đã dựng khung dùng chung — `ApiResponse<T>`, `GlobalExceptionHandler`, springdoc/Swagger — cùng một domain mẫu `Parcel` (thửa ruộng) làm pattern tham chiếu cho các domain tiếp theo (CropSeason, Disease, Pesticide, TreatmentRule, TreatmentApplication...). Bước tiếp theo: chốt schema đầy đủ cho Structured Knowledge + Operational Data, dựng vision-api (Python), sau đó nối AI Service (LangGraph) với backend qua contract API.

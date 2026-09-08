@@ -1,0 +1,11 @@
+.git
+.idea
+**/.DS_Store
+**/node_modules
+**/dist
+**/coverage
+**/.cache
+backend/venv
+backend/.venv
+deploy/data
+frontend/.npm

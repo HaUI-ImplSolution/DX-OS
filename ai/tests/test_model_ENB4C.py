@@ -1,9 +1,3 @@
-"""Unit tests for EfficientNet-B4 model wrapper."""
-
-from pathlib import Path
-from types import SimpleNamespace
-
-import pytest
 import torch
 
 from src.models.ENB4C.class_names import CLASS_NAMES

@@ -1,11 +1,13 @@
 deploy/data/
 
-ai/service/.venv/
-ai/service/models/
-
 deploy/.env
 *.env.local
 *.env
+
+ai/.idea
+ai/.venv
+ai/weights/
+ai/AI_TASKS_PHASE_0.md
 
 node_modules/
 frontend/dist/

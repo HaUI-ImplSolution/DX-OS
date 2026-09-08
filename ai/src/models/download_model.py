@@ -4,7 +4,7 @@ from pathlib import Path
 
 from .model import EfficientNetB4Classifier
 
-BASE_DIR = Path(__file__).resolve().parents[2]
+BASE_DIR = Path(__file__).resolve().parents[1]
 
 MODEL_DIR = BASE_DIR / "weights"
 MODEL_PATH = MODEL_DIR / "best_model.pth"

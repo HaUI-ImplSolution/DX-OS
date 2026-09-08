@@ -5,6 +5,7 @@ target/
 !**/src/test/**/target/
 .agent/
 data/
+uploads/
 
 ### STS ###
 .apt_generated

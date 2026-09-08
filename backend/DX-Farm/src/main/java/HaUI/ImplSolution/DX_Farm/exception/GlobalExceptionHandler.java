@@ -1,6 +1,8 @@
 package HaUI.ImplSolution.DX_Farm.exception;
 
 import HaUI.ImplSolution.DX_Farm.dto.ApiResponse;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +29,26 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(ResourceNotFoundException.class)
   public ResponseEntity<ApiResponse<Void>> handleNotFound(ResourceNotFoundException ex) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error(ex.getMessage()));
+  }
+
+  @ExceptionHandler(InvalidStateException.class)
+  public ResponseEntity<ApiResponse<Void>> handleInvalidState(InvalidStateException ex) {
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error(ex.getMessage()));
+  }
+
+  @ExceptionHandler(PokaYokeViolationException.class)
+  public ResponseEntity<ApiResponse<Map<String, Object>>> handlePokaYoke(
+      PokaYokeViolationException ex) {
+    Map<String, Object> data = new LinkedHashMap<>();
+    data.put("errorCode", ex.getErrorCode());
+    data.put("harvestLockedUntil", ex.getHarvestLockedUntil());
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+        .body(ApiResponse.error(ex.getMessage(), data));
+  }
+
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<ApiResponse<Void>> handleIllegalArgument(IllegalArgumentException ex) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(ex.getMessage()));
   }
 
   @ExceptionHandler(Exception.class)

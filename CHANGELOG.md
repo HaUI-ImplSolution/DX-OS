@@ -35,6 +35,51 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
 
 Chưa bắt đầu.
 
-## Frontend
+## Frontend (`frontend`)
 
-Chưa bắt đầu.
+### 2026-09-09
+
+**Đã xong — Demo UI cho Phase 0 spine flow (M1–M6):**
+
+- React 18 + TypeScript + Vite, không dùng router/state library ngoài — một trang duy nhất
+  theo đúng thứ tự spine flow: chọn/tạo thửa ruộng → chọn/tạo vụ mùa → gửi báo cáo sâu bệnh
+  kèm ảnh → chẩn đoán (nhập tay giả lập AI Service) → kỹ sư duyệt/từ chối → ghi nhận đã phun
+  thuốc → khai báo thu hoạch (thấy rõ banner khi bị poka-yoke chặn, HTTP 422).
+- Tab phụ "Danh mục tham chiếu" hiển thị read-only Disease/Pesticide/TreatmentRule (Structured
+  Knowledge).
+- `src/api.ts` bọc toàn bộ `ApiResponse<T>` envelope của backend, ném `ApiError` (status + data)
+  để UI phân biệt lỗi validate (400), state machine (409) và poka-yoke (422).
+- Đã chạy thử full flow qua trình duyệt thật (parcel → crop season → upload ảnh → diagnosis →
+  approve → apply → harvest bị khoá đúng theo PHI) trên backend thật, không chỉ build/typecheck.
+
+**Thay đổi kèm theo ở backend để FE chạy được:**
+
+- Thêm `WebConfig` (CORS cho `/api/**` từ localhost, static resource handler `/uploads/**` trỏ
+  vào `app.upload-dir`) vì trước đó chưa có cấu hình CORS và ảnh upload chưa được serve qua HTTP.
+
+**Chưa làm:**
+
+- Chưa có auth/SSO nên tên nông dân/kỹ sư vẫn là input tự do (khớp với hiện trạng backend).
+- Chưa có low-code frontend (ToolJet/Appsmith) theo Giai đoạn 1 — đây vẫn là bản tự viết tối
+  giản cho demo Phase 0.
+
+## Deploy (`deploy`)
+
+### 2026-09-09
+
+**Đã xong — đóng gói Postgres + backend + frontend chạy một lệnh:**
+
+- `deploy/docker-compose.yml`: build backend từ `backend/DX-Farm/Dockerfile` (đã có sẵn),
+  build frontend qua `frontend/Dockerfile` mới (multi-stage: `npm run build` rồi serve bằng
+  nginx). Expose ra host: `${POSTGRES_PORT:-5432}` (để còn chạy `mvn spring-boot:run` local
+  khi cần hot reload), `${BACKEND_PORT:-8081}`, `${FRONTEND_PORT:-8082}`.
+- Frontend production build gọi API cùng-origin (`frontend/.env.production` để trống
+  `VITE_API_BASE_URL`) — nginx (`frontend/nginx.conf`) reverse-proxy `/api/` và `/uploads/`
+  sang container backend, nên môi trường deploy không cần CORS.
+- Dữ liệu Postgres và ảnh upload persist qua bind mount `deploy/data/` (đã có sẵn trong
+  `.gitignore` từ trước, không mất khi `docker compose down`).
+- Đã build + chạy thử thật bằng `docker compose up -d --build` từ thư mục `deploy`, không chỉ
+  viết cấu hình suông.
+- Xoá `backend/DX-Farm/docker-compose.yml` (chỉ chạy Postgres riêng cho dev cũ) — giờ
+  `deploy/docker-compose.yml` là docker-compose file duy nhất trong repo, dùng chung cho cả
+  demo full-stack lẫn Postgres khi dev thủ công.

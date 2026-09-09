@@ -33,8 +33,19 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
 
 ## AI Service (Python)
 
-Chưa bắt đầu.
+### 2026-09-09
 
+**Đã xong — Vision API (Computer Vision) cơ bản:**
+
+- Khởi tạo project FastAPI (`ai/src`).
+- Tích hợp model phân loại bệnh thực vật dựa trên PyTorch (kiến trúc `EfficientNet-B4`, hỗ trợ 38 lớp bệnh lý).
+- Cung cấp API endpoint `POST /api/v1/disease/predict` nhận upload ảnh và trả về kết quả chẩn đoán (`class_id`, `class_name`, `confidence`, `model_name`, `model_version`).
+
+**Chưa làm:**
+
+- Chưa tích hợp LLM (Qwen2.5-1.5B qua Ollama) để sinh khuyến nghị.
+- Chưa có LangGraph để điều phối luồng (workflow).
+- Chưa có lookup chuẩn xác mã bệnh (`disease_code`) và tên tiếng Việt (`disease_name_vi`) để đồng bộ với mã `Disease` của CSDL backend (hiện API trả về `null`).
 ## Frontend (`frontend`)
 
 ### 2026-09-09

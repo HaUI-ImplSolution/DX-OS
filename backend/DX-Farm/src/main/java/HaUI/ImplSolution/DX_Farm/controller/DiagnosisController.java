@@ -2,7 +2,6 @@ package HaUI.ImplSolution.DX_Farm.controller;
 
 import HaUI.ImplSolution.DX_Farm.dto.ApiResponse;
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisApplyRequest;
-import HaUI.ImplSolution.DX_Farm.dto.DiagnosisApproveRequest;
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisCreateRequest;
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisRejectRequest;
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisResponse;
@@ -12,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/disease-reports/{reportId}/diagnosis")
-@Tag(name = "Diagnosis", description = "Chẩn đoán + duyệt + ghi nhận xử lý - M2-M6")
+@Tag(name = "Diagnosis", description = "Chẩn đoán + duyệt + ghi nhận xử lý")
+@PreAuthorize("hasAnyRole('ENGINEER','ADMIN')")
 public class DiagnosisController {
 
   private final DiagnosisService diagnosisService;
@@ -32,21 +33,20 @@ public class DiagnosisController {
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(summary = "Record CV diagnosis + deterministic treatment lookup (M2-M4)")
+  @Operation(summary = "Record CV diagnosis + deterministic treatment lookup")
   public ApiResponse<DiagnosisResponse> create(@PathVariable Long reportId,
       @Valid @RequestBody DiagnosisCreateRequest request) {
     return ApiResponse.success("Diagnosis recorded", diagnosisService.create(reportId, request));
   }
 
   @PostMapping("/approve")
-  @Operation(summary = "Engineer approves the recommendation (M5)")
-  public ApiResponse<DiagnosisResponse> approve(@PathVariable Long reportId,
-      @Valid @RequestBody DiagnosisApproveRequest request) {
-    return ApiResponse.success("Diagnosis approved", diagnosisService.approve(reportId, request));
+  @Operation(summary = "Engineer approves the recommendation (approvedBy = logged-in engineer)")
+  public ApiResponse<DiagnosisResponse> approve(@PathVariable Long reportId) {
+    return ApiResponse.success("Diagnosis approved", diagnosisService.approve(reportId));
   }
 
   @PostMapping("/reject")
-  @Operation(summary = "Engineer rejects the recommendation (M5)")
+  @Operation(summary = "Engineer rejects the recommendation (rejectedBy = logged-in engineer)")
   public ApiResponse<DiagnosisResponse> reject(@PathVariable Long reportId,
       @Valid @RequestBody DiagnosisRejectRequest request) {
     return ApiResponse.success("Diagnosis rejected", diagnosisService.reject(reportId, request));
@@ -54,7 +54,7 @@ public class DiagnosisController {
 
   @PostMapping("/apply")
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(summary = "Record treatment applied + compute harvest lock (M6)")
+  @Operation(summary = "Record treatment applied + compute harvest lock")
   public ApiResponse<TreatmentApplicationResponse> apply(@PathVariable Long reportId,
       @RequestBody(required = false) DiagnosisApplyRequest request) {
     DiagnosisApplyRequest safeRequest = request != null ? request : new DiagnosisApplyRequest(null);

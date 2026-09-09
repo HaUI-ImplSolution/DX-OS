@@ -3,8 +3,12 @@ package HaUI.ImplSolution.DX_Farm.dto;
 import jakarta.validation.constraints.NotBlank;
 
 // @formatter:off
-public record DiagnosisApproveRequest(
-  // Tên kỹ sư thực hiện duyệt
+public record LoginRequest(
+  // Tên đăng nhập
   @NotBlank
-  String approvedBy
+  String username,
+
+  // Mật khẩu
+  @NotBlank
+  String password
 ){}

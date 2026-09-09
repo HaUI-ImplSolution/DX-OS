@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -44,6 +46,20 @@ public class GlobalExceptionHandler {
     data.put("harvestLockedUntil", ex.getHarvestLockedUntil());
     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
         .body(ApiResponse.error(ex.getMessage(), data));
+  }
+
+  @ExceptionHandler(AuthenticationException.class)
+  public ResponseEntity<ApiResponse<Void>> handleAuthentication(AuthenticationException ex) {
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+        .body(ApiResponse.error("Sai tên đăng nhập hoặc mật khẩu"));
+  }
+
+  @ExceptionHandler(AccessDeniedException.class)
+  public ResponseEntity<ApiResponse<Void>> handleAccessDenied(AccessDeniedException ex) {
+    // @PreAuthorize ném exception này ngay trong lời gọi controller (AOP method security),
+    // khác với vi phạm rule ở authorizeHttpRequests (đã xử lý bởi RestAccessDeniedHandler).
+    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+        .body(ApiResponse.error("Không đủ quyền thực hiện thao tác này"));
   }
 
   @ExceptionHandler(IllegalArgumentException.class)

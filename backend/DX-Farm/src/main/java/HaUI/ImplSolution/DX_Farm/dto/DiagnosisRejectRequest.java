@@ -4,11 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 
 // @formatter:off
 public record DiagnosisRejectRequest(
-  // Tên kỹ sư thực hiện từ chối
-  @NotBlank
-  String rejectedBy,
-
-  // Lý do từ chối
+  // Lý do từ chối (rejectedBy lấy từ kỹ sư đang đăng nhập, không nhận qua request)
   @NotBlank
   String reason
 ){}

@@ -1,15 +1,24 @@
 import { useEffect, useState } from "react";
 import { listCropSeasons, listDiseaseReports, listDiseases, listParcels } from "./api";
+import { clearCurrentUser, getCurrentUser, type CurrentUser } from "./auth";
 import CropSeasonPanel from "./components/CropSeasonPanel";
 import DiagnosisPanel from "./components/DiagnosisPanel";
 import DiseaseReportPanel from "./components/DiseaseReportPanel";
+import LoginPanel from "./components/LoginPanel";
 import ParcelPanel from "./components/ParcelPanel";
 import ReferencePanel from "./components/ReferencePanel";
 import type { CropSeason, Diagnosis, Disease, DiseaseReport, Parcel } from "./types";
 
 type Tab = "flow" | "reference";
 
+const ROLE_LABEL: Record<CurrentUser["role"], string> = {
+  FARMER: "Nông dân",
+  ENGINEER: "Kỹ sư",
+  ADMIN: "Quản trị viên",
+};
+
 export default function App() {
+  const [user, setUser] = useState<CurrentUser | null>(() => getCurrentUser());
   const [tab, setTab] = useState<Tab>("flow");
   const [error, setError] = useState<string | null>(null);
 
@@ -24,12 +33,25 @@ export default function App() {
 
   const [diseases, setDiseases] = useState<Disease[]>([]);
 
-  const showError = (message: string) => setError(message);
+  // Token hết hạn/bị thu hồi -> api.ts đã tự xoá localStorage (401), đồng bộ lại state ở đây
+  // để quay về màn đăng nhập thay vì tiếp tục hiển thị dữ liệu cũ.
+  const showError = (message: string) => {
+    setError(message);
+    if (!getCurrentUser()) setUser(null);
+  };
+
+  const logout = () => {
+    clearCurrentUser();
+    setUser(null);
+  };
 
   useEffect(() => {
+    // Chưa đăng nhập thì chưa có token -> chờ user đăng nhập xong mới gọi API,
+    // và tải lại ngay sau khi đăng nhập (không chỉ chạy đúng 1 lần lúc mount).
+    if (!user) return;
     listParcels().then(setParcels).catch((err) => showError(err.message));
     listDiseases().then(setDiseases).catch((err) => showError(err.message));
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (!selectedParcelCode) {
@@ -66,12 +88,31 @@ export default function App() {
     );
   };
 
+  if (!user) {
+    return (
+      <LoginPanel
+        onLoggedIn={(loggedInUser) => {
+          setError(null);
+          setUser(loggedInUser);
+        }}
+      />
+    );
+  }
+
   return (
     <div className="app">
       <header className="app-header">
         <div>
           <h1>DX-Farm — Demo Spine Flow (Phase 0)</h1>
           <p>Báo bệnh bằng ảnh → chẩn đoán → tra cứu quy tắc → kỹ sư duyệt → ghi nhận xử lý → khoá thu hoạch (PHI)</p>
+        </div>
+        <div className="user-bar">
+          <span>
+            {user.fullName} ({ROLE_LABEL[user.role]})
+          </span>
+          <button className="btn" onClick={logout}>
+            Đăng xuất
+          </button>
         </div>
         <nav className="tabs">
           <button className={tab === "flow" ? "tab tab-active" : "tab"} onClick={() => setTab("flow")}>
@@ -143,6 +184,7 @@ export default function App() {
             <DiagnosisPanel
               report={selectedReport}
               diseases={diseases}
+              currentRole={user.role}
               onUpdated={updateDiagnosisInReport}
               onError={showError}
             />

@@ -41,24 +41,17 @@ server:
 app:
   upload-dir: ${UPLOAD_DIR:./uploads}
 
-# jwt:
-#   secret: ${JWT_SECRET}
-#   expiration: ${JWT_EXPIRATION}
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:86400000}
 
-# admin:
-#   default:
-#     username: ${SUPER_ADMIN_USERNAME}
-#     password: ${SUPER_ADMIN_PASSWORD}
+admin:
+  default:
+    username: ${SUPER_ADMIN_USERNAME:admin}
+    password: ${SUPER_ADMIN_PASSWORD}
 
 logging:
   level:
     HaUI.ImplSolution.DX_Farm: DEBUG
     org.springframework.security: WARN
     org.hibernate.SQL: WARN
-
-# security:
-#   public-endpoints: /public/**
-#   public-get-endpoints: 
-#   public-post-endpoints: 
-#   admin-endpoints: /api/admin/**
-#   swagger-endpoints: /swagger-ui.html,/swagger-ui/**,/v3/api-docs/**

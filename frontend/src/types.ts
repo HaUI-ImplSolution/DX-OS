@@ -5,6 +5,20 @@ export interface ApiResponse<T> {
   timestamp: string;
 }
 
+export type Role = "FARMER" | "ENGINEER" | "ADMIN";
+
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  token: string;
+  username: string;
+  fullName: string;
+  role: Role;
+}
+
 export interface Parcel {
   id: number;
   code: string;
@@ -95,12 +109,7 @@ export interface DiagnosisCreateRequest {
   modelVersion: string;
 }
 
-export interface DiagnosisApproveRequest {
-  approvedBy: string;
-}
-
 export interface DiagnosisRejectRequest {
-  rejectedBy: string;
   reason: string;
 }
 

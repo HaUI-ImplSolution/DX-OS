@@ -60,17 +60,25 @@ Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot
 #### Phần AI đã có trên `feature/make-data`
 
 - Data layer cho 8 entity spine-flow và 2 entity RAG (`Document`, `DocumentChunk` với
-  `vector(768)`).
+  `vector(384)`, đồng bộ với model embedding multilingual MiniLM).
 - Repository SQL cho Parcel/CropSeason, kết quả CV, deterministic treatment lookup, lịch sử
   phun và kiểm tra PHI; `get_field_context()` đã gom được operational context làm đầu vào
   cho LangGraph sau này.
 - Alembic initial revision `9700136d7e00` đã được thử upgrade/downgrade cho 8 bảng
   spine-flow. PostgreSQL trong Compose đã chuyển sang `pgvector/pgvector:pg16`.
+- Dataset có cấu trúc gồm 38 lớp bệnh/healthy được map nguyên văn từ sheet `Disease_KB`:
+  `class_name → code`, `disease_name → name`, `symptoms → description`; đã xác minh không
+  trùng `code` và có script seed idempotent cho bảng `diseases`.
+- Migration `4c2a0f9d8b71` đã bật extension pgvector và tạo `documents`, `document_chunks`.
+- RAG cơ bản đã chạy local: ingest idempotent 38 document/38 chunk, embedding 384 chiều,
+  cosine retrieval, prompt guardrail và Qwen2.5-1.5B qua Ollama. Smoke test câu hỏi triệu
+  chứng ghẻ táo trả đúng lớp `Apple___Apple_scab` ở Top 1.
 
-Đây mới là **data foundation**, chưa phải AI Service có thể gọi qua HTTP. Hai model RAG được
-thêm sau initial revision nên còn thiếu migration cho `documents` và `document_chunks`;
-seed JSON vẫn rỗng, chưa có test, và `ai/main.py` chưa có FastAPI application. M7/M8 vì vậy
-vẫn giữ trạng thái chưa hoàn thành.
+Đây là **data foundation + RAG prototype chạy local**, chưa phải AI Service có thể gọi qua
+HTTP. `ai/main.py` chưa có FastAPI application; vision-api và LangGraph chưa được triển khai.
+Các file kiểm tra RAG hiện là smoke script, chưa có automated test với assertion. M7/M8 vì
+vậy vẫn giữ trạng thái chưa hoàn thành; đặc biệt M8 còn thiếu citation chứa metadata nguồn
+VietGAP/IRRI có thể audit.
 
 ### Giai đoạn 1 — Hoàn thiện trải nghiệm & truy vấn (Should)
 
@@ -125,9 +133,10 @@ Một PostgreSQL vật lý, ba nguồn logic:
 ## Trạng thái hiện tại (cập nhật 2026-09-09)
 
 Backend Spring Boot và Frontend demo (React/Vite) cho Phase 0 spine flow đã có trên
-`main`. Trên `feature/make-data`, phần AI đã bắt đầu ở tầng dữ liệu/truy vấn và Alembic,
-nhưng chưa có service runtime, CV, LangGraph, LLM hoặc RAG pipeline chạy được. Checklist việc
-còn thiếu: xem mục "Giai đoạn 0" ở trên; chi tiết có kiểm chứng theo từng module:
+`main`. Trên `feature/make-data`, phần AI đã có tầng dữ liệu/truy vấn, Alembic, disease seed
+và RAG prototype chạy local với pgvector + Ollama. Chưa có FastAPI runtime, CV, LangGraph
+hoặc kết nối HTTP với backend. Checklist việc còn thiếu: xem mục "Giai đoạn 0" ở trên; chi
+tiết có kiểm chứng theo từng module:
 [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Chạy demo Phase 0

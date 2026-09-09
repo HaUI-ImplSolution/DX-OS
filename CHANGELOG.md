@@ -35,7 +35,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
 
 ### 2026-09-09
 
-**Đã xong trên `feature/make-data` — nền tảng dữ liệu cho AI workflow (chưa phải AI Service chạy được):**
+**Đã xong trên `feature/make-data` — nền tảng dữ liệu và RAG prototype chạy local:**
 
 - Khởi tạo Python data layer dùng SQLAlchemy 2.x và PostgreSQL, gồm `Base`, `engine`,
   `SessionLocal` và kết nối qua `DATABASE_URL`.
@@ -43,7 +43,8 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
   `CropSeason`, `DiseaseReport`, `Diagnosis`, `Disease`, `Pesticide`, `TreatmentRule`
   và `TreatmentApplication`; đã cấu hình UUID, khóa ngoại, index và relationship.
 - Bổ sung model nền cho RAG Knowledge: `Document` và `DocumentChunk`; chunk lưu nội dung,
-  số trang và embedding `vector(768)` qua pgvector.
+  số trang và embedding `vector(384)` qua pgvector, đồng bộ với
+  `paraphrase-multilingual-MiniLM-L12-v2`.
 - Bổ sung repository cho các thao tác đã có code:
   - tải thửa ruộng và vụ mùa đang hoạt động;
   - tạo báo cáo bệnh, lưu kết quả CV theo `disease_code`, lấy chẩn đoán mới nhất;
@@ -60,23 +61,41 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
   `docker compose config`.
 - Mở rộng `.gitignore` cho virtualenv/cache, secrets, model artifacts và build/runtime output;
   migration, seed source và `.env.example` vẫn được phép commit.
+- Chuyển seed sang `ai/data/structured/`; tạo 38 bản ghi Disease từ sheet `Disease_KB` với
+  mapping `class_name → code`, `disease_name → name`, `symptoms → description`. Dữ liệu được
+  giữ nguyên theo nguồn và đã kiểm tra không trùng mã cả nguyên dạng lẫn không phân biệt hoa
+  thường.
+- Thêm migration `4c2a0f9d8b71`: bật extension pgvector, tạo bảng `documents`,
+  `document_chunks`, khóa ngoại cascade và index theo `document_id`.
+- Hoàn thiện RAG prototype local: batch embedding, ingest Disease idempotent, cosine
+  retrieval, prompt tiếng Việt có guardrail không tự sinh thuốc/liều/PHI và gọi
+  Qwen2.5-1.5B qua Ollama.
+- Thêm `--dry-run` cho ingestion để validate và xem trước document mà không ghi PostgreSQL.
 
 **Đã xác minh:**
 
 - Python source compile được; SQLAlchemy đăng ký và configure mapper thành công cho 10
   model/table.
 - Initial migration chạy được cả hai chiều cho 8 bảng mà revision đang quản lý.
+- Database phát triển đã upgrade tới `4c2a0f9d8b71`, pgvector `0.8.6`; xác minh có đúng 38
+  document, 38 chunk và mọi embedding đều 384 chiều.
+- Chạy ingestion hai lần vẫn giữ 38 document/38 chunk; lần sau thay thế đúng 38 document cũ,
+  không nhân đôi dữ liệu.
+- Smoke test retrieval cho câu hỏi triệu chứng ghẻ táo trả
+  `Apple___Apple_scab` ở Top 1 (similarity khoảng `0.736`); RAG end-to-end qua Ollama trả lời
+  đúng theo context và không thêm dữ liệu thuốc.
 
 **Chưa làm / cần xử lý tiếp:**
 
 - `ai/main.py` vẫn rỗng; chưa có FastAPI endpoint, vision-api/MobileNetV3, LangGraph state và
-  node, Qwen/Ollama, RAG ingestion/retriever hoặc contract HTTP với Spring Boot backend.
-- Ba file seed JSON mới là placeholder rỗng; chưa có dữ liệu Disease/Pesticide/TreatmentRule
-  để chạy lookup thật.
-- `Document` và `DocumentChunk` được thêm sau initial revision nên chưa có migration kế
-  tiếp; `alembic check` hiện phát hiện hai bảng và index tương ứng chưa được quản lý.
-- Chưa có test cho model/repository/service; Ruff hiện vẫn báo lỗi chuẩn hóa import và
-  re-export.
+  node hoặc contract HTTP với Spring Boot backend.
+- `pesticides.json` và `treatment_rules.json` vẫn là placeholder rỗng; chưa có dữ liệu đã đối
+  chiếu danh mục/nhãn Việt Nam để chạy treatment lookup thật.
+- Các file `test_retriever.py` và `test_rag_service.py` hiện là smoke script chạy tay, chưa
+  phải pytest test có assertion; chưa có evaluation set, relevance threshold hay test cho
+  câu hỏi ngoài phạm vi.
+- Citation hiện chỉ trả UUID và similarity, chưa trả metadata nguồn/URL có thể audit; chưa có
+  vector index cho quy mô dữ liệu lớn.
 - Repository Python hiện có cả thao tác ghi Operational Data. Trước khi nối end-to-end cần
   chốt lại ranh giới Single Source of Truth trong tài liệu: backend Spring Boot sở hữu ghi
   nghiệp vụ, AI Service nên gọi backend qua HTTP thay vì tự ghi song song.

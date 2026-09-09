@@ -69,8 +69,8 @@ Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot
   guardrail và Qwen2.5-1.5B qua Ollama; câu hỏi ghẻ táo trả đúng lớp ở Top 1.
 - Các kiểm tra RAG hiện là smoke script, chưa phải automated test với assertion. Citation
   chưa có metadata nguồn VietGAP/IRRI có thể audit, nên M8 vẫn chưa hoàn thành.
-- Sau merge, Vision API nằm trong `ai/src`, còn data/RAG nằm trong `ai/app`; cần hợp nhất
-  package/runtime trước khi đóng gói AI Service và nối backend qua HTTP.
+- Vision API và data/RAG đã được tổ chức chung trong `ai/app`; RAG/Ollama chưa được nối vào
+  FastAPI runtime và AI Service vẫn chưa kết nối với backend qua HTTP.
 
 ### Giai đoạn 1 — Hoàn thiện trải nghiệm & truy vấn (Should)
 
@@ -132,9 +132,9 @@ Một PostgreSQL vật lý, ba nguồn logic:
 ## Trạng thái hiện tại (cập nhật 2026-09-09)
 
 Backend Spring Boot đã có JWT/phân quyền và M7; Frontend demo đã có màn đăng nhập. AI Service
-đã có Vision API cơ bản cùng data/RAG prototype chạy local, nhưng hai phần chưa hợp nhất thành
-một runtime, chưa có LangGraph và chưa nối HTTP với backend. Checklist còn thiếu ở “Giai đoạn
-0”; chi tiết theo từng module: [`CHANGELOG.md`](./CHANGELOG.md).
+đã có Vision API cơ bản cùng data/RAG trong `ai/app`, nhưng RAG chưa có endpoint FastAPI,
+chưa có LangGraph và chưa nối HTTP với backend. Checklist còn thiếu ở “Giai đoạn 0”; chi tiết
+theo từng module: [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Chạy demo Phase 0
 

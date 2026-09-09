@@ -82,14 +82,14 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
 
 **Đã xong — Vision API (Computer Vision) cơ bản:**
 
-- Khởi tạo project FastAPI (`ai/src`).
+- Khởi tạo project FastAPI (đã được chuyển từ `ai/src` vào `ai/app`).
 - Tích hợp model phân loại bệnh thực vật dựa trên PyTorch (kiến trúc `EfficientNet-B4`, hỗ trợ 38 lớp bệnh lý).
 - Cung cấp API endpoint `POST /api/v1/disease/predict` nhận upload ảnh và trả về kết quả chẩn đoán (`class_id`, `class_name`, `confidence`, `model_name`, `model_version`).
 
 **Chưa làm / cần tích hợp tiếp:**
 
-- Vision API (`ai/src`) và data/RAG (`ai/app`) chưa được hợp nhất thành một package/runtime;
-  RAG/Ollama mới chạy bằng smoke script, chưa có endpoint FastAPI.
+- Vision API và data/RAG đã nằm chung trong `ai/app`, nhưng RAG/Ollama mới chạy bằng smoke
+  script và chưa được nối vào endpoint FastAPI/runtime chính.
 - Chưa có LangGraph để điều phối workflow và chưa nối HTTP với Spring Boot backend.
 - Vision API chưa lookup `disease_code`/`disease_name_vi`; hai trường hiện trả `null`.
 - Smoke script RAG chưa phải pytest test có assertion; chưa có evaluation set, relevance

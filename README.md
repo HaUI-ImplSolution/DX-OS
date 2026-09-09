@@ -105,4 +105,26 @@ Một PostgreSQL vật lý, ba nguồn logic:
 
 ## Trạng thái hiện tại (cập nhật 2026-09-09)
 
-Backend Spring Boot đã xong; AI Service (Python) và Frontend chưa bắt đầu. Checklist việc còn thiếu: xem mục "Giai đoạn 0" ở trên. Chi tiết đầy đủ theo từng module: [`CHANGELOG.md`](./CHANGELOG.md).
+Backend Spring Boot đã xong; Frontend demo (React/Vite) cho Phase 0 spine flow đã xong; AI Service (Python) chưa bắt đầu. Checklist việc còn thiếu: xem mục "Giai đoạn 0" ở trên. Chi tiết đầy đủ theo từng module: [`CHANGELOG.md`](./CHANGELOG.md).
+
+## Chạy demo Phase 0
+
+Đóng gói cả Postgres + backend + frontend vào một lệnh duy nhất, dùng thư mục [`deploy`](./deploy)
+— đây là docker-compose file duy nhất trong repo, chạy một chỗ cho tiện:
+
+```bash
+cd deploy
+cp .env.example .env      # chỉnh lại nếu cần
+docker compose up -d --build
+```
+
+- Frontend: http://localhost:8082 (nginx serve build tĩnh + reverse-proxy `/api` và `/uploads`
+  sang backend, nên không cần CORS, không cần biết host/port backend)
+- Backend (Swagger/debug trực tiếp): http://localhost:8081/swagger-ui.html
+- Dữ liệu Postgres + ảnh upload được lưu ở `deploy/data/` (bind mount, không mất khi
+  `docker compose down`; dùng `down -v` hoặc xoá thư mục nếu muốn làm sạch từ đầu)
+- Dừng: `docker compose down` (chạy trong thư mục `deploy`)
+
+Khi cần sửa code + hot reload thay vì rebuild image: chạy `docker compose up -d postgres` trong
+`deploy` để có sẵn Postgres, rồi `./mvnw spring-boot:run` (backend) và `npm run dev` (frontend,
+sau khi `cp .env.example .env`) như bình thường — không cần thêm docker-compose nào khác.

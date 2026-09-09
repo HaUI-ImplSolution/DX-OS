@@ -36,8 +36,13 @@ python-docx>=1.1,<2.0
 numpy>=1.26,<3.0
 Pillow>=10.0,<13.0
 onnxruntime>=1.20,<2.0
+torch>=2.1.0
+torchvision>=0.16.0
 
 # Testing / Code quality
 pytest>=8.0,<10.0
 pytest-asyncio>=0.24,<2.0
 ruff>=0.8,<1.0
+
+# App
+huggingface_hub>=0.19.0

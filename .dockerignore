@@ -9,5 +9,3 @@ backend/venv
 backend/.venv
 deploy/data
 frontend/.npm
-ai/idea
-ai/.venv

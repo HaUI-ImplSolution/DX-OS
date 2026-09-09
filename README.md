@@ -124,11 +124,7 @@ Một PostgreSQL vật lý, ba nguồn logic:
 
 ## Trạng thái hiện tại (cập nhật 2026-09-09)
 
-Backend Spring Boot và Frontend demo (React/Vite) cho Phase 0 spine flow đã có trên
-`main`. Trên `feature/make-data`, phần AI đã bắt đầu ở tầng dữ liệu/truy vấn và Alembic,
-nhưng chưa có service runtime, CV, LangGraph, LLM hoặc RAG pipeline chạy được. Checklist việc
-còn thiếu: xem mục "Giai đoạn 0" ở trên; chi tiết có kiểm chứng theo từng module:
-[`CHANGELOG.md`](./CHANGELOG.md).
+Backend Spring Boot đã xong; Frontend demo (React/Vite) cho Phase 0 spine flow đã xong; AI Service (Python) đã dựng xong phần Vision API cơ bản, đang thiếu phần điều phối LangGraph và LLM. Checklist việc còn thiếu: xem mục "Giai đoạn 0" ở trên. Chi tiết đầy đủ theo từng module: [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Chạy demo Phase 0
 
@@ -144,8 +140,6 @@ docker compose up -d --build
 - Frontend: http://localhost:8082 (nginx serve build tĩnh + reverse-proxy `/api` và `/uploads`
   sang backend, nên không cần CORS, không cần biết host/port backend)
 - Backend (Swagger/debug trực tiếp): http://localhost:8081/swagger-ui.html
-- PostgreSQL dùng image `pgvector/pgvector:pg16` để chừa khả năng lưu embedding cho RAG;
-  AI Service chưa được đóng gói thành service trong Compose.
 - Dữ liệu Postgres + ảnh upload được lưu ở `deploy/data/` (bind mount, không mất khi
   `docker compose down`; dùng `down -v` hoặc xoá thư mục nếu muốn làm sạch từ đầu)
 - Dừng: `docker compose down` (chạy trong thư mục `deploy`)

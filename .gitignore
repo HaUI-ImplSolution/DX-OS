@@ -1,3 +1,6 @@
+deploy/data/
+
+deploy/.env
 # Environment variables and local secrets
 .env
 .env.*
@@ -11,6 +14,11 @@
 venv/
 env/
 ENV/
+
+ai/.idea
+ai/.venv
+ai/weights/
+ai/AI_TASKS_PHASE_0.md
 
 # Python bytecode, caches, builds, and test output
 __pycache__/
@@ -65,7 +73,10 @@ deploy/data/
 *.swo
 *~
 
-# IDE settings
+__pycache__/
+*.pyc
+*.pyo
+.venv/
 .idea/
 .vscode/
 

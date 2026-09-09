@@ -2,7 +2,7 @@ name: CI
 on:
   push:
     branches:
-      - Khuong-main
+      - main
     paths:
       - 'backend/**'
   pull_request:
@@ -10,7 +10,7 @@ on:
       - opened
       - synchronize
     branches:
-      - Khuong-main
+      - main
     paths:
       - 'backend/**'
 

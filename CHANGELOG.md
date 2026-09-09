@@ -33,7 +33,53 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
 
 ## AI Service (Python)
 
-Chưa bắt đầu.
+### 2026-09-09
+
+**Đã xong trên `feature/make-data` — nền tảng dữ liệu cho AI workflow (chưa phải AI Service chạy được):**
+
+- Khởi tạo Python data layer dùng SQLAlchemy 2.x và PostgreSQL, gồm `Base`, `engine`,
+  `SessionLocal` và kết nối qua `DATABASE_URL`.
+- Khai báo 8 model Operational Data / Structured Knowledge phục vụ spine flow: `Parcel`,
+  `CropSeason`, `DiseaseReport`, `Diagnosis`, `Disease`, `Pesticide`, `TreatmentRule`
+  và `TreatmentApplication`; đã cấu hình UUID, khóa ngoại, index và relationship.
+- Bổ sung model nền cho RAG Knowledge: `Document` và `DocumentChunk`; chunk lưu nội dung,
+  số trang và embedding `vector(768)` qua pgvector.
+- Bổ sung repository cho các thao tác đã có code:
+  - tải thửa ruộng và vụ mùa đang hoạt động;
+  - tạo báo cáo bệnh, lưu kết quả CV theo `disease_code`, lấy chẩn đoán mới nhất;
+  - lookup `Disease → TreatmentRule → Pesticide` bằng SQL deterministic;
+  - ghi `TreatmentApplication`, snapshot liều/PHI, tính `harvest_locked_until` từ thời điểm
+    `APPLIED`, đọc lịch sử phun và kiểm tra còn cách ly hay không.
+- Bổ sung `get_field_context()` để gom Parcel, CropSeason, chẩn đoán mới nhất, lần phun gần
+  nhất và trạng thái PHI thành `dict` làm đầu vào cho LangGraph sau này.
+- Thiết lập Alembic và tạo initial revision `9700136d7e00` cho 8 bảng spine-flow. Revision đã
+  được thử `upgrade → downgrade → upgrade` thành công trên PostgreSQL tạm; database phát
+  triển được baseline bằng `alembic stamp head` sau khi đối chiếu schema.
+- Đổi PostgreSQL dùng chung trong `deploy/docker-compose.yml` sang
+  `pgvector/pgvector:pg16`; cấu hình Compose sau merge với `main` đã qua
+  `docker compose config`.
+- Mở rộng `.gitignore` cho virtualenv/cache, secrets, model artifacts và build/runtime output;
+  migration, seed source và `.env.example` vẫn được phép commit.
+
+**Đã xác minh:**
+
+- Python source compile được; SQLAlchemy đăng ký và configure mapper thành công cho 10
+  model/table.
+- Initial migration chạy được cả hai chiều cho 8 bảng mà revision đang quản lý.
+
+**Chưa làm / cần xử lý tiếp:**
+
+- `ai/main.py` vẫn rỗng; chưa có FastAPI endpoint, vision-api/MobileNetV3, LangGraph state và
+  node, Qwen/Ollama, RAG ingestion/retriever hoặc contract HTTP với Spring Boot backend.
+- Ba file seed JSON mới là placeholder rỗng; chưa có dữ liệu Disease/Pesticide/TreatmentRule
+  để chạy lookup thật.
+- `Document` và `DocumentChunk` được thêm sau initial revision nên chưa có migration kế
+  tiếp; `alembic check` hiện phát hiện hai bảng và index tương ứng chưa được quản lý.
+- Chưa có test cho model/repository/service; Ruff hiện vẫn báo lỗi chuẩn hóa import và
+  re-export.
+- Repository Python hiện có cả thao tác ghi Operational Data. Trước khi nối end-to-end cần
+  chốt lại ranh giới Single Source of Truth trong tài liệu: backend Spring Boot sở hữu ghi
+  nghiệp vụ, AI Service nên gọi backend qua HTTP thay vì tự ghi song song.
 
 ## Frontend (`frontend`)
 

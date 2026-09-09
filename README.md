@@ -48,10 +48,29 @@ Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot
 
 **Còn thiếu để Phase 0 chạy thật end-to-end (chưa gọi AI Service thật):**
 
-- [ ] Dựng AI Service Python (vision-api + LangGraph + LLM Qwen2.5-1.5B qua Ollama)
+- [x] Khởi tạo nền tảng dữ liệu Python cho AI workflow: SQLAlchemy models/repositories,
+  Alembic và PostgreSQL có pgvector
+- [ ] Hoàn thiện AI Service chạy được (FastAPI + vision-api + LangGraph + Qwen2.5-1.5B qua
+  Ollama)
 - [ ] Nối HTTP client backend ↔ AI Service theo contract API
-- [ ] Vision API CV chẩn đoán bệnh thật (hiện backend nhận `disease_id/confidence/model_version` qua API như thể AI Service đã gửi vào)
+- [ ] Vision API CV chẩn đoán bệnh thật (hiện backend nhận
+  `disease_id/confidence/model_version` qua API như thể AI Service đã gửi vào)
 - [ ] LLM sinh khuyến nghị thật (hiện backend dùng khuyến nghị tiếng Việt dạng template)
+
+#### Phần AI đã có trên `feature/make-data`
+
+- Data layer cho 8 entity spine-flow và 2 entity RAG (`Document`, `DocumentChunk` với
+  `vector(768)`).
+- Repository SQL cho Parcel/CropSeason, kết quả CV, deterministic treatment lookup, lịch sử
+  phun và kiểm tra PHI; `get_field_context()` đã gom được operational context làm đầu vào
+  cho LangGraph sau này.
+- Alembic initial revision `9700136d7e00` đã được thử upgrade/downgrade cho 8 bảng
+  spine-flow. PostgreSQL trong Compose đã chuyển sang `pgvector/pgvector:pg16`.
+
+Đây mới là **data foundation**, chưa phải AI Service có thể gọi qua HTTP. Hai model RAG được
+thêm sau initial revision nên còn thiếu migration cho `documents` và `document_chunks`;
+seed JSON vẫn rỗng, chưa có test, và `ai/main.py` chưa có FastAPI application. M7/M8 vì vậy
+vẫn giữ trạng thái chưa hoàn thành.
 
 ### Giai đoạn 1 — Hoàn thiện trải nghiệm & truy vấn (Should)
 
@@ -105,7 +124,11 @@ Một PostgreSQL vật lý, ba nguồn logic:
 
 ## Trạng thái hiện tại (cập nhật 2026-09-09)
 
-Backend Spring Boot đã xong; Frontend demo (React/Vite) cho Phase 0 spine flow đã xong; AI Service (Python) chưa bắt đầu. Checklist việc còn thiếu: xem mục "Giai đoạn 0" ở trên. Chi tiết đầy đủ theo từng module: [`CHANGELOG.md`](./CHANGELOG.md).
+Backend Spring Boot và Frontend demo (React/Vite) cho Phase 0 spine flow đã có trên
+`main`. Trên `feature/make-data`, phần AI đã bắt đầu ở tầng dữ liệu/truy vấn và Alembic,
+nhưng chưa có service runtime, CV, LangGraph, LLM hoặc RAG pipeline chạy được. Checklist việc
+còn thiếu: xem mục "Giai đoạn 0" ở trên; chi tiết có kiểm chứng theo từng module:
+[`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Chạy demo Phase 0
 
@@ -121,6 +144,8 @@ docker compose up -d --build
 - Frontend: http://localhost:8082 (nginx serve build tĩnh + reverse-proxy `/api` và `/uploads`
   sang backend, nên không cần CORS, không cần biết host/port backend)
 - Backend (Swagger/debug trực tiếp): http://localhost:8081/swagger-ui.html
+- PostgreSQL dùng image `pgvector/pgvector:pg16` để chừa khả năng lưu embedding cho RAG;
+  AI Service chưa được đóng gói thành service trong Compose.
 - Dữ liệu Postgres + ảnh upload được lưu ở `deploy/data/` (bind mount, không mất khi
   `docker compose down`; dùng `down -v` hoặc xoá thư mục nếu muốn làm sạch từ đầu)
 - Dừng: `docker compose down` (chạy trong thư mục `deploy`)

@@ -4,6 +4,17 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
 
 ## Backend (Spring Boot — `backend/DX-Farm`)
 
+### 2026-09-09
+
+**Đã xong — M7 (Giai đoạn 1):**
+
+- `GET /api/v1/crop-seasons/{id}/isolation-status` — trả lời "ruộng này còn cách ly không?"
+  bằng SQL context deterministic: tái dùng chính truy vấn
+  `findTopByCropSeasonIdOrderByHarvestLockedUntilDesc` mà `harvest()` đã dùng để chặn
+  poka-yoke, đảm bảo một nguồn sự thật duy nhất giữa "hỏi" và "chặn". Trả về
+  `isolated`, `harvestLockedUntil`, `daysRemaining`, `pesticideCode`, kèm câu trả lời tiếng
+  Việt diễn đạt lại facts (`message`) — không qua LLM, đúng nguyên tắc deterministic-first.
+
 ### 2026-09-08
 
 **Đã xong — Phase 0 spine flow (M1–M6), đủ để demo end-to-end:**
@@ -47,6 +58,9 @@ Chưa bắt đầu.
   thuốc → khai báo thu hoạch (thấy rõ banner khi bị poka-yoke chặn, HTTP 422).
 - Tab phụ "Danh mục tham chiếu" hiển thị read-only Disease/Pesticide/TreatmentRule (Structured
   Knowledge).
+- Nút "Hỏi: ruộng này còn cách ly không? (M7)" ở panel Vụ mùa, gọi
+  `GET /crop-seasons/{id}/isolation-status`, hiển thị câu trả lời bằng banner xanh/đỏ theo
+  đúng trạng thái cách ly hiện tại.
 - `src/api.ts` bọc toàn bộ `ApiResponse<T>` envelope của backend, ném `ApiError` (status + data)
   để UI phân biệt lỗi validate (400), state machine (409) và poka-yoke (422).
 - Đã chạy thử full flow qua trình duyệt thật (parcel → crop season → upload ảnh → diagnosis →

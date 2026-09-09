@@ -9,6 +9,7 @@ import type {
   DiagnosisRejectRequest,
   Disease,
   DiseaseReport,
+  IsolationStatus,
   Parcel,
   ParcelCreateRequest,
   Pesticide,
@@ -67,6 +68,8 @@ export const createCropSeason = (parcelCode: string, payload: CropSeasonCreateRe
   request<CropSeason>(`/parcels/${encodeURIComponent(parcelCode)}/crop-seasons`, json("POST", payload));
 export const harvestCropSeason = (id: number) =>
   request<CropSeason>(`/crop-seasons/${id}/harvest`, { method: "POST" });
+export const getIsolationStatus = (id: number) =>
+  request<IsolationStatus>(`/crop-seasons/${id}/isolation-status`);
 
 // Disease report
 export const listDiseaseReports = (cropSeasonId: number) =>

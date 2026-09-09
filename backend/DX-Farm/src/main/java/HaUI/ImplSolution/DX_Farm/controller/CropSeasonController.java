@@ -3,6 +3,7 @@ package HaUI.ImplSolution.DX_Farm.controller;
 import HaUI.ImplSolution.DX_Farm.dto.ApiResponse;
 import HaUI.ImplSolution.DX_Farm.dto.CropSeasonCreateRequest;
 import HaUI.ImplSolution.DX_Farm.dto.CropSeasonResponse;
+import HaUI.ImplSolution.DX_Farm.dto.IsolationStatusResponse;
 import HaUI.ImplSolution.DX_Farm.service.CropSeasonService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -46,6 +47,12 @@ public class CropSeasonController {
   @Operation(summary = "Get crop season detail")
   public ApiResponse<CropSeasonResponse> getById(@PathVariable Long id) {
     return ApiResponse.success(cropSeasonService.getById(id));
+  }
+
+  @GetMapping("/crop-seasons/{id}/isolation-status")
+  @Operation(summary = "Check whether a crop season is still under pesticide isolation (PHI)")
+  public ApiResponse<IsolationStatusResponse> getIsolationStatus(@PathVariable Long id) {
+    return ApiResponse.success(cropSeasonService.getIsolationStatus(id));
   }
 
   @PostMapping("/crop-seasons/{id}/harvest")

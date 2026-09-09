@@ -40,6 +40,16 @@ export interface CropSeasonCreateRequest {
   expectedHarvestDate?: string;
 }
 
+export interface IsolationStatus {
+  cropSeasonId: number;
+  parcelCode: string;
+  isolated: boolean;
+  harvestLockedUntil: string | null;
+  daysRemaining: number | null;
+  pesticideCode: string | null;
+  message: string;
+}
+
 export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED";
 
 export interface TreatmentRule {

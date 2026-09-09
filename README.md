@@ -55,7 +55,7 @@ Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot
 
 ### Giai đoạn 1 — Hoàn thiện trải nghiệm & truy vấn (Should)
 
-- [ ] M7 — Trả lời được câu hỏi kiểu "ruộng này còn cách ly không?" bằng SQL context
+- [x] M7 — Trả lời được câu hỏi kiểu "ruộng này còn cách ly không?" bằng SQL context
 - [ ] M8 — RAG trả lời có trích nguồn từ ít nhất một bộ tài liệu VietGAP/IRRI đã ingest (pgvector)
 - [ ] Frontend low-code thật cho nông hộ (ToolJet/Appsmith) thay vì gọi API tay
 

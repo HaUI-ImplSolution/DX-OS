@@ -1,26 +1,45 @@
 services:
   postgres:
     image: pgvector/pgvector:pg16
-    container_name: dx-farm-postgres
-
     environment:
-      POSTGRES_DB: dx_farm
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-
-    ports:
-      - "5432:5432"
-
+      POSTGRES_DB: ${POSTGRES_DB:-dxfarm}
+      POSTGRES_USER: ${POSTGRES_USER:-dxfarm}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dxfarm}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-
+      - ./data/postgres:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d dx_farm"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dxfarm}"]
+      interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 5
 
-    restart: unless-stopped
+  backend:
+    build:
+      context: ../backend/DX-Farm
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-dxfarm}
+      POSTGRES_USER: ${POSTGRES_USER:-dxfarm}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dxfarm}
+      SERVER_PORT: 8081
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      - ./data/uploads:/app/uploads
+    ports:
+      - "${BACKEND_PORT:-8081}:8081"
 
-volumes:
-  postgres_data:
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-8082}:80"

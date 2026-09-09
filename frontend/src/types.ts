@@ -1,0 +1,130 @@
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+  timestamp: string;
+}
+
+export interface Parcel {
+  id: number;
+  code: string;
+  farmerName: string;
+  areaHectares: number;
+  location: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ParcelCreateRequest {
+  code: string;
+  farmerName: string;
+  areaHectares: number;
+  location?: string;
+}
+
+export type CropSeasonStatus = "ACTIVE" | "HARVESTED";
+
+export interface CropSeason {
+  id: number;
+  parcelCode: string;
+  riceVariety: string;
+  startDate: string;
+  expectedHarvestDate: string | null;
+  status: CropSeasonStatus;
+  harvestedAt: string | null;
+}
+
+export interface CropSeasonCreateRequest {
+  riceVariety: string;
+  startDate: string;
+  expectedHarvestDate?: string;
+}
+
+export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+export interface TreatmentRule {
+  id: number;
+  diseaseCode: string;
+  pesticideCode: string;
+  doseAmount: number;
+  doseUnit: string;
+  phiDays: number;
+  notes: string | null;
+  source: string | null;
+  version: string | null;
+}
+
+export interface Diagnosis {
+  id: number;
+  diseaseReportId: number;
+  diseaseCode: string;
+  diseaseName: string;
+  confidence: number;
+  modelVersion: string;
+  diagnosedAt: string;
+  recommendationText: string;
+  approvalStatus: ApprovalStatus;
+  decidedBy: string | null;
+  decidedAt: string | null;
+  rejectionReason: string | null;
+  treatmentRule: TreatmentRule | null;
+}
+
+export interface DiseaseReport {
+  id: number;
+  cropSeasonId: number;
+  imageRef: string;
+  reportedBy: string;
+  reportedAt: string;
+  diagnosis: Diagnosis | null;
+}
+
+export interface DiagnosisCreateRequest {
+  diseaseCode: string;
+  confidence: number;
+  modelVersion: string;
+}
+
+export interface DiagnosisApproveRequest {
+  approvedBy: string;
+}
+
+export interface DiagnosisRejectRequest {
+  rejectedBy: string;
+  reason: string;
+}
+
+export interface DiagnosisApplyRequest {
+  appliedAt?: string;
+}
+
+export interface TreatmentApplication {
+  id: number;
+  cropSeasonId: number;
+  diagnosisId: number | null;
+  pesticideCode: string;
+  doseAmountSnapshot: number;
+  doseUnitSnapshot: string;
+  phiDaysSnapshot: number;
+  appliedAt: string;
+  harvestLockedUntil: string;
+}
+
+export interface Disease {
+  id: number;
+  code: string;
+  name: string;
+  description: string | null;
+}
+
+export interface Pesticide {
+  id: number;
+  code: string;
+  name: string;
+  unit: string;
+}
+
+export interface PokaYokeErrorData {
+  errorCode: string;
+  harvestLockedUntil: string | null;
+}

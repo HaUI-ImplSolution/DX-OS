@@ -2,8 +2,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from src.models.download_model import download_model
-from src.api.router import router as api_router
+from app.db.models.ENB4C_model.download_model import download_model
+from app.api.router import router as api_router
 
 
 @asynccontextmanager

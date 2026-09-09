@@ -101,65 +101,126 @@ APPROVED != APPLIED
 
 ---
 
-## 3. Cấu trúc thư mục đề xuất trong `ai/`
+## 3. Cấu trúc thư mục `ai/` (đã refactor — 2026-09-09)
+
+> Cấu trúc dưới đây phản ánh trạng thái **thực tế** sau refactor.
+> Các thư mục đánh dấu `[SKELETON]` đã được tạo với file stub, chờ implement logic.
 
 ```text
 ai/
-├── app/
-│   ├── db/
-│   │   ├── models/
-│   │   ├── repositories/
-│   │   ├── base.py
-│   │   └── session.py
-│   │
-│   ├── rag/
-│   │   ├── document_loader.py
-│   │   ├── chunker.py
-│   │   ├── embedding_service.py
-│   │   ├── ingestion_service.py
-│   │   ├── retriever.py
-│   │   ├── prompt_builder.py
-│   │   └── rag_service.py
-│   │
-│   ├── services/
-│   │   └── field_context_service.py
-│   │
-│   └── graph/
-│       ├── __init__.py
-│       ├── state.py
-│       ├── graph.py
-│       │
-│       ├── nodes/
-│       │   ├── __init__.py
-│       │   ├── resolve_request.py
-│       │   ├── cv_diagnosis.py
-│       │   ├── load_field_context.py
-│       │   ├── treatment_lookup.py
-│       │   ├── retrieve_knowledge.py
-│       │   ├── generate_recommendation.py
-│       │   ├── engineer_approval.py
-│       │   ├── record_treatment.py
-│       │   └── reject_case.py
-│       │
-│       ├── tools/
-│       │   ├── __init__.py
-│       │   ├── vision_tool.py
-│       │   ├── field_context_tool.py
-│       │   ├── treatment_tool.py
-│       │   └── rag_tool.py
-│       │
-│       └── prompts/
-│           ├── __init__.py
-│           └── recommendation_prompt.py
 │
-├── data/
-│   ├── structured/
+├── app/                        # Python package chính của AI Service
+│   │
+│   ├── main.py                 # Entrypoint: tạo FastAPI app, đăng ký router
+│   │
+│   ├── core/                   # [SKELETON] Config & infrastructure tập trung
+│   │   ├── config.py           #   Settings từ .env (DATABASE_URL, OLLAMA_*, CV_*)
+│   │   └── lifespan.py         #   FastAPI lifespan: load/unload CV model khi startup/shutdown
+│   │
+│   ├── api/                    # HTTP layer — CHỈ định nghĩa router và schemas
+│   │   ├── router.py           #   Aggregate router, include sub-routers
+│   │   └── schemas.py          #   Pydantic request/response schemas (DiseaseDetectionResponse)
+│   │
+│   ├── cv/                     # Computer Vision domain (EfficientNet-B4)
+│   │   ├── classifier.py       #   EfficientNetB4Classifier: model architecture + training helpers
+│   │   ├── preprocessor.py     #   Image preprocessing: PlantVillageDataset, prepare_input_image()
+│   │   ├── class_names.py      #   Mapping {class_id: class_name} cho 38 lớp bệnh PlantVillage
+│   │   └── loader.py           #   download_model(): tải weights từ HuggingFace về ai/weights/
+│   │                           #   ⚠ Path fix: __file__.parents[2] = ai/ — luôn cố định bất kể CWD
+│   │
+│   ├── db/                     # Data layer: ORM models + repository functions
+│   │   ├── base.py             #   SQLAlchemy declarative Base
+│   │   ├── session.py          #   SessionLocal factory, get_db() FastAPI dependency
+│   │   ├── models/             #   ORM models ánh xạ tới PostgreSQL tables:
+│   │   │   ├── parcel.py             # Parcel — thửa ruộng
+│   │   │   ├── crop_season.py        # CropSeason — vụ mùa
+│   │   │   ├── disease.py            # Disease — danh mục 38 lớp bệnh (Structured Knowledge)
+│   │   │   ├── disease_report.py     # DiseaseReport — báo cáo sự cố + ảnh upload
+│   │   │   ├── diagnosis.py          # Diagnosis — kết quả CV + trạng thái duyệt APPROVE/REJECT
+│   │   │   ├── pesticide.py          # Pesticide — danh mục thuốc BVTV (Structured Knowledge)
+│   │   │   ├── treatment_rule.py     # TreatmentRule — quy tắc xử lý: liều + PHI (Structured Knowledge)
+│   │   │   ├── treatment_application.py  # TreatmentApplication — đã phun + harvest_locked_until
+│   │   │   ├── document.py           # Document — tài liệu RAG (VietGAP/IRRI)
+│   │   │   └── document_chunk.py     # DocumentChunk — chunk + embedding vector(384)
+│   │   └── repositories/       #   Repository functions (SQLAlchemy queries):
+│   │       ├── parcel_repository.py       # get_parcel_by_code(), get_current_crop_season()
+│   │       ├── diagnosis_repository.py    # get_latest_diagnosis()
+│   │       ├── knowledge_repository.py    # lookup Disease, TreatmentRule, Pesticide
+│   │       └── treatment_repository.py    # create/get TreatmentApplication, is_harvest_blocked()
+│   │
+│   ├── rag/                    # RAG pipeline (pgvector + Ollama)
+│   │   ├── document_loader.py  #   Load raw tài liệu từ file/text
+│   │   ├── chunker.py          #   Chia tài liệu thành chunks có kích thước phù hợp
+│   │   ├── embedding_service.py #  Tạo vector embedding (multilingual MiniLM 384 chiều)
+│   │   ├── ingestion_service.py #  Ingest idempotent: embed + lưu vào pgvector (không nhân đôi)
+│   │   ├── retriever.py        #   Cosine similarity retrieval từ pgvector
+│   │   ├── prompt_builder.py   #   Build prompt từ retrieved contexts
+│   │   └── rag_service.py      #   RAGService: kết hợp retriever + LLM Ollama (answer())
+│   │
+│   ├── services/               # Application services — orchestrate giữa db, cv, rag
+│   │   ├── plant_disease_service.py  # PlantDiseaseService: preprocess ảnh + CV inference -> dict
+│   │   └── field_context_service.py  # get_field_context(): gom Parcel+Season+Diagnosis+Treatment
+│   │
+│   └── graph/                  # [SKELETON] LangGraph orchestration — spine flow M1-M6
+│       ├── state.py            #   FarmState TypedDict: state object duy nhất qua toàn bộ nodes
+│       │                       #   ⚠ State là dữ liệu TẠM — không dùng làm database
+│       ├── graph.py            #   Build & compile StateGraph, khai báo edges và conditions
+│       │
+│       ├── nodes/              #   Mỗi node = 1 bước xử lý trong spine flow:
+│       │   ├── resolve_request.py        # Validate và chuẩn hóa input vào FarmState
+│       │   ├── cv_diagnosis.py           # Gọi vision_tool -> lưu Diagnosis vào DB
+│       │   ├── load_field_context.py     # Đọc Parcel/CropSeason/Treatment hiện tại từ DB
+│       │   ├── treatment_lookup.py       # Lookup DETERMINISTIC: Disease->TreatmentRule->Pesticide
+│       │   │                             # ⚠ Không dùng LLM để đoán liều/thuốc/PHI
+│       │   ├── retrieve_knowledge.py     # RAG retrieve: lấy context giải thích từ pgvector
+│       │   ├── generate_recommendation.py # LLM sinh khuyến nghị dễ hiểu TỪ facts đã cung cấp
+│       │   │                             # ⚠ LLM không tự sinh số liệu
+│       │   ├── engineer_approval.py      # Human-in-the-loop: PENDING -> APPROVED | REJECTED
+│       │   ├── record_treatment.py       # Persist TreatmentApplication + tính PHI lock
+│       │   │                             # Chỉ chạy sau APPROVED + APPLIED
+│       │   └── reject_case.py            # Lưu REJECTED + reason + đóng workflow
+│       │
+│       ├── tools/              #   Thin wrapper giữa nodes và services/repositories:
+│       │   ├── vision_tool.py            # node -> tool -> PlantDiseaseService
+│       │   ├── field_context_tool.py     # node -> tool -> field_context_service
+│       │   ├── treatment_tool.py         # node -> tool -> knowledge_repository
+│       │   └── rag_tool.py               # node -> tool -> RAGRetriever
+│       │
+│       └── prompts/            #   Prompt templates cho LLM:
+│           └── recommendation_prompt.py  # Template khuyến nghị (facts-only, no hallucination)
+│
+├── data/                       # Static data files — không thay đổi khi runtime
+│   ├── structured/             #   JSON seed data cho Structured Knowledge:
+│   │   ├── diseases.json             # 38 lớp bệnh (code, name, description)
+│   │   ├── pesticides.json           # Danh mục thuốc BVTV
+│   │   └── treatment_rules.json      # Quy tắc xử lý (liều, đơn vị, PHI ngày)
+│   └── rag/                    #   Metadata cho RAG sources:
+│       └── source_registry.json      # Danh sách tài liệu VietGAP/IRRI đã ingest
+│
+├── migrations/                 # Alembic database migrations
+│   └── versions/
+│       ├── 9700136d7e00_initial_schema.py           # Schema ban đầu (8 entity spine-flow)
+│       └── 4c2a0f9d8b71_add_rag_document_tables.py  # Bật pgvector + Document + DocumentChunk
+│
+├── scripts/                    # CLI scripts chạy một lần — KHÔNG phải app module
+│   ├── seed_diseases.py        #   Seed 38 bản ghi Disease vào DB từ diseases.json
+│   └── ingest_diseases.py      #   Ingest disease knowledge vào pgvector (hỗ trợ --dry-run)
+│
+├── tests/                      # Automated tests (pytest)
+│   ├── cv/
+│   │   └── test_model_ENB4C.py #   Test CLASS_NAMES mapping (38 classes), model output shape
 │   └── rag/
+│       ├── test_retriever.py   #   Test cosine retrieval từ pgvector
+│       ├── test_rag_service.py #   Test RAG end-to-end với Ollama
+│       └── test.py             #   Smoke tests cho RAG pipeline
 │
-├── migrations/
-├── alembic.ini
-├── requirements.txt
-└── README.md
+├── weights/                    # Model weights — canonical location
+│   └── best_model.pth          #   EfficientNet-B4 weights (auto-download từ HuggingFace nếu thiếu)
+│                               #   ⚠ Không commit lên git (kích thước lớn)
+│
+├── .env                        # Biến môi trường local (DATABASE_URL, OLLAMA_BASE_URL, ...)
+├── alembic.ini                 # Alembic config — trỏ tới migrations/
+└── requirements.txt            # Python dependencies
 ```
 
 ---

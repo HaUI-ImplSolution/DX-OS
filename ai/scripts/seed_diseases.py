@@ -6,7 +6,7 @@ from app.db.session import SessionLocal
 from sqlalchemy import select
 
 DATA_FILE = (
-    Path(__file__).resolve().parents[2]
+    Path(__file__).resolve().parents[1]
     / "data"
     / "structured"
     / "diseases.json"

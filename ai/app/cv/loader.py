@@ -2,9 +2,14 @@ import torch
 from huggingface_hub import hf_hub_download
 from pathlib import Path
 
-from .model import EfficientNetB4Classifier
+from .classifier import EfficientNetB4Classifier
 
-BASE_DIR = Path(__file__).resolve().parents[1]
+# Anchor: loader.py nằm ở app/cv/loader.py
+# parents[0] = app/cv/
+# parents[1] = app/
+# parents[2] = ai/   <-- project root của AI service
+# Weights luôn được lưu tại ai/weights/ bất kể file được gọi từ đâu
+BASE_DIR = Path(__file__).resolve().parents[2]
 
 MODEL_DIR = BASE_DIR / "weights"
 MODEL_PATH = MODEL_DIR / "best_model.pth"

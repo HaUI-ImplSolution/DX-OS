@@ -1,6 +1,6 @@
 import torch
 
-from app.db.models.ENB4C_model.class_names import CLASS_NAMES
+from app.cv.class_names import CLASS_NAMES
 
 
 def test_class_names_contains_38_classes():

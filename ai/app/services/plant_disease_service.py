@@ -3,8 +3,8 @@ from io import BytesIO
 import torch
 from PIL import Image
 
-from app.db.models.ENB4C_model.dataset import prepare_input_image
-from app.db.models.ENB4C_model.class_names import CLASS_NAMES
+from app.cv.preprocessor import prepare_input_image
+from app.cv.class_names import CLASS_NAMES
 
 
 class PlantDiseaseService:

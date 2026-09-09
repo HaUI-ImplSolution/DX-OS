@@ -21,15 +21,19 @@ import lombok.Setter;
 @Builder
 public class Disease {
 
+  // Khoá chính
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  // Mã bệnh, dùng để tra cứu (vd: BROWN_SPOT)
   @Column(nullable = false, unique = true)
   private String code;
 
+  // Tên hiển thị tiếng Việt
   @Column(nullable = false)
   private String name;
 
+  // Mô tả chi tiết về bệnh
   private String description;
 }

@@ -28,26 +28,33 @@ import lombok.Setter;
 @Builder
 public class CropSeason {
 
+  // Khoá chính
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  // Thửa ruộng canh tác vụ mùa này
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "parcel_id", nullable = false)
   private Parcel parcel;
 
+  // Giống lúa gieo trồng
   @Column(nullable = false)
   private String riceVariety;
 
+  // Ngày bắt đầu vụ
   @Column(nullable = false)
   private LocalDate startDate;
 
+  // Ngày dự kiến thu hoạch
   private LocalDate expectedHarvestDate;
 
+  // Trạng thái vụ mùa (ACTIVE/HARVESTED)
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   @Builder.Default
   private CropSeasonStatus status = CropSeasonStatus.ACTIVE;
 
+  // Thời điểm thực tế đã thu hoạch
   private Instant harvestedAt;
 }

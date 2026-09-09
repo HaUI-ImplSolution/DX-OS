@@ -26,20 +26,25 @@ import org.hibernate.annotations.CreationTimestamp;
 @Builder
 public class DiseaseReport {
 
+  // Khoá chính
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  // Vụ mùa được báo cáo sự cố
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "crop_season_id", nullable = false)
   private CropSeason cropSeason;
 
+  // Tên/đường dẫn file ảnh đã upload
   @Column(nullable = false)
   private String imageRef;
 
+  // Tên người báo cáo (nông dân)
   @Column(nullable = false)
   private String reportedBy;
 
+  // Thời điểm báo cáo được ghi nhận
   @CreationTimestamp
   @Column(nullable = false, updatable = false)
   private Instant reportedAt;

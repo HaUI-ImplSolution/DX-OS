@@ -21,16 +21,20 @@ import lombok.Setter;
 @Builder
 public class Pesticide {
 
+  // Khoá chính
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  // Mã thuốc, dùng để tra cứu (vd: HEXACONAZOLE)
   @Column(nullable = false, unique = true)
   private String code;
 
+  // Tên hiển thị
   @Column(nullable = false)
   private String name;
 
+  // Đơn vị tính liều (vd: lít/ha)
   @Column(nullable = false)
   private String unit;
 }

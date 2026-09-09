@@ -25,30 +25,39 @@ import lombok.Setter;
 @Builder
 public class TreatmentRule {
 
+  // Khoá chính
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  // Bệnh áp dụng quy tắc này
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "disease_id", nullable = false)
   private Disease disease;
 
+  // Thuốc khuyến cáo dùng để xử lý
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "pesticide_id", nullable = false)
   private Pesticide pesticide;
 
+  // Liều lượng khuyến cáo
   @Column(nullable = false, precision = 10, scale = 2)
   private BigDecimal doseAmount;
 
+  // Đơn vị của liều lượng (vd: lít/ha)
   @Column(nullable = false)
   private String doseUnit;
 
+  // Số ngày cách ly trước khi được thu hoạch (PHI)
   @Column(nullable = false)
   private Integer phiDays;
 
+  // Ghi chú thêm về cách dùng
   private String notes;
 
+  // Nguồn tham chiếu quy tắc (vd: VietGAP)
   private String source;
 
+  // Phiên bản quy tắc
   private String version;
 }

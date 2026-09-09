@@ -27,34 +27,43 @@ import lombok.Setter;
 @Builder
 public class TreatmentApplication {
 
+  // Khoá chính
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  // Vụ mùa được áp dụng xử lý
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "crop_season_id", nullable = false)
   private CropSeason cropSeason;
 
+  // Chẩn đoán gốc dẫn tới lần phun này (có thể null nếu ghi nhận thủ công)
   @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "diagnosis_id", unique = true)
   private Diagnosis diagnosis;
 
+  // Thuốc thực tế đã phun
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "pesticide_id", nullable = false)
   private Pesticide pesticide;
 
+  // Liều lượng đã phun, snapshot tại thời điểm áp dụng
   @Column(nullable = false, precision = 10, scale = 2)
   private BigDecimal doseAmountSnapshot;
 
+  // Đơn vị liều lượng, snapshot tại thời điểm áp dụng
   @Column(nullable = false)
   private String doseUnitSnapshot;
 
+  // Số ngày cách ly, snapshot tại thời điểm áp dụng
   @Column(nullable = false)
   private Integer phiDaysSnapshot;
 
+  // Ngày thực tế đã phun thuốc
   @Column(nullable = false)
   private LocalDate appliedAt;
 
+  // Ngày được phép thu hoạch trở lại (appliedAt + phiDaysSnapshot)
   @Column(nullable = false)
   private LocalDate harvestLockedUntil;
 }

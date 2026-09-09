@@ -69,8 +69,8 @@ public class DiagnosisService {
     Diagnosis diagnosis = findByReportIdOrThrow(reportId);
     requirePending(diagnosis);
     diagnosis.setApprovalStatus(ApprovalStatus.APPROVED);
-    diagnosis.setApprovedBy(request.approvedBy());
-    diagnosis.setApprovedAt(Instant.now());
+    diagnosis.setDecidedBy(request.approvedBy());
+    diagnosis.setDecidedAt(Instant.now());
     return toResponse(diagnosisRepository.save(diagnosis));
   }
 
@@ -79,8 +79,8 @@ public class DiagnosisService {
     Diagnosis diagnosis = findByReportIdOrThrow(reportId);
     requirePending(diagnosis);
     diagnosis.setApprovalStatus(ApprovalStatus.REJECTED);
-    diagnosis.setApprovedBy(request.rejectedBy());
-    diagnosis.setApprovedAt(Instant.now());
+    diagnosis.setDecidedBy(request.rejectedBy());
+    diagnosis.setDecidedAt(Instant.now());
     diagnosis.setRejectionReason(request.reason());
     return toResponse(diagnosisRepository.save(diagnosis));
   }
@@ -119,7 +119,7 @@ public class DiagnosisService {
 
   private static String buildRecommendation(DiseaseReport report, Disease disease,
       TreatmentRule rule, BigDecimal confidence) {
-    return "Thửa %s phát hiện bệnh %s (%.1f%%). Đề xuất phác đồ: phun %s %s%s - yêu cầu cách ly thu hoạch %d ngày."
+    return "Thửa %s phát hiện bệnh %s (%.1f%%). Đề xuất phác đồ: phun %s %s %s - yêu cầu cách ly thu hoạch %d ngày."
         .formatted(report.getCropSeason().getParcel().getCode(), disease.getName(),
             confidence.multiply(BigDecimal.valueOf(100)), rule.getPesticide().getName(),
             rule.getDoseAmount(), rule.getDoseUnit(), rule.getPhiDays());
@@ -130,7 +130,7 @@ public class DiagnosisService {
         diagnosis.getDisease().getCode(), diagnosis.getDisease().getName(),
         diagnosis.getConfidence(), diagnosis.getModelVersion(), diagnosis.getDiagnosedAt(),
         diagnosis.getRecommendationText(), diagnosis.getApprovalStatus().name(),
-        diagnosis.getApprovedBy(), diagnosis.getApprovedAt(), diagnosis.getRejectionReason(),
+        diagnosis.getDecidedBy(), diagnosis.getDecidedAt(), diagnosis.getRejectionReason(),
         TreatmentRuleService.toResponse(diagnosis.getTreatmentRule()));
   }
 

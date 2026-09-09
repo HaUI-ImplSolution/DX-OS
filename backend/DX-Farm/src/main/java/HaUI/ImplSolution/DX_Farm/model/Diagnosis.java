@@ -30,43 +30,55 @@ import org.hibernate.annotations.CreationTimestamp;
 @Builder
 public class Diagnosis {
 
+  // Khoá chính
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  // Báo cáo sự cố mà chẩn đoán này thuộc về (1-1)
   @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "disease_report_id", nullable = false, unique = true)
   private DiseaseReport diseaseReport;
 
+  // Bệnh được chẩn đoán
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "disease_id", nullable = false)
   private Disease disease;
 
+  // Độ tin cậy của chẩn đoán (0.0 - 1.0), do AI Service trả về
   @Column(nullable = false, precision = 5, scale = 4)
   private BigDecimal confidence;
 
+  // Phiên bản model AI đã dùng để chẩn đoán
   @Column(nullable = false)
   private String modelVersion;
 
+  // Thời điểm chẩn đoán được ghi nhận
   @CreationTimestamp
   @Column(nullable = false, updatable = false)
   private Instant diagnosedAt;
 
+  // Quy tắc xử lý được tra cứu deterministic tương ứng với bệnh
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "treatment_rule_id", nullable = false)
   private TreatmentRule treatmentRule;
 
+  // Khuyến nghị dạng văn bản sinh ra từ treatmentRule
   @Column(nullable = false, columnDefinition = "TEXT")
   private String recommendationText;
 
+  // Trạng thái duyệt của kỹ sư (PENDING/APPROVED/REJECTED)
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   @Builder.Default
   private ApprovalStatus approvalStatus = ApprovalStatus.PENDING;
 
-  private String approvedBy;
+  // Người đưa ra quyết định duyệt hoặc từ chối
+  private String decidedBy;
 
-  private Instant approvedAt;
+  // Thời điểm đưa ra quyết định duyệt hoặc từ chối
+  private Instant decidedAt;
 
+  // Lý do từ chối (chỉ có giá trị khi bị REJECTED)
   private String rejectionReason;
 }

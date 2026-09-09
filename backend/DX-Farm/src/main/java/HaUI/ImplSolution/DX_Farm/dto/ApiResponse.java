@@ -2,6 +2,10 @@ package HaUI.ImplSolution.DX_Farm.dto;
 
 import java.time.Instant;
 
+// success: request có thành công hay không
+// message: thông điệp mô tả kết quả
+// data: dữ liệu trả về (null nếu lỗi hoặc không có)
+// timestamp: thời điểm phản hồi được tạo
 public record ApiResponse<T>(boolean success, String message, T data, Instant timestamp) {
 
 	public static <T> ApiResponse<T> success(T data) {

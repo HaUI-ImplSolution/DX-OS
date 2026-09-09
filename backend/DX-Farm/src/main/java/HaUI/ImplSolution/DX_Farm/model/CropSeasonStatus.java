@@ -1,5 +1,8 @@
 package HaUI.ImplSolution.DX_Farm.model;
 
 public enum CropSeasonStatus {
-  ACTIVE, HARVESTED
+  // Vụ mùa đang canh tác
+  ACTIVE,
+  // Đã thu hoạch
+  HARVESTED
 }

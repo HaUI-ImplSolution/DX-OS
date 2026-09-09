@@ -46,19 +46,19 @@ Luồng: nông dân báo bệnh bằng ảnh → CV chẩn đoán → tra cứu 
 
 Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot (API nghiệp vụ, duyệt, poka-yoke), AI Service Python riêng (vision-api MobileNetV3 + LangGraph điều phối + LLM nhỏ Qwen2.5-1.5B qua Ollama) gọi qua HTTP. Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
 
-**Còn thiếu để Phase 0 chạy thật end-to-end (chưa gọi AI Service thật):**
+**Còn thiếu để Phase 0 chạy thật end-to-end:**
 
-- [ ] Dựng AI Service Python (vision-api + LangGraph + LLM Qwen2.5-1.5B qua Ollama)
-- [ ] Nối HTTP client backend ↔ AI Service theo contract API
-- [ ] Vision API CV chẩn đoán bệnh thật (hiện backend nhận `disease_id/confidence/model_version` qua API như thể AI Service đã gửi vào)
-- [ ] LLM sinh khuyến nghị thật (hiện backend dùng khuyến nghị tiếng Việt dạng template)
+- [ ] Hoàn thiện AI Service Python: Đã có vision-api (FastAPI + EfficientNet-B4), còn thiếu LangGraph + LLM Qwen2.5-1.5B qua Ollama.
+- [ ] Nối HTTP client backend ↔ AI Service theo contract API.
+- [ ] Khớp dữ liệu CV chẩn đoán: model hiện có trả về `class_name` nhưng chưa map `disease_code` với cơ sở dữ liệu của backend.
+- [ ] LLM sinh khuyến nghị thật (hiện backend dùng khuyến nghị tiếng Việt dạng template).
 
 ### Giai đoạn 1 — Hoàn thiện trải nghiệm & truy vấn (Should)
 
 - [x] M7 — Trả lời được câu hỏi kiểu "ruộng này còn cách ly không?" bằng SQL context
 - [ ] M8 — RAG trả lời có trích nguồn từ ít nhất một bộ tài liệu VietGAP/IRRI đã ingest (pgvector)
 - [ ] Frontend low-code thật cho nông hộ (ToolJet/Appsmith) thay vì gọi API tay
-
+ranch is up to date with 'o
 ### Giai đoạn 2 — Lấp đầy đủ 4 không gian H-P-D-I
 
 Đây là phần **cần bổ sung so với bản đề xuất thống nhất hiện tại**, vì đề bài OLP yêu cầu tường minh đủ 4 nhóm công cụ:
@@ -112,7 +112,7 @@ Một PostgreSQL vật lý, ba nguồn logic:
 
 ## Trạng thái hiện tại (cập nhật 2026-09-09)
 
-Backend Spring Boot đã xong, có đăng nhập JWT + phân quyền FARMER/ENGINEER/ADMIN; Frontend demo (React/Vite) cho Phase 0 spine flow đã xong, có màn đăng nhập; AI Service (Python) chưa bắt đầu. Checklist việc còn thiếu: xem mục "Giai đoạn 0" ở trên. Chi tiết đầy đủ theo từng module: [`CHANGELOG.md`](./CHANGELOG.md).
+Backend Spring Boot đã xong, có đăng nhập JWT + phân quyền FARMER/ENGINEER/ADMIN; Frontend demo (React/Vite) cho Phase 0 spine flow đã xong, có màn đăng nhập; AI Service (Python) đã dựng xong phần Vision API cơ bản, đang thiếu phần điều phối LangGraph và LLM. Checklist việc còn thiếu: xem mục "Giai đoạn 0" ở trên. Chi tiết đầy đủ theo từng module: [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Chạy demo Phase 0
 

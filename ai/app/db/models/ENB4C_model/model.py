@@ -46,7 +46,7 @@ class EfficientNetB4Classifier(nn.Module):
         Kaiming's gain assumes a ReLU follows the layer. The final Linear feeds
         a softmax, not a ReLU, so the same gain starts training with logits
         spread far wider than they should be -- a needlessly confident, badly
-        calibrated models for the first epochs.
+        calibrated model for the first epochs.
         """
         linears = [m for m in self.classifier.modules() if isinstance(m, nn.Linear)]
         for m in linears[:-1]:

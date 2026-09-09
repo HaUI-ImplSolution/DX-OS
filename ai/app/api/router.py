@@ -1,7 +1,7 @@
 from fastapi import APIRouter, File, HTTPException, Request, UploadFile
 
-from src.api.schemas import DiseaseDetectionResponse
-from src.service.plant_disease_service import PlantDiseaseService
+from app.api.schemas import DiseaseDetectionResponse
+from src import PlantDiseaseService
 
 router = APIRouter(prefix="/disease", tags=["Disease Detection"])
 

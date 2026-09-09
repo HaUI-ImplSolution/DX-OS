@@ -4,6 +4,8 @@ MVP dự thi **OLP Phần mềm nguồn mở 2026** (khối thi DX-OS, VFOSSA). 
 
 > Tài liệu này là bản tổng quan để làm ngữ cảnh cho các phiên làm việc sau — không đi sâu chi tiết kỹ thuật. Chi tiết triển khai từng module sẽ được đào sâu dần trong các lần làm việc tiếp theo.
 
+> Tiến trình implement từng module (đã xong gì, chưa làm gì) được ghi lại ở [`CHANGELOG.md`](./CHANGELOG.md).
+
 ## Nguồn tài liệu
 
 - `docs/DX - Farm.docx` — thiết kế gốc "MVP Agri-Carbon DX-OS" (8 trang): phân vai tác nhân, 4 không gian HPDI, spine flow 6 bước, các lưu ý PoF/anti-hallucination/poka-yoke.
@@ -35,14 +37,21 @@ Hai service tách biệt, giao tiếp qua HTTP:
 
 Luồng: nông dân báo bệnh bằng ảnh → CV chẩn đoán → tra cứu quy tắc xử lý (deterministic) → LLM diễn đạt khuyến nghị → kỹ sư duyệt → ghi nhận can thiệp + khoá thu hoạch theo PHI.
 
-- [ ] M1 — Chọn thửa ruộng/vụ mùa, gửi ảnh bệnh
-- [ ] M2 — Vision API trả `disease_id/confidence/model_version`, lưu lại được
-- [ ] M3 — Lookup Disease → TreatmentRule → Pesticide deterministic (SQL/JSON, không qua LLM)
-- [ ] M4 — LLM chỉ diễn đạt lại facts đã tra được, không tự sinh số liệu
-- [ ] M5 — Kỹ sư Approve/Reject trong flow (trạng thái duyệt lưu & kiểm soát ở Spring Boot backend; AI Service chỉ đề xuất, không tự quyết)
-- [ ] M6 — Khi xác nhận đã phun (APPLIED): backend ghi `TreatmentApplication`, tính `harvest_locked_until`, poka-yoke 2 tầng (Spring Boot API trả 422 + UI disable) chặn thu hoạch sớm
+- [x] M1 — Chọn thửa ruộng/vụ mùa, gửi ảnh bệnh
+- [x] M2 — Vision API trả `disease_id/confidence/model_version`, lưu lại được
+- [x] M3 — Lookup Disease → TreatmentRule → Pesticide deterministic (SQL/JSON, không qua LLM)
+- [x] M4 — LLM chỉ diễn đạt lại facts đã tra được, không tự sinh số liệu
+- [x] M5 — Kỹ sư Approve/Reject trong flow (trạng thái duyệt lưu & kiểm soát ở Spring Boot backend; AI Service chỉ đề xuất, không tự quyết)
+- [x] M6 — Khi xác nhận đã phun (APPLIED): backend ghi `TreatmentApplication`, tính `harvest_locked_until`, poka-yoke 2 tầng (Spring Boot API trả 422 + UI disable) chặn thu hoạch sớm
 
 Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot (API nghiệp vụ, duyệt, poka-yoke), AI Service Python riêng (vision-api MobileNetV3 + LangGraph điều phối + LLM nhỏ Qwen2.5-1.5B qua Ollama) gọi qua HTTP. Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
+
+**Còn thiếu để Phase 0 chạy thật end-to-end (chưa gọi AI Service thật):**
+
+- [ ] Dựng AI Service Python (vision-api + LangGraph + LLM Qwen2.5-1.5B qua Ollama)
+- [ ] Nối HTTP client backend ↔ AI Service theo contract API
+- [ ] Vision API CV chẩn đoán bệnh thật (hiện backend nhận `disease_id/confidence/model_version` qua API như thể AI Service đã gửi vào)
+- [ ] LLM sinh khuyến nghị thật (hiện backend dùng khuyến nghị tiếng Việt dạng template)
 
 ### Giai đoạn 1 — Hoàn thiện trải nghiệm & truy vấn (Should)
 
@@ -94,6 +103,28 @@ Một PostgreSQL vật lý, ba nguồn logic:
 - [ ] Cấu trúc monorepo và quyền sở hữu từng thư mục/module
 - [ ] Chính sách repo Private trong lúc phát triển, thời điểm public trước khi nộp bài
 
-## Trạng thái hiện tại
+## Trạng thái hiện tại (cập nhật 2026-09-09)
 
-Đang ở bước lên kế hoạch/khoá kiến trúc — chưa có code. Bước tiếp theo: dựng khung repo (Giai đoạn 0) gồm khởi tạo backend Spring Boot, chốt schema, dựng vision-api (Python), sau đó nối AI Service (LangGraph) với backend qua contract API.
+Backend Spring Boot đã xong; Frontend demo (React/Vite) cho Phase 0 spine flow đã xong; AI Service (Python) chưa bắt đầu. Checklist việc còn thiếu: xem mục "Giai đoạn 0" ở trên. Chi tiết đầy đủ theo từng module: [`CHANGELOG.md`](./CHANGELOG.md).
+
+## Chạy demo Phase 0
+
+Đóng gói cả Postgres + backend + frontend vào một lệnh duy nhất, dùng thư mục [`deploy`](./deploy)
+— đây là docker-compose file duy nhất trong repo, chạy một chỗ cho tiện:
+
+```bash
+cd deploy
+cp .env.example .env      # chỉnh lại nếu cần
+docker compose up -d --build
+```
+
+- Frontend: http://localhost:8082 (nginx serve build tĩnh + reverse-proxy `/api` và `/uploads`
+  sang backend, nên không cần CORS, không cần biết host/port backend)
+- Backend (Swagger/debug trực tiếp): http://localhost:8081/swagger-ui.html
+- Dữ liệu Postgres + ảnh upload được lưu ở `deploy/data/` (bind mount, không mất khi
+  `docker compose down`; dùng `down -v` hoặc xoá thư mục nếu muốn làm sạch từ đầu)
+- Dừng: `docker compose down` (chạy trong thư mục `deploy`)
+
+Khi cần sửa code + hot reload thay vì rebuild image: chạy `docker compose up -d postgres` trong
+`deploy` để có sẵn Postgres, rồi `./mvnw spring-boot:run` (backend) và `npm run dev` (frontend,
+sau khi `cp .env.example .env`) như bình thường — không cần thêm docker-compose nào khác.

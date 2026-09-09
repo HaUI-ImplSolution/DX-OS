@@ -77,9 +77,10 @@ Cách Claude nên vận hành trong thư mục này — về quy trình và hàn
 - Thứ tự: **spec doc trước (chỉ khi task thực sự cần một tài liệu và user yêu cầu — nghĩa là một
   tài liệu đặc tả thật, không phải file plan của plan mode) → swagger kế tiếp → code triển khai
   sau cùng.**
-- Vị trí và định dạng tài liệu swagger (hand-maintained OpenAPI hay springdoc annotation trong
-  Java) **chưa chốt** — cập nhật mục này ngay khi quyết định được đưa ra, cùng với lệnh lint/verify
-  tương ứng.
+- Chốt: dùng springdoc annotation trong Java (`@Tag`/`@Operation` trên controller,
+  `OpenApiConfig` cho `Info` chung) — không hand-maintain OpenAPI YAML riêng. UI ở
+  `/swagger-ui.html`, JSON ở `/v3/api-docs`, tự sinh từ code, không có lệnh lint/verify riêng
+  ngoài compile.
 
 ## Nguyên tắc cốt lõi
 - **Đơn giản trước tiên** — thay đổi nhỏ nhất giải quyết được vấn đề; tối thiểu hoá code sinh ra.
@@ -89,10 +90,20 @@ Cách Claude nên vận hành trong thư mục này — về quy trình và hàn
   (`ResponseDTO`, exception handling, controller split...) để bám theo.
 
 ## Quy tắc riêng của dự án
-- Java + Spring Boot, build bằng Maven (`./mvnw`), group ID **chưa chốt** — cập nhật mục này ngay
-  khi project được khởi tạo, không tự đoán hay dùng group ID của dự án khác.
-- Có dùng Lombok hay không **chưa chốt** — kiểm tra `pom.xml` trước khi giả định, đừng tự ý thêm
-  hoặc gỡ Lombok annotation trước khi việc này được chốt.
+- Java + Spring Boot, build bằng Maven (`./mvnw`), group ID **`HaUI.ImplSolution`**, artifact
+  `DX-Farm`, base package `HaUI.ImplSolution.DX_Farm`.
+- Có dùng Lombok: **có** — `@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder`
+  trên JPA entity (mutable, cần no-arg constructor cho Hibernate). DTO vẫn ưu tiên Java record
+  (đã bất biến, không cần Lombok) — chỉ dùng Lombok cho entity, không lạm dụng sang DTO.
+- Package-by-layer: `controller/`, `service/`, `repository/`, `model/`, `dto/`, `config/`,
+  `exception/` dưới base package — theo đúng skill `spring-boot`. Domain mới bám theo layout của
+  `Parcel` (model/repository/service/controller + `dto/ParcelCreateRequest`,
+  `dto/ParcelResponse`) làm ví dụ tham chiếu.
+- Mọi response của controller bọc trong `dto/ApiResponse<T>` (record, static factory
+  `success`/`error`) — kể cả lỗi, qua `exception/GlobalExceptionHandler`. Không trả entity JPA
+  trực tiếp, không trả `Map`/raw object tuỳ tiện.
+- Domain có business key rõ ràng (vd `Parcel.code` như "TD-01") thì route theo key đó
+  (`/api/v1/parcels/{code}`), không theo surrogate `id` — surrogate id vẫn giữ nội bộ cho FK.
 - Giữ `README.md` và `backend/CLAUDE.md` (khi có) đồng bộ khi thay đổi kiến trúc, route, hoặc
   trạng thái migrate.
 - Không có cấu hình CircleCI trong repo này (`.circleci/` không tồn tại) — không tự tạo file CI

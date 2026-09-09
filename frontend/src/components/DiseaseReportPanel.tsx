@@ -29,7 +29,6 @@ export default function DiseaseReportPanel({
   onError,
 }: DiseaseReportPanelProps) {
   const [showForm, setShowForm] = useState(false);
-  const [reportedBy, setReportedBy] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -42,9 +41,8 @@ export default function DiseaseReportPanel({
     }
     setSubmitting(true);
     try {
-      const report = await createDiseaseReport(cropSeasonId, file, reportedBy);
+      const report = await createDiseaseReport(cropSeasonId, file);
       onCreated(report);
-      setReportedBy("");
       if (fileInput.current) fileInput.current.value = "";
       setShowForm(false);
     } catch (err) {
@@ -82,12 +80,6 @@ export default function DiseaseReportPanel({
       {showForm && (
         <form className="inline-form" onSubmit={submit}>
           <input type="file" accept="image/*" ref={fileInput} required />
-          <input
-            placeholder="Tên người báo cáo"
-            value={reportedBy}
-            onChange={(e) => setReportedBy(e.target.value)}
-            required
-          />
           <div className="form-actions">
             <button type="submit" className="btn btn-primary" disabled={submitting}>
               {submitting ? "Đang gửi…" : "Gửi báo cáo"}

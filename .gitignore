@@ -24,3 +24,5 @@ __pycache__/
 .idea/
 .vscode/
 .DS_Store
+
+.claude/settings.local.json

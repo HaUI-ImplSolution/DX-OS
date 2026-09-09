@@ -43,11 +43,11 @@ class DocumentChunk(Base):
         nullable=True,
     )
 
-    embedding: Mapped[list[float] | None] = mapped_column(
-        Vector(768),
-        nullable=True,
-    )
-
     document: Mapped["Document"] = relationship(
         back_populates="chunks",
+    )
+
+    embedding: Mapped[list[float] | None] = mapped_column(
+        Vector(384),
+        nullable=True,
     )

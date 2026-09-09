@@ -20,14 +20,16 @@ public class DiseaseReportService {
   private final CropSeasonRepository cropSeasonRepository;
   private final DiagnosisRepository diagnosisRepository;
   private final FileStorageService fileStorageService;
+  private final CurrentUserService currentUserService;
 
   public DiseaseReportService(DiseaseReportRepository diseaseReportRepository,
       CropSeasonRepository cropSeasonRepository, DiagnosisRepository diagnosisRepository,
-      FileStorageService fileStorageService) {
+      FileStorageService fileStorageService, CurrentUserService currentUserService) {
     this.diseaseReportRepository = diseaseReportRepository;
     this.cropSeasonRepository = cropSeasonRepository;
     this.diagnosisRepository = diagnosisRepository;
     this.fileStorageService = fileStorageService;
+    this.currentUserService = currentUserService;
   }
 
   public List<DiseaseReportResponse> listByCropSeason(Long cropSeasonId) {
@@ -40,12 +42,12 @@ public class DiseaseReportService {
   }
 
   @Transactional
-  public DiseaseReportResponse create(Long cropSeasonId, MultipartFile image, String reportedBy) {
+  public DiseaseReportResponse create(Long cropSeasonId, MultipartFile image) {
     CropSeason season = cropSeasonRepository.findById(cropSeasonId)
         .orElseThrow(() -> new ResourceNotFoundException("Crop season not found: " + cropSeasonId));
     String imageRef = fileStorageService.store(image);
     DiseaseReport report = DiseaseReport.builder().cropSeason(season).imageRef(imageRef)
-        .reportedBy(reportedBy).build();
+        .reportedBy(currentUserService.currentFullName()).build();
     return toResponse(diseaseReportRepository.save(report));
   }
 

@@ -16,14 +16,14 @@ async def predict_disease(request: Request, image: UploadFile = File(...)):
 
     try:
         image_bytes = await image.read()
-        
+
         # Khởi tạo service với model đã được load từ main.py lifespan
         model = request.app.state.plant_model
         service = PlantDiseaseService(model=model)
-        
+
         # Thực hiện dự đoán
         result = service.predict(image_bytes)
-        
+
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")

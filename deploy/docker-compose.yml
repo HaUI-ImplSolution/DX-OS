@@ -30,6 +30,10 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dxfarm}
       SERVER_PORT: 8081
       UPLOAD_DIR: /app/uploads
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      SUPER_ADMIN_USERNAME: ${SUPER_ADMIN_USERNAME:-admin}
+      SUPER_ADMIN_PASSWORD: ${SUPER_ADMIN_PASSWORD}
     volumes:
       - ./data/uploads:/app/uploads
     ports:

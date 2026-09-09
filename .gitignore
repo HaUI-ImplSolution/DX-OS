@@ -1,6 +1,3 @@
-deploy/data/
-
-deploy/.env
 # Environment variables and local secrets
 .env
 .env.*
@@ -14,11 +11,6 @@ deploy/.env
 venv/
 env/
 ENV/
-
-ai/.idea
-ai/.venv
-ai/weights/
-ai/AI_TASKS_PHASE_0.md
 
 # Python bytecode, caches, builds, and test output
 __pycache__/
@@ -42,6 +34,9 @@ dist/
 
 # Downloaded AI models and large generated artifacts
 ai/service/models/
+ai/weights/
+ai/src/weights/
+ai/AI_TASKS_PHASE_0.md
 *.ckpt
 *.onnx
 *.pt
@@ -73,13 +68,12 @@ deploy/data/
 *.swo
 *~
 
-__pycache__/
-*.pyc
-*.pyo
-.venv/
+# IDE settings
 .idea/
 .vscode/
 
 # Operating-system metadata
 .DS_Store
 Thumbs.db
+
+.claude/settings.local.json

@@ -18,7 +18,6 @@ async def lifespan(app: FastAPI):
     # Cho FastAPI bắt đầu nhận request
     yield
 
-
     # Shutdown
     print("Shutting down application...")
 

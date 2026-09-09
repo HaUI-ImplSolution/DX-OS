@@ -44,37 +44,35 @@ Luồng: nông dân báo bệnh bằng ảnh → CV chẩn đoán → tra cứu 
 - [x] M5 — Kỹ sư Approve/Reject trong flow (trạng thái duyệt lưu & kiểm soát ở Spring Boot backend; AI Service chỉ đề xuất, không tự quyết)
 - [x] M6 — Khi xác nhận đã phun (APPLIED): backend ghi `TreatmentApplication`, tính `harvest_locked_until`, poka-yoke 2 tầng (Spring Boot API trả 422 + UI disable) chặn thu hoạch sớm
 
-Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot (API nghiệp vụ, duyệt, poka-yoke), AI Service Python riêng (vision-api MobileNetV3 + LangGraph điều phối + LLM nhỏ Qwen2.5-1.5B qua Ollama) gọi qua HTTP. Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
+Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot (API nghiệp vụ, duyệt, poka-yoke), AI Service Python riêng (vision-api EfficientNet-B4 + LangGraph điều phối + LLM nhỏ Qwen2.5-1.5B qua Ollama) gọi qua HTTP. Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
 
-**Còn thiếu để Phase 0 chạy thật end-to-end (chưa gọi AI Service thật):**
+**Còn thiếu để Phase 0 chạy thật end-to-end:**
 
-- [x] Khởi tạo nền tảng dữ liệu Python cho AI workflow: SQLAlchemy models/repositories,
-  Alembic và PostgreSQL có pgvector
-- [ ] Hoàn thiện AI Service chạy được (FastAPI + vision-api + LangGraph + Qwen2.5-1.5B qua
-  Ollama)
-- [ ] Nối HTTP client backend ↔ AI Service theo contract API
-- [ ] Vision API CV chẩn đoán bệnh thật (hiện backend nhận
-  `disease_id/confidence/model_version` qua API như thể AI Service đã gửi vào)
-- [ ] LLM sinh khuyến nghị thật (hiện backend dùng khuyến nghị tiếng Việt dạng template)
+- [x] Khởi tạo nền tảng dữ liệu Python: SQLAlchemy, Alembic, PostgreSQL và pgvector.
+- [ ] Hoàn thiện AI Service Python thống nhất: đã có Vision API (FastAPI + EfficientNet-B4)
+  và RAG/Ollama chạy local, còn thiếu LangGraph và endpoint RAG trong FastAPI.
+- [ ] Nối HTTP client backend ↔ AI Service theo contract API.
+- [ ] Khớp dữ liệu CV chẩn đoán: đã có danh mục 38 `class_name` làm mã Disease, nhưng
+  Vision API vẫn trả `disease_code`/`disease_name_vi` là `null`.
+- [ ] Tích hợp LLM sinh khuyến nghị vào spine flow thật; hiện backend vẫn dùng template.
 
-#### Phần AI đã có trên `feature/make-data`
+#### Phần AI/data/RAG đã có trên `feature/make-data`
 
 - Data layer cho 8 entity spine-flow và 2 entity RAG (`Document`, `DocumentChunk` với
-  `vector(768)`).
-- Repository SQL cho Parcel/CropSeason, kết quả CV, deterministic treatment lookup, lịch sử
-  phun và kiểm tra PHI; `get_field_context()` đã gom được operational context làm đầu vào
-  cho LangGraph sau này.
-- Alembic initial revision `9700136d7e00` đã được thử upgrade/downgrade cho 8 bảng
-  spine-flow. PostgreSQL trong Compose đã chuyển sang `pgvector/pgvector:pg16`.
-
-Đây mới là **data foundation**, chưa phải AI Service có thể gọi qua HTTP. Hai model RAG được
-thêm sau initial revision nên còn thiếu migration cho `documents` và `document_chunks`;
-seed JSON vẫn rỗng, chưa có test, và `ai/main.py` chưa có FastAPI application. M7/M8 vì vậy
-vẫn giữ trạng thái chưa hoàn thành.
+  `vector(384)`, đồng bộ model embedding multilingual MiniLM).
+- Dataset có cấu trúc gồm 38 lớp bệnh/healthy được map nguyên văn từ sheet `Disease_KB`:
+  `class_name → code`, `disease_name → name`, `symptoms → description`; không trùng mã.
+- Alembic revision `4c2a0f9d8b71` bật pgvector và tạo `documents`, `document_chunks`.
+- RAG prototype chạy local: ingest idempotent 38 document/38 chunk, cosine retrieval, prompt
+  guardrail và Qwen2.5-1.5B qua Ollama; câu hỏi ghẻ táo trả đúng lớp ở Top 1.
+- Các kiểm tra RAG hiện là smoke script, chưa phải automated test với assertion. Citation
+  chưa có metadata nguồn VietGAP/IRRI có thể audit, nên M8 vẫn chưa hoàn thành.
+- Sau merge, Vision API nằm trong `ai/src`, còn data/RAG nằm trong `ai/app`; cần hợp nhất
+  package/runtime trước khi đóng gói AI Service và nối backend qua HTTP.
 
 ### Giai đoạn 1 — Hoàn thiện trải nghiệm & truy vấn (Should)
 
-- [ ] M7 — Trả lời được câu hỏi kiểu "ruộng này còn cách ly không?" bằng SQL context
+- [x] M7 — Trả lời được câu hỏi kiểu "ruộng này còn cách ly không?" bằng SQL context
 - [ ] M8 — RAG trả lời có trích nguồn từ ít nhất một bộ tài liệu VietGAP/IRRI đã ingest (pgvector)
 - [ ] Frontend low-code thật cho nông hộ (ToolJet/Appsmith) thay vì gọi API tay
 
@@ -83,6 +81,13 @@ vẫn giữ trạng thái chưa hoàn thành.
 Đây là phần **cần bổ sung so với bản đề xuất thống nhất hiện tại**, vì đề bài OLP yêu cầu tường minh đủ 4 nhóm công cụ:
 
 - [ ] **[H]** Một SSO nhẹ (Keycloak/Authentik) + một kênh chat nội bộ (Mattermost) chạy thật trong docker-compose, không chỉ nằm trên giấy
+  - [x] Bước đệm đã xong: đăng nhập JWT + phân quyền FARMER/ENGINEER/ADMIN tự viết trong Spring
+    Boot (thay các field tên tự do như `reportedBy`/`approvedBy`) — đây **chưa phải SSO thật**,
+    chỉ là auth cục bộ riêng cho app này, mỗi user/mật khẩu do chính backend tự quản lý
+  - [ ] SSO thật: dựng thêm một Identity Provider riêng (Keycloak/Authentik) chạy trong
+    docker-compose, để sau này có thêm app khác (Mattermost, BI dashboard) thì đăng nhập 1 lần
+    dùng chung được, thay vì mỗi app một tài khoản như hiện tại
+  - [ ] Kênh chat nội bộ (Mattermost) — chưa bắt đầu
 - [ ] **[D]** Một dashboard BI tối thiểu (Superset/Metabase) hiển thị bản đồ/trạng thái thửa ruộng cho Ban quản trị — không dừng ở truy vấn SQL thuần
 - [ ] Rà lại license mọi thành phần open-core trước khi khoá stack (xem mục PoF bên dưới)
 
@@ -113,18 +118,21 @@ Một PostgreSQL vật lý, ba nguồn logic:
 
 ## Việc cần chốt cùng Lead trước khi chia task
 
-- [ ] Phạm vi demo: chỉ spine flow (Giai đoạn 0) hay bao gồm cả [H]/[D] tối thiểu (Giai đoạn 2)?
+- [x] Phạm vi demo: chỉ spine flow (Giai đoạn 0) hay bao gồm cả [H]/[D] tối thiểu (Giai đoạn 2)?
 - [ ] Quyết định dứt khoát về n8n (giữ/bỏ) vì lý do license
 - [ ] Schema operational + structured knowledge (entity, field bắt buộc)
 - [ ] Contract `vision-api` (request/response JSON)
 - [ ] Contract giữa backend Spring Boot và AI Service Python (REST, base URL, timeout/retry, ai-service base URL cấu hình ở đâu)
 - [ ] Thời điểm PHI bắt đầu: khi `TreatmentApplication = APPLIED` (không phải khi Approve)
-- [ ] Cấu trúc monorepo và quyền sở hữu từng thư mục/module
-- [ ] Chính sách repo Private trong lúc phát triển, thời điểm public trước khi nộp bài
+- [x] Cấu trúc monorepo và quyền sở hữu từng thư mục/module
+- [x] Chính sách repo Private trong lúc phát triển, thời điểm public trước khi nộp bài
 
 ## Trạng thái hiện tại (cập nhật 2026-09-09)
 
-Backend Spring Boot đã xong; Frontend demo (React/Vite) cho Phase 0 spine flow đã xong; AI Service (Python) đã dựng xong phần Vision API cơ bản, đang thiếu phần điều phối LangGraph và LLM. Checklist việc còn thiếu: xem mục "Giai đoạn 0" ở trên. Chi tiết đầy đủ theo từng module: [`CHANGELOG.md`](./CHANGELOG.md).
+Backend Spring Boot đã có JWT/phân quyền và M7; Frontend demo đã có màn đăng nhập. AI Service
+đã có Vision API cơ bản cùng data/RAG prototype chạy local, nhưng hai phần chưa hợp nhất thành
+một runtime, chưa có LangGraph và chưa nối HTTP với backend. Checklist còn thiếu ở “Giai đoạn
+0”; chi tiết theo từng module: [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Chạy demo Phase 0
 
@@ -133,13 +141,18 @@ Backend Spring Boot đã xong; Frontend demo (React/Vite) cho Phase 0 spine flow
 
 ```bash
 cd deploy
-cp .env.example .env      # chỉnh lại nếu cần
+cp .env.example .env      # chỉnh lại nếu cần, đặc biệt JWT_SECRET và SUPER_ADMIN_PASSWORD
 docker compose up -d --build
 ```
 
 - Frontend: http://localhost:8082 (nginx serve build tĩnh + reverse-proxy `/api` và `/uploads`
-  sang backend, nên không cần CORS, không cần biết host/port backend)
-- Backend (Swagger/debug trực tiếp): http://localhost:8081/swagger-ui.html
+  sang backend, nên không cần CORS, không cần biết host/port backend) — đăng nhập bằng
+  `SUPER_ADMIN_USERNAME`/`SUPER_ADMIN_PASSWORD` đã đặt trong `.env` (mặc định seed đúng 1 lần
+  lúc khởi động), sau đó dùng tài khoản admin đó gọi `POST /api/v1/users` (qua Swagger hoặc
+  curl) để tạo thêm tài khoản `ENGINEER`/`FARMER`.
+- Backend (Swagger/debug trực tiếp): http://localhost:8081/swagger-ui.html — bấm "Authorize"
+  và dán JWT lấy từ `POST /api/v1/auth/login` để gọi thử các API cần đăng nhập.
+- PostgreSQL dùng image `pgvector/pgvector:pg16`; AI Service chưa được đóng gói vào Compose.
 - Dữ liệu Postgres + ảnh upload được lưu ở `deploy/data/` (bind mount, không mất khi
   `docker compose down`; dùng `down -v` hoặc xoá thư mục nếu muốn làm sạch từ đầu)
 - Dừng: `docker compose down` (chạy trong thư mục `deploy`)

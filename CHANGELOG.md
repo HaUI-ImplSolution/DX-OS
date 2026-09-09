@@ -4,6 +4,33 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
 
 ## Backend (Spring Boot — `backend/DX-Farm`)
 
+### 2026-09-09
+
+**Đã xong — Auth/SSO cơ bản (Giai đoạn 2 [H]):**
+
+- JWT stateless (HS256, `spring-security` + `jjwt`), không session/cookie. `User` có 3 role
+  `FARMER`/`ENGINEER`/`ADMIN`; seed đúng 1 `ADMIN` lúc khởi động từ biến môi trường, không có
+  đăng ký công khai — chỉ `ADMIN` tạo user mới.
+- `POST /api/v1/auth/login` trả JWT + role. Mọi API nghiệp vụ yêu cầu đăng nhập, trừ danh mục
+  tham chiếu (đọc), `/auth/**`, swagger, `/uploads/**`.
+- Điểm mấu chốt: bỏ hẳn field tên tự do (`reportedBy`/`approvedBy`/`rejectedBy`) khỏi request
+  body — backend tự lấy actor từ `SecurityContextHolder`, không tin client gửi lên. Duyệt/từ
+  chối/chẩn đoán giờ yêu cầu role `ENGINEER`/`ADMIN` (`@PreAuthorize`), enforce ở backend chứ
+  không chỉ ẩn nút FE — cùng tinh thần poka-yoke 2 tầng như PHI.
+- 401/403 trả đúng khuôn `ApiResponse` sẵn có, qua `RestAuthenticationEntryPoint`/
+  `RestAccessDeniedHandler`/`GlobalExceptionHandler`.
+- `User` implement thẳng `UserDetails` (thay vì bọc qua Spring's `User`) — bớt 1 query DB thừa
+  mỗi lần cần biết actor đang thao tác.
+- Đã build + test thật qua `deploy` (login, tạo user, full flow theo từng role, xác nhận
+  401/403 qua curl và trình duyệt).
+
+**Đã xong — M7 (Giai đoạn 1):**
+
+- `GET /api/v1/crop-seasons/{id}/isolation-status` — trả lời "ruộng này còn cách ly không?"
+  bằng cách tái dùng đúng truy vấn mà `harvest()` dùng để chặn poka-yoke (một nguồn sự thật
+  duy nhất giữa "hỏi" và "chặn"). Trả `isolated`, `harvestLockedUntil`, `daysRemaining`,
+  `pesticideCode` + câu trả lời tiếng Việt diễn giải facts — không qua LLM.
+
 ### 2026-09-08
 
 **Đã xong — Phase 0 spine flow (M1–M6), đủ để demo end-to-end:**
@@ -24,99 +51,79 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
 
 **Chưa làm** (ngoài phạm vi backend hoặc chưa cần ở Phase 0):
 
-- Chưa gọi AI Service Python thật (vision-api CV + LLM) — `Diagnosis` nhận sẵn
-  `disease_id/confidence/model_version` qua API như thể AI Service gửi vào, nhưng chưa có HTTP
-  client nối sang AI Service vì service đó chưa tồn tại trong repo.
-- Chưa có auth/SSO — tên nông dân/kỹ sư hiện là chuỗi tự do, chưa có `User`/`Farmer` entity.
-- Chưa có RAG, Carbon/AWD Estimator, IoT simulator, BI dashboard (Superset/Metabase) — thuộc
-  Giai đoạn 1–3 theo roadmap trong `README.md`.
+- Vision API và RAG prototype đã có trên nhánh `feature/make-data`, nhưng backend chưa có HTTP
+  client gọi AI Service; `Diagnosis` vẫn nhận sẵn `disease_id/confidence/model_version`.
+- Chưa có Carbon/AWD Estimator, IoT simulator, BI dashboard (Superset/Metabase), SSO nặng
+  (Keycloak/Authentik) hay kênh chat nội bộ (Mattermost) — thuộc Giai đoạn 1–3 theo roadmap
+  trong `README.md`. Auth/role cơ bản (JWT, FARMER/ENGINEER/ADMIN) đã xong ở trên.
 
 ## AI Service (Python)
 
 ### 2026-09-09
 
-**Đã xong trên `feature/make-data` — nền tảng dữ liệu cho AI workflow (chưa phải AI Service chạy được):**
+**Đã xong trên `feature/make-data` — nền tảng dữ liệu và RAG prototype chạy local:**
 
-- Khởi tạo Python data layer dùng SQLAlchemy 2.x và PostgreSQL, gồm `Base`, `engine`,
-  `SessionLocal` và kết nối qua `DATABASE_URL`.
-- Khai báo 8 model Operational Data / Structured Knowledge phục vụ spine flow: `Parcel`,
-  `CropSeason`, `DiseaseReport`, `Diagnosis`, `Disease`, `Pesticide`, `TreatmentRule`
-  và `TreatmentApplication`; đã cấu hình UUID, khóa ngoại, index và relationship.
-- Bổ sung model nền cho RAG Knowledge: `Document` và `DocumentChunk`; chunk lưu nội dung,
-  số trang và embedding `vector(768)` qua pgvector.
-- Bổ sung repository cho các thao tác đã có code:
-  - tải thửa ruộng và vụ mùa đang hoạt động;
-  - tạo báo cáo bệnh, lưu kết quả CV theo `disease_code`, lấy chẩn đoán mới nhất;
-  - lookup `Disease → TreatmentRule → Pesticide` bằng SQL deterministic;
-  - ghi `TreatmentApplication`, snapshot liều/PHI, tính `harvest_locked_until` từ thời điểm
-    `APPLIED`, đọc lịch sử phun và kiểm tra còn cách ly hay không.
-- Bổ sung `get_field_context()` để gom Parcel, CropSeason, chẩn đoán mới nhất, lần phun gần
-  nhất và trạng thái PHI thành `dict` làm đầu vào cho LangGraph sau này.
-- Thiết lập Alembic và tạo initial revision `9700136d7e00` cho 8 bảng spine-flow. Revision đã
-  được thử `upgrade → downgrade → upgrade` thành công trên PostgreSQL tạm; database phát
-  triển được baseline bằng `alembic stamp head` sau khi đối chiếu schema.
-- Đổi PostgreSQL dùng chung trong `deploy/docker-compose.yml` sang
-  `pgvector/pgvector:pg16`; cấu hình Compose sau merge với `main` đã qua
-  `docker compose config`.
-- Mở rộng `.gitignore` cho virtualenv/cache, secrets, model artifacts và build/runtime output;
-  migration, seed source và `.env.example` vẫn được phép commit.
+- Khởi tạo SQLAlchemy data layer cho 8 entity spine-flow và 2 entity RAG (`Document`,
+  `DocumentChunk`), cùng repository SQL và `get_field_context()`.
+- Tạo 38 bản ghi Disease từ sheet `Disease_KB`: `class_name → code`,
+  `disease_name → name`, `symptoms → description`; giữ nguyên nguồn và không trùng mã.
+- Thêm migration `4c2a0f9d8b71`: bật pgvector, tạo `documents`, `document_chunks`,
+  khóa ngoại cascade, index theo `document_id` và embedding `vector(384)`.
+- Hoàn thiện batch embedding, ingest idempotent, cosine retrieval, prompt tiếng Việt có
+  guardrail và gọi Qwen2.5-1.5B qua Ollama; có `--dry-run` để preview không ghi DB.
+
+**Đã xác minh phần data/RAG:**
+
+- Database đã ở revision `4c2a0f9d8b71`, pgvector `0.8.6`; có đúng 38 document, 38 chunk,
+  tất cả embedding 384 chiều.
+- Chạy ingestion hai lần không nhân đôi dữ liệu.
+- Retrieval câu hỏi ghẻ táo trả `Apple___Apple_scab` Top 1 (similarity khoảng `0.736`);
+  RAG end-to-end qua Ollama trả lời đúng context, không thêm dữ liệu thuốc.
+
+**Đã xong — Vision API (Computer Vision) cơ bản:**
 
 - Khởi tạo project FastAPI (`ai/src`).
 - Tích hợp model phân loại bệnh thực vật dựa trên PyTorch (kiến trúc `EfficientNet-B4`, hỗ trợ 38 lớp bệnh lý).
 - Cung cấp API endpoint `POST /api/v1/disease/predict` nhận upload ảnh và trả về kết quả chẩn đoán (`class_id`, `class_name`, `confidence`, `model_name`, `model_version`).
 
+**Chưa làm / cần tích hợp tiếp:**
 
-**Đã xác minh:**
+- Vision API (`ai/src`) và data/RAG (`ai/app`) chưa được hợp nhất thành một package/runtime;
+  RAG/Ollama mới chạy bằng smoke script, chưa có endpoint FastAPI.
+- Chưa có LangGraph để điều phối workflow và chưa nối HTTP với Spring Boot backend.
+- Vision API chưa lookup `disease_code`/`disease_name_vi`; hai trường hiện trả `null`.
+- Smoke script RAG chưa phải pytest test có assertion; chưa có evaluation set, relevance
+  threshold, citation metadata/URL có thể audit hoặc vector index cho dữ liệu lớn.
+- `pesticides.json` và `treatment_rules.json` vẫn là placeholder rỗng, chưa có dữ liệu đã
+  đối chiếu danh mục/nhãn Việt Nam.
 
-- Python source compile được; SQLAlchemy đăng ký và configure mapper thành công cho 10
-  model/table.
-- Initial migration chạy được cả hai chiều cho 8 bảng mà revision đang quản lý.
-
-**Chưa làm / cần xử lý tiếp:**
-
-- `ai/main.py`; chưa có LangGraph state và node, Qwen/Ollama, RAG ingestion/retriever 
-  hoặc contract HTTP với Spring Boot backend.
-- Ba file seed JSON mới là placeholder rỗng; chưa có dữ liệu Disease/Pesticide/TreatmentRule
-  để chạy lookup thật.
-- `Document` và `DocumentChunk` được thêm sau initial revision nên chưa có migration kế
-  tiếp; `alembic check` hiện phát hiện hai bảng và index tương ứng chưa được quản lý.
-- Chưa có test cho model/repository/service; Ruff hiện vẫn báo lỗi chuẩn hóa import và
-  re-export.
-- Repository Python hiện có cả thao tác ghi Operational Data. Trước khi nối end-to-end cần
-  chốt lại ranh giới Single Source of Truth trong tài liệu: backend Spring Boot sở hữu ghi
-  nghiệp vụ, AI Service nên gọi backend qua HTTP thay vì tự ghi song song.
-
-- Chưa tích hợp LLM (Qwen2.5-1.5B qua Ollama) để sinh khuyến nghị.
-- Chưa có LangGraph để điều phối luồng (workflow).
-- Chưa có lookup chuẩn xác mã bệnh (`disease_code`) và tên tiếng Việt (`disease_name_vi`) 
-  để đồng bộ với mã `Disease` của CSDL backend (hiện API trả về `null`).
 ## Frontend (`frontend`)
 
 ### 2026-09-09
 
 **Đã xong — Demo UI cho Phase 0 spine flow (M1–M6):**
 
-- React 18 + TypeScript + Vite, không dùng router/state library ngoài — một trang duy nhất
-  theo đúng thứ tự spine flow: chọn/tạo thửa ruộng → chọn/tạo vụ mùa → gửi báo cáo sâu bệnh
-  kèm ảnh → chẩn đoán (nhập tay giả lập AI Service) → kỹ sư duyệt/từ chối → ghi nhận đã phun
-  thuốc → khai báo thu hoạch (thấy rõ banner khi bị poka-yoke chặn, HTTP 422).
-- Tab phụ "Danh mục tham chiếu" hiển thị read-only Disease/Pesticide/TreatmentRule (Structured
-  Knowledge).
-- `src/api.ts` bọc toàn bộ `ApiResponse<T>` envelope của backend, ném `ApiError` (status + data)
-  để UI phân biệt lỗi validate (400), state machine (409) và poka-yoke (422).
-- Đã chạy thử full flow qua trình duyệt thật (parcel → crop season → upload ảnh → diagnosis →
-  approve → apply → harvest bị khoá đúng theo PHI) trên backend thật, không chỉ build/typecheck.
+- React 18 + TypeScript + Vite, một trang duy nhất theo đúng spine flow: chọn/tạo thửa ruộng →
+  vụ mùa → báo sâu bệnh kèm ảnh → chẩn đoán (nhập tay giả lập AI Service) → kỹ sư duyệt/từ chối
+  → ghi nhận đã phun thuốc → khai báo thu hoạch (banner rõ khi bị poka-yoke chặn, HTTP 422).
+- Tab "Danh mục tham chiếu" (read-only Disease/Pesticide/TreatmentRule) và nút hỏi "ruộng còn
+  cách ly không? (M7)" ở panel Vụ mùa, gọi `GET /crop-seasons/{id}/isolation-status`.
+- `src/api.ts` bọc `ApiResponse<T>` envelope, ném `ApiError` để UI phân biệt lỗi 400/409/422.
+- Đã chạy full flow qua trình duyệt thật trên backend thật, không chỉ build/typecheck.
 
-**Thay đổi kèm theo ở backend để FE chạy được:**
+**Thay đổi kèm theo ở backend để FE chạy được:** thêm `WebConfig` (CORS cho `/api/**`, static
+handler `/uploads/**`).
 
-- Thêm `WebConfig` (CORS cho `/api/**` từ localhost, static resource handler `/uploads/**` trỏ
-  vào `app.upload-dir`) vì trước đó chưa có cấu hình CORS và ảnh upload chưa được serve qua HTTP.
+**Chưa làm:** low-code frontend (ToolJet/Appsmith) — đây vẫn là bản tự viết tối giản cho demo.
 
-**Chưa làm:**
+**Đã xong — Đăng nhập + role, thay input tên tự do bằng danh tính đã xác thực:**
 
-- Chưa có auth/SSO nên tên nông dân/kỹ sư vẫn là input tự do (khớp với hiện trạng backend).
-- Chưa có low-code frontend (ToolJet/Appsmith) theo Giai đoạn 1 — đây vẫn là bản tự viết tối
-  giản cho demo Phase 0.
+- `LoginPanel` mới gate toàn app; header hiện tên/vai trò + nút đăng xuất. `src/auth.ts` lưu
+  `{token, username, fullName, role}` ở `localStorage`.
+- `src/api.ts` tự gắn Bearer token; gặp 401 thì tự xoá phiên, quay lại màn đăng nhập.
+- Bỏ input "Người báo cáo"/"Tên kỹ sư" — backend tự lấy từ user đã đăng nhập. Nút duyệt/từ
+  chối/chẩn đoán chỉ hiện với role `ENGINEER`/`ADMIN` (ẩn FE là UX, chặn thật ở backend).
+- Đã test qua trình duyệt thật với từng role, xác nhận UI và 401/403 đúng chỗ.
 
 ## Deploy (`deploy`)
 
@@ -124,17 +131,15 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
 
 **Đã xong — đóng gói Postgres + backend + frontend chạy một lệnh:**
 
-- `deploy/docker-compose.yml`: build backend từ `backend/DX-Farm/Dockerfile` (đã có sẵn),
-  build frontend qua `frontend/Dockerfile` mới (multi-stage: `npm run build` rồi serve bằng
-  nginx). Expose ra host: `${POSTGRES_PORT:-5432}` (để còn chạy `mvn spring-boot:run` local
-  khi cần hot reload), `${BACKEND_PORT:-8081}`, `${FRONTEND_PORT:-8082}`.
-- Frontend production build gọi API cùng-origin (`frontend/.env.production` để trống
-  `VITE_API_BASE_URL`) — nginx (`frontend/nginx.conf`) reverse-proxy `/api/` và `/uploads/`
-  sang container backend, nên môi trường deploy không cần CORS.
-- Dữ liệu Postgres và ảnh upload persist qua bind mount `deploy/data/` (đã có sẵn trong
-  `.gitignore` từ trước, không mất khi `docker compose down`).
-- Đã build + chạy thử thật bằng `docker compose up -d --build` từ thư mục `deploy`, không chỉ
-  viết cấu hình suông.
-- Xoá `backend/DX-Farm/docker-compose.yml` (chỉ chạy Postgres riêng cho dev cũ) — giờ
-  `deploy/docker-compose.yml` là docker-compose file duy nhất trong repo, dùng chung cho cả
-  demo full-stack lẫn Postgres khi dev thủ công.
+- `deploy/docker-compose.yml`: build backend (`backend/DX-Farm/Dockerfile`) + frontend
+  (`frontend/Dockerfile` mới, multi-stage `npm run build` → serve bằng nginx). Expose
+  `${POSTGRES_PORT:-5432}`, `${BACKEND_PORT:-8081}`, `${FRONTEND_PORT:-8082}`.
+- Frontend production gọi API cùng-origin — nginx reverse-proxy `/api/` và `/uploads/` sang
+  backend, nên deploy không cần CORS.
+- Postgres + ảnh upload persist qua bind mount `deploy/data/` (không mất khi `docker compose
+  down`).
+- Đã build + chạy thử thật bằng `docker compose up -d --build`.
+- Xoá `backend/DX-Farm/docker-compose.yml` cũ — `deploy/docker-compose.yml` giờ là compose
+  file duy nhất trong repo (dùng chung cho demo full-stack lẫn Postgres khi dev thủ công).
+- Service `backend` nhận thêm secret cho auth (`JWT_SECRET`, `JWT_EXPIRATION`,
+  `SUPER_ADMIN_USERNAME/PASSWORD`) từ `deploy/.env` (mẫu ở `.env.example`).

@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { ApiError, createCropSeason, harvestCropSeason } from "../api";
-import type { CropSeason, PokaYokeErrorData } from "../types";
+import { useEffect, useState } from "react";
+import { ApiError, createCropSeason, getIsolationStatus, harvestCropSeason } from "../api";
+import type { CropSeason, IsolationStatus, PokaYokeErrorData } from "../types";
 import Badge from "./Badge";
 import Section from "./Section";
 
@@ -30,8 +30,26 @@ export default function CropSeasonPanel({
   const [submitting, setSubmitting] = useState(false);
   const [harvestBusy, setHarvestBusy] = useState(false);
   const [pokaYoke, setPokaYoke] = useState<PokaYokeErrorData | null>(null);
+  const [isolationStatus, setIsolationStatus] = useState<IsolationStatus | null>(null);
+  const [isolationBusy, setIsolationBusy] = useState(false);
 
   const selected = cropSeasons.find((s) => s.id === selectedId) ?? null;
+
+  useEffect(() => {
+    setIsolationStatus(null);
+  }, [selectedId]);
+
+  const askIsolation = async () => {
+    if (!selected) return;
+    setIsolationBusy(true);
+    try {
+      setIsolationStatus(await getIsolationStatus(selected.id));
+    } catch (err) {
+      onError(err instanceof Error ? err.message : "Không hỏi được trạng thái cách ly");
+    } finally {
+      setIsolationBusy(false);
+    }
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,10 +151,20 @@ export default function CropSeasonPanel({
             <strong>Vụ đang chọn:</strong> {selected.riceVariety} ({selected.status})
             {selected.harvestedAt && <span> — đã thu hoạch lúc {new Date(selected.harvestedAt).toLocaleString("vi-VN")}</span>}
           </div>
-          {selected.status === "ACTIVE" && (
-            <button className="btn btn-secondary" onClick={harvest} disabled={harvestBusy}>
-              {harvestBusy ? "Đang xử lý…" : "Khai báo đã thu hoạch"}
+          <div className="form-actions">
+            <button className="btn" onClick={askIsolation} disabled={isolationBusy}>
+              {isolationBusy ? "Đang hỏi…" : "Hỏi: ruộng này còn cách ly không? (M7)"}
             </button>
+            {selected.status === "ACTIVE" && (
+              <button className="btn btn-secondary" onClick={harvest} disabled={harvestBusy}>
+                {harvestBusy ? "Đang xử lý…" : "Khai báo đã thu hoạch"}
+              </button>
+            )}
+          </div>
+          {isolationStatus && (
+            <div className={`banner ${isolationStatus.isolated ? "banner-danger" : "banner-success"}`}>
+              <p>{isolationStatus.message}</p>
+            </div>
           )}
           {pokaYoke && (
             <div className="banner banner-danger">

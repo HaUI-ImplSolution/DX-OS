@@ -37,14 +37,21 @@ Hai service tách biệt, giao tiếp qua HTTP:
 
 Luồng: nông dân báo bệnh bằng ảnh → CV chẩn đoán → tra cứu quy tắc xử lý (deterministic) → LLM diễn đạt khuyến nghị → kỹ sư duyệt → ghi nhận can thiệp + khoá thu hoạch theo PHI.
 
-- [ ] M1 — Chọn thửa ruộng/vụ mùa, gửi ảnh bệnh
-- [ ] M2 — Vision API trả `disease_id/confidence/model_version`, lưu lại được
-- [ ] M3 — Lookup Disease → TreatmentRule → Pesticide deterministic (SQL/JSON, không qua LLM)
-- [ ] M4 — LLM chỉ diễn đạt lại facts đã tra được, không tự sinh số liệu
-- [ ] M5 — Kỹ sư Approve/Reject trong flow (trạng thái duyệt lưu & kiểm soát ở Spring Boot backend; AI Service chỉ đề xuất, không tự quyết)
-- [ ] M6 — Khi xác nhận đã phun (APPLIED): backend ghi `TreatmentApplication`, tính `harvest_locked_until`, poka-yoke 2 tầng (Spring Boot API trả 422 + UI disable) chặn thu hoạch sớm
+- [x] M1 — Chọn thửa ruộng/vụ mùa, gửi ảnh bệnh
+- [x] M2 — Vision API trả `disease_id/confidence/model_version`, lưu lại được
+- [x] M3 — Lookup Disease → TreatmentRule → Pesticide deterministic (SQL/JSON, không qua LLM)
+- [x] M4 — LLM chỉ diễn đạt lại facts đã tra được, không tự sinh số liệu
+- [x] M5 — Kỹ sư Approve/Reject trong flow (trạng thái duyệt lưu & kiểm soát ở Spring Boot backend; AI Service chỉ đề xuất, không tự quyết)
+- [x] M6 — Khi xác nhận đã phun (APPLIED): backend ghi `TreatmentApplication`, tính `harvest_locked_until`, poka-yoke 2 tầng (Spring Boot API trả 422 + UI disable) chặn thu hoạch sớm
 
 Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot (API nghiệp vụ, duyệt, poka-yoke), AI Service Python riêng (vision-api MobileNetV3 + LangGraph điều phối + LLM nhỏ Qwen2.5-1.5B qua Ollama) gọi qua HTTP. Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
+
+**Còn thiếu để Phase 0 chạy thật end-to-end (chưa gọi AI Service thật):**
+
+- [ ] Dựng AI Service Python (vision-api + LangGraph + LLM Qwen2.5-1.5B qua Ollama)
+- [ ] Nối HTTP client backend ↔ AI Service theo contract API
+- [ ] Vision API CV chẩn đoán bệnh thật (hiện backend nhận `disease_id/confidence/model_version` qua API như thể AI Service đã gửi vào)
+- [ ] LLM sinh khuyến nghị thật (hiện backend dùng khuyến nghị tiếng Việt dạng template)
 
 ### Giai đoạn 1 — Hoàn thiện trải nghiệm & truy vấn (Should)
 
@@ -96,6 +103,6 @@ Một PostgreSQL vật lý, ba nguồn logic:
 - [ ] Cấu trúc monorepo và quyền sở hữu từng thư mục/module
 - [ ] Chính sách repo Private trong lúc phát triển, thời điểm public trước khi nộp bài
 
-## Trạng thái hiện tại
+## Trạng thái hiện tại (cập nhật 2026-09-09)
 
-Backend Spring Boot (`backend/DX-Farm`) đã triển khai xong toàn bộ spine flow Giai đoạn 0 (M1–M6): Parcel → CropSeason → DiseaseReport (upload ảnh) → Diagnosis (lookup Disease/TreatmentRule deterministic + khuyến nghị dạng template, chưa gọi LLM/AI Service thật) → Approve/Reject kỹ sư → ghi nhận TreatmentApplication + khoá thu hoạch theo PHI với poka-yoke 2 tầng (`POKA_YOKE_VIETGAP_VIOLATION`, HTTP 422). Structured Knowledge (Disease/Pesticide/TreatmentRule) seed sẵn qua `data.sql`. Chưa có: vision-api/AI Service Python thật (điểm nối HTTP để dành cho sau), RAG, carbon/AWD, SSO, BI dashboard — đúng ranh giới Giai đoạn 0. Bước tiếp theo: dựng vision-api (Python) + AI Service (LangGraph), nối qua contract API với backend.
+Backend Spring Boot đã xong; AI Service (Python) và Frontend chưa bắt đầu. Checklist việc còn thiếu: xem mục "Giai đoạn 0" ở trên. Chi tiết đầy đủ theo từng module: [`CHANGELOG.md`](./CHANGELOG.md).

@@ -2,6 +2,9 @@
 
 > README nội bộ dành riêng cho thư mục `ai/`  
 > Mục tiêu: giúp **Khánh (CV)** và **Tùng (Data / RAG / LLM / LangGraph)** hiểu cùng một luồng, phát triển song song và tích hợp ít xung đột nhất.
+>
+> Theo dõi tiến độ và handoff theo từng Stage tại
+> [Phụ lục A — Master Stage Roadmap](#master-stage-roadmap).
 
 ---
 
@@ -138,15 +141,16 @@ ai/
 │   │   │   ├── disease_report.py     # DiseaseReport — báo cáo sự cố + ảnh upload
 │   │   │   ├── diagnosis.py          # Diagnosis — kết quả CV + trạng thái duyệt APPROVE/REJECT
 │   │   │   ├── pesticide.py          # Pesticide — danh mục thuốc BVTV (Structured Knowledge)
-│   │   │   ├── treatment_rule.py     # TreatmentRule — quy tắc xử lý: liều + PHI (Structured Knowledge)
+│   │   │   ├── treatment_rule.py     # TreatmentRule — khoảng liều + PHI (Structured Knowledge)
+│   │   │   ├── disease_management_policy.py # Policy an toàn khi không có chemical rule
 │   │   │   ├── treatment_application.py  # TreatmentApplication — đã phun + harvest_locked_until
 │   │   │   ├── document.py           # Document — tài liệu RAG (VietGAP/IRRI)
 │   │   │   └── document_chunk.py     # DocumentChunk — chunk + embedding vector(384)
 │   │   └── repositories/       #   Repository functions (SQLAlchemy queries):
 │   │       ├── parcel_repository.py       # get_parcel_by_code(), get_current_crop_season()
 │   │       ├── diagnosis_repository.py    # get_latest_diagnosis()
-│   │       ├── knowledge_repository.py    # lookup Disease, TreatmentRule, Pesticide
-│   │       └── treatment_repository.py    # create/get TreatmentApplication, is_harvest_blocked()
+│   │       ├── knowledge_repository.py    # lookup Disease, Rule, Pesticide và management policy
+│   │       └── treatment_repository.py    # validate liều thực tế, create/get application, PHI
 │   │
 │   ├── rag/                    # RAG pipeline (pgvector + Ollama)
 │   │   ├── document_loader.py  #   Load raw tài liệu từ file/text
@@ -155,6 +159,7 @@ ai/
 │   │   ├── ingestion_service.py #  Ingest idempotent: embed + lưu vào pgvector (không nhân đôi)
 │   │   ├── retriever.py        #   Cosine similarity retrieval từ pgvector
 │   │   ├── prompt_builder.py   #   Build prompt từ retrieved contexts
+│   │   ├── source_registry.py  #   Validate/resolve provenance và citation theo source_id
 │   │   └── rag_service.py      #   RAGService: kết hợp retriever + LLM Ollama (answer())
 │   │
 │   ├── services/               # Application services — orchestrate giữa db, cv, rag
@@ -192,26 +197,39 @@ ai/
 ├── data/                       # Static data files — không thay đổi khi runtime
 │   ├── structured/             #   JSON seed data cho Structured Knowledge:
 │   │   ├── diseases.json             # 38 lớp bệnh (code, name, description)
-│   │   ├── pesticides.json           # Danh mục thuốc BVTV
-│   │   └── treatment_rules.json      # Quy tắc xử lý (liều, đơn vị, PHI ngày)
-│   └── rag/                    #   Metadata cho RAG sources:
-│       └── source_registry.json      # Danh sách tài liệu VietGAP/IRRI đã ingest
+│   │   ├── pesticides.json           # 4 thuốc trong tập Stage 3 đã review
+│   │   ├── treatment_rules.json      # 8 rule APPROVE/READY_TO_PROMOTE
+│   │   ├── disease_management_policies.json # 21 policy cho lớp không có chemical rule
+│   │   └── treatment_rule_candidates.json # 26 candidate staging; không seed trực tiếp
+│   ├── rag/
+│   │   ├── source_registry.json      # Registry hợp nhất 41 nguồn và metadata citation
+│   │   └── processed/
+│   │       └── disease_knowledge.json # 38 bản ghi kiến thức sẵn sàng cho embedding
+│   └── stage3/                       # Gói review, manifest, report và HOLD để audit
 │
 ├── migrations/                 # Alembic database migrations
 │   └── versions/
 │       ├── 9700136d7e00_initial_schema.py           # Schema ban đầu (8 entity spine-flow)
-│       └── 4c2a0f9d8b71_add_rag_document_tables.py  # Bật pgvector + Document + DocumentChunk
+│       ├── 4c2a0f9d8b71_add_rag_document_tables.py  # Bật pgvector + Document + DocumentChunk
+│       └── c1f7e2d4a9b0_stage3_structured_knowledge.py # Khoảng liều + management policy
 │
 ├── scripts/                    # CLI scripts chạy một lần — KHÔNG phải app module
 │   ├── seed_diseases.py        #   Seed 38 bản ghi Disease vào DB từ diseases.json
+│   ├── seed_pesticides.py       #   Seed idempotent 4 pesticide Stage 5
+│   ├── seed_treatment_rules.py  #   Seed idempotent 8 rule đã approve
+│   ├── seed_disease_management_policies.py # Seed idempotent 21 policy
 │   └── ingest_diseases.py      #   Ingest disease knowledge vào pgvector (hỗ trợ --dry-run)
 │
 ├── tests/                      # Unit tests (pytest) và RAG smoke checks
 │   ├── cv/
 │   │   └── test_model_ENB4C.py #   Test CLASS_NAMES mapping (38 classes), model output shape
+│   ├── data/
+│   │   └── test_stage3_structured_data.py # Validate final/hold/coverage/guardrail
+│   ├── db/                      # Unit + integration test repository Stage 4/5
 │   └── rag/
 │       ├── test_retriever.py   #   Test cosine retrieval từ pgvector
 │       ├── test_rag_service.py #   Test RAG end-to-end với Ollama
+│       ├── test_knowledge_data.py # Validate dataset, provenance, guardrail và chunking
 │       └── test.py             #   Smoke tests cho RAG pipeline
 │
 ├── weights/                    # Model weights — canonical location
@@ -223,6 +241,75 @@ ai/
 ├── alembic.ini                 # Alembic config — trỏ tới migrations/
 └── requirements.txt            # Python dependencies
 ```
+
+---
+
+### 3.1. Snapshot dữ liệu RAG Stage 1 (lịch sử, 2026-09-10)
+
+Các dòng dưới mô tả trạng thái ở cuối Stage 1. File final và source registry đã được
+Stage 3 thay thế/cập nhật như mục 3.2; các candidate Stage 1 vẫn chỉ là staging.
+
+- `disease_knowledge.json`: 38 lớp bệnh/healthy, giữ nguyên nội dung từ workbook
+  `DX_Farm_Plant_Disease_Knowledge_Base_v1(1).xlsx`; trường `content` không chứa
+  liều lượng, PHI hay tên sản phẩm.
+- Registry ở snapshot Stage 1 có 26 nguồn; registry canonical hiện đã hợp nhất thành 41
+  nguồn ở Stage 3. Mọi `source_id` được tham chiếu đều phải resolve được.
+- `treatment_rule_candidates.json`: 26 lớp bệnh, không gồm 12 lớp healthy; tất cả
+  có `eligible_for_seed = false` và chỉ là dữ liệu staging.
+- Ở cuối Stage 1, `pesticides.json` và `treatment_rules.json` là mảng rỗng. Stage 3 chỉ
+  promote tập con đã có quyết định review; nguyên tắc không seed dữ liệu HOLD vẫn giữ nguyên.
+- Pipeline ưu tiên ranh giới dòng và tách theo từ khi cần, tối đa 350 ký tự/chunk. Dry-run dự kiến
+  38 document và 270 chunk; cần chạy ingestion thật để thay dữ liệu cũ trong PostgreSQL.
+- Hiện còn một khác biệt mã CV/knowledge cần xử lý ở adapter:
+  `Corn_(maize)___Common_rust_` (CV) và `Corn_(maize)__Common_rust` (dữ liệu). Không
+  sửa chuỗi trong dữ liệu nguồn.
+
+### 3.2. Structured Knowledge Stage 3 review + Stage 4/5 triển khai (2026-09-10)
+
+- Hai bản workbook review độc lập và nằm trong gói có cùng SHA-256; toàn bộ checksum gói
+  đã đạt. Bản review, quyết định, manifest, report và dữ liệu HOLD được lưu tại
+  `data/stage3/` để truy vết.
+- File final dùng để seed có đúng 4 pesticide, 8 treatment rule và 21
+  disease-management policy. Tám candidate `HOLD/NOT_READY` chỉ nằm trong khu vực HOLD,
+  không được seeder đọc.
+- `TreatmentRule` lưu `dose_min`/`dose_max`; khi ghi `TreatmentApplication`, caller phải
+  cung cấp `actual_dose` nằm trong khoảng và giá trị này được snapshot ở cột `dose`.
+- Policy bao phủ 21 lớp bệnh không có chemical rule trực tiếp; 5 lớp có rule và 21 lớp có
+  policy tạo thành 26 lớp non-healthy, không chồng lấn. Lớp healthy không được gán rule.
+- Stage 4 hoàn thiện schema, migration, kiểm tra `actual_dose` và policy lookup. Stage 5
+  có ba seeder idempotent; PostgreSQL local đã xác minh ở revision `c1f7e2d4a9b0` với
+  count 4/8/21 và test tự chạy seed lần hai không tạo bản ghi trùng.
+- Stage 4/5 không chạy embedding/re-ingest. Registry 41 nguồn chỉ được cập nhật cho
+  provenance. Workbook là review kỹ thuật phục vụ MVP, không phải field-use authorization.
+
+#### Checklist tiến độ Stage 4/5
+
+**Stage 4 — Schema và repository**
+
+- [x] Thay `TreatmentRule.dose` bằng `dose_min`/`dose_max`, giữ nguyên unit, PHI và provenance.
+- [x] Có invariant `dose_min <= dose_max`; `TreatmentApplication.dose` vẫn là actual dose.
+- [x] Tạo và đăng ký Alembic model/table `DiseaseManagementPolicy`, `disease_id`
+  NOT NULL/UNIQUE/indexed.
+- [x] Migration chỉ thay `treatment_rules` và tạo `disease_management_policies`;
+  `alembic upgrade head` đạt ở revision `c1f7e2d4a9b0`.
+- [x] Repository nhận và validate `actual_dose`; có deterministic treatment/policy lookup.
+
+**Stage 5 — Final data và seed**
+
+- [x] Final seed giữ nguyên 4 pesticide, 8 treatment rule và 21 management policy từ gói review.
+- [x] Seeder không hard-code UUID; lookup exact `Disease.code`/`Pesticide.name` và fail-fast.
+- [x] Dữ liệu HOLD được giữ để audit nhưng không được seeder đọc.
+- [x] Mỗi seeder chạy atomic, rollback khi lỗi và idempotent khi chạy lần hai.
+
+**Kiểm thử và sẵn sàng tích hợp**
+
+- [x] Lookup Tomato late blight và Corn northern leaf blight đạt.
+- [x] Tomato Target Spot trả safe policy; Tomato mosaic virus trả `NO_CHEMICAL_CONTROL`.
+- [x] Actual dose trong range được nhận, ngoài range/NaN bị từ chối.
+- [x] Toàn bộ pytest đạt, gồm integration test tự chạy seeder hai lần.
+- [x] Repository đã sẵn sàng để node `treatment_lookup` của LangGraph gọi sau này.
+- [ ] LangGraph node/workflow chưa triển khai vì nằm ngoài phạm vi Stage 4/5.
+- [ ] RAG chưa re-ingest/embedding lại; chỉ cập nhật provenance registry.
 
 ---
 
@@ -757,3 +844,1139 @@ tài liệu giải thích gì, và LangGraph điều phối quyết định ra s
 ```
 
 Hai phần gặp nhau tại **CV Prediction Contract** và được LangGraph nối thành spine flow của DX-Farm MVP.
+
+---
+
+<!-- BEGIN MASTER_STAGE_ROADMAP -->
+
+<a id="master-stage-roadmap"></a>
+
+## Phụ lục A — DX-Farm MVP Master Stage Roadmap & Team Handoff
+
+> Cập nhật theo trạng thái nhánh `feature/make-data` ngày 2026-09-10. Chỉ đánh dấu `[x]` cho đầu ra đã có và có thể kiểm tra; trạng thái CV của Khánh không được tự suy đoán.
+
+> File dùng chung cho Tùng và Khánh để theo dõi tiến độ, input/output, checklist và điểm handoff giữa các stage.
+> Đã tích hợp vào tài liệu AI dùng chung theo yêu cầu của nhóm.
+
+### 0. Team boundary
+
+**Khánh — CV**
+
+```text
+Image -> preprocessing -> CV model -> prediction -> stable disease_code
+```
+
+Không phụ trách PostgreSQL, TreatmentRule, RAG, LangGraph hay PHI.
+
+**Tùng — Data / RAG / LLM / LangGraph**
+
+```text
+Disease data -> Structured Knowledge -> PostgreSQL -> RAG -> LLM -> LangGraph
+-> approval flow -> TreatmentApplication -> PHI lock
+```
+
+Không chỉnh sâu model CV nếu không cần.
+
+### 1. Kiến trúc MVP cuối
+
+```text
+Farmer image
+   |
+   v
+CV Service
+   |
+   | disease_code + confidence
+   v
+Diagnosis DB
+   |
+   v
+TreatmentRule / DiseaseManagementPolicy
+   |
+   +-------------------+
+   |                   |
+   v                   v
+Treatment facts      Safe policy
+   |                   |
+   +---------+---------+
+             |
+             v
+        RAG evidence
+             |
+             v
+         LLM wording
+             |
+             v
+      Engineer approval
+        |           |
+      REJECT      APPROVE
+                    |
+                    v
+               wait APPLIED
+                    |
+                    v
+           TreatmentApplication
+                    |
+                    v
+                 PHI lock
+```
+
+### 2. Quy tắc handoff chung
+
+Một stage chỉ được coi là handoff-ready khi có đủ:
+
+```text
+1. Input contract rõ.
+2. Output contract rõ.
+3. Test/checklist pass.
+4. README hoặc cách chạy rõ.
+5. Branch/commit state rõ.
+```
+
+Mẫu handoff:
+
+```text
+Stage:
+Owner:
+Branch:
+Commit:
+
+Input:
+...
+
+Output:
+...
+
+How to run:
+...
+
+Tests:
+...
+
+Known issues:
+...
+```
+
+### 3. Status board
+
+| Stage | Nội dung | Owner | Status |
+|---|---|---|---|
+| 1 | Disease knowledge base | Tùng | DONE |
+| 2 | Structured-data research/staging | Tùng | DONE |
+| 3 | Reviewed final MVP data | Tùng | DONE |
+| 4 | PostgreSQL schema & migration | Tùng | DONE |
+| 5 | Structured data seed & lookup | Tùng | DONE |
+| 6 | CV ↔ Data integration | Tùng + Khánh | WAITING |
+| 7 | RAG production-ready | Tùng | IN PROGRESS |
+| 8 | LangGraph spine flow | Tùng | TODO |
+| 9 | HITL / APPLIED / PHI | Tùng | WAITING |
+| 10 | End-to-end demo hardening | Tùng + Khánh | WAITING |
+
+---
+
+## STAGE 1 — Disease Knowledge Base
+
+### Mục tiêu
+Tạo knowledge base chuẩn cho 38 class CV.
+
+### Owner
+`Tùng`
+
+### Input
+
+```text
+PlantVillage 38-class taxonomy
+authoritative disease sources
+Vietnam source registry
+MVP requirements
+```
+
+### Output
+
+```text
+Disease knowledge workbook
+diseases.json
+disease_knowledge.json
+source_registry
+38 canonical disease_code
+```
+
+`disease_code` là identity xuyên suốt hệ thống.
+
+### Checklist
+
+```text
+[x] Có đủ 38 class.
+[x] Không duplicate disease_code.
+[x] Có healthy classes.
+[x] Có Vietnamese display names.
+[x] Có triệu chứng, pathogen, prevention/IPM.
+[x] Có source provenance.
+[x] RAG knowledge không hard-code dose/PHI chưa review.
+```
+
+### Handoff
+Stage 2 nhận taxonomy + knowledge base + source registry.
+
+---
+
+## STAGE 2 — Structured Knowledge Research / Staging
+
+### Mục tiêu
+Tìm và staging Pesticide, TreatmentRule candidate, ManagementPolicy và pest candidate.
+
+### Owner
+`Tùng`
+
+### Input
+
+```text
+Stage 1 disease codes
+Vietnam pesticide registration sources
+manufacturer product pages
+disease-pathogen mapping sources
+```
+
+### Output
+
+```text
+pesticides_candidates_master.json
+treatment_rules_candidates_master.json
+disease_management_policies_master.json
+pest_management_candidates_master.json
+source_registry_master.json
+coverage_master.json
+```
+
+### Contract
+Candidate không đồng nghĩa approved.
+
+Phải phân biệt rõ:
+
+```text
+VERIFIED
+NEEDS_REVIEW
+CONFLICT
+LOW_CONFIDENCE
+MISSING_PHI
+BROAD_TARGET
+```
+
+### Checklist
+
+```text
+[x] Không bịa dose.
+[x] Không bịa PHI.
+[x] Broad target không tự map thành exact disease.
+[x] Có source authority/provenance.
+[x] Có safe policy cho disease chưa có chemical rule sạch.
+[x] Không ép mọi class phải có thuốc.
+```
+
+### Handoff
+Stage 3 nhận toàn bộ candidate + provenance + review queue.
+
+---
+
+## STAGE 3 — Reviewed Final MVP Data
+
+### Mục tiêu
+Promote candidate đủ mạnh thành final seed data.
+
+Nguyên tắc:
+
+```text
+false negative > false positive
+```
+
+Nếu chưa chắc -> HOLD.
+
+### Owner
+`Tùng`
+
+### Input
+
+```text
+Stage 2 staging data
+source review
+Vietnam registration evidence
+```
+
+### Output final
+
+```text
+final_data/
+├── pesticides.json
+├── treatment_rules.json
+└── disease_management_policies.json
+```
+
+Reference:
+
+```text
+source_registry.json
+review report
+review workbook
+```
+
+Không seed:
+
+```text
+hold/
+```
+
+### Expected counts
+
+```text
+Pesticides                4
+TreatmentRules            8
+DiseaseManagementPolicies 21
+```
+
+### Checklist
+
+```text
+[x] Strong/exact mapping mới promote.
+[x] Conflict PHI -> HOLD.
+[x] Broad target -> HOLD.
+[x] Missing PHI -> HOLD.
+[x] Crop mismatch -> HOLD.
+[x] Final và hold tách riêng.
+[x] Final data có source/version.
+```
+
+### Handoff
+Stage 4/5 chỉ consume `final_data/`.
+
+---
+
+## STAGE 4 — PostgreSQL Schema & Migration
+
+### Mục tiêu
+Làm schema tương thích với data thật.
+
+### Owner
+`Tùng`
+
+### Input
+
+```text
+Stage 3 final JSON contract
+existing SQLAlchemy models
+existing Alembic migrations
+existing repositories
+```
+
+### Required changes
+
+`TreatmentRule`:
+
+```text
+dose_min
+dose_max
+dose_unit
+phi_days
+source
+version
+notes
+```
+
+Invariant:
+
+```text
+dose_min <= dose_max
+```
+
+`TreatmentApplication` vẫn giữ:
+
+```text
+dose
+```
+
+vì đây là actual applied dose.
+
+Tạo model:
+
+```text
+DiseaseManagementPolicy
+```
+
+fields:
+
+```text
+id
+disease_id
+management_status
+direct_treatment_rule_allowed
+chemical_rule_scope
+source
+version
+notes
+```
+
+### Output
+
+```text
+updated SQLAlchemy models
+Alembic migration
+updated treatment_repository
+updated knowledge_repository
+```
+
+Repository contract tối thiểu:
+
+```python
+get_treatment_rules_by_disease_code(...)
+get_management_policy_by_disease_code(...)
+```
+
+### Checklist
+
+```text
+[x] TreatmentRule có dose_min/dose_max.
+[x] Không còn code đọc TreatmentRule.dose cũ.
+[x] TreatmentApplication.dose vẫn tồn tại.
+[x] DiseaseManagementPolicy model tồn tại.
+[x] Alembic nhận model mới.
+[x] Migration không đụng unrelated tables.
+[x] alembic upgrade head pass.
+[x] actual_dose validation tồn tại.
+[x] policy lookup tồn tại.
+```
+
+### Output contract cho Stage 5
+DB schema đã sẵn sàng nhận 3 final JSON.
+
+---
+
+## STAGE 5 — Seed Structured Knowledge
+
+### Mục tiêu
+Đưa structured data final vào PostgreSQL.
+
+### Owner
+`Tùng`
+
+### Input
+
+```text
+Stage 4 schema
+pesticides.json
+treatment_rules.json
+disease_management_policies.json
+```
+
+### Output
+
+PostgreSQL chứa:
+
+```text
+Disease
+Pesticide
+TreatmentRule
+DiseaseManagementPolicy
+```
+
+Expected:
+
+```text
+4 Pesticides
+8 TreatmentRules
+21 DiseaseManagementPolicies
+```
+
+### Seeder contract
+
+```text
+idempotent
+exact lookup
+transaction-safe
+fail-fast
+```
+
+Không fuzzy-map disease_code, không hard-code UUID, không tạo placeholder.
+
+### Tests
+
+```text
+Tomato___Late_blight
+-> TreatmentRule exists
+
+Corn_(maize)___Northern_Leaf_Blight
+-> Amistar Top rule exists
+
+Tomato___Target_Spot
+-> no final TreatmentRule
+-> safe Policy exists
+
+Tomato___Tomato_mosaic_virus
+-> NO_CHEMICAL_CONTROL
+```
+
+### Checklist
+
+```text
+[x] 4 pesticides seed.
+[x] 8 rules seed.
+[x] 21 policies seed.
+[x] seed lần 2 không duplicate.
+[x] Disease exact lookup pass.
+[x] Pesticide join pass.
+[x] Policy lookup pass.
+[x] dose range valid.
+[x] actual_dose ngoài range bị reject.
+[x] tests pass.
+```
+
+### Handoff
+Stage 6/8 nhận structured lookup service/repository.
+
+---
+
+## STAGE 6 — CV ↔ Data Integration
+
+### Mục tiêu
+Nối output CV của Khánh với Disease/Diagnosis/Structured Knowledge của Tùng.
+
+### Owners
+`Khánh: CV handoff`
+`Tùng: integration`
+
+### Input từ CV
+
+```json
+{
+  "disease_code": "Tomato___Late_blight",
+  "confidence": 0.95,
+  "model_name": "EfficientNet-B4",
+  "model_version": "v1.0"
+}
+```
+
+Khánh cần cung cấp:
+
+```text
+POST /api/v1/disease/predict
+GET /api/v1/disease/health
+class_contract.json
+CV README
+CV tests
+```
+
+### Output Stage 6
+
+```text
+image
+-> CV
+-> disease_code
+-> Disease
+-> Diagnosis saved
+-> TreatmentRule / Policy lookup
+```
+
+Chưa cần LangGraph.
+
+### Checklist Khánh
+
+```text
+[ ] Model load clean environment.
+[ ] 38 classes đúng thứ tự.
+[ ] disease_code canonical/unique.
+[ ] predict endpoint pass.
+[ ] health endpoint pass.
+[ ] invalid image không crash.
+[ ] confidence trong [0,1].
+[ ] model_name/version có.
+[ ] class_contract.json có.
+[ ] CV tests pass.
+```
+
+### Checklist Tùng
+
+```text
+[ ] 38 CV codes match 38 DB codes.
+[ ] Không map bằng class_id/display name.
+[ ] Diagnosis persisted.
+[ ] confidence/model metadata persisted.
+[ ] TreatmentRule lookup chạy sau prediction.
+[ ] Policy fallback chạy khi không có rule.
+```
+
+### Definition of Done
+
+```text
+sample image
+-> prediction
+-> DB lookup
+-> structured result
+```
+
+---
+
+## STAGE 7 — RAG Production-Ready
+
+### Mục tiêu
+Biến RAG thành reusable service ổn định.
+
+### Owner
+`Tùng`
+
+### Input
+
+```text
+disease_knowledge.json
+source_registry
+embedding model
+PostgreSQL + pgvector
+Document / DocumentChunk
+```
+
+### Output contract
+
+```python
+retrieve_knowledge(
+    query,
+    disease_code=None,
+    top_k=3
+)
+```
+
+Response:
+
+```json
+[
+  {
+    "content": "...",
+    "disease_code": "...",
+    "source_ids": ["S05"],
+    "score": 0.81
+  }
+]
+```
+
+RAG được dùng cho triệu chứng, pathogen, điều kiện thuận lợi, transmission, prevention, IPM và giải thích.
+
+RAG không được override Pesticide/dose/PHI/Policy.
+
+### Checklist
+
+```text
+[ ] Rich disease_knowledge ingest.
+[ ] Có disease_code metadata trong Document/Chunk đã ingest.
+[x] Có source provenance.
+[x] top_k hoạt động.
+[ ] disease filter hoạt động nếu dùng.
+[x] duplicate chunks được kiểm soát.
+[x] re-ingest có cleanup strategy (replace bộ document cùng type).
+[x] sample query cơ bản relevant.
+[x] source metadata trả được.
+[x] Prompt/LLM guardrail không cho bịa structured facts.
+```
+
+### Handoff
+Stage 8 chỉ gọi `rag_tool.retrieve(...)`.
+
+---
+
+## STAGE 8 — LangGraph Spine Flow
+
+### Mục tiêu
+Nối các service hoàn chỉnh thành workflow chính.
+
+### Owner
+`Tùng`
+
+### Input
+
+```text
+Stage 6 CV integration
+Stage 5 structured lookup
+Stage 7 RAG service
+LLM generation service
+DB persistence services
+```
+
+### Graph output
+
+```text
+START
+-> Resolve Request
+-> CV Diagnosis
+-> Load Field Context
+-> Treatment/Policy Lookup
+-> Retrieve Knowledge
+-> Generate Recommendation
+-> Engineer Approval
+-> APPROVE / REJECT
+```
+
+Suggested nodes:
+
+```text
+resolve_request
+cv_diagnosis
+load_field_context
+treatment_lookup
+retrieve_knowledge
+generate_recommendation
+engineer_approval
+record_treatment
+reject_case
+```
+
+### Checklist
+
+```text
+[ ] FarmState tối giản.
+[ ] Graph compile được.
+[ ] CV node gọi đúng contract.
+[ ] disease_code propagate đúng.
+[ ] DB context load được.
+[ ] TreatmentRule path chạy.
+[ ] Policy path chạy.
+[ ] RAG node chạy.
+[ ] LLM chỉ wording.
+[ ] Approval route chạy.
+[ ] Reject route chạy.
+[ ] Node errors được handle.
+```
+
+### Definition of Done
+
+```text
+request
+-> recommendation waiting for approval
+```
+
+qua LangGraph.
+
+---
+
+## STAGE 9 — HITL / APPROVED / APPLIED / PHI
+
+### Mục tiêu
+Hoàn thiện nghiệp vụ sau recommendation.
+
+### Owner
+`Tùng`
+
+### Input
+
+```text
+LangGraph recommendation
+TreatmentRule
+CropSeason
+engineer action
+farmer/field application confirmation
+```
+
+### Critical rule
+
+```text
+APPROVED != APPLIED
+```
+
+Approve chưa bắt đầu PHI.
+
+### Flow
+
+```text
+Recommendation
+  |
+  v
+Engineer review
+  |
+  +-> REJECT -> save reason -> close
+  |
+  +-> APPROVE
+        |
+        v
+     wait APPLIED
+        |
+        v
+ actual treatment confirmation
+        |
+        v
+ TreatmentApplication
+        |
+        v
+ PHI lock
+```
+
+PHI:
+
+```text
+harvest_locked_until = applied_at + phi_days
+```
+
+### Output
+
+```text
+TreatmentApplication
+actual_dose
+applied_at
+phi_days snapshot
+harvest_locked_until
+audit trail
+```
+
+### Checklist
+
+```text
+[ ] APPROVED không tạo PHI trong workflow AI.
+[ ] REJECT lưu reason trong workflow AI.
+[x] Repository APPLIED yêu cầu actual_dose.
+[x] actual_dose nằm trong rule range.
+[x] APPLIED tạo TreatmentApplication.
+[x] Rule values snapshot.
+[x] PHI bắt đầu từ applied_at.
+[x] harvest lock được tính từ applied_at + phi_days.
+[x] treatment history query được.
+```
+
+---
+
+## STAGE 10 — End-to-End Demo Hardening
+
+### Mục tiêu
+Biến tất cả module thành MVP demo ổn định.
+
+### Owners
+`Tùng + Khánh`
+
+### Input
+
+```text
+CV
+DB
+Structured Knowledge
+RAG
+LLM
+LangGraph
+HITL
+PHI
+```
+
+### Demo fixtures
+
+```text
+1-2 Parcel
+1-2 CropSeason
+known sample images
+known treatment path
+known policy-only path
+```
+
+### Scenario A — Treatment path
+
+```text
+Tomato + Late blight image
+-> CV
+-> TreatmentRule
+-> RAG
+-> recommendation
+-> APPROVE
+-> APPLIED
+-> PHI lock
+```
+
+### Scenario B — Safe policy path
+
+```text
+Tomato mosaic virus
+-> CV
+-> no TreatmentRule
+-> NO_CHEMICAL_CONTROL
+-> RAG explanation
+-> no fabricated chemical treatment
+```
+
+### Scenario C — Uncertain CV
+
+```text
+low confidence
+-> review/confirmation path
+```
+
+Threshold lấy từ validation của model CV, không đoán.
+
+### Output
+
+MVP chạy:
+
+```text
+Image
+-> Recommendation
+-> Approval
+-> Application
+-> PHI
+```
+
+### Checklist
+
+```text
+[x] Fresh PostgreSQL/Alembic startup documented.
+[x] PostgreSQL starts.
+[x] migrations pass.
+[x] seed pass.
+[ ] CV starts trong luồng tích hợp.
+[ ] RAG production-ready.
+[ ] LangGraph compiles.
+[ ] fixtures load.
+[ ] treatment scenario end-to-end pass.
+[ ] safe-policy scenario end-to-end pass.
+[ ] APPROVE pass qua LangGraph.
+[ ] REJECT pass qua LangGraph.
+[ ] APPLIED pass end-to-end.
+[ ] PHI lock pass end-to-end.
+[ ] logs/errors understandable.
+[x] no secrets committed; local env/weights/cache được ignore.
+[ ] demo runbook end-to-end exists.
+```
+
+---
+
+## Final MVP Definition of Done
+
+```text
+Farmer image
+-> CV prediction
+-> Diagnosis stored
+-> Field context
+-> TreatmentRule / Policy
+-> RAG evidence
+-> LLM recommendation wording
+-> Engineer approval/rejection
+-> APPLIED confirmation
+-> TreatmentApplication
+-> PHI lock
+```
+
+Và hệ thống KHÔNG:
+
+```text
+- để LLM bịa thuốc
+- để LLM bịa dose
+- để LLM bịa PHI
+- coi APPROVED = APPLIED
+- fuzzy map disease_code
+- ép disease chưa có verified rule phải có thuốc
+```
+
+---
+
+## Dependency map
+
+```text
+Stage 1
+  |
+Stage 2
+  |
+Stage 3
+  |
+  +-----------> Stage 7
+  |
+Stage 4
+  |
+Stage 5
+  |
+  +----------------+
+                   |
+Khánh CV ----------+--> Stage 6
+                         |
+                       Stage 8
+                         |
+                       Stage 9
+                         |
+                       Stage 10
+                         |
+                        MVP
+```
+
+Stage 7 có thể làm song song với Stage 4/5/6.
+
+---
+
+## Parallel work plan
+
+### Hiện tại
+
+Tùng:
+
+```text
+Stage 4 DONE
+-> Stage 5 DONE
+-> Stage 7 IN PROGRESS
+```
+
+Stage 6 chờ CV trả `disease_code` canonical ổn định; chưa bắt đầu Stage 8.
+
+Khánh:
+
+```text
+finish CV
+-> stable API
+-> class_contract
+-> tests
+-> handoff
+```
+
+### Khi Stage 4/5 + CV xong
+
+Tùng:
+
+```text
+Stage 6 integration
+```
+
+Khánh chỉ support nếu CV contract mismatch.
+
+### Sau Stage 6
+
+```text
+Stage 7 nếu chưa xong
+-> Stage 8
+-> Stage 9
+-> Stage 10
+```
+
+---
+
+## Cross-team contracts không được tự ý đổi
+
+### Disease identity
+
+```text
+disease_code
+```
+
+### CV response
+
+```json
+{
+  "disease_code": "...",
+  "confidence": 0.0,
+  "model_name": "...",
+  "model_version": "..."
+}
+```
+
+### Structured treatment
+
+```text
+disease_code
+pesticide
+dose_min
+dose_max
+dose_unit
+phi_days
+```
+
+### Policy
+
+```text
+disease_code
+management_status
+direct_treatment_rule_allowed
+chemical_rule_scope
+```
+
+### RAG
+
+```text
+content
+disease_code
+source_ids
+score
+```
+
+Phải báo người còn lại nếu thay đổi bất kỳ public contract nào ở trên.
+
+---
+
+## Daily status template
+
+```text
+TODAY
+
+Stage:
+...
+
+Done:
+- ...
+
+Output ready:
+- ...
+
+Tests:
+- ...
+
+Blocked:
+- ...
+
+Public contract changed?
+YES / NO
+
+Need other person:
+- ...
+```
+
+## Stage completion template
+
+```text
+STAGE N DONE
+
+Owner:
+...
+
+Input consumed:
+...
+
+Output produced:
+...
+
+Files:
+...
+
+Commands:
+...
+
+Tests:
+...
+
+Known limitations:
+...
+
+Next stage can start:
+YES / NO
+
+Next stage expected input:
+...
+```
+
+## MVP scope control
+
+Không mở rộng trước khi Stage 10 pass:
+
+```text
+GraphRAG
+multi-agent
+full carbon accounting
+advanced AWD automation
+fully autonomous chemical recommendation
+large-scale production deployment
+```
+
+## Một câu để nhớ kiến trúc
+
+```text
+CV nhận diện.
+PostgreSQL giữ sự thật.
+Structured Knowledge giữ quy tắc.
+RAG cung cấp tài liệu.
+LLM diễn đạt.
+LangGraph điều phối.
+Con người phê duyệt.
+APPLIED mới bắt đầu PHI.
+```
+
+<!-- END MASTER_STAGE_ROADMAP -->

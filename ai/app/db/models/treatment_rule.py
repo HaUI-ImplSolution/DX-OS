@@ -1,7 +1,7 @@
 import uuid
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Float, ForeignKey, Integer, String, Text
+from sqlalchemy import CheckConstraint, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -14,6 +14,16 @@ if TYPE_CHECKING:
 
 class TreatmentRule(Base):
     __tablename__ = "treatment_rules"
+    __table_args__ = (
+        CheckConstraint(
+            "dose_min <= dose_max",
+            name="ck_treatment_rules_dose_range",
+        ),
+        CheckConstraint(
+            "phi_days > 0",
+            name="ck_treatment_rules_phi_days_positive",
+        ),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -35,7 +45,12 @@ class TreatmentRule(Base):
         index=True,
     )
 
-    dose: Mapped[float] = mapped_column(
+    dose_min: Mapped[float] = mapped_column(
+        Float,
+        nullable=False,
+    )
+
+    dose_max: Mapped[float] = mapped_column(
         Float,
         nullable=False,
     )
@@ -67,5 +82,4 @@ class TreatmentRule(Base):
     )
 
     disease: Mapped["Disease"] = relationship()
-
     pesticide: Mapped["Pesticide"] = relationship()

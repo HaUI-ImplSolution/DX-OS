@@ -12,6 +12,8 @@ Tài liệu này hướng dẫn thành viên trong nhóm khởi động PostgreS
 - Chuỗi migration hiện tại:
   - `9700136d7e00`: tạo schema ban đầu.
   - `4c2a0f9d8b71`: bật extension `vector`, tạo bảng `documents` và `document_chunks` cho RAG.
+  - `c1f7e2d4a9b0`: đổi TreatmentRule sang `dose_min`/`dose_max`, tạo bảng
+    `disease_management_policies`.
 
 > Không commit các file `.env` vì chúng chứa cấu hình và mật khẩu local.
 
@@ -107,7 +109,7 @@ python -m alembic history
 Kết quả `current` đúng ở thời điểm viết tài liệu phải chứa:
 
 ```text
-4c2a0f9d8b71 (head)
+c1f7e2d4a9b0 (head)
 ```
 
 Sau khi migration thành công, có thể khởi động toàn bộ ứng dụng:
@@ -144,8 +146,13 @@ Một số lệnh `psql` hữu ích:
 \dx
 \dt
 \d diseases
+\d treatment_rules
+\d disease_management_policies
 SELECT version_num FROM alembic_version;
 SELECT COUNT(*) FROM diseases;
+SELECT COUNT(*) FROM pesticides;
+SELECT COUNT(*) FROM treatment_rules;
+SELECT COUNT(*) FROM disease_management_policies;
 SELECT COUNT(*) FROM documents;
 \q
 ```
@@ -218,21 +225,38 @@ python -m alembic downgrade 9700136d7e00
 
 > `downgrade` có thể xoá bảng hoặc dữ liệu. Chỉ dùng trên môi trường local/test hoặc sau khi đã sao lưu và đọc kỹ hàm `downgrade()`.
 
-## 9. Nạp dữ liệu bệnh và dữ liệu RAG
+## 9. Nạp Structured Knowledge Stage 5
 
-Sau khi database đã ở `head`, chạy từ thư mục `ai`:
+Sau khi database đã ở `head`, chạy từ thư mục `ai` theo đúng thứ tự:
 
 ```bash
 python -m scripts.seed_diseases
+python -m scripts.seed_pesticides
+python -m scripts.seed_treatment_rules
+python -m scripts.seed_disease_management_policies
+```
+
+- Các seeder idempotent: chạy lại không nhân đôi dữ liệu.
+- Ba seeder Stage 5 chỉ đọc các file final trong `data/structured`; không đọc
+  `data/stage3/hold`.
+- Kết quả mong đợi hiện tại: 38 disease, 4 pesticide, 8 treatment rule và 21
+  disease-management policy.
+- Seeder rule/policy sẽ dừng nếu disease hoặc pesticide tham chiếu chưa tồn tại, vì vậy phải
+  chạy `seed_diseases` và `seed_pesticides` trước.
+
+### Tùy chọn: kiểm tra hoặc ingest dữ liệu RAG
+
+Stage 4/5 không yêu cầu embedding. Chỉ chạy khi nhóm chủ động muốn cập nhật pgvector:
+
+```bash
 python -m scripts.ingest_diseases --dry-run --limit 3
 python -m scripts.ingest_diseases
 ```
 
-- `seed_diseases` nạp danh mục bệnh có cấu trúc và bỏ qua mã đã tồn tại.
 - `--dry-run` chỉ kiểm tra/hiển thị dữ liệu RAG, không ghi database.
-- `ingest_diseases` thật sẽ tạo embedding và ghi vào `documents`, `document_chunks`; lần chạy sau thay thế bộ tài liệu bệnh trước đó.
-
-Lệnh ingest thật cần tải/chạy model embedding, vì vậy lần đầu có thể mất thời gian và cần kết nối mạng.
+- Lệnh không có `--dry-run` sẽ tạo embedding và ghi vào `documents`,
+  `document_chunks`; lần chạy sau thay thế bộ tài liệu bệnh trước đó.
+- Ingest thật cần tải/chạy model embedding, nên lần đầu có thể mất thời gian và cần mạng.
 
 ## 10. Dừng hoặc làm sạch PostgreSQL
 
@@ -303,6 +327,10 @@ python -m pip install -r requirements.txt
 python -m alembic upgrade head
 python -m alembic current
 python -m scripts.seed_diseases
+python -m scripts.seed_pesticides
+python -m scripts.seed_treatment_rules
+python -m scripts.seed_disease_management_policies
 ```
 
-Khi `alembic current` hiển thị head và có thể truy vấn bảng bằng `psql`, môi trường PostgreSQL local đã sẵn sàng.
+Khi `alembic current` hiển thị `c1f7e2d4a9b0 (head)` và có thể truy vấn bảng bằng
+`psql`, môi trường PostgreSQL local đã sẵn sàng.

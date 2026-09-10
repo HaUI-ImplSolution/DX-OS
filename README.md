@@ -64,11 +64,22 @@ Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot
   `vector(384)`, đồng bộ model embedding multilingual MiniLM).
 - Dataset có cấu trúc gồm 38 lớp bệnh/healthy được map nguyên văn từ sheet `Disease_KB`:
   `class_name → code`, `disease_name → name`, `symptoms → description`; không trùng mã.
-- Alembic revision `4c2a0f9d8b71` bật pgvector và tạo `documents`, `document_chunks`.
-- RAG prototype chạy local: ingest idempotent 38 document/38 chunk, cosine retrieval, prompt
-  guardrail và Qwen2.5-1.5B qua Ollama; câu hỏi ghẻ táo trả đúng lớp ở Top 1.
-- Các kiểm tra RAG hiện là smoke script, chưa phải automated test với assertion. Citation
-  chưa có metadata nguồn VietGAP/IRRI có thể audit, nên M8 vẫn chưa hoàn thành.
+- Alembic revision `4c2a0f9d8b71` bật pgvector; revision hiện tại
+  `c1f7e2d4a9b0` bổ sung khoảng liều `dose_min`/`dose_max` và bảng
+  `disease_management_policies` cho Structured Knowledge Stage 4.
+- Dữ liệu RAG có 38 bản ghi kiến thức và registry 41 nguồn có metadata citation. Bộ này
+  chưa được re-ingest sau các đợt cập nhật dữ liệu.
+- Gói dữ liệu Stage 3 đã qua review cung cấp bộ seed cuối gồm 4 thuốc, 8 treatment rule và 21
+  disease-management policy. Chỉ 8 candidate có quyết định `APPROVE/READY_TO_PROMOTE`
+  được đưa vào bộ cuối; 8 candidate `HOLD/NOT_READY` được giữ riêng để audit và không seed.
+- Stage 4 đã hoàn thiện schema/repository; ba seeder Stage 5 chạy idempotent. Database local
+  đã được migrate và xác minh đúng
+  revision/count `c1f7e2d4a9b0` / `4` / `8` / `21`. Workbook review chỉ là nguồn đánh giá
+  kỹ thuật MVP, không phải quyền cho phép sử dụng ngoài thực địa.
+- Pipeline đã validate provenance, chia nội dung tối đa 350 ký tự (dự kiến 270 chunk),
+  retrieve theo loại document và resolve citation ra URL có thể audit. Đã có pytest cho
+  dataset/guardrail/chunk/citation; chưa re-ingest PostgreSQL bằng bộ Stage 1 mới, nên M8
+  vẫn chưa được đánh dấu hoàn thành.
 - Vision API và data/RAG đã được tổ chức chung trong `ai/app`; RAG/Ollama chưa được nối vào
   FastAPI runtime và AI Service vẫn chưa kết nối với backend qua HTTP.
 
@@ -104,7 +115,7 @@ Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot
 Một PostgreSQL vật lý, ba nguồn logic:
 
 - **Operational Data**: Parcel, CropSeason, DiseaseReport, Diagnosis, TreatmentApplication — "chuyện gì đã xảy ra"
-- **Structured Knowledge**: Disease, Pesticide, TreatmentRule — "quy tắc là gì" (lookup bằng khoá/SQL, không qua LLM)
+- **Structured Knowledge**: Disease, Pesticide, TreatmentRule, DiseaseManagementPolicy — "quy tắc là gì" (lookup bằng khoá/SQL, không qua LLM)
 - **RAG Knowledge**: tài liệu VietGAP/IRRI/nội bộ đã duyệt, qua pgvector — "tài liệu giải thích gì"
 
 ## Điểm cần lưu ý cho tiêu chí PoF (50/100 điểm, mang tính loại trừ)
@@ -129,7 +140,7 @@ Một PostgreSQL vật lý, ba nguồn logic:
 - [x] Cấu trúc monorepo và quyền sở hữu từng thư mục/module
 - [x] Chính sách repo Private trong lúc phát triển, thời điểm public trước khi nộp bài
 
-## Trạng thái hiện tại (cập nhật 2026-09-09)
+## Trạng thái hiện tại (cập nhật 2026-09-10)
 
 Backend Spring Boot đã có JWT/phân quyền và M7; Frontend demo đã có màn đăng nhập. AI Service
 đã có Vision API cơ bản cùng data/RAG trong `ai/app`, nhưng RAG chưa có endpoint FastAPI,

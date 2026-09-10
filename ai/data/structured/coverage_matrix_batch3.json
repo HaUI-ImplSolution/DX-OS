@@ -1,0 +1,40 @@
+{
+  "summary": {
+    "total_non_healthy_classes": 26,
+    "chemical_candidate_classes": 7,
+    "deterministic_non_curative_policy_classes": 4,
+    "remaining_unresolved_classes": 15
+  },
+  "chemical_candidate_classes": [
+    "Corn_(maize)__Common_rust",
+    "Corn_(maize)___Northern_Leaf_Blight",
+    "Potato___Early_blight",
+    "Potato___Late_blight",
+    "Tomato___Early_blight",
+    "Tomato___Late_blight",
+    "Tomato___Target_Spot"
+  ],
+  "deterministic_non_curative_policy_classes": [
+    "Orange___Haunglongbing_(Citrus_greening)",
+    "Grape___Esca_(Black_Measles)",
+    "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+    "Tomato___Tomato_mosaic_virus"
+  ],
+  "remaining_unresolved_classes": [
+    "Apple___Apple_scab",
+    "Apple___Black_rot",
+    "Apple___Cedar_apple_rust",
+    "Cherry_(including_sour)___Powdery_mildew",
+    "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot",
+    "Grape___Black_rot",
+    "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)",
+    "Peach___Bacterial_spot",
+    "Pepper,_bell___Bacterial_spot",
+    "Squash___Powdery_mildew",
+    "Strawberry___Leaf_scorch",
+    "Tomato___Bacterial_spot",
+    "Tomato___Leaf_Mold",
+    "Tomato___Septoria_leaf_spot",
+    "Tomato___Spider_mites Two-spotted_spider_mite"
+  ]
+}

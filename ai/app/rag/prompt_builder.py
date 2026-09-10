@@ -1,14 +1,12 @@
-# ai/app/rag/prompt_builder.py
+from typing import Any
+
 
 def build_rag_prompt(
     question: str,
-    contexts: list[dict],
+    contexts: list[dict[str, Any]],
 ) -> str:
     context_text = "\n\n".join(
-        [
-            f"[Nguồn {i+1}]\n{item['content']}"
-            for i, item in enumerate(contexts)
-        ]
+        _format_context(index, item) for index, item in enumerate(contexts, start=1)
     )
 
     return f"""
@@ -28,3 +26,9 @@ CÂU HỎI:
 
 TRẢ LỜI:
 """.strip()
+
+
+def _format_context(index: int, item: dict[str, Any]) -> str:
+    source_ids = item.get("source_ids") or []
+    source_label = ", ".join(source_ids) if source_ids else str(index)
+    return f"[Nguồn {source_label}]\n{item['content']}"

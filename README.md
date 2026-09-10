@@ -70,7 +70,8 @@ Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot
   - [ ] SSO thật: dựng thêm một Identity Provider riêng (Keycloak/Authentik) chạy trong
     docker-compose, để sau này có thêm app khác (Mattermost, BI dashboard) thì đăng nhập 1 lần
     dùng chung được, thay vì mỗi app một tài khoản như hiện tại
-  - [ ] Kênh chat nội bộ (Mattermost) — chưa bắt đầu
+  - [x] Kênh chat nội bộ (Mattermost) — chạy thật trong docker-compose (image Team Edition chính thức). Chi tiết: [`chat/README.md`](./chat/README.md).
+  - [ ] Tích hợp thông báo tự động vào channel Mattermost (ví dụ: có `DiseaseReport` mới hoặc chờ duyệt thì backend tự post vào channel)
 - [x] **[D]** Dashboard BI (Apache Superset) hiển thị bản đồ/trạng thái thửa ruộng cho Ban quản trị, tự bootstrap qua docker-compose.
   Chi tiết: [`bi/README.md`](./bi/README.md).
 - [x] Rà lại license mọi thành phần open-core trước khi khoá stack (xem mục PoF bên dưới) — xem [`LICENSES.md`](./LICENSES.md).
@@ -118,8 +119,7 @@ Backend Spring Boot đã xong, có đăng nhập JWT + phân quyền FARMER/ENGI
 
 ## Chạy demo Phase 0
 
-Đóng gói cả Postgres + backend + frontend vào một lệnh duy nhất, dùng thư mục [`deploy`](./deploy)
-— đây là docker-compose file duy nhất trong repo, chạy một chỗ cho tiện:
+### 1. Khởi động (một lệnh duy nhất, dựng toàn bộ Postgres + backend + frontend + BI + chat)
 
 ```bash
 cd deploy
@@ -127,19 +127,27 @@ cp .env.example .env      # chỉnh lại nếu cần, đặc biệt JWT_SECRET,
 docker compose up -d --build
 ```
 
-- Frontend: http://localhost:8082 (nginx serve build tĩnh + reverse-proxy `/api` và `/uploads`
-  sang backend, nên không cần CORS, không cần biết host/port backend) — đăng nhập bằng
-  `SUPER_ADMIN_USERNAME`/`SUPER_ADMIN_PASSWORD` đã đặt trong `.env` (mặc định seed đúng 1 lần
-  lúc khởi động), sau đó dùng tài khoản admin đó gọi `POST /api/v1/users` (qua Swagger hoặc
-  curl) để tạo thêm tài khoản `ENGINEER`/`FARMER`.
-- Backend (Swagger/debug trực tiếp): http://localhost:8081/swagger-ui.html — bấm "Authorize"
-  và dán JWT lấy từ `POST /api/v1/auth/login` để gọi thử các API cần đăng nhập.
-- BI dashboard (Apache Superset): http://localhost:8088, đăng nhập bằng `SUPERSET_ADMIN_USERNAME`/`SUPERSET_ADMIN_PASSWORD` — dashboard mẫu tự có sẵn, không cần thao tác thêm.
-  Chi tiết: [`bi/README.md`](./bi/README.md).
-- Dữ liệu Postgres + ảnh upload được lưu ở `deploy/data/` (bind mount, không mất khi
-  `docker compose down`; dùng `down -v` hoặc xoá thư mục nếu muốn làm sạch từ đầu)
-- Dừng: `docker compose down` (chạy trong thư mục `deploy`)
+### 2. Vào test
 
-Khi cần sửa code + hot reload thay vì rebuild image: chạy `docker compose up -d postgres` trong
-`deploy` để có sẵn Postgres, rồi `./mvnw spring-boot:run` (backend) và `npm run dev` (frontend,
-sau khi `cp .env.example .env`) như bình thường — không cần thêm docker-compose nào khác.
+| Service | Vào đâu | Đăng nhập |
+|---|---|---|
+| **App chính** (frontend) | http://localhost:8082 | `SUPER_ADMIN_USERNAME`/`SUPER_ADMIN_PASSWORD` trong `.env` |
+| **Backend** (Swagger, gọi API tay) | http://localhost:8081/swagger-ui.html | Lấy JWT từ `POST /api/v1/auth/login`, bấm "Authorize" rồi dán vào |
+| **BI Dashboard** (Superset) | http://localhost:8088 | `SUPERSET_ADMIN_USERNAME`/`SUPERSET_ADMIN_PASSWORD` trong `.env` |
+| **Chat nội bộ** (Mattermost) | http://localhost:8065 | Chưa có tài khoản — bấm "Create account" để tạo (tự động thành Admin) |
+
+### 3. Dừng lại
+
+```bash
+docker compose down
+```
+
+<details>
+<summary>Ghi chú thêm (chỉ cần khi cần, không bắt buộc đọc để test)</summary>
+
+- Tạo thêm tài khoản `ENGINEER`/`FARMER`: dùng tài khoản admin ở trên gọi `POST /api/v1/users` (qua Swagger hoặc curl).
+- Dữ liệu Postgres + ảnh upload lưu ở `deploy/data/` (bind mount, không mất khi `docker compose down`; dùng `down -v` hoặc xoá thư mục nếu muốn làm sạch từ đầu).
+- Chi tiết riêng từng service: [`bi/README.md`](./bi/README.md) (Superset), [`chat/README.md`](./chat/README.md) (Mattermost).
+- Sửa code + hot reload thay vì rebuild image: chạy `docker compose up -d postgres` trong `deploy` để có sẵn Postgres, rồi `./mvnw spring-boot:run` (backend) và `npm run dev` (frontend, sau khi `cp .env.example .env`) như bình thường.
+
+</details>

@@ -55,6 +55,11 @@ superset:
     # Mật khẩu role Postgres chỉ-đọc cho BI dashboard. Xem SupersetReadOnlyRoleSeeder.
     password: ${SUPERSET_RO_PASSWORD:superset_demo}
 
+mattermost:
+  db:
+    # Mật khẩu role Postgres riêng của Mattermost. Xem MattermostDatabaseSeeder.
+    password: ${MATTERMOST_DB_PASSWORD:mattermost_demo}
+
 logging:
   level:
     HaUI.ImplSolution.DX_Farm: DEBUG

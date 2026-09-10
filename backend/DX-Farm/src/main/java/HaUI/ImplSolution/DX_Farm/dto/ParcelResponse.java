@@ -22,7 +22,7 @@ public record ParcelResponse(
 
   // Toạ độ GPS (tuỳ chọn)
   BigDecimal latitude,
-  
+
   BigDecimal longitude,
 
   // Thời điểm tạo

@@ -28,6 +28,16 @@ Không chọn Metabase (AGPL-3.0, copyleft mạnh hơn dù vẫn OSI-approved) �
 - URL: `http://localhost:${SUPERSET_PORT:-8088}`
 - Tài khoản: `SUPERSET_ADMIN_USERNAME`/`SUPERSET_ADMIN_PASSWORD` đặt trong `deploy/.env` (mẫu ở `.env.example`), seed đúng 1 lần lúc khởi động — giống cơ chế `SUPER_ADMIN_*` của backend.
 
+## Xem/quản trị dữ liệu
+
+- **Dữ liệu nghiệp vụ Superset đọc** (Parcel, CropSeason...): nằm trong Postgres `dxfarm` — cùng CSDL với backend, không tách riêng. Superset chỉ đọc qua role `superset_ro` (chỉ có quyền `SELECT`, đã seed sẵn). Xem qua DBeaver bằng connection tới `dxfarm` hiện có, hoặc tạo connection mới:
+  - Host/Port: giống connection tới `dxfarm` (mặc định `localhost:5432`)
+  - Database: `dxfarm`
+  - User: `superset_ro`
+  - Password: giá trị `SUPERSET_RO_PASSWORD` trong `deploy/.env` (mặc định `superset_ro_demo_only`)
+
+- **Metadata riêng của Superset** (dashboard, chart, user/role của Superset, log truy vấn...): **không** nằm trong Postgres — Superset dùng SQLite riêng, file `deploy/data/superset/superset.db`.
+
 ## Dashboard mẫu hiện có
 
 **"DX-Farm — Bản đồ & Trạng thái thửa ruộng"** — 2 chart:

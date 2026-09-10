@@ -137,6 +137,18 @@ handler `/uploads/**`).
 - Đã build + chạy thử thật, kể cả re-import dashboard nhiều lần — idempotent, không tạo trùng chart.
 - **Còn thiếu**: chưa cấu hình `MAPBOX_API_KEY` nên bản đồ chưa có nền (basemap) thật, chỉ thấy điểm trên nền trắng — cần token Mapbox miễn phí, xem `bi/README.md`.
 
+## Kênh chat nội bộ (`chat`, Mattermost)
+
+### 2026-09-10
+
+**Đã xong — Kênh chat nội bộ (Giai đoạn 2 [H]):**
+
+- Thêm service `mattermost` (image chính thức `mattermost/mattermost-team-edition:10.5`, không build lại) vào `deploy/docker-compose.yml`, lên cùng lệnh `docker compose up -d --build` sẵn có, cổng 8065.
+- Backend tự tạo role + database Postgres riêng `mattermost_app`/`mattermost` lúc khởi động (`MattermostDatabaseSeeder`, JDBC thuần vì `CREATE DATABASE` không chạy được trong khối PL/pgSQL `DO $$ ... $$`) — tách biệt hoàn toàn khỏi CSDL nghiệp vụ.
+- Dữ liệu chat persist qua bind mount `deploy/data/mattermost/`.
+- Rà soát license kỹ vì Mattermost không dùng một license duy nhất: server core AGPLv3 (OSI-approved), `server/enterprise/` là Mattermost Source Available License (không OSI-approved, không dùng tới), bản binary Team Edition được Mattermost, Inc. cấp phép lại MIT riêng cho đúng binary đó. Ghi chi tiết ở `LICENSES.md` và `chat/README.md`.
+- **Còn thiếu**: tài khoản Mattermost hiện tách biệt khỏi tài khoản backend (FARMER/ENGINEER/ADMIN) — đăng nhập chung 1 lần cần SSO thật (Keycloak/Authentik), thuộc mục riêng chưa làm theo roadmap.
+
 ## Rà soát license (PoF)
 
 ### 2026-09-10

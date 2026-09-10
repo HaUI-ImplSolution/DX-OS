@@ -36,7 +36,18 @@ Chưa rà — sẽ làm khi tích hợp AI Service thật vào backend (xem `CHA
 | Thành phần | License | OSI-approved | Ghi chú |
 |---|---|---|---|
 | Apache Superset (`apache/superset` image) | Apache-2.0 | ✅ | BI dashboard, thêm ở lượt này — xem `bi/` |
+| Mattermost (`mattermost/mattermost-team-edition` image) | AGPLv3 (server core) | ✅ | Xem mục riêng "Rà soát license Mattermost" dưới đây — không đơn giản như một dòng |
 | Docker / Docker Compose (tooling, không đóng gói vào sản phẩm) | Apache-2.0 | ✅ | |
+
+## Rà soát license Mattermost (kênh chat nội bộ)
+
+Không phải một license duy nhất như các thành phần khác — chia theo thư mục trong repo nguồn Mattermost:
+
+- Server core (toàn bộ trừ `server/enterprise/`): **AGPLv3**, OSI-approved.
+- `server/enterprise/` (tính năng trả phí — SSO nâng cao, compliance, LDAP...): **Mattermost Source Available License**, **không OSI-approved**.
+- Bản Linux binary Team Edition mà chính Mattermost, Inc. compile sẵn: họ cấp phép lại dưới **MIT** — chỉ áp dụng cho đúng binary đó, không phải toàn bộ mã nguồn.
+
+Quyết định: dùng thẳng image chính thức `mattermost/mattermost-team-edition` (không build lại từ source), không bật/không đụng `server/enterprise/`. Chi tiết đầy đủ ở [`chat/README.md`](./chat/README.md).
 
 ## Quyết định về n8n
 

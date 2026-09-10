@@ -12,6 +12,9 @@ class PlantDiseaseService:
         self.model = model
         self.model.eval()
         self.settings = settings or get_settings()
+        # Retrieve device from settings (set in loader)
+        self.device = getattr(self.settings, "_chosen_device", torch.device("cpu"))
+        self.model.to(self.device)
 
     def predict(self, image_bytes: bytes) -> dict:
         try:
@@ -19,18 +22,17 @@ class PlantDiseaseService:
         except (OSError, ValueError) as exc:
             raise ValueError("Invalid image data") from exc
 
-        # Import lazily so class-name tooling and lightweight tests do not
-        # require torchvision until preprocessing is actually requested.
+        # Lazy import for preprocessing
         from app.cv.preprocessor import prepare_input_image
 
-        image = prepare_input_image(
-            image,
-            img_size=self.settings.cv_image_size,
-        )
-        image_tensor = self._preprocess(image).unsqueeze(0)
+        image = prepare_input_image(image, img_size=self.settings.cv_image_size)
+        image_tensor = self._preprocess(image).unsqueeze(0).to(self.device)
 
+        import time
+        start = time.time()
         with torch.no_grad():
             output = self.model(image_tensor)
+        inference_time_ms = (time.time() - start) * 1000
 
         probabilities = torch.softmax(output, dim=1)
         predicted_class = probabilities.argmax(dim=1).item()
@@ -47,6 +49,7 @@ class PlantDiseaseService:
             "confidence": round(confidence, 3),
             "model_name": self.settings.cv_model_name,
             "model_version": self.settings.cv_model_version,
+            "inference_time_ms": inference_time_ms,
         }
 
     @staticmethod

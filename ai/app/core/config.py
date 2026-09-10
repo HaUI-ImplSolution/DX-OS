@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     cv_image_size: int = 224
     cv_model_name: str = "EfficientNet-B4"
     cv_model_version: str = "v1.0"
+    cv_device: str = "auto"
+    cv_confidence_threshold: float = 0.70
 
     log_level: str = "INFO"
 

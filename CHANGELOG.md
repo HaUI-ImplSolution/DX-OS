@@ -59,7 +59,27 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
 
 ## AI Service (Python)
 
+### 2026-09-11
+
+**Đã xong — Triển khai hoàn chỉnh Stage 8 LangGraph Spine Flow:**
+
+- **State & Graph Schema**: Chuẩn hóa `FarmState` trong `app/graph/state.py` (loại bỏ trường trùng lặp, chuẩn hóa kiểu dữ liệu), export đầy đủ các node trong `app/graph/nodes/__init__.py`.
+- **Triển khai toàn bộ Nodes**:
+  - `resolve_request.py`: Validate tham số đầu vào workflow (`request_id`, `image_ref`, parcel/season).
+  - `cv_diagnosis.py`: Nhận diện CV qua `vision_tool` hoặc `cv_result` sẵn có, trích xuất `disease_code` canonical.
+  - `load_field_context.py`: Lấy ngữ cảnh Parcel/CropSeason từ DB.
+  - `treatment_lookup.py`: Tra cứu deterministic qua `lookup_structured_knowledge()`.
+  - `retrieve_knowledge.py`: Truy vấn trích dẫn kiến thức RAG từ pgvector.
+  - `generate_recommendation.py`: Sinh khuyến nghị có cấu trúc tuân thủ Guardrails (không tự bịa thuốc/liều/PHI, phân định rõ đường đi `treatment` vs `policy`, đính kèm Nguồn RAG).
+  - `engineer_approval.py`: Kiểm tra hợp lệ các trạng thái duyệt (`PENDING`, `APPROVED`, `REJECTED` bắt buộc lý do).
+  - `record_treatment.py`: Xử lý nhánh kỹ sư duyệt `APPROVED` (chuyển `application_status = "WAITING_APPLIED"`, tuân thủ `APPROVED != APPLIED`).
+  - `reject_case.py`: Xử lý nhánh kỹ sư từ chối `REJECTED` (chuyển `application_status = "CANCELLED"` và lưu vết lý do).
+- **Rẽ nhánh điều kiện Graph**: Cập nhật `build_graph()` trong `app/graph/graph.py` hỗ trợ rẽ nhánh chính xác theo trạng thái `APPROVED` -> `record_treatment`, `REJECTED` -> `reject_case`, `PENDING` -> `END`.
+- **API Endpoint**: Thêm Pydantic schema `WorkflowRunRequest` & `WorkflowRunResponse` trong `app/api/schemas.py` và triển khai endpoint `/disease/workflow/run` nhận file ảnh upload và tham số ngữ cảnh thực thi StateGraph end-to-end.
+- **Kiểm thử Unit Test**: Tạo bộ test `tests/graph/test_stage8_workflow.py` kiểm thử 6 kịch bản (Treatment path, Policy path, Approval path, Reject path, Validation errors). Tất cả 6/6 tests đã PASSED 100%.
+
 ### 2026-09-10
+
 
 **Đã xong — Chuẩn hóa đầu ra CV Service khớp CV Contract & Test suite (Task A2, A3, A5):**
 

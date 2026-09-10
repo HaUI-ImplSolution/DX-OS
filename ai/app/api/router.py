@@ -2,17 +2,25 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
 
-from app.api.schemas import CVHealthResponse, DiseaseDetectionResponse, RetrieveRequest
+from app.api.schemas import (
+    CVHealthResponse,
+    DiseaseDetectionResponse,
+    RetrieveRequest,
+    WorkflowRunResponse,
+)
 from app.core.config import get_settings
 from app.cv.contract import class_contract
 from app.db.session import get_db
+from app.graph.graph import farm_graph
+from app.graph.state import FarmState
 from app.rag.retriever import RAGRetriever
 from app.services.diagnosis_service import diagnose_report
 from app.services.plant_disease_service import PlantDiseaseService
+
 
 router = APIRouter(prefix="/disease", tags=["Disease Detection"])
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
@@ -91,9 +99,62 @@ def retrieve(payload: RetrieveRequest, db: Annotated[Session, Depends(get_db)]):
     )
 
 
-@router.post("/workflow/run")
-def run_workflow():
-    # Stage 8 is not ready; never report a pass-through graph as a real workflow.
-    raise HTTPException(
-        501, "Stage 8 workflow is not implemented; use predict/diagnose/retrieve."
+
+@router.post("/workflow/run", response_model=WorkflowRunResponse)
+async def run_workflow(
+    request: Request,
+    image: Annotated[UploadFile, File()],
+    db: Annotated[Session, Depends(get_db)],
+    request_id: Annotated[str | None, Form()] = None,
+    parcel_code: Annotated[str | None, Form()] = None,
+    crop_season_id: Annotated[str | None, Form()] = None,
+    rag_question: Annotated[str | None, Form()] = None,
+    approval_status: Annotated[str | None, Form()] = "PENDING",
+    approval_reason: Annotated[str | None, Form()] = None,
+    selected_rule_id: Annotated[str | None, Form()] = None,
+    approved_dose: Annotated[float | None, Form()] = None,
+):
+    data = await read_image(image)
+
+    # Acquire plant model if loaded, or vision tool wrapper
+    vision = None
+    if getattr(request.app.state, "plant_model", None) is not None:
+        vision = PlantDiseaseService(model=request.app.state.plant_model)
+
+    req_id = request_id or str(uuid.uuid4())
+
+    initial_state: FarmState = {
+        "request_id": req_id,
+        "parcel_code": parcel_code or "",
+        "crop_season_id": crop_season_id or "",
+        "image_ref": data,
+        "vision_tool": vision,
+        "db": db,
+        "rag_question": rag_question,
+        "approval_status": approval_status or "PENDING",
+        "approval_reason": approval_reason,
+        "selected_rule_id": selected_rule_id,
+        "approved_dose": approved_dose,
+        "errors": [],
+    }
+
+    try:
+        final_state = await run_in_threadpool(farm_graph, initial_state)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(500, f"Workflow execution failed: {exc}") from exc
+
+    return WorkflowRunResponse(
+        request_id=final_state.get("request_id", req_id),
+        approval_status=final_state.get("approval_status", "PENDING"),
+        application_status=final_state.get("application_status"),
+        cv_result=final_state.get("cv_result"),
+        field_context=final_state.get("field_context"),
+        treatment_rule=final_state.get("treatment_rule"),
+        rag_context=final_state.get("rag_context"),
+        recommendation=final_state.get("recommendation"),
+        response=final_state.get("response"),
+        errors=final_state.get("errors", []),
     )
+

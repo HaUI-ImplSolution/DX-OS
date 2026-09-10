@@ -60,16 +60,30 @@ def build_graph() -> Callable[[FarmState], FarmState]:
     builder.add_edge("treatment_lookup", "retrieve_knowledge")
     builder.add_edge("retrieve_knowledge", "generate_recommendation")
     builder.add_edge("generate_recommendation", "engineer_approval")
+    def route_approval(state: FarmState) -> str:
+        status = state.get("approval_status", "PENDING")
+        if status == "APPROVED":
+            return "record_treatment"
+        elif status == "REJECTED":
+            return "reject_case"
+        return END
+
     # Conditional branches from approval
     builder.add_conditional_edges(
         "engineer_approval",
-        lambda state: "record_treatment" if state.get("approval_status") == "APPROVED" else "reject_case",
+        route_approval,
+        {
+            "record_treatment": "record_treatment",
+            "reject_case": "reject_case",
+            END: END,
+        },
     )
     builder.add_edge("record_treatment", END)
     builder.add_edge("reject_case", END)
 
     graph = builder.compile()
     return graph
+
 
 # Pre‑compile graph for FastAPI reuse
 farm_graph = build_graph()

@@ -1572,19 +1572,20 @@ reject_case
 ### Checklist
 
 ```text
-[ ] FarmState tối giản.
-[ ] Graph compile được.
-[ ] CV node gọi đúng contract.
-[ ] disease_code propagate đúng.
-[ ] DB context load được.
-[ ] TreatmentRule path chạy.
-[ ] Policy path chạy.
-[ ] RAG node chạy.
-[ ] LLM chỉ wording.
-[ ] Approval route chạy.
-[ ] Reject route chạy.
-[ ] Node errors được handle.
+[x] FarmState tối giản.
+[x] Graph compile được.
+[x] CV node gọi đúng contract.
+[x] disease_code propagate đúng.
+[x] DB context load được.
+[x] TreatmentRule path chạy.
+[x] Policy path chạy.
+[x] RAG node chạy.
+[x] LLM chỉ wording.
+[x] Approval route chạy.
+[x] Reject route chạy.
+[x] Node errors được handle.
 ```
+
 
 ### Definition of Done
 
@@ -1852,9 +1853,11 @@ Tùng:
 Stage 4 DONE
 -> Stage 5 DONE
 -> Stage 7 DONE (MVP local)
+-> Stage 8 DONE (LangGraph Spine Flow)
 ```
 
-Stage 6/7 đã triển khai và kiểm thử local; còn xác minh artifact/venv trắng của CV. Stage 8 chưa làm.
+Stage 6/7/8 đã triển khai và kiểm thử local; đã hoàn thiện các nodes, graph conditional routing, và endpoint `/workflow/run`.
+
 
 Khánh:
 

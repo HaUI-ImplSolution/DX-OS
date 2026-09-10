@@ -32,3 +32,36 @@ class RetrieveRequest(BaseModel):
     query: str = Field(min_length=1, max_length=4000)
     disease_code: str | None = Field(default=None, max_length=100)
     top_k: int = Field(default=3, ge=1, le=20)
+
+
+class WorkflowRunRequest(BaseModel):
+    request_id: str | None = Field(default=None, description="Mã định danh yêu cầu")
+    parcel_code: str | None = Field(default=None, description="Mã mảnh ruộng/lô đất")
+    crop_season_id: str | None = Field(default=None, description="ID vụ mùa")
+    rag_question: str | None = Field(default=None, description="Câu hỏi bổ sung cho RAG")
+    approval_status: str | None = Field(
+        default="PENDING", description="Trạng thái phê duyệt: PENDING, APPROVED, REJECTED"
+    )
+    approval_reason: str | None = Field(
+        default=None, description="Lý do từ chối nếu REJECTED"
+    )
+    selected_rule_id: str | None = Field(
+        default=None, description="ID quy trình được chọn nếu APPROVED"
+    )
+    approved_dose: float | None = Field(
+        default=None, description="Liều lượng phê duyệt"
+    )
+
+
+class WorkflowRunResponse(BaseModel):
+    request_id: str
+    approval_status: str
+    application_status: str | None = None
+    cv_result: dict[str, Any] | None = None
+    field_context: dict[str, Any] | None = None
+    treatment_rule: dict[str, Any] | None = None
+    rag_context: list[dict[str, Any]] | None = None
+    recommendation: Any | None = None
+    response: dict[str, Any] | None = None
+    errors: list[str] | None = None
+

@@ -14,32 +14,34 @@ class FarmState(TypedDict, total=False):
     actor_role: str
     parcel_code: str
     crop_season_id: str
-    image_ref: str
+    image_ref: Any
+
     # CV output
     cv_result: Optional[Dict[str, Any]]
+
     # Data outputs
     field_context: Optional[Dict[str, Any]]
     treatment_rule: Optional[Dict[str, Any]]
     rag_context: Optional[List[Dict[str, Any]]]
-    # LLM output
-    recommendation: Optional[str]
-    # Approval
+
+    # Recommendation output
+    recommendation: Optional[Any]
+
+    # Approval & Application status
     approval_status: Optional[str]
+    approval_reason: Optional[str]
+    selected_rule_id: Optional[str]
+    approved_dose: Optional[float]
     application_status: Optional[str]
+    applied_at: Any
+
     # Final response
     response: Optional[Dict[str, Any]]
-    # Internal helpers
-    db: Any  # SQLAlchemy Session, injected by FastAPI endpoint
+
+    # Internal helpers / context
+    db: Any  # SQLAlchemy Session, injected by API / caller
+    vision_tool: Any
     rag_question: Optional[str]
     rag_top_k: Optional[int]
-    approval_reason: Optional[str]
-    selected_rule_id: Optional[str]
-    approved_dose: Optional[float]
-    applied_at: Any
     errors: List[str]
-    vision_tool: Any
-    approval_reason: Optional[str]
-    selected_rule_id: Optional[str]
-    approved_dose: Optional[float]
-    applied_at: Any
-    errors: List[str]
+

@@ -61,6 +61,12 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
 
 ### 2026-09-10
 
+**Đã xong — Chuẩn hóa đầu ra CV Service khớp CV Contract & Test suite (Task A2, A3, A5):**
+
+- **Task A2 (`disease_code`)**: Sửa `PlantDiseaseService.predict()` để trả `disease_code` = `CLASS_NAMES[predicted_class]` (ví dụ `"Tomato___Early_blight"`) thay vì `None`, khớp 1:1 với `Disease.code` trong PostgreSQL.
+- **Task A3 (CV Contract alignment)**: Bổ sung từ điển tên bệnh tiếng Việt `DISEASE_NAMES_VI` và hàm helper `get_disease_name()` trong `app/cv/class_names.py` cho 38/38 lớp bệnh PlantVillage. Đổi tên trường `disease_name_vi` → `disease_name` trong Pydantic schema `DiseaseDetectionResponse` (`app/api/schemas.py`) và output của service để khớp hoàn toàn với CV Contract trong `AI_README_LangGraph_MVP.md`.
+- **Task A5 (Test suite ảnh thật & API router)**: Thêm bộ test `tests/cv/test_plant_disease_service.py` kiểm thử luồng chẩn đoán với ảnh thật `tomato_leaf.jpg`, mock model và FastAPI endpoint `/disease/predict` thông qua `TestClient`. Đã chạy 8/8 unit tests thành công 100%.
+
 **Đã xong — chuẩn hóa cấu trúc module AI theo tài liệu LangGraph MVP:**
 
 - Tổ chức thống nhất code trong `ai/app`: tách rõ `api`, `core`, `cv`, `db`, `rag`,
@@ -74,7 +80,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
   Alembic tiếp tục là luồng quản lý schema được hướng dẫn chính thức.
 - Cập nhật tài liệu PostgreSQL theo entrypoint mới: `python -m scripts.seed_diseases` và
   `python -m scripts.ingest_diseases`.
-- Đã xác minh: 5 test CV đạt, RAG dry-run đọc đủ 38 tài liệu, Alembic head vẫn là
+- Đã xác minh: 8 test CV đạt, RAG dry-run đọc đủ 38 tài liệu, Alembic head vẫn là
   `4c2a0f9d8b71`; compile/lint phạm vi refactor đạt.
 
 **Chưa làm:**
@@ -114,7 +120,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
 - Vision API và data/RAG đã nằm chung trong `ai/app`, nhưng RAG/Ollama mới chạy bằng smoke
   script và chưa được nối vào endpoint FastAPI/runtime chính.
 - Chưa có LangGraph để điều phối workflow và chưa nối HTTP với Spring Boot backend.
-- Vision API chưa lookup `disease_code`/`disease_name_vi`; hai trường hiện trả `null`.
+- Vision API đã hoàn thành lookup `disease_code` và `disease_name` tiếng Việt (Task A2, A3).
 - Smoke script RAG chưa phải pytest test có assertion; chưa có evaluation set, relevance
   threshold, citation metadata/URL có thể audit hoặc vector index cho dữ liệu lớn.
 - `pesticides.json` và `treatment_rules.json` vẫn là placeholder rỗng, chưa có dữ liệu đã

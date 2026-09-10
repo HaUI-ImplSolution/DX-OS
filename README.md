@@ -55,8 +55,7 @@ Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot
 - [ ] Hoàn thiện AI Service Python thống nhất: đã có Vision API (FastAPI + EfficientNet-B4)
   và RAG/Ollama chạy local, còn thiếu LangGraph và endpoint RAG trong FastAPI.
 - [ ] Nối HTTP client backend ↔ AI Service theo contract API.
-- [ ] Khớp dữ liệu CV chẩn đoán: đã có danh mục 38 `class_name` làm mã Disease, nhưng
-  Vision API vẫn trả `disease_code`/`disease_name_vi` là `null`.
+- [x] Khớp dữ liệu CV chẩn đoán: đã chuẩn hóa Vision API trả `disease_code` và `disease_name` tiếng Việt khớp 1:1 với `Disease.code` trong DB.
 - [ ] Tích hợp LLM sinh khuyến nghị vào spine flow thật; hiện backend vẫn dùng template.
 
 #### Phần AI/data/RAG đã có trên `feature/make-data`

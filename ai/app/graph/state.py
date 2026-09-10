@@ -32,3 +32,14 @@ class FarmState(TypedDict, total=False):
     db: Any  # SQLAlchemy Session, injected by FastAPI endpoint
     rag_question: Optional[str]
     rag_top_k: Optional[int]
+    approval_reason: Optional[str]
+    selected_rule_id: Optional[str]
+    approved_dose: Optional[float]
+    applied_at: Any
+    errors: List[str]
+    vision_tool: Any
+    approval_reason: Optional[str]
+    selected_rule_id: Optional[str]
+    approved_dose: Optional[float]
+    applied_at: Any
+    errors: List[str]

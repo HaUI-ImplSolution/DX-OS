@@ -1,4 +1,11 @@
-# SPDX-License-Identifier: Apache-2.0
-# Human-in-the-loop: chờ kỹ sư APPROVE hoặc REJECT. Trạng thái: PENDING -> APPROVED | REJECTED.
-# TODO: Implement node logic
+from typing import Any, Dict
+from app.graph.state import FarmState
 
+def engineer_approval(state: FarmState) -> Dict[str, Any]:
+    status = state.get("approval_status", "PENDING")
+    if status not in {"PENDING", "APPROVED", "REJECTED"}:
+        raise ValueError("approval_status must be PENDING, APPROVED, or REJECTED")
+    if status == "REJECTED" and not state.get("approval_reason"):
+        raise ValueError("approval_reason is required for REJECTED")
+    state["approval_status"] = status
+    return state

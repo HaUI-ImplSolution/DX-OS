@@ -14,5 +14,8 @@ def resolve_request(state: FarmState) -> Dict[str, Any]:
     Returns:
         The unchanged state.
     """
+    if not state.get("request_id"): raise ValueError("request_id is required")
+    if not state.get("image_ref"): raise ValueError("image_ref is required")
+    if not state.get("parcel_code") and not state.get("crop_season_id"): raise ValueError("parcel_code or crop_season_id is required")
+    state.setdefault("approval_status", "PENDING")
     return state
-

@@ -67,6 +67,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
 - **Task A3 (CV Contract alignment)**: Bổ sung từ điển tên bệnh tiếng Việt `DISEASE_NAMES_VI` và hàm helper `get_disease_name()` trong `app/cv/class_names.py` cho 38/38 lớp bệnh PlantVillage. Đổi tên trường `disease_name_vi` → `disease_name` trong Pydantic schema `DiseaseDetectionResponse` (`app/api/schemas.py`) và output của service để khớp hoàn toàn với CV Contract trong `AI_README_LangGraph_MVP.md`.
 - **Task A5 (Test suite ảnh thật & API router)**: Thêm bộ test `tests/cv/test_plant_disease_service.py` kiểm thử luồng chẩn đoán với ảnh thật `tomato_leaf.jpg`, mock model và FastAPI endpoint `/disease/predict` thông qua `TestClient`. Đã chạy 8/8 unit tests thành công 100%.
 
+- **Partial CV handoff implementation**: Updated response schema, health endpoint, device fallback, inference timing, and generated `class_contract.json`. Remaining tasks: implement structured JSON error responses (`CVErrorResponse`), create `example_response.json`, export OpenAPI (`cv_openapi.json`), write `app/cv/README.md`, add smoke test script, and add unit tests for health endpoint, error contracts, and class contract.
 **Đã xong — chuẩn hóa cấu trúc module AI theo tài liệu LangGraph MVP:**
 
 - Tổ chức thống nhất code trong `ai/app`: tách rõ `api`, `core`, `cv`, `db`, `rag`,

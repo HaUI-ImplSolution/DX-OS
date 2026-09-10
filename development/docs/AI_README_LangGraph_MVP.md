@@ -680,8 +680,8 @@ PHI lock
 - [ ] CV result được lưu thành `Diagnosis`.
 - [ ] `Disease.code` map đúng với CV class.
 - [ ] Lookup `TreatmentRule / Pesticide` deterministic.
-- [ ] RAG retrieve được context liên quan.
-- [ ] LLM sinh recommendation từ context đã cung cấp.
+- [x] RAG retrieve được context liên quan.
+- [x] LLM sinh recommendation từ context đã cung cấp.
 - [ ] Có trạng thái `APPROVE / REJECT`.
 - [ ] Phân biệt `APPROVED` và `APPLIED`.
 - [ ] Khi `APPLIED`, lưu `TreatmentApplication`.

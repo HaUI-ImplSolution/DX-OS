@@ -4,7 +4,7 @@ import torch
 from PIL import Image
 
 from app.core.config import Settings, get_settings
-from app.cv.class_names import CLASS_NAMES
+from app.cv.class_names import CLASS_NAMES, get_disease_name
 
 
 class PlantDiseaseService:
@@ -36,11 +36,14 @@ class PlantDiseaseService:
         predicted_class = probabilities.argmax(dim=1).item()
         confidence = probabilities[0, predicted_class].item()
 
+        disease_code = CLASS_NAMES[predicted_class]
+        disease_name = get_disease_name(disease_code)
+
         return {
             "class_id": predicted_class,
-            "class_name": CLASS_NAMES[predicted_class],
-            "disease_code": None,
-            "disease_name_vi": None,
+            "class_name": disease_code,
+            "disease_code": disease_code,
+            "disease_name": disease_name,
             "confidence": round(confidence, 3),
             "model_name": self.settings.cv_model_name,
             "model_version": self.settings.cv_model_version,

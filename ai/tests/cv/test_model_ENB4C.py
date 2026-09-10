@@ -23,6 +23,9 @@ def test_class_names_contains_tomato_classes():
 class FakeModel:
     """Small fake model returning deterministic logits."""
 
+    def eval(self):
+        return self
+
     def __call__(self, x):
         output = torch.zeros((x.shape[0], 38))
 

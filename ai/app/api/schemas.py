@@ -4,8 +4,8 @@ from pydantic import BaseModel, Field
 class DiseaseDetectionResponse(BaseModel):
     class_id: int = Field(..., description="ID của bệnh theo model")
     class_name: str = Field(..., description="Tên bệnh nguyên bản từ model")
-    disease_code: str | None = Field(None, description="Mã bệnh")
-    disease_name_vi: str | None = Field(
+    disease_code: str = Field(..., description="Mã bệnh (khớp với Disease.code trong DB)")
+    disease_name: str | None = Field(
         None,
         description="Tên bệnh bằng tiếng Việt",
     )

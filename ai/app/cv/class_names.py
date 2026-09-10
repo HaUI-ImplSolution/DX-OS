@@ -38,3 +38,50 @@ CLASS_NAMES = {
     36: "Tomato___Tomato_mosaic_virus",
     37: "Tomato___healthy",
 }
+
+DISEASE_NAMES_VI = {
+    "Apple___Apple_scab": "Bệnh ghẻ táo",
+    "Apple___Black_rot": "Bệnh thối đen trên táo",
+    "Apple___Cedar_apple_rust": "Bệnh gỉ sắt tuyết tùng trên táo",
+    "Apple___healthy": "Không phát hiện bệnh thuộc lớp CV (healthy)",
+    "Blueberry___healthy": "Không phát hiện bệnh thuộc lớp CV (healthy)",
+    "Cherry_(including_sour)___Powdery_mildew": "Bệnh phấn trắng trên anh đào",
+    "Cherry_(including_sour)___healthy": "Không phát hiện bệnh thuộc lớp CV (healthy)",
+    "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot": "Bệnh đốm lá Cercospora / đốm lá xám trên ngô",
+    "Corn_(maize)___Common_rust_": "Bệnh gỉ sắt thông thường trên ngô",
+    "Corn_(maize)__Common_rust": "Bệnh gỉ sắt thông thường trên ngô",
+    "Corn_(maize)___Northern_Leaf_Blight": "Bệnh cháy lá phương Bắc trên ngô",
+    "Corn_(maize)___healthy": "Không phát hiện bệnh thuộc lớp CV (healthy)",
+    "Grape___Black_rot": "Bệnh thối đen trên nho",
+    "Grape___Esca_(Black_Measles)": "Bệnh Esca (sởi đen) trên nho",
+    "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)": "Bệnh cháy lá / đốm lá Isariopsis trên nho",
+    "Grape___healthy": "Không phát hiện bệnh thuộc lớp CV (healthy)",
+    "Orange___Haunglongbing_(Citrus_greening)": "Bệnh vàng lá gân xanh (Greening) trên cam",
+    "Peach___Bacterial_spot": "Bệnh đốm vi khuẩn trên đào",
+    "Peach___healthy": "Không phát hiện bệnh thuộc lớp CV (healthy)",
+    "Pepper,_bell___Bacterial_spot": "Bệnh đốm vi khuẩn trên ớt chuông",
+    "Pepper,_bell___healthy": "Không phát hiện bệnh thuộc lớp CV (healthy)",
+    "Potato___Early_blight": "Bệnh cháy lá sớm trên khoai tây",
+    "Potato___Late_blight": "Bệnh cháy lá muộn trên khoai tây",
+    "Potato___healthy": "Không phát hiện bệnh thuộc lớp CV (healthy)",
+    "Raspberry___healthy": "Không phát hiện bệnh thuộc lớp CV (healthy)",
+    "Soybean___healthy": "Không phát hiện bệnh thuộc lớp CV (healthy)",
+    "Squash___Powdery_mildew": "Bệnh phấn trắng trên bí",
+    "Strawberry___Leaf_scorch": "Bệnh cháy lá trên dâu tây",
+    "Strawberry___healthy": "Không phát hiện bệnh thuộc lớp CV (healthy)",
+    "Tomato___Bacterial_spot": "Bệnh đốm vi khuẩn trên cà chua",
+    "Tomato___Early_blight": "Bệnh cháy lá sớm trên cà chua",
+    "Tomato___Late_blight": "Bệnh cháy lá muộn trên cà chua",
+    "Tomato___Leaf_Mold": "Bệnh mốc lá trên cà chua",
+    "Tomato___Septoria_leaf_spot": "Bệnh đốm lá Septoria trên cà chua",
+    "Tomato___Spider_mites Two-spotted_spider_mite": "Bệnh do nhện đỏ hai chấm trên cà chua",
+    "Tomato___Target_Spot": "Bệnh đốm vòng / đốm mục tiêu trên cà chua",
+    "Tomato___Tomato_Yellow_Leaf_Curl_Virus": "Bệnh virus xoăn vàng lá cà chua",
+    "Tomato___Tomato_mosaic_virus": "Bệnh virus khảm cà chua",
+    "Tomato___healthy": "Không phát hiện bệnh thuộc lớp CV (healthy)",
+}
+
+
+def get_disease_name(disease_code: str) -> str | None:
+    """Return Vietnamese disease name for a given disease_code."""
+    return DISEASE_NAMES_VI.get(disease_code)

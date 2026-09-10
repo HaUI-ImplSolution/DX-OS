@@ -25,6 +25,8 @@ export interface Parcel {
   farmerName: string;
   areaHectares: number;
   location: string | null;
+  latitude: number | null;
+  longitude: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -34,6 +36,8 @@ export interface ParcelCreateRequest {
   farmerName: string;
   areaHectares: number;
   location?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export type CropSeasonStatus = "ACTIVE" | "HARVESTED";

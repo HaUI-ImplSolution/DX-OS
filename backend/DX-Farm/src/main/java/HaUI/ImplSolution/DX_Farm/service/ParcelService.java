@@ -30,7 +30,8 @@ public class ParcelService {
   @Transactional
   public ParcelResponse create(ParcelCreateRequest request) {
     Parcel parcel = Parcel.builder().code(request.code()).farmerName(request.farmerName())
-        .areaHectares(request.areaHectares()).location(request.location()).build();
+        .areaHectares(request.areaHectares()).location(request.location())
+        .latitude(request.latitude()).longitude(request.longitude()).build();
     return toResponse(parcelRepository.save(parcel));
   }
 
@@ -41,7 +42,7 @@ public class ParcelService {
 
   private static ParcelResponse toResponse(Parcel parcel) {
     return new ParcelResponse(parcel.getId(), parcel.getCode(), parcel.getFarmerName(),
-        parcel.getAreaHectares(), parcel.getLocation(), parcel.getCreatedAt(),
-        parcel.getUpdatedAt());
+        parcel.getAreaHectares(), parcel.getLocation(), parcel.getLatitude(), parcel.getLongitude(),
+        parcel.getCreatedAt(), parcel.getUpdatedAt());
   }
 }

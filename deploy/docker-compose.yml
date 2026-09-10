@@ -34,6 +34,7 @@ services:
       JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
       SUPER_ADMIN_USERNAME: ${SUPER_ADMIN_USERNAME:-admin}
       SUPER_ADMIN_PASSWORD: ${SUPER_ADMIN_PASSWORD}
+      SUPERSET_RO_PASSWORD: ${SUPERSET_RO_PASSWORD:-superset_ro_demo_only}
     volumes:
       - ./data/uploads:/app/uploads
     ports:
@@ -47,3 +48,26 @@ services:
       - backend
     ports:
       - "${FRONTEND_PORT:-8082}:80"
+
+  superset:
+    image: apache/superset:3.1.3
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    environment:
+      SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY}
+      SUPERSET_ADMIN_USERNAME: ${SUPERSET_ADMIN_USERNAME:-admin}
+      SUPERSET_ADMIN_PASSWORD: ${SUPERSET_ADMIN_PASSWORD}
+      SUPERSET_ADMIN_EMAIL: ${SUPERSET_ADMIN_EMAIL:-admin@dxfarm.local}
+      # Role superset_ro (backend tự tạo lúc khởi động) chỉ có quyền SELECT.
+      DXFARM_DB_URI: postgresql+psycopg2://superset_ro:${SUPERSET_RO_PASSWORD:-superset_ro_demo_only}@postgres:5432/${POSTGRES_DB:-dxfarm}
+    volumes:
+      - ../bi/bootstrap.sh:/app/pythonpath/bootstrap.sh:ro
+      - ../bi/bootstrap_datasources.py:/app/pythonpath/bootstrap_datasources.py:ro
+      - ../bi/dxfarm_dashboard_export.zip:/app/pythonpath/dxfarm_dashboard_export.zip:ro
+      - ./data/superset:/app/superset_home
+    entrypoint: ["/bin/bash", "/app/pythonpath/bootstrap.sh"]
+    ports:
+      - "${SUPERSET_PORT:-8088}:8088"

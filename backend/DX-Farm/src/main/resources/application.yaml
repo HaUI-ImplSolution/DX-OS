@@ -50,6 +50,11 @@ admin:
     username: ${SUPER_ADMIN_USERNAME:admin}
     password: ${SUPER_ADMIN_PASSWORD}
 
+superset:
+  readonly:
+    # Mật khẩu role Postgres chỉ-đọc cho BI dashboard. Xem SupersetReadOnlyRoleSeeder.
+    password: ${SUPERSET_RO_PASSWORD:superset_demo}
+
 logging:
   level:
     HaUI.ImplSolution.DX_Farm: DEBUG

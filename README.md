@@ -58,7 +58,7 @@ Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot
 - [x] M7 — Trả lời được câu hỏi kiểu "ruộng này còn cách ly không?" bằng SQL context
 - [ ] M8 — RAG trả lời có trích nguồn từ ít nhất một bộ tài liệu VietGAP/IRRI đã ingest (pgvector)
 - [ ] Frontend low-code thật cho nông hộ (ToolJet/Appsmith) thay vì gọi API tay
-ranch is up to date with 'o
+
 ### Giai đoạn 2 — Lấp đầy đủ 4 không gian H-P-D-I
 
 Đây là phần **cần bổ sung so với bản đề xuất thống nhất hiện tại**, vì đề bài OLP yêu cầu tường minh đủ 4 nhóm công cụ:
@@ -71,8 +71,9 @@ ranch is up to date with 'o
     docker-compose, để sau này có thêm app khác (Mattermost, BI dashboard) thì đăng nhập 1 lần
     dùng chung được, thay vì mỗi app một tài khoản như hiện tại
   - [ ] Kênh chat nội bộ (Mattermost) — chưa bắt đầu
-- [ ] **[D]** Một dashboard BI tối thiểu (Superset/Metabase) hiển thị bản đồ/trạng thái thửa ruộng cho Ban quản trị — không dừng ở truy vấn SQL thuần
-- [ ] Rà lại license mọi thành phần open-core trước khi khoá stack (xem mục PoF bên dưới)
+- [x] **[D]** Dashboard BI (Apache Superset) hiển thị bản đồ/trạng thái thửa ruộng cho Ban quản trị, tự bootstrap qua docker-compose.
+  Chi tiết: [`bi/README.md`](./bi/README.md).
+- [x] Rà lại license mọi thành phần open-core trước khi khoá stack (xem mục PoF bên dưới) — xem [`LICENSES.md`](./LICENSES.md).
 
 ### Giai đoạn 3 — Chiều sâu (Later, sau khi Giai đoạn 0-2 chạy ổn)
 
@@ -91,7 +92,8 @@ Một PostgreSQL vật lý, ba nguồn logic:
 ## Điểm cần lưu ý cho tiêu chí PoF (50/100 điểm, mang tính loại trừ)
 
 - Giấy phép mọi thành phần phải **OSI-approved**; đã loại Llama (không đạt chuẩn OSD), chọn Qwen2.5-1.5B-Instruct (Apache-2.0).
-- ⚠️ **n8n Community Edition dùng Sustainable Use License — không phải OSI-approved.** Nếu còn dùng n8n trong stack, đây là rủi ro trừ điểm PoF nghiêm trọng cần xử lý trước khi khoá kiến trúc (ưu tiên: giữ LangGraph làm orchestrator chính, cân nhắc bỏ hẳn n8n hoặc thay bằng công cụ OSI-approved khác).
+- ✅ Không dùng n8n (Sustainable Use License, không OSI-approved) — LangGraph (Apache-2.0) là orchestrator.
+  Rà soát license đầy đủ từng thành phần: [`LICENSES.md`](./LICENSES.md).
 - Mã nguồn tự viết: SPDX header `Apache-2.0` ở đầu mỗi file, kèm `LICENSE` toàn văn ở gốc repo.
 - Source control phải public, có web viewer.
 - Phải build/cài đặt được từ source; khuyến khích Docker.
@@ -102,7 +104,7 @@ Một PostgreSQL vật lý, ba nguồn logic:
 ## Việc cần chốt cùng Lead trước khi chia task
 
 - [x] Phạm vi demo: chỉ spine flow (Giai đoạn 0) hay bao gồm cả [H]/[D] tối thiểu (Giai đoạn 2)?
-- [ ] Quyết định dứt khoát về n8n (giữ/bỏ) vì lý do license
+- [x] Quyết định dứt khoát về n8n (giữ/bỏ) vì lý do license — đã bỏ, xem `LICENSES.md`
 - [ ] Schema operational + structured knowledge (entity, field bắt buộc)
 - [ ] Contract `vision-api` (request/response JSON)
 - [ ] Contract giữa backend Spring Boot và AI Service Python (REST, base URL, timeout/retry, ai-service base URL cấu hình ở đâu)
@@ -121,7 +123,7 @@ Backend Spring Boot đã xong, có đăng nhập JWT + phân quyền FARMER/ENGI
 
 ```bash
 cd deploy
-cp .env.example .env      # chỉnh lại nếu cần, đặc biệt JWT_SECRET và SUPER_ADMIN_PASSWORD
+cp .env.example .env      # chỉnh lại nếu cần, đặc biệt JWT_SECRET, SUPER_ADMIN_PASSWORD, SUPERSET_*
 docker compose up -d --build
 ```
 
@@ -132,6 +134,8 @@ docker compose up -d --build
   curl) để tạo thêm tài khoản `ENGINEER`/`FARMER`.
 - Backend (Swagger/debug trực tiếp): http://localhost:8081/swagger-ui.html — bấm "Authorize"
   và dán JWT lấy từ `POST /api/v1/auth/login` để gọi thử các API cần đăng nhập.
+- BI dashboard (Apache Superset): http://localhost:8088, đăng nhập bằng `SUPERSET_ADMIN_USERNAME`/`SUPERSET_ADMIN_PASSWORD` — dashboard mẫu tự có sẵn, không cần thao tác thêm.
+  Chi tiết: [`bi/README.md`](./bi/README.md).
 - Dữ liệu Postgres + ảnh upload được lưu ở `deploy/data/` (bind mount, không mất khi
   `docker compose down`; dùng `down -v` hoặc xoá thư mục nếu muốn làm sạch từ đầu)
 - Dừng: `docker compose down` (chạy trong thư mục `deploy`)

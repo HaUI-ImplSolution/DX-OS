@@ -45,6 +45,13 @@ public class Parcel {
   // Vị trí/địa chỉ thửa ruộng
   private String location;
 
+  // Toạ độ GPS (tuỳ chọn)
+  @Column(precision = 9, scale = 6)
+  private BigDecimal latitude;
+
+  @Column(precision = 9, scale = 6)
+  private BigDecimal longitude;
+
   // Thời điểm tạo bản ghi
   @CreationTimestamp
   @Column(nullable = false, updatable = false)

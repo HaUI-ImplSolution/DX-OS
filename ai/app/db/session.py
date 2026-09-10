@@ -1,12 +1,12 @@
-import os
+from collections.abc import Generator
 
-from dotenv import load_dotenv
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 
-load_dotenv()
+from app.core.config import get_settings
 
-DATABASE_URL = os.getenv("DATABASE_URL")  # load from env
+settings = get_settings()
+DATABASE_URL = settings.database_url
 
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL is not configured")
@@ -21,3 +21,13 @@ SessionLocal = sessionmaker(
     autoflush=False,
     autocommit=False,
 )
+
+
+def get_db() -> Generator[Session, None, None]:
+    """Provide one SQLAlchemy session per FastAPI request."""
+
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

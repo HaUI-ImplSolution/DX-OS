@@ -1,15 +1,13 @@
 import json
 from pathlib import Path
 
-from app.db.models.disease import Disease
-from app.db.session import SessionLocal
 from sqlalchemy import select
 
+from app.db.models.disease import Disease
+from app.db.session import SessionLocal
+
 DATA_FILE = (
-    Path(__file__).resolve().parents[1]
-    / "data"
-    / "structured"
-    / "diseases.json"
+    Path(__file__).resolve().parents[1] / "data" / "structured" / "diseases.json"
 )
 
 
@@ -21,11 +19,7 @@ def seed_diseases():
 
     try:
         for item in diseases_data:
-            existing = db.scalar(
-                select(Disease).where(
-                    Disease.code == item["code"]
-                )
-            )
+            existing = db.scalar(select(Disease).where(Disease.code == item["code"]))
 
             if existing:
                 print(f"Skip: {item['code']}")

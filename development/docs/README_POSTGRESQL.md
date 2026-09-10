@@ -72,7 +72,13 @@ python -m pip install -r requirements.txt
 
 Các lệnh trong tài liệu dùng virtualenv `ai/venv`. Nếu đã có virtualenv ở vị trí khác (ví dụ `venv` tại gốc repo), hãy kích hoạt đúng môi trường đó rồi vẫn chạy các lệnh Alembic từ thư mục `ai`.
 
-Tạo file `ai/.env` với nội dung sau nếu đang dùng cấu hình PostgreSQL mặc định:
+Tạo cấu hình AI local từ file mẫu:
+
+```bash
+cp .env.example .env
+```
+
+Nếu đang dùng cấu hình PostgreSQL mặc định, kiểm tra `ai/.env` có dòng:
 
 ```dotenv
 DATABASE_URL=postgresql+psycopg://dxfarm:dxfarm@localhost:5432/dxfarm
@@ -217,9 +223,9 @@ python -m alembic downgrade 9700136d7e00
 Sau khi database đã ở `head`, chạy từ thư mục `ai`:
 
 ```bash
-python -m app.data_import.seed_diseases
-python -m app.rag.ingest_diseases --dry-run --limit 3
-python -m app.rag.ingest_diseases
+python -m scripts.seed_diseases
+python -m scripts.ingest_diseases --dry-run --limit 3
+python -m scripts.ingest_diseases
 ```
 
 - `seed_diseases` nạp danh mục bệnh có cấu trúc và bỏ qua mã đã tồn tại.
@@ -296,7 +302,7 @@ python -m pip install -r requirements.txt
 # Tạo ai/.env với DATABASE_URL như mục 4
 python -m alembic upgrade head
 python -m alembic current
-python -m app.data_import.seed_diseases
+python -m scripts.seed_diseases
 ```
 
 Khi `alembic current` hiển thị head và có thể truy vấn bảng bằng `psql`, môi trường PostgreSQL local đã sẵn sàng.

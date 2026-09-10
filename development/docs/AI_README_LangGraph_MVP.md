@@ -101,7 +101,7 @@ APPROVED != APPLIED
 
 ---
 
-## 3. Cấu trúc thư mục `ai/` (đã refactor — 2026-09-09)
+## 3. Cấu trúc thư mục `ai/` (đã refactor — 2026-09-10)
 
 > Cấu trúc dưới đây phản ánh trạng thái **thực tế** sau refactor.
 > Các thư mục đánh dấu `[SKELETON]` đã được tạo với file stub, chờ implement logic.
@@ -113,9 +113,9 @@ ai/
 │   │
 │   ├── main.py                 # Entrypoint: tạo FastAPI app, đăng ký router
 │   │
-│   ├── core/                   # [SKELETON] Config & infrastructure tập trung
-│   │   ├── config.py           #   Settings từ .env (DATABASE_URL, OLLAMA_*, CV_*)
-│   │   └── lifespan.py         #   FastAPI lifespan: load/unload CV model khi startup/shutdown
+│   ├── core/                   # Config & infrastructure tập trung
+│   │   ├── config.py           #   Settings tập trung từ .env (DATABASE_URL, OLLAMA_*, CV_*)
+│   │   └── lifespan.py         #   FastAPI lifespan: load/unload CV model một lần
 │   │
 │   ├── api/                    # HTTP layer — CHỈ định nghĩa router và schemas
 │   │   ├── router.py           #   Aggregate router, include sub-routers
@@ -206,7 +206,7 @@ ai/
 │   ├── seed_diseases.py        #   Seed 38 bản ghi Disease vào DB từ diseases.json
 │   └── ingest_diseases.py      #   Ingest disease knowledge vào pgvector (hỗ trợ --dry-run)
 │
-├── tests/                      # Automated tests (pytest)
+├── tests/                      # Unit tests (pytest) và RAG smoke checks
 │   ├── cv/
 │   │   └── test_model_ENB4C.py #   Test CLASS_NAMES mapping (38 classes), model output shape
 │   └── rag/
@@ -218,7 +218,8 @@ ai/
 │   └── best_model.pth          #   EfficientNet-B4 weights (auto-download từ HuggingFace nếu thiếu)
 │                               #   ⚠ Không commit lên git (kích thước lớn)
 │
-├── .env                        # Biến môi trường local (DATABASE_URL, OLLAMA_BASE_URL, ...)
+├── .env.example                # Mẫu biến môi trường được phép commit
+├── .env                        # Biến môi trường local (không commit)
 ├── alembic.ini                 # Alembic config — trỏ tới migrations/
 └── requirements.txt            # Python dependencies
 ```

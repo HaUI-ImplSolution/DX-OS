@@ -59,6 +59,29 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
 
 ## AI Service (Python)
 
+### 2026-09-10
+
+**Đã xong — chuẩn hóa cấu trúc module AI theo tài liệu LangGraph MVP:**
+
+- Tổ chức thống nhất code trong `ai/app`: tách rõ `api`, `core`, `cv`, `db`, `rag`,
+  `services` và khung `graph`; chuyển CLI seed/ingest sang `ai/scripts`, test sang
+  `ai/tests/cv` và `ai/tests/rag`.
+- Hoàn thiện cấu hình tập trung bằng `pydantic-settings`, thêm `ai/.env.example`, tách
+  FastAPI lifespan khỏi `main.py` và cố định đường dẫn model tại `ai/weights`.
+- Giảm coupling package CV: import class mapping không còn tự kéo theo `torchvision` hoặc
+  model loader; FastAPI có thể import mà chưa tải weights, model chỉ được load trong lifespan.
+- Bổ sung `get_db()` cho FastAPI dependency; bỏ `app/db/init_db.py` dùng `create_all()` để
+  Alembic tiếp tục là luồng quản lý schema được hướng dẫn chính thức.
+- Cập nhật tài liệu PostgreSQL theo entrypoint mới: `python -m scripts.seed_diseases` và
+  `python -m scripts.ingest_diseases`.
+- Đã xác minh: 5 test CV đạt, RAG dry-run đọc đủ 38 tài liệu, Alembic head vẫn là
+  `4c2a0f9d8b71`; compile/lint phạm vi refactor đạt.
+
+**Chưa làm:**
+
+- `ai/app/graph` mới là skeleton theo tài liệu; chưa implement LangGraph state/nodes/tools,
+  human interrupt hoặc nối RAG vào FastAPI endpoint.
+
 ### 2026-09-09
 
 **Đã xong trên `feature/make-data` — nền tảng dữ liệu và RAG prototype chạy local:**

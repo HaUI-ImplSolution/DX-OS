@@ -1,20 +1,22 @@
-# ai/app/rag/rag_service.py
-
-from app.rag.prompt_builder import build_rag_prompt
-from app.rag.retriever import RAGRetriever
 from langchain_ollama import ChatOllama
 from sqlalchemy.orm import Session
+
+from app.core.config import get_settings
+from app.rag.prompt_builder import build_rag_prompt
+from app.rag.retriever import RAGRetriever
 
 
 class RAGService:
     def __init__(
         self,
-        model_name: str = "qwen2.5:1.5b",
+        model_name: str | None = None,
+        base_url: str | None = None,
     ):
+        settings = get_settings()
         self.retriever = RAGRetriever()
-
         self.llm = ChatOllama(
-            model=model_name,
+            model=model_name or settings.ollama_model,
+            base_url=base_url or settings.ollama_base_url,
             temperature=0,
         )
 
@@ -24,18 +26,15 @@ class RAGService:
         question: str,
         top_k: int = 3,
     ) -> dict:
-
         contexts = self.retriever.retrieve(
             db=db,
             query=question,
             top_k=top_k,
         )
-
         prompt = build_rag_prompt(
             question=question,
             contexts=contexts,
         )
-
         response = self.llm.invoke(prompt)
 
         return {

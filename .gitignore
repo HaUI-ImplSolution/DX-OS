@@ -72,6 +72,10 @@ deploy/data/
 .idea/
 .vscode/
 
+# Office temporary and lock files
+.~lock.*#
+~$*
+
 # Operating-system metadata
 .DS_Store
 Thumbs.db

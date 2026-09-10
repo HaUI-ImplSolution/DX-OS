@@ -1,12 +1,13 @@
-# ai/app/rag/embedding_service.py
-
 from sentence_transformers import SentenceTransformer
+
+from app.core.config import get_settings
 
 
 class EmbeddingService:
-    def __init__(self):
+    def __init__(self, model_name: str | None = None):
+        settings = get_settings()
         self.model = SentenceTransformer(
-            "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+            model_name or settings.embedding_model,
         )
 
     def embed_text(self, text: str) -> list[float]:
@@ -14,7 +15,6 @@ class EmbeddingService:
             text,
             normalize_embeddings=True,
         )
-
         return vector.tolist()
 
     def embed_texts(
@@ -25,5 +25,4 @@ class EmbeddingService:
             texts,
             normalize_embeddings=True,
         )
-
         return vectors.tolist()

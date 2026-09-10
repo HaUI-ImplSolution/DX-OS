@@ -1,5 +1,79 @@
 # SPDX-License-Identifier: Apache-2.0
-# TODO: Build và compile LangGraph StateGraph cho DX-Farm spine flow.
+"""Minimal LangGraph construction for DX‑Farm MVP.
+
+We only build the nodes that have concrete implementations (the ones we need for the
+spine flow). Nodes that are still TODO are kept as placeholders – they will be
+executed but simply return the received state.
+"""
+
+from typing import Callable
+
+from langgraph.graph import StateGraph, END
+
+from app.graph.state import FarmState  # type: ignore
+from app.graph.nodes import (
+    resolve_request,
+    cv_diagnosis,
+    load_field_context,
+    treatment_lookup,
+    retrieve_knowledge,
+    generate_recommendation,
+    engineer_approval,
+    record_treatment,
+    reject_case,
+)
+
+
+def _passthrough(state: FarmState) -> FarmState:
+    """Placeholder for nodes that are not yet implemented.
+    They simply return the state unchanged so the graph can run.
+    """
+    return state
+
+
+def build_graph() -> Callable[[FarmState], FarmState]:
+    """Construct and compile the StateGraph.
+
+    Returns a callable that takes an initial ``FarmState`` and returns the final
+    state after traversing the graph.
+    """
+    builder = StateGraph(FarmState)
+    # Register nodes – use actual implementation where available, otherwise a
+    # passthrough.
+    builder.add_node("resolve_request", resolve_request)
+    builder.add_node("cv_diagnosis", cv_diagnosis)
+    builder.add_node("load_field_context", load_field_context)
+    builder.add_node("treatment_lookup", treatment_lookup)
+    builder.add_node("retrieve_knowledge", retrieve_knowledge)
+    builder.add_node("generate_recommendation", generate_recommendation)
+    builder.add_node("engineer_approval", engineer_approval)
+    builder.add_node("record_treatment", record_treatment)
+    builder.add_node("reject_case", reject_case)
+
+    # Entry point
+    builder.set_entry_point("resolve_request")
+
+    # Define edges – minimal linear flow plus conditional approvals.
+    builder.add_edge("resolve_request", "cv_diagnosis")
+    builder.add_edge("cv_diagnosis", "load_field_context")
+    builder.add_edge("load_field_context", "treatment_lookup")
+    builder.add_edge("treatment_lookup", "retrieve_knowledge")
+    builder.add_edge("retrieve_knowledge", "generate_recommendation")
+    builder.add_edge("generate_recommendation", "engineer_approval")
+    # Conditional branches from approval
+    builder.add_conditional_edges(
+        "engineer_approval",
+        lambda state: "record_treatment" if state.get("approval_status") == "APPROVED" else "reject_case",
+    )
+    builder.add_edge("record_treatment", END)
+    builder.add_edge("reject_case", END)
+
+    graph = builder.compile()
+    return graph
+
+# Pre‑compile graph for FastAPI reuse
+farm_graph = build_graph()
+
 #
 # Graph flow:
 #   START

@@ -1,33 +1,34 @@
 # SPDX-License-Identifier: Apache-2.0
-# TODO: Định nghĩa FarmState — state object duy nhất được truyền qua tất cả nodes của LangGraph.
-# State chỉ là dữ liệu TẠM THỜI của workflow, KHÔNG phải database.
-# Dữ liệu lâu dài phải được persist xuống PostgreSQL qua repositories.
-#
-# from typing import TypedDict, Optional
-#
-# class FarmState(TypedDict):
-#     # --- Input ---
-#     request_id: str           # ID duy nhất cho mỗi request
-#     actor_id: str             # ID của user thực hiện (từ JWT)
-#     actor_role: str           # FARMER | ENGINEER | ADMIN
-#     parcel_code: str          # Mã thửa ruộng
-#     crop_season_id: str       # ID vụ mùa hiện tại
-#     image_ref: str            # Path hoặc URL tới ảnh bệnh
-#
-#     # --- CV Step Output ---
-#     cv_result: Optional[dict]         # {disease_code, disease_name, confidence, model_name, model_version}
-#
-#     # --- Data Step Output ---
-#     field_context: Optional[dict]     # Parcel + CropSeason + Diagnosis + Treatment hiện tại
-#     treatment_rule: Optional[dict]    # Disease -> TreatmentRule -> Pesticide (deterministic lookup)
-#     rag_context: Optional[list]       # Danh sách context chunks từ pgvector
-#
-#     # --- LLM Step Output ---
-#     recommendation: Optional[str]    # Văn bản khuyến nghị do LLM sinh (chỉ diễn đạt facts)
-#
-#     # --- Approval State ---
-#     approval_status: Optional[str]    # PENDING | APPROVED | REJECTED
-#     application_status: Optional[str] # None | APPLIED
-#
-#     # --- Final Output ---
-#     response: Optional[dict]          # Kết quả trả về cho Backend Spring Boot
+"""TypedDict definition for LangGraph workflow state.
+Only the fields required for the minimal flow are defined. Additional fields
+can be added later without breaking existing code.
+"""
+
+from typing import TypedDict, Optional, List, Dict, Any
+
+
+class FarmState(TypedDict, total=False):
+    # Input fields
+    request_id: str
+    actor_id: str
+    actor_role: str
+    parcel_code: str
+    crop_season_id: str
+    image_ref: str
+    # CV output
+    cv_result: Optional[Dict[str, Any]]
+    # Data outputs
+    field_context: Optional[Dict[str, Any]]
+    treatment_rule: Optional[Dict[str, Any]]
+    rag_context: Optional[List[Dict[str, Any]]]
+    # LLM output
+    recommendation: Optional[str]
+    # Approval
+    approval_status: Optional[str]
+    application_status: Optional[str]
+    # Final response
+    response: Optional[Dict[str, Any]]
+    # Internal helpers
+    db: Any  # SQLAlchemy Session, injected by FastAPI endpoint
+    rag_question: Optional[str]
+    rag_top_k: Optional[int]

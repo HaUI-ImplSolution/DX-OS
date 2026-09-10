@@ -1,10 +1,49 @@
-from fastapi import APIRouter, File, HTTPException, Request, UploadFile
+from fastapi import APIRouter, File, HTTPException, Request, UploadFile, Depends
 from fastapi.responses import JSONResponse
 
 from app.api.schemas import DiseaseDetectionResponse, CVHealthResponse, CVErrorResponse
 from app.services.plant_disease_service import PlantDiseaseService
+from app.graph.graph import farm_graph
+from app.core.config import get_settings
+from app.db.session import get_db
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/disease", tags=["Disease Detection"])
+
+# Existing health and predict endpoints remain unchanged (omitted for brevity)
+# ... (lines 1-66 unchanged) 
+
+@router.post("/workflow/run", summary="Run full LangGraph workflow (minimal mode)")
+async def run_workflow(
+    request: Request,
+    db: Session = Depends(get_db),
+    payload: dict = None,
+) -> JSONResponse:
+    """Execute the DX‑Farm LangGraph spine flow.
+
+    The payload should contain the minimal fields required by the ``resolve_request``
+    node: ``request_id``, ``parcel_code``, ``crop_season_id``, ``image_ref``,
+    ``actor_id`` and ``actor_role``.
+    """
+    if payload is None:
+        payload = await request.json()
+    # Prepare initial state. ``db`` is injected so the retrieve_knowledge node can
+    # access the database. Additional keys can be added later.
+    initial_state = {
+        "request_id": payload.get("request_id"),
+        "parcel_code": payload.get("parcel_code"),
+        "crop_season_id": payload.get("crop_season_id"),
+        "image_ref": payload.get("image_ref"),
+        "actor_id": payload.get("actor_id"),
+        "actor_role": payload.get("actor_role"),
+        "db": db,
+    }
+    # Run the compiled graph – it returns the final state.
+    final_state = farm_graph.invoke(initial_state)
+    # Remove the raw DB session from the response for safety.
+    final_state.pop("db", None)
+    return JSONResponse(content=final_state)
+
 
 
 @router.get("/health", response_model=CVHealthResponse)

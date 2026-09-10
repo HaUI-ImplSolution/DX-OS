@@ -34,8 +34,12 @@ Không chọn Metabase (AGPL-3.0, copyleft mạnh hơn dù vẫn OSI-approved) �
 
 - **Bản đồ thửa ruộng** (deck.gl Scatterplot, dataset `parcels`) — vẽ điểm theo `latitude`/`longitude`.
   `Parcel` có thêm 2 cột toạ độ tuỳ chọn (xem backend `Parcel.java` + `ParcelPanel.tsx`) — chỉ thửa nào nhập toạ độ khi đăng ký mới lên bản đồ.
-  ⚠️ Chưa cấu hình `MAPBOX_API_KEY` nên nền bản đồ (basemap) chưa hiện, chỉ thấy các điểm trên nền trắng — điểm vẫn đúng vị trí tương đối.
-  Muốn có nền bản đồ thật: đăng ký token miễn phí tại mapbox.com, thêm biến môi trường `MAPBOX_API_KEY` vào service `superset` trong `deploy/docker-compose.yml`.
+  ⚠️ Cố tình không cấu hình nền bản đồ (basemap) — chỉ thấy các điểm trên nền trắng, điểm vẫn đúng vị trí tương đối. Đã cân nhắc và bỏ qua các phương án:
+  - **Mapbox**: cần API key + thẻ thanh toán; nhãn vùng biển ghi "South China Sea".
+  - **OpenStreetMap** (mọi renderer công khai: OSM Standard, CyclOSM, Humanitarian, OpenTopoMap): không cần key, nhưng dữ liệu OSM tại khu vực Hoàng Sa/Trường Sa gắn nhãn hành chính Trung Quốc ("西沙区"/"三沙市"/"南沙区") — vấn đề ở tầng dữ liệu OSM, đổi style không giải quyết được.
+  - **Google Maps**: nhãn đúng nhất ("quần đảo Hoàng Sa", "Biển Đông" theo tiếng Việt) nhưng Embed API tĩnh không gắn được marker động, còn JS API (gắn được marker) cần thẻ thanh toán + có ngưỡng free/tháng.
+  - Tự host vector tile riêng (lọc bỏ nhãn tranh chấp) giải quyết được nhưng là một dự án kỹ thuật riêng, không tương xứng quy mô demo.
+  Thửa ruộng thật nằm ở ĐBSCL, cách xa Hoàng Sa/Trường Sa — vấn đề nhãn chỉ lộ ra nếu người xem chủ động kéo bản đồ ra xa vùng dữ liệu.
 - **Vụ mùa theo trạng thái** (Pie, dataset `crop_seasons`) — tỉ lệ `ACTIVE`/`HARVESTED`.
 
 ## Build/sửa dashboard rồi cập nhật bundle

@@ -9,8 +9,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from ..base import Base
 
 if TYPE_CHECKING:
-    from .disease_report import DiseaseReport
     from .disease import Disease
+    from .disease_report import DiseaseReport
+
 
 class Diagnosis(Base):
     __tablename__ = "diagnoses"
@@ -45,14 +46,14 @@ class Diagnosis(Base):
         nullable=False,
     )
 
+    model_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+
     diagnosed_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=datetime.utcnow,
         nullable=False,
     )
 
-    disease_report: Mapped["DiseaseReport"] = relationship(
-        back_populates="diagnosis"
-    )
+    disease_report: Mapped["DiseaseReport"] = relationship(back_populates="diagnosis")
 
     disease: Mapped["Disease"] = relationship()

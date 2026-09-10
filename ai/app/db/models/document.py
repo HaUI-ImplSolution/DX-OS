@@ -41,6 +41,8 @@ class Document(Base):
         nullable=True,
     )
 
+    disease_code: Mapped[str | None] = mapped_column(String(100), index=True)
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=datetime.utcnow,

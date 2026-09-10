@@ -13,13 +13,13 @@ The function returns the updated state so downstream nodes can use the
 retrieved context.
 """
 
-from typing import Any, Dict
+from typing import Any
 
-from app.rag.retriever import RAGRetriever
 from app.graph.state import FarmState  # type: ignore
+from app.rag.retriever import RAGRetriever
 
 
-def retrieve_knowledge(state: FarmState) -> Dict[str, Any]:
+def retrieve_knowledge(state: FarmState) -> dict[str, Any]:
     """Retrieve knowledge chunks and attach them to the state.
 
     Args:
@@ -50,9 +50,13 @@ def retrieve_knowledge(state: FarmState) -> Dict[str, Any]:
         # Return an empty list so downstream nodes can still operate.
         contexts = []
     else:
-        contexts = retriever.retrieve(db=db, query=query, top_k=top_k)
+        contexts = retriever.retrieve(
+            db=db,
+            query=query,
+            top_k=top_k,
+            disease_code=(state.get("cv_result") or {}).get("disease_code"),
+        )
 
     # Store raw contexts for the next node
     state["rag_context"] = contexts
     return state
-

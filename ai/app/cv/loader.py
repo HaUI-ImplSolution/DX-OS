@@ -1,65 +1,50 @@
+# SPDX-License-Identifier: Apache-2.0
 import torch
 from huggingface_hub import hf_hub_download
 
 from app.core.config import Settings, get_settings
-from .classifier import EfficientNetB4Classifier
+from app.cv.class_names import CLASS_NAMES
+from app.cv.classifier import EfficientNetB4Classifier
 
 
 def download_model(settings: Settings | None = None) -> EfficientNetB4Classifier:
-    """Download the model weights (if needed) and return a ready‑to‑use EfficientNetB4 model.
-
-    The function respects ``settings.cv_device`` which can be ``"auto"`` (default), ``"cuda"`` or ``"cpu"``.
-    The chosen torch device is stored on the ``Settings`` instance as ``_chosen_device`` for later reference.
-    """
     settings = settings or get_settings()
     settings.weights_dir.mkdir(parents=True, exist_ok=True)
-
     if not settings.weights_path.exists():
-        print("Downloading model...")
         hf_hub_download(
             repo_id=settings.hf_repo_id,
             filename=settings.weights_filename,
             local_dir=settings.weights_dir,
         )
-    else:
-        print("Model already exists.")
-
-    checkpoint = torch.load(settings.weights_path, map_location="cpu")
-
-    model = EfficientNetB4Classifier(num_classes=settings.cv_num_classes, pretrained=False)
-    model.load_state_dict(checkpoint["model_state_dict"])
-    model.eval()
-
-    # Determine device
-    device_setting = settings.cv_device
-    if device_setting == "auto":
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    else:
-        device = torch.device(device_setting)
-
-    model.to(device)
-    # Store chosen device for later use (e.g., in health endpoint)
-    setattr(settings, "_chosen_device", device)
-    return model
-    settings = settings or get_settings()
-    settings.weights_dir.mkdir(parents=True, exist_ok=True)
-
-    if not settings.weights_path.exists():
-        print("Downloading model...")
-        hf_hub_download(
-            repo_id=settings.hf_repo_id,
-            filename=settings.weights_filename,
-            local_dir=settings.weights_dir,
-        )
-    else:
-        print("Model already exists.")
-
-    checkpoint = torch.load(settings.weights_path, map_location="cpu")
-
+    checkpoint = torch.load(
+        settings.weights_path, map_location="cpu", weights_only=True
+    )
+    config = checkpoint.get("config", {})
+    if (
+        config.get("data", {}).get("img_size", settings.cv_image_size)
+        != settings.cv_image_size
+    ):
+        raise ValueError("CV image size does not match checkpoint")
+    if (
+        config.get("model", {}).get("num_classes", settings.cv_num_classes)
+        != settings.cv_num_classes
+    ):
+        raise ValueError("CV class count does not match checkpoint")
+    if "class_to_idx" in checkpoint:
+        expected = {label: index for index, label in CLASS_NAMES.items()}
+        if checkpoint["class_to_idx"] != expected:
+            raise ValueError("Checkpoint class order does not match CV contract")
     model = EfficientNetB4Classifier(
-        num_classes=settings.cv_num_classes,
-        pretrained=False,
+        num_classes=settings.cv_num_classes, pretrained=False
     )
     model.load_state_dict(checkpoint["model_state_dict"])
-    model.eval()
+    device = torch.device(
+        "cuda"
+        if settings.cv_device == "auto" and torch.cuda.is_available()
+        else "cpu"
+        if settings.cv_device == "auto"
+        else settings.cv_device
+    )
+    model.to(device).eval()
+    settings._chosen_device = device
     return model

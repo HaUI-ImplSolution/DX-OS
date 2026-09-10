@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
 from app.db.models.document import Document
@@ -19,7 +19,7 @@ DATA_FILE = (
 )
 
 DOCUMENT_TYPE = "disease_knowledge"
-VERSION = "stage1-2026-09-09"
+VERSION = "stage7-rich-v1"
 REQUIRED_FIELDS = {
     "disease_code",
     "class_name_vi",
@@ -106,15 +106,28 @@ def preview_disease_knowledge() -> list[dict[str, Any]]:
 
 
 def ingest_disease_knowledge(db: Session) -> dict[str, int]:
+    """Replace the disease corpus atomically; retain unrelated document types."""
+    try:
+        return _ingest_disease_knowledge(db)
+    except Exception:
+        db.rollback()
+        raise
+
+
+def _ingest_disease_knowledge(db: Session) -> dict[str, int]:
     from app.rag.embedding_service import EmbeddingService
 
     diseases = load_disease_knowledge()
-    prepared = [(item, chunk_text(item["content"])) for item in diseases]
+    prepared = [
+        (item, list(dict.fromkeys(chunk_text(item["content"])))) for item in diseases
+    ]
     chunk_contents = [content for _, chunks in prepared for content in chunks]
 
     embedding_service = EmbeddingService()
     embeddings = iter(embedding_service.embed_texts(chunk_contents))
 
+    # Serialize replacements of this corpus, including simultaneous CLI runs.
+    db.execute(text("SELECT pg_advisory_xact_lock(674507)"))
     existing_documents = db.scalars(
         select(Document).where(Document.document_type == DOCUMENT_TYPE)
     ).all()
@@ -132,6 +145,7 @@ def ingest_disease_knowledge(db: Session) -> dict[str, int]:
             source=",".join(source_ids),
             document_type=DOCUMENT_TYPE,
             version=VERSION,
+            disease_code=item["disease_code"],
         )
         db.add(document)
         db.flush()

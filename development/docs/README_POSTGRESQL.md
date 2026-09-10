@@ -14,6 +14,7 @@ Tài liệu này hướng dẫn thành viên trong nhóm khởi động PostgreS
   - `4c2a0f9d8b71`: bật extension `vector`, tạo bảng `documents` và `document_chunks` cho RAG.
   - `c1f7e2d4a9b0`: đổi TreatmentRule sang `dose_min`/`dose_max`, tạo bảng
     `disease_management_policies`.
+  - `d6e7a1202601`: thêm `diagnoses.model_name` và `documents.disease_code`/index.
 
 > Không commit các file `.env` vì chúng chứa cấu hình và mật khẩu local.
 
@@ -109,7 +110,7 @@ python -m alembic history
 Kết quả `current` đúng ở thời điểm viết tài liệu phải chứa:
 
 ```text
-c1f7e2d4a9b0 (head)
+d6e7a1202601 (head)
 ```
 
 Sau khi migration thành công, có thể khởi động toàn bộ ứng dụng:
@@ -332,5 +333,25 @@ python -m scripts.seed_treatment_rules
 python -m scripts.seed_disease_management_policies
 ```
 
-Khi `alembic current` hiển thị `c1f7e2d4a9b0 (head)` và có thể truy vấn bảng bằng
+Khi `alembic current` hiển thị `d6e7a1202601 (head)` và có thể truy vấn bảng bằng
 `psql`, môi trường PostgreSQL local đã sẵn sàng.
+
+## Stage 6–7: kiểm tra sau migration và ingest
+
+Local đã xác minh head `d6e7a1202601`, 38 disease, 4 pesticide, 8 treatment rule,
+21 policy; RAG 38 document / 270 chunk. Máy khác vẫn cần migrate/seed/ingest theo
+cấu hình DB của mình; git pull không sao chép database hoặc model cache.
+
+Từ thư mục `ai`, sau khi seed structured data:
+
+```bash
+python -m alembic upgrade head
+python -m scripts.ingest_diseases --dry-run --limit 1
+python -m scripts.ingest_diseases
+```
+
+Lệnh cuối **chạy embedding thật và replace corpus disease_knowledge**; giữ document khác
+loại, đổi ID document/chunk. Không chạy nếu chỉ muốn đặt file data.
+
+Xem [CV handoff](../../ai/app/cv/README.md) để lưu chẩn đoán report đã tồn tại và
+[RAG handoff](../../ai/app/rag/README.md) để query disease_code/top_k.

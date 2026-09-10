@@ -259,8 +259,8 @@ Stage 3 thay thế/cập nhật như mục 3.2; các candidate Stage 1 vẫn ch�
 - Ở cuối Stage 1, `pesticides.json` và `treatment_rules.json` là mảng rỗng. Stage 3 chỉ
   promote tập con đã có quyết định review; nguyên tắc không seed dữ liệu HOLD vẫn giữ nguyên.
 - Pipeline ưu tiên ranh giới dòng và tách theo từ khi cần, tối đa 350 ký tự/chunk. Dry-run dự kiến
-  38 document và 270 chunk; cần chạy ingestion thật để thay dữ liệu cũ trong PostgreSQL.
-- Hiện còn một khác biệt mã CV/knowledge cần xử lý ở adapter:
+  38 document và 270 chunk; Stage 7 đã ingest thật và xác minh số lượng này.
+- Stage 6 đã xử lý khác biệt mã CV/knowledge bằng adapter:
   `Corn_(maize)___Common_rust_` (CV) và `Corn_(maize)__Common_rust` (dữ liệu). Không
   sửa chuỗi trong dữ liệu nguồn.
 
@@ -309,7 +309,7 @@ Stage 3 thay thế/cập nhật như mục 3.2; các candidate Stage 1 vẫn ch�
 - [x] Toàn bộ pytest đạt, gồm integration test tự chạy seeder hai lần.
 - [x] Repository đã sẵn sàng để node `treatment_lookup` của LangGraph gọi sau này.
 - [ ] LangGraph node/workflow chưa triển khai vì nằm ngoài phạm vi Stage 4/5.
-- [ ] RAG chưa re-ingest/embedding lại; chỉ cập nhật provenance registry.
+- [x] Stage 7 đã re-ingest thật: 38 document / 270 chunk, registry 41 nguồn.
 
 ---
 
@@ -965,8 +965,8 @@ Known issues:
 | 3 | Reviewed final MVP data | Tùng | DONE |
 | 4 | PostgreSQL schema & migration | Tùng | DONE |
 | 5 | Structured data seed & lookup | Tùng | DONE |
-| 6 | CV ↔ Data integration | Tùng + Khánh | WAITING |
-| 7 | RAG production-ready | Tùng | IN PROGRESS |
+| 6 | CV ↔ Data integration | Tùng + Khánh | IMPLEMENTED — pass local; còn xác minh artifact/venv trắng |
+| 7 | RAG production-ready | Tùng | DONE — MVP local |
 | 8 | LangGraph spine flow | Tùng | TODO |
 | 9 | HITL / APPLIED / PHI | Tùng | WAITING |
 | 10 | End-to-end demo hardening | Tùng + Khánh | WAITING |
@@ -1334,6 +1334,9 @@ Stage 6/8 nhận structured lookup service/repository.
 
 ## STAGE 6 — CV ↔ Data Integration
 
+> Đã triển khai và kiểm thử MVP local, gồm phần Khánh và Tùng. Không bao gồm
+> LangGraph Stage 8 hoặc đánh giá accuracy trên tập validation độc lập.
+
 ### Mục tiêu
 Nối output CV của Khánh với Disease/Diagnosis/Structured Knowledge của Tùng.
 
@@ -1352,11 +1355,13 @@ Nối output CV của Khánh với Disease/Diagnosis/Structured Knowledge của 
 }
 ```
 
-Khánh cần cung cấp:
+Đã cung cấp:
 
 ```text
 POST /api/v1/disease/predict
 GET /api/v1/disease/health
+GET /api/v1/disease/class-contract
+POST /api/v1/disease/reports/{report_id}/diagnose
 class_contract.json
 CV README
 CV tests
@@ -1373,32 +1378,42 @@ image
 -> TreatmentRule / Policy lookup
 ```
 
-Chưa cần LangGraph.
+Chưa cần LangGraph. Endpoint diagnose nhận image và report_id đã tồn tại; lưu Diagnosis
+cùng trạng thái ANALYZED atomically, report đã chẩn đoán trả 409, không tồn tại trả 404.
+Structured result yêu cầu kỹ sư duyệt, không tự áp dụng thuốc hoặc chọn actual_dose.
+Healthy/thiếu rule và policy trả review_required. Adapter chỉ đổi alias common rust,
+giữ nguyên dữ liệu nguồn. Confidence contract ở trên chỉ là ví dụ, không phải accuracy.
+
+Handoff: [CV README](../../ai/app/cv/README.md) và
+[class_contract.json](../../ai/data/structured/class_contract.json).
+Hai mục xác minh môi trường/artifact còn mở bên dưới không được coi là đã nghiệm thu.
 
 ### Checklist Khánh
 
 ```text
-[ ] Model load clean environment.
-[ ] 38 classes đúng thứ tự.
-[ ] disease_code canonical/unique.
-[ ] predict endpoint pass.
-[ ] health endpoint pass.
-[ ] invalid image không crash.
-[ ] confidence trong [0,1].
-[ ] model_name/version có.
-[ ] class_contract.json có.
-[ ] CV tests pass.
+[x] Model load/startup/shutdown bằng checkpoint thật qua lifespan trong venv local.
+[ ] Cài lại và xác minh từ venv trắng (chưa thực hiện).
+[x] 38 classes đúng thứ tự CLASS_NAMES và preprocessor.CLASSES; checkpoint đúng config/shape.
+[ ] Xác nhận thứ tự lớp độc lập từ artifact: checkpoint chưa có class_to_idx.
+[x] disease_code canonical/unique.
+[x] predict endpoint pass.
+[x] health endpoint pass.
+[x] invalid image không crash.
+[x] Service tính confidence bằng softmax trong [0,1] (đã kiểm thử endpoint).
+[x] model_name/version có trong output service và response schema.
+[x] class_contract.json có.
+[x] CV tests pass.
 ```
 
 ### Checklist Tùng
 
 ```text
-[ ] 38 CV codes match 38 DB codes.
-[ ] Không map bằng class_id/display name.
-[ ] Diagnosis persisted.
-[ ] confidence/model metadata persisted.
-[ ] TreatmentRule lookup chạy sau prediction.
-[ ] Policy fallback chạy khi không có rule.
+[x] 38 CV codes match 38 DB codes.
+[x] Repository Diagnosis lookup exact Disease.code, không lookup bằng class_id/display name.
+[x] Diagnosis persisted.
+[x] confidence/model metadata persisted.
+[x] TreatmentRule lookup chạy sau prediction.
+[x] Policy fallback chạy khi không có rule.
 ```
 
 ### Definition of Done
@@ -1413,6 +1428,9 @@ sample image
 ---
 
 ## STAGE 7 — RAG Production-Ready
+
+> Đã triển khai và kiểm thử MVP local; đã embedding/ingest thật hai lần.
+> Chưa phải chứng nhận vận hành production hoặc benchmark live Ollama.
 
 ### Mục tiêu
 Biến RAG thành reusable service ổn định.
@@ -1434,6 +1452,7 @@ Document / DocumentChunk
 
 ```python
 retrieve_knowledge(
+    db,  # SQLAlchemy Session do caller quản lý
     query,
     disease_code=None,
     top_k=3
@@ -1460,20 +1479,47 @@ RAG không được override Pesticide/dose/PHI/Policy.
 ### Checklist
 
 ```text
-[ ] Rich disease_knowledge ingest.
-[ ] Có disease_code metadata trong Document/Chunk đã ingest.
+[x] Rich knowledge đã ingest: 38 document / 270 chunk, version stage7-rich-v1.
+[x] Document lưu disease_code; chunk truy xuất metadata qua document.
 [x] Có source provenance.
-[x] top_k hoạt động.
-[ ] disease filter hoạt động nếu dùng.
-[x] duplicate chunks được kiểm soát.
-[x] re-ingest có cleanup strategy (replace bộ document cùng type).
-[x] sample query cơ bản relevant.
+[x] top_k validate 1–20 và SQL LIMIT, đã kiểm thử trên DB thật.
+[x] disease filter exact hoạt động; mã không tồn tại trả [].
+[x] Không trùng chunk index/nội dung trong cùng document; re-ingest không nhân đôi.
+[x] Replace riêng corpus cùng type atomically + advisory lock; đã test rollback khi lỗi DB.
+[x] Query Apple scab trả bệnh phù hợp trong top 3; query có lọc chỉ trả đúng bệnh.
 [x] source metadata trả được.
-[x] Prompt/LLM guardrail không cho bịa structured facts.
+[x] Output gate chỉ nhận evidence excerpt; test draft bịa thuốc/liều/PHI không được phát hành.
 ```
 
 ### Handoff
-Stage 8 chỉ gọi `rag_tool.retrieve(...)`.
+
+Stage 8 gọi `rag_tool.retrieve(db, query, disease_code=None, top_k=3)`.
+Endpoint `POST /api/v1/disease/knowledge/retrieve` nhận JSON query/disease_code/top_k.
+Score = 1 - cosine distance. Xem [RAG README](../../ai/app/rag/README.md).
+
+`RAGService.answer` trả `answer_mode=grounded_excerpt`: chỉ nhận draft là đoạn trích
+nguyên văn evidence; draft thêm facts hoặc Ollama timeout/lỗi kết nối sẽ trả evidence.
+Chưa hỗ trợ diễn đạt tự do có đảm bảo factuality. Facts thuốc/liều/PHI/policy lấy
+riêng từ structured SQL lookup, không từ LLM. Chưa benchmark live Ollama/latency.
+
+### Kết quả kiểm tra Stage 6–7
+
+- Full suite: **40 passed**, gồm checkpoint thật + FastAPI lifespan, PostgreSQL integration,
+  diagnosis/policy, vector retrieval, citation, seeder idempotency và rollback.
+- PostgreSQL head `d6e7a1202601`: thêm diagnoses.model_name và documents.disease_code/index.
+  Dữ liệu: 38 disease, 4 pesticide, 8 rule, 21 policy; RAG 38 document / 270 chunk.
+- Đã ingest thật hai lần, mỗi lần replace 38 document / tạo 270 chunk; không nhân đôi.
+- Checkpoint không chứa class_to_idx: thứ tự chỉ đối chiếu mã training trong repo,
+  chưa xác nhận độc lập bằng artifact. Chưa thử cài venv trắng hoặc đo accuracy/calibration.
+- Tách eager import graph lỗi khỏi router. `/workflow/run` trả 501 rõ ràng vì Stage 8
+  chưa triển khai; không coi pass-through graph là workflow hoàn chỉnh.
+- Chỉ sửa AI/tài liệu; không sửa backend/frontend hoặc seed dữ liệu HOLD.
+
+Lệnh kiểm thử từ thư mục `ai` (cần DB migrate/seed/ingest, weights và embedding cache):
+
+```bash
+HF_HUB_OFFLINE=1 OMP_NUM_THREADS=2 RUN_REAL_CV_TESTS=1 RUN_STAGE3_DB_TESTS=1 RUN_STAGE67_DB_TESTS=1 python -m pytest -q tests --tb=short
+```
 
 ---
 
@@ -1805,10 +1851,10 @@ Tùng:
 ```text
 Stage 4 DONE
 -> Stage 5 DONE
--> Stage 7 IN PROGRESS
+-> Stage 7 DONE (MVP local)
 ```
 
-Stage 6 chờ CV trả `disease_code` canonical ổn định; chưa bắt đầu Stage 8.
+Stage 6/7 đã triển khai và kiểm thử local; còn xác minh artifact/venv trắng của CV. Stage 8 chưa làm.
 
 Khánh:
 

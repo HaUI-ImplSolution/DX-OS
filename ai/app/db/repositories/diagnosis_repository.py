@@ -3,9 +3,9 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from ..models.diagnosis import Diagnosis
 from ..models.disease import Disease
 from ..models.disease_report import DiseaseReport
-from ..models.diagnosis import Diagnosis
 
 
 def create_disease_report(
@@ -26,6 +26,7 @@ def create_disease_report(
 
     return report
 
+
 def create_diagnosis_from_cv(
     db: Session,
     disease_report_id: uuid.UUID,
@@ -34,22 +35,19 @@ def create_diagnosis_from_cv(
 
     disease_code = cv_result["disease_code"]
 
-    stmt = select(Disease).where(
-        Disease.code == disease_code
-    )
+    stmt = select(Disease).where(Disease.code == disease_code)
 
     disease = db.scalar(stmt)
 
     if disease is None:
-        raise ValueError(
-            f"Disease code '{disease_code}' does not exist"
-        )
+        raise ValueError(f"Disease code '{disease_code}' does not exist")
 
     diagnosis = Diagnosis(
         disease_report_id=disease_report_id,
         disease_id=disease.id,
         confidence=cv_result["confidence"],
         model_version=cv_result["model_version"],
+        model_name=cv_result.get("model_name"),
     )
 
     db.add(diagnosis)
@@ -67,6 +65,7 @@ def create_diagnosis_from_cv(
 
     return diagnosis
 
+
 def get_latest_diagnosis(
     db: Session,
     crop_season_id: uuid.UUID,
@@ -75,12 +74,8 @@ def get_latest_diagnosis(
     stmt = (
         select(Diagnosis)
         .join(DiseaseReport)
-        .where(
-            DiseaseReport.crop_season_id == crop_season_id
-        )
-        .order_by(
-            Diagnosis.diagnosed_at.desc()
-        )
+        .where(DiseaseReport.crop_season_id == crop_season_id)
+        .order_by(Diagnosis.diagnosed_at.desc())
         .limit(1)
     )
 

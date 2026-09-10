@@ -5,6 +5,7 @@ from PIL import Image
 
 from app.core.config import Settings, get_settings
 from app.cv.class_names import CLASS_NAMES, get_disease_name
+from app.cv.contract import canonical_code
 
 
 class PlantDiseaseService:
@@ -29,21 +30,24 @@ class PlantDiseaseService:
         image_tensor = self._preprocess(image).unsqueeze(0).to(self.device)
 
         import time
+
         start = time.time()
         with torch.no_grad():
             output = self.model(image_tensor)
         inference_time_ms = (time.time() - start) * 1000
 
+        if output.shape != (1, len(CLASS_NAMES)) or not torch.isfinite(output).all():
+            raise ValueError("Invalid model output")
         probabilities = torch.softmax(output, dim=1)
         predicted_class = probabilities.argmax(dim=1).item()
         confidence = probabilities[0, predicted_class].item()
 
-        disease_code = CLASS_NAMES[predicted_class]
+        disease_code = canonical_code(CLASS_NAMES[predicted_class])
         disease_name = get_disease_name(disease_code)
 
         return {
             "class_id": predicted_class,
-            "class_name": disease_code,
+            "class_name": CLASS_NAMES[predicted_class],
             "disease_code": disease_code,
             "disease_name": disease_name,
             "confidence": round(confidence, 3),

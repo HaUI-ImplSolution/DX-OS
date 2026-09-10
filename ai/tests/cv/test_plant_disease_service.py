@@ -1,27 +1,25 @@
-from pathlib import Path
 from io import BytesIO
+from pathlib import Path
 
 import torch
-from PIL import Image
-from fastapi.testclient import TestClient
-from fastapi import FastAPI
-
 from app.api.router import router
 from app.cv.class_names import CLASS_NAMES
 from app.services.plant_disease_service import PlantDiseaseService
-
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+from PIL import Image
 
 TEST_DATA_DIR = Path(__file__).parents[1] / "data" / "images"
 TOMATO_LEAF_PATH = TEST_DATA_DIR / "tomato_leaf.jpg"
 
 
-class FakeModel:
+class FakeModel(torch.nn.Module):
     """Fake model returning deterministic logits for testing."""
 
     def eval(self):
         return self
 
-    def __call__(self, x):
+    def forward(self, x):
         output = torch.zeros((x.shape[0], 38))
         # Class 29 = "Tomato___Early_blight"
         output[:, 29] = 10.0

@@ -1,12 +1,19 @@
+from functools import lru_cache
+
 from sentence_transformers import SentenceTransformer
 
 from app.core.config import get_settings
 
 
+@lru_cache(maxsize=2)
+def _load_model(name: str):
+    return SentenceTransformer(name)
+
+
 class EmbeddingService:
     def __init__(self, model_name: str | None = None):
         settings = get_settings()
-        self.model = SentenceTransformer(
+        self.model = _load_model(
             model_name or settings.embedding_model,
         )
 

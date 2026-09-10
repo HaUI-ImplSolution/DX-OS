@@ -53,7 +53,7 @@ Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot
 
 - [x] Khởi tạo nền tảng dữ liệu Python: SQLAlchemy, Alembic, PostgreSQL và pgvector.
 - [ ] Hoàn thiện AI Service Python thống nhất: đã có Vision API (FastAPI + EfficientNet-B4)
-  và RAG/Ollama chạy local, còn thiếu LangGraph và endpoint RAG trong FastAPI.
+  và endpoint retrieval RAG chạy local; còn thiếu LangGraph workflow hoàn chỉnh.
 - [ ] Nối HTTP client backend ↔ AI Service theo contract API.
 - [x] Khớp dữ liệu CV chẩn đoán: đã chuẩn hóa Vision API trả `disease_code` và `disease_name` tiếng Việt khớp 1:1 với `Disease.code` trong DB.
 - [ ] Tích hợp LLM sinh khuyến nghị vào spine flow thật; hiện backend vẫn dùng template.
@@ -64,24 +64,28 @@ Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot
   `vector(384)`, đồng bộ model embedding multilingual MiniLM).
 - Dataset có cấu trúc gồm 38 lớp bệnh/healthy được map nguyên văn từ sheet `Disease_KB`:
   `class_name → code`, `disease_name → name`, `symptoms → description`; không trùng mã.
-- Alembic revision `4c2a0f9d8b71` bật pgvector; revision hiện tại
-  `c1f7e2d4a9b0` bổ sung khoảng liều `dose_min`/`dose_max` và bảng
-  `disease_management_policies` cho Structured Knowledge Stage 4.
-- Dữ liệu RAG có 38 bản ghi kiến thức và registry 41 nguồn có metadata citation. Bộ này
-  chưa được re-ingest sau các đợt cập nhật dữ liệu.
+- Alembic head `d6e7a1202601` thêm diagnoses.model_name và documents.disease_code/index;
+  kế thừa pgvector, khoảng liều và disease-management policy của Stage 4.
+- Stage 7 đã embedding/ingest rich knowledge: 38 document / 270 chunk, registry 41 nguồn.
+  Đã chạy hai lần và kiểm thử rollback, không nhân đôi corpus.
 - Gói dữ liệu Stage 3 đã qua review cung cấp bộ seed cuối gồm 4 thuốc, 8 treatment rule và 21
   disease-management policy. Chỉ 8 candidate có quyết định `APPROVE/READY_TO_PROMOTE`
   được đưa vào bộ cuối; 8 candidate `HOLD/NOT_READY` được giữ riêng để audit và không seed.
 - Stage 4 đã hoàn thiện schema/repository; ba seeder Stage 5 chạy idempotent. Database local
   đã được migrate và xác minh đúng
-  revision/count `c1f7e2d4a9b0` / `4` / `8` / `21`. Workbook review chỉ là nguồn đánh giá
+  revision/count `d6e7a1202601` / `4` / `8` / `21`. Workbook review chỉ là nguồn đánh giá
   kỹ thuật MVP, không phải quyền cho phép sử dụng ngoài thực địa.
-- Pipeline đã validate provenance, chia nội dung tối đa 350 ký tự (dự kiến 270 chunk),
-  retrieve theo loại document và resolve citation ra URL có thể audit. Đã có pytest cho
-  dataset/guardrail/chunk/citation; chưa re-ingest PostgreSQL bằng bộ Stage 1 mới, nên M8
-  vẫn chưa được đánh dấu hoàn thành.
-- Vision API và data/RAG đã được tổ chức chung trong `ai/app`; RAG/Ollama chưa được nối vào
-  FastAPI runtime và AI Service vẫn chưa kết nối với backend qua HTTP.
+- Stage 6 có contract 38 lớp canonical, predict/health API, endpoint chẩn đoán report:
+  lưu Diagnosis/confidence/model metadata, trả SQL rule hoặc safe policy, yêu cầu kỹ sư duyệt.
+  Checkpoint thiếu class_to_idx nên thứ tự được đối chiếu với mã training, chưa xác minh độc lập.
+- Stage 7 có retrieval API, exact disease filter, top_k, provenance và atomic re-ingest.
+  RAG answer ở chế độ grounded_excerpt, không phát hành draft bịa structured facts.
+- Kiểm thử local **40 passed**, gồm checkpoint thật, FastAPI lifespan và PostgreSQL/pgvector.
+  Xem [checklist Stage 6–7](development/docs/AI_README_LangGraph_MVP.md#master-stage-roadmap),
+  [CV handoff](ai/app/cv/README.md) và [RAG handoff](ai/app/rag/README.md).
+- Chưa làm Stage 8 hoặc nối HTTP client backend; workflow endpoint trả 501. Chưa thử venv
+  trắng, đánh giá accuracy CV hoặc benchmark live Ollama. M8 vẫn cần nghiệm thu đúng bộ
+  tài liệu VietGAP/IRRI và luồng hỏi đáp yêu cầu bên dưới.
 
 ### Giai đoạn 1 — Hoàn thiện trải nghiệm & truy vấn (Should)
 

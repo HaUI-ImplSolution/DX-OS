@@ -120,12 +120,27 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
   trong Stage 4/5 này. Kết quả review là đánh giá kỹ thuật MVP, không phải field-use
   authorization.
 
+**Đã triển khai — Stage 6 CV ↔ Data và Stage 7 RAG:**
+
+- CV handoff gồm contract 38 lớp, adapter common rust giữ nguyên nguồn, checkpoint/config
+  validation, predict/health/class-contract API và xử lý ảnh lỗi.
+- Endpoint chẩn đoán report lưu Diagnosis + trạng thái atomically, snapshot confidence/model
+  metadata và trả SQL rule/safe policy. Không tự áp dụng thuốc; không sửa backend/frontend.
+- Migration `d6e7a1202601` thêm diagnoses.model_name và documents.disease_code/index.
+- RAG có exact disease filter, top_k, score/provenance, cache model, atomic replace và
+  advisory lock. Đã ingest thật hai lần: 38 document / 270 chunk, version stage7-rich-v1.
+- RAG answer chỉ trả evidence (grounded_excerpt), loại draft bịa facts và fallback khi
+  Ollama không khả dụng. Facts thuốc/liều/PHI/policy được đọc từ SQL riêng.
+- Full suite **40 passed** với checkpoint thật qua FastAPI lifespan và PostgreSQL.
+  Có test diagnosis, policy, retrieval/citation, idempotency và rollback.
+- Thêm CV/RAG handoff README, cập nhật checklist. Chưa kiểm thử venv trắng, accuracy CV,
+  live Ollama; checkpoint thiếu class_to_idx, thứ tự được đối chiếu mã training trong repo.
+- Stage 8 chưa làm: tách eager import graph lỗi; workflow endpoint hiện trả 501.
+
 **Chưa làm:**
 
 - `ai/app/graph` mới là skeleton theo tài liệu; chưa implement LangGraph state/nodes/tools,
-  human interrupt hoặc nối RAG vào FastAPI endpoint.
-- Chưa re-ingest bộ Stage 1 vào PostgreSQL; sau khi ingest cần xác minh 38 document,
-  270 chunk, retrieval và citation trên database thật.
+  human interrupt hoặc workflow end-to-end (retrieval API Stage 7 đã có).
 - 8 treatment-rule candidate trạng thái HOLD và các candidate staging còn lại chưa phải
   dữ liệu cuối, không được seed cho đến khi có quyết định review mới.
 

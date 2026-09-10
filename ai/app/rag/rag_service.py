@@ -1,6 +1,8 @@
 from typing import Any
 
+from httpx import HTTPError
 from langchain_ollama import ChatOllama
+from ollama import ResponseError
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
@@ -52,6 +54,7 @@ class RAGService:
             model=model_name or settings.ollama_model,
             base_url=base_url or settings.ollama_base_url,
             temperature=0,
+            client_kwargs={"timeout": 30},
         )
 
     def answer(
@@ -59,20 +62,39 @@ class RAGService:
         db: Session,
         question: str,
         top_k: int = 3,
+        disease_code: str | None = None,
     ) -> dict:
         contexts = self.retriever.retrieve(
             db=db,
             query=question,
             top_k=top_k,
+            disease_code=disease_code,
         )
         prompt = build_rag_prompt(
             question=question,
             contexts=contexts,
         )
-        response = self.llm.invoke(prompt)
+        # Conservative MVP gate: only verbatim evidence can leave the RAG layer.
+        # Structured drug/dose/PHI facts are returned by the SQL service separately.
+        evidence = "\n\n".join(item["content"] for item in contexts)
+        fallback = evidence or "Chưa có tài liệu phù hợp để trả lời."
+        answer = fallback
+        if contexts:
+            try:
+                draft = self.llm.invoke(prompt).content
+                if (
+                    isinstance(draft, str)
+                    and draft.strip()
+                    and draft.strip() in evidence
+                ):
+                    answer = draft.strip()
+            except (HTTPError, ResponseError, TimeoutError, ConnectionError):
+                # RAG evidence remains usable when the optional LLM is unavailable.
+                answer = fallback
 
         return {
             "question": question,
-            "answer": response.content,
+            "answer": answer,
+            "answer_mode": "grounded_excerpt",
             "sources": build_citations(contexts),
         }

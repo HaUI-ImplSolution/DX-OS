@@ -70,6 +70,9 @@ Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot
   - [ ] SSO thật: dựng thêm một Identity Provider riêng (Keycloak/Authentik) chạy trong
     docker-compose, để sau này có thêm app khác (Mattermost, BI dashboard) thì đăng nhập 1 lần
     dùng chung được, thay vì mỗi app một tài khoản như hiện tại
+  - [x] Bước đệm trước SSO: trang portal tĩnh liệt kê link tới các app (App chính, BI, Chat) —
+    chưa đăng nhập chung được, nhưng người dùng không cần tự nhớ URL từng app. Chi tiết:
+    [`portal/README.md`](./portal/README.md).
   - [x] Kênh chat nội bộ (Mattermost) — chạy thật trong docker-compose (image Team Edition chính thức). Chi tiết: [`chat/README.md`](./chat/README.md).
   - [ ] Tích hợp thông báo tự động vào channel Mattermost (ví dụ: có `DiseaseReport` mới hoặc chờ duyệt thì backend tự post vào channel)
 - [x] **[D]** Dashboard BI (Apache Superset) hiển thị bản đồ/trạng thái thửa ruộng cho Ban quản trị, tự bootstrap qua docker-compose.
@@ -113,13 +116,13 @@ Một PostgreSQL vật lý, ba nguồn logic:
 - [x] Cấu trúc monorepo và quyền sở hữu từng thư mục/module
 - [x] Chính sách repo Private trong lúc phát triển, thời điểm public trước khi nộp bài
 
-## Trạng thái hiện tại (cập nhật 2026-09-09)
+## Trạng thái hiện tại (cập nhật 2026-09-10)
 
-Backend Spring Boot đã xong, có đăng nhập JWT + phân quyền FARMER/ENGINEER/ADMIN; Frontend demo (React/Vite) cho Phase 0 spine flow đã xong, có màn đăng nhập; AI Service (Python) đã dựng xong phần Vision API cơ bản, đang thiếu phần điều phối LangGraph và LLM. Checklist việc còn thiếu: xem mục "Giai đoạn 0" ở trên. Chi tiết đầy đủ theo từng module: [`CHANGELOG.md`](./CHANGELOG.md).
+Backend Spring Boot đã xong, có đăng nhập JWT + phân quyền FARMER/ENGINEER/ADMIN; Frontend demo (React/Vite) cho Phase 0 spine flow đã xong, có màn đăng nhập; AI Service (Python) đã dựng xong phần Vision API cơ bản, đang thiếu phần điều phối LangGraph và LLM. BI Dashboard (Superset) và kênh chat nội bộ (Mattermost) đã chạy thật trong docker-compose, kèm trang portal tĩnh liệt kê link tới các app — SSO thật (Keycloak/Authentik) để đăng nhập chung chưa làm. Đã rà soát license toàn bộ thành phần đang chạy ([`LICENSES.md`](./LICENSES.md)). Checklist việc còn thiếu: xem mục "Giai đoạn 0"/"Giai đoạn 2" ở trên. Chi tiết đầy đủ theo từng module: [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Chạy demo Phase 0
 
-### 1. Khởi động (một lệnh duy nhất, dựng toàn bộ Postgres + backend + frontend + BI + chat)
+### 1. Khởi động (một lệnh duy nhất, dựng toàn bộ Postgres + backend + frontend + BI + chat + portal)
 
 ```bash
 cd deploy
@@ -131,6 +134,7 @@ docker compose up -d --build
 
 | Service | Vào đâu | Đăng nhập |
 |---|---|---|
+| **Portal** (danh sách link các app) | http://localhost:8090 | Không cần đăng nhập — chỉ là trang link |
 | **App chính** (frontend) | http://localhost:8082 | `SUPER_ADMIN_USERNAME`/`SUPER_ADMIN_PASSWORD` trong `.env` |
 | **Backend** (Swagger, gọi API tay) | http://localhost:8081/swagger-ui.html | Lấy JWT từ `POST /api/v1/auth/login`, bấm "Authorize" rồi dán vào |
 | **BI Dashboard** (Superset) | http://localhost:8088 | `SUPERSET_ADMIN_USERNAME`/`SUPERSET_ADMIN_PASSWORD` trong `.env` |
@@ -147,7 +151,7 @@ docker compose down
 
 - Tạo thêm tài khoản `ENGINEER`/`FARMER`: dùng tài khoản admin ở trên gọi `POST /api/v1/users` (qua Swagger hoặc curl).
 - Dữ liệu Postgres + ảnh upload lưu ở `deploy/data/` (bind mount, không mất khi `docker compose down`; dùng `down -v` hoặc xoá thư mục nếu muốn làm sạch từ đầu).
-- Chi tiết riêng từng service: [`bi/README.md`](./bi/README.md) (Superset), [`chat/README.md`](./chat/README.md) (Mattermost).
+- Chi tiết riêng từng service: [`bi/README.md`](./bi/README.md) (Superset), [`chat/README.md`](./chat/README.md) (Mattermost), [`portal/README.md`](./portal/README.md) (trang portal).
 - Sửa code + hot reload thay vì rebuild image: chạy `docker compose up -d postgres` trong `deploy` để có sẵn Postgres, rồi `./mvnw spring-boot:run` (backend) và `npm run dev` (frontend, sau khi `cp .env.example .env`) như bình thường.
 
 </details>

@@ -149,6 +149,19 @@ handler `/uploads/**`).
 - Rà soát license kỹ vì Mattermost không dùng một license duy nhất: server core AGPLv3 (OSI-approved), `server/enterprise/` là Mattermost Source Available License (không OSI-approved, không dùng tới), bản binary Team Edition được Mattermost, Inc. cấp phép lại MIT riêng cho đúng binary đó. Ghi chi tiết ở `LICENSES.md` và `chat/README.md`.
 - **Còn thiếu**: tài khoản Mattermost hiện tách biệt khỏi tài khoản backend (FARMER/ENGINEER/ADMIN) — đăng nhập chung 1 lần cần SSO thật (Keycloak/Authentik), thuộc mục riêng chưa làm theo roadmap.
 
+## Portal (`portal`)
+
+### 2026-09-10
+
+**Đã xong — trang portal tĩnh, bước đệm trước SSO:**
+
+- Trang tĩnh (nginx, không build step) liệt kê link tới 3 ứng dụng hiện có (Ứng dụng chính,
+  BI Dashboard, Kênh chat nội bộ) — người dùng không cần tự nhớ URL từng app.
+- Thêm service `portal` vào `deploy/docker-compose.yml`, cổng mặc định `8090` (`PORTAL_PORT`).
+- Đã build + chạy thử thật qua `docker compose up -d`, xác nhận trang load đúng.
+- **Còn thiếu**: mỗi app đích vẫn đăng nhập riêng — portal chỉ là danh sách link tĩnh, sẽ trở
+  thành landing page thật khi SSO (Keycloak/Authentik) được triển khai.
+
 ## Rà soát license (PoF)
 
 ### 2026-09-10

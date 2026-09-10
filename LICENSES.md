@@ -27,6 +27,12 @@ Khi bật lại cần rà license tương ứng: POI Apache-2.0 OK, các cái c�
 | @vitejs/plugin-react | MIT | ✅ |
 | nginx (ảnh serve production, `frontend/Dockerfile`) | BSD-2-Clause (nginx license) | ✅ |
 
+## Portal (`portal`)
+
+| Thành phần | License | OSI-approved |
+|---|---|---|
+| nginx (ảnh serve trang tĩnh, `portal/Dockerfile`) | BSD-2-Clause (nginx license) | ✅ |
+
 ## AI Service (`ai`, ngoài phạm vi lượt rà soát này)
 
 Chưa rà — sẽ làm khi tích hợp AI Service thật vào backend (xem `CHANGELOG.md`).

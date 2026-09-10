@@ -18,9 +18,7 @@ def create_treatment_application(
     phi_days: int,
     applied_at: datetime,
 ) -> TreatmentApplication:
-    """
-    Ghi nhận một lần phun thuốc đã thực sự xảy ra ngoài ruộng.
-    """
+    """Record one pesticide application that actually happened."""
 
     if applied_at.tzinfo is None:
         applied_at = applied_at.replace(tzinfo=timezone.utc)
@@ -42,7 +40,6 @@ def create_treatment_application(
     db.add(treatment)
     db.commit()
     db.refresh(treatment)
-
     return treatment
 
 
@@ -50,19 +47,23 @@ def create_treatment_from_rule(
     db: Session,
     crop_season_id: uuid.UUID,
     rule: TreatmentRule,
+    actual_dose: float,
     applied_at: datetime,
 ) -> TreatmentApplication:
-    """
-    Convenience function:
-    lấy thông tin từ TreatmentRule và snapshot vào TreatmentApplication.
-    """
+    """Validate the approved actual dose, then persist its snapshot."""
+
+    if not rule.dose_min <= actual_dose <= rule.dose_max:
+        raise ValueError(
+            "actual_dose must be between "
+            f"{rule.dose_min} and {rule.dose_max} {rule.dose_unit}"
+        )
 
     return create_treatment_application(
         db=db,
         crop_season_id=crop_season_id,
         pesticide_id=rule.pesticide_id,
         treatment_rule_id=rule.id,
-        dose=rule.dose,
+        dose=actual_dose,
         dose_unit=rule.dose_unit,
         phi_days=rule.phi_days,
         applied_at=applied_at,
@@ -73,9 +74,7 @@ def get_latest_treatment(
     db: Session,
     crop_season_id: uuid.UUID,
 ) -> TreatmentApplication | None:
-    """
-    Lấy lần phun gần nhất của vụ mùa.
-    """
+    """Return the latest applied treatment for a crop season."""
 
     stmt = (
         select(TreatmentApplication)
@@ -90,7 +89,6 @@ def get_latest_treatment(
         .order_by(TreatmentApplication.applied_at.desc())
         .limit(1)
     )
-
     return db.scalar(stmt)
 
 
@@ -98,22 +96,17 @@ def get_treatment_history(
     db: Session,
     crop_season_id: uuid.UUID,
 ) -> list[TreatmentApplication]:
-    """
-    Lấy toàn bộ lịch sử phun của một vụ mùa.
-    """
+    """Return all applied treatments for a crop season."""
 
     stmt = (
         select(TreatmentApplication)
-        .where(
-            TreatmentApplication.crop_season_id == crop_season_id,
-        )
+        .where(TreatmentApplication.crop_season_id == crop_season_id)
         .options(
             joinedload(TreatmentApplication.pesticide),
             joinedload(TreatmentApplication.treatment_rule),
         )
         .order_by(TreatmentApplication.applied_at.desc())
     )
-
     return list(db.scalars(stmt).all())
 
 
@@ -122,9 +115,7 @@ def is_harvest_blocked(
     crop_season_id: uuid.UUID,
     at_time: datetime | None = None,
 ) -> bool:
-    """
-    Kiểm tra vụ hiện tại có đang trong thời gian cách ly hay không.
-    """
+    """Return whether the latest treatment still locks harvest."""
 
     if at_time is None:
         at_time = datetime.now(timezone.utc)
@@ -133,8 +124,6 @@ def is_harvest_blocked(
         db=db,
         crop_season_id=crop_season_id,
     )
-
     if latest is None:
         return False
-
     return at_time < latest.harvest_locked_until

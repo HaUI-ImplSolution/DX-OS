@@ -34,6 +34,8 @@ def print_preview(limit: int) -> None:
 
     for index, document in enumerate(documents[:limit], start=1):
         print(f"\n--- Document {index}: {document['code']} ---")
+        print(f"Sources: {', '.join(document['source_ids'])}")
+        print(f"Chunks: {document['chunk_count']}")
         print(document["content"])
 
 

@@ -83,10 +83,50 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
 - Đã xác minh: 8 test CV đạt, RAG dry-run đọc đủ 38 tài liệu, Alembic head vẫn là
   `4c2a0f9d8b71`; compile/lint phạm vi refactor đạt.
 
+**Đã xong — chuẩn bị dữ liệu RAG Stage 1 và provenance:**
+
+- Đặt đúng tầng ba artifact từ workbook: 38 bản ghi tại
+  `data/rag/processed/disease_knowledge.json`, 26 nguồn tại
+  `data/rag/source_registry.json` và 26 candidate tại
+  `data/structured/treatment_rule_candidates.json`.
+- Validate mã disease/source không trùng và mọi provenance reference đều resolve được;
+  prompt/retrieval/response duy trì `source_id` và trả metadata citation có URL.
+- Chia knowledge ưu tiên ranh giới dòng và tách theo từ khi cần, tối đa 350 ký tự/chunk để phù hợp giới hạn
+  embedding hiện tại; dry-run dự kiến 38 document/270 chunk.
+- Giữ guardrail structured knowledge: cả 26 candidate đều
+  `REQUIRES_VN_LABEL_VALIDATION` và `eligible_for_seed = false`; chuyển
+  `pesticides.json`/`treatment_rules.json` từ file 0 byte thành mảng JSON rỗng hợp lệ.
+- Bổ sung pytest cho số lượng dataset, uniqueness, source reference, candidate guardrail,
+  chunking và citation.
+
+**Đã xong — Structured Knowledge Stage 4/5 theo gói dữ liệu Stage 3 đã review:**
+
+- Đối chiếu workbook độc lập với workbook trong gói Stage 3 (cùng SHA-256), kiểm tra toàn
+  bộ checksum của gói và lưu bản review/manifest/HOLD trong `ai/data/stage3` để audit.
+- Promote đúng 8 candidate `APPROVE/READY_TO_PROMOTE` thành bộ cuối: 4 pesticide, 8
+  treatment rule và 21 disease-management policy; giữ riêng 8 candidate
+  `HOLD/NOT_READY`, tuyệt đối không đưa vào seeder.
+- Stage 4 thêm migration `c1f7e2d4a9b0`: đổi `TreatmentRule.dose` thành khoảng
+  `dose_min`/`dose_max`, thêm check constraint và bảng `disease_management_policies`.
+  `TreatmentApplication.dose` vẫn là liều thực tế đã áp dụng.
+- Repository ghi nhận treatment bắt buộc nhận `actual_dose` và từ chối giá trị ngoài
+  khoảng rule; bổ sung lookup policy theo disease code.
+- Stage 5 thêm ba seeder idempotent chỉ đọc file final. Đã chạy hai lần trên PostgreSQL local:
+  revision `c1f7e2d4a9b0`, đúng 4 pesticide, 8 rule, 21 policy và không nhân đôi dữ liệu.
+- Kiểm tra dữ liệu/guardrail/unit đạt; integration test PostgreSQL xác minh lookup khoảng
+  liều, PHI, policy an toàn và tự chạy seeder hai lần để chặn duplicate.
+- Registry provenance hợp nhất hiện có 41 nguồn. Không chạy embedding hoặc re-ingest RAG
+  trong Stage 4/5 này. Kết quả review là đánh giá kỹ thuật MVP, không phải field-use
+  authorization.
+
 **Chưa làm:**
 
 - `ai/app/graph` mới là skeleton theo tài liệu; chưa implement LangGraph state/nodes/tools,
   human interrupt hoặc nối RAG vào FastAPI endpoint.
+- Chưa re-ingest bộ Stage 1 vào PostgreSQL; sau khi ingest cần xác minh 38 document,
+  270 chunk, retrieval và citation trên database thật.
+- 8 treatment-rule candidate trạng thái HOLD và các candidate staging còn lại chưa phải
+  dữ liệu cuối, không được seed cho đến khi có quyết định review mới.
 
 ### 2026-09-09
 
@@ -123,8 +163,8 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
 - Vision API đã hoàn thành lookup `disease_code` và `disease_name` tiếng Việt (Task A2, A3).
 - Smoke script RAG chưa phải pytest test có assertion; chưa có evaluation set, relevance
   threshold, citation metadata/URL có thể audit hoặc vector index cho dữ liệu lớn.
-- `pesticides.json` và `treatment_rules.json` vẫn là placeholder rỗng, chưa có dữ liệu đã
-  đối chiếu danh mục/nhãn Việt Nam.
+- Dòng trạng thái ngày 2026-09-09 này đã được Stage 3 ngày 2026-09-10 thay thế cho tập con
+  được review; các candidate HOLD vẫn không được sử dụng.
 
 ## Frontend (`frontend`)
 

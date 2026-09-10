@@ -1,0 +1,230 @@
+[
+  {
+    "candidate_id": "P-CAND-001",
+    "name": "Revus Opti 440SC",
+    "registered_company": "Công ty TNHH Syngenta Việt Nam",
+    "active_ingredient": "Mandipropamid + Chlorothalonil",
+    "concentration": "Mandipropamid 40 g/L + Chlorothalonil 400 g/L",
+    "formulation": "SC",
+    "registration_verification": {
+      "status": "VERIFIED_CURRENT_LIST",
+      "source_ids": [
+        "S27"
+      ],
+      "evidence": "Danh mục hiện hành ghi Revus Opti 440SC với Chlorothalonil 400 g/L + Mandipropamid 40 g/L và đăng ký cho sương mai/cà chua; đốm vòng, mốc sương/khoai tây."
+    },
+    "label_verification": {
+      "status": "VERIFIED_MANUFACTURER_GUIDANCE",
+      "source_ids": [
+        "S28"
+      ]
+    },
+    "eligible_for_pesticide_seed": true,
+    "notes": "Pesticide identity/product data can be seeded. Individual TreatmentRule mappings still require disease-code-to-Vietnamese-label-term review."
+  },
+  {
+    "candidate_id": "P-CAND-002",
+    "name": "Ortiva 600SC",
+    "registered_company": "Công ty TNHH Syngenta Việt Nam",
+    "active_ingredient": "Azoxystrobin + Chlorothalonil",
+    "concentration": "Azoxystrobin 100 g/L + Chlorothalonil 500 g/L",
+    "formulation": "SC",
+    "registration_verification": {
+      "status": "VERIFIED_CURRENT_LIST",
+      "source_ids": [
+        "S27",
+        "S29"
+      ],
+      "amendment_check": "Không tìm thấy tên Ortiva trong phụ lục thay đổi/rút khỏi của TT28/2026."
+    },
+    "label_verification": {
+      "status": "VERIFIED_MANUFACTURER_GUIDANCE",
+      "source_ids": [
+        "S30"
+      ]
+    },
+    "eligible_for_pesticide_seed": true
+  },
+  {
+    "candidate_id": "P-CAND-003",
+    "name": "Amistar 250SC",
+    "registered_company": "Công ty TNHH Syngenta Việt Nam",
+    "active_ingredient": "Azoxystrobin",
+    "concentration": "250 g/L",
+    "formulation": "SC",
+    "registration_verification": {
+      "status": "VERIFIED_CURRENT_LIST",
+      "source_ids": [
+        "S27",
+        "S29"
+      ],
+      "amendment_check": "Không tìm thấy tên Amistar trong phụ lục thay đổi/rút khỏi của TT28/2026."
+    },
+    "label_verification": {
+      "status": "SOURCE_CONFLICT_REQUIRES_REVIEW",
+      "source_ids": [
+        "S31",
+        "S33"
+      ],
+      "notes": "Hai trang chính thức cùng hãng có PHI khác nhau cho cà chua; không dùng dữ liệu PHI cà chua để seed trước khi xác minh nhãn hiện hành."
+    },
+    "eligible_for_pesticide_seed": true
+  },
+  {
+    "candidate_id": "P-CAND-004",
+    "name": "Amistar Top 325SC",
+    "registered_company": "Công ty TNHH Syngenta Việt Nam",
+    "active_ingredient": "Azoxystrobin + Difenoconazole",
+    "concentration": "Azoxystrobin 200 g/L + Difenoconazole 125 g/L",
+    "formulation": "SC",
+    "registration_verification": {
+      "status": "VERIFIED_CURRENT_LIST",
+      "source_ids": [
+        "S27",
+        "S29"
+      ],
+      "amendment_check": "Không tìm thấy tên Amistar Top trong phụ lục thay đổi/rút khỏi của TT28/2026."
+    },
+    "label_verification": {
+      "status": "VERIFIED_MANUFACTURER_GUIDANCE",
+      "source_ids": [
+        "S32"
+      ]
+    },
+    "eligible_for_pesticide_seed": true
+  },
+  {
+    "candidate_id": "P-CAND-005",
+    "name": "Anti-Xo 200WP",
+    "registered_company": "Công ty TNHH Phú Nông",
+    "active_ingredient": "Bismerthiazol",
+    "concentration": "200 g/kg",
+    "formulation": "WP",
+    "registration_verification": {
+      "status": "VERIFIED_CURRENT_LIST",
+      "source_ids": [
+        "S27"
+      ],
+      "registered_targets_relevant_to_project": [
+        "đốm lá vi khuẩn/cà chua",
+        "héo xanh vi khuẩn/ớt"
+      ]
+    },
+    "label_verification": {
+      "status": "PARTIAL_VERIFIED",
+      "source_ids": [
+        "S35"
+      ],
+      "verified_fields": [
+        "active_ingredient",
+        "dose",
+        "water_volume",
+        "application_timing"
+      ],
+      "missing_fields": [
+        "phi_days"
+      ]
+    },
+    "eligible_for_pesticide_seed": true,
+    "notes": "Có thể seed định danh sản phẩm; chưa tạo TreatmentRule final vì PHI chưa được xác minh."
+  },
+  {
+    "candidate_id": "P-CAND-006",
+    "name": "Agrovertin 50EC",
+    "registered_company": "Công ty TNHH Việt Hoá Nông",
+    "active_ingredient": "Abamectin",
+    "concentration": "50 g/L",
+    "formulation": "EC",
+    "registration_verification": {
+      "status": "VERIFIED_CURRENT_LIST",
+      "source_ids": [
+        "S27"
+      ],
+      "registered_targets_relevant_to_project": [
+        "nhện đỏ/cà chua"
+      ]
+    },
+    "label_verification": {
+      "status": "NEEDS_PRIMARY_LABEL_SOURCE",
+      "source_ids": [],
+      "verified_fields": [],
+      "missing_fields": [
+        "dose",
+        "water_volume",
+        "phi_days",
+        "application_timing"
+      ]
+    },
+    "eligible_for_pesticide_seed": true,
+    "notes": "Danh mục chính thức xác nhận sản phẩm/đối tượng; chưa dùng dữ liệu liều từ nguồn thứ cấp để seed rule."
+  },
+  {
+    "candidate_id": "P-CAND-007",
+    "name": "Antracol 70WP",
+    "registered_company": "Công ty TNHH Bayer Việt Nam",
+    "active_ingredient": "Propineb",
+    "concentration": "700 g/kg",
+    "formulation": "WP",
+    "registration_verification": {
+      "status": "VERIFIED_CURRENT_LIST",
+      "source_ids": [
+        "S27",
+        "S29"
+      ],
+      "registered_targets_relevant_to_project": [
+        "đốm lá/ngô",
+        "rỉ sắt/ngô"
+      ]
+    },
+    "label_verification": {
+      "status": "PARTIAL_VERIFIED",
+      "source_ids": [
+        "S36"
+      ],
+      "verified_fields": [
+        "active_ingredient",
+        "dose_range",
+        "water_volume",
+        "application_method"
+      ],
+      "missing_fields": [
+        "phi_days"
+      ]
+    },
+    "eligible_for_pesticide_seed": true,
+    "notes": "Có thể seed định danh Pesticide. Không seed TreatmentRule final cho Corn gray leaf spot cho tới khi xác nhận mapping và PHI."
+  },
+  {
+    "candidate_id": "P-CAND-008",
+    "name": "Thumb 0.5SL",
+    "registered_company": "Công ty TNHH Nam Bắc",
+    "active_ingredient": "Chitosan",
+    "concentration": "0.5%",
+    "formulation": "SL",
+    "registration_verification": {
+      "status": "VERIFIED_CURRENT_LIST",
+      "source_ids": [
+        "S27",
+        "S29"
+      ],
+      "registered_targets_relevant_to_project": [
+        "phấn trắng/bí xanh"
+      ]
+    },
+    "label_verification": {
+      "status": "SECONDARY_ONLY",
+      "source_ids": [
+        "S37"
+      ],
+      "verified_fields": [
+        "dose_concentration",
+        "water_volume",
+        "phi_days",
+        "application_timing"
+      ],
+      "primary_label_missing": true
+    },
+    "eligible_for_pesticide_seed": true,
+    "notes": "Có thể seed identity của Pesticide từ danh mục hiện hành. Không dùng S37 một mình để seed TreatmentRule final."
+  }
+]

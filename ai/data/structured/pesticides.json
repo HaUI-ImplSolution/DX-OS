@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Revus Opti 440SC",
+    "active_ingredient": "Mandipropamid + Chlorothalonil",
+    "concentration": "Mandipropamid 40 g/L + Chlorothalonil 400 g/L",
+    "notes": "MVP source-reviewed 2026-09-10. Sources: S27,S28,S29. Identity/product record only; per-disease dose and PHI come from TreatmentRule."
+  },
+  {
+    "name": "Ortiva 600SC",
+    "active_ingredient": "Azoxystrobin + Chlorothalonil",
+    "concentration": "Azoxystrobin 100 g/L + Chlorothalonil 500 g/L",
+    "notes": "MVP source-reviewed 2026-09-10. Sources: S27,S29,S30. Identity/product record only; per-disease dose and PHI come from TreatmentRule."
+  },
+  {
+    "name": "Amistar 250SC",
+    "active_ingredient": "Azoxystrobin",
+    "concentration": "250 g/L",
+    "notes": "MVP source-reviewed 2026-09-10. Sources: S27,S29,S31,S33. Identity/product record only; per-disease dose and PHI come from TreatmentRule."
+  },
+  {
+    "name": "Amistar Top 325SC",
+    "active_ingredient": "Azoxystrobin + Difenoconazole",
+    "concentration": "Azoxystrobin 200 g/L + Difenoconazole 125 g/L",
+    "notes": "MVP source-reviewed 2026-09-10. Sources: S27,S29,S32. Identity/product record only; per-disease dose and PHI come from TreatmentRule."
+  }
+]

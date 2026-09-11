@@ -1,0 +1,74 @@
+{
+  "batches": [
+    "stage2_batch2",
+    "stage2_batch4",
+    "stage2_batch6"
+  ],
+  "findings": [
+    {
+      "id": "DQ-001",
+      "severity": "HIGH",
+      "title": "PHI conflict inside manufacturer sources",
+      "affected_product": "Amistar 250SC",
+      "affected_crop": "Cà chua - sương mai",
+      "details": "S31 ghi PHI 7 ngày cho 'sương mai/cà chua', trong khi S33 ghi PHI 5 ngày. Đốm vòng/cà chua nhất quán ở 5 ngày.",
+      "required_action": "Verify current product label/registration document before seed."
+    },
+    {
+      "id": "DQ-002",
+      "severity": "HIGH",
+      "title": "Dose range requires schema support",
+      "details": "Real labels use dose ranges (e.g. 0.25-0.5 L/ha). A single Float dose loses source meaning.",
+      "required_action": "Use dose_min/dose_max in TreatmentRule."
+    },
+    {
+      "id": "DQ-003",
+      "severity": "MEDIUM",
+      "title": "Disease-name semantic mapping requires agronomist review",
+      "details": "PlantVillage English class labels cannot be automatically equated to broad Vietnamese registration terms such as 'đốm lá'.",
+      "required_action": "Add reviewed mapping table disease_code ↔ registered_target_text."
+    },
+    {
+      "id": "DQ-004",
+      "severity": "HIGH",
+      "title": "Manufacturer page has no PHI for Anti-Xo 200WP",
+      "affected_candidate_rule": "TR-CAND-012",
+      "required_action": "Locate current product label/registration instructions containing PHI before final seed."
+    },
+    {
+      "id": "DQ-005",
+      "severity": "MEDIUM",
+      "title": "PlantVillage contains a pest class inside Disease catalog",
+      "affected_class": "Tomato___Spider_mites Two-spotted_spider_mite",
+      "required_action": "Treat as pest/arachnid management in structured data; do not force fungal/bacterial disease semantics."
+    },
+    {
+      "id": "DQ-006",
+      "severity": "MEDIUM",
+      "title": "Vietnamese registration target can be broader than CV class",
+      "details": "Two-spotted spider mite is more specific than the registration term 'nhện đỏ'.",
+      "required_action": "Require agronomist mapping approval before deterministic treatment lookup."
+    },
+    {
+      "id": "DQ-007",
+      "severity": "HIGH",
+      "title": "Broad Vietnamese target terms cannot be treated as exact CV class mappings",
+      "details": "Ortiva 600SC is registered/labeled for 'đốm lá/cà chua', but that term is broader than both Tomato Leaf Mold and Septoria Leaf Spot.",
+      "required_action": "Agronomist review before deterministic mapping."
+    },
+    {
+      "id": "DQ-008",
+      "severity": "HIGH",
+      "title": "Crop mismatch in powdery mildew candidate",
+      "details": "Current registration found for Thumb 0.5SL is 'phấn trắng/bí xanh', while the CV class is Squash.",
+      "required_action": "Do not seed until crop equivalence/registration is confirmed."
+    },
+    {
+      "id": "DQ-009",
+      "severity": "HIGH",
+      "title": "Secondary source cannot establish final PHI",
+      "details": "Thumb 0.5SL dose/PHI values currently come from a retailer copy, not a primary manufacturer/label source.",
+      "required_action": "Find current product label or primary manufacturer instructions."
+    }
+  ]
+}

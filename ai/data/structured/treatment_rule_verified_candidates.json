@@ -1,0 +1,496 @@
+[
+  {
+    "candidate_rule_id": "TR-CAND-001",
+    "disease_code": "Tomato___Late_blight",
+    "crop_name": "Cà chua",
+    "registered_target_text": "Sương mai",
+    "pesticide_candidate_id": "P-CAND-001",
+    "pesticide_name": "Revus Opti 440SC",
+    "dose_min": 2.0,
+    "dose_max": 2.5,
+    "dose_unit": "L/ha",
+    "water_volume_min": 600,
+    "water_volume_max": 1000,
+    "water_volume_unit": "L/ha",
+    "phi_days": 5,
+    "application_method": "Phun khi tỷ lệ bệnh xuất hiện.",
+    "source_ids": [
+      "S27",
+      "S28"
+    ],
+    "verification": {
+      "regulatory_product_target": "VERIFIED",
+      "quantitative_label_data": "VERIFIED",
+      "cv_disease_to_registered_target_mapping": "NEEDS_AGRONOMIST_REVIEW"
+    },
+    "eligible_for_seed": false,
+    "blocked_reason": [
+      "TreatmentRule hiện chỉ có dose: Float, không biểu diễn chính xác khoảng 2.0-2.5 L/ha.",
+      "Cần kỹ sư nông nghiệp xác nhận mapping Tomato___Late_blight ↔ thuật ngữ đăng ký 'sương mai/cà chua'."
+    ]
+  },
+  {
+    "candidate_rule_id": "TR-CAND-002",
+    "disease_code": "Potato___Early_blight",
+    "crop_name": "Khoai tây",
+    "registered_target_text": "Đốm vòng",
+    "pesticide_candidate_id": "P-CAND-001",
+    "pesticide_name": "Revus Opti 440SC",
+    "dose_min": 2.0,
+    "dose_max": 2.5,
+    "dose_unit": "L/ha",
+    "water_volume_min": 400,
+    "water_volume_max": 500,
+    "water_volume_unit": "L/ha",
+    "phi_days": 5,
+    "application_method": "Phun khi tỷ lệ bệnh xuất hiện.",
+    "source_ids": [
+      "S27",
+      "S28"
+    ],
+    "verification": {
+      "regulatory_product_target": "VERIFIED",
+      "quantitative_label_data": "VERIFIED",
+      "cv_disease_to_registered_target_mapping": "NEEDS_AGRONOMIST_REVIEW"
+    },
+    "eligible_for_seed": false,
+    "blocked_reason": [
+      "TreatmentRule hiện chỉ có dose: Float, không biểu diễn chính xác khoảng 2.0-2.5 L/ha.",
+      "Cần kỹ sư nông nghiệp xác nhận mapping Potato___Early_blight ↔ thuật ngữ đăng ký 'đốm vòng/khoai tây'."
+    ]
+  },
+  {
+    "candidate_rule_id": "TR-CAND-003",
+    "disease_code": "Potato___Late_blight",
+    "crop_name": "Khoai tây",
+    "registered_target_text": "Mốc sương",
+    "pesticide_candidate_id": "P-CAND-001",
+    "pesticide_name": "Revus Opti 440SC",
+    "dose_min": 2.0,
+    "dose_max": 2.5,
+    "dose_unit": "L/ha",
+    "water_volume_min": 400,
+    "water_volume_max": 500,
+    "water_volume_unit": "L/ha",
+    "phi_days": 5,
+    "application_method": "Phun khi tỷ lệ bệnh xuất hiện.",
+    "source_ids": [
+      "S27",
+      "S28"
+    ],
+    "verification": {
+      "regulatory_product_target": "VERIFIED",
+      "quantitative_label_data": "VERIFIED",
+      "cv_disease_to_registered_target_mapping": "NEEDS_AGRONOMIST_REVIEW"
+    },
+    "eligible_for_seed": false,
+    "blocked_reason": [
+      "TreatmentRule hiện chỉ có dose: Float, không biểu diễn chính xác khoảng 2.0-2.5 L/ha.",
+      "Cần kỹ sư nông nghiệp xác nhận mapping Potato___Late_blight ↔ thuật ngữ đăng ký 'mốc sương/khoai tây'."
+    ]
+  },
+  {
+    "candidate_rule_id": "TR-CAND-004",
+    "disease_code": "Tomato___Early_blight",
+    "crop_name": "Cà chua",
+    "registered_target_text": "Đốm vòng",
+    "pesticide_candidate_id": "P-CAND-002",
+    "pesticide_name": "Ortiva 600SC",
+    "dose_min": 1.5,
+    "dose_max": 1.5,
+    "dose_unit": "L/ha",
+    "water_volume_min": 400,
+    "water_volume_max": 600,
+    "water_volume_unit": "L/ha",
+    "phi_days": 7,
+    "application_method": "Phun khi tỷ lệ bệnh khoảng 5-10%.",
+    "source_ids": [
+      "S27",
+      "S30",
+      "S29"
+    ],
+    "verification": {
+      "regulatory_product_target": "VERIFIED",
+      "quantitative_label_data": "VERIFIED",
+      "cv_disease_to_registered_target_mapping": "NEEDS_AGRONOMIST_REVIEW"
+    },
+    "eligible_for_seed": false,
+    "blocked_reason": [
+      "Cần kỹ sư nông nghiệp xác nhận Tomato___Early_blight ↔ 'đốm vòng/cà chua'."
+    ]
+  },
+  {
+    "candidate_rule_id": "TR-CAND-005",
+    "disease_code": "Tomato___Late_blight",
+    "crop_name": "Cà chua",
+    "registered_target_text": "Sương mai",
+    "pesticide_candidate_id": "P-CAND-002",
+    "pesticide_name": "Ortiva 600SC",
+    "dose_min": 1.5,
+    "dose_max": 1.5,
+    "dose_unit": "L/ha",
+    "water_volume_min": 400,
+    "water_volume_max": 600,
+    "water_volume_unit": "L/ha",
+    "phi_days": 7,
+    "application_method": "Phun khi tỷ lệ bệnh khoảng 5-10%.",
+    "source_ids": [
+      "S27",
+      "S30",
+      "S29"
+    ],
+    "verification": {
+      "regulatory_product_target": "VERIFIED",
+      "quantitative_label_data": "VERIFIED",
+      "cv_disease_to_registered_target_mapping": "NEEDS_AGRONOMIST_REVIEW"
+    },
+    "eligible_for_seed": false,
+    "blocked_reason": [
+      "Cần kỹ sư nông nghiệp xác nhận Tomato___Late_blight ↔ 'sương mai/cà chua'."
+    ]
+  },
+  {
+    "candidate_rule_id": "TR-CAND-006",
+    "disease_code": "Tomato___Target_Spot",
+    "crop_name": "Cà chua",
+    "registered_target_text": "Đốm lá",
+    "pesticide_candidate_id": "P-CAND-002",
+    "pesticide_name": "Ortiva 600SC",
+    "dose_min": 1.5,
+    "dose_max": 1.5,
+    "dose_unit": "L/ha",
+    "water_volume_min": 400,
+    "water_volume_max": 600,
+    "water_volume_unit": "L/ha",
+    "phi_days": 7,
+    "application_method": "Phun khi bệnh chớm xuất hiện.",
+    "source_ids": [
+      "S27",
+      "S30",
+      "S29"
+    ],
+    "verification": {
+      "regulatory_product_target": "VERIFIED",
+      "quantitative_label_data": "VERIFIED",
+      "cv_disease_to_registered_target_mapping": "LOW_CONFIDENCE_NEEDS_AGRONOMIST_REVIEW"
+    },
+    "eligible_for_seed": false,
+    "blocked_reason": [
+      "Thuật ngữ 'đốm lá' trên đăng ký quá rộng; chưa đủ cơ sở để đồng nhất với Target Spot."
+    ]
+  },
+  {
+    "candidate_rule_id": "TR-CAND-007",
+    "disease_code": "Corn_(maize)___Northern_Leaf_Blight",
+    "crop_name": "Ngô",
+    "registered_target_text": "Đốm lá lớn",
+    "pesticide_candidate_id": "P-CAND-004",
+    "pesticide_name": "Amistar Top 325SC",
+    "dose_min": 0.25,
+    "dose_max": 0.5,
+    "dose_unit": "L/ha",
+    "phi_days": 10,
+    "application_method": "Phun khi bệnh xuất hiện, tỷ lệ bệnh khoảng 5%.",
+    "source_ids": [
+      "S27",
+      "S32",
+      "S29"
+    ],
+    "verification": {
+      "regulatory_product_target": "VERIFIED",
+      "quantitative_label_data": "VERIFIED",
+      "cv_disease_to_registered_target_mapping": "NEEDS_AGRONOMIST_REVIEW"
+    },
+    "eligible_for_seed": false,
+    "blocked_reason": [
+      "Cần kỹ sư nông nghiệp xác nhận Northern Leaf Blight ↔ 'đốm lá lớn/ngô'.",
+      "Schema TreatmentRule hiện cần dose_min/dose_max để giữ đúng khoảng liều."
+    ]
+  },
+  {
+    "candidate_rule_id": "TR-CAND-008",
+    "disease_code": "Corn_(maize)__Common_rust",
+    "crop_name": "Ngô",
+    "registered_target_text": "Rỉ sắt",
+    "pesticide_candidate_id": "P-CAND-004",
+    "pesticide_name": "Amistar Top 325SC",
+    "dose_min": 0.4,
+    "dose_max": 0.5,
+    "dose_unit": "L/ha",
+    "phi_days": 10,
+    "application_method": "Phun khi bệnh xuất hiện, tỷ lệ bệnh khoảng 5%.",
+    "source_ids": [
+      "S27",
+      "S32",
+      "S29"
+    ],
+    "verification": {
+      "regulatory_product_target": "VERIFIED",
+      "quantitative_label_data": "VERIFIED",
+      "cv_disease_to_registered_target_mapping": "NEEDS_AGRONOMIST_REVIEW",
+      "disease_code_contract": "NEEDS_CV_CODE_REFACTOR_CONFIRMATION"
+    },
+    "eligible_for_seed": false,
+    "blocked_reason": [
+      "Cần kỹ sư nông nghiệp xác nhận Common rust ↔ 'rỉ sắt/ngô'.",
+      "Disease code ngô rỉ sắt đang là điểm Khánh/Tùng cần chốt lại sau refactor.",
+      "Schema TreatmentRule hiện cần dose_min/dose_max."
+    ]
+  },
+  {
+    "candidate_rule_id": "TR-CAND-009",
+    "disease_code": "Tomato___Early_blight",
+    "crop_name": "Cà chua",
+    "registered_target_text": "Đốm vòng",
+    "pesticide_candidate_id": "P-CAND-003",
+    "pesticide_name": "Amistar 250SC",
+    "dose_min": 0.3,
+    "dose_max": 0.4,
+    "dose_unit": "L/ha",
+    "water_volume_min": 500,
+    "water_volume_max": 600,
+    "water_volume_unit": "L/ha",
+    "phi_days": 5,
+    "application_method": "Phun khi bệnh chớm xuất hiện hoặc tỷ lệ bệnh khoảng 5%, tùy hướng dẫn nguồn.",
+    "source_ids": [
+      "S27",
+      "S31",
+      "S33",
+      "S29"
+    ],
+    "verification": {
+      "regulatory_product_target": "VERIFIED",
+      "quantitative_label_data": "VERIFIED",
+      "cv_disease_to_registered_target_mapping": "NEEDS_AGRONOMIST_REVIEW"
+    },
+    "eligible_for_seed": false,
+    "blocked_reason": [
+      "Cần kỹ sư nông nghiệp xác nhận Tomato___Early_blight ↔ 'đốm vòng/cà chua'.",
+      "Schema TreatmentRule hiện cần dose_min/dose_max để giữ đúng khoảng liều 0.3-0.4 L/ha."
+    ]
+  },
+  {
+    "candidate_rule_id": "TR-CAND-010",
+    "disease_code": "Tomato___Late_blight",
+    "crop_name": "Cà chua",
+    "registered_target_text": "Sương mai",
+    "pesticide_candidate_id": "P-CAND-003",
+    "pesticide_name": "Amistar 250SC",
+    "dose_min": 0.4,
+    "dose_max": 0.4,
+    "dose_unit": "L/ha",
+    "water_volume_min": 500,
+    "water_volume_max": 600,
+    "water_volume_unit": "L/ha",
+    "phi_days": null,
+    "phi_conflict": {
+      "S31": 7,
+      "S33": 5
+    },
+    "application_method": "Phun khi bệnh chớm xuất hiện hoặc tỷ lệ bệnh khoảng 5%, tùy hướng dẫn nguồn.",
+    "source_ids": [
+      "S27",
+      "S31",
+      "S33",
+      "S29"
+    ],
+    "verification": {
+      "regulatory_product_target": "VERIFIED",
+      "quantitative_label_data": "CONFLICT",
+      "cv_disease_to_registered_target_mapping": "NEEDS_AGRONOMIST_REVIEW"
+    },
+    "eligible_for_seed": false,
+    "blocked_reason": [
+      "PHI cho 'sương mai/cà chua' xung đột giữa hai trang chính thức của cùng hãng (7 và 5 ngày).",
+      "Không được tự chọn một giá trị; phải xác minh nhãn hiện hành."
+    ]
+  },
+  {
+    "candidate_rule_id": "TR-CAND-011",
+    "disease_code": "Potato___Late_blight",
+    "crop_name": "Khoai tây",
+    "registered_target_text": "Mốc sương",
+    "pesticide_candidate_id": "P-CAND-003",
+    "pesticide_name": "Amistar 250SC",
+    "dose_min": 0.5,
+    "dose_max": 0.5,
+    "dose_unit": "L/ha",
+    "water_volume_min": 500,
+    "water_volume_max": 600,
+    "water_volume_unit": "L/ha",
+    "phi_days": 14,
+    "application_method": "Phun khi bệnh chớm xuất hiện / tỷ lệ bệnh khoảng 5%.",
+    "source_ids": [
+      "S27",
+      "S31",
+      "S33",
+      "S29"
+    ],
+    "verification": {
+      "regulatory_product_target": "VERIFIED",
+      "quantitative_label_data": "VERIFIED_FOR_POTATO",
+      "cv_disease_to_registered_target_mapping": "NEEDS_AGRONOMIST_REVIEW"
+    },
+    "eligible_for_seed": false,
+    "blocked_reason": [
+      "Cần kỹ sư nông nghiệp xác nhận Potato___Late_blight ↔ 'mốc sương/khoai tây'."
+    ]
+  },
+  {
+    "candidate_rule_id": "TR-CAND-012",
+    "disease_code": "Tomato___Bacterial_spot",
+    "crop_name": "Cà chua",
+    "registered_target_text": "Đốm lá vi khuẩn",
+    "pesticide_candidate_id": "P-CAND-005",
+    "pesticide_name": "Anti-Xo 200WP",
+    "dose_min": 1.5,
+    "dose_max": 1.5,
+    "dose_unit": "kg/ha",
+    "water_volume_min": 400,
+    "water_volume_max": 500,
+    "water_volume_unit": "L/ha",
+    "phi_days": null,
+    "application_method": "Phun khi tỷ lệ bệnh khoảng 4-7%; khi cần có thể phun lại sau 5-7 ngày.",
+    "source_ids": [
+      "S27",
+      "S35"
+    ],
+    "verification": {
+      "regulatory_product_target": "VERIFIED",
+      "quantitative_label_data": "PARTIAL_VERIFIED",
+      "phi": "MISSING",
+      "cv_disease_to_registered_target_mapping": "NEEDS_AGRONOMIST_REVIEW"
+    },
+    "eligible_for_seed": false,
+    "blocked_reason": [
+      "Trang nhà sản xuất không công bố PHI; không được tự suy diễn.",
+      "Cần kỹ sư nông nghiệp xác nhận Tomato___Bacterial_spot ↔ 'đốm lá vi khuẩn/cà chua'."
+    ]
+  },
+  {
+    "candidate_rule_id": "TR-CAND-013",
+    "disease_code": "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot",
+    "crop_name": "Ngô",
+    "registered_target_text": "Đốm lá",
+    "pesticide_candidate_id": "P-CAND-007",
+    "pesticide_name": "Antracol 70WP",
+    "dose_min": 1.0,
+    "dose_max": 2.0,
+    "dose_unit": "kg/ha",
+    "water_volume_min": 320,
+    "water_volume_max": 500,
+    "water_volume_unit": "L/ha",
+    "phi_days": null,
+    "application_method": "Phun khi bệnh xuất hiện; phun ướt đều cây trồng.",
+    "source_ids": [
+      "S27",
+      "S29",
+      "S36"
+    ],
+    "verification": {
+      "regulatory_product_target": "VERIFIED_FOR_GENERIC_CORN_LEAF_SPOT",
+      "quantitative_label_data": "PARTIAL_VERIFIED",
+      "phi": "MISSING",
+      "cv_disease_to_registered_target_mapping": "LOW_CONFIDENCE_NEEDS_AGRONOMIST_REVIEW"
+    },
+    "eligible_for_seed": false,
+    "blocked_reason": [
+      "Danh mục/nhà sản xuất dùng thuật ngữ rộng 'đốm lá/ngô', chưa đủ để tự động đồng nhất với Cercospora/Gray Leaf Spot.",
+      "PHI chưa được xác minh từ primary label source.",
+      "TreatmentRule cần dose_min/dose_max để giữ đúng khoảng 1-2 kg/ha."
+    ]
+  },
+  {
+    "candidate_rule_id": "TR-CAND-014",
+    "disease_code": "Tomato___Leaf_Mold",
+    "crop_name": "Cà chua",
+    "registered_target_text": "Đốm lá",
+    "pesticide_candidate_id": "P-CAND-002",
+    "pesticide_name": "Ortiva 600SC",
+    "dose_min": 1.5,
+    "dose_max": 1.5,
+    "dose_unit": "L/ha",
+    "water_volume_min": 400,
+    "water_volume_max": 600,
+    "water_volume_unit": "L/ha",
+    "phi_days": 7,
+    "application_method": "Phun khi bệnh chớm xuất hiện.",
+    "source_ids": [
+      "S27",
+      "S29",
+      "S30"
+    ],
+    "verification": {
+      "regulatory_product_target": "VERIFIED_FOR_BROAD_TARGET",
+      "quantitative_label_data": "VERIFIED",
+      "cv_disease_to_registered_target_mapping": "LOW_CONFIDENCE_NEEDS_AGRONOMIST_REVIEW"
+    },
+    "eligible_for_seed": false,
+    "blocked_reason": [
+      "Đăng ký ghi chung 'đốm lá/cà chua'; không đủ để tự động đồng nhất với Leaf Mold.",
+      "Cần kỹ sư nông nghiệp xác nhận mapping trước khi lookup deterministic."
+    ]
+  },
+  {
+    "candidate_rule_id": "TR-CAND-015",
+    "disease_code": "Tomato___Septoria_leaf_spot",
+    "crop_name": "Cà chua",
+    "registered_target_text": "Đốm lá",
+    "pesticide_candidate_id": "P-CAND-002",
+    "pesticide_name": "Ortiva 600SC",
+    "dose_min": 1.5,
+    "dose_max": 1.5,
+    "dose_unit": "L/ha",
+    "water_volume_min": 400,
+    "water_volume_max": 600,
+    "water_volume_unit": "L/ha",
+    "phi_days": 7,
+    "application_method": "Phun khi bệnh chớm xuất hiện.",
+    "source_ids": [
+      "S27",
+      "S29",
+      "S30"
+    ],
+    "verification": {
+      "regulatory_product_target": "VERIFIED_FOR_BROAD_TARGET",
+      "quantitative_label_data": "VERIFIED",
+      "cv_disease_to_registered_target_mapping": "LOW_CONFIDENCE_NEEDS_AGRONOMIST_REVIEW"
+    },
+    "eligible_for_seed": false,
+    "blocked_reason": [
+      "Đăng ký ghi chung 'đốm lá/cà chua'; chưa chỉ đích danh Septoria lycopersici.",
+      "Cần kỹ sư nông nghiệp xác nhận mapping trước khi lookup deterministic."
+    ]
+  },
+  {
+    "candidate_rule_id": "TR-CAND-016",
+    "disease_code": "Squash___Powdery_mildew",
+    "crop_name": "Squash",
+    "registered_target_text": "Phấn trắng/bí xanh",
+    "pesticide_candidate_id": "P-CAND-008",
+    "pesticide_name": "Thumb 0.5SL",
+    "dose_min": 0.08,
+    "dose_max": 0.12,
+    "dose_unit": "% solution",
+    "water_volume_min": 500,
+    "water_volume_max": 600,
+    "water_volume_unit": "L/ha",
+    "phi_days": 2,
+    "application_method": "Phun khi bệnh mới xuất hiện.",
+    "source_ids": [
+      "S27",
+      "S29",
+      "S37"
+    ],
+    "verification": {
+      "regulatory_product_target": "VERIFIED_FOR_BI_XANH",
+      "quantitative_label_data": "SECONDARY_ONLY",
+      "cv_disease_to_registered_target_mapping": "CROP_MISMATCH_NEEDS_AGRONOMIST_REVIEW"
+    },
+    "eligible_for_seed": false,
+    "blocked_reason": [
+      "PlantVillage class là Squash, trong khi đăng ký Việt Nam là bí xanh; không tự động coi là cùng cây.",
+      "Dose/PHI đang dựa trên nguồn secondary, cần nhãn/primary source trước khi seed."
+    ]
+  }
+]

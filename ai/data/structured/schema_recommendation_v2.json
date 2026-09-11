@@ -1,0 +1,31 @@
+{
+  "treatment_rule": {
+    "current_problem": "Một trường dose: Float không biểu diễn đúng khoảng liều trên nhãn.",
+    "recommended_fields": {
+      "dose_min": "Float",
+      "dose_max": "Float",
+      "dose_unit": "String",
+      "phi_days": "Integer",
+      "application_method": "Text/String optional",
+      "source": "String/source_id",
+      "version": "String"
+    },
+    "fixed_dose_policy": "Liều cố định: dose_min = dose_max.",
+    "treatment_application_policy": "TreatmentApplication lưu dose thực tế đã dùng khi APPLIED, không lưu khoảng liều."
+  },
+  "disease_management_policy": {
+    "why": "Không phải class nào cũng có thuốc chữa trực tiếp; cần deterministic guardrail để LangGraph không hiểu 'không có TreatmentRule' là được phép để LLM tự chọn thuốc.",
+    "recommended_fields": [
+      "disease_code",
+      "management_status",
+      "direct_treatment_rule_allowed",
+      "chemical_rule_scope",
+      "source",
+      "version",
+      "notes"
+    ]
+  },
+  "provenance": {
+    "recommendation": "TreatmentRule nên tham chiếu source_id/source registry; nếu cần audit tốt hơn, bổ sung source_url/effective_date/verified_at/verified_by về sau."
+  }
+}

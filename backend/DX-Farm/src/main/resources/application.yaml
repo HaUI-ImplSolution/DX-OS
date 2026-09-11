@@ -35,20 +35,23 @@ spring:
     date-format: yyyy-MM-dd'T'HH:mm:ss.SSS
     time-zone: Asia/Ho_Chi_Minh
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Hostname nội bộ, không dùng issuer-uri - xem sso/README.md.
+          jwk-set-uri: http://keycloak:8080/realms/dxfarm/protocol/openid-connect/certs
+
 server:
   port: ${SERVER_PORT:8081}
 
 app:
   upload-dir: ${UPLOAD_DIR:./uploads}
 
-jwt:
-  secret: ${JWT_SECRET}
-  expiration: ${JWT_EXPIRATION:86400000}
-
-admin:
-  default:
-    username: ${SUPER_ADMIN_USERNAME:admin}
-    password: ${SUPER_ADMIN_PASSWORD}
+keycloak:
+  db:
+    # Mật khẩu role Postgres riêng của Keycloak.
+    password: ${KEYCLOAK_DB_PASSWORD:keycloak_demo_only}
 
 superset:
   readonly:

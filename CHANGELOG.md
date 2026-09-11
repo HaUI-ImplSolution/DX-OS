@@ -4,6 +4,18 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
 
 ## Backend (Spring Boot — `backend/DX-Farm`)
 
+### 2026-09-11
+
+**Đã xong — SSO thật qua Keycloak (Giai đoạn 2 [H]):**
+
+- Xác thực qua OAuth2 Resource Server, verify token bằng `jwk-set-uri` trỏ vào Keycloak nội bộ.
+  `KeycloakRoleConverter` map `realm_access.roles` thành `ROLE_FARMER`/`ROLE_ENGINEER`/`ROLE_ADMIN`.
+- `CurrentUserService` lấy `reportedBy`/`decidedBy` từ claim token, không tra DB.
+- `KeycloakDatabaseSeeder` tạo role/database Postgres riêng cho Keycloak, theo pattern `MattermostDatabaseSeeder`.
+- Quản lý tài khoản qua Keycloak Admin Console.
+  Chi tiết: `sso/README.md`.
+- Đã chạy thật qua `deploy`, xác nhận 401/403 bằng access token thật.
+
 ### 2026-09-09
 
 **Đã xong — Auth/SSO cơ bản (Giai đoạn 2 [H]):**
@@ -75,6 +87,15 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
 - Chưa có lookup chuẩn xác mã bệnh (`disease_code`) và tên tiếng Việt (`disease_name_vi`) để đồng bộ với mã `Disease` của CSDL backend (hiện API trả về `null`).
 ## Frontend (`frontend`)
 
+### 2026-09-11
+
+**Đã xong — Đăng nhập qua Keycloak (SSO thật):**
+
+- `src/auth.ts` dùng `oidc-client-ts` (Authorization Code + PKCE), phiên lưu ở `sessionStorage`.
+- Nút "Đăng nhập" redirect sang Keycloak, đọc `fullName`/`role` từ claim token sau khi quay về.
+- `src/api.ts` gắn Bearer token từ phiên OIDC; 401 tự xoá phiên, quay lại màn đăng nhập.
+- Đã test qua trình duyệt thật với từng tài khoản demo trong `sso/README.md`.
+
 ### 2026-09-09
 
 **Đã xong — Demo UI cho Phase 0 spine flow (M1–M6):**
@@ -102,6 +123,15 @@ handler `/uploads/**`).
 - Đã test qua trình duyệt thật với từng role, xác nhận UI và 401/403 đúng chỗ.
 
 ## Deploy (`deploy`)
+
+### 2026-09-11
+
+**Đã xong — service `keycloak` (SSO thật):**
+
+- Thêm service `keycloak` (image chính thức `quay.io/keycloak/keycloak:26.0`), cổng mặc định `8180`.
+  Tự import realm `dxfarm` từ `sso/realm-dxfarm.json` lúc khởi động, không cần thao tác tay.
+- `.env.example`: `KEYCLOAK_ADMIN_PASSWORD`/`KEYCLOAK_DB_PASSWORD` thay cho secret JWT/admin cũ.
+- Đã chạy thật bằng `docker compose up -d --build`.
 
 ### 2026-09-09
 
@@ -162,7 +192,24 @@ handler `/uploads/**`).
 - **Còn thiếu**: mỗi app đích vẫn đăng nhập riêng — portal chỉ là danh sách link tĩnh, sẽ trở
   thành landing page thật khi SSO (Keycloak/Authentik) được triển khai.
 
+## Identity Provider (`sso`, Keycloak)
+
+### 2026-09-11
+
+**Đã xong — SSO thật (Giai đoạn 2 [H]):**
+
+- Realm `dxfarm` (`sso/realm-dxfarm.json`): 3 realm role, client public `dxfarm-frontend` (PKCE), 3 tài khoản demo.
+- Backend và frontend đều xác thực qua Keycloak.
+  Chi tiết + trade-off hostname nội bộ vs. trình duyệt: `sso/README.md`.
+- **Còn thiếu**: Superset và Mattermost chưa nối SSO.
+
 ## Rà soát license (PoF)
+
+### 2026-09-11
+
+**Đã xong:**
+
+- Thêm Keycloak (Apache-2.0) và `oidc-client-ts` (MIT) vào `LICENSES.md`, cả hai OSI-approved.
 
 ### 2026-09-10
 

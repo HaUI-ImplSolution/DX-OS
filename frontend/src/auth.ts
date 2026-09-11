@@ -1,27 +1,88 @@
-import type { LoginResponse } from "./types";
+import { UserManager, WebStorageStateStore, type User as OidcUser } from "oidc-client-ts";
+import type { Role } from "./types";
 
-const STORAGE_KEY = "dxfarm.auth";
+const KEYCLOAK_URL = import.meta.env.VITE_KEYCLOAK_URL ?? "http://localhost:8080/realms/dxfarm";
+const CLIENT_ID = import.meta.env.VITE_KEYCLOAK_CLIENT_ID ?? "dxfarm-frontend";
+const ROLES: Role[] = ["FARMER", "ENGINEER", "ADMIN"];
 
-export type CurrentUser = LoginResponse;
-
-export function getCurrentUser(): CurrentUser | null {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw) as CurrentUser;
-  } catch {
-    return null;
-  }
+export interface CurrentUser {
+  username: string;
+  fullName: string;
+  role: Role;
 }
 
-export function getToken(): string | null {
-  return getCurrentUser()?.token ?? null;
+const userManager = new UserManager({
+  authority: KEYCLOAK_URL,
+  client_id: CLIENT_ID,
+  redirect_uri: window.location.origin,
+  post_logout_redirect_uri: window.location.origin,
+  response_type: "code",
+  scope: "openid profile",
+  userStore: new WebStorageStateStore({ store: window.sessionStorage }),
+});
+
+// Cache đồng bộ để api.ts đăng xuất ngay khi gặp 401, không cần chờ Promise.
+let cachedUser: CurrentUser | null = null;
+
+// Claim "realm_access" chỉ có trong access token, không có trong ID token (oidcUser.profile).
+function decodeJwtPayload(jwt: string): Record<string, unknown> {
+  const base64 = jwt.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+  return JSON.parse(atob(base64));
 }
 
-export function setCurrentUser(user: CurrentUser) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+function toCurrentUser(oidcUser: OidcUser): CurrentUser | null {
+  const claims = oidcUser.profile as Record<string, unknown>;
+  const accessTokenClaims = decodeJwtPayload(oidcUser.access_token);
+  const realmAccess = accessTokenClaims.realm_access as { roles?: string[] } | undefined;
+  const role = ROLES.find((r) => realmAccess?.roles?.includes(r));
+  if (!role) return null;
+  const preferredUsername = (claims.preferred_username as string) ?? "";
+  return {
+    username: preferredUsername,
+    fullName: (claims.name as string) ?? preferredUsername,
+    role,
+  };
 }
 
-export function clearCurrentUser() {
-  localStorage.removeItem(STORAGE_KEY);
+function refreshCachedUser(oidcUser: OidcUser | null): CurrentUser | null {
+  cachedUser = oidcUser && !oidcUser.expired ? toCurrentUser(oidcUser) : null;
+  return cachedUser;
+}
+
+export function getCachedUser(): CurrentUser | null {
+  return cachedUser;
+}
+
+export async function getCurrentUser(): Promise<CurrentUser | null> {
+  return refreshCachedUser(await userManager.getUser());
+}
+
+export async function getToken(): Promise<string | null> {
+  const oidcUser = await userManager.getUser();
+  return oidcUser && !oidcUser.expired ? oidcUser.access_token : null;
+}
+
+export function signIn(): Promise<void> {
+  return userManager.signinRedirect();
+}
+
+export function signOut(): Promise<void> {
+  clearSession();
+  return userManager.signoutRedirect();
+}
+
+export function clearSession() {
+  cachedUser = null;
+  void userManager.removeUser();
+}
+
+export function isCallbackRedirect(): boolean {
+  const params = new URLSearchParams(window.location.search);
+  return params.has("code") && params.has("state");
+}
+
+export async function handleCallback(): Promise<CurrentUser | null> {
+  const oidcUser = await userManager.signinRedirectCallback();
+  window.history.replaceState({}, document.title, window.location.pathname);
+  return refreshCachedUser(oidcUser);
 }

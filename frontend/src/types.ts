@@ -7,18 +7,6 @@ export interface ApiResponse<T> {
 
 export type Role = "FARMER" | "ENGINEER" | "ADMIN";
 
-export interface LoginRequest {
-  username: string;
-  password: string;
-}
-
-export interface LoginResponse {
-  token: string;
-  username: string;
-  fullName: string;
-  role: Role;
-}
-
 export interface Parcel {
   id: number;
   code: string;

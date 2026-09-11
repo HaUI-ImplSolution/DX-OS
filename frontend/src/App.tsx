@@ -1,10 +1,17 @@
 import { useEffect, useState } from "react";
 import { listCropSeasons, listDiseaseReports, listDiseases, listParcels } from "./api";
-import { clearCurrentUser, getCurrentUser, type CurrentUser } from "./auth";
+import {
+  getCachedUser,
+  getCurrentUser,
+  handleCallback,
+  isCallbackRedirect,
+  signIn,
+  signOut,
+  type CurrentUser,
+} from "./auth";
 import CropSeasonPanel from "./components/CropSeasonPanel";
 import DiagnosisPanel from "./components/DiagnosisPanel";
 import DiseaseReportPanel from "./components/DiseaseReportPanel";
-import LoginPanel from "./components/LoginPanel";
 import ParcelPanel from "./components/ParcelPanel";
 import ReferencePanel from "./components/ReferencePanel";
 import type { CropSeason, Diagnosis, Disease, DiseaseReport, Parcel } from "./types";
@@ -18,7 +25,8 @@ const ROLE_LABEL: Record<CurrentUser["role"], string> = {
 };
 
 export default function App() {
-  const [user, setUser] = useState<CurrentUser | null>(() => getCurrentUser());
+  const [user, setUser] = useState<CurrentUser | null>(null);
+  const [authReady, setAuthReady] = useState(false);
   const [tab, setTab] = useState<Tab>("flow");
   const [error, setError] = useState<string | null>(null);
 
@@ -33,17 +41,27 @@ export default function App() {
 
   const [diseases, setDiseases] = useState<Disease[]>([]);
 
-  // Token hết hạn/bị thu hồi -> api.ts đã tự xoá localStorage (401), đồng bộ lại state ở đây
-  // để quay về màn đăng nhập thay vì tiếp tục hiển thị dữ liệu cũ.
+  // Token hết hạn -> api.ts đã xoá session OIDC (401), đồng bộ lại state để quay về màn đăng nhập.
   const showError = (message: string) => {
     setError(message);
-    if (!getCurrentUser()) setUser(null);
+    if (!getCachedUser()) setUser(null);
   };
 
   const logout = () => {
-    clearCurrentUser();
-    setUser(null);
+    void signOut();
   };
+
+  useEffect(() => {
+    // Callback từ Keycloak thì đổi code lấy token, ngược lại đọc session OIDC hiện có.
+    (async () => {
+      try {
+        const loggedInUser = isCallbackRedirect() ? await handleCallback() : await getCurrentUser();
+        setUser(loggedInUser);
+      } finally {
+        setAuthReady(true);
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     // Chưa đăng nhập thì chưa có token -> chờ user đăng nhập xong mới gọi API,
@@ -88,14 +106,29 @@ export default function App() {
     );
   };
 
+  if (!authReady) {
+    return <div className="login-screen" />;
+  }
+
   if (!user) {
     return (
-      <LoginPanel
-        onLoggedIn={(loggedInUser) => {
-          setError(null);
-          setUser(loggedInUser);
-        }}
-      />
+      <div className="login-screen">
+        <section className="section login-card">
+          <header className="section-header">
+            <div>
+              <h2>Đăng nhập DX-Farm</h2>
+              <p className="section-subtitle">
+                Đăng nhập một lần dùng chung (SSO) qua Keycloak — tài khoản do quản trị viên HTX cấp.
+              </p>
+            </div>
+          </header>
+          <div className="form-actions">
+            <button className="btn btn-primary" onClick={() => void signIn()}>
+              Đăng nhập
+            </button>
+          </div>
+        </section>
+      </div>
     );
   }
 

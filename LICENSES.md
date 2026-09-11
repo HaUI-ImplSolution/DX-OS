@@ -7,9 +7,8 @@ Bảng dưới liệt kê từng thành phần đang thực sự chạy trong re
 
 | Thành phần | License | OSI-approved | Ghi chú |
 |---|---|---|---|
-| Spring Boot / Spring Framework / Spring Security (`org.springframework*`) | Apache-2.0 | ✅ | |
+| Spring Boot / Spring Framework / Spring Security (`org.springframework*`) | Apache-2.0 | ✅ | Bao gồm `spring-boot-starter-oauth2-resource-server` (xác thực token Keycloak) |
 | PostgreSQL JDBC Driver (`org.postgresql:postgresql`) | BSD-2-Clause (PostgreSQL License) | ✅ | |
-| jjwt (`io.jsonwebtoken:jjwt-*`) | Apache-2.0 | ✅ | |
 | springdoc-openapi | Apache-2.0 | ✅ | |
 | Lombok | MIT | ✅ | `optional=true`, không đóng gói vào runtime |
 | PostgreSQL (server, `postgres:15-alpine` image) | PostgreSQL License | ✅ | |
@@ -25,6 +24,7 @@ Khi bật lại cần rà license tương ứng: POI Apache-2.0 OK, các cái c�
 | Vite | MIT | ✅ |
 | TypeScript | Apache-2.0 | ✅ |
 | @vitejs/plugin-react | MIT | ✅ |
+| oidc-client-ts | MIT | ✅ |
 | nginx (ảnh serve production, `frontend/Dockerfile`) | BSD-2-Clause (nginx license) | ✅ |
 
 ## Portal (`portal`)
@@ -43,6 +43,7 @@ Chưa rà — sẽ làm khi tích hợp AI Service thật vào backend (xem `CHA
 |---|---|---|---|
 | Apache Superset (`apache/superset` image) | Apache-2.0 | ✅ | BI dashboard, thêm ở lượt này — xem `bi/` |
 | Mattermost (`mattermost/mattermost-team-edition` image) | AGPLv3 (server core) | ✅ | Xem mục riêng "Rà soát license Mattermost" dưới đây — không đơn giản như một dòng |
+| Keycloak (`quay.io/keycloak/keycloak` image) | Apache-2.0 | ✅ | Identity Provider cho SSO thật — xem `sso/README.md` |
 | Docker / Docker Compose (tooling, không đóng gói vào sản phẩm) | Apache-2.0 | ✅ | |
 
 ## Rà soát license Mattermost (kênh chat nội bộ)

@@ -30,12 +30,9 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dxfarm}
       SERVER_PORT: 8081
       UPLOAD_DIR: /app/uploads
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
-      SUPER_ADMIN_USERNAME: ${SUPER_ADMIN_USERNAME:-admin}
-      SUPER_ADMIN_PASSWORD: ${SUPER_ADMIN_PASSWORD}
       SUPERSET_RO_PASSWORD: ${SUPERSET_RO_PASSWORD:-superset_ro_demo_only}
       MATTERMOST_DB_PASSWORD: ${MATTERMOST_DB_PASSWORD:-mattermost_demo_only}
+      KEYCLOAK_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak_demo_only}
     volumes:
       - ./data/uploads:/app/uploads
     ports:
@@ -56,6 +53,32 @@ services:
       dockerfile: Dockerfile
     ports:
       - "${PORTAL_PORT:-8090}:80"
+
+  # Identity Provider cho đăng nhập một lần (SSO thật) - xem sso/README.md.
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    command: ["start-dev", "--import-realm"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    # Backend chưa có healthcheck - tự thử lại nếu lần đầu connect Postgres thất bại.
+    restart: on-failure
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_DB: postgres
+      # Role/database do backend tự tạo lúc khởi động (KeycloakDatabaseSeeder).
+      KC_DB_URL: "jdbc:postgresql://postgres:5432/keycloak"
+      KC_DB_USERNAME: keycloak_app
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak_demo_only}
+      KC_HOSTNAME: "http://localhost:${KEYCLOAK_PORT:-8180}"
+      KC_HEALTH_ENABLED: "true"
+    volumes:
+      - ../sso/realm-dxfarm.json:/opt/keycloak/data/import/realm-dxfarm.json:ro
+    ports:
+      - "${KEYCLOAK_PORT:-8180}:8080"
 
   superset:
     image: apache/superset:3.1.3

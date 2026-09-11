@@ -58,21 +58,23 @@ Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot
 - [x] M7 — Trả lời được câu hỏi kiểu "ruộng này còn cách ly không?" bằng SQL context
 - [ ] M8 — RAG trả lời có trích nguồn từ ít nhất một bộ tài liệu VietGAP/IRRI đã ingest (pgvector)
 - [ ] Frontend low-code thật cho nông hộ (ToolJet/Appsmith) thay vì gọi API tay
-ranch is up to date with 'o
+
 ### Giai đoạn 2 — Lấp đầy đủ 4 không gian H-P-D-I
 
 Đây là phần **cần bổ sung so với bản đề xuất thống nhất hiện tại**, vì đề bài OLP yêu cầu tường minh đủ 4 nhóm công cụ:
 
-- [ ] **[H]** Một SSO nhẹ (Keycloak/Authentik) + một kênh chat nội bộ (Mattermost) chạy thật trong docker-compose, không chỉ nằm trên giấy
-  - [x] Bước đệm đã xong: đăng nhập JWT + phân quyền FARMER/ENGINEER/ADMIN tự viết trong Spring
-    Boot (thay các field tên tự do như `reportedBy`/`approvedBy`) — đây **chưa phải SSO thật**,
-    chỉ là auth cục bộ riêng cho app này, mỗi user/mật khẩu do chính backend tự quản lý
-  - [ ] SSO thật: dựng thêm một Identity Provider riêng (Keycloak/Authentik) chạy trong
-    docker-compose, để sau này có thêm app khác (Mattermost, BI dashboard) thì đăng nhập 1 lần
-    dùng chung được, thay vì mỗi app một tài khoản như hiện tại
-  - [ ] Kênh chat nội bộ (Mattermost) — chưa bắt đầu
-- [ ] **[D]** Một dashboard BI tối thiểu (Superset/Metabase) hiển thị bản đồ/trạng thái thửa ruộng cho Ban quản trị — không dừng ở truy vấn SQL thuần
-- [ ] Rà lại license mọi thành phần open-core trước khi khoá stack (xem mục PoF bên dưới)
+- [x] **[H]** Một SSO nhẹ (Keycloak) + một kênh chat nội bộ (Mattermost) chạy thật trong docker-compose, không chỉ nằm trên giấy
+  - [x] SSO thật: Identity Provider Keycloak chạy trong docker-compose.
+    Backend xác thực bằng OAuth2 Resource Server, frontend và BI Dashboard (Superset) đăng nhập bằng redirect sang Keycloak.
+    Chi tiết: [`sso/README.md`](./sso/README.md).
+  - [x] Bước đệm trước SSO: trang portal tĩnh liệt kê link tới các app (App chính, BI, Chat) —
+    chưa đăng nhập chung được, nhưng người dùng không cần tự nhớ URL từng app. Chi tiết:
+    [`portal/README.md`](./portal/README.md).
+  - [x] Kênh chat nội bộ (Mattermost) — chạy thật trong docker-compose (image Team Edition chính thức), nền tảng tách biệt hoàn toàn có chủ đích, không dùng SSO chung với Keycloak. Chi tiết: [`chat/README.md`](./chat/README.md).
+  - [ ] Tích hợp thông báo tự động vào channel Mattermost (ví dụ: có `DiseaseReport` mới hoặc chờ duyệt thì backend tự post vào channel)
+- [x] **[D]** Dashboard BI (Apache Superset) hiển thị bản đồ/trạng thái thửa ruộng cho Ban quản trị, tự bootstrap qua docker-compose.
+  Chi tiết: [`bi/README.md`](./bi/README.md).
+- [x] Rà lại license mọi thành phần open-core trước khi khoá stack (xem mục PoF bên dưới) — xem [`LICENSES.md`](./LICENSES.md).
 
 ### Giai đoạn 3 — Chiều sâu (Later, sau khi Giai đoạn 0-2 chạy ổn)
 
@@ -91,7 +93,8 @@ Một PostgreSQL vật lý, ba nguồn logic:
 ## Điểm cần lưu ý cho tiêu chí PoF (50/100 điểm, mang tính loại trừ)
 
 - Giấy phép mọi thành phần phải **OSI-approved**; đã loại Llama (không đạt chuẩn OSD), chọn Qwen2.5-1.5B-Instruct (Apache-2.0).
-- ⚠️ **n8n Community Edition dùng Sustainable Use License — không phải OSI-approved.** Nếu còn dùng n8n trong stack, đây là rủi ro trừ điểm PoF nghiêm trọng cần xử lý trước khi khoá kiến trúc (ưu tiên: giữ LangGraph làm orchestrator chính, cân nhắc bỏ hẳn n8n hoặc thay bằng công cụ OSI-approved khác).
+- ✅ Không dùng n8n (Sustainable Use License, không OSI-approved) — LangGraph (Apache-2.0) là orchestrator.
+  Rà soát license đầy đủ từng thành phần: [`LICENSES.md`](./LICENSES.md).
 - Mã nguồn tự viết: SPDX header `Apache-2.0` ở đầu mỗi file, kèm `LICENSE` toàn văn ở gốc repo.
 - Source control phải public, có web viewer.
 - Phải build/cài đặt được từ source; khuyến khích Docker.
@@ -102,7 +105,7 @@ Một PostgreSQL vật lý, ba nguồn logic:
 ## Việc cần chốt cùng Lead trước khi chia task
 
 - [x] Phạm vi demo: chỉ spine flow (Giai đoạn 0) hay bao gồm cả [H]/[D] tối thiểu (Giai đoạn 2)?
-- [ ] Quyết định dứt khoát về n8n (giữ/bỏ) vì lý do license
+- [x] Quyết định dứt khoát về n8n (giữ/bỏ) vì lý do license — đã bỏ, xem `LICENSES.md`
 - [ ] Schema operational + structured knowledge (entity, field bắt buộc)
 - [ ] Contract `vision-api` (request/response JSON)
 - [ ] Contract giữa backend Spring Boot và AI Service Python (REST, base URL, timeout/retry, ai-service base URL cấu hình ở đâu)
@@ -110,32 +113,50 @@ Một PostgreSQL vật lý, ba nguồn logic:
 - [x] Cấu trúc monorepo và quyền sở hữu từng thư mục/module
 - [x] Chính sách repo Private trong lúc phát triển, thời điểm public trước khi nộp bài
 
-## Trạng thái hiện tại (cập nhật 2026-09-09)
+## Trạng thái hiện tại (cập nhật 2026-09-11)
 
-Backend Spring Boot đã xong, có đăng nhập JWT + phân quyền FARMER/ENGINEER/ADMIN; Frontend demo (React/Vite) cho Phase 0 spine flow đã xong, có màn đăng nhập; AI Service (Python) đã dựng xong phần Vision API cơ bản, đang thiếu phần điều phối LangGraph và LLM. Checklist việc còn thiếu: xem mục "Giai đoạn 0" ở trên. Chi tiết đầy đủ theo từng module: [`CHANGELOG.md`](./CHANGELOG.md).
+Backend Spring Boot đã xong, xác thực qua OAuth2 Resource Server (SSO thật qua Keycloak), phân quyền FARMER/ENGINEER/ADMIN theo realm role.
+Frontend demo (React/Vite) cho Phase 0 spine flow đã xong, đăng nhập bằng redirect sang Keycloak.
+AI Service (Python) đã dựng xong phần Vision API cơ bản, đang thiếu phần điều phối LangGraph và LLM.
+BI Dashboard (Superset) đã đăng nhập qua Keycloak; kênh chat nội bộ (Mattermost) đã chạy thật trong docker-compose kèm trang portal tĩnh liệt kê link tới các app — là nền tảng tách biệt có chủ đích, không dùng SSO chung.
+Đã rà soát license toàn bộ thành phần đang chạy ([`LICENSES.md`](./LICENSES.md)).
+Checklist việc còn thiếu: xem mục "Giai đoạn 0"/"Giai đoạn 2" ở trên.
+Chi tiết đầy đủ theo từng module: [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Chạy demo Phase 0
 
-Đóng gói cả Postgres + backend + frontend vào một lệnh duy nhất, dùng thư mục [`deploy`](./deploy)
-— đây là docker-compose file duy nhất trong repo, chạy một chỗ cho tiện:
+### 1. Khởi động (một lệnh duy nhất, dựng toàn bộ Postgres + Keycloak + backend + frontend + BI + chat + portal)
 
 ```bash
 cd deploy
-cp .env.example .env      # chỉnh lại nếu cần, đặc biệt JWT_SECRET và SUPER_ADMIN_PASSWORD
+cp .env.example .env      # chỉnh lại nếu cần, đặc biệt KEYCLOAK_ADMIN_PASSWORD, SUPERSET_*
 docker compose up -d --build
 ```
 
-- Frontend: http://localhost:8082 (nginx serve build tĩnh + reverse-proxy `/api` và `/uploads`
-  sang backend, nên không cần CORS, không cần biết host/port backend) — đăng nhập bằng
-  `SUPER_ADMIN_USERNAME`/`SUPER_ADMIN_PASSWORD` đã đặt trong `.env` (mặc định seed đúng 1 lần
-  lúc khởi động), sau đó dùng tài khoản admin đó gọi `POST /api/v1/users` (qua Swagger hoặc
-  curl) để tạo thêm tài khoản `ENGINEER`/`FARMER`.
-- Backend (Swagger/debug trực tiếp): http://localhost:8081/swagger-ui.html — bấm "Authorize"
-  và dán JWT lấy từ `POST /api/v1/auth/login` để gọi thử các API cần đăng nhập.
-- Dữ liệu Postgres + ảnh upload được lưu ở `deploy/data/` (bind mount, không mất khi
-  `docker compose down`; dùng `down -v` hoặc xoá thư mục nếu muốn làm sạch từ đầu)
-- Dừng: `docker compose down` (chạy trong thư mục `deploy`)
+### 2. Vào test
 
-Khi cần sửa code + hot reload thay vì rebuild image: chạy `docker compose up -d postgres` trong
-`deploy` để có sẵn Postgres, rồi `./mvnw spring-boot:run` (backend) và `npm run dev` (frontend,
-sau khi `cp .env.example .env`) như bình thường — không cần thêm docker-compose nào khác.
+| Service | Vào đâu | Đăng nhập |
+|---|---|---|
+| **Portal** (danh sách link các app) | http://localhost:8090 | Không cần đăng nhập — chỉ là trang link |
+| **App chính** (frontend) | http://localhost:8082 | Bấm "Đăng nhập" → redirect sang Keycloak, dùng tài khoản demo (xem [`sso/README.md`](./sso/README.md)) |
+| **Keycloak Admin Console** | http://localhost:8180/admin | `admin`/`KEYCLOAK_ADMIN_PASSWORD` trong `.env` |
+| **Backend** (Swagger, gọi API tay) | http://localhost:8081/swagger-ui.html | Lấy access token từ Keycloak (xem `sso/README.md`), bấm "Authorize" rồi dán vào |
+| **BI Dashboard** (Superset) | http://localhost:8088 | Bấm "Sign In with keycloak", dùng tài khoản demo (xem [`sso/README.md`](./sso/README.md)) |
+| **Chat nội bộ** (Mattermost) | http://localhost:8065 | Chưa có tài khoản — bấm "Create account" để tạo (tự động thành Admin) |
+
+### 3. Dừng lại
+
+```bash
+docker compose down
+```
+
+<details>
+<summary>Ghi chú thêm (chỉ cần khi cần, không bắt buộc đọc để test)</summary>
+
+- Quản lý tài khoản (tạo/xoá/đổi role FARMER/ENGINEER/ADMIN): qua Keycloak Admin Console.
+  Xem [`sso/README.md`](./sso/README.md).
+- Dữ liệu Postgres + ảnh upload lưu ở `deploy/data/` (bind mount, không mất khi `docker compose down`; dùng `down -v` hoặc xoá thư mục nếu muốn làm sạch từ đầu).
+- Chi tiết riêng từng service: [`sso/README.md`](./sso/README.md) (Keycloak), [`bi/README.md`](./bi/README.md) (Superset), [`chat/README.md`](./chat/README.md) (Mattermost), [`portal/README.md`](./portal/README.md) (trang portal).
+- Sửa code + hot reload thay vì rebuild image: chạy `docker compose up -d postgres` trong `deploy` để có sẵn Postgres, rồi `./mvnw spring-boot:run` (backend) và `npm run dev` (frontend, sau khi `cp .env.example .env`) như bình thường.
+
+</details>

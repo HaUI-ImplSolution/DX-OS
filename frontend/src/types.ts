@@ -7,24 +7,14 @@ export interface ApiResponse<T> {
 
 export type Role = "FARMER" | "ENGINEER" | "ADMIN";
 
-export interface LoginRequest {
-  username: string;
-  password: string;
-}
-
-export interface LoginResponse {
-  token: string;
-  username: string;
-  fullName: string;
-  role: Role;
-}
-
 export interface Parcel {
   id: number;
   code: string;
   farmerName: string;
   areaHectares: number;
   location: string | null;
+  latitude: number | null;
+  longitude: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -34,6 +24,8 @@ export interface ParcelCreateRequest {
   farmerName: string;
   areaHectares: number;
   location?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export type CropSeasonStatus = "ACTIVE" | "HARVESTED";

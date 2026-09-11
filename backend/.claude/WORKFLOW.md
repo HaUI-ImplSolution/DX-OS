@@ -82,6 +82,30 @@ Cách Claude nên vận hành trong thư mục này — về quy trình và hàn
   `/swagger-ui.html`, JSON ở `/v3/api-docs`, tự sinh từ code, không có lệnh lint/verify riêng
   ngoài compile.
 
+## 10. Comment và tài liệu ngắn, chỉ nêu kết quả cuối cùng
+- Comment trong code (`//`, `#`, docstring) phải **ngắn** và chỉ nêu **hành vi/kết quả hiện tại**
+  — không kể lại quá trình so sánh trước/sau ("trước làm X, đổi sang Y vì Z sẽ lỗi A"), không
+  liệt kê phương án đã bị loại bỏ, không thuật lại lý luận dẫn tới code hiện tại.
+- Trước khi stage/commit, đọc lại mọi comment mới thêm hoặc sửa trong diff. Rút còn 1-2 dòng nêu
+  đúng "làm gì, vì sao (nếu lý do không hiển nhiên từ context)" — bỏ hẳn phần kể chuyện đối
+  chiếu cũ/mới. Áp dụng cho cả comment class/module-level, không chỉ inline.
+- Cùng quy tắc áp dụng cho **tài liệu** — `README.md`, `CHANGELOG.md`, và mọi doc khác trong
+  repo: mục "Đã xong" chỉ liệt kê trạng thái/kết quả hiện tại, không kể lại diễn biến "trước đó
+  làm X, phát hiện lỗi Y, sửa thành Z" — phần diễn biến đó (nếu cần) thuộc về commit message/PR
+  description, không thuộc README/CHANGELOG.
+- Lý do: user yêu cầu rõ rút gọn comment đã staged rồi mở rộng sang tài liệu, bỏ khung so sánh
+  trước/sau ở cả hai — áp dụng như quy tắc chuẩn cho mọi lần sau, không phải chỉ một lần.
+
+## 11. File `.md` viết theo kiểu mỗi câu một dòng
+- Mọi file Markdown (`README.md`, `CHANGELOG.md`, `WORKFLOW.md`, doc trong `bi/`...) viết theo
+  semantic line breaks: mỗi câu bắt đầu một dòng nguồn mới, không gói (wrap) nhiều câu chung một
+  dòng dài rồi ngắt theo độ rộng cột tuỳ ý. Markdown coi các dòng liên tiếp không cách nhau bằng
+  dòng trống là cùng một đoạn, nên khi render ra vẫn là một đoạn văn bình thường.
+- Trong một bullet/list item, nếu có nhiều câu thì câu thứ hai trở đi xuống dòng mới (thụt lề
+  theo item cha), không dồn chung dòng với câu đầu.
+- Lý do: mỗi câu một dòng khiến diff khi sửa một câu chỉ đổi đúng dòng đó, không làm cả đoạn bị
+  reflow và đổi trắng những dòng không liên quan — dễ review hơn nhiều trên git.
+
 ## Nguyên tắc cốt lõi
 - **Đơn giản trước tiên** — thay đổi nhỏ nhất giải quyết được vấn đề; tối thiểu hoá code sinh ra.
 - **Không lười biếng** — sửa tận gốc, không vá tạm.

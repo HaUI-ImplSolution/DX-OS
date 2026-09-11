@@ -23,6 +23,8 @@ export default function ParcelPanel({
   const [farmerName, setFarmerName] = useState("");
   const [areaHectares, setAreaHectares] = useState("1");
   const [location, setLocation] = useState("");
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
@@ -34,12 +36,16 @@ export default function ParcelPanel({
         farmerName,
         areaHectares: Number(areaHectares),
         location: location || undefined,
+        latitude: latitude ? Number(latitude) : undefined,
+        longitude: longitude ? Number(longitude) : undefined,
       });
       onCreated(parcel);
       setCode("");
       setFarmerName("");
       setAreaHectares("1");
       setLocation("");
+      setLatitude("");
+      setLongitude("");
       setShowForm(false);
     } catch (err) {
       onError(err instanceof Error ? err.message : "Không tạo được thửa ruộng");
@@ -88,6 +94,20 @@ export default function ParcelPanel({
             required
           />
           <input placeholder="Vị trí (tuỳ chọn)" value={location} onChange={(e) => setLocation(e.target.value)} />
+          <input
+            type="number"
+            step="0.000001"
+            placeholder="Vĩ độ (tuỳ chọn, vd. 10.031967)"
+            value={latitude}
+            onChange={(e) => setLatitude(e.target.value)}
+          />
+          <input
+            type="number"
+            step="0.000001"
+            placeholder="Kinh độ (tuỳ chọn, vd. 105.783833)"
+            value={longitude}
+            onChange={(e) => setLongitude(e.target.value)}
+          />
           <div className="form-actions">
             <button type="submit" className="btn btn-primary" disabled={submitting}>
               {submitting ? "Đang lưu…" : "Tạo thửa ruộng"}

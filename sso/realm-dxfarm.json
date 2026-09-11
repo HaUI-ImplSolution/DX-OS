@@ -1,0 +1,113 @@
+{
+  "realm": "dxfarm",
+  "enabled": true,
+  "sslRequired": "none",
+  "roles": {
+    "realm": [
+      { "name": "FARMER", "description": "Nông hộ - gửi báo cáo bệnh, xem thửa ruộng của mình" },
+      { "name": "ENGINEER", "description": "Kỹ sư nông nghiệp - duyệt/từ chối chẩn đoán, xác nhận đã phun" },
+      { "name": "ADMIN", "description": "Quản trị viên" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "dxfarm-frontend",
+      "name": "DX-Farm frontend",
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "bearerOnly": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "consentRequired": false,
+      "redirectUris": [
+        "http://localhost:8082/*",
+        "http://localhost:5173/*"
+      ],
+      "webOrigins": [
+        "http://localhost:8082",
+        "http://localhost:5173"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:8082/*##http://localhost:5173/*"
+      },
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "profile",
+        "roles",
+        "email"
+      ]
+    },
+    {
+      "clientId": "dxfarm-superset",
+      "name": "DX-Farm Superset",
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "dxfarm_superset_demo_secret",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "consentRequired": false,
+      "redirectUris": [
+        "http://localhost:8088/oauth-authorized/keycloak"
+      ],
+      "webOrigins": [
+        "http://localhost:8088"
+      ],
+      "frontchannelLogout": true,
+      "attributes": {
+        "post.logout.redirect.uris": "http://localhost:8088/*",
+        "frontchannel.logout.url": "http://localhost:8088/logout/"
+      },
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "profile",
+        "roles",
+        "email"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "farmer1",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Nguyễn Văn",
+      "lastName": "Nông",
+      "email": "farmer1@dxfarm.local",
+      "credentials": [
+        { "type": "password", "value": "farmer123", "temporary": false }
+      ],
+      "realmRoles": ["FARMER"]
+    },
+    {
+      "username": "engineer1",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Trần",
+      "lastName": "Kỹ Sư",
+      "email": "engineer1@dxfarm.local",
+      "credentials": [
+        { "type": "password", "value": "engineer123", "temporary": false }
+      ],
+      "realmRoles": ["ENGINEER"]
+    },
+    {
+      "username": "admin1",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Quản Trị",
+      "lastName": "Viên",
+      "email": "admin1@dxfarm.local",
+      "credentials": [
+        { "type": "password", "value": "admin123", "temporary": false }
+      ],
+      "realmRoles": ["ADMIN"]
+    }
+  ]
+}

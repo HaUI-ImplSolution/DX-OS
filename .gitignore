@@ -1,85 +1,28 @@
-# Environment variables and local secrets
-.env
-.env.*
-*.env
-*.env.local
-!.env.example
-!**/.env.example
-
-# Python virtual environments
-.venv/
-venv/
-env/
-ENV/
-
-# Python bytecode, caches, builds, and test output
-__pycache__/
-*.py[cod]
-*$py.class
-.pytest_cache/
-.mypy_cache/
-.pyright/
-.ruff_cache/
-.tox/
-.nox/
-.coverage
-.coverage.*
-coverage.xml
-htmlcov/
-build/
-dist/
-*.egg-info/
-.eggs/
-.ipynb_checkpoints/
-
-# Downloaded AI models and large generated artifacts
-ai/service/models/
-ai/weights/
-ai/src/weights/
-ai/AI_TASKS_PHASE_0.md
-*.ckpt
-*.onnx
-*.pt
-*.pth
-*.safetensors
-
-# Node / frontend dependencies and generated output
-node_modules/
-frontend/dist/
-frontend/build/
-frontend/coverage/
-frontend/static/js/vendor.dll.js
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# Java / Maven build output
-**/target/
-*.class
-
-# Local database and Docker runtime data
 deploy/data/
 
-# Logs and temporary files
-*.log
-*.tmp
-*.swp
-*.swo
-*~
+deploy/.env
+*.env.local
+*.env
 
-# IDE settings
+ai/.idea
+ai/.venv
+ai/weights/
+ai/AI_TASKS_PHASE_0.md
+
+node_modules/
+frontend/dist/
+frontend/build/vendor-manifest.json
+frontend/static/js/vendor.dll.js
+npm-debug.log*
+yarn-error.log*
+*.log
+
+__pycache__/
+*.pyc
+*.pyo
+.venv/
 .idea/
 .vscode/
-
-# Office temporary and lock files
-.~lock.*#
-~$*
-
-# Operating-system metadata
 .DS_Store
-Thumbs.db
 
 .claude/settings.local.json
-# Local codebase analysis artifacts
-.ua/

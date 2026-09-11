@@ -63,7 +63,7 @@
         <div class="app-url">localhost:8082</div>
       </a>
 
-      <a class="app-card" href="http://localhost:8088" target="_blank" rel="noopener">
+      <a class="app-card" href="http://localhost:8088/login/keycloak" target="_blank" rel="noopener">
         <div class="app-name">BI Dashboard</div>
         <div class="app-desc">Bản đồ và trạng thái thửa ruộng (Apache Superset)</div>
         <div class="app-url">localhost:8088</div>
@@ -77,8 +77,9 @@
     </div>
 
     <div class="note">
-      Ứng dụng chính đã đăng nhập qua Keycloak (SSO thật) — BI Dashboard và Kênh chat nội bộ vẫn
-      yêu cầu đăng nhập riêng, chưa nối chung.
+      Ứng dụng chính và BI Dashboard đã đăng nhập qua Keycloak (SSO thật) — bấm vào tự chuyển
+      hướng đăng nhập nếu chưa có phiên, đăng nhập một lần dùng chung cho cả hai.
+      Kênh chat nội bộ vẫn yêu cầu đăng nhập riêng, chưa nối chung.
       Nếu bạn đổi cổng trong <code>deploy/.env</code>, sửa lại link tương ứng ở đây.
     </div>
   </div>

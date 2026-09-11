@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { listCropSeasons, listDiseaseReports, listDiseases, listParcels } from "./api";
 import {
+  callbackError,
+  clearCallbackParams,
   getCachedUser,
   getCurrentUser,
   handleCallback,
   isCallbackRedirect,
+  onSessionEnded,
   signIn,
   signOut,
   type CurrentUser,
@@ -27,6 +30,7 @@ const ROLE_LABEL: Record<CurrentUser["role"], string> = {
 export default function App() {
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [authReady, setAuthReady] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("flow");
   const [error, setError] = useState<string | null>(null);
 
@@ -53,7 +57,16 @@ export default function App() {
 
   useEffect(() => {
     // Callback từ Keycloak thì đổi code lấy token, ngược lại đọc session OIDC hiện có.
+    // Callback lỗi (huỷ đăng nhập, tài khoản bị khoá...) thì dừng lại báo lỗi, không auto-redirect
+    // lại kẻo lặp vô hạn.
     (async () => {
+      const failure = callbackError();
+      if (failure) {
+        clearCallbackParams();
+        setAuthError(failure);
+        setAuthReady(true);
+        return;
+      }
       try {
         const loggedInUser = isCallbackRedirect() ? await handleCallback() : await getCurrentUser();
         setUser(loggedInUser);
@@ -61,6 +74,18 @@ export default function App() {
         setAuthReady(true);
       }
     })();
+  }, []);
+
+  useEffect(() => {
+    // Chưa đăng nhập (và không phải do vừa lỗi) -> tự redirect sang Keycloak ngay, không bắt
+    // người dùng bấm thêm nút "Đăng nhập" - vào thẳng từ portal là vào được app sau khi qua SSO.
+    if (authReady && !user && !authError) void signIn();
+  }, [authReady, user, authError]);
+
+  useEffect(() => {
+    // Đăng xuất ở app khác (Superset) hoặc Keycloak Account Console cũng kết thúc phiên ở đây -
+    // single logout, xem sso/README.md.
+    return onSessionEnded(() => setUser(null));
   }, []);
 
   useEffect(() => {
@@ -110,26 +135,35 @@ export default function App() {
     return <div className="login-screen" />;
   }
 
-  if (!user) {
+  if (authError) {
     return (
       <div className="login-screen">
         <section className="section login-card">
           <header className="section-header">
             <div>
-              <h2>Đăng nhập DX-Farm</h2>
-              <p className="section-subtitle">
-                Đăng nhập một lần dùng chung (SSO) qua Keycloak — tài khoản do quản trị viên HTX cấp.
-              </p>
+              <h2>Đăng nhập thất bại</h2>
+              <p className="section-subtitle">{authError}</p>
             </div>
           </header>
           <div className="form-actions">
-            <button className="btn btn-primary" onClick={() => void signIn()}>
-              Đăng nhập
+            <button
+              className="btn btn-primary"
+              onClick={() => {
+                setAuthError(null);
+                void signIn();
+              }}
+            >
+              Thử lại
             </button>
           </div>
         </section>
       </div>
     );
+  }
+
+  if (!user) {
+    // Đang tự redirect sang Keycloak (xem effect ở trên) - không cần render gì thêm.
+    return <div className="login-screen" />;
   }
 
   return (

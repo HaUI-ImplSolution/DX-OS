@@ -65,13 +65,13 @@ Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot
 
 - [x] **[H]** Một SSO nhẹ (Keycloak) + một kênh chat nội bộ (Mattermost) chạy thật trong docker-compose, không chỉ nằm trên giấy
   - [x] SSO thật: Identity Provider Keycloak chạy trong docker-compose.
-    Backend xác thực bằng OAuth2 Resource Server, frontend đăng nhập bằng redirect sang Keycloak (PKCE).
+    Backend xác thực bằng OAuth2 Resource Server, frontend và BI Dashboard (Superset) đăng nhập bằng redirect sang Keycloak.
     Chi tiết: [`sso/README.md`](./sso/README.md).
-    Superset/Mattermost vẫn đăng nhập riêng, để sau.
   - [x] Bước đệm trước SSO: trang portal tĩnh liệt kê link tới các app (App chính, BI, Chat) —
     chưa đăng nhập chung được, nhưng người dùng không cần tự nhớ URL từng app. Chi tiết:
     [`portal/README.md`](./portal/README.md).
   - [x] Kênh chat nội bộ (Mattermost) — chạy thật trong docker-compose (image Team Edition chính thức). Chi tiết: [`chat/README.md`](./chat/README.md).
+  - [ ] SSO cho Mattermost: không làm — Team Edition (bản free) không hỗ trợ OpenID Connect với IdP tuỳ ý, tính năng đó thuộc Mattermost Enterprise (trả phí). Chi tiết: [`chat/README.md`](./chat/README.md).
   - [ ] Tích hợp thông báo tự động vào channel Mattermost (ví dụ: có `DiseaseReport` mới hoặc chờ duyệt thì backend tự post vào channel)
 - [x] **[D]** Dashboard BI (Apache Superset) hiển thị bản đồ/trạng thái thửa ruộng cho Ban quản trị, tự bootstrap qua docker-compose.
   Chi tiết: [`bi/README.md`](./bi/README.md).
@@ -119,7 +119,7 @@ Một PostgreSQL vật lý, ba nguồn logic:
 Backend Spring Boot đã xong, xác thực qua OAuth2 Resource Server (SSO thật qua Keycloak), phân quyền FARMER/ENGINEER/ADMIN theo realm role.
 Frontend demo (React/Vite) cho Phase 0 spine flow đã xong, đăng nhập bằng redirect sang Keycloak.
 AI Service (Python) đã dựng xong phần Vision API cơ bản, đang thiếu phần điều phối LangGraph và LLM.
-BI Dashboard (Superset) và kênh chat nội bộ (Mattermost) đã chạy thật trong docker-compose, kèm trang portal tĩnh liệt kê link tới các app — Superset/Mattermost chưa nối SSO, thuộc đợt sau.
+BI Dashboard (Superset) đã đăng nhập qua Keycloak; kênh chat nội bộ (Mattermost) đã chạy thật trong docker-compose kèm trang portal tĩnh liệt kê link tới các app, nhưng chưa nối SSO (Team Edition không hỗ trợ OpenID Connect với IdP tuỳ ý).
 Đã rà soát license toàn bộ thành phần đang chạy ([`LICENSES.md`](./LICENSES.md)).
 Checklist việc còn thiếu: xem mục "Giai đoạn 0"/"Giai đoạn 2" ở trên.
 Chi tiết đầy đủ theo từng module: [`CHANGELOG.md`](./CHANGELOG.md).
@@ -142,7 +142,7 @@ docker compose up -d --build
 | **App chính** (frontend) | http://localhost:8082 | Bấm "Đăng nhập" → redirect sang Keycloak, dùng tài khoản demo (xem [`sso/README.md`](./sso/README.md)) |
 | **Keycloak Admin Console** | http://localhost:8180/admin | `admin`/`KEYCLOAK_ADMIN_PASSWORD` trong `.env` |
 | **Backend** (Swagger, gọi API tay) | http://localhost:8081/swagger-ui.html | Lấy access token từ Keycloak (xem `sso/README.md`), bấm "Authorize" rồi dán vào |
-| **BI Dashboard** (Superset) | http://localhost:8088 | `SUPERSET_ADMIN_USERNAME`/`SUPERSET_ADMIN_PASSWORD` trong `.env` |
+| **BI Dashboard** (Superset) | http://localhost:8088 | Bấm "Sign In with keycloak", dùng tài khoản demo (xem [`sso/README.md`](./sso/README.md)) |
 | **Chat nội bộ** (Mattermost) | http://localhost:8065 | Chưa có tài khoản — bấm "Create account" để tạo (tự động thành Admin) |
 
 ### 3. Dừng lại

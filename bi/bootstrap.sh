@@ -3,6 +3,10 @@
 # dashboard mẫu - idempotent, chạy lại an toàn mỗi lần container khởi động.
 set -e
 
+# authlib không có sẵn trong image gốc, cần cho AUTH_OAUTH (superset_config.py) - không build lại
+# image, cài thẳng lúc container khởi động.
+pip install --no-cache-dir authlib
+
 superset db upgrade
 
 superset fab create-admin \

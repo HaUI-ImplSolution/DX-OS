@@ -22,11 +22,18 @@ Không chọn Metabase (AGPL-3.0, copyleft mạnh hơn dù vẫn OSI-approved) �
   - Nếu **chưa có** export nào (lần đầu dựng dashboard mới, trước khi có ai build+export) thì fallback: tự tạo database connection `DX-Farm` (role `superset_ro`) + 5 dataset (`parcels`, `crop_seasons`, `disease_reports`, `diagnoses`, `treatment_applications`) trỏ thẳng vào các bảng nghiệp vụ.
     Chart/dashboard thì để build tay theo hướng dẫn bên dưới.
   - Toàn bộ script idempotent (`overwrite=true`, tìm-theo-tên trước khi tạo mới) và có retry vì một vài request đầu tiên ngay sau khi Superset vừa khởi động đôi khi thất bại thoáng qua.
+- `bi/superset_config.py` (bind mount vào `/app/pythonpath/`, Superset tự nạp) cấu hình SSO thật qua Keycloak.
+  `authlib` không có sẵn trong image gốc nên `bootstrap.sh` tự `pip install` lúc container khởi động, không build lại image.
 
 ## Đăng nhập
 
 - URL: `http://localhost:${SUPERSET_PORT:-8088}`
-- Tài khoản: `SUPERSET_ADMIN_USERNAME`/`SUPERSET_ADMIN_PASSWORD` đặt trong `deploy/.env` (mẫu ở `.env.example`), seed đúng 1 lần lúc khởi động — giống cơ chế `SUPER_ADMIN_*` của backend.
+- Đăng nhập qua UI bằng SSO thật (Keycloak) — bấm "Sign In with keycloak", dùng tài khoản demo
+  trong [`sso/README.md`](../sso/README.md). Role realm map sang role Superset:
+  `ADMIN` → `Admin`, `ENGINEER`/`FARMER` → `Gamma`.
+- Tài khoản `SUPERSET_ADMIN_USERNAME`/`SUPERSET_ADMIN_PASSWORD` (seed lúc khởi động) vẫn tồn tại
+  song song, chỉ dùng cho REST API/automation (`bi/bootstrap_datasources.py` tự đăng nhập bằng
+  tài khoản này) — không đăng nhập được qua UI nữa vì đã bật `AUTH_TYPE = AUTH_OAUTH`.
 
 ## Xem/quản trị dữ liệu
 

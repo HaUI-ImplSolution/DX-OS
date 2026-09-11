@@ -92,9 +92,12 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
 **Đã xong — Đăng nhập qua Keycloak (SSO thật):**
 
 - `src/auth.ts` dùng `oidc-client-ts` (Authorization Code + PKCE), phiên lưu ở `sessionStorage`.
-- Nút "Đăng nhập" redirect sang Keycloak, đọc `fullName`/`role` từ claim token sau khi quay về.
+- Chưa có phiên thì tự redirect sang Keycloak ngay lúc mount, không cần bấm nút — vào thẳng từ portal cũng tự vào được app.
+  Callback lỗi (huỷ đăng nhập, tài khoản bị khoá...) thì dừng lại báo lỗi kèm nút thử lại, không lặp vô hạn.
+  Đọc `fullName`/`role` từ claim token sau khi quay về.
 - `src/api.ts` gắn Bearer token từ phiên OIDC; 401 tự xoá phiên, quay lại màn đăng nhập.
-- Đã test qua trình duyệt thật với từng tài khoản demo trong `sso/README.md`.
+- Single logout: bật `monitorSession` để tự phát hiện khi phiên Keycloak kết thúc ở app khác (Superset) hoặc Keycloak Account Console, tự đăng xuất theo. Chi tiết: `sso/README.md`.
+- Đã test qua trình duyệt thật với từng tài khoản demo trong `sso/README.md`, bao gồm bấm thẳng từ portal và đăng xuất chéo giữa App chính/Superset.
 
 ### 2026-09-09
 
@@ -152,6 +155,18 @@ handler `/uploads/**`).
 
 ## BI Dashboard (`bi`, Apache Superset)
 
+### 2026-09-11
+
+**Đã xong — SSO thật qua Keycloak:**
+
+- `bi/superset_config.py` bật `AUTH_TYPE = AUTH_OAUTH`, đăng nhập UI bằng redirect sang Keycloak.
+  `CustomSecurityManager` map claim `realm_access.roles` (đọc trực tiếp từ access token) sang role Superset: `ADMIN` → `Admin`, `ENGINEER`/`FARMER` → `Gamma`.
+- Client confidential `dxfarm-superset` mới trong `sso/realm-dxfarm.json`.
+- `bi/bootstrap.sh` tự `pip install authlib` lúc khởi động (không có sẵn trong image gốc, không build lại image).
+- Tài khoản admin DB cục bộ vẫn dùng được qua REST API cho `bootstrap_datasources.py`, không phụ thuộc `AUTH_TYPE`.
+- Single logout: `LOGOUT_REDIRECT_URL` khiến đăng xuất Superset cũng kết thúc phiên SSO ở Keycloak, không chỉ xoá cookie Superset. Client `dxfarm-superset` bật `frontchannelLogout` để nhận thông báo khi phiên SSO kết thúc từ nơi khác. Chi tiết: `sso/README.md`.
+- Đã đăng nhập thật qua trình duyệt bằng `engineer1`/`admin1`, xác nhận role map đúng và đăng xuất chéo với App chính hoạt động đúng cả 2 chiều.
+
 ### 2026-09-10
 
 **Đã xong — BI dashboard (Giai đoạn 2 [D]):**
@@ -169,6 +184,14 @@ handler `/uploads/**`).
 
 ## Kênh chat nội bộ (`chat`, Mattermost)
 
+### 2026-09-11
+
+**Quyết định — không nối SSO cho Mattermost:**
+
+- Team Edition (bản free đang dùng) không hỗ trợ OpenID Connect với IdP tuỳ ý — tính năng đó thuộc Mattermost Enterprise (trả phí).
+- Có thể lách bằng provider "GitLab" (generic OAuth2 built-in) trỏ sang Keycloak, nhưng cần custom protocol mapper giả dạng shape JSON của GitLab user và dựa vào hành vi nội bộ không được Mattermost chính thức hỗ trợ cho IdP ngoài GitLab — quyết định không làm.
+- App chính và BI Dashboard đã đăng nhập qua Keycloak, xem `sso/README.md`.
+
 ### 2026-09-10
 
 **Đã xong — Kênh chat nội bộ (Giai đoạn 2 [H]):**
@@ -180,6 +203,14 @@ handler `/uploads/**`).
 - **Còn thiếu**: tài khoản Mattermost hiện tách biệt khỏi tài khoản backend (FARMER/ENGINEER/ADMIN) — đăng nhập chung 1 lần cần SSO thật (Keycloak/Authentik), thuộc mục riêng chưa làm theo roadmap.
 
 ## Portal (`portal`)
+
+### 2026-09-11
+
+**Đã xong — bấm link từ portal vào thẳng app đã đăng nhập SSO:**
+
+- Link BI Dashboard trỏ thẳng `/login/keycloak` thay vì trang chủ Superset — vào thẳng luồng OAuth, không dừng ở màn hình "Sign In with keycloak".
+- Kết hợp với frontend tự redirect khi chưa có phiên: bấm app nào từ portal cũng tự chuyển sang Keycloak nếu chưa đăng nhập, xong quay lại đúng app đó; đã đăng nhập app này rồi thì bấm app kia (App chính/BI Dashboard) không cần đăng nhập lại.
+- Đã test qua trình duyệt thật: bấm portal → chưa có phiên → Keycloak → quay lại đúng app; bấm app còn lại → vào thẳng không cần đăng nhập lại.
 
 ### 2026-09-10
 
@@ -198,10 +229,11 @@ handler `/uploads/**`).
 
 **Đã xong — SSO thật (Giai đoạn 2 [H]):**
 
-- Realm `dxfarm` (`sso/realm-dxfarm.json`): 3 realm role, client public `dxfarm-frontend` (PKCE), 3 tài khoản demo.
-- Backend và frontend đều xác thực qua Keycloak.
+- Realm `dxfarm` (`sso/realm-dxfarm.json`): 3 realm role, client public `dxfarm-frontend` (PKCE), client confidential `dxfarm-superset`, 3 tài khoản demo.
+- Backend, frontend và BI Dashboard (Superset) đều xác thực qua Keycloak.
   Chi tiết + trade-off hostname nội bộ vs. trình duyệt: `sso/README.md`.
-- **Còn thiếu**: Superset và Mattermost chưa nối SSO.
+- Single logout (front-channel + session monitoring): đăng xuất ở app nào cũng kết thúc phiên SSO ở Keycloak, các app khác đang mở tự đăng xuất theo. Giới hạn: không phải backchannel logout chuẩn OIDC (chỉ hoạt động khi tab còn mở). Chi tiết: `sso/README.md`.
+- **Còn thiếu**: Mattermost chưa nối SSO — Team Edition không hỗ trợ OpenID Connect với IdP tuỳ ý, xem `chat/README.md`.
 
 ## Rà soát license (PoF)
 
@@ -210,6 +242,7 @@ handler `/uploads/**`).
 **Đã xong:**
 
 - Thêm Keycloak (Apache-2.0) và `oidc-client-ts` (MIT) vào `LICENSES.md`, cả hai OSI-approved.
+- Thêm Authlib (BSD-3-Clause, OSI-approved) vào `LICENSES.md` — pip package cho SSO OAuth của Superset.
 
 ### 2026-09-10
 

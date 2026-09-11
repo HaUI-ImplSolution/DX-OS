@@ -1,318 +1,100 @@
 # DX-Farm AI Event Schema
 
-Tài liệu tích hợp dành cho Backend và Frontend khi gọi AI Service. Contract này mô tả đúng API
-đang có trong thư mục ai/; không phải cam kết cho các endpoint Spring Boot.
+Contract local của AI service cho Backend/Frontend; base URL là `http://127.0.0.1:8000/api/v1` và `disease_code` phải khớp chính xác `Disease.code`.
 
-## 1. Quy tắc tích hợp
+## Quy tắc bất biến
 
-- Base URL local: http://127.0.0.1:8000/api/v1.
-- disease_code là mã canonical, phải khớp exact với Disease.code; không fuzzy-map.
-- PostgreSQL/structured knowledge là nguồn sự thật cho thuốc, hoạt chất, liều, PHI và policy.
-- RAG chỉ bổ sung evidence/source; không override structured facts.
-- LLM chỉ diễn đạt evidence. Ollama lỗi/timeout thì generation_mode là evidence_fallback.
-- APPROVED không có nghĩa là đã phun. Chỉ APPLIED mới tạo TreatmentApplication và bắt đầu PHI.
-- AI MVP chưa có authentication/authorization riêng; Backend production phải xác thực actor trước
-  khi proxy approve/reject/applied.
+- Structured PostgreSQL quyết định thuốc, hoạt chất, liều và PHI; RAG chỉ bổ sung evidence/source.
+- `APPROVED` không phải `APPLIED`; chỉ `APPLIED` tạo `TreatmentApplication` và bắt đầu PHI.
+- AI MVP chưa xác thực actor; Backend production phải xác thực/ủy quyền trước khi proxy transition.
 
-## 2. Workflow event map
+## Luồng bền vững
 
-~~~text
-WORKFLOW_REQUEST
-  -> RECOMMENDATION_PENDING
-       -> APPROVED -> WAITING_APPLIED -> APPLIED
-       -> APPROVED -> NOT_APPLICABLE
-       -> REJECTED  -> CANCELLED
-~~~
+```text
+POST workflow/run -> RECOMMENDATION_PENDING (PENDING/NOT_READY)
+APPROVED -> WAITING_APPLIED (treatment) | NOT_APPLICABLE (policy/review)
+REJECTED -> CANCELLED
+APPLIED -> TreatmentApplication + PHI lock
+```
 
-### Trạng thái
-
-| Field | Giá trị | Ý nghĩa |
-|---|---|---|
-| approval_status | PENDING | Đang chờ kỹ sư xử lý |
-| approval_status | APPROVED | Kỹ sư đã duyệt recommendation |
-| approval_status | REJECTED | Kỹ sư từ chối, phải có reason |
-| application_status | NOT_READY | Case mới, chưa approve |
-| application_status | WAITING_APPLIED | Chemical recommendation đã approve |
-| application_status | NOT_APPLICABLE | Policy/review path, không tạo chemical application |
-| application_status | APPLIED | Đã tạo TreatmentApplication, PHI có hiệu lực |
-| application_status | CANCELLED | Case bị reject |
-
-| structured_path | Ý nghĩa |
+| `structured_path` | Ý nghĩa |
 |---|---|
-| treatment | Có TreatmentRule hợp lệ; có thể chọn rule/dose |
-| policy | Có policy nhưng không được đề xuất hóa chất |
-| review_required | Chưa có rule/policy đủ điều kiện |
+| `treatment` | Có rule hợp lệ; engineer chọn rule và dose. |
+| `policy` | Chỉ policy; không có chemical action. |
+| `review_required` | Chưa đủ rule/policy; cần review. |
 
-## 3. Tạo recommendation
+## Endpoints
 
-Endpoint: POST /api/v1/disease/workflow/run
+| Method | Endpoint | Input chính | Output chính |
+|---|---|---|---|
+| POST | `/disease/workflow/run` | multipart image + context | recommendation, `case_id`, PENDING |
+| GET | `/disease/workflow/{case_id}` | case UUID | durable case + audit events |
+| POST | `/disease/workflow/{case_id}/approve` | actor, rule/dose khi treatment | APPROVED |
+| POST | `/disease/workflow/{case_id}/reject` | actor, reason | REJECTED/CANCELLED |
+| POST | `/disease/workflow/{case_id}/applied` | actor, actual dose, time | APPLIED + PHI lock |
+| POST | `/disease/predict` | multipart image | CV-only diagnosis |
+| POST | `/disease/knowledge/retrieve` | query, disease code, top_k | RAG evidence |
 
-Content-Type: multipart/form-data
+## `POST /disease/workflow/run`
 
-| Field | Bắt buộc | Kiểu | Ghi chú |
-|---|---:|---|---|
-| image | Có | image file | Tối đa 10 MiB |
-| request_id | Không | string | Nên truyền giá trị ổn định để retry idempotent |
-| parcel_code | Có nếu không có crop_season_id | string | Mã thửa/lô |
-| crop_season_id | Không | UUID | AI kiểm tra season thuộc parcel |
-| rag_question | Không | string | Câu hỏi bổ sung cho RAG |
-| requested_by | Không | string <=100 | Actor dùng cho audit MVP |
+`Content-Type: multipart/form-data`.
 
-~~~bash
-curl -X POST http://127.0.0.1:8000/api/v1/disease/workflow/run \
-  -F 'image=@tests/data/images/tomato_leaf.jpg;type=image/jpeg' \
-  -F 'request_id=field-report-2026-0001' \
-  -F 'parcel_code=DEMO-PARCEL-001' \
-  -F 'rag_question=Triệu chứng và lưu ý cách ly là gì?' \
-  -F 'requested_by=farmer-001'
-~~~
+| Field | Required | Rule |
+|---|---:|---|
+| `image` | yes | image, maximum 10 MiB |
+| `request_id` | no | stable client retry key; duplicate returns the same case |
+| `parcel_code` | conditional | required when `crop_season_id` is absent |
+| `crop_season_id` | conditional | UUID; must belong to supplied parcel when both exist |
+| `rag_question` | no | optional retrieval question |
+| `requested_by` | no | MVP audit actor |
 
-Response HTTP 200 ở checkpoint:
+Response has `approval_status: "PENDING"`; `application_status` can be `null` at this immediate checkpoint. Use `GET /workflow/{case_id}` as the durable source, where a new case is `NOT_READY`.
 
-~~~json
+```json
 {
-  "case_id": "8a5e7f6e-0e6f-4f2d-9f4f-25d7e6d4a901",
-  "request_id": "field-report-2026-0001",
+  "case_id": "uuid",
+  "request_id": "field-report-001",
   "approval_status": "PENDING",
-  "application_status": "NOT_READY",
-  "cv_result": {
-    "disease_code": "Tomato___Early_blight",
-    "disease_name": "Bệnh đốm vòng sớm trên cà chua",
-    "confidence": 0.91,
-    "model_name": "efficientnet_b4",
-    "model_version": "plant-disease-v1"
-  },
-  "field_context": {
-    "parcel": {"id": "...", "code": "DEMO-PARCEL-001"},
-    "current_season": {"id": "...", "status": "ACTIVE"},
-    "latest_diagnosis": null,
-    "latest_treatment": null,
-    "harvest": {"is_blocked": false, "locked_until": null}
-  },
-  "treatment_rule": {
-    "path": "treatment",
-    "disease_code": "Tomato___Early_blight",
-    "rules": [
-      {
-        "id": "rule-uuid",
-        "pesticide": "Tên từ structured DB",
-        "active_ingredient": "Hoạt chất từ structured DB",
-        "dose_min": 1.0,
-        "dose_max": 2.0,
-        "dose_unit": "...",
-        "phi_days": 7,
-        "source": "...",
-        "version": "...",
-        "notes": "..."
-      }
-    ],
-    "policy": null
-  },
-  "rag_context": [
-    {"content": "Evidence nguyên văn", "source_ids": ["source-001"], "score": 0.82}
-  ],
-  "recommendation": {
-    "path": "treatment",
-    "disease_code": "Tomato___Early_blight",
-    "confidence": 0.91,
-    "summary": "...",
-    "explanation": "...",
-    "generation_mode": "evidence_fallback",
-    "actions": [],
-    "policy": null,
-    "rag_sources": ["source-001"],
-    "requires_engineer_approval": true,
-    "low_confidence": false
-  },
-  "errors": [],
-  "timings_ms": {
-    "cv_inference": 120.0,
-    "rag_retrieval": 13.0,
-    "llm_generation": 5000.0,
-    "workflow_total": 5200.0
-  }
+  "cv_result": {"disease_code": "Tomato___Late_blight", "confidence": 0.91, "model_name": "EfficientNet-B4", "model_version": "v1.0"},
+  "recommendation": {"path": "treatment", "actions": [], "rag_sources": [], "requires_engineer_approval": true},
+  "errors": []
 }
-~~~
+```
 
-Gửi lại cùng request_id sẽ trả cùng case_id; Frontend không tạo case mới cho cùng request_id.
+## Durable case and events
 
-## 4. Đọc trạng thái và audit event
+`GET /disease/workflow/{case_id}` returns `approval_status`, `application_status`, recommendation, selected rule/dose, optional application and ordered `events`.
 
-Endpoint: GET /api/v1/disease/workflow/{case_id}
+| Event | Required details |
+|---|---|
+| `RECOMMENDATION_PENDING` | disease code, structured path, low confidence |
+| `APPROVED` | selected rule, approved dose, application status |
+| `REJECTED` | reason |
+| `APPLIED` | application id, actual dose, PHI and lock timestamp |
 
-Response durable state từ PostgreSQL:
+Render `events` by ascending `sequence`; do not infer a transition from UI state.
 
-~~~json
-{
-  "case_id": "...",
-  "request_id": "field-report-2026-0001",
-  "crop_season_id": "...",
-  "disease_report_id": "...",
-  "disease_code": "Tomato___Early_blight",
-  "structured_path": "treatment",
-  "recommendation": {},
-  "rag_source_ids": ["source-001"],
-  "low_confidence": false,
-  "approval_status": "PENDING",
-  "application_status": "NOT_READY",
-  "approval_reason": null,
-  "selected_rule_id": null,
-  "approved_dose": null,
-  "application": null,
-  "events": [
-    {
-      "sequence": 1,
-      "event_type": "RECOMMENDATION_PENDING",
-      "actor_id": "farmer-001",
-      "details": {
-        "disease_code": "Tomato___Early_blight",
-        "structured_path": "treatment",
-        "low_confidence": false
-      },
-      "created_at": "2026-09-11T08:00:00+00:00"
-    }
-  ],
-  "created_at": "2026-09-11T08:00:00+00:00",
-  "updated_at": "2026-09-11T08:00:00+00:00"
-}
-~~~
+## Transition payloads
 
-Event hiện có:
+```json
+// approve: policy/review omits selected_rule_id and approved_dose
+{"actor_id":"engineer-001","selected_rule_id":"uuid","approved_dose":1.5,"confirmed_low_confidence":false}
+// reject
+{"actor_id":"engineer-001","reason":"Cần ảnh rõ hơn"}
+// applied
+{"actor_id":"farmer-001","actual_dose":1.5,"applied_at":"2026-09-11T08:30:00Z"}
+```
 
-| Event | Khi tạo | details |
-|---|---|---|
-| RECOMMENDATION_PENDING | Graph hoàn tất recommendation | disease_code, structured_path, low_confidence |
-| APPROVED | Kỹ sư approve | selected_rule_id, approved_dose, application_status |
-| REJECTED | Kỹ sư reject | reason |
-| APPLIED | Xác nhận đã phun | application_id, actual_dose, PHI, lock timestamp |
+Treatment approve requires a listed rule and dose inside its range; low-confidence treatment requires explicit confirmation. Applied retries with the same dose/time are idempotent; a different payload returns `409`.
 
-sequence bắt đầu từ 1 và tăng theo từng case. Render timeline theo sequence.
+## Errors
 
-## 5. Transition events
-
-### Approve
-
-Endpoint: POST /api/v1/disease/workflow/{case_id}/approve
-
-~~~json
-{
-  "actor_id": "engineer-001",
-  "selected_rule_id": "rule-uuid",
-  "approved_dose": 1.5,
-  "confirmed_low_confidence": false
-}
-~~~
-
-Với treatment, selected_rule_id và approved_dose bắt buộc; dose phải nằm trong
-[dose_min, dose_max]. Response là APPROVED + WAITING_APPLIED, chưa có application và PHI.
-
-Với policy/review_required, không gửi chemical rule/dose; response là APPROVED +
-NOT_APPLICABLE.
-
-### Reject
-
-Endpoint: POST /api/v1/disease/workflow/{case_id}/reject
-
-~~~json
-{
-  "actor_id": "engineer-001",
-  "reason": "Cần chụp lại ảnh rõ hơn"
-}
-~~~
-
-Response là REJECTED + CANCELLED; reason được lưu trong case và event.
-
-### Applied
-
-Endpoint: POST /api/v1/disease/workflow/{case_id}/applied
-
-~~~json
-{
-  "actor_id": "farmer-001",
-  "actual_dose": 1.5,
-  "applied_at": "2026-09-11T08:30:00Z"
-}
-~~~
-
-Chỉ case APPROVED + WAITING_APPLIED + treatment mới được APPLIED. AI kiểm tra lại rule và
-actual_dose rồi tạo application snapshot:
-
-~~~json
-{
-  "application_status": "APPLIED",
-  "application": {
-    "id": "application-uuid",
-    "pesticide_id": "...",
-    "pesticide_name": "...",
-    "active_ingredient": "...",
-    "actual_dose": 1.5,
-    "dose_unit": "...",
-    "phi_days": 7,
-    "rule_version": "...",
-    "rule_source": "...",
-    "applied_at": "2026-09-11T08:30:00+00:00",
-    "harvest_locked_until": "2026-09-18T08:30:00+00:00",
-    "status": "APPLIED"
-  }
-}
-~~~
-
-Retry cùng actual_dose và applied_at trả application cũ. Payload khác trả HTTP 409; AI không
-clamp dose.
-
-## 6. Endpoint phụ trợ
-
-| Method | Endpoint | Dùng cho |
-|---|---|---|
-| GET | /api/v1/disease/health | Kiểm tra model đã load |
-| GET | /api/v1/disease/class-contract | Lấy 38 canonical disease classes |
-| POST | /api/v1/disease/predict | CV-only; multipart image |
-| POST | /api/v1/disease/reports/{report_id}/diagnose | Lưu diagnosis cho report có sẵn |
-| POST | /api/v1/disease/knowledge/retrieve | RAG retrieval có filter disease/top_k |
-
-RAG request:
-
-~~~json
-{
-  "query": "Triệu chứng bệnh sương mai cà chua",
-  "disease_code": "Tomato___Late_blight",
-  "top_k": 3
-}
-~~~
-
-top_k nằm trong 1–20. Retrieval chỉ là evidence có provenance, không phải quyết định thuốc.
-
-## 7. HTTP errors
-
-| HTTP | Trường hợp | Cách xử lý |
-|---:|---|---|
-| 400 | Ảnh/UUID/context/request sai | Hiển thị lỗi input, không retry mù |
-| 404 | Parcel, crop season hoặc case không tồn tại | Kiểm tra ID/context |
-| 409 | Transition sai trạng thái hoặc retry APPLIED khác payload | Refresh case, hiển thị conflict |
-| 413 | Ảnh lớn hơn 10 MiB | Yêu cầu ảnh nhỏ hơn |
-| 422 | Dose ngoài range, thiếu reason/field approve | Hiển thị validation |
-| 500 | Lỗi workflow nội bộ | Dùng message chung; xem log bằng request id |
-| 503 | CV model/DB không sẵn sàng | Retry có backoff; không tự approve/apply |
-
-Không hiển thị traceback, filesystem path, SQL hoặc secret cho người dùng cuối.
-
-## 8. Hướng dẫn nối Backend và Frontend
-
-Backend nên:
-
-1. Tạo request_id ổn định cho một lần báo bệnh và truyền lại khi retry.
-2. Proxy multipart tới workflow/run, lưu case_id cùng nghiệp vụ backend.
-3. Chỉ role kỹ sư gọi approve/reject; chỉ actor được phép xác nhận applied.
-4. Không chuyển APPROVED thành APPLIED nếu chưa có xác nhận thực tế.
-5. Đồng bộ trạng thái từ GET workflow/{case_id} sau mỗi transition.
-
-Frontend nên:
-
-1. Hiển thị recommendation.path, low_confidence, rag_sources và events.
-2. Với treatment, chỉ chọn selected_rule_id từ treatment_rule.rules và validate dose range.
-3. Với policy/review, ẩn nút chemical approve/applied.
-4. Chỉ hiển thị cách ly từ application.harvest_locked_until sau APPLIED.
-5. Dùng events[].sequence làm audit timeline.
-
-Runbook: ai/README_MVP_RUNBOOK.md.
-
+| HTTP | Meaning |
+|---:|---|
+| 400 | invalid image, UUID or workflow context |
+| 404 | parcel, season or case missing |
+| 409 | invalid state transition or non-idempotent applied retry |
+| 413 | image exceeds 10 MiB |
+| 422 | invalid dose, missing transition field or low-confidence confirmation |
+| 500 | internal workflow failure |
+| 503 | CV model or database unavailable |

@@ -22,7 +22,7 @@ Ghi vào [`LICENSES.md`](../LICENSES.md) đúng caveat này để minh bạch kh
 - Dữ liệu (config, tin nhắn, file đính kèm, log, plugin) persist qua bind mount `deploy/data/mattermost/` — không mất khi `docker compose down`.
 - Service phụ `mattermost-init` (image `alpine`, chạy 1 lần rồi tắt) tự `chown` các thư mục bind mount trên về `uid 2000` — Mattermost chạy bằng user không phải root nhưng thư mục bind mount tạo lần đầu thuộc `root`, nếu không chown trước thì container chính báo lỗi `permission denied` lúc khởi động.
 - Tài khoản Mattermost hiện tách biệt khỏi tài khoản backend (`FARMER`/`ENGINEER`/`ADMIN`) — user đầu tiên tự đăng ký qua UI sẽ tự động thành System Admin của Mattermost.
-  App chính và BI Dashboard đã đăng nhập qua Keycloak (xem [`sso/README.md`](../sso/README.md)); Mattermost chưa nối vì Team Edition (bản free) không hỗ trợ SSO chuẩn với IdP tuỳ ý — tính năng OpenID Connect chỉ có ở Mattermost Enterprise (trả phí).
+  Đây là nền tảng tách biệt hoàn toàn có chủ đích: App chính và BI Dashboard đăng nhập qua Keycloak (xem [`sso/README.md`](../sso/README.md)), còn Mattermost dùng tài khoản/role riêng của chính nó, không nối SSO chung — Team Edition (bản free) không hỗ trợ OpenID Connect với IdP tuỳ ý (tính năng đó thuộc Mattermost Enterprise, trả phí).
 
 ## Đăng nhập lần đầu
 
@@ -42,6 +42,4 @@ Ghi vào [`LICENSES.md`](../LICENSES.md) đúng caveat này để minh bạch kh
 
 ## Còn thiếu
 
-- SSO thật qua Keycloak: chưa làm cho Mattermost, vì Team Edition (bản free đang dùng) không hỗ trợ OpenID Connect chuẩn với IdP tuỳ ý — tính năng đó thuộc Mattermost Enterprise (trả phí).
-  Có thể lách bằng provider "GitLab" (generic OAuth2 built-in) trỏ sang Keycloak, nhưng cần custom protocol mapper giả dạng shape JSON của GitLab user và không được Mattermost chính thức hỗ trợ cho IdP ngoài GitLab — quyết định không làm để tránh phụ thuộc hành vi nội bộ không chính thức.
 - Chưa tích hợp thông báo tự động (ví dụ: có `DiseaseReport` mới thì post vào channel Mattermost) — nằm ngoài phạm vi "chạy thật trong docker-compose" của lượt này.

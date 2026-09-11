@@ -200,7 +200,7 @@ handler `/uploads/**`).
 - Backend tự tạo role + database Postgres riêng `mattermost_app`/`mattermost` lúc khởi động (`MattermostDatabaseSeeder`, JDBC thuần vì `CREATE DATABASE` không chạy được trong khối PL/pgSQL `DO $$ ... $$`) — tách biệt hoàn toàn khỏi CSDL nghiệp vụ.
 - Dữ liệu chat persist qua bind mount `deploy/data/mattermost/`.
 - Rà soát license kỹ vì Mattermost không dùng một license duy nhất: server core AGPLv3 (OSI-approved), `server/enterprise/` là Mattermost Source Available License (không OSI-approved, không dùng tới), bản binary Team Edition được Mattermost, Inc. cấp phép lại MIT riêng cho đúng binary đó. Ghi chi tiết ở `LICENSES.md` và `chat/README.md`.
-- **Còn thiếu**: tài khoản Mattermost hiện tách biệt khỏi tài khoản backend (FARMER/ENGINEER/ADMIN) — đăng nhập chung 1 lần cần SSO thật (Keycloak/Authentik), thuộc mục riêng chưa làm theo roadmap.
+- Tài khoản Mattermost tách biệt hoàn toàn khỏi tài khoản backend (FARMER/ENGINEER/ADMIN) có chủ đích — nền tảng riêng, không dùng SSO chung.
 
 ## Portal (`portal`)
 
@@ -233,7 +233,7 @@ handler `/uploads/**`).
 - Backend, frontend và BI Dashboard (Superset) đều xác thực qua Keycloak.
   Chi tiết + trade-off hostname nội bộ vs. trình duyệt: `sso/README.md`.
 - Single logout (front-channel + session monitoring): đăng xuất ở app nào cũng kết thúc phiên SSO ở Keycloak, các app khác đang mở tự đăng xuất theo. Giới hạn: không phải backchannel logout chuẩn OIDC (chỉ hoạt động khi tab còn mở). Chi tiết: `sso/README.md`.
-- **Còn thiếu**: Mattermost chưa nối SSO — Team Edition không hỗ trợ OpenID Connect với IdP tuỳ ý, xem `chat/README.md`.
+- Mattermost là nền tảng chat tách biệt có chủ đích, không nối SSO — xem `chat/README.md`.
 
 ## Rà soát license (PoF)
 

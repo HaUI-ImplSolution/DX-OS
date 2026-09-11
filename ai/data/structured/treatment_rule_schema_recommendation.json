@@ -1,0 +1,14 @@
+{
+  "reason": "Nhãn thực tế có thể quy định liều theo khoảng, ví dụ 2.0-2.5 L/ha. Một trường dose: Float làm mất thông tin.",
+  "treatment_rule_recommended_fields": {
+    "dose_min": "Float, nullable=False",
+    "dose_max": "Float, nullable=False",
+    "dose_unit": "String",
+    "phi_days": "Integer",
+    "application_method": "Text/String, optional",
+    "source": "String/source_id",
+    "version": "String"
+  },
+  "fixed_dose_policy": "Nếu nhãn chỉ có một liều cố định thì dose_min = dose_max.",
+  "treatment_application_policy": "TreatmentApplication vẫn nên lưu một giá trị dose thực tế đã áp dụng (snapshot), không phải khoảng cho phép."
+}

@@ -1,3 +1,7 @@
+import uuid
+from datetime import datetime
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -38,22 +42,14 @@ class WorkflowRunRequest(BaseModel):
     request_id: str | None = Field(default=None, description="Mã định danh yêu cầu")
     parcel_code: str | None = Field(default=None, description="Mã mảnh ruộng/lô đất")
     crop_season_id: str | None = Field(default=None, description="ID vụ mùa")
-    rag_question: str | None = Field(default=None, description="Câu hỏi bổ sung cho RAG")
-    approval_status: str | None = Field(
-        default="PENDING", description="Trạng thái phê duyệt: PENDING, APPROVED, REJECTED"
+    rag_question: str | None = Field(
+        default=None, description="Câu hỏi bổ sung cho RAG"
     )
-    approval_reason: str | None = Field(
-        default=None, description="Lý do từ chối nếu REJECTED"
-    )
-    selected_rule_id: str | None = Field(
-        default=None, description="ID quy trình được chọn nếu APPROVED"
-    )
-    approved_dose: float | None = Field(
-        default=None, description="Liều lượng phê duyệt"
-    )
+    requested_by: str | None = Field(default=None, max_length=100)
 
 
 class WorkflowRunResponse(BaseModel):
+    case_id: str | None = None
     request_id: str
     approval_status: str
     application_status: str | None = None
@@ -64,4 +60,22 @@ class WorkflowRunResponse(BaseModel):
     recommendation: Any | None = None
     response: dict[str, Any] | None = None
     errors: list[str] | None = None
+    timings_ms: dict[str, float] | None = None
 
+
+class ApproveWorkflowRequest(BaseModel):
+    actor_id: str = Field(min_length=1, max_length=100)
+    selected_rule_id: uuid.UUID | None = None
+    approved_dose: float | None = None
+    confirmed_low_confidence: bool = False
+
+
+class RejectWorkflowRequest(BaseModel):
+    actor_id: str = Field(min_length=1, max_length=100)
+    reason: str = Field(min_length=1, max_length=2000)
+
+
+class ApplyWorkflowRequest(BaseModel):
+    actor_id: str = Field(min_length=1, max_length=100)
+    actual_dose: float = Field(gt=0)
+    applied_at: datetime

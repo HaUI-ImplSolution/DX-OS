@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload
 
 from ..models.treatment_application import TreatmentApplication
@@ -70,6 +70,20 @@ def create_treatment_from_rule(
     )
 
 
+def get_harvest_lock_until(
+    db: Session,
+    crop_season_id: uuid.UUID,
+) -> datetime | None:
+    """Return the latest effective PHI boundary across all applied treatments."""
+
+    return db.scalar(
+        select(func.max(TreatmentApplication.harvest_locked_until)).where(
+            TreatmentApplication.crop_season_id == crop_season_id,
+            TreatmentApplication.status == "APPLIED",
+        )
+    )
+
+
 def get_latest_treatment(
     db: Session,
     crop_season_id: uuid.UUID,
@@ -120,10 +134,7 @@ def is_harvest_blocked(
     if at_time is None:
         at_time = datetime.now(timezone.utc)
 
-    latest = get_latest_treatment(
-        db=db,
-        crop_season_id=crop_season_id,
-    )
-    if latest is None:
+    locked_until = get_harvest_lock_until(db=db, crop_season_id=crop_season_id)
+    if locked_until is None:
         return False
-    return at_time < latest.harvest_locked_until
+    return at_time < locked_until

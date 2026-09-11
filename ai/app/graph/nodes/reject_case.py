@@ -1,10 +1,11 @@
-from typing import Any, Dict
+from typing import Any
+
 from app.graph.state import FarmState
 
 
-def reject_case(state: FarmState) -> Dict[str, Any]:
+def reject_case(state: FarmState) -> dict[str, Any]:
     """Node executed when engineer rejects recommendation.
-    
+
     Sets approval_status to REJECTED, application_status to CANCELLED,
     and requires an audit reason.
     """
@@ -22,5 +23,3 @@ def reject_case(state: FarmState) -> Dict[str, Any]:
         "recommendation": state.get("recommendation"),
     }
     return state
-
-

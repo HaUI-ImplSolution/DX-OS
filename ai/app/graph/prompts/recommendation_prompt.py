@@ -1,6 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
-# TODO: Định nghĩa prompt template cho node generate_recommendation.
-# Nguyên tắc bắt buộc:
-# - LLM CHỈ diễn đạt lại facts đã được cung cấp (CV result, TreatmentRule, RAG context).
-# - LLM KHÔNG ĐƯỢC tự sinh liều lượng, tên thuốc, số ngày cách ly (PHI) hay bất kỳ số liệu định lượng nào.
-# - Output phải là văn bản tiếng Việt dễ hiểu cho kỹ sư nông nghiệp review.
+"""Prompt for extractive, evidence-only recommendation wording."""
+
+GROUNDED_EXCERPT_INSTRUCTION = (
+    "Chọn một đoạn nguyên văn ngắn, hữu ích nhất từ EVIDENCE. "
+    "Không thêm thuốc, hoạt chất, liều hoặc PHI. Chỉ trả đoạn đã chọn."
+)
+
+
+def build_grounded_excerpt_prompt(evidence: str) -> str:
+    """Build the prompt without mixing structured treatment facts into the LLM input."""
+
+    return f"{GROUNDED_EXCERPT_INSTRUCTION}\n\nEVIDENCE:\n{evidence}"

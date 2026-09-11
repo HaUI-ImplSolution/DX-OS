@@ -5,13 +5,14 @@ from pathlib import Path
 
 import pytest
 import torch
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+from PIL import Image
+
 from app.api.router import router
 from app.cv.class_names import CLASS_NAMES
 from app.cv.contract import canonical_code, class_contract
 from app.services.plant_disease_service import PlantDiseaseService
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
-from PIL import Image
 
 
 class Model(torch.nn.Module):
@@ -81,4 +82,5 @@ def test_health_predict_and_error_contract():
             == 400
         )
     assert len(client.get("/api/v1/disease/class-contract").json()["classes"]) == 38
-    assert client.post("/api/v1/disease/workflow/run").status_code == 501
+    # Stage 8 endpoint exists; multipart image and context are required.
+    assert client.post("/api/v1/disease/workflow/run").status_code == 422

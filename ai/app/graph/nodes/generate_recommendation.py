@@ -1,16 +1,15 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Generate recommendation node.
-Creates a simple textual recommendation using CV result, treatment rule, and optional RAG context.
-This placeholder avoids heavy LLM calls – it builds a deterministic string for minimal MVP.
-"""
+"""Build a structured recommendation and an optional grounded explanation."""
 
-from typing import Any, Dict
+import time
+from typing import Any
+
 from app.graph.state import FarmState  # type: ignore
 
 
-def generate_recommendation(state: FarmState) -> Dict[str, Any]:
+def generate_recommendation(state: FarmState) -> dict[str, Any]:
     """Generate structured recommendation while strictly adhering to safety guardrails.
-    
+
     Guardrails:
     - LLM / Generator MUST NOT invent pesticides, active ingredients, doses, or PHI.
     - If path == 'treatment', use strictly provided TreatmentRule(s).
@@ -33,33 +32,52 @@ def generate_recommendation(state: FarmState) -> Dict[str, Any]:
                 source_ids.append(s_id)
 
     actions = []
-    summary_parts = [f"Chẩn đoán nhận diện: {disease_name} ({disease_code}) với độ tin cậy {confidence:.1%}."]
+    summary_parts = [
+        f"Chẩn đoán nhận diện: {disease_name} ({disease_code}) với độ tin cậy {confidence:.1%}."
+    ]
 
     if path == "treatment":
         rules = treatment_lookup.get("rules", [])
         summary_parts.append(f"Tìm thấy {len(rules)} quy trình điều trị được duyệt.")
         for r in rules:
-            actions.append({
-                "rule_id": r.get("id"),
-                "pesticide": r.get("pesticide"),
-                "active_ingredient": r.get("active_ingredient"),
-                "dose_min": r.get("dose_min"),
-                "dose_max": r.get("dose_max"),
-                "dose_unit": r.get("dose_unit"),
-                "phi_days": r.get("phi_days"),
-                "source": r.get("source"),
-                "notes": r.get("notes"),
-            })
+            actions.append(
+                {
+                    "rule_id": r.get("id"),
+                    "pesticide": r.get("pesticide"),
+                    "active_ingredient": r.get("active_ingredient"),
+                    "dose_min": r.get("dose_min"),
+                    "dose_max": r.get("dose_max"),
+                    "dose_unit": r.get("dose_unit"),
+                    "phi_days": r.get("phi_days"),
+                    "source": r.get("source"),
+                    "notes": r.get("notes"),
+                }
+            )
     elif path == "policy":
         policy = treatment_lookup.get("policy") or {}
         status = policy.get("management_status", "NO_CHEMICAL_CONTROL")
         notes = policy.get("notes", "Không áp dụng hóa chất cho bệnh này.")
         summary_parts.append(f"Chính sách quản lý: {status}. {notes}")
     else:
-        summary_parts.append("Chưa có quy trình hóa chất hoặc chính sách cố định cho bệnh này. Cần kỹ sư nông nghiệp đánh giá chuyên sâu.")
+        summary_parts.append(
+            "Chưa có quy trình hóa chất hoặc chính sách cố định cho bệnh này. Cần kỹ sư nông nghiệp đánh giá chuyên sâu."
+        )
 
     if rag_context:
-        summary_parts.append(f"Tham khảo {len(rag_context)} đoạn tài liệu kiến thức (Nguồn: {', '.join(source_ids) if source_ids else 'hệ thống RAG'}).")
+        summary_parts.append(
+            f"Tham khảo {len(rag_context)} đoạn tài liệu kiến thức (Nguồn: {', '.join(source_ids) if source_ids else 'hệ thống RAG'})."
+        )
+
+    evidence = "\n\n".join(chunk.get("content", "") for chunk in rag_context)
+    explanation = evidence
+    generation_mode = "evidence_fallback" if evidence else "no_evidence"
+    writer = state.get("recommendation_writer")
+    started = time.perf_counter()
+    if writer is not None:
+        explanation, generation_mode = writer.write(evidence)
+    state.setdefault("timings_ms", {})["llm_generation"] = round(
+        (time.perf_counter() - started) * 1000, 2
+    )
 
     recommendation_payload = {
         "path": path,
@@ -67,12 +85,14 @@ def generate_recommendation(state: FarmState) -> Dict[str, Any]:
         "disease_name": disease_name,
         "confidence": confidence,
         "summary": " ".join(summary_parts),
+        "explanation": explanation,
+        "generation_mode": generation_mode,
         "actions": actions,
         "policy": treatment_lookup.get("policy"),
         "rag_sources": source_ids,
         "requires_engineer_approval": True,
+        "low_confidence": bool(state.get("low_confidence")),
     }
 
     state["recommendation"] = recommendation_payload
     return state
-

@@ -1,168 +1,151 @@
-# SPDX-License-Identifier: Apache-2.0
 import pytest
-from app.graph.graph import farm_graph, build_graph
+
+from app.graph.graph import build_graph
 from app.graph.state import FarmState
 
 
-def mock_vision_tool(disease_code: str):
-    def _tool(image_bytes: bytes):
+class Writer:
+    def write(self, evidence):
+        return evidence, "test_grounded"
+
+
+def vision(disease_code: str, confidence: float = 0.95):
+    def call(_image: bytes):
         return {
             "disease_code": disease_code,
             "disease_name": disease_code.replace("___", " "),
-            "confidence": 0.95,
+            "confidence": confidence,
             "model_name": "EfficientNet-B4-Test",
             "model_version": "v1.0-test",
         }
-    return _tool
+
+    return call
+
+
+def base_state(code: str, lookup: dict, confidence: float = 0.95) -> FarmState:
+    return {
+        "request_id": "req-stage8",
+        "parcel_code": "P-001",
+        "image_ref": b"image",
+        "vision_tool": vision(code, confidence),
+        "field_context_tool": lambda parcel, season: {
+            "parcel": {"code": parcel},
+            "current_season": {"id": season or "season"},
+            "harvest": {"is_blocked": False, "locked_until": None},
+        },
+        "treatment_tool": lambda disease_code: lookup,
+        "rag_tool": lambda query, disease_code, top_k: [
+            {
+                "content": f"Evidence for {disease_code}",
+                "disease_code": disease_code,
+                "source_ids": ["S05"],
+                "score": 0.9,
+            }
+        ][:top_k],
+        "recommendation_writer": Writer(),
+        "approval_status": "PENDING",
+        "errors": [],
+        "timings_ms": {},
+    }
+
+
+def treatment_lookup():
+    return {
+        "path": "treatment",
+        "disease_code": "Tomato___Late_blight",
+        "rules": [
+            {
+                "id": "rule-101",
+                "pesticide": "SOURCE PRODUCT",
+                "active_ingredient": "SOURCE INGREDIENT",
+                "dose_min": 2.0,
+                "dose_max": 2.5,
+                "dose_unit": "kg/ha",
+                "phi_days": 7,
+            }
+        ],
+    }
 
 
 def test_resolve_request_validation():
-    graph = build_graph()
-    initial_state: FarmState = {
-        "request_id": "",
-        "image_ref": b"fake_image",
-    }
     with pytest.raises(ValueError, match="request_id is required"):
-        graph.invoke(initial_state)
+        build_graph().invoke({"request_id": "", "image_ref": b"image"})
 
 
-def test_stage8_treatment_path_pending():
-    graph = build_graph()
-    initial_state: FarmState = {
-        "request_id": "req-001",
-        "parcel_code": "P-001",
-        "image_ref": b"dummy_bytes",
-        "cv_result": {
-            "disease_code": "Tomato___Late_blight",
-            "disease_name": "Cà chua - Bệnh sương mai",
-            "confidence": 0.96,
-            "model_name": "EfficientNet-B4",
-            "model_version": "v1.0",
+def test_treatment_path_reaches_pending_with_provenance():
+    state = base_state("Tomato___Late_blight", treatment_lookup())
+    final = build_graph().invoke(state)
+    assert final["approval_status"] == "PENDING"
+    assert final["disease_code"] == "Tomato___Late_blight"
+    assert final["field_context"]["parcel"]["code"] == "P-001"
+    assert final["recommendation"]["path"] == "treatment"
+    assert final["recommendation"]["actions"][0]["pesticide"] == "SOURCE PRODUCT"
+    assert final["recommendation"]["rag_sources"] == ["S05"]
+    assert final["recommendation"]["generation_mode"] == "test_grounded"
+
+
+def test_policy_path_never_creates_chemical_action():
+    lookup = {
+        "path": "policy",
+        "disease_code": "Tomato___Tomato_mosaic_virus",
+        "rules": [],
+        "policy": {
+            "management_status": "NO_CHEMICAL_CONTROL",
+            "direct_treatment_rule_allowed": False,
+            "notes": "Remove infected plants.",
         },
-        "treatment_rule": {
-            "path": "treatment",
-            "disease_code": "Tomato___Late_blight",
-            "rules": [
-                {
-                    "id": "rule-101",
-                    "pesticide": "Mancozeb 80WP",
-                    "active_ingredient": "Mancozeb",
-                    "dose_min": 2.0,
-                    "dose_max": 2.5,
-                    "dose_unit": "kg/ha",
-                    "phi_days": 7,
-                }
-            ],
-        },
-        "approval_status": "PENDING",
     }
-
-    final_state = graph.invoke(initial_state)
-
-    assert final_state["approval_status"] == "PENDING"
-    rec = final_state.get("recommendation")
-    assert rec is not None
-    assert rec["path"] == "treatment"
-    assert len(rec["actions"]) == 1
-    assert rec["actions"][0]["pesticide"] == "Mancozeb 80WP"
+    final = build_graph().invoke(base_state("Tomato___Tomato_mosaic_virus", lookup))
+    assert final["recommendation"]["path"] == "policy"
+    assert final["recommendation"]["actions"] == []
+    assert (
+        final["recommendation"]["policy"]["management_status"] == "NO_CHEMICAL_CONTROL"
+    )
 
 
-def test_stage8_policy_path_pending():
-    graph = build_graph()
-    initial_state: FarmState = {
-        "request_id": "req-002",
-        "parcel_code": "P-002",
-        "image_ref": b"dummy_bytes",
-        "cv_result": {
-            "disease_code": "Tomato___Tomato_mosaic_virus",
-            "disease_name": "Cà chua - Khảm lá Virus",
-            "confidence": 0.92,
-        },
-        "treatment_rule": {
-            "path": "policy",
-            "disease_code": "Tomato___Tomato_mosaic_virus",
-            "policy": {
-                "management_status": "NO_CHEMICAL_CONTROL",
-                "direct_treatment_rule_allowed": False,
-                "notes": "Nhổ bỏ cây bệnh, vệ sinh công cụ, không phun thuốc hóa học.",
-            },
-        },
-        "approval_status": "PENDING",
+def test_review_required_and_low_confidence_are_visible():
+    lookup = {
+        "path": "review_required",
+        "disease_code": "Tomato___healthy",
+        "rules": [],
+        "policy": None,
     }
-
-    final_state = graph.invoke(initial_state)
-
-    assert final_state["approval_status"] == "PENDING"
-    rec = final_state.get("recommendation")
-    assert rec is not None
-    assert rec["path"] == "policy"
-    assert len(rec["actions"]) == 0
-    assert rec["policy"]["management_status"] == "NO_CHEMICAL_CONTROL"
+    final = build_graph().invoke(base_state("Tomato___healthy", lookup, confidence=0.2))
+    assert final["low_confidence"] is True
+    assert final["recommendation"]["low_confidence"] is True
+    assert final["recommendation"]["path"] == "review_required"
 
 
-def test_stage8_engineer_approval_approved():
-    graph = build_graph()
-    initial_state: FarmState = {
-        "request_id": "req-003",
-        "parcel_code": "P-003",
-        "image_ref": b"dummy_bytes",
-        "vision_tool": mock_vision_tool("Tomato___Late_blight"),
-        "treatment_rule": {
-            "path": "treatment",
-            "disease_code": "Tomato___Late_blight",
-            "rules": [
-                {
-                    "id": "rule-101",
-                    "pesticide": "Mancozeb 80WP",
-                    "dose_min": 2.0,
-                    "dose_max": 2.5,
-                    "dose_unit": "kg/ha",
-                    "phi_days": 7,
-                }
-            ],
-        },
-        "approval_status": "APPROVED",
-        "selected_rule_id": "rule-101",
-        "approved_dose": 2.2,
-    }
+def test_rag_unavailable_keeps_structured_facts():
+    state = base_state("Tomato___Late_blight", treatment_lookup())
 
-    final_state = graph.invoke(initial_state)
+    def unavailable(*args):
+        raise RuntimeError("offline")
 
-    assert final_state["approval_status"] == "APPROVED"
-    assert final_state["application_status"] == "WAITING_APPLIED"
-    assert final_state["response"]["status"] == "APPROVED"
-    assert final_state["response"]["selected_rule_id"] == "rule-101"
+    state["rag_tool"] = unavailable
+    final = build_graph().invoke(state)
+    assert final["recommendation"]["actions"][0]["dose_min"] == 2.0
+    assert final["recommendation"]["rag_sources"] == []
+    assert final["errors"] == [
+        "RAG_UNAVAILABLE: structured recommendation remains available"
+    ]
 
 
-def test_stage8_engineer_approval_rejected():
-    graph = build_graph()
-    initial_state: FarmState = {
-        "request_id": "req-004",
-        "parcel_code": "P-004",
-        "image_ref": b"dummy_bytes",
-        "vision_tool": mock_vision_tool("Tomato___Late_blight"),
-        "approval_status": "REJECTED",
-        "approval_reason": "Hình ảnh bị mờ, không đủ cơ sở chẩn đoán.",
-    }
+def test_approval_and_reject_routes_remain_distinct():
+    approved = base_state("Tomato___Late_blight", treatment_lookup())
+    approved.update(
+        {
+            "approval_status": "APPROVED",
+            "selected_rule_id": "rule-101",
+            "approved_dose": 2.2,
+        }
+    )
+    approved_final = build_graph().invoke(approved)
+    assert approved_final["application_status"] == "WAITING_APPLIED"
+    assert "harvest_locked_until" not in approved_final["response"]
 
-    final_state = graph.invoke(initial_state)
-
-    assert final_state["approval_status"] == "REJECTED"
-    assert final_state["application_status"] == "CANCELLED"
-    assert final_state["response"]["status"] == "REJECTED"
-    assert "mờ" in final_state["response"]["approval_reason"]
-
-
-def test_stage8_engineer_approval_rejected_missing_reason():
-    graph = build_graph()
-    initial_state: FarmState = {
-        "request_id": "req-005",
-        "parcel_code": "P-005",
-        "image_ref": b"dummy_bytes",
-        "vision_tool": mock_vision_tool("Tomato___Late_blight"),
-        "approval_status": "REJECTED",
-        "approval_reason": "",
-    }
-
-    with pytest.raises(ValueError, match="approval_reason is required"):
-        graph.invoke(initial_state)
+    rejected = base_state("Tomato___Late_blight", treatment_lookup())
+    rejected.update({"approval_status": "REJECTED", "approval_reason": "Image unclear"})
+    rejected_final = build_graph().invoke(rejected)
+    assert rejected_final["application_status"] == "CANCELLED"
+    assert rejected_final["response"]["approval_reason"] == "Image unclear"

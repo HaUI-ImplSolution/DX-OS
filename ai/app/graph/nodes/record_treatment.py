@@ -1,10 +1,11 @@
-from typing import Any, Dict
+from typing import Any
+
 from app.graph.state import FarmState
 
 
-def record_treatment(state: FarmState) -> Dict[str, Any]:
+def record_treatment(state: FarmState) -> dict[str, Any]:
     """Node executed when engineer approves recommendation.
-    
+
     Hard Rule: APPROVED != APPLIED.
     Approval marks recommendation as approved and prepares for application confirmation.
     No PHI lock is created until actual application (APPLIED state in Stage 9).
@@ -23,5 +24,3 @@ def record_treatment(state: FarmState) -> Dict[str, Any]:
         "recommendation": rec,
     }
     return state
-
-

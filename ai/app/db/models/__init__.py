@@ -9,6 +9,7 @@ from .parcel import Parcel
 from .pesticide import Pesticide
 from .treatment_application import TreatmentApplication
 from .treatment_rule import TreatmentRule
+from .workflow_case import WorkflowCase, WorkflowEvent
 
 __all__ = [
     "CropSeason",
@@ -22,4 +23,6 @@ __all__ = [
     "Pesticide",
     "TreatmentApplication",
     "TreatmentRule",
+    "WorkflowCase",
+    "WorkflowEvent",
 ]

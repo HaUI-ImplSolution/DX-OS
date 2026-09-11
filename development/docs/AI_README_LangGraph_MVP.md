@@ -6,6 +6,8 @@
 > Theo dõi tiến độ và handoff theo từng Stage tại
 > [Phụ lục A — Master Stage Roadmap](#master-stage-roadmap).
 
+Contract tích hợp cho Backend/Frontend: [AI Event Schema README](./AI_EVENT_SCHEMA_README.md).
+
 ---
 
 ## 1. Mục tiêu của module `ai/`
@@ -308,7 +310,7 @@ Stage 3 thay thế/cập nhật như mục 3.2; các candidate Stage 1 vẫn ch�
 - [x] Actual dose trong range được nhận, ngoài range/NaN bị từ chối.
 - [x] Toàn bộ pytest đạt, gồm integration test tự chạy seeder hai lần.
 - [x] Repository đã sẵn sàng để node `treatment_lookup` của LangGraph gọi sau này.
-- [ ] LangGraph node/workflow chưa triển khai vì nằm ngoài phạm vi Stage 4/5.
+- [x] LangGraph node/workflow được triển khai tiếp ở Stage 8; Stage 4/5 vẫn không chứa logic graph.
 - [x] Stage 7 đã re-ingest thật: 38 document / 270 chunk, registry 41 nguồn.
 
 ---
@@ -763,23 +765,23 @@ PHI lock
 
 ### Must
 
-- [ ] CV nhận ảnh và trả JSON đúng contract.
-- [ ] CV result được lưu thành `Diagnosis`.
-- [ ] `Disease.code` map đúng với CV class.
-- [ ] Lookup `TreatmentRule / Pesticide` deterministic.
+- [x] CV nhận ảnh và trả JSON đúng contract.
+- [x] CV result được lưu thành `Diagnosis`.
+- [x] `Disease.code` map đúng với CV class.
+- [x] Lookup `TreatmentRule / Pesticide` deterministic.
 - [x] RAG retrieve được context liên quan.
 - [x] LLM sinh recommendation từ context đã cung cấp.
-- [ ] Có trạng thái `APPROVE / REJECT`.
-- [ ] Phân biệt `APPROVED` và `APPLIED`.
-- [ ] Khi `APPLIED`, lưu `TreatmentApplication`.
-- [ ] Tính được `harvest_locked_until`.
+- [x] Có trạng thái `APPROVE / REJECT`.
+- [x] Phân biệt `APPROVED` và `APPLIED`.
+- [x] Khi `APPLIED`, lưu `TreatmentApplication`.
+- [x] Tính được `harvest_locked_until`.
 
 ### Should
 
-- [ ] Trả source RAG.
-- [ ] Log state từng node.
+- [x] Trả source RAG.
+- [x] Có log request/disease/model/path/status và timing theo node chính.
 - [ ] Có retry / timeout khi CV service lỗi.
-- [ ] Có confidence threshold cho CV.
+- [x] Có confidence threshold cho CV.
 
 ### Later
 
@@ -967,9 +969,9 @@ Known issues:
 | 5 | Structured data seed & lookup | Tùng | DONE |
 | 6 | CV ↔ Data integration | Tùng + Khánh | IMPLEMENTED — pass local; còn xác minh artifact/venv trắng |
 | 7 | RAG production-ready | Tùng | DONE — MVP local |
-| 8 | LangGraph spine flow | Tùng | TODO |
-| 9 | HITL / APPLIED / PHI | Tùng | WAITING |
-| 10 | End-to-end demo hardening | Tùng + Khánh | WAITING |
+| 8 | LangGraph spine flow | Tùng | DONE — pass local |
+| 9 | HITL / APPLIED / PHI | Tùng | DONE — pass PostgreSQL integration |
+| 10 | End-to-end demo hardening | Tùng + Khánh | DONE — AI scope, pass local |
 
 ---
 
@@ -1586,6 +1588,10 @@ reject_case
 [x] Node errors được handle.
 ```
 
+Đã xác minh node bằng unit test cho treatment, policy-only, review-required/low-confidence,
+RAG unavailable, approve/reject và input lỗi. Graph dừng tại `PENDING`; transition bền vững
+sau checkpoint do workflow service/API ghi vào PostgreSQL.
+
 
 ### Definition of Done
 
@@ -1669,8 +1675,8 @@ audit trail
 ### Checklist
 
 ```text
-[ ] APPROVED không tạo PHI trong workflow AI.
-[ ] REJECT lưu reason trong workflow AI.
+[x] APPROVED không tạo PHI trong workflow AI.
+[x] REJECT lưu reason trong workflow AI.
 [x] Repository APPLIED yêu cầu actual_dose.
 [x] actual_dose nằm trong rule range.
 [x] APPLIED tạo TreatmentApplication.
@@ -1679,6 +1685,10 @@ audit trail
 [x] harvest lock được tính từ applied_at + phi_days.
 [x] treatment history query được.
 ```
+
+Workflow state/audit được lưu bằng `WorkflowCase`/`WorkflowEvent`. Retry APPLIED cùng payload
+không tạo bản ghi trùng; payload khác bị conflict. Với nhiều lần phun, isolation lấy lock lớn
+nhất nên không bị rút ngắn bởi một application mới có PHI ngắn hơn.
 
 ---
 
@@ -1765,20 +1775,45 @@ Image
 [x] PostgreSQL starts.
 [x] migrations pass.
 [x] seed pass.
-[ ] CV starts trong luồng tích hợp.
-[ ] RAG production-ready.
-[ ] LangGraph compiles.
-[ ] fixtures load.
-[ ] treatment scenario end-to-end pass.
-[ ] safe-policy scenario end-to-end pass.
-[ ] APPROVE pass qua LangGraph.
-[ ] REJECT pass qua LangGraph.
-[ ] APPLIED pass end-to-end.
-[ ] PHI lock pass end-to-end.
-[ ] logs/errors understandable.
+[x] CV starts trong luồng tích hợp.
+[x] RAG retrieval/provenance và safe fallback pass.
+[x] LangGraph compiles.
+[x] fixtures load idempotent.
+[x] treatment scenario end-to-end pass.
+[x] safe-policy scenario end-to-end pass.
+[x] APPROVE pass qua workflow checkpoint/API.
+[x] REJECT pass qua workflow checkpoint/API.
+[x] APPLIED pass end-to-end.
+[x] PHI lock pass end-to-end.
+[x] logs/errors/timings understandable.
 [x] no secrets committed; local env/weights/cache được ignore.
-[ ] demo runbook end-to-end exists.
+[x] demo runbook end-to-end exists.
 ```
+
+### Kết quả xác minh local Stage 10
+
+```text
+Alembic head: f0a1b2026011
+Fresh PostgreSQL migration: PASS
+Structured data: 38 disease / 4 pesticide / 8 rule / 21 policy
+RAG corpus: 38 document / 270 chunk
+Full test suite: 59 passed (real CV + PostgreSQL enabled)
+MVP smoke: PASS (real FastAPI lifespan + real CV checkpoint)
+Smoke timing tham chiếu local: CV HTTP 216.20 ms; graph 5160.80 ms
+  (RAG 12.97 ms; Ollama timeout/fallback 5047.01 ms)
+```
+
+Smoke hiện nhận ảnh `tests/data/images/tomato_leaf.jpg` là
+`Tomato___Early_blight`. Scenario A Late blight được kiểm tra E2E xác định bằng fake CV tại
+biên contract, còn checkpoint thật được chạy riêng trong cùng suite/smoke; không coi ảnh này
+là mẫu Late blight đã được gán nhãn. Khi Ollama không sẵn sàng, wording về
+`evidence_fallback` và structured facts không thay đổi.
+
+Runbook: `ai/README_MVP_RUNBOOK.md`.
+
+Giới hạn còn lại ngoài phần AI Stage 8–10: chưa nối backend/frontend qua HTTP, transition API
+AI chưa có auth riêng, chưa đánh giá accuracy trên validation set độc lập và chưa benchmark
+live Ollama.
 
 ---
 
@@ -1854,9 +1889,12 @@ Stage 4 DONE
 -> Stage 5 DONE
 -> Stage 7 DONE (MVP local)
 -> Stage 8 DONE (LangGraph Spine Flow)
+-> Stage 9 DONE (durable HITL / APPLIED / PHI)
+-> Stage 10 DONE (AI MVP hardening local)
 ```
 
-Stage 6/7/8 đã triển khai và kiểm thử local; đã hoàn thiện các nodes, graph conditional routing, và endpoint `/workflow/run`.
+Stage 6–10 đã triển khai và kiểm thử local trong phạm vi `ai/`; backend/frontend HTTP
+integration vẫn là phần việc tiếp theo của đội.
 
 
 Khánh:

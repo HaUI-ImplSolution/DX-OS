@@ -4,7 +4,7 @@ Only the fields required for the minimal flow are defined. Additional fields
 can be added later without breaking existing code.
 """
 
-from typing import TypedDict, Optional, List, Dict, Any
+from typing import Any, TypedDict
 
 
 class FarmState(TypedDict, total=False):
@@ -15,33 +15,41 @@ class FarmState(TypedDict, total=False):
     parcel_code: str
     crop_season_id: str
     image_ref: Any
+    disease_report_id: str
 
     # CV output
-    cv_result: Optional[Dict[str, Any]]
+    cv_result: dict[str, Any] | None
+    disease_code: str
+    confidence: float
+    low_confidence: bool
 
     # Data outputs
-    field_context: Optional[Dict[str, Any]]
-    treatment_rule: Optional[Dict[str, Any]]
-    rag_context: Optional[List[Dict[str, Any]]]
+    field_context: dict[str, Any] | None
+    treatment_rule: dict[str, Any] | None
+    rag_context: list[dict[str, Any]] | None
 
     # Recommendation output
-    recommendation: Optional[Any]
+    recommendation: Any | None
 
     # Approval & Application status
-    approval_status: Optional[str]
-    approval_reason: Optional[str]
-    selected_rule_id: Optional[str]
-    approved_dose: Optional[float]
-    application_status: Optional[str]
+    approval_status: str | None
+    approval_reason: str | None
+    selected_rule_id: str | None
+    approved_dose: float | None
+    application_status: str | None
     applied_at: Any
 
     # Final response
-    response: Optional[Dict[str, Any]]
+    response: dict[str, Any] | None
 
     # Internal helpers / context
     db: Any  # SQLAlchemy Session, injected by API / caller
     vision_tool: Any
-    rag_question: Optional[str]
-    rag_top_k: Optional[int]
-    errors: List[str]
-
+    field_context_tool: Any
+    treatment_tool: Any
+    rag_tool: Any
+    recommendation_writer: Any
+    rag_question: str | None
+    rag_top_k: int | None
+    errors: list[str]
+    timings_ms: dict[str, float]

@@ -15,6 +15,9 @@ Tài liệu này hướng dẫn thành viên trong nhóm khởi động PostgreS
   - `c1f7e2d4a9b0`: đổi TreatmentRule sang `dose_min`/`dose_max`, tạo bảng
     `disease_management_policies`.
   - `d6e7a1202601`: thêm `diagnoses.model_name` và `documents.disease_code`/index.
+  - `e8f9a1026011`: thêm workflow case/event bền vững và snapshot rule/thuốc trên
+    `treatment_applications` cho HITL/APPLIED/PHI.
+  - `f0a1b2026011`: bảo đảm sequence của audit event là duy nhất theo workflow case.
 
 > Không commit các file `.env` vì chúng chứa cấu hình và mật khẩu local.
 
@@ -110,7 +113,7 @@ python -m alembic history
 Kết quả `current` đúng ở thời điểm viết tài liệu phải chứa:
 
 ```text
-d6e7a1202601 (head)
+f0a1b2026011 (head)
 ```
 
 Sau khi migration thành công, có thể khởi động toàn bộ ứng dụng:
@@ -333,14 +336,16 @@ python -m scripts.seed_treatment_rules
 python -m scripts.seed_disease_management_policies
 ```
 
-Khi `alembic current` hiển thị `d6e7a1202601 (head)` và có thể truy vấn bảng bằng
+Khi `alembic current` hiển thị `f0a1b2026011 (head)` và có thể truy vấn bảng bằng
 `psql`, môi trường PostgreSQL local đã sẵn sàng.
 
-## Stage 6–7: kiểm tra sau migration và ingest
+## Stage 6–10: kiểm tra sau migration và ingest
 
-Local đã xác minh head `d6e7a1202601`, 38 disease, 4 pesticide, 8 treatment rule,
-21 policy; RAG 38 document / 270 chunk. Máy khác vẫn cần migrate/seed/ingest theo
-cấu hình DB của mình; git pull không sao chép database hoặc model cache.
+Local đã xác minh head `f0a1b2026011`, 38 disease, 4 pesticide, 8 treatment rule,
+21 policy; RAG 38 document / 270 chunk. Migration cũng đã chạy từ đầu trên một database
+PostgreSQL tạm mới và `alembic check` không phát hiện schema drift. Máy khác vẫn cần
+migrate/seed/ingest theo cấu hình DB của mình; git pull không sao chép database hoặc model
+cache.
 
 Từ thư mục `ai`, sau khi seed structured data:
 

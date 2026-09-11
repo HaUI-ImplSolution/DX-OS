@@ -61,22 +61,50 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
 
 ### 2026-09-11
 
-**Đã xong — Triển khai hoàn chỉnh Stage 8 LangGraph Spine Flow:**
+**Đã xong — Stage 8 LangGraph spine flow:**
 
-- **State & Graph Schema**: Chuẩn hóa `FarmState` trong `app/graph/state.py` (loại bỏ trường trùng lặp, chuẩn hóa kiểu dữ liệu), export đầy đủ các node trong `app/graph/nodes/__init__.py`.
-- **Triển khai toàn bộ Nodes**:
-  - `resolve_request.py`: Validate tham số đầu vào workflow (`request_id`, `image_ref`, parcel/season).
-  - `cv_diagnosis.py`: Nhận diện CV qua `vision_tool` hoặc `cv_result` sẵn có, trích xuất `disease_code` canonical.
-  - `load_field_context.py`: Lấy ngữ cảnh Parcel/CropSeason từ DB.
-  - `treatment_lookup.py`: Tra cứu deterministic qua `lookup_structured_knowledge()`.
-  - `retrieve_knowledge.py`: Truy vấn trích dẫn kiến thức RAG từ pgvector.
-  - `generate_recommendation.py`: Sinh khuyến nghị có cấu trúc tuân thủ Guardrails (không tự bịa thuốc/liều/PHI, phân định rõ đường đi `treatment` vs `policy`, đính kèm Nguồn RAG).
-  - `engineer_approval.py`: Kiểm tra hợp lệ các trạng thái duyệt (`PENDING`, `APPROVED`, `REJECTED` bắt buộc lý do).
-  - `record_treatment.py`: Xử lý nhánh kỹ sư duyệt `APPROVED` (chuyển `application_status = "WAITING_APPLIED"`, tuân thủ `APPROVED != APPLIED`).
-  - `reject_case.py`: Xử lý nhánh kỹ sư từ chối `REJECTED` (chuyển `application_status = "CANCELLED"` và lưu vết lý do).
-- **Rẽ nhánh điều kiện Graph**: Cập nhật `build_graph()` trong `app/graph/graph.py` hỗ trợ rẽ nhánh chính xác theo trạng thái `APPROVED` -> `record_treatment`, `REJECTED` -> `reject_case`, `PENDING` -> `END`.
-- **API Endpoint**: Thêm Pydantic schema `WorkflowRunRequest` & `WorkflowRunResponse` trong `app/api/schemas.py` và triển khai endpoint `/disease/workflow/run` nhận file ảnh upload và tham số ngữ cảnh thực thi StateGraph end-to-end.
-- **Kiểm thử Unit Test**: Tạo bộ test `tests/graph/test_stage8_workflow.py` kiểm thử 6 kịch bản (Treatment path, Policy path, Approval path, Reject path, Validation errors). Tất cả 6/6 tests đã PASSED 100%.
+- Hoàn thiện `FarmState`, 9 node và tool adapter; graph chạy từ request → CV → field context
+  → structured lookup → RAG → recommendation → checkpoint `PENDING`.
+- `disease_code` được kiểm tra đúng contract 38 lớp và propagate nguyên vẹn. Diagnosis lưu
+  confidence/model metadata; crop season được kiểm tra thuộc đúng parcel.
+- Structured facts luôn lấy từ SQL: treatment dùng đúng rule; policy-only không phát sinh
+  thuốc; trường hợp chưa có rule/policy đi `review_required`. RAG lỗi vẫn giữ được structured
+  recommendation và ghi lỗi `RAG_UNAVAILABLE`.
+- Lớp Ollama chỉ được chọn đoạn evidence nguyên văn. Nội dung không grounded hoặc
+  lỗi/timeout sẽ về `evidence_fallback`, không được sửa thuốc, hoạt chất, liều hoặc PHI.
+- `/api/v1/disease/workflow/run` gọi graph thật bằng `.invoke()`, có request idempotency,
+  giới hạn ảnh, log disease/model/path/timing và lỗi API không lộ traceback/path nội bộ.
+
+**Đã xong — Stage 9 durable HITL / APPLIED / PHI:**
+
+- Thêm `WorkflowCase` và append-only `WorkflowEvent`; trạng thái/audit nằm trong PostgreSQL,
+  không phụ thuộc state LangGraph trong bộ nhớ.
+- Thêm API lấy trạng thái, approve, reject và applied. Approve/reject chỉ do actor truyền rõ;
+  low-confidence cần xác nhận rõ ràng; reject bắt buộc lưu reason.
+- Giữ bất biến `APPROVED != APPLIED`: approve chỉ chuyển sang `WAITING_APPLIED`, chưa tạo
+  `TreatmentApplication` và chưa bắt đầu PHI.
+- APPLIED kiểm tra rule đúng diagnosis và actual dose hữu hạn/nằm trong khoảng; sai dữ liệu
+  rollback. Bản ghi lưu snapshot tên thuốc, hoạt chất, dose/unit, PHI, rule version/source.
+- PHI được tính đúng `applied_at + phi_days`; truy vấn isolation dùng `MAX` lock nên lần phun
+  chồng lấn không thể vô tình rút ngắn thời gian cách ly. Retry cùng payload idempotent, payload
+  khác trả conflict.
+- Alembic thêm `e8f9a1026011` và head `f0a1b2026011`; đã kiểm tra upgrade/check trên DB hiện
+  tại và trên một PostgreSQL tạm hoàn toàn mới.
+
+**Đã xong — Stage 10 demo hardening trong phạm vi `ai/`:**
+
+- Thêm fixture demo idempotent, E2E treatment/policy/reject/invalid-dose/low-confidence,
+  smoke test khởi động FastAPI với checkpoint CV thật, kiểm tra DB counts, structured lookup,
+  pgvector provenance, graph PENDING và safe LLM fallback.
+- Thêm timing CV/RAG/LLM/workflow, runbook migration → seed → ingest → API → smoke → test tại
+  `ai/README_MVP_RUNBOOK.md` và biến môi trường cho confidence threshold/LLM timeout.
+- Đã xác minh local: **59 passed** với checkpoint thật và PostgreSQL; smoke MVP PASS. Ảnh smoke
+  hiện được model nhận là `Tomato___Early_blight`; kịch bản Late blight deterministic được
+  kiểm tra tại biên contract bằng fake CV, không khai khống ảnh mẫu Late blight thật.
+- Timing smoke tham chiếu trên máy local: CV HTTP 216.20 ms; graph 5160.80 ms, trong đó
+  Ollama không sẵn sàng chờ timeout khoảng 5 giây rồi fallback an toàn.
+- Giới hạn còn lại: AI transition API chưa có auth riêng; backend/frontend chưa nối HTTP với
+  workflow AI; checkpoint chưa có `class_to_idx`/accuracy độc lập; chưa benchmark live Ollama.
 
 ### 2026-09-10
 
@@ -155,12 +183,13 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
   Có test diagnosis, policy, retrieval/citation, idempotency và rollback.
 - Thêm CV/RAG handoff README, cập nhật checklist. Chưa kiểm thử venv trắng, accuracy CV,
   live Ollama; checkpoint thiếu class_to_idx, thứ tự được đối chiếu mã training trong repo.
-- Stage 8 chưa làm: tách eager import graph lỗi; workflow endpoint hiện trả 501.
+- Tại snapshot Stage 6–7 này, Stage 8 chưa làm và workflow endpoint còn trả 501; trạng thái
+  mới nhất đã được cập nhật trong mục Stage 8–10 ngày 2026-09-11 ở trên.
 
 **Chưa làm:**
 
-- `ai/app/graph` mới là skeleton theo tài liệu; chưa implement LangGraph state/nodes/tools,
-  human interrupt hoặc workflow end-to-end (retrieval API Stage 7 đã có).
+- Phần skeleton/human interrupt trong ghi chú Stage 6–7 đã được hoàn thiện ở Stage 8–10;
+  backend ↔ AI HTTP integration vẫn chưa triển khai.
 - 8 treatment-rule candidate trạng thái HOLD và các candidate staging còn lại chưa phải
   dữ liệu cuối, không được seed cho đến khi có quyết định review mới.
 

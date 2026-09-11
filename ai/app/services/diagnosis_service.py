@@ -17,6 +17,12 @@ def diagnose_report(
     db: Session, report_id: uuid.UUID, image_bytes: bytes, predictor
 ) -> dict:
     prediction = predictor.predict(image_bytes)
+    return persist_prediction(db, report_id, prediction)
+
+
+def persist_prediction(db: Session, report_id: uuid.UUID, prediction: dict) -> dict:
+    """Persist an already-produced CV contract for one report."""
+
     confidence = prediction["confidence"]
     if not math.isfinite(confidence) or not 0 <= confidence <= 1:
         raise ValueError("Invalid prediction confidence")

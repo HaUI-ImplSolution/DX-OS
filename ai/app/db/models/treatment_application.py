@@ -43,6 +43,14 @@ class TreatmentApplication(Base):
         nullable=True,
     )
 
+    pesticide_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    active_ingredient: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    rule_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
+
+    rule_source: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
     dose: Mapped[float] = mapped_column(
         Float,
         nullable=False,

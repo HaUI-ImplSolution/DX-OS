@@ -1,7 +1,9 @@
-from typing import Any, Dict
+from typing import Any
+
 from app.graph.state import FarmState
 
-def engineer_approval(state: FarmState) -> Dict[str, Any]:
+
+def engineer_approval(state: FarmState) -> dict[str, Any]:
     status = state.get("approval_status", "PENDING")
     if status not in {"PENDING", "APPROVED", "REJECTED"}:
         raise ValueError("approval_status must be PENDING, APPROVED, or REJECTED")

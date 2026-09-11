@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     cv_model_version: str = "v1.0"
     cv_device: str = "auto"
     cv_confidence_threshold: float = 0.70
+    llm_timeout_seconds: float = 5.0
 
     log_level: str = "INFO"
 

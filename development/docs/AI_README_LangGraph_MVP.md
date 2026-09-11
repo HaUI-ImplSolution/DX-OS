@@ -25,7 +25,8 @@ POST /workflow/run
 POST approve/reject/applied -> WorkflowTransitions -> PostgreSQL audit state
 ```
 
-`WorkflowRuntime` carries DB/CV/RAG/writer dependencies; `FarmState` contains only business data and node outputs. Each node returns a partial update.
+`WorkflowRuntime` carries DB/CV/RAG/writer dependencies; `FarmState` contains only business data and node outputs.
+Each node returns a partial update.
 
 ## Inputs and outputs
 

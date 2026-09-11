@@ -15,8 +15,10 @@ Chuẩn công nghiệp cho OIDC/SAML, license Apache-2.0 (OSI-approved), có tà
 
 - Backend Spring Boot: OAuth2 Resource Server, xác thực token do Keycloak cấp.
 - Frontend: tự redirect sang Keycloak (Authorization Code + PKCE) ngay khi chưa có phiên — không cần bấm nút đăng nhập trung gian, vào thẳng từ portal cũng được.
-- BI Dashboard (Superset): đăng nhập bằng redirect sang Keycloak (`AUTH_OAUTH`), role realm map sang role Superset. Chi tiết: [`bi/README.md`](../bi/README.md).
-- **Không làm**: Mattermost (Team Edition không hỗ trợ OpenID Connect với IdP tuỳ ý — cần Enterprise license). Chi tiết: [`chat/README.md`](../chat/README.md).
+- BI Dashboard (Superset): đăng nhập bằng redirect sang Keycloak (`AUTH_OAUTH`), role realm map sang role Superset.
+  Chi tiết: [`bi/README.md`](../bi/README.md).
+- **Không làm**: Mattermost (Team Edition không hỗ trợ OpenID Connect với IdP tuỳ ý — cần Enterprise license).
+  Chi tiết: [`chat/README.md`](../chat/README.md).
 
 ## Cách hoạt động
 
@@ -48,7 +50,8 @@ Triển khai thật cần reverse proxy để trình duyệt và backend cùng g
 Đăng xuất ở app này thì các app khác đang mở cũng tự đăng xuất theo, không cần vào từng app đăng xuất tay:
 
 - **App chính → Superset**: đăng xuất frontend gọi Keycloak kết thúc phiên SSO; Keycloak trả về front-channel logout (`frontchannelLogout` trên client `dxfarm-superset`, trỏ `http://localhost:8088/logout/`) — trình duyệt tự tải ngầm URL này, xoá luôn cookie Superset.
-- **Superset → App chính**: `LOGOUT_REDIRECT_URL` trong `bi/superset_config.py` khiến đăng xuất Superset cũng gọi Keycloak kết thúc phiên SSO (không chỉ xoá cookie Superset). Frontend đang mở tab thì tự phát hiện qua session monitoring (`monitorSession: true` trong `oidc-client-ts`, poll trạng thái phiên Keycloak vài giây/lần) và tự đăng xuất.
+- **Superset → App chính**: `LOGOUT_REDIRECT_URL` trong `bi/superset_config.py` khiến đăng xuất Superset cũng gọi Keycloak kết thúc phiên SSO (không chỉ xoá cookie Superset).
+  Frontend đang mở tab thì tự phát hiện qua session monitoring (`monitorSession: true` trong `oidc-client-ts`, poll trạng thái phiên Keycloak vài giây/lần) và tự đăng xuất.
 - **Đăng xuất ở Keycloak Account Console**: kích hoạt cả hai cơ chế trên vì phiên SSO kết thúc trực tiếp.
 
 **Giới hạn**: đây là cơ chế phía trình duyệt (front-channel + polling định kỳ), không phải backchannel logout chuẩn OIDC (server-to-server, hoạt động kể cả khi không có tab nào đang mở).

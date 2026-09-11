@@ -48,7 +48,8 @@ APPLIED -> TreatmentApplication + PHI lock
 | `rag_question` | no | optional retrieval question |
 | `requested_by` | no | MVP audit actor |
 
-Response has `approval_status: "PENDING"`; `application_status` can be `null` at this immediate checkpoint. Use `GET /workflow/{case_id}` as the durable source, where a new case is `NOT_READY`.
+Response has `approval_status: "PENDING"`; `application_status` can be `null` at this immediate checkpoint.
+Use `GET /workflow/{case_id}` as the durable source, where a new case is `NOT_READY`.
 
 ```json
 {
@@ -85,7 +86,8 @@ Render `events` by ascending `sequence`; do not infer a transition from UI state
 {"actor_id":"farmer-001","actual_dose":1.5,"applied_at":"2026-09-11T08:30:00Z"}
 ```
 
-Treatment approve requires a listed rule and dose inside its range; low-confidence treatment requires explicit confirmation. Applied retries with the same dose/time are idempotent; a different payload returns `409`.
+Treatment approve requires a listed rule and dose inside its range; low-confidence treatment requires explicit confirmation.
+Applied retries with the same dose/time are idempotent; a different payload returns `409`.
 
 ## Errors
 

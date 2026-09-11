@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "project": "DX---Farm",
+  "target": ".agents/skills",
+  "policy": "Every installed SKILL.md must be copied unchanged from a GitHub repository checkout. This manifest and installer are metadata/tooling, not agent skills.",
+  "repositories": [
+    {
+      "id": "superpowers",
+      "url": "https://github.com/obra/superpowers.git",
+      "web": "https://github.com/obra/superpowers",
+      "ref": "main",
+      "category": "engineering-workflow",
+      "skills": [
+        "skills/using-superpowers",
+        "skills/brainstorming",
+        "skills/writing-plans",
+        "skills/subagent-driven-development",
+        "skills/executing-plans",
+        "skills/test-driven-development",
+        "skills/systematic-debugging",
+        "skills/requesting-code-review",
+        "skills/receiving-code-review",
+        "skills/verification-before-completion",
+        "skills/using-git-worktrees",
+        "skills/finishing-a-development-branch"
+      ]
+    },
+    {
+      "id": "langchain-skills",
+      "url": "https://github.com/langchain-ai/langchain-skills.git",
+      "web": "https://github.com/langchain-ai/langchain-skills",
+      "ref": "main",
+      "category": "langgraph-langchain-rag",
+      "skills": [
+        "config/skills/ecosystem-primer",
+        "config/skills/langchain-dependencies",
+        "config/skills/langchain-fundamentals",
+        "config/skills/langchain-middleware",
+        "config/skills/langchain-rag",
+        "config/skills/langgraph-fundamentals",
+        "config/skills/langgraph-persistence",
+        "config/skills/langgraph-cli",
+        "config/skills/langgraph-human-in-the-loop",
+        "config/skills/eval-engineering"
+      ]
+    },
+    {
+      "id": "langsmith-skills",
+      "url": "https://github.com/langchain-ai/langsmith-skills.git",
+      "web": "https://github.com/langchain-ai/langsmith-skills",
+      "ref": "main",
+      "category": "agent-observability-evaluation",
+      "skills": [
+        "config/skills/langsmith-trace",
+        "config/skills/langsmith-dataset",
+        "config/skills/langsmith-evaluator"
+      ]
+    },
+    {
+      "id": "huggingface-skills",
+      "url": "https://github.com/huggingface/skills.git",
+      "web": "https://github.com/huggingface/skills",
+      "ref": "main",
+      "category": "computer-vision-ml",
+      "skills": [
+        "skills/hf-cli",
+        "skills/huggingface-best",
+        "skills/huggingface-datasets",
+        "skills/huggingface-trackio",
+        "skills/huggingface-vision-trainer",
+        "skills/huggingface-spaces"
+      ]
+    },
+    {
+      "id": "ultralytics-skills",
+      "url": "https://github.com/ultralytics/skills.git",
+      "web": "https://github.com/ultralytics/skills",
+      "ref": "main",
+      "category": "computer-vision-yolo",
+      "skills": [
+        "skills/yolo",
+        "skills/yolo-models",
+        "skills/yolo-datasets",
+        "skills/yolo-training",
+        "skills/yolo-tuning",
+        "skills/yolo-inference",
+        "skills/yolo-export"
+      ]
+    }
+  ],
+  "optional_repositories": [
+    {
+      "id": "nvidia-tao-skill-bank",
+      "web": "https://github.com/NVIDIA-TAO/tao-skill-bank",
+      "reason": "Not installed by this MVP pack. TAO currently bundles dozens of production/GPU workflow skills and is better added via its own upstream Codex installer when DX---Farm reaches that stage."
+    }
+  ]
+}

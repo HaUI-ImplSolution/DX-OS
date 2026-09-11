@@ -4,10 +4,15 @@
 import time
 from typing import Any
 
+from langgraph.runtime import Runtime
+
+from app.graph.context import WorkflowRuntime
 from app.graph.state import FarmState  # type: ignore
 
 
-def generate_recommendation(state: FarmState) -> dict[str, Any]:
+def generate_recommendation(
+    state: FarmState, runtime: Runtime[WorkflowRuntime]
+) -> dict[str, Any]:
     """Generate structured recommendation while strictly adhering to safety guardrails.
 
     Guardrails:
@@ -71,11 +76,12 @@ def generate_recommendation(state: FarmState) -> dict[str, Any]:
     evidence = "\n\n".join(chunk.get("content", "") for chunk in rag_context)
     explanation = evidence
     generation_mode = "evidence_fallback" if evidence else "no_evidence"
-    writer = state.get("recommendation_writer")
+    writer = runtime.context.recommendation_writer
     started = time.perf_counter()
     if writer is not None:
         explanation, generation_mode = writer.write(evidence)
-    state.setdefault("timings_ms", {})["llm_generation"] = round(
+    timings = dict(state.get("timings_ms", {}))
+    timings["llm_generation"] = round(
         (time.perf_counter() - started) * 1000, 2
     )
 
@@ -94,5 +100,4 @@ def generate_recommendation(state: FarmState) -> dict[str, Any]:
         "low_confidence": bool(state.get("low_confidence")),
     }
 
-    state["recommendation"] = recommendation_payload
-    return state
+    return {"recommendation": recommendation_payload, "timings_ms": timings}

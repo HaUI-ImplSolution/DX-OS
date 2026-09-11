@@ -32,8 +32,8 @@ def resolve_request(state: FarmState) -> dict[str, Any]:
             uuid.UUID(str(state["crop_season_id"]))
         except ValueError as exc:
             raise ValueError("crop_season_id must be a UUID") from exc
-    state["request_id"] = request_id
-    state.setdefault("approval_status", "PENDING")
-    state.setdefault("errors", [])
-    state.setdefault("timings_ms", {})
-    return state
+    return {
+        "request_id": request_id,
+        "errors": list(state.get("errors", [])),
+        "timings_ms": dict(state.get("timings_ms", {})),
+    }

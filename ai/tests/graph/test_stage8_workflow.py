@@ -1,5 +1,6 @@
 import pytest
 
+from app.graph.context import WorkflowRuntime
 from app.graph.graph import build_graph
 from app.graph.state import FarmState
 
@@ -49,6 +50,17 @@ def base_state(code: str, lookup: dict, confidence: float = 0.95) -> FarmState:
     }
 
 
+def invoke_with_runtime(state: FarmState):
+    runtime = WorkflowRuntime(
+        vision_tool=state.pop("vision_tool"),
+        field_context_tool=state.pop("field_context_tool"),
+        treatment_tool=state.pop("treatment_tool"),
+        rag_tool=state.pop("rag_tool"),
+        recommendation_writer=state.pop("recommendation_writer"),
+    )
+    return build_graph().invoke(state, context=runtime)
+
+
 def treatment_lookup():
     return {
         "path": "treatment",
@@ -74,14 +86,15 @@ def test_resolve_request_validation():
 
 def test_treatment_path_reaches_pending_with_provenance():
     state = base_state("Tomato___Late_blight", treatment_lookup())
-    final = build_graph().invoke(state)
-    assert final["approval_status"] == "PENDING"
+    final = invoke_with_runtime(state)
+    assert "approval_status" not in final
     assert final["disease_code"] == "Tomato___Late_blight"
     assert final["field_context"]["parcel"]["code"] == "P-001"
     assert final["recommendation"]["path"] == "treatment"
     assert final["recommendation"]["actions"][0]["pesticide"] == "SOURCE PRODUCT"
     assert final["recommendation"]["rag_sources"] == ["S05"]
     assert final["recommendation"]["generation_mode"] == "test_grounded"
+    assert final["recommendation"]["requires_engineer_approval"] is True
 
 
 def test_policy_path_never_creates_chemical_action():
@@ -95,7 +108,7 @@ def test_policy_path_never_creates_chemical_action():
             "notes": "Remove infected plants.",
         },
     }
-    final = build_graph().invoke(base_state("Tomato___Tomato_mosaic_virus", lookup))
+    final = invoke_with_runtime(base_state("Tomato___Tomato_mosaic_virus", lookup))
     assert final["recommendation"]["path"] == "policy"
     assert final["recommendation"]["actions"] == []
     assert (
@@ -110,7 +123,7 @@ def test_review_required_and_low_confidence_are_visible():
         "rules": [],
         "policy": None,
     }
-    final = build_graph().invoke(base_state("Tomato___healthy", lookup, confidence=0.2))
+    final = invoke_with_runtime(base_state("Tomato___healthy", lookup, confidence=0.2))
     assert final["low_confidence"] is True
     assert final["recommendation"]["low_confidence"] is True
     assert final["recommendation"]["path"] == "review_required"
@@ -123,7 +136,7 @@ def test_rag_unavailable_keeps_structured_facts():
         raise RuntimeError("offline")
 
     state["rag_tool"] = unavailable
-    final = build_graph().invoke(state)
+    final = invoke_with_runtime(state)
     assert final["recommendation"]["actions"][0]["dose_min"] == 2.0
     assert final["recommendation"]["rag_sources"] == []
     assert final["errors"] == [
@@ -131,21 +144,15 @@ def test_rag_unavailable_keeps_structured_facts():
     ]
 
 
-def test_approval_and_reject_routes_remain_distinct():
-    approved = base_state("Tomato___Late_blight", treatment_lookup())
-    approved.update(
-        {
-            "approval_status": "APPROVED",
-            "selected_rule_id": "rule-101",
-            "approved_dose": 2.2,
-        }
-    )
-    approved_final = build_graph().invoke(approved)
-    assert approved_final["application_status"] == "WAITING_APPLIED"
-    assert "harvest_locked_until" not in approved_final["response"]
+def test_recommendation_graph_excludes_durable_transition_nodes():
+    graph = build_graph().get_graph()
+    assert "engineer_approval" not in graph.nodes
+    assert "record_treatment" not in graph.nodes
+    assert "reject_case" not in graph.nodes
 
-    rejected = base_state("Tomato___Late_blight", treatment_lookup())
-    rejected.update({"approval_status": "REJECTED", "approval_reason": "Image unclear"})
-    rejected_final = build_graph().invoke(rejected)
-    assert rejected_final["application_status"] == "CANCELLED"
-    assert rejected_final["response"]["approval_reason"] == "Image unclear"
+
+def test_recommendation_graph_receives_services_from_runtime_context():
+    state = base_state("Tomato___Late_blight", treatment_lookup())
+    final = invoke_with_runtime(state)
+
+    assert final["recommendation"]["path"] == "treatment"

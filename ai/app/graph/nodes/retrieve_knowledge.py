@@ -16,13 +16,17 @@ retrieved context.
 import time
 from typing import Any
 
+from langgraph.runtime import Runtime
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.graph.context import WorkflowRuntime
 from app.graph.state import FarmState  # type: ignore
 from app.rag.retriever import RAGRetriever
 
 
-def retrieve_knowledge(state: FarmState) -> dict[str, Any]:
+def retrieve_knowledge(
+    state: FarmState, runtime: Runtime[WorkflowRuntime]
+) -> dict[str, Any]:
     """Retrieve knowledge chunks and attach them to the state.
 
     Args:
@@ -48,8 +52,8 @@ def retrieve_knowledge(state: FarmState) -> dict[str, Any]:
     top_k: int = int(state.get("rag_top_k") or 3)
     if not 1 <= top_k <= 20:
         raise ValueError("rag_top_k must be between 1 and 20")
-    db = state.get("db")
-    tool = state.get("rag_tool")
+    db = runtime.context.db
+    tool = runtime.context.rag_tool
     started = time.perf_counter()
     try:
         if tool is not None:
@@ -69,13 +73,14 @@ def retrieve_knowledge(state: FarmState) -> dict[str, Any]:
             )
     except (RuntimeError, ConnectionError, TimeoutError, OSError, SQLAlchemyError):
         contexts = []
-        state.setdefault("errors", []).append(
-            "RAG_UNAVAILABLE: structured recommendation remains available"
-        )
-    state.setdefault("timings_ms", {})["rag_retrieval"] = round(
+        errors = [
+            *state.get("errors", []),
+            "RAG_UNAVAILABLE: structured recommendation remains available",
+        ]
+    else:
+        errors = list(state.get("errors", []))
+    timings = dict(state.get("timings_ms", {}))
+    timings["rag_retrieval"] = round(
         (time.perf_counter() - started) * 1000, 2
     )
-
-    # Store raw contexts for the next node
-    state["rag_context"] = contexts
-    return state
+    return {"rag_context": contexts, "errors": errors, "timings_ms": timings}

@@ -65,8 +65,8 @@ def parcel_season(db):
 
 @pytest.fixture
 def client(db, monkeypatch):
-    router_module = importlib.import_module("app.api.router")
-    monkeypatch.setattr(router_module, "GroundedRecommendationWriter", Writer)
+    runner_module = importlib.import_module("app.application.workflow_runner")
+    monkeypatch.setattr(runner_module, "GroundedRecommendationWriter", Writer)
     app = FastAPI()
     app.include_router(router, prefix="/api/v1")
     app.state.plant_model = Model(30)
@@ -233,12 +233,12 @@ def test_request_id_retry_returns_same_case(db, client, parcel_season):
 
 
 def test_graph_failure_marks_report_failed(db, client, parcel_season, monkeypatch):
-    router_module = importlib.import_module("app.api.router")
+    runner_module = importlib.import_module("app.application.workflow_runner")
 
     def fail_graph(_state):
         raise RuntimeError("simulated internal failure")
 
-    monkeypatch.setattr(router_module.farm_graph, "invoke", fail_graph)
+    monkeypatch.setattr(runner_module.farm_graph, "invoke", fail_graph)
     http, _ = client
     parcel, _ = parcel_season
     request_id = f"graph-fail-{uuid.uuid4()}"

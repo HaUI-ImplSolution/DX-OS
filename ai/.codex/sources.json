@@ -70,22 +70,6 @@
         "skills/huggingface-vision-trainer",
         "skills/huggingface-spaces"
       ]
-    },
-    {
-      "id": "ultralytics-skills",
-      "url": "https://github.com/ultralytics/skills.git",
-      "web": "https://github.com/ultralytics/skills",
-      "ref": "main",
-      "category": "computer-vision-yolo",
-      "skills": [
-        "skills/yolo",
-        "skills/yolo-models",
-        "skills/yolo-datasets",
-        "skills/yolo-training",
-        "skills/yolo-tuning",
-        "skills/yolo-inference",
-        "skills/yolo-export"
-      ]
     }
   ],
   "optional_repositories": [

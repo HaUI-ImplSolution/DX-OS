@@ -4,21 +4,26 @@ import time
 import uuid
 from typing import Any
 
+from langgraph.runtime import Runtime
+
 from app.core.config import get_settings
 from app.cv.contract import class_contract
+from app.graph.context import WorkflowRuntime
 from app.graph.state import FarmState  # type: ignore
 from app.services.diagnosis_service import persist_prediction
 
 
-def cv_diagnosis(state: FarmState) -> dict[str, Any]:
+def cv_diagnosis(
+    state: FarmState, runtime: Runtime[WorkflowRuntime]
+) -> dict[str, Any]:
     """Execute CV diagnosis node using vision_tool or existing cv_result."""
     started = time.perf_counter()
     cv_res = state.get("cv_result")
 
     if not cv_res:
-        tool = state.get("vision_tool")
+        tool = runtime.context.vision_tool
         if tool is None:
-            raise ValueError("vision_tool or cv_result is required in FarmState")
+            raise ValueError("vision_tool or cv_result is required")
 
         image_bytes = state.get("image_ref")
 
@@ -50,24 +55,28 @@ def cv_diagnosis(state: FarmState) -> dict[str, Any]:
     if not cv_res.get("model_name") or not cv_res.get("model_version"):
         raise ValueError("CV diagnosis failed: model metadata is required")
 
-    state["cv_result"] = cv_res
-    state["disease_code"] = disease_code
-    state["confidence"] = float(confidence)
-    state["low_confidence"] = confidence < get_settings().cv_confidence_threshold
-    state.setdefault("timings_ms", {})["cv_inference"] = round(
+    timings = dict(state.get("timings_ms", {}))
+    timings["cv_inference"] = round(
         float(cv_res.get("inference_time_ms", 0.0)), 2
     )
 
-    db = state.get("db")
+    db = runtime.context.db
     report_id = state.get("disease_report_id")
     persistence_started = time.perf_counter()
+    updates: dict[str, Any] = {
+        "cv_result": cv_res,
+        "disease_code": disease_code,
+        "confidence": float(confidence),
+        "low_confidence": confidence < get_settings().cv_confidence_threshold,
+    }
     if db is not None and report_id:
         persisted = persist_prediction(db, uuid.UUID(str(report_id)), cv_res)
-        state["disease_report_id"] = persisted["report_id"]
-    state["timings_ms"]["cv_persistence"] = round(
+        updates["disease_report_id"] = persisted["report_id"]
+    timings["cv_persistence"] = round(
         (time.perf_counter() - persistence_started) * 1000, 2
     )
-    state["timings_ms"]["cv_node_total"] = round(
+    timings["cv_node_total"] = round(
         (time.perf_counter() - started) * 1000, 2
     )
-    return state
+    updates["timings_ms"] = timings
+    return updates

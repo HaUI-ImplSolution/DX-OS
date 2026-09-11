@@ -39,12 +39,3 @@ huggingface-datasets
 huggingface-trackio
 huggingface-vision-trainer
 huggingface-spaces
-
-# ultralytics/skills
-yolo
-yolo-models
-yolo-datasets
-yolo-training
-yolo-tuning
-yolo-inference
-yolo-export

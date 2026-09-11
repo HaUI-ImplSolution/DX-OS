@@ -31,24 +31,10 @@ class FarmState(TypedDict, total=False):
     # Recommendation output
     recommendation: Any | None
 
-    # Approval & Application status
-    approval_status: str | None
-    approval_reason: str | None
-    selected_rule_id: str | None
-    approved_dose: float | None
-    application_status: str | None
-    applied_at: Any
-
     # Final response
     response: dict[str, Any] | None
 
-    # Internal helpers / context
-    db: Any  # SQLAlchemy Session, injected by API / caller
-    vision_tool: Any
-    field_context_tool: Any
-    treatment_tool: Any
-    rag_tool: Any
-    recommendation_writer: Any
+    # Retrieval controls and diagnostic metadata
     rag_question: str | None
     rag_top_k: int | None
     errors: list[str]

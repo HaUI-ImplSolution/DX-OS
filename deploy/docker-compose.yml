@@ -30,10 +30,9 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dxfarm}
       SERVER_PORT: 8081
       UPLOAD_DIR: /app/uploads
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
-      SUPER_ADMIN_USERNAME: ${SUPER_ADMIN_USERNAME:-admin}
-      SUPER_ADMIN_PASSWORD: ${SUPER_ADMIN_PASSWORD}
+      SUPERSET_RO_PASSWORD: ${SUPERSET_RO_PASSWORD:-superset_ro_demo_only}
+      MATTERMOST_DB_PASSWORD: ${MATTERMOST_DB_PASSWORD:-mattermost_demo_only}
+      KEYCLOAK_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak_demo_only}
     volumes:
       - ./data/uploads:/app/uploads
     ports:
@@ -47,3 +46,112 @@ services:
       - backend
     ports:
       - "${FRONTEND_PORT:-8082}:80"
+
+  portal:
+    build:
+      context: ../portal
+      dockerfile: Dockerfile
+    ports:
+      - "${PORTAL_PORT:-8090}:80"
+
+  # Identity Provider cho đăng nhập một lần (SSO thật) - xem sso/README.md.
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    command: ["start-dev", "--import-realm"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    # Backend chưa có healthcheck - tự thử lại nếu lần đầu connect Postgres thất bại.
+    restart: on-failure
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_DB: postgres
+      # Role/database do backend tự tạo lúc khởi động (KeycloakDatabaseSeeder).
+      KC_DB_URL: "jdbc:postgresql://postgres:5432/keycloak"
+      KC_DB_USERNAME: keycloak_app
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak_demo_only}
+      KC_HOSTNAME: "http://localhost:${KEYCLOAK_PORT:-8180}"
+      KC_HEALTH_ENABLED: "true"
+    volumes:
+      - ../sso/realm-dxfarm.json:/opt/keycloak/data/import/realm-dxfarm.json:ro
+    ports:
+      - "${KEYCLOAK_PORT:-8180}:8080"
+
+  superset:
+    image: apache/superset:3.1.3
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_started
+      keycloak:
+        condition: service_started
+    environment:
+      SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY}
+      SUPERSET_ADMIN_USERNAME: ${SUPERSET_ADMIN_USERNAME:-admin}
+      SUPERSET_ADMIN_PASSWORD: ${SUPERSET_ADMIN_PASSWORD}
+      SUPERSET_ADMIN_EMAIL: ${SUPERSET_ADMIN_EMAIL:-admin@dxfarm.local}
+      # Role superset_ro (backend tự tạo lúc khởi động) chỉ có quyền SELECT.
+      DXFARM_DB_URI: postgresql+psycopg2://superset_ro:${SUPERSET_RO_PASSWORD:-superset_ro_demo_only}@postgres:5432/${POSTGRES_DB:-dxfarm}
+      # SSO thật qua Keycloak (superset_config.py) - xem sso/README.md.
+      KEYCLOAK_SUPERSET_CLIENT_ID: ${KEYCLOAK_SUPERSET_CLIENT_ID:-dxfarm-superset}
+      KEYCLOAK_SUPERSET_CLIENT_SECRET: ${KEYCLOAK_SUPERSET_CLIENT_SECRET:-dxfarm_superset_demo_secret}
+    volumes:
+      - ../bi/bootstrap.sh:/app/pythonpath/bootstrap.sh:ro
+      - ../bi/bootstrap_datasources.py:/app/pythonpath/bootstrap_datasources.py:ro
+      - ../bi/superset_config.py:/app/pythonpath/superset_config.py:ro
+      - ../bi/dxfarm_dashboard_export.zip:/app/pythonpath/dxfarm_dashboard_export.zip:ro
+      - ./data/superset:/app/superset_home
+    entrypoint: ["/bin/bash", "/app/pythonpath/bootstrap.sh"]
+    ports:
+      - "${SUPERSET_PORT:-8088}:8088"
+
+  # Container Mattermost chạy bằng user không phải root (uid 2000) nhưng bind mount mới tạo lần
+  # đầu thuộc root — service tạm này chown lại một lần trước khi Mattermost khởi động, để
+  # `docker compose up` chạy được ngay không cần thao tác tay.
+  mattermost-init:
+    image: alpine:3.20
+    command:
+      ["chown", "-R", "2000:2000", "/mattermost/config", "/mattermost/data", "/mattermost/logs",
+        "/mattermost/plugins", "/mattermost/client/plugins", "/mattermost/bleve-indexes"]
+    volumes:
+      - ./data/mattermost/config:/mattermost/config
+      - ./data/mattermost/data:/mattermost/data
+      - ./data/mattermost/logs:/mattermost/logs
+      - ./data/mattermost/plugins:/mattermost/plugins
+      - ./data/mattermost/client-plugins:/mattermost/client/plugins
+      - ./data/mattermost/bleve-indexes:/mattermost/bleve-indexes
+
+  mattermost:
+    # Team Edition chính thức, không build lại, không đụng thư mục server/enterprise — xem
+    # chat/README.md về lựa chọn license.
+    image: mattermost/mattermost-team-edition:10.5
+    # Backend chưa có healthcheck nên `depends_on: backend` chỉ đảm bảo container đã chạy, không
+    # đảm bảo role/database `mattermost` đã tạo xong — tự thử lại nếu lần đầu connect Postgres
+    # thất bại.
+    restart: on-failure
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_started
+      mattermost-init:
+        condition: service_completed_successfully
+    environment:
+      MM_SQLSETTINGS_DRIVERNAME: postgres
+      # Role/database `mattermost_app`/`mattermost` do backend tự tạo lúc khởi động
+      # (MattermostDatabaseSeeder), tách biệt hoàn toàn khỏi CSDL nghiệp vụ.
+      MM_SQLSETTINGS_DATASOURCE: "postgres://mattermost_app:${MATTERMOST_DB_PASSWORD:-mattermost_demo_only}@postgres:5432/mattermost?sslmode=disable"
+      MM_SERVICESETTINGS_SITEURL: "http://localhost:${MATTERMOST_PORT:-8065}"
+    volumes:
+      - ./data/mattermost/config:/mattermost/config
+      - ./data/mattermost/data:/mattermost/data
+      - ./data/mattermost/logs:/mattermost/logs
+      - ./data/mattermost/plugins:/mattermost/plugins
+      - ./data/mattermost/client-plugins:/mattermost/client/plugins
+      - ./data/mattermost/bleve-indexes:/mattermost/bleve-indexes
+    ports:
+      - "${MATTERMOST_PORT:-8065}:8065"

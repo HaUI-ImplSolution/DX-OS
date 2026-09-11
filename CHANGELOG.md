@@ -4,6 +4,18 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
 
 ## Backend (Spring Boot — `backend/DX-Farm`)
 
+### 2026-09-11
+
+**Đã xong — SSO thật qua Keycloak (Giai đoạn 2 [H]):**
+
+- Xác thực qua OAuth2 Resource Server, verify token bằng `jwk-set-uri` trỏ vào Keycloak nội bộ.
+  `KeycloakRoleConverter` map `realm_access.roles` thành `ROLE_FARMER`/`ROLE_ENGINEER`/`ROLE_ADMIN`.
+- `CurrentUserService` lấy `reportedBy`/`decidedBy` từ claim token, không tra DB.
+- `KeycloakDatabaseSeeder` tạo role/database Postgres riêng cho Keycloak, theo pattern `MattermostDatabaseSeeder`.
+- Quản lý tài khoản qua Keycloak Admin Console.
+  Chi tiết: `sso/README.md`.
+- Đã chạy thật qua `deploy`, xác nhận 401/403 bằng access token thật.
+
 ### 2026-09-09
 
 **Đã xong — Auth/SSO cơ bản (Giai đoạn 2 [H]):**
@@ -233,6 +245,18 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
 
 ## Frontend (`frontend`)
 
+### 2026-09-11
+
+**Đã xong — Đăng nhập qua Keycloak (SSO thật):**
+
+- `src/auth.ts` dùng `oidc-client-ts` (Authorization Code + PKCE), phiên lưu ở `sessionStorage`.
+- Chưa có phiên thì tự redirect sang Keycloak ngay lúc mount, không cần bấm nút — vào thẳng từ portal cũng tự vào được app.
+  Callback lỗi (huỷ đăng nhập, tài khoản bị khoá...) thì dừng lại báo lỗi kèm nút thử lại, không lặp vô hạn.
+  Đọc `fullName`/`role` từ claim token sau khi quay về.
+- `src/api.ts` gắn Bearer token từ phiên OIDC; 401 tự xoá phiên, quay lại màn đăng nhập.
+- Single logout: bật `monitorSession` để tự phát hiện khi phiên Keycloak kết thúc ở app khác (Superset) hoặc Keycloak Account Console, tự đăng xuất theo. Chi tiết: `sso/README.md`.
+- Đã test qua trình duyệt thật với từng tài khoản demo trong `sso/README.md`, bao gồm bấm thẳng từ portal và đăng xuất chéo giữa App chính/Superset.
+
 ### 2026-09-09
 
 **Đã xong — Demo UI cho Phase 0 spine flow (M1–M6):**
@@ -261,6 +285,15 @@ handler `/uploads/**`).
 
 ## Deploy (`deploy`)
 
+### 2026-09-11
+
+**Đã xong — service `keycloak` (SSO thật):**
+
+- Thêm service `keycloak` (image chính thức `quay.io/keycloak/keycloak:26.0`), cổng mặc định `8180`.
+  Tự import realm `dxfarm` từ `sso/realm-dxfarm.json` lúc khởi động, không cần thao tác tay.
+- `.env.example`: `KEYCLOAK_ADMIN_PASSWORD`/`KEYCLOAK_DB_PASSWORD` thay cho secret JWT/admin cũ.
+- Đã chạy thật bằng `docker compose up -d --build`.
+
 ### 2026-09-09
 
 **Đã xong — đóng gói Postgres + backend + frontend chạy một lệnh:**
@@ -277,3 +310,104 @@ handler `/uploads/**`).
   file duy nhất trong repo (dùng chung cho demo full-stack lẫn Postgres khi dev thủ công).
 - Service `backend` nhận thêm secret cho auth (`JWT_SECRET`, `JWT_EXPIRATION`,
   `SUPER_ADMIN_USERNAME/PASSWORD`) từ `deploy/.env` (mẫu ở `.env.example`).
+
+## BI Dashboard (`bi`, Apache Superset)
+
+### 2026-09-11
+
+**Đã xong — SSO thật qua Keycloak:**
+
+- `bi/superset_config.py` bật `AUTH_TYPE = AUTH_OAUTH`, đăng nhập UI bằng redirect sang Keycloak.
+  `CustomSecurityManager` map claim `realm_access.roles` (đọc trực tiếp từ access token) sang role Superset: `ADMIN` → `Admin`, `ENGINEER`/`FARMER` → `Gamma`.
+- Client confidential `dxfarm-superset` mới trong `sso/realm-dxfarm.json`.
+- `bi/bootstrap.sh` tự `pip install authlib` lúc khởi động (không có sẵn trong image gốc, không build lại image).
+- Tài khoản admin DB cục bộ vẫn dùng được qua REST API cho `bootstrap_datasources.py`, không phụ thuộc `AUTH_TYPE`.
+- Single logout: `LOGOUT_REDIRECT_URL` khiến đăng xuất Superset cũng kết thúc phiên SSO ở Keycloak, không chỉ xoá cookie Superset. Client `dxfarm-superset` bật `frontchannelLogout` để nhận thông báo khi phiên SSO kết thúc từ nơi khác. Chi tiết: `sso/README.md`.
+- Đã đăng nhập thật qua trình duyệt bằng `engineer1`/`admin1`, xác nhận role map đúng và đăng xuất chéo với App chính hoạt động đúng cả 2 chiều.
+
+### 2026-09-10
+
+**Đã xong — BI dashboard (Giai đoạn 2 [D]):**
+
+- Thêm service `superset` (image chính thức `apache/superset:3.1.3`, không build lại) vào `deploy/docker-compose.yml`, lên cùng lệnh `docker compose up -d --build` sẵn có, cổng 8088.
+  Bind mount script/dashboard từ thư mục `bi/` riêng.
+- Backend tự tạo role Postgres chỉ-đọc `superset_ro` lúc khởi động (`SupersetReadOnlyRoleSeeder`, JDBC thuần — `data.sql` không tương thích với khối PL/pgSQL `DO $$ ... $$`).
+- `bi/bootstrap.sh` + `bootstrap_datasources.py`: tự `db upgrade` + tạo admin + đăng ký database connection + 5 dataset + import dashboard mẫu qua REST API công khai của chính Superset.
+  Không cần thao tác tay sau `docker compose up`. Idempotent, có retry.
+- Dashboard mẫu "DX-Farm — Bản đồ & Trạng thái thửa ruộng": deck.gl Scatterplot vẽ thửa ruộng theo toạ độ + Pie chart tỉ lệ vụ mùa ACTIVE/HARVESTED.
+  Build bằng browser thật (Claude in Chrome), verify bằng screenshot dữ liệu thật, export lại thành bundle YAML commit vào `bi/dxfarm_dashboard_export.zip` để tự import lại mỗi lần dựng từ đầu.
+- `Parcel` có thêm 2 cột toạ độ tuỳ chọn `latitude`/`longitude` (backend + FE `ParcelPanel`) để dashboard vẽ bản đồ thật.
+- Đã build + chạy thử thật, kể cả re-import dashboard nhiều lần — idempotent, không tạo trùng chart.
+- **Còn thiếu**: chưa cấu hình `MAPBOX_API_KEY` nên bản đồ chưa có nền (basemap) thật, chỉ thấy điểm trên nền trắng — cần token Mapbox miễn phí, xem `bi/README.md`.
+
+## Kênh chat nội bộ (`chat`, Mattermost)
+
+### 2026-09-11
+
+**Quyết định — không nối SSO cho Mattermost:**
+
+- Team Edition (bản free đang dùng) không hỗ trợ OpenID Connect với IdP tuỳ ý — tính năng đó thuộc Mattermost Enterprise (trả phí).
+- Có thể lách bằng provider "GitLab" (generic OAuth2 built-in) trỏ sang Keycloak, nhưng cần custom protocol mapper giả dạng shape JSON của GitLab user và dựa vào hành vi nội bộ không được Mattermost chính thức hỗ trợ cho IdP ngoài GitLab — quyết định không làm.
+- App chính và BI Dashboard đã đăng nhập qua Keycloak, xem `sso/README.md`.
+
+### 2026-09-10
+
+**Đã xong — Kênh chat nội bộ (Giai đoạn 2 [H]):**
+
+- Thêm service `mattermost` (image chính thức `mattermost/mattermost-team-edition:10.5`, không build lại) vào `deploy/docker-compose.yml`, lên cùng lệnh `docker compose up -d --build` sẵn có, cổng 8065.
+- Backend tự tạo role + database Postgres riêng `mattermost_app`/`mattermost` lúc khởi động (`MattermostDatabaseSeeder`, JDBC thuần vì `CREATE DATABASE` không chạy được trong khối PL/pgSQL `DO $$ ... $$`) — tách biệt hoàn toàn khỏi CSDL nghiệp vụ.
+- Dữ liệu chat persist qua bind mount `deploy/data/mattermost/`.
+- Rà soát license kỹ vì Mattermost không dùng một license duy nhất: server core AGPLv3 (OSI-approved), `server/enterprise/` là Mattermost Source Available License (không OSI-approved, không dùng tới), bản binary Team Edition được Mattermost, Inc. cấp phép lại MIT riêng cho đúng binary đó. Ghi chi tiết ở `LICENSES.md` và `chat/README.md`.
+- Tài khoản Mattermost tách biệt hoàn toàn khỏi tài khoản backend (FARMER/ENGINEER/ADMIN) có chủ đích — nền tảng riêng, không dùng SSO chung.
+
+## Portal (`portal`)
+
+### 2026-09-11
+
+**Đã xong — bấm link từ portal vào thẳng app đã đăng nhập SSO:**
+
+- Link BI Dashboard trỏ thẳng `/login/keycloak` thay vì trang chủ Superset — vào thẳng luồng OAuth, không dừng ở màn hình "Sign In with keycloak".
+- Kết hợp với frontend tự redirect khi chưa có phiên: bấm app nào từ portal cũng tự chuyển sang Keycloak nếu chưa đăng nhập, xong quay lại đúng app đó; đã đăng nhập app này rồi thì bấm app kia (App chính/BI Dashboard) không cần đăng nhập lại.
+- Đã test qua trình duyệt thật: bấm portal → chưa có phiên → Keycloak → quay lại đúng app; bấm app còn lại → vào thẳng không cần đăng nhập lại.
+
+### 2026-09-10
+
+**Đã xong — trang portal tĩnh, bước đệm trước SSO:**
+
+- Trang tĩnh (nginx, không build step) liệt kê link tới 3 ứng dụng hiện có (Ứng dụng chính,
+  BI Dashboard, Kênh chat nội bộ) — người dùng không cần tự nhớ URL từng app.
+- Thêm service `portal` vào `deploy/docker-compose.yml`, cổng mặc định `8090` (`PORTAL_PORT`).
+- Đã build + chạy thử thật qua `docker compose up -d`, xác nhận trang load đúng.
+- **Còn thiếu**: mỗi app đích vẫn đăng nhập riêng — portal chỉ là danh sách link tĩnh, sẽ trở
+  thành landing page thật khi SSO (Keycloak/Authentik) được triển khai.
+
+## Identity Provider (`sso`, Keycloak)
+
+### 2026-09-11
+
+**Đã xong — SSO thật (Giai đoạn 2 [H]):**
+
+- Realm `dxfarm` (`sso/realm-dxfarm.json`): 3 realm role, client public `dxfarm-frontend` (PKCE), client confidential `dxfarm-superset`, 3 tài khoản demo.
+- Backend, frontend và BI Dashboard (Superset) đều xác thực qua Keycloak.
+  Chi tiết + trade-off hostname nội bộ vs. trình duyệt: `sso/README.md`.
+- Single logout (front-channel + session monitoring): đăng xuất ở app nào cũng kết thúc phiên SSO ở Keycloak, các app khác đang mở tự đăng xuất theo. Giới hạn: không phải backchannel logout chuẩn OIDC (chỉ hoạt động khi tab còn mở). Chi tiết: `sso/README.md`.
+- Mattermost là nền tảng chat tách biệt có chủ đích, không nối SSO — xem `chat/README.md`.
+
+## Rà soát license (PoF)
+
+### 2026-09-11
+
+**Đã xong:**
+
+- Thêm Keycloak (Apache-2.0) và `oidc-client-ts` (MIT) vào `LICENSES.md`, cả hai OSI-approved.
+- Thêm Authlib (BSD-3-Clause, OSI-approved) vào `LICENSES.md` — pip package cho SSO OAuth của Superset.
+
+### 2026-09-10
+
+**Đã xong:**
+
+- `LICENSES.md` (gốc repo): rà soát license từng thành phần thật sự đang chạy (backend, frontend, deploy).
+  Toàn bộ OSI-approved (Apache-2.0/MIT/BSD/PostgreSQL License).
+- Chốt dứt khoát bỏ n8n khỏi kiến trúc (Sustainable Use License, không OSI-approved) — chưa từng tích hợp vào code.
+- Thêm `LICENSE` (Apache-2.0 toàn văn) ở gốc repo.
+- **Còn thiếu**: SPDX header đầu mỗi file mã nguồn tự viết — việc sửa hàng loạt file, để riêng một lượt khác.

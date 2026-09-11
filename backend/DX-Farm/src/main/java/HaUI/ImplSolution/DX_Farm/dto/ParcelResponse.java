@@ -20,6 +20,11 @@ public record ParcelResponse(
   // Vị trí/địa chỉ thửa ruộng
   String location,
 
+  // Toạ độ GPS (tuỳ chọn)
+  BigDecimal latitude,
+
+  BigDecimal longitude,
+
   // Thời điểm tạo
   Instant createdAt,
 

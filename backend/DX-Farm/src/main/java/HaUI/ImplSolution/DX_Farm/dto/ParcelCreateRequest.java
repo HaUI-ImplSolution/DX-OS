@@ -1,5 +1,6 @@
 package HaUI.ImplSolution.DX_Farm.dto;
 
+import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -21,5 +22,12 @@ public record ParcelCreateRequest(
   BigDecimal areaHectares,
 
   // Vị trí/địa chỉ thửa ruộng
-  String location
+  String location,
+
+  // Toạ độ GPS (tuỳ chọn)
+  @DecimalMin(value = "-90") @DecimalMax(value = "90")
+  BigDecimal latitude,
+
+  @DecimalMin(value = "-180") @DecimalMax(value = "180")
+  BigDecimal longitude
 ){}

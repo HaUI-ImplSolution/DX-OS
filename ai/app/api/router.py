@@ -13,6 +13,7 @@ from app.api.schemas import (
     ApplyWorkflowRequest,
     ApproveWorkflowRequest,
     CVHealthResponse,
+    DiagnoseAndRetrieveResponse,
     DiseaseDetectionResponse,
     RejectWorkflowRequest,
     RetrieveRequest,
@@ -24,6 +25,7 @@ from app.db.models.crop_season import CropSeason
 from app.db.models.disease_report import DiseaseReport
 from app.db.repositories.parcel_repository import (
     get_current_crop_season,
+    get_default_crop_season,
     get_parcel_by_code,
 )
 from app.db.session import get_db
@@ -33,6 +35,7 @@ from app.llm.recommendation_writer import GroundedRecommendationWriter
 from app.rag.retriever import RAGRetriever
 from app.services.diagnosis_service import diagnose_report
 from app.services.plant_disease_service import PlantDiseaseService
+from app.services.structured_knowledge_service import lookup_structured_knowledge
 from app.services.workflow_service import (
     WorkflowConflictError,
     apply_workflow_case,
@@ -65,7 +68,7 @@ def predictor(request: Request) -> PlantDiseaseService:
     return PlantDiseaseService(model=model)
 
 
-@router.get("/health", response_model=CVHealthResponse)
+@router.get("/health", response_model=CVHealthResponse, summary="Kiểm tra trạng thái mô hình CV", description="Dùng trước khi test các API dự đoán. Cho biết model CV đã được load hay chưa, phiên bản và thiết bị chạy (CPU/GPU).")
 def health(request: Request):
     settings = get_settings()
     model = getattr(request.app.state, "plant_model", None)
@@ -79,12 +82,12 @@ def health(request: Request):
     )
 
 
-@router.get("/class-contract")
+@router.get("/class-contract", summary="Xem danh sách lớp bệnh CV", description="Trả về contract ánh xạ class ID của mô hình với disease_code chuẩn dùng trong database. Dùng để kiểm tra tính tương thích CV–DB.")
 def get_class_contract():
     return class_contract()
 
 
-@router.post("/predict", response_model=DiseaseDetectionResponse)
+@router.post("/predict", response_model=DiseaseDetectionResponse, summary="Dự đoán bệnh từ ảnh", description="Upload một ảnh lá cây để mô hình EfficientNet-B4 nhận diện bệnh. API chỉ dự đoán, không lưu Diagnosis và không tạo workflow xử lý.")
 async def predict_disease(request: Request, image: Annotated[UploadFile, File()]):
     data = await read_image(image)
     try:
@@ -93,7 +96,7 @@ async def predict_disease(request: Request, image: Annotated[UploadFile, File()]
         raise HTTPException(400, str(exc)) from exc
 
 
-@router.post("/reports/{report_id}/diagnose")
+@router.post("/reports/{report_id}/diagnose", summary="Chẩn đoán và lưu kết quả vào DiseaseReport", description="Upload ảnh cho một DiseaseReport đã tồn tại. API chạy CV, lưu Diagnosis và chuyển report sang trạng thái đã phân tích; report đã chẩn đoán sẽ trả lỗi 409.")
 async def diagnose(
     report_id: uuid.UUID,
     request: Request,
@@ -113,7 +116,7 @@ async def diagnose(
         raise HTTPException(400, str(exc)) from exc
 
 
-@router.post("/knowledge/retrieve")
+@router.post("/knowledge/retrieve", summary="Tìm kiến thức giải thích bằng RAG", description="Tìm các đoạn tài liệu liên quan trong pgvector theo câu hỏi, có thể lọc theo disease_code. Kết quả chỉ là bằng chứng giải thích, không phải thuốc, liều lượng hoặc PHI.")
 def retrieve(payload: RetrieveRequest, db: Annotated[Session, Depends(get_db)]):
     if not payload.query.strip():
         raise HTTPException(422, "query must not be blank")
@@ -122,7 +125,74 @@ def retrieve(payload: RetrieveRequest, db: Annotated[Session, Depends(get_db)]):
     )
 
 
-@router.post("/workflow/run", response_model=WorkflowRunResponse)
+@router.get(
+    "/{disease_code}/treatment",
+    summary="Tra cứu quy trình điều trị & chính sách theo mã bệnh",
+    description="Tra cứu thông tin thuốc được phép sử dụng (tên thuốc, hoạt chất, khoảng liều lượng min-max, đơn vị liều, số ngày cách ly PHI) hoặc chính sách quản lý không hóa chất từ cơ sở dữ liệu định hình.",
+)
+def get_treatment(disease_code: str, db: Annotated[Session, Depends(get_db)]):
+    try:
+        return lookup_structured_knowledge(db, disease_code)
+    except ValueError as exc:
+        raise HTTPException(404, str(exc)) from exc
+
+
+@router.post(
+    "/diagnose-and-retrieve",
+    response_model=DiagnoseAndRetrieveResponse,
+    summary="Chẩn đoán bệnh từ ảnh và tự động truy vấn tri thức điều trị & RAG",
+    description="API nối luồng: nhận file ảnh lá cây, nhận diện bệnh qua CV, sau đó tự động tra cứu thông tin điều trị/chính sách định hình (giống /{disease_code}/treatment) và các đoạn tài liệu RAG giải thích liên quan (giống /knowledge/retrieve).",
+)
+async def diagnose_and_retrieve(
+    request: Request,
+    image: Annotated[UploadFile, File()],
+    db: Annotated[Session, Depends(get_db)],
+    query: Annotated[str | None, Form()] = None,
+    top_k: Annotated[int, Form()] = 1,
+):
+    data = await read_image(image)
+    try:
+        cv_res = await run_in_threadpool(predictor(request).predict, data)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+    if isinstance(cv_res, dict):
+        disease_code = cv_res["disease_code"]
+        disease_name = cv_res.get("disease_name", "")
+    else:
+        disease_code = cv_res.disease_code
+        disease_name = cv_res.disease_name
+
+    try:
+        treatment_knowledge = lookup_structured_knowledge(db, disease_code)
+    except ValueError:
+        treatment_knowledge = {
+            "path": "review_required",
+            "disease_code": disease_code,
+            "rules": [],
+            "policy": None,
+        }
+
+    rag_query = (query or "").strip()
+    if not rag_query:
+        rag_query = f"Explain disease {disease_code} in detail"
+
+    try:
+        rag_knowledge = RAGRetriever().retrieve(
+            db, rag_query, top_k=top_k, disease_code=disease_code
+        )
+    except Exception:
+        rag_knowledge = []
+
+    return DiagnoseAndRetrieveResponse(
+        cv_result=cv_res,
+        treatment_knowledge=treatment_knowledge,
+        rag_knowledge=rag_knowledge,
+    )
+
+
+
+@router.post("/workflow/run", response_model=WorkflowRunResponse, summary="Chạy workflow AI tạo khuyến nghị", description="API chính của MVP: nhận ảnh và parcel/crop season, chạy Resolve Request → CV Diagnosis → Field Context → Treatment/Policy → RAG → Recommendation. Workflow dừng ở PENDING để chờ kỹ sư phê duyệt.")
 async def run_workflow(
     request: Request,
     image: Annotated[UploadFile, File()],
@@ -292,7 +362,7 @@ def _transition_error(exc: Exception) -> HTTPException:
     return HTTPException(500, "Workflow transition failed")
 
 
-@router.get("/workflow/{case_id}")
+@router.get("/workflow/{case_id}", summary="Xem trạng thái workflow", description="Lấy toàn bộ trạng thái và audit summary của một case, gồm khuyến nghị, approval_status, application_status và thông tin PHI nếu đã APPLIED.")
 def workflow_status(case_id: uuid.UUID, db: Annotated[Session, Depends(get_db)]):
     try:
         return serialize_case(get_workflow_case(db, case_id))
@@ -300,7 +370,7 @@ def workflow_status(case_id: uuid.UUID, db: Annotated[Session, Depends(get_db)])
         raise _transition_error(exc) from exc
 
 
-@router.post("/workflow/{case_id}/approve")
+@router.post("/workflow/{case_id}/approve", summary="Kỹ sư phê duyệt khuyến nghị", description="Chuyển case từ PENDING sang APPROVED. Có thể chọn treatment rule và liều được duyệt. APPROVED chưa đồng nghĩa với APPLIED và chưa bắt đầu tính PHI.")
 def approve_workflow(
     case_id: uuid.UUID,
     payload: ApproveWorkflowRequest,
@@ -320,7 +390,7 @@ def approve_workflow(
         raise _transition_error(exc) from exc
 
 
-@router.post("/workflow/{case_id}/reject")
+@router.post("/workflow/{case_id}/reject", summary="Kỹ sư từ chối khuyến nghị", description="Chuyển case sang REJECTED, lưu actor_id và lý do từ chối, đồng thời đóng workflow.")
 def reject_workflow(
     case_id: uuid.UUID,
     payload: RejectWorkflowRequest,
@@ -335,7 +405,7 @@ def reject_workflow(
         raise _transition_error(exc) from exc
 
 
-@router.post("/workflow/{case_id}/applied")
+@router.post("/workflow/{case_id}/applied", summary="Xác nhận đã áp dụng xử lý ngoài ruộng", description="Ghi nhận việc phun/xử lý thực tế sau khi đã APPROVED. API kiểm tra actual_dose, tạo TreatmentApplication và tính harvest_locked_until = applied_at + phi_days.")
 def confirm_applied(
     case_id: uuid.UUID,
     payload: ApplyWorkflowRequest,

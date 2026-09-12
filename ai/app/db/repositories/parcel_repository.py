@@ -44,3 +44,18 @@ def get_current_crop_season(
     )
 
     return db.scalar(stmt)
+
+
+def get_default_crop_season(db: Session) -> CropSeason | None:
+    stmt = (
+        select(CropSeason)
+        .where(CropSeason.status == "ACTIVE")
+        .order_by(CropSeason.start_date.desc())
+        .limit(1)
+    )
+    season = db.scalar(stmt)
+    if season is None:
+        stmt_any = select(CropSeason).limit(1)
+        season = db.scalar(stmt_any)
+    return season
+

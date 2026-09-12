@@ -38,6 +38,19 @@ class RetrieveRequest(BaseModel):
     top_k: int = Field(default=3, ge=1, le=20)
 
 
+class DiagnoseAndRetrieveResponse(BaseModel):
+    cv_result: DiseaseDetectionResponse = Field(
+        ..., description="Kết quả nhận diện bệnh từ mô hình CV"
+    )
+    treatment_knowledge: dict[str, Any] = Field(
+        ..., description="Thông tin thuốc được phép / quy trình điều trị / chính sách định hình"
+    )
+    rag_knowledge: list[dict[str, Any]] = Field(
+        ..., description="Danh sách tài liệu RAG giải thích liên quan từ pgvector"
+    )
+
+
+
 class WorkflowRunRequest(BaseModel):
     request_id: str | None = Field(default=None, description="Mã định danh yêu cầu")
     parcel_code: str | None = Field(default=None, description="Mã mảnh ruộng/lô đất")

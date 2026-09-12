@@ -44,7 +44,7 @@ Luồng: nông dân báo bệnh bằng ảnh → CV chẩn đoán → tra cứu 
 - [x] M5 — Kỹ sư Approve/Reject trong flow (trạng thái duyệt lưu & kiểm soát ở Spring Boot backend; AI Service chỉ đề xuất, không tự quyết)
 - [x] M6 — Khi xác nhận đã phun (APPLIED): backend ghi `TreatmentApplication`, tính `harvest_locked_until`, poka-yoke 2 tầng (Spring Boot API trả 422 + UI disable) chặn thu hoạch sớm
 
-Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot (API nghiệp vụ, duyệt, poka-yoke), AI Service Python riêng (vision-api EfficientNet-B4 + LangGraph điều phối + LLM nhỏ Qwen2.5-1.5B qua Ollama) gọi qua HTTP. Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
+Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot (API nghiệp vụ, duyệt, poka-yoke), AI Service Python riêng (vision-api MobileNetV3 + LangGraph điều phối + LLM nhỏ Qwen2.5-1.5B qua Ollama) gọi qua HTTP. Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
 
 **Còn thiếu để Phase 0 chạy thật end-to-end:**
 
@@ -87,7 +87,7 @@ Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot
 Một PostgreSQL vật lý, ba nguồn logic:
 
 - **Operational Data**: Parcel, CropSeason, DiseaseReport, Diagnosis, TreatmentApplication — "chuyện gì đã xảy ra"
-- **Structured Knowledge**: Disease, Pesticide, TreatmentRule, DiseaseManagementPolicy — "quy tắc là gì" (lookup bằng khoá/SQL, không qua LLM)
+- **Structured Knowledge**: Disease, Pesticide, TreatmentRule — "quy tắc là gì" (lookup bằng khoá/SQL, không qua LLM)
 - **RAG Knowledge**: tài liệu VietGAP/IRRI/nội bộ đã duyệt, qua pgvector — "tài liệu giải thích gì"
 
 ## Điểm cần lưu ý cho tiêu chí PoF (50/100 điểm, mang tính loại trừ)
@@ -109,7 +109,7 @@ Một PostgreSQL vật lý, ba nguồn logic:
 - [ ] Schema operational + structured knowledge (entity, field bắt buộc)
 - [ ] Contract `vision-api` (request/response JSON)
 - [ ] Contract giữa backend Spring Boot và AI Service Python (REST, base URL, timeout/retry, ai-service base URL cấu hình ở đâu)
-- [x] Thời điểm PHI bắt đầu: khi `TreatmentApplication = APPLIED` (không phải khi Approve)
+- [ ] Thời điểm PHI bắt đầu: khi `TreatmentApplication = APPLIED` (không phải khi Approve)
 - [x] Cấu trúc monorepo và quyền sở hữu từng thư mục/module
 - [x] Chính sách repo Private trong lúc phát triển, thời điểm public trước khi nộp bài
 

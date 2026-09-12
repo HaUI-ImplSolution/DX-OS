@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import (
+    BigInteger,
     Boolean,
     CheckConstraint,
     DateTime,
@@ -59,14 +60,14 @@ class WorkflowCase(Base):
     request_id: Mapped[str] = mapped_column(
         String(100), nullable=False, unique=True, index=True
     )
-    crop_season_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+    crop_season_id: Mapped[int] = mapped_column(
+        BigInteger,
         ForeignKey("crop_seasons.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
-    disease_report_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+    disease_report_id: Mapped[int] = mapped_column(
+        BigInteger,
         ForeignKey("disease_reports.id", ondelete="CASCADE"),
         nullable=False,
         unique=True,
@@ -85,12 +86,12 @@ class WorkflowCase(Base):
         String(30), nullable=False, default="NOT_READY"
     )
     approval_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
-    selected_rule_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("treatment_rules.id"), nullable=True
+    selected_rule_id: Mapped[int | None] = mapped_column(
+        BigInteger, ForeignKey("treatment_rules.id"), nullable=True
     )
     approved_dose: Mapped[float | None] = mapped_column(Float, nullable=True)
-    application_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True),
+    application_id: Mapped[int | None] = mapped_column(
+        BigInteger,
         ForeignKey("treatment_applications.id"),
         nullable=True,
         unique=True,

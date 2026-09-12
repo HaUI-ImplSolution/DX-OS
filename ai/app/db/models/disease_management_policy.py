@@ -1,7 +1,7 @@
 import uuid
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, ForeignKey, String, Text
+from sqlalchemy import BigInteger, Boolean, ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -20,8 +20,8 @@ class DiseaseManagementPolicy(Base):
         default=uuid.uuid4,
     )
 
-    disease_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+    disease_id: Mapped[int] = mapped_column(
+        BigInteger,
         ForeignKey("diseases.id"),
         nullable=False,
         unique=True,

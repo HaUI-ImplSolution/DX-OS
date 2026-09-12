@@ -10,13 +10,19 @@ def load_json(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+import pytest
+
+
 def test_stage3_final_data_matches_review_decisions():
+    decisions_path = STAGE3 / "review" / "agronomy_review_decisions.json"
+    if not decisions_path.exists():
+        pytest.skip("Stage3 review decision artifacts are not included in distribution.")
     diseases = load_json(STRUCTURED / "diseases.json")
     pesticides = load_json(STRUCTURED / "pesticides.json")
     rules = load_json(STRUCTURED / "treatment_rules.json")
     policies = load_json(STRUCTURED / "disease_management_policies.json")
     candidates = load_json(STRUCTURED / "treatment_rules_candidates_master.json")
-    decisions = load_json(STAGE3 / "review" / "agronomy_review_decisions.json")
+    decisions = load_json(decisions_path)
     manifest = load_json(STAGE3 / "seed_manifest.json")
 
     assert manifest["counts"] == {

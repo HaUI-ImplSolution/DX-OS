@@ -26,9 +26,9 @@ def lookup_structured_knowledge(db: Session, disease_code: str) -> dict:
                 {
                     "id": str(r.id),
                     "pesticide": r.pesticide.name,
-                    "active_ingredient": r.pesticide.active_ingredient,
-                    "dose_min": r.dose_min,
-                    "dose_max": r.dose_max,
+                    "active_ingredient": getattr(r.pesticide, "active_ingredient", None) or getattr(r.pesticide, "name", ""),
+                    "dose_min": r.dose_min if r.dose_min is not None else r.dose_amount,
+                    "dose_max": r.dose_max if r.dose_max is not None else r.dose_amount,
                     "dose_unit": r.dose_unit,
                     "phi_days": r.phi_days,
                     "source": r.source,

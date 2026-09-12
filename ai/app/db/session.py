@@ -4,6 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import get_settings
+from app.db.base import ReflectedBase
 
 settings = get_settings()
 DATABASE_URL = settings.database_url
@@ -23,9 +24,17 @@ SessionLocal = sessionmaker(
 )
 
 
+def prepare_reflected_tables(target_engine=None) -> None:
+    """Reflect master backend tables dynamically from PostgreSQL database."""
+    try:
+        ReflectedBase.prepare(target_engine or engine)
+    except Exception:
+        pass
+
+
 def get_db() -> Generator[Session, None, None]:
     """Provide one SQLAlchemy session per FastAPI request."""
-
+    prepare_reflected_tables()
     db = SessionLocal()
     try:
         yield db

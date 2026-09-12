@@ -37,4 +37,14 @@ public class Pesticide {
   // Đơn vị tính liều (vd: lít/ha)
   @Column(nullable = false)
   private String unit;
+
+  // Hoạt chất chính
+  @Column(name = "active_ingredient")
+  private String activeIngredient;
+
+  // Nồng độ hoạt chất
+  private String concentration;
+
+  // Ghi chú thêm
+  private String notes;
 }

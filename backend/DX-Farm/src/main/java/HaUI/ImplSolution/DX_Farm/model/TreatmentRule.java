@@ -40,9 +40,16 @@ public class TreatmentRule {
   @JoinColumn(name = "pesticide_id", nullable = false)
   private Pesticide pesticide;
 
-  // Liều lượng khuyến cáo
+  // Liều lượng khuyến cáo (cố định)
   @Column(nullable = false, precision = 10, scale = 2)
   private BigDecimal doseAmount;
+
+  // Khoảng liều lượng min-max
+  @Column(name = "dose_min", precision = 10, scale = 2)
+  private BigDecimal doseMin;
+
+  @Column(name = "dose_max", precision = 10, scale = 2)
+  private BigDecimal doseMax;
 
   // Đơn vị của liều lượng (vd: lít/ha)
   @Column(nullable = false)

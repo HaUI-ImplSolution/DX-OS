@@ -34,7 +34,7 @@ def image_bytes():
 
 def test_contract_matches_all_source_codes_and_training_order():
     root = Path(__file__).resolve().parents[2]
-    diseases = json.loads((root / "data/structured/diseases.json").read_text())
+    diseases = json.loads((root / "data/structured/diseases.json").read_text(encoding="utf-8"))
     contract = class_contract()
     assert len(contract["classes"]) == 38
     assert {c["disease_code"] for c in contract["classes"]} == {
@@ -44,7 +44,7 @@ def test_contract_matches_all_source_codes_and_training_order():
 
     assert list(CLASS_NAMES.values()) == CLASSES
     assert (
-        json.loads((root / "data/structured/class_contract.json").read_text())
+        json.loads((root / "data/structured/class_contract.json").read_text(encoding="utf-8"))
         == contract
     )
 

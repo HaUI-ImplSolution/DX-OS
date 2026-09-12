@@ -1,4 +1,4 @@
-import { clearCurrentUser, getToken } from "./auth";
+import { clearSession, getToken } from "./auth";
 import type {
   ApiResponse,
   CropSeason,
@@ -10,8 +10,6 @@ import type {
   Disease,
   DiseaseReport,
   IsolationStatus,
-  LoginRequest,
-  LoginResponse,
   Parcel,
   ParcelCreateRequest,
   Pesticide,
@@ -37,7 +35,7 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const token = getToken();
+  const token = await getToken();
   const headers = new Headers(init?.headers);
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
@@ -48,7 +46,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     : null;
 
   if (response.status === 401) {
-    clearCurrentUser();
+    clearSession();
   }
   if (!response.ok || !body?.success) {
     const message = body?.message ?? `Lỗi HTTP ${response.status}`;
@@ -107,7 +105,3 @@ export const applyDiagnosis = (reportId: number, payload: DiagnosisApplyRequest)
 export const listDiseases = () => request<Disease[]>("/diseases");
 export const listPesticides = () => request<Pesticide[]>("/pesticides");
 export const listTreatmentRules = () => request<TreatmentRule[]>("/treatment-rules");
-
-// Auth (tạo user ENGINEER/FARMER mới hiện làm qua Swagger/curl bằng token admin, xem README)
-export const login = (payload: LoginRequest) =>
-  request<LoginResponse>("/auth/login", json("POST", payload));

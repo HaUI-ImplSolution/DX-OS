@@ -6,15 +6,10 @@ MVP dự thi **OLP Phần mềm nguồn mở 2026** (khối thi DX-OS, VFOSSA). 
 
 > Tiến trình implement từng module (đã xong gì, chưa làm gì) được ghi lại ở [`CHANGELOG.md`](./CHANGELOG.md).
 
-> Cách khởi động PostgreSQL, kết nối database và sử dụng Alembic được hướng dẫn tại [`development/docs/README_POSTGRESQL.md`](./development/docs/README_POSTGRESQL.md).
-
 ## Nguồn tài liệu
 
-- `development/docs/DX - Farm.docx` — thiết kế gốc "MVP Agri-Carbon DX-OS" (8 trang): phân vai tác nhân, 4 không gian HPDI, spine flow 6 bước, các lưu ý PoF/anti-hallucination/poka-yoke.
-- `development/docs/DX-Farm_MVP_DeXuat_Duyet_Lead.docx` — bản đề xuất thống nhất để Lead duyệt: thu hẹp phạm vi demo, LangGraph, schema dữ liệu, khung repo.
-- `development/docs/AI_README_LangGraph_MVP.md` — cấu trúc chuẩn của module AI, ranh giới CV/Data/RAG và khung LangGraph MVP.
-- `development/docs/AI_EVENT_SCHEMA_README.md` — contract event/API để Backend và Frontend nối
-  với AI Service.
+- `docs/DX - Farm.docx` — thiết kế gốc "MVP Agri-Carbon DX-OS" (8 trang): phân vai tác nhân, 4 không gian HPDI, spine flow 6 bước, các lưu ý PoF/anti-hallucination/poka-yoke.
+- `docs/DX-Farm_MVP_DeXuat_Duyet_Lead.docx` — bản đề xuất thống nhất để Lead duyệt: thu hẹp phạm vi demo, LangGraph, schema dữ liệu, khung repo.
 - Chủ đề chính thức: https://vfossa.vn/tin-tuc/gioi-thieu-mo-hinh-dx-os-va-chu-de-cuoc-thi-phan-mem-nguon-mo-olp-2026-761.html
 - Giáo trình DX-OS: https://opendigitransform.gitbook.io/dx-os
 
@@ -23,10 +18,7 @@ MVP dự thi **OLP Phần mềm nguồn mở 2026** (khối thi DX-OS, VFOSSA). 
 Hai service tách biệt, giao tiếp qua HTTP:
 
 - **Backend (Java/Spring Boot)** — sở hữu Single Source of Truth: API nghiệp vụ, PostgreSQL (Operational Data + Structured Knowledge), state machine duyệt (Approve/Reject), enforce poka-yoke (khoá PHI/thu hoạch), auth. Đây là nơi mọi ghi nhận cuối cùng xảy ra.
-- **AI Service (Python)** — vision-api (CV chẩn đoán bệnh), LangGraph điều phối lookup + sinh
-  khuyến nghị, LLM nhỏ (Qwen2.5-1.5B qua Ollama) và RAG. Workflow AI lưu trạng thái/audit
-  PENDING → APPROVED/REJECTED → APPLIED trong PostgreSQL để chạy demo độc lập; mọi quyết định
-  thuốc vẫn cần tác nhân kỹ sư và xác nhận APPLIED riêng.
+- **AI Service (Python)** — stateless theo hướng advisory: vision-api (CV chẩn đoán bệnh), LangGraph điều phối bước lookup + sinh khuyến nghị, LLM nhỏ (Qwen2.5-1.5B qua Ollama), RAG. Chỉ trả đề xuất/kết quả phân tích; không tự ghi dữ liệu nghiệp vụ, không tự quyết định thay kỹ sư.
 - Backend gọi AI Service qua contract API (xem mục "Việc cần chốt cùng Lead"); AI Service không truy cập trực tiếp PostgreSQL nghiệp vụ trừ khi cần đọc RAG Knowledge (pgvector) riêng.
 
 ## Nguyên tắc kiến trúc (bất biến qua mọi giai đoạn)
@@ -49,54 +41,17 @@ Luồng: nông dân báo bệnh bằng ảnh → CV chẩn đoán → tra cứu 
 - [x] M2 — Vision API trả `disease_id/confidence/model_version`, lưu lại được
 - [x] M3 — Lookup Disease → TreatmentRule → Pesticide deterministic (SQL/JSON, không qua LLM)
 - [x] M4 — LLM chỉ diễn đạt lại facts đã tra được, không tự sinh số liệu
-- [x] M5 — Kỹ sư Approve/Reject trong flow; AI API lưu actor/audit nhưng không tự duyệt.
-- [x] M6 — APPLIED là bước xác nhận riêng, tạo snapshot `TreatmentApplication`, tính
-  `harvest_locked_until` từ thời điểm phun và không cho lần ghi sau rút ngắn khoá PHI.
+- [x] M5 — Kỹ sư Approve/Reject trong flow (trạng thái duyệt lưu & kiểm soát ở Spring Boot backend; AI Service chỉ đề xuất, không tự quyết)
+- [x] M6 — Khi xác nhận đã phun (APPLIED): backend ghi `TreatmentApplication`, tính `harvest_locked_until`, poka-yoke 2 tầng (Spring Boot API trả 422 + UI disable) chặn thu hoạch sớm
 
 Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot (API nghiệp vụ, duyệt, poka-yoke), AI Service Python riêng (vision-api EfficientNet-B4 + LangGraph điều phối + LLM nhỏ Qwen2.5-1.5B qua Ollama) gọi qua HTTP. Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
 
 **Còn thiếu để Phase 0 chạy thật end-to-end:**
 
-- [x] Khởi tạo nền tảng dữ liệu Python: SQLAlchemy, Alembic, PostgreSQL và pgvector.
-- [x] Hoàn thiện AI Service Python thống nhất: Vision API, structured lookup, RAG, LangGraph,
-  durable HITL và PHI chạy trong luồng tích hợp local.
+- [ ] Hoàn thiện AI Service Python: Đã có vision-api (FastAPI + EfficientNet-B4), còn thiếu LangGraph + LLM Qwen2.5-1.5B qua Ollama.
 - [ ] Nối HTTP client backend ↔ AI Service theo contract API.
-- [x] Khớp dữ liệu CV chẩn đoán: đã chuẩn hóa Vision API trả `disease_code` và `disease_name` tiếng Việt khớp 1:1 với `Disease.code` trong DB.
-- [x] Tích hợp lớp wording vào spine flow; nếu Ollama lỗi/timeout thì trả evidence nguyên văn,
-  không thay đổi thuốc, hoạt chất, liều hoặc PHI từ SQL.
-
-#### Phần AI/data/RAG đã có trên `feature/make-data`
-
-- Data layer cho 8 entity spine-flow và 2 entity RAG (`Document`, `DocumentChunk` với
-  `vector(384)`, đồng bộ model embedding multilingual MiniLM).
-- Dataset có cấu trúc gồm 38 lớp bệnh/healthy được map nguyên văn từ sheet `Disease_KB`:
-  `class_name → code`, `disease_name → name`, `symptoms → description`; không trùng mã.
-- Alembic head `f0a1b2026011` gồm metadata CV/RAG, workflow case/event bền vững, snapshot
-  TreatmentApplication và unique sequence cho audit event.
-- Stage 7 đã embedding/ingest rich knowledge: 38 document / 270 chunk, registry 41 nguồn.
-  Đã chạy hai lần và kiểm thử rollback, không nhân đôi corpus.
-- Gói dữ liệu Stage 3 đã qua review cung cấp bộ seed cuối gồm 4 thuốc, 8 treatment rule và 21
-  disease-management policy. Chỉ 8 candidate có quyết định `APPROVE/READY_TO_PROMOTE`
-  được đưa vào bộ cuối; 8 candidate `HOLD/NOT_READY` được giữ riêng để audit và không seed.
-- Stage 4 đã hoàn thiện schema/repository; ba seeder Stage 5 chạy idempotent. Database local
-  đã được migrate và xác minh đúng
-  revision/count `f0a1b2026011` / `4` / `8` / `21`. Workbook review chỉ là nguồn đánh giá
-  kỹ thuật MVP, không phải quyền cho phép sử dụng ngoài thực địa.
-- Stage 6 có contract 38 lớp canonical, predict/health API, endpoint chẩn đoán report:
-  lưu Diagnosis/confidence/model metadata, trả SQL rule hoặc safe policy, yêu cầu kỹ sư duyệt.
-  Checkpoint thiếu class_to_idx nên thứ tự được đối chiếu với mã training, chưa xác minh độc lập.
-- Stage 7 có retrieval API, exact disease filter, top_k, provenance và atomic re-ingest.
-  RAG answer ở chế độ grounded_excerpt, không phát hành draft bịa structured facts.
-- Stage 8–10 đã có graph đến checkpoint PENDING, API approve/reject/applied, audit trail,
-  idempotency, dose guardrail, snapshot rule/PHI và khoá thu hoạch lấy giá trị lớn nhất.
-- Kiểm thử local **59 passed**, gồm checkpoint CV thật, FastAPI lifespan, PostgreSQL/pgvector,
-  E2E treatment/policy/reject/low-confidence và fresh-database migration. Smoke MVP với model
-  thật cũng đã PASS; Ollama không chạy vẫn về `evidence_fallback` an toàn.
-  Xem [checklist Stage 6–10](development/docs/AI_README_LangGraph_MVP.md#master-stage-roadmap),
-  [CV handoff](ai/app/cv/README.md) và [RAG handoff](ai/app/rag/README.md).
-- Chưa nối HTTP client backend ↔ AI, chưa có auth riêng cho transition API AI, chưa thử venv
-  trắng, chưa đánh giá accuracy CV độc lập hoặc benchmark live Ollama. M8 vẫn cần nghiệm thu
-  đúng bộ tài liệu VietGAP/IRRI và luồng hỏi đáp yêu cầu bên dưới.
+- [ ] Khớp dữ liệu CV chẩn đoán: model hiện có trả về `class_name` nhưng chưa map `disease_code` với cơ sở dữ liệu của backend.
+- [ ] LLM sinh khuyến nghị thật (hiện backend dùng khuyến nghị tiếng Việt dạng template).
 
 ### Giai đoạn 1 — Hoàn thiện trải nghiệm & truy vấn (Should)
 
@@ -108,16 +63,18 @@ Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot
 
 Đây là phần **cần bổ sung so với bản đề xuất thống nhất hiện tại**, vì đề bài OLP yêu cầu tường minh đủ 4 nhóm công cụ:
 
-- [ ] **[H]** Một SSO nhẹ (Keycloak/Authentik) + một kênh chat nội bộ (Mattermost) chạy thật trong docker-compose, không chỉ nằm trên giấy
-  - [x] Bước đệm đã xong: đăng nhập JWT + phân quyền FARMER/ENGINEER/ADMIN tự viết trong Spring
-    Boot (thay các field tên tự do như `reportedBy`/`approvedBy`) — đây **chưa phải SSO thật**,
-    chỉ là auth cục bộ riêng cho app này, mỗi user/mật khẩu do chính backend tự quản lý
-  - [ ] SSO thật: dựng thêm một Identity Provider riêng (Keycloak/Authentik) chạy trong
-    docker-compose, để sau này có thêm app khác (Mattermost, BI dashboard) thì đăng nhập 1 lần
-    dùng chung được, thay vì mỗi app một tài khoản như hiện tại
-  - [ ] Kênh chat nội bộ (Mattermost) — chưa bắt đầu
-- [ ] **[D]** Một dashboard BI tối thiểu (Superset/Metabase) hiển thị bản đồ/trạng thái thửa ruộng cho Ban quản trị — không dừng ở truy vấn SQL thuần
-- [ ] Rà lại license mọi thành phần open-core trước khi khoá stack (xem mục PoF bên dưới)
+- [x] **[H]** Một SSO nhẹ (Keycloak) + một kênh chat nội bộ (Mattermost) chạy thật trong docker-compose, không chỉ nằm trên giấy
+  - [x] SSO thật: Identity Provider Keycloak chạy trong docker-compose.
+    Backend xác thực bằng OAuth2 Resource Server, frontend và BI Dashboard (Superset) đăng nhập bằng redirect sang Keycloak.
+    Chi tiết: [`sso/README.md`](./sso/README.md).
+  - [x] Bước đệm trước SSO: trang portal tĩnh liệt kê link tới các app (App chính, BI, Chat) —
+    chưa đăng nhập chung được, nhưng người dùng không cần tự nhớ URL từng app. Chi tiết:
+    [`portal/README.md`](./portal/README.md).
+  - [x] Kênh chat nội bộ (Mattermost) — chạy thật trong docker-compose (image Team Edition chính thức), nền tảng tách biệt hoàn toàn có chủ đích, không dùng SSO chung với Keycloak. Chi tiết: [`chat/README.md`](./chat/README.md).
+  - [ ] Tích hợp thông báo tự động vào channel Mattermost (ví dụ: có `DiseaseReport` mới hoặc chờ duyệt thì backend tự post vào channel)
+- [x] **[D]** Dashboard BI (Apache Superset) hiển thị bản đồ/trạng thái thửa ruộng cho Ban quản trị, tự bootstrap qua docker-compose.
+  Chi tiết: [`bi/README.md`](./bi/README.md).
+- [x] Rà lại license mọi thành phần open-core trước khi khoá stack (xem mục PoF bên dưới) — xem [`LICENSES.md`](./LICENSES.md).
 
 ### Giai đoạn 3 — Chiều sâu (Later, sau khi Giai đoạn 0-2 chạy ổn)
 
@@ -136,7 +93,8 @@ Một PostgreSQL vật lý, ba nguồn logic:
 ## Điểm cần lưu ý cho tiêu chí PoF (50/100 điểm, mang tính loại trừ)
 
 - Giấy phép mọi thành phần phải **OSI-approved**; đã loại Llama (không đạt chuẩn OSD), chọn Qwen2.5-1.5B-Instruct (Apache-2.0).
-- ⚠️ **n8n Community Edition dùng Sustainable Use License — không phải OSI-approved.** Nếu còn dùng n8n trong stack, đây là rủi ro trừ điểm PoF nghiêm trọng cần xử lý trước khi khoá kiến trúc (ưu tiên: giữ LangGraph làm orchestrator chính, cân nhắc bỏ hẳn n8n hoặc thay bằng công cụ OSI-approved khác).
+- ✅ Không dùng n8n (Sustainable Use License, không OSI-approved) — LangGraph (Apache-2.0) là orchestrator.
+  Rà soát license đầy đủ từng thành phần: [`LICENSES.md`](./LICENSES.md).
 - Mã nguồn tự viết: SPDX header `Apache-2.0` ở đầu mỗi file, kèm `LICENSE` toàn văn ở gốc repo.
 - Source control phải public, có web viewer.
 - Phải build/cài đặt được từ source; khuyến khích Docker.
@@ -147,9 +105,9 @@ Một PostgreSQL vật lý, ba nguồn logic:
 ## Việc cần chốt cùng Lead trước khi chia task
 
 - [x] Phạm vi demo: chỉ spine flow (Giai đoạn 0) hay bao gồm cả [H]/[D] tối thiểu (Giai đoạn 2)?
-- [ ] Quyết định dứt khoát về n8n (giữ/bỏ) vì lý do license
-- [x] Schema operational + structured knowledge (entity, field bắt buộc)
-- [x] Contract `vision-api` (request/response JSON)
+- [x] Quyết định dứt khoát về n8n (giữ/bỏ) vì lý do license — đã bỏ, xem `LICENSES.md`
+- [ ] Schema operational + structured knowledge (entity, field bắt buộc)
+- [ ] Contract `vision-api` (request/response JSON)
 - [ ] Contract giữa backend Spring Boot và AI Service Python (REST, base URL, timeout/retry, ai-service base URL cấu hình ở đâu)
 - [x] Thời điểm PHI bắt đầu: khi `TreatmentApplication = APPLIED` (không phải khi Approve)
 - [x] Cấu trúc monorepo và quyền sở hữu từng thư mục/module
@@ -157,35 +115,48 @@ Một PostgreSQL vật lý, ba nguồn logic:
 
 ## Trạng thái hiện tại (cập nhật 2026-09-11)
 
-Backend Spring Boot đã có JWT/phân quyền và M7; Frontend demo đã có màn đăng nhập. Trong phạm
-vi `ai/`, Stage 8–10 đã hoàn thiện Vision API, structured lookup, RAG endpoint, LangGraph,
-durable HITL/APPLIED/PHI và smoke/test local. Phần còn thiếu để ghép toàn hệ thống là HTTP
-client backend ↔ AI, auth cho transition AI hoặc ủy quyền từ backend, và UI gọi flow mới.
-Chi tiết theo từng module: [`CHANGELOG.md`](./CHANGELOG.md).
+Backend Spring Boot đã xong, xác thực qua OAuth2 Resource Server (SSO thật qua Keycloak), phân quyền FARMER/ENGINEER/ADMIN theo realm role.
+Frontend demo (React/Vite) cho Phase 0 spine flow đã xong, đăng nhập bằng redirect sang Keycloak.
+AI Service (Python) đã dựng xong phần Vision API cơ bản, đang thiếu phần điều phối LangGraph và LLM.
+BI Dashboard (Superset) đã đăng nhập qua Keycloak; kênh chat nội bộ (Mattermost) đã chạy thật trong docker-compose kèm trang portal tĩnh liệt kê link tới các app — là nền tảng tách biệt có chủ đích, không dùng SSO chung.
+Đã rà soát license toàn bộ thành phần đang chạy ([`LICENSES.md`](./LICENSES.md)).
+Checklist việc còn thiếu: xem mục "Giai đoạn 0"/"Giai đoạn 2" ở trên.
+Chi tiết đầy đủ theo từng module: [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Chạy demo Phase 0
 
-Đóng gói cả Postgres + backend + frontend vào một lệnh duy nhất, dùng thư mục [`deploy`](./deploy)
-— đây là docker-compose file duy nhất trong repo, chạy một chỗ cho tiện:
+### 1. Khởi động (một lệnh duy nhất, dựng toàn bộ Postgres + Keycloak + backend + frontend + BI + chat + portal)
 
 ```bash
 cd deploy
-cp .env.example .env      # chỉnh lại nếu cần, đặc biệt JWT_SECRET và SUPER_ADMIN_PASSWORD
+cp .env.example .env      # chỉnh lại nếu cần, đặc biệt KEYCLOAK_ADMIN_PASSWORD, SUPERSET_*
 docker compose up -d --build
 ```
 
-- Frontend: http://localhost:8082 (nginx serve build tĩnh + reverse-proxy `/api` và `/uploads`
-  sang backend, nên không cần CORS, không cần biết host/port backend) — đăng nhập bằng
-  `SUPER_ADMIN_USERNAME`/`SUPER_ADMIN_PASSWORD` đã đặt trong `.env` (mặc định seed đúng 1 lần
-  lúc khởi động), sau đó dùng tài khoản admin đó gọi `POST /api/v1/users` (qua Swagger hoặc
-  curl) để tạo thêm tài khoản `ENGINEER`/`FARMER`.
-- Backend (Swagger/debug trực tiếp): http://localhost:8081/swagger-ui.html — bấm "Authorize"
-  và dán JWT lấy từ `POST /api/v1/auth/login` để gọi thử các API cần đăng nhập.
-- PostgreSQL dùng image `pgvector/pgvector:pg16`; AI Service chưa được đóng gói vào Compose.
-- Dữ liệu Postgres + ảnh upload được lưu ở `deploy/data/` (bind mount, không mất khi
-  `docker compose down`; dùng `down -v` hoặc xoá thư mục nếu muốn làm sạch từ đầu)
-- Dừng: `docker compose down` (chạy trong thư mục `deploy`)
+### 2. Vào test
 
-Khi cần sửa code + hot reload thay vì rebuild image: chạy `docker compose up -d postgres` trong
-`deploy` để có sẵn Postgres, rồi `./mvnw spring-boot:run` (backend) và `npm run dev` (frontend,
-sau khi `cp .env.example .env`) như bình thường — không cần thêm docker-compose nào khác.
+| Service | Vào đâu | Đăng nhập |
+|---|---|---|
+| **Portal** (danh sách link các app) | http://localhost:8090 | Không cần đăng nhập — chỉ là trang link |
+| **App chính** (frontend) | http://localhost:8082 | Bấm "Đăng nhập" → redirect sang Keycloak, dùng tài khoản demo (xem [`sso/README.md`](./sso/README.md)) |
+| **Keycloak Admin Console** | http://localhost:8180/admin | `admin`/`KEYCLOAK_ADMIN_PASSWORD` trong `.env` |
+| **Backend** (Swagger, gọi API tay) | http://localhost:8081/swagger-ui.html | Lấy access token từ Keycloak (xem `sso/README.md`), bấm "Authorize" rồi dán vào |
+| **BI Dashboard** (Superset) | http://localhost:8088 | Bấm "Sign In with keycloak", dùng tài khoản demo (xem [`sso/README.md`](./sso/README.md)) |
+| **Chat nội bộ** (Mattermost) | http://localhost:8065 | Chưa có tài khoản — bấm "Create account" để tạo (tự động thành Admin) |
+
+### 3. Dừng lại
+
+```bash
+docker compose down
+```
+
+<details>
+<summary>Ghi chú thêm (chỉ cần khi cần, không bắt buộc đọc để test)</summary>
+
+- Quản lý tài khoản (tạo/xoá/đổi role FARMER/ENGINEER/ADMIN): qua Keycloak Admin Console.
+  Xem [`sso/README.md`](./sso/README.md).
+- Dữ liệu Postgres + ảnh upload lưu ở `deploy/data/` (bind mount, không mất khi `docker compose down`; dùng `down -v` hoặc xoá thư mục nếu muốn làm sạch từ đầu).
+- Chi tiết riêng từng service: [`sso/README.md`](./sso/README.md) (Keycloak), [`bi/README.md`](./bi/README.md) (Superset), [`chat/README.md`](./chat/README.md) (Mattermost), [`portal/README.md`](./portal/README.md) (trang portal).
+- Sửa code + hot reload thay vì rebuild image: chạy `docker compose up -d postgres` trong `deploy` để có sẵn Postgres, rồi `./mvnw spring-boot:run` (backend) và `npm run dev` (frontend, sau khi `cp .env.example .env`) như bình thường.
+
+</details>

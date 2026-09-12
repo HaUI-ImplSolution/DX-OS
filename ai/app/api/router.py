@@ -165,7 +165,7 @@ async def diagnose_and_retrieve(
 
     try:
         treatment_knowledge = lookup_structured_knowledge(db, disease_code)
-    except ValueError:
+    except Exception:
         treatment_knowledge = {
             "path": "review_required",
             "disease_code": disease_code,

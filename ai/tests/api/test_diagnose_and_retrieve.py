@@ -6,14 +6,19 @@ from fastapi.testclient import TestClient
 
 import app.api.router as router_module
 from app.api.router import router
+from app.db.session import get_db
 from tests.cv.test_stage6_contract import Model, image_bytes
 
 
 def test_diagnose_and_retrieve_api(monkeypatch):
     mock_retrieve = MagicMock(return_value=[{"chunk_id": "1", "content": "RAG test chunk"}])
     monkeypatch.setattr(router_module.RAGRetriever, "retrieve", lambda self, db, query, top_k, disease_code: mock_retrieve(query, top_k, disease_code))
+    
+    mock_treatment = {"path": "treatment", "disease_code": "Corn_(maize)__Common_rust", "rules": [], "policy": None}
+    monkeypatch.setattr(router_module, "lookup_structured_knowledge", lambda db, disease_code: mock_treatment)
 
     app = FastAPI()
+    app.dependency_overrides[get_db] = lambda: MagicMock()
     app.include_router(router, prefix="/api/v1")
     client = TestClient(app)
 

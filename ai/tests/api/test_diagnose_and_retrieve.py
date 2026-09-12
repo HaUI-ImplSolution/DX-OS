@@ -53,3 +53,13 @@ def test_diagnose_and_retrieve_api(monkeypatch):
     assert response_custom.status_code == 200
     mock_retrieve.assert_called_with("Thuốc đặc trị rỉ sắt", 2, "Corn_(maize)__Common_rust")
 
+    # 4. Test PDF report endpoint
+    resp_pdf = client.post(
+        "/api/v1/disease/diagnose-and-retrieve/pdf",
+        files={"image": ("leaf.png", image_bytes(), "image/png")},
+    )
+    assert resp_pdf.status_code == 200
+    assert resp_pdf.headers["content-type"] == "application/pdf"
+    assert resp_pdf.content.startswith(b"%PDF")
+
+

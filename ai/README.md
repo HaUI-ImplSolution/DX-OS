@@ -34,6 +34,8 @@ Dịch vụ tuân thủ nguyên tắc kiến trúc bất biến: **Stateless & A
 | `GET` | `/class-contract` | Lấy danh sách contract 38 lớp bệnh ánh xạ CV $\leftrightarrow$ DB |
 | `POST` | `/predict` | Nhận diện bệnh từ ảnh lá cây qua CV |
 | `POST` | `/diagnose-and-retrieve` | **API nối luồng**: Nhận ảnh $\rightarrow$ CV nhận diện bệnh $\rightarrow$ Tự động tra cứu tri thức điều trị (`/{disease_code}/treatment`) + RAG giải thích (`top_k=1`) |
+| `POST` | `/diagnose-and-retrieve/pdf` | **API xuất báo cáo PDF**: Nhận ảnh $\rightarrow$ Chẩn đoán & Tra cứu $\rightarrow$ Xuất file báo cáo PDF có cấu trúc rõ ràng tường minh (`application/pdf`) |
+
 | `GET` | `/{disease_code}/treatment` | Tra cứu quy trình điều trị & chính sách theo mã bệnh định hình |
 | `POST` | `/knowledge/retrieve` | Truy vấn các đoạn tài liệu RAG trong pgvector theo câu hỏi & mã bệnh |
 | `POST` | `/workflow/run` | Chạy toàn bộ LangGraph workflow tạo khuyến nghị dừng ở trạng thái `PENDING` |

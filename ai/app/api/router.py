@@ -4,7 +4,7 @@ import time
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, Response, UploadFile
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
@@ -34,6 +34,7 @@ from app.graph.state import FarmState
 from app.llm.recommendation_writer import GroundedRecommendationWriter
 from app.rag.retriever import RAGRetriever
 from app.services.diagnosis_service import diagnose_report
+from app.services.pdf_report_service import generate_diagnosis_pdf_report
 from app.services.plant_disease_service import PlantDiseaseService
 from app.services.structured_knowledge_service import lookup_structured_knowledge
 from app.services.workflow_service import (
@@ -189,6 +190,36 @@ async def diagnose_and_retrieve(
         treatment_knowledge=treatment_knowledge,
         rag_knowledge=rag_knowledge,
     )
+
+
+@router.post(
+    "/diagnose-and-retrieve/pdf",
+    response_class=Response,
+    summary="Chẩn đoán bệnh từ ảnh và xuất báo cáo PDF",
+    description="API nhận file ảnh lá cây, chẩn đoán bệnh qua CV, tra cứu tri thức điều trị/chính sách và RAG, sau đó xuất ra file báo cáo PDF có cấu trúc rõ ràng tường minh.",
+)
+async def diagnose_and_retrieve_pdf(
+    request: Request,
+    image: Annotated[UploadFile, File()],
+    db: Annotated[Session, Depends(get_db)],
+    query: Annotated[str | None, Form()] = None,
+    top_k: Annotated[int, Form()] = 1,
+):
+    data = await diagnose_and_retrieve(
+        request=request, image=image, db=db, query=query, top_k=top_k
+    )
+    cv_res = data.cv_result.model_dump() if hasattr(data.cv_result, "model_dump") else data.cv_result
+    pdf_bytes = generate_diagnosis_pdf_report(
+        cv_res, data.treatment_knowledge, data.rag_knowledge
+    )
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": "inline; filename=DX-Farm-Diagnosis-Report.pdf"
+        },
+    )
+
 
 
 

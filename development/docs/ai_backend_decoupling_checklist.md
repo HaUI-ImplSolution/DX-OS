@@ -48,8 +48,8 @@ Tham chiếu: mục 6 "Phase 2" của `ai_backend_decoupling_plan.md`.
 - [x] **P2-0 (chặn P2-\*)** — Chốt schema liều lượng: dùng `dose_amount` đơn để khớp schema Backend hiện tại (`TreatmentRule.doseAmount`), không thêm `doseMin`/`doseMax` (xem mục 5 của kế hoạch, phần ghi chú dưới response mẫu).
 - [x] **P2-1** — Thêm `AiDiagnosisClient` (dùng `RestClient` + `JdkClientHttpRequestFactory`), có timeout/circuit breaker (Resilience4j) theo mục 4.4.
   Chưa nối vào flow nào — `DiseaseReportService` sẽ gọi ở P2-4.
-- [ ] **P2-2** — Cập nhật `DiseaseReportService`: tự khởi tạo và lưu `DiseaseReport` vào Backend DB (không còn chờ AI ghi hộ).
-- [ ] **P2-3** — Cung cấp internal API read-only để AI lấy structured facts bằng `disease_code` và context của báo cáo; bảo vệ bằng service token/network nội bộ theo mục 4.3.
+- [x] **P2-2** — Cập nhật `DiseaseReportService`: tự khởi tạo và lưu `DiseaseReport` vào Backend DB (không còn chờ AI ghi hộ).
+- [x] **P2-3** — Cung cấp internal API read-only để AI lấy structured facts bằng `disease_code` và context của báo cáo; bảo vệ bằng service token/network nội bộ theo mục 4.3.
   Chỉ gồm endpoint GET; không expose POST/PUT/DELETE cho service role của AI.
 - [ ] **P2-4** — Gọi `AiDiagnosisClient.diagnose(...)` gửi payload sang AI Service theo contract `POST /api/v1/diagnose`.
 - [ ] **P2-5** — Nhận CV, evidence và recommendation từ AI; đối chiếu lại `version` của rule (mục 4.5) trước khi lưu; nếu rule đã đổi trong lúc AI xử lý thì từ chối và lấy lại rule mới.

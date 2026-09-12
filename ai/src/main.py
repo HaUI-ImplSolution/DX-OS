@@ -1,35 +1,24 @@
-from contextlib import asynccontextmanager
+# SPDX-License-Identifier: Apache-2.0
 
 from fastapi import FastAPI
 
-from src.models.download_model import download_model
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-
-    print("Starting application...")
-
-    app.state.plant_model = download_model()
-
-    print("Plant disease model loaded successfully.")
-
-    # Cho FastAPI bắt đầu nhận request
-    yield
-
-
-    # Shutdown
-    print("Shutting down application...")
-
-    app.state.plant_model = None
-
-    print("Plant disease model released.")
-
-
-app = FastAPI(
-    title="Plant Disease Detection API",
-    lifespan=lifespan,
-)
-
 from src.api.router import router as api_router
-app.include_router(api_router, prefix="/api/v1")
+from src.core.lifespan import lifespan
+
+
+def create_app() -> FastAPI:
+    application = FastAPI(
+        title="DX-Farm AI Service",
+        description=(
+            "API chẩn đoán bệnh cây và điều phối workflow xử lý: "
+            "CV nhận diện bệnh, RAG cung cấp bằng chứng, kỹ sư phê duyệt, "
+            "sau đó xác nhận APPLIED để ghi nhận xử lý và tính thời gian cách ly (PHI)."
+        ),
+        version="1.0.0",
+        lifespan=lifespan,
+    )
+    application.include_router(api_router, prefix="/api/v1")
+    return application
+
+
+app = create_app()

@@ -4,9 +4,9 @@ from unittest.mock import MagicMock
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-import app.api.router as router_module
-from app.api.router import router
-from app.db.session import get_db
+import src.api.router as router_module
+from src.api.router import router
+from src.db.session import get_db
 from tests.cv.test_stage6_contract import Model, image_bytes
 
 

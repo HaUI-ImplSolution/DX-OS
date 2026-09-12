@@ -61,6 +61,8 @@ def test_stage3_final_data_matches_review_decisions():
 
 
 def test_stage3_final_data_keeps_quantitative_guardrails():
+    if not (STRUCTURED / "pesticides.json").exists():
+        pytest.skip("Stage3 structured data artifacts are not included in distribution.")
     pesticides = load_json(STRUCTURED / "pesticides.json")
     rules = load_json(STRUCTURED / "treatment_rules.json")
     policies = load_json(STRUCTURED / "disease_management_policies.json")

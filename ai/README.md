@@ -70,10 +70,13 @@ Dịch vụ AI sử dụng cấu hình từ file `.env` (mẫu tại `.env.examp
 cd ai
 python -m venv .venv
 # Trên Windows:
-.venv\Scripts\activate
+.venv\Scripts\\activate
 # Trên Linux/macOS:
 source .venv/bin/activate
 
+# Cài heavy deps trước (torch, torchvision, pymupdf)
+pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements-heavy.txt
+# Sau đó cài app deps
 pip install -r requirements.txt
 ```
 
@@ -91,7 +94,7 @@ python -m scripts.ingest_diseases
 ### 3. Khởi chạy FastAPI Server
 
 ```bash
-uvicorn app.main:app --reload --port 8000
+uvicorn src.main:app --reload --port 8000
 ```
 Swagger UI xem và test API tại: `http://localhost:8000/docs`
 
@@ -103,7 +106,63 @@ pytest
 
 ---
 
+## Triển khai Docker
+
+### Khởi chạy toàn bộ hệ thống
+
+```bash
+cd deploy
+docker compose up -d
+```
+
+### Build & restart chỉ AI service
+
+```bash
+docker compose up -d --build ai
+```
+
+### ⚠️ Lưu ý về thời gian build
+
+Build image lần **đầu tiên** sẽ mất **15–25 phút** do phải tải các package nặng:
+
+| Package | Kích thước | Ghi chú |
+|---|---|---|
+| `torch` (CPU) | ~196 MB | Bắt buộc cho CV model inference |
+| `torchvision` | ~1.7 MB | Transform ảnh đầu vào |
+| `pymupdf` | ~25.8 MB | Xuất báo cáo PDF |
+| App deps còn lại | ~50 MB | FastAPI, LangGraph, SQLAlchemy... |
+
+Từ **lần thứ 2 trở đi**, nếu chỉ sửa code Python hoặc `requirements.txt`:
+- Layer `torch` + `torchvision` + `pymupdf` → **cache hit**, không tải lại
+- Chỉ install lại app deps nhẹ → build **< 5 phút**
+
+### Cấu trúc requirements (2 file tách biệt)
+
+```
+requirements-heavy.txt  ← torch, torchvision, pymupdf  (cache vĩnh viễn)
+requirements.txt        ← app deps nhẹ                 (rebuild khi cần)
+```
+
+> **Nguyên tắc**: Chỉ chỉnh `requirements-heavy.txt` khi **thực sự cần** đổi version torch/pymupdf. Mọi dep mới thêm vào `requirements.txt`.
+
+### Dọn dẹp cache Docker (khi ổ cứng đầy)
+
+```bash
+# Xóa image dangling
+docker image prune -f
+# Xóa toàn bộ build cache (~16GB tiết kiệm được)
+docker builder prune -f
+# Xóa container đã dừng
+docker container prune -f
+```
+
+> ⚠️ Sau `docker builder prune -f`, lần build tiếp theo sẽ lại mất 15–25 phút để tải lại torch. Chỉ chạy khi thực sự cần giải phóng không gian.
+
+---
+
 ## Giới hạn hiện tại & Hướng phát triển tiếp theo
 
 - Các endpoint AI hiện chưa yêu cầu xác thực JWT riêng; xác thực người dùng được kiểm soát ở gateway Spring Boot backend và Keycloak SSO.
 - Khi triển khai Docker Compose toàn hệ thống, cấu hình biến môi trường của AI Service được hợp nhất chung tại [`deploy/.env`](../deploy/.env).
+- `HF_TOKEN` chưa được cấu hình — HuggingFace Hub sẽ tải model với rate limit ẩn danh (thường đủ dùng, nhưng nếu bị throttle thì set biến `HF_TOKEN` trong `deploy/.env`).
+

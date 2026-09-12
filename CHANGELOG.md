@@ -98,6 +98,16 @@ Nhật ký thay đổi của DX-Farm, theo từng module. Định dạng dựa t
 
 ### 2026-09-09
 
+### 2026-09-12
+
+**Đã xong — Dockerization, Hợp nhất Database & Dynamic Reflection:**
+
+- **Dockerization**: Tạo `Dockerfile` tối giản cho AI Service dùng multi-stage build (`python:3.11-slim`) và PyTorch CPU wheels (`--extra-index-url https://download.pytorch.org/whl/cpu`), giảm dung lượng image từ ~3.5GB xuống ~500MB.
+- **Tích hợp Docker Compose**: Cập nhật [`deploy/docker-compose.yml`](file:///d:/HIT/DX-Farm/deploy/docker-compose.yml) đăng ký container `ai` kết nối trực tiếp với `postgres` container chung với Backend.
+- **Hợp nhất Database & Dynamic Reflection**: Loại bỏ định nghĩa schema trùng lặp ở AI cho 8 bảng master do Backend quản lý, sử dụng SQLAlchemy `ReflectedBase` để tự động phản chiếu schema trực tiếp từ PostgreSQL database lúc runtime.
+
+### 2026-09-09
+
 **Đã xong — Data Layer, Vector Store & Vision API:**
 
 - Data Layer & Vector Store: Khởi tạo SQLAlchemy models cho 8 entity nghiệp vụ và 2 entity RAG (`Document`, `DocumentChunk`); migration `4c2a0f9d8b71` kích hoạt pgvector extension và lưu embedding `vector(384)`.

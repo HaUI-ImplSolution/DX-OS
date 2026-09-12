@@ -38,6 +38,20 @@ services:
     ports:
       - "${BACKEND_PORT:-8081}:8081"
 
+  ai:
+    build:
+      context: ../ai
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-dxfarm}:${POSTGRES_PASSWORD:-dxfarm}@postgres:5432/${POSTGRES_DB:-dxfarm}
+      API_ENV: production
+      PORT: 8000
+    ports:
+      - "${AI_PORT:-8000}:8000"
+
   frontend:
     build:
       context: ../frontend

@@ -63,6 +63,24 @@ mattermost:
     # Mật khẩu role Postgres riêng của Mattermost. Xem MattermostDatabaseSeeder.
     password: ${MATTERMOST_DB_PASSWORD:mattermost_demo}
 
+ai:
+  service:
+    base-url: ${AI_SERVICE_BASE_URL:http://ai:8000}
+    # Service token/API key nội bộ cho chiều Backend -> AI
+    api-key: ${AI_SERVICE_API_KEY:}
+    connect-timeout-ms: ${AI_SERVICE_CONNECT_TIMEOUT_MS:3000}
+    read-timeout-ms: ${AI_SERVICE_READ_TIMEOUT_MS:15000}
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      aiDiagnosis:
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+
 logging:
   level:
     HaUI.ImplSolution.DX_Farm: DEBUG

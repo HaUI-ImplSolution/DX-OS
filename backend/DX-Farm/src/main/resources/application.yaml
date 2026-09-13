@@ -47,6 +47,8 @@ server:
 
 app:
   upload-dir: ${UPLOAD_DIR:./uploads}
+  # Base URL nội bộ để build image_url gửi cho AI Service (ảnh phục vụ qua /uploads/**).
+  public-base-url: ${APP_PUBLIC_BASE_URL:http://backend:8081}
 
 keycloak:
   db:

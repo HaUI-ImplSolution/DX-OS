@@ -46,7 +46,8 @@ Tham chiếu: mục 6 "Phase 2" của `ai_backend_decoupling_plan.md`.
 **Áp dụng WORKFLOW.md mục 9 cho mọi mục dưới đây** — cập nhật swagger (springdoc annotation) trong cùng lần thay đổi khi endpoint mới hoặc response shape đổi, không ship code rồi để swagger sau.
 
 - [x] **P2-0 (chặn P2-\*)** — Chốt schema liều lượng: dùng `dose_amount` đơn để khớp schema Backend hiện tại (`TreatmentRule.doseAmount`), không thêm `doseMin`/`doseMax` (xem mục 5 của kế hoạch, phần ghi chú dưới response mẫu).
-- [ ] **P2-1** — Thêm `AiDiagnosisClient` (dùng `WebClient` hoặc `RestTemplate`), có timeout/circuit breaker (Resilience4j) theo mục 4.4.
+- [x] **P2-1** — Thêm `AiDiagnosisClient` (dùng `RestClient` + `JdkClientHttpRequestFactory`), có timeout/circuit breaker (Resilience4j) theo mục 4.4.
+  Chưa nối vào flow nào — `DiseaseReportService` sẽ gọi ở P2-4.
 - [ ] **P2-2** — Cập nhật `DiseaseReportService`: tự khởi tạo và lưu `DiseaseReport` vào Backend DB (không còn chờ AI ghi hộ).
 - [ ] **P2-3** — Cung cấp internal API read-only để AI lấy structured facts bằng `disease_code` và context của báo cáo; bảo vệ bằng service token/network nội bộ theo mục 4.3.
   Chỉ gồm endpoint GET; không expose POST/PUT/DELETE cho service role của AI.

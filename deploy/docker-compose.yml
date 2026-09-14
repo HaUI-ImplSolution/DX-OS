@@ -38,6 +38,28 @@ services:
     ports:
       - "${BACKEND_PORT:-8081}:8081"
 
+
+  ai:
+    build:
+      context: ../ai
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure
+    environment:
+      DATABASE_URL: postgresql+psycopg://dxfarm:dxfarm@postgres:5432/${POSTGRES_DB:-dxfarm}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:1.5b}
+      CV_DEVICE: ${AI_CV_DEVICE:-cpu}
+      LOG_LEVEL: ${AI_LOG_LEVEL:-INFO}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ai_weights:/app/weights
+    ports:
+      - "${AI_PORT:-8000}:8000"
+
   frontend:
     build:
       context: ../frontend
@@ -155,3 +177,6 @@ services:
       - ./data/mattermost/bleve-indexes:/mattermost/bleve-indexes
     ports:
       - "${MATTERMOST_PORT:-8065}:8065"
+
+volumes:
+  ai_weights:

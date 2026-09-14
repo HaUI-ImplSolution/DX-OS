@@ -55,9 +55,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ### 2026-09-14
 
-- Thêm `ai/Dockerfile` để đóng gói FastAPI AI trên cổng 8000; tài liệu nêu rõ biến môi trường database, healthcheck và cache CV weights.
-- Bỏ Alembic/migrations; AI dùng schema PostgreSQL phiên bản hiện tại và các seed có sẵn.
-- Làm rõ JSON là dữ liệu nguồn: cần seed rồi ingest embedding vào PostgreSQL trước khi RAG/workflow có dữ liệu truy vấn.
+**Đã xong — đóng gói Docker và chuẩn hóa cấu hình AI Service:**
+
+- `ai/Dockerfile` đóng gói FastAPI trên cổng 8000 với healthcheck, non-root user, volume weights và 2-layer pip cache tách `requirements-heavy.txt` cho torch/torchvision.
+- AI Service dùng schema PostgreSQL phiên bản hiện tại; dữ liệu seed và embedding phải được ingest trước khi RAG/workflow có thể truy vấn.
 
 ### 2026-09-11
 

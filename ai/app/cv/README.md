@@ -20,7 +20,6 @@ Checkpoint hiện không lưu class_to_idx; thứ tự nhãn được đối chi
 Từ thư mục `ai`, dùng venv đã cài requirements:
 
 ```bash
-python -m alembic upgrade head
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 

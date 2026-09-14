@@ -7,7 +7,6 @@ Model được cache theo tên trong process.
 Từ thư mục `ai`:
 
 ```bash
-python -m alembic upgrade head
 python -m scripts.ingest_diseases --dry-run --limit 1
 python -m scripts.ingest_diseases
 ```

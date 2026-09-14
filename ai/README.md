@@ -99,12 +99,6 @@ uvicorn app.main:app --reload --port 8000
 ```
 Swagger UI xem và test API tại: `http://localhost:8000/docs`
 
-### 4. Chạy Test Suite
-
-```bash
-pytest
-```
-
 ---
 
 ## Triển khai Docker

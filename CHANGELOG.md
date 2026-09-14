@@ -53,6 +53,12 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## AI Service (Python)
 
+### 2026-09-14
+
+- Thêm `ai/Dockerfile` để đóng gói FastAPI AI trên cổng 8000; tài liệu nêu rõ biến môi trường database, healthcheck và cache CV weights.
+- Bỏ Alembic/migrations; AI dùng schema PostgreSQL phiên bản hiện tại và các seed có sẵn.
+- Làm rõ JSON là dữ liệu nguồn: cần seed rồi ingest embedding vào PostgreSQL trước khi RAG/workflow có dữ liệu truy vấn.
+
 ### 2026-09-11
 
 **Đã xong — Stage 8 LangGraph spine flow:**

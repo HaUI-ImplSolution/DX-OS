@@ -8,7 +8,7 @@ Bài toán được chọn: **Agri-Carbon DX-OS** — hệ điều hành chuyể
 
 > Tiến trình implement từng module (đã xong gì, chưa làm gì) được ghi lại ở [`CHANGELOG.md`](./CHANGELOG.md).
 
-> Cách khởi động PostgreSQL, kết nối database và sử dụng Alembic được hướng dẫn tại [`development/docs/README_POSTGRESQL.md`](./development/docs/README_POSTGRESQL.md).
+> Hướng dẫn schema database hiện tại, seed, ingest RAG và chạy Docker AI nằm tại [`ai/README.md`](./ai/README.md).
 
 ## Nguồn tài liệu
 
@@ -146,11 +146,12 @@ Một PostgreSQL vật lý, ba nguồn logic:
 - [x] Cấu trúc monorepo và quyền sở hữu từng thư mục/module
 - [x] Chính sách repo Private trong lúc phát triển, thời điểm public trước khi nộp bài
 
-## Trạng thái hiện tại (cập nhật 2026-09-11)
+## Trạng thái hiện tại (cập nhật 2026-09-14)
 
 Backend Spring Boot đã xong, xác thực qua OAuth2 Resource Server (SSO thật qua Keycloak), phân quyền FARMER/ENGINEER/ADMIN theo realm role.
 Frontend demo (React/Vite) cho Phase 0 spine flow đã xong, đăng nhập bằng redirect sang Keycloak.
 Trong phạm vi `ai/`, Stage 8–10 đã hoàn thiện Vision API, structured lookup, RAG endpoint, LangGraph, durable HITL/APPLIED/PHI và smoke/test local.
+AI hiện có `ai/Dockerfile`; database dùng schema phiên bản hiện tại, còn JSON phải được seed/ingest trước khi RAG/workflow truy vấn được.
 BI Dashboard (Superset) đã đăng nhập qua Keycloak; kênh chat nội bộ (Mattermost) đã chạy thật trong docker-compose kèm trang portal tĩnh liệt kê link tới các app — là nền tảng tách biệt có chủ đích, không dùng SSO chung.
 Đã rà soát license toàn bộ thành phần đang chạy ([`LICENSES.md`](./LICENSES.md)).
 Checklist việc còn thiếu: xem mục "Giai đoạn 0"/"Giai đoạn 2" ở trên.

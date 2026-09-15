@@ -1,15 +1,21 @@
 # DX-Farm
 
-MVP dự thi **OLP Phần mềm nguồn mở 2026** (khối thi DX-OS, VFOSSA). Bài toán được chọn: **Agri-Carbon DX-OS** — hệ điều hành chuyển đổi số nội bộ cho một Hợp tác xã Nông nghiệp Số chuyên canh lúa nước (ĐBSCL), triển khai theo kiến trúc 4 không gian **H-P-D-I** (Human, Process, Data, Intelligence).
+MVP dự thi **OLP Phần mềm nguồn mở 2026** (khối thi DX-OS, VFOSSA).
+Bài toán được chọn: **Agri-Carbon DX-OS** — hệ điều hành chuyển đổi số nội bộ cho một Hợp tác xã Nông nghiệp Số chuyên canh lúa nước (ĐBSCL), triển khai theo kiến trúc 4 không gian **H-P-D-I** (Human, Process, Data, Intelligence).
 
-> Tài liệu này là bản tổng quan để làm ngữ cảnh cho các phiên làm việc sau — không đi sâu chi tiết kỹ thuật. Chi tiết triển khai từng module sẽ được đào sâu dần trong các lần làm việc tiếp theo.
+> Tài liệu này là bản tổng quan để làm ngữ cảnh cho các phiên làm việc sau — không đi sâu chi tiết kỹ thuật.
+> Chi tiết triển khai từng module sẽ được đào sâu dần trong các lần làm việc tiếp theo.
 
 > Tiến trình implement từng module (đã xong gì, chưa làm gì) được ghi lại ở [`CHANGELOG.md`](./CHANGELOG.md).
 
+> Cách khởi động PostgreSQL, kết nối database và sử dụng Alembic được hướng dẫn tại [`development/docs/README_POSTGRESQL.md`](./development/docs/README_POSTGRESQL.md).
+
 ## Nguồn tài liệu
 
-- `docs/DX - Farm.docx` — thiết kế gốc "MVP Agri-Carbon DX-OS" (8 trang): phân vai tác nhân, 4 không gian HPDI, spine flow 6 bước, các lưu ý PoF/anti-hallucination/poka-yoke.
-- `docs/DX-Farm_MVP_DeXuat_Duyet_Lead.docx` — bản đề xuất thống nhất để Lead duyệt: thu hẹp phạm vi demo, LangGraph, schema dữ liệu, khung repo.
+- `development/docs/DX - Farm.docx` — thiết kế gốc "MVP Agri-Carbon DX-OS" (8 trang): phân vai tác nhân, 4 không gian HPDI, spine flow 6 bước, các lưu ý PoF/anti-hallucination/poka-yoke.
+- `development/docs/DX-Farm_MVP_DeXuat_Duyet_Lead.docx` — bản đề xuất thống nhất để Lead duyệt: thu hẹp phạm vi demo, LangGraph, schema dữ liệu, khung repo.
+- `development/docs/AI_README_LangGraph_MVP.md` — cấu trúc chuẩn của module AI, ranh giới CV/Data/RAG và khung LangGraph MVP.
+- `development/docs/AI_EVENT_SCHEMA_README.md` — contract event/API để Backend và Frontend nối với AI Service.
 - Chủ đề chính thức: https://vfossa.vn/tin-tuc/gioi-thieu-mo-hinh-dx-os-va-chu-de-cuoc-thi-phan-mem-nguon-mo-olp-2026-761.html
 - Giáo trình DX-OS: https://opendigitransform.gitbook.io/dx-os
 
@@ -17,8 +23,10 @@ MVP dự thi **OLP Phần mềm nguồn mở 2026** (khối thi DX-OS, VFOSSA). 
 
 Hai service tách biệt, giao tiếp qua HTTP:
 
-- **Backend (Java/Spring Boot)** — sở hữu Single Source of Truth: API nghiệp vụ, PostgreSQL (Operational Data + Structured Knowledge), state machine duyệt (Approve/Reject), enforce poka-yoke (khoá PHI/thu hoạch), auth. Đây là nơi mọi ghi nhận cuối cùng xảy ra.
-- **AI Service (Python)** — stateless theo hướng advisory: vision-api (CV chẩn đoán bệnh), LangGraph điều phối bước lookup + sinh khuyến nghị, LLM nhỏ (Qwen2.5-1.5B qua Ollama), RAG. Chỉ trả đề xuất/kết quả phân tích; không tự ghi dữ liệu nghiệp vụ, không tự quyết định thay kỹ sư.
+- **Backend (Java/Spring Boot)** — sở hữu Single Source of Truth: API nghiệp vụ, PostgreSQL (Operational Data + Structured Knowledge), state machine duyệt (Approve/Reject), enforce poka-yoke (khoá PHI/thu hoạch), auth.
+  Đây là nơi mọi ghi nhận cuối cùng xảy ra.
+- **AI Service (Python)** — vision-api (CV chẩn đoán bệnh), LangGraph điều phối lookup + sinh khuyến nghị, LLM nhỏ (Qwen2.5-1.5B qua Ollama) và RAG.
+  Workflow AI lưu trạng thái/audit PENDING → APPROVED/REJECTED → APPLIED trong PostgreSQL để chạy demo độc lập; mọi quyết định thuốc vẫn cần tác nhân kỹ sư và xác nhận APPLIED riêng.
 - Backend gọi AI Service qua contract API (xem mục "Việc cần chốt cùng Lead"); AI Service không truy cập trực tiếp PostgreSQL nghiệp vụ trừ khi cần đọc RAG Knowledge (pgvector) riêng.
 
 ## Nguyên tắc kiến trúc (bất biến qua mọi giai đoạn)
@@ -41,17 +49,42 @@ Luồng: nông dân báo bệnh bằng ảnh → CV chẩn đoán → tra cứu 
 - [x] M2 — Vision API trả `disease_id/confidence/model_version`, lưu lại được
 - [x] M3 — Lookup Disease → TreatmentRule → Pesticide deterministic (SQL/JSON, không qua LLM)
 - [x] M4 — LLM chỉ diễn đạt lại facts đã tra được, không tự sinh số liệu
-- [x] M5 — Kỹ sư Approve/Reject trong flow (trạng thái duyệt lưu & kiểm soát ở Spring Boot backend; AI Service chỉ đề xuất, không tự quyết)
-- [x] M6 — Khi xác nhận đã phun (APPLIED): backend ghi `TreatmentApplication`, tính `harvest_locked_until`, poka-yoke 2 tầng (Spring Boot API trả 422 + UI disable) chặn thu hoạch sớm
+- [x] M5 — Kỹ sư Approve/Reject trong flow; AI API lưu actor/audit nhưng không tự duyệt.
+- [x] M6 — APPLIED là bước xác nhận riêng, tạo snapshot `TreatmentApplication`, tính `harvest_locked_until` từ thời điểm phun và không cho lần ghi sau rút ngắn khoá PHI.
 
-Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot (API nghiệp vụ, duyệt, poka-yoke), AI Service Python riêng (vision-api MobileNetV3 + LangGraph điều phối + LLM nhỏ Qwen2.5-1.5B qua Ollama) gọi qua HTTP. Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
+Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot (API nghiệp vụ, duyệt, poka-yoke), AI Service Python riêng (vision-api EfficientNet-B4 + LangGraph điều phối + LLM nhỏ Qwen2.5-1.5B qua Ollama) gọi qua HTTP.
+Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
 
 **Còn thiếu để Phase 0 chạy thật end-to-end:**
 
-- [ ] Hoàn thiện AI Service Python: Đã có vision-api (FastAPI + EfficientNet-B4), còn thiếu LangGraph + LLM Qwen2.5-1.5B qua Ollama.
+- [x] Khởi tạo nền tảng dữ liệu Python: SQLAlchemy, Alembic, PostgreSQL và pgvector.
+- [x] Hoàn thiện AI Service Python thống nhất: Vision API, structured lookup, RAG, LangGraph, durable HITL và PHI chạy trong luồng tích hợp local.
 - [ ] Nối HTTP client backend ↔ AI Service theo contract API.
-- [ ] Khớp dữ liệu CV chẩn đoán: model hiện có trả về `class_name` nhưng chưa map `disease_code` với cơ sở dữ liệu của backend.
-- [ ] LLM sinh khuyến nghị thật (hiện backend dùng khuyến nghị tiếng Việt dạng template).
+- [x] Khớp dữ liệu CV chẩn đoán: đã chuẩn hóa Vision API trả `disease_code` và `disease_name` tiếng Việt khớp 1:1 với `Disease.code` trong DB.
+- [x] Tích hợp lớp wording vào spine flow; nếu Ollama lỗi/timeout thì trả evidence nguyên văn, không thay đổi thuốc, hoạt chất, liều hoặc PHI từ SQL.
+
+#### Phần AI/data/RAG đã có trên `feature/make-data`
+
+- Data layer cho 8 entity spine-flow và 2 entity RAG (`Document`, `DocumentChunk` với `vector(384)`, đồng bộ model embedding multilingual MiniLM).
+- Dataset có cấu trúc gồm 38 lớp bệnh/healthy được map nguyên văn từ sheet `Disease_KB`: `class_name → code`, `disease_name → name`, `symptoms → description`; không trùng mã.
+- Alembic head `f0a1b2026011` gồm metadata CV/RAG, workflow case/event bền vững, snapshot TreatmentApplication và unique sequence cho audit event.
+- Stage 7 đã embedding/ingest rich knowledge: 38 document / 270 chunk, registry 41 nguồn.
+  Đã chạy hai lần và kiểm thử rollback, không nhân đôi corpus.
+- Gói dữ liệu Stage 3 đã qua review cung cấp bộ seed cuối gồm 4 thuốc, 8 treatment rule và 21 disease-management policy.
+  Chỉ 8 candidate có quyết định `APPROVE/READY_TO_PROMOTE` được đưa vào bộ cuối; 8 candidate `HOLD/NOT_READY` được giữ riêng để audit và không seed.
+- Stage 4 đã hoàn thiện schema/repository; ba seeder Stage 5 chạy idempotent.
+  Database local đã được migrate và xác minh đúng revision/count `f0a1b2026011` / `4` / `8` / `21`.
+  Workbook review chỉ là nguồn đánh giá kỹ thuật MVP, không phải quyền cho phép sử dụng ngoài thực địa.
+- Stage 6 có contract 38 lớp canonical, predict/health API, endpoint chẩn đoán report: lưu Diagnosis/confidence/model metadata, trả SQL rule hoặc safe policy, yêu cầu kỹ sư duyệt.
+  Checkpoint thiếu class_to_idx nên thứ tự được đối chiếu với mã training, chưa xác minh độc lập.
+- Stage 7 có retrieval API, exact disease filter, top_k, provenance và atomic re-ingest.
+  RAG answer ở chế độ grounded_excerpt, không phát hành draft bịa structured facts.
+- Stage 8–10 đã có graph đến checkpoint PENDING, API approve/reject/applied, audit trail, idempotency, dose guardrail, snapshot rule/PHI và khoá thu hoạch lấy giá trị lớn nhất.
+- Kiểm thử local **59 passed**, gồm checkpoint CV thật, FastAPI lifespan, PostgreSQL/pgvector, E2E treatment/policy/reject/low-confidence và fresh-database migration.
+  Smoke MVP với model thật cũng đã PASS; Ollama không chạy vẫn về `evidence_fallback` an toàn.
+  Xem [checklist Stage 6–10](development/docs/AI_README_LangGraph_MVP.md#master-stage-roadmap), [CV handoff](ai/app/cv/README.md) và [RAG handoff](ai/app/rag/README.md).
+- Chưa nối HTTP client backend ↔ AI, chưa có auth riêng cho transition API AI, chưa thử venv trắng, chưa đánh giá accuracy CV độc lập hoặc benchmark live Ollama.
+  M8 vẫn cần nghiệm thu đúng bộ tài liệu VietGAP/IRRI và luồng hỏi đáp yêu cầu bên dưới.
 
 ### Giai đoạn 1 — Hoàn thiện trải nghiệm & truy vấn (Should)
 
@@ -67,10 +100,10 @@ Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot
   - [x] SSO thật: Identity Provider Keycloak chạy trong docker-compose.
     Backend xác thực bằng OAuth2 Resource Server, frontend và BI Dashboard (Superset) đăng nhập bằng redirect sang Keycloak.
     Chi tiết: [`sso/README.md`](./sso/README.md).
-  - [x] Bước đệm trước SSO: trang portal tĩnh liệt kê link tới các app (App chính, BI, Chat) —
-    chưa đăng nhập chung được, nhưng người dùng không cần tự nhớ URL từng app. Chi tiết:
-    [`portal/README.md`](./portal/README.md).
-  - [x] Kênh chat nội bộ (Mattermost) — chạy thật trong docker-compose (image Team Edition chính thức), nền tảng tách biệt hoàn toàn có chủ đích, không dùng SSO chung với Keycloak. Chi tiết: [`chat/README.md`](./chat/README.md).
+  - [x] Bước đệm trước SSO: trang portal tĩnh liệt kê link tới các app (App chính, BI, Chat) — chưa đăng nhập chung được, nhưng người dùng không cần tự nhớ URL từng app.
+    Chi tiết: [`portal/README.md`](./portal/README.md).
+  - [x] Kênh chat nội bộ (Mattermost) — chạy thật trong docker-compose (image Team Edition chính thức), nền tảng tách biệt hoàn toàn có chủ đích, không dùng SSO chung với Keycloak.
+    Chi tiết: [`chat/README.md`](./chat/README.md).
   - [ ] Tích hợp thông báo tự động vào channel Mattermost (ví dụ: có `DiseaseReport` mới hoặc chờ duyệt thì backend tự post vào channel)
 - [x] **[D]** Dashboard BI (Apache Superset) hiển thị bản đồ/trạng thái thửa ruộng cho Ban quản trị, tự bootstrap qua docker-compose.
   Chi tiết: [`bi/README.md`](./bi/README.md).
@@ -87,7 +120,7 @@ Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot
 Một PostgreSQL vật lý, ba nguồn logic:
 
 - **Operational Data**: Parcel, CropSeason, DiseaseReport, Diagnosis, TreatmentApplication — "chuyện gì đã xảy ra"
-- **Structured Knowledge**: Disease, Pesticide, TreatmentRule — "quy tắc là gì" (lookup bằng khoá/SQL, không qua LLM)
+- **Structured Knowledge**: Disease, Pesticide, TreatmentRule, DiseaseManagementPolicy — "quy tắc là gì" (lookup bằng khoá/SQL, không qua LLM)
 - **RAG Knowledge**: tài liệu VietGAP/IRRI/nội bộ đã duyệt, qua pgvector — "tài liệu giải thích gì"
 
 ## Điểm cần lưu ý cho tiêu chí PoF (50/100 điểm, mang tính loại trừ)
@@ -106,10 +139,10 @@ Một PostgreSQL vật lý, ba nguồn logic:
 
 - [x] Phạm vi demo: chỉ spine flow (Giai đoạn 0) hay bao gồm cả [H]/[D] tối thiểu (Giai đoạn 2)?
 - [x] Quyết định dứt khoát về n8n (giữ/bỏ) vì lý do license — đã bỏ, xem `LICENSES.md`
-- [ ] Schema operational + structured knowledge (entity, field bắt buộc)
-- [ ] Contract `vision-api` (request/response JSON)
+- [x] Schema operational + structured knowledge (entity, field bắt buộc)
+- [x] Contract `vision-api` (request/response JSON)
 - [ ] Contract giữa backend Spring Boot và AI Service Python (REST, base URL, timeout/retry, ai-service base URL cấu hình ở đâu)
-- [ ] Thời điểm PHI bắt đầu: khi `TreatmentApplication = APPLIED` (không phải khi Approve)
+- [x] Thời điểm PHI bắt đầu: khi `TreatmentApplication = APPLIED` (không phải khi Approve)
 - [x] Cấu trúc monorepo và quyền sở hữu từng thư mục/module
 - [x] Chính sách repo Private trong lúc phát triển, thời điểm public trước khi nộp bài
 
@@ -117,11 +150,12 @@ Một PostgreSQL vật lý, ba nguồn logic:
 
 Backend Spring Boot đã xong, xác thực qua OAuth2 Resource Server (SSO thật qua Keycloak), phân quyền FARMER/ENGINEER/ADMIN theo realm role.
 Frontend demo (React/Vite) cho Phase 0 spine flow đã xong, đăng nhập bằng redirect sang Keycloak.
-AI Service (Python) đã dựng xong phần Vision API cơ bản, đang thiếu phần điều phối LangGraph và LLM.
+Trong phạm vi `ai/`, Stage 8–10 đã hoàn thiện Vision API, structured lookup, RAG endpoint, LangGraph, durable HITL/APPLIED/PHI và smoke/test local.
 BI Dashboard (Superset) đã đăng nhập qua Keycloak; kênh chat nội bộ (Mattermost) đã chạy thật trong docker-compose kèm trang portal tĩnh liệt kê link tới các app — là nền tảng tách biệt có chủ đích, không dùng SSO chung.
 Đã rà soát license toàn bộ thành phần đang chạy ([`LICENSES.md`](./LICENSES.md)).
 Checklist việc còn thiếu: xem mục "Giai đoạn 0"/"Giai đoạn 2" ở trên.
 Chi tiết đầy đủ theo từng module: [`CHANGELOG.md`](./CHANGELOG.md).
+Phần còn thiếu để ghép toàn hệ thống là HTTP client backend ↔ AI, auth cho transition AI hoặc ủy quyền từ backend, và UI gọi flow mới.
 
 ## Chạy demo Phase 0
 

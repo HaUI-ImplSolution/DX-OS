@@ -59,16 +59,22 @@ Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
 
 - [ ] Nối HTTP client backend ↔ AI Service theo contract API.
 
-#### Phần AI/data/RAG đã có trên `feature/make-data`
+#### Tiến độ AI Service & Data Python
 
-- Data layer đủ 8 entity spine-flow, 2 entity RAG (`Document`, `DocumentChunk` với pgvector `vector(384)`), Alembic head `f0a1b2026011`.
-- Bộ seed cuối: 4 thuốc, 8 treatment rule, 21 disease-management policy — chỉ candidate `APPROVE/READY_TO_PROMOTE` được đưa vào; 8 candidate `HOLD` giữ riêng để audit.
-- Knowledge đã ingest: 38 document / 270 chunk, registry 41 nguồn; idempotent, đã kiểm thử rollback và re-ingest.
-- Vision API trả `disease_code`/`disease_name` khớp 1:1 với `Disease.code` trong DB; endpoint chẩn đoán lưu Diagnosis + confidence/model metadata, trả SQL rule hoặc safe policy.
-- LangGraph spine flow: CV → field context → structured lookup → RAG → recommendation → checkpoint `PENDING`.
-  API approve/reject/applied với audit trail, idempotency, dose guardrail, snapshot PHI và khoá thu hoạch lấy `MAX`.
-- LLM chỉ chọn evidence nguyên văn; lỗi/timeout về `evidence_fallback`, không tự sinh thuốc/liều/PHI.
-- Kiểm thử local **59 passed** (checkpoint CV thật, FastAPI lifespan, PostgreSQL/pgvector, E2E treatment/policy/reject/low-confidence, fresh-DB migration). Smoke MVP PASS.
+- [x] Khởi tạo nền tảng dữ liệu Python: SQLAlchemy, Alembic, PostgreSQL và pgvector.
+- [x] Hoàn thiện AI Service Python thống nhất: Vision API, structured lookup, RAG, LangGraph, durable HITL và PHI chạy trong luồng tích hợp local.
+- [ ] Nối HTTP client backend ↔ AI Service theo contract API.
+- [x] Khớp dữ liệu CV chẩn đoán: đã chuẩn hóa Vision API trả `disease_code` và `disease_name` tiếng Việt khớp 1:1 với `Disease.code` trong DB.
+- [x] Tích hợp lớp wording vào spine flow; nếu Ollama lỗi/timeout thì trả evidence nguyên văn, không thay đổi thuốc, hoạt chất, liều hoặc PHI từ SQL.
+
+#### Chi tiết Phần AI/data/RAG (trên `feature/make-data`)
+
+- [x] **Data layer**: Khởi tạo 8 entity spine-flow và 2 entity RAG (`Document`, `DocumentChunk` với pgvector).
+- [x] **Dữ liệu quy tắc (Seed)**: Tích hợp 4 thuốc, 8 treatment rule và 21 disease-management policy đã duyệt.
+- [x] **Tri thức RAG**: Ingest 38 tài liệu (270 chunk) từ 41 nguồn registry.
+- [x] **Chẩn đoán CV**: Vision API trả `disease_code`/`disease_name` khớp 1:1 `Disease.code`, tạo `Diagnosis` và trả SQL rule/safe policy.
+- [x] **Điều phối LangGraph**: Luồng CV → context → lookup → RAG → recommendation (checkpoint `PENDING`), hỗ trợ approve/reject/applied với dose guardrail, snapshot PHI và khóa thu hoạch lấy `MAX`.
+- [x] **Diễn đạt LLM (Wording)**: Trích chọn evidence nguyên văn, tự động fallback an toàn nếu lỗi/timeout, giữ nguyên số liệu thuốc/liều/PHI từ SQL.
 
 ### Giai đoạn 1 — Hoàn thiện trải nghiệm & truy vấn (Should)
 

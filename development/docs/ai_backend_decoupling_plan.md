@@ -3,6 +3,7 @@
 > **Dự án**: DX-Farm (Hệ thống Quản lý Nông nghiệp Thông minh)
 > **Tài liệu**: Kế hoạch Tái cấu trúc Kiến trúc Backend & AI
 > **Ngày cập nhật**: 15/09/2026
+> **Checklist triển khai**: [`ai_backend_decoupling_checklist.md`](./ai_backend_decoupling_checklist.md) — phân rã kế hoạch này thành các mục nhỏ có thể giao việc, cùng danh sách tài liệu cần cập nhật sau mỗi mục.
 
 ---
 

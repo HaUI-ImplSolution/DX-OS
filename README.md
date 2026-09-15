@@ -17,6 +17,7 @@ Bài toán được chọn: **Agri-Carbon DX-OS** — hệ điều hành chuyể
 - `development/docs/AI_README_LangGraph_MVP.md` — cấu trúc chuẩn của module AI, ranh giới CV/Data/RAG và khung LangGraph MVP.
 - `development/docs/AI_EVENT_SCHEMA_README.md` — contract event/API để Backend và Frontend nối với AI Service.
 - `development/docs/ai_backend_decoupling_plan.md` — kế hoạch tách DB & biến AI thành dịch vụ suy luận phi trạng thái (stateless inference service); nguồn sự thật cho hướng kiến trúc AI↔Backend sắp tới, thay thế dần cách AI tự ghi DB nghiệp vụ mô tả ở các mục bên dưới.
+- `development/docs/ai_backend_decoupling_checklist.md` — checklist triển khai kế hoạch trên, phân theo Phase và có mã mục để tham chiếu trong commit/PR.
 - Chủ đề chính thức: https://vfossa.vn/tin-tuc/gioi-thieu-mo-hinh-dx-os-va-chu-de-cuoc-thi-phan-mem-nguon-mo-olp-2026-761.html
 - Giáo trình DX-OS: https://opendigitransform.gitbook.io/dx-os
 

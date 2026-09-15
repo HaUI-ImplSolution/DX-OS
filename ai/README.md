@@ -4,6 +4,9 @@ Dịch vụ AI độc lập nằm trong thư mục `ai/` (ngang hàng `backend/`
 
 Dịch vụ tuân thủ nguyên tắc kiến trúc bất biến: **Stateless & Advisory** — chỉ cung cấp chẩn đoán thị giác máy tính (CV), tra cứu tri thức định hình, truy vấn RAG giải thích và sinh đề xuất khuyến nghị. Dịch vụ không tự ghi nhận hay thay đổi dữ liệu nghiệp vụ chính thức; mọi khuyến nghị đều qua trạng thái `PENDING` chờ kỹ sư nông nghiệp phê duyệt (Human-in-the-loop).
 
+> **Trạng thái kiến trúc**: Nội dung dưới đây mô tả hành vi hiện tại, nơi AI vẫn ghi trực tiếp `WorkflowCase`/`WorkflowEvent`/`DiseaseReport`/`Diagnosis`/`TreatmentApplication` vào cùng một PostgreSQL với Backend — khác với nguyên tắc Stateless & Advisory ở trên.
+> Kế hoạch tách AI thành dịch vụ suy luận phi trạng thái thật sự (không ghi DB nghiệp vụ, chỉ đọc Backend qua REST GET) đã chốt ở [`../development/docs/ai_backend_decoupling_plan.md`](../development/docs/ai_backend_decoupling_plan.md); tài liệu này sẽ cập nhật lại khi Phase 1 của kế hoạch đó hoàn tất.
+
 ---
 
 ## Kiến trúc & Các thành phần chính
@@ -40,6 +43,9 @@ Dịch vụ tuân thủ nguyên tắc kiến trúc bất biến: **Stateless & A
 | `POST` | `/workflow/{case_id}/approve` | Kỹ sư duyệt khuyến nghị (`APPROVED`) |
 | `POST` | `/workflow/{case_id}/reject` | Kỹ sư từ chối khuyến nghị (`REJECTED`) |
 | `POST` | `/workflow/{case_id}/applied` | Xác nhận đã phun thuốc thực tế (`APPLIED`), tính ngày hết cách ly PHI |
+
+Bảng trên phản ánh contract hiện tại.
+Theo Phase 1 của [kế hoạch tách AI/Backend](../development/docs/ai_backend_decoupling_plan.md), `POST /reports/{report_id}/diagnose` và toàn bộ `/workflow/*` sẽ bị xóa, thay bằng contract suy luận phi trạng thái `POST /api/v1/diagnose`: nhận ảnh + field context và trả CV result + RAG evidence + structured facts + recommendation trong một lần gọi, không tự ghi DB nghiệp vụ.
 
 ---
 
@@ -134,3 +140,5 @@ Lần khởi động đầu tiên cần Internet để tải CV weights từ Hug
 - Các endpoint AI hiện chưa yêu cầu xác thực JWT riêng; xác thực người dùng được kiểm soát ở gateway Spring Boot backend và Keycloak SSO.
 - Dockerfile đã sẵn sàng, nhưng Docker Compose và Java backend chưa tự động khởi chạy/gọi AI service; phần tích hợp đó cần cấu hình service `ai` và URL `http://ai:8000`.
 - `HF_TOKEN` chưa được cấu hình — HuggingFace Hub sẽ tải model với rate limit ẩn danh (thường đủ dùng, nhưng nếu bị throttle thì set biến `HF_TOKEN` trong `deploy/.env`).
+- AI hiện dùng chung một PostgreSQL vật lý với Backend và tự ghi trực tiếp dữ liệu nghiệp vụ (`disease_reports`, `diagnoses`, `treatment_applications`, `workflow_cases`); chưa có Backend REST client trong `ai/`.
+  Kế hoạch tách DB & biến AI thành stateless inference service theo [`../development/docs/ai_backend_decoupling_plan.md`](../development/docs/ai_backend_decoupling_plan.md) chưa được triển khai (Phase 1-3 còn mở).

@@ -16,6 +16,7 @@ Bài toán được chọn: **Agri-Carbon DX-OS** — hệ điều hành chuyể
 - `development/docs/DX-Farm_MVP_DeXuat_Duyet_Lead.docx` — bản đề xuất thống nhất để Lead duyệt: thu hẹp phạm vi demo, LangGraph, schema dữ liệu, khung repo.
 - `development/docs/AI_README_LangGraph_MVP.md` — cấu trúc chuẩn của module AI, ranh giới CV/Data/RAG và khung LangGraph MVP.
 - `development/docs/AI_EVENT_SCHEMA_README.md` — contract event/API để Backend và Frontend nối với AI Service.
+- `development/docs/ai_backend_decoupling_plan.md` — kế hoạch tách DB & biến AI thành dịch vụ suy luận phi trạng thái (stateless inference service); nguồn sự thật cho hướng kiến trúc AI↔Backend sắp tới, thay thế dần cách AI tự ghi DB nghiệp vụ mô tả ở các mục bên dưới.
 - Chủ đề chính thức: https://vfossa.vn/tin-tuc/gioi-thieu-mo-hinh-dx-os-va-chu-de-cuoc-thi-phan-mem-nguon-mo-olp-2026-761.html
 - Giáo trình DX-OS: https://opendigitransform.gitbook.io/dx-os
 
@@ -26,8 +27,10 @@ Hai service tách biệt, giao tiếp qua HTTP:
 - **Backend (Java/Spring Boot)** — sở hữu Single Source of Truth: API nghiệp vụ, PostgreSQL (Operational Data + Structured Knowledge), state machine duyệt (Approve/Reject), enforce poka-yoke (khoá PHI/thu hoạch), auth.
   Đây là nơi mọi ghi nhận cuối cùng xảy ra.
 - **AI Service (Python)** — vision-api (CV chẩn đoán bệnh), LangGraph điều phối lookup + sinh khuyến nghị, LLM nhỏ (Qwen2.5-1.5B qua Ollama) và RAG.
+  AI hiện dùng chung một PostgreSQL vật lý với Backend, tự ghi trực tiếp `disease_reports`/`diagnoses`/`treatment_applications`/`workflow_cases` và tra cứu thẳng `parcels`/`crop_seasons`/`diseases`/`pesticides`/`treatment_rules`.
   Workflow AI lưu trạng thái/audit PENDING → APPROVED/REJECTED → APPLIED trong PostgreSQL để chạy demo độc lập; mọi quyết định thuốc vẫn cần tác nhân kỹ sư và xác nhận APPLIED riêng.
-- Backend gọi AI Service qua contract API (xem mục "Việc cần chốt cùng Lead"); AI Service không truy cập trực tiếp PostgreSQL nghiệp vụ trừ khi cần đọc RAG Knowledge (pgvector) riêng.
+- Backend và AI Service hiện gọi trực tiếp cùng một DB thay vì qua REST.
+  Kế hoạch tách rời ở [`development/docs/ai_backend_decoupling_plan.md`](./development/docs/ai_backend_decoupling_plan.md) sẽ biến AI thành dịch vụ suy luận phi trạng thái (stateless): chỉ đọc Backend qua REST GET, không còn quyền ghi hay đọc trực tiếp DB nghiệp vụ, kể cả read-only ở tầng DB.
 
 ## Nguyên tắc kiến trúc (bất biến qua mọi giai đoạn)
 
@@ -60,6 +63,7 @@ Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
 - [x] Khởi tạo nền tảng dữ liệu Python: SQLAlchemy, Alembic, PostgreSQL và pgvector.
 - [x] Hoàn thiện AI Service Python thống nhất: Vision API, structured lookup, RAG, LangGraph, durable HITL và PHI chạy trong luồng tích hợp local.
 - [ ] Nối HTTP client backend ↔ AI Service theo contract API.
+  Theo [`ai_backend_decoupling_plan.md`](./development/docs/ai_backend_decoupling_plan.md), việc này chỉ nối sau khi AI chuyển sang contract phi trạng thái `POST /api/v1/diagnose` (Phase 1-2 của kế hoạch), không nối theo `/disease/workflow/*` hiện tại.
 - [x] Khớp dữ liệu CV chẩn đoán: đã chuẩn hóa Vision API trả `disease_code` và `disease_name` tiếng Việt khớp 1:1 với `Disease.code` trong DB.
 - [x] Tích hợp lớp wording vào spine flow; nếu Ollama lỗi/timeout thì trả evidence nguyên văn, không thay đổi thuốc, hoạt chất, liều hoặc PHI từ SQL.
 
@@ -123,6 +127,8 @@ Một PostgreSQL vật lý, ba nguồn logic:
 - **Structured Knowledge**: Disease, Pesticide, TreatmentRule, DiseaseManagementPolicy — "quy tắc là gì" (lookup bằng khoá/SQL, không qua LLM)
 - **RAG Knowledge**: tài liệu VietGAP/IRRI/nội bộ đã duyệt, qua pgvector — "tài liệu giải thích gì"
 
+Kế hoạch tách thành 2 database vật lý riêng (Backend DB + AI Vector DB) đã chốt ở [`development/docs/ai_backend_decoupling_plan.md`](./development/docs/ai_backend_decoupling_plan.md) mục 3, chưa triển khai.
+
 ## Điểm cần lưu ý cho tiêu chí PoF (50/100 điểm, mang tính loại trừ)
 
 - Giấy phép mọi thành phần phải **OSI-approved**; đã loại Llama (không đạt chuẩn OSD), chọn Qwen2.5-1.5B-Instruct (Apache-2.0).
@@ -142,11 +148,13 @@ Một PostgreSQL vật lý, ba nguồn logic:
 - [x] Schema operational + structured knowledge (entity, field bắt buộc)
 - [x] Contract `vision-api` (request/response JSON)
 - [ ] Contract giữa backend Spring Boot và AI Service Python (REST, base URL, timeout/retry, ai-service base URL cấu hình ở đâu)
+  Đã đặc tả chi tiết ở [`ai_backend_decoupling_plan.md`](./development/docs/ai_backend_decoupling_plan.md) mục 4-5.
+  Còn một điểm mở: khớp schema `dose_min`/`dose_max` (AI) với `doseAmount` (Backend) trước khi triển khai Phase 2.
 - [x] Thời điểm PHI bắt đầu: khi `TreatmentApplication = APPLIED` (không phải khi Approve)
 - [x] Cấu trúc monorepo và quyền sở hữu từng thư mục/module
 - [x] Chính sách repo Private trong lúc phát triển, thời điểm public trước khi nộp bài
 
-## Trạng thái hiện tại (cập nhật 2026-09-11)
+## Trạng thái hiện tại (cập nhật 2026-09-15)
 
 Backend Spring Boot đã xong, xác thực qua OAuth2 Resource Server (SSO thật qua Keycloak), phân quyền FARMER/ENGINEER/ADMIN theo realm role.
 Frontend demo (React/Vite) cho Phase 0 spine flow đã xong, đăng nhập bằng redirect sang Keycloak.
@@ -155,7 +163,8 @@ BI Dashboard (Superset) đã đăng nhập qua Keycloak; kênh chat nội bộ (
 Đã rà soát license toàn bộ thành phần đang chạy ([`LICENSES.md`](./LICENSES.md)).
 Checklist việc còn thiếu: xem mục "Giai đoạn 0"/"Giai đoạn 2" ở trên.
 Chi tiết đầy đủ theo từng module: [`CHANGELOG.md`](./CHANGELOG.md).
-Phần còn thiếu để ghép toàn hệ thống là HTTP client backend ↔ AI, auth cho transition AI hoặc ủy quyền từ backend, và UI gọi flow mới.
+Hướng ghép hệ thống đã đổi theo [`ai_backend_decoupling_plan.md`](./development/docs/ai_backend_decoupling_plan.md): AI hiện vẫn ghi trực tiếp DB nghiệp vụ dùng chung với Backend, chưa tách DB, chưa có Backend REST client ở AI và chưa có `AiDiagnosisClient` ở Backend.
+Phase 1-3 của kế hoạch đó (mục 6) là điều kiện tiên quyết trước khi nối HTTP client backend ↔ AI theo contract mới `POST /api/v1/diagnose`.
 
 ## Chạy demo Phase 0
 

@@ -15,7 +15,7 @@
 3. **Biến AI Service thành Dịch vụ Suy luận Thuần túy (Stateless Inference Service)**:
    - AI nhận Request Payload -> Chẩn đoán hình ảnh (CV) + Tra cứu RAG -> Trả về kết quả JSON cho Backend.
    - AI **không kết nối trực tiếp** và **không lưu trữ** vào Database của Backend.
-   - AI chỉ trả `disease_code`, confidence và RAG evidence; Backend là nơi duy nhất tra cứu và quyết định dữ liệu thuốc, liều lượng, PHI, policy và trạng thái nghiệp vụ.
+   - Sau khi CV trả `disease_code`, AI lấy RAG evidence từ pgvector và gọi Backend API để lấy dữ liệu nghiệp vụ chính xác, sau đó LangGraph/LLM tổng hợp recommendation trả về Backend.
 
 ---
 
@@ -53,7 +53,7 @@ Cả Backend và AI đều đang khai báo các bảng này trong DB của mình
 | **Lưu kết quả chẩn đoán** | Ghi `diagnoses` (kèm trạng thái duyệt `PENDING`/`APPROVED`) | Ghi `diagnoses` thẳng vào DB | ❌ **LOẠI BỎ KHỎI AI**. AI chỉ trả kết quả JSON, Backend tự lưu `diagnoses`. |
 | **Ghi nhận phun thuốc** | Ghi `treatment_applications` + tính ngày khóa thu hoạch PHI | Ghi `treatment_applications` | ❌ **LOẠI BỎ KHỎI AI**. Chỉ Backend quản lý lịch sử phun thuốc. |
 | **Đọc thông tin thực địa** | Truy vấn `parcels`, `crop_seasons` | Truy vấn `parcels`, `crop_seasons` | ❌ **LOẠI BỎ TRUY VẤN Ở AI**. Backend đọc DB và đóng gói gửi qua REST Payload. |
-| **Tra cứu dữ liệu quyết định** | Dựa vào `disease_code` để lấy disease, treatment rule, policy, PHI và lịch sử phun | Không truy vấn các bảng này | ✅ **CHỈ BACKEND**. RAG/LLM không được tạo hoặc xác nhận dữ liệu quyết định. |
+| **Tra cứu dữ liệu quyết định** | Cung cấp REST API read-only trả disease, treatment rule, policy, PHI và lịch sử phun | Gọi Backend API bằng `disease_code` rồi đưa structured facts vào LangGraph/LLM | ✅ **BACKEND LÀ NGUỒN SỰ THẬT**. AI được tổng hợp lời khuyên nhưng không tự tạo dữ liệu nghiệp vụ. |
 | **Tra cứu tri thức RAG** | *Không thực hiện* | Đọc `documents`, `document_chunks` | ✅ **GIỮ LẠI CHO AI**. Đây là nhiệm vụ cốt lõi của AI. |
 
 ---
@@ -87,7 +87,7 @@ Cả Backend và AI đều đang khai báo các bảng này trong DB của mình
              │                                             │    (Python FastAPI)      │
 ┌────────────┴─────────────┐         REST API (JSON)       │  - CV Model Inference    │
 │     BACKEND SERVICE      ├──────────────────────────────►│  - RAG Vector Search     │
-│    (Java Spring Boot)    │◄──────────────────────────────┤  - Evidence-only wording │
+│    (Java Spring Boot)    │◄──────────────────────────────┤  - LLM Recommendation    │
 └──────────────────────────┘                               │  - STATELESS (NO WRITES) │
                                                            └──────────────────────────┘
 ```
@@ -114,39 +114,48 @@ sequenceDiagram
     participant AI as AI Inference Service (Python)
     participant AIDB as AI Vector DB (Read-Only)
 
-    Farmer->>BE: 1. Đăng tải ảnh lá bệnh + parcel_code
-    BE->>BEDB: 2. Lưu ảnh -> Tạo disease_report (PENDING)
-    BE->>BEDB: 3. Đọc context thực địa không quyết định
-    BE->>AI: 4. POST /api/v1/diagnose (image + request_id + context)
+    Farmer->>BE: Đăng tải ảnh lá bệnh + parcel_code
+    BE->>BEDB: Lưu ảnh và tạo disease_report PENDING
+    BE->>AI: Gọi POST /api/v1/diagnose
 
     activate AI
-    AI->>AI: 5. CV nhận diện và tạo disease_code
-    AI->>AIDB: 6. Vector search theo disease_code
-    AIDB-->>AI: 7. Trả evidence, similarity, source IDs
-    AI-->>BE: 8. Trả CV result + RAG evidence
+    AI->>AI: CV nhận diện và tạo disease_code
+    par Lấy knowledge theo ngữ nghĩa
+        AI->>AIDB: Vector search theo disease_code
+        AIDB-->>AI: Trả evidence, similarity, source IDs
+    and Lấy sự thật nghiệp vụ
+        AI->>BE: Gọi internal API bằng disease_code + report context
+        BE->>BEDB: Tra field context, rule, policy, PHI và lịch sử phun
+        BEDB-->>BE: Trả dữ liệu nghiệp vụ chính xác
+        BE-->>AI: Trả structured facts qua REST
+    end
+
+    AI->>AI: LangGraph/LLM kết hợp CV + RAG + structured facts
+    AI-->>BE: Trả CV result + evidence + recommendation
     deactivate AI
 
-    BE->>BEDB: 9. Tra disease, rule, policy, PHI, lịch sử phun theo disease_code
-    BEDB-->>BE: 10. Trả dữ liệu nghiệp vụ chính xác
-    BE->>BEDB: 11. Ghi diagnosis/workflow PENDING
-    BE-->>Farmer: 12. Trả recommendation đã được Backend kiểm tra
+    BE->>BEDB: Kiểm tra lại và lưu diagnosis/workflow PENDING
+    BE-->>Farmer: Trả recommendation chờ kỹ sư duyệt
 ```
 
-### 4.2 Ranh giới giữa RAG evidence và dữ liệu quyết định
+### 4.2 Ranh giới dữ liệu
 
-Sau khi CV có `disease_code`, hai nhánh dữ liệu chạy độc lập:
+Sau khi CV có `disease_code`, AI dùng đồng thời hai nguồn context:
 
 ```text
-AI → AI Vector DB (pgvector)
-   → đoạn kiến thức liên quan, similarity, source IDs
-   → dùng để giải thích, không quyết định thuốc hoặc PHI
+AI Vector DB (pgvector)
+  → semantic evidence và nguồn tài liệu
 
-Backend → Backend DB
-        → disease, treatment rules, management policy, lịch sử phun, PHI
-        → nguồn sự thật duy nhất để tạo recommendation và approval
+Backend Internal API
+  → field context, treatment rules, policy, liều lượng, PHI và lịch sử phun
+  → nguồn sự thật nghiệp vụ
+
+LangGraph/LLM
+  → kết hợp CV + semantic evidence + structured facts
+  → tạo recommendation trả về Backend
 ```
 
-AI không gọi REST sang Backend để tra từng tên bệnh/thuốc. Backend tự tra Core DB sau khi nhận `disease_code`; hai bên chỉ trao đổi mã canonical và JSON contract.
+AI gọi Backend bằng `disease_code` canonical, không nối dữ liệu bằng tên bệnh. AI được đề xuất dựa trên rule Backend cung cấp nhưng không được tự tạo hoặc sửa thuốc, liều lượng và PHI. Backend kiểm tra lại, lưu kết quả và sở hữu toàn bộ trạng thái phê duyệt/APPLIED.
 
 ---
 
@@ -190,11 +199,30 @@ AI không gọi REST sang Backend để tra từng tên bệnh/thuốc. Backend 
       "source_ids": ["DOC_DISEASE_GUIDE_V1"],
       "similarity": 0.87
     }
-  ]
+  ],
+  "structured_context": {
+    "path": "treatment",
+    "rules": [
+      {
+        "rule_id": "rule-123",
+        "pesticide": "Tên thuốc từ Backend",
+        "dose_min": 1.0,
+        "dose_max": 1.5,
+        "dose_unit": "lít/ha",
+        "phi_days": 14,
+        "version": "1.0"
+      }
+    ]
+  },
+  "recommendation": {
+    "selected_rule_id": "rule-123",
+    "summary": "Lời khuyên được tổng hợp từ structured facts và RAG evidence.",
+    "requires_engineer_approval": true
+  }
 }
 ```
 
-AI không trả `treatment_proposal`, liều lượng hoặc `phi_days_suggested`. Backend dùng `cv_result.disease_code` để lấy các giá trị này từ Core DB, kiểm tra policy và lịch sử phun trước khi lưu recommendation ở trạng thái `PENDING`.
+Thuốc, khoảng liều và PHI trong recommendation phải giữ nguyên từ `structured_context` do Backend cung cấp. AI chỉ lựa chọn và diễn giải lời khuyên có căn cứ; Backend kiểm tra lại trước khi lưu recommendation ở trạng thái `PENDING`.
 
 ---
 
@@ -203,15 +231,16 @@ AI không trả `treatment_proposal`, liều lượng hoặc `phi_days_suggested
 ### Phase 1: Tái cấu trúc phía AI (Python/FastAPI)
 - [ ] Xóa 10 ORM Models nghiệp vụ dư thừa (`disease_report.py`, `diagnosis.py`, `treatment_application.py`, `parcel.py`, `crop_season.py`, `disease.py`, `pesticide.py`, `treatment_rule.py`, `disease_management_policy.py`, `workflow_case.py`).
 - [ ] Xóa repository/service CRUD nghiệp vụ và toàn bộ lệnh `db.add()`, `db.commit()` trong AI runtime.
-- [ ] Đổi endpoint AI thành inference contract: nhận ảnh/request context, trả `cv_result` và `rag_evidence`; không trả rule, liều lượng hoặc PHI.
+- [ ] Thêm Backend REST client read-only để lấy field context, treatment rule, policy, PHI và lịch sử phun sau khi CV có `disease_code`.
+- [ ] Đổi endpoint AI thành inference contract: nhận ảnh/request context, kết hợp CV + RAG + structured facts và trả recommendation về Backend.
 - [ ] Giữ `rag/retriever.py` và `rag/ingestion_service.py`; runtime chỉ đọc AI Vector DB, còn ingest là job quản trị có quyền ghi riêng.
 
 ### Phase 2: Tái cấu trúc phía Backend (Java/Spring Boot)
 - [ ] Thêm `AiDiagnosisClient` (sử dụng `WebClient` hoặc `RestTemplate`).
 - [ ] Cập nhật `DiseaseReportService`: Tự khởi tạo và lưu `DiseaseReport` vào Backend DB.
+- [ ] Cung cấp internal API read-only để AI lấy structured facts bằng `disease_code` và context của báo cáo.
 - [ ] Gọi `AiDiagnosisClient.diagnose(...)` gửi Payload sang AI Service.
-- [ ] Nhận `cv_result`, xác thực `disease_code`, rồi tra disease, treatment rule, management policy, PHI và lịch sử phun trong Backend DB.
-- [ ] Tự khởi tạo `Diagnosis`/workflow `PENDING` từ dữ liệu Backend đã kiểm tra; RAG evidence chỉ được lưu như nguồn giải thích.
+- [ ] Nhận CV, evidence và recommendation từ AI; kiểm tra lại rule/liều/PHI rồi lưu `Diagnosis`/workflow `PENDING`.
 
 ### Phase 3: Khởi tạo Database & Deployment
 - [ ] Khởi tạo DB riêng `dx_farm_ai_vector_db` chỉ chứa bảng `documents` và `document_chunks` (kèm pgvector extension).

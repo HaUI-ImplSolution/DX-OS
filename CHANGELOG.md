@@ -345,3 +345,13 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Chốt dứt khoát bỏ n8n khỏi kiến trúc (Sustainable Use License, không OSI-approved) — chưa từng tích hợp vào code.
 - Thêm `LICENSE` (Apache-2.0 toàn văn) ở gốc repo.
 - **Còn thiếu**: SPDX header đầu mỗi file mã nguồn tự viết — việc sửa hàng loạt file, để riêng một lượt khác.
+
+## Tài liệu (root, `development/docs`, `ai/`)
+
+### 2026-09-15
+
+**Đã xong:**
+
+- Thêm kế hoạch tách AI/Backend (`ai_backend_decoupling_plan.md`) và checklist triển khai theo Phase (`ai_backend_decoupling_checklist.md`).
+- Cập nhật `README.md`, `ai/README.md`, `ai/app/graph/README.md`, `AI_EVENT_SCHEMA_README.md` để trỏ tới kế hoạch trên và nêu rõ AI hiện vẫn dùng chung PostgreSQL với Backend.
+- Dọn `development/docs/`: chỉ còn kế hoạch/checklist/contract hiện hành; tài liệu thiết kế gốc chuyển vào `legacy_docs/`.

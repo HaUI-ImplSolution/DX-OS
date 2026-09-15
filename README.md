@@ -8,13 +8,13 @@ Bài toán được chọn: **Agri-Carbon DX-OS** — hệ điều hành chuyể
 
 > Tiến trình implement từng module (đã xong gì, chưa làm gì) được ghi lại ở [`CHANGELOG.md`](./CHANGELOG.md).
 
-> Cách khởi động PostgreSQL, kết nối database và sử dụng Alembic được hướng dẫn tại [`development/docs/README_POSTGRESQL.md`](./development/docs/README_POSTGRESQL.md).
+> Cách khởi động PostgreSQL bằng Docker Compose xem mục "Chạy demo Phase 0" bên dưới; chuẩn bị schema/seed/RAG riêng cho AI xem [`ai/README.md`](./ai/README.md).
 
 ## Nguồn tài liệu
 
-- `development/docs/DX - Farm.docx` — thiết kế gốc "MVP Agri-Carbon DX-OS" (8 trang): phân vai tác nhân, 4 không gian HPDI, spine flow 6 bước, các lưu ý PoF/anti-hallucination/poka-yoke.
-- `development/docs/DX-Farm_MVP_DeXuat_Duyet_Lead.docx` — bản đề xuất thống nhất để Lead duyệt: thu hẹp phạm vi demo, LangGraph, schema dữ liệu, khung repo.
-- `development/docs/AI_README_LangGraph_MVP.md` — cấu trúc chuẩn của module AI, ranh giới CV/Data/RAG và khung LangGraph MVP.
+- `development/docs/legacy_docs/DX - Farm.docx` — thiết kế gốc "MVP Agri-Carbon DX-OS" (8 trang): phân vai tác nhân, 4 không gian HPDI, spine flow 6 bước, các lưu ý PoF/anti-hallucination/poka-yoke.
+- `development/docs/legacy_docs/DX-Farm_MVP_DeXuat_Duyet_Lead.docx` — bản đề xuất thống nhất để Lead duyệt: thu hẹp phạm vi demo, LangGraph, schema dữ liệu, khung repo.
+- `ai/README.md` — cấu trúc chuẩn của module AI, danh sách endpoint và biến môi trường; `ai/app/graph/README.md` — ranh giới LangGraph so với `WorkflowRunner`/PostgreSQL.
 - `development/docs/AI_EVENT_SCHEMA_README.md` — contract event/API để Backend và Frontend nối với AI Service.
 - `development/docs/ai_backend_decoupling_plan.md` — kế hoạch tách DB & biến AI thành dịch vụ suy luận phi trạng thái (stateless inference service); nguồn sự thật cho hướng kiến trúc AI↔Backend sắp tới, thay thế dần cách AI tự ghi DB nghiệp vụ mô tả ở các mục bên dưới.
 - `development/docs/ai_backend_decoupling_checklist.md` — checklist triển khai kế hoạch trên, phân theo Phase và có mã mục để tham chiếu trong commit/PR.
@@ -87,7 +87,7 @@ Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
 - Stage 8–10 đã có graph đến checkpoint PENDING, API approve/reject/applied, audit trail, idempotency, dose guardrail, snapshot rule/PHI và khoá thu hoạch lấy giá trị lớn nhất.
 - Kiểm thử local **59 passed**, gồm checkpoint CV thật, FastAPI lifespan, PostgreSQL/pgvector, E2E treatment/policy/reject/low-confidence và fresh-database migration.
   Smoke MVP với model thật cũng đã PASS; Ollama không chạy vẫn về `evidence_fallback` an toàn.
-  Xem [checklist Stage 6–10](development/docs/AI_README_LangGraph_MVP.md#master-stage-roadmap), [CV handoff](ai/app/cv/README.md) và [RAG handoff](ai/app/rag/README.md).
+  Chi tiết Stage 6–10 xem [`CHANGELOG.md`](./CHANGELOG.md) mục "AI Service (Python)", [CV handoff](ai/app/cv/README.md) và [RAG handoff](ai/app/rag/README.md).
 - Chưa nối HTTP client backend ↔ AI, chưa có auth riêng cho transition API AI, chưa thử venv trắng, chưa đánh giá accuracy CV độc lập hoặc benchmark live Ollama.
   M8 vẫn cần nghiệm thu đúng bộ tài liệu VietGAP/IRRI và luồng hỏi đáp yêu cầu bên dưới.
 

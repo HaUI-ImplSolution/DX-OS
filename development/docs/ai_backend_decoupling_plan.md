@@ -16,6 +16,7 @@
    - AI nhận Request Payload -> Chẩn đoán hình ảnh (CV) + Tra cứu RAG -> Trả về kết quả JSON cho Backend.
    - AI **không kết nối trực tiếp** và **không lưu trữ** vào Database của Backend.
    - AI chỉ được đọc dữ liệu từ Backend qua REST GET; Backend không expose bất kỳ endpoint ghi (POST/PUT/DELETE) nào cho AI gọi.
+   - AI không được cấp bất kỳ DB credential nào trỏ vào Backend DB, kể cả quyền chỉ đọc (read-only) ở tầng DB. Quyền đọc-only ở tầng DB chỉ áp dụng cho AI Vector DB của chính AI.
    - Sau khi CV trả `disease_code`, AI lấy RAG evidence từ pgvector và gọi Backend API để lấy dữ liệu nghiệp vụ chính xác, sau đó LangGraph/LLM tổng hợp recommendation trả về Backend.
 
 ---
@@ -274,6 +275,9 @@ Nếu rule đã bị cập nhật trong lúc AI xử lý, Backend từ chối v�
 
 Thuốc, khoảng liều và PHI trong recommendation phải giữ nguyên từ `structured_context` do Backend cung cấp.
 AI chỉ lựa chọn và diễn giải lời khuyên có căn cứ; Backend kiểm tra lại trước khi lưu recommendation ở trạng thái `PENDING`.
+
+`dose_min`/`dose_max` ở trên khớp với model `treatment_rules` hiện tại của AI (`ai/app/db/models/treatment_rule.py`), nhưng Backend (`model/TreatmentRule.java`) chỉ có một cột `doseAmount` duy nhất, không có khoảng min/max.
+Trước khi triển khai Phase 2, cần chốt: thêm `doseMin`/`doseMax` vào `TreatmentRule` của Backend, hoặc đổi contract API sang `dose_amount` đơn để khớp schema Backend hiện tại.
 
 ---
 

@@ -53,133 +53,44 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## AI Service (Python)
 
+### 2026-09-14
+
+**Đã xong — đóng gói Docker và chuẩn hóa cấu hình AI Service:**
+
+- `ai/Dockerfile` đóng gói FastAPI trên cổng 8000 với healthcheck, non-root user, volume weights và 2-layer pip cache cho PyTorch.
+- AI Service dùng schema PostgreSQL thống nhất; dữ liệu seed và embedding được ingest sẵn trước khi RAG/workflow truy vấn.
+
 ### 2026-09-11
 
-**Đã xong — Stage 8 LangGraph spine flow:**
+**Đã xong — Luồng điều phối AI Spine Flow & Quản lý vòng đời khuyến nghị:**
 
-- Hoàn thiện `FarmState`, 6 node và tool adapter; graph chạy từ request → CV → field context → structured lookup → RAG → recommendation → checkpoint `PENDING`.
-  Approve/reject/applied nằm ở tầng `ai/app/application/` (`workflow_runner.py`, `workflow_transitions.py`), tách khỏi graph để orchestration và HITL transition không lẫn vào nhau.
-- `disease_code` được kiểm tra đúng contract 38 lớp và propagate nguyên vẹn.
-  Diagnosis lưu confidence/model metadata; crop season được kiểm tra thuộc đúng parcel.
-- Structured facts luôn lấy từ SQL: treatment dùng đúng rule; policy-only không phát sinh thuốc; trường hợp chưa có rule/policy đi `review_required`.
-  RAG lỗi vẫn giữ được structured recommendation và ghi lỗi `RAG_UNAVAILABLE`.
-- Lớp Ollama chỉ được chọn đoạn evidence nguyên văn.
-  Nội dung không grounded hoặc lỗi/timeout sẽ về `evidence_fallback`, không được sửa thuốc, hoạt chất, liều hoặc PHI.
-- `/api/v1/disease/workflow/run` gọi graph thật bằng `.invoke()`, có request idempotency, giới hạn ảnh, log disease/model/path/timing và lỗi API không lộ traceback/path nội bộ.
-
-**Đã xong — Stage 9 durable HITL / APPLIED / PHI:**
-
-- Thêm `WorkflowCase` và append-only `WorkflowEvent`; trạng thái/audit nằm trong PostgreSQL, không phụ thuộc state LangGraph trong bộ nhớ.
-- Thêm API lấy trạng thái, approve, reject và applied.
-  Approve/reject chỉ do actor truyền rõ; low-confidence cần xác nhận rõ ràng; reject bắt buộc lưu reason.
-- Giữ bất biến `APPROVED != APPLIED`: approve chỉ chuyển sang `WAITING_APPLIED`, chưa tạo `TreatmentApplication` và chưa bắt đầu PHI.
-- APPLIED kiểm tra rule đúng diagnosis và actual dose hữu hạn/nằm trong khoảng; sai dữ liệu rollback.
-  Bản ghi lưu snapshot tên thuốc, hoạt chất, dose/unit, PHI, rule version/source.
-- PHI được tính đúng `applied_at + phi_days`; truy vấn isolation dùng `MAX` lock nên lần phun chồng lấn không thể vô tình rút ngắn thời gian cách ly.
-  Retry cùng payload idempotent, payload khác trả conflict.
-- Alembic thêm `e8f9a1026011` và head `f0a1b2026011`; đã kiểm tra upgrade/check trên DB hiện tại và trên một PostgreSQL tạm hoàn toàn mới.
-
-**Đã xong — Stage 10 demo hardening trong phạm vi `ai/`:**
-
-- Thêm fixture demo idempotent, E2E treatment/policy/reject/invalid-dose/low-confidence, smoke test khởi động FastAPI với checkpoint CV thật, kiểm tra DB counts, structured lookup, pgvector provenance, graph PENDING và safe LLM fallback.
-- Thêm timing CV/RAG/LLM/workflow, runbook migration → seed → ingest → API → smoke → test tại `ai/README_MVP_RUNBOOK.md` và biến môi trường cho confidence threshold/LLM timeout.
-- Đã xác minh local: **59 passed** với checkpoint thật và PostgreSQL; smoke MVP PASS.
-  Ảnh smoke hiện được model nhận là `Tomato___Early_blight`; kịch bản Late blight deterministic được kiểm tra tại biên contract bằng fake CV, không khai khống ảnh mẫu Late blight thật.
-- Timing smoke tham chiếu trên máy local: CV HTTP 216.20 ms; graph 5160.80 ms, trong đó Ollama không sẵn sàng chờ timeout khoảng 5 giây rồi fallback an toàn.
-- Giới hạn còn lại: AI transition API chưa có auth riêng; backend/frontend chưa nối HTTP với workflow AI; checkpoint chưa có `class_to_idx`/accuracy độc lập; chưa benchmark live Ollama.
+- LangGraph điều phối spine flow: request chẩn đoán CV → field context → structured lookup → RAG → recommendation → checkpoint `PENDING`.
+  `workflow_runner.py` và `workflow_transitions.py` nằm ở tầng application, tách biệt khỏi graph để orchestration không lẫn với HITL transition.
+- Structured facts luôn lấy từ SQL: treatment dùng đúng rule; policy-only không tự sinh thuốc; RAG hoặc LLM lỗi/timeout tự động về `evidence_fallback`, giữ nguyên thuốc, hoạt chất, liều và PHI từ SQL.
+- Durable HITL trong PostgreSQL: lưu `WorkflowCase` và `WorkflowEvent` append-only; giữ bất biến `APPROVED != APPLIED` (approve chỉ chuyển sang `WAITING_APPLIED`, chỉ `APPLIED` mới tạo `TreatmentApplication` và tính PHI).
+- Tính toán PHI an toàn: `harvest_locked_until = applied_at + phi_days`, dùng khóa `MAX` để các lần phun sau không thể rút ngắn thời gian cách ly của lần phun trước.
 
 ### 2026-09-10
 
-**Đã xong — Chuẩn hóa đầu ra CV Service khớp CV Contract & Test suite (Task A2, A3, A5):**
+**Đã xong — Chuẩn hóa Vision API, Dữ liệu quy tắc & RAG Search:**
 
-- **Task A2 (`disease_code`)**: Sửa `PlantDiseaseService.predict()` để trả `disease_code` = `CLASS_NAMES[predicted_class]` (ví dụ `"Tomato___Early_blight"`) thay vì `None`, khớp 1:1 với `Disease.code` trong PostgreSQL.
-- **Task A3 (CV Contract alignment)**: Bổ sung từ điển tên bệnh tiếng Việt `DISEASE_NAMES_VI` và hàm helper `get_disease_name()` trong `app/cv/class_names.py` cho 38/38 lớp bệnh PlantVillage.
-  Đổi tên trường `disease_name_vi` → `disease_name` trong Pydantic schema `DiseaseDetectionResponse` (`app/api/schemas.py`) và output của service để khớp hoàn toàn với CV Contract trong `AI_README_LangGraph_MVP.md`.
-- **Task A5 (Test suite ảnh thật & API router)**: Thêm bộ test `tests/cv/test_plant_disease_service.py` kiểm thử luồng chẩn đoán với ảnh thật `tomato_leaf.jpg`, mock model và FastAPI endpoint `/disease/predict` thông qua `TestClient`.
-  Đã chạy 8/8 unit tests thành công 100%.
-- **Partial CV handoff implementation**: Updated response schema, health endpoint, device fallback, inference timing, and generated `class_contract.json`.
-  Remaining tasks: implement structured JSON error responses (`CVErrorResponse`), create `example_response.json`, export OpenAPI (`cv_openapi.json`), write `app/cv/README.md`, add smoke test script, and add unit tests for health endpoint, error contracts, and class contract.
-
-**Đã xong — chuẩn hóa cấu trúc module AI theo tài liệu LangGraph MVP:**
-
-- Tổ chức thống nhất code trong `ai/app`: tách rõ `api`, `core`, `cv`, `db`, `rag`, `services` và khung `graph`; chuyển CLI seed/ingest sang `ai/scripts`, test sang `ai/tests/cv` và `ai/tests/rag`.
-- Hoàn thiện cấu hình tập trung bằng `pydantic-settings`, thêm `ai/.env.example`, tách FastAPI lifespan khỏi `main.py` và cố định đường dẫn model tại `ai/weights`.
-- Giảm coupling package CV: import class mapping không còn tự kéo theo `torchvision` hoặc model loader; FastAPI có thể import mà chưa tải weights, model chỉ được load trong lifespan.
-- Bổ sung `get_db()` cho FastAPI dependency; bỏ `app/db/init_db.py` dùng `create_all()` để Alembic tiếp tục là luồng quản lý schema được hướng dẫn chính thức.
-- Cập nhật tài liệu PostgreSQL theo entrypoint mới: `python -m scripts.seed_diseases` và `python -m scripts.ingest_diseases`.
-- Đã xác minh: 8 test CV đạt, RAG dry-run đọc đủ 38 tài liệu, Alembic head vẫn là `4c2a0f9d8b71`; compile/lint phạm vi refactor đạt.
-
-**Đã xong — chuẩn bị dữ liệu RAG Stage 1 và provenance:**
-
-- Đặt đúng tầng ba artifact từ workbook: 38 bản ghi tại `data/rag/processed/disease_knowledge.json`, 26 nguồn tại `data/rag/source_registry.json` và 26 candidate tại `data/structured/treatment_rule_candidates.json`.
-- Validate mã disease/source không trùng và mọi provenance reference đều resolve được; prompt/retrieval/response duy trì `source_id` và trả metadata citation có URL.
-- Chia knowledge ưu tiên ranh giới dòng và tách theo từ khi cần, tối đa 350 ký tự/chunk để phù hợp giới hạn embedding hiện tại; dry-run dự kiến 38 document/270 chunk.
-- Giữ guardrail structured knowledge: cả 26 candidate đều `REQUIRES_VN_LABEL_VALIDATION` và `eligible_for_seed = false`; chuyển `pesticides.json`/`treatment_rules.json` từ file 0 byte thành mảng JSON rỗng hợp lệ.
-- Bổ sung pytest cho số lượng dataset, uniqueness, source reference, candidate guardrail, chunking và citation.
-
-**Đã xong — Structured Knowledge Stage 4/5 theo gói dữ liệu Stage 3 đã review:**
-
-- Đối chiếu workbook độc lập với workbook trong gói Stage 3 (cùng SHA-256), kiểm tra toàn bộ checksum của gói và lưu bản review/manifest/HOLD trong `ai/data/stage3` để audit.
-- Promote đúng 8 candidate `APPROVE/READY_TO_PROMOTE` thành bộ cuối: 4 pesticide, 8 treatment rule và 21 disease-management policy; giữ riêng 8 candidate `HOLD/NOT_READY`, tuyệt đối không đưa vào seeder.
-- Stage 4 thêm migration `c1f7e2d4a9b0`: đổi `TreatmentRule.dose` thành khoảng `dose_min`/`dose_max`, thêm check constraint và bảng `disease_management_policies`.
-  `TreatmentApplication.dose` vẫn là liều thực tế đã áp dụng.
-- Repository ghi nhận treatment bắt buộc nhận `actual_dose` và từ chối giá trị ngoài khoảng rule; bổ sung lookup policy theo disease code.
-- Stage 5 thêm ba seeder idempotent chỉ đọc file final.
-  Đã chạy hai lần trên PostgreSQL local: revision `c1f7e2d4a9b0`, đúng 4 pesticide, 8 rule, 21 policy và không nhân đôi dữ liệu.
-- Kiểm tra dữ liệu/guardrail/unit đạt; integration test PostgreSQL xác minh lookup khoảng liều, PHI, policy an toàn và tự chạy seeder hai lần để chặn duplicate.
-- Registry provenance hợp nhất hiện có 41 nguồn.
-  Không chạy embedding hoặc re-ingest RAG trong Stage 4/5 này.
-  Kết quả review là đánh giá kỹ thuật MVP, không phải field-use authorization.
-
-**Đã triển khai — Stage 6 CV ↔ Data và Stage 7 RAG:**
-
-- CV handoff gồm contract 38 lớp, adapter common rust giữ nguyên nguồn, checkpoint/config validation, predict/health/class-contract API và xử lý ảnh lỗi.
-- Endpoint chẩn đoán report lưu Diagnosis + trạng thái atomically, snapshot confidence/model metadata và trả SQL rule/safe policy.
-  Không tự áp dụng thuốc; không sửa backend/frontend.
-- Migration `d6e7a1202601` thêm diagnoses.model_name và documents.disease_code/index.
-- RAG có exact disease filter, top_k, score/provenance, cache model, atomic replace và advisory lock.
-  Đã ingest thật hai lần: 38 document / 270 chunk, version stage7-rich-v1.
-- RAG answer chỉ trả evidence (grounded_excerpt), loại draft bịa facts và fallback khi Ollama không khả dụng.
-  Facts thuốc/liều/PHI/policy được đọc từ SQL riêng.
-- Full suite **40 passed** với checkpoint thật qua FastAPI lifespan và PostgreSQL.
-  Có test diagnosis, policy, retrieval/citation, idempotency và rollback.
-- Thêm CV/RAG handoff README, cập nhật checklist.
-  Chưa kiểm thử venv trắng, accuracy CV, live Ollama; checkpoint thiếu class_to_idx, thứ tự được đối chiếu mã training trong repo.
-- Tại snapshot Stage 6–7 này, Stage 8 chưa làm và workflow endpoint còn trả 501; trạng thái mới nhất đã được cập nhật trong mục Stage 8–10 ngày 2026-09-11 ở trên.
-
-**Chưa làm:**
-
-- Phần skeleton/human interrupt trong ghi chú Stage 6–7 đã được hoàn thiện ở Stage 8–10; backend ↔ AI HTTP integration vẫn chưa triển khai.
-- 8 treatment-rule candidate trạng thái HOLD và các candidate staging còn lại chưa phải dữ liệu cuối, không được seed cho đến khi có quyết định review mới.
+- Vision API chuẩn hóa trả `disease_code` và `disease_name` tiếng Việt khớp 1:1 với `Disease.code` trong PostgreSQL cho 38 lớp bệnh lý.
+- Tái cấu trúc module `ai/app`: tách biệt `api`, `cv`, `db`, `rag`, `services` và `graph`; cấu hình tập trung qua `pydantic-settings` và load weights mô hình trong FastAPI lifespan.
+- Định dạng quy tắc điều trị: đổi `TreatmentRule.dose` sang khoảng `dose_min`/`dose_max`, thêm bảng `DiseaseManagementPolicy` và validate liều thực tế `actual_dose` khi áp dụng.
+- RAG search với pgvector: lọc chính xác theo `disease_code`, truy vấn Top-K chunk kèm metadata nguồn (`provenance`/citation URL) và fallback an toàn khi LLM không phản hồi.
 
 ### 2026-09-09
 
-**Đã xong trên `feature/make-data` — nền tảng dữ liệu và RAG prototype chạy local:**
+**Đã xong — Nền tảng dữ liệu RAG & Vision API cơ bản:**
 
-- Khởi tạo SQLAlchemy data layer cho 8 entity spine-flow và 2 entity RAG (`Document`, `DocumentChunk`), cùng repository SQL và `get_field_context()`.
-- Tạo 38 bản ghi Disease từ sheet `Disease_KB`: `class_name → code`, `disease_name → name`, `symptoms → description`; giữ nguyên nguồn và không trùng mã.
-- Thêm migration `4c2a0f9d8b71`: bật pgvector, tạo `documents`, `document_chunks`, khóa ngoại cascade, index theo `document_id` và embedding `vector(384)`.
-- Hoàn thiện batch embedding, ingest idempotent, cosine retrieval, prompt tiếng Việt có guardrail và gọi Qwen2.5-1.5B qua Ollama; có `--dry-run` để preview không ghi DB.
+- Khởi tạo SQLAlchemy data layer cho 8 entity spine-flow và 2 entity RAG (`Document`, `DocumentChunk`), bật extension pgvector với vector embedding 384 chiều.
+- RAG prototype local: ingest 38 tài liệu tri thức bệnh cây trồng, tìm kiếm cosine similarity và tích hợp Qwen2.5-1.5B qua Ollama để giải thích ngữ cảnh.
+- Vision API cơ bản: FastAPI endpoint `POST /api/v1/disease/predict` nhận ảnh và phân loại bệnh dựa trên mô hình PyTorch EfficientNet-B4.
 
-**Đã xác minh phần data/RAG:**
+**Chưa làm:**
 
-- Database đã ở revision `4c2a0f9d8b71`, pgvector `0.8.6`; có đúng 38 document, 38 chunk, tất cả embedding 384 chiều.
-- Chạy ingestion hai lần không nhân đôi dữ liệu.
-- Retrieval câu hỏi ghẻ táo trả `Apple___Apple_scab` Top 1 (similarity khoảng `0.736`); RAG end-to-end qua Ollama trả lời đúng context, không thêm dữ liệu thuốc.
-
-**Đã xong — Vision API (Computer Vision) cơ bản:**
-
-- Khởi tạo project FastAPI tại `ai/app`.
-- Tích hợp model phân loại bệnh thực vật dựa trên PyTorch (kiến trúc `EfficientNet-B4`, hỗ trợ 38 lớp bệnh lý).
-- Cung cấp API endpoint `POST /api/v1/disease/predict` nhận upload ảnh và trả về kết quả chẩn đoán (`class_id`, `class_name`, `confidence`, `model_name`, `model_version`).
-
-**Chưa làm / cần tích hợp tiếp:**
-
-- Vision API và data/RAG đã nằm chung trong `ai/app`, nhưng RAG/Ollama mới chạy bằng smoke script và chưa được nối vào endpoint FastAPI/runtime chính.
-- Chưa có LangGraph để điều phối workflow và chưa nối HTTP với Spring Boot backend.
-- Vision API đã hoàn thành lookup `disease_code` và `disease_name` tiếng Việt (Task A2, A3).
-- Smoke script RAG chưa phải pytest test có assertion; chưa có evaluation set, relevance threshold, citation metadata/URL có thể audit hoặc vector index cho dữ liệu lớn.
-- Dòng trạng thái ngày 2026-09-09 này đã được Stage 3 ngày 2026-09-10 thay thế cho tập con được review; các candidate HOLD vẫn không được sử dụng.
+- Chưa nối HTTP client giữa Spring Boot backend và AI Service (API workflow AI chạy local độc lập).
+- 8 candidate quy tắc điều trị trạng thái HOLD được giữ riêng để audit, không seed vào CSDL chính thức.
 
 ## Frontend (`frontend`)
 

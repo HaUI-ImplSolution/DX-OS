@@ -61,6 +61,10 @@ Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
 
 **Còn thiếu để Phase 0 chạy thật end-to-end:**
 
+- [ ] Nối HTTP client backend ↔ AI Service theo contract API.
+
+#### Tiến độ AI Service & Data Python
+
 - [x] Khởi tạo nền tảng dữ liệu Python: SQLAlchemy, Alembic, PostgreSQL và pgvector.
 - [x] Hoàn thiện AI Service Python thống nhất: Vision API, structured lookup, RAG, LangGraph, durable HITL và PHI chạy trong luồng tích hợp local.
 - [ ] Nối HTTP client backend ↔ AI Service theo contract API.
@@ -68,28 +72,15 @@ Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
 - [x] Khớp dữ liệu CV chẩn đoán: đã chuẩn hóa Vision API trả `disease_code` và `disease_name` tiếng Việt khớp 1:1 với `Disease.code` trong DB.
 - [x] Tích hợp lớp wording vào spine flow; nếu Ollama lỗi/timeout thì trả evidence nguyên văn, không thay đổi thuốc, hoạt chất, liều hoặc PHI từ SQL.
 
-#### Phần AI/data/RAG đã có trên `feature/make-data`
+#### Chi tiết Phần AI/data/RAG (trên `feature/make-data`)
 
-- Data layer cho 8 entity spine-flow và 2 entity RAG (`Document`, `DocumentChunk` với `vector(384)`, đồng bộ model embedding multilingual MiniLM).
-- Dataset có cấu trúc gồm 38 lớp bệnh/healthy được map nguyên văn từ sheet `Disease_KB`: `class_name → code`, `disease_name → name`, `symptoms → description`; không trùng mã.
-- Alembic head `f0a1b2026011` gồm metadata CV/RAG, workflow case/event bền vững, snapshot TreatmentApplication và unique sequence cho audit event.
-- Stage 7 đã embedding/ingest rich knowledge: 38 document / 270 chunk, registry 41 nguồn.
-  Đã chạy hai lần và kiểm thử rollback, không nhân đôi corpus.
-- Gói dữ liệu Stage 3 đã qua review cung cấp bộ seed cuối gồm 4 thuốc, 8 treatment rule và 21 disease-management policy.
-  Chỉ 8 candidate có quyết định `APPROVE/READY_TO_PROMOTE` được đưa vào bộ cuối; 8 candidate `HOLD/NOT_READY` được giữ riêng để audit và không seed.
-- Stage 4 đã hoàn thiện schema/repository; ba seeder Stage 5 chạy idempotent.
-  Database local đã được migrate và xác minh đúng revision/count `f0a1b2026011` / `4` / `8` / `21`.
-  Workbook review chỉ là nguồn đánh giá kỹ thuật MVP, không phải quyền cho phép sử dụng ngoài thực địa.
-- Stage 6 có contract 38 lớp canonical, predict/health API, endpoint chẩn đoán report: lưu Diagnosis/confidence/model metadata, trả SQL rule hoặc safe policy, yêu cầu kỹ sư duyệt.
-  Checkpoint thiếu class_to_idx nên thứ tự được đối chiếu với mã training, chưa xác minh độc lập.
-- Stage 7 có retrieval API, exact disease filter, top_k, provenance và atomic re-ingest.
-  RAG answer ở chế độ grounded_excerpt, không phát hành draft bịa structured facts.
-- Stage 8–10 đã có graph đến checkpoint PENDING, API approve/reject/applied, audit trail, idempotency, dose guardrail, snapshot rule/PHI và khoá thu hoạch lấy giá trị lớn nhất.
-- Kiểm thử local **59 passed**, gồm checkpoint CV thật, FastAPI lifespan, PostgreSQL/pgvector, E2E treatment/policy/reject/low-confidence và fresh-database migration.
-  Smoke MVP với model thật cũng đã PASS; Ollama không chạy vẫn về `evidence_fallback` an toàn.
+- [x] **Data layer**: Khởi tạo 8 entity spine-flow và 2 entity RAG (`Document`, `DocumentChunk` với pgvector).
+- [x] **Dữ liệu quy tắc (Seed)**: Tích hợp 4 thuốc, 8 treatment rule và 21 disease-management policy đã duyệt.
+- [x] **Tri thức RAG**: Ingest 38 tài liệu (270 chunk) từ 41 nguồn registry.
+- [x] **Chẩn đoán CV**: Vision API trả `disease_code`/`disease_name` khớp 1:1 `Disease.code`, tạo `Diagnosis` và trả SQL rule/safe policy.
+- [x] **Điều phối LangGraph**: Luồng CV → context → lookup → RAG → recommendation (checkpoint `PENDING`), hỗ trợ approve/reject/applied với dose guardrail, snapshot PHI và khóa thu hoạch lấy `MAX`.
+- [x] **Diễn đạt LLM (Wording)**: Trích chọn evidence nguyên văn, tự động fallback an toàn nếu lỗi/timeout, giữ nguyên số liệu thuốc/liều/PHI từ SQL.
   Chi tiết Stage 6–10 xem [`CHANGELOG.md`](./CHANGELOG.md) mục "AI Service (Python)", [CV handoff](ai/app/cv/README.md) và [RAG handoff](ai/app/rag/README.md).
-- Chưa nối HTTP client backend ↔ AI, chưa có auth riêng cho transition API AI, chưa thử venv trắng, chưa đánh giá accuracy CV độc lập hoặc benchmark live Ollama.
-  M8 vẫn cần nghiệm thu đúng bộ tài liệu VietGAP/IRRI và luồng hỏi đáp yêu cầu bên dưới.
 
 ### Giai đoạn 1 — Hoàn thiện trải nghiệm & truy vấn (Should)
 
@@ -160,6 +151,7 @@ Kế hoạch tách thành 2 database vật lý riêng (Backend DB + AI Vector DB
 Backend Spring Boot đã xong, xác thực qua OAuth2 Resource Server (SSO thật qua Keycloak), phân quyền FARMER/ENGINEER/ADMIN theo realm role.
 Frontend demo (React/Vite) cho Phase 0 spine flow đã xong, đăng nhập bằng redirect sang Keycloak.
 Trong phạm vi `ai/`, Stage 8–10 đã hoàn thiện Vision API, structured lookup, RAG endpoint, LangGraph, durable HITL/APPLIED/PHI và smoke/test local.
+AI hiện có `ai/Dockerfile`; database dùng schema phiên bản hiện tại, còn JSON phải được seed/ingest trước khi RAG/workflow truy vấn được.
 BI Dashboard (Superset) đã đăng nhập qua Keycloak; kênh chat nội bộ (Mattermost) đã chạy thật trong docker-compose kèm trang portal tĩnh liệt kê link tới các app — là nền tảng tách biệt có chủ đích, không dùng SSO chung.
 Đã rà soát license toàn bộ thành phần đang chạy ([`LICENSES.md`](./LICENSES.md)).
 Checklist việc còn thiếu: xem mục "Giai đoạn 0"/"Giai đoạn 2" ở trên.

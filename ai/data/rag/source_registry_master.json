@@ -1,0 +1,372 @@
+[
+  {
+    "source_id": "S01",
+    "title": "PlantVillage Dataset",
+    "organization": "EPFL / community mirror",
+    "source_type": "CV dataset taxonomy",
+    "recommended_use": "CV class mapping; do not treat as agronomic authority",
+    "url": "https://github.com/spMohanty/PlantVillage-Dataset",
+    "authority_level": "High for class taxonomy",
+    "accessed_at": "2026-09-09"
+  },
+  {
+    "source_id": "S02",
+    "title": "PlantVillage dataset catalog",
+    "organization": "TensorFlow Datasets",
+    "source_type": "CV dataset metadata",
+    "recommended_use": "38-class metadata / dataset documentation",
+    "url": "https://www.tensorflow.org/datasets/catalog/plant_village",
+    "authority_level": "High for dataset metadata",
+    "accessed_at": "2026-09-09"
+  },
+  {
+    "source_id": "S03",
+    "title": "Thông tư 28/2026/TT-BNNMT",
+    "organization": "Cục Trồng trọt và Bảo vệ thực vật",
+    "source_type": "Vietnam pesticide regulation",
+    "recommended_use": "Structured Knowledge / validate allowed pesticide products, labels and amendments",
+    "url": "https://ppd.gov.vn/van-ban-chinh-sach/thong-tu-282026tt-bnnmt-ngay-3062026-sua-doi--bo-sung-thong-tu-so-752025tt-bnnmt.html",
+    "authority_level": "Primary regulatory source",
+    "accessed_at": "2026-09-09"
+  },
+  {
+    "source_id": "S04",
+    "title": "Thông tư 75/2025/TT-BNNMT",
+    "organization": "Cục Trồng trọt và Bảo vệ thực vật",
+    "source_type": "Vietnam pesticide regulation",
+    "recommended_use": "Base allowed/banned pesticide lists; use with later amendments",
+    "url": "https://ppd.gov.vn/tin-moi-nhat-289/thong-tu-so-752025tt-bnnmt-ban-hanh-danh-muc-thuoc-bao-ve-thuc-vat-duoc-phep-su-dung-tai-viet-nam-va-danh-muc-thuoc-bao-ve-thuc-vat-cam-su-dung-tai-viet-nam.html",
+    "authority_level": "Primary regulatory source",
+    "accessed_at": "2026-09-09"
+  },
+  {
+    "source_id": "S05",
+    "title": "Apple scab of apples and crabapples",
+    "organization": "University of Minnesota Extension",
+    "source_type": "Disease/IPM",
+    "recommended_use": "RAG: symptoms, disease cycle, conditions, management",
+    "url": "https://extension.umn.edu/garden-and-home/yard-and-garden/gardening-in-minnesota/yard-and-garden-problems/apple-scab",
+    "authority_level": "Authoritative extension",
+    "accessed_at": "2026-09-09"
+  },
+  {
+    "source_id": "S06",
+    "title": "Apple black rot diagnostic pages",
+    "organization": "University of Minnesota Extension",
+    "source_type": "Disease/IPM",
+    "recommended_use": "RAG: symptoms and field diagnosis",
+    "url": "https://apps.extension.umn.edu/garden/diagnose/plant/fruit/apple/branchdieback.html",
+    "authority_level": "Authoritative extension",
+    "accessed_at": "2026-09-09"
+  },
+  {
+    "source_id": "S07",
+    "title": "Cedar-apple rust and related rust diseases",
+    "organization": "University of Minnesota Extension",
+    "source_type": "Disease/IPM",
+    "recommended_use": "RAG: symptoms, alternate hosts, life cycle",
+    "url": "https://extension.umn.edu/garden-and-home/yard-and-garden/gardening-in-minnesota/yard-and-garden-problems/cedar-apple-rust",
+    "authority_level": "Authoritative extension",
+    "accessed_at": "2026-09-09"
+  },
+  {
+    "source_id": "S08",
+    "title": "Cherry Powdery Mildew",
+    "organization": "Washington State University Tree Fruit",
+    "source_type": "Disease/IPM",
+    "recommended_use": "RAG: pathogen, conditions, disease cycle, resistance management",
+    "url": "https://treefruit.wsu.edu/crop-protection/disease-management/cherry-powdery-mildew/",
+    "authority_level": "Authoritative extension",
+    "accessed_at": "2026-09-09"
+  },
+  {
+    "source_id": "S09",
+    "title": "Gray Leaf Spot",
+    "organization": "Cornell CALS",
+    "source_type": "Disease/IPM",
+    "recommended_use": "RAG: corn gray leaf spot symptoms, conditions, management",
+    "url": "https://cals.cornell.edu/field-crops/corn/diseases-of-corn/gray-leaf-spot",
+    "authority_level": "Authoritative extension",
+    "accessed_at": "2026-09-09"
+  },
+  {
+    "source_id": "S10",
+    "title": "Common rust on corn",
+    "organization": "University of Minnesota Extension",
+    "source_type": "Disease/IPM",
+    "recommended_use": "RAG: symptoms, conditions, management",
+    "url": "https://extension.umn.edu/agriculture/crop-production/corn/common-rust-on-corn",
+    "authority_level": "Authoritative extension",
+    "accessed_at": "2026-09-09"
+  },
+  {
+    "source_id": "S11",
+    "title": "Northern corn leaf blight",
+    "organization": "University of Minnesota Extension",
+    "source_type": "Disease/IPM",
+    "recommended_use": "RAG: symptoms, conditions, management",
+    "url": "https://extension.umn.edu/agriculture/crop-production/corn/northern-corn-leaf-blight",
+    "authority_level": "Authoritative extension",
+    "accessed_at": "2026-09-09"
+  },
+  {
+    "source_id": "S12",
+    "title": "Grape Disease - Black Rot",
+    "organization": "Penn State Extension",
+    "source_type": "Disease/IPM",
+    "recommended_use": "RAG: symptoms, disease significance, management context",
+    "url": "https://extension.psu.edu/grape-disease-black-rot",
+    "authority_level": "Authoritative extension",
+    "accessed_at": "2026-09-09"
+  },
+  {
+    "source_id": "S13",
+    "title": "Esca (Black Measles)",
+    "organization": "UC Statewide IPM Program",
+    "source_type": "Disease/IPM",
+    "recommended_use": "RAG: symptoms, wood infection, pruning-wound management",
+    "url": "https://ipm.ucanr.edu/agriculture/grape/esca-black-measles/",
+    "authority_level": "Authoritative IPM",
+    "accessed_at": "2026-09-09"
+  },
+  {
+    "source_id": "S14",
+    "title": "NC Winegrape Grower's Guide - Pest Management",
+    "organization": "NC State Extension",
+    "source_type": "Disease/IPM",
+    "recommended_use": "RAG: Isariopsis/Pseudocercospora leaf spot and grape IPM",
+    "url": "https://content.ces.ncsu.edu/north-carolina-winegrape-growers-guide/chapter-8-pest-management",
+    "authority_level": "Authoritative extension",
+    "accessed_at": "2026-09-09"
+  },
+  {
+    "source_id": "S15",
+    "title": "Huanglongbing",
+    "organization": "UC Statewide IPM Program",
+    "source_type": "Disease/IPM",
+    "recommended_use": "RAG: HLB symptoms, vector and no-curative-treatment guardrail",
+    "url": "https://ipm.ucanr.edu/agriculture/citrus/huanglongbing/",
+    "authority_level": "Authoritative IPM",
+    "accessed_at": "2026-09-09"
+  },
+  {
+    "source_id": "S16",
+    "title": "Peach diseases - Bacterial Spot",
+    "organization": "University of Georgia",
+    "source_type": "Disease/IPM",
+    "recommended_use": "RAG: peach bacterial spot diagnosis",
+    "url": "https://peaches.caes.uga.edu/research/diseases.html",
+    "authority_level": "Authoritative university",
+    "accessed_at": "2026-09-09"
+  },
+  {
+    "source_id": "S17",
+    "title": "Bacterial spot of tomato and pepper",
+    "organization": "University of Minnesota Extension",
+    "source_type": "Disease/IPM",
+    "recommended_use": "RAG: bacterial spot symptoms, biology and management",
+    "url": "https://extension.umn.edu/agriculture/specialty-crops/vegetable-farming/disease-management/bacterial-spot-of-tomato-and-pepper",
+    "authority_level": "Authoritative extension",
+    "accessed_at": "2026-09-09"
+  },
+  {
+    "source_id": "S18",
+    "title": "Potato leaf disease diagnostics",
+    "organization": "University of Minnesota Extension",
+    "source_type": "Disease/IPM",
+    "recommended_use": "RAG: early/late blight symptoms and field differentiation",
+    "url": "https://apps.extension.umn.edu/garden/diagnose/plant/vegetable/potato/leavesspots.html",
+    "authority_level": "Authoritative extension",
+    "accessed_at": "2026-09-09"
+  },
+  {
+    "source_id": "S19",
+    "title": "Winter squash and pumpkins - spots on leaves",
+    "organization": "University of Minnesota Extension",
+    "source_type": "Disease/IPM",
+    "recommended_use": "RAG: powdery mildew symptoms/pathogen",
+    "url": "https://apps.extension.umn.edu/garden/diagnose/plant/vegetable/wintersquash/leavesspots.html",
+    "authority_level": "Authoritative extension",
+    "accessed_at": "2026-09-09"
+  },
+  {
+    "source_id": "S20",
+    "title": "Strawberry leaf spots",
+    "organization": "University of Minnesota Extension",
+    "source_type": "Disease/IPM",
+    "recommended_use": "RAG: leaf scorch symptoms/pathogen",
+    "url": "https://apps.extension.umn.edu/garden/diagnose/plant/fruit/strawberry/leavesspots.html",
+    "authority_level": "Authoritative extension",
+    "accessed_at": "2026-09-09"
+  },
+  {
+    "source_id": "S21",
+    "title": "Tomato leaf spot diseases",
+    "organization": "University of Minnesota Extension",
+    "source_type": "Disease/IPM",
+    "recommended_use": "RAG: early blight, Septoria, bacterial spot management context",
+    "url": "https://extension.umn.edu/garden-and-home/yard-and-garden/gardening-in-minnesota/yard-and-garden-problems/tomato-leaf-spot-diseases",
+    "authority_level": "Authoritative extension",
+    "accessed_at": "2026-09-09"
+  },
+  {
+    "source_id": "S22",
+    "title": "Tomato leaf mold",
+    "organization": "University of Minnesota Extension",
+    "source_type": "Disease/IPM",
+    "recommended_use": "RAG: leaf mold symptoms, RH threshold and management",
+    "url": "https://extension.umn.edu/agriculture/specialty-crops/vegetable-farming/disease-management/tomato-leaf-mold",
+    "authority_level": "Authoritative extension",
+    "accessed_at": "2026-09-09"
+  },
+  {
+    "source_id": "S23",
+    "title": "Tomato - Spider Mites",
+    "organization": "University of Connecticut IPM",
+    "source_type": "Pest/IPM",
+    "recommended_use": "RAG: two-spotted spider mite symptoms, hot-dry conditions, IPM",
+    "url": "https://ipm.cahnr.uconn.edu/tomato-spider-mites/",
+    "authority_level": "Authoritative IPM",
+    "accessed_at": "2026-09-09"
+  },
+  {
+    "source_id": "S24",
+    "title": "Target spot of tomato",
+    "organization": "Purdue University",
+    "source_type": "Disease reference",
+    "recommended_use": "RAG: target spot identification",
+    "url": "https://ag.purdue.edu/department/arge/swpap/target-spot-tomato.html",
+    "authority_level": "University reference",
+    "accessed_at": "2026-09-09"
+  },
+  {
+    "source_id": "S25",
+    "title": "Tomato Yellow Leaf Curl Virus",
+    "organization": "NC State Extension",
+    "source_type": "Disease/IPM",
+    "recommended_use": "RAG: TYLCV symptoms, vector and management",
+    "url": "https://content.ces.ncsu.edu/tomato-yellow-leaf-curl-virus",
+    "authority_level": "Authoritative extension",
+    "accessed_at": "2026-09-09"
+  },
+  {
+    "source_id": "S26",
+    "title": "TMV and ToMV",
+    "organization": "Utah State University Extension",
+    "source_type": "Disease/IPM",
+    "recommended_use": "RAG: ToMV transmission, symptoms and no-chemical-cure guardrail",
+    "url": "https://extension.usu.edu/vegetableguide/tomato-pepper-eggplant/TMV-ToMV",
+    "authority_level": "Authoritative extension",
+    "accessed_at": "2026-09-09"
+  },
+  {
+    "source_id": "S27",
+    "title": "Phụ lục I - Danh mục thuốc bảo vệ thực vật được phép sử dụng tại Việt Nam kèm Thông tư 75/2025/TT-BNNMT",
+    "organization": "Chính phủ Việt Nam / Bộ Nông nghiệp và Môi trường",
+    "source_type": "VIETNAM_PESTICIDE_ALLOWED_LIST",
+    "authority_level": "PRIMARY_REGULATORY",
+    "url": "https://datafiles.chinhphu.vn/cpp/files/vbpq/2025/12/75-bnnmt-pl1.pdf",
+    "accessed_at": "2026-09-10",
+    "recommended_use": "Xác minh sản phẩm, thành phần và cặp cây trồng/sinh vật gây hại được đăng ký."
+  },
+  {
+    "source_id": "S28",
+    "title": "Revus Opti 440SC - Thông tin sản phẩm và hướng dẫn sử dụng",
+    "organization": "Syngenta Việt Nam",
+    "source_type": "MANUFACTURER_LABEL_GUIDANCE",
+    "authority_level": "PRIMARY_MANUFACTURER",
+    "url": "https://www.syngenta.com.vn/revus-optir-440sc",
+    "accessed_at": "2026-09-10",
+    "recommended_use": "Xác minh thành phần, liều sử dụng, lượng nước, thời điểm phun và PHI của Revus Opti 440SC."
+  },
+  {
+    "source_id": "S29",
+    "title": "Phụ lục Thông tư 28/2026/TT-BNNMT",
+    "organization": "Cục Trồng trọt và Bảo vệ thực vật",
+    "source_type": "VIETNAM_PESTICIDE_REGULATION_AMENDMENT",
+    "authority_level": "PRIMARY_REGULATORY",
+    "url": "https://www.ppd.gov.vn/FileUpload/Documents/Thuoc%20BVTV/26.07.03_PL%20TT28__01072026152914_signed.pdf",
+    "accessed_at": "2026-09-10",
+    "recommended_use": "Kiểm tra thuốc thay đổi thông tin, bổ sung hoặc tự nguyện rút khỏi danh mục sau Thông tư 75/2025."
+  },
+  {
+    "source_id": "S30",
+    "title": "Ortiva 600SC - Hướng dẫn sử dụng",
+    "organization": "Syngenta Việt Nam",
+    "source_type": "MANUFACTURER_LABEL_GUIDANCE",
+    "authority_level": "PRIMARY_MANUFACTURER",
+    "url": "https://www.syngenta.com.vn/ortivar-600sc",
+    "accessed_at": "2026-09-10",
+    "recommended_use": "Xác minh thành phần, liều, lượng nước, thời điểm phun và PHI của Ortiva 600SC."
+  },
+  {
+    "source_id": "S31",
+    "title": "Amistar 250SC - Hướng dẫn sử dụng",
+    "organization": "Syngenta Việt Nam",
+    "source_type": "MANUFACTURER_LABEL_GUIDANCE",
+    "authority_level": "PRIMARY_MANUFACTURER",
+    "url": "https://www.syngenta.com.vn/amistarr-250sc",
+    "accessed_at": "2026-09-10",
+    "recommended_use": "Xác minh thành phần, liều, lượng nước, thời điểm phun và PHI của Amistar 250SC."
+  },
+  {
+    "source_id": "S32",
+    "title": "Amistar Top 325SC - Hướng dẫn sử dụng",
+    "organization": "Syngenta Việt Nam",
+    "source_type": "MANUFACTURER_LABEL_GUIDANCE",
+    "authority_level": "PRIMARY_MANUFACTURER",
+    "url": "https://www.syngenta.com.vn/amistar-topr-325sc",
+    "accessed_at": "2026-09-10",
+    "recommended_use": "Xác minh thành phần, liều, thời điểm phun và PHI của Amistar Top 325SC."
+  },
+  {
+    "source_id": "S33",
+    "title": "Amistar 250SC - Product Registration Detail",
+    "organization": "Syngenta Việt Nam",
+    "source_type": "MANUFACTURER_REGISTRATION_DETAIL",
+    "authority_level": "PRIMARY_MANUFACTURER",
+    "url": "https://www.syngenta.com.vn/product/crop-protection/thuoc-tru-benh/amistar-250sc/1000",
+    "accessed_at": "2026-09-10",
+    "recommended_use": "Đối chiếu dữ liệu registration chi tiết; phát hiện xung đột PHI với trang marketing/hướng dẫn khác của cùng hãng."
+  },
+  {
+    "source_id": "S34",
+    "title": "Kỹ thuật trồng và chăm sóc cà chua Savior",
+    "organization": "Syngenta Việt Nam",
+    "source_type": "VIETNAM_CROP_TECHNICAL_GUIDE",
+    "authority_level": "PRIMARY_MANUFACTURER_GUIDE",
+    "url": "https://www.syngenta.com.vn/sites/g/files/kgtney1261/files/media/document/2022/10/28/ky-thuat-trong-va-cham-soc-savior.pdf",
+    "accessed_at": "2026-09-10",
+    "recommended_use": "Bổ sung mapping bệnh cà chua tại Việt Nam, đặc biệt sương mai, bệnh kim châm/bả trầu và TYLCV; không tự động coi đây là nhãn đăng ký sản phẩm."
+  },
+  {
+    "source_id": "S35",
+    "title": "Anti-Xo 200WP - Thông tin sản phẩm và hướng dẫn sử dụng",
+    "organization": "Công ty TNHH Phú Nông",
+    "source_type": "MANUFACTURER_LABEL_GUIDANCE",
+    "authority_level": "PRIMARY_MANUFACTURER",
+    "url": "https://phunong.com.vn/product/thuoc-tru-benh/anti-xo-200wp/",
+    "accessed_at": "2026-09-10",
+    "recommended_use": "Xác minh hoạt chất, đối tượng đốm lá vi khuẩn/cà chua, liều, lượng nước và thời điểm phun. Trang hiện không công bố PHI."
+  },
+  {
+    "source_id": "S36",
+    "title": "ANTRACOL 70WP - Bayer CropScience Việt Nam",
+    "organization": "Bayer CropScience Việt Nam",
+    "source_type": "MANUFACTURER_LABEL_GUIDANCE",
+    "authority_level": "PRIMARY_MANUFACTURER",
+    "url": "https://cropssciencebayer.com.vn/our-products/fungicide/antracol-70wp/",
+    "accessed_at": "2026-09-10",
+    "recommended_use": "Xác minh sản phẩm, hoạt chất, đăng ký sử dụng và khoảng liều trên ngô. Trang hiện không cung cấp PHI nên không dùng để seed PHI."
+  },
+  {
+    "source_id": "S37",
+    "title": "Thumb 0.5SL - hướng dẫn sử dụng sản phẩm",
+    "organization": "Phân Dơi Số 1 / Vietgro",
+    "source_type": "SECONDARY_RETAILER_LABEL_COPY",
+    "authority_level": "SECONDARY_NON_AUTHORITATIVE",
+    "url": "https://www.phandoiso1.com/thuoc-bao-ve-thuc-vat/thuoc-tru-benh/thumb-0-5sl-thuoc-tru-benh-cho-cay-trong",
+    "accessed_at": "2026-09-10",
+    "recommended_use": "Chỉ dùng làm nguồn tham khảo staging cho liều/PHI của Thumb 0.5SL. Không đủ authority để seed TreatmentRule final nếu chưa có nhãn/nguồn primary."
+  }
+]

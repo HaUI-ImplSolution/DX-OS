@@ -28,16 +28,15 @@ Không chọn Metabase (AGPL-3.0, copyleft mạnh hơn dù vẫn OSI-approved) �
 ## Đăng nhập
 
 - URL: `http://localhost:${SUPERSET_PORT:-8088}`
-- Đăng nhập qua UI bằng SSO thật (Keycloak) — bấm "Sign In with keycloak", dùng tài khoản demo
-  trong [`sso/README.md`](../sso/README.md). Role realm map sang role Superset:
-  `ADMIN` → `Admin`, `ENGINEER`/`FARMER` → `Gamma`.
-- Tài khoản `SUPERSET_ADMIN_USERNAME`/`SUPERSET_ADMIN_PASSWORD` (seed lúc khởi động) vẫn tồn tại
-  song song, chỉ dùng cho REST API/automation (`bi/bootstrap_datasources.py` tự đăng nhập bằng
-  tài khoản này) — không đăng nhập được qua UI nữa vì đã bật `AUTH_TYPE = AUTH_OAUTH`.
+- Đăng nhập qua UI bằng SSO thật (Keycloak) — bấm "Sign In with keycloak", dùng tài khoản demo trong [`sso/README.md`](../sso/README.md).
+  Role realm map sang role Superset: `ADMIN` → `Admin`, `ENGINEER`/`FARMER` → `Gamma`.
+- Tài khoản `SUPERSET_ADMIN_USERNAME`/`SUPERSET_ADMIN_PASSWORD` (seed lúc khởi động) vẫn tồn tại song song, chỉ dùng cho REST API/automation (`bi/bootstrap_datasources.py` tự đăng nhập bằng tài khoản này) — không đăng nhập được qua UI nữa vì đã bật `AUTH_TYPE = AUTH_OAUTH`.
 
 ## Xem/quản trị dữ liệu
 
-- **Dữ liệu nghiệp vụ Superset đọc** (Parcel, CropSeason...): nằm trong Postgres `dxfarm` — cùng CSDL với backend, không tách riêng. Superset chỉ đọc qua role `superset_ro` (chỉ có quyền `SELECT`, đã seed sẵn). Xem qua DBeaver bằng connection tới `dxfarm` hiện có, hoặc tạo connection mới:
+- **Dữ liệu nghiệp vụ Superset đọc** (Parcel, CropSeason...): nằm trong Postgres `dxfarm` — cùng CSDL với backend, không tách riêng.
+  Superset chỉ đọc qua role `superset_ro` (chỉ có quyền `SELECT`, đã seed sẵn).
+  Xem qua DBeaver bằng connection tới `dxfarm` hiện có, hoặc tạo connection mới:
   - Host/Port: giống connection tới `dxfarm` (mặc định `localhost:5432`)
   - Database: `dxfarm`
   - User: `superset_ro`
@@ -51,7 +50,8 @@ Không chọn Metabase (AGPL-3.0, copyleft mạnh hơn dù vẫn OSI-approved) �
 
 - **Bản đồ thửa ruộng** (deck.gl Scatterplot, dataset `parcels`) — vẽ điểm theo `latitude`/`longitude`.
   `Parcel` có thêm 2 cột toạ độ tuỳ chọn (xem backend `Parcel.java` + `ParcelPanel.tsx`) — chỉ thửa nào nhập toạ độ khi đăng ký mới lên bản đồ.
-  ⚠️ Cố tình không cấu hình nền bản đồ (basemap) — chỉ thấy các điểm trên nền trắng, điểm vẫn đúng vị trí tương đối. Đã cân nhắc và bỏ qua các phương án:
+  ⚠️ Cố tình không cấu hình nền bản đồ (basemap) — chỉ thấy các điểm trên nền trắng, điểm vẫn đúng vị trí tương đối.
+  Đã cân nhắc và bỏ qua các phương án:
   - **Mapbox**: cần API key + thẻ thanh toán; nhãn vùng biển ghi "South China Sea".
   - **OpenStreetMap** (mọi renderer công khai: OSM Standard, CyclOSM, Humanitarian, OpenTopoMap): không cần key, nhưng dữ liệu OSM tại khu vực Hoàng Sa/Trường Sa gắn nhãn hành chính Trung Quốc ("西沙区"/"三沙市"/"南沙区") — vấn đề ở tầng dữ liệu OSM, đổi style không giải quyết được.
   - **Google Maps**: nhãn đúng nhất ("quần đảo Hoàng Sa", "Biển Đông" theo tiếng Việt) nhưng Embed API tĩnh không gắn được marker động, còn JS API (gắn được marker) cần thẻ thanh toán + có ngưỡng free/tháng.

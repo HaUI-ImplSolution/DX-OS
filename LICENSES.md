@@ -55,7 +55,8 @@ Không phải một license duy nhất như các thành phần khác — chia th
 - `server/enterprise/` (tính năng trả phí — SSO nâng cao, compliance, LDAP...): **Mattermost Source Available License**, **không OSI-approved**.
 - Bản Linux binary Team Edition mà chính Mattermost, Inc. compile sẵn: họ cấp phép lại dưới **MIT** — chỉ áp dụng cho đúng binary đó, không phải toàn bộ mã nguồn.
 
-Quyết định: dùng thẳng image chính thức `mattermost/mattermost-team-edition` (không build lại từ source), không bật/không đụng `server/enterprise/`. Chi tiết đầy đủ ở [`chat/README.md`](./chat/README.md).
+Quyết định: dùng thẳng image chính thức `mattermost/mattermost-team-edition` (không build lại từ source), không bật/không đụng `server/enterprise/`.
+Chi tiết đầy đủ ở [`chat/README.md`](./chat/README.md).
 
 ## Quyết định về n8n
 

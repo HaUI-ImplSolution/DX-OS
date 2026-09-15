@@ -1,0 +1,191 @@
+[
+  {
+    "disease_code": "Apple___Apple_scab",
+    "management_status": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "AGRONOMIST_ONLY_UNTIL_VN_RULE_VERIFIED",
+    "source": "S05,S03,S27,S29",
+    "version": "2026.09.10-mvp-reviewed-v1",
+    "notes": "Targeted review 2026-09-10 chưa xác minh được một TreatmentRule Việt Nam đủ exact cho đúng CV class này. Đây là trạng thái 'chưa xác minh', không phải khẳng định rằng không tồn tại sản phẩm đăng ký. Guardrail: LLM không được sinh product/dose/PHI khi policy này có hiệu lực."
+  },
+  {
+    "disease_code": "Apple___Black_rot",
+    "management_status": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "AGRONOMIST_ONLY_UNTIL_VN_RULE_VERIFIED",
+    "source": "S06,S03,S27,S29",
+    "version": "2026.09.10-mvp-reviewed-v1",
+    "notes": "Targeted review 2026-09-10 chưa xác minh được một TreatmentRule Việt Nam đủ exact cho đúng CV class này. Đây là trạng thái 'chưa xác minh', không phải khẳng định rằng không tồn tại sản phẩm đăng ký. Guardrail: LLM không được sinh product/dose/PHI khi policy này có hiệu lực."
+  },
+  {
+    "disease_code": "Apple___Cedar_apple_rust",
+    "management_status": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "AGRONOMIST_ONLY_UNTIL_VN_RULE_VERIFIED",
+    "source": "S07,S03,S27,S29",
+    "version": "2026.09.10-mvp-reviewed-v1",
+    "notes": "Targeted review 2026-09-10 chưa xác minh được một TreatmentRule Việt Nam đủ exact cho đúng CV class này. Đây là trạng thái 'chưa xác minh', không phải khẳng định rằng không tồn tại sản phẩm đăng ký. Guardrail: LLM không được sinh product/dose/PHI khi policy này có hiệu lực."
+  },
+  {
+    "disease_code": "Cherry_(including_sour)___Powdery_mildew",
+    "management_status": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "AGRONOMIST_ONLY_UNTIL_VN_RULE_VERIFIED",
+    "source": "S08,S03,S27,S29",
+    "version": "2026.09.10-mvp-reviewed-v1",
+    "notes": "Targeted review 2026-09-10 chưa xác minh được một TreatmentRule Việt Nam đủ exact cho đúng CV class này. Đây là trạng thái 'chưa xác minh', không phải khẳng định rằng không tồn tại sản phẩm đăng ký. Guardrail: LLM không được sinh product/dose/PHI khi policy này có hiệu lực."
+  },
+  {
+    "disease_code": "Corn_(maize)__Common_rust",
+    "management_status": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "AGRONOMIST_ONLY_UNTIL_EXACT_MAPPING_VERIFIED",
+    "source": "S10,S03,S27,S29",
+    "version": "2026.09.10-mvp-reviewed-v1",
+    "notes": "MVP review: chưa promote được TreatmentRule đủ sạch cho class này. Guardrail: LLM không được sinh product/dose/PHI khi policy này có hiệu lực."
+  },
+  {
+    "disease_code": "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot",
+    "management_status": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "AGRONOMIST_ONLY_UNTIL_EXACT_MAPPING_VERIFIED",
+    "source": "S09,S03,S27,S29",
+    "version": "2026.09.10-mvp-reviewed-v1",
+    "notes": "MVP review: chưa promote được TreatmentRule đủ sạch cho class này. Guardrail: LLM không được sinh product/dose/PHI khi policy này có hiệu lực."
+  },
+  {
+    "disease_code": "Grape___Black_rot",
+    "management_status": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "AGRONOMIST_ONLY_UNTIL_VN_RULE_VERIFIED",
+    "source": "S12,S03,S27,S29",
+    "version": "2026.09.10-mvp-reviewed-v1",
+    "notes": "Targeted review 2026-09-10 chưa xác minh được một TreatmentRule Việt Nam đủ exact cho đúng CV class này. Đây là trạng thái 'chưa xác minh', không phải khẳng định rằng không tồn tại sản phẩm đăng ký. Guardrail: LLM không được sinh product/dose/PHI khi policy này có hiệu lực."
+  },
+  {
+    "disease_code": "Grape___Esca_(Black_Measles)",
+    "management_status": "WOOD_INFECTION_NOT_ERADICABLE_BY_FUNGICIDE",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "PREVENTIVE_WOUND_MANAGEMENT_ONLY_IF_REGISTERED",
+    "source": "S13",
+    "version": "2026.09.10-mvp-reviewed-v1",
+    "notes": "UC IPM nêu nhiễm gỗ sau khi thiết lập không thể được loại bỏ bằng phun fungicide. Guardrail: LLM không được sinh product/dose/PHI khi policy này có hiệu lực."
+  },
+  {
+    "disease_code": "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)",
+    "management_status": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "AGRONOMIST_ONLY_UNTIL_VN_RULE_VERIFIED",
+    "source": "S14,S03,S27,S29",
+    "version": "2026.09.10-mvp-reviewed-v1",
+    "notes": "Targeted review 2026-09-10 chưa xác minh được một TreatmentRule Việt Nam đủ exact cho đúng CV class này. Đây là trạng thái 'chưa xác minh', không phải khẳng định rằng không tồn tại sản phẩm đăng ký. Guardrail: LLM không được sinh product/dose/PHI khi policy này có hiệu lực."
+  },
+  {
+    "disease_code": "Orange___Haunglongbing_(Citrus_greening)",
+    "management_status": "NO_CURATIVE_TREATMENT",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "VECTOR_CONTROL_ONLY_IF_REGISTERED",
+    "source": "S15",
+    "version": "2026.09.10-mvp-reviewed-v1",
+    "notes": "UC IPM nêu rõ HLB không có biện pháp chữa khỏi; quản lý tập trung vào hạn chế lây lan, vector và cây nhiễm. Guardrail: LLM không được sinh product/dose/PHI khi policy này có hiệu lực."
+  },
+  {
+    "disease_code": "Peach___Bacterial_spot",
+    "management_status": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "AGRONOMIST_ONLY_UNTIL_VN_RULE_VERIFIED",
+    "source": "S16,S03,S27,S29",
+    "version": "2026.09.10-mvp-reviewed-v1",
+    "notes": "Targeted review 2026-09-10 chưa xác minh được một TreatmentRule Việt Nam đủ exact cho đúng CV class này. Đây là trạng thái 'chưa xác minh', không phải khẳng định rằng không tồn tại sản phẩm đăng ký. Guardrail: LLM không được sinh product/dose/PHI khi policy này có hiệu lực."
+  },
+  {
+    "disease_code": "Pepper,_bell___Bacterial_spot",
+    "management_status": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "AGRONOMIST_ONLY_UNTIL_VN_RULE_VERIFIED",
+    "source": "S17,S03,S27,S29",
+    "version": "2026.09.10-mvp-reviewed-v1",
+    "notes": "Targeted review 2026-09-10 chưa xác minh được một TreatmentRule Việt Nam đủ exact cho đúng CV class này. Đây là trạng thái 'chưa xác minh', không phải khẳng định rằng không tồn tại sản phẩm đăng ký. Guardrail: LLM không được sinh product/dose/PHI khi policy này có hiệu lực."
+  },
+  {
+    "disease_code": "Squash___Powdery_mildew",
+    "management_status": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "AGRONOMIST_ONLY_UNTIL_CROP_AND_LABEL_VERIFIED",
+    "source": "S19,S03,S27,S29",
+    "version": "2026.09.10-mvp-reviewed-v1",
+    "notes": "MVP review: chưa promote được TreatmentRule đủ sạch cho class này. Guardrail: LLM không được sinh product/dose/PHI khi policy này có hiệu lực."
+  },
+  {
+    "disease_code": "Strawberry___Leaf_scorch",
+    "management_status": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "AGRONOMIST_ONLY_UNTIL_VN_RULE_VERIFIED",
+    "source": "S20,S03,S27,S29",
+    "version": "2026.09.10-mvp-reviewed-v1",
+    "notes": "Targeted review 2026-09-10 chưa xác minh được một TreatmentRule Việt Nam đủ exact cho đúng CV class này. Đây là trạng thái 'chưa xác minh', không phải khẳng định rằng không tồn tại sản phẩm đăng ký. Guardrail: LLM không được sinh product/dose/PHI khi policy này có hiệu lực."
+  },
+  {
+    "disease_code": "Tomato___Bacterial_spot",
+    "management_status": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "AGRONOMIST_ONLY_UNTIL_PHI_VERIFIED",
+    "source": "S17,S03,S27,S29",
+    "version": "2026.09.10-mvp-reviewed-v1",
+    "notes": "MVP review: chưa promote được TreatmentRule đủ sạch cho class này. Guardrail: LLM không được sinh product/dose/PHI khi policy này có hiệu lực."
+  },
+  {
+    "disease_code": "Tomato___Leaf_Mold",
+    "management_status": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "AGRONOMIST_ONLY_UNTIL_EXACT_MAPPING_VERIFIED",
+    "source": "S22,S03,S27,S29",
+    "version": "2026.09.10-mvp-reviewed-v1",
+    "notes": "MVP review: chưa promote được TreatmentRule đủ sạch cho class này. Guardrail: LLM không được sinh product/dose/PHI khi policy này có hiệu lực."
+  },
+  {
+    "disease_code": "Tomato___Septoria_leaf_spot",
+    "management_status": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "AGRONOMIST_ONLY_UNTIL_EXACT_MAPPING_VERIFIED",
+    "source": "S21,S03,S27,S29",
+    "version": "2026.09.10-mvp-reviewed-v1",
+    "notes": "MVP review: chưa promote được TreatmentRule đủ sạch cho class này. Guardrail: LLM không được sinh product/dose/PHI khi policy này có hiệu lực."
+  },
+  {
+    "disease_code": "Tomato___Spider_mites Two-spotted_spider_mite",
+    "management_status": "PEST_TREATMENT_RULE_NOT_VERIFIED",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "PEST_MANAGEMENT_REQUIRES_VERIFIED_LABEL",
+    "source": "S23,S03,S27,S29",
+    "version": "2026.09.10-mvp-reviewed-v1",
+    "notes": "MVP review: chưa promote được TreatmentRule đủ sạch cho class này. Guardrail: LLM không được sinh product/dose/PHI khi policy này có hiệu lực."
+  },
+  {
+    "disease_code": "Tomato___Target_Spot",
+    "management_status": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "AGRONOMIST_ONLY_UNTIL_EXACT_MAPPING_VERIFIED",
+    "source": "S24,S03,S27,S29",
+    "version": "2026.09.10-mvp-reviewed-v1",
+    "notes": "MVP review: chưa promote được TreatmentRule đủ sạch cho class này. Guardrail: LLM không được sinh product/dose/PHI khi policy này có hiệu lực."
+  },
+  {
+    "disease_code": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+    "management_status": "VECTOR_MANAGEMENT_PRIMARY",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "WHITEFLY_VECTOR_CONTROL_ONLY_IF_REGISTERED",
+    "source": "S25,S34",
+    "version": "2026.09.10-mvp-reviewed-v1",
+    "notes": "NC State mô tả TYLCV truyền qua bọ phấn trắng và quản lý tập trung vào phòng ngừa/vector; tài liệu Syngenta Việt Nam cũng khuyến nghị kiểm soát côn trùng trung gian. Guardrail: LLM không được sinh product/dose/PHI khi policy này có hiệu lực."
+  },
+  {
+    "disease_code": "Tomato___Tomato_mosaic_virus",
+    "management_status": "NO_CHEMICAL_CONTROL",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "NONE_FOR_VIRUS",
+    "source": "S26",
+    "version": "2026.09.10-mvp-reviewed-v1",
+    "notes": "Utah State University Extension nêu không có biện pháp kiểm soát hóa học cho TMV/ToMV. Guardrail: LLM không được sinh product/dose/PHI khi policy này có hiệu lực."
+  }
+]

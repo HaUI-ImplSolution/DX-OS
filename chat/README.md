@@ -6,7 +6,8 @@ Service `mattermost` được khai báo trong [`deploy/docker-compose.yml`](../d
 
 ## Vì sao chọn Mattermost, và rà soát license
 
-Mattermost được chọn theo đúng roadmap đã chốt (`README.md` gốc). License của Mattermost chia theo thư mục trong repo nguồn:
+Mattermost được chọn theo đúng roadmap đã chốt (`README.md` gốc).
+License của Mattermost chia theo thư mục trong repo nguồn:
 
 - Phần server core (toàn bộ trừ `server/enterprise/`) — **AGPLv3**, OSI-approved.
 - `server/enterprise/` (tính năng trả phí: SSO nâng cao, compliance, LDAP...) — **Mattermost Source Available License**, **không OSI-approved** (chỉ free trong dev/test, cần license trả phí ở production).
@@ -31,7 +32,8 @@ Ghi vào [`LICENSES.md`](../LICENSES.md) đúng caveat này để minh bạch kh
 
 ## Xem/quản trị dữ liệu
 
-- **System Console** (UI, dễ đọc nhất): `http://localhost:${MATTERMOST_PORT:-8065}/admin_console` — đăng nhập bằng tài khoản `system_admin` (user đầu tiên tạo lúc "Create account"). Xem/quản lý user, team, channel, plugin, cấu hình... tại đây, không cần đụng SQL.
+- **System Console** (UI, dễ đọc nhất): `http://localhost:${MATTERMOST_PORT:-8065}/admin_console` — đăng nhập bằng tài khoản `system_admin` (user đầu tiên tạo lúc "Create account").
+  Xem/quản lý user, team, channel, plugin, cấu hình... tại đây, không cần đụng SQL.
 - **DBeaver / SQL trực tiếp**: cùng Postgres server với CSDL nghiệp vụ (`dxfarm`) — chỉ cần đổi database sang `mattermost` trong connection, hoặc tạo connection mới:
   - Host/Port: giống connection tới `dxfarm` (mặc định `localhost:5432`)
   - Database: `mattermost`

@@ -1,0 +1,22 @@
+{
+  "problem": "TreatmentRule hiện bắt buộc Disease -> Pesticide, nhưng một số class không nên có thuốc chữa trực tiếp.",
+  "recommendation": "Bổ sung một lớp policy deterministic hoặc field management_status để phân biệt NO_CHEMICAL_CONTROL / VECTOR_MANAGEMENT / CHEMICAL_RULE_AVAILABLE / UNRESOLVED.",
+  "why": [
+    "Tránh hiểu nhầm 'không có TreatmentRule' là data bị thiếu.",
+    "Cho LangGraph biết khi nào phải chặn LLM khỏi đề xuất thuốc.",
+    "Phân biệt thuốc kiểm soát vector với thuốc chữa bệnh.",
+    "Hỗ trợ audit và human-in-the-loop."
+  ],
+  "mvp_minimal_option": {
+    "file_or_table": "DiseaseManagementPolicy",
+    "fields": [
+      "disease_code",
+      "management_status",
+      "direct_treatment_rule_allowed",
+      "chemical_rule_scope",
+      "source",
+      "version",
+      "notes"
+    ]
+  }
+}

@@ -63,7 +63,6 @@ Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
 
 - [x] Khởi tạo nền tảng dữ liệu Python: SQLAlchemy, Alembic, PostgreSQL và pgvector.
 - [x] Hoàn thiện AI Service Python thống nhất: Vision API, structured lookup, RAG, LangGraph, durable HITL và PHI chạy trong luồng tích hợp local.
-- [ ] Nối HTTP client backend ↔ AI Service theo contract API.
 - [x] Khớp dữ liệu CV chẩn đoán: đã chuẩn hóa Vision API trả `disease_code` và `disease_name` tiếng Việt khớp 1:1 với `Disease.code` trong DB.
 - [x] Tích hợp lớp wording vào spine flow; nếu Ollama lỗi/timeout thì trả evidence nguyên văn, không thay đổi thuốc, hoạt chất, liều hoặc PHI từ SQL.
 

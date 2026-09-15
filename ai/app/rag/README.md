@@ -1,39 +1,96 @@
-# RAG handoff — Stage 7
+# RAG — Tra cứu kiến thức bệnh cây
 
-Input: `data/rag/processed/disease_knowledge.json` và `data/rag/source_registry.json`.
-Embedding: multilingual MiniLM, 384 chiều.
-Model được cache theo tên trong process.
+## Vai trò của thư mục này
 
-Từ thư mục `ai`:
+`app/rag/` là phần Retrieval-Augmented Generation của AI Service. Nó biến kiến thức bệnh cây đã được duyệt thành các đoạn có thể tra cứu, tìm các đoạn liên quan theo câu hỏi và cung cấp evidence cho workflow hoặc LLM.
+
+RAG chỉ là lớp kiến thức giải thích. Nó không là nguồn quyết định về thuốc, liều lượng, PHI hay thao tác áp dụng; các thông tin đó luôn lấy từ dữ liệu nghiệp vụ có cấu trúc trong PostgreSQL.
+
+## Phạm vi
+
+RAG chịu trách nhiệm:
+
+- Đọc corpus kiến thức bệnh từ `data/rag/processed/disease_knowledge.json`.
+- Kiểm tra cấu trúc dữ liệu, `disease_code`, nội dung và nguồn trích dẫn trước khi ingest.
+- Cắt nội dung thành các chunk nhỏ, tạo embedding và lưu vào PostgreSQL.
+- Tra cứu các chunk gần với câu hỏi bằng cosine similarity.
+- Lọc kết quả theo `disease_code` khi đã có kết quả nhận diện từ CV.
+- Trả context kèm nguồn trích dẫn có thể kiểm tra.
+- Tạo câu trả lời có căn cứ khi Ollama khả dụng; nếu không, vẫn trả evidence đã truy xuất.
+
+RAG không chịu trách nhiệm:
+
+- Không tự crawl web hoặc tự thêm nguồn tài liệu mới.
+- Không seed bảng bệnh, thuốc, treatment rule hoặc policy.
+- Không sinh hay xác nhận liều lượng, hoạt chất, PHI và quyết định điều trị.
+- Không thay thế truy vấn SQL có cấu trúc hoặc phê duyệt của kỹ sư.
+
+## Cách hoạt động
+
+### Ingest kiến thức
+
+```text
+disease_knowledge.json + source_registry.json
+  → kiểm tra trường bắt buộc và source_id hợp lệ
+  → cắt nội dung thành chunk tối đa 350 ký tự
+  → tạo embedding 384 chiều bằng multilingual MiniLM
+  → khóa advisory transaction để tránh hai lần ingest đồng thời
+  → thay thế atomically corpus disease_knowledge cũ
+  → lưu documents, document_chunks và embedding vào PostgreSQL
+```
+
+Ingest chạy qua:
 
 ```bash
-python -m alembic upgrade head
-python -m scripts.ingest_diseases --dry-run --limit 1
 python -m scripts.ingest_diseases
 ```
 
-Ingest thật tạo embedding và thay thế atomically corpus document_type=disease_knowledge, version=stage7-rich-v1.
-Document khác loại được giữ nguyên; lỗi DB rollback corpus cũ.
-Advisory lock PostgreSQL tuần tự hóa hai lần replace đồng thời.
-Chunk trùng nội dung trong cùng document được loại bỏ; re-ingest tạo lại ID document/chunk.
+Dùng `--dry-run` để kiểm tra dữ liệu và preview chunk mà không ghi database.
 
-Output truy vấn:
+### Tra cứu
 
-```python
-from app.rag.retriever import retrieve_knowledge
-rows = retrieve_knowledge(db, query="Triệu chứng cháy lá muộn",
-                         disease_code="Tomato___Late_blight", top_k=3)
-# rows: content, disease_code, source_ids, score; thêm ID/citation metadata để audit.
+```text
+Câu hỏi + disease_code tùy chọn
+  → tạo embedding cho câu hỏi
+  → PostgreSQL so sánh cosine với embedding của các chunk
+  → lọc theo document_type và disease_code nếu có
+  → trả top-k đoạn gần nhất, score và provenance
+  → workflow/RAG service dùng evidence để giải thích
 ```
 
-`disease_code` là bộ lọc SQL exact; mã không tồn tại trả []; bỏ lọc sẽ tìm toàn corpus.
-`score` = 1 - cosine distance; giữ `similarity` để tương thích caller cũ.
-`top_k` nằm trong [1,20].
-Endpoint: `POST /api/v1/disease/knowledge/retrieve` nhận JSON query/disease_code/top_k.
-LangGraph Stage 8 có thể gọi `app.graph.tools.rag_tool.retrieve`.
+Khi CV đã trả `disease_code`, workflow truyền mã đó vào RAG. Việc giới hạn corpus theo mã bệnh giúp context phù hợp với bệnh nhận diện và giảm nguy cơ lấy tài liệu của bệnh khác.
 
-`RAGService.answer` dùng Ollama tùy chọn.
-Cổng kiểm soát đầu ra chỉ nhận đoạn trích nguyên văn từ evidence; nếu LLM thêm thông tin hoặc không phản hồi trong 30 giây, trả evidence.
-`answer_mode=grounded_excerpt` thể hiện giới hạn này.
-Đây là lựa chọn bảo thủ của MVP; chưa hỗ trợ diễn đạt tự do có đảm bảo factuality.
-Thuốc/liều/PHI/policy được cung cấp riêng bởi structured lookup, không lấy từ LLM.
+## Thành phần
+
+| Thành phần | Vai trò |
+|---|---|
+| `embedding_service.py` | Nạp và cache mô hình embedding multilingual MiniLM; tạo vector đã normalize. |
+| `ingestion_service.py` | Validate corpus, chunk nội dung, tạo embedding và thay thế corpus trong transaction. |
+| `chunker.py` | Chia văn bản theo dòng, tối đa 350 ký tự/chunk, overlap một dòng. |
+| `retriever.py` | Tạo embedding câu hỏi, cosine search và trả các chunk liên quan. |
+| `rag_service.py` | Ghép evidence, gọi Ollama khi khả dụng và tạo citations. |
+| `prompt_builder.py` | Tạo prompt có guardrail: chỉ trả lời từ context, không tự bịa thuốc/liều lượng/PHI. |
+| `source_registry.py` | Nạp và kiểm tra registry nguồn, ánh xạ `source_id` thành metadata trích dẫn. |
+| `scripts/ingest_diseases.py` | Entry point CLI cho preview hoặc ingest corpus. |
+
+## Dữ liệu và lưu trữ
+
+Corpus nguồn không tự xuất hiện trong database. Sau khi PostgreSQL có schema hiện tại, cần chạy seed dữ liệu nghiệp vụ và ingest RAG để các endpoint/workflow có knowledge truy vấn.
+
+Mỗi document lưu metadata như tiêu đề, `disease_code`, loại document, version và `source_id`. Mỗi chunk lưu nội dung, vị trí chunk và embedding `vector(384)`.
+
+Implementation hiện tại dùng PostgreSQL kèm `pgvector` để thực hiện cosine search. Vì embedding model tạo 384 chiều, thay model embedding sẽ cần tạo lại toàn bộ embedding của corpus.
+
+## Evidence và guardrail
+
+Kết quả truy xuất luôn chứa `source_ids`, document/chunk ID, similarity và nội dung evidence. `RAGService` chỉ chấp nhận câu trả lời từ LLM khi câu đó xuất hiện nguyên văn trong evidence đã lấy; nếu Ollama lỗi, timeout hoặc trả nội dung không được chứng minh, service trả lại excerpt evidence thay vì bịa câu trả lời.
+
+Do đó RAG chỉ dùng để giải thích kiến thức. Thuốc, liều lượng, PHI và policy an toàn phải tiếp tục lấy từ structured knowledge/service tương ứng.
+
+## Giới hạn
+
+- Chỉ truy xuất được kiến thức đã ingest thành công vào PostgreSQL.
+- Chất lượng retrieval phụ thuộc vào corpus, metadata nguồn và embedding model.
+- Similarity cao không tự xác nhận một khuyến nghị là đúng.
+- `top_k` phải từ 1 đến 20; giá trị cao hơn không đồng nghĩa context tốt hơn.
+- RAG không thay thế dữ liệu nghiệp vụ có cấu trúc hay phê duyệt của kỹ sư.

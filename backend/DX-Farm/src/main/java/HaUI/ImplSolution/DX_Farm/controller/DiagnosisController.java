@@ -33,10 +33,18 @@ public class DiagnosisController {
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(summary = "Record CV diagnosis + deterministic treatment lookup")
+  @Operation(
+      summary = "Record CV diagnosis manually (testing/demo) + deterministic treatment lookup")
   public ApiResponse<DiagnosisResponse> create(@PathVariable Long reportId,
       @Valid @RequestBody DiagnosisCreateRequest request) {
     return ApiResponse.success("Diagnosis recorded", diagnosisService.create(reportId, request));
+  }
+
+  @PostMapping("/ai")
+  @ResponseStatus(HttpStatus.CREATED)
+  @Operation(summary = "Trigger AI Service diagnosis + deterministic treatment lookup")
+  public ApiResponse<DiagnosisResponse> createFromAi(@PathVariable Long reportId) {
+    return ApiResponse.success("Diagnosis recorded", diagnosisService.createFromAi(reportId));
   }
 
   @PostMapping("/approve")

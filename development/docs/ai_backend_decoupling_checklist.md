@@ -55,7 +55,9 @@ Tham chiếu: mục 6 "Phase 2" của `ai_backend_decoupling_plan.md`.
   Chưa nối vào flow tạo báo cáo/HTTP endpoint nào — `requestAiDiagnosis()` sẽ được P2-5 gọi khi xử lý và lưu response.
 - [x] **P2-5** — Nhận CV, evidence và recommendation từ AI; đối chiếu lại `version` của rule (mục 4.5) trước khi lưu; nếu rule đã đổi trong lúc AI xử lý thì từ chối và lấy lại rule mới.
   `createFromAi()` chưa nối vào `DiagnosisController` — endpoint nào expose nó là quyết định của P2-6.
-- [ ] **P2-6** — Xác nhận `DiagnosisController` (`create`/`approve`/`reject`/`apply`) là nơi duy nhất quản lý vòng đời phê duyệt sau khi AI không còn state machine riêng.
+- [x] **P2-6** — Xác nhận `DiagnosisController` (`create`/`approve`/`reject`/`apply`) là nơi duy nhất quản lý vòng đời phê duyệt sau khi AI không còn state machine riêng.
+  Rà soát: chỉ `DiagnosisService` mutate `ApprovalStatus`, và chỉ `DiagnosisController` gọi các phương thức đó.
+  Thêm `POST .../diagnosis/ai` gọi `createFromAi()` (P2-5), giữ `POST .../diagnosis` cho nhập tay (testing/demo) - cả hai cùng đổ vào một `Diagnosis`/vòng đời duyệt duy nhất qua `approve`/`reject`/`apply`.
 
 ## Phase 3 — Khởi tạo Database & Deployment
 

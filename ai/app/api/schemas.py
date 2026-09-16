@@ -1,7 +1,3 @@
-import uuid
-from datetime import datetime
-from typing import Any
-
 from pydantic import BaseModel, Field
 
 
@@ -36,46 +32,3 @@ class RetrieveRequest(BaseModel):
     query: str = Field(min_length=1, max_length=4000)
     disease_code: str | None = Field(default=None, max_length=100)
     top_k: int = Field(default=3, ge=1, le=20)
-
-
-class WorkflowRunRequest(BaseModel):
-    request_id: str | None = Field(default=None, description="Mã định danh yêu cầu")
-    parcel_code: str | None = Field(default=None, description="Mã mảnh ruộng/lô đất")
-    crop_season_id: str | None = Field(default=None, description="ID vụ mùa")
-    rag_question: str | None = Field(
-        default=None, description="Câu hỏi bổ sung cho RAG"
-    )
-    requested_by: str | None = Field(default=None, max_length=100)
-
-
-class WorkflowRunResponse(BaseModel):
-    case_id: str | None = None
-    request_id: str
-    approval_status: str
-    application_status: str | None = None
-    cv_result: dict[str, Any] | None = None
-    field_context: dict[str, Any] | None = None
-    treatment_rule: dict[str, Any] | None = None
-    rag_context: list[dict[str, Any]] | None = None
-    recommendation: Any | None = None
-    response: dict[str, Any] | None = None
-    errors: list[str] | None = None
-    timings_ms: dict[str, float] | None = None
-
-
-class ApproveWorkflowRequest(BaseModel):
-    actor_id: str = Field(min_length=1, max_length=100)
-    selected_rule_id: uuid.UUID | None = None
-    approved_dose: float | None = None
-    confirmed_low_confidence: bool = False
-
-
-class RejectWorkflowRequest(BaseModel):
-    actor_id: str = Field(min_length=1, max_length=100)
-    reason: str = Field(min_length=1, max_length=2000)
-
-
-class ApplyWorkflowRequest(BaseModel):
-    actor_id: str = Field(min_length=1, max_length=100)
-    actual_dose: float = Field(gt=0)
-    applied_at: datetime

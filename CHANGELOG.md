@@ -57,6 +57,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 - Xóa thành công 10 ORM model nghiệp vụ dư thừa khỏi AI Service.
 - Xóa thành công repository/service CRUD và thao tác ghi dữ liệu nghiệp vụ khỏi AI runtime.
+- Xóa thành công router workflow cũ, `WorkflowRunner`, `WorkflowTransitions` và schema liên quan khỏi AI Service.
 
 ### 2026-09-14
 

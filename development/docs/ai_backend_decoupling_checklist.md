@@ -65,8 +65,8 @@ Owner đề xuất: người phụ trách hạ tầng/docker-compose.
 Tham chiếu: mục 6 "Phase 3" của `ai_backend_decoupling_plan.md`.
 
 - [x] **P3-1** — Khởi tạo DB riêng `dx_farm_ai_vector_db` chỉ chứa bảng `documents` và `document_chunks` (kèm pgvector extension).
-- [ ] **P3-2** — Cập nhật `deploy/docker-compose.yml` để tách biệt biến môi trường kết nối DB của Backend và AI, theo cùng pattern DB/user riêng mà `keycloak`/`superset_ro` đang dùng trên cùng Postgres instance.
-- [ ] **P3-3** — Dùng user chỉ-đọc cho AI runtime trên Vector DB, và user/job riêng cho ingest.
+- [x] **P3-2** — Cập nhật `deploy/docker-compose.yml` để tách biệt biến môi trường kết nối DB của Backend và AI, theo cùng pattern DB/user riêng mà `keycloak`/`superset_ro` đang dùng trên cùng Postgres instance.
+- [x] **P3-3** — Dùng user chỉ-đọc cho AI runtime trên Vector DB, và user/job riêng cho ingest.
   Không cấp bất kỳ credential nào của AI trỏ vào Backend DB, kể cả read-only (mục "Mục tiêu cốt lõi" của kế hoạch).
 - [ ] **P3-4** — Quyết định số phận dữ liệu cũ trong AI DB (`disease_reports`, `diagnoses`, `treatment_applications`, `workflow_cases`): bỏ nếu là dữ liệu demo/test, migrate/backfill sang Backend DB trước khi cắt kết nối nếu là dữ liệu thật.
 

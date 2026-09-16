@@ -113,14 +113,13 @@ Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
 
 ## Kiến trúc dữ liệu (tóm tắt)
 
-Một PostgreSQL vật lý, ba nguồn logic:
+Hai database vật lý riêng trên cùng một Postgres instance, theo kế hoạch chốt ở [`development/docs/ai_backend_decoupling_plan.md`](./development/docs/ai_backend_decoupling_plan.md) mục 3:
 
-- **Operational Data**: Parcel, CropSeason, DiseaseReport, Diagnosis, TreatmentApplication — "chuyện gì đã xảy ra"
-- **Structured Knowledge**: Disease, Pesticide, TreatmentRule, DiseaseManagementPolicy — "quy tắc là gì" (lookup bằng khoá/SQL, không qua LLM)
-- **RAG Knowledge**: tài liệu VietGAP/IRRI/nội bộ đã duyệt, qua pgvector — "tài liệu giải thích gì"
+- **Backend DB (`dxfarm`)** — Operational Data (Parcel, CropSeason, DiseaseReport, Diagnosis, TreatmentApplication) và Structured Knowledge (Disease, Pesticide, TreatmentRule, DiseaseManagementPolicy).
+- **AI Vector DB (`dx_farm_ai_vector_db`)** — chỉ `documents`/`document_chunks` (RAG Knowledge, qua pgvector).
+  Backend tự tạo DB này cùng 2 role Postgres riêng cho AI (`ai_vector_ro` chỉ-đọc cho runtime, `ai_vector_ingest` đọc/ghi cho job ingest) lúc khởi động; không role nào của AI được cấp quyền vào Backend DB (Phase 3, P3-1..P3-3 đã xong).
 
-Kế hoạch tách thành 2 database vật lý riêng (Backend DB + AI Vector DB) đã chốt ở [`development/docs/ai_backend_decoupling_plan.md`](./development/docs/ai_backend_decoupling_plan.md) mục 3.
-Database `dx_farm_ai_vector_db` (chỉ `documents`/`document_chunks`, kèm pgvector) đã được tạo tự động lúc khởi động (P3-1 trong checklist); AI service chưa kết nối sang DB này và chưa dùng user chỉ-đọc riêng (P3-2/P3-3 còn mở).
+Phase 1 (AI bỏ đọc/ghi trực tiếp các bảng nghiệp vụ, chuyển sang gọi Backend REST) chưa xong — xem [`ai/README.md`](./ai/README.md) phần "Trạng thái kiến trúc" về các endpoint AI đang tạm hỏng do đã cắt kết nối DB trước.
 
 ## Điểm cần lưu ý cho tiêu chí PoF (50/100 điểm, mang tính loại trừ)
 
@@ -152,7 +151,7 @@ Database `dx_farm_ai_vector_db` (chỉ `documents`/`document_chunks`, kèm pgvec
 Backend Spring Boot đã xong, xác thực qua OAuth2 Resource Server (SSO thật qua Keycloak), phân quyền FARMER/ENGINEER/ADMIN theo realm role.
 Frontend demo (React/Vite) cho Phase 0 spine flow đã xong, đăng nhập bằng redirect sang Keycloak.
 Trong phạm vi `ai/`, Stage 8–10 đã hoàn thiện Vision API, structured lookup, RAG endpoint, LangGraph, durable HITL/APPLIED/PHI và smoke/test local.
-AI hiện có `ai/Dockerfile`; database dùng schema phiên bản hiện tại, còn JSON phải được seed/ingest trước khi RAG/workflow truy vấn được.
+AI hiện có `ai/Dockerfile`; DB vật lý đã tách khỏi Backend (Phase 3, P3-1..P3-3) trước khi Phase 1 xong, nên các endpoint đụng bảng nghiệp vụ (`/reports/{report_id}/diagnose`, `/workflow/*`) và script `scripts.seed_*` đang tạm hỏng — `/predict` và `/knowledge/retrieve` (sau khi `scripts.ingest_diseases` chạy) vẫn hoạt động.
 BI Dashboard (Superset) đã đăng nhập qua Keycloak; kênh chat nội bộ (Mattermost) đã chạy thật trong docker-compose kèm trang portal tĩnh liệt kê link tới các app — là nền tảng tách biệt có chủ đích, không dùng SSO chung.
 Đã rà soát license toàn bộ thành phần đang chạy ([`LICENSES.md`](./LICENSES.md)).
 Checklist việc còn thiếu: xem mục "Giai đoạn 0"/"Giai đoạn 2" ở trên.

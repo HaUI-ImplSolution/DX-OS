@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     backend_base_url: str = "http://localhost:8081"
     backend_service_api_key: str | None = None
     backend_timeout_seconds: float = 3.0
+    ai_service_api_key: str | None = None
 
     log_level: str = "INFO"
 

@@ -13,7 +13,7 @@ class FarmState(TypedDict, total=False):
     actor_id: str
     actor_role: str
     parcel_code: str
-    crop_season_id: str
+    crop_season_id: int
     image_ref: Any
 
     # CV output

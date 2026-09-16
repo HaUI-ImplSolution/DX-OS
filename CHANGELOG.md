@@ -75,6 +75,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Xóa thành công router workflow cũ, `WorkflowRunner`, `WorkflowTransitions` và schema liên quan khỏi AI Service.
 - Xóa thành công endpoint legacy `POST /disease/reports/{report_id}/diagnose` khỏi AI Service.
 - Thêm Backend REST client read-only để AI lấy field context và structured facts.
+- Hoàn thành `POST /api/v1/diagnose`, kết hợp CV, RAG và structured facts từ Backend để trả recommendation đúng contract.
 
 ### 2026-09-14
 

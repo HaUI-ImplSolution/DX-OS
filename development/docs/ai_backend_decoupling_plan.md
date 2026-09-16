@@ -288,7 +288,7 @@ Model `treatment_rules` hiện tại của AI (`ai/app/db/models/treatment_rule.
 - [x] Xóa repository/service CRUD nghiệp vụ và toàn bộ lệnh `db.add()`, `db.commit()` trong AI runtime.
 - [x] Xóa router `/disease/workflow/*` (`run`, `{case_id}` GET, `approve`, `reject`, `applied`) cùng `WorkflowRunner`/`WorkflowTransitions` — rà soát mọi client (frontend, app, script nội bộ) đang gọi các endpoint này và chuyển sang gọi Backend trước khi xóa.
 - [x] Xóa endpoint `POST /disease/reports/{report_id}/diagnose` (ghi thẳng DB qua `diagnose_report`) — thay bằng inference contract mới.
-- [ ] Thêm Backend REST client read-only để lấy field context, treatment rule, policy, PHI và lịch sử phun sau khi CV có `disease_code`.
+- [x] Thêm Backend REST client read-only để lấy field context, treatment rule, policy, PHI và lịch sử phun sau khi CV có `disease_code`.
 - [ ] Đổi endpoint AI thành inference contract: nhận ảnh/request context, kết hợp CV + RAG + structured facts và trả recommendation về Backend.
 - [ ] Giữ `rag/retriever.py` và `rag/ingestion_service.py`; runtime chỉ đọc AI Vector DB, còn ingest là job quản trị có quyền ghi riêng.
 - [ ] Áp dụng timeout + retry giới hạn (`httpx`) khi gọi Backend internal API, theo mục 4.4.

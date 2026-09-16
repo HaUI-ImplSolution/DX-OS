@@ -8,8 +8,8 @@ Graph chỉ tạo recommendation. Nó không là nguồn lưu trạng thái nghi
 
 `WorkflowRunner` ở `app/application/` gọi graph, còn PostgreSQL cùng `workflow_service` sở hữu các chuyển trạng thái bền vững và audit.
 
-> **Trạng thái**: Router `/disease/workflow/*` cùng `WorkflowRunner`/`WorkflowTransitions` đã được xóa ở mục **P1-3** của Phase 1 Decoupling ([`../../development/docs/ai_backend_decoupling_checklist.md`](../../../development/docs/ai_backend_decoupling_checklist.md)).
-> LangGraph hiện phục vụ luồng suy luận phi trạng thái (stateless inference) trong contract `POST /api/v1/diagnose`, không còn lưu `WorkflowCase` vào DB. Vòng đời duyệt/áp dụng do Backend sở hữu.
+> Toàn bộ luồng `WorkflowRunner`/`WorkflowCase`/`WorkflowEvent` mô tả ở đây thuộc kiến trúc hiện tại, nơi AI tự lưu trạng thái phê duyệt.
+> Theo Phase 1 của [`../../development/docs/ai_backend_decoupling_plan.md`](../../../development/docs/ai_backend_decoupling_plan.md), router `/disease/workflow/*` cùng `WorkflowRunner`/`WorkflowTransitions` sẽ bị xóa khỏi AI; graph sẽ chỉ chạy trong một lệnh gọi suy luận phi trạng thái, không còn tạo `WorkflowCase`.
 
 ## Phạm vi
 

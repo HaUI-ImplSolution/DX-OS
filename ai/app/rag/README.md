@@ -4,7 +4,7 @@
 
 `app/rag/` là phần Retrieval-Augmented Generation của AI Service. Nó biến kiến thức bệnh cây đã được duyệt thành các đoạn có thể tra cứu, tìm các đoạn liên quan theo câu hỏi và cung cấp evidence cho workflow hoặc LLM.
 
-RAG chỉ là lớp kiến thức giải thích. Nó không là nguồn quyết định về thuốc, liều lượng, PHI hay thao tác áp dụng; các thông tin đó luôn lấy từ dữ liệu nghiệp vụ có cấu trúc trong PostgreSQL.
+RAG chỉ là lớp kiến thức giải thích. Nó không là nguồn quyết định về thuốc, liều lượng, PHI hay thao tác áp dụng; các thông tin đó luôn lấy từ Backend qua REST API.
 
 ## Phạm vi
 
@@ -42,9 +42,12 @@ disease_knowledge.json + source_registry.json
 Ingest chạy qua:
 
 ```bash
+export RAG_INGEST_DATABASE_URL=postgresql+psycopg://<ingest-user>:<password>@<host>:5432/<ai-vector-db>
 python -m scripts.ingest_diseases
 ```
 
+FastAPI runtime không gọi ingestion và chỉ sử dụng `DATABASE_URL` cho truy vấn RAG.
+Credential `RAG_INGEST_DATABASE_URL` chỉ cấp cho job quản trị, không cấp cho container runtime.
 Dùng `--dry-run` để kiểm tra dữ liệu và preview chunk mà không ghi database.
 
 ### Tra cứu
@@ -75,7 +78,7 @@ Khi CV đã trả `disease_code`, workflow truyền mã đó vào RAG. Việc gi
 
 ## Dữ liệu và lưu trữ
 
-Corpus nguồn không tự xuất hiện trong database. Sau khi PostgreSQL có schema hiện tại, cần chạy seed dữ liệu nghiệp vụ và ingest RAG để các endpoint/workflow có knowledge truy vấn.
+Corpus nguồn không tự xuất hiện trong database. Sau khi AI Vector DB có schema, job quản trị phải ingest RAG trước khi runtime có knowledge để truy vấn.
 
 Mỗi document lưu metadata như tiêu đề, `disease_code`, loại document, version và `source_id`. Mỗi chunk lưu nội dung, vị trí chunk và embedding `vector(384)`.
 
@@ -85,7 +88,7 @@ Implementation hiện tại dùng PostgreSQL kèm `pgvector` để thực hiện
 
 Kết quả truy xuất luôn chứa `source_ids`, document/chunk ID, similarity và nội dung evidence. `RAGService` chỉ chấp nhận câu trả lời từ LLM khi câu đó xuất hiện nguyên văn trong evidence đã lấy; nếu Ollama lỗi, timeout hoặc trả nội dung không được chứng minh, service trả lại excerpt evidence thay vì bịa câu trả lời.
 
-Do đó RAG chỉ dùng để giải thích kiến thức. Thuốc, liều lượng, PHI và policy an toàn phải tiếp tục lấy từ structured knowledge/service tương ứng.
+Do đó RAG chỉ dùng để giải thích kiến thức. Thuốc, liều lượng, PHI và policy an toàn phải lấy từ Backend.
 
 ## Giới hạn
 

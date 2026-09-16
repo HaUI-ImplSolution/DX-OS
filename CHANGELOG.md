@@ -76,6 +76,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Xóa thành công endpoint legacy `POST /disease/reports/{report_id}/diagnose` khỏi AI Service.
 - Thêm Backend REST client read-only để AI lấy field context và structured facts.
 - Hoàn thành `POST /api/v1/diagnose`, kết hợp CV, RAG và structured facts từ Backend để trả recommendation đúng contract.
+- Tách quyền truy vấn RAG của runtime khỏi quyền ghi corpus của job ingestion.
 
 ### 2026-09-14
 

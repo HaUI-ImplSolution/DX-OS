@@ -37,7 +37,7 @@ Tham chiếu: mục 6 "Phase 1" của `ai_backend_decoupling_plan.md`.
   > **Lưu ý:** P2-3 chưa trả `management_policy` cho nhánh `NO_CHEMICAL_CONTROL`; Docker Compose chưa truyền URL/API key giữa AI và Backend. Cần xử lý trước khi kiểm thử tích hợp P1-6.
 - [x] **P1-6** — Đổi endpoint AI thành inference contract mới `POST /api/v1/diagnose`: nhận ảnh/request context, kết hợp CV + RAG + structured facts và trả recommendation về Backend theo schema mục 5.2 của kế hoạch.
   > **Lưu ý tích hợp:** Backend đã kiểm tra `selected_rule_id` nhưng hiện vẫn tự dựng `recommendationText`, chưa lưu `recommendation.summary` do AI trả về.
-- [ ] **P1-7** — Giữ nguyên `rag/retriever.py` và `rag/ingestion_service.py`; đảm bảo runtime chỉ đọc AI Vector DB, còn ingest là job quản trị có quyền ghi riêng (không lẫn với runtime inference).
+- [x] **P1-7** — Giữ nguyên `rag/retriever.py` và `rag/ingestion_service.py`; đảm bảo runtime chỉ đọc AI Vector DB, còn ingest là job quản trị có quyền ghi riêng (không lẫn với runtime inference).
 - [ ] **P1-8** — Áp dụng timeout + retry giới hạn (`httpx`) khi AI gọi Backend internal API, theo mục 4.4 của kế hoạch (timeout của AI ngắn hơn timeout Backend khi gọi AI).
 - [ ] **P1-9** — Đảm bảo nhánh "lấy sự thật nghiệp vụ" thất bại thì AI trả lỗi ngay, không trả `recommendation` chỉ dựa trên RAG evidence (mục 4.4).
 

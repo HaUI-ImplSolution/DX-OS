@@ -1,5 +1,9 @@
 package HaUI.ImplSolution.DX_Farm.service;
 
+import HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseRequest;
+import HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseRequest.FieldContext;
+import HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseRequest.RecentTreatment;
+import HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseResponse;
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisApplyRequest;
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisCreateRequest;
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisRejectRequest;
@@ -8,6 +12,7 @@ import HaUI.ImplSolution.DX_Farm.dto.TreatmentApplicationResponse;
 import HaUI.ImplSolution.DX_Farm.exception.InvalidStateException;
 import HaUI.ImplSolution.DX_Farm.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.DX_Farm.model.ApprovalStatus;
+import HaUI.ImplSolution.DX_Farm.model.CropSeason;
 import HaUI.ImplSolution.DX_Farm.model.Diagnosis;
 import HaUI.ImplSolution.DX_Farm.model.Disease;
 import HaUI.ImplSolution.DX_Farm.model.DiseaseReport;
@@ -20,6 +25,11 @@ import HaUI.ImplSolution.DX_Farm.repository.TreatmentApplicationRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,24 +37,98 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class DiagnosisService {
 
+  private static final int RECENT_TREATMENTS_LIMIT = 5;
+
   private final DiagnosisRepository diagnosisRepository;
   private final DiseaseReportRepository diseaseReportRepository;
   private final DiseaseRepository diseaseRepository;
   private final TreatmentRuleService treatmentRuleService;
   private final TreatmentApplicationRepository treatmentApplicationRepository;
   private final CurrentUserService currentUserService;
+  private final AiDiagnosisClient aiDiagnosisClient;
+  private final String publicBaseUrl;
 
   public DiagnosisService(DiagnosisRepository diagnosisRepository,
       DiseaseReportRepository diseaseReportRepository, DiseaseRepository diseaseRepository,
       TreatmentRuleService treatmentRuleService,
       TreatmentApplicationRepository treatmentApplicationRepository,
-      CurrentUserService currentUserService) {
+      CurrentUserService currentUserService, AiDiagnosisClient aiDiagnosisClient,
+      @Value("${app.public-base-url}") String publicBaseUrl) {
     this.diagnosisRepository = diagnosisRepository;
     this.diseaseReportRepository = diseaseReportRepository;
     this.diseaseRepository = diseaseRepository;
     this.treatmentRuleService = treatmentRuleService;
     this.treatmentApplicationRepository = treatmentApplicationRepository;
     this.currentUserService = currentUserService;
+    this.aiDiagnosisClient = aiDiagnosisClient;
+    this.publicBaseUrl = publicBaseUrl;
+  }
+
+  // Gọi AI Service theo contract POST /api/v1/diagnose và trả nguyên response - chưa lưu
+  // Diagnosis ở đây, xem createFromAi() cho bước đối chiếu version rule rồi lưu.
+  public AiDiagnoseResponse requestAiDiagnosis(Long reportId) {
+    DiseaseReport report = diseaseReportRepository.findById(reportId)
+        .orElseThrow(() -> new ResourceNotFoundException("Disease report not found: " + reportId));
+    return aiDiagnosisClient.diagnose(buildAiDiagnoseRequest(report));
+  }
+
+  // Gọi AI, đối chiếu version của rule AI dùng với treatment_rules hiện tại rồi mới lưu
+  // Diagnosis - rule đã đổi trong lúc AI xử lý thì từ chối, không lưu recommendation cũ.
+  @Transactional
+  public DiagnosisResponse createFromAi(Long reportId) {
+    DiseaseReport report = diseaseReportRepository.findById(reportId)
+        .orElseThrow(() -> new ResourceNotFoundException("Disease report not found: " + reportId));
+    if (diagnosisRepository.findByDiseaseReportId(reportId).isPresent()) {
+      throw new InvalidStateException("Disease report already has a diagnosis: " + reportId);
+    }
+
+    AiDiagnoseResponse aiResponse = aiDiagnosisClient.diagnose(buildAiDiagnoseRequest(report));
+    AiDiagnoseResponse.CvResult cvResult = aiResponse.cvResult();
+    String diseaseCode = cvResult.diseaseCode();
+
+    Disease disease = diseaseRepository.findByCode(diseaseCode).orElseThrow(
+        () -> new ResourceNotFoundException("Unknown disease code from AI: " + diseaseCode));
+    TreatmentRule currentRule = treatmentRuleService.findByDiseaseCodeOrThrow(diseaseCode);
+    AiDiagnoseResponse.RuleFact selectedRule = findSelectedRule(aiResponse);
+    if (!Objects.equals(currentRule.getVersion(), selectedRule.version())) {
+      throw new InvalidStateException(
+          "Treatment rule for %s changed while AI was processing (rule version %s -> %s) - retry diagnosis"
+              .formatted(diseaseCode, selectedRule.version(), currentRule.getVersion()));
+    }
+
+    Diagnosis diagnosis =
+        Diagnosis.builder().diseaseReport(report).disease(disease).confidence(cvResult.confidence())
+            .modelVersion(cvResult.modelName() + " " + cvResult.modelVersion())
+            .treatmentRule(currentRule)
+            .recommendationText(
+                buildRecommendation(report, disease, currentRule, cvResult.confidence()))
+            .approvalStatus(ApprovalStatus.PENDING).build();
+    return toResponse(diagnosisRepository.save(diagnosis));
+  }
+
+  private static AiDiagnoseResponse.RuleFact findSelectedRule(AiDiagnoseResponse aiResponse) {
+    String selectedRuleId = aiResponse.recommendation().selectedRuleId();
+    return aiResponse.structuredContext().rules().stream()
+        .filter(rule -> rule.ruleId().equals(selectedRuleId)).findFirst().orElseThrow(
+            () -> new InvalidStateException("AI selected an unknown rule_id: " + selectedRuleId));
+  }
+
+  private AiDiagnoseRequest buildAiDiagnoseRequest(DiseaseReport report) {
+    CropSeason season = report.getCropSeason();
+    List<RecentTreatment> recentTreatments = treatmentApplicationRepository
+        .findByCropSeasonIdOrderByAppliedAtDesc(season.getId()).stream()
+        .limit(RECENT_TREATMENTS_LIMIT).map(DiagnosisService::toRecentTreatment).toList();
+    FieldContext fieldContext = new FieldContext(season.getParcel().getCode(),
+        season.getRiceVariety(), null, recentTreatments);
+    String imageUrl = publicBaseUrl + "/uploads/" + report.getImageRef();
+    return new AiDiagnoseRequest("req_" + UUID.randomUUID(), season.getId(), imageUrl,
+        fieldContext);
+  }
+
+  private static RecentTreatment toRecentTreatment(TreatmentApplication application) {
+    Instant appliedAt = application.getAppliedAt().atStartOfDay(ZoneId.systemDefault()).toInstant();
+    return new RecentTreatment(application.getPesticide().getName(), appliedAt,
+        application.getHarvestLockedUntil());
   }
 
   @Transactional

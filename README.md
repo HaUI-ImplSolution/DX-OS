@@ -146,7 +146,7 @@ Kế hoạch tách thành 2 database vật lý riêng (Backend DB + AI Vector DB
 - [x] Cấu trúc monorepo và quyền sở hữu từng thư mục/module
 - [x] Chính sách repo Private trong lúc phát triển, thời điểm public trước khi nộp bài
 
-## Trạng thái hiện tại (cập nhật 2026-09-15)
+## Trạng thái hiện tại (cập nhật 2026-09-16)
 
 Backend Spring Boot đã xong, xác thực qua OAuth2 Resource Server (SSO thật qua Keycloak), phân quyền FARMER/ENGINEER/ADMIN theo realm role.
 Frontend demo (React/Vite) cho Phase 0 spine flow đã xong, đăng nhập bằng redirect sang Keycloak.
@@ -156,8 +156,9 @@ BI Dashboard (Superset) đã đăng nhập qua Keycloak; kênh chat nội bộ (
 Đã rà soát license toàn bộ thành phần đang chạy ([`LICENSES.md`](./LICENSES.md)).
 Checklist việc còn thiếu: xem mục "Giai đoạn 0"/"Giai đoạn 2" ở trên.
 Chi tiết đầy đủ theo từng module: [`CHANGELOG.md`](./CHANGELOG.md).
-Hướng ghép hệ thống đã đổi theo [`ai_backend_decoupling_plan.md`](./development/docs/ai_backend_decoupling_plan.md): AI hiện vẫn ghi trực tiếp DB nghiệp vụ dùng chung với Backend, chưa tách DB, chưa có Backend REST client ở AI và chưa có `AiDiagnosisClient` ở Backend.
-Phase 1-3 của kế hoạch đó (mục 6) là điều kiện tiên quyết trước khi nối HTTP client backend ↔ AI theo contract mới `POST /api/v1/diagnose`.
+Hướng ghép hệ thống đã đổi theo [`ai_backend_decoupling_plan.md`](./development/docs/ai_backend_decoupling_plan.md): Phase 2 (Backend) đã hoàn tất — xem [`ai_backend_decoupling_checklist.md`](./development/docs/ai_backend_decoupling_checklist.md).
+`DiagnosisController` có endpoint AI-triggered (`POST .../diagnosis/ai`) gọi `AiDiagnosisClient` theo contract `POST /api/v1/diagnose`, cùng internal API read-only để AI tra structured facts.
+Phase 1 (tái cấu trúc AI Service) và Phase 3 (tách DB) chưa làm: AI vẫn ghi trực tiếp DB nghiệp vụ dùng chung với Backend và chưa expose contract `/api/v1/diagnose` thật, nên endpoint AI-triggered mới ở Backend sẽ lỗi runtime cho tới khi Phase 1 xong.
 
 ## Chạy demo Phase 0
 

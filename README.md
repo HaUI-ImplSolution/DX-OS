@@ -119,7 +119,8 @@ Một PostgreSQL vật lý, ba nguồn logic:
 - **Structured Knowledge**: Disease, Pesticide, TreatmentRule, DiseaseManagementPolicy — "quy tắc là gì" (lookup bằng khoá/SQL, không qua LLM)
 - **RAG Knowledge**: tài liệu VietGAP/IRRI/nội bộ đã duyệt, qua pgvector — "tài liệu giải thích gì"
 
-Kế hoạch tách thành 2 database vật lý riêng (Backend DB + AI Vector DB) đã chốt ở [`development/docs/ai_backend_decoupling_plan.md`](./development/docs/ai_backend_decoupling_plan.md) mục 3, chưa triển khai.
+Kế hoạch tách thành 2 database vật lý riêng (Backend DB + AI Vector DB) đã chốt ở [`development/docs/ai_backend_decoupling_plan.md`](./development/docs/ai_backend_decoupling_plan.md) mục 3.
+Database `dx_farm_ai_vector_db` (chỉ `documents`/`document_chunks`, kèm pgvector) đã được tạo tự động lúc khởi động (P3-1 trong checklist); AI service chưa kết nối sang DB này và chưa dùng user chỉ-đọc riêng (P3-2/P3-3 còn mở).
 
 ## Điểm cần lưu ý cho tiêu chí PoF (50/100 điểm, mang tính loại trừ)
 

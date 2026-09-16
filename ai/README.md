@@ -84,6 +84,9 @@ pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requiremen
 
 AI không dùng Alembic hay migration. PostgreSQL phải được khởi tạo sẵn theo **schema phiên bản hiện tại** của DX-Farm, bao gồm các bảng dùng bởi AI như `diseases`, `pesticides`, `treatment_rules`, `documents`, `document_chunks` và các bảng workflow. Service AI không tự tạo các bảng này.
 
+Database pgvector riêng `dx_farm_ai_vector_db` (chỉ chứa `documents`/`document_chunks`, kèm extension `vector`) đã được Backend tự tạo lúc khởi động (`AiVectorDatabaseSeeder`, xem [`ai_backend_decoupling_checklist.md`](../development/docs/ai_backend_decoupling_checklist.md) mục P3-1).
+`DATABASE_URL` của AI ở trên vẫn trỏ vào DB nghiệp vụ dùng chung — việc chuyển AI sang kết nối `dx_farm_ai_vector_db` là phạm vi P3-2/P3-3, chưa triển khai.
+
 Các file JSON trong `data/structured/` và `data/rag/` là **dữ liệu nguồn trong repository**, chưa tự xuất hiện trong PostgreSQL. Sau khi schema đã có, nạp seed và tạo embedding RAG:
 
 ```bash

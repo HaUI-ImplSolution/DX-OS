@@ -61,6 +61,9 @@ Dịch vụ AI sử dụng cấu hình từ file `.env` (mẫu tại `.env.examp
 | `CV_MODEL_NAME` | `EfficientNet-B4` | Tên mô hình nhận diện bệnh |
 | `CV_CONFIDENCE_THRESHOLD` | `0.70` | Ngưỡng độ tin cậy cảnh báo low confidence |
 | `LLM_TIMEOUT_SECONDS` | `5` | Thời gian chờ tối đa khi gọi LLM (tự fallback nếu quá giờ) |
+| `BACKEND_BASE_URL` | `http://localhost:8081` | URL gốc của Backend internal REST API |
+| `BACKEND_INTERNAL_SERVICE_TOKEN` | *None* | Service token (Bearer) cho giao tiếp nội bộ AI -> Backend |
+| `BACKEND_TIMEOUT_SECONDS` | `3.0` | Timeout tối đa khi AI gọi Backend internal API (read-only) |
 
 ---
 

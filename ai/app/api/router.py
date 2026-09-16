@@ -1,9 +1,6 @@
-# SPDX-License-Identifier: Apache-2.0
-import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
-from sqlalchemy.exc import SQLAlchemyError
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
 
@@ -62,26 +59,6 @@ async def predict_disease(request: Request, image: Annotated[UploadFile, File()]
     data = await read_image(image)
     try:
         return await run_in_threadpool(predictor(request).predict, data)
-    except ValueError as exc:
-        raise HTTPException(400, str(exc)) from exc
-
-
-@router.post("/reports/{report_id}/diagnose")
-async def diagnose(
-    report_id: uuid.UUID,
-    request: Request,
-    image: Annotated[UploadFile, File()],
-    db: Annotated[Session, Depends(get_db)],
-):
-    data = await read_image(image)
-    try:
-        return await run_in_threadpool(
-            diagnose_report, db, report_id, data, predictor(request)
-        )
-    except LookupError as exc:
-        raise HTTPException(404, str(exc)) from exc
-    except FileExistsError as exc:
-        raise HTTPException(409, str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
 

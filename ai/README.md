@@ -36,7 +36,7 @@ Dịch vụ tuân thủ nguyên tắc kiến trúc bất biến: **Stateless & A
 | `GET` | `/health` | Kiểm tra trạng thái mô hình CV (đã load hay chưa, device GPU/CPU) |
 | `GET` | `/class-contract` | Lấy danh sách contract 38 lớp bệnh ánh xạ CV $\leftrightarrow$ DB |
 | `POST` | `/predict` | Nhận diện bệnh từ ảnh lá cây qua CV |
-| `POST` | `/reports/{report_id}/diagnose` | *(Sẽ xóa ở P1-4)* Chẩn đoán ảnh cho báo cáo bệnh đã tồn tại và lưu kết quả |
+| ~`POST`~ | ~`/reports/{report_id}/diagnose`~ | *(Đã xóa ở P1-4)* Thay bằng contract suy luận phi trạng thái ở P1-6 |
 | `POST` | `/knowledge/retrieve` | Truy vấn các đoạn tài liệu RAG trong pgvector theo câu hỏi & mã bệnh |
 | ~`POST`~ | ~`/workflow/run`~ | *(Đã xóa ở P1-3)* Chuyển sang Backend điều phối |
 | ~`GET`~ | ~`/workflow/{case_id}`~ | *(Đã xóa ở P1-3)* Chuyển sang Backend quản lý trạng thái case |

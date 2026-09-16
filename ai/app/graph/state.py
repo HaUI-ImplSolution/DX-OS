@@ -15,7 +15,6 @@ class FarmState(TypedDict, total=False):
     parcel_code: str
     crop_season_id: str
     image_ref: Any
-    disease_report_id: str
 
     # CV output
     cv_result: dict[str, Any] | None

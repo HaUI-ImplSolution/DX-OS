@@ -36,16 +36,15 @@ Dịch vụ tuân thủ nguyên tắc kiến trúc bất biến: **Stateless & A
 | `GET` | `/health` | Kiểm tra trạng thái mô hình CV (đã load hay chưa, device GPU/CPU) |
 | `GET` | `/class-contract` | Lấy danh sách contract 38 lớp bệnh ánh xạ CV $\leftrightarrow$ DB |
 | `POST` | `/predict` | Nhận diện bệnh từ ảnh lá cây qua CV |
-| `POST` | `/reports/{report_id}/diagnose` | Chẩn đoán ảnh cho báo cáo bệnh đã tồn tại và lưu kết quả |
+| `POST` | `/reports/{report_id}/diagnose` | *(Sẽ xóa ở P1-4)* Chẩn đoán ảnh cho báo cáo bệnh đã tồn tại và lưu kết quả |
 | `POST` | `/knowledge/retrieve` | Truy vấn các đoạn tài liệu RAG trong pgvector theo câu hỏi & mã bệnh |
-| `POST` | `/workflow/run` | Chạy toàn bộ LangGraph workflow tạo khuyến nghị dừng ở trạng thái `PENDING` |
-| `GET` | `/workflow/{case_id}` | Xem trạng thái workflow và lịch sử audit case |
-| `POST` | `/workflow/{case_id}/approve` | Kỹ sư duyệt khuyến nghị (`APPROVED`) |
-| `POST` | `/workflow/{case_id}/reject` | Kỹ sư từ chối khuyến nghị (`REJECTED`) |
-| `POST` | `/workflow/{case_id}/applied` | Xác nhận đã phun thuốc thực tế (`APPLIED`), tính ngày hết cách ly PHI |
+| ~`POST`~ | ~`/workflow/run`~ | *(Đã xóa ở P1-3)* Chuyển sang Backend điều phối |
+| ~`GET`~ | ~`/workflow/{case_id}`~ | *(Đã xóa ở P1-3)* Chuyển sang Backend quản lý trạng thái case |
+| ~`POST`~ | ~`/workflow/{case_id}/approve`~ | *(Đã xóa ở P1-3)* Chuyển sang Backend duyệt khuyến nghị |
+| ~`POST`~ | ~`/workflow/{case_id}/reject`~ | *(Đã xóa ở P1-3)* Chuyển sang Backend từ chối khuyến nghị |
+| ~`POST`~ | ~`/workflow/{case_id}/applied`~ | *(Đã xóa ở P1-3)* Chuyển sang Backend ghi nhận đã áp dụng |
 
-Bảng trên phản ánh contract hiện tại.
-Theo Phase 1 của [kế hoạch tách AI/Backend](../development/docs/ai_backend_decoupling_plan.md), `POST /reports/{report_id}/diagnose` và toàn bộ `/workflow/*` sẽ bị xóa, thay bằng contract suy luận phi trạng thái `POST /api/v1/diagnose`: nhận ảnh + field context và trả CV result + RAG evidence + structured facts + recommendation trong một lần gọi, không tự ghi DB nghiệp vụ.
+Theo Phase 1 của [kế hoạch tách AI/Backend](../development/docs/ai_backend_decoupling_plan.md), toàn bộ `/workflow/*` đã bị xóa ở mục **P1-3**. AI Service đang được chuẩn hóa sang contract suy luận phi trạng thái `POST /api/v1/diagnose`.
 
 ---
 

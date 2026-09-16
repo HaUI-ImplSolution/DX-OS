@@ -8,25 +8,15 @@ from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
 
 from app.api.schemas import (
-    ApplyWorkflowRequest,
-    ApproveWorkflowRequest,
     CVHealthResponse,
     DiseaseDetectionResponse,
-    RejectWorkflowRequest,
     RetrieveRequest,
-    WorkflowRunResponse,
 )
-from app.application.workflow_runner import WorkflowRunner
-from app.application.workflow_transitions import WorkflowTransitions
 from app.core.config import get_settings
 from app.cv.contract import class_contract
 from app.db.session import get_db
 from app.rag.retriever import RAGRetriever
-from app.services.diagnosis_service import diagnose_report
 from app.services.plant_disease_service import PlantDiseaseService
-from app.services.workflow_service import (
-    WorkflowConflictError,
-)
 
 router = APIRouter(prefix="/disease", tags=["Disease Detection"])
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
@@ -104,108 +94,3 @@ def retrieve(payload: RetrieveRequest, db: Annotated[Session, Depends(get_db)]):
         db, payload.query, top_k=payload.top_k, disease_code=payload.disease_code
     )
 
-
-@router.post("/workflow/run", response_model=WorkflowRunResponse)
-async def run_workflow(
-    request: Request,
-    image: Annotated[UploadFile, File()],
-    db: Annotated[Session, Depends(get_db)],
-    request_id: Annotated[str | None, Form()] = None,
-    parcel_code: Annotated[str | None, Form()] = None,
-    crop_season_id: Annotated[str | None, Form()] = None,
-    rag_question: Annotated[str | None, Form()] = None,
-    requested_by: Annotated[str | None, Form()] = None,
-):
-    data = await read_image(image)
-    req_id = request_id or str(uuid.uuid4())
-    try:
-        result = await run_in_threadpool(
-            WorkflowRunner(db, vision_factory=lambda: predictor(request)).run,
-            image_bytes=data,
-            request_id=req_id,
-            parcel_code=parcel_code,
-            crop_season_id=crop_season_id,
-            rag_question=rag_question,
-            requested_by=requested_by,
-        )
-    except ValueError as exc:
-        raise HTTPException(400, str(exc)) from exc
-    except LookupError as exc:
-        raise HTTPException(404, str(exc)) from exc
-    except SQLAlchemyError as exc:
-        db.rollback()
-        raise HTTPException(503, "Workflow database is unavailable") from exc
-    except HTTPException:
-        raise
-    except Exception as exc:
-        raise HTTPException(500, "Workflow execution failed") from exc
-    return WorkflowRunResponse(**result)
-
-
-def _transition_error(exc: Exception) -> HTTPException:
-    if isinstance(exc, LookupError):
-        return HTTPException(404, str(exc))
-    if isinstance(exc, WorkflowConflictError):
-        return HTTPException(409, str(exc))
-    if isinstance(exc, ValueError):
-        return HTTPException(422, str(exc))
-    if isinstance(exc, SQLAlchemyError):
-        return HTTPException(503, "Workflow database is unavailable")
-    return HTTPException(500, "Workflow transition failed")
-
-
-@router.get("/workflow/{case_id}")
-def workflow_status(case_id: uuid.UUID, db: Annotated[Session, Depends(get_db)]):
-    try:
-        return WorkflowTransitions(db).get(case_id)
-    except Exception as exc:
-        raise _transition_error(exc) from exc
-
-
-@router.post("/workflow/{case_id}/approve")
-def approve_workflow(
-    case_id: uuid.UUID,
-    payload: ApproveWorkflowRequest,
-    db: Annotated[Session, Depends(get_db)],
-):
-    try:
-        return WorkflowTransitions(db).approve(
-            case_id,
-            actor_id=payload.actor_id,
-            selected_rule_id=payload.selected_rule_id,
-            approved_dose=payload.approved_dose,
-            confirmed_low_confidence=payload.confirmed_low_confidence,
-        )
-    except Exception as exc:
-        raise _transition_error(exc) from exc
-
-
-@router.post("/workflow/{case_id}/reject")
-def reject_workflow(
-    case_id: uuid.UUID,
-    payload: RejectWorkflowRequest,
-    db: Annotated[Session, Depends(get_db)],
-):
-    try:
-        return WorkflowTransitions(db).reject(
-            case_id, actor_id=payload.actor_id, reason=payload.reason
-        )
-    except Exception as exc:
-        raise _transition_error(exc) from exc
-
-
-@router.post("/workflow/{case_id}/applied")
-def confirm_applied(
-    case_id: uuid.UUID,
-    payload: ApplyWorkflowRequest,
-    db: Annotated[Session, Depends(get_db)],
-):
-    try:
-        return WorkflowTransitions(db).apply(
-            case_id,
-            actor_id=payload.actor_id,
-            actual_dose=payload.actual_dose,
-            applied_at=payload.applied_at,
-        )
-    except Exception as exc:
-        raise _transition_error(exc) from exc

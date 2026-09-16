@@ -258,8 +258,7 @@ Nếu rule đã bị cập nhật trong lúc AI xử lý, Backend từ chối v�
       {
         "rule_id": "rule-123",
         "pesticide": "Tên thuốc từ Backend",
-        "dose_min": 1.0,
-        "dose_max": 1.5,
+        "dose_amount": 1.5,
         "dose_unit": "lít/ha",
         "phi_days": 14,
         "version": "1.0"
@@ -277,8 +276,8 @@ Nếu rule đã bị cập nhật trong lúc AI xử lý, Backend từ chối v�
 Thuốc, khoảng liều và PHI trong recommendation phải giữ nguyên từ `structured_context` do Backend cung cấp.
 AI chỉ lựa chọn và diễn giải lời khuyên có căn cứ; Backend kiểm tra lại trước khi lưu recommendation ở trạng thái `PENDING`.
 
-`dose_min`/`dose_max` ở trên khớp với model `treatment_rules` hiện tại của AI (`ai/app/db/models/treatment_rule.py`), nhưng Backend (`model/TreatmentRule.java`) chỉ có một cột `doseAmount` duy nhất, không có khoảng min/max.
-Trước khi triển khai Phase 2, cần chốt: thêm `doseMin`/`doseMax` vào `TreatmentRule` của Backend, hoặc đổi contract API sang `dose_amount` đơn để khớp schema Backend hiện tại.
+`dose_amount` ở trên khớp với cột `doseAmount` duy nhất của `TreatmentRule.java` phía Backend.
+Model `treatment_rules` hiện tại của AI (`ai/app/db/models/treatment_rule.py`) dùng khoảng `dose_min`/`dose_max` — bị xóa cùng các ORM model nghiệp vụ dư thừa khác ở Phase 1 (P1-1), nên không còn tồn tại để lệch schema với Backend.
 
 ---
 

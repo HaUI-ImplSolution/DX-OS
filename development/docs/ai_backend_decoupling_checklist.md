@@ -45,15 +45,19 @@ Owner đề xuất: người phụ trách `backend/`.
 Tham chiếu: mục 6 "Phase 2" của `ai_backend_decoupling_plan.md`.
 **Áp dụng WORKFLOW.md mục 9 cho mọi mục dưới đây** — cập nhật swagger (springdoc annotation) trong cùng lần thay đổi khi endpoint mới hoặc response shape đổi, không ship code rồi để swagger sau.
 
-- [ ] **P2-0 (chặn P2-\*)** — Chốt schema liều lượng: thêm `doseMin`/`doseMax` vào `TreatmentRule.java`, hoặc đổi contract API sang `dose_amount` đơn để khớp schema Backend hiện tại (xem mục 5 của kế hoạch, phần ghi chú dưới response mẫu).
-  Đây là quyết định mở duy nhất còn lại trước khi code Phase 2 — chốt trước khi làm P2-3/P2-5.
-- [ ] **P2-1** — Thêm `AiDiagnosisClient` (dùng `WebClient` hoặc `RestTemplate`), có timeout/circuit breaker (Resilience4j) theo mục 4.4.
-- [ ] **P2-2** — Cập nhật `DiseaseReportService`: tự khởi tạo và lưu `DiseaseReport` vào Backend DB (không còn chờ AI ghi hộ).
-- [ ] **P2-3** — Cung cấp internal API read-only để AI lấy structured facts bằng `disease_code` và context của báo cáo; bảo vệ bằng service token/network nội bộ theo mục 4.3.
+- [x] **P2-0 (chặn P2-\*)** — Chốt schema liều lượng: dùng `dose_amount` đơn để khớp schema Backend hiện tại (`TreatmentRule.doseAmount`), không thêm `doseMin`/`doseMax` (xem mục 5 của kế hoạch, phần ghi chú dưới response mẫu).
+- [x] **P2-1** — Thêm `AiDiagnosisClient` (dùng `RestClient` + `JdkClientHttpRequestFactory`), có timeout/circuit breaker (Resilience4j) theo mục 4.4.
+  Chưa nối vào flow nào — `DiseaseReportService` sẽ gọi ở P2-4.
+- [x] **P2-2** — Cập nhật `DiseaseReportService`: tự khởi tạo và lưu `DiseaseReport` vào Backend DB (không còn chờ AI ghi hộ).
+- [x] **P2-3** — Cung cấp internal API read-only để AI lấy structured facts bằng `disease_code` và context của báo cáo; bảo vệ bằng service token/network nội bộ theo mục 4.3.
   Chỉ gồm endpoint GET; không expose POST/PUT/DELETE cho service role của AI.
-- [ ] **P2-4** — Gọi `AiDiagnosisClient.diagnose(...)` gửi payload sang AI Service theo contract `POST /api/v1/diagnose`.
-- [ ] **P2-5** — Nhận CV, evidence và recommendation từ AI; đối chiếu lại `version` của rule (mục 4.5) trước khi lưu; nếu rule đã đổi trong lúc AI xử lý thì từ chối và lấy lại rule mới.
-- [ ] **P2-6** — Xác nhận `DiagnosisController` (`create`/`approve`/`reject`/`apply`) là nơi duy nhất quản lý vòng đời phê duyệt sau khi AI không còn state machine riêng.
+- [x] **P2-4** — Gọi `AiDiagnosisClient.diagnose(...)` gửi payload sang AI Service theo contract `POST /api/v1/diagnose`.
+  Chưa nối vào flow tạo báo cáo/HTTP endpoint nào — `requestAiDiagnosis()` sẽ được P2-5 gọi khi xử lý và lưu response.
+- [x] **P2-5** — Nhận CV, evidence và recommendation từ AI; đối chiếu lại `version` của rule (mục 4.5) trước khi lưu; nếu rule đã đổi trong lúc AI xử lý thì từ chối và lấy lại rule mới.
+  `createFromAi()` chưa nối vào `DiagnosisController` — endpoint nào expose nó là quyết định của P2-6.
+- [x] **P2-6** — Xác nhận `DiagnosisController` (`create`/`approve`/`reject`/`apply`) là nơi duy nhất quản lý vòng đời phê duyệt sau khi AI không còn state machine riêng.
+  Rà soát: chỉ `DiagnosisService` mutate `ApprovalStatus`, và chỉ `DiagnosisController` gọi các phương thức đó.
+  Thêm `POST .../diagnosis/ai` gọi `createFromAi()` (P2-5), giữ `POST .../diagnosis` cho nhập tay (testing/demo) - cả hai cùng đổ vào một `Diagnosis`/vòng đời duyệt duy nhất qua `approve`/`reject`/`apply`.
 
 ## Phase 3 — Khởi tạo Database & Deployment
 

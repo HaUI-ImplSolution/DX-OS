@@ -53,6 +53,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## AI Service (Python)
 
+### 2026-09-16
+
+- Xóa thành công 10 ORM model nghiệp vụ dư thừa khỏi AI Service.
+
 ### 2026-09-14
 
 **Đã xong — đóng gói Docker và chuẩn hóa cấu hình AI Service:**

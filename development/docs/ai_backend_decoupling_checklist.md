@@ -34,7 +34,7 @@ Tham chiếu: mục 6 "Phase 1" của `ai_backend_decoupling_plan.md`.
 - [x] **P1-4** — Xóa endpoint `POST /disease/reports/{report_id}/diagnose` (`diagnose_report` trong `ai/app/api/router.py`, ghi thẳng DB) — thay bằng inference contract mới ở P1-6.
 - [x] **P1-5** — Thêm Backend REST client read-only trong `ai/` để lấy field context, treatment rule, policy, PHI và lịch sử phun sau khi CV có `disease_code`.
   Xem contract client cần gọi ở mục 4.3 của kế hoạch (service token, chỉ GET).
-- [ ] **P1-6** — Đổi endpoint AI thành inference contract mới `POST /api/v1/diagnose`: nhận ảnh/request context, kết hợp CV + RAG + structured facts và trả recommendation về Backend theo schema mục 5.2 của kế hoạch.
+- [x] **P1-6** — Đổi endpoint AI thành inference contract mới `POST /api/v1/diagnose`: nhận ảnh/request context, kết hợp CV + RAG + structured facts và trả recommendation về Backend theo schema mục 5.2 của kế hoạch.
 - [ ] **P1-7** — Giữ nguyên `rag/retriever.py` và `rag/ingestion_service.py`; đảm bảo runtime chỉ đọc AI Vector DB, còn ingest là job quản trị có quyền ghi riêng (không lẫn với runtime inference).
 - [ ] **P1-8** — Áp dụng timeout + retry giới hạn (`httpx`) khi AI gọi Backend internal API, theo mục 4.4 của kế hoạch (timeout của AI ngắn hơn timeout Backend khi gọi AI).
 - [ ] **P1-9** — Đảm bảo nhánh "lấy sự thật nghiệp vụ" thất bại thì AI trả lỗi ngay, không trả `recommendation` chỉ dựa trên RAG evidence (mục 4.4).

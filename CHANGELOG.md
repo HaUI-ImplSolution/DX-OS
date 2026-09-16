@@ -55,13 +55,14 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ### 2026-09-16
 
-**Đã xong — Phase 1 Decoupling (P1-1 đến P1-5):**
+**Đã xong — Phase 1 Decoupling (P1-1 đến P1-6):**
 
 - Xóa 10 ORM model nghiệp vụ dư thừa (`disease_report.py`, `diagnosis.py`, `treatment_application.py`, `parcel.py`, `crop_season.py`, `disease.py`, `pesticide.py`, `treatment_rule.py`, `disease_management_policy.py`, `workflow_case.py`) khỏi `ai/app/db/models/`.
 - Xóa các repository và service CRUD nghiệp vụ tương ứng (`diagnosis_repository.py`, `treatment_repository.py`, `parcel_repository.py`, `knowledge_repository.py`, `diagnosis_service.py`, `workflow_service.py`).
 - Xóa router `/disease/workflow/*` (`run`, `{case_id}` GET, `approve`, `reject`, `applied`) cùng `WorkflowRunner`/`WorkflowTransitions` (`workflow_runner.py`, `workflow_transitions.py`) và các schema Pydantic liên quan.
 - Xóa endpoint legacy `POST /disease/reports/{report_id}/diagnose` khỏi `ai/app/api/router.py`.
 - Thêm `BackendClient` read-only trong `ai/app/clients/backend_client.py` dùng `httpx` hỗ trợ gọi Backend internal REST API (`GET /api/v1/internal/field-context` & `/structured-facts`), tự truyền service token (Bearer) và `X-Request-ID`.
+- Triển khai contract suy luận phi trạng thái hợp nhất `POST /api/v1/diagnose` (`inference_service.py`) kết hợp nhận diện CV + RAG Vector DB + Backend structured facts để trả recommendation về Backend theo chuẩn DTO section 5.2.
 - Cập nhật `ai/app/db/models/__init__.py` chỉ export 2 model RAG Vector DB (`Document`, `DocumentChunk`), đồng thời loại bỏ toàn bộ lệnh `db.add()`/`db.commit()` ghi vào các bảng nghiệp vụ trong AI runtime.
 
 ### 2026-09-14

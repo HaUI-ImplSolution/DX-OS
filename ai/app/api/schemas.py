@@ -1,3 +1,5 @@
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -32,4 +34,22 @@ class RetrieveRequest(BaseModel):
     query: str = Field(min_length=1, max_length=4000)
     disease_code: str | None = Field(default=None, max_length=100)
     top_k: int = Field(default=3, ge=1, le=20)
+
+
+class DiagnoseRequest(BaseModel):
+    request_id: str | None = Field(default=None, description="Mã định danh truy vết luồng")
+    crop_season_id: str | None = Field(default=None, description="ID vụ mùa")
+    parcel_code: str | None = Field(default=None, description="Mã thửa ruộng")
+    image_url: str | None = Field(default=None, description="URL ảnh bệnh nếu không gửi file multipart")
+    field_context: dict[str, Any] | None = Field(default=None, description="Bối cảnh vận hành từ Backend")
+    rag_question: str | None = Field(default=None, description="Câu hỏi bổ sung cho RAG")
+
+
+class DiagnoseResponse(BaseModel):
+    request_id: str = Field(..., description="Mã định danh yêu cầu")
+    cv_result: dict[str, Any] = Field(..., description="Kết quả chẩn đoán mô hình CV")
+    rag_evidence: list[dict[str, Any]] = Field(default_factory=list, description="Danh sách bằng chứng từ RAG Vector DB")
+    structured_context: dict[str, Any] = Field(default_factory=dict, description="Thông tin quy tắc điều trị và chính sách")
+    recommendation: dict[str, Any] = Field(default_factory=dict, description="Đề xuất khuyến nghị tổng hợp")
+
 

@@ -29,22 +29,23 @@ Dịch vụ tuân thủ nguyên tắc kiến trúc bất biến: **Stateless & A
 
 ---
 
-## Danh sách API chính (`/api/v1/disease`)
+## Danh sách API chính (`/api/v1`)
 
 | Method | Endpoint | Mô tả |
 |---|---|---|
-| `GET` | `/health` | Kiểm tra trạng thái mô hình CV (đã load hay chưa, device GPU/CPU) |
-| `GET` | `/class-contract` | Lấy danh sách contract 38 lớp bệnh ánh xạ CV $\leftrightarrow$ DB |
-| `POST` | `/predict` | Nhận diện bệnh từ ảnh lá cây qua CV |
-| ~`POST`~ | ~`/reports/{report_id}/diagnose`~ | *(Đã xóa ở P1-4)* Thay bằng contract suy luận phi trạng thái ở P1-6 |
-| `POST` | `/knowledge/retrieve` | Truy vấn các đoạn tài liệu RAG trong pgvector theo câu hỏi & mã bệnh |
-| ~`POST`~ | ~`/workflow/run`~ | *(Đã xóa ở P1-3)* Chuyển sang Backend điều phối |
-| ~`GET`~ | ~`/workflow/{case_id}`~ | *(Đã xóa ở P1-3)* Chuyển sang Backend quản lý trạng thái case |
-| ~`POST`~ | ~`/workflow/{case_id}/approve`~ | *(Đã xóa ở P1-3)* Chuyển sang Backend duyệt khuyến nghị |
-| ~`POST`~ | ~`/workflow/{case_id}/reject`~ | *(Đã xóa ở P1-3)* Chuyển sang Backend từ chối khuyến nghị |
-| ~`POST`~ | ~`/workflow/{case_id}/applied`~ | *(Đã xóa ở P1-3)* Chuyển sang Backend ghi nhận đã áp dụng |
+| `POST` | `/diagnose` | **(Mới - P1-6)** Endpoint suy luận phi trạng thái hợp nhất: nhận ảnh + context, CV + RAG + Backend facts -> recommendation |
+| `GET` | `/disease/health` | Kiểm tra trạng thái mô hình CV (đã load hay chưa, device GPU/CPU) |
+| `GET` | `/disease/class-contract` | Lấy danh sách contract 38 lớp bệnh ánh xạ CV $\leftrightarrow$ DB |
+| `POST` | `/disease/predict` | Nhận diện bệnh từ ảnh lá cây qua CV |
+| `POST` | `/disease/knowledge/retrieve` | Truy vấn các đoạn tài liệu RAG trong pgvector theo câu hỏi & mã bệnh |
+| ~`POST`~ | ~`/disease/reports/{report_id}/diagnose`~ | *(Đã xóa ở P1-4)* Thay bằng contract suy luận phi trạng thái `POST /api/v1/diagnose` |
+| ~`POST`~ | ~`/disease/workflow/run`~ | *(Đã xóa ở P1-3)* Chuyển sang Backend điều phối |
+| ~`GET`~ | ~`/disease/workflow/{case_id}`~ | *(Đã xóa ở P1-3)* Chuyển sang Backend quản lý trạng thái case |
+| ~`POST`~ | ~`/disease/workflow/{case_id}/approve`~ | *(Đã xóa ở P1-3)* Chuyển sang Backend duyệt khuyến nghị |
+| ~`POST`~ | ~`/disease/workflow/{case_id}/reject`~ | *(Đã xóa ở P1-3)* Chuyển sang Backend từ chối khuyến nghị |
+| ~`POST`~ | ~`/disease/workflow/{case_id}/applied`~ | *(Đã xóa ở P1-3)* Chuyển sang Backend ghi nhận đã áp dụng |
 
-Theo Phase 1 của [kế hoạch tách AI/Backend](../development/docs/ai_backend_decoupling_plan.md), toàn bộ `/workflow/*` đã bị xóa ở mục **P1-3**. AI Service đang được chuẩn hóa sang contract suy luận phi trạng thái `POST /api/v1/diagnose`.
+Theo Phase 1 của [kế hoạch tách AI/Backend](../development/docs/ai_backend_decoupling_plan.md), AI Service đã chuyển sang sử dụng contract suy luận phi trạng thái hợp nhất `POST /api/v1/diagnose` (**P1-6**).
 
 ---
 

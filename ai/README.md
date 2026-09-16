@@ -82,7 +82,7 @@ pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requiremen
 
 ### 2. Chuẩn bị database, seed và RAG
 
-AI không dùng Alembic hay migration. PostgreSQL phải được khởi tạo sẵn theo **schema phiên bản hiện tại** của DX-Farm, bao gồm các bảng dùng bởi AI như `diseases`, `pesticides`, `treatment_rules`, `documents`, `document_chunks` và các bảng workflow. Service AI không tự tạo các bảng này.
+AI không dùng Alembic hay migration. Theo định hướng decoupling, AI không còn duy trì các ORM model nghiệp vụ (`diseases`, `pesticides`, `treatment_rules`, `disease_reports`, `workflow_cases`... đã bị xóa khỏi `ai/app/db/models/`). AI runtime chỉ quản lý 2 ORM model cho RAG Vector DB là `Document` (`documents`) và `DocumentChunk` (`document_chunks`).
 
 Các file JSON trong `data/structured/` và `data/rag/` là **dữ liệu nguồn trong repository**, chưa tự xuất hiện trong PostgreSQL. Sau khi schema đã có, nạp seed và tạo embedding RAG:
 

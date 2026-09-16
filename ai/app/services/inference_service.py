@@ -50,23 +50,12 @@ def run_stateless_diagnose(
         for chunk in rag_chunks
     ]
 
-    # 3. Fetch Structured Facts from Backend Internal REST API
-    structured_context: dict[str, Any] = {}
-    try:
-        structured_context = client.get_structured_facts(
-            disease_code=disease_code,
-            crop_season_id=crop_season_id,
-            request_id=req_id,
-        )
-    except Exception as exc:
-        # Fallback for offline/standalone local dev if Backend internal API is unreachable
-        structured_context = {
-            "path": "review_required",
-            "disease_code": disease_code,
-            "rules": [],
-            "policy": None,
-            "notes": f"Backend internal API unreachable: {exc}",
-        }
+    # 3. Fetch Structured Facts from Backend Internal REST API (Fail-fast as Backend is single source of business truth)
+    structured_context = client.get_structured_facts(
+        disease_code=disease_code,
+        crop_season_id=crop_season_id,
+        request_id=req_id,
+    )
 
     # 4. Synthesize Recommendation
     writer = GroundedRecommendationWriter()

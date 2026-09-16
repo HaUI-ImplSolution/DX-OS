@@ -217,7 +217,7 @@ Nếu rule đã bị cập nhật trong lúc AI xử lý, Backend từ chối v�
 ```json
 {
   "request_id": "req_123456789",
-  "crop_season_id": "101",
+  "crop_season_id": 101,
   "image_url": "https://storage.dxfarm.com/reports/leaf_01.jpg",
   "field_context": {
     "parcel_code": "P-01",
@@ -227,7 +227,7 @@ Nếu rule đã bị cập nhật trong lúc AI xử lý, Backend từ chối v�
       {
         "pesticide_name": "Anvil 5SC",
         "applied_at": "2026-09-01T08:00:00Z",
-        "harvest_locked_until": "2026-09-15T08:00:00Z"
+        "harvest_locked_until": "2026-09-15"
       }
     ]
   }
@@ -273,7 +273,7 @@ Nếu rule đã bị cập nhật trong lúc AI xử lý, Backend từ chối v�
 }
 ```
 
-Thuốc, khoảng liều và PHI trong recommendation phải giữ nguyên từ `structured_context` do Backend cung cấp.
+Thuốc, liều và PHI trong recommendation phải giữ nguyên từ `structured_context` do Backend cung cấp.
 AI chỉ lựa chọn và diễn giải lời khuyên có căn cứ; Backend kiểm tra lại trước khi lưu recommendation ở trạng thái `PENDING`.
 
 `dose_amount` ở trên khớp với cột `doseAmount` duy nhất của `TreatmentRule.java` phía Backend.
@@ -289,7 +289,7 @@ Model `treatment_rules` hiện tại của AI (`ai/app/db/models/treatment_rule.
 - [x] Xóa router `/disease/workflow/*` (`run`, `{case_id}` GET, `approve`, `reject`, `applied`) cùng `WorkflowRunner`/`WorkflowTransitions` — rà soát mọi client (frontend, app, script nội bộ) đang gọi các endpoint này và chuyển sang gọi Backend trước khi xóa.
 - [x] Xóa endpoint `POST /disease/reports/{report_id}/diagnose` (ghi thẳng DB qua `diagnose_report`) — thay bằng inference contract mới.
 - [x] Thêm Backend REST client read-only để lấy field context, treatment rule, policy, PHI và lịch sử phun sau khi CV có `disease_code`.
-- [ ] Đổi endpoint AI thành inference contract: nhận ảnh/request context, kết hợp CV + RAG + structured facts và trả recommendation về Backend.
+- [x] Đổi endpoint AI thành inference contract: nhận ảnh/request context, kết hợp CV + RAG + structured facts và trả recommendation về Backend.
 - [ ] Giữ `rag/retriever.py` và `rag/ingestion_service.py`; runtime chỉ đọc AI Vector DB, còn ingest là job quản trị có quyền ghi riêng.
 - [ ] Áp dụng timeout + retry giới hạn (`httpx`) khi gọi Backend internal API, theo mục 4.4.
 

@@ -258,8 +258,7 @@ Nếu rule đã bị cập nhật trong lúc AI xử lý, Backend từ chối v�
       {
         "rule_id": "rule-123",
         "pesticide": "Tên thuốc từ Backend",
-        "dose_min": 1.0,
-        "dose_max": 1.5,
+        "dose_amount": 1.5,
         "dose_unit": "lít/ha",
         "phi_days": 14,
         "version": "1.0"
@@ -277,19 +276,19 @@ Nếu rule đã bị cập nhật trong lúc AI xử lý, Backend từ chối v�
 Thuốc, khoảng liều và PHI trong recommendation phải giữ nguyên từ `structured_context` do Backend cung cấp.
 AI chỉ lựa chọn và diễn giải lời khuyên có căn cứ; Backend kiểm tra lại trước khi lưu recommendation ở trạng thái `PENDING`.
 
-`dose_min`/`dose_max` ở trên khớp với model `treatment_rules` hiện tại của AI (`ai/app/db/models/treatment_rule.py`), nhưng Backend (`model/TreatmentRule.java`) chỉ có một cột `doseAmount` duy nhất, không có khoảng min/max.
-Trước khi triển khai Phase 2, cần chốt: thêm `doseMin`/`doseMax` vào `TreatmentRule` của Backend, hoặc đổi contract API sang `dose_amount` đơn để khớp schema Backend hiện tại.
+`dose_amount` ở trên khớp với cột `doseAmount` duy nhất của `TreatmentRule.java` phía Backend.
+Model `treatment_rules` hiện tại của AI (`ai/app/db/models/treatment_rule.py`) dùng khoảng `dose_min`/`dose_max` — bị xóa cùng các ORM model nghiệp vụ dư thừa khác ở Phase 1 (P1-1), nên không còn tồn tại để lệch schema với Backend.
 
 ---
 
 ## 🚀 6. Lộ Trình Triển Khai (Implementation Roadmap)
 
 ### Phase 1: Tái cấu trúc phía AI (Python/FastAPI)
-- [ ] Xóa 10 ORM Models nghiệp vụ dư thừa (`disease_report.py`, `diagnosis.py`, `treatment_application.py`, `parcel.py`, `crop_season.py`, `disease.py`, `pesticide.py`, `treatment_rule.py`, `disease_management_policy.py`, `workflow_case.py`).
-- [ ] Xóa repository/service CRUD nghiệp vụ và toàn bộ lệnh `db.add()`, `db.commit()` trong AI runtime.
-- [ ] Xóa router `/disease/workflow/*` (`run`, `{case_id}` GET, `approve`, `reject`, `applied`) cùng `WorkflowRunner`/`WorkflowTransitions` — rà soát mọi client (frontend, app, script nội bộ) đang gọi các endpoint này và chuyển sang gọi Backend trước khi xóa.
-- [ ] Xóa endpoint `POST /disease/reports/{report_id}/diagnose` (ghi thẳng DB qua `diagnose_report`) — thay bằng inference contract mới.
-- [ ] Thêm Backend REST client read-only để lấy field context, treatment rule, policy, PHI và lịch sử phun sau khi CV có `disease_code`.
+- [x] Xóa 10 ORM Models nghiệp vụ dư thừa (`disease_report.py`, `diagnosis.py`, `treatment_application.py`, `parcel.py`, `crop_season.py`, `disease.py`, `pesticide.py`, `treatment_rule.py`, `disease_management_policy.py`, `workflow_case.py`).
+- [x] Xóa repository/service CRUD nghiệp vụ và toàn bộ lệnh `db.add()`, `db.commit()` trong AI runtime.
+- [x] Xóa router `/disease/workflow/*` (`run`, `{case_id}` GET, `approve`, `reject`, `applied`) cùng `WorkflowRunner`/`WorkflowTransitions` — rà soát mọi client (frontend, app, script nội bộ) đang gọi các endpoint này và chuyển sang gọi Backend trước khi xóa.
+- [x] Xóa endpoint `POST /disease/reports/{report_id}/diagnose` (ghi thẳng DB qua `diagnose_report`) — thay bằng inference contract mới.
+- [x] Thêm Backend REST client read-only để lấy field context, treatment rule, policy, PHI và lịch sử phun sau khi CV có `disease_code`.
 - [ ] Đổi endpoint AI thành inference contract: nhận ảnh/request context, kết hợp CV + RAG + structured facts và trả recommendation về Backend.
 - [ ] Giữ `rag/retriever.py` và `rag/ingestion_service.py`; runtime chỉ đọc AI Vector DB, còn ingest là job quản trị có quyền ghi riêng.
 - [ ] Áp dụng timeout + retry giới hạn (`httpx`) khi gọi Backend internal API, theo mục 4.4.

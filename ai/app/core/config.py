@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     llm_timeout_seconds: float = 5.0
 
     backend_base_url: str = "http://localhost:8081"
-    backend_internal_service_token: str | None = None
+    backend_service_api_key: str | None = None
     backend_timeout_seconds: float = 3.0
 
     log_level: str = "INFO"

@@ -5,6 +5,21 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Backend (Spring Boot — `backend/DX-Farm`)
 
+### 2026-09-16
+
+**Đã xong — Phase 2 tách AI thành dịch vụ suy luận (P2-0..P2-6, xem `development/docs/ai_backend_decoupling_checklist.md`):**
+
+- `AiDiagnosisClient` (`RestClient` + `JdkClientHttpRequestFactory`) gọi AI theo contract `POST /api/v1/diagnose`, timeout riêng + circuit breaker Resilience4j.
+- Internal API read-only `GET /internal/v1/diagnosis-context` cho AI tra treatment rule + lịch sử phun theo `disease_code`, bảo vệ bằng service API key riêng (`ServiceApiKeyAuthenticationFilter`), chỉ cho GET.
+- `DiagnosisController` có endpoint mới `POST .../diagnosis/ai` gọi `DiagnosisService.createFromAi()`: nhận CV/recommendation từ AI, đối chiếu `version` của treatment rule trước khi lưu, từ chối (409) nếu rule đã đổi trong lúc AI xử lý.
+- Endpoint nhập tay `POST .../diagnosis` vẫn giữ cho testing/demo — cả hai cùng đổ vào một `Diagnosis`/vòng đời duyệt duy nhất qua `approve`/`reject`/`apply`.
+- Xác nhận `DiseaseReportService` đã tự lưu `DiseaseReport` vào Backend DB từ Phase 0, không phụ thuộc AI ghi hộ.
+
+**Chưa làm** (thuộc Phase 1/Phase 3, ngoài phạm vi backend/Phase 2):
+
+- AI Service (`ai/`) chưa expose contract `/api/v1/diagnose` thật, vẫn ghi trực tiếp DB nghiệp vụ dùng chung với Backend — endpoint `POST .../diagnosis/ai` sẽ lỗi runtime cho tới khi Phase 1 xong.
+- Tách DB vật lý (`dx_farm_ai_vector_db`) và cách ly network nội bộ cho `/internal/v1/**` — Phase 3.
+
 ### 2026-09-11
 
 **Đã xong — SSO thật qua Keycloak (Giai đoạn 2 [H]):**
@@ -55,15 +70,11 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ### 2026-09-16
 
-**Đã xong — Phase 1 Decoupling (P1-1 đến P1-6):**
-
-- Xóa 10 ORM model nghiệp vụ dư thừa (`disease_report.py`, `diagnosis.py`, `treatment_application.py`, `parcel.py`, `crop_season.py`, `disease.py`, `pesticide.py`, `treatment_rule.py`, `disease_management_policy.py`, `workflow_case.py`) khỏi `ai/app/db/models/`.
-- Xóa các repository và service CRUD nghiệp vụ tương ứng (`diagnosis_repository.py`, `treatment_repository.py`, `parcel_repository.py`, `knowledge_repository.py`, `diagnosis_service.py`, `workflow_service.py`).
-- Xóa router `/disease/workflow/*` (`run`, `{case_id}` GET, `approve`, `reject`, `applied`) cùng `WorkflowRunner`/`WorkflowTransitions` (`workflow_runner.py`, `workflow_transitions.py`) và các schema Pydantic liên quan.
-- Xóa endpoint legacy `POST /disease/reports/{report_id}/diagnose` khỏi `ai/app/api/router.py`.
-- Thêm `BackendClient` read-only trong `ai/app/clients/backend_client.py` dùng `httpx` hỗ trợ gọi Backend internal REST API (`GET /api/v1/internal/field-context` & `/structured-facts`), tự truyền service token (Bearer) và `X-Request-ID`.
-- Triển khai contract suy luận phi trạng thái hợp nhất `POST /api/v1/diagnose` (`inference_service.py`) kết hợp nhận diện CV + RAG Vector DB + Backend structured facts để trả recommendation về Backend theo chuẩn DTO section 5.2.
-- Cập nhật `ai/app/db/models/__init__.py` chỉ export 2 model RAG Vector DB (`Document`, `DocumentChunk`), đồng thời loại bỏ toàn bộ lệnh `db.add()`/`db.commit()` ghi vào các bảng nghiệp vụ trong AI runtime.
+- Xóa thành công 10 ORM model nghiệp vụ dư thừa khỏi AI Service.
+- Xóa thành công repository/service CRUD và thao tác ghi dữ liệu nghiệp vụ khỏi AI runtime.
+- Xóa thành công router workflow cũ, `WorkflowRunner`, `WorkflowTransitions` và schema liên quan khỏi AI Service.
+- Xóa thành công endpoint legacy `POST /disease/reports/{report_id}/diagnose` khỏi AI Service.
+- Thêm Backend REST client read-only để AI lấy field context và structured facts.
 
 ### 2026-09-14
 

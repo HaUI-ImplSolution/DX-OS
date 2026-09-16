@@ -31,10 +31,11 @@ Tham chiếu: mục 6 "Phase 1" của `ai_backend_decoupling_plan.md`.
 - [x] **P1-2** — Xóa repository/service CRUD nghiệp vụ tương ứng và toàn bộ lệnh `db.add()`/`db.commit()` ghi vào các bảng nghiệp vụ trong AI runtime.
 - [x] **P1-3** — Xóa router `/disease/workflow/*` (`run`, `{case_id}` GET, `approve`, `reject`, `applied`) cùng `WorkflowRunner`/`WorkflowTransitions` (`ai/app/application/workflow_runner.py`, `workflow_transitions.py`).
   Phụ thuộc: rà soát mọi client (frontend, app, script nội bộ) đang gọi các endpoint này và chuyển sang gọi Backend trước khi xóa.
+  Kết quả rà soát: frontend, backend và script nội bộ không gọi trực tiếp `/disease/workflow/*`; không cần chuyển đổi client trong repository.
 - [x] **P1-4** — Xóa endpoint `POST /disease/reports/{report_id}/diagnose` (`diagnose_report` trong `ai/app/api/router.py`, ghi thẳng DB) — thay bằng inference contract mới ở P1-6.
 - [x] **P1-5** — Thêm Backend REST client read-only trong `ai/` để lấy field context, treatment rule, policy, PHI và lịch sử phun sau khi CV có `disease_code`.
-  Xem contract client cần gọi ở mục 4.3 của kế hoạch (service token, chỉ GET).
-- [x] **P1-6** — Đổi endpoint AI thành inference contract mới `POST /api/v1/diagnose`: nhận ảnh/request context, kết hợp CV + RAG + structured facts và trả recommendation về Backend theo schema mục 5.2 của kế hoạch.
+  > **Lưu ý:** P2-3 chưa trả `management_policy` cho nhánh `NO_CHEMICAL_CONTROL`; Docker Compose chưa truyền URL/API key giữa AI và Backend. Cần xử lý trước khi kiểm thử tích hợp P1-6.
+- [ ] **P1-6** — Đổi endpoint AI thành inference contract mới `POST /api/v1/diagnose`: nhận ảnh/request context, kết hợp CV + RAG + structured facts và trả recommendation về Backend theo schema mục 5.2 của kế hoạch.
 - [ ] **P1-7** — Giữ nguyên `rag/retriever.py` và `rag/ingestion_service.py`; đảm bảo runtime chỉ đọc AI Vector DB, còn ingest là job quản trị có quyền ghi riêng (không lẫn với runtime inference).
 - [ ] **P1-8** — Áp dụng timeout + retry giới hạn (`httpx`) khi AI gọi Backend internal API, theo mục 4.4 của kế hoạch (timeout của AI ngắn hơn timeout Backend khi gọi AI).
 - [ ] **P1-9** — Đảm bảo nhánh "lấy sự thật nghiệp vụ" thất bại thì AI trả lỗi ngay, không trả `recommendation` chỉ dựa trên RAG evidence (mục 4.4).
@@ -45,15 +46,19 @@ Owner đề xuất: người phụ trách `backend/`.
 Tham chiếu: mục 6 "Phase 2" của `ai_backend_decoupling_plan.md`.
 **Áp dụng WORKFLOW.md mục 9 cho mọi mục dưới đây** — cập nhật swagger (springdoc annotation) trong cùng lần thay đổi khi endpoint mới hoặc response shape đổi, không ship code rồi để swagger sau.
 
-- [ ] **P2-0 (chặn P2-\*)** — Chốt schema liều lượng: thêm `doseMin`/`doseMax` vào `TreatmentRule.java`, hoặc đổi contract API sang `dose_amount` đơn để khớp schema Backend hiện tại (xem mục 5 của kế hoạch, phần ghi chú dưới response mẫu).
-  Đây là quyết định mở duy nhất còn lại trước khi code Phase 2 — chốt trước khi làm P2-3/P2-5.
-- [ ] **P2-1** — Thêm `AiDiagnosisClient` (dùng `WebClient` hoặc `RestTemplate`), có timeout/circuit breaker (Resilience4j) theo mục 4.4.
-- [ ] **P2-2** — Cập nhật `DiseaseReportService`: tự khởi tạo và lưu `DiseaseReport` vào Backend DB (không còn chờ AI ghi hộ).
-- [ ] **P2-3** — Cung cấp internal API read-only để AI lấy structured facts bằng `disease_code` và context của báo cáo; bảo vệ bằng service token/network nội bộ theo mục 4.3.
+- [x] **P2-0 (chặn P2-\*)** — Chốt schema liều lượng: dùng `dose_amount` đơn để khớp schema Backend hiện tại (`TreatmentRule.doseAmount`), không thêm `doseMin`/`doseMax` (xem mục 5 của kế hoạch, phần ghi chú dưới response mẫu).
+- [x] **P2-1** — Thêm `AiDiagnosisClient` (dùng `RestClient` + `JdkClientHttpRequestFactory`), có timeout/circuit breaker (Resilience4j) theo mục 4.4.
+  Chưa nối vào flow nào — `DiseaseReportService` sẽ gọi ở P2-4.
+- [x] **P2-2** — Cập nhật `DiseaseReportService`: tự khởi tạo và lưu `DiseaseReport` vào Backend DB (không còn chờ AI ghi hộ).
+- [x] **P2-3** — Cung cấp internal API read-only để AI lấy structured facts bằng `disease_code` và context của báo cáo; bảo vệ bằng service token/network nội bộ theo mục 4.3.
   Chỉ gồm endpoint GET; không expose POST/PUT/DELETE cho service role của AI.
-- [ ] **P2-4** — Gọi `AiDiagnosisClient.diagnose(...)` gửi payload sang AI Service theo contract `POST /api/v1/diagnose`.
-- [ ] **P2-5** — Nhận CV, evidence và recommendation từ AI; đối chiếu lại `version` của rule (mục 4.5) trước khi lưu; nếu rule đã đổi trong lúc AI xử lý thì từ chối và lấy lại rule mới.
-- [ ] **P2-6** — Xác nhận `DiagnosisController` (`create`/`approve`/`reject`/`apply`) là nơi duy nhất quản lý vòng đời phê duyệt sau khi AI không còn state machine riêng.
+- [x] **P2-4** — Gọi `AiDiagnosisClient.diagnose(...)` gửi payload sang AI Service theo contract `POST /api/v1/diagnose`.
+  Chưa nối vào flow tạo báo cáo/HTTP endpoint nào — `requestAiDiagnosis()` sẽ được P2-5 gọi khi xử lý và lưu response.
+- [x] **P2-5** — Nhận CV, evidence và recommendation từ AI; đối chiếu lại `version` của rule (mục 4.5) trước khi lưu; nếu rule đã đổi trong lúc AI xử lý thì từ chối và lấy lại rule mới.
+  `createFromAi()` chưa nối vào `DiagnosisController` — endpoint nào expose nó là quyết định của P2-6.
+- [x] **P2-6** — Xác nhận `DiagnosisController` (`create`/`approve`/`reject`/`apply`) là nơi duy nhất quản lý vòng đời phê duyệt sau khi AI không còn state machine riêng.
+  Rà soát: chỉ `DiagnosisService` mutate `ApprovalStatus`, và chỉ `DiagnosisController` gọi các phương thức đó.
+  Thêm `POST .../diagnosis/ai` gọi `createFromAi()` (P2-5), giữ `POST .../diagnosis` cho nhập tay (testing/demo) - cả hai cùng đổ vào một `Diagnosis`/vòng đời duyệt duy nhất qua `approve`/`reject`/`apply`.
 
 ## Phase 3 — Khởi tạo Database & Deployment
 

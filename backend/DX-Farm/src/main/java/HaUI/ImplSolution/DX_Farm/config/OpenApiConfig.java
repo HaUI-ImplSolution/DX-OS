@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Configuration;
 public class OpenApiConfig {
 
   private static final String BEARER_SCHEME = "bearerAuth";
+  private static final String SERVICE_API_KEY_SCHEME = "serviceApiKey";
 
   @Bean
   public OpenAPI dxFarmOpenApi() {
@@ -19,9 +20,13 @@ public class OpenApiConfig {
         .info(new Info().title("DX-Farm API").version("v1")
             .description("Agri-Carbon DX-OS backend — operational data, structured knowledge lookup"
                 + " and approval workflow for the spine flow."))
-        .components(new Components().addSecuritySchemes(BEARER_SCHEME,
-            new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer")
-                .bearerFormat("JWT")))
+        .components(new Components()
+            .addSecuritySchemes(BEARER_SCHEME,
+                new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer")
+                    .bearerFormat("JWT"))
+            .addSecuritySchemes(SERVICE_API_KEY_SCHEME,
+                new SecurityScheme().type(SecurityScheme.Type.APIKEY).in(SecurityScheme.In.HEADER)
+                    .name("X-Service-Api-Key")))
         .addSecurityItem(new SecurityRequirement().addList(BEARER_SCHEME));
   }
 }

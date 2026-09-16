@@ -2,9 +2,9 @@
 
 Contract local của AI service cho Backend/Frontend; base URL là `http://127.0.0.1:8000/api/v1` và `disease_code` phải khớp chính xác `Disease.code`.
 
-> **Trạng thái**: Endpoint suy luận phi trạng thái hợp nhất `POST /api/v1/diagnose` đã hoàn tất triển khai ở mục **P1-6** của Phase 1 Decoupling ([`ai_backend_decoupling_checklist.md`](./ai_backend_decoupling_checklist.md)).
-> AI Service hoạt động thuần suy luận (stateless): nhận ảnh/bối cảnh, thực hiện CV + RAG + lấy structured facts từ Backend và trả kết quả recommendation trong 1 request duy nhất.
-> Các tài liệu bên dưới được giữ lại làm dữ liệu lịch sử tham chiếu contract cũ trước khi tách.
+> **Trạng thái**: Tài liệu này mô tả contract **hiện tại**, nơi AI tự lưu `WorkflowCase`/`WorkflowEvent` và ghi trực tiếp vào PostgreSQL dùng chung với Backend.
+> Theo [`ai_backend_decoupling_plan.md`](./ai_backend_decoupling_plan.md), toàn bộ `/disease/workflow/*` cùng `POST /disease/reports/{report_id}/diagnose` sẽ bị xóa ở Phase 1 và thay bằng contract suy luận phi trạng thái `POST /api/v1/diagnose` (Backend gọi AI, AI trả JSON một lần, không tự ghi DB nghiệp vụ).
+> Nội dung dưới đây vẫn đúng cho tới khi Phase 1 hoàn tất; xem contract mới ở mục 5 của kế hoạch đó.
 
 ## Quy tắc bất biến
 

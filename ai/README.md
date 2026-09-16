@@ -29,23 +29,23 @@ Dịch vụ tuân thủ nguyên tắc kiến trúc bất biến: **Stateless & A
 
 ---
 
-## Danh sách API chính (`/api/v1`)
+## Danh sách API chính (`/api/v1/disease`)
 
 | Method | Endpoint | Mô tả |
 |---|---|---|
-| `POST` | `/diagnose` | **(Mới - P1-6)** Endpoint suy luận phi trạng thái hợp nhất: nhận ảnh + context, CV + RAG + Backend facts -> recommendation |
-| `GET` | `/disease/health` | Kiểm tra trạng thái mô hình CV (đã load hay chưa, device GPU/CPU) |
-| `GET` | `/disease/class-contract` | Lấy danh sách contract 38 lớp bệnh ánh xạ CV $\leftrightarrow$ DB |
-| `POST` | `/disease/predict` | Nhận diện bệnh từ ảnh lá cây qua CV |
-| `POST` | `/disease/knowledge/retrieve` | Truy vấn các đoạn tài liệu RAG trong pgvector theo câu hỏi & mã bệnh |
-| ~`POST`~ | ~`/disease/reports/{report_id}/diagnose`~ | *(Đã xóa ở P1-4)* Thay bằng contract suy luận phi trạng thái `POST /api/v1/diagnose` |
-| ~`POST`~ | ~`/disease/workflow/run`~ | *(Đã xóa ở P1-3)* Chuyển sang Backend điều phối |
-| ~`GET`~ | ~`/disease/workflow/{case_id}`~ | *(Đã xóa ở P1-3)* Chuyển sang Backend quản lý trạng thái case |
-| ~`POST`~ | ~`/disease/workflow/{case_id}/approve`~ | *(Đã xóa ở P1-3)* Chuyển sang Backend duyệt khuyến nghị |
-| ~`POST`~ | ~`/disease/workflow/{case_id}/reject`~ | *(Đã xóa ở P1-3)* Chuyển sang Backend từ chối khuyến nghị |
-| ~`POST`~ | ~`/disease/workflow/{case_id}/applied`~ | *(Đã xóa ở P1-3)* Chuyển sang Backend ghi nhận đã áp dụng |
+| `GET` | `/health` | Kiểm tra trạng thái mô hình CV (đã load hay chưa, device GPU/CPU) |
+| `GET` | `/class-contract` | Lấy danh sách contract 38 lớp bệnh ánh xạ CV $\leftrightarrow$ DB |
+| `POST` | `/predict` | Nhận diện bệnh từ ảnh lá cây qua CV |
+| `POST` | `/reports/{report_id}/diagnose` | Chẩn đoán ảnh cho báo cáo bệnh đã tồn tại và lưu kết quả |
+| `POST` | `/knowledge/retrieve` | Truy vấn các đoạn tài liệu RAG trong pgvector theo câu hỏi & mã bệnh |
+| `POST` | `/workflow/run` | Chạy toàn bộ LangGraph workflow tạo khuyến nghị dừng ở trạng thái `PENDING` |
+| `GET` | `/workflow/{case_id}` | Xem trạng thái workflow và lịch sử audit case |
+| `POST` | `/workflow/{case_id}/approve` | Kỹ sư duyệt khuyến nghị (`APPROVED`) |
+| `POST` | `/workflow/{case_id}/reject` | Kỹ sư từ chối khuyến nghị (`REJECTED`) |
+| `POST` | `/workflow/{case_id}/applied` | Xác nhận đã phun thuốc thực tế (`APPLIED`), tính ngày hết cách ly PHI |
 
-Theo Phase 1 của [kế hoạch tách AI/Backend](../development/docs/ai_backend_decoupling_plan.md), AI Service đã chuyển sang sử dụng contract suy luận phi trạng thái hợp nhất `POST /api/v1/diagnose` (**P1-6**).
+Bảng trên phản ánh contract hiện tại.
+Theo Phase 1 của [kế hoạch tách AI/Backend](../development/docs/ai_backend_decoupling_plan.md), `POST /reports/{report_id}/diagnose` và toàn bộ `/workflow/*` sẽ bị xóa, thay bằng contract suy luận phi trạng thái `POST /api/v1/diagnose`: nhận ảnh + field context và trả CV result + RAG evidence + structured facts + recommendation trong một lần gọi, không tự ghi DB nghiệp vụ.
 
 ---
 
@@ -62,9 +62,6 @@ Dịch vụ AI sử dụng cấu hình từ file `.env` (mẫu tại `.env.examp
 | `CV_MODEL_NAME` | `EfficientNet-B4` | Tên mô hình nhận diện bệnh |
 | `CV_CONFIDENCE_THRESHOLD` | `0.70` | Ngưỡng độ tin cậy cảnh báo low confidence |
 | `LLM_TIMEOUT_SECONDS` | `5` | Thời gian chờ tối đa khi gọi LLM (tự fallback nếu quá giờ) |
-| `BACKEND_BASE_URL` | `http://localhost:8081` | URL gốc của Backend internal REST API |
-| `BACKEND_INTERNAL_SERVICE_TOKEN` | *None* | Service token (Bearer) cho giao tiếp nội bộ AI -> Backend |
-| `BACKEND_TIMEOUT_SECONDS` | `3.0` | Timeout tối đa khi AI gọi Backend internal API (read-only) |
 
 ---
 

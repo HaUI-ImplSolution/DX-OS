@@ -7,6 +7,7 @@ Dịch vụ tuân thủ nguyên tắc kiến trúc bất biến: **Stateless & A
 > **Trạng thái kiến trúc**: Nội dung dưới đây mô tả hành vi *dự định* của code (AI vẫn ghi trực tiếp `WorkflowCase`/`WorkflowEvent`/`DiseaseReport`/`Diagnosis`/`TreatmentApplication`), nhưng **DB vật lý đã tách trước theo Phase 3** (P3-1..P3-3) trong khi Phase 1 chưa làm.
 > `DATABASE_URL` của AI giờ trỏ vào `dx_farm_ai_vector_db` bằng role chỉ-đọc `ai_vector_ro`, DB này chỉ có `documents`/`document_chunks`.
 > Kết quả: `/predict` và `/knowledge/retrieve` vẫn chạy được, nhưng mọi endpoint đụng tới bảng nghiệp vụ (`/reports/{report_id}/diagnose`, toàn bộ `/workflow/*`, node `treatment_lookup`) và các script `scripts.seed_*` đều lỗi kết nối/permission cho tới khi Phase 1 của [`../development/docs/ai_backend_decoupling_plan.md`](../development/docs/ai_backend_decoupling_plan.md) hoàn tất (AI gọi Backend REST thay vì đọc thẳng DB).
+> Dữ liệu demo cũ do AI ghi trực tiếp (`disease_reports`, `diagnoses`, `treatment_applications`, `workflow_cases`/`workflow_events`) được dọn theo P3-4 bằng [`../deploy/sql/p3-4-legacy-ai-data-cleanup.sql`](../deploy/sql/p3-4-legacy-ai-data-cleanup.sql), chạy một lần thủ công.
 
 ---
 

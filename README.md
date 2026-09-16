@@ -121,6 +121,8 @@ Hai database vật lý riêng trên cùng một Postgres instance, theo kế ho�
 
 Phase 1 (AI bỏ đọc/ghi trực tiếp các bảng nghiệp vụ, chuyển sang gọi Backend REST) chưa xong — xem [`ai/README.md`](./ai/README.md) phần "Trạng thái kiến trúc" về các endpoint AI đang tạm hỏng do đã cắt kết nối DB trước.
 
+Dữ liệu demo cũ do AI ghi trực tiếp trước khi tách DB (`disease_reports`, `diagnoses`, `treatment_applications`, `workflow_cases`/`workflow_events`) coi là dữ liệu demo/test, dọn bằng [`deploy/sql/p3-4-legacy-ai-data-cleanup.sql`](./deploy/sql/p3-4-legacy-ai-data-cleanup.sql) (P3-4, chạy một lần thủ công).
+
 ## Điểm cần lưu ý cho tiêu chí PoF (50/100 điểm, mang tính loại trừ)
 
 - Giấy phép mọi thành phần phải **OSI-approved**; đã loại Llama (không đạt chuẩn OSD), chọn Qwen2.5-1.5B-Instruct (Apache-2.0).

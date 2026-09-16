@@ -27,6 +27,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -64,11 +65,52 @@ public class DiagnosisService {
   }
 
   // Gọi AI Service theo contract POST /api/v1/diagnose và trả nguyên response - chưa lưu
-  // Diagnosis ở đây (cần đối chiếu version rule trước khi lưu, xem phương thức create()).
+  // Diagnosis ở đây, xem createFromAi() cho bước đối chiếu version rule rồi lưu.
   public AiDiagnoseResponse requestAiDiagnosis(Long reportId) {
     DiseaseReport report = diseaseReportRepository.findById(reportId)
         .orElseThrow(() -> new ResourceNotFoundException("Disease report not found: " + reportId));
     return aiDiagnosisClient.diagnose(buildAiDiagnoseRequest(report));
+  }
+
+  // Gọi AI, đối chiếu version của rule AI dùng với treatment_rules hiện tại rồi mới lưu
+  // Diagnosis - rule đã đổi trong lúc AI xử lý thì từ chối, không lưu recommendation cũ.
+  @Transactional
+  public DiagnosisResponse createFromAi(Long reportId) {
+    DiseaseReport report = diseaseReportRepository.findById(reportId)
+        .orElseThrow(() -> new ResourceNotFoundException("Disease report not found: " + reportId));
+    if (diagnosisRepository.findByDiseaseReportId(reportId).isPresent()) {
+      throw new InvalidStateException("Disease report already has a diagnosis: " + reportId);
+    }
+
+    AiDiagnoseResponse aiResponse = aiDiagnosisClient.diagnose(buildAiDiagnoseRequest(report));
+    AiDiagnoseResponse.CvResult cvResult = aiResponse.cvResult();
+    String diseaseCode = cvResult.diseaseCode();
+
+    Disease disease = diseaseRepository.findByCode(diseaseCode).orElseThrow(
+        () -> new ResourceNotFoundException("Unknown disease code from AI: " + diseaseCode));
+    TreatmentRule currentRule = treatmentRuleService.findByDiseaseCodeOrThrow(diseaseCode);
+    AiDiagnoseResponse.RuleFact selectedRule = findSelectedRule(aiResponse);
+    if (!Objects.equals(currentRule.getVersion(), selectedRule.version())) {
+      throw new InvalidStateException(
+          "Treatment rule for %s changed while AI was processing (rule version %s -> %s) - retry diagnosis"
+              .formatted(diseaseCode, selectedRule.version(), currentRule.getVersion()));
+    }
+
+    Diagnosis diagnosis =
+        Diagnosis.builder().diseaseReport(report).disease(disease).confidence(cvResult.confidence())
+            .modelVersion(cvResult.modelName() + " " + cvResult.modelVersion())
+            .treatmentRule(currentRule)
+            .recommendationText(
+                buildRecommendation(report, disease, currentRule, cvResult.confidence()))
+            .approvalStatus(ApprovalStatus.PENDING).build();
+    return toResponse(diagnosisRepository.save(diagnosis));
+  }
+
+  private static AiDiagnoseResponse.RuleFact findSelectedRule(AiDiagnoseResponse aiResponse) {
+    String selectedRuleId = aiResponse.recommendation().selectedRuleId();
+    return aiResponse.structuredContext().rules().stream()
+        .filter(rule -> rule.ruleId().equals(selectedRuleId)).findFirst().orElseThrow(
+            () -> new InvalidStateException("AI selected an unknown rule_id: " + selectedRuleId));
   }
 
   private AiDiagnoseRequest buildAiDiagnoseRequest(DiseaseReport report) {

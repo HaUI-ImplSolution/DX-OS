@@ -70,4 +70,3 @@ def retrieve(payload: RetrieveRequest, db: Annotated[Session, Depends(get_db)]):
     return RAGRetriever().retrieve(
         db, payload.query, top_k=payload.top_k, disease_code=payload.disease_code
     )
-

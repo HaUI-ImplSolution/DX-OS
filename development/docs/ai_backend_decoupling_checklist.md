@@ -31,6 +31,7 @@ Tham chiếu: mục 6 "Phase 1" của `ai_backend_decoupling_plan.md`.
 - [x] **P1-2** — Xóa repository/service CRUD nghiệp vụ tương ứng và toàn bộ lệnh `db.add()`/`db.commit()` ghi vào các bảng nghiệp vụ trong AI runtime.
 - [x] **P1-3** — Xóa router `/disease/workflow/*` (`run`, `{case_id}` GET, `approve`, `reject`, `applied`) cùng `WorkflowRunner`/`WorkflowTransitions` (`ai/app/application/workflow_runner.py`, `workflow_transitions.py`).
   Phụ thuộc: rà soát mọi client (frontend, app, script nội bộ) đang gọi các endpoint này và chuyển sang gọi Backend trước khi xóa.
+  Kết quả rà soát: frontend, backend và script nội bộ không gọi trực tiếp `/disease/workflow/*`; không cần chuyển đổi client trong repository.
 - [x] **P1-4** — Xóa endpoint `POST /disease/reports/{report_id}/diagnose` (`diagnose_report` trong `ai/app/api/router.py`, ghi thẳng DB) — thay bằng inference contract mới ở P1-6.
 - [ ] **P1-5** — Thêm Backend REST client read-only trong `ai/` để lấy field context, treatment rule, policy, PHI và lịch sử phun sau khi CV có `disease_code`.
   Xem contract client cần gọi ở mục 4.3 của kế hoạch (service token, chỉ GET).

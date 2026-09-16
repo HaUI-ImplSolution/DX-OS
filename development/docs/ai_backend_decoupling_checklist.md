@@ -28,7 +28,7 @@ Owner đề xuất: người phụ trách `ai/`.
 Tham chiếu: mục 6 "Phase 1" của `ai_backend_decoupling_plan.md`.
 
 - [x] **P1-1** — Xóa 10 ORM model nghiệp vụ dư thừa trong `ai/app/db/models/`: `disease_report.py`, `diagnosis.py`, `treatment_application.py`, `parcel.py`, `crop_season.py`, `disease.py`, `pesticide.py`, `treatment_rule.py`, `disease_management_policy.py`, `workflow_case.py`.
-- [ ] **P1-2** — Xóa repository/service CRUD nghiệp vụ tương ứng và toàn bộ lệnh `db.add()`/`db.commit()` ghi vào các bảng nghiệp vụ trong AI runtime.
+- [x] **P1-2** — Xóa repository/service CRUD nghiệp vụ tương ứng và toàn bộ lệnh `db.add()`/`db.commit()` ghi vào các bảng nghiệp vụ trong AI runtime.
 - [ ] **P1-3** — Xóa router `/disease/workflow/*` (`run`, `{case_id}` GET, `approve`, `reject`, `applied`) cùng `WorkflowRunner`/`WorkflowTransitions` (`ai/app/application/workflow_runner.py`, `workflow_transitions.py`).
   Phụ thuộc: rà soát mọi client (frontend, app, script nội bộ) đang gọi các endpoint này và chuyển sang gọi Backend trước khi xóa.
 - [ ] **P1-4** — Xóa endpoint `POST /disease/reports/{report_id}/diagnose` (`diagnose_report` trong `ai/app/api/router.py`, ghi thẳng DB) — thay bằng inference contract mới ở P1-6.

@@ -286,7 +286,7 @@ Trước khi triển khai Phase 2, cần chốt: thêm `doseMin`/`doseMax` vào 
 
 ### Phase 1: Tái cấu trúc phía AI (Python/FastAPI)
 - [x] Xóa 10 ORM Models nghiệp vụ dư thừa (`disease_report.py`, `diagnosis.py`, `treatment_application.py`, `parcel.py`, `crop_season.py`, `disease.py`, `pesticide.py`, `treatment_rule.py`, `disease_management_policy.py`, `workflow_case.py`).
-- [ ] Xóa repository/service CRUD nghiệp vụ và toàn bộ lệnh `db.add()`, `db.commit()` trong AI runtime.
+- [x] Xóa repository/service CRUD nghiệp vụ và toàn bộ lệnh `db.add()`, `db.commit()` trong AI runtime.
 - [ ] Xóa router `/disease/workflow/*` (`run`, `{case_id}` GET, `approve`, `reject`, `applied`) cùng `WorkflowRunner`/`WorkflowTransitions` — rà soát mọi client (frontend, app, script nội bộ) đang gọi các endpoint này và chuyển sang gọi Backend trước khi xóa.
 - [ ] Xóa endpoint `POST /disease/reports/{report_id}/diagnose` (ghi thẳng DB qua `diagnose_report`) — thay bằng inference contract mới.
 - [ ] Thêm Backend REST client read-only để lấy field context, treatment rule, policy, PHI và lịch sử phun sau khi CV có `disease_code`.

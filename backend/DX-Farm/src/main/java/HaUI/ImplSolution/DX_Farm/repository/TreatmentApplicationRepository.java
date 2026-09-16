@@ -1,6 +1,7 @@
 package HaUI.ImplSolution.DX_Farm.repository;
 
 import HaUI.ImplSolution.DX_Farm.model.TreatmentApplication;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -10,4 +11,6 @@ public interface TreatmentApplicationRepository extends JpaRepository<TreatmentA
       Long cropSeasonId);
 
   Optional<TreatmentApplication> findByDiagnosisId(Long diagnosisId);
+
+  List<TreatmentApplication> findByCropSeasonIdOrderByAppliedAtDesc(Long cropSeasonId);
 }

@@ -55,7 +55,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ### 2026-09-16
 
-**Đã xong — Phase 1 Decoupling (P1-1 đến P1-7):**
+**Đã xong — Phase 1 Decoupling (P1-1 đến P1-8):**
 
 - Xóa 10 ORM model nghiệp vụ dư thừa (`disease_report.py`, `diagnosis.py`, `treatment_application.py`, `parcel.py`, `crop_season.py`, `disease.py`, `pesticide.py`, `treatment_rule.py`, `disease_management_policy.py`, `workflow_case.py`) khỏi `ai/app/db/models/`.
 - Xóa các repository và service CRUD nghiệp vụ tương ứng (`diagnosis_repository.py`, `treatment_repository.py`, `parcel_repository.py`, `knowledge_repository.py`, `diagnosis_service.py`, `workflow_service.py`).
@@ -64,6 +64,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Thêm `BackendClient` read-only trong `ai/app/clients/backend_client.py` dùng `httpx` hỗ trợ gọi Backend internal REST API (`GET /api/v1/internal/field-context` & `/structured-facts`), tự truyền service token (Bearer) và `X-Request-ID`.
 - Triển khai contract suy luận phi trạng thái hợp nhất `POST /api/v1/diagnose` (`inference_service.py`) kết hợp nhận diện CV + RAG Vector DB + Backend structured facts để trả recommendation về Backend theo chuẩn DTO section 5.2.
 - Chuẩn hóa RAG Vector DB layer (`retriever.py` & `ingestion_service.py`): đảm bảo AI runtime chỉ thực hiện đọc (read-only) Vector DB, còn quyền ghi corpus thuộc về job quản trị CLI độc lập (`scripts.ingest_diseases`).
+- Áp dụng cấu hình timeout (`backend_timeout_seconds=3.0`) và chính sách retry giới hạn (`backend_max_retries=2` qua `httpx.HTTPTransport`) trong `BackendClient` khi AI gọi Backend internal API.
 - Cập nhật `ai/app/db/models/__init__.py` chỉ export 2 model RAG Vector DB (`Document`, `DocumentChunk`), đồng thời loại bỏ toàn bộ lệnh `db.add()`/`db.commit()` ghi vào các bảng nghiệp vụ trong AI runtime.
 
 ### 2026-09-14

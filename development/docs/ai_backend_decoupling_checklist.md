@@ -36,7 +36,7 @@ Tham chiếu: mục 6 "Phase 1" của `ai_backend_decoupling_plan.md`.
   Xem contract client cần gọi ở mục 4.3 của kế hoạch (service token, chỉ GET).
 - [x] **P1-6** — Đổi endpoint AI thành inference contract mới `POST /api/v1/diagnose`: nhận ảnh/request context, kết hợp CV + RAG + structured facts và trả recommendation về Backend theo schema mục 5.2 của kế hoạch.
 - [x] **P1-7** — Giữ nguyên `rag/retriever.py` và `rag/ingestion_service.py`; đảm bảo runtime chỉ đọc AI Vector DB, còn ingest là job quản trị có quyền ghi riêng (không lẫn với runtime inference).
-- [ ] **P1-8** — Áp dụng timeout + retry giới hạn (`httpx`) khi AI gọi Backend internal API, theo mục 4.4 của kế hoạch (timeout của AI ngắn hơn timeout Backend khi gọi AI).
+- [x] **P1-8** — Áp dụng timeout + retry giới hạn (`httpx`) khi AI gọi Backend internal API, theo mục 4.4 của kế hoạch (timeout của AI ngắn hơn timeout Backend khi gọi AI).
 - [ ] **P1-9** — Đảm bảo nhánh "lấy sự thật nghiệp vụ" thất bại thì AI trả lỗi ngay, không trả `recommendation` chỉ dựa trên RAG evidence (mục 4.4).
 
 ## Phase 2 — Tái cấu trúc phía Backend (Java/Spring Boot)

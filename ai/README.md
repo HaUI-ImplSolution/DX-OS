@@ -65,6 +65,7 @@ Dịch vụ AI sử dụng cấu hình từ file `.env` (mẫu tại `.env.examp
 | `BACKEND_BASE_URL` | `http://localhost:8081` | URL gốc của Backend internal REST API |
 | `BACKEND_INTERNAL_SERVICE_TOKEN` | *None* | Service token (Bearer) cho giao tiếp nội bộ AI -> Backend |
 | `BACKEND_TIMEOUT_SECONDS` | `3.0` | Timeout tối đa khi AI gọi Backend internal API (read-only) |
+| `BACKEND_MAX_RETRIES` | `2` | Số lần thử lại tối đa (httpx retries) khi AI gọi Backend internal API |
 
 ---
 

@@ -2,8 +2,7 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
-from sqlalchemy.exc import SQLAlchemyError
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
 
@@ -93,4 +92,3 @@ def retrieve(payload: RetrieveRequest, db: Annotated[Session, Depends(get_db)]):
     return RAGRetriever().retrieve(
         db, payload.query, top_k=payload.top_k, disease_code=payload.disease_code
     )
-

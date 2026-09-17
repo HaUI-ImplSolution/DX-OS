@@ -63,6 +63,9 @@ Dịch vụ AI sử dụng cấu hình từ file `.env` (mẫu tại `.env.examp
 | `CV_MODEL_NAME` | `EfficientNet-B4` | Tên mô hình nhận diện bệnh |
 | `CV_CONFIDENCE_THRESHOLD` | `0.70` | Ngưỡng độ tin cậy cảnh báo low confidence |
 | `LLM_TIMEOUT_SECONDS` | `5` | Thời gian chờ tối đa khi gọi LLM (tự fallback nếu quá giờ) |
+| `BACKEND_TIMEOUT_SECONDS` | `3` | Timeout mỗi lần AI gọi internal API của Backend |
+| `BACKEND_MAX_ATTEMPTS` | `2` | Tổng số lần gọi internal API, gồm lần đầu và retry |
+| `BACKEND_RETRY_BACKOFF_SECONDS` | `0.2` | Thời gian chờ giữa hai lần gọi Backend |
 
 ---
 

@@ -37,6 +37,6 @@ resolve_request
 CV hoặc structured facts thất bại thì lượt suy luận thất bại.
 RAG không khả dụng thì graph vẫn có thể giữ structured recommendation và ghi nhận `RAG_UNAVAILABLE`.
 AI giới hạn mỗi lần gọi Backend ở 3 giây và retry một lần cho lỗi transport hoặc HTTP `502`/`503`/`504`.
-Chính sách bắt buộc dừng khi thiếu structured facts được hoàn thiện ở P1-9.
+Khi Backend không cung cấp được structured facts, graph dừng ngay; không chạy RAG hoặc tạo recommendation chỉ dựa trên evidence.
 
 P2-3 hiện chưa cung cấp contract cho `management_policy` và `NO_CHEMICAL_CONTROL`.

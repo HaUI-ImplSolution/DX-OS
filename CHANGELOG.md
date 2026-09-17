@@ -71,6 +71,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 ### 2026-09-17
 
 - Thêm timeout và retry giới hạn khi AI gọi internal API của Backend.
+- Buộc AI trả lỗi khi Backend không cung cấp structured facts.
 
 ### 2026-09-16
 

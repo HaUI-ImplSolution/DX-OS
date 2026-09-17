@@ -4,8 +4,10 @@ Dịch vụ AI độc lập nằm trong thư mục `ai/` (ngang hàng `backend/`
 
 Dịch vụ tuân thủ nguyên tắc kiến trúc bất biến: **Stateless & Advisory** — chỉ cung cấp chẩn đoán thị giác máy tính (CV), tra cứu tri thức định hình, truy vấn RAG giải thích và sinh đề xuất khuyến nghị. Dịch vụ không tự ghi nhận hay thay đổi dữ liệu nghiệp vụ chính thức; mọi khuyến nghị đều qua trạng thái `PENDING` chờ kỹ sư nông nghiệp phê duyệt (Human-in-the-loop).
 
-> **Trạng thái kiến trúc**: Nội dung dưới đây mô tả hành vi hiện tại, nơi AI vẫn ghi trực tiếp `WorkflowCase`/`WorkflowEvent`/`DiseaseReport`/`Diagnosis`/`TreatmentApplication` vào cùng một PostgreSQL với Backend — khác với nguyên tắc Stateless & Advisory ở trên.
-> Kế hoạch tách AI thành dịch vụ suy luận phi trạng thái thật sự (không ghi DB nghiệp vụ, chỉ đọc Backend qua REST GET) đã chốt ở [`../development/docs/ai_backend_decoupling_plan.md`](../development/docs/ai_backend_decoupling_plan.md); tài liệu này sẽ cập nhật lại khi Phase 1 của kế hoạch đó hoàn tất.
+> **Trạng thái kiến trúc**: Nội dung dưới đây mô tả hành vi *dự định* của code (AI vẫn ghi trực tiếp `WorkflowCase`/`WorkflowEvent`/`DiseaseReport`/`Diagnosis`/`TreatmentApplication`), nhưng **DB vật lý đã tách trước theo Phase 3** (P3-1..P3-3) trong khi Phase 1 chưa làm.
+> `DATABASE_URL` của AI giờ trỏ vào `dx_farm_ai_vector_db` bằng role chỉ-đọc `ai_vector_ro`, DB này chỉ có `documents`/`document_chunks`.
+> Kết quả: `/predict` và `/knowledge/retrieve` vẫn chạy được, nhưng mọi endpoint đụng tới bảng nghiệp vụ (`/reports/{report_id}/diagnose`, toàn bộ `/workflow/*`, node `treatment_lookup`) và các script `scripts.seed_*` đều lỗi kết nối/permission cho tới khi Phase 1 của [`../development/docs/ai_backend_decoupling_plan.md`](../development/docs/ai_backend_decoupling_plan.md) hoàn tất (AI gọi Backend REST thay vì đọc thẳng DB).
+> Dữ liệu demo cũ do AI ghi trực tiếp (`disease_reports`, `diagnoses`, `treatment_applications`, `workflow_cases`/`workflow_events`) được dọn theo P3-4 bằng [`../deploy/sql/p3-4-legacy-ai-data-cleanup.sql`](../deploy/sql/p3-4-legacy-ai-data-cleanup.sql), chạy một lần thủ công.
 
 ---
 
@@ -55,7 +57,8 @@ Dịch vụ AI sử dụng cấu hình từ file `.env` (mẫu tại `.env.examp
 
 | Biến môi trường | Giá trị mặc định | Giải thích |
 |---|---|---|
-| `DATABASE_URL` | `postgresql+psycopg://dxfarm:dxfarm@localhost:5432/dxfarm` | Kết nối PostgreSQL (Operational & Knowledge DB) |
+| `DATABASE_URL` | `postgresql+psycopg://ai_vector_ro:ai_vector_ro_demo_only@localhost:5432/dx_farm_ai_vector_db` | Kết nối chỉ-đọc tới AI Vector DB (`documents`/`document_chunks`), dùng cho runtime suy luận |
+| `INGEST_DATABASE_URL` | `postgresql+psycopg://ai_vector_ingest:ai_vector_ingest_demo_only@localhost:5432/dx_farm_ai_vector_db` | Kết nối đọc/ghi tới AI Vector DB, chỉ dùng cho job ingest RAG (`scripts.ingest_diseases`) |
 | `OLLAMA_BASE_URL` | `http://localhost:11434` | Endpoint của dịch vụ Ollama local |
 | `OLLAMA_MODEL` | `qwen2.5:1.5b` | Mô hình LLM nhỏ dùng để diễn đạt khuyến nghị tiếng Việt |
 | `EMBEDDING_MODEL` | `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` | Mô hình embedding cho RAG |
@@ -82,19 +85,19 @@ pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requiremen
 
 ### 2. Chuẩn bị database, seed và RAG
 
-AI không dùng Alembic hay migration. PostgreSQL phải được khởi tạo sẵn theo **schema phiên bản hiện tại** của DX-Farm, bao gồm các bảng dùng bởi AI như `diseases`, `pesticides`, `treatment_rules`, `documents`, `document_chunks` và các bảng workflow. Service AI không tự tạo các bảng này.
+AI không dùng Alembic hay migration.
+Database pgvector riêng `dx_farm_ai_vector_db` (chỉ chứa `documents`/`document_chunks`, kèm extension `vector`) do Backend tự tạo lúc khởi động (`AiVectorDatabaseSeeder`), cùng 2 role Postgres riêng cho AI: `ai_vector_ro` (chỉ-đọc, dùng cho `DATABASE_URL`) và `ai_vector_ingest` (đọc/ghi, dùng cho `INGEST_DATABASE_URL`) — xem [`ai_backend_decoupling_checklist.md`](../development/docs/ai_backend_decoupling_checklist.md) mục P3-1..P3-3.
+Không role nào của AI được cấp quyền vào DB nghiệp vụ của Backend, kể cả chỉ-đọc.
 
-Các file JSON trong `data/structured/` và `data/rag/` là **dữ liệu nguồn trong repository**, chưa tự xuất hiện trong PostgreSQL. Sau khi schema đã có, nạp seed và tạo embedding RAG:
+`scripts.seed_diseases`, `scripts.seed_pesticides`, `scripts.seed_treatment_rules`, `scripts.seed_disease_management_policies` ghi vào các bảng nghiệp vụ (`diseases`, `pesticides`, `treatment_rules`, `disease_management_policies`) không còn tồn tại trong `dx_farm_ai_vector_db` — các script này hỏng cho tới khi Phase 1 thay bằng Backend REST client.
+
+Các file JSON trong `data/rag/` là **dữ liệu nguồn trong repository**, chưa tự xuất hiện trong PostgreSQL. Sau khi DB vector đã sẵn sàng, nạp embedding RAG bằng role ingest:
 
 ```bash
-python -m scripts.seed_diseases
-python -m scripts.seed_pesticides
-python -m scripts.seed_treatment_rules
-python -m scripts.seed_disease_management_policies
 python -m scripts.ingest_diseases
 ```
 
-`scripts.ingest_diseases` đọc `data/rag/processed/disease_knowledge.json`, tạo embedding và ghi corpus vào PostgreSQL. Chỉ sau bước này `/knowledge/retrieve` và phần RAG của workflow mới có dữ liệu để truy vấn.
+`scripts.ingest_diseases` đọc `data/rag/processed/disease_knowledge.json`, tạo embedding và ghi corpus qua `INGEST_DATABASE_URL`. Chỉ sau bước này `/knowledge/retrieve` và phần RAG của workflow mới có dữ liệu để truy vấn.
 
 `/health` và `/predict` không cần corpus RAG hoặc dữ liệu seed; chúng chỉ cần model CV tải thành công. Tuy vậy `DATABASE_URL` vẫn bắt buộc để ứng dụng khởi tạo cấu hình. Các endpoint RAG/workflow cần cả schema lẫn seed đã nạp.
 
@@ -118,7 +121,7 @@ docker build --tag dxfarm-ai:local --file ai/Dockerfile ai
 ### Chạy container
 
 ```bash
-docker run --rm --name dxfarm-ai -p 8000:8000 -e DATABASE_URL="postgresql+psycopg://dxfarm:dxfarm@<postgres-host>:5432/dxfarm" -v dxfarm-ai-weights:/app/weights dxfarm-ai:local
+docker run --rm --name dxfarm-ai -p 8000:8000 -e DATABASE_URL="postgresql+psycopg://ai_vector_ro:ai_vector_ro_demo_only@<postgres-host>:5432/dx_farm_ai_vector_db" -v dxfarm-ai-weights:/app/weights dxfarm-ai:local
 ```
 
 Thay `<postgres-host>` bằng địa chỉ PostgreSQL mà container truy cập được; nếu service AI nằm cùng Docker Compose với PostgreSQL thì dùng hostname `postgres`.
@@ -140,5 +143,6 @@ Lần khởi động đầu tiên cần Internet để tải CV weights từ Hug
 - Các endpoint AI hiện chưa yêu cầu xác thực JWT riêng; xác thực người dùng được kiểm soát ở gateway Spring Boot backend và Keycloak SSO.
 - Dockerfile đã sẵn sàng, nhưng Docker Compose và Java backend chưa tự động khởi chạy/gọi AI service; phần tích hợp đó cần cấu hình service `ai` và URL `http://ai:8000`.
 - `HF_TOKEN` chưa được cấu hình — HuggingFace Hub sẽ tải model với rate limit ẩn danh (thường đủ dùng, nhưng nếu bị throttle thì set biến `HF_TOKEN` trong `deploy/.env`).
-- AI hiện dùng chung một PostgreSQL vật lý với Backend và tự ghi trực tiếp dữ liệu nghiệp vụ (`disease_reports`, `diagnoses`, `treatment_applications`, `workflow_cases`); chưa có Backend REST client trong `ai/`.
-  Kế hoạch tách DB & biến AI thành stateless inference service theo [`../development/docs/ai_backend_decoupling_plan.md`](../development/docs/ai_backend_decoupling_plan.md) chưa được triển khai (Phase 1-3 còn mở).
+- DB vật lý đã tách (Phase 3, P3-1..P3-3): AI kết nối `dx_farm_ai_vector_db` bằng role riêng, không còn credential nào trỏ vào DB nghiệp vụ của Backend.
+  Code AI (Phase 1) chưa theo kịp: các model/endpoint vẫn giả định đọc/ghi được `diseases`, `pesticides`, `treatment_rules`, `disease_reports`, `diagnoses`, `treatment_applications`, `workflow_cases` — các endpoint/script đụng tới những bảng này hiện lỗi kết nối cho tới khi Phase 1 xong (xoá model/router cũ, thêm Backend REST client).
+  Xem [`../development/docs/ai_backend_decoupling_plan.md`](../development/docs/ai_backend_decoupling_plan.md).

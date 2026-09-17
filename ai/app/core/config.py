@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     )
 
     database_url: str | None = None
+    ingest_database_url: str | None = None
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "qwen2.5:1.5b"
     embedding_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"

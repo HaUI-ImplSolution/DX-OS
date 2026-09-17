@@ -33,6 +33,8 @@ services:
       SUPERSET_RO_PASSWORD: ${SUPERSET_RO_PASSWORD:-superset_ro_demo_only}
       MATTERMOST_DB_PASSWORD: ${MATTERMOST_DB_PASSWORD:-mattermost_demo_only}
       KEYCLOAK_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak_demo_only}
+      AI_VECTOR_DB_RO_PASSWORD: ${AI_VECTOR_DB_RO_PASSWORD:-ai_vector_ro_demo_only}
+      AI_VECTOR_DB_INGEST_PASSWORD: ${AI_VECTOR_DB_INGEST_PASSWORD:-ai_vector_ingest_demo_only}
     volumes:
       - ./data/uploads:/app/uploads
     ports:
@@ -48,7 +50,11 @@ services:
         condition: service_healthy
     restart: on-failure
     environment:
-      DATABASE_URL: postgresql+psycopg://dxfarm:dxfarm@postgres:5432/${POSTGRES_DB:-dxfarm}
+      # Role/database dx_farm_ai_vector_db do backend tự tạo lúc khởi động (AiVectorDatabaseSeeder) -
+      # chỉ chứa documents/document_chunks, tách biệt hoàn toàn khỏi CSDL nghiệp vụ của Backend.
+      DATABASE_URL: postgresql+psycopg://ai_vector_ro:${AI_VECTOR_DB_RO_PASSWORD:-ai_vector_ro_demo_only}@postgres:5432/dx_farm_ai_vector_db
+      # Role đọc/ghi riêng cho job ingest RAG (scripts/ingest_diseases.py), không dùng chung với DATABASE_URL chỉ-đọc.
+      INGEST_DATABASE_URL: postgresql+psycopg://ai_vector_ingest:${AI_VECTOR_DB_INGEST_PASSWORD:-ai_vector_ingest_demo_only}@postgres:5432/dx_farm_ai_vector_db
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:1.5b}
       CV_DEVICE: ${AI_CV_DEVICE:-cpu}

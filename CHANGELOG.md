@@ -15,10 +15,17 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Endpoint nhập tay `POST .../diagnosis` vẫn giữ cho testing/demo — cả hai cùng đổ vào một `Diagnosis`/vòng đời duyệt duy nhất qua `approve`/`reject`/`apply`.
 - Xác nhận `DiseaseReportService` đã tự lưu `DiseaseReport` vào Backend DB từ Phase 0, không phụ thuộc AI ghi hộ.
 
-**Chưa làm** (thuộc Phase 1/Phase 3, ngoài phạm vi backend/Phase 2):
+**Đã xong — Phase 3 tách DB vật lý cho AI (P3-1..P3-4, xem `development/docs/ai_backend_decoupling_checklist.md`):**
 
-- AI Service (`ai/`) chưa expose contract `/api/v1/diagnose` thật, vẫn ghi trực tiếp DB nghiệp vụ dùng chung với Backend — endpoint `POST .../diagnosis/ai` sẽ lỗi runtime cho tới khi Phase 1 xong.
-- Tách DB vật lý (`dx_farm_ai_vector_db`) và cách ly network nội bộ cho `/internal/v1/**` — Phase 3.
+- `AiVectorDatabaseSeeder` tự tạo database `dx_farm_ai_vector_db` (chỉ `documents`/`document_chunks`, extension `pgvector`) lúc khởi động.
+- Hai role Postgres riêng cho AI: `ai_vector_ro` (chỉ-đọc, runtime suy luận) và `ai_vector_ingest` (đọc/ghi, job ingest RAG) — cả hai bị revoke `CONNECT` khỏi Backend DB, không credential nào của AI chạm được vào DB nghiệp vụ.
+- `deploy/docker-compose.yml` đổi `DATABASE_URL` của service `ai` sang DB/role mới, thêm `INGEST_DATABASE_URL` riêng cho ingest.
+- Dữ liệu cũ do AI ghi trực tiếp trước khi tách DB (`disease_reports`, `diagnoses`, `treatment_applications`, `workflow_cases`/`workflow_events`) xác định là dữ liệu demo/test, dọn bằng `deploy/sql/p3-4-legacy-ai-data-cleanup.sql`.
+
+**Chưa làm** (thuộc Phase 1, ngoài phạm vi backend/Phase 2):
+
+- AI Service (`ai/`) chưa expose contract `/api/v1/diagnose` thật, chưa xoá model/router nghiệp vụ dư thừa — endpoint `POST .../diagnosis/ai` sẽ lỗi runtime cho tới khi Phase 1 xong.
+- Vì Phase 3 đã cắt `DATABASE_URL` của AI sang DB chỉ có 2 bảng vector, các endpoint AI còn phụ thuộc bảng nghiệp vụ (`/reports/{id}/diagnose`, `/workflow/*`) tạm thời lỗi kết nối cho tới khi Phase 1 xong.
 
 ### 2026-09-11
 

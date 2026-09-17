@@ -46,9 +46,9 @@ def main() -> None:
         print_preview(args.limit)
         return
 
-    from app.db.session import SessionLocal
+    from app.db.session import IngestSessionLocal
 
-    db = SessionLocal()
+    db = IngestSessionLocal()
 
     try:
         result = ingest_disease_knowledge(db)

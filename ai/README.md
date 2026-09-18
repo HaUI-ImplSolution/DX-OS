@@ -55,13 +55,17 @@ Dịch vụ AI sử dụng cấu hình từ file `.env` (mẫu tại `.env.examp
 
 | Biến môi trường | Giá trị mặc định | Giải thích |
 |---|---|---|
-| `DATABASE_URL` | `postgresql+psycopg://dxfarm:dxfarm@localhost:5432/dxfarm` | Kết nối PostgreSQL (Operational & Knowledge DB) |
+| `DATABASE_URL` | `postgresql+psycopg://dxfarm:dxfarm@localhost:5432/dxfarm` | Kết nối AI Vector DB cho runtime chỉ đọc |
+| `RAG_INGEST_DATABASE_URL` | Không có | Kết nối AI Vector DB có quyền ghi, chỉ dùng cho job ingest |
 | `OLLAMA_BASE_URL` | `http://localhost:11434` | Endpoint của dịch vụ Ollama local |
 | `OLLAMA_MODEL` | `qwen2.5:1.5b` | Mô hình LLM nhỏ dùng để diễn đạt khuyến nghị tiếng Việt |
 | `EMBEDDING_MODEL` | `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` | Mô hình embedding cho RAG |
 | `CV_MODEL_NAME` | `EfficientNet-B4` | Tên mô hình nhận diện bệnh |
 | `CV_CONFIDENCE_THRESHOLD` | `0.70` | Ngưỡng độ tin cậy cảnh báo low confidence |
 | `LLM_TIMEOUT_SECONDS` | `5` | Thời gian chờ tối đa khi gọi LLM (tự fallback nếu quá giờ) |
+| `BACKEND_TIMEOUT_SECONDS` | `3` | Timeout mỗi lần AI gọi internal API của Backend |
+| `BACKEND_MAX_ATTEMPTS` | `2` | Tổng số lần gọi internal API, gồm lần đầu và retry |
+| `BACKEND_RETRY_BACKOFF_SECONDS` | `0.2` | Thời gian chờ giữa hai lần gọi Backend |
 
 ---
 
@@ -82,21 +86,23 @@ pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requiremen
 
 ### 2. Chuẩn bị database, seed và RAG
 
-AI không dùng Alembic hay migration. Theo định hướng decoupling, AI không còn duy trì các ORM model nghiệp vụ (`diseases`, `pesticides`, `treatment_rules`, `disease_reports`, `workflow_cases`... đã bị xóa khỏi `ai/app/db/models/`). AI runtime chỉ quản lý 2 ORM model cho RAG Vector DB là `Document` (`documents`) và `DocumentChunk` (`document_chunks`).
+AI không dùng Alembic hay migration.
+AI chỉ duy trì hai ORM model của RAG Vector DB là `Document` (`documents`) và `DocumentChunk` (`document_chunks`).
 
-Các file JSON trong `data/structured/` và `data/rag/` là **dữ liệu nguồn trong repository**, chưa tự xuất hiện trong PostgreSQL. Sau khi schema đã có, nạp seed và tạo embedding RAG:
+Runtime sử dụng `DATABASE_URL` để truy vấn hai bảng này và không chạy ingestion.
+Job quản trị ingestion sử dụng riêng `RAG_INGEST_DATABASE_URL` có quyền ghi.
+Việc tạo hai PostgreSQL role tương ứng được thực hiện ở P3-3.
+
+Sau khi schema đã có, chạy job quản trị để validate corpus, tạo embedding và nạp dữ liệu RAG:
 
 ```bash
-python -m scripts.seed_diseases
-python -m scripts.seed_pesticides
-python -m scripts.seed_treatment_rules
-python -m scripts.seed_disease_management_policies
 python -m scripts.ingest_diseases
 ```
 
-`scripts.ingest_diseases` đọc `data/rag/processed/disease_knowledge.json`, tạo embedding và ghi corpus vào PostgreSQL. Chỉ sau bước này `/knowledge/retrieve` và phần RAG của workflow mới có dữ liệu để truy vấn.
+`scripts.ingest_diseases` đọc `data/rag/processed/disease_knowledge.json` và chỉ ghi `documents` cùng `document_chunks`.
+Không dùng credential runtime để chạy lệnh này.
 
-`/health` và `/predict` không cần corpus RAG hoặc dữ liệu seed; chúng chỉ cần model CV tải thành công. Tuy vậy `DATABASE_URL` vẫn bắt buộc để ứng dụng khởi tạo cấu hình. Các endpoint RAG/workflow cần cả schema lẫn seed đã nạp.
+`/health` và `/predict` không cần corpus RAG; các endpoint RAG và `/api/v1/diagnose` cần schema cùng corpus đã ingest.
 
 ### 3. Khởi chạy FastAPI Server
 

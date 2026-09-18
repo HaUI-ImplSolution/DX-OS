@@ -290,8 +290,8 @@ Model `treatment_rules` hiện tại của AI (`ai/app/db/models/treatment_rule.
 - [x] Xóa endpoint `POST /disease/reports/{report_id}/diagnose` (ghi thẳng DB qua `diagnose_report`) — thay bằng inference contract mới.
 - [x] Thêm Backend REST client read-only để lấy field context, treatment rule, policy, PHI và lịch sử phun sau khi CV có `disease_code`.
 - [x] Đổi endpoint AI thành inference contract: nhận ảnh/request context, kết hợp CV + RAG + structured facts và trả recommendation về Backend.
-- [ ] Giữ `rag/retriever.py` và `rag/ingestion_service.py`; runtime chỉ đọc AI Vector DB, còn ingest là job quản trị có quyền ghi riêng.
-- [ ] Áp dụng timeout + retry giới hạn (`httpx`) khi gọi Backend internal API, theo mục 4.4.
+- [x] Giữ `rag/retriever.py` và `rag/ingestion_service.py`; runtime chỉ đọc AI Vector DB, còn ingest là job quản trị có quyền ghi riêng.
+- [x] Áp dụng timeout + retry giới hạn (`httpx`) khi gọi Backend internal API, theo mục 4.4.
 
 ### Phase 2: Tái cấu trúc phía Backend (Java/Spring Boot)
 - [ ] Thêm `AiDiagnosisClient` (sử dụng `WebClient` hoặc `RestTemplate`), có timeout/circuit breaker theo mục 4.4.

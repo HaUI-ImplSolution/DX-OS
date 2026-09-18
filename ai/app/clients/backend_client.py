@@ -2,6 +2,7 @@
 """Read-only client for Backend's internal diagnosis-context API."""
 
 import logging
+import time
 from datetime import date
 from decimal import Decimal
 
@@ -11,6 +12,43 @@ from pydantic import BaseModel, Field, ValidationError
 from app.core.config import Settings, get_settings
 
 logger = logging.getLogger(__name__)
+RETRYABLE_STATUS_CODES = frozenset({502, 503, 504})
+
+
+def _get_with_retry(
+    *,
+    client: httpx.Client,
+    url: str,
+    params: dict,
+    headers: dict,
+    max_attempts: int,
+    backoff_seconds: float,
+    request_id: str,
+) -> httpx.Response:
+    for attempt in range(1, max_attempts + 1):
+        try:
+            response = client.get(url, params=params, headers=headers)
+            response.raise_for_status()
+            return response
+        except (httpx.TransportError, httpx.HTTPStatusError) as exc:
+            status = (
+                exc.response.status_code
+                if isinstance(exc, httpx.HTTPStatusError)
+                else None
+            )
+            retryable = isinstance(exc, httpx.TransportError) or (
+                status in RETRYABLE_STATUS_CODES
+            )
+            if not retryable or attempt >= max_attempts:
+                raise
+            logger.warning(
+                "Retrying Backend diagnosis context attempt=%s request_id=%s",
+                attempt + 1,
+                request_id,
+            )
+            time.sleep(backoff_seconds)
+
+    raise RuntimeError("Backend diagnosis context exhausted all attempts")
 
 
 class RuleFact(BaseModel):
@@ -48,6 +86,8 @@ class BackendClient:
         base_url: str | None = None,
         service_api_key: str | None = None,
         timeout_seconds: float | None = None,
+        max_attempts: int | None = None,
+        retry_backoff_seconds: float | None = None,
         settings: Settings | None = None,
     ) -> None:
         settings = settings or get_settings()
@@ -64,10 +104,20 @@ class BackendClient:
             if timeout_seconds is not None
             else settings.backend_timeout_seconds
         )
+        resolved_max_attempts = (
+            max_attempts if max_attempts is not None else settings.backend_max_attempts
+        )
+        resolved_retry_backoff = (
+            retry_backoff_seconds
+            if retry_backoff_seconds is not None
+            else settings.backend_retry_backoff_seconds
+        )
 
         self.base_url = resolved_base_url.strip().rstrip("/")
         self.service_api_key = (resolved_api_key or "").strip()
         self.timeout_seconds = resolved_timeout
+        self.max_attempts = resolved_max_attempts
+        self.retry_backoff_seconds = resolved_retry_backoff
 
         if not self.base_url:
             raise ValueError("backend_base_url must not be blank")
@@ -75,6 +125,10 @@ class BackendClient:
             raise ValueError("backend_service_api_key must not be blank")
         if self.timeout_seconds <= 0:
             raise ValueError("backend_timeout_seconds must be greater than zero")
+        if not 1 <= self.max_attempts <= 3:
+            raise ValueError("backend_max_attempts must be between 1 and 3")
+        if self.retry_backoff_seconds < 0:
+            raise ValueError("backend_retry_backoff_seconds must not be negative")
 
     def get_diagnosis_context(
         self,
@@ -95,8 +149,9 @@ class BackendClient:
         url = f"{self.base_url}/internal/v1/diagnosis-context"
         try:
             with httpx.Client(timeout=self.timeout_seconds) as client:
-                response = client.get(
-                    url,
+                response = _get_with_retry(
+                    client=client,
+                    url=url,
                     params={
                         "request_id": request_id,
                         "disease_code": disease_code,
@@ -106,8 +161,10 @@ class BackendClient:
                         "Accept": "application/json",
                         "X-Service-Api-Key": self.service_api_key,
                     },
+                    max_attempts=self.max_attempts,
+                    backoff_seconds=self.retry_backoff_seconds,
+                    request_id=request_id,
                 )
-                response.raise_for_status()
                 context = DiagnosisContext.model_validate(response.json())
         except httpx.HTTPStatusError as exc:
             logger.error(

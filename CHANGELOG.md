@@ -68,6 +68,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## AI Service (Python)
 
+### 2026-09-17
+
+- Thêm timeout và retry giới hạn khi AI gọi internal API của Backend.
+
 ### 2026-09-16
 
 - Xóa thành công 10 ORM model nghiệp vụ dư thừa khỏi AI Service.
@@ -76,6 +80,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Xóa thành công endpoint legacy `POST /disease/reports/{report_id}/diagnose` khỏi AI Service.
 - Thêm Backend REST client read-only để AI lấy field context và structured facts.
 - Hoàn thành `POST /api/v1/diagnose`, kết hợp CV, RAG và structured facts từ Backend để trả recommendation đúng contract.
+- Tách quyền truy vấn RAG của runtime khỏi quyền ghi corpus của job ingestion.
 
 ### 2026-09-14
 

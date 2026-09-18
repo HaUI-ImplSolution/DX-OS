@@ -4,7 +4,7 @@ from datetime import date
 from decimal import Decimal
 
 from app.api.schemas import DiagnoseRequest
-from app.clients.backend_client import DiagnosisContext, RuleFact
+from app.clients.backend_client import BackendClientError, DiagnosisContext, RuleFact
 from app.services.inference_service import run_stateless_diagnose
 
 
@@ -114,6 +114,50 @@ def main() -> None:
         "structured_context",
         "recommendation",
     }
+
+    failed_events: list[str] = []
+
+    class FailurePredictor:
+        def predict(self, _image: bytes) -> dict:
+            failed_events.append("cv")
+            return {
+                "disease_code": "Tomato___Late_blight",
+                "disease_name": "Bệnh mốc sương cà chua",
+                "confidence": 0.94,
+                "model_name": "EfficientNet-B4",
+                "model_version": "v1.0",
+            }
+
+    class UnavailableBackend:
+        def get_diagnosis_context(self, **_kwargs) -> DiagnosisContext:
+            failed_events.append("backend")
+            raise BackendClientError("Backend diagnosis context is unavailable")
+
+    class MustNotRetrieve:
+        def retrieve(self, **_kwargs) -> list[dict]:
+            failed_events.append("rag")
+            raise AssertionError("RAG must not run without structured facts")
+
+    class MustNotWrite:
+        def write(self, _evidence: str) -> tuple[str, str]:
+            failed_events.append("recommendation")
+            raise AssertionError("Recommendation must not run without structured facts")
+
+    try:
+        run_stateless_diagnose(
+            payload=payload,
+            image_bytes=b"image",
+            predictor=FailurePredictor(),
+            db=object(),
+            backend_client=UnavailableBackend(),
+            rag_retriever=MustNotRetrieve(),
+            recommendation_writer=MustNotWrite(),
+        )
+    except BackendClientError:
+        pass
+    else:
+        raise AssertionError("Missing structured facts must fail the diagnosis")
+    assert failed_events == ["cv", "backend"]
     print("Diagnose contract check: PASS")
 
 

@@ -292,6 +292,7 @@ Model `treatment_rules` hiện tại của AI (`ai/app/db/models/treatment_rule.
 - [x] Đổi endpoint AI thành inference contract: nhận ảnh/request context, kết hợp CV + RAG + structured facts và trả recommendation về Backend.
 - [x] Giữ `rag/retriever.py` và `rag/ingestion_service.py`; runtime chỉ đọc AI Vector DB, còn ingest là job quản trị có quyền ghi riêng.
 - [x] Áp dụng timeout + retry giới hạn (`httpx`) khi gọi Backend internal API, theo mục 4.4.
+- [x] Khi Backend không trả structured facts, dừng suy luận và không trả recommendation chỉ dựa trên RAG evidence.
 
 ### Phase 2: Tái cấu trúc phía Backend (Java/Spring Boot)
 - [ ] Thêm `AiDiagnosisClient` (sử dụng `WebClient` hoặc `RestTemplate`), có timeout/circuit breaker theo mục 4.4.

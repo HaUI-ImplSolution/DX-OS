@@ -33,8 +33,8 @@ Tham chiếu: mục 6 "Phase 1" của `ai_backend_decoupling_plan.md`.
   Phụ thuộc: rà soát mọi client (frontend, app, script nội bộ) đang gọi các endpoint này và chuyển sang gọi Backend trước khi xóa.
   Kết quả rà soát: frontend, backend và script nội bộ không gọi trực tiếp `/disease/workflow/*`; không cần chuyển đổi client trong repository.
 - [x] **P1-4** — Xóa endpoint `POST /disease/reports/{report_id}/diagnose` (`diagnose_report` trong `ai/app/api/router.py`, ghi thẳng DB) — thay bằng inference contract mới ở P1-6.
-- [x] **P1-5** — Thêm Backend REST client read-only trong `ai/` để lấy field context, treatment rule, policy, PHI và lịch sử phun sau khi CV có `disease_code`.
-  > **Lưu ý:** P2-3 chưa trả `management_policy` cho nhánh `NO_CHEMICAL_CONTROL`; Docker Compose chưa truyền URL/API key giữa AI và Backend. Cần xử lý trước khi kiểm thử tích hợp P1-6.
+- [x] **P1-5** — Thêm Backend REST client read-only trong `ai/` để lấy field context, treatment rule, PHI và lịch sử phun sau khi CV có `disease_code`.
+  > **Lưu ý:** Contract Backend chưa trả `management_policy` cho nhánh `NO_CHEMICAL_CONTROL`.
 - [x] **P1-6** — Đổi endpoint AI thành inference contract mới `POST /api/v1/diagnose`: nhận ảnh/request context, kết hợp CV + RAG + structured facts và trả recommendation về Backend theo schema mục 5.2 của kế hoạch.
   > **Lưu ý tích hợp:** Backend đã kiểm tra `selected_rule_id` nhưng hiện vẫn tự dựng `recommendationText`, chưa lưu `recommendation.summary` do AI trả về.
 - [x] **P1-7** — Giữ nguyên `rag/retriever.py` và `rag/ingestion_service.py`; đảm bảo runtime chỉ đọc AI Vector DB, còn ingest là job quản trị có quyền ghi riêng (không lẫn với runtime inference).

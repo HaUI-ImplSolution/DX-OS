@@ -28,5 +28,4 @@ Contract JSON đầy đủ được định nghĩa tại mục 5 của [`ai_back
 
 ## Giới hạn hiện tại
 
-P2-3 chưa trả `management_policy` cho nhánh `NO_CHEMICAL_CONTROL`.
-Docker Compose chưa truyền đầy đủ URL và API key giữa AI với Backend.
+Backend chưa trả `management_policy` cho nhánh `NO_CHEMICAL_CONTROL`.

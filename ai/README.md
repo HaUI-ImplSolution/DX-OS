@@ -20,7 +20,7 @@ Backend → POST /api/v1/diagnose
 Các thành phần chính:
 
 - **Computer Vision**: EfficientNet-B4 nhận diện một trong 38 lớp PlantVillage và trả `disease_code`, confidence cùng metadata model.
-- **Structured facts**: AI gọi internal API chỉ đọc của Backend để lấy treatment rule, liều lượng, PHI, policy và lịch sử phun. Những dữ liệu này không được lấy từ RAG hoặc tự sinh bởi LLM.
+- **Structured facts**: AI gọi internal API chỉ đọc của Backend để lấy treatment rule, liều lượng, PHI và lịch sử phun. Những dữ liệu này không được lấy từ RAG hoặc tự sinh bởi LLM.
 - **RAG**: truy vấn `documents` và `document_chunks` trong PostgreSQL/pgvector bằng embedding 384 chiều, trả evidence kèm nguồn.
 - **LangGraph**: điều phối một lượt suy luận stateless; không lưu workflow hoặc trạng thái phê duyệt.
 - **Recommendation**: kết hợp kết quả CV, structured facts và RAG evidence. Backend kiểm tra lại rule version trước khi lưu.

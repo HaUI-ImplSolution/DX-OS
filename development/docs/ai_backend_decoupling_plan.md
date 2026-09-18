@@ -295,18 +295,18 @@ Model `treatment_rules` hiện tại của AI (`ai/app/db/models/treatment_rule.
 - [x] Khi Backend không trả structured facts, dừng suy luận và không trả recommendation chỉ dựa trên RAG evidence.
 
 ### Phase 2: Tái cấu trúc phía Backend (Java/Spring Boot)
-- [ ] Thêm `AiDiagnosisClient` (sử dụng `WebClient` hoặc `RestTemplate`), có timeout/circuit breaker theo mục 4.4.
-- [ ] Cập nhật `DiseaseReportService`: Tự khởi tạo và lưu `DiseaseReport` vào Backend DB.
-- [ ] Cung cấp internal API read-only để AI lấy structured facts bằng `disease_code` và context của báo cáo; bảo vệ bằng service token/network nội bộ theo mục 4.3.
-- [ ] Gọi `AiDiagnosisClient.diagnose(...)` gửi Payload sang AI Service.
-- [ ] Nhận CV, evidence và recommendation từ AI; đối chiếu lại `version` của rule (mục 4.5), kiểm tra rule/liều/PHI rồi lưu `Diagnosis`/workflow `PENDING`.
-- [ ] Xác nhận `DiagnosisController` (`create`/`approve`/`reject`/`apply`) là nơi duy nhất quản lý vòng đời phê duyệt.
+- [x] Thêm `AiDiagnosisClient` (sử dụng `WebClient` hoặc `RestTemplate`), có timeout/circuit breaker theo mục 4.4.
+- [x] Cập nhật `DiseaseReportService`: Tự khởi tạo và lưu `DiseaseReport` vào Backend DB.
+- [x] Cung cấp internal API read-only để AI lấy structured facts bằng `disease_code` và context của báo cáo; bảo vệ bằng service token/network nội bộ theo mục 4.3.
+- [x] Gọi `AiDiagnosisClient.diagnose(...)` gửi Payload sang AI Service.
+- [x] Nhận CV, evidence và recommendation từ AI; đối chiếu lại `version` của rule (mục 4.5), kiểm tra rule/liều/PHI rồi lưu `Diagnosis`/workflow `PENDING`.
+- [x] Xác nhận `DiagnosisController` (`create`/`approve`/`reject`/`apply`) là nơi duy nhất quản lý vòng đời phê duyệt.
 
 ### Phase 3: Khởi tạo Database & Deployment
-- [ ] Khởi tạo DB riêng `dx_farm_ai_vector_db` chỉ chứa bảng `documents` và `document_chunks` (kèm pgvector extension).
-- [ ] Cập nhật `deploy/docker-compose.yml` để tách biệt cấu hình biến môi trường kết nối DB của Backend và AI, theo cùng pattern DB/user riêng mà `keycloak`/`superset_ro` đang dùng trên cùng Postgres instance.
-- [ ] Dùng user chỉ-đọc cho AI runtime trên Vector DB và user/job riêng cho ingest.
-- [ ] Quyết định số phận dữ liệu cũ trong AI DB (`disease_reports`, `diagnoses`, `treatment_applications`, `workflow_cases`): bỏ nếu là dữ liệu demo/test, migrate/backfill sang Backend DB trước khi cắt kết nối nếu là dữ liệu thật.
+- [x] Khởi tạo DB riêng `dx_farm_ai_vector_db` chỉ chứa bảng `documents` và `document_chunks` (kèm pgvector extension).
+- [x] Cập nhật `deploy/docker-compose.yml` để tách biệt cấu hình biến môi trường kết nối DB của Backend và AI, theo cùng pattern DB/user riêng mà `keycloak`/`superset_ro` đang dùng trên cùng Postgres instance.
+- [x] Dùng user chỉ-đọc cho AI runtime trên Vector DB và user/job riêng cho ingest.
+- [x] Quyết định số phận dữ liệu cũ trong AI DB (`disease_reports`, `diagnoses`, `treatment_applications`, `workflow_cases`): bỏ nếu là dữ liệu demo/test, migrate/backfill sang Backend DB trước khi cắt kết nối nếu là dữ liệu thật.
 
 ---
 

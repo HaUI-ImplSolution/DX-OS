@@ -75,6 +75,13 @@ ai:
     # Service API key nội bộ cho chiều AI -> Backend (/internal/v1/**, header X-Service-Api-Key).
     # Để trống thì ServiceApiKeyAuthenticationFilter không cấp quyền cho ai (fail closed).
     inbound-api-key: ${AI_SERVICE_INBOUND_API_KEY:}
+  vector-db:
+    readonly:
+      # Mật khẩu role Postgres chỉ-đọc (ai_vector_ro) cho AI runtime. Xem AiVectorDatabaseSeeder.
+      password: ${AI_VECTOR_DB_RO_PASSWORD:ai_vector_ro_demo_only}
+    ingest:
+      # Mật khẩu role Postgres đọc/ghi (ai_vector_ingest) cho job ingest RAG. Xem AiVectorDatabaseSeeder.
+      password: ${AI_VECTOR_DB_INGEST_PASSWORD:ai_vector_ingest_demo_only}
 
 resilience4j:
   circuitbreaker:

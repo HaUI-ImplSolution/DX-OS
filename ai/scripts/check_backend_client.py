@@ -4,6 +4,7 @@ from typing import ClassVar
 from unittest.mock import patch
 
 import httpx
+
 from app.clients import BackendClient, BackendClientError
 
 

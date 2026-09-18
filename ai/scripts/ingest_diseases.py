@@ -46,9 +46,10 @@ def main() -> None:
         print_preview(args.limit)
         return
 
-    from app.core.config import get_settings
     from sqlalchemy import create_engine
     from sqlalchemy.orm import Session
+
+    from app.core.config import get_settings
 
     database_url = (get_settings().rag_ingest_database_url or "").strip()
     if not database_url:

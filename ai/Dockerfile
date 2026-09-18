@@ -15,7 +15,6 @@ COPY requirements.txt ./
 RUN pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
 
 COPY app ./app
-COPY data/rag ./data/rag
 
 RUN useradd --create-home --uid 10001 appuser \
     && mkdir /app/weights \

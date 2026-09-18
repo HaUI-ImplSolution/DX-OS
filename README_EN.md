@@ -33,6 +33,22 @@ One shared core handles sign-in, data, workflows, notifications and AI; two busi
 - **Transparent open source:** licenses and the list of software components are public; every source file has a license header, CI checks the license of each library and scans automatically for leaked passwords, vulnerable libraries (including the resolved dependency list) and third-party images; Dependabot proposes updates.
 - **Releases:** each `vX.Y.Z` release has a source `.tar.gz`, a `.sha256` file and the SBOMs on the Releases page; prebuilt images are on GHCR and `deploy/install.sh` installs them into another directory.
 
+## 📸 Screenshots
+
+Taken from the live deployment at [khuongdev.io.vn/portal](https://khuongdev.io.vn/portal/).
+
+| Portal, no sign-in needed | Monitoring and tracing (administrators) |
+|---|---|
+| ![Portal listing the applications, admin pages and service status](docs/images/demo/portal.png) | ![Monitoring screen: abnormal events and the status of each service](docs/images/demo/monitor.png) |
+
+| Farm: the engineer's request queue | Farm: document Q&A with sources |
+|---|---|
+| ![Requests waiting for the engineer's approval](docs/images/demo/farm-review.png) | ![An answer about rice blast with its cited sources](docs/images/demo/farm-knowledge.png) |
+
+| Farm: the farmer's mobile app | Lab: handling a support request |
+|---|---|
+| ![Approved report on mobile: confidence, pesticide, dose, pre-harvest days](docs/images/demo/farm-mobile.png) | ![Support request detail: deadlines, history, discussion](docs/images/demo/lab-ticket.png) |
+
 ## 🗺️ Overall architecture
 
 ![Overall architecture diagram](docs/images/tong_quan.gif)

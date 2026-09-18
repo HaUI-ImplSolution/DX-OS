@@ -33,6 +33,22 @@ Một lõi dùng chung lo đăng nhập, dữ liệu, quy trình, thông báo v�
 - **Nguồn mở minh bạch:** công khai giấy phép và danh sách thành phần phần mềm; mọi tệp mã có header giấy phép, CI kiểm giấy phép của từng thư viện, tự động quét lộ mật khẩu, lỗ hổng của thư viện (kể cả danh mục đã phân giải) và image của bên thứ ba; Dependabot đề xuất cập nhật.
 - **Phát hành:** mỗi bản `vX.Y.Z` có gói mã nguồn `.tar.gz`, tệp `.sha256` và SBOM trên trang Releases; image dựng sẵn ở GHCR, cài ra thư mục khác bằng `deploy/install.sh`.
 
+## 📸 Giao diện
+
+Ảnh chụp từ bản chạy thật tại [khuongdev.io.vn/portal](https://khuongdev.io.vn/portal/).
+
+| Cổng vào, không cần đăng nhập | Giám sát và truy vết (quản trị viên) |
+|---|---|
+| ![Portal liệt kê ứng dụng, trang quản trị và trạng thái dịch vụ](docs/images/demo/portal.png) | ![Màn hình giám sát: sự việc bất thường, tình trạng từng dịch vụ](docs/images/demo/monitor.png) |
+
+| Farm: hàng chờ yêu cầu của kỹ sư | Farm: hỏi đáp tài liệu kèm nguồn |
+|---|---|
+| ![Danh sách yêu cầu chờ kỹ sư duyệt](docs/images/demo/farm-review.png) | ![Câu trả lời về bệnh đạo ôn kèm nguồn trích dẫn](docs/images/demo/farm-knowledge.png) |
+
+| Farm: app mobile của nông dân | Lab: xử lý yêu cầu hỗ trợ |
+|---|---|
+| ![Báo cáo đã duyệt trên mobile: độ tin cậy, thuốc, liều, ngày cách ly](docs/images/demo/farm-mobile.png) | ![Chi tiết yêu cầu hỗ trợ: hạn xử lý, lịch sử, trao đổi](docs/images/demo/lab-ticket.png) |
+
 ## 🗺️ Kiến trúc tổng thể
 
 ![Sơ đồ kiến trúc tổng thể](docs/images/tong_quan.gif)

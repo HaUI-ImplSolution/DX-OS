@@ -4,6 +4,8 @@ Chỉ chứa cấu hình và script của Superset (image `apache/superset:3.1.3
 Trên máy chủ công khai, Superset (`bi.<tên miền>`) nằm sau Cloudflare Access rồi mới tới đăng nhập SSO Keycloak, chi tiết theo dõi ở [trang docs](https://haui-implsolution.github.io/DX-OS-docs/).
 Service `superset` khai báo trong [`deploy/docker-compose.yml`](../deploy/docker-compose.yml).
 
+![Dashboard DX-Farm trong Superset: bản đồ thửa ruộng và biểu đồ báo cáo](../docs/images/demo/bi-dashboard.png)
+
 ## Cách hoạt động
 
 - Metadata dùng SQLite riêng (`deploy/data/superset/`), không dùng Postgres nghiệp vụ; không có Celery nên truy vấn chạy đồng bộ.

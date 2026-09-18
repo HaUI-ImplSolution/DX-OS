@@ -11,6 +11,10 @@ Hỏi đáp hiển thị câu trả lời Qwen riêng với tài liệu tham kh�
 Chẩn đoán chỉ hiển thị phần Qwen được chấp nhận, không hiện nội dung dự phòng.
 Chẩn đoán Farm có phần giải thích riêng, thuốc/liều/PHI vẫn dựng từ phác đồ Backend.
 
+![Farm: hàng chờ yêu cầu của kỹ sư](../docs/images/demo/farm-review.png)
+
+![Lab: chi tiết yêu cầu hỗ trợ](../docs/images/demo/lab-ticket.png)
+
 ## Cấu trúc
 
 | Đường dẫn | Nội dung |

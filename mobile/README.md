@@ -7,6 +7,8 @@ Kiến trúc ở [`ARCHITECTURE.md`](../ARCHITECTURE.md); việc chưa làm theo
 **Luồng:** đăng nhập → chọn thửa → chọn vụ → xem và gửi báo cáo → theo dõi kết quả kỹ sư duyệt → khai phun thuốc → khai báo thu hoạch.
 Chẩn đoán AI do kỹ sư kích hoạt trên web; nông dân thấy "Chờ chẩn đoán" sau khi gửi.
 
+![Báo cáo đã duyệt trên app mobile](../docs/images/demo/farm-mobile.png)
+
 ## Cách hoạt động
 
 - **Điều hướng:** `expo-router` theo cấu trúc file trong `app/`, dạng stack, route guard `Stack.Protected` ở `app/_layout.tsx`.

@@ -80,12 +80,12 @@ class DiagnoseRuleFact(BaseModel):
 
 
 class DiagnoseStructuredContext(BaseModel):
-    path: str = Field(pattern="^treatment$")
-    rules: list[DiagnoseRuleFact] = Field(min_length=1)
+    path: str = Field(pattern="^(treatment|review_required)$")
+    rules: list[DiagnoseRuleFact] = Field(default_factory=list)
 
 
 class DiagnoseRecommendation(BaseModel):
-    selected_rule_id: str = Field(min_length=1)
+    selected_rule_id: str | None = None
     summary: str = Field(min_length=1)
     requires_engineer_approval: bool = True
 

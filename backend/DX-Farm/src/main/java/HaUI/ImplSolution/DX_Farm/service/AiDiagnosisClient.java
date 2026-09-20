@@ -25,8 +25,8 @@ public class AiDiagnosisClient {
       @Value("${ai.service.api-key:}") String apiKey,
       @Value("${ai.service.connect-timeout-ms:3000}") int connectTimeoutMs,
       @Value("${ai.service.read-timeout-ms:15000}") int readTimeoutMs) {
-    HttpClient httpClient =
-        HttpClient.newBuilder().connectTimeout(Duration.ofMillis(connectTimeoutMs)).build();
+    HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1)
+        .connectTimeout(Duration.ofMillis(connectTimeoutMs)).build();
     JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(httpClient);
     requestFactory.setReadTimeout(Duration.ofMillis(readTimeoutMs));
 

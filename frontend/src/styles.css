@@ -266,6 +266,12 @@ body {
   color: var(--primary-dark);
 }
 
+.banner-warning {
+  background: #fff8e1;
+  border: 1px solid var(--warning);
+  color: #7a4a00;
+}
+
 .banner-dismissible {
   display: flex;
   justify-content: space-between;

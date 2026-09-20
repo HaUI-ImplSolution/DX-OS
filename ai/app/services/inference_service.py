@@ -93,10 +93,8 @@ def run_stateless_diagnose(
             disease_code=disease_code,
             crop_season_id=payload.crop_season_id,
         )
-        return {
-            "path": "treatment",
-            "rules": [rule.model_dump(mode="json") for rule in context.rules],
-        }
+        rules = [rule.model_dump(mode="json") for rule in context.rules]
+        return {"path": "treatment" if rules else "review_required", "rules": rules}
 
     def retrieve_rag(query: str, disease_code: str, top_k: int) -> list[dict]:
         return rag_retriever.retrieve(
@@ -143,8 +141,13 @@ def run_stateless_diagnose(
     )
     recommendation = result.get("recommendation") or {}
     selected_rule_id = recommendation.get("selected_rule_id")
-    if selected_rule_id not in {rule.rule_id for rule in structured_context.rules}:
+    known_rule_ids = {rule.rule_id for rule in structured_context.rules}
+    if selected_rule_id is not None and selected_rule_id not in known_rule_ids:
         raise ValueError("Recommendation selected an unknown rule_id")
+    if structured_context.path == "treatment" and selected_rule_id is None:
+        raise ValueError("Treatment recommendation must select a rule_id")
+    if structured_context.path == "review_required" and selected_rule_id is not None:
+        raise ValueError("Review-required recommendation cannot select a rule_id")
 
     return DiagnoseResponse(
         request_id=payload.request_id,

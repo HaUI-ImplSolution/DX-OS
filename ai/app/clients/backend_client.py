@@ -70,7 +70,7 @@ class DiagnosisContext(BaseModel):
     request_id: str = Field(min_length=1)
     disease_code: str = Field(min_length=1)
     disease_name: str = Field(min_length=1)
-    rules: list[RuleFact] = Field(min_length=1)
+    rules: list[RuleFact] = Field(default_factory=list)
     recent_treatments: list[RecentTreatment]
 
 

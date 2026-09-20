@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { applyDiagnosis, approveDiagnosis, createDiagnosis, rejectDiagnosis } from "../api";
+import {
+  applyDiagnosis,
+  approveDiagnosis,
+  createAiDiagnosis,
+  createDiagnosis,
+  rejectDiagnosis,
+} from "../api";
 import type { Diagnosis, Disease, DiseaseReport, Role, TreatmentApplication } from "../types";
 import Badge from "./Badge";
 import Section from "./Section";
@@ -27,6 +33,18 @@ function CreateDiagnosisForm({
   const [confidence, setConfidence] = useState("0.92");
   const [modelVersion, setModelVersion] = useState("manual-input-v1");
   const [submitting, setSubmitting] = useState(false);
+  const [aiSubmitting, setAiSubmitting] = useState(false);
+
+  const runAi = async () => {
+    setAiSubmitting(true);
+    try {
+      onUpdated(await createAiDiagnosis(reportId));
+    } catch (err) {
+      onError(err instanceof Error ? err.message : "Không chạy được chẩn đoán AI");
+    } finally {
+      setAiSubmitting(false);
+    }
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,8 +66,19 @@ function CreateDiagnosisForm({
   return (
     <form className="inline-form" onSubmit={submit}>
       <p className="empty-hint">
-        AI Service (vision-api + LLM) chưa được dựng — nhập tay để giả lập kết quả CV mà AI Service sẽ gửi
-        sang backend (disease_id/confidence/model_version).
+        Chạy luồng thật CV → Backend facts → RAG → khuyến nghị. Lần đầu có thể chậm do tải model.
+      </p>
+      <div className="form-actions">
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={runAi}
+          disabled={aiSubmitting || submitting}
+        >
+          {aiSubmitting ? "AI đang chẩn đoán…" : "Chạy chẩn đoán AI"}
+        </button>
+      </div>
+      <p className="empty-hint">Hoặc nhập tay kết quả CV để kiểm thử nghiệp vụ:
       </p>
       <label className="field-label">
         Bệnh chẩn đoán
@@ -80,7 +109,11 @@ function CreateDiagnosisForm({
         required
       />
       <div className="form-actions">
-        <button type="submit" className="btn btn-primary" disabled={submitting || diseases.length === 0}>
+        <button
+          type="submit"
+          className="btn btn-secondary"
+          disabled={submitting || aiSubmitting || diseases.length === 0}
+        >
           {submitting ? "Đang lưu…" : "Ghi nhận chẩn đoán"}
         </button>
       </div>
@@ -289,8 +322,13 @@ export default function DiagnosisPanel({
             <p className="empty-hint">Chỉ kỹ sư nông nghiệp mới được duyệt/từ chối khuyến nghị.</p>
           )}
 
-          {diagnosis.approvalStatus === "APPROVED" && canDecide && (
+          {diagnosis.approvalStatus === "APPROVED" && canDecide && diagnosis.treatmentRule && (
             <ApplyTreatmentBox reportId={report.id} onError={onError} />
+          )}
+          {diagnosis.approvalStatus === "APPROVED" && !diagnosis.treatmentRule && (
+            <div className="banner banner-warning">
+              Chưa có quy tắc điều trị được duyệt nên không thể ghi nhận phun thuốc.
+            </div>
           )}
 
           {diagnosis.approvalStatus === "REJECTED" && (

@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-dxfarm}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dxfarm}
     volumes:
-      - ./data/postgres:/var/lib/postgresql/data
+      - ${POSTGRES_DATA_DIR:-./data/postgres}:/var/lib/postgresql/data
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     healthcheck:
@@ -46,33 +46,74 @@ services:
       - "${BACKEND_PORT:-8081}:8081"
 
 
+  ollama:
+    image: ollama/ollama:0.34.2
+    restart: unless-stopped
+    volumes:
+      - ollama_models:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  ollama-init:
+    image: ollama/ollama:0.34.2
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    volumes:
+      - ollama_models:/root/.ollama
+    command: ["pull", "${OLLAMA_MODEL:-qwen2.5:1.5b}"]
+
   ai:
+    build:
+      context: ../ai
+      dockerfile: Dockerfile
+    depends_on:
+      rag-ingest:
+        condition: service_completed_successfully
+      ollama-init:
+        condition: service_completed_successfully
+    restart: on-failure
+    environment:
+      # Role/database dx_farm_ai_vector_db do backend tự tạo lúc khởi động (AiVectorDatabaseSeeder) -
+      # chỉ chứa documents/document_chunks, tách biệt hoàn toàn khỏi CSDL nghiệp vụ của Backend.
+      DATABASE_URL: postgresql+psycopg://ai_vector_ro:${AI_VECTOR_DB_RO_PASSWORD:-ai_vector_ro_demo_only}@postgres:5432/dx_farm_ai_vector_db
+      BACKEND_BASE_URL: ${BACKEND_BASE_URL:-http://backend:8081}
+      BACKEND_SERVICE_API_KEY: ${AI_SERVICE_INBOUND_API_KEY:-}
+      AI_SERVICE_API_KEY: ${AI_SERVICE_API_KEY:-}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:1.5b}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2}
+      HF_HOME: /app/weights/huggingface
+      CV_DEVICE: ${AI_CV_DEVICE:-cpu}
+      LOG_LEVEL: ${AI_LOG_LEVEL:-INFO}
+    volumes:
+      - ai_weights:/app/weights
+    ports:
+      - "${AI_PORT:-8000}:8000"
+
+  rag-ingest:
     build:
       context: ../ai
       dockerfile: Dockerfile
     depends_on:
       postgres:
         condition: service_healthy
+      backend:
+        condition: service_started
     restart: on-failure
     environment:
-      # Role/database dx_farm_ai_vector_db do backend tự tạo lúc khởi động (AiVectorDatabaseSeeder) -
-      # chỉ chứa documents/document_chunks, tách biệt hoàn toàn khỏi CSDL nghiệp vụ của Backend.
-      DATABASE_URL: postgresql+psycopg://ai_vector_ro:${AI_VECTOR_DB_RO_PASSWORD:-ai_vector_ro_demo_only}@postgres:5432/dx_farm_ai_vector_db
-      # Role đọc/ghi riêng cho job ingest RAG (scripts/ingest_diseases.py), không dùng chung với DATABASE_URL chỉ-đọc.
       RAG_INGEST_DATABASE_URL: postgresql+psycopg://ai_vector_ingest:${AI_VECTOR_DB_INGEST_PASSWORD:-ai_vector_ingest_demo_only}@postgres:5432/dx_farm_ai_vector_db
-      BACKEND_BASE_URL: ${BACKEND_BASE_URL:-http://backend:8081}
-      BACKEND_SERVICE_API_KEY: ${AI_SERVICE_INBOUND_API_KEY:-}
-      AI_SERVICE_API_KEY: ${AI_SERVICE_API_KEY:-}
-      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
-      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:1.5b}
-      CV_DEVICE: ${AI_CV_DEVICE:-cpu}
-      LOG_LEVEL: ${AI_LOG_LEVEL:-INFO}
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2}
+      HF_HOME: /app/weights/huggingface
     volumes:
+      - ${AI_DATA_DIR:-../ai/.local/data}:/app/data:ro
       - ai_weights:/app/weights
-    ports:
-      - "${AI_PORT:-8000}:8000"
+    command: ["python", "-m", "scripts.ingest_diseases"]
 
   frontend:
     build:
@@ -194,3 +235,4 @@ services:
 
 volumes:
   ai_weights:
+  ollama_models:

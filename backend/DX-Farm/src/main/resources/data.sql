@@ -1,3 +1,46 @@
+-- Canonical 38-class CV contract. This seeds disease identity only; no treatment facts.
+INSERT INTO diseases (code, name, description)
+VALUES
+  ('Apple___Apple_scab', 'Bệnh ghẻ táo', NULL),
+  ('Apple___Black_rot', 'Bệnh thối đen trên táo', NULL),
+  ('Apple___Cedar_apple_rust', 'Bệnh gỉ sắt tuyết tùng trên táo', NULL),
+  ('Apple___healthy', 'Không phát hiện bệnh thuộc lớp CV (healthy)', NULL),
+  ('Blueberry___healthy', 'Không phát hiện bệnh thuộc lớp CV (healthy)', NULL),
+  ('Cherry_(including_sour)___Powdery_mildew', 'Bệnh phấn trắng trên anh đào', NULL),
+  ('Cherry_(including_sour)___healthy', 'Không phát hiện bệnh thuộc lớp CV (healthy)', NULL),
+  ('Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot', 'Bệnh đốm lá Cercospora / đốm lá xám trên ngô', NULL),
+  ('Corn_(maize)__Common_rust', 'Bệnh gỉ sắt thông thường trên ngô', NULL),
+  ('Corn_(maize)___Northern_Leaf_Blight', 'Bệnh cháy lá phương Bắc trên ngô', NULL),
+  ('Corn_(maize)___healthy', 'Không phát hiện bệnh thuộc lớp CV (healthy)', NULL),
+  ('Grape___Black_rot', 'Bệnh thối đen trên nho', NULL),
+  ('Grape___Esca_(Black_Measles)', 'Bệnh Esca (sởi đen) trên nho', NULL),
+  ('Grape___Leaf_blight_(Isariopsis_Leaf_Spot)', 'Bệnh cháy lá / đốm lá Isariopsis trên nho', NULL),
+  ('Grape___healthy', 'Không phát hiện bệnh thuộc lớp CV (healthy)', NULL),
+  ('Orange___Haunglongbing_(Citrus_greening)', 'Bệnh vàng lá gân xanh (Greening) trên cam', NULL),
+  ('Peach___Bacterial_spot', 'Bệnh đốm vi khuẩn trên đào', NULL),
+  ('Peach___healthy', 'Không phát hiện bệnh thuộc lớp CV (healthy)', NULL),
+  ('Pepper,_bell___Bacterial_spot', 'Bệnh đốm vi khuẩn trên ớt chuông', NULL),
+  ('Pepper,_bell___healthy', 'Không phát hiện bệnh thuộc lớp CV (healthy)', NULL),
+  ('Potato___Early_blight', 'Bệnh cháy lá sớm trên khoai tây', NULL),
+  ('Potato___Late_blight', 'Bệnh cháy lá muộn trên khoai tây', NULL),
+  ('Potato___healthy', 'Không phát hiện bệnh thuộc lớp CV (healthy)', NULL),
+  ('Raspberry___healthy', 'Không phát hiện bệnh thuộc lớp CV (healthy)', NULL),
+  ('Soybean___healthy', 'Không phát hiện bệnh thuộc lớp CV (healthy)', NULL),
+  ('Squash___Powdery_mildew', 'Bệnh phấn trắng trên bí', NULL),
+  ('Strawberry___Leaf_scorch', 'Bệnh cháy lá trên dâu tây', NULL),
+  ('Strawberry___healthy', 'Không phát hiện bệnh thuộc lớp CV (healthy)', NULL),
+  ('Tomato___Bacterial_spot', 'Bệnh đốm vi khuẩn trên cà chua', NULL),
+  ('Tomato___Early_blight', 'Bệnh cháy lá sớm trên cà chua', NULL),
+  ('Tomato___Late_blight', 'Bệnh cháy lá muộn trên cà chua', NULL),
+  ('Tomato___Leaf_Mold', 'Bệnh mốc lá trên cà chua', NULL),
+  ('Tomato___Septoria_leaf_spot', 'Bệnh đốm lá Septoria trên cà chua', NULL),
+  ('Tomato___Spider_mites Two-spotted_spider_mite', 'Bệnh do nhện đỏ hai chấm trên cà chua', NULL),
+  ('Tomato___Target_Spot', 'Bệnh đốm vòng / đốm mục tiêu trên cà chua', NULL),
+  ('Tomato___Tomato_Yellow_Leaf_Curl_Virus', 'Bệnh virus xoăn vàng lá cà chua', NULL),
+  ('Tomato___Tomato_mosaic_virus', 'Bệnh virus khảm cà chua', NULL),
+  ('Tomato___healthy', 'Không phát hiện bệnh thuộc lớp CV (healthy)', NULL)
+ON CONFLICT (code) DO NOTHING;
+
 INSERT INTO diseases (code, name, description)
 VALUES ('BROWN_SPOT', 'Đốm nâu', 'Bệnh đốm nâu trên lá lúa do nấm Bipolaris oryzae')
 ON CONFLICT (code) DO NOTHING;

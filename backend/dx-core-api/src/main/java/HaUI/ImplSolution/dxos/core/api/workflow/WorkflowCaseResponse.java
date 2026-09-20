@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-package HaUI.ImplSolution.DX_Farm.core.workflow;
+package HaUI.ImplSolution.dxos.core.api.workflow;
 
 import java.time.Instant;
 
@@ -28,4 +28,11 @@ public record WorkflowCaseResponse(
   String assignedToName,
 
   Instant updatedAt
-){}
+) {
+
+  public static WorkflowCaseResponse of(CaseView view) {
+    return new WorkflowCaseResponse(view.id(), view.caseType(), view.entityType(), view.entityId(),
+        view.status().name(), view.createdBy(), view.createdAt(), view.assignedTo(),
+        view.assignedToName(), view.updatedAt());
+  }
+}

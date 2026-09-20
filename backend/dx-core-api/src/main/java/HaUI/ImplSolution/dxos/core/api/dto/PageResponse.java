@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-package HaUI.ImplSolution.DX_Farm.dto;
+package HaUI.ImplSolution.dxos.core.api.dto;
 
 import java.util.List;
 import java.util.function.Function;
@@ -15,5 +15,10 @@ public record PageResponse<T>(List<T> items, int page, int size, long totalEleme
   public static <S, T> PageResponse<T> of(Page<S> page, Function<S, T> mapper) {
     return new PageResponse<>(page.getContent().stream().map(mapper).toList(), page.getNumber(),
         page.getSize(), page.getTotalElements(), page.getTotalPages());
+  }
+
+  public <R> PageResponse<R> map(Function<T, R> mapper) {
+    return new PageResponse<>(items.stream().map(mapper).toList(), page, size, totalElements,
+        totalPages);
   }
 }

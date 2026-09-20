@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-package HaUI.ImplSolution.DX_Farm.exception;
+package HaUI.ImplSolution.dxos.core.api.exception;
 
 import java.time.LocalDate;
 

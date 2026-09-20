@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-package HaUI.ImplSolution.DX_Farm.exception;
+package HaUI.ImplSolution.dxos.core.api.exception;
 
 public class AiServiceException extends RuntimeException {
 

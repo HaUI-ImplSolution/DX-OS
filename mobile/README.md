@@ -2,7 +2,7 @@
 
 Ứng dụng React Native dành cho nông dân (chỉ role `FARMER`): chụp ảnh sâu bệnh ngay tại ruộng và gửi báo cáo về Backend; ENGINEER và ADMIN dùng web vì việc duyệt cần xem ảnh, kết quả CV, khuyến nghị và PHI cùng lúc.
 Một codebase TypeScript cho Android và iOS, dependency đều MIT hoặc Apache-2.0 ([`COPYRIGHT.txt`](../COPYRIGHT.txt)); build APK bằng EAS, không cần Android Studio.
-Kiến trúc ở [`ARCHITECTURE.md`](../ARCHITECTURE.md); việc chưa làm ở [Việc tồn đọng](https://haui-implsolution.github.io/DX-OS-docs/docs/backlog).
+Kiến trúc ở [`ARCHITECTURE.md`](../ARCHITECTURE.md); việc chưa làm theo dõi ở [trang docs](https://haui-implsolution.github.io/DX-OS-docs/).
 
 **Luồng:** đăng nhập → chọn thửa → chọn vụ → xem và gửi báo cáo → theo dõi kết quả kỹ sư duyệt → khai phun thuốc → khai báo thu hoạch.
 Chẩn đoán AI do kỹ sư kích hoạt trên web; nông dân thấy "Chờ chẩn đoán" sau khi gửi.
@@ -136,4 +136,4 @@ Mỗi màn hình có đúng một hành động chính, màu `primary`, đặt �
 
 ## Còn thiếu
 
-Push notification; chi tiết ở [Việc tồn đọng](https://haui-implsolution.github.io/DX-OS-docs/docs/backlog).
+Push notification; chi tiết theo dõi ở [trang docs](https://haui-implsolution.github.io/DX-OS-docs/).

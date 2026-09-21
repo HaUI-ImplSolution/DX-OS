@@ -64,6 +64,9 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 | Mọi route gateway không kiểm token đều nằm trong danh sách công khai (`deploy/demo/check_gateway_routes.py`) | Có | Job CI `gateway`, thử route thêm vào và route đổi trạng thái | Không áp dụng |
 | Luật phân lớp và ranh giới gói của backend (`ArchitectureTest`) | Có | Test đơn vị trong `mvn verify` | Không áp dụng |
 | Giám sát từ ngoài: web, portal, đăng nhập, backend và kho ảnh (`deploy/online-check.sh`, chạy bằng cron trên máy chủ) | Có | Chạy thử với site thật, địa chỉ không kết nối được và phản hồi không phải JSON | Không áp dụng |
+| Kiểm header giấy phép của mọi tệp mã và giấy phép của từng thư viện trong `sbom/` (`.github/scripts/check_licenses.py`) | Có | Job CI `license` của `ci-infra.yml` | Không áp dụng |
+| Cài stack ra thư mục khác (`deploy/install.sh`) | Có | Job CI `install`: compose hợp lệ cho Farm và Lab, mọi tệp được mount đã chép; chưa chạy stack từ thư mục đã cài | Không áp dụng |
+| Gói phát hành cho mỗi tag: `.tar.gz`, `.sha256`, SBOM (`release-package.yml`) | Có | Chạy thật cho 5 tag ngày 30/10/2026 | Không áp dụng |
 | Kiểm tra máy và `deploy/.env` trước khi chạy (`deploy/doctor.sh`) | Có | Chạy thử với `.env` đủ, thiếu, để trống và còn tên biến cũ | Không áp dụng |
 
 ## 2. Chuẩn bị
@@ -100,7 +103,7 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 | Cache và tính nhất quán dữ liệu | Đạt khi dùng cache, thay corpus, rollback và ingest đồng thời trên PostgreSQL |
 | Thử tải HTTP retrieval | 12 lượt rút gọn, không ghi nhận lỗi HTTP, sai định dạng phản hồi hoặc hết bộ nhớ |
 
-Chỉ số chất lượng và hiệu năng ở [Đánh giá AI](https://haui-implsolution.github.io/DX-OS-docs/docs/ai-evaluation#7-đánh-giá-truy-xuất-rag).
+Chỉ số chất lượng và hiệu năng theo dõi ở [trang docs](https://haui-implsolution.github.io/DX-OS-docs/).
 Cách chạy công cụ và xem báo cáo ở [`ai/README.md`](../ai/README.md#đánh-giá-truy-xuất-rag).
 
 ### Câu trả lời Qwen có cấu trúc
@@ -119,7 +122,7 @@ Thuốc, liều và thời gian cách ly (PHI) do Backend cung cấp.
 | Luồng sử dụng | Hỏi đáp web Farm/Lab, chẩn đoán, duyệt và xem lại trên mobile | Chủ dự án đã kiểm tay; E2E Farm 10/10, Lab 16/16 |
 
 Khi kiểm tay, đối chiếu câu trả lời với nguồn; kiểm giải thích chẩn đoán tách khỏi phác đồ và chỉ hiển thị cho nông dân sau duyệt.
-Các hạn chế về nội dung Qwen và khởi động từ clone sạch được ghi trong [Việc tồn đọng](https://haui-implsolution.github.io/DX-OS-docs/docs/backlog).
+Các hạn chế về nội dung Qwen và khởi động từ clone sạch được theo dõi ở [trang docs](https://haui-implsolution.github.io/DX-OS-docs/).
 
 ## 4. Dựng stack
 
@@ -391,6 +394,8 @@ Cách dùng và ý nghĩa từng khối ở [`backend/dx-monitor/README.md`](../
 | Mục | Kết quả | Ghi chú |
 |---|---|---|
 | CI trên pull request: Backend, AI, Infra, E2E Farm và Lab, Dependencies | Đạt | Ngày 29/10/2026 ở commit `1f61ab4`; gồm `mvn verify` cả sáu module, `pytest`, job `backup-drill`, gitleaks, quét Trivy (phụ thuộc, SBOM và image), kiểm route gateway |
+| CI trên `Khuong/main` sau khi thêm kiểm giấy phép và cài ra thư mục khác | Đạt | Ngày 30/10/2026 ở commit `c62ebdd`: CI Backend, Frontend, Mobile, AI, Infra (gồm job `license` và `install`) và Dependencies đều xanh |
+| Release Package cho `v1.0.0` đến `v1.1.0` | Đạt | Ngày 30/10/2026: mỗi release có `.tar.gz`, `.sha256` và bốn SBOM; ghi chú lấy từ CHANGELOG, riêng `v1.0.3` giữ ghi chú viết tay |
 | Backend `mvn verify` (sáu module, Testcontainers) | Đạt | Job `CI Backend` ngày 29/10/2026; số test chạy xem ở log job |
 | BI `python -m unittest test_chart_query_context` trong `bi/` | Đạt | 22 test |
 | AI `pytest` trong `ai/` | Đạt | Job `CI AI` ngày 29/10/2026; số test chạy xem ở log job |
@@ -404,7 +409,7 @@ Cách dùng và ý nghĩa từng khối ở [`backend/dx-monitor/README.md`](../
 | E2E Lab | Đạt | 16/16 bước với `--require-knowledge`, kể cả sau khi đổi app không `--reset` |
 | Đổi ứng dụng B1 đến B6 | Đạt | B2 dừng với thông báo nêu `[farm, lab]`; B3, B4 route app khác 404; B6 không lỗi migration |
 | Kiểm tay Farm | Đạt | F1 đến F14 (kỹ sư cũng thấy dashboard Superset); hộp duyệt chỉ có loại case của Farm; trên mobile đạt F3, nhãn "Đang cách ly", ngưỡng GPS, thẻ thời tiết, màn hỏi đáp, hộp thông báo cuộn tải thêm 30 mục mỗi trang, icon và splash của bản build |
-| Tri thức Lab | Đạt, trừ K17 | Ngày 19/10/2026: K1 đến K16 đúng bài, nguồn mở trang của HaUI và bản PDF trên web và qua API; K17 (máy in) hiện đoạn không liên quan, xem [Việc tồn đọng](https://haui-implsolution.github.io/DX-OS-docs/docs/backlog) |
+| Tri thức Lab | Đạt, trừ K17 | Ngày 19/10/2026: K1 đến K16 đúng bài, nguồn mở trang của HaUI và bản PDF trên web và qua API; K17 (máy in) hiện đoạn không liên quan, theo dõi ở [trang docs](https://haui-implsolution.github.io/DX-OS-docs/) |
 | Kiểm tay Lab | Đạt | L1 đến L18, API bước 1 đến 22, các màn hình web; hộp duyệt chỉ có loại case của Lab |
 | API và lỗi request | Đạt | 415, 405, 400; `settings` của `GET /api/v1/app`; `GET /api/v1/crop-seasons/isolated` |
 | Thời tiết | Đạt | Open-Meteo trả dữ liệu thật; địa chỉ không tới được trả snapshot kèm ghi chú |

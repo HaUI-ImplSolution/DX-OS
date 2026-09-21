@@ -43,4 +43,4 @@ Dùng Mattermost bên ngoài stack thì đặt `MATTERMOST_WEBHOOK_URL_*` trong 
 - Tin gửi lỗi tạm thời (mạng, HTTP 5xx, 429) được lưu ở bảng `chat_outbox` và gửi lại tối đa 8 lần; tin chưa kịp vào bảng khi backend tắt giữa lúc commit và lúc gửi thì mất.
 - `Kỹ sư nông nghiệp` là channel public: mọi thành viên team đọc được tên người báo cáo và mã thửa; muốn giới hạn thì chuyển sang private.
 
-Hướng mở rộng ở [Việc tồn đọng](https://haui-implsolution.github.io/DX-OS-docs/docs/backlog).
+Hướng mở rộng theo dõi ở [trang docs](https://haui-implsolution.github.io/DX-OS-docs/).

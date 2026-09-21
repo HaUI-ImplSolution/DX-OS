@@ -78,5 +78,4 @@ Ngưỡng mới thử trên ảnh công khai nền ruộng, nền trắng và �
 - Health `model_loaded` chỉ true khi cả hai model sẵn sàng.
 
 **Giới hạn:** model nhận ngô và mía thành Rice với điểm rất cao (6/15 và 15/15 ảnh thử) và chặn 8/50 ảnh lúa nền ruộng.
-Tăng ngưỡng không sửa được ca gần 100%; số liệu ở [Đánh giá AI](https://haui-implsolution.github.io/DX-OS-docs/docs/ai-evaluation).
-Việc chưa làm ở [Việc tồn đọng](https://haui-implsolution.github.io/DX-OS-docs/docs/backlog).
+Tăng ngưỡng không sửa được ca gần 100%; số liệu và việc chưa làm theo dõi ở [trang docs](https://haui-implsolution.github.io/DX-OS-docs/).

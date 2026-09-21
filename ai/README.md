@@ -159,7 +159,7 @@ Bộ đề gồm 66 câu hỏi đáp và 6 câu tham khảo chẩn đoán, so s�
 Trong đó, 42 câu pilot đã được chủ dự án duyệt; 30 câu mở rộng còn dùng nhãn nháp.
 Chatbot được chấm sau bước lọc truy xuất, trước khi Backend gộp đoạn; chẩn đoán dùng retriever hiện có.
 Lệnh cũng chấm gate phạm vi của chatbot (`scripts/evaluate_scope.py`) trên 75 câu trong/ngoài phạm vi và 15 câu đúng chủ đề nhưng không có tài liệu; nhãn của hai bộ này còn là nháp.
-Kết quả và ý nghĩa chỉ số ở [Đánh giá AI](https://haui-implsolution.github.io/DX-OS-docs/docs/ai-evaluation#7-đánh-giá-truy-xuất-rag).
+Kết quả và ý nghĩa chỉ số theo dõi ở [trang docs](https://haui-implsolution.github.io/DX-OS-docs/).
 
 Sau khi đo, AI và database đánh giá được dừng; terminal in link Langfuse, tài khoản local và thư mục kết quả.
 Trong Experiments, bật **Expected Output**, **Output** và **score** để đối chiếu nhãn, đoạn truy xuất và điểm.
@@ -207,7 +207,7 @@ Langfuse hiển thị độ trễ, số yêu cầu mỗi giây, lỗi và CPU/RA
 Giá trị p95 ở dòng `SUMMARY/AVG` là trung bình p95 của các lượt.
 
 Môi trường tự dừng như lệnh `quality`; lượt lỗi vẫn giữ kết quả và trả mã lỗi.
-Phương pháp và kết quả đo ở [Đánh giá AI](https://haui-implsolution.github.io/DX-OS-docs/docs/ai-evaluation#8-thử-tải-http-retrieval).
+Phương pháp và kết quả đo theo dõi ở [trang docs](https://haui-implsolution.github.io/DX-OS-docs/).
 
 ## Kiểm tra
 
@@ -226,6 +226,6 @@ Chạy từ `ai/`:
 - CV nhận diện Healthy và 5 bệnh lá lúa; accuracy 89,43% trên 1.466 ảnh theo báo cáo người huấn luyện, chưa phải accuracy toàn pipeline; kỹ sư chốt bệnh tại Backend.
 - RAG chỉ tìm được kiến thức đã ingest; Ollama lỗi hoặc quá thời gian (30 giây với hỏi đáp, 20 giây với giải thích chẩn đoán) thì không hiển thị nội dung sinh, giữ evidence nguyên văn.
 - CPU không có AVX chạy Qwen quá chậm cho các giới hạn trên (khoảng 2 token/giây khi đọc prompt), nên đặt `ANSWER_GENERATION_ENABLED=false`.
-- Hỏi đáp Farm về một bệnh đã nêu tên vẫn có thể nhận nguyên nhân hoặc cách phòng không có trong nguồn ([Việc tồn đọng](https://haui-implsolution.github.io/DX-OS-docs/docs/backlog)).
+- Hỏi đáp Farm về một bệnh đã nêu tên vẫn có thể nhận nguyên nhân hoặc cách phòng không có trong nguồn (theo dõi ở [trang docs](https://haui-implsolution.github.io/DX-OS-docs/)).
 - `ai/` phân phối theo AGPL-3.0 ([`LICENSE`](./LICENSE)); Backend gọi AI qua HTTP nên không là tác phẩm phái sinh.
   Danh sách thành phần ở [`COPYRIGHT.txt`](../COPYRIGHT.txt).

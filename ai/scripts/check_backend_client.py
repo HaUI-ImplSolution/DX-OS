@@ -29,7 +29,8 @@ class _Response:
                 {
                     "rule_id": "7",
                     "pesticide": "Copper 50WP",
-                    "dose_amount": 1.5,
+                    "dose_min": 1.0,
+                    "dose_max": 1.5,
                     "dose_unit": "kg/ha",
                     "phi_days": 7,
                     "version": "v1",
@@ -88,7 +89,8 @@ def main() -> None:
     ):
         result = _call(client)
 
-    assert result.rules[0].dose_amount == 1.5
+    assert result.rules[0].dose_min == 1.0
+    assert result.rules[0].dose_max == 1.5
     assert len(_HttpClient.calls) == 2
     sleep.assert_called_once_with(0.2)
     assert _HttpClient.calls[-1] == {

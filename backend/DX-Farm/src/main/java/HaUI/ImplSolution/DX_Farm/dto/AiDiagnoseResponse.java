@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
 import java.util.List;
 
-// Response AI -> Backend cho POST /api/v1/diagnose
+// Response AI -> Backend cho POST /api/v1/diagnose.
 // @formatter:off
 public record AiDiagnoseResponse(
   @JsonProperty("request_id") String requestId,
@@ -33,11 +33,11 @@ public record AiDiagnoseResponse(
     List<RuleFact> rules
   ){}
 
-  // Sự thật nghiệp vụ do Backend cung cấp cho một rule, AI không được tự đổi.
   public record RuleFact(
     @JsonProperty("rule_id") String ruleId,
     String pesticide,
-    @JsonProperty("dose_amount") BigDecimal doseAmount,
+    @JsonProperty("dose_min") BigDecimal doseMin,
+    @JsonProperty("dose_max") BigDecimal doseMax,
     @JsonProperty("dose_unit") String doseUnit,
     @JsonProperty("phi_days") Integer phiDays,
     String version

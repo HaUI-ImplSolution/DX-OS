@@ -58,9 +58,9 @@ public class Diagnosis {
   @Column(nullable = false, updatable = false)
   private Instant diagnosedAt;
 
-  // Quy tắc xử lý được tra cứu deterministic tương ứng với bệnh
+  // Quy tắc xử lý deterministic; null khi AI chỉ có thể yêu cầu kỹ sư xem xét.
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "treatment_rule_id", nullable = false)
+  @JoinColumn(name = "treatment_rule_id")
   private TreatmentRule treatmentRule;
 
   // Khuyến nghị dạng văn bản sinh ra từ treatmentRule

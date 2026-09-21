@@ -38,7 +38,8 @@ def main() -> None:
                     RuleFact(
                         rule_id="7",
                         pesticide="Copper 50WP",
-                        dose_amount=Decimal("1.5"),
+                        dose_min=Decimal("1.0"),
+                        dose_max=Decimal("1.5"),
                         dose_unit="kg/ha",
                         phi_days=7,
                         version="v1",
@@ -98,7 +99,8 @@ def main() -> None:
     assert body["structured_context"]["rules"][0] == {
         "rule_id": "7",
         "pesticide": "Copper 50WP",
-        "dose_amount": 1.5,
+        "dose_min": 1.0,
+        "dose_max": 1.5,
         "dose_unit": "kg/ha",
         "phi_days": 7,
         "version": "v1",
@@ -114,6 +116,35 @@ def main() -> None:
         "structured_context",
         "recommendation",
     }
+
+    class BackendWithoutRule:
+        def get_diagnosis_context(self, **_kwargs) -> DiagnosisContext:
+            return DiagnosisContext(
+                request_id="req-1",
+                disease_code="Tomato___Late_blight",
+                disease_name="Bệnh mốc sương cà chua",
+                rules=[],
+                recent_treatments=[],
+            )
+
+    review_response = run_stateless_diagnose(
+        payload=payload,
+        image_bytes=b"image",
+        predictor=Predictor(),
+        db=object(),
+        backend_client=BackendWithoutRule(),
+        rag_retriever=Retriever(),
+        recommendation_writer=Writer(),
+    ).model_dump(mode="json")
+    assert review_response["structured_context"] == {
+        "path": "review_required",
+        "rules": [],
+    }
+    assert review_response["recommendation"]["selected_rule_id"] is None
+    assert (
+        "Cần kỹ sư nông nghiệp đánh giá chuyên sâu"
+        in review_response["recommendation"]["summary"]
+    )
 
     failed_events: list[str] = []
 

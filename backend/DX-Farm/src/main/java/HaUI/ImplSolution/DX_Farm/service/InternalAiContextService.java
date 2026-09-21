@@ -15,8 +15,6 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-// Structured facts read-only cho AI Service sau khi CV xác định disease_code.
-// Không có endpoint ghi nào ở đây - service role của AI chỉ được gọi GET.
 @Service
 @Transactional(readOnly = true)
 public class InternalAiContextService {
@@ -45,20 +43,20 @@ public class InternalAiContextService {
     }
     Disease disease = diseaseRepository.findByCode(diseaseCode)
         .orElseThrow(() -> new ResourceNotFoundException("Unknown disease code: " + diseaseCode));
-    TreatmentRule rule = treatmentRuleRepository.findFirstByDisease_Code(diseaseCode).orElseThrow(
-        () -> new ResourceNotFoundException("No treatment rule found for disease: " + diseaseCode));
+    List<RuleFact> rules = treatmentRuleRepository.findByDisease_CodeOrderByIdAsc(diseaseCode)
+        .stream().map(InternalAiContextService::toRuleFact).toList();
     List<TreatmentApplication> recentTreatments =
         treatmentApplicationRepository.findByCropSeasonIdOrderByAppliedAtDesc(cropSeasonId).stream()
             .limit(RECENT_TREATMENTS_LIMIT).toList();
 
-    return new AiDiagnosisContextResponse(requestId, disease.getCode(), disease.getName(),
-        List.of(toRuleFact(rule)),
+    return new AiDiagnosisContextResponse(requestId, disease.getCode(), disease.getName(), rules,
         recentTreatments.stream().map(InternalAiContextService::toRecentTreatment).toList());
   }
 
   private static RuleFact toRuleFact(TreatmentRule rule) {
     return new RuleFact(String.valueOf(rule.getId()), rule.getPesticide().getName(),
-        rule.getDoseAmount(), rule.getDoseUnit(), rule.getPhiDays(), rule.getVersion());
+        rule.getDoseMin(), rule.getDoseMax(), rule.getDoseUnit(), rule.getPhiDays(),
+        rule.getVersion());
   }
 
   private static RecentTreatment toRecentTreatment(TreatmentApplication application) {

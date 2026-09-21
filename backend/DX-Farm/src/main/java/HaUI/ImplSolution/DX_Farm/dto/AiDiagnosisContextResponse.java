@@ -6,8 +6,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 // Response Backend -> AI cho GET /internal/v1/diagnosis-context.
-// Cùng hình dạng rule_id/pesticide/dose_amount/... với StructuredContext.RuleFact mà AI
-// echo lại trong AiDiagnoseResponse - đây là nguồn Backend tự tạo ra nó.
 // @formatter:off
 public record AiDiagnosisContextResponse(
   @JsonProperty("request_id") String requestId,
@@ -20,7 +18,8 @@ public record AiDiagnosisContextResponse(
   public record RuleFact(
     @JsonProperty("rule_id") String ruleId,
     String pesticide,
-    @JsonProperty("dose_amount") BigDecimal doseAmount,
+    @JsonProperty("dose_min") BigDecimal doseMin,
+    @JsonProperty("dose_max") BigDecimal doseMax,
     @JsonProperty("dose_unit") String doseUnit,
     @JsonProperty("phi_days") Integer phiDays,
     String version

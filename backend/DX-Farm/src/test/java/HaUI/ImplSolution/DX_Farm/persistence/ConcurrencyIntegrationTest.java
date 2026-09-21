@@ -25,6 +25,7 @@ import HaUI.ImplSolution.DX_Farm.repository.ParcelRepository;
 import HaUI.ImplSolution.DX_Farm.service.AiDiagnosisClient;
 import HaUI.ImplSolution.DX_Farm.service.CurrentUserService;
 import HaUI.ImplSolution.DX_Farm.service.DiagnosisService;
+import HaUI.ImplSolution.DX_Farm.service.NotificationService;
 import HaUI.ImplSolution.DX_Farm.service.TreatmentRuleService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -61,7 +62,8 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @DataJpaTest(properties = "spring.flyway.enabled=false")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
-@Import({DiagnosisService.class, WorkflowService.class, TimeConfig.class})
+@Import({DiagnosisService.class, WorkflowService.class, NotificationService.class,
+    TimeConfig.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class ConcurrencyIntegrationTest {
 

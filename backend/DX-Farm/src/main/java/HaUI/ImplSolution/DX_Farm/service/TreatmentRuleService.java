@@ -24,13 +24,19 @@ public class TreatmentRuleService {
   }
 
   public TreatmentRule findByDiseaseCodeOrThrow(String diseaseCode) {
-    return treatmentRuleRepository.findFirstByDisease_Code(diseaseCode).orElseThrow(
+    return treatmentRuleRepository.findFirstByDisease_CodeOrderByIdAsc(diseaseCode).orElseThrow(
         () -> new ResourceNotFoundException("No treatment rule found for disease: " + diseaseCode));
+  }
+
+  public TreatmentRule findByIdAndDiseaseCodeOrThrow(Long ruleId, String diseaseCode) {
+    return treatmentRuleRepository.findByIdAndDisease_Code(ruleId, diseaseCode)
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Treatment rule %d not found for disease: %s".formatted(ruleId, diseaseCode)));
   }
 
   public static TreatmentRuleResponse toResponse(TreatmentRule rule) {
     return new TreatmentRuleResponse(rule.getId(), rule.getDisease().getCode(),
-        rule.getPesticide().getCode(), rule.getDoseAmount(), rule.getDoseUnit(), rule.getPhiDays(),
-        rule.getNotes(), rule.getSource(), rule.getVersion());
+        rule.getPesticide().getCode(), rule.getDoseMin(), rule.getDoseMax(), rule.getDoseUnit(),
+        rule.getPhiDays(), rule.getNotes(), rule.getSource(), rule.getVersion());
   }
 }

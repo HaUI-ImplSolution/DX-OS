@@ -12,7 +12,15 @@ docker compose up -d --build
 
 Compose khởi động PostgreSQL, Backend, frontend, Keycloak, AI Service, Ollama và các dịch vụ demo hiện có. Job `rag-ingest` nạp corpus vào AI Vector DB; `ollama-init` bảo đảm model được tải trước khi AI Service chạy. Lần đầu cần mạng và dung lượng trống để tải container, model CV, embedding model và LLM.
 
-Corpus RAG mặc định lấy từ `ai/.local/data` qua `AI_DATA_DIR`. Đây là dữ liệu local, không được commit lên Git; cần có corpus tại đường dẫn này trước khi ingest.
+Corpus RAG mặc định lấy từ `ai/.local/data` qua `AI_DATA_DIR`.
+Đây là dữ liệu local, không được commit lên Git; cần có corpus tại đường dẫn này trước khi ingest.
+
+Backend tự seed danh mục 38 bệnh, 4 thuốc và 8 treatment rule trên database sạch.
+Cả 8 rule đều là dữ liệu MVP đã qua bước source review ngày 10/09/2026.
+Corpus RAG và structured treatment facts là hai nguồn độc lập: thiếu corpus thì không có semantic evidence, còn treatment rule vẫn do Backend quản lý và kiểm tra.
+
+Schema hiện chỉ hỗ trợ một phiên bản database phát triển và không có migration.
+Nếu volume PostgreSQL cũ còn cột `dose_amount`, cần dùng một `POSTGRES_DATA_DIR` sạch trước khi chạy bản này để Hibernate tạo schema `dose_min`/`dose_max` hiện hành.
 
 ## Địa chỉ và tài khoản
 
@@ -36,13 +44,15 @@ Corpus RAG mặc định lấy từ `ai/.local/data` qua `AI_DATA_DIR`. Đây l�
 2. ENGINEER chọn **Chạy chẩn đoán AI**. Frontend gọi endpoint Backend `/api/v1/disease-reports/{id}/diagnosis/ai`.
 3. Backend gửi URL ảnh và ngữ cảnh thực địa tới AI Service. AI chạy CV, lấy dữ kiện cấu trúc từ Backend, tìm bằng chứng theo ngữ nghĩa trong pgvector rồi tạo khuyến nghị có căn cứ.
 4. Backend lưu kết quả AI vào `Diagnosis`; ENGINEER hoặc ADMIN có thể duyệt/từ chối.
-5. Chỉ khi có treatment rule nghiệp vụ hợp lệ mới có thể ghi nhận áp dụng thuốc. Thiếu rule thì kết quả vẫn được lưu và phải được kỹ sư xem xét; Backend chặn áp dụng thuốc.
+5. Khi ghi nhận đã xử lý, ENGINEER hoặc ADMIN phải nhập liều thực tế nằm trong khoảng của rule đã chọn.
+6. Thiếu rule thì kết quả vẫn được lưu và phải được kỹ sư xem xét; Backend chặn áp dụng thuốc.
 
 ## Thay đổi chính
 
 - Frontend có nút gọi chẩn đoán AI và hiển thị khuyến nghị AI Backend trả về; luồng nhập chẩn đoán thủ công vẫn còn để demo nghiệp vụ.
 - Backend giữ summary do AI tạo, hỗ trợ kết quả `review_required` không có rule, cho phép `treatment_rule_id` rỗng và từ chối áp dụng khi rule không tồn tại.
-- Seed Backend bổ sung danh mục nhận diện của 38 lớp CV. Đây chỉ là danh tính bệnh, không tự tạo thuốc hoặc treatment rule.
+- Seed Backend bổ sung 38 lớp CV, 4 thuốc và 8 treatment rule theo kiểu idempotent.
+- Rule hỗ trợ khoảng liều `dose_min`/`dose_max`; Backend trả toàn bộ rule của một bệnh và kiểm tra liều thực tế trước khi tạo `TreatmentApplication`.
 - AI chấp nhận structured context không có rule như trạng thái cần kỹ sư xem xét.
 - Docker Compose chạy job nạp corpus trước khi khởi động AI và chạy Ollama/model cùng stack, nên không phụ thuộc Ollama đang mở sẵn trên host.
 - Backend AI client dùng HTTP/1.1 để request JSON tương thích với Uvicorn trong container.
@@ -69,7 +79,7 @@ Một request hiện đi qua các bước sau:
 1. Backend tạo request_id, gửi URL ảnh, crop_season_id, mã thửa và tối đa năm lần xử lý gần nhất cho AI.
 2. AI tải ảnh từ URL nội bộ, giới hạn tối đa 10 MiB và chạy EfficientNet-B4.
 3. Sau khi có disease_code, AI gọi GET /internal/v1/diagnosis-context. Backend exact-match disease_code; AI không đọc trực tiếp database nghiệp vụ.
-4. Backend trả danh tính bệnh, treatment rule hiện hành nếu có và lịch sử xử lý gần nhất.
+4. Backend trả danh tính bệnh, toàn bộ treatment rule hiện hành nếu có và lịch sử xử lý gần nhất.
 5. AI tìm evidence trong documents/document_chunks của AI Vector DB, sau đó dùng Ollama diễn đạt phần giải thích.
 6. AI trả cv_result, rag_evidence, structured_context và recommendation.
 7. Backend kiểm tra một trong hai contract:
@@ -77,7 +87,7 @@ Một request hiện đi qua các bước sau:
    - review_required: selected_rule_id phải rỗng và danh sách rules phải rỗng.
 8. Backend lưu summary do AI trả về, nhưng vẫn đặt diagnosis ở PENDING để ENGINEER hoặc ADMIN quyết định.
 9. Mỗi báo cáo chỉ có một diagnosis. Muốn chạy lại cần tạo báo cáo mới.
-10. TreatmentApplication chỉ được tạo sau khi diagnosis được duyệt và có treatment rule hợp lệ.
+10. TreatmentApplication chỉ được tạo sau khi diagnosis được duyệt, có treatment rule hợp lệ và liều thực tế nằm trong khoảng cho phép.
 
 ## Thay đổi nằm ở đâu và vì sao
 
@@ -94,17 +104,18 @@ Một request hiện đi qua các bước sau:
 | File | Thay đổi | Lý do |
 |---|---|---|
 | [Diagnosis.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/model/Diagnosis.java) | Cho phép treatment_rule_id rỗng | Không làm mất kết quả CV/RAG chỉ vì bệnh chưa có rule được duyệt |
+| [TreatmentRule.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/model/TreatmentRule.java) | Đổi liều cố định thành khoảng `doseMin`/`doseMax` | Giữ nguyên khoảng liều trong dữ liệu review và kiểm tra được lượng thuốc thực tế |
 | [InternalAiContextService.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/service/InternalAiContextService.java) | Bệnh có thật nhưng thiếu rule sẽ trả rules rỗng thay vì 404 | Phân biệt “không biết disease_code” với “đã biết bệnh nhưng cần review” |
-| [DiagnosisService.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/service/DiagnosisService.java) | Kiểm tra hai path treatment/review_required, xác minh rule version, lưu summary AI và chặn apply khi rule rỗng | Backend vẫn là nguồn sự thật và lớp quyết định cuối; AI không thể tự đưa rule lạ hoặc rule cũ |
+| [DiagnosisService.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/service/DiagnosisService.java) | Kiểm tra hai path treatment/review_required, tải lại đúng rule AI chọn, xác minh version và kiểm tra liều thực tế | Backend vẫn là nguồn sự thật và lớp quyết định cuối; AI không thể tự đưa rule lạ, rule cũ hoặc liều ngoài khoảng |
 | [AiDiagnosisClient.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/service/AiDiagnosisClient.java) | Ép HTTP/1.1 | Khắc phục tương thích Java HTTP client với Uvicorn trong container hiện tại |
 | [application.yaml](../../backend/DX-Farm/src/main/resources/application.yaml) | Tăng read timeout từ 15 lên 120 giây | Cold start CPU gồm CV, embedding và LLM có thể vượt 15 giây |
-| [data.sql](../../backend/DX-Farm/src/main/resources/data.sql) | Seed identity đủ 38 lớp CV theo kiểu idempotent | Backend phải nhận đúng disease_code do model trả về; phần này không tạo thuốc hay treatment rule |
+| [data.sql](../../backend/DX-Farm/src/main/resources/data.sql) | Seed idempotent 38 bệnh, 4 thuốc và 8 treatment rule | Database sạch có đủ structured facts để chạy nhánh treatment ngay sau khi Compose khởi động |
 
 ### AI Service
 
 | File | Thay đổi | Lý do |
 |---|---|---|
-| [ai/app/api/schemas.py](../../ai/app/api/schemas.py) | Cho phép review_required, rules rỗng và selected_rule_id rỗng | Không ép AI chọn hoặc bịa rule khi Backend chưa có dữ liệu deterministic |
+| [ai/app/api/schemas.py](../../ai/app/api/schemas.py) | Cho phép review_required, rules rỗng, selected_rule_id rỗng và kiểm tra khoảng liều | Không ép AI chọn hoặc bịa rule khi Backend chưa có dữ liệu deterministic |
 | [ai/app/clients/backend_client.py](../../ai/app/clients/backend_client.py) | Chấp nhận response Backend không có rule | Đồng bộ client với contract nội bộ mới |
 | [ai/app/services/inference_service.py](../../ai/app/services/inference_service.py) | Chọn path theo structured facts và kiểm tra invariant trước khi trả response | Chặn response mâu thuẫn như treatment không có rule hoặc review_required lại chọn rule |
 | [ai/scripts/check_diagnose_contract.py](../../ai/scripts/check_diagnose_contract.py) | Thêm kiểm tra nhánh không có rule | Bảo vệ contract an toàn khỏi regression |
@@ -129,10 +140,11 @@ Một request hiện đi qua các bước sau:
 | LLM | Ollama trong Compose | Ollama host, managed API hoặc template không LLM | Compose tái lập tốt và dữ liệu không rời máy, nhưng tải model nặng và CPU chậm. Host tận dụng GPU nhưng phụ thuộc máy. API dễ scale nhưng tốn phí/cần mạng. Template ổn định nhưng kém linh hoạt |
 | Nạp RAG | Job one-shot trước AI | Ingest thủ công, DB snapshot hoặc pipeline quản trị | Tự động và dễ dựng lại, nhưng startup lâu và recreate job có thể re-embed corpus. Pipeline riêng quản trị tốt hơn nhưng cần versioning và quy trình deploy data |
 | Phân phối corpus | Bind-mount ai/.local/data read-only | Commit Git, đóng vào image hoặc artifact storage | Local giữ repo nhẹ và tránh đẩy data chưa chốt; đổi lại người nhận nhánh phải có data riêng. Artifact có version/checksum tốt hơn nhưng cần hạ tầng |
-| Seed 38 bệnh | data.sql idempotent | Migration, importer CLI/API hoặc seeder có version | Phù hợp giai đoạn phát triển một schema, nhưng audit/rollback kém hơn pipeline production |
+| Seed structured facts | `data.sql` idempotent cho 38 bệnh, 4 thuốc và 8 rule | Migration, importer CLI/API hoặc seeder có version | Phù hợp giai đoạn phát triển một schema, nhưng audit/rollback kém hơn pipeline production |
 | Recommendation text | Lưu summary do AI trả | Backend tự dựng text hoặc lưu toàn response AI vào bảng audit | Giữ được phần giải thích CV+RAG+LLM, nhưng hiện chưa lưu evidence/generation metadata riêng. Backend tự dựng deterministic hơn nhưng mất phần diễn giải RAG |
 | HTTP protocol | Ép HTTP/1.1 | Auto-negotiation hoặc reverse proxy HTTP/2 | Sửa tương thích với thay đổi nhỏ, nhưng không tận dụng multiplexing khi tải đồng thời tăng |
-| Rule lookup | Backend lấy rule đầu tiên theo disease | Trả mọi rule rồi chọn theo priority, thời gian hiệu lực và bối cảnh | Đủ cho demo một rule/bệnh, nhưng chưa biểu diễn tốt nhiều sản phẩm hay rule có hiệu lực theo thời gian |
+| Rule lookup | Backend trả mọi rule theo ID; AI chọn rule đầu tiên một cách deterministic | Chấm điểm theo priority, thời gian hiệu lực, bối cảnh ruộng và lịch sử xử lý | Đủ để test nhiều rule và Backend tải lại đúng ID đã chọn, nhưng thứ tự ID chưa phải chiến lược nông học tối ưu |
+| Biểu diễn liều | Rule lưu khoảng min/max và người duyệt nhập liều thực tế | Lưu một liều mặc định hoặc mô hình liều theo cây trồng/giai đoạn | Khoảng liều giữ đúng dữ liệu review và có kiểm soát ở Backend; đổi lại UI phải yêu cầu thêm một giá trị khi apply |
 
 Không chọn phương án để LLM tự tạo tên thuốc, liều hoặc PHI. Cách đó phá vỡ deterministic-first và biến RAG thành nguồn sự thật nghiệp vụ không kiểm soát được.
 
@@ -143,10 +155,9 @@ Nhánh hiện đã nối được luồng thật CV → Backend facts → semant
 Các phần chưa đạt được:
 
 - Chưa dùng async job; request giữ kết nối trong suốt thời gian suy luận.
-- Chưa có pipeline seed treatment rule có version; commit chỉ seed identity 38 lớp CV.
 - Chưa lưu riêng rag_evidence, request_id, generation_mode và timings để audit/replay.
 - Chưa có contract DiseaseManagementPolicy; bệnh không có rule hiện đi vào review_required.
-- Backend hiện chỉ lấy tối đa một rule cho mỗi disease dù DTO có dạng danh sách.
+- AI hiện chọn rule đầu tiên trong danh sách Backend trả về; chưa có priority hay bộ chọn dựa trên ngữ cảnh nông học.
 - Chưa benchmark concurrency, cold start và yêu cầu RAM/CPU.
 - API key và tài khoản mẫu chỉ dùng local, chưa có secret management production.
 - CV không có ngưỡng confidence tối thiểu; mọi ảnh đều đi hết pipeline kể cả confidence rất thấp hoặc ảnh không phải lá cây bị bệnh.
@@ -154,15 +165,19 @@ Các phần chưa đạt được:
 - Chưa validate kích thước ảnh ở phía client trước khi upload; vượt giới hạn 10MB chỉ báo lỗi sau khi đã upload xong.
 - Chưa có phản hồi tiến trình khi chờ AI xử lý (có thể tới 120 giây); chỉ có spinner tĩnh, không có bước trung gian.
 
-Ngày 21/09/2026, database Docker local đã được nạp trực tiếp rule Tomato___Early_blight → Ortiva 600SC, liều 1.50 L/ha, PHI 7 ngày, version 2026.09.10-mvp-reviewed-v1; internal API đã trả đúng rule. Dữ liệu này không nằm trong commit. Máy clone mới vẫn đi theo review_required cho tới khi Backend seed rule. Diagnosis cũ có treatment_rule_id rỗng không tự cập nhật; phải tạo báo cáo mới để test nhánh treatment.
+Tám rule version `2026.09.10-mvp-reviewed-v1` là dữ liệu MVP có truy vết nguồn, chưa phải phê duyệt của chuyên gia nông nghiệp có thẩm quyền cho sử dụng thực tế.
+Các candidate bị hold trong artifact review không được seed và không được bịa liều hoặc PHI thành structured facts.
 
 ## Kết quả kiểm tra E2E
 
-Đã chạy trên máy local với ảnh thử và dữ liệu demo:
+Ngày 21/09/2026 đã dựng lại toàn bộ stack trên một `POSTGRES_DATA_DIR` sạch và kiểm tra:
 
-- FARMER tạo báo cáo được; gọi endpoint chẩn đoán bị từ chối `403`.
-- ENGINEER chạy thành công CV → Backend facts → semantic RAG → Ollama. Ảnh thử được nhận diện là `Tomato___Early_blight` với confidence `0.981`; RAG trả 3 đoạn evidence từ nguồn `S03` và `S21`.
-- Trong lần kiểm tra ban đầu, database chưa có treatment rule cho bệnh thử: kết quả được lưu ở trạng thái chờ duyệt, ADMIN duyệt được, còn áp dụng thuốc bị chặn 409.
-- Các URL chính của frontend, Backend, AI và Keycloak trả HTTP `200`; Compose hợp lệ và các service cần thiết đều chạy.
+- Seed tạo 38 bệnh, 4 thuốc và 8 rule; chạy lại Backend không tạo bản ghi trùng.
+- Job RAG ingest hoàn tất với 38 documents và 270 chunks; AI health báo model CV đã load.
+- Internal API trả hai rule cho `Tomato___Late_blight` và trả danh sách rỗng cho `Tomato___Target_Spot`.
+- FARMER tạo thửa, vụ mùa và báo cáo được; gọi endpoint chẩn đoán AI bị từ chối `403`.
+- ENGINEER chạy thành công CV → Backend facts → semantic RAG → Ollama; ảnh thử được nhận diện là `Tomato___Early_blight` và chọn rule có liều `1.50 L/ha`.
+- ADMIN duyệt được kết quả; liều `1.49 L/ha` bị Backend chặn `409`, còn liều `1.50 L/ha` được lưu và tạo ngày khóa thu hoạch.
+- Frontend production build, Backend unit test, hai AI contract self-check và các endpoint chính đều qua kiểm tra.
 
 Kết quả nhận diện phụ thuộc ảnh đầu vào và không phải cam kết chính xác cho mọi ảnh. RAG chỉ cung cấp kiến thức tham khảo; liều lượng, PHI và quyết định điều trị phải đến từ rule nghiệp vụ được Backend quản lý.

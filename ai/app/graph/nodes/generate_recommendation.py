@@ -49,7 +49,8 @@ def generate_recommendation(
                 {
                     "rule_id": r.get("rule_id"),
                     "pesticide": r.get("pesticide"),
-                    "dose_amount": r.get("dose_amount"),
+                    "dose_min": r.get("dose_min"),
+                    "dose_max": r.get("dose_max"),
                     "dose_unit": r.get("dose_unit"),
                     "phi_days": r.get("phi_days"),
                     "version": r.get("version"),
@@ -57,9 +58,12 @@ def generate_recommendation(
             )
         if actions:
             selected = actions[0]
+            dose_text = str(selected["dose_min"])
+            if selected["dose_min"] != selected["dose_max"]:
+                dose_text = f"{selected['dose_min']}-{selected['dose_max']}"
             summary_parts.append(
                 f"Khuyến nghị dùng {selected['pesticide']} với liều "
-                f"{selected['dose_amount']} {selected['dose_unit']}; PHI {selected['phi_days']} ngày."
+                f"{dose_text} {selected['dose_unit']}; PHI {selected['phi_days']} ngày."
             )
     elif path == "policy":
         policy = treatment_lookup.get("policy") or {}

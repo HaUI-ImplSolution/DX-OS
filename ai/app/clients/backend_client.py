@@ -7,7 +7,7 @@ from datetime import date
 from decimal import Decimal
 
 import httpx
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field, ValidationError, model_validator
 
 from app.core.config import Settings, get_settings
 
@@ -54,10 +54,17 @@ def _get_with_retry(
 class RuleFact(BaseModel):
     rule_id: str = Field(min_length=1)
     pesticide: str = Field(min_length=1)
-    dose_amount: Decimal = Field(ge=0)
+    dose_min: Decimal = Field(ge=0)
+    dose_max: Decimal = Field(ge=0)
     dose_unit: str = Field(min_length=1)
     phi_days: int = Field(ge=0)
     version: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_dose_range(self) -> "RuleFact":
+        if self.dose_min > self.dose_max:
+            raise ValueError("dose_min must not exceed dose_max")
+        return self
 
 
 class RecentTreatment(BaseModel):

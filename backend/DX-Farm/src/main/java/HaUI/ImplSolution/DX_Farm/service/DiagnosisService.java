@@ -91,7 +91,13 @@ public class DiagnosisService {
     AiDiagnoseResponse.RuleFact selectedRule = findSelectedRule(aiResponse);
     TreatmentRule currentRule = null;
     if (selectedRule != null) {
-      currentRule = treatmentRuleService.findByDiseaseCodeOrThrow(diseaseCode);
+      Long selectedRuleId;
+      try {
+        selectedRuleId = Long.valueOf(selectedRule.ruleId());
+      } catch (NumberFormatException exception) {
+        throw new InvalidStateException("AI selected an invalid rule_id: " + selectedRule.ruleId());
+      }
+      currentRule = treatmentRuleService.findByIdAndDiseaseCodeOrThrow(selectedRuleId, diseaseCode);
       if (!Objects.equals(currentRule.getVersion(), selectedRule.version())) {
         throw new InvalidStateException(
             "Treatment rule for %s changed while AI was processing (rule version %s -> %s) - retry diagnosis"
@@ -193,17 +199,22 @@ public class DiagnosisService {
       throw new InvalidStateException("Diagnosis already applied: " + reportId);
     }
 
-    LocalDate appliedAt = request.appliedAt() != null ? request.appliedAt() : LocalDate.now();
     TreatmentRule rule = diagnosis.getTreatmentRule();
     if (rule == null) {
       throw new InvalidStateException(
           "Diagnosis has no approved treatment rule and cannot be applied: " + reportId);
     }
-    TreatmentApplication application = TreatmentApplication.builder()
-        .cropSeason(diagnosis.getDiseaseReport().getCropSeason()).diagnosis(diagnosis)
-        .pesticide(rule.getPesticide()).doseAmountSnapshot(rule.getDoseAmount())
-        .doseUnitSnapshot(rule.getDoseUnit()).phiDaysSnapshot(rule.getPhiDays())
-        .appliedAt(appliedAt).harvestLockedUntil(appliedAt.plusDays(rule.getPhiDays())).build();
+    BigDecimal actualDose = request.doseAmount();
+    if (!rule.allowsDose(actualDose)) {
+      throw new InvalidStateException("Applied dose %s must be between %s and %s %s"
+          .formatted(actualDose, rule.getDoseMin(), rule.getDoseMax(), rule.getDoseUnit()));
+    }
+    LocalDate appliedAt = request.appliedAt() != null ? request.appliedAt() : LocalDate.now();
+    TreatmentApplication application =
+        TreatmentApplication.builder().cropSeason(diagnosis.getDiseaseReport().getCropSeason())
+            .diagnosis(diagnosis).pesticide(rule.getPesticide()).doseAmountSnapshot(actualDose)
+            .doseUnitSnapshot(rule.getDoseUnit()).phiDaysSnapshot(rule.getPhiDays())
+            .appliedAt(appliedAt).harvestLockedUntil(appliedAt.plusDays(rule.getPhiDays())).build();
     return toApplicationResponse(treatmentApplicationRepository.save(application));
   }
 
@@ -223,7 +234,14 @@ public class DiagnosisService {
     return "Thửa %s phát hiện bệnh %s (%.1f%%). Đề xuất phác đồ: phun %s %s %s - yêu cầu cách ly thu hoạch %d ngày."
         .formatted(report.getCropSeason().getParcel().getCode(), disease.getName(),
             confidence.multiply(BigDecimal.valueOf(100)), rule.getPesticide().getName(),
-            rule.getDoseAmount(), rule.getDoseUnit(), rule.getPhiDays());
+            formatDoseRange(rule), rule.getDoseUnit(), rule.getPhiDays());
+  }
+
+  private static String formatDoseRange(TreatmentRule rule) {
+    if (rule.getDoseMin().compareTo(rule.getDoseMax()) == 0) {
+      return rule.getDoseMin().toPlainString();
+    }
+    return "%s-%s".formatted(rule.getDoseMin().toPlainString(), rule.getDoseMax().toPlainString());
   }
 
   public static DiagnosisResponse toResponse(Diagnosis diagnosis) {

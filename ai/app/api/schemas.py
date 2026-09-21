@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from pydantic import AnyHttpUrl, BaseModel, Field
+from pydantic import AnyHttpUrl, BaseModel, Field, model_validator
 
 
 class DiseaseDetectionResponse(BaseModel):
@@ -73,10 +73,17 @@ class DiagnoseRagEvidence(BaseModel):
 class DiagnoseRuleFact(BaseModel):
     rule_id: str = Field(min_length=1)
     pesticide: str = Field(min_length=1)
-    dose_amount: float = Field(ge=0)
+    dose_min: float = Field(ge=0)
+    dose_max: float = Field(ge=0)
     dose_unit: str = Field(min_length=1)
     phi_days: int = Field(ge=0)
     version: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_dose_range(self) -> "DiagnoseRuleFact":
+        if self.dose_min > self.dose_max:
+            raise ValueError("dose_min must not exceed dose_max")
+        return self
 
 
 class DiagnoseStructuredContext(BaseModel):

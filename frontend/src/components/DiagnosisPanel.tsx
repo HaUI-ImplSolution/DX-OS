@@ -6,7 +6,14 @@ import {
   createDiagnosis,
   rejectDiagnosis,
 } from "../api";
-import type { Diagnosis, Disease, DiseaseReport, Role, TreatmentApplication } from "../types";
+import type {
+  Diagnosis,
+  Disease,
+  DiseaseReport,
+  Role,
+  TreatmentApplication,
+  TreatmentRule,
+} from "../types";
 import Badge from "./Badge";
 import Section from "./Section";
 
@@ -191,7 +198,16 @@ function ApprovalActions({
   );
 }
 
-function ApplyTreatmentBox({ reportId, onError }: { reportId: number; onError: (message: string) => void }) {
+function ApplyTreatmentBox({
+  reportId,
+  rule,
+  onError,
+}: {
+  reportId: number;
+  rule: TreatmentRule;
+  onError: (message: string) => void;
+}) {
+  const [doseAmount, setDoseAmount] = useState("");
   const [appliedAt, setAppliedAt] = useState(() => new Date().toISOString().slice(0, 10));
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<TreatmentApplication | null>(null);
@@ -200,7 +216,7 @@ function ApplyTreatmentBox({ reportId, onError }: { reportId: number; onError: (
     e.preventDefault();
     setBusy(true);
     try {
-      setResult(await applyDiagnosis(reportId, { appliedAt }));
+      setResult(await applyDiagnosis(reportId, { doseAmount: Number(doseAmount), appliedAt }));
     } catch (err) {
       onError(err instanceof Error ? err.message : "Không ghi nhận được đã phun thuốc");
     } finally {
@@ -223,6 +239,18 @@ function ApplyTreatmentBox({ reportId, onError }: { reportId: number; onError: (
 
   return (
     <form className="inline-form" onSubmit={submit}>
+      <label className="field-label">
+        Liều thực tế ({rule.doseUnit}, cho phép {rule.doseMin}–{rule.doseMax})
+        <input
+          type="number"
+          min={rule.doseMin}
+          max={rule.doseMax}
+          step="0.01"
+          value={doseAmount}
+          onChange={(e) => setDoseAmount(e.target.value)}
+          required
+        />
+      </label>
       <label className="field-label">
         Ngày thực tế đã phun
         <input type="date" value={appliedAt} onChange={(e) => setAppliedAt(e.target.value)} required />
@@ -298,7 +326,10 @@ export default function DiagnosisPanel({
                 <tr>
                   <th>Liều lượng</th>
                   <td>
-                    {diagnosis.treatmentRule.doseAmount} {diagnosis.treatmentRule.doseUnit}
+                    {diagnosis.treatmentRule.doseMin === diagnosis.treatmentRule.doseMax
+                      ? diagnosis.treatmentRule.doseMin
+                      : `${diagnosis.treatmentRule.doseMin}–${diagnosis.treatmentRule.doseMax}`}{" "}
+                    {diagnosis.treatmentRule.doseUnit}
                   </td>
                 </tr>
                 <tr>
@@ -323,7 +354,7 @@ export default function DiagnosisPanel({
           )}
 
           {diagnosis.approvalStatus === "APPROVED" && canDecide && diagnosis.treatmentRule && (
-            <ApplyTreatmentBox reportId={report.id} onError={onError} />
+            <ApplyTreatmentBox reportId={report.id} rule={diagnosis.treatmentRule} onError={onError} />
           )}
           {diagnosis.approvalStatus === "APPROVED" && !diagnosis.treatmentRule && (
             <div className="banner banner-warning">

@@ -38,7 +38,8 @@ def main() -> None:
                     RuleFact(
                         rule_id="7",
                         pesticide="Copper 50WP",
-                        dose_amount=Decimal("1.5"),
+                        dose_min=Decimal("1.0"),
+                        dose_max=Decimal("1.5"),
                         dose_unit="kg/ha",
                         phi_days=7,
                         version="v1",
@@ -98,7 +99,8 @@ def main() -> None:
     assert body["structured_context"]["rules"][0] == {
         "rule_id": "7",
         "pesticide": "Copper 50WP",
-        "dose_amount": 1.5,
+        "dose_min": 1.0,
+        "dose_max": 1.5,
         "dose_unit": "kg/ha",
         "phi_days": 7,
         "version": "v1",

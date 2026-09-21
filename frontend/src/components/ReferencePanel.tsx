@@ -85,7 +85,7 @@ export default function ReferencePanel({ onError }: ReferencePanelProps) {
                 <td>{r.diseaseCode}</td>
                 <td>{r.pesticideCode}</td>
                 <td>
-                  {r.doseAmount} {r.doseUnit}
+                  {r.doseMin === r.doseMax ? r.doseMin : `${r.doseMin}–${r.doseMax}`} {r.doseUnit}
                 </td>
                 <td>{r.phiDays}</td>
                 <td>

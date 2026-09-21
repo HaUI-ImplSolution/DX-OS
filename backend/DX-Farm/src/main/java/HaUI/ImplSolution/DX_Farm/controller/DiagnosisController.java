@@ -62,11 +62,10 @@ public class DiagnosisController {
 
   @PostMapping("/apply")
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(summary = "Record treatment applied + compute harvest lock")
+  @Operation(summary = "Record actual treatment dose + compute harvest lock")
   public ApiResponse<TreatmentApplicationResponse> apply(@PathVariable Long reportId,
-      @RequestBody(required = false) DiagnosisApplyRequest request) {
-    DiagnosisApplyRequest safeRequest = request != null ? request : new DiagnosisApplyRequest(null);
+      @Valid @RequestBody DiagnosisApplyRequest request) {
     return ApiResponse.success("Treatment application recorded",
-        diagnosisService.apply(reportId, safeRequest));
+        diagnosisService.apply(reportId, request));
   }
 }

@@ -6,6 +6,7 @@ import HaUI.ImplSolution.DX_Farm.dto.AiDiagnosisContextResponse.RuleFact;
 import HaUI.ImplSolution.DX_Farm.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.DX_Farm.model.Disease;
 import HaUI.ImplSolution.DX_Farm.model.TreatmentApplication;
+import HaUI.ImplSolution.DX_Farm.model.TreatmentConfirmationStatus;
 import HaUI.ImplSolution.DX_Farm.model.TreatmentRule;
 import HaUI.ImplSolution.DX_Farm.repository.CropSeasonRepository;
 import HaUI.ImplSolution.DX_Farm.repository.DiseaseRepository;
@@ -47,8 +48,10 @@ public class InternalAiContextService {
         treatmentRuleRepository.findByDisease_CodeAndActiveTrueOrderByIdAsc(diseaseCode).stream()
             .map(InternalAiContextService::toRuleFact).toList();
     List<TreatmentApplication> recentTreatments =
-        treatmentApplicationRepository.findByCropSeasonIdOrderByAppliedAtDesc(cropSeasonId).stream()
-            .limit(RECENT_TREATMENTS_LIMIT).toList();
+        treatmentApplicationRepository
+            .findByCropSeasonIdAndConfirmationStatusNotOrderByAppliedAtDesc(cropSeasonId,
+                TreatmentConfirmationStatus.REJECTED)
+            .stream().limit(RECENT_TREATMENTS_LIMIT).toList();
 
     return new AiDiagnosisContextResponse(requestId, disease.getCode(), disease.getName(), rules,
         recentTreatments.stream().map(InternalAiContextService::toRecentTreatment).toList());

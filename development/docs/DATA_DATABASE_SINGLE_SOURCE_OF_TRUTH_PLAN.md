@@ -4,11 +4,11 @@
 >
 > **Ngày khảo sát:** 22/09/2026
 >
-> **Phạm vi:** `ai/`, `backend/DX-Farm/`, `deploy/` và các artifact dữ liệu mà hai service dùng. Không thay đổi API ownership: Backend và AI vẫn truy cập dữ liệu bằng các client/configuration tại thư mục hiện hữu của chúng.
+> **Phạm vi:** `ai/`, `backend/DX-Farm/`, `deploy/` và các artifact dữ liệu/database mà hai service dùng. Không thay đổi API ownership: Backend và AI vẫn truy cập dữ liệu bằng các client/configuration tại thư mục hiện hữu của chúng.
 
 ## 1. Quyết định kiến trúc cần chốt
 
-Tạo một thư mục gốc duy nhất là `data/` để quản trị **artifact dữ liệu, database schema/migration, seed, RAG corpus, fixture E2E và dữ liệu runtime**. Đây là nơi duy nhất để tìm, review, version và vận hành dữ liệu; không phải một database dùng chung để Backend và AI cùng ghi.
+Tạo một thư mục gốc duy nhất là `data/` để quản trị **artifact dữ liệu, database schema/migration, seed, RAG corpus và dữ liệu runtime**. Đây là nơi duy nhất để tìm, review, version và vận hành dữ liệu; không phải một database dùng chung để Backend và AI cùng ghi.
 
 "Một nguồn sự thật" phải được hiểu theo quyền sở hữu dữ liệu:
 
@@ -17,7 +17,7 @@ Tạo một thư mục gốc duy nhất là `data/` để quản trị **artifac
 | Nghiệp vụ nông trại, trạng thái duyệt, thuốc, liều, PHI | Backend DB `dxfarm` qua Backend service | Chỉ đọc facts tối thiểu qua `GET /internal/v1/diagnosis-context`; không có DB credential |
 | RAG corpus đã duyệt và provenance | Artifact versioned tại `data/rag/` | Job ingest đọc để tạo index |
 | Vector index `documents`/`document_chunks` | Dữ liệu **dẫn xuất** tái tạo từ corpus + manifest | Runtime chỉ đọc với `ai_vector_ro`; job riêng ghi với `ai_vector_ingest` |
-| Ảnh báo bệnh và dữ liệu demo/E2E | `data/runtime/uploads/` và `data/e2e/fixtures/` theo từng mục đích | Nhận ảnh thông qua URL nội bộ Backend, không truy cập volume upload trực tiếp |
+| Ảnh báo bệnh do người dùng tải lên | `data/runtime/uploads/` | Nhận ảnh thông qua URL nội bộ Backend, không truy cập volume upload trực tiếp |
 
 Vì vậy không đưa bảng nghiệp vụ vào AI DB, không cấp AI quyền DB `dxfarm`, và không coi RAG là nguồn quyết định thuốc/liều/PHI. Điều đó giữ nguyên ranh giới stateless/advisory đã chốt trong `ai/README.md` và tránh tái tạo tình trạng AI/Backend ghi cùng một facts.
 
@@ -36,10 +36,10 @@ Vì vậy không đưa bảng nghiệp vụ vào AI DB, không cấp AI quyền 
 | Seed 38 disease, pesticide và 8 treatment rule nằm trong source Backend | `backend/DX-Farm/src/main/resources/data.sql` | Dữ liệu domain bị lẫn với mã Java; không có catalog/version/migration độc lập để review, audit hoặc rollback. `ON CONFLICT DO NOTHING` cũng không cập nhật bản seed cũ khi facts đã được hiệu chỉnh. |
 | Schema/role của AI Vector DB được tạo bằng Java `CommandLineRunner` | `.../config/AiVectorDatabaseSeeder.java` | Backend code đang sở hữu DDL của một database khác; schema thiếu lifecycle migration, checksum và executor độc lập. |
 | Hibernate dùng `ddl-auto: update` | `backend/.../resources/application.yaml` | Schema nghiệp vụ có thể đổi ngầm khi application khởi động; khó biết chính xác database đang ở version nào. |
-| Corpus RAG được kỳ vọng tại đường dẫn local | `ai/.local/data` qua `AI_DATA_DIR` | Đây là đường dẫn riêng của AI và ngoài Git. Trong checkout đang khảo sát, `ai/.local/` không tồn tại, nên compose không thể tái lập ingest mặc định dù tài liệu E2E nói corpus cần có. |
+| Corpus RAG được kỳ vọng tại đường dẫn local | `ai/.local/data` qua `AI_DATA_DIR` | Đây là đường dẫn riêng của AI và ngoài Git. Trong checkout đang khảo sát, `ai/.local/` không tồn tại, nên compose không thể tái lập ingest mặc định. |
 | Runtime data phân tán dưới compose | `deploy/data/postgres`, `deploy/data/uploads`, cùng các volume/bind mount service khác | Đường dẫn vận hành, artifact đầu vào, data database và upload không có catalog/retention/backup chung. |
 | Vector schema có model Python và DDL Java tách nhau | `ai/app/db/models/*` và `AiVectorDatabaseSeeder` | Hai định nghĩa phải luôn đồng bộ bằng thao tác thủ công. |
-| Tài liệu cũ ghi một số trạng thái lịch sử | `development/docs/legacy_docs/*` | Tài liệu decoupling vẫn hữu ích cho lịch sử, nhưng không nên là kế hoạch thực thi data mới; đặc biệt contract cũ có `dose_amount` trong khi code/E2E hiện dùng `dose_min`/`dose_max`. |
+| Tài liệu cũ ghi một số trạng thái lịch sử | `development/docs/legacy_docs/*` | Tài liệu decoupling vẫn hữu ích cho lịch sử, nhưng không nên là kế hoạch thực thi data mới; đặc biệt contract cũ có `dose_amount` trong khi code hiện dùng `dose_min`/`dose_max`. |
 
 `backend/DX-Farm/target/classes/data.sql` chỉ là output build; không được coi là nguồn data thứ hai.
 
@@ -63,8 +63,6 @@ data/
 │   ├── registry/                     # source registry và metadata/provenance
 │   ├── processed/                    # disease_knowledge.json đã review
 │   └── manifests/                    # corpus version, SHA-256, embedding model, chunking policy
-├── e2e/
-│   └── fixtures/                     # ảnh/input E2E hợp pháp, expected facts và cases
 └── runtime/                          # Git-ignored: PostgreSQL volumes, uploads, Superset/Mattermost runtime
     ├── postgres/
     ├── uploads/
@@ -108,7 +106,7 @@ flowchart LR
 
 1. Lead chấp thuận `data/` là control plane dữ liệu và chỉ định Data Owner/Reviewer cho `reference` seed và `rag` corpus.
 2. Export snapshot/checksum của hai DB đang chạy trước bất cứ di chuyển nào; lập inventory row count, schema, roles, corpus version, embedding model và storage path.
-3. Phân loại từng file/data thành `reference`, `demo`, `derived`, `runtime`, hoặc `secret`; xác định license/provenance của mọi artifact RAG và ảnh E2E.
+3. Phân loại từng file/data thành `reference`, `demo`, `derived`, `runtime`, hoặc `secret`; xác định license/provenance của mọi artifact RAG.
 4. Chốt policy cập nhật seed: reference facts phải có version/source/reviewer/effective date; dữ liệu demo không được tự động ghi đè facts đã review.
 
 **Gate:** team ký owner cho 4 domain ở mục 1, đọc được backup và chấp thuận chính sách Git/artifact store.
@@ -144,7 +142,7 @@ flowchart LR
 
 ### Phase 4 — Cắt chuyển và dọn path cũ
 
-1. Chạy song song ở môi trường staging: snapshot trước migration, bootstrap data mới, ingest RAG, so sánh count/checksum và chạy E2E.
+1. Chạy song song ở môi trường staging: snapshot trước migration, bootstrap data mới, ingest RAG và so sánh count/checksum.
 2. Chỉ khi checks đạt mới đổi default path. Giữ `ai/.local/data` và `deploy/data` ở chế độ read-only/legacy trong một cửa sổ rollback đã công bố; không tạo hai đường ghi song song.
 3. Sau cửa sổ rollback, archive hoặc xoá path cũ theo retention đã chốt, cập nhật README/changelog và đánh dấu legacy docs là lịch sử.
 
@@ -154,43 +152,24 @@ flowchart LR
 
 | Nhóm | Thay đổi dự kiến | Không thay đổi |
 |---|---|---|
-| `data/` mới | Thêm migrations, seeds, corpus registry/manifest, fixtures, catalog và runbook | Không chứa application code/secret/runtime data được commit |
+| `data/` mới | Thêm migrations, seeds, corpus registry/manifest, catalog và runbook | Không chứa application code/secret/runtime data được commit |
 | `backend/.../resources/data.sql` | Ngừng là nơi sở hữu reference seed; thay bằng executor trỏ tới `data/database/backend/seeds` | Backend repository, business ownership, internal read-only API vẫn ở `backend/` |
 | `AiVectorDatabaseSeeder.java` | Bỏ responsibility DDL/role khi SQL bootstrap đã thay thế | Backend vẫn không cấp AI quyền DB nghiệp vụ |
 | `application.yaml` | Chuyển JPA sang validate sau baseline; giữ endpoint/config truy cập ở Backend | Contract REST Backend ↔ AI không đổi ở phase data |
 | `ai/app/rag/*` | Đọc corpus/manifest từ `data/rag`, ghi metadata ingest và kiểm tra version | AI runtime vẫn stateless, read-only Vector DB |
 | `deploy/docker-compose.yml`, `.env.example`, `.gitignore` | Mount paths mới, thêm bootstrap/order/dependency và ignore `data/runtime` | Không mount writable data store vào AI runtime |
-| docs/test | Cập nhật README, contract/source-of-truth, check scripts và E2E fixture/runbook | Không di chuyển logic access sang `data/` |
+| docs/checks | Cập nhật README, contract/source-of-truth, database/RAG validation và runbook | Không di chuyển logic access sang `data/` |
 
-## 7. Hạng mục chưa đạt trong AI Web E2E phải đi cùng kế hoạch
-
-Các item sau được lấy nguyên ý nghĩa từ phần **"Các phần chưa đạt được"** của `AI_WEB_E2E_DEMO_README.md`. Chúng không phải tất cả đều là việc di chuyển folder, nhưng data plan phải chuẩn bị schema/artifact/audit để chúng không tạo thêm nguồn dữ liệu rời rạc.
-
-| Hạng mục E2E chưa đạt | Phụ thuộc data/database cần đưa vào kế hoạch | Tiêu chí hoàn thành |
-|---|---|---|
-| Async job thay request giữ kết nối | Migration Backend cho job, status, attempt, idempotency key, timestamps và correlation `request_id` | UI có thể poll/nhận trạng thái; retry không tạo nhiều diagnosis |
-| Audit/replay: `rag_evidence`, `request_id`, `generation_mode`, timings | Immutable inference/audit record ở Backend, tham chiếu corpus manifest + vector document/chunk IDs | Có thể tái dựng chính xác context/version đã dẫn tới diagnosis |
-| `DiseaseManagementPolicy` | Structured reference data có owner/version/effective date, migration/seed riêng | Absence of treatment rule được phân biệt rõ với policy review_required |
-| Rule selector theo priority/ngữ cảnh | Migration/reference fields cho priority, hiệu lực, crop/growth constraints; không dùng thứ tự ID | Backend/AI chọn rule theo policy kiểm thử được và Backend revalidates |
-| Benchmark concurrency/cold start/RAM/CPU | Corpus/version, fixture ảnh, cấu hình hardware và kết quả benchmark được version/capture | Có baseline tái lập với SLA/capacity được chấp thuận |
-| Secret management production | Inventory secret và rotation record ngoài `data/`; không có secret trong seed/manifest | Không còn demo key/password làm default production |
-| CV minimum confidence/invalid image | Versioned test fixtures + expected confidence band; threshold vẫn là config, không là business seed | Ảnh low-confidence/không hợp lệ không đi vào treatment recommendation |
-| Reconcile khi `/diagnosis/ai` bị rớt | Persist request/idempotency/status ở Backend | Reload/UI truy được kết quả request đã được xử lý |
-| Client-side image size validation | Fixture 10 MiB boundary và negative fixtures | Client chặn sớm; server vẫn là boundary cuối |
-| Progress feedback 120 giây | Job progress event/status model và fixture mô phỏng các phase CV/context/RAG/LLM | UI hiển thị tiến độ thật, không chỉ spinner tĩnh |
-
-Thứ tự khuyến nghị: làm audit + idempotency/job model trước async UI; policy/rule priority trước tự động chọn rule nâng cao; fixture/corpus manifest trước benchmark và confidence gate.
-
-## 8. Kiểm tra bắt buộc trước khi merge từng phase
+## 7. Kiểm tra bắt buộc trước khi merge từng phase
 
 - Schema checks: FK, unique canonical `disease_code`, treatment rule range (`dose_min <= dose_max`), grants và migration checksum.
 - Seed checks: count/identity/version/source của reference facts; seed run lại không tạo duplicate và không lặng lẽ giữ bản facts lỗi thời.
 - RAG checks: source registry hợp lệ, manifest hash, 38 code mapping, embedding dimension 384 (hoặc migration/model version có chủ đích), count document/chunk và provenance query.
 - Boundary checks: AI credential không `CONNECT` được `dxfarm`; AI runtime không có ingest credential; Backend mới là bên persist diagnosis/application.
 - Restore checks: restore snapshot riêng cho `dxfarm` và AI Vector DB, ingest lại index từ cùng corpus, so sánh metadata/count.
-- E2E checks: chạy hai nhánh có rule/review_required, rồi các cases trong mục 7 khi từng capability được thêm.
+- Data bootstrap checks: dựng database sạch từ migrations/seeds, ingest corpus hợp lệ và đối chiếu counts/checksum sau mỗi lần phát hành data.
 
-## 9. Rủi ro và cách giảm thiểu
+## 8. Rủi ro và cách giảm thiểu
 
 | Rủi ro | Giảm thiểu |
 |---|---|
@@ -201,7 +180,7 @@ Thứ tự khuyến nghị: làm audit + idempotency/job model trước async UI
 | Migration/seed vừa do application vừa do bootstrap chạy | Chọn duy nhất bootstrap executor trước khi chuyển `ddl-auto` sang `validate`; loại bỏ ownership cũ sau cutover |
 | Data thật/secret bị commit | `.gitignore` hẹp cho `data/runtime`, pre-commit/CI secret scan, artifact store/access control và catalog chỉ chứa metadata |
 
-## 10. Các quyết định cần team review trước khi bắt đầu code
+## 9. Các quyết định cần team review trước khi bắt đầu code
 
 1. Chấp thuận `data/` tại repo root, hay cần một repository/artifact store riêng cho corpus lớn/sensitive?
 2. Công cụ/executor migration tối thiểu: PostgreSQL `psql` one-shot trong Compose hay migration runner đã chuẩn hoá của team? Quyết định này phải bảo đảm không thêm migration logic thứ hai.
@@ -209,7 +188,7 @@ Thứ tự khuyến nghị: làm audit + idempotency/job model trước async UI
 4. Retention/backup cho `data/runtime/uploads` và PostgreSQL là bao lâu; dữ liệu demo có được xoá trong restore drill không?
 5. Ai phê duyệt corpus/source registry và ai phê duyệt treatment policy/rule version? Hai luồng review này không nên gộp làm một.
 
-## 11. Kết luận
+## 10. Kết luận
 
 Kế hoạch không thay thế kiến trúc hai database hiện có. Nó làm rõ ownership và đưa tất cả **data definition + data artifact + runtime location** về một catalog/folder có kiểm soát, đồng thời giữ Backend là nguồn thật cho nghiệp vụ và giữ AI Vector DB là index dẫn xuất chỉ đọc ở runtime.
 

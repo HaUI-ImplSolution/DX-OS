@@ -15,9 +15,9 @@ Bài toán được chọn: **Agri-Carbon DX-OS** — hệ điều hành chuyể
 - `development/docs/legacy_docs/DX - Farm.docx` — thiết kế gốc "MVP Agri-Carbon DX-OS" (8 trang): phân vai tác nhân, 4 không gian HPDI, spine flow 6 bước, các lưu ý PoF/anti-hallucination/poka-yoke.
 - `development/docs/legacy_docs/DX-Farm_MVP_DeXuat_Duyet_Lead.docx` — bản đề xuất thống nhất để Lead duyệt: thu hẹp phạm vi demo, LangGraph, schema dữ liệu, khung repo.
 - `ai/README.md` — kiến trúc, endpoint, cấu hình và cách vận hành AI Service; các README trong `ai/app/` mô tả CV, RAG và LangGraph.
-- `development/docs/AI_EVENT_SCHEMA_README.md` — contract event/API giữa Backend và AI Service.
-- `development/docs/ai_backend_decoupling_plan.md` — kiến trúc tách AI thành dịch vụ suy luận phi trạng thái.
-- `development/docs/ai_backend_decoupling_checklist.md` — trạng thái hoàn thành ba phase triển khai.
+- `development/docs/legacy_docs/AI_EVENT_SCHEMA_README.md` — contract event/API giữa Backend và AI Service.
+- `development/docs/legacy_docs/ai_backend_decoupling_plan.md` — kiến trúc tách AI thành dịch vụ suy luận phi trạng thái.
+- `development/docs/legacy_docs/ai_backend_decoupling_checklist.md` — trạng thái hoàn thành ba phase triển khai.
 - Chủ đề chính thức: https://vfossa.vn/tin-tuc/gioi-thieu-mo-hinh-dx-os-va-chu-de-cuoc-thi-phan-mem-nguon-mo-olp-2026-761.html
 - Giáo trình DX-OS: https://opendigitransform.gitbook.io/dx-os
 
@@ -100,7 +100,7 @@ Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
 
 ## Kiến trúc dữ liệu (tóm tắt)
 
-Hai database vật lý riêng trên cùng một Postgres instance, theo kế hoạch chốt ở [`development/docs/ai_backend_decoupling_plan.md`](./development/docs/ai_backend_decoupling_plan.md) mục 3:
+Hai database vật lý riêng trên cùng một Postgres instance, theo kế hoạch chốt ở [`development/docs/legacy_docs/ai_backend_decoupling_plan.md`](./development/docs/legacy_docs/ai_backend_decoupling_plan.md) mục 3:
 
 - **Backend DB (`dxfarm`)** — Operational Data (Parcel, CropSeason, DiseaseReport, Diagnosis, TreatmentApplication) và Structured Knowledge (Disease, Pesticide, TreatmentRule, DiseaseManagementPolicy).
 - **AI Vector DB (`dx_farm_ai_vector_db`)** — chỉ `documents`/`document_chunks` (RAG Knowledge, qua pgvector).
@@ -128,7 +128,7 @@ Dữ liệu demo cũ do AI ghi trực tiếp trước khi tách DB (`disease_rep
 - [x] Schema operational + structured knowledge (entity, field bắt buộc)
 - [x] Contract `vision-api` (request/response JSON)
 - [x] Contract giữa Backend Spring Boot và AI Service Python đã chốt: REST nội bộ, service API key hai chiều, timeout/retry giới hạn và `dose_amount` thống nhất.
-  Chi tiết tại [`ai_backend_decoupling_plan.md`](./development/docs/ai_backend_decoupling_plan.md) mục 4-5.
+  Chi tiết tại [`ai_backend_decoupling_plan.md`](./development/docs/legacy_docs/ai_backend_decoupling_plan.md) mục 4-5.
 - [x] Thời điểm PHI bắt đầu: khi `TreatmentApplication = APPLIED` (không phải khi Approve)
 - [x] Cấu trúc monorepo và quyền sở hữu từng thư mục/module
 - [x] Chính sách repo Private trong lúc phát triển, thời điểm public trước khi nộp bài
@@ -138,7 +138,7 @@ Dữ liệu demo cũ do AI ghi trực tiếp trước khi tách DB (`disease_rep
 Backend Spring Boot sở hữu dữ liệu nghiệp vụ, structured knowledge và toàn bộ vòng đời phê duyệt; đồng thời cung cấp internal API chỉ đọc cho AI.
 AI Service hoạt động stateless: kết hợp CV, structured facts từ Backend và RAG evidence, sau đó trả recommendation để Backend kiểm tra và lưu.
 AI Vector DB đã tách khỏi Backend DB; runtime dùng role chỉ đọc, còn job ingest dùng role đọc/ghi riêng.
-Ba phase của kế hoạch tách AI/Backend đã hoàn thành theo [`ai_backend_decoupling_checklist.md`](./development/docs/ai_backend_decoupling_checklist.md).
+Ba phase của kế hoạch tách AI/Backend đã hoàn thành theo [`ai_backend_decoupling_checklist.md`](./development/docs/legacy_docs/ai_backend_decoupling_checklist.md).
 Frontend, Keycloak SSO, Superset, Mattermost và portal tiếp tục dùng chung stack Docker Compose.
 Chi tiết thay đổi theo từng module xem tại [`CHANGELOG.md`](./CHANGELOG.md).
 

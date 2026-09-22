@@ -7,7 +7,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ### 2026-09-16
 
-**Đã xong — Phase 2 tách AI thành dịch vụ suy luận (P2-0..P2-6, xem `development/docs/ai_backend_decoupling_checklist.md`):**
+**Đã xong — Phase 2 tách AI thành dịch vụ suy luận (P2-0..P2-6, xem `development/docs/legacy_docs/ai_backend_decoupling_checklist.md`):**
 
 - `AiDiagnosisClient` (`RestClient` + `JdkClientHttpRequestFactory`) gọi AI theo contract `POST /api/v1/diagnose`, timeout riêng + circuit breaker Resilience4j.
 - Internal API read-only `GET /internal/v1/diagnosis-context` cho AI tra treatment rule + lịch sử phun theo `disease_code`, bảo vệ bằng service API key riêng (`ServiceApiKeyAuthenticationFilter`), chỉ cho GET.
@@ -15,7 +15,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Endpoint nhập tay `POST .../diagnosis` vẫn giữ cho testing/demo — cả hai cùng đổ vào một `Diagnosis`/vòng đời duyệt duy nhất qua `approve`/`reject`/`apply`.
 - Xác nhận `DiseaseReportService` đã tự lưu `DiseaseReport` vào Backend DB từ Phase 0, không phụ thuộc AI ghi hộ.
 
-**Đã xong — Phase 3 tách DB vật lý cho AI (P3-1..P3-4, xem `development/docs/ai_backend_decoupling_checklist.md`):**
+**Đã xong — Phase 3 tách DB vật lý cho AI (P3-1..P3-4, xem `development/docs/legacy_docs/ai_backend_decoupling_checklist.md`):**
 
 - `AiVectorDatabaseSeeder` tự tạo database `dx_farm_ai_vector_db` (chỉ `documents`/`document_chunks`, extension `pgvector`) lúc khởi động.
 - Hai role Postgres riêng cho AI: `ai_vector_ro` chỉ đọc khi runtime và `ai_vector_ingest` đọc/ghi khi ingest; AI không nhận credential truy cập Backend DB.

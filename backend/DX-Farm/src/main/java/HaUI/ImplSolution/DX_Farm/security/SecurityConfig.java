@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -29,10 +30,14 @@ public class SecurityConfig {
   private static final String[] SWAGGER_ENDPOINTS =
       {"/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**"};
 
+  // Docker healthcheck gọi endpoint này không kèm Authorization header.
+  private static final String ACTUATOR_HEALTH_ENDPOINT = "/actuator/health/**";
+
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http,
       RestAuthenticationEntryPoint authenticationEntryPoint,
-      RestAccessDeniedHandler accessDeniedHandler) throws Exception {
+      RestAccessDeniedHandler accessDeniedHandler,
+      ServiceApiKeyAuthenticationFilter serviceApiKeyAuthenticationFilter) throws Exception {
     http.csrf(csrf -> csrf.disable()).cors(Customizer.withDefaults())
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -40,8 +45,13 @@ public class SecurityConfig {
             .accessDeniedHandler(accessDeniedHandler))
         .authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .requestMatchers(SWAGGER_ENDPOINTS).permitAll()
-            .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS).permitAll().anyRequest()
-            .authenticated())
+            .requestMatchers(HttpMethod.GET, ACTUATOR_HEALTH_ENDPOINT).permitAll()
+            .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS).permitAll()
+            // AI chỉ được gọi GET qua service API key - mọi method khác ở /internal/v1/**
+            // bị chặn hẳn, kể cả nếu lỡ có endpoint ghi được thêm sau này.
+            .requestMatchers(HttpMethod.GET, "/internal/v1/**").hasAuthority("ROLE_AI_SERVICE")
+            .requestMatchers("/internal/v1/**").denyAll().anyRequest().authenticated())
+        .addFilterBefore(serviceApiKeyAuthenticationFilter, BearerTokenAuthenticationFilter.class)
         .oauth2ResourceServer(oauth2 -> oauth2.authenticationEntryPoint(authenticationEntryPoint)
             .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
     return http.build();

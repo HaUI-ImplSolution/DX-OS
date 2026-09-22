@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     )
 
     database_url: str | None = None
+    rag_ingest_database_url: str | None = None
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "qwen2.5:1.5b"
     embedding_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
@@ -31,6 +32,13 @@ class Settings(BaseSettings):
     cv_device: str = "auto"
     cv_confidence_threshold: float = 0.70
     llm_timeout_seconds: float = 5.0
+
+    backend_base_url: str = "http://localhost:8081"
+    backend_service_api_key: str | None = None
+    backend_timeout_seconds: float = 3.0
+    backend_max_attempts: int = 2
+    backend_retry_backoff_seconds: float = 0.2
+    ai_service_api_key: str | None = None
 
     log_level: str = "INFO"
 

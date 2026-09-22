@@ -1,9 +1,15 @@
 package HaUI.ImplSolution.DX_Farm.dto;
 
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 // @formatter:off
 public record DiagnosisApplyRequest(
-  // Ngày thực tế đã phun thuốc (mặc định hôm nay nếu để trống)
+  @NotNull
+  @DecimalMin(value = "0.0", inclusive = false)
+  BigDecimal doseAmount,
+
   LocalDate appliedAt
 ){}

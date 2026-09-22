@@ -33,10 +33,18 @@ public class DiagnosisController {
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(summary = "Record CV diagnosis + deterministic treatment lookup")
+  @Operation(
+      summary = "Record CV diagnosis manually (testing/demo) + deterministic treatment lookup")
   public ApiResponse<DiagnosisResponse> create(@PathVariable Long reportId,
       @Valid @RequestBody DiagnosisCreateRequest request) {
     return ApiResponse.success("Diagnosis recorded", diagnosisService.create(reportId, request));
+  }
+
+  @PostMapping("/ai")
+  @ResponseStatus(HttpStatus.CREATED)
+  @Operation(summary = "Trigger AI Service diagnosis + deterministic treatment lookup")
+  public ApiResponse<DiagnosisResponse> createFromAi(@PathVariable Long reportId) {
+    return ApiResponse.success("Diagnosis recorded", diagnosisService.createFromAi(reportId));
   }
 
   @PostMapping("/approve")
@@ -54,11 +62,10 @@ public class DiagnosisController {
 
   @PostMapping("/apply")
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(summary = "Record treatment applied + compute harvest lock")
+  @Operation(summary = "Record actual treatment dose + compute harvest lock")
   public ApiResponse<TreatmentApplicationResponse> apply(@PathVariable Long reportId,
-      @RequestBody(required = false) DiagnosisApplyRequest request) {
-    DiagnosisApplyRequest safeRequest = request != null ? request : new DiagnosisApplyRequest(null);
+      @Valid @RequestBody DiagnosisApplyRequest request) {
     return ApiResponse.success("Treatment application recorded",
-        diagnosisService.apply(reportId, safeRequest));
+        diagnosisService.apply(reportId, request));
   }
 }

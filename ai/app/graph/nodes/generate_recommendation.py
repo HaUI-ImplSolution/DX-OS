@@ -47,16 +47,23 @@ def generate_recommendation(
         for r in rules:
             actions.append(
                 {
-                    "rule_id": r.get("id"),
+                    "rule_id": r.get("rule_id"),
                     "pesticide": r.get("pesticide"),
-                    "active_ingredient": r.get("active_ingredient"),
                     "dose_min": r.get("dose_min"),
                     "dose_max": r.get("dose_max"),
                     "dose_unit": r.get("dose_unit"),
                     "phi_days": r.get("phi_days"),
-                    "source": r.get("source"),
-                    "notes": r.get("notes"),
+                    "version": r.get("version"),
                 }
+            )
+        if actions:
+            selected = actions[0]
+            dose_text = str(selected["dose_min"])
+            if selected["dose_min"] != selected["dose_max"]:
+                dose_text = f"{selected['dose_min']}-{selected['dose_max']}"
+            summary_parts.append(
+                f"Khuyến nghị dùng {selected['pesticide']} với liều "
+                f"{dose_text} {selected['dose_unit']}; PHI {selected['phi_days']} ngày."
             )
     elif path == "policy":
         policy = treatment_lookup.get("policy") or {}
@@ -73,6 +80,12 @@ def generate_recommendation(
             f"Tham khảo {len(rag_context)} đoạn tài liệu kiến thức (Nguồn: {', '.join(source_ids) if source_ids else 'hệ thống RAG'})."
         )
 
+    recent_treatments = (state.get("field_context") or {}).get("recent_treatments", [])
+    if recent_treatments:
+        summary_parts.append(
+            f"Đã đối chiếu {len(recent_treatments)} lần xử lý gần nhất."
+        )
+
     evidence = "\n\n".join(chunk.get("content", "") for chunk in rag_context)
     explanation = evidence
     generation_mode = "evidence_fallback" if evidence else "no_evidence"
@@ -80,12 +93,13 @@ def generate_recommendation(
     started = time.perf_counter()
     if writer is not None:
         explanation, generation_mode = writer.write(evidence)
+    if explanation:
+        summary_parts.append(f"Khuyến nghị từ tài liệu: {explanation}")
     timings = dict(state.get("timings_ms", {}))
-    timings["llm_generation"] = round(
-        (time.perf_counter() - started) * 1000, 2
-    )
+    timings["llm_generation"] = round((time.perf_counter() - started) * 1000, 2)
 
     recommendation_payload = {
+        "selected_rule_id": actions[0]["rule_id"] if actions else None,
         "path": path,
         "disease_code": disease_code,
         "disease_name": disease_name,

@@ -20,7 +20,7 @@ def build_graph():
 
     The graph computes a recommendation and always ends while it is pending.
     Durable approval, rejection and application transitions are intentionally
-    outside LangGraph and are owned by ``workflow_service`` / PostgreSQL.
+    outside LangGraph and are owned by Backend.
     """
     builder = StateGraph(FarmState, context_schema=WorkflowRuntime)
     builder.add_node("resolve_request", resolve_request)
@@ -32,8 +32,7 @@ def build_graph():
 
     builder.set_entry_point("resolve_request")
 
-    # The graph stops before human action. PostgreSQL is the source of truth
-    # for the durable HITL transitions that follow.
+    # The graph stops before human action; Backend owns durable HITL state.
     builder.add_edge("resolve_request", "cv_diagnosis")
     builder.add_edge("cv_diagnosis", "load_field_context")
     builder.add_edge("load_field_context", "treatment_lookup")

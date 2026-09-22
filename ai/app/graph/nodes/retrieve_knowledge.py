@@ -21,7 +21,6 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.graph.context import WorkflowRuntime
 from app.graph.state import FarmState  # type: ignore
-from app.rag.retriever import RAGRetriever
 
 
 def retrieve_knowledge(
@@ -65,6 +64,8 @@ def retrieve_knowledge(
         elif db is None:
             contexts = state.get("rag_context") or []
         else:
+            from app.rag.retriever import RAGRetriever
+
             contexts = RAGRetriever().retrieve(
                 db=db,
                 query=query,
@@ -80,7 +81,5 @@ def retrieve_knowledge(
     else:
         errors = list(state.get("errors", []))
     timings = dict(state.get("timings_ms", {}))
-    timings["rag_retrieval"] = round(
-        (time.perf_counter() - started) * 1000, 2
-    )
+    timings["rag_retrieval"] = round((time.perf_counter() - started) * 1000, 2)
     return {"rag_context": contexts, "errors": errors, "timings_ms": timings}

@@ -1,34 +1,32 @@
 # SPDX-License-Identifier: Apache-2.0
-import uuid
+import hmac
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
-from sqlalchemy.exc import SQLAlchemyError
+from fastapi import APIRouter, Depends, File, Header, HTTPException, Request, UploadFile
 from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
 
 from app.api.schemas import (
-    ApplyWorkflowRequest,
-    ApproveWorkflowRequest,
     CVHealthResponse,
+    DiagnoseRequest,
+    DiagnoseResponse,
     DiseaseDetectionResponse,
-    RejectWorkflowRequest,
     RetrieveRequest,
-    WorkflowRunResponse,
 )
-from app.application.workflow_runner import WorkflowRunner
-from app.application.workflow_transitions import WorkflowTransitions
-from app.core.config import get_settings
+from app.clients.backend_client import BackendClient, BackendClientError
+from app.core.config import Settings, get_settings
 from app.cv.contract import class_contract
 from app.db.session import get_db
 from app.rag.retriever import RAGRetriever
-from app.services.diagnosis_service import diagnose_report
-from app.services.plant_disease_service import PlantDiseaseService
-from app.services.workflow_service import (
-    WorkflowConflictError,
+from app.services.inference_service import (
+    ImageFetchError,
+    fetch_image,
+    run_stateless_diagnose,
 )
+from app.services.plant_disease_service import PlantDiseaseService
 
 router = APIRouter(prefix="/disease", tags=["Disease Detection"])
+inference_router = APIRouter(tags=["Inference"])
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
 
 
@@ -46,6 +44,26 @@ def predictor(request: Request) -> PlantDiseaseService:
     if model is None:
         raise HTTPException(503, "Plant disease model is not available.")
     return PlantDiseaseService(model=model)
+
+
+def authorize_backend(
+    settings: Annotated[Settings, Depends(get_settings)],
+    x_service_api_key: Annotated[str | None, Header(alias="X-Service-Api-Key")] = None,
+) -> None:
+    expected = (settings.ai_service_api_key or "").strip()
+    if not expected:
+        raise HTTPException(503, "AI service authentication is not configured.")
+    if not x_service_api_key or not hmac.compare_digest(x_service_api_key, expected):
+        raise HTTPException(401, "Invalid service API key.")
+
+
+def backend_client(
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> BackendClient:
+    try:
+        return BackendClient(settings=settings)
+    except ValueError as exc:
+        raise HTTPException(503, "Backend client is not configured.") from exc
 
 
 @router.get("/health", response_model=CVHealthResponse)
@@ -76,26 +94,6 @@ async def predict_disease(request: Request, image: Annotated[UploadFile, File()]
         raise HTTPException(400, str(exc)) from exc
 
 
-@router.post("/reports/{report_id}/diagnose")
-async def diagnose(
-    report_id: uuid.UUID,
-    request: Request,
-    image: Annotated[UploadFile, File()],
-    db: Annotated[Session, Depends(get_db)],
-):
-    data = await read_image(image)
-    try:
-        return await run_in_threadpool(
-            diagnose_report, db, report_id, data, predictor(request)
-        )
-    except LookupError as exc:
-        raise HTTPException(404, str(exc)) from exc
-    except FileExistsError as exc:
-        raise HTTPException(409, str(exc)) from exc
-    except ValueError as exc:
-        raise HTTPException(400, str(exc)) from exc
-
-
 @router.post("/knowledge/retrieve")
 def retrieve(payload: RetrieveRequest, db: Annotated[Session, Depends(get_db)]):
     if not payload.query.strip():
@@ -105,107 +103,31 @@ def retrieve(payload: RetrieveRequest, db: Annotated[Session, Depends(get_db)]):
     )
 
 
-@router.post("/workflow/run", response_model=WorkflowRunResponse)
-async def run_workflow(
+@inference_router.post(
+    "/diagnose",
+    response_model=DiagnoseResponse,
+    summary="Run stateless disease diagnosis",
+    dependencies=[Depends(authorize_backend)],
+)
+async def diagnose(
+    payload: DiagnoseRequest,
     request: Request,
-    image: Annotated[UploadFile, File()],
     db: Annotated[Session, Depends(get_db)],
-    request_id: Annotated[str | None, Form()] = None,
-    parcel_code: Annotated[str | None, Form()] = None,
-    crop_season_id: Annotated[str | None, Form()] = None,
-    rag_question: Annotated[str | None, Form()] = None,
-    requested_by: Annotated[str | None, Form()] = None,
-):
-    data = await read_image(image)
-    req_id = request_id or str(uuid.uuid4())
+    client: Annotated[BackendClient, Depends(backend_client)],
+) -> DiagnoseResponse:
     try:
-        result = await run_in_threadpool(
-            WorkflowRunner(db, vision_factory=lambda: predictor(request)).run,
-            image_bytes=data,
-            request_id=req_id,
-            parcel_code=parcel_code,
-            crop_season_id=crop_season_id,
-            rag_question=rag_question,
-            requested_by=requested_by,
+        image_bytes = await fetch_image(str(payload.image_url))
+        return await run_in_threadpool(
+            run_stateless_diagnose,
+            payload=payload,
+            image_bytes=image_bytes,
+            predictor=predictor(request),
+            db=db,
+            backend_client=client,
         )
+    except ImageFetchError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    except BackendClientError as exc:
+        raise HTTPException(502, "Backend diagnosis context is unavailable.") from exc
     except ValueError as exc:
-        raise HTTPException(400, str(exc)) from exc
-    except LookupError as exc:
-        raise HTTPException(404, str(exc)) from exc
-    except SQLAlchemyError as exc:
-        db.rollback()
-        raise HTTPException(503, "Workflow database is unavailable") from exc
-    except HTTPException:
-        raise
-    except Exception as exc:
-        raise HTTPException(500, "Workflow execution failed") from exc
-    return WorkflowRunResponse(**result)
-
-
-def _transition_error(exc: Exception) -> HTTPException:
-    if isinstance(exc, LookupError):
-        return HTTPException(404, str(exc))
-    if isinstance(exc, WorkflowConflictError):
-        return HTTPException(409, str(exc))
-    if isinstance(exc, ValueError):
-        return HTTPException(422, str(exc))
-    if isinstance(exc, SQLAlchemyError):
-        return HTTPException(503, "Workflow database is unavailable")
-    return HTTPException(500, "Workflow transition failed")
-
-
-@router.get("/workflow/{case_id}")
-def workflow_status(case_id: uuid.UUID, db: Annotated[Session, Depends(get_db)]):
-    try:
-        return WorkflowTransitions(db).get(case_id)
-    except Exception as exc:
-        raise _transition_error(exc) from exc
-
-
-@router.post("/workflow/{case_id}/approve")
-def approve_workflow(
-    case_id: uuid.UUID,
-    payload: ApproveWorkflowRequest,
-    db: Annotated[Session, Depends(get_db)],
-):
-    try:
-        return WorkflowTransitions(db).approve(
-            case_id,
-            actor_id=payload.actor_id,
-            selected_rule_id=payload.selected_rule_id,
-            approved_dose=payload.approved_dose,
-            confirmed_low_confidence=payload.confirmed_low_confidence,
-        )
-    except Exception as exc:
-        raise _transition_error(exc) from exc
-
-
-@router.post("/workflow/{case_id}/reject")
-def reject_workflow(
-    case_id: uuid.UUID,
-    payload: RejectWorkflowRequest,
-    db: Annotated[Session, Depends(get_db)],
-):
-    try:
-        return WorkflowTransitions(db).reject(
-            case_id, actor_id=payload.actor_id, reason=payload.reason
-        )
-    except Exception as exc:
-        raise _transition_error(exc) from exc
-
-
-@router.post("/workflow/{case_id}/applied")
-def confirm_applied(
-    case_id: uuid.UUID,
-    payload: ApplyWorkflowRequest,
-    db: Annotated[Session, Depends(get_db)],
-):
-    try:
-        return WorkflowTransitions(db).apply(
-            case_id,
-            actor_id=payload.actor_id,
-            actual_dose=payload.actual_dose,
-            applied_at=payload.applied_at,
-        )
-    except Exception as exc:
-        raise _transition_error(exc) from exc
+        raise HTTPException(422, str(exc)) from exc

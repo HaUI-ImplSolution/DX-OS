@@ -7,7 +7,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ### 2026-09-16
 
-**Đã xong — Phase 2 tách AI thành dịch vụ suy luận (P2-0..P2-6, xem `development/docs/ai_backend_decoupling_checklist.md`):**
+**Đã xong — Phase 2 tách AI thành dịch vụ suy luận (P2-0..P2-6, xem `development/docs/legacy_docs/ai_backend_decoupling_checklist.md`):**
 
 - `AiDiagnosisClient` (`RestClient` + `JdkClientHttpRequestFactory`) gọi AI theo contract `POST /api/v1/diagnose`, timeout riêng + circuit breaker Resilience4j.
 - Internal API read-only `GET /internal/v1/diagnosis-context` cho AI tra treatment rule + lịch sử phun theo `disease_code`, bảo vệ bằng service API key riêng (`ServiceApiKeyAuthenticationFilter`), chỉ cho GET.
@@ -15,17 +15,12 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Endpoint nhập tay `POST .../diagnosis` vẫn giữ cho testing/demo — cả hai cùng đổ vào một `Diagnosis`/vòng đời duyệt duy nhất qua `approve`/`reject`/`apply`.
 - Xác nhận `DiseaseReportService` đã tự lưu `DiseaseReport` vào Backend DB từ Phase 0, không phụ thuộc AI ghi hộ.
 
-**Đã xong — Phase 3 tách DB vật lý cho AI (P3-1..P3-4, xem `development/docs/ai_backend_decoupling_checklist.md`):**
+**Đã xong — Phase 3 tách DB vật lý cho AI (P3-1..P3-4, xem `development/docs/legacy_docs/ai_backend_decoupling_checklist.md`):**
 
 - `AiVectorDatabaseSeeder` tự tạo database `dx_farm_ai_vector_db` (chỉ `documents`/`document_chunks`, extension `pgvector`) lúc khởi động.
-- Hai role Postgres riêng cho AI: `ai_vector_ro` (chỉ-đọc, runtime suy luận) và `ai_vector_ingest` (đọc/ghi, job ingest RAG) — cả hai bị revoke `CONNECT` khỏi Backend DB, không credential nào của AI chạm được vào DB nghiệp vụ.
-- `deploy/docker-compose.yml` đổi `DATABASE_URL` của service `ai` sang DB/role mới, thêm `INGEST_DATABASE_URL` riêng cho ingest.
+- Hai role Postgres riêng cho AI: `ai_vector_ro` chỉ đọc khi runtime và `ai_vector_ingest` đọc/ghi khi ingest; AI không nhận credential truy cập Backend DB.
+- `deploy/docker-compose.yml` chuyển AI runtime sang DB/role riêng và cấp `RAG_INGEST_DATABASE_URL` cho job ingest.
 - Dữ liệu cũ do AI ghi trực tiếp trước khi tách DB (`disease_reports`, `diagnoses`, `treatment_applications`, `workflow_cases`/`workflow_events`) xác định là dữ liệu demo/test, dọn bằng `deploy/sql/p3-4-legacy-ai-data-cleanup.sql`.
-
-**Chưa làm** (thuộc Phase 1, ngoài phạm vi backend/Phase 2):
-
-- AI Service (`ai/`) chưa expose contract `/api/v1/diagnose` thật, chưa xoá model/router nghiệp vụ dư thừa — endpoint `POST .../diagnosis/ai` sẽ lỗi runtime cho tới khi Phase 1 xong.
-- Vì Phase 3 đã cắt `DATABASE_URL` của AI sang DB chỉ có 2 bảng vector, các endpoint AI còn phụ thuộc bảng nghiệp vụ (`/reports/{id}/diagnose`, `/workflow/*`) tạm thời lỗi kết nối cho tới khi Phase 1 xong.
 
 ### 2026-09-11
 
@@ -74,6 +69,26 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
   Auth/role cơ bản (JWT, FARMER/ENGINEER/ADMIN) đã xong ở trên.
 
 ## AI Service (Python)
+
+### 2026-09-18
+
+- Hoàn tất tích hợp AI stateless với Backend REST và AI Vector DB riêng sau ba phase decoupling.
+- Runtime chỉ đọc RAG; job ingest sử dụng credential ghi riêng qua `RAG_INGEST_DATABASE_URL`.
+
+### 2026-09-17
+
+- Thêm timeout và retry giới hạn khi AI gọi internal API của Backend.
+- Buộc AI trả lỗi khi Backend không cung cấp structured facts.
+
+### 2026-09-16
+
+- Xóa thành công 10 ORM model nghiệp vụ dư thừa khỏi AI Service.
+- Xóa thành công repository/service CRUD và thao tác ghi dữ liệu nghiệp vụ khỏi AI runtime.
+- Xóa thành công router workflow cũ, `WorkflowRunner`, `WorkflowTransitions` và schema liên quan khỏi AI Service.
+- Xóa thành công endpoint legacy `POST /disease/reports/{report_id}/diagnose` khỏi AI Service.
+- Thêm Backend REST client read-only để AI lấy field context và structured facts.
+- Hoàn thành `POST /api/v1/diagnose`, kết hợp CV, RAG và structured facts từ Backend để trả recommendation đúng contract.
+- Tách quyền truy vấn RAG của runtime khỏi quyền ghi corpus của job ingestion.
 
 ### 2026-09-14
 

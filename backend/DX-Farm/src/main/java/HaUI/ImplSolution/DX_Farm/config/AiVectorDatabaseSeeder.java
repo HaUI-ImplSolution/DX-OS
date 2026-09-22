@@ -62,11 +62,11 @@ public class AiVectorDatabaseSeeder implements CommandLineRunner {
     createRole(READONLY_ROLE, readonlyPassword);
     createRole(INGEST_ROLE, ingestPassword);
 
-    // AI không được cấp bất kỳ credential nào trỏ vào Backend DB, kể cả read-only.
-    jdbcTemplate.execute(
-        "REVOKE CONNECT ON DATABASE %s FROM %s".formatted(backendDatabaseName, READONLY_ROLE));
-    jdbcTemplate.execute(
-        "REVOKE CONNECT ON DATABASE %s FROM %s".formatted(backendDatabaseName, INGEST_ROLE));
+    // PostgreSQL cấp CONNECT cho PUBLIC theo mặc định. Revoke trực tiếp từng role không thể
+    // ghi đè quyền kế thừa này, nên phải đóng PUBLIC; owner Backend và superset_ro vẫn có
+    // quyền CONNECT tường minh từ quyền sở hữu/seeder riêng.
+    jdbcTemplate
+        .execute("REVOKE CONNECT ON DATABASE %s FROM PUBLIC".formatted(backendDatabaseName));
 
     String url = "jdbc:postgresql://%s:%s/%s".formatted(host, port, DATABASE_NAME);
     try (Connection connection = DriverManager.getConnection(url, adminUser, adminPassword);

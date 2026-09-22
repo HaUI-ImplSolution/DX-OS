@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 import math
 import time
-import uuid
 from typing import Any
 
 from langgraph.runtime import Runtime
@@ -10,7 +9,6 @@ from app.core.config import get_settings
 from app.cv.contract import class_contract
 from app.graph.context import WorkflowRuntime
 from app.graph.state import FarmState  # type: ignore
-from app.services.diagnosis_service import persist_prediction
 
 
 def cv_diagnosis(
@@ -60,21 +58,12 @@ def cv_diagnosis(
         float(cv_res.get("inference_time_ms", 0.0)), 2
     )
 
-    db = runtime.context.db
-    report_id = state.get("disease_report_id")
-    persistence_started = time.perf_counter()
     updates: dict[str, Any] = {
         "cv_result": cv_res,
         "disease_code": disease_code,
         "confidence": float(confidence),
         "low_confidence": confidence < get_settings().cv_confidence_threshold,
     }
-    if db is not None and report_id:
-        persisted = persist_prediction(db, uuid.UUID(str(report_id)), cv_res)
-        updates["disease_report_id"] = persisted["report_id"]
-    timings["cv_persistence"] = round(
-        (time.perf_counter() - persistence_started) * 1000, 2
-    )
     timings["cv_node_total"] = round(
         (time.perf_counter() - started) * 1000, 2
     )

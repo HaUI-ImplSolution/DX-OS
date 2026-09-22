@@ -46,9 +46,17 @@ def main() -> None:
         print_preview(args.limit)
         return
 
-    from app.db.session import IngestSessionLocal
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import Session
 
-    db = IngestSessionLocal()
+    from app.core.config import get_settings
+
+    database_url = (get_settings().rag_ingest_database_url or "").strip()
+    if not database_url:
+        raise RuntimeError("RAG_INGEST_DATABASE_URL is not configured")
+
+    engine = create_engine(database_url, pool_pre_ping=True)
+    db = Session(engine)
 
     try:
         result = ingest_disease_knowledge(db)
@@ -61,6 +69,7 @@ def main() -> None:
         raise
     finally:
         db.close()
+        engine.dispose()
 
 
 if __name__ == "__main__":

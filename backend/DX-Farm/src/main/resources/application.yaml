@@ -71,7 +71,7 @@ ai:
     # Service token/API key nội bộ cho chiều Backend -> AI
     api-key: ${AI_SERVICE_API_KEY:}
     connect-timeout-ms: ${AI_SERVICE_CONNECT_TIMEOUT_MS:3000}
-    read-timeout-ms: ${AI_SERVICE_READ_TIMEOUT_MS:15000}
+    read-timeout-ms: ${AI_SERVICE_READ_TIMEOUT_MS:120000}
     # Service API key nội bộ cho chiều AI -> Backend (/internal/v1/**, header X-Service-Api-Key).
     # Để trống thì ServiceApiKeyAuthenticationFilter không cấp quyền cho ai (fail closed).
     inbound-api-key: ${AI_SERVICE_INBOUND_API_KEY:}

@@ -4,7 +4,6 @@ It simply returns the received state unchanged. This allows the LangGraph
 pipeline to run in minimal mode before the full logic is added.
 """
 
-import uuid
 from typing import Any
 
 from app.graph.state import FarmState  # type: ignore
@@ -25,13 +24,11 @@ def resolve_request(state: FarmState) -> dict[str, Any]:
     image = state.get("image_ref")
     if not isinstance(image, bytes) or not image:
         raise ValueError("image_ref must contain image bytes")
-    if not state.get("parcel_code") and not state.get("crop_season_id"):
-        raise ValueError("parcel_code or crop_season_id is required")
-    if state.get("crop_season_id"):
-        try:
-            uuid.UUID(str(state["crop_season_id"]))
-        except ValueError as exc:
-            raise ValueError("crop_season_id must be a UUID") from exc
+    crop_season_id = state.get("crop_season_id")
+    if not isinstance(crop_season_id, int) or crop_season_id <= 0:
+        raise ValueError("crop_season_id must be a positive integer")
+    if not state.get("field_context"):
+        raise ValueError("field_context is required")
     return {
         "request_id": request_id,
         "errors": list(state.get("errors", [])),

@@ -62,7 +62,8 @@ export interface TreatmentRule {
   id: number;
   diseaseCode: string;
   pesticideCode: string;
-  doseAmount: number;
+  doseMin: number;
+  doseMax: number;
   doseUnit: string;
   phiDays: number;
   notes: string | null;
@@ -106,6 +107,7 @@ export interface DiagnosisRejectRequest {
 }
 
 export interface DiagnosisApplyRequest {
+  doseAmount: number;
   appliedAt?: string;
 }
 

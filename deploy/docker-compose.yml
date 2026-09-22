@@ -1,12 +1,31 @@
+x-postgres-env: &postgres-env
+  POSTGRES_DB: ${POSTGRES_DB:-dxfarm}
+  POSTGRES_USER: ${POSTGRES_USER:-dxfarm}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dxfarm}
+
+x-ai-build: &ai-build
+  context: ../ai
+  dockerfile: Dockerfile
+
+x-ai-common-env: &ai-common-env
+  EMBEDDING_MODEL: ${EMBEDDING_MODEL:-sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2}
+  HF_HOME: /app/weights/huggingface
+
+x-mattermost-volumes: &mattermost-volumes
+  - ./data/mattermost/config:/mattermost/config
+  - ./data/mattermost/data:/mattermost/data
+  - ./data/mattermost/logs:/mattermost/logs
+  - ./data/mattermost/plugins:/mattermost/plugins
+  - ./data/mattermost/client-plugins:/mattermost/client/plugins
+  - ./data/mattermost/bleve-indexes:/mattermost/bleve-indexes
+
 services:
   postgres:
     image: pgvector/pgvector:pg16
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-dxfarm}
-      POSTGRES_USER: ${POSTGRES_USER:-dxfarm}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dxfarm}
+      <<: *postgres-env
     volumes:
-      - ./data/postgres:/var/lib/postgresql/data
+      - ${POSTGRES_DATA_DIR:-./data/postgres}:/var/lib/postgresql/data
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     healthcheck:
@@ -23,11 +42,9 @@ services:
       postgres:
         condition: service_healthy
     environment:
+      <<: *postgres-env
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
-      POSTGRES_DB: ${POSTGRES_DB:-dxfarm}
-      POSTGRES_USER: ${POSTGRES_USER:-dxfarm}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dxfarm}
       SERVER_PORT: 8081
       UPLOAD_DIR: /app/uploads
       SUPERSET_RO_PASSWORD: ${SUPERSET_RO_PASSWORD:-superset_ro_demo_only}
@@ -35,36 +52,86 @@ services:
       KEYCLOAK_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak_demo_only}
       AI_VECTOR_DB_RO_PASSWORD: ${AI_VECTOR_DB_RO_PASSWORD:-ai_vector_ro_demo_only}
       AI_VECTOR_DB_INGEST_PASSWORD: ${AI_VECTOR_DB_INGEST_PASSWORD:-ai_vector_ingest_demo_only}
+      AI_SERVICE_BASE_URL: ${AI_SERVICE_BASE_URL:-http://ai:8000}
+      AI_SERVICE_API_KEY: ${AI_SERVICE_API_KEY:-}
+      AI_SERVICE_CONNECT_TIMEOUT_MS: ${AI_SERVICE_CONNECT_TIMEOUT_MS:-3000}
+      AI_SERVICE_READ_TIMEOUT_MS: ${AI_SERVICE_READ_TIMEOUT_MS:-120000}
+      AI_SERVICE_INBOUND_API_KEY: ${AI_SERVICE_INBOUND_API_KEY:-}
     volumes:
       - ./data/uploads:/app/uploads
     ports:
       - "${BACKEND_PORT:-8081}:8081"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8081/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
 
+  ollama:
+    image: ollama/ollama:0.34.2
+    restart: unless-stopped
+    volumes:
+      - ollama_models:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  ollama-init:
+    image: ollama/ollama:0.34.2
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    volumes:
+      - ollama_models:/root/.ollama
+    command: ["pull", "${OLLAMA_MODEL:-qwen2.5:1.5b}"]
 
   ai:
     build:
-      context: ../ai
-      dockerfile: Dockerfile
+      <<: *ai-build
     depends_on:
-      postgres:
-        condition: service_healthy
+      rag-ingest:
+        condition: service_completed_successfully
+      ollama-init:
+        condition: service_completed_successfully
     restart: on-failure
     environment:
+      <<: *ai-common-env
       # Role/database dx_farm_ai_vector_db do backend tự tạo lúc khởi động (AiVectorDatabaseSeeder) -
       # chỉ chứa documents/document_chunks, tách biệt hoàn toàn khỏi CSDL nghiệp vụ của Backend.
       DATABASE_URL: postgresql+psycopg://ai_vector_ro:${AI_VECTOR_DB_RO_PASSWORD:-ai_vector_ro_demo_only}@postgres:5432/dx_farm_ai_vector_db
-      # Role đọc/ghi riêng cho job ingest RAG (scripts/ingest_diseases.py), không dùng chung với DATABASE_URL chỉ-đọc.
-      INGEST_DATABASE_URL: postgresql+psycopg://ai_vector_ingest:${AI_VECTOR_DB_INGEST_PASSWORD:-ai_vector_ingest_demo_only}@postgres:5432/dx_farm_ai_vector_db
-      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      BACKEND_BASE_URL: ${BACKEND_BASE_URL:-http://backend:8081}
+      BACKEND_SERVICE_API_KEY: ${AI_SERVICE_INBOUND_API_KEY:-}
+      AI_SERVICE_API_KEY: ${AI_SERVICE_API_KEY:-}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:1.5b}
       CV_DEVICE: ${AI_CV_DEVICE:-cpu}
       LOG_LEVEL: ${AI_LOG_LEVEL:-INFO}
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     volumes:
       - ai_weights:/app/weights
     ports:
       - "${AI_PORT:-8000}:8000"
+
+  rag-ingest:
+    build:
+      <<: *ai-build
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    restart: on-failure
+    environment:
+      <<: *ai-common-env
+      RAG_INGEST_DATABASE_URL: postgresql+psycopg://ai_vector_ingest:${AI_VECTOR_DB_INGEST_PASSWORD:-ai_vector_ingest_demo_only}@postgres:5432/dx_farm_ai_vector_db
+    volumes:
+      - ${AI_DATA_DIR:-../ai/.local/data}:/app/data:ro
+      - ai_weights:/app/weights
+    command: ["python", "-m", "scripts.ingest_diseases"]
 
   frontend:
     build:
@@ -82,7 +149,6 @@ services:
     ports:
       - "${PORTAL_PORT:-8090}:80"
 
-  # Identity Provider cho đăng nhập một lần (SSO thật) - xem sso/README.md.
   keycloak:
     image: quay.io/keycloak/keycloak:26.0
     command: ["start-dev", "--import-realm"]
@@ -90,14 +156,15 @@ services:
       postgres:
         condition: service_healthy
       backend:
-        condition: service_started
-    # Backend chưa có healthcheck - tự thử lại nếu lần đầu connect Postgres thất bại.
+        condition: service_healthy
+    # Healthcheck của backend chỉ xác nhận app đã lên, không đảm bảo role/database do các
+    # CommandLineRunner seeder tạo xong (Tomcat nhận request trước khi seeder chạy xong) -
+    # tự thử lại nếu lần đầu connect Postgres thất bại.
     restart: on-failure
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-admin}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       KC_DB: postgres
-      # Role/database do backend tự tạo lúc khởi động (KeycloakDatabaseSeeder).
       KC_DB_URL: "jdbc:postgresql://postgres:5432/keycloak"
       KC_DB_USERNAME: keycloak_app
       KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak_demo_only}
@@ -114,7 +181,7 @@ services:
       postgres:
         condition: service_healthy
       backend:
-        condition: service_started
+        condition: service_healthy
       keycloak:
         condition: service_started
     environment:
@@ -122,9 +189,7 @@ services:
       SUPERSET_ADMIN_USERNAME: ${SUPERSET_ADMIN_USERNAME:-admin}
       SUPERSET_ADMIN_PASSWORD: ${SUPERSET_ADMIN_PASSWORD}
       SUPERSET_ADMIN_EMAIL: ${SUPERSET_ADMIN_EMAIL:-admin@dxfarm.local}
-      # Role superset_ro (backend tự tạo lúc khởi động) chỉ có quyền SELECT.
       DXFARM_DB_URI: postgresql+psycopg2://superset_ro:${SUPERSET_RO_PASSWORD:-superset_ro_demo_only}@postgres:5432/${POSTGRES_DB:-dxfarm}
-      # SSO thật qua Keycloak (superset_config.py) - xem sso/README.md.
       KEYCLOAK_SUPERSET_CLIENT_ID: ${KEYCLOAK_SUPERSET_CLIENT_ID:-dxfarm-superset}
       KEYCLOAK_SUPERSET_CLIENT_SECRET: ${KEYCLOAK_SUPERSET_CLIENT_SECRET:-dxfarm_superset_demo_secret}
     volumes:
@@ -145,44 +210,29 @@ services:
     command:
       ["chown", "-R", "2000:2000", "/mattermost/config", "/mattermost/data", "/mattermost/logs",
         "/mattermost/plugins", "/mattermost/client/plugins", "/mattermost/bleve-indexes"]
-    volumes:
-      - ./data/mattermost/config:/mattermost/config
-      - ./data/mattermost/data:/mattermost/data
-      - ./data/mattermost/logs:/mattermost/logs
-      - ./data/mattermost/plugins:/mattermost/plugins
-      - ./data/mattermost/client-plugins:/mattermost/client/plugins
-      - ./data/mattermost/bleve-indexes:/mattermost/bleve-indexes
+    volumes: *mattermost-volumes
 
   mattermost:
-    # Team Edition chính thức, không build lại, không đụng thư mục server/enterprise — xem
-    # chat/README.md về lựa chọn license.
     image: mattermost/mattermost-team-edition:10.5
-    # Backend chưa có healthcheck nên `depends_on: backend` chỉ đảm bảo container đã chạy, không
-    # đảm bảo role/database `mattermost` đã tạo xong — tự thử lại nếu lần đầu connect Postgres
-    # thất bại.
+    # `depends_on: backend` (service_healthy) chỉ đảm bảo app đã lên, không đảm bảo role/database
+    # `mattermost` đã tạo xong (CommandLineRunner seeder chạy sau khi Tomcat đã nhận request) -
+    # tự thử lại nếu lần đầu connect Postgres thất bại.
     restart: on-failure
     depends_on:
       postgres:
         condition: service_healthy
       backend:
-        condition: service_started
+        condition: service_healthy
       mattermost-init:
         condition: service_completed_successfully
     environment:
       MM_SQLSETTINGS_DRIVERNAME: postgres
-      # Role/database `mattermost_app`/`mattermost` do backend tự tạo lúc khởi động
-      # (MattermostDatabaseSeeder), tách biệt hoàn toàn khỏi CSDL nghiệp vụ.
       MM_SQLSETTINGS_DATASOURCE: "postgres://mattermost_app:${MATTERMOST_DB_PASSWORD:-mattermost_demo_only}@postgres:5432/mattermost?sslmode=disable"
       MM_SERVICESETTINGS_SITEURL: "http://localhost:${MATTERMOST_PORT:-8065}"
-    volumes:
-      - ./data/mattermost/config:/mattermost/config
-      - ./data/mattermost/data:/mattermost/data
-      - ./data/mattermost/logs:/mattermost/logs
-      - ./data/mattermost/plugins:/mattermost/plugins
-      - ./data/mattermost/client-plugins:/mattermost/client/plugins
-      - ./data/mattermost/bleve-indexes:/mattermost/bleve-indexes
+    volumes: *mattermost-volumes
     ports:
       - "${MATTERMOST_PORT:-8065}:8065"
 
 volumes:
   ai_weights:
+  ollama_models:

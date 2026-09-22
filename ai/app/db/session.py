@@ -31,19 +31,3 @@ def get_db() -> Generator[Session, None, None]:
         yield db
     finally:
         db.close()
-
-
-# Job ingest RAG cần quyền ghi (INSERT/UPDATE/DELETE) trên documents/document_chunks, khác với
-# DATABASE_URL chỉ-đọc mà runtime suy luận dùng (role ai_vector_ro so với ai_vector_ingest).
-INGEST_DATABASE_URL = settings.ingest_database_url or DATABASE_URL
-
-ingest_engine = create_engine(
-    INGEST_DATABASE_URL,
-    pool_pre_ping=True,
-)
-
-IngestSessionLocal = sessionmaker(
-    bind=ingest_engine,
-    autoflush=False,
-    autocommit=False,
-)

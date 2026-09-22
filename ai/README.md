@@ -1,148 +1,134 @@
 # AI Service (Python — FastAPI & LangGraph)
 
-Dịch vụ AI độc lập nằm trong thư mục `ai/` (ngang hàng `backend/`, `frontend/`, `bi/`, `chat/`, `portal/`), đóng vai trò không gian **Intelligence [I]** trong kiến trúc 4 không gian H-P-D-I của hệ thống DX-Farm.
+`ai/` là dịch vụ suy luận của DX-Farm. Dịch vụ nhận ảnh và ngữ cảnh báo cáo từ Backend, nhận diện bệnh bằng Computer Vision, lấy sự thật nghiệp vụ qua Backend REST API, truy xuất kiến thức giải thích trong AI Vector DB và trả recommendation về Backend.
 
-Dịch vụ tuân thủ nguyên tắc kiến trúc bất biến: **Stateless & Advisory** — chỉ cung cấp chẩn đoán thị giác máy tính (CV), tra cứu tri thức định hình, truy vấn RAG giải thích và sinh đề xuất khuyến nghị. Dịch vụ không tự ghi nhận hay thay đổi dữ liệu nghiệp vụ chính thức; mọi khuyến nghị đều qua trạng thái `PENDING` chờ kỹ sư nông nghiệp phê duyệt (Human-in-the-loop).
+AI hoạt động theo nguyên tắc **Stateless & Advisory**: không sở hữu hoặc thay đổi dữ liệu nghiệp vụ, không quản lý vòng đời phê duyệt và không tự xác nhận áp dụng thuốc. Backend là nguồn sự thật duy nhất cho dữ liệu nghiệp vụ và các trạng thái `PENDING`, `APPROVED`, `REJECTED`, `APPLIED`.
 
-> **Trạng thái kiến trúc**: Nội dung dưới đây mô tả hành vi *dự định* của code (AI vẫn ghi trực tiếp `WorkflowCase`/`WorkflowEvent`/`DiseaseReport`/`Diagnosis`/`TreatmentApplication`), nhưng **DB vật lý đã tách trước theo Phase 3** (P3-1..P3-3) trong khi Phase 1 chưa làm.
-> `DATABASE_URL` của AI giờ trỏ vào `dx_farm_ai_vector_db` bằng role chỉ-đọc `ai_vector_ro`, DB này chỉ có `documents`/`document_chunks`.
-> Kết quả: `/predict` và `/knowledge/retrieve` vẫn chạy được, nhưng mọi endpoint đụng tới bảng nghiệp vụ (`/reports/{report_id}/diagnose`, toàn bộ `/workflow/*`, node `treatment_lookup`) và các script `scripts.seed_*` đều lỗi kết nối/permission cho tới khi Phase 1 của [`../development/docs/ai_backend_decoupling_plan.md`](../development/docs/ai_backend_decoupling_plan.md) hoàn tất (AI gọi Backend REST thay vì đọc thẳng DB).
-> Dữ liệu demo cũ do AI ghi trực tiếp (`disease_reports`, `diagnoses`, `treatment_applications`, `workflow_cases`/`workflow_events`) được dọn theo P3-4 bằng [`../deploy/sql/p3-4-legacy-ai-data-cleanup.sql`](../deploy/sql/p3-4-legacy-ai-data-cleanup.sql), chạy một lần thủ công.
+## Kiến trúc
 
----
+```text
+Backend → POST /api/v1/diagnose
+              │
+              ├─ CV nhận diện disease_code
+              ├─ Backend REST trả structured facts
+              ├─ pgvector trả RAG evidence
+              └─ LangGraph tổng hợp recommendation
+                         │
+                         └─ Backend kiểm tra và lưu
+```
 
-## Kiến trúc & Các thành phần chính
+Các thành phần chính:
 
-1. **Vision API (Computer Vision)**:
-   - Sử dụng mô hình `EfficientNet-B4` được huấn luyện trên 38 lớp bệnh cây trồng (PlantVillage).
-   - Trả về mã bệnh chuẩn `disease_code` (như `Corn_(maize)__Common_rust` hay `Tomato___Early_blight`), độ tin cậy `confidence` và tên bệnh tiếng Việt `disease_name` khớp 1:1 với cơ sở dữ liệu `Disease.code` ở backend.
+- **Computer Vision**: EfficientNet-B4 nhận diện một trong 38 lớp PlantVillage và trả `disease_code`, confidence cùng metadata model.
+- **Structured facts**: AI gọi internal API chỉ đọc của Backend để lấy treatment rule, liều lượng, PHI và lịch sử phun. Những dữ liệu này không được lấy từ RAG hoặc tự sinh bởi LLM.
+- **RAG**: truy vấn `documents` và `document_chunks` trong PostgreSQL/pgvector bằng embedding 384 chiều, trả evidence kèm nguồn.
+- **LangGraph**: điều phối một lượt suy luận stateless; không lưu workflow hoặc trạng thái phê duyệt.
+- **Recommendation**: kết hợp kết quả CV, structured facts và RAG evidence. Backend kiểm tra lại rule version trước khi lưu.
 
-2. **Tra cứu quy tắc định hình (Structured Knowledge)**:
-   - Truy vấn SQL xác định thông tin quy trình điều trị (`TreatmentRule`: danh mục thuốc được phép, hoạt chất, khoảng liều lượng min-max, đơn vị liều, số ngày cách ly PHI) hoặc chính sách quản lý không hóa chất (`DiseaseManagementPolicy`).
-   - Tuyệt đối tuân thủ nguyên tắc **Deterministic-first**: số liệu thuốc và PHI lấy trực tiếp từ database, không cho phép LLM tự bịa số liệu.
+Tài liệu chi tiết theo module:
 
-3. **Truy vấn tài liệu RAG (Unstructured Knowledge)**:
-   - Tìm kiếm vector trên pgvector sử dụng mô hình embedding `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`.
-   - Trả về các đoạn tài liệu giải thích từ các tài liệu VietGAP/IRRI đã ingest kèm trích nguồn (`source_ids`, `similarity`).
+- [`app/cv/README.md`](app/cv/README.md)
+- [`app/rag/README.md`](app/rag/README.md)
+- [`app/graph/README.md`](app/graph/README.md)
 
-4. **Điều phối Workflow (LangGraph)**:
-   - Luồng xương sống 9 node: `resolve_request` $\rightarrow$ `cv_diagnosis` $\rightarrow$ `load_field_context` $\rightarrow$ `treatment_lookup` $\rightarrow$ `retrieve_knowledge` $\rightarrow$ `generate_recommendation` $\rightarrow$ `engineer_approval`.
-   - Lưu trữ trạng thái duyệt bền vững trong bảng `WorkflowCase` và `WorkflowEvent` của PostgreSQL.
-
----
-
-## Danh sách API chính (`/api/v1/disease`)
+## API
 
 | Method | Endpoint | Mô tả |
 |---|---|---|
-| `GET` | `/health` | Kiểm tra trạng thái mô hình CV (đã load hay chưa, device GPU/CPU) |
-| `GET` | `/class-contract` | Lấy danh sách contract 38 lớp bệnh ánh xạ CV $\leftrightarrow$ DB |
-| `POST` | `/predict` | Nhận diện bệnh từ ảnh lá cây qua CV |
-| `POST` | `/reports/{report_id}/diagnose` | Chẩn đoán ảnh cho báo cáo bệnh đã tồn tại và lưu kết quả |
-| `POST` | `/knowledge/retrieve` | Truy vấn các đoạn tài liệu RAG trong pgvector theo câu hỏi & mã bệnh |
-| `POST` | `/workflow/run` | Chạy toàn bộ LangGraph workflow tạo khuyến nghị dừng ở trạng thái `PENDING` |
-| `GET` | `/workflow/{case_id}` | Xem trạng thái workflow và lịch sử audit case |
-| `POST` | `/workflow/{case_id}/approve` | Kỹ sư duyệt khuyến nghị (`APPROVED`) |
-| `POST` | `/workflow/{case_id}/reject` | Kỹ sư từ chối khuyến nghị (`REJECTED`) |
-| `POST` | `/workflow/{case_id}/applied` | Xác nhận đã phun thuốc thực tế (`APPLIED`), tính ngày hết cách ly PHI |
+| `GET` | `/api/v1/disease/health` | Trạng thái model CV và thiết bị chạy |
+| `GET` | `/api/v1/disease/class-contract` | Contract 38 lớp CV và `disease_code` canonical |
+| `POST` | `/api/v1/disease/predict` | Nhận ảnh multipart và trả kết quả CV |
+| `POST` | `/api/v1/disease/knowledge/retrieve` | Truy vấn RAG theo câu hỏi và `disease_code` tùy chọn |
+| `POST` | `/api/v1/diagnose` | Contract nội bộ Backend → AI, yêu cầu header `X-Service-Api-Key` |
 
-Bảng trên phản ánh contract hiện tại.
-Theo Phase 1 của [kế hoạch tách AI/Backend](../development/docs/ai_backend_decoupling_plan.md), `POST /reports/{report_id}/diagnose` và toàn bộ `/workflow/*` sẽ bị xóa, thay bằng contract suy luận phi trạng thái `POST /api/v1/diagnose`: nhận ảnh + field context và trả CV result + RAG evidence + structured facts + recommendation trong một lần gọi, không tự ghi DB nghiệp vụ.
+`POST /api/v1/diagnose` tải ảnh từ `image_url`, chạy CV, gọi Backend lấy structured facts, truy vấn RAG và trả recommendation. Nếu structured facts không khả dụng, request thất bại; AI không đưa ra recommendation chỉ dựa trên RAG.
 
----
+## Dữ liệu và quyền sở hữu
 
-## Biến môi trường (`.env`)
-
-Dịch vụ AI sử dụng cấu hình từ file `.env` (mẫu tại `.env.example`). Các biến môi trường chính gồm:
-
-| Biến môi trường | Giá trị mặc định | Giải thích |
+| Dữ liệu | Nơi sở hữu | Quyền của AI runtime |
 |---|---|---|
-| `DATABASE_URL` | `postgresql+psycopg://ai_vector_ro:ai_vector_ro_demo_only@localhost:5432/dx_farm_ai_vector_db` | Kết nối chỉ-đọc tới AI Vector DB (`documents`/`document_chunks`), dùng cho runtime suy luận |
-| `INGEST_DATABASE_URL` | `postgresql+psycopg://ai_vector_ingest:ai_vector_ingest_demo_only@localhost:5432/dx_farm_ai_vector_db` | Kết nối đọc/ghi tới AI Vector DB, chỉ dùng cho job ingest RAG (`scripts.ingest_diseases`) |
-| `OLLAMA_BASE_URL` | `http://localhost:11434` | Endpoint của dịch vụ Ollama local |
-| `OLLAMA_MODEL` | `qwen2.5:1.5b` | Mô hình LLM nhỏ dùng để diễn đạt khuyến nghị tiếng Việt |
-| `EMBEDDING_MODEL` | `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` | Mô hình embedding cho RAG |
-| `CV_MODEL_NAME` | `EfficientNet-B4` | Tên mô hình nhận diện bệnh |
-| `CV_CONFIDENCE_THRESHOLD` | `0.70` | Ngưỡng độ tin cậy cảnh báo low confidence |
-| `LLM_TIMEOUT_SECONDS` | `5` | Thời gian chờ tối đa khi gọi LLM (tự fallback nếu quá giờ) |
+| Parcel, CropSeason, DiseaseReport, Diagnosis, TreatmentApplication | Backend DB `dxfarm` | Không có credential DB; chỉ nhận dữ liệu cần thiết qua REST |
+| Disease, Pesticide, TreatmentRule, DiseaseManagementPolicy | Backend DB `dxfarm` | Chỉ đọc qua internal REST API |
+| Document, DocumentChunk và embedding | AI Vector DB `dx_farm_ai_vector_db` | Role `ai_vector_ro` chỉ có quyền đọc |
+| Corpus ingest | File local do người vận hành cung cấp | Job riêng dùng role `ai_vector_ingest` |
 
----
+Backend khởi tạo AI Vector DB, extension `vector`, hai bảng RAG và hai role PostgreSQL. Runtime không giữ credential ingest; `RAG_INGEST_DATABASE_URL` chỉ được cấp khi chạy job quản trị.
 
-## Hướng dẫn cài đặt & Chạy cục bộ (Local Development)
+## Biến môi trường
 
-### 1. Khởi tạo môi trường ảo Python & Cài thư viện
+Mẫu cấu hình nằm tại [`.env.example`](.env.example).
+
+| Biến | Ý nghĩa |
+|---|---|
+| `DATABASE_URL` | Kết nối read-only của AI runtime tới `dx_farm_ai_vector_db` |
+| `RAG_INGEST_DATABASE_URL` | Kết nối read/write chỉ dành cho job ingest |
+| `BACKEND_BASE_URL` | Base URL Backend, mặc định local `http://localhost:8081` |
+| `BACKEND_SERVICE_API_KEY` | Key AI gửi khi gọi `/internal/v1/**` của Backend |
+| `AI_SERVICE_API_KEY` | Key Backend phải gửi khi gọi `/api/v1/diagnose` |
+| `BACKEND_TIMEOUT_SECONDS` | Timeout mỗi lần AI gọi Backend |
+| `BACKEND_MAX_ATTEMPTS` | Tổng số lần gọi Backend, bao gồm lần đầu |
+| `OLLAMA_BASE_URL`, `OLLAMA_MODEL` | Cấu hình LLM diễn đạt recommendation |
+| `EMBEDDING_MODEL` | Model embedding dùng đồng nhất cho ingest và retrieval |
+| `CV_DEVICE` | `auto`, `cpu` hoặc `cuda` |
+
+Hai service key phải được cấu hình và khớp theo từng chiều. Khi key đầu vào AI để trống, `/api/v1/diagnose` trả `503` theo cơ chế fail-closed.
+
+## Chạy local
 
 ```bash
 cd ai
 python -m venv .venv
-# Trên Windows:
-.venv\Scripts\\activate
-# Trên Linux/macOS:
 source .venv/bin/activate
-
 pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
+cp .env.example .env
+uvicorn app.main:app --reload --port 8000
 ```
 
-### 2. Chuẩn bị database, seed và RAG
+AI không dùng Alembic hoặc migration. Backend phải khởi tạo AI Vector DB trước khi endpoint RAG được gọi.
 
-AI không dùng Alembic hay migration.
-Database pgvector riêng `dx_farm_ai_vector_db` (chỉ chứa `documents`/`document_chunks`, kèm extension `vector`) do Backend tự tạo lúc khởi động (`AiVectorDatabaseSeeder`), cùng 2 role Postgres riêng cho AI: `ai_vector_ro` (chỉ-đọc, dùng cho `DATABASE_URL`) và `ai_vector_ingest` (đọc/ghi, dùng cho `INGEST_DATABASE_URL`) — xem [`ai_backend_decoupling_checklist.md`](../development/docs/ai_backend_decoupling_checklist.md) mục P3-1..P3-3.
-Không role nào của AI được cấp quyền vào DB nghiệp vụ của Backend, kể cả chỉ-đọc.
+`/health`, `/class-contract` và `/predict` không cần corpus RAG. `/knowledge/retrieve` và `/diagnose` cần schema vector; để có evidence, corpus phải được ingest trước.
 
-`scripts.seed_diseases`, `scripts.seed_pesticides`, `scripts.seed_treatment_rules`, `scripts.seed_disease_management_policies` ghi vào các bảng nghiệp vụ (`diseases`, `pesticides`, `treatment_rules`, `disease_management_policies`) không còn tồn tại trong `dx_farm_ai_vector_db` — các script này hỏng cho tới khi Phase 1 thay bằng Backend REST client.
+## Ingest RAG
 
-Các file JSON trong `data/rag/` là **dữ liệu nguồn trong repository**, chưa tự xuất hiện trong PostgreSQL. Sau khi DB vector đã sẵn sàng, nạp embedding RAG bằng role ingest:
+Corpus không được đóng gói trong Git. Người vận hành đặt dữ liệu đã duyệt tại `data/rag/processed/disease_knowledge.json` cùng registry nguồn tương ứng, sau đó chạy:
 
 ```bash
+export RAG_INGEST_DATABASE_URL=postgresql+psycopg://<ingest-user>:<password>@<host>:5432/dx_farm_ai_vector_db
+python -m scripts.ingest_diseases --dry-run
 python -m scripts.ingest_diseases
 ```
 
-`scripts.ingest_diseases` đọc `data/rag/processed/disease_knowledge.json`, tạo embedding và ghi corpus qua `INGEST_DATABASE_URL`. Chỉ sau bước này `/knowledge/retrieve` và phần RAG của workflow mới có dữ liệu để truy vấn.
+Job chỉ ghi `documents` và `document_chunks`. Model embedding khi ingest phải giống model của runtime; đổi model hoặc số chiều vector yêu cầu ingest lại toàn bộ corpus.
 
-`/health` và `/predict` không cần corpus RAG hoặc dữ liệu seed; chúng chỉ cần model CV tải thành công. Tuy vậy `DATABASE_URL` vẫn bắt buộc để ứng dụng khởi tạo cấu hình. Các endpoint RAG/workflow cần cả schema lẫn seed đã nạp.
+## Docker Compose
 
-### 3. Khởi chạy FastAPI Server
-
-```bash
-uvicorn app.main:app --reload --port 8000
-```
-Swagger UI xem và test API tại: `http://localhost:8000/docs`
-
----
-
-## Triển khai Docker
-
-### Build image
+Từ thư mục gốc repository:
 
 ```bash
-docker build --tag dxfarm-ai:local --file ai/Dockerfile ai
+cp deploy/.env.example deploy/.env
+# Thiết lập AI_SERVICE_API_KEY và AI_SERVICE_INBOUND_API_KEY bằng giá trị không rỗng.
+cd deploy
+docker compose up -d --build postgres backend ai
 ```
 
-### Chạy container
+Compose sử dụng:
 
-```bash
-docker run --rm --name dxfarm-ai -p 8000:8000 -e DATABASE_URL="postgresql+psycopg://ai_vector_ro:ai_vector_ro_demo_only@<postgres-host>:5432/dx_farm_ai_vector_db" -v dxfarm-ai-weights:/app/weights dxfarm-ai:local
-```
+- `ai_vector_ro` qua `DATABASE_URL` cho AI runtime.
+- `ai_vector_ingest` qua `RAG_INGEST_DATABASE_URL` cho job ingest thủ công.
+- `http://ai:8000` cho chiều Backend → AI.
+- `http://backend:8081` cho chiều AI → Backend.
 
-Thay `<postgres-host>` bằng địa chỉ PostgreSQL mà container truy cập được; nếu service AI nằm cùng Docker Compose với PostgreSQL thì dùng hostname `postgres`.
-
-Kiểm tra service sau khi model đã tải xong:
+Kiểm tra model sau khi service khởi động:
 
 ```bash
 curl http://localhost:8000/api/v1/disease/health
 ```
 
-Lần khởi động đầu tiên cần Internet để tải CV weights từ Hugging Face. Volume `dxfarm-ai-weights` giữ weights cho các lần chạy sau; nếu chạy offline, volume này phải đã có `best_model.pth`.
+Lần chạy đầu có thể cần Internet để tải weights từ Hugging Face. Volume `ai_weights` giữ checkpoint cho các lần chạy sau.
 
-Để backend gọi container trên cùng Docker network, dùng hostname service `ai` và URL gốc `http://ai:8000`. `deploy/docker-compose.yml` hiện chưa khai báo service `ai`; cần thêm service đó khi tích hợp Compose.
+## Giới hạn vận hành
 
----
-
-## Giới hạn hiện tại & Hướng phát triển tiếp theo
-
-- Các endpoint AI hiện chưa yêu cầu xác thực JWT riêng; xác thực người dùng được kiểm soát ở gateway Spring Boot backend và Keycloak SSO.
-- Dockerfile đã sẵn sàng, nhưng Docker Compose và Java backend chưa tự động khởi chạy/gọi AI service; phần tích hợp đó cần cấu hình service `ai` và URL `http://ai:8000`.
-- `HF_TOKEN` chưa được cấu hình — HuggingFace Hub sẽ tải model với rate limit ẩn danh (thường đủ dùng, nhưng nếu bị throttle thì set biến `HF_TOKEN` trong `deploy/.env`).
-- DB vật lý đã tách (Phase 3, P3-1..P3-3): AI kết nối `dx_farm_ai_vector_db` bằng role riêng, không còn credential nào trỏ vào DB nghiệp vụ của Backend.
-  Code AI (Phase 1) chưa theo kịp: các model/endpoint vẫn giả định đọc/ghi được `diseases`, `pesticides`, `treatment_rules`, `disease_reports`, `diagnoses`, `treatment_applications`, `workflow_cases` — các endpoint/script đụng tới những bảng này hiện lỗi kết nối cho tới khi Phase 1 xong (xoá model/router cũ, thêm Backend REST client).
-  Xem [`../development/docs/ai_backend_decoupling_plan.md`](../development/docs/ai_backend_decoupling_plan.md).
+- CV chỉ nhận diện 38 lớp đã huấn luyện; kết quả là tín hiệu chẩn đoán, không phải quyết định điều trị.
+- RAG chỉ tìm được kiến thức đã ingest và không thay thế structured facts từ Backend.
+- Ollama có thể fallback khi lỗi hoặc timeout, nhưng thiếu structured facts luôn làm lượt chẩn đoán thất bại.
+- `/predict` và `/knowledge/retrieve` là endpoint kỹ thuật; luồng nghiệp vụ chính đi qua Backend và `POST /api/v1/diagnose`.

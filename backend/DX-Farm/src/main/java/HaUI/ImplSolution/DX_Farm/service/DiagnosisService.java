@@ -88,26 +88,43 @@ public class DiagnosisService {
 
     Disease disease = diseaseRepository.findByCode(diseaseCode).orElseThrow(
         () -> new ResourceNotFoundException("Unknown disease code from AI: " + diseaseCode));
-    TreatmentRule currentRule = treatmentRuleService.findByDiseaseCodeOrThrow(diseaseCode);
     AiDiagnoseResponse.RuleFact selectedRule = findSelectedRule(aiResponse);
-    if (!Objects.equals(currentRule.getVersion(), selectedRule.version())) {
-      throw new InvalidStateException(
-          "Treatment rule for %s changed while AI was processing (rule version %s -> %s) - retry diagnosis"
-              .formatted(diseaseCode, selectedRule.version(), currentRule.getVersion()));
+    TreatmentRule currentRule = null;
+    if (selectedRule != null) {
+      Long selectedRuleId;
+      try {
+        selectedRuleId = Long.valueOf(selectedRule.ruleId());
+      } catch (NumberFormatException exception) {
+        throw new InvalidStateException("AI selected an invalid rule_id: " + selectedRule.ruleId());
+      }
+      currentRule = treatmentRuleService.findByIdAndDiseaseCodeOrThrow(selectedRuleId, diseaseCode);
+      if (!Objects.equals(currentRule.getVersion(), selectedRule.version())) {
+        throw new InvalidStateException(
+            "Treatment rule for %s changed while AI was processing (rule version %s -> %s) - retry diagnosis"
+                .formatted(diseaseCode, selectedRule.version(), currentRule.getVersion()));
+      }
     }
 
     Diagnosis diagnosis =
         Diagnosis.builder().diseaseReport(report).disease(disease).confidence(cvResult.confidence())
             .modelVersion(cvResult.modelName() + " " + cvResult.modelVersion())
-            .treatmentRule(currentRule)
-            .recommendationText(
-                buildRecommendation(report, disease, currentRule, cvResult.confidence()))
+            .treatmentRule(currentRule).recommendationText(aiResponse.recommendation().summary())
             .approvalStatus(ApprovalStatus.PENDING).build();
     return toResponse(diagnosisRepository.save(diagnosis));
   }
 
   private static AiDiagnoseResponse.RuleFact findSelectedRule(AiDiagnoseResponse aiResponse) {
     String selectedRuleId = aiResponse.recommendation().selectedRuleId();
+    if (selectedRuleId == null) {
+      if (!"review_required".equals(aiResponse.structuredContext().path())
+          || !aiResponse.structuredContext().rules().isEmpty()) {
+        throw new InvalidStateException("AI omitted rule_id outside review_required path");
+      }
+      return null;
+    }
+    if (!"treatment".equals(aiResponse.structuredContext().path())) {
+      throw new InvalidStateException("AI selected rule_id outside treatment path");
+    }
     return aiResponse.structuredContext().rules().stream()
         .filter(rule -> rule.ruleId().equals(selectedRuleId)).findFirst().orElseThrow(
             () -> new InvalidStateException("AI selected an unknown rule_id: " + selectedRuleId));
@@ -182,13 +199,22 @@ public class DiagnosisService {
       throw new InvalidStateException("Diagnosis already applied: " + reportId);
     }
 
-    LocalDate appliedAt = request.appliedAt() != null ? request.appliedAt() : LocalDate.now();
     TreatmentRule rule = diagnosis.getTreatmentRule();
-    TreatmentApplication application = TreatmentApplication.builder()
-        .cropSeason(diagnosis.getDiseaseReport().getCropSeason()).diagnosis(diagnosis)
-        .pesticide(rule.getPesticide()).doseAmountSnapshot(rule.getDoseAmount())
-        .doseUnitSnapshot(rule.getDoseUnit()).phiDaysSnapshot(rule.getPhiDays())
-        .appliedAt(appliedAt).harvestLockedUntil(appliedAt.plusDays(rule.getPhiDays())).build();
+    if (rule == null) {
+      throw new InvalidStateException(
+          "Diagnosis has no approved treatment rule and cannot be applied: " + reportId);
+    }
+    BigDecimal actualDose = request.doseAmount();
+    if (!rule.allowsDose(actualDose)) {
+      throw new InvalidStateException("Applied dose %s must be between %s and %s %s"
+          .formatted(actualDose, rule.getDoseMin(), rule.getDoseMax(), rule.getDoseUnit()));
+    }
+    LocalDate appliedAt = request.appliedAt() != null ? request.appliedAt() : LocalDate.now();
+    TreatmentApplication application =
+        TreatmentApplication.builder().cropSeason(diagnosis.getDiseaseReport().getCropSeason())
+            .diagnosis(diagnosis).pesticide(rule.getPesticide()).doseAmountSnapshot(actualDose)
+            .doseUnitSnapshot(rule.getDoseUnit()).phiDaysSnapshot(rule.getPhiDays())
+            .appliedAt(appliedAt).harvestLockedUntil(appliedAt.plusDays(rule.getPhiDays())).build();
     return toApplicationResponse(treatmentApplicationRepository.save(application));
   }
 
@@ -208,7 +234,14 @@ public class DiagnosisService {
     return "Thửa %s phát hiện bệnh %s (%.1f%%). Đề xuất phác đồ: phun %s %s %s - yêu cầu cách ly thu hoạch %d ngày."
         .formatted(report.getCropSeason().getParcel().getCode(), disease.getName(),
             confidence.multiply(BigDecimal.valueOf(100)), rule.getPesticide().getName(),
-            rule.getDoseAmount(), rule.getDoseUnit(), rule.getPhiDays());
+            formatDoseRange(rule), rule.getDoseUnit(), rule.getPhiDays());
+  }
+
+  private static String formatDoseRange(TreatmentRule rule) {
+    if (rule.getDoseMin().compareTo(rule.getDoseMax()) == 0) {
+      return rule.getDoseMin().toPlainString();
+    }
+    return "%s-%s".formatted(rule.getDoseMin().toPlainString(), rule.getDoseMax().toPlainString());
   }
 
   public static DiagnosisResponse toResponse(Diagnosis diagnosis) {
@@ -217,7 +250,9 @@ public class DiagnosisService {
         diagnosis.getConfidence(), diagnosis.getModelVersion(), diagnosis.getDiagnosedAt(),
         diagnosis.getRecommendationText(), diagnosis.getApprovalStatus().name(),
         diagnosis.getDecidedBy(), diagnosis.getDecidedAt(), diagnosis.getRejectionReason(),
-        TreatmentRuleService.toResponse(diagnosis.getTreatmentRule()));
+        diagnosis.getTreatmentRule() != null
+            ? TreatmentRuleService.toResponse(diagnosis.getTreatmentRule())
+            : null);
   }
 
   private static TreatmentApplicationResponse toApplicationResponse(

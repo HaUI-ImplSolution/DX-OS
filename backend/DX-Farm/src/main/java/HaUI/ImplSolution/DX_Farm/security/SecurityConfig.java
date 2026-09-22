@@ -30,6 +30,9 @@ public class SecurityConfig {
   private static final String[] SWAGGER_ENDPOINTS =
       {"/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**"};
 
+  // Docker healthcheck gọi endpoint này không kèm Authorization header.
+  private static final String ACTUATOR_HEALTH_ENDPOINT = "/actuator/health/**";
+
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http,
       RestAuthenticationEntryPoint authenticationEntryPoint,
@@ -42,6 +45,7 @@ public class SecurityConfig {
             .accessDeniedHandler(accessDeniedHandler))
         .authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .requestMatchers(SWAGGER_ENDPOINTS).permitAll()
+            .requestMatchers(HttpMethod.GET, ACTUATOR_HEALTH_ENDPOINT).permitAll()
             .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS).permitAll()
             // AI chỉ được gọi GET qua service API key - mọi method khác ở /internal/v1/**
             // bị chặn hẳn, kể cả nếu lỡ có endpoint ghi được thêm sau này.

@@ -15,7 +15,7 @@
 
 | Nguồn yêu cầu | Nội dung | Mức độ | Phạm vi trong phase này |
 |---|---|---|---|
-| RD2 ở `refactor/README.md` | Đổi `DXOS_APP` rồi restart backend là chuyển app | Nghiêm trọng | Toàn bộ |
+| RD2 ở `refactor_docs/README.md` | Đổi `DXOS_APP` rồi restart backend là chuyển app | Nghiêm trọng | Toàn bộ |
 | Đề thi HaUI mục 5, 7, 9 | Build và chạy từ source, dữ liệu mẫu, kịch bản demo đầu-cuối | Nghiêm trọng | Toàn bộ |
 | Đề thi HaUI mục 12 | Demo không chạy bị trừ điểm | Nghiêm trọng | CI hai app |
 

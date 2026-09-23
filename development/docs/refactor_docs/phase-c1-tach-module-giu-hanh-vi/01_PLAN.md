@@ -98,7 +98,8 @@ WPC1-05 (migration) làm song song với WPC1-03 sau khi WPC1-01 xong.
 **Hướng làm**
 
 - Chuyển theo thứ tự: DTO/exception chung → `core/*` → bảo mật và nền tảng → nghiệp vụ Farm.
-- `SecurityConfig` vẫn chứa endpoint công khai của Farm ở phase này; C2 mới tách bằng interface. Để Farm cấu hình được, đặt tạm trong `app-farm` một cấu hình bảo mật bổ sung thay vì sửa core.
+- Endpoint công khai và hạn chế client FARMER nằm trong cấu hình bảo mật bổ sung của `app-farm`.
+  `SecurityConfig` của `dx-core` không chứa tên endpoint hay vai của Farm.
 - `ApprovalRequestService` chuyển cả khối sang `app-farm` ở C1 (đang gọi 5 repository của Farm); C2 tách khung về core.
 - Core/App: `dx-core` không import gói Farm; kiểm bằng tìm kiếm import.
 

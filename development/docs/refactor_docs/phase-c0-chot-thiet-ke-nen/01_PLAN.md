@@ -28,7 +28,7 @@ WPC0-01 → WPC0-02; WPC0-03 làm song song được.
 **Phạm vi ảnh hưởng**
 
 - Module: không.
-- File chính: `refactor/README.md`, `MODULE_MAP.md`, mục 9 của `00_OVERVIEW.md`.
+- File chính: `refactor_docs/README.md`, `MODULE_MAP.md`, mục 9 của `00_OVERVIEW.md`.
 - Endpoint, bảng DB, biến môi trường: không.
 - Role và client bị ảnh hưởng: không.
 - Tương thích ngược và dữ liệu cũ: không.

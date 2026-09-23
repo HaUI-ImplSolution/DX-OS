@@ -17,7 +17,7 @@
 |---|---|---|---|
 | Đề thi HaUI mục 4.1 | Identity/RBAC, API trung gian, dữ liệu, workflow dùng chung | Nghiêm trọng | Toàn bộ |
 | Đề thi HaUI mục 13 | "Thay đổi ứng dụng nghiệp vụ, Open-Core có phải thay đổi theo không?" | Nghiêm trọng | Toàn bộ |
-| RD3, RD10 ở `refactor/README.md` | `Workspace`, workflow cấu hình được | Nghiêm trọng | Toàn bộ |
+| RD3, RD10 ở `refactor_docs/README.md` | `Workspace`, workflow cấu hình được | Nghiêm trọng | Toàn bộ |
 
 ## 2. Lý do
 

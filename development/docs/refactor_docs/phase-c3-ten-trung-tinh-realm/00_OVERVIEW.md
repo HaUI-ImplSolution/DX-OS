@@ -15,7 +15,7 @@
 
 | Nguồn yêu cầu | Nội dung | Mức độ | Phạm vi trong phase này |
 |---|---|---|---|
-| RD4 ở `refactor/README.md` | Tên realm, client, audience trung tính | Quan trọng | Toàn bộ |
+| RD4 ở `refactor_docs/README.md` | Tên realm, client, audience trung tính | Quan trọng | Toàn bộ |
 | Đề thi HaUI mục 4.1 | Identity/SSO dùng chung cho mọi ứng dụng | Quan trọng | Toàn bộ |
 
 ## 2. Lý do

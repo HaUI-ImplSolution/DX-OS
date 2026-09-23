@@ -18,7 +18,7 @@
 | Đề thi HaUI mục 4.3 | Ứng dụng minh họa giải quyết bài toán rõ của khoa, phòng, trung tâm: quản lý yêu cầu CNTT, thiết bị, phòng học, công việc | Nghiêm trọng | Backend |
 | Đề thi HaUI mục 4.2 | H, P, D, I đều có minh chứng; I gồm RAG, tìm kiếm, phân loại, phát hiện bất thường, suy luận bằng luật | Nghiêm trọng | Toàn bộ |
 | Đề thi HaUI mục 8, 15 | Nguồn dữ liệu có gốc; sản phẩm giải quyết đúng bài toán và có dữ liệu mẫu, kịch bản demo đầu-cuối | Quan trọng | Dữ liệu mẫu và tri thức |
-| RD5, RD11 ở `refactor/README.md` | Lab web trước; ứng dụng dùng được thật, có thứ tự ưu tiên | Nghiêm trọng | Toàn bộ |
+| RD5, RD11 ở `refactor_docs/README.md` | Lab web trước; ứng dụng dùng được thật, có thứ tự ưu tiên | Nghiêm trọng | Toàn bộ |
 
 ## 2. Lý do
 

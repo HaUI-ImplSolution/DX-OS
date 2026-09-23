@@ -16,7 +16,7 @@
 | Nguồn yêu cầu | Nội dung | Mức độ | Phạm vi trong phase này |
 |---|---|---|---|
 | Đề thi HaUI mục 4.1, 12 | Open-Core tách khỏi giao diện và ứng dụng, chứng minh được | Nghiêm trọng | Ranh giới ở mức biên dịch |
-| RD1, RD2, RD8, RD9 ở `refactor/README.md` | Host + plugin, `DXOS_APP`, tên module, Flyway tách location | Nghiêm trọng | Toàn bộ |
+| RD1, RD2, RD8, RD9 ở `refactor_docs/README.md` | Host + plugin, `DXOS_APP`, tên module, Flyway tách location | Nghiêm trọng | Toàn bộ |
 
 ## 2. Lý do
 

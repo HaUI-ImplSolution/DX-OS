@@ -42,7 +42,7 @@ Không đổi code.
 | AI | Không | |
 | Data / Seed / Migration | Không | |
 | Infra / Deploy / CI | Không | |
-| Docs / PoF | Có | `refactor/` |
+| Docs / PoF | Có | `refactor_docs/` |
 
 ## 4. Phạm vi
 
@@ -59,7 +59,7 @@ Không đổi code.
 
 ## 6. Kết quả đầu ra mong đợi (Definition of Done)
 
-- Demo được: đọc `README.md` của `refactor/` là hiểu đích đến, thứ tự phase và các quyết định đã chốt.
+- Demo được: đọc `README.md` của `refactor_docs/` là hiểu đích đến, thứ tự phase và các quyết định đã chốt.
 - Sản phẩm bàn giao: `README.md`, `MODULE_MAP.md`, `SPI_CATALOG.md`, tám folder phase, bản ghi baseline.
 - Tiêu chí đo được: RD8 đến RD12 có trạng thái "Đã chốt"; mục 9 không còn câu hỏi mở.
 - Bằng chứng: `README.md` cập nhật, bản ghi baseline trong `03_TEST_PLAN.md`.
@@ -88,5 +88,5 @@ Không đổi code.
 
 ## 10. Tài liệu cần cập nhật khi xong
 
-- [x] `README.md` của `refactor/`: trạng thái quyết định RD8 đến RD12.
+- [x] `README.md` của `refactor_docs/`: trạng thái quyết định RD8 đến RD12.
 - [ ] `MODULE_MAP.md`, `SPI_CATALOG.md` khớp quyết định.

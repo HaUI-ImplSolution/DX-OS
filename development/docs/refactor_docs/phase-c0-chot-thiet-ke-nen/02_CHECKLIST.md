@@ -43,6 +43,6 @@ Kết quả đầu ra: số liệu test và OpenAPI baseline được lưu.
 ## Đóng phase
 
 - [ ] Mọi tiêu chí ở `00_OVERVIEW.md` mục 6 đã đạt và có bằng chứng.
-- [ ] `README.md` của `refactor/` có trạng thái quyết định mới nhất.
+- [ ] `README.md` của `refactor_docs/` có trạng thái quyết định mới nhất.
 - [ ] Không có secret, mật khẩu hay dữ liệu thật trong diff.
 - [ ] Cập nhật trạng thái phase ở bảng chỉ mục của `README.md`.

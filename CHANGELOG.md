@@ -3,9 +3,20 @@
 Nhật ký thay đổi của DX-Farm, theo từng module.
 Định dạng dựa trên [Keep a Changelog](https://keepachangelog.com/).
 
-## Backend (Spring Boot — `backend/DX-Farm`)
+## Backend (Spring Boot — `backend`)
 
 ### 2026-10-09
+
+**Đã xong — Backend đa module:**
+
+- Backend là bốn module Maven: `dx-core-api` (interface, DTO, lỗi), `dx-core` (identity, workflow, storage, bảo mật, nền tảng), `app-farm` (nghiệp vụ nông nghiệp) và `dx-host` (fat jar).
+  Package gốc là `HaUI.ImplSolution.dxos`.
+- `app-farm` chỉ phụ thuộc `dx-core-api` và gọi core qua `WorkflowOperations`, `WorkspaceDirectory`, `ObjectStorage`, `UserContext`.
+  `Parcel` giữ `household_id` dạng số, không còn quan hệ JPA tới nông hộ.
+- `DXOS_APP` (mặc định `farm`) chọn app chạy cùng core; giá trị không hợp lệ làm backend dừng khi khởi động.
+- Flyway có hai location: `db/migration/core` (`households`, `workflow_case`, `workflow_event`) và `db/migration/farm`, mỗi nơi một bảng lịch sử, core chạy trước.
+  Database dựng lại bằng `deploy/reset.sh`.
+- `data.sql` của Farm nằm ở `app-farm/src/main/resources/farm/data.sql` và chỉ nạp khi `DXOS_APP=farm`.
 
 **Đã xong — Seed treatment rule đã duyệt:**
 

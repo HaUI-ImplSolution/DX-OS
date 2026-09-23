@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Draft |
+| Trạng thái | Hoàn tất |
 | Mức độ | Nghiêm trọng |
 | Nhóm ưu tiên | A |
 | Ứng dụng và module chính | `dx-core-api`, `dx-core`, `app-farm`, `dx-host` |

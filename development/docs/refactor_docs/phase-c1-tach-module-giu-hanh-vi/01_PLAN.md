@@ -56,7 +56,7 @@ WPC1-05 (migration) làm song song với WPC1-03 sau khi WPC1-01 xong.
 | Farm tra nông hộ | Dùng `HouseholdRepository`, entity `Household` | Gọi `WorkspaceDirectory`, nhận `WorkspaceView` |
 | Farm lưu ảnh | Dùng `StorageService` (lộ client MinIO) | Gọi `ObjectStorage` (lưu, đọc, link có hạn, kiểm tra sẵn sàng) |
 | Farm biết người đăng nhập | `CurrentUserService` | `UserContext` |
-| Farm gửi thông báo | `NotificationService.notifyHousehold*` | `NotificationPublisher` |
+| Farm gửi thông báo | `NotificationService.notifyHousehold*` nhận entity `Household` | `NotificationService` ở `app-farm` nhận id nông hộ và tra người nhận qua `WorkspaceDirectory`; `NotificationPublisher` thêm ở C2 |
 | Handler duyệt | `onDecision(WorkflowCase, ...)` | `onDecision(CaseView, ...)` |
 
 **Hướng làm**
@@ -64,6 +64,8 @@ WPC1-05 (migration) làm song song với WPC1-03 sau khi WPC1-01 xong.
 - Chỉ đưa vào `dx-core-api` những gì Farm đang dùng thật: `Household` 10 chỗ, `WorkflowStatus` 9, `WorkflowService` 6, `WorkflowCase` 6, `StorageService` 6, `WorkflowActor` 4, `WorkflowDecisionHandler` 3.
 - `ApiResponse`, `PageResponse`, `WorkflowStatus`, `WorkflowAction`, các exception dùng chung chuyển sang `dx-core-api`.
 - Interface mở rộng khác (`RoleProvider`, `BiDatasetProvider`...) chưa tạo ở phase này; thêm ở C2 khi có người cài.
+- Nhóm Notification, `AiDiagnosisClient`, `KnowledgeService`, `SystemStatusService`, `PendingRequestLimiter`, `MattermostWebhookClient` ở `app-farm` cho tới C2; `NotificationPublisher`, `KnowledgeGateway`, `AiGateway` thêm ở C2.
+- Nhóm hạ tầng dùng chung chưa có người cài khác được chạy qua kiểu có sẵn của Spring: `SecurityConfig` nhận `Customizer` của app để thêm endpoint công khai và bộ lọc; C2 thay bằng interface.
 - Core/App: entity của core không lộ ra.
 
 **Phạm vi ảnh hưởng**

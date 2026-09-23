@@ -30,7 +30,7 @@ Hướng dẫn đầy đủ ở [`README.md`](./README.md).
 
 | Phần | Kiểm tra |
 |---|---|
-| Backend (`backend/DX-Farm`) | `./mvnw formatter:validate` và `./mvnw verify` (cần Docker cho Testcontainers) |
+| Backend (`backend`) | `./mvnw formatter:validate` và `./mvnw verify` (cần Docker cho Testcontainers) |
 | AI (`ai`) | `pytest` |
 | Web (`frontend`) | `npx tsc --noEmit` |
 | Mobile (`mobile`) | `npx tsc --noEmit` |
@@ -56,11 +56,12 @@ Dữ liệu thuốc, treatment rule và policy chỉ được seed khi có quy�
 
 ## Thêm một quy trình hoặc ứng dụng mới
 
-DX-Farm tách Core dùng chung (`core.identity`, `core.workflow`, `core.storage`, gateway) khỏi ứng dụng.
+Backend gồm `dx-core-api` (interface và DTO), `dx-core` (dịch vụ dùng chung), `app-farm` (nghiệp vụ nông nghiệp) và `dx-host` (chạy được, chọn app bằng `DXOS_APP`).
+Ứng dụng chỉ phụ thuộc `dx-core-api`; core không biết ứng dụng nào đang chạy.
 Để thêm quy trình mới:
 
-1. Tạo package ứng dụng mới bên cạnh `controller`/`service` hiện có, không sửa `core`.
-2. Đăng ký loại yêu cầu mới với `core.workflow` (`caseType`, `entityType`) để có sẵn lịch sử, người phụ trách và danh sách việc chờ.
+1. Thêm package vào module của ứng dụng (`app-farm`), không sửa `dx-core`.
+2. Đăng ký loại yêu cầu mới qua `WorkflowOperations` (`caseType`, `entityType`) để có sẵn lịch sử, người phụ trách và danh sách việc chờ.
 3. Khai báo route mới trong `deploy/apisix/apisix.yaml` nếu cần giới hạn tốc độ.
 4. Thêm view `vw_*` và dataset Superset nếu cần báo cáo.
 

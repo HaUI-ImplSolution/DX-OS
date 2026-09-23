@@ -14,18 +14,18 @@ Không thêm file test mới; test hiện có đi theo module chứa code đư�
 
 | ID | WP | Loại | Mô tả và bước | Kết quả mong đợi | Người chạy | Kết quả |
 |---|---|---|---|---|---|---|
-| TC1-01 | WPC1-01 | Happy path | `./mvnw compile` ở `backend/` | Cả bốn module đạt | | |
-| TC1-02 | WPC1-02 | Ranh giới | Tìm import gói `dx-core` hoặc `core.` trong `app-farm` | Không có; chỉ import `dx-core-api` | | |
-| TC1-03 | WPC1-03 | Ranh giới | Tìm import gói Farm trong `dx-core-api` và `dx-core` | Không có | | |
-| TC1-04 | WPC1-04 | Happy path | Khởi động `dx-host` với `DXOS_APP=farm` | Lên đủ, `/actuator/health` UP | | |
-| TC1-05 | WPC1-04 | Âm tính | Khởi động với `DXOS_APP=abc` | Dừng khi khởi động, thông báo nêu giá trị hợp lệ | | |
-| TC1-06 | WPC1-05 | Dữ liệu | Dựng DB trống, so schema cuối với baseline | Cùng bảng, cột, ràng buộc, view | | |
-| TC1-07 | WPC1-06 | Tài liệu | Tìm `backend/DX-Farm` trong repo | Không còn | | |
-| TC1-08 | WPC1-03 | Hồi quy API | So `/v3/api-docs` với baseline ở C0 | Không khác ngoài thông tin đóng gói | | |
-| TC1-09 | WPC1-03 | Hồi quy | `./mvnw verify` ở `backend/` | Số test bằng baseline trừ các test bỏ có chủ đích (`HouseholdMigrationTest`, `WorkflowMigrationTest`); không bỏ qua | | |
-| TC1-10 | WPC1-03 | Hồi quy | E2E hiện có chạy với `DXOS_APP=farm` | 10/10 bước đạt | | |
-| TC1-11 | WPC1-05 | Dữ liệu | `python data/scripts/generate_seed_sql.py --check` và unit test của generator | Đạt với đường dẫn `data.sql` mới | | |
-| TC1-12 | WPC1-05 | Dữ liệu | Khởi động `DXOS_APP=farm`, rồi xem seed | `data.sql` được nạp một lần; treatment rule đạo ôn và khô vằn có trong DB | | |
+| TC1-01 | WPC1-01 | Happy path | `./mvnw compile` ở `backend/` | Cả bốn module đạt | Claude (09/10/2026) | Đạt |
+| TC1-02 | WPC1-02 | Ranh giới | Tìm import gói `dx-core` hoặc `core.` trong `app-farm` | Không có; chỉ import `dx-core-api` | Claude (09/10/2026) | Đạt |
+| TC1-03 | WPC1-03 | Ranh giới | Tìm import gói Farm trong `dx-core-api` và `dx-core` | Không có | Claude (09/10/2026) | Đạt |
+| TC1-04 | WPC1-04 | Happy path | Khởi động `dx-host` với `DXOS_APP=farm` | Lên đủ, `/actuator/health` UP | Claude (09/10/2026) | Đạt |
+| TC1-05 | WPC1-04 | Âm tính | Khởi động với `DXOS_APP=abc` | Dừng khi khởi động, thông báo nêu giá trị hợp lệ | Claude (09/10/2026) | Đạt |
+| TC1-06 | WPC1-05 | Dữ liệu | Dựng DB trống, so schema cuối với baseline | Cùng bảng, cột, ràng buộc, view | Claude (09/10/2026) | Đạt |
+| TC1-07 | WPC1-06 | Tài liệu | Tìm `backend/DX-Farm` trong repo | Không còn | Claude (09/10/2026) | Đạt |
+| TC1-08 | WPC1-03 | Hồi quy API | So `/v3/api-docs` với baseline ở C0 | Không khác ngoài thông tin đóng gói | Claude (09/10/2026) | Đạt |
+| TC1-09 | WPC1-03 | Hồi quy | `./mvnw verify` ở `backend/` | 76 test (10 `dx-core`, 20 `app-farm`, 46 `dx-host`); baseline 80 trừ 4 test của `HouseholdMigrationTest`, `WorkflowMigrationTest` bỏ có chủ đích; không bỏ qua | Claude (09/10/2026) | Đạt |
+| TC1-10 | WPC1-03 | Hồi quy | E2E hiện có chạy với `DXOS_APP=farm` | 10/10 bước đạt | Claude (09/10/2026) | Đạt |
+| TC1-11 | WPC1-05 | Dữ liệu | `python data/scripts/generate_seed_sql.py --check` và unit test của generator | Đạt với đường dẫn `data.sql` mới | Claude (09/10/2026) | Đạt |
+| TC1-12 | WPC1-05 | Dữ liệu | Khởi động `DXOS_APP=farm`, rồi xem seed | `data.sql` được nạp một lần; treatment rule đạo ôn và khô vằn có trong DB | Claude (09/10/2026) | Đạt |
 
 ## 3. Hồi quy (không được hỏng)
 
@@ -54,5 +54,10 @@ Không thêm file test mới; test hiện có đi theo module chứa code đư�
 
 ## 5. Bằng chứng và báo lỗi
 
-- Bằng chứng: kết quả compile, kết quả tìm import, diff OpenAPI, log test và E2E lưu ở {đường dẫn}.
+- Bằng chứng (09/10/2026, stack dựng sạch bằng `deploy/reset.sh --yes`):
+  - `./mvnw clean verify`: 76 test đạt.
+  - E2E `--require-rule`: 10/10 bước đạt; log backend không có lỗi.
+  - `/v3/api-docs`: 50 path, không khác `openapi-baseline.json` ở C0 (đường dẫn, schema, info).
+  - Schema: giống schema dựng từ migration cũ, chỉ khác bảng lịch sử Flyway thứ hai và quyền do seeder cấp lúc chạy.
+  - Image backend với `DXOS_APP=abc`: dừng với thông báo `DXOS_APP must be one of [farm] but was 'abc'`.
 - Lỗi phát hiện: tạo issue, ghi mã vào cột "Kết quả" (ví dụ `Fail #123`).

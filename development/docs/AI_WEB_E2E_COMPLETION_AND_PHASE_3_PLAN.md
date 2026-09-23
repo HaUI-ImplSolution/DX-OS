@@ -1,474 +1,295 @@
-# Kế hoạch hoàn thiện AI Web E2E và Giai đoạn 3
+# Kế hoạch hoàn thiện AI Web E2E và chuẩn bị Giai đoạn 3
 
-> **Trạng thái:** Backlog triển khai, chưa bắt đầu.
+> **Trạng thái:** Backlog nâng cấp, chưa bắt đầu.
 >
 > **Cập nhật:** 23/09/2026.
 >
-> **Phạm vi:** Hoàn thiện các giới hạn được liệt kê trong [AI Web E2E Demo](AI_WEB_E2E_DEMO_README.md), sau đó thực hiện ba hạng mục Giai đoạn 3 trong [README gốc](../../README.md). Tài liệu này thay thế kế hoạch cũ và không còn là kế hoạch về data/database.
+> **Nguồn trạng thái hiện tại:** [AI Web E2E Demo](AI_WEB_E2E_DEMO_README.md).
+>
+> **Phạm vi:** Hoàn thiện các pain point còn lại của luồng AI Web E2E, sau đó chuẩn bị ba hạng mục Giai đoạn 3 trong [README gốc](../../README.md). Đây không phải kế hoạch data/database.
 
-## 1. Mục tiêu và nguyên tắc
+## 1. Phạm vi và giả định tạm thời
 
-Mục tiêu là chuyển luồng demo đồng bộ thành luồng có thể vận hành, kiểm tra và mở rộng an toàn.
+Checklist này dùng tên **Nâng cấp A–C** để không nhầm với Giai đoạn 0–3 của README tổng.
 
-~~~mermaid
-flowchart LR
-    F[Farmer gửi ảnh] --> B[Backend tạo Diagnosis Job]
-    B --> Q[Queue và worker]
-    Q --> A[AI: CV, facts, RAG, diễn đạt]
-    A --> R[Backend kiểm tra policy và rule]
-    R --> H[Diagnosis chờ kỹ sư duyệt]
-    H --> T[Ghi nhận xử lý]
-    T -. Giai đoạn 3 .-> I[Xác nhận IoT]
-~~~
+Trong lượt nâng cấp này:
 
-- Backend là nơi duy nhất quyết định trạng thái nghiệp vụ, policy điều trị, duyệt/từ chối và ghi nhận xử lý. AI chỉ suy luận và diễn đạt dựa trên input được cấp.
-- LLM hoặc agent không được tự đặt thuốc, liều, PHI, tự duyệt diagnosis, hoặc điều khiển thiết bị. Xác nhận IoT là xác nhận một sự kiện đã xảy ra, không phải lệnh tự động phun.
-- Mỗi kết quả có tác động nghiệp vụ phải truy được request, phiên bản model/policy/rule, evidence và thời lượng từng bước.
-- Giai đoạn 3 chỉ bắt đầu sau khi các gate Giai đoạn 0–2 đạt ở staging. Không dùng GraphRAG hoặc multi-agent để che vấn đề chưa giải quyết của pipeline cơ bản.
-- Treatment rule hiện tại vẫn chỉ là demo/MVP. Không bỏ nhãn demo hoặc dùng như khuyến cáo thực tế trước khi có phê duyệt chuyên môn độc lập.
+- Không thiết kế lại database, không thêm migration framework và không backfill dữ liệu cũ.
+- Không thay corpus RAG, seed, schema `documents`/`document_chunks` hoặc schema nghiệp vụ hiện tại.
+- Nếu một task cần dữ liệu chưa có, task phải dùng fixture/simulator nhỏ, ghi rõ giả định và không trình bày kết quả giả định như dữ liệu thực tế.
+- Mọi schema persistence mới như `DiagnosisJob`, `DiagnosisRun`, policy, telemetry hoặc IoT event store được hoãn đến khi hai bên chốt riêng kế hoạch data.
+- Database sạch, 38 disease, 4 pesticide, 8 treatment rule và corpus local hiện tại được xem là baseline demo, không phải dữ liệu production hay khuyến cáo chuyên môn.
+- Hệ thống vẫn là single-instance demo. Chưa cam kết job sống qua restart, audit dài hạn hoặc vận hành production.
 
-Ngoài phạm vi: tái cấu trúc kho dữ liệu/database, thay thuật toán CV, tự động điều khiển bơm/van/phun và phát hành production. Schema/API bổ sung chỉ phục vụ job, audit, policy, IoT và vận hành luồng này.
+Các giả định trên phải được nhắc lại trong PR/README của task có sử dụng chúng.
 
-## 2. Cơ sở lập kế hoạch
+## 2. Bất biến không được phá vỡ
 
-| Khoảng trống | Dấu hiệu đã xác nhận | Hướng xử lý | Giai đoạn |
-|---|---|---|---|
-| Request AI giữ HTTP đến 120 giây | Endpoint diagnosis AI gọi service đồng bộ và trả 201 | Job nền, polling, idempotency | 1 |
-| Rớt mạng làm UX không rõ kết quả | UI chỉ chờ promise; reload mới có thể thấy diagnosis | Job truy vấn được theo report; UI tự khôi phục | 1 |
-| Chỉ có spinner tĩnh | DiagnosisPanel không biết bước AI hiện tại | Milestone có ý nghĩa, polling/backoff, lỗi có thể hành động | 1 |
-| Không audit/replay được | AI có request ID, evidence; graph có timings; Diagnosis chỉ lưu summary/model | Lưu immutable run, provenance, timing, policy snapshot | 2 |
-| Chưa có DiseaseManagementPolicy; rule đầu tiên được chọn | Rule được sắp theo ID và AI lấy phần tử đầu | Backend resolver chọn policy/rule xác định theo ngữ cảnh | 2 |
-| Threshold CV chưa chặn nghiệp vụ | Có cấu hình threshold và cờ low confidence, nhưng pipeline vẫn tiếp tục treatment path | Low-confidence/image-quality path chặn đề xuất hóa chất | 2 |
-| Upload chỉ bị chặn sau khi gửi | Frontend chỉ nhận image wildcard; Backend/AI giới hạn 10 MiB | Browser preflight, server vẫn quyết định cuối | 0 |
-| Chưa benchmark, secret chỉ local | Được ghi rõ trong AI Web E2E Demo | Baseline, recovery test, secret theo môi trường | 0–2 |
-| Hạng mục chiều sâu | README mục Giai đoạn 3: Carbon/AWD, GraphRAG/multi-agent, xác nhận phun từ IoT | Ba workstream sau gate | 3 |
+- Backend là nguồn sự thật duy nhất cho dữ liệu nghiệp vụ, treatment rule, PHI, phê duyệt và ghi nhận xử lý.
+- AI stateless, không có credential vào Backend DB và chỉ gọi internal REST API chỉ đọc.
+- RAG chỉ cung cấp evidence để giải thích; thuốc, liều, PHI và policy không được lấy từ RAG hoặc do LLM/agent tự tạo.
+- Mọi khuyến nghị hóa chất phải qua ENGINEER hoặc ADMIN; FARMER không được gọi endpoint chẩn đoán/quyết định.
+- Low confidence, thiếu rule, nhiều rule chưa có tiêu chí chọn hoặc dữ kiện không đủ phải đi vào review; không được chọn đại rule đầu tiên.
+- IoT chỉ xác nhận sự kiện đã xảy ra, không điều khiển bơm, van hoặc thiết bị phun.
+- Mọi dependency/image/model mới phải có license OSI-approved và được cập nhật vào `LICENSES.md` trước khi merge.
+- Mã nguồn tự viết mới phải giữ Apache-2.0/SPDX theo quy định OLP 2026 của repo.
 
-## 3. Cách dùng backlog này
+## 3. Baseline đã hoàn thành — không làm lại
 
-Mỗi mục T là một task có thể giao cho một phiên làm việc. Không đánh dấu xong chỉ vì mã đã viết: chỉ đánh dấu khi checklist hoàn tất, test qua và PR được review.
+Các mục dưới đây là trạng thái đã có và chỉ cần giữ bằng regression test:
 
-| Ký hiệu | Ý nghĩa |
-|---|---|
-| [ ] | Chưa bắt đầu |
-| [~] | Đang làm; thêm link PR/issue và người phụ trách sau ký hiệu |
-| [x] | Đã xong; thêm link bằng chứng kiểm tra |
-| Gate | Điểm dừng bắt buộc trước khi làm nhóm task phía sau |
+- [x] Docker Compose dựng được Frontend, Backend, AI, PostgreSQL/pgvector, Ollama, Keycloak, Superset, Mattermost và portal.
+- [x] FARMER tạo thửa, vụ mùa và báo cáo ảnh; ENGINEER/ADMIN chạy diagnosis, duyệt/từ chối và ghi nhận xử lý.
+- [x] Backend gọi `POST /api/v1/diagnose`; AI gọi `GET /internal/v1/diagnosis-context` bằng service API key.
+- [x] AI chạy CV → Backend structured facts → semantic RAG → Ollama và trả recommendation stateless.
+- [x] Backend xác minh `rule_id`/version, lưu `Diagnosis` ở `PENDING` và chặn apply khi không có rule.
+- [x] Liều ngoài khoảng bị Backend chặn; liều hợp lệ tạo `TreatmentApplication` và khóa thu hoạch theo PHI.
+- [x] Backend DB và AI Vector DB đã tách quyền; AI runtime chỉ đọc vector DB, job ingest dùng credential riêng.
+- [x] RAG ingest hiện tại tạo 38 documents, 270 chunks/embeddings trên database sạch.
+- [x] Nhánh có rule và `review_required` không có rule đều đã chạy E2E với ba role.
+- [x] Docker healthcheck, Backend test/formatter và hai AI contract self-check đã pass ở baseline.
 
-Khi bắt đầu một task, tạo issue theo mẫu: mục tiêu, phạm vi file/module, API/schema ảnh hưởng, người phụ trách, rủi ro, checklist bên dưới và bằng chứng bàn giao. Một task không được mở rộng sang task kế tiếp nếu chưa qua Gate của nó.
+Không mở task để viết lại các phần trên nếu không có regression hoặc yêu cầu contract mới cụ thể.
 
-## 4. Backlog Giai đoạn 0 — Chuẩn bị để triển khai
+## 4. Pain point còn lại
 
-**Mục tiêu giai đoạn:** chốt contract và có baseline đo được. Giai đoạn này chưa thay đổi flow diagnosis thành async.
+| Pain point hiện tại | Xử lý trong checklist | Trạng thái |
+|---|---|---|
+| Frontend chưa preflight file, chỉ có `accept="image/*"` | A1 | Làm ngay |
+| Low-confidence chỉ là cờ nội bộ, vẫn có thể đi vào treatment path | A2 | Làm ngay |
+| AI chọn rule đầu tiên khi Backend trả nhiều rule | A3 | Làm ngay theo fail-safe |
+| Request AI đồng bộ có thể giữ HTTP tới 120 giây | A4 giảm tác động; async durable hoãn | Có giả định |
+| Rớt mạng có thể khiến UI không biết diagnosis đã được lưu | A4 refetch trạng thái từ Backend | Làm ngay |
+| Chưa có correlation/log và benchmark lặp lại được | B1, B2 | Làm ngay |
+| Chưa lưu audit/replay bền vững | Hoãn vì cần persistence/schema | Deferred |
+| Chưa có DiseaseManagementPolicy đầy đủ | Dùng rule hiện tại; trường hợp mơ hồ trả review | Có giả định |
+| M8 chưa chứng minh citation từ bộ tài liệu VietGAP/IRRI đã duyệt | C1 | Chưa làm |
+| License AI/model và dependency mới chưa được khóa đầy đủ | B3 | Bắt buộc trước Gate B |
+| Carbon/AWD, GraphRAG/multi-agent, IoT confirmation | C2–C4 | Chỉ mở sau Gate B |
 
-### T0.1 — Chốt thiết kế diagnosis job
+## 5. Nâng cấp A — An toàn và UX trên luồng hiện tại
 
-**Mục đích:** biến yêu cầu async thành contract cụ thể trước khi viết migration hoặc worker.
+### A1 — Upload preflight phía Frontend
 
-**Công việc cần làm**
+**Công việc**
 
-- Chọn queue/worker có durable job, retry, lease và khả năng quan sát; không dùng background thread chỉ sống trong web process.
-- Chốt state machine: QUEUED, RUNNING, SUCCEEDED, FAILED_RETRYABLE, FAILED_FINAL và CANCELLED.
-- Chốt semantics cho Idempotency-Key, cùng key trả cùng job; mỗi report chỉ có một job active.
-- Chốt retry matrix, lease timeout, số attempt, backoff, người có quyền retry/cancel và cách rollout/rollback.
-- Viết OpenAPI cho tạo job, đọc job, progress, error và status terminal.
+- Kiểm tra file tồn tại, không rỗng, MIME/extension được phép và tối đa 10 MiB trước khi gọi API.
+- Hiển thị preview, tên, dung lượng và cho phép thay/xóa ảnh.
+- Giữ validation 10 MiB ở Backend và AI làm lớp quyết định cuối; không tin validation client.
 
-**Đầu ra bàn giao:** ADR được duyệt và file OpenAPI/contract version đầu tiên.
+**Hoàn thành khi**
 
-**Checklist hoàn tất**
-
-- [ ] ADR trả lời công nghệ queue/worker, ownership vận hành, lease và recovery sau restart.
-- [ ] Contract nêu rõ request/response HTTP status, Idempotency-Key, error code và authorization.
-- [ ] Có sơ đồ state transition; mỗi transition có actor và điều kiện hợp lệ.
-- [ ] Retry matrix phân biệt lỗi tạm thời với ảnh, contract, policy hoặc input không hợp lệ.
-- [ ] Có kế hoạch feature flag, migration compatible ngược và rollback ở staging.
-- [ ] Lead hoặc reviewer kỹ thuật phê duyệt ADR/contract.
-
-### T0.2 — Cải thiện upload và thông điệp low confidence
-
-**Mục đích:** chặn lỗi người dùng có thể tự sửa trước upload và chuẩn bị UI cho path an toàn.
-
-**Công việc cần làm**
-
-- Thêm preflight trong DiseaseReportPanel: file tồn tại, loại file whitelist, dung lượng tối đa 10 MiB.
-- Hiển thị preview, tên/dung lượng và thao tác xoá file đã chọn.
-- Thống nhất constants/config giới hạn upload với Backend và AI; server vẫn validate ảnh thật.
-- Thiết kế trạng thái LOW_CONFIDENCE_REVIEW: giải thích rõ không phải kết luận, không có khuyến nghị hóa chất, cách chụp lại hoặc gọi kỹ sư.
-
-**Đầu ra bàn giao:** PR frontend, test component và ảnh/recording các trạng thái upload/error.
-
-**Checklist hoàn tất**
-
-- [ ] File quá 10 MiB không gọi API và có thông báo tiếng Việt.
-- [ ] MIME/extension sai, file rỗng và preview không render đều có lỗi dễ hiểu.
-- [ ] Người dùng có thể thay/xoá ảnh trước khi submit.
-- [ ] UI không chỉ dùng màu để báo lỗi; focus và aria-live hoạt động.
-- [ ] Backend/AI test vẫn chặn ảnh giả hoặc vượt giới hạn dù client bị bypass.
+- [ ] File sai loại, rỗng hoặc quá 10 MiB không gọi API và có thông báo tiếng Việt.
+- [ ] Lỗi có focus/`aria-live`, không chỉ biểu diễn bằng màu.
+- [ ] Bypass Frontend vẫn bị Backend/AI từ chối.
 - [ ] Frontend build và test liên quan pass.
 
-### T0.3 — Baseline performance và khả năng quan sát
+### A2 — Low-confidence trở thành safety gate thật
 
-**Mục đích:** có số liệu trước khi đổi kiến trúc, tránh dùng cảm nhận để đánh giá async/GraphRAG sau này.
+**Giả định:** chưa thêm bảng policy/threshold. Threshold dùng config hiện tại, phải xuất hiện trong log/response để truy vết trong phạm vi một lần chạy.
 
-**Công việc cần làm**
+**Công việc**
 
-- Viết runbook benchmark: cấu hình máy, CPU/RAM/GPU, version image/model, tập ảnh demo và cách đo cold/warm.
-- Thêm request ID/correlation ID xuyên Backend và AI; không log secret, ảnh hoặc evidence đầy đủ.
-- Đo end-to-end và từng bước CV, facts, RAG, LLM tại concurrency 1, 2, 4, 8.
-- Tạo health/readiness riêng cho Backend, AI, Ollama và RAG để biết model/index đã dùng được hay chưa.
+- Chốt contract `LOW_CONFIDENCE_REVIEW` giữa AI và Backend.
+- Khi confidence dưới threshold, AI không chọn chemical rule; Backend kiểm tra lại và chặn apply.
+- UI nói rõ đây không phải kết luận chắc chắn và hướng dẫn chụp lại/gọi kỹ sư.
+- Đánh giá tối thiểu ảnh mờ, tối, không phải lá hoặc ngoài phân phối; trường hợp không chắc chắn luôn đi review.
 
-**Đầu ra bàn giao:** benchmark report, dashboard/log mẫu và smoke-test report.
+**Hoàn thành khi**
 
-**Checklist hoàn tất**
+- [ ] Có test ngay dưới, bằng và trên threshold.
+- [ ] Low confidence không có `selected_rule_id` và không thể tạo `TreatmentApplication`.
+- [ ] ENGINEER vẫn xem được CV result/evidence để đánh giá, nhưng UI không trình bày như kết luận chắc chắn.
+- [ ] Threshold và model version xuất hiện trong bằng chứng test.
 
-- [ ] Runbook có thể để người khác lặp lại mà không đoán cấu hình.
-- [ ] Report có p50/p95/p99, throughput, error rate, CPU/RAM/VRAM và cold/warm.
-- [ ] Một request có thể trace được qua Backend và AI bằng correlation ID.
-- [ ] Smoke test có các lỗi: AI unavailable, LLM timeout, RAG unavailable, ảnh hỏng và low confidence.
-- [ ] Không có secret hoặc nội dung ảnh/evidence nhạy cảm trong log mẫu.
+### A3 — Bỏ chọn rule đầu tiên
 
-**Gate 0:** T0.1, T0.2 và T0.3 hoàn tất. Contract được review, baseline có thể lặp lại và luồng E2E cũ vẫn pass.
+**Giả định:** chưa có DiseaseManagementPolicy, priority, effective time hoặc dữ liệu chuyên môn đủ để xếp hạng nhiều rule.
 
-## 5. Backlog Giai đoạn 1 — Diagnosis chạy nền và UX có thể khôi phục
+**Cách tạm thời an toàn**
 
-**Mục tiêu giai đoạn:** click chạy AI trả ngay, reload/rớt mạng không mất kết quả, và không có diagnosis trùng.
+- Không bịa priority và không chọn theo ID.
+- Một rule hợp lệ duy nhất có thể đi `treatment`.
+- Không có rule hoặc có nhiều rule nhưng thiếu tiêu chí deterministic phải trả `REVIEW_REQUIRED`; Backend chặn apply tự động.
 
-### T1.1 — Backend job API và persistence
+**Hoàn thành khi**
 
-**Mục đích:** tạo job bền vững và API status trước khi nối worker.
+- [ ] Không còn `actions[0]` hoặc logic tương đương để quyết định treatment.
+- [ ] Có test cho 0, 1 và nhiều rule.
+- [ ] AI không tự tạo thuốc/liều/PHI để giải quyết trường hợp mơ hồ.
+- [ ] Backend là final validator cho path và rule.
 
-**Công việc cần làm**
+### A4 — Khôi phục UI khi request chậm hoặc rớt mạng
 
-- Thêm entity/migration DiagnosisJob và attempt/lease tối thiểu.
-- Thay endpoint tạo diagnosis AI sang tạo job và trả 202 Accepted.
-- Thêm endpoint đọc job theo report, gồm progress, lỗi đã sanitize và diagnosis ID khi thành công.
-- Enforce unique job active/report và Idempotency-Key bằng database constraint + transaction.
+**Giả định:** vẫn giữ HTTP đồng bộ và timeout hiện tại; không tạo queue, worker hoặc bảng `DiagnosisJob` trong lượt này.
 
-**Đầu ra bàn giao:** migration, DTO/controller/service, OpenAPI cập nhật và integration tests.
+**Công việc**
 
-**Checklist hoàn tất**
+- Sau timeout/network error, Frontend refetch report để phát hiện diagnosis đã được Backend lưu.
+- Chặn double-click và thao tác cạnh tranh trong lúc request đang chạy.
+- Hiển thị bước mô tả thật (`đang gửi`, `đang chẩn đoán`, `đang kiểm tra kết quả`), không hiển thị phần trăm giả.
+- Ghi rõ giới hạn: Backend/AI restart giữa request vẫn có thể làm mất lượt chạy; async durable là task sau khi chốt data.
 
-- [ ] ENGINEER/ADMIN tạo job được; FARMER vẫn bị chặn.
-- [ ] Cùng Idempotency-Key trả lại cùng job, không tạo record mới.
-- [ ] Double-click/hai tab chỉ tạo một active job.
-- [ ] Nếu diagnosis đã tồn tại, API trả trạng thái/kết quả hiện có, không tạo diagnosis thứ hai.
-- [ ] Response không lộ stack trace, API key hay URL nội bộ.
-- [ ] Migration chạy được trên database sạch và môi trường nâng cấp.
+**Hoàn thành khi**
 
-### T1.2 — Worker, retry và recovery
+- [ ] Request thành công cập nhật diagnosis như hiện tại.
+- [ ] Request rớt sau khi Backend đã lưu vẫn tự tìm lại diagnosis qua refetch.
+- [ ] Double-click không tạo hai diagnosis.
+- [ ] UI có thông báo hành động tiếp theo khi AI unavailable/timeout.
+- [ ] E2E ba role hiện tại vẫn pass.
 
-**Mục đích:** chuyển orchestration AI ra khỏi request thread và bảo đảm job không bị kẹt/mất.
+**Gate A:** A1–A4 hoàn tất; low confidence và nhiều rule không thể đi nhầm vào chemical apply; luồng E2E hiện tại không regression.
 
-**Công việc cần làm**
+## 6. Nâng cấp B — Đo được, kiểm tra được và đủ điều kiện OLP
 
-- Tách phần gọi AI hiện có thành handler worker, vẫn giữ validation contract/rule trước persist.
-- Implement publish, consume, atomic lease, lease renewal, concurrency limit và reconciliation job quá hạn lease.
-- Implement retry backoff + jitter theo retry matrix; ghi attempt và lý do retry.
-- Cập nhật milestone sau các bước: fetch ảnh, CV, facts, RAG, generation, persist.
+### B1 — Correlation và observability không thêm persistence
 
-**Đầu ra bàn giao:** worker chạy được ở staging, retry/recovery tests và runbook xử lý failed job.
+**Giả định:** log chỉ phục vụ phiên demo; chưa phải audit store dài hạn.
 
-**Checklist hoàn tất**
+- Truyền một correlation/request ID xuyên Backend → AI → Backend internal facts.
+- Log milestone và timing CV, facts, RAG, LLM, persist; không log secret, ảnh hoặc toàn bộ evidence.
+- Tách health/readiness để biết Backend, CV model, Ollama và RAG index đã sẵn sàng.
 
-- [ ] Worker không tạo diagnosis trùng khi nhận message trễ hoặc chạy lại sau crash.
-- [ ] Worker restart giữa inference và persist không mất job, không apply treatment.
-- [ ] Lỗi input/contract/policy thành FAILED_FINAL; lỗi hạ tầng retry đúng giới hạn.
-- [ ] Job hết lease được nhận lại hoặc chuyển failure có lý do rõ ràng.
-- [ ] RAG fallback được gắn cờ trong status/audit, không bị xem là evidence đầy đủ.
-- [ ] Có metric queue depth, queue age, active worker, retry và dead-letter/final failure.
+**Hoàn thành khi**
 
-### T1.3 — Polling, resume và progress frontend
+- [ ] Một request tìm được xuyên hai service bằng cùng correlation ID.
+- [ ] Log có timing theo bước và error code đã sanitize.
+- [ ] Readiness fail đúng khi model/index/dependency bắt buộc chưa sẵn sàng.
+- [ ] Không có secret hoặc dữ liệu nhạy cảm trong log mẫu.
 
-**Mục đích:** người dùng hiểu hệ thống đang làm gì và luôn tìm lại được kết quả từ server.
+### B2 — Baseline và regression có thể lặp lại
 
-**Công việc cần làm**
+- Viết runbook cấu hình máy, image/model version, tập ảnh demo và cách đo cold/warm.
+- Đo concurrency 1, 2, 4; chỉ tăng lên 8 nếu tài nguyên máy cho phép.
+- Test AI unavailable, LLM timeout, RAG unavailable, ảnh hỏng, low confidence, 0/1/nhiều rule.
+- Giữ E2E FARMER → ENGINEER/ADMIN → approve/reject/apply làm smoke test chuẩn.
 
-- Đổi API client nhận DiagnosisJob thay vì chờ Diagnosis.
-- Khi mở report, đọc diagnosis/job mới nhất từ server.
-- Poll có backoff, dừng khi unmount/tab ẩn, resume khi quay lại.
-- Hiển thị timeline milestone, elapsed time, trạng thái chờ queue và action theo lỗi.
+**Hoàn thành khi**
 
-**Đầu ra bàn giao:** PR frontend và E2E recording của submit, reload, success, failure, retry.
+- [ ] Report có p50/p95, throughput, error rate, CPU/RAM và cold/warm.
+- [ ] Người khác chạy lại được bằng runbook mà không đoán cấu hình.
+- [ ] Contract self-check, Backend test, Frontend build và Compose smoke pass.
+- [ ] Kết quả benchmark không được diễn giải thành SLO production.
 
-**Checklist hoàn tất**
+### B3 — License và hồ sơ nguồn mở
 
-- [ ] Reload trong lúc RUNNING tiếp tục hiển thị đúng job.
-- [ ] SUCCEEDED tự tải diagnosis, không yêu cầu chạy lại.
-- [ ] FAILED hiển thị action đúng: retry, đổi ảnh hoặc liên hệ kỹ sư/vận hành.
-- [ ] Không có polling leak khi đổi report hoặc unmount.
-- [ ] Nút AI/manual không tạo thao tác cạnh tranh khi job active.
-- [ ] Progress không hiển thị phần trăm giả và có aria-live.
+- Rà toàn bộ dependency Python/model checkpoint của AI đang thực sự chạy.
+- Mọi queue, GraphRAG, telemetry, benchmark hoặc observability dependency dự kiến thêm phải được kiểm tra OSI trước khi chọn.
+- Cập nhật `LICENSES.md`, attribution/model source và SPDX của file tự viết mới.
+- Không dùng dependency source-available/non-OSI để “thử tạm” trong stack nộp thi.
 
-### T1.4 — Kiểm thử luồng async và rollout staging
+**Hoàn thành khi**
 
-**Mục đích:** xác minh flow mới chịu được các race/failure thực tế trước khi bật mặc định.
+- [ ] AI dependencies và model có nguồn/license rõ ràng trong `LICENSES.md`.
+- [ ] Dependency mới đều OSI-approved và build/cài được từ source theo yêu cầu repo.
+- [ ] Không còn mục “AI Service chưa rà” trong `LICENSES.md`.
+- [ ] License/secret scan pass trước khi merge.
 
-**Checklist hoàn tất**
+**Gate B:** Gate A, B1–B3 hoàn tất; baseline lặp lại được, failure path có bằng chứng và toàn bộ stack dự kiến dùng cho bước tiếp theo đạt điều kiện license OLP.
 
-- [ ] Unit tests cho state transition, idempotency, retry classification, lease expiry và authorization.
-- [ ] Integration tests cho double-click, hai tab, retry mạng, diagnosis đã tồn tại, worker crash.
-- [ ] Contract tests Backend ↔ AI cho request ID, malformed response, timeout và RAG fallback.
-- [ ] E2E test: upload → queue → reload → diagnosis → approve/reject/apply với FARMER/ENGINEER/ADMIN.
-- [ ] Feature flag được bật ở staging; có report duplicate rate, final failure rate, p95 completion latency.
-- [ ] Có rollback note nếu worker/queue fail khi rollout.
+## 7. Nâng cấp C — Giai đoạn 3 của README tổng
 
-**Gate 1:** T1.1 đến T1.4 hoàn tất. Không có diagnosis trùng trong test race; reload không mất job; worker restart/retry đạt E2E; latency và failure được đo.
+Chỉ mở sau Gate B. Các task dưới đây ưu tiên contract, simulator và spike; chưa mở rộng database.
 
-## 6. Backlog Giai đoạn 2 — Decision an toàn và vận hành được
+### C1 — Chứng minh citation RAG hiện tại trước GraphRAG
 
-**Mục tiêu giai đoạn:** mỗi diagnosis giải thích/tái kiểm tra được; confidence thấp không đi vào chemical flow; hệ thống có SLO, recovery và secret handling.
+- Chọn bộ câu hỏi representative và rubric groundedness/citation/policy adherence.
+- Chứng minh ít nhất một bộ VietGAP/IRRI đã duyệt được ingest và citation truy ngược đúng nguồn.
+- Đo chất lượng, latency và fallback của vector RAG hiện tại.
 
-### T2.1 — Audit trail và replay read-only
+**Hoàn thành khi**
 
-**Mục đích:** lưu dấu vết đầy đủ cho mỗi attempt mà không biến replay thành thao tác nghiệp vụ mới.
+- [ ] M8 trong README tổng có bằng chứng để đánh dấu xong.
+- [ ] Citation trỏ đúng source registry/chunk; không chỉ in mã nguồn không kiểm chứng.
+- [ ] Thiếu evidence trả fallback/review, không sinh kết luận chắc chắn.
 
-**Công việc cần làm**
+### C2 — Carbon/AWD estimator và IoT simulator
 
-- Thêm DiagnosisRun immutable, timing và evidence/provenance.
-- Nâng contract AI để trả evidence ID/revision, score, generation mode, timing theo bước.
-- Lưu snapshot input, model, threshold, policy/rule, outcome và error code.
-- Cung cấp API/màn hình audit chỉ cho ENGINEER/ADMIN và replay read-only trong môi trường cô lập.
+**Giả định data:** dùng fixture versioned cho parcel/crop season/telemetry; không tuyên bố là số liệu thực địa và chưa persist event.
 
-**Đầu ra bàn giao:** migration, API audit, một audit trail mẫu hoàn chỉnh và test quyền truy cập.
+- Chốt methodology, nguồn IRRI/SECTOR/Đề án 1 triệu hecta, input, đơn vị, uncertainty và disclaimer.
+- Chốt AWD advisory threshold/hysteresis/safe override; không điều khiển actuator.
+- Thiết kế event contract và simulator deterministic cho normal, dry, wet, offline, duplicate, late/out-of-order.
+- Estimator trả range/uncertainty và `REVIEW_REQUIRED` khi input hoặc methodology chưa đủ.
 
-**Checklist hoàn tất**
+**Hoàn thành khi**
 
-- [ ] Từ diagnosis có thể truy về job, attempt, request ID, image checksum, model/version, policy/rule snapshot và timing.
-- [ ] Evidence có source/chunk/revision/score; nội dung nhạy cảm được redact theo policy.
-- [ ] Rule/model/prompt mới không làm mất khả năng xem run cũ.
-- [ ] Replay không tạo Diagnosis hoặc TreatmentApplication mới.
-- [ ] Audit API bị chặn với FARMER và phân trang được.
-- [ ] Test migration/backfill và authorization pass.
+- [ ] Cùng fixture/clock cho cùng output.
+- [ ] Output truy được methodology version và input fixture.
+- [ ] Không trả con số carbon chính xác giả khi dữ liệu thiếu.
+- [ ] Tài liệu dùng đúng tên “Mô-đun Ước Lượng Giảm Phát Thải Tham Chiếu Thực Nghiệm” và disclaimer theo README.
 
-### T2.2 — DiseaseManagementPolicy và deterministic rule resolver
+### C3 — Đánh giá GraphRAG/multi-agent
 
-**Mục đích:** loại bỏ việc AI chọn rule đầu tiên và đưa quyết định deterministic về Backend.
+**Giả định data:** spike chỉ dùng corpus local đã duyệt; không tạo graph nghiệp vụ authoritative và không ghi Backend DB.
 
-**Công việc cần làm**
+- Chạy baseline C1 trước khi viết GraphRAG.
+- Chốt KPI adopt/defer/reject về groundedness, citation, latency và tài nguyên.
+- Nếu cần, làm spike ontology tối thiểu disease/crop/symptom/evidence; Backend facts vẫn authoritative.
+- Chỉ xem xét multi-agent nếu GraphRAG vượt KPI và workflow thực sự cần phân vai.
 
-- Chốt owner/chuyên gia phê duyệt các policy path, priority, effective time, crop/growth stage và safety constraints.
-- Thêm PolicyResolution và resolver ở Backend.
-- Resolver chọn một rule hợp lệ hoặc trả NON_CHEMICAL_MANAGEMENT, REVIEW_REQUIRED, LOW_CONFIDENCE_REVIEW hoặc BLOCKED_BY_SAFETY_POLICY.
-- AI chỉ diễn đạt policy snapshot Backend đã chọn; Backend validate lại trước persist.
+**Hoàn thành khi**
 
-**Đầu ra bàn giao:** API nội bộ versioned, decision table, tests và UI hiển thị policy path.
+- [ ] Spike có provenance/revision và fallback vector RAG.
+- [ ] Không graph/agent nào gọi approve/apply hoặc tự sửa policy/rule.
+- [ ] Có báo cáo so sánh với baseline; không vượt KPI thì đóng workstream.
+- [ ] Dependency dùng trong spike đạt Gate B3 trước khi nhập vào stack chính.
 
-**Checklist hoàn tất**
+### C4 — Xác nhận đã phun từ IoT
 
-- [ ] Không còn logic chọn rule theo thứ tự ID ở AI hoặc Backend.
-- [ ] Resolver xét eligibility, status/effective time, crop/growth stage, recent treatment, priority và tie-breaker.
-- [ ] Hai rule ngang hạng cần quyết định nông học trả REVIEW_REQUIRED.
-- [ ] Mỗi path có machine reason code, human reason và hành vi UI/apply rõ ràng.
-- [ ] Contract cũ có migration/feature flag hoặc compatibility plan.
-- [ ] Decision-table tests cover priority, expired rule, missing context, recent treatment và safety block.
+**Trạng thái:** chỉ thiết kế contract/simulator. Auto-confirm thật bị hoãn vì cần lifecycle, event persistence, device registry và quyết định data riêng.
 
-### T2.3 — Low confidence và image-quality gate
+- Chốt lifecycle dự kiến: `APPROVED_FOR_APPLICATION → AWAITING_IOT_CONFIRMATION → CONFIRMED | EXCEPTION | EXPIRED`.
+- Chốt signed event, replay protection, parcel/rule/dose/time correlation và manual fallback có reason.
+- Dùng simulator kiểm tra event hợp lệ, forged, duplicate, wrong parcel/rule/dose và late/out-of-order.
 
-**Mục đích:** ảnh có confidence thấp hoặc chất lượng không đủ không thể dẫn tới treatment recommendation.
+**Hoàn thành trong phạm vi hiện tại khi**
 
-**Công việc cần làm**
+- [ ] Contract và transition guard được review.
+- [ ] Không event nào xác nhận diagnosis chưa APPROVED.
+- [ ] Match mơ hồ hoặc validation thiếu luôn vào `EXCEPTION`, không tự chọn bản ghi đầu tiên.
+- [ ] Không có API/UI gửi lệnh điều khiển thiết bị.
+- [ ] Tài liệu ghi rõ auto-confirm thật chưa hoàn thành cho đến khi kế hoạch data được chốt.
 
-- Chọn threshold từ benchmark/evaluation, có owner và version trong audit.
-- Đưa low confidence vào contract chính thức và chuyển path sang LOW_CONFIDENCE_REVIEW.
-- Đánh giá quality checks cho ảnh không phải lá, mờ, tối hoặc out-of-distribution.
-- Báo cáo accuracy/calibration và giới hạn giữa PlantVillage với ảnh ruộng thật.
+## 8. Các hạng mục hoãn do phụ thuộc data
 
-**Checklist hoàn tất**
+Không triển khai các mục sau trong checklist này:
 
-- [ ] Confidence ngay dưới/bằng/trên threshold có test xác định.
-- [ ] LOW_CONFIDENCE_REVIEW không có selected chemical rule và Backend chặn apply.
-- [ ] Quality check không chắc chắn chỉ cảnh báo/review, không âm thầm loại bỏ ảnh.
-- [ ] UI hướng dẫn thao tác tiếp theo, không thể hiện kết quả như kết luận chắc chắn.
-- [ ] Báo cáo evaluation và limitation được review trước pilot.
+- Queue/worker durable, lease, dead-letter và job recovery sau restart.
+- Bảng `DiagnosisJob`, `DiagnosisRun`, audit/replay store và backfill.
+- DiseaseManagementPolicy/priority/effective-time persistence đầy đủ.
+- Telemetry/event store, device registry và IoT auto-confirm thật.
+- Migration framework, migration lịch sử hoặc hỗ trợ nhiều database version.
+- Đóng gói corpus/seed mới hoặc thay đổi ownership giữa Backend DB và AI Vector DB.
 
-### T2.4 — SLO, recovery, secret và release gate
+Khi buộc phải chạm một mục trên, dừng task và mở quyết định riêng với Backend/AI lead; không tự mở rộng phạm vi.
 
-**Mục đích:** đưa luồng từ chạy được sang vận hành có kiểm soát.
+## 9. Checklist chung cho mọi task
 
-**Công việc cần làm**
+- [ ] Phạm vi chỉ thuộc đúng task; không làm lại baseline đã hoàn thành.
+- [ ] Nếu dùng fixture/giả định, ghi rõ nguồn, giới hạn và đường thay thế sau này.
+- [ ] Không thay đổi database/schema/seed/corpus nếu chưa có quyết định riêng.
+- [ ] Authorization, validation, failure/fallback và observability được kiểm tra, không chỉ happy path.
+- [ ] Có test nhỏ nhất bảo vệ logic mới; contract/E2E test khi đi qua nhiều service.
+- [ ] Không commit secret, ảnh/telemetry thật hoặc output nhạy cảm.
+- [ ] Dependency mới đã qua OSI/license review và cập nhật `LICENSES.md`.
+- [ ] Build/lint/test/Compose smoke liên quan pass.
+- [ ] README, OpenAPI, runbook và changelog liên quan được cập nhật ngắn gọn cùng PR.
+- [ ] AI/agent không bypass Backend; fallback fail-safe; IoT confirmation không biến thành auto-actuation.
 
-- Xuất metrics job, queue, retry, model readiness, RAG fallback, API error và resource usage; dựng dashboard/alert/runbook.
-- Load test warm/cold/concurrency; chốt SLO dựa trên số đo, không dùng timeout hiện tại làm SLO.
-- Recovery drill queue/DB/AI/Ollama/RAG restart, retry exhausted và rolling deploy worker.
-- Tách secret/config theo local, staging, production; secret scan và least privilege.
+## 10. Thứ tự triển khai
 
-**Checklist hoàn tất**
+| Thứ tự | Task | Điều kiện |
+|---|---|---|
+| 1 | A1 | Baseline hiện tại |
+| 2 | A2 và A3 | Chốt contract safety, không cần thay data |
+| 3 | A4 | A2/A3 ổn định response path |
+| 4 | B1 và B2 | Gate A |
+| 5 | B3 | Có thể chạy song song, nhưng bắt buộc trước Gate B |
+| 6 | C1 | Gate B |
+| 7 | Chọn C2 hoặc C3 | C1 xong; Lead chốt ưu tiên |
+| 8 | C4 contract/simulator | C2 có event contract; chưa làm auto-confirm thật |
 
-- [ ] Dashboard và alert có owner, ngưỡng, runbook cho queue stalled, failure burst, model/index not ready, latency regression.
-- [ ] Benchmark report so sánh baseline và async flow, có throughput, completion latency, CPU/RAM/VRAM.
-- [ ] SLO demo/staging được lead chấp thuận.
-- [ ] Recovery drill không mất audit hoặc tạo diagnosis trùng.
-- [ ] API key/password thật không nằm trong source, image hoặc log; secret scan CI pass.
-- [ ] Threat model, rollback plan, model limitation và runbook được review.
+## 11. Definition of done trong phạm vi này
 
-**Gate 2:** T2.1 đến T2.4 hoàn tất. Một diagnosis mẫu có audit trọn vẹn; policy không chọn rule theo ID; low confidence không thể dẫn tới chemical apply; SLO/recovery/secret/runbook đã được duyệt.
-
-## 7. Backlog Giai đoạn 3 — Chỉ mở sau Gate 2
-
-### T3A.1 — Carbon/AWD contract và IoT simulator
-
-**Mục đích:** tạo môi trường mô phỏng tái lập trước khi nhận telemetry thật.
-
-**Công việc cần làm**
-
-- Chốt persona, crop/parcel, timezone, đơn vị, telemetry frequency, offline behavior và ranh giới advisory so với automatic control.
-- Chốt methodology estimator: scope, assumptions, input, CO2e output, uncertainty/data-quality, version và disclaimer.
-- Chốt AWD policy do chuyên gia phê duyệt: threshold, hysteresis, safe override, growth stage và điều kiện REVIEW_REQUIRED.
-- Thiết kế telemetry event: event ID, device identity, parcel/crop season, observed time UTC, metric/unit/value, quality, source, signature và schema version.
-- Viết simulator các scenario normal, dry, wet, sensor offline, duplicate, out-of-order với clock điều khiển được.
-
-**Checklist hoàn tất**
-
-- [ ] Có contract event và validation rule được review.
-- [ ] Simulator lặp lại cùng output với cùng scenario/clock.
-- [ ] Scenario có cả data tốt, data thiếu, duplicate, late/out-of-order và sensor offline.
-- [ ] Documentation nói rõ advisory không điều khiển actuator.
-- [ ] Methodology/threshold chưa duyệt luôn dẫn tới REVIEW_REQUIRED.
-
-### T3A.2 — Telemetry ingestion, AWD evaluator và carbon estimator
-
-**Mục đích:** biến event mô phỏng thành advisory/estimation truy được nguồn.
-
-**Công việc cần làm**
-
-- Implement ingestion có signature/auth, idempotency, schema/unit/range validation, dedup, out-of-order rule, dead-letter và monitoring.
-- Implement AWD evaluator tách khỏi transport; lưu telemetry window, policy/methodology version, reason, expiry.
-- Implement carbon estimator lưu input snapshot, output range/uncertainty và data-quality state.
-- Thêm UI timeline telemetry, freshness/quality, advisory/lý do và acknowledgement.
-
-**Checklist hoàn tất**
-
-- [ ] Telemetry stale/unknown trả REVIEW_REQUIRED, không trả hướng dẫn tưới chắc chắn.
-- [ ] Duplicate và out-of-order không thay đổi sai trạng thái/advisory.
-- [ ] Output truy được telemetry window, policy và methodology version.
-- [ ] Không trả số carbon chính xác giả khi input thiếu.
-- [ ] E2E simulator → ingestion → evaluator → dashboard pass.
-
-### T3A.3 — Pilot telemetry thật
-
-**Checklist hoàn tất**
-
-- [ ] Chỉ bật cho device/parcel allowlist bằng feature flag.
-- [ ] Có kill switch và runbook khi device gửi lỗi hoặc telemetry drift.
-- [ ] Đối soát event mô phỏng/thực địa trước khi mở rộng.
-- [ ] Không có đường API/UI điều khiển bơm, van hoặc thiết bị phun.
-
-### T3B.1 — Đánh giá GraphRAG trước khi đầu tư
-
-**Mục đích:** chứng minh nhu cầu trước khi thêm graph hoặc agent.
-
-**Công việc cần làm**
-
-- Viết bộ câu hỏi representative và rubric: groundedness, citation correctness, policy adherence, latency, cost.
-- Chạy baseline bằng vector RAG hiện tại.
-- Chốt KPI adopt/defer/reject và người quyết định.
-
-**Checklist hoàn tất**
-
-- [ ] Baseline có điểm chất lượng, latency/resource/cost và evidence review.
-- [ ] Rubric kiểm tra citation, policy safety, hallucination và fallback.
-- [ ] KPI có ngưỡng thành công và điều kiện dừng rõ ràng.
-- [ ] Không có code GraphRAG/multi-agent production trước khi review baseline.
-
-### T3B.2 — GraphRAG spike và quyết định
-
-**Công việc cần làm**
-
-- Xác định ontology tối thiểu: disease, crop, symptom, policy, evidence; Backend facts vẫn authoritative và graph chỉ read-only.
-- Làm spike nhỏ có provenance, revision, access control và fallback vector RAG.
-- So sánh với baseline, công bố adopt/defer/reject.
-
-**Checklist hoàn tất**
-
-- [ ] Mỗi kết quả spike có provenance/revision và fallback vector RAG.
-- [ ] Không có ghi trực tiếp nghiệp vụ từ graph layer.
-- [ ] Báo cáo so sánh quality, latency, resource, cost được review.
-- [ ] Nếu không vượt KPI, đóng workstream thay vì mở rộng thêm công nghệ.
-
-### T3B.3 — Workflow phức tạp hoặc multi-agent, chỉ khi T3B.2 adopt
-
-**Công việc cần làm**
-
-- Thiết kế typed input/output và state machine trước khi tách agent.
-- Mỗi node có timeout, retry budget, idempotency, trace, safe fallback.
-- Mỗi agent có role, tool allowlist, read-only scope, output schema và policy check sau handoff.
-- Chạy shadow mode trước canary.
-
-**Checklist hoàn tất**
-
-- [ ] Không agent nào gọi approve/apply, đổi policy/rule hoặc ghi trực tiếp nghiệp vụ.
-- [ ] Backend validator vẫn là final gate cho mọi output agent.
-- [ ] CI có regression cho factual/policy/citation/adversarial tool test và latency/cost budget.
-- [ ] Shadow report có mismatch, hallucination, fallback rate, cost trước khi canary.
-
-### T3C.1 — Policy và lifecycle xác nhận đã phun từ IoT
-
-**Mục đích:** chốt ý nghĩa nghiệp vụ/pháp lý trước khi tự động xác nhận bất kỳ treatment application nào.
-
-**Công việc cần làm**
-
-- Chốt bằng chứng đủ CONFIRMED, các điều kiện EXCEPTION, actor chịu trách nhiệm, retention và dispute handling.
-- Chốt lifecycle: APPROVED_FOR_APPLICATION → AWAITING_IOT_CONFIRMATION → CONFIRMED hoặc EXCEPTION/EXPIRED.
-- Chốt manual fallback có reason/audit.
-
-**Checklist hoàn tất**
-
-- [ ] Policy owner/chuyên gia phê duyệt điều kiện auto-confirm.
-- [ ] Không có event IoT nào xác nhận diagnosis chưa APPROVED.
-- [ ] Manual fallback không overwrite dấu vết IoT hoặc decision cũ.
-- [ ] UI/backend có transition guard cho mọi trạng thái.
-
-### T3C.2 — Xác thực event và correlation engine
-
-**Công việc cần làm**
-
-- Thiết kế signed event: event ID, device, timestamp, location/parcel, crop season, diagnosis/rule correlation, pesticide, dose/unit, coverage, calibration, firmware/schema version.
-- Implement device registry, credential rotation, signature verification, replay protection, idempotency, clock-skew/geofence và device-to-parcel authorization.
-- Implement correlation engine chỉ match diagnosis APPROVED, rule hợp lệ, parcel/crop season/window đúng.
-
-**Checklist hoàn tất**
-
-- [ ] Forged signature, duplicate, wrong parcel/rule/dose, late/out-of-order bị từ chối hoặc EXCEPTION.
-- [ ] Match mơ hồ không tự chọn bản ghi đầu tiên.
-- [ ] Dose/unit/coverage/calibration/firmware mismatch không auto-confirm.
-- [ ] Confirm lưu event reference immutable, validation result, rule snapshot, resolver version và actor IOT.
-- [ ] Không tạo application khi validation không đầy đủ.
-
-### T3C.3 — UI exception và pilot IoT
-
-**Checklist hoàn tất**
-
-- [ ] Kỹ sư thấy trạng thái chờ IoT, evidence tóm tắt, exception queue và manual confirm/reject có lý do.
-- [ ] E2E simulator cover event hợp lệ, lỗi xác thực, duplicate, mismatch, mất mạng và manual fallback.
-- [ ] Pilot chỉ chạy theo device/parcel allowlist, feature flag và kill switch.
-- [ ] Có đối soát event–thực địa trước khi tăng phạm vi.
-- [ ] Auto-confirm không đồng nghĩa auto-actuation; không có API/UI gửi lệnh phun.
-
-## 8. Checklist chung cho mọi task
-
-- [ ] Có issue/task, owner, phạm vi, acceptance criteria và link tài liệu liên quan.
-- [ ] Contract/API/schema thay đổi có version, migration/rollback, compatibility note.
-- [ ] Đã xét authorization, idempotency, retry/failure, observability; không chỉ happy path.
-- [ ] Có unit test; integration/contract test khi đi qua Backend–AI/IoT; E2E khi thay đổi luồng người dùng.
-- [ ] Không commit secret, ảnh/telemetry thật hoặc audit output nhạy cảm; log/error đã redact.
-- [ ] Build/lint/test liên quan pass; compose config và smoke pass nếu thay đổi deploy.
-- [ ] README, OpenAPI, runbook, dashboard/alert liên quan được cập nhật cùng PR.
-- [ ] Reviewer xác nhận AI/agent không bypass Backend policy, auto-confirm không thành auto-actuation, fallback an toàn và audit đầy đủ.
-
-## 9. Thứ tự các phiên làm việc
-
-| Phiên | Chỉ làm các task | Điều kiện bắt đầu | Bàn giao tối thiểu |
-|---|---|---|---|
-| S1 | T0.1 | Không có | ADR + contract review |
-| S2 | T0.2 | T0.1 chốt path/status | PR frontend + test/build |
-| S3 | T0.3 | Không có dependency code | Benchmark/runbook + smoke report |
-| S4 | T1.1 | Gate 0 | Migration + API + integration tests |
-| S5 | T1.2 | T1.1 | Worker + recovery/retry report |
-| S6 | T1.3 và T1.4 | T1.1, T1.2 | E2E + staging rollout report |
-| S7 | T2.1 | Gate 1 | Audit trail + authorization tests |
-| S8 | T2.2 và T2.3 | T2.1 contract ready | Policy tests + safety UI |
-| S9 | T2.4 | T2.2, T2.3 | SLO + drill + hardening evidence |
-| S10 | Gate 2 review, chọn T3A/T3B/T3C | T2.1 đến T2.4 | Gate checklist + owner/priority Giai đoạn 3 |
-
-## 10. Definition of done toàn chương trình
-
-Chương trình hoàn tất trong phạm vi này khi ENGINEER có thể gửi AI job, đóng/reload trình duyệt và quay lại thấy tiến trình/kết quả không trùng lặp; diagnosis có audit từ input đến evidence/policy/model/timing; low-confidence hoặc thiếu policy không thể dẫn tới chemical apply; có benchmark, SLO, recovery drill, secret handling và runbook; mỗi hạng mục Giai đoạn 3 cũng đạt checklist hoàn tất của riêng nó.
+Checklist hoàn tất khi luồng E2E hiện tại vẫn chạy qua ba role; upload và low-confidence được xử lý an toàn; nhiều rule không còn bị chọn theo thứ tự; UI tự kiểm tra lại kết quả sau lỗi mạng; request có thể trace và benchmark lặp lại; license AI/dependency đáp ứng OLP; vector RAG có citation đã chứng minh; các spike Giai đoạn 3 được đánh giá bằng fixture/giả định minh bạch và không tạo cảm giác rằng data persistence hoặc IoT auto-confirm thật đã hoàn thành.

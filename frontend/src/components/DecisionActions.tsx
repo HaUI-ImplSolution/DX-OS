@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { approveCase, approveDiagnosis, assignCase, rejectCase, rejectDiagnosis } from "../api";
+import {
+  approveCase,
+  approveDiagnosis,
+  assignCase,
+  confirmTreatment,
+  rejectCase,
+  rejectDiagnosis,
+  rejectTreatment,
+} from "../api";
 import type { ApprovalRequest, Role } from "../types";
 
 interface DecisionActionsProps {
@@ -9,8 +17,8 @@ interface DecisionActionsProps {
   onError: (message: string) => void;
 }
 
-// Parcel and season requests are decided by an ADMIN; diagnoses by an ENGINEER or ADMIN through
-// their own endpoints.
+// Parcel and season requests are decided by an ADMIN; diagnoses and spraying reports by an
+// ENGINEER or ADMIN through their own endpoints.
 export default function DecisionActions({ request, role, onDone, onError }: DecisionActionsProps) {
   const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState("");
@@ -19,7 +27,8 @@ export default function DecisionActions({ request, role, onDone, onError }: Deci
   if (request.status !== "PENDING") return null;
 
   const isDiagnosis = request.caseType === "DIAGNOSIS_APPROVAL";
-  const canDecide = role === "ADMIN" || (role === "ENGINEER" && isDiagnosis);
+  const isTreatment = request.caseType === "TREATMENT_CONFIRMATION";
+  const canDecide = role === "ADMIN" || (role === "ENGINEER" && (isDiagnosis || isTreatment));
   const reportId = Number(request.details.reportId);
 
   const run = async (action: () => Promise<unknown>, failure: string) => {
@@ -53,12 +62,17 @@ export default function DecisionActions({ request, role, onDone, onError }: Deci
               disabled={busy}
               onClick={() =>
                 run(
-                  () => (isDiagnosis ? approveDiagnosis(reportId) : approveCase(request.caseId)),
+                  () =>
+                    isTreatment
+                      ? confirmTreatment(reportId)
+                      : isDiagnosis
+                        ? approveDiagnosis(reportId)
+                        : approveCase(request.caseId),
                   "Không duyệt được",
                 )
               }
             >
-              Duyệt
+              {isTreatment ? "Xác nhận đã phun" : "Duyệt"}
             </button>
             <button className="btn btn-secondary" disabled={busy} onClick={() => setRejecting(true)}>
               Từ chối
@@ -73,9 +87,11 @@ export default function DecisionActions({ request, role, onDone, onError }: Deci
             e.preventDefault();
             void run(
               () =>
-                isDiagnosis
-                  ? rejectDiagnosis(reportId, { reason })
-                  : rejectCase(request.caseId, reason),
+                isTreatment
+                  ? rejectTreatment(reportId, { reason })
+                  : isDiagnosis
+                    ? rejectDiagnosis(reportId, { reason })
+                    : rejectCase(request.caseId, reason),
               "Không từ chối được",
             );
           }}

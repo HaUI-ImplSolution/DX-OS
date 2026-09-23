@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./backend/DX-Farm
+        working-directory: ./backend
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

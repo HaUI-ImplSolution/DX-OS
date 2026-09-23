@@ -9,7 +9,7 @@ Nội dung là dữ liệu nguồn do AI bàn giao để Backend tham khảo và
 
 ## Cách hoạt động
 
-- **Generator** đọc `structured/*.json` và sinh `backend/DX-Farm/src/main/resources/data.sql` cho database nghiệp vụ (`diseases`, `pesticides`, `treatment_rules`, `disease_management_policies`).
+- **Generator** đọc `structured/*.json` và sinh `backend/app-farm/src/main/resources/farm/data.sql` cho database nghiệp vụ (`diseases`, `pesticides`, `treatment_rules`, `disease_management_policies`).
   Backend không đọc JSON trực tiếp; Spring chạy file SQL đã sinh một cách idempotent lúc khởi động.
 - **AI** đọc `rag/processed/disease_knowledge.json` và `rag/source_registry.json` qua job ingest (`ai/scripts/ingest_diseases.py`, chạy bằng `python -m scripts.ingest_diseases`) để tạo embedding và ghi vào AI Vector DB (`documents`, `document_chunks`).
   Xem [`ai/README.md`](../ai/README.md) mục "Ingest RAG".
@@ -25,7 +25,7 @@ Nội dung là dữ liệu nguồn do AI bàn giao để Backend tham khảo và
    Không bulk-seed toàn bộ file có chữ `candidates`.
 4. Seed phải idempotent: chạy lại không sinh bản ghi trùng.
 5. `source_ids` phải truy được về `rag/source_registry.json` để audit nguồn.
-6. Khi `rag/source_registry.json` đổi, cập nhật `backend/DX-Farm/src/main/resources/knowledge-sources.json` (sourceId, title, organization, url, license, reviewStatus) để trang hỏi đáp hiện đúng nguồn.
+6. Khi `rag/source_registry.json` đổi, cập nhật `backend/app-farm/src/main/resources/knowledge-sources.json` (sourceId, title, organization, url, license, reviewStatus) để trang hỏi đáp hiện đúng nguồn.
 
 ## Danh mục file
 
@@ -55,7 +55,7 @@ python data/scripts/generate_seed_sql.py --check
 python -m unittest data.scripts.test_generate_seed_sql
 ```
 
-Commit đồng thời thay đổi trong `data/` và `backend/DX-Farm/src/main/resources/data.sql`; không sửa tay file SQL. CI chạy lại hai lệnh kiểm tra cuối để chặn JSON và SQL bị lệch nhau.
+Commit đồng thời thay đổi trong `data/` và `backend/app-farm/src/main/resources/farm/data.sql`; không sửa tay file SQL. CI chạy lại hai lệnh kiểm tra cuối để chặn JSON và SQL bị lệch nhau.
 
 ## Seed hiện hành
 

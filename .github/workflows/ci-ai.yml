@@ -7,7 +7,7 @@ on:
     paths:
       - 'ai/**'
       - 'data/**'
-      - 'backend/DX-Farm/src/main/resources/data.sql'
+      - 'backend/app-farm/src/main/resources/farm/data.sql'
       - '.github/workflows/ci-ai.yml'
   pull_request:
     types:
@@ -19,7 +19,7 @@ on:
     paths:
       - 'ai/**'
       - 'data/**'
-      - 'backend/DX-Farm/src/main/resources/data.sql'
+      - 'backend/app-farm/src/main/resources/farm/data.sql'
       - '.github/workflows/ci-ai.yml'
 
 jobs:

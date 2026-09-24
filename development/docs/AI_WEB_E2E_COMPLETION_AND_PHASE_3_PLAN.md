@@ -140,6 +140,19 @@ Không mở task để viết lại các phần trên nếu không có regressio
 
 **Gate A:** Hoàn tất ngày 24/09/2026; low confidence và nhiều rule không thể đi nhầm vào chemical apply, còn luồng E2E ba role không regression.
 
+### Ghi chú triển khai Gate A
+
+| Hạng mục | Đã đạt được và cách thực hiện | Lý do |
+|---|---|---|
+| A1 — Upload | Frontend preflight và preview JPEG/PNG tối đa 10 MiB; Backend kiểm tra MIME, extension, chữ ký file và khả năng giải mã trước khi lưu; AI áp dụng cùng giới hạn đầu vào. | Validation phía client chỉ cải thiện UX; Backend/AI vẫn phải chặn request bypass hoặc nội dung ảnh giả. |
+| A2 — Confidence | Dùng chung `CV_CONFIDENCE_THRESHOLD` qua Compose. AI trả `low_confidence_review` dưới ngưỡng, không chọn rule; Backend tự so lại confidence và trả path/threshold cho UI. | Không tin riêng kết quả AI và không biến dự đoán thiếu chắc chắn thành quyết định điều trị. |
+| A3 — Rule | Chỉ đúng một rule hiện hành mới đi `treatment`; 0 hoặc nhiều rule đi `review_required`. Backend tải lại cardinality, ID và version trước khi lưu; manual diagnosis dùng cùng quy tắc. | Chưa có policy chuyên môn để xếp hạng nhiều rule, nên fail-safe an toàn hơn chọn theo thứ tự. |
+| A4 — Recovery | Frontend khóa request trùng, đặt timeout 125 giây và refetch report hữu hạn sau lỗi mơ hồ; Backend ánh xạ race của unique constraint thành `409`. | HTTP vẫn đồng bộ nên có thể mất response sau khi diagnosis đã lưu; đối soát giúp UI phục hồi mà chưa cần thêm queue/schema. |
+
+**Bằng chứng:** Backend 9 test pass; AI contract self-check bao phủ dưới/bằng/trên ngưỡng và 0/1/nhiều rule; Frontend production build, Compose config và E2E ba role trên database sạch đều pass.
+
+**Giới hạn còn lại:** threshold chưa thay thế phát hiện ảnh ngoài phân phối; recovery chỉ retry hữu hạn và không bảo đảm khi Backend/AI restart giữa request. Các vấn đề này thuộc các nâng cấp sau, không mở rộng Gate A.
+
 ## 6. Nâng cấp B — Đo được, kiểm tra được và đủ điều kiện OLP
 
 ### B1 — Correlation và observability không thêm persistence

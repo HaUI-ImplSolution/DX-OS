@@ -14,8 +14,8 @@ Compose khởi động PostgreSQL, Backend, frontend, Keycloak, AI Service, Olla
 
 Corpus RAG mặc định lấy từ `data/` (gốc repository) qua `AI_DATA_DIR`; đổi biến này nếu muốn dùng bộ corpus khác.
 
-Backend tự seed danh mục 38 bệnh, 4 thuốc và 8 treatment rule trên database sạch.
-Cả 8 rule đều là dữ liệu MVP đã qua bước source review ngày 10/09/2026.
+`data.sql` hiện đang rỗng — nội dung cũ không khớp eligibility trong `data/structured/treatment_rules_candidates_master.json` nên đã bị xóa, chờ generator mô tả ở [`DB_SEED_UNIFICATION_PLAN.md`](DB_SEED_UNIFICATION_PLAN.md) sinh lại.
+Trên database sạch, bảng `diseases`/`pesticides`/`treatment_rules` của Backend đang trống cho tới khi `data.sql` được generate lại; nhánh treatment của luồng E2E sẽ không chạy được, chỉ nhánh `review_required` hoạt động.
 Corpus RAG và structured treatment facts là hai nguồn độc lập: thiếu corpus thì không có semantic evidence, còn treatment rule vẫn do Backend quản lý và kiểm tra.
 
 Schema hiện chỉ hỗ trợ một phiên bản database phát triển và không có migration.
@@ -50,7 +50,7 @@ Nếu volume PostgreSQL cũ còn cột `dose_amount`, cần dùng một `POSTGRE
 
 - Frontend có nút gọi chẩn đoán AI và hiển thị khuyến nghị AI Backend trả về; luồng nhập chẩn đoán thủ công vẫn còn để demo nghiệp vụ.
 - Backend giữ summary do AI tạo, hỗ trợ kết quả `review_required` không có rule, cho phép `treatment_rule_id` rỗng và từ chối áp dụng khi rule không tồn tại.
-- Seed Backend bổ sung 38 lớp CV, 4 thuốc và 8 treatment rule theo kiểu idempotent.
+- Backend seed qua `data.sql` theo kiểu idempotent (`ON CONFLICT`/`NOT EXISTS`); file hiện đang rỗng, chờ generator ở [`DB_SEED_UNIFICATION_PLAN.md`](DB_SEED_UNIFICATION_PLAN.md).
 - Rule hỗ trợ khoảng liều `dose_min`/`dose_max`; Backend trả toàn bộ rule của một bệnh và kiểm tra liều thực tế trước khi tạo `TreatmentApplication`.
 - AI chấp nhận structured context không có rule như trạng thái cần kỹ sư xem xét.
 - Docker Compose chạy job nạp corpus trước khi khởi động AI và chạy Ollama/model cùng stack, nên không phụ thuộc Ollama đang mở sẵn trên host.
@@ -108,7 +108,7 @@ Một request hiện đi qua các bước sau:
 | [DiagnosisService.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/service/DiagnosisService.java) | Kiểm tra hai path treatment/review_required, tải lại đúng rule AI chọn, xác minh version và kiểm tra liều thực tế | Backend vẫn là nguồn sự thật và lớp quyết định cuối; AI không thể tự đưa rule lạ, rule cũ hoặc liều ngoài khoảng |
 | [AiDiagnosisClient.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/service/AiDiagnosisClient.java) | Ép HTTP/1.1 | Khắc phục tương thích Java HTTP client với Uvicorn trong container hiện tại |
 | [application.yaml](../../backend/DX-Farm/src/main/resources/application.yaml) | Tăng read timeout từ 15 lên 120 giây | Cold start CPU gồm CV, embedding và LLM có thể vượt 15 giây |
-| [data.sql](../../backend/DX-Farm/src/main/resources/data.sql) | Seed idempotent 38 bệnh, 4 thuốc và 8 treatment rule | Database sạch có đủ structured facts để chạy nhánh treatment ngay sau khi Compose khởi động |
+| [data.sql](../../backend/DX-Farm/src/main/resources/data.sql) | Hiện rỗng, chờ generator sinh lại từ `data/structured/*.json` theo eligibility đã duyệt | Nội dung cũ chứa rule chưa khớp `eligible_for_seed`; xem [`DB_SEED_UNIFICATION_PLAN.md`](DB_SEED_UNIFICATION_PLAN.md) |
 
 ### AI Service
 
@@ -139,7 +139,7 @@ Một request hiện đi qua các bước sau:
 | LLM | Ollama trong Compose | Ollama host, managed API hoặc template không LLM | Compose tái lập tốt và dữ liệu không rời máy, nhưng tải model nặng và CPU chậm. Host tận dụng GPU nhưng phụ thuộc máy. API dễ scale nhưng tốn phí/cần mạng. Template ổn định nhưng kém linh hoạt |
 | Nạp RAG | Job one-shot trước AI | Ingest thủ công, DB snapshot hoặc pipeline quản trị | Tự động và dễ dựng lại, nhưng startup lâu và recreate job có thể re-embed corpus. Pipeline riêng quản trị tốt hơn nhưng cần versioning và quy trình deploy data |
 | Phân phối corpus | Commit vào Git tại `data/` (gốc repository) + bind-mount read-only vào container `rag-ingest` | Không commit (mỗi máy tự có data riêng), đóng vào image, hoặc artifact storage có version/checksum | Commit giữ corpus tái lập được cho mọi người clone nhánh, đổi lại repo nặng hơn theo kích thước corpus. Đóng vào image thì mỗi lần đổi corpus phải rebuild; artifact storage tốt hơn cho corpus lớn nhưng cần thêm hạ tầng |
-| Seed structured facts | `data.sql` idempotent cho 38 bệnh, 4 thuốc và 8 rule | Migration, importer CLI/API hoặc seeder có version | Phù hợp giai đoạn phát triển một schema, nhưng audit/rollback kém hơn pipeline production |
+| Seed structured facts | `data.sql` idempotent (hiện rỗng, chờ generator sinh từ `data/structured/*.json`) | Migration, importer CLI/API hoặc seeder có version | Phù hợp giai đoạn phát triển một schema, nhưng audit/rollback kém hơn pipeline production |
 | Recommendation text | Lưu summary do AI trả | Backend tự dựng text hoặc lưu toàn response AI vào bảng audit | Giữ được phần giải thích CV+RAG+LLM, nhưng hiện chưa lưu evidence/generation metadata riêng. Backend tự dựng deterministic hơn nhưng mất phần diễn giải RAG |
 | HTTP protocol | Ép HTTP/1.1 | Auto-negotiation hoặc reverse proxy HTTP/2 | Sửa tương thích với thay đổi nhỏ, nhưng không tận dụng multiplexing khi tải đồng thời tăng |
 | Rule lookup | Backend trả mọi rule theo ID; AI chọn rule đầu tiên một cách deterministic | Chấm điểm theo priority, thời gian hiệu lực, bối cảnh ruộng và lịch sử xử lý | Đủ để test nhiều rule và Backend tải lại đúng ID đã chọn, nhưng thứ tự ID chưa phải chiến lược nông học tối ưu |
@@ -170,6 +170,7 @@ Các candidate bị hold trong artifact review không được seed và không �
 ## Kết quả kiểm tra E2E
 
 Ngày 21/09/2026 đã dựng lại toàn bộ stack trên một `POSTGRES_DATA_DIR` sạch và kiểm tra:
+Kết quả dưới đây gắn với `data.sql` tại thời điểm đó; `data.sql` hiện đang rỗng (xem mục "Khởi động"), nên các bước liên quan treatment rule cần chạy lại sau khi generator ở [`DB_SEED_UNIFICATION_PLAN.md`](DB_SEED_UNIFICATION_PLAN.md) sinh dữ liệu mới.
 
 - Seed tạo 38 bệnh, 4 thuốc và 8 rule; chạy lại Backend không tạo bản ghi trùng.
 - Job RAG ingest hoàn tất với 38 documents và 270 chunks; AI health báo model CV đã load.

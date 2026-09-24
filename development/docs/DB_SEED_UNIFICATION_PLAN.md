@@ -5,7 +5,6 @@
 > **Cập nhật:** 24/09/2026.
 >
 > **Phạm vi:** Seed dữ liệu nghiệp vụ (disease/pesticide/treatment rule/disease management policy) từ thư mục `data/` (gốc repository) vào Backend DB một cách idempotent, và thống nhất quy ước quản lý DB.
-> Không thuộc phạm vi UX/AI (xem [AI_WEB_E2E_COMPLETION_AND_PHASE_3_PLAN.md](AI_WEB_E2E_COMPLETION_AND_PHASE_3_PLAN.md)).
 
 ## 1. Giả định đã chốt
 

@@ -10,7 +10,7 @@ RAG chỉ là lớp kiến thức giải thích. Nó không là nguồn quyết 
 
 RAG chịu trách nhiệm:
 
-- Đọc corpus kiến thức bệnh từ `data/rag/processed/disease_knowledge.json`.
+- Đọc corpus kiến thức bệnh từ `data/rag/processed/disease_knowledge.json` (thư mục `data/` ở gốc repository).
 - Kiểm tra cấu trúc dữ liệu, `disease_code`, nội dung và nguồn trích dẫn trước khi ingest.
 - Cắt nội dung thành các chunk nhỏ, tạo embedding và lưu vào PostgreSQL.
 - Tra cứu các chunk gần với câu hỏi bằng cosine similarity.

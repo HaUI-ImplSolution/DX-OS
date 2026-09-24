@@ -1,0 +1,53 @@
+{
+  "generated_at": "2026-09-10",
+  "total_cv_classes": 38,
+  "healthy_classes": 12,
+  "nonhealthy_classes": 26,
+  "workflow_coverage": {
+    "classes_with_chemical_rule_candidate": 12,
+    "classes_with_management_policy": 13,
+    "classes_with_pest_management_candidate": 1,
+    "classes_without_safe_structured_path": 0
+  },
+  "management_policy_status_counts": {
+    "NO_CURATIVE_TREATMENT": 1,
+    "NO_CHEMICAL_CONTROL": 1,
+    "VECTOR_MANAGEMENT_PRIMARY": 1,
+    "WOOD_INFECTION_NOT_ERADICABLE_BY_FUNGICIDE": 1,
+    "LOCAL_TREATMENT_RULE_NOT_VERIFIED": 9
+  },
+  "chemical_rule_candidate_classes": [
+    "Corn_(maize)__Common_rust",
+    "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot",
+    "Corn_(maize)___Northern_Leaf_Blight",
+    "Potato___Early_blight",
+    "Potato___Late_blight",
+    "Squash___Powdery_mildew",
+    "Tomato___Bacterial_spot",
+    "Tomato___Early_blight",
+    "Tomato___Late_blight",
+    "Tomato___Leaf_Mold",
+    "Tomato___Septoria_leaf_spot",
+    "Tomato___Target_Spot"
+  ],
+  "management_policy_classes": [
+    "Apple___Apple_scab",
+    "Apple___Black_rot",
+    "Apple___Cedar_apple_rust",
+    "Cherry_(including_sour)___Powdery_mildew",
+    "Grape___Black_rot",
+    "Grape___Esca_(Black_Measles)",
+    "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)",
+    "Orange___Haunglongbing_(Citrus_greening)",
+    "Peach___Bacterial_spot",
+    "Pepper,_bell___Bacterial_spot",
+    "Strawberry___Leaf_scorch",
+    "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+    "Tomato___Tomato_mosaic_virus"
+  ],
+  "pest_management_candidate_classes": [
+    "Tomato___Spider_mites Two-spotted_spider_mite"
+  ],
+  "classes_without_safe_structured_path": [],
+  "interpretation": "0 class without safe structured path does NOT mean all classes have a verified chemical treatment. It means every non-healthy class now has either a candidate treatment, an explicit safe-block policy, or a pest-management path."
+}

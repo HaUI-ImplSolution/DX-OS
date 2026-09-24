@@ -102,7 +102,7 @@ Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
 
 Hai database vật lý riêng trên cùng một Postgres instance, theo kế hoạch chốt ở [`development/docs/legacy_docs/ai_backend_decoupling_plan.md`](./development/docs/legacy_docs/ai_backend_decoupling_plan.md) mục 3:
 
-- **Backend DB (`dxfarm`)** — Operational Data (Parcel, CropSeason, DiseaseReport, Diagnosis, TreatmentApplication) và Structured Knowledge (Disease, Pesticide, TreatmentRule, DiseaseManagementPolicy).
+- **Backend DB (`dxfarm`)** — Operational Data (Parcel, CropSeason, DiseaseReport, Diagnosis, TreatmentApplication) và Structured Knowledge (Disease, Pesticide, TreatmentRule; DiseaseManagementPolicy đang ở giai đoạn kế hoạch, xem [`development/docs/DB_SEED_UNIFICATION_PLAN.md`](./development/docs/DB_SEED_UNIFICATION_PLAN.md)).
 - **AI Vector DB (`dx_farm_ai_vector_db`)** — chỉ `documents`/`document_chunks` (RAG Knowledge, qua pgvector).
   Backend tự tạo DB này cùng 2 role Postgres riêng cho AI (`ai_vector_ro` chỉ-đọc cho runtime, `ai_vector_ingest` đọc/ghi cho job ingest) lúc khởi động; không role nào của AI được cấp quyền vào Backend DB (Phase 3, P3-1..P3-3 đã xong).
 

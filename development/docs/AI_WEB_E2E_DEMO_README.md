@@ -12,8 +12,7 @@ docker compose up -d --build
 
 Compose khởi động PostgreSQL, Backend, frontend, Keycloak, AI Service, Ollama và các dịch vụ demo hiện có. Job `rag-ingest` nạp corpus vào AI Vector DB; `ollama-init` bảo đảm model được tải trước khi AI Service chạy. Lần đầu cần mạng và dung lượng trống để tải container, model CV, embedding model và LLM.
 
-Corpus RAG mặc định lấy từ `ai/.local/data` qua `AI_DATA_DIR`.
-Đây là dữ liệu local, không được commit lên Git; cần có corpus tại đường dẫn này trước khi ingest.
+Corpus RAG mặc định lấy từ `data/` (gốc repository) qua `AI_DATA_DIR`; đổi biến này nếu muốn dùng bộ corpus khác.
 
 Backend tự seed danh mục 38 bệnh, 4 thuốc và 8 treatment rule trên database sạch.
 Cả 8 rule đều là dữ liệu MVP đã qua bước source review ngày 10/09/2026.
@@ -127,7 +126,7 @@ Một request hiện đi qua các bước sau:
 |---|---|---|
 | [deploy/docker-compose.yml](../../deploy/docker-compose.yml) | Thêm Ollama, ollama-init, rag-ingest và volumes model/data | Dựng được toàn bộ luồng bằng một lệnh, không phụ thuộc Ollama hoặc bước ingest đang chạy trên host |
 | [deploy/docker-compose.yml](../../deploy/docker-compose.yml) | Runtime dùng ai_vector_ro, ingest dùng ai_vector_ingest | AI runtime chỉ đọc, job quản trị mới được thay corpus |
-| [deploy/docker-compose.yml](../../deploy/docker-compose.yml) | Mount AI_DATA_DIR read-only và cho phép đổi POSTGRES_DATA_DIR | Giữ corpus ngoài Git/image và cho phép dùng database demo riêng mà không ghi đè dữ liệu cũ |
+| [deploy/docker-compose.yml](../../deploy/docker-compose.yml) | Mount AI_DATA_DIR read-only và cho phép đổi POSTGRES_DATA_DIR | Nạp corpus từ `data/` vào container `rag-ingest` mà không đóng vào image; vẫn cho phép dùng database demo riêng mà không ghi đè dữ liệu cũ |
 | [deploy/.env.example](../../deploy/.env.example) | Bổ sung URL nội bộ, model, timeout, data path và service keys mẫu | Có cấu hình tham chiếu để người khác dựng lại stack local |
 | [deploy/docker-compose.yml](../../deploy/docker-compose.yml) | Fallback mặc định của `AI_SERVICE_READ_TIMEOUT_MS` cho service `backend` đổi từ 15000 lên 120000 | Compose luôn set env var này nên trước đó nó ghi đè giá trị 120000 trong `application.yaml` khi `.env` chưa khai báo, khiến timeout thật vẫn là 15 giây |
 
@@ -139,7 +138,7 @@ Một request hiện đi qua các bước sau:
 | Thực thi AI | HTTP đồng bộ, timeout 120 giây | Queue + async job + polling/WebSocket | Đồng bộ ít code, dễ demo; đổi lại giữ request lâu, khó scale và dễ timeout. Async tốt hơn cho production nhưng cần retry, idempotency, job state và UI tiến độ |
 | LLM | Ollama trong Compose | Ollama host, managed API hoặc template không LLM | Compose tái lập tốt và dữ liệu không rời máy, nhưng tải model nặng và CPU chậm. Host tận dụng GPU nhưng phụ thuộc máy. API dễ scale nhưng tốn phí/cần mạng. Template ổn định nhưng kém linh hoạt |
 | Nạp RAG | Job one-shot trước AI | Ingest thủ công, DB snapshot hoặc pipeline quản trị | Tự động và dễ dựng lại, nhưng startup lâu và recreate job có thể re-embed corpus. Pipeline riêng quản trị tốt hơn nhưng cần versioning và quy trình deploy data |
-| Phân phối corpus | Bind-mount ai/.local/data read-only | Commit Git, đóng vào image hoặc artifact storage | Local giữ repo nhẹ và tránh đẩy data chưa chốt; đổi lại người nhận nhánh phải có data riêng. Artifact có version/checksum tốt hơn nhưng cần hạ tầng |
+| Phân phối corpus | Commit vào Git tại `data/` (gốc repository) + bind-mount read-only vào container `rag-ingest` | Không commit (mỗi máy tự có data riêng), đóng vào image, hoặc artifact storage có version/checksum | Commit giữ corpus tái lập được cho mọi người clone nhánh, đổi lại repo nặng hơn theo kích thước corpus. Đóng vào image thì mỗi lần đổi corpus phải rebuild; artifact storage tốt hơn cho corpus lớn nhưng cần thêm hạ tầng |
 | Seed structured facts | `data.sql` idempotent cho 38 bệnh, 4 thuốc và 8 rule | Migration, importer CLI/API hoặc seeder có version | Phù hợp giai đoạn phát triển một schema, nhưng audit/rollback kém hơn pipeline production |
 | Recommendation text | Lưu summary do AI trả | Backend tự dựng text hoặc lưu toàn response AI vào bảng audit | Giữ được phần giải thích CV+RAG+LLM, nhưng hiện chưa lưu evidence/generation metadata riêng. Backend tự dựng deterministic hơn nhưng mất phần diễn giải RAG |
 | HTTP protocol | Ép HTTP/1.1 | Auto-negotiation hoặc reverse proxy HTTP/2 | Sửa tương thích với thay đổi nhỏ, nhưng không tận dụng multiplexing khi tải đồng thời tăng |

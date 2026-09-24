@@ -11,7 +11,7 @@ from app.rag.chunker import chunk_text
 from app.rag.source_registry import load_source_registry
 
 DATA_FILE = (
-    Path(__file__).resolve().parents[2]
+    Path(__file__).resolve().parents[3]
     / "data"
     / "rag"
     / "processed"

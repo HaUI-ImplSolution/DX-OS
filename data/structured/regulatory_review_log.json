@@ -1,0 +1,65 @@
+{
+  "reviewed_at": "2026-09-10",
+  "scope": "9 classes unresolved in Master v2",
+  "primary_regulatory_basis": [
+    "S27",
+    "S29"
+  ],
+  "method": [
+    "Tra cứu exact/broad Vietnamese crop-target terms trong danh mục TT75/2025.",
+    "Kiểm tra thay đổi/bổ sung theo TT28/2026.",
+    "Không suy diễn broad target thành exact PlantVillage class.",
+    "Không dùng sự vắng mặt của kết quả tìm kiếm để kết luận pháp lý rằng không có sản phẩm nào tồn tại."
+  ],
+  "result": {
+    "exact_verified_rules_added": 0,
+    "safe_fallback_policies_added": 9
+  },
+  "reviewed_classes": [
+    {
+      "disease_code": "Apple___Apple_scab",
+      "result": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+      "next_action": "Agronomist/manual label review if this class is selected for demo."
+    },
+    {
+      "disease_code": "Apple___Black_rot",
+      "result": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+      "next_action": "Agronomist/manual label review if this class is selected for demo."
+    },
+    {
+      "disease_code": "Apple___Cedar_apple_rust",
+      "result": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+      "next_action": "Agronomist/manual label review if this class is selected for demo."
+    },
+    {
+      "disease_code": "Cherry_(including_sour)___Powdery_mildew",
+      "result": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+      "next_action": "Agronomist/manual label review if this class is selected for demo."
+    },
+    {
+      "disease_code": "Grape___Black_rot",
+      "result": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+      "next_action": "Agronomist/manual label review if this class is selected for demo."
+    },
+    {
+      "disease_code": "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)",
+      "result": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+      "next_action": "Agronomist/manual label review if this class is selected for demo."
+    },
+    {
+      "disease_code": "Peach___Bacterial_spot",
+      "result": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+      "next_action": "Agronomist/manual label review if this class is selected for demo."
+    },
+    {
+      "disease_code": "Pepper,_bell___Bacterial_spot",
+      "result": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+      "next_action": "Agronomist/manual label review if this class is selected for demo."
+    },
+    {
+      "disease_code": "Strawberry___Leaf_scorch",
+      "result": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+      "next_action": "Agronomist/manual label review if this class is selected for demo."
+    }
+  ]
+}

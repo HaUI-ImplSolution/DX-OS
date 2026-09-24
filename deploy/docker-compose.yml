@@ -129,7 +129,7 @@ services:
       <<: *ai-common-env
       RAG_INGEST_DATABASE_URL: postgresql+psycopg://ai_vector_ingest:${AI_VECTOR_DB_INGEST_PASSWORD:-ai_vector_ingest_demo_only}@postgres:5432/dx_farm_ai_vector_db
     volumes:
-      - ${AI_DATA_DIR:-../ai/.local/data}:/app/data:ro
+      - ${AI_DATA_DIR:-../data}:/data:ro
       - ai_weights:/app/weights
     command: ["python", "-m", "scripts.ingest_diseases"]
 

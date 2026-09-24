@@ -1,0 +1,310 @@
+[
+  {
+    "policy_id": "DMP-001",
+    "disease_code": "Orange___Haunglongbing_(Citrus_greening)",
+    "management_status": "NO_CURATIVE_TREATMENT",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "VECTOR_CONTROL_ONLY_IF_REGISTERED",
+    "recommended_actions": [
+      "Không sinh TreatmentRule coi thuốc BVTV là thuốc chữa HLB.",
+      "Ưu tiên xác nhận chẩn đoán và quy trình xử lý theo cơ quan/kỹ sư chuyên môn.",
+      "Quản lý côn trùng môi giới truyền bệnh chỉ bằng sản phẩm đăng ký phù hợp.",
+      "Loại bỏ/cách ly cây nhiễm theo quy trình chuyên môn và quy định địa phương."
+    ],
+    "source_ids": [
+      "S15"
+    ],
+    "evidence_note": "UC IPM nêu rõ HLB không có biện pháp chữa khỏi; quản lý tập trung vào hạn chế lây lan, vector và cây nhiễm.",
+    "eligible_for_deterministic_guardrail": true
+  },
+  {
+    "policy_id": "DMP-002",
+    "disease_code": "Tomato___Tomato_mosaic_virus",
+    "management_status": "NO_CHEMICAL_CONTROL",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "NONE_FOR_VIRUS",
+    "recommended_actions": [
+      "Không tạo TreatmentRule hóa học để chữa ToMV/TMV.",
+      "Loại bỏ cây nhiễm.",
+      "Sử dụng hạt giống/cây giống sạch bệnh.",
+      "Khử trùng dụng cụ và hạn chế lây truyền cơ học.",
+      "Ưu tiên giống kháng khi phù hợp."
+    ],
+    "source_ids": [
+      "S26"
+    ],
+    "evidence_note": "Utah State University Extension nêu không có biện pháp kiểm soát hóa học cho TMV/ToMV.",
+    "eligible_for_deterministic_guardrail": true
+  },
+  {
+    "policy_id": "DMP-003",
+    "disease_code": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+    "management_status": "VECTOR_MANAGEMENT_PRIMARY",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "WHITEFLY_VECTOR_CONTROL_ONLY_IF_REGISTERED",
+    "recommended_actions": [
+      "Không tạo TreatmentRule coi thuốc BVTV là thuốc chữa virus TYLCV.",
+      "Ưu tiên giống kháng/chống chịu.",
+      "Loại bỏ cây nhiễm và giảm nguồn bệnh.",
+      "Theo dõi, kiểm soát bọ phấn trắng - vector truyền bệnh bằng giải pháp đăng ký phù hợp.",
+      "Áp dụng biện pháp phòng ngừa và quản lý canh tác."
+    ],
+    "source_ids": [
+      "S25",
+      "S34"
+    ],
+    "evidence_note": "NC State mô tả TYLCV truyền qua bọ phấn trắng và quản lý tập trung vào phòng ngừa/vector; tài liệu Syngenta Việt Nam cũng khuyến nghị kiểm soát côn trùng trung gian.",
+    "eligible_for_deterministic_guardrail": true
+  },
+  {
+    "policy_id": "DMP-004",
+    "disease_code": "Grape___Esca_(Black_Measles)",
+    "management_status": "WOOD_INFECTION_NOT_ERADICABLE_BY_FUNGICIDE",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "PREVENTIVE_WOUND_MANAGEMENT_ONLY_IF_REGISTERED",
+    "recommended_actions": [
+      "Không tạo TreatmentRule khẳng định fungicide có thể diệt sạch nhiễm Esca đã thiết lập trong gỗ.",
+      "Ưu tiên quản lý vết cắt tỉa và biện pháp phòng ngừa.",
+      "Dùng hướng dẫn chuyên môn về bệnh thân gỗ nho khi xây rule phòng ngừa."
+    ],
+    "source_ids": [
+      "S13"
+    ],
+    "evidence_note": "UC IPM nêu nhiễm gỗ sau khi thiết lập không thể được loại bỏ bằng phun fungicide.",
+    "eligible_for_deterministic_guardrail": true
+  },
+  {
+    "policy_id": "DMP-005",
+    "disease_code": "Apple___Apple_scab",
+    "management_status": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "AGRONOMIST_ONLY_UNTIL_VN_RULE_VERIFIED",
+    "recommended_actions": [
+      "Không tự sinh hoạt chất, tên thuốc, liều lượng hoặc PHI.",
+      "Dùng RAG chỉ để giải thích triệu chứng, tác nhân, phòng ngừa và quản lý không định lượng.",
+      "Nếu cần xử lý hóa học, chuyển kỹ sư nông nghiệp kiểm tra sản phẩm/nhãn đăng ký hiện hành tại Việt Nam.",
+      "Chỉ tạo TreatmentRule deterministic sau khi xác minh đúng cặp cây trồng–đối tượng, liều và PHI."
+    ],
+    "source_ids": [
+      "S05",
+      "S03",
+      "S27",
+      "S29"
+    ],
+    "evidence_note": "Targeted review 2026-09-10 chưa xác minh được một TreatmentRule Việt Nam đủ exact cho đúng CV class này. Đây là trạng thái 'chưa xác minh', không phải khẳng định rằng không tồn tại sản phẩm đăng ký.",
+    "eligible_for_deterministic_guardrail": true,
+    "review": {
+      "reviewed_at": "2026-09-10",
+      "review_status": "NO_EXACT_VN_RULE_VERIFIED_IN_TARGETED_REVIEW",
+      "absence_is_not_proof_of_nonexistence": true
+    }
+  },
+  {
+    "policy_id": "DMP-006",
+    "disease_code": "Apple___Black_rot",
+    "management_status": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "AGRONOMIST_ONLY_UNTIL_VN_RULE_VERIFIED",
+    "recommended_actions": [
+      "Không tự sinh hoạt chất, tên thuốc, liều lượng hoặc PHI.",
+      "Dùng RAG chỉ để giải thích triệu chứng, tác nhân, phòng ngừa và quản lý không định lượng.",
+      "Nếu cần xử lý hóa học, chuyển kỹ sư nông nghiệp kiểm tra sản phẩm/nhãn đăng ký hiện hành tại Việt Nam.",
+      "Chỉ tạo TreatmentRule deterministic sau khi xác minh đúng cặp cây trồng–đối tượng, liều và PHI."
+    ],
+    "source_ids": [
+      "S06",
+      "S03",
+      "S27",
+      "S29"
+    ],
+    "evidence_note": "Targeted review 2026-09-10 chưa xác minh được một TreatmentRule Việt Nam đủ exact cho đúng CV class này. Đây là trạng thái 'chưa xác minh', không phải khẳng định rằng không tồn tại sản phẩm đăng ký.",
+    "eligible_for_deterministic_guardrail": true,
+    "review": {
+      "reviewed_at": "2026-09-10",
+      "review_status": "NO_EXACT_VN_RULE_VERIFIED_IN_TARGETED_REVIEW",
+      "absence_is_not_proof_of_nonexistence": true
+    }
+  },
+  {
+    "policy_id": "DMP-007",
+    "disease_code": "Apple___Cedar_apple_rust",
+    "management_status": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "AGRONOMIST_ONLY_UNTIL_VN_RULE_VERIFIED",
+    "recommended_actions": [
+      "Không tự sinh hoạt chất, tên thuốc, liều lượng hoặc PHI.",
+      "Dùng RAG chỉ để giải thích triệu chứng, tác nhân, phòng ngừa và quản lý không định lượng.",
+      "Nếu cần xử lý hóa học, chuyển kỹ sư nông nghiệp kiểm tra sản phẩm/nhãn đăng ký hiện hành tại Việt Nam.",
+      "Chỉ tạo TreatmentRule deterministic sau khi xác minh đúng cặp cây trồng–đối tượng, liều và PHI."
+    ],
+    "source_ids": [
+      "S07",
+      "S03",
+      "S27",
+      "S29"
+    ],
+    "evidence_note": "Targeted review 2026-09-10 chưa xác minh được một TreatmentRule Việt Nam đủ exact cho đúng CV class này. Đây là trạng thái 'chưa xác minh', không phải khẳng định rằng không tồn tại sản phẩm đăng ký.",
+    "eligible_for_deterministic_guardrail": true,
+    "review": {
+      "reviewed_at": "2026-09-10",
+      "review_status": "NO_EXACT_VN_RULE_VERIFIED_IN_TARGETED_REVIEW",
+      "absence_is_not_proof_of_nonexistence": true
+    }
+  },
+  {
+    "policy_id": "DMP-008",
+    "disease_code": "Cherry_(including_sour)___Powdery_mildew",
+    "management_status": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "AGRONOMIST_ONLY_UNTIL_VN_RULE_VERIFIED",
+    "recommended_actions": [
+      "Không tự sinh hoạt chất, tên thuốc, liều lượng hoặc PHI.",
+      "Dùng RAG chỉ để giải thích triệu chứng, tác nhân, phòng ngừa và quản lý không định lượng.",
+      "Nếu cần xử lý hóa học, chuyển kỹ sư nông nghiệp kiểm tra sản phẩm/nhãn đăng ký hiện hành tại Việt Nam.",
+      "Chỉ tạo TreatmentRule deterministic sau khi xác minh đúng cặp cây trồng–đối tượng, liều và PHI."
+    ],
+    "source_ids": [
+      "S08",
+      "S03",
+      "S27",
+      "S29"
+    ],
+    "evidence_note": "Targeted review 2026-09-10 chưa xác minh được một TreatmentRule Việt Nam đủ exact cho đúng CV class này. Đây là trạng thái 'chưa xác minh', không phải khẳng định rằng không tồn tại sản phẩm đăng ký.",
+    "eligible_for_deterministic_guardrail": true,
+    "review": {
+      "reviewed_at": "2026-09-10",
+      "review_status": "NO_EXACT_VN_RULE_VERIFIED_IN_TARGETED_REVIEW",
+      "absence_is_not_proof_of_nonexistence": true
+    }
+  },
+  {
+    "policy_id": "DMP-009",
+    "disease_code": "Grape___Black_rot",
+    "management_status": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "AGRONOMIST_ONLY_UNTIL_VN_RULE_VERIFIED",
+    "recommended_actions": [
+      "Không tự sinh hoạt chất, tên thuốc, liều lượng hoặc PHI.",
+      "Dùng RAG chỉ để giải thích triệu chứng, tác nhân, phòng ngừa và quản lý không định lượng.",
+      "Nếu cần xử lý hóa học, chuyển kỹ sư nông nghiệp kiểm tra sản phẩm/nhãn đăng ký hiện hành tại Việt Nam.",
+      "Chỉ tạo TreatmentRule deterministic sau khi xác minh đúng cặp cây trồng–đối tượng, liều và PHI."
+    ],
+    "source_ids": [
+      "S12",
+      "S03",
+      "S27",
+      "S29"
+    ],
+    "evidence_note": "Targeted review 2026-09-10 chưa xác minh được một TreatmentRule Việt Nam đủ exact cho đúng CV class này. Đây là trạng thái 'chưa xác minh', không phải khẳng định rằng không tồn tại sản phẩm đăng ký.",
+    "eligible_for_deterministic_guardrail": true,
+    "review": {
+      "reviewed_at": "2026-09-10",
+      "review_status": "NO_EXACT_VN_RULE_VERIFIED_IN_TARGETED_REVIEW",
+      "absence_is_not_proof_of_nonexistence": true
+    }
+  },
+  {
+    "policy_id": "DMP-010",
+    "disease_code": "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)",
+    "management_status": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "AGRONOMIST_ONLY_UNTIL_VN_RULE_VERIFIED",
+    "recommended_actions": [
+      "Không tự sinh hoạt chất, tên thuốc, liều lượng hoặc PHI.",
+      "Dùng RAG chỉ để giải thích triệu chứng, tác nhân, phòng ngừa và quản lý không định lượng.",
+      "Nếu cần xử lý hóa học, chuyển kỹ sư nông nghiệp kiểm tra sản phẩm/nhãn đăng ký hiện hành tại Việt Nam.",
+      "Chỉ tạo TreatmentRule deterministic sau khi xác minh đúng cặp cây trồng–đối tượng, liều và PHI."
+    ],
+    "source_ids": [
+      "S14",
+      "S03",
+      "S27",
+      "S29"
+    ],
+    "evidence_note": "Targeted review 2026-09-10 chưa xác minh được một TreatmentRule Việt Nam đủ exact cho đúng CV class này. Đây là trạng thái 'chưa xác minh', không phải khẳng định rằng không tồn tại sản phẩm đăng ký.",
+    "eligible_for_deterministic_guardrail": true,
+    "review": {
+      "reviewed_at": "2026-09-10",
+      "review_status": "NO_EXACT_VN_RULE_VERIFIED_IN_TARGETED_REVIEW",
+      "absence_is_not_proof_of_nonexistence": true
+    }
+  },
+  {
+    "policy_id": "DMP-011",
+    "disease_code": "Peach___Bacterial_spot",
+    "management_status": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "AGRONOMIST_ONLY_UNTIL_VN_RULE_VERIFIED",
+    "recommended_actions": [
+      "Không tự sinh hoạt chất, tên thuốc, liều lượng hoặc PHI.",
+      "Dùng RAG chỉ để giải thích triệu chứng, tác nhân, phòng ngừa và quản lý không định lượng.",
+      "Nếu cần xử lý hóa học, chuyển kỹ sư nông nghiệp kiểm tra sản phẩm/nhãn đăng ký hiện hành tại Việt Nam.",
+      "Chỉ tạo TreatmentRule deterministic sau khi xác minh đúng cặp cây trồng–đối tượng, liều và PHI."
+    ],
+    "source_ids": [
+      "S16",
+      "S03",
+      "S27",
+      "S29"
+    ],
+    "evidence_note": "Targeted review 2026-09-10 chưa xác minh được một TreatmentRule Việt Nam đủ exact cho đúng CV class này. Đây là trạng thái 'chưa xác minh', không phải khẳng định rằng không tồn tại sản phẩm đăng ký.",
+    "eligible_for_deterministic_guardrail": true,
+    "review": {
+      "reviewed_at": "2026-09-10",
+      "review_status": "NO_EXACT_VN_RULE_VERIFIED_IN_TARGETED_REVIEW",
+      "absence_is_not_proof_of_nonexistence": true
+    }
+  },
+  {
+    "policy_id": "DMP-012",
+    "disease_code": "Pepper,_bell___Bacterial_spot",
+    "management_status": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "AGRONOMIST_ONLY_UNTIL_VN_RULE_VERIFIED",
+    "recommended_actions": [
+      "Không tự sinh hoạt chất, tên thuốc, liều lượng hoặc PHI.",
+      "Dùng RAG chỉ để giải thích triệu chứng, tác nhân, phòng ngừa và quản lý không định lượng.",
+      "Nếu cần xử lý hóa học, chuyển kỹ sư nông nghiệp kiểm tra sản phẩm/nhãn đăng ký hiện hành tại Việt Nam.",
+      "Chỉ tạo TreatmentRule deterministic sau khi xác minh đúng cặp cây trồng–đối tượng, liều và PHI."
+    ],
+    "source_ids": [
+      "S17",
+      "S03",
+      "S27",
+      "S29"
+    ],
+    "evidence_note": "Targeted review 2026-09-10 chưa xác minh được một TreatmentRule Việt Nam đủ exact cho đúng CV class này. Đây là trạng thái 'chưa xác minh', không phải khẳng định rằng không tồn tại sản phẩm đăng ký.",
+    "eligible_for_deterministic_guardrail": true,
+    "review": {
+      "reviewed_at": "2026-09-10",
+      "review_status": "NO_EXACT_VN_RULE_VERIFIED_IN_TARGETED_REVIEW",
+      "absence_is_not_proof_of_nonexistence": true
+    }
+  },
+  {
+    "policy_id": "DMP-013",
+    "disease_code": "Strawberry___Leaf_scorch",
+    "management_status": "LOCAL_TREATMENT_RULE_NOT_VERIFIED",
+    "direct_treatment_rule_allowed": false,
+    "chemical_rule_scope": "AGRONOMIST_ONLY_UNTIL_VN_RULE_VERIFIED",
+    "recommended_actions": [
+      "Không tự sinh hoạt chất, tên thuốc, liều lượng hoặc PHI.",
+      "Dùng RAG chỉ để giải thích triệu chứng, tác nhân, phòng ngừa và quản lý không định lượng.",
+      "Nếu cần xử lý hóa học, chuyển kỹ sư nông nghiệp kiểm tra sản phẩm/nhãn đăng ký hiện hành tại Việt Nam.",
+      "Chỉ tạo TreatmentRule deterministic sau khi xác minh đúng cặp cây trồng–đối tượng, liều và PHI."
+    ],
+    "source_ids": [
+      "S20",
+      "S03",
+      "S27",
+      "S29"
+    ],
+    "evidence_note": "Targeted review 2026-09-10 chưa xác minh được một TreatmentRule Việt Nam đủ exact cho đúng CV class này. Đây là trạng thái 'chưa xác minh', không phải khẳng định rằng không tồn tại sản phẩm đăng ký.",
+    "eligible_for_deterministic_guardrail": true,
+    "review": {
+      "reviewed_at": "2026-09-10",
+      "review_status": "NO_EXACT_VN_RULE_VERIFIED_IN_TARGETED_REVIEW",
+      "absence_is_not_proof_of_nonexistence": true
+    }
+  }
+]

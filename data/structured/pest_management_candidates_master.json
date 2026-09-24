@@ -1,0 +1,20 @@
+[
+  {
+    "candidate_id": "PEST-CAND-001",
+    "class_code": "Tomato___Spider_mites Two-spotted_spider_mite",
+    "class_type": "PEST_ARACHNID",
+    "registered_target_text": "Nhện đỏ/cà chua",
+    "pesticide_candidate_id": "P-CAND-006",
+    "pesticide_name": "Agrovertin 50EC",
+    "mapping_status": "LIKELY_BUT_NEEDS_AGRONOMIST_REVIEW",
+    "quantitative_status": "NEEDS_PRIMARY_LABEL_SOURCE",
+    "eligible_for_seed": false,
+    "source_ids": [
+      "S27"
+    ],
+    "notes": [
+      "PlantVillage class là Two-spotted spider mite; danh mục Việt Nam dùng thuật ngữ rộng 'nhện đỏ'.",
+      "Không dùng liều/PHI từ nguồn bán lẻ hoặc database thứ cấp để tạo rule final."
+    ]
+  }
+]

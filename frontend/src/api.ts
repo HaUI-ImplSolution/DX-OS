@@ -81,7 +81,8 @@ export const getIsolationStatus = (id: number) =>
 // Disease report (reportedBy lấy từ user đang đăng nhập, không gửi từ client)
 export const listDiseaseReports = (cropSeasonId: number) =>
   request<DiseaseReport[]>(`/crop-seasons/${cropSeasonId}/disease-reports`);
-export const getDiseaseReport = (id: number) => request<DiseaseReport>(`/disease-reports/${id}`);
+export const getDiseaseReport = (id: number, signal?: AbortSignal) =>
+  request<DiseaseReport>(`/disease-reports/${id}`, { signal });
 export const createDiseaseReport = (cropSeasonId: number, image: File) => {
   const form = new FormData();
   form.append("image", image);
@@ -94,8 +95,8 @@ export const createDiseaseReport = (cropSeasonId: number, image: File) => {
 // Diagnosis (approvedBy/rejectedBy lấy từ kỹ sư đang đăng nhập, không gửi từ client)
 export const createDiagnosis = (reportId: number, payload: DiagnosisCreateRequest) =>
   request<Diagnosis>(`/disease-reports/${reportId}/diagnosis`, json("POST", payload));
-export const createAiDiagnosis = (reportId: number) =>
-  request<Diagnosis>(`/disease-reports/${reportId}/diagnosis/ai`, { method: "POST" });
+export const createAiDiagnosis = (reportId: number, signal?: AbortSignal) =>
+  request<Diagnosis>(`/disease-reports/${reportId}/diagnosis/ai`, { method: "POST", signal });
 export const approveDiagnosis = (reportId: number) =>
   request<Diagnosis>(`/disease-reports/${reportId}/diagnosis/approve`, { method: "POST" });
 export const rejectDiagnosis = (reportId: number, payload: DiagnosisRejectRequest) =>

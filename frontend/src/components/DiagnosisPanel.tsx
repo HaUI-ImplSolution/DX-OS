@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  ApiError,
   applyDiagnosis,
   approveDiagnosis,
   createAiDiagnosis,
   createDiagnosis,
+  getDiseaseReport,
   rejectDiagnosis,
 } from "../api";
 import type {
@@ -25,6 +27,24 @@ interface DiagnosisPanelProps {
   onError: (message: string) => void;
 }
 
+function waitFor(delay: number, signal: AbortSignal) {
+  return new Promise<void>((resolve) => {
+    if (signal.aborted) {
+      resolve();
+      return;
+    }
+    const timer = window.setTimeout(resolve, delay);
+    signal.addEventListener(
+      "abort",
+      () => {
+        window.clearTimeout(timer);
+        resolve();
+      },
+      { once: true },
+    );
+  });
+}
+
 function CreateDiagnosisForm({
   reportId,
   diseases,
@@ -41,15 +61,77 @@ function CreateDiagnosisForm({
   const [modelVersion, setModelVersion] = useState("manual-input-v1");
   const [submitting, setSubmitting] = useState(false);
   const [aiSubmitting, setAiSubmitting] = useState(false);
+  const [aiStage, setAiStage] = useState<string | null>(null);
+  const aiInFlight = useRef(false);
+  const mounted = useRef(true);
+  const abortController = useRef<AbortController | null>(null);
+  const reconcileController = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => {
+      mounted.current = false;
+      abortController.current?.abort();
+      reconcileController.current?.abort();
+    };
+  }, []);
+
+  const reconcileDiagnosis = async () => {
+    if (mounted.current) setAiStage("Đang kiểm tra kết quả đã lưu…");
+    const controller = new AbortController();
+    reconcileController.current = controller;
+    const delays = [0, 1500, 3000];
+    for (const delay of delays) {
+      if (delay > 0) await waitFor(delay, controller.signal);
+      if (!mounted.current || controller.signal.aborted) return false;
+      try {
+        const report = await getDiseaseReport(reportId, controller.signal);
+        if (report.diagnosis) {
+          reconcileController.current = null;
+          onUpdated(report.diagnosis);
+          return true;
+        }
+      } catch {
+        // Lỗi đối soát tạm thời được thử lại hữu hạn ở vòng tiếp theo.
+      }
+    }
+    reconcileController.current = null;
+    return false;
+  };
 
   const runAi = async () => {
+    if (aiInFlight.current) return;
+    aiInFlight.current = true;
     setAiSubmitting(true);
+    setAiStage("Đã gửi yêu cầu, đang chờ kết quả AI…");
+    const controller = new AbortController();
+    abortController.current = controller;
+    const timeout = window.setTimeout(() => controller.abort(), 125_000);
     try {
-      onUpdated(await createAiDiagnosis(reportId));
+      onUpdated(await createAiDiagnosis(reportId, controller.signal));
     } catch (err) {
-      onError(err instanceof Error ? err.message : "Không chạy được chẩn đoán AI");
+      const ambiguous =
+        err instanceof DOMException && err.name === "AbortError"
+          ? true
+          : err instanceof ApiError
+            ? err.status === 409 || err.status >= 500
+            : true;
+      const recovered = ambiguous ? await reconcileDiagnosis() : false;
+      if (!recovered && mounted.current) {
+        const detail = err instanceof Error ? err.message : "Không chạy được chẩn đoán AI";
+        onError(
+          ambiguous
+            ? `${detail}. Chưa tìm thấy kết quả đã lưu; vui lòng thử lại hoặc tải lại trang.`
+            : detail,
+        );
+      }
     } finally {
-      setAiSubmitting(false);
+      window.clearTimeout(timeout);
+      abortController.current = null;
+      aiInFlight.current = false;
+      if (mounted.current) {
+        setAiSubmitting(false);
+        setAiStage(null);
+      }
     }
   };
 
@@ -85,6 +167,7 @@ function CreateDiagnosisForm({
           {aiSubmitting ? "AI đang chẩn đoán…" : "Chạy chẩn đoán AI"}
         </button>
       </div>
+      {aiStage && <p className="ai-stage" role="status" aria-live="polite">{aiStage}</p>}
       <p className="empty-hint">Hoặc nhập tay kết quả CV để kiểm thử nghiệp vụ:
       </p>
       <label className="field-label">
@@ -314,6 +397,22 @@ export default function DiagnosisPanel({
             Độ tin cậy {Math.round(diagnosis.confidence * 100)}% · model {diagnosis.modelVersion} ·{" "}
             {new Date(diagnosis.diagnosedAt).toLocaleString("vi-VN")}
           </p>
+          {diagnosis.recommendationPath === "low_confidence_review" && (
+            <div className="banner banner-warning" role="alert">
+              <strong>Kết quả chưa đủ độ tin cậy để đề xuất điều trị</strong>
+              <p>
+                Confidence {Math.round(diagnosis.confidence * 100)}% thấp hơn ngưỡng{" "}
+                {Math.round(diagnosis.confidenceThreshold * 100)}%. Hãy chụp lại ảnh rõ hơn hoặc
+                nhờ kỹ sư đánh giá; đây chưa phải kết luận chắc chắn.
+              </p>
+            </div>
+          )}
+          {diagnosis.recommendationPath === "review_required" && (
+            <div className="banner banner-warning">
+              Chưa có đúng một quy tắc điều trị đủ điều kiện. Kỹ sư cần đánh giá và hệ thống sẽ
+              không tự chọn thuốc theo thứ tự.
+            </div>
+          )}
           <blockquote className="recommendation">{diagnosis.recommendationText}</blockquote>
 
           {diagnosis.treatmentRule && (
@@ -358,7 +457,8 @@ export default function DiagnosisPanel({
           )}
           {diagnosis.approvalStatus === "APPROVED" && !diagnosis.treatmentRule && (
             <div className="banner banner-warning">
-              Chưa có quy tắc điều trị được duyệt nên không thể ghi nhận phun thuốc.
+              Kết quả này thuộc nhánh cần review và không có quy tắc điều trị được chọn, nên không
+              thể ghi nhận phun thuốc.
             </div>
           )}
 

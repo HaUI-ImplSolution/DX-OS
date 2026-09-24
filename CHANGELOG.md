@@ -5,6 +5,11 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Backend (Spring Boot — `backend/DX-Farm`)
 
+### 2026-09-24
+
+- Backend tự kiểm tra confidence và số treatment rule; low-confidence hoặc 0/nhiều rule không thể đi vào apply.
+- Upload chỉ nhận JPEG/PNG hợp lệ, giới hạn 10 MiB và trả lỗi 4xx có kiểm soát.
+
 ### 2026-09-16
 
 **Đã xong — Phase 2 tách AI thành dịch vụ suy luận (P2-0..P2-6, xem `development/docs/legacy_docs/ai_backend_decoupling_checklist.md`):**
@@ -70,6 +75,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## AI Service (Python)
 
+### 2026-09-24
+
+- Thêm safety path cho low-confidence và 0/1/nhiều rule; bỏ lựa chọn rule theo thứ tự.
+
 ### 2026-09-18
 
 - Hoàn tất tích hợp AI stateless với Backend REST và AI Vector DB riêng sau ba phase decoupling.
@@ -131,6 +140,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Frontend (`frontend`)
 
+### 2026-09-24
+
+- Thêm preflight/preview ảnh, cảnh báo review và tự đối soát diagnosis sau lỗi mạng hoặc timeout.
+
 ### 2026-09-11
 
 **Đã xong — Đăng nhập qua Keycloak (SSO thật):**
@@ -167,6 +180,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Đã test qua trình duyệt thật với từng role, xác nhận UI và 401/403 đúng chỗ.
 
 ## Deploy (`deploy`)
+
+### 2026-09-24
+
+- Đồng bộ `CV_CONFIDENCE_THRESHOLD` cho Backend và AI qua Docker Compose.
 
 ### 2026-09-11
 

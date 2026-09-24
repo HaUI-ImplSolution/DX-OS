@@ -19,6 +19,7 @@ from app.cv.contract import class_contract
 from app.db.session import get_db
 from app.rag.retriever import RAGRetriever
 from app.services.inference_service import (
+    ALLOWED_IMAGE_CONTENT_TYPES,
     ImageFetchError,
     fetch_image,
     run_stateless_diagnose,
@@ -31,9 +32,12 @@ MAX_IMAGE_BYTES = 10 * 1024 * 1024
 
 
 async def read_image(image: UploadFile) -> bytes:
-    if not (image.content_type or "").startswith("image/"):
-        raise HTTPException(400, "File uploaded must be an image.")
+    content_type = (image.content_type or "").split(";", 1)[0].lower()
+    if content_type not in ALLOWED_IMAGE_CONTENT_TYPES:
+        raise HTTPException(400, "File uploaded must be a JPEG or PNG image.")
     data = await image.read(MAX_IMAGE_BYTES + 1)
+    if not data:
+        raise HTTPException(400, "Image file must not be empty.")
     if len(data) > MAX_IMAGE_BYTES:
         raise HTTPException(413, "Image exceeds 10 MiB.")
     return data

@@ -1,8 +1,8 @@
 # Kế hoạch hoàn thiện AI Web E2E và chuẩn bị Giai đoạn 3
 
-> **Trạng thái:** Backlog nâng cấp, chưa bắt đầu.
+> **Trạng thái:** Gate A hoàn tất; Nâng cấp B–C chưa bắt đầu.
 >
-> **Cập nhật:** 23/09/2026.
+> **Cập nhật:** 24/09/2026.
 >
 > **Nguồn trạng thái hiện tại:** [AI Web E2E Demo](AI_WEB_E2E_DEMO_README.md).
 >
@@ -55,11 +55,11 @@ Không mở task để viết lại các phần trên nếu không có regressio
 
 | Pain point hiện tại | Xử lý trong checklist | Trạng thái |
 |---|---|---|
-| Frontend chưa preflight file, chỉ có `accept="image/*"` | A1 | Làm ngay |
-| Low-confidence chỉ là cờ nội bộ, vẫn có thể đi vào treatment path | A2 | Làm ngay |
-| AI chọn rule đầu tiên khi Backend trả nhiều rule | A3 | Làm ngay theo fail-safe |
+| Frontend chưa preflight file, chỉ có `accept="image/*"` | A1 | Đã xong |
+| Low-confidence chỉ là cờ nội bộ, vẫn có thể đi vào treatment path | A2 | Đã xong |
+| AI chọn rule đầu tiên khi Backend trả nhiều rule | A3 | Đã xong theo fail-safe |
 | Request AI đồng bộ có thể giữ HTTP tới 120 giây | A4 giảm tác động; async durable hoãn | Có giả định |
-| Rớt mạng có thể khiến UI không biết diagnosis đã được lưu | A4 refetch trạng thái từ Backend | Làm ngay |
+| Rớt mạng có thể khiến UI không biết diagnosis đã được lưu | A4 refetch trạng thái từ Backend | Đã xong |
 | Chưa có correlation/log và benchmark lặp lại được | B1, B2 | Làm ngay |
 | Chưa lưu audit/replay bền vững | Hoãn vì cần persistence/schema | Deferred |
 | Chưa có DiseaseManagementPolicy đầy đủ | Dùng rule hiện tại; trường hợp mơ hồ trả review | Có giả định |
@@ -79,10 +79,10 @@ Không mở task để viết lại các phần trên nếu không có regressio
 
 **Hoàn thành khi**
 
-- [ ] File sai loại, rỗng hoặc quá 10 MiB không gọi API và có thông báo tiếng Việt.
-- [ ] Lỗi có focus/`aria-live`, không chỉ biểu diễn bằng màu.
-- [ ] Bypass Frontend vẫn bị Backend/AI từ chối.
-- [ ] Frontend build và test liên quan pass.
+- [x] File sai loại, rỗng hoặc quá 10 MiB không gọi API và có thông báo tiếng Việt.
+- [x] Lỗi có focus/`aria-live`, không chỉ biểu diễn bằng màu.
+- [x] Bypass Frontend vẫn bị Backend/AI từ chối.
+- [x] Frontend build và test liên quan pass.
 
 ### A2 — Low-confidence trở thành safety gate thật
 
@@ -97,10 +97,10 @@ Không mở task để viết lại các phần trên nếu không có regressio
 
 **Hoàn thành khi**
 
-- [ ] Có test ngay dưới, bằng và trên threshold.
-- [ ] Low confidence không có `selected_rule_id` và không thể tạo `TreatmentApplication`.
-- [ ] ENGINEER vẫn xem được CV result/evidence để đánh giá, nhưng UI không trình bày như kết luận chắc chắn.
-- [ ] Threshold và model version xuất hiện trong bằng chứng test.
+- [x] Có test ngay dưới, bằng và trên threshold.
+- [x] Low confidence không có `selected_rule_id` và không thể tạo `TreatmentApplication`.
+- [x] ENGINEER vẫn xem được CV result/evidence để đánh giá, nhưng UI không trình bày như kết luận chắc chắn.
+- [x] Threshold và model version xuất hiện trong bằng chứng test.
 
 ### A3 — Bỏ chọn rule đầu tiên
 
@@ -114,10 +114,10 @@ Không mở task để viết lại các phần trên nếu không có regressio
 
 **Hoàn thành khi**
 
-- [ ] Không còn `actions[0]` hoặc logic tương đương để quyết định treatment.
-- [ ] Có test cho 0, 1 và nhiều rule.
-- [ ] AI không tự tạo thuốc/liều/PHI để giải quyết trường hợp mơ hồ.
-- [ ] Backend là final validator cho path và rule.
+- [x] Không còn `actions[0]` hoặc logic tương đương để quyết định treatment.
+- [x] Có test cho 0, 1 và nhiều rule.
+- [x] AI không tự tạo thuốc/liều/PHI để giải quyết trường hợp mơ hồ.
+- [x] Backend là final validator cho path và rule.
 
 ### A4 — Khôi phục UI khi request chậm hoặc rớt mạng
 
@@ -132,13 +132,13 @@ Không mở task để viết lại các phần trên nếu không có regressio
 
 **Hoàn thành khi**
 
-- [ ] Request thành công cập nhật diagnosis như hiện tại.
-- [ ] Request rớt sau khi Backend đã lưu vẫn tự tìm lại diagnosis qua refetch.
-- [ ] Double-click không tạo hai diagnosis.
-- [ ] UI có thông báo hành động tiếp theo khi AI unavailable/timeout.
-- [ ] E2E ba role hiện tại vẫn pass.
+- [x] Request thành công cập nhật diagnosis như hiện tại.
+- [x] Request rớt sau khi Backend đã lưu vẫn tự tìm lại diagnosis qua refetch.
+- [x] Double-click không tạo hai diagnosis.
+- [x] UI có thông báo hành động tiếp theo khi AI unavailable/timeout.
+- [x] E2E ba role hiện tại vẫn pass.
 
-**Gate A:** A1–A4 hoàn tất; low confidence và nhiều rule không thể đi nhầm vào chemical apply; luồng E2E hiện tại không regression.
+**Gate A:** Hoàn tất ngày 24/09/2026; low confidence và nhiều rule không thể đi nhầm vào chemical apply, còn luồng E2E ba role không regression.
 
 ## 6. Nâng cấp B — Đo được, kiểm tra được và đủ điều kiện OLP
 

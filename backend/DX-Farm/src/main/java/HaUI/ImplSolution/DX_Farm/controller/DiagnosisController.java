@@ -42,7 +42,7 @@ public class DiagnosisController {
 
   @PostMapping("/ai")
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(summary = "Trigger AI Service diagnosis + deterministic treatment lookup")
+  @Operation(summary = "Trigger AI diagnosis with confidence and deterministic rule safety gates")
   public ApiResponse<DiagnosisResponse> createFromAi(@PathVariable Long reportId) {
     return ApiResponse.success("Diagnosis recorded", diagnosisService.createFromAi(reportId));
   }

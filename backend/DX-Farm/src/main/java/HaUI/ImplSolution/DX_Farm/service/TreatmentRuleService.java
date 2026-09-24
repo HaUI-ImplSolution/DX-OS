@@ -1,7 +1,6 @@
 package HaUI.ImplSolution.DX_Farm.service;
 
 import HaUI.ImplSolution.DX_Farm.dto.TreatmentRuleResponse;
-import HaUI.ImplSolution.DX_Farm.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.DX_Farm.model.TreatmentRule;
 import HaUI.ImplSolution.DX_Farm.repository.TreatmentRuleRepository;
 import java.util.List;
@@ -23,15 +22,8 @@ public class TreatmentRuleService {
         .toList();
   }
 
-  public TreatmentRule findByDiseaseCodeOrThrow(String diseaseCode) {
-    return treatmentRuleRepository.findFirstByDisease_CodeOrderByIdAsc(diseaseCode).orElseThrow(
-        () -> new ResourceNotFoundException("No treatment rule found for disease: " + diseaseCode));
-  }
-
-  public TreatmentRule findByIdAndDiseaseCodeOrThrow(Long ruleId, String diseaseCode) {
-    return treatmentRuleRepository.findByIdAndDisease_Code(ruleId, diseaseCode)
-        .orElseThrow(() -> new ResourceNotFoundException(
-            "Treatment rule %d not found for disease: %s".formatted(ruleId, diseaseCode)));
+  public List<TreatmentRule> findByDiseaseCode(String diseaseCode) {
+    return treatmentRuleRepository.findByDisease_CodeOrderByIdAsc(diseaseCode);
   }
 
   public static TreatmentRuleResponse toResponse(TreatmentRule rule) {

@@ -15,6 +15,8 @@ Response khớp DTO `AiDiagnoseResponse`, gồm `request_id`, `cv_result`, `rag_
 Thuốc, `dose_amount`, `phi_days` và `version` phải giữ nguyên từ structured facts do Backend cung cấp.
 Backend kiểm tra lại rule version và lưu recommendation ở trạng thái `PENDING`.
 
+`structured_context.path` có ba giá trị: `treatment` khi confidence đạt ngưỡng và có đúng một rule; `review_required` khi có 0/nhiều rule; `low_confidence_review` khi confidence dưới ngưỡng. Hai path review bắt buộc có `selected_rule_id = null`; Backend tự kiểm tra lại confidence và số rule hiện hành.
+
 Contract JSON đầy đủ được định nghĩa tại mục 5 của [`ai_backend_decoupling_plan.md`](./ai_backend_decoupling_plan.md).
 
 ## Endpoint hỗ trợ

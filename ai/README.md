@@ -43,6 +43,8 @@ Tài liệu chi tiết theo module:
 
 `POST /api/v1/diagnose` tải ảnh từ `image_url`, chạy CV, gọi Backend lấy structured facts, truy vấn RAG và trả recommendation. Nếu structured facts không khả dụng, request thất bại; AI không đưa ra recommendation chỉ dựa trên RAG.
 
+Safety path được xác định theo `CV_CONFIDENCE_THRESHOLD`: dưới ngưỡng luôn là `low_confidence_review`; đạt ngưỡng và có đúng một rule là `treatment`; 0 hoặc nhiều rule là `review_required`. Hai path review không có `selected_rule_id`; Backend kiểm tra lại confidence, số rule và version trước khi lưu.
+
 ## Dữ liệu và quyền sở hữu
 
 | Dữ liệu | Nơi sở hữu | Quyền của AI runtime |
@@ -70,6 +72,7 @@ Mẫu cấu hình nằm tại [`.env.example`](.env.example).
 | `OLLAMA_BASE_URL`, `OLLAMA_MODEL` | Cấu hình LLM diễn đạt recommendation |
 | `EMBEDDING_MODEL` | Model embedding dùng đồng nhất cho ingest và retrieval |
 | `CV_DEVICE` | `auto`, `cpu` hoặc `cuda` |
+| `CV_CONFIDENCE_THRESHOLD` | Ngưỡng safety dùng chung với Backend, mặc định `0.70` |
 
 Hai service key phải được cấu hình và khớp theo từng chiều. Khi key đầu vào AI để trống, `/api/v1/diagnose` trả `503` theo cơ chế fail-closed.
 
@@ -129,6 +132,7 @@ Lần chạy đầu có thể cần Internet để tải weights từ Hugging Fa
 ## Giới hạn vận hành
 
 - CV chỉ nhận diện 38 lớp đã huấn luyện; kết quả là tín hiệu chẩn đoán, không phải quyết định điều trị.
+- Confidence thấp không chọn treatment rule; threshold không thay thế bộ phát hiện ảnh ngoài phân phối chuyên biệt.
 - RAG chỉ tìm được kiến thức đã ingest và không thay thế structured facts từ Backend.
 - Ollama có thể fallback khi lỗi hoặc timeout, nhưng thiếu structured facts luôn làm lượt chẩn đoán thất bại.
 - `/predict` và `/knowledge/retrieve` là endpoint kỹ thuật; luồng nghiệp vụ chính đi qua Backend và `POST /api/v1/diagnose`.

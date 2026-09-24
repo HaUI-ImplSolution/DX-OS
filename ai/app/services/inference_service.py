@@ -29,6 +29,7 @@ if TYPE_CHECKING:
     from app.services.plant_disease_service import PlantDiseaseService
 
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
+ALLOWED_IMAGE_CONTENT_TYPES = frozenset({"image/jpeg", "image/png"})
 
 
 class ImageFetchError(RuntimeError):
@@ -46,8 +47,9 @@ async def fetch_image(image_url: str) -> bytes:
             client.stream("GET", image_url) as response,
         ):
             response.raise_for_status()
-            if not response.headers.get("content-type", "").startswith("image/"):
-                raise ImageFetchError("image_url did not return an image")
+            content_type = response.headers.get("content-type", "").split(";", 1)[0]
+            if content_type.lower() not in ALLOWED_IMAGE_CONTENT_TYPES:
+                raise ImageFetchError("image_url must return a JPEG or PNG image")
             content_length = response.headers.get("content-length")
             if content_length and int(content_length) > MAX_IMAGE_BYTES:
                 raise ImageFetchError("Image exceeds 10 MiB")
@@ -94,7 +96,7 @@ def run_stateless_diagnose(
             crop_season_id=payload.crop_season_id,
         )
         rules = [rule.model_dump(mode="json") for rule in context.rules]
-        return {"path": "treatment" if rules else "review_required", "rules": rules}
+        return {"rules": rules}
 
     def retrieve_rag(query: str, disease_code: str, top_k: int) -> list[dict]:
         return rag_retriever.retrieve(
@@ -144,10 +146,22 @@ def run_stateless_diagnose(
     known_rule_ids = {rule.rule_id for rule in structured_context.rules}
     if selected_rule_id is not None and selected_rule_id not in known_rule_ids:
         raise ValueError("Recommendation selected an unknown rule_id")
-    if structured_context.path == "treatment" and selected_rule_id is None:
-        raise ValueError("Treatment recommendation must select a rule_id")
-    if structured_context.path == "review_required" and selected_rule_id is not None:
-        raise ValueError("Review-required recommendation cannot select a rule_id")
+    threshold = get_settings().cv_confidence_threshold
+    if cv_result.confidence < threshold:
+        expected_path = "low_confidence_review"
+    elif len(structured_context.rules) == 1:
+        expected_path = "treatment"
+    else:
+        expected_path = "review_required"
+    if structured_context.path != expected_path:
+        raise ValueError(
+            f"Recommendation path must be {expected_path} for the current safety state"
+        )
+    if structured_context.path == "treatment":
+        if len(structured_context.rules) != 1 or selected_rule_id is None:
+            raise ValueError("Treatment recommendation must select its only rule_id")
+    elif selected_rule_id is not None:
+        raise ValueError("Review recommendation cannot select a rule_id")
 
     return DiagnoseResponse(
         request_id=payload.request_id,

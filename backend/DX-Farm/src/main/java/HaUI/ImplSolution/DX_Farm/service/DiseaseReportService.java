@@ -21,15 +21,18 @@ public class DiseaseReportService {
   private final DiagnosisRepository diagnosisRepository;
   private final FileStorageService fileStorageService;
   private final CurrentUserService currentUserService;
+  private final DiagnosisService diagnosisService;
 
   public DiseaseReportService(DiseaseReportRepository diseaseReportRepository,
       CropSeasonRepository cropSeasonRepository, DiagnosisRepository diagnosisRepository,
-      FileStorageService fileStorageService, CurrentUserService currentUserService) {
+      FileStorageService fileStorageService, CurrentUserService currentUserService,
+      DiagnosisService diagnosisService) {
     this.diseaseReportRepository = diseaseReportRepository;
     this.cropSeasonRepository = cropSeasonRepository;
     this.diagnosisRepository = diagnosisRepository;
     this.fileStorageService = fileStorageService;
     this.currentUserService = currentUserService;
+    this.diagnosisService = diagnosisService;
   }
 
   public List<DiseaseReportResponse> listByCropSeason(Long cropSeasonId) {
@@ -58,7 +61,7 @@ public class DiseaseReportService {
 
   private DiseaseReportResponse toResponse(DiseaseReport report) {
     var diagnosis = diagnosisRepository.findByDiseaseReportId(report.getId())
-        .map(DiagnosisService::toResponse).orElse(null);
+        .map(diagnosisService::toResponse).orElse(null);
     return new DiseaseReportResponse(report.getId(), report.getCropSeason().getId(),
         report.getImageRef(), report.getReportedBy(), report.getReportedAt(), diagnosis);
   }

@@ -1,10 +1,6 @@
 # Kế hoạch hoàn thiện Web E2E
 
-> **Trạng thái:** Backlog, chưa bắt đầu.
->
 > **Cập nhật:** 24/09/2026.
->
-> **Phạm vi:** Các công việc còn lại của Web E2E. Diễn giải và phạm vi ảnh hưởng xem [KE_HOACH_GIAI_THICH_THUAT_NGU.md](KE_HOACH_GIAI_THICH_THUAT_NGU.md).
 
 ## 1. Giả định đã chốt
 

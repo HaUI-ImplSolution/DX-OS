@@ -32,7 +32,7 @@ Nội dung là dữ liệu nguồn do AI bàn giao để Backend tham khảo và
 |---|---|---|
 | `structured/diseases.json` | 38 định danh lớp CV: `code`, tên tiếng Việt và mô tả | Seed/upsert vào `diseases`; đây là nguồn tiện dụng nhất cho danh mục bệnh |
 | `structured/class_contract.json` | Contract ánh xạ `class_id` → `model_label` → `disease_code` | Dùng để kiểm tra tính toàn vẹn, không cần tạo bảng riêng |
-| `structured/pesticides_candidates_master.json` | 8 danh tính sản phẩm đã có `eligible_for_pesticide_seed=true` | Seed vào `pesticides`; `code` và `unit` do generator suy ra, đang chờ bên data rà soát |
+| `structured/pesticides_candidates_master.json` | 8 danh tính sản phẩm, gồm mã Backend và đơn vị liều | Seed 6 record có `eligible_for_pesticide_seed=true`; 2 record chờ xác minh đơn vị |
 | `structured/treatment_rules_candidates_master.json` | 16 rule ứng viên cùng liều, PHI, nguồn và lý do bị chặn | Chỉ seed record có `eligible_for_seed=true`; hiện cả 16 record đều `false` nên chưa có rule nào được seed |
 | `structured/disease_management_policies_master.json` | 13 guardrail deterministic cho bệnh không có/không được phép suy ra thuốc chữa | Seed vào `disease_management_policies` (`recommended_actions` nối bằng xuống dòng, `source` là `source_ids` nối bằng dấu phẩy) |
 | `structured/pest_management_candidates_master.json` | 1 ứng viên quản lý nhện đỏ | Không seed: vẫn cần chuyên gia và nguồn nhãn chính thức |
@@ -63,13 +63,20 @@ File có đủ 38 lớp CV, gồm cả lớp `healthy`.
 
 ### 2. Pesticides
 
-Tám record trong `pesticides_candidates_master.json` đã xác minh danh tính sản phẩm và đều có `eligible_for_pesticide_seed=true`.
-Tuy nhiên:
+`pesticides_candidates_master.json` là contract nguồn cho bảng `pesticides` của Backend:
 
-- `candidate_id` chỉ là khóa liên kết trong bộ JSON, không phải `pesticides.code` chính thức.
+| JSON | Backend |
+|---|---|
+| `code` | `pesticides.code` — bắt buộc, duy nhất, `UPPER_SNAKE_CASE` |
+| `name` | `pesticides.name` |
+| `unit` | `pesticides.unit` — bắt buộc khi `eligible_for_pesticide_seed=true` |
+
+- `candidate_id` chỉ là khóa liên kết trong bộ JSON, không thay cho `pesticides.code`.
 - `formulation` (`SC`, `WP`, `EC`, `SL`) là dạng thuốc, **không phải** đơn vị liều.
-- Schema Backend bắt buộc `pesticides.unit`, vì vậy lấy đơn vị từ rule đã duyệt tương ứng (`L/ha`, `kg/ha` hoặc `% solution`), không lấy từ `formulation`.
-- Backend cần chốt quy ước mã ổn định, ví dụ `Ortiva 600SC` → `ORTIVA_600SC`.
+- Generator đọc trực tiếp `code` và `unit`; không tự suy ra từ `name`, treatment rule hoặc `formulation`.
+- Chỉ record có đủ `code`, `name`, `unit` với nguồn phù hợp mới được `eligible_for_pesticide_seed=true` và được đưa vào `data.sql`.
+- `P-CAND-006` chờ nhãn primary xác nhận đơn vị; `P-CAND-008` chỉ có nguồn secondary cho đơn vị. Cả hai không được seed.
+- Sinh lại toàn bộ seed: `python data/scripts/generate_seed_sql.py`; dùng `--check` để xác minh `data.sql` không lệch master.
 
 ### 3. Treatment rules
 

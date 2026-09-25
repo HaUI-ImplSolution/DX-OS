@@ -47,14 +47,12 @@ SET name = EXCLUDED.name,
 
 INSERT INTO pesticides (code, name, unit)
 VALUES
-  ('REVUS_OPTI_440SC', 'Revus Opti 440SC', 'L/ha'),
-  ('ORTIVA_600SC', 'Ortiva 600SC', 'L/ha'),
   ('AMISTAR_250SC', 'Amistar 250SC', 'L/ha'),
   ('AMISTAR_TOP_325SC', 'Amistar Top 325SC', 'L/ha'),
   ('ANTI_XO_200WP', 'Anti-Xo 200WP', 'kg/ha'),
-  ('AGROVERTIN_50EC', 'Agrovertin 50EC', 'L/ha'),
   ('ANTRACOL_70WP', 'Antracol 70WP', 'kg/ha'),
-  ('THUMB_0_5SL', 'Thumb 0.5SL', '% solution')
+  ('ORTIVA_600SC', 'Ortiva 600SC', 'L/ha'),
+  ('REVUS_OPTI_440SC', 'Revus Opti 440SC', 'L/ha')
 ON CONFLICT (code) DO UPDATE
 SET name = EXCLUDED.name,
     unit = EXCLUDED.unit;

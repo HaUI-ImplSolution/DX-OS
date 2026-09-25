@@ -32,7 +32,7 @@ Nội dung là dữ liệu nguồn do AI bàn giao để Backend tham khảo và
 |---|---|---|
 | `structured/diseases.json` | 38 định danh lớp CV: `code`, tên tiếng Việt và mô tả | Seed/upsert vào `diseases`; đây là nguồn tiện dụng nhất cho danh mục bệnh |
 | `structured/class_contract.json` | Contract ánh xạ `class_id` → `model_label` → `disease_code` | Dùng để kiểm tra tính toàn vẹn, không cần tạo bảng riêng |
-| `structured/pesticides_candidates_master.json` | 8 danh tính sản phẩm đã có `eligible_for_pesticide_seed=true` | Seed vào `pesticides`; `code` và `unit` do generator suy ra, đang chờ bên data rà soát |
+| `structured/pesticides_candidates_master.json` | 8 danh tính sản phẩm đã có `eligible_for_pesticide_seed=true` | Seed vào `pesticides`; `code` và `unit` do generator suy ra (`unit` từ rule đã duyệt, chưa có thì theo dạng bào chế), đang chờ bên data rà soát |
 | `structured/treatment_rules_candidates_master.json` | 16 rule ứng viên cùng liều, PHI, nguồn và lý do bị chặn | Chỉ seed record có `eligible_for_seed=true`; hiện cả 16 record đều `false` nên chưa có rule nào được seed |
 | `structured/disease_management_policies_master.json` | 13 guardrail deterministic cho bệnh không có/không được phép suy ra thuốc chữa | Seed vào `disease_management_policies` (`recommended_actions` nối bằng xuống dòng, `source` là `source_ids` nối bằng dấu phẩy) |
 | `structured/pest_management_candidates_master.json` | 1 ứng viên quản lý nhện đỏ | Không seed: vẫn cần chuyên gia và nguồn nhãn chính thức |
@@ -146,12 +146,7 @@ SELECT
 FROM diseases d
 JOIN pesticides p ON p.code = 'ORTIVA_600SC'
 WHERE d.code = 'Tomato___Early_blight'
-  AND NOT EXISTS (
-    SELECT 1
-    FROM treatment_rules tr
-    WHERE tr.disease_id = d.id
-      AND tr.pesticide_id = p.id
-  );
+ON CONFLICT (disease_id, pesticide_id) DO NOTHING;
 ```
 
 Các record còn lại trong `treatment_rules_candidates_master.json` vẫn là dữ liệu nghiên cứu.

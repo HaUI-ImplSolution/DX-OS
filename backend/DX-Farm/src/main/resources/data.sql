@@ -54,12 +54,40 @@ VALUES
   ('ANTI_XO_200WP', 'Anti-Xo 200WP', 'kg/ha'),
   ('AGROVERTIN_50EC', 'Agrovertin 50EC', 'L/ha'),
   ('ANTRACOL_70WP', 'Antracol 70WP', 'kg/ha'),
-  ('THUMB_0_5SL', 'Thumb 0.5SL', '% solution')
+  ('THUMB_0_5SL', 'Thumb 0.5SL', 'L/ha')
 ON CONFLICT (code) DO UPDATE
 SET name = EXCLUDED.name,
     unit = EXCLUDED.unit;
 
 -- No treatment rule has eligible_for_seed=true; none are seeded.
+
+-- Remove rules whose candidate is not eligible, unless a diagnosis references them.
+DELETE FROM treatment_rules tr
+USING diseases d, pesticides p, (VALUES
+  ('Corn_(maize)__Common_rust', 'AMISTAR_TOP_325SC'),
+  ('Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot', 'ANTRACOL_70WP'),
+  ('Corn_(maize)___Northern_Leaf_Blight', 'AMISTAR_TOP_325SC'),
+  ('Potato___Early_blight', 'REVUS_OPTI_440SC'),
+  ('Potato___Late_blight', 'AMISTAR_250SC'),
+  ('Potato___Late_blight', 'REVUS_OPTI_440SC'),
+  ('Squash___Powdery_mildew', 'THUMB_0_5SL'),
+  ('Tomato___Bacterial_spot', 'ANTI_XO_200WP'),
+  ('Tomato___Early_blight', 'AMISTAR_250SC'),
+  ('Tomato___Early_blight', 'ORTIVA_600SC'),
+  ('Tomato___Late_blight', 'AMISTAR_250SC'),
+  ('Tomato___Late_blight', 'ORTIVA_600SC'),
+  ('Tomato___Late_blight', 'REVUS_OPTI_440SC'),
+  ('Tomato___Leaf_Mold', 'ORTIVA_600SC'),
+  ('Tomato___Septoria_leaf_spot', 'ORTIVA_600SC'),
+  ('Tomato___Target_Spot', 'ORTIVA_600SC')
+) AS stale(disease_code, pesticide_code)
+WHERE tr.disease_id = d.id
+  AND tr.pesticide_id = p.id
+  AND d.code = stale.disease_code
+  AND p.code = stale.pesticide_code
+  AND NOT EXISTS (
+    SELECT 1 FROM diagnoses dg WHERE dg.treatment_rule_id = tr.id
+  );
 
 INSERT INTO disease_management_policies (
   disease_id, management_status, direct_treatment_rule_allowed,

@@ -16,7 +16,7 @@
 
 ## 2. Hiện trạng
 
-- `ddl-auto: update` + `sql.init.mode: always` — mỗi lần start, Hibernate cập nhật schema rồi `data.sql` chạy lại (tự né trùng bằng `ON CONFLICT`/`NOT EXISTS`).
+- `ddl-auto: update` + `sql.init.mode: always` — mỗi lần start, Hibernate cập nhật schema rồi `data.sql` chạy lại (tự né trùng bằng `ON CONFLICT` trên khoá duy nhất của DB).
   Không có Flyway/Liquibase.
 - Hai cơ chế seed song song, chưa có quy ước:
 

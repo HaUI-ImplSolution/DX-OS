@@ -83,5 +83,4 @@ Thumbs.db
 .claude/settings.local.json
 # Local codebase analysis artifacts
 .ua/
-
-development/docs/KE_HOACH_GIAI_THICH_THUAT_NGU.md
+.local/

@@ -153,12 +153,7 @@ SELECT
 FROM diseases d
 JOIN pesticides p ON p.code = 'ORTIVA_600SC'
 WHERE d.code = 'Tomato___Early_blight'
-  AND NOT EXISTS (
-    SELECT 1
-    FROM treatment_rules tr
-    WHERE tr.disease_id = d.id
-      AND tr.pesticide_id = p.id
-  );
+ON CONFLICT (disease_id, pesticide_id) DO NOTHING;
 ```
 
 Các record còn lại trong `treatment_rules_candidates_master.json` vẫn là dữ liệu nghiên cứu.

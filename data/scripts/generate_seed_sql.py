@@ -120,6 +120,11 @@ def generate():
             pesticide = by_candidate.get(r["pesticide_candidate_id"])
             if pesticide is None:
                 raise ValueError(f"{r['candidate_rule_id']}: pesticide not seeded")
+            if r["pesticide_name"] != pesticide["name"]:
+                raise ValueError(
+                    f"{r['candidate_rule_id']}: pesticide_name "
+                    f"{r['pesticide_name']!r} does not match {pesticide['name']!r}"
+                )
             if r["disease_code"] not in disease_codes:
                 raise ValueError(f"{r['candidate_rule_id']}: unknown disease_code")
             if r.get("phi_days") is None:
@@ -154,14 +159,46 @@ def generate():
             ")",
             "JOIN diseases d ON d.code = seed.disease_code",
             "JOIN pesticides p ON p.code = seed.pesticide_code",
-            "WHERE NOT EXISTS (",
-            "  SELECT 1 FROM treatment_rules tr",
-            "  WHERE tr.disease_id = d.id AND tr.pesticide_id = p.id",
-            ");",
+            "ON CONFLICT (disease_id, pesticide_id) DO UPDATE",
+            "SET dose_min = EXCLUDED.dose_min,",
+            "    dose_max = EXCLUDED.dose_max,",
+            "    dose_unit = EXCLUDED.dose_unit,",
+            "    phi_days = EXCLUDED.phi_days,",
+            "    notes = EXCLUDED.notes,",
+            "    source = EXCLUDED.source,",
+            "    version = EXCLUDED.version;",
             "",
         ]
     else:
         out += ["-- No treatment rule has eligible_for_seed=true; none are seeded.", ""]
+
+    eligible_pairs = {(r["disease_code"], r["pesticide_candidate_id"]) for r in rules}
+    stale_rows = sorted(
+        {
+            (r["disease_code"], by_candidate[r["pesticide_candidate_id"]]["code"])
+            for r in all_rules
+            if not r["eligible_for_seed"]
+            and r["pesticide_candidate_id"] in by_candidate
+            and r["disease_code"] in disease_codes
+            and (r["disease_code"], r["pesticide_candidate_id"]) not in eligible_pairs
+        }
+    )
+    if stale_rows:
+        out += [
+            "-- Remove rules whose candidate is not eligible, unless a diagnosis references them.",
+            "DELETE FROM treatment_rules tr",
+            "USING diseases d, pesticides p, (VALUES",
+            rows([q(disease), q(pesticide)] for disease, pesticide in stale_rows),
+            ") AS stale(disease_code, pesticide_code)",
+            "WHERE tr.disease_id = d.id",
+            "  AND tr.pesticide_id = p.id",
+            "  AND d.code = stale.disease_code",
+            "  AND p.code = stale.pesticide_code",
+            "  AND NOT EXISTS (",
+            "    SELECT 1 FROM diagnoses dg WHERE dg.treatment_rule_id = tr.id",
+            "  );",
+            "",
+        ]
 
     policy_rows = []
     for p in policies:

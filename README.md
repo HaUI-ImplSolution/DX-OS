@@ -117,7 +117,7 @@ Chỉ có hai cơ chế seed, không thêm cơ chế thứ ba:
 
 - `data.sql` không sửa tay; đổi dữ liệu ở `data/` rồi chạy lại generator.
 - Chỉ record có cờ eligibility `true` được seed; generator in danh sách treatment rule bị chặn kèm lý do.
-- Backend không đọc `data/` lúc runtime; `data.sql` chạy idempotent mỗi lần start (`ON CONFLICT`/`NOT EXISTS`).
+- Backend không đọc `data/` lúc runtime; `data.sql` chạy idempotent mỗi lần start (`ON CONFLICT` trên khoá duy nhất của DB).
 - Chi tiết: [`development/docs/DB_SEED_UNIFICATION_PLAN.md`](./development/docs/DB_SEED_UNIFICATION_PLAN.md).
 
 

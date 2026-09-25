@@ -303,6 +303,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Thống nhất luồng seed: `data/scripts/generate_seed_sql.py` sinh `data.sql` từ `data/structured/*.json`; chỉ seed record có cờ eligibility `true`.
   Quy ước hai cơ chế seed ghi ở `README.md`.
 - Thêm entity `DiseaseManagementPolicy` (bảng `disease_management_policies`), seed 13 guardrail qua generator.
+  `treatment_rules` có ràng buộc duy nhất `(disease_id, pesticide_id)` nên seed chạy đồng thời vẫn không trùng.
   `treatment_rules` chưa có dòng nào vì cả 16 candidate đều `eligible_for_seed=false`.
 - Thêm `development/docs/DB_SEED_UNIFICATION_PLAN.md`: kế hoạch dùng `data/` làm nguồn seed duy nhất qua generator sinh `data.sql`, đối soát eligibility của treatment rule candidate, và mở entity `disease_management_policies` còn thiếu.
 - `ai/app/rag/source_registry.py`, `ai/app/rag/ingestion_service.py` đọc corpus từ `data/rag/...` ở gốc repository.

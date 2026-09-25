@@ -50,7 +50,7 @@ Nếu volume PostgreSQL cũ còn cột `dose_amount`, cần dùng một `POSTGRE
 
 - Frontend có nút gọi chẩn đoán AI và hiển thị khuyến nghị AI Backend trả về; luồng nhập chẩn đoán thủ công vẫn còn để demo nghiệp vụ.
 - Backend giữ summary do AI tạo, hỗ trợ kết quả `review_required` không có rule, cho phép `treatment_rule_id` rỗng và từ chối áp dụng khi rule không tồn tại.
-- Backend seed qua `data.sql` theo kiểu idempotent (`ON CONFLICT`/`NOT EXISTS`); file do generator sinh từ `data/structured/*.json`, xem [`DB_SEED_UNIFICATION_PLAN.md`](DB_SEED_UNIFICATION_PLAN.md).
+- Backend seed qua `data.sql` theo kiểu idempotent (`ON CONFLICT` trên khoá duy nhất của DB); file do generator sinh từ `data/structured/*.json`, xem [`DB_SEED_UNIFICATION_PLAN.md`](DB_SEED_UNIFICATION_PLAN.md).
 - Rule hỗ trợ khoảng liều `dose_min`/`dose_max`; Backend trả toàn bộ rule của một bệnh và kiểm tra liều thực tế trước khi tạo `TreatmentApplication`.
 - AI chấp nhận structured context không có rule như trạng thái cần kỹ sư xem xét.
 - Docker Compose chạy job nạp corpus trước khi khởi động AI và chạy Ollama/model cùng stack, nên không phụ thuộc Ollama đang mở sẵn trên host.

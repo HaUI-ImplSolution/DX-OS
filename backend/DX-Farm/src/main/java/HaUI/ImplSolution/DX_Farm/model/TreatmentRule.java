@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,7 +18,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "treatment_rules")
+@Table(name = "treatment_rules",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"disease_id", "pesticide_id"}))
 @Getter
 @Setter
 @NoArgsConstructor

@@ -10,20 +10,16 @@ import re
 import sys
 from pathlib import Path
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 STRUCTURED_DIR = REPO_ROOT / "data" / "structured"
 DEFAULT_OUTPUT = (
     REPO_ROOT / "backend" / "DX-Farm" / "src" / "main" / "resources" / "data.sql"
 )
 SEED_VERSION = "2026.09.10-mvp-reviewed-v1"
-# Default unit by formulation for pesticides with no eligible rule; pending data review.
-FORMULATION_UNITS = {
-    "SC": "L/ha",
-    "EC": "L/ha",
-    "SL": "L/ha",
-    "WP": "kg/ha",
-    "WG": "kg/ha",
-}
+PESTICIDE_CODE_PATTERN = re.compile(r"^[A-Z0-9]+(?:_[A-Z0-9]+)*$")
 
 
 def load(name):
@@ -41,33 +37,35 @@ def num(value):
     return f"{value:.2f}::numeric"
 
 
-def pesticide_code(name):
-    return re.sub(r"[^A-Z0-9]+", "_", name.upper()).strip("_")
-
-
 def rows(items):
     return ",\n".join(f"  ({', '.join(item)})" for item in items)
 
 
-def pesticide_units(pesticides, eligible_rules):
-    by_candidate = {}
-    for rule in eligible_rules:
-        by_candidate.setdefault(rule["pesticide_candidate_id"], set()).add(
-            rule["dose_unit"]
-        )
-    units = {}
-    for p in pesticides:
-        cid = p["candidate_id"]
-        candidates = by_candidate.get(cid, set())
-        if len(candidates) > 1:
-            raise ValueError(f"{cid}: conflicting dose units {sorted(candidates)}")
-        if candidates:
-            units[cid] = next(iter(candidates))
-        elif p["formulation"] in FORMULATION_UNITS:
-            units[cid] = FORMULATION_UNITS[p["formulation"]]
-        else:
-            raise ValueError(f"{cid}: cannot determine dose unit")
-    return units
+def validated_seedable_pesticides(candidates):
+    codes = set()
+    seedable = []
+
+    for candidate in candidates:
+        candidate_id = candidate.get("candidate_id", "<missing candidate_id>")
+        code = candidate.get("code")
+        unit = candidate.get("unit")
+
+        if not isinstance(code, str) or not PESTICIDE_CODE_PATTERN.fullmatch(code):
+            raise ValueError(f"{candidate_id}: code must be UPPER_SNAKE_CASE")
+        if code in codes:
+            raise ValueError(f"Duplicate pesticide code: {code}")
+        codes.add(code)
+
+        if candidate.get("eligible_for_pesticide_seed"):
+            if not isinstance(candidate.get("name"), str) or not candidate["name"].strip():
+                raise ValueError(f"{candidate_id}: eligible pesticide requires name")
+            if not isinstance(unit, str) or not unit.strip():
+                raise ValueError(f"{candidate_id}: eligible pesticide requires unit")
+            seedable.append(candidate)
+        elif unit is not None and (not isinstance(unit, str) or not unit.strip()):
+            raise ValueError(f"{candidate_id}: unit must be a non-empty string or null")
+
+    return sorted(seedable, key=lambda candidate: candidate["code"])
 
 
 def rule_notes(rule):
@@ -87,11 +85,10 @@ def generate():
     all_rules = load("treatment_rules_candidates_master.json")
     all_policies = load("disease_management_policies_master.json")
 
-    pesticides = [p for p in all_pesticides if p["eligible_for_pesticide_seed"]]
+    pesticides = validated_seedable_pesticides(all_pesticides)
     by_candidate = {p["candidate_id"]: p for p in pesticides}
     rules = [r for r in all_rules if r["eligible_for_seed"]]
     policies = [p for p in all_policies if p["eligible_for_deterministic_guardrail"]]
-    units = pesticide_units(pesticides, rules)
     disease_codes = {d["code"] for d in diseases}
 
     out = [
@@ -108,7 +105,7 @@ def generate():
         "INSERT INTO pesticides (code, name, unit)",
         "VALUES",
         rows(
-            [q(pesticide_code(p["name"])), q(p["name"]), q(units[p["candidate_id"]])]
+            [q(p["code"]), q(p["name"]), q(p["unit"])]
             for p in pesticides
         ),
         "ON CONFLICT (code) DO UPDATE",
@@ -132,10 +129,12 @@ def generate():
                 raise ValueError(f"{r['candidate_rule_id']}: unknown disease_code")
             if r.get("phi_days") is None:
                 raise ValueError(f"{r['candidate_rule_id']}: phi_days missing")
+            if r["dose_unit"] != pesticide["unit"]:
+                raise ValueError(f"{r['candidate_rule_id']}: dose_unit does not match pesticide unit")
             rule_rows.append(
                 [
                     q(r["disease_code"]),
-                    q(pesticide_code(pesticide["name"])),
+                    q(pesticide["code"]),
                     num(r["dose_min"]),
                     num(r["dose_max"]),
                     q(r["dose_unit"]),
@@ -176,7 +175,7 @@ def generate():
     eligible_pairs = {(r["disease_code"], r["pesticide_candidate_id"]) for r in rules}
     stale_rows = sorted(
         {
-            (r["disease_code"], pesticide_code(by_candidate[r["pesticide_candidate_id"]]["name"]))
+            (r["disease_code"], by_candidate[r["pesticide_candidate_id"]]["code"])
             for r in all_rules
             if not r["eligible_for_seed"]
             and r["pesticide_candidate_id"] in by_candidate
@@ -247,8 +246,15 @@ def generate():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--check", action="store_true",
+                        help="fail unless the output already matches generated SQL")
     args = parser.parse_args()
     sql, blocked = generate()
+    if args.check:
+        if not args.output.exists() or args.output.read_text(encoding="utf-8") != sql:
+            print(f"{args.output} is not generated from data/structured", file=sys.stderr)
+            return 1
+        return 0
     args.output.write_text(sql, encoding="utf-8")
     print(f"Wrote {args.output}")
     print(f"Treatment rules blocked from seed: {len(blocked)}")

@@ -1,7 +1,9 @@
 [
   {
     "candidate_id": "P-CAND-001",
+    "code": "REVUS_OPTI_440SC",
     "name": "Revus Opti 440SC",
+    "unit": "L/ha",
     "registered_company": "Công ty TNHH Syngenta Việt Nam",
     "active_ingredient": "Mandipropamid + Chlorothalonil",
     "concentration": "Mandipropamid 40 g/L + Chlorothalonil 400 g/L",
@@ -24,7 +26,9 @@
   },
   {
     "candidate_id": "P-CAND-002",
+    "code": "ORTIVA_600SC",
     "name": "Ortiva 600SC",
+    "unit": "L/ha",
     "registered_company": "Công ty TNHH Syngenta Việt Nam",
     "active_ingredient": "Azoxystrobin + Chlorothalonil",
     "concentration": "Azoxystrobin 100 g/L + Chlorothalonil 500 g/L",
@@ -47,7 +51,9 @@
   },
   {
     "candidate_id": "P-CAND-003",
+    "code": "AMISTAR_250SC",
     "name": "Amistar 250SC",
+    "unit": "L/ha",
     "registered_company": "Công ty TNHH Syngenta Việt Nam",
     "active_ingredient": "Azoxystrobin",
     "concentration": "250 g/L",
@@ -72,7 +78,9 @@
   },
   {
     "candidate_id": "P-CAND-004",
+    "code": "AMISTAR_TOP_325SC",
     "name": "Amistar Top 325SC",
+    "unit": "L/ha",
     "registered_company": "Công ty TNHH Syngenta Việt Nam",
     "active_ingredient": "Azoxystrobin + Difenoconazole",
     "concentration": "Azoxystrobin 200 g/L + Difenoconazole 125 g/L",
@@ -95,7 +103,9 @@
   },
   {
     "candidate_id": "P-CAND-005",
+    "code": "ANTI_XO_200WP",
     "name": "Anti-Xo 200WP",
+    "unit": "kg/ha",
     "registered_company": "Công ty TNHH Phú Nông",
     "active_ingredient": "Bismerthiazol",
     "concentration": "200 g/kg",
@@ -130,7 +140,9 @@
   },
   {
     "candidate_id": "P-CAND-006",
+    "code": "AGROVERTIN_50EC",
     "name": "Agrovertin 50EC",
+    "unit": null,
     "registered_company": "Công ty TNHH Việt Hoá Nông",
     "active_ingredient": "Abamectin",
     "concentration": "50 g/L",
@@ -155,12 +167,14 @@
         "application_timing"
       ]
     },
-    "eligible_for_pesticide_seed": true,
-    "notes": "Danh mục chính thức xác nhận sản phẩm/đối tượng; chưa dùng dữ liệu liều từ nguồn thứ cấp để seed rule."
+    "eligible_for_pesticide_seed": false,
+    "notes": "Danh mục chính thức xác nhận sản phẩm/đối tượng, nhưng chưa có nhãn primary xác nhận liều và đơn vị. Không seed Pesticide vì Backend bắt buộc unit không rỗng."
   },
   {
     "candidate_id": "P-CAND-007",
+    "code": "ANTRACOL_70WP",
     "name": "Antracol 70WP",
+    "unit": "kg/ha",
     "registered_company": "Công ty TNHH Bayer Việt Nam",
     "active_ingredient": "Propineb",
     "concentration": "700 g/kg",
@@ -196,7 +210,9 @@
   },
   {
     "candidate_id": "P-CAND-008",
+    "code": "THUMB_0_5SL",
     "name": "Thumb 0.5SL",
+    "unit": "% solution",
     "registered_company": "Công ty TNHH Nam Bắc",
     "active_ingredient": "Chitosan",
     "concentration": "0.5%",
@@ -224,7 +240,7 @@
       ],
       "primary_label_missing": true
     },
-    "eligible_for_pesticide_seed": true,
-    "notes": "Có thể seed identity của Pesticide từ danh mục hiện hành. Không dùng S37 một mình để seed TreatmentRule final."
+    "eligible_for_pesticide_seed": false,
+    "notes": "Identity được xác nhận từ danh mục hiện hành, nhưng unit chỉ có nguồn secondary S37. Không seed Pesticide vì Backend bắt buộc unit phải có nguồn primary."
   }
 ]

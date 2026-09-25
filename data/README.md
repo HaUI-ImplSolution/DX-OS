@@ -10,7 +10,8 @@ Nội dung là dữ liệu nguồn do AI bàn giao để Backend tham khảo và
 ## Cách hoạt động
 
 - **Backend** đọc `structured/*.json` để tạo seed cho database nghiệp vụ (`diseases`, `pesticides`, `treatment_rules`).
-  Kế hoạch thống nhất luồng này (generator sinh `backend/DX-Farm/src/main/resources/data.sql` từ `structured/*.json`, Spring seed idempotent lúc khởi động) nằm ở [`development/docs/DB_SEED_UNIFICATION_PLAN.md`](../development/docs/DB_SEED_UNIFICATION_PLAN.md).
+  Generator `data/scripts/generate_seed_sql.py` sinh `backend/DX-Farm/src/main/resources/data.sql` từ `structured/*.json`; Spring chạy file này idempotent lúc khởi động.
+  Quy ước và kế hoạch: [`development/docs/DB_SEED_UNIFICATION_PLAN.md`](../development/docs/DB_SEED_UNIFICATION_PLAN.md).
 - **AI** đọc `rag/processed/disease_knowledge.json` và `rag/source_registry.json` qua job ingest (`ai/scripts/ingest_diseases.py`, chạy bằng `python -m scripts.ingest_diseases`) để tạo embedding và ghi vào AI Vector DB (`documents`, `document_chunks`).
   Xem [`ai/README.md`](../ai/README.md) mục "Ingest RAG".
 - Trong Docker Compose, `data/` được bind-mount read-only vào container `rag-ingest` tại `/data` (biến `AI_DATA_DIR` trong `deploy/.env`, mặc định `../data`) — xem [`deploy/docker-compose.yml`](../deploy/docker-compose.yml).
@@ -31,9 +32,9 @@ Nội dung là dữ liệu nguồn do AI bàn giao để Backend tham khảo và
 |---|---|---|
 | `structured/diseases.json` | 38 định danh lớp CV: `code`, tên tiếng Việt và mô tả | Seed/upsert vào `diseases`; đây là nguồn tiện dụng nhất cho danh mục bệnh |
 | `structured/class_contract.json` | Contract ánh xạ `class_id` → `model_label` → `disease_code` | Dùng để kiểm tra tính toàn vẹn, không cần tạo bảng riêng |
-| `structured/pesticides_candidates_master.json` | 8 danh tính sản phẩm đã có `eligible_for_pesticide_seed=true` | Có thể seed danh mục thuốc sau khi Backend chốt `code` và `unit` |
-| `structured/treatment_rules_candidates_master.json` | 16 rule ứng viên cùng liều, PHI, nguồn và lý do bị chặn | Không bulk-seed; hiện cả 16 record đều có `eligible_for_seed=false` |
-| `structured/disease_management_policies_master.json` | 13 guardrail deterministic cho bệnh không có/không được phép suy ra thuốc chữa | Dữ liệu đã đủ làm guardrail, nhưng Backend hiện chưa có bảng/entity tương ứng; chỉ seed sau khi bổ sung schema/contract |
+| `structured/pesticides_candidates_master.json` | 8 danh tính sản phẩm đã có `eligible_for_pesticide_seed=true` | Seed vào `pesticides`; `code` và `unit` do generator suy ra, đang chờ bên data rà soát |
+| `structured/treatment_rules_candidates_master.json` | 16 rule ứng viên cùng liều, PHI, nguồn và lý do bị chặn | Chỉ seed record có `eligible_for_seed=true`; hiện cả 16 record đều `false` nên chưa có rule nào được seed |
+| `structured/disease_management_policies_master.json` | 13 guardrail deterministic cho bệnh không có/không được phép suy ra thuốc chữa | Seed vào `disease_management_policies` (`recommended_actions` nối bằng xuống dòng, `source` là `source_ids` nối bằng dấu phẩy) |
 | `structured/pest_management_candidates_master.json` | 1 ứng viên quản lý nhện đỏ | Không seed: vẫn cần chuyên gia và nguồn nhãn chính thức |
 | `structured/coverage_master.json` | Tổng hợp độ phủ 38 lớp và đường xử lý an toàn | File báo cáo/kiểm tra, không seed |
 | `structured/demo_support_matrix.json` | Trạng thái hỗ trợ của 26 lớp không healthy | File chọn kịch bản demo, không seed |
@@ -162,8 +163,8 @@ Mười ba policy đều có `eligible_for_deterministic_guardrail=true`.
 Chúng mô tả trường hợp không có thuốc chữa trực tiếp, ưu tiên quản lý vector hoặc chưa xác minh được rule địa phương.
 Không chuyển nội dung các policy này thành treatment rule.
 
-Backend hiện chưa có entity/bảng `disease_management_policies`; việc mở entity này đã được lên kế hoạch tại [`development/docs/DB_SEED_UNIFICATION_PLAN.md`](../development/docs/DB_SEED_UNIFICATION_PLAN.md) (field đề xuất: `disease_id`, `management_status`, `direct_treatment_rule_allowed`, `chemical_rule_scope`, `recommended_actions`, `source`, `version`).
-Cho tới khi entity được triển khai, giữ 13 policy này làm nguồn tham khảo và để AI đi theo nhánh `review_required` khi không có treatment rule được duyệt.
+Backend lưu 13 policy này trong bảng `disease_management_policies` (một dòng mỗi bệnh: `disease_id`, `management_status`, `direct_treatment_rule_allowed`, `chemical_rule_scope`, `recommended_actions`, `source`, `version`).
+Bảng chỉ dùng để chặn/tra cứu; không service nào sinh khuyến nghị hoá chất từ nó.
 
 ## RAG không thuộc seed nghiệp vụ Backend
 

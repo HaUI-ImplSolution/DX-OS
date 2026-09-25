@@ -49,7 +49,7 @@ Tài liệu chi tiết theo module:
 |---|---|---|
 | Parcel, CropSeason, DiseaseReport, Diagnosis, TreatmentApplication | Backend DB `dxfarm` | Không có credential DB; chỉ nhận dữ liệu cần thiết qua REST |
 | Disease, Pesticide, TreatmentRule | Backend DB `dxfarm` | Chỉ đọc qua internal REST API |
-| DiseaseManagementPolicy | Backend DB `dxfarm` (**kế hoạch, chưa triển khai** — xem [`development/docs/DB_SEED_UNIFICATION_PLAN.md`](../development/docs/DB_SEED_UNIFICATION_PLAN.md)) | Chỉ đọc qua internal REST API khi entity tồn tại |
+| DiseaseManagementPolicy | Backend DB `dxfarm` | Chỉ đọc qua internal REST API khi endpoint tương ứng được mở |
 | Document, DocumentChunk và embedding | AI Vector DB `dx_farm_ai_vector_db` | Role `ai_vector_ro` chỉ có quyền đọc |
 | Corpus ingest | File local do người vận hành cung cấp | Job riêng dùng role `ai_vector_ingest` |
 

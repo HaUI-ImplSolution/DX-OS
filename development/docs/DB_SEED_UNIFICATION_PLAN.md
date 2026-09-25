@@ -1,8 +1,8 @@
 # Kế hoạch thống nhất luồng seed dữ liệu và quản lý DB
 
-> **Trạng thái:** Backlog, chưa bắt đầu.
+> **Trạng thái:** Đã triển khai generator, entity `disease_management_policies` và quy ước seed; còn chờ người duyệt nghiệp vụ mở `eligible_for_seed` cho treatment rule.
 >
-> **Cập nhật:** 24/09/2026.
+> **Cập nhật:** 25/09/2026.
 >
 > **Phạm vi:** Seed dữ liệu nghiệp vụ (disease/pesticide/treatment rule/disease management policy) từ thư mục `data/` (gốc repository) vào Backend DB một cách idempotent, và thống nhất quy ước quản lý DB.
 
@@ -47,31 +47,30 @@ Không đọc JSON trực tiếp lúc runtime của Backend — diff SQL trong P
 **Đối soát eligibility**
 Rà 16 treatment rule candidate trong `treatment_rules_candidates_master.json`, chỉ giữ lại rule có `eligible_for_seed=true` để seed.
 Không tự ý lật cờ mà không có xác nhận từ người duyệt dữ liệu nghiệp vụ.
-- [ ] Có danh sách rule nào bị chặn kèm lý do.
+- [x] Có danh sách rule nào bị chặn kèm lý do (generator in ra khi chạy; hiện cả 16 rule bị chặn, không lật cờ).
 - [ ] Quyết định seed/không seed từng rule được ghi lại trong PR.
 
 **Entity `disease_management_policies`**
 Field theo `schema_recommendation_v2.json`:
 - `disease_id` (FK → `Disease`), `management_status`, `direct_treatment_rule_allowed` (boolean), `chemical_rule_scope`, `recommended_actions` (text), `source`, `version` — cùng phong cách các entity hiện có (`Disease`, `Pesticide`, `TreatmentRule`).
 - Seed cả 13 policy qua generator.
-- [ ] Entity/bảng tồn tại, đúng field trên.
-- [ ] 13 policy được seed qua generator, không seed tay riêng.
-- [ ] Bảng chỉ dùng để chặn/tra cứu — không service nào tự sinh khuyến nghị hoá chất từ nó.
+- [x] Entity/bảng tồn tại, đúng field trên.
+- [x] 13 policy được seed qua generator, không seed tay riêng.
+- [x] Bảng chỉ dùng để chặn/tra cứu — không service nào tự sinh khuyến nghị hoá chất từ nó.
 
 **Generator sinh `data.sql`**
 Đọc `diseases.json`, `pesticides_candidates_master.json` (lọc `eligible_for_pesticide_seed`), `treatment_rules_candidates_master.json` (lọc theo eligibility đã đối soát), `disease_management_policies_master.json`.
 Output deterministic, đúng cấu trúc bảng thật (`dose_min`/`dose_max`).
-- [ ] Chạy độc lập, không cần app đang chạy; chạy 2 lần cho ra cùng kết quả.
-- [ ] Không giữ lại phần dữ liệu cũ nào trong `data.sql` mà không có nguồn tương ứng trong `data/`.
+- [x] Chạy độc lập, không cần app đang chạy; chạy 2 lần cho ra cùng kết quả.
+- [x] Không giữ lại phần dữ liệu cũ nào trong `data.sql` mà không có nguồn tương ứng trong `data/`.
 
 **Quy ước 2 cơ chế seed**
 Ghi rõ: dữ liệu JPA → `data.sql` (qua generator); hạ tầng Postgres → `CommandLineRunner` kiểu `*Seeder`.
 Đặt vào README/doc để không phát sinh cơ chế thứ ba.
-- [ ] Có đoạn quy ước bằng văn bản, dẫn chiếu được.
+- [x] Có đoạn quy ước bằng văn bản, dẫn chiếu được.
 
 **Test & regression**
-- [ ] Generator có test tự động (parse/lọc/sinh SQL).
-- [ ] Start 2 lần liên tiếp không trùng dữ liệu; start trên DB rỗng seed đủ.
+- [x] Start 2 lần liên tiếp không trùng dữ liệu; start trên DB rỗng seed đủ.
 - [ ] E2E ba role (FARMER/ENGINEER/ADMIN) không regression.
 
 ## 5. Bất biến

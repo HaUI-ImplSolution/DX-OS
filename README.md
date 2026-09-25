@@ -102,9 +102,23 @@ Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
 
 Hai database vật lý riêng trên cùng một Postgres instance, theo kế hoạch chốt ở [`development/docs/legacy_docs/ai_backend_decoupling_plan.md`](./development/docs/legacy_docs/ai_backend_decoupling_plan.md) mục 3:
 
-- **Backend DB (`dxfarm`)** — Operational Data (Parcel, CropSeason, DiseaseReport, Diagnosis, TreatmentApplication) và Structured Knowledge (Disease, Pesticide, TreatmentRule; DiseaseManagementPolicy đang ở giai đoạn kế hoạch, xem [`development/docs/DB_SEED_UNIFICATION_PLAN.md`](./development/docs/DB_SEED_UNIFICATION_PLAN.md)).
+- **Backend DB (`dxfarm`)** — Operational Data (Parcel, CropSeason, DiseaseReport, Diagnosis, TreatmentApplication) và Structured Knowledge (Disease, Pesticide, TreatmentRule; DiseaseManagementPolicy).
 - **AI Vector DB (`dx_farm_ai_vector_db`)** — chỉ `documents`/`document_chunks` (RAG Knowledge, qua pgvector).
   Backend tự tạo DB này cùng 2 role Postgres riêng cho AI (`ai_vector_ro` chỉ-đọc cho runtime, `ai_vector_ingest` đọc/ghi cho job ingest) lúc khởi động; không role nào của AI được cấp quyền vào Backend DB (Phase 3, P3-1..P3-3 đã xong).
+
+### Quy ước seed dữ liệu
+
+Chỉ có hai cơ chế seed, không thêm cơ chế thứ ba:
+
+| Loại dữ liệu | Cơ chế |
+|---|---|
+| Nghiệp vụ do JPA quản lý (`diseases`, `pesticides`, `treatment_rules`, `disease_management_policies`) | `backend/DX-Farm/src/main/resources/data.sql`, sinh từ `data/structured/*.json` bằng `python3 data/scripts/generate_seed_sql.py`; commit file sinh ra và review diff qua PR |
+| Hạ tầng Postgres (role, database, extension) | `CommandLineRunner` kiểu `*Seeder` trong `backend/DX-Farm/.../config` |
+
+- `data.sql` không sửa tay; đổi dữ liệu ở `data/` rồi chạy lại generator.
+- Chỉ record có cờ eligibility `true` được seed; generator in danh sách treatment rule bị chặn kèm lý do.
+- Backend không đọc `data/` lúc runtime; `data.sql` chạy idempotent mỗi lần start (`ON CONFLICT`/`NOT EXISTS`).
+- Chi tiết: [`development/docs/DB_SEED_UNIFICATION_PLAN.md`](./development/docs/DB_SEED_UNIFICATION_PLAN.md).
 
 
 Dữ liệu demo cũ do AI ghi trực tiếp trước khi tách DB (`disease_reports`, `diagnoses`, `treatment_applications`, `workflow_cases`/`workflow_events`) coi là dữ liệu demo/test, dọn bằng [`deploy/sql/p3-4-legacy-ai-data-cleanup.sql`](./deploy/sql/p3-4-legacy-ai-data-cleanup.sql) (P3-4, chạy một lần thủ công).

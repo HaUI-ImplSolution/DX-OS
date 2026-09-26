@@ -57,6 +57,11 @@ public class TreatmentRule {
 
   private String version;
 
+  // Rule mất eligibility vẫn có thể được giữ lại để bảo toàn lịch sử diagnosis.
+  @Builder.Default
+  @Column(nullable = false, columnDefinition = "boolean default true")
+  private boolean active = true;
+
   public boolean allowsDose(BigDecimal actualDose) {
     return actualDose != null && actualDose.compareTo(doseMin) >= 0
         && actualDose.compareTo(doseMax) <= 0;

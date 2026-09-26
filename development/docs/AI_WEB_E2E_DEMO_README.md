@@ -15,7 +15,9 @@ Compose khởi động PostgreSQL, Backend, frontend, Keycloak, AI Service, Olla
 Corpus RAG mặc định lấy từ `data/` (gốc repository) qua `AI_DATA_DIR`; đổi biến này nếu muốn dùng bộ corpus khác.
 
 `data.sql` được sinh từ `data/structured/*.json` bằng `data/scripts/generate_seed_sql.py` (xem [`DB_SEED_UNIFICATION_PLAN.md`](DB_SEED_UNIFICATION_PLAN.md)).
-Trên database sạch, Backend seed 38 bệnh, 8 thuốc và 13 disease management policy; bảng `treatment_rules` trống cho tới khi có rule candidate được duyệt (`eligible_for_seed=true`), nên luồng E2E đi nhánh `review_required`.
+Trên database sạch, Backend seed 38 bệnh, 6 thuốc, 1 treatment rule active và 13 disease management policy.
+Rule duy nhất là `TR-CAND-004` cho `Tomato___Early_blight`, được nhóm dự án cho phép dưới trạng thái `E2E_ASSUMPTION` để chạy local/demo; đây không phải phê duyệt chuyên gia và không dùng cho production.
+Mười lăm treatment rule candidate khác vẫn bị chặn, nên các bệnh tương ứng tiếp tục đi nhánh `review_required`.
 Corpus RAG và structured treatment facts là hai nguồn độc lập: thiếu corpus thì không có semantic evidence, còn treatment rule vẫn do Backend quản lý và kiểm tra.
 
 Schema hiện chỉ hỗ trợ một phiên bản database phát triển và không có migration.
@@ -103,7 +105,7 @@ Một request hiện đi qua các bước sau:
 | File | Thay đổi | Lý do |
 |---|---|---|
 | [Diagnosis.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/model/Diagnosis.java) | Cho phép treatment_rule_id rỗng | Không làm mất kết quả CV/RAG chỉ vì bệnh chưa có rule được duyệt |
-| [TreatmentRule.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/model/TreatmentRule.java) | Đổi liều cố định thành khoảng `doseMin`/`doseMax` | Giữ nguyên khoảng liều trong dữ liệu review và kiểm tra được lượng thuốc thực tế |
+| [TreatmentRule.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/model/TreatmentRule.java) | Lưu khoảng `doseMin`/`doseMax` và trạng thái `active` | Giữ nguyên khoảng liều; rule bị thu hồi không tham gia lookup mới nhưng vẫn có thể được giữ để bảo toàn lịch sử |
 | [InternalAiContextService.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/service/InternalAiContextService.java) | Bệnh có thật nhưng thiếu rule sẽ trả rules rỗng thay vì 404 | Phân biệt “không biết disease_code” với “đã biết bệnh nhưng cần review” |
 | [DiagnosisService.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/service/DiagnosisService.java) | Kiểm tra hai path treatment/review_required, tải lại đúng rule AI chọn, xác minh version và kiểm tra liều thực tế | Backend vẫn là nguồn sự thật và lớp quyết định cuối; AI không thể tự đưa rule lạ, rule cũ hoặc liều ngoài khoảng |
 | [AiDiagnosisClient.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/service/AiDiagnosisClient.java) | Ép HTTP/1.1 | Khắc phục tương thích Java HTTP client với Uvicorn trong container hiện tại |
@@ -165,21 +167,20 @@ Các phần chưa đạt được:
 - Chưa validate kích thước ảnh ở phía client trước khi upload; vượt giới hạn 10MB chỉ báo lỗi sau khi đã upload xong.
 - Chưa có phản hồi tiến trình khi chờ AI xử lý (có thể tới 120 giây); chỉ có spinner tĩnh, không có bước trung gian.
 
-Tám rule version `2026.09.10-mvp-reviewed-v1` là dữ liệu MVP có truy vết nguồn, chưa phải phê duyệt của chuyên gia nông nghiệp có thẩm quyền cho sử dụng thực tế.
-Các candidate bị hold trong artifact review không được seed và không được bịa liều hoặc PHI thành structured facts.
+Rule `TR-CAND-004` version `2026.09.26-e2e-assumed-v1` chỉ là giả định có truy vết để kiểm thử E2E, chưa phải phê duyệt của chuyên gia nông nghiệp có thẩm quyền cho sử dụng thực tế.
+Mười lăm candidate còn lại không được seed và không được bịa liều hoặc PHI thành structured facts.
 
 ## Kết quả kiểm tra E2E
 
-Ngày 21/09/2026 đã dựng lại toàn bộ stack trên một `POSTGRES_DATA_DIR` sạch và kiểm tra:
-Kết quả dưới đây ghi nhận với bộ seed 8 rule.
-Các bước liên quan treatment rule cần chạy lại khi có rule được duyệt (xem mục "Khởi động").
+Ngày 26/09/2026 đã dựng Backend, Keycloak và PostgreSQL trên database tạm sạch để kiểm tra regression của seed và luồng nghiệp vụ ba role:
 
-- Seed tạo 38 bệnh, 4 thuốc và 8 rule; chạy lại Backend không tạo bản ghi trùng.
-- Job RAG ingest hoàn tất với 38 documents và 270 chunks; AI health báo model CV đã load.
-- Internal API trả hai rule cho `Tomato___Late_blight` và trả danh sách rỗng cho `Tomato___Target_Spot`.
-- FARMER tạo thửa, vụ mùa và báo cáo được; gọi endpoint chẩn đoán AI bị từ chối `403`.
-- ENGINEER chạy thành công CV → Backend facts → semantic RAG → Ollama; ảnh thử được nhận diện là `Tomato___Early_blight` và chọn rule có liều `1.50 L/ha`.
-- ADMIN duyệt được kết quả; liều `1.49 L/ha` bị Backend chặn `409`, còn liều `1.50 L/ha` được lưu và tạo ngày khóa thu hoạch.
-- Frontend production build, Backend unit test, hai AI contract self-check và các endpoint chính đều qua kiểm tra.
+- Seed ổn định ở 38 bệnh, 6 thuốc, 1 treatment rule active và 13 policy; start lặp không tạo bản ghi trùng.
+- FARMER tạo thửa, vụ mùa và báo cáo được; gọi endpoint chẩn đoán bị từ chối `403`.
+- ENGINEER dùng endpoint chẩn đoán thủ công dành cho testing/demo, nhận đúng `ORTIVA_600SC`, liều `1.50 L/ha`, PHI 7 và version `2026.09.26-e2e-assumed-v1`; diagnosis được lưu ở trạng thái `PENDING`.
+- ADMIN duyệt được diagnosis; liều `1.49 L/ha` bị Backend chặn `409`, còn `1.50 L/ha` được lưu và tạo khóa thu hoạch đến 03/10/2026.
+- Database có đúng một diagnosis đã duyệt và một treatment application; Backend test chạy bằng JDK 21 qua 1/1 test.
+
+Kiểm tra này chủ đích cô lập seed, phân quyền và state machine nên không gọi CV/RAG/Ollama.
+Luồng AI đầy đủ vẫn theo contract mô tả ở trên và cần ảnh kiểm thử CV phù hợp khi chạy lại; không dùng kết quả chẩn đoán thủ công làm bằng chứng rằng chất lượng model hoặc semantic search đã được xác minh trong lượt này.
 
 Kết quả nhận diện phụ thuộc ảnh đầu vào và không phải cam kết chính xác cho mọi ảnh. RAG chỉ cung cấp kiến thức tham khảo; liều lượng, PHI và quyết định điều trị phải đến từ rule nghiệp vụ được Backend quản lý.

@@ -19,17 +19,18 @@ public class TreatmentRuleService {
   }
 
   public List<TreatmentRuleResponse> listAll() {
-    return treatmentRuleRepository.findAll().stream().map(TreatmentRuleService::toResponse)
-        .toList();
+    return treatmentRuleRepository.findAllByActiveTrueOrderByIdAsc().stream()
+        .map(TreatmentRuleService::toResponse).toList();
   }
 
   public TreatmentRule findByDiseaseCodeOrThrow(String diseaseCode) {
-    return treatmentRuleRepository.findFirstByDisease_CodeOrderByIdAsc(diseaseCode).orElseThrow(
-        () -> new ResourceNotFoundException("No treatment rule found for disease: " + diseaseCode));
+    return treatmentRuleRepository.findFirstByDisease_CodeAndActiveTrueOrderByIdAsc(diseaseCode)
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "No treatment rule found for disease: " + diseaseCode));
   }
 
   public TreatmentRule findByIdAndDiseaseCodeOrThrow(Long ruleId, String diseaseCode) {
-    return treatmentRuleRepository.findByIdAndDisease_Code(ruleId, diseaseCode)
+    return treatmentRuleRepository.findByIdAndDisease_CodeAndActiveTrue(ruleId, diseaseCode)
         .orElseThrow(() -> new ResourceNotFoundException(
             "Treatment rule %d not found for disease: %s".formatted(ruleId, diseaseCode)));
   }

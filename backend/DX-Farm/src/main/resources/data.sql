@@ -57,9 +57,56 @@ ON CONFLICT (code) DO UPDATE
 SET name = EXCLUDED.name,
     unit = EXCLUDED.unit;
 
--- No treatment rule has eligible_for_seed=true; none are seeded.
+INSERT INTO treatment_rules (
+  disease_id, pesticide_id, dose_min, dose_max, dose_unit,
+  phi_days, notes, source, version, active
+)
+SELECT d.id, p.id, seed.dose_min, seed.dose_max, seed.dose_unit,
+       seed.phi_days, seed.notes, seed.source, seed.version, seed.active
+FROM (VALUES
+  ('Tomato___Early_blight', 'ORTIVA_600SC', 1.50::numeric, 1.50::numeric, 'L/ha', 7, 'Registered target: Đốm vòng. Application guidance: Phun khi tỷ lệ bệnh khoảng 5-10%. Water volume: 400-600 L/ha. Seed authorization: E2E_ASSUMPTION. Chỉ dùng để kiểm thử E2E; chưa phải phê duyệt của chuyên gia nông nghiệp và không dùng cho production.', 'S27,S30,S29', '2026.09.26-e2e-assumed-v1', TRUE)
+) AS seed(
+  disease_code, pesticide_code, dose_min, dose_max, dose_unit,
+  phi_days, notes, source, version, active
+)
+JOIN diseases d ON d.code = seed.disease_code
+JOIN pesticides p ON p.code = seed.pesticide_code
+ON CONFLICT (disease_id, pesticide_id) DO UPDATE
+SET dose_min = EXCLUDED.dose_min,
+    dose_max = EXCLUDED.dose_max,
+    dose_unit = EXCLUDED.dose_unit,
+    phi_days = EXCLUDED.phi_days,
+    notes = EXCLUDED.notes,
+    source = EXCLUDED.source,
+    version = EXCLUDED.version,
+    active = TRUE;
 
--- Remove rules whose candidate is not eligible, unless a diagnosis references them.
+-- Inactive rules are excluded from new lookups; referenced rows remain for audit.
+UPDATE treatment_rules tr
+SET active = FALSE
+FROM diseases d, pesticides p, (VALUES
+  ('Corn_(maize)__Common_rust', 'AMISTAR_TOP_325SC'),
+  ('Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot', 'ANTRACOL_70WP'),
+  ('Corn_(maize)___Northern_Leaf_Blight', 'AMISTAR_TOP_325SC'),
+  ('Potato___Early_blight', 'REVUS_OPTI_440SC'),
+  ('Potato___Late_blight', 'AMISTAR_250SC'),
+  ('Potato___Late_blight', 'REVUS_OPTI_440SC'),
+  ('Squash___Powdery_mildew', 'THUMB_0_5SL'),
+  ('Tomato___Bacterial_spot', 'ANTI_XO_200WP'),
+  ('Tomato___Early_blight', 'AMISTAR_250SC'),
+  ('Tomato___Late_blight', 'AMISTAR_250SC'),
+  ('Tomato___Late_blight', 'ORTIVA_600SC'),
+  ('Tomato___Late_blight', 'REVUS_OPTI_440SC'),
+  ('Tomato___Leaf_Mold', 'ORTIVA_600SC'),
+  ('Tomato___Septoria_leaf_spot', 'ORTIVA_600SC'),
+  ('Tomato___Target_Spot', 'ORTIVA_600SC')
+) AS stale(disease_code, pesticide_code)
+WHERE tr.disease_id = d.id
+  AND tr.pesticide_id = p.id
+  AND d.code = stale.disease_code
+  AND p.code = stale.pesticide_code;
+
+-- Remove inactive rules only when no diagnosis history references them.
 DELETE FROM treatment_rules tr
 USING diseases d, pesticides p, (VALUES
   ('Corn_(maize)__Common_rust', 'AMISTAR_TOP_325SC'),
@@ -68,9 +115,9 @@ USING diseases d, pesticides p, (VALUES
   ('Potato___Early_blight', 'REVUS_OPTI_440SC'),
   ('Potato___Late_blight', 'AMISTAR_250SC'),
   ('Potato___Late_blight', 'REVUS_OPTI_440SC'),
+  ('Squash___Powdery_mildew', 'THUMB_0_5SL'),
   ('Tomato___Bacterial_spot', 'ANTI_XO_200WP'),
   ('Tomato___Early_blight', 'AMISTAR_250SC'),
-  ('Tomato___Early_blight', 'ORTIVA_600SC'),
   ('Tomato___Late_blight', 'AMISTAR_250SC'),
   ('Tomato___Late_blight', 'ORTIVA_600SC'),
   ('Tomato___Late_blight', 'REVUS_OPTI_440SC'),
@@ -84,6 +131,20 @@ WHERE tr.disease_id = d.id
   AND p.code = stale.pesticide_code
   AND NOT EXISTS (
     SELECT 1 FROM diagnoses dg WHERE dg.treatment_rule_id = tr.id
+  );
+
+-- Remove ineligible pesticides only when no history still references them.
+DELETE FROM pesticides p
+USING (VALUES
+  ('AGROVERTIN_50EC'),
+  ('THUMB_0_5SL')
+) AS stale(code)
+WHERE p.code = stale.code
+  AND NOT EXISTS (
+    SELECT 1 FROM treatment_rules tr WHERE tr.pesticide_id = p.id
+  )
+  AND NOT EXISTS (
+    SELECT 1 FROM treatment_applications ta WHERE ta.pesticide_id = p.id
   );
 
 INSERT INTO disease_management_policies (

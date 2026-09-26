@@ -114,10 +114,15 @@
       "quantitative_label_data": "VERIFIED",
       "cv_disease_to_registered_target_mapping": "NEEDS_AGRONOMIST_REVIEW"
     },
-    "eligible_for_seed": false,
-    "blocked_reason": [
-      "Cần kỹ sư nông nghiệp xác nhận Tomato___Early_blight ↔ 'đốm vòng/cà chua'."
-    ]
+    "eligible_for_seed": true,
+    "seed_authorization": {
+      "status": "E2E_ASSUMPTION",
+      "authorized_by": "project_team",
+      "authorized_on": "2026-09-26",
+      "note": "Chỉ dùng để kiểm thử E2E; chưa phải phê duyệt của chuyên gia nông nghiệp và không dùng cho production."
+    },
+    "seed_version": "2026.09.26-e2e-assumed-v1",
+    "blocked_reason": []
   },
   {
     "candidate_rule_id": "TR-CAND-005",

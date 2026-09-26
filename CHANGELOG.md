@@ -5,6 +5,11 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Backend (Spring Boot — `backend/DX-Farm`)
 
+### 2026-09-26
+
+- Hoàn thiện seed idempotent từ dữ liệu nguồn: 1 treatment rule giả định cho E2E, 15 candidate còn lại bị chặn; rule stale được vô hiệu hóa và bảo toàn an toàn khi đã có lịch sử tham chiếu.
+- Tối giản `data/`: loại 7 artifact báo cáo/đề xuất đã được master JSON, code và tài liệu hiện hành thay thế.
+
 ### 2026-09-16
 
 **Đã xong — Phase 2 tách AI thành dịch vụ suy luận (P2-0..P2-6, xem `development/docs/legacy_docs/ai_backend_decoupling_checklist.md`):**

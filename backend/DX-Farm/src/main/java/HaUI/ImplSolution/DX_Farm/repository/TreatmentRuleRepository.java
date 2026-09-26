@@ -7,9 +7,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TreatmentRuleRepository extends JpaRepository<TreatmentRule, Long> {
 
-  List<TreatmentRule> findByDisease_CodeOrderByIdAsc(String diseaseCode);
+  List<TreatmentRule> findAllByActiveTrueOrderByIdAsc();
 
-  Optional<TreatmentRule> findFirstByDisease_CodeOrderByIdAsc(String diseaseCode);
+  List<TreatmentRule> findByDisease_CodeAndActiveTrueOrderByIdAsc(String diseaseCode);
 
-  Optional<TreatmentRule> findByIdAndDisease_Code(Long id, String diseaseCode);
+  Optional<TreatmentRule> findFirstByDisease_CodeAndActiveTrueOrderByIdAsc(String diseaseCode);
+
+  Optional<TreatmentRule> findByIdAndDisease_CodeAndActiveTrue(Long id, String diseaseCode);
 }

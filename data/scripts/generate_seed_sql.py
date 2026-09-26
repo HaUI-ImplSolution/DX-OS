@@ -20,6 +20,7 @@ DEFAULT_OUTPUT = (
 )
 SEED_VERSION = "2026.09.10-mvp-reviewed-v1"
 PESTICIDE_CODE_PATTERN = re.compile(r"^[A-Z0-9]+(?:_[A-Z0-9]+)*$")
+ALLOWED_SEED_AUTHORIZATION_STATUSES = {"E2E_ASSUMPTION", "EXPERT_APPROVED"}
 
 
 def load(name):
@@ -76,7 +77,35 @@ def rule_notes(rule):
         lo, hi = rule["water_volume_min"], rule["water_volume_max"]
         span = f"{lo:g}" if lo == hi else f"{lo:g}-{hi:g}"
         parts.append(f"Water volume: {span} {rule['water_volume_unit']}.")
+    authorization = rule["seed_authorization"]
+    parts.append(f"Seed authorization: {authorization['status']}.")
+    parts.append(authorization["note"])
     return " ".join(parts)
+
+
+def validated_rules(candidates):
+    candidate_ids = set()
+    seedable = []
+
+    for candidate in candidates:
+        candidate_id = candidate.get("candidate_rule_id", "<missing candidate_rule_id>")
+        if candidate_id in candidate_ids:
+            raise ValueError(f"Duplicate treatment rule candidate: {candidate_id}")
+        candidate_ids.add(candidate_id)
+
+        if candidate.get("eligible_for_seed"):
+            authorization = candidate.get("seed_authorization")
+            if not isinstance(authorization, dict):
+                raise ValueError(f"{candidate_id}: eligible rule requires seed_authorization")
+            if authorization.get("status") not in ALLOWED_SEED_AUTHORIZATION_STATUSES:
+                raise ValueError(f"{candidate_id}: invalid seed authorization status")
+            if not authorization.get("note") or not candidate.get("seed_version"):
+                raise ValueError(f"{candidate_id}: authorization note and seed_version required")
+            seedable.append(candidate)
+        elif not candidate.get("blocked_reason"):
+            raise ValueError(f"{candidate_id}: blocked rule requires blocked_reason")
+
+    return seedable
 
 
 def generate():
@@ -87,7 +116,8 @@ def generate():
 
     pesticides = validated_seedable_pesticides(all_pesticides)
     by_candidate = {p["candidate_id"]: p for p in pesticides}
-    rules = [r for r in all_rules if r["eligible_for_seed"]]
+    all_pesticides_by_candidate = {p["candidate_id"]: p for p in all_pesticides}
+    rules = validated_rules(all_rules)
     policies = [p for p in all_policies if p["eligible_for_deterministic_guardrail"]]
     disease_codes = {d["code"] for d in diseases}
 
@@ -141,21 +171,22 @@ def generate():
                     str(r["phi_days"]),
                     q(rule_notes(r)),
                     q(",".join(r["source_ids"])),
-                    q(SEED_VERSION),
+                    q(r["seed_version"]),
+                    "TRUE",
                 ]
             )
         out += [
             "INSERT INTO treatment_rules (",
             "  disease_id, pesticide_id, dose_min, dose_max, dose_unit,",
-            "  phi_days, notes, source, version",
+            "  phi_days, notes, source, version, active",
             ")",
             "SELECT d.id, p.id, seed.dose_min, seed.dose_max, seed.dose_unit,",
-            "       seed.phi_days, seed.notes, seed.source, seed.version",
+            "       seed.phi_days, seed.notes, seed.source, seed.version, seed.active",
             "FROM (VALUES",
             rows(rule_rows),
             ") AS seed(",
             "  disease_code, pesticide_code, dose_min, dose_max, dose_unit,",
-            "  phi_days, notes, source, version",
+            "  phi_days, notes, source, version, active",
             ")",
             "JOIN diseases d ON d.code = seed.disease_code",
             "JOIN pesticides p ON p.code = seed.pesticide_code",
@@ -166,7 +197,8 @@ def generate():
             "    phi_days = EXCLUDED.phi_days,",
             "    notes = EXCLUDED.notes,",
             "    source = EXCLUDED.source,",
-            "    version = EXCLUDED.version;",
+            "    version = EXCLUDED.version,",
+            "    active = TRUE;",
             "",
         ]
     else:
@@ -175,20 +207,32 @@ def generate():
     eligible_pairs = {(r["disease_code"], r["pesticide_candidate_id"]) for r in rules}
     stale_rows = sorted(
         {
-            (r["disease_code"], by_candidate[r["pesticide_candidate_id"]]["code"])
+            (r["disease_code"], all_pesticides_by_candidate[r["pesticide_candidate_id"]]["code"])
             for r in all_rules
             if not r["eligible_for_seed"]
-            and r["pesticide_candidate_id"] in by_candidate
+            and r["pesticide_candidate_id"] in all_pesticides_by_candidate
             and r["disease_code"] in disease_codes
             and (r["disease_code"], r["pesticide_candidate_id"]) not in eligible_pairs
         }
     )
     if stale_rows:
+        stale_values = rows([q(disease), q(pesticide)] for disease, pesticide in stale_rows)
         out += [
-            "-- Remove rules whose candidate is not eligible, unless a diagnosis references them.",
+            "-- Inactive rules are excluded from new lookups; referenced rows remain for audit.",
+            "UPDATE treatment_rules tr",
+            "SET active = FALSE",
+            "FROM diseases d, pesticides p, (VALUES",
+            stale_values,
+            ") AS stale(disease_code, pesticide_code)",
+            "WHERE tr.disease_id = d.id",
+            "  AND tr.pesticide_id = p.id",
+            "  AND d.code = stale.disease_code",
+            "  AND p.code = stale.pesticide_code;",
+            "",
+            "-- Remove inactive rules only when no diagnosis history references them.",
             "DELETE FROM treatment_rules tr",
             "USING diseases d, pesticides p, (VALUES",
-            rows([q(disease), q(pesticide)] for disease, pesticide in stale_rows),
+            stale_values,
             ") AS stale(disease_code, pesticide_code)",
             "WHERE tr.disease_id = d.id",
             "  AND tr.pesticide_id = p.id",
@@ -196,6 +240,26 @@ def generate():
             "  AND p.code = stale.pesticide_code",
             "  AND NOT EXISTS (",
             "    SELECT 1 FROM diagnoses dg WHERE dg.treatment_rule_id = tr.id",
+            "  );",
+            "",
+        ]
+
+    ineligible_pesticide_codes = sorted(
+        p["code"] for p in all_pesticides if not p["eligible_for_pesticide_seed"]
+    )
+    if ineligible_pesticide_codes:
+        out += [
+            "-- Remove ineligible pesticides only when no history still references them.",
+            "DELETE FROM pesticides p",
+            "USING (VALUES",
+            rows([q(code)] for code in ineligible_pesticide_codes),
+            ") AS stale(code)",
+            "WHERE p.code = stale.code",
+            "  AND NOT EXISTS (",
+            "    SELECT 1 FROM treatment_rules tr WHERE tr.pesticide_id = p.id",
+            "  )",
+            "  AND NOT EXISTS (",
+            "    SELECT 1 FROM treatment_applications ta WHERE ta.pesticide_id = p.id",
             "  );",
             "",
         ]

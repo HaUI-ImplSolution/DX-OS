@@ -21,7 +21,8 @@ Nội dung là dữ liệu nguồn do AI bàn giao để Backend tham khảo và
 1. `disease_code` phải khớp tuyệt đối với `diseases.code` và nhãn đầu ra CV; không fuzzy match, đổi tên hoặc tự chuẩn hóa.
 2. Tên thuốc, liều, đơn vị và PHI là dữ liệu deterministic.
    Không lấy các giá trị này từ RAG và không để LLM sửa.
-3. Chỉ seed treatment rule khi đã được duyệt rõ ràng.
+3. Chỉ seed treatment rule khi có quyết định cho phép rõ ràng trong dữ liệu nguồn.
+   `E2E_ASSUMPTION` chỉ cho phép chạy local/demo, không phải phê duyệt chuyên gia và không được dùng cho production.
    Không bulk-seed toàn bộ file có chữ `candidates`.
 4. Seed phải idempotent: chạy lại không sinh bản ghi trùng.
 5. `source_ids` phải truy được về `rag/source_registry.json` để audit nguồn.
@@ -33,18 +34,14 @@ Nội dung là dữ liệu nguồn do AI bàn giao để Backend tham khảo và
 | `structured/diseases.json` | 38 định danh lớp CV: `code`, tên tiếng Việt và mô tả | Seed/upsert vào `diseases`; đây là nguồn tiện dụng nhất cho danh mục bệnh |
 | `structured/class_contract.json` | Contract ánh xạ `class_id` → `model_label` → `disease_code` | Dùng để kiểm tra tính toàn vẹn, không cần tạo bảng riêng |
 | `structured/pesticides_candidates_master.json` | 8 danh tính sản phẩm, gồm mã Backend và đơn vị liều | Seed 6 record có `eligible_for_pesticide_seed=true`; 2 record chờ xác minh đơn vị |
-| `structured/treatment_rules_candidates_master.json` | 16 rule ứng viên cùng liều, PHI, nguồn và lý do bị chặn | Chỉ seed record có `eligible_for_seed=true`; hiện cả 16 record đều `false` nên chưa có rule nào được seed |
+| `structured/treatment_rules_candidates_master.json` | 16 rule ứng viên cùng liều, PHI, nguồn và trạng thái cho phép seed | Seed 1 rule mang `E2E_ASSUMPTION`; 15 rule còn lại vẫn bị chặn |
 | `structured/disease_management_policies_master.json` | 13 guardrail deterministic cho bệnh không có/không được phép suy ra thuốc chữa | Seed vào `disease_management_policies` (`recommended_actions` nối bằng xuống dòng, `source` là `source_ids` nối bằng dấu phẩy) |
 | `structured/pest_management_candidates_master.json` | 1 ứng viên quản lý nhện đỏ | Không seed: vẫn cần chuyên gia và nguồn nhãn chính thức |
-| `structured/coverage_master.json` | Tổng hợp độ phủ 38 lớp và đường xử lý an toàn | File báo cáo/kiểm tra, không seed |
-| `structured/demo_support_matrix.json` | Trạng thái hỗ trợ của 26 lớp không healthy | File chọn kịch bản demo, không seed |
-| `structured/disease_label_mapping_review_queue_master.json` | Các mapping nhãn đang chờ review | Hàng đợi kiểm duyệt, không seed thành rule |
-| `structured/regulatory_review_log.json` | Phạm vi, phương pháp và kết quả rà soát pháp lý | Audit, không seed |
-| `structured/data_quality_findings.json` | Các phát hiện chất lượng dữ liệu | Audit, không seed |
-| `structured/schema_recommendation_v2.json` | Đề xuất schema để biểu diễn khoảng liều và policy | Tài liệu thiết kế, không seed |
-| `structured/structured_decision_policy_v1.json` | Thứ tự quyết định treatment/policy/RAG fallback | Contract logic tham khảo, không seed |
 | `rag/processed/disease_knowledge.json` | 38 tài liệu tri thức bệnh/IPM dùng để chunk và embedding | AI ingest vào `documents`/`document_chunks`; Backend không seed |
 | `rag/source_registry.json` | 41 nguồn và metadata provenance | Dùng audit; AI giữ cùng corpus RAG |
+
+Các báo cáo coverage/demo, review queue, review log và đề xuất schema/decision cũ đã được loại bỏ sau khi nội dung cần thiết được hợp nhất vào master JSON, code và tài liệu hiện hành.
+Không tạo lại các artifact dẫn xuất này nếu chưa có consumer hoặc quy trình review cụ thể.
 
 ## Thứ tự seed đề xuất
 
@@ -103,14 +100,17 @@ Mapping vào schema Backend hiện tại:
 | `phi_days` | `phi_days`; không seed nếu đang `null` |
 | `application_method`, lượng nước và `blocked_reason` | `notes` nếu rule đã được duyệt |
 | `source_ids` | `source`, giữ nguyên các mã nguồn để audit |
-| phiên bản được nhóm chốt | `version` |
+| `seed_version` | `version` |
+| `seed_authorization` | Ghi vào `notes` để phân biệt giả định E2E với phê duyệt chuyên gia |
+| rule còn hiệu lực trong tập seed hiện hành | `active=true` |
 
 `treatment_rules` có sẵn `dose_min`/`dose_max`.
 Rule có khoảng liều map thẳng vào `dose_min`/`dose_max`; rule liều cố định dùng `dose_min = dose_max`.
 
-## Rule đã chốt cho luồng E2E hiện tại
+## Giả định treatment rule cho E2E hiện tại
 
-Để kiểm thử luồng AI → Backend → kỹ sư phê duyệt, hiện chỉ seed rule cố định sau:
+Nhóm dự án cho phép seed **duy nhất** rule dưới đây để kiểm thử luồng AI → Backend → kỹ sư phê duyệt.
+Đây là giả định E2E (`E2E_ASSUMPTION`), không phải kết luận đã được chuyên gia nông nghiệp thẩm định và không phải dữ liệu đủ điều kiện dùng trong production.
 
 | Field | Giá trị |
 |---|---|
@@ -122,42 +122,19 @@ Rule có khoảng liều map thẳng vào `dose_min`/`dose_max`; rule liều c�
 | PHI | `7` ngày |
 | Application | Phun khi tỷ lệ bệnh khoảng 5–10% |
 | Water volume | 400–600 L/ha |
-| Sources | `S27,S30,S29,S39` |
-| Version | `2026.09.10-mvp-reviewed-v1` |
+| Sources | `S27,S30,S29` |
+| Authorization | `E2E_ASSUMPTION` — nhóm dự án, ngày 26/09/2026 |
+| Version | `2026.09.26-e2e-assumed-v1` |
 
-`S27` và `S29` kiểm tra danh mục/quy định Việt Nam, `S30` là hướng dẫn của nhà sản xuất, còn `S39` hỗ trợ mapping `Alternaria solani` với bệnh đốm vòng trên cà chua.
-Không thay đổi thuốc, liều hoặc PHI khi đưa rule này vào seed.
+`S27` và `S29` phục vụ kiểm tra danh mục/quy định Việt Nam; `S30` là hướng dẫn của nhà sản xuất.
+Generator đưa trạng thái và ghi chú cho phép E2E vào `notes`, vì vậy người đọc dữ liệu Backend không thể nhầm rule này với rule đã được chuyên gia duyệt.
 
-Ví dụ SQL idempotent theo schema Backend hiện tại:
-
-```sql
-INSERT INTO pesticides (code, name, unit)
-VALUES ('ORTIVA_600SC', 'Ortiva 600SC', 'L/ha')
-ON CONFLICT (code) DO UPDATE
-SET name = EXCLUDED.name, unit = EXCLUDED.unit;
-
-INSERT INTO treatment_rules (
-  disease_id, pesticide_id, dose_min, dose_max, dose_unit,
-  phi_days, notes, source, version
-)
-SELECT
-  d.id,
-  p.id,
-  1.50,
-  1.50,
-  'L/ha',
-  7,
-  'Phun khi tỷ lệ bệnh khoảng 5-10%. Lượng nước 400-600 L/ha.',
-  'S27,S30,S29,S39',
-  '2026.09.10-mvp-reviewed-v1'
-FROM diseases d
-JOIN pesticides p ON p.code = 'ORTIVA_600SC'
-WHERE d.code = 'Tomato___Early_blight'
-ON CONFLICT (disease_id, pesticide_id) DO NOTHING;
-```
-
-Các record còn lại trong `treatment_rules_candidates_master.json` vẫn là dữ liệu nghiên cứu.
+Mười lăm record còn lại trong `treatment_rules_candidates_master.json` vẫn là dữ liệu nghiên cứu và không được seed.
 `blocked_reason`, `verification` và `eligible_for_seed` là hàng rào an toàn, không phải metadata có thể bỏ qua.
+
+Khi nguồn seed thu hồi một rule, Backend đặt rule đó thành `active=false` trước khi đối soát.
+Rule chưa được dữ liệu nghiệp vụ tham chiếu sẽ bị xóa; rule đã có diagnosis tham chiếu được giữ để bảo toàn lịch sử nhưng không còn xuất hiện trong lookup mới.
+Pesticide mất eligibility chỉ bị xóa khi không còn treatment rule hoặc treatment application tham chiếu.
 
 ## Disease management policies
 
@@ -177,7 +154,7 @@ Nội dung RAG chỉ dùng giải thích và bổ sung ngữ cảnh; không đư
 ## Checklist sau khi seed
 
 - Có đúng 38 `diseases.code` thuộc contract CV và không có mã bị đổi.
-- Mọi treatment rule đều tham chiếu disease và pesticide tồn tại.
+- Mọi treatment rule active đều tham chiếu disease và pesticide tồn tại.
 - Không có hai rule trùng cùng cặp `(disease_id, pesticide_id)` ngoài chủ đích nghiệp vụ.
 - Mọi rule có `dose_min`, `dose_max`, `dose_unit`, `phi_days`, `source` và `version` không rỗng.
 - API nội bộ `/internal/v1/diagnosis-context` trả đúng rule theo exact `disease_code`.

@@ -83,6 +83,10 @@ public class DiseaseReportService {
             currentUserService.isFarmer());
       }
     }
+    if (season.getApprovalStatus() != ApprovalStatus.APPROVED) {
+      throw new PokaYokeViolationException("CROP_SEASON_NOT_APPROVED",
+          "Crop season is not approved yet: " + cropSeasonId);
+    }
     if (season.getStatus() == CropSeasonStatus.HARVESTED) {
       throw new PokaYokeViolationException("CROP_SEASON_HARVESTED",
           "Crop season is already harvested: " + cropSeasonId);

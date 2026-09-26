@@ -13,6 +13,7 @@ docker compose up -d --build
 Compose khởi động PostgreSQL, Backend, frontend, Keycloak, AI Service, Ollama và các dịch vụ demo hiện có. Job `rag-ingest` nạp corpus vào AI Vector DB; `ollama-init` bảo đảm model được tải trước khi AI Service chạy. Lần đầu cần mạng và dung lượng trống để tải container, model CV, embedding model và LLM.
 
 Corpus RAG mặc định lấy từ `data/` (gốc repository) qua `AI_DATA_DIR`; đổi biến này nếu muốn dùng bộ corpus khác.
+Thiết lập chuẩn là `AI_DATA_DIR=../data`; không dùng bản sao `ai/.local/data` trong luồng E2E của repository.
 
 `data.sql` được sinh từ `data/structured/*.json` bằng `data/scripts/generate_seed_sql.py` (xem [`DB_SEED_UNIFICATION_PLAN.md`](DB_SEED_UNIFICATION_PLAN.md)).
 Trên database sạch, Backend seed 38 bệnh, 6 thuốc, 1 treatment rule active và 13 disease management policy.

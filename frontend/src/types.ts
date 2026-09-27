@@ -87,6 +87,21 @@ export interface Diagnosis {
   treatmentRule: TreatmentRule | null;
 }
 
+export type DiagnosisJobStatus = "QUEUED" | "RUNNING" | "COMPLETED" | "FAILED";
+
+export interface DiagnosisJob {
+  jobId: string;
+  reportId: number;
+  requestId: string;
+  status: DiagnosisJobStatus;
+  stage: string;
+  errorMessage: string | null;
+  createdAt: string;
+  updatedAt: string;
+  completedAt: string | null;
+  diagnosis: Diagnosis | null;
+}
+
 export interface DiseaseReport {
   id: number;
   cropSeasonId: number;

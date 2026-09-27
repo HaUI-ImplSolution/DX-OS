@@ -69,20 +69,26 @@ public class DiagnosisService {
   public AiDiagnoseResponse requestAiDiagnosis(Long reportId) {
     DiseaseReport report = diseaseReportRepository.findById(reportId)
         .orElseThrow(() -> new ResourceNotFoundException("Disease report not found: " + reportId));
-    return aiDiagnosisClient.diagnose(buildAiDiagnoseRequest(report));
+    return aiDiagnosisClient.diagnose(buildAiDiagnoseRequest(report, "req_" + UUID.randomUUID()));
   }
 
   // Gọi AI, đối chiếu version của rule AI dùng với treatment_rules hiện tại rồi mới lưu
   // Diagnosis - rule đã đổi trong lúc AI xử lý thì từ chối, không lưu recommendation cũ.
   @Transactional
   public DiagnosisResponse createFromAi(Long reportId) {
+    return createFromAi(reportId, "req_" + UUID.randomUUID());
+  }
+
+  @Transactional
+  public DiagnosisResponse createFromAi(Long reportId, String requestId) {
     DiseaseReport report = diseaseReportRepository.findById(reportId)
         .orElseThrow(() -> new ResourceNotFoundException("Disease report not found: " + reportId));
     if (diagnosisRepository.findByDiseaseReportId(reportId).isPresent()) {
       throw new InvalidStateException("Disease report already has a diagnosis: " + reportId);
     }
 
-    AiDiagnoseResponse aiResponse = aiDiagnosisClient.diagnose(buildAiDiagnoseRequest(report));
+    AiDiagnoseResponse aiResponse =
+        aiDiagnosisClient.diagnose(buildAiDiagnoseRequest(report, requestId));
     AiDiagnoseResponse.CvResult cvResult = aiResponse.cvResult();
     String diseaseCode = cvResult.diseaseCode();
 
@@ -130,7 +136,7 @@ public class DiagnosisService {
             () -> new InvalidStateException("AI selected an unknown rule_id: " + selectedRuleId));
   }
 
-  private AiDiagnoseRequest buildAiDiagnoseRequest(DiseaseReport report) {
+  private AiDiagnoseRequest buildAiDiagnoseRequest(DiseaseReport report, String requestId) {
     CropSeason season = report.getCropSeason();
     List<RecentTreatment> recentTreatments = treatmentApplicationRepository
         .findByCropSeasonIdOrderByAppliedAtDesc(season.getId()).stream()
@@ -138,8 +144,7 @@ public class DiagnosisService {
     FieldContext fieldContext = new FieldContext(season.getParcel().getCode(),
         season.getRiceVariety(), null, recentTreatments);
     String imageUrl = publicBaseUrl + "/uploads/" + report.getImageRef();
-    return new AiDiagnoseRequest("req_" + UUID.randomUUID(), season.getId(), imageUrl,
-        fieldContext);
+    return new AiDiagnoseRequest(requestId, season.getId(), imageUrl, fieldContext);
   }
 
   private static RecentTreatment toRecentTreatment(TreatmentApplication application) {

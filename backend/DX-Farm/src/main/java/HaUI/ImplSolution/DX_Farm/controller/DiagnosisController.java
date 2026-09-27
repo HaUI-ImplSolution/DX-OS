@@ -3,16 +3,19 @@ package HaUI.ImplSolution.DX_Farm.controller;
 import HaUI.ImplSolution.DX_Farm.dto.ApiResponse;
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisApplyRequest;
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisCreateRequest;
+import HaUI.ImplSolution.DX_Farm.dto.DiagnosisJobResponse;
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisRejectRequest;
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisResponse;
 import HaUI.ImplSolution.DX_Farm.dto.TreatmentApplicationResponse;
 import HaUI.ImplSolution.DX_Farm.service.DiagnosisService;
+import HaUI.ImplSolution.DX_Farm.service.DiagnosisJobService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,9 +29,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class DiagnosisController {
 
   private final DiagnosisService diagnosisService;
+  private final DiagnosisJobService diagnosisJobService;
 
-  public DiagnosisController(DiagnosisService diagnosisService) {
+  public DiagnosisController(DiagnosisService diagnosisService,
+      DiagnosisJobService diagnosisJobService) {
     this.diagnosisService = diagnosisService;
+    this.diagnosisJobService = diagnosisJobService;
   }
 
   @PostMapping
@@ -41,10 +47,16 @@ public class DiagnosisController {
   }
 
   @PostMapping("/ai")
-  @ResponseStatus(HttpStatus.CREATED)
-  @Operation(summary = "Trigger AI Service diagnosis + deterministic treatment lookup")
-  public ApiResponse<DiagnosisResponse> createFromAi(@PathVariable Long reportId) {
-    return ApiResponse.success("Diagnosis recorded", diagnosisService.createFromAi(reportId));
+  @ResponseStatus(HttpStatus.ACCEPTED)
+  @Operation(summary = "Queue AI diagnosis and return a recoverable job status")
+  public ApiResponse<DiagnosisJobResponse> createFromAi(@PathVariable Long reportId) {
+    return ApiResponse.success("Diagnosis job queued", diagnosisJobService.start(reportId));
+  }
+
+  @GetMapping("/jobs/{jobId}")
+  @Operation(summary = "Read AI diagnosis job status")
+  public ApiResponse<DiagnosisJobResponse> getJob(@PathVariable String jobId) {
+    return ApiResponse.success(diagnosisJobService.get(jobId));
   }
 
   @PostMapping("/approve")

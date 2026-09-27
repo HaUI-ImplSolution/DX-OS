@@ -13,6 +13,27 @@ interface DiseaseReportPanelProps {
   onError: (message: string) => void;
 }
 
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+
+async function validateImage(file: File): Promise<string | null> {
+  if (file.size > MAX_IMAGE_BYTES) return "Ảnh không được vượt quá 10 MB";
+  if (!file.type.startsWith("image/")) return "Chỉ chấp nhận file ảnh";
+  const url = URL.createObjectURL(file);
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve();
+      image.onerror = () => reject(new Error("invalid image"));
+      image.src = url;
+    });
+    return null;
+  } catch {
+    return "Không thể đọc nội dung ảnh";
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
 function diagnosisBadge(report: DiseaseReport) {
   if (!report.diagnosis) return <Badge tone="neutral">Chưa chẩn đoán</Badge>;
   const status = report.diagnosis.approvalStatus;
@@ -37,6 +58,11 @@ export default function DiseaseReportPanel({
     const file = fileInput.current?.files?.[0];
     if (!file) {
       onError("Vui lòng chọn ảnh sâu bệnh");
+      return;
+    }
+    const validationError = await validateImage(file);
+    if (validationError) {
+      onError(validationError);
       return;
     }
     setSubmitting(true);

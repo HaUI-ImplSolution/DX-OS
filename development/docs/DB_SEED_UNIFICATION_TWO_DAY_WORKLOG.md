@@ -97,7 +97,9 @@ Việc nối policy vào internal API/AI là thay đổi contract riêng; không
 
 ### 27/09/2026
 
-- Không còn công việc dự kiến; toàn bộ checklist được hoàn thành sớm ngày 26/09/2026.
+- Hoàn thành validation ảnh cho Web E2E: frontend chặn file vượt 10 MiB, không phải ảnh hoặc không decode được; Backend kiểm tra chữ ký/nội dung ảnh, format, kích thước và giới hạn 24 triệu pixel trước khi lưu.
+- Hoàn thành diagnosis job chạy nền: `POST .../diagnosis/ai` trả `202 Accepted` cùng job ID; frontend polling trạng thái và lưu job trong local storage để lấy lại sau khi rời trang/mất mạng. Job `QUEUED` được chạy lại, job `RUNNING` được đưa về queue khi Backend khởi động lại.
+- Xác minh thay đổi bằng `mvnw.cmd test` (1 test, 0 failure/error) và `npm run build` (frontend production build pass).
 
 ## Điều kiện kết thúc worklog
 

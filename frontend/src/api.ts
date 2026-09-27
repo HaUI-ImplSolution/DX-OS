@@ -4,6 +4,7 @@ import type {
   CropSeason,
   CropSeasonCreateRequest,
   Diagnosis,
+  DiagnosisJob,
   DiagnosisApplyRequest,
   DiagnosisCreateRequest,
   DiagnosisRejectRequest,
@@ -95,7 +96,9 @@ export const createDiseaseReport = (cropSeasonId: number, image: File) => {
 export const createDiagnosis = (reportId: number, payload: DiagnosisCreateRequest) =>
   request<Diagnosis>(`/disease-reports/${reportId}/diagnosis`, json("POST", payload));
 export const createAiDiagnosis = (reportId: number) =>
-  request<Diagnosis>(`/disease-reports/${reportId}/diagnosis/ai`, { method: "POST" });
+  request<DiagnosisJob>(`/disease-reports/${reportId}/diagnosis/ai`, { method: "POST" });
+export const getDiagnosisJob = (reportId: number, jobId: string) =>
+  request<DiagnosisJob>(`/disease-reports/${reportId}/diagnosis/jobs/${encodeURIComponent(jobId)}`);
 export const approveDiagnosis = (reportId: number) =>
   request<Diagnosis>(`/disease-reports/${reportId}/diagnosis/approve`, { method: "POST" });
 export const rejectDiagnosis = (reportId: number, payload: DiagnosisRejectRequest) =>

@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   applyDiagnosis,
   approveDiagnosis,
   createAiDiagnosis,
   createDiagnosis,
+  getDiagnosisJob,
   rejectDiagnosis,
 } from "../api";
 import type {
   Diagnosis,
+  DiagnosisJob,
   Disease,
   DiseaseReport,
   Role,
@@ -40,16 +42,55 @@ function CreateDiagnosisForm({
   const [confidence, setConfidence] = useState("0.92");
   const [modelVersion, setModelVersion] = useState("manual-input-v1");
   const [submitting, setSubmitting] = useState(false);
-  const [aiSubmitting, setAiSubmitting] = useState(false);
+  const storageKey = `dxfarm.diagnosis-job.${reportId}`;
+  const [aiJob, setAiJob] = useState<DiagnosisJob | null>(() => {
+    try {
+      const saved = window.localStorage.getItem(storageKey);
+      return saved ? (JSON.parse(saved) as DiagnosisJob) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    if (!aiJob || !["QUEUED", "RUNNING"].includes(aiJob.status)) return;
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const next = await getDiagnosisJob(reportId, aiJob.jobId);
+        if (cancelled) return;
+        setAiJob(next);
+        window.localStorage.setItem(storageKey, JSON.stringify(next));
+        if (next.status === "COMPLETED" && next.diagnosis) {
+          window.localStorage.removeItem(storageKey);
+          onUpdated(next.diagnosis);
+        } else if (next.status === "FAILED") {
+          window.localStorage.removeItem(storageKey);
+          onError(next.errorMessage ?? "Không chạy được chẩn đoán AI");
+        }
+      } catch (err) {
+        if (!cancelled) onError(err instanceof Error ? err.message : "Không đọc được trạng thái chẩn đoán");
+      }
+    };
+    void poll();
+    const interval = window.setInterval(() => void poll(), 2000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [aiJob?.jobId, aiJob?.status, onError, onUpdated, reportId, storageKey]);
 
   const runAi = async () => {
-    setAiSubmitting(true);
     try {
-      onUpdated(await createAiDiagnosis(reportId));
+      const job = await createAiDiagnosis(reportId);
+      setAiJob(job);
+      window.localStorage.setItem(storageKey, JSON.stringify(job));
+      if (job.status === "COMPLETED" && job.diagnosis) {
+        window.localStorage.removeItem(storageKey);
+        onUpdated(job.diagnosis);
+      }
     } catch (err) {
       onError(err instanceof Error ? err.message : "Không chạy được chẩn đoán AI");
-    } finally {
-      setAiSubmitting(false);
     }
   };
 
@@ -80,11 +121,16 @@ function CreateDiagnosisForm({
           type="button"
           className="btn btn-primary"
           onClick={runAi}
-          disabled={aiSubmitting || submitting}
+          disabled={aiJob?.status === "QUEUED" || aiJob?.status === "RUNNING" || submitting}
         >
-          {aiSubmitting ? "AI đang chẩn đoán…" : "Chạy chẩn đoán AI"}
+          {aiJob?.status === "QUEUED" || aiJob?.status === "RUNNING"
+            ? `AI đang xử lý: ${aiJob.stage}…`
+            : "Chạy chẩn đoán AI"}
         </button>
       </div>
+      {aiJob && (aiJob.status === "QUEUED" || aiJob.status === "RUNNING") && (
+        <p className="empty-hint">Bạn có thể rời trang; hệ thống sẽ lấy lại trạng thái job này khi quay lại.</p>
+      )}
       <p className="empty-hint">Hoặc nhập tay kết quả CV để kiểm thử nghiệp vụ:
       </p>
       <label className="field-label">
@@ -119,7 +165,7 @@ function CreateDiagnosisForm({
         <button
           type="submit"
           className="btn btn-secondary"
-          disabled={submitting || aiSubmitting || diseases.length === 0}
+          disabled={submitting || aiJob?.status === "QUEUED" || aiJob?.status === "RUNNING" || diseases.length === 0}
         >
           {submitting ? "Đang lưu…" : "Ghi nhận chẩn đoán"}
         </button>

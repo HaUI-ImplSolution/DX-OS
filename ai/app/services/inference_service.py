@@ -96,7 +96,7 @@ def run_stateless_diagnose(
             crop_season_id=payload.crop_season_id,
         )
         rules = [rule.model_dump(mode="json") for rule in context.rules]
-        return {"rules": rules}
+        return {"path": "treatment" if rules else "review_required", "rules": rules}
 
     def retrieve_rag(query: str, disease_code: str, top_k: int) -> list[dict]:
         return rag_retriever.retrieve(
@@ -146,22 +146,10 @@ def run_stateless_diagnose(
     known_rule_ids = {rule.rule_id for rule in structured_context.rules}
     if selected_rule_id is not None and selected_rule_id not in known_rule_ids:
         raise ValueError("Recommendation selected an unknown rule_id")
-    threshold = get_settings().cv_confidence_threshold
-    if cv_result.confidence < threshold:
-        expected_path = "low_confidence_review"
-    elif len(structured_context.rules) == 1:
-        expected_path = "treatment"
-    else:
-        expected_path = "review_required"
-    if structured_context.path != expected_path:
-        raise ValueError(
-            f"Recommendation path must be {expected_path} for the current safety state"
-        )
-    if structured_context.path == "treatment":
-        if len(structured_context.rules) != 1 or selected_rule_id is None:
-            raise ValueError("Treatment recommendation must select its only rule_id")
-    elif selected_rule_id is not None:
-        raise ValueError("Review recommendation cannot select a rule_id")
+    if structured_context.path == "treatment" and selected_rule_id is None:
+        raise ValueError("Treatment recommendation must select a rule_id")
+    if structured_context.path == "review_required" and selected_rule_id is not None:
+        raise ValueError("Review-required recommendation cannot select a rule_id")
 
     return DiagnoseResponse(
         request_id=payload.request_id,

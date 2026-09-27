@@ -1,6 +1,5 @@
 package HaUI.ImplSolution.DX_Farm.dto;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.Instant;
 
@@ -23,15 +22,6 @@ public record DiagnosisResponse(
 
   // Phiên bản model AI đã dùng để chẩn đoán
   String modelVersion,
-
-  // Path an toàn do Backend xác định: treatment/review_required/low_confidence_review
-  @Schema(description = "Safety path do Backend xác định",
-      allowableValues = {"treatment", "review_required", "low_confidence_review"})
-  String recommendationPath,
-
-  // Ngưỡng confidence Backend đã áp dụng cho response này
-  @Schema(description = "Ngưỡng confidence Backend dùng để chặn treatment", example = "0.70")
-  BigDecimal confidenceThreshold,
 
   // Thời điểm chẩn đoán được ghi nhận
   Instant diagnosedAt,

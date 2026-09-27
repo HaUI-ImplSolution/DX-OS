@@ -87,9 +87,7 @@ class DiagnoseRuleFact(BaseModel):
 
 
 class DiagnoseStructuredContext(BaseModel):
-    path: str = Field(
-        pattern="^(treatment|review_required|low_confidence_review)$"
-    )
+    path: str = Field(pattern="^(treatment|review_required)$")
     rules: list[DiagnoseRuleFact] = Field(default_factory=list)
 
 

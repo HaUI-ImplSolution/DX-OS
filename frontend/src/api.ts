@@ -82,8 +82,7 @@ export const getIsolationStatus = (id: number) =>
 // Disease report (reportedBy lấy từ user đang đăng nhập, không gửi từ client)
 export const listDiseaseReports = (cropSeasonId: number) =>
   request<DiseaseReport[]>(`/crop-seasons/${cropSeasonId}/disease-reports`);
-export const getDiseaseReport = (id: number, signal?: AbortSignal) =>
-  request<DiseaseReport>(`/disease-reports/${id}`, { signal });
+export const getDiseaseReport = (id: number) => request<DiseaseReport>(`/disease-reports/${id}`);
 export const createDiseaseReport = (cropSeasonId: number, image: File) => {
   const form = new FormData();
   form.append("image", image);

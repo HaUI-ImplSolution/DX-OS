@@ -23,16 +23,14 @@ public class DiagnosisJobService {
   private final DiagnosisJobRepository diagnosisJobRepository;
   private final DiagnosisRepository diagnosisRepository;
   private final DiseaseReportRepository diseaseReportRepository;
-  private final DiagnosisService diagnosisService;
   private final ApplicationEventPublisher eventPublisher;
 
   public DiagnosisJobService(DiagnosisJobRepository diagnosisJobRepository,
       DiagnosisRepository diagnosisRepository, DiseaseReportRepository diseaseReportRepository,
-      DiagnosisService diagnosisService, ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher) {
     this.diagnosisJobRepository = diagnosisJobRepository;
     this.diagnosisRepository = diagnosisRepository;
     this.diseaseReportRepository = diseaseReportRepository;
-    this.diagnosisService = diagnosisService;
     this.eventPublisher = eventPublisher;
   }
 
@@ -67,6 +65,6 @@ public class DiagnosisJobService {
     return new DiagnosisJobResponse(job.getId(), job.getDiseaseReport().getId(), job.getRequestId(),
         job.getStatus().name(), job.getStage(), job.getErrorMessage(), job.getCreatedAt(),
         job.getUpdatedAt(), job.getCompletedAt(),
-        diagnosis != null ? diagnosisService.toResponse(diagnosis) : null);
+        diagnosis != null ? DiagnosisService.toResponse(diagnosis) : null);
   }
 }

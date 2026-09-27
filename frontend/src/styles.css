@@ -254,12 +254,6 @@ body {
   overflow-wrap: anywhere;
 }
 
-.ai-stage {
-  margin: 0;
-  color: #315744;
-  font-weight: 600;
-}
-
 .field-label {
   display: flex;
   flex-direction: column;

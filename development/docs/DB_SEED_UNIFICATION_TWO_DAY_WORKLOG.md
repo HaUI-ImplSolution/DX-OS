@@ -99,7 +99,8 @@ Việc nối policy vào internal API/AI là thay đổi contract riêng; không
 
 - Hoàn thành validation ảnh cho Web E2E: frontend chặn file vượt 10 MiB, không phải ảnh hoặc không decode được; Backend kiểm tra chữ ký/nội dung ảnh, format, kích thước và giới hạn 24 triệu pixel trước khi lưu.
 - Hoàn thành diagnosis job chạy nền: `POST .../diagnosis/ai` trả `202 Accepted` cùng job ID; frontend polling trạng thái và lưu job trong local storage để lấy lại sau khi rời trang/mất mạng. Job `QUEUED` được chạy lại, job `RUNNING` được đưa về queue khi Backend khởi động lại.
-- Xác minh thay đổi bằng `mvnw.cmd test` (1 test, 0 failure/error) và `npm run build` (frontend production build pass).
+- Chuẩn hóa upload theo pipeline AI: chỉ nhận JPEG/PNG có nội dung giải mã hợp lệ; frontend kiểm tra MIME/đuôi file, dung lượng và decode để cải thiện UX, Backend vẫn xác định format theo nội dung thực. Request vượt giới hạn 10 MiB trả `413` có kiểm soát.
+- Xác minh thay đổi phạm vi làm ngay bằng `mvnw.cmd test` (4 tests, 0 failure/error), `npm run build`, ba AI self-check và Docker Compose config đều pass.
 
 ## Điều kiện kết thúc worklog
 

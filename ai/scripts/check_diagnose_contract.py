@@ -5,25 +5,19 @@ from decimal import Decimal
 
 from app.api.schemas import DiagnoseRequest
 from app.clients.backend_client import BackendClientError, DiagnosisContext, RuleFact
-from app.core.config import get_settings
 from app.services.inference_service import run_stateless_diagnose
 
 
 def main() -> None:
     events: list[str] = []
-    threshold = get_settings().cv_confidence_threshold
-    if not 0 < threshold < 1:
-        raise AssertionError("CV_CONFIDENCE_THRESHOLD must be between 0 and 1")
 
     class Predictor:
-        confidence = min(1.0, threshold + 0.1)
-
         def predict(self, _image: bytes) -> dict:
             events.append("cv")
             return {
                 "disease_code": "Tomato___Late_blight",
                 "disease_name": "Bệnh mốc sương cà chua",
-                "confidence": self.confidence,
+                "confidence": 0.94,
                 "model_name": "EfficientNet-B4",
                 "model_version": "v1.0",
             }
@@ -152,71 +146,6 @@ def main() -> None:
         in review_response["recommendation"]["summary"]
     )
 
-    class BackendWithManyRules(Backend):
-        def get_diagnosis_context(self, **kwargs) -> DiagnosisContext:
-            context = super().get_diagnosis_context(**kwargs)
-            return context.model_copy(
-                update={
-                    "rules": [
-                        *context.rules,
-                        RuleFact(
-                            rule_id="8",
-                            pesticide="Alternative Copper",
-                            dose_min=Decimal("0.8"),
-                            dose_max=Decimal("1.0"),
-                            dose_unit="kg/ha",
-                            phi_days=10,
-                            version="v1",
-                        ),
-                    ]
-                }
-            )
-
-    multiple_response = run_stateless_diagnose(
-        payload=payload,
-        image_bytes=b"image",
-        predictor=Predictor(),
-        db=object(),
-        backend_client=BackendWithManyRules(),
-        rag_retriever=Retriever(),
-        recommendation_writer=Writer(),
-    ).model_dump(mode="json")
-    assert multiple_response["structured_context"]["path"] == "review_required"
-    assert len(multiple_response["structured_context"]["rules"]) == 2
-    assert multiple_response["recommendation"]["selected_rule_id"] is None
-    assert "không tự chọn theo thứ tự" in multiple_response["recommendation"]["summary"]
-
-    class LowConfidencePredictor(Predictor):
-        confidence = threshold - 0.01
-
-    low_response = run_stateless_diagnose(
-        payload=payload,
-        image_bytes=b"image",
-        predictor=LowConfidencePredictor(),
-        db=object(),
-        backend_client=Backend(),
-        rag_retriever=Retriever(),
-        recommendation_writer=Writer(),
-    ).model_dump(mode="json")
-    assert low_response["structured_context"]["path"] == "low_confidence_review"
-    assert low_response["recommendation"]["selected_rule_id"] is None
-    assert "chưa đạt ngưỡng an toàn" in low_response["recommendation"]["summary"]
-
-    class ThresholdPredictor(Predictor):
-        confidence = threshold
-
-    threshold_response = run_stateless_diagnose(
-        payload=payload,
-        image_bytes=b"image",
-        predictor=ThresholdPredictor(),
-        db=object(),
-        backend_client=Backend(),
-        rag_retriever=Retriever(),
-        recommendation_writer=Writer(),
-    ).model_dump(mode="json")
-    assert threshold_response["structured_context"]["path"] == "treatment"
-    assert threshold_response["recommendation"]["selected_rule_id"] == "7"
-
     failed_events: list[str] = []
 
     class FailurePredictor:
@@ -260,11 +189,7 @@ def main() -> None:
     else:
         raise AssertionError("Missing structured facts must fail the diagnosis")
     assert failed_events == ["cv", "backend"]
-    print(
-        "Diagnose contract check: PASS "
-        f"(threshold={threshold:.2f}, model=EfficientNet-B4 v1.0, "
-        "paths=low_confidence_review/review_required/treatment)"
-    )
+    print("Diagnose contract check: PASS")
 
 
 if __name__ == "__main__":

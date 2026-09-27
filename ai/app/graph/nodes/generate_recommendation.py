@@ -37,15 +37,13 @@ def generate_recommendation(
                 source_ids.append(s_id)
 
     actions = []
-    selected_rule = None
     summary_parts = [
         f"Chẩn đoán nhận diện: {disease_name} ({disease_code}) với độ tin cậy {confidence:.1%}."
     ]
 
     if path == "treatment":
         rules = treatment_lookup.get("rules", [])
-        if len(rules) != 1:
-            raise ValueError("Treatment path requires exactly one rule")
+        summary_parts.append(f"Tìm thấy {len(rules)} quy trình điều trị được duyệt.")
         for r in rules:
             actions.append(
                 {
@@ -58,41 +56,24 @@ def generate_recommendation(
                     "version": r.get("version"),
                 }
             )
-        selected_rule = next(iter(actions), None)
-        if selected_rule is None:
-            raise ValueError("Treatment path is missing its rule")
-        dose_text = str(selected_rule["dose_min"])
-        if selected_rule["dose_min"] != selected_rule["dose_max"]:
-            dose_text = (
-                f"{selected_rule['dose_min']}-{selected_rule['dose_max']}"
+        if actions:
+            selected = actions[0]
+            dose_text = str(selected["dose_min"])
+            if selected["dose_min"] != selected["dose_max"]:
+                dose_text = f"{selected['dose_min']}-{selected['dose_max']}"
+            summary_parts.append(
+                f"Khuyến nghị dùng {selected['pesticide']} với liều "
+                f"{dose_text} {selected['dose_unit']}; PHI {selected['phi_days']} ngày."
             )
-        summary_parts.append(
-            f"Khuyến nghị dùng {selected_rule['pesticide']} với liều "
-            f"{dose_text} {selected_rule['dose_unit']}; "
-            f"PHI {selected_rule['phi_days']} ngày."
-        )
     elif path == "policy":
         policy = treatment_lookup.get("policy") or {}
         status = policy.get("management_status", "NO_CHEMICAL_CONTROL")
         notes = policy.get("notes", "Không áp dụng hóa chất cho bệnh này.")
         summary_parts.append(f"Chính sách quản lý: {status}. {notes}")
-    elif path == "low_confidence_review":
-        summary_parts.append(
-            "Độ tin cậy chưa đạt ngưỡng an toàn. Kết quả này chưa phải kết luận "
-            "chắc chắn; cần chụp lại ảnh rõ hơn hoặc nhờ kỹ sư nông nghiệp đánh giá."
-        )
     else:
-        rule_count = len(treatment_lookup.get("rules", []))
-        if rule_count > 1:
-            summary_parts.append(
-                "Có nhiều quy trình điều trị nhưng chưa có tiêu chí lựa chọn xác định. "
-                "Cần kỹ sư nông nghiệp đánh giá; hệ thống không tự chọn theo thứ tự."
-            )
-        else:
-            summary_parts.append(
-                "Chưa có quy trình hóa chất hoặc chính sách cố định cho bệnh này. "
-                "Cần kỹ sư nông nghiệp đánh giá chuyên sâu."
-            )
+        summary_parts.append(
+            "Chưa có quy trình hóa chất hoặc chính sách cố định cho bệnh này. Cần kỹ sư nông nghiệp đánh giá chuyên sâu."
+        )
 
     if rag_context:
         summary_parts.append(
@@ -118,9 +99,7 @@ def generate_recommendation(
     timings["llm_generation"] = round((time.perf_counter() - started) * 1000, 2)
 
     recommendation_payload = {
-        "selected_rule_id": (
-            selected_rule["rule_id"] if selected_rule is not None else None
-        ),
+        "selected_rule_id": actions[0]["rule_id"] if actions else None,
         "path": path,
         "disease_code": disease_code,
         "disease_name": disease_name,

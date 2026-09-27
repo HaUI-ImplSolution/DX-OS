@@ -106,6 +106,10 @@ mattermost:
   webhook:
     # Empty disables notifications. Internal hostname, e.g. http://mattermost:8065/hooks/<key>.
     url: ${MATTERMOST_WEBHOOK_URL:}
+    # Own channel for new parcel and crop season requests; empty falls back to the default url.
+    url-admin: ${MATTERMOST_WEBHOOK_URL_ADMIN:}
+    # Own channel for new reports and pending diagnoses; empty falls back to the default url.
+    url-engineer: ${MATTERMOST_WEBHOOK_URL_ENGINEER:}
     # Browser-reachable gateway origin used to attach the report photo; empty omits the image.
     image-base-url: ${MATTERMOST_IMAGE_BASE_URL:}
     connect-timeout-ms: ${MATTERMOST_WEBHOOK_CONNECT_TIMEOUT_MS:2000}

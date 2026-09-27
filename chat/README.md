@@ -47,18 +47,22 @@ Ghi vào [`LICENSES.md`](../LICENSES.md) đúng caveat này để minh bạch kh
 
 ## Thông báo tự động từ Backend
 
-Backend post vào channel `Kỹ sư nông nghiệp` qua Incoming Webhook khi có:
+Backend post qua Incoming Webhook, mỗi loại sự kiện vào một channel:
 
-- **Báo cáo sâu bệnh mới**: mã báo cáo, mã thửa, giống lúa, người báo cáo, thời điểm báo cáo và ảnh báo cáo.
-- **Chẩn đoán chờ duyệt** (nhập tay hoặc qua AI): mã báo cáo, mã thửa, bệnh, độ tin cậy, có hay không có phác đồ.
-  Chẩn đoán không có phác đồ ghi "Không có phác đồ — cần kỹ sư xem xét".
+- `Ban quản trị` (`MATTERMOST_WEBHOOK_URL_ADMIN`): **yêu cầu thửa ruộng mới** và **yêu cầu vụ mùa mới** (cả khi gửi lại sau khi bị từ chối), kèm mã, hộ, diện tích hoặc giống lúa.
+- `Kỹ sư nông nghiệp` (`MATTERMOST_WEBHOOK_URL_ENGINEER`):
+
+  - **Báo cáo sâu bệnh mới**: mã báo cáo, mã thửa, giống lúa, người báo cáo, thời điểm báo cáo và ảnh báo cáo.
+  - **Chẩn đoán chờ duyệt** (nhập tay hoặc qua AI): mã báo cáo, mã thửa, bệnh, độ tin cậy, có hay không có phác đồ.
+    Chẩn đoán không có phác đồ ghi "Không có phác đồ — cần kỹ sư xem xét".
 
 Cách hoạt động:
 
 - Thông báo đi sau khi transaction lưu dữ liệu commit, chạy nền trên executor riêng; request tạo báo cáo/chẩn đoán không chờ Mattermost.
 - Best-effort, không retry: Mattermost tắt, webhook sai hoặc hàng đợi đầy thì thông báo bị bỏ, Backend chỉ ghi một dòng WARN không chứa URL.
 - Gửi lại báo cáo với `Idempotency-Key` đã dùng không sinh thông báo thứ hai.
-- `MATTERMOST_WEBHOOK_URL` rỗng thì tính năng tắt; Backend ghi một dòng lúc khởi động cho biết bật hay tắt.
+- Mỗi kênh dùng webhook riêng của nó; kênh không có webhook riêng dùng `MATTERMOST_WEBHOOK_URL`, cả hai đều rỗng thì thông báo của kênh đó tắt.
+  Backend ghi một dòng mỗi kênh lúc khởi động cho biết bật hay tắt.
 - Thông báo báo cáo mới kèm ảnh khi `MATTERMOST_IMAGE_BASE_URL` trỏ tới địa chỉ backend mà trình duyệt người xem truy cập được (địa chỉ gateway, ví dụ `http://localhost:9080`); để trống thì không kèm ảnh.
 - Tên người báo cáo, mã thửa, giống lúa và tên bệnh được cắt tối đa 100 ký tự, bỏ xuống dòng và vô hiệu mention, link, markdown.
   Thời điểm hiển thị theo múi giờ `Asia/Ho_Chi_Minh`.
@@ -67,9 +71,11 @@ Cách hoạt động:
 ### Cấp webhook (một lần cho mỗi môi trường)
 
 1. Đăng nhập Mattermost bằng tài khoản System Admin.
-2. Vào Integrations → Incoming Webhooks → Add Incoming Webhook, chọn channel `Kỹ sư nông nghiệp` trong team `DX-Farm HTX`, bật **Lock to this channel** để webhook chỉ đăng được vào channel đó.
+2. Vào Integrations → Incoming Webhooks → Add Incoming Webhook, chọn channel trong team `DX-Farm HTX` (`Ban quản trị` hoặc `Kỹ sư nông nghiệp`), bật **Lock to this channel** để webhook chỉ đăng được vào channel đó.
+  Làm một webhook cho mỗi channel.
 3. Sao chép URL, đổi host `localhost:<cổng>` thành `mattermost:8065` (Backend gọi qua mạng nội bộ của compose), ví dụ `http://mattermost:8065/hooks/<key>`.
-4. Điền vào `MATTERMOST_WEBHOOK_URL` trong `deploy/.env`, rồi chạy lại service `backend`: `docker compose up -d backend`.
+4. Điền vào `MATTERMOST_WEBHOOK_URL_ADMIN` (channel `Ban quản trị`) và `MATTERMOST_WEBHOOK_URL_ENGINEER` (channel `Kỹ sư nông nghiệp`) trong `deploy/.env`, rồi chạy lại service `backend`: `docker compose up -d backend`.
+   Chỉ có một webhook thì điền vào `MATTERMOST_WEBHOOK_URL`, mọi thông báo vào channel đó.
 
 URL chứa khóa truy cập nên chỉ nằm trong `deploy/.env`, không đưa vào Git.
 Xóa `deploy/data/mattermost/` hoặc thu hồi webhook làm khóa cũ mất hiệu lực; khi đó cấp lại và cập nhật `deploy/.env`.
@@ -77,7 +83,7 @@ Xóa `deploy/data/mattermost/` hoặc thu hồi webhook làm khóa cũ mất hi�
 ### Hạn chế
 
 - Luồng một chiều: duyệt, từ chối và ghi nhận xử lý vẫn làm trong web app, Mattermost không nhận kết quả và không cập nhật thông báo cũ.
-- Một channel cho mọi sự kiện, không định tuyến theo thửa hoặc kỹ sư phụ trách.
+- Định tuyến theo loại sự kiện, không theo thửa hoặc kỹ sư phụ trách.
 - `Kỹ sư nông nghiệp` là channel public: mọi tài khoản trong team đọc được tên người báo cáo và mã thửa.
   Muốn giới hạn thì chuyển channel sang private và thêm thành viên thủ công.
 - Không có outbox hay lịch sử gửi: thông báo bị lỡ không được gửi lại.

@@ -116,7 +116,6 @@ Chỉ có hai cơ chế seed, không thêm cơ chế thứ ba:
 - `data.sql` không sửa tay; đổi dữ liệu ở `data/` rồi chạy lại generator.
 - Chỉ record có cờ eligibility `true` được seed; generator in danh sách treatment rule bị chặn kèm lý do.
 - Backend không đọc `data/` lúc runtime; `data.sql` chạy idempotent mỗi lần start (`ON CONFLICT` trên khoá duy nhất của DB).
-- Chi tiết: [`development/docs/DB_SEED_UNIFICATION_PLAN.md`](./development/docs/DB_SEED_UNIFICATION_PLAN.md).
 
 
 Dữ liệu demo cũ do AI ghi trực tiếp trước khi tách DB (`disease_reports`, `diagnoses`, `treatment_applications`, `workflow_cases`/`workflow_events`) coi là dữ liệu demo/test, dọn bằng [`deploy/sql/p3-4-legacy-ai-data-cleanup.sql`](./deploy/sql/p3-4-legacy-ai-data-cleanup.sql) (P3-4, chạy một lần thủ công).

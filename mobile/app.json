@@ -29,6 +29,12 @@
       "expo-secure-store",
       "expo-web-browser",
       [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "DX-Farm cần vị trí của bạn để ghi toạ độ thửa ruộng khi bạn đang đứng tại ruộng."
+        }
+      ],
+      [
         "expo-image-picker",
         {
           "cameraPermission": "DX-Farm cần dùng camera để chụp ảnh cây lúa bị bệnh gửi cho kỹ sư.",

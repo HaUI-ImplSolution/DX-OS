@@ -14,20 +14,68 @@ export interface Parcel {
   location: string | null;
   latitude: number | null;
   longitude: number | null;
+  gpsAccuracyMeters: number | null;
+  locationMissing: boolean;
+  approvalStatus: ApprovalStatus;
+  rejectionReason: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
+// latitude, longitude and gpsAccuracyMeters come from one GPS fix; mockedLocation is set when
+// the phone reports the position as faked.
+export interface ParcelInput {
+  areaHectares: number;
+  location?: string;
+  latitude: number;
+  longitude: number;
+  gpsAccuracyMeters: number;
+  mockedLocation: boolean;
+  reason?: string;
+}
+
 export type CropSeasonStatus = "ACTIVE" | "HARVESTED";
+
+export type SeasonType = "DONG_XUAN" | "HE_THU" | "THU_DONG";
 
 export interface CropSeason {
   id: number;
+  code: string | null;
   parcelCode: string;
   riceVariety: string;
+  riceVarietyCode: string | null;
+  seasonType: SeasonType | null;
   startDate: string;
   expectedHarvestDate: string | null;
+  reasonForOverride: string | null;
   status: CropSeasonStatus;
+  approvalStatus: ApprovalStatus;
+  rejectionReason: string | null;
   harvestedAt: string | null;
+}
+
+export interface CropSeasonInput {
+  riceVarietyCode: string;
+  startDate: string;
+  seasonType?: SeasonType;
+  expectedHarvestDate?: string;
+  reasonForOverride?: string;
+}
+
+export interface RiceVariety {
+  code: string;
+  name: string;
+  growthDaysMin: number;
+  growthDaysMax: number;
+  source: string;
+  reviewStatus: "APPROVED" | "IN_REVIEW";
+}
+
+export interface CropSeasonSuggestion {
+  seasonType: SeasonType | null;
+  expectedHarvestDate: string;
+  earliestHarvestDate: string;
+  latestHarvestDate: string;
 }
 
 export interface IsolationStatus {

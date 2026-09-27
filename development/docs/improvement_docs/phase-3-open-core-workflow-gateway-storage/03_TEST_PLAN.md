@@ -38,7 +38,7 @@ Phase này đụng hạ tầng (gateway, storage) nên một số case bắt bu�
   `ConcurrencyIntegrationTest` và `DiseaseReportServiceTest` đạt.
 - [x] Đăng nhập SSO qua Keycloak (web, mobile, Superset) vẫn hoạt động qua APISIX.
   Web và Superset kiểm bằng trình duyệt, mobile trên máy thật.
-- [~] Thông báo Mattermost vẫn gửi, ảnh trong thông báo load được bằng presigned URL mới.
+- [x] Thông báo Mattermost vẫn gửi, ảnh trong thông báo load được bằng presigned URL mới. Kiểm ở P4 bằng báo cáo thật: thông báo vào kênh `ky-su-nong-nghiep`, link ảnh trả 200.
   Hoãn sang P4: webhook đã cấu hình, chờ giao diện tạo nông hộ để gửi báo cáo thật.
   Link ảnh công khai đã kiểm bằng `StorageServiceTest`.
 - [x] Dựng từ clone sạch (gồm APISIX, MinIO mới) bằng `docker compose up -d --build` vẫn lên đủ dịch vụ healthy.
@@ -47,7 +47,7 @@ Phase này đụng hạ tầng (gateway, storage) nên một số case bắt bu�
 ## 4. Tiêu chí đạt của phase (exit criteria)
 
 - T3-01 đến T3-10 đạt.
-- Mọi case hồi quy ở mục 3 đạt, trừ Mattermost kèm ảnh: hoãn sang P4, đã ghi ở `00_OVERVIEW.md`.
+- Mọi case hồi quy ở mục 3 đạt, gồm Mattermost kèm ảnh (kiểm ở P4).
 - Không còn lỗi nghiêm trọng mở; lỗi còn lại đã ghi ở `04_TRADEOFFS_RISKS.md`.
 - Các tiêu chí ở `00_OVERVIEW.md` mục 6 đều có bằng chứng.
 

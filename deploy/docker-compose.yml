@@ -57,6 +57,7 @@ services:
       AI_SERVICE_CONNECT_TIMEOUT_MS: ${AI_SERVICE_CONNECT_TIMEOUT_MS:-3000}
       AI_SERVICE_READ_TIMEOUT_MS: ${AI_SERVICE_READ_TIMEOUT_MS:-120000}
       AI_SERVICE_INBOUND_API_KEY: ${AI_SERVICE_INBOUND_API_KEY:-}
+      CV_CONFIDENCE_THRESHOLD: ${CV_CONFIDENCE_THRESHOLD:-0.70}
     volumes:
       - ./data/uploads:/app/uploads
     ports:
@@ -110,6 +111,7 @@ services:
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:1.5b}
       CV_DEVICE: ${AI_CV_DEVICE:-cpu}
+      CV_CONFIDENCE_THRESHOLD: ${CV_CONFIDENCE_THRESHOLD:-0.70}
       LOG_LEVEL: ${AI_LOG_LEVEL:-INFO}
     volumes:
       - ${AI_DATA_DIR:-../data}:/data:ro

@@ -360,6 +360,22 @@ export default function DiagnosisPanel({
             Độ tin cậy {Math.round(diagnosis.confidence * 100)}% · model {diagnosis.modelVersion} ·{" "}
             {new Date(diagnosis.diagnosedAt).toLocaleString("vi-VN")}
           </p>
+          {diagnosis.recommendationPath === "low_confidence_review" && (
+            <div className="banner banner-warning" role="alert">
+              <strong>Kết quả chưa đủ độ tin cậy để đề xuất điều trị</strong>
+              <p>
+                Confidence {Math.round(diagnosis.confidence * 100)}% thấp hơn ngưỡng{" "}
+                {Math.round(diagnosis.confidenceThreshold * 100)}%. Hãy chụp lại ảnh rõ hơn hoặc
+                nhờ kỹ sư đánh giá; đây chưa phải kết luận chắc chắn.
+              </p>
+            </div>
+          )}
+          {diagnosis.recommendationPath === "review_required" && (
+            <div className="banner banner-warning">
+              Chưa có đúng một quy tắc điều trị đủ điều kiện. Kỹ sư cần đánh giá và hệ thống sẽ
+              không tự chọn thuốc theo thứ tự.
+            </div>
+          )}
           <blockquote className="recommendation">{diagnosis.recommendationText}</blockquote>
 
           {diagnosis.treatmentRule && (
@@ -404,7 +420,8 @@ export default function DiagnosisPanel({
           )}
           {diagnosis.approvalStatus === "APPROVED" && !diagnosis.treatmentRule && (
             <div className="banner banner-warning">
-              Chưa có quy tắc điều trị được duyệt nên không thể ghi nhận phun thuốc.
+              Kết quả này thuộc nhánh cần review và không có quy tắc điều trị được chọn, nên không
+              thể ghi nhận phun thuốc.
             </div>
           )}
 

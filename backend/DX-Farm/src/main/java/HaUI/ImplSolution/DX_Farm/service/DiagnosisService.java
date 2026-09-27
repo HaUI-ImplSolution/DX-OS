@@ -29,6 +29,7 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +39,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class DiagnosisService {
 
   private static final int RECENT_TREATMENTS_LIMIT = 5;
+  private static final String TREATMENT_PATH = "treatment";
+  private static final String REVIEW_REQUIRED_PATH = "review_required";
+  private static final String LOW_CONFIDENCE_REVIEW_PATH = "low_confidence_review";
 
   private final DiagnosisRepository diagnosisRepository;
   private final DiseaseReportRepository diseaseReportRepository;
@@ -47,13 +51,15 @@ public class DiagnosisService {
   private final CurrentUserService currentUserService;
   private final AiDiagnosisClient aiDiagnosisClient;
   private final String publicBaseUrl;
+  private final BigDecimal confidenceThreshold;
 
   public DiagnosisService(DiagnosisRepository diagnosisRepository,
       DiseaseReportRepository diseaseReportRepository, DiseaseRepository diseaseRepository,
       TreatmentRuleService treatmentRuleService,
       TreatmentApplicationRepository treatmentApplicationRepository,
       CurrentUserService currentUserService, AiDiagnosisClient aiDiagnosisClient,
-      @Value("${app.public-base-url}") String publicBaseUrl) {
+      @Value("${app.public-base-url}") String publicBaseUrl,
+      @Value("${ai.service.confidence-threshold:0.70}") BigDecimal confidenceThreshold) {
     this.diagnosisRepository = diagnosisRepository;
     this.diseaseReportRepository = diseaseReportRepository;
     this.diseaseRepository = diseaseRepository;
@@ -62,6 +68,7 @@ public class DiagnosisService {
     this.currentUserService = currentUserService;
     this.aiDiagnosisClient = aiDiagnosisClient;
     this.publicBaseUrl = publicBaseUrl;
+    this.confidenceThreshold = confidenceThreshold;
   }
 
   // Gọi AI Service theo contract POST /api/v1/diagnose và trả nguyên response - chưa lưu
@@ -94,46 +101,69 @@ public class DiagnosisService {
 
     Disease disease = diseaseRepository.findByCode(diseaseCode).orElseThrow(
         () -> new ResourceNotFoundException("Unknown disease code from AI: " + diseaseCode));
-    AiDiagnoseResponse.RuleFact selectedRule = findSelectedRule(aiResponse);
-    TreatmentRule currentRule = null;
-    if (selectedRule != null) {
-      Long selectedRuleId;
-      try {
-        selectedRuleId = Long.valueOf(selectedRule.ruleId());
-      } catch (NumberFormatException exception) {
-        throw new InvalidStateException("AI selected an invalid rule_id: " + selectedRule.ruleId());
-      }
-      currentRule = treatmentRuleService.findByIdAndDiseaseCodeOrThrow(selectedRuleId, diseaseCode);
-      if (!Objects.equals(currentRule.getVersion(), selectedRule.version())) {
-        throw new InvalidStateException(
-            "Treatment rule for %s changed while AI was processing (rule version %s -> %s) - retry diagnosis"
-                .formatted(diseaseCode, selectedRule.version(), currentRule.getVersion()));
-      }
-    }
+    List<TreatmentRule> currentRules = treatmentRuleService.findByDiseaseCode(diseaseCode);
+    TreatmentRule currentRule = resolveRule(aiResponse, currentRules);
 
     Diagnosis diagnosis =
         Diagnosis.builder().diseaseReport(report).disease(disease).confidence(cvResult.confidence())
             .modelVersion(cvResult.modelName() + " " + cvResult.modelVersion())
             .treatmentRule(currentRule).recommendationText(aiResponse.recommendation().summary())
             .approvalStatus(ApprovalStatus.PENDING).build();
-    return toResponse(diagnosisRepository.save(diagnosis));
+    return toResponse(saveDiagnosis(diagnosis, reportId));
   }
 
-  private static AiDiagnoseResponse.RuleFact findSelectedRule(AiDiagnoseResponse aiResponse) {
+  private TreatmentRule resolveRule(AiDiagnoseResponse aiResponse,
+      List<TreatmentRule> currentRules) {
+    if (!Boolean.TRUE.equals(aiResponse.recommendation().requiresEngineerApproval())) {
+      throw new InvalidStateException("AI recommendation must require engineer approval");
+    }
+    String path = aiResponse.structuredContext().path();
     String selectedRuleId = aiResponse.recommendation().selectedRuleId();
-    if (selectedRuleId == null) {
-      if (!"review_required".equals(aiResponse.structuredContext().path())
-          || !aiResponse.structuredContext().rules().isEmpty()) {
-        throw new InvalidStateException("AI omitted rule_id outside review_required path");
+    if (isLowConfidence(aiResponse.cvResult().confidence())) {
+      if (!LOW_CONFIDENCE_REVIEW_PATH.equals(path) || selectedRuleId != null) {
+        throw new InvalidStateException(
+            "Low-confidence diagnosis must use low_confidence_review without rule_id");
       }
       return null;
     }
-    if (!"treatment".equals(aiResponse.structuredContext().path())) {
-      throw new InvalidStateException("AI selected rule_id outside treatment path");
+
+    if (currentRules.size() != 1) {
+      if (!REVIEW_REQUIRED_PATH.equals(path) || selectedRuleId != null) {
+        throw new InvalidStateException(
+            "Diagnosis without exactly one current rule must use review_required without rule_id");
+      }
+      return null;
     }
-    return aiResponse.structuredContext().rules().stream()
-        .filter(rule -> rule.ruleId().equals(selectedRuleId)).findFirst().orElseThrow(
-            () -> new InvalidStateException("AI selected an unknown rule_id: " + selectedRuleId));
+
+    TreatmentRule currentRule = currentRules.getFirst();
+    if (!TREATMENT_PATH.equals(path) || selectedRuleId == null) {
+      throw new InvalidStateException(
+          "Diagnosis with exactly one current rule must select it on treatment path");
+    }
+    Long parsedRuleId;
+    try {
+      parsedRuleId = Long.valueOf(selectedRuleId);
+    } catch (NumberFormatException exception) {
+      throw new InvalidStateException("AI selected an invalid rule_id: " + selectedRuleId);
+    }
+    if (!Objects.equals(currentRule.getId(), parsedRuleId)) {
+      throw new InvalidStateException("AI selected an unknown rule_id: " + selectedRuleId);
+    }
+    if (aiResponse.structuredContext().rules().size() != 1) {
+      throw new InvalidStateException("Treatment path must contain exactly one structured rule");
+    }
+    AiDiagnoseResponse.RuleFact selectedFact = aiResponse.structuredContext().rules().getFirst();
+    if (!Objects.equals(selectedFact.ruleId(), selectedRuleId)) {
+      throw new InvalidStateException(
+          "AI selected an unknown structured rule_id: " + selectedRuleId);
+    }
+    if (!Objects.equals(currentRule.getVersion(), selectedFact.version())) {
+      throw new InvalidStateException(
+          "Treatment rule for %s changed while AI was processing (rule version %s -> %s) - retry diagnosis"
+              .formatted(currentRule.getDisease().getCode(), selectedFact.version(),
+                  currentRule.getVersion()));
+    }
+    return currentRule;
   }
 
   private AiDiagnoseRequest buildAiDiagnoseRequest(DiseaseReport report, String requestId) {
@@ -163,13 +193,16 @@ public class DiagnosisService {
 
     Disease disease = diseaseRepository.findByCode(request.diseaseCode()).orElseThrow(
         () -> new ResourceNotFoundException("Unknown disease code: " + request.diseaseCode()));
-    TreatmentRule rule = treatmentRuleService.findByDiseaseCodeOrThrow(request.diseaseCode());
+    List<TreatmentRule> rules = treatmentRuleService.findByDiseaseCode(request.diseaseCode());
+    TreatmentRule rule =
+        !isLowConfidence(request.confidence()) && rules.size() == 1 ? rules.getFirst() : null;
 
     Diagnosis diagnosis = Diagnosis.builder().diseaseReport(report).disease(disease)
         .confidence(request.confidence()).modelVersion(request.modelVersion()).treatmentRule(rule)
-        .recommendationText(buildRecommendation(report, disease, rule, request.confidence()))
+        .recommendationText(
+            buildRecommendation(report, disease, rule, request.confidence(), rules.size()))
         .approvalStatus(ApprovalStatus.PENDING).build();
-    return toResponse(diagnosisRepository.save(diagnosis));
+    return toResponse(saveDiagnosis(diagnosis, reportId));
   }
 
   @Transactional
@@ -234,8 +267,21 @@ public class DiagnosisService {
     }
   }
 
-  private static String buildRecommendation(DiseaseReport report, Disease disease,
-      TreatmentRule rule, BigDecimal confidence) {
+  private String buildRecommendation(DiseaseReport report, Disease disease, TreatmentRule rule,
+      BigDecimal confidence, int ruleCount) {
+    if (isLowConfidence(confidence)) {
+      return "Thửa %s có tín hiệu %s với độ tin cậy %.1f%%, thấp hơn ngưỡng %.1f%%. Cần chụp lại ảnh rõ hơn hoặc nhờ kỹ sư đánh giá; chưa chọn quy tắc điều trị."
+          .formatted(report.getCropSeason().getParcel().getCode(), disease.getName(),
+              confidence.multiply(BigDecimal.valueOf(100)),
+              confidenceThreshold.multiply(BigDecimal.valueOf(100)));
+    }
+    if (rule == null) {
+      String reason = ruleCount == 0 ? "chưa có quy tắc điều trị"
+          : "có nhiều quy tắc nhưng chưa có tiêu chí lựa chọn xác định";
+      return "Thửa %s phát hiện bệnh %s (%.1f%%), nhưng %s. Cần kỹ sư nông nghiệp đánh giá; hệ thống không tự chọn thuốc."
+          .formatted(report.getCropSeason().getParcel().getCode(), disease.getName(),
+              confidence.multiply(BigDecimal.valueOf(100)), reason);
+    }
     return "Thửa %s phát hiện bệnh %s (%.1f%%). Đề xuất phác đồ: phun %s %s %s - yêu cầu cách ly thu hoạch %d ngày."
         .formatted(report.getCropSeason().getParcel().getCode(), disease.getName(),
             confidence.multiply(BigDecimal.valueOf(100)), rule.getPesticide().getName(),
@@ -249,15 +295,35 @@ public class DiagnosisService {
     return "%s-%s".formatted(rule.getDoseMin().toPlainString(), rule.getDoseMax().toPlainString());
   }
 
-  public static DiagnosisResponse toResponse(Diagnosis diagnosis) {
+  public DiagnosisResponse toResponse(Diagnosis diagnosis) {
     return new DiagnosisResponse(diagnosis.getId(), diagnosis.getDiseaseReport().getId(),
         diagnosis.getDisease().getCode(), diagnosis.getDisease().getName(),
-        diagnosis.getConfidence(), diagnosis.getModelVersion(), diagnosis.getDiagnosedAt(),
-        diagnosis.getRecommendationText(), diagnosis.getApprovalStatus().name(),
-        diagnosis.getDecidedBy(), diagnosis.getDecidedAt(), diagnosis.getRejectionReason(),
+        diagnosis.getConfidence(), diagnosis.getModelVersion(), recommendationPath(diagnosis),
+        confidenceThreshold, diagnosis.getDiagnosedAt(), diagnosis.getRecommendationText(),
+        diagnosis.getApprovalStatus().name(), diagnosis.getDecidedBy(), diagnosis.getDecidedAt(),
+        diagnosis.getRejectionReason(),
         diagnosis.getTreatmentRule() != null
             ? TreatmentRuleService.toResponse(diagnosis.getTreatmentRule())
             : null);
+  }
+
+  private boolean isLowConfidence(BigDecimal confidence) {
+    return confidence.compareTo(confidenceThreshold) < 0;
+  }
+
+  private String recommendationPath(Diagnosis diagnosis) {
+    if (isLowConfidence(diagnosis.getConfidence())) {
+      return LOW_CONFIDENCE_REVIEW_PATH;
+    }
+    return diagnosis.getTreatmentRule() == null ? REVIEW_REQUIRED_PATH : TREATMENT_PATH;
+  }
+
+  private Diagnosis saveDiagnosis(Diagnosis diagnosis, Long reportId) {
+    try {
+      return diagnosisRepository.saveAndFlush(diagnosis);
+    } catch (DataIntegrityViolationException exception) {
+      throw new InvalidStateException("Disease report already has a diagnosis: " + reportId);
+    }
   }
 
   private static TreatmentApplicationResponse toApplicationResponse(

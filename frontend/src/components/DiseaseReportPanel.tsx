@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createDiseaseReport, staticUrl } from "../api";
 import type { DiseaseReport } from "../types";
 import Badge from "./Badge";
@@ -14,10 +14,16 @@ interface DiseaseReportPanelProps {
 }
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png"]);
+const ALLOWED_IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png"]);
 
 async function validateImage(file: File): Promise<string | null> {
-  if (file.size > MAX_IMAGE_BYTES) return "Ảnh không được vượt quá 10 MB";
-  if (!file.type.startsWith("image/")) return "Chỉ chấp nhận file ảnh";
+  const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
+  if (file.size === 0) return "Ảnh không được để trống.";
+  if (file.size > MAX_IMAGE_BYTES) return "Ảnh không được vượt quá 10 MiB.";
+  if (!ALLOWED_IMAGE_TYPES.has(file.type) || !ALLOWED_IMAGE_EXTENSIONS.has(extension)) {
+    return "Chỉ chấp nhận ảnh JPEG hoặc PNG có phần mở rộng phù hợp.";
+  }
   const url = URL.createObjectURL(file);
   try {
     await new Promise<void>((resolve, reject) => {
@@ -32,6 +38,10 @@ async function validateImage(file: File): Promise<string | null> {
   } finally {
     URL.revokeObjectURL(url);
   }
+}
+
+function formatFileSize(bytes: number) {
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MiB`;
 }
 
 function diagnosisBadge(report: DiseaseReport) {
@@ -51,26 +61,64 @@ export default function DiseaseReportPanel({
 }: DiseaseReportPanelProps) {
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  const clearFile = () => {
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    setFileError(null);
+    if (fileInput.current) fileInput.current.value = "";
+  };
+
+  const closeForm = () => {
+    clearFile();
+    setShowForm(false);
+  };
+
+  const selectFile = async (file: File | null) => {
+    setFileError(null);
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    if (!file) return;
+    const error = await validateImage(file);
+    if (error) {
+      setFileError(error);
+      if (fileInput.current) fileInput.current.value = "";
+      fileInput.current?.focus();
+      return;
+    }
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const file = fileInput.current?.files?.[0];
+    const file = selectedFile;
     if (!file) {
-      onError("Vui lòng chọn ảnh sâu bệnh");
+      setFileError("Vui lòng chọn ảnh sâu bệnh.");
+      fileInput.current?.focus();
       return;
     }
     const validationError = await validateImage(file);
     if (validationError) {
-      onError(validationError);
+      setFileError(validationError);
+      fileInput.current?.focus();
       return;
     }
     setSubmitting(true);
     try {
       const report = await createDiseaseReport(cropSeasonId, file);
       onCreated(report);
-      if (fileInput.current) fileInput.current.value = "";
-      setShowForm(false);
+      closeForm();
     } catch (err) {
       onError(err instanceof Error ? err.message : "Không gửi được báo cáo");
     } finally {
@@ -105,12 +153,40 @@ export default function DiseaseReportPanel({
 
       {showForm && (
         <form className="inline-form" onSubmit={submit}>
-          <input type="file" accept="image/*" ref={fileInput} required />
+          <label className="field-label">
+            Ảnh lá cây (JPEG/PNG, tối đa 10 MiB)
+            <input
+              type="file"
+              accept="image/jpeg,image/png,.jpg,.jpeg,.png"
+              ref={fileInput}
+              onChange={(event) => void selectFile(event.target.files?.[0] ?? null)}
+              aria-describedby={fileError ? "report-image-error" : undefined}
+              aria-invalid={Boolean(fileError)}
+              required
+            />
+          </label>
+          {fileError && (
+            <p id="report-image-error" className="field-error" role="alert" aria-live="assertive">
+              {fileError}
+            </p>
+          )}
+          {selectedFile && previewUrl && (
+            <div className="image-preview">
+              <img src={previewUrl} alt="Xem trước ảnh sâu bệnh đã chọn" />
+              <div>
+                <strong>{selectedFile.name}</strong>
+                <span>{formatFileSize(selectedFile.size)}</span>
+                <button type="button" className="btn btn-link" onClick={clearFile} disabled={submitting}>
+                  Xóa ảnh
+                </button>
+              </div>
+            </div>
+          )}
           <div className="form-actions">
-            <button type="submit" className="btn btn-primary" disabled={submitting}>
+            <button type="submit" className="btn btn-primary" disabled={submitting || !selectedFile}>
               {submitting ? "Đang gửi…" : "Gửi báo cáo"}
             </button>
-            <button type="button" className="btn" onClick={() => setShowForm(false)}>
+            <button type="button" className="btn" onClick={closeForm} disabled={submitting}>
               Huỷ
             </button>
           </div>

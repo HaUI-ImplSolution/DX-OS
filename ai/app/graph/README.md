@@ -27,6 +27,8 @@ resolve_request
 - `retrieve_knowledge` chỉ đọc `documents` và `document_chunks` trong AI Vector DB.
 - `generate_recommendation` kết hợp facts và evidence nhưng không được sửa thuốc, liều, PHI hoặc rule version.
 
+Graph dùng một bảng quyết định fail-safe: confidence dưới ngưỡng đi `low_confidence_review`; confidence đạt ngưỡng và đúng một rule đi `treatment`; 0 hoặc nhiều rule đi `review_required`. Chỉ `treatment` có `selected_rule_id`; thứ tự rule không được dùng để ra quyết định.
+
 ## State và runtime
 
 `FarmState` chỉ giữ dữ liệu của một lần suy luận.

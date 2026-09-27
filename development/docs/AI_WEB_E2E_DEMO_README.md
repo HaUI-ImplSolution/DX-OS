@@ -73,8 +73,8 @@ Nếu volume PostgreSQL cũ còn cột `dose_amount`, cần dùng một `POSTGRE
                 ├─ AI semantic search trong pgvector
                 └─ Ollama diễn đạt recommendation từ evidence
                      └─ Backend kiểm tra response và lưu Diagnosis PENDING
-                          ├─ có rule: duyệt → được phép ghi nhận áp dụng
-                          └─ không có rule: review_required → chặn áp dụng
+                          ├─ đúng một rule và đủ confidence: duyệt → được phép ghi nhận áp dụng
+                          └─ low-confidence hoặc 0/nhiều rule: review → chặn áp dụng
 
 Một request hiện đi qua các bước sau:
 
@@ -84,9 +84,11 @@ Một request hiện đi qua các bước sau:
 4. Backend trả danh tính bệnh, toàn bộ treatment rule hiện hành nếu có và lịch sử xử lý gần nhất.
 5. AI tìm evidence trong documents/document_chunks của AI Vector DB, sau đó dùng Ollama diễn đạt phần giải thích.
 6. AI trả cv_result, rag_evidence, structured_context và recommendation.
-7. Backend kiểm tra một trong hai contract:
-   - treatment: selected_rule_id phải có trong rules; Backend đọc lại rule và so version trước khi lưu.
-   - review_required: selected_rule_id phải rỗng và danh sách rules phải rỗng.
+7. AI và Backend cùng áp dụng bảng quyết định an toàn:
+   - `low_confidence_review`: confidence dưới `CV_CONFIDENCE_THRESHOLD`, `selected_rule_id` rỗng.
+   - `treatment`: confidence đạt ngưỡng và có đúng một rule; Backend đọc lại rule và so version trước khi lưu.
+   - `review_required`: không có rule hoặc có nhiều rule chưa có tiêu chí chọn; `selected_rule_id` rỗng.
+   Backend tự kiểm tra lại confidence và số rule hiện hành, không tin riêng path do AI trả.
 8. Backend lưu summary do AI trả về, nhưng vẫn đặt diagnosis ở PENDING để ENGINEER hoặc ADMIN quyết định.
 9. Mỗi báo cáo chỉ có một diagnosis. Muốn chạy lại cần tạo báo cáo mới.
 10. TreatmentApplication chỉ được tạo sau khi diagnosis được duyệt, có treatment rule hợp lệ và liều thực tế nằm trong khoảng cho phép.
@@ -108,7 +110,7 @@ Một request hiện đi qua các bước sau:
 | [Diagnosis.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/model/Diagnosis.java) | Cho phép treatment_rule_id rỗng | Không làm mất kết quả CV/RAG chỉ vì bệnh chưa có rule được duyệt |
 | [TreatmentRule.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/model/TreatmentRule.java) | Lưu khoảng `doseMin`/`doseMax` và trạng thái `active` | Giữ nguyên khoảng liều; rule bị thu hồi không tham gia lookup mới nhưng vẫn có thể được giữ để bảo toàn lịch sử |
 | [InternalAiContextService.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/service/InternalAiContextService.java) | Bệnh có thật nhưng thiếu rule sẽ trả rules rỗng thay vì 404 | Phân biệt “không biết disease_code” với “đã biết bệnh nhưng cần review” |
-| [DiagnosisService.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/service/DiagnosisService.java) | Kiểm tra hai path treatment/review_required, tải lại đúng rule AI chọn, xác minh version và kiểm tra liều thực tế | Backend vẫn là nguồn sự thật và lớp quyết định cuối; AI không thể tự đưa rule lạ, rule cũ hoặc liều ngoài khoảng |
+| [DiagnosisService.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/service/DiagnosisService.java) | Kiểm tra ba path an toàn, tự đối chiếu confidence/số rule, xác minh version và kiểm tra liều thực tế | Backend vẫn là nguồn sự thật và lớp quyết định cuối; AI không thể tự đưa rule lạ, rule cũ hoặc liều ngoài khoảng |
 | [AiDiagnosisClient.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/service/AiDiagnosisClient.java) | Ép HTTP/1.1 | Khắc phục tương thích Java HTTP client với Uvicorn trong container hiện tại |
 | [application.yaml](../../backend/DX-Farm/src/main/resources/application.yaml) | Tăng read timeout từ 15 lên 120 giây | Cold start CPU gồm CV, embedding và LLM có thể vượt 15 giây |
 | [data.sql](../../backend/DX-Farm/src/main/resources/data.sql) | Sinh từ `data/structured/*.json` theo eligibility đã duyệt | Mọi giá trị seed truy được về `data/` và review qua diff; xem [`DB_SEED_UNIFICATION_PLAN.md`](DB_SEED_UNIFICATION_PLAN.md) |
@@ -118,7 +120,7 @@ Một request hiện đi qua các bước sau:
 
 | File | Thay đổi | Lý do |
 |---|---|---|
-| [ai/app/api/schemas.py](../../ai/app/api/schemas.py) | Cho phép review_required, rules rỗng, selected_rule_id rỗng và kiểm tra khoảng liều | Không ép AI chọn hoặc bịa rule khi Backend chưa có dữ liệu deterministic |
+| [ai/app/api/schemas.py](../../ai/app/api/schemas.py) | Công bố `treatment`, `review_required`, `low_confidence_review` và kiểm tra khoảng liều | Không ép AI chọn hoặc bịa rule khi confidence hoặc dữ liệu deterministic chưa đủ |
 | [ai/app/clients/backend_client.py](../../ai/app/clients/backend_client.py) | Chấp nhận response Backend không có rule | Đồng bộ client với contract nội bộ mới |
 | [ai/app/services/inference_service.py](../../ai/app/services/inference_service.py) | Chọn path theo structured facts và kiểm tra invariant trước khi trả response | Chặn response mâu thuẫn như treatment không có rule hoặc review_required lại chọn rule |
 | [ai/scripts/check_diagnose_contract.py](../../ai/scripts/check_diagnose_contract.py) | Thêm kiểm tra nhánh không có rule | Bảo vệ contract an toàn khỏi regression |
@@ -146,7 +148,7 @@ Một request hiện đi qua các bước sau:
 | Seed structured facts | `data.sql` idempotent, sinh từ `data/structured/*.json` qua generator | Migration, importer CLI/API hoặc seeder có version | Phù hợp giai đoạn phát triển một schema, nhưng audit/rollback kém hơn pipeline production |
 | Recommendation text | Lưu summary do AI trả | Backend tự dựng text hoặc lưu toàn response AI vào bảng audit | Giữ được phần giải thích CV+RAG+LLM, nhưng hiện chưa lưu evidence/generation metadata riêng. Backend tự dựng deterministic hơn nhưng mất phần diễn giải RAG |
 | HTTP protocol | Ép HTTP/1.1 | Auto-negotiation hoặc reverse proxy HTTP/2 | Sửa tương thích với thay đổi nhỏ, nhưng không tận dụng multiplexing khi tải đồng thời tăng |
-| Rule lookup | Backend trả mọi rule theo ID; AI chọn rule đầu tiên một cách deterministic | Chấm điểm theo priority, thời gian hiệu lực, bối cảnh ruộng và lịch sử xử lý | Đủ để test nhiều rule và Backend tải lại đúng ID đã chọn, nhưng thứ tự ID chưa phải chiến lược nông học tối ưu |
+| Rule lookup | Chỉ đúng một rule mới đi `treatment`; 0/nhiều rule đi `review_required` | Chấm điểm theo priority, thời gian hiệu lực, bối cảnh ruộng và lịch sử xử lý | Fail-safe và không bịa priority; đổi lại bệnh có nhiều rule chưa thể áp dụng cho đến khi có policy được chốt |
 | Biểu diễn liều | Rule lưu khoảng min/max và người duyệt nhập liều thực tế | Lưu một liều mặc định hoặc mô hình liều theo cây trồng/giai đoạn | Khoảng liều giữ đúng dữ liệu review và có kiểm soát ở Backend; đổi lại UI phải yêu cầu thêm một giá trị khi apply |
 
 Không chọn phương án để LLM tự tạo tên thuốc, liều hoặc PHI. Cách đó phá vỡ deterministic-first và biến RAG thành nguồn sự thật nghiệp vụ không kiểm soát được.
@@ -157,16 +159,13 @@ Nhánh hiện đã nối được luồng thật CV → Backend facts → semant
 
 Các phần chưa đạt được:
 
-- Chưa dùng async job; request giữ kết nối trong suốt thời gian suy luận.
+- Diagnosis dùng job chạy nền có polling và recovery khi Backend khởi động lại; job chưa có retry thủ công hoặc dead-letter queue.
 - Chưa lưu riêng rag_evidence, request_id, generation_mode và timings để audit/replay.
 - DiseaseManagementPolicy đã có bảng và dữ liệu seed nhưng chưa được internal API/AI sử dụng; bệnh không có rule vẫn đi vào review_required.
-- AI hiện chọn rule đầu tiên trong danh sách Backend trả về; chưa có priority hay bộ chọn dựa trên ngữ cảnh nông học.
+- Chưa có priority hay policy để chọn giữa nhiều treatment rule; các trường hợp này chủ động đi `review_required`.
 - Chưa benchmark concurrency, cold start và yêu cầu RAM/CPU.
 - API key và tài khoản mẫu chỉ dùng local, chưa có secret management production.
-- CV không có ngưỡng confidence tối thiểu; mọi ảnh đều đi hết pipeline kể cả confidence rất thấp hoặc ảnh không phải lá cây bị bệnh.
-- Frontend không tự phát hiện diagnosis đã được tạo khi request `/diagnosis/ai` bị rớt giữa chừng; phải tự reload trang để thấy trạng thái mới nhất.
-- Chưa validate kích thước ảnh ở phía client trước khi upload; vượt giới hạn 10MB chỉ báo lỗi sau khi đã upload xong.
-- Chưa có phản hồi tiến trình khi chờ AI xử lý (có thể tới 120 giây); chỉ có spinner tĩnh, không có bước trung gian.
+- Threshold chỉ là safety gate theo confidence, chưa phải bộ phát hiện ảnh ngoài phân phối chuyên biệt.
 
 Rule `TR-CAND-004` version `2026.09.26-e2e-assumed-v1` chỉ là giả định có truy vết để kiểm thử E2E, chưa phải phê duyệt của chuyên gia nông nghiệp có thẩm quyền cho sử dụng thực tế.
 Mười lăm candidate còn lại không được seed và không được bịa liều hoặc PHI thành structured facts.

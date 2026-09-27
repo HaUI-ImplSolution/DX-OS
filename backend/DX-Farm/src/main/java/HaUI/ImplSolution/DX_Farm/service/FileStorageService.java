@@ -21,7 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class FileStorageService {
 
   private static final long MAX_IMAGE_PIXELS = 24_000_000L;
-  private static final Set<String> ALLOWED_FORMATS = Set.of("jpeg", "png", "gif", "bmp", "wbmp");
+  private static final Set<String> ALLOWED_FORMATS = Set.of("jpeg", "png");
 
   private final Path uploadDir;
 
@@ -41,8 +41,8 @@ public class FileStorageService {
     String extension = validatedExtension(file);
     String filename = UUID.randomUUID() + "." + extension;
     Path target = uploadDir.resolve(filename);
-    try {
-      Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+    try (InputStream input = file.getInputStream()) {
+      Files.copy(input, target, StandardCopyOption.REPLACE_EXISTING);
     } catch (IOException e) {
       throw new IllegalStateException("Failed to store image file", e);
     }
@@ -63,7 +63,7 @@ public class FileStorageService {
       try {
         String format = reader.getFormatName().toLowerCase();
         if (!ALLOWED_FORMATS.contains(format)) {
-          throw new IllegalArgumentException("Unsupported image format");
+          throw new IllegalArgumentException("Only JPEG or PNG uploads are allowed");
         }
         reader.setInput(imageStream, true, true);
         int width = reader.getWidth(0);

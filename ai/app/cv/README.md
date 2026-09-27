@@ -69,7 +69,7 @@ Ví dụ kết quả:
 - Weights mặc định lấy từ Hugging Face khi chưa tồn tại ở `ai/weights/`; các lần chạy sau tái sử dụng cache này.
 - `CV_DEVICE=auto` ưu tiên CUDA khi có GPU, nếu không chạy CPU. Có thể đặt rõ `cpu` hoặc `cuda`.
 - Model chạy `eval()` và `torch.no_grad()` khi suy luận để không cập nhật trọng số.
-- Confidence nằm trong khoảng `0–1`. Workflow xem confidence thấp hơn `CV_CONFIDENCE_THRESHOLD` — mặc định `0.70` — là low-confidence và yêu cầu xác nhận rõ ràng trước khi áp dụng hành động liên quan.
+- Confidence nằm trong khoảng `0–1`. Dưới `CV_CONFIDENCE_THRESHOLD` — mặc định `0.70` — workflow trả `low_confidence_review`, không chọn treatment rule; Backend kiểm tra lại cùng ngưỡng và chặn apply.
 - API giới hạn tệp upload là ảnh và tối đa 10 MiB. Ảnh không đọc được hoặc output model không hợp lệ sẽ bị từ chối.
 
 ## Giới hạn dữ liệu

@@ -21,6 +21,14 @@ Contract thực thi được khóa bởi DTO Backend
 và schema AI [`schemas.py`](../../../ai/app/api/schemas.py); script
 [`check_diagnose_contract.py`](../../../ai/scripts/check_diagnose_contract.py) kiểm tra sự tương thích giữa hai phía.
 
+`structured_context.path` có ba giá trị: `treatment` khi confidence đạt ngưỡng và có đúng một rule; `review_required` khi có 0/nhiều rule; `low_confidence_review` khi confidence dưới ngưỡng. Hai path review bắt buộc có `selected_rule_id = null`; Backend tự kiểm tra lại confidence và số rule hiện hành.
+
+Contract thực thi được khóa bởi DTO Backend
+[`AiDiagnoseRequest.java`](../../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/dto/AiDiagnoseRequest.java),
+[`AiDiagnoseResponse.java`](../../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/dto/AiDiagnoseResponse.java)
+và schema AI [`schemas.py`](../../../ai/app/api/schemas.py); script
+[`check_diagnose_contract.py`](../../../ai/scripts/check_diagnose_contract.py) kiểm tra sự tương thích giữa hai phía.
+
 ## Endpoint hỗ trợ
 
 | Method | Endpoint | Vai trò |

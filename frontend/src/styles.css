@@ -221,6 +221,45 @@ body {
   min-width: 140px;
 }
 
+.field-error {
+  margin: 0;
+  color: #a61b1b;
+  font-weight: 600;
+}
+
+.image-preview {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.75rem;
+  border: 1px solid #d5dfd8;
+  border-radius: 0.75rem;
+  background: #f8fbf9;
+}
+
+.image-preview img {
+  width: 112px;
+  height: 84px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+
+.image-preview div {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.image-preview strong {
+  overflow-wrap: anywhere;
+}
+
+.ai-stage {
+  margin: 0;
+  color: #315744;
+  font-weight: 600;
+}
+
 .field-label {
   display: flex;
   flex-direction: column;

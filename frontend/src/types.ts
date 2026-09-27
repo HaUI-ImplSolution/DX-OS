@@ -57,6 +57,7 @@ export interface IsolationStatus {
 }
 
 export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED";
+export type RecommendationPath = "treatment" | "review_required" | "low_confidence_review";
 
 export interface TreatmentRule {
   id: number;
@@ -78,6 +79,8 @@ export interface Diagnosis {
   diseaseName: string;
   confidence: number;
   modelVersion: string;
+  recommendationPath: RecommendationPath;
+  confidenceThreshold: number;
   diagnosedAt: string;
   recommendationText: string;
   approvalStatus: ApprovalStatus;

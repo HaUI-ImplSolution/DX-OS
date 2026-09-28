@@ -15,7 +15,11 @@ Response khớp DTO `AiDiagnoseResponse`, gồm `request_id`, `cv_result`, `rag_
 Thuốc, `dose_amount`, `phi_days` và `version` phải giữ nguyên từ structured facts do Backend cung cấp.
 Backend kiểm tra lại rule version và lưu recommendation ở trạng thái `PENDING`.
 
-Contract JSON đầy đủ được định nghĩa tại mục 5 của [`ai_backend_decoupling_plan.md`](./ai_backend_decoupling_plan.md).
+Contract thực thi được khóa bởi DTO Backend
+[`AiDiagnoseRequest.java`](../../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/dto/AiDiagnoseRequest.java),
+[`AiDiagnoseResponse.java`](../../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/dto/AiDiagnoseResponse.java)
+và schema AI [`schemas.py`](../../../ai/app/api/schemas.py); script
+[`check_diagnose_contract.py`](../../../ai/scripts/check_diagnose_contract.py) kiểm tra sự tương thích giữa hai phía.
 
 ## Endpoint hỗ trợ
 

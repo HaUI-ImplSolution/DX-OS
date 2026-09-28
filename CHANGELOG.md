@@ -5,9 +5,16 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Backend (Spring Boot — `backend/DX-Farm`)
 
+### 2026-09-26
+
+- Hoàn thiện seed idempotent từ dữ liệu nguồn: 1 treatment rule giả định cho E2E, 15 candidate còn lại bị chặn; rule stale được vô hiệu hóa và bảo toàn an toàn khi đã có lịch sử tham chiếu.
+- Tối giản `data/`: loại 7 artifact báo cáo/đề xuất đã được master JSON, code và tài liệu hiện hành thay thế.
+- Chuẩn hóa `data/` ở gốc repository làm nguồn RAG duy nhất, loại bản sao local khỏi luồng ingest E2E.
+- Dọn hai tài liệu kế hoạch/checklist tách AI-Backend trung gian sau khi trạng thái cuối đã được phản ánh trong code và tài liệu hiện hành.
+
 ### 2026-09-16
 
-**Đã xong — Phase 2 tách AI thành dịch vụ suy luận (P2-0..P2-6, xem `development/docs/legacy_docs/ai_backend_decoupling_checklist.md`):**
+**Đã xong — Phase 2 tách AI thành dịch vụ suy luận (P2-0..P2-6):**
 
 - `AiDiagnosisClient` (`RestClient` + `JdkClientHttpRequestFactory`) gọi AI theo contract `POST /api/v1/diagnose`, timeout riêng + circuit breaker Resilience4j.
 - Internal API read-only `GET /internal/v1/diagnosis-context` cho AI tra treatment rule + lịch sử phun theo `disease_code`, bảo vệ bằng service API key riêng (`ServiceApiKeyAuthenticationFilter`), chỉ cho GET.
@@ -15,7 +22,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Endpoint nhập tay `POST .../diagnosis` vẫn giữ cho testing/demo — cả hai cùng đổ vào một `Diagnosis`/vòng đời duyệt duy nhất qua `approve`/`reject`/`apply`.
 - Xác nhận `DiseaseReportService` đã tự lưu `DiseaseReport` vào Backend DB từ Phase 0, không phụ thuộc AI ghi hộ.
 
-**Đã xong — Phase 3 tách DB vật lý cho AI (P3-1..P3-4, xem `development/docs/legacy_docs/ai_backend_decoupling_checklist.md`):**
+**Đã xong — Phase 3 tách DB vật lý cho AI (P3-1..P3-4):**
 
 - `AiVectorDatabaseSeeder` tự tạo database `dx_farm_ai_vector_db` (chỉ `documents`/`document_chunks`, extension `pgvector`) lúc khởi động.
 - Hai role Postgres riêng cho AI: `ai_vector_ro` chỉ đọc khi runtime và `ai_vector_ingest` đọc/ghi khi ingest; AI không nhận credential truy cập Backend DB.
@@ -300,6 +307,11 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 **Đã xong:**
 
+- Thống nhất luồng seed: `data/scripts/generate_seed_sql.py` sinh `data.sql` từ `data/structured/*.json`; chỉ seed record có cờ eligibility `true`.
+  Quy ước hai cơ chế seed ghi ở `README.md`.
+- Thêm entity `DiseaseManagementPolicy` (bảng `disease_management_policies`), seed 13 guardrail qua generator.
+  `treatment_rules` có ràng buộc duy nhất `(disease_id, pesticide_id)` nên seed chạy đồng thời vẫn không trùng.
+  `treatment_rules` chưa có dòng nào vì cả 16 candidate đều `eligible_for_seed=false`.
 - Thêm `development/docs/DB_SEED_UNIFICATION_PLAN.md`: kế hoạch dùng `data/` làm nguồn seed duy nhất qua generator sinh `data.sql`, đối soát eligibility của treatment rule candidate, và mở entity `disease_management_policies` còn thiếu.
 - `ai/app/rag/source_registry.py`, `ai/app/rag/ingestion_service.py` đọc corpus từ `data/rag/...` ở gốc repository.
 - `deploy/docker-compose.yml`, `deploy/.env.example` bind-mount `data/` vào `/data` cho container `rag-ingest`.
@@ -310,6 +322,6 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 **Đã xong:**
 
-- Thêm kế hoạch tách AI/Backend (`ai_backend_decoupling_plan.md`) và checklist triển khai theo Phase (`ai_backend_decoupling_checklist.md`).
-- Cập nhật `README.md`, `ai/README.md`, `ai/app/graph/README.md`, `AI_EVENT_SCHEMA_README.md` để trỏ tới kế hoạch trên và nêu rõ AI hiện vẫn dùng chung PostgreSQL với Backend.
+- Từng bổ sung kế hoạch và checklist triển khai tách AI/Backend theo phase; hai tài liệu trung gian này được dọn sau khi hoàn tất và hợp nhất trạng thái cuối vào tài liệu hiện hành.
+- Cập nhật `README.md`, `ai/README.md`, `ai/app/graph/README.md`, `AI_EVENT_SCHEMA_README.md` để mô tả trạng thái kiến trúc tại thời điểm triển khai.
 - Dọn `development/docs/`: chỉ còn kế hoạch/checklist/contract hiện hành; tài liệu thiết kế gốc chuyển vào `legacy_docs/`.

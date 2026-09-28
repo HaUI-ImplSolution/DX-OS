@@ -33,7 +33,7 @@ git status          # sạch
 | Ranh giới core | Tìm `Household`, `Parcel`, tên view `vw_` trong `dx-core-api`, `dx-core` | Không có | C2 |
 | Tên cũ | Tìm `dxfarm` ngoài tài liệu lịch sử, scheme và bundle mobile | Không có | C3 |
 | Đường dẫn cũ | Tìm `backend/DX-Farm`, `docs/ARCHITECTURE_OPEN_CORE`, `improvement_docs/_template` | Không có | C1, C7 |
-| Backend đầy đủ (có thể bỏ qua nếu chỉ kiểm nhanh) | `cd backend && ./mvnw verify` | Số test bằng baseline đã đo lại ở C0 (79 tại `64dc2bc` cộng 2 test của `SeedDataIntegrationTest`), trừ các test migration bỏ có chủ đích ở C1; không bỏ qua | C1, C2, C4 |
+| Backend đầy đủ (có thể bỏ qua nếu chỉ kiểm nhanh) | `cd backend && ./mvnw verify` | Số test bằng baseline đã đo lại ở C0 (80 tại `304c810`), trừ các test migration bỏ có chủ đích ở C1; không bỏ qua | C1, C2, C4 |
 | AI | `cd ai && pytest` | Số test không ít hơn baseline (64) | C2, C4 |
 | Seed Farm nhất quán | `python data/scripts/generate_seed_sql.py --check` và `python -m unittest data.scripts.test_generate_seed_sql` | Đạt; CI chạy lại ở `ci-ai.yml` | C1 |
 

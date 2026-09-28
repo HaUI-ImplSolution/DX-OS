@@ -33,16 +33,16 @@ Kết quả đầu ra: số liệu test và OpenAPI baseline được lưu.
 
 **Spec và tài liệu**
 
-- [ ] WPC0-03-DOC-01 Ghi số test và số bước E2E baseline vào `03_TEST_PLAN.md` mục 5.
-- [ ] WPC0-03-DOC-02 Người dùng xuất `/v3/api-docs` và lưu ở đường dẫn ghi trong mục 5.
+- [x] WPC0-03-DOC-01 Ghi số test và số bước E2E baseline vào `03_TEST_PLAN.md` mục 5.
+- [x] WPC0-03-DOC-02 Người dùng xuất `/v3/api-docs` và lưu ở đường dẫn ghi trong mục 5.
 
 **Test** (chi tiết ở `03_TEST_PLAN.md`)
 
-- [ ] WPC0-03-TEST-01 Đọc lại tài liệu theo TC0-01.
+- [x] WPC0-03-TEST-01 Đọc lại tài liệu theo TC0-01.
 
 ## Đóng phase
 
-- [ ] Mọi tiêu chí ở `00_OVERVIEW.md` mục 6 đã đạt và có bằng chứng.
-- [ ] `README.md` của `refactor_docs/` có trạng thái quyết định mới nhất.
-- [ ] Không có secret, mật khẩu hay dữ liệu thật trong diff.
-- [ ] Cập nhật trạng thái phase ở bảng chỉ mục của `README.md`.
+- [x] Mọi tiêu chí ở `00_OVERVIEW.md` mục 6 đã đạt và có bằng chứng.
+- [x] `README.md` của `refactor_docs/` có trạng thái quyết định mới nhất.
+- [x] Không có secret, mật khẩu hay dữ liệu thật trong diff.
+- [x] Cập nhật trạng thái phase ở bảng chỉ mục của `README.md`.

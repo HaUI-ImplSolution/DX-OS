@@ -5,7 +5,7 @@ Dựng cho tiêu chí **Giai đoạn 2 [H]** (không gian Human) — đăng nh�
 
 Service `keycloak` khai báo trong [`deploy/docker-compose.yml`](../deploy/docker-compose.yml), tự import realm `dxfarm` từ [`realm-dxfarm.json`](./realm-dxfarm.json) lúc khởi động.
 Không cần thao tác tay nào thêm sau `docker compose up -d --build`.
-Cổng host mặc định `8180` (`KEYCLOAK_HOST_PORT`), không dùng `8080` mặc định của Keycloak vì đó là port hay bị chiếm nhất trên máy dev.
+Cổng host `8180` (`KEYCLOAK_HOST_PORT`), không dùng `8080` mặc định của Keycloak vì đó là port hay bị chiếm nhất trên máy dev.
 
 ## Vì sao chọn Keycloak
 
@@ -27,6 +27,7 @@ Chuẩn công nghiệp cho OIDC/SAML, license Apache-2.0 (OSI-approved), có tà
 - `keycloak` dùng CSDL Postgres riêng (`keycloak`), cùng pattern với Mattermost/Superset.
   Backend tự tạo role `keycloak_app` + database `keycloak` lúc khởi động (`KeycloakDatabaseSeeder`).
 - Realm `dxfarm` có 3 realm role `FARMER`/`ENGINEER`/`ADMIN`, client public `dxfarm-frontend` và `dxfarm-mobile` (Standard Flow + PKCE, không dùng client secret), và client confidential `dxfarm-superset` (Superset trao đổi token server-to-server nên cần secret).
+  Secret của client này nằm trong `realm-dxfarm.json` và phải trùng `SUPERSET_OIDC_CLIENT_SECRET` trong `deploy/.env`.
 - 3 tài khoản demo tạo sẵn trong realm import — xem bảng dưới.
   Chỉ dùng để demo, đổi mật khẩu/secret thật trước khi triển khai ngoài môi trường dev.
 - Claim `name` của `farmer1` là `Nguyễn Văn Nông`; backend so khớp claim này với `farmerName` của thửa để giới hạn dữ liệu của FARMER.
@@ -37,7 +38,7 @@ Chuẩn công nghiệp cho OIDC/SAML, license Apache-2.0 (OSI-approved), có tà
 | `engineer1` | `engineer123` | ENGINEER |
 | `admin1` | `admin123` | ADMIN |
 
-Quản lý user (tạo/xoá/đổi role) qua Keycloak Admin Console: `http://localhost:${KEYCLOAK_HOST_PORT:-8180}/admin`, đăng nhập bằng `KEYCLOAK_ADMIN_PASSWORD`.
+Quản lý user (tạo/xoá/đổi role) qua Keycloak Admin Console: `http://localhost:${KEYCLOAK_HOST_PORT}/admin`, đăng nhập bằng `KEYCLOAK_ADMIN_PASSWORD`.
 
 ## Client mobile `dxfarm-mobile`
 
@@ -51,7 +52,7 @@ Quản lý user (tạo/xoá/đổi role) qua Keycloak Admin Console: `http://loc
 
 ## Lưu ý kỹ thuật: hostname nội bộ vs. hostname trình duyệt
 
-Trình duyệt gọi Keycloak qua `http://localhost:${KEYCLOAK_HOST_PORT:-8180}`, backend/Superset trong mạng docker gọi qua `http://keycloak:8080` — hai hostname khác nhau cho cùng một Keycloak.
+Trình duyệt gọi Keycloak qua `http://localhost:${KEYCLOAK_HOST_PORT}`, backend/Superset trong mạng docker gọi qua `http://keycloak:8080` — hai hostname khác nhau cho cùng một Keycloak.
 Backend xác thực token bằng `jwk-set-uri` (chỉ lấy public key verify chữ ký) thay vì `issuer-uri` (sẽ lệch claim `iss` vì token mang hostname trình duyệt).
 Superset (`bi/superset_config.py`) tự chỉ định từng endpoint (`authorize_url` dùng hostname trình duyệt, `access_token_url`/`api_base_url`/`jwks_uri` dùng hostname nội bộ) thay vì dùng `server_metadata_url` tự khám phá — cùng lý do.
 

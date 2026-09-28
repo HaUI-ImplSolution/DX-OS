@@ -51,7 +51,7 @@ Tài liệu chi tiết theo module:
 | Disease, Pesticide, TreatmentRule | Backend DB `dxfarm` | Chỉ đọc qua internal REST API |
 | DiseaseManagementPolicy | Backend DB `dxfarm` | Chỉ đọc qua internal REST API khi endpoint tương ứng được mở |
 | Document, DocumentChunk và embedding | AI Vector DB `dx_farm_ai_vector_db` | Role `ai_vector_ro` chỉ có quyền đọc |
-| Corpus ingest | File local do người vận hành cung cấp | Job riêng dùng role `ai_vector_ingest` |
+| Corpus ingest | Thư mục `data/` ở gốc repository (mount read-only vào job `rag-ingest`) | Job riêng dùng role `ai_vector_ingest` |
 
 Backend khởi tạo AI Vector DB, extension `vector`, hai bảng RAG và hai role PostgreSQL. Runtime không giữ credential ingest; `RAG_INGEST_DATABASE_URL` chỉ được cấp khi chạy job quản trị.
 
@@ -107,7 +107,7 @@ Từ thư mục gốc repository:
 
 ```bash
 cp deploy/.env.example deploy/.env
-# Thiết lập BACKEND_TO_AI_API_KEY và AI_TO_BACKEND_API_KEY bằng giá trị không rỗng.
+# Mọi biến trong compose là bắt buộc; BACKEND_TO_AI_API_KEY và AI_TO_BACKEND_API_KEY phải khác rỗng.
 cd deploy
 docker compose up -d --build postgres backend ai
 ```
@@ -115,7 +115,8 @@ docker compose up -d --build postgres backend ai
 Compose sử dụng:
 
 - `ai_vector_ro` qua `DATABASE_URL` cho AI runtime.
-- `ai_vector_ingest` qua `RAG_INGEST_DATABASE_URL` cho job ingest thủ công.
+- `ai_vector_ingest` qua `RAG_INGEST_DATABASE_URL` cho job `rag-ingest`, tự chạy trước khi AI khởi động.
+- Service `ollama` và `ollama-init` chạy cùng stack; `ollama-init` tải model `OLLAMA_MODEL` trước khi AI khởi động.
 - `http://ai:8000` cho chiều Backend → AI.
 - `http://backend:8081` cho chiều AI → Backend.
 

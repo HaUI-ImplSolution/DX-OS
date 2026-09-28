@@ -2,7 +2,7 @@
 
 > **Trạng thái:** Đã triển khai và xác minh generator, entity `disease_management_policies`, quy ước seed và hội tụ an toàn. Một treatment rule được nhóm dự án cho phép bằng giả định E2E; 15 rule còn lại vẫn bị chặn.
 >
-> **Cập nhật:** 26/09/2026.
+> **Cập nhật:** 28/09/2026.
 >
 > **Phạm vi:** Seed dữ liệu nghiệp vụ (disease/pesticide/treatment rule/disease management policy) từ thư mục `data/` (gốc repository) vào Backend DB một cách idempotent, và thống nhất quy ước quản lý DB.
 
@@ -10,7 +10,7 @@
 
 - `data/structured/*.json` ở gốc repository là **nguồn seed nghiệp vụ duy nhất**.
   `data/rag/*` chỉ phục vụ AI Vector DB và audit nguồn, không được seed vào Backend DB.
-  Nội dung hiện có trong `data.sql` không còn giá trị tham chiếu, sẽ được thay thế hoàn toàn.
+  `data.sql` hiện được sinh hoàn toàn từ dữ liệu có eligibility và quyết định cho phép seed trong `data/structured/`.
 - **Khi data và schema lệch nhau:** ưu tiên dữ liệu **đã được duyệt** (`eligible_for_seed`/`eligible_for_pesticide_seed`/`eligible_for_deterministic_guardrail` = `true`) — sửa schema cho khớp dữ liệu đó.
   Dữ liệu **chưa duyệt** thì không kéo theo sửa schema; nó đứng yên chờ duyệt, không seed và không ép schema thay đổi theo.
 - `data/` không phải nguồn đọc trực tiếp lúc runtime của Backend — generator vẫn chạy dev-time, cách Spring seed lúc start không đổi.
@@ -19,11 +19,11 @@
 
 - `ddl-auto: update` + `sql.init.mode: always` — mỗi lần start, Hibernate cập nhật schema rồi `data.sql` chạy lại (tự né trùng bằng `ON CONFLICT` trên khoá duy nhất của DB).
   Không có Flyway/Liquibase.
-- Hai cơ chế seed song song, chưa có quy ước:
+- Hai cơ chế seed hiện hành:
 
   | Loại dữ liệu | Cơ chế |
   |---|---|
-  | Nghiệp vụ (JPA quản lý: `diseases`, `pesticides`, `treatment_rules`) | `data.sql` |
+  | Nghiệp vụ (JPA quản lý: `diseases`, `pesticides`, `treatment_rules`, `disease_management_policies`) | `data.sql` sinh từ `data/structured/` |
   | Hạ tầng Postgres (role, database, extension) | `CommandLineRunner` (`KeycloakDatabaseSeeder`, `MattermostDatabaseSeeder`, `SupersetReadOnlyRoleSeeder`, `AiVectorDatabaseSeeder`) |
 
 - Backend đã có entity/bảng `disease_management_policies` và seed đủ 13 guardrail.
@@ -31,8 +31,8 @@
 
 ## 3. Quyết định kiến trúc
 
-Giữ nguyên cơ chế "seed idempotent lúc start" đã có (`data.sql` qua Spring).
-Chỉ thay đổi **nguồn sinh ra `data.sql`**:
+Cơ chế hiện hành giữ việc seed idempotent lúc khởi động qua `data.sql` của Spring.
+Nguồn sinh `data.sql` được thống nhất như sau:
 
 ```
 data/ (JSON, có cờ eligibility, gốc repository)
@@ -43,10 +43,10 @@ data/ (JSON, có cờ eligibility, gốc repository)
 
 Không đọc JSON trực tiếp lúc runtime của Backend — diff SQL trong PR dễ audit hơn logic ẩn trong code.
 
-## 4. Các thành phần cần triển khai
+## 4. Các thành phần đã triển khai
 
 **Đối soát eligibility**
-Rà 16 treatment rule candidate trong `treatment_rules_candidates_master.json`, chỉ giữ lại rule có `eligible_for_seed=true` và có `seed_authorization` hợp lệ.
+Đã rà 16 treatment rule candidate trong `treatment_rules_candidates_master.json`; chỉ rule có `eligible_for_seed=true` và `seed_authorization` hợp lệ được đưa vào seed.
 Nhóm dự án đã cho phép `TR-CAND-004` ở trạng thái `E2E_ASSUMPTION` để kiểm thử local/demo; trạng thái này không thay thế phê duyệt chuyên gia và không hợp lệ cho production.
 - [x] Có danh sách rule bị chặn kèm lý do: 15 rule không seed; 1 rule được phép riêng cho E2E.
 - [x] Quyết định seed/không seed và phạm vi sử dụng được lưu ngay trong dữ liệu nguồn, README và diff để review.
@@ -54,7 +54,7 @@ Nhóm dự án đã cho phép `TR-CAND-004` ở trạng thái `E2E_ASSUMPTION` �
 **Entity `disease_management_policies`**
 Field theo schema Backend hiện hành:
 - `disease_id` (FK → `Disease`), `management_status`, `direct_treatment_rule_allowed` (boolean), `chemical_rule_scope`, `recommended_actions` (text), `source`, `version` — cùng phong cách các entity hiện có (`Disease`, `Pesticide`, `TreatmentRule`).
-- Seed cả 13 policy qua generator.
+- Cả 13 policy được seed qua generator.
 - [x] Entity/bảng tồn tại, đúng field trên.
 - [x] 13 policy được seed qua generator, không seed tay riêng.
 - [x] Bảng chỉ dùng để chặn/tra cứu — không service nào tự sinh khuyến nghị hoá chất từ nó.
@@ -73,7 +73,8 @@ Ghi rõ: dữ liệu JPA → `data.sql` (qua generator); hạ tầng Postgres �
 
 **Test & regression**
 - [x] Start 2 lần liên tiếp không trùng dữ liệu; start trên DB rỗng seed đủ.
-- [x] E2E ba role (FARMER/ENGINEER/ADMIN) không regression trên đường chẩn đoán thủ công dành cho testing/demo; kiểm tra này không đại diện cho chất lượng CV/RAG/LLM.
+- [x] E2E ba role qua API: AI thật tạo diagnosis theo nhánh `review_required`; nhánh treatment dùng chẩn đoán thủ công để kiểm tra duyệt, giới hạn liều và khóa PHI.
+  Kiểm tra này xác nhận luồng kỹ thuật, không đánh giá độ chính xác CV/RAG/LLM hoặc nhánh AI tự chọn treatment rule.
 
 ## 5. Bất biến
 

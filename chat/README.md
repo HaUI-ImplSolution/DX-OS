@@ -27,12 +27,12 @@ Ghi vào [`LICENSES.md`](../LICENSES.md) đúng caveat này để minh bạch kh
 
 ## Đăng nhập lần đầu
 
-- URL: `http://localhost:${MATTERMOST_PORT:-8065}`
+- URL: `http://localhost:${MATTERMOST_HOST_PORT:-8065}`
 - Chưa seed sẵn tài khoản — vào URL trên, bấm "Create account" để tạo user đầu tiên (tự động thành System Admin), sau đó tạo thêm team/channel theo nhu cầu (ví dụ channel "Kỹ sư nông nghiệp", "Ban quản trị").
 
 ## Xem/quản trị dữ liệu
 
-- **System Console** (UI, dễ đọc nhất): `http://localhost:${MATTERMOST_PORT:-8065}/admin_console` — đăng nhập bằng tài khoản `system_admin` (user đầu tiên tạo lúc "Create account").
+- **System Console** (UI, dễ đọc nhất): `http://localhost:${MATTERMOST_HOST_PORT:-8065}/admin_console` — đăng nhập bằng tài khoản `system_admin` (user đầu tiên tạo lúc "Create account").
   Xem/quản lý user, team, channel, plugin, cấu hình... tại đây, không cần đụng SQL.
 - **DBeaver / SQL trực tiếp**: cùng Postgres server với CSDL nghiệp vụ (`dxfarm`) — chỉ cần đổi database sang `mattermost` trong connection, hoặc tạo connection mới:
   - Host/Port: giống connection tới `dxfarm` (mặc định `localhost:5432`)

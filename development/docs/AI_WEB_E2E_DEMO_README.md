@@ -132,7 +132,7 @@ Một request hiện đi qua các bước sau:
 | [deploy/docker-compose.yml](../../deploy/docker-compose.yml) | Runtime dùng ai_vector_ro, ingest dùng ai_vector_ingest | AI runtime chỉ đọc, job quản trị mới được thay corpus |
 | [deploy/docker-compose.yml](../../deploy/docker-compose.yml) | Mount AI_DATA_DIR read-only và cho phép đổi POSTGRES_DATA_DIR | Nạp corpus từ `data/` vào container `rag-ingest` mà không đóng vào image; vẫn cho phép dùng database demo riêng mà không ghi đè dữ liệu cũ |
 | [deploy/.env.example](../../deploy/.env.example) | Bổ sung URL nội bộ, model, timeout, data path và service keys mẫu | Có cấu hình tham chiếu để người khác dựng lại stack local |
-| [deploy/docker-compose.yml](../../deploy/docker-compose.yml) | Fallback mặc định của `AI_SERVICE_READ_TIMEOUT_MS` cho service `backend` đổi từ 15000 lên 120000 | Compose luôn set env var này nên trước đó nó ghi đè giá trị 120000 trong `application.yaml` khi `.env` chưa khai báo, khiến timeout thật vẫn là 15 giây |
+| [deploy/docker-compose.yml](../../deploy/docker-compose.yml) | Fallback mặc định của `BACKEND_TO_AI_READ_TIMEOUT_MS` cho service `backend` đổi từ 15000 lên 120000 | Compose luôn set env var này nên trước đó nó ghi đè giá trị 120000 trong `application.yaml` khi `.env` chưa khai báo, khiến timeout thật vẫn là 15 giây |
 
 ## Phương án khác và trade-off
 

@@ -5,6 +5,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Backend (Spring Boot — `backend/DX-Farm`)
 
+### 2026-09-27
+
+- Chuyển chẩn đoán AI sang job nền có thể phục hồi sau restart; siết upload chỉ nhận ảnh JPEG/PNG hợp lệ, tối đa 10 MiB và 24 triệu pixel.
+
 ### 2026-09-26
 
 - Hoàn thiện seed idempotent từ dữ liệu nguồn: 1 treatment rule giả định cho E2E, 15 candidate còn lại bị chặn; rule stale được vô hiệu hóa và bảo toàn an toàn khi đã có lịch sử tham chiếu.
@@ -137,6 +141,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - 8 candidate quy tắc điều trị trạng thái HOLD được giữ riêng để audit, không seed vào CSDL chính thức.
 
 ## Frontend (`frontend`)
+
+### 2026-09-27
+
+- Kiểm tra ảnh trước khi upload; polling và lưu trạng thái job chẩn đoán để tiếp tục sau khi rời trang hoặc mất mạng.
 
 ### 2026-09-11
 

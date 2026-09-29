@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,7 +18,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "treatment_rules")
+@Table(name = "treatment_rules",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"disease_id", "pesticide_id"}))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -54,6 +56,11 @@ public class TreatmentRule {
   private String source;
 
   private String version;
+
+  // Rule mất eligibility vẫn có thể được giữ lại để bảo toàn lịch sử diagnosis.
+  @Builder.Default
+  @Column(nullable = false, columnDefinition = "boolean default true")
+  private boolean active = true;
 
   public boolean allowsDose(BigDecimal actualDose) {
     return actualDose != null && actualDose.compareTo(doseMin) >= 0

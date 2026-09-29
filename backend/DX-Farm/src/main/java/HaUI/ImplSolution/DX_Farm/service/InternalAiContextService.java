@@ -43,8 +43,9 @@ public class InternalAiContextService {
     }
     Disease disease = diseaseRepository.findByCode(diseaseCode)
         .orElseThrow(() -> new ResourceNotFoundException("Unknown disease code: " + diseaseCode));
-    List<RuleFact> rules = treatmentRuleRepository.findByDisease_CodeOrderByIdAsc(diseaseCode)
-        .stream().map(InternalAiContextService::toRuleFact).toList();
+    List<RuleFact> rules =
+        treatmentRuleRepository.findByDisease_CodeAndActiveTrueOrderByIdAsc(diseaseCode).stream()
+            .map(InternalAiContextService::toRuleFact).toList();
     List<TreatmentApplication> recentTreatments =
         treatmentApplicationRepository.findByCropSeasonIdOrderByAppliedAtDesc(cropSeasonId).stream()
             .limit(RECENT_TREATMENTS_LIMIT).toList();

@@ -12,11 +12,13 @@ docker compose up -d --build
 
 Compose khởi động PostgreSQL, Backend, frontend, Keycloak, AI Service, Ollama và các dịch vụ demo hiện có. Job `rag-ingest` nạp corpus vào AI Vector DB; `ollama-init` bảo đảm model được tải trước khi AI Service chạy. Lần đầu cần mạng và dung lượng trống để tải container, model CV, embedding model và LLM.
 
-Corpus RAG mặc định lấy từ `ai/.local/data` qua `AI_DATA_DIR`.
-Đây là dữ liệu local, không được commit lên Git; cần có corpus tại đường dẫn này trước khi ingest.
+Corpus RAG mặc định lấy từ `data/` (gốc repository) qua `AI_DATA_DIR`; đổi biến này nếu muốn dùng bộ corpus khác.
+Thiết lập chuẩn là `AI_DATA_DIR=../data`; không dùng bản sao `ai/.local/data` trong luồng E2E của repository.
 
-Backend tự seed danh mục 38 bệnh, 4 thuốc và 8 treatment rule trên database sạch.
-Cả 8 rule đều là dữ liệu MVP đã qua bước source review ngày 10/09/2026.
+`data.sql` được sinh từ `data/structured/*.json` bằng `data/scripts/generate_seed_sql.py` (xem [`DB_SEED_UNIFICATION_PLAN.md`](DB_SEED_UNIFICATION_PLAN.md)).
+Trên database sạch, Backend seed 38 bệnh, 6 thuốc, 1 treatment rule active và 13 disease management policy.
+Rule duy nhất là `TR-CAND-004` cho `Tomato___Early_blight`, được nhóm dự án cho phép dưới trạng thái `E2E_ASSUMPTION` để chạy local/demo; đây không phải phê duyệt chuyên gia và không dùng cho production.
+Mười lăm treatment rule candidate khác vẫn bị chặn, nên các bệnh tương ứng tiếp tục đi nhánh `review_required`.
 Corpus RAG và structured treatment facts là hai nguồn độc lập: thiếu corpus thì không có semantic evidence, còn treatment rule vẫn do Backend quản lý và kiểm tra.
 
 Schema hiện chỉ hỗ trợ một phiên bản database phát triển và không có migration.
@@ -51,7 +53,7 @@ Nếu volume PostgreSQL cũ còn cột `dose_amount`, cần dùng một `POSTGRE
 
 - Frontend có nút gọi chẩn đoán AI và hiển thị khuyến nghị AI Backend trả về; luồng nhập chẩn đoán thủ công vẫn còn để demo nghiệp vụ.
 - Backend giữ summary do AI tạo, hỗ trợ kết quả `review_required` không có rule, cho phép `treatment_rule_id` rỗng và từ chối áp dụng khi rule không tồn tại.
-- Seed Backend bổ sung 38 lớp CV, 4 thuốc và 8 treatment rule theo kiểu idempotent.
+- Backend seed qua `data.sql` theo kiểu idempotent (`ON CONFLICT` trên khoá duy nhất của DB); file do generator sinh từ `data/structured/*.json`, xem [`DB_SEED_UNIFICATION_PLAN.md`](DB_SEED_UNIFICATION_PLAN.md).
 - Rule hỗ trợ khoảng liều `dose_min`/`dose_max`; Backend trả toàn bộ rule của một bệnh và kiểm tra liều thực tế trước khi tạo `TreatmentApplication`.
 - AI chấp nhận structured context không có rule như trạng thái cần kỹ sư xem xét.
 - Docker Compose chạy job nạp corpus trước khi khởi động AI và chạy Ollama/model cùng stack, nên không phụ thuộc Ollama đang mở sẵn trên host.
@@ -104,12 +106,13 @@ Một request hiện đi qua các bước sau:
 | File | Thay đổi | Lý do |
 |---|---|---|
 | [Diagnosis.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/model/Diagnosis.java) | Cho phép treatment_rule_id rỗng | Không làm mất kết quả CV/RAG chỉ vì bệnh chưa có rule được duyệt |
-| [TreatmentRule.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/model/TreatmentRule.java) | Đổi liều cố định thành khoảng `doseMin`/`doseMax` | Giữ nguyên khoảng liều trong dữ liệu review và kiểm tra được lượng thuốc thực tế |
+| [TreatmentRule.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/model/TreatmentRule.java) | Lưu khoảng `doseMin`/`doseMax` và trạng thái `active` | Giữ nguyên khoảng liều; rule bị thu hồi không tham gia lookup mới nhưng vẫn có thể được giữ để bảo toàn lịch sử |
 | [InternalAiContextService.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/service/InternalAiContextService.java) | Bệnh có thật nhưng thiếu rule sẽ trả rules rỗng thay vì 404 | Phân biệt “không biết disease_code” với “đã biết bệnh nhưng cần review” |
 | [DiagnosisService.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/service/DiagnosisService.java) | Kiểm tra hai path treatment/review_required, tải lại đúng rule AI chọn, xác minh version và kiểm tra liều thực tế | Backend vẫn là nguồn sự thật và lớp quyết định cuối; AI không thể tự đưa rule lạ, rule cũ hoặc liều ngoài khoảng |
 | [AiDiagnosisClient.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/service/AiDiagnosisClient.java) | Ép HTTP/1.1 | Khắc phục tương thích Java HTTP client với Uvicorn trong container hiện tại |
 | [application.yaml](../../backend/DX-Farm/src/main/resources/application.yaml) | Tăng read timeout từ 15 lên 120 giây | Cold start CPU gồm CV, embedding và LLM có thể vượt 15 giây |
-| [data.sql](../../backend/DX-Farm/src/main/resources/data.sql) | Seed idempotent 38 bệnh, 4 thuốc và 8 treatment rule | Database sạch có đủ structured facts để chạy nhánh treatment ngay sau khi Compose khởi động |
+| [data.sql](../../backend/DX-Farm/src/main/resources/data.sql) | Sinh từ `data/structured/*.json` theo eligibility đã duyệt | Mọi giá trị seed truy được về `data/` và review qua diff; xem [`DB_SEED_UNIFICATION_PLAN.md`](DB_SEED_UNIFICATION_PLAN.md) |
+| [DiseaseManagementPolicy.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/model/DiseaseManagementPolicy.java) | Entity/bảng `disease_management_policies`, seed 13 guardrail | Lưu chính sách chặn/tra cứu cho bệnh không có thuốc chữa trực tiếp |
 
 ### AI Service
 
@@ -127,7 +130,7 @@ Một request hiện đi qua các bước sau:
 |---|---|---|
 | [deploy/docker-compose.yml](../../deploy/docker-compose.yml) | Thêm Ollama, ollama-init, rag-ingest và volumes model/data | Dựng được toàn bộ luồng bằng một lệnh, không phụ thuộc Ollama hoặc bước ingest đang chạy trên host |
 | [deploy/docker-compose.yml](../../deploy/docker-compose.yml) | Runtime dùng ai_vector_ro, ingest dùng ai_vector_ingest | AI runtime chỉ đọc, job quản trị mới được thay corpus |
-| [deploy/docker-compose.yml](../../deploy/docker-compose.yml) | Mount AI_DATA_DIR read-only và cho phép đổi POSTGRES_DATA_DIR | Giữ corpus ngoài Git/image và cho phép dùng database demo riêng mà không ghi đè dữ liệu cũ |
+| [deploy/docker-compose.yml](../../deploy/docker-compose.yml) | Mount AI_DATA_DIR read-only và cho phép đổi POSTGRES_DATA_DIR | Nạp corpus từ `data/` vào container `rag-ingest` mà không đóng vào image; vẫn cho phép dùng database demo riêng mà không ghi đè dữ liệu cũ |
 | [deploy/.env.example](../../deploy/.env.example) | Bổ sung URL nội bộ, model, timeout, data path và service keys mẫu | Có cấu hình tham chiếu để người khác dựng lại stack local |
 | [deploy/docker-compose.yml](../../deploy/docker-compose.yml) | Fallback mặc định của `AI_SERVICE_READ_TIMEOUT_MS` cho service `backend` đổi từ 15000 lên 120000 | Compose luôn set env var này nên trước đó nó ghi đè giá trị 120000 trong `application.yaml` khi `.env` chưa khai báo, khiến timeout thật vẫn là 15 giây |
 
@@ -139,8 +142,8 @@ Một request hiện đi qua các bước sau:
 | Thực thi AI | HTTP đồng bộ, timeout 120 giây | Queue + async job + polling/WebSocket | Đồng bộ ít code, dễ demo; đổi lại giữ request lâu, khó scale và dễ timeout. Async tốt hơn cho production nhưng cần retry, idempotency, job state và UI tiến độ |
 | LLM | Ollama trong Compose | Ollama host, managed API hoặc template không LLM | Compose tái lập tốt và dữ liệu không rời máy, nhưng tải model nặng và CPU chậm. Host tận dụng GPU nhưng phụ thuộc máy. API dễ scale nhưng tốn phí/cần mạng. Template ổn định nhưng kém linh hoạt |
 | Nạp RAG | Job one-shot trước AI | Ingest thủ công, DB snapshot hoặc pipeline quản trị | Tự động và dễ dựng lại, nhưng startup lâu và recreate job có thể re-embed corpus. Pipeline riêng quản trị tốt hơn nhưng cần versioning và quy trình deploy data |
-| Phân phối corpus | Bind-mount ai/.local/data read-only | Commit Git, đóng vào image hoặc artifact storage | Local giữ repo nhẹ và tránh đẩy data chưa chốt; đổi lại người nhận nhánh phải có data riêng. Artifact có version/checksum tốt hơn nhưng cần hạ tầng |
-| Seed structured facts | `data.sql` idempotent cho 38 bệnh, 4 thuốc và 8 rule | Migration, importer CLI/API hoặc seeder có version | Phù hợp giai đoạn phát triển một schema, nhưng audit/rollback kém hơn pipeline production |
+| Phân phối corpus | Commit vào Git tại `data/` (gốc repository) + bind-mount read-only vào container `rag-ingest` | Không commit (mỗi máy tự có data riêng), đóng vào image, hoặc artifact storage có version/checksum | Commit giữ corpus tái lập được cho mọi người clone nhánh, đổi lại repo nặng hơn theo kích thước corpus. Đóng vào image thì mỗi lần đổi corpus phải rebuild; artifact storage tốt hơn cho corpus lớn nhưng cần thêm hạ tầng |
+| Seed structured facts | `data.sql` idempotent, sinh từ `data/structured/*.json` qua generator | Migration, importer CLI/API hoặc seeder có version | Phù hợp giai đoạn phát triển một schema, nhưng audit/rollback kém hơn pipeline production |
 | Recommendation text | Lưu summary do AI trả | Backend tự dựng text hoặc lưu toàn response AI vào bảng audit | Giữ được phần giải thích CV+RAG+LLM, nhưng hiện chưa lưu evidence/generation metadata riêng. Backend tự dựng deterministic hơn nhưng mất phần diễn giải RAG |
 | HTTP protocol | Ép HTTP/1.1 | Auto-negotiation hoặc reverse proxy HTTP/2 | Sửa tương thích với thay đổi nhỏ, nhưng không tận dụng multiplexing khi tải đồng thời tăng |
 | Rule lookup | Backend trả mọi rule theo ID; AI chọn rule đầu tiên một cách deterministic | Chấm điểm theo priority, thời gian hiệu lực, bối cảnh ruộng và lịch sử xử lý | Đủ để test nhiều rule và Backend tải lại đúng ID đã chọn, nhưng thứ tự ID chưa phải chiến lược nông học tối ưu |
@@ -156,7 +159,7 @@ Các phần chưa đạt được:
 
 - Chưa dùng async job; request giữ kết nối trong suốt thời gian suy luận.
 - Chưa lưu riêng rag_evidence, request_id, generation_mode và timings để audit/replay.
-- Chưa có contract DiseaseManagementPolicy; bệnh không có rule hiện đi vào review_required.
+- DiseaseManagementPolicy đã có bảng và dữ liệu seed nhưng chưa được internal API/AI sử dụng; bệnh không có rule vẫn đi vào review_required.
 - AI hiện chọn rule đầu tiên trong danh sách Backend trả về; chưa có priority hay bộ chọn dựa trên ngữ cảnh nông học.
 - Chưa benchmark concurrency, cold start và yêu cầu RAM/CPU.
 - API key và tài khoản mẫu chỉ dùng local, chưa có secret management production.
@@ -165,19 +168,20 @@ Các phần chưa đạt được:
 - Chưa validate kích thước ảnh ở phía client trước khi upload; vượt giới hạn 10MB chỉ báo lỗi sau khi đã upload xong.
 - Chưa có phản hồi tiến trình khi chờ AI xử lý (có thể tới 120 giây); chỉ có spinner tĩnh, không có bước trung gian.
 
-Tám rule version `2026.09.10-mvp-reviewed-v1` là dữ liệu MVP có truy vết nguồn, chưa phải phê duyệt của chuyên gia nông nghiệp có thẩm quyền cho sử dụng thực tế.
-Các candidate bị hold trong artifact review không được seed và không được bịa liều hoặc PHI thành structured facts.
+Rule `TR-CAND-004` version `2026.09.26-e2e-assumed-v1` chỉ là giả định có truy vết để kiểm thử E2E, chưa phải phê duyệt của chuyên gia nông nghiệp có thẩm quyền cho sử dụng thực tế.
+Mười lăm candidate còn lại không được seed và không được bịa liều hoặc PHI thành structured facts.
 
 ## Kết quả kiểm tra E2E
 
-Ngày 21/09/2026 đã dựng lại toàn bộ stack trên một `POSTGRES_DATA_DIR` sạch và kiểm tra:
+Ngày 26/09/2026 đã dựng Backend, Keycloak và PostgreSQL trên database tạm sạch để kiểm tra regression của seed và luồng nghiệp vụ ba role:
 
-- Seed tạo 38 bệnh, 4 thuốc và 8 rule; chạy lại Backend không tạo bản ghi trùng.
-- Job RAG ingest hoàn tất với 38 documents và 270 chunks; AI health báo model CV đã load.
-- Internal API trả hai rule cho `Tomato___Late_blight` và trả danh sách rỗng cho `Tomato___Target_Spot`.
-- FARMER tạo thửa, vụ mùa và báo cáo được; gọi endpoint chẩn đoán AI bị từ chối `403`.
-- ENGINEER chạy thành công CV → Backend facts → semantic RAG → Ollama; ảnh thử được nhận diện là `Tomato___Early_blight` và chọn rule có liều `1.50 L/ha`.
-- ADMIN duyệt được kết quả; liều `1.49 L/ha` bị Backend chặn `409`, còn liều `1.50 L/ha` được lưu và tạo ngày khóa thu hoạch.
-- Frontend production build, Backend unit test, hai AI contract self-check và các endpoint chính đều qua kiểm tra.
+- Seed ổn định ở 38 bệnh, 6 thuốc, 1 treatment rule active và 13 policy; start lặp không tạo bản ghi trùng.
+- FARMER tạo thửa, vụ mùa và báo cáo được; gọi endpoint chẩn đoán bị từ chối `403`.
+- ENGINEER dùng endpoint chẩn đoán thủ công dành cho testing/demo, nhận đúng `ORTIVA_600SC`, liều `1.50 L/ha`, PHI 7 và version `2026.09.26-e2e-assumed-v1`; diagnosis được lưu ở trạng thái `PENDING`.
+- ADMIN duyệt được diagnosis; liều `1.49 L/ha` bị Backend chặn `409`, còn `1.50 L/ha` được lưu và tạo khóa thu hoạch đến 03/10/2026.
+- Database có đúng một diagnosis đã duyệt và một treatment application; Backend test chạy bằng JDK 21 qua 1/1 test.
+
+Kiểm tra này chủ đích cô lập seed, phân quyền và state machine nên không gọi CV/RAG/Ollama.
+Luồng AI đầy đủ vẫn theo contract mô tả ở trên và cần ảnh kiểm thử CV phù hợp khi chạy lại; không dùng kết quả chẩn đoán thủ công làm bằng chứng rằng chất lượng model hoặc semantic search đã được xác minh trong lượt này.
 
 Kết quả nhận diện phụ thuộc ảnh đầu vào và không phải cam kết chính xác cho mọi ảnh. RAG chỉ cung cấp kiến thức tham khảo; liều lượng, PHI và quyết định điều trị phải đến từ rule nghiệp vụ được Backend quản lý.

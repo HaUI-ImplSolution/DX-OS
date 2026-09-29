@@ -83,5 +83,4 @@ Thumbs.db
 .claude/settings.local.json
 # Local codebase analysis artifacts
 .ua/
-
-
+.local/

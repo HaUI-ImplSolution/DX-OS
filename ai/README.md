@@ -48,7 +48,8 @@ Tài liệu chi tiết theo module:
 | Dữ liệu | Nơi sở hữu | Quyền của AI runtime |
 |---|---|---|
 | Parcel, CropSeason, DiseaseReport, Diagnosis, TreatmentApplication | Backend DB `dxfarm` | Không có credential DB; chỉ nhận dữ liệu cần thiết qua REST |
-| Disease, Pesticide, TreatmentRule, DiseaseManagementPolicy | Backend DB `dxfarm` | Chỉ đọc qua internal REST API |
+| Disease, Pesticide, TreatmentRule | Backend DB `dxfarm` | Chỉ đọc qua internal REST API |
+| DiseaseManagementPolicy | Backend DB `dxfarm` | Chỉ đọc qua internal REST API khi endpoint tương ứng được mở |
 | Document, DocumentChunk và embedding | AI Vector DB `dx_farm_ai_vector_db` | Role `ai_vector_ro` chỉ có quyền đọc |
 | Corpus ingest | File local do người vận hành cung cấp | Job riêng dùng role `ai_vector_ingest` |
 
@@ -90,7 +91,8 @@ AI không dùng Alembic hoặc migration. Backend phải khởi tạo AI Vector 
 
 ## Ingest RAG
 
-Corpus không được đóng gói trong Git. Người vận hành đặt dữ liệu đã duyệt tại `data/rag/processed/disease_knowledge.json` cùng registry nguồn tương ứng, sau đó chạy:
+Corpus đã duyệt nằm tại `data/rag/processed/disease_knowledge.json` cùng registry nguồn `data/rag/source_registry.json` (thư mục `data/` ở gốc repository, dùng chung cho mọi dữ liệu seed/DB, không riêng AI).
+Sau khi có/cập nhật corpus, chạy:
 
 ```bash
 export RAG_INGEST_DATABASE_URL=postgresql+psycopg://<ingest-user>:<password>@<host>:5432/dx_farm_ai_vector_db

@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any
 
 REGISTRY_FILE = (
-    Path(__file__).resolve().parents[2] / "data" / "rag" / "source_registry.json"
+    Path(__file__).resolve().parents[3] / "data" / "rag" / "source_registry.json"
 )
 
 REQUIRED_FIELDS = {

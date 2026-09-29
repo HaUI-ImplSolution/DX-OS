@@ -175,6 +175,14 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Deploy (`deploy`)
 
+### 2026-09-29
+
+- `deploy/.env.example` là nơi duy nhất chứa mẫu cấu hình; các file `.env*` của `ai`, `backend/DX-Farm`, `frontend` đã bỏ.
+- Biến môi trường đặt tên theo `<SERVICE>_<THIẾT_LẬP>`, nhóm theo service trong `.env.example`; `docker-compose.yml` ánh xạ sang tên nội bộ của từng service. Khóa giữa backend và AI đặt theo chiều: `BACKEND_TO_AI_API_KEY`, `AI_TO_BACKEND_API_KEY`.
+- Cổng expose ra host đặt tên `<SERVICE>_HOST_PORT`; timeout backend gọi AI là `BACKEND_TO_AI_CONNECT_TIMEOUT_MS`/`BACKEND_TO_AI_READ_TIMEOUT_MS`; mật khẩu role Postgres phụ nêu rõ đích: `SUPERSET_READONLY_DB_PASSWORD`, `AI_VECTOR_DB_READONLY_PASSWORD`, `AI_VECTOR_DB_INGEST_PASSWORD`.
+- `BACKEND_BASE_URL` là URL backend dùng chung cho AI và cho `APP_PUBLIC_BASE_URL` của backend.
+- `frontend/Dockerfile` nhận `VITE_API_BASE_URL`, `VITE_KEYCLOAK_URL`, `VITE_KEYCLOAK_CLIENT_ID` qua build args, cấp từ `deploy/docker-compose.yml` (URL Keycloak theo `KEYCLOAK_HOST_PORT`).
+
 ### 2026-09-11
 
 **Đã xong — service `keycloak` (SSO thật):**
@@ -312,7 +320,6 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Thêm entity `DiseaseManagementPolicy` (bảng `disease_management_policies`), seed 13 guardrail qua generator.
   `treatment_rules` có ràng buộc duy nhất `(disease_id, pesticide_id)` nên seed chạy đồng thời vẫn không trùng.
   `treatment_rules` chưa có dòng nào vì cả 16 candidate đều `eligible_for_seed=false`.
-- Thêm `development/docs/DB_SEED_UNIFICATION_PLAN.md`: kế hoạch dùng `data/` làm nguồn seed duy nhất qua generator sinh `data.sql`, đối soát eligibility của treatment rule candidate, và mở entity `disease_management_policies` còn thiếu.
 - `ai/app/rag/source_registry.py`, `ai/app/rag/ingestion_service.py` đọc corpus từ `data/rag/...` ở gốc repository.
 - `deploy/docker-compose.yml`, `deploy/.env.example` bind-mount `data/` vào `/data` cho container `rag-ingest`.
 - `data/README.md`: mapping `dose_min`/`dose_max` khớp đúng `TreatmentRule` hiện tại.

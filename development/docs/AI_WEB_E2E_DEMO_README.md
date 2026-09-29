@@ -15,7 +15,7 @@ Compose khởi động PostgreSQL, Backend, frontend, Keycloak, AI Service, Olla
 Corpus RAG mặc định lấy từ `data/` (gốc repository) qua `AI_DATA_DIR`; đổi biến này nếu muốn dùng bộ corpus khác.
 Thiết lập chuẩn là `AI_DATA_DIR=../data`; không dùng bản sao `ai/.local/data` trong luồng E2E của repository.
 
-`data.sql` được sinh từ `data/structured/*.json` bằng `data/scripts/generate_seed_sql.py` (xem [`DB_SEED_UNIFICATION_PLAN.md`](DB_SEED_UNIFICATION_PLAN.md)).
+`data.sql` được sinh từ `data/structured/*.json` bằng `data/scripts/generate_seed_sql.py`.
 Trên database sạch, Backend seed 38 bệnh, 6 thuốc, 1 treatment rule active và 13 disease management policy.
 Rule duy nhất là `TR-CAND-004` cho `Tomato___Early_blight`, được nhóm dự án cho phép dưới trạng thái `E2E_ASSUMPTION` để chạy local/demo; đây không phải phê duyệt chuyên gia và không dùng cho production.
 Mười lăm treatment rule candidate khác vẫn bị chặn, nên các bệnh tương ứng tiếp tục đi nhánh `review_required`.
@@ -53,7 +53,7 @@ Nếu volume PostgreSQL cũ còn cột `dose_amount`, cần dùng một `POSTGRE
 
 - Frontend có nút gọi chẩn đoán AI và hiển thị khuyến nghị AI Backend trả về; luồng nhập chẩn đoán thủ công vẫn còn để demo nghiệp vụ.
 - Backend giữ summary do AI tạo, hỗ trợ kết quả `review_required` không có rule, cho phép `treatment_rule_id` rỗng và từ chối áp dụng khi rule không tồn tại.
-- Backend seed qua `data.sql` theo kiểu idempotent (`ON CONFLICT` trên khoá duy nhất của DB); file do generator sinh từ `data/structured/*.json`, xem [`DB_SEED_UNIFICATION_PLAN.md`](DB_SEED_UNIFICATION_PLAN.md).
+- Backend seed qua `data.sql` theo kiểu idempotent (`ON CONFLICT` trên khoá duy nhất của DB); file do generator sinh từ `data/structured/*.json`.
 - Rule hỗ trợ khoảng liều `dose_min`/`dose_max`; Backend trả toàn bộ rule của một bệnh và kiểm tra liều thực tế trước khi tạo `TreatmentApplication`.
 - AI chấp nhận structured context không có rule như trạng thái cần kỹ sư xem xét.
 - Docker Compose chạy job nạp corpus trước khi khởi động AI và chạy Ollama/model cùng stack, nên không phụ thuộc Ollama đang mở sẵn trên host.
@@ -111,7 +111,7 @@ Một request hiện đi qua các bước sau:
 | [DiagnosisService.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/service/DiagnosisService.java) | Kiểm tra hai path treatment/review_required, tải lại đúng rule AI chọn, xác minh version và kiểm tra liều thực tế | Backend vẫn là nguồn sự thật và lớp quyết định cuối; AI không thể tự đưa rule lạ, rule cũ hoặc liều ngoài khoảng |
 | [AiDiagnosisClient.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/service/AiDiagnosisClient.java) | Ép HTTP/1.1 | Khắc phục tương thích Java HTTP client với Uvicorn trong container hiện tại |
 | [application.yaml](../../backend/DX-Farm/src/main/resources/application.yaml) | Tăng read timeout từ 15 lên 120 giây | Cold start CPU gồm CV, embedding và LLM có thể vượt 15 giây |
-| [data.sql](../../backend/DX-Farm/src/main/resources/data.sql) | Sinh từ `data/structured/*.json` theo eligibility đã duyệt | Mọi giá trị seed truy được về `data/` và review qua diff; xem [`DB_SEED_UNIFICATION_PLAN.md`](DB_SEED_UNIFICATION_PLAN.md) |
+| [data.sql](../../backend/DX-Farm/src/main/resources/data.sql) | Sinh từ `data/structured/*.json` theo eligibility đã duyệt | Mọi giá trị seed truy được về `data/` và review qua diff |
 | [DiseaseManagementPolicy.java](../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/model/DiseaseManagementPolicy.java) | Entity/bảng `disease_management_policies`, seed 13 guardrail | Lưu chính sách chặn/tra cứu cho bệnh không có thuốc chữa trực tiếp |
 
 ### AI Service
@@ -132,7 +132,7 @@ Một request hiện đi qua các bước sau:
 | [deploy/docker-compose.yml](../../deploy/docker-compose.yml) | Runtime dùng ai_vector_ro, ingest dùng ai_vector_ingest | AI runtime chỉ đọc, job quản trị mới được thay corpus |
 | [deploy/docker-compose.yml](../../deploy/docker-compose.yml) | Mount AI_DATA_DIR read-only và cho phép đổi POSTGRES_DATA_DIR | Nạp corpus từ `data/` vào container `rag-ingest` mà không đóng vào image; vẫn cho phép dùng database demo riêng mà không ghi đè dữ liệu cũ |
 | [deploy/.env.example](../../deploy/.env.example) | Bổ sung URL nội bộ, model, timeout, data path và service keys mẫu | Có cấu hình tham chiếu để người khác dựng lại stack local |
-| [deploy/docker-compose.yml](../../deploy/docker-compose.yml) | Fallback mặc định của `AI_SERVICE_READ_TIMEOUT_MS` cho service `backend` đổi từ 15000 lên 120000 | Compose luôn set env var này nên trước đó nó ghi đè giá trị 120000 trong `application.yaml` khi `.env` chưa khai báo, khiến timeout thật vẫn là 15 giây |
+| [deploy/docker-compose.yml](../../deploy/docker-compose.yml) | Fallback mặc định của `BACKEND_TO_AI_READ_TIMEOUT_MS` cho service `backend` đổi từ 15000 lên 120000 | Compose luôn set env var này nên trước đó nó ghi đè giá trị 120000 trong `application.yaml` khi `.env` chưa khai báo, khiến timeout thật vẫn là 15 giây |
 
 ## Phương án khác và trade-off
 

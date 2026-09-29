@@ -116,7 +116,6 @@ Chỉ có hai cơ chế seed, không thêm cơ chế thứ ba:
 - `data.sql` không sửa tay; đổi dữ liệu ở `data/` rồi chạy lại generator.
 - Chỉ record có cờ eligibility `true` được seed; generator in danh sách treatment rule bị chặn kèm lý do.
 - Backend không đọc `data/` lúc runtime; `data.sql` chạy idempotent mỗi lần start (`ON CONFLICT` trên khoá duy nhất của DB).
-- Chi tiết: [`development/docs/DB_SEED_UNIFICATION_PLAN.md`](./development/docs/DB_SEED_UNIFICATION_PLAN.md).
 
 
 Dữ liệu demo cũ do AI ghi trực tiếp trước khi tách DB (`disease_reports`, `diagnoses`, `treatment_applications`, `workflow_cases`/`workflow_events`) coi là dữ liệu demo/test, dọn bằng [`deploy/sql/p3-4-legacy-ai-data-cleanup.sql`](./deploy/sql/p3-4-legacy-ai-data-cleanup.sql) (P3-4, chạy một lần thủ công).
@@ -188,6 +187,6 @@ docker compose down
   Xem [`sso/README.md`](./sso/README.md).
 - Dữ liệu Postgres + ảnh upload lưu ở `deploy/data/` (bind mount, không mất khi `docker compose down`; dùng `down -v` hoặc xoá thư mục nếu muốn làm sạch từ đầu).
 - Chi tiết riêng từng service: [`sso/README.md`](./sso/README.md) (Keycloak), [`bi/README.md`](./bi/README.md) (Superset), [`chat/README.md`](./chat/README.md) (Mattermost), [`portal/README.md`](./portal/README.md) (trang portal).
-- Sửa code + hot reload thay vì rebuild image: chạy `docker compose up -d postgres` trong `deploy` để có sẵn Postgres, rồi `./mvnw spring-boot:run` (backend) và `npm run dev` (frontend, sau khi `cp .env.example .env`) như bình thường.
+- Sửa code + hot reload thay vì rebuild image: chạy `docker compose up -d postgres` trong `deploy` để có sẵn Postgres, rồi `./mvnw spring-boot:run` (backend) và `VITE_KEYCLOAK_URL=http://localhost:8180/realms/dxfarm npm run dev` (frontend) như bình thường. Mọi file `.env` chỉ nằm ở `deploy/`.
 
 </details>

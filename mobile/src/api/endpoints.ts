@@ -18,6 +18,14 @@ export const createDiseaseReport = (
   cropSeasonId: number,
   image: UploadFile,
   onProgress?: (fraction: number) => void,
-) => upload<DiseaseReport>(`/crop-seasons/${cropSeasonId}/disease-reports`, "image", image, onProgress);
+  idempotencyKey?: string,
+) =>
+  upload<DiseaseReport>(
+    `/crop-seasons/${cropSeasonId}/disease-reports`,
+    "image",
+    image,
+    onProgress,
+    idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {},
+  );
 
 export const reportImageUrl = (imageRef: string) => staticUrl(`uploads/${imageRef}`);

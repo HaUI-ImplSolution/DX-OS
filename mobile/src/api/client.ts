@@ -70,6 +70,7 @@ export async function upload<T>(
   field: string,
   file: UploadFile,
   onProgress?: (fraction: number) => void,
+  headers: Record<string, string> = {},
 ): Promise<T> {
   const token = await getValidAccessToken();
   const form = new FormData();
@@ -80,6 +81,7 @@ export async function upload<T>(
       const xhr = new XMLHttpRequest();
       xhr.open("POST", `${API_V1}${path}`);
       if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+      Object.entries(headers).forEach(([name, value]) => xhr.setRequestHeader(name, value));
       xhr.timeout = UPLOAD_TIMEOUT_MS;
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) onProgress?.(event.loaded / event.total);

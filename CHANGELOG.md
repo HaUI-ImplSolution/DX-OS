@@ -7,6 +7,12 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ### 2026-09-30
 
+**Đã xong — Idempotency cho gửi báo cáo:**
+
+- `POST /api/v1/crop-seasons/{id}/disease-reports` nhận header tuỳ chọn `Idempotency-Key` (UUID); key đã dùng thì trả báo cáo cũ mà không lưu ảnh lần hai.
+- `DiseaseReport.clientRequestId` (`UUID`, unique, nullable); key thuộc vụ mùa khác hoặc user khác trả `409`, key sai định dạng trả `400`.
+- Swagger khai báo header bằng `@Parameter`.
+
 **Đã xong — Phạm vi dữ liệu của FARMER (phục vụ bản mobile):**
 
 - User có role `FARMER` (không kèm `ENGINEER`/`ADMIN`) chỉ thấy thửa có `farmerName` khớp claim `name` của token, không phân biệt hoa thường.
@@ -120,6 +126,12 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Gửi multipart part `image` qua `XMLHttpRequest` để có thanh tiến trình; lỗi hiển thị kèm nút "Gửi lại"; không thoát được màn hình khi đang gửi.
 - Chi tiết báo cáo: timeline Đã gửi → Đã chẩn đoán → Kỹ sư duyệt theo `diagnosis` (`null`, `PENDING`, `APPROVED`, `REJECTED`); `APPROVED` hiện bệnh, khuyến nghị, thuốc, liều, số ngày cách ly; `REJECTED` hiện lý do và nút "Chụp lại".
 - Danh sách báo cáo tự làm mới khi quay lại từ màn chụp; nút tròn nổi "Chụp" ở góc phải dưới.
+
+**Đã xong — Hàng đợi gửi khi mất mạng:**
+
+- Mất mạng hoặc lỗi kết nối lúc gửi thì ảnh được copy vào `documentDirectory` và ghi hàng đợi vào AsyncStorage; mỗi ảnh có UUID làm `Idempotency-Key`.
+- Tự gửi khi `NetInfo` báo có mạng và khi app trở lại foreground; thử lại với khoảng chờ tăng dần, tối đa 8 lần; lỗi `4xx` (trừ `408`, `409`, `429`) đánh dấu "Lỗi".
+- Dải "Chờ gửi (N)" ở màn Báo cáo của vụ; danh sách chờ gửi và nút xoá ở màn Hồ sơ; hàng đợi tách theo tài khoản.
 
 **Đã xong — Hướng dẫn chạy:**
 

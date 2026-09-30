@@ -85,17 +85,17 @@ Mốc hoàn thành luồng online đầu-cuối; có thể chốt demo tại đ�
 
 Backend (`BACKEND_CHANGES.md` mục 3):
 
-- [ ] Header `Idempotency-Key` và `@Parameter` trong Swagger.
-- [ ] Cột `DiseaseReport.clientRequestId`, logic trả báo cáo cũ khi trùng key.
-- [ ] `./mvnw compile`.
+- [X] Header `Idempotency-Key` và `@Parameter` trong Swagger.
+- [X] Cột `DiseaseReport.clientRequestId`, logic trả báo cáo cũ khi trùng key.
+- [X] `./mvnw compile`.
 
 Mobile:
 
-- [ ] Khi offline hoặc lỗi mạng: copy ảnh vào `documentDirectory`, ghi hàng đợi `{id, cropSeasonId, uri, createdAt, attempts}` vào AsyncStorage.
-- [ ] Tự flush khi `NetInfo` báo có mạng và khi app trở lại foreground, retry có backoff, `id` làm `Idempotency-Key`.
-- [ ] Lỗi `4xx` đánh dấu thất bại, không retry vô hạn.
-- [ ] Badge "Chờ gửi (N)" và danh sách trong Hồ sơ, cho phép xoá mục hỏng.
-- [ ] Phụ thuộc thêm: `@react-native-async-storage/async-storage`, `@react-native-community/netinfo`, `expo-file-system`.
+- [X] Khi offline hoặc lỗi mạng: copy ảnh vào `documentDirectory`, ghi hàng đợi `{id, cropSeasonId, uri, createdAt, attempts}` vào AsyncStorage.
+- [X] Tự flush khi `NetInfo` báo có mạng và khi app trở lại foreground, retry có backoff, `id` làm `Idempotency-Key`.
+- [X] Lỗi `4xx` đánh dấu thất bại, không retry vô hạn.
+- [X] Badge "Chờ gửi (N)" và danh sách trong Hồ sơ, cho phép xoá mục hỏng.
+- [X] Phụ thuộc thêm: `@react-native-async-storage/async-storage`, `@react-native-community/netinfo`, `expo-file-system`; thêm `react-dom` cùng phiên bản `react` để `npm` không kéo bản không tương thích.
 
 ## Giai đoạn 8 — Đóng gói và tài liệu
 

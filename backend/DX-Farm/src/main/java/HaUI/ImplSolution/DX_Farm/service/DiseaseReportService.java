@@ -2,6 +2,7 @@ package HaUI.ImplSolution.DX_Farm.service;
 
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisResponse;
 import HaUI.ImplSolution.DX_Farm.dto.DiseaseReportResponse;
+import HaUI.ImplSolution.DX_Farm.exception.InvalidStateException;
 import HaUI.ImplSolution.DX_Farm.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.DX_Farm.model.ApprovalStatus;
 import HaUI.ImplSolution.DX_Farm.model.CropSeason;
@@ -11,6 +12,8 @@ import HaUI.ImplSolution.DX_Farm.repository.CropSeasonRepository;
 import HaUI.ImplSolution.DX_Farm.repository.DiagnosisRepository;
 import HaUI.ImplSolution.DX_Farm.repository.DiseaseReportRepository;
 import java.util.List;
+import java.util.UUID;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -48,12 +51,33 @@ public class DiseaseReportService {
   }
 
   @Transactional
-  public DiseaseReportResponse create(Long cropSeasonId, MultipartFile image) {
+  public DiseaseReportResponse create(Long cropSeasonId, MultipartFile image,
+      UUID clientRequestId) {
     CropSeason season = findAccessibleSeasonOrThrow(cropSeasonId);
+    String reporter = currentUserService.currentFullName();
+    if (clientRequestId != null) {
+      var existing = diseaseReportRepository.findByClientRequestId(clientRequestId);
+      if (existing.isPresent()) {
+        return toResponse(requireSameRequester(existing.get(), cropSeasonId, reporter));
+      }
+    }
     String imageRef = fileStorageService.store(image);
     DiseaseReport report = DiseaseReport.builder().cropSeason(season).imageRef(imageRef)
-        .reportedBy(currentUserService.currentFullName()).build();
-    return toResponse(diseaseReportRepository.save(report));
+        .reportedBy(reporter).clientRequestId(clientRequestId).build();
+    try {
+      return toResponse(diseaseReportRepository.saveAndFlush(report));
+    } catch (DataIntegrityViolationException e) {
+      throw new InvalidStateException("Idempotency-Key is already being processed");
+    }
+  }
+
+  private static DiseaseReport requireSameRequester(DiseaseReport report, Long cropSeasonId,
+      String reporter) {
+    if (!report.getCropSeason().getId().equals(cropSeasonId)
+        || !report.getReportedBy().equals(reporter)) {
+      throw new InvalidStateException("Idempotency-Key was used for a different request");
+    }
+    return report;
   }
 
   private CropSeason findAccessibleSeasonOrThrow(Long cropSeasonId) {

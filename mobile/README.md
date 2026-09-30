@@ -12,7 +12,7 @@ Ngoài Expo Go, có thể build APK bằng EAS mà không cần cài Android Stu
 ## Phạm vi
 
 - Chỉ role `FARMER`; ENGINEER và ADMIN tiếp tục dùng web (`frontend/`) vì việc duyệt cần xem ảnh, kết quả CV, khuyến nghị và quy tắc PHI cùng lúc.
-- Luồng hiện có: đăng nhập → chọn thửa → chọn vụ mùa → xem và gửi báo cáo → theo dõi kết quả kỹ sư duyệt.
+- Luồng hiện có: đăng nhập → chọn thửa → chọn vụ mùa → xem và gửi báo cáo → theo dõi kết quả kỹ sư duyệt; mất mạng thì ảnh chờ trong máy và tự gửi khi có mạng.
 - Chẩn đoán AI do kỹ sư kích hoạt thủ công trên web; nông dân thấy trạng thái "Chờ chẩn đoán" sau khi gửi.
 
 ## Cách hoạt động
@@ -29,6 +29,11 @@ Ngoài Expo Go, có thể build APK bằng EAS mà không cần cài Android Stu
   Lỗi mạng trả `ApiError` với `status` `0`.
 - **Chụp và gửi ảnh**: `expo-image-picker` mở camera hệ thống; `expo-image-manipulator` thu nhỏ cạnh dài tối đa 1280px và nén JPEG 0.7 để nằm xa giới hạn multipart 10MB.
   Ảnh gửi dạng multipart, part `image`, qua `XMLHttpRequest` để có thanh tiến trình.
+- **Hàng đợi offline**: khi không có mạng hoặc gặp lỗi kết nối lúc gửi, ảnh được copy vào thư mục dữ liệu của app và ghi vào hàng đợi (`@react-native-async-storage/async-storage`).
+  Mỗi ảnh có một UUID dùng làm header `Idempotency-Key`, nên gửi lại nhiều lần vẫn chỉ tạo một báo cáo.
+  Hàng đợi tự gửi khi `NetInfo` báo có mạng và khi app trở lại foreground; lỗi tạm thời được thử lại với khoảng chờ tăng dần (5 giây đến tối đa 5 phút, tối đa 8 lần).
+  Lỗi `4xx` khác `408`, `409`, `429` đánh dấu "Lỗi" và không thử lại.
+  Hàng đợi tách theo tài khoản; danh sách "Chờ gửi" và nút xoá nằm ở màn Hồ sơ, số lượng hiện ở đầu màn Báo cáo của vụ.
 - **Hiển thị trạng thái**: trạng thái báo cáo suy ra từ `diagnosis`.
 
   | `diagnosis` | Chip | Nội dung nông dân thấy |
@@ -50,6 +55,7 @@ Ngoài Expo Go, có thể build APK bằng EAS mà không cần cài Android Stu
 | `src/api/` | `client.ts` (`request`, `upload`, `ApiError`) và `endpoints.ts` |
 | `src/auth/` | Đăng nhập PKCE (`AuthProvider`), lưu token (`session`), refresh (`tokens`), đọc claim (`claims`) |
 | `src/components/` | `Button`, `Card`, `StatusChip`, `IsolationBanner`, `Timeline`, `ProgressBar`, `EmptyState`, `ErrorState`, `Skeleton`, `Screen` |
+| `src/offline/` | Hàng đợi gửi khi mất mạng: lưu trữ (`queue`) và tự gửi lại (`QueueProvider`) |
 | `src/hooks/` | `useAsync`, `useParcelIsolation` |
 | `src/theme/` | Màu, cỡ chữ, khoảng cách, kích thước vùng chạm |
 | `src/types.ts` | Kiểu dữ liệu của phía nông dân |
@@ -151,11 +157,12 @@ npx expo export --platform android
 | "Không kết nối được. Kiểm tra mạng rồi thử lại." | Điện thoại không tới được Backend: sai IP trong `.env.local`, khác mạng WiFi hoặc firewall chặn cổng `8081` |
 | Danh sách thửa trống | `farmerName` của thửa không khớp tên trong token |
 | Ảnh báo cáo không hiển thị | Đường dẫn `/uploads/...` không truy cập được từ điện thoại; kiểm tra `EXPO_PUBLIC_API_BASE_URL` |
+| Ảnh nằm mãi ở "Chờ gửi" | Chưa có mạng tới Backend hoặc đang chờ khoảng thử lại; đưa app về foreground để gửi ngay |
+| Ảnh ở trạng thái "Lỗi" | Backend từ chối ảnh (ví dụ sai định dạng, quá lớn hoặc vụ mùa không còn thuộc tài khoản); đọc thông báo dưới ảnh rồi xoá và chụp lại |
 | Đổi `.env.local` nhưng app vẫn dùng giá trị cũ | Chạy lại `npx expo start -c` |
 
 ## Còn thiếu
 
-- Hàng đợi gửi khi mất mạng (offline queue) và header `Idempotency-Key` phía Backend.
 - Đóng gói APK bằng EAS (`eas.json`, profile `preview`).
 - Push notification khi kỹ sư duyệt hoặc từ chối báo cáo.
 - Icon và splash vẫn là ảnh mặc định của Expo.

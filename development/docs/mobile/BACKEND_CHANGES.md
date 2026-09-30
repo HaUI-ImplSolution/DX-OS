@@ -9,8 +9,8 @@ Chỉ FARMER bị ảnh hưởng; ENGINEER và ADMIN giữ nguyên hành vi.
 |---|---|
 | 1. Phạm vi dữ liệu của farmer | Đã triển khai |
 | 2. Ẩn nội dung chẩn đoán chưa duyệt | Đã triển khai |
-| 3. Idempotency cho gửi báo cáo | Chưa làm (giai đoạn offline) |
-| 4. Swagger | Đã triển khai cho mục 1 và 2 |
+| 3. Idempotency cho gửi báo cáo | Đã triển khai |
+| 4. Swagger | Đã triển khai cho mục 1, 2 và 3 |
 | 5. SSO | Đã triển khai |
 
 ## 1. Phạm vi dữ liệu của farmer
@@ -46,13 +46,15 @@ Hành vi cho FARMER ở `GET /disease-reports/{id}` và `GET /crop-seasons/{id}/
 - `DiagnosisService.toResponse` (dùng cho ENGINEER/ADMIN) không đổi; phần rút gọn nằm ở tầng `DiseaseReportService.toResponse`.
 - Web đăng nhập bằng FARMER cũng nhận dữ liệu rút gọn; phần hiển thị của web cần chịu được các trường `null`.
 
-## 3. Idempotency cho gửi báo cáo (giai đoạn offline)
+## 3. Idempotency cho gửi báo cáo
 
 - `POST /api/v1/crop-seasons/{id}/disease-reports` nhận header tuỳ chọn `Idempotency-Key` (UUID do client sinh).
 - `DiseaseReport` thêm cột `clientRequestId` (`UUID`, unique, nullable); `ddl-auto: update` tự thêm cột.
 - Nếu key đã tồn tại thì trả về báo cáo cũ với cùng response, không lưu ảnh lần hai.
 - Không có header thì hành vi như hiện tại.
 - Key trùng nhưng thuộc vụ mùa khác hoặc user khác trả `409`.
+- Hai request cùng key chạy đồng thời: request thua ở ràng buộc unique trả `409`; client gửi lại sẽ nhận báo cáo đã lưu.
+- `Idempotency-Key` không phải UUID hợp lệ trả `400`.
 
 ## 4. Swagger
 

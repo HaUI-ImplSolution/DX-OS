@@ -2,6 +2,7 @@ import { Link, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { AuthProvider, useAuth } from "@/auth/AuthProvider";
+import { QueueProvider } from "@/offline/QueueProvider";
 import { colors, fontSize, sizes } from "@/theme";
 
 function ProfileLink() {
@@ -51,8 +52,10 @@ function RootStack() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <StatusBar style="dark" />
-      <RootStack />
+      <QueueProvider>
+        <StatusBar style="dark" />
+        <RootStack />
+      </QueueProvider>
     </AuthProvider>
   );
 }

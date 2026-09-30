@@ -31,8 +31,9 @@ Khi bật lại cần rà license tương ứng: POI Apache-2.0 OK, các cái c�
 
 | Thành phần | License | OSI-approved |
 |---|---|---|
-| Expo (`expo`, `expo-router`, `expo-auth-session`, `expo-secure-store`, `expo-image-picker`, `expo-image-manipulator`, `expo-web-browser`, `expo-build-properties`, `expo-constants`, `expo-linking`, `expo-crypto`, `expo-status-bar`) | MIT | ✅ |
-| React / React Native | MIT | ✅ |
+| Expo (`expo`, `expo-router`, `expo-auth-session`, `expo-secure-store`, `expo-image-picker`, `expo-image-manipulator`, `expo-web-browser`, `expo-build-properties`, `expo-constants`, `expo-linking`, `expo-crypto`, `expo-file-system`, `expo-status-bar`) | MIT | ✅ |
+| React / React DOM / React Native | MIT | ✅ |
+| @react-native-async-storage/async-storage / @react-native-community/netinfo | MIT | ✅ |
 | react-native-screens / react-native-safe-area-context | MIT | ✅ |
 | TypeScript | Apache-2.0 | ✅ |
 

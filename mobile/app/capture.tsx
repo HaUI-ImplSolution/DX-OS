@@ -1,17 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BackHandler, Image, Linking, StyleSheet, Text, View } from "react-native";
+import { Alert, BackHandler, Image, Linking, StyleSheet, Text, View } from "react-native";
+import NetInfo from "@react-native-community/netinfo";
+import { randomUUID } from "expo-crypto";
 import * as ImagePicker from "expo-image-picker";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { ApiError, type UploadFile } from "@/api/client";
+import { ApiError, isNetworkError, type UploadFile } from "@/api/client";
 import { createDiseaseReport } from "@/api/endpoints";
 import { Button } from "@/components/Button";
 import { ProgressBar } from "@/components/ProgressBar";
 import { Screen } from "@/components/Screen";
 import { prepareForUpload } from "@/image";
+import { useQueue } from "@/offline/QueueProvider";
 import { colors, fontSize, radius, spacing } from "@/theme";
 
 export default function CaptureScreen() {
-  const { seasonId } = useLocalSearchParams<{ seasonId: string }>();
+  const { seasonId, parcelCode } = useLocalSearchParams<{ seasonId: string; parcelCode?: string }>();
+  const { enqueue } = useQueue();
   const [photo, setPhoto] = useState<UploadFile | null>(null);
   const [preparing, setPreparing] = useState(false);
   const [permissionDenied, setPermissionDenied] = useState(false);
@@ -19,6 +23,8 @@ export default function CaptureScreen() {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const hasPhoto = useRef(false);
+  // One key per photo: a retry of the same photo can never create a second report.
+  const idempotencyKey = useRef(randomUUID());
 
   const capture = useCallback(async () => {
     setError(null);
@@ -37,6 +43,7 @@ export default function CaptureScreen() {
     try {
       const prepared = await prepareForUpload(result.assets[0]);
       hasPhoto.current = true;
+      idempotencyKey.current = randomUUID();
       setPhoto(prepared);
     } catch {
       setError("Không xử lý được ảnh. Hãy chụp lại.");
@@ -55,16 +62,37 @@ export default function CaptureScreen() {
     return () => subscription.remove();
   }, [sending]);
 
+  const saveForLater = async (file: UploadFile) => {
+    await enqueue({
+      id: idempotencyKey.current,
+      cropSeasonId: Number(seasonId),
+      parcelCode: parcelCode ?? null,
+      uri: file.uri,
+    });
+    setSending(false);
+    Alert.alert("Đã lưu ảnh", "Không gửi được. Ảnh đã lưu, sẽ tự gửi khi có mạng.", [
+      { text: "Đóng", onPress: () => router.back() },
+    ]);
+  };
+
   const send = async () => {
     if (!photo) return;
     setSending(true);
     setProgress(0);
     setError(null);
+    if ((await NetInfo.fetch()).isConnected === false) {
+      await saveForLater(photo);
+      return;
+    }
     try {
-      await createDiseaseReport(Number(seasonId), photo, setProgress);
+      await createDiseaseReport(Number(seasonId), photo, setProgress, idempotencyKey.current);
       router.back();
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Không gửi được. Kiểm tra mạng rồi thử lại.");
+      if (isNetworkError(e)) {
+        await saveForLater(photo);
+        return;
+      }
+      setError(e instanceof ApiError ? e.message : "Không gửi được. Thử lại sau.");
       setSending(false);
     }
   };

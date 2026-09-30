@@ -1,7 +1,7 @@
 # Mobile (Expo) cho nông dân
 
 > **Cập nhật:** 30/09/2026.
-> **Trạng thái:** thiết kế UI đã duyệt; backend phạm vi farmer, client Keycloak `dxfarm-mobile` và app `mobile/` (Expo SDK 57, `expo-router`) đã có luồng online đầu-cuối: đăng nhập, xem thửa/vụ/báo cáo, chụp và gửi, chi tiết báo cáo; offline queue chưa làm.
+> **Trạng thái:** thiết kế UI đã duyệt; backend phạm vi farmer, client Keycloak `dxfarm-mobile` và app `mobile/` (Expo SDK 57, `expo-router`) đã có luồng online đầu-cuối: đăng nhập, xem thửa/vụ/báo cáo, chụp và gửi, chi tiết báo cáo, hàng đợi gửi khi mất mạng; chưa đóng gói APK.
 
 Bản mobile React Native (Expo) giúp nông dân chụp ảnh sâu bệnh và gửi báo cáo ngay tại ruộng.
 Tài liệu trong thư mục này là nguồn tham chiếu duy nhất cho phần mobile.
@@ -29,7 +29,7 @@ Tài liệu trong thư mục này là nguồn tham chiếu duy nhất cho phần
 - Chẩn đoán AI vẫn do kỹ sư kích hoạt thủ công trên web; farmer thấy trạng thái "Chờ chẩn đoán" sau khi gửi.
 - Farmer chỉ thấy nội dung chẩn đoán (bệnh, khuyến nghị, thuốc, liều, PHI) khi `APPROVED`.
 - Farmer chỉ thấy thửa của mình, lọc theo `farmerName` khớp claim `name` của token (áp dụng cho cả web khi đăng nhập bằng FARMER).
-- Offline queue làm ở giai đoạn cuối và có thể cắt.
+- Khi mất mạng, ảnh được lưu trong máy và tự gửi lại khi có mạng, an toàn với gửi trùng nhờ `Idempotency-Key`.
 - Dùng Expo với `expo-router`; chụp ảnh bằng `expo-image-picker` (camera hệ thống); không thêm state library, không dựng monorepo.
 
 ## Backlog (chưa làm ở đợt này)

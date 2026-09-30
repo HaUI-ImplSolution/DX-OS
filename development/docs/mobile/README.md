@@ -1,7 +1,7 @@
 # Mobile (Expo) cho nông dân
 
 > **Cập nhật:** 30/09/2026.
-> **Trạng thái:** thiết kế UI đã duyệt; backend phạm vi farmer, client Keycloak `dxfarm-mobile` và app `mobile/` (Expo SDK 57, `expo-router`) đã có luồng online đầu-cuối: đăng nhập, xem thửa/vụ/báo cáo, chụp và gửi, chi tiết báo cáo, hàng đợi gửi khi mất mạng; chưa đóng gói APK.
+> **Trạng thái:** thiết kế UI đã duyệt; backend phạm vi farmer, client Keycloak `dxfarm-mobile` và app `mobile/` (Expo SDK 57, `expo-router`) đã có luồng online đầu-cuối: đăng nhập, xem thửa/vụ/báo cáo, chụp và gửi, chi tiết báo cáo, hàng đợi gửi khi mất mạng; cấu hình `eas.json` cho APK; chưa build APK.
 
 Bản mobile React Native (Expo) giúp nông dân chụp ảnh sâu bệnh và gửi báo cáo ngay tại ruộng.
 Tài liệu trong thư mục này là nguồn tham chiếu duy nhất cho phần mobile.
@@ -10,7 +10,7 @@ Tài liệu trong thư mục này là nguồn tham chiếu duy nhất cho phần
 
 | Tài liệu | Nội dung |
 |---|---|
-| [`mobile/README.md`](../../../mobile/README.md) | Hướng dẫn chạy thử trên điện thoại thật, biến môi trường, tài khoản demo |
+| [`mobile/README.md`](../../../mobile/README.md) | Hướng dẫn chạy thử trên điện thoại thật, đóng gói APK, biến môi trường, tài khoản demo |
 | [`PLAN.md`](./PLAN.md) | Các giai đoạn từ thiết kế UI đến hoàn thành luồng, kèm checklist và cách verify |
 | [`BACKEND_CHANGES.md`](./BACKEND_CHANGES.md) | Đặc tả thay đổi backend (phạm vi dữ liệu farmer, ẩn khuyến nghị chưa duyệt, idempotency) |
 | [`design/screens.md`](./design/screens.md) | Danh sách màn hình, luồng điều hướng, trạng thái rỗng/lỗi/tải |

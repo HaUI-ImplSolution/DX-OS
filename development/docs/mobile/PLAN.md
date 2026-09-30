@@ -99,9 +99,9 @@ Mobile:
 
 ## Giai đoạn 8 — Đóng gói và tài liệu
 
-- [ ] `mobile/eas.json` với profile `preview` xuất APK; Expo Go cho dev.
-- [ ] `mobile/README.md`: mục đích, chạy dev với IP LAN, biến môi trường, tài khoản demo, build APK.
-- [ ] Cập nhật `README.md` gốc (kiến trúc, tiến độ, backlog) và `CHANGELOG.md` (mục Mobile).
+- [X] `mobile/eas.json` với profile `preview` xuất APK; Expo Go cho dev. Việc build APK do user thực hiện theo hướng dẫn trong `mobile/README.md`.
+- [X] `mobile/README.md`: mục đích, chạy dev với IP LAN, biến môi trường, tài khoản demo, build APK.
+- [X] Cập nhật `README.md` gốc (kiến trúc, tiến độ, backlog) và `CHANGELOG.md` (mục Mobile).
 
 ## Checklist kiểm thử tay
 

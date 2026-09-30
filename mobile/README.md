@@ -141,6 +141,49 @@ npx expo start -c
 - Quét mã QR bằng Expo Go trên điện thoại.
   Expo Go phải hỗ trợ SDK 57; nếu không, dùng development build.
 
+## Đóng gói APK
+
+APK được build trên đám mây của EAS (Expo Application Services), không cần cài Android Studio hay Android SDK trên máy dev.
+Cấu hình nằm ở [`eas.json`](./eas.json), profile `preview` xuất file `.apk` để cài trực tiếp lên điện thoại Android.
+
+### Chuẩn bị
+
+- Tài khoản Expo miễn phí tại https://expo.dev.
+- Backend và Keycloak đã chạy với địa chỉ điện thoại truy cập được (xem mục "Chạy trên điện thoại thật", bước 2).
+- Client `dxfarm-mobile` có redirect URI `dxfarm://*` — có sẵn trong realm import.
+
+### Các bước
+
+1. Mở `eas.json` và thay `192.168.1.10` trong ba biến `EXPO_PUBLIC_*` của profile `preview` bằng IP LAN của máy chạy Backend và Keycloak.
+   Giá trị này được nhúng vào APK lúc build; file `.env.local` không được đưa lên EAS.
+2. Đăng nhập và gắn dự án với tài khoản Expo (chỉ lần đầu):
+
+   ```bash
+   cd mobile
+   npx eas-cli login
+   npx eas-cli init
+   ```
+
+   Lệnh `init` ghi `projectId` của dự án vào `app.json`; commit thay đổi này nếu muốn dùng lại.
+3. Build:
+
+   ```bash
+   npx eas-cli build --platform android --profile preview
+   ```
+
+   Lần đầu EAS hỏi có tạo Android keystore không; chọn để EAS tự quản lý.
+4. Khi build xong (thường vài phút đến vài chục phút do hàng đợi), EAS in ra link và mã QR của file `.apk`.
+   Mở link trên điện thoại để tải về, cho phép cài ứng dụng từ nguồn không xác định khi hệ thống hỏi, rồi cài đặt.
+5. Mở app "DX-Farm Nông dân" và đăng nhập bằng `farmer1`.
+
+### Lưu ý
+
+- IP nhúng trong APK cố định: đổi IP máy dev (DHCP cấp lại) hoặc chuyển sang mạng khác thì phải sửa `eas.json` và build lại.
+- Profile `preview` cho phép HTTP thường để gọi Backend qua IP LAN; bản chạy thật cần HTTPS và một profile `production` riêng.
+- Muốn tăng số phiên bản, sửa `version` trong `app.json`, và thêm `android.versionCode` khi cần cài đè.
+- Build trên máy dev (không dùng đám mây) cần JDK và Android SDK, chạy `npx eas-cli build --platform android --profile preview --local`.
+- Nếu `KEYCLOAK_PUBLIC_URL` đổi, sửa `EXPO_PUBLIC_KEYCLOAK_URL` trong `eas.json` cho khớp rồi build lại.
+
 ## Kiểm tra mã nguồn
 
 ```bash
@@ -163,6 +206,5 @@ npx expo export --platform android
 
 ## Còn thiếu
 
-- Đóng gói APK bằng EAS (`eas.json`, profile `preview`).
 - Push notification khi kỹ sư duyệt hoặc từ chối báo cáo.
 - Icon và splash vẫn là ảnh mặc định của Expo.

@@ -133,6 +133,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Tự gửi khi `NetInfo` báo có mạng và khi app trở lại foreground; thử lại với khoảng chờ tăng dần, tối đa 8 lần; lỗi `4xx` (trừ `408`, `409`, `429`) đánh dấu "Lỗi".
 - Dải "Chờ gửi (N)" ở màn Báo cáo của vụ; danh sách chờ gửi và nút xoá ở màn Hồ sơ; hàng đợi tách theo tài khoản.
 
+**Đã xong — Đóng gói:**
+
+- `mobile/eas.json` với profile `preview` xuất APK; hướng dẫn build bằng EAS trong `mobile/README.md`.
+
 **Đã xong — Hướng dẫn chạy:**
 
 - `mobile/README.md`: chạy thử trên điện thoại thật với IP LAN, biến môi trường, tài khoản demo, kiểm tra mã nguồn.

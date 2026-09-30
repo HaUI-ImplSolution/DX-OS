@@ -50,11 +50,12 @@ Nhật ký triển khai `RICE_MODEL_DATA_MIGRATION_PLAN.md`. Chỉ ghi nhận th
 - Loại file ứng viên pest PlantVillage không còn dữ liệu tương ứng hoặc runtime consumer.
 - RAG dry-run xác thực 6/6 tài liệu; không còn mã PlantVillage trong canonical JSON hoặc seed SQL.
 
-**Đã triển khai — Giai đoạn 2: seed và bảo vệ database hiện có**
+**Đã xong — Giai đoạn 2: seed và bảo vệ database hiện có**
 
 - Generator sinh `data.sql` cho 6 bệnh lúa và không seed pesticide, treatment rule hoặc policy chưa được duyệt.
 - Thêm trạng thái `active` cho disease và pesticide; lookup mới chỉ đọc record active.
 - Migration vô hiệu hóa taxonomy/rule/pesticide legacy, xóa record không còn tham chiếu và giữ record còn diagnosis/treatment history.
 - `data.sql` được sinh lại bằng generator; kiểm tra deterministic và `--check` đạt.
 - Data test đạt 4/4; Backend build và test đạt 3/3; formatter và Ruff đạt.
-- Chưa xác nhận migration trên PostgreSQL thật: Docker daemon không hoạt động; PostgreSQL local có chạy nhưng không có credential được cấp. Giai đoạn 2 chưa đóng cho đến khi fresh/existing DB smoke test đạt.
+- PostgreSQL 16 + pgvector smoke test đạt trên database mới và database legacy mô phỏng; Backend khởi động, health `UP` và seed đúng 6 bệnh lúa active.
+- Xác nhận migration giữ disease, pesticide và rule legacy đang được diagnosis/treatment history tham chiếu ở trạng thái inactive; xóa bản ghi legacy không còn tham chiếu và không seed dữ liệu `IN_REVIEW`.

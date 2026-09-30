@@ -9,6 +9,7 @@ from app.api.schemas import DiseaseDetectionResponse
 from app.core.config import Settings
 from app.cv.contract import load_class_contract
 from app.cv.loader import load_model, validate_model_contract
+from app.cv.triage import CvTriageError
 from app.services.plant_disease_service import PlantDiseaseService
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -72,7 +73,7 @@ class FakeModel:
 
 def image_bytes() -> bytes:
     stream = BytesIO()
-    Image.new("RGB", (32, 32), color="green").save(stream, format="PNG")
+    Image.effect_noise((256, 256), 100).convert("RGB").save(stream, format="PNG")
     return stream.getvalue()
 
 
@@ -109,7 +110,7 @@ def test_no_detection_uses_healthy_fallback_without_expanding_response():
     assert result == {
         "disease_code": "Rice___healthy",
         "disease_name": "Lá lúa không thấy triệu chứng bệnh",
-        "confidence": 1.0,
+        "confidence": 0.0,
         "model_name": "YOLOv8n-RiceLeafBD",
         "model_version": "3.0.0",
     }
@@ -122,7 +123,29 @@ def test_detection_below_threshold_uses_healthy_fallback():
     )
 
     assert result["disease_code"] == "Rice___healthy"
-    assert result["confidence"] == 1.0
+    assert result["confidence"] == 0.0
+
+
+def test_image_too_small_is_rejected_before_model_inference():
+    stream = BytesIO()
+    Image.new("RGB", (100, 100), color="green").save(stream, format="PNG")
+    model = FakeModel([], [])
+
+    with pytest.raises(CvTriageError, match="Ảnh quá nhỏ"):
+        PlantDiseaseService(model, settings()).predict(stream.getvalue())
+
+    assert model.predict_kwargs is None
+
+
+def test_blurry_image_is_rejected_before_model_inference():
+    stream = BytesIO()
+    Image.new("RGB", (256, 256), color="green").save(stream, format="PNG")
+    model = FakeModel([], [])
+
+    with pytest.raises(CvTriageError, match="bị mờ"):
+        PlantDiseaseService(model, settings()).predict(stream.getvalue())
+
+    assert model.predict_kwargs is None
 
 
 def test_invalid_image_keeps_existing_error_behavior():

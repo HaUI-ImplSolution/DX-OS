@@ -4,6 +4,7 @@ import pytest
 
 from app.api.schemas import DiagnoseRequest
 from app.clients.backend_client import DiagnosisContext
+from app.cv.triage import CvTriageError
 from app.rag.ingestion_service import load_disease_knowledge
 from app.services.inference_service import run_stateless_diagnose
 
@@ -114,3 +115,39 @@ def test_each_rice_code_flows_through_rag_to_review_required(document):
     assert "Cần kỹ sư nông nghiệp đánh giá chuyên sâu" in summary
     assert "NEWTEC" not in summary
     assert "0.75" not in summary
+
+
+def test_low_confidence_stops_before_backend_rag_and_llm():
+    class LowConfidencePredictor:
+        def predict(self, _image: bytes) -> dict:
+            return {
+                "disease_code": "Rice___Blast",
+                "disease_name": "Bệnh đạo ôn trên lúa",
+                "confidence": 0.69,
+                "model_name": "YOLOv8n-RiceLeafBD",
+                "model_version": "3.0.0",
+            }
+
+    class MustNotRun:
+        def __getattr__(self, _name):
+            raise AssertionError("Downstream dependency must not run after CV gate")
+
+    payload = DiagnoseRequest.model_validate(
+        {
+            "request_id": "low-confidence-test",
+            "crop_season_id": 1,
+            "image_url": "http://backend:8081/uploads/rice-leaf.jpg",
+            "field_context": {"parcel_code": "RICE-01"},
+        }
+    )
+
+    with pytest.raises(CvTriageError, match="69.0%"):
+        run_stateless_diagnose(
+            payload=payload,
+            image_bytes=b"image",
+            predictor=LowConfidencePredictor(),
+            db=object(),
+            backend_client=MustNotRun(),
+            rag_retriever=MustNotRun(),
+            recommendation_writer=MustNotRun(),
+        )

@@ -38,8 +38,10 @@ class Settings(BaseSettings):
     cv_device: str = "auto"
     cv_detection_confidence_threshold: float = Field(default=0.25, ge=0, le=1)
     cv_iou_threshold: float = Field(default=0.45, ge=0, le=1)
-    # Workflow threshold used after CV inference; separate from YOLO box filtering.
-    cv_confidence_threshold: float = 0.70
+    # Workflow gate used after CV inference; separate from YOLO box filtering.
+    cv_confidence_threshold: float = Field(default=0.70, ge=0, le=1)
+    cv_min_image_dimension: int = Field(default=160, ge=32)
+    cv_min_sharpness: float = Field(default=10.0, ge=0)
     llm_timeout_seconds: float = 5.0
 
     backend_base_url: str = "http://localhost:8081"

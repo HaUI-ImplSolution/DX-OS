@@ -18,6 +18,7 @@ from app.api.schemas import (
 )
 from app.clients.backend_client import BackendClient
 from app.core.config import get_settings
+from app.cv.triage import CvTriageError
 from app.graph.context import WorkflowRuntime
 from app.graph.graph import farm_graph
 
@@ -78,6 +79,15 @@ def run_stateless_diagnose(
     recommendation_writer: GroundedRecommendationWriter | None = None,
 ) -> DiagnoseResponse:
     """Run the existing LangGraph and adapt its result to Backend's DTO."""
+    cv_result = DiagnoseCvResult.model_validate(predictor.predict(image_bytes))
+    confidence_threshold = get_settings().cv_confidence_threshold
+    if cv_result.confidence < confidence_threshold:
+        raise CvTriageError(
+            "Kết quả nhận diện chưa đủ tin cậy "
+            f"({cv_result.confidence:.1%}, yêu cầu tối thiểu {confidence_threshold:.1%}). "
+            "Vui lòng chụp lại ảnh cận cảnh lá lúa, đủ sáng và rõ nét."
+        )
+
     if rag_retriever is None:
         from app.rag.retriever import RAGRetriever
 
@@ -110,6 +120,7 @@ def run_stateless_diagnose(
             "parcel_code": payload.field_context.parcel_code,
             "crop_season_id": payload.crop_season_id,
             "image_ref": image_bytes,
+            "cv_result": cv_result.model_dump(mode="json"),
             "field_context": payload.field_context.model_dump(mode="json"),
             "errors": [],
             "timings_ms": {},

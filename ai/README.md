@@ -57,7 +57,7 @@ Backend khởi tạo AI Vector DB, extension `vector`, hai bảng RAG và hai ro
 
 ## Biến môi trường
 
-Mẫu cấu hình nằm tại [`.env.example`](.env.example).
+Cấu hình Docker Compose nằm tại [`deploy/.env.example`](../deploy/.env.example); chạy local thì export các biến dưới đây trong shell.
 
 | Biến | Ý nghĩa |
 |---|---|
@@ -81,7 +81,6 @@ cd ai
 python -m venv .venv
 source .venv/bin/activate
 pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
-cp .env.example .env
 uvicorn app.main:app --reload --port 8000
 ```
 
@@ -108,7 +107,7 @@ Từ thư mục gốc repository:
 
 ```bash
 cp deploy/.env.example deploy/.env
-# Thiết lập AI_SERVICE_API_KEY và AI_SERVICE_INBOUND_API_KEY bằng giá trị không rỗng.
+# Thiết lập BACKEND_TO_AI_API_KEY và AI_TO_BACKEND_API_KEY bằng giá trị không rỗng.
 cd deploy
 docker compose up -d --build postgres backend ai
 ```

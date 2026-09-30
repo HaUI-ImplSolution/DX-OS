@@ -5,7 +5,7 @@ Trang tĩnh liệt kê link tới các ứng dụng trong hệ thống (Ứng d�
 ## Chạy
 
 Nằm trong `deploy/docker-compose.yml`, lên cùng lệnh `docker compose up -d --build` sẵn có của repo.
-Mặc định expose cổng `8090` (`PORTAL_PORT` trong `deploy/.env`).
+Mặc định expose cổng `8090` (`PORTAL_HOST_PORT` trong `deploy/.env`).
 
 ## Đăng nhập
 
@@ -16,5 +16,5 @@ Mặc định expose cổng `8090` (`PORTAL_PORT` trong `deploy/.env`).
 
 ## Giới hạn hiện tại
 
-- Link trỏ theo cổng mặc định trong `deploy/.env.example` (`FRONTEND_PORT`, `SUPERSET_PORT`, `MATTERMOST_PORT`).
+- Link trỏ theo cổng mặc định trong `deploy/.env.example` (`FRONTEND_HOST_PORT`, `SUPERSET_HOST_PORT`, `MATTERMOST_HOST_PORT`).
   Nếu đổi cổng trong `.env`, sửa lại URL tương ứng trong `index.html`.

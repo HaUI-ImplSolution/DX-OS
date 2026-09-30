@@ -8,7 +8,7 @@ x-ai-build: &ai-build
   dockerfile: Dockerfile
 
 x-ai-common-env: &ai-common-env
-  EMBEDDING_MODEL: ${EMBEDDING_MODEL:-sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2}
+  EMBEDDING_MODEL: ${AI_EMBEDDING_MODEL:-sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2}
   HF_HOME: /app/weights/huggingface
 
 x-mattermost-volumes: &mattermost-volumes
@@ -27,7 +27,7 @@ services:
     volumes:
       - ${POSTGRES_DATA_DIR:-./data/postgres}:/var/lib/postgresql/data
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dxfarm}"]
       interval: 10s
@@ -47,21 +47,21 @@ services:
       POSTGRES_PORT: 5432
       SERVER_PORT: 8081
       UPLOAD_DIR: /app/uploads
-      APP_PUBLIC_BASE_URL: ${APP_PUBLIC_BASE_URL:-http://backend:8081}
-      SUPERSET_RO_PASSWORD: ${SUPERSET_RO_PASSWORD:-superset_ro_demo_only}
+      SUPERSET_RO_PASSWORD: ${SUPERSET_READONLY_DB_PASSWORD:-superset_ro_demo_only}
       MATTERMOST_DB_PASSWORD: ${MATTERMOST_DB_PASSWORD:-mattermost_demo_only}
       KEYCLOAK_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak_demo_only}
-      AI_VECTOR_DB_RO_PASSWORD: ${AI_VECTOR_DB_RO_PASSWORD:-ai_vector_ro_demo_only}
+      AI_VECTOR_DB_RO_PASSWORD: ${AI_VECTOR_DB_READONLY_PASSWORD:-ai_vector_ro_demo_only}
       AI_VECTOR_DB_INGEST_PASSWORD: ${AI_VECTOR_DB_INGEST_PASSWORD:-ai_vector_ingest_demo_only}
-      AI_SERVICE_BASE_URL: ${AI_SERVICE_BASE_URL:-http://ai:8000}
-      AI_SERVICE_API_KEY: ${AI_SERVICE_API_KEY:-}
-      AI_SERVICE_CONNECT_TIMEOUT_MS: ${AI_SERVICE_CONNECT_TIMEOUT_MS:-3000}
-      AI_SERVICE_READ_TIMEOUT_MS: ${AI_SERVICE_READ_TIMEOUT_MS:-120000}
-      AI_SERVICE_INBOUND_API_KEY: ${AI_SERVICE_INBOUND_API_KEY:-}
+      APP_PUBLIC_BASE_URL: ${BACKEND_BASE_URL:-http://backend:8081}
+      AI_SERVICE_BASE_URL: ${AI_BASE_URL:-http://ai:8000}
+      AI_SERVICE_API_KEY: ${BACKEND_TO_AI_API_KEY:-}
+      AI_SERVICE_CONNECT_TIMEOUT_MS: ${BACKEND_TO_AI_CONNECT_TIMEOUT_MS:-3000}
+      AI_SERVICE_READ_TIMEOUT_MS: ${BACKEND_TO_AI_READ_TIMEOUT_MS:-120000}
+      AI_SERVICE_INBOUND_API_KEY: ${AI_TO_BACKEND_API_KEY:-}
     volumes:
       - ./data/uploads:/app/uploads
     ports:
-      - "${BACKEND_PORT:-8081}:8081"
+      - "${BACKEND_HOST_PORT:-8081}:8081"
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8081/actuator/health || exit 1"]
       interval: 10s
@@ -104,10 +104,10 @@ services:
       <<: *ai-common-env
       # Role/database dx_farm_ai_vector_db do backend tự tạo lúc khởi động (AiVectorDatabaseSeeder) -
       # chỉ chứa documents/document_chunks, tách biệt hoàn toàn khỏi CSDL nghiệp vụ của Backend.
-      DATABASE_URL: postgresql+psycopg://ai_vector_ro:${AI_VECTOR_DB_RO_PASSWORD:-ai_vector_ro_demo_only}@postgres:5432/dx_farm_ai_vector_db
+      DATABASE_URL: postgresql+psycopg://ai_vector_ro:${AI_VECTOR_DB_READONLY_PASSWORD:-ai_vector_ro_demo_only}@postgres:5432/dx_farm_ai_vector_db
       BACKEND_BASE_URL: ${BACKEND_BASE_URL:-http://backend:8081}
-      BACKEND_SERVICE_API_KEY: ${AI_SERVICE_INBOUND_API_KEY:-}
-      AI_SERVICE_API_KEY: ${AI_SERVICE_API_KEY:-}
+      BACKEND_SERVICE_API_KEY: ${AI_TO_BACKEND_API_KEY:-}
+      AI_SERVICE_API_KEY: ${BACKEND_TO_AI_API_KEY:-}
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:1.5b}
       CV_WEIGHTS_PATH: /app/weights/best.pt
@@ -120,13 +120,16 @@ services:
       CV_DEVICE: ${AI_CV_DEVICE:-cpu}
       CV_DETECTION_CONFIDENCE_THRESHOLD: ${AI_CV_DETECTION_CONFIDENCE_THRESHOLD:-0.25}
       CV_IOU_THRESHOLD: ${AI_CV_IOU_THRESHOLD:-0.45}
+      CV_CONFIDENCE_THRESHOLD: ${AI_CV_CONFIDENCE_THRESHOLD:-0.70}
+      CV_MIN_IMAGE_DIMENSION: ${AI_CV_MIN_IMAGE_DIMENSION:-160}
+      CV_MIN_SHARPNESS: ${AI_CV_MIN_SHARPNESS:-10.0}
       LOG_LEVEL: ${AI_LOG_LEVEL:-INFO}
     volumes:
       - ${AI_DATA_DIR:-../data}:/data:ro
       - ai_weights:/app/weights
       - ${AI_CV_WEIGHTS_PATH:-../development/.local/best.pt}:/app/weights/best.pt:ro
     ports:
-      - "${AI_PORT:-8000}:8000"
+      - "${AI_HOST_PORT:-8000}:8000"
 
   rag-ingest:
     build:
@@ -149,17 +152,22 @@ services:
     build:
       context: ../frontend
       dockerfile: Dockerfile
+      args:
+        # Cùng-origin qua nginx nên để trống; Keycloak đi thẳng cổng expose ra host.
+        VITE_API_BASE_URL: ""
+        VITE_KEYCLOAK_URL: http://localhost:${KEYCLOAK_HOST_PORT:-8180}/realms/dxfarm
+        VITE_KEYCLOAK_CLIENT_ID: dxfarm-frontend
     depends_on:
       - backend
     ports:
-      - "${FRONTEND_PORT:-8082}:80"
+      - "${FRONTEND_HOST_PORT:-8082}:80"
 
   portal:
     build:
       context: ../portal
       dockerfile: Dockerfile
     ports:
-      - "${PORTAL_PORT:-8090}:80"
+      - "${PORTAL_HOST_PORT:-8090}:80"
 
   keycloak:
     image: quay.io/keycloak/keycloak:26.0
@@ -180,12 +188,12 @@ services:
       KC_DB_URL: "jdbc:postgresql://postgres:5432/keycloak"
       KC_DB_USERNAME: keycloak_app
       KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak_demo_only}
-      KC_HOSTNAME: "http://localhost:${KEYCLOAK_PORT:-8180}"
+      KC_HOSTNAME: "${KEYCLOAK_PUBLIC_URL:-http://localhost:${KEYCLOAK_HOST_PORT:-8180}}"
       KC_HEALTH_ENABLED: "true"
     volumes:
       - ../sso/realm-dxfarm.json:/opt/keycloak/data/import/realm-dxfarm.json:ro
     ports:
-      - "${KEYCLOAK_PORT:-8180}:8080"
+      - "${KEYCLOAK_HOST_PORT:-8180}:8080"
 
   superset:
     image: apache/superset:3.1.3
@@ -201,9 +209,9 @@ services:
       SUPERSET_ADMIN_USERNAME: ${SUPERSET_ADMIN_USERNAME:-admin}
       SUPERSET_ADMIN_PASSWORD: ${SUPERSET_ADMIN_PASSWORD}
       SUPERSET_ADMIN_EMAIL: ${SUPERSET_ADMIN_EMAIL:-admin@dxfarm.local}
-      DXFARM_DB_URI: postgresql+psycopg2://superset_ro:${SUPERSET_RO_PASSWORD:-superset_ro_demo_only}@postgres:5432/${POSTGRES_DB:-dxfarm}
-      KEYCLOAK_SUPERSET_CLIENT_ID: ${KEYCLOAK_SUPERSET_CLIENT_ID:-dxfarm-superset}
-      KEYCLOAK_SUPERSET_CLIENT_SECRET: ${KEYCLOAK_SUPERSET_CLIENT_SECRET:-dxfarm_superset_demo_secret}
+      DXFARM_DB_URI: postgresql+psycopg2://superset_ro:${SUPERSET_READONLY_DB_PASSWORD:-superset_ro_demo_only}@postgres:5432/${POSTGRES_DB:-dxfarm}
+      KEYCLOAK_SUPERSET_CLIENT_ID: ${SUPERSET_OIDC_CLIENT_ID:-dxfarm-superset}
+      KEYCLOAK_SUPERSET_CLIENT_SECRET: ${SUPERSET_OIDC_CLIENT_SECRET:-dxfarm_superset_demo_secret}
     volumes:
       - ../bi/bootstrap.sh:/app/pythonpath/bootstrap.sh:ro
       - ../bi/bootstrap_datasources.py:/app/pythonpath/bootstrap_datasources.py:ro
@@ -212,7 +220,7 @@ services:
       - ./data/superset:/app/superset_home
     entrypoint: ["/bin/bash", "/app/pythonpath/bootstrap.sh"]
     ports:
-      - "${SUPERSET_PORT:-8088}:8088"
+      - "${SUPERSET_HOST_PORT:-8088}:8088"
 
   # Container Mattermost chạy bằng user không phải root (uid 2000) nhưng bind mount mới tạo lần
   # đầu thuộc root — service tạm này chown lại một lần trước khi Mattermost khởi động, để
@@ -240,10 +248,10 @@ services:
     environment:
       MM_SQLSETTINGS_DRIVERNAME: postgres
       MM_SQLSETTINGS_DATASOURCE: "postgres://mattermost_app:${MATTERMOST_DB_PASSWORD:-mattermost_demo_only}@postgres:5432/mattermost?sslmode=disable"
-      MM_SERVICESETTINGS_SITEURL: "http://localhost:${MATTERMOST_PORT:-8065}"
+      MM_SERVICESETTINGS_SITEURL: "http://localhost:${MATTERMOST_HOST_PORT:-8065}"
     volumes: *mattermost-volumes
     ports:
-      - "${MATTERMOST_PORT:-8065}:8065"
+      - "${MATTERMOST_HOST_PORT:-8065}:8065"
 
 volumes:
   ai_weights:

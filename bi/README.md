@@ -27,7 +27,7 @@ Không chọn Metabase (AGPL-3.0, copyleft mạnh hơn dù vẫn OSI-approved) �
 
 ## Đăng nhập
 
-- URL: `http://localhost:${SUPERSET_PORT:-8088}`
+- URL: `http://localhost:${SUPERSET_HOST_PORT:-8088}`
 - Đăng nhập qua UI bằng SSO thật (Keycloak) — bấm "Sign In with keycloak", dùng tài khoản demo trong [`sso/README.md`](../sso/README.md).
   Role realm map sang role Superset: `ADMIN` → `Admin`, `ENGINEER`/`FARMER` → `Gamma`.
 - Tài khoản `SUPERSET_ADMIN_USERNAME`/`SUPERSET_ADMIN_PASSWORD` (seed lúc khởi động) vẫn tồn tại song song, chỉ dùng cho REST API/automation (`bi/bootstrap_datasources.py` tự đăng nhập bằng tài khoản này) — không đăng nhập được qua UI nữa vì đã bật `AUTH_TYPE = AUTH_OAUTH`.
@@ -40,7 +40,7 @@ Không chọn Metabase (AGPL-3.0, copyleft mạnh hơn dù vẫn OSI-approved) �
   - Host/Port: giống connection tới `dxfarm` (mặc định `localhost:5432`)
   - Database: `dxfarm`
   - User: `superset_ro`
-  - Password: giá trị `SUPERSET_RO_PASSWORD` trong `deploy/.env` (mặc định `superset_ro_demo_only`)
+  - Password: giá trị `SUPERSET_READONLY_DB_PASSWORD` trong `deploy/.env` (mặc định `superset_ro_demo_only`)
 
 - **Metadata riêng của Superset** (dashboard, chart, user/role của Superset, log truy vấn...): **không** nằm trong Postgres — Superset dùng SQLite riêng, file `deploy/data/superset/superset.db`.
 

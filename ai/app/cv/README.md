@@ -11,6 +11,8 @@ Response giữ nguyên `disease_code`, `disease_name`, `confidence`, `model_name
 
 `loader.py` yêu cầu checkpoint tồn tại tại `CV_WEIGHTS_PATH`, kiểm tra SHA-256 khi cấu hình, task `detect`, số lớp và đúng thứ tự class. Service không tự tải checkpoint. Khi chạy Compose, `best.pt` được bind-mount read-only.
 
-`CV_DETECTION_CONFIDENCE_THRESHOLD` là ngưỡng lọc box YOLO. `CV_CONFIDENCE_THRESHOLD` vẫn là ngưỡng nghiệp vụ đánh dấu kết quả low-confidence trong workflow; hai cấu hình không dùng thay nhau.
+`CV_DETECTION_CONFIDENCE_THRESHOLD` là ngưỡng lọc box YOLO. `CV_CONFIDENCE_THRESHOLD` là confidence gate của workflow; kết quả thấp hơn ngưỡng sẽ yêu cầu chụp lại và không chạy Backend facts, RAG hoặc LLM. `CV_MIN_IMAGE_DIMENSION` và `CV_MIN_SHARPNESS` chặn ảnh quá nhỏ hoặc thiếu độ nét trước inference.
+
+Checkpoint chỉ có năm lớp bệnh, không có lớp healthy/non-leaf riêng. Vì vậy trường hợp không có detection được xem là chưa đủ tin cậy thay vì tự khẳng định lá khỏe; đây là lựa chọn fail-safe để ảnh ngoài miền không đi tiếp vào khuyến nghị.
 
 CV không quyết định thuốc, liều lượng, PHI, truy vấn RAG hoặc ghi diagnosis. Chất lượng tích hợp kỹ thuật không thay thế đánh giá độ chính xác của model trên tập kiểm thử phù hợp.

@@ -69,3 +69,12 @@ Nhật ký triển khai `RICE_MODEL_DATA_MIGRATION_PLAN.md`. Chỉ ghi nhận th
 - Compose mount `best.pt` read-only; cấu hình Compose hợp lệ và checkpoint không được đóng gói hoặc tải ngầm trong image.
 - Checkpoint thật load/inference đạt; health trả `ok` trên CPU. CV test đạt 7/7, Ruff đạt; Backend client và RAG access boundary check đạt.
 - `check_diagnose_contract` còn fixture PlantVillage nên dừng ở unknown `disease_code`; việc đổi workflow fixture sang mã lúa thuộc Giai đoạn 4 theo kế hoạch.
+
+**Đã xong — Giai đoạn 4: đồng bộ RAG và logic khuyến nghị**
+
+- Chuyển diagnose contract fixture sang bệnh đạo ôn/lúa và xác nhận response workflow giữ nguyên schema.
+- Bổ sung healthy fallback vào tập `disease_code` hợp lệ của graph; cả sáu điều kiện lúa đi qua Backend context và RAG đúng mã.
+- Xác nhận corpus có đúng 6 tài liệu `IN_REVIEW`, đầy đủ source provenance; RAG dry-run đạt 6/6.
+- PostgreSQL 16 + pgvector smoke test ingest và truy hồi lọc chính xác đạt 6/6 mã; container kiểm thử tạm đã được xóa.
+- Khi Backend không có rule đã duyệt, cả sáu mã đều đi nhánh `review_required`, không chọn rule và không đưa tên/liều thuốc candidate vào khuyến nghị.
+- AI test đạt 14/14; diagnose contract, Backend client, RAG access boundary và Ruff đều đạt.

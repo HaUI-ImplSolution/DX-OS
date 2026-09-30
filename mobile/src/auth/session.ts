@@ -1,18 +1,47 @@
 import * as SecureStore from "expo-secure-store";
 
-const ACCESS_TOKEN_KEY = "dxfarm.accessToken";
-const REFRESH_TOKEN_KEY = "dxfarm.refreshToken";
+const KEYS = {
+  accessToken: "dxfarm.accessToken",
+  refreshToken: "dxfarm.refreshToken",
+  expiresAt: "dxfarm.expiresAt",
+} as const;
 
-export const getAccessToken = () => SecureStore.getItemAsync(ACCESS_TOKEN_KEY);
+export interface StoredTokens {
+  accessToken: string;
+  refreshToken: string | null;
+  // Epoch milliseconds at which the access token expires.
+  expiresAt: number;
+}
 
-export const getRefreshToken = () => SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
+const listeners = new Set<() => void>();
 
-export async function saveTokens(accessToken: string, refreshToken?: string | null) {
-  await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, accessToken);
-  if (refreshToken) await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken);
+// Called after the stored session is removed, whatever the cause.
+export function onSessionCleared(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+export async function loadTokens(): Promise<StoredTokens | null> {
+  const [accessToken, refreshToken, expiresAt] = await Promise.all([
+    SecureStore.getItemAsync(KEYS.accessToken),
+    SecureStore.getItemAsync(KEYS.refreshToken),
+    SecureStore.getItemAsync(KEYS.expiresAt),
+  ]);
+  if (!accessToken) return null;
+  return { accessToken, refreshToken, expiresAt: Number(expiresAt) || 0 };
+}
+
+export async function saveTokens(tokens: StoredTokens) {
+  await SecureStore.setItemAsync(KEYS.accessToken, tokens.accessToken);
+  await SecureStore.setItemAsync(KEYS.expiresAt, String(tokens.expiresAt));
+  if (tokens.refreshToken) {
+    await SecureStore.setItemAsync(KEYS.refreshToken, tokens.refreshToken);
+  } else {
+    await SecureStore.deleteItemAsync(KEYS.refreshToken);
+  }
 }
 
 export async function clearSession() {
-  await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
-  await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+  await Promise.all(Object.values(KEYS).map((key) => SecureStore.deleteItemAsync(key)));
+  listeners.forEach((listener) => listener());
 }

@@ -58,11 +58,11 @@ Chi tiết: `BACKEND_CHANGES.md` mục 5.
 
 ## Giai đoạn 4 — Xác thực
 
-- [ ] Authorization Code + PKCE bằng `expo-auth-session`.
-- [ ] Lưu access và refresh token ở `expo-secure-store`, tự refresh khi hết hạn.
-- [ ] `401` xoá phiên và về màn Đăng nhập.
-- [ ] Giải mã `realm_access.roles` như `frontend/src/auth.ts`; role khác FARMER bị đăng xuất kèm thông báo.
-- [ ] Route guard ở layout gốc.
+- [X] Authorization Code + PKCE bằng `expo-auth-session`.
+- [X] Lưu access và refresh token ở `expo-secure-store`, tự refresh khi hết hạn.
+- [X] `401` xoá phiên và về màn Đăng nhập.
+- [X] Giải mã `realm_access.roles` như `frontend/src/auth.ts`; role khác FARMER bị đăng xuất kèm thông báo.
+- [X] Route guard ở layout gốc.
 
 ## Giai đoạn 5 — Màn hình đọc dữ liệu
 

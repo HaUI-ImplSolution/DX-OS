@@ -1,5 +1,6 @@
 import { API_BASE_URL } from "@/config";
-import { clearSession, getAccessToken } from "@/auth/session";
+import { clearSession } from "@/auth/session";
+import { getValidAccessToken } from "@/auth/tokens";
 import type { ApiResponse } from "@/types";
 
 const API_V1 = `${API_BASE_URL}/api/v1`;
@@ -23,7 +24,7 @@ export class ApiError extends Error {
 export const isNetworkError = (error: unknown) => error instanceof ApiError && error.status === 0;
 
 export async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const token = await getAccessToken();
+  const token = await getValidAccessToken();
   const headers = new Headers(init?.headers);
   if (token) headers.set("Authorization", `Bearer ${token}`);
 

@@ -98,6 +98,14 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - `mobile/.env.example`: `EXPO_PUBLIC_API_BASE_URL`, `EXPO_PUBLIC_KEYCLOAK_URL`, `EXPO_PUBLIC_KEYCLOAK_CLIENT_ID`.
 - `src/`: client API (`request`, `ApiError`, `json`, timeout 30 giây, lỗi mạng trả `status` 0), lưu token bằng `expo-secure-store`, type dùng cho farmer, theme theo design tokens, component `Screen`.
 
+**Đã xong — Xác thực:**
+
+- Đăng nhập Authorization Code + PKCE với client `dxfarm-mobile` qua `expo-auth-session`; endpoint dựng từ `EXPO_PUBLIC_KEYCLOAK_URL`, không dùng discovery.
+- Access token và refresh token lưu ở `expo-secure-store`; token tự refresh trước khi hết hạn, refresh bị từ chối hoặc `401` thì xoá phiên và về màn Đăng nhập.
+- Role đọc từ `realm_access.roles` của access token; tài khoản không có role FARMER bị đăng xuất kèm thông báo "Ứng dụng này dành cho nông dân".
+- Đăng xuất kết thúc luôn phiên Keycloak (POST endpoint logout kèm refresh token).
+- Route guard bằng `Stack.Protected` ở layout gốc; màn Đăng nhập và Hồ sơ.
+
 ## AI Service (Python)
 
 ### 2026-09-18

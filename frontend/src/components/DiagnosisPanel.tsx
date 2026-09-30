@@ -297,7 +297,7 @@ export default function DiagnosisPanel({
       {diagnosis && (
         <div className="diagnosis-card">
           <div className="diagnosis-head">
-            <h3>{diagnosis.diseaseName}</h3>
+            <h3>{diagnosis.diseaseName ?? "Chẩn đoán"}</h3>
             <Badge
               tone={
                 diagnosis.approvalStatus === "APPROVED"
@@ -310,11 +310,15 @@ export default function DiagnosisPanel({
               {diagnosis.approvalStatus}
             </Badge>
           </div>
-          <p className="diagnosis-meta">
-            Độ tin cậy {Math.round(diagnosis.confidence * 100)}% · model {diagnosis.modelVersion} ·{" "}
-            {new Date(diagnosis.diagnosedAt).toLocaleString("vi-VN")}
-          </p>
-          <blockquote className="recommendation">{diagnosis.recommendationText}</blockquote>
+          {diagnosis.confidence != null && diagnosis.diagnosedAt && (
+            <p className="diagnosis-meta">
+              Độ tin cậy {Math.round(diagnosis.confidence * 100)}% · model {diagnosis.modelVersion} ·{" "}
+              {new Date(diagnosis.diagnosedAt).toLocaleString("vi-VN")}
+            </p>
+          )}
+          {diagnosis.recommendationText && (
+            <blockquote className="recommendation">{diagnosis.recommendationText}</blockquote>
+          )}
 
           {diagnosis.treatmentRule && (
             <table className="rule-table">
@@ -364,7 +368,7 @@ export default function DiagnosisPanel({
 
           {diagnosis.approvalStatus === "REJECTED" && (
             <div className="banner banner-danger">
-              <strong>Đã từ chối bởi {diagnosis.decidedBy}</strong>
+              <strong>Đã từ chối{diagnosis.decidedBy ? ` bởi ${diagnosis.decidedBy}` : ""}</strong>
               <p>{diagnosis.rejectionReason}</p>
             </div>
           )}

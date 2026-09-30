@@ -4,13 +4,16 @@ import HaUI.ImplSolution.DX_Farm.dto.ApiResponse;
 import HaUI.ImplSolution.DX_Farm.dto.DiseaseReportResponse;
 import HaUI.ImplSolution.DX_Farm.service.DiseaseReportService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -19,7 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1")
-@Tag(name = "DiseaseReport", description = "Báo cáo sự cố sâu bệnh - M1")
+@Tag(name = "DiseaseReport", description = "Disease sighting reports")
 public class DiseaseReportController {
 
   private final DiseaseReportService diseaseReportService;
@@ -31,22 +34,32 @@ public class DiseaseReportController {
   @PostMapping(value = "/crop-seasons/{cropSeasonId}/disease-reports",
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(summary = "Report a disease sighting with a photo (reportedBy = logged-in user)")
+  @Operation(summary = "Report a disease sighting with a photo (reportedBy = logged-in user)",
+      description = "FARMER: 404 if the season's parcel belongs to another farmer."
+          + " With an Idempotency-Key, a repeated request returns the existing report without"
+          + " storing the image again; 409 if the key was used for another crop season or user.")
   public ApiResponse<DiseaseReportResponse> create(@PathVariable Long cropSeasonId,
-      @RequestPart("image") MultipartFile image) {
+      @RequestPart("image") MultipartFile image,
+      @Parameter(description = "Client-generated UUID that makes retries of this request safe")
+      @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
+    UUID clientRequestId = idempotencyKey == null ? null : UUID.fromString(idempotencyKey);
     return ApiResponse.success("Disease report created",
-        diseaseReportService.create(cropSeasonId, image));
+        diseaseReportService.create(cropSeasonId, image, clientRequestId));
   }
 
   @GetMapping("/crop-seasons/{cropSeasonId}/disease-reports")
-  @Operation(summary = "List disease reports for a crop season")
+  @Operation(summary = "List disease reports for a crop season",
+      description = "FARMER: 404 if the season's parcel belongs to another farmer;"
+          + " diagnosis is trimmed until APPROVED (see DiagnosisResponse).")
   public ApiResponse<List<DiseaseReportResponse>> listByCropSeason(
       @PathVariable Long cropSeasonId) {
     return ApiResponse.success(diseaseReportService.listByCropSeason(cropSeasonId));
   }
 
   @GetMapping("/disease-reports/{id}")
-  @Operation(summary = "Get a disease report (with nested diagnosis if present)")
+  @Operation(summary = "Get a disease report (with nested diagnosis if present)",
+      description = "FARMER: 404 if the season's parcel belongs to another farmer;"
+          + " diagnosis is trimmed until APPROVED (see DiagnosisResponse).")
   public ApiResponse<DiseaseReportResponse> getById(@PathVariable Long id) {
     return ApiResponse.success(diseaseReportService.getById(id));
   }

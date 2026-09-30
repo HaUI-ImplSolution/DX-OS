@@ -121,6 +121,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Chi tiết báo cáo: timeline Đã gửi → Đã chẩn đoán → Kỹ sư duyệt theo `diagnosis` (`null`, `PENDING`, `APPROVED`, `REJECTED`); `APPROVED` hiện bệnh, khuyến nghị, thuốc, liều, số ngày cách ly; `REJECTED` hiện lý do và nút "Chụp lại".
 - Danh sách báo cáo tự làm mới khi quay lại từ màn chụp; nút tròn nổi "Chụp" ở góc phải dưới.
 
+**Đã xong — Hướng dẫn chạy:**
+
+- `mobile/README.md`: chạy thử trên điện thoại thật với IP LAN, biến môi trường, tài khoản demo, kiểm tra mã nguồn.
+
 ## AI Service (Python)
 
 ### 2026-09-18

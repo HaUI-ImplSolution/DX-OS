@@ -10,6 +10,7 @@ Tài liệu trong thư mục này là nguồn tham chiếu duy nhất cho phần
 
 | Tài liệu | Nội dung |
 |---|---|
+| [`mobile/README.md`](../../../mobile/README.md) | Hướng dẫn chạy thử trên điện thoại thật, biến môi trường, tài khoản demo |
 | [`PLAN.md`](./PLAN.md) | Các giai đoạn từ thiết kế UI đến hoàn thành luồng, kèm checklist và cách verify |
 | [`BACKEND_CHANGES.md`](./BACKEND_CHANGES.md) | Đặc tả thay đổi backend (phạm vi dữ liệu farmer, ẩn khuyến nghị chưa duyệt, idempotency) |
 | [`design/screens.md`](./design/screens.md) | Danh sách màn hình, luồng điều hướng, trạng thái rỗng/lỗi/tải |

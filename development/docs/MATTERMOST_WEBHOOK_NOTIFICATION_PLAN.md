@@ -121,6 +121,15 @@ mattermost:
 - [ ] `README.md` gốc và `CHANGELOG.md` ghi trạng thái hiện tại của tính năng, theo quy ước không kể diễn biến trước/sau.
 - [ ] Comment và `@Operation` (nếu có) bằng tiếng Anh, ngắn, không nhắc nhãn milestone.
 
+**Cần xác minh khi triển khai**
+
+- [ ] `@TransactionalEventListener(AFTER_COMMIT)` chỉ chạy khi `publishEvent` nằm trong transaction đang hoạt động, nếu không event bị bỏ im lặng.
+  Kiểm tra `@Transactional` của `DiagnosisService.createFromAi()`: nếu gọi AI ngoài transaction rồi mới `save`, cần publish trong phạm vi transaction của `save` hoặc đặt `fallbackExecution = true`.
+- [ ] Executor `mattermostNotifyExecutor` dùng handler bỏ task khi tràn queue (`DiscardPolicy` hoặc handler có log WARN).
+  `AbortPolicy` mặc định ném `TaskRejectedException` ở luồng gọi, vi phạm bất biến ở mục 7.
+- [ ] Làm sạch chuỗi người dùng: quyết định có vô hiệu hóa cả markdown/link chèn qua `reportedBy`, mã thửa, giống lúa hay chỉ mention.
+- [ ] Xác nhận vị trí `save` trong `createFromAi()` (nằm sau `AiDiagnosisClient`, có Resilience4j) để publish event đúng chỗ, không phát khi AI lỗi hoặc rơi vào fallback.
+
 ## 5. Các phần chưa đạt được
 
 - Thông báo khi chẩn đoán được duyệt, bị từ chối hoặc đã ghi nhận xử lý.

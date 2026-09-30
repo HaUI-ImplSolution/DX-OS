@@ -45,7 +45,9 @@ public class ParcelController {
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(summary = "Register a new parcel")
+  @Operation(summary = "Register a new parcel",
+      description = "FARMER: the request farmerName is ignored and the parcel is stored under"
+          + " the user's own name.")
   public ApiResponse<ParcelResponse> create(@Valid @RequestBody ParcelCreateRequest request) {
     return ApiResponse.success("Parcel created", parcelService.create(request));
   }

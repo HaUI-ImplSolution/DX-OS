@@ -26,7 +26,7 @@ Hai service tách biệt, giao tiếp qua HTTP; các client (web, mobile) gọi 
 
 - **Backend (Java/Spring Boot)** — sở hữu Single Source of Truth: API nghiệp vụ, PostgreSQL (Operational Data + Structured Knowledge), state machine duyệt (Approve/Reject), enforce poka-yoke (khoá PHI/thu hoạch), auth.
   Đây là nơi mọi ghi nhận cuối cùng xảy ra.
-  Role `FARMER` chỉ thấy thửa có `farmerName` khớp tên trong token và chỉ nhận nội dung chẩn đoán khi đã `APPROVED`.
+  Role `FARMER` chỉ thấy và thao tác trên thửa có `farmerName` khớp tên trong token (thửa FARMER tạo luôn mang tên họ) và chỉ nhận nội dung chẩn đoán khi đã `APPROVED`.
 - **AI Service (Python)** — Vision API, LangGraph, Qwen2.5 qua Ollama và RAG; hoạt động như dịch vụ suy luận stateless.
   AI gọi internal REST API của Backend để lấy structured facts, chỉ đọc AI Vector DB riêng và trả recommendation về Backend.
 - **Mobile (Expo/React Native)** — client dành riêng cho FARMER: đăng nhập Keycloak (PKCE), xem thửa/vụ/báo cáo, chụp và gửi ảnh sâu bệnh, gửi lại tự động khi mất mạng.

@@ -76,7 +76,8 @@ Ngoài Expo Go, có thể build APK bằng EAS mà không cần cài Android Stu
 ## Phạm vi dữ liệu của nông dân
 
 - Backend chỉ trả cho `FARMER` những thửa có `farmerName` khớp tên trong token (claim `name`), không phân biệt hoa thường; `farmer1` có tên `Nguyễn Văn Nông`.
-  Thửa, vụ mùa hoặc báo cáo của người khác trả `404`.
+  Thửa, vụ mùa, báo cáo hoặc thao tác thu hoạch trên dữ liệu của người khác trả `404`.
+  Thửa do FARMER tạo luôn mang tên của họ, bất kể `farmerName` trong request.
 - Nội dung chẩn đoán (bệnh, khuyến nghị, thuốc, liều) chỉ có khi diagnosis đã `APPROVED`.
   Đặc tả: [`development/docs/mobile/BACKEND_CHANGES.md`](../development/docs/mobile/BACKEND_CHANGES.md).
 
@@ -125,7 +126,7 @@ docker compose up -d --build
   Với volume Postgres cũ, thêm client `dxfarm-mobile` qua Admin Console hoặc xoá `deploy/data/postgres` để import lại (mất dữ liệu demo).
 - Khi `KEYCLOAK_PUBLIC_URL` trỏ sang IP, web cũng phải truy cập Keycloak bằng địa chỉ này.
   Để trống biến này khi chỉ dùng web ở `localhost`.
-- Thửa cần có `farmerName` là `Nguyễn Văn Nông` để `farmer1` nhìn thấy; tạo thửa qua web hoặc `POST /api/v1/parcels`.
+- Thửa cần có `farmerName` là `Nguyễn Văn Nông` để `farmer1` nhìn thấy; đăng nhập web bằng `farmer1` để tạo thửa (tên được gán tự động), hoặc dùng `admin1`/`engineer1` tạo thửa với đúng tên đó.
 
 ### 3. Cài đặt và chạy app
 

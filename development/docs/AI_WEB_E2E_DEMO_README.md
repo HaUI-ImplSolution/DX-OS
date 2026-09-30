@@ -43,7 +43,8 @@ Nếu volume PostgreSQL cũ còn cột `dose_amount`, cần dùng một `POSTGRE
 ## Luồng được nối
 
 1. FARMER tạo thửa, vụ mùa và báo cáo bệnh kèm ảnh.
-   FARMER chỉ thấy lại thửa có `farmerName` khớp tên trong token (`Nguyễn Văn Nông` với `farmer1`), và chỉ thấy nội dung chẩn đoán sau khi `APPROVED`.
+   FARMER chỉ thấy, tạo vụ mùa, báo cáo và ghi nhận thu hoạch trên thửa có `farmerName` khớp tên trong token (`Nguyễn Văn Nông` với `farmer1`), và chỉ thấy nội dung chẩn đoán sau khi `APPROVED`.
+   Thửa do FARMER tạo luôn mang tên của họ, bất kể `farmerName` nhập trong form.
 2. ENGINEER chọn **Chạy chẩn đoán AI**. Frontend gọi endpoint Backend `/api/v1/disease-reports/{id}/diagnosis/ai`.
 3. Backend gửi URL ảnh và ngữ cảnh thực địa tới AI Service. AI chạy CV, lấy dữ kiện cấu trúc từ Backend, tìm bằng chứng theo ngữ nghĩa trong pgvector rồi tạo khuyến nghị có căn cứ.
 4. Backend lưu kết quả AI vào `Diagnosis`; ENGINEER hoặc ADMIN có thể duyệt/từ chối.

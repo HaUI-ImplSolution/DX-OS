@@ -70,7 +70,7 @@ public class CropSeasonService {
 
   @Transactional
   public CropSeasonResponse harvest(Long id) {
-    CropSeason season = findOrThrow(id);
+    CropSeason season = findAccessibleOrThrow(id);
     if (season.getStatus() == CropSeasonStatus.HARVESTED) {
       throw new InvalidStateException("Crop season already harvested: " + id);
     }
@@ -94,11 +94,6 @@ public class CropSeasonService {
   private CropSeason findAccessibleOrThrow(Long id) {
     return cropSeasonRepository.findById(id)
         .filter(season -> currentUserService.canAccess(season.getParcel()))
-        .orElseThrow(() -> new ResourceNotFoundException("Crop season not found: " + id));
-  }
-
-  private CropSeason findOrThrow(Long id) {
-    return cropSeasonRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Crop season not found: " + id));
   }
 

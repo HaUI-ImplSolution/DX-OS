@@ -34,7 +34,9 @@ public class ParcelService {
 
   @Transactional
   public ParcelResponse create(ParcelCreateRequest request) {
-    Parcel parcel = Parcel.builder().code(request.code()).farmerName(request.farmerName())
+    String farmerName =
+        currentUserService.isFarmer() ? currentUserService.currentFullName() : request.farmerName();
+    Parcel parcel = Parcel.builder().code(request.code()).farmerName(farmerName)
         .areaHectares(request.areaHectares()).location(request.location())
         .latitude(request.latitude()).longitude(request.longitude()).build();
     return toResponse(parcelRepository.save(parcel));

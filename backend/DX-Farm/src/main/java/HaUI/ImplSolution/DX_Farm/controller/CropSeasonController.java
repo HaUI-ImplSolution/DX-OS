@@ -61,7 +61,8 @@ public class CropSeasonController {
 
   @PostMapping("/crop-seasons/{id}/harvest")
   @Operation(
-      summary = "Declare harvest (poka-yoke: 422 POKA_YOKE_VIETGAP_VIOLATION if still isolated)")
+      summary = "Declare harvest (poka-yoke: 422 POKA_YOKE_VIETGAP_VIOLATION if still isolated)",
+      description = "FARMER: 404 if the season's parcel belongs to another farmer.")
   public ApiResponse<CropSeasonResponse> harvest(@PathVariable Long id) {
     return ApiResponse.success("Harvest recorded", cropSeasonService.harvest(id));
   }

@@ -38,7 +38,5 @@ Tài liệu trong thư mục này là nguồn tham chiếu duy nhất cho phần
 - [ ] Push notification khi kỹ sư duyệt hoặc từ chối, khi có khoá thu hoạch mới.
 - [ ] Màn hình duyệt nhanh cho kỹ sư trên mobile.
 - [ ] Ảnh kèm thời điểm chụp và toạ độ GPS/EXIF.
-- [ ] `POST /api/v1/crop-seasons/{id}/harvest` kiểm tra thửa thuộc FARMER (hiện chỉ có khoá PHI).
-- [ ] `POST /api/v1/parcels` gán `farmerName` theo người tạo khi là FARMER (hiện do người tạo nhập).
 - [ ] `frontend/src/components/DiagnosisPanel.tsx` chịu được diagnosis rút gọn (trường `null`) khi đăng nhập bằng FARMER.
 - [ ] Cột owner theo `preferred_username` trên `Parcel` thay cho so khớp theo tên.

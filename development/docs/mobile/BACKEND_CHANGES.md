@@ -20,17 +20,18 @@ Hành vi khi user hiện tại có role FARMER:
 | Endpoint | Hành vi |
 |---|---|
 | `GET /api/v1/parcels` | Chỉ trả thửa có `farmerName` khớp tên user, không phân biệt hoa thường |
+| `POST /api/v1/parcels` | `farmerName` trong request bị bỏ qua, thửa được lưu với tên của user |
 | `GET /api/v1/parcels/{code}` | `404` nếu thửa không thuộc user |
 | `GET/POST /api/v1/parcels/{code}/crop-seasons` | `404` nếu thửa không thuộc user |
 | `GET /api/v1/crop-seasons/{id}` và `/isolation-status` | `404` nếu thửa của vụ không thuộc user |
+| `POST /api/v1/crop-seasons/{id}/harvest` | `404` nếu thửa của vụ không thuộc user |
 | `GET/POST /api/v1/crop-seasons/{id}/disease-reports` | `404` nếu thửa của vụ không thuộc user |
 | `GET /api/v1/disease-reports/{id}` | `404` nếu thửa của vụ chứa báo cáo không thuộc user |
 
 - Người bị giới hạn là user có `ROLE_FARMER` mà không có `ROLE_ENGINEER` hoặc `ROLE_ADMIN` (`CurrentUserService.isFarmer()`).
 - Tên user lấy từ `CurrentUserService.currentFullName()` (claim `name`, dự phòng `preferred_username`).
 - Trả `404` thay vì `403` để không lộ sự tồn tại của thửa người khác.
-- `POST /api/v1/crop-seasons/{id}/harvest` không đổi ở đợt này.
-- `POST /api/v1/parcels` không đổi; `farmerName` do người tạo nhập, FARMER chỉ thấy lại thửa khi tên khớp claim `name`.
+- Field `farmerName` của `ParcelCreateRequest` vẫn bắt buộc để hợp đồng API không đổi; ENGINEER và ADMIN nhập tên chủ hộ như trước.
 
 ## 2. Ẩn nội dung chẩn đoán chưa duyệt
 

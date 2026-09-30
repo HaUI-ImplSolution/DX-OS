@@ -17,7 +17,8 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 - User có role `FARMER` (không kèm `ENGINEER`/`ADMIN`) chỉ thấy thửa có `farmerName` khớp claim `name` của token, không phân biệt hoa thường.
   `CurrentUserService` có `isFarmer()` và `canAccess(Parcel)`; `ParcelRepository.findByFarmerNameIgnoreCase` phục vụ danh sách thửa.
-- Endpoint thửa, vụ mùa (trừ `harvest`) và báo cáo bệnh trả `404` khi thửa không thuộc FARMER.
+- Endpoint thửa, vụ mùa (gồm `harvest`) và báo cáo bệnh trả `404` khi thửa không thuộc FARMER.
+- `POST /api/v1/parcels` bởi FARMER lưu thửa với tên của chính họ, bỏ qua `farmerName` trong request.
 - Với FARMER, `diagnosis` lồng trong báo cáo chỉ đầy đủ khi `APPROVED`; `PENDING` chỉ có `id`, `diseaseReportId`, `approvalStatus`; `REJECTED` thêm `decidedAt`, `rejectionReason`.
   ENGINEER và ADMIN nhận dữ liệu đầy đủ như trước.
 - Swagger: `@Operation` của `ParcelController`, `CropSeasonController`, `DiseaseReportController` và schema `DiagnosisResponse` mô tả hành vi theo role.

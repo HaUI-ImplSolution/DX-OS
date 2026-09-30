@@ -290,6 +290,14 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Identity Provider (`sso`, Keycloak)
 
+### 2026-09-30
+
+**Đã xong — Client cho bản mobile:**
+
+- Client public `dxfarm-mobile` trong `realm-dxfarm.json`: Standard Flow + PKCE, không direct access grants, redirect URI `dxfarm://*` và `exp://*`.
+- `deploy/docker-compose.yml` lấy `KC_HOSTNAME` từ `KEYCLOAK_PUBLIC_URL` (mặc định `http://localhost:${KEYCLOAK_HOST_PORT}`) để điện thoại truy cập Keycloak qua IP LAN.
+- `sso/README.md`: phạm vi, cách dev với IP LAN, cách thêm client vào volume cũ.
+
 ### 2026-09-11
 
 **Đã xong — SSO thật (Giai đoạn 2 [H]):**

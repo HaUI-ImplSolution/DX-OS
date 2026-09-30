@@ -15,6 +15,8 @@ Chuẩn công nghiệp cho OIDC/SAML, license Apache-2.0 (OSI-approved), có tà
 
 - Backend Spring Boot: OAuth2 Resource Server, xác thực token do Keycloak cấp.
 - Frontend: tự redirect sang Keycloak (Authorization Code + PKCE) ngay khi chưa có phiên — không cần bấm nút đăng nhập trung gian, vào thẳng từ portal cũng được.
+- Mobile (Expo, chỉ FARMER): client public `dxfarm-mobile`, Authorization Code + PKCE, không dùng direct access grants.
+  Chi tiết: [`development/docs/mobile/README.md`](../development/docs/mobile/README.md).
 - BI Dashboard (Superset): đăng nhập bằng redirect sang Keycloak (`AUTH_OAUTH`), role realm map sang role Superset.
   Chi tiết: [`bi/README.md`](../bi/README.md).
 - **Không làm**: Mattermost (Team Edition không hỗ trợ OpenID Connect với IdP tuỳ ý — cần Enterprise license).
@@ -24,7 +26,7 @@ Chuẩn công nghiệp cho OIDC/SAML, license Apache-2.0 (OSI-approved), có tà
 
 - `keycloak` dùng CSDL Postgres riêng (`keycloak`), cùng pattern với Mattermost/Superset.
   Backend tự tạo role `keycloak_app` + database `keycloak` lúc khởi động (`KeycloakDatabaseSeeder`).
-- Realm `dxfarm` có 3 realm role `FARMER`/`ENGINEER`/`ADMIN`, client public `dxfarm-frontend` (Standard Flow + PKCE, không dùng client secret), và client confidential `dxfarm-superset` (Superset trao đổi token server-to-server nên cần secret).
+- Realm `dxfarm` có 3 realm role `FARMER`/`ENGINEER`/`ADMIN`, client public `dxfarm-frontend` và `dxfarm-mobile` (Standard Flow + PKCE, không dùng client secret), và client confidential `dxfarm-superset` (Superset trao đổi token server-to-server nên cần secret).
 - 3 tài khoản demo tạo sẵn trong realm import — xem bảng dưới.
   Chỉ dùng để demo, đổi mật khẩu/secret thật trước khi triển khai ngoài môi trường dev.
 - Claim `name` của `farmer1` là `Nguyễn Văn Nông`; backend so khớp claim này với `farmerName` của thửa để giới hạn dữ liệu của FARMER.
@@ -36,6 +38,16 @@ Chuẩn công nghiệp cho OIDC/SAML, license Apache-2.0 (OSI-approved), có tà
 | `admin1` | `admin123` | ADMIN |
 
 Quản lý user (tạo/xoá/đổi role) qua Keycloak Admin Console: `http://localhost:${KEYCLOAK_HOST_PORT:-8180}/admin`, đăng nhập bằng `KEYCLOAK_ADMIN_PASSWORD`.
+
+## Client mobile `dxfarm-mobile`
+
+- Redirect URI: `dxfarm://*` (app đã build) và `exp://*` (Expo Go, chỉ dùng khi dev).
+- Backend xác thực bằng `jwk-set-uri` và không kiểm tra `iss`, nên token cấp qua IP LAN vẫn hợp lệ.
+- Điện thoại phải truy cập được Keycloak và backend qua IP LAN của máy dev cùng mạng.
+  Đặt `KEYCLOAK_PUBLIC_URL=http://<IP-LAN>:8180` trong `deploy/.env` rồi `docker compose up -d keycloak`.
+  Khi đó web và BI cũng phải truy cập Keycloak bằng địa chỉ này.
+- Keycloak chỉ import realm khi realm chưa tồn tại.
+  Với volume Postgres cũ, thêm client `dxfarm-mobile` qua Admin Console (cấu hình như trong `realm-dxfarm.json`) hoặc xoá `deploy/data/postgres` để import lại.
 
 ## Lưu ý kỹ thuật: hostname nội bộ vs. hostname trình duyệt
 

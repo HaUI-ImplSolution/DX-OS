@@ -175,7 +175,7 @@ services:
       KC_DB_URL: "jdbc:postgresql://postgres:5432/keycloak"
       KC_DB_USERNAME: keycloak_app
       KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak_demo_only}
-      KC_HOSTNAME: "http://localhost:${KEYCLOAK_HOST_PORT:-8180}"
+      KC_HOSTNAME: "${KEYCLOAK_PUBLIC_URL:-http://localhost:${KEYCLOAK_HOST_PORT:-8180}}"
       KC_HEALTH_ENABLED: "true"
     volumes:
       - ../sso/realm-dxfarm.json:/opt/keycloak/data/import/realm-dxfarm.json:ro

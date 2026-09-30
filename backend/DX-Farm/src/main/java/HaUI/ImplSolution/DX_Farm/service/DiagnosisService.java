@@ -86,7 +86,7 @@ public class DiagnosisService {
     AiDiagnoseResponse.CvResult cvResult = aiResponse.cvResult();
     String diseaseCode = cvResult.diseaseCode();
 
-    Disease disease = diseaseRepository.findByCode(diseaseCode).orElseThrow(
+    Disease disease = diseaseRepository.findByCodeAndActiveTrue(diseaseCode).orElseThrow(
         () -> new ResourceNotFoundException("Unknown disease code from AI: " + diseaseCode));
     AiDiagnoseResponse.RuleFact selectedRule = findSelectedRule(aiResponse);
     TreatmentRule currentRule = null;
@@ -156,7 +156,7 @@ public class DiagnosisService {
       throw new InvalidStateException("Disease report already has a diagnosis: " + reportId);
     }
 
-    Disease disease = diseaseRepository.findByCode(request.diseaseCode()).orElseThrow(
+    Disease disease = diseaseRepository.findByCodeAndActiveTrue(request.diseaseCode()).orElseThrow(
         () -> new ResourceNotFoundException("Unknown disease code: " + request.diseaseCode()));
     TreatmentRule rule = treatmentRuleService.findByDiseaseCodeOrThrow(request.diseaseCode());
 

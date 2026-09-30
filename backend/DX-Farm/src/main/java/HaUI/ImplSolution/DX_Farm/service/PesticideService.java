@@ -18,7 +18,8 @@ public class PesticideService {
   }
 
   public List<PesticideResponse> listAll() {
-    return pesticideRepository.findAll().stream().map(PesticideService::toResponse).toList();
+    return pesticideRepository.findAllByActiveTrueOrderByIdAsc().stream()
+        .map(PesticideService::toResponse).toList();
   }
 
   public static PesticideResponse toResponse(Pesticide pesticide) {

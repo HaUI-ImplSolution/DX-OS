@@ -41,3 +41,20 @@ Nhật ký triển khai `RICE_MODEL_DATA_MIGRATION_PLAN.md`. Chỉ ghi nhận th
 
 - Môi trường AI hiện chưa cài `ultralytics`; kiểm tra load/inference thật của checkpoint thuộc Giai đoạn 3.
 - Warning thiếu secret local của Keycloak/Superset khi kiểm tra Compose không liên quan migration.
+
+**Đã xong — Giai đoạn 1: thay dữ liệu chuẩn sang bệnh lá lúa**
+
+- Thay 38 lớp PlantVillage bằng 6 điều kiện lúa; class contract dùng 5 lớp detection và healthy fallback đúng checkpoint.
+- Thay corpus RAG bằng 6 tài liệu và source registry bằng 9 nguồn từ workbook; validator đối chiếu trực tiếp workbook đạt.
+- Thay master data bằng 1 thuốc, 2 treatment rule và 6 policy ở trạng thái `IN_REVIEW`; toàn bộ eligibility giữ `false` nên không được seed.
+- Loại file ứng viên pest PlantVillage không còn dữ liệu tương ứng hoặc runtime consumer.
+- RAG dry-run xác thực 6/6 tài liệu; không còn mã PlantVillage trong canonical JSON hoặc seed SQL.
+
+**Đã triển khai — Giai đoạn 2: seed và bảo vệ database hiện có**
+
+- Generator sinh `data.sql` cho 6 bệnh lúa và không seed pesticide, treatment rule hoặc policy chưa được duyệt.
+- Thêm trạng thái `active` cho disease và pesticide; lookup mới chỉ đọc record active.
+- Migration vô hiệu hóa taxonomy/rule/pesticide legacy, xóa record không còn tham chiếu và giữ record còn diagnosis/treatment history.
+- `data.sql` được sinh lại bằng generator; kiểm tra deterministic và `--check` đạt.
+- Data test đạt 4/4; Backend build và test đạt 3/3; formatter và Ruff đạt.
+- Chưa xác nhận migration trên PostgreSQL thật: Docker daemon không hoạt động; PostgreSQL local có chạy nhưng không có credential được cấp. Giai đoạn 2 chưa đóng cho đến khi fresh/existing DB smoke test đạt.

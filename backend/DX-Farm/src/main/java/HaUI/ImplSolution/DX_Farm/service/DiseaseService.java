@@ -18,7 +18,8 @@ public class DiseaseService {
   }
 
   public List<DiseaseResponse> listAll() {
-    return diseaseRepository.findAll().stream().map(DiseaseService::toResponse).toList();
+    return diseaseRepository.findAllByActiveTrueOrderByIdAsc().stream()
+        .map(DiseaseService::toResponse).toList();
   }
 
   public static DiseaseResponse toResponse(Disease disease) {

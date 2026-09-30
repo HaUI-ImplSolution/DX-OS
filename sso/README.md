@@ -27,6 +27,7 @@ Chuẩn công nghiệp cho OIDC/SAML, license Apache-2.0 (OSI-approved), có tà
 - Realm `dxfarm` có 3 realm role `FARMER`/`ENGINEER`/`ADMIN`, client public `dxfarm-frontend` (Standard Flow + PKCE, không dùng client secret), và client confidential `dxfarm-superset` (Superset trao đổi token server-to-server nên cần secret).
 - 3 tài khoản demo tạo sẵn trong realm import — xem bảng dưới.
   Chỉ dùng để demo, đổi mật khẩu/secret thật trước khi triển khai ngoài môi trường dev.
+- Claim `name` của `farmer1` là `Nguyễn Văn Nông`; backend so khớp claim này với `farmerName` của thửa để giới hạn dữ liệu của FARMER.
 
 | Username | Mật khẩu | Role |
 |---|---|---|

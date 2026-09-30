@@ -5,6 +5,18 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Backend (Spring Boot — `backend/DX-Farm`)
 
+### 2026-09-30
+
+**Đã xong — Phạm vi dữ liệu của FARMER (phục vụ bản mobile):**
+
+- User có role `FARMER` (không kèm `ENGINEER`/`ADMIN`) chỉ thấy thửa có `farmerName` khớp claim `name` của token, không phân biệt hoa thường.
+  `CurrentUserService` có `isFarmer()` và `canAccess(Parcel)`; `ParcelRepository.findByFarmerNameIgnoreCase` phục vụ danh sách thửa.
+- Endpoint thửa, vụ mùa (trừ `harvest`) và báo cáo bệnh trả `404` khi thửa không thuộc FARMER.
+- Với FARMER, `diagnosis` lồng trong báo cáo chỉ đầy đủ khi `APPROVED`; `PENDING` chỉ có `id`, `diseaseReportId`, `approvalStatus`; `REJECTED` thêm `decidedAt`, `rejectionReason`.
+  ENGINEER và ADMIN nhận dữ liệu đầy đủ như trước.
+- Swagger: `@Operation` của `ParcelController`, `CropSeasonController`, `DiseaseReportController` và schema `DiagnosisResponse` mô tả hành vi theo role.
+- Đặc tả: `development/docs/mobile/BACKEND_CHANGES.md`.
+
 ### 2026-09-26
 
 - Hoàn thiện seed idempotent từ dữ liệu nguồn: 1 treatment rule giả định cho E2E, 15 candidate còn lại bị chặn; rule stale được vô hiệu hóa và bảo toàn an toàn khi đã có lịch sử tham chiếu.

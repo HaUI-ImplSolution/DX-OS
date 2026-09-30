@@ -1,10 +1,10 @@
 # Mobile (Expo) cho nông dân
 
-> **Cập nhật:** 29/09/2026.
-> **Trạng thái:** đang lập kế hoạch, chưa có code trong `mobile/`.
+> **Cập nhật:** 30/09/2026.
+> **Trạng thái:** thiết kế UI đã duyệt; backend phạm vi farmer đã xong; chưa có code trong `mobile/`.
 
 Bản mobile React Native (Expo) giúp nông dân chụp ảnh sâu bệnh và gửi báo cáo ngay tại ruộng.
-Tài liệu trong thư mục này là nguồn tham chiếu duy nhất cho phần mobile, viết trước khi triển khai.
+Tài liệu trong thư mục này là nguồn tham chiếu duy nhất cho phần mobile.
 
 ## Mục lục
 
@@ -27,7 +27,7 @@ Tài liệu trong thư mục này là nguồn tham chiếu duy nhất cho phần
 
 - Chẩn đoán AI vẫn do kỹ sư kích hoạt thủ công trên web; farmer thấy trạng thái "Chờ chẩn đoán" sau khi gửi.
 - Farmer chỉ thấy nội dung chẩn đoán (bệnh, khuyến nghị, thuốc, liều, PHI) khi `APPROVED`.
-- Farmer chỉ thấy thửa của mình, lọc theo `farmerName` khớp claim `name` của token.
+- Farmer chỉ thấy thửa của mình, lọc theo `farmerName` khớp claim `name` của token (áp dụng cho cả web khi đăng nhập bằng FARMER).
 - Offline queue làm ở giai đoạn cuối và có thể cắt.
 - Dùng Expo với `expo-router`; chụp ảnh bằng `expo-image-picker` (camera hệ thống); không thêm state library, không dựng monorepo.
 
@@ -37,4 +37,5 @@ Tài liệu trong thư mục này là nguồn tham chiếu duy nhất cho phần
 - [ ] Push notification khi kỹ sư duyệt hoặc từ chối, khi có khoá thu hoạch mới.
 - [ ] Màn hình duyệt nhanh cho kỹ sư trên mobile.
 - [ ] Ảnh kèm thời điểm chụp và toạ độ GPS/EXIF.
+- [ ] `frontend/src/components/DiagnosisPanel.tsx` chịu được diagnosis rút gọn (trường `null`) khi đăng nhập bằng FARMER.
 - [ ] Cột owner theo `preferred_username` trên `Parcel` thay cho so khớp theo tên.

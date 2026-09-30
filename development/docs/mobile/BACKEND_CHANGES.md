@@ -1,15 +1,21 @@
 # Đặc tả thay đổi backend cho mobile
 
-> **Cập nhật:** 29/09/2026.
+> **Cập nhật:** 30/09/2026.
 
 Tài liệu này là spec đi trước Swagger và code theo thứ tự Spec → Swagger → Code.
 Chỉ FARMER bị ảnh hưởng; ENGINEER và ADMIN giữ nguyên hành vi.
 
+| Mục | Trạng thái |
+|---|---|
+| 1. Phạm vi dữ liệu của farmer | Đã triển khai |
+| 2. Ẩn nội dung chẩn đoán chưa duyệt | Đã triển khai |
+| 3. Idempotency cho gửi báo cáo | Chưa làm (giai đoạn offline) |
+| 4. Swagger | Đã triển khai cho mục 1 và 2 |
+| 5. SSO | Chưa làm |
+
 ## 1. Phạm vi dữ liệu của farmer
 
-Hiện trạng: `ParcelService.listAll()` trả mọi thửa; các endpoint vụ mùa và báo cáo không kiểm tra thửa thuộc về ai.
-
-Hành vi mới khi user hiện tại có role FARMER:
+Hành vi khi user hiện tại có role FARMER:
 
 | Endpoint | Hành vi |
 |---|---|
@@ -20,15 +26,15 @@ Hành vi mới khi user hiện tại có role FARMER:
 | `GET/POST /api/v1/crop-seasons/{id}/disease-reports` | `404` nếu thửa của vụ không thuộc user |
 | `GET /api/v1/disease-reports/{id}` | `404` nếu thửa của vụ chứa báo cáo không thuộc user |
 
+- Người bị giới hạn là user có `ROLE_FARMER` mà không có `ROLE_ENGINEER` hoặc `ROLE_ADMIN` (`CurrentUserService.isFarmer()`).
 - Tên user lấy từ `CurrentUserService.currentFullName()` (claim `name`, dự phòng `preferred_username`).
 - Trả `404` thay vì `403` để không lộ sự tồn tại của thửa người khác.
 - `POST /api/v1/crop-seasons/{id}/harvest` không đổi ở đợt này.
+- `POST /api/v1/parcels` không đổi; `farmerName` do người tạo nhập, FARMER chỉ thấy lại thửa khi tên khớp claim `name`.
 
 ## 2. Ẩn nội dung chẩn đoán chưa duyệt
 
-Hiện trạng: `GET /disease-reports/{id}` và `GET /crop-seasons/{id}/disease-reports` trả `DiagnosisResponse` đầy đủ kể cả khi `PENDING`.
-
-Hành vi mới cho FARMER, theo `approvalStatus` của diagnosis:
+Hành vi cho FARMER ở `GET /disease-reports/{id}` và `GET /crop-seasons/{id}/disease-reports`, theo `approvalStatus` của diagnosis:
 
 | `approvalStatus` | Trường được trả | Trường `null` |
 |---|---|---|

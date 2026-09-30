@@ -19,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1")
-@Tag(name = "DiseaseReport", description = "Báo cáo sự cố sâu bệnh - M1")
+@Tag(name = "DiseaseReport", description = "Disease sighting reports")
 public class DiseaseReportController {
 
   private final DiseaseReportService diseaseReportService;
@@ -31,7 +31,8 @@ public class DiseaseReportController {
   @PostMapping(value = "/crop-seasons/{cropSeasonId}/disease-reports",
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(summary = "Report a disease sighting with a photo (reportedBy = logged-in user)")
+  @Operation(summary = "Report a disease sighting with a photo (reportedBy = logged-in user)",
+      description = "FARMER: 404 if the season's parcel belongs to another farmer.")
   public ApiResponse<DiseaseReportResponse> create(@PathVariable Long cropSeasonId,
       @RequestPart("image") MultipartFile image) {
     return ApiResponse.success("Disease report created",
@@ -39,14 +40,18 @@ public class DiseaseReportController {
   }
 
   @GetMapping("/crop-seasons/{cropSeasonId}/disease-reports")
-  @Operation(summary = "List disease reports for a crop season")
+  @Operation(summary = "List disease reports for a crop season",
+      description = "FARMER: 404 if the season's parcel belongs to another farmer;"
+          + " diagnosis is trimmed until APPROVED (see DiagnosisResponse).")
   public ApiResponse<List<DiseaseReportResponse>> listByCropSeason(
       @PathVariable Long cropSeasonId) {
     return ApiResponse.success(diseaseReportService.listByCropSeason(cropSeasonId));
   }
 
   @GetMapping("/disease-reports/{id}")
-  @Operation(summary = "Get a disease report (with nested diagnosis if present)")
+  @Operation(summary = "Get a disease report (with nested diagnosis if present)",
+      description = "FARMER: 404 if the season's parcel belongs to another farmer;"
+          + " diagnosis is trimmed until APPROVED (see DiagnosisResponse).")
   public ApiResponse<DiseaseReportResponse> getById(@PathVariable Long id) {
     return ApiResponse.success(diseaseReportService.getById(id));
   }

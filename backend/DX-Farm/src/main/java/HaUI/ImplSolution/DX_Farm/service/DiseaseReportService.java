@@ -1,8 +1,11 @@
 package HaUI.ImplSolution.DX_Farm.service;
 
+import HaUI.ImplSolution.DX_Farm.dto.DiagnosisResponse;
 import HaUI.ImplSolution.DX_Farm.dto.DiseaseReportResponse;
 import HaUI.ImplSolution.DX_Farm.exception.ResourceNotFoundException;
+import HaUI.ImplSolution.DX_Farm.model.ApprovalStatus;
 import HaUI.ImplSolution.DX_Farm.model.CropSeason;
+import HaUI.ImplSolution.DX_Farm.model.Diagnosis;
 import HaUI.ImplSolution.DX_Farm.model.DiseaseReport;
 import HaUI.ImplSolution.DX_Farm.repository.CropSeasonRepository;
 import HaUI.ImplSolution.DX_Farm.repository.DiagnosisRepository;
@@ -33,6 +36,9 @@ public class DiseaseReportService {
   }
 
   public List<DiseaseReportResponse> listByCropSeason(Long cropSeasonId) {
+    if (currentUserService.isFarmer()) {
+      findAccessibleSeasonOrThrow(cropSeasonId);
+    }
     return diseaseReportRepository.findByCropSeasonId(cropSeasonId).stream().map(this::toResponse)
         .toList();
   }
@@ -43,23 +49,42 @@ public class DiseaseReportService {
 
   @Transactional
   public DiseaseReportResponse create(Long cropSeasonId, MultipartFile image) {
-    CropSeason season = cropSeasonRepository.findById(cropSeasonId)
-        .orElseThrow(() -> new ResourceNotFoundException("Crop season not found: " + cropSeasonId));
+    CropSeason season = findAccessibleSeasonOrThrow(cropSeasonId);
     String imageRef = fileStorageService.store(image);
     DiseaseReport report = DiseaseReport.builder().cropSeason(season).imageRef(imageRef)
         .reportedBy(currentUserService.currentFullName()).build();
     return toResponse(diseaseReportRepository.save(report));
   }
 
+  private CropSeason findAccessibleSeasonOrThrow(Long cropSeasonId) {
+    return cropSeasonRepository.findById(cropSeasonId)
+        .filter(season -> currentUserService.canAccess(season.getParcel()))
+        .orElseThrow(() -> new ResourceNotFoundException("Crop season not found: " + cropSeasonId));
+  }
+
   private DiseaseReport findOrThrow(Long id) {
     return diseaseReportRepository.findById(id)
+        .filter(report -> currentUserService.canAccess(report.getCropSeason().getParcel()))
         .orElseThrow(() -> new ResourceNotFoundException("Disease report not found: " + id));
   }
 
   private DiseaseReportResponse toResponse(DiseaseReport report) {
     var diagnosis = diagnosisRepository.findByDiseaseReportId(report.getId())
-        .map(DiagnosisService::toResponse).orElse(null);
+        .map(this::toDiagnosisView).orElse(null);
     return new DiseaseReportResponse(report.getId(), report.getCropSeason().getId(),
         report.getImageRef(), report.getReportedBy(), report.getReportedAt(), diagnosis);
+  }
+
+  // A farmer sees the clinical content only once the engineer has approved it.
+  private DiagnosisResponse toDiagnosisView(Diagnosis diagnosis) {
+    DiagnosisResponse full = DiagnosisService.toResponse(diagnosis);
+    ApprovalStatus status = diagnosis.getApprovalStatus();
+    if (!currentUserService.isFarmer() || status == ApprovalStatus.APPROVED) {
+      return full;
+    }
+    boolean rejected = status == ApprovalStatus.REJECTED;
+    return new DiagnosisResponse(full.id(), full.diseaseReportId(), null, null, null, null, null,
+        null, full.approvalStatus(), null, rejected ? full.decidedAt() : null,
+        rejected ? full.rejectionReason() : null, null);
   }
 }

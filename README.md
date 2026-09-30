@@ -25,6 +25,7 @@ Hai service tách biệt, giao tiếp qua HTTP:
 
 - **Backend (Java/Spring Boot)** — sở hữu Single Source of Truth: API nghiệp vụ, PostgreSQL (Operational Data + Structured Knowledge), state machine duyệt (Approve/Reject), enforce poka-yoke (khoá PHI/thu hoạch), auth.
   Đây là nơi mọi ghi nhận cuối cùng xảy ra.
+  Role `FARMER` chỉ thấy thửa có `farmerName` khớp tên trong token và chỉ nhận nội dung chẩn đoán khi đã `APPROVED`.
 - **AI Service (Python)** — Vision API, LangGraph, Qwen2.5 qua Ollama và RAG; hoạt động như dịch vụ suy luận stateless.
   AI gọi internal REST API của Backend để lấy structured facts, chỉ đọc AI Vector DB riêng và trả recommendation về Backend.
 - **Giao tiếp** — hai service gọi nhau qua HTTP với service API key riêng cho từng chiều; AI không có credential truy cập Backend DB.
@@ -144,13 +145,14 @@ Dữ liệu demo cũ do AI ghi trực tiếp trước khi tách DB (`disease_rep
 - [x] Cấu trúc monorepo và quyền sở hữu từng thư mục/module
 - [x] Chính sách repo Private trong lúc phát triển, thời điểm public trước khi nộp bài
 
-## Trạng thái hiện tại (cập nhật 2026-09-18)
+## Trạng thái hiện tại (cập nhật 2026-09-30)
 
 Backend Spring Boot sở hữu dữ liệu nghiệp vụ, structured knowledge và toàn bộ vòng đời phê duyệt; đồng thời cung cấp internal API chỉ đọc cho AI.
 AI Service hoạt động stateless: kết hợp CV, structured facts từ Backend và RAG evidence, sau đó trả recommendation để Backend kiểm tra và lưu.
 AI Vector DB đã tách khỏi Backend DB; runtime dùng role chỉ đọc, còn job ingest dùng role đọc/ghi riêng.
 Ba phase tách AI/Backend đã hoàn thành; trạng thái cuối được phản ánh trực tiếp trong code, README và CHANGELOG.
 Frontend, Keycloak SSO, Superset, Mattermost và portal tiếp tục dùng chung stack Docker Compose.
+Bản mobile Expo cho FARMER đang triển khai theo giai đoạn; backend phạm vi dữ liệu farmer đã xong, kế hoạch xem [`development/docs/mobile/PLAN.md`](./development/docs/mobile/PLAN.md).
 Chi tiết thay đổi theo từng module xem tại [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Chạy demo Phase 0

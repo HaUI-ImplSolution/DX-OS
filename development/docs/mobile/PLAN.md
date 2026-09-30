@@ -1,13 +1,13 @@
 # Kế hoạch triển khai mobile
 
-> **Cập nhật:** 29/09/2026.
+> **Cập nhật:** 30/09/2026.
 
 Bối cảnh, phạm vi và quyết định đã chốt xem [`README.md`](./README.md).
 Đặc tả backend xem [`BACKEND_CHANGES.md`](./BACKEND_CHANGES.md).
 
 ## Quy ước làm việc
 
-- Thay đổi backend đi theo thứ tự spec → Swagger → code.
+- Thay đổi backend đi theo thứ tự document plan → duyệt plan → swagger → code.
 - Verify chỉ ở mức compile/typecheck: backend `./mvnw compile`; mobile `npx tsc --noEmit` và `npx expo export`.
   Không chạy `spring-boot:run`, không chạy test, không viết test file.
 - Không tự commit hoặc push; cuối mỗi giai đoạn dừng để review diff và đề xuất commit message tiếng Anh.
@@ -18,24 +18,24 @@ Bối cảnh, phạm vi và quyết định đã chốt xem [`README.md`](./READ
 
 ## Giai đoạn 0 — Thiết kế UI (có cổng duyệt)
 
-- [x] Danh sách màn hình và luồng: [`design/screens.md`](./design/screens.md).
-- [x] Design tokens kế thừa web: [`design/tokens.md`](./design/tokens.md).
-- [x] Prototype HTML bấm được: [`design/prototype.html`](./design/prototype.html).
-- [ ] User duyệt prototype và chốt danh sách màn hình.
+- [X] Danh sách màn hình và luồng: [`design/screens.md`](./design/screens.md).
+- [X] Design tokens kế thừa web: [`design/tokens.md`](./design/tokens.md).
+- [X] Prototype HTML bấm được: [`design/prototype.html`](./design/prototype.html).
+- [X] User duyệt prototype và chốt danh sách màn hình.
 - [ ] (Tuỳ chọn) publish prototype thành Artifact private hoặc chuyển sang Figma nếu user muốn.
 
-**Cổng duyệt:** không viết code app trước khi user duyệt bước này.
+**Cổng duyệt:** đã qua ngày 30/09/2026.
 
 ## Giai đoạn 1 — Backend: phạm vi dữ liệu và ẩn khuyến nghị chưa duyệt
 
 Chi tiết: `BACKEND_CHANGES.md` mục 1, 2 và 4.
 
-- [ ] Cập nhật Swagger (`@Operation`, schema `DiagnosisResponse`).
-- [ ] Helper xác định FARMER và so khớp tên, đặt cạnh `CurrentUserService`.
-- [ ] `ParcelRepository.findByFarmerNameIgnoreCase` và lọc trong `ParcelService`.
-- [ ] Kiểm tra sở hữu trong `CropSeasonService` và `DiseaseReportService`.
-- [ ] `DiseaseReportService.toResponse` rút gọn diagnosis cho FARMER.
-- [ ] `./mvnw compile` và đọc lại diff.
+- [X] Cập nhật Swagger (`@Operation`, schema `DiagnosisResponse`).
+- [X] Helper xác định FARMER và so khớp tên, đặt cạnh `CurrentUserService`.
+- [X] `ParcelRepository.findByFarmerNameIgnoreCase` và lọc trong `ParcelService`.
+- [X] Kiểm tra sở hữu trong `CropSeasonService` và `DiseaseReportService`.
+- [X] `DiseaseReportService.toResponse` rút gọn diagnosis cho FARMER.
+- [X] `./mvnw compile` và đọc lại diff.
 
 ## Giai đoạn 2 — SSO: client Keycloak cho mobile
 

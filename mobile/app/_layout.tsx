@@ -36,6 +36,8 @@ function RootStack() {
       <Stack.Protected guard={signedIn}>
         <Stack.Screen name="index" options={{ title: "Thửa của tôi", headerRight: ProfileLink }} />
         <Stack.Screen name="profile" options={{ title: "Hồ sơ" }} />
+        <Stack.Screen name="parcels/[code]" />
+        <Stack.Screen name="seasons/[id]" options={{ title: "Báo cáo của vụ" }} />
       </Stack.Protected>
       <Stack.Protected guard={!signedIn}>
         <Stack.Screen name="login" options={{ headerShown: false }} />

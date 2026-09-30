@@ -66,10 +66,10 @@ Chi tiết: `BACKEND_CHANGES.md` mục 5.
 
 ## Giai đoạn 5 — Màn hình đọc dữ liệu
 
-- [ ] Thửa của tôi, Vụ mùa của thửa, Báo cáo của vụ, kèm pull-to-refresh và trạng thái rỗng/lỗi/tải.
-- [ ] Banner cách ly từ `IsolationStatus`.
-- [ ] Ảnh hiển thị qua `${API_BASE}/uploads/{imageRef}`.
-- [ ] Component dùng chung: `StatusChip`, `Screen`, `EmptyState`.
+- [X] Thửa của tôi, Vụ mùa của thửa, Báo cáo của vụ, kèm pull-to-refresh và trạng thái rỗng/lỗi/tải.
+- [X] Banner cách ly từ `IsolationStatus`.
+- [X] Ảnh hiển thị qua `${API_BASE}/uploads/{imageRef}`.
+- [X] Component dùng chung: `StatusChip`, `Screen`, `EmptyState`.
 
 ## Giai đoạn 6 — Chụp, gửi và chi tiết báo cáo
 

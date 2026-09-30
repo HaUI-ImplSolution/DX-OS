@@ -106,6 +106,13 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Đăng xuất kết thúc luôn phiên Keycloak (POST endpoint logout kèm refresh token).
 - Route guard bằng `Stack.Protected` ở layout gốc; màn Đăng nhập và Hồ sơ.
 
+**Đã xong — Màn hình đọc dữ liệu:**
+
+- Thửa của tôi (badge "Đang cách ly" theo vụ đang hoạt động), Vụ mùa của thửa (vụ đang hoạt động ở trên, vụ đã thu hoạch mờ hơn), Báo cáo của vụ (lưới 2 cột kèm chip trạng thái).
+- Banner cách ly từ `IsolationStatus`; ảnh hiển thị qua `/uploads/{imageRef}`.
+- Kéo để làm mới, khung xương khi tải, trạng thái rỗng và lỗi kèm nút "Thử lại".
+- Component dùng chung: `StatusChip`, `Card`, `EmptyState`, `ErrorState`, `IsolationBanner`; hook `useAsync`.
+
 ## AI Service (Python)
 
 ### 2026-09-18

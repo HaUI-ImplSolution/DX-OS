@@ -99,10 +99,10 @@ public class DiseaseReportService {
   }
 
   private DiseaseReportResponse toResponse(DiseaseReport report, boolean farmerView) {
-    var diagnosis = diagnosisRepository.findByDiseaseReportId(report.getId())
+    var diagnosisView = diagnosisRepository.findByDiseaseReportId(report.getId())
         .map(diagnosis -> toDiagnosisView(diagnosis, farmerView)).orElse(null);
     return new DiseaseReportResponse(report.getId(), report.getCropSeason().getId(),
-        report.getImageRef(), report.getReportedBy(), report.getReportedAt(), diagnosis);
+        report.getImageRef(), report.getReportedBy(), report.getReportedAt(), diagnosisView);
   }
 
   // A farmer sees the clinical content only once the engineer has approved it.

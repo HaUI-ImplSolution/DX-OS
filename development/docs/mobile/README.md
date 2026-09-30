@@ -20,7 +20,7 @@ Tài liệu trong thư mục này là nguồn tham chiếu duy nhất cho phần
 ## Phạm vi
 
 - Chỉ role FARMER.
-- Luồng v1: đăng nhập → chọn thửa và vụ → chụp và gửi báo cáo → theo dõi trạng thái → đọc khuyến nghị đã duyệt và khoá thu hoạch (PHI) → gửi offline.
+- Luồng v1: đăng nhập → chọn thửa và vụ → chụp và gửi báo cáo → theo dõi trạng thái → đọc khuyến nghị đã duyệt và khoá thu hoạch (PHI); mất mạng thì ảnh chờ trong máy và tự gửi lại.
 - ENGINEER và ADMIN tiếp tục dùng web (`frontend/`).
   Việc duyệt cần xem ảnh, kết quả CV, khuyến nghị và quy tắc PHI cùng lúc nên hợp với màn hình lớn.
 
@@ -38,5 +38,7 @@ Tài liệu trong thư mục này là nguồn tham chiếu duy nhất cho phần
 - [ ] Push notification khi kỹ sư duyệt hoặc từ chối, khi có khoá thu hoạch mới.
 - [ ] Màn hình duyệt nhanh cho kỹ sư trên mobile.
 - [ ] Ảnh kèm thời điểm chụp và toạ độ GPS/EXIF.
+- [ ] `POST /api/v1/crop-seasons/{id}/harvest` kiểm tra thửa thuộc FARMER (hiện chỉ có khoá PHI).
+- [ ] `POST /api/v1/parcels` gán `farmerName` theo người tạo khi là FARMER (hiện do người tạo nhập).
 - [ ] `frontend/src/components/DiagnosisPanel.tsx` chịu được diagnosis rút gọn (trường `null`) khi đăng nhập bằng FARMER.
 - [ ] Cột owner theo `preferred_username` trên `Parcel` thay cho so khớp theo tên.

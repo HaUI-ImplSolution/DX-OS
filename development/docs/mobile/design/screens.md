@@ -10,7 +10,7 @@ Mỗi màn hình có đúng một hành động chính.
 Đăng nhập → Thửa của tôi → Vụ mùa của thửa → Báo cáo của vụ → Chi tiết báo cáo
                                                   │
                                                   └─ (nút chụp) → Chụp và gửi → quay lại Báo cáo của vụ
-Hồ sơ: mở từ biểu tượng người dùng ở thanh tiêu đề màn Thửa của tôi
+Hồ sơ: mở từ nút chữ "Hồ sơ" ở thanh tiêu đề màn Thửa của tôi
 ```
 
 ## 1. Đăng nhập
@@ -44,7 +44,7 @@ Hồ sơ: mở từ biểu tượng người dùng ở thanh tiêu đề màn Th
 - Nội dung: lưới 2 cột, mỗi thẻ có ảnh, ngày gửi và chip trạng thái.
 - Hành động chính: nút tròn nổi "Chụp ảnh" ở góc phải dưới.
 - Chip trạng thái: "Chờ chẩn đoán", "Chờ kỹ sư duyệt", "Đã duyệt", "Cần chụp lại".
-- Giai đoạn offline: dải "Chờ gửi (N)" ở đầu danh sách, chạm để xem hàng đợi.
+- Dải "Chờ gửi (N)" (kèm "Gửi lỗi (M)" nếu có) ở đầu danh sách khi vụ có ảnh trong hàng đợi, chạm để mở Hồ sơ.
 - Rỗng: "Chưa có báo cáo nào. Chụp ảnh lá hoặc thân cây bị bệnh để gửi."
 
 ## 5. Chụp và gửi
@@ -54,7 +54,8 @@ Hồ sơ: mở từ biểu tượng người dùng ở thanh tiêu đề màn Th
 - Bước 2 (xem lại): ảnh lớn, gợi ý "Ảnh rõ nét, thấy rõ vết bệnh?", hai nút "Chụp lại" và "Gửi báo cáo" (nút chính).
 - Đang gửi: thanh tiến trình, nút vô hiệu hoá, không cho thoát nhầm.
 - Thành công: quay về Báo cáo của vụ, báo cáo mới xuất hiện đầu danh sách với chip "Chờ chẩn đoán".
-- Lỗi mạng: thông báo "Không gửi được. Ảnh đã lưu, sẽ tự gửi khi có mạng." (giai đoạn offline); trước giai đoạn offline hiện lỗi và nút "Gửi lại".
+- Lỗi mạng hoặc không có mạng: hộp thoại "Không gửi được. Ảnh đã lưu, sẽ tự gửi khi có mạng." rồi quay về Báo cáo của vụ.
+- Lỗi từ backend (ví dụ ảnh bị từ chối): thông báo lỗi và nút "Gửi lại".
 - Từ chối quyền camera: hướng dẫn mở Cài đặt.
 
 ## 6. Chi tiết báo cáo
@@ -71,7 +72,7 @@ Hồ sơ: mở từ biểu tượng người dùng ở thanh tiêu đề màn Th
 
 - Nội dung: họ tên, vai trò "Nông dân", phiên bản app.
 - Hành động chính: "Đăng xuất" (có xác nhận).
-- Giai đoạn offline: danh sách "Chờ gửi" gồm ảnh nhỏ, vụ, trạng thái (đang chờ, đang gửi, lỗi) và nút xoá mục hỏng.
+- Danh sách "Chờ gửi" gồm ảnh nhỏ, thửa hoặc vụ, trạng thái (đang chờ, đang gửi, lỗi) và nút xoá (có xác nhận) cho mục chưa gửi.
 
 ## Ánh xạ trạng thái
 

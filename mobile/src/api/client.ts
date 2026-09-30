@@ -42,7 +42,7 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   const contentType = response.headers.get("content-type") ?? "";
   const body: ApiResponse<T> | null = contentType.includes("application/json")
-    ? await response.json()
+    ? await response.json().catch(() => null)
     : null;
   return unwrap(response.status, body);
 }

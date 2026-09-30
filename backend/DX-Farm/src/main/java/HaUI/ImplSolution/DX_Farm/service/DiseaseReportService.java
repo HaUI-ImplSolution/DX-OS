@@ -39,15 +39,16 @@ public class DiseaseReportService {
   }
 
   public List<DiseaseReportResponse> listByCropSeason(Long cropSeasonId) {
-    if (currentUserService.isFarmer()) {
+    boolean farmerView = currentUserService.isFarmer();
+    if (farmerView) {
       findAccessibleSeasonOrThrow(cropSeasonId);
     }
-    return diseaseReportRepository.findByCropSeasonId(cropSeasonId).stream().map(this::toResponse)
-        .toList();
+    return diseaseReportRepository.findByCropSeasonId(cropSeasonId).stream()
+        .map(report -> toResponse(report, farmerView)).toList();
   }
 
   public DiseaseReportResponse getById(Long id) {
-    return toResponse(findOrThrow(id));
+    return toResponse(findOrThrow(id), currentUserService.isFarmer());
   }
 
   @Transactional
@@ -58,15 +59,20 @@ public class DiseaseReportService {
     if (clientRequestId != null) {
       var existing = diseaseReportRepository.findByClientRequestId(clientRequestId);
       if (existing.isPresent()) {
-        return toResponse(requireSameRequester(existing.get(), cropSeasonId, reporter));
+        return toResponse(requireSameRequester(existing.get(), cropSeasonId, reporter),
+            currentUserService.isFarmer());
       }
     }
     String imageRef = fileStorageService.store(image);
     DiseaseReport report = DiseaseReport.builder().cropSeason(season).imageRef(imageRef)
         .reportedBy(reporter).clientRequestId(clientRequestId).build();
     try {
-      return toResponse(diseaseReportRepository.saveAndFlush(report));
+      return toResponse(diseaseReportRepository.saveAndFlush(report),
+          currentUserService.isFarmer());
     } catch (DataIntegrityViolationException e) {
+      if (clientRequestId == null) {
+        throw e;
+      }
       throw new InvalidStateException("Idempotency-Key is already being processed");
     }
   }
@@ -92,18 +98,18 @@ public class DiseaseReportService {
         .orElseThrow(() -> new ResourceNotFoundException("Disease report not found: " + id));
   }
 
-  private DiseaseReportResponse toResponse(DiseaseReport report) {
+  private DiseaseReportResponse toResponse(DiseaseReport report, boolean farmerView) {
     var diagnosis = diagnosisRepository.findByDiseaseReportId(report.getId())
-        .map(this::toDiagnosisView).orElse(null);
+        .map(diagnosis -> toDiagnosisView(diagnosis, farmerView)).orElse(null);
     return new DiseaseReportResponse(report.getId(), report.getCropSeason().getId(),
         report.getImageRef(), report.getReportedBy(), report.getReportedAt(), diagnosis);
   }
 
   // A farmer sees the clinical content only once the engineer has approved it.
-  private DiagnosisResponse toDiagnosisView(Diagnosis diagnosis) {
+  private DiagnosisResponse toDiagnosisView(Diagnosis diagnosis, boolean farmerView) {
     DiagnosisResponse full = DiagnosisService.toResponse(diagnosis);
     ApprovalStatus status = diagnosis.getApprovalStatus();
-    if (!currentUserService.isFarmer() || status == ApprovalStatus.APPROVED) {
+    if (!farmerView || status == ApprovalStatus.APPROVED) {
       return full;
     }
     boolean rejected = status == ApprovalStatus.REJECTED;

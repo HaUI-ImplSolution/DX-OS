@@ -63,12 +63,18 @@ export default function CaptureScreen() {
   }, [sending]);
 
   const saveForLater = async (file: UploadFile) => {
-    await enqueue({
-      id: idempotencyKey.current,
-      cropSeasonId: Number(seasonId),
-      parcelCode: parcelCode ?? null,
-      uri: file.uri,
-    });
+    try {
+      await enqueue({
+        id: idempotencyKey.current,
+        cropSeasonId: Number(seasonId),
+        parcelCode: parcelCode ?? null,
+        uri: file.uri,
+      });
+    } catch {
+      setError("Không gửi được và không lưu được ảnh. Kiểm tra dung lượng máy rồi thử lại.");
+      setSending(false);
+      return;
+    }
     setSending(false);
     Alert.alert("Đã lưu ảnh", "Không gửi được. Ảnh đã lưu, sẽ tự gửi khi có mạng.", [
       { text: "Đóng", onPress: () => router.back() },

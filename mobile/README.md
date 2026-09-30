@@ -54,11 +54,11 @@ Ngoài Expo Go, có thể build APK bằng EAS mà không cần cài Android Stu
 | `app/` | Màn hình theo `expo-router`: `index` (Thửa), `parcels/[code]` (Vụ mùa), `seasons/[id]` (Báo cáo của vụ), `capture` (Chụp và gửi), `reports/[id]` (Chi tiết báo cáo), `login`, `profile` |
 | `src/api/` | `client.ts` (`request`, `upload`, `ApiError`) và `endpoints.ts` |
 | `src/auth/` | Đăng nhập PKCE (`AuthProvider`), lưu token (`session`), refresh (`tokens`), đọc claim (`claims`) |
-| `src/components/` | `Button`, `Card`, `StatusChip`, `IsolationBanner`, `Timeline`, `ProgressBar`, `EmptyState`, `ErrorState`, `Skeleton`, `Screen` |
+| `src/components/` | `Button`, `Card`, `ParcelCard`, `StatusChip`, `IsolationBanner`, `Timeline`, `ProgressBar`, `EmptyState`, `ErrorState`, `Skeleton`, `Screen` |
 | `src/offline/` | Hàng đợi gửi khi mất mạng: lưu trữ (`queue`) và tự gửi lại (`QueueProvider`) |
 | `src/hooks/` | `useAsync`, `useParcelIsolation` |
 | `src/theme/` | Màu, cỡ chữ, khoảng cách, kích thước vùng chạm |
-| `src/types.ts` | Kiểu dữ liệu của phía nông dân |
+| `src/*.ts` | `config` (biến môi trường), `types` (kiểu dữ liệu phía nông dân), `format` (ngày giờ), `image` (nén ảnh), `reportStatus` (chip trạng thái) |
 | `app.json`, `app.config.ts` | Cấu hình Expo: scheme `dxfarm`, quyền camera, cleartext |
 
 ## Đăng nhập

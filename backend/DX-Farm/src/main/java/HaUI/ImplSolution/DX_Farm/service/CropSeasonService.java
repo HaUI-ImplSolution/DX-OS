@@ -27,27 +27,33 @@ public class CropSeasonService {
   private final CropSeasonRepository cropSeasonRepository;
   private final ParcelRepository parcelRepository;
   private final TreatmentApplicationRepository treatmentApplicationRepository;
+  private final CurrentUserService currentUserService;
 
   public CropSeasonService(CropSeasonRepository cropSeasonRepository,
       ParcelRepository parcelRepository,
-      TreatmentApplicationRepository treatmentApplicationRepository) {
+      TreatmentApplicationRepository treatmentApplicationRepository,
+      CurrentUserService currentUserService) {
     this.cropSeasonRepository = cropSeasonRepository;
     this.parcelRepository = parcelRepository;
     this.treatmentApplicationRepository = treatmentApplicationRepository;
+    this.currentUserService = currentUserService;
   }
 
   public List<CropSeasonResponse> listByParcelCode(String parcelCode) {
+    if (currentUserService.isFarmer()) {
+      findAccessibleParcelOrThrow(parcelCode);
+    }
     return cropSeasonRepository.findByParcel_Code(parcelCode).stream()
         .map(CropSeasonService::toResponse).toList();
   }
 
   public CropSeasonResponse getById(Long id) {
-    return toResponse(findOrThrow(id));
+    return toResponse(findAccessibleOrThrow(id));
   }
 
   // Reuses harvest()'s exact lookup so this answer and the poka-yoke check never disagree.
   public IsolationStatusResponse getIsolationStatus(Long id) {
-    CropSeason season = findOrThrow(id);
+    CropSeason season = findAccessibleOrThrow(id);
     return treatmentApplicationRepository.findTopByCropSeasonIdOrderByHarvestLockedUntilDesc(id)
         .map(application -> toIsolationStatus(season, application))
         .orElseGet(() -> notIsolated(season, null, null));
@@ -55,8 +61,7 @@ public class CropSeasonService {
 
   @Transactional
   public CropSeasonResponse create(String parcelCode, CropSeasonCreateRequest request) {
-    Parcel parcel = parcelRepository.findByCode(parcelCode)
-        .orElseThrow(() -> new ResourceNotFoundException("Parcel not found: " + parcelCode));
+    Parcel parcel = findAccessibleParcelOrThrow(parcelCode);
     CropSeason season = CropSeason.builder().parcel(parcel).riceVariety(request.riceVariety())
         .startDate(request.startDate()).expectedHarvestDate(request.expectedHarvestDate())
         .status(CropSeasonStatus.ACTIVE).build();
@@ -65,7 +70,7 @@ public class CropSeasonService {
 
   @Transactional
   public CropSeasonResponse harvest(Long id) {
-    CropSeason season = findOrThrow(id);
+    CropSeason season = findAccessibleOrThrow(id);
     if (season.getStatus() == CropSeasonStatus.HARVESTED) {
       throw new InvalidStateException("Crop season already harvested: " + id);
     }
@@ -81,8 +86,14 @@ public class CropSeasonService {
     return toResponse(cropSeasonRepository.save(season));
   }
 
-  private CropSeason findOrThrow(Long id) {
+  private Parcel findAccessibleParcelOrThrow(String parcelCode) {
+    return parcelRepository.findByCode(parcelCode).filter(currentUserService::canAccess)
+        .orElseThrow(() -> new ResourceNotFoundException("Parcel not found: " + parcelCode));
+  }
+
+  private CropSeason findAccessibleOrThrow(Long id) {
     return cropSeasonRepository.findById(id)
+        .filter(season -> currentUserService.canAccess(season.getParcel()))
         .orElseThrow(() -> new ResourceNotFoundException("Crop season not found: " + id));
   }
 

@@ -5,6 +5,25 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Backend (Spring Boot — `backend/DX-Farm`)
 
+### 2026-09-30
+
+**Đã xong — Idempotency cho gửi báo cáo:**
+
+- `POST /api/v1/crop-seasons/{id}/disease-reports` nhận header tuỳ chọn `Idempotency-Key` (UUID); key đã dùng thì trả báo cáo cũ mà không lưu ảnh lần hai.
+- `DiseaseReport.clientRequestId` (`UUID`, unique, nullable); key thuộc vụ mùa khác hoặc user khác trả `409`, key sai định dạng trả `400`.
+- Swagger khai báo header bằng `@Parameter`.
+
+**Đã xong — Phạm vi dữ liệu của FARMER (phục vụ bản mobile):**
+
+- User có role `FARMER` (không kèm `ENGINEER`/`ADMIN`) chỉ thấy thửa có `farmerName` khớp claim `name` của token, không phân biệt hoa thường.
+  `CurrentUserService` có `isFarmer()` và `canAccess(Parcel)`; `ParcelRepository.findByFarmerNameIgnoreCase` phục vụ danh sách thửa.
+- Endpoint thửa, vụ mùa (gồm `harvest`) và báo cáo bệnh trả `404` khi thửa không thuộc FARMER.
+- `POST /api/v1/parcels` bởi FARMER lưu thửa với tên của chính họ, bỏ qua `farmerName` trong request.
+- Với FARMER, `diagnosis` lồng trong báo cáo chỉ đầy đủ khi `APPROVED`; `PENDING` chỉ có `id`, `diseaseReportId`, `approvalStatus`; `REJECTED` thêm `decidedAt`, `rejectionReason`.
+  ENGINEER và ADMIN nhận dữ liệu đầy đủ như trước.
+- Swagger: `@Operation` của `ParcelController`, `CropSeasonController`, `DiseaseReportController` và schema `DiagnosisResponse` mô tả hành vi theo role.
+- Đặc tả: `development/docs/mobile/BACKEND_CHANGES.md`.
+
 ### 2026-09-26
 
 - Hoàn thiện seed idempotent từ dữ liệu nguồn: 1 treatment rule giả định cho E2E, 15 candidate còn lại bị chặn; rule stale được vô hiệu hóa và bảo toàn an toàn khi đã có lịch sử tham chiếu.
@@ -75,6 +94,54 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Chưa có Carbon/AWD Estimator, IoT simulator, BI dashboard (Superset/Metabase), SSO nặng (Keycloak/Authentik) hay kênh chat nội bộ (Mattermost) — thuộc Giai đoạn 1–3 theo roadmap trong `README.md`.
   Auth/role cơ bản (JWT, FARMER/ENGINEER/ADMIN) đã xong ở trên.
 
+## Mobile (`mobile`, Expo)
+
+### 2026-09-30
+
+**Đã xong — Khung app cho FARMER:**
+
+- Expo SDK 57, TypeScript, `expo-router`, thư mục `mobile/` ngang hàng `frontend/`.
+- `app.json`: scheme `dxfarm`, chuỗi quyền camera tiếng Việt; `app.config.ts` cho phép HTTP cleartext ngoài profile `production`.
+- `mobile/.env.example`: `EXPO_PUBLIC_API_BASE_URL`, `EXPO_PUBLIC_KEYCLOAK_URL`, `EXPO_PUBLIC_KEYCLOAK_CLIENT_ID`.
+- `src/`: client API (`request`, `ApiError`, `json`, timeout 30 giây, lỗi mạng trả `status` 0), lưu token bằng `expo-secure-store`, type dùng cho farmer, theme theo design tokens, component `Screen`.
+
+**Đã xong — Xác thực:**
+
+- Đăng nhập Authorization Code + PKCE với client `dxfarm-mobile` qua `expo-auth-session`; endpoint dựng từ `EXPO_PUBLIC_KEYCLOAK_URL`, không dùng discovery.
+- Access token và refresh token lưu ở `expo-secure-store`; token tự refresh trước khi hết hạn, refresh bị từ chối hoặc `401` thì xoá phiên và về màn Đăng nhập.
+- Role đọc từ `realm_access.roles` của access token; tài khoản không có role FARMER bị đăng xuất kèm thông báo "Ứng dụng này dành cho nông dân".
+- Đăng xuất kết thúc luôn phiên Keycloak (POST endpoint logout kèm refresh token).
+- Route guard bằng `Stack.Protected` ở layout gốc; màn Đăng nhập và Hồ sơ.
+
+**Đã xong — Màn hình đọc dữ liệu:**
+
+- Thửa của tôi (badge "Đang cách ly" theo vụ đang hoạt động), Vụ mùa của thửa (vụ đang hoạt động ở trên, vụ đã thu hoạch mờ hơn), Báo cáo của vụ (lưới 2 cột kèm chip trạng thái).
+- Banner cách ly từ `IsolationStatus`; ảnh hiển thị qua `/uploads/{imageRef}`.
+- Kéo để làm mới, khung xương khi tải, trạng thái rỗng và lỗi kèm nút "Thử lại".
+- Component dùng chung: `StatusChip`, `Card`, `EmptyState`, `ErrorState`, `IsolationBanner`; hook `useAsync`.
+
+**Đã xong — Chụp, gửi và chi tiết báo cáo:**
+
+- Chụp bằng camera hệ thống (`launchCameraAsync`), xin quyền camera và hướng dẫn mở Cài đặt khi bị từ chối.
+- Nén bằng `expo-image-manipulator`: cạnh dài tối đa 1280px, JPEG 0.7.
+- Gửi multipart part `image` qua `XMLHttpRequest` để có thanh tiến trình; lỗi hiển thị kèm nút "Gửi lại"; không thoát được màn hình khi đang gửi.
+- Chi tiết báo cáo: timeline Đã gửi → Đã chẩn đoán → Kỹ sư duyệt theo `diagnosis` (`null`, `PENDING`, `APPROVED`, `REJECTED`); `APPROVED` hiện bệnh, khuyến nghị, thuốc, liều, số ngày cách ly; `REJECTED` hiện lý do và nút "Chụp lại".
+- Danh sách báo cáo tự làm mới khi quay lại từ màn chụp; nút tròn nổi "Chụp" ở góc phải dưới.
+
+**Đã xong — Hàng đợi gửi khi mất mạng:**
+
+- Mất mạng hoặc lỗi kết nối lúc gửi thì ảnh được copy vào `documentDirectory` và ghi hàng đợi vào AsyncStorage; mỗi ảnh có UUID làm `Idempotency-Key`.
+- Tự gửi khi `NetInfo` báo có mạng và khi app trở lại foreground; thử lại với khoảng chờ tăng dần, tối đa 8 lần; lỗi `4xx` (trừ `408`, `409`, `429`) đánh dấu "Lỗi".
+- Dải "Chờ gửi (N)" ở màn Báo cáo của vụ; danh sách chờ gửi và nút xoá ở màn Hồ sơ; hàng đợi tách theo tài khoản.
+
+**Đã xong — Đóng gói:**
+
+- `mobile/eas.json` với profile `preview` xuất APK; hướng dẫn build bằng EAS trong `mobile/README.md`.
+
+**Đã xong — Hướng dẫn chạy:**
+
+- `mobile/README.md`: chạy thử trên điện thoại thật với IP LAN, biến môi trường, tài khoản demo, kiểm tra mã nguồn.
+
 ## AI Service (Python)
 
 ### 2026-09-18
@@ -137,6 +204,13 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - 8 candidate quy tắc điều trị trạng thái HOLD được giữ riêng để audit, không seed vào CSDL chính thức.
 
 ## Frontend (`frontend`)
+
+### 2026-09-30
+
+**Đã xong — Phù hợp phạm vi dữ liệu của FARMER:**
+
+- `ParcelPanel`: khi đăng nhập bằng FARMER, ô "Tên chủ hộ" hiển thị tên người dùng và bị khoá; thửa luôn được đăng ký dưới tên đó.
+- `DiagnosisPanel`, `Diagnosis` trong `types.ts`: các trường chẩn đoán có thể `null`; FARMER thấy trạng thái, và lý do từ chối khi `REJECTED`, còn nội dung chẩn đoán chỉ hiện khi `APPROVED`.
 
 ### 2026-09-11
 
@@ -278,6 +352,14 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Identity Provider (`sso`, Keycloak)
 
+### 2026-09-30
+
+**Đã xong — Client cho bản mobile:**
+
+- Client public `dxfarm-mobile` trong `realm-dxfarm.json`: Standard Flow + PKCE, không direct access grants, redirect URI `dxfarm://*` và `exp://*`.
+- `deploy/docker-compose.yml` lấy `KC_HOSTNAME` từ `KEYCLOAK_PUBLIC_URL` (mặc định `http://localhost:${KEYCLOAK_HOST_PORT}`) để điện thoại truy cập Keycloak qua IP LAN.
+- `sso/README.md`: phạm vi, cách dev với IP LAN, cách thêm client vào volume cũ.
+
 ### 2026-09-11
 
 **Đã xong — SSO thật (Giai đoạn 2 [H]):**
@@ -310,6 +392,13 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - **Còn thiếu**: SPDX header đầu mỗi file mã nguồn tự viết — việc sửa hàng loạt file, để riêng một lượt khác.
 
 ## Tài liệu (root, `development/docs`, `ai/`)
+
+### 2026-09-30
+
+**Đã xong:**
+
+- `development/docs/mobile/`: kế hoạch, đặc tả backend, thiết kế UI và `CHANGES_OVERVIEW.md` tổng hợp hành vi cũ và mới của nhánh mobile.
+- `mobile/README.md`, `LICENSES.md` (mục Mobile), `sso/README.md` (client `dxfarm-mobile`), `README.md` gốc (client mobile, trạng thái).
 
 ### 2026-09-24
 

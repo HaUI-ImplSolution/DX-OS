@@ -31,33 +31,38 @@ public class CropSeasonController {
 
   @PostMapping("/parcels/{code}/crop-seasons")
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(summary = "Start a new crop season for a parcel")
+  @Operation(summary = "Start a new crop season for a parcel",
+      description = "FARMER: 404 if the parcel belongs to another farmer.")
   public ApiResponse<CropSeasonResponse> create(@PathVariable String code,
       @Valid @RequestBody CropSeasonCreateRequest request) {
     return ApiResponse.success("Crop season created", cropSeasonService.create(code, request));
   }
 
   @GetMapping("/parcels/{code}/crop-seasons")
-  @Operation(summary = "List crop seasons for a parcel")
+  @Operation(summary = "List crop seasons for a parcel",
+      description = "FARMER: 404 if the parcel belongs to another farmer.")
   public ApiResponse<List<CropSeasonResponse>> listByParcel(@PathVariable String code) {
     return ApiResponse.success(cropSeasonService.listByParcelCode(code));
   }
 
   @GetMapping("/crop-seasons/{id}")
-  @Operation(summary = "Get crop season detail")
+  @Operation(summary = "Get crop season detail",
+      description = "FARMER: 404 if the season's parcel belongs to another farmer.")
   public ApiResponse<CropSeasonResponse> getById(@PathVariable Long id) {
     return ApiResponse.success(cropSeasonService.getById(id));
   }
 
   @GetMapping("/crop-seasons/{id}/isolation-status")
-  @Operation(summary = "Check whether a crop season is still under pesticide isolation (PHI)")
+  @Operation(summary = "Check whether a crop season is still under pesticide isolation (PHI)",
+      description = "FARMER: 404 if the season's parcel belongs to another farmer.")
   public ApiResponse<IsolationStatusResponse> getIsolationStatus(@PathVariable Long id) {
     return ApiResponse.success(cropSeasonService.getIsolationStatus(id));
   }
 
   @PostMapping("/crop-seasons/{id}/harvest")
   @Operation(
-      summary = "Declare harvest (poka-yoke: 422 POKA_YOKE_VIETGAP_VIOLATION if still isolated)")
+      summary = "Declare harvest (poka-yoke: 422 POKA_YOKE_VIETGAP_VIOLATION if still isolated)",
+      description = "FARMER: 404 if the season's parcel belongs to another farmer.")
   public ApiResponse<CropSeasonResponse> harvest(@PathVariable Long id) {
     return ApiResponse.success("Harvest recorded", cropSeasonService.harvest(id));
   }

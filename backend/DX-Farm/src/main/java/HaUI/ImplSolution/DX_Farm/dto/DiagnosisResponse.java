@@ -1,9 +1,13 @@
 package HaUI.ImplSolution.DX_Farm.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.Instant;
 
 // @formatter:off
+@Schema(description = "AI diagnosis of a disease report. For FARMER users, PENDING exposes only"
+    + " id, diseaseReportId and approvalStatus; REJECTED adds decidedAt and rejectionReason;"
+    + " every other field is null until APPROVED.")
 public record DiagnosisResponse(
   // Khoá chính
   Long id,

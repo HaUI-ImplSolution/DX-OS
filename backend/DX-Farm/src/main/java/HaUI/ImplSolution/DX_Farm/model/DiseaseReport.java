@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -43,6 +44,10 @@ public class DiseaseReport {
   // Tên người báo cáo (nông dân)
   @Column(nullable = false)
   private String reportedBy;
+
+  // Khoá idempotency do client sinh, dùng để gộp các lần gửi lại cùng một báo cáo
+  @Column(unique = true)
+  private UUID clientRequestId;
 
   // Thời điểm báo cáo được ghi nhận
   @CreationTimestamp

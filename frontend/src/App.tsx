@@ -208,6 +208,7 @@ export default function App() {
           <ParcelPanel
             parcels={parcels}
             selectedCode={selectedParcelCode}
+            ownerName={user.role === "FARMER" ? user.fullName : undefined}
             onSelect={selectParcel}
             onCreated={(p) => {
               setParcels((prev) => [...prev, p]);

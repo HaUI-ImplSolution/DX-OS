@@ -29,20 +29,25 @@ public class ParcelController {
   }
 
   @GetMapping
-  @Operation(summary = "List all parcels")
+  @Operation(summary = "List parcels",
+      description = "FARMER: only parcels whose farmerName matches the user's name (case-insensitive)."
+          + " Other roles: all parcels.")
   public ApiResponse<List<ParcelResponse>> listAll() {
     return ApiResponse.success(parcelService.listAll());
   }
 
   @GetMapping("/{code}")
-  @Operation(summary = "Get a parcel by its business code (e.g. TD-01)")
+  @Operation(summary = "Get a parcel by its business code (e.g. TD-01)",
+      description = "FARMER: 404 if the parcel belongs to another farmer.")
   public ApiResponse<ParcelResponse> getByCode(@PathVariable String code) {
     return ApiResponse.success(parcelService.getByCode(code));
   }
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(summary = "Register a new parcel")
+  @Operation(summary = "Register a new parcel",
+      description = "FARMER: the request farmerName is ignored and the parcel is stored under"
+          + " the user's own name.")
   public ApiResponse<ParcelResponse> create(@Valid @RequestBody ParcelCreateRequest request) {
     return ApiResponse.success("Parcel created", parcelService.create(request));
   }

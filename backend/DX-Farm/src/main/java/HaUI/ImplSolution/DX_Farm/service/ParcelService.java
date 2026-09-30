@@ -14,13 +14,18 @@ import org.springframework.transaction.annotation.Transactional;
 public class ParcelService {
 
   private final ParcelRepository parcelRepository;
+  private final CurrentUserService currentUserService;
 
-  public ParcelService(ParcelRepository parcelRepository) {
+  public ParcelService(ParcelRepository parcelRepository, CurrentUserService currentUserService) {
     this.parcelRepository = parcelRepository;
+    this.currentUserService = currentUserService;
   }
 
   public List<ParcelResponse> listAll() {
-    return parcelRepository.findAll().stream().map(ParcelService::toResponse).toList();
+    List<Parcel> parcels = currentUserService.isFarmer()
+        ? parcelRepository.findByFarmerNameIgnoreCase(currentUserService.currentFullName())
+        : parcelRepository.findAll();
+    return parcels.stream().map(ParcelService::toResponse).toList();
   }
 
   public ParcelResponse getByCode(String code) {
@@ -29,14 +34,16 @@ public class ParcelService {
 
   @Transactional
   public ParcelResponse create(ParcelCreateRequest request) {
-    Parcel parcel = Parcel.builder().code(request.code()).farmerName(request.farmerName())
+    String farmerName =
+        currentUserService.isFarmer() ? currentUserService.currentFullName() : request.farmerName();
+    Parcel parcel = Parcel.builder().code(request.code()).farmerName(farmerName)
         .areaHectares(request.areaHectares()).location(request.location())
         .latitude(request.latitude()).longitude(request.longitude()).build();
     return toResponse(parcelRepository.save(parcel));
   }
 
   private Parcel findParcelOrThrow(String code) {
-    return parcelRepository.findByCode(code)
+    return parcelRepository.findByCode(code).filter(currentUserService::canAccess)
         .orElseThrow(() -> new ResourceNotFoundException("Parcel not found: " + code));
   }
 

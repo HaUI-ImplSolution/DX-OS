@@ -6,6 +6,8 @@ import Section from "./Section";
 interface ParcelPanelProps {
   parcels: Parcel[];
   selectedCode: string | null;
+  // Set for FARMER: new parcels are always registered under this name.
+  ownerName?: string;
   onSelect: (code: string) => void;
   onCreated: (parcel: Parcel) => void;
   onError: (message: string) => void;
@@ -14,6 +16,7 @@ interface ParcelPanelProps {
 export default function ParcelPanel({
   parcels,
   selectedCode,
+  ownerName,
   onSelect,
   onCreated,
   onError,
@@ -33,7 +36,7 @@ export default function ParcelPanel({
     try {
       const parcel = await createParcel({
         code,
-        farmerName,
+        farmerName: ownerName ?? farmerName,
         areaHectares: Number(areaHectares),
         location: location || undefined,
         latitude: latitude ? Number(latitude) : undefined,
@@ -80,8 +83,9 @@ export default function ParcelPanel({
           <input placeholder="Mã thửa (vd. TD-01)" value={code} onChange={(e) => setCode(e.target.value)} required />
           <input
             placeholder="Tên chủ hộ"
-            value={farmerName}
+            value={ownerName ?? farmerName}
             onChange={(e) => setFarmerName(e.target.value)}
+            disabled={ownerName !== undefined}
             required
           />
           <input

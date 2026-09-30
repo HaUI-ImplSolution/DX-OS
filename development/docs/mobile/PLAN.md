@@ -103,6 +103,13 @@ Mobile:
 - [X] `mobile/README.md`: mục đích, chạy dev với IP LAN, biến môi trường, tài khoản demo, build APK.
 - [X] Cập nhật `README.md` gốc (kiến trúc, tiến độ, backlog) và `CHANGELOG.md` (mục Mobile).
 
+## Bổ sung sau review
+
+- [X] `POST /crop-seasons/{id}/harvest` trả `404` khi thửa không thuộc FARMER.
+- [X] `POST /parcels` bởi FARMER lưu thửa với tên của user.
+- [X] Web: form đăng ký thửa khoá tên chủ hộ cho FARMER; `DiagnosisPanel` chịu được diagnosis rút gọn.
+- [X] Tổng quan thay đổi: [`CHANGES_OVERVIEW.md`](./CHANGES_OVERVIEW.md).
+
 ## Checklist kiểm thử tay
 
 Chạy trên điện thoại thật, do user thực hiện.
@@ -114,6 +121,8 @@ Chạy trên điện thoại thật, do user thực hiện.
 - [ ] Kỹ sư từ chối thì farmer thấy lý do và nút "Chụp lại".
 - [ ] Tắt mạng, chụp và gửi thì vào hàng đợi; bật mạng thì tự gửi đúng một lần.
 - [ ] Đăng nhập `engineer1` bị chặn với thông báo.
+- [ ] Đăng nhập web bằng `farmer1` và tạo thửa: thửa mang tên `Nguyễn Văn Nông` bất kể giá trị nhập.
+- [ ] Farmer gọi `harvest` hoặc xem báo cáo của vụ thuộc thửa người khác nhận `404`.
 
 ## Rủi ro
 

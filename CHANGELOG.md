@@ -205,6 +205,13 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Frontend (`frontend`)
 
+### 2026-09-30
+
+**Đã xong — Phù hợp phạm vi dữ liệu của FARMER:**
+
+- `ParcelPanel`: khi đăng nhập bằng FARMER, ô "Tên chủ hộ" hiển thị tên người dùng và bị khoá; thửa luôn được đăng ký dưới tên đó.
+- `DiagnosisPanel`, `Diagnosis` trong `types.ts`: các trường chẩn đoán có thể `null`; FARMER thấy trạng thái, và lý do từ chối khi `REJECTED`, còn nội dung chẩn đoán chỉ hiện khi `APPROVED`.
+
 ### 2026-09-11
 
 **Đã xong — Đăng nhập qua Keycloak (SSO thật):**
@@ -385,6 +392,13 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - **Còn thiếu**: SPDX header đầu mỗi file mã nguồn tự viết — việc sửa hàng loạt file, để riêng một lượt khác.
 
 ## Tài liệu (root, `development/docs`, `ai/`)
+
+### 2026-09-30
+
+**Đã xong:**
+
+- `development/docs/mobile/`: kế hoạch, đặc tả backend, thiết kế UI và `CHANGES_OVERVIEW.md` tổng hợp hành vi cũ và mới của nhánh mobile.
+- `mobile/README.md`, `LICENSES.md` (mục Mobile), `sso/README.md` (client `dxfarm-mobile`), `README.md` gốc (client mobile, trạng thái).
 
 ### 2026-09-24
 

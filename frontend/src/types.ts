@@ -71,15 +71,17 @@ export interface TreatmentRule {
   version: string | null;
 }
 
+// For FARMER only id, diseaseReportId and approvalStatus are guaranteed;
+// REJECTED adds decidedAt and rejectionReason, and the rest is set once APPROVED.
 export interface Diagnosis {
   id: number;
   diseaseReportId: number;
-  diseaseCode: string;
-  diseaseName: string;
-  confidence: number;
-  modelVersion: string;
-  diagnosedAt: string;
-  recommendationText: string;
+  diseaseCode: string | null;
+  diseaseName: string | null;
+  confidence: number | null;
+  modelVersion: string | null;
+  diagnosedAt: string | null;
+  recommendationText: string | null;
   approvalStatus: ApprovalStatus;
   decidedBy: string | null;
   decidedAt: string | null;

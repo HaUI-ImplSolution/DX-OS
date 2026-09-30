@@ -32,6 +32,7 @@ Hành vi khi user hiện tại có role FARMER:
 - Tên user lấy từ `CurrentUserService.currentFullName()` (claim `name`, dự phòng `preferred_username`).
 - Trả `404` thay vì `403` để không lộ sự tồn tại của thửa người khác.
 - Field `farmerName` của `ParcelCreateRequest` vẫn bắt buộc để hợp đồng API không đổi; ENGINEER và ADMIN nhập tên chủ hộ như trước.
+- Form đăng ký thửa trên web khoá ô tên chủ hộ theo tên người dùng khi đăng nhập bằng FARMER.
 
 ## 2. Ẩn nội dung chẩn đoán chưa duyệt
 
@@ -45,7 +46,7 @@ Hành vi cho FARMER ở `GET /disease-reports/{id}` và `GET /crop-seasons/{id}/
 
 - `diagnosis` vẫn là `null` khi báo cáo chưa được chẩn đoán.
 - `DiagnosisService.toResponse` (dùng cho ENGINEER/ADMIN) không đổi; phần rút gọn nằm ở tầng `DiseaseReportService.toResponse`.
-- Web đăng nhập bằng FARMER cũng nhận dữ liệu rút gọn; phần hiển thị của web cần chịu được các trường `null`.
+- Web đăng nhập bằng FARMER cũng nhận dữ liệu rút gọn; `DiagnosisPanel` bỏ qua các trường `null`.
 
 ## 3. Idempotency cho gửi báo cáo
 

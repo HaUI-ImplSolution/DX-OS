@@ -14,7 +14,7 @@ Bài toán được chọn: **Agri-Carbon DX-OS** — hệ điều hành chuyể
 
 - `development/docs/legacy_docs/DX - Farm.docx` — thiết kế gốc "MVP Agri-Carbon DX-OS" (8 trang): phân vai tác nhân, 4 không gian HPDI, spine flow 6 bước, các lưu ý PoF/anti-hallucination/poka-yoke.
 - `development/docs/legacy_docs/DX-Farm_MVP_DeXuat_Duyet_Lead.docx` — bản đề xuất thống nhất để Lead duyệt: thu hẹp phạm vi demo, LangGraph, schema dữ liệu, khung repo.
-- `mobile/README.md` — app Expo cho nông dân: kiến trúc, chạy trên điện thoại thật, đóng gói APK; kế hoạch và đặc tả ở `development/docs/mobile/`.
+- `mobile/README.md` — app Expo cho nông dân: kiến trúc, chạy trên điện thoại thật, đóng gói APK; kế hoạch, đặc tả và tổng quan thay đổi (hành vi cũ/mới) ở `development/docs/mobile/`.
 - `ai/README.md` — kiến trúc, endpoint, cấu hình và cách vận hành AI Service; các README trong `ai/app/` mô tả CV, RAG và LangGraph.
 - `development/docs/legacy_docs/AI_EVENT_SCHEMA_README.md` — contract event/API giữa Backend và AI Service.
 - Chủ đề chính thức: https://vfossa.vn/tin-tuc/gioi-thieu-mo-hinh-dx-os-va-chu-de-cuoc-thi-phan-mem-nguon-mo-olp-2026-761.html

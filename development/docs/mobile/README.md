@@ -11,6 +11,7 @@ Tài liệu trong thư mục này là nguồn tham chiếu duy nhất cho phần
 | Tài liệu | Nội dung |
 |---|---|
 | [`mobile/README.md`](../../../mobile/README.md) | Hướng dẫn chạy thử trên điện thoại thật, đóng gói APK, biến môi trường, tài khoản demo |
+| [`CHANGES_OVERVIEW.md`](./CHANGES_OVERVIEW.md) | Tổng quan toàn bộ thay đổi của nhánh, hành vi cũ và mới, ảnh hưởng khi nâng cấp |
 | [`PLAN.md`](./PLAN.md) | Các giai đoạn từ thiết kế UI đến hoàn thành luồng, kèm checklist và cách verify |
 | [`BACKEND_CHANGES.md`](./BACKEND_CHANGES.md) | Đặc tả thay đổi backend (phạm vi dữ liệu farmer, ẩn khuyến nghị chưa duyệt, idempotency) |
 | [`design/screens.md`](./design/screens.md) | Danh sách màn hình, luồng điều hướng, trạng thái rỗng/lỗi/tải |
@@ -38,5 +39,4 @@ Tài liệu trong thư mục này là nguồn tham chiếu duy nhất cho phần
 - [ ] Push notification khi kỹ sư duyệt hoặc từ chối, khi có khoá thu hoạch mới.
 - [ ] Màn hình duyệt nhanh cho kỹ sư trên mobile.
 - [ ] Ảnh kèm thời điểm chụp và toạ độ GPS/EXIF.
-- [ ] `frontend/src/components/DiagnosisPanel.tsx` chịu được diagnosis rút gọn (trường `null`) khi đăng nhập bằng FARMER.
 - [ ] Cột owner theo `preferred_username` trên `Parcel` thay cho so khớp theo tên.

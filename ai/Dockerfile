@@ -14,6 +14,14 @@ RUN apt-get update \
 COPY requirements.txt ./
 RUN pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
 
+# Ultralytics imports OpenCV at startup. The non-headless OpenCV wheel needs
+# these shared libraries even though inference itself runs without a GUI.
+RUN sed -i 's|^URIs: http://deb.debian.org/debian$|URIs: http://mirror.bizflycloud.vn/debian|' \
+      /etc/apt/sources.list.d/debian.sources \
+    && apt-get update \
+    && apt-get install --no-install-recommends -y libgl1 libglib2.0-0 libxcb1 \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY app ./app
 COPY scripts ./scripts
 

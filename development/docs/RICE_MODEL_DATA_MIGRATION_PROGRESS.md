@@ -78,3 +78,19 @@ Nhật ký triển khai `RICE_MODEL_DATA_MIGRATION_PLAN.md`. Chỉ ghi nhận th
 - PostgreSQL 16 + pgvector smoke test ingest và truy hồi lọc chính xác đạt 6/6 mã; container kiểm thử tạm đã được xóa.
 - Khi Backend không có rule đã duyệt, cả sáu mã đều đi nhánh `review_required`, không chọn rule và không đưa tên/liều thuốc candidate vào khuyến nghị.
 - AI test đạt 14/14; diagnose contract, Backend client, RAG access boundary và Ruff đều đạt.
+
+**Đã xong — Giai đoạn 5: kiểm thử tích hợp và E2E**
+
+- Data validation, generator và seed check đạt; AI test đạt 14/14, toàn bộ contract check và Ruff đạt; Backend test đạt 3/3; cấu hình Compose hợp lệ.
+- Fresh PostgreSQL/Backend/Keycloak cô lập khởi động healthy với đúng 6 bệnh lúa active; RAG ingest 6 tài liệu thành 31 chunks và truy hồi đúng `Rice___healthy` kèm provenance.
+- Checkpoint bind mount read-only có đúng SHA-256; AI container load model trên CPU, health đạt và inference thật giữ response năm trường với healthy fallback.
+- E2E thật đạt: FARMER tạo thửa, vụ và báo cáo ảnh; ENGINEER chạy AI qua CV → Backend context → RAG → recommendation; diagnosis lưu `Rice___healthy`, trạng thái `PENDING`, không có treatment rule. FARMER bị chặn đúng `403`.
+- Docker E2E stateless đạt với ảnh khô vằn: CV trả `Rice___Sheath_blight` (`0.379`), Backend context và RAG trả đúng nguồn, recommendation đi nhánh `review_required` và không chọn treatment rule.
+- Semantic smoke trên 5 ảnh bệnh và 1 ảnh khỏe do người dùng cung cấp: cả 6 request đạt HTTP 200; nhận đúng khô vằn (`0.379`) và healthy fallback, 4 ảnh bệnh còn lại không có detection đạt ngưỡng `0.25`.
+- Bổ sung shared library Linux tối thiểu cho OpenCV/Ultralytics; AI image build thành công và không còn liên kết động bị thiếu.
+- Bổ sung wiring `APP_PUBLIC_BASE_URL` vào Backend Compose; giá trị mặc định và contract hiện hữu không đổi.
+- Audit toàn bộ diff migration: chỉ gồm data/seed, bảo toàn legacy, CV, RAG, test, Compose trực tiếp phục vụ model và tài liệu tiến độ; không sửa logic frontend, SSO, BI, chat hoặc mở rộng API/schema ngoài yêu cầu migration.
+
+**Ghi chú đánh giá**
+
+- Mỗi lớp mới có một ảnh mẫu và nguồn nhãn chưa được xác minh; kết quả smoke chưa đủ để kết luận độ chính xác model hoặc điều chỉnh ngưỡng vận hành.

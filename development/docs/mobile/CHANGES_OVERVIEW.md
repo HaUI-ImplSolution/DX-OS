@@ -155,7 +155,8 @@ Tên của user lấy từ claim `name` của token (dự phòng `preferred_user
 - Icon và splash của app vẫn là ảnh mặc định của Expo.
 - Mỗi thẻ thửa gọi thêm hai request để hiện badge cách ly; nhiều thửa cần endpoint gộp.
 - Request thua khi hai lần gửi cùng key chạy đồng thời để lại một file ảnh mồ côi trong `uploads/`.
-- Các mục backlog khác xem [`README.md`](./README.md).
+- Các mục trên và các mục backlog khác đều nằm trong [`README.md`](./README.md).
+- `DiseaseReportService.listByCropSeason` truy vấn diagnosis riêng cho từng báo cáo; hành vi này có từ trước nhánh mobile.
 
 ## 9. Bản đồ commit
 

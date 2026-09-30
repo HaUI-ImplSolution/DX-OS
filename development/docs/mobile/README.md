@@ -39,4 +39,8 @@ Tài liệu trong thư mục này là nguồn tham chiếu duy nhất cho phần
 - [ ] Push notification khi kỹ sư duyệt hoặc từ chối, khi có khoá thu hoạch mới.
 - [ ] Màn hình duyệt nhanh cho kỹ sư trên mobile.
 - [ ] Ảnh kèm thời điểm chụp và toạ độ GPS/EXIF.
+- [ ] Endpoint gộp trạng thái cách ly theo thửa để thẻ thửa không phải gọi hai request mỗi thửa.
+- [ ] Xoá file ảnh đã lưu khi lần gửi thua ràng buộc `Idempotency-Key` (hiện còn một file mồ côi trong `uploads/`).
+- [ ] Nạp diagnosis của danh sách báo cáo bằng một truy vấn thay vì một truy vấn mỗi báo cáo (`DiseaseReportService.listByCropSeason`).
+- [ ] Icon và splash riêng của DX-Farm thay cho ảnh mặc định của Expo.
 - [ ] Cột owner theo `preferred_username` trên `Parcel` thay cho so khớp theo tên.

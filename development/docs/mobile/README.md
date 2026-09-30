@@ -1,7 +1,7 @@
 # Mobile (Expo) cho nông dân
 
 > **Cập nhật:** 30/09/2026.
-> **Trạng thái:** thiết kế UI đã duyệt; backend phạm vi farmer, client Keycloak `dxfarm-mobile` và khung app `mobile/` (Expo SDK 57, `expo-router`) đã xong; chưa có màn hình nghiệp vụ.
+> **Trạng thái:** thiết kế UI đã duyệt; backend phạm vi farmer, client Keycloak `dxfarm-mobile` và app `mobile/` (Expo SDK 57, `expo-router`) đã có luồng online đầu-cuối: đăng nhập, xem thửa/vụ/báo cáo, chụp và gửi, chi tiết báo cáo; offline queue chưa làm.
 
 Bản mobile React Native (Expo) giúp nông dân chụp ảnh sâu bệnh và gửi báo cáo ngay tại ruộng.
 Tài liệu trong thư mục này là nguồn tham chiếu duy nhất cho phần mobile.

@@ -73,11 +73,11 @@ Chi tiết: `BACKEND_CHANGES.md` mục 5.
 
 ## Giai đoạn 6 — Chụp, gửi và chi tiết báo cáo
 
-- [ ] Chụp bằng `launchCameraAsync`, xử lý quyền camera bị từ chối.
-- [ ] Nén bằng `expo-image-manipulator`: cạnh dài tối đa 1280px, JPEG 0.7, dưới giới hạn multipart 10MB.
-- [ ] Gửi `FormData` part `image`, hiển thị tiến trình và lỗi.
-- [ ] Chi tiết báo cáo với timeline theo `diagnosis` (`null`, `PENDING`, `APPROVED`, `REJECTED`).
-- [ ] `REJECTED` hiện lý do và nút "Chụp lại".
+- [X] Chụp bằng `launchCameraAsync`, xử lý quyền camera bị từ chối.
+- [X] Nén bằng `expo-image-manipulator`: cạnh dài tối đa 1280px, JPEG 0.7, dưới giới hạn multipart 10MB.
+- [X] Gửi `FormData` part `image`, hiển thị tiến trình và lỗi.
+- [X] Chi tiết báo cáo với timeline theo `diagnosis` (`null`, `PENDING`, `APPROVED`, `REJECTED`).
+- [X] `REJECTED` hiện lý do và nút "Chụp lại".
 
 Mốc hoàn thành luồng online đầu-cuối; có thể chốt demo tại đây.
 

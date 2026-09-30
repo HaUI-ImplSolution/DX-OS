@@ -113,6 +113,14 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Kéo để làm mới, khung xương khi tải, trạng thái rỗng và lỗi kèm nút "Thử lại".
 - Component dùng chung: `StatusChip`, `Card`, `EmptyState`, `ErrorState`, `IsolationBanner`; hook `useAsync`.
 
+**Đã xong — Chụp, gửi và chi tiết báo cáo:**
+
+- Chụp bằng camera hệ thống (`launchCameraAsync`), xin quyền camera và hướng dẫn mở Cài đặt khi bị từ chối.
+- Nén bằng `expo-image-manipulator`: cạnh dài tối đa 1280px, JPEG 0.7.
+- Gửi multipart part `image` qua `XMLHttpRequest` để có thanh tiến trình; lỗi hiển thị kèm nút "Gửi lại"; không thoát được màn hình khi đang gửi.
+- Chi tiết báo cáo: timeline Đã gửi → Đã chẩn đoán → Kỹ sư duyệt theo `diagnosis` (`null`, `PENDING`, `APPROVED`, `REJECTED`); `APPROVED` hiện bệnh, khuyến nghị, thuốc, liều, số ngày cách ly; `REJECTED` hiện lý do và nút "Chụp lại".
+- Danh sách báo cáo tự làm mới khi quay lại từ màn chụp; nút tròn nổi "Chụp" ở góc phải dưới.
+
 ## AI Service (Python)
 
 ### 2026-09-18

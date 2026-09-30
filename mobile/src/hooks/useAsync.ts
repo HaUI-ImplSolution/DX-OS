@@ -13,6 +13,7 @@ const errorMessage = (error: unknown) =>
   error instanceof Error && error.message ? error.message : "Có lỗi xảy ra. Thử lại sau.";
 
 // Runs `load` on mount and whenever `deps` change; a stale response never overwrites a newer one.
+// `reload` and `refresh` keep the same identity until `deps` change.
 export function useAsync<T>(load: () => Promise<T>, deps: readonly unknown[]): AsyncState<T> {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -52,12 +53,8 @@ export function useAsync<T>(load: () => Promise<T>, deps: readonly unknown[]): A
     void execute("reload");
   }, [execute]);
 
-  return {
-    data,
-    error,
-    loading,
-    refreshing,
-    reload: () => void execute("reload"),
-    refresh: () => void execute("refresh"),
-  };
+  const reload = useCallback(() => void execute("reload"), [execute]);
+  const refresh = useCallback(() => void execute("refresh"), [execute]);
+
+  return { data, error, loading, refreshing, reload, refresh };
 }

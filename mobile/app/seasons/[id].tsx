@@ -1,5 +1,15 @@
-import { useLocalSearchParams } from "expo-router";
-import { FlatList, Image, RefreshControl, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { useCallback, useRef } from "react";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
+import {
+  FlatList,
+  Image,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { getIsolationStatus, listDiseaseReports, reportImageUrl } from "@/api/endpoints";
 import { Card } from "@/components/Card";
 import { EmptyState } from "@/components/EmptyState";
@@ -11,7 +21,7 @@ import { StatusChip } from "@/components/StatusChip";
 import { formatDateTime } from "@/format";
 import { useAsync } from "@/hooks/useAsync";
 import { reportStatus } from "@/reportStatus";
-import { colors, fontSize, radius, spacing } from "@/theme";
+import { colors, fontSize, radius, sizes, spacing } from "@/theme";
 import type { DiseaseReport, IsolationStatus } from "@/types";
 
 interface ReportsData {
@@ -34,10 +44,19 @@ export default function ReportsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const cropSeasonId = Number(id);
   const { width } = useWindowDimensions();
+  const wasFocused = useRef(false);
   const cardWidth = (width - spacing.lg * 2 - spacing.md) / 2;
   const { data, error, loading, refreshing, reload, refresh } = useAsync(
     () => loadReports(cropSeasonId),
     [cropSeasonId],
+  );
+
+  // Reload when returning from the capture screen; the first focus is covered by the initial load.
+  useFocusEffect(
+    useCallback(() => {
+      if (wasFocused.current) refresh();
+      wasFocused.current = true;
+    }, [refresh]),
   );
 
   if (loading && !data) {
@@ -70,6 +89,15 @@ export default function ReportsScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
         renderItem={({ item }) => <ReportCard report={item} width={cardWidth} />}
       />
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Chụp ảnh"
+        onPress={() => router.push({ pathname: "/capture", params: { seasonId: String(cropSeasonId) } })}
+        style={({ pressed }) => [styles.fab, pressed && styles.fabPressed]}
+      >
+        <Text style={styles.fabIcon}>📷</Text>
+        <Text style={styles.fabLabel}>Chụp</Text>
+      </Pressable>
     </View>
   );
 }
@@ -77,7 +105,10 @@ export default function ReportsScreen() {
 function ReportCard({ report, width }: { report: DiseaseReport; width: number }) {
   const status = reportStatus(report.diagnosis);
   return (
-    <Card style={[styles.card, { width }]}>
+    <Card
+      style={[styles.card, { width }]}
+      onPress={() => router.push({ pathname: "/reports/[id]", params: { id: String(report.id) } })}
+    >
       <Image
         source={{ uri: reportImageUrl(report.imageRef) }}
         accessibilityLabel="Ảnh báo cáo sâu bệnh"
@@ -91,7 +122,7 @@ function ReportCard({ report, width }: { report: DiseaseReport; width: number })
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
-  list: { padding: spacing.lg, gap: spacing.md },
+  list: { padding: spacing.lg, paddingBottom: sizes.fab + spacing.lg * 2, gap: spacing.md },
   row: { gap: spacing.md },
   card: { padding: spacing.sm, gap: spacing.sm },
   image: {
@@ -100,5 +131,20 @@ const styles = StyleSheet.create({
     borderRadius: radius.card - 4,
     backgroundColor: colors.border,
   },
+  fab: {
+    position: "absolute",
+    right: spacing.lg,
+    bottom: spacing.lg,
+    width: sizes.fab,
+    height: sizes.fab,
+    borderRadius: sizes.fab / 2,
+    backgroundColor: colors.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 4,
+  },
+  fabPressed: { opacity: 0.85 },
+  fabIcon: { fontSize: 24 },
+  fabLabel: { fontSize: fontSize.caption, fontWeight: "700", color: "#ffffff" },
   date: { fontSize: fontSize.caption, color: colors.textMuted },
 });

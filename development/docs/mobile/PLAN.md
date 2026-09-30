@@ -48,13 +48,13 @@ Chi tiết: `BACKEND_CHANGES.md` mục 5.
 
 ## Giai đoạn 3 — Khung app `mobile/`
 
-- [ ] Khởi tạo Expo SDK mới nhất, TypeScript, `expo-router` tại `mobile/` (ngang hàng `frontend/`).
-- [ ] Phụ thuộc: `expo-auth-session`, `expo-secure-store`, `expo-image-picker`, `expo-image-manipulator`, `expo-web-browser`.
-- [ ] `app.json`: scheme `dxfarm`, quyền camera bằng chuỗi tiếng Việt, cho phép HTTP cleartext ở profile dev/preview qua `expo-build-properties`.
-- [ ] `mobile/.env.example`: `EXPO_PUBLIC_API_BASE_URL`, `EXPO_PUBLIC_KEYCLOAK_URL`, `EXPO_PUBLIC_KEYCLOAK_CLIENT_ID=dxfarm-mobile`.
-- [ ] Cấu trúc: `app/`, `src/api/`, `src/auth/`, `src/components/`, `src/theme/`, `src/types.ts`.
-- [ ] Client API port từ `frontend/src/api.ts` (`request`, `ApiError`, `json`); chỉ copy type farmer cần từ `frontend/src/types.ts`.
-- [ ] `npx tsc --noEmit` và `npx expo export`.
+- [X] Khởi tạo Expo SDK mới nhất, TypeScript, `expo-router` tại `mobile/` (ngang hàng `frontend/`).
+- [X] Phụ thuộc: `expo-auth-session`, `expo-secure-store`, `expo-image-picker`, `expo-image-manipulator`, `expo-web-browser`.
+- [X] `app.json`: scheme `dxfarm`, quyền camera bằng chuỗi tiếng Việt, cho phép HTTP cleartext ngoài profile `production` qua `app.config.ts` và `expo-build-properties`.
+- [X] `mobile/.env.example`: `EXPO_PUBLIC_API_BASE_URL`, `EXPO_PUBLIC_KEYCLOAK_URL`, `EXPO_PUBLIC_KEYCLOAK_CLIENT_ID=dxfarm-mobile`.
+- [X] Cấu trúc: `app/`, `src/api/`, `src/auth/`, `src/components/`, `src/theme/`, `src/types.ts`.
+- [X] Client API port từ `frontend/src/api.ts` (`request`, `ApiError`, `json`); chỉ copy type farmer cần từ `frontend/src/types.ts`.
+- [X] `npx tsc --noEmit` và `npx expo export`.
 
 ## Giai đoạn 4 — Xác thực
 

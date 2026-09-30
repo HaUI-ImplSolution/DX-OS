@@ -87,6 +87,17 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Chưa có Carbon/AWD Estimator, IoT simulator, BI dashboard (Superset/Metabase), SSO nặng (Keycloak/Authentik) hay kênh chat nội bộ (Mattermost) — thuộc Giai đoạn 1–3 theo roadmap trong `README.md`.
   Auth/role cơ bản (JWT, FARMER/ENGINEER/ADMIN) đã xong ở trên.
 
+## Mobile (`mobile`, Expo)
+
+### 2026-09-30
+
+**Đã xong — Khung app cho FARMER:**
+
+- Expo SDK 57, TypeScript, `expo-router`, thư mục `mobile/` ngang hàng `frontend/`.
+- `app.json`: scheme `dxfarm`, chuỗi quyền camera tiếng Việt; `app.config.ts` cho phép HTTP cleartext ngoài profile `production`.
+- `mobile/.env.example`: `EXPO_PUBLIC_API_BASE_URL`, `EXPO_PUBLIC_KEYCLOAK_URL`, `EXPO_PUBLIC_KEYCLOAK_CLIENT_ID`.
+- `src/`: client API (`request`, `ApiError`, `json`, timeout 30 giây, lỗi mạng trả `status` 0), lưu token bằng `expo-secure-store`, type dùng cho farmer, theme theo design tokens, component `Screen`.
+
 ## AI Service (Python)
 
 ### 2026-09-18

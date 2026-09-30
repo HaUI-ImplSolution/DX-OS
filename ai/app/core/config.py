@@ -3,6 +3,7 @@
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 AI_ROOT = Path(__file__).resolve().parents[2]
@@ -23,13 +24,21 @@ class Settings(BaseSettings):
     ollama_model: str = "qwen2.5:1.5b"
     embedding_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 
-    hf_repo_id: str = "Khawajaa/plant-disease-detector"
-    weights_filename: str = "best_model.pth"
-    cv_num_classes: int = 38
-    cv_image_size: int = 224
-    cv_model_name: str = "EfficientNet-B4"
-    cv_model_version: str = "v1.0"
+    cv_weights_path: Path = AI_ROOT / "weights" / "best.pt"
+    cv_weights_sha256: str | None = (
+        "573db0871f39396f2bbec5e6aa5988d36b79b13e01cb00f03eee29b32a12c60b"
+    )
+    cv_class_contract_path: Path = (
+        AI_ROOT.parent / "data" / "structured" / "class_contract.json"
+    )
+    cv_num_classes: int = 5
+    cv_image_size: int = 640
+    cv_model_name: str = "YOLOv8n-RiceLeafBD"
+    cv_model_version: str = "3.0.0"
     cv_device: str = "auto"
+    cv_detection_confidence_threshold: float = Field(default=0.25, ge=0, le=1)
+    cv_iou_threshold: float = Field(default=0.45, ge=0, le=1)
+    # Workflow threshold used after CV inference; separate from YOLO box filtering.
     cv_confidence_threshold: float = 0.70
     llm_timeout_seconds: float = 5.0
 
@@ -41,14 +50,6 @@ class Settings(BaseSettings):
     ai_service_api_key: str | None = None
 
     log_level: str = "INFO"
-
-    @property
-    def weights_dir(self) -> Path:
-        return AI_ROOT / "weights"
-
-    @property
-    def weights_path(self) -> Path:
-        return self.weights_dir / self.weights_filename
 
 
 @lru_cache

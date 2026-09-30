@@ -109,11 +109,21 @@ services:
       AI_SERVICE_API_KEY: ${AI_SERVICE_API_KEY:-}
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:1.5b}
+      CV_WEIGHTS_PATH: /app/weights/best.pt
+      CV_WEIGHTS_SHA256: ${AI_CV_WEIGHTS_SHA256:-573DB0871F39396F2BBEC5E6AA5988D36B79B13E01CB00F03EEE29B32A12C60B}
+      CV_CLASS_CONTRACT_PATH: /data/structured/class_contract.json
+      CV_NUM_CLASSES: 5
+      CV_IMAGE_SIZE: 640
+      CV_MODEL_NAME: YOLOv8n-RiceLeafBD
+      CV_MODEL_VERSION: 3.0.0
       CV_DEVICE: ${AI_CV_DEVICE:-cpu}
+      CV_DETECTION_CONFIDENCE_THRESHOLD: ${AI_CV_DETECTION_CONFIDENCE_THRESHOLD:-0.25}
+      CV_IOU_THRESHOLD: ${AI_CV_IOU_THRESHOLD:-0.45}
       LOG_LEVEL: ${AI_LOG_LEVEL:-INFO}
     volumes:
       - ${AI_DATA_DIR:-../data}:/data:ro
       - ai_weights:/app/weights
+      - ${AI_CV_WEIGHTS_PATH:-../development/.local/best.pt}:/app/weights/best.pt:ro
     ports:
       - "${AI_PORT:-8000}:8000"
 

@@ -59,3 +59,13 @@ Nhật ký triển khai `RICE_MODEL_DATA_MIGRATION_PLAN.md`. Chỉ ghi nhận th
 - Data test đạt 4/4; Backend build và test đạt 3/3; formatter và Ruff đạt.
 - PostgreSQL 16 + pgvector smoke test đạt trên database mới và database legacy mô phỏng; Backend khởi động, health `UP` và seed đúng 6 bệnh lúa active.
 - Xác nhận migration giữ disease, pesticide và rule legacy đang được diagnosis/treatment history tham chiếu ở trạng thái inactive; xóa bản ghi legacy không còn tham chiếu và không seed dữ liệu `IN_REVIEW`.
+
+**Đã xong — Giai đoạn 3: thay inference CV bằng YOLOv8n**
+
+- Thay EfficientNet classifier bằng Ultralytics YOLOv8n; chỉ nạp checkpoint cục bộ cấu hình qua `CV_WEIGHTS_PATH`, không tự tải model.
+- Mapping inference đọc trực tiếp `class_contract.json`; chọn detection có confidence cao nhất và trả healthy fallback khi không có box đạt ngưỡng `0.25` sau NMS IoU `0.45`.
+- Kiểm tra startup gồm file/checksum, task `detect`, số lớp và đúng thứ tự năm class; checkpoint mismatch làm startup thất bại rõ ràng.
+- Giữ nguyên response CV năm trường và hành vi invalid image HTTP 400; không đưa bounding box hoặc danh sách detection ra API.
+- Compose mount `best.pt` read-only; cấu hình Compose hợp lệ và checkpoint không được đóng gói hoặc tải ngầm trong image.
+- Checkpoint thật load/inference đạt; health trả `ok` trên CPU. CV test đạt 7/7, Ruff đạt; Backend client và RAG access boundary check đạt.
+- `check_diagnose_contract` còn fixture PlantVillage nên dừng ở unknown `disease_code`; việc đổi workflow fixture sang mã lúa thuộc Giai đoạn 4 theo kế hoạch.

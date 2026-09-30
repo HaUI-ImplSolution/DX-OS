@@ -23,8 +23,8 @@ RUN useradd --create-home --uid 10001 appuser \
 
 USER appuser
 
-# Preserve the downloaded CV weights between container restarts. Mount a named
-# volume here when deploying with Compose.
+# Cache embedding assets here. The CV checkpoint is mounted separately as a
+# read-only file by Compose and is never downloaded by the service.
 VOLUME ["/app/weights"]
 
 EXPOSE 8000

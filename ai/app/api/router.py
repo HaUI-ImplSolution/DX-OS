@@ -70,7 +70,7 @@ def backend_client(
 def health(request: Request):
     settings = get_settings()
     model = getattr(request.app.state, "plant_model", None)
-    device = getattr(settings, "_chosen_device", None)
+    device = getattr(model, "_dxfarm_device", None)
     return CVHealthResponse(
         status="ok" if model is not None else "not_ready",
         model_loaded=model is not None,

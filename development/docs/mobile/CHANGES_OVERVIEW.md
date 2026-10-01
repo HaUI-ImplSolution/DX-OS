@@ -81,10 +81,10 @@ Tên của user lấy từ claim `name` của token (dự phòng `preferred_user
 | Hạng mục | Hành vi cũ | Hành vi mới |
 |---|---|---|
 | Client Keycloak cho mobile | Chỉ có `dxfarm-frontend` và `dxfarm-superset` | Thêm client public `dxfarm-mobile`: Standard Flow + PKCE, không direct access grants, redirect URI `dxfarm://*` và `exp://*` |
-| `KC_HOSTNAME` trong `deploy/docker-compose.yml` | Cố định `http://localhost:${KEYCLOAK_HOST_PORT}` | Lấy từ `KEYCLOAK_PUBLIC_URL`, mặc định vẫn là `http://localhost:${KEYCLOAK_HOST_PORT}` |
-| `deploy/.env.example` | Không có `KEYCLOAK_PUBLIC_URL` | Có `KEYCLOAK_PUBLIC_URL` để trống |
+| `KC_HOSTNAME` trong `deploy/docker-compose.yml` | Cố định `http://localhost:${KEYCLOAK_HOST_PORT}` | Lấy từ `KEYCLOAK_PUBLIC_URL` (mẫu `http://localhost:8180`) |
+| `deploy/.env.example` | Không có `KEYCLOAK_PUBLIC_URL` | Có `KEYCLOAK_PUBLIC_URL=http://localhost:8180` |
 
-- Để trống `KEYCLOAK_PUBLIC_URL` thì mọi thứ chạy như trước.
+- Đặt `KEYCLOAK_PUBLIC_URL=http://localhost:8180` thì mọi thứ chạy như trước.
 - Đặt `KEYCLOAK_PUBLIC_URL` sang IP LAN để điện thoại đăng nhập được; khi đó web và BI cũng phải truy cập Keycloak bằng địa chỉ này.
 - Keycloak chỉ import realm khi realm chưa tồn tại; volume Postgres cũ cần thêm client `dxfarm-mobile` bằng tay hoặc xoá volume để import lại.
 

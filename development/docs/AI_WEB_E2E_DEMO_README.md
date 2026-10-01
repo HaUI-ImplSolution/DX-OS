@@ -4,7 +4,7 @@ Tài liệu này mô tả các thay đổi cần thiết để chạy luồng b�
 
 ## Khởi động
 
-Tại thư mục `deploy/`, chạy:
+Tại thư mục `deploy/`, copy `.env.example` thành `.env` và điền mọi biến đang để trống, rồi chạy:
 
 ```bash
 docker compose up -d --build

@@ -1,12 +1,12 @@
 # Kế hoạch hoàn thiện Web E2E
 
-> **Cập nhật:** 24/09/2026.
+> **Cập nhật:** 30/09/2026.
 
 ## 1. Giả định đã chốt
 
 - Luồng hiện có là baseline: FARMER báo bệnh, ENGINEER chạy diagnosis, ENGINEER/ADMIN duyệt và ghi nhận xử lý.
 - Backend tiếp tục là nguồn sự thật cho `TreatmentRule`, liều lượng, PHI và trạng thái duyệt.
-- Seed 38 bệnh, 4 thuốc và 8 rule; RAG ingest; role authorization; kiểm tra khoảng liều; build và contract self-check hiện có không được regression.
+- Seed 38 bệnh, 6 thuốc, 1 rule active và 13 policy; RAG ingest; role authorization; kiểm tra khoảng liều; build và contract self-check hiện có không được regression.
 
 ## 2. Hiện trạng
 
@@ -28,7 +28,7 @@ Kế hoạch này chỉ theo dõi các công việc còn lại liên quan đến
 
 ## 5. Các phần chưa đạt được
 
-- `DiseaseManagementPolicy` và seed data.
+- Internal API và AI sử dụng `DiseaseManagementPolicy` (bảng và seed đã có).
 - Deterministic selector theo ngữ cảnh nông học.
 - Carbon/AWD Estimator và IoT simulator.
 - GraphRAG, multi-agent và workflow phức tạp.

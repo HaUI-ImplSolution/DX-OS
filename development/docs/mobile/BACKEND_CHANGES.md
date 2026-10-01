@@ -70,7 +70,7 @@ Hành vi cho FARMER ở `GET /disease-reports/{id}` và `GET /crop-seasons/{id}/
 - Client public `dxfarm-mobile` trong `sso/realm-dxfarm.json`: Standard Flow + PKCE, không direct access grants, redirect URI `dxfarm://*` và `exp://*` (chỉ dev).
 - Backend không đổi: xác thực bằng `jwk-set-uri`, không kiểm tra `iss`, nên token cấp qua IP LAN vẫn hợp lệ.
 - Keycloak chỉ import realm khi realm chưa tồn tại; volume cũ cần thêm client qua Admin Console hoặc xoá volume để import lại.
-- `KC_HOSTNAME` lấy từ `KEYCLOAK_PUBLIC_URL` (mặc định `http://localhost:${KEYCLOAK_HOST_PORT}`) để điện thoại truy cập Keycloak qua IP LAN.
+- `KC_HOSTNAME` lấy từ `KEYCLOAK_PUBLIC_URL` (mẫu `http://localhost:8180`) để điện thoại truy cập Keycloak qua IP LAN.
 
 ## 6. Ngoài phạm vi
 

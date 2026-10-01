@@ -148,13 +148,14 @@ Dữ liệu demo cũ do AI ghi trực tiếp trước khi tách DB (`disease_rep
 - [x] Cấu trúc monorepo và quyền sở hữu từng thư mục/module
 - [x] Chính sách repo Private trong lúc phát triển, thời điểm public trước khi nộp bài
 
-## Trạng thái hiện tại (cập nhật 2026-09-30)
+## Trạng thái hiện tại (cập nhật 2026-10-01)
 
 Backend Spring Boot sở hữu dữ liệu nghiệp vụ, structured knowledge và toàn bộ vòng đời phê duyệt; đồng thời cung cấp internal API chỉ đọc cho AI.
 AI Service hoạt động stateless: kết hợp CV, structured facts từ Backend và RAG evidence, sau đó trả recommendation để Backend kiểm tra và lưu.
 AI Vector DB đã tách khỏi Backend DB; runtime dùng role chỉ đọc, còn job ingest dùng role đọc/ghi riêng.
 Ba phase tách AI/Backend đã hoàn thành; trạng thái cuối được phản ánh trực tiếp trong code, README và CHANGELOG.
 Frontend, Keycloak SSO, Superset, Mattermost và portal tiếp tục dùng chung stack Docker Compose.
+Keycloak không cố định hostname nên web (`localhost`) và điện thoại (IP LAN) đăng nhập cùng lúc mà không cần đổi `deploy/.env`.
 Bản mobile Expo cho FARMER đã có luồng đầu-cuối (đăng nhập, xem thửa/vụ/báo cáo, chụp và gửi, hàng đợi offline); hướng dẫn chạy và đóng gói APK ở [`mobile/README.md`](./mobile/README.md), kế hoạch ở [`development/docs/mobile/PLAN.md`](./development/docs/mobile/PLAN.md).
 Chi tiết thay đổi theo từng module xem tại [`CHANGELOG.md`](./CHANGELOG.md).
 
@@ -165,6 +166,7 @@ Chi tiết thay đổi theo từng module xem tại [`CHANGELOG.md`](./CHANGELOG
 ```bash
 cd deploy
 cp .env.example .env      # điền mọi biến đang để trống trong .env (bắt buộc)
+# Đặt checkpoint CV `best.pt` vào development/.local/ (hoặc đặt AI_CV_WEIGHTS_PATH trong .env); file không nằm trong Git
 docker compose up -d --build
 ```
 
@@ -172,11 +174,11 @@ docker compose up -d --build
 
 | Service | Vào đâu | Đăng nhập |
 |---|---|---|
-| **Portal** (danh sách link các app) | http://localhost:8090 | Không cần đăng nhập — chỉ là trang link |
+| **Portal** (link tới các app, trang quản trị và tài liệu API) | http://localhost:8090 | Không cần đăng nhập — chỉ là trang link |
 | **App chính** (frontend) | http://localhost:8082 | Bấm "Đăng nhập" → redirect sang Keycloak, dùng tài khoản demo (xem [`sso/README.md`](./sso/README.md)) |
 | **Keycloak Admin Console** | http://localhost:8180/admin | `KEYCLOAK_ADMIN_USERNAME`/`KEYCLOAK_ADMIN_PASSWORD` trong `.env` |
 | **Backend** (Swagger, gọi API tay) | http://localhost:8081/swagger-ui.html | Lấy access token từ Keycloak (xem `sso/README.md`), bấm "Authorize" rồi dán vào |
-| **BI Dashboard** (Superset) | http://localhost:8088 | Bấm "Sign In with keycloak", dùng tài khoản demo (xem [`sso/README.md`](./sso/README.md)) |
+| **BI Dashboard** (Superset) | http://localhost:8088 | Bấm "Sign In with keycloak", dùng tài khoản demo (xem [`sso/README.md`](./sso/README.md)); tài khoản role `ADMIN` vào được trang quản trị `/users/list/` |
 | **Chat nội bộ** (Mattermost) | http://localhost:8065 | Tài khoản System Admin có sẵn: `MATTERMOST_ADMIN_USERNAME`/`MATTERMOST_ADMIN_PASSWORD` trong `.env`; team `DX-Farm HTX` và 3 channel đã được tạo sẵn |
 
 ### 3. Dừng lại
@@ -190,7 +192,7 @@ docker compose down
 
 - Quản lý tài khoản (tạo/xoá/đổi role FARMER/ENGINEER/ADMIN): qua Keycloak Admin Console.
   Xem [`sso/README.md`](./sso/README.md).
-- Dữ liệu Postgres, Mattermost, Superset và ảnh upload lưu ở `deploy/data/` (bind mount, không mất khi `docker compose down`); model Ollama và weights AI nằm ở volume Docker.
+- Dữ liệu Postgres, Mattermost, Superset và ảnh upload lưu ở `deploy/data/` (bind mount, không mất khi `docker compose down`); model Ollama và cache embedding của AI nằm ở volume Docker.
   Làm sạch từ đầu: `docker compose down -v` rồi xoá nội dung `deploy/data/` (một số thư mục thuộc root nên cần `sudo`).
 - Chi tiết riêng từng service: [`mobile/README.md`](./mobile/README.md) (app mobile), [`sso/README.md`](./sso/README.md) (Keycloak), [`bi/README.md`](./bi/README.md) (Superset), [`chat/README.md`](./chat/README.md) (Mattermost), [`portal/README.md`](./portal/README.md) (trang portal).
 - Sửa code + hot reload thay vì rebuild image: chạy `docker compose up -d postgres` trong `deploy` để có sẵn Postgres, rồi `./mvnw spring-boot:run` (backend) và `VITE_KEYCLOAK_URL=http://localhost:8180/realms/dxfarm npm run dev` (frontend) như bình thường. Mọi file `.env` chỉ nằm ở `deploy/`.

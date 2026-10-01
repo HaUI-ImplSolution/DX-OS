@@ -19,7 +19,7 @@ Backend → POST /api/v1/diagnose
 
 Các thành phần chính:
 
-- **Computer Vision**: EfficientNet-B4 nhận diện một trong 38 lớp PlantVillage và trả `disease_code`, confidence cùng metadata model.
+- **Computer Vision**: YOLOv8n (checkpoint cục bộ `best.pt`) phát hiện một trong 5 lớp bệnh lá lúa, dùng `Rice___healthy` làm fallback khi không có detection đạt ngưỡng; trả `disease_code`, confidence cùng metadata model.
 - **Structured facts**: AI gọi internal API chỉ đọc của Backend để lấy treatment rule, liều lượng, PHI và lịch sử phun. Những dữ liệu này không được lấy từ RAG hoặc tự sinh bởi LLM.
 - **RAG**: truy vấn `documents` và `document_chunks` trong PostgreSQL/pgvector bằng embedding 384 chiều, trả evidence kèm nguồn.
 - **LangGraph**: điều phối một lượt suy luận stateless; không lưu workflow hoặc trạng thái phê duyệt.
@@ -36,7 +36,7 @@ Tài liệu chi tiết theo module:
 | Method | Endpoint | Mô tả |
 |---|---|---|
 | `GET` | `/api/v1/disease/health` | Trạng thái model CV và thiết bị chạy |
-| `GET` | `/api/v1/disease/class-contract` | Contract 38 lớp CV và `disease_code` canonical |
+| `GET` | `/api/v1/disease/class-contract` | Contract 5 lớp CV, fallback và `disease_code` canonical |
 | `POST` | `/api/v1/disease/predict` | Nhận ảnh multipart và trả kết quả CV |
 | `POST` | `/api/v1/disease/knowledge/retrieve` | Truy vấn RAG theo câu hỏi và `disease_code` tùy chọn |
 | `POST` | `/api/v1/diagnose` | Contract nội bộ Backend → AI, yêu cầu header `X-Service-Api-Key` |
@@ -71,6 +71,7 @@ Cấu hình Docker Compose nằm tại [`deploy/.env.example`](../deploy/.env.ex
 | `OLLAMA_BASE_URL`, `OLLAMA_MODEL` | Cấu hình LLM diễn đạt recommendation |
 | `EMBEDDING_MODEL` | Model embedding dùng đồng nhất cho ingest và retrieval |
 | `CV_DEVICE` | `auto`, `cpu` hoặc `cuda` |
+| `CV_WEIGHTS_PATH` | Đường dẫn checkpoint `best.pt` (mặc định `ai/weights/best.pt`); service không tự tải |
 
 Hai service key phải được cấu hình và khớp theo từng chiều. Khi key đầu vào AI để trống, `/api/v1/diagnose` trả `503` theo cơ chế fail-closed.
 
@@ -126,11 +127,11 @@ Kiểm tra model sau khi service khởi động:
 curl http://localhost:8000/api/v1/disease/health
 ```
 
-Lần chạy đầu có thể cần Internet để tải weights từ Hugging Face. Volume `ai_weights` giữ checkpoint cho các lần chạy sau.
+Checkpoint CV `best.pt` phải có sẵn trước khi chạy: Compose bind-mount read-only từ `AI_CV_WEIGHTS_PATH` (mặc định `development/.local/best.pt`, file này không nằm trong Git). Volume `ai_weights` chỉ lưu cache embedding.
 
 ## Giới hạn vận hành
 
-- CV chỉ nhận diện 38 lớp đã huấn luyện; kết quả là tín hiệu chẩn đoán, không phải quyết định điều trị.
+- CV chỉ nhận diện 5 lớp bệnh lá lúa đã huấn luyện; kết quả là tín hiệu chẩn đoán, không phải quyết định điều trị.
 - RAG chỉ tìm được kiến thức đã ingest và không thay thế structured facts từ Backend.
 - Ollama có thể fallback khi lỗi hoặc timeout, nhưng thiếu structured facts luôn làm lượt chẩn đoán thất bại.
 - `/predict` và `/knowledge/retrieve` là endpoint kỹ thuật; luồng nghiệp vụ chính đi qua Backend và `POST /api/v1/diagnose`.

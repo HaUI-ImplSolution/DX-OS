@@ -211,6 +211,10 @@
   .app-card.main .app-icon { background: var(--accent-soft); color: var(--accent-dark); }
   .app-card.bi .app-icon { background: #e5eef8; color: #2a5f82; }
   .app-card.chat .app-icon { background: var(--gold-soft); color: #8a6410; }
+  .app-card.admin .app-icon { background: #efe9f8; color: #5a3d99; }
+  .app-card.api .app-icon { background: #e3f3f0; color: #1f6b5e; }
+
+  .section-head.spaced { margin-top: 40px; }
 
   .app-name { font-weight: 650; font-size: 1.05rem; }
   .app-desc { color: var(--muted); font-size: 0.88rem; margin-top: 6px; line-height: 1.5; flex-grow: 1; }
@@ -351,6 +355,39 @@
         <div class="app-desc">Trao đổi nội bộ giữa nông dân và kỹ sư (Mattermost).</div>
         <div class="app-meta">
           <span class="app-url">localhost:8065</span>
+          <span class="app-cta">Mở →</span>
+        </div>
+      </a>
+    </div>
+
+    <div class="section-head spaced">
+      <h2>Quản trị &amp; tài liệu</h2>
+      <span>Dành cho quản trị viên và lập trình viên</span>
+    </div>
+
+    <div class="apps">
+      <a class="app-card admin" href="http://localhost:8180/admin/" target="_blank" rel="noopener">
+        <span class="pill sso">SSO</span>
+        <div class="app-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9"/><path d="m16 7 3 3"/><path d="m14 9 2 2"/></svg>
+        </div>
+        <div class="app-name">Keycloak Admin</div>
+        <div class="app-desc">Quản lý người dùng, vai trò và client đăng nhập SSO.</div>
+        <div class="app-meta">
+          <span class="app-url">localhost:8180/admin</span>
+          <span class="app-cta">Mở →</span>
+        </div>
+      </a>
+
+      <a class="app-card api" href="http://localhost:8081/swagger-ui/index.html#/" target="_blank" rel="noopener">
+        <span class="pill standalone">API</span>
+        <div class="app-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m8 7-5 5 5 5"/><path d="m16 7 5 5-5 5"/><path d="m14 4-4 16"/></svg>
+        </div>
+        <div class="app-name">Tài liệu API</div>
+        <div class="app-desc">Danh sách endpoint của Backend và thử gọi trực tiếp (Swagger UI).</div>
+        <div class="app-meta">
+          <span class="app-url">localhost:8081/swagger-ui</span>
           <span class="app-cta">Mở →</span>
         </div>
       </a>

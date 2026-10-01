@@ -1,6 +1,6 @@
 # Portal (`portal`)
 
-Trang tĩnh liệt kê link tới các ứng dụng trong hệ thống (Ứng dụng chính, BI Dashboard, Kênh chat nội bộ), để người dùng không phải tự nhớ/gõ URL từng app.
+Trang tĩnh liệt kê link tới các ứng dụng trong hệ thống (Ứng dụng chính, BI Dashboard, Kênh chat nội bộ) cùng trang quản trị Keycloak và tài liệu API Swagger của Backend, để người dùng không phải tự nhớ/gõ URL từng app.
 
 ## Chạy
 
@@ -16,5 +16,5 @@ Expose cổng `8090` (`PORTAL_HOST_PORT` trong `deploy/.env`).
 
 ## Giới hạn hiện tại
 
-- Link trỏ theo cổng trong `deploy/.env.example` (`FRONTEND_HOST_PORT`, `SUPERSET_HOST_PORT`, `MATTERMOST_HOST_PORT`).
+- Link trỏ theo cổng trong `deploy/.env.example` (`FRONTEND_HOST_PORT`, `SUPERSET_HOST_PORT`, `MATTERMOST_HOST_PORT`, `KEYCLOAK_HOST_PORT`, `BACKEND_HOST_PORT`).
   Nếu đổi cổng trong `.env`, sửa lại URL tương ứng trong `index.html`.

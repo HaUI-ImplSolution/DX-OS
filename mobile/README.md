@@ -83,12 +83,12 @@ Ngoài Expo Go, có thể build APK bằng EAS mà không cần cài Android Stu
 
 ## Biến môi trường
 
-Khai báo trong `mobile/.env.local` (không commit); mẫu ở [`.env.example`](./.env.example).
+Khai báo trong `mobile/.env` (không commit); mẫu ở [`.env.example`](./.env.example).
 
 | Biến | Ý nghĩa | Ví dụ |
 |---|---|---|
 | `EXPO_PUBLIC_API_BASE_URL` | Địa chỉ Backend | `http://192.168.1.10:8081` |
-| `EXPO_PUBLIC_KEYCLOAK_URL` | Realm URL của Keycloak, phải trùng `KEYCLOAK_PUBLIC_URL` trong `deploy/.env` | `http://192.168.1.10:8180/realms/dxfarm` |
+| `EXPO_PUBLIC_KEYCLOAK_URL` | Realm URL của Keycloak qua IP LAN của máy dev | `http://192.168.1.10:8180/realms/dxfarm` |
 | `EXPO_PUBLIC_KEYCLOAK_CLIENT_ID` | Client OIDC | `dxfarm-mobile` |
 
 Biến `EXPO_PUBLIC_*` được nhúng vào bundle lúc build nên chỉ chứa giá trị công khai.
@@ -106,15 +106,7 @@ hostname -I | awk '{print $1}'
 
 Các bước dưới dùng `192.168.1.10` làm ví dụ.
 
-### 2. Cấu hình Backend và Keycloak
-
-Trong `deploy/.env` đặt:
-
-```
-KEYCLOAK_PUBLIC_URL=http://192.168.1.10:8180
-```
-
-Khởi động lại stack:
+### 2. Khởi động Backend và Keycloak
 
 ```bash
 cd deploy
@@ -124,21 +116,20 @@ docker compose up -d --build
 - Điện thoại phải truy cập được cổng `8081` (Backend) và `8180` (Keycloak) của máy dev; mở cổng trên firewall nếu cần.
 - Keycloak chỉ import realm khi realm chưa tồn tại.
   Với volume Postgres cũ, thêm client `dxfarm-mobile` qua Admin Console hoặc xoá `deploy/data/postgres` để import lại (mất dữ liệu demo).
-- Khi `KEYCLOAK_PUBLIC_URL` trỏ sang IP, web cũng phải truy cập Keycloak bằng địa chỉ này.
-  Để trống biến này khi chỉ dùng web ở `localhost`.
 - Thửa cần có `farmerName` là `Nguyễn Văn Nông` để `farmer1` nhìn thấy; đăng nhập web bằng `farmer1` để tạo thửa (tên được gán tự động), hoặc dùng `admin1`/`engineer1` tạo thửa với đúng tên đó.
 
 ### 3. Cài đặt và chạy app
 
 ```bash
 cd mobile
-cp .env.example .env.local
-# sửa .env.local: thay 192.168.1.10 bằng IP LAN của máy dev
+cp .env.example .env
+# sửa .env: thay 192.168.1.10 bằng IP LAN của máy dev
 npm install
-npx expo start -c
+npm start -- -c
 ```
 
-- Cờ `-c` xoá cache Metro để nạp lại biến `EXPO_PUBLIC_*`; dùng lại mỗi khi đổi `.env.local`.
+- Cờ `-c` xoá cache Metro để nạp lại biến `EXPO_PUBLIC_*`; dùng lại mỗi khi đổi `.env`.
+- Metro chạy ở cổng `8083` (script `npm start`) vì `8081` dành cho Backend; điện thoại cần truy cập được cổng này của máy dev.
 - Quét mã QR bằng Expo Go trên điện thoại.
   Expo Go phải hỗ trợ SDK 57; nếu không, dùng development build.
 
@@ -156,7 +147,7 @@ Cấu hình nằm ở [`eas.json`](./eas.json), profile `preview` xuất file `.
 ### Các bước
 
 1. Mở `eas.json` và thay `192.168.1.10` trong ba biến `EXPO_PUBLIC_*` của profile `preview` bằng IP LAN của máy chạy Backend và Keycloak.
-   Giá trị này được nhúng vào APK lúc build; file `.env.local` không được đưa lên EAS.
+   Giá trị này được nhúng vào APK lúc build; file `.env` không được đưa lên EAS.
 2. Đăng nhập và gắn dự án với tài khoản Expo (chỉ lần đầu):
 
    ```bash
@@ -183,7 +174,7 @@ Cấu hình nằm ở [`eas.json`](./eas.json), profile `preview` xuất file `.
 - Profile `preview` cho phép HTTP thường để gọi Backend qua IP LAN; bản chạy thật cần HTTPS và một profile `production` riêng.
 - Muốn tăng số phiên bản, sửa `version` trong `app.json`, và thêm `android.versionCode` khi cần cài đè.
 - Build trên máy dev (không dùng đám mây) cần JDK và Android SDK, chạy `npx eas-cli build --platform android --profile preview --local`.
-- Nếu `KEYCLOAK_PUBLIC_URL` đổi, sửa `EXPO_PUBLIC_KEYCLOAK_URL` trong `eas.json` cho khớp rồi build lại.
+- Nếu IP máy dev đổi, sửa `EXPO_PUBLIC_KEYCLOAK_URL` trong `eas.json` cho khớp rồi build lại.
 
 ## Kiểm tra mã nguồn
 
@@ -197,13 +188,13 @@ npx expo export --platform android
 | Triệu chứng | Nguyên nhân thường gặp |
 |---|---|
 | "Không đăng nhập được, thử lại" hoặc Keycloak báo redirect URI không hợp lệ | Realm chưa có client `dxfarm-mobile` (volume cũ); xem bước 2 |
-| Trang đăng nhập Keycloak không tải hoặc trỏ về `localhost` | `KEYCLOAK_PUBLIC_URL` chưa đặt hoặc chưa khởi động lại Keycloak |
-| "Không kết nối được. Kiểm tra mạng rồi thử lại." | Điện thoại không tới được Backend: sai IP trong `.env.local`, khác mạng WiFi hoặc firewall chặn cổng `8081` |
+| Trang đăng nhập Keycloak không tải, hoặc đăng nhập xong bị chuyển về `localhost` và Safari không mở được | `EXPO_PUBLIC_KEYCLOAK_URL` trong `.env` đang là `localhost` hoặc sai IP; đặt IP LAN của máy dev rồi chạy `npm start -- -c` |
+| "Không kết nối được. Kiểm tra mạng rồi thử lại." | Điện thoại không tới được Backend: sai IP trong `.env`, khác mạng WiFi hoặc firewall chặn cổng `8081` |
 | Danh sách thửa trống | `farmerName` của thửa không khớp tên trong token |
 | Ảnh báo cáo không hiển thị | Đường dẫn `/uploads/...` không truy cập được từ điện thoại; kiểm tra `EXPO_PUBLIC_API_BASE_URL` |
 | Ảnh nằm mãi ở "Chờ gửi" | Chưa có mạng tới Backend hoặc đang chờ khoảng thử lại; đưa app về foreground để gửi ngay |
 | Ảnh ở trạng thái "Lỗi" | Backend từ chối ảnh (ví dụ sai định dạng, quá lớn hoặc vụ mùa không còn thuộc tài khoản); đọc thông báo dưới ảnh rồi xoá và chụp lại |
-| Đổi `.env.local` nhưng app vẫn dùng giá trị cũ | Chạy lại `npx expo start -c` |
+| Đổi `.env` nhưng app vẫn dùng giá trị cũ | Chạy lại `npm start -- -c` |
 
 ## Còn thiếu
 

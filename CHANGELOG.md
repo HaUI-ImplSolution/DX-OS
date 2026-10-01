@@ -249,6 +249,12 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Deploy (`deploy`)
 
+### 2026-10-01
+
+- Keycloak không đặt `KC_HOSTNAME`, dùng hostname của request: web vào `localhost:8180`, điện thoại vào qua IP LAN, hai bên chạy cùng lúc.
+- Superset đọc tên, email và role từ access token thay vì gọi `/userinfo`, vì `/userinfo` từ chối token có issuer khác hostname của request.
+- `VITE_KEYCLOAK_URL` của frontend và `KEYCLOAK_BROWSER_BASE` của Superset lấy từ `KEYCLOAK_PUBLIC_URL` (mẫu `http://localhost:8180`).
+
 ### 2026-09-30
 
 - `docker-compose.yml` không chứa giá trị mặc định: mọi biến `${...}` bắt buộc khai báo trong `deploy/.env`, giá trị mẫu nằm ở `.env.example`; thiếu biến nào Compose dừng và báo tên biến đó. `KEYCLOAK_PUBLIC_URL` có giá trị mẫu `http://localhost:8180`.
@@ -372,7 +378,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 **Đã xong — Client cho bản mobile:**
 
 - Client public `dxfarm-mobile` trong `realm-dxfarm.json`: Standard Flow + PKCE, không direct access grants, redirect URI `dxfarm://*` và `exp://*`.
-- `deploy/docker-compose.yml` lấy `KC_HOSTNAME` từ `KEYCLOAK_PUBLIC_URL` (mặc định `http://localhost:${KEYCLOAK_HOST_PORT}`) để điện thoại truy cập Keycloak qua IP LAN.
+- Keycloak trong `deploy/docker-compose.yml` dùng hostname của request để điện thoại truy cập qua IP LAN.
 - `sso/README.md`: phạm vi, cách dev với IP LAN, cách thêm client vào volume cũ.
 
 ### 2026-09-11

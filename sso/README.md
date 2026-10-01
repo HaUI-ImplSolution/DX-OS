@@ -45,8 +45,7 @@ Quản lý user (tạo/xoá/đổi role) qua Keycloak Admin Console: `http://loc
 - Redirect URI: `dxfarm://*` (app đã build) và `exp://*` (Expo Go, chỉ dùng khi dev).
 - Backend xác thực bằng `jwk-set-uri` và không kiểm tra `iss`, nên token cấp qua IP LAN vẫn hợp lệ.
 - Điện thoại phải truy cập được Keycloak và backend qua IP LAN của máy dev cùng mạng.
-  Đặt `KEYCLOAK_PUBLIC_URL=http://<IP-LAN>:8180` trong `deploy/.env` rồi `docker compose up -d keycloak`.
-  Khi đó web và BI cũng phải truy cập Keycloak bằng địa chỉ này.
+  Keycloak không đặt `KC_HOSTNAME` nên URL trong form đăng nhập và redirect theo địa chỉ request: web vào `localhost:8180`, điện thoại vào `<IP-LAN>:8180`, hai bên chạy song song mà không cần đổi `deploy/.env`.
 - Keycloak chỉ import realm khi realm chưa tồn tại.
   Với volume Postgres cũ, thêm client `dxfarm-mobile` qua Admin Console (cấu hình như trong `realm-dxfarm.json`) hoặc xoá `deploy/data/postgres` để import lại.
 
@@ -55,6 +54,7 @@ Quản lý user (tạo/xoá/đổi role) qua Keycloak Admin Console: `http://loc
 Trình duyệt gọi Keycloak qua `http://localhost:${KEYCLOAK_HOST_PORT}`, backend/Superset trong mạng docker gọi qua `http://keycloak:8080` — hai hostname khác nhau cho cùng một Keycloak.
 Backend xác thực token bằng `jwk-set-uri` (chỉ lấy public key verify chữ ký) thay vì `issuer-uri` (sẽ lệch claim `iss` vì token mang hostname trình duyệt).
 Superset (`bi/superset_config.py`) tự chỉ định từng endpoint (`authorize_url` dùng hostname trình duyệt, `access_token_url`/`api_base_url`/`jwks_uri` dùng hostname nội bộ) thay vì dùng `server_metadata_url` tự khám phá — cùng lý do.
+Tên, email và role của user lấy thẳng từ access token nhận qua kênh server-to-server, không gọi `/userinfo` (Keycloak từ chối token có issuer khác hostname của request).
 
 Đây là đánh đổi chấp nhận được cho docker-compose chạy trên một máy.
 Triển khai thật cần reverse proxy để trình duyệt và backend cùng gọi Keycloak qua một hostname, khi đó bật lại `issuer-uri`.

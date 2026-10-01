@@ -3,6 +3,9 @@ package HaUI.ImplSolution.DX_Farm.service;
 import HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseRequest;
 import HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseResponse;
 import HaUI.ImplSolution.DX_Farm.exception.AiServiceException;
+import HaUI.ImplSolution.DX_Farm.exception.AiTriageException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import java.net.http.HttpClient;
 import java.time.Duration;
@@ -13,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 // Gọi inference contract POST /api/v1/diagnose của AI Service.
 // Chưa được gọi từ flow nào - nối vào DiseaseReportService ở P2-4.
@@ -20,11 +24,13 @@ import org.springframework.web.client.RestClientException;
 public class AiDiagnosisClient {
 
   private final RestClient restClient;
+  private final ObjectMapper objectMapper;
 
   public AiDiagnosisClient(@Value("${ai.service.base-url}") String baseUrl,
       @Value("${ai.service.api-key:}") String apiKey,
       @Value("${ai.service.connect-timeout-ms:3000}") int connectTimeoutMs,
-      @Value("${ai.service.read-timeout-ms:15000}") int readTimeoutMs) {
+      @Value("${ai.service.read-timeout-ms:15000}") int readTimeoutMs, ObjectMapper objectMapper) {
+    this.objectMapper = objectMapper;
     HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1)
         .connectTimeout(Duration.ofMillis(connectTimeoutMs)).build();
     JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(httpClient);
@@ -44,12 +50,32 @@ public class AiDiagnosisClient {
     try {
       return restClient.post().uri("/api/v1/diagnose").body(request).retrieve()
           .body(AiDiagnoseResponse.class);
+    } catch (RestClientResponseException e) {
+      if (e.getStatusCode().value() == 422) {
+        throw new AiTriageException(readTriageMessage(e), e);
+      }
+      throw new AiServiceException("AI diagnose call failed: " + e.getMessage(), e);
     } catch (RestClientException e) {
       throw new AiServiceException("AI diagnose call failed: " + e.getMessage(), e);
     }
   }
 
   private AiDiagnoseResponse diagnoseFallback(AiDiagnoseRequest request, Throwable t) {
+    if (t instanceof AiTriageException triageException) {
+      throw triageException;
+    }
     throw new AiServiceException("AI diagnosis service unavailable", t);
+  }
+
+  private String readTriageMessage(RestClientResponseException exception) {
+    try {
+      JsonNode detail = objectMapper.readTree(exception.getResponseBodyAsString()).path("detail");
+      if (detail.isTextual() && !detail.asText().isBlank()) {
+        return detail.asText();
+      }
+    } catch (Exception ignored) {
+      // Fall through to a stable user-facing message if the AI error body is malformed.
+    }
+    return "Ảnh chưa đạt yêu cầu nhận diện. Vui lòng chụp lại ảnh lá lúa rõ nét.";
   }
 }

@@ -1,1434 +1,181 @@
 [
   {
-    "disease_code": "Apple___Apple_scab",
-    "class_name_vi": "Bệnh ghẻ táo",
-    "crop_name": "Táo",
-    "disease_name": "Bệnh ghẻ táo",
-    "disease_type": "Nấm",
-    "pathogen": {
-      "name": "Nấm gây bệnh ghẻ táo",
-      "scientific_name": "Venturia inaequalis"
-    },
+    "disease_code": "Rice___healthy",
+    "class_name_vi": "Lá lúa không thấy triệu chứng bệnh",
+    "crop_name": "Lúa",
+    "disease_name": "Lá lúa không thấy triệu chứng bệnh",
+    "disease_type": "Không bệnh",
+    "pathogen": {"name": null, "scientific_name": null},
     "knowledge": {
-      "symptoms": "Đốm tròn màu xanh ô-liu đến nâu trên lá, về sau sẫm/đen; lá vàng và rụng sớm. Quả có vết nâu sần, hóa bần; nhiễm sớm có thể làm quả biến dạng và nứt.",
-      "disease_development": "Nấm qua đông chủ yếu trên lá bệnh rụng. Mùa xuân phát tán bào tử sơ cấp; sau nhiễm, tổn thương tạo bào tử thứ cấp và chu kỳ có thể lặp lại nhiều lần trong mùa.",
-      "favorable_conditions": "Thời tiết ấm và mưa/ẩm, thời gian lá ướt kéo dài; nguy cơ cao trong giai đoạn lộc non–ra hoa–đậu quả.",
-      "transmission": "Bào tử phát tán nhờ gió; mưa và tưới bắn làm lan trong tán cây và sang cây lân cận.",
-      "prevention": "Ưu tiên giống kháng; giảm nguồn bệnh từ lá rụng; theo dõi thời tiết và thời gian lá ướt.",
-      "cultural_control": "Thu gom/phân hủy hoặc làm vụn lá bệnh, tỉa tán thông thoáng, hạn chế tưới làm ướt lá kéo dài.",
-      "biological_control": "Không coi biện pháp sinh học là trụ cột duy nhất; có thể dùng chế phẩm sinh học được đăng ký nếu nhãn cho phép, kết hợp vệ sinh vườn.",
-      "chemical_control_non_quantitative": "Fungicide có thể hữu ích nếu dùng đúng thời điểm phòng nhiễm; lựa chọn sản phẩm theo đăng ký địa phương.",
-      "treatment_timing": "Tập trung bảo vệ mô non trong giai đoạn phát tán bào tử sơ cấp mùa xuân; xử lý theo mô hình nguy cơ/khuyến cáo địa phương.",
-      "resistance_management": "Luân phiên nhóm FRAC, tránh lặp liên tiếp cùng cơ chế tác động; ưu tiên IPM và giống kháng.",
-      "safety_notes": "Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
+      "symptoms": "Không thấy triệu chứng thuộc năm lớp bệnh trong tập ảnh; vẫn có thể tồn tại vấn đề khác ngoài phạm vi model.",
+      "prevention": "Theo dõi ruộng định kỳ; nếu xuất hiện triệu chứng mới, yêu cầu kiểm tra trực tiếp."
     },
     "provenance": {
-      "source_ids": [
-        "S05",
-        "S03"
-      ],
-      "evidence_scope": "CV label + disease biology/IPM + regulatory guardrail",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "HIGH",
-      "structured_rule_status": "REQUIRES_VN_LABEL_VALIDATION",
-      "regulatory_note": "Liều, tần suất, PHI, tên thương phẩm và tình trạng được phép dùng phải lấy deterministic từ nhãn/danh mục thuốc BVTV Việt Nam hiện hành; nguồn extension quốc tế chỉ dùng cho triệu chứng, sinh học bệnh và IPM tham khảo."
-    },
-    "content": "Mã bệnh: Apple___Apple_scab\nTên tiếng Việt: Bệnh ghẻ táo\nCây trồng: Táo\nTên bệnh/điều kiện: Bệnh ghẻ táo\nLoại bệnh/dịch hại: Nấm\nTác nhân: Nấm gây bệnh ghẻ táo\nTên khoa học tác nhân: Venturia inaequalis\nTriệu chứng: Đốm tròn màu xanh ô-liu đến nâu trên lá, về sau sẫm/đen; lá vàng và rụng sớm. Quả có vết nâu sần, hóa bần; nhiễm sớm có thể làm quả biến dạng và nứt.\nDiễn biến/vòng bệnh: Nấm qua đông chủ yếu trên lá bệnh rụng. Mùa xuân phát tán bào tử sơ cấp; sau nhiễm, tổn thương tạo bào tử thứ cấp và chu kỳ có thể lặp lại nhiều lần trong mùa.\nĐiều kiện thuận lợi: Thời tiết ấm và mưa/ẩm, thời gian lá ướt kéo dài; nguy cơ cao trong giai đoạn lộc non–ra hoa–đậu quả.\nLây lan: Bào tử phát tán nhờ gió; mưa và tưới bắn làm lan trong tán cây và sang cây lân cận.\nPhòng ngừa: Ưu tiên giống kháng; giảm nguồn bệnh từ lá rụng; theo dõi thời tiết và thời gian lá ướt.\nBiện pháp canh tác: Thu gom/phân hủy hoặc làm vụn lá bệnh, tỉa tán thông thoáng, hạn chế tưới làm ướt lá kéo dài.\nBiện pháp sinh học: Không coi biện pháp sinh học là trụ cột duy nhất; có thể dùng chế phẩm sinh học được đăng ký nếu nhãn cho phép, kết hợp vệ sinh vườn.\nKiểm soát hóa học (không định lượng): Fungicide có thể hữu ích nếu dùng đúng thời điểm phòng nhiễm; lựa chọn sản phẩm theo đăng ký địa phương.\nThời điểm xử lý: Tập trung bảo vệ mô non trong giai đoạn phát tán bào tử sơ cấp mùa xuân; xử lý theo mô hình nguy cơ/khuyến cáo địa phương.\nQuản lý kháng: Luân phiên nhóm FRAC, tránh lặp liên tiếp cùng cơ chế tác động; ưu tiên IPM và giống kháng.\nLưu ý an toàn: Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-  },
-  {
-    "disease_code": "Apple___Black_rot",
-    "class_name_vi": "Bệnh thối đen trên táo",
-    "crop_name": "Táo",
-    "disease_name": "Bệnh thối đen trên táo",
-    "disease_type": "Nấm",
-    "pathogen": {
-      "name": "Nấm gây thối đen/canker trên táo",
-      "scientific_name": "Botryosphaeria obtusa (thường được tài liệu cũ dùng; taxonomy có thể được cập nhật)"
-    },
-    "knowledge": {
-      "symptoms": "Đốm lá tròn viền tím, tâm nâu; quả xuất hiện vết nâu với các vòng đồng tâm, thối nhưng thường còn cứng rồi hóa 'mummy'; cành có canker nâu đỏ, nứt/sunken và có thể gây chết cành.",
-      "disease_development": "Mầm bệnh duy trì trên gỗ/cành bệnh và quả khô còn lại; thường nặng hơn trên cây suy yếu hoặc có tổn thương/canker khác.",
-      "favorable_conditions": "Ẩm, mưa và cây bị stress/tổn thương; mô chết và vết thương tạo điểm xâm nhập thuận lợi.",
-      "transmission": "Bào tử từ mô bệnh phát tán chủ yếu khi ẩm/mưa, lây sang mô cảm nhiễm và vết thương.",
-      "prevention": "Giữ cây khỏe, xử lý nguồn bệnh và các canker khác; không để quả khô/mô chết tồn tại trong vườn.",
-      "cultural_control": "Cắt bỏ cành/canker, loại bỏ quả mummy và gỗ chết; vệ sinh dụng cụ, quản lý stress cây.",
-      "biological_control": "Không có biocontrol đơn lẻ thay thế sanitation; chỉ sử dụng sản phẩm sinh học nếu được đăng ký cho bệnh/cây.",
-      "chemical_control_non_quantitative": "Hóa học chỉ là bổ trợ trong chương trình quản lý quả/bệnh; hiệu quả phụ thuộc thời điểm và nhãn.",
-      "treatment_timing": "Loại bỏ nguồn bệnh trong thời kỳ nghỉ và trước mùa ẩm; bảo vệ mô/quả khi nguy cơ cao theo hướng dẫn địa phương.",
-      "resistance_management": "Nếu dùng fungicide, luân phiên FRAC; không dựa hoàn toàn vào hóa học.",
-      "safety_notes": "Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-    },
-    "provenance": {
-      "source_ids": [
-        "S06",
-        "S03"
-      ],
-      "evidence_scope": "CV label + disease biology/IPM + regulatory guardrail",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "HIGH",
-      "structured_rule_status": "REQUIRES_VN_LABEL_VALIDATION",
-      "regulatory_note": "Liều, tần suất, PHI, tên thương phẩm và tình trạng được phép dùng phải lấy deterministic từ nhãn/danh mục thuốc BVTV Việt Nam hiện hành; nguồn extension quốc tế chỉ dùng cho triệu chứng, sinh học bệnh và IPM tham khảo."
-    },
-    "content": "Mã bệnh: Apple___Black_rot\nTên tiếng Việt: Bệnh thối đen trên táo\nCây trồng: Táo\nTên bệnh/điều kiện: Bệnh thối đen trên táo\nLoại bệnh/dịch hại: Nấm\nTác nhân: Nấm gây thối đen/canker trên táo\nTên khoa học tác nhân: Botryosphaeria obtusa (thường được tài liệu cũ dùng; taxonomy có thể được cập nhật)\nTriệu chứng: Đốm lá tròn viền tím, tâm nâu; quả xuất hiện vết nâu với các vòng đồng tâm, thối nhưng thường còn cứng rồi hóa 'mummy'; cành có canker nâu đỏ, nứt/sunken và có thể gây chết cành.\nDiễn biến/vòng bệnh: Mầm bệnh duy trì trên gỗ/cành bệnh và quả khô còn lại; thường nặng hơn trên cây suy yếu hoặc có tổn thương/canker khác.\nĐiều kiện thuận lợi: Ẩm, mưa và cây bị stress/tổn thương; mô chết và vết thương tạo điểm xâm nhập thuận lợi.\nLây lan: Bào tử từ mô bệnh phát tán chủ yếu khi ẩm/mưa, lây sang mô cảm nhiễm và vết thương.\nPhòng ngừa: Giữ cây khỏe, xử lý nguồn bệnh và các canker khác; không để quả khô/mô chết tồn tại trong vườn.\nBiện pháp canh tác: Cắt bỏ cành/canker, loại bỏ quả mummy và gỗ chết; vệ sinh dụng cụ, quản lý stress cây.\nBiện pháp sinh học: Không có biocontrol đơn lẻ thay thế sanitation; chỉ sử dụng sản phẩm sinh học nếu được đăng ký cho bệnh/cây.\nKiểm soát hóa học (không định lượng): Hóa học chỉ là bổ trợ trong chương trình quản lý quả/bệnh; hiệu quả phụ thuộc thời điểm và nhãn.\nThời điểm xử lý: Loại bỏ nguồn bệnh trong thời kỳ nghỉ và trước mùa ẩm; bảo vệ mô/quả khi nguy cơ cao theo hướng dẫn địa phương.\nQuản lý kháng: Nếu dùng fungicide, luân phiên FRAC; không dựa hoàn toàn vào hóa học.\nLưu ý an toàn: Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-  },
-  {
-    "disease_code": "Apple___Cedar_apple_rust",
-    "class_name_vi": "Bệnh gỉ sắt tuyết tùng trên táo",
-    "crop_name": "Táo",
-    "disease_name": "Bệnh gỉ sắt tuyết tùng trên táo",
-    "disease_type": "Nấm gỉ sắt",
-    "pathogen": {
-      "name": "Nấm gỉ sắt luân phiên ký chủ táo–bách xù",
-      "scientific_name": "Gymnosporangium juniperi-virginianae"
-    },
-    "knowledge": {
-      "symptoms": "Lá có đốm vàng rồi cam đỏ với viền đỏ; mặt trên có chấm đen nhỏ, mặt dưới có ống sinh bào tử; quả có thể có đốm xanh-nâu nông. Trên bách xù hình thành u gỗ với tua cam khi ẩm.",
-      "disease_development": "Cần hai nhóm ký chủ để hoàn thành vòng đời. U trên bách xù tạo bào tử trong thời tiết ẩm mùa xuân, nhiễm táo; sau đó táo tạo bào tử quay lại nhiễm bách xù.",
-      "favorable_conditions": "Mùa xuân ẩm/mưa và thời gian ướt kéo dài trong giai đoạn mô táo non cảm nhiễm.",
-      "transmission": "Bào tử lan xa bằng gió giữa bách xù và táo; không lan trực tiếp táo→táo theo cùng một pha vòng đời.",
-      "prevention": "Giống kháng là biện pháp bền vững; quản lý ký chủ bách xù gần vườn có thể giảm áp lực nhưng không loại bỏ hoàn toàn nguy cơ.",
-      "cultural_control": "Tỉa thông thoáng; nếu khả thi loại bỏ u gỉ sắt trên bách xù; theo dõi thời tiết mùa xuân.",
-      "biological_control": "Không có biocontrol chuẩn là biện pháp chính; dùng IPM và giống kháng.",
-      "chemical_control_non_quantitative": "Có thể bảo vệ lá/quả non bằng fungicide đăng ký trong giai đoạn nguy cơ nhiễm.",
-      "treatment_timing": "Bảo vệ mô non từ giai đoạn nảy lộc/ra hoa khi bách xù phát tán bào tử và có mưa ẩm.",
-      "resistance_management": "Luân phiên nhóm FRAC; không phun lặp một MOA kéo dài.",
-      "safety_notes": "Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-    },
-    "provenance": {
-      "source_ids": [
-        "S07",
-        "S03"
-      ],
-      "evidence_scope": "CV label + disease biology/IPM + regulatory guardrail",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "HIGH",
-      "structured_rule_status": "REQUIRES_VN_LABEL_VALIDATION",
-      "regulatory_note": "Liều, tần suất, PHI, tên thương phẩm và tình trạng được phép dùng phải lấy deterministic từ nhãn/danh mục thuốc BVTV Việt Nam hiện hành; nguồn extension quốc tế chỉ dùng cho triệu chứng, sinh học bệnh và IPM tham khảo."
-    },
-    "content": "Mã bệnh: Apple___Cedar_apple_rust\nTên tiếng Việt: Bệnh gỉ sắt tuyết tùng trên táo\nCây trồng: Táo\nTên bệnh/điều kiện: Bệnh gỉ sắt tuyết tùng trên táo\nLoại bệnh/dịch hại: Nấm gỉ sắt\nTác nhân: Nấm gỉ sắt luân phiên ký chủ táo–bách xù\nTên khoa học tác nhân: Gymnosporangium juniperi-virginianae\nTriệu chứng: Lá có đốm vàng rồi cam đỏ với viền đỏ; mặt trên có chấm đen nhỏ, mặt dưới có ống sinh bào tử; quả có thể có đốm xanh-nâu nông. Trên bách xù hình thành u gỗ với tua cam khi ẩm.\nDiễn biến/vòng bệnh: Cần hai nhóm ký chủ để hoàn thành vòng đời. U trên bách xù tạo bào tử trong thời tiết ẩm mùa xuân, nhiễm táo; sau đó táo tạo bào tử quay lại nhiễm bách xù.\nĐiều kiện thuận lợi: Mùa xuân ẩm/mưa và thời gian ướt kéo dài trong giai đoạn mô táo non cảm nhiễm.\nLây lan: Bào tử lan xa bằng gió giữa bách xù và táo; không lan trực tiếp táo→táo theo cùng một pha vòng đời.\nPhòng ngừa: Giống kháng là biện pháp bền vững; quản lý ký chủ bách xù gần vườn có thể giảm áp lực nhưng không loại bỏ hoàn toàn nguy cơ.\nBiện pháp canh tác: Tỉa thông thoáng; nếu khả thi loại bỏ u gỉ sắt trên bách xù; theo dõi thời tiết mùa xuân.\nBiện pháp sinh học: Không có biocontrol chuẩn là biện pháp chính; dùng IPM và giống kháng.\nKiểm soát hóa học (không định lượng): Có thể bảo vệ lá/quả non bằng fungicide đăng ký trong giai đoạn nguy cơ nhiễm.\nThời điểm xử lý: Bảo vệ mô non từ giai đoạn nảy lộc/ra hoa khi bách xù phát tán bào tử và có mưa ẩm.\nQuản lý kháng: Luân phiên nhóm FRAC; không phun lặp một MOA kéo dài.\nLưu ý an toàn: Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-  },
-  {
-    "disease_code": "Apple___healthy",
-    "class_name_vi": "Táo khỏe mạnh",
-    "crop_name": "Táo",
-    "disease_name": "Không phát hiện bệnh thuộc lớp CV (healthy)",
-    "disease_type": "Healthy class / Không phát hiện bệnh thuộc phạm vi lớp CV",
-    "pathogen": {
-      "name": "N/A",
-      "scientific_name": "N/A"
-    },
-    "knowledge": {
-      "symptoms": "Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác.",
-      "disease_development": "N/A — đây là lớp nhãn CV, không phải chẩn đoán bệnh lý toàn cây.",
-      "favorable_conditions": "N/A; vẫn cần xem xét stress dinh dưỡng, nước, sâu hại và bệnh ngoài bộ lớp.",
-      "transmission": "N/A",
-      "prevention": "Duy trì scouting/IPM, vệ sinh, giống/cây giống khỏe và điều kiện canh tác phù hợp.",
-      "cultural_control": "Tiếp tục giám sát định kỳ; không phun thuốc chỉ vì model trả 'healthy'.",
-      "biological_control": "N/A",
-      "chemical_control_non_quantitative": "Không khuyến nghị xử lý hóa học nếu không có đối tượng dịch hại/chẩn đoán xác định.",
-      "treatment_timing": "N/A",
-      "resistance_management": "N/A",
-      "safety_notes": "Không dùng nhãn 'healthy' để bỏ qua scouting thực địa hoặc các triệu chứng ngoài bộ 38 lớp."
-    },
-    "provenance": {
-      "source_ids": [
-        "S01"
-      ],
-      "evidence_scope": "CV label / negative class only",
-      "reviewed_at": "2026-09-09"
+      "source_ids": ["SRC_MND_RICE_V3"],
+      "evidence_scope": "Dataset taxonomy + rice disease biology/IPM; Vietnam pesticide rule separate",
+      "reviewed_at": "2026-09-29"
     },
     "governance": {
       "rag_priority": "LOW",
-      "structured_rule_status": "NOT_APPLICABLE",
-      "regulatory_note": "Không tạo TreatmentRule hóa học từ lớp healthy. Nếu thửa ruộng có lịch sử phun, PHI vẫn lấy từ PostgreSQL."
+      "structured_rule_status": "NO_TREATMENT_FOR_HEALTHY",
+      "regulatory_note": "Tri thức quốc tế chỉ dùng giải thích/IPM. Tên thuốc, liều và PHI phải do Backend lấy từ rule có nguồn/duyệt tại Việt Nam."
     },
-    "content": "Mã bệnh: Apple___healthy\nTên tiếng Việt: Táo khỏe mạnh\nCây trồng: Táo\nTên bệnh/điều kiện: Không phát hiện bệnh thuộc lớp CV (healthy)\nLoại bệnh/dịch hại: Healthy class / Không phát hiện bệnh thuộc phạm vi lớp CV\nTác nhân: N/A\nTên khoa học tác nhân: N/A\nTriệu chứng: Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác.\nDiễn biến/vòng bệnh: N/A — đây là lớp nhãn CV, không phải chẩn đoán bệnh lý toàn cây.\nĐiều kiện thuận lợi: N/A; vẫn cần xem xét stress dinh dưỡng, nước, sâu hại và bệnh ngoài bộ lớp.\nLây lan: N/A\nPhòng ngừa: Duy trì scouting/IPM, vệ sinh, giống/cây giống khỏe và điều kiện canh tác phù hợp.\nBiện pháp canh tác: Tiếp tục giám sát định kỳ; không phun thuốc chỉ vì model trả 'healthy'.\nBiện pháp sinh học: N/A\nKiểm soát hóa học (không định lượng): Không khuyến nghị xử lý hóa học nếu không có đối tượng dịch hại/chẩn đoán xác định.\nThời điểm xử lý: N/A\nQuản lý kháng: N/A\nLưu ý an toàn: Không dùng nhãn 'healthy' để bỏ qua scouting thực địa hoặc các triệu chứng ngoài bộ 38 lớp."
+    "content": "Mã bệnh: Rice___healthy\nTên tiếng Việt: Lá lúa không thấy triệu chứng bệnh\nCây trồng: Lúa\nLoại bệnh: Không bệnh\nTriệu chứng: Không thấy triệu chứng thuộc năm lớp bệnh trong tập ảnh; vẫn có thể tồn tại vấn đề khác ngoài phạm vi model.\nPhòng ngừa: Theo dõi ruộng định kỳ; nếu xuất hiện triệu chứng mới, yêu cầu kiểm tra trực tiếp.\nLưu ý pháp lý: Tri thức quốc tế chỉ dùng giải thích/IPM. Tên thuốc, liều và PHI phải do Backend lấy từ rule có nguồn/duyệt tại Việt Nam.",
+    "review_status": "IN_REVIEW",
+    "notes": "Tri thức từ SRC_MND_RICE_V3; cần kỹ sư nông nghiệp kiểm tra áp dụng cho Việt Nam. Không dùng ảnh dataset làm nguồn thuốc."
   },
   {
-    "disease_code": "Blueberry___healthy",
-    "class_name_vi": "Việt quất khỏe mạnh",
-    "crop_name": "Việt quất",
-    "disease_name": "Không phát hiện bệnh thuộc lớp CV (healthy)",
-    "disease_type": "Healthy class / Không phát hiện bệnh thuộc phạm vi lớp CV",
-    "pathogen": {
-      "name": "N/A",
-      "scientific_name": "N/A"
-    },
-    "knowledge": {
-      "symptoms": "Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác.",
-      "disease_development": "N/A — đây là lớp nhãn CV, không phải chẩn đoán bệnh lý toàn cây.",
-      "favorable_conditions": "N/A; vẫn cần xem xét stress dinh dưỡng, nước, sâu hại và bệnh ngoài bộ lớp.",
-      "transmission": "N/A",
-      "prevention": "Duy trì scouting/IPM, vệ sinh, giống/cây giống khỏe và điều kiện canh tác phù hợp.",
-      "cultural_control": "Tiếp tục giám sát định kỳ; không phun thuốc chỉ vì model trả 'healthy'.",
-      "biological_control": "N/A",
-      "chemical_control_non_quantitative": "Không khuyến nghị xử lý hóa học nếu không có đối tượng dịch hại/chẩn đoán xác định.",
-      "treatment_timing": "N/A",
-      "resistance_management": "N/A",
-      "safety_notes": "Không dùng nhãn 'healthy' để bỏ qua scouting thực địa hoặc các triệu chứng ngoài bộ 38 lớp."
-    },
-    "provenance": {
-      "source_ids": [
-        "S01"
-      ],
-      "evidence_scope": "CV label / negative class only",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "LOW",
-      "structured_rule_status": "NOT_APPLICABLE",
-      "regulatory_note": "Không tạo TreatmentRule hóa học từ lớp healthy. Nếu thửa ruộng có lịch sử phun, PHI vẫn lấy từ PostgreSQL."
-    },
-    "content": "Mã bệnh: Blueberry___healthy\nTên tiếng Việt: Việt quất khỏe mạnh\nCây trồng: Việt quất\nTên bệnh/điều kiện: Không phát hiện bệnh thuộc lớp CV (healthy)\nLoại bệnh/dịch hại: Healthy class / Không phát hiện bệnh thuộc phạm vi lớp CV\nTác nhân: N/A\nTên khoa học tác nhân: N/A\nTriệu chứng: Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác.\nDiễn biến/vòng bệnh: N/A — đây là lớp nhãn CV, không phải chẩn đoán bệnh lý toàn cây.\nĐiều kiện thuận lợi: N/A; vẫn cần xem xét stress dinh dưỡng, nước, sâu hại và bệnh ngoài bộ lớp.\nLây lan: N/A\nPhòng ngừa: Duy trì scouting/IPM, vệ sinh, giống/cây giống khỏe và điều kiện canh tác phù hợp.\nBiện pháp canh tác: Tiếp tục giám sát định kỳ; không phun thuốc chỉ vì model trả 'healthy'.\nBiện pháp sinh học: N/A\nKiểm soát hóa học (không định lượng): Không khuyến nghị xử lý hóa học nếu không có đối tượng dịch hại/chẩn đoán xác định.\nThời điểm xử lý: N/A\nQuản lý kháng: N/A\nLưu ý an toàn: Không dùng nhãn 'healthy' để bỏ qua scouting thực địa hoặc các triệu chứng ngoài bộ 38 lớp."
-  },
-  {
-    "disease_code": "Cherry_(including_sour)___Powdery_mildew",
-    "class_name_vi": "Bệnh phấn trắng trên anh đào",
-    "crop_name": "Anh đào",
-    "disease_name": "Bệnh phấn trắng trên anh đào",
+    "disease_code": "Rice___Blast",
+    "class_name_vi": "Bệnh đạo ôn trên lúa",
+    "crop_name": "Lúa",
+    "disease_name": "Bệnh đạo ôn trên lúa",
     "disease_type": "Nấm",
-    "pathogen": {
-      "name": "Nấm phấn trắng anh đào",
-      "scientific_name": "Podosphaera cerasi (trước đây thường ghi P. clandestina)"
-    },
+    "pathogen": {"name": "Nấm gây đạo ôn", "scientific_name": "Magnaporthe oryzae"},
     "knowledge": {
-      "symptoms": "Mảng trắng dạng bột trên lá non, thường bắt đầu ở mặt dưới; lá có thể quăn, nhăn và biến dạng. Quả có thể xuất hiện lớp nấm trắng gần cuống, làm giảm giá trị thương phẩm.",
-      "disease_development": "Nấm qua đông bằng cấu trúc sinh sản trên lá/góc cành; ẩm/rain đầu mùa giải phóng bào tử sơ cấp, sau đó bào tử phấn phát tán bằng gió suốt mùa.",
-      "favorable_conditions": "Ẩm độ cao, khoảng 21–27°C (70–80°F); không cần nước tự do trên lá để phát triển mạnh. Sương/ẩm buổi sáng thuận lợi.",
-      "transmission": "Chủ yếu bào tử theo gió; nguồn bệnh tích lũy trên lá và tán.",
-      "prevention": "Quản lý bệnh trên lá cả mùa để giảm bào tử nhiễm quả; tán thông thoáng và tránh thúc lộc quá mức.",
-      "cultural_control": "Tỉa tán, quản lý tưới/đạm để hạn chế tán quá rậm; giảm nguồn lá bệnh sau vụ.",
-      "biological_control": "Một số chế phẩm sinh học/không tổng hợp có thể hỗ trợ nếu được đăng ký; không thay thế quản lý kháng thuốc.",
-      "chemical_control_non_quantitative": "Fungicide phòng bệnh thường hiệu quả hơn chữa bệnh; chương trình phải bám nguy cơ và giai đoạn quả.",
-      "treatment_timing": "Từ sau rụng cánh/đậu quả và trong giai đoạn bệnh hoạt động; tiếp tục giám sát sau thu hoạch vì nấm còn hoạt động.",
-      "resistance_management": "Luân phiên MOA/FRAC; kháng QoI đã được ghi nhận trong một số hệ thống sản xuất, tránh dùng lặp nhóm 11.",
-      "safety_notes": "Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
+      "symptoms": "Vết trên lá thường thuôn/hình thoi, tâm trắng-xám, rìa nâu đỏ; khác đốm nâu thường tròn hơn.",
+      "disease_development": "Bệnh có thể xuất hiện nhiều giai đoạn, trên lá và các bộ phận trên mặt đất; nhiều vết liên kết làm khô lá.",
+      "favorable_conditions": "Mưa kéo dài, ẩm/đọng sương, đất thiếu nước và bón đạm quá mức thuận lợi cho bệnh.",
+      "transmission": "Nguồn bào tử nấm hiện diện trên đồng ruộng; cần theo dõi khi thời tiết thuận lợi.",
+      "prevention": "Ưu tiên giống kháng phù hợp địa phương và theo dõi nguy cơ trong mùa mưa.",
+      "cultural_control": "Điều chỉnh thời vụ nếu phù hợp; bón đạm chia lần, tránh dư đạm và quản lý nước hợp lý.",
+      "chemical_control_non_quantitative": "Nếu cần phun, chỉ xem xét sản phẩm đăng ký đúng đối tượng đạo ôn/lúa sau khi kỹ sư xác nhận.",
+      "treatment_timing": "Kiểm tra sớm vết bệnh và thời tiết; không đồng nhất đạo ôn lá với đạo ôn cổ bông khi chọn rule."
     },
     "provenance": {
-      "source_ids": [
-        "S08",
-        "S03"
-      ],
-      "evidence_scope": "CV label + disease biology/IPM + regulatory guardrail",
-      "reviewed_at": "2026-09-09"
+      "source_ids": ["SRC_MND_RICE_V3", "SRC_IRRI_BLAST"],
+      "evidence_scope": "Dataset taxonomy + rice disease biology/IPM; Vietnam pesticide rule separate",
+      "reviewed_at": "2026-09-29"
     },
     "governance": {
       "rag_priority": "HIGH",
-      "structured_rule_status": "REQUIRES_VN_LABEL_VALIDATION",
-      "regulatory_note": "Liều, tần suất, PHI, tên thương phẩm và tình trạng được phép dùng phải lấy deterministic từ nhãn/danh mục thuốc BVTV Việt Nam hiện hành; nguồn extension quốc tế chỉ dùng cho triệu chứng, sinh học bệnh và IPM tham khảo."
+      "structured_rule_status": "CANDIDATE_PENDING_EXPERT_REVIEW",
+      "regulatory_note": "Tri thức quốc tế chỉ dùng giải thích/IPM. Tên thuốc, liều và PHI phải do Backend lấy từ rule có nguồn/duyệt tại Việt Nam."
     },
-    "content": "Mã bệnh: Cherry_(including_sour)___Powdery_mildew\nTên tiếng Việt: Bệnh phấn trắng trên anh đào\nCây trồng: Anh đào\nTên bệnh/điều kiện: Bệnh phấn trắng trên anh đào\nLoại bệnh/dịch hại: Nấm\nTác nhân: Nấm phấn trắng anh đào\nTên khoa học tác nhân: Podosphaera cerasi (trước đây thường ghi P. clandestina)\nTriệu chứng: Mảng trắng dạng bột trên lá non, thường bắt đầu ở mặt dưới; lá có thể quăn, nhăn và biến dạng. Quả có thể xuất hiện lớp nấm trắng gần cuống, làm giảm giá trị thương phẩm.\nDiễn biến/vòng bệnh: Nấm qua đông bằng cấu trúc sinh sản trên lá/góc cành; ẩm/rain đầu mùa giải phóng bào tử sơ cấp, sau đó bào tử phấn phát tán bằng gió suốt mùa.\nĐiều kiện thuận lợi: Ẩm độ cao, khoảng 21–27°C (70–80°F); không cần nước tự do trên lá để phát triển mạnh. Sương/ẩm buổi sáng thuận lợi.\nLây lan: Chủ yếu bào tử theo gió; nguồn bệnh tích lũy trên lá và tán.\nPhòng ngừa: Quản lý bệnh trên lá cả mùa để giảm bào tử nhiễm quả; tán thông thoáng và tránh thúc lộc quá mức.\nBiện pháp canh tác: Tỉa tán, quản lý tưới/đạm để hạn chế tán quá rậm; giảm nguồn lá bệnh sau vụ.\nBiện pháp sinh học: Một số chế phẩm sinh học/không tổng hợp có thể hỗ trợ nếu được đăng ký; không thay thế quản lý kháng thuốc.\nKiểm soát hóa học (không định lượng): Fungicide phòng bệnh thường hiệu quả hơn chữa bệnh; chương trình phải bám nguy cơ và giai đoạn quả.\nThời điểm xử lý: Từ sau rụng cánh/đậu quả và trong giai đoạn bệnh hoạt động; tiếp tục giám sát sau thu hoạch vì nấm còn hoạt động.\nQuản lý kháng: Luân phiên MOA/FRAC; kháng QoI đã được ghi nhận trong một số hệ thống sản xuất, tránh dùng lặp nhóm 11.\nLưu ý an toàn: Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
+    "content": "Mã bệnh: Rice___Blast\nTên tiếng Việt: Bệnh đạo ôn trên lúa\nCây trồng: Lúa\nLoại bệnh: Nấm\nTác nhân: Nấm gây đạo ôn\nTên khoa học: Magnaporthe oryzae\nTriệu chứng: Vết trên lá thường thuôn/hình thoi, tâm trắng-xám, rìa nâu đỏ; khác đốm nâu thường tròn hơn.\nDiễn biến: Bệnh có thể xuất hiện nhiều giai đoạn, trên lá và các bộ phận trên mặt đất; nhiều vết liên kết làm khô lá.\nĐiều kiện thuận lợi: Mưa kéo dài, ẩm/đọng sương, đất thiếu nước và bón đạm quá mức thuận lợi cho bệnh.\nLây lan: Nguồn bào tử nấm hiện diện trên đồng ruộng; cần theo dõi khi thời tiết thuận lợi.\nPhòng ngừa: Ưu tiên giống kháng phù hợp địa phương và theo dõi nguy cơ trong mùa mưa.\nBiện pháp canh tác: Điều chỉnh thời vụ nếu phù hợp; bón đạm chia lần, tránh dư đạm và quản lý nước hợp lý.\nKiểm soát hóa học không định lượng: Nếu cần phun, chỉ xem xét sản phẩm đăng ký đúng đối tượng đạo ôn/lúa sau khi kỹ sư xác nhận.\nThời điểm xử lý: Kiểm tra sớm vết bệnh và thời tiết; không đồng nhất đạo ôn lá với đạo ôn cổ bông khi chọn rule.\nLưu ý pháp lý: Tri thức quốc tế chỉ dùng giải thích/IPM. Tên thuốc, liều và PHI phải do Backend lấy từ rule có nguồn/duyệt tại Việt Nam.",
+    "review_status": "IN_REVIEW",
+    "notes": "Tri thức từ SRC_IRRI_BLAST; cần kỹ sư nông nghiệp kiểm tra áp dụng cho Việt Nam. Không dùng ảnh dataset làm nguồn thuốc."
   },
   {
-    "disease_code": "Cherry_(including_sour)___healthy",
-    "class_name_vi": "Anh đào khỏe mạnh",
-    "crop_name": "Anh đào",
-    "disease_name": "Không phát hiện bệnh thuộc lớp CV (healthy)",
-    "disease_type": "Healthy class / Không phát hiện bệnh thuộc phạm vi lớp CV",
-    "pathogen": {
-      "name": "N/A",
-      "scientific_name": "N/A"
-    },
-    "knowledge": {
-      "symptoms": "Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác.",
-      "disease_development": "N/A — đây là lớp nhãn CV, không phải chẩn đoán bệnh lý toàn cây.",
-      "favorable_conditions": "N/A; vẫn cần xem xét stress dinh dưỡng, nước, sâu hại và bệnh ngoài bộ lớp.",
-      "transmission": "N/A",
-      "prevention": "Duy trì scouting/IPM, vệ sinh, giống/cây giống khỏe và điều kiện canh tác phù hợp.",
-      "cultural_control": "Tiếp tục giám sát định kỳ; không phun thuốc chỉ vì model trả 'healthy'.",
-      "biological_control": "N/A",
-      "chemical_control_non_quantitative": "Không khuyến nghị xử lý hóa học nếu không có đối tượng dịch hại/chẩn đoán xác định.",
-      "treatment_timing": "N/A",
-      "resistance_management": "N/A",
-      "safety_notes": "Không dùng nhãn 'healthy' để bỏ qua scouting thực địa hoặc các triệu chứng ngoài bộ 38 lớp."
-    },
-    "provenance": {
-      "source_ids": [
-        "S01"
-      ],
-      "evidence_scope": "CV label / negative class only",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "LOW",
-      "structured_rule_status": "NOT_APPLICABLE",
-      "regulatory_note": "Không tạo TreatmentRule hóa học từ lớp healthy. Nếu thửa ruộng có lịch sử phun, PHI vẫn lấy từ PostgreSQL."
-    },
-    "content": "Mã bệnh: Cherry_(including_sour)___healthy\nTên tiếng Việt: Anh đào khỏe mạnh\nCây trồng: Anh đào\nTên bệnh/điều kiện: Không phát hiện bệnh thuộc lớp CV (healthy)\nLoại bệnh/dịch hại: Healthy class / Không phát hiện bệnh thuộc phạm vi lớp CV\nTác nhân: N/A\nTên khoa học tác nhân: N/A\nTriệu chứng: Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác.\nDiễn biến/vòng bệnh: N/A — đây là lớp nhãn CV, không phải chẩn đoán bệnh lý toàn cây.\nĐiều kiện thuận lợi: N/A; vẫn cần xem xét stress dinh dưỡng, nước, sâu hại và bệnh ngoài bộ lớp.\nLây lan: N/A\nPhòng ngừa: Duy trì scouting/IPM, vệ sinh, giống/cây giống khỏe và điều kiện canh tác phù hợp.\nBiện pháp canh tác: Tiếp tục giám sát định kỳ; không phun thuốc chỉ vì model trả 'healthy'.\nBiện pháp sinh học: N/A\nKiểm soát hóa học (không định lượng): Không khuyến nghị xử lý hóa học nếu không có đối tượng dịch hại/chẩn đoán xác định.\nThời điểm xử lý: N/A\nQuản lý kháng: N/A\nLưu ý an toàn: Không dùng nhãn 'healthy' để bỏ qua scouting thực địa hoặc các triệu chứng ngoài bộ 38 lớp."
-  },
-  {
-    "disease_code": "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot",
-    "class_name_vi": "Bệnh đốm lá Cercospora / đốm lá xám trên ngô",
-    "crop_name": "Ngô",
-    "disease_name": "Bệnh đốm lá Cercospora / đốm lá xám trên ngô",
+    "disease_code": "Rice___Brown_spot",
+    "class_name_vi": "Bệnh đốm nâu trên lúa",
+    "crop_name": "Lúa",
+    "disease_name": "Bệnh đốm nâu trên lúa",
     "disease_type": "Nấm",
-    "pathogen": {
-      "name": "Nấm đốm lá xám ngô",
-      "scientific_name": "Cercospora zeae-maydis"
-    },
+    "pathogen": {"name": "Nấm gây đốm nâu", "scientific_name": "Bipolaris oryzae"},
     "knowledge": {
-      "symptoms": "Vết bệnh ban đầu nhỏ có quầng vàng, sau kéo dài song song gân lá thành đốm chữ nhật màu nâu nhạt–xám, đầu tù; nhiều vết có thể liên kết làm chết lá.",
-      "disease_development": "Nấm sống sót trên tàn dư ngô; hình thành bào tử và gây nhiễm các lá thấp trước, sau đó lan dần lên tán.",
-      "favorable_conditions": "Ấm, ẩm kéo dài; canh tác tối thiểu và ngô liên tục làm tăng nguồn tàn dư bệnh.",
-      "transmission": "Bào tử phát tán nhờ gió và mưa từ tàn dư bệnh.",
-      "prevention": "Chọn giống lai kháng, luân canh, quản lý tàn dư và theo dõi ruộng có tiền sử bệnh.",
-      "cultural_control": "Luân canh cây không ký chủ, thúc đẩy phân hủy tàn dư, cân đối dinh dưỡng.",
-      "biological_control": "Không có biocontrol chuẩn là trụ cột; ưu tiên giống kháng + quản lý tàn dư.",
-      "chemical_control_non_quantitative": "Fungicide lá chỉ cân nhắc khi giống mẫn cảm, bệnh xuất hiện sớm và thời tiết tiếp tục thuận lợi.",
-      "treatment_timing": "Cân nhắc trước/đầu giai đoạn sinh sản khi bệnh đã hiện diện ở lá dưới và dự báo tiếp tục ẩm.",
-      "resistance_management": "Luân phiên/phối hợp FRAC hợp lý, tránh lạm dụng một nhóm; ưu tiên giống kháng.",
-      "safety_notes": "Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
+      "symptoms": "Đốm nhỏ tròn nâu-tím rồi thành tròn/bầu dục, tâm nâu nhạt hoặc xám, viền nâu đỏ; có thể có quầng vàng.",
+      "disease_development": "Có thể xuất hiện từ mạ đến chín, đáng chú ý ở đẻ nhánh tối đa đến giai đoạn chín; hạt nhiễm có thể bị đốm/mất chất lượng.",
+      "favorable_conditions": "Ẩm cao, lá ướt kéo dài; đất thiếu dinh dưỡng hoặc không ngập thuận lợi cho bệnh.",
+      "transmission": "Nguồn từ hạt giống nhiễm, lúa sót và tàn dư; bào tử lan qua không khí.",
+      "prevention": "Dùng giống/hạt giống sạch bệnh, giống chống chịu và theo dõi dinh dưỡng đất.",
+      "cultural_control": "Bón dinh dưỡng cân đối; cải thiện đất thiếu dinh dưỡng và quản lý tàn dư/nguồn bệnh.",
+      "chemical_control_non_quantitative": "Nguồn IRRI có nhắc xử lý hạt giống; không suy ra thuốc, liều hoặc PHI dùng tại Việt Nam.",
+      "treatment_timing": "Theo dõi từ giai đoạn đẻ nhánh, phân biệt với vết đạo ôn hình thoi."
     },
     "provenance": {
-      "source_ids": [
-        "S09",
-        "S03"
-      ],
-      "evidence_scope": "CV label + disease biology/IPM + regulatory guardrail",
-      "reviewed_at": "2026-09-09"
+      "source_ids": ["SRC_MND_RICE_V3", "SRC_IRRI_BROWN_SPOT"],
+      "evidence_scope": "Dataset taxonomy + rice disease biology/IPM; Vietnam pesticide rule separate",
+      "reviewed_at": "2026-09-29"
     },
     "governance": {
       "rag_priority": "HIGH",
-      "structured_rule_status": "REQUIRES_VN_LABEL_VALIDATION",
-      "regulatory_note": "Liều, tần suất, PHI, tên thương phẩm và tình trạng được phép dùng phải lấy deterministic từ nhãn/danh mục thuốc BVTV Việt Nam hiện hành; nguồn extension quốc tế chỉ dùng cho triệu chứng, sinh học bệnh và IPM tham khảo."
+      "structured_rule_status": "NO_EXACT_VN_RULE_VERIFIED",
+      "regulatory_note": "Tri thức quốc tế chỉ dùng giải thích/IPM. Tên thuốc, liều và PHI phải do Backend lấy từ rule có nguồn/duyệt tại Việt Nam."
     },
-    "content": "Mã bệnh: Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot\nTên tiếng Việt: Bệnh đốm lá Cercospora / đốm lá xám trên ngô\nCây trồng: Ngô\nTên bệnh/điều kiện: Bệnh đốm lá Cercospora / đốm lá xám trên ngô\nLoại bệnh/dịch hại: Nấm\nTác nhân: Nấm đốm lá xám ngô\nTên khoa học tác nhân: Cercospora zeae-maydis\nTriệu chứng: Vết bệnh ban đầu nhỏ có quầng vàng, sau kéo dài song song gân lá thành đốm chữ nhật màu nâu nhạt–xám, đầu tù; nhiều vết có thể liên kết làm chết lá.\nDiễn biến/vòng bệnh: Nấm sống sót trên tàn dư ngô; hình thành bào tử và gây nhiễm các lá thấp trước, sau đó lan dần lên tán.\nĐiều kiện thuận lợi: Ấm, ẩm kéo dài; canh tác tối thiểu và ngô liên tục làm tăng nguồn tàn dư bệnh.\nLây lan: Bào tử phát tán nhờ gió và mưa từ tàn dư bệnh.\nPhòng ngừa: Chọn giống lai kháng, luân canh, quản lý tàn dư và theo dõi ruộng có tiền sử bệnh.\nBiện pháp canh tác: Luân canh cây không ký chủ, thúc đẩy phân hủy tàn dư, cân đối dinh dưỡng.\nBiện pháp sinh học: Không có biocontrol chuẩn là trụ cột; ưu tiên giống kháng + quản lý tàn dư.\nKiểm soát hóa học (không định lượng): Fungicide lá chỉ cân nhắc khi giống mẫn cảm, bệnh xuất hiện sớm và thời tiết tiếp tục thuận lợi.\nThời điểm xử lý: Cân nhắc trước/đầu giai đoạn sinh sản khi bệnh đã hiện diện ở lá dưới và dự báo tiếp tục ẩm.\nQuản lý kháng: Luân phiên/phối hợp FRAC hợp lý, tránh lạm dụng một nhóm; ưu tiên giống kháng.\nLưu ý an toàn: Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
+    "content": "Mã bệnh: Rice___Brown_spot\nTên tiếng Việt: Bệnh đốm nâu trên lúa\nCây trồng: Lúa\nLoại bệnh: Nấm\nTác nhân: Nấm gây đốm nâu\nTên khoa học: Bipolaris oryzae\nTriệu chứng: Đốm nhỏ tròn nâu-tím rồi thành tròn/bầu dục, tâm nâu nhạt hoặc xám, viền nâu đỏ; có thể có quầng vàng.\nDiễn biến: Có thể xuất hiện từ mạ đến chín, đáng chú ý ở đẻ nhánh tối đa đến giai đoạn chín; hạt nhiễm có thể bị đốm/mất chất lượng.\nĐiều kiện thuận lợi: Ẩm cao, lá ướt kéo dài; đất thiếu dinh dưỡng hoặc không ngập thuận lợi cho bệnh.\nLây lan: Nguồn từ hạt giống nhiễm, lúa sót và tàn dư; bào tử lan qua không khí.\nPhòng ngừa: Dùng giống/hạt giống sạch bệnh, giống chống chịu và theo dõi dinh dưỡng đất.\nBiện pháp canh tác: Bón dinh dưỡng cân đối; cải thiện đất thiếu dinh dưỡng và quản lý tàn dư/nguồn bệnh.\nKiểm soát hóa học không định lượng: Nguồn IRRI có nhắc xử lý hạt giống; không suy ra thuốc, liều hoặc PHI dùng tại Việt Nam.\nThời điểm xử lý: Theo dõi từ giai đoạn đẻ nhánh, phân biệt với vết đạo ôn hình thoi.\nLưu ý pháp lý: Tri thức quốc tế chỉ dùng giải thích/IPM. Tên thuốc, liều và PHI phải do Backend lấy từ rule có nguồn/duyệt tại Việt Nam.",
+    "review_status": "IN_REVIEW",
+    "notes": "Tri thức từ SRC_IRRI_BROWN_SPOT; cần kỹ sư nông nghiệp kiểm tra áp dụng cho Việt Nam. Không dùng ảnh dataset làm nguồn thuốc."
   },
   {
-    "disease_code": "Corn_(maize)__Common_rust",
-    "class_name_vi": "Bệnh gỉ sắt thông thường trên ngô",
-    "crop_name": "Ngô",
-    "disease_name": "Bệnh gỉ sắt thông thường trên ngô",
-    "disease_type": "Nấm gỉ sắt",
-    "pathogen": {
-      "name": "Nấm gỉ sắt thường ngô",
-      "scientific_name": "Puccinia sorghi"
-    },
-    "knowledge": {
-      "symptoms": "Ổ bào tử kéo dài màu nâu quế đến nâu sẫm xuất hiện ở cả hai mặt lá; nặng có thể làm vàng và chết lá.",
-      "disease_development": "Nguồn bào tử thường được gió đưa đến vùng trồng theo mùa; lá non dễ nhiễm, ổ gỉ tạo thêm bào tử và tiếp tục chu kỳ.",
-      "favorable_conditions": "Mát 16–24°C, sương đậm, khoảng ≥6 giờ lá ướt và RH rất cao; nhiệt độ >~27°C thường hạn chế bệnh.",
-      "transmission": "Bào tử lan xa bằng gió.",
-      "prevention": "Giống lai kháng là biện pháp chính; giám sát ruộng trong thời tiết mát ẩm.",
-      "cultural_control": "Chọn giống kháng và thời vụ phù hợp; duy trì cây khỏe.",
-      "biological_control": "Không có biocontrol chuẩn thay thế giống kháng.",
-      "chemical_control_non_quantitative": "Có thể cân nhắc fungicide nếu giống mẫn cảm, bệnh xuất hiện sớm và nguy cơ thiệt hại cao.",
-      "treatment_timing": "Khi mới xuất hiện ít ổ bệnh trên cây mẫn cảm và dự báo tiếp tục mát ẩm, trước khi bệnh lan lên lá quan trọng.",
-      "resistance_management": "Luân phiên FRAC, tránh phun không cần thiết vì gỉ thường không gây thiệt hại kinh tế trên giống kháng.",
-      "safety_notes": "Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-    },
-    "provenance": {
-      "source_ids": [
-        "S10",
-        "S03"
-      ],
-      "evidence_scope": "CV label + disease biology/IPM + regulatory guardrail",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "HIGH",
-      "structured_rule_status": "REQUIRES_VN_LABEL_VALIDATION",
-      "regulatory_note": "Liều, tần suất, PHI, tên thương phẩm và tình trạng được phép dùng phải lấy deterministic từ nhãn/danh mục thuốc BVTV Việt Nam hiện hành; nguồn extension quốc tế chỉ dùng cho triệu chứng, sinh học bệnh và IPM tham khảo."
-    },
-    "content": "Mã bệnh: Corn_(maize)__Common_rust\nTên tiếng Việt: Bệnh gỉ sắt thông thường trên ngô\nCây trồng: Ngô\nTên bệnh/điều kiện: Bệnh gỉ sắt thông thường trên ngô\nLoại bệnh/dịch hại: Nấm gỉ sắt\nTác nhân: Nấm gỉ sắt thường ngô\nTên khoa học tác nhân: Puccinia sorghi\nTriệu chứng: Ổ bào tử kéo dài màu nâu quế đến nâu sẫm xuất hiện ở cả hai mặt lá; nặng có thể làm vàng và chết lá.\nDiễn biến/vòng bệnh: Nguồn bào tử thường được gió đưa đến vùng trồng theo mùa; lá non dễ nhiễm, ổ gỉ tạo thêm bào tử và tiếp tục chu kỳ.\nĐiều kiện thuận lợi: Mát 16–24°C, sương đậm, khoảng ≥6 giờ lá ướt và RH rất cao; nhiệt độ >~27°C thường hạn chế bệnh.\nLây lan: Bào tử lan xa bằng gió.\nPhòng ngừa: Giống lai kháng là biện pháp chính; giám sát ruộng trong thời tiết mát ẩm.\nBiện pháp canh tác: Chọn giống kháng và thời vụ phù hợp; duy trì cây khỏe.\nBiện pháp sinh học: Không có biocontrol chuẩn thay thế giống kháng.\nKiểm soát hóa học (không định lượng): Có thể cân nhắc fungicide nếu giống mẫn cảm, bệnh xuất hiện sớm và nguy cơ thiệt hại cao.\nThời điểm xử lý: Khi mới xuất hiện ít ổ bệnh trên cây mẫn cảm và dự báo tiếp tục mát ẩm, trước khi bệnh lan lên lá quan trọng.\nQuản lý kháng: Luân phiên FRAC, tránh phun không cần thiết vì gỉ thường không gây thiệt hại kinh tế trên giống kháng.\nLưu ý an toàn: Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-  },
-  {
-    "disease_code": "Corn_(maize)___Northern_Leaf_Blight",
-    "class_name_vi": "Bệnh cháy lá phương Bắc trên ngô",
-    "crop_name": "Ngô",
-    "disease_name": "Bệnh cháy lá phương Bắc trên ngô",
+    "disease_code": "Rice___Leaf_smut",
+    "class_name_vi": "Bệnh than lá lúa (leaf smut)",
+    "crop_name": "Lúa",
+    "disease_name": "Bệnh than lá lúa (leaf smut)",
     "disease_type": "Nấm",
-    "pathogen": {
-      "name": "Nấm cháy lá phương Bắc ngô",
-      "scientific_name": "Exserohilum turcicum"
-    },
+    "pathogen": {"name": "Nấm gây than lá", "scientific_name": "Entyloma oryzae"},
     "knowledge": {
-      "symptoms": "Vết dài hình thoi/cigar khoảng 2,5–15 cm, ban đầu xanh xám sau chuyển nâu vàng; bắt đầu ở lá dưới rồi lan lên trên, nặng gây cháy lá.",
-      "disease_development": "Nấm qua đông trên tàn dư lá ngô; bào tử gây nhiễm lá thấp, tạo bào tử mới và lặp chu kỳ trong thời tiết ẩm.",
-      "favorable_conditions": "Nhiệt độ vừa ~18–27°C và thời gian ẩm/lá ướt kéo dài; bệnh nặng hơn nếu nhiễm trước trỗ cờ/phun râu.",
-      "transmission": "Bào tử nhờ gió và mưa từ tàn dư và vết bệnh.",
-      "prevention": "Giống kháng, luân canh, quản lý tàn dư.",
-      "cultural_control": "Luân canh, xử lý tàn dư hợp lý, theo dõi giống mẫn cảm.",
-      "biological_control": "Không có biocontrol chính thức là trụ cột; dùng IPM.",
-      "chemical_control_non_quantitative": "Fungicide có thể hữu ích ở giống mẫn cảm/ruộng giống khi bệnh xuất hiện sớm.",
-      "treatment_timing": "Cân nhắc khi bệnh xuất hiện trước/đầu giai đoạn sinh sản trên giống mẫn cảm và điều kiện tiếp tục ẩm.",
-      "resistance_management": "Luân phiên FRAC và ưu tiên giống kháng.",
-      "safety_notes": "Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
+      "symptoms": "Nhiều đốm đen nhỏ hơi nổi, góc cạnh trên hai mặt lá; nhiễm nặng làm lá vàng và đầu lá chết/xám.",
+      "disease_development": "Thường xuất hiện muộn trong mùa; nguồn LSU mô tả thiệt hại kinh tế thường thấp trong bối cảnh của họ.",
+      "favorable_conditions": "Bón đạm cao có thể làm bệnh tăng.",
+      "transmission": "Bào tử có thể phát tán theo không khí; nấm tồn tại trong tàn dư lá bệnh.",
+      "prevention": "Quan sát đúng đốm đen nổi trên lá, tránh nhầm với bệnh khác; quản lý dinh dưỡng cân đối.",
+      "cultural_control": "Theo dõi mức độ bệnh và tránh dư đạm; tham vấn cán bộ địa phương khi triệu chứng nặng.",
+      "chemical_control_non_quantitative": "Nguồn LSU không khuyến nghị biện pháp trừ riêng trong bối cảnh của họ; không suy thành chỉ định thuốc tại Việt Nam."
     },
     "provenance": {
-      "source_ids": [
-        "S11",
-        "S03"
-      ],
-      "evidence_scope": "CV label + disease biology/IPM + regulatory guardrail",
-      "reviewed_at": "2026-09-09"
+      "source_ids": ["SRC_MND_RICE_V3", "SRC_LSU_LEAF_SMUT"],
+      "evidence_scope": "Dataset taxonomy + rice disease biology/IPM; Vietnam pesticide rule separate",
+      "reviewed_at": "2026-09-29"
     },
     "governance": {
       "rag_priority": "HIGH",
-      "structured_rule_status": "REQUIRES_VN_LABEL_VALIDATION",
-      "regulatory_note": "Liều, tần suất, PHI, tên thương phẩm và tình trạng được phép dùng phải lấy deterministic từ nhãn/danh mục thuốc BVTV Việt Nam hiện hành; nguồn extension quốc tế chỉ dùng cho triệu chứng, sinh học bệnh và IPM tham khảo."
+      "structured_rule_status": "NO_EXACT_VN_RULE_VERIFIED",
+      "regulatory_note": "Tri thức quốc tế chỉ dùng giải thích/IPM. Tên thuốc, liều và PHI phải do Backend lấy từ rule có nguồn/duyệt tại Việt Nam."
     },
-    "content": "Mã bệnh: Corn_(maize)___Northern_Leaf_Blight\nTên tiếng Việt: Bệnh cháy lá phương Bắc trên ngô\nCây trồng: Ngô\nTên bệnh/điều kiện: Bệnh cháy lá phương Bắc trên ngô\nLoại bệnh/dịch hại: Nấm\nTác nhân: Nấm cháy lá phương Bắc ngô\nTên khoa học tác nhân: Exserohilum turcicum\nTriệu chứng: Vết dài hình thoi/cigar khoảng 2,5–15 cm, ban đầu xanh xám sau chuyển nâu vàng; bắt đầu ở lá dưới rồi lan lên trên, nặng gây cháy lá.\nDiễn biến/vòng bệnh: Nấm qua đông trên tàn dư lá ngô; bào tử gây nhiễm lá thấp, tạo bào tử mới và lặp chu kỳ trong thời tiết ẩm.\nĐiều kiện thuận lợi: Nhiệt độ vừa ~18–27°C và thời gian ẩm/lá ướt kéo dài; bệnh nặng hơn nếu nhiễm trước trỗ cờ/phun râu.\nLây lan: Bào tử nhờ gió và mưa từ tàn dư và vết bệnh.\nPhòng ngừa: Giống kháng, luân canh, quản lý tàn dư.\nBiện pháp canh tác: Luân canh, xử lý tàn dư hợp lý, theo dõi giống mẫn cảm.\nBiện pháp sinh học: Không có biocontrol chính thức là trụ cột; dùng IPM.\nKiểm soát hóa học (không định lượng): Fungicide có thể hữu ích ở giống mẫn cảm/ruộng giống khi bệnh xuất hiện sớm.\nThời điểm xử lý: Cân nhắc khi bệnh xuất hiện trước/đầu giai đoạn sinh sản trên giống mẫn cảm và điều kiện tiếp tục ẩm.\nQuản lý kháng: Luân phiên FRAC và ưu tiên giống kháng.\nLưu ý an toàn: Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
+    "content": "Mã bệnh: Rice___Leaf_smut\nTên tiếng Việt: Bệnh than lá lúa (leaf smut)\nCây trồng: Lúa\nLoại bệnh: Nấm\nTác nhân: Nấm gây than lá\nTên khoa học: Entyloma oryzae\nTriệu chứng: Nhiều đốm đen nhỏ hơi nổi, góc cạnh trên hai mặt lá; nhiễm nặng làm lá vàng và đầu lá chết/xám.\nDiễn biến: Thường xuất hiện muộn trong mùa; nguồn LSU mô tả thiệt hại kinh tế thường thấp trong bối cảnh của họ.\nĐiều kiện thuận lợi: Bón đạm cao có thể làm bệnh tăng.\nLây lan: Bào tử có thể phát tán theo không khí; nấm tồn tại trong tàn dư lá bệnh.\nPhòng ngừa: Quan sát đúng đốm đen nổi trên lá, tránh nhầm với bệnh khác; quản lý dinh dưỡng cân đối.\nBiện pháp canh tác: Theo dõi mức độ bệnh và tránh dư đạm; tham vấn cán bộ địa phương khi triệu chứng nặng.\nKiểm soát hóa học không định lượng: Nguồn LSU không khuyến nghị biện pháp trừ riêng trong bối cảnh của họ; không suy thành chỉ định thuốc tại Việt Nam.\nLưu ý pháp lý: Tri thức quốc tế chỉ dùng giải thích/IPM. Tên thuốc, liều và PHI phải do Backend lấy từ rule có nguồn/duyệt tại Việt Nam.",
+    "review_status": "IN_REVIEW",
+    "notes": "Tri thức từ SRC_LSU_LEAF_SMUT; cần kỹ sư nông nghiệp kiểm tra áp dụng cho Việt Nam. Không dùng ảnh dataset làm nguồn thuốc."
   },
   {
-    "disease_code": "Corn_(maize)___healthy",
-    "class_name_vi": "Ngô khỏe mạnh",
-    "crop_name": "Ngô",
-    "disease_name": "Không phát hiện bệnh thuộc lớp CV (healthy)",
-    "disease_type": "Healthy class / Không phát hiện bệnh thuộc phạm vi lớp CV",
-    "pathogen": {
-      "name": "N/A",
-      "scientific_name": "N/A"
-    },
-    "knowledge": {
-      "symptoms": "Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác.",
-      "disease_development": "N/A — đây là lớp nhãn CV, không phải chẩn đoán bệnh lý toàn cây.",
-      "favorable_conditions": "N/A; vẫn cần xem xét stress dinh dưỡng, nước, sâu hại và bệnh ngoài bộ lớp.",
-      "transmission": "N/A",
-      "prevention": "Duy trì scouting/IPM, vệ sinh, giống/cây giống khỏe và điều kiện canh tác phù hợp.",
-      "cultural_control": "Tiếp tục giám sát định kỳ; không phun thuốc chỉ vì model trả 'healthy'.",
-      "biological_control": "N/A",
-      "chemical_control_non_quantitative": "Không khuyến nghị xử lý hóa học nếu không có đối tượng dịch hại/chẩn đoán xác định.",
-      "treatment_timing": "N/A",
-      "resistance_management": "N/A",
-      "safety_notes": "Không dùng nhãn 'healthy' để bỏ qua scouting thực địa hoặc các triệu chứng ngoài bộ 38 lớp."
-    },
-    "provenance": {
-      "source_ids": [
-        "S01"
-      ],
-      "evidence_scope": "CV label / negative class only",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "LOW",
-      "structured_rule_status": "NOT_APPLICABLE",
-      "regulatory_note": "Không tạo TreatmentRule hóa học từ lớp healthy. Nếu thửa ruộng có lịch sử phun, PHI vẫn lấy từ PostgreSQL."
-    },
-    "content": "Mã bệnh: Corn_(maize)___healthy\nTên tiếng Việt: Ngô khỏe mạnh\nCây trồng: Ngô\nTên bệnh/điều kiện: Không phát hiện bệnh thuộc lớp CV (healthy)\nLoại bệnh/dịch hại: Healthy class / Không phát hiện bệnh thuộc phạm vi lớp CV\nTác nhân: N/A\nTên khoa học tác nhân: N/A\nTriệu chứng: Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác.\nDiễn biến/vòng bệnh: N/A — đây là lớp nhãn CV, không phải chẩn đoán bệnh lý toàn cây.\nĐiều kiện thuận lợi: N/A; vẫn cần xem xét stress dinh dưỡng, nước, sâu hại và bệnh ngoài bộ lớp.\nLây lan: N/A\nPhòng ngừa: Duy trì scouting/IPM, vệ sinh, giống/cây giống khỏe và điều kiện canh tác phù hợp.\nBiện pháp canh tác: Tiếp tục giám sát định kỳ; không phun thuốc chỉ vì model trả 'healthy'.\nBiện pháp sinh học: N/A\nKiểm soát hóa học (không định lượng): Không khuyến nghị xử lý hóa học nếu không có đối tượng dịch hại/chẩn đoán xác định.\nThời điểm xử lý: N/A\nQuản lý kháng: N/A\nLưu ý an toàn: Không dùng nhãn 'healthy' để bỏ qua scouting thực địa hoặc các triệu chứng ngoài bộ 38 lớp."
-  },
-  {
-    "disease_code": "Grape___Black_rot",
-    "class_name_vi": "Bệnh thối đen trên nho",
-    "crop_name": "Nho",
-    "disease_name": "Bệnh thối đen trên nho",
-    "disease_type": "Nấm",
-    "pathogen": {
-      "name": "Nấm thối đen nho",
-      "scientific_name": "Guignardia bidwellii (tên hiện đại thường liên hệ Phyllosticta ampelicida)"
-    },
-    "knowledge": {
-      "symptoms": "Lá có đốm tròn nâu đỏ, tâm nâu với các chấm đen pycnidia; quả nhiễm chuyển nâu, nhăn và hóa đen thành quả mummy.",
-      "disease_development": "Nấm qua đông trên quả mummy và mô dây bệnh. Mưa xuân giải phóng bào tử sơ cấp; mô xanh bị nhiễm và tạo bào tử thứ cấp.",
-      "favorable_conditions": "Ấm và ẩm/mưa, mô non và quả trong giai đoạn cảm nhiễm; tán rậm kéo dài ẩm.",
-      "transmission": "Bào tử nhờ mưa bắn và gió từ mummy/mô bệnh.",
-      "prevention": "Loại bỏ quả mummy, quản lý tán, theo dõi các giai đoạn cảm nhiễm của quả.",
-      "cultural_control": "Thu gom mummy, cắt bỏ mô bệnh, tạo tán thông thoáng, kiểm soát cỏ/ẩm trong tán.",
-      "biological_control": "Không có biocontrol đơn lẻ thay thế sanitation và bảo vệ đúng thời điểm.",
-      "chemical_control_non_quantitative": "Chương trình fungicide bảo vệ phải tập trung giai đoạn mô xanh/quả cảm nhiễm và bám nhãn.",
-      "treatment_timing": "Từ lộc non đến giai đoạn quả giảm cảm nhiễm; ưu tiên trước sự kiện mưa có nguy cơ.",
-      "resistance_management": "Luân phiên FRAC, tránh lặp nhóm đơn điểm.",
-      "safety_notes": "Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-    },
-    "provenance": {
-      "source_ids": [
-        "S12",
-        "S03"
-      ],
-      "evidence_scope": "CV label + disease biology/IPM + regulatory guardrail",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "HIGH",
-      "structured_rule_status": "REQUIRES_VN_LABEL_VALIDATION",
-      "regulatory_note": "Liều, tần suất, PHI, tên thương phẩm và tình trạng được phép dùng phải lấy deterministic từ nhãn/danh mục thuốc BVTV Việt Nam hiện hành; nguồn extension quốc tế chỉ dùng cho triệu chứng, sinh học bệnh và IPM tham khảo."
-    },
-    "content": "Mã bệnh: Grape___Black_rot\nTên tiếng Việt: Bệnh thối đen trên nho\nCây trồng: Nho\nTên bệnh/điều kiện: Bệnh thối đen trên nho\nLoại bệnh/dịch hại: Nấm\nTác nhân: Nấm thối đen nho\nTên khoa học tác nhân: Guignardia bidwellii (tên hiện đại thường liên hệ Phyllosticta ampelicida)\nTriệu chứng: Lá có đốm tròn nâu đỏ, tâm nâu với các chấm đen pycnidia; quả nhiễm chuyển nâu, nhăn và hóa đen thành quả mummy.\nDiễn biến/vòng bệnh: Nấm qua đông trên quả mummy và mô dây bệnh. Mưa xuân giải phóng bào tử sơ cấp; mô xanh bị nhiễm và tạo bào tử thứ cấp.\nĐiều kiện thuận lợi: Ấm và ẩm/mưa, mô non và quả trong giai đoạn cảm nhiễm; tán rậm kéo dài ẩm.\nLây lan: Bào tử nhờ mưa bắn và gió từ mummy/mô bệnh.\nPhòng ngừa: Loại bỏ quả mummy, quản lý tán, theo dõi các giai đoạn cảm nhiễm của quả.\nBiện pháp canh tác: Thu gom mummy, cắt bỏ mô bệnh, tạo tán thông thoáng, kiểm soát cỏ/ẩm trong tán.\nBiện pháp sinh học: Không có biocontrol đơn lẻ thay thế sanitation và bảo vệ đúng thời điểm.\nKiểm soát hóa học (không định lượng): Chương trình fungicide bảo vệ phải tập trung giai đoạn mô xanh/quả cảm nhiễm và bám nhãn.\nThời điểm xử lý: Từ lộc non đến giai đoạn quả giảm cảm nhiễm; ưu tiên trước sự kiện mưa có nguy cơ.\nQuản lý kháng: Luân phiên FRAC, tránh lặp nhóm đơn điểm.\nLưu ý an toàn: Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-  },
-  {
-    "disease_code": "Grape___Esca_(Black_Measles)",
-    "class_name_vi": "Bệnh Esca (sởi đen) trên nho",
-    "crop_name": "Nho",
-    "disease_name": "Bệnh Esca (sởi đen) trên nho",
-    "disease_type": "Phức hợp bệnh thân gỗ do nấm",
-    "pathogen": {
-      "name": "Phức hợp nấm bệnh Esca / Black measles",
-      "scientific_name": "Phaeomoniella chlamydospora; Phaeoacremonium spp.; Fomitiporia spp. và các nấm thân gỗ liên quan"
-    },
-    "knowledge": {
-      "symptoms": "Lá có sọc giữa gân kiểu 'tiger stripe' đỏ/vàng rồi hoại tử; quả có chấm đen nhỏ viền nâu-tím ('black measles'); gỗ có vùng đổi màu/vòng đen và có thể chết cành.",
-      "disease_development": "Nhiễm thường xảy ra qua vết cắt tỉa; mầm bệnh định cư lâu dài trong gỗ. Triệu chứng lá/quả có thể biến động giữa các năm.",
-      "favorable_conditions": "Mưa từ thu đến xuân làm phát tán bào tử; vết cắt tỉa mới là cửa ngõ chính. Bệnh thường biểu hiện rõ ở vườn lâu năm.",
-      "transmission": "Bào tử nấm từ gỗ bệnh phát tán trong mưa và xâm nhập vết thương cắt tỉa.",
-      "prevention": "Ngăn nhiễm vết cắt tỉa, dùng vật liệu giống sạch, loại bỏ gỗ bệnh nặng và giảm nguồn inoculum.",
-      "cultural_control": "Tỉa trong điều kiện khô, bảo vệ vết cắt, loại bỏ/tiêu hủy phần gỗ nhiễm nặng; vệ sinh dụng cụ.",
-      "biological_control": "Một số chất bảo vệ vết thương/chế phẩm đối kháng được nghiên cứu tùy vùng; chỉ dùng sản phẩm đã đăng ký.",
-      "chemical_control_non_quantitative": "Không có fungicide phun lá chữa khỏi nhiễm gỗ đã thiết lập; hóa học (nếu có) chủ yếu bảo vệ vết thương theo nhãn.",
-      "treatment_timing": "Phòng ngừa vào thời điểm cắt tỉa và quản lý vết thương; xử lý cây/cành bệnh theo đánh giá kỹ thuật.",
-      "resistance_management": "Không áp dụng logic phun lặp fungicide như bệnh lá; tập trung phòng nhiễm và sanitation.",
-      "safety_notes": "Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-    },
-    "provenance": {
-      "source_ids": [
-        "S13",
-        "S03"
-      ],
-      "evidence_scope": "CV label + disease biology/IPM + regulatory guardrail",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "HIGH",
-      "structured_rule_status": "REQUIRES_VN_LABEL_VALIDATION",
-      "regulatory_note": "Liều, tần suất, PHI, tên thương phẩm và tình trạng được phép dùng phải lấy deterministic từ nhãn/danh mục thuốc BVTV Việt Nam hiện hành; nguồn extension quốc tế chỉ dùng cho triệu chứng, sinh học bệnh và IPM tham khảo."
-    },
-    "content": "Mã bệnh: Grape___Esca_(Black_Measles)\nTên tiếng Việt: Bệnh Esca (sởi đen) trên nho\nCây trồng: Nho\nTên bệnh/điều kiện: Bệnh Esca (sởi đen) trên nho\nLoại bệnh/dịch hại: Phức hợp bệnh thân gỗ do nấm\nTác nhân: Phức hợp nấm bệnh Esca / Black measles\nTên khoa học tác nhân: Phaeomoniella chlamydospora; Phaeoacremonium spp.; Fomitiporia spp. và các nấm thân gỗ liên quan\nTriệu chứng: Lá có sọc giữa gân kiểu 'tiger stripe' đỏ/vàng rồi hoại tử; quả có chấm đen nhỏ viền nâu-tím ('black measles'); gỗ có vùng đổi màu/vòng đen và có thể chết cành.\nDiễn biến/vòng bệnh: Nhiễm thường xảy ra qua vết cắt tỉa; mầm bệnh định cư lâu dài trong gỗ. Triệu chứng lá/quả có thể biến động giữa các năm.\nĐiều kiện thuận lợi: Mưa từ thu đến xuân làm phát tán bào tử; vết cắt tỉa mới là cửa ngõ chính. Bệnh thường biểu hiện rõ ở vườn lâu năm.\nLây lan: Bào tử nấm từ gỗ bệnh phát tán trong mưa và xâm nhập vết thương cắt tỉa.\nPhòng ngừa: Ngăn nhiễm vết cắt tỉa, dùng vật liệu giống sạch, loại bỏ gỗ bệnh nặng và giảm nguồn inoculum.\nBiện pháp canh tác: Tỉa trong điều kiện khô, bảo vệ vết cắt, loại bỏ/tiêu hủy phần gỗ nhiễm nặng; vệ sinh dụng cụ.\nBiện pháp sinh học: Một số chất bảo vệ vết thương/chế phẩm đối kháng được nghiên cứu tùy vùng; chỉ dùng sản phẩm đã đăng ký.\nKiểm soát hóa học (không định lượng): Không có fungicide phun lá chữa khỏi nhiễm gỗ đã thiết lập; hóa học (nếu có) chủ yếu bảo vệ vết thương theo nhãn.\nThời điểm xử lý: Phòng ngừa vào thời điểm cắt tỉa và quản lý vết thương; xử lý cây/cành bệnh theo đánh giá kỹ thuật.\nQuản lý kháng: Không áp dụng logic phun lặp fungicide như bệnh lá; tập trung phòng nhiễm và sanitation.\nLưu ý an toàn: Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-  },
-  {
-    "disease_code": "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)",
-    "class_name_vi": "Bệnh cháy lá / đốm lá Isariopsis trên nho",
-    "crop_name": "Nho",
-    "disease_name": "Bệnh cháy lá / đốm lá Isariopsis trên nho",
-    "disease_type": "Nấm",
-    "pathogen": {
-      "name": "Nấm đốm/cháy lá Isariopsis trên nho",
-      "scientific_name": "Pseudocercospora vitis (syn. Isariopsis clavispora)"
-    },
-    "knowledge": {
-      "symptoms": "Đốm nâu không đều đến góc cạnh trên lá, có thể 2–20 mm; bệnh nặng gây rụng lá sớm và giảm tích lũy đường/chất lượng quả.",
-      "disease_development": "Vết bệnh xuất hiện và tăng nhanh trong mùa mưa/ẩm; bào tử được tạo trên lá bệnh và tiếp tục gây nhiễm.",
-      "favorable_conditions": "Mưa nhiều, ẩm độ cao, lá ướt kéo dài và tán rậm; các nghiên cứu cho thấy bệnh tăng mạnh trong mùa mưa.",
-      "transmission": "Bào tử từ lá bệnh phát tán nhờ gió/mưa trong tán.",
-      "prevention": "Giảm ẩm tán, vệ sinh lá bệnh, theo dõi sớm trước mùa mưa.",
-      "cultural_control": "Tỉa tạo tán, quản lý mật độ, thu gom lá bệnh và cải thiện thông khí.",
-      "biological_control": "Một số nghiên cứu về tinh dầu/chế phẩm sinh học cho thấy tiềm năng nhưng không thay thế quy trình đăng ký; dùng chỉ khi có nhãn.",
-      "chemical_control_non_quantitative": "Fungicide đăng ký cho Pseudocercospora/leaf spot có thể được dùng trong IPM nếu nguy cơ cao.",
-      "treatment_timing": "Theo dõi từ đầu mùa mưa; ưu tiên phòng khi tán bắt đầu duy trì ẩm và có vết đầu tiên.",
-      "resistance_management": "Luân phiên FRAC nếu dùng fungicide; phối hợp sanitation.",
-      "safety_notes": "Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-    },
-    "provenance": {
-      "source_ids": [
-        "S14",
-        "S03"
-      ],
-      "evidence_scope": "CV label + disease biology/IPM + regulatory guardrail",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "HIGH",
-      "structured_rule_status": "REQUIRES_VN_LABEL_VALIDATION",
-      "regulatory_note": "Liều, tần suất, PHI, tên thương phẩm và tình trạng được phép dùng phải lấy deterministic từ nhãn/danh mục thuốc BVTV Việt Nam hiện hành; nguồn extension quốc tế chỉ dùng cho triệu chứng, sinh học bệnh và IPM tham khảo."
-    },
-    "content": "Mã bệnh: Grape___Leaf_blight_(Isariopsis_Leaf_Spot)\nTên tiếng Việt: Bệnh cháy lá / đốm lá Isariopsis trên nho\nCây trồng: Nho\nTên bệnh/điều kiện: Bệnh cháy lá / đốm lá Isariopsis trên nho\nLoại bệnh/dịch hại: Nấm\nTác nhân: Nấm đốm/cháy lá Isariopsis trên nho\nTên khoa học tác nhân: Pseudocercospora vitis (syn. Isariopsis clavispora)\nTriệu chứng: Đốm nâu không đều đến góc cạnh trên lá, có thể 2–20 mm; bệnh nặng gây rụng lá sớm và giảm tích lũy đường/chất lượng quả.\nDiễn biến/vòng bệnh: Vết bệnh xuất hiện và tăng nhanh trong mùa mưa/ẩm; bào tử được tạo trên lá bệnh và tiếp tục gây nhiễm.\nĐiều kiện thuận lợi: Mưa nhiều, ẩm độ cao, lá ướt kéo dài và tán rậm; các nghiên cứu cho thấy bệnh tăng mạnh trong mùa mưa.\nLây lan: Bào tử từ lá bệnh phát tán nhờ gió/mưa trong tán.\nPhòng ngừa: Giảm ẩm tán, vệ sinh lá bệnh, theo dõi sớm trước mùa mưa.\nBiện pháp canh tác: Tỉa tạo tán, quản lý mật độ, thu gom lá bệnh và cải thiện thông khí.\nBiện pháp sinh học: Một số nghiên cứu về tinh dầu/chế phẩm sinh học cho thấy tiềm năng nhưng không thay thế quy trình đăng ký; dùng chỉ khi có nhãn.\nKiểm soát hóa học (không định lượng): Fungicide đăng ký cho Pseudocercospora/leaf spot có thể được dùng trong IPM nếu nguy cơ cao.\nThời điểm xử lý: Theo dõi từ đầu mùa mưa; ưu tiên phòng khi tán bắt đầu duy trì ẩm và có vết đầu tiên.\nQuản lý kháng: Luân phiên FRAC nếu dùng fungicide; phối hợp sanitation.\nLưu ý an toàn: Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-  },
-  {
-    "disease_code": "Grape___healthy",
-    "class_name_vi": "Nho khỏe mạnh",
-    "crop_name": "Nho",
-    "disease_name": "Không phát hiện bệnh thuộc lớp CV (healthy)",
-    "disease_type": "Healthy class / Không phát hiện bệnh thuộc phạm vi lớp CV",
-    "pathogen": {
-      "name": "N/A",
-      "scientific_name": "N/A"
-    },
-    "knowledge": {
-      "symptoms": "Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác.",
-      "disease_development": "N/A — đây là lớp nhãn CV, không phải chẩn đoán bệnh lý toàn cây.",
-      "favorable_conditions": "N/A; vẫn cần xem xét stress dinh dưỡng, nước, sâu hại và bệnh ngoài bộ lớp.",
-      "transmission": "N/A",
-      "prevention": "Duy trì scouting/IPM, vệ sinh, giống/cây giống khỏe và điều kiện canh tác phù hợp.",
-      "cultural_control": "Tiếp tục giám sát định kỳ; không phun thuốc chỉ vì model trả 'healthy'.",
-      "biological_control": "N/A",
-      "chemical_control_non_quantitative": "Không khuyến nghị xử lý hóa học nếu không có đối tượng dịch hại/chẩn đoán xác định.",
-      "treatment_timing": "N/A",
-      "resistance_management": "N/A",
-      "safety_notes": "Không dùng nhãn 'healthy' để bỏ qua scouting thực địa hoặc các triệu chứng ngoài bộ 38 lớp."
-    },
-    "provenance": {
-      "source_ids": [
-        "S01"
-      ],
-      "evidence_scope": "CV label / negative class only",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "LOW",
-      "structured_rule_status": "NOT_APPLICABLE",
-      "regulatory_note": "Không tạo TreatmentRule hóa học từ lớp healthy. Nếu thửa ruộng có lịch sử phun, PHI vẫn lấy từ PostgreSQL."
-    },
-    "content": "Mã bệnh: Grape___healthy\nTên tiếng Việt: Nho khỏe mạnh\nCây trồng: Nho\nTên bệnh/điều kiện: Không phát hiện bệnh thuộc lớp CV (healthy)\nLoại bệnh/dịch hại: Healthy class / Không phát hiện bệnh thuộc phạm vi lớp CV\nTác nhân: N/A\nTên khoa học tác nhân: N/A\nTriệu chứng: Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác.\nDiễn biến/vòng bệnh: N/A — đây là lớp nhãn CV, không phải chẩn đoán bệnh lý toàn cây.\nĐiều kiện thuận lợi: N/A; vẫn cần xem xét stress dinh dưỡng, nước, sâu hại và bệnh ngoài bộ lớp.\nLây lan: N/A\nPhòng ngừa: Duy trì scouting/IPM, vệ sinh, giống/cây giống khỏe và điều kiện canh tác phù hợp.\nBiện pháp canh tác: Tiếp tục giám sát định kỳ; không phun thuốc chỉ vì model trả 'healthy'.\nBiện pháp sinh học: N/A\nKiểm soát hóa học (không định lượng): Không khuyến nghị xử lý hóa học nếu không có đối tượng dịch hại/chẩn đoán xác định.\nThời điểm xử lý: N/A\nQuản lý kháng: N/A\nLưu ý an toàn: Không dùng nhãn 'healthy' để bỏ qua scouting thực địa hoặc các triệu chứng ngoài bộ 38 lớp."
-  },
-  {
-    "disease_code": "Orange___Haunglongbing_(Citrus_greening)",
-    "class_name_vi": "Bệnh vàng lá gân xanh (Greening) trên cam",
-    "crop_name": "Cam",
-    "disease_name": "Bệnh vàng lá gân xanh (Greening) trên cam",
-    "disease_type": "Vi khuẩn hạn chế trong mạch libe",
-    "pathogen": {
-      "name": "Tác nhân HLB (citrus greening)",
-      "scientific_name": "'Candidatus Liberibacter asiaticus' (tác nhân chính ở nhiều vùng châu Á)"
-    },
-    "knowledge": {
-      "symptoms": "Chồi vàng; lá loang lổ vàng-xanh không đối xứng hai bên gân giữa, lá dày/cứng; cây suy kiệt. Quả nhỏ, lệch, chín màu không đều, giảm chất lượng và rụng.",
-      "disease_development": "Sau nhiễm, vi khuẩn định cư trong libe và gây suy cây tiến triển; cây trẻ có thể suy nhanh, cây già suy dần nhiều năm.",
-      "favorable_conditions": "Nguy cơ phụ thuộc hiện diện vector rầy chổng cánh châu Á và nguồn cây bệnh; vùng ấm thuận lợi cho vector.",
-      "transmission": "Chủ yếu qua rầy chổng cánh châu Á (Diaphorina citri) và vật liệu nhân giống nhiễm bệnh.",
-      "prevention": "Cây giống sạch bệnh/chứng nhận, phát hiện sớm, loại bỏ cây bệnh theo quy định địa phương và quản lý vector theo khu vực.",
-      "cultural_control": "Kiểm soát nguồn cây bệnh, quản lý vườn đồng bộ, không nhân giống từ cây nghi nhiễm.",
-      "biological_control": "Quản lý sinh học vector có thể dùng thiên địch như parasitoid ở chương trình phù hợp; không có biocontrol chữa khỏi cây HLB.",
-      "chemical_control_non_quantitative": "Không có thuốc hóa học chữa khỏi HLB. Thuốc (nếu dùng) chỉ nhằm quản lý vector và phải theo đăng ký.",
-      "treatment_timing": "Ưu tiên phát hiện cây bệnh và quản lý vector liên tục theo đợt lộc non; tuân thủ hướng dẫn kiểm dịch địa phương.",
-      "resistance_management": "Quản lý kháng insecticide cho vector bằng luân phiên IRAC; không lạm dụng hóa chất.",
-      "safety_notes": "Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-    },
-    "provenance": {
-      "source_ids": [
-        "S15",
-        "S03"
-      ],
-      "evidence_scope": "CV label + disease biology/IPM + regulatory guardrail",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "HIGH",
-      "structured_rule_status": "REQUIRES_VN_LABEL_VALIDATION",
-      "regulatory_note": "Liều, tần suất, PHI, tên thương phẩm và tình trạng được phép dùng phải lấy deterministic từ nhãn/danh mục thuốc BVTV Việt Nam hiện hành; nguồn extension quốc tế chỉ dùng cho triệu chứng, sinh học bệnh và IPM tham khảo."
-    },
-    "content": "Mã bệnh: Orange___Haunglongbing_(Citrus_greening)\nTên tiếng Việt: Bệnh vàng lá gân xanh (Greening) trên cam\nCây trồng: Cam\nTên bệnh/điều kiện: Bệnh vàng lá gân xanh (Greening) trên cam\nLoại bệnh/dịch hại: Vi khuẩn hạn chế trong mạch libe\nTác nhân: Tác nhân HLB (citrus greening)\nTên khoa học tác nhân: 'Candidatus Liberibacter asiaticus' (tác nhân chính ở nhiều vùng châu Á)\nTriệu chứng: Chồi vàng; lá loang lổ vàng-xanh không đối xứng hai bên gân giữa, lá dày/cứng; cây suy kiệt. Quả nhỏ, lệch, chín màu không đều, giảm chất lượng và rụng.\nDiễn biến/vòng bệnh: Sau nhiễm, vi khuẩn định cư trong libe và gây suy cây tiến triển; cây trẻ có thể suy nhanh, cây già suy dần nhiều năm.\nĐiều kiện thuận lợi: Nguy cơ phụ thuộc hiện diện vector rầy chổng cánh châu Á và nguồn cây bệnh; vùng ấm thuận lợi cho vector.\nLây lan: Chủ yếu qua rầy chổng cánh châu Á (Diaphorina citri) và vật liệu nhân giống nhiễm bệnh.\nPhòng ngừa: Cây giống sạch bệnh/chứng nhận, phát hiện sớm, loại bỏ cây bệnh theo quy định địa phương và quản lý vector theo khu vực.\nBiện pháp canh tác: Kiểm soát nguồn cây bệnh, quản lý vườn đồng bộ, không nhân giống từ cây nghi nhiễm.\nBiện pháp sinh học: Quản lý sinh học vector có thể dùng thiên địch như parasitoid ở chương trình phù hợp; không có biocontrol chữa khỏi cây HLB.\nKiểm soát hóa học (không định lượng): Không có thuốc hóa học chữa khỏi HLB. Thuốc (nếu dùng) chỉ nhằm quản lý vector và phải theo đăng ký.\nThời điểm xử lý: Ưu tiên phát hiện cây bệnh và quản lý vector liên tục theo đợt lộc non; tuân thủ hướng dẫn kiểm dịch địa phương.\nQuản lý kháng: Quản lý kháng insecticide cho vector bằng luân phiên IRAC; không lạm dụng hóa chất.\nLưu ý an toàn: Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-  },
-  {
-    "disease_code": "Peach___Bacterial_spot",
-    "class_name_vi": "Bệnh đốm vi khuẩn trên đào",
-    "crop_name": "Đào",
-    "disease_name": "Bệnh đốm vi khuẩn trên đào",
-    "disease_type": "Vi khuẩn",
-    "pathogen": {
-      "name": "Vi khuẩn đốm quả/lá đào",
-      "scientific_name": "Xanthomonas arboricola pv. pruni"
-    },
-    "knowledge": {
-      "symptoms": "Lá có đốm úng nước/góc cạnh rồi sẫm và hoại tử, có thể tạo lỗ thủng; lá vàng/rụng. Quả có đốm lõm, nứt/pitting; cành non có thể có tổn thương.",
-      "disease_development": "Vi khuẩn sống trên mô/canker và lan trong mùa khi có mưa, gió; mô non và quả dễ nhiễm.",
-      "favorable_conditions": "Ấm, ẩm, mưa và gió mạnh làm tăng nhiễm; giống mẫn cảm và stress làm bệnh nặng hơn.",
-      "transmission": "Mưa bắn/gió mang vi khuẩn từ mô bệnh; dụng cụ và vật liệu cây giống có thể góp phần lan.",
-      "prevention": "Giống ít mẫn cảm, duy trì cây khỏe, giảm stress, theo dõi giai đoạn quả non.",
-      "cultural_control": "Cắt bỏ mô bệnh khi thích hợp, tránh tưới làm ướt kéo dài, cân đối dinh dưỡng và giảm tổn thương.",
-      "biological_control": "Một số bactericide sinh học có thể được đăng ký theo vùng; hiệu lực cần đánh giá địa phương.",
-      "chemical_control_non_quantitative": "Copper/bactericide có thể được dùng phòng ngừa theo chương trình địa phương nhưng nguy cơ phytotoxicity và kháng cần quản lý.",
-      "treatment_timing": "Phòng ngừa ở các giai đoạn nguy cơ trước/sau mưa theo hướng dẫn cây ăn quả địa phương; không chờ bệnh nặng mới xử lý.",
-      "resistance_management": "Hạn chế lạm dụng copper; phối hợp giống, sanitation và luân phiên giải pháp được phép.",
-      "safety_notes": "Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-    },
-    "provenance": {
-      "source_ids": [
-        "S16",
-        "S03"
-      ],
-      "evidence_scope": "CV label + disease biology/IPM + regulatory guardrail",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "HIGH",
-      "structured_rule_status": "REQUIRES_VN_LABEL_VALIDATION",
-      "regulatory_note": "Liều, tần suất, PHI, tên thương phẩm và tình trạng được phép dùng phải lấy deterministic từ nhãn/danh mục thuốc BVTV Việt Nam hiện hành; nguồn extension quốc tế chỉ dùng cho triệu chứng, sinh học bệnh và IPM tham khảo."
-    },
-    "content": "Mã bệnh: Peach___Bacterial_spot\nTên tiếng Việt: Bệnh đốm vi khuẩn trên đào\nCây trồng: Đào\nTên bệnh/điều kiện: Bệnh đốm vi khuẩn trên đào\nLoại bệnh/dịch hại: Vi khuẩn\nTác nhân: Vi khuẩn đốm quả/lá đào\nTên khoa học tác nhân: Xanthomonas arboricola pv. pruni\nTriệu chứng: Lá có đốm úng nước/góc cạnh rồi sẫm và hoại tử, có thể tạo lỗ thủng; lá vàng/rụng. Quả có đốm lõm, nứt/pitting; cành non có thể có tổn thương.\nDiễn biến/vòng bệnh: Vi khuẩn sống trên mô/canker và lan trong mùa khi có mưa, gió; mô non và quả dễ nhiễm.\nĐiều kiện thuận lợi: Ấm, ẩm, mưa và gió mạnh làm tăng nhiễm; giống mẫn cảm và stress làm bệnh nặng hơn.\nLây lan: Mưa bắn/gió mang vi khuẩn từ mô bệnh; dụng cụ và vật liệu cây giống có thể góp phần lan.\nPhòng ngừa: Giống ít mẫn cảm, duy trì cây khỏe, giảm stress, theo dõi giai đoạn quả non.\nBiện pháp canh tác: Cắt bỏ mô bệnh khi thích hợp, tránh tưới làm ướt kéo dài, cân đối dinh dưỡng và giảm tổn thương.\nBiện pháp sinh học: Một số bactericide sinh học có thể được đăng ký theo vùng; hiệu lực cần đánh giá địa phương.\nKiểm soát hóa học (không định lượng): Copper/bactericide có thể được dùng phòng ngừa theo chương trình địa phương nhưng nguy cơ phytotoxicity và kháng cần quản lý.\nThời điểm xử lý: Phòng ngừa ở các giai đoạn nguy cơ trước/sau mưa theo hướng dẫn cây ăn quả địa phương; không chờ bệnh nặng mới xử lý.\nQuản lý kháng: Hạn chế lạm dụng copper; phối hợp giống, sanitation và luân phiên giải pháp được phép.\nLưu ý an toàn: Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-  },
-  {
-    "disease_code": "Peach___healthy",
-    "class_name_vi": "Đào khỏe mạnh",
-    "crop_name": "Đào",
-    "disease_name": "Không phát hiện bệnh thuộc lớp CV (healthy)",
-    "disease_type": "Healthy class / Không phát hiện bệnh thuộc phạm vi lớp CV",
-    "pathogen": {
-      "name": "N/A",
-      "scientific_name": "N/A"
-    },
-    "knowledge": {
-      "symptoms": "Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác.",
-      "disease_development": "N/A — đây là lớp nhãn CV, không phải chẩn đoán bệnh lý toàn cây.",
-      "favorable_conditions": "N/A; vẫn cần xem xét stress dinh dưỡng, nước, sâu hại và bệnh ngoài bộ lớp.",
-      "transmission": "N/A",
-      "prevention": "Duy trì scouting/IPM, vệ sinh, giống/cây giống khỏe và điều kiện canh tác phù hợp.",
-      "cultural_control": "Tiếp tục giám sát định kỳ; không phun thuốc chỉ vì model trả 'healthy'.",
-      "biological_control": "N/A",
-      "chemical_control_non_quantitative": "Không khuyến nghị xử lý hóa học nếu không có đối tượng dịch hại/chẩn đoán xác định.",
-      "treatment_timing": "N/A",
-      "resistance_management": "N/A",
-      "safety_notes": "Không dùng nhãn 'healthy' để bỏ qua scouting thực địa hoặc các triệu chứng ngoài bộ 38 lớp."
-    },
-    "provenance": {
-      "source_ids": [
-        "S01"
-      ],
-      "evidence_scope": "CV label / negative class only",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "LOW",
-      "structured_rule_status": "NOT_APPLICABLE",
-      "regulatory_note": "Không tạo TreatmentRule hóa học từ lớp healthy. Nếu thửa ruộng có lịch sử phun, PHI vẫn lấy từ PostgreSQL."
-    },
-    "content": "Mã bệnh: Peach___healthy\nTên tiếng Việt: Đào khỏe mạnh\nCây trồng: Đào\nTên bệnh/điều kiện: Không phát hiện bệnh thuộc lớp CV (healthy)\nLoại bệnh/dịch hại: Healthy class / Không phát hiện bệnh thuộc phạm vi lớp CV\nTác nhân: N/A\nTên khoa học tác nhân: N/A\nTriệu chứng: Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác.\nDiễn biến/vòng bệnh: N/A — đây là lớp nhãn CV, không phải chẩn đoán bệnh lý toàn cây.\nĐiều kiện thuận lợi: N/A; vẫn cần xem xét stress dinh dưỡng, nước, sâu hại và bệnh ngoài bộ lớp.\nLây lan: N/A\nPhòng ngừa: Duy trì scouting/IPM, vệ sinh, giống/cây giống khỏe và điều kiện canh tác phù hợp.\nBiện pháp canh tác: Tiếp tục giám sát định kỳ; không phun thuốc chỉ vì model trả 'healthy'.\nBiện pháp sinh học: N/A\nKiểm soát hóa học (không định lượng): Không khuyến nghị xử lý hóa học nếu không có đối tượng dịch hại/chẩn đoán xác định.\nThời điểm xử lý: N/A\nQuản lý kháng: N/A\nLưu ý an toàn: Không dùng nhãn 'healthy' để bỏ qua scouting thực địa hoặc các triệu chứng ngoài bộ 38 lớp."
-  },
-  {
-    "disease_code": "Pepper,_bell___Bacterial_spot",
-    "class_name_vi": "Bệnh đốm vi khuẩn trên ớt chuông",
-    "crop_name": "Ớt chuông",
-    "disease_name": "Bệnh đốm vi khuẩn trên ớt chuông",
-    "disease_type": "Vi khuẩn",
-    "pathogen": {
-      "name": "Nhóm Xanthomonas gây bacterial spot trên ớt",
-      "scientific_name": "Xanthomonas spp. (bao gồm X. euvesicatoria, X. vesicatoria, X. perforans, X. gardneri tùy vùng)"
-    },
-    "knowledge": {
-      "symptoms": "Lá có đốm nâu tròn nhỏ, viền sẫm; có thể rụng lá. Quả có đốm nâu sần/corky nhô lên, làm giảm giá trị thương phẩm.",
-      "disease_development": "Có thể bắt đầu từ hạt/cây con nhiễm; vi khuẩn tăng nhanh trên tán trong thời tiết ấm ẩm và tạo nhiều chu kỳ lây.",
-      "favorable_conditions": "Ấm và ẩm/mưa, khoảng 24–30°C; lá ướt và mưa bắn thúc đẩy bệnh.",
-      "transmission": "Hạt/cây giống nhiễm, tàn dư, mưa bắn, tưới phun, tay/dụng cụ khi tán ướt.",
-      "prevention": "Hạt/cây giống sạch bệnh, luân canh, vệ sinh nhà ươm, tránh thao tác cây khi ướt.",
-      "cultural_control": "Giảm tưới phun lên lá, tăng thông thoáng, loại cây con bệnh, luân canh cây không ký chủ.",
-      "biological_control": "Một số Bacillus/chế phẩm sinh học có thể hỗ trợ nếu được đăng ký; không thay sanitation.",
-      "chemical_control_non_quantitative": "Copper-based bactericide và sản phẩm được đăng ký có thể giảm bệnh nhưng kháng copper có thể xảy ra.",
-      "treatment_timing": "Phòng ngừa từ cây con/đầu mùa khi dự báo ấm ẩm; xử lý dựa trên nguy cơ, không dùng sau khi bệnh đã bùng mạnh như biện pháp duy nhất.",
-      "resistance_management": "Không lặp một bactericide; giảm áp lực chọn lọc bằng sanitation và luân canh.",
-      "safety_notes": "Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-    },
-    "provenance": {
-      "source_ids": [
-        "S17",
-        "S03"
-      ],
-      "evidence_scope": "CV label + disease biology/IPM + regulatory guardrail",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "HIGH",
-      "structured_rule_status": "REQUIRES_VN_LABEL_VALIDATION",
-      "regulatory_note": "Liều, tần suất, PHI, tên thương phẩm và tình trạng được phép dùng phải lấy deterministic từ nhãn/danh mục thuốc BVTV Việt Nam hiện hành; nguồn extension quốc tế chỉ dùng cho triệu chứng, sinh học bệnh và IPM tham khảo."
-    },
-    "content": "Mã bệnh: Pepper,_bell___Bacterial_spot\nTên tiếng Việt: Bệnh đốm vi khuẩn trên ớt chuông\nCây trồng: Ớt chuông\nTên bệnh/điều kiện: Bệnh đốm vi khuẩn trên ớt chuông\nLoại bệnh/dịch hại: Vi khuẩn\nTác nhân: Nhóm Xanthomonas gây bacterial spot trên ớt\nTên khoa học tác nhân: Xanthomonas spp. (bao gồm X. euvesicatoria, X. vesicatoria, X. perforans, X. gardneri tùy vùng)\nTriệu chứng: Lá có đốm nâu tròn nhỏ, viền sẫm; có thể rụng lá. Quả có đốm nâu sần/corky nhô lên, làm giảm giá trị thương phẩm.\nDiễn biến/vòng bệnh: Có thể bắt đầu từ hạt/cây con nhiễm; vi khuẩn tăng nhanh trên tán trong thời tiết ấm ẩm và tạo nhiều chu kỳ lây.\nĐiều kiện thuận lợi: Ấm và ẩm/mưa, khoảng 24–30°C; lá ướt và mưa bắn thúc đẩy bệnh.\nLây lan: Hạt/cây giống nhiễm, tàn dư, mưa bắn, tưới phun, tay/dụng cụ khi tán ướt.\nPhòng ngừa: Hạt/cây giống sạch bệnh, luân canh, vệ sinh nhà ươm, tránh thao tác cây khi ướt.\nBiện pháp canh tác: Giảm tưới phun lên lá, tăng thông thoáng, loại cây con bệnh, luân canh cây không ký chủ.\nBiện pháp sinh học: Một số Bacillus/chế phẩm sinh học có thể hỗ trợ nếu được đăng ký; không thay sanitation.\nKiểm soát hóa học (không định lượng): Copper-based bactericide và sản phẩm được đăng ký có thể giảm bệnh nhưng kháng copper có thể xảy ra.\nThời điểm xử lý: Phòng ngừa từ cây con/đầu mùa khi dự báo ấm ẩm; xử lý dựa trên nguy cơ, không dùng sau khi bệnh đã bùng mạnh như biện pháp duy nhất.\nQuản lý kháng: Không lặp một bactericide; giảm áp lực chọn lọc bằng sanitation và luân canh.\nLưu ý an toàn: Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-  },
-  {
-    "disease_code": "Pepper,_bell___healthy",
-    "class_name_vi": "Ớt chuông khỏe mạnh",
-    "crop_name": "Ớt chuông",
-    "disease_name": "Không phát hiện bệnh thuộc lớp CV (healthy)",
-    "disease_type": "Healthy class / Không phát hiện bệnh thuộc phạm vi lớp CV",
-    "pathogen": {
-      "name": "N/A",
-      "scientific_name": "N/A"
-    },
-    "knowledge": {
-      "symptoms": "Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác.",
-      "disease_development": "N/A — đây là lớp nhãn CV, không phải chẩn đoán bệnh lý toàn cây.",
-      "favorable_conditions": "N/A; vẫn cần xem xét stress dinh dưỡng, nước, sâu hại và bệnh ngoài bộ lớp.",
-      "transmission": "N/A",
-      "prevention": "Duy trì scouting/IPM, vệ sinh, giống/cây giống khỏe và điều kiện canh tác phù hợp.",
-      "cultural_control": "Tiếp tục giám sát định kỳ; không phun thuốc chỉ vì model trả 'healthy'.",
-      "biological_control": "N/A",
-      "chemical_control_non_quantitative": "Không khuyến nghị xử lý hóa học nếu không có đối tượng dịch hại/chẩn đoán xác định.",
-      "treatment_timing": "N/A",
-      "resistance_management": "N/A",
-      "safety_notes": "Không dùng nhãn 'healthy' để bỏ qua scouting thực địa hoặc các triệu chứng ngoài bộ 38 lớp."
-    },
-    "provenance": {
-      "source_ids": [
-        "S01"
-      ],
-      "evidence_scope": "CV label / negative class only",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "LOW",
-      "structured_rule_status": "NOT_APPLICABLE",
-      "regulatory_note": "Không tạo TreatmentRule hóa học từ lớp healthy. Nếu thửa ruộng có lịch sử phun, PHI vẫn lấy từ PostgreSQL."
-    },
-    "content": "Mã bệnh: Pepper,_bell___healthy\nTên tiếng Việt: Ớt chuông khỏe mạnh\nCây trồng: Ớt chuông\nTên bệnh/điều kiện: Không phát hiện bệnh thuộc lớp CV (healthy)\nLoại bệnh/dịch hại: Healthy class / Không phát hiện bệnh thuộc phạm vi lớp CV\nTác nhân: N/A\nTên khoa học tác nhân: N/A\nTriệu chứng: Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác.\nDiễn biến/vòng bệnh: N/A — đây là lớp nhãn CV, không phải chẩn đoán bệnh lý toàn cây.\nĐiều kiện thuận lợi: N/A; vẫn cần xem xét stress dinh dưỡng, nước, sâu hại và bệnh ngoài bộ lớp.\nLây lan: N/A\nPhòng ngừa: Duy trì scouting/IPM, vệ sinh, giống/cây giống khỏe và điều kiện canh tác phù hợp.\nBiện pháp canh tác: Tiếp tục giám sát định kỳ; không phun thuốc chỉ vì model trả 'healthy'.\nBiện pháp sinh học: N/A\nKiểm soát hóa học (không định lượng): Không khuyến nghị xử lý hóa học nếu không có đối tượng dịch hại/chẩn đoán xác định.\nThời điểm xử lý: N/A\nQuản lý kháng: N/A\nLưu ý an toàn: Không dùng nhãn 'healthy' để bỏ qua scouting thực địa hoặc các triệu chứng ngoài bộ 38 lớp."
-  },
-  {
-    "disease_code": "Potato___Early_blight",
-    "class_name_vi": "Bệnh cháy lá sớm trên khoai tây",
-    "crop_name": "Khoai tây",
-    "disease_name": "Bệnh cháy lá sớm trên khoai tây",
-    "disease_type": "Nấm",
-    "pathogen": {
-      "name": "Nấm gây cháy lá sớm",
-      "scientific_name": "Alternaria solani"
-    },
-    "knowledge": {
-      "symptoms": "Lá già xuất hiện đốm nâu có các vòng đồng tâm kiểu 'bia bắn', mô quanh vết thường vàng; nặng các đốm liên kết làm cháy lá. Củ có thể có vết lõm sẫm với mô khô bần bên dưới.",
-      "disease_development": "Nấm tồn tại trên tàn dư/cây ký chủ và gây nhiều chu kỳ bào tử trong mùa; thường tăng trên cây già hoặc cây bị stress.",
-      "favorable_conditions": "Ấm và ẩm, sương/mưa thường xuyên; cây thiếu dinh dưỡng hoặc stress dễ bị nặng.",
-      "transmission": "Bào tử lan bằng gió/mưa từ tàn dư và vết bệnh.",
-      "prevention": "Luân canh, giống/giống cây khỏe, quản lý dinh dưỡng và giảm stress; vệ sinh tàn dư.",
-      "cultural_control": "Giảm lá ướt, tưới gốc, tạo tán (cà chua), loại tàn dư/volunteer và luân canh.",
-      "biological_control": "Một số biofungicide có thể hỗ trợ nếu đăng ký; không thay sanitation và bảo vệ đúng thời điểm.",
-      "chemical_control_non_quantitative": "Fungicide bảo vệ/hệ thống có thể được dùng khi nguy cơ cao; chọn theo cây trồng và nhãn.",
-      "treatment_timing": "Khi bắt đầu có nguy cơ/triệu chứng ở lá dưới và thời tiết tiếp tục thuận lợi; ưu tiên phòng hơn chữa.",
-      "resistance_management": "Luân phiên FRAC, tránh dùng liên tiếp fungicide đơn điểm.",
-      "safety_notes": "Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-    },
-    "provenance": {
-      "source_ids": [
-        "S18",
-        "S03"
-      ],
-      "evidence_scope": "CV label + disease biology/IPM + regulatory guardrail",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "HIGH",
-      "structured_rule_status": "REQUIRES_VN_LABEL_VALIDATION",
-      "regulatory_note": "Liều, tần suất, PHI, tên thương phẩm và tình trạng được phép dùng phải lấy deterministic từ nhãn/danh mục thuốc BVTV Việt Nam hiện hành; nguồn extension quốc tế chỉ dùng cho triệu chứng, sinh học bệnh và IPM tham khảo."
-    },
-    "content": "Mã bệnh: Potato___Early_blight\nTên tiếng Việt: Bệnh cháy lá sớm trên khoai tây\nCây trồng: Khoai tây\nTên bệnh/điều kiện: Bệnh cháy lá sớm trên khoai tây\nLoại bệnh/dịch hại: Nấm\nTác nhân: Nấm gây cháy lá sớm\nTên khoa học tác nhân: Alternaria solani\nTriệu chứng: Lá già xuất hiện đốm nâu có các vòng đồng tâm kiểu 'bia bắn', mô quanh vết thường vàng; nặng các đốm liên kết làm cháy lá. Củ có thể có vết lõm sẫm với mô khô bần bên dưới.\nDiễn biến/vòng bệnh: Nấm tồn tại trên tàn dư/cây ký chủ và gây nhiều chu kỳ bào tử trong mùa; thường tăng trên cây già hoặc cây bị stress.\nĐiều kiện thuận lợi: Ấm và ẩm, sương/mưa thường xuyên; cây thiếu dinh dưỡng hoặc stress dễ bị nặng.\nLây lan: Bào tử lan bằng gió/mưa từ tàn dư và vết bệnh.\nPhòng ngừa: Luân canh, giống/giống cây khỏe, quản lý dinh dưỡng và giảm stress; vệ sinh tàn dư.\nBiện pháp canh tác: Giảm lá ướt, tưới gốc, tạo tán (cà chua), loại tàn dư/volunteer và luân canh.\nBiện pháp sinh học: Một số biofungicide có thể hỗ trợ nếu đăng ký; không thay sanitation và bảo vệ đúng thời điểm.\nKiểm soát hóa học (không định lượng): Fungicide bảo vệ/hệ thống có thể được dùng khi nguy cơ cao; chọn theo cây trồng và nhãn.\nThời điểm xử lý: Khi bắt đầu có nguy cơ/triệu chứng ở lá dưới và thời tiết tiếp tục thuận lợi; ưu tiên phòng hơn chữa.\nQuản lý kháng: Luân phiên FRAC, tránh dùng liên tiếp fungicide đơn điểm.\nLưu ý an toàn: Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-  },
-  {
-    "disease_code": "Potato___Late_blight",
-    "class_name_vi": "Bệnh cháy lá muộn trên khoai tây",
-    "crop_name": "Khoai tây",
-    "disease_name": "Bệnh cháy lá muộn trên khoai tây",
-    "disease_type": "Oomycete (nấm giả)",
-    "pathogen": {
-      "name": "Tác nhân cháy lá muộn",
-      "scientific_name": "Phytophthora infestans"
-    },
-    "knowledge": {
-      "symptoms": "Vết úng nước không đều trên lá, nhanh chuyển ô-liu/nâu; trong ẩm có lớp mốc trắng ở rìa/mặt dưới. Bệnh lan rất nhanh, làm cháy lá/thân. Củ có vết nâu cứng và thối bên trong.",
-      "disease_development": "Nguồn bệnh từ củ/cây nhiễm hoặc cây tự mọc; sporangia phát tán, gây nhiễm nhanh và lặp chu kỳ trong thời tiết mát ẩm.",
-      "favorable_conditions": "Mát và rất ẩm, lá ướt kéo dài, mưa/sương; dịch có thể bùng nhanh trong vài ngày.",
-      "transmission": "Sporangia lan xa bằng gió, mưa; nguồn cây/củ nhiễm và tàn dư sống.",
-      "prevention": "Giống/cây giống sạch, loại nguồn volunteer/cull piles, giám sát dự báo bệnh, tránh lá ướt kéo dài.",
-      "cultural_control": "Khoảng cách/tán thông thoáng, tưới hợp lý, loại cây nhiễm nặng; khoai tây cần quản lý củ giống/củ bỏ.",
-      "biological_control": "Biocontrol có vai trò hỗ trợ hạn chế; không thay chương trình phòng trong điều kiện dịch cao.",
-      "chemical_control_non_quantitative": "Cần chương trình phòng bệnh theo nguy cơ ở vùng có dịch; lựa chọn fungicide/oomyceticide đăng ký và bám dự báo.",
-      "treatment_timing": "Phòng trước/sớm khi dự báo mát ẩm hoặc có cảnh báo vùng; không chờ bệnh lan rộng.",
-      "resistance_management": "Luân phiên FRAC theo cơ chế tác động, dùng hỗn hợp hợp lý và không vượt số lần trên nhãn.",
-      "safety_notes": "Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-    },
-    "provenance": {
-      "source_ids": [
-        "S18",
-        "S03"
-      ],
-      "evidence_scope": "CV label + disease biology/IPM + regulatory guardrail",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "HIGH",
-      "structured_rule_status": "REQUIRES_VN_LABEL_VALIDATION",
-      "regulatory_note": "Liều, tần suất, PHI, tên thương phẩm và tình trạng được phép dùng phải lấy deterministic từ nhãn/danh mục thuốc BVTV Việt Nam hiện hành; nguồn extension quốc tế chỉ dùng cho triệu chứng, sinh học bệnh và IPM tham khảo."
-    },
-    "content": "Mã bệnh: Potato___Late_blight\nTên tiếng Việt: Bệnh cháy lá muộn trên khoai tây\nCây trồng: Khoai tây\nTên bệnh/điều kiện: Bệnh cháy lá muộn trên khoai tây\nLoại bệnh/dịch hại: Oomycete (nấm giả)\nTác nhân: Tác nhân cháy lá muộn\nTên khoa học tác nhân: Phytophthora infestans\nTriệu chứng: Vết úng nước không đều trên lá, nhanh chuyển ô-liu/nâu; trong ẩm có lớp mốc trắng ở rìa/mặt dưới. Bệnh lan rất nhanh, làm cháy lá/thân. Củ có vết nâu cứng và thối bên trong.\nDiễn biến/vòng bệnh: Nguồn bệnh từ củ/cây nhiễm hoặc cây tự mọc; sporangia phát tán, gây nhiễm nhanh và lặp chu kỳ trong thời tiết mát ẩm.\nĐiều kiện thuận lợi: Mát và rất ẩm, lá ướt kéo dài, mưa/sương; dịch có thể bùng nhanh trong vài ngày.\nLây lan: Sporangia lan xa bằng gió, mưa; nguồn cây/củ nhiễm và tàn dư sống.\nPhòng ngừa: Giống/cây giống sạch, loại nguồn volunteer/cull piles, giám sát dự báo bệnh, tránh lá ướt kéo dài.\nBiện pháp canh tác: Khoảng cách/tán thông thoáng, tưới hợp lý, loại cây nhiễm nặng; khoai tây cần quản lý củ giống/củ bỏ.\nBiện pháp sinh học: Biocontrol có vai trò hỗ trợ hạn chế; không thay chương trình phòng trong điều kiện dịch cao.\nKiểm soát hóa học (không định lượng): Cần chương trình phòng bệnh theo nguy cơ ở vùng có dịch; lựa chọn fungicide/oomyceticide đăng ký và bám dự báo.\nThời điểm xử lý: Phòng trước/sớm khi dự báo mát ẩm hoặc có cảnh báo vùng; không chờ bệnh lan rộng.\nQuản lý kháng: Luân phiên FRAC theo cơ chế tác động, dùng hỗn hợp hợp lý và không vượt số lần trên nhãn.\nLưu ý an toàn: Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-  },
-  {
-    "disease_code": "Potato___healthy",
-    "class_name_vi": "Khoai tây khỏe mạnh",
-    "crop_name": "Khoai tây",
-    "disease_name": "Không phát hiện bệnh thuộc lớp CV (healthy)",
-    "disease_type": "Healthy class / Không phát hiện bệnh thuộc phạm vi lớp CV",
-    "pathogen": {
-      "name": "N/A",
-      "scientific_name": "N/A"
-    },
-    "knowledge": {
-      "symptoms": "Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác.",
-      "disease_development": "N/A — đây là lớp nhãn CV, không phải chẩn đoán bệnh lý toàn cây.",
-      "favorable_conditions": "N/A; vẫn cần xem xét stress dinh dưỡng, nước, sâu hại và bệnh ngoài bộ lớp.",
-      "transmission": "N/A",
-      "prevention": "Duy trì scouting/IPM, vệ sinh, giống/cây giống khỏe và điều kiện canh tác phù hợp.",
-      "cultural_control": "Tiếp tục giám sát định kỳ; không phun thuốc chỉ vì model trả 'healthy'.",
-      "biological_control": "N/A",
-      "chemical_control_non_quantitative": "Không khuyến nghị xử lý hóa học nếu không có đối tượng dịch hại/chẩn đoán xác định.",
-      "treatment_timing": "N/A",
-      "resistance_management": "N/A",
-      "safety_notes": "Không dùng nhãn 'healthy' để bỏ qua scouting thực địa hoặc các triệu chứng ngoài bộ 38 lớp."
-    },
-    "provenance": {
-      "source_ids": [
-        "S01"
-      ],
-      "evidence_scope": "CV label / negative class only",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "LOW",
-      "structured_rule_status": "NOT_APPLICABLE",
-      "regulatory_note": "Không tạo TreatmentRule hóa học từ lớp healthy. Nếu thửa ruộng có lịch sử phun, PHI vẫn lấy từ PostgreSQL."
-    },
-    "content": "Mã bệnh: Potato___healthy\nTên tiếng Việt: Khoai tây khỏe mạnh\nCây trồng: Khoai tây\nTên bệnh/điều kiện: Không phát hiện bệnh thuộc lớp CV (healthy)\nLoại bệnh/dịch hại: Healthy class / Không phát hiện bệnh thuộc phạm vi lớp CV\nTác nhân: N/A\nTên khoa học tác nhân: N/A\nTriệu chứng: Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác.\nDiễn biến/vòng bệnh: N/A — đây là lớp nhãn CV, không phải chẩn đoán bệnh lý toàn cây.\nĐiều kiện thuận lợi: N/A; vẫn cần xem xét stress dinh dưỡng, nước, sâu hại và bệnh ngoài bộ lớp.\nLây lan: N/A\nPhòng ngừa: Duy trì scouting/IPM, vệ sinh, giống/cây giống khỏe và điều kiện canh tác phù hợp.\nBiện pháp canh tác: Tiếp tục giám sát định kỳ; không phun thuốc chỉ vì model trả 'healthy'.\nBiện pháp sinh học: N/A\nKiểm soát hóa học (không định lượng): Không khuyến nghị xử lý hóa học nếu không có đối tượng dịch hại/chẩn đoán xác định.\nThời điểm xử lý: N/A\nQuản lý kháng: N/A\nLưu ý an toàn: Không dùng nhãn 'healthy' để bỏ qua scouting thực địa hoặc các triệu chứng ngoài bộ 38 lớp."
-  },
-  {
-    "disease_code": "Raspberry___healthy",
-    "class_name_vi": "Mâm xôi khỏe mạnh",
-    "crop_name": "Mâm xôi",
-    "disease_name": "Không phát hiện bệnh thuộc lớp CV (healthy)",
-    "disease_type": "Healthy class / Không phát hiện bệnh thuộc phạm vi lớp CV",
-    "pathogen": {
-      "name": "N/A",
-      "scientific_name": "N/A"
-    },
-    "knowledge": {
-      "symptoms": "Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác.",
-      "disease_development": "N/A — đây là lớp nhãn CV, không phải chẩn đoán bệnh lý toàn cây.",
-      "favorable_conditions": "N/A; vẫn cần xem xét stress dinh dưỡng, nước, sâu hại và bệnh ngoài bộ lớp.",
-      "transmission": "N/A",
-      "prevention": "Duy trì scouting/IPM, vệ sinh, giống/cây giống khỏe và điều kiện canh tác phù hợp.",
-      "cultural_control": "Tiếp tục giám sát định kỳ; không phun thuốc chỉ vì model trả 'healthy'.",
-      "biological_control": "N/A",
-      "chemical_control_non_quantitative": "Không khuyến nghị xử lý hóa học nếu không có đối tượng dịch hại/chẩn đoán xác định.",
-      "treatment_timing": "N/A",
-      "resistance_management": "N/A",
-      "safety_notes": "Không dùng nhãn 'healthy' để bỏ qua scouting thực địa hoặc các triệu chứng ngoài bộ 38 lớp."
-    },
-    "provenance": {
-      "source_ids": [
-        "S01"
-      ],
-      "evidence_scope": "CV label / negative class only",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "LOW",
-      "structured_rule_status": "NOT_APPLICABLE",
-      "regulatory_note": "Không tạo TreatmentRule hóa học từ lớp healthy. Nếu thửa ruộng có lịch sử phun, PHI vẫn lấy từ PostgreSQL."
-    },
-    "content": "Mã bệnh: Raspberry___healthy\nTên tiếng Việt: Mâm xôi khỏe mạnh\nCây trồng: Mâm xôi\nTên bệnh/điều kiện: Không phát hiện bệnh thuộc lớp CV (healthy)\nLoại bệnh/dịch hại: Healthy class / Không phát hiện bệnh thuộc phạm vi lớp CV\nTác nhân: N/A\nTên khoa học tác nhân: N/A\nTriệu chứng: Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác.\nDiễn biến/vòng bệnh: N/A — đây là lớp nhãn CV, không phải chẩn đoán bệnh lý toàn cây.\nĐiều kiện thuận lợi: N/A; vẫn cần xem xét stress dinh dưỡng, nước, sâu hại và bệnh ngoài bộ lớp.\nLây lan: N/A\nPhòng ngừa: Duy trì scouting/IPM, vệ sinh, giống/cây giống khỏe và điều kiện canh tác phù hợp.\nBiện pháp canh tác: Tiếp tục giám sát định kỳ; không phun thuốc chỉ vì model trả 'healthy'.\nBiện pháp sinh học: N/A\nKiểm soát hóa học (không định lượng): Không khuyến nghị xử lý hóa học nếu không có đối tượng dịch hại/chẩn đoán xác định.\nThời điểm xử lý: N/A\nQuản lý kháng: N/A\nLưu ý an toàn: Không dùng nhãn 'healthy' để bỏ qua scouting thực địa hoặc các triệu chứng ngoài bộ 38 lớp."
-  },
-  {
-    "disease_code": "Soybean___healthy",
-    "class_name_vi": "Đậu tương khỏe mạnh",
-    "crop_name": "Đậu tương",
-    "disease_name": "Không phát hiện bệnh thuộc lớp CV (healthy)",
-    "disease_type": "Healthy class / Không phát hiện bệnh thuộc phạm vi lớp CV",
-    "pathogen": {
-      "name": "N/A",
-      "scientific_name": "N/A"
-    },
-    "knowledge": {
-      "symptoms": "Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác.",
-      "disease_development": "N/A — đây là lớp nhãn CV, không phải chẩn đoán bệnh lý toàn cây.",
-      "favorable_conditions": "N/A; vẫn cần xem xét stress dinh dưỡng, nước, sâu hại và bệnh ngoài bộ lớp.",
-      "transmission": "N/A",
-      "prevention": "Duy trì scouting/IPM, vệ sinh, giống/cây giống khỏe và điều kiện canh tác phù hợp.",
-      "cultural_control": "Tiếp tục giám sát định kỳ; không phun thuốc chỉ vì model trả 'healthy'.",
-      "biological_control": "N/A",
-      "chemical_control_non_quantitative": "Không khuyến nghị xử lý hóa học nếu không có đối tượng dịch hại/chẩn đoán xác định.",
-      "treatment_timing": "N/A",
-      "resistance_management": "N/A",
-      "safety_notes": "Không dùng nhãn 'healthy' để bỏ qua scouting thực địa hoặc các triệu chứng ngoài bộ 38 lớp."
-    },
-    "provenance": {
-      "source_ids": [
-        "S01"
-      ],
-      "evidence_scope": "CV label / negative class only",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "LOW",
-      "structured_rule_status": "NOT_APPLICABLE",
-      "regulatory_note": "Không tạo TreatmentRule hóa học từ lớp healthy. Nếu thửa ruộng có lịch sử phun, PHI vẫn lấy từ PostgreSQL."
-    },
-    "content": "Mã bệnh: Soybean___healthy\nTên tiếng Việt: Đậu tương khỏe mạnh\nCây trồng: Đậu tương\nTên bệnh/điều kiện: Không phát hiện bệnh thuộc lớp CV (healthy)\nLoại bệnh/dịch hại: Healthy class / Không phát hiện bệnh thuộc phạm vi lớp CV\nTác nhân: N/A\nTên khoa học tác nhân: N/A\nTriệu chứng: Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác.\nDiễn biến/vòng bệnh: N/A — đây là lớp nhãn CV, không phải chẩn đoán bệnh lý toàn cây.\nĐiều kiện thuận lợi: N/A; vẫn cần xem xét stress dinh dưỡng, nước, sâu hại và bệnh ngoài bộ lớp.\nLây lan: N/A\nPhòng ngừa: Duy trì scouting/IPM, vệ sinh, giống/cây giống khỏe và điều kiện canh tác phù hợp.\nBiện pháp canh tác: Tiếp tục giám sát định kỳ; không phun thuốc chỉ vì model trả 'healthy'.\nBiện pháp sinh học: N/A\nKiểm soát hóa học (không định lượng): Không khuyến nghị xử lý hóa học nếu không có đối tượng dịch hại/chẩn đoán xác định.\nThời điểm xử lý: N/A\nQuản lý kháng: N/A\nLưu ý an toàn: Không dùng nhãn 'healthy' để bỏ qua scouting thực địa hoặc các triệu chứng ngoài bộ 38 lớp."
-  },
-  {
-    "disease_code": "Squash___Powdery_mildew",
-    "class_name_vi": "Bệnh phấn trắng trên bí",
-    "crop_name": "Bí",
-    "disease_name": "Bệnh phấn trắng trên bí",
-    "disease_type": "Nấm",
-    "pathogen": {
-      "name": "Nấm phấn trắng họ bầu bí",
-      "scientific_name": "Podosphaera xanthii (một tác nhân chính)"
-    },
-    "knowledge": {
-      "symptoms": "Đốm vàng nhạt ban đầu trên lá già, sau có lớp bột trắng-xám thành mảng hoặc phủ lá; lá/cành nặng có thể héo chết, quả dễ bị cháy nắng.",
-      "disease_development": "Bào tử phấn được tạo liên tục trên lá bệnh và lan nhanh trong tán; thường bắt đầu ở lá già.",
-      "favorable_conditions": "Ẩm độ tương đối cao nhưng bề mặt lá có thể khô; nhiệt độ ấm vừa và tán rậm thuận lợi.",
-      "transmission": "Conidia chủ yếu lan theo gió.",
-      "prevention": "Giống kháng, khoảng cách/tán thông thoáng, theo dõi lá già sớm.",
-      "cultural_control": "Loại tàn dư bệnh, tránh bón đạm quá mức, tăng thông khí.",
-      "biological_control": "Một số chế phẩm Bacillus, dầu làm vườn hoặc potassium bicarbonate/sulfur (không phải tất cả đều 'sinh học') có thể được dùng nếu đăng ký.",
-      "chemical_control_non_quantitative": "Fungicide phòng/phấn trắng cần luân phiên FRAC vì nguy cơ kháng cao.",
-      "treatment_timing": "Bắt đầu sớm khi xuất hiện vết đầu tiên hoặc trước giai đoạn bệnh thường bùng phát; phủ tốt cả mặt lá.",
-      "resistance_management": "Luân phiên FRAC, giới hạn số lần nhóm nguy cơ cao, tích hợp giống kháng.",
-      "safety_notes": "Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-    },
-    "provenance": {
-      "source_ids": [
-        "S19",
-        "S03"
-      ],
-      "evidence_scope": "CV label + disease biology/IPM + regulatory guardrail",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "HIGH",
-      "structured_rule_status": "REQUIRES_VN_LABEL_VALIDATION",
-      "regulatory_note": "Liều, tần suất, PHI, tên thương phẩm và tình trạng được phép dùng phải lấy deterministic từ nhãn/danh mục thuốc BVTV Việt Nam hiện hành; nguồn extension quốc tế chỉ dùng cho triệu chứng, sinh học bệnh và IPM tham khảo."
-    },
-    "content": "Mã bệnh: Squash___Powdery_mildew\nTên tiếng Việt: Bệnh phấn trắng trên bí\nCây trồng: Bí\nTên bệnh/điều kiện: Bệnh phấn trắng trên bí\nLoại bệnh/dịch hại: Nấm\nTác nhân: Nấm phấn trắng họ bầu bí\nTên khoa học tác nhân: Podosphaera xanthii (một tác nhân chính)\nTriệu chứng: Đốm vàng nhạt ban đầu trên lá già, sau có lớp bột trắng-xám thành mảng hoặc phủ lá; lá/cành nặng có thể héo chết, quả dễ bị cháy nắng.\nDiễn biến/vòng bệnh: Bào tử phấn được tạo liên tục trên lá bệnh và lan nhanh trong tán; thường bắt đầu ở lá già.\nĐiều kiện thuận lợi: Ẩm độ tương đối cao nhưng bề mặt lá có thể khô; nhiệt độ ấm vừa và tán rậm thuận lợi.\nLây lan: Conidia chủ yếu lan theo gió.\nPhòng ngừa: Giống kháng, khoảng cách/tán thông thoáng, theo dõi lá già sớm.\nBiện pháp canh tác: Loại tàn dư bệnh, tránh bón đạm quá mức, tăng thông khí.\nBiện pháp sinh học: Một số chế phẩm Bacillus, dầu làm vườn hoặc potassium bicarbonate/sulfur (không phải tất cả đều 'sinh học') có thể được dùng nếu đăng ký.\nKiểm soát hóa học (không định lượng): Fungicide phòng/phấn trắng cần luân phiên FRAC vì nguy cơ kháng cao.\nThời điểm xử lý: Bắt đầu sớm khi xuất hiện vết đầu tiên hoặc trước giai đoạn bệnh thường bùng phát; phủ tốt cả mặt lá.\nQuản lý kháng: Luân phiên FRAC, giới hạn số lần nhóm nguy cơ cao, tích hợp giống kháng.\nLưu ý an toàn: Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-  },
-  {
-    "disease_code": "Strawberry___Leaf_scorch",
-    "class_name_vi": "Bệnh cháy lá trên dâu tây",
-    "crop_name": "Dâu tây",
-    "disease_name": "Bệnh cháy lá trên dâu tây",
-    "disease_type": "Nấm",
-    "pathogen": {
-      "name": "Nấm cháy lá dâu tây",
-      "scientific_name": "Diplocarpon earlianum"
-    },
-    "knowledge": {
-      "symptoms": "Nhiều chấm tím đặc không có tâm trắng; mô quanh đốm đỏ/tím, mép lá dần nâu khô như bị cháy; cuống/thân lá có thể có vệt nâu-tím lõm.",
-      "disease_development": "Nấm sống trên lá nhiễm và tạo bào tử trong thời tiết ẩm; nhiều chu kỳ có thể làm tán già hóa/rụng sớm.",
-      "favorable_conditions": "Ẩm, mưa và thời gian lá ướt kéo dài; ruộng/tán rậm giữ ẩm.",
-      "transmission": "Bào tử lan chủ yếu nhờ mưa bắn và nước tưới.",
-      "prevention": "Cây giống sạch, tán thông thoáng, loại lá bệnh nặng và giảm ướt lá.",
-      "cultural_control": "Renovation/vệ sinh sau vụ, tưới gốc, khoảng cách hợp lý và luân canh nếu hệ thống cho phép.",
-      "biological_control": "Không có biocontrol chính thống là trụ cột; sản phẩm sinh học chỉ khi được đăng ký.",
-      "chemical_control_non_quantitative": "Fungicide chỉ cân nhắc khi bệnh nặng/giống mẫn cảm và có sản phẩm đăng ký.",
-      "treatment_timing": "Sớm khi có vết đầu tiên và dự báo tiếp tục ẩm; kết hợp vệ sinh.",
-      "resistance_management": "Luân phiên FRAC nếu phải sử dụng hóa học.",
-      "safety_notes": "Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-    },
-    "provenance": {
-      "source_ids": [
-        "S20",
-        "S03"
-      ],
-      "evidence_scope": "CV label + disease biology/IPM + regulatory guardrail",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "HIGH",
-      "structured_rule_status": "REQUIRES_VN_LABEL_VALIDATION",
-      "regulatory_note": "Liều, tần suất, PHI, tên thương phẩm và tình trạng được phép dùng phải lấy deterministic từ nhãn/danh mục thuốc BVTV Việt Nam hiện hành; nguồn extension quốc tế chỉ dùng cho triệu chứng, sinh học bệnh và IPM tham khảo."
-    },
-    "content": "Mã bệnh: Strawberry___Leaf_scorch\nTên tiếng Việt: Bệnh cháy lá trên dâu tây\nCây trồng: Dâu tây\nTên bệnh/điều kiện: Bệnh cháy lá trên dâu tây\nLoại bệnh/dịch hại: Nấm\nTác nhân: Nấm cháy lá dâu tây\nTên khoa học tác nhân: Diplocarpon earlianum\nTriệu chứng: Nhiều chấm tím đặc không có tâm trắng; mô quanh đốm đỏ/tím, mép lá dần nâu khô như bị cháy; cuống/thân lá có thể có vệt nâu-tím lõm.\nDiễn biến/vòng bệnh: Nấm sống trên lá nhiễm và tạo bào tử trong thời tiết ẩm; nhiều chu kỳ có thể làm tán già hóa/rụng sớm.\nĐiều kiện thuận lợi: Ẩm, mưa và thời gian lá ướt kéo dài; ruộng/tán rậm giữ ẩm.\nLây lan: Bào tử lan chủ yếu nhờ mưa bắn và nước tưới.\nPhòng ngừa: Cây giống sạch, tán thông thoáng, loại lá bệnh nặng và giảm ướt lá.\nBiện pháp canh tác: Renovation/vệ sinh sau vụ, tưới gốc, khoảng cách hợp lý và luân canh nếu hệ thống cho phép.\nBiện pháp sinh học: Không có biocontrol chính thống là trụ cột; sản phẩm sinh học chỉ khi được đăng ký.\nKiểm soát hóa học (không định lượng): Fungicide chỉ cân nhắc khi bệnh nặng/giống mẫn cảm và có sản phẩm đăng ký.\nThời điểm xử lý: Sớm khi có vết đầu tiên và dự báo tiếp tục ẩm; kết hợp vệ sinh.\nQuản lý kháng: Luân phiên FRAC nếu phải sử dụng hóa học.\nLưu ý an toàn: Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-  },
-  {
-    "disease_code": "Strawberry___healthy",
-    "class_name_vi": "Dâu tây khỏe mạnh",
-    "crop_name": "Dâu tây",
-    "disease_name": "Không phát hiện bệnh thuộc lớp CV (healthy)",
-    "disease_type": "Healthy class / Không phát hiện bệnh thuộc phạm vi lớp CV",
-    "pathogen": {
-      "name": "N/A",
-      "scientific_name": "N/A"
-    },
-    "knowledge": {
-      "symptoms": "Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác.",
-      "disease_development": "N/A — đây là lớp nhãn CV, không phải chẩn đoán bệnh lý toàn cây.",
-      "favorable_conditions": "N/A; vẫn cần xem xét stress dinh dưỡng, nước, sâu hại và bệnh ngoài bộ lớp.",
-      "transmission": "N/A",
-      "prevention": "Duy trì scouting/IPM, vệ sinh, giống/cây giống khỏe và điều kiện canh tác phù hợp.",
-      "cultural_control": "Tiếp tục giám sát định kỳ; không phun thuốc chỉ vì model trả 'healthy'.",
-      "biological_control": "N/A",
-      "chemical_control_non_quantitative": "Không khuyến nghị xử lý hóa học nếu không có đối tượng dịch hại/chẩn đoán xác định.",
-      "treatment_timing": "N/A",
-      "resistance_management": "N/A",
-      "safety_notes": "Không dùng nhãn 'healthy' để bỏ qua scouting thực địa hoặc các triệu chứng ngoài bộ 38 lớp."
-    },
-    "provenance": {
-      "source_ids": [
-        "S01"
-      ],
-      "evidence_scope": "CV label / negative class only",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "LOW",
-      "structured_rule_status": "NOT_APPLICABLE",
-      "regulatory_note": "Không tạo TreatmentRule hóa học từ lớp healthy. Nếu thửa ruộng có lịch sử phun, PHI vẫn lấy từ PostgreSQL."
-    },
-    "content": "Mã bệnh: Strawberry___healthy\nTên tiếng Việt: Dâu tây khỏe mạnh\nCây trồng: Dâu tây\nTên bệnh/điều kiện: Không phát hiện bệnh thuộc lớp CV (healthy)\nLoại bệnh/dịch hại: Healthy class / Không phát hiện bệnh thuộc phạm vi lớp CV\nTác nhân: N/A\nTên khoa học tác nhân: N/A\nTriệu chứng: Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác.\nDiễn biến/vòng bệnh: N/A — đây là lớp nhãn CV, không phải chẩn đoán bệnh lý toàn cây.\nĐiều kiện thuận lợi: N/A; vẫn cần xem xét stress dinh dưỡng, nước, sâu hại và bệnh ngoài bộ lớp.\nLây lan: N/A\nPhòng ngừa: Duy trì scouting/IPM, vệ sinh, giống/cây giống khỏe và điều kiện canh tác phù hợp.\nBiện pháp canh tác: Tiếp tục giám sát định kỳ; không phun thuốc chỉ vì model trả 'healthy'.\nBiện pháp sinh học: N/A\nKiểm soát hóa học (không định lượng): Không khuyến nghị xử lý hóa học nếu không có đối tượng dịch hại/chẩn đoán xác định.\nThời điểm xử lý: N/A\nQuản lý kháng: N/A\nLưu ý an toàn: Không dùng nhãn 'healthy' để bỏ qua scouting thực địa hoặc các triệu chứng ngoài bộ 38 lớp."
-  },
-  {
-    "disease_code": "Tomato___Bacterial_spot",
-    "class_name_vi": "Bệnh đốm vi khuẩn trên cà chua",
-    "crop_name": "Cà chua",
-    "disease_name": "Bệnh đốm vi khuẩn trên cà chua",
-    "disease_type": "Vi khuẩn",
-    "pathogen": {
-      "name": "Nhóm Xanthomonas gây bacterial spot trên cà chua",
-      "scientific_name": "Xanthomonas spp. (X. vesicatoria, X. euvesicatoria, X. gardneri, X. perforans tùy vùng)"
-    },
-    "knowledge": {
-      "symptoms": "Lá có đốm nâu/đen nhỏ kèm quầng vàng; quả có đốm đen sần/corky lớn hơn bacterial speck, đôi khi có quầng trắng nhờn.",
-      "disease_development": "Bệnh đa chu kỳ trong điều kiện ấm ẩm; có thể khởi phát từ cây con/hạt nhiễm và lan nhanh trong tán.",
-      "favorable_conditions": "Ấm ẩm, khoảng 24–30°C, mưa/tưới bắn và lá ướt.",
-      "transmission": "Hạt/cây con, tàn dư, mưa bắn, nước tưới, tay và dụng cụ.",
-      "prevention": "Cây giống sạch, vệ sinh, luân canh, hạn chế tưới làm ướt lá.",
-      "cultural_control": "Cọc/giàn giúp khô tán, loại lá bệnh nặng, không làm việc trong tán khi ướt, vệ sinh dụng cụ.",
-      "biological_control": "Chế phẩm Bacillus/biological bactericide có thể là một phần IPM nếu nhãn cho phép.",
-      "chemical_control_non_quantitative": "Copper-based bactericide và sản phẩm đăng ký có thể được dùng phòng; hiệu quả phụ thuộc kháng và thời điểm.",
-      "treatment_timing": "Đầu vụ/trước các đợt mưa khi có nguy cơ; kết hợp sanitation.",
-      "resistance_management": "Không phụ thuộc copper đơn độc; luân phiên/ phối hợp chiến lược hợp pháp.",
-      "safety_notes": "Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-    },
-    "provenance": {
-      "source_ids": [
-        "S17",
-        "S03"
-      ],
-      "evidence_scope": "CV label + disease biology/IPM + regulatory guardrail",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "HIGH",
-      "structured_rule_status": "REQUIRES_VN_LABEL_VALIDATION",
-      "regulatory_note": "Liều, tần suất, PHI, tên thương phẩm và tình trạng được phép dùng phải lấy deterministic từ nhãn/danh mục thuốc BVTV Việt Nam hiện hành; nguồn extension quốc tế chỉ dùng cho triệu chứng, sinh học bệnh và IPM tham khảo."
-    },
-    "content": "Mã bệnh: Tomato___Bacterial_spot\nTên tiếng Việt: Bệnh đốm vi khuẩn trên cà chua\nCây trồng: Cà chua\nTên bệnh/điều kiện: Bệnh đốm vi khuẩn trên cà chua\nLoại bệnh/dịch hại: Vi khuẩn\nTác nhân: Nhóm Xanthomonas gây bacterial spot trên cà chua\nTên khoa học tác nhân: Xanthomonas spp. (X. vesicatoria, X. euvesicatoria, X. gardneri, X. perforans tùy vùng)\nTriệu chứng: Lá có đốm nâu/đen nhỏ kèm quầng vàng; quả có đốm đen sần/corky lớn hơn bacterial speck, đôi khi có quầng trắng nhờn.\nDiễn biến/vòng bệnh: Bệnh đa chu kỳ trong điều kiện ấm ẩm; có thể khởi phát từ cây con/hạt nhiễm và lan nhanh trong tán.\nĐiều kiện thuận lợi: Ấm ẩm, khoảng 24–30°C, mưa/tưới bắn và lá ướt.\nLây lan: Hạt/cây con, tàn dư, mưa bắn, nước tưới, tay và dụng cụ.\nPhòng ngừa: Cây giống sạch, vệ sinh, luân canh, hạn chế tưới làm ướt lá.\nBiện pháp canh tác: Cọc/giàn giúp khô tán, loại lá bệnh nặng, không làm việc trong tán khi ướt, vệ sinh dụng cụ.\nBiện pháp sinh học: Chế phẩm Bacillus/biological bactericide có thể là một phần IPM nếu nhãn cho phép.\nKiểm soát hóa học (không định lượng): Copper-based bactericide và sản phẩm đăng ký có thể được dùng phòng; hiệu quả phụ thuộc kháng và thời điểm.\nThời điểm xử lý: Đầu vụ/trước các đợt mưa khi có nguy cơ; kết hợp sanitation.\nQuản lý kháng: Không phụ thuộc copper đơn độc; luân phiên/ phối hợp chiến lược hợp pháp.\nLưu ý an toàn: Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-  },
-  {
-    "disease_code": "Tomato___Early_blight",
-    "class_name_vi": "Bệnh cháy lá sớm trên cà chua",
-    "crop_name": "Cà chua",
-    "disease_name": "Bệnh cháy lá sớm trên cà chua",
-    "disease_type": "Nấm",
-    "pathogen": {
-      "name": "Nấm gây cháy lá sớm",
-      "scientific_name": "Alternaria solani"
-    },
-    "knowledge": {
-      "symptoms": "Lá già xuất hiện đốm nâu có các vòng đồng tâm kiểu 'bia bắn', mô quanh vết thường vàng; nặng các đốm liên kết làm cháy lá. Thân/quả có thể có tổn thương sẫm, vòng đồng tâm; quả thường bị gần cuống.",
-      "disease_development": "Nấm tồn tại trên tàn dư/cây ký chủ và gây nhiều chu kỳ bào tử trong mùa; thường tăng trên cây già hoặc cây bị stress.",
-      "favorable_conditions": "Ấm và ẩm, sương/mưa thường xuyên; cây thiếu dinh dưỡng hoặc stress dễ bị nặng.",
-      "transmission": "Bào tử lan bằng gió/mưa từ tàn dư và vết bệnh.",
-      "prevention": "Luân canh, giống/giống cây khỏe, quản lý dinh dưỡng và giảm stress; vệ sinh tàn dư.",
-      "cultural_control": "Giảm lá ướt, tưới gốc, tạo tán (cà chua), loại tàn dư/volunteer và luân canh.",
-      "biological_control": "Một số biofungicide có thể hỗ trợ nếu đăng ký; không thay sanitation và bảo vệ đúng thời điểm.",
-      "chemical_control_non_quantitative": "Fungicide bảo vệ/hệ thống có thể được dùng khi nguy cơ cao; chọn theo cây trồng và nhãn.",
-      "treatment_timing": "Khi bắt đầu có nguy cơ/triệu chứng ở lá dưới và thời tiết tiếp tục thuận lợi; ưu tiên phòng hơn chữa.",
-      "resistance_management": "Luân phiên FRAC, tránh dùng liên tiếp fungicide đơn điểm.",
-      "safety_notes": "Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-    },
-    "provenance": {
-      "source_ids": [
-        "S21",
-        "S03"
-      ],
-      "evidence_scope": "CV label + disease biology/IPM + regulatory guardrail",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "HIGH",
-      "structured_rule_status": "REQUIRES_VN_LABEL_VALIDATION",
-      "regulatory_note": "Liều, tần suất, PHI, tên thương phẩm và tình trạng được phép dùng phải lấy deterministic từ nhãn/danh mục thuốc BVTV Việt Nam hiện hành; nguồn extension quốc tế chỉ dùng cho triệu chứng, sinh học bệnh và IPM tham khảo."
-    },
-    "content": "Mã bệnh: Tomato___Early_blight\nTên tiếng Việt: Bệnh cháy lá sớm trên cà chua\nCây trồng: Cà chua\nTên bệnh/điều kiện: Bệnh cháy lá sớm trên cà chua\nLoại bệnh/dịch hại: Nấm\nTác nhân: Nấm gây cháy lá sớm\nTên khoa học tác nhân: Alternaria solani\nTriệu chứng: Lá già xuất hiện đốm nâu có các vòng đồng tâm kiểu 'bia bắn', mô quanh vết thường vàng; nặng các đốm liên kết làm cháy lá. Thân/quả có thể có tổn thương sẫm, vòng đồng tâm; quả thường bị gần cuống.\nDiễn biến/vòng bệnh: Nấm tồn tại trên tàn dư/cây ký chủ và gây nhiều chu kỳ bào tử trong mùa; thường tăng trên cây già hoặc cây bị stress.\nĐiều kiện thuận lợi: Ấm và ẩm, sương/mưa thường xuyên; cây thiếu dinh dưỡng hoặc stress dễ bị nặng.\nLây lan: Bào tử lan bằng gió/mưa từ tàn dư và vết bệnh.\nPhòng ngừa: Luân canh, giống/giống cây khỏe, quản lý dinh dưỡng và giảm stress; vệ sinh tàn dư.\nBiện pháp canh tác: Giảm lá ướt, tưới gốc, tạo tán (cà chua), loại tàn dư/volunteer và luân canh.\nBiện pháp sinh học: Một số biofungicide có thể hỗ trợ nếu đăng ký; không thay sanitation và bảo vệ đúng thời điểm.\nKiểm soát hóa học (không định lượng): Fungicide bảo vệ/hệ thống có thể được dùng khi nguy cơ cao; chọn theo cây trồng và nhãn.\nThời điểm xử lý: Khi bắt đầu có nguy cơ/triệu chứng ở lá dưới và thời tiết tiếp tục thuận lợi; ưu tiên phòng hơn chữa.\nQuản lý kháng: Luân phiên FRAC, tránh dùng liên tiếp fungicide đơn điểm.\nLưu ý an toàn: Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-  },
-  {
-    "disease_code": "Tomato___Late_blight",
-    "class_name_vi": "Bệnh cháy lá muộn trên cà chua",
-    "crop_name": "Cà chua",
-    "disease_name": "Bệnh cháy lá muộn trên cà chua",
-    "disease_type": "Oomycete (nấm giả)",
-    "pathogen": {
-      "name": "Tác nhân cháy lá muộn",
-      "scientific_name": "Phytophthora infestans"
-    },
-    "knowledge": {
-      "symptoms": "Vết úng nước không đều trên lá, nhanh chuyển ô-liu/nâu; trong ẩm có lớp mốc trắng ở rìa/mặt dưới. Bệnh lan rất nhanh, làm cháy lá/thân. Quả có vết nâu-ô-liu lớn, cứng rồi có thể thối.",
-      "disease_development": "Nguồn bệnh từ củ/cây nhiễm hoặc cây tự mọc; sporangia phát tán, gây nhiễm nhanh và lặp chu kỳ trong thời tiết mát ẩm.",
-      "favorable_conditions": "Mát và rất ẩm, lá ướt kéo dài, mưa/sương; dịch có thể bùng nhanh trong vài ngày.",
-      "transmission": "Sporangia lan xa bằng gió, mưa; nguồn cây/củ nhiễm và tàn dư sống.",
-      "prevention": "Giống/cây giống sạch, loại nguồn volunteer/cull piles, giám sát dự báo bệnh, tránh lá ướt kéo dài.",
-      "cultural_control": "Khoảng cách/tán thông thoáng, tưới hợp lý, loại cây nhiễm nặng; khoai tây cần quản lý củ giống/củ bỏ.",
-      "biological_control": "Biocontrol có vai trò hỗ trợ hạn chế; không thay chương trình phòng trong điều kiện dịch cao.",
-      "chemical_control_non_quantitative": "Cần chương trình phòng bệnh theo nguy cơ ở vùng có dịch; lựa chọn fungicide/oomyceticide đăng ký và bám dự báo.",
-      "treatment_timing": "Phòng trước/sớm khi dự báo mát ẩm hoặc có cảnh báo vùng; không chờ bệnh lan rộng.",
-      "resistance_management": "Luân phiên FRAC theo cơ chế tác động, dùng hỗn hợp hợp lý và không vượt số lần trên nhãn.",
-      "safety_notes": "Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-    },
-    "provenance": {
-      "source_ids": [
-        "S21",
-        "S03"
-      ],
-      "evidence_scope": "CV label + disease biology/IPM + regulatory guardrail",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "HIGH",
-      "structured_rule_status": "REQUIRES_VN_LABEL_VALIDATION",
-      "regulatory_note": "Liều, tần suất, PHI, tên thương phẩm và tình trạng được phép dùng phải lấy deterministic từ nhãn/danh mục thuốc BVTV Việt Nam hiện hành; nguồn extension quốc tế chỉ dùng cho triệu chứng, sinh học bệnh và IPM tham khảo."
-    },
-    "content": "Mã bệnh: Tomato___Late_blight\nTên tiếng Việt: Bệnh cháy lá muộn trên cà chua\nCây trồng: Cà chua\nTên bệnh/điều kiện: Bệnh cháy lá muộn trên cà chua\nLoại bệnh/dịch hại: Oomycete (nấm giả)\nTác nhân: Tác nhân cháy lá muộn\nTên khoa học tác nhân: Phytophthora infestans\nTriệu chứng: Vết úng nước không đều trên lá, nhanh chuyển ô-liu/nâu; trong ẩm có lớp mốc trắng ở rìa/mặt dưới. Bệnh lan rất nhanh, làm cháy lá/thân. Quả có vết nâu-ô-liu lớn, cứng rồi có thể thối.\nDiễn biến/vòng bệnh: Nguồn bệnh từ củ/cây nhiễm hoặc cây tự mọc; sporangia phát tán, gây nhiễm nhanh và lặp chu kỳ trong thời tiết mát ẩm.\nĐiều kiện thuận lợi: Mát và rất ẩm, lá ướt kéo dài, mưa/sương; dịch có thể bùng nhanh trong vài ngày.\nLây lan: Sporangia lan xa bằng gió, mưa; nguồn cây/củ nhiễm và tàn dư sống.\nPhòng ngừa: Giống/cây giống sạch, loại nguồn volunteer/cull piles, giám sát dự báo bệnh, tránh lá ướt kéo dài.\nBiện pháp canh tác: Khoảng cách/tán thông thoáng, tưới hợp lý, loại cây nhiễm nặng; khoai tây cần quản lý củ giống/củ bỏ.\nBiện pháp sinh học: Biocontrol có vai trò hỗ trợ hạn chế; không thay chương trình phòng trong điều kiện dịch cao.\nKiểm soát hóa học (không định lượng): Cần chương trình phòng bệnh theo nguy cơ ở vùng có dịch; lựa chọn fungicide/oomyceticide đăng ký và bám dự báo.\nThời điểm xử lý: Phòng trước/sớm khi dự báo mát ẩm hoặc có cảnh báo vùng; không chờ bệnh lan rộng.\nQuản lý kháng: Luân phiên FRAC theo cơ chế tác động, dùng hỗn hợp hợp lý và không vượt số lần trên nhãn.\nLưu ý an toàn: Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-  },
-  {
-    "disease_code": "Tomato___Leaf_Mold",
-    "class_name_vi": "Bệnh mốc lá trên cà chua",
-    "crop_name": "Cà chua",
-    "disease_name": "Bệnh mốc lá trên cà chua",
-    "disease_type": "Nấm",
-    "pathogen": {
-      "name": "Nấm mốc lá cà chua",
-      "scientific_name": "Passalora fulva (syn. Fulvia fulva / Cladosporium fulvum)"
-    },
-    "knowledge": {
-      "symptoms": "Mặt trên lá có đốm xanh nhạt–vàng không rõ viền; mặt dưới tương ứng có lớp mốc nhung ô-liu đến nâu. Lá già nhiễm trước, về sau vết liên kết, lá héo/chết.",
-      "disease_development": "Conidia phát triển mạnh trong nhà kính/nhà màng có RH cao; lan qua không khí và bề mặt/dụng cụ.",
-      "favorable_conditions": "RH >85%, thông khí kém và lá ẩm; đặc biệt quan trọng trong greenhouse/high tunnel.",
-      "transmission": "Bào tử không khí, nước bắn, tay/dụng cụ và vật liệu nhiễm.",
-      "prevention": "Giống kháng, kiểm soát RH, thông gió và sanitation.",
-      "cultural_control": "Duy trì RH thấp hơn ngưỡng nguy cơ, khoảng cách/tỉa lá, tưới gốc, loại lá bệnh và vệ sinh nhà màng.",
-      "biological_control": "Biofungicide có thể hỗ trợ nếu đăng ký, nhưng kiểm soát RH là cốt lõi.",
-      "chemical_control_non_quantitative": "Fungicide đăng ký có thể được dùng nếu biện pháp môi trường không đủ.",
-      "treatment_timing": "Xử lý sớm khi phát hiện vết đầu tiên và đồng thời hạ RH/tăng thông gió.",
-      "resistance_management": "Luân phiên FRAC và ưu tiên giống kháng/kiểm soát môi trường.",
-      "safety_notes": "Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-    },
-    "provenance": {
-      "source_ids": [
-        "S22",
-        "S03"
-      ],
-      "evidence_scope": "CV label + disease biology/IPM + regulatory guardrail",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "HIGH",
-      "structured_rule_status": "REQUIRES_VN_LABEL_VALIDATION",
-      "regulatory_note": "Liều, tần suất, PHI, tên thương phẩm và tình trạng được phép dùng phải lấy deterministic từ nhãn/danh mục thuốc BVTV Việt Nam hiện hành; nguồn extension quốc tế chỉ dùng cho triệu chứng, sinh học bệnh và IPM tham khảo."
-    },
-    "content": "Mã bệnh: Tomato___Leaf_Mold\nTên tiếng Việt: Bệnh mốc lá trên cà chua\nCây trồng: Cà chua\nTên bệnh/điều kiện: Bệnh mốc lá trên cà chua\nLoại bệnh/dịch hại: Nấm\nTác nhân: Nấm mốc lá cà chua\nTên khoa học tác nhân: Passalora fulva (syn. Fulvia fulva / Cladosporium fulvum)\nTriệu chứng: Mặt trên lá có đốm xanh nhạt–vàng không rõ viền; mặt dưới tương ứng có lớp mốc nhung ô-liu đến nâu. Lá già nhiễm trước, về sau vết liên kết, lá héo/chết.\nDiễn biến/vòng bệnh: Conidia phát triển mạnh trong nhà kính/nhà màng có RH cao; lan qua không khí và bề mặt/dụng cụ.\nĐiều kiện thuận lợi: RH >85%, thông khí kém và lá ẩm; đặc biệt quan trọng trong greenhouse/high tunnel.\nLây lan: Bào tử không khí, nước bắn, tay/dụng cụ và vật liệu nhiễm.\nPhòng ngừa: Giống kháng, kiểm soát RH, thông gió và sanitation.\nBiện pháp canh tác: Duy trì RH thấp hơn ngưỡng nguy cơ, khoảng cách/tỉa lá, tưới gốc, loại lá bệnh và vệ sinh nhà màng.\nBiện pháp sinh học: Biofungicide có thể hỗ trợ nếu đăng ký, nhưng kiểm soát RH là cốt lõi.\nKiểm soát hóa học (không định lượng): Fungicide đăng ký có thể được dùng nếu biện pháp môi trường không đủ.\nThời điểm xử lý: Xử lý sớm khi phát hiện vết đầu tiên và đồng thời hạ RH/tăng thông gió.\nQuản lý kháng: Luân phiên FRAC và ưu tiên giống kháng/kiểm soát môi trường.\nLưu ý an toàn: Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-  },
-  {
-    "disease_code": "Tomato___Septoria_leaf_spot",
-    "class_name_vi": "Bệnh đốm lá Septoria trên cà chua",
-    "crop_name": "Cà chua",
-    "disease_name": "Bệnh đốm lá Septoria trên cà chua",
-    "disease_type": "Nấm",
-    "pathogen": {
-      "name": "Nấm đốm lá Septoria cà chua",
-      "scientific_name": "Septoria lycopersici"
-    },
-    "knowledge": {
-      "symptoms": "Nhiều đốm nhỏ tròn (<~3 mm) có viền sẫm và tâm nâu xám; trong tâm thường thấy chấm đen pycnidia. Bắt đầu ở lá dưới và có thể làm rụng lá mạnh.",
-      "disease_development": "Nấm sống trên tàn dư/cây họ cà; mưa bắn phát tán bào tử, tạo nhiều chu kỳ trong mùa.",
-      "favorable_conditions": "Ẩm cao, nhiệt độ khoảng 20–25°C và lá ướt kéo dài.",
-      "transmission": "Mưa/tưới bắn, dụng cụ/tay và tàn dư nhiễm.",
-      "prevention": "Luân canh, sanitation, cọc/giàn, mulch và tưới gốc.",
-      "cultural_control": "Loại lá bệnh thấp, tăng thông thoáng, không tưới lên tán, dọn tàn dư cuối vụ.",
-      "biological_control": "Biofungicide có thể hỗ trợ nếu đăng ký.",
-      "chemical_control_non_quantitative": "Fungicide bảo vệ đăng ký có thể cần trong điều kiện thuận lợi kéo dài.",
-      "treatment_timing": "Khi xuất hiện sớm ở lá dưới hoặc trước các đợt mưa kéo dài ở ruộng có tiền sử bệnh.",
-      "resistance_management": "Luân phiên FRAC và tích hợp sanitation.",
-      "safety_notes": "Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-    },
-    "provenance": {
-      "source_ids": [
-        "S21",
-        "S03"
-      ],
-      "evidence_scope": "CV label + disease biology/IPM + regulatory guardrail",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "HIGH",
-      "structured_rule_status": "REQUIRES_VN_LABEL_VALIDATION",
-      "regulatory_note": "Liều, tần suất, PHI, tên thương phẩm và tình trạng được phép dùng phải lấy deterministic từ nhãn/danh mục thuốc BVTV Việt Nam hiện hành; nguồn extension quốc tế chỉ dùng cho triệu chứng, sinh học bệnh và IPM tham khảo."
-    },
-    "content": "Mã bệnh: Tomato___Septoria_leaf_spot\nTên tiếng Việt: Bệnh đốm lá Septoria trên cà chua\nCây trồng: Cà chua\nTên bệnh/điều kiện: Bệnh đốm lá Septoria trên cà chua\nLoại bệnh/dịch hại: Nấm\nTác nhân: Nấm đốm lá Septoria cà chua\nTên khoa học tác nhân: Septoria lycopersici\nTriệu chứng: Nhiều đốm nhỏ tròn (<~3 mm) có viền sẫm và tâm nâu xám; trong tâm thường thấy chấm đen pycnidia. Bắt đầu ở lá dưới và có thể làm rụng lá mạnh.\nDiễn biến/vòng bệnh: Nấm sống trên tàn dư/cây họ cà; mưa bắn phát tán bào tử, tạo nhiều chu kỳ trong mùa.\nĐiều kiện thuận lợi: Ẩm cao, nhiệt độ khoảng 20–25°C và lá ướt kéo dài.\nLây lan: Mưa/tưới bắn, dụng cụ/tay và tàn dư nhiễm.\nPhòng ngừa: Luân canh, sanitation, cọc/giàn, mulch và tưới gốc.\nBiện pháp canh tác: Loại lá bệnh thấp, tăng thông thoáng, không tưới lên tán, dọn tàn dư cuối vụ.\nBiện pháp sinh học: Biofungicide có thể hỗ trợ nếu đăng ký.\nKiểm soát hóa học (không định lượng): Fungicide bảo vệ đăng ký có thể cần trong điều kiện thuận lợi kéo dài.\nThời điểm xử lý: Khi xuất hiện sớm ở lá dưới hoặc trước các đợt mưa kéo dài ở ruộng có tiền sử bệnh.\nQuản lý kháng: Luân phiên FRAC và tích hợp sanitation.\nLưu ý an toàn: Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-  },
-  {
-    "disease_code": "Tomato___Spider_mites Two-spotted_spider_mite",
-    "class_name_vi": "Bệnh do nhện đỏ hai chấm trên cà chua",
-    "crop_name": "Cà chua",
-    "disease_name": "Bệnh do nhện đỏ hai chấm trên cà chua",
-    "disease_type": "Côn trùng/nhện hại (Arachnid), không phải bệnh truyền nhiễm",
-    "pathogen": {
-      "name": "Nhện đỏ hai chấm",
-      "scientific_name": "Tetranychus urticae"
-    },
-    "knowledge": {
-      "symptoms": "Chấm trắng/vàng li ti (stippling) trên lá, lá vàng/đồng hóa và khô; mật số cao có mạng tơ mịn ở mặt dưới lá. Nhện rất nhỏ, thường có hai đốm sẫm.",
-      "disease_development": "Trứng→ấu trùng→nhộng/nymph→trưởng thành; vòng đời rút ngắn mạnh khi nóng, quần thể có thể tăng rất nhanh.",
-      "favorable_conditions": "Nóng, khô; cây stress nước và môi trường nhà màng ít mưa rửa trôi thường thuận lợi.",
-      "transmission": "Di chuyển giữa cây, theo gió, người/dụng cụ/vật liệu cây; quần thể thường khởi phát ở rìa ruộng.",
-      "prevention": "Scouting mặt dưới lá, giảm bụi và stress nước, quản lý cỏ ký chủ, bảo tồn thiên địch.",
-      "cultural_control": "Tưới nước cân đối, tránh thuốc phổ rộng làm chết thiên địch, loại ổ nhiễm nặng khi phù hợp.",
-      "biological_control": "Thiên địch quan trọng gồm các loài nhện bắt mồi như Phytoseiulus persimilis/Neoseiulus californicus trong hệ thống phù hợp.",
-      "chemical_control_non_quantitative": "Nếu vượt ngưỡng, dùng miticide/insecticidal soap/oil được đăng ký; phủ tốt mặt dưới lá.",
-      "treatment_timing": "Xử lý khi quần thể còn thấp và trước khi có mạng tơ dày; theo ngưỡng scouting.",
-      "resistance_management": "Luân phiên IRAC, không lặp một acaricide; bảo tồn thiên địch là trọng tâm.",
-      "safety_notes": "Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-    },
-    "provenance": {
-      "source_ids": [
-        "S23",
-        "S03"
-      ],
-      "evidence_scope": "CV label + disease biology/IPM + regulatory guardrail",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "HIGH",
-      "structured_rule_status": "REQUIRES_VN_LABEL_VALIDATION",
-      "regulatory_note": "Liều, tần suất, PHI, tên thương phẩm và tình trạng được phép dùng phải lấy deterministic từ nhãn/danh mục thuốc BVTV Việt Nam hiện hành; nguồn extension quốc tế chỉ dùng cho triệu chứng, sinh học bệnh và IPM tham khảo."
-    },
-    "content": "Mã bệnh: Tomato___Spider_mites Two-spotted_spider_mite\nTên tiếng Việt: Bệnh do nhện đỏ hai chấm trên cà chua\nCây trồng: Cà chua\nTên bệnh/điều kiện: Bệnh do nhện đỏ hai chấm trên cà chua\nLoại bệnh/dịch hại: Côn trùng/nhện hại (Arachnid), không phải bệnh truyền nhiễm\nTác nhân: Nhện đỏ hai chấm\nTên khoa học tác nhân: Tetranychus urticae\nTriệu chứng: Chấm trắng/vàng li ti (stippling) trên lá, lá vàng/đồng hóa và khô; mật số cao có mạng tơ mịn ở mặt dưới lá. Nhện rất nhỏ, thường có hai đốm sẫm.\nDiễn biến/vòng bệnh: Trứng→ấu trùng→nhộng/nymph→trưởng thành; vòng đời rút ngắn mạnh khi nóng, quần thể có thể tăng rất nhanh.\nĐiều kiện thuận lợi: Nóng, khô; cây stress nước và môi trường nhà màng ít mưa rửa trôi thường thuận lợi.\nLây lan: Di chuyển giữa cây, theo gió, người/dụng cụ/vật liệu cây; quần thể thường khởi phát ở rìa ruộng.\nPhòng ngừa: Scouting mặt dưới lá, giảm bụi và stress nước, quản lý cỏ ký chủ, bảo tồn thiên địch.\nBiện pháp canh tác: Tưới nước cân đối, tránh thuốc phổ rộng làm chết thiên địch, loại ổ nhiễm nặng khi phù hợp.\nBiện pháp sinh học: Thiên địch quan trọng gồm các loài nhện bắt mồi như Phytoseiulus persimilis/Neoseiulus californicus trong hệ thống phù hợp.\nKiểm soát hóa học (không định lượng): Nếu vượt ngưỡng, dùng miticide/insecticidal soap/oil được đăng ký; phủ tốt mặt dưới lá.\nThời điểm xử lý: Xử lý khi quần thể còn thấp và trước khi có mạng tơ dày; theo ngưỡng scouting.\nQuản lý kháng: Luân phiên IRAC, không lặp một acaricide; bảo tồn thiên địch là trọng tâm.\nLưu ý an toàn: Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-  },
-  {
-    "disease_code": "Tomato___Target_Spot",
-    "class_name_vi": "Bệnh đốm vòng / đốm mục tiêu trên cà chua",
-    "crop_name": "Cà chua",
-    "disease_name": "Bệnh đốm vòng / đốm mục tiêu trên cà chua",
-    "disease_type": "Nấm",
-    "pathogen": {
-      "name": "Nấm đốm mục tiêu cà chua",
-      "scientific_name": "Corynespora cassiicola"
-    },
-    "knowledge": {
-      "symptoms": "Vết lá nâu có thể có vòng đồng tâm như bia, dễ nhầm early blight/bacterial spot; bệnh nặng gây rụng lá. Thân và quả cũng có thể có đốm, làm giảm khả năng thương phẩm.",
-      "disease_development": "Nấm tồn tại trên tàn dư/ký chủ và tạo bào tử gây nhiều chu kỳ trong điều kiện ấm ẩm.",
-      "favorable_conditions": "Ấm, ẩm, lá ướt kéo dài; phổ biến hơn ở khí hậu nhiệt đới/cận nhiệt và nhà màng ẩm.",
-      "transmission": "Bào tử phát tán nhờ gió/mưa và tàn dư bệnh.",
-      "prevention": "Sanitation, rotation, thông thoáng tán và giảm lá ướt.",
-      "cultural_control": "Tỉa/tạo giàn, tưới gốc, dọn tàn dư, luân canh cây không ký chủ khi khả thi.",
-      "biological_control": "Biofungicide có thể hỗ trợ nếu được đăng ký.",
-      "chemical_control_non_quantitative": "Fungicide có thể cần khi bệnh tăng; chương trình phải luân phiên FRAC.",
-      "treatment_timing": "Sớm khi xuất hiện vết đầu tiên và điều kiện tiếp tục ấm ẩm.",
-      "resistance_management": "Luân phiên FRAC và tránh phun lặp nhóm đơn điểm.",
-      "safety_notes": "Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-    },
-    "provenance": {
-      "source_ids": [
-        "S24",
-        "S03"
-      ],
-      "evidence_scope": "CV label + disease biology/IPM + regulatory guardrail",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "HIGH",
-      "structured_rule_status": "REQUIRES_VN_LABEL_VALIDATION",
-      "regulatory_note": "Liều, tần suất, PHI, tên thương phẩm và tình trạng được phép dùng phải lấy deterministic từ nhãn/danh mục thuốc BVTV Việt Nam hiện hành; nguồn extension quốc tế chỉ dùng cho triệu chứng, sinh học bệnh và IPM tham khảo."
-    },
-    "content": "Mã bệnh: Tomato___Target_Spot\nTên tiếng Việt: Bệnh đốm vòng / đốm mục tiêu trên cà chua\nCây trồng: Cà chua\nTên bệnh/điều kiện: Bệnh đốm vòng / đốm mục tiêu trên cà chua\nLoại bệnh/dịch hại: Nấm\nTác nhân: Nấm đốm mục tiêu cà chua\nTên khoa học tác nhân: Corynespora cassiicola\nTriệu chứng: Vết lá nâu có thể có vòng đồng tâm như bia, dễ nhầm early blight/bacterial spot; bệnh nặng gây rụng lá. Thân và quả cũng có thể có đốm, làm giảm khả năng thương phẩm.\nDiễn biến/vòng bệnh: Nấm tồn tại trên tàn dư/ký chủ và tạo bào tử gây nhiều chu kỳ trong điều kiện ấm ẩm.\nĐiều kiện thuận lợi: Ấm, ẩm, lá ướt kéo dài; phổ biến hơn ở khí hậu nhiệt đới/cận nhiệt và nhà màng ẩm.\nLây lan: Bào tử phát tán nhờ gió/mưa và tàn dư bệnh.\nPhòng ngừa: Sanitation, rotation, thông thoáng tán và giảm lá ướt.\nBiện pháp canh tác: Tỉa/tạo giàn, tưới gốc, dọn tàn dư, luân canh cây không ký chủ khi khả thi.\nBiện pháp sinh học: Biofungicide có thể hỗ trợ nếu được đăng ký.\nKiểm soát hóa học (không định lượng): Fungicide có thể cần khi bệnh tăng; chương trình phải luân phiên FRAC.\nThời điểm xử lý: Sớm khi xuất hiện vết đầu tiên và điều kiện tiếp tục ấm ẩm.\nQuản lý kháng: Luân phiên FRAC và tránh phun lặp nhóm đơn điểm.\nLưu ý an toàn: Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-  },
-  {
-    "disease_code": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
-    "class_name_vi": "Bệnh virus xoăn vàng lá cà chua",
-    "crop_name": "Cà chua",
-    "disease_name": "Bệnh virus xoăn vàng lá cà chua",
+    "disease_code": "Rice___Tungro",
+    "class_name_vi": "Bệnh tungro trên lúa",
+    "crop_name": "Lúa",
+    "disease_name": "Bệnh tungro trên lúa",
     "disease_type": "Virus",
-    "pathogen": {
-      "name": "Virus xoăn vàng lá cà chua",
-      "scientific_name": "Tomato yellow leaf curl virus (TYLCV; Begomovirus)"
-    },
+    "pathogen": {"name": "Hai virus gây bệnh tungro", "scientific_name": "Rice tungro bacilliform virus + Rice tungro spherical virus"},
     "knowledge": {
-      "symptoms": "Lá non nhỏ, quăn lên/xuống, nhăn; vàng mép và giữa gân; cây lùn, đốt ngắn tạo dáng bụi, rụng hoa và giảm đậu quả mạnh.",
-      "disease_development": "Sau khi vector truyền virus, triệu chứng có thể xuất hiện sau vài tuần; cây nhiễm sớm chịu thiệt hại năng suất nặng.",
-      "favorable_conditions": "Mật số bọ phấn cao và nguồn ký chủ nhiễm; vùng ấm hỗ trợ vector.",
-      "transmission": "Bọ phấn Bemisia tabaci truyền; cây ký chủ dại/cây bệnh là reservoir. Không điều trị được virus sau khi nhiễm.",
-      "prevention": "Giống kháng, cây giống sạch, lưới chắn/kiểm soát vector, loại cây bệnh sớm và quản lý cỏ ký chủ.",
-      "cultural_control": "Loại cây nhiễm, vệ sinh nhà màng, quản lý nguồn cây con và ký chủ phụ.",
-      "biological_control": "Thiên địch bọ phấn có thể tích hợp trong IPM; không có sinh học chữa virus trong cây.",
-      "chemical_control_non_quantitative": "Không có thuốc diệt virus chữa cây. Hóa học chỉ quản lý vector khi cần và phải theo nhãn.",
-      "treatment_timing": "Ngăn vector/cây bệnh ngay từ vườn ươm và đầu vụ; loại cây nhiễm sớm.",
-      "resistance_management": "Luân phiên IRAC khi quản lý bọ phấn; ưu tiên giống kháng và exclusion.",
-      "safety_notes": "Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
+      "symptoms": "Lá chuyển xanh nhạt sang vàng/vàng cam, cây lùn, đẻ nhánh giảm; triệu chứng có thể nhầm với thiếu dinh dưỡng hoặc bệnh virus khác.",
+      "disease_development": "Nhiễm ở mọi giai đoạn nhưng hay gặp giai đoạn sinh trưởng sinh dưỡng; cây đẻ nhánh dễ tổn thương.",
+      "favorable_conditions": "Rầy xanh hiện diện và ruộng gieo cấy lệch lịch với vùng lân cận làm nguy cơ lan truyền tăng.",
+      "transmission": "Rầy xanh truyền virus từ cây bệnh sang cây khỏe qua chích hút.",
+      "prevention": "Ưu tiên giống kháng/chống chịu phù hợp địa phương và gieo cấy đồng loạt.",
+      "cultural_control": "Điều chỉnh lịch gieo theo vùng, cày vùi gốc rạ bệnh sau thu hoạch để giảm nguồn bệnh/vector.",
+      "chemical_control_non_quantitative": "Không có thuốc chữa cây đã nhiễm virus; không tạo rule thuốc chữa tungro. Phun rầy xanh thường không hiệu quả để ngăn lây lan tungro theo IRRI.",
+      "treatment_timing": "Phòng ngừa trước khi lây lan; cây đã nhiễm cần xác nhận và quản lý nguồn bệnh/vector."
     },
     "provenance": {
-      "source_ids": [
-        "S25",
-        "S03"
-      ],
-      "evidence_scope": "CV label + disease biology/IPM + regulatory guardrail",
-      "reviewed_at": "2026-09-09"
+      "source_ids": ["SRC_MND_RICE_V3", "SRC_IRRI_TUNGRO"],
+      "evidence_scope": "Dataset taxonomy + rice disease biology/IPM; Vietnam pesticide rule separate",
+      "reviewed_at": "2026-09-29"
     },
     "governance": {
       "rag_priority": "HIGH",
-      "structured_rule_status": "REQUIRES_VN_LABEL_VALIDATION",
-      "regulatory_note": "Liều, tần suất, PHI, tên thương phẩm và tình trạng được phép dùng phải lấy deterministic từ nhãn/danh mục thuốc BVTV Việt Nam hiện hành; nguồn extension quốc tế chỉ dùng cho triệu chứng, sinh học bệnh và IPM tham khảo."
+      "structured_rule_status": "NO_CURATIVE_TREATMENT",
+      "regulatory_note": "Tri thức quốc tế chỉ dùng giải thích/IPM. Tên thuốc, liều và PHI phải do Backend lấy từ rule có nguồn/duyệt tại Việt Nam."
     },
-    "content": "Mã bệnh: Tomato___Tomato_Yellow_Leaf_Curl_Virus\nTên tiếng Việt: Bệnh virus xoăn vàng lá cà chua\nCây trồng: Cà chua\nTên bệnh/điều kiện: Bệnh virus xoăn vàng lá cà chua\nLoại bệnh/dịch hại: Virus\nTác nhân: Virus xoăn vàng lá cà chua\nTên khoa học tác nhân: Tomato yellow leaf curl virus (TYLCV; Begomovirus)\nTriệu chứng: Lá non nhỏ, quăn lên/xuống, nhăn; vàng mép và giữa gân; cây lùn, đốt ngắn tạo dáng bụi, rụng hoa và giảm đậu quả mạnh.\nDiễn biến/vòng bệnh: Sau khi vector truyền virus, triệu chứng có thể xuất hiện sau vài tuần; cây nhiễm sớm chịu thiệt hại năng suất nặng.\nĐiều kiện thuận lợi: Mật số bọ phấn cao và nguồn ký chủ nhiễm; vùng ấm hỗ trợ vector.\nLây lan: Bọ phấn Bemisia tabaci truyền; cây ký chủ dại/cây bệnh là reservoir. Không điều trị được virus sau khi nhiễm.\nPhòng ngừa: Giống kháng, cây giống sạch, lưới chắn/kiểm soát vector, loại cây bệnh sớm và quản lý cỏ ký chủ.\nBiện pháp canh tác: Loại cây nhiễm, vệ sinh nhà màng, quản lý nguồn cây con và ký chủ phụ.\nBiện pháp sinh học: Thiên địch bọ phấn có thể tích hợp trong IPM; không có sinh học chữa virus trong cây.\nKiểm soát hóa học (không định lượng): Không có thuốc diệt virus chữa cây. Hóa học chỉ quản lý vector khi cần và phải theo nhãn.\nThời điểm xử lý: Ngăn vector/cây bệnh ngay từ vườn ươm và đầu vụ; loại cây nhiễm sớm.\nQuản lý kháng: Luân phiên IRAC khi quản lý bọ phấn; ưu tiên giống kháng và exclusion.\nLưu ý an toàn: Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
+    "content": "Mã bệnh: Rice___Tungro\nTên tiếng Việt: Bệnh tungro trên lúa\nCây trồng: Lúa\nLoại bệnh: Virus\nTác nhân: Hai virus gây bệnh tungro\nTên khoa học: Rice tungro bacilliform virus + Rice tungro spherical virus\nTriệu chứng: Lá chuyển xanh nhạt sang vàng/vàng cam, cây lùn, đẻ nhánh giảm; triệu chứng có thể nhầm với thiếu dinh dưỡng hoặc bệnh virus khác.\nDiễn biến: Nhiễm ở mọi giai đoạn nhưng hay gặp giai đoạn sinh trưởng sinh dưỡng; cây đẻ nhánh dễ tổn thương.\nĐiều kiện thuận lợi: Rầy xanh hiện diện và ruộng gieo cấy lệch lịch với vùng lân cận làm nguy cơ lan truyền tăng.\nLây lan: Rầy xanh truyền virus từ cây bệnh sang cây khỏe qua chích hút.\nPhòng ngừa: Ưu tiên giống kháng/chống chịu phù hợp địa phương và gieo cấy đồng loạt.\nBiện pháp canh tác: Điều chỉnh lịch gieo theo vùng, cày vùi gốc rạ bệnh sau thu hoạch để giảm nguồn bệnh/vector.\nKiểm soát hóa học không định lượng: Không có thuốc chữa cây đã nhiễm virus; không tạo rule thuốc chữa tungro. Phun rầy xanh thường không hiệu quả để ngăn lây lan tungro theo IRRI.\nThời điểm xử lý: Phòng ngừa trước khi lây lan; cây đã nhiễm cần xác nhận và quản lý nguồn bệnh/vector.\nLưu ý pháp lý: Tri thức quốc tế chỉ dùng giải thích/IPM. Tên thuốc, liều và PHI phải do Backend lấy từ rule có nguồn/duyệt tại Việt Nam.",
+    "review_status": "IN_REVIEW",
+    "notes": "Tri thức từ SRC_IRRI_TUNGRO; cần kỹ sư nông nghiệp kiểm tra áp dụng cho Việt Nam. Không dùng ảnh dataset làm nguồn thuốc."
   },
   {
-    "disease_code": "Tomato___Tomato_mosaic_virus",
-    "class_name_vi": "Bệnh virus khảm cà chua",
-    "crop_name": "Cà chua",
-    "disease_name": "Bệnh virus khảm cà chua",
-    "disease_type": "Virus",
-    "pathogen": {
-      "name": "Virus khảm cà chua",
-      "scientific_name": "Tomato mosaic virus (ToMV; Tobamovirus)"
-    },
+    "disease_code": "Rice___Sheath_blight",
+    "class_name_vi": "Bệnh khô vằn trên lúa",
+    "crop_name": "Lúa",
+    "disease_name": "Bệnh khô vằn trên lúa",
+    "disease_type": "Nấm",
+    "pathogen": {"name": "Nấm gây khô vằn", "scientific_name": "Rhizoctonia solani"},
     "knowledge": {
-      "symptoms": "Lá có khảm xanh nhạt–xanh đậm/vàng, biến dạng/quăn, sinh trưởng còi; quả có thể loang màu, vòng vàng hoặc vết nâu lõm tùy giống và điều kiện.",
-      "disease_development": "Virus rất bền, có thể tồn tại lâu trên tàn dư/bề mặt và truyền qua hạt; xâm nhập qua các vết thương nhỏ do thao tác.",
-      "favorable_conditions": "Lan mạnh khi thao tác nhiều trên cây và vệ sinh kém; mức biểu hiện triệu chứng phụ thuộc giống/nhiệt độ/ánh sáng.",
-      "transmission": "Hạt, ghép, tay, dụng cụ, cọc/giàn và tiếp xúc cơ học; không chủ yếu qua côn trùng như nhiều virus khác.",
-      "prevention": "Hạt/cây giống sạch, giống kháng, vệ sinh tay/dụng cụ/bề mặt, loại cây bệnh, tránh lây cơ học.",
-      "cultural_control": "Không thao tác cây khỏe sau cây bệnh nếu chưa vệ sinh; khử trùng dụng cụ và vật tư nhà màng.",
-      "biological_control": "Không có biocontrol chữa cây đã nhiễm; phòng lây là cốt lõi.",
-      "chemical_control_non_quantitative": "Không có thuốc hóa học chữa ToMV.",
-      "treatment_timing": "Ngay khi phát hiện cây nghi nhiễm: cô lập/loại bỏ theo quy trình và vệ sinh dụng cụ.",
-      "resistance_management": "Không áp dụng FRAC/IRAC cho virus trực tiếp; dùng giống có gen kháng phù hợp và đa dạng biện pháp phòng.",
-      "safety_notes": "Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
+      "symptoms": "Vết bầu dục xanh-xám trên bẹ gần mặt nước, ban đầu ướt nước; lan lên lá, tâm trắng-xám và rìa nâu.",
+      "disease_development": "Vết phát triển từ bẹ lên lá và cây lân cận; có thể thấy từ đẻ nhánh đến chín sữa.",
+      "favorable_conditions": "Nhiệt/ẩm cao, mưa, ruộng dày, tán lá kín và bón nhiều đạm thuận lợi cho bệnh.",
+      "transmission": "Lan chủ yếu qua sợi nấm trên mô cây và hạch nấm trong ruộng; không phải bào tử phát tán trên không.",
+      "prevention": "Giữ mật độ gieo hợp lý, tán thông thoáng, bón phân cân đối và kiểm soát cỏ.",
+      "cultural_control": "Giảm mật độ gieo nếu quá dày, điều chỉnh thoát nước phù hợp và quản lý cỏ bờ.",
+      "chemical_control_non_quantitative": "Nếu cần phun, chỉ xem xét sản phẩm đăng ký đúng đối tượng khô vằn/lúa sau khi kỹ sư xác nhận.",
+      "treatment_timing": "Theo dõi vết trên bẹ từ giai đoạn đẻ nhánh; phân biệt với thối thân hoặc sâu đục thân."
     },
     "provenance": {
-      "source_ids": [
-        "S26",
-        "S03"
-      ],
-      "evidence_scope": "CV label + disease biology/IPM + regulatory guardrail",
-      "reviewed_at": "2026-09-09"
+      "source_ids": ["SRC_MND_RICE_V3", "SRC_IRRI_SHEATH_BLIGHT"],
+      "evidence_scope": "Dataset taxonomy + rice disease biology/IPM; Vietnam pesticide rule separate",
+      "reviewed_at": "2026-09-29"
     },
     "governance": {
       "rag_priority": "HIGH",
-      "structured_rule_status": "REQUIRES_VN_LABEL_VALIDATION",
-      "regulatory_note": "Liều, tần suất, PHI, tên thương phẩm và tình trạng được phép dùng phải lấy deterministic từ nhãn/danh mục thuốc BVTV Việt Nam hiện hành; nguồn extension quốc tế chỉ dùng cho triệu chứng, sinh học bệnh và IPM tham khảo."
+      "structured_rule_status": "CANDIDATE_PENDING_EXPERT_REVIEW",
+      "regulatory_note": "Tri thức quốc tế chỉ dùng giải thích/IPM. Tên thuốc, liều và PHI phải do Backend lấy từ rule có nguồn/duyệt tại Việt Nam."
     },
-    "content": "Mã bệnh: Tomato___Tomato_mosaic_virus\nTên tiếng Việt: Bệnh virus khảm cà chua\nCây trồng: Cà chua\nTên bệnh/điều kiện: Bệnh virus khảm cà chua\nLoại bệnh/dịch hại: Virus\nTác nhân: Virus khảm cà chua\nTên khoa học tác nhân: Tomato mosaic virus (ToMV; Tobamovirus)\nTriệu chứng: Lá có khảm xanh nhạt–xanh đậm/vàng, biến dạng/quăn, sinh trưởng còi; quả có thể loang màu, vòng vàng hoặc vết nâu lõm tùy giống và điều kiện.\nDiễn biến/vòng bệnh: Virus rất bền, có thể tồn tại lâu trên tàn dư/bề mặt và truyền qua hạt; xâm nhập qua các vết thương nhỏ do thao tác.\nĐiều kiện thuận lợi: Lan mạnh khi thao tác nhiều trên cây và vệ sinh kém; mức biểu hiện triệu chứng phụ thuộc giống/nhiệt độ/ánh sáng.\nLây lan: Hạt, ghép, tay, dụng cụ, cọc/giàn và tiếp xúc cơ học; không chủ yếu qua côn trùng như nhiều virus khác.\nPhòng ngừa: Hạt/cây giống sạch, giống kháng, vệ sinh tay/dụng cụ/bề mặt, loại cây bệnh, tránh lây cơ học.\nBiện pháp canh tác: Không thao tác cây khỏe sau cây bệnh nếu chưa vệ sinh; khử trùng dụng cụ và vật tư nhà màng.\nBiện pháp sinh học: Không có biocontrol chữa cây đã nhiễm; phòng lây là cốt lõi.\nKiểm soát hóa học (không định lượng): Không có thuốc hóa học chữa ToMV.\nThời điểm xử lý: Ngay khi phát hiện cây nghi nhiễm: cô lập/loại bỏ theo quy trình và vệ sinh dụng cụ.\nQuản lý kháng: Không áp dụng FRAC/IRAC cho virus trực tiếp; dùng giống có gen kháng phù hợp và đa dạng biện pháp phòng.\nLưu ý an toàn: Chỉ dùng thuốc BVTV được phép cho đúng cây trồng/dịch hại; đọc nhãn, PPE, thời gian tái xâm nhập và PHI. Không cho LLM tự tạo liều/PHI/tên thương phẩm."
-  },
-  {
-    "disease_code": "Tomato___healthy",
-    "class_name_vi": "Cà chua khỏe mạnh",
-    "crop_name": "Cà chua",
-    "disease_name": "Không phát hiện bệnh thuộc lớp CV (healthy)",
-    "disease_type": "Healthy class / Không phát hiện bệnh thuộc phạm vi lớp CV",
-    "pathogen": {
-      "name": "N/A",
-      "scientific_name": "N/A"
-    },
-    "knowledge": {
-      "symptoms": "Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác.",
-      "disease_development": "N/A — đây là lớp nhãn CV, không phải chẩn đoán bệnh lý toàn cây.",
-      "favorable_conditions": "N/A; vẫn cần xem xét stress dinh dưỡng, nước, sâu hại và bệnh ngoài bộ lớp.",
-      "transmission": "N/A",
-      "prevention": "Duy trì scouting/IPM, vệ sinh, giống/cây giống khỏe và điều kiện canh tác phù hợp.",
-      "cultural_control": "Tiếp tục giám sát định kỳ; không phun thuốc chỉ vì model trả 'healthy'.",
-      "biological_control": "N/A",
-      "chemical_control_non_quantitative": "Không khuyến nghị xử lý hóa học nếu không có đối tượng dịch hại/chẩn đoán xác định.",
-      "treatment_timing": "N/A",
-      "resistance_management": "N/A",
-      "safety_notes": "Không dùng nhãn 'healthy' để bỏ qua scouting thực địa hoặc các triệu chứng ngoài bộ 38 lớp."
-    },
-    "provenance": {
-      "source_ids": [
-        "S01"
-      ],
-      "evidence_scope": "CV label / negative class only",
-      "reviewed_at": "2026-09-09"
-    },
-    "governance": {
-      "rag_priority": "LOW",
-      "structured_rule_status": "NOT_APPLICABLE",
-      "regulatory_note": "Không tạo TreatmentRule hóa học từ lớp healthy. Nếu thửa ruộng có lịch sử phun, PHI vẫn lấy từ PostgreSQL."
-    },
-    "content": "Mã bệnh: Tomato___healthy\nTên tiếng Việt: Cà chua khỏe mạnh\nCây trồng: Cà chua\nTên bệnh/điều kiện: Không phát hiện bệnh thuộc lớp CV (healthy)\nLoại bệnh/dịch hại: Healthy class / Không phát hiện bệnh thuộc phạm vi lớp CV\nTác nhân: N/A\nTên khoa học tác nhân: N/A\nTriệu chứng: Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác.\nDiễn biến/vòng bệnh: N/A — đây là lớp nhãn CV, không phải chẩn đoán bệnh lý toàn cây.\nĐiều kiện thuận lợi: N/A; vẫn cần xem xét stress dinh dưỡng, nước, sâu hại và bệnh ngoài bộ lớp.\nLây lan: N/A\nPhòng ngừa: Duy trì scouting/IPM, vệ sinh, giống/cây giống khỏe và điều kiện canh tác phù hợp.\nBiện pháp canh tác: Tiếp tục giám sát định kỳ; không phun thuốc chỉ vì model trả 'healthy'.\nBiện pháp sinh học: N/A\nKiểm soát hóa học (không định lượng): Không khuyến nghị xử lý hóa học nếu không có đối tượng dịch hại/chẩn đoán xác định.\nThời điểm xử lý: N/A\nQuản lý kháng: N/A\nLưu ý an toàn: Không dùng nhãn 'healthy' để bỏ qua scouting thực địa hoặc các triệu chứng ngoài bộ 38 lớp."
+    "content": "Mã bệnh: Rice___Sheath_blight\nTên tiếng Việt: Bệnh khô vằn trên lúa\nCây trồng: Lúa\nLoại bệnh: Nấm\nTác nhân: Nấm gây khô vằn\nTên khoa học: Rhizoctonia solani\nTriệu chứng: Vết bầu dục xanh-xám trên bẹ gần mặt nước, ban đầu ướt nước; lan lên lá, tâm trắng-xám và rìa nâu.\nDiễn biến: Vết phát triển từ bẹ lên lá và cây lân cận; có thể thấy từ đẻ nhánh đến chín sữa.\nĐiều kiện thuận lợi: Nhiệt/ẩm cao, mưa, ruộng dày, tán lá kín và bón nhiều đạm thuận lợi cho bệnh.\nLây lan: Lan chủ yếu qua sợi nấm trên mô cây và hạch nấm trong ruộng; không phải bào tử phát tán trên không.\nPhòng ngừa: Giữ mật độ gieo hợp lý, tán thông thoáng, bón phân cân đối và kiểm soát cỏ.\nBiện pháp canh tác: Giảm mật độ gieo nếu quá dày, điều chỉnh thoát nước phù hợp và quản lý cỏ bờ.\nKiểm soát hóa học không định lượng: Nếu cần phun, chỉ xem xét sản phẩm đăng ký đúng đối tượng khô vằn/lúa sau khi kỹ sư xác nhận.\nThời điểm xử lý: Theo dõi vết trên bẹ từ giai đoạn đẻ nhánh; phân biệt với thối thân hoặc sâu đục thân.\nLưu ý pháp lý: Tri thức quốc tế chỉ dùng giải thích/IPM. Tên thuốc, liều và PHI phải do Backend lấy từ rule có nguồn/duyệt tại Việt Nam.",
+    "review_status": "IN_REVIEW",
+    "notes": "Tri thức từ SRC_IRRI_SHEATH_BLIGHT; cần kỹ sư nông nghiệp kiểm tra áp dụng cho Việt Nam. Không dùng ảnh dataset làm nguồn thuốc."
   }
 ]

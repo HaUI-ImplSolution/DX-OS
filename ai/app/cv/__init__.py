@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""Computer-vision components for plant disease classification.
+"""Computer-vision components for rice leaf disease detection.
 
-Import concrete modules directly so lightweight consumers of
-``app.cv.class_names`` do not initialize torchvision or model loading code.
+Ultralytics is imported lazily by ``app.cv.loader`` so non-CV tooling does not
+load the model or trigger any external checkpoint behavior.
 """

@@ -38,6 +38,12 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error(ex.getMessage()));
   }
 
+  @ExceptionHandler(AiTriageException.class)
+  public ResponseEntity<ApiResponse<Void>> handleAiTriage(AiTriageException ex) {
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+        .body(ApiResponse.error(ex.getMessage()));
+  }
+
   @ExceptionHandler(PokaYokeViolationException.class)
   public ResponseEntity<ApiResponse<Map<String, Object>>> handlePokaYoke(
       PokaYokeViolationException ex) {

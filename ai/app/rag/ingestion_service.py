@@ -19,7 +19,7 @@ DATA_FILE = (
 )
 
 DOCUMENT_TYPE = "disease_knowledge"
-VERSION = "stage7-rich-v1"
+VERSION = "riceleafbd-v3-workbook-v1"
 REQUIRED_FIELDS = {
     "disease_code",
     "class_name_vi",

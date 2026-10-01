@@ -23,14 +23,11 @@ class Settings(BaseSettings):
     ollama_model: str = "qwen2.5:1.5b"
     embedding_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 
-    hf_repo_id: str = "Khawajaa/plant-disease-detector"
-    weights_filename: str = "best_model.pth"
-    cv_num_classes: int = 38
-    cv_image_size: int = 224
-    cv_model_name: str = "EfficientNet-B4"
-    cv_model_version: str = "v1.0"
+    cv_weights_path: Path = AI_ROOT / "weights" / "best.pt"
+    cv_class_contract_path: Path = (
+        AI_ROOT.parent / "data" / "structured" / "class_contract.json"
+    )
     cv_device: str = "auto"
-    cv_confidence_threshold: float = 0.70
     llm_timeout_seconds: float = 5.0
 
     backend_base_url: str = "http://localhost:8081"
@@ -41,14 +38,6 @@ class Settings(BaseSettings):
     ai_service_api_key: str | None = None
 
     log_level: str = "INFO"
-
-    @property
-    def weights_dir(self) -> Path:
-        return AI_ROOT / "weights"
-
-    @property
-    def weights_path(self) -> Path:
-        return self.weights_dir / self.weights_filename
 
 
 @lru_cache

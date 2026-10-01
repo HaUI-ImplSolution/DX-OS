@@ -56,7 +56,7 @@ Luồng: nông dân báo bệnh bằng ảnh → CV chẩn đoán → tra cứu 
 - [x] M5 — Kỹ sư Approve/Reject trong Backend; AI chỉ trả recommendation và không tự quản lý trạng thái duyệt.
 - [x] M6 — APPLIED là bước xác nhận riêng, tạo snapshot `TreatmentApplication`, tính `harvest_locked_until` từ thời điểm phun và không cho lần ghi sau rút ngắn khoá PHI.
 
-Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot (API nghiệp vụ, duyệt, poka-yoke), AI Service Python riêng (vision-api EfficientNet-B4 + LangGraph điều phối + LLM nhỏ Qwen2.5-1.5B qua Ollama) gọi qua HTTP.
+Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot (API nghiệp vụ, duyệt, poka-yoke), AI Service Python riêng (vision-api YOLOv8n + LangGraph điều phối + LLM nhỏ Qwen2.5-1.5B qua Ollama) gọi qua HTTP.
 Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
 
 **Phase 0 đã nối end-to-end qua contract Backend ↔ AI:**
@@ -65,7 +65,7 @@ Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
 
 #### Tiến độ AI Service
 
-- [x] Vision API chuẩn hóa `disease_code`, confidence và metadata model cho 38 lớp bệnh.
+- [x] Vision API chuẩn hóa `disease_code`, confidence và metadata model cho 6 điều kiện lúa: 5 lớp detection và một mã healthy.
 - [x] Backend REST client chỉ đọc lấy structured facts; AI không truy cập trực tiếp Backend DB.
 - [x] RAG dùng AI Vector DB riêng với runtime read-only và job ingest có credential ghi riêng.
 - [x] LangGraph điều phối CV → structured facts → RAG → recommendation theo contract stateless `POST /api/v1/diagnose`.

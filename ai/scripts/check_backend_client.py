@@ -23,8 +23,8 @@ class _Response:
     def json(self) -> dict:
         return {
             "request_id": "req-1",
-            "disease_code": "Tomato___Late_blight",
-            "disease_name": "Bệnh mốc sương cà chua",
+            "disease_code": "Rice___Blast",
+            "disease_name": "Bệnh đạo ôn trên lúa",
             "rules": [
                 {
                     "rule_id": "7",
@@ -64,7 +64,7 @@ class _HttpClient:
 def _call(client: BackendClient):
     return client.get_diagnosis_context(
         request_id="req-1",
-        disease_code="Tomato___Late_blight",
+        disease_code="Rice___Blast",
         crop_season_id=101,
     )
 
@@ -97,7 +97,7 @@ def main() -> None:
         "url": "http://backend:8081/internal/v1/diagnosis-context",
         "params": {
             "request_id": "req-1",
-            "disease_code": "Tomato___Late_blight",
+            "disease_code": "Rice___Blast",
             "crop_season_id": 101,
         },
         "headers": {"Accept": "application/json", "X-Service-Api-Key": "secret"},
@@ -142,7 +142,7 @@ def main() -> None:
 
     try:
         client.get_diagnosis_context(
-            request_id="req-1", disease_code="Tomato___Late_blight", crop_season_id=0
+            request_id="req-1", disease_code="Rice___Blast", crop_season_id=0
         )
     except ValueError:
         pass

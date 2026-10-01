@@ -118,6 +118,7 @@ services:
     volumes:
       - ${AI_DATA_DIR:?}:/data:ro
       - ai_weights:/app/weights
+      - ${AI_CV_WEIGHTS_PATH:-../development/.local/best.pt}:/app/weights/best.pt:ro
     ports:
       - "${AI_HOST_PORT:?}:8000"
 

@@ -14,6 +14,14 @@ RUN apt-get update \
 COPY requirements.txt ./
 RUN pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
 
+# Ultralytics imports OpenCV at startup. The non-headless OpenCV wheel needs
+# these shared libraries even though inference itself runs without a GUI.
+RUN sed -i 's|^URIs: http://deb.debian.org/debian$|URIs: http://mirror.bizflycloud.vn/debian|' \
+      /etc/apt/sources.list.d/debian.sources \
+    && apt-get update \
+    && apt-get install --no-install-recommends -y libgl1 libglib2.0-0 libxcb1 \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY app ./app
 COPY scripts ./scripts
 
@@ -23,8 +31,8 @@ RUN useradd --create-home --uid 10001 appuser \
 
 USER appuser
 
-# Preserve the downloaded CV weights between container restarts. Mount a named
-# volume here when deploying with Compose.
+# Cache embedding assets here. The CV checkpoint is mounted separately as a
+# read-only file by Compose and is never downloaded by the service.
 VOLUME ["/app/weights"]
 
 EXPOSE 8000

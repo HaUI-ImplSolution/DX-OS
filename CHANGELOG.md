@@ -24,6 +24,12 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Swagger: `@Operation` của `ParcelController`, `CropSeasonController`, `DiseaseReportController` và schema `DiagnosisResponse` mô tả hành vi theo role.
 - Đặc tả: `development/docs/mobile/BACKEND_CHANGES.md`.
 
+**Đã xong — Chuyển seed sang bệnh lá lúa:**
+
+- Seed 6 bệnh lá lúa active; pesticide, treatment rule và policy đang `IN_REVIEW` không được seed.
+- Taxonomy, pesticide và rule cũ không còn tham gia lookup; bản ghi đang được lịch sử diagnosis/treatment tham chiếu được giữ lại ở trạng thái inactive.
+- Migration đạt trên database mới và database legacy mô phỏng; Backend khởi động healthy với đúng 6 bệnh active.
+
 ### 2026-09-26
 
 - Hoàn thiện seed idempotent từ dữ liệu nguồn: 1 treatment rule giả định cho E2E, 15 candidate còn lại bị chặn; rule stale được vô hiệu hóa và bảo toàn an toàn khi đã có lịch sử tham chiếu.
@@ -94,6 +100,16 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Chưa có Carbon/AWD Estimator, IoT simulator, BI dashboard (Superset/Metabase), SSO nặng (Keycloak/Authentik) hay kênh chat nội bộ (Mattermost) — thuộc Giai đoạn 1–3 theo roadmap trong `README.md`.
   Auth/role cơ bản (JWT, FARMER/ENGINEER/ADMIN) đã xong ở trên.
 
+## Dữ liệu (`data`)
+
+### 2026-09-30
+
+**Đã xong — Thay bộ dữ liệu PlantVillage bằng dữ liệu bệnh lá lúa:**
+
+- Chuẩn hóa 6 điều kiện lúa, gồm 5 lớp detection và một mã healthy; loại toàn bộ mã PlantVillage khỏi canonical JSON và seed SQL.
+- Corpus RAG còn 6 tài liệu, truy vết qua 9 nguồn; dữ liệu thuốc, treatment rule và policy giữ nguyên trạng thái `IN_REVIEW` từ workbook.
+- Generator, validator đối chiếu workbook, seed check và RAG dry-run đều đạt; `data.sql` được sinh deterministic từ dữ liệu chuẩn.
+
 ## Mobile (`mobile`, Expo)
 
 ### 2026-09-30
@@ -143,6 +159,16 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - `mobile/README.md`: chạy thử trên điện thoại thật với IP LAN, biến môi trường, tài khoản demo, kiểm tra mã nguồn.
 
 ## AI Service (Python)
+
+### 2026-09-30
+
+**Đã xong — Chuyển CV và RAG sang bệnh lá lúa:**
+
+- Thay EfficientNet bằng YOLOv8n với checkpoint cục bộ `best.pt`; kiểm tra checksum, task, số lớp và thứ tự class khi khởi động.
+- Mapping class đọc từ `class_contract.json`; checkpoint được mount read-only và không tự tải model.
+- RAG ingest 6 tài liệu thành 31 chunks; cả 6 mã lúa đi đúng Backend context/RAG và về `review_required` khi chưa có rule được duyệt.
+- Giữ nguyên response CV năm trường và contract chẩn đoán; container CPU, kiểm thử tích hợp và E2E đều đạt.
+- Bổ sung shared library cho OpenCV/Ultralytics; AI image build và healthcheck thành công.
 
 ### 2026-09-18
 

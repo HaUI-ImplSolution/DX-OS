@@ -112,6 +112,11 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Mobile (`mobile`, Expo)
 
+### 2026-10-01
+
+- Metro chạy ở cổng `8083` (script `npm start`) vì `8081` dành cho Backend.
+- `mobile/README.md` ghi cách chạy khi web và mobile dùng Keycloak cùng lúc: điện thoại vào qua IP LAN ở `.env.local`, không cần đổi `deploy/.env`.
+
 ### 2026-09-30
 
 **Đã xong — Khung app cho FARMER:**
@@ -230,6 +235,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - 8 candidate quy tắc điều trị trạng thái HOLD được giữ riêng để audit, không seed vào CSDL chính thức.
 
 ## Frontend (`frontend`)
+
+### 2026-10-01
+
+- Đăng xuất giữ `id_token_hint`: `signOut` không xoá user trước `signoutRedirect`, nên Keycloak kết thúc phiên SSO ngay thay vì hiện trang xác nhận, và Superset đăng xuất theo.
 
 ### 2026-09-30
 
@@ -379,6 +388,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Tài khoản Mattermost tách biệt hoàn toàn khỏi tài khoản backend (FARMER/ENGINEER/ADMIN) có chủ đích — nền tảng riêng, không dùng SSO chung.
 
 ## Portal (`portal`)
+
+### 2026-10-01
+
+- Thêm mục "Quản trị & tài liệu": Keycloak Admin, Superset Admin (`/users/list/`), Mattermost Admin (System Console) và Swagger của Backend.
 
 ### 2026-09-11
 

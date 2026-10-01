@@ -5,6 +5,13 @@ from PIL import Image, ImageFilter, ImageStat
 
 from app.core.config import Settings, get_settings
 from app.cv.contract import class_contract, class_entry
+from app.cv.model_profile import MODEL_IMAGE_SIZE, MODEL_NAME, MODEL_VERSION
+from app.cv.policy import (
+    DETECTION_CONFIDENCE_THRESHOLD,
+    IOU_THRESHOLD,
+    MIN_IMAGE_DIMENSION,
+    MIN_SHARPNESS,
+)
 from app.cv.triage import CvTriageError
 
 SHARPNESS_KERNEL = ImageFilter.Kernel(
@@ -31,7 +38,7 @@ class PlantDiseaseService:
             raise ValueError("Invalid image data") from exc
 
         width, height = image.size
-        minimum = self.settings.cv_min_image_dimension
+        minimum = MIN_IMAGE_DIMENSION
         if width < minimum or height < minimum:
             raise CvTriageError(
                 f"Ảnh quá nhỏ ({width}x{height}px). Vui lòng chụp lại ảnh lá lúa "
@@ -41,7 +48,7 @@ class PlantDiseaseService:
         grayscale = image.convert("L")
         edges = grayscale.filter(SHARPNESS_KERNEL).crop((1, 1, width - 1, height - 1))
         sharpness = float(ImageStat.Stat(edges).var[0])
-        if sharpness < self.settings.cv_min_sharpness:
+        if sharpness < MIN_SHARPNESS:
             raise CvTriageError(
                 "Ảnh có dấu hiệu bị mờ hoặc thiếu chi tiết. "
                 "Vui lòng chụp lại ảnh lá lúa rõ nét hơn."
@@ -49,9 +56,9 @@ class PlantDiseaseService:
 
         results = self.model.predict(
             source=image,
-            imgsz=self.settings.cv_image_size,
-            conf=self.settings.cv_detection_confidence_threshold,
-            iou=self.settings.cv_iou_threshold,
+            imgsz=MODEL_IMAGE_SIZE,
+            conf=DETECTION_CONFIDENCE_THRESHOLD,
+            iou=IOU_THRESHOLD,
             device=self.device,
             verbose=False,
         )
@@ -70,7 +77,7 @@ class PlantDiseaseService:
                 class_id = int(raw_class_id)
                 if (
                     not math.isfinite(confidence)
-                    or confidence < self.settings.cv_detection_confidence_threshold
+                    or confidence < DETECTION_CONFIDENCE_THRESHOLD
                     or raw_class_id != class_id
                 ):
                     continue
@@ -90,6 +97,6 @@ class PlantDiseaseService:
             "disease_code": entry["disease_code"],
             "disease_name": entry["disease_name"],
             "confidence": round(confidence, 3),
-            "model_name": self.settings.cv_model_name,
-            "model_version": self.settings.cv_model_version,
+            "model_name": MODEL_NAME,
+            "model_version": MODEL_VERSION,
         }

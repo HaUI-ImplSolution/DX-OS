@@ -5,8 +5,8 @@ from typing import Any
 
 from langgraph.runtime import Runtime
 
-from app.core.config import get_settings
 from app.cv.contract import class_contract
+from app.cv.policy import WORKFLOW_CONFIDENCE_THRESHOLD
 from app.graph.context import WorkflowRuntime
 from app.graph.state import FarmState  # type: ignore
 
@@ -60,7 +60,7 @@ def cv_diagnosis(state: FarmState, runtime: Runtime[WorkflowRuntime]) -> dict[st
         "cv_result": cv_res,
         "disease_code": disease_code,
         "confidence": float(confidence),
-        "low_confidence": confidence < get_settings().cv_confidence_threshold,
+        "low_confidence": confidence < WORKFLOW_CONFIDENCE_THRESHOLD,
     }
     timings["cv_node_total"] = round((time.perf_counter() - started) * 1000, 2)
     updates["timings_ms"] = timings

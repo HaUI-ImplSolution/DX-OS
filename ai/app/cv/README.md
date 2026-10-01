@@ -9,9 +9,9 @@
 
 Response giữ nguyên `disease_code`, `disease_name`, `confidence`, `model_name`, `model_version`. Bounding box và danh sách detection chỉ được xử lý nội bộ.
 
-`loader.py` yêu cầu checkpoint tồn tại tại `CV_WEIGHTS_PATH`, kiểm tra SHA-256 khi cấu hình, task `detect`, số lớp và đúng thứ tự class. Service không tự tải checkpoint. Khi chạy Compose, `best.pt` được bind-mount read-only.
+`loader.py` yêu cầu checkpoint tồn tại tại `CV_WEIGHTS_PATH`, kiểm tra SHA-256 theo `model_profile.py`, task `detect`, số lớp và đúng thứ tự class. Số lớp được suy ra trực tiếp từ class contract thay vì cấu hình lặp lại. Service không tự tải checkpoint. Khi chạy Compose, `best.pt` được bind-mount read-only.
 
-`CV_DETECTION_CONFIDENCE_THRESHOLD` là ngưỡng lọc box YOLO. `CV_CONFIDENCE_THRESHOLD` là confidence gate của workflow; kết quả thấp hơn ngưỡng sẽ yêu cầu chụp lại và không chạy Backend facts, RAG hoặc LLM. `CV_MIN_IMAGE_DIMENSION` và `CV_MIN_SHARPNESS` chặn ảnh quá nhỏ hoặc thiếu độ nét trước inference.
+Các thuộc tính cố định của artifact nằm trong `model_profile.py`; ngưỡng inference và kiểm tra chất lượng ảnh nằm trong `policy.py`, không phải biến môi trường. Detection confidence lọc box YOLO; workflow confidence gate yêu cầu chụp lại và không chạy Backend facts, RAG hoặc LLM nếu kết quả chưa đủ tin cậy. Minimum image dimension và sharpness chặn ảnh quá nhỏ hoặc thiếu độ nét trước inference.
 
 Checkpoint chỉ có năm lớp bệnh, không có lớp healthy/non-leaf riêng. Vì vậy trường hợp không có detection được xem là chưa đủ tin cậy thay vì tự khẳng định lá khỏe; đây là lựa chọn fail-safe để ảnh ngoài miền không đi tiếp vào khuyến nghị.
 

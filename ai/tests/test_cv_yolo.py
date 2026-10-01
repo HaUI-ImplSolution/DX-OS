@@ -80,7 +80,6 @@ def image_bytes() -> bytes:
 def settings(**overrides) -> Settings:
     values = {
         "cv_class_contract_path": CONTRACT_PATH,
-        "cv_weights_sha256": None,
         **overrides,
     }
     return Settings(**values)
@@ -159,7 +158,7 @@ def test_model_class_order_mismatch_fails_validation():
     model.names[1] = "Wrong class"
 
     with pytest.raises(ValueError, match="class order"):
-        validate_model_contract(model, load_class_contract(CONTRACT_PATH), 5)
+        validate_model_contract(model, load_class_contract(CONTRACT_PATH))
 
 
 def test_model_task_mismatch_fails_validation():
@@ -167,16 +166,12 @@ def test_model_task_mismatch_fails_validation():
     model.task = "classify"
 
     with pytest.raises(ValueError, match="task must be 'detect'"):
-        validate_model_contract(model, load_class_contract(CONTRACT_PATH), 5)
+        validate_model_contract(model, load_class_contract(CONTRACT_PATH))
 
 
 def test_checksum_mismatch_fails_before_model_import(monkeypatch):
     monkeypatch.setattr("app.cv.loader._sha256", lambda _path: "1" * 64)
+    monkeypatch.setattr("app.cv.loader.MODEL_WEIGHTS_SHA256", "0" * 64)
 
     with pytest.raises(ValueError, match="SHA-256"):
-        load_model(
-            settings(
-                cv_weights_path=CONTRACT_PATH,
-                cv_weights_sha256="0" * 64,
-            )
-        )
+        load_model(settings(cv_weights_path=CONTRACT_PATH))

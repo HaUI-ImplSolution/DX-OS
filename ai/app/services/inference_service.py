@@ -18,6 +18,7 @@ from app.api.schemas import (
 )
 from app.clients.backend_client import BackendClient
 from app.core.config import get_settings
+from app.cv.policy import WORKFLOW_CONFIDENCE_THRESHOLD
 from app.cv.triage import CvTriageError
 from app.graph.context import WorkflowRuntime
 from app.graph.graph import farm_graph
@@ -80,7 +81,7 @@ def run_stateless_diagnose(
 ) -> DiagnoseResponse:
     """Run the existing LangGraph and adapt its result to Backend's DTO."""
     cv_result = DiagnoseCvResult.model_validate(predictor.predict(image_bytes))
-    confidence_threshold = get_settings().cv_confidence_threshold
+    confidence_threshold = WORKFLOW_CONFIDENCE_THRESHOLD
     if cv_result.confidence < confidence_threshold:
         raise CvTriageError(
             "Kết quả nhận diện chưa đủ tin cậy "

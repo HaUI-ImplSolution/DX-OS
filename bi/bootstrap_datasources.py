@@ -133,7 +133,8 @@ def import_dashboard_bundle(headers, cookies) -> bool:
         db_yaml_paths = [n for n in zf.namelist() if n.endswith("/databases/DX-Farm.yaml")]
 
     real_password = urlparse(DXFARM_DB_URI).password or ""
-    passwords = {path: real_password for path in db_yaml_paths}
+    # Superset khớp mật khẩu theo đường dẫn đã bỏ thư mục gốc của zip.
+    passwords = {path.split("/", 1)[1]: real_password for path in db_yaml_paths}
 
     with open(DASHBOARD_EXPORT_PATH, "rb") as f:
         files = {"formData": ("dxfarm_dashboard_export.zip", f.read(), "application/zip")}

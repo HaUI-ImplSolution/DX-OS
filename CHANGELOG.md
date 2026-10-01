@@ -52,7 +52,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - `AiVectorDatabaseSeeder` tự tạo database `dx_farm_ai_vector_db` (chỉ `documents`/`document_chunks`, extension `pgvector`) lúc khởi động.
 - Hai role Postgres riêng cho AI: `ai_vector_ro` chỉ đọc khi runtime và `ai_vector_ingest` đọc/ghi khi ingest; AI không nhận credential truy cập Backend DB.
 - `deploy/docker-compose.yml` chuyển AI runtime sang DB/role riêng và cấp `RAG_INGEST_DATABASE_URL` cho job ingest.
-- Dữ liệu cũ do AI ghi trực tiếp trước khi tách DB (`disease_reports`, `diagnoses`, `treatment_applications`, `workflow_cases`/`workflow_events`) xác định là dữ liệu demo/test, dọn bằng `deploy/sql/p3-4-legacy-ai-data-cleanup.sql`.
+- Dữ liệu cũ do AI ghi trực tiếp trước khi tách DB (`disease_reports`, `diagnoses`, `treatment_applications`, `workflow_cases`/`workflow_events`) xác định là dữ liệu demo/test và không được giữ lại.
 
 ### 2026-09-11
 
@@ -275,6 +275,19 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Deploy (`deploy`)
 
+### 2026-10-01
+
+- Keycloak không đặt `KC_HOSTNAME`, dùng hostname của request: web vào `localhost:8180`, điện thoại vào qua IP LAN, hai bên chạy cùng lúc.
+- Superset đọc tên, email và role từ access token thay vì gọi `/userinfo`, vì `/userinfo` từ chối token có issuer khác hostname của request.
+- `VITE_KEYCLOAK_URL` của frontend và `KEYCLOAK_BROWSER_BASE` của Superset lấy từ `KEYCLOAK_PUBLIC_URL` (mẫu `http://localhost:8180`).
+
+### 2026-09-30
+
+- `docker-compose.yml` không chứa giá trị mặc định: mọi biến `${...}` bắt buộc khai báo trong `deploy/.env`, giá trị mẫu nằm ở `.env.example`; thiếu biến nào Compose dừng và báo tên biến đó. `KEYCLOAK_PUBLIC_URL` có giá trị mẫu `http://localhost:8180`.
+- Đồng bộ tài liệu với cấu hình hiện tại: hướng dẫn `.env` bắt buộc, tài khoản Mattermost có sẵn, job `rag-ingest`/Ollama tự chạy, khoảng liều `dose_min`/`dose_max`, số liệu seed (38 bệnh, 6 thuốc, 1 rule active, 13 policy).
+- Service `superset-init` chown `data/superset` về uid 1000 trước khi Superset khởi động, nên dựng mới không cần thao tác tay.
+- Service `mattermost-bootstrap` tạo System Admin, team và channel mặc định (xem mục `chat`); biến `MATTERMOST_ADMIN_USERNAME`, `MATTERMOST_ADMIN_EMAIL`, `MATTERMOST_ADMIN_PASSWORD` trong `.env.example`.
+
 ### 2026-09-29
 
 - `deploy/.env.example` là nơi duy nhất chứa mẫu cấu hình; các file `.env*` của `ai`, `backend/DX-Farm`, `frontend` đã bỏ.
@@ -305,6 +318,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Service `backend` nhận thêm secret cho auth (`JWT_SECRET`, `JWT_EXPIRATION`, `SUPER_ADMIN_USERNAME/PASSWORD`) từ `deploy/.env` (mẫu ở `.env.example`).
 
 ## BI Dashboard (`bi`, Apache Superset)
+
+### 2026-09-30
+
+- Import dashboard mẫu chạy được trên metadata DB trống: khóa `passwords` của API import dùng đường dẫn đã bỏ thư mục gốc của zip.
 
 ### 2026-09-11
 
@@ -337,6 +354,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - **Còn thiếu**: chưa cấu hình `MAPBOX_API_KEY` nên bản đồ chưa có nền (basemap) thật, chỉ thấy điểm trên nền trắng — cần token Mapbox miễn phí, xem `bi/README.md`.
 
 ## Kênh chat nội bộ (`chat`, Mattermost)
+
+### 2026-09-30
+
+- `chat/bootstrap.sh` (service `mattermost-bootstrap`) tạo sẵn System Admin, team `dx-farm` và 3 channel: `Thông báo chung`, `Kỹ sư nông nghiệp` (public), `Ban quản trị` (private); idempotent.
 
 ### 2026-09-11
 
@@ -383,7 +404,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 **Đã xong — Client cho bản mobile:**
 
 - Client public `dxfarm-mobile` trong `realm-dxfarm.json`: Standard Flow + PKCE, không direct access grants, redirect URI `dxfarm://*` và `exp://*`.
-- `deploy/docker-compose.yml` lấy `KC_HOSTNAME` từ `KEYCLOAK_PUBLIC_URL` (mặc định `http://localhost:${KEYCLOAK_HOST_PORT}`) để điện thoại truy cập Keycloak qua IP LAN.
+- Keycloak trong `deploy/docker-compose.yml` dùng hostname của request để điện thoại truy cập qua IP LAN.
 - `sso/README.md`: phạm vi, cách dev với IP LAN, cách thêm client vào volume cũ.
 
 ### 2026-09-11

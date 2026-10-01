@@ -43,7 +43,7 @@ Chi tiết: `BACKEND_CHANGES.md` mục 5.
 
 - [X] Thêm client `dxfarm-mobile` vào `sso/realm-dxfarm.json`.
 - [X] Cập nhật `sso/README.md` (phạm vi, cách dev với IP LAN).
-- [X] Cho phép ghi đè `KC_HOSTNAME` qua `KEYCLOAK_PUBLIC_URL` (`deploy/docker-compose.yml`, `deploy/.env.example`).
+- [X] Keycloak dùng hostname của request thay vì `KC_HOSTNAME` cố định (`deploy/docker-compose.yml`).
 - [X] Kiểm tra JSON hợp lệ bằng `python3 -m json.tool`.
 
 ## Giai đoạn 3 — Khung app `mobile/`

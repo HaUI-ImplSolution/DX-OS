@@ -14,7 +14,7 @@ Nội dung là dữ liệu nguồn do AI bàn giao để Backend tham khảo và
   Quy ước và kế hoạch: [`development/docs/DB_SEED_UNIFICATION_PLAN.md`](../development/docs/DB_SEED_UNIFICATION_PLAN.md).
 - **AI** đọc `rag/processed/disease_knowledge.json` và `rag/source_registry.json` qua job ingest (`ai/scripts/ingest_diseases.py`, chạy bằng `python -m scripts.ingest_diseases`) để tạo embedding và ghi vào AI Vector DB (`documents`, `document_chunks`).
   Xem [`ai/README.md`](../ai/README.md) mục "Ingest RAG".
-- Trong Docker Compose, `data/` được bind-mount read-only vào container `rag-ingest` tại `/data` (biến `AI_DATA_DIR` trong `deploy/.env`, mặc định `../data`) — xem [`deploy/docker-compose.yml`](../deploy/docker-compose.yml).
+- Trong Docker Compose, `data/` được bind-mount read-only vào container `rag-ingest` tại `/data` (biến `AI_DATA_DIR` trong `deploy/.env`, giá trị mẫu `../data`) — xem [`deploy/docker-compose.yml`](../deploy/docker-compose.yml).
 - `data/` ở gốc repository là nguồn canonical duy nhất; không duy trì bản sao trong `ai/.local/data` vì dễ khiến ingest dùng dữ liệu cũ và không thể tái lập từ Git.
 
 ## Nguyên tắc bắt buộc

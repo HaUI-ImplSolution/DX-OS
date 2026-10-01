@@ -14,7 +14,9 @@ from superset.security import SupersetSecurityManager
 # api_base_url/access_token_url gọi Keycloak qua hostname nội bộ (server-to-server, trong mạng
 # docker); authorize_url dùng hostname trình duyệt - xem "Lưu ý kỹ thuật" trong sso/README.md.
 KEYCLOAK_INTERNAL_BASE = "http://keycloak:8080/realms/dxfarm/protocol/openid-connect"
-KEYCLOAK_BROWSER_BASE = "http://localhost:8180/realms/dxfarm/protocol/openid-connect"
+KEYCLOAK_BROWSER_BASE = (
+    os.environ["KEYCLOAK_PUBLIC_URL"].rstrip("/") + "/realms/dxfarm/protocol/openid-connect"
+)
 
 
 def _decode_jwt_payload(token: str) -> dict:
@@ -27,17 +29,15 @@ class KeycloakSecurityManager(SupersetSecurityManager):
     def oauth_user_info(self, provider, response=None):
         if provider != "keycloak":
             return {}
-        me = self.appbuilder.sm.oauth_remotes[provider].get("userinfo")
-        me.raise_for_status()
-        data = me.json()
-        # realm_access.roles chỉ có trong access token, không có trong response /userinfo.
-        access_token_claims = _decode_jwt_payload(response["access_token"])
+        # Đọc thẳng từ access token vừa nhận qua kênh server-to-server, không gọi /userinfo:
+        # Keycloak không cố định hostname nên /userinfo từ chối token có issuer theo hostname trình duyệt.
+        claims = _decode_jwt_payload(response["access_token"])
         return {
-            "username": data.get("preferred_username", ""),
-            "first_name": data.get("given_name", ""),
-            "last_name": data.get("family_name", ""),
-            "email": data.get("email", ""),
-            "role_keys": access_token_claims.get("realm_access", {}).get("roles", []),
+            "username": claims.get("preferred_username", ""),
+            "first_name": claims.get("given_name", ""),
+            "last_name": claims.get("family_name", ""),
+            "email": claims.get("email", ""),
+            "role_keys": claims.get("realm_access", {}).get("roles", []),
         }
 
 

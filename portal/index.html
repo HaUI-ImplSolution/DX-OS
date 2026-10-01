@@ -213,6 +213,8 @@
   .app-card.chat .app-icon { background: var(--gold-soft); color: #8a6410; }
   .app-card.admin .app-icon { background: #efe9f8; color: #5a3d99; }
   .app-card.api .app-icon { background: #e3f3f0; color: #1f6b5e; }
+  .app-card.bi-admin .app-icon { background: #e5eef8; color: #2a5f82; }
+  .app-card.chat-admin .app-icon { background: var(--gold-soft); color: #8a6410; }
 
   .section-head.spaced { margin-top: 40px; }
 
@@ -375,6 +377,32 @@
         <div class="app-desc">Quản lý người dùng, vai trò và client đăng nhập SSO.</div>
         <div class="app-meta">
           <span class="app-url">localhost:8180/admin</span>
+          <span class="app-cta">Mở →</span>
+        </div>
+      </a>
+
+      <a class="app-card bi-admin" href="http://localhost:8088/users/list/" target="_blank" rel="noopener">
+        <span class="pill sso">SSO</span>
+        <div class="app-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+        </div>
+        <div class="app-name">Superset Admin</div>
+        <div class="app-desc">Quản lý người dùng và phân quyền của BI Dashboard.</div>
+        <div class="app-meta">
+          <span class="app-url">localhost:8088/users/list</span>
+          <span class="app-cta">Mở →</span>
+        </div>
+      </a>
+
+      <a class="app-card chat-admin" href="http://localhost:8065/admin_console" target="_blank" rel="noopener">
+        <span class="pill standalone">Riêng</span>
+        <div class="app-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+        </div>
+        <div class="app-name">Mattermost Admin</div>
+        <div class="app-desc">System Console: quản lý người dùng, team và cấu hình kênh chat.</div>
+        <div class="app-meta">
+          <span class="app-url">localhost:8065/admin_console</span>
           <span class="app-cta">Mở →</span>
         </div>
       </a>

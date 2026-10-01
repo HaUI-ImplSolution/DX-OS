@@ -1,8 +1,6 @@
 package HaUI.ImplSolution.DX_Farm.security;
 
 import HaUI.ImplSolution.DX_Farm.dto.ApiResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -11,15 +9,18 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.ObjectMapper;
 
 // Chạy ở tầng filter chain (trước DispatcherServlet) nên GlobalExceptionHandler không bắt
 // được request thiếu/sai JWT - phải tự trả đúng khuôn ApiResponse ở đây.
 @Component
 public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-  // ObjectMapper riêng, không phụ thuộc bean autoconfigure - entry point này chạy sớm
-  // trong filter chain security, muốn tách khỏi mọi cấu hình Jackson của tầng MVC.
-  private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+  private final ObjectMapper objectMapper;
+
+  public RestAuthenticationEntryPoint(ObjectMapper objectMapper) {
+    this.objectMapper = objectMapper;
+  }
 
   @Override
   public void commence(HttpServletRequest request, HttpServletResponse response,

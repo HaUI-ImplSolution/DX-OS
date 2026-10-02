@@ -1,8 +1,8 @@
 # Kế hoạch thông báo Mattermost qua Incoming Webhook
 
-> **Trạng thái:** Kế hoạch, chưa triển khai.
+> **Trạng thái:** Kế hoạch đã đối chiếu với code hiện tại, chưa triển khai.
 >
-> **Cập nhật:** 29/09/2026.
+> **Cập nhật:** 02/10/2026.
 >
 > **Phạm vi:** Backend post thông báo vào một channel Mattermost qua Incoming Webhook khi có báo cáo sâu bệnh mới hoặc chẩn đoán chờ duyệt.
 
@@ -14,17 +14,30 @@
 - Lỗi khi post webhook không được làm hỏng hoặc chậm request tạo báo cáo/chẩn đoán.
 - Webhook URL chứa khóa truy cập, được coi là secret: chỉ đọc từ biến môi trường, không có trong source, log hay response.
 - Mattermost giữ nguyên tài khoản riêng, không nối SSO; webhook được tạo tay một lần trong UI Mattermost.
+- Channel nhận thông báo là `Kỹ sư nông nghiệp` (`ky-su-nong-nghiep`) trong team `dx-farm`, do `chat/bootstrap.sh` tạo sẵn.
 - Frontend chưa có routing nên thông báo không kèm deep link; kỹ sư tìm báo cáo theo mã thửa và mã báo cáo trong thông báo.
 
 ## 2. Hiện trạng
 
-- `DiseaseReportService.create()` lưu `DiseaseReport` trong một transaction.
-- `DiagnosisService.create()` (nhập tay) và `DiagnosisService.createFromAi()` (gọi AI) đều lưu `Diagnosis` với `approvalStatus = PENDING`.
-  `treatmentRule = null` khi AI chỉ yêu cầu kỹ sư xem xét.
-- Service `mattermost` chạy trong `deploy/docker-compose.yml`, Backend gọi được qua hostname nội bộ `mattermost:8065`.
-- Backend chưa có code gọi Mattermost; `application.yaml` mới chỉ có `mattermost.db.password`.
-- Backend đã có mẫu client HTTP ra ngoài: `AiDiagnosisClient` dùng `RestClient` + `JdkClientHttpRequestFactory` với timeout cấu hình được.
+**Backend**
+
+- `DiseaseReportService.create()` là `@Transactional`.
+  Nhánh idempotent (`Idempotency-Key` đã dùng) trả báo cáo cũ ngay, không lưu báo cáo mới; nhánh tạo mới kết thúc bằng `saveAndFlush`.
+- `DiagnosisService.create()` (nhập tay) và `createFromAi()` (gọi AI) đều là `@Transactional` và lưu `Diagnosis` với `approvalStatus = PENDING` bằng `save` ở dòng cuối.
+  - `createFromAi()` gọi `AiDiagnosisClient.diagnose()` bên trong transaction, trước `save`; AI lỗi, ảnh bị triage hoặc rule đổi version đều ném exception trước `save`.
+  - `treatmentRule = null` chỉ xảy ra ở `createFromAi()` khi AI trả đường `review_required`; `create()` luôn có rule.
+- `DiseaseReport.reportedAt` và `Diagnosis.diagnosedAt` là `Instant`; `confidence` là `BigDecimal` trong khoảng 0–1.
+- Backend chưa có code gọi Mattermost ngoài `MattermostDatabaseSeeder`; `application.yaml` mới chỉ có `mattermost.db.password`.
+- `AiDiagnosisClient` là mẫu client HTTP ra ngoài: `RestClient` + `JdkClientHttpRequestFactory` với timeout cấu hình được.
 - `spring-boot-starter-aspectj` và `resilience4j-spring-boot3` đã có trong `pom.xml`; chưa dùng `@Async` hay Spring event.
+- `spring.jackson.time-zone: Asia/Ho_Chi_Minh` chỉ áp dụng khi serialize JSON, không áp dụng cho chuỗi tự dựng trong thông báo.
+
+**Mattermost và deploy**
+
+- Service `mattermost` chạy trong `deploy/docker-compose.yml`, Backend gọi được qua hostname nội bộ `mattermost:8065`.
+  `MM_SERVICESETTINGS_SITEURL` là `http://localhost:${MATTERMOST_HOST_PORT}`, nên URL webhook sao chép từ UI mang host `localhost`.
+- `mattermost-bootstrap` đã tạo sẵn System Admin, team `dx-farm` và 3 channel; `Kỹ sư nông nghiệp` là channel public.
+- Chưa có biến `MATTERMOST_WEBHOOK_URL` trong `docker-compose.yml` và `.env.example`; chưa bật `MM_SERVICESETTINGS_ENABLEINCOMINGWEBHOOKS`.
 
 ## 3. Quyết định kiến trúc
 
@@ -43,38 +56,54 @@ DiagnosisService.createFromAi()──┘
 
 - Service nghiệp vụ chỉ `publishEvent`; listener dùng `@TransactionalEventListener(phase = AFTER_COMMIT)`.
   Thông báo chỉ đi khi dữ liệu đã commit, transaction rollback thì không có thông báo "ma".
-- Event là record chứa giá trị thuần (chuỗi, số), dựng trong transaction.
+- Cả ba điểm publish đều nằm trong transaction đang hoạt động nên không cần `fallbackExecution`.
+- Event là record chứa giá trị thuần (chuỗi, số), dựng từ entity vừa lưu ngay trong transaction.
   Listener chạy ở thread khác, không đụng tới entity lazy.
+
+**Vị trí publish**
+
+| Điểm publish                          | Publish ở đâu                                                                     | Không publish khi                                     |
+| ------------------------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| `DiseaseReportService.create()`       | Ngay sau `saveAndFlush` của báo cáo mới, ngoài khối `try/catch`                   | Nhánh idempotent trả báo cáo cũ; `saveAndFlush` lỗi   |
+| `DiagnosisService.create()`           | Ngay sau `save`                                                                   | Validate hoặc `save` lỗi                              |
+| `DiagnosisService.createFromAi()`     | Ngay sau `save`, tức sau lệnh gọi AI và kiểm tra version rule                     | AI lỗi, bị triage, rule đổi version, bệnh không hợp lệ |
+
+- Nhánh idempotent bắt buộc không publish: app mobile gửi lại cùng `Idempotency-Key` khi mất mạng, nếu publish sẽ có thông báo trùng cho một báo cáo.
 
 **Xử lý bất đồng bộ, không retry**
 
-- Listener chạy `@Async` trên executor riêng (`mattermostNotifyExecutor`, 1–2 thread, queue 100, tràn thì bỏ).
+- Listener chạy `@Async("mattermostNotifyExecutor")` trên executor riêng (1–2 thread, queue 100).
   Request người dùng không phải chờ Mattermost.
+- Khi queue đầy, executor bỏ task và ghi một dòng WARN bằng `RejectedExecutionHandler` riêng; không để `TaskRejectedException` nổi lên luồng gọi.
 - Mọi exception trong listener/client được bắt và log mức WARN; không ném ngược lên luồng nghiệp vụ.
 - Không retry; thông báo là best-effort nên chấp nhận mất khi Mattermost đang tắt.
 
 **Tắt an toàn khi chưa cấu hình**
 
-- `mattermost.webhook.url` rỗng thì listener bỏ qua ngay, không tạo HTTP call.
-  Cùng kiểu fail-closed với `ai.service.inbound-api-key`.
+- `mattermost.webhook.url` rỗng thì listener bỏ qua ngay, không tạo HTTP call (fail-closed).
 - Log một dòng lúc khởi động cho biết webhook bật hay tắt, không in URL.
 
 **Nội dung thông báo**
 
-| Sự kiện                | Trigger                                              | Nội dung                                                                                    |
-| ------------------------ | ---------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Báo cáo mới           | `DiseaseReportService.create()`                    | Mã báo cáo, mã thửa, giống lúa, người báo cáo, thời điểm báo cáo             |
-| Chẩn đoán chờ duyệt | `DiagnosisService.create()` và `createFromAi()` | Mã báo cáo, mã thửa, bệnh (mã + tên), độ tin cậy, có/không có`TreatmentRule` |
+| Sự kiện             | Trigger                                         | Nội dung                                                                    |
+| ------------------- | ----------------------------------------------- | --------------------------------------------------------------------------- |
+| Báo cáo mới         | `DiseaseReportService.create()`                 | Mã báo cáo, mã thửa, giống lúa, người báo cáo, thời điểm báo cáo            |
+| Chẩn đoán chờ duyệt | `DiagnosisService.create()` và `createFromAi()` | Mã báo cáo, mã thửa, bệnh (mã + tên), độ tin cậy, có/không có `TreatmentRule` |
 
 - Định dạng: một `attachment` Mattermost (`title`, `color`, `fields`) kèm `fallback` là text thuần.
+- Độ tin cậy hiển thị dạng phần trăm (ví dụ `87%`).
 - Chẩn đoán không có `TreatmentRule` ghi rõ "Không có phác đồ — cần kỹ sư xem xét".
 - Không đưa vào thông báo: `image_url` (hostname nội bộ `backend:8081`), nội dung khuyến nghị đầy đủ, secret.
-- Thời điểm hiển thị theo múi giờ `Asia/Ho_Chi_Minh`, cùng cấu hình Jackson hiện có.
+- Thời điểm format tường minh theo `ZoneId` `Asia/Ho_Chi_Minh` (ví dụ `dd/MM/yyyy HH:mm`).
 
 **Làm sạch dữ liệu người dùng**
 
-- `reportedBy`, mã thửa và giống lúa là chuỗi do người dùng/Keycloak cung cấp.
-  Trước khi đưa vào thông báo: cắt tối đa 100 ký tự và vô hiệu hóa mention (`@channel`, `@all`, `@here`, `@user`) để không spam channel.
+- `reportedBy`, mã thửa, giống lúa và tên bệnh là chuỗi do người dùng/Keycloak/dữ liệu danh mục cung cấp, hiển thị trong `fields` có render markdown.
+- Một hàm làm sạch dùng chung cho cả hai thông báo:
+  - cắt tối đa 100 ký tự;
+  - thay xuống dòng bằng khoảng trắng;
+  - vô hiệu mention (`@channel`, `@all`, `@here`, `@user`) bằng cách chèn ký tự zero-width sau `@`;
+  - escape ký tự markdown (`` ` `` `*` `_` `[` `]` `<` `>` `|` `\`) để không chèn được link hay định dạng.
 
 **Cấu hình**
 
@@ -88,14 +117,14 @@ mattermost:
 
 - Khóa `mattermost.webhook` đặt cạnh `mattermost.db` hiện có.
 - `MATTERMOST_WEBHOOK_URL` có dạng `http://mattermost:8065/hooks/<key>`; host phải là hostname nội bộ, không dùng `localhost`.
-- `deploy/docker-compose.yml` truyền `MATTERMOST_WEBHOOK_URL` cho `backend` và bật `MM_SERVICESETTINGS_ENABLEINCOMINGWEBHOOKS=true` cho `mattermost`.
+- `deploy/docker-compose.yml` truyền `MATTERMOST_WEBHOOK_URL` (không bắt buộc, mặc định rỗng) cho `backend` và đặt `MM_SERVICESETTINGS_ENABLEINCOMINGWEBHOOKS: "true"` cho `mattermost`.
 - `deploy/.env.example` thêm `MATTERMOST_WEBHOOK_URL=` để trống kèm chú thích cách lấy giá trị.
 
 **Cấp webhook (thao tác tay một lần)**
 
-- Đăng nhập Mattermost bằng System Admin, tạo team và channel nhận thông báo (ví dụ "Kỹ sư nông nghiệp").
-- Vào Integrations → Incoming Webhooks → Add Incoming Webhook, chọn channel đích.
-- Sao chép URL, đổi host `localhost:8065` thành `mattermost:8065`, điền vào `deploy/.env`.
+- Team `dx-farm` và channel `Kỹ sư nông nghiệp` đã có sẵn từ `mattermost-bootstrap`.
+- Đăng nhập Mattermost bằng System Admin, vào Integrations → Incoming Webhooks → Add Incoming Webhook, chọn channel `Kỹ sư nông nghiệp`.
+- Sao chép URL, đổi host `localhost:<cổng>` thành `mattermost:8065`, điền vào `deploy/.env`.
 - Chạy lại service `backend` để nhận cấu hình mới.
 
 **API và Swagger**
@@ -104,37 +133,34 @@ mattermost:
 
 ## 4. Các công việc cần thực hiện
 
-**Backend**
+**Backend** (`backend/DX-Farm`)
 
 - [ ] Package `event/` với hai record `DiseaseReportCreatedEvent` và `DiagnosisPendingEvent`, chỉ chứa giá trị thuần.
-- [ ] `DiseaseReportService.create()` publish `DiseaseReportCreatedEvent`; `DiagnosisService.create()` và `createFromAi()` publish `DiagnosisPendingEvent` sau khi `save`.
-- [ ] `config/AsyncConfig` bật `@EnableAsync` và khai báo executor `mattermostNotifyExecutor` có giới hạn thread và queue.
+- [ ] `DiseaseReportService.create()` publish `DiseaseReportCreatedEvent` sau `saveAndFlush` của báo cáo mới (không publish ở nhánh idempotent); `DiagnosisService.create()` và `createFromAi()` publish `DiagnosisPendingEvent` sau `save`.
+- [ ] `config/AsyncConfig` bật `@EnableAsync` và khai báo executor `mattermostNotifyExecutor` (1–2 thread, queue 100) với `RejectedExecutionHandler` bỏ task và log WARN.
 - [ ] `MattermostWebhookClient` (`RestClient` + `JdkClientHttpRequestFactory`, timeout từ cấu hình) POST JSON attachment; URL rỗng thì không gửi.
-- [ ] `MattermostNotificationListener` xử lý hai event bằng `@Async` + `@TransactionalEventListener(AFTER_COMMIT)`, bắt mọi exception và log WARN không kèm URL.
-- [ ] Hàm làm sạch chuỗi người dùng (cắt độ dài, vô hiệu mention) dùng chung cho cả hai thông báo.
+- [ ] `MattermostNotificationListener` xử lý hai event bằng `@Async("mattermostNotifyExecutor")` + `@TransactionalEventListener(AFTER_COMMIT)`, bắt mọi exception và log WARN không kèm URL.
+- [ ] Hàm làm sạch chuỗi người dùng (cắt độ dài, bỏ xuống dòng, vô hiệu mention, escape markdown) và hàm format thời điểm theo `Asia/Ho_Chi_Minh`, dùng chung cho cả hai thông báo.
 - [ ] `application.yaml` thêm khóa `mattermost.webhook.*` như mục 3.
 
 **Deploy và tài liệu**
 
 - [ ] `deploy/docker-compose.yml` và `deploy/.env.example` cập nhật theo mục 3.
 - [ ] `chat/README.md`: thay mục "Còn thiếu" bằng mô tả thông báo tự động và các bước cấp webhook.
-- [ ] `README.md` gốc và `CHANGELOG.md` ghi trạng thái hiện tại của tính năng, theo quy ước không kể diễn biến trước/sau.
+- [ ] `README.md` gốc (mục Giai đoạn 2 [H]) và `CHANGELOG.md` ghi trạng thái hiện tại của tính năng, theo quy ước không kể diễn biến trước/sau.
 - [ ] Comment và `@Operation` (nếu có) bằng tiếng Anh, ngắn, không nhắc nhãn milestone.
 
-**Cần xác minh khi triển khai**
+**Cần xác minh khi chạy thật**
 
-- [ ] `@TransactionalEventListener(AFTER_COMMIT)` chỉ chạy khi `publishEvent` nằm trong transaction đang hoạt động, nếu không event bị bỏ im lặng.
-  Kiểm tra `@Transactional` của `DiagnosisService.createFromAi()`: nếu gọi AI ngoài transaction rồi mới `save`, cần publish trong phạm vi transaction của `save` hoặc đặt `fallbackExecution = true`.
-- [ ] Executor `mattermostNotifyExecutor` dùng handler bỏ task khi tràn queue (`DiscardPolicy` hoặc handler có log WARN).
-  `AbortPolicy` mặc định ném `TaskRejectedException` ở luồng gọi, vi phạm bất biến ở mục 7.
-- [ ] Làm sạch chuỗi người dùng: quyết định có vô hiệu hóa cả markdown/link chèn qua `reportedBy`, mã thửa, giống lúa hay chỉ mention.
-- [ ] Xác nhận vị trí `save` trong `createFromAi()` (nằm sau `AiDiagnosisClient`, có Resilience4j) để publish event đúng chỗ, không phát khi AI lỗi hoặc rơi vào fallback.
+- [ ] `MM_SERVICESETTINGS_ENABLEINCOMINGWEBHOOKS=true` có hiệu lực dù `config.json` nằm trong bind mount `deploy/data/mattermost/config/` (biến môi trường ghi đè file; xác nhận mục Incoming Webhooks hiện trong UI).
+- [ ] Mention và markdown trong `reportedBy`, mã thửa, giống lúa thật sự bị vô hiệu trên Mattermost (thử một báo cáo có `@channel` và `[x](http://...)` trong tên thửa).
 
 ## 5. Các phần chưa đạt được
 
 - Thông báo khi chẩn đoán được duyệt, bị từ chối hoặc đã ghi nhận xử lý.
 - Deep link từ thông báo sang màn hình báo cáo (chờ frontend có routing).
-- Tự động tạo webhook lúc dựng compose (ví dụ qua `mmctl` hoặc REST API của Mattermost).
+- Tự động tạo webhook lúc dựng compose.
+  `mattermost-bootstrap` đã có admin token và gọi được REST API tạo webhook, nhưng khóa sinh ra phải đến được `backend` đã khởi động từ trước (qua file dùng chung hoặc khởi động lại `backend`), nên hiện giữ thao tác tay.
 - Retry, hàng đợi bền vững hoặc outbox cho thông báo bị lỡ.
 - Định tuyến thông báo theo channel khác nhau cho từng loại sự kiện.
 
@@ -143,12 +169,12 @@ mattermost:
 **Luồng vận hành**
 
 ```
-1. Nông dân  POST /crop-seasons/{id}/disease-reports (ảnh)
+1. Nông dân  POST /api/v1/crop-seasons/{id}/disease-reports (ảnh)
       └► DiseaseReportService.create() lưu DB, publish event
             └► commit xong → listener chạy nền → POST webhook
                   └► Mattermost: "Báo cáo sâu bệnh mới"
 
-2. Kỹ sư  POST /disease-reports/{id}/diagnosis/ai (hoặc nhập tay)
+2. Kỹ sư  POST /api/v1/disease-reports/{id}/diagnosis/ai (hoặc nhập tay)
       └► gọi AI, lưu Diagnosis PENDING, publish event
             └► commit xong → listener chạy nền → POST webhook
                   └► Mattermost: "Chẩn đoán chờ duyệt"
@@ -159,6 +185,7 @@ mattermost:
 
 - Chẩn đoán không tự chạy khi có báo cáo; bước 2 do kỹ sư kích hoạt, nên thông báo "chẩn đoán chờ duyệt" chỉ có sau khi có người gọi.
 - Ở `createFromAi()`, thông báo đi sau commit nên đến sau khi AI xử lý xong, tối đa theo `ai.service.read-timeout-ms`.
+- Gửi lại báo cáo với `Idempotency-Key` đã dùng không sinh thông báo thứ hai.
 
 **Độ tin cậy của thông báo**
 
@@ -181,13 +208,15 @@ mattermost:
 
 - Một channel cho mọi sự kiện, không định tuyến theo thửa hoặc kỹ sư phụ trách.
 - Quyền xem thông báo do thành viên channel Mattermost quyết định, không đồng bộ với role FARMER/ENGINEER/ADMIN của Backend.
-  Thông báo có tên người báo cáo và mã thửa nên cần kiểm soát thành viên channel.
+- `Kỹ sư nông nghiệp` là channel public: mọi tài khoản trong team `dx-farm` tự tham gia và đọc được tên người báo cáo, mã thửa.
+  Muốn giới hạn phải chuyển channel sang private và thêm thành viên thủ công, hoặc tạo channel private riêng cho webhook.
 - Cấp webhook là thao tác tay; môi trường mới chưa cấu hình thì tính năng ở trạng thái tắt.
 
 ## 7. Bất biến
 
 - Không thay đổi quyền FARMER/ENGINEER/ADMIN, state machine duyệt, kiểm tra khoảng liều hay khóa PHI.
 - Luồng tạo báo cáo/chẩn đoán thành công hay thất bại không phụ thuộc vào Mattermost.
+- Mỗi báo cáo mới và mỗi chẩn đoán được lưu sinh đúng một event; request lặp theo `Idempotency-Key` không sinh event.
 - Không log, không trả về response và không commit Webhook URL thật.
 - Không thêm dependency mới vào `pom.xml`.
 - Mattermost vẫn dùng tài khoản riêng, không nối SSO.
@@ -195,7 +224,7 @@ mattermost:
 ## 8. Definition of done
 
 - Toàn bộ hạng mục ở mục 4 hoàn tất.
-- `./mvnw compile` pass và diff đã được đọc lại.
+- `./mvnw compile` (chạy trong `backend/DX-Farm`) pass và diff đã được đọc lại.
 - Khi `MATTERMOST_WEBHOOK_URL` rỗng, Backend khởi động và tạo báo cáo/chẩn đoán bình thường, không gọi Mattermost.
-- Khi URL hợp lệ, tạo báo cáo mới và chẩn đoán chờ duyệt đều sinh đúng một thông báo vào channel đã chọn (kiểm tra thủ công khi người dùng chạy stack).
+- Khi URL hợp lệ, tạo báo cáo mới và chẩn đoán chờ duyệt (cả nhập tay lẫn qua AI) đều sinh đúng một thông báo vào channel `Kỹ sư nông nghiệp`; gửi lại báo cáo cùng `Idempotency-Key` không sinh thêm (kiểm tra thủ công khi người dùng chạy stack).
 - Khi Mattermost tắt hoặc URL sai, request tạo báo cáo/chẩn đoán vẫn trả thành công và log có đúng một dòng WARN không chứa URL.

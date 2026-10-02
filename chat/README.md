@@ -47,4 +47,4 @@ Ghi vào [`LICENSES.md`](../LICENSES.md) đúng caveat này để minh bạch kh
 
 ## Còn thiếu
 
-- Chưa tích hợp thông báo tự động (ví dụ: có `DiseaseReport` mới thì post vào channel Mattermost) — nằm ngoài phạm vi "chạy thật trong docker-compose" của lượt này.
+- Thông báo tự động từ Backend vào channel `Kỹ sư nông nghiệp` (báo cáo sâu bệnh mới, chẩn đoán chờ duyệt) qua Incoming Webhook: kế hoạch ở [`development/docs/MATTERMOST_WEBHOOK_NOTIFICATION_PLAN.md`](../development/docs/MATTERMOST_WEBHOOK_NOTIFICATION_PLAN.md), chưa triển khai.

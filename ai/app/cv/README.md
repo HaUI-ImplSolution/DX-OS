@@ -68,7 +68,7 @@ Ví dụ kết quả:
 - Model được nạp một lần khi FastAPI khởi động, lưu tại `app.state.plant_model` và giải phóng khi service dừng.
 - Weights phải có sẵn tại `CV_WEIGHTS_PATH`; service không tự tải checkpoint. Khi chạy Compose, `best.pt` được bind-mount read-only.
 - `CV_DEVICE=auto` ưu tiên CUDA khi có GPU, nếu không chạy CPU. Có thể đặt rõ `cpu` hoặc `cuda`.
-- Checkpoint phải có SHA-256, task `detect` và thứ tự class khớp model profile/class contract thì mới được nạp.
+- Checkpoint phải khớp `CV_WEIGHTS_SHA256`, task `detect` và thứ tự class trong class contract thì mới được nạp.
 - Confidence nằm trong khoảng `0–1`. Workflow xem confidence thấp hơn `WORKFLOW_CONFIDENCE_THRESHOLD` — hiện là `0.70` — là chưa đủ tin cậy và yêu cầu chụp lại ảnh trước khi truy vấn Backend facts, RAG hoặc LLM.
 - API giới hạn tệp upload là ảnh và tối đa 10 MiB. Ảnh quá nhỏ, thiếu độ nét, không đọc được hoặc output model không hợp lệ sẽ bị từ chối.
 

@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     embedding_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 
     cv_weights_path: Path = AI_ROOT / "weights" / "best.pt"
+    cv_weights_sha256: str | None = None
     cv_class_contract_path: Path = (
         AI_ROOT.parent / "data" / "structured" / "class_contract.json"
     )

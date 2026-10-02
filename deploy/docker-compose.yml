@@ -116,6 +116,7 @@ services:
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:?}
       OLLAMA_MODEL: ${OLLAMA_MODEL:?}
       CV_DEVICE: ${AI_CV_DEVICE:?}
+      CV_WEIGHTS_SHA256: ${AI_CV_WEIGHTS_SHA256:?}
       LOG_LEVEL: ${AI_LOG_LEVEL:?}
     volumes:
       - ${AI_DATA_DIR:?}:/data:ro

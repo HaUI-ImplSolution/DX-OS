@@ -190,6 +190,9 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 - Đưa checkpoint YOLOv8n đã xác thực vào `ai/weights/best.pt` để clone mới có thể chạy Compose mà không phải chép model thủ công; vẫn kiểm tra SHA-256 trước khi nạp.
 - `AI_CV_WEIGHTS_PATH` cho phép override đường dẫn theo máy. Bind mount không tự tạo thư mục `best.pt` khi source bị thiếu, nên Compose dừng với lỗi cấu hình rõ ràng.
+- Công khai hồ sơ `YOLOv8n-RiceLeafBD` 3.0.0: thêm model card, toàn văn AGPL-3.0, nguồn
+  train, attribution RiceLeafDiseaseBD Version 3, checksum và giới hạn đánh giá; rà license
+  dependency AI trực tiếp và ghi nhận Ultralytics/PyMuPDF theo AGPL-3.0.
 
 ### 2026-09-30
 

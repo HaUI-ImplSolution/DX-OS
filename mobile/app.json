@@ -24,11 +24,6 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "extra": {
-      "eas": {
-        "projectId": "706312ae-a859-4083-a5f7-c358a6f2910a"
-      }
-    },
     "plugins": [
       "expo-router",
       "expo-secure-store",
@@ -41,7 +36,6 @@
           "microphonePermission": false
         }
       ]
-    ],
-    "owner": "d.khanh"
+    ]
   }
 }

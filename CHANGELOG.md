@@ -11,6 +11,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 - Lỗi kết nối AI và circuit breaker mở được ánh xạ thành `HTTP 503` với thông báo ổn định cho người dùng, thay vì rơi vào handler `500 Internal server error`; frontend hiển thị thông báo này và tự cuộn tới banner lỗi.
 
+**Đã xong — Jackson 3:**
+
+- `RestAuthenticationEntryPoint`, `RestAccessDeniedHandler` và `AiDiagnosisClient` dùng `tools.jackson.databind.ObjectMapper` do Spring cung cấp thay vì tự khởi tạo.
+
 **Đã xong — Thông báo Mattermost qua Incoming Webhook:**
 
 - `DiseaseReportService.create()` publish `DiseaseReportCreatedEvent` sau khi lưu báo cáo mới; `DiagnosisService.create()` và `createFromAi()` publish `DiagnosisPendingEvent` sau khi lưu chẩn đoán `PENDING`.

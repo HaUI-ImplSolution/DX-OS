@@ -49,7 +49,7 @@ Ghi vào [`LICENSES.md`](../LICENSES.md) đúng caveat này để minh bạch kh
 
 Backend post vào channel `Kỹ sư nông nghiệp` qua Incoming Webhook khi có:
 
-- **Báo cáo sâu bệnh mới**: mã báo cáo, mã thửa, giống lúa, người báo cáo, thời điểm báo cáo.
+- **Báo cáo sâu bệnh mới**: mã báo cáo, mã thửa, giống lúa, người báo cáo, thời điểm báo cáo và ảnh báo cáo.
 - **Chẩn đoán chờ duyệt** (nhập tay hoặc qua AI): mã báo cáo, mã thửa, bệnh, độ tin cậy, có hay không có phác đồ.
   Chẩn đoán không có phác đồ ghi "Không có phác đồ — cần kỹ sư xem xét".
 
@@ -62,12 +62,12 @@ Cách hoạt động:
 - Thông báo báo cáo mới kèm ảnh khi `MATTERMOST_IMAGE_BASE_URL` trỏ tới địa chỉ backend mà trình duyệt người xem truy cập được (ví dụ `http://localhost:8081`); để trống thì không kèm ảnh.
 - Tên người báo cáo, mã thửa, giống lúa và tên bệnh được cắt tối đa 100 ký tự, bỏ xuống dòng và vô hiệu mention, link, markdown.
   Thời điểm hiển thị theo múi giờ `Asia/Ho_Chi_Minh`.
-- Thông báo không kèm deep link; kỹ sư tìm báo cáo trong web app theo mã thửa và mã báo cáo.
+- Thông báo không kèm deep link; kỹ sư tìm báo cáo trong web app theo mã thửa và mã báo cáo. Hướng bổ sung deep link và danh sách chờ xử lý nằm ở mục 9 của tài liệu thiết kế.
 
 ### Cấp webhook (một lần cho mỗi môi trường)
 
 1. Đăng nhập Mattermost bằng tài khoản System Admin.
-2. Vào Integrations → Incoming Webhooks → Add Incoming Webhook, chọn channel `Kỹ sư nông nghiệp` trong team `DX-Farm HTX`.
+2. Vào Integrations → Incoming Webhooks → Add Incoming Webhook, chọn channel `Kỹ sư nông nghiệp` trong team `DX-Farm HTX`, bật **Lock to this channel** để webhook chỉ đăng được vào channel đó.
 3. Sao chép URL, đổi host `localhost:<cổng>` thành `mattermost:8065` (Backend gọi qua mạng nội bộ của compose), ví dụ `http://mattermost:8065/hooks/<key>`.
 4. Điền vào `MATTERMOST_WEBHOOK_URL` trong `deploy/.env`, rồi chạy lại service `backend`: `docker compose up -d backend`.
 

@@ -130,6 +130,16 @@ curl http://localhost:8000/api/v1/disease/health
 
 Checkpoint CV chuẩn nằm tại `ai/weights/best.pt` và có SHA-256 `573db0871f39396f2bbec5e6aa5988d36b79b13e01cb00f03eee29b32a12c60b`. Compose bind-mount file này ở chế độ read-only; `AI_CV_WEIGHTS_PATH` chỉ cần đổi khi máy dùng đường dẫn khác. File thay thế phải đúng checksum trên, nếu không AI chủ động từ chối khởi động. Volume `ai_weights` chỉ lưu cache embedding. Nếu đường dẫn override không tồn tại, Compose báo lỗi và không tạo thư mục `best.pt` trên host.
 
+## Script kiểm tra
+
+Chạy từ thư mục `ai/`:
+
+| Lệnh | Mục đích |
+|---|---|
+| `python -m scripts.check_backend_client` | Kiểm tra client gọi Backend bằng mock: retry giới hạn, không retry khi HTTP 401, đọc khoảng liều `dose_min`/`dose_max` |
+| `python -m scripts.check_diagnose_contract` | Kiểm tra luồng `/diagnose` chạy theo thứ tự CV, Backend, RAG; response đúng contract và phần diễn đạt không chứa số liệu tự sinh |
+| `python -m scripts.check_rag_access_boundary` | Xác nhận việc ghi RAG nằm ngoài runtime FastAPI |
+
 ## Giới hạn vận hành
 
 - CV chỉ nhận diện 5 lớp bệnh lá lúa đã huấn luyện; kết quả là tín hiệu chẩn đoán, không phải quyết định điều trị.

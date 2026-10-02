@@ -64,6 +64,11 @@ mattermost:
   db:
     # Mật khẩu role Postgres riêng của Mattermost. Xem MattermostDatabaseSeeder.
     password: ${MATTERMOST_DB_PASSWORD:mattermost_demo}
+  webhook:
+    # Empty disables notifications. Internal hostname, e.g. http://mattermost:8065/hooks/<key>.
+    url: ${MATTERMOST_WEBHOOK_URL:}
+    connect-timeout-ms: ${MATTERMOST_WEBHOOK_CONNECT_TIMEOUT_MS:2000}
+    read-timeout-ms: ${MATTERMOST_WEBHOOK_READ_TIMEOUT_MS:3000}
 
 ai:
   service:

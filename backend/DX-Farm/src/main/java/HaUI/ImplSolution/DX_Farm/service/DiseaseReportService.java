@@ -2,6 +2,7 @@ package HaUI.ImplSolution.DX_Farm.service;
 
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisResponse;
 import HaUI.ImplSolution.DX_Farm.dto.DiseaseReportResponse;
+import HaUI.ImplSolution.DX_Farm.event.DiseaseReportCreatedEvent;
 import HaUI.ImplSolution.DX_Farm.exception.InvalidStateException;
 import HaUI.ImplSolution.DX_Farm.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.DX_Farm.model.ApprovalStatus;
@@ -13,6 +14,7 @@ import HaUI.ImplSolution.DX_Farm.repository.DiagnosisRepository;
 import HaUI.ImplSolution.DX_Farm.repository.DiseaseReportRepository;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,15 +29,18 @@ public class DiseaseReportService {
   private final DiagnosisRepository diagnosisRepository;
   private final FileStorageService fileStorageService;
   private final CurrentUserService currentUserService;
+  private final ApplicationEventPublisher eventPublisher;
 
   public DiseaseReportService(DiseaseReportRepository diseaseReportRepository,
       CropSeasonRepository cropSeasonRepository, DiagnosisRepository diagnosisRepository,
-      FileStorageService fileStorageService, CurrentUserService currentUserService) {
+      FileStorageService fileStorageService, CurrentUserService currentUserService,
+      ApplicationEventPublisher eventPublisher) {
     this.diseaseReportRepository = diseaseReportRepository;
     this.cropSeasonRepository = cropSeasonRepository;
     this.diagnosisRepository = diagnosisRepository;
     this.fileStorageService = fileStorageService;
     this.currentUserService = currentUserService;
+    this.eventPublisher = eventPublisher;
   }
 
   public List<DiseaseReportResponse> listByCropSeason(Long cropSeasonId) {
@@ -66,15 +71,19 @@ public class DiseaseReportService {
     String imageRef = fileStorageService.store(image);
     DiseaseReport report = DiseaseReport.builder().cropSeason(season).imageRef(imageRef)
         .reportedBy(reporter).clientRequestId(clientRequestId).build();
+    DiseaseReport saved;
     try {
-      return toResponse(diseaseReportRepository.saveAndFlush(report),
-          currentUserService.isFarmer());
+      saved = diseaseReportRepository.saveAndFlush(report);
     } catch (DataIntegrityViolationException e) {
       if (clientRequestId == null) {
         throw e;
       }
       throw new InvalidStateException("Idempotency-Key is already being processed");
     }
+    eventPublisher
+        .publishEvent(new DiseaseReportCreatedEvent(saved.getId(), season.getParcel().getCode(),
+            season.getRiceVariety(), saved.getReportedBy(), saved.getReportedAt()));
+    return toResponse(saved, currentUserService.isFarmer());
   }
 
   private static DiseaseReport requireSameRequester(DiseaseReport report, Long cropSeasonId,

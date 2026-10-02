@@ -32,6 +32,7 @@ Hai service tách biệt, giao tiếp qua HTTP; các client (web, mobile) gọi 
 - **Mobile (Expo/React Native)** — client dành riêng cho FARMER: đăng nhập Keycloak (PKCE), xem thửa/vụ/báo cáo, chụp và gửi ảnh sâu bệnh, gửi lại tự động khi mất mạng.
   Chỉ gọi API của Backend, không truy cập trực tiếp dịch vụ nào khác.
 - **Giao tiếp** — hai service gọi nhau qua HTTP với service API key riêng cho từng chiều; AI không có credential truy cập Backend DB.
+- **Thông báo** — Backend post một chiều sang Mattermost qua Incoming Webhook (báo cáo mới, chẩn đoán chờ duyệt); đây là kênh phụ trợ best-effort, dữ liệu và trạng thái duyệt vẫn nằm trong Backend.
 
 ## Nguyên tắc kiến trúc (bất biến qua mọi giai đoạn)
 

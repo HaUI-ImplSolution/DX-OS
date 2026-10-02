@@ -4,8 +4,6 @@ import HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseRequest;
 import HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseResponse;
 import HaUI.ImplSolution.DX_Farm.exception.AiServiceException;
 import HaUI.ImplSolution.DX_Farm.exception.AiTriageException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import java.net.http.HttpClient;
 import java.time.Duration;
@@ -17,6 +15,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 // Gọi inference contract POST /api/v1/diagnose của AI Service.
 // Chưa được gọi từ flow nào - nối vào DiseaseReportService ở P2-4.

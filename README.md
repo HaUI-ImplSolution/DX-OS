@@ -166,7 +166,6 @@ Chi tiết thay đổi theo từng module xem tại [`CHANGELOG.md`](./CHANGELOG
 ```bash
 cd deploy
 cp .env.example .env      # điền mọi biến đang để trống trong .env (bắt buộc)
-# Đặt checkpoint CV `best.pt` vào development/.local/ (hoặc đặt AI_CV_WEIGHTS_PATH trong .env); file không nằm trong Git
 docker compose up -d --build
 ```
 

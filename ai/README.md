@@ -72,6 +72,7 @@ Cấu hình Docker Compose nằm tại [`deploy/.env.example`](../deploy/.env.ex
 | `EMBEDDING_MODEL` | Model embedding dùng đồng nhất cho ingest và retrieval |
 | `CV_DEVICE` | `auto`, `cpu` hoặc `cuda` |
 | `CV_WEIGHTS_PATH` | Đường dẫn checkpoint `best.pt` (mặc định `ai/weights/best.pt`); service không tự tải |
+| `AI_CV_WEIGHTS_PATH` | Đường dẫn phía host mà Compose bind-mount; mặc định dùng checkpoint chuẩn trong repo |
 
 Hai service key phải được cấu hình và khớp theo từng chiều. Khi key đầu vào AI để trống, `/api/v1/diagnose` trả `503` theo cơ chế fail-closed.
 
@@ -127,7 +128,7 @@ Kiểm tra model sau khi service khởi động:
 curl http://localhost:8000/api/v1/disease/health
 ```
 
-Checkpoint CV `best.pt` phải có sẵn trước khi chạy: Compose bind-mount read-only từ `AI_CV_WEIGHTS_PATH` (mặc định `development/.local/best.pt`, file này không nằm trong Git). Volume `ai_weights` chỉ lưu cache embedding.
+Checkpoint CV chuẩn nằm tại `ai/weights/best.pt` và có SHA-256 `573db0871f39396f2bbec5e6aa5988d36b79b13e01cb00f03eee29b32a12c60b`. Compose bind-mount file này ở chế độ read-only; `AI_CV_WEIGHTS_PATH` chỉ cần đổi khi máy dùng đường dẫn khác. File thay thế phải đúng checksum trên, nếu không AI chủ động từ chối khởi động. Volume `ai_weights` chỉ lưu cache embedding. Nếu đường dẫn override không tồn tại, Compose báo lỗi và không tạo thư mục `best.pt` trên host.
 
 ## Giới hạn vận hành
 

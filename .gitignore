@@ -84,3 +84,9 @@ Thumbs.db
 # Local codebase analysis artifacts
 .ua/
 .local/
+
+# The validated rice-leaf checkpoint is a runtime artifact shared by every clone.
+# Keep all other model weights local.
+!ai/weights/
+ai/weights/*
+!ai/weights/best.pt

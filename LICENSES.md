@@ -1,8 +1,7 @@
 # Rà soát license thành phần (PoF — tiêu chí loại trừ)
 
 Tiêu chí PoF của OLP yêu cầu **mọi thành phần trong stack phải dùng license OSI-approved** (xem [danh sách OSI](https://opensource.org/licenses)).
-Bảng dưới liệt kê các thành phần cấp cao và dependency trực tiếp đang thực sự dùng trong repo
-(không tính thành phần đã comment-out/chưa dùng), license và tình trạng OSI-approved.
+Bảng dưới liệt kê từng thành phần đang thực sự chạy trong repo (không tính thành phần đã comment-out/chưa dùng), license, và tình trạng OSI-approved.
 
 ## Backend (`backend/DX-Farm`, Maven)
 

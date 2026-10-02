@@ -56,7 +56,7 @@ Luồng: nông dân báo bệnh bằng ảnh → CV chẩn đoán → tra cứu 
 - [x] M5 — Kỹ sư Approve/Reject trong Backend; AI chỉ trả recommendation và không tự quản lý trạng thái duyệt.
 - [x] M6 — APPLIED là bước xác nhận riêng, tạo snapshot `TreatmentApplication`, tính `harvest_locked_until` từ thời điểm phun và không cho lần ghi sau rút ngắn khoá PHI.
 
-Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot (API nghiệp vụ, duyệt, poka-yoke), AI Service Python riêng (vision-api EfficientNet-B4 + LangGraph điều phối + LLM nhỏ Qwen2.5-1.5B qua Ollama) gọi qua HTTP.
+Ngăn xếp tối thiểu cho giai đoạn này: PostgreSQL, backend Spring Boot (API nghiệp vụ, duyệt, poka-yoke), AI Service Python riêng (vision-api YOLOv8n + LangGraph điều phối + LLM nhỏ Qwen2.5-1.5B qua Ollama) gọi qua HTTP.
 Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
 
 **Phase 0 đã nối end-to-end qua contract Backend ↔ AI:**
@@ -65,7 +65,7 @@ Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
 
 #### Tiến độ AI Service
 
-- [x] Vision API chuẩn hóa `disease_code`, confidence và metadata model cho 38 lớp bệnh.
+- [x] Vision API chuẩn hóa `disease_code`, confidence và metadata model cho 6 điều kiện lúa: 5 lớp detection và một mã healthy.
 - [x] Backend REST client chỉ đọc lấy structured facts; AI không truy cập trực tiếp Backend DB.
 - [x] RAG dùng AI Vector DB riêng với runtime read-only và job ingest có credential ghi riêng.
 - [x] LangGraph điều phối CV → structured facts → RAG → recommendation theo contract stateless `POST /api/v1/diagnose`.
@@ -122,7 +122,7 @@ Chỉ có hai cơ chế seed, không thêm cơ chế thứ ba:
 - Backend không đọc `data/` lúc runtime; `data.sql` chạy idempotent mỗi lần start (`ON CONFLICT` trên khoá duy nhất của DB).
 
 
-Dữ liệu demo cũ do AI ghi trực tiếp trước khi tách DB (`disease_reports`, `diagnoses`, `treatment_applications`, `workflow_cases`/`workflow_events`) coi là dữ liệu demo/test, dọn bằng [`deploy/sql/p3-4-legacy-ai-data-cleanup.sql`](./deploy/sql/p3-4-legacy-ai-data-cleanup.sql) (P3-4, chạy một lần thủ công).
+Dữ liệu demo cũ do AI ghi trực tiếp trước khi tách DB (`disease_reports`, `diagnoses`, `treatment_applications`, `workflow_cases`/`workflow_events`) là dữ liệu demo/test, không được giữ lại.
 
 ## Điểm cần lưu ý cho tiêu chí PoF (50/100 điểm, mang tính loại trừ)
 
@@ -142,29 +142,31 @@ Dữ liệu demo cũ do AI ghi trực tiếp trước khi tách DB (`disease_rep
 - [x] Quyết định dứt khoát về n8n (giữ/bỏ) vì lý do license — đã bỏ, xem `LICENSES.md`
 - [x] Schema operational + structured knowledge (entity, field bắt buộc)
 - [x] Contract `vision-api` (request/response JSON)
-- [x] Contract giữa Backend Spring Boot và AI Service Python đã chốt: REST nội bộ, service API key hai chiều, timeout/retry giới hạn và `dose_amount` thống nhất.
+- [x] Contract giữa Backend Spring Boot và AI Service Python đã chốt: REST nội bộ, service API key hai chiều, timeout/retry giới hạn và khoảng liều `dose_min`/`dose_max` thống nhất.
   Contract hiện hành được mô tả tại [`AI_EVENT_SCHEMA_README.md`](./development/docs/legacy_docs/AI_EVENT_SCHEMA_README.md) và khóa bằng DTO/schema trong code.
 - [x] Thời điểm PHI bắt đầu: khi `TreatmentApplication = APPLIED` (không phải khi Approve)
 - [x] Cấu trúc monorepo và quyền sở hữu từng thư mục/module
 - [x] Chính sách repo Private trong lúc phát triển, thời điểm public trước khi nộp bài
 
-## Trạng thái hiện tại (cập nhật 2026-09-30)
+## Trạng thái hiện tại (cập nhật 2026-10-01)
 
 Backend Spring Boot sở hữu dữ liệu nghiệp vụ, structured knowledge và toàn bộ vòng đời phê duyệt; đồng thời cung cấp internal API chỉ đọc cho AI.
 AI Service hoạt động stateless: kết hợp CV, structured facts từ Backend và RAG evidence, sau đó trả recommendation để Backend kiểm tra và lưu.
 AI Vector DB đã tách khỏi Backend DB; runtime dùng role chỉ đọc, còn job ingest dùng role đọc/ghi riêng.
 Ba phase tách AI/Backend đã hoàn thành; trạng thái cuối được phản ánh trực tiếp trong code, README và CHANGELOG.
 Frontend, Keycloak SSO, Superset, Mattermost và portal tiếp tục dùng chung stack Docker Compose.
+Keycloak không cố định hostname nên web (`localhost`) và điện thoại (IP LAN) đăng nhập cùng lúc mà không cần đổi `deploy/.env`.
 Bản mobile Expo cho FARMER đã có luồng đầu-cuối (đăng nhập, xem thửa/vụ/báo cáo, chụp và gửi, hàng đợi offline); hướng dẫn chạy và đóng gói APK ở [`mobile/README.md`](./mobile/README.md), kế hoạch ở [`development/docs/mobile/PLAN.md`](./development/docs/mobile/PLAN.md).
 Chi tiết thay đổi theo từng module xem tại [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Chạy demo Phase 0
 
-### 1. Khởi động (một lệnh duy nhất, dựng toàn bộ Postgres + Keycloak + backend + frontend + BI + chat + portal)
+### 1. Khởi động (một lệnh duy nhất, dựng toàn bộ Postgres + Keycloak + backend + AI (kèm Ollama và nạp RAG) + frontend + BI + chat + portal)
 
 ```bash
 cd deploy
-cp .env.example .env      # chỉnh lại nếu cần, đặc biệt KEYCLOAK_ADMIN_PASSWORD, SUPERSET_*
+cp .env.example .env      # điền mọi biến đang để trống trong .env (bắt buộc)
+# Đặt checkpoint CV `best.pt` vào development/.local/ (hoặc đặt AI_CV_WEIGHTS_PATH trong .env); file không nằm trong Git
 docker compose up -d --build
 ```
 
@@ -172,12 +174,12 @@ docker compose up -d --build
 
 | Service | Vào đâu | Đăng nhập |
 |---|---|---|
-| **Portal** (danh sách link các app) | http://localhost:8090 | Không cần đăng nhập — chỉ là trang link |
+| **Portal** (link tới các app, trang quản trị và tài liệu API) | http://localhost:8090 | Không cần đăng nhập — chỉ là trang link |
 | **App chính** (frontend) | http://localhost:8082 | Bấm "Đăng nhập" → redirect sang Keycloak, dùng tài khoản demo (xem [`sso/README.md`](./sso/README.md)) |
-| **Keycloak Admin Console** | http://localhost:8180/admin | `admin`/`KEYCLOAK_ADMIN_PASSWORD` trong `.env` |
+| **Keycloak Admin Console** | http://localhost:8180/admin | `KEYCLOAK_ADMIN_USERNAME`/`KEYCLOAK_ADMIN_PASSWORD` trong `.env` |
 | **Backend** (Swagger, gọi API tay) | http://localhost:8081/swagger-ui.html | Lấy access token từ Keycloak (xem `sso/README.md`), bấm "Authorize" rồi dán vào |
-| **BI Dashboard** (Superset) | http://localhost:8088 | Bấm "Sign In with keycloak", dùng tài khoản demo (xem [`sso/README.md`](./sso/README.md)) |
-| **Chat nội bộ** (Mattermost) | http://localhost:8065 | Chưa có tài khoản — bấm "Create account" để tạo (tự động thành Admin) |
+| **BI Dashboard** (Superset) | http://localhost:8088 | Bấm "Sign In with keycloak", dùng tài khoản demo (xem [`sso/README.md`](./sso/README.md)); tài khoản role `ADMIN` vào được trang quản trị `/users/list/` |
+| **Chat nội bộ** (Mattermost) | http://localhost:8065 | Tài khoản System Admin có sẵn: `MATTERMOST_ADMIN_USERNAME`/`MATTERMOST_ADMIN_PASSWORD` trong `.env`; team `DX-Farm HTX` và 3 channel đã được tạo sẵn |
 
 ### 3. Dừng lại
 
@@ -190,7 +192,8 @@ docker compose down
 
 - Quản lý tài khoản (tạo/xoá/đổi role FARMER/ENGINEER/ADMIN): qua Keycloak Admin Console.
   Xem [`sso/README.md`](./sso/README.md).
-- Dữ liệu Postgres + ảnh upload lưu ở `deploy/data/` (bind mount, không mất khi `docker compose down`; dùng `down -v` hoặc xoá thư mục nếu muốn làm sạch từ đầu).
+- Dữ liệu Postgres, Mattermost, Superset và ảnh upload lưu ở `deploy/data/` (bind mount, không mất khi `docker compose down`); model Ollama và cache embedding của AI nằm ở volume Docker.
+  Làm sạch từ đầu: `docker compose down -v` rồi xoá nội dung `deploy/data/` (một số thư mục thuộc root nên cần `sudo`).
 - Chi tiết riêng từng service: [`mobile/README.md`](./mobile/README.md) (app mobile), [`sso/README.md`](./sso/README.md) (Keycloak), [`bi/README.md`](./bi/README.md) (Superset), [`chat/README.md`](./chat/README.md) (Mattermost), [`portal/README.md`](./portal/README.md) (trang portal).
 - Sửa code + hot reload thay vì rebuild image: chạy `docker compose up -d postgres` trong `deploy` để có sẵn Postgres, rồi `./mvnw spring-boot:run` (backend) và `VITE_KEYCLOAK_URL=http://localhost:8180/realms/dxfarm npm run dev` (frontend) như bình thường. Mọi file `.env` chỉ nằm ở `deploy/`.
 

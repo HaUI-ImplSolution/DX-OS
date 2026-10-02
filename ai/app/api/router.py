@@ -16,6 +16,7 @@ from app.api.schemas import (
 from app.clients.backend_client import BackendClient, BackendClientError
 from app.core.config import Settings, get_settings
 from app.cv.contract import class_contract
+from app.cv.model_profile import MODEL_NAME, MODEL_VERSION
 from app.db.session import get_db
 from app.rag.retriever import RAGRetriever
 from app.services.inference_service import (
@@ -68,14 +69,13 @@ def backend_client(
 
 @router.get("/health", response_model=CVHealthResponse)
 def health(request: Request):
-    settings = get_settings()
     model = getattr(request.app.state, "plant_model", None)
-    device = getattr(settings, "_chosen_device", None)
+    device = getattr(model, "_dxfarm_device", None)
     return CVHealthResponse(
         status="ok" if model is not None else "not_ready",
         model_loaded=model is not None,
-        model_name=settings.cv_model_name,
-        model_version=settings.cv_model_version,
+        model_name=MODEL_NAME,
+        model_version=MODEL_VERSION,
         device=str(device) if device else None,
     )
 

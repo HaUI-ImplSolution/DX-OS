@@ -77,5 +77,5 @@ LangGraph (Apache-2.0) đảm nhận vai trò orchestrator cho luồng vision �
 
 - **SPDX header**: `LICENSE` (Apache-2.0) đã có ở gốc repo.
   SPDX header (`// SPDX-License-Identifier: Apache-2.0`) đầu mỗi file mã nguồn tự viết **chưa có** — cần một lượt riêng để chèn hàng loạt theo từng loại file (`.java`/`.ts`/`.tsx`).
-- AI Service (Python, `ai/requirements.txt`: FastAPI, PyTorch, v.v.) chưa rà.
-  Cần làm trước khi khoá kiến trúc, cùng lúc với license model checkpoint EfficientNet-B4 đang dùng.
+- AI Service (Python, `ai/requirements.txt`: FastAPI, ultralytics, v.v.) chưa rà.
+  Cần làm trước khi khoá kiến trúc, cùng lúc với license của thư viện `ultralytics` (suy luận YOLOv8n) và của checkpoint `best.pt` đang dùng.

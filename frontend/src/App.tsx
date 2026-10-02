@@ -48,6 +48,7 @@ export default function App() {
   // Token hết hạn -> api.ts đã xoá session OIDC (401), đồng bộ lại state để quay về màn đăng nhập.
   const showError = (message: string) => {
     setError(message);
+    window.scrollTo({ top: 0, behavior: "smooth" });
     if (!getCachedUser()) setUser(null);
   };
 

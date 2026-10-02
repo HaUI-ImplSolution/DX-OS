@@ -1,192 +1,38 @@
 [
   {
-    "code": "Apple___Apple_scab",
-    "name": "Bệnh ghẻ táo",
-    "description": "Đốm tròn màu xanh ô-liu đến nâu trên lá, về sau sẫm/đen; lá vàng và rụng sớm. Quả có vết nâu sần, hóa bần; nhiễm sớm có thể làm quả biến dạng và nứt."
+    "code": "Rice___healthy",
+    "name": "Lá lúa không thấy triệu chứng bệnh",
+    "description": "Ảnh thuộc lớp Healthy: không thấy triệu chứng của năm lớp bệnh trong tập ảnh; không khẳng định toàn cây hoặc ruộng hoàn toàn khỏe.",
+    "review_status": "IN_REVIEW"
   },
   {
-    "code": "Apple___Black_rot",
-    "name": "Bệnh thối đen trên táo",
-    "description": "Đốm lá tròn viền tím, tâm nâu; quả xuất hiện vết nâu với các vòng đồng tâm, thối nhưng thường còn cứng rồi hóa 'mummy'; cành có canker nâu đỏ, nứt/sunken và có thể gây chết cành."
+    "code": "Rice___Blast",
+    "name": "Bệnh đạo ôn trên lúa",
+    "description": "Bệnh nấm gây các vết hình thoi trên lá; tâm xám/trắng, rìa nâu; có thể ảnh hưởng bộ phận trên mặt đất khác.",
+    "review_status": "IN_REVIEW"
   },
   {
-    "code": "Apple___Cedar_apple_rust",
-    "name": "Bệnh gỉ sắt tuyết tùng trên táo",
-    "description": "Lá có đốm vàng rồi cam đỏ với viền đỏ; mặt trên có chấm đen nhỏ, mặt dưới có ống sinh bào tử; quả có thể có đốm xanh-nâu nông. Trên bách xù hình thành u gỗ với tua cam khi ẩm."
+    "code": "Rice___Brown_spot",
+    "name": "Bệnh đốm nâu trên lúa",
+    "description": "Bệnh nấm với đốm tròn/bầu dục trên lá, tâm nâu nhạt đến xám và rìa nâu đỏ; có thể ảnh hưởng bẹ, hạt và chất lượng hạt.",
+    "review_status": "IN_REVIEW"
   },
   {
-    "code": "Apple___healthy",
-    "name": "Không phát hiện bệnh thuộc lớp CV (healthy)",
-    "description": "Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác."
+    "code": "Rice___Leaf_smut",
+    "name": "Bệnh than lá lúa (leaf smut)",
+    "description": "Bệnh nấm tạo những đốm đen nhỏ, hơi nổi trên lá; nặng có thể làm vàng/chết đầu lá.",
+    "review_status": "IN_REVIEW"
   },
   {
-    "code": "Blueberry___healthy",
-    "name": "Không phát hiện bệnh thuộc lớp CV (healthy)",
-    "description": "Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác."
+    "code": "Rice___Tungro",
+    "name": "Bệnh tungro trên lúa",
+    "description": "Bệnh virus do rầy xanh truyền, làm lá vàng/cam, cây lùn và giảm đẻ nhánh.",
+    "review_status": "IN_REVIEW"
   },
   {
-    "code": "Cherry_(including_sour)___Powdery_mildew",
-    "name": "Bệnh phấn trắng trên anh đào",
-    "description": "Mảng trắng dạng bột trên lá non, thường bắt đầu ở mặt dưới; lá có thể quăn, nhăn và biến dạng. Quả có thể xuất hiện lớp nấm trắng gần cuống, làm giảm giá trị thương phẩm."
-  },
-  {
-    "code": "Cherry_(including_sour)___healthy",
-    "name": "Không phát hiện bệnh thuộc lớp CV (healthy)",
-    "description": "Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác."
-  },
-  {
-    "code": "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot",
-    "name": "Bệnh đốm lá Cercospora / đốm lá xám trên ngô",
-    "description": "Vết bệnh ban đầu nhỏ có quầng vàng, sau kéo dài song song gân lá thành đốm chữ nhật màu nâu nhạt–xám, đầu tù; nhiều vết có thể liên kết làm chết lá."
-  },
-  {
-    "code": "Corn_(maize)__Common_rust",
-    "name": "Bệnh gỉ sắt thông thường trên ngô",
-    "description": "Ổ bào tử kéo dài màu nâu quế đến nâu sẫm xuất hiện ở cả hai mặt lá; nặng có thể làm vàng và chết lá."
-  },
-  {
-    "code": "Corn_(maize)___Northern_Leaf_Blight",
-    "name": "Bệnh cháy lá phương Bắc trên ngô",
-    "description": "Vết dài hình thoi/cigar khoảng 2,5–15 cm, ban đầu xanh xám sau chuyển nâu vàng; bắt đầu ở lá dưới rồi lan lên trên, nặng gây cháy lá."
-  },
-  {
-    "code": "Corn_(maize)___healthy",
-    "name": "Không phát hiện bệnh thuộc lớp CV (healthy)",
-    "description": "Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác."
-  },
-  {
-    "code": "Grape___Black_rot",
-    "name": "Bệnh thối đen trên nho",
-    "description": "Lá có đốm tròn nâu đỏ, tâm nâu với các chấm đen pycnidia; quả nhiễm chuyển nâu, nhăn và hóa đen thành quả mummy."
-  },
-  {
-    "code": "Grape___Esca_(Black_Measles)",
-    "name": "Bệnh Esca (sởi đen) trên nho",
-    "description": "Lá có sọc giữa gân kiểu 'tiger stripe' đỏ/vàng rồi hoại tử; quả có chấm đen nhỏ viền nâu-tím ('black measles'); gỗ có vùng đổi màu/vòng đen và có thể chết cành."
-  },
-  {
-    "code": "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)",
-    "name": "Bệnh cháy lá / đốm lá Isariopsis trên nho",
-    "description": "Đốm nâu không đều đến góc cạnh trên lá, có thể 2–20 mm; bệnh nặng gây rụng lá sớm và giảm tích lũy đường/chất lượng quả."
-  },
-  {
-    "code": "Grape___healthy",
-    "name": "Không phát hiện bệnh thuộc lớp CV (healthy)",
-    "description": "Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác."
-  },
-  {
-    "code": "Orange___Haunglongbing_(Citrus_greening)",
-    "name": "Bệnh vàng lá gân xanh (Greening) trên cam",
-    "description": "Chồi vàng; lá loang lổ vàng-xanh không đối xứng hai bên gân giữa, lá dày/cứng; cây suy kiệt. Quả nhỏ, lệch, chín màu không đều, giảm chất lượng và rụng."
-  },
-  {
-    "code": "Peach___Bacterial_spot",
-    "name": "Bệnh đốm vi khuẩn trên đào",
-    "description": "Lá có đốm úng nước/góc cạnh rồi sẫm và hoại tử, có thể tạo lỗ thủng; lá vàng/rụng. Quả có đốm lõm, nứt/pitting; cành non có thể có tổn thương."
-  },
-  {
-    "code": "Peach___healthy",
-    "name": "Không phát hiện bệnh thuộc lớp CV (healthy)",
-    "description": "Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác."
-  },
-  {
-    "code": "Pepper,_bell___Bacterial_spot",
-    "name": "Bệnh đốm vi khuẩn trên ớt chuông",
-    "description": "Lá có đốm nâu tròn nhỏ, viền sẫm; có thể rụng lá. Quả có đốm nâu sần/corky nhô lên, làm giảm giá trị thương phẩm."
-  },
-  {
-    "code": "Pepper,_bell___healthy",
-    "name": "Không phát hiện bệnh thuộc lớp CV (healthy)",
-    "description": "Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác."
-  },
-  {
-    "code": "Potato___Early_blight",
-    "name": "Bệnh cháy lá sớm trên khoai tây",
-    "description": "Lá già xuất hiện đốm nâu có các vòng đồng tâm kiểu 'bia bắn', mô quanh vết thường vàng; nặng các đốm liên kết làm cháy lá. Củ có thể có vết lõm sẫm với mô khô bần bên dưới."
-  },
-  {
-    "code": "Potato___Late_blight",
-    "name": "Bệnh cháy lá muộn trên khoai tây",
-    "description": "Vết úng nước không đều trên lá, nhanh chuyển ô-liu/nâu; trong ẩm có lớp mốc trắng ở rìa/mặt dưới. Bệnh lan rất nhanh, làm cháy lá/thân. Củ có vết nâu cứng và thối bên trong."
-  },
-  {
-    "code": "Potato___healthy",
-    "name": "Không phát hiện bệnh thuộc lớp CV (healthy)",
-    "description": "Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác."
-  },
-  {
-    "code": "Raspberry___healthy",
-    "name": "Không phát hiện bệnh thuộc lớp CV (healthy)",
-    "description": "Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác."
-  },
-  {
-    "code": "Soybean___healthy",
-    "name": "Không phát hiện bệnh thuộc lớp CV (healthy)",
-    "description": "Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác."
-  },
-  {
-    "code": "Squash___Powdery_mildew",
-    "name": "Bệnh phấn trắng trên bí",
-    "description": "Đốm vàng nhạt ban đầu trên lá già, sau có lớp bột trắng-xám thành mảng hoặc phủ lá; lá/cành nặng có thể héo chết, quả dễ bị cháy nắng."
-  },
-  {
-    "code": "Strawberry___Leaf_scorch",
-    "name": "Bệnh cháy lá trên dâu tây",
-    "description": "Nhiều chấm tím đặc không có tâm trắng; mô quanh đốm đỏ/tím, mép lá dần nâu khô như bị cháy; cuống/thân lá có thể có vệt nâu-tím lõm."
-  },
-  {
-    "code": "Strawberry___healthy",
-    "name": "Không phát hiện bệnh thuộc lớp CV (healthy)",
-    "description": "Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác."
-  },
-  {
-    "code": "Tomato___Bacterial_spot",
-    "name": "Bệnh đốm vi khuẩn trên cà chua",
-    "description": "Lá có đốm nâu/đen nhỏ kèm quầng vàng; quả có đốm đen sần/corky lớn hơn bacterial speck, đôi khi có quầng trắng nhờn."
-  },
-  {
-    "code": "Tomato___Early_blight",
-    "name": "Bệnh cháy lá sớm trên cà chua",
-    "description": "Lá già xuất hiện đốm nâu có các vòng đồng tâm kiểu 'bia bắn', mô quanh vết thường vàng; nặng các đốm liên kết làm cháy lá. Thân/quả có thể có tổn thương sẫm, vòng đồng tâm; quả thường bị gần cuống."
-  },
-  {
-    "code": "Tomato___Late_blight",
-    "name": "Bệnh cháy lá muộn trên cà chua",
-    "description": "Vết úng nước không đều trên lá, nhanh chuyển ô-liu/nâu; trong ẩm có lớp mốc trắng ở rìa/mặt dưới. Bệnh lan rất nhanh, làm cháy lá/thân. Quả có vết nâu-ô-liu lớn, cứng rồi có thể thối."
-  },
-  {
-    "code": "Tomato___Leaf_Mold",
-    "name": "Bệnh mốc lá trên cà chua",
-    "description": "Mặt trên lá có đốm xanh nhạt–vàng không rõ viền; mặt dưới tương ứng có lớp mốc nhung ô-liu đến nâu. Lá già nhiễm trước, về sau vết liên kết, lá héo/chết."
-  },
-  {
-    "code": "Tomato___Septoria_leaf_spot",
-    "name": "Bệnh đốm lá Septoria trên cà chua",
-    "description": "Nhiều đốm nhỏ tròn (<~3 mm) có viền sẫm và tâm nâu xám; trong tâm thường thấy chấm đen pycnidia. Bắt đầu ở lá dưới và có thể làm rụng lá mạnh."
-  },
-  {
-    "code": "Tomato___Spider_mites Two-spotted_spider_mite",
-    "name": "Bệnh do nhện đỏ hai chấm trên cà chua",
-    "description": "Chấm trắng/vàng li ti (stippling) trên lá, lá vàng/đồng hóa và khô; mật số cao có mạng tơ mịn ở mặt dưới lá. Nhện rất nhỏ, thường có hai đốm sẫm."
-  },
-  {
-    "code": "Tomato___Target_Spot",
-    "name": "Bệnh đốm vòng / đốm mục tiêu trên cà chua",
-    "description": "Vết lá nâu có thể có vòng đồng tâm như bia, dễ nhầm early blight/bacterial spot; bệnh nặng gây rụng lá. Thân và quả cũng có thể có đốm, làm giảm khả năng thương phẩm."
-  },
-  {
-    "code": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
-    "name": "Bệnh virus xoăn vàng lá cà chua",
-    "description": "Lá non nhỏ, quăn lên/xuống, nhăn; vàng mép và giữa gân; cây lùn, đốt ngắn tạo dáng bụi, rụng hoa và giảm đậu quả mạnh."
-  },
-  {
-    "code": "Tomato___Tomato_mosaic_virus",
-    "name": "Bệnh virus khảm cà chua",
-    "description": "Lá có khảm xanh nhạt–xanh đậm/vàng, biến dạng/quăn, sinh trưởng còi; quả có thể loang màu, vòng vàng hoặc vết nâu lõm tùy giống và điều kiện."
-  },
-  {
-    "code": "Tomato___healthy",
-    "name": "Không phát hiện bệnh thuộc lớp CV (healthy)",
-    "description": "Lá không biểu hiện triệu chứng điển hình của các lớp bệnh mà model được huấn luyện để phân loại. Kết quả 'healthy' không chứng minh cây hoàn toàn khỏe hoặc không có sâu bệnh khác."
+    "code": "Rice___Sheath_blight",
+    "name": "Bệnh khô vằn trên lúa",
+    "description": "Bệnh nấm khởi phát trên bẹ lá với vết xanh xám ướt nước rồi lan lên lá, chuyển tâm xám trắng và viền nâu.",
+    "review_status": "IN_REVIEW"
   }
 ]

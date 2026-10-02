@@ -1,72 +1,102 @@
+import math
 from io import BytesIO
 
-import torch
-from PIL import Image
+from PIL import Image, ImageFilter, ImageStat
 
 from app.core.config import Settings, get_settings
-from app.cv.class_names import CLASS_NAMES, get_disease_name
-from app.cv.contract import canonical_code
+from app.cv.contract import class_contract, class_entry
+from app.cv.model_profile import MODEL_IMAGE_SIZE, MODEL_NAME, MODEL_VERSION
+from app.cv.policy import (
+    DETECTION_CONFIDENCE_THRESHOLD,
+    IOU_THRESHOLD,
+    MIN_IMAGE_DIMENSION,
+    MIN_SHARPNESS,
+)
+from app.cv.triage import CvTriageError
+
+SHARPNESS_KERNEL = ImageFilter.Kernel(
+    (3, 3),
+    (0, 1, 0, 1, -4, 1, 0, 1, 0),
+    scale=1,
+    offset=128,
+)
 
 
 class PlantDiseaseService:
     def __init__(self, model, settings: Settings | None = None):
         self.model = model
-        self.model.eval()
         self.settings = settings or get_settings()
-        # Retrieve device from settings (set in loader)
-        self.device = getattr(self.settings, "_chosen_device", torch.device("cpu"))
-        self.model.to(self.device)
+        self.contract = class_contract(self.settings.cv_class_contract_path)
+        self.device = getattr(model, "_dxfarm_device", self.settings.cv_device)
 
     def predict(self, image_bytes: bytes) -> dict:
         try:
-            image = Image.open(BytesIO(image_bytes)).convert("RGB")
+            image = Image.open(BytesIO(image_bytes))
+            image.load()
+            image = image.convert("RGB")
         except (OSError, ValueError) as exc:
             raise ValueError("Invalid image data") from exc
 
-        # Lazy import for preprocessing
-        from app.cv.preprocessor import prepare_input_image
+        width, height = image.size
+        minimum = MIN_IMAGE_DIMENSION
+        if width < minimum or height < minimum:
+            raise CvTriageError(
+                f"Ảnh quá nhỏ ({width}x{height}px). Vui lòng chụp lại ảnh lá lúa "
+                f"rõ nét, mỗi chiều tối thiểu {minimum}px."
+            )
 
-        image = prepare_input_image(image, img_size=self.settings.cv_image_size)
-        image_tensor = self._preprocess(image).unsqueeze(0).to(self.device)
+        grayscale = image.convert("L")
+        edges = grayscale.filter(SHARPNESS_KERNEL).crop((1, 1, width - 1, height - 1))
+        sharpness = float(ImageStat.Stat(edges).var[0])
+        if sharpness < MIN_SHARPNESS:
+            raise CvTriageError(
+                "Ảnh có dấu hiệu bị mờ hoặc thiếu chi tiết. "
+                "Vui lòng chụp lại ảnh lá lúa rõ nét hơn."
+            )
 
-        import time
-
-        start = time.time()
-        with torch.no_grad():
-            output = self.model(image_tensor)
-        inference_time_ms = (time.time() - start) * 1000
-
-        if output.shape != (1, len(CLASS_NAMES)) or not torch.isfinite(output).all():
+        results = self.model.predict(
+            source=image,
+            imgsz=MODEL_IMAGE_SIZE,
+            conf=DETECTION_CONFIDENCE_THRESHOLD,
+            iou=IOU_THRESHOLD,
+            device=self.device,
+            verbose=False,
+        )
+        if not isinstance(results, list) or len(results) != 1:
             raise ValueError("Invalid model output")
-        probabilities = torch.softmax(output, dim=1)
-        predicted_class = probabilities.argmax(dim=1).item()
-        confidence = probabilities[0, predicted_class].item()
 
-        disease_code = canonical_code(CLASS_NAMES[predicted_class])
-        disease_name = get_disease_name(disease_code)
+        boxes = getattr(results[0], "boxes", None)
+        detections: list[tuple[float, int]] = []
+        if boxes is not None and len(boxes):
+            confidences = boxes.conf.detach().cpu().tolist()
+            class_ids = boxes.cls.detach().cpu().tolist()
+            if len(confidences) != len(class_ids):
+                raise ValueError("Invalid model output")
+            for raw_confidence, raw_class_id in zip(confidences, class_ids):
+                confidence = float(raw_confidence)
+                class_id = int(raw_class_id)
+                if (
+                    not math.isfinite(confidence)
+                    or confidence < DETECTION_CONFIDENCE_THRESHOLD
+                    or raw_class_id != class_id
+                ):
+                    continue
+                class_entry(class_id, self.contract)
+                detections.append((confidence, class_id))
+
+        if detections:
+            confidence, predicted_class = max(detections, key=lambda item: item[0])
+            entry = class_entry(predicted_class, self.contract)
+        else:
+            # The five-class checkpoint has no explicit healthy/non-leaf class. A missing
+            # detection is therefore uncertain and must pass through the workflow gate.
+            confidence = 0.0
+            entry = self.contract["fallback"]
 
         return {
-            "class_id": predicted_class,
-            "class_name": CLASS_NAMES[predicted_class],
-            "disease_code": disease_code,
-            "disease_name": disease_name,
+            "disease_code": entry["disease_code"],
+            "disease_name": entry["disease_name"],
             "confidence": round(confidence, 3),
-            "model_name": self.settings.cv_model_name,
-            "model_version": self.settings.cv_model_version,
-            "inference_time_ms": inference_time_ms,
+            "model_name": MODEL_NAME,
+            "model_version": MODEL_VERSION,
         }
-
-    @staticmethod
-    def _preprocess(image: Image.Image) -> torch.Tensor:
-        from torchvision import transforms
-
-        transform = transforms.Compose(
-            [
-                transforms.ToTensor(),
-                transforms.Normalize(
-                    mean=[0.485, 0.456, 0.406],
-                    std=[0.229, 0.224, 0.225],
-                ),
-            ]
-        )
-        return transform(image)

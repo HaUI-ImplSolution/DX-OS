@@ -36,4 +36,9 @@ public class Disease {
 
   // Mô tả chi tiết về bệnh
   private String description;
+
+  // Bản ghi legacy vẫn được giữ khi lịch sử chẩn đoán còn tham chiếu.
+  @Builder.Default
+  @Column(nullable = false, columnDefinition = "boolean default true")
+  private boolean active = true;
 }

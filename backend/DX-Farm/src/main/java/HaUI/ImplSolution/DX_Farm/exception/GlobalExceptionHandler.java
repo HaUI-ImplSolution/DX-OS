@@ -38,6 +38,19 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error(ex.getMessage()));
   }
 
+  @ExceptionHandler(AiTriageException.class)
+  public ResponseEntity<ApiResponse<Void>> handleAiTriage(AiTriageException ex) {
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+        .body(ApiResponse.error(ex.getMessage()));
+  }
+
+  @ExceptionHandler(AiServiceException.class)
+  public ResponseEntity<ApiResponse<Void>> handleAiService(AiServiceException ex) {
+    log.warn("AI service unavailable: {}", ex.getMessage());
+    return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(ApiResponse
+        .error("AI diagnosis service is temporarily unavailable, please try again later"));
+  }
+
   @ExceptionHandler(PokaYokeViolationException.class)
   public ResponseEntity<ApiResponse<Map<String, Object>>> handlePokaYoke(
       PokaYokeViolationException ex) {

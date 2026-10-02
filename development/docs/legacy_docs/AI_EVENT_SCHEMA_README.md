@@ -12,7 +12,7 @@ Backend xác thực bằng header `X-Service-Api-Key`.
 AI thực hiện lần lượt CV, lấy structured facts từ Backend, truy vấn RAG và chạy LangGraph để tạo recommendation.
 Response khớp DTO `AiDiagnoseResponse`, gồm `request_id`, `cv_result`, `rag_evidence`, `structured_context` và `recommendation`.
 
-Thuốc, `dose_amount`, `phi_days` và `version` phải giữ nguyên từ structured facts do Backend cung cấp.
+Thuốc, `dose_min`/`dose_max`, `dose_unit`, `phi_days` và `version` phải giữ nguyên từ structured facts do Backend cung cấp.
 Backend kiểm tra lại rule version và lưu recommendation ở trạng thái `PENDING`.
 
 Contract thực thi được khóa bởi DTO Backend

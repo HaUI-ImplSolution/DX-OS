@@ -1,10 +1,9 @@
 """Run with ``python -m scripts.check_diagnose_contract`` from ``ai/``."""
 
 from datetime import date
-from decimal import Decimal
 
 from app.api.schemas import DiagnoseRequest
-from app.clients.backend_client import BackendClientError, DiagnosisContext, RuleFact
+from app.clients.backend_client import BackendClientError, DiagnosisContext
 from app.services.inference_service import run_stateless_diagnose
 
 
@@ -15,11 +14,11 @@ def main() -> None:
         def predict(self, _image: bytes) -> dict:
             events.append("cv")
             return {
-                "disease_code": "Tomato___Late_blight",
-                "disease_name": "Bệnh mốc sương cà chua",
+                "disease_code": "Rice___Blast",
+                "disease_name": "Bệnh đạo ôn trên lúa",
                 "confidence": 0.94,
-                "model_name": "EfficientNet-B4",
-                "model_version": "v1.0",
+                "model_name": "YOLOv8n-RiceLeafBD",
+                "model_version": "3.0.0",
             }
 
     class Backend:
@@ -27,42 +26,32 @@ def main() -> None:
             events.append("backend")
             assert kwargs == {
                 "request_id": "req-1",
-                "disease_code": "Tomato___Late_blight",
+                "disease_code": "Rice___Blast",
                 "crop_season_id": 101,
             }
             return DiagnosisContext(
                 request_id="req-1",
-                disease_code="Tomato___Late_blight",
-                disease_name="Bệnh mốc sương cà chua",
-                rules=[
-                    RuleFact(
-                        rule_id="7",
-                        pesticide="Copper 50WP",
-                        dose_min=Decimal("1.0"),
-                        dose_max=Decimal("1.5"),
-                        dose_unit="kg/ha",
-                        phi_days=7,
-                        version="v1",
-                    )
-                ],
+                disease_code="Rice___Blast",
+                disease_name="Bệnh đạo ôn trên lúa",
+                rules=[],
                 recent_treatments=[],
             )
 
     class Retriever:
         def retrieve(self, **kwargs) -> list[dict]:
             events.append("rag")
-            assert kwargs["disease_code"] == "Tomato___Late_blight"
+            assert kwargs["disease_code"] == "Rice___Blast"
             return [
                 {
-                    "content": "Bằng chứng đã được ingest.",
-                    "source_ids": ["DOC-1"],
+                    "content": "Ưu tiên biện pháp canh tác và quản lý nước hợp lý.",
+                    "source_ids": ["SRC_IRRI_BLAST"],
                     "similarity": 0.91,
                 }
             ]
 
     class Writer:
         def write(self, evidence: str) -> tuple[str, str]:
-            assert evidence == "Bằng chứng đã được ingest."
+            assert evidence == "Ưu tiên biện pháp canh tác và quản lý nước hợp lý."
             return evidence, "evidence_fallback"
 
     payload = DiagnoseRequest.model_validate(
@@ -72,11 +61,11 @@ def main() -> None:
             "image_url": "http://backend:8081/uploads/leaf.jpg",
             "field_context": {
                 "parcel_code": "P-01",
-                "crop_name": "Cà chua",
+                "crop_name": "Lúa",
                 "growth_stage": None,
                 "recent_treatments": [
                     {
-                        "pesticide_name": "Copper 50WP",
+                        "pesticide_name": "Xử lý lịch sử",
                         "applied_at": "2026-09-01T08:00:00Z",
                         "harvest_locked_until": date(2026, 9, 8),
                     }
@@ -96,19 +85,16 @@ def main() -> None:
     body = response.model_dump(mode="json")
 
     assert events == ["cv", "backend", "rag"]
-    assert body["structured_context"]["rules"][0] == {
-        "rule_id": "7",
-        "pesticide": "Copper 50WP",
-        "dose_min": 1.0,
-        "dose_max": 1.5,
-        "dose_unit": "kg/ha",
-        "phi_days": 7,
-        "version": "v1",
+    assert body["structured_context"] == {
+        "path": "review_required",
+        "rules": [],
     }
     summary = body["recommendation"]["summary"]
-    assert "Copper 50WP" in summary
-    assert "Bằng chứng đã được ingest." in summary
-    assert body["recommendation"]["selected_rule_id"] == "7"
+    assert "Ưu tiên biện pháp canh tác và quản lý nước hợp lý." in summary
+    assert body["recommendation"]["selected_rule_id"] is None
+    assert "NEWTEC" not in summary
+    assert "0.75" not in summary
+    assert "1.0 L/ha" not in summary
     assert set(body) == {
         "request_id",
         "cv_result",
@@ -121,8 +107,8 @@ def main() -> None:
         def get_diagnosis_context(self, **_kwargs) -> DiagnosisContext:
             return DiagnosisContext(
                 request_id="req-1",
-                disease_code="Tomato___Late_blight",
-                disease_name="Bệnh mốc sương cà chua",
+                disease_code="Rice___Blast",
+                disease_name="Bệnh đạo ôn trên lúa",
                 rules=[],
                 recent_treatments=[],
             )
@@ -152,11 +138,11 @@ def main() -> None:
         def predict(self, _image: bytes) -> dict:
             failed_events.append("cv")
             return {
-                "disease_code": "Tomato___Late_blight",
-                "disease_name": "Bệnh mốc sương cà chua",
+                "disease_code": "Rice___Blast",
+                "disease_name": "Bệnh đạo ôn trên lúa",
                 "confidence": 0.94,
-                "model_name": "EfficientNet-B4",
-                "model_version": "v1.0",
+                "model_name": "YOLOv8n-RiceLeafBD",
+                "model_version": "3.0.0",
             }
 
     class UnavailableBackend:

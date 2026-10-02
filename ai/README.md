@@ -27,7 +27,6 @@ Các thành phần chính:
 
 Tài liệu chi tiết theo module:
 
-- [`MODEL_CARD.md`](MODEL_CARD.md) — nguồn gốc, license, cấu hình, metrics và giới hạn của checkpoint CV
 - [`app/cv/README.md`](app/cv/README.md)
 - [`app/rag/README.md`](app/rag/README.md)
 - [`app/graph/README.md`](app/graph/README.md)

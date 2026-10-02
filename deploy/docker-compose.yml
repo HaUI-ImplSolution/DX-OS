@@ -61,6 +61,8 @@ services:
       AI_SERVICE_CONNECT_TIMEOUT_MS: ${BACKEND_TO_AI_CONNECT_TIMEOUT_MS:?}
       AI_SERVICE_READ_TIMEOUT_MS: ${BACKEND_TO_AI_READ_TIMEOUT_MS:?}
       AI_SERVICE_INBOUND_API_KEY: ${AI_TO_BACKEND_API_KEY:?}
+      MATTERMOST_WEBHOOK_URL: ${MATTERMOST_WEBHOOK_URL:-}
+      MATTERMOST_IMAGE_BASE_URL: ${MATTERMOST_IMAGE_BASE_URL:-}
     volumes:
       - ./data/uploads:/app/uploads
     ports:
@@ -256,6 +258,7 @@ services:
       MM_SQLSETTINGS_DRIVERNAME: postgres
       MM_SQLSETTINGS_DATASOURCE: "postgres://mattermost_app:${MATTERMOST_DB_PASSWORD:?}@postgres:5432/mattermost?sslmode=disable"
       MM_SERVICESETTINGS_SITEURL: "http://localhost:${MATTERMOST_HOST_PORT:?}"
+      MM_SERVICESETTINGS_ENABLEINCOMINGWEBHOOKS: "true"
     volumes: *mattermost-volumes
     ports:
       - "${MATTERMOST_HOST_PORT:?}:8065"

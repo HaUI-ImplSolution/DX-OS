@@ -67,6 +67,8 @@ mattermost:
   webhook:
     # Empty disables notifications. Internal hostname, e.g. http://mattermost:8065/hooks/<key>.
     url: ${MATTERMOST_WEBHOOK_URL:}
+    # Browser-reachable backend origin used to attach the report photo; empty omits the image.
+    image-base-url: ${MATTERMOST_IMAGE_BASE_URL:}
     connect-timeout-ms: ${MATTERMOST_WEBHOOK_CONNECT_TIMEOUT_MS:2000}
     read-timeout-ms: ${MATTERMOST_WEBHOOK_READ_TIMEOUT_MS:3000}
 

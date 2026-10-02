@@ -59,6 +59,7 @@ Cách hoạt động:
 - Best-effort, không retry: Mattermost tắt, webhook sai hoặc hàng đợi đầy thì thông báo bị bỏ, Backend chỉ ghi một dòng WARN không chứa URL.
 - Gửi lại báo cáo với `Idempotency-Key` đã dùng không sinh thông báo thứ hai.
 - `MATTERMOST_WEBHOOK_URL` rỗng thì tính năng tắt; Backend ghi một dòng lúc khởi động cho biết bật hay tắt.
+- Thông báo báo cáo mới kèm ảnh khi `MATTERMOST_IMAGE_BASE_URL` trỏ tới địa chỉ backend mà trình duyệt người xem truy cập được (ví dụ `http://localhost:8081`); để trống thì không kèm ảnh.
 - Tên người báo cáo, mã thửa, giống lúa và tên bệnh được cắt tối đa 100 ký tự, bỏ xuống dòng và vô hiệu mention, link, markdown.
   Thời điểm hiển thị theo múi giờ `Asia/Ho_Chi_Minh`.
 - Thông báo không kèm deep link; kỹ sư tìm báo cáo trong web app theo mã thửa và mã báo cáo.

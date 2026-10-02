@@ -87,13 +87,14 @@ DiagnosisService.createFromAi()──┘
 
 | Sự kiện             | Trigger                                         | Nội dung                                                                    |
 | ------------------- | ----------------------------------------------- | --------------------------------------------------------------------------- |
-| Báo cáo mới         | `DiseaseReportService.create()`                 | Mã báo cáo, mã thửa, giống lúa, người báo cáo, thời điểm báo cáo            |
+| Báo cáo mới         | `DiseaseReportService.create()`                 | Mã báo cáo, mã thửa, giống lúa, người báo cáo, thời điểm báo cáo, ảnh báo cáo |
 | Chẩn đoán chờ duyệt | `DiagnosisService.create()` và `createFromAi()` | Mã báo cáo, mã thửa, bệnh (mã + tên), độ tin cậy, có/không có `TreatmentRule` |
 
 - Định dạng: một `attachment` Mattermost (`title`, `color`, `fields`) kèm `fallback` là text thuần.
 - Độ tin cậy hiển thị dạng phần trăm (ví dụ `87%`).
 - Chẩn đoán không có `TreatmentRule` ghi rõ "Không có phác đồ — cần kỹ sư xem xét".
-- Không đưa vào thông báo: `image_url` (hostname nội bộ `backend:8081`), nội dung khuyến nghị đầy đủ, secret.
+- Thông báo báo cáo mới kèm ảnh qua `image_url` = `MATTERMOST_IMAGE_BASE_URL` + `/uploads/<imageRef>`; biến này là địa chỉ backend mà trình duyệt người xem truy cập được (ví dụ `http://localhost:8081`), rỗng thì không kèm ảnh.
+- Không đưa vào thông báo: nội dung khuyến nghị đầy đủ, secret.
 - Thời điểm format tường minh theo `ZoneId` `Asia/Ho_Chi_Minh` (ví dụ `dd/MM/yyyy HH:mm`).
 
 **Làm sạch dữ liệu người dùng**
@@ -118,7 +119,7 @@ mattermost:
 - Khóa `mattermost.webhook` đặt cạnh `mattermost.db` hiện có.
 - `MATTERMOST_WEBHOOK_URL` có dạng `http://mattermost:8065/hooks/<key>`; host phải là hostname nội bộ, không dùng `localhost`.
 - `deploy/docker-compose.yml` truyền `MATTERMOST_WEBHOOK_URL` (không bắt buộc, mặc định rỗng) cho `backend` và đặt `MM_SERVICESETTINGS_ENABLEINCOMINGWEBHOOKS: "true"` cho `mattermost`.
-- `deploy/.env.example` thêm `MATTERMOST_WEBHOOK_URL=` để trống kèm chú thích cách lấy giá trị.
+- `deploy/.env.example` thêm `MATTERMOST_WEBHOOK_URL=` để trống kèm chú thích cách lấy giá trị, và `MATTERMOST_IMAGE_BASE_URL` (mặc định `http://localhost:8081`) cho ảnh trong thông báo.
 
 **Cấp webhook (thao tác tay một lần)**
 

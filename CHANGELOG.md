@@ -14,7 +14,8 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - `MattermostNotificationListener` nhận event bằng `@TransactionalEventListener(AFTER_COMMIT)` và `@Async("mattermostNotifyExecutor")`; executor 2 thread, queue 100, tràn thì bỏ và ghi WARN.
 - `MattermostWebhookClient` (`RestClient` + timeout cấu hình được) POST một `attachment` vào webhook; lỗi chỉ ghi một dòng WARN không chứa URL, không ném lên luồng nghiệp vụ.
 - `MattermostMessageBuilder` dựng nội dung tiếng Việt; chuỗi người dùng cắt 100 ký tự, vô hiệu mention, link và markdown; thời điểm theo `Asia/Ho_Chi_Minh`.
-- Cấu hình `mattermost.webhook.url|connect-timeout-ms|read-timeout-ms` (`MATTERMOST_WEBHOOK_URL` rỗng thì tắt).
+- Cấu hình `mattermost.webhook.url|image-base-url|connect-timeout-ms|read-timeout-ms` (`MATTERMOST_WEBHOOK_URL` rỗng thì tắt).
+- Thông báo báo cáo mới kèm ảnh qua `image_url` khi `MATTERMOST_IMAGE_BASE_URL` được đặt (backend `compose` truyền biến này).
 - Không đổi endpoint, request/response hay Swagger.
 
 ### 2026-09-30

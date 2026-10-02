@@ -80,9 +80,9 @@ public class DiseaseReportService {
       }
       throw new InvalidStateException("Idempotency-Key is already being processed");
     }
-    eventPublisher
-        .publishEvent(new DiseaseReportCreatedEvent(saved.getId(), season.getParcel().getCode(),
-            season.getRiceVariety(), saved.getReportedBy(), saved.getReportedAt()));
+    eventPublisher.publishEvent(new DiseaseReportCreatedEvent(saved.getId(),
+        season.getParcel().getCode(), season.getRiceVariety(), saved.getReportedBy(),
+        saved.getReportedAt(), saved.getImageRef()));
     return toResponse(saved, currentUserService.isFarmer());
   }
 

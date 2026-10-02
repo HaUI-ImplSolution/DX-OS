@@ -4,11 +4,15 @@ import HaUI.ImplSolution.DX_Farm.event.DiagnosisPendingEvent;
 import HaUI.ImplSolution.DX_Farm.event.DiseaseReportCreatedEvent;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 // Builds Mattermost attachment payloads. User-provided strings are shortened, stripped of
@@ -24,6 +28,13 @@ public class MattermostMessageBuilder {
   private static final DateTimeFormatter TIME_FORMAT =
       DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.of("Asia/Ho_Chi_Minh"));
 
+  private final String imageBaseUrl;
+
+  public MattermostMessageBuilder(
+      @Value("${mattermost.webhook.image-base-url:}") String imageBaseUrl) {
+    this.imageBaseUrl = imageBaseUrl == null ? "" : imageBaseUrl.strip().replaceAll("/+$", "");
+  }
+
   public Map<String, Object> reportCreated(DiseaseReportCreatedEvent event) {
     String title = "Báo cáo sâu bệnh mới";
     String fallback = "%s: báo cáo #%d, thửa %s, giống %s, người báo cáo %s, lúc %s".formatted(
@@ -34,7 +45,8 @@ public class MattermostMessageBuilder {
             field("Mã thửa", markdown(event.parcelCode())),
             field("Giống lúa", markdown(event.riceVariety())),
             field("Người báo cáo", markdown(event.reportedBy())),
-            field("Thời điểm", formatTime(event.reportedAt()))));
+            field("Thời điểm", formatTime(event.reportedAt()))),
+        imageUrl(event.imageRef()));
   }
 
   public Map<String, Object> diagnosisPending(DiagnosisPendingEvent event) {
@@ -49,7 +61,15 @@ public class MattermostMessageBuilder {
         List.of(field("Mã báo cáo", "#" + event.reportId()),
             field("Mã thửa", markdown(event.parcelCode())),
             field("Bệnh", markdown(event.diseaseCode()) + " — " + markdown(event.diseaseName())),
-            field("Độ tin cậy", confidence), field("Phác đồ", rule)));
+            field("Độ tin cậy", confidence), field("Phác đồ", rule)),
+        null);
+  }
+
+  private String imageUrl(String imageRef) {
+    if (imageBaseUrl.isEmpty() || imageRef == null || imageRef.isBlank()) {
+      return null;
+    }
+    return imageBaseUrl + "/uploads/" + URLEncoder.encode(imageRef, StandardCharsets.UTF_8);
   }
 
   static String plain(String value) {
@@ -83,8 +103,15 @@ public class MattermostMessageBuilder {
   }
 
   private static Map<String, Object> payload(String fallback, String color, String title,
-      List<Map<String, Object>> fields) {
-    return Map.of("attachments",
-        List.of(Map.of("fallback", fallback, "color", color, "title", title, "fields", fields)));
+      List<Map<String, Object>> fields, String imageUrl) {
+    Map<String, Object> attachment = new LinkedHashMap<>();
+    attachment.put("fallback", fallback);
+    attachment.put("color", color);
+    attachment.put("title", title);
+    attachment.put("fields", fields);
+    if (imageUrl != null) {
+      attachment.put("image_url", imageUrl);
+    }
+    return Map.of("attachments", List.of(attachment));
   }
 }

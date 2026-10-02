@@ -15,7 +15,8 @@ Bài toán được chọn: **Agri-Carbon DX-OS** — hệ điều hành chuyể
 - `development/docs/legacy_docs/DX - Farm.docx` — thiết kế gốc "MVP Agri-Carbon DX-OS" (8 trang): phân vai tác nhân, 4 không gian HPDI, spine flow 6 bước, các lưu ý PoF/anti-hallucination/poka-yoke.
 - `development/docs/legacy_docs/DX-Farm_MVP_DeXuat_Duyet_Lead.docx` — bản đề xuất thống nhất để Lead duyệt: thu hẹp phạm vi demo, LangGraph, schema dữ liệu, khung repo.
 - `mobile/README.md` — app Expo cho nông dân: kiến trúc, chạy trên điện thoại thật, đóng gói APK; kế hoạch, đặc tả và tổng quan thay đổi (hành vi cũ/mới) ở `development/docs/mobile/`.
-- `ai/README.md` — kiến trúc, endpoint, cấu hình và cách vận hành AI Service; các README trong `ai/app/` mô tả CV, RAG và LangGraph.
+- `ai/README.md` — kiến trúc, endpoint, cấu hình và cách vận hành AI Service; các README
+  trong `ai/app/` mô tả CV, RAG và LangGraph.
 - `development/docs/legacy_docs/AI_EVENT_SCHEMA_README.md` — contract event/API giữa Backend và AI Service.
 - Chủ đề chính thức: https://vfossa.vn/tin-tuc/gioi-thieu-mo-hinh-dx-os-va-chu-de-cuoc-thi-phan-mem-nguon-mo-olp-2026-761.html
 - Giáo trình DX-OS: https://opendigitransform.gitbook.io/dx-os
@@ -130,7 +131,10 @@ Dữ liệu demo cũ do AI ghi trực tiếp trước khi tách DB (`disease_rep
 
 - Giấy phép mọi thành phần phải **OSI-approved**; đã loại Llama (không đạt chuẩn OSD), chọn Qwen2.5-1.5B-Instruct (Apache-2.0).
 - ✅ Không dùng n8n (Sustainable Use License, không OSI-approved) — LangGraph (Apache-2.0) là orchestrator.
-  Rà soát license đầy đủ từng thành phần: [`LICENSES.md`](./LICENSES.md).
+  Bảng rà soát license và các hạng mục còn thiếu: [`LICENSES.md`](./LICENSES.md).
+- Checkpoint CV, Ultralytics và PyMuPDF của AI Service được phân phối theo AGPL-3.0;
+  dataset RiceLeafDiseaseBD Version 3 theo CC BY 4.0. Xem
+  [`LICENSES.md`](./LICENSES.md) và [`ai/MODEL_LICENSE`](./ai/MODEL_LICENSE).
 - Mã nguồn tự viết: SPDX header `Apache-2.0` ở đầu mỗi file, kèm `LICENSE` toàn văn ở gốc repo.
 - Source control phải public, có web viewer.
 - Phải build/cài đặt được từ source; khuyến khích Docker.
@@ -169,7 +173,6 @@ Chi tiết thay đổi theo từng module xem tại [`CHANGELOG.md`](./CHANGELOG
 ```bash
 cd deploy
 cp .env.example .env      # điền mọi biến đang để trống trong .env (bắt buộc)
-# Đặt checkpoint CV `best.pt` vào development/.local/ (hoặc đặt AI_CV_WEIGHTS_PATH trong .env); file không nằm trong Git
 docker compose up -d --build
 ```
 

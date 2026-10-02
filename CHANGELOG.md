@@ -7,6 +7,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ### 2026-10-02
 
+**Đã xong — Xử lý khi AI Service không khả dụng:**
+
+- Lỗi kết nối AI và circuit breaker mở được ánh xạ thành `HTTP 503` với thông báo ổn định cho người dùng, thay vì rơi vào handler `500 Internal server error`; frontend hiển thị thông báo này và tự cuộn tới banner lỗi.
+
 **Đã xong — Jackson 3:**
 
 - `RestAuthenticationEntryPoint`, `RestAccessDeniedHandler` và `AiDiagnosisClient` dùng `tools.jackson.databind.ObjectMapper` do Spring cung cấp thay vì tự khởi tạo.
@@ -181,6 +185,14 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - `mobile/README.md`: chạy thử trên điện thoại thật với IP LAN, biến môi trường, tài khoản demo, kiểm tra mã nguồn.
 
 ## AI Service (Python)
+
+### 2026-10-02
+
+- Đưa checkpoint YOLOv8n đã xác thực vào `ai/weights/best.pt` để clone mới có thể chạy Compose mà không phải chép model thủ công; vẫn kiểm tra SHA-256 trước khi nạp.
+- `AI_CV_WEIGHTS_PATH` cho phép override đường dẫn theo máy. Bind mount không tự tạo thư mục `best.pt` khi source bị thiếu, nên Compose dừng với lỗi cấu hình rõ ràng.
+- Công khai hồ sơ `YOLOv8n-RiceLeafBD` 3.0.0: thêm toàn văn AGPL-3.0, nguồn train,
+  attribution RiceLeafDiseaseBD Version 3 và checksum; rà license dependency AI trực tiếp
+  và ghi nhận Ultralytics/PyMuPDF theo AGPL-3.0.
 
 ### 2026-09-30
 

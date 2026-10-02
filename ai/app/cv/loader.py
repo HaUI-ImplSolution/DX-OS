@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
 import hashlib
+import re
 from pathlib import Path
 
 import torch
 
 from app.core.config import Settings, get_settings
 from app.cv.contract import class_contract
-from app.cv.model_profile import MODEL_WEIGHTS_SHA256
 
 
 def _sha256(path: Path) -> str:
@@ -50,13 +50,17 @@ def _resolve_device(configured: str) -> str:
 
 def load_model(settings: Settings | None = None):
     settings = settings or get_settings()
+    expected_sha256 = (settings.cv_weights_sha256 or "").strip().lower()
+    if not re.fullmatch(r"[0-9a-f]{64}", expected_sha256):
+        raise ValueError("CV_WEIGHTS_SHA256 must be configured as 64 hexadecimal characters")
+
     path = settings.cv_weights_path
     if not path.is_file():
         raise ValueError(f"CV checkpoint does not exist or is not a file: {path}")
     if not path.stat().st_size:
         raise ValueError(f"CV checkpoint is empty: {path}")
-    if _sha256(path) != MODEL_WEIGHTS_SHA256:
-        raise ValueError("CV checkpoint SHA-256 does not match model profile")
+    if _sha256(path) != expected_sha256:
+        raise ValueError("CV checkpoint SHA-256 does not match CV_WEIGHTS_SHA256")
 
     # Import only after local file validation. No checkpoint is downloaded implicitly.
     from ultralytics import YOLO

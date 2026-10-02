@@ -44,6 +44,13 @@ public class GlobalExceptionHandler {
         .body(ApiResponse.error(ex.getMessage()));
   }
 
+  @ExceptionHandler(AiServiceException.class)
+  public ResponseEntity<ApiResponse<Void>> handleAiService(AiServiceException ex) {
+    log.warn("AI service unavailable: {}", ex.getMessage());
+    return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(ApiResponse
+        .error("AI diagnosis service is temporarily unavailable, please try again later"));
+  }
+
   @ExceptionHandler(PokaYokeViolationException.class)
   public ResponseEntity<ApiResponse<Map<String, Object>>> handlePokaYoke(
       PokaYokeViolationException ex) {

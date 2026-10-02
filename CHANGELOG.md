@@ -5,6 +5,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Backend (Spring Boot — `backend/DX-Farm`)
 
+### 2026-10-02
+
+- Lỗi kết nối AI và circuit breaker mở được ánh xạ thành `HTTP 503` với thông báo ổn định cho người dùng, thay vì rơi vào handler `500 Internal server error`; frontend hiển thị thông báo này và tự cuộn tới banner lỗi.
+
 ### 2026-09-30
 
 **Đã xong — Idempotency cho gửi báo cáo:**
@@ -164,6 +168,11 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - `mobile/README.md`: chạy thử trên điện thoại thật với IP LAN, biến môi trường, tài khoản demo, kiểm tra mã nguồn.
 
 ## AI Service (Python)
+
+### 2026-10-02
+
+- Đưa checkpoint YOLOv8n đã xác thực vào `ai/weights/best.pt` để clone mới có thể chạy Compose mà không phải chép model thủ công; vẫn kiểm tra SHA-256 trước khi nạp.
+- `AI_CV_WEIGHTS_PATH` cho phép override đường dẫn theo máy. Bind mount không tự tạo thư mục `best.pt` khi source bị thiếu, nên Compose dừng với lỗi cấu hình rõ ràng.
 
 ### 2026-09-30
 

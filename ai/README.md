@@ -129,6 +129,16 @@ curl http://localhost:8000/api/v1/disease/health
 
 Checkpoint CV `best.pt` phải có sẵn trước khi chạy: Compose bind-mount read-only từ `AI_CV_WEIGHTS_PATH` (mặc định `development/.local/best.pt`, file này không nằm trong Git). Volume `ai_weights` chỉ lưu cache embedding.
 
+## Script kiểm tra
+
+Chạy từ thư mục `ai/`:
+
+| Lệnh | Mục đích |
+|---|---|
+| `python -m scripts.check_backend_client` | Kiểm tra client gọi Backend bằng mock: retry giới hạn, không retry khi HTTP 401, đọc khoảng liều `dose_min`/`dose_max` |
+| `python -m scripts.check_diagnose_contract` | Kiểm tra luồng `/diagnose` chạy theo thứ tự CV, Backend, RAG; response đúng contract và phần diễn đạt không chứa số liệu tự sinh |
+| `python -m scripts.check_rag_access_boundary` | Xác nhận việc ghi RAG nằm ngoài runtime FastAPI |
+
 ## Giới hạn vận hành
 
 - CV chỉ nhận diện 5 lớp bệnh lá lúa đã huấn luyện; kết quả là tín hiệu chẩn đoán, không phải quyết định điều trị.

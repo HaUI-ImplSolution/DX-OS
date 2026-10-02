@@ -5,6 +5,18 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Backend (Spring Boot — `backend/DX-Farm`)
 
+### 2026-10-02
+
+**Đã xong — Thông báo Mattermost qua Incoming Webhook:**
+
+- `DiseaseReportService.create()` publish `DiseaseReportCreatedEvent` sau khi lưu báo cáo mới; `DiagnosisService.create()` và `createFromAi()` publish `DiagnosisPendingEvent` sau khi lưu chẩn đoán `PENDING`.
+  Báo cáo trả về từ nhánh idempotent (`Idempotency-Key` đã dùng) không publish.
+- `MattermostNotificationListener` nhận event bằng `@TransactionalEventListener(AFTER_COMMIT)` và `@Async("mattermostNotifyExecutor")`; executor 2 thread, queue 100, tràn thì bỏ và ghi WARN.
+- `MattermostWebhookClient` (`RestClient` + timeout cấu hình được) POST một `attachment` vào webhook; lỗi chỉ ghi một dòng WARN không chứa URL, không ném lên luồng nghiệp vụ.
+- `MattermostMessageBuilder` dựng nội dung tiếng Việt; chuỗi người dùng cắt 100 ký tự, vô hiệu mention, link và markdown; thời điểm theo `Asia/Ho_Chi_Minh`.
+- Cấu hình `mattermost.webhook.url|connect-timeout-ms|read-timeout-ms` (`MATTERMOST_WEBHOOK_URL` rỗng thì tắt).
+- Không đổi endpoint, request/response hay Swagger.
+
 ### 2026-09-30
 
 **Đã xong — Idempotency cho gửi báo cáo:**
@@ -284,6 +296,11 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Deploy (`deploy`)
 
+### 2026-10-02
+
+- `backend` nhận biến tuỳ chọn `MATTERMOST_WEBHOOK_URL` (mặc định rỗng); `mattermost` bật `MM_SERVICESETTINGS_ENABLEINCOMINGWEBHOOKS`.
+- `.env.example` có `MATTERMOST_WEBHOOK_URL` để trống kèm chú thích cách lấy giá trị.
+
 ### 2026-10-01
 
 - Keycloak không đặt `KC_HOSTNAME`, dùng hostname của request: web vào `localhost:8180`, điện thoại vào qua IP LAN, hai bên chạy cùng lúc.
@@ -363,6 +380,15 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - **Còn thiếu**: chưa cấu hình `MAPBOX_API_KEY` nên bản đồ chưa có nền (basemap) thật, chỉ thấy điểm trên nền trắng — cần token Mapbox miễn phí, xem `bi/README.md`.
 
 ## Kênh chat nội bộ (`chat`, Mattermost)
+
+### 2026-10-02
+
+**Đã xong — Thông báo tự động từ Backend:**
+
+- Backend post "Báo cáo sâu bệnh mới" và "Chẩn đoán chờ duyệt" vào channel `Kỹ sư nông nghiệp` qua Incoming Webhook; webhook cấp tay một lần theo `chat/README.md`.
+- Thông báo best-effort, không retry, tắt khi `MATTERMOST_WEBHOOK_URL` rỗng.
+- Một chiều: duyệt/từ chối vẫn làm trong web app; không deep link; channel public nên mọi thành viên team đọc được thông báo.
+- Mattermost vẫn dùng tài khoản riêng, không nối SSO.
 
 ### 2026-09-30
 
@@ -452,6 +478,13 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - **Còn thiếu**: SPDX header đầu mỗi file mã nguồn tự viết — việc sửa hàng loạt file, để riêng một lượt khác.
 
 ## Tài liệu (root, `development/docs`, `ai/`)
+
+### 2026-10-02
+
+**Đã xong:**
+
+- `development/docs/MATTERMOST_WEBHOOK_NOTIFICATION_PLAN.md`: thiết kế, danh sách công việc và hạn chế của thông báo Mattermost.
+- `chat/README.md` (mục thông báo tự động và cấp webhook), `README.md` gốc (Giai đoạn 2 [H], trạng thái, bảng truy cập).
 
 ### 2026-09-30
 

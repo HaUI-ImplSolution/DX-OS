@@ -2,7 +2,7 @@
 
 Thư mục riêng ngang hàng `backend/`, `frontend/`, `ai/`, `bi/` — chỉ chứa ghi chú/quyết định, không có mã nguồn tự viết (Mattermost chạy bằng image chính thức, không build lại).
 Dựng cho tiêu chí **Giai đoạn 2 [H]** (không gian Human) — một kênh chat nội bộ chạy thật trong docker-compose, không chỉ nằm trên giấy.
-Service `mattermost` được khai báo trong [`deploy/docker-compose.yml`](../deploy/docker-compose.yml), lên tự động cùng lệnh `docker compose up -d --build` ở [`README.md`](../README.md) gốc — không cần thao tác tay nào thêm.
+Service `mattermost` được khai báo trong [`deploy/docker-compose.yml`](../deploy/docker-compose.yml), lên tự động cùng lệnh `docker compose up -d --build` ở [`README.md`](../README.md) gốc; thông báo tự động từ Backend chỉ cần thêm một bước cấp webhook (xem mục bên dưới).
 
 ## Vì sao chọn Mattermost, và rà soát license
 
@@ -45,6 +45,41 @@ Ghi vào [`LICENSES.md`](../LICENSES.md) đúng caveat này để minh bạch kh
 
   Bảng đáng chú ý: `users` (tài khoản — có vài bot hệ thống như `feedbackbot`/`playbooks`/`calls`/`github`, không phải người dùng thật), `teams`/`channels`, `channelmembers`/`teammembers`, `posts` (nội dung tin nhắn), `audits` (log hành động).
 
-## Còn thiếu
+## Thông báo tự động từ Backend
 
-- Thông báo tự động từ Backend vào channel `Kỹ sư nông nghiệp` (báo cáo sâu bệnh mới, chẩn đoán chờ duyệt) qua Incoming Webhook: kế hoạch ở [`development/docs/MATTERMOST_WEBHOOK_NOTIFICATION_PLAN.md`](../development/docs/MATTERMOST_WEBHOOK_NOTIFICATION_PLAN.md), chưa triển khai.
+Backend post vào channel `Kỹ sư nông nghiệp` qua Incoming Webhook khi có:
+
+- **Báo cáo sâu bệnh mới**: mã báo cáo, mã thửa, giống lúa, người báo cáo, thời điểm báo cáo.
+- **Chẩn đoán chờ duyệt** (nhập tay hoặc qua AI): mã báo cáo, mã thửa, bệnh, độ tin cậy, có hay không có phác đồ.
+  Chẩn đoán không có phác đồ ghi "Không có phác đồ — cần kỹ sư xem xét".
+
+Cách hoạt động:
+
+- Thông báo đi sau khi transaction lưu dữ liệu commit, chạy nền trên executor riêng; request tạo báo cáo/chẩn đoán không chờ Mattermost.
+- Best-effort, không retry: Mattermost tắt, webhook sai hoặc hàng đợi đầy thì thông báo bị bỏ, Backend chỉ ghi một dòng WARN không chứa URL.
+- Gửi lại báo cáo với `Idempotency-Key` đã dùng không sinh thông báo thứ hai.
+- `MATTERMOST_WEBHOOK_URL` rỗng thì tính năng tắt; Backend ghi một dòng lúc khởi động cho biết bật hay tắt.
+- Tên người báo cáo, mã thửa, giống lúa và tên bệnh được cắt tối đa 100 ký tự, bỏ xuống dòng và vô hiệu mention, link, markdown.
+  Thời điểm hiển thị theo múi giờ `Asia/Ho_Chi_Minh`.
+- Thông báo không kèm deep link; kỹ sư tìm báo cáo trong web app theo mã thửa và mã báo cáo.
+
+### Cấp webhook (một lần cho mỗi môi trường)
+
+1. Đăng nhập Mattermost bằng tài khoản System Admin.
+2. Vào Integrations → Incoming Webhooks → Add Incoming Webhook, chọn channel `Kỹ sư nông nghiệp` trong team `DX-Farm HTX`.
+3. Sao chép URL, đổi host `localhost:<cổng>` thành `mattermost:8065` (Backend gọi qua mạng nội bộ của compose), ví dụ `http://mattermost:8065/hooks/<key>`.
+4. Điền vào `MATTERMOST_WEBHOOK_URL` trong `deploy/.env`, rồi chạy lại service `backend`: `docker compose up -d backend`.
+
+URL chứa khóa truy cập nên chỉ nằm trong `deploy/.env`, không đưa vào Git.
+Xóa `deploy/data/mattermost/` hoặc thu hồi webhook làm khóa cũ mất hiệu lực; khi đó cấp lại và cập nhật `deploy/.env`.
+
+### Hạn chế
+
+- Luồng một chiều: duyệt, từ chối và ghi nhận xử lý vẫn làm trong web app, Mattermost không nhận kết quả và không cập nhật thông báo cũ.
+- Một channel cho mọi sự kiện, không định tuyến theo thửa hoặc kỹ sư phụ trách.
+- `Kỹ sư nông nghiệp` là channel public: mọi tài khoản trong team đọc được tên người báo cáo và mã thửa.
+  Muốn giới hạn thì chuyển channel sang private và thêm thành viên thủ công.
+- Không có outbox hay lịch sử gửi: thông báo bị lỡ không được gửi lại.
+- Cấp webhook là thao tác tay.
+
+Thiết kế chi tiết: [`development/docs/MATTERMOST_WEBHOOK_NOTIFICATION_PLAN.md`](../development/docs/MATTERMOST_WEBHOOK_NOTIFICATION_PLAN.md).

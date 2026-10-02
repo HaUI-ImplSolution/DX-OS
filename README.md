@@ -89,7 +89,8 @@ Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
     Chi tiết: [`portal/README.md`](./portal/README.md).
   - [x] Kênh chat nội bộ (Mattermost) — chạy thật trong docker-compose (image Team Edition chính thức), nền tảng tách biệt hoàn toàn có chủ đích, không dùng SSO chung với Keycloak.
     Chi tiết: [`chat/README.md`](./chat/README.md).
-  - [ ] Tích hợp thông báo tự động vào channel Mattermost (ví dụ: có `DiseaseReport` mới hoặc chờ duyệt thì backend tự post vào channel)
+  - [x] Thông báo tự động vào channel Mattermost: backend post qua Incoming Webhook khi có `DiseaseReport` mới hoặc chẩn đoán chờ duyệt; best-effort, tắt khi chưa cấu hình `MATTERMOST_WEBHOOK_URL`.
+    Cách cấp webhook: [`chat/README.md`](./chat/README.md).
 - [x] **[D]** Dashboard BI (Apache Superset) hiển thị bản đồ/trạng thái thửa ruộng cho Ban quản trị, tự bootstrap qua docker-compose.
   Chi tiết: [`bi/README.md`](./bi/README.md).
 - [x] Rà lại license mọi thành phần open-core trước khi khoá stack (xem mục PoF bên dưới) — xem [`LICENSES.md`](./LICENSES.md).
@@ -148,13 +149,14 @@ Dữ liệu demo cũ do AI ghi trực tiếp trước khi tách DB (`disease_rep
 - [x] Cấu trúc monorepo và quyền sở hữu từng thư mục/module
 - [x] Chính sách repo Private trong lúc phát triển, thời điểm public trước khi nộp bài
 
-## Trạng thái hiện tại (cập nhật 2026-10-01)
+## Trạng thái hiện tại (cập nhật 2026-10-02)
 
 Backend Spring Boot sở hữu dữ liệu nghiệp vụ, structured knowledge và toàn bộ vòng đời phê duyệt; đồng thời cung cấp internal API chỉ đọc cho AI.
 AI Service hoạt động stateless: kết hợp CV, structured facts từ Backend và RAG evidence, sau đó trả recommendation để Backend kiểm tra và lưu.
 AI Vector DB đã tách khỏi Backend DB; runtime dùng role chỉ đọc, còn job ingest dùng role đọc/ghi riêng.
 Ba phase tách AI/Backend đã hoàn thành; trạng thái cuối được phản ánh trực tiếp trong code, README và CHANGELOG.
 Frontend, Keycloak SSO, Superset, Mattermost và portal tiếp tục dùng chung stack Docker Compose.
+Backend post thông báo báo cáo mới và chẩn đoán chờ duyệt vào channel Mattermost `Kỹ sư nông nghiệp` qua Incoming Webhook khi `MATTERMOST_WEBHOOK_URL` được cấu hình.
 Keycloak không cố định hostname nên web (`localhost`) và điện thoại (IP LAN) đăng nhập cùng lúc mà không cần đổi `deploy/.env`.
 Bản mobile Expo cho FARMER đã có luồng đầu-cuối (đăng nhập, xem thửa/vụ/báo cáo, chụp và gửi, hàng đợi offline); hướng dẫn chạy và đóng gói APK ở [`mobile/README.md`](./mobile/README.md), kế hoạch ở [`development/docs/mobile/PLAN.md`](./development/docs/mobile/PLAN.md).
 Chi tiết thay đổi theo từng module xem tại [`CHANGELOG.md`](./CHANGELOG.md).
@@ -179,7 +181,7 @@ docker compose up -d --build
 | **Keycloak Admin Console** | http://localhost:8180/admin | `KEYCLOAK_ADMIN_USERNAME`/`KEYCLOAK_ADMIN_PASSWORD` trong `.env` |
 | **Backend** (Swagger, gọi API tay) | http://localhost:8081/swagger-ui.html | Lấy access token từ Keycloak (xem `sso/README.md`), bấm "Authorize" rồi dán vào |
 | **BI Dashboard** (Superset) | http://localhost:8088 | Bấm "Sign In with keycloak", dùng tài khoản demo (xem [`sso/README.md`](./sso/README.md)); tài khoản role `ADMIN` vào được trang quản trị `/users/list/` |
-| **Chat nội bộ** (Mattermost) | http://localhost:8065 | Tài khoản System Admin có sẵn: `MATTERMOST_ADMIN_USERNAME`/`MATTERMOST_ADMIN_PASSWORD` trong `.env`; team `DX-Farm HTX` và 3 channel đã được tạo sẵn |
+| **Chat nội bộ** (Mattermost) | http://localhost:8065 | Tài khoản System Admin có sẵn: `MATTERMOST_ADMIN_USERNAME`/`MATTERMOST_ADMIN_PASSWORD` trong `.env`; team `DX-Farm HTX` và 3 channel đã được tạo sẵn; muốn nhận thông báo từ Backend thì cấp webhook theo [`chat/README.md`](./chat/README.md) |
 
 ### 3. Dừng lại
 

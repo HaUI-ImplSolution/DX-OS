@@ -1,6 +1,6 @@
 # Kế hoạch thông báo Mattermost qua Incoming Webhook
 
-> **Trạng thái:** Kế hoạch đã đối chiếu với code hiện tại, chưa triển khai.
+> **Trạng thái:** Đã triển khai trong Backend và deploy; còn bước cấp webhook tay và kiểm tra thủ công khi chạy stack.
 >
 > **Cập nhật:** 02/10/2026.
 >
@@ -27,9 +27,9 @@
   - `createFromAi()` gọi `AiDiagnosisClient.diagnose()` bên trong transaction, trước `save`; AI lỗi, ảnh bị triage hoặc rule đổi version đều ném exception trước `save`.
   - `treatmentRule = null` chỉ xảy ra ở `createFromAi()` khi AI trả đường `review_required`; `create()` luôn có rule.
 - `DiseaseReport.reportedAt` và `Diagnosis.diagnosedAt` là `Instant`; `confidence` là `BigDecimal` trong khoảng 0–1.
-- Backend chưa có code gọi Mattermost ngoài `MattermostDatabaseSeeder`; `application.yaml` mới chỉ có `mattermost.db.password`.
+- Ngoài `MattermostDatabaseSeeder`, Backend gọi Mattermost qua `MattermostWebhookClient`; cấu hình nằm ở khóa `mattermost.webhook` cạnh `mattermost.db` trong `application.yaml`.
 - `AiDiagnosisClient` là mẫu client HTTP ra ngoài: `RestClient` + `JdkClientHttpRequestFactory` với timeout cấu hình được.
-- `spring-boot-starter-aspectj` và `resilience4j-spring-boot3` đã có trong `pom.xml`; chưa dùng `@Async` hay Spring event.
+- `@Async` và Spring event chỉ dùng cho thông báo Mattermost; không thêm dependency vào `pom.xml`.
 - `spring.jackson.time-zone: Asia/Ho_Chi_Minh` chỉ áp dụng khi serialize JSON, không áp dụng cho chuỗi tự dựng trong thông báo.
 
 **Mattermost và deploy**
@@ -37,7 +37,7 @@
 - Service `mattermost` chạy trong `deploy/docker-compose.yml`, Backend gọi được qua hostname nội bộ `mattermost:8065`.
   `MM_SERVICESETTINGS_SITEURL` là `http://localhost:${MATTERMOST_HOST_PORT}`, nên URL webhook sao chép từ UI mang host `localhost`.
 - `mattermost-bootstrap` đã tạo sẵn System Admin, team `dx-farm` và 3 channel; `Kỹ sư nông nghiệp` là channel public.
-- Chưa có biến `MATTERMOST_WEBHOOK_URL` trong `docker-compose.yml` và `.env.example`; chưa bật `MM_SERVICESETTINGS_ENABLEINCOMINGWEBHOOKS`.
+- `docker-compose.yml` truyền `MATTERMOST_WEBHOOK_URL` cho `backend` và bật `MM_SERVICESETTINGS_ENABLEINCOMINGWEBHOOKS` cho `mattermost`; `.env.example` có biến này để trống.
 
 ## 3. Quyết định kiến trúc
 
@@ -72,7 +72,7 @@ DiagnosisService.createFromAi()──┘
 
 **Xử lý bất đồng bộ, không retry**
 
-- Listener chạy `@Async("mattermostNotifyExecutor")` trên executor riêng (1–2 thread, queue 100).
+- Listener chạy `@Async("mattermostNotifyExecutor")` trên executor riêng (2 thread, queue 100).
   Request người dùng không phải chờ Mattermost.
 - Khi queue đầy, executor bỏ task và ghi một dòng WARN bằng `RejectedExecutionHandler` riêng; không để `TaskRejectedException` nổi lên luồng gọi.
 - Mọi exception trong listener/client được bắt và log mức WARN; không ném ngược lên luồng nghiệp vụ.
@@ -103,7 +103,7 @@ DiagnosisService.createFromAi()──┘
   - cắt tối đa 100 ký tự;
   - thay xuống dòng bằng khoảng trắng;
   - vô hiệu mention (`@channel`, `@all`, `@here`, `@user`) bằng cách chèn ký tự zero-width sau `@`;
-  - escape ký tự markdown (`` ` `` `*` `_` `[` `]` `<` `>` `|` `\`) để không chèn được link hay định dạng.
+  - escape ký tự markdown (`` ` `` `*` `_` `[` `]` `<` `>` `|` `#` `~` `\`) và chèn zero-width vào `://` để không chèn được link hay định dạng.
 
 **Cấu hình**
 
@@ -135,20 +135,20 @@ mattermost:
 
 **Backend** (`backend/DX-Farm`)
 
-- [ ] Package `event/` với hai record `DiseaseReportCreatedEvent` và `DiagnosisPendingEvent`, chỉ chứa giá trị thuần.
-- [ ] `DiseaseReportService.create()` publish `DiseaseReportCreatedEvent` sau `saveAndFlush` của báo cáo mới (không publish ở nhánh idempotent); `DiagnosisService.create()` và `createFromAi()` publish `DiagnosisPendingEvent` sau `save`.
-- [ ] `config/AsyncConfig` bật `@EnableAsync` và khai báo executor `mattermostNotifyExecutor` (1–2 thread, queue 100) với `RejectedExecutionHandler` bỏ task và log WARN.
-- [ ] `MattermostWebhookClient` (`RestClient` + `JdkClientHttpRequestFactory`, timeout từ cấu hình) POST JSON attachment; URL rỗng thì không gửi.
-- [ ] `MattermostNotificationListener` xử lý hai event bằng `@Async("mattermostNotifyExecutor")` + `@TransactionalEventListener(AFTER_COMMIT)`, bắt mọi exception và log WARN không kèm URL.
-- [ ] Hàm làm sạch chuỗi người dùng (cắt độ dài, bỏ xuống dòng, vô hiệu mention, escape markdown) và hàm format thời điểm theo `Asia/Ho_Chi_Minh`, dùng chung cho cả hai thông báo.
-- [ ] `application.yaml` thêm khóa `mattermost.webhook.*` như mục 3.
+- [x] Package `event/` với hai record `DiseaseReportCreatedEvent` và `DiagnosisPendingEvent`, chỉ chứa giá trị thuần.
+- [x] `DiseaseReportService.create()` publish `DiseaseReportCreatedEvent` sau `saveAndFlush` của báo cáo mới (không publish ở nhánh idempotent); `DiagnosisService.create()` và `createFromAi()` publish `DiagnosisPendingEvent` sau `save`.
+- [x] `config/AsyncConfig` bật `@EnableAsync` và khai báo executor `mattermostNotifyExecutor` (2 thread, queue 100) với `RejectedExecutionHandler` bỏ task và log WARN.
+- [x] `MattermostWebhookClient` (`RestClient` + `JdkClientHttpRequestFactory`, timeout từ cấu hình) POST JSON attachment; URL rỗng thì không gửi.
+- [x] `MattermostNotificationListener` xử lý hai event bằng `@Async("mattermostNotifyExecutor")` + `@TransactionalEventListener(AFTER_COMMIT)`, bắt mọi exception và log WARN không kèm URL.
+- [x] Hàm làm sạch chuỗi người dùng (cắt độ dài, bỏ xuống dòng, vô hiệu mention, escape markdown) và hàm format thời điểm theo `Asia/Ho_Chi_Minh`, dùng chung cho cả hai thông báo.
+- [x] `application.yaml` thêm khóa `mattermost.webhook.*` như mục 3.
 
 **Deploy và tài liệu**
 
-- [ ] `deploy/docker-compose.yml` và `deploy/.env.example` cập nhật theo mục 3.
-- [ ] `chat/README.md`: thay mục "Còn thiếu" bằng mô tả thông báo tự động và các bước cấp webhook.
-- [ ] `README.md` gốc (mục Giai đoạn 2 [H]) và `CHANGELOG.md` ghi trạng thái hiện tại của tính năng, theo quy ước không kể diễn biến trước/sau.
-- [ ] Comment và `@Operation` (nếu có) bằng tiếng Anh, ngắn, không nhắc nhãn milestone.
+- [x] `deploy/docker-compose.yml` và `deploy/.env.example` cập nhật theo mục 3.
+- [x] `chat/README.md`: thay mục "Còn thiếu" bằng mô tả thông báo tự động và các bước cấp webhook.
+- [x] `README.md` gốc (mục Giai đoạn 2 [H]) và `CHANGELOG.md` ghi trạng thái hiện tại của tính năng, theo quy ước không kể diễn biến trước/sau.
+- [x] Comment và `@Operation` (nếu có) bằng tiếng Anh, ngắn, không nhắc nhãn milestone.
 
 **Cần xác minh khi chạy thật**
 

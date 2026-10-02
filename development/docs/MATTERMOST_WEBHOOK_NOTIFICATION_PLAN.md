@@ -159,7 +159,7 @@ mattermost:
 ## 5. Các phần chưa đạt được
 
 - Thông báo khi chẩn đoán được duyệt, bị từ chối hoặc đã ghi nhận xử lý.
-- Deep link từ thông báo sang màn hình báo cáo (chờ frontend có routing).
+- Deep link từ thông báo sang báo cáo và danh sách báo cáo chờ xử lý; hướng triển khai ở mục 9.
 - Tự động tạo webhook lúc dựng compose.
   `mattermost-bootstrap` đã có admin token và gọi được REST API tạo webhook, nhưng khóa sinh ra phải đến được `backend` đã khởi động từ trước (qua file dùng chung hoặc khởi động lại `backend`), nên hiện giữ thao tác tay.
 - Retry, hàng đợi bền vững hoặc outbox cho thông báo bị lỡ.
@@ -229,3 +229,41 @@ mattermost:
 - Khi `MATTERMOST_WEBHOOK_URL` rỗng, Backend khởi động và tạo báo cáo/chẩn đoán bình thường, không gọi Mattermost.
 - Khi URL hợp lệ, tạo báo cáo mới và chẩn đoán chờ duyệt (cả nhập tay lẫn qua AI) đều sinh đúng một thông báo vào channel `Kỹ sư nông nghiệp`; gửi lại báo cáo cùng `Idempotency-Key` không sinh thêm (kiểm tra thủ công khi người dùng chạy stack).
 - Khi Mattermost tắt hoặc URL sai, request tạo báo cáo/chẩn đoán vẫn trả thành công và log có đúng một dòng WARN không chứa URL.
+
+## 9. Hướng mở rộng: deep link và danh sách chờ xử lý
+
+> **Trạng thái:** Chưa triển khai; ghi lại để làm sau.
+
+**Vấn đề**
+
+- Kỹ sư phải chọn thửa, rồi vụ mùa, rồi mới thấy báo cáo; không có danh sách báo cáo chưa xử lý.
+- Khi có nhiều farmer, thửa và vụ mùa, việc tra cứu một báo cáo từ thông báo mất nhiều thao tác.
+
+**Bước 1: deep link theo mã báo cáo**
+
+- Thông báo "Báo cáo sâu bệnh mới" kèm link `<MATTERMOST_APP_BASE_URL>/?report=<id>`, ví dụ `http://localhost:8082/?report=3`.
+- Frontend (`App.tsx`) đọc query `report` khi tải trang, gọi `GET /api/v1/disease-reports/{id}`, rồi tự chọn thửa, vụ mùa và báo cáo; kỹ sư chỉ còn bấm nút chạy AI.
+- Link chỉ mang mã báo cáo; quyền truy cập vẫn do Backend kiểm tra như mọi request khác (FARMER nhận 404 với thửa của người khác).
+- `DiseaseReportResponse` mới có `cropSeasonId`; thêm `parcelCode` để frontend chọn thửa mà không phải tra ngược từ vụ mùa. `types.ts` đã khai báo `parcelCode` ở kiểu báo cáo.
+- Không thêm thư viện router; không đổi state machine duyệt hay quyền.
+- Cấu hình mới: `MATTERMOST_APP_BASE_URL` (khóa `mattermost.webhook.app-base-url`) là địa chỉ frontend mà trình duyệt người xem truy cập được, ví dụ `http://localhost:8082`; rỗng thì không kèm link.
+- Thông báo "Chẩn đoán chờ duyệt" cũng kèm link cùng dạng.
+- Link `localhost` chỉ mở được trên máy chạy stack; dùng máy khác thì đặt địa chỉ máy chủ thật.
+
+**Bước 2: danh sách "Chờ xử lý" trong app**
+
+- Tab liệt kê báo cáo chưa có chẩn đoán hoặc có chẩn đoán `PENDING`, mới nhất lên trước, lọc được theo thửa và farmer.
+- Cần endpoint list báo cáo theo toàn bộ phạm vi người dùng được xem: kỹ sư thấy tất cả, FARMER chỉ thấy báo cáo trên thửa của mình, theo đúng `CurrentUserService.canAccess`.
+- Bước này giải quyết việc tra cứu khi dữ liệu lớn; deep link ở bước 1 chỉ rút ngắn đường đi từ thông báo.
+
+**Không làm**
+
+- Nút chạy AI ngay trong thông báo Mattermost (interactive button): cần Mattermost gọi ngược về Backend kèm xác thực, và bước chạy AI đang giữ thủ công.
+- Thông báo không tự gọi AI.
+
+**Tiêu chí hoàn thành**
+
+- Bấm link trong thông báo mở app ở đúng báo cáo, thấy nút chạy AI mà không phải chọn thửa hay vụ mùa.
+- Mở link của báo cáo không có quyền xem hiển thị lỗi 404 rõ ràng, không lộ dữ liệu.
+- `MATTERMOST_APP_BASE_URL` rỗng thì thông báo không kèm link.
+- Tab "Chờ xử lý" liệt kê đúng các báo cáo chưa xử lý và tôn trọng quyền theo vai trò.

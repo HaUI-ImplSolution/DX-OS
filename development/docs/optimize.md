@@ -93,17 +93,13 @@ hiện có một số cái cần note lại để cải thiện:
         - Hiện app farmer hiểu "Cần chụp lại" chính là trạng thái REJECTED của chẩn đoán, trộn lẫn 2 chuyện khác nhau: (1) ảnh không dùng được, (2) kỹ sư không đồng ý khuyến nghị. Nên tách trạng thái riêng cho báo cáo (ví dụ NEEDS_RETAKE + lý do).
         - Báo cáo mới liên kết tới báo cáo cũ (retakeOf) để xem được cả chuỗi. Farmer nhận thông báo qua kênh ở mục 13.
 
-> Từ mục 6 trở xuống là các vấn đề phát hiện thêm, đã gộp từ 3 nguồn: đọc code và docs, file PROJECT_ISSUES.md cũ (giờ gộp hết vào đây, khỏi phải mở file kia), và đề thi HaUI 2026 (file De_thi_PMNM_HaUI_2026_BAN_CHINH_THUC.pdf). Chỗ nào trùng nhau thì gộp vào một mục. Chữ "đề mục X" là mục X của chính đề thi, còn "mục X" trơn là mục trong file này.
->
-> Mức độ (lấy từ PROJECT_ISSUES.md cũ): [Nghiêm trọng] là ảnh hưởng thẳng tới việc chứng minh đúng kiến trúc của đề; [Quan trọng] là không làm sai hướng nhưng demo hoặc sản phẩm sẽ bị hụt; [Theo dõi] là chưa gấp nhưng phải xong trước khi nộp. Mục hay ý nào không gắn nhãn là phát hiện thêm từ code, chưa xếp mức.
-
 ## 6. Danh tính nông hộ và mô hình dữ liệu:
 
-- Hiện không có thực thể Nông hộ. Quan hệ thửa - chủ hộ chỉ là chuỗi tên (`Parcel.farmerName`) so khớp với claim `name` trong token, không phân biệt hoa thường (đã check code: CurrentUserService.canAccess). Hậu quả: 2 farmer trùng tên thấy chung thửa của nhau, đổi tên trong Keycloak là mất thửa, lệch dấu/chính tả cũng mất. Chính docs (PLAN.md mục rủi ro) cũng đã ghi cái này là rủi ro.
+- Hiện không có thực thể Nông hộ. Quan hệ thửa - chủ hộ chỉ là chuỗi tên (`Parcel.farmerName`) so khớp với claim `name` trong token, không phân biệt hoa thường (đã check code: CurrentUserService.canAccess). 
+   - Hậu quả: 2 farmer trùng tên thấy chung thửa của nhau, đổi tên trong Keycloak là mất thửa, lệch dấu/chính tả cũng mất. Chính docs (PLAN.md mục rủi ro) cũng đã ghi cái này là rủi ro.
 - Đề xuất: bảng Household (mã hộ, họ tên, SĐT, địa chỉ, `keycloakUserId` = claim `sub`), Parcel trỏ tới Household bằng khóa ngoại. Quyền truy cập dựa trên `sub`, không dựa trên tên nữa. Mã thửa/mã vụ ở mục 2 cũng dựa vào đây.
 - Audit hiện lưu `reportedBy`, `decidedBy` bằng tên hiển thị (không lưu `sub`/username). Đổi tên là mất dấu vết, 2 người trùng tên không phân biệt được. Nên lưu thêm id người dùng.
 - Bảng lịch sử chuyển trạng thái không bị ghi đè + `assignedTo` (kỹ sư phụ trách), dùng chung cho thửa / vụ mùa / báo cáo / chẩn đoán: xem mục 8.
-- Schema đang để Hibernate tự sửa (`ddl-auto: update`) và `data.sql` có cả ALTER TABLE. Làm mục 2 sẽ thêm hàng loạt cột/bảng (status, household, danh mục giống, mã...) nên cần chuyển sang migration thật (Flyway hoặc Liquibase) trước khi thêm, nếu không dữ liệu cũ sẽ vỡ ngầm.
 - Chưa có xóa mềm / hủy bản ghi. Nhập nhầm thì không có đường để hủy, chỉ còn sửa DB tay.
 - Dữ liệu cá nhân nông hộ (tên, SĐT, vị trí, ảnh) nên có ghi chú về thu thập tối thiểu, đồng ý của người dùng và thời gian lưu. Không cần làm to, nhưng nên có trong tài liệu vì có phần thuyết trình về dữ liệu.
 

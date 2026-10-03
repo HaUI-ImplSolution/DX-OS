@@ -1,6 +1,9 @@
 package HaUI.ImplSolution.DX_Farm.service;
 
 import HaUI.ImplSolution.DX_Farm.core.storage.StorageService;
+import HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowActor;
+import HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowService;
+import HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowStatus;
 import HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseRequest;
 import HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseRequest.FieldContext;
 import HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseRequest.RecentTreatment;
@@ -44,6 +47,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class DiagnosisService {
 
+  static final String CASE_TYPE = "DIAGNOSIS_APPROVAL";
+  static final String ENTITY_TYPE = "DIAGNOSIS";
   // Must outlast the AI read timeout, since the AI service downloads the photo while it works.
   private static final Duration AI_IMAGE_URL_TTL = Duration.ofMinutes(10);
   private static final int RECENT_TREATMENTS_LIMIT = 5;
@@ -56,6 +61,7 @@ public class DiagnosisService {
   private final TreatmentRuleService treatmentRuleService;
   private final TreatmentApplicationRepository treatmentApplicationRepository;
   private final CurrentUserService currentUserService;
+  private final WorkflowService workflowService;
   private final AiDiagnosisClient aiDiagnosisClient;
   private final ApplicationEventPublisher eventPublisher;
   private final StorageService storageService;
@@ -66,16 +72,16 @@ public class DiagnosisService {
       DiseaseReportRepository diseaseReportRepository, DiseaseRepository diseaseRepository,
       TreatmentRuleService treatmentRuleService,
       TreatmentApplicationRepository treatmentApplicationRepository,
-      CurrentUserService currentUserService, AiDiagnosisClient aiDiagnosisClient,
-      ApplicationEventPublisher eventPublisher,
-      StorageService storageService, Clock clock,
-      EntityManager entityManager) {
+      CurrentUserService currentUserService, WorkflowService workflowService,
+      AiDiagnosisClient aiDiagnosisClient, ApplicationEventPublisher eventPublisher,
+      StorageService storageService, Clock clock, EntityManager entityManager) {
     this.diagnosisRepository = diagnosisRepository;
     this.diseaseReportRepository = diseaseReportRepository;
     this.diseaseRepository = diseaseRepository;
     this.treatmentRuleService = treatmentRuleService;
     this.treatmentApplicationRepository = treatmentApplicationRepository;
     this.currentUserService = currentUserService;
+    this.workflowService = workflowService;
     this.aiDiagnosisClient = aiDiagnosisClient;
     this.eventPublisher = eventPublisher;
     this.storageService = storageService;
@@ -186,6 +192,7 @@ public class DiagnosisService {
   // Stores a PENDING diagnosis and announces it once the transaction commits.
   private DiagnosisResponse savePending(Diagnosis diagnosis) {
     Diagnosis saved = diagnosisRepository.save(diagnosis);
+    workflowService.createCase(CASE_TYPE, ENTITY_TYPE, saved.getId(), currentActor());
     DiseaseReport report = saved.getDiseaseReport();
     Disease disease = saved.getDisease();
     eventPublisher.publishEvent(new DiagnosisPendingEvent(report.getId(),
@@ -202,7 +209,10 @@ public class DiagnosisService {
     diagnosis.setDecidedBy(currentUserService.currentFullName());
     diagnosis.setDecidedByUserId(currentUserService.currentUserId());
     diagnosis.setDecidedAt(Instant.now(clock));
-    return toResponse(diagnosisRepository.save(diagnosis));
+    Diagnosis saved = diagnosisRepository.save(diagnosis);
+    workflowService.recordTransition(CASE_TYPE, ENTITY_TYPE, saved.getId(), WorkflowStatus.APPROVED,
+        currentActor(), null, null);
+    return toResponse(saved);
   }
 
   @Transactional
@@ -214,7 +224,15 @@ public class DiagnosisService {
     diagnosis.setDecidedByUserId(currentUserService.currentUserId());
     diagnosis.setDecidedAt(Instant.now(clock));
     diagnosis.setRejectionReason(request.reason());
-    return toResponse(diagnosisRepository.save(diagnosis));
+    Diagnosis saved = diagnosisRepository.save(diagnosis);
+    workflowService.recordTransition(CASE_TYPE, ENTITY_TYPE, saved.getId(), WorkflowStatus.REJECTED,
+        currentActor(), request.reason(), null);
+    return toResponse(saved);
+  }
+
+  private WorkflowActor currentActor() {
+    return new WorkflowActor(currentUserService.currentUserId(),
+        currentUserService.currentFullName());
   }
 
   @Transactional

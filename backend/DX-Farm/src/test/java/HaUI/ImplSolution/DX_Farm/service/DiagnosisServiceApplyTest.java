@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import HaUI.ImplSolution.DX_Farm.core.storage.StorageService;
+import HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowService;
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisApplyRequest;
 import HaUI.ImplSolution.DX_Farm.exception.PokaYokeViolationException;
 import HaUI.ImplSolution.DX_Farm.model.ApprovalStatus;
@@ -58,6 +59,8 @@ class DiagnosisServiceApplyTest {
   @Mock
   private CurrentUserService currentUserService;
   @Mock
+  private WorkflowService workflowService;
+  @Mock
   private StorageService storageService;
   @Mock
   private AiDiagnosisClient aiDiagnosisClient;
@@ -72,8 +75,8 @@ class DiagnosisServiceApplyTest {
   @BeforeEach
   void setUp() {
     service = new DiagnosisService(diagnosisRepository, diseaseReportRepository, diseaseRepository,
-        treatmentRuleService, treatmentApplicationRepository, currentUserService, aiDiagnosisClient,
-        eventPublisher, storageService, CLOCK, entityManager);
+        treatmentRuleService, treatmentApplicationRepository, currentUserService, workflowService,
+        aiDiagnosisClient, eventPublisher, storageService, CLOCK, entityManager);
     Parcel parcel = Parcel.builder().id(1L).code("P-01").farmerName("A").build();
     season = CropSeason.builder().id(5L).parcel(parcel).build();
     DiseaseReport report = DiseaseReport.builder().id(9L).cropSeason(season).build();

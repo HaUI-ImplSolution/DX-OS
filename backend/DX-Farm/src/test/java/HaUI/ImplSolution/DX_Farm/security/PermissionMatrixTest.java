@@ -14,17 +14,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import HaUI.ImplSolution.DX_Farm.controller.CropSeasonController;
 import HaUI.ImplSolution.DX_Farm.controller.DiagnosisController;
 import HaUI.ImplSolution.DX_Farm.controller.DiseaseReportController;
-import HaUI.ImplSolution.DX_Farm.controller.HouseholdController;
+import HaUI.ImplSolution.DX_Farm.core.identity.HouseholdController;
 import HaUI.ImplSolution.DX_Farm.controller.ParcelController;
+import HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowController;
+import HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowService;
 import HaUI.ImplSolution.DX_Farm.dto.CropSeasonResponse;
 import HaUI.ImplSolution.DX_Farm.dto.DiseaseReportResponse;
-import HaUI.ImplSolution.DX_Farm.dto.HouseholdCreateResponse;
-import HaUI.ImplSolution.DX_Farm.dto.HouseholdResponse;
+import HaUI.ImplSolution.DX_Farm.core.identity.HouseholdCreateResponse;
+import HaUI.ImplSolution.DX_Farm.core.identity.HouseholdResponse;
 import HaUI.ImplSolution.DX_Farm.dto.ParcelResponse;
 import HaUI.ImplSolution.DX_Farm.service.CropSeasonService;
 import HaUI.ImplSolution.DX_Farm.service.DiagnosisService;
 import HaUI.ImplSolution.DX_Farm.service.DiseaseReportService;
-import HaUI.ImplSolution.DX_Farm.service.HouseholdService;
+import HaUI.ImplSolution.DX_Farm.core.identity.HouseholdService;
 import HaUI.ImplSolution.DX_Farm.service.ParcelService;
 import java.util.List;
 import java.util.stream.Stream;
@@ -44,10 +46,9 @@ import org.springframework.test.web.servlet.RequestBuilder;
 
 // The permission matrix from the phase 2 plan, checked against the real security configuration
 // with the services mocked out: only the role/client rules are under test here.
-@WebMvcTest(
-    controllers = {ParcelController.class, CropSeasonController.class,
-        DiseaseReportController.class, DiagnosisController.class, HouseholdController.class},
-    properties = "ai.service.inbound-api-key=test-key")
+@WebMvcTest(controllers = {ParcelController.class, CropSeasonController.class,
+    DiseaseReportController.class, DiagnosisController.class, HouseholdController.class,
+    WorkflowController.class}, properties = "ai.service.inbound-api-key=test-key")
 @Import({SecurityConfig.class, RestAuthenticationEntryPoint.class, RestAccessDeniedHandler.class,
     ServiceApiKeyAuthenticationFilter.class})
 class PermissionMatrixTest {
@@ -65,6 +66,8 @@ class PermissionMatrixTest {
   private DiagnosisService diagnosisService;
   @MockitoBean
   private HouseholdService householdService;
+  @MockitoBean
+  private WorkflowService workflowService;
 
   private static JwtRequestPostProcessor token(String role, String client) {
     return jwt().authorities(new SimpleGrantedAuthority("ROLE_" + role))
@@ -180,6 +183,18 @@ class PermissionMatrixTest {
         .perform(patch("/api/v1/households/H0001/account").with(engineer())
             .contentType(MediaType.APPLICATION_JSON).content("{\"keycloakUserId\":\"abc\"}"))
         .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void workflowCasesAreStaffOnly() throws Exception {
+    mockMvc.perform(get("/api/v1/workflow-cases").with(farmer())).andExpect(status().isForbidden());
+    mockMvc.perform(get("/api/v1/workflow-cases/1/events").with(farmer()))
+        .andExpect(status().isForbidden());
+    mockMvc.perform(patch("/api/v1/workflow-cases/1/assign").with(farmer()))
+        .andExpect(status().isForbidden());
+    mockMvc.perform(get("/api/v1/workflow-cases").with(engineer())).andExpect(status().isOk());
+    mockMvc.perform(get("/api/v1/workflow-cases/1/events").with(admin()))
+        .andExpect(status().isOk());
   }
 
   @Test

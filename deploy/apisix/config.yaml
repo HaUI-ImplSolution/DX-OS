@@ -1,0 +1,17 @@
+# APISIX in standalone mode: routes live in apisix.yaml, there is no etcd and no admin API.
+deployment:
+  role: data_plane
+  role_data_plane:
+    config_provider: yaml
+
+apisix:
+  node_listen:
+    - 9080
+    # Superset only runs at the root of its own origin, so it gets its own listener.
+    - 9081
+    # MinIO console, same reason as Superset.
+    - 9082
+  enable_ipv6: false
+  router:
+    # Routes such as /crop-seasons/:id/disease-reports need path parameters.
+    http: radixtree_uri_with_parameter

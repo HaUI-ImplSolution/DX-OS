@@ -1,8 +1,8 @@
 package HaUI.ImplSolution.DX_Farm.service;
 
-import HaUI.ImplSolution.DX_Farm.model.Household;
+import HaUI.ImplSolution.DX_Farm.core.identity.Household;
 import HaUI.ImplSolution.DX_Farm.model.Parcel;
-import HaUI.ImplSolution.DX_Farm.repository.HouseholdRepository;
+import HaUI.ImplSolution.DX_Farm.core.identity.HouseholdRepository;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;

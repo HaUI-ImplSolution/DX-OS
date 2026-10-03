@@ -1,5 +1,6 @@
 package HaUI.ImplSolution.DX_Farm.model;
 
+import HaUI.ImplSolution.DX_Farm.core.identity.Household;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

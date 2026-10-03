@@ -1,5 +1,6 @@
 package HaUI.ImplSolution.DX_Farm.repository;
 
+import HaUI.ImplSolution.DX_Farm.core.identity.Household;
 import HaUI.ImplSolution.DX_Farm.model.Parcel;
 import java.util.List;
 import java.util.Optional;

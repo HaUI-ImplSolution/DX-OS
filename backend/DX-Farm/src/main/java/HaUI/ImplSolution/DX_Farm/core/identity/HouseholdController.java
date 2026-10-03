@@ -1,11 +1,11 @@
-package HaUI.ImplSolution.DX_Farm.controller;
+package HaUI.ImplSolution.DX_Farm.core.identity;
 
 import HaUI.ImplSolution.DX_Farm.dto.ApiResponse;
-import HaUI.ImplSolution.DX_Farm.dto.HouseholdCreateRequest;
-import HaUI.ImplSolution.DX_Farm.dto.HouseholdCreateResponse;
-import HaUI.ImplSolution.DX_Farm.dto.HouseholdLinkRequest;
-import HaUI.ImplSolution.DX_Farm.dto.HouseholdResponse;
-import HaUI.ImplSolution.DX_Farm.service.HouseholdService;
+import HaUI.ImplSolution.DX_Farm.core.identity.HouseholdCreateRequest;
+import HaUI.ImplSolution.DX_Farm.core.identity.HouseholdCreateResponse;
+import HaUI.ImplSolution.DX_Farm.core.identity.HouseholdLinkRequest;
+import HaUI.ImplSolution.DX_Farm.core.identity.HouseholdResponse;
+import HaUI.ImplSolution.DX_Farm.core.identity.HouseholdService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

@@ -8,7 +8,7 @@ Cuối trang có mục **Trạng thái dịch vụ**, tự làm mới mỗi 30 g
 
 ## Chạy
 
-Nằm trong `deploy/docker-compose.yml`, không publish cổng riêng: gateway phục vụ ở `http://localhost:9080/portal/`.
+Nằm trong `deploy/docker-compose.yml`, không publish cổng riêng: gateway phục vụ ở `https://khuongdev.io.vn/portal/`.
 
 ## Đăng nhập
 

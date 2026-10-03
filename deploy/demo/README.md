@@ -1,6 +1,6 @@
 # Dữ liệu demo và kiểm thử đầu-cuối
 
-Các script Python 3 (thư viện chuẩn, thêm `pillow` cho ảnh tổng hợp) gọi API qua gateway `http://localhost:9080`.
+Các script Python 3 (thư viện chuẩn, thêm `pillow` cho ảnh tổng hợp) gọi API qua gateway, địa chỉ đặt bằng `--base-url` (ví dụ `https://khuongdev.io.vn`).
 Đăng nhập bằng tài khoản demo qua Authorization Code + PKCE của Keycloak nên token mang đúng client như app thật (`farmer1` đi qua client mobile).
 Mỗi script làm việc với app đang chạy; `--app farm|lab` chọn rõ ràng và dừng nếu backend chạy app khác.
 

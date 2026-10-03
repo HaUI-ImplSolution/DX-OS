@@ -60,4 +60,4 @@ Trong Compose, ba biến đầu để rỗng và `VITE_KEYCLOAK_CLIENT_ID=dxos-w
 
 `Dockerfile` build hai giai đoạn: `node:20-alpine` chạy `npm run build`, rồi `nginx:1.27-alpine` phục vụ `dist/`.
 `nginx.conf` trả `index.html` cho mọi đường dẫn (SPA) và `404` cho `/uploads/`; ảnh nằm ở SeaweedFS qua link có hạn của Backend.
-Service không publish cổng, gateway APISIX phục vụ web ở `http://localhost:9080`.
+Service không publish cổng, gateway APISIX phục vụ web ở `https://khuongdev.io.vn`.

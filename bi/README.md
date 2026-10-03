@@ -21,7 +21,7 @@ Service `superset` khai báo trong [`deploy/docker-compose.yml`](../deploy/docke
 
 ## Đăng nhập
 
-- `http://localhost:${APISIX_SUPERSET_HOST_PORT}` (mặc định `9081`): listener riêng của gateway vì Superset 3.1 không chạy được dưới đường dẫn con.
+- `https://bi.khuongdev.io.vn` (cổng `APISIX_SUPERSET_HOST_PORT`, mặc định `9081`): listener riêng của gateway vì Superset 3.1 không chạy được dưới đường dẫn con.
 - SSO Keycloak, tài khoản demo ở [`sso/README.md`](../sso/README.md): `ADMIN` → `Admin`, `ENGINEER` → `Gamma`; tài khoản khác (ví dụ `FARMER`) bị từ chối.
 - `SUPERSET_ADMIN_USERNAME` / `SUPERSET_ADMIN_PASSWORD` chỉ dùng cho REST API, không đăng nhập qua UI.
 

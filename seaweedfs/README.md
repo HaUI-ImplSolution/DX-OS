@@ -19,7 +19,7 @@ Hai service `seaweedfs` và `seaweedfs-admin` khai báo trong [`deploy/docker-co
 - Client nhận link có hạn (`imageUrl`, mặc định 15 phút, `storage.presign-ttl`), ký theo địa chỉ client dùng gọi API nên web (`localhost`) và điện thoại (IP LAN) đều tải được.
 - Cổng S3 không publish ra host: link đi qua gateway (route `/<bucket>/*`, chỉ `GET` và `HEAD`, giữ nguyên đường dẫn vì chữ ký phủ cả đường dẫn).
   AI Service nhận link nội bộ `http://seaweedfs:8333/...` hiệu lực 10 phút.
-- Trang quản trị `seaweedfs-admin` ở `http://localhost:9082`, mặc định chỉ mở trên chính máy chủ (`APISIX_STORAGE_ADMIN_HOST_PORT=127.0.0.1:9082`; đặt `9082` để mở ra mạng), đăng nhập `S3_ACCESS_KEY` / `S3_SECRET_KEY`; không dùng SSO vì Keycloak cố ý không cố định hostname.
+- Trang quản trị `seaweedfs-admin` ở `https://files.khuongdev.io.vn`; cổng gateway mặc định chỉ mở trên chính máy chủ (`APISIX_STORAGE_ADMIN_HOST_PORT=127.0.0.1:9082`; đặt `9082` để mở ra mạng), đăng nhập `S3_ACCESS_KEY` / `S3_SECRET_KEY`; không dùng SSO vì Keycloak cố ý không cố định hostname.
 - Trên máy chủ công khai, trang quản trị (`files.<tên miền>`) nằm sau Cloudflare Access, chi tiết theo dõi ở [trang docs](https://haui-implsolution.github.io/DX-OS-docs/).
 
 ## Biến môi trường (`deploy/.env`)

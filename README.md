@@ -7,6 +7,8 @@
 
 **Đội:** HaUI-ImplSolution · **Trường:** Trường Công nghệ Thông tin và Truyền thông, Đại học Công nghiệp Hà Nội
 
+**Dự án đang chạy:** [khuongdev.io.vn/portal](https://khuongdev.io.vn/portal/)
+
 **Tài liệu:** theo dõi tại [trang docs](https://haui-implsolution.github.io/DX-OS-docs/).
 
 Nền tảng mã nguồn mở dùng chung cho chuyển đổi số, dự thi **OLP Phần mềm nguồn mở 2026** (khối thi DX-OS, VFOSSA).
@@ -163,14 +165,14 @@ Cấu hình riêng của từng ứng dụng ở [`backend/app-farm/README.md`](
 
 | Dịch vụ | Địa chỉ | Đăng nhập |
 |---|---|---|
-| Ứng dụng web | http://localhost:9080 | SSO Keycloak, tài khoản bên dưới |
-| Portal (trạng thái dịch vụ) | http://localhost:9080/portal/ | Không cần |
-| Giám sát và truy vết | http://localhost:9080/monitor/ | SSO Keycloak, chỉ vai ADMIN (`admin1`) |
-| Swagger | http://localhost:9080/swagger-ui.html | Access token Keycloak, bấm Authorize |
-| Keycloak Admin | http://localhost:9080/admin | `KEYCLOAK_ADMIN_USERNAME` / `KEYCLOAK_ADMIN_PASSWORD` |
-| BI (Superset) | http://localhost:9081 | SSO Keycloak; `admin1` vào trang quản trị |
-| Quản trị lưu ảnh (SeaweedFS) | http://localhost:9082 | `S3_ACCESS_KEY` / `S3_SECRET_KEY` |
-| Chat (Mattermost) | http://localhost:8065 | `MATTERMOST_ADMIN_USERNAME` / `MATTERMOST_ADMIN_PASSWORD` |
+| Ứng dụng web | https://khuongdev.io.vn | SSO Keycloak, tài khoản bên dưới |
+| Portal (trạng thái dịch vụ) | https://khuongdev.io.vn/portal/ | Không cần |
+| Giám sát và truy vết | https://khuongdev.io.vn/monitor/ | SSO Keycloak, chỉ vai ADMIN (`admin1`) |
+| Swagger | https://khuongdev.io.vn/swagger-ui.html | Access token Keycloak, bấm Authorize |
+| Keycloak Admin | https://khuongdev.io.vn/admin | `KEYCLOAK_ADMIN_USERNAME` / `KEYCLOAK_ADMIN_PASSWORD` |
+| BI (Superset) | https://bi.khuongdev.io.vn | Cloudflare Access, rồi SSO Keycloak; `admin1` vào trang quản trị |
+| Quản trị lưu ảnh (SeaweedFS) | https://files.khuongdev.io.vn | Cloudflare Access, rồi `S3_ACCESS_KEY` / `S3_SECRET_KEY` |
+| Chat (Mattermost) | https://chat.khuongdev.io.vn | `MATTERMOST_ADMIN_USERNAME` / `MATTERMOST_ADMIN_PASSWORD` |
 
 ### 🌐 Máy chủ công khai
 
@@ -195,7 +197,7 @@ Script [`deploy/online-check.sh`](./deploy/online-check.sh) gọi các đường
 ## 🔌 API
 
 - Swagger UI ở `/swagger-ui.html`, OpenAPI JSON ở `/v3/api-docs`; tài liệu sinh từ annotation springdoc và chỉ có API của ứng dụng đang chạy (`DXOS_APP`).
-- Mọi lời gọi đi qua gateway `http://localhost:9080/api/v1/...` kèm `Authorization: Bearer <access token Keycloak>`; chỉ `GET /api/v1/system/status` và danh mục công khai của ứng dụng không cần token.
+- Mọi lời gọi đi qua gateway `https://khuongdev.io.vn/api/v1/...` kèm `Authorization: Bearer <access token Keycloak>`; chỉ `GET /api/v1/system/status` và danh mục công khai của ứng dụng không cần token.
 - Response bọc trong `ApiResponse`; lỗi có `errorCode` ổn định, lỗi nghiệp vụ trả `422` và xung đột đồng thời trả `409`.
 - Gọi quá giới hạn số lần trả `429` kèm `Retry-After`; các lệnh tạo mới nhận header `Idempotency-Key`.
 - Để thử: bấm **Authorize** trong Swagger với access token, hoặc dùng `deploy/demo/dxos_client.py` (đăng nhập Authorization Code + PKCE như app thật).

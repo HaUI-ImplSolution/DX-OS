@@ -61,7 +61,7 @@ Chỉ để demo; đổi mật khẩu trước khi triển khai ngoài môi trư
 | `tech1`, `tech2` | `tech1234` | TECHNICIAN |
 
 Farm dùng ba tài khoản đầu, Lab dùng `admin1` và các nhóm còn lại; `seed_demo.py` tạo tài khoản của app đang chạy.
-Quản lý user qua Admin Console `http://localhost:${APISIX_HOST_PORT}/admin` (`KEYCLOAK_ADMIN_USERNAME` / `KEYCLOAK_ADMIN_PASSWORD`).
+Quản lý user qua Admin Console `https://khuongdev.io.vn/admin` (`KEYCLOAK_ADMIN_USERNAME` / `KEYCLOAK_ADMIN_PASSWORD`).
 
 ## Client mobile
 
@@ -90,7 +90,7 @@ Chi tiết theo dõi ở [trang docs](https://haui-implsolution.github.io/DX-OS-
 
 ## Hostname nội bộ và hostname trình duyệt
 
-Trình duyệt gọi Keycloak qua gateway (`http://localhost:9080`), Backend và Superset trong mạng docker gọi `http://keycloak:8080`, nên claim `iss` của token mang hostname trình duyệt.
+Trình duyệt gọi Keycloak qua gateway (`https://khuongdev.io.vn`), Backend và Superset trong mạng docker gọi `http://keycloak:8080`, nên claim `iss` của token mang hostname trình duyệt.
 Vì vậy Backend dùng `jwk-set-uri` (chỉ lấy public key) thay cho `issuer-uri` và không kiểm `iss`; Superset chỉ định từng endpoint (`authorize_url` hostname trình duyệt, `access_token_url`/`api_base_url`/`jwks_uri` hostname nội bộ) và lấy thông tin user từ access token thay vì `/userinfo`.
 Triển khai thật cần reverse proxy để hai bên dùng cùng một hostname, khi đó bật lại `issuer-uri`.
 

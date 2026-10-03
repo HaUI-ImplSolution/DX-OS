@@ -150,9 +150,9 @@ Dùng `./reset.sh --yes --keep-images` khi chỉ đổi dữ liệu, không đ�
 | Việc | Cách | Kết quả |
 |---|---|---|
 | Dịch vụ healthy | `docker compose ps` | Mọi service healthy hoặc job đã thoát mã 0 |
-| Backend | `curl -s http://localhost:9080/api/v1/system/status` | `backend`, `ai`, `storage` ở trạng thái UP; `app.id` và `app.name` là app đang chạy |
+| Backend | `curl -s https://khuongdev.io.vn/api/v1/system/status` | `backend`, `ai`, `storage` ở trạng thái UP; `app.id` và `app.name` là app đang chạy |
 | Manifest app | Với token hợp lệ: `GET /api/v1/app` | `id` đúng `farm` hoặc `lab`; kèm vai, menu và loại workspace |
-| Portal | http://localhost:9080/portal/ | Hiện hạ tầng và app đang chạy |
+| Portal | https://khuongdev.io.vn/portal/ | Hiện hạ tầng và app đang chạy |
 
 ### 4.4 Nạp dữ liệu demo
 
@@ -258,7 +258,7 @@ Web không cần build lại: web đọc `GET /api/v1/app` rồi nạp giao di�
 
 ### 6.3 Kiểm qua API
 
-Dùng Swagger (`http://localhost:9080/swagger-ui.html`) hoặc client trong `deploy/demo/dxos_client.py`, sau khi `reset.sh` và `seed_demo.py --app lab` đã chạy xong.
+Dùng Swagger (`https://khuongdev.io.vn/swagger-ui.html`) hoặc client trong `deploy/demo/dxos_client.py`, sau khi `reset.sh` và `seed_demo.py --app lab` đã chạy xong.
 
 | Bước | Gọi | Kiểm |
 |---|---|---|

@@ -1,5 +1,6 @@
 package HaUI.ImplSolution.DX_Farm.service;
 
+import HaUI.ImplSolution.DX_Farm.core.storage.StorageService;
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisResponse;
 import HaUI.ImplSolution.DX_Farm.dto.DiseaseReportResponse;
 import HaUI.ImplSolution.DX_Farm.event.DiseaseReportCreatedEvent;
@@ -33,18 +34,21 @@ public class DiseaseReportService {
   private final CropSeasonRepository cropSeasonRepository;
   private final DiagnosisRepository diagnosisRepository;
   private final FileStorageService fileStorageService;
+  private final StorageService storageService;
   private final CurrentUserService currentUserService;
   private final ApplicationEventPublisher eventPublisher;
   private final Clock clock;
 
   public DiseaseReportService(DiseaseReportRepository diseaseReportRepository,
       CropSeasonRepository cropSeasonRepository, DiagnosisRepository diagnosisRepository,
-      FileStorageService fileStorageService, CurrentUserService currentUserService,
-      ApplicationEventPublisher eventPublisher, Clock clock) {
+      FileStorageService fileStorageService, StorageService storageService,
+      CurrentUserService currentUserService, ApplicationEventPublisher eventPublisher,
+      Clock clock) {
     this.diseaseReportRepository = diseaseReportRepository;
     this.cropSeasonRepository = cropSeasonRepository;
     this.diagnosisRepository = diagnosisRepository;
     this.fileStorageService = fileStorageService;
+    this.storageService = storageService;
     this.currentUserService = currentUserService;
     this.eventPublisher = eventPublisher;
     this.clock = clock;
@@ -83,7 +87,7 @@ public class DiseaseReportService {
       throw new PokaYokeViolationException("CROP_SEASON_HARVESTED",
           "Crop season is already harvested: " + cropSeasonId);
     }
-    String imageRef = fileStorageService.store(image);
+    String imageRef = fileStorageService.store(image, reporterId);
     DiseaseReport report = DiseaseReport.builder().cropSeason(season).imageRef(imageRef)
         .reportedBy(reporter).reportedByUserId(reporterId).clientRequestId(clientRequestId).build();
     DiseaseReport saved;
@@ -141,7 +145,8 @@ public class DiseaseReportService {
     var diagnosisView = diagnosisRepository.findByDiseaseReportId(report.getId())
         .map(diagnosis -> toDiagnosisView(diagnosis, farmerView)).orElse(null);
     return new DiseaseReportResponse(report.getId(), report.getCropSeason().getId(),
-        report.getImageRef(), report.getReportedBy(), report.getReportedAt(), diagnosisView);
+        storageService.presignedUrl(report.getImageRef()), report.getReportedBy(),
+        report.getReportedAt(), diagnosisView);
   }
 
   // A farmer sees the clinical content only once the engineer has approved it.

@@ -51,10 +51,15 @@ spring:
 server:
   port: ${SERVER_PORT:8081}
 
-app:
-  upload-dir: ${UPLOAD_DIR:./uploads}
-  # Base URL nội bộ để build image_url gửi cho AI Service (ảnh phục vụ qua /uploads/**).
-  public-base-url: ${APP_PUBLIC_BASE_URL:http://backend:8081}
+storage:
+  # S3-compatible object storage (MinIO); the bucket is private.
+  endpoint: ${MINIO_ENDPOINT}
+  access-key: ${MINIO_ACCESS_KEY}
+  secret-key: ${MINIO_SECRET_KEY}
+  bucket: ${MINIO_BUCKET}
+  # Origin of the gateway, used to sign links when no request is being served.
+  public-url: ${STORAGE_PUBLIC_URL}
+  presign-ttl: ${STORAGE_PRESIGN_TTL:15m}
 
 security:
   jwt:
@@ -87,7 +92,7 @@ mattermost:
   webhook:
     # Empty disables notifications. Internal hostname, e.g. http://mattermost:8065/hooks/<key>.
     url: ${MATTERMOST_WEBHOOK_URL:}
-    # Browser-reachable backend origin used to attach the report photo; empty omits the image.
+    # Browser-reachable gateway origin used to attach the report photo; empty omits the image.
     image-base-url: ${MATTERMOST_IMAGE_BASE_URL:}
     connect-timeout-ms: ${MATTERMOST_WEBHOOK_CONNECT_TIMEOUT_MS:2000}
     read-timeout-ms: ${MATTERMOST_WEBHOOK_READ_TIMEOUT_MS:3000}

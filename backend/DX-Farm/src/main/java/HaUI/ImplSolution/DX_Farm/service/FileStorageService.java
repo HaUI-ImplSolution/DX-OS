@@ -1,5 +1,6 @@
 package HaUI.ImplSolution.DX_Farm.service;
 
+import HaUI.ImplSolution.DX_Farm.core.storage.StorageService;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
@@ -7,9 +8,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.Map;
 import java.util.UUID;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -18,30 +17,26 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-// Stores uploaded photos after decoding and re-encoding them, so the stored file is always a real
-// JPEG/PNG whose type comes from its content and which carries no EXIF/GPS metadata.
+// Stores uploaded photos in object storage after decoding and re-encoding them, so the stored
+// object is always a real JPEG/PNG whose type comes from its content and which carries no
+// EXIF/GPS metadata.
 @Service
 public class FileStorageService {
 
   private static final long MAX_PIXELS = 40_000_000L;
   private static final float JPEG_QUALITY = 0.92f;
 
-  private final Path uploadDir;
+  private final StorageService storageService;
 
-  public FileStorageService(@Value("${app.upload-dir:./uploads}") String uploadDir) {
-    this.uploadDir = Paths.get(uploadDir).toAbsolutePath().normalize();
-    try {
-      Files.createDirectories(this.uploadDir);
-    } catch (IOException e) {
-      throw new IllegalStateException("Could not create upload directory: " + this.uploadDir, e);
-    }
+  public FileStorageService(StorageService storageService) {
+    this.storageService = storageService;
   }
 
-  public String store(MultipartFile file) {
+  // Returns the object key of the stored image.
+  public String store(MultipartFile file, String uploadedBy) {
     if (file == null || file.isEmpty()) {
       throw new IllegalArgumentException("Image file is required");
     }
@@ -59,25 +54,23 @@ public class FileStorageService {
     }
     byte[] sanitized = encode(decoded, format);
 
-    String filename = UUID.randomUUID() + "." + format.extension;
-    Path target = uploadDir.resolve(filename);
-    try {
-      Files.write(target, sanitized);
-    } catch (IOException e) {
-      throw new IllegalStateException("Failed to store image file", e);
-    }
-    return filename;
+    String key = UUID.randomUUID() + "." + format.extension;
+    storageService.putObject(key, sanitized, format.contentType,
+        Map.of("uploaded-by", uploadedBy, "source", "disease-report"));
+    return key;
   }
 
   private enum ImageFormat {
-    JPEG("jpg", "jpeg"), PNG("png", "png");
+    JPEG("jpg", "jpeg", "image/jpeg"), PNG("png", "png", "image/png");
 
     private final String extension;
     private final String writerName;
+    private final String contentType;
 
-    ImageFormat(String extension, String writerName) {
+    ImageFormat(String extension, String writerName, String contentType) {
       this.extension = extension;
       this.writerName = writerName;
+      this.contentType = contentType;
     }
   }
 

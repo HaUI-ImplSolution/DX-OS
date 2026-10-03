@@ -1,5 +1,6 @@
 package HaUI.ImplSolution.DX_Farm.service;
 
+import HaUI.ImplSolution.DX_Farm.core.storage.StorageService;
 import HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseRequest;
 import HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseRequest.FieldContext;
 import HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseRequest.RecentTreatment;
@@ -25,6 +26,7 @@ import HaUI.ImplSolution.DX_Farm.repository.DiseaseRepository;
 import HaUI.ImplSolution.DX_Farm.repository.DiseaseReportRepository;
 import HaUI.ImplSolution.DX_Farm.repository.TreatmentApplicationRepository;
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -33,7 +35,6 @@ import java.util.Objects;
 import java.util.UUID;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -43,6 +44,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class DiagnosisService {
 
+  // Must outlast the AI read timeout, since the AI service downloads the photo while it works.
+  private static final Duration AI_IMAGE_URL_TTL = Duration.ofMinutes(10);
   private static final int RECENT_TREATMENTS_LIMIT = 5;
   // Reports of spraying older than this are rejected so the harvest lock cannot be defeated.
   private static final int MAX_APPLIED_BACKDATE_DAYS = 30;
@@ -55,7 +58,7 @@ public class DiagnosisService {
   private final CurrentUserService currentUserService;
   private final AiDiagnosisClient aiDiagnosisClient;
   private final ApplicationEventPublisher eventPublisher;
-  private final String publicBaseUrl;
+  private final StorageService storageService;
   private final Clock clock;
   private final EntityManager entityManager;
 
@@ -65,7 +68,7 @@ public class DiagnosisService {
       TreatmentApplicationRepository treatmentApplicationRepository,
       CurrentUserService currentUserService, AiDiagnosisClient aiDiagnosisClient,
       ApplicationEventPublisher eventPublisher,
-      @Value("${app.public-base-url}") String publicBaseUrl, Clock clock,
+      StorageService storageService, Clock clock,
       EntityManager entityManager) {
     this.diagnosisRepository = diagnosisRepository;
     this.diseaseReportRepository = diseaseReportRepository;
@@ -75,7 +78,7 @@ public class DiagnosisService {
     this.currentUserService = currentUserService;
     this.aiDiagnosisClient = aiDiagnosisClient;
     this.eventPublisher = eventPublisher;
-    this.publicBaseUrl = publicBaseUrl;
+    this.storageService = storageService;
     this.clock = clock;
     this.entityManager = entityManager;
   }
@@ -151,7 +154,7 @@ public class DiagnosisService {
             .stream().limit(RECENT_TREATMENTS_LIMIT).map(this::toRecentTreatment).toList();
     FieldContext fieldContext = new FieldContext(season.getParcel().getCode(),
         season.getRiceVariety(), null, recentTreatments);
-    String imageUrl = publicBaseUrl + "/uploads/" + report.getImageRef();
+    String imageUrl = storageService.internalPresignedUrl(report.getImageRef(), AI_IMAGE_URL_TTL);
     return new AiDiagnoseRequest("req_" + UUID.randomUUID(), season.getId(), imageUrl,
         fieldContext);
   }

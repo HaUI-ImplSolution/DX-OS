@@ -33,10 +33,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-  // Ảnh upload (/uploads/**) public vì <img> ở FE không gửi kèm Authorization header -
-  // khớp thiết kế hiện tại (ảnh phục vụ qua HTTP thẳng, không qua API JSON có auth).
   private static final String[] PUBLIC_GET_ENDPOINTS =
-      {"/api/v1/diseases/**", "/api/v1/pesticides/**", "/api/v1/treatment-rules/**", "/uploads/**"};
+      {"/api/v1/diseases/**", "/api/v1/pesticides/**", "/api/v1/treatment-rules/**"};
 
   private static final String[] SWAGGER_ENDPOINTS =
       {"/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**"};

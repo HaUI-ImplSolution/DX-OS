@@ -7,6 +7,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import HaUI.ImplSolution.DX_Farm.core.storage.StorageService;
 import HaUI.ImplSolution.DX_Farm.exception.PokaYokeViolationException;
 import HaUI.ImplSolution.DX_Farm.model.CropSeason;
 import HaUI.ImplSolution.DX_Farm.model.CropSeasonStatus;
@@ -37,6 +38,8 @@ class DiseaseReportServiceTest {
   @Mock
   private FileStorageService fileStorageService;
   @Mock
+  private StorageService storageService;
+  @Mock
   private CurrentUserService currentUserService;
   @Mock
   private ApplicationEventPublisher eventPublisher;
@@ -50,14 +53,14 @@ class DiseaseReportServiceTest {
     when(currentUserService.canAccess(parcel)).thenReturn(true);
     when(currentUserService.currentFullName()).thenReturn("A");
     var service = new DiseaseReportService(diseaseReportRepository, cropSeasonRepository,
-        diagnosisRepository, fileStorageService, currentUserService, eventPublisher,
+        diagnosisRepository, fileStorageService, storageService, currentUserService, eventPublisher,
         Clock.fixed(Instant.parse("2026-10-06T00:00:00Z"), ZoneOffset.UTC));
     var image = new MockMultipartFile("image", "leaf.jpg", "image/jpeg", new byte[] {1});
 
     assertThatThrownBy(() -> service.create(5L, image, null)).isInstanceOfSatisfying(
         PokaYokeViolationException.class,
         e -> assertThat(e.getErrorCode()).isEqualTo("CROP_SEASON_HARVESTED"));
-    verify(fileStorageService, never()).store(any());
+    verify(fileStorageService, never()).store(any(), any());
     verify(diseaseReportRepository, never()).saveAndFlush(any());
   }
 }

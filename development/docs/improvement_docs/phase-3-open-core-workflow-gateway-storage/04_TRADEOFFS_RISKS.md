@@ -9,7 +9,13 @@
 | TO3 | APISIX đặt trước hay sau Spring Security | Đặt trước (xác thực ở gateway, backend tin tưởng) / Đặt trước nhưng backend vẫn tự kiểm lại (2 lớp độc lập) | 2 lớp độc lập | Đúng nguyên tắc "chặn 2 tầng" của dự án, backend vẫn an toàn nếu gateway bị cấu hình sai | Xác thực JWT 2 lần mỗi request (gateway + backend), tốn thêm một chút CPU/latency | Thấp — bỏ lớp gateway không ảnh hưởng backend vẫn tự bảo vệ được |
 | TO4 | Ảnh cũ migrate ngay (Q2, đã chốt) | Xem mục 00_OVERVIEW Q2 | Migrate ngay | Không phải duy trì 2 code path đọc ảnh (filesystem cũ + MinIO mới) lâu dài | Nếu script migrate lỗi giữa chừng, một phần ảnh có thể tạm không truy cập được | Vừa — chạy lại script trên phần chưa migrate, không mất dữ liệu nếu chưa xoá filesystem cũ |
 
-Kết luận: TO1-TO4 áp dụng ngay, không cần chờ chốt thêm.
+| TO5 | Nguồn image MinIO (Q3) | Build từ source / image bên thứ ba / store S3 khác | Build từ source tag chính thức | Biết chính xác mã nguồn đã chạy, vẫn là MinIO theo D4 | Lần dựng đầu thêm khoảng 2 phút, bản không còn được vá lỗi vì upstream đã archived | Thấp — chỉ đổi `image:` hoặc Dockerfile, backend dùng S3 API nên không đổi |
+| TO6 | Host của link ảnh có hạn | Một host cố định trong cấu hình / ký theo host client dùng để gọi API | Ký theo header `Host` của request (host không hợp lệ thì dùng `GATEWAY_PUBLIC_URL`) | Web (`localhost`) và điện thoại (IP LAN) cùng nhận link tải được, không cần cấu hình theo từng máy | Link chỉ đúng cho host đã gọi API; chữ ký gắn với host nên gateway phải chuyển tiếp nguyên `Host` | Thấp |
+| TO7 | Web phục vụ ở đâu | Cổng riêng của frontend, gọi API khác origin / qua gateway cùng origin | Qua gateway (`/*`) | Không cần CORS, không cần cấu hình URL API cho web, một địa chỉ duy nhất | Frontend không còn cổng riêng, redirect URI Keycloak đổi sang `localhost:9080` | Thấp |
+
+| TO8 | Superset và portal qua gateway | Đường dẫn con `/superset` / listener thứ hai của gateway / giữ cổng riêng | Superset ở listener thứ hai (`9081`) của APISIX, portal ở `/portal/` | Một gateway, không service nào publish cổng riêng (trừ Mattermost) | Superset 3.1 không có tiền tố đường dẫn (giao diện React báo 404), nên người dùng thấy hai cổng; nâng lên Superset 4.x mới cho chung cổng | Thấp |
+
+Kết luận: TO1-TO8 áp dụng ngay, không cần chờ chốt thêm.
 
 ## 2. Rủi ro
 
@@ -26,6 +32,10 @@ Kết luận: TO1-TO4 áp dụng ngay, không cần chờ chốt thêm.
 - `Diagnosis.approvalStatus` và `WorkflowCase.status` là 2 nguồn sự thật song song (TO2) — dọn về 1 nguồn để P4/P9 không phải quyết định lại từ đầu.
 - Không tách module Maven riêng cho Core (TO1) — chỉ là convention package, không có ràng buộc compile-time.
 - `iss` vẫn không được kiểm ở backend dù APISIX đã thống nhất hostname — để riêng vì ảnh hưởng rộng hơn phạm vi phase, xem `sso/README.md`.
+- Giới hạn tốc độ tính theo `remote_addr`; sau mạng Docker mọi client trên cùng máy dùng chung một bộ đếm.
+- Phản hồi `429` và `401` do gateway sinh ra không có dạng `ApiResponse` của backend; web và mobile hiển thị mã HTTP thay cho thông điệp tiếng Việt.
+- `MINIO_ACCESS_KEY` và `MINIO_SECRET_KEY` là tài khoản gốc của MinIO, backend dùng chung; chưa tạo tài khoản dịch vụ riêng với quyền hẹp.
+- Gateway chạy HTTP; HTTPS cho bản phát hành thuộc P10.
 
 ## 4. Điều kiện dừng và rollback
 

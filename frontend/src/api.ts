@@ -18,10 +18,8 @@ import type {
   TreatmentRule,
 } from "./types";
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8081").replace(/\/$/, "");
+const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? "http://localhost:9080").replace(/\/$/, "");
 const API_V1 = `${API_BASE}/api/v1`;
-
-export const staticUrl = (path: string) => `${API_BASE}/${path.replace(/^\//, "")}`;
 
 export class ApiError extends Error {
   status: number;

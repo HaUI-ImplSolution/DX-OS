@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { Image, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
-import { getDiseaseReport, reportImageUrl } from "@/api/endpoints";
+import { getDiseaseReport } from "@/api/endpoints";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { ErrorState } from "@/components/ErrorState";
@@ -94,7 +94,7 @@ export default function ReportDetailScreen() {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
     >
       <Image
-        source={{ uri: reportImageUrl(report.imageRef) }}
+        source={{ uri: report.imageUrl }}
         accessibilityLabel="Ảnh báo cáo sâu bệnh"
         style={styles.image}
         resizeMode="cover"

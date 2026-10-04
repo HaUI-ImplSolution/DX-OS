@@ -27,7 +27,8 @@ Không chọn Metabase (AGPL-3.0, copyleft mạnh hơn dù vẫn OSI-approved) �
 
 ## Đăng nhập
 
-- URL: `http://localhost:${SUPERSET_HOST_PORT}`
+- URL: `http://localhost:${APISIX_SUPERSET_HOST_PORT}` (mặc định `http://localhost:9081`), cổng thứ hai của gateway APISIX; Superset không publish cổng riêng.
+  Superset 3.1 không chạy được dưới đường dẫn con nên cần listener riêng.
 - Đăng nhập qua UI bằng SSO thật (Keycloak) — bấm "Sign In with keycloak", dùng tài khoản demo trong [`sso/README.md`](../sso/README.md).
   Role realm map sang role Superset: `ADMIN` → `Admin`, `ENGINEER` → `Gamma`; tài khoản chỉ có role `FARMER` bị từ chối đăng nhập (nông dân chỉ dùng app mobile). Role Postgres `superset_ro` không đọc được bảng `households` (thông tin liên hệ nông hộ).
 - Tài khoản `SUPERSET_ADMIN_USERNAME`/`SUPERSET_ADMIN_PASSWORD` (seed lúc khởi động) vẫn tồn tại song song, chỉ dùng cho REST API/automation (`bi/bootstrap_datasources.py` tự đăng nhập bằng tài khoản này) — không đăng nhập được qua UI nữa vì đã bật `AUTH_TYPE = AUTH_OAUTH`.

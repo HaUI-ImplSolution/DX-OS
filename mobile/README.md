@@ -90,8 +90,8 @@ Khai báo trong `mobile/.env` (không commit); mẫu ở [`.env.example`](./.env
 
 | Biến | Ý nghĩa | Ví dụ |
 |---|---|---|
-| `EXPO_PUBLIC_API_BASE_URL` | Địa chỉ Backend | `http://192.168.1.10:8081` |
-| `EXPO_PUBLIC_KEYCLOAK_URL` | Realm URL của Keycloak qua IP LAN của máy dev | `http://192.168.1.10:8180/realms/dxfarm` |
+| `EXPO_PUBLIC_API_BASE_URL` | Địa chỉ gateway (API và ảnh) | `http://192.168.1.10:9080` |
+| `EXPO_PUBLIC_KEYCLOAK_URL` | Realm URL của Keycloak, cũng qua gateway | `http://192.168.1.10:9080/realms/dxfarm` |
 | `EXPO_PUBLIC_KEYCLOAK_CLIENT_ID` | Client OIDC | `dxfarm-mobile` |
 
 Biến `EXPO_PUBLIC_*` được nhúng vào bundle lúc build nên chỉ chứa giá trị công khai.
@@ -116,7 +116,7 @@ cd deploy
 docker compose up -d --build
 ```
 
-- Điện thoại phải truy cập được cổng `8081` (Backend) và `8180` (Keycloak) của máy dev; mở cổng trên firewall nếu cần.
+- Điện thoại phải truy cập được cổng `9080` (gateway) của máy dev; mở cổng trên firewall nếu cần.
 - Keycloak chỉ import realm khi realm chưa tồn tại.
   Với volume Postgres cũ, thêm client `dxfarm-mobile` qua Admin Console hoặc xoá `deploy/data/postgres` để import lại (mất dữ liệu demo).
 - Thửa cần có `farmerName` là `Nguyễn Văn Nông` để `farmer1` nhìn thấy; đăng nhập web bằng `farmer1` để tạo thửa (tên được gán tự động), hoặc dùng `admin1`/`engineer1` tạo thửa với đúng tên đó.
@@ -132,7 +132,7 @@ npm start -- -c
 ```
 
 - Cờ `-c` xoá cache Metro để nạp lại biến `EXPO_PUBLIC_*`; dùng lại mỗi khi đổi `.env`.
-- Metro chạy ở cổng `8083` (script `npm start`) vì `8081` dành cho Backend; điện thoại cần truy cập được cổng này của máy dev.
+- Metro chạy ở cổng `8083` (script `npm start`); điện thoại cần truy cập được cổng này của máy dev.
 - Quét mã QR bằng Expo Go trên điện thoại.
   Expo Go phải hỗ trợ SDK 57; nếu không, dùng development build.
 
@@ -192,7 +192,7 @@ npx expo export --platform android
 |---|---|
 | "Không đăng nhập được, thử lại" hoặc Keycloak báo redirect URI không hợp lệ | Realm chưa có client `dxfarm-mobile` (volume cũ); xem bước 2 |
 | Trang đăng nhập Keycloak không tải, hoặc đăng nhập xong bị chuyển về `localhost` và Safari không mở được | `EXPO_PUBLIC_KEYCLOAK_URL` trong `.env` đang là `localhost` hoặc sai IP; đặt IP LAN của máy dev rồi chạy `npm start -- -c` |
-| "Không kết nối được. Kiểm tra mạng rồi thử lại." | Điện thoại không tới được Backend: sai IP trong `.env`, khác mạng WiFi hoặc firewall chặn cổng `8081` |
+| "Không kết nối được. Kiểm tra mạng rồi thử lại." | Điện thoại không tới được Backend: sai IP trong `.env`, khác mạng WiFi hoặc firewall chặn cổng `9080` |
 | Danh sách thửa trống | `farmerName` của thửa không khớp tên trong token |
 | Ảnh báo cáo không hiển thị | Đường dẫn `/uploads/...` không truy cập được từ điện thoại; kiểm tra `EXPO_PUBLIC_API_BASE_URL` |
 | Ảnh nằm mãi ở "Chờ gửi" | Chưa có mạng tới Backend hoặc đang chờ khoảng thử lại; đưa app về foreground để gửi ngay |

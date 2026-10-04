@@ -25,11 +25,20 @@ Bài toán được chọn: **Agri-Carbon DX-OS** — hệ điều hành chuyể
 
 ## Kiến trúc dịch vụ (tóm tắt)
 
-Hai service tách biệt, giao tiếp qua HTTP; các client (web, mobile) gọi Backend:
+Các client (web, mobile) chỉ gọi một cửa chung là gateway APISIX (cổng `9080`), gateway chuyển tới Backend, Keycloak, MinIO và web.
+Sơ đồ 3 tầng Open-Core (Core dùng chung, H-P-D-I, ứng dụng DX-Farm) và sơ đồ luồng request ở [`development/docs/ARCHITECTURE_OPEN_CORE.md`](./development/docs/ARCHITECTURE_OPEN_CORE.md).
+Core nằm ở các package `core.identity`, `core.workflow`, `core.storage` của Backend; đổi ứng dụng chỉ thêm package ứng dụng mới, Core không đổi.
+
+Hai service tách biệt, giao tiếp qua HTTP:
 
 - **Backend (Java/Spring Boot)** — sở hữu Single Source of Truth: API nghiệp vụ, PostgreSQL (Operational Data + Structured Knowledge), state machine duyệt (Approve/Reject), enforce poka-yoke (khoá PHI/thu hoạch), auth.
   Đây là nơi mọi ghi nhận cuối cùng xảy ra.
   Role `FARMER` chỉ thấy và thao tác trên thửa có `farmerName` khớp tên trong token (thửa FARMER tạo luôn mang tên họ) và chỉ nhận nội dung chẩn đoán khi đã `APPROVED`.
+- **Gateway (APISIX standalone)** — cửa duy nhất publish ra host: kiểm JWT Keycloak lần đầu, giới hạn tốc độ upload ảnh và gọi AI, route `/api`, `/realms`, link ảnh có hạn và web.
+  Cổng của Backend, Keycloak, AI và MinIO không publish ra host; Backend vẫn tự kiểm JWT lần hai.
+- **Workflow dùng chung** — mỗi chẩn đoán có một `workflow_case` (trạng thái, người phụ trách) và các `workflow_event` chỉ thêm, không sửa, nên xem lại được toàn bộ lịch sử duyệt.
+  `GET /api/v1/workflow-cases` trả danh sách việc chờ cho kỹ sư và admin.
+- **Lưu ảnh (MinIO)** — ảnh báo cáo nằm trong bucket riêng tư, client nhận link có hạn (mặc định 15 phút) trong trường `imageUrl`; không còn đường dẫn ảnh công khai.
 - **AI Service (Python)** — Vision API, LangGraph, Qwen2.5 qua Ollama và RAG; hoạt động như dịch vụ suy luận stateless.
   AI gọi internal REST API của Backend để lấy structured facts, chỉ đọc AI Vector DB riêng và trả recommendation về Backend.
 - **Mobile (Expo/React Native)** — client dành riêng cho FARMER: đăng nhập Keycloak (PKCE), xem thửa/vụ/báo cáo, chụp và gửi ảnh sâu bệnh, gửi lại tự động khi mất mạng.
@@ -163,6 +172,9 @@ AI Service hoạt động stateless: kết hợp CV, structured facts từ Backe
 AI Vector DB đã tách khỏi Backend DB; runtime dùng role chỉ đọc, còn job ingest dùng role đọc/ghi riêng.
 Ba phase tách AI/Backend đã hoàn thành; trạng thái cuối được phản ánh trực tiếp trong code, README và CHANGELOG.
 Frontend, Keycloak SSO, Superset, Mattermost và portal tiếp tục dùng chung stack Docker Compose.
+Web, API, Keycloak, ảnh và portal đi qua gateway APISIX ở `http://localhost:9080`, Superset ở listener thứ hai `http://localhost:9081` của cùng gateway; Backend, Keycloak, AI, MinIO, Superset và portal không publish cổng ra host.
+Duyệt hoặc từ chối chẩn đoán ghi một sự kiện vào `workflow_event` (không ghi đè), mỗi chẩn đoán có người phụ trách và danh sách việc chờ qua `GET /api/v1/workflow-cases`.
+Ảnh báo cáo lưu ở MinIO (build từ source vì image chính thức không còn phát hành) và chỉ xem được qua link có hạn.
 Backend post thông báo báo cáo mới và chẩn đoán chờ duyệt vào channel Mattermost `Kỹ sư nông nghiệp` qua Incoming Webhook khi `MATTERMOST_WEBHOOK_URL` được cấu hình.
 Keycloak không cố định hostname nên web (`localhost`) và điện thoại (IP LAN) đăng nhập cùng lúc mà không cần đổi `deploy/.env`.
 Bản mobile Expo cho FARMER đã có luồng đầu-cuối (đăng nhập, xem thửa/vụ/báo cáo, chụp và gửi, hàng đợi offline); hướng dẫn chạy và đóng gói APK ở [`mobile/README.md`](./mobile/README.md), kế hoạch ở [`development/docs/pending_docs/mobile/PLAN.md`](./development/docs/pending_docs/mobile/PLAN.md).
@@ -185,12 +197,27 @@ docker compose up -d --build
 
 | Service | Vào đâu | Đăng nhập |
 |---|---|---|
-| **Portal** (link tới các app, trang quản trị và tài liệu API) | http://localhost:8090 | Không cần đăng nhập — chỉ là trang link |
-| **App chính** (frontend) | http://localhost:8082 | Bấm "Đăng nhập" → redirect sang Keycloak, dùng tài khoản demo (xem [`sso/README.md`](./sso/README.md)) |
-| **Keycloak Admin Console** | http://localhost:8180/admin | `KEYCLOAK_ADMIN_USERNAME`/`KEYCLOAK_ADMIN_PASSWORD` trong `.env` |
-| **Backend** (Swagger, gọi API tay) | http://localhost:8081/swagger-ui.html | Lấy access token từ Keycloak (xem `sso/README.md`), bấm "Authorize" rồi dán vào |
-| **BI Dashboard** (Superset) | http://localhost:8088 | Bấm "Sign In with keycloak", dùng tài khoản demo (xem [`sso/README.md`](./sso/README.md)); tài khoản role `ADMIN` vào được trang quản trị `/users/list/` |
+| **Portal** (link tới các app, trang quản trị và tài liệu API, qua gateway) | http://localhost:9080/portal/ | Không cần đăng nhập — chỉ là trang link |
+| **App chính** (frontend, qua gateway) | http://localhost:9080 | Bấm "Đăng nhập" → redirect sang Keycloak, dùng tài khoản demo (xem [`sso/README.md`](./sso/README.md)) |
+| **Keycloak Admin Console** (qua gateway) | http://localhost:9080/admin | `KEYCLOAK_ADMIN_USERNAME`/`KEYCLOAK_ADMIN_PASSWORD` trong `.env` |
+| **Backend** (Swagger, gọi API tay, qua gateway) | http://localhost:9080/swagger-ui.html | Lấy access token từ Keycloak (xem `sso/README.md`), bấm "Authorize" rồi dán vào |
+| **BI Dashboard** (Superset, listener thứ hai của gateway) | http://localhost:9081 | Bấm "Sign In with keycloak", dùng tài khoản demo (xem [`sso/README.md`](./sso/README.md)); tài khoản role `ADMIN` vào được trang quản trị `/users/list/` |
+| **Quản trị lưu ảnh** (MinIO Console, listener thứ ba của gateway) | http://localhost:9082 | Tài khoản gốc `MINIO_ACCESS_KEY`/`MINIO_SECRET_KEY` trong `.env`; xem bucket và ảnh báo cáo |
 | **Chat nội bộ** (Mattermost) | http://localhost:8065 | Tài khoản System Admin có sẵn: `MATTERMOST_ADMIN_USERNAME`/`MATTERMOST_ADMIN_PASSWORD` trong `.env`; team `DX-Farm HTX` và 3 channel đã được tạo sẵn; muốn nhận thông báo từ Backend thì cấp webhook theo [`chat/README.md`](./chat/README.md) |
+
+### Đăng nhập vào từng service
+
+Mỗi service có hai kiểu tài khoản: tài khoản của ứng dụng (engineer, admin trong Keycloak) và tài khoản quản trị riêng của chính service đó.
+
+| Service | Engineer / admin của ứng dụng | Quản trị riêng của service |
+|---|---|---|
+| App chính (web) | SSO Keycloak: `engineer1` và `admin1` | Không có, `admin1` là quản trị của ứng dụng |
+| Keycloak | Không vào được Admin Console | `KEYCLOAK_ADMIN_USERNAME`/`KEYCLOAK_ADMIN_PASSWORD` (realm `master`) |
+| Superset (BI) | SSO Keycloak: `engineer1` vào với role Gamma, `admin1` với role Admin (kể cả trang `/users/list/`) | Tài khoản `SUPERSET_ADMIN_*` chỉ dùng cho script bootstrap qua REST, giao diện chỉ có nút đăng nhập Keycloak |
+| MinIO Console | Không dùng SSO | `MINIO_ACCESS_KEY`/`MINIO_SECRET_KEY` |
+| Mattermost | Tài khoản Mattermost riêng, không dùng SSO | `MATTERMOST_ADMIN_USERNAME`/`MATTERMOST_ADMIN_PASSWORD` |
+| Swagger (API) | Lấy access token của `engineer1` hoặc `admin1`, bấm Authorize | Không có |
+| Portal | Không cần đăng nhập | Không có |
 
 ### Tài khoản demo
 
@@ -229,12 +256,15 @@ Muốn chỉ dựng một phần: `./reset.sh --yes postgres backend keycloak`.
 
 - Quản lý tài khoản (tạo/xoá/đổi role FARMER/ENGINEER/ADMIN): qua Keycloak Admin Console.
   Xem [`sso/README.md`](./sso/README.md).
-- Dữ liệu Postgres, Mattermost, Superset và ảnh upload lưu ở `deploy/data/` (bind mount, không mất khi `docker compose down`); model Ollama và cache embedding của AI nằm ở volume Docker.
+- Dữ liệu Postgres, Mattermost, Superset và ảnh upload (MinIO) lưu ở `deploy/data/` (bind mount, không mất khi `docker compose down`); model Ollama và cache embedding của AI nằm ở volume Docker.
   Dựng lại từ đầu bằng `deploy/reset.sh` (xem mục "Dựng lại từ đầu" bên dưới).
-- Chi tiết riêng từng service: [`mobile/README.md`](./mobile/README.md) (app mobile), [`sso/README.md`](./sso/README.md) (Keycloak), [`bi/README.md`](./bi/README.md) (Superset), [`chat/README.md`](./chat/README.md) (Mattermost), [`portal/README.md`](./portal/README.md) (trang portal).
+- Chi tiết riêng từng service: [`mobile/README.md`](./mobile/README.md) (app mobile), [`sso/README.md`](./sso/README.md) (Keycloak), [`bi/README.md`](./bi/README.md) (Superset), [`minio/README.md`](./minio/README.md) (lưu ảnh), [`chat/README.md`](./chat/README.md) (Mattermost), [`portal/README.md`](./portal/README.md) (trang portal).
 - Test backend: `./mvnw test` trong `backend/DX-Farm`; cần Docker vì có test chạy PostgreSQL qua Testcontainers.
 - Backend log mức `INFO`; đặt `LOG_LEVEL_APP=DEBUG` khi cần chi tiết (không nằm trong `deploy/.env.example`).
-- Cổng AI (8000) không publish ra host; chỉ Backend gọi được AI qua mạng compose.
-- Sửa code + hot reload thay vì rebuild image: chạy `docker compose up -d postgres` trong `deploy` để có sẵn Postgres, rồi `./mvnw spring-boot:run` (backend) và `VITE_KEYCLOAK_URL=http://localhost:8180/realms/dxfarm npm run dev` (frontend) như bình thường. Mọi file `.env` chỉ nằm ở `deploy/`.
+- Cổng AI (8000), Backend (8081), Keycloak (8080), MinIO (9000), Superset (8088) và portal (80) không publish ra host; chỉ gateway (`APISIX_HOST_PORT` mặc định `9080`, `APISIX_SUPERSET_HOST_PORT` mặc định `9081`) và Mattermost mở ra ngoài, Backend gọi AI qua mạng compose.
+- Lần dựng đầu build MinIO từ source Go (khoảng 2 phút) vì image chính thức không còn phát hành.
+- Ảnh cũ trong `deploy/data/uploads` chuyển vào MinIO bằng `minio/migrate-uploads.sh` (không xoá thư mục cũ, chỉ so số lượng).
+- Sửa code + hot reload thay vì rebuild image: chạy `docker compose up -d postgres` trong `deploy` để có sẵn Postgres, rồi `./mvnw spring-boot:run` (backend) và `VITE_KEYCLOAK_URL=http://localhost:9080/realms/dxfarm npm run dev` (frontend) như bình thường.
+  Mọi file `.env` chỉ nằm ở `deploy/`.
 
 </details>

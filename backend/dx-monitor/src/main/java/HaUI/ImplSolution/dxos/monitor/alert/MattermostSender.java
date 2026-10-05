@@ -80,6 +80,16 @@ public class MattermostSender {
     return value != null && !value.isBlank();
   }
 
-  private static String escape(
-      String text) {StringBuilder out=new StringBuilder(text.length()+8);for(char c:text.toCharArray()){switch(c){case'"'->out.append("\\\"");case'\\'->out.append("\\\\");case'\n'->out.append("\\n");default->out.append(c<0x20?' ':c);}}return out.toString();}
+  private static String escape(String text) {
+    StringBuilder out = new StringBuilder(text.length() + 8);
+    for (char c : text.toCharArray()) {
+      switch (c) {
+        case '"' -> out.append("\\\"");
+        case '\\' -> out.append("\\\\");
+        case '\n' -> out.append("\\n");
+        default -> out.append(c < 0x20 ? ' ' : c);
+      }
+    }
+    return out.toString();
+  }
 }

@@ -36,7 +36,7 @@ Chi tiết ở [`README.md`](./README.md).
 
 ## Quy ước
 
-- Java: định dạng theo `eclipse-java-google-style.xml`, chạy `./mvnw net.revelc.code.formatter:formatter-maven-plugin:2.26.0:format` trước khi commit.
+- Java: định dạng theo `eclipse-java-google-style.xml`, chạy `./mvnw formatter:format` trước khi commit (phiên bản plugin lấy từ `backend/pom.xml`).
 - Package theo lớp: `controller`, `service`, `repository`, `model`, `dto`, `config`, `exception`; tính năng dùng chung nằm trong `core`.
 - Response của controller bọc trong `ApiResponse`; lỗi nghiệp vụ có `errorCode` ổn định.
 - Đổi API thì cập nhật `@Operation` trong cùng PR.

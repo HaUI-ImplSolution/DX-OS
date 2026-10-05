@@ -3,3 +3,4 @@
 # Transitive packages of the mobile app (Expo) without a compatible fix.
 CVE-2026-93749 exp:2026-12-31
 CVE-2023-54404 exp:2026-12-31
+CVE-2026-118664 exp:2026-12-31

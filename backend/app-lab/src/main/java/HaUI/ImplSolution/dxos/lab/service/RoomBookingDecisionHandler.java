@@ -30,8 +30,7 @@ public class RoomBookingDecisionHandler implements WorkflowDecisionHandler {
   @Override
   public void onDecision(CaseView workflowCase, String target, String reason) {
     RoomBooking booking = bookingRepository.findById(workflowCase.entityId()).orElseThrow(
-        () -> new ResourceNotFoundException(
-            "Room booking not found: " + workflowCase.entityId()));
+        () -> new ResourceNotFoundException("Room booking not found: " + workflowCase.entityId()));
     booking.setStatus(target);
     String room = booking.getRoom().getCode();
     switch (target) {

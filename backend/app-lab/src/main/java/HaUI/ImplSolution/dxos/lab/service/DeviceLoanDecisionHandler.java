@@ -54,8 +54,8 @@ public class DeviceLoanDecisionHandler implements WorkflowDecisionHandler {
       case LoanStatus.REJECTED -> {
         loan.setRejectionReason(reason);
         notifier.tell(loan.getBorrowerId(), LabNotificationTypes.LOAN_REJECTED,
-            "Phiếu mượn bị từ chối", "Phiếu mượn thiết bị %s bị từ chối. Lý do: %s"
-                .formatted(device.getAssetCode(), reason),
+            "Phiếu mượn bị từ chối",
+            "Phiếu mượn thiết bị %s bị từ chối. Lý do: %s".formatted(device.getAssetCode(), reason),
             LabCaseTypes.DEVICE_LOAN_ENTITY, loan.getId());
       }
       case LoanStatus.RETURNED -> device.setStatus(

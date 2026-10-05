@@ -147,8 +147,8 @@ public class MattermostMessageBuilder {
       case CONFIRMED -> "Đã xác nhận việc phun thuốc";
       case REJECTED -> "Đã từ chối khai phun thuốc";
     };
-    List<Map<String, Object>> fields = new ArrayList<>(
-        List.of(field("Mã báo cáo", "#" + event.reportId()),
+    List<Map<String, Object>> fields =
+        new ArrayList<>(List.of(field("Mã báo cáo", "#" + event.reportId()),
             field("Mã thửa", markdown(event.parcelCode())),
             field("Thuốc", markdown(event.pesticideName())),
             field("Người xử lý", markdown(event.decidedBy()))));
@@ -157,9 +157,9 @@ public class MattermostMessageBuilder {
     } else {
       fields.add(field("Hết cách ly", formatDate(event.harvestLockedUntil())));
     }
-    String fallback = "%s: báo cáo #%d, thửa %s, thuốc %s, bởi %s".formatted(title,
-        event.reportId(), plain(event.parcelCode()), plain(event.pesticideName()),
-        plain(event.decidedBy()));
+    String fallback =
+        "%s: báo cáo #%d, thửa %s, thuốc %s, bởi %s".formatted(title, event.reportId(),
+            plain(event.parcelCode()), plain(event.pesticideName()), plain(event.decidedBy()));
     return payload(fallback,
         event.outcome() == TreatmentDecidedEvent.Outcome.REJECTED ? COLOR_REVIEW_REQUIRED
             : COLOR_REQUEST,

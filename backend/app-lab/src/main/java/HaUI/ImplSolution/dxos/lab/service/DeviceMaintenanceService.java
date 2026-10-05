@@ -67,12 +67,12 @@ public class DeviceMaintenanceService {
     }
     Ticket ticket = null;
     if (request.ticketId() != null) {
-      ticket = ticketRepository.findById(request.ticketId()).orElseThrow(
-          () -> new IllegalArgumentException("Unknown ticket: " + request.ticketId()));
+      ticket = ticketRepository.findById(request.ticketId())
+          .orElseThrow(() -> new IllegalArgumentException("Unknown ticket: " + request.ticketId()));
     }
     DeviceMaintenance entry = maintenanceRepository.save(DeviceMaintenance.builder().device(device)
-        .kind(request.kind()).note(request.note().strip()).ticket(ticket)
-        .performedById(user.id()).performedByName(user.name()).startedAt(clock.instant()).build());
+        .kind(request.kind()).note(request.note().strip()).ticket(ticket).performedById(user.id())
+        .performedByName(user.name()).startedAt(clock.instant()).build());
     if (request.kind() != MaintenanceKind.INSPECTION) {
       device.setStatus(DeviceStatus.UNDER_REPAIR);
       deviceRepository.save(device);

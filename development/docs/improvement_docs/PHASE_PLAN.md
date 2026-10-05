@@ -17,17 +17,18 @@ Số ngày là ước lượng người-ngày, chưa tính thời gian chờ chu
 | P6 | AI: kiểm tra ảnh, chẩn đoán, đánh giá | Quan trọng | A (đánh giá), B (còn lại) | 5-6 ngày | P1 (song song được với P4) | 5, 11 |
 | P7 | Dữ liệu, BI và tri thức | Quan trọng | B | 4-5 ngày | P4, P6 | 14, 21 |
 | P8 | Kiểm thử, dữ liệu demo, hồ sơ nộp bài | Nghiêm trọng (hạn nộp) | A | 5-6 ngày | làm xuyên suốt, chốt sau cùng | 17, 18, 19, 20 |
-| P9 | Ứng dụng minh họa thứ hai (tùy chọn) | Quan trọng nếu P0 yêu cầu | A có điều kiện | 3-5 ngày | P3 | 22 |
+| P9 | _(Đã loại bỏ, xem ghi chú dưới bảng)_ | - | - | - | - | - |
 | P10 | Để sau | Theo dõi | C | không tính | | 24, 15 (phần hoàn thiện) |
 
-Phủ đủ 24 mục: 1→P2, 2→P4, 3→P4, 4→P5, 5→P6, 6→P2, 7→P3, 8→P3, 9→P1, 10→P1+P5, 11→P6, 12→P4, 13→P4+P5, 14→P7, 15→P4+P5+P10, 16→P2+P4+P8, 17→P1+P3+P8, 18→P8, 19→P8, 20→P8, 21→P7, 22→P0+P9, 23→P0, 24→P10.
+P9 đã loại bỏ: D1 (phase 0, chốt 05/10/2026) xác nhận với giảng viên hướng dẫn/BTC rằng đề tài Agri-Carbon hợp lệ ở vòng HaUI, không cần ứng dụng minh họa thứ hai.
+
+Phủ đủ 24 mục: 1→P2, 2→P4, 3→P4, 4→P5, 5→P6, 6→P2, 7→P3, 8→P3, 9→P1, 10→P1+P5, 11→P6, 12→P4, 13→P4+P5, 14→P7, 15→P4+P5+P10, 16→P2+P4+P8, 17→P1+P3+P8, 18→P8, 19→P8, 20→P8, 21→P7, 22→P0, 23→P0, 24→P10.
 
 ## 2. Thứ tự và phụ thuộc
 
 ```
 P0 → P1 → P2 → P3 ─┬→ P4 → P5 ─┐
-                   ├→ P6 ──────┼→ P7 → P8
-                   └→ P9 (tùy chọn)
+                   └→ P6 ──────┴→ P7 → P8
 ```
 
 - P1 làm sớm vì nhỏ, rủi ro thấp, và là lỗi có thể bị trừ điểm nặng (secret, khóa PHI).
@@ -35,21 +36,21 @@ P0 → P1 → P2 → P3 ─┬→ P4 → P5 ─┐
 - P6 chỉ cần P1 nên làm song song với P4 nếu có người rảnh.
 - P8 chạy xuyên suốt (test, tài liệu, seed demo cập nhật theo từng phase), chốt ở cuối.
 
-## 3. Lộ trình rút gọn nếu hạn chỉ 14 ngày
+## 3. Lộ trình rút gọn (dự phòng, hiện không áp dụng)
 
-Đề thi cho 14 ngày kể từ ngày công bố nội bộ, trong khi cộng đầy đủ các phase là khoảng 40 người-ngày.
-Với tối đa 3 người làm song song, giữ nhóm A và cắt phần còn lại:
+**Đã chốt ở phase 0 (DP0-04, 05/10/2026): không bị ràng buộc mốc 14 ngày, làm đầy đủ P0-P8 + P10 theo ước lượng thật (~40 người-ngày), không cắt work package nào vì thời gian.**
+Giữ bảng dưới làm phương án dự phòng — chỉ áp dụng lại nếu sau này có mốc thời gian mới ép buộc; đề thi gốc cho 14 ngày kể từ ngày công bố nội bộ, trong khi cộng đầy đủ các phase là khoảng 40 người-ngày, với tối đa 3 người làm song song, giữ nhóm A và cắt phần còn lại:
 
 | Phase | Giữ lại | Cắt hoặc hoãn |
 |---|---|---|
 | P0 | Toàn bộ | |
 | P1 | Toàn bộ | |
 | P2 | Household gắn `sub`, ma trận quyền, chặn farmer ở web và Superset | Onboarding qua Keycloak Admin API, xóa mềm |
-| P3 | Workflow dùng chung có lịch sử + `assignedTo` + danh sách chờ (tự làm gọn), cửa API bằng Nginx/Traefik, sơ đồ 3 tầng | MinIO, APISIX, Flowable nếu chọn tự làm |
+| P3 | Workflow dùng chung có lịch sử + `assignedTo` + danh sách chờ (tự làm, theo D2), cửa API bằng APISIX standalone (theo D3), MinIO (theo D4), sơ đồ 3 tầng | Flowable (đã loại theo D2) |
 | P4 | Duyệt thửa/vụ qua workflow, trang quản lý tối thiểu cho admin và engineer | GPS nâng cao, danh mục giống đầy đủ, định tuyến Mattermost |
 | P6 | Báo cáo đánh giá AI, precheck ảnh cơ bản | Vòng phản hồi nhãn, nhập triệu chứng bằng text |
 | P8 | Toàn bộ | |
-| P5, P7, P9, P10 | | Hoãn (P9 chỉ giữ nếu P0 yêu cầu) |
+| P5, P7, P10 | | Hoãn |
 
 ## 4. Quyết định cần chốt ở P0
 
@@ -66,6 +67,8 @@ Với tối đa 3 người làm song song, giữ nhóm A và cắt phần còn l
 | D9 | Ma trận quyền engineer | Quyền gì, phạm vi theo khu vực hay không | P2 |
 | D10 | Nguồn dữ liệu mở | Thời tiết (Open-Meteo) và nguồn thứ hai | P7 |
 
+Tất cả D1-D10 đã chốt ngày 05/10/2026, xem `phase-0-chot-quyet-dinh-pham-vi/01_PLAN.md` mục "Quyết định thiết kế đã chốt" (D1=A, D2=tự làm, D3=APISIX standalone, D4=MinIO, D5=hộp thông báo GET+PATCH, D6=bật test case crash/logic, D7=giữ 5 bệnh lá, D8=tự biên soạn danh mục giống, D9=theo thao tác, D10=Open-Meteo). Còn mở: ngày công bố đề nội bộ và ngày hạn nộp thật.
+
 ## P0. Chốt quyết định và phạm vi
 
 - Mức độ: Nghiêm trọng. Nhóm A. Ước lượng 1-2 ngày. Mục tham chiếu: 22, 23.
@@ -73,8 +76,7 @@ Với tối đa 3 người làm song song, giữ nhóm A và cắt phần còn l
 - Phạm vi: tài liệu, họp với giảng viên hướng dẫn.
 - Hành vi thay đổi: không có.
 - Trade-off: tốn 1-2 ngày không ra tính năng, đổi lại tránh làm sai hướng cả phase lớn (đặc biệt D1 và D2).
-- Rủi ro: giảng viên chưa phản hồi, khi đó chọn phương án an toàn (làm cả hai: giữ DX-Farm và thêm P9).
-- Kết quả mong muốn: bảng quyết định đã chốt, ngày hạn rõ, phân việc cho từng người, plan này cập nhật.
+- Kết quả: D1-D10 đã chốt (xem mục 4 ở trên và `phase-0-chot-quyet-dinh-pham-vi/01_PLAN.md`). Còn mở: ngày hạn nộp thật, phân việc cho từng người.
 
 ## P1. Gia cố an toàn, poka-yoke và nền dựng sạch
 
@@ -245,15 +247,10 @@ Với tối đa 3 người làm song song, giữ nhóm A và cắt phần còn l
 - Rủi ro: dồn hết vào cuối. Giảm thiểu bằng cách cập nhật tài liệu và seed theo từng phase, chừa tối thiểu 2 ngày cuối cho rehearsal.
 - Kết quả mong muốn: clone sạch chạy được theo README, E2E xanh, repo public có tag, đủ báo cáo, slide, video, và kịch bản demo đã tập.
 
-## P9. Ứng dụng minh họa thứ hai (tùy chọn)
+## P9. (Đã loại bỏ)
 
-- Mức độ: Quan trọng nếu D1 yêu cầu bối cảnh đại học. Nhóm A có điều kiện. Ước lượng 3-5 ngày. Mục tham chiếu: 22.
-- Thay đổi tổng quát: một ứng dụng nhỏ cho khoa/phòng (phiếu hỗ trợ CNTT hoặc mượn thiết bị: tạo yêu cầu, duyệt, xử lý, thống kê) chạy trên cùng Identity, Workflow, Data, thông báo của Core, không cần AI.
-- Phạm vi: định nghĩa quy trình mới trên workflow, vài màn hình web, dữ liệu mẫu, dashboard nhỏ.
-- Hành vi thay đổi: thêm ứng dụng mới, không đổi DX-Farm.
-- Trade-off: tốn thêm vài ngày nhưng chứng minh trực tiếp Core tái sử dụng được. Nếu P3 làm không đủ tổng quát thì ứng dụng này lộ ra điểm yếu, đó cũng là giá trị của nó.
-- Rủi ro: bị coi là làm cho có. Giảm thiểu bằng cách dùng thật workflow và thông báo của Core, không viết riêng.
-- Kết quả mong muốn: một quy trình khác hoàn toàn chạy trên Core mà không sửa mã Core.
+- D1 đã chốt (phase 0, 05/10/2026): đề tài Agri-Carbon được giảng viên hướng dẫn/BTC xác nhận hợp lệ ở vòng HaUI, không cần ứng dụng minh họa thứ hai.
+- Bằng chứng "đổi ứng dụng, Core có đổi không" (câu hỏi hội đồng số 1) chuyển sang dựa vào sơ đồ 3 tầng và ranh giới module rõ ràng ở P3, không có app thứ hai minh họa trực tiếp.
 
 ## P10. Để sau
 

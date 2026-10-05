@@ -40,4 +40,13 @@ Gợi ý câu lệnh cho Claude: "Tạo phase {N} từ `improvement_docs/_templa
 
 | Phase | Tên | Mục tham chiếu | Mức độ | Trạng thái |
 |---|---|---|---|---|
-| _(chưa có)_ | | | | |
+| [P0](./phase-0-chot-quyet-dinh-pham-vi/00_OVERVIEW.md) | Chốt quyết định và phạm vi | 22, 23 | Nghiêm trọng | Xong |
+| [P1](./phase-1-gia-co-an-toan-poka-yoke/00_OVERVIEW.md) | Gia cố an toàn, poka-yoke và nền dựng sạch | 9, 10, 17 | Nghiêm trọng | Sẵn sàng code |
+| [P2](./phase-2-danh-tinh-nong-ho-phan-quyen/00_OVERVIEW.md) | Danh tính nông hộ, phân quyền, migration | 1, 6, 9, 16 | Nghiêm trọng | Sẵn sàng code |
+| [P3](./phase-3-open-core-workflow-gateway-storage/00_OVERVIEW.md) | Open-Core: workflow, gateway, storage, sơ đồ | 7, 8, 17 | Nghiêm trọng | Sẵn sàng code |
+| [P4](./phase-4-duyet-thua-vu-trang-quan-ly/00_OVERVIEW.md) | Duyệt thửa/vụ, mã chuẩn, GPS, trang quản lý | 2, 3, 12, 13, 15, 16 | Quan trọng | Chờ Q1 (kỹ sư nông nghiệp) |
+| [P5](./phase-5-vong-doi-vu-mua-thong-bao/00_OVERVIEW.md) | Vòng đời vụ mùa và thông báo cho farmer | 4, 10, 13, 15 | Quan trọng | Chờ Q1 (kỹ sư xác nhận thực tế canh tác) |
+| [P6](./phase-6-ai-kiem-tra-chan-doan-danh-gia/00_OVERVIEW.md) | AI: kiểm tra ảnh, chẩn đoán, đánh giá | 5, 11 | Quan trọng | Chờ Q2 (cần thu ảnh thật ngoài ruộng) |
+| [P7](./phase-7-du-lieu-bi-tri-thuc/00_OVERVIEW.md) | Dữ liệu, BI và tri thức | 14, 21 | Quan trọng | Sẵn sàng code |
+| [P8](./phase-8-test-demo-ho-so-nop-bai/00_OVERVIEW.md) | Kiểm thử, dữ liệu demo, hồ sơ nộp bài | 17, 18, 19, 20 | Nghiêm trọng (hạn nộp) | Chờ Q2 (chuyên gia duyệt treatment rule) |
+| [P10](./phase-10-de-sau/00_OVERVIEW.md) | Để sau (backlog) | 24, 15 (phần hoàn thiện) | Theo dõi | Backlog |

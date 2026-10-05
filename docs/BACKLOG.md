@@ -17,8 +17,8 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 
 | Việc | Phạm vi |
 |---|---|
-| Phát hành bản sửa `backup.sh` (mục Unreleased của CHANGELOG) | Sau khi cập nhật, chạy `backup.sh` và kiểm `restic snapshots` chỉ còn các bản theo chính sách 7 ngày, 4 tuần, 6 tháng |
-| Kiểm bản phát hành ngày 29/10/2026 bằng phiên đăng nhập | `img.src` của ảnh báo cáo là `https://`; chú thích thẻ portal trên trình duyệt; upload ảnh mới bằng tài khoản nông dân rồi mở link ảnh vừa tải; đăng nhập SeaweedFS Admin và xem danh sách user |
+| Phát hành bản sửa `backup.sh` (mục Unreleased của CHANGELOG) | Gộp vào `main` rồi `git pull` trên VPS; bản mới đã chạy thử trên VPS và gom mọi snapshot vào một nhóm giữ, nhưng chưa có snapshot nào quá 7 ngày nên việc xóa bản cũ chưa được kiểm |
+| Đặt cron cho `deploy/online-check.sh` trên VPS | Sau `git pull`, chạy tay một lần rồi thêm `0 */12 * * *` theo `deploy/OPERATIONS.md`; script đã chạy thử trên VPS với bốn đường đều `OK` |
 
 ## 3. Chưa kiểm thử
 
@@ -27,12 +27,9 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Bên thứ ba tái lập đánh giá RAG | Cần người đánh giá độc lập kiểm tra nhãn và tính lại điểm từ qrels/run; cách chạy ở [`ai/README.md`](../ai/README.md#đánh-giá-truy-xuất-rag) |
 | Chấm nội dung Qwen trên 36 câu hỏi và 6 chủ đề chẩn đoán | Chưa có bảng chấm trọng tâm, bám nguồn và dễ đọc do người duyệt xác nhận; tỷ lệ `generated` không phải độ đúng nội dung |
 | Kiểm nguyên nhân và cách phòng của hỏi đáp Farm với Qwen thật | Chạy bộ câu hỏi Farm với Qwen để xem tỷ lệ câu bị chuyển sang `insufficient_evidence` |
-| Chữ lớn trên mobile native | Đo bố cục khi tăng cỡ chữ trên máy thật |
 | Khởi động bản Qwen từ clone sạch | Chạy full build/seed toàn stack từ clone sạch |
 | `backup.sh` với kho sao lưu từ xa | Thử `BACKUP_REPOSITORY` từ xa |
 | Cầu dao AI với tải thật | Thử khi AI chậm vì tải, lúc đó lỗi đọc quá hạn cũng tính là lỗi dịch vụ |
-| Giới hạn gọi API theo người dùng trên VPS | Chưa thử với tài khoản thật qua Cloudflare, nơi `X-Forwarded-For` và địa chỉ client do Cloudflare đặt |
-
 ## 4. Giới hạn của AI và dữ liệu
 
 | Việc | Ghi chú |
@@ -40,7 +37,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Model bệnh chưa được đánh giá độc lập ngoài ruộng | Accuracy 89,43% trên 1.466 ảnh theo người huấn luyện, xem [`AI_EVALUATION.md`](./AI_EVALUATION.md); cần ít nhất 100 ảnh ruộng thật có nhãn kỹ sư để đo toàn pipeline và ngưỡng 0.70 |
 | Crop classifier nhận 6/15 ảnh ngô và 15/15 ảnh mía là lúa, chặn 8/50 ảnh lúa nền ruộng | Classifier 10 lớp không có lớp ngô, mía, cỏ; cần thay classifier hoặc thêm dữ liệu ngoài miền; kỹ sư vẫn chốt bệnh |
 | Ngưỡng độ nét mới thử trên ảnh công khai và ảnh mờ nhân tạo | Chưa có ảnh mờ thật ngoài ruộng; chưa tách vùng lá |
-| Chẩn đoán AI chạy trên CPU mất khoảng 50 giây mỗi ảnh | Đo trên máy chủ 8 nhân; chưa có GPU hay mô hình nhỏ hơn để rút ngắn; lần gọi đầu sau khi khởi động lại AI nạp mô hình và có thể vượt 60 giây chờ của gateway, nhận 504 (kết quả vẫn được tạo) |
+| Chẩn đoán AI chạy trên CPU mất 50 đến 70 giây mỗi ảnh | Đo trên máy chủ 8 nhân; lượt đo ngày 30/10/2026 trên AI đã chạy 14 giờ mất 68 giây, vượt 60 giây chờ của gateway nên nhận 504, nhưng chẩn đoán vẫn được tạo và hiện khi tải lại báo cáo; chưa có GPU hay mô hình nhỏ hơn để rút ngắn |
 | Qwen tắt trên VPS | CPU ảo chỉ có SSE2/SSE3 nên Qwen đọc prompt khoảng 2 token/giây; VPS đặt `AI_ANSWER_GENERATION=false` và `AI_CHAT_CANDIDATE_COUNT=10`, chatbot trả tài liệu nguyên văn trong khoảng 5 giây. Bật lại Qwen cần CPU có AVX2 |
 | Nộp báo cáo cần AI service chạy | Chưa có đường nhận ảnh chưa kiểm khi AI dừng; hàng đợi offline thử lại |
 | Chưa có mô hình nhận diện sâu hại | Classifier nhận Healthy và 5 bệnh lá |
@@ -55,7 +52,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Kho tri thức Lab chỉ có 12 bài từ 9 văn bản công khai của HaUI | Chưa có bài về máy in, VPN, quy chế phòng máy của khoa, đặt phòng máy; sổ tay LMS là bản năm học 2019-2020 |
 | Gợi ý tri thức ticket Lab chưa có hybrid/gate chatbot | Ticket vẫn dùng retrieve legacy; đoạn gần nghĩa chưa chắc đúng sự cố. Chưa đánh giá riêng độ phù hợp trên dữ liệu ticket thật |
 | Snapshot thời tiết chỉ có 5 điểm ĐBSCL, chụp ngày 07/10/2026 | Chụp lại nếu cần dữ liệu dự phòng mới hơn |
-| Giới hạn tốc độ ở gateway tính theo IP và ở backend theo người dùng (60 câu hỏi tri thức, 60 lần tạo ticket, 30 lần upload ảnh, chẩn đoán AI, đặt phòng hoặc đính kèm, 120 lượt đăng nhập, 600 lượt API mỗi phút) là số tạm; chưa thử tải | Superset dùng SQLite cho metadata, AI service là một tiến trình; chatbot có hàng đợi rerank CPU giới hạn |
+| Giới hạn tốc độ ở gateway tính theo IP và ở backend theo người dùng (60 câu hỏi tri thức, 60 lần tạo ticket, 30 lần upload ảnh, chẩn đoán AI, đặt phòng hoặc đính kèm, 120 lượt đăng nhập, 600 lượt API mỗi phút) là số tạm; mới thử giới hạn câu hỏi tri thức theo người dùng qua Cloudflare, chưa thử tải | Superset dùng SQLite cho metadata, AI service là một tiến trình; chatbot có hàng đợi rerank CPU giới hạn |
 
 ## 5. Chức năng chưa có
 
@@ -83,7 +80,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Email cho thông báo trong hộp thư | Chưa có. Cần `spring-boot-starter-mail`, tắt `management.health.mail` (biến `SPRING_MAIL_HOST` rỗng vẫn tạo bộ gửi và làm `/actuator/health` báo lỗi), hàng đợi gửi lại chung với tin chat, địa chỉ lấy từ Keycloak lúc gửi, bảng lựa chọn của từng tài khoản và màn hình bật tắt |
 | Che thông tin cá nhân trong log | Nội dung log chưa đi qua `PiiMask` |
 | Mật khẩu demo cũ của `tech1`, `tech2` | Stack có sẵn hai tài khoản này giữ mật khẩu `tech123`; chỉ stack dựng mới nhận `tech1234` |
-| Cải tiến core và vận hành chưa làm: metric và Alertmanager, trang trạng thái công khai và cảnh báo sang chat cho giám sát từ bên ngoài, WAF Coraza, nâng cấp có đường lùi, compose profiles, kiểm giấy phép tự động, sổ kiểm toán chuỗi băm | Chưa làm |
+| Cải tiến core và vận hành chưa làm: metric và Alertmanager, trang trạng thái công khai, WAF Coraza, nâng cấp có đường lùi, compose profiles, kiểm giấy phép tự động, sổ kiểm toán chuỗi băm | Chưa làm |
 
 ## 6. Phụ thuộc người ngoài
 

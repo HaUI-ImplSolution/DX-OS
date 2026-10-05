@@ -57,7 +57,7 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 | Đăng nhập nhân sự bằng TOTP (`STAFF_OTP_FLOW`) và chính sách mật khẩu | Có | Kiểm tay bằng script đăng nhập qua Keycloak ở cả hai chế độ | Không áp dụng |
 | Quét mã độc tệp tải lên bằng ClamAV: tệp nhiễm bị từ chối, ClamAV ngừng thì 503 | Có | Test đơn vị, kiểm tay với ClamAV thật và tệp EICAR | Không áp dụng |
 | Che số điện thoại, email, dãy số dài trong tin chat và câu hỏi gửi sang AI | Có | Test đơn vị | Không áp dụng |
-| Giới hạn theo người dùng ở backend (`UserRateLimitFilter`): vượt ngưỡng nhận 429 kèm `Retry-After` | Có | Chưa có test tự động; kiểm tay: gọi 11 lần `POST /api/v1/tickets` (Lab) bằng một token, lần 11 nhận 429; E2E tắt giới hạn | Không áp dụng |
+| Giới hạn theo người dùng ở backend (`UserRateLimitFilter`): vượt ngưỡng nhận 429 kèm `Retry-After` | Có | Chưa có test tự động; kiểm tay: gọi 11 lần `POST /api/v1/tickets` (Lab) bằng một token, lần 11 nhận 429; trên VPS qua Cloudflare xem mục 10; E2E tắt giới hạn | Không áp dụng |
 | Cầu dao khi gọi AI: dịch vụ lỗi thì trả 503 ngay | Có | Test đơn vị, kiểm tay với AI dừng | Không áp dụng |
 | Cảnh báo một địa chỉ đăng nhập sai nhiều lần | Có | Test đơn vị, kiểm tay với Mattermost giả | Không áp dụng |
 | Quét lỗ hổng phụ thuộc, SBOM đã phân giải của backend và image của bên thứ ba bằng Trivy (`ci-deps.yml`, hằng tuần) | Có | Chạy thử ở local, CI | Không áp dụng |
@@ -119,7 +119,7 @@ Thuốc, liều và thời gian cách ly (PHI) do Backend cung cấp.
 | Luồng sử dụng | Hỏi đáp web Farm/Lab, chẩn đoán, duyệt và xem lại trên mobile | Chủ dự án đã kiểm tay; E2E Farm 10/10, Lab 16/16 |
 
 Khi kiểm tay, đối chiếu câu trả lời với nguồn; kiểm giải thích chẩn đoán tách khỏi phác đồ và chỉ hiển thị cho nông dân sau duyệt.
-Các hạn chế về nội dung Qwen, chữ lớn trên mobile và khởi động từ clone sạch được ghi trong [`BACKLOG.md`](BACKLOG.md).
+Các hạn chế về nội dung Qwen và khởi động từ clone sạch được ghi trong [`BACKLOG.md`](BACKLOG.md).
 
 ## 4. Dựng stack
 
@@ -411,7 +411,11 @@ Cách dùng và ý nghĩa từng khối ở [`backend/dx-monitor/README.md`](../
 | Gateway, log và audit G1 đến G10 | Đạt | Ngày 23/10/2026 trên stack local và VPS (`remote_addr` thật `1.52.120.232` qua Cloudflare Tunnel, sự kiện Keycloak, khóa tạm, giới hạn tốc độ, `audit_log`, cảnh báo Mattermost) |
 | Khởi động từ clone sạch Farm và Lab, không overlay | Đạt | Ngày 23/10/2026: migration core V1 đến V4, import realm, E2E Farm 10/10 và Lab 16/16; chưa thử `--build` toàn bộ image ngoài CI |
 | Cấu hình Cloudflare (Bot fight mode, rate limiting, HTTPS và TLS, Access) | Đạt | Ngày 23/10/2026: `bi.`, `files.`, `admin/*` chuyển sang đăng nhập Access, vào được Superset sau khi qua Access; web app, API, `/realms/`, portal, chat vẫn mở; tải ảnh và chẩn đoán AI qua Cloudflare không bị chặn nhầm; 40 lượt gửi form đăng nhập trong 1,4 giây có 13 lượt bị Cloudflare chặn |
-| Đăng nhập mobile qua địa chỉ công khai | Chưa kiểm | Cần điện thoại |
+| Đăng nhập mobile qua địa chỉ công khai | Đạt | Ngày 30/10/2026 trên iOS với Expo qua `https://khuongdev.io.vn`: tài khoản nông dân đăng nhập, kiểm tra ảnh hai lượt `200`, gửi báo cáo `201`, ảnh JPEG 410.635 byte tải lại được qua link ký; chữ lớn không vỡ bố cục |
+| Bản phát hành 29/10/2026 trên VPS | Đạt | Ngày 30/10/2026: `img.src` của ảnh báo cáo là `https://` và tải được; chú thích thẻ portal hiện địa chỉ thật; `/portal/config` trả `no-cache` và Cloudflare báo `DYNAMIC`; báo cáo mới từ mobile tạo một tin ở kênh kỹ sư; SeaweedFS Admin mở được trang Users (0 user, vì khóa S3 lấy từ `.env`) và Buckets (`dxos-uploads`, 487,7 KB) |
+| Giới hạn gọi API theo người dùng qua Cloudflare trên VPS | Đạt | Ngày 30/10/2026: 25 lượt `POST /api/v1/knowledge/ask` song song bằng một token có 20 lượt `200` và 5 lượt `429 ERR_TOO_MANY_REQUESTS` kèm `Retry-After: 60`; 25 lượt tuần tự trong 108 giây đều `200` |
+| Chẩn đoán AI qua gateway trên VPS | Đạt, có giới hạn | Ngày 30/10/2026: bấm lần hai sau 3 giây nhận `409 ERR_INVALID_STATE` trong 0,2 giây; lượt đầu mất 68 giây ở AI nên gateway trả `504` sau 60 giây, chẩn đoán vẫn được tạo (khô vằn, độ tin cậy 0,88) và `request_id` của gateway khớp log AI |
+| `backup.sh` và `online-check.sh` trên VPS | Đạt | Ngày 30/10/2026: bản `backup.sh` mới gom 3 snapshot khác hostname và đường dẫn vào một nhóm, `restic check` và `verify` đạt (5 database, 32 bảng trong `dxos`); `online-check.sh` cho bốn đường `OK`, địa chỉ không kết nối được và phản hồi không phải JSON đều thoát mã 1 |
 | Màn hình giám sát M1 đến M14 (stack local, Farm và Lab) | Đạt | Ngày 26/10/2026: đăng nhập `admin1` và từ chối `engineer1`, đăng xuất, sự kiện gateway nạp qua `http-logger` và còn sau khi tạo lại `apisix`, dừng backend và MinIO thì `monitor` vẫn mở và báo `DOWN` rồi phục hồi, cảnh báo Mattermost cho dịch vụ, `5xx` và `429`, truy vết theo IP, xóa theo thời hạn, `<script>` trong đường dẫn không chạy; E2E Farm 10/10 và Lab 16/16; `./mvnw verify` đạt 149 test |
 | Dựng sạch có `monitor` (volume và `deploy/data` rỗng, `./start.sh farm --reset --yes --build`) | Đạt | Ngày 26/10/2026: realm import có client `dxos-monitor`, `monitor-init` xong, migration `V1` của monitor, 12 dịch vụ healthy, E2E Farm 10/10, đăng nhập `admin1` vào `/monitor/`; CI e2e dựng sạch cả Farm và Lab có `monitor` |
 | Màn hình giám sát trên VPS qua Cloudflare Tunnel và Access | Đạt | Ngày 26/10/2026 qua `https://khuongdev.io.vn`: `admin1` đăng nhập và đọc đủ API, `engineer1` và `farmer1` nhận trang 403 và API 403, phiên web app vào thẳng `/monitor/`, `/monitor/ingest/gateway` từ ngoài 404; sự kiện gateway mang IP thật và tối đa 100 dòng mỗi IP mỗi phút; Keycloak dừng thì `/monitor/api/summary` vẫn trả dữ liệu; backend dừng thì báo `DOWN` sau 73 giây rồi `UP`; `monitor` dừng 30 giây thì gateway vẫn phục vụ; kênh "Ban quản trị" nhận tin backend ngừng, phục hồi và `429`; quyền `monitor_app`, `keycloak_ro` như M5; Superset từ chối `farmer1`, cấp `Gamma` cho `engineer1`, `Admin` cho `admin1`; Access chuyển mọi đường dẫn dưới `/monitor/` sang trang đăng nhập Access, web app, API và `/realms/*` vẫn mở; trên trình duyệt đăng nhập Access rồi Keycloak bằng `admin1` thì màn hình hiện đủ số liệu |

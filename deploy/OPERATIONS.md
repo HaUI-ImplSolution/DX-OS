@@ -255,7 +255,8 @@ Thử bằng tệp EICAR (chuỗi kiểm thử chuẩn của ngành diệt virus
 Khi một nửa trong 10 lần gọi AI gần nhất (tối thiểu 5 lần) gặp lỗi mạng hoặc HTTP 5xx, backend ngừng gọi AI trong 30 giây (`ai.service.breaker.open-seconds`) và trả ngay HTTP 503 `ERR_AI_UNAVAILABLE`, thay vì để mỗi yêu cầu chờ hết thời gian.
 Sau 30 giây backend thử lại vài lần; thành công thì mở lại.
 Lỗi 4xx (yêu cầu sai) không tính là lỗi dịch vụ.
-Backend không tự gọi lại một lượt AI đã lỗi, vì mỗi lượt chẩn đoán trên CPU mất khoảng 50 giây.
+Backend không tự gọi lại một lượt AI đã lỗi, vì mỗi lượt chẩn đoán trên CPU mất 50 đến 70 giây.
+Lượt dài hơn 60 giây nhận `504` từ gateway nhưng backend vẫn lưu chẩn đoán; tải lại báo cáo để thấy kết quả.
 Trong log backend, dòng `AI service is paused after repeated failures` cho biết cầu dao đang mở.
 
 ## Máy chủ CPU yếu

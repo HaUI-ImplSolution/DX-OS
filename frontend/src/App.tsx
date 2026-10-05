@@ -48,6 +48,7 @@ export default function App() {
   // Token hết hạn -> api.ts đã xoá session OIDC (401), đồng bộ lại state để quay về màn đăng nhập.
   const showError = (message: string) => {
     setError(message);
+    window.scrollTo({ top: 0, behavior: "smooth" });
     if (!getCachedUser()) setUser(null);
   };
 
@@ -208,6 +209,7 @@ export default function App() {
           <ParcelPanel
             parcels={parcels}
             selectedCode={selectedParcelCode}
+            ownerName={user.role === "FARMER" ? user.fullName : undefined}
             onSelect={selectParcel}
             onCreated={(p) => {
               setParcels((prev) => [...prev, p]);

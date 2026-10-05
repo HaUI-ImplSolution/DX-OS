@@ -27,15 +27,60 @@ Khi bật lại cần rà license tương ứng: POI Apache-2.0 OK, các cái c�
 | oidc-client-ts | MIT | ✅ |
 | nginx (ảnh serve production, `frontend/Dockerfile`) | BSD-2-Clause (nginx license) | ✅ |
 
+## Mobile (`mobile`, npm)
+
+| Thành phần | License | OSI-approved |
+|---|---|---|
+| Expo (`expo`, `expo-router`, `expo-auth-session`, `expo-secure-store`, `expo-image-picker`, `expo-image-manipulator`, `expo-web-browser`, `expo-build-properties`, `expo-constants`, `expo-linking`, `expo-crypto`, `expo-file-system`, `expo-status-bar`) | MIT | ✅ |
+| React / React DOM / React Native | MIT | ✅ |
+| @react-native-async-storage/async-storage / @react-native-community/netinfo | MIT | ✅ |
+| react-native-screens / react-native-safe-area-context | MIT | ✅ |
+| TypeScript | Apache-2.0 | ✅ |
+
 ## Portal (`portal`)
 
 | Thành phần | License | OSI-approved |
 |---|---|---|
 | nginx (ảnh serve trang tĩnh, `portal/Dockerfile`) | BSD-2-Clause (nginx license) | ✅ |
 
-## AI Service (`ai`, ngoài phạm vi lượt rà soát này)
+## AI Service (`ai`)
 
-Chưa rà — sẽ làm khi tích hợp AI Service thật vào backend (xem `CHANGELOG.md`).
+| Thành phần | License | OSI-approved | Ghi chú |
+|---|---|---|---|
+| Mã nguồn AI do DX-Farm tự viết | Apache-2.0 | ✅ | Theo `LICENSE` ở gốc repo |
+| FastAPI, Pydantic, SQLAlchemy, pgvector, LangGraph, LangChain, python-docx, Ruff | MIT | ✅ | Dependency trực tiếp; Ruff chỉ dùng khi phát triển |
+| Uvicorn, HTTPX, python-dotenv, pypdf | BSD-3-Clause | ✅ | Dependency trực tiếp |
+| python-multipart, sentence-transformers | Apache-2.0 | ✅ | Dependency trực tiếp |
+| psycopg / psycopg-binary | LGPL-3.0-only | ✅ | Dependency trực tiếp |
+| PyMuPDF | AGPL-3.0 hoặc Artifex commercial | ✅ với AGPL-3.0 | Repo dùng nhánh open-source AGPL-3.0 |
+| PyTorch | Apache-2.0 và các license nguồn mở đi kèm | ✅ | Dependency trực tiếp |
+| NumPy | BSD-3-Clause và các license nguồn mở đi kèm | ✅ | Dependency trực tiếp |
+| Pillow | MIT-CMU | ✅ | Dependency trực tiếp |
+| [OpenCV](https://opencv.org/license/) | Apache-2.0 | ✅ | Dependency runtime do Ultralytics kéo theo; áp dụng cho OpenCV 4.5.0 trở lên |
+| [Ultralytics](https://www.ultralytics.com/license) | AGPL-3.0 | ✅ | Runtime `8.3.40`; checkpoint ghi phiên bản train `8.4.165` |
+| [Ollama](https://github.com/ollama/ollama) (`ollama/ollama:0.34.2`) | MIT | ✅ | Runtime phục vụ LLM trong Compose |
+| [Qwen2.5 1.5B](https://ollama.com/library/qwen2.5) | Apache-2.0 | ✅ | Model mặc định `qwen2.5:1.5b` |
+| [`paraphrase-multilingual-MiniLM-L12-v2`](https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2) | Apache-2.0 | ✅ | Model embedding mặc định |
+| `YOLOv8n-RiceLeafBD` / `ai/weights/best.pt` | AGPL-3.0 | ✅ | Phiên bản `3.0.0`, fine-tune từ pretrained `yolov8n.pt` |
+| RiceLeafDiseaseBD | CC BY 4.0 | N/A | License dữ liệu, không phải software license do OSI phê duyệt |
+
+**Checkpoint:** `YOLOv8n-RiceLeafBD` phiên bản `3.0.0`, do
+[`@nddKhanh`](https://github.com/nddKhanh) fine-tune trong
+[notebook Kaggle](https://www.kaggle.com/code/baodark/dx-farm-8169e1/notebook), được nhóm
+đồng ý công khai theo AGPL-3.0. File `ai/weights/best.pt` có SHA-256
+`573db0871f39396f2bbec5e6aa5988d36b79b13e01cb00f03eee29b32a12c60b`; toàn văn license
+nằm tại [`ai/MODEL_LICENSE`](./ai/MODEL_LICENSE).
+
+**Dataset:** [RiceLeafDiseaseBD Version 3](https://doi.org/10.17632/86s4jzj2m4.3), theo
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), của Mohammad Mehedi Hasan Munna,
+Toriqul Islam, Smita Saha, Iqbal Hossain Safy, Saiful Bari, Jasmin Akter, Md Momtajur
+Rahman, Riya Akter, Nahid Hossain Antu, Acramul Haque Kabir, Reefka Fabliha Tulona,
+Ashraful Islam và M Ashraful Amin. Thay đổi: chỉ dùng 5 lớp bệnh, resize ảnh về `640` và
+áp dụng augmentation; lớp `Healthy` không được dùng làm class detection, còn
+`Rice___healthy` chỉ là fallback runtime.
+
+Ultralytics và PyMuPDF áp dụng AGPL-3.0 cho phần tương ứng; mã nguồn DX-Farm tự viết vẫn
+giữ Apache-2.0.
 
 ## Deploy (`deploy`)
 
@@ -67,5 +112,5 @@ LangGraph (Apache-2.0) đảm nhận vai trò orchestrator cho luồng vision �
 
 - **SPDX header**: `LICENSE` (Apache-2.0) đã có ở gốc repo.
   SPDX header (`// SPDX-License-Identifier: Apache-2.0`) đầu mỗi file mã nguồn tự viết **chưa có** — cần một lượt riêng để chèn hàng loạt theo từng loại file (`.java`/`.ts`/`.tsx`).
-- AI Service (Python, `ai/requirements.txt`: FastAPI, PyTorch, v.v.) chưa rà.
-  Cần làm trước khi khoá kiến trúc, cùng lúc với license model checkpoint EfficientNet-B4 đang dùng.
+- AI Service: dependency trực tiếp đã được rà từ môi trường hiện tại; còn thiếu inventory
+  dependency bắc cầu và thành phần bundle từ đúng Docker image phát hành.

@@ -1,0 +1,82 @@
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+  timestamp: string;
+}
+
+export interface Parcel {
+  id: number;
+  code: string;
+  farmerName: string;
+  areaHectares: number;
+  location: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CropSeasonStatus = "ACTIVE" | "HARVESTED";
+
+export interface CropSeason {
+  id: number;
+  parcelCode: string;
+  riceVariety: string;
+  startDate: string;
+  expectedHarvestDate: string | null;
+  status: CropSeasonStatus;
+  harvestedAt: string | null;
+}
+
+export interface IsolationStatus {
+  cropSeasonId: number;
+  parcelCode: string;
+  isolated: boolean;
+  harvestLockedUntil: string | null;
+  daysRemaining: number | null;
+  pesticideCode: string | null;
+  message: string;
+}
+
+export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+export interface TreatmentRule {
+  id: number;
+  diseaseCode: string;
+  pesticideCode: string;
+  doseMin: number;
+  doseMax: number;
+  doseUnit: string;
+  phiDays: number;
+  notes: string | null;
+  source: string | null;
+  version: string | null;
+}
+
+// For FARMER only id, diseaseReportId and approvalStatus are guaranteed;
+// REJECTED adds decidedAt and rejectionReason, and the rest is set once APPROVED.
+export interface Diagnosis {
+  id: number;
+  diseaseReportId: number;
+  approvalStatus: ApprovalStatus;
+  diseaseCode: string | null;
+  diseaseName: string | null;
+  confidence: number | null;
+  modelVersion: string | null;
+  diagnosedAt: string | null;
+  recommendationText: string | null;
+  decidedBy: string | null;
+  decidedAt: string | null;
+  rejectionReason: string | null;
+  treatmentRule: TreatmentRule | null;
+}
+
+export interface DiseaseReport {
+  id: number;
+  cropSeasonId: number;
+  imageRef: string;
+  reportedBy: string;
+  reportedAt: string;
+  diagnosis: Diagnosis | null;
+}

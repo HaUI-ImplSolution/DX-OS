@@ -13,12 +13,11 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Load the CV model once and release it when FastAPI shuts down."""
 
-    # Keep the heavy CV dependency lazy so tooling can import the application
-    # package without loading torchvision or downloading model weights.
-    from app.cv.loader import download_model
+    # Keep Ultralytics lazy so non-CV tooling can import the application package.
+    from app.cv.loader import load_model
 
     logger.info("Loading plant disease model")
-    app.state.plant_model = download_model()
+    app.state.plant_model = load_model()
     logger.info("Plant disease model loaded")
 
     try:

@@ -1,234 +1,42 @@
 {
-  "version": "1.0",
+  "version": "riceleafbd-v3-yolov8n",
   "identity": "Disease.code (exact lookup; no fuzzy mapping)",
+  "review_status": "BLOCKED",
   "classes": [
     {
       "class_id": 0,
-      "model_label": "Apple___Apple_scab",
-      "disease_code": "Apple___Apple_scab",
-      "disease_name": "Bệnh ghẻ táo"
+      "model_label": "Blast",
+      "disease_code": "Rice___Blast",
+      "disease_name": "Bệnh đạo ôn trên lúa"
     },
     {
       "class_id": 1,
-      "model_label": "Apple___Black_rot",
-      "disease_code": "Apple___Black_rot",
-      "disease_name": "Bệnh thối đen trên táo"
+      "model_label": "Brown Spot",
+      "disease_code": "Rice___Brown_spot",
+      "disease_name": "Bệnh đốm nâu trên lúa"
     },
     {
       "class_id": 2,
-      "model_label": "Apple___Cedar_apple_rust",
-      "disease_code": "Apple___Cedar_apple_rust",
-      "disease_name": "Bệnh gỉ sắt tuyết tùng trên táo"
+      "model_label": "Leaf Smut",
+      "disease_code": "Rice___Leaf_smut",
+      "disease_name": "Bệnh than lá lúa (leaf smut)"
     },
     {
       "class_id": 3,
-      "model_label": "Apple___healthy",
-      "disease_code": "Apple___healthy",
-      "disease_name": "Không phát hiện bệnh thuộc lớp CV (healthy)"
+      "model_label": "Rice Tungro",
+      "disease_code": "Rice___Tungro",
+      "disease_name": "Bệnh tungro trên lúa"
     },
     {
       "class_id": 4,
-      "model_label": "Blueberry___healthy",
-      "disease_code": "Blueberry___healthy",
-      "disease_name": "Không phát hiện bệnh thuộc lớp CV (healthy)"
-    },
-    {
-      "class_id": 5,
-      "model_label": "Cherry_(including_sour)___Powdery_mildew",
-      "disease_code": "Cherry_(including_sour)___Powdery_mildew",
-      "disease_name": "Bệnh phấn trắng trên anh đào"
-    },
-    {
-      "class_id": 6,
-      "model_label": "Cherry_(including_sour)___healthy",
-      "disease_code": "Cherry_(including_sour)___healthy",
-      "disease_name": "Không phát hiện bệnh thuộc lớp CV (healthy)"
-    },
-    {
-      "class_id": 7,
-      "model_label": "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot",
-      "disease_code": "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot",
-      "disease_name": "Bệnh đốm lá Cercospora / đốm lá xám trên ngô"
-    },
-    {
-      "class_id": 8,
-      "model_label": "Corn_(maize)___Common_rust_",
-      "disease_code": "Corn_(maize)__Common_rust",
-      "disease_name": "Bệnh gỉ sắt thông thường trên ngô"
-    },
-    {
-      "class_id": 9,
-      "model_label": "Corn_(maize)___Northern_Leaf_Blight",
-      "disease_code": "Corn_(maize)___Northern_Leaf_Blight",
-      "disease_name": "Bệnh cháy lá phương Bắc trên ngô"
-    },
-    {
-      "class_id": 10,
-      "model_label": "Corn_(maize)___healthy",
-      "disease_code": "Corn_(maize)___healthy",
-      "disease_name": "Không phát hiện bệnh thuộc lớp CV (healthy)"
-    },
-    {
-      "class_id": 11,
-      "model_label": "Grape___Black_rot",
-      "disease_code": "Grape___Black_rot",
-      "disease_name": "Bệnh thối đen trên nho"
-    },
-    {
-      "class_id": 12,
-      "model_label": "Grape___Esca_(Black_Measles)",
-      "disease_code": "Grape___Esca_(Black_Measles)",
-      "disease_name": "Bệnh Esca (sởi đen) trên nho"
-    },
-    {
-      "class_id": 13,
-      "model_label": "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)",
-      "disease_code": "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)",
-      "disease_name": "Bệnh cháy lá / đốm lá Isariopsis trên nho"
-    },
-    {
-      "class_id": 14,
-      "model_label": "Grape___healthy",
-      "disease_code": "Grape___healthy",
-      "disease_name": "Không phát hiện bệnh thuộc lớp CV (healthy)"
-    },
-    {
-      "class_id": 15,
-      "model_label": "Orange___Haunglongbing_(Citrus_greening)",
-      "disease_code": "Orange___Haunglongbing_(Citrus_greening)",
-      "disease_name": "Bệnh vàng lá gân xanh (Greening) trên cam"
-    },
-    {
-      "class_id": 16,
-      "model_label": "Peach___Bacterial_spot",
-      "disease_code": "Peach___Bacterial_spot",
-      "disease_name": "Bệnh đốm vi khuẩn trên đào"
-    },
-    {
-      "class_id": 17,
-      "model_label": "Peach___healthy",
-      "disease_code": "Peach___healthy",
-      "disease_name": "Không phát hiện bệnh thuộc lớp CV (healthy)"
-    },
-    {
-      "class_id": 18,
-      "model_label": "Pepper,_bell___Bacterial_spot",
-      "disease_code": "Pepper,_bell___Bacterial_spot",
-      "disease_name": "Bệnh đốm vi khuẩn trên ớt chuông"
-    },
-    {
-      "class_id": 19,
-      "model_label": "Pepper,_bell___healthy",
-      "disease_code": "Pepper,_bell___healthy",
-      "disease_name": "Không phát hiện bệnh thuộc lớp CV (healthy)"
-    },
-    {
-      "class_id": 20,
-      "model_label": "Potato___Early_blight",
-      "disease_code": "Potato___Early_blight",
-      "disease_name": "Bệnh cháy lá sớm trên khoai tây"
-    },
-    {
-      "class_id": 21,
-      "model_label": "Potato___Late_blight",
-      "disease_code": "Potato___Late_blight",
-      "disease_name": "Bệnh cháy lá muộn trên khoai tây"
-    },
-    {
-      "class_id": 22,
-      "model_label": "Potato___healthy",
-      "disease_code": "Potato___healthy",
-      "disease_name": "Không phát hiện bệnh thuộc lớp CV (healthy)"
-    },
-    {
-      "class_id": 23,
-      "model_label": "Raspberry___healthy",
-      "disease_code": "Raspberry___healthy",
-      "disease_name": "Không phát hiện bệnh thuộc lớp CV (healthy)"
-    },
-    {
-      "class_id": 24,
-      "model_label": "Soybean___healthy",
-      "disease_code": "Soybean___healthy",
-      "disease_name": "Không phát hiện bệnh thuộc lớp CV (healthy)"
-    },
-    {
-      "class_id": 25,
-      "model_label": "Squash___Powdery_mildew",
-      "disease_code": "Squash___Powdery_mildew",
-      "disease_name": "Bệnh phấn trắng trên bí"
-    },
-    {
-      "class_id": 26,
-      "model_label": "Strawberry___Leaf_scorch",
-      "disease_code": "Strawberry___Leaf_scorch",
-      "disease_name": "Bệnh cháy lá trên dâu tây"
-    },
-    {
-      "class_id": 27,
-      "model_label": "Strawberry___healthy",
-      "disease_code": "Strawberry___healthy",
-      "disease_name": "Không phát hiện bệnh thuộc lớp CV (healthy)"
-    },
-    {
-      "class_id": 28,
-      "model_label": "Tomato___Bacterial_spot",
-      "disease_code": "Tomato___Bacterial_spot",
-      "disease_name": "Bệnh đốm vi khuẩn trên cà chua"
-    },
-    {
-      "class_id": 29,
-      "model_label": "Tomato___Early_blight",
-      "disease_code": "Tomato___Early_blight",
-      "disease_name": "Bệnh cháy lá sớm trên cà chua"
-    },
-    {
-      "class_id": 30,
-      "model_label": "Tomato___Late_blight",
-      "disease_code": "Tomato___Late_blight",
-      "disease_name": "Bệnh cháy lá muộn trên cà chua"
-    },
-    {
-      "class_id": 31,
-      "model_label": "Tomato___Leaf_Mold",
-      "disease_code": "Tomato___Leaf_Mold",
-      "disease_name": "Bệnh mốc lá trên cà chua"
-    },
-    {
-      "class_id": 32,
-      "model_label": "Tomato___Septoria_leaf_spot",
-      "disease_code": "Tomato___Septoria_leaf_spot",
-      "disease_name": "Bệnh đốm lá Septoria trên cà chua"
-    },
-    {
-      "class_id": 33,
-      "model_label": "Tomato___Spider_mites Two-spotted_spider_mite",
-      "disease_code": "Tomato___Spider_mites Two-spotted_spider_mite",
-      "disease_name": "Bệnh do nhện đỏ hai chấm trên cà chua"
-    },
-    {
-      "class_id": 34,
-      "model_label": "Tomato___Target_Spot",
-      "disease_code": "Tomato___Target_Spot",
-      "disease_name": "Bệnh đốm vòng / đốm mục tiêu trên cà chua"
-    },
-    {
-      "class_id": 35,
-      "model_label": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
-      "disease_code": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
-      "disease_name": "Bệnh virus xoăn vàng lá cà chua"
-    },
-    {
-      "class_id": 36,
-      "model_label": "Tomato___Tomato_mosaic_virus",
-      "disease_code": "Tomato___Tomato_mosaic_virus",
-      "disease_name": "Bệnh virus khảm cà chua"
-    },
-    {
-      "class_id": 37,
-      "model_label": "Tomato___healthy",
-      "disease_code": "Tomato___healthy",
-      "disease_name": "Không phát hiện bệnh thuộc lớp CV (healthy)"
+      "model_label": "Sheath Blight",
+      "disease_code": "Rice___Sheath_blight",
+      "disease_name": "Bệnh khô vằn trên lúa"
     }
-  ]
+  ],
+  "fallback": {
+    "when": "no_detection_at_or_above_confidence_threshold",
+    "disease_code": "Rice___healthy",
+    "disease_name": "Lá lúa không thấy triệu chứng bệnh"
+  }
 }

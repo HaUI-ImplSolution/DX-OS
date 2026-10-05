@@ -18,7 +18,7 @@ Không chọn Metabase (AGPL-3.0, copyleft mạnh hơn dù vẫn OSI-approved) �
   Superset không bao giờ có quyền ghi vào CSDL nghiệp vụ.
 - `bi/bootstrap_datasources.py` chạy sau khi server lên, tự đăng ký mọi thứ qua REST API công khai của chính Superset (không đụng ORM nội bộ, ổn định qua version):
   - Nếu **đã có** `dxfarm_dashboard_export.zip` (trường hợp bình thường, file này đã commit sẵn trong repo): import trọn bộ database connection + dataset + chart + dashboard từ bundle này — đây là **nguồn sự thật duy nhất**.
-    Mật khẩu Postgres bị Superset mask thành `XXXXXXXXXX` lúc export nên bootstrap phải truyền lại mật khẩu thật qua tham số `passwords` của API import, khớp theo đường dẫn file trong zip.
+    Mật khẩu Postgres bị Superset mask thành `XXXXXXXXXX` lúc export nên bootstrap phải truyền lại mật khẩu thật qua tham số `passwords` của API import, khớp theo đường dẫn file trong zip đã bỏ thư mục gốc (`databases/DX-Farm.yaml`).
   - Nếu **chưa có** export nào (lần đầu dựng dashboard mới, trước khi có ai build+export) thì fallback: tự tạo database connection `DX-Farm` (role `superset_ro`) + 5 dataset (`parcels`, `crop_seasons`, `disease_reports`, `diagnoses`, `treatment_applications`) trỏ thẳng vào các bảng nghiệp vụ.
     Chart/dashboard thì để build tay theo hướng dẫn bên dưới.
   - Toàn bộ script idempotent (`overwrite=true`, tìm-theo-tên trước khi tạo mới) và có retry vì một vài request đầu tiên ngay sau khi Superset vừa khởi động đôi khi thất bại thoáng qua.
@@ -27,7 +27,7 @@ Không chọn Metabase (AGPL-3.0, copyleft mạnh hơn dù vẫn OSI-approved) �
 
 ## Đăng nhập
 
-- URL: `http://localhost:${SUPERSET_PORT:-8088}`
+- URL: `http://localhost:${SUPERSET_HOST_PORT}`
 - Đăng nhập qua UI bằng SSO thật (Keycloak) — bấm "Sign In with keycloak", dùng tài khoản demo trong [`sso/README.md`](../sso/README.md).
   Role realm map sang role Superset: `ADMIN` → `Admin`, `ENGINEER`/`FARMER` → `Gamma`.
 - Tài khoản `SUPERSET_ADMIN_USERNAME`/`SUPERSET_ADMIN_PASSWORD` (seed lúc khởi động) vẫn tồn tại song song, chỉ dùng cho REST API/automation (`bi/bootstrap_datasources.py` tự đăng nhập bằng tài khoản này) — không đăng nhập được qua UI nữa vì đã bật `AUTH_TYPE = AUTH_OAUTH`.
@@ -37,10 +37,10 @@ Không chọn Metabase (AGPL-3.0, copyleft mạnh hơn dù vẫn OSI-approved) �
 - **Dữ liệu nghiệp vụ Superset đọc** (Parcel, CropSeason...): nằm trong Postgres `dxfarm` — cùng CSDL với backend, không tách riêng.
   Superset chỉ đọc qua role `superset_ro` (chỉ có quyền `SELECT`, đã seed sẵn).
   Xem qua DBeaver bằng connection tới `dxfarm` hiện có, hoặc tạo connection mới:
-  - Host/Port: giống connection tới `dxfarm` (mặc định `localhost:5432`)
+  - Host/Port: giống connection tới `dxfarm` (`localhost`, cổng `POSTGRES_HOST_PORT`)
   - Database: `dxfarm`
   - User: `superset_ro`
-  - Password: giá trị `SUPERSET_RO_PASSWORD` trong `deploy/.env` (mặc định `superset_ro_demo_only`)
+  - Password: giá trị `SUPERSET_READONLY_DB_PASSWORD` trong `deploy/.env`
 
 - **Metadata riêng của Superset** (dashboard, chart, user/role của Superset, log truy vấn...): **không** nằm trong Postgres — Superset dùng SQLite riêng, file `deploy/data/superset/superset.db`.
 

@@ -69,8 +69,9 @@ export function signIn(): Promise<void> {
   return userManager.signinRedirect();
 }
 
+// signoutRedirect tự lấy id_token_hint rồi mới xoá user, nên không gọi removeUser trước đó.
 export function signOut(): Promise<void> {
-  clearSession();
+  cachedUser = null;
   return userManager.signoutRedirect();
 }
 

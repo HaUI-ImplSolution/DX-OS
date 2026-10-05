@@ -37,4 +37,9 @@ public class Pesticide {
   // Đơn vị tính liều (vd: lít/ha)
   @Column(nullable = false)
   private String unit;
+
+  // Thuốc legacy còn được giữ nếu lịch sử xử lý đang tham chiếu.
+  @Builder.Default
+  @Column(nullable = false, columnDefinition = "boolean default true")
+  private boolean active = true;
 }

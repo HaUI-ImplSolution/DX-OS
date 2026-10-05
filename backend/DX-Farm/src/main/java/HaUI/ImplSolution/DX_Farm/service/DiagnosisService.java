@@ -9,6 +9,7 @@ import HaUI.ImplSolution.DX_Farm.dto.DiagnosisCreateRequest;
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisRejectRequest;
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisResponse;
 import HaUI.ImplSolution.DX_Farm.dto.TreatmentApplicationResponse;
+import HaUI.ImplSolution.DX_Farm.event.DiagnosisPendingEvent;
 import HaUI.ImplSolution.DX_Farm.exception.InvalidStateException;
 import HaUI.ImplSolution.DX_Farm.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.DX_Farm.model.ApprovalStatus;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +48,7 @@ public class DiagnosisService {
   private final TreatmentApplicationRepository treatmentApplicationRepository;
   private final CurrentUserService currentUserService;
   private final AiDiagnosisClient aiDiagnosisClient;
+  private final ApplicationEventPublisher eventPublisher;
   private final String publicBaseUrl;
 
   public DiagnosisService(DiagnosisRepository diagnosisRepository,
@@ -53,6 +56,7 @@ public class DiagnosisService {
       TreatmentRuleService treatmentRuleService,
       TreatmentApplicationRepository treatmentApplicationRepository,
       CurrentUserService currentUserService, AiDiagnosisClient aiDiagnosisClient,
+      ApplicationEventPublisher eventPublisher,
       @Value("${app.public-base-url}") String publicBaseUrl) {
     this.diagnosisRepository = diagnosisRepository;
     this.diseaseReportRepository = diseaseReportRepository;
@@ -61,6 +65,7 @@ public class DiagnosisService {
     this.treatmentApplicationRepository = treatmentApplicationRepository;
     this.currentUserService = currentUserService;
     this.aiDiagnosisClient = aiDiagnosisClient;
+    this.eventPublisher = eventPublisher;
     this.publicBaseUrl = publicBaseUrl;
   }
 
@@ -86,7 +91,7 @@ public class DiagnosisService {
     AiDiagnoseResponse.CvResult cvResult = aiResponse.cvResult();
     String diseaseCode = cvResult.diseaseCode();
 
-    Disease disease = diseaseRepository.findByCode(diseaseCode).orElseThrow(
+    Disease disease = diseaseRepository.findByCodeAndActiveTrue(diseaseCode).orElseThrow(
         () -> new ResourceNotFoundException("Unknown disease code from AI: " + diseaseCode));
     AiDiagnoseResponse.RuleFact selectedRule = findSelectedRule(aiResponse);
     TreatmentRule currentRule = null;
@@ -110,7 +115,7 @@ public class DiagnosisService {
             .modelVersion(cvResult.modelName() + " " + cvResult.modelVersion())
             .treatmentRule(currentRule).recommendationText(aiResponse.recommendation().summary())
             .approvalStatus(ApprovalStatus.PENDING).build();
-    return toResponse(diagnosisRepository.save(diagnosis));
+    return savePending(diagnosis);
   }
 
   private static AiDiagnoseResponse.RuleFact findSelectedRule(AiDiagnoseResponse aiResponse) {
@@ -156,7 +161,7 @@ public class DiagnosisService {
       throw new InvalidStateException("Disease report already has a diagnosis: " + reportId);
     }
 
-    Disease disease = diseaseRepository.findByCode(request.diseaseCode()).orElseThrow(
+    Disease disease = diseaseRepository.findByCodeAndActiveTrue(request.diseaseCode()).orElseThrow(
         () -> new ResourceNotFoundException("Unknown disease code: " + request.diseaseCode()));
     TreatmentRule rule = treatmentRuleService.findByDiseaseCodeOrThrow(request.diseaseCode());
 
@@ -164,7 +169,18 @@ public class DiagnosisService {
         .confidence(request.confidence()).modelVersion(request.modelVersion()).treatmentRule(rule)
         .recommendationText(buildRecommendation(report, disease, rule, request.confidence()))
         .approvalStatus(ApprovalStatus.PENDING).build();
-    return toResponse(diagnosisRepository.save(diagnosis));
+    return savePending(diagnosis);
+  }
+
+  // Stores a PENDING diagnosis and announces it once the transaction commits.
+  private DiagnosisResponse savePending(Diagnosis diagnosis) {
+    Diagnosis saved = diagnosisRepository.save(diagnosis);
+    DiseaseReport report = saved.getDiseaseReport();
+    Disease disease = saved.getDisease();
+    eventPublisher.publishEvent(new DiagnosisPendingEvent(report.getId(),
+        report.getCropSeason().getParcel().getCode(), disease.getCode(), disease.getName(),
+        saved.getConfidence(), saved.getTreatmentRule() != null));
+    return toResponse(saved);
   }
 
   @Transactional

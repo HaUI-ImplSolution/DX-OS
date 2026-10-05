@@ -1,50 +1,74 @@
 # SPDX-License-Identifier: Apache-2.0
+import hashlib
+import re
+from pathlib import Path
+
 import torch
-from huggingface_hub import hf_hub_download
 
 from app.core.config import Settings, get_settings
-from app.cv.class_names import CLASS_NAMES
-from app.cv.classifier import EfficientNetB4Classifier
+from app.cv.contract import class_contract
 
 
-def download_model(settings: Settings | None = None) -> EfficientNetB4Classifier:
-    settings = settings or get_settings()
-    settings.weights_dir.mkdir(parents=True, exist_ok=True)
-    if not settings.weights_path.exists():
-        hf_hub_download(
-            repo_id=settings.hf_repo_id,
-            filename=settings.weights_filename,
-            local_dir=settings.weights_dir,
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _model_names(model) -> list[str]:
+    names = getattr(model, "names", None)
+    if isinstance(names, dict):
+        try:
+            return [names[index] for index in range(len(names))]
+        except KeyError as exc:
+            raise ValueError("YOLO class IDs are not contiguous from zero") from exc
+    if isinstance(names, (list, tuple)):
+        return list(names)
+    raise ValueError("YOLO checkpoint does not expose class names")
+
+
+def validate_model_contract(model, contract: dict) -> None:
+    task = getattr(model, "task", None)
+    if task != "detect":
+        raise ValueError(f"YOLO checkpoint task must be 'detect', got {task!r}")
+    expected_names = [item["model_label"] for item in contract["classes"]]
+    actual_names = _model_names(model)
+    if actual_names != expected_names:
+        raise ValueError(
+            "YOLO checkpoint class order does not match class_contract.json: "
+            f"expected {expected_names}, got {actual_names}"
         )
-    checkpoint = torch.load(
-        settings.weights_path, map_location="cpu", weights_only=True
-    )
-    config = checkpoint.get("config", {})
-    if (
-        config.get("data", {}).get("img_size", settings.cv_image_size)
-        != settings.cv_image_size
-    ):
-        raise ValueError("CV image size does not match checkpoint")
-    if (
-        config.get("model", {}).get("num_classes", settings.cv_num_classes)
-        != settings.cv_num_classes
-    ):
-        raise ValueError("CV class count does not match checkpoint")
-    if "class_to_idx" in checkpoint:
-        expected = {label: index for index, label in CLASS_NAMES.items()}
-        if checkpoint["class_to_idx"] != expected:
-            raise ValueError("Checkpoint class order does not match CV contract")
-    model = EfficientNetB4Classifier(
-        num_classes=settings.cv_num_classes, pretrained=False
-    )
-    model.load_state_dict(checkpoint["model_state_dict"])
-    device = torch.device(
-        "cuda"
-        if settings.cv_device == "auto" and torch.cuda.is_available()
-        else "cpu"
-        if settings.cv_device == "auto"
-        else settings.cv_device
-    )
-    model.to(device).eval()
-    settings._chosen_device = device
+
+
+def _resolve_device(configured: str) -> str:
+    if configured != "auto":
+        return configured
+    return "cuda" if torch.cuda.is_available() else "cpu"
+
+
+def load_model(settings: Settings | None = None):
+    settings = settings or get_settings()
+    expected_sha256 = (settings.cv_weights_sha256 or "").strip().lower()
+    if not re.fullmatch(r"[0-9a-f]{64}", expected_sha256):
+        raise ValueError("CV_WEIGHTS_SHA256 must be configured as 64 hexadecimal characters")
+
+    path = settings.cv_weights_path
+    if not path.is_file():
+        raise ValueError(f"CV checkpoint does not exist or is not a file: {path}")
+    if not path.stat().st_size:
+        raise ValueError(f"CV checkpoint is empty: {path}")
+    if _sha256(path) != expected_sha256:
+        raise ValueError("CV checkpoint SHA-256 does not match CV_WEIGHTS_SHA256")
+
+    # Import only after local file validation. No checkpoint is downloaded implicitly.
+    from ultralytics import YOLO
+
+    model = YOLO(str(path), task="detect")
+    contract = class_contract(settings.cv_class_contract_path)
+    validate_model_contract(model, contract)
+    device = _resolve_device(settings.cv_device)
+    model.to(device)
+    model._dxfarm_device = device
     return model

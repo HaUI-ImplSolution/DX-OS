@@ -41,7 +41,7 @@ public class InternalAiContextService {
     if (!cropSeasonRepository.existsById(cropSeasonId)) {
       throw new ResourceNotFoundException("Crop season not found: " + cropSeasonId);
     }
-    Disease disease = diseaseRepository.findByCode(diseaseCode)
+    Disease disease = diseaseRepository.findByCodeAndActiveTrue(diseaseCode)
         .orElseThrow(() -> new ResourceNotFoundException("Unknown disease code: " + diseaseCode));
     List<RuleFact> rules =
         treatmentRuleRepository.findByDisease_CodeAndActiveTrueOrderByIdAsc(diseaseCode).stream()

@@ -5,6 +5,52 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Backend (Spring Boot — `backend/DX-Farm`)
 
+### 2026-10-02
+
+**Đã xong — Xử lý khi AI Service không khả dụng:**
+
+- Lỗi kết nối AI và circuit breaker mở được ánh xạ thành `HTTP 503` với thông báo ổn định cho người dùng, thay vì rơi vào handler `500 Internal server error`; frontend hiển thị thông báo này và tự cuộn tới banner lỗi.
+
+**Đã xong — Jackson 3:**
+
+- `RestAuthenticationEntryPoint`, `RestAccessDeniedHandler` và `AiDiagnosisClient` dùng `tools.jackson.databind.ObjectMapper` do Spring cung cấp thay vì tự khởi tạo.
+
+**Đã xong — Thông báo Mattermost qua Incoming Webhook:**
+
+- `DiseaseReportService.create()` publish `DiseaseReportCreatedEvent` sau khi lưu báo cáo mới; `DiagnosisService.create()` và `createFromAi()` publish `DiagnosisPendingEvent` sau khi lưu chẩn đoán `PENDING`.
+  Báo cáo trả về từ nhánh idempotent (`Idempotency-Key` đã dùng) không publish.
+- `MattermostNotificationListener` nhận event bằng `@TransactionalEventListener(AFTER_COMMIT)` và `@Async("mattermostNotifyExecutor")`; executor 2 thread, queue 100, tràn thì bỏ và ghi WARN.
+- `MattermostWebhookClient` (`RestClient` + timeout cấu hình được) POST một `attachment` vào webhook; lỗi chỉ ghi một dòng WARN không chứa URL, không ném lên luồng nghiệp vụ.
+- `MattermostMessageBuilder` dựng nội dung tiếng Việt; chuỗi người dùng cắt 100 ký tự, vô hiệu mention, link và markdown; thời điểm theo `Asia/Ho_Chi_Minh`.
+- Cấu hình `mattermost.webhook.url|image-base-url|connect-timeout-ms|read-timeout-ms` (`MATTERMOST_WEBHOOK_URL` rỗng thì tắt).
+- Thông báo báo cáo mới kèm ảnh qua `image_url` khi `MATTERMOST_IMAGE_BASE_URL` được đặt (backend `compose` truyền biến này).
+- Không đổi endpoint, request/response hay Swagger.
+
+### 2026-09-30
+
+**Đã xong — Idempotency cho gửi báo cáo:**
+
+- `POST /api/v1/crop-seasons/{id}/disease-reports` nhận header tuỳ chọn `Idempotency-Key` (UUID); key đã dùng thì trả báo cáo cũ mà không lưu ảnh lần hai.
+- `DiseaseReport.clientRequestId` (`UUID`, unique, nullable); key thuộc vụ mùa khác hoặc user khác trả `409`, key sai định dạng trả `400`.
+- Swagger khai báo header bằng `@Parameter`.
+
+**Đã xong — Phạm vi dữ liệu của FARMER (phục vụ bản mobile):**
+
+- User có role `FARMER` (không kèm `ENGINEER`/`ADMIN`) chỉ thấy thửa có `farmerName` khớp claim `name` của token, không phân biệt hoa thường.
+  `CurrentUserService` có `isFarmer()` và `canAccess(Parcel)`; `ParcelRepository.findByFarmerNameIgnoreCase` phục vụ danh sách thửa.
+- Endpoint thửa, vụ mùa (gồm `harvest`) và báo cáo bệnh trả `404` khi thửa không thuộc FARMER.
+- `POST /api/v1/parcels` bởi FARMER lưu thửa với tên của chính họ, bỏ qua `farmerName` trong request.
+- Với FARMER, `diagnosis` lồng trong báo cáo chỉ đầy đủ khi `APPROVED`; `PENDING` chỉ có `id`, `diseaseReportId`, `approvalStatus`; `REJECTED` thêm `decidedAt`, `rejectionReason`.
+  ENGINEER và ADMIN nhận dữ liệu đầy đủ như trước.
+- Swagger: `@Operation` của `ParcelController`, `CropSeasonController`, `DiseaseReportController` và schema `DiagnosisResponse` mô tả hành vi theo role.
+- Đặc tả: `development/docs/mobile/BACKEND_CHANGES.md`.
+
+**Đã xong — Chuyển seed sang bệnh lá lúa:**
+
+- Seed 6 bệnh lá lúa active; pesticide, treatment rule và policy đang `IN_REVIEW` không được seed.
+- Taxonomy, pesticide và rule cũ không còn tham gia lookup; bản ghi đang được lịch sử diagnosis/treatment tham chiếu được giữ lại ở trạng thái inactive.
+- Migration đạt trên database mới và database legacy mô phỏng; Backend khởi động healthy với đúng 6 bệnh active.
+
 ### 2026-09-26
 
 - Hoàn thiện seed idempotent từ dữ liệu nguồn: 1 treatment rule giả định cho E2E, 15 candidate còn lại bị chặn; rule stale được vô hiệu hóa và bảo toàn an toàn khi đã có lịch sử tham chiếu.
@@ -27,7 +73,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - `AiVectorDatabaseSeeder` tự tạo database `dx_farm_ai_vector_db` (chỉ `documents`/`document_chunks`, extension `pgvector`) lúc khởi động.
 - Hai role Postgres riêng cho AI: `ai_vector_ro` chỉ đọc khi runtime và `ai_vector_ingest` đọc/ghi khi ingest; AI không nhận credential truy cập Backend DB.
 - `deploy/docker-compose.yml` chuyển AI runtime sang DB/role riêng và cấp `RAG_INGEST_DATABASE_URL` cho job ingest.
-- Dữ liệu cũ do AI ghi trực tiếp trước khi tách DB (`disease_reports`, `diagnoses`, `treatment_applications`, `workflow_cases`/`workflow_events`) xác định là dữ liệu demo/test, dọn bằng `deploy/sql/p3-4-legacy-ai-data-cleanup.sql`.
+- Dữ liệu cũ do AI ghi trực tiếp trước khi tách DB (`disease_reports`, `diagnoses`, `treatment_applications`, `workflow_cases`/`workflow_events`) xác định là dữ liệu demo/test và không được giữ lại.
 
 ### 2026-09-11
 
@@ -75,7 +121,88 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Chưa có Carbon/AWD Estimator, IoT simulator, BI dashboard (Superset/Metabase), SSO nặng (Keycloak/Authentik) hay kênh chat nội bộ (Mattermost) — thuộc Giai đoạn 1–3 theo roadmap trong `README.md`.
   Auth/role cơ bản (JWT, FARMER/ENGINEER/ADMIN) đã xong ở trên.
 
+## Dữ liệu (`data`)
+
+### 2026-09-30
+
+**Đã xong — Thay bộ dữ liệu PlantVillage bằng dữ liệu bệnh lá lúa:**
+
+- Chuẩn hóa 6 điều kiện lúa, gồm 5 lớp detection và một mã healthy; loại toàn bộ mã PlantVillage khỏi canonical JSON và seed SQL.
+- Corpus RAG còn 6 tài liệu, truy vết qua 9 nguồn; dữ liệu thuốc, treatment rule và policy giữ nguyên trạng thái `IN_REVIEW` từ workbook.
+- Generator, validator đối chiếu workbook, seed check và RAG dry-run đều đạt; `data.sql` được sinh deterministic từ dữ liệu chuẩn.
+
+## Mobile (`mobile`, Expo)
+
+### 2026-10-01
+
+- Metro chạy ở cổng `8083` (script `npm start`) vì `8081` dành cho Backend.
+- `mobile/README.md` ghi cách chạy khi web và mobile dùng Keycloak cùng lúc: điện thoại vào qua IP LAN ở `.env.local`, không cần đổi `deploy/.env`.
+
+### 2026-09-30
+
+**Đã xong — Khung app cho FARMER:**
+
+- Expo SDK 57, TypeScript, `expo-router`, thư mục `mobile/` ngang hàng `frontend/`.
+- `app.json`: scheme `dxfarm`, chuỗi quyền camera tiếng Việt; `app.config.ts` cho phép HTTP cleartext ngoài profile `production`.
+- `mobile/.env.example`: `EXPO_PUBLIC_API_BASE_URL`, `EXPO_PUBLIC_KEYCLOAK_URL`, `EXPO_PUBLIC_KEYCLOAK_CLIENT_ID`.
+- `src/`: client API (`request`, `ApiError`, `json`, timeout 30 giây, lỗi mạng trả `status` 0), lưu token bằng `expo-secure-store`, type dùng cho farmer, theme theo design tokens, component `Screen`.
+
+**Đã xong — Xác thực:**
+
+- Đăng nhập Authorization Code + PKCE với client `dxfarm-mobile` qua `expo-auth-session`; endpoint dựng từ `EXPO_PUBLIC_KEYCLOAK_URL`, không dùng discovery.
+- Access token và refresh token lưu ở `expo-secure-store`; token tự refresh trước khi hết hạn, refresh bị từ chối hoặc `401` thì xoá phiên và về màn Đăng nhập.
+- Role đọc từ `realm_access.roles` của access token; tài khoản không có role FARMER bị đăng xuất kèm thông báo "Ứng dụng này dành cho nông dân".
+- Đăng xuất kết thúc luôn phiên Keycloak (POST endpoint logout kèm refresh token).
+- Route guard bằng `Stack.Protected` ở layout gốc; màn Đăng nhập và Hồ sơ.
+
+**Đã xong — Màn hình đọc dữ liệu:**
+
+- Thửa của tôi (badge "Đang cách ly" theo vụ đang hoạt động), Vụ mùa của thửa (vụ đang hoạt động ở trên, vụ đã thu hoạch mờ hơn), Báo cáo của vụ (lưới 2 cột kèm chip trạng thái).
+- Banner cách ly từ `IsolationStatus`; ảnh hiển thị qua `/uploads/{imageRef}`.
+- Kéo để làm mới, khung xương khi tải, trạng thái rỗng và lỗi kèm nút "Thử lại".
+- Component dùng chung: `StatusChip`, `Card`, `EmptyState`, `ErrorState`, `IsolationBanner`; hook `useAsync`.
+
+**Đã xong — Chụp, gửi và chi tiết báo cáo:**
+
+- Chụp bằng camera hệ thống (`launchCameraAsync`), xin quyền camera và hướng dẫn mở Cài đặt khi bị từ chối.
+- Nén bằng `expo-image-manipulator`: cạnh dài tối đa 1280px, JPEG 0.7.
+- Gửi multipart part `image` qua `XMLHttpRequest` để có thanh tiến trình; lỗi hiển thị kèm nút "Gửi lại"; không thoát được màn hình khi đang gửi.
+- Chi tiết báo cáo: timeline Đã gửi → Đã chẩn đoán → Kỹ sư duyệt theo `diagnosis` (`null`, `PENDING`, `APPROVED`, `REJECTED`); `APPROVED` hiện bệnh, khuyến nghị, thuốc, liều, số ngày cách ly; `REJECTED` hiện lý do và nút "Chụp lại".
+- Danh sách báo cáo tự làm mới khi quay lại từ màn chụp; nút tròn nổi "Chụp" ở góc phải dưới.
+
+**Đã xong — Hàng đợi gửi khi mất mạng:**
+
+- Mất mạng hoặc lỗi kết nối lúc gửi thì ảnh được copy vào `documentDirectory` và ghi hàng đợi vào AsyncStorage; mỗi ảnh có UUID làm `Idempotency-Key`.
+- Tự gửi khi `NetInfo` báo có mạng và khi app trở lại foreground; thử lại với khoảng chờ tăng dần, tối đa 8 lần; lỗi `4xx` (trừ `408`, `409`, `429`) đánh dấu "Lỗi".
+- Dải "Chờ gửi (N)" ở màn Báo cáo của vụ; danh sách chờ gửi và nút xoá ở màn Hồ sơ; hàng đợi tách theo tài khoản.
+
+**Đã xong — Đóng gói:**
+
+- `mobile/eas.json` với profile `preview` xuất APK; hướng dẫn build bằng EAS trong `mobile/README.md`.
+
+**Đã xong — Hướng dẫn chạy:**
+
+- `mobile/README.md`: chạy thử trên điện thoại thật với IP LAN, biến môi trường, tài khoản demo, kiểm tra mã nguồn.
+
 ## AI Service (Python)
+
+### 2026-10-02
+
+- Đưa checkpoint YOLOv8n đã xác thực vào `ai/weights/best.pt` để clone mới có thể chạy Compose mà không phải chép model thủ công; vẫn kiểm tra SHA-256 trước khi nạp.
+- `AI_CV_WEIGHTS_PATH` cho phép override đường dẫn theo máy. Bind mount không tự tạo thư mục `best.pt` khi source bị thiếu, nên Compose dừng với lỗi cấu hình rõ ràng.
+- Công khai hồ sơ `YOLOv8n-RiceLeafBD` 3.0.0: thêm toàn văn AGPL-3.0, nguồn train,
+  attribution RiceLeafDiseaseBD Version 3 và checksum; rà license dependency AI trực tiếp
+  và ghi nhận Ultralytics/PyMuPDF theo AGPL-3.0.
+
+### 2026-09-30
+
+**Đã xong — Chuyển CV và RAG sang bệnh lá lúa:**
+
+- Thay EfficientNet bằng YOLOv8n với checkpoint cục bộ `best.pt`; kiểm tra checksum, task, số lớp và thứ tự class khi khởi động.
+- Mapping class đọc từ `class_contract.json`; checkpoint được mount read-only và không tự tải model.
+- RAG ingest 6 tài liệu thành 31 chunks; cả 6 mã lúa đi đúng Backend context/RAG và về `review_required` khi chưa có rule được duyệt.
+- Giữ nguyên response CV năm trường và contract chẩn đoán; container CPU, kiểm thử tích hợp và E2E đều đạt.
+- Bổ sung shared library cho OpenCV/Ultralytics; AI image build và healthcheck thành công.
 
 ### 2026-09-18
 
@@ -138,6 +265,17 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Frontend (`frontend`)
 
+### 2026-10-01
+
+- Đăng xuất giữ `id_token_hint`: `signOut` không xoá user trước `signoutRedirect`, nên Keycloak kết thúc phiên SSO ngay thay vì hiện trang xác nhận, và Superset đăng xuất theo.
+
+### 2026-09-30
+
+**Đã xong — Phù hợp phạm vi dữ liệu của FARMER:**
+
+- `ParcelPanel`: khi đăng nhập bằng FARMER, ô "Tên chủ hộ" hiển thị tên người dùng và bị khoá; thửa luôn được đăng ký dưới tên đó.
+- `DiagnosisPanel`, `Diagnosis` trong `types.ts`: các trường chẩn đoán có thể `null`; FARMER thấy trạng thái, và lý do từ chối khi `REJECTED`, còn nội dung chẩn đoán chỉ hiện khi `APPROVED`.
+
 ### 2026-09-11
 
 **Đã xong — Đăng nhập qua Keycloak (SSO thật):**
@@ -175,6 +313,32 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Deploy (`deploy`)
 
+### 2026-10-02
+
+- `backend` nhận biến tuỳ chọn `MATTERMOST_WEBHOOK_URL` (mặc định rỗng); `mattermost` bật `MM_SERVICESETTINGS_ENABLEINCOMINGWEBHOOKS`.
+- `.env.example` có `MATTERMOST_WEBHOOK_URL` để trống kèm chú thích cách lấy giá trị.
+
+### 2026-10-01
+
+- Keycloak không đặt `KC_HOSTNAME`, dùng hostname của request: web vào `localhost:8180`, điện thoại vào qua IP LAN, hai bên chạy cùng lúc.
+- Superset đọc tên, email và role từ access token thay vì gọi `/userinfo`, vì `/userinfo` từ chối token có issuer khác hostname của request.
+- `VITE_KEYCLOAK_URL` của frontend và `KEYCLOAK_BROWSER_BASE` của Superset lấy từ `KEYCLOAK_PUBLIC_URL` (mẫu `http://localhost:8180`).
+
+### 2026-09-30
+
+- `docker-compose.yml` không chứa giá trị mặc định: mọi biến `${...}` bắt buộc khai báo trong `deploy/.env`, giá trị mẫu nằm ở `.env.example`; thiếu biến nào Compose dừng và báo tên biến đó. `KEYCLOAK_PUBLIC_URL` có giá trị mẫu `http://localhost:8180`.
+- Đồng bộ tài liệu với cấu hình hiện tại: hướng dẫn `.env` bắt buộc, tài khoản Mattermost có sẵn, job `rag-ingest`/Ollama tự chạy, khoảng liều `dose_min`/`dose_max`, số liệu seed (38 bệnh, 6 thuốc, 1 rule active, 13 policy).
+- Service `superset-init` chown `data/superset` về uid 1000 trước khi Superset khởi động, nên dựng mới không cần thao tác tay.
+- Service `mattermost-bootstrap` tạo System Admin, team và channel mặc định (xem mục `chat`); biến `MATTERMOST_ADMIN_USERNAME`, `MATTERMOST_ADMIN_EMAIL`, `MATTERMOST_ADMIN_PASSWORD` trong `.env.example`.
+
+### 2026-09-29
+
+- `deploy/.env.example` là nơi duy nhất chứa mẫu cấu hình; các file `.env*` của `ai`, `backend/DX-Farm`, `frontend` đã bỏ.
+- Biến môi trường đặt tên theo `<SERVICE>_<THIẾT_LẬP>`, nhóm theo service trong `.env.example`; `docker-compose.yml` ánh xạ sang tên nội bộ của từng service. Khóa giữa backend và AI đặt theo chiều: `BACKEND_TO_AI_API_KEY`, `AI_TO_BACKEND_API_KEY`.
+- Cổng expose ra host đặt tên `<SERVICE>_HOST_PORT`; timeout backend gọi AI là `BACKEND_TO_AI_CONNECT_TIMEOUT_MS`/`BACKEND_TO_AI_READ_TIMEOUT_MS`; mật khẩu role Postgres phụ nêu rõ đích: `SUPERSET_READONLY_DB_PASSWORD`, `AI_VECTOR_DB_READONLY_PASSWORD`, `AI_VECTOR_DB_INGEST_PASSWORD`.
+- `BACKEND_BASE_URL` là URL backend dùng chung cho AI và cho `APP_PUBLIC_BASE_URL` của backend.
+- `frontend/Dockerfile` nhận `VITE_API_BASE_URL`, `VITE_KEYCLOAK_URL`, `VITE_KEYCLOAK_CLIENT_ID` qua build args, cấp từ `deploy/docker-compose.yml` (URL Keycloak theo `KEYCLOAK_HOST_PORT`).
+
 ### 2026-09-11
 
 **Đã xong — service `keycloak` (SSO thật):**
@@ -197,6 +361,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Service `backend` nhận thêm secret cho auth (`JWT_SECRET`, `JWT_EXPIRATION`, `SUPER_ADMIN_USERNAME/PASSWORD`) từ `deploy/.env` (mẫu ở `.env.example`).
 
 ## BI Dashboard (`bi`, Apache Superset)
+
+### 2026-09-30
+
+- Import dashboard mẫu chạy được trên metadata DB trống: khóa `passwords` của API import dùng đường dẫn đã bỏ thư mục gốc của zip.
 
 ### 2026-09-11
 
@@ -230,6 +398,19 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Kênh chat nội bộ (`chat`, Mattermost)
 
+### 2026-10-02
+
+**Đã xong — Thông báo tự động từ Backend:**
+
+- Backend post "Báo cáo sâu bệnh mới" và "Chẩn đoán chờ duyệt" vào channel `Kỹ sư nông nghiệp` qua Incoming Webhook; webhook cấp tay một lần theo `chat/README.md`.
+- Thông báo best-effort, không retry, tắt khi `MATTERMOST_WEBHOOK_URL` rỗng.
+- Một chiều: duyệt/từ chối vẫn làm trong web app; không deep link; channel public nên mọi thành viên team đọc được thông báo.
+- Mattermost vẫn dùng tài khoản riêng, không nối SSO.
+
+### 2026-09-30
+
+- `chat/bootstrap.sh` (service `mattermost-bootstrap`) tạo sẵn System Admin, team `dx-farm` và 3 channel: `Thông báo chung`, `Kỹ sư nông nghiệp` (public), `Ban quản trị` (private); idempotent.
+
 ### 2026-09-11
 
 **Quyết định — không nối SSO cho Mattermost:**
@@ -251,6 +432,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Portal (`portal`)
 
+### 2026-10-01
+
+- Thêm mục "Quản trị & tài liệu": Keycloak Admin, Superset Admin (`/users/list/`), Mattermost Admin (System Console) và Swagger của Backend.
+
 ### 2026-09-11
 
 **Đã xong — bấm link từ portal vào thẳng app đã đăng nhập SSO:**
@@ -269,6 +454,14 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - **Còn thiếu**: mỗi app đích vẫn đăng nhập riêng — portal chỉ là danh sách link tĩnh, sẽ trở thành landing page thật khi SSO (Keycloak/Authentik) được triển khai.
 
 ## Identity Provider (`sso`, Keycloak)
+
+### 2026-09-30
+
+**Đã xong — Client cho bản mobile:**
+
+- Client public `dxfarm-mobile` trong `realm-dxfarm.json`: Standard Flow + PKCE, không direct access grants, redirect URI `dxfarm://*` và `exp://*`.
+- Keycloak trong `deploy/docker-compose.yml` dùng hostname của request để điện thoại truy cập qua IP LAN.
+- `sso/README.md`: phạm vi, cách dev với IP LAN, cách thêm client vào volume cũ.
 
 ### 2026-09-11
 
@@ -303,6 +496,20 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Tài liệu (root, `development/docs`, `ai/`)
 
+### 2026-10-02
+
+**Đã xong:**
+
+- `development/docs/MATTERMOST_WEBHOOK_NOTIFICATION_PLAN.md`: thiết kế, danh sách công việc và hạn chế của thông báo Mattermost.
+- `chat/README.md` (mục thông báo tự động và cấp webhook), `README.md` gốc (Giai đoạn 2 [H], trạng thái, bảng truy cập).
+
+### 2026-09-30
+
+**Đã xong:**
+
+- `development/docs/mobile/`: kế hoạch, đặc tả backend, thiết kế UI và `CHANGES_OVERVIEW.md` tổng hợp hành vi cũ và mới của nhánh mobile.
+- `mobile/README.md`, `LICENSES.md` (mục Mobile), `sso/README.md` (client `dxfarm-mobile`), `README.md` gốc (client mobile, trạng thái).
+
 ### 2026-09-24
 
 **Đã xong:**
@@ -312,7 +519,6 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Thêm entity `DiseaseManagementPolicy` (bảng `disease_management_policies`), seed 13 guardrail qua generator.
   `treatment_rules` có ràng buộc duy nhất `(disease_id, pesticide_id)` nên seed chạy đồng thời vẫn không trùng.
   `treatment_rules` chưa có dòng nào vì cả 16 candidate đều `eligible_for_seed=false`.
-- Thêm `development/docs/DB_SEED_UNIFICATION_PLAN.md`: kế hoạch dùng `data/` làm nguồn seed duy nhất qua generator sinh `data.sql`, đối soát eligibility của treatment rule candidate, và mở entity `disease_management_policies` còn thiếu.
 - `ai/app/rag/source_registry.py`, `ai/app/rag/ingestion_service.py` đọc corpus từ `data/rag/...` ở gốc repository.
 - `deploy/docker-compose.yml`, `deploy/.env.example` bind-mount `data/` vào `/data` cho container `rag-ingest`.
 - `data/README.md`: mapping `dose_min`/`dose_max` khớp đúng `TreatmentRule` hiện tại.

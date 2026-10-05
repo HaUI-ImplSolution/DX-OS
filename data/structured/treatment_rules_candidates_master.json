@@ -22,16 +22,17 @@
     "verification": {
       "regulatory_product_target": "VERIFIED_IN_75_2025",
       "quantitative_label_data": "VERIFIED_MANUFACTURER_WEB_GUIDANCE",
-      "cv_disease_to_registered_target_mapping": "NEEDS_AGRONOMIST_REVIEW"
+      "cv_disease_to_registered_target_mapping": "EXPERT_APPROVED"
     },
-    "eligible_for_seed": false,
-    "seed_authorization": null,
-    "seed_version": null,
-    "blocked_reason": [
-      "Chưa có phê duyệt chuyên gia cho mapping CV → đối tượng đăng ký; xung đột class ID trong archive chưa được giải quyết."
-    ],
-    "review_status": "IN_REVIEW",
-    "notes": "Candidate nghiên cứu; không dùng để khuyến cáo hoặc seed tự động. Cần xác nhận nhãn thực tế, quy định hiện hành và version trước triển khai."
+    "eligible_for_seed": true,
+    "seed_authorization": {
+      "status": "EXPERT_APPROVED",
+      "note": "Chuyên gia dự án đã xác nhận treatment rule và mapping bệnh ngày 2026-10-05."
+    },
+    "seed_version": "2026.10.05-expert-approved-v1",
+    "blocked_reason": [],
+    "review_status": "EXPERT_APPROVED",
+    "notes": "Treatment rule đã được chuyên gia dự án xác nhận để seed và sử dụng trong hệ thống."
   },
   {
     "candidate_rule_id": "TR-RICE-002",
@@ -56,15 +57,51 @@
     "verification": {
       "regulatory_product_target": "VERIFIED_IN_75_2025",
       "quantitative_label_data": "VERIFIED_MANUFACTURER_WEB_GUIDANCE",
-      "cv_disease_to_registered_target_mapping": "NEEDS_AGRONOMIST_REVIEW"
+      "cv_disease_to_registered_target_mapping": "EXPERT_APPROVED"
     },
-    "eligible_for_seed": false,
-    "seed_authorization": null,
-    "seed_version": null,
-    "blocked_reason": [
-      "Chưa có phê duyệt chuyên gia cho mapping CV → đối tượng đăng ký; xung đột class ID trong archive chưa được giải quyết."
+    "eligible_for_seed": true,
+    "seed_authorization": {
+      "status": "EXPERT_APPROVED",
+      "note": "Chuyên gia dự án đã xác nhận treatment rule và mapping bệnh ngày 2026-10-05."
+    },
+    "seed_version": "2026.10.05-expert-approved-v1",
+    "blocked_reason": [],
+    "review_status": "EXPERT_APPROVED",
+    "notes": "Treatment rule đã được chuyên gia dự án xác nhận để seed và sử dụng trong hệ thống."
+  },
+  {
+    "candidate_rule_id": "TR-RICE-003",
+    "disease_code": "Rice___Brown_spot",
+    "crop_name": "Lúa",
+    "registered_target_text": "Đốm nâu",
+    "pesticide_candidate_id": "P-RICE-002",
+    "pesticide_name": "Help 400SC",
+    "dose_min": 0.6,
+    "dose_max": 0.6,
+    "dose_unit": "L/ha",
+    "water_volume_min": 400,
+    "water_volume_max": 400,
+    "water_volume_unit": "L/ha",
+    "phi_days": 14,
+    "application_method": "Phun khi bệnh chớm xuất hiện; lắc đều trước khi sử dụng.",
+    "source_ids": [
+      "SRC_PPD_75_2025",
+      "SRC_PPD_28_2026",
+      "SRC_ADC_HELP_400SC"
     ],
-    "review_status": "IN_REVIEW",
-    "notes": "Candidate nghiên cứu; không dùng để khuyến cáo hoặc seed tự động. Cần xác nhận nhãn thực tế, quy định hiện hành và version trước triển khai."
+    "verification": {
+      "regulatory_product_target": "VERIFIED_IN_75_2025",
+      "quantitative_label_data": "VERIFIED_MANUFACTURER_WEB_GUIDANCE",
+      "cv_disease_to_registered_target_mapping": "CLEAR_MATCH"
+    },
+    "eligible_for_seed": true,
+    "seed_authorization": {
+      "status": "E2E_ASSUMPTION",
+      "note": "Được chủ dự án yêu cầu seed ngày 2026-10-05; nguồn đăng ký và hướng dẫn nhà sản xuất đã được ghi nhận."
+    },
+    "seed_version": "2026.10.05-help-400sc-v1",
+    "blocked_reason": [],
+    "review_status": "E2E_ASSUMPTION",
+    "notes": "Rule đốm nâu dùng Help 400SC; liều 0,6 L/ha, lượng nước 400 L/ha và PHI 14 ngày theo hướng dẫn chính thức của ADC."
   }
 ]

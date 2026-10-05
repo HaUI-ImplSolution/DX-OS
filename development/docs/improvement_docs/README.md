@@ -2,6 +2,7 @@
 
 Thư mục này chứa các phase để implement các vấn đề trong [`PROJECT_IMPROVEMENTS.md`](./PROJECT_IMPROVEMENTS.md).
 Mỗi phase là một folder, sinh từ [`_template/`](./_template/).
+Kế hoạch chia phase (P0 đến P10) nằm ở [`PHASE_PLAN.md`](./PHASE_PLAN.md).
 
 ## Cấu trúc một phase
 

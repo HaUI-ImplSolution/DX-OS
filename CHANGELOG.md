@@ -43,7 +43,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Với FARMER, `diagnosis` lồng trong báo cáo chỉ đầy đủ khi `APPROVED`; `PENDING` chỉ có `id`, `diseaseReportId`, `approvalStatus`; `REJECTED` thêm `decidedAt`, `rejectionReason`.
   ENGINEER và ADMIN nhận dữ liệu đầy đủ như trước.
 - Swagger: `@Operation` của `ParcelController`, `CropSeasonController`, `DiseaseReportController` và schema `DiagnosisResponse` mô tả hành vi theo role.
-- Đặc tả: `development/docs/mobile/BACKEND_CHANGES.md`.
+- Đặc tả: `development/docs/pending_docs/mobile/BACKEND_CHANGES.md`.
 
 **Đã xong — Chuyển seed sang bệnh lá lúa:**
 
@@ -496,18 +496,26 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Tài liệu (root, `development/docs`, `ai/`)
 
+### 2026-10-05
+
+**Đã xong:**
+
+- `development/docs/improvement_docs/`: `PROJECT_IMPROVEMENTS.md` tổng hợp vấn đề cải thiện và đối chiếu đề thi HaUI 2026, template phase (`_template/`) và kế hoạch chia phase.
+- `development/docs/pending_docs/`: tài liệu mobile và kế hoạch thông báo Mattermost.
+- `development/docs/De_thi_PMNM_HaUI_2026_BAN_CHINH_THUC.pdf`: đề thi tuyển chọn nội bộ.
+
 ### 2026-10-02
 
 **Đã xong:**
 
-- `development/docs/MATTERMOST_WEBHOOK_NOTIFICATION_PLAN.md`: thiết kế, danh sách công việc và hạn chế của thông báo Mattermost.
+- `development/docs/pending_docs/MATTERMOST_WEBHOOK_NOTIFICATION_PLAN.md`: thiết kế, danh sách công việc và hạn chế của thông báo Mattermost.
 - `chat/README.md` (mục thông báo tự động và cấp webhook), `README.md` gốc (Giai đoạn 2 [H], trạng thái, bảng truy cập).
 
 ### 2026-09-30
 
 **Đã xong:**
 
-- `development/docs/mobile/`: kế hoạch, đặc tả backend, thiết kế UI và `CHANGES_OVERVIEW.md` tổng hợp hành vi cũ và mới của nhánh mobile.
+- `development/docs/pending_docs/mobile/`: kế hoạch, đặc tả backend, thiết kế UI và `CHANGES_OVERVIEW.md` tổng hợp hành vi cũ và mới của nhánh mobile.
 - `mobile/README.md`, `LICENSES.md` (mục Mobile), `sso/README.md` (client `dxfarm-mobile`), `README.md` gốc (client mobile, trạng thái).
 
 ### 2026-09-24

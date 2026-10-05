@@ -172,7 +172,7 @@ hiện có một số cái cần note lại để cải thiện:
 - Backend chưa có endpoint "liệt kê tất cả" nào cho báo cáo; chỉ có theo vụ mùa. Danh sách thửa thì `findAll` không phân trang, không lọc. Cần endpoint list có phân trang + lọc (trạng thái, thửa, hộ, ngày, người phụ trách) cho: yêu cầu tạo thửa, yêu cầu tạo vụ, báo cáo sâu bệnh, chẩn đoán chờ duyệt. Đề phần D cũng đòi có tìm kiếm / lọc / thống kê.
 - `listByCropSeason` đang truy vấn diagnosis riêng cho từng báo cáo (N+1), đã ghi trong CHANGES_OVERVIEW. Làm list toàn cục thì phải sửa trước, nếu không sẽ chậm.
 - Frontend hiện là một trang duy nhất (App.tsx), không có router, chọn thửa -> vụ -> báo cáo tuần tự. Trang quản lý cần: router, menu theo role, bảng danh sách có lọc, trang chi tiết (xem thông tin nông hộ + ảnh + kết quả AI + lịch sử), hộp "việc của tôi" cho kỹ sư. Nên tách rõ khu vực Admin và khu vực Engineer.
-- Deep link từ Mattermost sang báo cáo (đã có thiết kế ở mục 9 của MATTERMOST_WEBHOOK_NOTIFICATION_PLAN.md, chưa làm) sẽ gắn luôn vào router này.
+- Deep link từ Mattermost sang báo cáo (đã có thiết kế ở mục 9 của `pending_docs/MATTERMOST_WEBHOOK_NOTIFICATION_PLAN.md`, chưa làm) sẽ gắn luôn vào router này.
 - Cần màn hình xem lịch sử xử lý (timeline, dựa trên bảng ở mục 8) và nhật ký thao tác của admin, để truy vết ai duyệt cái gì.
 - SLA xử lý: báo cáo chờ quá N giờ chưa có ai xem thì nhắc kỹ sư/admin (dùng chung job định kỳ ở mục 4 phần thu hoạch).
 - Thống kê nhanh cho admin: số yêu cầu chờ duyệt, số báo cáo theo bệnh/tuần, số vụ sắp thu hoạch, thửa đang cách ly. Nhiều thứ trong này có thể đưa sang Superset thay vì tự code, cần chốt cái gì làm trong app, cái gì để BI.

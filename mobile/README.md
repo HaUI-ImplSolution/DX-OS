@@ -1,7 +1,7 @@
 # Mobile (`mobile`, Expo)
 
 Thư mục riêng ngang hàng `backend/`, `frontend/`, `ai/`, `bi/`, `chat/` — ứng dụng React Native dành cho nông dân, chụp ảnh sâu bệnh ngay tại ruộng và gửi báo cáo về Backend.
-Kế hoạch, đặc tả backend và thiết kế UI nằm ở [`development/docs/mobile/`](../development/docs/mobile/README.md).
+Kế hoạch, đặc tả backend và thiết kế UI nằm ở [`development/docs/pending_docs/mobile/`](../development/docs/pending_docs/mobile/README.md).
 
 ## Vì sao chọn Expo (React Native)
 
@@ -79,7 +79,7 @@ Ngoài Expo Go, có thể build APK bằng EAS mà không cần cài Android Stu
   Thửa, vụ mùa, báo cáo hoặc thao tác thu hoạch trên dữ liệu của người khác trả `404`.
   Thửa do FARMER tạo luôn mang tên của họ, bất kể `farmerName` trong request.
 - Nội dung chẩn đoán (bệnh, khuyến nghị, thuốc, liều) chỉ có khi diagnosis đã `APPROVED`.
-  Đặc tả: [`development/docs/mobile/BACKEND_CHANGES.md`](../development/docs/mobile/BACKEND_CHANGES.md).
+  Đặc tả: [`development/docs/pending_docs/mobile/BACKEND_CHANGES.md`](../development/docs/pending_docs/mobile/BACKEND_CHANGES.md).
 
 ## Biến môi trường
 

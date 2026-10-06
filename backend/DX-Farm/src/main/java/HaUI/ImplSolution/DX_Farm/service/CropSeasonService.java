@@ -13,10 +13,12 @@ import HaUI.ImplSolution.DX_Farm.model.TreatmentApplication;
 import HaUI.ImplSolution.DX_Farm.repository.CropSeasonRepository;
 import HaUI.ImplSolution.DX_Farm.repository.ParcelRepository;
 import HaUI.ImplSolution.DX_Farm.repository.TreatmentApplicationRepository;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,15 +30,17 @@ public class CropSeasonService {
   private final ParcelRepository parcelRepository;
   private final TreatmentApplicationRepository treatmentApplicationRepository;
   private final CurrentUserService currentUserService;
+  private final Clock clock;
 
   public CropSeasonService(CropSeasonRepository cropSeasonRepository,
       ParcelRepository parcelRepository,
       TreatmentApplicationRepository treatmentApplicationRepository,
-      CurrentUserService currentUserService) {
+      CurrentUserService currentUserService, Clock clock) {
     this.cropSeasonRepository = cropSeasonRepository;
     this.parcelRepository = parcelRepository;
     this.treatmentApplicationRepository = treatmentApplicationRepository;
     this.currentUserService = currentUserService;
+    this.clock = clock;
   }
 
   public List<CropSeasonResponse> listByParcelCode(String parcelCode) {
@@ -62,10 +66,22 @@ public class CropSeasonService {
   @Transactional
   public CropSeasonResponse create(String parcelCode, CropSeasonCreateRequest request) {
     Parcel parcel = findAccessibleParcelOrThrow(parcelCode);
+    if (request.expectedHarvestDate() != null
+        && request.expectedHarvestDate().isBefore(request.startDate())) {
+      throw new IllegalArgumentException("expectedHarvestDate must not be before startDate");
+    }
+    if (cropSeasonRepository.existsByParcel_IdAndStatus(parcel.getId(), CropSeasonStatus.ACTIVE)) {
+      throw new InvalidStateException("Parcel already has an active crop season: " + parcelCode);
+    }
     CropSeason season = CropSeason.builder().parcel(parcel).riceVariety(request.riceVariety())
         .startDate(request.startDate()).expectedHarvestDate(request.expectedHarvestDate())
         .status(CropSeasonStatus.ACTIVE).build();
-    return toResponse(cropSeasonRepository.save(season));
+    try {
+      return toResponse(cropSeasonRepository.saveAndFlush(season));
+    } catch (DataIntegrityViolationException e) {
+      // Lost a race against a concurrent create: the partial unique index allows one ACTIVE season.
+      throw new InvalidStateException("Parcel already has an active crop season: " + parcelCode);
+    }
   }
 
   @Transactional
@@ -76,13 +92,13 @@ public class CropSeasonService {
     }
 
     treatmentApplicationRepository.findTopByCropSeasonIdOrderByHarvestLockedUntilDesc(id)
-        .filter(application -> application.getHarvestLockedUntil().isAfter(LocalDate.now()))
+        .filter(application -> application.getHarvestLockedUntil().isAfter(LocalDate.now(clock)))
         .ifPresent(application -> {
           throw pokaYokeViolation(application);
         });
 
     season.setStatus(CropSeasonStatus.HARVESTED);
-    season.setHarvestedAt(Instant.now());
+    season.setHarvestedAt(Instant.now(clock));
     return toResponse(cropSeasonRepository.save(season));
   }
 
@@ -104,15 +120,16 @@ public class CropSeasonService {
         application.getHarvestLockedUntil());
   }
 
-  private static IsolationStatusResponse toIsolationStatus(CropSeason season,
+  private IsolationStatusResponse toIsolationStatus(CropSeason season,
       TreatmentApplication application) {
     LocalDate lockedUntil = application.getHarvestLockedUntil();
     String pesticideCode = application.getPesticide().getCode();
-    if (!lockedUntil.isAfter(LocalDate.now())) {
+    LocalDate today = LocalDate.now(clock);
+    if (!lockedUntil.isAfter(today)) {
       return notIsolated(season, lockedUntil, pesticideCode);
     }
 
-    long daysRemaining = ChronoUnit.DAYS.between(LocalDate.now(), lockedUntil);
+    long daysRemaining = ChronoUnit.DAYS.between(today, lockedUntil);
     String message =
         "Thửa %s còn cách ly do vừa phun %s, còn %d ngày nữa (đến hết ngày %s) mới được thu hoạch."
             .formatted(season.getParcel().getCode(), application.getPesticide().getName(),

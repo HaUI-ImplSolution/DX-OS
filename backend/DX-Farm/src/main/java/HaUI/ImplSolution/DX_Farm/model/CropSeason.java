@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.Instant;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
@@ -57,4 +58,9 @@ public class CropSeason {
 
   // Thời điểm thực tế đã thu hoạch
   private Instant harvestedAt;
+
+  // Optimistic lock: concurrent writers get a 409 instead of silently overwriting each other
+  @Version
+  @Column(nullable = false, columnDefinition = "BIGINT NOT NULL DEFAULT 0")
+  private Long version;
 }

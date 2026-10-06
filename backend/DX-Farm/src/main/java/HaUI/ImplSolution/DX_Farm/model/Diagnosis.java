@@ -12,6 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
@@ -81,4 +82,9 @@ public class Diagnosis {
 
   // Lý do từ chối (chỉ có giá trị khi bị REJECTED)
   private String rejectionReason;
+
+  // Optimistic lock: concurrent writers get a 409 instead of silently overwriting each other
+  @Version
+  @Column(nullable = false, columnDefinition = "BIGINT NOT NULL DEFAULT 0")
+  private Long version;
 }

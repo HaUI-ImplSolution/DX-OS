@@ -53,17 +53,17 @@ app:
 keycloak:
   db:
     # Mật khẩu role Postgres riêng của Keycloak.
-    password: ${KEYCLOAK_DB_PASSWORD:keycloak_demo_only}
+    password: ${KEYCLOAK_DB_PASSWORD}
 
 superset:
   readonly:
     # Mật khẩu role Postgres chỉ-đọc cho BI dashboard. Xem SupersetReadOnlyRoleSeeder.
-    password: ${SUPERSET_RO_PASSWORD:superset_demo}
+    password: ${SUPERSET_RO_PASSWORD}
 
 mattermost:
   db:
     # Mật khẩu role Postgres riêng của Mattermost. Xem MattermostDatabaseSeeder.
-    password: ${MATTERMOST_DB_PASSWORD:mattermost_demo}
+    password: ${MATTERMOST_DB_PASSWORD}
   webhook:
     # Empty disables notifications. Internal hostname, e.g. http://mattermost:8065/hooks/<key>.
     url: ${MATTERMOST_WEBHOOK_URL:}
@@ -76,19 +76,18 @@ ai:
   service:
     base-url: ${AI_SERVICE_BASE_URL:http://ai:8000}
     # Service token/API key nội bộ cho chiều Backend -> AI
-    api-key: ${AI_SERVICE_API_KEY:}
+    api-key: ${AI_SERVICE_API_KEY}
     connect-timeout-ms: ${AI_SERVICE_CONNECT_TIMEOUT_MS:3000}
     read-timeout-ms: ${AI_SERVICE_READ_TIMEOUT_MS:120000}
     # Service API key nội bộ cho chiều AI -> Backend (/internal/v1/**, header X-Service-Api-Key).
-    # Để trống thì ServiceApiKeyAuthenticationFilter không cấp quyền cho ai (fail closed).
-    inbound-api-key: ${AI_SERVICE_INBOUND_API_KEY:}
+    inbound-api-key: ${AI_SERVICE_INBOUND_API_KEY}
   vector-db:
     readonly:
       # Mật khẩu role Postgres chỉ-đọc (ai_vector_ro) cho AI runtime. Xem AiVectorDatabaseSeeder.
-      password: ${AI_VECTOR_DB_RO_PASSWORD:ai_vector_ro_demo_only}
+      password: ${AI_VECTOR_DB_RO_PASSWORD}
     ingest:
       # Mật khẩu role Postgres đọc/ghi (ai_vector_ingest) cho job ingest RAG. Xem AiVectorDatabaseSeeder.
-      password: ${AI_VECTOR_DB_INGEST_PASSWORD:ai_vector_ingest_demo_only}
+      password: ${AI_VECTOR_DB_INGEST_PASSWORD}
 
 resilience4j:
   circuitbreaker:
@@ -102,6 +101,7 @@ resilience4j:
 
 logging:
   level:
-    HaUI.ImplSolution.DX_Farm: DEBUG
+    # INFO unless LOG_LEVEL_APP overrides it (set DEBUG for local development).
+    HaUI.ImplSolution.DX_Farm: ${LOG_LEVEL_APP:INFO}
     org.springframework.security: WARN
     org.hibernate.SQL: WARN

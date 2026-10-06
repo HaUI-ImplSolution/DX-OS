@@ -11,6 +11,7 @@ import HaUI.ImplSolution.DX_Farm.dto.DiagnosisResponse;
 import HaUI.ImplSolution.DX_Farm.dto.TreatmentApplicationResponse;
 import HaUI.ImplSolution.DX_Farm.event.DiagnosisPendingEvent;
 import HaUI.ImplSolution.DX_Farm.exception.InvalidStateException;
+import HaUI.ImplSolution.DX_Farm.exception.PokaYokeViolationException;
 import HaUI.ImplSolution.DX_Farm.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.DX_Farm.model.ApprovalStatus;
 import HaUI.ImplSolution.DX_Farm.model.CropSeason;
@@ -24,14 +25,17 @@ import HaUI.ImplSolution.DX_Farm.repository.DiseaseRepository;
 import HaUI.ImplSolution.DX_Farm.repository.DiseaseReportRepository;
 import HaUI.ImplSolution.DX_Farm.repository.TreatmentApplicationRepository;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +44,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class DiagnosisService {
 
   private static final int RECENT_TREATMENTS_LIMIT = 5;
+  // Reports of spraying older than this are rejected so the harvest lock cannot be defeated.
+  private static final int MAX_APPLIED_BACKDATE_DAYS = 30;
 
   private final DiagnosisRepository diagnosisRepository;
   private final DiseaseReportRepository diseaseReportRepository;
@@ -50,6 +56,8 @@ public class DiagnosisService {
   private final AiDiagnosisClient aiDiagnosisClient;
   private final ApplicationEventPublisher eventPublisher;
   private final String publicBaseUrl;
+  private final Clock clock;
+  private final EntityManager entityManager;
 
   public DiagnosisService(DiagnosisRepository diagnosisRepository,
       DiseaseReportRepository diseaseReportRepository, DiseaseRepository diseaseRepository,
@@ -57,7 +65,8 @@ public class DiagnosisService {
       TreatmentApplicationRepository treatmentApplicationRepository,
       CurrentUserService currentUserService, AiDiagnosisClient aiDiagnosisClient,
       ApplicationEventPublisher eventPublisher,
-      @Value("${app.public-base-url}") String publicBaseUrl) {
+      @Value("${app.public-base-url}") String publicBaseUrl, Clock clock,
+      EntityManager entityManager) {
     this.diagnosisRepository = diagnosisRepository;
     this.diseaseReportRepository = diseaseReportRepository;
     this.diseaseRepository = diseaseRepository;
@@ -67,6 +76,8 @@ public class DiagnosisService {
     this.aiDiagnosisClient = aiDiagnosisClient;
     this.eventPublisher = eventPublisher;
     this.publicBaseUrl = publicBaseUrl;
+    this.clock = clock;
+    this.entityManager = entityManager;
   }
 
   // Gọi AI Service theo contract POST /api/v1/diagnose và trả nguyên response - chưa lưu
@@ -137,9 +148,9 @@ public class DiagnosisService {
 
   private AiDiagnoseRequest buildAiDiagnoseRequest(DiseaseReport report) {
     CropSeason season = report.getCropSeason();
-    List<RecentTreatment> recentTreatments = treatmentApplicationRepository
-        .findByCropSeasonIdOrderByAppliedAtDesc(season.getId()).stream()
-        .limit(RECENT_TREATMENTS_LIMIT).map(DiagnosisService::toRecentTreatment).toList();
+    List<RecentTreatment> recentTreatments =
+        treatmentApplicationRepository.findByCropSeasonIdOrderByAppliedAtDesc(season.getId())
+            .stream().limit(RECENT_TREATMENTS_LIMIT).map(this::toRecentTreatment).toList();
     FieldContext fieldContext = new FieldContext(season.getParcel().getCode(),
         season.getRiceVariety(), null, recentTreatments);
     String imageUrl = publicBaseUrl + "/uploads/" + report.getImageRef();
@@ -147,8 +158,8 @@ public class DiagnosisService {
         fieldContext);
   }
 
-  private static RecentTreatment toRecentTreatment(TreatmentApplication application) {
-    Instant appliedAt = application.getAppliedAt().atStartOfDay(ZoneId.systemDefault()).toInstant();
+  private RecentTreatment toRecentTreatment(TreatmentApplication application) {
+    Instant appliedAt = application.getAppliedAt().atStartOfDay(clock.getZone()).toInstant();
     return new RecentTreatment(application.getPesticide().getName(), appliedAt,
         application.getHarvestLockedUntil());
   }
@@ -189,7 +200,7 @@ public class DiagnosisService {
     requirePending(diagnosis);
     diagnosis.setApprovalStatus(ApprovalStatus.APPROVED);
     diagnosis.setDecidedBy(currentUserService.currentFullName());
-    diagnosis.setDecidedAt(Instant.now());
+    diagnosis.setDecidedAt(Instant.now(clock));
     return toResponse(diagnosisRepository.save(diagnosis));
   }
 
@@ -199,7 +210,7 @@ public class DiagnosisService {
     requirePending(diagnosis);
     diagnosis.setApprovalStatus(ApprovalStatus.REJECTED);
     diagnosis.setDecidedBy(currentUserService.currentFullName());
-    diagnosis.setDecidedAt(Instant.now());
+    diagnosis.setDecidedAt(Instant.now(clock));
     diagnosis.setRejectionReason(request.reason());
     return toResponse(diagnosisRepository.save(diagnosis));
   }
@@ -225,13 +236,36 @@ public class DiagnosisService {
       throw new InvalidStateException("Applied dose %s must be between %s and %s %s"
           .formatted(actualDose, rule.getDoseMin(), rule.getDoseMax(), rule.getDoseUnit()));
     }
-    LocalDate appliedAt = request.appliedAt() != null ? request.appliedAt() : LocalDate.now();
-    TreatmentApplication application =
-        TreatmentApplication.builder().cropSeason(diagnosis.getDiseaseReport().getCropSeason())
-            .diagnosis(diagnosis).pesticide(rule.getPesticide()).doseAmountSnapshot(actualDose)
-            .doseUnitSnapshot(rule.getDoseUnit()).phiDaysSnapshot(rule.getPhiDays())
-            .appliedAt(appliedAt).harvestLockedUntil(appliedAt.plusDays(rule.getPhiDays())).build();
-    return toApplicationResponse(treatmentApplicationRepository.save(application));
+    LocalDate appliedAt = resolveAppliedAt(request.appliedAt());
+    CropSeason season = diagnosis.getDiseaseReport().getCropSeason();
+    // Bumps the season version so a concurrent harvest cannot slip past this new isolation lock.
+    entityManager.lock(season, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
+    TreatmentApplication application = TreatmentApplication.builder().cropSeason(season)
+        .diagnosis(diagnosis).pesticide(rule.getPesticide()).doseAmountSnapshot(actualDose)
+        .doseUnitSnapshot(rule.getDoseUnit()).phiDaysSnapshot(rule.getPhiDays())
+        .appliedAt(appliedAt).harvestLockedUntil(appliedAt.plusDays(rule.getPhiDays())).build();
+    try {
+      return toApplicationResponse(treatmentApplicationRepository.saveAndFlush(application));
+    } catch (DataIntegrityViolationException e) {
+      throw new InvalidStateException("Diagnosis already applied: " + reportId);
+    }
+  }
+
+  private LocalDate resolveAppliedAt(LocalDate requested) {
+    LocalDate today = LocalDate.now(clock);
+    if (requested == null) {
+      return today;
+    }
+    if (requested.isAfter(today)) {
+      throw new PokaYokeViolationException("INVALID_APPLIED_AT",
+          "appliedAt must not be in the future");
+    }
+    if (requested.isBefore(today.minusDays(MAX_APPLIED_BACKDATE_DAYS))) {
+      throw new PokaYokeViolationException("INVALID_APPLIED_AT",
+          "appliedAt must not be more than %d days in the past"
+              .formatted(MAX_APPLIED_BACKDATE_DAYS));
+    }
+    return requested;
   }
 
   private Diagnosis findByReportIdOrThrow(Long reportId) {

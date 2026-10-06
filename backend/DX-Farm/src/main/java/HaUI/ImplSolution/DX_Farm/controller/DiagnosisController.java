@@ -48,13 +48,15 @@ public class DiagnosisController {
   }
 
   @PostMapping("/approve")
-  @Operation(summary = "Engineer approves the recommendation (approvedBy = logged-in engineer)")
+  @Operation(summary = "Engineer approves the recommendation (approvedBy = logged-in engineer)",
+      description = "409 if the diagnosis is not pending or was modified concurrently.")
   public ApiResponse<DiagnosisResponse> approve(@PathVariable Long reportId) {
     return ApiResponse.success("Diagnosis approved", diagnosisService.approve(reportId));
   }
 
   @PostMapping("/reject")
-  @Operation(summary = "Engineer rejects the recommendation (rejectedBy = logged-in engineer)")
+  @Operation(summary = "Engineer rejects the recommendation (rejectedBy = logged-in engineer)",
+      description = "409 if the diagnosis is not pending or was modified concurrently.")
   public ApiResponse<DiagnosisResponse> reject(@PathVariable Long reportId,
       @Valid @RequestBody DiagnosisRejectRequest request) {
     return ApiResponse.success("Diagnosis rejected", diagnosisService.reject(reportId, request));
@@ -62,7 +64,10 @@ public class DiagnosisController {
 
   @PostMapping("/apply")
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(summary = "Record actual treatment dose + compute harvest lock")
+  @Operation(summary = "Record actual treatment dose + compute harvest lock",
+      description = "appliedAt defaults to today (Asia/Ho_Chi_Minh); 422 INVALID_APPLIED_AT if it"
+          + " is in the future or more than 30 days in the past. 409 if the diagnosis was"
+          + " already applied or the crop season was modified concurrently.")
   public ApiResponse<TreatmentApplicationResponse> apply(@PathVariable Long reportId,
       @Valid @RequestBody DiagnosisApplyRequest request) {
     return ApiResponse.success("Treatment application recorded",

@@ -73,7 +73,7 @@
       "name": "DX-Farm Superset",
       "protocol": "openid-connect",
       "publicClient": false,
-      "secret": "dxfarm_superset_demo_secret",
+      "secret": "${SUPERSET_OIDC_CLIENT_SECRET}",
       "standardFlowEnabled": true,
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,

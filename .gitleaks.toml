@@ -1,0 +1,15 @@
+title = "DX-Farm gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Placeholders and retired demo defaults that only survive in git history or docs"
+regexes = [
+  # Demo passwords that used to be the defaults of deploy/.env.example (now left blank).
+  '''(AiVectorRo123|AiVectorIngest123|Keycloak123|Superset123|Mattermost123|dxfarm_superset_demo_secret)''',
+]
+# Third-party skill documentation contains example environment blocks with placeholders.
+paths = [
+  '''ai/\.codex/skills/.*''',
+]

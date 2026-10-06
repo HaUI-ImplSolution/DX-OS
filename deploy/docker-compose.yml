@@ -129,8 +129,7 @@ services:
           # Fail clearly instead of letting Docker create a root-owned directory
           # when a machine-specific override points to a missing file.
           create_host_path: false
-    ports:
-      - "${AI_HOST_PORT:?}:8000"
+    # No published port: only Backend (and AI-internal jobs) reach AI over the compose network.
 
   rag-ingest:
     build:
@@ -162,6 +161,11 @@ services:
       - backend
     ports:
       - "${FRONTEND_HOST_PORT:?}:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
 
   portal:
     build:
@@ -169,6 +173,11 @@ services:
       dockerfile: Dockerfile
     ports:
       - "${PORTAL_HOST_PORT:?}:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
 
   keycloak:
     image: quay.io/keycloak/keycloak:26.0
@@ -190,10 +199,24 @@ services:
       KC_DB_USERNAME: keycloak_app
       KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?}
       KC_HEALTH_ENABLED: "true"
+      # Substituted into realm-dxfarm.json (${SUPERSET_OIDC_CLIENT_SECRET}) at import time.
+      SUPERSET_OIDC_CLIENT_SECRET: ${SUPERSET_OIDC_CLIENT_SECRET:?}
     volumes:
       - ../sso/realm-dxfarm.json:/opt/keycloak/data/import/realm-dxfarm.json:ro
     ports:
       - "${KEYCLOAK_HOST_PORT:?}:8080"
+    # The Keycloak image has no curl; probe the management port (KC_HEALTH_ENABLED) over bash.
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          exec 3<>/dev/tcp/127.0.0.1/9000 &&
+          printf 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 &&
+          grep -q '"status": "UP"' <&3
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 30s
 
   # Superset chạy bằng uid 1000 nhưng bind mount mới tạo thuộc root - chown một lần trước khi Superset khởi động.
   superset-init:

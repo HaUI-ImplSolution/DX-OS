@@ -12,6 +12,8 @@ Bảng dưới liệt kê từng thành phần đang thực sự chạy trong re
 | springdoc-openapi | Apache-2.0 | ✅ | |
 | Lombok | MIT | ✅ | `optional=true`, không đóng gói vào runtime |
 | PostgreSQL (server, `postgres:15-alpine` image) | PostgreSQL License | ✅ | |
+| Testcontainers (`org.testcontainers`, scope `test`) | MIT | ✅ | Chỉ dùng khi chạy test, khởi động PostgreSQL thật; không đóng gói vào runtime |
+| JUnit 5, Mockito, AssertJ (qua `spring-boot-starter-test`, scope `test`) | EPL-2.0 / MIT / Apache-2.0 | ✅ | Chỉ dùng khi chạy test |
 
 Các dependency đã bị comment-out trong `pom.xml` (Redis, Mail, AMQP, Apache POI, totp, owasp-java-html-sanitizer) **chưa thực sự dùng** — không tính vào rà soát cho tới khi được bật lại.
 Khi bật lại cần rà license tương ứng: POI Apache-2.0 OK, các cái còn lại cũng Apache-2.0 hoặc MIT, đều OSI-approved.
@@ -91,6 +93,8 @@ giữ Apache-2.0.
 | Mattermost (`mattermost/mattermost-team-edition` image) | AGPLv3 (server core) | ✅ | Xem mục riêng "Rà soát license Mattermost" dưới đây — không đơn giản như một dòng |
 | Keycloak (`quay.io/keycloak/keycloak` image) | Apache-2.0 | ✅ | Identity Provider cho SSO thật — xem `sso/README.md` |
 | Docker / Docker Compose (tooling, không đóng gói vào sản phẩm) | Apache-2.0 | ✅ | |
+| gitleaks (`ghcr.io/gitleaks/gitleaks`, quét secret trong CI) | MIT | ✅ | Công cụ CI, không đóng gói vào sản phẩm; cấu hình ở `.gitleaks.toml` |
+| pytest (`ai/requirements-dev.txt`) | MIT | ✅ | Chỉ dùng để chạy test AI, không nằm trong image runtime |
 
 ## Rà soát license Mattermost (kênh chat nội bộ)
 

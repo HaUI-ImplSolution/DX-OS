@@ -144,6 +144,7 @@ Chạy từ thư mục `ai/`:
 | `python -m scripts.check_backend_client` | Kiểm tra client gọi Backend bằng mock: retry giới hạn, không retry khi HTTP 401, đọc khoảng liều `dose_min`/`dose_max` |
 | `python -m scripts.check_diagnose_contract` | Kiểm tra luồng `/diagnose` chạy theo thứ tự CV, Backend, RAG; response đúng contract và phần diễn đạt không chứa số liệu tự sinh |
 | `python -m scripts.check_rag_access_boundary` | Xác nhận việc ghi RAG nằm ngoài runtime FastAPI |
+| `pip install -r requirements-dev.txt && python -m pytest tests` | Chạy test (CV, workflow, xác thực service key); CI chạy cùng lệnh |
 
 ## Giới hạn vận hành
 

@@ -101,7 +101,7 @@ Kết quả đầu ra: CI chạy test thật cho backend + check cho frontend/mo
 **Test**
 
 - [x] WP1-04-TEST-01 Chạy script reset 2 lần liên tiếp trên máy sạch, xác nhận `docker compose ps` toàn bộ `healthy` cả hai lần (T1-12).
-- [ ] WP1-04-TEST-02 Xác nhận CI job mới (frontend/mobile/AI) chạy và xanh trên PR thử (T1-13).
+- [x] WP1-04-TEST-02 Xác nhận CI job mới (frontend/mobile/AI) chạy và xanh trên PR thử (T1-13).
 
 ## Đóng phase
 

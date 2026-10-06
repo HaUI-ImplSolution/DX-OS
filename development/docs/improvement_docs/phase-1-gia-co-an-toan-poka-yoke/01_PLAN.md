@@ -216,3 +216,13 @@ Thứ tự đề xuất: WP1-01 → WP1-02 ∥ WP1-03 → WP1-04 (CI bật test 
 | Q1 | `appliedAt` lùi tối đa 30 ngày | Đủ dư cho sai số thực tế, vẫn chặn input vô lý |
 | Q2 | Dọn dữ liệu cũ bằng xóa + seed lại | Dữ liệu demo, không phải dữ liệu thật, không cần script chuyển trạng thái phức tạp |
 | Q3 | Dùng gitleaks | MIT license (OSI), chạy local + CI không cần dịch vụ ngoài |
+
+## Ghi chú triển khai
+
+- Không có công cụ migration: cột `version` do Hibernate `ddl-auto: update` thêm (`NOT NULL DEFAULT 0`), partial unique index nằm trong `backend/DX-Farm/src/main/resources/schema.sql`.
+- Cổng AI bỏ hẳn khỏi compose (không còn `AI_HOST_PORT`).
+- `apply` tăng version của `CropSeason` để thu hoạch chạy song song không lọt qua khóa PHI vừa tạo.
+- Upload ảnh chỉ nhận JPEG/PNG, giới hạn 40 megapixel, áp hướng EXIF vào điểm ảnh trước khi bỏ metadata.
+- Secret của client Superset đi vào realm qua `${SUPERSET_OIDC_CLIENT_SECRET}` lúc Keycloak import.
+- Thêm healthcheck cho frontend, portal, keycloak để `reset.sh` và `docker compose ps` phản ánh đúng trạng thái.
+- CI tách thành 5 workflow theo thư mục (`ci.yml`, `ci-frontend.yml`, `ci-mobile.yml`, `ci-ai.yml`, `ci-infra.yml`), chạy cho cả `main` và `Khuong/main`.

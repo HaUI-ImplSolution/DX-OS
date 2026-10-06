@@ -530,6 +530,11 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Tài liệu (root, `development/docs`, `ai/`)
 
+### 2026-10-06
+
+- `README.md` có bảng tài khoản demo, hướng dẫn `deploy/reset.sh` và cách chạy test backend; `LICENSES.md` ghi thêm Testcontainers, JUnit/Mockito/AssertJ, gitleaks và pytest (chỉ dùng cho test/CI).
+- Phase 1 của `development/docs/improvement_docs` ở trạng thái Xong, kèm kết quả kiểm thử.
+
 ### 2026-10-05
 
 **Đã xong:**

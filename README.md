@@ -156,7 +156,7 @@ Dữ liệu demo cũ do AI ghi trực tiếp trước khi tách DB (`disease_rep
 - [x] Cấu trúc monorepo và quyền sở hữu từng thư mục/module
 - [x] Chính sách repo Private trong lúc phát triển, thời điểm public trước khi nộp bài
 
-## Trạng thái hiện tại (cập nhật 2026-10-02)
+## Trạng thái hiện tại (cập nhật 2026-10-06)
 
 Backend Spring Boot sở hữu dữ liệu nghiệp vụ, structured knowledge và toàn bộ vòng đời phê duyệt; đồng thời cung cấp internal API chỉ đọc cho AI.
 AI Service hoạt động stateless: kết hợp CV, structured facts từ Backend và RAG evidence, sau đó trả recommendation để Backend kiểm tra và lưu.
@@ -166,6 +166,8 @@ Frontend, Keycloak SSO, Superset, Mattermost và portal tiếp tục dùng chung
 Backend post thông báo báo cáo mới và chẩn đoán chờ duyệt vào channel Mattermost `Kỹ sư nông nghiệp` qua Incoming Webhook khi `MATTERMOST_WEBHOOK_URL` được cấu hình.
 Keycloak không cố định hostname nên web (`localhost`) và điện thoại (IP LAN) đăng nhập cùng lúc mà không cần đổi `deploy/.env`.
 Bản mobile Expo cho FARMER đã có luồng đầu-cuối (đăng nhập, xem thửa/vụ/báo cáo, chụp và gửi, hàng đợi offline); hướng dẫn chạy và đóng gói APK ở [`mobile/README.md`](./mobile/README.md), kế hoạch ở [`development/docs/pending_docs/mobile/PLAN.md`](./development/docs/pending_docs/mobile/PLAN.md).
+Khóa PHI chặn ngày phun ngoài khoảng 30 ngày gần nhất, mỗi thửa chỉ có một vụ đang canh tác, mọi endpoint AI (trừ health) cần service key, ảnh upload được giải mã lại và không còn EXIF/GPS, mật khẩu hệ thống không còn giá trị mặc định.
+CI chạy riêng cho backend (kèm test), frontend, mobile, AI và hạ tầng (quét secret, kiểm tra compose).
 Chi tiết thay đổi theo từng module xem tại [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Chạy demo Phase 0
@@ -227,6 +229,7 @@ Muốn chỉ dựng một phần: `./reset.sh --yes postgres backend keycloak`.
 - Dữ liệu Postgres, Mattermost, Superset và ảnh upload lưu ở `deploy/data/` (bind mount, không mất khi `docker compose down`); model Ollama và cache embedding của AI nằm ở volume Docker.
   Dựng lại từ đầu bằng `deploy/reset.sh` (xem mục "Dựng lại từ đầu" bên dưới).
 - Chi tiết riêng từng service: [`mobile/README.md`](./mobile/README.md) (app mobile), [`sso/README.md`](./sso/README.md) (Keycloak), [`bi/README.md`](./bi/README.md) (Superset), [`chat/README.md`](./chat/README.md) (Mattermost), [`portal/README.md`](./portal/README.md) (trang portal).
+- Test backend: `./mvnw test` trong `backend/DX-Farm`; cần Docker vì có test chạy PostgreSQL qua Testcontainers.
 - Backend log mức `INFO`; đặt `LOG_LEVEL_APP=DEBUG` khi cần chi tiết (không nằm trong `deploy/.env.example`).
 - Cổng AI (8000) không publish ra host; chỉ Backend gọi được AI qua mạng compose.
 - Sửa code + hot reload thay vì rebuild image: chạy `docker compose up -d postgres` trong `deploy` để có sẵn Postgres, rồi `./mvnw spring-boot:run` (backend) và `VITE_KEYCLOAK_URL=http://localhost:8180/realms/dxfarm npm run dev` (frontend) như bình thường. Mọi file `.env` chỉ nằm ở `deploy/`.

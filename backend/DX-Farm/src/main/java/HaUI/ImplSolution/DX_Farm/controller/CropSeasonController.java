@@ -32,7 +32,9 @@ public class CropSeasonController {
   @PostMapping("/parcels/{code}/crop-seasons")
   @ResponseStatus(HttpStatus.CREATED)
   @Operation(summary = "Start a new crop season for a parcel",
-      description = "FARMER: 404 if the parcel belongs to another farmer.")
+      description = "FARMER: 404 if the parcel belongs to another farmer."
+          + " 400 if expectedHarvestDate is before startDate;"
+          + " 409 if the parcel already has an ACTIVE crop season.")
   public ApiResponse<CropSeasonResponse> create(@PathVariable String code,
       @Valid @RequestBody CropSeasonCreateRequest request) {
     return ApiResponse.success("Crop season created", cropSeasonService.create(code, request));
@@ -62,7 +64,8 @@ public class CropSeasonController {
   @PostMapping("/crop-seasons/{id}/harvest")
   @Operation(
       summary = "Declare harvest (poka-yoke: 422 POKA_YOKE_VIETGAP_VIOLATION if still isolated)",
-      description = "FARMER: 404 if the season's parcel belongs to another farmer.")
+      description = "FARMER: 404 if the season's parcel belongs to another farmer."
+          + " 409 if the season was modified concurrently.")
   public ApiResponse<CropSeasonResponse> harvest(@PathVariable Long id) {
     return ApiResponse.success("Harvest recorded", cropSeasonService.harvest(id));
   }

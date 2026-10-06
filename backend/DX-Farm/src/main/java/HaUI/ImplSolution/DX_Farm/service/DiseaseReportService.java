@@ -4,9 +4,11 @@ import HaUI.ImplSolution.DX_Farm.dto.DiagnosisResponse;
 import HaUI.ImplSolution.DX_Farm.dto.DiseaseReportResponse;
 import HaUI.ImplSolution.DX_Farm.event.DiseaseReportCreatedEvent;
 import HaUI.ImplSolution.DX_Farm.exception.InvalidStateException;
+import HaUI.ImplSolution.DX_Farm.exception.PokaYokeViolationException;
 import HaUI.ImplSolution.DX_Farm.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.DX_Farm.model.ApprovalStatus;
 import HaUI.ImplSolution.DX_Farm.model.CropSeason;
+import HaUI.ImplSolution.DX_Farm.model.CropSeasonStatus;
 import HaUI.ImplSolution.DX_Farm.model.Diagnosis;
 import HaUI.ImplSolution.DX_Farm.model.DiseaseReport;
 import HaUI.ImplSolution.DX_Farm.repository.CropSeasonRepository;
@@ -67,6 +69,10 @@ public class DiseaseReportService {
         return toResponse(requireSameRequester(existing.get(), cropSeasonId, reporter),
             currentUserService.isFarmer());
       }
+    }
+    if (season.getStatus() == CropSeasonStatus.HARVESTED) {
+      throw new PokaYokeViolationException("CROP_SEASON_HARVESTED",
+          "Crop season is already harvested: " + cropSeasonId);
     }
     String imageRef = fileStorageService.store(image);
     DiseaseReport report = DiseaseReport.builder().cropSeason(season).imageRef(imageRef)

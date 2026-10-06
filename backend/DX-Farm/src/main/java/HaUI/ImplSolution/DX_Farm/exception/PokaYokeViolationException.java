@@ -7,6 +7,10 @@ public class PokaYokeViolationException extends RuntimeException {
   private final String errorCode;
   private final LocalDate harvestLockedUntil;
 
+  public PokaYokeViolationException(String errorCode, String message) {
+    this(errorCode, message, null);
+  }
+
   public PokaYokeViolationException(String errorCode, String message,
       LocalDate harvestLockedUntil) {
     super(message);

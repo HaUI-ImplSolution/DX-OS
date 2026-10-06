@@ -1,0 +1,216 @@
+package HaUI.ImplSolution.DX_Farm.persistence;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.when;
+
+import HaUI.ImplSolution.DX_Farm.config.TimeConfig;
+import HaUI.ImplSolution.DX_Farm.exception.InvalidStateException;
+import HaUI.ImplSolution.DX_Farm.model.ApprovalStatus;
+import HaUI.ImplSolution.DX_Farm.model.CropSeason;
+import HaUI.ImplSolution.DX_Farm.model.CropSeasonStatus;
+import HaUI.ImplSolution.DX_Farm.model.Diagnosis;
+import HaUI.ImplSolution.DX_Farm.model.DiseaseReport;
+import HaUI.ImplSolution.DX_Farm.model.Parcel;
+import HaUI.ImplSolution.DX_Farm.repository.CropSeasonRepository;
+import HaUI.ImplSolution.DX_Farm.repository.DiagnosisRepository;
+import HaUI.ImplSolution.DX_Farm.repository.DiseaseReportRepository;
+import HaUI.ImplSolution.DX_Farm.repository.DiseaseRepository;
+import HaUI.ImplSolution.DX_Farm.repository.ParcelRepository;
+import HaUI.ImplSolution.DX_Farm.service.AiDiagnosisClient;
+import HaUI.ImplSolution.DX_Farm.service.CurrentUserService;
+import HaUI.ImplSolution.DX_Farm.service.DiagnosisService;
+import HaUI.ImplSolution.DX_Farm.service.TreatmentRuleService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.RollbackException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.postgresql.PostgreSQLContainer;
+
+// Runs against a real PostgreSQL because it checks the database-side guarantees: the @Version
+// columns and the partial unique index created by schema.sql.
+@DataJpaTest(properties = {"app.public-base-url=http://backend:8081",
+    "spring.jpa.hibernate.ddl-auto=update"})
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Testcontainers
+@Import({DiagnosisService.class, TimeConfig.class})
+@Transactional(propagation = Propagation.NOT_SUPPORTED)
+class ConcurrencyIntegrationTest {
+
+  @Container
+  static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16-alpine");
+
+  @DynamicPropertySource
+  static void datasource(DynamicPropertyRegistry registry) {
+    registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
+    registry.add("spring.datasource.username", POSTGRES::getUsername);
+    registry.add("spring.datasource.password", POSTGRES::getPassword);
+  }
+
+  @MockitoBean
+  private AiDiagnosisClient aiDiagnosisClient;
+  @MockitoBean
+  private TreatmentRuleService treatmentRuleService;
+  @MockitoBean
+  private CurrentUserService currentUserService;
+
+  @Autowired
+  private DiagnosisService diagnosisService;
+  @Autowired
+  private EntityManagerFactory entityManagerFactory;
+  @Autowired
+  private ParcelRepository parcelRepository;
+  @Autowired
+  private CropSeasonRepository cropSeasonRepository;
+  @Autowired
+  private DiseaseReportRepository diseaseReportRepository;
+  @Autowired
+  private DiseaseRepository diseaseRepository;
+  @Autowired
+  private DiagnosisRepository diagnosisRepository;
+
+  private Parcel newParcel() {
+    String code = "P-" + UUID.randomUUID();
+    return parcelRepository.save(
+        Parcel.builder().code(code).farmerName("Test Farmer").areaHectares(BigDecimal.ONE).build());
+  }
+
+  private CropSeason newSeason(Parcel parcel, CropSeasonStatus status) {
+    return cropSeasonRepository.saveAndFlush(CropSeason.builder().parcel(parcel)
+        .riceVariety("OM 5451").startDate(LocalDate.of(2026, 7, 1)).status(status).build());
+  }
+
+  private Diagnosis newPendingDiagnosis() {
+    CropSeason season = newSeason(newParcel(), CropSeasonStatus.ACTIVE);
+    DiseaseReport report = diseaseReportRepository.save(DiseaseReport.builder().cropSeason(season)
+        .imageRef("x.jpg").reportedBy("Test Farmer").build());
+    return diagnosisRepository.save(Diagnosis.builder().diseaseReport(report)
+        .disease(diseaseRepository.findByCodeAndActiveTrue("Rice___Blast").orElseThrow())
+        .confidence(new BigDecimal("0.9000")).modelVersion("test").recommendationText("test")
+        .approvalStatus(ApprovalStatus.PENDING).build());
+  }
+
+  @Test
+  void secondSeasonActiveOnSameParcelIsRejectedByDatabase() {
+    Parcel parcel = newParcel();
+    newSeason(parcel, CropSeasonStatus.ACTIVE);
+
+    assertThatThrownBy(() -> newSeason(parcel, CropSeasonStatus.ACTIVE))
+        .isInstanceOf(DataIntegrityViolationException.class);
+  }
+
+  @Test
+  void harvestedSeasonsDoNotCountAgainstTheActiveLimit() {
+    Parcel parcel = newParcel();
+    newSeason(parcel, CropSeasonStatus.HARVESTED);
+    newSeason(parcel, CropSeasonStatus.HARVESTED);
+
+    assertThat(newSeason(parcel, CropSeasonStatus.ACTIVE).getId()).isNotNull();
+  }
+
+  @Test
+  void staleDiagnosisWriterFailsOnCommit() {
+    Diagnosis diagnosis = newPendingDiagnosis();
+    EntityManager first = entityManagerFactory.createEntityManager();
+    EntityManager second = entityManagerFactory.createEntityManager();
+    try {
+      first.getTransaction().begin();
+      second.getTransaction().begin();
+      Diagnosis a = first.find(Diagnosis.class, diagnosis.getId());
+      Diagnosis b = second.find(Diagnosis.class, diagnosis.getId());
+      a.setApprovalStatus(ApprovalStatus.APPROVED);
+      first.getTransaction().commit();
+      b.setApprovalStatus(ApprovalStatus.REJECTED);
+
+      assertThatThrownBy(() -> second.getTransaction().commit())
+          .isInstanceOf(RollbackException.class);
+    } finally {
+      first.close();
+      second.close();
+    }
+    assertThat(diagnosisRepository.findById(diagnosis.getId()).orElseThrow().getApprovalStatus())
+        .isEqualTo(ApprovalStatus.APPROVED);
+  }
+
+  @Test
+  void staleCropSeasonWriterFailsOnCommit() {
+    CropSeason season = newSeason(newParcel(), CropSeasonStatus.ACTIVE);
+    EntityManager first = entityManagerFactory.createEntityManager();
+    EntityManager second = entityManagerFactory.createEntityManager();
+    try {
+      first.getTransaction().begin();
+      second.getTransaction().begin();
+      CropSeason a = first.find(CropSeason.class, season.getId());
+      CropSeason b = second.find(CropSeason.class, season.getId());
+      a.setStatus(CropSeasonStatus.HARVESTED);
+      first.getTransaction().commit();
+      b.setRiceVariety("Other");
+
+      assertThatThrownBy(() -> second.getTransaction().commit())
+          .isInstanceOf(RollbackException.class);
+    } finally {
+      first.close();
+      second.close();
+    }
+  }
+
+  @Test
+  void concurrentApprovalsLetExactlyOneRequestWin() throws Exception {
+    Diagnosis diagnosis = newPendingDiagnosis();
+    Long reportId = diagnosis.getDiseaseReport().getId();
+    when(currentUserService.currentFullName()).thenReturn("Engineer");
+    int callers = 2;
+    CyclicBarrier start = new CyclicBarrier(callers);
+    ExecutorService executor = Executors.newFixedThreadPool(callers);
+    try {
+      List<Future<Boolean>> results = new ArrayList<>();
+      for (int i = 0; i < callers; i++) {
+        Callable<Boolean> approve = () -> {
+          start.await();
+          try {
+            diagnosisService.approve(reportId);
+            return true;
+          } catch (ObjectOptimisticLockingFailureException | InvalidStateException e) {
+            // Both exceptions are mapped to HTTP 409 by GlobalExceptionHandler.
+            return false;
+          }
+        };
+        results.add(executor.submit(approve));
+      }
+      long winners = 0;
+      for (Future<Boolean> result : results) {
+        if (result.get()) {
+          winners++;
+        }
+      }
+      assertThat(winners).isEqualTo(1);
+    } finally {
+      executor.shutdownNow();
+    }
+    assertThat(diagnosisRepository.findById(diagnosis.getId()).orElseThrow().getApprovalStatus())
+        .isEqualTo(ApprovalStatus.APPROVED);
+  }
+}

@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Sẵn sàng code (plan + Q1-Q3 đã chốt, chưa bắt đầu implement) |
+| Trạng thái | Xong (CI GitHub xanh, 6 job) |
 | Mức độ | Nghiêm trọng |
 | Nhóm ưu tiên | A |
 | Ước lượng | 3-4 ngày |
@@ -78,6 +78,6 @@
 
 ## 10. Tài liệu cần cập nhật khi xong
 
-- [ ] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
-- [ ] Swagger (springdoc) cho các response lỗi mới (422 khóa PHI, 401 AI).
-- [ ] `deploy/.env.example` (bỏ mật khẩu mặc định), `ai/app/cv/README.md` nếu đổi hành vi auth.
+- [x] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
+- [x] Swagger (springdoc) cho các response lỗi mới (422 khóa PHI, 401 AI).
+- [x] `deploy/.env.example` (bỏ mật khẩu mặc định), `ai/app/cv/README.md` nếu đổi hành vi auth.

@@ -37,7 +37,8 @@ public class DiseaseReportController {
   @Operation(summary = "Report a disease sighting with a photo (reportedBy = logged-in user)",
       description = "FARMER: 404 if the season's parcel belongs to another farmer."
           + " With an Idempotency-Key, a repeated request returns the existing report without"
-          + " storing the image again; 409 if the key was used for another crop season or user.")
+          + " storing the image again; 409 if the key was used for another crop season or user."
+          + " 422 CROP_SEASON_HARVESTED if the crop season is already harvested.")
   public ApiResponse<DiseaseReportResponse> create(@PathVariable Long cropSeasonId,
       @RequestPart("image") MultipartFile image,
       @Parameter(description = "Client-generated UUID that makes retries of this request safe")

@@ -27,7 +27,8 @@ Chuẩn công nghiệp cho OIDC/SAML, license Apache-2.0 (OSI-approved), có tà
 - `keycloak` dùng CSDL Postgres riêng (`keycloak`), cùng pattern với Mattermost/Superset.
   Backend tự tạo role `keycloak_app` + database `keycloak` lúc khởi động (`KeycloakDatabaseSeeder`).
 - Realm `dxfarm` có 3 realm role `FARMER`/`ENGINEER`/`ADMIN`, client public `dxfarm-frontend` và `dxfarm-mobile` (Standard Flow + PKCE, không dùng client secret), và client confidential `dxfarm-superset` (Superset trao đổi token server-to-server nên cần secret).
-  Secret của client này nằm trong `realm-dxfarm.json` và phải trùng `SUPERSET_OIDC_CLIENT_SECRET` trong `deploy/.env`.
+  Secret của client này lấy từ `SUPERSET_OIDC_CLIENT_SECRET` trong `deploy/.env`: Keycloak thay `${SUPERSET_OIDC_CLIENT_SECRET}` trong `realm-dxfarm.json` lúc import, nên file realm không chứa secret thật.
+  Keycloak chỉ import khi realm chưa tồn tại; đổi giá trị này sau khi đã import thì cập nhật secret client trong Admin Console hoặc dựng lại bằng `deploy/reset.sh`.
 - 3 tài khoản demo tạo sẵn trong realm import — xem bảng dưới.
   Chỉ dùng để demo, đổi mật khẩu/secret thật trước khi triển khai ngoài môi trường dev.
 - Claim `name` của `farmer1` là `Nguyễn Văn Nông`; backend so khớp claim này với `farmerName` của thửa để giới hạn dữ liệu của FARMER.

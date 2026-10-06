@@ -7,9 +7,9 @@
 | TO1 | Q1 — ngưỡng ngày hợp lệ của `appliedAt` | 14 ngày / 30 ngày / không giới hạn cứng, chỉ cảnh báo | **30 ngày** | Ít chặn nhầm trường hợp hợp lệ, đủ dư cho sai số khai báo trễ thực tế | Ngưỡng rộng hơn 14 ngày nghĩa là dữ liệu PHI sai có thể tồn tại lâu hơn trước khi bị phát hiện | Thấp — chỉ là một hằng số, đổi được bất kỳ lúc nào không cần migration |
 | TO2 | Unique constraint "1 vụ ACTIVE/thửa" | Chặn cứng ở DB (partial unique index) / chỉ chặn ở service | DB + service (cả hai lớp) | An toàn trước race condition, đúng nguyên tắc chặn 2 tầng của dự án | Phải dọn dữ liệu cũ vi phạm trước khi migrate, có thể mất vài vụ demo cũ không hợp lệ | Vừa — bỏ constraint dễ, nhưng dữ liệu đã dọn (xóa/đổi trạng thái) không phục hồi được |
 | TO3 | Re-encode ảnh để xóa EXIF | Re-encode mọi ảnh upload / chỉ strip EXIF tag không decode lại | Re-encode (decode + encode lại) | Vừa xác minh ảnh thật (chặn file giả dạng ảnh) vừa xóa EXIF trong một bước | Tốn CPU hơn, có thể đổi nhẹ chất lượng ảnh nén lại (JPEG re-encode) | Thấp — đổi lại cách strip nhẹ hơn không cần migration dữ liệu đã lưu |
-| TO4 | Ngừng publish cổng AI (8000) ra host | Ngừng hẳn / giữ nhưng chỉ bind `127.0.0.1` | Ngừng hẳn (đổi `AI_HOST_PORT` thành tùy chọn) | Đóng đúng lỗ hổng mục 9; dọn đường cho gateway ở P3 | Mất tiện lợi debug trực tiếp AI qua Postman từ máy host, phải `docker compose exec` hoặc port-forward tạm | Thấp — compose dễ đổi lại, không ảnh hưởng dữ liệu |
+| TO4 | Ngừng publish cổng AI (8000) ra host | Ngừng hẳn / giữ nhưng chỉ bind `127.0.0.1` | Ngừng hẳn (bỏ hẳn `AI_HOST_PORT`) | Đóng đúng lỗ hổng mục 9; dọn đường cho gateway ở P3 | Mất tiện lợi debug trực tiếp AI qua Postman từ máy host, phải `docker compose exec` hoặc port-forward tạm | Thấp — compose dễ đổi lại, không ảnh hưởng dữ liệu |
 
-Kết luận: TO1-TO4 đã chốt, áp dụng ngay (xem `00_OVERVIEW.md` mục 9, ngày 05/10/2026).
+Kết luận: TO1-TO4 đã chốt và áp dụng (xem `00_OVERVIEW.md` mục 9, ngày 05/10/2026).
 
 ## 2. Rủi ro
 
@@ -20,10 +20,17 @@ Kết luận: TO1-TO4 đã chốt, áp dụng ngay (xem `00_OVERVIEW.md` mục 9
 | R3 | `@Version` (optimistic lock) làm một luồng cập nhật hợp lệ hiện có (ví dụ retry tự động ở FE/mobile) bất ngờ nhận 409 dù không có xung đột thật | Thấp | Vừa | Test T1-07 xác nhận đúng kịch bản 2 request đồng thời; kiểm tra FE/mobile hiện có không có cơ chế retry tự động nào gọi lại API ghi mà không tải lại dữ liệu mới | FE/mobile báo lỗi 409 bất thường trong luồng người dùng bình thường (không thao tác đồng thời) | Rà lại logic gọi API ở FE/mobile, thêm xử lý 409 (tải lại rồi thử lại) nếu phát hiện |
 | R4 | CI thêm job test thật (bỏ `-DskipTests`) làm lộ ra các test cũ/mới fail do môi trường CI khác máy local (thiếu service phụ thuộc, timezone...) | Vừa | Vừa | Test ở WP1-02 không phụ thuộc DB thật nếu dùng unit test thuần (mock `Clock`); nếu cần DB thì dùng Testcontainers hoặc H2 trong profile test | CI đỏ ngay sau khi bỏ `-DskipTests` dù code đúng | Tạm thời giữ `-DskipTests` cho job build chính, thêm job test riêng có thể fail mà không chặn merge, chuyển bắt buộc sau khi ổn định |
 
+## 2b. Kết quả thực tế của các rủi ro
+
+- R1: seed (`data.sql`) chỉ có danh mục bệnh, không có vụ mùa nên không vi phạm ràng buộc; chỉ DB dev cũ cần `reset.sh`.
+- R2: gitleaks báo 4 phát hiện trên lịch sử (mật khẩu demo cũ, placeholder trong tài liệu skill); đã xem từng cái và allowlist có lý do trong `.gitleaks.toml`.
+- R3: chưa thấy luồng nào của web hoặc mobile tự retry API ghi.
+- R4: test chạy PostgreSQL thật bằng Testcontainers; CI xanh ngay lần đầu.
+
 ## 3. Nợ kỹ thuật chấp nhận
 
 - Chưa chuyển sang Flyway (hoặc công cụ migration có phiên bản) ở phase này — để P2 xử lý cùng lúc với migration Household, tránh đổi 2 lần.
-- Chưa giới hạn chiều rộng/cao ảnh ở server (chỉ giới hạn dung lượng 10MB) — chấp nhận vì chưa thấy vấn đề thực tế, theo dõi ở P6 khi làm precheck ảnh.
+- Server giới hạn ảnh ở 10MB và 40 megapixel; chưa có giới hạn chiều rộng/cao riêng — theo dõi ở P6 khi làm precheck ảnh.
 - Reverse proxy + HTTPS và backup/restore không làm ở phase này — để P3/P8, phase 1 chỉ xử lý phần bảo mật có thể làm độc lập.
 
 ## 4. Điều kiện dừng và rollback

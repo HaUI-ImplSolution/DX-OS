@@ -94,7 +94,7 @@
     "title": "Thông tư 75/2025/TT-BNNMT – Phụ lục I danh mục thuốc BVTV được phép sử dụng",
     "organization": "Cục Trồng trọt và Bảo vệ thực vật Việt Nam",
     "source_type": "Vietnam pesticide regulation",
-    "recommended_use": "Xác minh sản phẩm, cây trồng và đối tượng phòng trừ đã đăng ký tại Việt Nam; không dùng làm nguồn liều/PHI",
+    "recommended_use": "Xác minh Newtec 300SC có đăng ký đạo ôn, khô vằn/lúa; không dùng làm nguồn liều/PHI",
     "url": "https://ppd.gov.vn/FileUpload/Documents/Thuoc%20BVTV/25.12.30_PL%201%20-%20Danh%20m%E1%BB%A5c%20%C4%91%C6%B0%E1%BB%A3c%20ph%C3%A9p%20s%E1%BB%AD%20d%E1%BB%A5ng.pdf",
     "authority_level": "Primary regulatory source",
     "accessed_at": "2026-09-29",
@@ -109,7 +109,7 @@
     "title": "Thông tư 28/2026/TT-BNNMT – Phụ lục sửa đổi/bổ sung",
     "organization": "Cục Trồng trọt và Bảo vệ thực vật Việt Nam",
     "source_type": "Vietnam pesticide regulation amendment",
-    "recommended_use": "Kiểm tra các thay đổi, bổ sung và sản phẩm rút khỏi danh mục sau Thông tư 75/2025/TT-BNNMT",
+    "recommended_use": "Kiểm tra danh sách 5 sản phẩm tự rút; Newtec không nằm trong danh sách này",
     "url": "https://www.ppd.gov.vn/FileUpload/Documents/Thuoc%20BVTV/26.07.03_PL%20TT28__01072026152914_signed.pdf",
     "authority_level": "Primary regulatory source",
     "accessed_at": "2026-09-29",
@@ -133,20 +133,5 @@
     "crop_target_locale": "Lúa; Việt Nam",
     "review_status": "IN_REVIEW",
     "notes": "Chưa thay thế xác nhận nhãn vật lý/đăng ký hiện hành bởi kỹ sư nông nghiệp."
-  },
-  {
-    "source_id": "SRC_ADC_HELP_400SC",
-    "title": "Help 400SC – hướng dẫn sử dụng",
-    "organization": "ADC Agrotech / Công ty TNHH ADC",
-    "source_type": "Manufacturer product directions",
-    "recommended_use": "Nguồn thành phần, liều, lượng nước, thời điểm phun và PHI của Help 400SC cho đốm nâu trên lúa",
-    "url": "https://www.adcgroup.net/shop/thuoc-bvtv/thuoc-tru-benh/help-400sc/",
-    "authority_level": "Primary manufacturer guidance",
-    "accessed_at": "2026-10-05",
-    "version": null,
-    "license": null,
-    "crop_target_locale": "Lúa; Việt Nam",
-    "review_status": "IN_REVIEW",
-    "notes": "Trang hướng dẫn chính thức của đơn vị đăng ký sản phẩm; cần tiếp tục lưu bản chụp/nhãn vật lý cho hồ sơ audit dài hạn."
   }
 ]

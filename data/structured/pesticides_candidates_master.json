@@ -23,38 +23,9 @@
         "SRC_SYNGENTA_NEWTEC"
       ]
     },
-    "eligible_for_pesticide_seed": true,
-    "review_status": "EXPERT_APPROVED",
-    "blocked_reason": null,
-    "notes": "Được chuyên gia dự án xác nhận ngày 2026-10-05 để sử dụng cho hai treatment rule đã duyệt. Phụ lục 75/2025 có Newtec, phụ lục 28/2026 không liệt kê Newtec trong 5 sản phẩm tự rút."
-  },
-  {
-    "candidate_id": "P-RICE-002",
-    "code": "HELP_400SC",
-    "name": "Help 400SC",
-    "unit": "L/ha",
-    "registered_company": "Công ty TNHH ADC",
-    "active_ingredient": "Azoxystrobin + Difenoconazole",
-    "concentration": "250 g/L + 150 g/L",
-    "formulation": "SC",
-    "registered_crop": "Lúa",
-    "registered_target": "Lem lép hạt, khô vằn, đạo ôn, đốm nâu",
-    "registration_verification": {
-      "status": "VERIFIED_75_2025_AND_28_2026_CHECKED",
-      "source_ids": [
-        "SRC_PPD_75_2025",
-        "SRC_PPD_28_2026"
-      ]
-    },
-    "label_verification": {
-      "status": "VERIFIED_MANUFACTURER_WEB_GUIDANCE",
-      "source_ids": [
-        "SRC_ADC_HELP_400SC"
-      ]
-    },
-    "eligible_for_pesticide_seed": true,
-    "review_status": "E2E_ASSUMPTION",
-    "blocked_reason": null,
-    "notes": "Được phép seed theo yêu cầu ngày 2026-10-05. Đăng ký và đối tượng được đối chiếu với danh mục hiện hành; dữ liệu định lượng lấy từ hướng dẫn chính thức của ADC."
+    "eligible_for_pesticide_seed": false,
+    "review_status": "IN_REVIEW",
+    "blocked_reason": "Chờ chuyên gia kiểm tra nhãn/đăng ký bản hiện hành và quyết định seed; chưa dùng cho production.",
+    "notes": "Phụ lục 75/2025 có Newtec, phụ lục 28/2026 không liệt kê Newtec trong 5 sản phẩm tự rút. Không suy rằng nguồn web thay thế nhãn chai."
   }
 ]

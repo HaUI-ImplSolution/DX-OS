@@ -29,12 +29,15 @@ Ngoài Expo Go, có thể build APK bằng EAS mà không cần cài Android Stu
   Lỗi mạng trả `ApiError` với `status` `0`.
 - **Chụp và gửi ảnh**: `expo-image-picker` mở camera hệ thống; `expo-image-manipulator` thu nhỏ cạnh dài tối đa 1280px và nén JPEG 0.7 để nằm xa giới hạn multipart 10MB.
   Ảnh gửi dạng multipart, part `image`, qua `XMLHttpRequest` để có thanh tiến trình.
+  App kiểm mỗi chiều từ 160px, dung lượng tối đa 10 MiB và độ sáng qua JPEG thumbnail (`jpeg-js`); Backend kiểm thêm độ nét trước khi gửi và khi nộp thật.
+  Ảnh không đạt phải chụp lại; precheck không xác nhận ảnh là lúa.
 - **Hàng đợi offline**: khi không có mạng hoặc gặp lỗi kết nối lúc gửi, ảnh được copy vào thư mục dữ liệu của app và ghi vào hàng đợi (`@react-native-async-storage/async-storage`).
   Mỗi ảnh có một UUID dùng làm header `Idempotency-Key`, nên gửi lại nhiều lần vẫn chỉ tạo một báo cáo.
+  Ảnh thay thế giữ `retakeOf` trong hàng đợi; Backend kiểm chất lượng khi có mạng, lỗi 422 không tạo báo cáo.
   Hàng đợi tự gửi khi `NetInfo` báo có mạng và khi app trở lại foreground; lỗi tạm thời được thử lại với khoảng chờ tăng dần (5 giây đến tối đa 5 phút, tối đa 8 lần).
   Lỗi `4xx` khác `408`, `409`, `429` đánh dấu "Lỗi" và không thử lại.
   Hàng đợi tách theo tài khoản; danh sách "Chờ gửi" và nút xoá nằm ở màn Hồ sơ, số lượng hiện ở đầu màn Báo cáo của vụ.
-- **Hiển thị trạng thái**: trạng thái báo cáo suy ra từ `diagnosis`.
+- **Hiển thị trạng thái**: NEEDS_RETAKE của báo cáo được ưu tiên; các quyết định còn lại lấy từ `diagnosis`. Màn chi tiết có liên kết xem chuỗi ảnh thay thế.
 
   | `diagnosis` | Chip | Nội dung nông dân thấy |
   |---|---|---|
@@ -204,12 +207,3 @@ npx expo export --platform android
 
 - Push notification khi kỹ sư duyệt hoặc từ chối báo cáo.
 - Icon và splash vẫn là ảnh mặc định của Expo.
-
-## Phase 6
-
-Trước khi gửi ảnh, app kiểm mỗi chiều từ 160px, dung lượng không quá 10 MiB và độ sáng từ thumbnail.
-Precheck qua Backend kiểm thêm độ nét; ảnh không đạt phải chụp lại.
-Khi offline, app giữ ảnh trong hàng đợi và Backend kiểm chất lượng khi gửi; ảnh bị từ chối không tạo báo cáo.
-Yêu cầu chụp lại theo `DiseaseReport.status=NEEDS_RETAKE`; quyết định `Diagnosis.REJECTED` chỉ có nghĩa khuyến nghị bị từ chối.
-Ảnh thay thế giữ `retakeOf` cả trong hàng đợi offline; màn chi tiết có liên kết xem chuỗi ảnh.
-Thư viện `jpeg-js` chỉ đọc JPEG thumbnail để tính độ sáng, không chạy nhận diện bệnh.

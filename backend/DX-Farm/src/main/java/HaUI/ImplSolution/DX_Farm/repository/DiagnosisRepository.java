@@ -13,6 +13,21 @@ public interface DiagnosisRepository extends JpaRepository<Diagnosis, Long> {
 
   List<Diagnosis> findByDiseaseReportIdOrderByIdDesc(Long reportId);
 
-  @Query("select d from Diagnosis d join fetch d.disease left join fetch d.treatmentRule r left join fetch r.pesticide where d.diseaseReport.id in :reportIds and d.id = (select max(latest.id) from Diagnosis latest where latest.diseaseReport.id = d.diseaseReport.id)")
+  @Query(
+  // @formatter:off
+      """
+      SELECT d
+      FROM Diagnosis d
+      JOIN FETCH d.disease
+      LEFT JOIN FETCH d.treatmentRule r
+      LEFT JOIN FETCH r.pesticide
+      WHERE d.diseaseReport.id IN :reportIds
+        AND d.id = (
+          SELECT MAX(latest.id)
+          FROM Diagnosis latest
+          WHERE latest.diseaseReport.id = d.diseaseReport.id
+        )
+      """)
+  // @formatter:on
   List<Diagnosis> findLatestForReports(@Param("reportIds") List<Long> reportIds);
 }

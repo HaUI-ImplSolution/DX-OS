@@ -46,7 +46,7 @@ Gợi ý câu lệnh cho Claude: "Tạo phase {N} từ `improvement_docs/_templa
 | [P3](./phase-3-open-core-workflow-gateway-storage/00_OVERVIEW.md) | Open-Core: workflow, gateway, storage, sơ đồ | 7, 8, 17 | Nghiêm trọng | Xong (hoãn một mục sang P4: test thông báo Mattermost) |
 | [P4](./phase-4-duyet-thua-vu-trang-quan-ly/00_OVERVIEW.md) | Duyệt thửa/vụ, mã chuẩn, GPS, trang quản lý | 2, 3, 12, 13, 15, 16 | Quan trọng | Chờ Q1 (kỹ sư nông nghiệp) |
 | [P5](./phase-5-vong-doi-vu-mua-thong-bao/00_OVERVIEW.md) | Vòng đời vụ mùa và thông báo cho farmer | 4, 10, 13, 15 | Quan trọng | Chờ Q1 (kỹ sư xác nhận thực tế canh tác) |
-| [P6](./phase-6-ai-kiem-tra-chan-doan-danh-gia/00_OVERVIEW.md) | AI: kiểm tra ảnh, chẩn đoán | 5, 11 | Quan trọng | Hoàn thành triển khai và kiểm thử tự động; còn demo điện thoại thật |
+| [P6](./phase-6-ai-kiem-tra-chan-doan-danh-gia/00_OVERVIEW.md) | AI: kiểm tra ảnh, chẩn đoán | 5, 11 | Quan trọng | Triển khai/test tự động đạt; chờ xác nhận luồng điện thoại |
 | [P7](./phase-7-du-lieu-bi-tri-thuc/00_OVERVIEW.md) | Dữ liệu, BI và tri thức | 14, 21 | Quan trọng | Sẵn sàng code |
 | [P8](./phase-8-test-demo-ho-so-nop-bai/00_OVERVIEW.md) | Kiểm thử, dữ liệu demo, hồ sơ nộp bài | 17, 18, 19, 20 | Nghiêm trọng (hạn nộp) | Chờ Q2 (chuyên gia duyệt treatment rule) |
 | [P10](./phase-10-de-sau/00_OVERVIEW.md) | Để sau (backlog) | 24, 15 (phần hoàn thiện) | Theo dõi | Backlog |

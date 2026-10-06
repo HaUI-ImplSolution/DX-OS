@@ -5,26 +5,26 @@ Theo D6 (phase 0): chỉ test case ảnh hưởng logic/an toàn hệ thống, k
 ## 1. Chiến lược
 
 - Mức kiểm thử áp dụng: unit/integration (JUnit) cho WP6-05/03/04; pytest (AI) cho WP6-01; thủ công trên mobile cho WP6-01 phần client.
-- Môi trường: clone sạch + seed demo.
-- Dữ liệu và tài khoản test: 1 báo cáo có ảnh mờ, 1 báo cáo có ảnh rõ; engineer1.
+- Môi trường: seed demo, PostgreSQL 16 Testcontainers và stack local cho kiểm tra HTTP/UI.
+- Dữ liệu: ảnh mờ/ảnh rõ; tài khoản `farmer1` (mobile), `engineer1` (web).
 
 ## 2. Test case
 
-| ID | WP | Loại | Mô tả và bước | Kết quả mong đợi | Người chạy | Kết quả |
-|---|---|---|---|---|---|---|
-| T6-01 | WP6-05 | Happy path | Gọi chẩn đoán AI lần 2 trên báo cáo đã có chẩn đoán | Thành công, không ném lỗi "đã có chẩn đoán" | Codex, 06/10/2026 | Pass — Phase6IntegrationTest.rerunPreservesHistoryAndUsesLatestDiagnosis |
-| T6-02 | WP6-05 | Hiệu năng/logic | Đo thời gian giữ connection DB trong lúc gọi AI | Không giữ suốt thời gian chờ AI | Codex, 06/10/2026 | Pass — datasource pool 1, AI callback không có transaction/resource và mượn connection được |
-| T6-03 | WP6-01 | Poka-yoke | Gửi ảnh mờ qua `precheck` | "Không đạt", không tạo báo cáo | Codex, 06/10/2026 | Pass — test_phase6.py: ảnh mờ trả passed=false, không cần model |
-| T6-04 | WP6-01 | Poka-yoke | Bỏ qua precheck, nộp báo cáo thật với ảnh mờ | Server vẫn từ chối | Codex, 06/10/2026 | Pass — serverRejectsBlurEvenWhenClientSkipsPrecheck; DB/file không được tạo |
-| T6-05 | WP6-03 | Poka-yoke | Kỹ sư yêu cầu chụp lại | `DiseaseReport.status = NEEDS_RETAKE`, không đổi `Diagnosis.approvalStatus` | Codex, 06/10/2026 | Pass — retakeChangesReportAndPreservesDiagnosisDecision |
-| T6-06 | WP6-03 | Đầy đủ | Farmer gửi báo cáo mới kèm `retakeOf` | Xem được chuỗi báo cáo cũ → mới liên tục | Codex, 06/10/2026 | Pass — linkedRetakeAndIdempotentReplayStayInSameChain |
-| T6-07 | WP6-04 | Poka-yoke | Nhập triệu chứng bất kỳ | Danh sách gợi ý chỉ chứa mã trong danh mục 6 bệnh, không có mã lạ | Codex, 06/10/2026 | Pass — RAG candidates lọc mã lạ, gộp bằng chứng tốt nhất |
-| T6-08 | WP6-04 | Hồi quy | Nhập tay (`diseaseCode` trực tiếp) trên database sạch chưa có treatment rule | Không còn 404 | Codex, 06/10/2026 | Pass — manualDiagnosisWithoutRuleStoresStructuredEngineerLabel |
+| ID | Kiểm tra | Kết quả mong đợi | Bằng chứng tự động |
+|---|---|---|---|
+| T6-01 | Chạy AI lần hai trên cùng báo cáo | Tạo chẩn đoán mới; giữ bản cũ và lấy bản mới làm hiện hành | `rerunPreservesHistoryAndUsesLatestDiagnosis` |
+| T6-02 | Gọi AI với pool DB chỉ một connection | Không giữ transaction/connection trong lúc chờ HTTP AI | Callback AI không có transaction/resource; mượn được connection |
+| T6-03 | Precheck ảnh mờ | `passed=false`, không tạo báo cáo | `test_phase6.py`, hồi quy sọc/nhiễu/chữ sắc |
+| T6-04 | Bỏ qua precheck, nộp ảnh mờ | Server trả 422, không lưu DB/file | `serverRejectsBlurEvenWhenClientSkipsPrecheck` và HTTP thật |
+| T6-05 | Kỹ sư yêu cầu ảnh mới | NEEDS_RETAKE, giữ quyết định chẩn đoán cũ | `retakeChangesReportAndPreservesDiagnosisDecision` |
+| T6-06 | Farmer gửi ảnh với retakeOf | Chuỗi cũ/mới đúng hộ/vụ; retry không tạo trùng | `linkedRetakeAndIdempotentReplayStayInSameChain` |
+| T6-07 | Gợi ý bệnh từ triệu chứng | Chỉ trả mã thuộc danh mục; có evidence/nguồn | Lọc mã lạ, gộp evidence và HTTP RAG thật |
+| T6-08 | Chẩn đoán tay khi thiếu treatment rule | Lưu nhãn có cấu trúc, chờ khuyến nghị, không trả 404 | `manualDiagnosisWithoutRuleStoresStructuredEngineerLabel` |
 
 ## 3. Hồi quy (không được hỏng)
 
 - [x] Khóa PHI (P1) vẫn chặn đúng sau khi đổi quan hệ `Diagnosis`-`DiseaseReport` thành 1-N.
-- [x] `listByCropSeason` không bị N+1 nặng hơn sau khi đổi sang lấy chẩn đoán mới nhất (đã ghi nhận N+1 cũ trong CHANGES_OVERVIEW, không làm nặng thêm).
+- [x] Danh sách báo cáo lấy chẩn đoán hiện hành bằng truy vấn theo nhóm.
 - [x] Gửi báo cáo với `Idempotency-Key` cũ không tạo báo cáo trùng.
 - [x] Dựng từ clone sạch bằng `docker compose up -d --build` vẫn lên đủ dịch vụ healthy.
 
@@ -39,27 +39,31 @@ Theo D6 (phase 0): chỉ test case ảnh hưởng logic/an toàn hệ thống, k
 - Bằng chứng: log test và demo luồng nghiệp vụ.
 - Lỗi phát hiện: tạo issue GitHub, ghi mã vào cột "Kết quả" (ví dụ `Fail #123`).
 
-## Kết quả thực hiện 06/10/2026
+## 6. Kết quả kiểm chứng mới nhất
 
-- Backend sau cập nhật `Khuong/main` tại `f52f564`: **74 test đạt**, 0 fail/error/skip, có PostgreSQL 16 Testcontainers và schema Hibernate validate sau Flyway V1–V5.
-- AI: **34 test đạt**, gồm 6 case P6 sau khi bỏ công cụ đánh giá.
-- Web: TypeScript và `npm run build` đạt.
-- Mobile: TypeScript và Expo export Android/Hermes đạt; artifact local `/tmp/dxfarm-phase6-parent-mobile-export`.
-- Seed theo nhánh cha mới: **4 test đạt**.
-- Cấu hình Compose sau cập nhật đạt `config --quiet` với env thử nghiệm riêng.
-- Kiểm tra bổ sung V4 → V5 đạt: trạng thái và event workflow cũ được giữ nguyên, báo cáo có chẩn đoán được backfill `PROCESSED`.
-- Ruff cho Python trong diff và `git diff --check` đạt.
-- Unit/integration dùng mock ở ranh giới HTTP AI; đây là bằng chứng logic, không phải accuracy checkpoint hay chất lượng retrieval trên corpus production.
+| Phần | Kết quả | Phạm vi |
+|---|---|---|
+| Backend | 74 test đạt; không fail/error/skip | PostgreSQL 16 Testcontainers, T6-01/02/04/05/06/08, PHI, migration V1–V5 và phân quyền |
+| AI | 48 test đạt; Ruff check/format đạt | CV, RAG, auth; ảnh mờ có sọc/nhiễu/chữ sắc; ảnh rõ sau nén và ở hai độ phân giải |
+| Web | TypeScript/build đạt | Chromium xác nhận history tải lại khi approvalStatus đổi trên cùng ID |
+| Mobile | TypeScript đạt; bundle Android HTTP 200 | Expo Go/Metro; chưa xác nhận đầy đủ camera/offline/retake trên điện thoại |
+| HTTP thật | Đạt precheck và nộp ảnh trực tiếp | FARMER, client mobile, Authorization Code + PKCE |
 
-Kiểm tra transaction dùng pool chỉ 1 connection: callback AI không có transaction/resource DB, vẫn lấy được connection từ cùng datasource.
-Chẩn đoán lại và danh sách báo cáo lấy id mới nhất; test PHI xác nhận thuốc từ chẩn đoán trước vẫn chặn thu hoạch.
-Test PostgreSQL xác nhận nhãn kỹ sư được lưu có cấu trúc khi chưa có treatment rule, cùng test baseline DB cũ.
-Forwarding multipart được kiểm bằng HTTP server thật, có MIME type ảnh và API key; lỗi key dịch vụ được ánh xạ 503.
+**Hồi quy ảnh mờ:** thuật toán cũ cho qua 5 ca có chữ/viền sắc, sọc màn hình hoặc nhiễu; thuật toán mới chặn chúng.
+Ảnh báo cáo #9 lúc 21:34 có điểm mới 9.613 và bị từ chối; ảnh lá lúa #10 đạt 30.113 và được chấp nhận (ngưỡng 20).
+Bỏ qua precheck và nộp #9 trực tiếp trả 422; số báo cáo của vụ giữ nguyên 6 → 6.
 
-Trước cập nhật nhánh cha, đã chạy Compose từ snapshot sạch với DB/volume mới và secret thử nghiệm; các dịch vụ chạy đều healthy, job init/ingest hoàn tất.
-Lần đó đã thử HTTP thật qua OIDC/PKCE cho precheck/nộp ảnh, nhập tay thiếu rule, history, phân quyền, retake và RAG 6 mã có nguồn. Chưa dựng lại toàn bộ stack sau cập nhật nhánh cha.
-Chưa chạy demo điện thoại thật; giữ tiêu chí này chưa đạt cho tới khi có bằng chứng.
-Xem [bàn giao](./05_IMPLEMENTATION.md).
+RAG qua Backend trả 6 mã hợp lệ, có evidence/nguồn. Phản hồi duyệt trong kiểm tra history được mock ở trình duyệt để không đổi dữ liệu demo.
+Unit/integration dùng mock ở ranh giới HTTP AI; các kiểm tra này chứng minh logic, không đo độ chính xác mô hình.
 
-Đường AI thật với ảnh synthetic trả 422 do confidence chưa đạt; không tự ghi kết quả “healthy” hoặc duyệt.
-Lượt này chỉ kiểm tra runtime/triage, không phải phép đo accuracy độc lập.
+Đã đối chiếu WP6-01/03/04/05 với quy ước AI và skill verification-before-completion, RAG, LangGraph, code-quality, JPA, Spring Boot.
+Truy vấn JPA dùng text block; kiểm ảnh dùng chung logic, không thêm dependency/framework.
+Code giữ confidence 0.70; container test đang hạ tạm xuống 0.00 theo yêu cầu của người dùng, độc lập với ngưỡng ảnh mờ.
+
+## 7. Xác nhận trên điện thoại
+
+- [ ] Camera: ảnh mờ bị chặn trước khi gửi; ảnh lá lúa rõ được nhận và xem được trên web.
+- [ ] Offline: ảnh chờ được gửi lại khi có mạng; ảnh mờ bị từ chối, không tạo trùng.
+- [ ] Retake: kỹ sư yêu cầu ảnh mới; farmer gửi lại và xem được chuỗi báo cáo.
+
+Chỉ đóng phần demo điện thoại sau khi ba mục trên được xác nhận.

@@ -1,7 +1,9 @@
 package HaUI.ImplSolution.DX_Farm.service;
 
-import HaUI.ImplSolution.DX_Farm.dto.*;
+import HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseRequest;
 import HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseResponse;
+import HaUI.ImplSolution.DX_Farm.dto.ImagePrecheckResponse;
+import HaUI.ImplSolution.DX_Farm.dto.SymptomSuggestionResponse;
 import HaUI.ImplSolution.DX_Farm.exception.AiServiceException;
 import HaUI.ImplSolution.DX_Farm.exception.AiTriageException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -23,8 +25,7 @@ import org.springframework.web.client.RestClientResponseException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-// Gọi inference contract POST /api/v1/diagnose của AI Service.
-// Chưa được gọi từ flow nào - nối vào DiseaseReportService ở P2-4.
+// Calls AI diagnosis, image precheck and symptom retrieval through the service contract.
 @Service
 public class AiDiagnosisClient {
 

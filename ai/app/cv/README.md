@@ -81,17 +81,22 @@ Chất lượng kết quả ngoài điều kiện ảnh lá lúa hoặc ngoài n
 
 Kết quả CV là tín hiệu chẩn đoán, không phải chỉ định canh tác. Các ràng buộc nghiệp vụ, thuốc, liều lượng, PHI và phê duyệt của kỹ sư luôn được xử lý ngoài module CV.
 
-## Precheck P6
+## Kiểm tra chất lượng ảnh
 
-`POST /api/v1/disease/precheck` nhận ảnh multipart, yêu cầu `X-Service-Api-Key`, trả `passed`, `reasons`, `width`, `height`, `sharpness`, `brightness`.
-Endpoint dùng `inspect_image` chung với `predict`, không chạy YOLO và không cần model đã nạp.
-Ảnh quá nhỏ/mờ/tối/chói trả `passed=false`; tệp giả ảnh hoặc định dạng không hỗ trợ trả 400.
-Backend kiểm lại ảnh khi nộp báo cáo và chỉ lưu báo cáo đạt chuẩn.
-Mobile gọi qua Backend; dữ liệu EXIF/GPS được loại trước khi forward.
+`POST /api/v1/disease/precheck` nhận multipart ảnh, yêu cầu `X-Service-Api-Key`; trả `passed`, `reasons`, `width`, `height`, `sharpness`, `brightness`.
+Precheck và predict dùng chung `inspect_image`; precheck không chạy YOLO. Backend bỏ EXIF/GPS, kiểm lại khi nộp và chỉ lưu ảnh đạt chuẩn.
+Ảnh kém chất lượng trả `passed=false`; dữ liệu ảnh không hợp lệ/định dạng không hỗ trợ trả 400.
 
-Ngưỡng: mỗi chiều từ 160px, sharpness từ 10, brightness 20–245; ảnh tối đa 40 megapixel.
-Đây là kiểm tra chất lượng, không xác nhận ảnh có phải lúa.
-Fallback `Rice___healthy` confidence 0 được workflow chuyển người xem, không được coi là nhận diện healthy thành công.
+| Điều kiện | Ngưỡng |
+|---|---|
+| Định dạng / độ phân giải | JPEG/PNG, tối đa 40 megapixel |
+| Kích thước | Mỗi chiều từ 160px |
+| Độ sáng trung bình | 20–245 |
+| Độ nét | `sharpness >= 20` |
 
-Ngưỡng confidence 0.70 được người dùng chốt ngày 06/10/2026.
-Chưa có số liệu thực địa độc lập để điều chỉnh ngưỡng 0.70.
+Điểm nét được tính trên ảnh xám thu về tối đa 640px, không phóng lớn; bỏ 10% viền và làm mượt Gaussian nhị thức 5×5.
+Sau đó lấy trung vị phương sai Laplacian của 16 vùng, trừ phần nhiễu ước lượng bằng MAD của sai phân chéo 2×2. Phép tính dùng số thực để tránh clipping 8-bit.
+
+Precheck không xác nhận ảnh là lúa và chưa tách vùng lá; nền sắc hoặc chủ thể ngoài trung tâm có thể gây sai đánh giá. Ngưỡng 20 cần đối chiếu camera thực địa.
+Điểm đã lưu bằng thuật toán cũ không so sánh trực tiếp với điểm mới; kiểm lại ảnh không tự đổi trạng thái báo cáo cũ.
+Workflow giữ ngưỡng confidence 0.70 và từ chối fallback confidence 0 trước khi gọi Backend facts/RAG.

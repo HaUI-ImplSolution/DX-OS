@@ -39,10 +39,12 @@ Tài liệu chi tiết theo module:
 | `GET` | `/api/v1/disease/class-contract` | Contract 5 lớp CV, fallback và `disease_code` canonical (công khai) |
 | `POST` | `/api/v1/disease/predict` | Nhận ảnh multipart và trả kết quả CV, yêu cầu header `X-Service-Api-Key` |
 | `POST` | `/api/v1/disease/knowledge/retrieve` | Truy vấn RAG theo câu hỏi và `disease_code` tùy chọn, yêu cầu header `X-Service-Api-Key` |
+| `POST` | `/api/v1/disease/precheck` | Multipart ảnh; kiểm chất lượng, không chạy YOLO |
+| `POST` | `/api/v1/disease/symptoms/suggest` | `symptom_text`, `top_k` 1–6; mã bệnh có score, evidence và source IDs |
 | `POST` | `/api/v1/diagnose` | Contract nội bộ Backend → AI, yêu cầu header `X-Service-Api-Key` |
 
 Mọi endpoint ngoài `/health` và `/class-contract` đều yêu cầu `X-Service-Api-Key` khớp `AI_SERVICE_API_KEY`; thiếu hoặc sai key trả `401`, chưa cấu hình key trả `503`.
-Cổng AI không publish ra host, chỉ truy cập được trong mạng compose.
+Cổng AI không publish ra host, chỉ truy cập được trong mạng compose. Gợi ý triệu chứng chỉ hỗ trợ tra cứu; kỹ sư chốt bệnh tại Backend.
 
 `POST /api/v1/diagnose` tải ảnh từ `image_url`, chạy CV, gọi Backend lấy structured facts, truy vấn RAG và trả recommendation. Nếu structured facts không khả dụng, request thất bại; AI không đưa ra recommendation chỉ dựa trên RAG.
 
@@ -50,7 +52,7 @@ Cổng AI không publish ra host, chỉ truy cập được trong mạng compose
 
 | Dữ liệu | Nơi sở hữu | Quyền của AI runtime |
 |---|---|---|
-| Parcel, CropSeason, DiseaseReport, Diagnosis, TreatmentApplication | Backend DB `dxfarm` | Không có credential DB; chỉ nhận dữ liệu cần thiết qua REST |
+| Parcel, CropSeason, DiseaseReport, Diagnosis, TrainingLabel, TreatmentApplication | Backend DB `dxfarm` | Không có credential DB; chỉ nhận dữ liệu cần thiết qua REST |
 | Disease, Pesticide, TreatmentRule | Backend DB `dxfarm` | Chỉ đọc qua internal REST API |
 | DiseaseManagementPolicy | Backend DB `dxfarm` | Chỉ đọc qua internal REST API khi endpoint tương ứng được mở |
 | Document, DocumentChunk và embedding | AI Vector DB `dx_farm_ai_vector_db` | Role `ai_vector_ro` chỉ có quyền đọc |
@@ -152,13 +154,3 @@ Chạy từ thư mục `ai/`:
 - RAG chỉ tìm được kiến thức đã ingest và không thay thế structured facts từ Backend.
 - Ollama có thể fallback khi lỗi hoặc timeout, nhưng thiếu structured facts luôn làm lượt chẩn đoán thất bại.
 - `/predict` và `/knowledge/retrieve` là endpoint kỹ thuật; luồng nghiệp vụ chính đi qua Backend và `POST /api/v1/diagnose`.
-
-## API Phase 6
-
-- `POST /api/v1/disease/precheck`: multipart ảnh, kiểm kích thước/độ nét/độ sáng, không suy luận bệnh.
-- `POST /api/v1/disease/symptoms/suggest`: JSON `symptom_text`, `top_k` (1–6), xếp hạng mã bệnh chuẩn từ bằng chứng RAG.
-
-Cả hai endpoint yêu cầu `X-Service-Api-Key` và chỉ Backend gọi.
-Gợi ý trả `disease_code`, `disease_name`, `score`, `evidence`, `source_ids`; kỹ sư chọn bệnh, không tự động duyệt.
-Kết quả chẩn đoán và nhãn kỹ sư thuộc DB Backend, không ghi sang DB AI.
-Ngưỡng confidence giữ 0.70. Phần dataset và báo cáo chỉ số đánh giá AI được bỏ khỏi phạm vi Phase 6 theo yêu cầu của người dùng.

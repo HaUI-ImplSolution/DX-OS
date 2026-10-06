@@ -44,6 +44,7 @@ Kết quả đầu ra: ảnh không đạt chuẩn bị chặn trước khi tạ
 
 - [x] WP6-01-TEST-01 Gửi ảnh mờ qua precheck → "không đạt", không tạo báo cáo (T6-03).
 - [x] WP6-01-TEST-02 Bỏ qua precheck (giả lập client cố tình), nộp báo cáo thật với ảnh mờ → server vẫn từ chối (T6-04).
+- [x] Hồi quy ảnh mờ có sọc màn hình, nhiễu hạt, chữ/viền sắc; kiểm ảnh rõ sau nén JPEG và ở hai độ phân giải; HTTP thật xác nhận ảnh mờ trả 422, không tạo báo cáo.
 
 ## WP6-03: Trạng thái "cần chụp lại" tách khỏi từ chối chẩn đoán
 
@@ -99,14 +100,12 @@ Kết quả đầu ra: kỹ sư nhập triệu chứng nhận gợi ý xếp h�
 - [x] Swagger khớp code.
 - [x] `.env.example`, seed, migration chạy được trên clone sạch.
 - [x] Không có secret, mật khẩu hay dữ liệu thật trong diff.
-- [x] README, CHANGELOG, `ai/app/cv/README.md` cập nhật (chỉ trạng thái cuối).
+- [x] CHANGELOG, tài liệu Phase 6 và README module cập nhật; không thêm nội dung vào README tổng.
 - [x] Các tiêu chí chức năng WP6-01/03/04/05 đã đạt qua kiểm thử tự động.
 - [ ] Demo camera/precheck/offline/chuỗi chụp lại trên điện thoại thật.
 - [x] Cập nhật trạng thái phase ở `improvement_docs/README.md`.
 
 ## Bằng chứng và phần chờ
 
-Xem [bàn giao](./05_IMPLEMENTATION.md) và [kết quả kiểm thử](./03_TEST_PLAN.md).
-Compile/test Backend chạy bằng JDK 21 và đầu ra `/tmp` do target hiện tại thuộc root.
-Migration V1–V5 và schema Hibernate được kiểm trên PostgreSQL trống/baseline cũ. Lần chạy Compose trước cập nhật nhánh cha đã dựng đủ dịch vụ healthy; cấu hình Compose sau cập nhật đạt kiểm tra `config --quiet`.
-Các checklist triển khai đã hoàn thành; còn demo điện thoại thật để đóng phase.
+Xem [hợp đồng API](./01_PLAN.md#hợp-đồng-api) và [kết quả kiểm thử](./03_TEST_PLAN.md#6-kết-quả-kiểm-chứng-mới-nhất).
+Triển khai và kiểm thử tự động đã đạt; xác nhận camera/offline/retake theo mục 7 của test plan để đóng phần điện thoại.

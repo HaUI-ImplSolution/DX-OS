@@ -1,43 +1,34 @@
-# Trade-off và rủi ro: Phase 6
+# Giới hạn và rủi ro: Phase 6
 
-## 1. Trade-off
+## 1. Quyết định thiết kế
 
-| # | Quyết định | Phương án | Chọn | Được | Mất | Chi phí đảo ngược |
-|---|---|---|---|---|---|---|
-| TO1 | Lớp lọc "không phải lúa/ảnh linh tinh" | Huấn luyện lại model với lớp background mới / Chỉ dựa vào `confidence = 0.0` của fallback hiện có, không huấn luyện lại | Không huấn luyện lại trong phạm vi phase này | Không tốn công thu dữ liệu lớp background + huấn luyện lại (việc AI tốn nhiều thời gian, không khả thi ngắn hạn) | Ảnh không phải lúa vẫn có thể lọt qua nếu người xem không chú ý `confidence = 0.0` — rủi ro gốc chưa giải quyết triệt để, chỉ giảm nhẹ bằng precheck (WP6-01, kiểm mờ/nhỏ, không kiểm "có phải lúa không") | Cao — huấn luyện lại model là việc riêng, cần dữ liệu và thời gian, không làm được "thêm vào" giữa chừng |
-| TO2 | Quan hệ `Diagnosis`-`DiseaseReport` | Giữ 1-1 (bắt buộc báo cáo mới mới chẩn đoán lại được) / Đổi sang 1-N (chẩn đoán lại trên cùng báo cáo) | 1-N | Đúng yêu cầu "chẩn đoán lại được" của mục 11, không bắt farmer gửi lại ảnh chỉ vì kỹ sư muốn thử lại | Mọi nơi đang giả định 1-1 phải rà lại (rủi ro bỏ sót, xem R1) | Cao — đổi ngược lại 1-1 sau khi đã có dữ liệu nhiều chẩn đoán/báo cáo sẽ phải chọn 1 để giữ, mất dữ liệu |
-| TO3 | Đường nhập tay bỏ điều kiện treatment rule active | Giữ bắt buộc rule (và chấp nhận 404 cho tới khi mục 18 có rule) / Bỏ bắt buộc, cho trạng thái "chờ khuyến nghị" | Bỏ bắt buộc | Đường nhập tay dùng được ngay trên database sạch, không phải chờ mục 18 xong mới demo được | Chẩn đoán "chờ khuyến nghị" không có khuyến nghị điều trị cụ thể cho tới khi có rule — farmer/kỹ sư thấy thiếu thông tin tạm thời | Thấp — khi mục 18 có rule, tự động hết tình trạng "chờ khuyến nghị" cho chẩn đoán mới, không cần đổi code |
+| Mã | Quyết định | Lợi ích | Giới hạn |
+|---|---|---|---|
+| TO1 | Giữ model 5 lớp bệnh lá, không huấn luyện lớp background | Giữ phạm vi D7 | Precheck không xác nhận ảnh là lúa; fallback confidence 0 không chứng minh cây khỏe |
+| TO2 | Một báo cáo có nhiều chẩn đoán; ID lớn nhất là hiện hành | Cho phép chạy lại, giữ lịch sử | Rollback về 1–1 đòi xử lý dữ liệu đã phát sinh |
+| TO3 | Cho lưu chẩn đoán khi thiếu treatment rule | Ghi nhận bệnh trên DB chưa có rule được duyệt | Chờ khuyến nghị; không cho apply và không sinh thuốc/liều/PHI |
 
-Kết luận: TO1-TO3 áp dụng ngay.
+## 2. Rủi ro và cách kiểm soát
 
-## 2. Rủi ro
+| Mã | Rủi ro | Kiểm soát |
+|---|---|---|
+| R1 | Lấy nhầm chẩn đoán cũ hoặc làm mất khóa PHI | Lấy hiện hành theo ID; PHI dùng tất cả lần phun; test rerun/PHI/đồng thời |
+| R2 | Hiểu nhầm precheck đạt là ảnh đúng nội dung | UI ghi rõ chỉ kiểm chất lượng; kỹ sư chốt bệnh |
+| R3 | Nền sắc, nhiễu hoặc chủ thể ngoài trung tâm làm sai điểm nét | Chuẩn hóa ảnh, trung vị 16 vùng, hiệu chỉnh nhiễu; còn cần kiểm chứng camera thật và tách vùng lá nếu cần |
+| R4 | AI không hoạt động khi nộp ảnh | Trả 503, không nhận ảnh chưa kiểm; hàng đợi retry lỗi dịch vụ |
 
-| # | Rủi ro | Xác suất | Ảnh hưởng | Giảm thiểu | Dấu hiệu sớm | Dự phòng |
-|---|---|---|---|---|---|---|
-| R1 | Đổi `Diagnosis`-`DiseaseReport` từ 1-1 sang 1-N (WP6-05) bỏ sót một nơi vẫn giả định 1-1, gây lấy sai chẩn đoán (ví dụ lấy chẩn đoán cũ thay vì mới nhất) | Vừa | Cao (sai dữ liệu nghiệp vụ, ảnh hưởng khóa PHI nếu lấy sai `treatmentRule`) | Rà toàn bộ `grep` tham chiếu `Diagnosis`/`diseaseReport` trước khi đổi, không chỉ sửa chỗ biết trước; test T6-01 xác nhận lấy đúng chẩn đoán mới nhất | Khóa PHI hoặc khuyến nghị hiển thị sai sau khi có chẩn đoán lại | Thêm cột `isLatest` rõ ràng thay vì chỉ dựa vào `ORDER BY diagnosedAt`, giảm rủi ro lấy nhầm nếu có nhiều bản ghi cùng thời điểm |
-| R2 | Precheck (WP6-01) cho qua ảnh không phải lúa (vì chỉ kiểm mờ/nhỏ, không kiểm nội dung), farmer hiểu nhầm "đã qua precheck" là ảnh chắc chắn dùng được | Vừa | Thấp-Vừa | UI ghi rõ precheck chỉ kiểm độ nét/kích thước, không đảm bảo ảnh đúng là lúa | Tỷ lệ ảnh "linh tinh" vẫn cao sau khi có precheck | Giới hạn đã biết được ghi ở `ai/app/cv/README.md` |
+## 3. Vận hành và tương thích
 
-## 3. Nợ kỹ thuật chấp nhận
-
-- Không huấn luyện lại model để có lớp "không phải lúa" (TO1); giới hạn được ghi ở `ai/app/cv/README.md`.
-- Mô hình nhận diện sâu hại (ngoài 5 bệnh lá) không làm ở phase này, theo D7 (phase 0).
-- Ngưỡng confidence giữ `0.70` theo quyết định của người dùng ngày 06/10/2026.
+- Confidence trong code là 0.70; sharpness từ 20, brightness 20–245. Đây là các ngưỡng kỹ thuật cần đối chiếu điều kiện thực địa.
+- Điểm nét từ thuật toán cũ không so sánh trực tiếp với điểm mới; không tự đổi trạng thái báo cáo đã lưu.
+- V5 chạy sau V4 workflow, giữ migration nhánh cha; không backfill nhãn kỹ sư giả.
+- Kết quả AI stale trả 409. Ghi chẩn đoán/duyệt và retake được kiểm soát bằng transaction/row lock.
+- P5 chưa có hộp thông báo: farmer mở báo cáo để xem yêu cầu ảnh mới. Workflow P3 đã được tích hợp.
+- Nhánh cha chưa seed thuốc/rule được duyệt; chẩn đoán thiếu rule vẫn lưu nhưng không được áp dụng thuốc.
 
 ## 4. Điều kiện dừng và rollback
 
-- Dừng và xem lại plan khi: R1 xảy ra (phát hiện khóa PHI tính sai sau khi đổi quan hệ 1-N) trong lúc test — dừng ngay, không merge WP6-05 cho tới khi rà xong toàn bộ chỗ tham chiếu.
-- Rollback: đổi `Diagnosis.diseaseReport` về `@OneToOne` là migration một chiều khó (mất dữ liệu nếu đã có nhiều chẩn đoán/báo cáo) — ưu tiên sửa tiếp thay vì rollback nếu phát hiện lỗi sau khi đã có dữ liệu thật dùng tính năng chẩn đoán lại.
+Nếu phát hiện sai chẩn đoán hiện hành hoặc sai khóa PHI, dừng merge WP6-05 để sửa và chạy lại hồi quy.
+Ưu tiên sửa tiếp; không thêm lại unique 1–1 khi còn nhiều chẩn đoán cho cùng báo cáo.
 
-## 5. Tác động ngoài phase
-
-- Lên các phase sau: P7 (BI) dùng nhãn huấn luyện đã lưu (WP6-04) để làm chart tỷ lệ AI đúng/sai so với kỹ sư chốt.
-
-## Ghi nhận triển khai 06/10/2026
-
-- Bộ dataset, công cụ tính chỉ số và báo cáo đánh giá AI đã được bỏ khỏi phạm vi theo yêu cầu của người dùng.
-- Brightness 20–245 là ngưỡng kiểm tra ban đầu.
-- Precheck lúc nộp cần AI hoạt động: AI lỗi trả 503 và không nhận ảnh chưa kiểm; hàng đợi mobile có thể retry lỗi dịch vụ.
-- P5 chưa có trên nhánh cha; farmer xem yêu cầu chụp lại trong màn báo cáo. Workflow duyệt P3 đã được tích hợp.
-- Migration Phase 6 dùng V5 sau V4 workflow; giữ nguyên migration của nhánh cha.
-- Nhánh cha chưa seed thuốc/rule được duyệt; chẩn đoán vẫn ghi nhận được nhưng không áp dụng thuốc khi thiếu rule.
-- Ghi chẩn đoán/duyệt cùng báo cáo được tuần tự hóa để tránh nhãn trùng; kết quả AI stale trả 409.
+Nhãn kỹ sư có thể dùng ở P7; Phase 6 chỉ lưu dữ liệu có cấu trúc.

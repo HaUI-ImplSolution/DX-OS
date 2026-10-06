@@ -314,7 +314,7 @@ export default function DiagnosisPanel({
       diagnosisHistory(report.id).then((items) => { if (!cancelled) setHistory(items); }).catch(() => {});
       return () => { cancelled = true; };
     }
-  }, [report.id, diagnosis?.id, currentRole]);
+  }, [report.id, diagnosis?.id, diagnosis?.approvalStatus, currentRole]);
   const requestRetake = async (e: React.FormEvent) => {
     e.preventDefault();
     setRetakeBusy(true);

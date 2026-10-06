@@ -10,7 +10,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { getIsolationStatus, listDiseaseReports, reportImageUrl } from "@/api/endpoints";
+import { getIsolationStatus, listDiseaseReports } from "@/api/endpoints";
 import { Card } from "@/components/Card";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorState } from "@/components/ErrorState";
@@ -146,7 +146,7 @@ function ReportCard({ report, width }: { report: DiseaseReport; width: number })
       onPress={() => router.push({ pathname: "/reports/[id]", params: { id: String(report.id) } })}
     >
       <Image
-        source={{ uri: reportImageUrl(report.imageRef) }}
+        source={{ uri: report.imageUrl }}
         accessibilityLabel="Ảnh báo cáo sâu bệnh"
         style={styles.image}
       />

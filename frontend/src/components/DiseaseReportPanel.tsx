@@ -1,4 +1,3 @@
-import { staticUrl } from "../api";
 import type { DiseaseReport } from "../types";
 import Badge from "./Badge";
 import Section from "./Section";
@@ -30,7 +29,7 @@ export default function DiseaseReportPanel({
             className={`report-card${r.id === selectedId ? " report-card-active" : ""}`}
             onClick={() => onSelect(r.id)}
           >
-            <img src={staticUrl(`uploads/${r.imageRef}`)} alt="Ảnh báo cáo sâu bệnh" />
+            <img src={r.imageUrl} alt="Ảnh báo cáo sâu bệnh" />
             <div className="report-card-meta">
               <span>{r.reportedBy}</span>
               {diagnosisBadge(r)}

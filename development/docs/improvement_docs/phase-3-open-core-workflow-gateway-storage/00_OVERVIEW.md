@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Sẵn sàng code (plan + Q1-Q2 đã chốt, chưa bắt đầu implement) |
+| Trạng thái | Xong. Còn một mục hoãn sang P4: thông báo Mattermost kèm ảnh (webhook đã cấu hình, chờ giao diện tạo nông hộ) |
 | Mức độ | Nghiêm trọng |
 | Nhóm ưu tiên | A |
 | Ước lượng | 5-7 ngày |
@@ -78,10 +78,11 @@ Mọi quyết định công nghệ (D2 workflow, D3 gateway, D4 storage) đã ch
 |---|---|---|---|---|
 | Q1 | `workflow_event` có cần cột `metadata` dạng JSONB để lưu dữ liệu riêng từng loại quy trình không | Có, JSONB tuỳ chọn / Không, chỉ các cột cố định | 05/10/2026 | Có, JSONB tuỳ chọn — P4/P9 thêm loại quy trình mới không cần migration riêng mỗi lần |
 | Q2 | Ảnh cũ trong `/uploads` local có migrate sang MinIO ngay hay chạy song song | Migrate ngay (một script, một lần) / Chạy song song (ảnh mới vào MinIO, ảnh cũ đọc từ filesystem cho tới khi dọn) | 05/10/2026 | Migrate ngay bằng một script — dữ liệu ở quy mô demo, chạy song song 2 nguồn ảnh lâu dài tốn công bảo trì hơn lợi ích |
+| Q3 | Image MinIO chính thức không còn phát hành (Docker Hub 404, quay.io 401, repo upstream archived) thì lấy MinIO từ đâu | Build từ source tag chính thức / Dùng image bên thứ ba / Đổi sang store S3 khác | 06/10/2026 | Build từ source tag `RELEASE.2025-10-15T17-29-55Z` (`minio/Dockerfile`): giữ D4, tránh image không rõ nguồn; code dùng S3 API nên đổi store sau này không sửa backend |
 
 ## 10. Tài liệu cần cập nhật khi xong
 
-- [ ] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
-- [ ] Sơ đồ 3 tầng, sơ đồ luồng request (file mới trong `development/docs/`).
-- [ ] Swagger cho endpoint `workflow`/danh sách chờ mới.
-- [ ] `deploy/.env.example`, `sso/README.md` nếu đổi cấu hình hostname/Keycloak qua gateway.
+- [x] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
+- [x] Sơ đồ 3 tầng, sơ đồ luồng request: `development/docs/ARCHITECTURE_OPEN_CORE.md`.
+- [x] Swagger cho endpoint `workflow`/danh sách chờ mới.
+- [x] `deploy/.env.example`, `sso/README.md` nếu đổi cấu hình hostname/Keycloak qua gateway.

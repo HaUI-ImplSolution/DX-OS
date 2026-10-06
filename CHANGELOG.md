@@ -7,6 +7,20 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ### 2026-10-06
 
+**Đã xong — Open-Core: workflow dùng chung, lưu ảnh có link hạn, package Core:**
+
+- Package `core.identity` (`Household`, `HouseholdService`, `KeycloakAdminClient`), `core.workflow`, `core.storage` là phần Core; ứng dụng DX-Farm giữ các package còn lại.
+  Sơ đồ ở `development/docs/ARCHITECTURE_OPEN_CORE.md`.
+- `V4__workflow.sql`: bảng `workflow_case` (trạng thái, `assigned_to`, optimistic lock) và `workflow_event` (chỉ thêm; trigger chặn `UPDATE` và `DELETE`, cột `metadata` JSONB).
+  Chẩn đoán đã có được dựng case và lịch sử từ cột quyết định hiện có.
+- Mỗi chẩn đoán mới mở case `DIAGNOSIS_APPROVAL`; duyệt hoặc từ chối ghi đúng một `workflow_event` cùng người thực hiện và lý do.
+- `GET /api/v1/workflow-cases` (phân trang, lọc `caseType`, `status`, `assignedTo` hoặc `me`), `PATCH /api/v1/workflow-cases/{id}/assign` (nhận việc; case của người khác chỉ ADMIN nhận lại được), `GET /api/v1/workflow-cases/{id}/events`; chỉ ENGINEER và ADMIN.
+- Ảnh báo cáo lưu trong bucket MinIO riêng tư với metadata `uploaded-by`, `source`; `StorageService` ký link có hạn (`STORAGE_PRESIGN_TTL`, mặc định 15 phút) theo đúng host mà client dùng để gọi API.
+- `DiseaseReportResponse.imageRef` thành `imageUrl` (link có hạn).
+  AI nhận link nội bộ hiệu lực 10 phút, thông báo Mattermost nhận link công khai hiệu lực 7 ngày.
+- Bỏ `GET /uploads/**`, `app.upload-dir` và `app.public-base-url`; thêm `MINIO_ENDPOINT`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`, `MINIO_BUCKET`, `STORAGE_PUBLIC_URL` (không có giá trị mặc định).
+- Test: `WorkflowServiceIntegrationTest` (PostgreSQL thật: lịch sử không ghi đè, chuyển trạng thái, danh sách chờ, nhận việc, chặn sửa/xóa event), `StorageServiceTest`, ma trận quyền cho `/workflow-cases`.
+
 **Đã xong — Nông hộ, phân quyền, migration:**
 
 - Schema do Flyway quản lý (`db/migration`): `V1` là baseline của schema cũ (DB tạo trước Flyway được đánh dấu đã ở V1 qua `baseline-on-migrate`), `V2` thêm `households` và `parcels.household_id`, `V3` thêm cột audit và xóa mềm. Hibernate chỉ `validate`.
@@ -161,6 +175,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Mobile (`mobile`, Expo)
 
+### 2026-10-06
+
+- `EXPO_PUBLIC_API_BASE_URL` và `EXPO_PUBLIC_KEYCLOAK_URL` cùng trỏ tới gateway (`<IP-LAN>:9080`); ảnh báo cáo hiển thị từ `imageUrl` trong response.
+
 ### 2026-10-01
 
 - Metro chạy ở cổng `8083` (script `npm start`) vì `8081` dành cho Backend.
@@ -301,6 +319,8 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ### 2026-10-06
 
+- Web phục vụ qua gateway cùng origin với API và Keycloak: nginx chỉ còn file tĩnh (bỏ proxy `/api` và `/uploads`), `VITE_API_BASE_URL` và `VITE_KEYCLOAK_URL` để trống thì dùng origin hiện tại.
+- Ảnh báo cáo lấy từ `imageUrl` (link có hạn) thay vì ghép `/uploads/<tên file>`.
 - Tài khoản chỉ có role `FARMER` thấy màn "Vui lòng dùng ứng dụng di động" và không gọi API nghiệp vụ.
 - Admin chọn nông hộ khi đăng ký thửa; tạo vụ mùa và khai báo thu hoạch chỉ hiện với ADMIN; bỏ form gửi báo cáo (chỉ nông dân gửi từ mobile).
 
@@ -355,6 +375,16 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ### 2026-10-06
 
+- Thêm `apisix` (standalone, `apisix/config.yaml`, `apisix/apisix.yaml`): route `/api`, `/realms`, `/admin`, link ảnh có hạn, Swagger và web; kiểm JWT bằng `openid-connect`, giới hạn 30 lần mỗi phút cho upload ảnh và gọi chẩn đoán AI (`429`).
+  Chỉ gateway publish cổng: `APISIX_HOST_PORT` (web, API, Keycloak, ảnh, Swagger, portal ở `/portal/`) và `APISIX_SUPERSET_HOST_PORT` (listener thứ hai, chỉ chuyển tới Superset).
+  Superset và portal không còn publish cổng riêng.
+  Listener thứ ba `APISIX_MINIO_HOST_PORT` (9082) chuyển tới console MinIO (`--console-address :9001`, hỗ trợ websocket).
+- Thêm `minio` build từ source (`minio/Dockerfile` ở thư mục `minio/` riêng, tag `RELEASE.2025-10-15T17-29-55Z`) vì image chính thức không còn phát hành; dữ liệu ở `deploy/data/minio`.
+- Backend, Keycloak và frontend không còn publish cổng; bỏ `BACKEND_HOST_PORT`, `KEYCLOAK_HOST_PORT`, `FRONTEND_HOST_PORT`, `UPLOAD_DIR` và `APP_PUBLIC_BASE_URL`.
+  Thêm `MINIO_ENDPOINT`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`, `MINIO_BUCKET`, `GATEWAY_PUBLIC_URL`.
+- `.env.example` sắp lại theo bốn mục: địa chỉ và cổng, tài khoản đăng nhập (mỗi dịch vụ một khối: Keycloak, Superset, Mattermost, MinIO, PostgreSQL), khóa và secret nội bộ, cấu hình từng dịch vụ; có chú thích cách điền và nơi đăng nhập.
+  `.env` dùng cùng bố cục, không còn biến khai báo trùng.
+- `minio/migrate-uploads.sh` chuyển ảnh cũ vào bucket và kiểm từng file đã có trong bucket, không xoá thư mục cũ.
 - `KEYCLOAK_ADMIN_CLIENT_ID` và `KEYCLOAK_ADMIN_CLIENT_SECRET` (secret bắt buộc, không mặc định) cho backend và Keycloak.
 
 
@@ -416,6 +446,9 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ### 2026-10-06
 
+- Tài khoản bị Superset từ chối (farmer) bị kết thúc luôn phiên Keycloak và quay về trang đăng nhập kèm cảnh báo, nên bấm "Sign In with keycloak" lần sau hiện form đăng nhập Keycloak thay vì tự đăng nhập lại và bị từ chối tiếp (`KeycloakAuthOAuthView`).
+- Phiên đăng nhập cũ trỏ tới user không còn trong metadata DB (sau khi dựng lại dữ liệu) được coi là chưa đăng nhập, thay vì lỗi 500 (`KeycloakSecurityManager.load_user`).
+- Superset chạy sau gateway ở `http://localhost:9081` (`APISIX_SUPERSET_HOST_PORT`), `ENABLE_PROXY_FIX` bật để link và redirect OAuth theo địa chỉ gateway; không còn publish cổng 8088.
 - Tài khoản chỉ có role `FARMER` bị từ chối đăng nhập Superset; role `FARMER` không còn map sang role Superset.
 
 
@@ -489,6 +522,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Portal (`portal`)
 
+### 2026-10-06
+
+- Portal phục vụ ở `/portal/` của gateway; link app chính, Keycloak Admin Console và Swagger là đường dẫn tương đối, thêm card MinIO Console; link Superset, MinIO Console và chat tự theo tên máy đang mở trang.
+
 ### 2026-10-01
 
 - Thêm mục "Quản trị & tài liệu": Keycloak Admin, Superset Admin (`/users/list/`), Mattermost Admin (System Console) và Swagger của Backend.
@@ -514,6 +551,8 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ### 2026-10-06
 
+- Client `dxfarm-frontend` nhận redirect URI và web origin `http://localhost:9080` (origin của gateway); client `dxfarm-superset` nhận `http://localhost:9081` (listener Superset của gateway).
+- Keycloak không publish cổng; trình duyệt và điện thoại đăng nhập qua gateway, backend vẫn xác thực bằng `jwk-set-uri` nội bộ.
 - Client `dxfarm-frontend` và `dxfarm-mobile` có mapper thêm `dxfarm-api` vào `aud` của access token.
 - Client `dxfarm-backend-admin` (service account, `manage-users`, `view-users`, `view-realm`) cho backend tạo tài khoản nông hộ; secret từ `KEYCLOAK_ADMIN_CLIENT_SECRET`.
 
@@ -564,6 +603,8 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ### 2026-10-06
 
+- `development/docs/ARCHITECTURE_OPEN_CORE.md`: sơ đồ 3 tầng Open-Core và sơ đồ luồng request (Mermaid), ranh giới Core và ứng dụng.
+- `README.md` gốc có bảng đăng nhập vào từng service (tài khoản ứng dụng và tài khoản quản trị riêng); `minio/README.md` mô tả thư mục MinIO và console; `README.md` mô tả gateway, workflow dùng chung, lưu ảnh có link hạn; `LICENSES.md` thêm APISIX, MinIO và MinIO Java SDK.
 - `README.md` có bảng tài khoản demo, hướng dẫn `deploy/reset.sh` và cách chạy test backend; `LICENSES.md` ghi thêm Testcontainers, JUnit/Mockito/AssertJ, gitleaks và pytest (chỉ dùng cho test/CI).
 - Phase 1 của `development/docs/improvement_docs` ở trạng thái Xong, kèm kết quả kiểm thử.
 

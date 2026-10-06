@@ -1,7 +1,9 @@
 import { UserManager, WebStorageStateStore, type User as OidcUser } from "oidc-client-ts";
 import type { Role } from "./types";
 
-const KEYCLOAK_URL = import.meta.env.VITE_KEYCLOAK_URL ?? "http://localhost:8080/realms/dxfarm";
+// Empty in the packaged build: Keycloak is served by the gateway on the same origin as the app.
+const KEYCLOAK_URL =
+  import.meta.env.VITE_KEYCLOAK_URL || `${window.location.origin}/realms/dxfarm`;
 const CLIENT_ID = import.meta.env.VITE_KEYCLOAK_CLIENT_ID ?? "dxfarm-frontend";
 // Highest privilege first: a user holding several roles acts with the strongest one.
 const ROLES: Role[] = ["ADMIN", "ENGINEER", "FARMER"];

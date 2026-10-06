@@ -1,14 +1,14 @@
-package HaUI.ImplSolution.DX_Farm.service;
+package HaUI.ImplSolution.DX_Farm.core.identity;
 
-import HaUI.ImplSolution.DX_Farm.client.KeycloakAdminClient;
-import HaUI.ImplSolution.DX_Farm.dto.HouseholdCreateRequest;
-import HaUI.ImplSolution.DX_Farm.dto.HouseholdCreateResponse;
-import HaUI.ImplSolution.DX_Farm.dto.HouseholdLinkRequest;
-import HaUI.ImplSolution.DX_Farm.dto.HouseholdResponse;
+import HaUI.ImplSolution.DX_Farm.core.identity.KeycloakAdminClient;
+import HaUI.ImplSolution.DX_Farm.core.identity.HouseholdCreateRequest;
+import HaUI.ImplSolution.DX_Farm.core.identity.HouseholdCreateResponse;
+import HaUI.ImplSolution.DX_Farm.core.identity.HouseholdLinkRequest;
+import HaUI.ImplSolution.DX_Farm.core.identity.HouseholdResponse;
 import HaUI.ImplSolution.DX_Farm.exception.InvalidStateException;
 import HaUI.ImplSolution.DX_Farm.exception.ResourceNotFoundException;
-import HaUI.ImplSolution.DX_Farm.model.Household;
-import HaUI.ImplSolution.DX_Farm.repository.HouseholdRepository;
+import HaUI.ImplSolution.DX_Farm.core.identity.Household;
+import HaUI.ImplSolution.DX_Farm.core.identity.HouseholdRepository;
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;

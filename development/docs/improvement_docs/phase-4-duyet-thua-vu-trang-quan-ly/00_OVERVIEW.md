@@ -63,6 +63,8 @@
 
 - Cần từ phase trước: `Household.code` (P2) để sinh mã thửa; `workflow_case`/`workflow_event` (P3) để duyệt thửa/vụ; gateway APISIX (P3) để mobile gọi API tạo thửa/vụ qua đúng cổng.
 - Phase sau cần từ phase này: P5 (vòng đời vụ mùa) cần thửa/vụ đã `APPROVED` để farmer khai báo thu hoạch; P7 (BI) cần mã thửa/vụ chuẩn để hiển thị trên Superset.
+- Việc chuyển từ P3: kiểm thông báo Mattermost kèm ảnh bằng báo cáo thật (webhook đã cấu hình, `03_TEST_PLAN.md` của P3 mục hồi quy).
+  Làm khi đã có giao diện tạo nông hộ.
 
 ## 8. Ảnh hưởng đến thi (PoF và sản phẩm)
 

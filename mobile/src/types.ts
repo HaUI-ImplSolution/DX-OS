@@ -76,7 +76,7 @@ export interface Diagnosis {
 export interface DiseaseReport {
   id: number;
   cropSeasonId: number;
-  imageRef: string;
+  imageUrl: string;
   reportedBy: string;
   reportedAt: string;
   diagnosis: Diagnosis | null;

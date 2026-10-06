@@ -5,19 +5,22 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import HaUI.ImplSolution.DX_Farm.config.TimeConfig;
+import HaUI.ImplSolution.DX_Farm.core.storage.StorageService;
+import HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowActor;
+import HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowService;
 import HaUI.ImplSolution.DX_Farm.exception.InvalidStateException;
 import HaUI.ImplSolution.DX_Farm.model.ApprovalStatus;
 import HaUI.ImplSolution.DX_Farm.model.CropSeason;
 import HaUI.ImplSolution.DX_Farm.model.CropSeasonStatus;
 import HaUI.ImplSolution.DX_Farm.model.Diagnosis;
-import HaUI.ImplSolution.DX_Farm.model.Household;
+import HaUI.ImplSolution.DX_Farm.core.identity.Household;
 import HaUI.ImplSolution.DX_Farm.model.DiseaseReport;
 import HaUI.ImplSolution.DX_Farm.model.Parcel;
 import HaUI.ImplSolution.DX_Farm.repository.CropSeasonRepository;
 import HaUI.ImplSolution.DX_Farm.repository.DiagnosisRepository;
 import HaUI.ImplSolution.DX_Farm.repository.DiseaseReportRepository;
 import HaUI.ImplSolution.DX_Farm.repository.DiseaseRepository;
-import HaUI.ImplSolution.DX_Farm.repository.HouseholdRepository;
+import HaUI.ImplSolution.DX_Farm.core.identity.HouseholdRepository;
 import HaUI.ImplSolution.DX_Farm.repository.ParcelRepository;
 import HaUI.ImplSolution.DX_Farm.service.AiDiagnosisClient;
 import HaUI.ImplSolution.DX_Farm.service.CurrentUserService;
@@ -55,11 +58,10 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 // Runs against a real PostgreSQL because it checks the database-side guarantees: the @Version
 // columns and the partial unique index created by the Flyway migrations. Hibernate validates the
 // entities against that schema when the context starts.
-@DataJpaTest(
-    properties = {"app.public-base-url=http://backend:8081", "spring.flyway.enabled=false"})
+@DataJpaTest(properties = "spring.flyway.enabled=false")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
-@Import({DiagnosisService.class, TimeConfig.class})
+@Import({DiagnosisService.class, WorkflowService.class, TimeConfig.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class ConcurrencyIntegrationTest {
 
@@ -80,9 +82,13 @@ class ConcurrencyIntegrationTest {
   private TreatmentRuleService treatmentRuleService;
   @MockitoBean
   private CurrentUserService currentUserService;
+  @MockitoBean
+  private StorageService storageService;
 
   @Autowired
   private DiagnosisService diagnosisService;
+  @Autowired
+  private WorkflowService workflowService;
   @Autowired
   private EntityManagerFactory entityManagerFactory;
   @Autowired
@@ -189,6 +195,8 @@ class ConcurrencyIntegrationTest {
   void concurrentApprovalsLetExactlyOneRequestWin() throws Exception {
     Diagnosis diagnosis = newPendingDiagnosis();
     Long reportId = diagnosis.getDiseaseReport().getId();
+    workflowService.createCase("DIAGNOSIS_APPROVAL", "DIAGNOSIS", diagnosis.getId(),
+        new WorkflowActor("eng-1", "Engineer"));
     when(currentUserService.currentFullName()).thenReturn("Engineer");
     int callers = 2;
     CyclicBarrier start = new CyclicBarrier(callers);

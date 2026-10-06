@@ -9,8 +9,8 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "http://192.168.1.10:8081",
-        "EXPO_PUBLIC_KEYCLOAK_URL": "http://192.168.1.10:8180/realms/dxfarm",
+        "EXPO_PUBLIC_API_BASE_URL": "http://192.168.1.10:9080",
+        "EXPO_PUBLIC_KEYCLOAK_URL": "http://192.168.1.10:9080/realms/dxfarm",
         "EXPO_PUBLIC_KEYCLOAK_CLIENT_ID": "dxfarm-mobile"
       }
     }

@@ -7,8 +7,6 @@ const API_V1 = `${API_BASE_URL}/api/v1`;
 const REQUEST_TIMEOUT_MS = 30_000;
 const UPLOAD_TIMEOUT_MS = 60_000;
 
-export const staticUrl = (path: string) => `${API_BASE_URL}/${path.replace(/^\//, "")}`;
-
 export class ApiError extends Error {
   status: number;
   data: unknown;

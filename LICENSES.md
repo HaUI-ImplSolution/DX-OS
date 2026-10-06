@@ -15,6 +15,7 @@ Bảng dưới liệt kê từng thành phần đang thực sự chạy trong re
 | Flyway (`org.flywaydb:flyway-core`, `flyway-database-postgresql`) | Apache-2.0 | ✅ | Migration schema (`db/migration`), chạy lúc backend khởi động |
 | Testcontainers (`org.testcontainers`, scope `test`) | MIT | ✅ | Chỉ dùng khi chạy test, khởi động PostgreSQL thật; không đóng gói vào runtime |
 | JUnit 5, Mockito, AssertJ (qua `spring-boot-starter-test`, scope `test`) | EPL-2.0 / MIT / Apache-2.0 | ✅ | Chỉ dùng khi chạy test |
+| MinIO Java SDK (`io.minio:minio`) | Apache-2.0 | ✅ | Client S3 để lưu ảnh và ký link có hạn (`core.storage`) |
 
 Các dependency đã bị comment-out trong `pom.xml` (Redis, Mail, AMQP, Apache POI, totp, owasp-java-html-sanitizer) **chưa thực sự dùng** — không tính vào rà soát cho tới khi được bật lại.
 Khi bật lại cần rà license tương ứng: POI Apache-2.0 OK, các cái còn lại cũng Apache-2.0 hoặc MIT, đều OSI-approved.
@@ -93,6 +94,9 @@ giữ Apache-2.0.
 | Authlib (pip, cài lúc container Superset khởi động cho SSO OAuth) | BSD-3-Clause | ✅ | |
 | Mattermost (`mattermost/mattermost-team-edition` image) | AGPLv3 (server core) | ✅ | Xem mục riêng "Rà soát license Mattermost" dưới đây — không đơn giản như một dòng |
 | Keycloak (`quay.io/keycloak/keycloak` image) | Apache-2.0 | ✅ | Identity Provider cho SSO thật — xem `sso/README.md` |
+| Apache APISIX (`apache/apisix` image, chế độ standalone) | Apache-2.0 | ✅ | Gateway: route, kiểm JWT, giới hạn tốc độ — xem `deploy/apisix/` |
+| MinIO server (build từ source tag `RELEASE.2025-10-15T17-29-55Z`, `minio/Dockerfile`) | AGPL-3.0 | ✅ | Lưu ảnh báo cáo. Image chính thức không còn phát hành nên build từ source; repo upstream đã archived. Chạy nguyên bản, không sửa mã nguồn |
+| AWS CLI (`amazon/aws-cli` image, chỉ dùng trong `minio/migrate-uploads.sh`) | Apache-2.0 | ✅ | Công cụ chuyển ảnh cũ vào bucket, không chạy trong stack |
 | Docker / Docker Compose (tooling, không đóng gói vào sản phẩm) | Apache-2.0 | ✅ | |
 | gitleaks (`ghcr.io/gitleaks/gitleaks`, quét secret trong CI) | MIT | ✅ | Công cụ CI, không đóng gói vào sản phẩm; cấu hình ở `.gitleaks.toml` |
 | pytest (`ai/requirements-dev.txt`) | MIT | ✅ | Chỉ dùng để chạy test AI, không nằm trong image runtime |

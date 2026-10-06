@@ -1,4 +1,4 @@
-package HaUI.ImplSolution.DX_Farm.client;
+package HaUI.ImplSolution.DX_Farm.core.identity;
 
 import HaUI.ImplSolution.DX_Farm.exception.InvalidStateException;
 import HaUI.ImplSolution.DX_Farm.exception.KeycloakAdminException;

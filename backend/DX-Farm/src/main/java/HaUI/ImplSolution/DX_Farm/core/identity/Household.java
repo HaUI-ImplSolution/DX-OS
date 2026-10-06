@@ -1,4 +1,4 @@
-package HaUI.ImplSolution.DX_Farm.model;
+package HaUI.ImplSolution.DX_Farm.core.identity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

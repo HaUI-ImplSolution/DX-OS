@@ -1,11 +1,11 @@
 package HaUI.ImplSolution.DX_Farm.service;
 
+import HaUI.ImplSolution.DX_Farm.core.storage.StorageService;
 import HaUI.ImplSolution.DX_Farm.event.DiagnosisPendingEvent;
 import HaUI.ImplSolution.DX_Farm.event.DiseaseReportCreatedEvent;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -28,10 +28,15 @@ public class MattermostMessageBuilder {
   private static final DateTimeFormatter TIME_FORMAT =
       DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.of("Asia/Ho_Chi_Minh"));
 
+  // Chat history keeps the message, so the photo link lives as long as a presigned URL can.
+  private static final Duration IMAGE_URL_TTL = Duration.ofDays(7);
+
+  private final StorageService storageService;
   private final String imageBaseUrl;
 
-  public MattermostMessageBuilder(
+  public MattermostMessageBuilder(StorageService storageService,
       @Value("${mattermost.webhook.image-base-url:}") String imageBaseUrl) {
+    this.storageService = storageService;
     this.imageBaseUrl = imageBaseUrl == null ? "" : imageBaseUrl.strip().replaceAll("/+$", "");
   }
 
@@ -69,7 +74,7 @@ public class MattermostMessageBuilder {
     if (imageBaseUrl.isEmpty() || imageRef == null || imageRef.isBlank()) {
       return null;
     }
-    return imageBaseUrl + "/uploads/" + URLEncoder.encode(imageRef, StandardCharsets.UTF_8);
+    return storageService.presignedUrl(imageBaseUrl, imageRef, IMAGE_URL_TTL);
   }
 
   static String plain(String value) {

@@ -1,4 +1,4 @@
-package HaUI.ImplSolution.DX_Farm.dto;
+package HaUI.ImplSolution.DX_Farm.core.identity;
 
 import java.time.Instant;
 

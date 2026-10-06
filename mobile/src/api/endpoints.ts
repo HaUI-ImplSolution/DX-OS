@@ -1,4 +1,4 @@
-import { request, staticUrl, upload, type UploadFile } from "./client";
+import { request, upload, type UploadFile } from "./client";
 import type { CropSeason, DiseaseReport, IsolationStatus, Parcel } from "@/types";
 
 export const listParcels = () => request<Parcel[]>("/parcels");
@@ -27,5 +27,3 @@ export const createDiseaseReport = (
     onProgress,
     idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {},
   );
-
-export const reportImageUrl = (imageRef: string) => staticUrl(`uploads/${imageRef}`);

@@ -5,7 +5,7 @@ Dựng cho tiêu chí **Giai đoạn 2 [H]** (không gian Human) — đăng nh�
 
 Service `keycloak` khai báo trong [`deploy/docker-compose.yml`](../deploy/docker-compose.yml), tự import realm `dxfarm` từ [`realm-dxfarm.json`](./realm-dxfarm.json) lúc khởi động.
 Không cần thao tác tay nào thêm sau `docker compose up -d --build`.
-Cổng host `8180` (`KEYCLOAK_HOST_PORT`), không dùng `8080` mặc định của Keycloak vì đó là port hay bị chiếm nhất trên máy dev.
+Keycloak không publish cổng ra host: gateway APISIX (`APISIX_HOST_PORT`, mặc định `9080`) chuyển tiếp `/realms`, `/resources`, `/admin` và `/js` tới Keycloak.
 
 ## Vì sao chọn Keycloak
 
@@ -57,13 +57,13 @@ Quản lý user (tạo/xoá/đổi role) qua Keycloak Admin Console: `http://loc
 - Redirect URI: `dxfarm://*` (app đã build) và `exp://*` (Expo Go, chỉ dùng khi dev).
 - Backend xác thực bằng `jwk-set-uri` và không kiểm tra `iss`, nên token cấp qua IP LAN vẫn hợp lệ.
 - Điện thoại phải truy cập được Keycloak và backend qua IP LAN của máy dev cùng mạng.
-  Keycloak không đặt `KC_HOSTNAME` nên URL trong form đăng nhập và redirect theo địa chỉ request: web vào `localhost:8180`, điện thoại vào `<IP-LAN>:8180`, hai bên chạy song song mà không cần đổi `deploy/.env`.
+  Keycloak không đặt `KC_HOSTNAME` nên URL trong form đăng nhập và redirect theo địa chỉ request: web vào `localhost:9080`, điện thoại vào `<IP-LAN>:9080`, hai bên chạy song song mà không cần đổi `deploy/.env`.
 - Keycloak chỉ import realm khi realm chưa tồn tại.
   Với volume Postgres cũ, thêm client `dxfarm-mobile` qua Admin Console (cấu hình như trong `realm-dxfarm.json`) hoặc xoá `deploy/data/postgres` để import lại.
 
 ## Lưu ý kỹ thuật: hostname nội bộ vs. hostname trình duyệt
 
-Trình duyệt gọi Keycloak qua `http://localhost:${KEYCLOAK_HOST_PORT}`, backend/Superset trong mạng docker gọi qua `http://keycloak:8080` — hai hostname khác nhau cho cùng một Keycloak.
+Trình duyệt gọi Keycloak qua `http://localhost:${APISIX_HOST_PORT}` (qua gateway), backend/Superset trong mạng docker gọi qua `http://keycloak:8080` — hai hostname khác nhau cho cùng một Keycloak.
 Backend xác thực token bằng `jwk-set-uri` (chỉ lấy public key verify chữ ký) thay vì `issuer-uri` (sẽ lệch claim `iss` vì token mang hostname trình duyệt).
 Superset (`bi/superset_config.py`) tự chỉ định từng endpoint (`authorize_url` dùng hostname trình duyệt, `access_token_url`/`api_base_url`/`jwks_uri` dùng hostname nội bộ) thay vì dùng `server_metadata_url` tự khám phá — cùng lý do.
 Tên, email và role của user lấy thẳng từ access token nhận qua kênh server-to-server, không gọi `/userinfo` (Keycloak từ chối token có issuer khác hostname của request).

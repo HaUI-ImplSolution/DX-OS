@@ -1,6 +1,6 @@
-package HaUI.ImplSolution.DX_Farm.repository;
+package HaUI.ImplSolution.DX_Farm.core.identity;
 
-import HaUI.ImplSolution.DX_Farm.model.Household;
+import HaUI.ImplSolution.DX_Farm.core.identity.Household;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;

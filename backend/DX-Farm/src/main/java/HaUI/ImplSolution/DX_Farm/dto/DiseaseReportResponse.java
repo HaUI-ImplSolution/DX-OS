@@ -10,8 +10,8 @@ public record DiseaseReportResponse(
   // Vụ mùa được báo cáo sự cố
   Long cropSeasonId,
 
-  // Tên/đường dẫn file ảnh đã upload
-  String imageRef,
+  // Link tải ảnh đã upload, chỉ có hiệu lực trong thời gian ngắn
+  String imageUrl,
 
   // Tên người báo cáo (nông dân)
   String reportedBy,

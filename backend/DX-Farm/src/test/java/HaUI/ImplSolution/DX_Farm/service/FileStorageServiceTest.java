@@ -2,31 +2,35 @@ package HaUI.ImplSolution.DX_Farm.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 
+import HaUI.ImplSolution.DX_Farm.core.storage.StorageService;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.stream.Stream;
+import java.util.HashMap;
+import java.util.Map;
 import javax.imageio.ImageIO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.springframework.mock.web.MockMultipartFile;
 
 class FileStorageServiceTest {
 
-  @TempDir
-  Path uploadDir;
-
+  private final Map<String, byte[]> stored = new HashMap<>();
   private FileStorageService service;
 
   @BeforeEach
   void setUp() {
-    service = new FileStorageService(uploadDir.toString());
+    StorageService storage = mock(StorageService.class);
+    doAnswer(invocation -> stored.put(invocation.getArgument(0), invocation.getArgument(1)))
+        .when(storage).putObject(anyString(), any(), anyString(), any());
+    service = new FileStorageService(storage);
   }
 
   private static byte[] encode(int width, int height, String format) throws IOException {
@@ -56,14 +60,12 @@ class FileStorageServiceTest {
     return out.toByteArray();
   }
 
-  private byte[] storedBytes(String filename) throws IOException {
-    return Files.readAllBytes(uploadDir.resolve(filename));
+  private byte[] storedBytes(String key) {
+    return stored.get(key);
   }
 
-  private long storedFileCount() throws IOException {
-    try (Stream<Path> files = Files.list(uploadDir)) {
-      return files.count();
-    }
+  private long storedFileCount() {
+    return stored.size();
   }
 
   @Test
@@ -71,7 +73,8 @@ class FileStorageServiceTest {
     var file = new MockMultipartFile("image", "leaf.jpg", "image/jpeg",
         "not an image".getBytes(StandardCharsets.UTF_8));
 
-    assertThatThrownBy(() -> service.store(file)).isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> service.store(file, "user-1"))
+        .isInstanceOf(IllegalArgumentException.class);
     assertThat(storedFileCount()).isZero();
   }
 
@@ -80,7 +83,8 @@ class FileStorageServiceTest {
     byte[] corrupt = {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, 0x00, 0x01, 0x02, 0x03};
     var file = new MockMultipartFile("image", "leaf.jpg", "image/jpeg", corrupt);
 
-    assertThatThrownBy(() -> service.store(file)).isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> service.store(file, "user-1"))
+        .isInstanceOf(IllegalArgumentException.class);
     assertThat(storedFileCount()).isZero();
   }
 
@@ -90,7 +94,7 @@ class FileStorageServiceTest {
     assertThat(new String(original, StandardCharsets.ISO_8859_1)).contains("GPS-SECRET");
     var file = new MockMultipartFile("image", "leaf.jpg", "image/jpeg", original);
 
-    byte[] stored = storedBytes(service.store(file));
+    byte[] stored = storedBytes(service.store(file, "user-1"));
 
     String content = new String(stored, StandardCharsets.ISO_8859_1);
     assertThat(content).doesNotContain("GPS-SECRET").doesNotContain("Exif");
@@ -102,7 +106,8 @@ class FileStorageServiceTest {
     byte[] original = withExif(encode(40, 20, "jpg"), 6, "x");
     var file = new MockMultipartFile("image", "leaf.jpg", "image/jpeg", original);
 
-    BufferedImage stored = ImageIO.read(new ByteArrayInputStream(storedBytes(service.store(file))));
+    BufferedImage stored =
+        ImageIO.read(new ByteArrayInputStream(storedBytes(service.store(file, "user-1"))));
 
     assertThat(stored.getWidth()).isEqualTo(20);
     assertThat(stored.getHeight()).isEqualTo(40);
@@ -112,7 +117,7 @@ class FileStorageServiceTest {
   void fileTypeComesFromContentNotFromClientMetadata() throws IOException {
     var file = new MockMultipartFile("image", "leaf.jpg", "image/jpeg", encode(30, 30, "png"));
 
-    String filename = service.store(file);
+    String filename = service.store(file, "user-1");
 
     assertThat(filename).endsWith(".png");
     assertThat(ImageIO.read(new ByteArrayInputStream(storedBytes(filename)))).isNotNull();
@@ -122,7 +127,8 @@ class FileStorageServiceTest {
   void rejectsOtherImageFormats() throws IOException {
     var file = new MockMultipartFile("image", "leaf.gif", "image/gif", encode(30, 30, "gif"));
 
-    assertThatThrownBy(() -> service.store(file)).isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> service.store(file, "user-1"))
+        .isInstanceOf(IllegalArgumentException.class);
     assertThat(storedFileCount()).isZero();
   }
 }

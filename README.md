@@ -133,6 +133,7 @@ Chỉ có hai cơ chế seed, không thêm cơ chế thứ ba:
 | Hạ tầng Postgres (role, database, extension) | `CommandLineRunner` kiểu `*Seeder` trong `backend/DX-Farm/.../config` |
 
 - `data.sql` không sửa tay; đổi dữ liệu ở `data/` rồi chạy lại generator.
+- Commit đồng thời dữ liệu nguồn và `data.sql` đã sinh; CI chạy `generate_seed_sql.py --check` cùng unit test của generator để chặn hai phía bị lệch.
 - Chỉ record có cờ eligibility `true` được seed; generator in danh sách treatment rule bị chặn kèm lý do.
 - Backend không đọc `data/` lúc runtime; `data.sql` chạy idempotent mỗi lần start (`ON CONFLICT` trên khoá duy nhất của DB).
 

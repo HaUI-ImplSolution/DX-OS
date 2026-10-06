@@ -11,6 +11,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 - Seed idempotent `NEWTEC_300SC` cùng hai rule `EXPERT_APPROVED` cho đạo ôn và khô vằn; giữ rule Help 400SC/đốm nâu ở trạng thái `IN_REVIEW`, không seed vì lịch sử chỉ có `E2E_ASSUMPTION`.
 - `V7__treatment_rule_notes_text.sql` mở rộng audit notes sang `text`; integration test kiểm tra migration, số rule active và chạy seed lặp không sinh trùng.
+- CI xác minh `data.sql` luôn khớp dữ liệu nguồn trong `data/`; file SQL vẫn được commit nhưng không sửa tay.
 
 **Đã xong — Duyệt thửa/vụ, mã chuẩn, GPS, danh mục giống:**
 

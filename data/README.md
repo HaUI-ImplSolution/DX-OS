@@ -9,8 +9,8 @@ Nội dung là dữ liệu nguồn do AI bàn giao để Backend tham khảo và
 
 ## Cách hoạt động
 
-- **Backend** đọc `structured/*.json` để tạo seed cho database nghiệp vụ (`diseases`, `pesticides`, `treatment_rules`, `disease_management_policies`).
-  Generator `data/scripts/generate_seed_sql.py` sinh `backend/DX-Farm/src/main/resources/data.sql` từ `structured/*.json`; Spring chạy file này idempotent lúc khởi động.
+- **Generator** đọc `structured/*.json` và sinh `backend/DX-Farm/src/main/resources/data.sql` cho database nghiệp vụ (`diseases`, `pesticides`, `treatment_rules`, `disease_management_policies`).
+  Backend không đọc JSON trực tiếp; Spring chạy file SQL đã sinh một cách idempotent lúc khởi động.
 - **AI** đọc `rag/processed/disease_knowledge.json` và `rag/source_registry.json` qua job ingest (`ai/scripts/ingest_diseases.py`, chạy bằng `python -m scripts.ingest_diseases`) để tạo embedding và ghi vào AI Vector DB (`documents`, `document_chunks`).
   Xem [`ai/README.md`](../ai/README.md) mục "Ingest RAG".
 - Trong Docker Compose, `data/` được bind-mount read-only vào container `rag-ingest` tại `/data` (biến `AI_DATA_DIR` trong `deploy/.env`, giá trị mẫu `../data`) — xem [`deploy/docker-compose.yml`](../deploy/docker-compose.yml).
@@ -45,6 +45,16 @@ Các script trong `scripts/`:
 | `generate_seed_sql.py` | Sinh `data.sql` từ `structured/*.json`; `--check` xác minh `data.sql` không lệch master |
 | `test_generate_seed_sql.py` | Test cho generator |
 | `validate_rice_workbook_export.py` | Đối chiếu JSON canonical với workbook thu thập dữ liệu cục bộ (mặc định `development/.local/RICE_DATA_COLLECTION_TEMPLATE.xlsx`) |
+
+Khi thay đổi dữ liệu nguồn, sinh lại SQL và kiểm tra trước khi commit:
+
+```bash
+python data/scripts/generate_seed_sql.py
+python data/scripts/generate_seed_sql.py --check
+python -m unittest data.scripts.test_generate_seed_sql
+```
+
+Commit đồng thời thay đổi trong `data/` và `backend/DX-Farm/src/main/resources/data.sql`; không sửa tay file SQL. CI chạy lại hai lệnh kiểm tra cuối để chặn JSON và SQL bị lệch nhau.
 
 ## Seed hiện hành
 

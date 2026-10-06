@@ -31,7 +31,18 @@ Chuẩn công nghiệp cho OIDC/SAML, license Apache-2.0 (OSI-approved), có tà
   Keycloak chỉ import khi realm chưa tồn tại; đổi giá trị này sau khi đã import thì cập nhật secret client trong Admin Console hoặc dựng lại bằng `deploy/reset.sh`.
 - 3 tài khoản demo tạo sẵn trong realm import — xem bảng dưới.
   Chỉ dùng để demo, đổi mật khẩu/secret thật trước khi triển khai ngoài môi trường dev.
-- Claim `name` của `farmer1` là `Nguyễn Văn Nông`; backend so khớp claim này với `farmerName` của thửa để giới hạn dữ liệu của FARMER.
+- Backend giới hạn dữ liệu của FARMER theo nông hộ: claim `sub` của token phải khớp `Household.keycloakUserId`.
+  Tên hiển thị (claim `name`) đổi được mà không ảnh hưởng quyền truy cập.
+  Các tài khoản demo chưa gắn nông hộ: admin tạo hộ kèm tài khoản mới bằng `POST /api/v1/households`, hoặc gắn tài khoản có sẵn vào hộ bằng `PATCH /api/v1/households/{code}/account` với `sub` của tài khoản.
+
+## Audience và giới hạn client
+
+- Client `dxfarm-frontend` và `dxfarm-mobile` có protocol mapper `dxfarm-api-audience` thêm `dxfarm-api` vào `aud` của access token.
+  Backend (`security.jwt.audience`, mặc định `dxfarm-api`) từ chối `401` mọi token không có audience đó; vẫn không kiểm `iss` như đã ghi ở mục hostname bên dưới.
+- Nông dân chỉ dùng app mobile: token chỉ mang role `FARMER` phải có `azp` thuộc `security.farmer-client-ids` (mặc định `dxfarm-mobile`), nếu không backend trả `403`.
+  Web hiển thị màn "dùng ứng dụng di động" cho tài khoản này và không gọi API nghiệp vụ.
+  Superset từ chối đăng nhập tài khoản chỉ có role `FARMER`.
+- Client confidential `dxfarm-backend-admin` (service account, secret `KEYCLOAK_ADMIN_CLIENT_SECRET`) chỉ giữ role `manage-users`, `view-users`, `view-realm` của `realm-management`; backend dùng nó để tạo tài khoản nông hộ qua Admin REST API.
 
 | Username | Mật khẩu | Role |
 |---|---|---|

@@ -9,6 +9,7 @@ import type {
   DiagnosisRejectRequest,
   Disease,
   DiseaseReport,
+  Household,
   IsolationStatus,
   Parcel,
   ParcelCreateRequest,
@@ -64,6 +65,8 @@ function json(method: string, payload: unknown): RequestInit {
 }
 
 // Parcel
+export const listHouseholds = () => request<Household[]>("/households");
+
 export const listParcels = () => request<Parcel[]>("/parcels");
 export const createParcel = (payload: ParcelCreateRequest) =>
   request<Parcel>("/parcels", json("POST", payload));

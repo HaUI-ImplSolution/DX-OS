@@ -8,7 +8,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface DiseaseReportRepository extends JpaRepository<DiseaseReport, Long> {
 
-  List<DiseaseReport> findByCropSeasonId(Long cropSeasonId);
+  List<DiseaseReport> findByCropSeasonIdAndDeletedAtIsNullOrderByIdAsc(Long cropSeasonId);
+
+  List<DiseaseReport> findByCropSeasonIdOrderByIdAsc(Long cropSeasonId);
 
   Optional<DiseaseReport> findByClientRequestId(UUID clientRequestId);
 }

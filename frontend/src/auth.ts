@@ -3,7 +3,8 @@ import type { Role } from "./types";
 
 const KEYCLOAK_URL = import.meta.env.VITE_KEYCLOAK_URL ?? "http://localhost:8080/realms/dxfarm";
 const CLIENT_ID = import.meta.env.VITE_KEYCLOAK_CLIENT_ID ?? "dxfarm-frontend";
-const ROLES: Role[] = ["FARMER", "ENGINEER", "ADMIN"];
+// Highest privilege first: a user holding several roles acts with the strongest one.
+const ROLES: Role[] = ["ADMIN", "ENGINEER", "FARMER"];
 
 export interface CurrentUser {
   username: string;

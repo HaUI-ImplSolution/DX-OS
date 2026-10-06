@@ -55,7 +55,7 @@ class CropSeasonServiceTest {
   }
 
   private void parcelIsAccessible() {
-    when(parcelRepository.findByCode("P-01")).thenReturn(Optional.of(parcel));
+    when(parcelRepository.findByCodeAndDeletedAtIsNull("P-01")).thenReturn(Optional.of(parcel));
     when(currentUserService.canAccess(parcel)).thenReturn(true);
   }
 
@@ -73,8 +73,8 @@ class CropSeasonServiceTest {
   @Test
   void createRejectsSecondActiveSeasonOnSameParcel() {
     parcelIsAccessible();
-    when(cropSeasonRepository.existsByParcel_IdAndStatus(7L, CropSeasonStatus.ACTIVE))
-        .thenReturn(true);
+    when(cropSeasonRepository.existsByParcel_IdAndStatusAndDeletedAtIsNull(7L,
+        CropSeasonStatus.ACTIVE)).thenReturn(true);
     var request = new CropSeasonCreateRequest("OM 5451", LocalDate.of(2026, 10, 1), null);
 
     assertThatThrownBy(() -> service.create("P-01", request))

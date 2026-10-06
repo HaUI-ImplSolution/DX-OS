@@ -59,6 +59,9 @@ public class CropSeason {
   // Thời điểm thực tế đã thu hoạch
   private Instant harvestedAt;
 
+  // Xóa mềm: khác null nghĩa là vụ mùa đã bị admin xóa
+  private Instant deletedAt;
+
   // Optimistic lock: concurrent writers get a 409 instead of silently overwriting each other
   @Version
   @Column(nullable = false, columnDefinition = "BIGINT NOT NULL DEFAULT 0")

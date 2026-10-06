@@ -2,9 +2,12 @@ package HaUI.ImplSolution.DX_Farm.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -31,10 +34,16 @@ public class Parcel {
   private Long id;
 
   // Mã thửa ruộng, dùng làm định danh nghiệp vụ (vd: TD-01)
-  @Column(nullable = false, unique = true)
+  // Unique among non-deleted parcels (partial index uq_parcels_code_not_deleted)
+  @Column(nullable = false)
   private String code;
 
-  // Tên chủ hộ/nông dân sở hữu thửa
+  // Hộ sở hữu thửa; quyền truy cập của FARMER dựa trên hộ này
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "household_id", nullable = false)
+  private Household household;
+
+  // Bản sao họ tên chủ hộ cho báo cáo/BI; không dùng cho logic phân quyền
   @Column(nullable = false)
   private String farmerName;
 
@@ -61,4 +70,7 @@ public class Parcel {
   @UpdateTimestamp
   @Column(nullable = false)
   private Instant updatedAt;
+
+  // Xóa mềm: khác null nghĩa là thửa đã bị admin xóa
+  private Instant deletedAt;
 }

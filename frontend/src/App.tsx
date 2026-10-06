@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { listCropSeasons, listDiseaseReports, listDiseases, listParcels } from "./api";
+import {
+  listCropSeasons,
+  listDiseaseReports,
+  listDiseases,
+  listHouseholds,
+  listParcels,
+} from "./api";
 import {
   callbackError,
   clearCallbackParams,
@@ -17,7 +23,7 @@ import DiagnosisPanel from "./components/DiagnosisPanel";
 import DiseaseReportPanel from "./components/DiseaseReportPanel";
 import ParcelPanel from "./components/ParcelPanel";
 import ReferencePanel from "./components/ReferencePanel";
-import type { CropSeason, Diagnosis, Disease, DiseaseReport, Parcel } from "./types";
+import type { CropSeason, Diagnosis, Disease, DiseaseReport, Household, Parcel } from "./types";
 
 type Tab = "flow" | "reference";
 
@@ -34,6 +40,7 @@ export default function App() {
   const [tab, setTab] = useState<Tab>("flow");
   const [error, setError] = useState<string | null>(null);
 
+  const [households, setHouseholds] = useState<Household[]>([]);
   const [parcels, setParcels] = useState<Parcel[]>([]);
   const [selectedParcelCode, setSelectedParcelCode] = useState<string | null>(null);
 
@@ -92,9 +99,13 @@ export default function App() {
   useEffect(() => {
     // Chưa đăng nhập thì chưa có token -> chờ user đăng nhập xong mới gọi API,
     // và tải lại ngay sau khi đăng nhập (không chỉ chạy đúng 1 lần lúc mount).
-    if (!user) return;
+    // Farmers use the mobile app only, so no business API is called for them.
+    if (!user || user.role === "FARMER") return;
     listParcels().then(setParcels).catch((err) => showError(err.message));
     listDiseases().then(setDiseases).catch((err) => showError(err.message));
+    if (user.role === "ADMIN") {
+      listHouseholds().then(setHouseholds).catch((err) => showError(err.message));
+    }
   }, [user]);
 
   useEffect(() => {
@@ -167,6 +178,29 @@ export default function App() {
     return <div className="login-screen" />;
   }
 
+  if (user.role === "FARMER") {
+    return (
+      <div className="login-screen">
+        <section className="section login-card">
+          <header className="section-header">
+            <div>
+              <h2>Vui lòng dùng ứng dụng di động</h2>
+              <p className="section-subtitle">
+                Tài khoản nông dân ({user.fullName}) chỉ sử dụng được trên ứng dụng DX-Farm di động.
+                Trang web dành cho kỹ sư và quản trị viên.
+              </p>
+            </div>
+          </header>
+          <div className="form-actions">
+            <button className="btn btn-primary" onClick={logout}>
+              Đăng xuất
+            </button>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
   return (
     <div className="app">
       <header className="app-header">
@@ -208,8 +242,8 @@ export default function App() {
         <main className="flow">
           <ParcelPanel
             parcels={parcels}
+            households={user.role === "ADMIN" ? households : null}
             selectedCode={selectedParcelCode}
-            ownerName={user.role === "FARMER" ? user.fullName : undefined}
             onSelect={selectParcel}
             onCreated={(p) => {
               setParcels((prev) => [...prev, p]);
@@ -222,6 +256,7 @@ export default function App() {
             <CropSeasonPanel
               parcelCode={selectedParcelCode}
               cropSeasons={cropSeasons}
+              canManage={user.role === "ADMIN"}
               selectedId={selectedCropSeasonId}
               onSelect={selectCropSeason}
               onCreated={(s) => {
@@ -237,15 +272,9 @@ export default function App() {
 
           {selectedCropSeasonId && (
             <DiseaseReportPanel
-              cropSeasonId={selectedCropSeasonId}
               reports={reports}
               selectedId={selectedReportId}
               onSelect={setSelectedReportId}
-              onCreated={(r) => {
-                setReports((prev) => [...prev, r]);
-                setSelectedReportId(r.id);
-              }}
-              onError={showError}
             />
           )}
 

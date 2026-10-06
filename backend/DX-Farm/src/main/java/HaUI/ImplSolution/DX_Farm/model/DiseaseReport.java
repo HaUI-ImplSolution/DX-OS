@@ -45,6 +45,9 @@ public class DiseaseReport {
   @Column(nullable = false)
   private String reportedBy;
 
+  // Claim "sub" của người báo cáo; null với bản ghi tạo trước khi có cột này
+  private String reportedByUserId;
+
   // Khoá idempotency do client sinh, dùng để gộp các lần gửi lại cùng một báo cáo
   @Column(unique = true)
   private UUID clientRequestId;
@@ -53,4 +56,7 @@ public class DiseaseReport {
   @CreationTimestamp
   @Column(nullable = false, updatable = false)
   private Instant reportedAt;
+
+  // Xóa mềm: khác null nghĩa là báo cáo đã bị admin xóa
+  private Instant deletedAt;
 }

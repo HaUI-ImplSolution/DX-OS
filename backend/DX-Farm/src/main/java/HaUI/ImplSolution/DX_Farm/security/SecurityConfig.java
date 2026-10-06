@@ -1,6 +1,9 @@
 package HaUI.ImplSolution.DX_Farm.security;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -9,6 +12,14 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtClaimNames;
+import org.springframework.security.oauth2.jwt.JwtClaimValidator;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtValidators;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
@@ -33,11 +44,30 @@ public class SecurityConfig {
   // Docker healthcheck gọi endpoint này không kèm Authorization header.
   private static final String ACTUATOR_HEALTH_ENDPOINT = "/actuator/health/**";
 
+  // Validates the signature and expiry like the default decoder, plus the audience: tokens that
+  // were not issued for this API are rejected. The issuer is deliberately not checked, see
+  // sso/README.md.
+  @Bean
+  public JwtDecoder jwtDecoder(
+      @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}") String jwkSetUri,
+      @Value("${security.jwt.audience}") String audience) {
+    NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+    decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(JwtValidators.createDefault(),
+        audienceValidator(audience)));
+    return decoder;
+  }
+
+  static OAuth2TokenValidator<Jwt> audienceValidator(String audience) {
+    return new JwtClaimValidator<Collection<String>>(JwtClaimNames.AUD,
+        audiences -> audiences != null && audiences.contains(audience));
+  }
+
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http,
       RestAuthenticationEntryPoint authenticationEntryPoint,
       RestAccessDeniedHandler accessDeniedHandler,
-      ServiceApiKeyAuthenticationFilter serviceApiKeyAuthenticationFilter) throws Exception {
+      ServiceApiKeyAuthenticationFilter serviceApiKeyAuthenticationFilter,
+      @Value("${security.farmer-client-ids}") String farmerClientIds) throws Exception {
     http.csrf(csrf -> csrf.disable()).cors(Customizer.withDefaults())
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -52,6 +82,10 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.GET, "/internal/v1/**").hasAuthority("ROLE_AI_SERVICE")
             .requestMatchers("/internal/v1/**").denyAll().anyRequest().authenticated())
         .addFilterBefore(serviceApiKeyAuthenticationFilter, BearerTokenAuthenticationFilter.class)
+        .addFilterAfter(
+            new FarmerClientRestrictionFilter(Set.of(farmerClientIds.trim().split("\\s*,\\s*")),
+                accessDeniedHandler),
+            BearerTokenAuthenticationFilter.class)
         .oauth2ResourceServer(oauth2 -> oauth2.authenticationEntryPoint(authenticationEntryPoint)
             .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
     return http.build();

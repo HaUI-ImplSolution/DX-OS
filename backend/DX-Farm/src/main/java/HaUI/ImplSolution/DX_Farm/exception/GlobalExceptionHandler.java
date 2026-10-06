@@ -69,6 +69,18 @@ public class GlobalExceptionHandler {
         .body(ApiResponse.error("The record was modified by someone else, reload and try again"));
   }
 
+  @ExceptionHandler(AccountNotLinkedException.class)
+  public ResponseEntity<ApiResponse<Void>> handleAccountNotLinked(AccountNotLinkedException ex) {
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error(ex.getMessage()));
+  }
+
+  @ExceptionHandler(KeycloakAdminException.class)
+  public ResponseEntity<ApiResponse<Void>> handleKeycloakAdmin(KeycloakAdminException ex) {
+    log.warn("Keycloak admin call failed: {}", ex.getMessage());
+    return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+        .body(ApiResponse.error("Account service is unavailable, the household was not created"));
+  }
+
   @ExceptionHandler(AuthenticationException.class)
   public ResponseEntity<ApiResponse<Void>> handleAuthentication(AuthenticationException ex) {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)

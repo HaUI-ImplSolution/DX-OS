@@ -13,8 +13,8 @@ public record ParcelCreateRequest(
   String code,
 
   // Tên chủ hộ/nông dân
-  @NotBlank
-  String farmerName,
+  // Mã hộ sở hữu thửa; bắt buộc với ADMIN, bị bỏ qua với FARMER (luôn dùng hộ của chính mình)
+  String householdCode,
 
   // Diện tích thửa (hecta)
   @NotNull

@@ -8,6 +8,7 @@ export interface ApiResponse<T> {
 export interface Parcel {
   id: number;
   code: string;
+  householdCode: string;
   farmerName: string;
   areaHectares: number;
   location: string | null;

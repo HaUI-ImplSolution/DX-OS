@@ -83,8 +83,7 @@ public class DiagnosisService {
   // Gọi AI Service theo contract POST /api/v1/diagnose và trả nguyên response - chưa lưu
   // Diagnosis ở đây, xem createFromAi() cho bước đối chiếu version rule rồi lưu.
   public AiDiagnoseResponse requestAiDiagnosis(Long reportId) {
-    DiseaseReport report = diseaseReportRepository.findById(reportId)
-        .orElseThrow(() -> new ResourceNotFoundException("Disease report not found: " + reportId));
+    DiseaseReport report = findActiveReportOrThrow(reportId);
     return aiDiagnosisClient.diagnose(buildAiDiagnoseRequest(report));
   }
 
@@ -92,8 +91,7 @@ public class DiagnosisService {
   // Diagnosis - rule đã đổi trong lúc AI xử lý thì từ chối, không lưu recommendation cũ.
   @Transactional
   public DiagnosisResponse createFromAi(Long reportId) {
-    DiseaseReport report = diseaseReportRepository.findById(reportId)
-        .orElseThrow(() -> new ResourceNotFoundException("Disease report not found: " + reportId));
+    DiseaseReport report = findActiveReportOrThrow(reportId);
     if (diagnosisRepository.findByDiseaseReportId(reportId).isPresent()) {
       throw new InvalidStateException("Disease report already has a diagnosis: " + reportId);
     }
@@ -166,8 +164,7 @@ public class DiagnosisService {
 
   @Transactional
   public DiagnosisResponse create(Long reportId, DiagnosisCreateRequest request) {
-    DiseaseReport report = diseaseReportRepository.findById(reportId)
-        .orElseThrow(() -> new ResourceNotFoundException("Disease report not found: " + reportId));
+    DiseaseReport report = findActiveReportOrThrow(reportId);
     if (diagnosisRepository.findByDiseaseReportId(reportId).isPresent()) {
       throw new InvalidStateException("Disease report already has a diagnosis: " + reportId);
     }
@@ -200,6 +197,7 @@ public class DiagnosisService {
     requirePending(diagnosis);
     diagnosis.setApprovalStatus(ApprovalStatus.APPROVED);
     diagnosis.setDecidedBy(currentUserService.currentFullName());
+    diagnosis.setDecidedByUserId(currentUserService.currentUserId());
     diagnosis.setDecidedAt(Instant.now(clock));
     return toResponse(diagnosisRepository.save(diagnosis));
   }
@@ -210,6 +208,7 @@ public class DiagnosisService {
     requirePending(diagnosis);
     diagnosis.setApprovalStatus(ApprovalStatus.REJECTED);
     diagnosis.setDecidedBy(currentUserService.currentFullName());
+    diagnosis.setDecidedByUserId(currentUserService.currentUserId());
     diagnosis.setDecidedAt(Instant.now(clock));
     diagnosis.setRejectionReason(request.reason());
     return toResponse(diagnosisRepository.save(diagnosis));
@@ -268,7 +267,17 @@ public class DiagnosisService {
     return requested;
   }
 
+  // A report is usable only while neither it, its season nor its parcel is soft-deleted.
+  private DiseaseReport findActiveReportOrThrow(Long reportId) {
+    return diseaseReportRepository.findById(reportId)
+        .filter(report -> report.getDeletedAt() == null)
+        .filter(report -> report.getCropSeason().getDeletedAt() == null)
+        .filter(report -> report.getCropSeason().getParcel().getDeletedAt() == null)
+        .orElseThrow(() -> new ResourceNotFoundException("Disease report not found: " + reportId));
+  }
+
   private Diagnosis findByReportIdOrThrow(Long reportId) {
+    findActiveReportOrThrow(reportId);
     return diagnosisRepository.findByDiseaseReportId(reportId).orElseThrow(
         () -> new ResourceNotFoundException("Diagnosis not found for report: " + reportId));
   }

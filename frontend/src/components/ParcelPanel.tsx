@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { createParcel } from "../api";
-import type { Parcel } from "../types";
+import type { Household, Parcel } from "../types";
 import Section from "./Section";
 
 interface ParcelPanelProps {
   parcels: Parcel[];
   selectedCode: string | null;
-  // Set for FARMER: new parcels are always registered under this name.
-  ownerName?: string;
+  // Households an ADMIN can register parcels for; null when the user may not register parcels.
+  households: Household[] | null;
   onSelect: (code: string) => void;
   onCreated: (parcel: Parcel) => void;
   onError: (message: string) => void;
@@ -16,14 +16,14 @@ interface ParcelPanelProps {
 export default function ParcelPanel({
   parcels,
   selectedCode,
-  ownerName,
+  households,
   onSelect,
   onCreated,
   onError,
 }: ParcelPanelProps) {
   const [showForm, setShowForm] = useState(false);
   const [code, setCode] = useState("");
-  const [farmerName, setFarmerName] = useState("");
+  const [householdCode, setHouseholdCode] = useState("");
   const [areaHectares, setAreaHectares] = useState("1");
   const [location, setLocation] = useState("");
   const [latitude, setLatitude] = useState("");
@@ -36,7 +36,7 @@ export default function ParcelPanel({
     try {
       const parcel = await createParcel({
         code,
-        farmerName: ownerName ?? farmerName,
+        householdCode,
         areaHectares: Number(areaHectares),
         location: location || undefined,
         latitude: latitude ? Number(latitude) : undefined,
@@ -44,7 +44,7 @@ export default function ParcelPanel({
       });
       onCreated(parcel);
       setCode("");
-      setFarmerName("");
+      setHouseholdCode("");
       setAreaHectares("1");
       setLocation("");
       setLatitude("");
@@ -72,22 +72,23 @@ export default function ParcelPanel({
         {parcels.length === 0 && <p className="empty-hint">Chưa có thửa ruộng nào.</p>}
       </div>
 
-      {!showForm && (
+      {households && !showForm && (
         <button className="btn btn-link" onClick={() => setShowForm(true)}>
           + Đăng ký thửa ruộng mới
         </button>
       )}
 
-      {showForm && (
+      {households && showForm && (
         <form className="inline-form" onSubmit={submit}>
           <input placeholder="Mã thửa (vd. TD-01)" value={code} onChange={(e) => setCode(e.target.value)} required />
-          <input
-            placeholder="Tên chủ hộ"
-            value={ownerName ?? farmerName}
-            onChange={(e) => setFarmerName(e.target.value)}
-            disabled={ownerName !== undefined}
-            required
-          />
+          <select value={householdCode} onChange={(e) => setHouseholdCode(e.target.value)} required>
+            <option value="">— Chọn nông hộ —</option>
+            {households.map((h) => (
+              <option key={h.code} value={h.code}>
+                {h.code} — {h.fullName}
+              </option>
+            ))}
+          </select>
           <input
             type="number"
             step="0.01"

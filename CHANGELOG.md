@@ -7,6 +7,20 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ### 2026-10-06
 
+**Đã xong — Nông hộ, phân quyền, migration:**
+
+- Schema do Flyway quản lý (`db/migration`): `V1` là baseline của schema cũ (DB tạo trước Flyway được đánh dấu đã ở V1 qua `baseline-on-migrate`), `V2` thêm `households` và `parcels.household_id`, `V3` thêm cột audit và xóa mềm. Hibernate chỉ `validate`.
+- `Household` (mã `H0001`, `keycloakUserId` = claim `sub`); mỗi `farmerName` phân biệt của thửa cũ thành một hộ riêng (không phân biệt hoa thường), hộ chưa có tài khoản do admin gắn tay.
+- Quyền của FARMER dựa trên hộ gắn với `sub`, không còn so tên; đổi tên trong Keycloak không mất thửa, hai nông dân trùng tên không thấy dữ liệu của nhau. Tài khoản chưa gắn hộ thấy danh sách rỗng và không tạo được thửa (`403`).
+- `POST /api/v1/parcels` không nhận `farmerName`: FARMER luôn tạo cho hộ của mình, ADMIN truyền `householdCode`. Mã thửa trùng trả `409`.
+- Ma trận quyền bằng `@PreAuthorize`: tạo thửa/vụ và thu hoạch chỉ FARMER và ADMIN, gửi báo cáo chỉ FARMER, xóa mềm và quản lý hộ chỉ ADMIN, danh sách hộ cho ENGINEER và ADMIN.
+- Access token phải có `aud` = `dxfarm-api`; token chỉ mang role FARMER chỉ nhận khi `azp` là `dxfarm-mobile`, ngược lại `403`.
+- `reportedByUserId`, `decidedByUserId` lưu `sub` bên cạnh tên hiển thị; idempotency của báo cáo so theo id người dùng.
+- Xóa mềm `DELETE /api/v1/parcels/{id}`, `/crop-seasons/{id}`, `/disease-reports/{id}` (ADMIN); danh sách nhận `includeDeleted=true` (chỉ ADMIN). Thửa còn vụ mùa chưa xóa trả `409`; mã thửa và vụ ACTIVE dùng lại được sau khi xóa.
+- `POST /api/v1/households` (ADMIN) tạo hộ và tài khoản Keycloak FARMER bằng service account `dxfarm-backend-admin`, trả mật khẩu tạm một lần; Keycloak lỗi thì không lưu hộ. `GET /api/v1/households` và `PATCH /api/v1/households/{code}/account` (gắn tài khoản có sẵn).
+- Role `superset_ro` không đọc được `households`.
+
+
 **Đã xong — Khóa PHI và ràng buộc vụ mùa:**
 
 - `POST .../diagnosis/{id}/apply` nhận `appliedAt` trong khoảng từ hôm nay lùi tối đa 30 ngày; ngoài khoảng trả `422` với `errorCode` `INVALID_APPLIED_AT`.
@@ -285,6 +299,12 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Frontend (`frontend`)
 
+### 2026-10-06
+
+- Tài khoản chỉ có role `FARMER` thấy màn "Vui lòng dùng ứng dụng di động" và không gọi API nghiệp vụ.
+- Admin chọn nông hộ khi đăng ký thửa; tạo vụ mùa và khai báo thu hoạch chỉ hiện với ADMIN; bỏ form gửi báo cáo (chỉ nông dân gửi từ mobile).
+
+
 ### 2026-10-01
 
 - Đăng xuất giữ `id_token_hint`: `signOut` không xoá user trước `signoutRedirect`, nên Keycloak kết thúc phiên SSO ngay thay vì hiện trang xác nhận, và Superset đăng xuất theo.
@@ -334,6 +354,9 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 ## Deploy (`deploy`)
 
 ### 2026-10-06
+
+- `KEYCLOAK_ADMIN_CLIENT_ID` và `KEYCLOAK_ADMIN_CLIENT_SECRET` (secret bắt buộc, không mặc định) cho backend và Keycloak.
+
 
 - Không còn mật khẩu/secret mặc định trong `.env.example`; mọi biến secret dùng `:?` nên Compose dừng và báo tên biến thiếu.
 - `keycloak` nhận `SUPERSET_OIDC_CLIENT_SECRET` để thay vào realm lúc import.
@@ -390,6 +413,11 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Service `backend` nhận thêm secret cho auth (`JWT_SECRET`, `JWT_EXPIRATION`, `SUPER_ADMIN_USERNAME/PASSWORD`) từ `deploy/.env` (mẫu ở `.env.example`).
 
 ## BI Dashboard (`bi`, Apache Superset)
+
+### 2026-10-06
+
+- Tài khoản chỉ có role `FARMER` bị từ chối đăng nhập Superset; role `FARMER` không còn map sang role Superset.
+
 
 ### 2026-09-30
 
@@ -485,6 +513,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 ## Identity Provider (`sso`, Keycloak)
 
 ### 2026-10-06
+
+- Client `dxfarm-frontend` và `dxfarm-mobile` có mapper thêm `dxfarm-api` vào `aud` của access token.
+- Client `dxfarm-backend-admin` (service account, `manage-users`, `view-users`, `view-realm`) cho backend tạo tài khoản nông hộ; secret từ `KEYCLOAK_ADMIN_CLIENT_SECRET`.
+
 
 - `secret` của client `dxfarm-superset` trong `realm-dxfarm.json` là `${SUPERSET_OIDC_CLIENT_SECRET}`, lấy từ `deploy/.env` lúc import. Mật khẩu 3 tài khoản demo vẫn nằm trong realm và được ghi rõ là chỉ dùng demo.
 

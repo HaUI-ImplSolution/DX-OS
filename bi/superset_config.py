@@ -32,6 +32,10 @@ class KeycloakSecurityManager(SupersetSecurityManager):
         # Đọc thẳng từ access token vừa nhận qua kênh server-to-server, không gọi /userinfo:
         # Keycloak không cố định hostname nên /userinfo từ chối token có issuer theo hostname trình duyệt.
         claims = _decode_jwt_payload(response["access_token"])
+        roles = claims.get("realm_access", {}).get("roles", [])
+        # Farmers use the mobile app only: without a username Flask-AppBuilder refuses the login.
+        if not {"ADMIN", "ENGINEER"} & set(roles):
+            return {}
         return {
             "username": claims.get("preferred_username", ""),
             "first_name": claims.get("given_name", ""),
@@ -50,7 +54,6 @@ AUTH_ROLES_SYNC_AT_LOGIN = True
 AUTH_ROLES_MAPPING = {
     "ADMIN": ["Admin"],
     "ENGINEER": ["Gamma"],
-    "FARMER": ["Gamma"],
 }
 
 # Đăng xuất ở Superset cũng kết thúc luôn phiên SSO ở Keycloak (không chỉ xoá cookie Superset) -

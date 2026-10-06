@@ -42,5 +42,7 @@ public class SupersetReadOnlyRoleSeeder implements CommandLineRunner {
     jdbcTemplate.execute("GRANT SELECT ON ALL TABLES IN SCHEMA public TO superset_ro");
     jdbcTemplate
         .execute("ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO superset_ro");
+    // Household contact details (phone, address) are personal data and stay out of BI.
+    jdbcTemplate.execute("REVOKE ALL ON TABLE households FROM superset_ro");
   }
 }

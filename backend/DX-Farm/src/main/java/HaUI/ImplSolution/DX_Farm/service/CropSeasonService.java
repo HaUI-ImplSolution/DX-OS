@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,12 +44,17 @@ public class CropSeasonService {
     this.clock = clock;
   }
 
-  public List<CropSeasonResponse> listByParcelCode(String parcelCode) {
+  public List<CropSeasonResponse> listByParcelCode(String parcelCode, boolean includeDeleted) {
+    if (includeDeleted && !currentUserService.isAdmin()) {
+      throw new AccessDeniedException("includeDeleted is limited to ADMIN");
+    }
     if (currentUserService.isFarmer()) {
       findAccessibleParcelOrThrow(parcelCode);
     }
-    return cropSeasonRepository.findByParcel_Code(parcelCode).stream()
-        .map(CropSeasonService::toResponse).toList();
+    List<CropSeason> seasons =
+        includeDeleted ? cropSeasonRepository.findByParcel_CodeOrderByIdAsc(parcelCode)
+            : cropSeasonRepository.findByParcel_CodeAndDeletedAtIsNullOrderByIdAsc(parcelCode);
+    return seasons.stream().map(CropSeasonService::toResponse).toList();
   }
 
   public CropSeasonResponse getById(Long id) {
@@ -70,7 +76,8 @@ public class CropSeasonService {
         && request.expectedHarvestDate().isBefore(request.startDate())) {
       throw new IllegalArgumentException("expectedHarvestDate must not be before startDate");
     }
-    if (cropSeasonRepository.existsByParcel_IdAndStatus(parcel.getId(), CropSeasonStatus.ACTIVE)) {
+    if (cropSeasonRepository.existsByParcel_IdAndStatusAndDeletedAtIsNull(parcel.getId(),
+        CropSeasonStatus.ACTIVE)) {
       throw new InvalidStateException("Parcel already has an active crop season: " + parcelCode);
     }
     CropSeason season = CropSeason.builder().parcel(parcel).riceVariety(request.riceVariety())
@@ -102,13 +109,23 @@ public class CropSeasonService {
     return toResponse(cropSeasonRepository.save(season));
   }
 
+  @Transactional
+  public void delete(Long id) {
+    CropSeason season = findAccessibleOrThrow(id);
+    season.setDeletedAt(Instant.now(clock));
+    cropSeasonRepository.save(season);
+  }
+
   private Parcel findAccessibleParcelOrThrow(String parcelCode) {
-    return parcelRepository.findByCode(parcelCode).filter(currentUserService::canAccess)
+    return parcelRepository.findByCodeAndDeletedAtIsNull(parcelCode)
+        .filter(currentUserService::canAccess)
         .orElseThrow(() -> new ResourceNotFoundException("Parcel not found: " + parcelCode));
   }
 
+  // A season is reachable only while neither it nor its parcel is soft-deleted.
   private CropSeason findAccessibleOrThrow(Long id) {
-    return cropSeasonRepository.findById(id)
+    return cropSeasonRepository.findById(id).filter(season -> season.getDeletedAt() == null)
+        .filter(season -> season.getParcel().getDeletedAt() == null)
         .filter(season -> currentUserService.canAccess(season.getParcel()))
         .orElseThrow(() -> new ResourceNotFoundException("Crop season not found: " + id));
   }

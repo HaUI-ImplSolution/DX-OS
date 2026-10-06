@@ -5,7 +5,7 @@
 
 Tài liệu này tóm tắt toàn bộ thay đổi của nhánh: backend, SSO, deploy, web và ứng dụng mobile mới.
 Mỗi thay đổi hành vi được ghi theo dạng hành vi cũ và hành vi mới để reviewer đối chiếu nhanh.
-Đặc tả chi tiết từng phần nằm ở [`BACKEND_CHANGES.md`](./BACKEND_CHANGES.md), kế hoạch ở [`PLAN.md`](./PLAN.md), hướng dẫn chạy ở [`mobile/README.md`](../../../mobile/README.md).
+Đặc tả chi tiết từng phần nằm ở [`BACKEND_CHANGES.md`](./BACKEND_CHANGES.md), kế hoạch ở [`PLAN.md`](./PLAN.md), hướng dẫn chạy ở [`mobile/README.md`](../../../../mobile/README.md).
 
 ## 1. Tóm tắt
 

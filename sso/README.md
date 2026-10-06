@@ -16,7 +16,7 @@ Chuẩn công nghiệp cho OIDC/SAML, license Apache-2.0 (OSI-approved), có tà
 - Backend Spring Boot: OAuth2 Resource Server, xác thực token do Keycloak cấp.
 - Frontend: tự redirect sang Keycloak (Authorization Code + PKCE) ngay khi chưa có phiên — không cần bấm nút đăng nhập trung gian, vào thẳng từ portal cũng được.
 - Mobile (Expo, chỉ FARMER): client public `dxfarm-mobile`, Authorization Code + PKCE, không dùng direct access grants.
-  Chi tiết: [`development/docs/mobile/README.md`](../development/docs/mobile/README.md).
+  Chi tiết: [`development/docs/pending_docs/mobile/README.md`](../development/docs/pending_docs/mobile/README.md).
 - BI Dashboard (Superset): đăng nhập bằng redirect sang Keycloak (`AUTH_OAUTH`), role realm map sang role Superset.
   Chi tiết: [`bi/README.md`](../bi/README.md).
 - **Không làm**: Mattermost (Team Edition không hỗ trợ OpenID Connect với IdP tuỳ ý — cần Enterprise license).

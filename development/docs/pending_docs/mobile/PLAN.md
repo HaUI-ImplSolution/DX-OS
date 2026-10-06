@@ -114,15 +114,15 @@ Mobile:
 
 Chạy trên điện thoại thật, do user thực hiện.
 
-- [ ] Đăng nhập `farmer1` thấy đúng thửa của mình, không thấy thửa người khác.
-- [ ] Chụp và gửi thấy chip "Chờ chẩn đoán".
+- [X] Đăng nhập `farmer1` thấy đúng thửa của mình, không thấy thửa người khác.
+- [X] Chụp và gửi thấy chip "Chờ chẩn đoán".
 - [ ] Kỹ sư chẩn đoán trên web thì farmer thấy "Chờ kỹ sư duyệt" và không thấy thuốc, liều.
 - [ ] Kỹ sư duyệt thì farmer thấy khuyến nghị đầy đủ; kỹ sư ghi nhận đã phun thì banner khoá thu hoạch xuất hiện.
 - [ ] Kỹ sư từ chối thì farmer thấy lý do và nút "Chụp lại".
 - [ ] Tắt mạng, chụp và gửi thì vào hàng đợi; bật mạng thì tự gửi đúng một lần.
-- [ ] Đăng nhập `engineer1` bị chặn với thông báo.
+- [X] Đăng nhập `engineer1` bị chặn với thông báo.
 - [ ] Đăng nhập web bằng `farmer1` và tạo thửa: thửa mang tên `Nguyễn Văn Nông` bất kể giá trị nhập.
-- [ ] Farmer gọi `harvest` hoặc xem báo cáo của vụ thuộc thửa người khác nhận `404`.
+- [X] Farmer gọi `harvest` hoặc xem báo cáo của vụ thuộc thửa người khác nhận `404`.
 
 ## Rủi ro
 

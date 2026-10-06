@@ -83,4 +83,4 @@ Xóa `deploy/data/mattermost/` hoặc thu hồi webhook làm khóa cũ mất hi�
 - Không có outbox hay lịch sử gửi: thông báo bị lỡ không được gửi lại.
 - Cấp webhook là thao tác tay.
 
-Thiết kế chi tiết: [`development/docs/MATTERMOST_WEBHOOK_NOTIFICATION_PLAN.md`](../development/docs/MATTERMOST_WEBHOOK_NOTIFICATION_PLAN.md).
+Thiết kế chi tiết: [`development/docs/pending_docs/MATTERMOST_WEBHOOK_NOTIFICATION_PLAN.md`](../development/docs/pending_docs/MATTERMOST_WEBHOOK_NOTIFICATION_PLAN.md).

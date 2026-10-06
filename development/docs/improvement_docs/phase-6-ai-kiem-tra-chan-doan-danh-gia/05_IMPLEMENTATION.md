@@ -1,6 +1,6 @@
 # Bàn giao Phase 6
 
-Nhánh: `tung/phas6-ai-kiem-tra-chan-doan-danh-gia`, đã cập nhật nền `Khuong/main` tại `f52f564`.
+Nhánh: `tung/phase6-image-quality-and-diagnosis`, đã cập nhật nền `Khuong/main` tại `f52f564`.
 Trạng thái: WP6-01/03/04/05 hoàn thành triển khai và kiểm thử tự động; còn demo điện thoại thật.
 
 ## Hợp đồng triển khai

@@ -51,6 +51,20 @@ spring:
 server:
   port: ${SERVER_PORT:8081}
 
+app:
+  # Cooperative code opening every generated parcel code (e.g. HTX01-H0042-T03).
+  htx-code: ${HTX_CODE:HTX01}
+  # A farmer's GPS fix is rejected when its reported error is larger than this (meters).
+  gps-max-accuracy-meters: ${GPS_MAX_ACCURACY_METERS:30}
+  # Requests a farmer may have waiting for a decision at the same time.
+  max-pending-requests: ${MAX_PENDING_REQUESTS:3}
+  # Start months (1-12) that suggest a season type. Self-compiled, not yet confirmed by an
+  # agronomist; months outside every list make the farmer pick the type.
+  season-start-months:
+    dong-xuan: ${SEASON_MONTHS_DONG_XUAN:11,12,1}
+    he-thu: ${SEASON_MONTHS_HE_THU:3,4,5}
+    thu-dong: ${SEASON_MONTHS_THU_DONG:6,7,8}
+
 storage:
   # S3-compatible object storage (MinIO); the bucket is private.
   endpoint: ${MINIO_ENDPOINT}
@@ -92,6 +106,10 @@ mattermost:
   webhook:
     # Empty disables notifications. Internal hostname, e.g. http://mattermost:8065/hooks/<key>.
     url: ${MATTERMOST_WEBHOOK_URL:}
+    # Own channel for new parcel and crop season requests; empty falls back to the default url.
+    url-admin: ${MATTERMOST_WEBHOOK_URL_ADMIN:}
+    # Own channel for new reports and pending diagnoses; empty falls back to the default url.
+    url-engineer: ${MATTERMOST_WEBHOOK_URL_ENGINEER:}
     # Browser-reachable gateway origin used to attach the report photo; empty omits the image.
     image-base-url: ${MATTERMOST_IMAGE_BASE_URL:}
     connect-timeout-ms: ${MATTERMOST_WEBHOOK_CONNECT_TIMEOUT_MS:2000}

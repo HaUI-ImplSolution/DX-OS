@@ -34,6 +34,11 @@ Ngoài Expo Go, có thể build APK bằng EAS mà không cần cài Android Stu
   Hàng đợi tự gửi khi `NetInfo` báo có mạng và khi app trở lại foreground; lỗi tạm thời được thử lại với khoảng chờ tăng dần (5 giây đến tối đa 5 phút, tối đa 8 lần).
   Lỗi `4xx` khác `408`, `409`, `429` đánh dấu "Lỗi" và không thử lại.
   Hàng đợi tách theo tài khoản; danh sách "Chờ gửi" và nút xoá nằm ở màn Hồ sơ, số lượng hiện ở đầu màn Báo cáo của vụ.
+- **Tạo thửa**: màn `parcels/new` lấy vị trí bằng `expo-location` (cần đứng tại ruộng), hiện sai số; sai số quá 30 m hoặc vị trí giả lập thì nút gửi bị khóa, Backend vẫn kiểm lại.
+  Thửa gửi đi ở trạng thái "Chờ duyệt"; bị từ chối thì thẻ thửa hiện lý do và nút "Sửa và gửi lại"; thửa đã duyệt có nút "Đề nghị chỉnh sửa thửa".
+- **Tạo vụ mùa**: màn `seasons/new` (chỉ với thửa đã duyệt) chọn giống từ danh mục, ngày bắt đầu và loại vụ; ngày thu hoạch gợi ý do Backend tính, chọn ngày ngoài khoảng gợi ý phải nêu lý do.
+  Cần mạng để tải danh mục giống.
+- **Hàng đợi thửa và vụ**: khi mất mạng lúc gửi, thửa và vụ mới vào cùng hàng đợi với ảnh, mỗi mục một `Idempotency-Key`; lỗi `422` (ví dụ sai số GPS) đánh dấu "Lỗi" và không thử lại.
 - **Hiển thị trạng thái**: trạng thái báo cáo suy ra từ `diagnosis`.
 
   | `diagnosis` | Chip | Nội dung nông dân thấy |
@@ -51,10 +56,10 @@ Ngoài Expo Go, có thể build APK bằng EAS mà không cần cài Android Stu
 
 | Đường dẫn | Nội dung |
 |---|---|
-| `app/` | Màn hình theo `expo-router`: `index` (Thửa), `parcels/[code]` (Vụ mùa), `seasons/[id]` (Báo cáo của vụ), `capture` (Chụp và gửi), `reports/[id]` (Chi tiết báo cáo), `login`, `profile` |
+| `app/` | Màn hình theo `expo-router`: `index` (Thửa), `parcels/[code]` (Vụ mùa), `parcels/new` (Tạo hoặc sửa thửa), `seasons/new` (Tạo hoặc sửa vụ), `seasons/[id]` (Báo cáo của vụ), `capture` (Chụp và gửi), `reports/[id]` (Chi tiết báo cáo), `login`, `profile` |
 | `src/api/` | `client.ts` (`request`, `upload`, `ApiError`) và `endpoints.ts` |
 | `src/auth/` | Đăng nhập PKCE (`AuthProvider`), lưu token (`session`), refresh (`tokens`), đọc claim (`claims`) |
-| `src/components/` | `Button`, `Card`, `ParcelCard`, `StatusChip`, `IsolationBanner`, `Timeline`, `ProgressBar`, `EmptyState`, `ErrorState`, `Skeleton`, `Screen` |
+| `src/components/` | `Button`, `Card`, `Field`, `OptionList`, `ParcelCard`, `StatusChip`, `IsolationBanner`, `Timeline`, `ProgressBar`, `EmptyState`, `ErrorState`, `Skeleton`, `Screen` |
 | `src/offline/` | Hàng đợi gửi khi mất mạng: lưu trữ (`queue`) và tự gửi lại (`QueueProvider`) |
 | `src/hooks/` | `useAsync`, `useParcelIsolation` |
 | `src/theme/` | Màu, cỡ chữ, khoảng cách, kích thước vùng chạm |

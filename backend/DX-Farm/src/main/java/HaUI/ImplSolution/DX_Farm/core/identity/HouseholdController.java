@@ -55,8 +55,9 @@ public class HouseholdController {
   @PatchMapping("/{code}/account")
   @PreAuthorize("hasRole('ADMIN')")
   @Operation(summary = "Link an existing Keycloak account to a household without one",
-      description = "ADMIN only. 409 if the household already has an account or the account is"
-          + " linked elsewhere; 404 if the household or Keycloak user does not exist.")
+      description = "ADMIN only. Name the account by keycloakUserId or by username (exactly one, 400"
+          + " otherwise). 409 if the household already has an account or the account is linked"
+          + " elsewhere; 404 if the household or Keycloak user does not exist.")
   public ApiResponse<HouseholdResponse> linkAccount(@PathVariable String code,
       @Valid @RequestBody HouseholdLinkRequest request) {
     return ApiResponse.success("Account linked", householdService.linkAccount(code, request));

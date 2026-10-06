@@ -38,6 +38,8 @@ function RootStack() {
         <Stack.Screen name="index" options={{ title: "Thửa của tôi", headerRight: ProfileLink }} />
         <Stack.Screen name="profile" options={{ title: "Hồ sơ" }} />
         <Stack.Screen name="parcels/[code]" />
+        <Stack.Screen name="parcels/new" options={{ title: "Thửa mới" }} />
+        <Stack.Screen name="seasons/new" options={{ title: "Vụ mùa mới" }} />
         <Stack.Screen name="seasons/[id]" options={{ title: "Báo cáo của vụ" }} />
         <Stack.Screen name="reports/[id]" options={{ title: "Chi tiết báo cáo" }} />
         <Stack.Screen name="capture" options={{ title: "Chụp ảnh" }} />

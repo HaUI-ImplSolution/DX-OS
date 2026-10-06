@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { createParcel } from "../api";
+import { createParcel, deleteParcel } from "../api";
 import type { Household, Parcel } from "../types";
+import Badge from "./Badge";
+import DeleteButton from "./DeleteButton";
 import Section from "./Section";
 
 interface ParcelPanelProps {
@@ -10,6 +12,7 @@ interface ParcelPanelProps {
   households: Household[] | null;
   onSelect: (code: string) => void;
   onCreated: (parcel: Parcel) => void;
+  onDeleted: (id: number) => void;
   onError: (message: string) => void;
 }
 
@@ -19,10 +22,10 @@ export default function ParcelPanel({
   households,
   onSelect,
   onCreated,
+  onDeleted,
   onError,
 }: ParcelPanelProps) {
   const [showForm, setShowForm] = useState(false);
-  const [code, setCode] = useState("");
   const [householdCode, setHouseholdCode] = useState("");
   const [areaHectares, setAreaHectares] = useState("1");
   const [location, setLocation] = useState("");
@@ -35,15 +38,13 @@ export default function ParcelPanel({
     setSubmitting(true);
     try {
       const parcel = await createParcel({
-        code,
         householdCode,
         areaHectares: Number(areaHectares),
         location: location || undefined,
-        latitude: latitude ? Number(latitude) : undefined,
-        longitude: longitude ? Number(longitude) : undefined,
+        latitude: Number(latitude),
+        longitude: Number(longitude),
       });
       onCreated(parcel);
-      setCode("");
       setHouseholdCode("");
       setAreaHectares("1");
       setLocation("");
@@ -67,10 +68,30 @@ export default function ParcelPanel({
             onClick={() => onSelect(p.code)}
           >
             {p.code} — {p.farmerName}
+            {p.approvalStatus !== "APPROVED" && (
+              <Badge tone={p.approvalStatus === "PENDING" ? "warning" : "danger"}>
+                {" "}
+                {p.approvalStatus === "PENDING" ? "Chờ duyệt" : "Bị từ chối"}
+              </Badge>
+            )}
           </button>
         ))}
         {parcels.length === 0 && <p className="empty-hint">Chưa có thửa ruộng nào.</p>}
       </div>
+
+      {households && selectedCode && (
+        <DeleteButton
+          label="Xóa thửa đang chọn"
+          confirmMessage={`Xóa thửa ${selectedCode}? Thửa còn vụ mùa thì phải xóa các vụ trước.`}
+          onDelete={async () => {
+            const parcel = parcels.find((p) => p.code === selectedCode);
+            if (!parcel) return;
+            await deleteParcel(parcel.id);
+            onDeleted(parcel.id);
+          }}
+          onError={onError}
+        />
+      )}
 
       {households && !showForm && (
         <button className="btn btn-link" onClick={() => setShowForm(true)}>
@@ -80,7 +101,6 @@ export default function ParcelPanel({
 
       {households && showForm && (
         <form className="inline-form" onSubmit={submit}>
-          <input placeholder="Mã thửa (vd. TD-01)" value={code} onChange={(e) => setCode(e.target.value)} required />
           <select value={householdCode} onChange={(e) => setHouseholdCode(e.target.value)} required>
             <option value="">— Chọn nông hộ —</option>
             {households.map((h) => (
@@ -102,16 +122,18 @@ export default function ParcelPanel({
           <input
             type="number"
             step="0.000001"
-            placeholder="Vĩ độ (tuỳ chọn, vd. 10.031967)"
+            placeholder="Vĩ độ (vd. 10.031967)"
             value={latitude}
             onChange={(e) => setLatitude(e.target.value)}
+            required
           />
           <input
             type="number"
             step="0.000001"
-            placeholder="Kinh độ (tuỳ chọn, vd. 105.783833)"
+            placeholder="Kinh độ (vd. 105.783833)"
             value={longitude}
             onChange={(e) => setLongitude(e.target.value)}
+            required
           />
           <div className="form-actions">
             <button type="submit" className="btn btn-primary" disabled={submitting}>

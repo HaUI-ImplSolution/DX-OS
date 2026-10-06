@@ -130,11 +130,10 @@ class HouseholdServiceIntegrationTest {
     String account = "kc-link-" + UUID.randomUUID();
     when(keycloakAdminClient.userExists(account)).thenReturn(true);
 
-    householdService.linkAccount(legacy.getCode(), new HouseholdLinkRequest(account));
+    householdService.linkAccount(legacy.getCode(), new HouseholdLinkRequest(account, null));
 
     assertThat(householdRepository.findByKeycloakUserId(account)).isPresent();
-    assertThatThrownBy(
-        () -> householdService.linkAccount(legacy.getCode(), new HouseholdLinkRequest("another")))
-        .isInstanceOf(InvalidStateException.class);
+    assertThatThrownBy(() -> householdService.linkAccount(legacy.getCode(),
+        new HouseholdLinkRequest("another", null))).isInstanceOf(InvalidStateException.class);
   }
 }

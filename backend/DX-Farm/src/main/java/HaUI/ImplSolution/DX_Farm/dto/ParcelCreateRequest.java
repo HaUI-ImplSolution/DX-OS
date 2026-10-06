@@ -2,32 +2,33 @@ package HaUI.ImplSolution.DX_Farm.dto;
 
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 // @formatter:off
 public record ParcelCreateRequest(
-  // Mã thửa ruộng
-  @NotBlank
-  String code,
-
-  // Tên chủ hộ/nông dân
   // Mã hộ sở hữu thửa; bắt buộc với ADMIN, bị bỏ qua với FARMER (luôn dùng hộ của chính mình)
   String householdCode,
 
-  // Diện tích thửa (hecta)
+  // Parcel area in hectares
   @NotNull
   @DecimalMin(value="0.01")
   BigDecimal areaHectares,
 
-  // Vị trí/địa chỉ thửa ruộng
+  // Parcel location or address
   String location,
 
-  // Toạ độ GPS (tuỳ chọn)
-  @DecimalMin(value = "-90") @DecimalMax(value = "90")
+  // GPS position, required
+  @NotNull @DecimalMin(value = "-90") @DecimalMax(value = "90")
   BigDecimal latitude,
 
-  @DecimalMin(value = "-180") @DecimalMax(value = "180")
-  BigDecimal longitude
+  @NotNull @DecimalMin(value = "-180") @DecimalMax(value = "180")
+  BigDecimal longitude,
+
+  // Error radius of the GPS fix in meters; required for a FARMER
+  @DecimalMin(value = "0")
+  BigDecimal gpsAccuracyMeters,
+
+  // The device reports the position as coming from a mock-location app
+  Boolean mockedLocation
 ){}

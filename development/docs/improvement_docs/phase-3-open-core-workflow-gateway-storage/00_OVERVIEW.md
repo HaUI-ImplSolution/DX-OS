@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Xong. Còn một mục hoãn sang P4: thông báo Mattermost kèm ảnh (webhook đã cấu hình, chờ giao diện tạo nông hộ) |
+| Trạng thái | Xong |
 | Mức độ | Nghiêm trọng |
 | Nhóm ưu tiên | A |
 | Ước lượng | 5-7 ngày |

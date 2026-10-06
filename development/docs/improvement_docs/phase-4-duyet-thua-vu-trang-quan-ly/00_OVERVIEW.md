@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Chờ Q1 (cần kỹ sư nông nghiệp xác nhận mốc tháng loại vụ), các quyết định khác đã chốt |
+| Trạng thái | Xong. Mốc tháng loại vụ (Q1) là giá trị tạm, chưa có kỹ sư nông nghiệp xác nhận |
 | Mức độ | Quan trọng |
 | Nhóm ưu tiên | B (phần duyệt và trang quản lý nên giữ nhóm A) |
 | Ước lượng | 6-8 ngày |
@@ -63,8 +63,8 @@
 
 - Cần từ phase trước: `Household.code` (P2) để sinh mã thửa; `workflow_case`/`workflow_event` (P3) để duyệt thửa/vụ; gateway APISIX (P3) để mobile gọi API tạo thửa/vụ qua đúng cổng.
 - Phase sau cần từ phase này: P5 (vòng đời vụ mùa) cần thửa/vụ đã `APPROVED` để farmer khai báo thu hoạch; P7 (BI) cần mã thửa/vụ chuẩn để hiển thị trên Superset.
-- Việc chuyển từ P3: kiểm thông báo Mattermost kèm ảnh bằng báo cáo thật (webhook đã cấu hình, `03_TEST_PLAN.md` của P3 mục hồi quy).
-  Làm khi đã có giao diện tạo nông hộ.
+- Việc chuyển từ P3: kiểm thông báo Mattermost kèm ảnh bằng báo cáo thật.
+  Đã kiểm: thông báo vào kênh `ky-su-nong-nghiep`, link ảnh trả 200.
 
 ## 8. Ảnh hưởng đến thi (PoF và sản phẩm)
 
@@ -75,12 +75,12 @@
 
 | # | Câu hỏi | Lựa chọn | Hạn chốt | Kết luận |
 |---|---|---|---|---|
-| Q1 | Mốc tháng của 3 loại vụ (Đông Xuân/Hè Thu/Thu Đông) ở ĐBSCL dùng để gợi ý tự động | Theo đề xuất tạm trong `01_PLAN.md`, cần kỹ sư nông nghiệp xác nhận trước khi hard-code | {ngày} | _(chưa chốt — cần chuyên gia, không tự quyết được)_ |
+| Q1 | Mốc tháng của 3 loại vụ (Đông Xuân/Hè Thu/Thu Đông) ở ĐBSCL dùng để gợi ý tự động | Theo đề xuất tạm trong `01_PLAN.md`, cần kỹ sư nông nghiệp xác nhận trước khi hard-code | 06/10/2026 | Đông Xuân tháng 11-1, Hè Thu tháng 3-5, Thu Đông tháng 6-8 (tự biên soạn theo lịch thời vụ ĐBSCL, chưa kỹ sư xác nhận). Nằm ở `app.season-start-months` nên đổi không cần sửa code; tháng ngoài mốc không gợi ý, nông dân tự chọn loại vụ |
 | Q2 | Ngưỡng sai số GPS tối đa để chấp nhận vị trí thửa | 30 mét (đề xuất ban đầu trong `PROJECT_IMPROVEMENTS.md`) / khác | 05/10/2026 | 30 mét — giữ đúng đề xuất gốc, đủ chặt cho định vị thửa ruộng bằng GPS điện thoại thường |
 | Q3 | Giới hạn số yêu cầu tạo thửa/vụ đang chờ duyệt mỗi farmer | Tối đa 3 yêu cầu chờ cùng lúc / không giới hạn cứng, chỉ cảnh báo admin | 05/10/2026 | Tối đa 3 yêu cầu chờ cùng lúc — đủ cho hộ có nhiều thửa, vẫn chặn được spam |
 
 ## 10. Tài liệu cần cập nhật khi xong
 
-- [ ] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
-- [ ] Swagger cho endpoint mới (tạo thửa/vụ, danh sách, duyệt).
-- [ ] Tài liệu quy chuẩn mã thửa/mã vụ (file riêng hoặc mục trong README).
+- [x] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
+- [x] Swagger cho endpoint mới (tạo thửa/vụ, danh sách, duyệt).
+- [x] Tài liệu quy chuẩn mã thửa/mã vụ: `development/docs/PARCEL_SEASON_CODES.md`.

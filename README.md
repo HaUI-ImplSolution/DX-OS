@@ -17,6 +17,7 @@ Bài toán được chọn: **Agri-Carbon DX-OS** — hệ điều hành chuyể
 - `mobile/README.md` — app Expo cho nông dân: kiến trúc, chạy trên điện thoại thật, đóng gói APK; kế hoạch, đặc tả và tổng quan thay đổi (hành vi cũ/mới) ở `development/docs/pending_docs/mobile/`.
 - `ai/README.md` — kiến trúc, endpoint, cấu hình và cách vận hành AI Service; các README
   trong `ai/app/` mô tả CV, RAG và LangGraph.
+- `development/docs/PARCEL_SEASON_CODES.md` — quy chuẩn mã thửa, mã vụ, GPS và quy tắc duyệt thửa/vụ.
 - `development/docs/legacy_docs/AI_EVENT_SCHEMA_README.md` — contract event/API giữa Backend và AI Service.
 - `development/docs/improvement_docs/` — danh sách vấn đề cần cải thiện (`PROJECT_IMPROVEMENTS.md`), template và kế hoạch chia phase để implement.
 - `development/docs/De_thi_PMNM_HaUI_2026_BAN_CHINH_THUC.pdf` — đề thi tuyển chọn đội tuyển PMNM HaUI 2026.

@@ -4,6 +4,7 @@ import HaUI.ImplSolution.DX_Farm.dto.ApiResponse;
 import HaUI.ImplSolution.DX_Farm.dto.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -12,6 +13,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -47,12 +49,31 @@ public class WorkflowController {
           + " assigned to someone else (an ADMIN may take it over).")
   public ApiResponse<WorkflowCaseResponse> assign(@PathVariable Long id,
       @AuthenticationPrincipal Jwt jwt, Authentication authentication) {
-    String name = jwt.getClaimAsString("name") != null ? jwt.getClaimAsString("name")
-        : jwt.getClaimAsString("preferred_username");
     boolean admin = authentication.getAuthorities().stream()
         .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
-    return ApiResponse.success("Case assigned",
-        workflowService.assign(id, new WorkflowActor(jwt.getSubject(), name), admin));
+    return ApiResponse.success("Case assigned", workflowService.assign(id, actorOf(jwt), admin));
+  }
+
+  @PatchMapping("/{id}/approve")
+  @PreAuthorize("hasRole('ADMIN')")
+  @Operation(summary = "Approve a pending case and apply it to the entity it tracks",
+      description = "ADMIN only. 409 if the case is not pending, or its type is decided through"
+          + " its own endpoint (diagnoses).")
+  public ApiResponse<WorkflowCaseResponse> approve(@PathVariable Long id,
+      @AuthenticationPrincipal Jwt jwt) {
+    return ApiResponse.success("Case approved",
+        workflowService.decide(id, WorkflowStatus.APPROVED, actorOf(jwt), null));
+  }
+
+  @PatchMapping("/{id}/reject")
+  @PreAuthorize("hasRole('ADMIN')")
+  @Operation(summary = "Reject a pending case; the requester sees the reason and may resubmit",
+      description = "ADMIN only. 400 without a reason. 409 if the case is not pending, or its"
+          + " type is decided through its own endpoint (diagnoses).")
+  public ApiResponse<WorkflowCaseResponse> reject(@PathVariable Long id,
+      @Valid @RequestBody WorkflowDecisionRequest request, @AuthenticationPrincipal Jwt jwt) {
+    return ApiResponse.success("Case rejected",
+        workflowService.decide(id, WorkflowStatus.REJECTED, actorOf(jwt), request.reason()));
   }
 
   @GetMapping("/{id}/events")
@@ -60,5 +81,11 @@ public class WorkflowController {
       description = "ENGINEER or ADMIN only. Events are never modified or removed.")
   public ApiResponse<List<WorkflowEventResponse>> events(@PathVariable Long id) {
     return ApiResponse.success(workflowService.events(id));
+  }
+
+  private static WorkflowActor actorOf(Jwt jwt) {
+    String name = jwt.getClaimAsString("name") != null ? jwt.getClaimAsString("name")
+        : jwt.getClaimAsString("preferred_username");
+    return new WorkflowActor(jwt.getSubject(), name);
   }
 }

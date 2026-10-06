@@ -100,7 +100,7 @@ class HouseholdMigrationTest {
           .containsExactly("H0001:Lê Văn C");
       assertThat(
           column(statement, "SELECT version FROM flyway_schema_history ORDER BY installed_rank"))
-          .containsExactly("1", "2", "3", "4");
+          .containsExactly("1", "2", "3", "4", "5", "6");
     }
   }
 
@@ -112,8 +112,8 @@ class HouseholdMigrationTest {
       statement.executeUpdate("INSERT INTO households (code, full_name, created_at, updated_at)"
           + " VALUES ('HX', 'X', now(), now())");
       String insert = "INSERT INTO parcels (code, farmer_name, area_hectares, created_at,"
-          + " updated_at, household_id, deleted_at) SELECT 'DUP', 'X', 1, now(), now(), id, %s"
-          + " FROM households WHERE code = 'HX'";
+          + " updated_at, household_id, approval_status, deleted_at) SELECT 'DUP', 'X', 1, now(),"
+          + " now(), id, 'APPROVED', %s FROM households WHERE code = 'HX'";
       statement.executeUpdate(insert.formatted("now()"));
       statement.executeUpdate(insert.formatted("NULL"));
       assertThatThrownBy(() -> statement.executeUpdate(insert.formatted("NULL")))

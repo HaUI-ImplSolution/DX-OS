@@ -7,26 +7,33 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowService;
 import HaUI.ImplSolution.DX_Farm.dto.CropSeasonCreateRequest;
 import HaUI.ImplSolution.DX_Farm.exception.InvalidStateException;
 import HaUI.ImplSolution.DX_Farm.exception.PokaYokeViolationException;
+import HaUI.ImplSolution.DX_Farm.model.ApprovalStatus;
 import HaUI.ImplSolution.DX_Farm.model.CropSeason;
 import HaUI.ImplSolution.DX_Farm.model.CropSeasonStatus;
 import HaUI.ImplSolution.DX_Farm.model.Parcel;
+import HaUI.ImplSolution.DX_Farm.model.RiceVariety;
+import HaUI.ImplSolution.DX_Farm.model.SeasonType;
 import HaUI.ImplSolution.DX_Farm.model.TreatmentApplication;
 import HaUI.ImplSolution.DX_Farm.repository.CropSeasonRepository;
 import HaUI.ImplSolution.DX_Farm.repository.ParcelRepository;
+import HaUI.ImplSolution.DX_Farm.repository.RiceVarietyRepository;
 import HaUI.ImplSolution.DX_Farm.repository.TreatmentApplicationRepository;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class CropSeasonServiceTest {
@@ -42,7 +49,15 @@ class CropSeasonServiceTest {
   @Mock
   private TreatmentApplicationRepository treatmentApplicationRepository;
   @Mock
+  private RiceVarietyRepository riceVarietyRepository;
+  @Mock
   private CurrentUserService currentUserService;
+  @Mock
+  private WorkflowService workflowService;
+  @Mock
+  private PendingRequestLimiter pendingRequestLimiter;
+  @Mock
+  private ApplicationEventPublisher eventPublisher;
 
   private CropSeasonService service;
   private Parcel parcel;
@@ -50,8 +65,17 @@ class CropSeasonServiceTest {
   @BeforeEach
   void setUp() {
     service = new CropSeasonService(cropSeasonRepository, parcelRepository,
-        treatmentApplicationRepository, currentUserService, CLOCK);
-    parcel = Parcel.builder().id(7L).code("P-01").farmerName("A").build();
+        treatmentApplicationRepository, riceVarietyRepository, currentUserService, workflowService,
+        new SeasonCalendar(List.of(11, 12, 1), List.of(3, 4, 5), List.of(6, 7, 8)),
+        pendingRequestLimiter, eventPublisher, CLOCK);
+    parcel = Parcel.builder().id(7L).code("P-01").farmerName("A")
+        .approvalStatus(ApprovalStatus.APPROVED).build();
+  }
+
+  private void varietyExists() {
+    when(riceVarietyRepository.findByCodeAndActiveTrue("OM5451")).thenReturn(
+        Optional.of(RiceVariety.builder().code("OM5451").name("OM 5451").growthDaysMin(95)
+            .growthDaysMax(100).source("test").reviewStatus("IN_REVIEW").build()));
   }
 
   private void parcelIsAccessible() {
@@ -62,10 +86,11 @@ class CropSeasonServiceTest {
   @Test
   void createRejectsExpectedHarvestBeforeStart() {
     parcelIsAccessible();
-    var request = new CropSeasonCreateRequest("OM 5451", LocalDate.of(2026, 10, 1),
-        LocalDate.of(2026, 9, 30));
+    varietyExists();
+    var request = new CropSeasonCreateRequest("OM5451", LocalDate.of(2026, 10, 1),
+        SeasonType.THU_DONG, LocalDate.of(2026, 9, 30), null);
 
-    assertThatThrownBy(() -> service.create("P-01", request))
+    assertThatThrownBy(() -> service.create("P-01", request, null))
         .isInstanceOf(IllegalArgumentException.class);
     verify(cropSeasonRepository, never()).saveAndFlush(any());
   }
@@ -73,11 +98,15 @@ class CropSeasonServiceTest {
   @Test
   void createRejectsSecondActiveSeasonOnSameParcel() {
     parcelIsAccessible();
-    when(cropSeasonRepository.existsByParcel_IdAndStatusAndDeletedAtIsNull(7L,
-        CropSeasonStatus.ACTIVE)).thenReturn(true);
-    var request = new CropSeasonCreateRequest("OM 5451", LocalDate.of(2026, 10, 1), null);
+    varietyExists();
+    when(cropSeasonRepository
+        .existsByParcel_IdAndStatusAndDeletedAtIsNullAndApprovalStatusNotAndIdNot(7L,
+            CropSeasonStatus.ACTIVE, ApprovalStatus.REJECTED, -1L))
+        .thenReturn(true);
+    var request = new CropSeasonCreateRequest("OM5451", LocalDate.of(2026, 10, 1),
+        SeasonType.THU_DONG, null, null);
 
-    assertThatThrownBy(() -> service.create("P-01", request))
+    assertThatThrownBy(() -> service.create("P-01", request, null))
         .isInstanceOf(InvalidStateException.class);
     verify(cropSeasonRepository, never()).saveAndFlush(any());
   }
@@ -85,7 +114,8 @@ class CropSeasonServiceTest {
   @Test
   void harvestUsesVietnamDateForIsolationLock() {
     CropSeason season = CropSeason.builder().id(1L).parcel(parcel).riceVariety("OM 5451")
-        .startDate(LocalDate.of(2026, 7, 1)).status(CropSeasonStatus.ACTIVE).build();
+        .startDate(LocalDate.of(2026, 7, 1)).status(CropSeasonStatus.ACTIVE)
+        .approvalStatus(ApprovalStatus.APPROVED).build();
     when(cropSeasonRepository.findById(1L)).thenReturn(Optional.of(season));
     when(currentUserService.canAccess(parcel)).thenReturn(true);
     // The lock ends on the Vietnamese "today"; a UTC-based date (6 Oct) would still block it.
@@ -103,7 +133,8 @@ class CropSeasonServiceTest {
   @Test
   void harvestIsBlockedWhileIsolationLockIsAfterVietnamToday() {
     CropSeason season = CropSeason.builder().id(1L).parcel(parcel).riceVariety("OM 5451")
-        .startDate(LocalDate.of(2026, 7, 1)).status(CropSeasonStatus.ACTIVE).build();
+        .startDate(LocalDate.of(2026, 7, 1)).status(CropSeasonStatus.ACTIVE)
+        .approvalStatus(ApprovalStatus.APPROVED).build();
     when(cropSeasonRepository.findById(1L)).thenReturn(Optional.of(season));
     when(currentUserService.canAccess(parcel)).thenReturn(true);
     TreatmentApplication application =

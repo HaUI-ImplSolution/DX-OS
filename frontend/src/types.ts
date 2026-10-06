@@ -17,6 +17,20 @@ export interface Household {
   createdAt: string;
 }
 
+export interface HouseholdCreateRequest {
+  fullName: string;
+  username: string;
+  phone?: string;
+  address?: string;
+  email?: string;
+}
+
+export interface HouseholdCreateResult {
+  household: Household;
+  username: string;
+  temporaryPassword: string;
+}
+
 export interface Parcel {
   id: number;
   code: string;
@@ -26,35 +40,64 @@ export interface Parcel {
   location: string | null;
   latitude: number | null;
   longitude: number | null;
+  gpsAccuracyMeters: number | null;
+  locationMissing: boolean;
+  approvalStatus: ApprovalStatus;
+  rejectionReason: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface ParcelCreateRequest {
-  code: string;
   householdCode: string;
   areaHectares: number;
   location?: string;
-  latitude?: number;
-  longitude?: number;
+  latitude: number;
+  longitude: number;
 }
 
 export type CropSeasonStatus = "ACTIVE" | "HARVESTED";
 
+export type SeasonType = "DONG_XUAN" | "HE_THU" | "THU_DONG";
+
 export interface CropSeason {
   id: number;
+  code: string | null;
   parcelCode: string;
   riceVariety: string;
+  riceVarietyCode: string | null;
+  seasonType: SeasonType | null;
   startDate: string;
   expectedHarvestDate: string | null;
+  reasonForOverride: string | null;
   status: CropSeasonStatus;
+  approvalStatus: ApprovalStatus;
+  rejectionReason: string | null;
   harvestedAt: string | null;
 }
 
 export interface CropSeasonCreateRequest {
-  riceVariety: string;
+  riceVarietyCode: string;
   startDate: string;
+  seasonType?: SeasonType;
   expectedHarvestDate?: string;
+  reasonForOverride?: string;
+}
+
+export interface RiceVariety {
+  code: string;
+  name: string;
+  growthDaysMin: number;
+  growthDaysMax: number;
+  source: string;
+  reviewStatus: "APPROVED" | "IN_REVIEW";
+}
+
+export interface CropSeasonSuggestion {
+  seasonType: SeasonType | null;
+  expectedHarvestDate: string;
+  earliestHarvestDate: string;
+  latestHarvestDate: string;
 }
 
 export interface IsolationStatus {
@@ -176,4 +219,63 @@ export interface SymptomSuggestion {
   score: number;
   evidence: string;
   source_ids: string[];
+}
+
+export type CaseType =
+  | "PARCEL_APPROVAL"
+  | "PARCEL_EDIT_REQUEST"
+  | "CROP_SEASON_APPROVAL"
+  | "DIAGNOSIS_APPROVAL";
+
+export type CaseStatus = ApprovalStatus | "CANCELLED";
+
+export interface ApprovalRequest {
+  caseId: number;
+  caseType: CaseType;
+  status: CaseStatus;
+  title: string;
+  householdCode: string | null;
+  farmerName: string | null;
+  details: Record<string, string | number | boolean | null>;
+  createdAt: string;
+  assignedTo: string | null;
+  assignedToName: string | null;
+  updatedAt: string;
+}
+
+export interface WorkflowEvent {
+  id: number;
+  action: string;
+  fromStatus: string | null;
+  toStatus: string;
+  actorUserId: string | null;
+  actorDisplayName: string | null;
+  reason: string | null;
+  occurredAt: string;
+  metadata: Record<string, unknown> | null;
+}
+
+export interface ApprovalRequestDetail {
+  request: ApprovalRequest;
+  events: WorkflowEvent[];
+}
+
+export interface Page<T> {
+  items: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+export interface ApprovalRequestFilter {
+  caseType?: CaseType;
+  status?: CaseStatus;
+  householdCode?: string;
+  assignedTo?: string;
+  unassigned?: boolean;
+  from?: string;
+  to?: string;
+  page?: number;
+  size?: number;
 }

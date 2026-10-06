@@ -5,7 +5,7 @@ import java.time.Instant;
 
 // @formatter:off
 public record ParcelResponse(
-  // Khoá chính
+  // Primary key
   Long id,
 
   // Mã thửa ruộng
@@ -17,16 +17,28 @@ public record ParcelResponse(
   // Tên chủ hộ/nông dân
   String farmerName,
 
-  // Diện tích thửa (hecta)
+  // Parcel area in hectares
   BigDecimal areaHectares,
 
-  // Vị trí/địa chỉ thửa ruộng
+  // Parcel location or address
   String location,
 
-  // Toạ độ GPS (tuỳ chọn)
+  // GPS position
   BigDecimal latitude,
 
   BigDecimal longitude,
+
+  // Error radius of the GPS fix in meters; null when an admin entered the position
+  BigDecimal gpsAccuracyMeters,
+
+  // Older parcel without a position
+  boolean locationMissing,
+
+  // PENDING, APPROVED or REJECTED
+  String approvalStatus,
+
+  // Reason it was rejected
+  String rejectionReason,
 
   // Thời điểm tạo
   Instant createdAt,

@@ -21,7 +21,7 @@
 
 - Confidence trong code là 0.70; sharpness từ 20, brightness 20–245. Đây là các ngưỡng kỹ thuật cần đối chiếu điều kiện thực địa.
 - Điểm nét từ thuật toán cũ không so sánh trực tiếp với điểm mới; không tự đổi trạng thái báo cáo đã lưu.
-- V5 chạy sau V4 workflow, giữ migration nhánh cha; không backfill nhãn kỹ sư giả.
+- V7 chạy sau V5/V6 của Phase 4, giữ migration nhánh cha; không backfill nhãn kỹ sư giả.
 - Kết quả AI stale trả 409. Ghi chẩn đoán/duyệt và retake được kiểm soát bằng transaction/row lock.
 - P5 chưa có hộp thông báo: farmer mở báo cáo để xem yêu cầu ảnh mới. Workflow P3 đã được tích hợp.
 - Nhánh cha chưa seed thuốc/rule được duyệt; chẩn đoán thiếu rule vẫn lưu nhưng không được áp dụng thuốc.

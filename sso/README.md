@@ -33,7 +33,7 @@ Chuẩn công nghiệp cho OIDC/SAML, license Apache-2.0 (OSI-approved), có tà
   Chỉ dùng để demo, đổi mật khẩu/secret thật trước khi triển khai ngoài môi trường dev.
 - Backend giới hạn dữ liệu của FARMER theo nông hộ: claim `sub` của token phải khớp `Household.keycloakUserId`.
   Tên hiển thị (claim `name`) đổi được mà không ảnh hưởng quyền truy cập.
-  Các tài khoản demo chưa gắn nông hộ: admin tạo hộ kèm tài khoản mới bằng `POST /api/v1/households`, hoặc gắn tài khoản có sẵn vào hộ bằng `PATCH /api/v1/households/{code}/account` với `sub` của tài khoản.
+  Các tài khoản demo chưa gắn nông hộ: admin tạo hộ kèm tài khoản mới ở trang "Nông hộ" của web, hoặc gắn tài khoản có sẵn vào hộ ở cùng trang bằng tên đăng nhập.
 
 ## Audience và giới hạn client
 

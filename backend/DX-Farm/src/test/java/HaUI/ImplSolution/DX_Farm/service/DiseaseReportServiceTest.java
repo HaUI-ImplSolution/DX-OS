@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import HaUI.ImplSolution.DX_Farm.core.storage.StorageService;
 import HaUI.ImplSolution.DX_Farm.exception.PokaYokeViolationException;
+import HaUI.ImplSolution.DX_Farm.model.ApprovalStatus;
 import HaUI.ImplSolution.DX_Farm.model.CropSeason;
 import HaUI.ImplSolution.DX_Farm.model.CropSeasonStatus;
 import HaUI.ImplSolution.DX_Farm.model.Parcel;
@@ -55,8 +56,8 @@ class DiseaseReportServiceTest {
   @Test
   void createIsRejectedOnHarvestedSeasonWithoutStoringTheImage() {
     Parcel parcel = Parcel.builder().id(1L).code("P-01").farmerName("A").build();
-    CropSeason season =
-        CropSeason.builder().id(5L).parcel(parcel).status(CropSeasonStatus.HARVESTED).build();
+    CropSeason season = CropSeason.builder().id(5L).parcel(parcel)
+        .status(CropSeasonStatus.HARVESTED).approvalStatus(ApprovalStatus.APPROVED).build();
     when(cropSeasonRepository.findById(5L)).thenReturn(Optional.of(season));
     when(currentUserService.canAccess(parcel)).thenReturn(true);
     var service = new DiseaseReportService(diseaseReportRepository, cropSeasonRepository,

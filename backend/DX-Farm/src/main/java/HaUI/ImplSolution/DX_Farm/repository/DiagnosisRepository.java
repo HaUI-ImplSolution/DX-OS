@@ -1,6 +1,7 @@
 package HaUI.ImplSolution.DX_Farm.repository;
 
 import HaUI.ImplSolution.DX_Farm.model.Diagnosis;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -30,4 +31,7 @@ public interface DiagnosisRepository extends JpaRepository<Diagnosis, Long> {
       """)
   // @formatter:on
   List<Diagnosis> findLatestForReports(@Param("reportIds") List<Long> reportIds);
+
+  @Query("select d.id from Diagnosis d where d.diseaseReport.cropSeason.parcel.id in :parcelIds")
+  List<Long> findIdsByParcelIds(@Param("parcelIds") Collection<Long> parcelIds);
 }

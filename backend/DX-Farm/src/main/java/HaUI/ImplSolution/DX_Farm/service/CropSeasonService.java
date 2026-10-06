@@ -1,23 +1,35 @@
 package HaUI.ImplSolution.DX_Farm.service;
 
+import HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowActor;
+import HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowCase;
+import HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowService;
+import HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowStatus;
 import HaUI.ImplSolution.DX_Farm.dto.CropSeasonCreateRequest;
 import HaUI.ImplSolution.DX_Farm.dto.CropSeasonResponse;
+import HaUI.ImplSolution.DX_Farm.dto.CropSeasonSuggestionResponse;
 import HaUI.ImplSolution.DX_Farm.dto.IsolationStatusResponse;
+import HaUI.ImplSolution.DX_Farm.event.CropSeasonCreatedEvent;
 import HaUI.ImplSolution.DX_Farm.exception.InvalidStateException;
 import HaUI.ImplSolution.DX_Farm.exception.PokaYokeViolationException;
 import HaUI.ImplSolution.DX_Farm.exception.ResourceNotFoundException;
+import HaUI.ImplSolution.DX_Farm.model.ApprovalStatus;
 import HaUI.ImplSolution.DX_Farm.model.CropSeason;
 import HaUI.ImplSolution.DX_Farm.model.CropSeasonStatus;
 import HaUI.ImplSolution.DX_Farm.model.Parcel;
+import HaUI.ImplSolution.DX_Farm.model.RiceVariety;
+import HaUI.ImplSolution.DX_Farm.model.SeasonType;
 import HaUI.ImplSolution.DX_Farm.model.TreatmentApplication;
 import HaUI.ImplSolution.DX_Farm.repository.CropSeasonRepository;
 import HaUI.ImplSolution.DX_Farm.repository.ParcelRepository;
+import HaUI.ImplSolution.DX_Farm.repository.RiceVarietyRepository;
 import HaUI.ImplSolution.DX_Farm.repository.TreatmentApplicationRepository;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.UUID;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -30,17 +42,30 @@ public class CropSeasonService {
   private final CropSeasonRepository cropSeasonRepository;
   private final ParcelRepository parcelRepository;
   private final TreatmentApplicationRepository treatmentApplicationRepository;
+  private final RiceVarietyRepository riceVarietyRepository;
   private final CurrentUserService currentUserService;
+  private final WorkflowService workflowService;
+  private final SeasonCalendar seasonCalendar;
+  private final PendingRequestLimiter pendingRequestLimiter;
+  private final ApplicationEventPublisher eventPublisher;
   private final Clock clock;
 
   public CropSeasonService(CropSeasonRepository cropSeasonRepository,
       ParcelRepository parcelRepository,
       TreatmentApplicationRepository treatmentApplicationRepository,
-      CurrentUserService currentUserService, Clock clock) {
+      RiceVarietyRepository riceVarietyRepository, CurrentUserService currentUserService,
+      WorkflowService workflowService, SeasonCalendar seasonCalendar,
+      PendingRequestLimiter pendingRequestLimiter, ApplicationEventPublisher eventPublisher,
+      Clock clock) {
     this.cropSeasonRepository = cropSeasonRepository;
     this.parcelRepository = parcelRepository;
     this.treatmentApplicationRepository = treatmentApplicationRepository;
+    this.riceVarietyRepository = riceVarietyRepository;
     this.currentUserService = currentUserService;
+    this.workflowService = workflowService;
+    this.seasonCalendar = seasonCalendar;
+    this.pendingRequestLimiter = pendingRequestLimiter;
+    this.eventPublisher = eventPublisher;
     this.clock = clock;
   }
 
@@ -69,31 +94,164 @@ public class CropSeasonService {
         .orElseGet(() -> notIsolated(season, null, null));
   }
 
+  // Season type and harvest date the farmer is shown before saving; the checks in create() use
+  // the same figures.
+  public CropSeasonSuggestionResponse suggest(String riceVarietyCode, LocalDate startDate) {
+    RiceVariety variety = findVarietyOrThrow(riceVarietyCode);
+    return new CropSeasonSuggestionResponse(
+        seasonCalendar.suggest(startDate).map(SeasonType::name).orElse(null),
+        suggestedHarvest(variety, startDate), startDate.plusDays(variety.getGrowthDaysMin()),
+        startDate.plusDays(variety.getGrowthDaysMax()));
+  }
+
+  // A farmer's season waits for an administrator; one an administrator starts is approved at once.
   @Transactional
-  public CropSeasonResponse create(String parcelCode, CropSeasonCreateRequest request) {
+  public CropSeasonResponse create(String parcelCode, CropSeasonCreateRequest request,
+      UUID clientRequestId) {
     Parcel parcel = findAccessibleParcelOrThrow(parcelCode);
-    if (request.expectedHarvestDate() != null
-        && request.expectedHarvestDate().isBefore(request.startDate())) {
+    if (clientRequestId != null) {
+      var existing = cropSeasonRepository.findByClientRequestId(clientRequestId);
+      if (existing.isPresent()) {
+        return toResponse(requireSameParcel(existing.get(), parcel));
+      }
+    }
+    if (parcel.getApprovalStatus() != ApprovalStatus.APPROVED) {
+      throw new PokaYokeViolationException("PARCEL_NOT_APPROVED",
+          "Thửa %s chưa được duyệt nên chưa tạo được vụ mùa".formatted(parcelCode));
+    }
+    boolean farmer = currentUserService.isFarmer();
+    if (farmer) {
+      pendingRequestLimiter.requireCapacity();
+    }
+    CropSeason season = CropSeason.builder().parcel(parcel).status(CropSeasonStatus.ACTIVE)
+        .approvalStatus(ApprovalStatus.PENDING).clientRequestId(clientRequestId).build();
+    fill(season, request);
+    CropSeason saved = save(season, parcelCode, clientRequestId != null);
+    WorkflowCase workflowCase = workflowService.createCase(ApprovalCaseTypes.CROP_SEASON_APPROVAL,
+        ApprovalCaseTypes.CROP_SEASON_ENTITY, saved.getId(), currentActor());
+    return toResponse(settle(saved, workflowCase, farmer, false));
+  }
+
+  // A rejected season goes back to the administrator with the corrected values.
+  @Transactional
+  public CropSeasonResponse resubmit(Long id, CropSeasonCreateRequest request) {
+    CropSeason season = findAccessibleOrThrow(id);
+    if (season.getApprovalStatus() != ApprovalStatus.REJECTED) {
+      throw new InvalidStateException("Only a rejected crop season can be sent again: " + id);
+    }
+    boolean farmer = currentUserService.isFarmer();
+    if (farmer) {
+      pendingRequestLimiter.requireCapacity();
+    }
+    fill(season, request);
+    season.setApprovalStatus(ApprovalStatus.PENDING);
+    season.setRejectionReason(null);
+    CropSeason saved = save(season, season.getParcel().getCode(), false);
+    WorkflowCase workflowCase = workflowService.recordTransition(
+        ApprovalCaseTypes.CROP_SEASON_APPROVAL, ApprovalCaseTypes.CROP_SEASON_ENTITY, saved.getId(),
+        WorkflowStatus.PENDING, currentActor(), null, null);
+    return toResponse(settle(saved, workflowCase, farmer, true));
+  }
+
+  // Copies the request onto the season after checking variety, season type, harvest date and the
+  // slots the parcel allows.
+  private void fill(CropSeason season, CropSeasonCreateRequest request) {
+    LocalDate startDate = request.startDate();
+    RiceVariety variety = findVarietyOrThrow(request.riceVarietyCode());
+    SeasonType seasonType = request.seasonType() != null ? request.seasonType()
+        : seasonCalendar.suggest(startDate).orElseThrow(() -> new IllegalArgumentException(
+            "seasonType is required: the start month matches no season window"));
+    LocalDate expected = request.expectedHarvestDate();
+    String override =
+        request.reasonForOverride() == null || request.reasonForOverride().isBlank() ? null
+            : request.reasonForOverride().strip();
+    if (expected == null) {
+      expected = suggestedHarvest(variety, startDate);
+    } else if (expected.isBefore(startDate)) {
       throw new IllegalArgumentException("expectedHarvestDate must not be before startDate");
+    } else if ((expected.isBefore(startDate.plusDays(variety.getGrowthDaysMin()))
+        || expected.isAfter(startDate.plusDays(variety.getGrowthDaysMax()))) && override == null) {
+      throw new IllegalArgumentException(
+          "reasonForOverride is required: expectedHarvestDate is outside %d-%d days of growth for %s"
+              .formatted(variety.getGrowthDaysMin(), variety.getGrowthDaysMax(),
+                  variety.getName()));
     }
-    if (cropSeasonRepository.existsByParcel_IdAndStatusAndDeletedAtIsNull(parcel.getId(),
-        CropSeasonStatus.ACTIVE)) {
-      throw new InvalidStateException("Parcel already has an active crop season: " + parcelCode);
+    Parcel parcel = season.getParcel();
+    Long self = season.getId() == null ? -1L : season.getId();
+    if (cropSeasonRepository
+        .existsByParcel_IdAndStatusAndDeletedAtIsNullAndApprovalStatusNotAndIdNot(parcel.getId(),
+            CropSeasonStatus.ACTIVE, ApprovalStatus.REJECTED, self)) {
+      throw new InvalidStateException(
+          "Parcel already has an active crop season: " + parcel.getCode());
     }
-    CropSeason season = CropSeason.builder().parcel(parcel).riceVariety(request.riceVariety())
-        .startDate(request.startDate()).expectedHarvestDate(request.expectedHarvestDate())
-        .status(CropSeasonStatus.ACTIVE).build();
+    int year = startDate.getYear();
+    if (cropSeasonRepository
+        .existsByParcel_IdAndSeasonYearAndSeasonTypeAndDeletedAtIsNullAndApprovalStatusNotAndIdNot(
+            parcel.getId(), year, seasonType, ApprovalStatus.REJECTED, self)) {
+      throw new InvalidStateException(
+          "Parcel %s already has a %s season in %d".formatted(parcel.getCode(), seasonType, year));
+    }
+    season.setRiceVariety(variety.getName());
+    season.setRiceVarietyCode(variety.getCode());
+    season.setStartDate(startDate);
+    season.setExpectedHarvestDate(expected);
+    season.setReasonForOverride(override);
+    season.setSeasonType(seasonType);
+    season.setSeasonYear(year);
+    season.setCode("%s-%d%s".formatted(parcel.getCode(), year, seasonType.codeSuffix()));
+  }
+
+  private CropSeason save(CropSeason season, String parcelCode, boolean hasIdempotencyKey) {
     try {
-      return toResponse(cropSeasonRepository.saveAndFlush(season));
+      return cropSeasonRepository.saveAndFlush(season);
     } catch (DataIntegrityViolationException e) {
-      // Lost a race against a concurrent create: the partial unique index allows one ACTIVE season.
-      throw new InvalidStateException("Parcel already has an active crop season: " + parcelCode);
+      // Lost a race against a concurrent create for the same slot or the same Idempotency-Key.
+      throw new InvalidStateException(
+          hasIdempotencyKey ? "Idempotency-Key is already being processed"
+              : "Parcel already has a crop season in this slot: " + parcelCode);
     }
+  }
+
+  private CropSeason settle(CropSeason season, WorkflowCase workflowCase, boolean farmer,
+      boolean resubmitted) {
+    if (!farmer) {
+      workflowService.decide(workflowCase.getId(), WorkflowStatus.APPROVED, currentActor(), null);
+      return season;
+    }
+    eventPublisher.publishEvent(new CropSeasonCreatedEvent(season.getCode(),
+        season.getParcel().getCode(), season.getParcel().getFarmerName(), season.getRiceVariety(),
+        season.getStartDate(), season.getExpectedHarvestDate(), resubmitted));
+    return season;
+  }
+
+  private WorkflowActor currentActor() {
+    return new WorkflowActor(currentUserService.currentUserId(),
+        currentUserService.currentFullName());
+  }
+
+  private RiceVariety findVarietyOrThrow(String code) {
+    return riceVarietyRepository.findByCodeAndActiveTrue(code)
+        .orElseThrow(() -> new IllegalArgumentException("Unknown rice variety: " + code));
+  }
+
+  private static LocalDate suggestedHarvest(RiceVariety variety, LocalDate startDate) {
+    return startDate.plusDays((variety.getGrowthDaysMin() + variety.getGrowthDaysMax()) / 2);
+  }
+
+  private static CropSeason requireSameParcel(CropSeason season, Parcel parcel) {
+    if (!season.getParcel().getId().equals(parcel.getId())) {
+      throw new InvalidStateException("Idempotency-Key was used for a different request");
+    }
+    return season;
   }
 
   @Transactional
   public CropSeasonResponse harvest(Long id) {
     CropSeason season = findAccessibleOrThrow(id);
+    if (season.getApprovalStatus() != ApprovalStatus.APPROVED) {
+      throw new PokaYokeViolationException("CROP_SEASON_NOT_APPROVED",
+          "Crop season is not approved yet: " + id);
+    }
     if (season.getStatus() == CropSeasonStatus.HARVESTED) {
       throw new InvalidStateException("Crop season already harvested: " + id);
     }
@@ -167,8 +325,11 @@ public class CropSeasonService {
   }
 
   public static CropSeasonResponse toResponse(CropSeason season) {
-    return new CropSeasonResponse(season.getId(), season.getParcel().getCode(),
-        season.getRiceVariety(), season.getStartDate(), season.getExpectedHarvestDate(),
-        season.getStatus().name(), season.getHarvestedAt());
+    return new CropSeasonResponse(season.getId(), season.getCode(), season.getParcel().getCode(),
+        season.getRiceVariety(), season.getRiceVarietyCode(),
+        season.getSeasonType() != null ? season.getSeasonType().name() : null,
+        season.getStartDate(), season.getExpectedHarvestDate(), season.getReasonForOverride(),
+        season.getStatus().name(), season.getApprovalStatus().name(), season.getRejectionReason(),
+        season.getHarvestedAt());
   }
 }

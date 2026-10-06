@@ -41,13 +41,13 @@ Thứ tự: (WP4-01 ∥ WP4-04) → WP4-03 → (WP4-02 ∥ WP4-05 ∥ WP4-06).
   Tự gợi ý `seasonType` theo tháng bắt đầu (bảng mốc tháng ở dưới, **cần kỹ sư nông nghiệp xác nhận trước khi hard-code** — Q1 ở `00_OVERVIEW.md`), farmer xác nhận lại trước khi lưu.
 - Unique constraint `(parcel_id, year, season_type)` trên `CropSeason` để chặn tạo trùng vụ trong cùng năm cho cùng thửa.
 
-**Bảng mốc tháng tạm đề xuất (chờ kỹ sư nông nghiệp xác nhận — Q1)**
+**Bảng mốc tháng đã chốt (Q1, chưa kỹ sư nông nghiệp xác nhận)**
 
-| Loại vụ | Tháng bắt đầu đề xuất (ĐBSCL) |
+| Loại vụ | Tháng bắt đầu (ĐBSCL) |
 |---|---|
-| Đông Xuân (ĐX) | Tháng 11-12 |
-| Hè Thu (HT) | Tháng 4-5 |
-| Thu Đông (TĐ) | Tháng 8-9 |
+| Đông Xuân (ĐX) | Tháng 11, 12, 1 |
+| Hè Thu (HT) | Tháng 3, 4, 5 |
+| Thu Đông (TĐ) | Tháng 6, 7, 8 |
 
 **Phạm vi ảnh hưởng**
 
@@ -261,6 +261,17 @@ Thứ tự: (WP4-01 ∥ WP4-04) → WP4-03 → (WP4-02 ∥ WP4-05 ∥ WP4-06).
 
 **Phụ thuộc, lưu ý**: cần WP4-03 publish đúng event sau khi tạo `WorkflowCase`; không phụ thuộc WP khác về code.
 
+## Ghi chú triển khai
+
+- Endpoint duyệt dùng chung nằm ở `WorkflowController` (`PATCH /{id}/approve`, `/{id}/reject`, chỉ ADMIN); Core nhận quyết định rồi giao cho `WorkflowDecisionHandler` theo `caseType`, nên không biết thửa hay vụ là gì.
+  Chẩn đoán vẫn duyệt qua endpoint riêng (endpoint chung trả 409 cho `DIAGNOSIS_APPROVAL`).
+- `crop_seasons` có thêm `approval_status` (plan chỉ nêu `parcels`), vì vụ chờ duyệt không được tính là vụ đang canh tác.
+- Yêu cầu chỉnh sửa thửa lưu ở bảng `parcel_edit_requests`; `workflow_case` unique theo `(case_type, entity_type, entity_id)` nên không thể gắn nhiều yêu cầu vào cùng một thửa.
+- Trang quản lý dùng `/requests`, `/requests/:caseId`, `/queue` thay cho `/admin/*` và `/engineer/*`, vì gateway chuyển `/admin/*` sang Keycloak.
+  Dữ liệu do `GET /api/v1/approval-requests` cung cấp (case kèm thửa, vụ hoặc chẩn đoán, lọc theo hộ và ngày).
+- Quản trị viên tạo thửa, vụ hoặc yêu cầu chỉnh sửa thì được duyệt ngay (vẫn có đủ event trong timeline); giới hạn yêu cầu chờ chỉ áp cho nông dân và tính trên cả ba loại yêu cầu.
+- Danh mục giống seed 9 giống, mọi giống `IN_REVIEW`: số ngày sinh trưởng là số liệu công khai làm tròn, chưa kỹ sư xác nhận.
+
 ## Thay đổi hợp đồng (API, schema, cấu hình)
 
 | Loại | Đối tượng | Thay đổi | Phá tương thích? |
@@ -286,6 +297,6 @@ Thứ tự: (WP4-01 ∥ WP4-04) → WP4-03 → (WP4-02 ∥ WP4-05 ∥ WP4-06).
 | # | Quyết định | Lý do ngắn |
 |---|---|---|
 | D8 (kế thừa phase 0) | Tự biên soạn danh mục giống từ nguồn công khai | Xem `phase-0-chot-quyet-dinh-pham-vi/01_PLAN.md` |
-| Q1 | _(chưa chốt — cần kỹ sư nông nghiệp xác nhận mốc tháng loại vụ)_ | |
+| Q1 | Đông Xuân tháng 11-1, Hè Thu tháng 3-5, Thu Đông tháng 6-8; cấu hình ở `app.season-start-months`, chưa kỹ sư xác nhận | Gợi ý loại vụ chỉ là giá trị mặc định, nông dân luôn xác nhận trước khi lưu |
 | Q2 | Ngưỡng sai số GPS 30 mét | Giữ đúng đề xuất gốc, đủ chặt cho định vị bằng điện thoại thường |
 | Q3 | Tối đa 3 yêu cầu chờ duyệt cùng lúc mỗi farmer | Đủ cho hộ nhiều thửa, vẫn chặn spam |

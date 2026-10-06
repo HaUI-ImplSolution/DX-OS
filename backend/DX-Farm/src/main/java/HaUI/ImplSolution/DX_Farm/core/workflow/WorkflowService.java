@@ -3,8 +3,12 @@ package HaUI.ImplSolution.DX_Farm.core.workflow;
 import HaUI.ImplSolution.DX_Farm.dto.PageResponse;
 import HaUI.ImplSolution.DX_Farm.exception.InvalidStateException;
 import HaUI.ImplSolution.DX_Farm.exception.ResourceNotFoundException;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -21,20 +25,30 @@ public class WorkflowService {
 
   private final WorkflowCaseRepository caseRepository;
   private final WorkflowEventRepository eventRepository;
+  private final Map<String, WorkflowDecisionHandler> decisionHandlers = new HashMap<>();
 
   public WorkflowService(WorkflowCaseRepository caseRepository,
-      WorkflowEventRepository eventRepository) {
+      WorkflowEventRepository eventRepository, List<WorkflowDecisionHandler> handlers) {
     this.caseRepository = caseRepository;
     this.eventRepository = eventRepository;
+    handlers.forEach(handler -> decisionHandlers.put(handler.caseType(), handler));
   }
 
   @Transactional
   public WorkflowCase createCase(String caseType, String entityType, Long entityId,
       WorkflowActor actor) {
+    return createCase(caseType, entityType, entityId, actor, null);
+  }
+
+  // metadata: data specific to the kind of process, kept on the opening event
+  @Transactional
+  public WorkflowCase createCase(String caseType, String entityType, Long entityId,
+      WorkflowActor actor, Map<String, Object> metadata) {
     WorkflowCase created =
         caseRepository.save(WorkflowCase.builder().caseType(caseType).entityType(entityType)
             .entityId(entityId).status(WorkflowStatus.PENDING).createdBy(actor.userId()).build());
-    appendEvent(created, WorkflowAction.SUBMITTED, null, WorkflowStatus.PENDING, actor, null, null);
+    appendEvent(created, WorkflowAction.SUBMITTED, null, WorkflowStatus.PENDING, actor, null,
+        metadata);
     return created;
   }
 
@@ -46,6 +60,30 @@ public class WorkflowService {
         caseRepository.findByCaseTypeAndEntityTypeAndEntityId(caseType, entityType, entityId)
             .orElseThrow(() -> new ResourceNotFoundException(
                 "Workflow case not found for %s %s".formatted(entityType, entityId)));
+    return move(workflowCase, target, actor, reason, metadata);
+  }
+
+  // Decides a pending case and hands the decision to the handler of its case type.
+  @Transactional
+  public WorkflowCaseResponse decide(Long caseId, WorkflowStatus target, WorkflowActor actor,
+      String reason) {
+    if (target != WorkflowStatus.APPROVED && target != WorkflowStatus.REJECTED) {
+      throw new IllegalArgumentException("A decision is APPROVED or REJECTED");
+    }
+    WorkflowCase workflowCase = findOrThrow(caseId);
+    WorkflowDecisionHandler handler = decisionHandlers.get(workflowCase.getCaseType());
+    if (handler == null) {
+      throw new InvalidStateException(
+          "Case type %s is decided through its own endpoint".formatted(workflowCase.getCaseType()));
+    }
+    move(workflowCase, target, actor, reason, null);
+    handler.onDecision(workflowCase, target, reason);
+    return toResponse(workflowCase);
+  }
+
+  // Moves a case to a new status and logs the step. Earlier events stay untouched.
+  private WorkflowCase move(WorkflowCase workflowCase, WorkflowStatus target, WorkflowActor actor,
+      String reason, Map<String, Object> metadata) {
     WorkflowStatus current = workflowCase.getStatus();
     if (!current.allowedNext().contains(target)) {
       throw new InvalidStateException("Workflow case %d cannot move from %s to %s"
@@ -97,6 +135,33 @@ public class WorkflowService {
         Math.min(Math.max(size, 1), MAX_PAGE_SIZE), Sort.by("createdAt", "id"));
     return PageResponse.of(caseRepository.findAll(filter, pageRequest),
         WorkflowService::toResponse);
+  }
+
+  // Free-form query for application layers that need filters the generic list does not offer.
+  public Page<WorkflowCase> search(Specification<WorkflowCase> filter, int page, int size) {
+    PageRequest pageRequest = PageRequest.of(Math.max(page, 0),
+        Math.min(Math.max(size, 1), MAX_PAGE_SIZE), Sort.by("createdAt", "id"));
+    return caseRepository.findAll(filter, pageRequest);
+  }
+
+  public WorkflowCase get(Long caseId) {
+    return findOrThrow(caseId);
+  }
+
+  // Number of cases a user opened that are still waiting for a decision.
+  public long countPending(String createdBy, Collection<String> caseTypes) {
+    return caseRepository.countByCreatedByAndStatusAndCaseTypeIn(createdBy, WorkflowStatus.PENDING,
+        caseTypes);
+  }
+
+  public boolean hasPending(String caseType, String entityType, Collection<Long> entityIds) {
+    return !entityIds.isEmpty()
+        && caseRepository.existsByCaseTypeAndEntityTypeAndEntityIdInAndStatus(caseType, entityType,
+            entityIds, WorkflowStatus.PENDING);
+  }
+
+  public Optional<WorkflowCase> find(String caseType, String entityType, Long entityId) {
+    return caseRepository.findByCaseTypeAndEntityTypeAndEntityId(caseType, entityType, entityId);
   }
 
   public List<WorkflowEventResponse> events(Long caseId) {

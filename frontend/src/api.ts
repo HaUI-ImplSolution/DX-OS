@@ -1,8 +1,12 @@
 import { clearSession, getToken } from "./auth";
 import type {
   ApiResponse,
+  ApprovalRequest,
+  ApprovalRequestDetail,
+  ApprovalRequestFilter,
   CropSeason,
   CropSeasonCreateRequest,
+  CropSeasonSuggestion,
   Diagnosis,
   DiagnosisApplyRequest,
   DiagnosisCreateRequest,
@@ -10,10 +14,14 @@ import type {
   Disease,
   DiseaseReport,
   Household,
+  HouseholdCreateRequest,
+  HouseholdCreateResult,
   IsolationStatus,
+  Page,
   Parcel,
   ParcelCreateRequest,
   Pesticide,
+  RiceVariety,
   TreatmentApplication,
   TreatmentRule,
 } from "./types";
@@ -64,10 +72,20 @@ function json(method: string, payload: unknown): RequestInit {
 
 // Parcel
 export const listHouseholds = () => request<Household[]>("/households");
+export const linkHouseholdAccount = (code: string, username: string) =>
+  request<Household>(`/households/${encodeURIComponent(code)}/account`, json("PATCH", { username }));
+export const createHousehold = (payload: HouseholdCreateRequest) =>
+  request<HouseholdCreateResult>("/households", json("POST", payload));
 
 export const listParcels = () => request<Parcel[]>("/parcels");
 export const createParcel = (payload: ParcelCreateRequest) =>
   request<Parcel>("/parcels", json("POST", payload));
+
+export const deleteParcel = (id: number) => request<null>(`/parcels/${id}`, { method: "DELETE" });
+export const deleteCropSeason = (id: number) =>
+  request<null>(`/crop-seasons/${id}`, { method: "DELETE" });
+export const deleteDiseaseReport = (id: number) =>
+  request<null>(`/disease-reports/${id}`, { method: "DELETE" });
 
 // Crop season
 export const listCropSeasons = (parcelCode: string) =>
@@ -78,6 +96,29 @@ export const harvestCropSeason = (id: number) =>
   request<CropSeason>(`/crop-seasons/${id}/harvest`, { method: "POST" });
 export const getIsolationStatus = (id: number) =>
   request<IsolationStatus>(`/crop-seasons/${id}/isolation-status`);
+
+export const listRiceVarieties = () => request<RiceVariety[]>("/rice-varieties");
+export const suggestCropSeason = (riceVarietyCode: string, startDate: string) =>
+  request<CropSeasonSuggestion>(
+    `/crop-seasons/suggestion?${new URLSearchParams({ riceVarietyCode, startDate })}`,
+  );
+
+// Requests waiting for a decision (ENGINEER, ADMIN)
+export const listApprovalRequests = (filter: ApprovalRequestFilter) => {
+  const params = new URLSearchParams();
+  Object.entries(filter).forEach(([key, value]) => {
+    if (value !== undefined && value !== "") params.set(key, String(value));
+  });
+  return request<Page<ApprovalRequest>>(`/approval-requests?${params}`);
+};
+export const getApprovalRequest = (caseId: number) =>
+  request<ApprovalRequestDetail>(`/approval-requests/${caseId}`);
+export const assignCase = (caseId: number) =>
+  request<unknown>(`/workflow-cases/${caseId}/assign`, { method: "PATCH" });
+export const approveCase = (caseId: number) =>
+  request<unknown>(`/workflow-cases/${caseId}/approve`, { method: "PATCH" });
+export const rejectCase = (caseId: number, reason: string) =>
+  request<unknown>(`/workflow-cases/${caseId}/reject`, json("PATCH", { reason }));
 
 // Disease report (reportedBy lấy từ user đang đăng nhập, không gửi từ client)
 export const listDiseaseReports = (cropSeasonId: number) =>

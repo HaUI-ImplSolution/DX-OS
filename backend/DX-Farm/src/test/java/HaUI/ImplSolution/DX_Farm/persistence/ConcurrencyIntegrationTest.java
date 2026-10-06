@@ -108,13 +108,15 @@ class ConcurrencyIntegrationTest {
     String code = "P-" + UUID.randomUUID();
     Household household = householdRepository
         .save(Household.builder().code("T-" + UUID.randomUUID()).fullName("Test Farmer").build());
-    return parcelRepository.save(Parcel.builder().code(code).household(household)
-        .farmerName("Test Farmer").areaHectares(BigDecimal.ONE).build());
+    return parcelRepository
+        .save(Parcel.builder().code(code).household(household).farmerName("Test Farmer")
+            .areaHectares(BigDecimal.ONE).approvalStatus(ApprovalStatus.APPROVED).build());
   }
 
   private CropSeason newSeason(Parcel parcel, CropSeasonStatus status) {
     return cropSeasonRepository.saveAndFlush(CropSeason.builder().parcel(parcel)
-        .riceVariety("OM 5451").startDate(LocalDate.of(2026, 7, 1)).status(status).build());
+        .riceVariety("OM 5451").startDate(LocalDate.of(2026, 7, 1)).status(status)
+        .approvalStatus(ApprovalStatus.APPROVED).build());
   }
 
   private Diagnosis newPendingDiagnosis() {

@@ -31,6 +31,7 @@ Việc triển khai được theo dõi trong [checklist](./02_CHECKLIST.md), ki�
 - FARMER gửi ảnh thay thế với query `retakeOf`; cùng hộ/cùng vụ, báo cáo gốc phải NEEDS_RETAKE.
 - Mỗi báo cáo gốc có tối đa một ảnh thay thế chưa xóa; có thể nối tiếp thành chuỗi.
 - `retakeOf` và Idempotency-Key được giữ trong hàng đợi offline. Response có liên kết hai chiều để xem ảnh cũ/mới.
+- Chỉ nhận báo cáo trong vụ đã duyệt và chưa thu hoạch; kiểm trước precheck và kiểm lại khi lưu.
 - NEEDS_RETAKE chặn chẩn đoán/duyệt/apply trên ảnh cũ. Farmer xem yêu cầu trong báo cáo; thông báo riêng thuộc P5.
 - Kiểm chứng: T6-05/06, phân quyền, idempotency và retake đồng thời.
 
@@ -66,7 +67,7 @@ Farmer chỉ xem nội dung chẩn đoán khi APPROVED; lịch sử đầy đủ
 
 ## Schema và tương thích
 
-Flyway V5 chạy sau V4 workflow; không sửa migration của nhánh cha.
+Flyway V7 chạy sau V5/V6 của Phase 4; không sửa migration của nhánh cha.
 
 - `diagnoses`: bỏ unique trên `disease_report_id`, thêm index `(disease_report_id, id DESC)`.
 - `disease_reports`: thêm trạng thái, retake, quality và optimistic version.

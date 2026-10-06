@@ -71,6 +71,25 @@ public class KeycloakAdminClient {
     }
   }
 
+  // Id of the user with exactly this username, if there is one.
+  @SuppressWarnings("unchecked")
+  public java.util.Optional<String> findUserId(String username) {
+    try {
+      java.util.List<Map<String, Object>> users = restClient.get()
+          .uri("/admin/realms/{realm}/users?username={username}&exact=true", realm, username)
+          .headers(h -> h.setBearerAuth(accessToken())).retrieve().body(java.util.List.class);
+      return users == null || users.isEmpty() ? java.util.Optional.empty()
+          : java.util.Optional.of(users.get(0).get("id").toString());
+    } catch (RestClientResponseException e) {
+      throw new KeycloakAdminException(
+          "Keycloak refused a user lookup: HTTP " + e.getStatusCode().value(), e);
+    } catch (KeycloakAdminException e) {
+      throw e;
+    } catch (RuntimeException e) {
+      throw new KeycloakAdminException("Keycloak is unreachable", e);
+    }
+  }
+
   public boolean userExists(String userId) {
     try {
       restClient.get().uri("/admin/realms/{realm}/users/{id}", realm, userId)

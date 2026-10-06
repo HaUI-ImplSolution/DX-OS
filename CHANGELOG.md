@@ -9,11 +9,29 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Trạng thái NEEDS_RETAKE, lý do và chuỗi ảnh thay thế; giữ retakeOf/idempotency trong hàng đợi offline.
 - Chẩn đoán lại ngoài transaction DB, giữ lịch sử và khóa PHI; history cập nhật sau duyệt/từ chối.
 - RAG gợi ý bệnh từ triệu chứng có nguồn; kỹ sư chốt, thiếu treatment rule vẫn lưu chẩn đoán chờ khuyến nghị.
-- Flyway V5 thêm quality, retake và nhãn kỹ sư; mỗi chẩn đoán có workflow duyệt riêng.
+- Flyway V7 thêm quality, retake và nhãn kỹ sư; mỗi chẩn đoán có workflow duyệt riêng.
 
 ## Backend (Spring Boot — `backend/DX-Farm`)
 
 ### 2026-10-06
+
+**Đã xong — Duyệt thửa/vụ, mã chuẩn, GPS, danh mục giống:**
+
+- `V5__parcel_season_approval.sql`, `V6__rice_variety_seed.sql`: trạng thái duyệt, mã, GPS và khóa `client_request_id` cho `parcels` và `crop_seasons`; bảng `rice_varieties`, `household_parcel_counter`, `parcel_edit_requests`.
+  Thửa và vụ có sẵn coi như đã duyệt; thửa chưa có tọa độ mang cờ `location_missing`.
+- Mã thửa `HTX01-H0042-T03` và mã vụ `HTX01-H0042-T03-2026DX` do backend sinh, quy tắc ở `development/docs/PARCEL_SEASON_CODES.md`; `POST /api/v1/parcels` không nhận `code`, bắt buộc `latitude` và `longitude`.
+- Nông dân phải gửi `gpsAccuracyMeters` không quá `GPS_MAX_ACCURACY_METERS` (30 m) và không `mockedLocation` (`422`).
+- Thửa và vụ của nông dân chờ quản trị viên duyệt; của quản trị viên được duyệt ngay.
+  Core `workflow` có `WorkflowDecisionHandler` theo `caseType`; `PATCH /api/v1/workflow-cases/{id}/approve` và `/reject` (ADMIN, từ chối cần lý do) áp quyết định lên thửa, vụ hoặc yêu cầu chỉnh sửa.
+- `POST /api/v1/parcels/{id}/resubmit`, `POST /api/v1/crop-seasons/{id}/resubmit` (gửi lại sau khi bị từ chối), `POST /api/v1/parcels/{id}/edit-requests` (đổi diện tích hoặc vị trí thửa đã duyệt).
+- Tạo vụ trên thửa chưa duyệt, gửi báo cáo hoặc thu hoạch trên vụ chưa duyệt trả `422`; tối đa `MAX_PENDING_REQUESTS` (3) yêu cầu chờ mỗi nông dân.
+- `Idempotency-Key` cho `POST /api/v1/parcels` và `POST /api/v1/parcels/{code}/crop-seasons`.
+- `GET /api/v1/rice-varieties` và `GET /api/v1/crop-seasons/suggestion`; `riceVarietyCode` thay `riceVariety`, ngày thu hoạch gợi ý là trung bình số ngày sinh trưởng, lệch khỏi khoảng phải kèm `reasonForOverride`.
+  Danh mục giống ghi nguồn và `reviewStatus`; mọi giống còn `IN_REVIEW`.
+- Loại vụ gợi ý theo tháng bắt đầu, cấu hình ở `app.season-start-months`.
+- `GET /api/v1/approval-requests` (lọc loại, trạng thái, mã hộ, người nhận, khoảng ngày; phân trang) và `GET /api/v1/approval-requests/{caseId}` (kèm timeline) cho ENGINEER và ADMIN.
+- `PATCH /api/v1/households/{code}/account` nhận `username` thay cho `keycloakUserId` (đúng một trong hai).
+- Webhook Mattermost theo kênh: `MATTERMOST_WEBHOOK_URL_ADMIN` cho yêu cầu thửa và vụ, `MATTERMOST_WEBHOOK_URL_ENGINEER` cho báo cáo và chẩn đoán; kênh nào để trống dùng `MATTERMOST_WEBHOOK_URL`.
 
 **Đã xong — Open-Core: workflow dùng chung, lưu ảnh có link hạn, package Core:**
 
@@ -185,6 +203,11 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ### 2026-10-06
 
+- Nông dân tạo thửa ngay trên điện thoại (`parcels/new`): nhập diện tích, bấm "Tôi đang ở ruộng, lấy vị trí" (`expo-location`), thấy sai số GPS; sai số quá 30 m hoặc vị trí giả lập thì không gửi được.
+  Thửa chờ quản trị viên duyệt; bị từ chối thì sửa và gửi lại, thửa đã duyệt thì đề nghị chỉnh sửa.
+- Tạo vụ mùa (`seasons/new`): chọn giống từ danh mục, ngày bắt đầu, loại vụ; ngày thu hoạch gợi ý lấy từ backend, chọn ngày khác khoảng gợi ý phải nêu lý do.
+- Hàng đợi offline nhận thêm thửa và vụ mùa mới, mỗi mục một `Idempotency-Key`; danh sách chờ gửi ở màn Hồ sơ.
+- Thẻ thửa và vụ hiện trạng thái duyệt và lý do từ chối.
 - `EXPO_PUBLIC_API_BASE_URL` và `EXPO_PUBLIC_KEYCLOAK_URL` cùng trỏ tới gateway (`<IP-LAN>:9080`); ảnh báo cáo hiển thị từ `imageUrl` trong response.
 
 ### 2026-10-01
@@ -327,6 +350,13 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ### 2026-10-06
 
+- Router (`react-router-dom`): `/` luồng demo, `/requests` danh sách yêu cầu (lọc loại, trạng thái, mã hộ, ngày; phân trang; xem và duyệt ngay trong dòng), `/requests/:caseId` chi tiết kèm ảnh và timeline, `/queue` hàng đợi chẩn đoán (việc của tôi, chưa có người nhận).
+  Menu theo role: ENGINEER và ADMIN thấy "Yêu cầu" và "Hàng đợi chẩn đoán".
+  Đường dẫn `/admin/*` thuộc Keycloak ở gateway nên trang quản lý không dùng tiền tố đó.
+- Đăng nhập xong quay lại đúng trang đã mở.
+- Trang `/households` (ADMIN): thêm nông hộ cùng tài khoản đăng nhập (hiện mật khẩu tạm một lần), danh sách hộ, gắn tài khoản có sẵn theo tên đăng nhập.
+- Luồng demo của ADMIN có nút xóa thửa, vụ mùa và báo cáo (có hỏi xác nhận); mọi thao tác của admin đều làm được trên giao diện.
+- Form đăng ký thửa của admin bỏ ô mã thửa và bắt buộc vĩ độ, kinh độ; form vụ mùa chọn giống từ danh mục, loại vụ và ngày thu hoạch gợi ý lấy từ backend.
 - Web phục vụ qua gateway cùng origin với API và Keycloak: nginx chỉ còn file tĩnh (bỏ proxy `/api` và `/uploads`), `VITE_API_BASE_URL` và `VITE_KEYCLOAK_URL` để trống thì dùng origin hiện tại.
 - Ảnh báo cáo lấy từ `imageUrl` (link có hạn) thay vì ghép `/uploads/<tên file>`.
 - Tài khoản chỉ có role `FARMER` thấy màn "Vui lòng dùng ứng dụng di động" và không gọi API nghiệp vụ.
@@ -383,6 +413,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ### 2026-10-06
 
+- Thêm biến `HTX_CODE`, `MATTERMOST_WEBHOOK_URL_ADMIN`, `MATTERMOST_WEBHOOK_URL_ENGINEER` vào `.env.example` và `docker-compose.yml`.
 - Thêm `apisix` (standalone, `apisix/config.yaml`, `apisix/apisix.yaml`): route `/api`, `/realms`, `/admin`, link ảnh có hạn, Swagger và web; kiểm JWT bằng `openid-connect`, giới hạn 30 lần mỗi phút cho upload ảnh và gọi chẩn đoán AI (`429`).
   Chỉ gateway publish cổng: `APISIX_HOST_PORT` (web, API, Keycloak, ảnh, Swagger, portal ở `/portal/`) và `APISIX_SUPERSET_HOST_PORT` (listener thứ hai, chỉ chuyển tới Superset).
   Superset và portal không còn publish cổng riêng.
@@ -495,6 +526,11 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - **Còn thiếu**: chưa cấu hình `MAPBOX_API_KEY` nên bản đồ chưa có nền (basemap) thật, chỉ thấy điểm trên nền trắng — cần token Mapbox miễn phí, xem `bi/README.md`.
 
 ## Kênh chat nội bộ (`chat`, Mattermost)
+
+### 2026-10-06
+
+- Yêu cầu thửa và vụ mới đi vào kênh `Ban quản trị` qua `MATTERMOST_WEBHOOK_URL_ADMIN`; báo cáo mới và chẩn đoán chờ duyệt đi vào kênh `Kỹ sư nông nghiệp` qua `MATTERMOST_WEBHOOK_URL_ENGINEER`.
+  Kênh không có webhook riêng dùng `MATTERMOST_WEBHOOK_URL`.
 
 ### 2026-10-02
 

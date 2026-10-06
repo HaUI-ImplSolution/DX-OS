@@ -86,6 +86,7 @@ class WorkflowMigrationTest {
           + " AND case_type = 'DIAGNOSIS_APPROVAL'")).containsExactly("1");
     }
 
+    flyway("6").migrate();
     flyway("latest").migrate();
 
     try (Connection connection = connect(); Statement statement = connection.createStatement()) {

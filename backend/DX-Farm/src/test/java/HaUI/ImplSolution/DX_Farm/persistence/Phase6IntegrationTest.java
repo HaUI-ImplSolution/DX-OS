@@ -45,7 +45,8 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
 @Import({DiagnosisService.class, DiseaseReportService.class, TreatmentRuleService.class,
-    CropSeasonService.class, WorkflowService.class, TimeConfig.class})
+    CropSeasonService.class, SeasonCalendar.class, PendingRequestLimiter.class,
+    WorkflowService.class, TimeConfig.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class Phase6IntegrationTest {
   @Container
@@ -99,10 +100,11 @@ class Phase6IntegrationTest {
           Household.builder().code("H-" + UUID.randomUUID()).fullName("Test farmer").build();
       em.persist(household);
       Parcel parcel = Parcel.builder().code("P-" + UUID.randomUUID()).household(household)
-          .farmerName("Test farmer").areaHectares(BigDecimal.ONE).build();
+          .farmerName("Test farmer").areaHectares(BigDecimal.ONE)
+          .approvalStatus(ApprovalStatus.APPROVED).build();
       em.persist(parcel);
       CropSeason season = CropSeason.builder().parcel(parcel).riceVariety("OM 5451")
-          .startDate(LocalDate.now().minusDays(30)).build();
+          .startDate(LocalDate.now().minusDays(30)).approvalStatus(ApprovalStatus.APPROVED).build();
       em.persist(season);
       DiseaseReport report = DiseaseReport.builder().cropSeason(season).imageRef("test.png")
           .reportedBy("Test farmer").reportedByUserId("farmer-test").build();
@@ -222,6 +224,20 @@ class Phase6IntegrationTest {
         new MockMultipartFile("image", new byte[] {1}), UUID.randomUUID()))
         .isInstanceOf(AiTriageException.class);
     assertThat(reportRepository.count()).isEqualTo(before);
+    verify(storage, never()).store(any(), any());
+  }
+
+  @Test
+  void unapprovedSeasonRejectsReportBeforeCallingPrecheck() {
+    for (ApprovalStatus approval : List.of(ApprovalStatus.PENDING, ApprovalStatus.REJECTED)) {
+      tx.executeWithoutResult(
+          status -> em.find(CropSeason.class, seasonId).setApprovalStatus(approval));
+      assertThatThrownBy(() -> reports.create(seasonId,
+          new MockMultipartFile("image", new byte[] {1}), UUID.randomUUID()))
+          .isInstanceOfSatisfying(PokaYokeViolationException.class,
+              error -> assertThat(error.getErrorCode()).isEqualTo("CROP_SEASON_NOT_APPROVED"));
+    }
+    verify(ai, never()).precheck(any());
     verify(storage, never()).store(any(), any());
   }
 

@@ -86,13 +86,17 @@ public class HouseholdService {
     if (household.getKeycloakUserId() != null) {
       throw new InvalidStateException("Household already has an account: " + code);
     }
-    householdRepository.findByKeycloakUserId(request.keycloakUserId()).ifPresent(other -> {
+    String userId = request.keycloakUserId() != null && !request.keycloakUserId().isBlank()
+        ? request.keycloakUserId()
+        : keycloakAdminClient.findUserId(request.username().strip()).orElseThrow(
+            () -> new ResourceNotFoundException("Keycloak user not found: " + request.username()));
+    householdRepository.findByKeycloakUserId(userId).ifPresent(other -> {
       throw new InvalidStateException("Account is already linked to household " + other.getCode());
     });
-    if (!keycloakAdminClient.userExists(request.keycloakUserId())) {
-      throw new ResourceNotFoundException("Keycloak user not found: " + request.keycloakUserId());
+    if (!keycloakAdminClient.userExists(userId)) {
+      throw new ResourceNotFoundException("Keycloak user not found: " + userId);
     }
-    household.setKeycloakUserId(request.keycloakUserId());
+    household.setKeycloakUserId(userId);
     return toResponse(householdRepository.save(household));
   }
 

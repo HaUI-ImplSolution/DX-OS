@@ -26,7 +26,7 @@ Theo D6 (phase 0): chỉ test case ảnh hưởng logic/an toàn hệ thống, k
 - [x] Khóa PHI (P1) vẫn chặn đúng sau khi đổi quan hệ `Diagnosis`-`DiseaseReport` thành 1-N.
 - [x] Danh sách báo cáo lấy chẩn đoán hiện hành bằng truy vấn theo nhóm.
 - [x] Gửi báo cáo với `Idempotency-Key` cũ không tạo báo cáo trùng.
-- [x] Dựng từ clone sạch bằng `docker compose up -d --build` vẫn lên đủ dịch vụ healthy.
+- [ ] Dựng lại stack từ clone sạch sau khi tích hợp Phase 4; cấu hình Compose đã được kiểm tra, demo HTTP/UI bên dưới thuộc bản trước merge.
 
 ## 4. Tiêu chí đạt của phase (exit criteria)
 
@@ -43,11 +43,15 @@ Theo D6 (phase 0): chỉ test case ảnh hưởng logic/an toàn hệ thống, k
 
 | Phần | Kết quả | Phạm vi |
 |---|---|---|
-| Backend | 74 test đạt; không fail/error/skip | PostgreSQL 16 Testcontainers, T6-01/02/04/05/06/08, PHI, migration V1–V5 và phân quyền |
-| AI | 48 test đạt; Ruff check/format đạt | CV, RAG, auth; ảnh mờ có sọc/nhiễu/chữ sắc; ảnh rõ sau nén và ở hai độ phân giải |
-| Web | TypeScript/build đạt | Chromium xác nhận history tải lại khi approvalStatus đổi trên cùng ID |
-| Mobile | TypeScript đạt; bundle Android HTTP 200 | Expo Go/Metro; chưa xác nhận đầy đủ camera/offline/retake trên điện thoại |
-| HTTP thật | Đạt precheck và nộp ảnh trực tiếp | FARMER, client mobile, Authorization Code + PKCE |
+| Backend | 75 test đạt; `mvn verify` và formatter đạt | PostgreSQL 16 Testcontainers, T6-01/02/04/05/06/08, PHI, migration V1–V7, phân quyền và vụ chưa duyệt |
+| AI | 48 test đạt; Ruff check toàn AI và format các file Phase 6 đạt | CV, RAG, auth; ảnh mờ có sọc/nhiễu/chữ sắc; ảnh rõ sau nén và ở hai độ phân giải |
+| Web | TypeScript/build đạt | Kiểm callback DemoFlow cập nhật PROCESSED/NEEDS_RETAKE sau khi chuyển sang router Phase 4 |
+| Mobile | TypeScript và export Android đạt | Kiểm logic hàng đợi thửa/vụ/retake, idempotency và mục ảnh cũ; chưa xác nhận đầy đủ trên điện thoại |
+| Compose | Config đạt; từ chối secret thiếu | Dùng placeholder tạm, không đổi `.env` local |
+
+Sau merge `Khuong/main` tại `9ec9320`, giữ V5/V6 của Phase 4 và dùng V7 cho Phase 6. Hồi quy vụ chưa duyệt thất bại khi bỏ guard, đạt khi khôi phục.
+
+**Bằng chứng HTTP/UI trước merge:** precheck, nộp ảnh trực tiếp và history đã được kiểm với FARMER/mobile PKCE và Chromium (mock phản hồi duyệt).
 
 **Hồi quy ảnh mờ:** thuật toán cũ cho qua 5 ca có chữ/viền sắc, sọc màn hình hoặc nhiễu; thuật toán mới chặn chúng.
 Ảnh báo cáo #9 lúc 21:34 có điểm mới 9.613 và bị từ chối; ảnh lá lúa #10 đạt 30.113 và được chấp nhận (ngưỡng 20).
@@ -57,8 +61,8 @@ RAG qua Backend trả 6 mã hợp lệ, có evidence/nguồn. Phản hồi duy�
 Unit/integration dùng mock ở ranh giới HTTP AI; các kiểm tra này chứng minh logic, không đo độ chính xác mô hình.
 
 Đã đối chiếu WP6-01/03/04/05 với quy ước AI và skill verification-before-completion, RAG, LangGraph, code-quality, JPA, Spring Boot.
-Truy vấn JPA dùng text block; kiểm ảnh dùng chung logic, không thêm dependency/framework.
-Code giữ confidence 0.70; container test đang hạ tạm xuống 0.00 theo yêu cầu của người dùng, độc lập với ngưỡng ảnh mờ.
+Truy vấn lịch sử JPA dùng text block; kiểm ảnh dùng chung logic, không thêm dependency/framework. Bốn file AI cũ ngoài Phase 6 còn lệch format Ruff, giữ nguyên theo nhánh cha.
+Code và container test giữ confidence 0.70, độc lập với ngưỡng ảnh mờ.
 
 ## 7. Xác nhận trên điện thoại
 

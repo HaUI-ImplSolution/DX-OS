@@ -88,13 +88,14 @@ class PermissionMatrixTest {
 
   private RequestBuilder createParcel(JwtRequestPostProcessor user) {
     return post("/api/v1/parcels").with(user).contentType(MediaType.APPLICATION_JSON)
-        .content("{\"code\":\"TD-01\",\"householdCode\":\"H0001\",\"areaHectares\":1}");
+        .content("{\"householdCode\":\"H0001\",\"areaHectares\":1,\"latitude\":10.0,"
+            + "\"longitude\":105.0}");
   }
 
   private RequestBuilder createSeason(JwtRequestPostProcessor user) {
     return post("/api/v1/parcels/TD-01/crop-seasons").with(user)
         .contentType(MediaType.APPLICATION_JSON)
-        .content("{\"riceVariety\":\"OM 5451\",\"startDate\":\"2026-10-01\"}");
+        .content("{\"riceVarietyCode\":\"OM5451\",\"startDate\":\"2026-10-01\"}");
   }
 
   private RequestBuilder submitReport(JwtRequestPostProcessor user) {
@@ -108,13 +109,13 @@ class PermissionMatrixTest {
   }
 
   private void servicesAnswer() {
-    when(parcelService.create(any())).thenReturn(
-        new ParcelResponse(1L, "TD-01", "H0001", "A", null, null, null, null, null, null));
+    when(parcelService.create(any(), any())).thenReturn(new ParcelResponse(1L, "TD-01", "H0001",
+        "A", null, null, null, null, null, false, "APPROVED", null, null, null));
     when(parcelService.listAll(anyBoolean())).thenReturn(List.of());
-    when(cropSeasonService.create(any(), any()))
-        .thenReturn(new CropSeasonResponse(1L, "TD-01", "OM 5451", null, null, "ACTIVE", null));
-    when(cropSeasonService.harvest(any()))
-        .thenReturn(new CropSeasonResponse(1L, "TD-01", "OM 5451", null, null, "HARVESTED", null));
+    when(cropSeasonService.create(any(), any(), any())).thenReturn(new CropSeasonResponse(1L, null,
+        "TD-01", "OM 5451", "OM5451", null, null, null, null, "ACTIVE", "APPROVED", null, null));
+    when(cropSeasonService.harvest(any())).thenReturn(new CropSeasonResponse(1L, null, "TD-01",
+        "OM 5451", "OM5451", null, null, null, null, "HARVESTED", "APPROVED", null, null));
     when(diseaseReportService.create(any(), any(), any(), any()))
         .thenReturn(new DiseaseReportResponse(1L, 1L, "x.jpg", "A", null, null, "PENDING", null,
             null, List.of(), null));

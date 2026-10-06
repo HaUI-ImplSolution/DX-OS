@@ -7,7 +7,7 @@
 | Mức độ / ưu tiên | Quan trọng / B |
 | Ước lượng | 5–6 ngày |
 | Tham chiếu | Mục 5, 11 của `PROJECT_IMPROVEMENTS.md`; D6/D7 của Phase 0 |
-| Nền tích hợp | `Khuong/main` tại `f52f564`, có P1/P2/P3 |
+| Nền tích hợp | `Khuong/main` tại `9ec9320`, có P1/P2/P3/P4 |
 
 ## Phạm vi
 

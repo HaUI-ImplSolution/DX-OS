@@ -1,17 +1,27 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { router } from "expo-router";
 import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import { listParcels } from "@/api/endpoints";
+import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorState } from "@/components/ErrorState";
 import { ParcelCard } from "@/components/ParcelCard";
 import { Screen } from "@/components/Screen";
 import { SkeletonCards } from "@/components/Skeleton";
 import { useAsync } from "@/hooks/useAsync";
+import { useQueue } from "@/offline/QueueProvider";
 import { colors, spacing } from "@/theme";
 
 export default function ParcelsScreen() {
   const { data, error, loading, refreshing, reload, refresh } = useAsync(listParcels, []);
   const [version, setVersion] = useState(0);
+  const { sentCount } = useQueue();
+
+  // A parcel sent from the offline queue shows up without a manual refresh.
+  useEffect(() => {
+    if (sentCount > 0) refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sentCount]);
 
   if (loading && !data) {
     return (
@@ -37,7 +47,12 @@ export default function ParcelsScreen() {
         contentContainerStyle={styles.list}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         ListEmptyComponent={
-          <EmptyState message="Bạn chưa có thửa ruộng nào. Liên hệ hợp tác xã để được thêm thửa." />
+          <EmptyState message="Bạn chưa có thửa ruộng nào. Thêm thửa mới khi bạn đang đứng ở ruộng." />
+        }
+        ListFooterComponent={
+          <View style={styles.footer}>
+            <Button label="Thêm thửa mới" onPress={() => router.push("/parcels/new")} />
+          </View>
         }
         refreshControl={
           <RefreshControl
@@ -57,4 +72,5 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
   list: { padding: spacing.lg },
   separator: { height: spacing.md },
+  footer: { marginTop: spacing.lg },
 });

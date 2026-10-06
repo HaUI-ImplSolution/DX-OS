@@ -32,57 +32,12 @@ WHERE code NOT IN (
   ('Rice___healthy')
 );
 
-INSERT INTO pesticides (code, name, unit, active)
-VALUES
-  ('HELP_400SC', 'Help 400SC', 'L/ha', TRUE),
-  ('NEWTEC_300SC', 'Newtec® 300SC', 'L/ha', TRUE)
-ON CONFLICT (code) DO UPDATE
-SET name = EXCLUDED.name,
-    unit = EXCLUDED.unit,
-    active = TRUE;
+-- No pesticide has eligible_for_pesticide_seed=true; none are seeded.
 
-INSERT INTO treatment_rules (
-  disease_id, pesticide_id, dose_min, dose_max, dose_unit,
-  phi_days, notes, source, version, active
-)
-SELECT d.id, p.id, seed.dose_min, seed.dose_max, seed.dose_unit,
-       seed.phi_days, seed.notes, seed.source, seed.version, seed.active
-FROM (VALUES
-  ('Rice___Blast', 'NEWTEC_300SC', 0.75::numeric, 1.00::numeric, 'L/ha', 10, 'Registered target: Đạo ôn. Application guidance: Phun khi tỷ lệ bệnh khoảng 5–10%. Water volume: 400-600 L/ha. Seed authorization: EXPERT_APPROVED. Chuyên gia dự án đã xác nhận treatment rule và mapping bệnh ngày 2026-10-05.', 'SRC_PPD_75_2025,SRC_PPD_28_2026,SRC_SYNGENTA_NEWTEC', '2026.10.05-expert-approved-v1', TRUE),
-  ('Rice___Sheath_blight', 'NEWTEC_300SC', 1.00::numeric, 1.00::numeric, 'L/ha', 10, 'Registered target: Khô vằn. Application guidance: Phun khi tỷ lệ bệnh khoảng 10–20%. Water volume: 400-600 L/ha. Seed authorization: EXPERT_APPROVED. Chuyên gia dự án đã xác nhận treatment rule và mapping bệnh ngày 2026-10-05.', 'SRC_PPD_75_2025,SRC_PPD_28_2026,SRC_SYNGENTA_NEWTEC', '2026.10.05-expert-approved-v1', TRUE),
-  ('Rice___Brown_spot', 'HELP_400SC', 0.60::numeric, 0.60::numeric, 'L/ha', 14, 'Registered target: Đốm nâu. Application guidance: Phun khi bệnh chớm xuất hiện; lắc đều trước khi sử dụng. Water volume: 400 L/ha. Seed authorization: E2E_ASSUMPTION. Được chủ dự án yêu cầu seed ngày 2026-10-05; nguồn đăng ký và hướng dẫn nhà sản xuất đã được ghi nhận.', 'SRC_PPD_75_2025,SRC_PPD_28_2026,SRC_ADC_HELP_400SC', '2026.10.05-help-400sc-v1', TRUE)
-) AS seed(
-  disease_code, pesticide_code, dose_min, dose_max, dose_unit,
-  phi_days, notes, source, version, active
-)
-JOIN diseases d ON d.code = seed.disease_code
-JOIN pesticides p ON p.code = seed.pesticide_code
-ON CONFLICT (disease_id, pesticide_id) DO UPDATE
-SET dose_min = EXCLUDED.dose_min,
-    dose_max = EXCLUDED.dose_max,
-    dose_unit = EXCLUDED.dose_unit,
-    phi_days = EXCLUDED.phi_days,
-    notes = EXCLUDED.notes,
-    source = EXCLUDED.source,
-    version = EXCLUDED.version,
-    active = TRUE;
+-- No treatment rule has eligible_for_seed=true; none are seeded.
 
--- Inactive rules are excluded from new lookups; referenced rows remain for audit.
-UPDATE treatment_rules tr
-SET active = FALSE
-FROM diseases d, pesticides p
-WHERE tr.disease_id = d.id
-  AND tr.pesticide_id = p.id
-  AND NOT EXISTS (
-    SELECT 1
-    FROM (VALUES
-  ('Rice___Blast', 'NEWTEC_300SC'),
-  ('Rice___Sheath_blight', 'NEWTEC_300SC'),
-  ('Rice___Brown_spot', 'HELP_400SC')
-    ) AS desired(disease_code, pesticide_code)
-    WHERE desired.disease_code = d.code
-      AND desired.pesticide_code = p.code
-  );
+-- No rule is currently eligible; retain referenced history as inactive.
+UPDATE treatment_rules SET active = FALSE WHERE active = TRUE;
 
 -- Remove inactive rules only when no diagnosis history references them.
 DELETE FROM treatment_rules tr
@@ -95,12 +50,7 @@ WHERE tr.active = FALSE
 DELETE FROM disease_management_policies;
 
 -- Legacy pesticides stay inactive while history references them.
-UPDATE pesticides
-SET active = FALSE
-WHERE code NOT IN (
-  ('HELP_400SC'),
-  ('NEWTEC_300SC')
-);
+UPDATE pesticides SET active = FALSE WHERE active = TRUE;
 
 -- Remove inactive pesticides only when nothing references them.
 DELETE FROM pesticides p

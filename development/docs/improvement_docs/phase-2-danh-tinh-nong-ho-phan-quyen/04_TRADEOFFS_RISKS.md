@@ -19,6 +19,13 @@ Kết luận: TO1-TO3 đã chốt cùng Q1 ở `00_OVERVIEW.md`, áp dụng ngay
 | R3 | Script ghép `farmerName` → `Household` (WP2-01-DATA-03) chạy nhầm trên dữ liệu đã có người dùng thật (không phải seed), tạo hộ trùng hoặc sai | Thấp (ở giai đoạn demo, dữ liệu chủ yếu là seed) | Cao nếu xảy ra | Chạy thử trên bản sao DB trước, không chạy trực tiếp trên dữ liệu "thật" nếu có | Số lượng `Household` tạo ra nhiều bất thường so với số `farmerName` phân biệt dự kiến | Có log đầy đủ ánh xạ `farmerName` → `household.id` để truy ngược và gộp/sửa tay |
 | R4 | Thêm `@PreAuthorize` (WP2-02) chặn luôn một luồng nào đó đang được test/demo dựa vào việc "engineer tạo thửa được" (dù sai theo đề) | Thấp | Thấp | Rà lại mọi script/test/seed hiện có có giả định engineer tạo thửa trước khi merge | Seed demo hoặc E2E cũ lỗi 403 bất ngờ sau khi merge WP2-02 | Sửa seed/test dùng đúng role ADMIN hoặc FARMER để tạo thửa, không mở lại quyền cho engineer |
 
+## 2b. Kết quả thực tế của các rủi ro
+
+- R1: kiểm bằng luồng client web và mobile với token thật: farmer qua web nhận 403, qua mobile vào bình thường. Chưa thử trên điện thoại thật.
+- R2: baseline sinh từ chính schema Hibernate; Hibernate `validate` trong test và trong ứng dụng chạy thật xác nhận entity khớp schema.
+- R3: ghép tên chạy trên dữ liệu thử có tên viết hoa khác nhau, kết quả đúng; hộ chưa có tài khoản được admin gắn tay qua `PATCH .../account`.
+- R4: kịch bản E2E của phase 1 vẫn đúng nếu dùng token farmer để gửi báo cáo; seed và test dùng token admin/engineer để tạo thửa phải đổi.
+
 ## 3. Nợ kỹ thuật chấp nhận
 
 - Cột `farmerName` trên `Parcel` chưa xóa ngay (TO3) — dọn ở phase sau khi xác nhận không còn chỗ đọc.

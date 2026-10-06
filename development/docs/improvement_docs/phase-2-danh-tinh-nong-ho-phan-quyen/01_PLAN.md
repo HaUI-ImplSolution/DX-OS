@@ -260,3 +260,17 @@ Cột FARMER cho "ghi nhận đã phun"/"khai báo thu hoạch" phản ánh hư�
 | D9 (kế thừa phase 0) | Phân quyền theo thao tác, không theo khu vực | Xem `phase-0-chot-quyet-dinh-pham-vi/01_PLAN.md` |
 | Q1 | Tạo hộ mới riêng cho từng `farmerName` lạ, admin gộp tay | Fuzzy-match tự động dễ ghép sai người, rủi ro hơn để trùng |
 | Q2 | Xóa mềm: admin xem qua filter `?includeDeleted=true` | Giữ khả năng audit mà không ảnh hưởng danh sách thường |
+
+## Ghi chú triển khai
+
+- Flyway: `V1__baseline.sql` sinh từ schema Hibernate đang chạy (đã gồm cột `version` và index một vụ ACTIVE của phase 1), `V2` thêm `households`, `V3` thêm cột audit và xóa mềm. `spring.jpa.hibernate.ddl-auto` là `validate`; bỏ `defer-datasource-initialization` để Flyway chạy trước Hibernate, `data.sql` chạy giữa hai bước.
+- Mã hộ sinh từ sequence `household_code_seq` (có thể nhảy số khi tạo hộ thất bại).
+- Bảng `households` không cấp cho role `superset_ro`.
+- Cột `parcels.farmer_name` giữ lại làm bản sao họ tên chủ hộ cho BI, không dùng cho phân quyền.
+- Mã thửa chỉ unique giữa các thửa chưa xóa (`uq_parcels_code_not_deleted`); index một vụ ACTIVE bỏ qua vụ đã xóa mềm.
+- Ma trận quyền áp đúng bảng ở trên: gửi báo cáo chỉ FARMER (ADMIN và ENGINEER nhận 403); web bỏ form gửi báo cáo.
+- `aud` do mapper `dxfarm-api-audience` thêm vào hai client web và mobile; claim `sub` do scope `basic` (realm phải gán scope này cho client).
+- Chặn farmer ở web bằng claim `azp` (`FarmerClientRestrictionFilter`), thêm vào màn chặn ở web; Superset chặn trong `oauth_user_info`.
+- Realm đặt `email` là tùy chọn trong user profile để nông dân không có email vẫn đăng nhập được; tên đầy đủ khi tạo hộ cần ít nhất hai từ.
+- Thêm endpoint `GET /api/v1/households` và `PATCH /api/v1/households/{code}/account` (gắn tài khoản có sẵn vào hộ do migration tạo) ngoài phạm vi ban đầu của plan.
+- DB dev cũ: backend tự baseline và lên V3, nhưng Keycloak chỉ import realm một lần nên cần `deploy/reset.sh` (hoặc cập nhật client/user profile thủ công) để có `aud`, `sub`, service account và user profile mới.

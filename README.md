@@ -167,6 +167,7 @@ Backend post thông báo báo cáo mới và chẩn đoán chờ duyệt vào ch
 Keycloak không cố định hostname nên web (`localhost`) và điện thoại (IP LAN) đăng nhập cùng lúc mà không cần đổi `deploy/.env`.
 Bản mobile Expo cho FARMER đã có luồng đầu-cuối (đăng nhập, xem thửa/vụ/báo cáo, chụp và gửi, hàng đợi offline); hướng dẫn chạy và đóng gói APK ở [`mobile/README.md`](./mobile/README.md), kế hoạch ở [`development/docs/pending_docs/mobile/PLAN.md`](./development/docs/pending_docs/mobile/PLAN.md).
 Khóa PHI chặn ngày phun ngoài khoảng 30 ngày gần nhất, mỗi thửa chỉ có một vụ đang canh tác, mọi endpoint AI (trừ health) cần service key, ảnh upload được giải mã lại và không còn EXIF/GPS, mật khẩu hệ thống không còn giá trị mặc định.
+Quyền của nông dân dựa trên nông hộ gắn với tài khoản (claim `sub`), schema do Flyway quản lý, ma trận quyền theo role được áp bằng `@PreAuthorize`, nông dân chỉ dùng app mobile (web và Superset từ chối), admin tạo nông hộ kèm tài khoản qua `POST /api/v1/households`.
 CI chạy riêng cho backend (kèm test), frontend, mobile, AI và hạ tầng (quét secret, kiểm tra compose).
 Chi tiết thay đổi theo từng module xem tại [`CHANGELOG.md`](./CHANGELOG.md).
 
@@ -200,6 +201,8 @@ Realm Keycloak tạo sẵn 3 tài khoản **chỉ phục vụ demo và chấm th
 | `farmer1` | `farmer123` | FARMER |
 | `engineer1` | `engineer123` | ENGINEER |
 | `admin1` | `admin123` | ADMIN |
+
+Các tài khoản demo chưa gắn nông hộ: `farmer1` chưa thấy thửa nào cho tới khi admin gắn vào một hộ (`PATCH /api/v1/households/{code}/account`) hoặc tạo hộ mới kèm tài khoản (`POST /api/v1/households`). Web chỉ dành cho kỹ sư và quản trị viên; tài khoản `farmer1` dùng app mobile.
 
 Mật khẩu hệ thống (Postgres, Keycloak admin, Superset, Mattermost, API key nội bộ) không có giá trị mặc định: thiếu biến nào trong `deploy/.env` thì `docker compose` dừng và báo tên biến đó.
 

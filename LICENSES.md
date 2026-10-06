@@ -12,6 +12,7 @@ Bảng dưới liệt kê từng thành phần đang thực sự chạy trong re
 | springdoc-openapi | Apache-2.0 | ✅ | |
 | Lombok | MIT | ✅ | `optional=true`, không đóng gói vào runtime |
 | PostgreSQL (server, `postgres:15-alpine` image) | PostgreSQL License | ✅ | |
+| Flyway (`org.flywaydb:flyway-core`, `flyway-database-postgresql`) | Apache-2.0 | ✅ | Migration schema (`db/migration`), chạy lúc backend khởi động |
 | Testcontainers (`org.testcontainers`, scope `test`) | MIT | ✅ | Chỉ dùng khi chạy test, khởi động PostgreSQL thật; không đóng gói vào runtime |
 | JUnit 5, Mockito, AssertJ (qua `spring-boot-starter-test`, scope `test`) | EPL-2.0 / MIT / Apache-2.0 | ✅ | Chỉ dùng khi chạy test |
 

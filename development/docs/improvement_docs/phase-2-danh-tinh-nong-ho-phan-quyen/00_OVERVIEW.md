@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Sẵn sàng code (plan + Q1-Q2 đã chốt, chưa bắt đầu implement) |
+| Trạng thái | Đã code, chờ CI GitHub (T2-06/T2-08 trên thiết bị thật còn lại) |
 | Mức độ | Nghiêm trọng |
 | Nhóm ưu tiên | A |
 | Ước lượng | 4-5 ngày |
@@ -75,6 +75,6 @@
 
 ## 10. Tài liệu cần cập nhật khi xong
 
-- [ ] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
-- [ ] Swagger cho endpoint mới (`/api/v1/households`) và mã lỗi 403 mới.
-- [ ] Sơ đồ ERD (nếu có) thêm `Household`; `sso/README.md` nếu đổi cấu hình `aud`.
+- [x] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
+- [x] Swagger cho endpoint mới (`/api/v1/households`) và mã lỗi 403 mới.
+- [x] Sơ đồ ERD (nếu có) thêm `Household`; `sso/README.md` nếu đổi cấu hình `aud`.

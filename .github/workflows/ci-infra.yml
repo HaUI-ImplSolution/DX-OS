@@ -3,12 +3,14 @@ on:
   push:
     branches:
       - main
+      - Khuong/main
   pull_request:
     types:
       - opened
       - synchronize
     branches:
       - main
+      - Khuong/main
 
 jobs:
   secret-scan:

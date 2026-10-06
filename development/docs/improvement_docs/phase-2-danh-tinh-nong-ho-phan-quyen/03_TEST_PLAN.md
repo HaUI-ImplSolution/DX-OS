@@ -19,7 +19,7 @@ Theo D6 (phase 0): chỉ test case ảnh hưởng logic/an toàn hệ thống (p
 | T2-05 | WP2-02 | Phân quyền | ADMIN gọi các endpoint ghi ở trên | 200 | | Đạt (E2E + MockMvc) |
 | T2-06 | WP2-03 | Phân quyền (client) | Farmer đăng nhập web, thử gọi API nghiệp vụ | FE chặn trước khi gọi; nếu gọi trực tiếp API thì 401/403 | | Đạt (E2E: token web 403; MockMvc) |
 | T2-07 | WP2-03 | Âm tính | Gọi API với token thiếu `aud` hợp lệ | 401 | | Đạt (E2E: 401; unit validator) |
-| T2-08 | WP2-03 | Hồi quy | Mobile đăng nhập và gọi API bình thường sau khi bật `aud` | Không đổi hành vi, vẫn 200 | | Đạt qua luồng client mobile; chưa chạy app trên điện thoại |
+| T2-08 | WP2-03 | Hồi quy | Mobile đăng nhập và gọi API bình thường sau khi bật `aud` | Không đổi hành vi, vẫn 200 | | Đạt (luồng client mobile và app mobile đăng nhập bình thường) |
 | T2-09 | WP2-04 | Poka-yoke | ADMIN xóa mềm 1 thửa, `GET` thường và `GET ?includeDeleted=true` | Thửa ẩn ở danh sách thường, hiện ở danh sách có `includeDeleted` | | Đạt (E2E) |
 | T2-10 | WP2-04 | Phân quyền | FARMER/ENGINEER gọi `DELETE` thửa | 403 | | Đạt (E2E + MockMvc) |
 | T2-11 | WP2-05 | Happy path | ADMIN tạo hộ mới qua `POST /api/v1/households` | `Household` + user Keycloak tồn tại, đăng nhập mobile bằng mật khẩu tạm thành công | | Đạt (E2E) |
@@ -53,4 +53,5 @@ Theo D6 (phase 0): chỉ test case ảnh hưởng logic/an toàn hệ thống (p
 - Stack thật dựng bằng `deploy/reset.sh` (Postgres, backend, Keycloak, Superset): 46/47 bước của kịch bản gọi API đạt; bước còn lại chỉ lệch định dạng chuỗi trong script (kết quả thực tế đúng).
   Gồm: Flyway V1-V3 trên DB trống, `aud`, chặn token farmer qua client web, onboarding và mật khẩu tạm, Keycloak dừng thì không lưu hộ, gắn tài khoản vào hộ cũ, cùng tên khác hộ, đổi tên không mất thửa, ma trận quyền, xóa mềm, id người dùng trong audit, `superset_ro` không đọc `households`, Superset từ chối farmer.
 - Lỗi tìm thấy khi chạy thật và đã sửa: `defer-datasource-initialization` làm Flyway chạy sau Hibernate; realm thiếu scope `basic` nên token không có `sub`; tài khoản không có email bị Keycloak coi là chưa hoàn tất hồ sơ (đặt email thành tùy chọn trong user profile của realm).
-- Chưa chạy: đăng nhập bằng app mobile trên điện thoại thật; CI GitHub cho nhánh này.
+- Người phụ trách xác nhận app mobile đăng nhập bình thường sau khi bật `aud`; tài khoản chưa gắn nông hộ nên chưa có thửa để thử các API dữ liệu.
+- CI GitHub trên PR của nhánh: toàn bộ job xanh.

@@ -21,7 +21,7 @@ Kết luận: TO1-TO3 đã chốt cùng Q1 ở `00_OVERVIEW.md`, áp dụng ngay
 
 ## 2b. Kết quả thực tế của các rủi ro
 
-- R1: kiểm bằng luồng client web và mobile với token thật: farmer qua web nhận 403, qua mobile vào bình thường. Chưa thử trên điện thoại thật.
+- R1: kiểm bằng luồng client web và mobile với token thật: farmer qua web nhận 403, qua mobile vào bình thường. Người phụ trách xác nhận app mobile đăng nhập bình thường trên thiết bị thật.
 - R2: baseline sinh từ chính schema Hibernate; Hibernate `validate` trong test và trong ứng dụng chạy thật xác nhận entity khớp schema.
 - R3: ghép tên chạy trên dữ liệu thử có tên viết hoa khác nhau, kết quả đúng; hộ chưa có tài khoản được admin gắn tay qua `PATCH .../account`.
 - R4: kịch bản E2E của phase 1 vẫn đúng nếu dùng token farmer để gửi báo cáo; seed và test dùng token admin/engineer để tạo thửa phải đổi.

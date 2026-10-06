@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Đã code, chờ CI GitHub (T2-06/T2-08 trên thiết bị thật còn lại) |
+| Trạng thái | Xong (CI GitHub xanh, mobile đăng nhập bình thường) |
 | Mức độ | Nghiêm trọng |
 | Nhóm ưu tiên | A |
 | Ước lượng | 4-5 ngày |

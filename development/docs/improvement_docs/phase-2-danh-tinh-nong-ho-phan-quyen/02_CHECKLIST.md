@@ -77,7 +77,7 @@ Kết quả đầu ra: farmer đăng nhập web/Superset không gọi được A
 
 - [x] WP2-03-TEST-01 Farmer đăng nhập web, gọi API nghiệp vụ bất kỳ → bị chặn ở FE, và 401/403 nếu vẫn gọi trực tiếp (T2-06).
 - [x] WP2-03-TEST-02 Token thiếu `aud` hợp lệ gọi API → 401 (T2-07).
-- [ ] WP2-03-TEST-03 Mobile vẫn đăng nhập và gọi API bình thường sau khi bật `aud` (T2-08, hồi quy).
+- [x] WP2-03-TEST-03 Mobile vẫn đăng nhập và gọi API bình thường sau khi bật `aud` (T2-08, hồi quy).
 
 ## WP2-04: Audit theo id người dùng và xóa mềm
 
@@ -126,5 +126,5 @@ Kết quả đầu ra: admin tạo được 1 hộ + 1 tài khoản FARMER qua A
 - [x] `.env.example`, seed, migration chạy được trên clone sạch.
 - [x] Không có secret, mật khẩu hay dữ liệu thật trong diff.
 - [x] README, CHANGELOG cập nhật (chỉ trạng thái cuối).
-- [x] Mọi tiêu chí ở `00_OVERVIEW.md` mục 6 đã đạt và có bằng chứng (riêng đăng nhập app mobile trên điện thoại thật chưa chạy).
+- [x] Mọi tiêu chí ở `00_OVERVIEW.md` mục 6 đã đạt và có bằng chứng (đăng nhập app mobile đã được người phụ trách xác nhận trên thiết bị).
 - [x] Cập nhật trạng thái phase ở `improvement_docs/README.md`.

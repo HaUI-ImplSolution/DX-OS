@@ -139,7 +139,7 @@ export default function App() {
 
   const updateDiagnosisInReport = (diagnosis: Diagnosis) => {
     setReports((prev) =>
-      prev.map((r) => (r.id === diagnosis.diseaseReportId ? { ...r, diagnosis } : r)),
+      prev.map((r) => (r.id === diagnosis.diseaseReportId ? { ...r, diagnosis, status: "PROCESSED" } : r)),
     );
   };
 
@@ -280,6 +280,7 @@ export default function App() {
 
           {selectedReport && (
             <DiagnosisPanel
+              onReportUpdated={(updated) => setReports((items) => items.map((item) => item.id === updated.id ? updated : item))}
               report={selectedReport}
               diseases={diseases}
               currentRole={user.role}

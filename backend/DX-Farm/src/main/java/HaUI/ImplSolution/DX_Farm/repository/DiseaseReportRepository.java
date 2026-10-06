@@ -13,4 +13,8 @@ public interface DiseaseReportRepository extends JpaRepository<DiseaseReport, Lo
   List<DiseaseReport> findByCropSeasonIdOrderByIdAsc(Long cropSeasonId);
 
   Optional<DiseaseReport> findByClientRequestId(UUID clientRequestId);
+
+  List<DiseaseReport> findByRetakeOfIdAndDeletedAtIsNullOrderByIdAsc(Long reportId);
+
+  List<DiseaseReport> findByRetakeOfIdInAndDeletedAtIsNullOrderByIdAsc(List<Long> reportIds);
 }

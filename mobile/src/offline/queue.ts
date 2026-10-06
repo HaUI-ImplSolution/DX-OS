@@ -10,6 +10,7 @@ export interface QueueItem {
   id: string;
   username: string;
   cropSeasonId: number;
+  retakeOf?: number;
   parcelCode: string | null;
   // Photo copied into the app's document directory.
   uri: string;

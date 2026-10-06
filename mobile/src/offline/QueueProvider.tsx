@@ -28,6 +28,7 @@ const MAX_DELAY_MS = 300_000;
 interface EnqueueInput {
   id: string;
   cropSeasonId: number;
+  retakeOf?: number;
   parcelCode: string | null;
   uri: string;
 }
@@ -103,6 +104,7 @@ export function QueueProvider({ children }: { children: ReactNode }) {
               { uri: next.uri, name: "report.jpg", type: "image/jpeg" },
               undefined,
               next.id,
+              next.retakeOf,
             );
             deleteQueuedPhoto(next.uri);
             commit(itemsRef.current.filter((item) => item.id !== next.id));
@@ -178,6 +180,7 @@ export function QueueProvider({ children }: { children: ReactNode }) {
         id: input.id,
         username,
         cropSeasonId: input.cropSeasonId,
+        retakeOf: input.retakeOf,
         parcelCode: input.parcelCode,
         uri: storeQueuedPhoto(input.id, input.uri),
         createdAt: new Date().toISOString(),

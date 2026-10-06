@@ -3,6 +3,16 @@
 Nhật ký thay đổi của DX-Farm, theo từng module.
 Định dạng dựa trên [Keep a Changelog](https://keepachangelog.com/).
 
+## Phase 6 — 2026-10-06
+
+- Precheck ảnh JPEG/PNG qua Backend/AI, kiểm kích thước, độ nét, độ sáng và kiểm lại khi nộp; Mobile có kiểm nhẹ và chặn ảnh bị từ chối.
+- Báo cáo có `NEEDS_RETAKE` riêng, lý do và chuỗi ảnh thay thế; `retakeOf` được giữ trong hàng đợi offline.
+- Gọi AI ngoài transaction DB; giữ lịch sử chẩn đoán, lấy id mới nhất, bảo vệ kết quả trước các thao tác đồng thời và giữ khóa PHI của lần phun cũ.
+- Gợi ý bệnh từ triệu chứng qua RAG, có bằng chứng/nguồn và giới hạn mã theo danh mục; thiếu treatment rule vẫn ghi nhận chẩn đoán chờ khuyến nghị.
+- Flyway V5 thêm chất lượng ảnh, retake và `training_labels`; web có màn triệu chứng, yêu cầu ảnh mới, chẩn đoán lại và lịch sử.
+- Tích hợp workflow duyệt của Phase 3: chẩn đoán lại đóng hồ sơ chờ duyệt cũ và tạo hồ sơ mới, giữ nguyên lịch sử.
+- Giữ ngưỡng confidence 0.70 theo quyết định của người dùng; bỏ phần dataset, công cụ tính chỉ số và báo cáo đánh giá AI khỏi phạm vi Phase 6.
+
 ## Backend (Spring Boot — `backend/DX-Farm`)
 
 ### 2026-10-06

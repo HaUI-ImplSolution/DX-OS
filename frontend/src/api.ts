@@ -108,3 +108,10 @@ export const applyDiagnosis = (reportId: number, payload: DiagnosisApplyRequest)
 export const listDiseases = () => request<Disease[]>("/diseases");
 export const listPesticides = () => request<Pesticide[]>("/pesticides");
 export const listTreatmentRules = () => request<TreatmentRule[]>("/treatment-rules");
+
+export const suggestDiagnosis = (reportId: number, symptomText: string) =>
+  request<import("./types").SymptomSuggestion[]>(`/disease-reports/${reportId}/diagnosis/suggest`, json("POST", { symptomText }));
+export const requestReportRetake = (reportId: number, reason: string) =>
+  request<DiseaseReport>(`/disease-reports/${reportId}/request-retake`, json("PATCH", { reason }));
+export const diagnosisHistory = (reportId: number) =>
+  request<Diagnosis[]>(`/disease-reports/${reportId}/diagnosis/history`);

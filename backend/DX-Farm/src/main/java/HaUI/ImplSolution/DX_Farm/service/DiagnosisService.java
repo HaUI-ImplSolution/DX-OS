@@ -4,14 +4,15 @@ import HaUI.ImplSolution.DX_Farm.core.storage.StorageService;
 import HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowActor;
 import HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowService;
 import HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowStatus;
-import HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseRequest;
 import HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseRequest.FieldContext;
 import HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseRequest.RecentTreatment;
+import HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseRequest;
 import HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseResponse;
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisApplyRequest;
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisCreateRequest;
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisRejectRequest;
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisResponse;
+import HaUI.ImplSolution.DX_Farm.dto.SymptomSuggestionResponse;
 import HaUI.ImplSolution.DX_Farm.dto.TreatmentApplicationResponse;
 import HaUI.ImplSolution.DX_Farm.event.DiagnosisPendingEvent;
 import HaUI.ImplSolution.DX_Farm.exception.InvalidStateException;
@@ -19,15 +20,21 @@ import HaUI.ImplSolution.DX_Farm.exception.PokaYokeViolationException;
 import HaUI.ImplSolution.DX_Farm.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.DX_Farm.model.ApprovalStatus;
 import HaUI.ImplSolution.DX_Farm.model.CropSeason;
+import HaUI.ImplSolution.DX_Farm.model.CropSeasonStatus;
 import HaUI.ImplSolution.DX_Farm.model.Diagnosis;
 import HaUI.ImplSolution.DX_Farm.model.Disease;
 import HaUI.ImplSolution.DX_Farm.model.DiseaseReport;
+import HaUI.ImplSolution.DX_Farm.model.DiseaseReportStatus;
+import HaUI.ImplSolution.DX_Farm.model.TrainingLabel;
 import HaUI.ImplSolution.DX_Farm.model.TreatmentApplication;
 import HaUI.ImplSolution.DX_Farm.model.TreatmentRule;
 import HaUI.ImplSolution.DX_Farm.repository.DiagnosisRepository;
-import HaUI.ImplSolution.DX_Farm.repository.DiseaseRepository;
 import HaUI.ImplSolution.DX_Farm.repository.DiseaseReportRepository;
+import HaUI.ImplSolution.DX_Farm.repository.DiseaseRepository;
+import HaUI.ImplSolution.DX_Farm.repository.TrainingLabelRepository;
 import HaUI.ImplSolution.DX_Farm.repository.TreatmentApplicationRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Clock;
@@ -36,12 +43,13 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.LockModeType;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
 @Transactional(readOnly = true)
@@ -67,6 +75,9 @@ public class DiagnosisService {
   private final StorageService storageService;
   private final Clock clock;
   private final EntityManager entityManager;
+  private final TransactionTemplate readTransaction;
+  private final TransactionTemplate writeTransaction;
+  private final TrainingLabelRepository trainingLabelRepository;
 
   public DiagnosisService(DiagnosisRepository diagnosisRepository,
       DiseaseReportRepository diseaseReportRepository, DiseaseRepository diseaseRepository,
@@ -74,7 +85,9 @@ public class DiagnosisService {
       TreatmentApplicationRepository treatmentApplicationRepository,
       CurrentUserService currentUserService, WorkflowService workflowService,
       AiDiagnosisClient aiDiagnosisClient, ApplicationEventPublisher eventPublisher,
-      StorageService storageService, Clock clock, EntityManager entityManager) {
+      StorageService storageService, Clock clock, EntityManager entityManager,
+      PlatformTransactionManager transactionManager,
+      TrainingLabelRepository trainingLabelRepository) {
     this.diagnosisRepository = diagnosisRepository;
     this.diseaseReportRepository = diseaseReportRepository;
     this.diseaseRepository = diseaseRepository;
@@ -87,25 +100,49 @@ public class DiagnosisService {
     this.storageService = storageService;
     this.clock = clock;
     this.entityManager = entityManager;
+    this.readTransaction = new TransactionTemplate(transactionManager);
+    this.readTransaction.setReadOnly(true);
+    this.writeTransaction = new TransactionTemplate(transactionManager);
+    this.trainingLabelRepository = trainingLabelRepository;
   }
 
-  // Gọi AI Service theo contract POST /api/v1/diagnose và trả nguyên response - chưa lưu
-  // Diagnosis ở đây, xem createFromAi() cho bước đối chiếu version rule rồi lưu.
+  @Transactional(propagation = Propagation.NOT_SUPPORTED)
   public AiDiagnoseResponse requestAiDiagnosis(Long reportId) {
-    DiseaseReport report = findActiveReportOrThrow(reportId);
-    return aiDiagnosisClient.diagnose(buildAiDiagnoseRequest(report));
+    PreparedDiagnosis prepared = prepareDiagnosis(reportId);
+    return aiDiagnosisClient.diagnose(prepared.request());
   }
 
-  // Gọi AI, đối chiếu version của rule AI dùng với treatment_rules hiện tại rồi mới lưu
-  // Diagnosis - rule đã đổi trong lúc AI xử lý thì từ chối, không lưu recommendation cũ.
-  @Transactional
+  @Transactional(propagation = Propagation.NOT_SUPPORTED)
   public DiagnosisResponse createFromAi(Long reportId) {
-    DiseaseReport report = findActiveReportOrThrow(reportId);
-    if (diagnosisRepository.findByDiseaseReportId(reportId).isPresent()) {
-      throw new InvalidStateException("Disease report already has a diagnosis: " + reportId);
-    }
+    PreparedDiagnosis prepared = prepareDiagnosis(reportId);
+    AiDiagnoseResponse response = aiDiagnosisClient.diagnose(prepared.request());
+    return writeTransaction
+        .execute(status -> saveAiDiagnosis(reportId, prepared.latestId(), response));
+  }
 
-    AiDiagnoseResponse aiResponse = aiDiagnosisClient.diagnose(buildAiDiagnoseRequest(report));
+  private PreparedDiagnosis prepareDiagnosis(Long reportId) {
+    return readTransaction.execute(status -> {
+      DiseaseReport report = findActiveReportOrThrow(reportId);
+      requireUsableReport(report);
+      Long latestId = diagnosisRepository.findTopByDiseaseReportIdOrderByIdDesc(reportId)
+          .map(Diagnosis::getId).orElse(null);
+      return new PreparedDiagnosis(buildAiDiagnoseRequest(report), latestId);
+    });
+  }
+
+  private record PreparedDiagnosis(AiDiagnoseRequest request, Long latestId) {}
+
+  private DiagnosisResponse saveAiDiagnosis(Long reportId, Long previousId,
+      AiDiagnoseResponse aiResponse) {
+    DiseaseReport report = findActiveReportOrThrow(reportId);
+    entityManager.lock(report, LockModeType.PESSIMISTIC_WRITE);
+    requireUsableReport(report);
+    Long latestId = diagnosisRepository.findTopByDiseaseReportIdOrderByIdDesc(reportId)
+        .map(Diagnosis::getId).orElse(null);
+    if (!Objects.equals(previousId, latestId)) {
+      throw new InvalidStateException(
+          "Diagnosis changed while AI was processing; reload and retry");
+    }
     AiDiagnoseResponse.CvResult cvResult = aiResponse.cvResult();
     String diseaseCode = cvResult.diseaseCode();
 
@@ -174,24 +211,61 @@ public class DiagnosisService {
   @Transactional
   public DiagnosisResponse create(Long reportId, DiagnosisCreateRequest request) {
     DiseaseReport report = findActiveReportOrThrow(reportId);
-    if (diagnosisRepository.findByDiseaseReportId(reportId).isPresent()) {
-      throw new InvalidStateException("Disease report already has a diagnosis: " + reportId);
-    }
+    entityManager.lock(report, LockModeType.PESSIMISTIC_WRITE);
+    requireUsableReport(report);
+    Diagnosis previous =
+        diagnosisRepository.findTopByDiseaseReportIdOrderByIdDesc(reportId).orElse(null);
 
     Disease disease = diseaseRepository.findByCodeAndActiveTrue(request.diseaseCode()).orElseThrow(
         () -> new ResourceNotFoundException("Unknown disease code: " + request.diseaseCode()));
-    TreatmentRule rule = treatmentRuleService.findByDiseaseCodeOrThrow(request.diseaseCode());
+    TreatmentRule rule = treatmentRuleService.findByDiseaseCode(request.diseaseCode()).orElse(null);
 
     Diagnosis diagnosis = Diagnosis.builder().diseaseReport(report).disease(disease)
         .confidence(request.confidence()).modelVersion(request.modelVersion()).treatmentRule(rule)
-        .recommendationText(buildRecommendation(report, disease, rule, request.confidence()))
+        .recommendationText(rule == null
+            ? "Chờ khuyến nghị: chưa có quy tắc điều trị được duyệt. Cần kỹ sư đánh giá chuyên sâu."
+            : buildRecommendation(report, disease, rule, request.confidence()))
         .approvalStatus(ApprovalStatus.PENDING).build();
-    return savePending(diagnosis);
+    DiagnosisResponse response = savePending(diagnosis);
+    saveLabel(diagnosis, previous, request.symptomText());
+    return response;
+  }
+
+  private void saveLabel(Diagnosis diagnosis, Diagnosis source, String symptomText) {
+    if (!trainingLabelRepository.existsByDiagnosisId(diagnosis.getId())) {
+      trainingLabelRepository.save(TrainingLabel.builder()
+          .diseaseReport(diagnosis.getDiseaseReport()).diagnosis(diagnosis).sourceDiagnosis(source)
+          .symptomText(symptomText).diseaseCode(diagnosis.getDisease().getCode())
+          .engineerUserId(currentUserService.currentUserId()).labeledAt(clock.instant()).build());
+    }
+  }
+
+  @Transactional(propagation = Propagation.NOT_SUPPORTED)
+  public List<SymptomSuggestionResponse> suggest(Long reportId, String symptomText) {
+    readTransaction.executeWithoutResult(status -> findActiveReportOrThrow(reportId));
+    List<SymptomSuggestionResponse> suggestions = aiDiagnosisClient.suggest(symptomText);
+    return readTransaction.execute(status -> suggestions.stream()
+        .filter(item -> diseaseRepository.findByCodeAndActiveTrue(item.diseaseCode()).isPresent())
+        .toList());
+  }
+
+  public List<DiagnosisResponse> history(Long reportId) {
+    findActiveReportOrThrow(reportId);
+    return diagnosisRepository.findByDiseaseReportIdOrderByIdDesc(reportId).stream()
+        .map(DiagnosisService::toResponse).toList();
   }
 
   // Stores a PENDING diagnosis and announces it once the transaction commits.
   private DiagnosisResponse savePending(Diagnosis diagnosis) {
-    Diagnosis saved = diagnosisRepository.save(diagnosis);
+    Diagnosis previous = diagnosisRepository
+        .findTopByDiseaseReportIdOrderByIdDesc(diagnosis.getDiseaseReport().getId()).orElse(null);
+    if (previous != null && previous.getApprovalStatus() == ApprovalStatus.PENDING) {
+      workflowService.recordTransition(CASE_TYPE, ENTITY_TYPE, previous.getId(),
+          WorkflowStatus.CANCELLED, currentActor(), "Superseded by a new diagnosis", null);
+    }
+    Diagnosis saved = diagnosisRepository.saveAndFlush(diagnosis);
+    saved.getDiseaseReport().setStatus(DiseaseReportStatus.PROCESSED);
+    diseaseReportRepository.save(saved.getDiseaseReport());
     workflowService.createCase(CASE_TYPE, ENTITY_TYPE, saved.getId(), currentActor());
     DiseaseReport report = saved.getDiseaseReport();
     Disease disease = saved.getDisease();
@@ -205,7 +279,9 @@ public class DiagnosisService {
   public DiagnosisResponse approve(Long reportId) {
     Diagnosis diagnosis = findByReportIdOrThrow(reportId);
     requirePending(diagnosis);
+    requireUsableReport(diagnosis.getDiseaseReport());
     diagnosis.setApprovalStatus(ApprovalStatus.APPROVED);
+    saveLabel(diagnosis, diagnosis, null);
     diagnosis.setDecidedBy(currentUserService.currentFullName());
     diagnosis.setDecidedByUserId(currentUserService.currentUserId());
     diagnosis.setDecidedAt(Instant.now(clock));
@@ -258,6 +334,7 @@ public class DiagnosisService {
     }
     LocalDate appliedAt = resolveAppliedAt(request.appliedAt());
     CropSeason season = diagnosis.getDiseaseReport().getCropSeason();
+    requireUsableReport(diagnosis.getDiseaseReport());
     // Bumps the season version so a concurrent harvest cannot slip past this new isolation lock.
     entityManager.lock(season, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
     TreatmentApplication application = TreatmentApplication.builder().cropSeason(season)
@@ -298,9 +375,19 @@ public class DiagnosisService {
   }
 
   private Diagnosis findByReportIdOrThrow(Long reportId) {
-    findActiveReportOrThrow(reportId);
-    return diagnosisRepository.findByDiseaseReportId(reportId).orElseThrow(
+    DiseaseReport report = findActiveReportOrThrow(reportId);
+    entityManager.lock(report, LockModeType.PESSIMISTIC_WRITE);
+    return diagnosisRepository.findTopByDiseaseReportIdOrderByIdDesc(reportId).orElseThrow(
         () -> new ResourceNotFoundException("Diagnosis not found for report: " + reportId));
+  }
+
+  private static void requireUsableReport(DiseaseReport report) {
+    if (report.getStatus() == DiseaseReportStatus.NEEDS_RETAKE) {
+      throw new InvalidStateException("Report needs a new photo: " + report.getId());
+    }
+    if (report.getCropSeason().getStatus() != CropSeasonStatus.ACTIVE) {
+      throw new InvalidStateException("Crop season is not active");
+    }
   }
 
   private static void requirePending(Diagnosis diagnosis) {

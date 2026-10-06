@@ -23,6 +23,10 @@ public class TreatmentRuleService {
         .map(TreatmentRuleService::toResponse).toList();
   }
 
+  public java.util.Optional<TreatmentRule> findByDiseaseCode(String code) {
+    return treatmentRuleRepository.findFirstByDisease_CodeAndActiveTrueOrderByIdAsc(code);
+  }
+
   public TreatmentRule findByDiseaseCodeOrThrow(String diseaseCode) {
     return treatmentRuleRepository.findFirstByDisease_CodeAndActiveTrueOrderByIdAsc(diseaseCode)
         .orElseThrow(() -> new ResourceNotFoundException(

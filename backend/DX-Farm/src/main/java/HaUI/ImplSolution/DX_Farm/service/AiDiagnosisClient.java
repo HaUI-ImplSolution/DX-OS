@@ -1,16 +1,21 @@
 package HaUI.ImplSolution.DX_Farm.service;
 
-import HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseRequest;
+import HaUI.ImplSolution.DX_Farm.dto.*;
 import HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseResponse;
 import HaUI.ImplSolution.DX_Farm.exception.AiServiceException;
 import HaUI.ImplSolution.DX_Farm.exception.AiTriageException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import java.net.http.HttpClient;
 import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -57,6 +62,43 @@ public class AiDiagnosisClient {
       throw new AiServiceException("AI diagnose call failed: " + e.getMessage(), e);
     } catch (RestClientException e) {
       throw new AiServiceException("AI diagnose call failed: " + e.getMessage(), e);
+    }
+  }
+
+  public ImagePrecheckResponse precheck(byte[] image) {
+    var parts = new LinkedMultiValueMap<String, Object>();
+    parts.add("image", new ByteArrayResource(image) {
+      @Override
+      public String getFilename() {
+        return "image." + ((image[0] & 0xFF) == 0xFF ? "jpg" : "png");
+      }
+    });
+    try {
+      ImagePrecheckResponse response = restClient.post().uri("/api/v1/disease/precheck")
+          .contentType(MediaType.MULTIPART_FORM_DATA).body(parts).retrieve()
+          .body(ImagePrecheckResponse.class);
+      if (response == null)
+        throw new AiServiceException("Empty precheck response", null);
+      return response;
+    } catch (RestClientResponseException e) {
+      if (java.util.Set.of(400, 413, 422).contains(e.getStatusCode().value()))
+        throw new AiTriageException(readTriageMessage(e), e);
+      throw new AiServiceException("AI precheck unavailable", e);
+    } catch (RestClientException e) {
+      throw new AiServiceException("AI precheck unavailable", e);
+    }
+  }
+
+  public List<SymptomSuggestionResponse> suggest(String symptomText) {
+    try {
+      var response = restClient.post().uri("/api/v1/disease/symptoms/suggest")
+          .body(Map.of("symptom_text", symptomText, "top_k", 6)).retrieve()
+          .body(new ParameterizedTypeReference<List<SymptomSuggestionResponse>>() {});
+      if (response == null)
+        throw new AiServiceException("Empty suggestions response", null);
+      return response;
+    } catch (RestClientException e) {
+      throw new AiServiceException("AI suggestions unavailable", e);
     }
   }
 

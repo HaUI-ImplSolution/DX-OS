@@ -41,10 +41,11 @@ Ngoài Expo Go, có thể build APK bằng EAS mà không cần cài Android Stu
   | `null` | Chờ chẩn đoán | Ảnh và thời điểm gửi |
   | `PENDING` | Chờ kỹ sư duyệt | Chỉ trạng thái |
   | `APPROVED` | Đã duyệt | Bệnh, khuyến nghị, thuốc, liều, số ngày cách ly |
-  | `REJECTED` | Cần chụp lại | Lý do từ chối và nút "Chụp lại" |
+  | `REJECTED` | Khuyến nghị bị từ chối | Lý do từ chối |
+  | Báo cáo `NEEDS_RETAKE` | Cần chụp lại | Lý do và nút chụp ảnh thay thế |
 
 - **Banner cách ly**: hiển thị khi `IsolationStatus.isolated` là `true`, kèm số ngày còn lại và ngày hết cách ly.
-- **Ảnh báo cáo**: tải từ `${EXPO_PUBLIC_API_BASE_URL}/uploads/{imageRef}`.
+- **Ảnh báo cáo**: tải từ `imageUrl` do Backend trả về; đây là URL MinIO có thời hạn qua gateway.
 - **HTTP cleartext**: `app.config.ts` cho phép HTTP thường (Android `usesCleartextTraffic`, iOS ATS) ở mọi profile EAS trừ `production`, để dev và preview gọi được Backend qua IP LAN.
 
 ## Cấu trúc thư mục
@@ -194,7 +195,7 @@ npx expo export --platform android
 | Trang đăng nhập Keycloak không tải, hoặc đăng nhập xong bị chuyển về `localhost` và Safari không mở được | `EXPO_PUBLIC_KEYCLOAK_URL` trong `.env` đang là `localhost` hoặc sai IP; đặt IP LAN của máy dev rồi chạy `npm start -- -c` |
 | "Không kết nối được. Kiểm tra mạng rồi thử lại." | Điện thoại không tới được Backend: sai IP trong `.env`, khác mạng WiFi hoặc firewall chặn cổng `9080` |
 | Danh sách thửa trống | `farmerName` của thửa không khớp tên trong token |
-| Ảnh báo cáo không hiển thị | Đường dẫn `/uploads/...` không truy cập được từ điện thoại; kiểm tra `EXPO_PUBLIC_API_BASE_URL` |
+| Ảnh báo cáo không hiển thị | Gateway trong `imageUrl` không truy cập được từ điện thoại hoặc link đã hết hạn; kiểm tra IP LAN và tải lại báo cáo |
 | Ảnh nằm mãi ở "Chờ gửi" | Chưa có mạng tới Backend hoặc đang chờ khoảng thử lại; đưa app về foreground để gửi ngay |
 | Ảnh ở trạng thái "Lỗi" | Backend từ chối ảnh (ví dụ sai định dạng, quá lớn hoặc vụ mùa không còn thuộc tài khoản); đọc thông báo dưới ảnh rồi xoá và chụp lại |
 | Đổi `.env` nhưng app vẫn dùng giá trị cũ | Chạy lại `npm start -- -c` |
@@ -203,3 +204,12 @@ npx expo export --platform android
 
 - Push notification khi kỹ sư duyệt hoặc từ chối báo cáo.
 - Icon và splash vẫn là ảnh mặc định của Expo.
+
+## Phase 6
+
+Trước khi gửi ảnh, app kiểm mỗi chiều từ 160px, dung lượng không quá 10 MiB và độ sáng từ thumbnail.
+Precheck qua Backend kiểm thêm độ nét; ảnh không đạt phải chụp lại.
+Khi offline, app giữ ảnh trong hàng đợi và Backend kiểm chất lượng khi gửi; ảnh bị từ chối không tạo báo cáo.
+Yêu cầu chụp lại theo `DiseaseReport.status=NEEDS_RETAKE`; quyết định `Diagnosis.REJECTED` chỉ có nghĩa khuyến nghị bị từ chối.
+Ảnh thay thế giữ `retakeOf` cả trong hàng đợi offline; màn chi tiết có liên kết xem chuỗi ảnh.
+Thư viện `jpeg-js` chỉ đọc JPEG thumbnail để tính độ sáng, không chạy nhận diện bệnh.

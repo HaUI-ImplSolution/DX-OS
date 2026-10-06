@@ -4,6 +4,7 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 
 // @formatter:off
@@ -20,5 +21,11 @@ public record DiagnosisCreateRequest(
 
   // Phiên bản model AI đã dùng để chẩn đoán
   @NotBlank
-  String modelVersion
-){}
+  String modelVersion,
+
+  @Size(max = 4000) String symptomText
+){
+  public DiagnosisCreateRequest(String diseaseCode, BigDecimal confidence, String modelVersion) {
+    this(diseaseCode, confidence, modelVersion, null);
+  }
+}

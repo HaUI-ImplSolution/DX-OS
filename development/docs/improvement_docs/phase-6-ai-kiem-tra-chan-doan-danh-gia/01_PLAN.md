@@ -9,8 +9,7 @@ Thứ tự làm: Spec → Swagger → Code.
 WP6-05 (gọi AI ngoài transaction) nên làm trước vì nó chạm vào đường gọi AI dùng chung cho mọi WP khác.
 WP6-01 (precheck), WP6-03 (trạng thái cần chụp lại) độc lập, làm song song được sau WP6-05.
 WP6-04 (nhập triệu chứng qua RAG) độc lập về code, có thể làm bất kỳ lúc nào.
-WP6-06 (báo cáo đánh giá AI) nên làm cuối vì cần số liệu từ các WP khác (ngưỡng, giới hạn) để viết đầy đủ.
-Thứ tự: WP6-05 → (WP6-01 ∥ WP6-03 ∥ WP6-04) → WP6-06.
+Thứ tự: WP6-05 → (WP6-01 ∥ WP6-03 ∥ WP6-04).
 
 ## WP6-05: Gọi AI ngoài transaction, cho phép chẩn đoán lại
 
@@ -169,41 +168,6 @@ Thứ tự: WP6-05 → (WP6-01 ∥ WP6-03 ∥ WP6-04) → WP6-06.
 
 **Phụ thuộc, lưu ý**: tái dùng `RAGRetriever` đã có ở AI service, không viết retriever mới; không phụ thuộc WP khác về code.
 
-## WP6-06: Báo cáo đánh giá AI
-
-- Mục tham chiếu: mục 11 của `PROJECT_IMPROVEMENTS.md`.
-- Mục tiêu: có bằng chứng đánh giá AI đúng yêu cầu đề (test set độc lập, chỉ số theo lớp, confusion matrix, phân tích lỗi, giới hạn).
-- Ước lượng: S-M (chủ yếu viết tài liệu, phụ thuộc có bộ ảnh test — Q2).
-
-**Hiện trạng đã rà soát**
-
-- Hiện có validation metrics từ lúc huấn luyện, chưa có test set độc lập, chỉ số theo từng lớp, confusion matrix, phân tích lỗi điển hình (theo `PROJECT_IMPROVEMENTS.md` mục 11).
-- AI hiện có CV (YOLOv8n), RAG, LLM (Qwen2.5-1.5B) — cần ghi rõ tên, phiên bản, giấy phép, dữ liệu đầu vào, giới hạn.
-
-**Hành vi thay đổi**
-
-Không áp dụng — đây là việc viết tài liệu dựa trên đo đạc thật, không đổi hành vi hệ thống.
-
-**Hướng làm**
-
-- Thu/dùng bộ ảnh test độc lập (theo Q2) — không trùng với ảnh đã dùng huấn luyện.
-- Chạy `predict(...)` trên bộ ảnh test, tính chỉ số theo từng lớp (precision/recall/F1), vẽ confusion matrix, liệt kê vài trường hợp false positive/false negative điển hình kèm ảnh minh hoạ.
-- Viết báo cáo ngắn: tên mô hình/công cụ (YOLOv8n, phiên bản Ultralytics, AGPL-3.0), RAG (nguồn, 9 tài liệu), LLM (Qwen2.5-1.5B, giấy phép), dữ liệu đầu vào (dataset CC BY 4.0), giới hạn (5 lớp cố định, không có lớp "khác"), ngưỡng chuyển người xem (`0.70`, xem lại theo Q1 sau khi có số liệu thật).
-- Lưu file báo cáo trong `development/docs/` hoặc trực tiếp trong báo cáo kỹ thuật P8 (tránh viết 2 lần).
-
-**Phạm vi ảnh hưởng**
-
-- Module và file chính: không đổi code; file báo cáo mới (`.md` hoặc phần trong báo cáo kỹ thuật P8).
-- Endpoint, bảng DB, biến môi trường: không có.
-- Role và client bị ảnh hưởng: không ảnh hưởng runtime.
-- Tương thích ngược và dữ liệu cũ: không áp dụng.
-
-**Kết quả đầu ra**
-
-- File báo cáo đánh giá AI tồn tại, có đủ: tên/phiên bản/giấy phép, dữ liệu, chỉ số theo lớp, confusion matrix, false positive/negative điển hình, giới hạn, ngưỡng chuyển người xem có căn cứ.
-
-**Phụ thuộc, lưu ý**: cần Q2 (bộ ảnh test) có sẵn trước khi đo; nên làm sau các WP khác trong phase để số liệu phản ánh đúng hệ thống đã cập nhật (precheck, trạng thái mới).
-
 ## Thay đổi hợp đồng (API, schema, cấu hình)
 
 | Loại | Đối tượng | Thay đổi | Phá tương thích? |
@@ -227,5 +191,13 @@ Không áp dụng — đây là việc viết tài liệu dựa trên đo đạc
 | # | Quyết định | Lý do ngắn |
 |---|---|---|
 | D7 (kế thừa phase 0) | Giữ 5 bệnh lá, thêm đường nhập triệu chứng | Xem `phase-0-chot-quyet-dinh-pham-vi/01_PLAN.md` |
-| Q1 | _(chưa chốt — chờ kết quả đo ở WP6-06)_ | |
-| Q2 | _(chưa chốt — cần người đi thu ảnh thật ngoài ruộng)_ | |
+| Q1 | Giữ ngưỡng confidence `0.70` | Người dùng xác nhận ngày 06/10/2026 |
+
+## Hợp đồng đã triển khai
+
+[05_IMPLEMENTATION.md](./05_IMPLEMENTATION.md) ghi endpoint/schema chính xác.
+Chẩn đoán hiện hành chọn theo `id DESC`, không thêm cột `isLatest` và không phụ thuộc timestamp khác nhau.
+`training_labels` thuộc Backend; `sourceDiagnosis` tham chiếu kết quả trước để đối chiếu với quyết định kỹ sư.
+Precheck AI dùng `/api/v1/disease/precheck`; Backend gửi ảnh đã bỏ EXIF/GPS.
+Danh sách báo cáo tải chẩn đoán hiện hành theo nhóm.
+Phần dataset và báo cáo chỉ số đánh giá AI được bỏ khỏi phạm vi theo yêu cầu của người dùng ngày 06/10/2026.

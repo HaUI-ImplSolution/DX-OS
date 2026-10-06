@@ -71,7 +71,7 @@ class WorkflowMigrationTest {
       }
     }
 
-    flyway("latest").migrate();
+    flyway("4").migrate();
 
     try (Connection connection = connect(); Statement statement = connection.createStatement()) {
       assertThat(column(statement,
@@ -84,6 +84,18 @@ class WorkflowMigrationTest {
           .containsExactly("APPROVED:eng-1:-", "REJECTED:eng-2:Blurry");
       assertThat(column(statement, "SELECT count(*) FROM workflow_case WHERE status = 'PENDING'"
           + " AND case_type = 'DIAGNOSIS_APPROVAL'")).containsExactly("1");
+    }
+
+    flyway("latest").migrate();
+
+    try (Connection connection = connect(); Statement statement = connection.createStatement()) {
+      assertThat(column(statement,
+          "SELECT c.status || ':' || count(e.id) FROM workflow_case c JOIN workflow_event e"
+              + " ON e.workflow_case_id = c.id GROUP BY c.status ORDER BY c.status"))
+          .containsExactly("APPROVED:2", "PENDING:1", "REJECTED:2");
+      assertThat(column(statement,
+          "SELECT status || ':' || count(*) FROM disease_reports GROUP BY status"))
+          .containsExactly("PROCESSED:3");
     }
   }
 }

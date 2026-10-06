@@ -30,7 +30,7 @@ CV không chịu trách nhiệm:
 Ảnh lá lúa
   → API kiểm tra đây là ảnh và giới hạn dung lượng
   → PlantDiseaseService đọc ảnh RGB
-  → kiểm tra kích thước tối thiểu và độ sắc nét
+  → kiểm tra kích thước tối thiểu, độ sắc nét và độ sáng
   → YOLOv8n suy luận với kích thước ảnh 640
   → lọc bounding box theo confidence và IoU
   → chọn detection có confidence cao nhất
@@ -80,3 +80,18 @@ Checkpoint chỉ phát hiện 5 lớp bệnh lá lúa có trong `class_contract.
 Chất lượng kết quả ngoài điều kiện ảnh lá lúa hoặc ngoài năm lớp bệnh đã huấn luyện không được đảm bảo.
 
 Kết quả CV là tín hiệu chẩn đoán, không phải chỉ định canh tác. Các ràng buộc nghiệp vụ, thuốc, liều lượng, PHI và phê duyệt của kỹ sư luôn được xử lý ngoài module CV.
+
+## Precheck P6
+
+`POST /api/v1/disease/precheck` nhận ảnh multipart, yêu cầu `X-Service-Api-Key`, trả `passed`, `reasons`, `width`, `height`, `sharpness`, `brightness`.
+Endpoint dùng `inspect_image` chung với `predict`, không chạy YOLO và không cần model đã nạp.
+Ảnh quá nhỏ/mờ/tối/chói trả `passed=false`; tệp giả ảnh hoặc định dạng không hỗ trợ trả 400.
+Backend kiểm lại ảnh khi nộp báo cáo và chỉ lưu báo cáo đạt chuẩn.
+Mobile gọi qua Backend; dữ liệu EXIF/GPS được loại trước khi forward.
+
+Ngưỡng: mỗi chiều từ 160px, sharpness từ 10, brightness 20–245; ảnh tối đa 40 megapixel.
+Đây là kiểm tra chất lượng, không xác nhận ảnh có phải lúa.
+Fallback `Rice___healthy` confidence 0 được workflow chuyển người xem, không được coi là nhận diện healthy thành công.
+
+Ngưỡng confidence 0.70 được người dùng chốt ngày 06/10/2026.
+Chưa có số liệu thực địa độc lập để điều chỉnh ngưỡng 0.70.

@@ -152,3 +152,13 @@ Chạy từ thư mục `ai/`:
 - RAG chỉ tìm được kiến thức đã ingest và không thay thế structured facts từ Backend.
 - Ollama có thể fallback khi lỗi hoặc timeout, nhưng thiếu structured facts luôn làm lượt chẩn đoán thất bại.
 - `/predict` và `/knowledge/retrieve` là endpoint kỹ thuật; luồng nghiệp vụ chính đi qua Backend và `POST /api/v1/diagnose`.
+
+## API Phase 6
+
+- `POST /api/v1/disease/precheck`: multipart ảnh, kiểm kích thước/độ nét/độ sáng, không suy luận bệnh.
+- `POST /api/v1/disease/symptoms/suggest`: JSON `symptom_text`, `top_k` (1–6), xếp hạng mã bệnh chuẩn từ bằng chứng RAG.
+
+Cả hai endpoint yêu cầu `X-Service-Api-Key` và chỉ Backend gọi.
+Gợi ý trả `disease_code`, `disease_name`, `score`, `evidence`, `source_ids`; kỹ sư chọn bệnh, không tự động duyệt.
+Kết quả chẩn đoán và nhãn kỹ sư thuộc DB Backend, không ghi sang DB AI.
+Ngưỡng confidence giữ 0.70. Phần dataset và báo cáo chỉ số đánh giá AI được bỏ khỏi phạm vi Phase 6 theo yêu cầu của người dùng.

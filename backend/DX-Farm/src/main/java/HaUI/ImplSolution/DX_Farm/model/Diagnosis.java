@@ -10,7 +10,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.math.BigDecimal;
@@ -36,9 +35,9 @@ public class Diagnosis {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  // Báo cáo sự cố mà chẩn đoán này thuộc về (1-1)
-  @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "disease_report_id", nullable = false, unique = true)
+  // The report keeps every diagnosis; the highest id is the current one.
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "disease_report_id", nullable = false)
   private DiseaseReport diseaseReport;
 
   // Bệnh được chẩn đoán

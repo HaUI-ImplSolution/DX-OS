@@ -1,6 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   applyDiagnosis,
+  suggestDiagnosis,
+  requestReportRetake,
+  diagnosisHistory,
   approveDiagnosis,
   createAiDiagnosis,
   createDiagnosis,
@@ -13,11 +16,13 @@ import type {
   Role,
   TreatmentApplication,
   TreatmentRule,
+  SymptomSuggestion,
 } from "../types";
 import Badge from "./Badge";
 import Section from "./Section";
 
 interface DiagnosisPanelProps {
+  onReportUpdated: (report: DiseaseReport) => void;
   report: DiseaseReport;
   diseases: Disease[];
   currentRole: Role;
@@ -39,6 +44,16 @@ function CreateDiagnosisForm({
   const [diseaseCode, setDiseaseCode] = useState(diseases[0]?.code ?? "");
   const [confidence, setConfidence] = useState("0.92");
   const [modelVersion, setModelVersion] = useState("manual-input-v1");
+  const [symptomText, setSymptomText] = useState("");
+  const [suggestions, setSuggestions] = useState<SymptomSuggestion[]>([]);
+  const [suggesting, setSuggesting] = useState(false);
+  const suggest = async () => {
+    setSuggesting(true);
+    setSuggestions([]);
+    try { setSuggestions(await suggestDiagnosis(reportId, symptomText)); }
+    catch (err) { onError(err instanceof Error ? err.message : "Không tìm được gợi ý"); }
+    finally { setSuggesting(false); }
+  };
   const [submitting, setSubmitting] = useState(false);
   const [aiSubmitting, setAiSubmitting] = useState(false);
 
@@ -61,6 +76,7 @@ function CreateDiagnosisForm({
         diseaseCode,
         confidence: Number(confidence),
         modelVersion,
+        symptomText: symptomText.trim() || undefined,
       });
       onUpdated(diagnosis);
     } catch (err) {
@@ -85,7 +101,19 @@ function CreateDiagnosisForm({
           {aiSubmitting ? "AI đang chẩn đoán…" : "Chạy chẩn đoán AI"}
         </button>
       </div>
-      <p className="empty-hint">Hoặc nhập tay kết quả CV để kiểm thử nghiệp vụ:
+      <label className="field-label">Triệu chứng quan sát được
+        <textarea value={symptomText} maxLength={4000} onChange={(e) => { setSymptomText(e.target.value); setSuggestions([]); }} placeholder="Mô tả màu, hình dạng vết bệnh, vị trí và tình trạng cây…" />
+      </label>
+      <button type="button" className="btn" disabled={suggesting || !symptomText.trim()} onClick={() => void suggest()}>
+        {suggesting ? "Đang tra cứu…" : "Gợi ý bệnh từ tài liệu"}
+      </button>
+      <p className="empty-hint">Điểm tương đồng tài liệu chỉ hỗ trợ tra cứu. Kỹ sư chốt bệnh và độ tin cậy.</p>
+      {suggestions.map((item) => <div key={item.disease_code} className="banner">
+        <button type="button" className="btn" onClick={() => setDiseaseCode(item.disease_code)}>{item.disease_name} · tương đồng {item.score.toFixed(3)}</button>
+        <p>{item.evidence}</p><small>Nguồn: {item.source_ids.join(", ")}</small>
+      </div>)}
+      <p className="empty-hint">Chọn kết quả quan sát của kỹ sư:
+
       </p>
       <label className="field-label">
         Bệnh chẩn đoán
@@ -265,6 +293,7 @@ function ApplyTreatmentBox({
 }
 
 export default function DiagnosisPanel({
+  onReportUpdated,
   report,
   diseases,
   currentRole,
@@ -272,6 +301,27 @@ export default function DiagnosisPanel({
   onError,
 }: DiagnosisPanelProps) {
   const diagnosis = report.diagnosis;
+  const [retakeReason, setRetakeReason] = useState("");
+  const [retakeBusy, setRetakeBusy] = useState(false);
+  const [retakeRequested, setRetakeRequested] = useState(false);
+  const [history, setHistory] = useState<Diagnosis[]>([]);
+  useEffect(() => {
+    setRetakeRequested(false);
+    setRetakeReason("");
+    setHistory([]);
+    if (currentRole === "ENGINEER" || currentRole === "ADMIN") {
+      let cancelled = false;
+      diagnosisHistory(report.id).then((items) => { if (!cancelled) setHistory(items); }).catch(() => {});
+      return () => { cancelled = true; };
+    }
+  }, [report.id, diagnosis?.id, currentRole]);
+  const requestRetake = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setRetakeBusy(true);
+    try { onReportUpdated(await requestReportRetake(report.id, retakeReason)); setRetakeRequested(true); }
+    catch (err) { onError(err instanceof Error ? err.message : "Không yêu cầu chụp lại được"); }
+    finally { setRetakeBusy(false); }
+  };
   // Backend đã chặn cứng bằng @PreAuthorize - ẩn nút ở đây chỉ là defense-in-depth cho UX,
   // không phải điểm chặn thật (giống nguyên tắc poka-yoke 2 tầng đã áp dụng cho PHI).
   const canDecide = currentRole === "ENGINEER" || currentRole === "ADMIN";
@@ -282,7 +332,16 @@ export default function DiagnosisPanel({
       title="Chẩn đoán, duyệt & xử lý"
       subtitle="Tra cứu deterministic (M3) → diễn đạt khuyến nghị (M4) → kỹ sư duyệt (M5) → ghi nhận đã phun (M6)"
     >
-      {!diagnosis && canDecide && (
+      {report.status === "NEEDS_RETAKE" || retakeRequested ? <div className="banner banner-warning">Cần chụp lại: {retakeRequested ? retakeReason : report.retakeReason}</div> : null}
+      {canDecide && !retakeRequested && report.status !== "NEEDS_RETAKE" && (
+        <form className="inline-form" onSubmit={requestRetake}>
+          <label className="field-label">Ảnh không đủ để đánh giá — lý do cần chụp lại
+            <input required maxLength={1000} value={retakeReason} onChange={(e) => setRetakeReason(e.target.value)} />
+          </label>
+          <button className="btn" disabled={retakeBusy}>Yêu cầu ảnh mới</button>
+        </form>
+      )}
+      {canDecide && !retakeRequested && report.status !== "NEEDS_RETAKE" && (
         <CreateDiagnosisForm
           reportId={report.id}
           diseases={diseases}
@@ -350,14 +409,14 @@ export default function DiagnosisPanel({
             </table>
           )}
 
-          {diagnosis.approvalStatus === "PENDING" && canDecide && (
+          {diagnosis.approvalStatus === "PENDING" && canDecide && !retakeRequested && report.status !== "NEEDS_RETAKE" && (
             <ApprovalActions reportId={report.id} onUpdated={onUpdated} onError={onError} />
           )}
           {diagnosis.approvalStatus === "PENDING" && !canDecide && (
             <p className="empty-hint">Chỉ kỹ sư nông nghiệp mới được duyệt/từ chối khuyến nghị.</p>
           )}
 
-          {diagnosis.approvalStatus === "APPROVED" && canDecide && diagnosis.treatmentRule && (
+          {diagnosis.approvalStatus === "APPROVED" && canDecide && !retakeRequested && report.status !== "NEEDS_RETAKE" && diagnosis.treatmentRule && (
             <ApplyTreatmentBox reportId={report.id} rule={diagnosis.treatmentRule} onError={onError} />
           )}
           {diagnosis.approvalStatus === "APPROVED" && !diagnosis.treatmentRule && (
@@ -374,6 +433,9 @@ export default function DiagnosisPanel({
           )}
         </div>
       )}
+      {history.length > 1 && <details><summary>Lịch sử chẩn đoán ({history.length})</summary>
+        {history.map((item) => <p key={item.id}>#{item.id} · {item.diseaseName} · {item.approvalStatus} · {item.diagnosedAt && new Date(item.diagnosedAt).toLocaleString("vi-VN")}</p>)}
+      </details>}
     </Section>
   );
 }

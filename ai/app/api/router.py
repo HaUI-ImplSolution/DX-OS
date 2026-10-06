@@ -11,7 +11,10 @@ from app.api.schemas import (
     DiagnoseRequest,
     DiagnoseResponse,
     DiseaseDetectionResponse,
+    ImagePrecheckResponse,
     RetrieveRequest,
+    SymptomSuggestion,
+    SymptomSuggestRequest,
 )
 from app.clients.backend_client import BackendClient, BackendClientError
 from app.core.config import Settings, get_settings
@@ -24,7 +27,8 @@ from app.services.inference_service import (
     fetch_image,
     run_stateless_diagnose,
 )
-from app.services.plant_disease_service import PlantDiseaseService
+from app.services.plant_disease_service import PlantDiseaseService, precheck_image
+from app.services.symptom_service import suggest_diseases
 
 router = APIRouter(prefix="/disease", tags=["Disease Detection"])
 inference_router = APIRouter(tags=["Inference"])
@@ -133,5 +137,32 @@ async def diagnose(
         raise HTTPException(422, str(exc)) from exc
     except BackendClientError as exc:
         raise HTTPException(502, "Backend diagnosis context is unavailable.") from exc
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+
+@router.post(
+    "/precheck",
+    response_model=ImagePrecheckResponse,
+    dependencies=[Depends(authorize_backend)],
+)
+async def precheck(image: Annotated[UploadFile, File()]):
+    data = await read_image(image)
+    try:
+        return await run_in_threadpool(precheck_image, data)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+
+@router.post(
+    "/symptoms/suggest",
+    response_model=list[SymptomSuggestion],
+    dependencies=[Depends(authorize_backend)],
+)
+def symptom_suggestions(
+    payload: SymptomSuggestRequest, db: Annotated[Session, Depends(get_db)]
+):
+    try:
+        return suggest_diseases(db, payload.symptom_text, payload.top_k)
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc

@@ -22,6 +22,51 @@ SHARPNESS_KERNEL = ImageFilter.Kernel(
 )
 
 
+def inspect_image(image_bytes: bytes) -> tuple[Image.Image, dict]:
+    try:
+        with Image.open(BytesIO(image_bytes)) as original:
+            if original.format not in {"JPEG", "PNG"}:
+                raise ValueError("Only JPEG and PNG images are allowed")
+            width, height = original.size
+            if width * height > 40_000_000:
+                raise ValueError("Image resolution is too large")
+            original.load()
+            image = original.convert("RGB")
+    except (OSError, ValueError, Image.DecompressionBombError) as exc:
+        raise ValueError("Invalid image data or unsupported resolution/format") from exc
+    reasons = []
+    if min(width, height) < MIN_IMAGE_DIMENSION:
+        reasons.append(
+            f"Ảnh quá nhỏ ({width}x{height}px). Mỗi chiều phải từ {MIN_IMAGE_DIMENSION}px."
+        )
+    grayscale = image.convert("L")
+    brightness = float(ImageStat.Stat(grayscale).mean[0])
+    sharpness = 0.0
+    if min(width, height) >= 3:
+        edges = grayscale.filter(SHARPNESS_KERNEL).crop((1, 1, width - 1, height - 1))
+        sharpness = float(ImageStat.Stat(edges).var[0])
+    if sharpness < MIN_SHARPNESS:
+        reasons.append(
+            "Ảnh có dấu hiệu bị mờ hoặc thiếu chi tiết. Vui lòng chụp lại rõ nét hơn."
+        )
+    if brightness < 20:
+        reasons.append("Ảnh quá tối. Hãy chụp ở nơi đủ sáng.")
+    if brightness > 245:
+        reasons.append("Ảnh quá sáng. Tránh ánh sáng chiếu trực tiếp vào máy.")
+    return image, {
+        "passed": not reasons,
+        "reasons": reasons,
+        "width": width,
+        "height": height,
+        "sharpness": round(sharpness, 3),
+        "brightness": round(brightness, 3),
+    }
+
+
+def precheck_image(image_bytes: bytes) -> dict:
+    return inspect_image(image_bytes)[1]
+
+
 class PlantDiseaseService:
     def __init__(self, model, settings: Settings | None = None):
         self.model = model
@@ -30,29 +75,9 @@ class PlantDiseaseService:
         self.device = getattr(model, "_dxfarm_device", self.settings.cv_device)
 
     def predict(self, image_bytes: bytes) -> dict:
-        try:
-            image = Image.open(BytesIO(image_bytes))
-            image.load()
-            image = image.convert("RGB")
-        except (OSError, ValueError) as exc:
-            raise ValueError("Invalid image data") from exc
-
-        width, height = image.size
-        minimum = MIN_IMAGE_DIMENSION
-        if width < minimum or height < minimum:
-            raise CvTriageError(
-                f"Ảnh quá nhỏ ({width}x{height}px). Vui lòng chụp lại ảnh lá lúa "
-                f"rõ nét, mỗi chiều tối thiểu {minimum}px."
-            )
-
-        grayscale = image.convert("L")
-        edges = grayscale.filter(SHARPNESS_KERNEL).crop((1, 1, width - 1, height - 1))
-        sharpness = float(ImageStat.Stat(edges).var[0])
-        if sharpness < MIN_SHARPNESS:
-            raise CvTriageError(
-                "Ảnh có dấu hiệu bị mờ hoặc thiếu chi tiết. "
-                "Vui lòng chụp lại ảnh lá lúa rõ nét hơn."
-            )
+        image, quality = inspect_image(image_bytes)
+        if not quality["passed"]:
+            raise CvTriageError(" ".join(quality["reasons"]))
 
         results = self.model.predict(
             source=image,

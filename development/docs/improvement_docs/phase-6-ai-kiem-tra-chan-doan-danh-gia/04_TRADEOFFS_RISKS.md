@@ -15,14 +15,13 @@ Kết luận: TO1-TO3 áp dụng ngay.
 | # | Rủi ro | Xác suất | Ảnh hưởng | Giảm thiểu | Dấu hiệu sớm | Dự phòng |
 |---|---|---|---|---|---|---|
 | R1 | Đổi `Diagnosis`-`DiseaseReport` từ 1-1 sang 1-N (WP6-05) bỏ sót một nơi vẫn giả định 1-1, gây lấy sai chẩn đoán (ví dụ lấy chẩn đoán cũ thay vì mới nhất) | Vừa | Cao (sai dữ liệu nghiệp vụ, ảnh hưởng khóa PHI nếu lấy sai `treatmentRule`) | Rà toàn bộ `grep` tham chiếu `Diagnosis`/`diseaseReport` trước khi đổi, không chỉ sửa chỗ biết trước; test T6-01 xác nhận lấy đúng chẩn đoán mới nhất | Khóa PHI hoặc khuyến nghị hiển thị sai sau khi có chẩn đoán lại | Thêm cột `isLatest` rõ ràng thay vì chỉ dựa vào `ORDER BY diagnosedAt`, giảm rủi ro lấy nhầm nếu có nhiều bản ghi cùng thời điểm |
-| R2 | Precheck (WP6-01) cho qua ảnh không phải lúa (vì chỉ kiểm mờ/nhỏ, không kiểm nội dung), farmer hiểu nhầm "đã qua precheck" là ảnh chắc chắn dùng được | Vừa | Thấp-Vừa | UI ghi rõ precheck chỉ kiểm độ nét/kích thước, không đảm bảo ảnh đúng là lúa | Tỷ lệ ảnh "linh tinh" vẫn cao sau khi có precheck | Không có dự phòng kỹ thuật trong phạm vi phase này — ghi nhận là giới hạn đã biết trong báo cáo đánh giá AI (WP6-06) |
-| R3 | Bộ ảnh test độc lập (Q2, WP6-06) không thu thập được kịp (cần người đi thu ảnh thật ngoài ruộng) | Vừa | Cao (không có báo cáo đánh giá AI đúng yêu cầu — điều kiện không bị loại) | Giao việc thu ảnh sớm, song song với các WP code khác trong phase, không chờ tới cuối | Gần hết thời gian phase mà chưa có bộ ảnh test | Dùng tạm một phần ảnh trong dataset huấn luyện (ít khách quan hơn) kèm ghi chú rõ giới hạn này trong báo cáo, không chờ hoàn hảo |
+| R2 | Precheck (WP6-01) cho qua ảnh không phải lúa (vì chỉ kiểm mờ/nhỏ, không kiểm nội dung), farmer hiểu nhầm "đã qua precheck" là ảnh chắc chắn dùng được | Vừa | Thấp-Vừa | UI ghi rõ precheck chỉ kiểm độ nét/kích thước, không đảm bảo ảnh đúng là lúa | Tỷ lệ ảnh "linh tinh" vẫn cao sau khi có precheck | Giới hạn đã biết được ghi ở `ai/app/cv/README.md` |
 
 ## 3. Nợ kỹ thuật chấp nhận
 
-- Không huấn luyện lại model để có lớp "không phải lúa" (TO1) — ghi rõ là giới hạn trong báo cáo đánh giá AI, để sau cuộc thi.
+- Không huấn luyện lại model để có lớp "không phải lúa" (TO1); giới hạn được ghi ở `ai/app/cv/README.md`.
 - Mô hình nhận diện sâu hại (ngoài 5 bệnh lá) không làm ở phase này, theo D7 (phase 0).
-- Ngưỡng chuyển người xem (`0.70`) có thể vẫn chưa đổi nếu Q1 chưa có đủ số liệu khi kết thúc phase — ghi rõ "chưa có căn cứ đo đầy đủ" trong báo cáo, không tự bịa số.
+- Ngưỡng confidence giữ `0.70` theo quyết định của người dùng ngày 06/10/2026.
 
 ## 4. Điều kiện dừng và rollback
 
@@ -32,4 +31,13 @@ Kết luận: TO1-TO3 áp dụng ngay.
 ## 5. Tác động ngoài phase
 
 - Lên các phase sau: P7 (BI) dùng nhãn huấn luyện đã lưu (WP6-04) để làm chart tỷ lệ AI đúng/sai so với kỹ sư chốt.
-- Lên demo, tài liệu nộp bài, thời hạn: báo cáo đánh giá AI (WP6-06) là bằng chứng bắt buộc cho điều kiện không bị loại (đề mục 4.2 phần I), phải xong trước khi P8 chốt hồ sơ nộp bài.
+
+## Ghi nhận triển khai 06/10/2026
+
+- Bộ dataset, công cụ tính chỉ số và báo cáo đánh giá AI đã được bỏ khỏi phạm vi theo yêu cầu của người dùng.
+- Brightness 20–245 là ngưỡng kiểm tra ban đầu.
+- Precheck lúc nộp cần AI hoạt động: AI lỗi trả 503 và không nhận ảnh chưa kiểm; hàng đợi mobile có thể retry lỗi dịch vụ.
+- P5 chưa có trên nhánh cha; farmer xem yêu cầu chụp lại trong màn báo cáo. Workflow duyệt P3 đã được tích hợp.
+- Migration Phase 6 dùng V5 sau V4 workflow; giữ nguyên migration của nhánh cha.
+- Nhánh cha chưa seed thuốc/rule được duyệt; chẩn đoán vẫn ghi nhận được nhưng không áp dụng thuốc khi thiếu rule.
+- Ghi chẩn đoán/duyệt cùng báo cáo được tuần tự hóa để tránh nhãn trùng; kết quả AI stale trả 409.

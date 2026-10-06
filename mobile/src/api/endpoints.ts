@@ -1,5 +1,5 @@
 import { request, upload, type UploadFile } from "./client";
-import type { CropSeason, DiseaseReport, IsolationStatus, Parcel } from "@/types";
+import type { CropSeason, DiseaseReport, IsolationStatus, Parcel, ImagePrecheck } from "@/types";
 
 export const listParcels = () => request<Parcel[]>("/parcels");
 
@@ -19,11 +19,15 @@ export const createDiseaseReport = (
   image: UploadFile,
   onProgress?: (fraction: number) => void,
   idempotencyKey?: string,
+  retakeOf?: number,
 ) =>
   upload<DiseaseReport>(
-    `/crop-seasons/${cropSeasonId}/disease-reports`,
+    `/crop-seasons/${cropSeasonId}/disease-reports${retakeOf ? `?retakeOf=${retakeOf}` : ""}`,
     "image",
     image,
     onProgress,
     idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {},
   );
+
+export const precheckDiseaseReport = (image: UploadFile) =>
+  upload<ImagePrecheck>("/disease-reports/precheck", "image", image);

@@ -76,7 +76,10 @@ class DiagnosisServiceApplyTest {
   void setUp() {
     service = new DiagnosisService(diagnosisRepository, diseaseReportRepository, diseaseRepository,
         treatmentRuleService, treatmentApplicationRepository, currentUserService, workflowService,
-        aiDiagnosisClient, eventPublisher, storageService, CLOCK, entityManager);
+        aiDiagnosisClient, eventPublisher, storageService, CLOCK, entityManager,
+        org.mockito.Mockito.mock(org.springframework.transaction.PlatformTransactionManager.class),
+        org.mockito.Mockito
+            .mock(HaUI.ImplSolution.DX_Farm.repository.TrainingLabelRepository.class));
     Parcel parcel = Parcel.builder().id(1L).code("P-01").farmerName("A").build();
     season = CropSeason.builder().id(5L).parcel(parcel).build();
     DiseaseReport report = DiseaseReport.builder().id(9L).cropSeason(season).build();
@@ -86,7 +89,8 @@ class DiagnosisServiceApplyTest {
     Diagnosis diagnosis = Diagnosis.builder().id(3L).diseaseReport(report).treatmentRule(rule)
         .approvalStatus(ApprovalStatus.APPROVED).build();
     when(diseaseReportRepository.findById(9L)).thenReturn(Optional.of(report));
-    when(diagnosisRepository.findByDiseaseReportId(9L)).thenReturn(Optional.of(diagnosis));
+    when(diagnosisRepository.findTopByDiseaseReportIdOrderByIdDesc(9L))
+        .thenReturn(Optional.of(diagnosis));
     when(treatmentApplicationRepository.findByDiagnosisId(3L)).thenReturn(Optional.empty());
   }
 

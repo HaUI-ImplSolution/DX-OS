@@ -103,3 +103,25 @@ class DiagnoseResponse(BaseModel):
     rag_evidence: list[DiagnoseRagEvidence]
     structured_context: DiagnoseStructuredContext
     recommendation: DiagnoseRecommendation
+
+
+class ImagePrecheckResponse(BaseModel):
+    passed: bool
+    reasons: list[str]
+    width: int
+    height: int
+    sharpness: float
+    brightness: float
+
+
+class SymptomSuggestRequest(BaseModel):
+    symptom_text: str = Field(min_length=1, max_length=4000)
+    top_k: int = Field(default=5, ge=1, le=6)
+
+
+class SymptomSuggestion(BaseModel):
+    disease_code: str
+    disease_name: str
+    score: float
+    evidence: str
+    source_ids: list[str]

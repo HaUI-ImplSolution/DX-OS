@@ -62,9 +62,11 @@ public class GlobalExceptionHandler {
         .body(ApiResponse.error(ex.getMessage(), data));
   }
 
-  @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
-  public ResponseEntity<ApiResponse<Void>> handleOptimisticLock(
-      ObjectOptimisticLockingFailureException ex) {
+  @ExceptionHandler({ObjectOptimisticLockingFailureException.class,
+      jakarta.persistence.OptimisticLockException.class,
+      jakarta.persistence.PessimisticLockException.class,
+      jakarta.persistence.LockTimeoutException.class})
+  public ResponseEntity<ApiResponse<Void>> handleOptimisticLock(Exception ex) {
     return ResponseEntity.status(HttpStatus.CONFLICT)
         .body(ApiResponse.error("The record was modified by someone else, reload and try again"));
   }

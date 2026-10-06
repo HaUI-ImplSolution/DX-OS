@@ -237,6 +237,7 @@ hiện có một số cái cần note lại để cải thiện:
 - Dữ liệu dựng mới chưa chạy hết luồng demo [Quan trọng]:
     - Hiện trạng: seed có bệnh nhưng chưa có thuốc, treatment rule, policy nào được duyệt, nên trên database sạch chưa demo trọn luồng áp dụng thuốc và khóa PHI. Cũng không có thửa mẫu ở ĐBSCL có tọa độ thật, không có báo cáo mẫu kèm ảnh. Đề yêu cầu có dữ liệu mẫu đủ để Hội đồng chạy thử.
     - Hướng xử lý: có ít nhất một rule được kiểm chứng và phê duyệt để seed. Nếu chưa kịp thì demo cho trung thực nhánh `review_required`, đừng giả vờ là có.
+    - Kết quả nghiên cứu ngày 05/10/2026 được tổng hợp tại [`TREATMENT_RULE_RESEARCH.md`](../TREATMENT_RULE_RESEARCH.md): mới có candidate B Cure 1.75WP cho đốm nâu, nhưng liều và cách dùng chưa được xác minh từ nhãn gốc; bốn bệnh còn lại chưa có rule đủ bằng chứng. Chưa đưa kết quả này vào seed.
     - Làm script seed demo riêng (tách với seed nghiệp vụ), chạy một lệnh là có sẵn vài hộ, vài thửa, vài vụ ở các trạng thái khác nhau.
 - Checklist kiểm thử tay mobile chưa chạy (xem mục 15).
 - Bộ ảnh test cho AI: cần ảnh thật chụp bằng điện thoại ngoài ruộng (mờ, ngược sáng, ảnh không phải lúa) để đo precheck ở mục 5.

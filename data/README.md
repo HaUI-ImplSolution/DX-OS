@@ -32,11 +32,11 @@ Nội dung là dữ liệu nguồn do AI bàn giao để Backend tham khảo và
 |---|---|---|
 | `structured/diseases.json` | 6 định danh: 5 lớp bệnh lúa của CV và `Rice___healthy` (fallback): `code`, tên tiếng Việt, mô tả | Seed/upsert vào `diseases` |
 | `structured/class_contract.json` | Contract `class_id` → `model_label` → `disease_code` của model CV (5 lớp, kèm fallback), phiên bản `riceleafbd-v3-yolov8n` | Dùng để kiểm tra tính toàn vẹn, không cần tạo bảng riêng |
-| `structured/pesticides_candidates_master.json` | 1 danh tính sản phẩm (`NEWTEC_300SC`): mã Backend, đơn vị liều, xác minh đăng ký và nhãn | Chỉ seed record có `eligible_for_pesticide_seed=true`; hiện chưa có record nào |
-| `structured/treatment_rules_candidates_master.json` | 2 rule ứng viên (đạo ôn, khô vằn) cùng liều, PHI, nguồn và trạng thái cho phép seed | Chỉ seed rule có `eligible_for_seed=true`; hiện chưa có rule nào |
+| `structured/pesticides_candidates_master.json` | 2 sản phẩm (`NEWTEC_300SC`, `HELP_400SC`): mã Backend, đơn vị liều, xác minh đăng ký và nhãn | Seed `NEWTEC_300SC`; giữ `HELP_400SC` ở trạng thái ứng viên chờ duyệt |
+| `structured/treatment_rules_candidates_master.json` | 3 rule cho đạo ôn, khô vằn và đốm nâu, kèm liều, PHI, nguồn và trạng thái cho phép seed | Seed 2 rule `EXPERT_APPROVED`; rule đốm nâu vẫn bị chặn |
 | `structured/disease_management_policies_master.json` | 6 policy: trạng thái quản lý từng bệnh, hành động khuyến nghị và nguồn | Seed vào `disease_management_policies` khi `eligible_for_deterministic_guardrail=true`; hiện chưa có policy nào |
 | `rag/processed/disease_knowledge.json` | 6 tài liệu tri thức bệnh/IPM dùng để chunk và embedding | AI ingest vào `documents`/`document_chunks`; Backend không seed |
-| `rag/source_registry.json` | 9 nguồn và metadata provenance | Dùng audit; AI giữ cùng corpus RAG |
+| `rag/source_registry.json` | 10 nguồn và metadata provenance | Dùng audit; AI giữ cùng corpus RAG |
 
 Các script trong `scripts/`:
 
@@ -53,8 +53,8 @@ Các script trong `scripts/`:
 1. Thêm cột `active` cho `diseases` và `pesticides` nếu chưa có.
 2. Upsert 6 bệnh trong `diseases.json` với `active=TRUE`.
 3. Đặt `active=FALSE` cho mọi bệnh khác; bản ghi legacy chỉ bị xóa khi không còn diagnosis, treatment rule hoặc policy tham chiếu.
-4. Pesticide, treatment rule và policy: chưa có record nào đủ điều kiện seed nên không thêm mới.
-   Rule và pesticide cũ được đặt `active=FALSE`, chỉ bị xóa khi không còn lịch sử diagnosis hoặc treatment application tham chiếu; bảng `disease_management_policies` được làm trống.
+4. Upsert `NEWTEC_300SC` và 2 treatment rule đã được chuyên gia xác nhận cho đạo ôn và khô vằn; policy chưa có record đủ điều kiện seed.
+   Rule, pesticide cũ và các ứng viên chưa duyệt được đặt ngoài tập active; chúng chỉ bị xóa khi không còn lịch sử diagnosis hoặc treatment application tham chiếu. Bảng `disease_management_policies` được làm trống.
 
 Bệnh `active=FALSE` và thuốc `active=FALSE` không xuất hiện trong danh mục API và lookup mới nhưng vẫn giữ được lịch sử.
 
@@ -106,7 +106,8 @@ Mapping vào schema Backend:
 | `seed_authorization` | Ghi vào `notes` để phân biệt phê duyệt chuyên gia với giả định kiểm thử |
 | rule còn hiệu lực trong tập seed hiện hành | `active=true` |
 
-Hai rule hiện có (`Rice___Blast` và `Rice___Sheath_blight` với `P-RICE-001`) bị chặn vì chưa có phê duyệt chuyên gia cho mapping từ lớp CV sang đối tượng đăng ký của thuốc.
+Hai rule `Rice___Blast` và `Rice___Sheath_blight` với `P-RICE-001` đã được chuyên gia dự án xác nhận ngày 2026-10-05 và được seed.
+Rule `Rice___Brown_spot` với `P-RICE-002` được phục hồi để giữ dữ liệu nghiên cứu và provenance, nhưng vẫn bị chặn vì lịch sử mới chỉ có `E2E_ASSUMPTION`, chưa có phê duyệt chuyên gia.
 `blocked_reason`, `verification` và `eligible_for_seed` là hàng rào an toàn, không phải metadata có thể bỏ qua.
 
 Khi nguồn seed thu hồi một rule, Backend đặt rule đó thành `active=false` trước khi đối soát.

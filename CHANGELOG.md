@@ -7,6 +7,11 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ### 2026-10-06
 
+**Đã xong — Khôi phục seed treatment rule đã duyệt:**
+
+- Seed idempotent `NEWTEC_300SC` cùng hai rule `EXPERT_APPROVED` cho đạo ôn và khô vằn; giữ rule Help 400SC/đốm nâu ở trạng thái `IN_REVIEW`, không seed vì lịch sử chỉ có `E2E_ASSUMPTION`.
+- `V7__treatment_rule_notes_text.sql` mở rộng audit notes sang `text`; integration test kiểm tra migration, số rule active và chạy seed lặp không sinh trùng.
+
 **Đã xong — Duyệt thửa/vụ, mã chuẩn, GPS, danh mục giống:**
 
 - `V5__parcel_season_approval.sql`, `V6__rice_variety_seed.sql`: trạng thái duyệt, mã, GPS và khóa `client_request_id` cho `parcels` và `crop_seasons`; bảng `rice_varieties`, `household_parcel_counter`, `parcel_edit_requests`.

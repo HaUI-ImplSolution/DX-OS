@@ -133,5 +133,20 @@
     "crop_target_locale": "Lúa; Việt Nam",
     "review_status": "IN_REVIEW",
     "notes": "Chưa thay thế xác nhận nhãn vật lý/đăng ký hiện hành bởi kỹ sư nông nghiệp."
+  },
+  {
+    "source_id": "SRC_ADC_HELP_400SC",
+    "title": "Help 400SC – hướng dẫn sử dụng",
+    "organization": "ADC Agrotech / Công ty TNHH ADC",
+    "source_type": "Manufacturer product directions",
+    "recommended_use": "Nguồn thành phần, liều, lượng nước, thời điểm phun và PHI của Help 400SC cho đốm nâu trên lúa",
+    "url": "https://www.adcgroup.net/shop/thuoc-bvtv/thuoc-tru-benh/help-400sc/",
+    "authority_level": "Primary manufacturer guidance",
+    "accessed_at": "2026-10-05",
+    "version": null,
+    "license": null,
+    "crop_target_locale": "Lúa; Việt Nam",
+    "review_status": "IN_REVIEW",
+    "notes": "Trang hướng dẫn chính thức của đơn vị đăng ký sản phẩm; cần tiếp tục lưu bản chụp/nhãn vật lý cho hồ sơ audit dài hạn."
   }
 ]

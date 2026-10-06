@@ -18,6 +18,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Việc | Phạm vi |
 |---|---|
 | Phát hành bản sửa `backup.sh` (mục Unreleased của CHANGELOG) | Gộp vào `main` rồi `git pull` trên VPS; bản mới đã chạy thử trên VPS và gom mọi snapshot vào một nhóm giữ, nhưng chưa có snapshot nào quá 7 ngày nên việc xóa bản cũ chưa được kiểm |
+| Nạp cấu hình gateway mới và đo lại chẩn đoán AI trên VPS | Sau `git pull`: `./switch-app.sh farm`, rồi bấm chẩn đoán AI cho một báo cáo và kiểm nhận `200` trong 95 giây |
 | Đặt cron cho `deploy/online-check.sh` trên VPS | Sau `git pull`, chạy tay một lần rồi thêm `0 */12 * * *` theo `deploy/OPERATIONS.md`; script đã chạy thử trên VPS với bốn đường đều `OK` |
 
 ## 3. Chưa kiểm thử
@@ -37,7 +38,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Model bệnh chưa được đánh giá độc lập ngoài ruộng | Accuracy 89,43% trên 1.466 ảnh theo người huấn luyện, xem [`AI_EVALUATION.md`](./AI_EVALUATION.md); cần ít nhất 100 ảnh ruộng thật có nhãn kỹ sư để đo toàn pipeline và ngưỡng 0.70 |
 | Crop classifier nhận 6/15 ảnh ngô và 15/15 ảnh mía là lúa, chặn 8/50 ảnh lúa nền ruộng | Classifier 10 lớp không có lớp ngô, mía, cỏ; cần thay classifier hoặc thêm dữ liệu ngoài miền; kỹ sư vẫn chốt bệnh |
 | Ngưỡng độ nét mới thử trên ảnh công khai và ảnh mờ nhân tạo | Chưa có ảnh mờ thật ngoài ruộng; chưa tách vùng lá |
-| Chẩn đoán AI chạy trên CPU mất 50 đến 70 giây mỗi ảnh | Đo trên máy chủ 8 nhân; lượt đo ngày 30/10/2026 trên AI đã chạy 14 giờ mất 68 giây, vượt 60 giây chờ của gateway nên nhận 504, nhưng chẩn đoán vẫn được tạo và hiện khi tải lại báo cáo; chưa có GPU hay mô hình nhỏ hơn để rút ngắn |
+| Chẩn đoán AI chạy trên CPU mất 50 đến 70 giây mỗi ảnh | Đo trên máy chủ 8 nhân; lượt đo ngày 30/10/2026 trên AI đã chạy 14 giờ mất 68 giây; gateway chờ tới 95 giây, lượt dài hơn nhận 504 nhưng chẩn đoán vẫn được tạo và hiện khi tải lại báo cáo; chưa có GPU hay mô hình nhỏ hơn để rút ngắn |
 | Qwen tắt trên VPS | CPU ảo chỉ có SSE2/SSE3 nên Qwen đọc prompt khoảng 2 token/giây; VPS đặt `AI_ANSWER_GENERATION=false` và `AI_CHAT_CANDIDATE_COUNT=10`, chatbot trả tài liệu nguyên văn trong khoảng 5 giây. Bật lại Qwen cần CPU có AVX2 |
 | Nộp báo cáo cần AI service chạy | Chưa có đường nhận ảnh chưa kiểm khi AI dừng; hàng đợi offline thử lại |
 | Chưa có mô hình nhận diện sâu hại | Classifier nhận Healthy và 5 bệnh lá |

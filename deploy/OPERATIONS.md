@@ -256,7 +256,8 @@ Khi một nửa trong 10 lần gọi AI gần nhất (tối thiểu 5 lần) g�
 Sau 30 giây backend thử lại vài lần; thành công thì mở lại.
 Lỗi 4xx (yêu cầu sai) không tính là lỗi dịch vụ.
 Backend không tự gọi lại một lượt AI đã lỗi, vì mỗi lượt chẩn đoán trên CPU mất 50 đến 70 giây.
-Lượt dài hơn 60 giây nhận `504` từ gateway nhưng backend vẫn lưu chẩn đoán; tải lại báo cáo để thấy kết quả.
+Route chẩn đoán của gateway chờ tới 95 giây (upstream `backend-ai` trong `deploy/apisix/common.yaml`), dưới giới hạn 100 giây của Cloudflare.
+Lượt dài hơn nhận `504` nhưng backend vẫn lưu chẩn đoán; tải lại báo cáo để thấy kết quả.
 Trong log backend, dòng `AI service is paused after repeated failures` cho biết cầu dao đang mở.
 
 ## Máy chủ CPU yếu

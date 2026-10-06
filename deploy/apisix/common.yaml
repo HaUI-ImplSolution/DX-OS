@@ -11,6 +11,15 @@ upstreams:
     type: roundrobin
     nodes:
       "backend:8081": 1
+  # The AI diagnosis takes up to about 70 seconds on a CPU; Cloudflare cuts a request at 100 seconds.
+  - id: backend-ai
+    type: roundrobin
+    nodes:
+      "backend:8081": 1
+    timeout:
+      connect: 6
+      send: 60
+      read: 95
   - id: keycloak
     type: roundrobin
     nodes:

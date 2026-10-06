@@ -77,6 +77,9 @@ public class Diagnosis {
   // Người đưa ra quyết định duyệt hoặc từ chối
   private String decidedBy;
 
+  // Claim "sub" của người ra quyết định; null với bản ghi tạo trước khi có cột này
+  private String decidedByUserId;
+
   // Thời điểm đưa ra quyết định duyệt hoặc từ chối
   private Instant decidedAt;
 

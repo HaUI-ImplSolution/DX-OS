@@ -79,6 +79,7 @@ class DiagnosisServiceApplyTest {
         .phiDays(14).build();
     Diagnosis diagnosis = Diagnosis.builder().id(3L).diseaseReport(report).treatmentRule(rule)
         .approvalStatus(ApprovalStatus.APPROVED).build();
+    when(diseaseReportRepository.findById(9L)).thenReturn(Optional.of(report));
     when(diagnosisRepository.findByDiseaseReportId(9L)).thenReturn(Optional.of(diagnosis));
     when(treatmentApplicationRepository.findByDiagnosisId(3L)).thenReturn(Optional.empty());
   }

@@ -14,6 +14,9 @@ import HaUI.ImplSolution.DX_Farm.model.Parcel;
 import HaUI.ImplSolution.DX_Farm.repository.CropSeasonRepository;
 import HaUI.ImplSolution.DX_Farm.repository.DiagnosisRepository;
 import HaUI.ImplSolution.DX_Farm.repository.DiseaseReportRepository;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,7 +50,8 @@ class DiseaseReportServiceTest {
     when(currentUserService.canAccess(parcel)).thenReturn(true);
     when(currentUserService.currentFullName()).thenReturn("A");
     var service = new DiseaseReportService(diseaseReportRepository, cropSeasonRepository,
-        diagnosisRepository, fileStorageService, currentUserService, eventPublisher);
+        diagnosisRepository, fileStorageService, currentUserService, eventPublisher,
+        Clock.fixed(Instant.parse("2026-10-06T00:00:00Z"), ZoneOffset.UTC));
     var image = new MockMultipartFile("image", "leaf.jpg", "image/jpeg", new byte[] {1});
 
     assertThatThrownBy(() -> service.create(5L, image, null)).isInstanceOfSatisfying(

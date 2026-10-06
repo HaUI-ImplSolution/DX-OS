@@ -11,6 +11,9 @@ public record ParcelResponse(
   // Mã thửa ruộng
   String code,
 
+  // Mã hộ sở hữu thửa
+  String householdCode,
+
   // Tên chủ hộ/nông dân
   String farmerName,
 

@@ -10,11 +10,14 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,9 +36,11 @@ public class DiseaseReportController {
 
   @PostMapping(value = "/crop-seasons/{cropSeasonId}/disease-reports",
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PreAuthorize("hasRole('FARMER')")
   @ResponseStatus(HttpStatus.CREATED)
   @Operation(summary = "Report a disease sighting with a photo (reportedBy = logged-in user)",
-      description = "FARMER: 404 if the season's parcel belongs to another farmer."
+      description = "FARMER only (ENGINEER and ADMIN get 403)."
+          + " 404 if the season's parcel belongs to another farmer."
           + " With an Idempotency-Key, a repeated request returns the existing report without"
           + " storing the image again; 409 if the key was used for another crop season or user."
           + " 422 CROP_SEASON_HARVESTED if the crop season is already harvested.")
@@ -51,10 +56,11 @@ public class DiseaseReportController {
   @GetMapping("/crop-seasons/{cropSeasonId}/disease-reports")
   @Operation(summary = "List disease reports for a crop season",
       description = "FARMER: 404 if the season's parcel belongs to another farmer;"
-          + " diagnosis is trimmed until APPROVED (see DiagnosisResponse).")
-  public ApiResponse<List<DiseaseReportResponse>> listByCropSeason(
-      @PathVariable Long cropSeasonId) {
-    return ApiResponse.success(diseaseReportService.listByCropSeason(cropSeasonId));
+          + " diagnosis is trimmed until APPROVED (see DiagnosisResponse)."
+          + " includeDeleted=true (ADMIN only, otherwise 403) also returns soft-deleted reports.")
+  public ApiResponse<List<DiseaseReportResponse>> listByCropSeason(@PathVariable Long cropSeasonId,
+      @RequestParam(defaultValue = "false") boolean includeDeleted) {
+    return ApiResponse.success(diseaseReportService.listByCropSeason(cropSeasonId, includeDeleted));
   }
 
   @GetMapping("/disease-reports/{id}")
@@ -63,5 +69,14 @@ public class DiseaseReportController {
           + " diagnosis is trimmed until APPROVED (see DiagnosisResponse).")
   public ApiResponse<DiseaseReportResponse> getById(@PathVariable Long id) {
     return ApiResponse.success(diseaseReportService.getById(id));
+  }
+
+  @DeleteMapping("/disease-reports/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
+  @Operation(summary = "Soft-delete a disease report entered by mistake",
+      description = "ADMIN only.")
+  public ApiResponse<Void> delete(@PathVariable Long id) {
+    diseaseReportService.delete(id);
+    return ApiResponse.success("Disease report deleted", null);
   }
 }

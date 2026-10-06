@@ -9,11 +9,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,10 +33,12 @@ public class ParcelController {
 
   @GetMapping
   @Operation(summary = "List parcels",
-      description = "FARMER: only parcels whose farmerName matches the user's name (case-insensitive)."
-          + " Other roles: all parcels.")
-  public ApiResponse<List<ParcelResponse>> listAll() {
-    return ApiResponse.success(parcelService.listAll());
+      description = "FARMER: only parcels of the household linked to the account."
+          + " Other roles: all parcels. includeDeleted=true (ADMIN only, otherwise 403) also"
+          + " returns soft-deleted parcels.")
+  public ApiResponse<List<ParcelResponse>> listAll(
+      @RequestParam(defaultValue = "false") boolean includeDeleted) {
+    return ApiResponse.success(parcelService.listAll(includeDeleted));
   }
 
   @GetMapping("/{code}")
@@ -44,11 +49,22 @@ public class ParcelController {
   }
 
   @PostMapping
+  @PreAuthorize("hasAnyRole('FARMER','ADMIN')")
   @ResponseStatus(HttpStatus.CREATED)
   @Operation(summary = "Register a new parcel",
-      description = "FARMER: the request farmerName is ignored and the parcel is stored under"
-          + " the user's own name.")
+      description = "FARMER or ADMIN only (ENGINEER gets 403). FARMER: householdCode is ignored and"
+          + " the parcel belongs to the household linked to the account (403 if none is linked)."
+          + " ADMIN: householdCode is required. 409 if the parcel code is already in use.")
   public ApiResponse<ParcelResponse> create(@Valid @RequestBody ParcelCreateRequest request) {
     return ApiResponse.success("Parcel created", parcelService.create(request));
+  }
+
+  @DeleteMapping("/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
+  @Operation(summary = "Soft-delete a parcel entered by mistake",
+      description = "ADMIN only. 409 while the parcel still has crop seasons.")
+  public ApiResponse<Void> delete(@PathVariable Long id) {
+    parcelService.delete(id);
+    return ApiResponse.success("Parcel deleted", null);
   }
 }

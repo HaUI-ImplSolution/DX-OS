@@ -14,10 +14,13 @@ import HaUI.ImplSolution.DX_Farm.model.DiseaseReport;
 import HaUI.ImplSolution.DX_Farm.repository.CropSeasonRepository;
 import HaUI.ImplSolution.DX_Farm.repository.DiagnosisRepository;
 import HaUI.ImplSolution.DX_Farm.repository.DiseaseReportRepository;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,26 +35,31 @@ public class DiseaseReportService {
   private final FileStorageService fileStorageService;
   private final CurrentUserService currentUserService;
   private final ApplicationEventPublisher eventPublisher;
+  private final Clock clock;
 
   public DiseaseReportService(DiseaseReportRepository diseaseReportRepository,
       CropSeasonRepository cropSeasonRepository, DiagnosisRepository diagnosisRepository,
       FileStorageService fileStorageService, CurrentUserService currentUserService,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher, Clock clock) {
     this.diseaseReportRepository = diseaseReportRepository;
     this.cropSeasonRepository = cropSeasonRepository;
     this.diagnosisRepository = diagnosisRepository;
     this.fileStorageService = fileStorageService;
     this.currentUserService = currentUserService;
     this.eventPublisher = eventPublisher;
+    this.clock = clock;
   }
 
-  public List<DiseaseReportResponse> listByCropSeason(Long cropSeasonId) {
-    boolean farmerView = currentUserService.isFarmer();
-    if (farmerView) {
-      findAccessibleSeasonOrThrow(cropSeasonId);
+  public List<DiseaseReportResponse> listByCropSeason(Long cropSeasonId, boolean includeDeleted) {
+    if (includeDeleted && !currentUserService.isAdmin()) {
+      throw new AccessDeniedException("includeDeleted is limited to ADMIN");
     }
-    return diseaseReportRepository.findByCropSeasonId(cropSeasonId).stream()
-        .map(report -> toResponse(report, farmerView)).toList();
+    boolean farmerView = currentUserService.isFarmer();
+    findAccessibleSeasonOrThrow(cropSeasonId);
+    List<DiseaseReport> reports = includeDeleted
+        ? diseaseReportRepository.findByCropSeasonIdOrderByIdAsc(cropSeasonId)
+        : diseaseReportRepository.findByCropSeasonIdAndDeletedAtIsNullOrderByIdAsc(cropSeasonId);
+    return reports.stream().map(report -> toResponse(report, farmerView)).toList();
   }
 
   public DiseaseReportResponse getById(Long id) {
@@ -63,10 +71,11 @@ public class DiseaseReportService {
       UUID clientRequestId) {
     CropSeason season = findAccessibleSeasonOrThrow(cropSeasonId);
     String reporter = currentUserService.currentFullName();
+    String reporterId = currentUserService.currentUserId();
     if (clientRequestId != null) {
       var existing = diseaseReportRepository.findByClientRequestId(clientRequestId);
       if (existing.isPresent()) {
-        return toResponse(requireSameRequester(existing.get(), cropSeasonId, reporter),
+        return toResponse(requireSameRequester(existing.get(), cropSeasonId, reporter, reporterId),
             currentUserService.isFarmer());
       }
     }
@@ -76,7 +85,7 @@ public class DiseaseReportService {
     }
     String imageRef = fileStorageService.store(image);
     DiseaseReport report = DiseaseReport.builder().cropSeason(season).imageRef(imageRef)
-        .reportedBy(reporter).clientRequestId(clientRequestId).build();
+        .reportedBy(reporter).reportedByUserId(reporterId).clientRequestId(clientRequestId).build();
     DiseaseReport saved;
     try {
       saved = diseaseReportRepository.saveAndFlush(report);
@@ -92,23 +101,38 @@ public class DiseaseReportService {
     return toResponse(saved, currentUserService.isFarmer());
   }
 
+  // Reports created before user ids were stored fall back to comparing display names.
   private static DiseaseReport requireSameRequester(DiseaseReport report, Long cropSeasonId,
-      String reporter) {
-    if (!report.getCropSeason().getId().equals(cropSeasonId)
-        || !report.getReportedBy().equals(reporter)) {
+      String reporter, String reporterId) {
+    boolean sameUser =
+        report.getReportedByUserId() != null ? report.getReportedByUserId().equals(reporterId)
+            : report.getReportedBy().equals(reporter);
+    if (!report.getCropSeason().getId().equals(cropSeasonId) || !sameUser) {
       throw new InvalidStateException("Idempotency-Key was used for a different request");
     }
     return report;
   }
 
+  @Transactional
+  public void delete(Long id) {
+    DiseaseReport report = findOrThrow(id);
+    report.setDeletedAt(Instant.now(clock));
+    diseaseReportRepository.save(report);
+  }
+
+  // A season is reachable only while neither it nor its parcel is soft-deleted.
   private CropSeason findAccessibleSeasonOrThrow(Long cropSeasonId) {
     return cropSeasonRepository.findById(cropSeasonId)
+        .filter(season -> season.getDeletedAt() == null)
+        .filter(season -> season.getParcel().getDeletedAt() == null)
         .filter(season -> currentUserService.canAccess(season.getParcel()))
         .orElseThrow(() -> new ResourceNotFoundException("Crop season not found: " + cropSeasonId));
   }
 
   private DiseaseReport findOrThrow(Long id) {
-    return diseaseReportRepository.findById(id)
+    return diseaseReportRepository.findById(id).filter(report -> report.getDeletedAt() == null)
+        .filter(report -> report.getCropSeason().getDeletedAt() == null)
+        .filter(report -> report.getCropSeason().getParcel().getDeletedAt() == null)
         .filter(report -> currentUserService.canAccess(report.getCropSeason().getParcel()))
         .orElseThrow(() -> new ResourceNotFoundException("Disease report not found: " + id));
   }

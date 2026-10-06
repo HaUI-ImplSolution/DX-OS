@@ -10,12 +10,14 @@ import HaUI.ImplSolution.DX_Farm.model.ApprovalStatus;
 import HaUI.ImplSolution.DX_Farm.model.CropSeason;
 import HaUI.ImplSolution.DX_Farm.model.CropSeasonStatus;
 import HaUI.ImplSolution.DX_Farm.model.Diagnosis;
+import HaUI.ImplSolution.DX_Farm.model.Household;
 import HaUI.ImplSolution.DX_Farm.model.DiseaseReport;
 import HaUI.ImplSolution.DX_Farm.model.Parcel;
 import HaUI.ImplSolution.DX_Farm.repository.CropSeasonRepository;
 import HaUI.ImplSolution.DX_Farm.repository.DiagnosisRepository;
 import HaUI.ImplSolution.DX_Farm.repository.DiseaseReportRepository;
 import HaUI.ImplSolution.DX_Farm.repository.DiseaseRepository;
+import HaUI.ImplSolution.DX_Farm.repository.HouseholdRepository;
 import HaUI.ImplSolution.DX_Farm.repository.ParcelRepository;
 import HaUI.ImplSolution.DX_Farm.service.AiDiagnosisClient;
 import HaUI.ImplSolution.DX_Farm.service.CurrentUserService;
@@ -51,9 +53,10 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 // Runs against a real PostgreSQL because it checks the database-side guarantees: the @Version
-// columns and the partial unique index created by schema.sql.
-@DataJpaTest(properties = {"app.public-base-url=http://backend:8081",
-    "spring.jpa.hibernate.ddl-auto=update"})
+// columns and the partial unique index created by the Flyway migrations. Hibernate validates the
+// entities against that schema when the context starts.
+@DataJpaTest(
+    properties = {"app.public-base-url=http://backend:8081", "spring.flyway.enabled=false"})
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
 @Import({DiagnosisService.class, TimeConfig.class})
@@ -65,6 +68,7 @@ class ConcurrencyIntegrationTest {
 
   @DynamicPropertySource
   static void datasource(DynamicPropertyRegistry registry) {
+    MigratedDatabase.migrate(POSTGRES);
     registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
     registry.add("spring.datasource.username", POSTGRES::getUsername);
     registry.add("spring.datasource.password", POSTGRES::getPassword);
@@ -84,6 +88,8 @@ class ConcurrencyIntegrationTest {
   @Autowired
   private ParcelRepository parcelRepository;
   @Autowired
+  private HouseholdRepository householdRepository;
+  @Autowired
   private CropSeasonRepository cropSeasonRepository;
   @Autowired
   private DiseaseReportRepository diseaseReportRepository;
@@ -94,8 +100,10 @@ class ConcurrencyIntegrationTest {
 
   private Parcel newParcel() {
     String code = "P-" + UUID.randomUUID();
-    return parcelRepository.save(
-        Parcel.builder().code(code).farmerName("Test Farmer").areaHectares(BigDecimal.ONE).build());
+    Household household = householdRepository
+        .save(Household.builder().code("T-" + UUID.randomUUID()).fullName("Test Farmer").build());
+    return parcelRepository.save(Parcel.builder().code(code).household(household)
+        .farmerName("Test Farmer").areaHectares(BigDecimal.ONE).build());
   }
 
   private CropSeason newSeason(Parcel parcel, CropSeasonStatus status) {

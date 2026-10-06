@@ -7,7 +7,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ParcelRepository extends JpaRepository<Parcel, Long> {
 
-  Optional<Parcel> findByCode(String code);
+  Optional<Parcel> findByCodeAndDeletedAtIsNull(String code);
 
-  List<Parcel> findByFarmerNameIgnoreCase(String farmerName);
+  boolean existsByCodeAndDeletedAtIsNull(String code);
+
+  List<Parcel> findByDeletedAtIsNullOrderByIdAsc();
+
+  List<Parcel> findByHousehold_IdAndDeletedAtIsNullOrderByIdAsc(Long householdId);
+
+  List<Parcel> findAllByOrderByIdAsc();
 }

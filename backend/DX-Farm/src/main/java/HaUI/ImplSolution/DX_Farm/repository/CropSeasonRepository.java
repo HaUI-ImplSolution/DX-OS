@@ -7,7 +7,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CropSeasonRepository extends JpaRepository<CropSeason, Long> {
 
-  List<CropSeason> findByParcel_Code(String parcelCode);
+  List<CropSeason> findByParcel_CodeAndDeletedAtIsNullOrderByIdAsc(String parcelCode);
 
-  boolean existsByParcel_IdAndStatus(Long parcelId, CropSeasonStatus status);
+  List<CropSeason> findByParcel_CodeOrderByIdAsc(String parcelCode);
+
+  boolean existsByParcel_IdAndStatusAndDeletedAtIsNull(Long parcelId, CropSeasonStatus status);
+
+  boolean existsByParcel_IdAndDeletedAtIsNull(Long parcelId);
 }

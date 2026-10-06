@@ -7,6 +7,8 @@ import Section from "./Section";
 interface CropSeasonPanelProps {
   parcelCode: string;
   cropSeasons: CropSeason[];
+  // Only ADMIN starts seasons and declares harvests on the web (farmers use the mobile app).
+  canManage: boolean;
   selectedId: number | null;
   onSelect: (id: number) => void;
   onCreated: (season: CropSeason) => void;
@@ -17,6 +19,7 @@ interface CropSeasonPanelProps {
 export default function CropSeasonPanel({
   parcelCode,
   cropSeasons,
+  canManage,
   selectedId,
   onSelect,
   onCreated,
@@ -108,13 +111,13 @@ export default function CropSeasonPanel({
         {cropSeasons.length === 0 && <p className="empty-hint">Thửa này chưa có vụ mùa nào.</p>}
       </div>
 
-      {!showForm && (
+      {canManage && !showForm && (
         <button className="btn btn-link" onClick={() => setShowForm(true)}>
           + Bắt đầu vụ mùa mới
         </button>
       )}
 
-      {showForm && (
+      {canManage && showForm && (
         <form className="inline-form" onSubmit={submit}>
           <input
             placeholder="Giống lúa"
@@ -153,9 +156,9 @@ export default function CropSeasonPanel({
           </div>
           <div className="form-actions">
             <button className="btn" onClick={askIsolation} disabled={isolationBusy}>
-              {isolationBusy ? "Đang hỏi…" : "Hỏi: ruộng này còn cách ly không? (M7)"}
+              {isolationBusy ? "Đang hỏi…" : "Hỏi: ruộng này còn cách ly không?"}
             </button>
-            {selected.status === "ACTIVE" && (
+            {canManage && selected.status === "ACTIVE" && (
               <button className="btn btn-secondary" onClick={harvest} disabled={harvestBusy}>
                 {harvestBusy ? "Đang xử lý…" : "Khai báo đã thu hoạch"}
               </button>

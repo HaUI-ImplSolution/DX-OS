@@ -75,9 +75,12 @@ Ngoài Expo Go, có thể build APK bằng EAS mà không cần cài Android Stu
 
 ## Phạm vi dữ liệu của nông dân
 
-- Backend chỉ trả cho `FARMER` những thửa có `farmerName` khớp tên trong token (claim `name`), không phân biệt hoa thường; `farmer1` có tên `Nguyễn Văn Nông`.
-  Thửa, vụ mùa, báo cáo hoặc thao tác thu hoạch trên dữ liệu của người khác trả `404`.
-  Thửa do FARMER tạo luôn mang tên của họ, bất kể `farmerName` trong request.
+- Backend chỉ trả cho `FARMER` những thửa thuộc nông hộ đã gắn với tài khoản (claim `sub` của token khớp `Household.keycloakUserId`), không phụ thuộc tên hiển thị.
+  Tài khoản chưa gắn nông hộ thấy danh sách rỗng và không tạo được thửa; admin tạo hộ cùng tài khoản bằng `POST /api/v1/households` hoặc gắn tài khoản có sẵn bằng `PATCH /api/v1/households/{code}/account`.
+  Thửa, vụ mùa, báo cáo hoặc thao tác thu hoạch trên dữ liệu của hộ khác trả `404`.
+  Thửa do FARMER tạo luôn thuộc hộ của chính họ.
+- Token của `FARMER` chỉ được chấp nhận khi cấp cho client `dxfarm-mobile` (claim `azp`); cùng token đó cấp qua client web bị backend từ chối `403`.
+  Mọi access token phải có `aud` chứa `dxfarm-api`; realm tự thêm vào token của client web và mobile, nên token cấp trước khi có cấu hình này (không có `aud`) bị `401` và phải đăng nhập lại.
 - Nội dung chẩn đoán (bệnh, khuyến nghị, thuốc, liều) chỉ có khi diagnosis đã `APPROVED`.
   Đặc tả: [`development/docs/pending_docs/mobile/BACKEND_CHANGES.md`](../development/docs/pending_docs/mobile/BACKEND_CHANGES.md).
 

@@ -7,9 +7,20 @@ export interface ApiResponse<T> {
 
 export type Role = "FARMER" | "ENGINEER" | "ADMIN";
 
+export interface Household {
+  id: number;
+  code: string;
+  fullName: string;
+  phone: string | null;
+  address: string | null;
+  accountLinked: boolean;
+  createdAt: string;
+}
+
 export interface Parcel {
   id: number;
   code: string;
+  householdCode: string;
   farmerName: string;
   areaHectares: number;
   location: string | null;
@@ -21,7 +32,7 @@ export interface Parcel {
 
 export interface ParcelCreateRequest {
   code: string;
-  farmerName: string;
+  householdCode: string;
   areaHectares: number;
   location?: string;
   latitude?: number;

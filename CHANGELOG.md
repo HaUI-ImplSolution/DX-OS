@@ -5,6 +5,20 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Backend (Spring Boot — `backend/DX-Farm`)
 
+### 2026-10-06
+
+**Đã xong — Khóa PHI và ràng buộc vụ mùa:**
+
+- `POST .../diagnosis/{id}/apply` nhận `appliedAt` trong khoảng từ hôm nay lùi tối đa 30 ngày; ngoài khoảng trả `422` với `errorCode` `INVALID_APPLIED_AT`.
+- Ngày nghiệp vụ (hạn cách ly, trạng thái cách ly, thu hoạch, thời điểm duyệt) tính theo `Clock` cố định `Asia/Ho_Chi_Minh` (`TimeConfig`); image backend đặt `TZ=Asia/Ho_Chi_Minh`.
+- Tạo báo cáo trên vụ đã `HARVESTED` trả `422` `CROP_SEASON_HARVESTED` trước khi lưu ảnh.
+- Mỗi thửa chỉ có một vụ `ACTIVE`: service trả `409`, partial unique index `uq_crop_seasons_one_active_per_parcel` (`schema.sql`) chặn race. `expectedHarvestDate` trước `startDate` trả `400`.
+- `Diagnosis` và `CropSeason` có cột `version` (optimistic lock); ghi đè đồng thời trả `409`. `apply` tăng version của vụ mùa để không lọt qua một lần thu hoạch đang chạy song song.
+- Upload ảnh: chỉ nhận JPEG/PNG theo nội dung thật (không theo `Content-Type` hay đuôi file), giới hạn 40 megapixel, giải mã rồi mã hóa lại nên file lưu không còn EXIF/GPS; hướng chụp EXIF được áp vào điểm ảnh.
+- Mọi mật khẩu/secret trong `application.yaml` bắt buộc khai báo qua biến môi trường, không còn giá trị mặc định; log package ứng dụng mặc định `INFO` (`LOG_LEVEL_APP`).
+- Test: Mockito cho khóa PHI, vụ mùa, báo cáo, lưu ảnh; `ConcurrencyIntegrationTest` chạy PostgreSQL qua Testcontainers cho `@Version` và partial unique index.
+
+
 ### 2026-10-02
 
 **Đã xong — Xử lý khi AI Service không khả dụng:**
@@ -186,6 +200,12 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## AI Service (Python)
 
+### 2026-10-06
+
+- Mọi endpoint ngoài `/disease/health` và `/disease/class-contract` (gồm `/disease/predict`, `/disease/knowledge/retrieve`, `/diagnose`) yêu cầu header `X-Service-Api-Key`; thiếu hoặc sai key trả `401`, chưa cấu hình key trả `503`.
+- Thêm `requirements-dev.txt` (pytest) và `tests/test_service_auth.py`.
+
+
 ### 2026-10-02
 
 - Đưa checkpoint YOLOv8n đã xác thực vào `ai/weights/best.pt` để clone mới có thể chạy Compose mà không phải chép model thủ công; vẫn kiểm tra SHA-256 trước khi nạp.
@@ -312,6 +332,15 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Đã test qua trình duyệt thật với từng role, xác nhận UI và 401/403 đúng chỗ.
 
 ## Deploy (`deploy`)
+
+### 2026-10-06
+
+- Không còn mật khẩu/secret mặc định trong `.env.example`; mọi biến secret dùng `:?` nên Compose dừng và báo tên biến thiếu.
+- `keycloak` nhận `SUPERSET_OIDC_CLIENT_SECRET` để thay vào realm lúc import.
+- Cổng AI không publish ra host; bỏ `AI_HOST_PORT`.
+- `reset.sh`: dừng stack, xoá `deploy/data` qua container tạm (tránh lỗi quyền root), dựng lại và chờ mọi service sẵn sàng.
+- CI: `ci.yml` (backend `mvn verify` gồm test), `ci-frontend.yml`, `ci-mobile.yml` (`tsc --noEmit`), `ci-ai.yml` (`pytest`), `ci-infra.yml` (gitleaks trên lịch sử commit, kiểm tra `docker compose config` và việc Compose dừng khi thiếu secret). Cấu hình gitleaks ở `.gitleaks.toml`.
+
 
 ### 2026-10-02
 
@@ -454,6 +483,11 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - **Còn thiếu**: mỗi app đích vẫn đăng nhập riêng — portal chỉ là danh sách link tĩnh, sẽ trở thành landing page thật khi SSO (Keycloak/Authentik) được triển khai.
 
 ## Identity Provider (`sso`, Keycloak)
+
+### 2026-10-06
+
+- `secret` của client `dxfarm-superset` trong `realm-dxfarm.json` là `${SUPERSET_OIDC_CLIENT_SECRET}`, lấy từ `deploy/.env` lúc import. Mật khẩu 3 tài khoản demo vẫn nằm trong realm và được ghi rõ là chỉ dùng demo.
+
 
 ### 2026-09-30
 

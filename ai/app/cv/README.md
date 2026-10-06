@@ -70,6 +70,7 @@ Ví dụ kết quả:
 - `CV_DEVICE=auto` ưu tiên CUDA khi có GPU, nếu không chạy CPU. Có thể đặt rõ `cpu` hoặc `cuda`.
 - Checkpoint phải khớp `CV_WEIGHTS_SHA256`, task `detect` và thứ tự class trong class contract thì mới được nạp.
 - Confidence nằm trong khoảng `0–1`. Workflow xem confidence thấp hơn `WORKFLOW_CONFIDENCE_THRESHOLD` — hiện là `0.70` — là chưa đủ tin cậy và yêu cầu chụp lại ảnh trước khi truy vấn Backend facts, RAG hoặc LLM.
+- `POST /api/v1/disease/predict` yêu cầu header `X-Service-Api-Key` như mọi endpoint AI khác; chỉ `/health` và `/class-contract` công khai.
 - API giới hạn tệp upload là ảnh và tối đa 10 MiB. Ảnh quá nhỏ, thiếu độ nét, không đọc được hoặc output model không hợp lệ sẽ bị từ chối.
 
 ## Giới hạn dữ liệu

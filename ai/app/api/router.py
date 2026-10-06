@@ -85,7 +85,11 @@ def get_class_contract():
     return class_contract()
 
 
-@router.post("/predict", response_model=DiseaseDetectionResponse)
+@router.post(
+    "/predict",
+    response_model=DiseaseDetectionResponse,
+    dependencies=[Depends(authorize_backend)],
+)
 async def predict_disease(request: Request, image: Annotated[UploadFile, File()]):
     data = await read_image(image)
     try:
@@ -94,7 +98,7 @@ async def predict_disease(request: Request, image: Annotated[UploadFile, File()]
         raise HTTPException(400, str(exc)) from exc
 
 
-@router.post("/knowledge/retrieve")
+@router.post("/knowledge/retrieve", dependencies=[Depends(authorize_backend)])
 def retrieve(payload: RetrieveRequest, db: Annotated[Session, Depends(get_db)]):
     if not payload.query.strip():
         raise HTTPException(422, "query must not be blank")

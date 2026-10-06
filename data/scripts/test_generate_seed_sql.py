@@ -11,31 +11,33 @@ SPEC.loader.exec_module(GENERATOR)
 
 class GenerateSeedSqlTest(unittest.TestCase):
 
-    def test_output_is_deterministic_and_tracks_blocked_rules(self):
+    def test_output_is_deterministic_and_has_no_blocked_rules(self):
         first_sql, first_blocked = GENERATOR.generate()
         second_sql, second_blocked = GENERATOR.generate()
 
         self.assertEqual(first_sql, second_sql)
-        self.assertEqual(2, len(first_blocked))
+        self.assertEqual(0, len(first_blocked))
         self.assertEqual(first_blocked, second_blocked)
-        self.assertTrue(all(rule["blocked_reason"] for rule in first_blocked))
 
-    def test_unapproved_rice_candidates_are_not_seeded(self):
+    def test_authorized_rice_candidates_are_seeded(self):
         sql, _ = GENERATOR.generate()
 
         self.assertIn("'Rice___Blast'", sql)
         self.assertIn("'Rice___healthy'", sql)
-        self.assertNotIn("NEWTEC_300SC", sql)
-        self.assertIn("No pesticide has eligible_for_pesticide_seed=true", sql)
-        self.assertIn("No treatment rule has eligible_for_seed=true", sql)
+        self.assertIn("'NEWTEC_300SC'", sql)
+        self.assertIn("'HELP_400SC'", sql)
+        self.assertIn("'2026.10.05-expert-approved-v1'", sql)
+        self.assertIn("'2026.10.05-help-400sc-v1'", sql)
+        self.assertNotIn("No pesticide has eligible_for_pesticide_seed=true", sql)
+        self.assertNotIn("No treatment rule has eligible_for_seed=true", sql)
         self.assertIn("No policy is approved for deterministic lookup", sql)
 
     def test_legacy_rows_are_deactivated_and_cleaned_safely(self):
         sql, _ = GENERATOR.generate()
 
         self.assertIn("UPDATE diseases\nSET active = FALSE", sql)
-        self.assertIn("UPDATE pesticides SET active = FALSE", sql)
-        self.assertIn("UPDATE treatment_rules SET active = FALSE", sql)
+        self.assertIn("UPDATE pesticides\nSET active = FALSE", sql)
+        self.assertIn("UPDATE treatment_rules tr", sql)
         self.assertIn("SELECT 1 FROM diagnoses dg WHERE dg.treatment_rule_id = tr.id", sql)
         self.assertIn("SELECT 1 FROM treatment_applications ta WHERE ta.pesticide_id = p.id", sql)
         self.assertIn("SELECT 1 FROM diagnoses dg WHERE dg.disease_id = d.id", sql)
@@ -83,8 +85,15 @@ class GenerateSeedSqlTest(unittest.TestCase):
         for item in knowledge:
             self.assertTrue(set(item["provenance"]["source_ids"]) <= source_ids)
         pesticide_ids = {item["candidate_id"] for item in pesticides}
-        self.assertTrue(all(not item["eligible_for_pesticide_seed"] for item in pesticides))
-        self.assertTrue(all(not item["eligible_for_seed"] for item in rules))
+        self.assertTrue(all(item["eligible_for_pesticide_seed"] for item in pesticides))
+        self.assertTrue(all(item["eligible_for_seed"] for item in rules))
+        self.assertTrue(
+            all(
+                item["seed_authorization"]["status"]
+                in GENERATOR.ALLOWED_SEED_AUTHORIZATION_STATUSES
+                for item in rules
+            )
+        )
         self.assertTrue(all(item["disease_code"] in disease_codes for item in rules))
         self.assertTrue(
             all(item["pesticide_candidate_id"] in pesticide_ids for item in rules)

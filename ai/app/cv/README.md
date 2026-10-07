@@ -120,4 +120,4 @@ Workflow giữ ngưỡng confidence 0.70 và từ chối fallback confidence 0 t
 - Backend kiểm lại trước ghi báo cáo/MinIO, kể cả bỏ qua precheck. Offline/retake dùng cùng gate khi gửi; replay idempotency trả báo cáo đã tồn tại.
 - Hai model nạp một lần; health `model_loaded` chỉ true khi cả hai sẵn sàng. `model_name`/`model_version` vẫn mô tả detector bệnh.
 
-**Giới hạn đã biết:** model nhận nhầm ngô, lúa mì và cỏ thành Rice với điểm rất cao. Tích hợp theo yêu cầu để thử trong sản phẩm; chưa nghiệm thu khả năng chặn mọi ảnh ngoài miền. Tăng threshold không sửa được các ca Rice gần 100%. Các mẫu thử, đối chiếu và kịch bản thủ công ở [test plan](../../../development/docs/pending_docs/CV_RICE_IMAGE_VALIDATION_TEST_PLAN.md).
+**Giới hạn đã biết:** model nhận nhầm ngô, lúa mì và cỏ thành Rice với điểm rất cao. Tích hợp theo yêu cầu để thử trong sản phẩm; chưa nghiệm thu khả năng chặn mọi ảnh ngoài miền. Tăng threshold không sửa được các ca Rice gần 100%. Các mẫu thử, đối chiếu và kịch bản thủ công ở [tóm tắt triển khai và kiểm chứng](../../../development/docs/pending_docs/CV_RICE_IMAGE_VALIDATION_SUMMARY.md).

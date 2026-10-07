@@ -29,8 +29,11 @@ Ngoài Expo Go, có thể build APK bằng EAS mà không cần cài Android Stu
   Lỗi mạng trả `ApiError` với `status` `0`.
 - **Chụp và gửi ảnh**: `expo-image-picker` mở camera hệ thống; `expo-image-manipulator` thu nhỏ cạnh dài tối đa 1280px và nén JPEG 0.7 để nằm xa giới hạn multipart 10MB.
   Ảnh gửi dạng multipart, part `image`, qua `XMLHttpRequest` để có thanh tiến trình.
+  App kiểm mỗi chiều từ 160px và dung lượng tối đa 10 MiB; Backend kiểm độ sáng và độ nét ngay sau khi chọn ảnh và khi nộp thật.
+  Ảnh không đạt phải chụp lại; precheck không xác nhận ảnh là lúa.
 - **Hàng đợi offline**: khi không có mạng hoặc gặp lỗi kết nối lúc gửi, ảnh được copy vào thư mục dữ liệu của app và ghi vào hàng đợi (`@react-native-async-storage/async-storage`).
   Mỗi ảnh có một UUID dùng làm header `Idempotency-Key`, nên gửi lại nhiều lần vẫn chỉ tạo một báo cáo.
+  Ảnh thay thế giữ `retakeOf` trong hàng đợi; Backend kiểm chất lượng khi có mạng, lỗi 422 không tạo báo cáo.
   Hàng đợi tự gửi khi `NetInfo` báo có mạng và khi app trở lại foreground; lỗi tạm thời được thử lại với khoảng chờ tăng dần (5 giây đến tối đa 5 phút, tối đa 8 lần).
   Lỗi `4xx` khác `408`, `409`, `429` đánh dấu "Lỗi" và không thử lại.
   Hàng đợi tách theo tài khoản; danh sách "Chờ gửi" và nút xoá nằm ở màn Hồ sơ, số lượng hiện ở đầu màn Báo cáo của vụ.
@@ -49,17 +52,19 @@ Ngoài Expo Go, có thể build APK bằng EAS mà không cần cài Android Stu
 - **Khai phun thuốc**: ở chi tiết báo cáo đã duyệt, nông dân nhập liều và ngày phun.
   Bản khai chờ kỹ sư xác nhận, trong lúc chờ vụ chưa thu hoạch được.
   Bị từ chối thì màn hiện lý do và cho khai lại.
-- **Hiển thị trạng thái**: trạng thái báo cáo suy ra từ `diagnosis`.
+- **Hiển thị trạng thái**: `NEEDS_RETAKE` của báo cáo được ưu tiên, các quyết định còn lại lấy từ `diagnosis`.
+  Màn chi tiết có liên kết xem chuỗi ảnh thay thế.
 
   | `diagnosis` | Chip | Nội dung nông dân thấy |
   |---|---|---|
   | `null` | Chờ chẩn đoán | Ảnh và thời điểm gửi |
   | `PENDING` | Chờ kỹ sư duyệt | Chỉ trạng thái |
   | `APPROVED` | Đã duyệt | Bệnh, khuyến nghị, thuốc, liều, số ngày cách ly |
-  | `REJECTED` | Cần chụp lại | Lý do từ chối và nút "Chụp lại" |
+  | `REJECTED` | Khuyến nghị bị từ chối | Lý do từ chối |
+  | Báo cáo `NEEDS_RETAKE` | Cần chụp lại | Lý do và nút chụp ảnh thay thế |
 
 - **Banner cách ly**: hiển thị khi `IsolationStatus.isolated` là `true`, kèm số ngày còn lại và ngày hết cách ly.
-- **Ảnh báo cáo**: tải từ `${EXPO_PUBLIC_API_BASE_URL}/uploads/{imageRef}`.
+- **Ảnh báo cáo**: tải từ `imageUrl` do Backend trả về; đây là URL MinIO có thời hạn qua gateway.
 - **HTTP cleartext**: `app.config.ts` cho phép HTTP thường (Android `usesCleartextTraffic`, iOS ATS) ở mọi profile EAS trừ `production`, để dev và preview gọi được Backend qua IP LAN.
 
 ## Cấu trúc thư mục
@@ -209,7 +214,7 @@ npx expo export --platform android
 | Trang đăng nhập Keycloak không tải, hoặc đăng nhập xong bị chuyển về `localhost` và Safari không mở được | `EXPO_PUBLIC_KEYCLOAK_URL` trong `.env` đang là `localhost` hoặc sai IP; đặt IP LAN của máy dev rồi chạy `npm start -- -c` |
 | "Không kết nối được. Kiểm tra mạng rồi thử lại." | Điện thoại không tới được Backend: sai IP trong `.env`, khác mạng WiFi hoặc firewall chặn cổng `9080` |
 | Danh sách thửa trống | `farmerName` của thửa không khớp tên trong token |
-| Ảnh báo cáo không hiển thị | Đường dẫn `/uploads/...` không truy cập được từ điện thoại; kiểm tra `EXPO_PUBLIC_API_BASE_URL` |
+| Ảnh báo cáo không hiển thị | Gateway trong `imageUrl` không truy cập được từ điện thoại hoặc link đã hết hạn; kiểm tra IP LAN và tải lại báo cáo |
 | Ảnh nằm mãi ở "Chờ gửi" | Chưa có mạng tới Backend hoặc đang chờ khoảng thử lại; đưa app về foreground để gửi ngay |
 | Ảnh ở trạng thái "Lỗi" | Backend từ chối ảnh (ví dụ sai định dạng, quá lớn hoặc vụ mùa không còn thuộc tài khoản); đọc thông báo dưới ảnh rồi xoá và chụp lại |
 | Đổi `.env` nhưng app vẫn dùng giá trị cũ | Chạy lại `npm start -- -c` |

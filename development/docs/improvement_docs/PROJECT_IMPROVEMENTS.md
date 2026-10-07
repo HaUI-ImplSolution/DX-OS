@@ -156,6 +156,8 @@ hiện có một số cái cần note lại để cải thiện:
 
 ## 11. Luồng chẩn đoán và AI [Quan trọng, phần đánh giá AI] (đề mục 4.2 phần I):
 
+Cập nhật phạm vi ngày 06/10/2026: người dùng chốt confidence 0.70 và bỏ phần dataset/công cụ/báo cáo chỉ số đánh giá khỏi Phase 6. Các nhận xét đánh giá bên dưới là đề xuất ban đầu, không phải việc còn chờ để đóng Phase 6.
+
 - Một báo cáo chỉ có tối đa 1 diagnosis (`createFromAi` ném lỗi nếu đã có). Nếu kỹ sư không đồng ý kết quả AI hoặc cần chạy lại sau khi farmer chụp ảnh mới, không có đường chạy lại trên cùng báo cáo. Chốt: cho phép nhiều lần chẩn đoán (có lịch sử) hay bắt buộc báo cáo mới.
 - Đường "nhập tay" (`POST .../diagnosis`) luôn đòi phải có treatment rule active, seed sạch chưa có rule nào nên đường này lỗi 404 trên database mới. Đã ghi ở mục 5, sửa cùng lúc khi đổi luồng nhập tay. Gốc rễ là chuyện thiếu dữ liệu thuốc / rule ở mục 18.
 - `createFromAi` gọi AI (timeout đọc 120 giây) ngay bên trong `@Transactional`, giữ một kết nối DB suốt thời gian đó. Vài kỹ sư bấm cùng lúc là cạn pool kết nối. Nên gọi AI ngoài transaction rồi mới mở transaction để lưu.

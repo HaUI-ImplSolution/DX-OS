@@ -28,7 +28,7 @@ const BASE_DELAY_MS = 5_000;
 const MAX_DELAY_MS = 300_000;
 
 type EnqueueInput =
-  | { id: string; kind?: "report"; cropSeasonId: number; parcelCode: string | null; uri: string }
+  | { id: string; kind?: "report"; cropSeasonId: number; retakeOf?: number; parcelCode: string | null; uri: string }
   | { id: string; kind: "parcel" | "season"; parcelCode: string | null; payload: string };
 
 interface QueueContextValue {
@@ -62,6 +62,7 @@ async function send(item: QueueItem) {
       { uri: item.uri ?? "", name: "report.jpg", type: "image/jpeg" },
       undefined,
       item.id,
+      item.retakeOf,
     );
   }
 }
@@ -197,6 +198,7 @@ export function QueueProvider({ children }: { children: ReactNode }) {
           : {
               kind: "report" as const,
               cropSeasonId: input.cropSeasonId,
+              retakeOf: input.retakeOf,
               parcelCode: input.parcelCode,
               uri: storeQueuedPhoto(input.id, input.uri),
             };

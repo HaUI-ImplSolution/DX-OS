@@ -21,4 +21,8 @@ public interface DiseaseReportRepository extends JpaRepository<DiseaseReport, Lo
   long countAwaitingDecision(@Param("seasonId") Long seasonId);
 
   Optional<DiseaseReport> findByClientRequestId(UUID clientRequestId);
+
+  List<DiseaseReport> findByRetakeOfIdAndDeletedAtIsNullOrderByIdAsc(Long reportId);
+
+  List<DiseaseReport> findByRetakeOfIdInAndDeletedAtIsNullOrderByIdAsc(List<Long> reportIds);
 }

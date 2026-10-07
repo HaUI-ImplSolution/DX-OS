@@ -14,7 +14,7 @@ Số ngày là ước lượng người-ngày, chưa tính thời gian chờ chu
 | P3 | Open-Core: workflow, gateway, storage, sơ đồ | Nghiêm trọng | A | 5-7 ngày | P2 | 7, 8, 17 |
 | P4 | Duyệt thửa/vụ, mã chuẩn, GPS, trang quản lý | Quan trọng | B | 6-8 ngày | P3 | 2, 3, 12, 13, 15, 16 |
 | P5 | Vòng đời vụ mùa và thông báo cho farmer | Quan trọng | B | 4-5 ngày | P4 | 4, 10, 13, 15 |
-| P6 | AI: kiểm tra ảnh, chẩn đoán, đánh giá | Quan trọng | A (đánh giá), B (còn lại) | 5-6 ngày | P1 (song song được với P4) | 5, 11 |
+| P6 | AI: kiểm tra ảnh, chẩn đoán | Quan trọng | B | 5-6 ngày | P1 (song song được với P4) | 5, 11 |
 | P7 | Dữ liệu, BI và tri thức | Quan trọng | B | 4-5 ngày | P4, P6 | 14, 21 |
 | P8 | Kiểm thử, dữ liệu demo, hồ sơ nộp bài | Nghiêm trọng (hạn nộp) | A | 5-6 ngày | làm xuyên suốt, chốt sau cùng | 17, 18, 19, 20 |
 | P9 | _(Đã loại bỏ, xem ghi chú dưới bảng)_ | - | - | - | - | - |
@@ -22,7 +22,7 @@ Số ngày là ước lượng người-ngày, chưa tính thời gian chờ chu
 
 P9 đã loại bỏ: D1 (phase 0, chốt 05/10/2026) xác nhận với giảng viên hướng dẫn/BTC rằng đề tài Agri-Carbon hợp lệ ở vòng HaUI, không cần ứng dụng minh họa thứ hai.
 
-Phủ đủ 24 mục: 1→P2, 2→P4, 3→P4, 4→P5, 5→P6, 6→P2, 7→P3, 8→P3, 9→P1, 10→P1+P5, 11→P6, 12→P4, 13→P4+P5, 14→P7, 15→P4+P5+P10, 16→P2+P4+P8, 17→P1+P3+P8, 18→P8, 19→P8, 20→P8, 21→P7, 22→P0, 23→P0, 24→P10.
+Ánh xạ 24 mục ban đầu: 1→P2, 2→P4, 3→P4, 4→P5, 5→P6, 6→P2, 7→P3, 8→P3, 9→P1, 10→P1+P5, 11→P6, 12→P4, 13→P4+P5, 14→P7, 15→P4+P5+P10, 16→P2+P4+P8, 17→P1+P3+P8, 18→P8, 19→P8, 20→P8, 21→P7, 22→P0, 23→P0, 24→P10.
 
 ## 2. Thứ tự và phụ thuộc
 
@@ -48,7 +48,7 @@ Giữ bảng dưới làm phương án dự phòng — chỉ áp dụng lại n�
 | P2 | Household gắn `sub`, ma trận quyền, chặn farmer ở web và Superset | Onboarding qua Keycloak Admin API, xóa mềm |
 | P3 | Workflow dùng chung có lịch sử + `assignedTo` + danh sách chờ (tự làm, theo D2), cửa API bằng APISIX standalone (theo D3), MinIO (theo D4), sơ đồ 3 tầng | Flowable (đã loại theo D2) |
 | P4 | Duyệt thửa/vụ qua workflow, trang quản lý tối thiểu cho admin và engineer | GPS nâng cao, danh mục giống đầy đủ, định tuyến Mattermost |
-| P6 | Báo cáo đánh giá AI, precheck ảnh cơ bản | Vòng phản hồi nhãn, nhập triệu chứng bằng text |
+| P6 | Precheck ảnh cơ bản | Vòng phản hồi nhãn, nhập triệu chứng bằng text |
 | P8 | Toàn bộ | |
 | P5, P7, P10 | | Hoãn |
 
@@ -189,27 +189,28 @@ Tất cả D1-D10 đã chốt ngày 05/10/2026, xem `phase-0-chot-quyet-dinh-pha
 - Rủi ro: scheduler chạy sai múi giờ, đã được xử lý ở P1.
 - Kết quả mong muốn: vụ mùa đi hết vòng từ tạo đến thu hoạch có kiểm soát, farmer nhận được thông báo ở mọi mốc quan trọng.
 
-## P6. AI: kiểm tra ảnh, chẩn đoán, đánh giá
+## P6. AI: kiểm tra ảnh, chẩn đoán
 
-- Mức độ: Quan trọng. Nhóm A cho báo cáo đánh giá, B cho phần còn lại. Ước lượng 5-6 ngày. Mục tham chiếu: 5, 11.
+- Mức độ: Quan trọng. Nhóm B. Ước lượng 5-6 ngày. Mục tham chiếu: 5, 11.
 - Thay đổi tổng quát:
-  - Endpoint precheck ảnh qua backend, kiểm tra ảnh trên máy, thêm lớp lọc ảnh không phải lúa, chỉnh ngưỡng độ nét bằng ảnh thật.
+  - Endpoint precheck ảnh qua backend, mobile kiểm kích thước và dung lượng, server kiểm độ sáng và độ nét.
   - Báo cáo có trạng thái "cần chụp lại" riêng, tách khỏi từ chối chẩn đoán, farmer chụp lại được liên kết với báo cáo cũ.
   - Nhập triệu chứng thay luồng nhập kết quả tay: truy xuất RAG xếp hạng bệnh trong danh mục, kỹ sư chốt.
   - Gọi AI ngoài transaction, cho phép chẩn đoán lại, lưu nhãn kỹ sư chốt làm dữ liệu huấn luyện.
-  - Báo cáo đánh giá AI: test set độc lập, chỉ số theo lớp, confusion matrix, phân tích lỗi, giới hạn.
+  - Giữ ngưỡng confidence 0.70; precheck chỉ kiểm chất lượng ảnh, không xác nhận ảnh là lúa.
 - Phạm vi: AI service, backend (trạng thái báo cáo, luồng chẩn đoán), mobile (màn chụp), web (màn kỹ sư).
 
 | Tình huống | Hiện tại | Sau phase |
 |---|---|---|
-| Ảnh mờ hoặc không phải lúa | Có thể ra "lúa khỏe" | Bị chặn ngay lúc chụp, yêu cầu chụp lại |
+| Ảnh mờ/nhỏ/tối/chói | Chỉ kiểm khi chẩn đoán | Precheck trước khi gửi và kiểm lại ở server |
+| Ảnh không phải lúa | Không có lớp lọc riêng | Vẫn là giới hạn của model; precheck chỉ kiểm chất lượng ảnh |
 | Kỹ sư cần ảnh khác | Không có đường | Yêu cầu chụp lại kèm lý do, farmer được báo |
 | AI nhận không ra | Nhập tay (lỗi trên DB sạch) | Nhập triệu chứng, hệ thống gợi ý trong danh mục |
 | Kỹ sư không đồng ý AI | Không chạy lại được | Chẩn đoán lại có lịch sử |
 
-- Trade-off: lớp lọc ảnh thêm độ trễ và có thể chặn nhầm ảnh tốt, cần ngưỡng đo bằng dữ liệu thật. Giữ LLM không tự kết luận làm trải nghiệm kém "thông minh" nhưng đúng nguyên tắc an toàn. Sâu hại chưa có mô hình.
-- Rủi ro: thiếu ảnh thật để đo ngưỡng và đánh giá. Giảm thiểu bằng thu một bộ ảnh ngoài ruộng sớm.
-- Kết quả mong muốn: có báo cáo đánh giá AI nêu đủ mô hình, phiên bản, giấy phép, dữ liệu, giới hạn, trường hợp chuyển cho người, và luồng chụp lại hoạt động.
+- Trade-off: precheck thêm độ trễ và có thể từ chối ảnh dùng được. Giữ kỹ sư chốt bệnh và điều trị; sâu hại chưa có mô hình.
+- Rủi ro: AI không hoạt động khiến server chưa thể nhận ảnh. Mobile giữ ảnh trong hàng đợi để gửi lại khi dịch vụ phục hồi.
+- Kết quả mong muốn: precheck, chụp lại, gợi ý bệnh qua triệu chứng và chẩn đoán lại hoạt động; nhãn kỹ sư được lưu có cấu trúc.
 
 ## P7. Dữ liệu, BI và tri thức
 

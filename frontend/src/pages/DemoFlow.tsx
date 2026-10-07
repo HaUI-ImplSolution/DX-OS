@@ -77,7 +77,7 @@ export default function DemoFlow({ role, onError }: DemoFlowProps) {
 
   const updateDiagnosisInReport = (diagnosis: Diagnosis) => {
     setReports((prev) =>
-      prev.map((r) => (r.id === diagnosis.diseaseReportId ? { ...r, diagnosis } : r)),
+      prev.map((r) => (r.id === diagnosis.diseaseReportId ? { ...r, diagnosis, status: "PROCESSED" } : r)),
     );
   };
 
@@ -159,6 +159,7 @@ export default function DemoFlow({ role, onError }: DemoFlowProps) {
 
           {selectedReport && (
             <DiagnosisPanel
+              onReportUpdated={(updated) => setReports((items) => items.map((item) => item.id === updated.id ? updated : item))}
               report={selectedReport}
               diseases={diseases}
               currentRole={role}

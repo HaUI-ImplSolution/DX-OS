@@ -16,6 +16,7 @@ export interface QueueItem {
   kind?: QueueKind;
   // Reports only.
   cropSeasonId: number | null;
+  retakeOf?: number;
   // Reports: where the photo was taken. Seasons: the parcel the season is for.
   parcelCode: string | null;
   // Reports only: photo copied into the app's document directory.

@@ -21,11 +21,12 @@
 
 **Backend**
 
-- `DiseaseReportService.create()` là `@Transactional`.
+- `DiseaseReportService.create()` kiểm chất lượng ảnh ngoài transaction, rồi mở transaction ghi để lưu báo cáo.
   Nhánh idempotent (`Idempotency-Key` đã dùng) trả báo cáo cũ ngay, không lưu báo cáo mới; nhánh tạo mới kết thúc bằng `saveAndFlush`.
-- `DiagnosisService.create()` (nhập tay) và `createFromAi()` (gọi AI) đều là `@Transactional` và lưu `Diagnosis` với `approvalStatus = PENDING` bằng `save` ở dòng cuối.
-  - `createFromAi()` gọi `AiDiagnosisClient.diagnose()` bên trong transaction, trước `save`; AI lỗi, ảnh bị triage hoặc rule đổi version đều ném exception trước `save`.
-  - `treatmentRule = null` chỉ xảy ra ở `createFromAi()` khi AI trả đường `review_required`; `create()` luôn có rule.
+- `DiagnosisService.create()` (nhập tay) là `@Transactional`; `createFromAi()` (gọi AI) không mở transaction, chỉ transaction ghi ngắn sau khi AI trả kết quả.
+  Cả hai lưu `Diagnosis` với `approvalStatus = PENDING` bằng `saveAndFlush`.
+  - `createFromAi()` gọi `AiDiagnosisClient.diagnose()` ngoài transaction; AI lỗi, ảnh bị triage, rule đổi version hoặc có chẩn đoán mới hơn trong lúc chờ đều ném exception trước khi lưu.
+  - `treatmentRule = null` xảy ra ở `createFromAi()` khi AI trả đường `review_required`, và ở `create()` khi bệnh chưa có rule được duyệt.
 - `DiseaseReport.reportedAt` và `Diagnosis.diagnosedAt` là `Instant`; `confidence` là `BigDecimal` trong khoảng 0–1.
 - Ngoài `MattermostDatabaseSeeder`, Backend gọi Mattermost qua `MattermostWebhookClient`; cấu hình nằm ở khóa `mattermost.webhook` cạnh `mattermost.db` trong `application.yaml`.
 - `AiDiagnosisClient` là mẫu client HTTP ra ngoài: `RestClient` + `JdkClientHttpRequestFactory` với timeout cấu hình được.
@@ -66,7 +67,7 @@ DiagnosisService.createFromAi()──┘
 | ------------------------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------- |
 | `DiseaseReportService.create()`       | Ngay sau `saveAndFlush` của báo cáo mới, ngoài khối `try/catch`                   | Nhánh idempotent trả báo cáo cũ; `saveAndFlush` lỗi   |
 | `DiagnosisService.create()`           | Ngay sau `save`                                                                   | Validate hoặc `save` lỗi                              |
-| `DiagnosisService.createFromAi()`     | Ngay sau `save`, tức sau lệnh gọi AI và kiểm tra version rule                     | AI lỗi, bị triage, rule đổi version, bệnh không hợp lệ |
+| `DiagnosisService.createFromAi()`     | Ngay sau lưu, tức sau lệnh gọi AI và kiểm tra version rule                        | AI lỗi, bị triage, rule đổi version, bệnh không hợp lệ |
 
 - Nhánh idempotent bắt buộc không publish: app mobile gửi lại cùng `Idempotency-Key` khi mất mạng, nếu publish sẽ có thông báo trùng cho một báo cáo.
 
@@ -185,7 +186,7 @@ mattermost:
 ```
 
 - Chẩn đoán không tự chạy khi có báo cáo; bước 2 do kỹ sư kích hoạt, nên thông báo "chẩn đoán chờ duyệt" chỉ có sau khi có người gọi.
-- Ở `createFromAi()`, thông báo đi sau commit nên đến sau khi AI xử lý xong, tối đa theo `ai.service.read-timeout-ms`.
+- Ở `createFromAi()`, thông báo đi sau commit của transaction ghi nên đến sau khi AI xử lý xong, tối đa theo `ai.service.read-timeout-ms`.
 - Gửi lại báo cáo với `Idempotency-Key` đã dùng không sinh thông báo thứ hai.
 
 **Độ tin cậy của thông báo**

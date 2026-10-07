@@ -38,10 +38,29 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 - Push thật (FCM, UnifiedPush): hộp thông báo chỉ kéo về khi mở app (P10).
 - Hộp thông báo cho engineer và admin: họ thấy việc chờ ở hàng đợi và Mattermost.
-- Thông báo `RETAKE_REQUESTED` (P6).
 - Phun lặp lại nhiều lần trên cùng một chẩn đoán.
 - SLA nhắc kỹ sư khi bản khai phun chờ xác nhận quá lâu.
 - Lịch sử thu hoạch thay hộ trong timeline workflow (hiện nằm trên vụ và log backend).
+
+**Đã xong — Kiểm tra ảnh, yêu cầu chụp lại, chẩn đoán lại và gợi ý theo triệu chứng:**
+
+- `V8__report_quality_and_diagnosis_history.sql`: `diagnoses` không còn unique theo `disease_report_id` và có `symptom_text`; `disease_reports` có trạng thái, lý do và liên kết chụp lại, kết quả chất lượng ảnh, `version`; bảng `training_labels`.
+- `POST /api/v1/disease-reports/precheck` (FARMER) kiểm kích thước, độ sáng và độ nét của ảnh, không lưu gì; không xác nhận ảnh là lúa.
+  Nộp báo cáo kiểm lại chất lượng ngoài transaction: ảnh không đạt trả `422`, AI không chạy trả `503`, ảnh lưu bỏ EXIF/GPS và báo cáo ghi kết quả chất lượng.
+- `PATCH /api/v1/disease-reports/{id}/request-retake` (ENGINEER, ADMIN, lý do bắt buộc) đặt báo cáo `NEEDS_RETAKE` mà không đổi quyết định chẩn đoán.
+  Hộ nhận thông báo `RETAKE_REQUESTED`, chẩn đoán đang chờ duyệt đóng thành `CANCELLED`; chẩn đoán đã `APPROVED` hoặc báo cáo đã yêu cầu rồi trả `409`.
+  `POST .../disease-reports?retakeOf={id}` gửi ảnh thay thế: báo cáo gốc phải `NEEDS_RETAKE`, cùng vụ, chưa có ảnh thay thế; báo cáo trả `retakeOf` và `retakeIds`.
+- Một báo cáo có nhiều chẩn đoán, bản mới nhất là hiện hành.
+  `POST .../diagnosis/ai` chạy lại được, gọi AI ngoài transaction và trả `409` nếu có chẩn đoán mới hơn trong lúc chờ; `GET .../diagnosis/history` trả mọi bản.
+  Chẩn đoán mới đóng workflow chờ của bản cũ; khóa PHI tính trên mọi lần phun của vụ.
+- `POST .../diagnosis/suggest` (ENGINEER, ADMIN) xếp hạng bệnh trong danh mục từ triệu chứng, kèm evidence và nguồn, không lưu gì.
+  `POST .../diagnosis` nhận `symptomText` tùy chọn; thiếu treatment rule được duyệt vẫn lưu chẩn đoán chờ khuyến nghị, không áp dụng được thuốc.
+  Khi kỹ sư duyệt, `training_labels` ghi triệu chứng, mã bệnh, người duyệt và chẩn đoán bị thay.
+
+**Chưa làm:**
+
+- Hiệu chuẩn ngưỡng ảnh bằng ảnh ngoài ruộng.
+- Báo cáo đánh giá AI (test set độc lập, chỉ số theo lớp): bỏ khỏi phase.
 
 ### 2026-10-06
 
@@ -242,8 +261,14 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Màn Chi tiết báo cáo cho nông dân khai "Tôi đã phun thuốc" (liều, ngày phun) khi chẩn đoán đã duyệt.
   Màn hiện trạng thái chờ hoặc đã được kỹ sư xác nhận, và lý do khi bị từ chối để khai lại.
 
+- Màn `capture` kiểm ảnh trước khi gửi: kích thước và dung lượng trên máy, độ sáng và độ nét qua Backend; ảnh không đạt khóa nút gửi và hiện lý do.
+  Mất mạng thì ảnh vào hàng đợi, Backend kiểm khi gửi.
+- Báo cáo `NEEDS_RETAKE` hiện chip "Cần chụp lại" và lý do; nút "Chụp lại" gửi ảnh thay thế liên kết báo cáo cũ (`retakeOf` giữ trong hàng đợi offline), màn chi tiết có liên kết xem ảnh trước và ảnh chụp lại.
+  Chẩn đoán bị từ chối hiện "Khuyến nghị bị từ chối", không còn nút chụp lại.
+
 **Chưa làm:**
 
+- Chưa xác nhận camera, hàng đợi offline và chuỗi chụp lại trên điện thoại thật.
 - Hộp thông báo chỉ tải trang đầu (30 thông báo mới nhất), chưa có cuộn tải thêm.
 
 ### 2026-10-06
@@ -307,6 +332,17 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - `mobile/README.md`: chạy thử trên điện thoại thật với IP LAN, biến môi trường, tài khoản demo, kiểm tra mã nguồn.
 
 ## AI Service (Python)
+
+### 2026-10-07
+
+- `POST /api/v1/disease/precheck` kiểm chất lượng ảnh (JPEG/PNG, tối đa 40 megapixel, mỗi chiều từ 160px, độ sáng 20–245, độ nét từ 20) và trả `passed`, `reasons`, kích thước, độ nét, độ sáng; không chạy YOLO.
+  `predict` dùng chung bước kiểm này.
+  Độ nét đo trên ảnh xám tối đa 640px, bỏ viền, trung vị theo 16 vùng và trừ nhiễu, nên sọc màn hình, nhiễu hạt, chữ và viền sắc không che được ảnh mờ.
+- `POST /api/v1/disease/symptoms/suggest` xếp hạng các mã bệnh trong danh mục từ triệu chứng bằng RAG, kèm evidence và nguồn; điểm là độ tương đồng tài liệu, không phải confidence.
+
+**Chưa làm:**
+
+- Ngưỡng ảnh chưa hiệu chuẩn bằng ảnh ngoài ruộng; precheck không xác nhận ảnh là lúa.
 
 ### 2026-10-06
 
@@ -395,6 +431,8 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ### 2026-10-07
 
+- Panel Chẩn đoán cho kỹ sư nhập triệu chứng, xem gợi ý bệnh kèm evidence và nguồn rồi chọn mã, chạy lại chẩn đoán AI và xem lịch sử chẩn đoán.
+  Kỹ sư yêu cầu ảnh mới kèm lý do; báo cáo hiện "Cần chụp lại" và khóa việc chẩn đoán, duyệt, ghi nhận phun cho tới khi có ảnh mới.
 - Hàng đợi kỹ sư có thêm tab "Khai phun thuốc".
   Kỹ sư nhận việc, bấm "Xác nhận đã phun" hoặc từ chối kèm lý do.
   Danh sách yêu cầu có thêm loại "Khai phun thuốc".

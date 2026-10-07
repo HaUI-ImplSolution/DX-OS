@@ -1,6 +1,9 @@
 package HaUI.ImplSolution.DX_Farm.exception;
 
 import HaUI.ImplSolution.DX_Farm.dto.ApiResponse;
+import jakarta.persistence.LockTimeoutException;
+import jakarta.persistence.OptimisticLockException;
+import jakarta.persistence.PessimisticLockException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -62,9 +65,9 @@ public class GlobalExceptionHandler {
         .body(ApiResponse.error(ex.getMessage(), data));
   }
 
-  @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
-  public ResponseEntity<ApiResponse<Void>> handleOptimisticLock(
-      ObjectOptimisticLockingFailureException ex) {
+  @ExceptionHandler({ObjectOptimisticLockingFailureException.class, OptimisticLockException.class,
+      PessimisticLockException.class, LockTimeoutException.class})
+  public ResponseEntity<ApiResponse<Void>> handleOptimisticLock(Exception ex) {
     return ResponseEntity.status(HttpStatus.CONFLICT)
         .body(ApiResponse.error("The record was modified by someone else, reload and try again"));
   }

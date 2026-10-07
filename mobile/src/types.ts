@@ -134,6 +134,20 @@ export interface DiseaseReport {
   reportedBy: string;
   reportedAt: string;
   diagnosis: Diagnosis | null;
+  status: "PENDING" | "NEEDS_RETAKE" | "PROCESSED";
+  retakeReason: string | null;
+  retakeOf: number | null;
+  retakeIds: number[];
+  quality: ImagePrecheck | null;
+}
+
+export interface ImagePrecheck {
+  passed: boolean;
+  reasons: string[];
+  width: number;
+  height: number;
+  sharpness: number;
+  brightness: number;
 }
 
 export interface HarvestWarning {
@@ -201,7 +215,8 @@ export type NotificationType =
   | "TREATMENT_CONFIRMED"
   | "TREATMENT_REJECTED"
   | "HARVEST_REMINDER"
-  | "HARVEST_RECORDED";
+  | "HARVEST_RECORDED"
+  | "RETAKE_REQUESTED";
 
 export interface AppNotification {
   id: number;

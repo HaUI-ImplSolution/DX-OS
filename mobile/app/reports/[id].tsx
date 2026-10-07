@@ -35,6 +35,14 @@ function doseText(rule: NonNullable<Diagnosis["treatmentRule"]>) {
 }
 
 function DiagnosisSection({ report }: { report: DiseaseReport }) {
+  if (report.status === "NEEDS_RETAKE") {
+    return (
+      <Card style={styles.rejected}>
+        <Text style={styles.cardTitle}>Cần chụp lại ảnh</Text>
+        <Text style={styles.body}>{report.retakeReason}</Text>
+      </Card>
+    );
+  }
   const diagnosis = report.diagnosis;
   if (!diagnosis) {
     return <Text style={styles.note}>Đang chờ chẩn đoán.</Text>;
@@ -45,7 +53,7 @@ function DiagnosisSection({ report }: { report: DiseaseReport }) {
   if (diagnosis.approvalStatus === "REJECTED") {
     return (
       <Card style={styles.rejected}>
-        <Text style={styles.cardTitle}>Kỹ sư yêu cầu chụp lại</Text>
+        <Text style={styles.cardTitle}>Kỹ sư từ chối khuyến nghị</Text>
         {diagnosis.rejectionReason && <Text style={styles.body}>{diagnosis.rejectionReason}</Text>}
       </Card>
     );
@@ -176,7 +184,7 @@ export default function ReportDetailScreen() {
     );
   }
 
-  const status = reportStatus(report.diagnosis);
+  const status = reportStatus(report.diagnosis, report.status);
   return (
     <ScrollView
       style={styles.container}
@@ -196,15 +204,30 @@ export default function ReportDetailScreen() {
         </Text>
       </View>
       <Timeline steps={timelineSteps(report.diagnosis)} />
+      {report.retakeOf && (
+        <Button
+          variant="secondary"
+          label="Xem ảnh trước"
+          onPress={() => router.push({ pathname: "/reports/[id]", params: { id: String(report.retakeOf) } })}
+        />
+      )}
+      {report.retakeIds.map((child) => (
+        <Button
+          key={child}
+          variant="secondary"
+          label={`Xem ảnh chụp lại #${child}`}
+          onPress={() => router.push({ pathname: "/reports/[id]", params: { id: String(child) } })}
+        />
+      ))}
       <DiagnosisSection report={report} />
       {data && report.diagnosis?.approvalStatus === "APPROVED" && (
         <SprayingSection key={data.spraying?.confirmationStatus ?? "none"} data={data} onChanged={refresh} />
       )}
-      {report.diagnosis?.approvalStatus === "REJECTED" && (
+      {report.status === "NEEDS_RETAKE" && report.retakeIds.length === 0 && (
         <Button
           label="Chụp lại"
           onPress={() =>
-            router.replace({ pathname: "/capture", params: { seasonId: String(report.cropSeasonId) } })
+            router.replace({ pathname: "/capture", params: { seasonId: String(report.cropSeasonId), retakeOf: String(report.id) } })
           }
         />
       )}

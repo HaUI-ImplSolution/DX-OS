@@ -174,9 +174,15 @@ export interface DiseaseReport {
   reportedBy: string;
   reportedAt: string;
   diagnosis: Diagnosis | null;
+  status: "PENDING" | "NEEDS_RETAKE" | "PROCESSED";
+  retakeReason: string | null;
+  retakeOf: number | null;
+  retakeIds: number[];
+  quality: ImagePrecheck | null;
 }
 
 export interface DiagnosisCreateRequest {
+  symptomText?: string;
   diseaseCode: string;
   confidence: number;
   modelVersion: string;
@@ -223,6 +229,23 @@ export interface Pesticide {
 export interface PokaYokeErrorData {
   errorCode: string;
   harvestLockedUntil: string | null;
+}
+
+export interface ImagePrecheck {
+  passed: boolean;
+  reasons: string[];
+  width: number;
+  height: number;
+  sharpness: number;
+  brightness: number;
+}
+
+export interface SymptomSuggestion {
+  disease_code: string;
+  disease_name: string;
+  score: number;
+  evidence: string;
+  source_ids: string[];
 }
 
 export type CaseType =

@@ -37,27 +37,30 @@ public class FileStorageService {
 
   // Returns the object key of the stored image.
   public String store(MultipartFile file, String uploadedBy) {
-    if (file == null || file.isEmpty()) {
-      throw new IllegalArgumentException("Image file is required");
-    }
-    byte[] original;
-    try {
-      original = file.getBytes();
-    } catch (IOException e) {
-      throw new IllegalStateException("Failed to read uploaded image", e);
-    }
-
-    ImageFormat format = detectFormat(original);
-    BufferedImage decoded = decode(original);
-    if (format == ImageFormat.JPEG) {
-      decoded = applyOrientation(decoded, readJpegOrientation(original));
-    }
-    byte[] sanitized = encode(decoded, format);
+    byte[] sanitized = sanitize(file);
+    ImageFormat format = detectFormat(sanitized);
 
     String key = UUID.randomUUID() + "." + format.extension;
     storageService.putObject(key, sanitized, format.contentType,
         Map.of("uploaded-by", uploadedBy, "source", "disease-report"));
     return key;
+  }
+
+  public byte[] sanitize(MultipartFile file) {
+    if (file == null || file.isEmpty() || file.getSize() > 10 * 1024 * 1024) {
+      throw new IllegalArgumentException("A JPEG/PNG image up to 10 MiB is required");
+    }
+    try {
+      byte[] original = file.getBytes();
+      ImageFormat format = detectFormat(original);
+      BufferedImage decoded = decode(original);
+      if (format == ImageFormat.JPEG) {
+        decoded = applyOrientation(decoded, readJpegOrientation(original));
+      }
+      return encode(decoded, format);
+    } catch (IOException e) {
+      throw new IllegalArgumentException("Failed to read uploaded image", e);
+    }
   }
 
   private enum ImageFormat {

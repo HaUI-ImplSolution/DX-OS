@@ -30,7 +30,7 @@ CV không chịu trách nhiệm:
 Ảnh lá lúa
   → API kiểm tra đây là ảnh và giới hạn dung lượng
   → PlantDiseaseService đọc ảnh RGB
-  → kiểm tra kích thước tối thiểu và độ sắc nét
+  → kiểm tra kích thước tối thiểu, độ sắc nét và độ sáng
   → YOLOv8n suy luận với kích thước ảnh 640
   → lọc bounding box theo confidence và IoU
   → chọn detection có confidence cao nhất
@@ -80,3 +80,25 @@ Checkpoint chỉ phát hiện 5 lớp bệnh lá lúa có trong `class_contract.
 Chất lượng kết quả ngoài điều kiện ảnh lá lúa hoặc ngoài năm lớp bệnh đã huấn luyện không được đảm bảo.
 
 Kết quả CV là tín hiệu chẩn đoán, không phải chỉ định canh tác. Các ràng buộc nghiệp vụ, thuốc, liều lượng, PHI và phê duyệt của kỹ sư luôn được xử lý ngoài module CV.
+
+## Kiểm tra chất lượng ảnh
+
+`POST /api/v1/disease/precheck` nhận multipart ảnh, yêu cầu `X-Service-Api-Key`; trả `passed`, `reasons`, `width`, `height`, `sharpness`, `brightness`.
+Precheck và predict dùng chung `inspect_image`; precheck không chạy YOLO.
+Backend bỏ EXIF/GPS, kiểm lại khi nộp và chỉ lưu ảnh đạt chuẩn.
+Ảnh kém chất lượng trả `passed=false`; dữ liệu ảnh không hợp lệ/định dạng không hỗ trợ trả 400.
+
+| Điều kiện | Ngưỡng |
+|---|---|
+| Định dạng / độ phân giải | JPEG/PNG, tối đa 40 megapixel |
+| Kích thước | Mỗi chiều từ 160px |
+| Độ sáng trung bình | 20–245 |
+| Độ nét | `sharpness >= 20` |
+
+Điểm nét được tính trên ảnh xám thu về tối đa 640px, không phóng lớn; bỏ 10% viền và làm mượt Gaussian nhị thức 5×5.
+Sau đó lấy trung vị phương sai Laplacian của 16 vùng, trừ phần nhiễu ước lượng bằng MAD của sai phân chéo 2×2.
+Phép tính dùng số thực để tránh clipping 8-bit.
+
+Precheck không xác nhận ảnh là lúa và chưa tách vùng lá; nền sắc hoặc chủ thể ngoài trung tâm có thể gây sai đánh giá.
+Ngưỡng 20 cần đối chiếu camera thực địa.
+Workflow giữ ngưỡng confidence 0.70 và từ chối fallback confidence 0 trước khi gọi Backend facts/RAG.

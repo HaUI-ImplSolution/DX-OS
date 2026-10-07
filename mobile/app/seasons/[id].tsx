@@ -166,7 +166,7 @@ export default function ReportsScreen() {
 }
 
 function ReportCard({ report, width }: { report: DiseaseReport; width: number }) {
-  const status = reportStatus(report.diagnosis);
+  const status = reportStatus(report.diagnosis, report.status);
   return (
     <Card
       style={[styles.card, { width }]}

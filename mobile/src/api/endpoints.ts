@@ -5,6 +5,7 @@ import type {
   CropSeasonInput,
   CropSeasonSuggestion,
   DiseaseReport,
+  ImagePrecheck,
   HarvestInput,
   HarvestReadiness,
   HarvestReschedule,
@@ -74,14 +75,18 @@ export const createDiseaseReport = (
   image: UploadFile,
   onProgress?: (fraction: number) => void,
   idempotencyKey?: string,
+  retakeOf?: number,
 ) =>
   upload<DiseaseReport>(
-    `/crop-seasons/${cropSeasonId}/disease-reports`,
+    `/crop-seasons/${cropSeasonId}/disease-reports${retakeOf ? `?retakeOf=${retakeOf}` : ""}`,
     "image",
     image,
     onProgress,
     idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {},
   );
+
+export const precheckDiseaseReport = (image: UploadFile) =>
+  upload<ImagePrecheck>("/disease-reports/precheck", "image", image);
 
 export const getCropSeason = (id: number) => request<CropSeason>(`/crop-seasons/${id}`);
 

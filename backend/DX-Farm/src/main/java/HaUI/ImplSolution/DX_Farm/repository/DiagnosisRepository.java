@@ -10,7 +10,27 @@ import org.springframework.data.repository.query.Param;
 
 public interface DiagnosisRepository extends JpaRepository<Diagnosis, Long> {
 
-  Optional<Diagnosis> findByDiseaseReportId(Long diseaseReportId);
+  Optional<Diagnosis> findTopByDiseaseReportIdOrderByIdDesc(Long diseaseReportId);
+
+  List<Diagnosis> findByDiseaseReportIdOrderByIdDesc(Long reportId);
+
+  @Query(
+  // @formatter:off
+      """
+      SELECT d
+      FROM Diagnosis d
+      JOIN FETCH d.disease
+      LEFT JOIN FETCH d.treatmentRule r
+      LEFT JOIN FETCH r.pesticide
+      WHERE d.diseaseReport.id IN :reportIds
+        AND d.id = (
+          SELECT MAX(latest.id)
+          FROM Diagnosis latest
+          WHERE latest.diseaseReport.id = d.diseaseReport.id
+        )
+      """)
+  // @formatter:on
+  List<Diagnosis> findLatestForReports(@Param("reportIds") List<Long> reportIds);
 
   // Approved diagnoses with a treatment rule that nobody has recorded spraying for yet.
   @Query("select count(d) from Diagnosis d where d.diseaseReport.cropSeason.id = :seasonId"

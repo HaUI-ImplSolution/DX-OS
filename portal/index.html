@@ -279,6 +279,38 @@
     font-size: 0.82em;
   }
 
+
+  /* ---------- Service status ---------- */
+  .status-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 10px;
+  }
+
+  .status-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 0.88rem;
+  }
+
+  .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--muted-2);
+    flex: none;
+  }
+
+  .status-item[data-state="up"] .status-dot { background: var(--accent); }
+  .status-item[data-state="down"] .status-dot { background: #c0392b; }
+  .status-state { margin-left: auto; color: var(--muted); font-size: 0.8rem; }
+  .status-item[data-state="down"] .status-state { color: #c0392b; font-weight: 600; }
+
   /* ---------- Footer ---------- */
   footer {
     text-align: center;
@@ -444,7 +476,14 @@
         Ứng dụng chính, Keycloak, Swagger và portal đi qua gateway ở một cổng; Superset (9081) và MinIO Console (9082) ở các cổng khác của cùng gateway, kênh chat ở cổng riêng. Link tự theo tên máy đang mở trang này.
       </div>
     </div>
+    <div class="section-head spaced">
+      <h2>Trạng thái dịch vụ</h2>
+      <span>Tự làm mới mỗi 30 giây</span>
+    </div>
+
+    <div class="status-list" id="status-list"></div>
   </main>
+
 
   <footer>
     <span class="foot-brand">DX-Farm</span> — MVP Agri-Carbon DX-OS · OLP Phần mềm nguồn mở 2026 (VFOSSA)
@@ -458,6 +497,63 @@
       url.port = link.dataset.port;
       link.href = url.toString();
     });
+
+    // Service status: same-origin services answer with their content, services on other ports are
+    // probed without reading the response (reachable or not).
+    (function () {
+      var list = document.getElementById("status-list");
+      var rows = {};
+
+      function row(key, label) {
+        var item = document.createElement("div");
+        item.className = "status-item";
+        item.dataset.state = "unknown";
+        item.innerHTML = '<span class="status-dot"></span><span></span><span class="status-state">đang kiểm tra</span>';
+        item.children[1].textContent = label;
+        list.appendChild(item);
+        rows[key] = item;
+      }
+
+      function set(key, up) {
+        rows[key].dataset.state = up ? "up" : "down";
+        rows[key].lastChild.textContent = up ? "hoạt động" : "ngừng";
+      }
+
+      function probe(key, url, sameOrigin) {
+        var options = { cache: "no-store" };
+        if (!sameOrigin) options.mode = "no-cors";
+        return fetch(url, options).then(
+          function (r) { set(key, sameOrigin ? r.ok : true); },
+          function () { set(key, false); });
+      }
+
+      function otherPort(port, path) {
+        return location.protocol + "//" + location.hostname + ":" + port + path;
+      }
+
+      [["web", "Ứng dụng chính"], ["backend", "Backend API"], ["ai", "AI chẩn đoán"],
+        ["storage", "Lưu trữ ảnh"], ["sso", "Keycloak (đăng nhập)"], ["bi", "BI Dashboard"],
+        ["chat", "Kênh chat"]].forEach(function (s) { row(s[0], s[1]); });
+
+      function refresh() {
+        probe("web", "/", true);
+        probe("sso", "/realms/dxfarm/.well-known/openid-configuration", true);
+        probe("bi", otherPort(9081, "/health"), false);
+        probe("chat", otherPort(8065, "/api/v4/system/ping"), false);
+        fetch("/api/v1/system/status", { cache: "no-store" })
+          .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+          .then(function (body) {
+            var seen = {};
+            body.data.services.forEach(function (s) {
+              if (rows[s.name]) { set(s.name, s.status === "UP"); seen[s.name] = true; }
+            });
+          })
+          .catch(function () { ["backend", "ai", "storage"].forEach(function (k) { set(k, false); }); });
+      }
+
+      refresh();
+      setInterval(refresh, 30000);
+    })();
   </script>
 </body>
 </html>

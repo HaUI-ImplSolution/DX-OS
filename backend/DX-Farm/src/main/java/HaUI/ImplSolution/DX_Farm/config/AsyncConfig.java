@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.config;
 
 import org.slf4j.Logger;

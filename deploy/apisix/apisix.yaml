@@ -98,6 +98,22 @@ routes:
         rejected_code: 429
         rejected_msg: "Too many questions, try again in a minute"
 
+  # Service status for the portal: public, limited per client address.
+  - id: api-system-status
+    vars: [["server_port", "==", "9080"]]
+    priority: 20
+    uri: /api/v1/system/status
+    methods: ["GET"]
+    upstream_id: backend
+    plugins:
+      limit-count:
+        count: 120
+        time_window: 60
+        key_type: var
+        key: remote_addr
+        rejected_code: 429
+        rejected_msg: "Too many status checks, try again in a minute"
+
   # CORS preflight carries no token; only a web app served from another origin sends it.
   - id: api-preflight
     vars: [["server_port", "==", "9080"]]

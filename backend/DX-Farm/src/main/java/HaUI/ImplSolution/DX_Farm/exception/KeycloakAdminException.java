@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.exception;
 
 // Keycloak Admin API could not complete a request (unreachable, rejected or unexpected reply).

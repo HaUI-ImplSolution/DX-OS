@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.service;
 
 import HaUI.ImplSolution.DX_Farm.core.identity.Household;

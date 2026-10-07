@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.event;
 
 import java.math.BigDecimal;

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.security;
 
 import HaUI.ImplSolution.DX_Farm.dto.ApiResponse;
@@ -26,7 +27,7 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler {
     response.setStatus(HttpStatus.FORBIDDEN.value());
     response.setCharacterEncoding("UTF-8");
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-    response.getWriter().write(objectMapper
-        .writeValueAsString(ApiResponse.error("Không đủ quyền thực hiện thao tác này")));
+    response.getWriter().write(objectMapper.writeValueAsString(
+        ApiResponse.error("ERR_FORBIDDEN", "Không đủ quyền thực hiện thao tác này")));
   }
 }

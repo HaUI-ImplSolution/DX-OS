@@ -1,4 +1,5 @@
 import { clearSession, getToken } from "./auth";
+import { errorMessageFor } from "./errorMessages";
 import type {
   ApiResponse,
   ApprovalRequest,
@@ -60,7 +61,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     clearSession();
   }
   if (!response.ok || !body?.success) {
-    const message = body?.message ?? `Lỗi HTTP ${response.status}`;
+    const message = errorMessageFor(body?.errorCode, body?.message ?? `Lỗi HTTP ${response.status}`);
     throw new ApiError(message, response.status, body?.data);
   }
   return body.data;

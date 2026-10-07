@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Rank only canonical diseases using evidence from the existing retriever."""
 
 from app.cv.contract import class_contract

@@ -2,6 +2,11 @@
 
 Trang tĩnh liệt kê link tới các ứng dụng trong hệ thống (Ứng dụng chính, BI Dashboard, Kênh chat nội bộ) cùng các trang quản trị (Keycloak, Superset, Mattermost, MinIO Console) và tài liệu API Swagger của Backend, để người dùng không phải tự nhớ/gõ URL từng app.
 
+Cuối trang có mục **Trạng thái dịch vụ**, tự làm mới mỗi 30 giây:
+- Backend, AI chẩn đoán và lưu trữ ảnh lấy từ `GET /api/v1/system/status` (công khai, qua gateway).
+- Ứng dụng chính và Keycloak được gọi trực tiếp qua gateway.
+- BI Dashboard (9081) và Kênh chat (8065) chỉ kiểm tra có phản hồi hay không.
+
 ## Chạy
 
 Nằm trong `deploy/docker-compose.yml`, lên cùng lệnh `docker compose up -d --build` sẵn có của repo.

@@ -3,6 +3,7 @@ export interface ApiResponse<T> {
   message: string;
   data: T;
   timestamp: string;
+  errorCode?: string;
 }
 
 export type Role = "FARMER" | "ENGINEER" | "ADMIN";

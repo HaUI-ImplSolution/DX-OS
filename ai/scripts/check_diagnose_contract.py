@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Run with ``python -m scripts.check_diagnose_contract`` from ``ai/``."""
 
 from datetime import date

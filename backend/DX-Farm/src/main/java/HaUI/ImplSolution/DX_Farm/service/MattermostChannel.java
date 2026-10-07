@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.service;
 
 // Where a notification goes. Each channel has its own webhook; one without a webhook uses the

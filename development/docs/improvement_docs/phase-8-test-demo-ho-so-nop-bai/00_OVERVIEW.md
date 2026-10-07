@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Chờ Q2 (chuyên gia duyệt treatment rule), Q1 đã chốt |
+| Trạng thái | Code và tài liệu đã làm, chờ chạy kiểm thử và Q2 (chuyên gia duyệt treatment rule); Q1 đã chốt |
 | Mức độ | Nghiêm trọng (hạn nộp) |
 | Nhóm ưu tiên | A |
 | Ước lượng | 5-6 ngày, chạy xuyên suốt |
@@ -80,3 +80,19 @@
 - [ ] `README.md` (kiến trúc 3 tầng, H-P-D-I, cài đặt, API, tài khoản demo — theo đúng yêu cầu đề).
 - [ ] `CHANGELOG.md`, `CONTRIBUTING.md` (mới), `LICENSES.md`, SBOM (mới).
 - [ ] `.github/ISSUE_TEMPLATE/`, `.github/PULL_REQUEST_TEMPLATE.md` (mới).
+
+## 11. Việc chưa làm và chưa chốt
+
+**Chưa làm**
+
+- Chạy `seed_demo.py` và `e2e.py` trên stack sạch (T8-01, T8-02), workflow `E2E` chưa chạy trên GitHub; stack rút gọn của CI chưa được dựng thử.
+- Tag và release, bật GitHub Issues và tạo issue mẫu, chuyển repo sang public (việc trên GitHub).
+- Báo cáo kỹ thuật, slide, video và rehearsal; mới có kịch bản demo, bộ trả lời hội đồng và dàn ý ở `development/docs/submission/`.
+- Test tích hợp phạm vi dữ liệu giữa hai nông hộ và idempotency của thửa/vụ.
+- Ảnh lá lúa thật cho `seed_demo.py --images` và cho chẩn đoán AI trong demo.
+- Chart "Thửa đang cách ly" và "Tỷ lệ AI đúng/sai" trên Superset vẫn trống cho tới khi có rule được duyệt và chẩn đoán AI.
+
+**Chưa chốt**
+
+- Q2: treatment rule mẫu có kịp được chuyên gia duyệt trước hạn không.
+- Ngày hạn nộp thật.

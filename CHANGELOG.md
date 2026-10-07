@@ -7,6 +7,12 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ### 2026-10-07
 
+**Đã xong — Kiểm thử, dữ liệu demo, hồ sơ nộp bài:**
+
+- `ApiResponse` lỗi có thêm trường `errorCode` ổn định (ví dụ `ERR_FORBIDDEN`, `ERR_NOT_FOUND`, `ERR_VALIDATION`, `ERR_INTERNAL`); lỗi poka-yoke giữ mã riêng (`HARVEST_TOO_EARLY`, `POKA_YOKE_VIETGAP_VIOLATION`, ...).
+- `GET /api/v1/system/status` công khai, trả `UP`/`DOWN` của backend, AI Service và lưu trữ ảnh cho portal.
+- Mọi file Java có SPDX header `Apache-2.0`.
+
 **Đã xong — Dữ liệu, BI và hỏi đáp tài liệu:**
 
 - `V9__bi_views.sql` thêm sáu view chỉ đọc cho BI: `vw_parcels_approved`, `vw_crop_seasons_approved`, `vw_disease_reports_processed`, `vw_diagnoses_approved`, `vw_treatment_applications_confirmed`, `vw_ai_diagnosis_outcomes`.
@@ -248,12 +254,6 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - **Operational Data**: `Parcel` (thửa ruộng), `CropSeason` (vụ mùa), `DiseaseReport` (báo cáo sự cố kèm ảnh, upload multipart lưu local disk), `Diagnosis` (chẩn đoán + khuyến nghị + trạng thái duyệt), `TreatmentApplication` (bản ghi đã phun thuốc, snapshot liều/PHI).
 - Luồng nghiệp vụ đầy đủ: báo bệnh có ảnh → tra `Disease`→`TreatmentRule` deterministic (không qua LLM) → tự sinh khuyến nghị tiếng Việt → kỹ sư Approve/Reject (có state machine chặn duyệt/áp dụng sai thứ tự) → ghi nhận đã phun thuốc, tự tính ngày hết cách ly → **poka-yoke**: gọi thu hoạch khi còn cách ly bị chặn cứng, trả `HTTP 422` kèm mã lỗi `POKA_YOKE_VIETGAP_VIOLATION`.
 
-**Chưa làm** (ngoài phạm vi backend hoặc chưa cần ở Phase 0):
-
-- Vision API và RAG prototype đã có trên nhánh `feature/make-data`, nhưng backend chưa có HTTP client gọi AI Service; `Diagnosis` vẫn nhận sẵn `disease_id/confidence/model_version`.
-- Chưa có Carbon/AWD Estimator, IoT simulator, BI dashboard (Superset/Metabase), SSO nặng (Keycloak/Authentik) hay kênh chat nội bộ (Mattermost) — thuộc Giai đoạn 1–3 theo roadmap trong `README.md`.
-  Auth/role cơ bản (JWT, FARMER/ENGINEER/ADMIN) đã xong ở trên.
-
 ## Dữ liệu (`data`)
 
 ### 2026-09-30
@@ -268,6 +268,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ### 2026-10-07
 
+- Thông báo lỗi từ Backend hiển thị bằng tiếng Việt theo `errorCode` (`src/api/errorMessages.ts`).
 - Màn `notifications` là hộp thông báo của nông dân, chạm một thông báo để mở thửa, vụ hoặc báo cáo liên quan.
   Nút "Thông báo (n)" ở đầu màn Thửa.
   Số chưa đọc được tải khi mở app, mỗi lần app trở lại foreground, mỗi lần quay lại màn Thửa và khi kéo làm mới.
@@ -351,6 +352,8 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ### 2026-10-07
 
+- `requirements.lock` khóa phiên bản chính xác mọi gói Python; Dockerfile cài `requirements.txt` với file này làm constraints.
+- Mọi file Python có SPDX header `Apache-2.0`.
 - `POST /api/v1/disease/precheck` kiểm chất lượng ảnh (JPEG/PNG, tối đa 40 megapixel, mỗi chiều từ 160px, độ sáng 20–245, độ nét từ 20) và trả `passed`, `reasons`, kích thước, độ nét, độ sáng; không chạy YOLO.
   `predict` dùng chung bước kiểm này.
   Độ nét đo trên ảnh xám tối đa 640px, bỏ viền, trung vị theo 16 vùng và trừ nhiễu, nên sọc màn hình, nhiễu hạt, chữ và viền sắc không che được ảnh mờ.
@@ -438,15 +441,11 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - RAG prototype local: ingest 38 tài liệu tri thức bệnh cây trồng, tìm kiếm cosine similarity và tích hợp Qwen2.5-1.5B qua Ollama để giải thích ngữ cảnh.
 - Vision API cơ bản: FastAPI endpoint `POST /api/v1/disease/predict` nhận ảnh và phân loại bệnh dựa trên mô hình PyTorch EfficientNet-B4.
 
-**Chưa làm:**
-
-- Chưa nối HTTP client giữa Spring Boot backend và AI Service (API workflow AI chạy local độc lập).
-- 8 candidate quy tắc điều trị trạng thái HOLD được giữ riêng để audit, không seed vào CSDL chính thức.
-
 ## Frontend (`frontend`)
 
 ### 2026-10-07
 
+- Thông báo lỗi từ Backend hiển thị bằng tiếng Việt theo `errorCode` (`src/errorMessages.ts`).
 - Trang `/knowledge` ("Tài liệu") cho kỹ sư và admin: nhập câu hỏi, tùy chọn giới hạn theo bệnh, nhận các đoạn tài liệu kèm danh sách nguồn (link, giấy phép, trạng thái duyệt).
 
 - Panel Chẩn đoán cho kỹ sư nhập triệu chứng, xem gợi ý bệnh kèm evidence và nguồn rồi chọn mã, chạy lại chẩn đoán AI và xem lịch sử chẩn đoán.
@@ -520,6 +519,14 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Đã test qua trình duyệt thật với từng role, xác nhận UI và 401/403 đúng chỗ.
 
 ## Deploy (`deploy`)
+
+### 2026-10-07
+
+- `demo/seed_demo.py` tạo dữ liệu demo qua API: nông hộ (gắn `farmer1`), thửa có tọa độ ĐBSCL, vụ đang canh tác và đã thu hoạch, báo cáo kèm ảnh, chẩn đoán đã duyệt và đang chờ, yêu cầu chụp lại, một thửa chờ duyệt.
+  Chạy lại không tạo trùng.
+- `demo/e2e.py` chạy kịch bản đầu-cuối qua gateway: phạm vi dữ liệu, poka-yoke GPS và ngày thu hoạch, duyệt qua workflow, upload idempotent, kiểm tra chất lượng ảnh, duyệt chẩn đoán, khai phun thuốc và khóa thu hoạch.
+- Workflow `E2E` (`.github/workflows/e2e.yml`) dựng stack rút gọn bằng `demo/docker-compose.e2e.yml`, nạp dữ liệu demo, thêm một rule thử nghiệm riêng cho CI (`demo/ci_fixture_rule.sql`) rồi chạy `e2e.py`.
+- Gateway thêm route công khai `GET /api/v1/system/status`, giới hạn 120 lần mỗi phút.
 
 ### 2026-10-06
 
@@ -676,6 +683,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Portal (`portal`)
 
+### 2026-10-07
+
+- Mục "Trạng thái dịch vụ" ở cuối trang hiện hoạt động hoặc ngừng của ứng dụng chính, backend, AI, lưu trữ ảnh, Keycloak, BI và chat, làm mới mỗi 30 giây.
+
 ### 2026-10-06
 
 - Portal phục vụ ở `/portal/` của gateway; link app chính, Keycloak Admin Console và Swagger là đường dẫn tương đối, thêm card MinIO Console; link Superset, MinIO Console và chat tự theo tên máy đang mở trang.
@@ -735,6 +746,12 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Mattermost là nền tảng chat tách biệt có chủ đích, không nối SSO — xem `chat/README.md`.
 
 ## Rà soát license (PoF)
+
+### 2026-10-07
+
+- `LICENSES.md` khớp dependency hiện có (Resilience4j, AspectJ, Hibernate Validator, react-router-dom, expo-location, pgvector, base image).
+- SBOM CycloneDX của backend, AI, frontend, mobile ở `sbom/`.
+- `CONTRIBUTING.md`, mẫu issue và pull request ở `.github/`.
 
 ### 2026-09-11
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.security;
 
 import java.util.Collection;
@@ -35,6 +36,8 @@ public class SecurityConfig {
 
   private static final String[] PUBLIC_GET_ENDPOINTS =
       {"/api/v1/diseases/**", "/api/v1/pesticides/**", "/api/v1/treatment-rules/**"};
+
+  private static final String SYSTEM_STATUS_ENDPOINT = "/api/v1/system/status";
 
   private static final String[] SWAGGER_ENDPOINTS =
       {"/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**"};
@@ -74,6 +77,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .requestMatchers(SWAGGER_ENDPOINTS).permitAll()
             .requestMatchers(HttpMethod.GET, ACTUATOR_HEALTH_ENDPOINT).permitAll()
+            .requestMatchers(HttpMethod.GET, SYSTEM_STATUS_ENDPOINT).permitAll()
             .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS).permitAll()
             // AI chỉ được gọi GET qua service API key - mọi method khác ở /internal/v1/**
             // bị chặn hẳn, kể cả nếu lỡ có endpoint ghi được thêm sau này.

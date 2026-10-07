@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 from io import BytesIO
 from pathlib import Path
 from typing import ClassVar

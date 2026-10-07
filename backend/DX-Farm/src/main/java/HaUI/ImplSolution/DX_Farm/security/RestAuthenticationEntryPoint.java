@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.security;
 
 import HaUI.ImplSolution.DX_Farm.dto.ApiResponse;
@@ -28,7 +29,7 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
     response.setStatus(HttpStatus.UNAUTHORIZED.value());
     response.setCharacterEncoding("UTF-8");
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-    response.getWriter().write(objectMapper
-        .writeValueAsString(ApiResponse.error("Chưa đăng nhập hoặc token không hợp lệ")));
+    response.getWriter().write(objectMapper.writeValueAsString(
+        ApiResponse.error("ERR_UNAUTHENTICATED", "Chưa đăng nhập hoặc token không hợp lệ")));
   }
 }

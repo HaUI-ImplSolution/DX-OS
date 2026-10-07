@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """Generate backend data.sql from the top-level data/structured/*.json files.
 
 Dev-time only: run by hand when data/ changes, then commit the resulting diff.

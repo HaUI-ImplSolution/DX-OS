@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """Validate rice canonical JSON against the local collection workbook."""
 
 from __future__ import annotations

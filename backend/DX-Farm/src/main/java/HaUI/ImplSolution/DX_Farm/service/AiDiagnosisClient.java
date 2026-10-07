@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.service;
 
 import HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseRequest;
@@ -52,6 +53,15 @@ public class AiDiagnosisClient {
       builder.defaultHeader("X-Service-Api-Key", apiKey);
     }
     this.restClient = builder.build();
+  }
+
+  public boolean isAvailable() {
+    try {
+      restClient.get().uri("/api/v1/disease/health").retrieve().toBodilessEntity();
+      return true;
+    } catch (RestClientException e) {
+      return false;
+    }
   }
 
   @CircuitBreaker(name = "aiDiagnosis", fallbackMethod = "diagnoseFallback")

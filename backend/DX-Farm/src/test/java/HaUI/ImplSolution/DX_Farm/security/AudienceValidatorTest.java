@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.security;
 
 import static org.assertj.core.api.Assertions.assertThat;

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Runtime dependencies for a single recommendation-graph invocation."""
 
 from dataclasses import dataclass

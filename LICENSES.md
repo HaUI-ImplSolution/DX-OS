@@ -11,11 +11,16 @@ Bảng dưới liệt kê từng thành phần đang thực sự chạy trong re
 | PostgreSQL JDBC Driver (`org.postgresql:postgresql`) | BSD-2-Clause (PostgreSQL License) | ✅ | |
 | springdoc-openapi | Apache-2.0 | ✅ | |
 | Lombok | MIT | ✅ | `optional=true`, không đóng gói vào runtime |
-| PostgreSQL (server, `postgres:15-alpine` image) | PostgreSQL License | ✅ | |
+| PostgreSQL (server) và pgvector (`pgvector/pgvector:pg16` image) | PostgreSQL License | ✅ | Một instance chứa cả database nghiệp vụ lẫn AI Vector DB |
 | Flyway (`org.flywaydb:flyway-core`, `flyway-database-postgresql`) | Apache-2.0 | ✅ | Migration schema (`db/migration`), chạy lúc backend khởi động |
 | Testcontainers (`org.testcontainers`, scope `test`) | MIT | ✅ | Chỉ dùng khi chạy test, khởi động PostgreSQL thật; không đóng gói vào runtime |
 | JUnit 5, Mockito, AssertJ (qua `spring-boot-starter-test`, scope `test`) | EPL-2.0 / MIT / Apache-2.0 | ✅ | Chỉ dùng khi chạy test |
 | MinIO Java SDK (`io.minio:minio`) | Apache-2.0 | ✅ | Client S3 để lưu ảnh và ký link có hạn (`core.storage`) |
+| Hibernate Validator (`spring-boot-starter-validation`) | Apache-2.0 | ✅ | Kiểm tra dữ liệu request |
+| Resilience4j (`resilience4j-spring-boot3`) | Apache-2.0 | ✅ | Circuit breaker khi gọi AI Service |
+| AspectJ (`spring-boot-starter-aspectj`) | EPL-2.0 | ✅ | Hỗ trợ method security và circuit breaker |
+| formatter-maven-plugin (Revelc) | Apache-2.0 | ✅ | Chỉ dùng khi build, kiểm định dạng mã |
+| Eclipse Temurin (OpenJDK 21, base image build và runtime) | GPL-2.0 with Classpath Exception | ✅ | Chạy nguyên bản, không sửa mã nguồn |
 
 Các dependency đã bị comment-out trong `pom.xml` (Redis, Mail, AMQP, Apache POI, totp, owasp-java-html-sanitizer) **chưa thực sự dùng** — không tính vào rà soát cho tới khi được bật lại.
 Khi bật lại cần rà license tương ứng: POI Apache-2.0 OK, các cái còn lại cũng Apache-2.0 hoặc MIT, đều OSI-approved.
@@ -29,13 +34,14 @@ Khi bật lại cần rà license tương ứng: POI Apache-2.0 OK, các cái c�
 | TypeScript | Apache-2.0 | ✅ |
 | @vitejs/plugin-react | MIT | ✅ |
 | oidc-client-ts | MIT | ✅ |
+| react-router-dom | MIT | ✅ |
 | nginx (ảnh serve production, `frontend/Dockerfile`) | BSD-2-Clause (nginx license) | ✅ |
 
 ## Mobile (`mobile`, npm)
 
 | Thành phần | License | OSI-approved |
 |---|---|---|
-| Expo (`expo`, `expo-router`, `expo-auth-session`, `expo-secure-store`, `expo-image-picker`, `expo-image-manipulator`, `expo-web-browser`, `expo-build-properties`, `expo-constants`, `expo-linking`, `expo-crypto`, `expo-file-system`, `expo-status-bar`) | MIT | ✅ |
+| Expo (`expo`, `expo-router`, `expo-auth-session`, `expo-secure-store`, `expo-image-picker`, `expo-image-manipulator`, `expo-web-browser`, `expo-build-properties`, `expo-constants`, `expo-linking`, `expo-crypto`, `expo-file-system`, `expo-location`, `expo-status-bar`) | MIT | ✅ |
 | React / React DOM / React Native | MIT | ✅ |
 | @react-native-async-storage/async-storage / @react-native-community/netinfo | MIT | ✅ |
 | react-native-screens / react-native-safe-area-context | MIT | ✅ |
@@ -92,6 +98,9 @@ giữ Apache-2.0.
 |---|---|---|---|
 | Apache Superset (`apache/superset` image) | Apache-2.0 | ✅ | BI dashboard, thêm ở lượt này — xem `bi/` |
 | Authlib (pip, cài lúc container Superset khởi động cho SSO OAuth) | BSD-3-Clause | ✅ | |
+| Python (`python:3.11-slim`, base image của AI Service) | PSF-2.0 | ✅ | |
+| Node.js (`node:20-alpine`, chỉ ở bước build frontend) | MIT | ✅ | |
+| CycloneDX tooling (`cyclonedx-bom`, `@cyclonedx/cyclonedx-npm`, `cyclonedx-maven-plugin`) | Apache-2.0 | ✅ | Chỉ dùng để sinh SBOM ở `sbom/`, không đóng gói vào sản phẩm |
 | Mattermost (`mattermost/mattermost-team-edition` image) | AGPLv3 (server core) | ✅ | Xem mục riêng "Rà soát license Mattermost" dưới đây — không đơn giản như một dòng |
 | Keycloak (`quay.io/keycloak/keycloak` image) | Apache-2.0 | ✅ | Identity Provider cho SSO thật — xem `sso/README.md` |
 | Apache APISIX (`apache/apisix` image, chế độ standalone) | Apache-2.0 | ✅ | Gateway: route, kiểm JWT, giới hạn tốc độ — xem `deploy/apisix/` |
@@ -117,9 +126,12 @@ Chi tiết đầy đủ ở [`chat/README.md`](./chat/README.md).
 Không dùng n8n (Sustainable Use License, không OSI-approved) — chưa từng tích hợp vào code.
 LangGraph (Apache-2.0) đảm nhận vai trò orchestrator cho luồng vision → lookup → LLM diễn đạt.
 
-## Việc còn thiếu (ngoài phạm vi lượt rà soát này)
+## SBOM và phiên bản
 
-- **SPDX header**: `LICENSE` (Apache-2.0) đã có ở gốc repo.
-  SPDX header (`// SPDX-License-Identifier: Apache-2.0`) đầu mỗi file mã nguồn tự viết **chưa có** — cần một lượt riêng để chèn hàng loạt theo từng loại file (`.java`/`.ts`/`.tsx`).
-- AI Service: dependency trực tiếp đã được rà từ môi trường hiện tại; còn thiếu inventory
-  dependency bắc cầu và thành phần bundle từ đúng Docker image phát hành.
+- SBOM định dạng CycloneDX của backend, AI, frontend và mobile nằm ở [`sbom/`](./sbom/README.md).
+- `ai/requirements.lock` khóa phiên bản chính xác mọi gói Python của AI Service; Dockerfile cài `requirements.txt` với file này làm constraints.
+
+## Việc còn thiếu
+
+- SPDX header đã có ở file Java của Backend và file Python; file TypeScript chưa có.
+- Chưa có inventory thành phần bundle trong từng Docker image phát hành (chỉ có dependency khai báo ở trên).

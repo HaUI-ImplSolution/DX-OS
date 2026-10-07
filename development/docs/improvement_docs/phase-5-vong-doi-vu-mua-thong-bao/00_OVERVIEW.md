@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Chờ Q1 (cần kỹ sư xác nhận thực tế canh tác), Q2 đã chốt |
+| Trạng thái | Xong |
 | Mức độ | Quan trọng |
 | Nhóm ưu tiên | B |
 | Ước lượng | 4-5 ngày |
@@ -41,7 +41,7 @@
 ## 4. Phạm vi
 
 - Trong phạm vi: WP5-01 đến WP5-05 ở `01_PLAN.md` (khai báo thu hoạch có dữ liệu thật, job nhắc hạn, hộp thông báo, farmer tự khai đã phun, admin thao tác thay farmer có log rõ).
-- Ngoài phạm vi (không làm ở phase này): push thật qua FCM/ntfy (P10, D5 đã chốt pull trước); nhiều lần apply/phun lặp lại trên cùng chẩn đoán (chưa chốt, xem câu hỏi mở).
+- Ngoài phạm vi (không làm ở phase này): push thật qua FCM/ntfy (P10, D5 đã chốt pull trước); nhiều lần phun trên cùng chẩn đoán (Q1: giữ một lần).
 - Giả định: D5 (phase 0, hộp thông báo GET + PATCH đánh dấu đã đọc) đã chốt; `Clock`/`ZoneId` thống nhất (P1) đã có sẵn để scheduler dùng đúng múi giờ.
 
 ## 5. Ưu điểm và hạn chế
@@ -55,7 +55,7 @@
 - Demo được: đến ngày dự kiến thu hoạch mà chưa khai báo, farmer nhận thông báo trong hộp thông báo và chốt lại ngày mới; farmer bấm thu hoạch sớm phải xác nhận kèm lý do; farmer tự khai đã phun, kỹ sư xác nhận lại trước khi khóa PHI có hiệu lực chính thức; admin thao tác thay farmer có log "thao tác thay mặt" rõ ràng.
 - Sản phẩm bàn giao: scheduler nhắc hạn, bảng `Notification`, API GET/PATCH hộp thông báo, luồng `apply` 2 bước (farmer khai → engineer xác nhận), luồng `harvest` có `confirmEarly`/sản lượng/diện tích.
 - Tiêu chí đo được: bấm thu hoạch sớm không kèm `confirmEarly` bị từ chối; job nhắc hạn chạy đúng giờ theo `Asia/Ho_Chi_Minh`; farmer xem được thông báo mới trong hộp thông báo sau khi admin duyệt thửa/vụ (nối từ P4).
-- Bằng chứng: log test T5-xx, ảnh chụp hộp thông báo trên mobile.
+- Bằng chứng: kết quả T5-xx ở `03_TEST_PLAN.md` mục 5; đã thử trên điện thoại thật và web ngày 07/10/2026.
 
 ## 7. Phụ thuộc và thứ tự
 
@@ -71,10 +71,25 @@
 
 | # | Câu hỏi | Lựa chọn | Hạn chốt | Kết luận |
 |---|---|---|---|---|
-| Q1 | Một chẩn đoán có được áp dụng thuốc (`apply`) nhiều lần (phun lặp lại cách nhau vài ngày) không | Cho phép nhiều lần, khóa PHI theo lần phun mới nhất (đã là hành vi ngầm định hiện tại qua `findTopBy...OrderByHarvestLockedUntilDesc`) / Giữ đúng 1 lần/chẩn đoán như hiện tại | {ngày} | _(chưa chốt — cần kỹ sư xác nhận thực tế canh tác)_ |
+| Q1 | Một chẩn đoán có được áp dụng thuốc (`apply`) nhiều lần (phun lặp lại cách nhau vài ngày) không | Cho phép nhiều lần, khóa PHI theo lần phun mới nhất (đã là hành vi ngầm định hiện tại qua `findTopBy...OrderByHarvestLockedUntilDesc`) / Giữ đúng 1 lần/chẩn đoán như hiện tại | 07/10/2026 | Giữ đúng 1 lần/chẩn đoán — phun lại thì tạo báo cáo và chẩn đoán mới; bản khai bị kỹ sư từ chối được khai lại trên cùng bản ghi |
 | Q2 | Job nhắc hạn chạy với tần suất nào | 1 lần/ngày (buổi sáng) / Nhiều lần/ngày | 05/10/2026 | 1 lần/ngày buổi sáng — đủ cho nhu cầu nhắc hạn ngày, tránh làm phiền farmer |
 
 ## 10. Tài liệu cần cập nhật khi xong
 
-- [ ] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
-- [ ] Swagger cho endpoint `apply`/`harvest` đổi shape, endpoint `notifications` mới.
+- [x] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
+- [x] Swagger cho endpoint `apply`/`harvest` đổi shape, endpoint `notifications` mới.
+
+## 11. Việc chưa làm, chuyển tiếp
+
+| Việc | Lý do chưa làm | Nơi theo dõi |
+|---|---|---|
+| Push thật (FCM, UnifiedPush) | D5 chốt hộp thông báo kéo về trước | P10 |
+| Hộp thông báo cho engineer và admin | Họ có hàng đợi và Mattermost, ngoài phạm vi D5 | `04_TRADEOFFS_RISKS.md` mục 3 |
+| Thông báo `RETAKE_REQUESTED` | Thuộc luồng chụp lại của P6 | P6 |
+| Phun lặp lại trên cùng chẩn đoán | Q1 giữ một lần phun mỗi chẩn đoán | `04_TRADEOFFS_RISKS.md` mục 3 |
+| SLA nhắc kỹ sư khi bản khai chờ xác nhận lâu | Chưa có người dùng thật gặp tình huống này | `04_TRADEOFFS_RISKS.md` mục 3 |
+| Cuộn tải thêm trong hộp thông báo mobile | Màn chỉ tải 30 thông báo mới nhất | `04_TRADEOFFS_RISKS.md` mục 3 |
+| Thu hoạch thay hộ trong timeline workflow | Thu hoạch không có workflow case; thông tin nằm trên vụ và log backend | `04_TRADEOFFS_RISKS.md` mục 3 |
+| Hiển thị sản lượng và diện tích thu hoạch trên Superset | Thuộc BI | P7 |
+| Test tự động cho logic mới | Theo thỏa thuận không thêm test mới; kiểm bằng chạy thật (xem `03_TEST_PLAN.md`) | `03_TEST_PLAN.md` mục 5 |
+| Phác đồ thật để demo khóa PHI | Cần chuyên gia duyệt; dữ liệu thử `P5-TEST` chỉ để test | P8 (Q2) |

@@ -45,7 +45,7 @@ Gợi ý câu lệnh cho Claude: "Tạo phase {N} từ `improvement_docs/_templa
 | [P2](./phase-2-danh-tinh-nong-ho-phan-quyen/00_OVERVIEW.md) | Danh tính nông hộ, phân quyền, migration | 1, 6, 9, 16 | Nghiêm trọng | Xong |
 | [P3](./phase-3-open-core-workflow-gateway-storage/00_OVERVIEW.md) | Open-Core: workflow, gateway, storage, sơ đồ | 7, 8, 17 | Nghiêm trọng | Xong (hoãn một mục sang P4: test thông báo Mattermost) |
 | [P4](./phase-4-duyet-thua-vu-trang-quan-ly/00_OVERVIEW.md) | Duyệt thửa/vụ, mã chuẩn, GPS, trang quản lý | 2, 3, 12, 13, 15, 16 | Quan trọng | Xong |
-| [P5](./phase-5-vong-doi-vu-mua-thong-bao/00_OVERVIEW.md) | Vòng đời vụ mùa và thông báo cho farmer | 4, 10, 13, 15 | Quan trọng | Chờ Q1 (kỹ sư xác nhận thực tế canh tác) |
+| [P5](./phase-5-vong-doi-vu-mua-thong-bao/00_OVERVIEW.md) | Vòng đời vụ mùa và thông báo cho farmer | 4, 10, 13, 15 | Quan trọng | Xong (việc chưa làm ghi ở `00_OVERVIEW.md` mục 11) |
 | [P6](./phase-6-ai-kiem-tra-chan-doan-danh-gia/00_OVERVIEW.md) | AI: kiểm tra ảnh, chẩn đoán, đánh giá | 5, 11 | Quan trọng | Chờ Q2 (cần thu ảnh thật ngoài ruộng) |
 | [P7](./phase-7-du-lieu-bi-tri-thuc/00_OVERVIEW.md) | Dữ liệu, BI và tri thức | 14, 21 | Quan trọng | Sẵn sàng code |
 | [P8](./phase-8-test-demo-ho-so-nop-bai/00_OVERVIEW.md) | Kiểm thử, dữ liệu demo, hồ sơ nộp bài | 17, 18, 19, 20 | Nghiêm trọng (hạn nộp) | Chờ Q2 (chuyên gia duyệt treatment rule) |

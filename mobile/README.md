@@ -12,7 +12,7 @@ Ngoài Expo Go, có thể build APK bằng EAS mà không cần cài Android Stu
 ## Phạm vi
 
 - Chỉ role `FARMER`; ENGINEER và ADMIN tiếp tục dùng web (`frontend/`) vì việc duyệt cần xem ảnh, kết quả CV, khuyến nghị và quy tắc PHI cùng lúc.
-- Luồng hiện có: đăng nhập → chọn thửa → chọn vụ mùa → xem và gửi báo cáo → theo dõi kết quả kỹ sư duyệt; mất mạng thì ảnh chờ trong máy và tự gửi khi có mạng.
+- Luồng hiện có: đăng nhập → chọn thửa → chọn vụ mùa → xem và gửi báo cáo → theo dõi kết quả kỹ sư duyệt → khai phun thuốc → khai báo thu hoạch; mất mạng thì ảnh chờ trong máy và tự gửi khi có mạng.
 - Chẩn đoán AI do kỹ sư kích hoạt thủ công trên web; nông dân thấy trạng thái "Chờ chẩn đoán" sau khi gửi.
 
 ## Cách hoạt động
@@ -39,6 +39,16 @@ Ngoài Expo Go, có thể build APK bằng EAS mà không cần cài Android Stu
 - **Tạo vụ mùa**: màn `seasons/new` (chỉ với thửa đã duyệt) chọn giống từ danh mục, ngày bắt đầu và loại vụ; ngày thu hoạch gợi ý do Backend tính, chọn ngày ngoài khoảng gợi ý phải nêu lý do.
   Cần mạng để tải danh mục giống.
 - **Hàng đợi thửa và vụ**: khi mất mạng lúc gửi, thửa và vụ mới vào cùng hàng đợi với ảnh, mỗi mục một `Idempotency-Key`; lỗi `422` (ví dụ sai số GPS) đánh dấu "Lỗi" và không thử lại.
+- **Hộp thông báo**: màn `notifications` đọc `GET /api/v1/notifications` (30 thông báo mới nhất).
+  `NotificationsProvider` hỏi số chưa đọc khi mở app, mỗi lần app trở lại foreground, mỗi lần quay lại màn Thửa và khi kéo làm mới, không dùng push.
+  Trạng thái đã đọc lưu ở Backend nên mọi thiết bị thấy như nhau.
+- **Thu hoạch**: màn `seasons/harvest` đọc `harvest-readiness` rồi gửi ngày, sản lượng và diện tích.
+  Ngày thu hoạch trước ngày dự kiến thì phải bật xác nhận và nhập lý do.
+  Vụ còn cách ly thì nút gửi bị khóa.
+  Màn `seasons/reschedule` đổi ngày dự kiến kèm lý do và liệt kê các lần đổi.
+- **Khai phun thuốc**: ở chi tiết báo cáo đã duyệt, nông dân nhập liều và ngày phun.
+  Bản khai chờ kỹ sư xác nhận, trong lúc chờ vụ chưa thu hoạch được.
+  Bị từ chối thì màn hiện lý do và cho khai lại.
 - **Hiển thị trạng thái**: trạng thái báo cáo suy ra từ `diagnosis`.
 
   | `diagnosis` | Chip | Nội dung nông dân thấy |
@@ -56,7 +66,7 @@ Ngoài Expo Go, có thể build APK bằng EAS mà không cần cài Android Stu
 
 | Đường dẫn | Nội dung |
 |---|---|
-| `app/` | Màn hình theo `expo-router`: `index` (Thửa), `parcels/[code]` (Vụ mùa), `parcels/new` (Tạo hoặc sửa thửa), `seasons/new` (Tạo hoặc sửa vụ), `seasons/[id]` (Báo cáo của vụ), `capture` (Chụp và gửi), `reports/[id]` (Chi tiết báo cáo), `login`, `profile` |
+| `app/` | Màn hình theo `expo-router`: `index` (Thửa), `parcels/[code]` (Vụ mùa), `parcels/new` (Tạo hoặc sửa thửa), `seasons/new` (Tạo hoặc sửa vụ), `seasons/[id]` (Báo cáo của vụ), `seasons/harvest` (Khai báo thu hoạch), `seasons/reschedule` (Đổi ngày thu hoạch), `notifications` (Hộp thông báo), `capture` (Chụp và gửi), `reports/[id]` (Chi tiết báo cáo), `login`, `profile` |
 | `src/api/` | `client.ts` (`request`, `upload`, `ApiError`) và `endpoints.ts` |
 | `src/auth/` | Đăng nhập PKCE (`AuthProvider`), lưu token (`session`), refresh (`tokens`), đọc claim (`claims`) |
 | `src/components/` | `Button`, `Card`, `Field`, `OptionList`, `ParcelCard`, `StatusChip`, `IsolationBanner`, `Timeline`, `ProgressBar`, `EmptyState`, `ErrorState`, `Skeleton`, `Screen` |

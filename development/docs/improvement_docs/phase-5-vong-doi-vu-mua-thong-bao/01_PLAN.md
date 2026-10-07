@@ -76,7 +76,7 @@ Thứ tự: WP5-03 → (WP5-01 ∥ WP5-02 ∥ WP5-04 ∥ WP5-05).
 **Phạm vi ảnh hưởng**
 
 - Module và file chính: `dto/HarvestRequest.java` (mới), `service/CropSeasonService.java`, `model/CropSeason.java` (thêm `yieldKg`, `harvestedAreaHectares`, `harvestedByUserId`, `earlyReason`), `controller/CropSeasonController.java`.
-- Endpoint, bảng DB, biến môi trường: `PATCH .../crop-seasons/{id}/harvest` đổi request body; `crop_seasons` thêm 4 cột.
+- Endpoint, bảng DB, biến môi trường: `POST .../crop-seasons/{id}/harvest` đổi request body; `crop_seasons` thêm 7 cột.
 - Role và client bị ảnh hưởng: farmer (mobile) khai báo thu hoạch chính mình; admin (web) khai thay (xem WP5-05).
 - Tương thích ngược và dữ liệu cũ: vụ mùa đã `HARVESTED` trước phase này không có dữ liệu sản lượng — chấp nhận `NULL`, không backfill.
 
@@ -107,12 +107,13 @@ Thứ tự: WP5-03 → (WP5-01 ∥ WP5-02 ∥ WP5-04 ∥ WP5-05).
 **Hướng làm**
 
 - `@Scheduled(cron = ...)` (tần suất theo Q2) quét `CropSeason` có `status = ACTIVE` và `expectedHarvestDate <= LocalDate.now(clock)`, chưa có `Notification(type = HARVEST_REMINDER)` nào tạo trong ngày hôm đó (tránh bắn lặp), tạo thông báo qua `NotificationService`.
-- Entity `HarvestReschedule` (hoặc tái dùng `workflow_event` với `caseType` riêng nếu P3 đã đủ tổng quát — ưu tiên tái dùng để không tạo bảng lịch sử thứ hai) ghi mỗi lần farmer gia hạn: ngày cũ, ngày mới, lý do, thời điểm.
+- Entity `HarvestReschedule` (bảng `harvest_reschedules`) ghi mỗi lần gia hạn: ngày cũ, ngày mới, lý do, người đổi, thời điểm.
+  Workflow chỉ có vòng duyệt, không biểu diễn được việc đổi ngày.
 
 **Phạm vi ảnh hưởng**
 
 - Module và file chính: `service/HarvestReminderScheduler.java` (mới), `controller/CropSeasonController.java` (endpoint reschedule mới), `model/CropSeason.java` hoặc tái dùng `workflow_event`.
-- Endpoint, bảng DB, biến môi trường: `PATCH .../crop-seasons/{id}/reschedule-harvest` (mới); bảng lịch sử gia hạn (mới, hoặc tái dùng `workflow_event`).
+- Endpoint, bảng DB, biến môi trường: `PATCH .../crop-seasons/{id}/reschedule-harvest`, `GET .../harvest-reschedules` (mới); bảng `harvest_reschedules` (mới); `HARVEST_REMINDER_CRON`.
 - Role và client bị ảnh hưởng: farmer (mobile).
 - Tương thích ngược và dữ liệu cũ: không ảnh hưởng, job chỉ xét vụ còn `ACTIVE` từ thời điểm chạy trở đi.
 
@@ -138,20 +139,21 @@ Thứ tự: WP5-03 → (WP5-01 ∥ WP5-02 ∥ WP5-04 ∥ WP5-05).
 
 | Tình huống | Hành vi hiện tại | Hành vi sau thay đổi |
 |---|---|---|
-| Ghi nhận đã phun thuốc | Kỹ sư tự nhập `appliedAt` | Farmer tự khai (`POST .../treatment-applications/self-report`, kèm ảnh/giờ tuỳ chọn), tạo bản ghi trạng thái `PENDING_CONFIRMATION`; kỹ sư xác nhận lại (`PATCH .../confirm`) mới chính thức tính khóa PHI |
+| Ghi nhận đã phun thuốc | Kỹ sư tự nhập `appliedAt` | Farmer tự khai (`POST .../treatment-application/self-report`), tạo bản ghi `PENDING_CONFIRMATION` chặn thu hoạch; kỹ sư xác nhận (`POST .../confirm`) thì khóa PHI chính thức có hiệu lực |
 | Khóa PHI có hiệu lực | Ngay khi kỹ sư `apply` | Chỉ sau khi kỹ sư xác nhận bản khai của farmer (giữ nguyên nguyên tắc: dữ liệu quyết định khóa PHI phải qua người có trách nhiệm xác nhận, không chỉ farmer tự khai là đủ) |
 
 **Hướng làm**
 
-- `TreatmentApplication` thêm `reportedByUserId` (farmer), `confirmedByUserId` (kỹ sư, nullable cho tới khi xác nhận), `confirmationStatus` (enum: `PENDING_CONFIRMATION`/`CONFIRMED`).
-  `harvestLockedUntil` chỉ tính và có hiệu lực chặn thu hoạch sau khi `confirmationStatus = CONFIRMED` (giữ nguyên hành vi `apply` hiện tại làm đường "kỹ sư tự xác nhận luôn" khi kỹ sư là người tạo bản ghi trực tiếp).
-- Endpoint mới `POST .../treatment-applications/self-report` cho farmer (role `FARMER`), `PATCH .../treatment-applications/{id}/confirm` cho kỹ sư (giữ `@PreAuthorize` như `apply` hiện tại).
-- Kỹ sư nhận `Notification`/xuất hiện trong danh sách chờ (`workflow_case`, `caseType = TREATMENT_CONFIRMATION`, tái dùng từ P3) khi có bản khai mới từ farmer.
+- `TreatmentApplication` thêm `reportedByUserId` (farmer), `confirmedByUserId` (kỹ sư, nullable cho tới khi xác nhận), `confirmationStatus` (enum: `PENDING_CONFIRMATION`/`CONFIRMED`/`REJECTED`).
+  `harvestLockedUntil` tính từ ngày phun nông dân khai; chỉ bản `CONFIRMED` giữ khóa PHI, bản `PENDING_CONFIRMATION` chặn thu hoạch tạm, bản `REJECTED` không chặn.
+  `apply` của kỹ sư là đường "kỹ sư tự xác nhận luôn": bản ghi tạo ra là `CONFIRMED`.
+- Endpoint `POST /disease-reports/{reportId}/treatment-application/self-report` cho farmer (role `FARMER`), `POST .../confirm` và `POST .../reject` cho kỹ sư và admin.
+- Bản khai mới xuất hiện trong danh sách chờ của kỹ sư (`workflow_case`, `caseType = TREATMENT_CONFIRMATION`, tái dùng từ P3) và gửi tin vào kênh Mattermost của kỹ sư.
 
 **Phạm vi ảnh hưởng**
 
-- Module và file chính: `model/TreatmentApplication.java`, `service/DiagnosisService.java` (hoặc tách `TreatmentApplicationService` riêng nếu service hiện tại đã lớn), `controller/DiagnosisController.java` (hoặc controller mới).
-- Endpoint, bảng DB, biến môi trường: `POST .../treatment-applications/self-report`, `PATCH .../treatment-applications/{id}/confirm` (mới); `treatment_applications` thêm `reported_by_user_id`, `confirmed_by_user_id`, `confirmation_status`.
+- Module và file chính: `model/TreatmentApplication.java`, `service/DiagnosisService.java`, `controller/TreatmentApplicationController.java`.
+- Endpoint, bảng DB, biến môi trường: `/disease-reports/{reportId}/treatment-application` (`GET`, `POST self-report`, `POST confirm`, `POST reject`); `treatment_applications` thêm `reported_by_user_id`, `confirmed_by_user_id`, `confirmed_at`, `confirmation_status`, `rejection_reason`.
 - Role và client bị ảnh hưởng: farmer (mobile, tự khai mới), engineer (xác nhận thay vì tự nhập từ đầu).
 - Tương thích ngược và dữ liệu cũ: bản ghi `TreatmentApplication` cũ (kỹ sư tự `apply`) coi như `confirmationStatus = CONFIRMED` ngay từ đầu qua migration, không yêu cầu xác nhận lại.
 
@@ -176,37 +178,44 @@ Thứ tự: WP5-03 → (WP5-01 ∥ WP5-02 ∥ WP5-04 ∥ WP5-05).
 
 | Tình huống | Hành vi hiện tại | Hành vi sau thay đổi |
 |---|---|---|
-| Admin khai thu hoạch thay farmer | Không phân biệt, chỉ ghi admin là người gọi API (nếu có audit) | Request kèm `onBehalfOfHouseholdId` tuỳ chọn; nếu admin gọi và set field này, ghi `WorkflowEvent`/audit log rõ "ADMIN {id} thao tác thay HOUSEHOLD {id}, lý do: ..." |
+| Admin khai thu hoạch thay farmer | Không phân biệt, chỉ ghi admin là người gọi API (nếu có audit) | Request bắt buộc `reasonOnBehalf`; vụ lưu người khai và lý do, backend ghi log, hộ nhận thông báo |
 
 **Hướng làm**
 
-- `HarvestRequest` (WP5-01) thêm field `onBehalfOfHouseholdId` (nullable, chỉ có ý nghĩa khi người gọi là ADMIN) và `reasonOnBehalf` (bắt buộc nếu field trên có giá trị).
-- `WorkflowService`/audit ghi sự kiện có đủ 3 thông tin: ai làm (`actorUserId`), thay cho ai (`onBehalfOfHouseholdId`), lý do — tái dùng cột `metadata` JSONB của `WorkflowEvent` (P3, Q1) để lưu, không cần thêm bảng mới.
+- `HarvestRequest` (WP5-01) thêm `reasonOnBehalf`, bắt buộc khi người gọi không phải FARMER (ADMIN).
+  Hộ được thay lấy từ vụ mùa nên không cần `onBehalfOfHouseholdId`.
+- Vụ mùa lưu người khai (`harvested_by_user_id`, `harvested_by_name`) và `harvest_on_behalf_reason`; backend ghi log và gửi thông báo cho hộ.
+  Thu hoạch không có workflow case nên không ghi vào `workflow_event.metadata`.
 
 **Phạm vi ảnh hưởng**
 
-- Module và file chính: `dto/HarvestRequest.java`, `service/CropSeasonService.java`, `service/WorkflowService.java` (ghi `metadata`).
-- Endpoint, bảng DB, biến môi trường: không có bảng mới (tái dùng `workflow_event.metadata`).
-- Role và client bị ảnh hưởng: chỉ ADMIN có thể set `onBehalfOfHouseholdId`.
+- Module và file chính: `dto/HarvestRequest.java`, `service/CropSeasonService.java`, `model/CropSeason.java`.
+- Endpoint, bảng DB, biến môi trường: không có bảng mới, thêm cột trên `crop_seasons`.
+- Role và client bị ảnh hưởng: admin khai thay hộ qua `reasonOnBehalf`.
 - Tương thích ngược và dữ liệu cũ: không ảnh hưởng, field mới đều tuỳ chọn.
 
 **Kết quả đầu ra**
 
 - Admin khai thu hoạch thay farmer → log/audit thể hiện rõ ràng, không lẫn với farmer tự khai.
 
-**Phụ thuộc, lưu ý**: cần WP5-01 (endpoint `harvest` mới) và `workflow_event.metadata` (P3) đã có sẵn.
+**Phụ thuộc, lưu ý**: cần WP5-01 (endpoint `harvest` mới).
 
 ## Thay đổi hợp đồng (API, schema, cấu hình)
 
 | Loại | Đối tượng | Thay đổi | Phá tương thích? |
 |---|---|---|---|
-| Endpoint | `PATCH .../crop-seasons/{id}/harvest` | Đổi request body, thêm `confirmEarly`/dữ liệu sản lượng | Có |
-| Endpoint | `PATCH .../crop-seasons/{id}/reschedule-harvest` | Mới | Không |
-| Endpoint | `POST .../treatment-applications/self-report`, `PATCH .../confirm` | Mới | Không |
-| Endpoint | `GET /api/v1/notifications`, `PATCH .../read`, `PATCH .../read-all` | Mới | Không |
-| Bảng DB | `crop_seasons` | Thêm `yield_kg`, `harvested_area_hectares`, `harvested_by_user_id`, `early_reason` | Không (thêm cột) |
-| Bảng DB | `treatment_applications` | Thêm `reported_by_user_id`, `confirmed_by_user_id`, `confirmation_status` | Không (thêm cột, default `CONFIRMED` cho dữ liệu cũ) |
-| Bảng DB | `notifications` | Bảng mới | Không |
+| Endpoint | `POST /crop-seasons/{id}/harvest` | Body mới: `yieldKg` (bắt buộc), `actualHarvestDate`, `harvestedAreaHectares`, `confirmEarly`, `earlyReason`, `reasonOnBehalf` | Có |
+| Endpoint | `GET /crop-seasons/{id}/harvest-readiness` | Mới: ngày còn lại, cách ly, cảnh báo không chặn | Không |
+| Endpoint | `PATCH /crop-seasons/{id}/reschedule-harvest`, `GET /crop-seasons/{id}/harvest-reschedules` | Mới | Không |
+| Endpoint | `/disease-reports/{reportId}/treatment-application`: `GET`, `POST self-report`, `POST confirm`, `POST reject` | Mới | Không |
+| Endpoint | `GET /notifications`, `GET /notifications/unread-count`, `PATCH /notifications/{id}/read`, `PATCH /notifications/read-all` | Mới | Không |
+| Response | `CropSeasonResponse` | Thêm `actualHarvestDate`, `yieldKg`, `harvestedAreaHectares`, `harvestedByName`, `earlyReason`, `harvestOnBehalfReason` | Không |
+| Response | `TreatmentApplicationResponse` | Thêm `confirmationStatus`, `reportedByFarmer`, `rejectionReason` | Không |
+| Bảng DB | `crop_seasons` | Thêm `actual_harvest_date`, `yield_kg`, `harvested_area_hectares`, `harvested_by_user_id`, `harvested_by_name`, `early_reason`, `harvest_on_behalf_reason` | Không (thêm cột) |
+| Bảng DB | `treatment_applications` | Thêm `confirmation_status`, `reported_by_user_id`, `confirmed_by_user_id`, `confirmed_at`, `rejection_reason`; bản ghi cũ là `CONFIRMED` | Không (thêm cột) |
+| Bảng DB | `notifications`, `harvest_reschedules` | Bảng mới (`V7__season_lifecycle_notifications.sql`) | Không |
+| Case workflow | `TREATMENT_CONFIRMATION` (entity `TREATMENT_APPLICATION`) | Mới, quyết định qua endpoint riêng của kỹ sư | Không |
+| Cấu hình | `HARVEST_REMINDER_CRON` (mặc định `0 0 7 * * *`, múi giờ `Asia/Ho_Chi_Minh`) | Mới, chưa có trong `deploy/.env.example` | Không |
 
 ## Dữ liệu, migration và rollback
 
@@ -219,5 +228,9 @@ Thứ tự: WP5-03 → (WP5-01 ∥ WP5-02 ∥ WP5-04 ∥ WP5-05).
 | # | Quyết định | Lý do ngắn |
 |---|---|---|
 | D5 (kế thừa phase 0) | Hộp thông báo GET + PATCH đánh dấu đã đọc | Xem `phase-0-chot-quyet-dinh-pham-vi/01_PLAN.md` |
-| Q1 | _(chưa chốt — cần kỹ sư xác nhận thực tế canh tác)_ | |
+| Q1 | Giữ đúng 1 lần phun/chẩn đoán | Giữ ràng buộc unique, ít thay đổi nhất; bản khai bị từ chối được khai lại trên cùng bản ghi |
+| P5-D1 | Bản khai chờ xác nhận vẫn chặn thu hoạch (422 `TREATMENT_PENDING_CONFIRMATION`) | Nông dân khai thật không thiệt hơn khai gian; khóa PHI tính từ ngày phun đã khai |
+| P5-D2 | Việc tồn đọng khi thu hoạch chỉ cảnh báo, không chặn | Backend trả `GET .../harvest-readiness` để app hiện trước khi gửi |
+| P5-D3 | Lịch sử đổi ngày ở bảng `harvest_reschedules`; thu hoạch hộ ghi ở cột của vụ | Workflow chỉ có vòng duyệt, không biểu diễn việc đổi ngày hay thu hoạch |
+| P5-D4 | Endpoint thu hoạch giữ `POST`; đổi ngày là `PATCH`; khai phun nằm ở `/disease-reports/{id}/treatment-application` | Khớp endpoint hiện có và báo cáo là khóa tự nhiên của lần phun |
 | Q2 | Job nhắc hạn chạy 1 lần/ngày buổi sáng | Đủ cho nhu cầu nhắc hạn ngày, tránh làm phiền farmer |

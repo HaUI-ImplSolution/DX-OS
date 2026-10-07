@@ -20,6 +20,7 @@ import type {
   HouseholdCreateRequest,
   HouseholdCreateResult,
   IsolationStatus,
+  KnowledgeAnswer,
   Page,
   Parcel,
   ParcelCreateRequest,
@@ -163,6 +164,9 @@ export const applyDiagnosis = (reportId: number, payload: DiagnosisApplyRequest)
 export const listDiseases = () => request<Disease[]>("/diseases");
 export const listPesticides = () => request<Pesticide[]>("/pesticides");
 export const listTreatmentRules = () => request<TreatmentRule[]>("/treatment-rules");
+
+export const askKnowledge = (question: string, diseaseCode?: string) =>
+  request<KnowledgeAnswer>("/knowledge/ask", json("POST", { question, diseaseCode: diseaseCode || null }));
 
 export const suggestDiagnosis = (reportId: number, symptomText: string) =>
   request<SymptomSuggestion[]>(`/disease-reports/${reportId}/diagnosis/suggest`, json("POST", { symptomText }));

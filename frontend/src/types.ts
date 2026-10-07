@@ -307,3 +307,25 @@ export interface ApprovalRequestFilter {
   page?: number;
   size?: number;
 }
+
+export interface KnowledgeSource {
+  sourceId: string;
+  title: string;
+  organization: string | null;
+  url: string | null;
+  license: string | null;
+  reviewStatus: string | null;
+}
+
+export interface KnowledgePassage {
+  content: string;
+  documentTitle: string;
+  diseaseCode: string | null;
+  score: number;
+  sources: KnowledgeSource[];
+}
+
+export interface KnowledgeAnswer {
+  question: string;
+  passages: KnowledgePassage[];
+}

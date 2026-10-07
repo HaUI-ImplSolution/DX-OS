@@ -73,6 +73,7 @@ services:
       MATTERMOST_WEBHOOK_URL_ENGINEER: ${MATTERMOST_WEBHOOK_URL_ENGINEER:-}
       MATTERMOST_IMAGE_BASE_URL: ${MATTERMOST_IMAGE_BASE_URL:-}
       HTX_CODE: ${HTX_CODE:-HTX01}
+      WEATHER_BASE_URL: ${WEATHER_BASE_URL:-https://api.open-meteo.com}
     # No published port: clients reach the API through the gateway.
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8081/actuator/health || exit 1"]

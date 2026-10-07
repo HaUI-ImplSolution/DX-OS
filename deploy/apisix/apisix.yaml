@@ -81,6 +81,23 @@ routes:
         rejected_code: 429
         rejected_msg: "Too many diagnosis requests, try again in a minute"
 
+  # Each question runs an embedding on the AI service.
+  - id: api-knowledge-ask
+    vars: [["server_port", "==", "9080"]]
+    priority: 20
+    uri: /api/v1/knowledge/ask
+    methods: ["POST"]
+    upstream_id: backend
+    plugin_config_id: bearer-token
+    plugins:
+      limit-count:
+        count: 60
+        time_window: 60
+        key_type: var
+        key: remote_addr
+        rejected_code: 429
+        rejected_msg: "Too many questions, try again in a minute"
+
   # CORS preflight carries no token; only a web app served from another origin sends it.
   - id: api-preflight
     vars: [["server_port", "==", "9080"]]

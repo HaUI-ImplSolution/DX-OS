@@ -6,9 +6,11 @@ import HaUI.ImplSolution.DX_Farm.dto.ImagePrecheckResponse;
 import HaUI.ImplSolution.DX_Farm.dto.SymptomSuggestionResponse;
 import HaUI.ImplSolution.DX_Farm.exception.AiServiceException;
 import HaUI.ImplSolution.DX_Farm.exception.AiTriageException;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import java.net.http.HttpClient;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -104,6 +106,35 @@ public class AiDiagnosisClient {
       return response;
     } catch (RestClientException e) {
       throw new AiServiceException("AI suggestions unavailable", e);
+    }
+  }
+
+  public List<KnowledgeChunk> retrieveKnowledge(String query, String diseaseCode, int topK) {
+    Map<String, Object> body = new HashMap<>();
+    body.put("query", query);
+    body.put("top_k", topK);
+    if (diseaseCode != null) {
+      body.put("disease_code", diseaseCode);
+    }
+    try {
+      var response = restClient.post().uri("/api/v1/disease/knowledge/retrieve").body(body)
+          .retrieve().body(new ParameterizedTypeReference<List<KnowledgeChunk>>() {});
+      if (response == null) {
+        throw new AiServiceException("Empty knowledge response", null);
+      }
+      return response;
+    } catch (RestClientException e) {
+      throw new AiServiceException("AI knowledge retrieval unavailable", e);
+    }
+  }
+
+  // One passage returned by the AI retriever.
+  public record KnowledgeChunk(String content, @JsonProperty("document_title") String documentTitle,
+      @JsonProperty("source_ids") List<String> sourceIds,
+      @JsonProperty("disease_code") String diseaseCode, double score) {
+
+    public KnowledgeChunk {
+      sourceIds = sourceIds == null ? List.of() : sourceIds;
     }
   }
 

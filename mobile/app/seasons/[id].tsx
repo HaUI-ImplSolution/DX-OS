@@ -10,7 +10,8 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { getIsolationStatus, listDiseaseReports } from "@/api/endpoints";
+import { getCropSeason, getIsolationStatus, listDiseaseReports } from "@/api/endpoints";
+import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorState } from "@/components/ErrorState";
@@ -23,19 +24,22 @@ import { useAsync } from "@/hooks/useAsync";
 import { useQueue } from "@/offline/QueueProvider";
 import { reportStatus } from "@/reportStatus";
 import { chipTones, colors, fontSize, radius, sizes, spacing } from "@/theme";
-import type { DiseaseReport, IsolationStatus } from "@/types";
+import type { CropSeason, DiseaseReport, IsolationStatus } from "@/types";
 
 interface ReportsData {
+  season: CropSeason;
   reports: DiseaseReport[];
   isolation: IsolationStatus;
 }
 
 async function loadReports(cropSeasonId: number): Promise<ReportsData> {
-  const [reports, isolation] = await Promise.all([
+  const [season, reports, isolation] = await Promise.all([
+    getCropSeason(cropSeasonId),
     listDiseaseReports(cropSeasonId),
     getIsolationStatus(cropSeasonId),
   ]);
   return {
+    season,
     reports: [...reports].sort((a, b) => b.reportedAt.localeCompare(a.reportedAt)),
     isolation,
   };
@@ -99,6 +103,29 @@ export default function ReportsScreen() {
         ListHeaderComponent={
           <View style={styles.header}>
             <IsolationBanner status={data?.isolation ?? null} />
+            {data?.season.status === "ACTIVE" && (
+              <View style={styles.harvestActions}>
+                <Button
+                  label="Khai báo thu hoạch"
+                  onPress={() =>
+                    router.push({
+                      pathname: "/seasons/harvest",
+                      params: { seasonId: String(cropSeasonId) },
+                    })
+                  }
+                />
+                <Button
+                  label="Đổi ngày dự kiến thu hoạch"
+                  variant="secondary"
+                  onPress={() =>
+                    router.push({
+                      pathname: "/seasons/reschedule",
+                      params: { seasonId: String(cropSeasonId) },
+                    })
+                  }
+                />
+              </View>
+            )}
             {queued.length > 0 && (
               <Pressable
                 accessibilityRole="button"
@@ -168,6 +195,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
   },
   header: { gap: spacing.md, marginBottom: spacing.md },
+  harvestActions: { gap: spacing.sm },
   queueStrip: {
     backgroundColor: chipTones.warning.background,
     borderRadius: radius.card,

@@ -35,9 +35,14 @@ function doseText(rule: NonNullable<Diagnosis["treatmentRule"]>) {
 }
 
 function DiagnosisSection({ report }: { report: DiseaseReport }) {
-  if (report.status === "NEEDS_RETAKE") return <Card style={styles.rejected}>
-    <Text style={styles.cardTitle}>Cần chụp lại ảnh</Text><Text style={styles.body}>{report.retakeReason}</Text>
-  </Card>;
+  if (report.status === "NEEDS_RETAKE") {
+    return (
+      <Card style={styles.rejected}>
+        <Text style={styles.cardTitle}>Cần chụp lại ảnh</Text>
+        <Text style={styles.body}>{report.retakeReason}</Text>
+      </Card>
+    );
+  }
   const diagnosis = report.diagnosis;
   if (!diagnosis) {
     return <Text style={styles.note}>Đang chờ chẩn đoán.</Text>;
@@ -199,8 +204,21 @@ export default function ReportDetailScreen() {
         </Text>
       </View>
       <Timeline steps={timelineSteps(report.diagnosis)} />
-      {report.retakeOf && <Button variant="secondary" label="Xem ảnh trước" onPress={() => router.push({ pathname: "/reports/[id]", params: { id: String(report.retakeOf) } })} />}
-      {report.retakeIds.map((child) => <Button key={child} variant="secondary" label={`Xem ảnh chụp lại #${child}`} onPress={() => router.push({ pathname: "/reports/[id]", params: { id: String(child) } })} />)}
+      {report.retakeOf && (
+        <Button
+          variant="secondary"
+          label="Xem ảnh trước"
+          onPress={() => router.push({ pathname: "/reports/[id]", params: { id: String(report.retakeOf) } })}
+        />
+      )}
+      {report.retakeIds.map((child) => (
+        <Button
+          key={child}
+          variant="secondary"
+          label={`Xem ảnh chụp lại #${child}`}
+          onPress={() => router.push({ pathname: "/reports/[id]", params: { id: String(child) } })}
+        />
+      ))}
       <DiagnosisSection report={report} />
       {data && report.diagnosis?.approvalStatus === "APPROVED" && (
         <SprayingSection key={data.spraying?.confirmationStatus ?? "none"} data={data} onChanged={refresh} />

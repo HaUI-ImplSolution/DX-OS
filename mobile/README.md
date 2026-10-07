@@ -29,7 +29,7 @@ Ngoài Expo Go, có thể build APK bằng EAS mà không cần cài Android Stu
   Lỗi mạng trả `ApiError` với `status` `0`.
 - **Chụp và gửi ảnh**: `expo-image-picker` mở camera hệ thống; `expo-image-manipulator` thu nhỏ cạnh dài tối đa 1280px và nén JPEG 0.7 để nằm xa giới hạn multipart 10MB.
   Ảnh gửi dạng multipart, part `image`, qua `XMLHttpRequest` để có thanh tiến trình.
-  App kiểm mỗi chiều từ 160px, dung lượng tối đa 10 MiB và độ sáng qua JPEG thumbnail (`jpeg-js`); Backend kiểm thêm độ nét trước khi gửi và khi nộp thật.
+  App kiểm mỗi chiều từ 160px và dung lượng tối đa 10 MiB; Backend kiểm độ sáng và độ nét ngay sau khi chọn ảnh và khi nộp thật.
   Ảnh không đạt phải chụp lại; precheck không xác nhận ảnh là lúa.
 - **Hàng đợi offline**: khi không có mạng hoặc gặp lỗi kết nối lúc gửi, ảnh được copy vào thư mục dữ liệu của app và ghi vào hàng đợi (`@react-native-async-storage/async-storage`).
   Mỗi ảnh có một UUID dùng làm header `Idempotency-Key`, nên gửi lại nhiều lần vẫn chỉ tạo một báo cáo.
@@ -52,7 +52,8 @@ Ngoài Expo Go, có thể build APK bằng EAS mà không cần cài Android Stu
 - **Khai phun thuốc**: ở chi tiết báo cáo đã duyệt, nông dân nhập liều và ngày phun.
   Bản khai chờ kỹ sư xác nhận, trong lúc chờ vụ chưa thu hoạch được.
   Bị từ chối thì màn hiện lý do và cho khai lại.
-- **Hiển thị trạng thái**: NEEDS_RETAKE của báo cáo được ưu tiên; các quyết định còn lại lấy từ `diagnosis`. Màn chi tiết có liên kết xem chuỗi ảnh thay thế.
+- **Hiển thị trạng thái**: `NEEDS_RETAKE` của báo cáo được ưu tiên, các quyết định còn lại lấy từ `diagnosis`.
+  Màn chi tiết có liên kết xem chuỗi ảnh thay thế.
 
   | `diagnosis` | Chip | Nội dung nông dân thấy |
   |---|---|---|

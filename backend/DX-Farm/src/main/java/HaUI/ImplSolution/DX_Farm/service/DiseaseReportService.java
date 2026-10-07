@@ -1,6 +1,9 @@
 package HaUI.ImplSolution.DX_Farm.service;
 
 import HaUI.ImplSolution.DX_Farm.core.storage.StorageService;
+import HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowActor;
+import HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowService;
+import HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowStatus;
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisResponse;
 import HaUI.ImplSolution.DX_Farm.dto.DiseaseReportResponse;
 import HaUI.ImplSolution.DX_Farm.dto.ImagePrecheckResponse;
@@ -15,6 +18,7 @@ import HaUI.ImplSolution.DX_Farm.model.CropSeasonStatus;
 import HaUI.ImplSolution.DX_Farm.model.Diagnosis;
 import HaUI.ImplSolution.DX_Farm.model.DiseaseReport;
 import HaUI.ImplSolution.DX_Farm.model.DiseaseReportStatus;
+import HaUI.ImplSolution.DX_Farm.model.NotificationType;
 import HaUI.ImplSolution.DX_Farm.repository.CropSeasonRepository;
 import HaUI.ImplSolution.DX_Farm.repository.DiagnosisRepository;
 import HaUI.ImplSolution.DX_Farm.repository.DiseaseReportRepository;
@@ -47,6 +51,8 @@ public class DiseaseReportService {
   private final FileStorageService fileStorageService;
   private final StorageService storageService;
   private final CurrentUserService currentUserService;
+  private final NotificationService notificationService;
+  private final WorkflowService workflowService;
   private final ApplicationEventPublisher eventPublisher;
   private final Clock clock;
   private final AiDiagnosisClient aiClient;
@@ -57,7 +63,8 @@ public class DiseaseReportService {
   public DiseaseReportService(DiseaseReportRepository diseaseReportRepository,
       CropSeasonRepository cropSeasonRepository, DiagnosisRepository diagnosisRepository,
       FileStorageService fileStorageService, StorageService storageService,
-      CurrentUserService currentUserService, ApplicationEventPublisher eventPublisher, Clock clock,
+      CurrentUserService currentUserService, NotificationService notificationService,
+      WorkflowService workflowService, ApplicationEventPublisher eventPublisher, Clock clock,
       AiDiagnosisClient aiClient, PlatformTransactionManager transactionManager,
       EntityManager entityManager) {
     this.diseaseReportRepository = diseaseReportRepository;
@@ -66,6 +73,8 @@ public class DiseaseReportService {
     this.fileStorageService = fileStorageService;
     this.storageService = storageService;
     this.currentUserService = currentUserService;
+    this.notificationService = notificationService;
+    this.workflowService = workflowService;
     this.eventPublisher = eventPublisher;
     this.clock = clock;
     this.aiClient = aiClient;
@@ -84,8 +93,9 @@ public class DiseaseReportService {
     List<DiseaseReport> reports = includeDeleted
         ? diseaseReportRepository.findByCropSeasonIdOrderByIdAsc(cropSeasonId)
         : diseaseReportRepository.findByCropSeasonIdAndDeletedAtIsNullOrderByIdAsc(cropSeasonId);
-    if (reports.isEmpty())
+    if (reports.isEmpty()) {
       return List.of();
+    }
     List<Long> reportIds = reports.stream().map(DiseaseReport::getId).toList();
     Map<Long, Diagnosis> latest = diagnosisRepository.findLatestForReports(reportIds).stream()
         .collect(Collectors.toMap(d -> d.getDiseaseReport().getId(), d -> d));
@@ -101,6 +111,7 @@ public class DiseaseReportService {
     return toResponse(findOrThrow(id), currentUserService.isFarmer());
   }
 
+  // Quality check only; nothing is stored.
   @Transactional(propagation = Propagation.NOT_SUPPORTED)
   public ImagePrecheckResponse precheck(MultipartFile image) {
     return aiClient.precheck(fileStorageService.sanitize(image));
@@ -112,23 +123,28 @@ public class DiseaseReportService {
     return create(cropSeasonId, image, clientRequestId, null);
   }
 
+  // The photo quality is checked again here, outside any transaction, so a client that skipped
+  // the precheck cannot store a poor photo.
   @Transactional(propagation = Propagation.NOT_SUPPORTED)
   public DiseaseReportResponse create(Long cropSeasonId, MultipartFile image, UUID clientRequestId,
       Long retakeOf) {
     DiseaseReportResponse existing = readTransaction.execute(status -> {
       CropSeason season = findAccessibleSeasonOrThrow(cropSeasonId);
       DiseaseReport duplicate = findDuplicate(cropSeasonId, clientRequestId, retakeOf);
-      if (duplicate != null)
+      if (duplicate != null) {
         return toResponse(duplicate, currentUserService.isFarmer());
+      }
       requireActiveSeason(season);
       validateRetake(cropSeasonId, retakeOf, false);
       return null;
     });
-    if (existing != null)
+    if (existing != null) {
       return existing;
+    }
     ImagePrecheckResponse quality = precheck(image);
-    if (!quality.passed())
+    if (!quality.passed()) {
       throw new AiTriageException(String.join(" ", quality.reasons()), null);
+    }
     return writeTransaction
         .execute(status -> createChecked(cropSeasonId, image, clientRequestId, retakeOf, quality));
   }
@@ -138,8 +154,9 @@ public class DiseaseReportService {
     CropSeason season = findAccessibleSeasonOrThrow(cropSeasonId);
     entityManager.lock(season, LockModeType.PESSIMISTIC_WRITE);
     DiseaseReport duplicate = findDuplicate(cropSeasonId, clientRequestId, retakeOf);
-    if (duplicate != null)
+    if (duplicate != null) {
       return toResponse(duplicate, currentUserService.isFarmer());
+    }
     requireActiveSeason(season);
     DiseaseReport original = validateRetake(cropSeasonId, retakeOf, true);
     String reporter = currentUserService.currentFullName();
@@ -166,14 +183,16 @@ public class DiseaseReportService {
   }
 
   private DiseaseReport findDuplicate(Long seasonId, UUID key, Long retakeOf) {
-    if (key == null)
+    if (key == null) {
       return null;
+    }
     return diseaseReportRepository.findByClientRequestId(key).map(report -> {
       DiseaseReport duplicate = requireSameRequester(report, seasonId,
           currentUserService.currentFullName(), currentUserService.currentUserId());
       Long originalId = report.getRetakeOf() == null ? null : report.getRetakeOf().getId();
-      if (!Objects.equals(originalId, retakeOf))
+      if (!Objects.equals(originalId, retakeOf)) {
         throw new InvalidStateException("Idempotency-Key was used for a different retake");
+      }
       return duplicate;
     }).orElse(null);
   }
@@ -190,11 +209,13 @@ public class DiseaseReportService {
   }
 
   private DiseaseReport validateRetake(Long seasonId, Long originalId, boolean lock) {
-    if (originalId == null)
+    if (originalId == null) {
       return null;
+    }
     DiseaseReport original = findOrThrow(originalId);
-    if (lock)
+    if (lock) {
       entityManager.lock(original, LockModeType.PESSIMISTIC_WRITE);
+    }
     if (!original.getCropSeason().getId().equals(seasonId)
         || original.getStatus() != DiseaseReportStatus.NEEDS_RETAKE) {
       throw new InvalidStateException(
@@ -207,14 +228,35 @@ public class DiseaseReportService {
     return original;
   }
 
+  // Asks the farmer for a new photo; a diagnosis the engineer has not decided on stops waiting.
   @Transactional
   public DiseaseReportResponse requestRetake(Long id, String reason) {
     DiseaseReport report = findOrThrow(id);
     entityManager.lock(report, LockModeType.PESSIMISTIC_WRITE);
     requireActiveSeason(report.getCropSeason());
+    if (report.getStatus() == DiseaseReportStatus.NEEDS_RETAKE) {
+      throw new InvalidStateException("A new photo was already requested for report: " + id);
+    }
+    Diagnosis latest = diagnosisRepository.findTopByDiseaseReportIdOrderByIdDesc(id).orElse(null);
+    if (latest != null && latest.getApprovalStatus() == ApprovalStatus.APPROVED) {
+      throw new InvalidStateException(
+          "An approved diagnosis cannot be replaced by a new photo: " + id);
+    }
+    if (latest != null && latest.getApprovalStatus() == ApprovalStatus.PENDING) {
+      workflowService.recordTransition(DiagnosisService.CASE_TYPE, DiagnosisService.ENTITY_TYPE,
+          latest.getId(), WorkflowStatus.CANCELLED,
+          new WorkflowActor(currentUserService.currentUserId(),
+              currentUserService.currentFullName()),
+          "New photo requested", null);
+    }
     report.setStatus(DiseaseReportStatus.NEEDS_RETAKE);
     report.setRetakeReason(reason);
     diseaseReportRepository.save(report);
+    notificationService.notifyHousehold(report.getCropSeason().getParcel().getHousehold(),
+        NotificationType.RETAKE_REQUESTED, "Kỹ sư cần ảnh mới",
+        "Báo cáo #%d thửa %s. Lý do: %s. Hãy chụp lại và gửi ảnh thay thế.".formatted(id,
+            report.getCropSeason().getParcel().getCode(), reason),
+        "DISEASE_REPORT", String.valueOf(id));
     return toResponse(report, currentUserService.isFarmer());
   }
 

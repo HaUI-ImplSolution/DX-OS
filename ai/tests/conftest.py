@@ -3,9 +3,7 @@ import os
 from PIL import Image, ImageDraw
 
 # app.db.session builds its engine at import time; the URL is never connected to in unit tests.
-os.environ.setdefault(
-    "DATABASE_URL", "postgresql+psycopg://test:test@localhost:5432/test"
-)
+os.environ.setdefault("DATABASE_URL", "postgresql+psycopg://test:test@localhost:5432/test")
 
 
 def leaf_scene():

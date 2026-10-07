@@ -1,40 +1,83 @@
-# Phase 6: Kiểm tra ảnh và chẩn đoán
+# Phase 6: AI — kiểm tra ảnh, chẩn đoán
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Đã triển khai và kiểm thử tự động; chờ xác nhận đầy đủ luồng điện thoại |
+| Trạng thái | Xong (việc chưa làm ghi ở `04_TRADEOFFS_RISKS.md` mục 3) |
+| Mức độ | Quan trọng |
+| Nhóm ưu tiên | B |
+| Ước lượng | 5-6 ngày |
 | Người phụ trách | tung |
-| Mức độ / ưu tiên | Quan trọng / B |
-| Ước lượng | 5–6 ngày |
-| Tham chiếu | Mục 5, 11 của `PROJECT_IMPROVEMENTS.md`; D6/D7 của Phase 0 |
-| Nền tích hợp | `Khuong/main` tại `9ec9320`, có P1/P2/P3/P4 |
+| Bắt đầu, dự kiến xong | {dd/mm/yyyy}, {dd/mm/yyyy} |
+| Phụ thuộc | Phase 1 (song song được với P4) |
 
-## Phạm vi
+## 1. Tham chiếu
 
-| WP | Kết quả |
-|---|---|
-| WP6-01 | Kiểm chất lượng trước khi gửi ảnh; server kiểm lại khi nộp |
-| WP6-03 | Trạng thái cần chụp lại và chuỗi báo cáo cũ/mới |
-| WP6-04 | Gợi ý bệnh từ triệu chứng, kỹ sư chốt và lưu nhãn |
-| WP6-05 | Gọi AI ngoài transaction; cho phép chẩn đoán lại và giữ lịch sử |
+| Mục `PROJECT_IMPROVEMENTS.md` | Nội dung | Mức độ | Phạm vi trong phase này |
+|---|---|---|---|
+| mục 5 | Luồng nộp báo cáo sâu bệnh | Quan trọng | Toàn bộ |
+| mục 11 | Luồng chẩn đoán và AI | Quan trọng | Gọi AI ngoài transaction, chẩn đoán lại, nhập triệu chứng, nhãn kỹ sư; phần đánh giá AI (dataset, công cụ, báo cáo chỉ số) không thuộc phase này |
 
-CV giữ 5 lớp bệnh lá hiện có; RAG xếp hạng trong danh mục 6 mã, gồm mã fallback.
-Phase này không huấn luyện thêm lớp sâu hại hoặc lớp nhận diện ảnh ngoài miền.
-Precheck chỉ kiểm chất lượng, không xác nhận ảnh là lúa.
+## 2. Lý do
 
-## Điều kiện hoàn thành
+- Vấn đề đang gặp: farmer chỉ biết ảnh mờ sau khi kỹ sư phát hiện; "cần chụp lại" bị trộn với "kỹ sư từ chối khuyến nghị" ở cùng một trạng thái.
+  Báo cáo chỉ có tối đa một chẩn đoán nên kỹ sư không chạy lại được; `createFromAi` gọi AI (timeout đọc 120 giây) bên trong transaction và giữ một kết nối DB suốt thời gian đó.
+  Đường nhập tay bắt kỹ sư tự gõ `diseaseCode` và luôn đòi treatment rule active, nên lỗi 404 trên database sạch.
+  Model YOLO chỉ có 5 lớp bệnh lá, không có lớp "không phải lúa": khi không có detection nào đạt ngưỡng, kết quả rơi về `Rice___healthy` với `confidence = 0.0`.
+- Vì sao làm ở phase này: các lỗ hổng trên ảnh hưởng trực tiếp độ tin cậy của phần Intelligence khi demo.
 
-- T6-01 đến T6-08 và các ca hồi quy về PHI, idempotency, phân quyền đạt.
-- Farmer nhận cảnh báo ảnh mờ trước khi gửi; ảnh rõ được nhận.
-- Kỹ sư yêu cầu ảnh mới; farmer gửi ảnh thay thế và xem được chuỗi liên kết.
-- Hàng đợi offline gửi lại đúng báo cáo, không tạo trùng.
-- Kỹ sư nhập triệu chứng, chốt bệnh và chạy lại AI có lịch sử.
+## 3. Tổng quan sửa đổi
 
-Phần triển khai và kiểm thử tự động đã đạt; chưa có xác nhận đầy đủ camera/offline/retake trên điện thoại thật.
+| Lớp | Có thay đổi | Ghi chú ngắn |
+|---|---|---|
+| Backend | Có | Precheck và kiểm lại khi nộp, trạng thái cần chụp lại, nhiều chẩn đoán trên một báo cáo, gọi AI ngoài transaction, gợi ý theo triệu chứng, nhãn kỹ sư |
+| Frontend (web) | Có | Kỹ sư nhập triệu chứng, xem gợi ý, yêu cầu ảnh mới, xem lịch sử chẩn đoán |
+| Mobile | Có | Kiểm ảnh trước khi gửi, màn "cần chụp lại", chụp lại liên kết báo cáo cũ, giữ `retakeOf` trong hàng đợi offline |
+| AI | Có | `POST /api/v1/disease/precheck`, `POST /api/v1/disease/symptoms/suggest`, đo độ nét và độ sáng dùng chung với `predict` |
+| Data / Seed / Migration | Có | `V8`: bỏ unique 1-1 của `diagnoses`, cột chất lượng và retake trên `disease_reports`, bảng `training_labels` |
+| Infra / Deploy / CI | Không | |
+| Docs / PoF | Có | `ai/app/cv/README.md`, CHANGELOG |
 
-## Tài liệu
+## 4. Phạm vi
 
-- [Plan và hợp đồng API](./01_PLAN.md)
-- [Checklist](./02_CHECKLIST.md)
-- [Test plan và kết quả](./03_TEST_PLAN.md)
-- [Giới hạn và rủi ro](./04_TRADEOFFS_RISKS.md)
+- Trong phạm vi: WP6-01, WP6-03, WP6-04, WP6-05 ở `01_PLAN.md` (precheck, trạng thái cần chụp lại, nhập triệu chứng qua RAG, gọi AI ngoài transaction và chẩn đoán lại).
+- Ngoài phạm vi (không làm ở phase này):
+  - Lớp lọc "không phải lúa": cần huấn luyện lớp mới và bộ dữ liệu riêng, xem `04_TRADEOFFS_RISKS.md` TO1.
+  - Mô hình nhận diện sâu hại (ngoài 5 bệnh lá, theo D7).
+  - Dataset, công cụ và báo cáo chỉ số đánh giá AI (test set độc lập, chỉ số theo lớp, confusion matrix): bỏ khỏi phase, giữ ngưỡng confidence `0.70`.
+- Giả định: D7 (phase 0, giữ 5 bệnh lá và thêm đường nhập triệu chứng) đã chốt; hộp thông báo của P5 đã có để báo yêu cầu chụp lại.
+
+## 5. Ưu điểm và hạn chế
+
+- Ưu điểm: farmer biết ảnh có dùng được trước khi gửi; kỹ sư chạy lại chẩn đoán và yêu cầu ảnh mới mà không mất lịch sử; đường nhập tay dùng được trên database sạch; kết nối DB không bị giữ trong lúc chờ AI.
+- Hạn chế: precheck chỉ kiểm chất lượng ảnh, không xác nhận ảnh là lúa; ngưỡng độ nét chưa hiệu chuẩn bằng ảnh ngoài ruộng, không có số liệu đánh giá độ chính xác của model; nộp báo cáo phụ thuộc AI service đang chạy.
+- Trade-off lớn: xem `04_TRADEOFFS_RISKS.md` (không huấn luyện lại model, quan hệ chẩn đoán 1-N, cho lưu chẩn đoán khi thiếu treatment rule).
+
+## 6. Kết quả đầu ra mong đợi (Definition of Done)
+
+- Demo được: farmer chụp ảnh mờ, nhận cảnh báo chụp lại trước khi gửi; kỹ sư nhập triệu chứng, nhận danh sách bệnh xếp hạng từ danh mục, chọn một mã hợp lệ; kỹ sư yêu cầu ảnh mới, farmer nhận thông báo, chụp lại và xem được chuỗi ảnh; chẩn đoán lại được trên cùng báo cáo.
+- Sản phẩm bàn giao: endpoint precheck, trạng thái `NEEDS_RETAKE` tách khỏi `REJECTED`, luồng nhập triệu chứng qua RAG, bảng `training_labels`.
+- Tiêu chí đo được: đường nhập tay không còn 404 trên database sạch; gọi AI không giữ transaction DB; ảnh mờ nộp thẳng bị 422 và không lưu.
+- Bằng chứng: kết quả T6-xx ở `03_TEST_PLAN.md`.
+
+## 7. Phụ thuộc và thứ tự
+
+- Cần từ phase trước: `workflow_case` (P3) cho duyệt từng chẩn đoán; `NotificationService` (P5) cho thông báo chụp lại; chỉ cần P1 về mặt kỹ thuật cho phần AI.
+- Phase sau cần từ phase này: P7 (BI) dùng nhãn kỹ sư để làm chart tỷ lệ AI đúng/sai.
+
+## 8. Ảnh hưởng đến thi (PoF và sản phẩm)
+
+- Điểm rubric liên quan: đề mục 4.2 phần I (phần AI); phase này không thêm số liệu đánh giá, chỉ giới hạn đã biết ở `04_TRADEOFFS_RISKS.md`.
+- Dùng làm bằng chứng cho: câu hỏi hội đồng "AI dùng ở đâu, giới hạn?" (mục 20 `PROJECT_IMPROVEMENTS.md`).
+
+## 9. Câu hỏi mở và quyết định cần chốt
+
+| # | Câu hỏi | Lựa chọn | Hạn chốt | Kết luận |
+|---|---|---|---|---|
+| Q1 | Ngưỡng confidence coi là "không chắc, cần chuyển người xem" | Giữ `0.70` / Đổi theo số liệu đo | 06/10/2026 | Giữ `0.70` trong code; không đo lại vì phần đánh giá AI bỏ khỏi phase |
+
+## 10. Tài liệu cần cập nhật khi xong
+
+- [x] `CHANGELOG.md` (chỉ ghi trạng thái cuối).
+- [x] `ai/README.md`, `ai/app/cv/README.md` (precheck, ngưỡng, gợi ý triệu chứng).
+- [x] `mobile/README.md` (kiểm ảnh, chụp lại).
+- [x] Swagger cho precheck, yêu cầu chụp lại, gợi ý triệu chứng, lịch sử chẩn đoán.

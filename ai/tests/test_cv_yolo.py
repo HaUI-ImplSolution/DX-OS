@@ -187,7 +187,9 @@ def test_checksum_mismatch_fails_before_model_import(monkeypatch):
     monkeypatch.setattr("app.cv.loader._sha256", lambda _path: "1" * 64)
 
     with pytest.raises(ValueError, match="SHA-256"):
-        load_model(settings(cv_weights_path=CONTRACT_PATH, cv_weights_sha256="0" * 64))
+        load_model(
+            settings(cv_weights_path=CONTRACT_PATH, cv_weights_sha256="0" * 64)
+        )
 
 
 @pytest.mark.parametrize("checksum", [None, "", "not-a-sha256", "g" * 64])

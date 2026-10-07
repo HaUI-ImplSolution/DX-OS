@@ -193,7 +193,7 @@ Tất cả D1-D10 đã chốt ngày 05/10/2026, xem `phase-0-chot-quyet-dinh-pha
 
 - Mức độ: Quan trọng. Nhóm B. Ước lượng 5-6 ngày. Mục tham chiếu: 5, 11.
 - Thay đổi tổng quát:
-  - Endpoint precheck ảnh qua backend, mobile kiểm kích thước/độ sáng, server kiểm thêm độ nét.
+  - Endpoint precheck ảnh qua backend, mobile kiểm kích thước và dung lượng, server kiểm độ sáng và độ nét.
   - Báo cáo có trạng thái "cần chụp lại" riêng, tách khỏi từ chối chẩn đoán, farmer chụp lại được liên kết với báo cáo cũ.
   - Nhập triệu chứng thay luồng nhập kết quả tay: truy xuất RAG xếp hạng bệnh trong danh mục, kỹ sư chốt.
   - Gọi AI ngoài transaction, cho phép chẩn đoán lại, lưu nhãn kỹ sư chốt làm dữ liệu huấn luyện.

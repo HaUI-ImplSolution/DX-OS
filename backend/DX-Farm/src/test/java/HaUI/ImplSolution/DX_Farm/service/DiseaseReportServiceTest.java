@@ -61,8 +61,10 @@ class DiseaseReportServiceTest {
     when(cropSeasonRepository.findById(5L)).thenReturn(Optional.of(season));
     when(currentUserService.canAccess(parcel)).thenReturn(true);
     var service = new DiseaseReportService(diseaseReportRepository, cropSeasonRepository,
-        diagnosisRepository, fileStorageService, storageService, currentUserService, eventPublisher,
-        Clock.fixed(Instant.parse("2026-10-06T00:00:00Z"), ZoneOffset.UTC),
+        diagnosisRepository, fileStorageService, storageService, currentUserService,
+        org.mockito.Mockito.mock(NotificationService.class),
+        org.mockito.Mockito.mock(HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowService.class),
+        eventPublisher, Clock.fixed(Instant.parse("2026-10-06T00:00:00Z"), ZoneOffset.UTC),
         org.mockito.Mockito.mock(AiDiagnosisClient.class), transactionManager(),
         org.mockito.Mockito.mock(jakarta.persistence.EntityManager.class));
     var image = new MockMultipartFile("image", "leaf.jpg", "image/jpeg", new byte[] {1});

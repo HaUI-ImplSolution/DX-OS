@@ -48,7 +48,7 @@ def _noise_variance(pixels: np.ndarray) -> float:
 
 
 def image_sharpness(grayscale: Image.Image) -> float:
-    # ponytail: central-detail heuristic cannot isolate leaves; use a leaf ROI if needed.
+    # Central-detail heuristic: it cannot isolate leaves, a leaf ROI would be the upgrade.
     # Suppress screen pixels/noise and compare detail at a bounded resolution.
     normalized = grayscale.copy()
     normalized.thumbnail(

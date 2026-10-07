@@ -85,6 +85,10 @@ public class Diagnosis {
   // Lý do từ chối (chỉ có giá trị khi bị REJECTED)
   private String rejectionReason;
 
+  // Symptoms the engineer described when recording the diagnosis; copied to the label on approval
+  @Column(columnDefinition = "text")
+  private String symptomText;
+
   // Optimistic lock: concurrent writers get a 409 instead of silently overwriting each other
   @Version
   @Column(nullable = false, columnDefinition = "BIGINT NOT NULL DEFAULT 0")

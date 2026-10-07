@@ -23,6 +23,7 @@ public record DiagnosisCreateRequest(
   @NotBlank
   String modelVersion,
 
+  // Symptoms the engineer observed; kept with the diagnosis and copied to the training label on approval
   @Size(max = 4000) String symptomText
 ){
   public DiagnosisCreateRequest(String diseaseCode, BigDecimal confidence, String modelVersion) {

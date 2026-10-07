@@ -44,7 +44,8 @@ Tài liệu chi tiết theo module:
 | `POST` | `/api/v1/diagnose` | Contract nội bộ Backend → AI, yêu cầu header `X-Service-Api-Key` |
 
 Mọi endpoint ngoài `/health` và `/class-contract` đều yêu cầu `X-Service-Api-Key` khớp `AI_SERVICE_API_KEY`; thiếu hoặc sai key trả `401`, chưa cấu hình key trả `503`.
-Cổng AI không publish ra host, chỉ truy cập được trong mạng compose. Gợi ý triệu chứng chỉ hỗ trợ tra cứu; kỹ sư chốt bệnh tại Backend.
+Cổng AI không publish ra host, chỉ truy cập được trong mạng compose.
+Gợi ý triệu chứng chỉ hỗ trợ tra cứu; kỹ sư chốt bệnh tại Backend.
 
 `POST /api/v1/diagnose` tải ảnh từ `image_url`, chạy CV, gọi Backend lấy structured facts, truy vấn RAG và trả recommendation. Nếu structured facts không khả dụng, request thất bại; AI không đưa ra recommendation chỉ dựa trên RAG.
 

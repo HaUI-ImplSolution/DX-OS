@@ -11,6 +11,7 @@ import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
@@ -25,7 +26,7 @@ import org.springframework.web.client.RestClientResponseException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-// Calls AI diagnosis, image precheck and symptom retrieval through the service contract.
+// Calls the AI service: diagnosis, image quality precheck and symptom ranking.
 @Service
 public class AiDiagnosisClient {
 
@@ -78,12 +79,14 @@ public class AiDiagnosisClient {
       ImagePrecheckResponse response = restClient.post().uri("/api/v1/disease/precheck")
           .contentType(MediaType.MULTIPART_FORM_DATA).body(parts).retrieve()
           .body(ImagePrecheckResponse.class);
-      if (response == null)
+      if (response == null) {
         throw new AiServiceException("Empty precheck response", null);
+      }
       return response;
     } catch (RestClientResponseException e) {
-      if (java.util.Set.of(400, 413, 422).contains(e.getStatusCode().value()))
+      if (Set.of(400, 413, 422).contains(e.getStatusCode().value())) {
         throw new AiTriageException(readTriageMessage(e), e);
+      }
       throw new AiServiceException("AI precheck unavailable", e);
     } catch (RestClientException e) {
       throw new AiServiceException("AI precheck unavailable", e);
@@ -95,8 +98,9 @@ public class AiDiagnosisClient {
       var response = restClient.post().uri("/api/v1/disease/symptoms/suggest")
           .body(Map.of("symptom_text", symptomText, "top_k", 6)).retrieve()
           .body(new ParameterizedTypeReference<List<SymptomSuggestionResponse>>() {});
-      if (response == null)
+      if (response == null) {
         throw new AiServiceException("Empty suggestions response", null);
+      }
       return response;
     } catch (RestClientException e) {
       throw new AiServiceException("AI suggestions unavailable", e);

@@ -39,7 +39,6 @@ Khi bật lại cần rà license tương ứng: POI Apache-2.0 OK, các cái c�
 | React / React DOM / React Native | MIT | ✅ |
 | @react-native-async-storage/async-storage / @react-native-community/netinfo | MIT | ✅ |
 | react-native-screens / react-native-safe-area-context | MIT | ✅ |
-| jpeg-js (`0.4.4`, đọc JPEG thumbnail để kiểm độ sáng) | BSD-3-Clause | ✅ |
 | TypeScript | Apache-2.0 | ✅ |
 
 ## Portal (`portal`)

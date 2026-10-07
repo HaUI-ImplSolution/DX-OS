@@ -215,7 +215,8 @@ export type NotificationType =
   | "TREATMENT_CONFIRMED"
   | "TREATMENT_REJECTED"
   | "HARVEST_REMINDER"
-  | "HARVEST_RECORDED";
+  | "HARVEST_RECORDED"
+  | "RETAKE_REQUESTED";
 
 export interface AppNotification {
   id: number;

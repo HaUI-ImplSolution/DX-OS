@@ -71,7 +71,9 @@ public class DiseaseReportController {
   @PatchMapping("/disease-reports/{id}/request-retake")
   @PreAuthorize("hasAnyRole('ENGINEER','ADMIN')")
   @Operation(summary = "Request a new photo",
-      description = "Changes report status to NEEDS_RETAKE; leaves diagnosis decisions unchanged.")
+      description = "Changes report status to NEEDS_RETAKE, cancels a diagnosis still waiting for approval,"
+          + " and notifies the household. Leaves diagnosis decisions unchanged."
+          + " 409 if the current diagnosis is already APPROVED or a retake was already requested.")
   public ApiResponse<DiseaseReportResponse> requestRetake(@PathVariable Long id,
       @Valid @RequestBody RetakeRequest request) {
     return ApiResponse.success(diseaseReportService.requestRetake(id, request.reason()));

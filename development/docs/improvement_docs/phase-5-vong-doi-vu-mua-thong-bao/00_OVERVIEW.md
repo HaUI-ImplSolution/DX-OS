@@ -85,7 +85,6 @@
 |---|---|---|
 | Push thật (FCM, UnifiedPush) | D5 chốt hộp thông báo kéo về trước | P10 |
 | Hộp thông báo cho engineer và admin | Họ có hàng đợi và Mattermost, ngoài phạm vi D5 | `04_TRADEOFFS_RISKS.md` mục 3 |
-| Thông báo `RETAKE_REQUESTED` | Thuộc luồng chụp lại của P6 | P6 |
 | Phun lặp lại trên cùng chẩn đoán | Q1 giữ một lần phun mỗi chẩn đoán | `04_TRADEOFFS_RISKS.md` mục 3 |
 | SLA nhắc kỹ sư khi bản khai chờ xác nhận lâu | Chưa có người dùng thật gặp tình huống này | `04_TRADEOFFS_RISKS.md` mục 3 |
 | Cuộn tải thêm trong hộp thông báo mobile | Màn chỉ tải 30 thông báo mới nhất | `04_TRADEOFFS_RISKS.md` mục 3 |

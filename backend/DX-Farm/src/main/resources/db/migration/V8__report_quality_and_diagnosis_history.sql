@@ -1,6 +1,7 @@
 -- Preserve every diagnosis; the greatest id is the current one.
 ALTER TABLE diagnoses DROP CONSTRAINT ukqocm7r6v5tw8klvpyfacgijr4;
 CREATE INDEX idx_diagnoses_report_latest ON diagnoses (disease_report_id, id DESC);
+ALTER TABLE diagnoses ADD COLUMN symptom_text text;
 
 ALTER TABLE disease_reports ADD COLUMN status varchar(32) NOT NULL DEFAULT 'PENDING';
 ALTER TABLE disease_reports ADD COLUMN retake_reason varchar(1000);

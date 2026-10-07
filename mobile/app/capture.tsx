@@ -109,13 +109,6 @@ export default function CaptureScreen() {
       return;
     }
     try {
-      const quality = await precheckDiseaseReport(photo);
-      if (!quality.passed) {
-        setQualityRejected(true);
-        setError(quality.reasons.join(" "));
-        setSending(false);
-        return;
-      }
       await createDiseaseReport(Number(seasonId), photo, setProgress, idempotencyKey.current, retakeOf ? Number(retakeOf) : undefined);
       router.back();
     } catch (e) {

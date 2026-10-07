@@ -48,7 +48,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
     CropSeasonService.class, SeasonCalendar.class, PendingRequestLimiter.class,
     WorkflowService.class, NotificationService.class, TimeConfig.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
-class Phase6IntegrationTest {
+class ReportDiagnosisIntegrationTest {
   @Container
   static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16-alpine");
 
@@ -193,6 +193,9 @@ class Phase6IntegrationTest {
         new BigDecimal("0.8"), "engineer", "Vết hình thoi trên lá"));
     assertThat(result.treatmentRule()).isNull();
     assertThat(result.recommendationText()).contains("Chờ khuyến nghị");
+    assertThat(labelRepository.findAll())
+        .noneMatch(l -> l.getDiagnosis().getId().equals(result.id()));
+    diagnoses.approve(reportId);
     tx.executeWithoutResult(status -> {
       var label = labelRepository.findAll().stream()
           .filter(l -> l.getDiagnosis().getId().equals(result.id())).findFirst().orElseThrow();

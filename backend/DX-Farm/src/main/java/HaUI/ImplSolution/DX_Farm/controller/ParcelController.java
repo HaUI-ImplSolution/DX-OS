@@ -4,7 +4,9 @@ import HaUI.ImplSolution.DX_Farm.dto.ApiResponse;
 import HaUI.ImplSolution.DX_Farm.dto.ParcelCreateRequest;
 import HaUI.ImplSolution.DX_Farm.dto.ParcelResponse;
 import HaUI.ImplSolution.DX_Farm.dto.ParcelUpdateRequest;
+import HaUI.ImplSolution.DX_Farm.dto.WeatherResponse;
 import HaUI.ImplSolution.DX_Farm.service.ParcelService;
+import HaUI.ImplSolution.DX_Farm.service.WeatherService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,9 +32,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class ParcelController {
 
   private final ParcelService parcelService;
+  private final WeatherService weatherService;
 
-  public ParcelController(ParcelService parcelService) {
+  public ParcelController(ParcelService parcelService, WeatherService weatherService) {
     this.parcelService = parcelService;
+    this.weatherService = weatherService;
   }
 
   @GetMapping
@@ -50,6 +54,16 @@ public class ParcelController {
       description = "FARMER: 404 if the parcel belongs to another farmer.")
   public ApiResponse<ParcelResponse> getByCode(@PathVariable String code) {
     return ApiResponse.success(parcelService.getByCode(code));
+  }
+
+  @GetMapping("/{code}/weather")
+  @Operation(summary = "Current weather and 5-day forecast at the parcel position",
+      description = "Data from Open-Meteo, cached for an hour. When Open-Meteo cannot be reached"
+          + " the closest stored reference point is returned with isSnapshot=true and a note."
+          + " FARMER: 404 if the parcel belongs to another farmer. 422 PARCEL_LOCATION_MISSING"
+          + " when the parcel has no GPS position.")
+  public ApiResponse<WeatherResponse> weather(@PathVariable String code) {
+    return ApiResponse.success(weatherService.forParcel(code));
   }
 
   @PostMapping

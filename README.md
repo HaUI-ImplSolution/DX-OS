@@ -35,7 +35,7 @@ Hai service tách biệt, giao tiếp qua HTTP:
 - **Backend (Java/Spring Boot)** — sở hữu Single Source of Truth: API nghiệp vụ, PostgreSQL (Operational Data + Structured Knowledge), state machine duyệt (Approve/Reject), enforce poka-yoke (khoá PHI/thu hoạch), auth.
   Đây là nơi mọi ghi nhận cuối cùng xảy ra.
   Role `FARMER` chỉ thấy và thao tác trên thửa có `farmerName` khớp tên trong token (thửa FARMER tạo luôn mang tên họ) và chỉ nhận nội dung chẩn đoán khi đã `APPROVED`.
-- **Gateway (APISIX standalone)** — cửa duy nhất publish ra host: kiểm JWT Keycloak lần đầu, giới hạn tốc độ upload ảnh và gọi AI, route `/api`, `/realms`, link ảnh có hạn và web.
+- **Gateway (APISIX standalone)** — cửa duy nhất publish ra host: kiểm JWT Keycloak lần đầu, giới hạn tốc độ upload ảnh, gọi AI và hỏi đáp tài liệu, route `/api`, `/realms`, link ảnh có hạn và web.
   Cổng của Backend, Keycloak, AI và MinIO không publish ra host; Backend vẫn tự kiểm JWT lần hai.
 - **Workflow dùng chung** — mỗi chẩn đoán có một `workflow_case` (trạng thái, người phụ trách) và các `workflow_event` chỉ thêm, không sửa, nên xem lại được toàn bộ lịch sử duyệt.
   `GET /api/v1/workflow-cases` trả danh sách việc chờ cho kỹ sư và admin.
@@ -44,6 +44,14 @@ Hai service tách biệt, giao tiếp qua HTTP:
   Job nhắc hạn chạy 07:00 giờ Việt Nam mỗi ngày (`HARVEST_REMINDER_CRON`).
 - **Thu hoạch và khai phun thuốc** — thu hoạch ghi ngày, sản lượng, diện tích và người khai; thu hoạch sớm cần xác nhận kèm lý do.
   Nông dân khai phun thuốc, kỹ sư xác nhận; bản khai chờ xác nhận chặn thu hoạch.
+- **Dữ liệu cho BI** — Superset chỉ đọc 6 view `vw_*` (bản ghi đã duyệt hoặc đã xử lý, không có dữ liệu cá nhân) và 3 bảng danh mục.
+  Dashboard có 7 chart: bản đồ thửa, vụ mùa theo trạng thái, báo cáo bệnh theo tuần, điểm nóng dịch bệnh, thửa đang cách ly, lịch thu hoạch, tỷ lệ AI đúng/sai.
+  Chi tiết ở [`bi/README.md`](./bi/README.md).
+- **Thời tiết** — `GET /api/v1/parcels/{code}/weather` lấy từ Open-Meteo (CC BY 4.0), cache 1 giờ.
+  Open-Meteo không gọi được thì trả điểm tham chiếu gần nhất trong `weather-snapshot.json`, đánh dấu `isSnapshot=true`.
+- **Hỏi đáp tài liệu** — `POST /api/v1/knowledge/ask` trả các đoạn tài liệu bệnh lúa từ RAG, mỗi đoạn kèm nguồn.
+  Web có trang `/knowledge` (tab "Tài liệu") cho kỹ sư và admin.
+  Bảng ánh xạ nguồn `knowledge-sources.json` của Backend lấy từ `data/rag/source_registry.json`.
 - **Lưu ảnh (MinIO)** — ảnh báo cáo nằm trong bucket riêng tư, client nhận link có hạn (mặc định 15 phút) trong trường `imageUrl`; không còn đường dẫn ảnh công khai.
 - **AI Service (Python)** — Vision API, LangGraph, Qwen2.5 qua Ollama và RAG; hoạt động như dịch vụ suy luận stateless.
   AI gọi internal REST API của Backend để lấy structured facts, chỉ đọc AI Vector DB riêng và trả recommendation về Backend.
@@ -93,7 +101,7 @@ Chưa cần SSO, chưa cần BI dashboard, chưa cần carbon/IoT.
 ### Giai đoạn 1 — Hoàn thiện trải nghiệm & truy vấn (Should)
 
 - [x] M7 — Trả lời được câu hỏi kiểu "ruộng này còn cách ly không?" bằng SQL context
-- [ ] M8 — RAG trả lời có trích nguồn từ ít nhất một bộ tài liệu VietGAP/IRRI đã ingest (pgvector)
+- [x] M8 — RAG trả lời có trích nguồn từ bộ tài liệu bệnh lúa (IRRI, LSU) đã ingest (pgvector), qua trang Tài liệu trên web
 - [ ] Frontend low-code thật cho nông hộ (ToolJet/Appsmith) thay vì gọi API tay
 
 ### Giai đoạn 2 — Lấp đầy đủ 4 không gian H-P-D-I
@@ -204,7 +212,7 @@ docker compose up -d --build
 | Service | Vào đâu | Đăng nhập |
 |---|---|---|
 | **Portal** (link tới các app, trang quản trị và tài liệu API, qua gateway) | http://localhost:9080/portal/ | Không cần đăng nhập — chỉ là trang link |
-| **App chính** (frontend, qua gateway) | http://localhost:9080 | Bấm "Đăng nhập" → redirect sang Keycloak, dùng tài khoản demo (xem [`sso/README.md`](./sso/README.md)) |
+| **App chính** (frontend, qua gateway) | http://localhost:9080 (hỏi đáp tài liệu ở tab "Tài liệu", `/knowledge`) | Bấm "Đăng nhập" → redirect sang Keycloak, dùng tài khoản demo (xem [`sso/README.md`](./sso/README.md)) |
 | **Keycloak Admin Console** (qua gateway) | http://localhost:9080/admin | `KEYCLOAK_ADMIN_USERNAME`/`KEYCLOAK_ADMIN_PASSWORD` trong `.env` |
 | **Backend** (Swagger, gọi API tay, qua gateway) | http://localhost:9080/swagger-ui.html | Lấy access token từ Keycloak (xem `sso/README.md`), bấm "Authorize" rồi dán vào |
 | **BI Dashboard** (Superset, listener thứ hai của gateway) | http://localhost:9081 | Bấm "Sign In with keycloak", dùng tài khoản demo (xem [`sso/README.md`](./sso/README.md)); tài khoản role `ADMIN` vào được trang quản trị `/users/list/` |

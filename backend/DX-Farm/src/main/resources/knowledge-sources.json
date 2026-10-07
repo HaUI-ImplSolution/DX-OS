@@ -1,0 +1,74 @@
+[
+  {
+    "sourceId": "SRC_MND_RICE_V3",
+    "title": "RiceLeafDiseaseBD: A Field-Based Annotated Smartphone Image Dataset of Healthy and Diseased Rice Leaves from Bangladesh",
+    "organization": "Mendeley Data / Independent University",
+    "url": "https://data.mendeley.com/datasets/86s4jzj2m4/3",
+    "license": "CC BY 4.0",
+    "reviewStatus": "IN_REVIEW"
+  },
+  {
+    "sourceId": "SRC_IRRI_BLAST",
+    "title": "Blast (Leaf and Collar)",
+    "organization": "IRRI Rice Knowledge Bank / Rice Doctor",
+    "url": "https://keyserver.lucidcentral.org/key-server/data/0e090d01-0209-460e-810c-0d060708030c/media/Html/Blast_%28Leaf_and_Collar%29.htm",
+    "license": null,
+    "reviewStatus": "IN_REVIEW"
+  },
+  {
+    "sourceId": "SRC_IRRI_BROWN_SPOT",
+    "title": "Brown spot",
+    "organization": "IRRI Rice Knowledge Bank / Rice Doctor",
+    "url": "https://keyserver.lucidcentral.org/key-server/data/0e090d01-0209-460e-810c-0d060708030c/media/Html/Brown_spot.htm",
+    "license": null,
+    "reviewStatus": "IN_REVIEW"
+  },
+  {
+    "sourceId": "SRC_IRRI_TUNGRO",
+    "title": "Tungro",
+    "organization": "IRRI Rice Knowledge Bank / Rice Doctor",
+    "url": "https://keyserver.lucidcentral.org/key-server/data/0e090d01-0209-460e-810c-0d060708030c/media/Html/Tungro.htm",
+    "license": null,
+    "reviewStatus": "IN_REVIEW"
+  },
+  {
+    "sourceId": "SRC_IRRI_SHEATH_BLIGHT",
+    "title": "Sheath blight",
+    "organization": "IRRI Rice Knowledge Bank / Rice Doctor",
+    "url": "https://www.knowledgebank.irri.org/training/fact-sheets/pest-management/diseases/item/sheath-blight",
+    "license": null,
+    "reviewStatus": "IN_REVIEW"
+  },
+  {
+    "sourceId": "SRC_LSU_LEAF_SMUT",
+    "title": "Leaf Smut of Rice",
+    "organization": "LSU AgCenter",
+    "url": "https://www.lsuagcenter.com/NR/rdonlyres/41C7A6F2-E14A-4713-BFE1-724F8BE27509/75781/pub3115LeafSmutLOWRES.pdf",
+    "license": null,
+    "reviewStatus": "IN_REVIEW"
+  },
+  {
+    "sourceId": "SRC_PPD_75_2025",
+    "title": "Thông tư 75/2025/TT-BNNMT – Phụ lục I danh mục thuốc BVTV được phép sử dụng",
+    "organization": "Cục Trồng trọt và Bảo vệ thực vật Việt Nam",
+    "url": "https://ppd.gov.vn/FileUpload/Documents/Thuoc%20BVTV/25.12.30_PL%201%20-%20Danh%20m%E1%BB%A5c%20%C4%91%C6%B0%E1%BB%A3c%20ph%C3%A9p%20s%E1%BB%AD%20d%E1%BB%A5ng.pdf",
+    "license": null,
+    "reviewStatus": "IN_REVIEW"
+  },
+  {
+    "sourceId": "SRC_PPD_28_2026",
+    "title": "Thông tư 28/2026/TT-BNNMT – Phụ lục sửa đổi/bổ sung",
+    "organization": "Cục Trồng trọt và Bảo vệ thực vật Việt Nam",
+    "url": "https://www.ppd.gov.vn/FileUpload/Documents/Thuoc%20BVTV/26.07.03_PL%20TT28__01072026152914_signed.pdf",
+    "license": null,
+    "reviewStatus": "IN_REVIEW"
+  },
+  {
+    "sourceId": "SRC_SYNGENTA_NEWTEC",
+    "title": "NewTec 300SC – hướng dẫn sử dụng trên lúa",
+    "organization": "Syngenta Việt Nam",
+    "url": "https://www.syngenta.com.vn/newtecr-300sc",
+    "license": null,
+    "reviewStatus": "IN_REVIEW"
+  }
+]

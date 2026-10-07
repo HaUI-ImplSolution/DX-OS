@@ -5,9 +5,9 @@
 | # | Quyết định | Phương án | Chọn | Được | Mất | Chi phí đảo ngược |
 |---|---|---|---|---|---|---|
 | TO1 | Nền bản đồ | Chọn một phương án có chi phí/rủi ro nhãn (Mapbox/OSM/Google) / Giữ nền trắng đã chọn | Giữ nền trắng | Không tốn chi phí, không dính rủi ro nhãn tranh chấp Hoàng Sa/Trường Sa đã phân tích kỹ trong `bi/README.md` | Bản đồ kém trực quan hơn khi demo, phải giải thích nếu hội đồng hỏi | Thấp — đổi nền bản đồ là việc cấu hình chart, không ảnh hưởng dữ liệu |
-| TO2 | Bảng mới trong các phase sau có nên tự động cấp quyền `superset_ro` không | Giữ `ALTER DEFAULT PRIVILEGES` (tự động cấp cho mọi bảng mới) / Bỏ, bắt buộc cấp quyền tường minh từng bảng | Giữ cho bảng danh mục, nhưng quy ước REVOKE tường minh cho bảng nghiệp vụ có trạng thái duyệt | Không phải sửa seeder mỗi khi có bảng danh mục mới (ví dụ `rice_varieties`) | Người làm phase sau phải tự nhớ REVOKE nếu thêm bảng nghiệp vụ nhạy cảm — dễ quên nếu không ghi rõ trong README | Thấp — REVOKE thêm bất kỳ lúc nào không mất dữ liệu |
+| TO2 | Bảng mới trong các phase sau có nên tự động cấp quyền `superset_ro` không | Giữ `ALTER DEFAULT PRIVILEGES` (tự động cấp cho mọi bảng mới) / Bỏ, cấp quyền tường minh từng bảng | Bỏ, cấp theo danh sách trong seeder | Bảng mới đóng sẵn | Mỗi bảng danh mục mới phải thêm tay vào danh sách | Thấp — thêm tên vào danh sách, không mất dữ liệu |
 
-Kết luận: TO1-TO2 áp dụng ngay, TO2 phải ghi rõ thành quy ước trong `bi/README.md` để không bị quên ở phase sau.
+Kết luận: TO1-TO2 áp dụng ngay, quy ước thêm view và danh sách quyền nằm trong `bi/README.md`.
 
 ## 2. Rủi ro
 
@@ -20,7 +20,7 @@ Kết luận: TO1-TO2 áp dụng ngay, TO2 phải ghi rõ thành quy ước tron
 ## 3. Nợ kỹ thuật chấp nhận
 
 - Nền bản đồ vẫn là nền trắng (TO1) — giới hạn đã biết, không có giải pháp miễn phí hoàn chỉnh trong phạm vi dự án.
-- Quy ước REVOKE tường minh cho bảng nghiệp vụ mới (TO2) là thủ công, không có cơ chế tự động kiểm tra quên REVOKE.
+- Danh sách quyền `superset_ro` (TO2) cập nhật thủ công; quên thêm view thì chart báo `permission denied` chứ không lộ dữ liệu.
 
 ## 4. Điều kiện dừng và rollback
 
@@ -29,5 +29,5 @@ Kết luận: TO1-TO2 áp dụng ngay, TO2 phải ghi rõ thành quy ước tron
 
 ## 5. Tác động ngoài phase
 
-- Lên các phase sau: mọi bảng nghiệp vụ có trạng thái duyệt thêm ở phase sau phải tạo view tương ứng và REVOKE quyền trên bảng gốc theo đúng quy ước TO2, không chỉ phase này tự nhớ.
+- Lên các phase sau: dữ liệu mới muốn lên BI phải qua view và được thêm vào danh sách quyền theo quy ước ở `bi/README.md`.
 - Lên demo, tài liệu nộp bài, thời hạn: dashboard và trang hỏi đáp là bằng chứng trực tiếp cho phần D và I của H-P-D-I trong báo cáo/slide (P8).

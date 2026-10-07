@@ -28,6 +28,7 @@ import HaUI.ImplSolution.DX_Farm.service.DiagnosisService;
 import HaUI.ImplSolution.DX_Farm.service.DiseaseReportService;
 import HaUI.ImplSolution.DX_Farm.core.identity.HouseholdService;
 import HaUI.ImplSolution.DX_Farm.service.ParcelService;
+import HaUI.ImplSolution.DX_Farm.service.WeatherService;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -68,6 +69,8 @@ class PermissionMatrixTest {
   private HouseholdService householdService;
   @MockitoBean
   private WorkflowService workflowService;
+  @MockitoBean
+  private WeatherService weatherService;
 
   private static JwtRequestPostProcessor token(String role, String client) {
     return jwt().authorities(new SimpleGrantedAuthority("ROLE_" + role))

@@ -7,6 +7,22 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ### 2026-10-07
 
+**Đã xong — Dữ liệu, BI và hỏi đáp tài liệu:**
+
+- `V9__bi_views.sql` thêm sáu view chỉ đọc cho BI: `vw_parcels_approved`, `vw_crop_seasons_approved`, `vw_disease_reports_processed`, `vw_diagnoses_approved`, `vw_treatment_applications_confirmed`, `vw_ai_diagnosis_outcomes`.
+  View chỉ chứa bản ghi đã duyệt hoặc đã xử lý, không có tên chủ hộ, người báo cáo hay đường dẫn ảnh.
+- `SupersetReadOnlyRoleSeeder` cấp cho `superset_ro` quyền đọc theo danh sách: sáu view trên và ba bảng danh mục (`diseases`, `pesticides`, `rice_varieties`).
+  Mọi bảng khác, kể cả bảng thêm về sau, đóng cho tới khi được thêm vào danh sách.
+- `GET /api/v1/parcels/{code}/weather` trả thời tiết hiện tại và dự báo 5 ngày tại vị trí thửa từ Open-Meteo (không cần key, cache 1 giờ).
+  Open-Meteo không gọi được thì trả điểm tham chiếu gần nhất trong `weather-snapshot.json` kèm `isSnapshot=true` và ghi chú.
+  Thửa chưa có GPS trả `422 PARCEL_LOCATION_MISSING`; nông dân chỉ xem được thời tiết thửa của hộ mình.
+- `POST /api/v1/knowledge/ask` trả các đoạn tài liệu phù hợp nhất từ RAG, mỗi đoạn kèm nguồn (tên, tổ chức, link, giấy phép, trạng thái duyệt).
+  Đoạn được trích nguyên văn, không sinh thêm; câu hỏi không liên quan trả danh sách rỗng (ngưỡng `KNOWLEDGE_MIN_SCORE`).
+  Bảng ánh xạ nguồn nằm ở `knowledge-sources.json`, lấy từ `data/rag/source_registry.json`.
+- Gateway giới hạn 60 câu hỏi mỗi phút cho mỗi địa chỉ ở `/api/v1/knowledge/ask`.
+- `WEATHER_BASE_URL` (mặc định `https://api.open-meteo.com`) đổi được địa chỉ Open-Meteo qua `deploy/.env`.
+- Kết nối `DX-Farm` trong Superset chạy truy vấn đồng bộ vì stack không có Celery worker, SQL Lab dùng được.
+
 **Đã xong — Vòng đời vụ mùa và thông báo cho nông dân:**
 
 - `V7__season_lifecycle_notifications.sql` thêm bảng `notifications` và `harvest_reschedules`.
@@ -430,6 +446,8 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 ## Frontend (`frontend`)
 
 ### 2026-10-07
+
+- Trang `/knowledge` ("Tài liệu") cho kỹ sư và admin: nhập câu hỏi, tùy chọn giới hạn theo bệnh, nhận các đoạn tài liệu kèm danh sách nguồn (link, giấy phép, trạng thái duyệt).
 
 - Panel Chẩn đoán cho kỹ sư nhập triệu chứng, xem gợi ý bệnh kèm evidence và nguồn rồi chọn mã, chạy lại chẩn đoán AI và xem lịch sử chẩn đoán.
   Kỹ sư yêu cầu ảnh mới kèm lý do; báo cáo hiện "Cần chụp lại" và khóa việc chẩn đoán, duyệt, ghi nhận phun cho tới khi có ảnh mới.

@@ -1,5 +1,6 @@
 package HaUI.ImplSolution.DX_Farm.dto;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
@@ -42,5 +43,17 @@ public record CropSeasonResponse(
   String rejectionReason,
 
   // Thời điểm thực tế đã thu hoạch
-  Instant harvestedAt
+  Instant harvestedAt,
+
+  // Harvest as declared; null until the season is harvested
+  LocalDate actualHarvestDate,
+  BigDecimal yieldKg,
+  BigDecimal harvestedAreaHectares,
+  String harvestedByName,
+
+  // Reason given for harvesting before the expected date
+  String earlyReason,
+
+  // Reason an administrator gave for declaring the harvest in place of the farmer
+  String harvestOnBehalfReason
 ){}

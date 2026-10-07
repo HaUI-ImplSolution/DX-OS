@@ -5,6 +5,7 @@ export const CASE_TYPE_LABEL: Record<CaseType, string> = {
   PARCEL_EDIT_REQUEST: "Chỉnh sửa thửa",
   CROP_SEASON_APPROVAL: "Vụ mùa mới",
   DIAGNOSIS_APPROVAL: "Chẩn đoán",
+  TREATMENT_CONFIRMATION: "Khai phun thuốc",
 };
 
 export const STATUS_LABEL: Record<CaseStatus, string> = {
@@ -50,6 +51,12 @@ export const DETAIL_LABEL: Record<string, string> = {
   confidence: "Độ tin cậy",
   hasTreatmentRule: "Có phác đồ",
   recommendation: "Khuyến nghị",
+  seasonId: "Mã vụ (nội bộ)",
+  pesticide: "Thuốc",
+  doseAmount: "Liều đã phun",
+  doseUnit: "Đơn vị liều",
+  appliedAt: "Ngày phun",
+  harvestLockedUntil: "Hết cách ly",
 };
 
 export const SEASON_TYPE_LABEL: Record<string, string> = {

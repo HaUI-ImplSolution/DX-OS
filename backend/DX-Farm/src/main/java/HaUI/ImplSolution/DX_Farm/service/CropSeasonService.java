@@ -7,6 +7,11 @@ import HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowStatus;
 import HaUI.ImplSolution.DX_Farm.dto.CropSeasonCreateRequest;
 import HaUI.ImplSolution.DX_Farm.dto.CropSeasonResponse;
 import HaUI.ImplSolution.DX_Farm.dto.CropSeasonSuggestionResponse;
+import HaUI.ImplSolution.DX_Farm.dto.HarvestReadinessResponse;
+import HaUI.ImplSolution.DX_Farm.dto.HarvestRequest;
+import HaUI.ImplSolution.DX_Farm.dto.HarvestRescheduleRequest;
+import HaUI.ImplSolution.DX_Farm.dto.HarvestRescheduleResponse;
+import HaUI.ImplSolution.DX_Farm.dto.HarvestWarning;
 import HaUI.ImplSolution.DX_Farm.dto.IsolationStatusResponse;
 import HaUI.ImplSolution.DX_Farm.event.CropSeasonCreatedEvent;
 import HaUI.ImplSolution.DX_Farm.exception.InvalidStateException;
@@ -15,20 +20,30 @@ import HaUI.ImplSolution.DX_Farm.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.DX_Farm.model.ApprovalStatus;
 import HaUI.ImplSolution.DX_Farm.model.CropSeason;
 import HaUI.ImplSolution.DX_Farm.model.CropSeasonStatus;
+import HaUI.ImplSolution.DX_Farm.model.HarvestReschedule;
+import HaUI.ImplSolution.DX_Farm.model.NotificationType;
 import HaUI.ImplSolution.DX_Farm.model.Parcel;
 import HaUI.ImplSolution.DX_Farm.model.RiceVariety;
 import HaUI.ImplSolution.DX_Farm.model.SeasonType;
 import HaUI.ImplSolution.DX_Farm.model.TreatmentApplication;
+import HaUI.ImplSolution.DX_Farm.model.TreatmentConfirmationStatus;
 import HaUI.ImplSolution.DX_Farm.repository.CropSeasonRepository;
+import HaUI.ImplSolution.DX_Farm.repository.DiagnosisRepository;
+import HaUI.ImplSolution.DX_Farm.repository.DiseaseReportRepository;
+import HaUI.ImplSolution.DX_Farm.repository.HarvestRescheduleRepository;
 import HaUI.ImplSolution.DX_Farm.repository.ParcelRepository;
 import HaUI.ImplSolution.DX_Farm.repository.RiceVarietyRepository;
 import HaUI.ImplSolution.DX_Farm.repository.TreatmentApplicationRepository;
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
@@ -39,10 +54,21 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class CropSeasonService {
 
+  private static final Logger log = LoggerFactory.getLogger(CropSeasonService.class);
+  // A harvest cannot be declared for a day further back than this, so old dates cannot be used to
+  // slip past the isolation lock.
+  private static final int MAX_HARVEST_BACKDATE_DAYS = 30;
+  // A new expected harvest date may not be further ahead than this.
+  private static final int MAX_RESCHEDULE_AHEAD_DAYS = 90;
+
   private final CropSeasonRepository cropSeasonRepository;
   private final ParcelRepository parcelRepository;
   private final TreatmentApplicationRepository treatmentApplicationRepository;
   private final RiceVarietyRepository riceVarietyRepository;
+  private final DiagnosisRepository diagnosisRepository;
+  private final DiseaseReportRepository diseaseReportRepository;
+  private final HarvestRescheduleRepository harvestRescheduleRepository;
+  private final NotificationService notificationService;
   private final CurrentUserService currentUserService;
   private final WorkflowService workflowService;
   private final SeasonCalendar seasonCalendar;
@@ -53,7 +79,10 @@ public class CropSeasonService {
   public CropSeasonService(CropSeasonRepository cropSeasonRepository,
       ParcelRepository parcelRepository,
       TreatmentApplicationRepository treatmentApplicationRepository,
-      RiceVarietyRepository riceVarietyRepository, CurrentUserService currentUserService,
+      RiceVarietyRepository riceVarietyRepository, DiagnosisRepository diagnosisRepository,
+      DiseaseReportRepository diseaseReportRepository,
+      HarvestRescheduleRepository harvestRescheduleRepository,
+      NotificationService notificationService, CurrentUserService currentUserService,
       WorkflowService workflowService, SeasonCalendar seasonCalendar,
       PendingRequestLimiter pendingRequestLimiter, ApplicationEventPublisher eventPublisher,
       Clock clock) {
@@ -61,6 +90,10 @@ public class CropSeasonService {
     this.parcelRepository = parcelRepository;
     this.treatmentApplicationRepository = treatmentApplicationRepository;
     this.riceVarietyRepository = riceVarietyRepository;
+    this.diagnosisRepository = diagnosisRepository;
+    this.diseaseReportRepository = diseaseReportRepository;
+    this.harvestRescheduleRepository = harvestRescheduleRepository;
+    this.notificationService = notificationService;
     this.currentUserService = currentUserService;
     this.workflowService = workflowService;
     this.seasonCalendar = seasonCalendar;
@@ -86,10 +119,22 @@ public class CropSeasonService {
     return toResponse(findAccessibleOrThrow(id));
   }
 
-  // Reuses harvest()'s exact lookup so this answer and the poka-yoke check never disagree.
+  // Reuses harvest()'s exact lookups so this answer and the poka-yoke check never disagree.
   public IsolationStatusResponse getIsolationStatus(Long id) {
-    CropSeason season = findAccessibleOrThrow(id);
-    return treatmentApplicationRepository.findTopByCropSeasonIdOrderByHarvestLockedUntilDesc(id)
+    return isolationOf(findAccessibleOrThrow(id));
+  }
+
+  private IsolationStatusResponse isolationOf(CropSeason season) {
+    Long id = season.getId();
+    var pending = treatmentApplicationRepository
+        .findTopByCropSeasonIdAndConfirmationStatusOrderByHarvestLockedUntilDesc(id,
+            TreatmentConfirmationStatus.PENDING_CONFIRMATION);
+    if (pending.isPresent()) {
+      return toPendingIsolationStatus(season, pending.get());
+    }
+    return treatmentApplicationRepository
+        .findTopByCropSeasonIdAndConfirmationStatusOrderByHarvestLockedUntilDesc(id,
+            TreatmentConfirmationStatus.CONFIRMED)
         .map(application -> toIsolationStatus(season, application))
         .orElseGet(() -> notIsolated(season, null, null));
   }
@@ -245,8 +290,35 @@ public class CropSeasonService {
     return season;
   }
 
+  // What the farmer sees before declaring a harvest: how early it is, the isolation state and the
+  // open work that does not block it.
+  public HarvestReadinessResponse harvestReadiness(Long id) {
+    CropSeason season = findAccessibleOrThrow(id);
+    LocalDate today = LocalDate.now(clock);
+    LocalDate expected = season.getExpectedHarvestDate();
+    long daysBefore =
+        expected != null && expected.isAfter(today) ? ChronoUnit.DAYS.between(today, expected) : 0;
+    return new HarvestReadinessResponse(id, expected, daysBefore, daysBefore > 0,
+        isolationOf(season), harvestWarnings(id));
+  }
+
+  private List<HarvestWarning> harvestWarnings(Long seasonId) {
+    List<HarvestWarning> warnings = new ArrayList<>();
+    long awaiting = diseaseReportRepository.countAwaitingDecision(seasonId);
+    if (awaiting > 0) {
+      warnings.add(new HarvestWarning("PENDING_REPORTS",
+          "Còn %d báo cáo bệnh chưa có kết quả duyệt của kỹ sư.".formatted(awaiting)));
+    }
+    long untreated = diagnosisRepository.countUntreatedApproved(seasonId);
+    if (untreated > 0) {
+      warnings.add(new HarvestWarning("UNTREATED_RECOMMENDATIONS",
+          "Còn %d khuyến nghị đã được duyệt nhưng chưa ghi nhận phun thuốc.".formatted(untreated)));
+    }
+    return warnings;
+  }
+
   @Transactional
-  public CropSeasonResponse harvest(Long id) {
+  public CropSeasonResponse harvest(Long id, HarvestRequest request) {
     CropSeason season = findAccessibleOrThrow(id);
     if (season.getApprovalStatus() != ApprovalStatus.APPROVED) {
       throw new PokaYokeViolationException("CROP_SEASON_NOT_APPROVED",
@@ -255,16 +327,143 @@ public class CropSeasonService {
     if (season.getStatus() == CropSeasonStatus.HARVESTED) {
       throw new InvalidStateException("Crop season already harvested: " + id);
     }
-
-    treatmentApplicationRepository.findTopByCropSeasonIdOrderByHarvestLockedUntilDesc(id)
-        .filter(application -> application.getHarvestLockedUntil().isAfter(LocalDate.now(clock)))
-        .ifPresent(application -> {
-          throw pokaYokeViolation(application);
-        });
+    LocalDate today = LocalDate.now(clock);
+    LocalDate actual = request.actualHarvestDate() != null ? request.actualHarvestDate() : today;
+    requireHarvestDate(season, actual, today);
+    BigDecimal parcelArea = season.getParcel().getAreaHectares();
+    BigDecimal area =
+        request.harvestedAreaHectares() != null ? request.harvestedAreaHectares() : parcelArea;
+    if (area.compareTo(parcelArea) > 0) {
+      throw new IllegalArgumentException(
+          "harvestedAreaHectares must not exceed the parcel area of %s ha".formatted(parcelArea));
+    }
+    boolean onBehalf = !currentUserService.isFarmer();
+    String onBehalfReason = blankToNull(request.reasonOnBehalf());
+    if (onBehalf && onBehalfReason == null) {
+      throw new IllegalArgumentException(
+          "reasonOnBehalf is required when an administrator declares the harvest for a farmer");
+    }
+    String earlyReason = requireEarlyConfirmation(season, actual, request);
+    requireNoIsolation(season, actual);
 
     season.setStatus(CropSeasonStatus.HARVESTED);
     season.setHarvestedAt(Instant.now(clock));
+    season.setActualHarvestDate(actual);
+    season.setYieldKg(request.yieldKg());
+    season.setHarvestedAreaHectares(area);
+    season.setHarvestedByUserId(currentUserService.currentUserId());
+    season.setHarvestedByName(currentUserService.currentFullName());
+    season.setEarlyReason(earlyReason);
+    season.setHarvestOnBehalfReason(onBehalf ? onBehalfReason : null);
+    CropSeason saved = cropSeasonRepository.save(season);
+    if (onBehalf) {
+      log.info("Harvest of season {} declared by {} on behalf of household {}: {}", saved.getId(),
+          saved.getHarvestedByUserId(), saved.getParcel().getHousehold().getCode(), onBehalfReason);
+      notificationService.notifyHousehold(saved.getParcel().getHousehold(),
+          NotificationType.HARVEST_RECORDED, "Vụ mùa đã được ghi nhận thu hoạch",
+          "Quản trị viên đã ghi nhận thu hoạch vụ %s thay bạn (%s kg, %s ha). Lý do: %s.".formatted(
+              seasonLabel(saved), saved.getYieldKg().stripTrailingZeros().toPlainString(),
+              saved.getHarvestedAreaHectares().stripTrailingZeros().toPlainString(),
+              onBehalfReason),
+          "CROP_SEASON", String.valueOf(saved.getId()));
+    }
+    return toResponse(saved);
+  }
+
+  private void requireHarvestDate(CropSeason season, LocalDate actual, LocalDate today) {
+    if (actual.isAfter(today)) {
+      throw new IllegalArgumentException("actualHarvestDate must not be in the future");
+    }
+    if (actual.isBefore(season.getStartDate())) {
+      throw new IllegalArgumentException("actualHarvestDate must not be before the season start");
+    }
+    if (actual.isBefore(today.minusDays(MAX_HARVEST_BACKDATE_DAYS))) {
+      throw new IllegalArgumentException(
+          "actualHarvestDate must not be more than %d days in the past"
+              .formatted(MAX_HARVEST_BACKDATE_DAYS));
+    }
+  }
+
+  // Returns the reason to keep, or null when the harvest is not early.
+  private static String requireEarlyConfirmation(CropSeason season, LocalDate actual,
+      HarvestRequest request) {
+    LocalDate expected = season.getExpectedHarvestDate();
+    if (expected == null || !actual.isBefore(expected)) {
+      return null;
+    }
+    String reason = blankToNull(request.earlyReason());
+    if (!Boolean.TRUE.equals(request.confirmEarly()) || reason == null) {
+      throw new PokaYokeViolationException("HARVEST_TOO_EARLY",
+          "Harvest is before the expected date %s: send confirmEarly=true with earlyReason"
+              .formatted(expected));
+    }
+    return reason;
+  }
+
+  // A report still waiting for the engineer blocks the harvest as much as a confirmed isolation.
+  private void requireNoIsolation(CropSeason season, LocalDate harvestDate) {
+    Long id = season.getId();
+    if (treatmentApplicationRepository.existsByCropSeasonIdAndConfirmationStatus(id,
+        TreatmentConfirmationStatus.PENDING_CONFIRMATION)) {
+      throw new PokaYokeViolationException("TREATMENT_PENDING_CONFIRMATION",
+          "A spraying report is waiting for an engineer; harvest is blocked until it is decided");
+    }
+    treatmentApplicationRepository
+        .findTopByCropSeasonIdAndConfirmationStatusOrderByHarvestLockedUntilDesc(id,
+            TreatmentConfirmationStatus.CONFIRMED)
+        .filter(application -> application.getHarvestLockedUntil().isAfter(harvestDate))
+        .ifPresent(application -> {
+          throw pokaYokeViolation(application);
+        });
+  }
+
+  // The farmer moves the expected date; every change is kept in the history.
+  @Transactional
+  public CropSeasonResponse rescheduleHarvest(Long id, HarvestRescheduleRequest request) {
+    CropSeason season = findAccessibleOrThrow(id);
+    if (season.getApprovalStatus() != ApprovalStatus.APPROVED) {
+      throw new PokaYokeViolationException("CROP_SEASON_NOT_APPROVED",
+          "Crop season is not approved yet: " + id);
+    }
+    if (season.getStatus() != CropSeasonStatus.ACTIVE) {
+      throw new InvalidStateException("Only an active crop season can be rescheduled: " + id);
+    }
+    LocalDate today = LocalDate.now(clock);
+    LocalDate newDate = request.newExpectedHarvestDate();
+    LocalDate previous = season.getExpectedHarvestDate();
+    if (newDate.isBefore(today)) {
+      throw new IllegalArgumentException("newExpectedHarvestDate must not be in the past");
+    }
+    if (newDate.isAfter(today.plusDays(MAX_RESCHEDULE_AHEAD_DAYS))) {
+      throw new IllegalArgumentException("newExpectedHarvestDate must be within %d days from today"
+          .formatted(MAX_RESCHEDULE_AHEAD_DAYS));
+    }
+    if (newDate.equals(previous)) {
+      throw new IllegalArgumentException("newExpectedHarvestDate is the current date");
+    }
+    harvestRescheduleRepository.save(HarvestReschedule.builder().cropSeason(season)
+        .previousDate(previous != null ? previous : season.getStartDate()).newDate(newDate)
+        .reason(request.reason().strip()).rescheduledByUserId(currentUserService.currentUserId())
+        .rescheduledByName(currentUserService.currentFullName()).build());
+    season.setExpectedHarvestDate(newDate);
     return toResponse(cropSeasonRepository.save(season));
+  }
+
+  public List<HarvestRescheduleResponse> listReschedules(Long id) {
+    findAccessibleOrThrow(id);
+    return harvestRescheduleRepository.findByCropSeasonIdOrderByIdAsc(id).stream()
+        .map(item -> new HarvestRescheduleResponse(item.getId(), item.getPreviousDate(),
+            item.getNewDate(), item.getReason(), item.getRescheduledByName(),
+            item.getRescheduledAt()))
+        .toList();
+  }
+
+  private static String seasonLabel(CropSeason season) {
+    return season.getCode() != null ? season.getCode() : "#" + season.getId();
+  }
+
+  private static String blankToNull(String value) {
+    return value == null || value.isBlank() ? null : value.strip();
   }
 
   @Transactional
@@ -313,6 +512,19 @@ public class CropSeasonService {
         lockedUntil, daysRemaining, pesticideCode, message);
   }
 
+  private IsolationStatusResponse toPendingIsolationStatus(CropSeason season,
+      TreatmentApplication application) {
+    long daysRemaining = Math.max(0,
+        ChronoUnit.DAYS.between(LocalDate.now(clock), application.getHarvestLockedUntil()));
+    String message =
+        "Thửa %s đã khai phun %s ngày %s, đang chờ kỹ sư xác nhận nên chưa thu hoạch được."
+            .formatted(season.getParcel().getCode(), application.getPesticide().getName(),
+                application.getAppliedAt());
+    return new IsolationStatusResponse(season.getId(), season.getParcel().getCode(), true,
+        application.getHarvestLockedUntil(), daysRemaining, application.getPesticide().getCode(),
+        message);
+  }
+
   private static IsolationStatusResponse notIsolated(CropSeason season, LocalDate lastLockedUntil,
       String pesticideCode) {
     String message = lastLockedUntil == null
@@ -330,6 +542,8 @@ public class CropSeasonService {
         season.getSeasonType() != null ? season.getSeasonType().name() : null,
         season.getStartDate(), season.getExpectedHarvestDate(), season.getReasonForOverride(),
         season.getStatus().name(), season.getApprovalStatus().name(), season.getRejectionReason(),
-        season.getHarvestedAt());
+        season.getHarvestedAt(), season.getActualHarvestDate(), season.getYieldKg(),
+        season.getHarvestedAreaHectares(), season.getHarvestedByName(), season.getEarlyReason(),
+        season.getHarvestOnBehalfReason());
   }
 }

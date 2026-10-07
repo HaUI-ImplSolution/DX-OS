@@ -43,13 +43,13 @@ Theo D6 (phase 0): chỉ test case ảnh hưởng logic/an toàn hệ thống, k
 
 | Phần | Kết quả | Phạm vi |
 |---|---|---|
-| Backend | 75 test đạt; `mvn verify` và formatter đạt | PostgreSQL 16 Testcontainers, T6-01/02/04/05/06/08, PHI, migration V1–V7, phân quyền và vụ chưa duyệt |
+| Backend | 75 test đạt; `mvn verify` và formatter đạt | PostgreSQL 16 Testcontainers, T6-01/02/04/05/06/08, PHI, migration V1–V8, phân quyền và vụ chưa duyệt |
 | AI | 48 test đạt; Ruff check toàn AI và format các file Phase 6 đạt | CV, RAG, auth; ảnh mờ có sọc/nhiễu/chữ sắc; ảnh rõ sau nén và ở hai độ phân giải |
 | Web | TypeScript/build đạt | Kiểm callback DemoFlow cập nhật PROCESSED/NEEDS_RETAKE sau khi chuyển sang router Phase 4 |
 | Mobile | TypeScript và export Android đạt | Kiểm logic hàng đợi thửa/vụ/retake, idempotency và mục ảnh cũ; chưa xác nhận đầy đủ trên điện thoại |
 | Compose | Config đạt; từ chối secret thiếu | Dùng placeholder tạm, không đổi `.env` local |
 
-Sau merge `Khuong/main` tại `9ec9320`, giữ V5/V6 của Phase 4 và dùng V7 cho Phase 6. Hồi quy vụ chưa duyệt thất bại khi bỏ guard, đạt khi khôi phục.
+Sau merge `Khuong/main` tại `6e03bc6`, giữ V5 đến V7 và dùng V8 cho Phase 6. Hồi quy vụ chưa duyệt thất bại khi bỏ guard, đạt khi khôi phục.
 
 **Bằng chứng HTTP/UI trước merge:** precheck, nộp ảnh trực tiếp và history đã được kiểm với FARMER/mobile PKCE và Chromium (mock phản hồi duyệt).
 

@@ -74,6 +74,30 @@ export interface CropSeason {
   approvalStatus: ApprovalStatus;
   rejectionReason: string | null;
   harvestedAt: string | null;
+  actualHarvestDate: string | null;
+  yieldKg: number | null;
+  harvestedAreaHectares: number | null;
+  harvestedByName: string | null;
+  earlyReason: string | null;
+  harvestOnBehalfReason: string | null;
+}
+
+export interface HarvestRequest {
+  actualHarvestDate?: string;
+  yieldKg: number;
+  harvestedAreaHectares?: number;
+  confirmEarly?: boolean;
+  earlyReason?: string;
+  reasonOnBehalf: string;
+}
+
+export interface HarvestReadiness {
+  cropSeasonId: number;
+  expectedHarvestDate: string | null;
+  daysBeforeExpected: number;
+  earlyConfirmationRequired: boolean;
+  isolation: IsolationStatus;
+  warnings: { code: string; message: string }[];
 }
 
 export interface CropSeasonCreateRequest {
@@ -183,6 +207,9 @@ export interface TreatmentApplication {
   phiDaysSnapshot: number;
   appliedAt: string;
   harvestLockedUntil: string;
+  confirmationStatus: "PENDING_CONFIRMATION" | "CONFIRMED" | "REJECTED";
+  reportedByFarmer: boolean;
+  rejectionReason: string | null;
 }
 
 export interface Disease {
@@ -225,7 +252,8 @@ export type CaseType =
   | "PARCEL_APPROVAL"
   | "PARCEL_EDIT_REQUEST"
   | "CROP_SEASON_APPROVAL"
-  | "DIAGNOSIS_APPROVAL";
+  | "DIAGNOSIS_APPROVAL"
+  | "TREATMENT_CONFIRMATION";
 
 export type CaseStatus = ApprovalStatus | "CANCELLED";
 

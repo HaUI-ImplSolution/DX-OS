@@ -33,9 +33,9 @@ public class ApprovalRequestController {
 
   @GetMapping
   @Operation(
-      summary = "List requests with the parcel, season or diagnosis behind each, oldest first",
+      summary = "List requests with the parcel, season, diagnosis or spraying report behind each, oldest first",
       description = "ENGINEER or ADMIN only. Filter by caseType (PARCEL_APPROVAL,"
-          + " PARCEL_EDIT_REQUEST, CROP_SEASON_APPROVAL, DIAGNOSIS_APPROVAL), status, householdCode,"
+          + " PARCEL_EDIT_REQUEST, CROP_SEASON_APPROVAL, DIAGNOSIS_APPROVAL, TREATMENT_CONFIRMATION), status, householdCode,"
           + " assignedTo (a user id, or `me`), unassigned=true and the day range from/to"
           + " (yyyy-MM-dd, inclusive). size is capped at 100.")
   public ApiResponse<PageResponse<ApprovalRequestResponse>> list(

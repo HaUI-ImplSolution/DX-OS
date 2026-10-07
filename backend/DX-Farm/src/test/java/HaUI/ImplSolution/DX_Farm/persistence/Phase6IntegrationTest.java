@@ -46,7 +46,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @Testcontainers
 @Import({DiagnosisService.class, DiseaseReportService.class, TreatmentRuleService.class,
     CropSeasonService.class, SeasonCalendar.class, PendingRequestLimiter.class,
-    WorkflowService.class, TimeConfig.class})
+    WorkflowService.class, NotificationService.class, TimeConfig.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class Phase6IntegrationTest {
   @Container
@@ -283,11 +283,14 @@ class Phase6IntegrationTest {
       em.persist(TreatmentApplication.builder().cropSeason(em.find(CropSeason.class, seasonId))
           .diagnosis(em.find(Diagnosis.class, original.id())).pesticide(pesticide)
           .doseAmountSnapshot(BigDecimal.ONE).doseUnitSnapshot("L/ha").phiDaysSnapshot(14)
-          .appliedAt(LocalDate.now()).harvestLockedUntil(LocalDate.now().plusDays(14)).build());
+          .appliedAt(LocalDate.now()).harvestLockedUntil(LocalDate.now().plusDays(14))
+          .confirmationStatus(TreatmentConfirmationStatus.CONFIRMED).build());
     });
     diagnoses.createFromAi(reportId);
-    assertThatThrownBy(() -> seasons.harvest(seasonId))
-        .isInstanceOf(PokaYokeViolationException.class);
+    var harvest = new HarvestRequest(null, new BigDecimal("1000"), null, null, null, "test");
+    assertThatThrownBy(() -> seasons.harvest(seasonId, harvest)).isInstanceOfSatisfying(
+        PokaYokeViolationException.class,
+        e -> assertThat(e.getErrorCode()).isEqualTo("POKA_YOKE_VIETGAP_VIOLATION"));
   }
 
 }

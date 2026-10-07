@@ -67,7 +67,7 @@ Farmer chỉ xem nội dung chẩn đoán khi APPROVED; lịch sử đầy đủ
 
 ## Schema và tương thích
 
-Flyway V7 chạy sau V5/V6 của Phase 4; không sửa migration của nhánh cha.
+Flyway V8 chạy sau V7 của Phase 5; không sửa migration đã có.
 
 - `diagnoses`: bỏ unique trên `disease_report_id`, thêm index `(disease_report_id, id DESC)`.
 - `disease_reports`: thêm trạng thái, retake, quality và optimistic version.

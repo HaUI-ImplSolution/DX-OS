@@ -90,7 +90,7 @@ Kết quả đầu ra: kỹ sư nhập triệu chứng nhận gợi ý xếp h�
 - [x] Cập nhật nền `Khuong/main` tại `9ec9320` và giải quyết xung đột.
 - [x] Giữ lưu ảnh MinIO, `imageUrl` cho client và URL nội bộ cho AI.
 - [x] Tích hợp workflow duyệt từng chẩn đoán; chẩn đoán lại đóng hồ sơ chờ duyệt cũ.
-- [x] Dùng migration V7 sau V5/V6 của Phase 4; nâng database V6 lên V7 giữ nguyên lịch sử duyệt.
+- [x] Dùng migration V8 sau V7 của Phase 5; nâng database V7 lên V8 giữ nguyên lịch sử duyệt.
 - [x] Chạy lại kiểm thử Backend/AI, build web, TypeScript/export Android và kiểm tra cấu hình Compose.
 - [x] Giữ router Phase 4, hàng đợi thửa/vụ và điều kiện vụ đã duyệt; ghép lại callback chẩn đoán/retake.
 - [ ] Dựng lại toàn bộ stack sạch và xác nhận seed/demo sau merge Phase 4.

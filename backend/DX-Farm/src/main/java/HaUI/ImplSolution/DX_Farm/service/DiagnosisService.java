@@ -1,5 +1,6 @@
 package HaUI.ImplSolution.DX_Farm.service;
 
+import HaUI.ImplSolution.DX_Farm.core.identity.Household;
 import HaUI.ImplSolution.DX_Farm.core.storage.StorageService;
 import HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowActor;
 import HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowService;
@@ -15,6 +16,7 @@ import HaUI.ImplSolution.DX_Farm.dto.DiagnosisResponse;
 import HaUI.ImplSolution.DX_Farm.dto.SymptomSuggestionResponse;
 import HaUI.ImplSolution.DX_Farm.dto.TreatmentApplicationResponse;
 import HaUI.ImplSolution.DX_Farm.event.DiagnosisPendingEvent;
+import HaUI.ImplSolution.DX_Farm.event.TreatmentReportedEvent;
 import HaUI.ImplSolution.DX_Farm.exception.InvalidStateException;
 import HaUI.ImplSolution.DX_Farm.exception.PokaYokeViolationException;
 import HaUI.ImplSolution.DX_Farm.exception.ResourceNotFoundException;
@@ -25,8 +27,10 @@ import HaUI.ImplSolution.DX_Farm.model.Diagnosis;
 import HaUI.ImplSolution.DX_Farm.model.Disease;
 import HaUI.ImplSolution.DX_Farm.model.DiseaseReport;
 import HaUI.ImplSolution.DX_Farm.model.DiseaseReportStatus;
+import HaUI.ImplSolution.DX_Farm.model.NotificationType;
 import HaUI.ImplSolution.DX_Farm.model.TrainingLabel;
 import HaUI.ImplSolution.DX_Farm.model.TreatmentApplication;
+import HaUI.ImplSolution.DX_Farm.model.TreatmentConfirmationStatus;
 import HaUI.ImplSolution.DX_Farm.model.TreatmentRule;
 import HaUI.ImplSolution.DX_Farm.repository.DiagnosisRepository;
 import HaUI.ImplSolution.DX_Farm.repository.DiseaseReportRepository;
@@ -42,6 +46,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -57,6 +62,8 @@ public class DiagnosisService {
 
   static final String CASE_TYPE = "DIAGNOSIS_APPROVAL";
   static final String ENTITY_TYPE = "DIAGNOSIS";
+  private static final String TREATMENT_CASE_TYPE = ApprovalCaseTypes.TREATMENT_CONFIRMATION;
+  private static final String TREATMENT_ENTITY_TYPE = ApprovalCaseTypes.TREATMENT_ENTITY;
   // Must outlast the AI read timeout, since the AI service downloads the photo while it works.
   private static final Duration AI_IMAGE_URL_TTL = Duration.ofMinutes(10);
   private static final int RECENT_TREATMENTS_LIMIT = 5;
@@ -73,6 +80,7 @@ public class DiagnosisService {
   private final AiDiagnosisClient aiDiagnosisClient;
   private final ApplicationEventPublisher eventPublisher;
   private final StorageService storageService;
+  private final NotificationService notificationService;
   private final Clock clock;
   private final EntityManager entityManager;
   private final TransactionTemplate readTransaction;
@@ -85,8 +93,8 @@ public class DiagnosisService {
       TreatmentApplicationRepository treatmentApplicationRepository,
       CurrentUserService currentUserService, WorkflowService workflowService,
       AiDiagnosisClient aiDiagnosisClient, ApplicationEventPublisher eventPublisher,
-      StorageService storageService, Clock clock, EntityManager entityManager,
-      PlatformTransactionManager transactionManager,
+      StorageService storageService, NotificationService notificationService, Clock clock,
+      EntityManager entityManager, PlatformTransactionManager transactionManager,
       TrainingLabelRepository trainingLabelRepository) {
     this.diagnosisRepository = diagnosisRepository;
     this.diseaseReportRepository = diseaseReportRepository;
@@ -98,6 +106,7 @@ public class DiagnosisService {
     this.aiDiagnosisClient = aiDiagnosisClient;
     this.eventPublisher = eventPublisher;
     this.storageService = storageService;
+    this.notificationService = notificationService;
     this.clock = clock;
     this.entityManager = entityManager;
     this.readTransaction = new TransactionTemplate(transactionManager);
@@ -192,9 +201,10 @@ public class DiagnosisService {
 
   private AiDiagnoseRequest buildAiDiagnoseRequest(DiseaseReport report) {
     CropSeason season = report.getCropSeason();
-    List<RecentTreatment> recentTreatments =
-        treatmentApplicationRepository.findByCropSeasonIdOrderByAppliedAtDesc(season.getId())
-            .stream().limit(RECENT_TREATMENTS_LIMIT).map(this::toRecentTreatment).toList();
+    List<RecentTreatment> recentTreatments = treatmentApplicationRepository
+        .findByCropSeasonIdAndConfirmationStatusNotOrderByAppliedAtDesc(season.getId(),
+            TreatmentConfirmationStatus.REJECTED)
+        .stream().limit(RECENT_TREATMENTS_LIMIT).map(this::toRecentTreatment).toList();
     FieldContext fieldContext = new FieldContext(season.getParcel().getCode(),
         season.getRiceVariety(), null, recentTreatments);
     String imageUrl = storageService.internalPresignedUrl(report.getImageRef(), AI_IMAGE_URL_TTL);
@@ -288,6 +298,15 @@ public class DiagnosisService {
     Diagnosis saved = diagnosisRepository.save(diagnosis);
     workflowService.recordTransition(CASE_TYPE, ENTITY_TYPE, saved.getId(), WorkflowStatus.APPROVED,
         currentActor(), null, null);
+    DiseaseReport report = saved.getDiseaseReport();
+    notificationService.notifyHousehold(householdOf(report), NotificationType.DIAGNOSIS_APPROVED,
+        "Chẩn đoán đã được kỹ sư duyệt",
+        "Báo cáo #%d thửa %s: %s. %s".formatted(report.getId(),
+            report.getCropSeason().getParcel().getCode(), saved.getDisease().getName(),
+            saved.getTreatmentRule() != null
+                ? "Có phác đồ, hãy xem hướng dẫn phun thuốc trong báo cáo."
+                : "Kỹ sư sẽ hướng dẫn thêm."),
+        "DISEASE_REPORT", String.valueOf(report.getId()));
     return toResponse(saved);
   }
 
@@ -303,6 +322,12 @@ public class DiagnosisService {
     Diagnosis saved = diagnosisRepository.save(diagnosis);
     workflowService.recordTransition(CASE_TYPE, ENTITY_TYPE, saved.getId(), WorkflowStatus.REJECTED,
         currentActor(), request.reason(), null);
+    DiseaseReport report = saved.getDiseaseReport();
+    notificationService.notifyHousehold(householdOf(report), NotificationType.DIAGNOSIS_REJECTED,
+        "Kỹ sư không đồng ý với chẩn đoán",
+        "Báo cáo #%d thửa %s. Lý do: %s".formatted(report.getId(),
+            report.getCropSeason().getParcel().getCode(), request.reason()),
+        "DISEASE_REPORT", String.valueOf(report.getId()));
     return toResponse(saved);
   }
 
@@ -311,41 +336,198 @@ public class DiagnosisService {
         currentUserService.currentFullName());
   }
 
+  // Staff records the spraying themselves, so it counts at once. A report of the farmer that the
+  // engineer rejected may be replaced this way.
   @Transactional
   public TreatmentApplicationResponse apply(Long reportId, DiagnosisApplyRequest request) {
     Diagnosis diagnosis = findByReportIdOrThrow(reportId);
-    if (diagnosis.getApprovalStatus() != ApprovalStatus.APPROVED) {
-      throw new InvalidStateException(
-          "Diagnosis must be approved before applying treatment: " + reportId);
-    }
-    if (treatmentApplicationRepository.findByDiagnosisId(diagnosis.getId()).isPresent()) {
-      throw new InvalidStateException("Diagnosis already applied: " + reportId);
-    }
-
-    TreatmentRule rule = diagnosis.getTreatmentRule();
-    if (rule == null) {
-      throw new InvalidStateException(
-          "Diagnosis has no approved treatment rule and cannot be applied: " + reportId);
-    }
+    Optional<TreatmentApplication> replaceable = replaceableApplication(diagnosis, reportId);
+    TreatmentRule rule = requireApplicable(diagnosis, reportId);
     BigDecimal actualDose = request.doseAmount();
-    if (!rule.allowsDose(actualDose)) {
-      throw new InvalidStateException("Applied dose %s must be between %s and %s %s"
-          .formatted(actualDose, rule.getDoseMin(), rule.getDoseMax(), rule.getDoseUnit()));
-    }
+    requireDoseAllowed(rule, actualDose);
     LocalDate appliedAt = resolveAppliedAt(request.appliedAt());
     CropSeason season = diagnosis.getDiseaseReport().getCropSeason();
     requireUsableReport(diagnosis.getDiseaseReport());
     // Bumps the season version so a concurrent harvest cannot slip past this new isolation lock.
     entityManager.lock(season, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
-    TreatmentApplication application = TreatmentApplication.builder().cropSeason(season)
-        .diagnosis(diagnosis).pesticide(rule.getPesticide()).doseAmountSnapshot(actualDose)
-        .doseUnitSnapshot(rule.getDoseUnit()).phiDaysSnapshot(rule.getPhiDays())
-        .appliedAt(appliedAt).harvestLockedUntil(appliedAt.plusDays(rule.getPhiDays())).build();
+    TreatmentApplication application = replaceable.orElseGet(
+        () -> TreatmentApplication.builder().cropSeason(season).diagnosis(diagnosis).build());
+    boolean reopened = application.getId() != null;
+    fill(application, rule, actualDose, appliedAt);
+    application.setConfirmationStatus(TreatmentConfirmationStatus.CONFIRMED);
+    application.setReportedByUserId(null);
+    application.setConfirmedByUserId(currentUserService.currentUserId());
+    application.setConfirmedAt(Instant.now(clock));
+    application.setRejectionReason(null);
+    TreatmentApplication saved = saveApplication(application, reportId);
+    if (reopened) {
+      workflowService.recordTransition(TREATMENT_CASE_TYPE, TREATMENT_ENTITY_TYPE, saved.getId(),
+          WorkflowStatus.PENDING, currentActor(), null, null);
+      workflowService.recordTransition(TREATMENT_CASE_TYPE, TREATMENT_ENTITY_TYPE, saved.getId(),
+          WorkflowStatus.APPROVED, currentActor(), null, null);
+    }
+    return toApplicationResponse(saved);
+  }
+
+  // The farmer reports the spraying; it blocks the harvest at once but only an engineer's
+  // confirmation makes it count as a recorded treatment.
+  @Transactional
+  public TreatmentApplicationResponse selfReport(Long reportId, DiagnosisApplyRequest request) {
+    DiseaseReport report = findActiveReportOrThrow(reportId);
+    requireAccessible(report);
+    Diagnosis diagnosis = findByReportIdOrThrow(reportId);
+    Optional<TreatmentApplication> replaceable = replaceableApplication(diagnosis, reportId);
+    TreatmentRule rule = requireApplicable(diagnosis, reportId);
+    BigDecimal actualDose = request.doseAmount();
+    requireDoseAllowed(rule, actualDose);
+    LocalDate appliedAt = resolveAppliedAt(request.appliedAt());
+    CropSeason season = report.getCropSeason();
+    requireUsableReport(report);
+    entityManager.lock(season, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
+    TreatmentApplication application = replaceable.orElseGet(
+        () -> TreatmentApplication.builder().cropSeason(season).diagnosis(diagnosis).build());
+    boolean reopened = application.getId() != null;
+    fill(application, rule, actualDose, appliedAt);
+    application.setConfirmationStatus(TreatmentConfirmationStatus.PENDING_CONFIRMATION);
+    application.setReportedByUserId(currentUserService.currentUserId());
+    application.setConfirmedByUserId(null);
+    application.setConfirmedAt(null);
+    application.setRejectionReason(null);
+    TreatmentApplication saved = saveApplication(application, reportId);
+    if (reopened) {
+      workflowService.recordTransition(TREATMENT_CASE_TYPE, TREATMENT_ENTITY_TYPE, saved.getId(),
+          WorkflowStatus.PENDING, currentActor(), null, null);
+    } else {
+      workflowService.createCase(TREATMENT_CASE_TYPE, TREATMENT_ENTITY_TYPE, saved.getId(),
+          currentActor());
+    }
+    eventPublisher.publishEvent(new TreatmentReportedEvent(reportId, season.getParcel().getCode(),
+        season.getParcel().getFarmerName(), saved.getPesticide().getName(),
+        saved.getDoseAmountSnapshot(), saved.getDoseUnitSnapshot(), saved.getAppliedAt(),
+        saved.getHarvestLockedUntil()));
+    return toApplicationResponse(saved);
+  }
+
+  @Transactional
+  public TreatmentApplicationResponse confirmApplication(Long reportId) {
+    TreatmentApplication application = findPendingApplicationOrThrow(reportId);
+    entityManager.lock(application.getCropSeason(), LockModeType.OPTIMISTIC_FORCE_INCREMENT);
+    application.setConfirmationStatus(TreatmentConfirmationStatus.CONFIRMED);
+    application.setConfirmedByUserId(currentUserService.currentUserId());
+    application.setConfirmedAt(Instant.now(clock));
+    application.setRejectionReason(null);
+    TreatmentApplication saved = treatmentApplicationRepository.save(application);
+    workflowService.recordTransition(TREATMENT_CASE_TYPE, TREATMENT_ENTITY_TYPE, saved.getId(),
+        WorkflowStatus.APPROVED, currentActor(), null, null);
+    notificationService.notifyHousehold(saved.getCropSeason().getParcel().getHousehold(),
+        NotificationType.TREATMENT_CONFIRMED, "Kỹ sư đã xác nhận việc phun thuốc",
+        "Thửa %s: cách ly đến hết ngày %s, sau ngày đó mới được thu hoạch."
+            .formatted(saved.getCropSeason().getParcel().getCode(), saved.getHarvestLockedUntil()),
+        "DISEASE_REPORT", String.valueOf(reportId));
+    return toApplicationResponse(saved);
+  }
+
+  @Transactional
+  public TreatmentApplicationResponse rejectApplication(Long reportId,
+      DiagnosisRejectRequest request) {
+    TreatmentApplication application = findPendingApplicationOrThrow(reportId);
+    entityManager.lock(application.getCropSeason(), LockModeType.OPTIMISTIC_FORCE_INCREMENT);
+    application.setConfirmationStatus(TreatmentConfirmationStatus.REJECTED);
+    application.setConfirmedByUserId(currentUserService.currentUserId());
+    application.setConfirmedAt(Instant.now(clock));
+    application.setRejectionReason(request.reason());
+    TreatmentApplication saved = treatmentApplicationRepository.save(application);
+    workflowService.recordTransition(TREATMENT_CASE_TYPE, TREATMENT_ENTITY_TYPE, saved.getId(),
+        WorkflowStatus.REJECTED, currentActor(), request.reason(), null);
+    notificationService.notifyHousehold(saved.getCropSeason().getParcel().getHousehold(),
+        NotificationType.TREATMENT_REJECTED, "Kỹ sư chưa xác nhận việc phun thuốc",
+        "Thửa %s. Lý do: %s. Bạn có thể khai lại."
+            .formatted(saved.getCropSeason().getParcel().getCode(), request.reason()),
+        "DISEASE_REPORT", String.valueOf(reportId));
+    return toApplicationResponse(saved);
+  }
+
+  // The spraying recorded for a report, if any.
+  public TreatmentApplicationResponse getApplication(Long reportId) {
+    DiseaseReport report = findActiveReportOrThrow(reportId);
+    requireAccessible(report);
+    Diagnosis diagnosis = findByReportIdOrThrow(reportId);
+    return treatmentApplicationRepository.findByDiagnosisId(diagnosis.getId())
+        .map(DiagnosisService::toApplicationResponse).orElseThrow(
+            () -> new ResourceNotFoundException("No treatment recorded for report: " + reportId));
+  }
+
+  private TreatmentRule requireApplicable(Diagnosis diagnosis, Long reportId) {
+    if (diagnosis.getApprovalStatus() != ApprovalStatus.APPROVED) {
+      throw new InvalidStateException(
+          "Diagnosis must be approved before applying treatment: " + reportId);
+    }
+    TreatmentRule rule = diagnosis.getTreatmentRule();
+    if (rule == null) {
+      throw new InvalidStateException(
+          "Diagnosis has no approved treatment rule and cannot be applied: " + reportId);
+    }
+    return rule;
+  }
+
+  private static void requireDoseAllowed(TreatmentRule rule, BigDecimal actualDose) {
+    if (!rule.allowsDose(actualDose)) {
+      throw new InvalidStateException("Applied dose %s must be between %s and %s %s"
+          .formatted(actualDose, rule.getDoseMin(), rule.getDoseMax(), rule.getDoseUnit()));
+    }
+  }
+
+  // Empty for a diagnosis nobody sprayed for; the rejected application of a diagnosis is reused so
+  // the one-per-diagnosis rule holds; anything else means it was already recorded.
+  private Optional<TreatmentApplication> replaceableApplication(Diagnosis diagnosis,
+      Long reportId) {
+    Optional<TreatmentApplication> existing =
+        treatmentApplicationRepository.findByDiagnosisId(diagnosis.getId());
+    if (existing.isPresent()
+        && existing.get().getConfirmationStatus() != TreatmentConfirmationStatus.REJECTED) {
+      throw new InvalidStateException("Diagnosis already applied: " + reportId);
+    }
+    return existing;
+  }
+
+  private static void fill(TreatmentApplication application, TreatmentRule rule, BigDecimal dose,
+      LocalDate appliedAt) {
+    application.setPesticide(rule.getPesticide());
+    application.setDoseAmountSnapshot(dose);
+    application.setDoseUnitSnapshot(rule.getDoseUnit());
+    application.setPhiDaysSnapshot(rule.getPhiDays());
+    application.setAppliedAt(appliedAt);
+    application.setHarvestLockedUntil(appliedAt.plusDays(rule.getPhiDays()));
+  }
+
+  private TreatmentApplication saveApplication(TreatmentApplication application, Long reportId) {
     try {
-      return toApplicationResponse(treatmentApplicationRepository.saveAndFlush(application));
+      return treatmentApplicationRepository.saveAndFlush(application);
     } catch (DataIntegrityViolationException e) {
       throw new InvalidStateException("Diagnosis already applied: " + reportId);
     }
+  }
+
+  private TreatmentApplication findPendingApplicationOrThrow(Long reportId) {
+    Diagnosis diagnosis = findByReportIdOrThrow(reportId);
+    TreatmentApplication application =
+        treatmentApplicationRepository.findByDiagnosisId(diagnosis.getId()).orElseThrow(
+            () -> new ResourceNotFoundException("No treatment recorded for report: " + reportId));
+    if (application.getConfirmationStatus() != TreatmentConfirmationStatus.PENDING_CONFIRMATION) {
+      throw new InvalidStateException("Treatment is not waiting for confirmation: " + reportId);
+    }
+    return application;
+  }
+
+  // A farmer reaches only the reports of their own parcels.
+  private void requireAccessible(DiseaseReport report) {
+    if (!currentUserService.canAccess(report.getCropSeason().getParcel())) {
+      throw new ResourceNotFoundException("Disease report not found: " + report.getId());
+    }
+  }
+
+  private static Household householdOf(DiseaseReport report) {
+    return report.getCropSeason().getParcel().getHousehold();
   }
 
   private LocalDate resolveAppliedAt(LocalDate requested) {
@@ -429,6 +611,8 @@ public class DiagnosisService {
         application.getDiagnosis() != null ? application.getDiagnosis().getId() : null,
         application.getPesticide().getCode(), application.getDoseAmountSnapshot(),
         application.getDoseUnitSnapshot(), application.getPhiDaysSnapshot(),
-        application.getAppliedAt(), application.getHarvestLockedUntil());
+        application.getAppliedAt(), application.getHarvestLockedUntil(),
+        application.getConfirmationStatus().name(), application.getReportedByUserId() != null,
+        application.getRejectionReason());
   }
 }

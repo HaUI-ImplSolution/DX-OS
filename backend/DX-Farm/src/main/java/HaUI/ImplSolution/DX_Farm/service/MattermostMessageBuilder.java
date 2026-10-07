@@ -5,6 +5,7 @@ import HaUI.ImplSolution.DX_Farm.event.CropSeasonCreatedEvent;
 import HaUI.ImplSolution.DX_Farm.event.DiagnosisPendingEvent;
 import HaUI.ImplSolution.DX_Farm.event.DiseaseReportCreatedEvent;
 import HaUI.ImplSolution.DX_Farm.event.ParcelCreatedEvent;
+import HaUI.ImplSolution.DX_Farm.event.TreatmentReportedEvent;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
@@ -73,6 +74,22 @@ public class MattermostMessageBuilder {
             field("Mã thửa", markdown(event.parcelCode())),
             field("Bệnh", markdown(event.diseaseCode()) + " — " + markdown(event.diseaseName())),
             field("Độ tin cậy", confidence), field("Phác đồ", rule)),
+        null);
+  }
+
+  public Map<String, Object> treatmentReported(TreatmentReportedEvent event) {
+    String title = "Nông dân khai đã phun thuốc, chờ xác nhận";
+    String dose = event.doseAmount().stripTrailingZeros().toPlainString() + " " + event.doseUnit();
+    String fallback = "%s: báo cáo #%d, thửa %s, thuốc %s, liều %s, ngày phun %s".formatted(title,
+        event.reportId(), plain(event.parcelCode()), plain(event.pesticideName()), plain(dose),
+        formatDate(event.appliedAt()));
+    return payload(fallback, COLOR_REVIEW_REQUIRED, title,
+        List.of(field("Mã báo cáo", "#" + event.reportId()),
+            field("Mã thửa", markdown(event.parcelCode())),
+            field("Chủ hộ", markdown(event.farmerName())),
+            field("Thuốc", markdown(event.pesticideName())), field("Liều", markdown(dose)),
+            field("Ngày phun", formatDate(event.appliedAt())),
+            field("Hết cách ly", formatDate(event.harvestLockedUntil()))),
         null);
   }
 

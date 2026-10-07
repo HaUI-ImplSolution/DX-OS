@@ -39,6 +39,11 @@ Hai service tách biệt, giao tiếp qua HTTP:
   Cổng của Backend, Keycloak, AI và MinIO không publish ra host; Backend vẫn tự kiểm JWT lần hai.
 - **Workflow dùng chung** — mỗi chẩn đoán có một `workflow_case` (trạng thái, người phụ trách) và các `workflow_event` chỉ thêm, không sửa, nên xem lại được toàn bộ lịch sử duyệt.
   `GET /api/v1/workflow-cases` trả danh sách việc chờ cho kỹ sư và admin.
+- **Hộp thông báo** — Backend ghi thông báo cho nông dân khi duyệt thửa, vụ, chẩn đoán, khai phun thuốc và khi đến hạn thu hoạch.
+  Mobile đọc qua `GET /api/v1/notifications`, trạng thái đã đọc lưu ở server.
+  Job nhắc hạn chạy 07:00 giờ Việt Nam mỗi ngày (`HARVEST_REMINDER_CRON`).
+- **Thu hoạch và khai phun thuốc** — thu hoạch ghi ngày, sản lượng, diện tích và người khai; thu hoạch sớm cần xác nhận kèm lý do.
+  Nông dân khai phun thuốc, kỹ sư xác nhận; bản khai chờ xác nhận chặn thu hoạch.
 - **Lưu ảnh (MinIO)** — ảnh báo cáo nằm trong bucket riêng tư, client nhận link có hạn (mặc định 15 phút) trong trường `imageUrl`; không còn đường dẫn ảnh công khai.
 - **AI Service (Python)** — Vision API, LangGraph, Qwen2.5 qua Ollama và RAG; hoạt động như dịch vụ suy luận stateless.
   AI gọi internal REST API của Backend để lấy structured facts, chỉ đọc AI Vector DB riêng và trả recommendation về Backend.

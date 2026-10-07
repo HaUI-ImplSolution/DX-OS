@@ -67,6 +67,8 @@ class DiagnosisServiceApplyTest {
   @Mock
   private ApplicationEventPublisher eventPublisher;
   @Mock
+  private NotificationService notificationService;
+  @Mock
   private EntityManager entityManager;
 
   private DiagnosisService service;
@@ -76,7 +78,8 @@ class DiagnosisServiceApplyTest {
   void setUp() {
     service = new DiagnosisService(diagnosisRepository, diseaseReportRepository, diseaseRepository,
         treatmentRuleService, treatmentApplicationRepository, currentUserService, workflowService,
-        aiDiagnosisClient, eventPublisher, storageService, CLOCK, entityManager,
+        aiDiagnosisClient, eventPublisher, storageService, notificationService, CLOCK,
+        entityManager,
         org.mockito.Mockito.mock(org.springframework.transaction.PlatformTransactionManager.class),
         org.mockito.Mockito
             .mock(HaUI.ImplSolution.DX_Farm.repository.TrainingLabelRepository.class));

@@ -47,6 +47,7 @@ flowchart TB
   `StorageService` nhận khóa object và byte, không biết đó là ảnh báo cáo.
 - Ứng dụng gọi Core qua các điểm vào cố định:
   - `DiagnosisService` mở case `DIAGNOSIS_APPROVAL` và ghi bước duyệt qua `WorkflowService`.
+  - `DiagnosisService` mở case `TREATMENT_CONFIRMATION` khi nông dân khai phun thuốc và ghi bước xác nhận của kỹ sư.
   - `FileStorageService` làm sạch ảnh rồi lưu qua `StorageService`.
   - `ParcelService` dùng `Household` của `core.identity`.
 - Đổi ứng dụng (ví dụ làm ứng dụng thứ hai) chỉ thêm package ứng dụng mới.

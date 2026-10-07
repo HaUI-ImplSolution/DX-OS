@@ -47,9 +47,8 @@ def login(base_url, username, password, client):
     client_id, redirect_uri = client
     verifier = secrets.token_urlsafe(64)
     challenge = _b64url(hashlib.sha256(verifier.encode()).digest())
-    opener = urllib.request.build_opener(
-        urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()), _NoRedirect
-    )
+    jar = http.cookiejar.CookieJar()
+    opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar), _NoRedirect)
     endpoint = f"{base_url}/realms/{REALM}/protocol/openid-connect"
     query = urllib.parse.urlencode(
         {
@@ -63,6 +62,9 @@ def login(base_url, username, password, client):
         }
     )
     login_page = opener.open(f"{endpoint}/auth?{query}").read().decode()
+    # Keycloak marks its session cookies Secure; the gateway here serves plain HTTP.
+    for cookie in jar:
+        cookie.secure = False
     form = re.search(r"<form\b[^>]*id=\"kc-form-login\"[^>]*>", login_page)
     action = re.search(r"action=\"([^\"]+)\"", form.group(0)) if form else None
     if not action:
@@ -76,7 +78,7 @@ def login(base_url, username, password, client):
         raise RuntimeError(f"Login of {username} was not accepted")
     code = urllib.parse.parse_qs(urllib.parse.urlparse(location).query).get("code")
     if not location.startswith(redirect_uri) or not code:
-        raise RuntimeError(f"Login of {username} did not return an authorization code")
+        raise RuntimeError(f"Login of {username} did not return an authorization code: {location or 'no redirect'}")
     token_request = urllib.request.Request(
         f"{endpoint}/token",
         urllib.parse.urlencode(

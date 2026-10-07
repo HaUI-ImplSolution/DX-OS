@@ -11,7 +11,9 @@ enough for the screens but not for a meaningful AI diagnosis.
 """
 import argparse
 import datetime
+import os
 import pathlib
+import shlex
 import subprocess
 import sys
 import uuid
@@ -47,27 +49,26 @@ def read_env(path):
 
 
 def psql(sql):
-    env = read_env(DEPLOY_DIR / ".env")
+    """Runs SQL in the compose postgres; DEMO_COMPOSE and DEMO_ENV_FILE select another project."""
+    env = read_env(pathlib.Path(os.environ.get("DEMO_ENV_FILE", DEPLOY_DIR / ".env")))
+    compose = shlex.split(os.environ.get("DEMO_COMPOSE", "docker compose"))
     subprocess.run(
-        ["docker", "compose", "exec", "-T", "postgres", "psql", "-U", env["POSTGRES_USER"],
+        [*compose, "exec", "-T", "postgres", "psql", "-U", env["POSTGRES_USER"],
          "-d", env.get("POSTGRES_DB", "dxfarm"), "-v", "ON_ERROR_STOP=1", "-c", sql],
         cwd=DEPLOY_DIR, check=True, capture_output=True)
 
 
 def ensure_farmer_household(admin, farmer):
-    status, _ = farmer.call("GET", "/parcels")
-    if status == 200:
+    households = [h for h in admin.ok("GET", "/households") if h["fullName"] == FARMER_HOUSEHOLD_NAME]
+    if households and households[0]["accountLinked"]:
         return
-    households = admin.ok("GET", "/households")
-    free = [h for h in households if not h["accountLinked"] and h["fullName"] == FARMER_HOUSEHOLD_NAME]
-    if not free:
+    if not households:
         psql("INSERT INTO households (code, full_name, address, created_at, updated_at) "
              "VALUES ('H' || lpad(nextval('household_code_seq')::text, 4, '0'), "
              f"'{FARMER_HOUSEHOLD_NAME}', 'Cần Thơ', now(), now())")
-        households = admin.ok("GET", "/households")
-        free = [h for h in households if not h["accountLinked"] and h["fullName"] == FARMER_HOUSEHOLD_NAME]
-    admin.ok("PATCH", f"/households/{free[0]['code']}/account", {"username": "farmer1"})
-    print(f"Linked farmer1 to household {free[0]['code']}")
+        households = [h for h in admin.ok("GET", "/households") if h["fullName"] == FARMER_HOUSEHOLD_NAME]
+    admin.ok("PATCH", f"/households/{households[0]['code']}/account", {"username": "farmer1"})
+    print(f"Linked farmer1 to household {households[0]['code']}")
 
 
 def approve(admin, case_type, entity_id):

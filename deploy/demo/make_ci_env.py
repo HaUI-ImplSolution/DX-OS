@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0
-"""Writes deploy/.env for a throwaway CI stack: blank variables of .env.example get random values."""
+"""Writes an env file for a throwaway stack: blank variables of .env.example get random values.
+
+    python3 deploy/demo/make_ci_env.py [OUTPUT]     (default: deploy/.env)
+"""
 import hashlib
 import pathlib
 import secrets
+import sys
 
 DEPLOY_DIR = pathlib.Path(__file__).resolve().parent.parent
 FIXED = {"POSTGRES_USER": "dxfarm", "MINIO_ACCESS_KEY": "dxfarm-minio"}
@@ -22,7 +26,8 @@ def main():
                 value = FIXED.get(key, secrets.token_hex(16))
             line = f"{key}={value}"
         lines.append(line)
-    (DEPLOY_DIR / ".env").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    output = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else DEPLOY_DIR / ".env"
+    output.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":

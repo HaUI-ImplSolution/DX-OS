@@ -108,14 +108,21 @@ class PermissionMatrixTest {
         .content("{\"fullName\":\"Nguyen Van A\",\"username\":\"nguyenvana\"}");
   }
 
+  private RequestBuilder harvest(JwtRequestPostProcessor user) {
+    return post("/api/v1/crop-seasons/1/harvest").with(user).contentType(MediaType.APPLICATION_JSON)
+        .content("{\"yieldKg\":1000}");
+  }
+
   private void servicesAnswer() {
     when(parcelService.create(any(), any())).thenReturn(new ParcelResponse(1L, "TD-01", "H0001",
         "A", null, null, null, null, null, false, "APPROVED", null, null, null));
     when(parcelService.listAll(anyBoolean())).thenReturn(List.of());
-    when(cropSeasonService.create(any(), any(), any())).thenReturn(new CropSeasonResponse(1L, null,
-        "TD-01", "OM 5451", "OM5451", null, null, null, null, "ACTIVE", "APPROVED", null, null));
-    when(cropSeasonService.harvest(any())).thenReturn(new CropSeasonResponse(1L, null, "TD-01",
-        "OM 5451", "OM5451", null, null, null, null, "HARVESTED", "APPROVED", null, null));
+    when(cropSeasonService.create(any(), any(), any()))
+        .thenReturn(new CropSeasonResponse(1L, null, "TD-01", "OM 5451", "OM5451", null, null, null,
+            null, "ACTIVE", "APPROVED", null, null, null, null, null, null, null, null));
+    when(cropSeasonService.harvest(any(), any()))
+        .thenReturn(new CropSeasonResponse(1L, null, "TD-01", "OM 5451", "OM5451", null, null, null,
+            null, "HARVESTED", "APPROVED", null, null, null, null, null, null, null, null));
     when(diseaseReportService.create(any(), any(), any()))
         .thenReturn(new DiseaseReportResponse(1L, 1L, "x.jpg", "A", null, null));
     when(householdService.listAll()).thenReturn(List.of());
@@ -127,8 +134,7 @@ class PermissionMatrixTest {
   void engineerCannotCreateParcelsSeasonsOrHarvest() throws Exception {
     mockMvc.perform(createParcel(engineer())).andExpect(status().isForbidden());
     mockMvc.perform(createSeason(engineer())).andExpect(status().isForbidden());
-    mockMvc.perform(post("/api/v1/crop-seasons/1/harvest").with(engineer()))
-        .andExpect(status().isForbidden());
+    mockMvc.perform(harvest(engineer())).andExpect(status().isForbidden());
   }
 
   @Test
@@ -138,10 +144,8 @@ class PermissionMatrixTest {
     mockMvc.perform(createParcel(admin())).andExpect(status().isCreated());
     mockMvc.perform(createSeason(farmer())).andExpect(status().isCreated());
     mockMvc.perform(createSeason(admin())).andExpect(status().isCreated());
-    mockMvc.perform(post("/api/v1/crop-seasons/1/harvest").with(farmer()))
-        .andExpect(status().isOk());
-    mockMvc.perform(post("/api/v1/crop-seasons/1/harvest").with(admin()))
-        .andExpect(status().isOk());
+    mockMvc.perform(harvest(farmer())).andExpect(status().isOk());
+    mockMvc.perform(harvest(admin())).andExpect(status().isOk());
   }
 
   @Test

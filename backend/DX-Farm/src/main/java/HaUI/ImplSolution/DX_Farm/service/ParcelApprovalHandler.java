@@ -5,6 +5,7 @@ import HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowDecisionHandler;
 import HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowStatus;
 import HaUI.ImplSolution.DX_Farm.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.DX_Farm.model.ApprovalStatus;
+import HaUI.ImplSolution.DX_Farm.model.NotificationType;
 import HaUI.ImplSolution.DX_Farm.model.Parcel;
 import HaUI.ImplSolution.DX_Farm.repository.ParcelRepository;
 import org.springframework.stereotype.Component;
@@ -14,9 +15,12 @@ import org.springframework.stereotype.Component;
 public class ParcelApprovalHandler implements WorkflowDecisionHandler {
 
   private final ParcelRepository parcelRepository;
+  private final NotificationService notificationService;
 
-  public ParcelApprovalHandler(ParcelRepository parcelRepository) {
+  public ParcelApprovalHandler(ParcelRepository parcelRepository,
+      NotificationService notificationService) {
     this.parcelRepository = parcelRepository;
+    this.notificationService = notificationService;
   }
 
   @Override
@@ -36,5 +40,12 @@ public class ParcelApprovalHandler implements WorkflowDecisionHandler {
       parcel.setRejectionReason(reason);
     }
     parcelRepository.save(parcel);
+    boolean approved = target == WorkflowStatus.APPROVED;
+    notificationService.notifyHousehold(parcel.getHousehold(),
+        approved ? NotificationType.PARCEL_APPROVED : NotificationType.PARCEL_REJECTED,
+        approved ? "Thửa ruộng đã được duyệt" : "Thửa ruộng bị từ chối",
+        approved ? "Thửa %s đã được duyệt, bạn có thể tạo vụ mùa.".formatted(parcel.getCode())
+            : "Thửa %s bị từ chối. Lý do: %s".formatted(parcel.getCode(), reason),
+        "PARCEL", parcel.getCode());
   }
 }

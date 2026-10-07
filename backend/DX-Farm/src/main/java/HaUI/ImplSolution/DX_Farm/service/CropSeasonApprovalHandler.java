@@ -6,6 +6,7 @@ import HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowStatus;
 import HaUI.ImplSolution.DX_Farm.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.DX_Farm.model.ApprovalStatus;
 import HaUI.ImplSolution.DX_Farm.model.CropSeason;
+import HaUI.ImplSolution.DX_Farm.model.NotificationType;
 import HaUI.ImplSolution.DX_Farm.repository.CropSeasonRepository;
 import org.springframework.stereotype.Component;
 
@@ -14,9 +15,12 @@ import org.springframework.stereotype.Component;
 public class CropSeasonApprovalHandler implements WorkflowDecisionHandler {
 
   private final CropSeasonRepository cropSeasonRepository;
+  private final NotificationService notificationService;
 
-  public CropSeasonApprovalHandler(CropSeasonRepository cropSeasonRepository) {
+  public CropSeasonApprovalHandler(CropSeasonRepository cropSeasonRepository,
+      NotificationService notificationService) {
     this.cropSeasonRepository = cropSeasonRepository;
+    this.notificationService = notificationService;
   }
 
   @Override
@@ -37,5 +41,13 @@ public class CropSeasonApprovalHandler implements WorkflowDecisionHandler {
       season.setRejectionReason(reason);
     }
     cropSeasonRepository.save(season);
+    boolean approved = target == WorkflowStatus.APPROVED;
+    String label = season.getCode() != null ? season.getCode() : "#" + season.getId();
+    notificationService.notifyHousehold(season.getParcel().getHousehold(),
+        approved ? NotificationType.CROP_SEASON_APPROVED : NotificationType.CROP_SEASON_REJECTED,
+        approved ? "Vụ mùa đã được duyệt" : "Vụ mùa bị từ chối",
+        approved ? "Vụ %s đã được duyệt.".formatted(label)
+            : "Vụ %s bị từ chối. Lý do: %s".formatted(label, reason),
+        "CROP_SEASON", String.valueOf(season.getId()));
   }
 }

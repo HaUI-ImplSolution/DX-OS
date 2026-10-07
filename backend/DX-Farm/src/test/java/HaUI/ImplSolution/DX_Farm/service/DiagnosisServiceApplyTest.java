@@ -67,6 +67,8 @@ class DiagnosisServiceApplyTest {
   @Mock
   private ApplicationEventPublisher eventPublisher;
   @Mock
+  private NotificationService notificationService;
+  @Mock
   private EntityManager entityManager;
 
   private DiagnosisService service;
@@ -76,7 +78,8 @@ class DiagnosisServiceApplyTest {
   void setUp() {
     service = new DiagnosisService(diagnosisRepository, diseaseReportRepository, diseaseRepository,
         treatmentRuleService, treatmentApplicationRepository, currentUserService, workflowService,
-        aiDiagnosisClient, eventPublisher, storageService, CLOCK, entityManager);
+        aiDiagnosisClient, eventPublisher, storageService, notificationService, CLOCK,
+        entityManager);
     Parcel parcel = Parcel.builder().id(1L).code("P-01").farmerName("A").build();
     season = CropSeason.builder().id(5L).parcel(parcel).build();
     DiseaseReport report = DiseaseReport.builder().id(9L).cropSeason(season).build();

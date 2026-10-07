@@ -58,6 +58,8 @@ app:
   gps-max-accuracy-meters: ${GPS_MAX_ACCURACY_METERS:30}
   # Requests a farmer may have waiting for a decision at the same time.
   max-pending-requests: ${MAX_PENDING_REQUESTS:3}
+  # Cron (Asia/Ho_Chi_Minh) of the daily reminder for seasons that reached their expected harvest date.
+  harvest-reminder-cron: ${HARVEST_REMINDER_CRON:0 0 7 * * *}
   # Start months (1-12) that suggest a season type. Self-compiled, not yet confirmed by an
   # agronomist; months outside every list make the farmer pick the type.
   season-start-months:

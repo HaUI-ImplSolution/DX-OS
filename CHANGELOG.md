@@ -5,6 +5,44 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Backend (Spring Boot — `backend/DX-Farm`)
 
+### 2026-10-07
+
+**Đã xong — Vòng đời vụ mùa và thông báo cho nông dân:**
+
+- `V7__season_lifecycle_notifications.sql` thêm bảng `notifications` và `harvest_reschedules`.
+  `crop_seasons` có thêm cột thu hoạch, `treatment_applications` có thêm cột xác nhận (bản ghi có sẵn là `CONFIRMED`).
+- Hộp thông báo trong app: `GET /api/v1/notifications` (phân trang, `unreadOnly`), `GET /api/v1/notifications/unread-count`, `PATCH /api/v1/notifications/{id}/read`, `PATCH /api/v1/notifications/read-all`.
+  Mỗi tài khoản chỉ thấy thông báo của mình, trạng thái đã đọc lưu ở server.
+  Thông báo được ghi cùng giao dịch khi duyệt hoặc từ chối thửa, vụ, yêu cầu sửa thửa, chẩn đoán và việc phun thuốc.
+  Hộ cũng nhận thông báo khi admin khai thu hoạch thay và khi đến hạn thu hoạch.
+- `POST /api/v1/crop-seasons/{id}/harvest` nhận `yieldKg` (bắt buộc), `actualHarvestDate` và `harvestedAreaHectares`, và lưu người khai.
+  `actualHarvestDate` mặc định hôm nay, không ở tương lai, tối đa 30 ngày trước.
+  `harvestedAreaHectares` mặc định cả thửa, không vượt diện tích thửa (`400`).
+  Trước ngày dự kiến trả `422 HARVEST_TOO_EARLY` trừ khi có `confirmEarly=true` kèm `earlyReason`.
+  Admin khai thay hộ phải có `reasonOnBehalf` (`400` nếu thiếu); lý do và người khai nằm trên vụ.
+- `GET /api/v1/crop-seasons/{id}/harvest-readiness` trả số ngày còn lại tới ngày dự kiến, trạng thái cách ly và các cảnh báo không chặn.
+  Cảnh báo gồm báo cáo chưa có kết quả duyệt và khuyến nghị đã duyệt chưa ghi nhận phun.
+- `PATCH /api/v1/crop-seasons/{id}/reschedule-harvest` (FARMER, ADMIN) đổi ngày dự kiến từ hôm nay đến 90 ngày tới, kèm lý do.
+  `GET /api/v1/crop-seasons/{id}/harvest-reschedules` trả đủ các lần đổi theo thứ tự.
+- Job `HarvestReminderScheduler` chạy 07:00 giờ `Asia/Ho_Chi_Minh` (cấu hình `HARVEST_REMINDER_CRON`).
+  Vụ `ACTIVE` đã duyệt tới hoặc quá ngày dự kiến nhận một thông báo mỗi ngày (`dedup_key` duy nhất).
+- Nông dân khai phun thuốc: `POST /api/v1/disease-reports/{reportId}/treatment-application/self-report` (FARMER) tạo bản ghi `PENDING_CONFIRMATION` và case `TREATMENT_CONFIRMATION` trong hàng đợi kỹ sư.
+  `POST .../confirm` và `POST .../reject` (ENGINEER, ADMIN, từ chối cần lý do) quyết định bản khai; `GET .../treatment-application` trả bản ghi của báo cáo.
+  Bản khai chờ xác nhận chặn thu hoạch (`422 TREATMENT_PENDING_CONFIRMATION`).
+  Khóa PHI tính từ ngày phun nông dân khai và có hiệu lực khi kỹ sư xác nhận.
+  Bị từ chối thì nông dân khai lại trên cùng bản ghi.
+  `POST .../diagnosis/apply` của kỹ sư ghi nhận ngay ở trạng thái `CONFIRMED`; mỗi chẩn đoán có tối đa một lần phun.
+- Mattermost kênh kỹ sư nhận tin khi có bản khai phun thuốc mới.
+
+**Chưa làm:**
+
+- Push thật (FCM, UnifiedPush): hộp thông báo chỉ kéo về khi mở app (P10).
+- Hộp thông báo cho engineer và admin: họ thấy việc chờ ở hàng đợi và Mattermost.
+- Thông báo `RETAKE_REQUESTED` (P6).
+- Phun lặp lại nhiều lần trên cùng một chẩn đoán.
+- SLA nhắc kỹ sư khi bản khai phun chờ xác nhận quá lâu.
+- Lịch sử thu hoạch thay hộ trong timeline workflow (hiện nằm trên vụ và log backend).
+
 ### 2026-10-06
 
 **Đã xong — Duyệt thửa/vụ, mã chuẩn, GPS, danh mục giống:**
@@ -193,6 +231,21 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Mobile (`mobile`, Expo)
 
+### 2026-10-07
+
+- Màn `notifications` là hộp thông báo của nông dân, chạm một thông báo để mở thửa, vụ hoặc báo cáo liên quan.
+  Nút "Thông báo (n)" ở đầu màn Thửa.
+  Số chưa đọc được tải khi mở app, mỗi lần app trở lại foreground, mỗi lần quay lại màn Thửa và khi kéo làm mới.
+- Màn `seasons/harvest` khai báo thu hoạch (ngày, sản lượng kg, diện tích ha), hiện banner cách ly và các việc chưa xử lý.
+  Thu hoạch trước ngày dự kiến phải bật xác nhận và nhập lý do.
+- Màn `seasons/reschedule` đổi ngày dự kiến thu hoạch kèm lý do và liệt kê các lần đổi.
+- Màn Chi tiết báo cáo cho nông dân khai "Tôi đã phun thuốc" (liều, ngày phun) khi chẩn đoán đã duyệt.
+  Màn hiện trạng thái chờ hoặc đã được kỹ sư xác nhận, và lý do khi bị từ chối để khai lại.
+
+**Chưa làm:**
+
+- Hộp thông báo chỉ tải trang đầu (30 thông báo mới nhất), chưa có cuộn tải thêm.
+
 ### 2026-10-06
 
 - Nông dân tạo thửa ngay trên điện thoại (`parcels/new`): nhập diện tích, bấm "Tôi đang ở ruộng, lấy vị trí" (`expo-location`), thấy sai số GPS; sai số quá 30 m hoặc vị trí giả lập thì không gửi được.
@@ -339,6 +392,15 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - 8 candidate quy tắc điều trị trạng thái HOLD được giữ riêng để audit, không seed vào CSDL chính thức.
 
 ## Frontend (`frontend`)
+
+### 2026-10-07
+
+- Hàng đợi kỹ sư có thêm tab "Khai phun thuốc".
+  Kỹ sư nhận việc, bấm "Xác nhận đã phun" hoặc từ chối kèm lý do.
+  Danh sách yêu cầu có thêm loại "Khai phun thuốc".
+- Panel Vụ mùa cho admin khai thu hoạch thay nông hộ bằng form có sản lượng, diện tích và lý do thao tác thay mặt.
+  Thu hoạch trước ngày dự kiến cần xác nhận và lý do.
+  Form hiện cảnh báo cách ly và việc chưa xử lý trước khi gửi.
 
 ### 2026-10-06
 

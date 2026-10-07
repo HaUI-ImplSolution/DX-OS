@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { router } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
 import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import { listParcels } from "@/api/endpoints";
 import { Button } from "@/components/Button";
@@ -9,6 +9,7 @@ import { ParcelCard } from "@/components/ParcelCard";
 import { Screen } from "@/components/Screen";
 import { SkeletonCards } from "@/components/Skeleton";
 import { useAsync } from "@/hooks/useAsync";
+import { useNotifications } from "@/notifications/NotificationsProvider";
 import { useQueue } from "@/offline/QueueProvider";
 import { colors, spacing } from "@/theme";
 
@@ -16,6 +17,14 @@ export default function ParcelsScreen() {
   const { data, error, loading, refreshing, reload, refresh } = useAsync(listParcels, []);
   const [version, setVersion] = useState(0);
   const { sentCount } = useQueue();
+  const { refreshUnread } = useNotifications();
+
+  // The unread count follows every return to this screen, not only a pull to refresh.
+  useFocusEffect(
+    useCallback(() => {
+      refreshUnread();
+    }, [refreshUnread]),
+  );
 
   // A parcel sent from the offline queue shows up without a manual refresh.
   useEffect(() => {
@@ -60,6 +69,7 @@ export default function ParcelsScreen() {
             onRefresh={() => {
               setVersion((v) => v + 1);
               refresh();
+              refreshUnread();
             }}
           />
         }

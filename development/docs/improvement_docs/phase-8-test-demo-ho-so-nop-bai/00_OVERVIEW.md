@@ -77,15 +77,14 @@
 
 ## 10. Tài liệu cần cập nhật khi xong
 
-- [ ] `README.md` (kiến trúc 3 tầng, H-P-D-I, cài đặt, API, tài khoản demo — theo đúng yêu cầu đề).
-- [ ] `CHANGELOG.md`, `CONTRIBUTING.md` (mới), `LICENSES.md`, SBOM (mới).
-- [ ] `.github/ISSUE_TEMPLATE/`, `.github/PULL_REQUEST_TEMPLATE.md` (mới).
+- [x] `README.md` (kiến trúc 3 tầng, H-P-D-I, cài đặt, API, tài khoản demo — theo đúng yêu cầu đề).
+- [x] `CHANGELOG.md`, `CONTRIBUTING.md` (mới), `LICENSES.md`, SBOM (mới).
+- [x] `.github/ISSUE_TEMPLATE/`, `.github/PULL_REQUEST_TEMPLATE.md` (mới).
 
 ## 11. Việc chưa làm và chưa chốt
 
 **Chưa làm**
 
-- Chạy `seed_demo.py` và `e2e.py` trên stack sạch (T8-01, T8-02), workflow `E2E` chưa chạy trên GitHub; stack rút gọn của CI chưa được dựng thử.
 - Tag và release, bật GitHub Issues và tạo issue mẫu, chuyển repo sang public (việc trên GitHub).
 - Báo cáo kỹ thuật, slide, video và rehearsal; mới có kịch bản demo, bộ trả lời hội đồng và dàn ý ở `development/docs/submission/`.
 - Test tích hợp phạm vi dữ liệu giữa hai nông hộ và idempotency của thửa/vụ.

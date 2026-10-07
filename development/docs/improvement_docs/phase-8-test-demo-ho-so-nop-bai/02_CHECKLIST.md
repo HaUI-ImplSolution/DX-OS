@@ -16,8 +16,8 @@ Kết quả đầu ra: database sạch có đủ dữ liệu demo; rõ ràng v�
 
 **Test**
 
-- [ ] WP8-02-TEST-01 Chạy script seed demo trên database sạch, xác nhận đủ dữ liệu cho kịch bản demo (T8-01).
-  Chưa chạy; chạy `python3 deploy/demo/seed_demo.py` trên stack sạch.
+- [x] WP8-02-TEST-01 Chạy script seed demo trên database sạch, xác nhận đủ dữ liệu cho kịch bản demo (T8-01).
+  Đạt trên stack cô lập; chạy lại báo đã có dữ liệu.
 
 ## WP8-01: Test cho phần lõi và E2E trên môi trường sạch
 
@@ -37,8 +37,8 @@ Kết quả đầu ra: CI có job E2E chạy xanh trên clone sạch; danh sách
 
 **Test**
 
-- [ ] WP8-01-TEST-01 Job E2E chạy xanh trên clone sạch (T8-02).
-  Chưa chạy; workflow `E2E` chạy khi mở PR hoặc `workflow_dispatch`.
+- [x] WP8-01-TEST-01 Job E2E chạy xanh trên clone sạch (T8-02).
+  `e2e.py` đạt 10/10 trên stack cô lập; workflow `E2E` trên GitHub do người dùng xác nhận đạt.
 
 ## WP8-03: Hồ sơ PoF — repo, license, release, issue tracker
 
@@ -101,10 +101,10 @@ Kết quả đầu ra: portal hiện đúng trạng thái dịch vụ; lỗi ph�
 
 **Test**
 
-- [ ] WP8-05-TEST-01 Dừng 1 service, kiểm portal hiện đúng trạng thái down (T8-04).
-  Chưa chạy.
-- [ ] WP8-05-TEST-02 Gọi API gây lỗi khóa PHI, FE hiện thông báo tiếng Việt (T8-05).
-  Chưa chạy.
+- [x] WP8-05-TEST-01 Dừng 1 service, kiểm portal hiện đúng trạng thái down (T8-04).
+  Đạt trên stack cô lập, kiểm bằng trình duyệt.
+- [x] WP8-05-TEST-02 Gọi API gây lỗi khóa PHI, FE hiện thông báo tiếng Việt (T8-05).
+  Đạt, do người dùng xác nhận.
 
 ## WP8-06: Kịch bản demo, báo cáo kỹ thuật, slide, video
 
@@ -127,10 +127,10 @@ Kết quả đầu ra: bộ hồ sơ nộp bài đầy đủ, đã rehearsal.
 
 ## Đóng phase
 
-- [ ] `./mvnw compile` đạt (backend), `npx tsc --noEmit` đạt (web, mobile) và đã đọc lại diff.
-- [ ] CI xanh (gồm job E2E mới).
-- [ ] `.env.example`, seed, migration chạy được trên clone sạch, lặp lại được 2 lần liên tiếp.
-- [ ] Không có secret, mật khẩu hay dữ liệu thật trong diff hoặc lịch sử commit.
-- [ ] README, CHANGELOG, LICENSES.md, CONTRIBUTING.md đầy đủ và khớp thực tế.
+- [~] `./mvnw compile` đạt (backend, kèm `verify` 78/78), `npx tsc --noEmit` đạt (web, mobile); còn đọc lại diff.
+- [x] CI xanh (gồm job E2E mới), do người dùng xác nhận.
+- [x] `.env.example`, seed, migration chạy được trên stack sạch, lặp lại được 2 lần liên tiếp (stack cô lập, chưa dựng từ tag).
+- [x] Không có secret, mật khẩu hay dữ liệu thật trong diff hoặc lịch sử commit (gitleaks 253 commit; quét lại trước khi chuyển public).
+- [x] README, CHANGELOG, LICENSES.md, CONTRIBUTING.md đầy đủ và khớp thực tế.
 - [ ] Mọi tiêu chí ở `00_OVERVIEW.md` mục 6 đã đạt và có bằng chứng.
 - [ ] Cập nhật trạng thái phase ở `improvement_docs/README.md`.

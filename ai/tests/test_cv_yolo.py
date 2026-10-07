@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import ClassVar
 
 import pytest
-from conftest import leaf_scene
+from conftest import AcceptCrop, leaf_scene
 from PIL import Image, ImageDraw, ImageFilter
 
 from app.api.schemas import DiseaseDetectionResponse
@@ -90,14 +90,14 @@ def settings(**overrides) -> Settings:
 def test_highest_confidence_detection_uses_canonical_contract():
     model = FakeModel([0.61, 0.93, 0.82], [0.0, 3.0, 1.0])
 
-    result = PlantDiseaseService(model, settings()).predict(image_bytes(leaf_scene()))
+    result = PlantDiseaseService(model, AcceptCrop(), settings()).predict(image_bytes(leaf_scene()))
 
     assert result == {
         "disease_code": "Rice___Tungro",
         "disease_name": "Bệnh tungro trên lúa",
         "confidence": 0.93,
         "model_name": "YOLOv8n-RiceLeafBD",
-        "model_version": "3.0.0",
+        "model_version": "3.1.0",
     }
     assert set(result) == EXPECTED_RESPONSE_FIELDS
     assert set(DiseaseDetectionResponse.model_fields) == EXPECTED_RESPONSE_FIELDS
@@ -106,7 +106,7 @@ def test_highest_confidence_detection_uses_canonical_contract():
 
 
 def test_no_detection_uses_healthy_fallback_without_expanding_response():
-    result = PlantDiseaseService(FakeModel([], []), settings()).predict(
+    result = PlantDiseaseService(FakeModel([], []), AcceptCrop(), settings()).predict(
         image_bytes(leaf_scene())
     )
 
@@ -115,13 +115,13 @@ def test_no_detection_uses_healthy_fallback_without_expanding_response():
         "disease_name": "Lá lúa không thấy triệu chứng bệnh",
         "confidence": 0.0,
         "model_name": "YOLOv8n-RiceLeafBD",
-        "model_version": "3.0.0",
+        "model_version": "3.1.0",
     }
     assert set(result) == EXPECTED_RESPONSE_FIELDS
 
 
 def test_detection_below_threshold_uses_healthy_fallback():
-    result = PlantDiseaseService(FakeModel([0.24], [0.0]), settings()).predict(
+    result = PlantDiseaseService(FakeModel([0.24], [0.0]), AcceptCrop(), settings()).predict(
         image_bytes(leaf_scene())
     )
 
@@ -135,7 +135,7 @@ def test_image_too_small_is_rejected_before_model_inference():
     model = FakeModel([], [])
 
     with pytest.raises(CvTriageError, match="Ảnh quá nhỏ"):
-        PlantDiseaseService(model, settings()).predict(stream.getvalue())
+        PlantDiseaseService(model, AcceptCrop(), settings()).predict(stream.getvalue())
 
     assert model.predict_kwargs is None
 
@@ -146,7 +146,7 @@ def test_blurry_image_is_rejected_before_model_inference():
     model = FakeModel([], [])
 
     with pytest.raises(CvTriageError, match="bị mờ"):
-        PlantDiseaseService(model, settings()).predict(stream.getvalue())
+        PlantDiseaseService(model, AcceptCrop(), settings()).predict(stream.getvalue())
 
     assert model.predict_kwargs is None
 
@@ -158,13 +158,13 @@ def test_blurred_subject_with_screen_detail_is_rejected_before_inference():
         draw.line((x, 0, x, 959), fill=(165, 165, 165))
     model = FakeModel([], [])
     with pytest.raises(CvTriageError, match="bị mờ"):
-        PlantDiseaseService(model, settings()).predict(image_bytes(image))
+        PlantDiseaseService(model, AcceptCrop(), settings()).predict(image_bytes(image))
     assert model.predict_kwargs is None
 
 
 def test_invalid_image_keeps_existing_error_behavior():
     with pytest.raises(ValueError, match="Invalid image data"):
-        PlantDiseaseService(FakeModel([], []), settings()).predict(b"not-an-image")
+        PlantDiseaseService(FakeModel([], []), AcceptCrop(), settings()).predict(b"not-an-image")
 
 
 def test_model_class_order_mismatch_fails_validation():
@@ -188,9 +188,7 @@ def test_checksum_mismatch_fails_before_model_import(monkeypatch):
     monkeypatch.setattr("app.cv.loader._sha256", lambda _path: "1" * 64)
 
     with pytest.raises(ValueError, match="SHA-256"):
-        load_model(
-            settings(cv_weights_path=CONTRACT_PATH, cv_weights_sha256="0" * 64)
-        )
+        load_model(settings(cv_weights_path=CONTRACT_PATH, cv_weights_sha256="0" * 64))
 
 
 @pytest.mark.parametrize("checksum", [None, "", "not-a-sha256", "g" * 64])

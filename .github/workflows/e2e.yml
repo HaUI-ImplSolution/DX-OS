@@ -37,6 +37,9 @@ jobs:
       - name: Create deploy/.env
         run: python3 deploy/demo/make_ci_env.py
 
+      - name: Download and verify crop classifier
+        run: python3 ai/scripts/download_crop_classifier.py
+
       - name: Start the reduced stack
         working-directory: deploy
         run: $COMPOSE up -d --build --wait --wait-timeout 1500 postgres minio keycloak backend ai frontend portal apisix

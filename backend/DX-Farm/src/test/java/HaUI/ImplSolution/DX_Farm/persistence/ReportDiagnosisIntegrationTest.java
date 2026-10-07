@@ -232,6 +232,22 @@ class ReportDiagnosisIntegrationTest {
   }
 
   @Test
+  void serverRejectsNonRiceEvenWhenClientSkipsPrecheck() {
+    when(storage.sanitize(any())).thenReturn(new byte[] {1});
+    when(ai.precheck(any())).thenAnswer(call -> {
+      assertThat(TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
+      return new ImagePrecheckResponse(false, List.of("Ảnh chưa được nhận diện là lúa"), 640, 480,
+          100, 100);
+    });
+    long before = reportRepository.count();
+    assertThatThrownBy(() -> reports.create(seasonId,
+        new MockMultipartFile("image", new byte[] {1}), UUID.randomUUID()))
+        .isInstanceOf(AiTriageException.class);
+    assertThat(reportRepository.count()).isEqualTo(before);
+    verify(storage, never()).store(any(), any());
+  }
+
+  @Test
   void unapprovedSeasonRejectsReportBeforeCallingPrecheck() {
     for (ApprovalStatus approval : List.of(ApprovalStatus.PENDING, ApprovalStatus.REJECTED)) {
       tx.executeWithoutResult(

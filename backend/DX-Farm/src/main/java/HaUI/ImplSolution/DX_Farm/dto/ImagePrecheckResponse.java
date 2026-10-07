@@ -5,7 +5,7 @@ import java.util.List;
 
 // @formatter:off
 public record ImagePrecheckResponse(
-  // False when the photo is too small, too dark, too bright or too blurry
+  // False when the photo is too small, too dark, too bright, too blurry or not accepted as rice
   boolean passed,
 
   // Farmer-facing reasons the photo was rejected; empty when passed
@@ -15,7 +15,7 @@ public record ImagePrecheckResponse(
   int width,
   int height,
 
-  // Measured values behind the verdict
+  // Image quality measurements (not crop classifier scores)
   double sharpness,
   double brightness
 ) {}

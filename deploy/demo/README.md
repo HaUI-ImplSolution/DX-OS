@@ -47,5 +47,7 @@ Các bước: trạng thái hệ thống công khai, engineer bị chặn tạo 
 Khi có treatment rule: bản khai phun chặn thu hoạch tới khi kỹ sư xác nhận, sau đó khóa cách ly chặn thu hoạch tới `harvestLockedUntil`.
 Không có rule, kịch bản kiểm chẩn đoán ở trạng thái chỉ xem xét; `--require-rule` coi việc thiếu rule là lỗi.
 
-Workflow `E2E` trên GitHub chạy chuỗi: dựng stack rút gọn, `seed_demo.py`, thêm rule thử nghiệm của CI, `e2e.py --require-rule`.
+Trước khi dựng stack, chạy `python3 ai/scripts/download_crop_classifier.py` để tải ONNX đã pin checksum. Runtime không tự tải artifact.
+
+Workflow `E2E` trên GitHub chạy chuỗi: tải classifier, dựng stack rút gọn, `seed_demo.py`, thêm rule thử nghiệm của CI, `e2e.py --require-rule`.
 Rule này nằm trong database tạm của CI, không thuộc dữ liệu demo hay seed.

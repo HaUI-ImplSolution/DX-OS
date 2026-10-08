@@ -1,7 +1,10 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -11,6 +14,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -66,4 +70,20 @@ public class TreatmentApplication {
   // Ngày được phép thu hoạch trở lại (appliedAt + phiDaysSnapshot)
   @Column(nullable = false)
   private LocalDate harvestLockedUntil;
+
+  // A staff entry is CONFIRMED at once; a farmer's report waits for an engineer
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private TreatmentConfirmationStatus confirmationStatus;
+
+  // Token "sub" of the farmer who reported the spraying; null when staff recorded it
+  private String reportedByUserId;
+
+  // Token "sub" of the engineer or admin who confirmed it
+  private String confirmedByUserId;
+
+  private Instant confirmedAt;
+
+  // Reason the engineer rejected the report, cleared when the farmer reports again
+  private String rejectionReason;
 }

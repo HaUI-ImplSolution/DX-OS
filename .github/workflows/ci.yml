@@ -1,18 +1,22 @@
-name: CI
+name: CI Backend
 on:
   push:
     branches:
       - main
+      - Khuong/main
     paths:
       - 'backend/**'
+      - '.github/workflows/ci.yml'
   pull_request:
     types:
       - opened
       - synchronize
     branches:
       - main
+      - Khuong/main
     paths:
       - 'backend/**'
+      - '.github/workflows/ci.yml'
 
 jobs:
   build:
@@ -34,5 +38,6 @@ jobs:
       - name: Validate Code Formatting
         run: mvn -T 2C --batch-mode formatter:validate
 
-      - name: Build and Skip Test
-        run: mvn -T 2C --batch-mode verify -DskipTests
+      # Persistence tests start PostgreSQL through Testcontainers (Docker is available on the runner).
+      - name: Build and Test
+        run: mvn --batch-mode verify

@@ -11,8 +11,8 @@ RUN apt-get update \
     && apt-get install --no-install-recommends -y libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt ./
-RUN pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
+COPY requirements.txt requirements.lock ./
+RUN pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt -c requirements.lock
 
 # Ultralytics imports OpenCV at startup. The non-headless OpenCV wheel needs
 # these shared libraries even though inference itself runs without a GUI.

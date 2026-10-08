@@ -5,7 +5,7 @@ Dựng cho tiêu chí **Giai đoạn 2 [H]** (không gian Human) — đăng nh�
 
 Service `keycloak` khai báo trong [`deploy/docker-compose.yml`](../deploy/docker-compose.yml), tự import realm `dxfarm` từ [`realm-dxfarm.json`](./realm-dxfarm.json) lúc khởi động.
 Không cần thao tác tay nào thêm sau `docker compose up -d --build`.
-Cổng host `8180` (`KEYCLOAK_HOST_PORT`), không dùng `8080` mặc định của Keycloak vì đó là port hay bị chiếm nhất trên máy dev.
+Keycloak không publish cổng ra host: gateway APISIX (`APISIX_HOST_PORT`, mặc định `9080`) chuyển tiếp `/realms`, `/resources`, `/admin` và `/js` tới Keycloak.
 
 ## Vì sao chọn Keycloak
 
@@ -16,7 +16,7 @@ Chuẩn công nghiệp cho OIDC/SAML, license Apache-2.0 (OSI-approved), có tà
 - Backend Spring Boot: OAuth2 Resource Server, xác thực token do Keycloak cấp.
 - Frontend: tự redirect sang Keycloak (Authorization Code + PKCE) ngay khi chưa có phiên — không cần bấm nút đăng nhập trung gian, vào thẳng từ portal cũng được.
 - Mobile (Expo, chỉ FARMER): client public `dxfarm-mobile`, Authorization Code + PKCE, không dùng direct access grants.
-  Chi tiết: [`development/docs/mobile/README.md`](../development/docs/mobile/README.md).
+  Chi tiết: [`development/docs/pending_docs/mobile/README.md`](../development/docs/pending_docs/mobile/README.md).
 - BI Dashboard (Superset): đăng nhập bằng redirect sang Keycloak (`AUTH_OAUTH`), role realm map sang role Superset.
   Chi tiết: [`bi/README.md`](../bi/README.md).
 - **Không làm**: Mattermost (Team Edition không hỗ trợ OpenID Connect với IdP tuỳ ý — cần Enterprise license).
@@ -27,10 +27,22 @@ Chuẩn công nghiệp cho OIDC/SAML, license Apache-2.0 (OSI-approved), có tà
 - `keycloak` dùng CSDL Postgres riêng (`keycloak`), cùng pattern với Mattermost/Superset.
   Backend tự tạo role `keycloak_app` + database `keycloak` lúc khởi động (`KeycloakDatabaseSeeder`).
 - Realm `dxfarm` có 3 realm role `FARMER`/`ENGINEER`/`ADMIN`, client public `dxfarm-frontend` và `dxfarm-mobile` (Standard Flow + PKCE, không dùng client secret), và client confidential `dxfarm-superset` (Superset trao đổi token server-to-server nên cần secret).
-  Secret của client này nằm trong `realm-dxfarm.json` và phải trùng `SUPERSET_OIDC_CLIENT_SECRET` trong `deploy/.env`.
+  Secret của client này lấy từ `SUPERSET_OIDC_CLIENT_SECRET` trong `deploy/.env`: Keycloak thay `${SUPERSET_OIDC_CLIENT_SECRET}` trong `realm-dxfarm.json` lúc import, nên file realm không chứa secret thật.
+  Keycloak chỉ import khi realm chưa tồn tại; đổi giá trị này sau khi đã import thì cập nhật secret client trong Admin Console hoặc dựng lại bằng `deploy/reset.sh`.
 - 3 tài khoản demo tạo sẵn trong realm import — xem bảng dưới.
   Chỉ dùng để demo, đổi mật khẩu/secret thật trước khi triển khai ngoài môi trường dev.
-- Claim `name` của `farmer1` là `Nguyễn Văn Nông`; backend so khớp claim này với `farmerName` của thửa để giới hạn dữ liệu của FARMER.
+- Backend giới hạn dữ liệu của FARMER theo nông hộ: claim `sub` của token phải khớp `Household.keycloakUserId`.
+  Tên hiển thị (claim `name`) đổi được mà không ảnh hưởng quyền truy cập.
+  Các tài khoản demo chưa gắn nông hộ: admin tạo hộ kèm tài khoản mới ở trang "Nông hộ" của web, hoặc gắn tài khoản có sẵn vào hộ ở cùng trang bằng tên đăng nhập.
+
+## Audience và giới hạn client
+
+- Client `dxfarm-frontend` và `dxfarm-mobile` có protocol mapper `dxfarm-api-audience` thêm `dxfarm-api` vào `aud` của access token.
+  Backend (`security.jwt.audience`, mặc định `dxfarm-api`) từ chối `401` mọi token không có audience đó; vẫn không kiểm `iss` như đã ghi ở mục hostname bên dưới.
+- Nông dân chỉ dùng app mobile: token chỉ mang role `FARMER` phải có `azp` thuộc `security.farmer-client-ids` (mặc định `dxfarm-mobile`), nếu không backend trả `403`.
+  Web hiển thị màn "dùng ứng dụng di động" cho tài khoản này và không gọi API nghiệp vụ.
+  Superset từ chối đăng nhập tài khoản chỉ có role `FARMER`.
+- Client confidential `dxfarm-backend-admin` (service account, secret `KEYCLOAK_ADMIN_CLIENT_SECRET`) chỉ giữ role `manage-users`, `view-users`, `view-realm` của `realm-management`; backend dùng nó để tạo tài khoản nông hộ qua Admin REST API.
 
 | Username | Mật khẩu | Role |
 |---|---|---|
@@ -45,13 +57,13 @@ Quản lý user (tạo/xoá/đổi role) qua Keycloak Admin Console: `http://loc
 - Redirect URI: `dxfarm://*` (app đã build) và `exp://*` (Expo Go, chỉ dùng khi dev).
 - Backend xác thực bằng `jwk-set-uri` và không kiểm tra `iss`, nên token cấp qua IP LAN vẫn hợp lệ.
 - Điện thoại phải truy cập được Keycloak và backend qua IP LAN của máy dev cùng mạng.
-  Keycloak không đặt `KC_HOSTNAME` nên URL trong form đăng nhập và redirect theo địa chỉ request: web vào `localhost:8180`, điện thoại vào `<IP-LAN>:8180`, hai bên chạy song song mà không cần đổi `deploy/.env`.
+  Keycloak không đặt `KC_HOSTNAME` nên URL trong form đăng nhập và redirect theo địa chỉ request: web vào `localhost:9080`, điện thoại vào `<IP-LAN>:9080`, hai bên chạy song song mà không cần đổi `deploy/.env`.
 - Keycloak chỉ import realm khi realm chưa tồn tại.
   Với volume Postgres cũ, thêm client `dxfarm-mobile` qua Admin Console (cấu hình như trong `realm-dxfarm.json`) hoặc xoá `deploy/data/postgres` để import lại.
 
 ## Lưu ý kỹ thuật: hostname nội bộ vs. hostname trình duyệt
 
-Trình duyệt gọi Keycloak qua `http://localhost:${KEYCLOAK_HOST_PORT}`, backend/Superset trong mạng docker gọi qua `http://keycloak:8080` — hai hostname khác nhau cho cùng một Keycloak.
+Trình duyệt gọi Keycloak qua `http://localhost:${APISIX_HOST_PORT}` (qua gateway), backend/Superset trong mạng docker gọi qua `http://keycloak:8080` — hai hostname khác nhau cho cùng một Keycloak.
 Backend xác thực token bằng `jwk-set-uri` (chỉ lấy public key verify chữ ký) thay vì `issuer-uri` (sẽ lệch claim `iss` vì token mang hostname trình duyệt).
 Superset (`bi/superset_config.py`) tự chỉ định từng endpoint (`authorize_url` dùng hostname trình duyệt, `access_token_url`/`api_base_url`/`jwks_uri` dùng hostname nội bộ) thay vì dùng `server_metadata_url` tự khám phá — cùng lý do.
 Tên, email và role của user lấy thẳng từ access token nhận qua kênh server-to-server, không gọi `/userinfo` (Keycloak từ chối token có issuer khác hostname của request).

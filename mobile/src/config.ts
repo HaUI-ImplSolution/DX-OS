@@ -9,3 +9,6 @@ export const KEYCLOAK_CLIENT_ID = required(
   "EXPO_PUBLIC_KEYCLOAK_CLIENT_ID",
   process.env.EXPO_PUBLIC_KEYCLOAK_CLIENT_ID,
 );
+
+// Largest GPS error (meters) the backend accepts for a parcel position; the app warns earlier.
+export const GPS_MAX_ACCURACY_METERS = 30;

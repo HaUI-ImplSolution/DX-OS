@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { listCropSeasons, listDiseaseReports, listDiseases, listParcels } from "./api";
+import { useCallback, useEffect, useState } from "react";
+import { NavLink, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import {
   callbackError,
   clearCallbackParams,
@@ -10,16 +10,15 @@ import {
   onSessionEnded,
   signIn,
   signOut,
+  takeReturnPath,
   type CurrentUser,
 } from "./auth";
-import CropSeasonPanel from "./components/CropSeasonPanel";
-import DiagnosisPanel from "./components/DiagnosisPanel";
-import DiseaseReportPanel from "./components/DiseaseReportPanel";
-import ParcelPanel from "./components/ParcelPanel";
-import ReferencePanel from "./components/ReferencePanel";
-import type { CropSeason, Diagnosis, Disease, DiseaseReport, Parcel } from "./types";
-
-type Tab = "flow" | "reference";
+import CaseDetail from "./pages/CaseDetail";
+import DemoFlow from "./pages/DemoFlow";
+import Households from "./pages/Households";
+import Knowledge from "./pages/Knowledge";
+import Queue from "./pages/Queue";
+import Requests from "./pages/Requests";
 
 const ROLE_LABEL: Record<CurrentUser["role"], string> = {
   FARMER: "Nông dân",
@@ -28,29 +27,18 @@ const ROLE_LABEL: Record<CurrentUser["role"], string> = {
 };
 
 export default function App() {
+  const navigate = useNavigate();
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
-  const [tab, setTab] = useState<Tab>("flow");
   const [error, setError] = useState<string | null>(null);
 
-  const [parcels, setParcels] = useState<Parcel[]>([]);
-  const [selectedParcelCode, setSelectedParcelCode] = useState<string | null>(null);
-
-  const [cropSeasons, setCropSeasons] = useState<CropSeason[]>([]);
-  const [selectedCropSeasonId, setSelectedCropSeasonId] = useState<number | null>(null);
-
-  const [reports, setReports] = useState<DiseaseReport[]>([]);
-  const [selectedReportId, setSelectedReportId] = useState<number | null>(null);
-
-  const [diseases, setDiseases] = useState<Disease[]>([]);
-
   // Token hết hạn -> api.ts đã xoá session OIDC (401), đồng bộ lại state để quay về màn đăng nhập.
-  const showError = (message: string) => {
+  const showError = useCallback((message: string) => {
     setError(message);
     window.scrollTo({ top: 0, behavior: "smooth" });
     if (!getCachedUser()) setUser(null);
-  };
+  }, []);
 
   const logout = () => {
     void signOut();
@@ -71,6 +59,9 @@ export default function App() {
       try {
         const loggedInUser = isCallbackRedirect() ? await handleCallback() : await getCurrentUser();
         setUser(loggedInUser);
+        // Back to the page that sent the user to the login screen.
+        const returnPath = loggedInUser ? takeReturnPath() : null;
+        if (returnPath) navigate(returnPath, { replace: true });
       } finally {
         setAuthReady(true);
       }
@@ -89,48 +80,6 @@ export default function App() {
     return onSessionEnded(() => setUser(null));
   }, []);
 
-  useEffect(() => {
-    // Chưa đăng nhập thì chưa có token -> chờ user đăng nhập xong mới gọi API,
-    // và tải lại ngay sau khi đăng nhập (không chỉ chạy đúng 1 lần lúc mount).
-    if (!user) return;
-    listParcels().then(setParcels).catch((err) => showError(err.message));
-    listDiseases().then(setDiseases).catch((err) => showError(err.message));
-  }, [user]);
-
-  useEffect(() => {
-    if (!selectedParcelCode) {
-      setCropSeasons([]);
-      return;
-    }
-    listCropSeasons(selectedParcelCode).then(setCropSeasons).catch((err) => showError(err.message));
-  }, [selectedParcelCode]);
-
-  useEffect(() => {
-    if (!selectedCropSeasonId) {
-      setReports([]);
-      return;
-    }
-    listDiseaseReports(selectedCropSeasonId).then(setReports).catch((err) => showError(err.message));
-  }, [selectedCropSeasonId]);
-
-  const selectParcel = (code: string) => {
-    setSelectedParcelCode(code);
-    setSelectedCropSeasonId(null);
-    setSelectedReportId(null);
-  };
-
-  const selectCropSeason = (id: number) => {
-    setSelectedCropSeasonId(id);
-    setSelectedReportId(null);
-  };
-
-  const selectedReport = reports.find((r) => r.id === selectedReportId) ?? null;
-
-  const updateDiagnosisInReport = (diagnosis: Diagnosis) => {
-    setReports((prev) =>
-      prev.map((r) => (r.id === diagnosis.diseaseReportId ? { ...r, diagnosis } : r)),
-    );
-  };
 
   if (!authReady) {
     return <div className="login-screen" />;
@@ -167,12 +116,37 @@ export default function App() {
     return <div className="login-screen" />;
   }
 
+  if (user.role === "FARMER") {
+    return (
+      <div className="login-screen">
+        <section className="section login-card">
+          <header className="section-header">
+            <div>
+              <h2>Vui lòng dùng ứng dụng di động</h2>
+              <p className="section-subtitle">
+                Tài khoản nông dân ({user.fullName}) chỉ sử dụng được trên ứng dụng DX-Farm di động.
+                Trang web dành cho kỹ sư và quản trị viên.
+              </p>
+            </div>
+          </header>
+          <div className="form-actions">
+            <button className="btn btn-primary" onClick={logout}>
+              Đăng xuất
+            </button>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  const staff = user.role === "ENGINEER" || user.role === "ADMIN";
+
   return (
     <div className="app">
       <header className="app-header">
         <div>
-          <h1>DX-Farm — Demo Spine Flow (Phase 0)</h1>
-          <p>Báo bệnh bằng ảnh → chẩn đoán → tra cứu quy tắc → kỹ sư duyệt → ghi nhận xử lý → khoá thu hoạch (PHI)</p>
+          <h1>DX-Farm</h1>
+          <p>Quản lý thửa ruộng, vụ mùa và chẩn đoán sâu bệnh của hợp tác xã</p>
         </div>
         <div className="user-bar">
           <span>
@@ -183,15 +157,29 @@ export default function App() {
           </button>
         </div>
         <nav className="tabs">
-          <button className={tab === "flow" ? "tab tab-active" : "tab"} onClick={() => setTab("flow")}>
+          <NavLink to="/" end className={({ isActive }) => (isActive ? "tab tab-active" : "tab")}>
             Luồng demo
-          </button>
-          <button
-            className={tab === "reference" ? "tab tab-active" : "tab"}
-            onClick={() => setTab("reference")}
-          >
-            Danh mục tham chiếu
-          </button>
+          </NavLink>
+          {staff && (
+            <NavLink to="/requests" className={({ isActive }) => (isActive ? "tab tab-active" : "tab")}>
+              Yêu cầu
+            </NavLink>
+          )}
+          {user.role === "ADMIN" && (
+            <NavLink to="/households" className={({ isActive }) => (isActive ? "tab tab-active" : "tab")}>
+              Nông hộ
+            </NavLink>
+          )}
+          {staff && (
+            <NavLink to="/queue" className={({ isActive }) => (isActive ? "tab tab-active" : "tab")}>
+              Hàng đợi chẩn đoán
+            </NavLink>
+          )}
+          {staff && (
+            <NavLink to="/knowledge" className={({ isActive }) => (isActive ? "tab tab-active" : "tab")}>
+              Tài liệu
+            </NavLink>
+          )}
         </nav>
       </header>
 
@@ -202,64 +190,15 @@ export default function App() {
         </div>
       )}
 
-      {tab === "reference" && <ReferencePanel onError={showError} />}
-
-      {tab === "flow" && (
-        <main className="flow">
-          <ParcelPanel
-            parcels={parcels}
-            selectedCode={selectedParcelCode}
-            ownerName={user.role === "FARMER" ? user.fullName : undefined}
-            onSelect={selectParcel}
-            onCreated={(p) => {
-              setParcels((prev) => [...prev, p]);
-              selectParcel(p.code);
-            }}
-            onError={showError}
-          />
-
-          {selectedParcelCode && (
-            <CropSeasonPanel
-              parcelCode={selectedParcelCode}
-              cropSeasons={cropSeasons}
-              selectedId={selectedCropSeasonId}
-              onSelect={selectCropSeason}
-              onCreated={(s) => {
-                setCropSeasons((prev) => [...prev, s]);
-                selectCropSeason(s.id);
-              }}
-              onHarvested={(s) =>
-                setCropSeasons((prev) => prev.map((cs) => (cs.id === s.id ? s : cs)))
-              }
-              onError={showError}
-            />
-          )}
-
-          {selectedCropSeasonId && (
-            <DiseaseReportPanel
-              cropSeasonId={selectedCropSeasonId}
-              reports={reports}
-              selectedId={selectedReportId}
-              onSelect={setSelectedReportId}
-              onCreated={(r) => {
-                setReports((prev) => [...prev, r]);
-                setSelectedReportId(r.id);
-              }}
-              onError={showError}
-            />
-          )}
-
-          {selectedReport && (
-            <DiagnosisPanel
-              report={selectedReport}
-              diseases={diseases}
-              currentRole={user.role}
-              onUpdated={updateDiagnosisInReport}
-              onError={showError}
-            />
-          )}
-        </main>
-      )}
+      <Routes>
+        <Route path="/" element={<DemoFlow role={user.role} onError={showError} />} />
+        <Route path="/requests" element={<Requests role={user.role} onError={showError} />} />
+        <Route path="/requests/:caseId" element={<CaseDetail role={user.role} onError={showError} />} />
+        {user.role === "ADMIN" && <Route path="/households" element={<Households onError={showError} />} />}
+        {staff && <Route path="/knowledge" element={<Knowledge onError={showError} />} />}
+        <Route path="/queue" element={<Queue role={user.role} onError={showError} />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </div>
   );
 }

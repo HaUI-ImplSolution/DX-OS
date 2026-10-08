@@ -1,12 +1,17 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.service;
 
+import HaUI.ImplSolution.DX_Farm.core.storage.StorageService;
+import HaUI.ImplSolution.DX_Farm.event.CropSeasonCreatedEvent;
 import HaUI.ImplSolution.DX_Farm.event.DiagnosisPendingEvent;
 import HaUI.ImplSolution.DX_Farm.event.DiseaseReportCreatedEvent;
+import HaUI.ImplSolution.DX_Farm.event.ParcelCreatedEvent;
+import HaUI.ImplSolution.DX_Farm.event.TreatmentReportedEvent;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
@@ -23,15 +28,23 @@ public class MattermostMessageBuilder {
   private static final int MAX_VALUE_LENGTH = 100;
   private static final String COLOR_REPORT = "#F2A900";
   private static final String COLOR_DIAGNOSIS = "#1C7ED6";
+  private static final String COLOR_REQUEST = "#2F9E44";
   private static final String COLOR_REVIEW_REQUIRED = "#E03131";
   private static final String NO_RULE_TEXT = "Không có phác đồ — cần kỹ sư xem xét";
   private static final DateTimeFormatter TIME_FORMAT =
       DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.of("Asia/Ho_Chi_Minh"));
 
+  private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+  // Chat history keeps the message, so the photo link lives as long as a presigned URL can.
+  private static final Duration IMAGE_URL_TTL = Duration.ofDays(7);
+
+  private final StorageService storageService;
   private final String imageBaseUrl;
 
-  public MattermostMessageBuilder(
+  public MattermostMessageBuilder(StorageService storageService,
       @Value("${mattermost.webhook.image-base-url:}") String imageBaseUrl) {
+    this.storageService = storageService;
     this.imageBaseUrl = imageBaseUrl == null ? "" : imageBaseUrl.strip().replaceAll("/+$", "");
   }
 
@@ -65,11 +78,60 @@ public class MattermostMessageBuilder {
         null);
   }
 
+  public Map<String, Object> treatmentReported(TreatmentReportedEvent event) {
+    String title = "Nông dân khai đã phun thuốc, chờ xác nhận";
+    String dose = event.doseAmount().stripTrailingZeros().toPlainString() + " " + event.doseUnit();
+    String fallback = "%s: báo cáo #%d, thửa %s, thuốc %s, liều %s, ngày phun %s".formatted(title,
+        event.reportId(), plain(event.parcelCode()), plain(event.pesticideName()), plain(dose),
+        formatDate(event.appliedAt()));
+    return payload(fallback, COLOR_REVIEW_REQUIRED, title,
+        List.of(field("Mã báo cáo", "#" + event.reportId()),
+            field("Mã thửa", markdown(event.parcelCode())),
+            field("Chủ hộ", markdown(event.farmerName())),
+            field("Thuốc", markdown(event.pesticideName())), field("Liều", markdown(dose)),
+            field("Ngày phun", formatDate(event.appliedAt())),
+            field("Hết cách ly", formatDate(event.harvestLockedUntil()))),
+        null);
+  }
+
+  public Map<String, Object> parcelCreated(ParcelCreatedEvent event) {
+    String title = event.resubmitted() ? "Thửa ruộng gửi lại chờ duyệt" : "Yêu cầu thửa ruộng mới";
+    String fallback =
+        "%s: thửa %s, hộ %s (%s), diện tích %s ha".formatted(title, plain(event.parcelCode()),
+            plain(event.householdCode()), plain(event.farmerName()), event.areaHectares());
+    return payload(fallback, COLOR_REQUEST, title,
+        List.of(field("Mã thửa", markdown(event.parcelCode())),
+            field("Mã hộ", markdown(event.householdCode())),
+            field("Chủ hộ", markdown(event.farmerName())),
+            field("Diện tích", event.areaHectares() + " ha"),
+            field("Vị trí", event.latitude() + ", " + event.longitude())),
+        null);
+  }
+
+  public Map<String, Object> cropSeasonCreated(CropSeasonCreatedEvent event) {
+    String title = event.resubmitted() ? "Vụ mùa gửi lại chờ duyệt" : "Yêu cầu vụ mùa mới";
+    String fallback =
+        "%s: vụ %s, thửa %s, giống %s, bắt đầu %s".formatted(title, plain(event.seasonCode()),
+            plain(event.parcelCode()), plain(event.riceVariety()), formatDate(event.startDate()));
+    return payload(fallback, COLOR_REQUEST, title,
+        List.of(field("Mã vụ", markdown(event.seasonCode())),
+            field("Mã thửa", markdown(event.parcelCode())),
+            field("Chủ hộ", markdown(event.farmerName())),
+            field("Giống lúa", markdown(event.riceVariety())),
+            field("Bắt đầu", formatDate(event.startDate())),
+            field("Dự kiến thu hoạch", formatDate(event.expectedHarvestDate()))),
+        null);
+  }
+
+  private static String formatDate(LocalDate date) {
+    return date == null ? "-" : DATE_FORMAT.format(date);
+  }
+
   private String imageUrl(String imageRef) {
     if (imageBaseUrl.isEmpty() || imageRef == null || imageRef.isBlank()) {
       return null;
     }
-    return imageBaseUrl + "/uploads/" + URLEncoder.encode(imageRef, StandardCharsets.UTF_8);
+    return storageService.presignedUrl(imageBaseUrl, imageRef, IMAGE_URL_TTL);
   }
 
   static String plain(String value) {

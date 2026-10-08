@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Optional Ollama wording with an extractive evidence gate."""
 
 from httpx import HTTPError

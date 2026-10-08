@@ -35,11 +35,17 @@ Tài liệu chi tiết theo module:
 
 | Method | Endpoint | Mô tả |
 |---|---|---|
-| `GET` | `/api/v1/disease/health` | Trạng thái model CV và thiết bị chạy |
-| `GET` | `/api/v1/disease/class-contract` | Contract 5 lớp CV, fallback và `disease_code` canonical |
-| `POST` | `/api/v1/disease/predict` | Nhận ảnh multipart và trả kết quả CV |
-| `POST` | `/api/v1/disease/knowledge/retrieve` | Truy vấn RAG theo câu hỏi và `disease_code` tùy chọn |
+| `GET` | `/api/v1/disease/health` | Trạng thái model CV và thiết bị chạy (công khai) |
+| `GET` | `/api/v1/disease/class-contract` | Contract 5 lớp CV, fallback và `disease_code` canonical (công khai) |
+| `POST` | `/api/v1/disease/predict` | Nhận ảnh multipart và trả kết quả CV, yêu cầu header `X-Service-Api-Key` |
+| `POST` | `/api/v1/disease/knowledge/retrieve` | Truy vấn RAG theo câu hỏi và `disease_code` tùy chọn, yêu cầu header `X-Service-Api-Key` |
+| `POST` | `/api/v1/disease/precheck` | Multipart ảnh; kiểm chất lượng, không chạy YOLO |
+| `POST` | `/api/v1/disease/symptoms/suggest` | `symptom_text`, `top_k` 1–6; mã bệnh có score, evidence và source IDs |
 | `POST` | `/api/v1/diagnose` | Contract nội bộ Backend → AI, yêu cầu header `X-Service-Api-Key` |
+
+Mọi endpoint ngoài `/health` và `/class-contract` đều yêu cầu `X-Service-Api-Key` khớp `AI_SERVICE_API_KEY`; thiếu hoặc sai key trả `401`, chưa cấu hình key trả `503`.
+Cổng AI không publish ra host, chỉ truy cập được trong mạng compose.
+Gợi ý triệu chứng chỉ hỗ trợ tra cứu; kỹ sư chốt bệnh tại Backend.
 
 `POST /api/v1/diagnose` tải ảnh từ `image_url`, chạy CV, gọi Backend lấy structured facts, truy vấn RAG và trả recommendation. Nếu structured facts không khả dụng, request thất bại; AI không đưa ra recommendation chỉ dựa trên RAG.
 
@@ -47,7 +53,7 @@ Tài liệu chi tiết theo module:
 
 | Dữ liệu | Nơi sở hữu | Quyền của AI runtime |
 |---|---|---|
-| Parcel, CropSeason, DiseaseReport, Diagnosis, TreatmentApplication | Backend DB `dxfarm` | Không có credential DB; chỉ nhận dữ liệu cần thiết qua REST |
+| Parcel, CropSeason, DiseaseReport, Diagnosis, TrainingLabel, TreatmentApplication | Backend DB `dxfarm` | Không có credential DB; chỉ nhận dữ liệu cần thiết qua REST |
 | Disease, Pesticide, TreatmentRule | Backend DB `dxfarm` | Chỉ đọc qua internal REST API |
 | DiseaseManagementPolicy | Backend DB `dxfarm` | Chỉ đọc qua internal REST API khi endpoint tương ứng được mở |
 | Document, DocumentChunk và embedding | AI Vector DB `dx_farm_ai_vector_db` | Role `ai_vector_ro` chỉ có quyền đọc |
@@ -124,10 +130,10 @@ Compose sử dụng:
 - `http://ai:8000` cho chiều Backend → AI.
 - `http://backend:8081` cho chiều AI → Backend.
 
-Kiểm tra model sau khi service khởi động:
+Kiểm tra model sau khi service khởi động (cổng AI không publish ra host nên gọi từ bên trong container):
 
 ```bash
-curl http://localhost:8000/api/v1/disease/health
+docker compose exec ai python -c "import urllib.request; print(urllib.request.urlopen('http://localhost:8000/api/v1/disease/health').read().decode())"
 ```
 
 Checkpoint CV chuẩn nằm tại `ai/weights/best.pt`. Compose bind-mount file này ở chế độ read-only; `AI_CV_WEIGHTS_PATH` chỉ cần đổi khi máy dùng đường dẫn khác. Điền checksum được cấp cùng checkpoint vào `AI_CV_WEIGHTS_SHA256`; nếu thiếu hoặc không khớp, AI từ chối khởi động. Volume `ai_weights` chỉ lưu cache embedding. Nếu đường dẫn override không tồn tại, Compose báo lỗi và không tạo thư mục `best.pt` trên host.
@@ -141,6 +147,7 @@ Chạy từ thư mục `ai/`:
 | `python -m scripts.check_backend_client` | Kiểm tra client gọi Backend bằng mock: retry giới hạn, không retry khi HTTP 401, đọc khoảng liều `dose_min`/`dose_max` |
 | `python -m scripts.check_diagnose_contract` | Kiểm tra luồng `/diagnose` chạy theo thứ tự CV, Backend, RAG; response đúng contract và phần diễn đạt không chứa số liệu tự sinh |
 | `python -m scripts.check_rag_access_boundary` | Xác nhận việc ghi RAG nằm ngoài runtime FastAPI |
+| `pip install -r requirements-dev.txt && python -m pytest tests` | Chạy test (CV, workflow, xác thực service key); CI chạy cùng lệnh |
 
 ## Giới hạn vận hành
 

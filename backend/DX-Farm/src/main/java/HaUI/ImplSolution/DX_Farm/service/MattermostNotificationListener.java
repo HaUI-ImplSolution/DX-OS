@@ -1,7 +1,11 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.service;
 
+import HaUI.ImplSolution.DX_Farm.event.CropSeasonCreatedEvent;
 import HaUI.ImplSolution.DX_Farm.event.DiagnosisPendingEvent;
 import HaUI.ImplSolution.DX_Farm.event.DiseaseReportCreatedEvent;
+import HaUI.ImplSolution.DX_Farm.event.ParcelCreatedEvent;
+import HaUI.ImplSolution.DX_Farm.event.TreatmentReportedEvent;
 import java.util.Map;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
@@ -30,21 +34,39 @@ public class MattermostNotificationListener {
   @Async("mattermostNotifyExecutor")
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onReportCreated(DiseaseReportCreatedEvent event) {
-    dispatch(() -> messageBuilder.reportCreated(event));
+    dispatch(MattermostChannel.ENGINEER, () -> messageBuilder.reportCreated(event));
   }
 
   @Async("mattermostNotifyExecutor")
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onDiagnosisPending(DiagnosisPendingEvent event) {
-    dispatch(() -> messageBuilder.diagnosisPending(event));
+    dispatch(MattermostChannel.ENGINEER, () -> messageBuilder.diagnosisPending(event));
   }
 
-  private void dispatch(Supplier<Map<String, Object>> payload) {
-    if (!webhookClient.isEnabled()) {
+  @Async("mattermostNotifyExecutor")
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onTreatmentReported(TreatmentReportedEvent event) {
+    dispatch(MattermostChannel.ENGINEER, () -> messageBuilder.treatmentReported(event));
+  }
+
+  @Async("mattermostNotifyExecutor")
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onParcelCreated(ParcelCreatedEvent event) {
+    dispatch(MattermostChannel.ADMIN, () -> messageBuilder.parcelCreated(event));
+  }
+
+  @Async("mattermostNotifyExecutor")
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onCropSeasonCreated(CropSeasonCreatedEvent event) {
+    dispatch(MattermostChannel.ADMIN, () -> messageBuilder.cropSeasonCreated(event));
+  }
+
+  private void dispatch(MattermostChannel channel, Supplier<Map<String, Object>> payload) {
+    if (!webhookClient.isEnabled(channel)) {
       return;
     }
     try {
-      webhookClient.send(payload.get());
+      webhookClient.send(channel, payload.get());
     } catch (Exception e) {
       log.warn("Mattermost notification failed: {}", e.getClass().getSimpleName());
     }

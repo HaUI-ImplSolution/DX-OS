@@ -1,9 +1,11 @@
+# SPDX-License-Identifier: Apache-2.0
 from io import BytesIO
 from pathlib import Path
 from typing import ClassVar
 
 import pytest
-from PIL import Image
+from conftest import leaf_scene
+from PIL import Image, ImageDraw, ImageFilter
 
 from app.api.schemas import DiseaseDetectionResponse
 from app.core.config import Settings
@@ -71,9 +73,9 @@ class FakeModel:
         return [self.result]
 
 
-def image_bytes() -> bytes:
+def image_bytes(image) -> bytes:
     stream = BytesIO()
-    Image.effect_noise((256, 256), 100).convert("RGB").save(stream, format="PNG")
+    image.save(stream, format="PNG")
     return stream.getvalue()
 
 
@@ -88,7 +90,7 @@ def settings(**overrides) -> Settings:
 def test_highest_confidence_detection_uses_canonical_contract():
     model = FakeModel([0.61, 0.93, 0.82], [0.0, 3.0, 1.0])
 
-    result = PlantDiseaseService(model, settings()).predict(image_bytes())
+    result = PlantDiseaseService(model, settings()).predict(image_bytes(leaf_scene()))
 
     assert result == {
         "disease_code": "Rice___Tungro",
@@ -104,7 +106,9 @@ def test_highest_confidence_detection_uses_canonical_contract():
 
 
 def test_no_detection_uses_healthy_fallback_without_expanding_response():
-    result = PlantDiseaseService(FakeModel([], []), settings()).predict(image_bytes())
+    result = PlantDiseaseService(FakeModel([], []), settings()).predict(
+        image_bytes(leaf_scene())
+    )
 
     assert result == {
         "disease_code": "Rice___healthy",
@@ -118,7 +122,7 @@ def test_no_detection_uses_healthy_fallback_without_expanding_response():
 
 def test_detection_below_threshold_uses_healthy_fallback():
     result = PlantDiseaseService(FakeModel([0.24], [0.0]), settings()).predict(
-        image_bytes()
+        image_bytes(leaf_scene())
     )
 
     assert result["disease_code"] == "Rice___healthy"
@@ -144,6 +148,17 @@ def test_blurry_image_is_rejected_before_model_inference():
     with pytest.raises(CvTriageError, match="bị mờ"):
         PlantDiseaseService(model, settings()).predict(stream.getvalue())
 
+    assert model.predict_kwargs is None
+
+
+def test_blurred_subject_with_screen_detail_is_rejected_before_inference():
+    image = leaf_scene().filter(ImageFilter.GaussianBlur(4)).resize((1280, 960))
+    draw = ImageDraw.Draw(image)
+    for x in range(0, image.width, 2):
+        draw.line((x, 0, x, 959), fill=(165, 165, 165))
+    model = FakeModel([], [])
+    with pytest.raises(CvTriageError, match="bị mờ"):
+        PlantDiseaseService(model, settings()).predict(image_bytes(image))
     assert model.predict_kwargs is None
 
 

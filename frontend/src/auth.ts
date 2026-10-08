@@ -1,9 +1,12 @@
 import { UserManager, WebStorageStateStore, type User as OidcUser } from "oidc-client-ts";
 import type { Role } from "./types";
 
-const KEYCLOAK_URL = import.meta.env.VITE_KEYCLOAK_URL ?? "http://localhost:8080/realms/dxfarm";
+// Empty in the packaged build: Keycloak is served by the gateway on the same origin as the app.
+const KEYCLOAK_URL =
+  import.meta.env.VITE_KEYCLOAK_URL || `${window.location.origin}/realms/dxfarm`;
 const CLIENT_ID = import.meta.env.VITE_KEYCLOAK_CLIENT_ID ?? "dxfarm-frontend";
-const ROLES: Role[] = ["FARMER", "ENGINEER", "ADMIN"];
+// Highest privilege first: a user holding several roles acts with the strongest one.
+const ROLES: Role[] = ["ADMIN", "ENGINEER", "FARMER"];
 
 export interface CurrentUser {
   username: string;
@@ -65,8 +68,19 @@ export async function getToken(): Promise<string | null> {
   return oidcUser && !oidcUser.expired ? oidcUser.access_token : null;
 }
 
+const RETURN_PATH_KEY = "dxfarm.returnPath";
+
+// Remembers the page that asked for a login, so the callback can return to it.
 export function signIn(): Promise<void> {
+  const path = window.location.pathname + window.location.search;
+  if (path !== "/") window.sessionStorage.setItem(RETURN_PATH_KEY, path);
   return userManager.signinRedirect();
+}
+
+export function takeReturnPath(): string | null {
+  const path = window.sessionStorage.getItem(RETURN_PATH_KEY);
+  window.sessionStorage.removeItem(RETURN_PATH_KEY);
+  return path;
 }
 
 // signoutRedirect tự lấy id_token_hint rồi mới xoá user, nên không gọi removeUser trước đó.

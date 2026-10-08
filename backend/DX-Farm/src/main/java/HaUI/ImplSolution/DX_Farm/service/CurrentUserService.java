@@ -1,6 +1,10 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.service;
 
+import HaUI.ImplSolution.DX_Farm.core.identity.Household;
 import HaUI.ImplSolution.DX_Farm.model.Parcel;
+import HaUI.ImplSolution.DX_Farm.core.identity.HouseholdRepository;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.security.core.Authentication;
@@ -14,7 +18,14 @@ import org.springframework.stereotype.Service;
 public class CurrentUserService {
 
   private static final String ROLE_FARMER = "ROLE_FARMER";
-  private static final Set<String> STAFF_ROLES = Set.of("ROLE_ENGINEER", "ROLE_ADMIN");
+  private static final String ROLE_ADMIN = "ROLE_ADMIN";
+  private static final Set<String> STAFF_ROLES = Set.of("ROLE_ENGINEER", ROLE_ADMIN);
+
+  private final HouseholdRepository householdRepository;
+
+  public CurrentUserService(HouseholdRepository householdRepository) {
+    this.householdRepository = householdRepository;
+  }
 
   public Jwt getCurrentJwt() {
     Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -30,23 +41,42 @@ public class CurrentUserService {
     return name != null ? name : jwt.getClaimAsString("preferred_username");
   }
 
-  // A FARMER without ENGINEER/ADMIN is limited to their own parcels and approved diagnoses.
+  // Stable account id (token "sub"), unlike the display name which Keycloak users can change.
+  public String currentUserId() {
+    return getCurrentJwt().getSubject();
+  }
+
+  // The household linked to the signed-in account, if an administrator has linked one.
+  public Optional<Household> currentHousehold() {
+    return householdRepository.findByKeycloakUserId(currentUserId());
+  }
+
+  // A FARMER without ENGINEER/ADMIN is limited to their own household's parcels and approved
+  // diagnoses.
   public boolean isFarmer() {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (authentication == null) {
-      return false;
-    }
-    Set<String> roles = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority)
-        .collect(Collectors.toSet());
+    Set<String> roles = currentRoles();
     return roles.contains(ROLE_FARMER) && STAFF_ROLES.stream().noneMatch(roles::contains);
   }
 
-  // A farmer only accesses parcels whose farmerName matches their name; other roles access all.
+  public boolean isAdmin() {
+    return currentRoles().contains(ROLE_ADMIN);
+  }
+
+  // A farmer only accesses parcels of their own household; other roles access all.
   public boolean canAccess(Parcel parcel) {
     if (!isFarmer()) {
       return true;
     }
-    String name = currentFullName();
-    return name != null && name.equalsIgnoreCase(parcel.getFarmerName());
+    return currentHousehold()
+        .map(household -> household.getId().equals(parcel.getHousehold().getId())).orElse(false);
+  }
+
+  private Set<String> currentRoles() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication == null) {
+      return Set.of();
+    }
+    return authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority)
+        .collect(Collectors.toSet());
   }
 }

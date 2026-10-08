@@ -1,13 +1,12 @@
 import { API_BASE_URL } from "@/config";
 import { clearSession } from "@/auth/session";
 import { getValidAccessToken } from "@/auth/tokens";
+import { errorMessageFor } from "./errorMessages";
 import type { ApiResponse } from "@/types";
 
 const API_V1 = `${API_BASE_URL}/api/v1`;
 const REQUEST_TIMEOUT_MS = 30_000;
 const UPLOAD_TIMEOUT_MS = 60_000;
-
-export const staticUrl = (path: string) => `${API_BASE_URL}/${path.replace(/^\//, "")}`;
 
 export class ApiError extends Error {
   status: number;
@@ -52,7 +51,7 @@ async function unwrap<T>(status: number, body: ApiResponse<T> | null): Promise<T
     await clearSession();
   }
   if (status < 200 || status >= 300 || !body?.success) {
-    const message = body?.message ?? `Lỗi HTTP ${status}`;
+    const message = errorMessageFor(body?.errorCode, body?.message ?? `Lỗi HTTP ${status}`);
     throw new ApiError(message, status, body?.data);
   }
   return body.data;

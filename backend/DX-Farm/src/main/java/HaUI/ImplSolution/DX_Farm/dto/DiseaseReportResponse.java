@@ -1,24 +1,41 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.dto;
 
 import java.time.Instant;
+import java.util.List;
 
 // @formatter:off
 public record DiseaseReportResponse(
-  // Khoá chính
+  // Primary key
   Long id,
 
-  // Vụ mùa được báo cáo sự cố
+  // Crop season the report belongs to
   Long cropSeasonId,
 
-  // Tên/đường dẫn file ảnh đã upload
-  String imageRef,
+  // Download link of the uploaded photo, valid for a short time only
+  String imageUrl,
 
-  // Tên người báo cáo (nông dân)
+  // Name of the reporter (the farmer)
   String reportedBy,
 
-  // Thời điểm báo cáo được ghi nhận
+  // When the report was recorded
   Instant reportedAt,
 
-  // Chẩn đoán đi kèm báo cáo này (null nếu chưa chẩn đoán)
-  DiagnosisResponse diagnosis
-){}
+  // Current diagnosis of this report (null until one is recorded)
+  DiagnosisResponse diagnosis,
+
+  // PENDING, PROCESSED (a diagnosis exists) or NEEDS_RETAKE (an engineer asked for a new photo)
+  String status,
+
+  // Why a new photo is needed (only set when status is NEEDS_RETAKE)
+  String retakeReason,
+
+  // Report this photo replaces (null unless it is a retake)
+  Long retakeOf,
+
+  // Reports that replaced this one
+  List<Long> retakeIds,
+
+  // Photo quality measured when the report was submitted (null for older reports)
+  ImagePrecheckResponse quality
+) {}

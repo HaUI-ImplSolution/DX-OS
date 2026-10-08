@@ -1,0 +1,193 @@
+# Single entry point of the stack: port 9080 serves the web app, API, Keycloak, photos and portal;
+# port 9081 serves Superset only and port 9082 the MinIO console only. Clients reach the web app, the API, Keycloak and the photo
+# storage only through this gateway. The AI service and the internal API are not routed.
+upstreams:
+  - id: backend
+    type: roundrobin
+    nodes:
+      "backend:8081": 1
+  - id: keycloak
+    type: roundrobin
+    nodes:
+      "keycloak:8080": 1
+  - id: storage
+    type: roundrobin
+    nodes:
+      "minio:9000": 1
+  - id: frontend
+    type: roundrobin
+    nodes:
+      "frontend:80": 1
+  - id: superset
+    type: roundrobin
+    nodes:
+      "superset:8088": 1
+  - id: portal
+    type: roundrobin
+    nodes:
+      "portal:80": 1
+  - id: minio-console
+    type: roundrobin
+    nodes:
+      "minio:9001": 1
+
+# Second check of the access token, on top of the one the backend does itself.
+plugin_configs:
+  - id: bearer-token
+    plugins:
+      openid-connect:
+        client_id: dxfarm-api
+        client_secret: not-used-in-bearer-only-mode
+        discovery: http://keycloak:8080/realms/dxfarm/.well-known/openid-configuration
+        bearer_only: true
+        use_jwks: true
+        realm: dxfarm
+        set_userinfo_header: false
+        set_access_token_header: false
+        set_id_token_header: false
+
+routes:
+  # Photo upload: authenticated, and limited per client address.
+  - id: api-upload
+    vars: [["server_port", "==", "9080"]]
+    priority: 20
+    uri: /api/v1/crop-seasons/:cropSeasonId/disease-reports
+    methods: ["POST"]
+    upstream_id: backend
+    plugin_config_id: bearer-token
+    plugins:
+      limit-count:
+        count: 30
+        time_window: 60
+        key_type: var
+        key: remote_addr
+        rejected_code: 429
+        rejected_msg: "Too many uploads, try again in a minute"
+
+  # Triggering the AI diagnosis is the other expensive call.
+  - id: api-ai-diagnosis
+    vars: [["server_port", "==", "9080"]]
+    priority: 20
+    uri: /api/v1/disease-reports/:reportId/diagnosis/ai
+    methods: ["POST"]
+    upstream_id: backend
+    plugin_config_id: bearer-token
+    plugins:
+      limit-count:
+        count: 30
+        time_window: 60
+        key_type: var
+        key: remote_addr
+        rejected_code: 429
+        rejected_msg: "Too many diagnosis requests, try again in a minute"
+
+  # Each question runs an embedding on the AI service.
+  - id: api-knowledge-ask
+    vars: [["server_port", "==", "9080"]]
+    priority: 20
+    uri: /api/v1/knowledge/ask
+    methods: ["POST"]
+    upstream_id: backend
+    plugin_config_id: bearer-token
+    plugins:
+      limit-count:
+        count: 60
+        time_window: 60
+        key_type: var
+        key: remote_addr
+        rejected_code: 429
+        rejected_msg: "Too many questions, try again in a minute"
+
+  # Service status for the portal: public, limited per client address.
+  - id: api-system-status
+    vars: [["server_port", "==", "9080"]]
+    priority: 20
+    uri: /api/v1/system/status
+    methods: ["GET"]
+    upstream_id: backend
+    plugins:
+      limit-count:
+        count: 120
+        time_window: 60
+        key_type: var
+        key: remote_addr
+        rejected_code: 429
+        rejected_msg: "Too many status checks, try again in a minute"
+
+  # CORS preflight carries no token; only a web app served from another origin sends it.
+  - id: api-preflight
+    vars: [["server_port", "==", "9080"]]
+    priority: 10
+    uri: /api/*
+    methods: ["OPTIONS"]
+    upstream_id: backend
+
+  - id: api
+    vars: [["server_port", "==", "9080"]]
+    priority: 5
+    uri: /api/*
+    upstream_id: backend
+    plugin_config_id: bearer-token
+
+  - id: api-docs
+    vars: [["server_port", "==", "9080"]]
+    priority: 5
+    uris: ["/swagger-ui.html", "/swagger-ui/*", "/v3/api-docs", "/v3/api-docs/*"]
+    upstream_id: backend
+
+  - id: keycloak
+    vars: [["server_port", "==", "9080"]]
+    priority: 5
+    uris: ["/realms/*", "/resources/*", "/admin/*", "/js/*"]
+    upstream_id: keycloak
+
+  # Presigned photo links: the path is /<bucket>/<object>, passed through unchanged because the
+  # signature covers it.
+  - id: photos
+    vars: [["server_port", "==", "9080"]]
+    priority: 5
+    uri: /dxfarm-uploads/*
+    methods: ["GET", "HEAD"]
+    upstream_id: storage
+
+  # Everything arriving on the Superset port goes to Superset: version 3.1 cannot run under a path
+  # prefix, so it keeps the root of a second listener of this same gateway.
+  - id: superset
+    priority: 100
+    uri: /*
+    vars: [["server_port", "==", "9081"]]
+    upstream_id: superset
+
+  # MinIO console: its own listener, the console is served from the root path and uses websockets.
+  - id: minio-console
+    priority: 100
+    uri: /*
+    vars: [["server_port", "==", "9082"]]
+    enable_websocket: true
+    upstream_id: minio-console
+
+  - id: portal-root
+    vars: [["server_port", "==", "9080"]]
+    priority: 5
+    uri: /portal
+    plugins:
+      redirect:
+        uri: /portal/
+        ret_code: 301
+
+  - id: portal
+    vars: [["server_port", "==", "9080"]]
+    priority: 5
+    uri: /portal/*
+    upstream_id: portal
+    plugins:
+      proxy-rewrite:
+        regex_uri: ["^/portal/(.*)", "/$1"]
+
+  - id: web
+    vars: [["server_port", "==", "9080"]]
+    priority: -10
+    uri: /*
+    upstream_id: frontend
+
+#END

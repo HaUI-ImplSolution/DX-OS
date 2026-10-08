@@ -1,11 +1,16 @@
 # Portal (`portal`)
 
-Trang tĩnh liệt kê link tới các ứng dụng trong hệ thống (Ứng dụng chính, BI Dashboard, Kênh chat nội bộ) cùng các trang quản trị (Keycloak, Superset, Mattermost) và tài liệu API Swagger của Backend, để người dùng không phải tự nhớ/gõ URL từng app.
+Trang tĩnh liệt kê link tới các ứng dụng trong hệ thống (Ứng dụng chính, BI Dashboard, Kênh chat nội bộ) cùng các trang quản trị (Keycloak, Superset, Mattermost, MinIO Console) và tài liệu API Swagger của Backend, để người dùng không phải tự nhớ/gõ URL từng app.
+
+Cuối trang có mục **Trạng thái dịch vụ**, tự làm mới mỗi 30 giây:
+- Backend, AI chẩn đoán và lưu trữ ảnh lấy từ `GET /api/v1/system/status` (công khai, qua gateway).
+- Ứng dụng chính và Keycloak được gọi trực tiếp qua gateway.
+- BI Dashboard (9081) và Kênh chat (8065) chỉ kiểm tra có phản hồi hay không.
 
 ## Chạy
 
 Nằm trong `deploy/docker-compose.yml`, lên cùng lệnh `docker compose up -d --build` sẵn có của repo.
-Expose cổng `8090` (`PORTAL_HOST_PORT` trong `deploy/.env`).
+Không publish cổng riêng: gateway APISIX phục vụ portal ở `http://localhost:9080/portal/` (`APISIX_HOST_PORT` trong `deploy/.env`).
 
 ## Đăng nhập
 
@@ -16,5 +21,4 @@ Expose cổng `8090` (`PORTAL_HOST_PORT` trong `deploy/.env`).
 
 ## Giới hạn hiện tại
 
-- Link trỏ theo cổng trong `deploy/.env.example` (`FRONTEND_HOST_PORT`, `SUPERSET_HOST_PORT`, `MATTERMOST_HOST_PORT`, `KEYCLOAK_HOST_PORT`, `BACKEND_HOST_PORT`).
-  Nếu đổi cổng trong `.env`, sửa lại URL tương ứng trong `index.html`.
+- Link ứng dụng chính, Keycloak và Swagger là đường dẫn tương đối của gateway; link Superset (cổng `APISIX_SUPERSET_HOST_PORT`), MinIO Console (`APISIX_MINIO_HOST_PORT`) và Mattermost (`MATTERMOST_HOST_PORT`) tự lấy tên máy của trang đang mở nhưng giữ cổng viết sẵn trong `index.html` (9081, 9082 và 8065), nên đổi cổng trong `.env` thì sửa `data-port` tương ứng.

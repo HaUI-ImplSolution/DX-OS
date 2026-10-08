@@ -1,8 +1,10 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.service;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.time.Duration;
+import java.util.EnumMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,22 +15,28 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
 
-// Posts a message to a Mattermost Incoming Webhook. Disabled when the URL is empty or invalid.
-// The URL carries the access key, so it is never logged and exception messages are not logged
-// (they can contain the request URL).
+// Posts a message to a Mattermost Incoming Webhook. A channel without its own URL uses the default
+// one; with neither, notifications for it are off. A URL carries the access key, so it is never
+// logged and exception messages are not logged (they can contain the request URL).
 @Component
 public class MattermostWebhookClient {
 
   private static final Logger log = LoggerFactory.getLogger(MattermostWebhookClient.class);
 
-  private final URI webhookUri;
+  private final Map<MattermostChannel, URI> channelUris = new EnumMap<>(MattermostChannel.class);
   private final RestClient restClient;
 
   public MattermostWebhookClient(@Value("${mattermost.webhook.url:}") String url,
+      @Value("${mattermost.webhook.url-admin:}") String adminUrl,
+      @Value("${mattermost.webhook.url-engineer:}") String engineerUrl,
       @Value("${mattermost.webhook.connect-timeout-ms:2000}") int connectTimeoutMs,
       @Value("${mattermost.webhook.read-timeout-ms:3000}") int readTimeoutMs) {
-    this.webhookUri = parse(url);
-    if (webhookUri == null) {
+    URI defaultUri = parse(url);
+    URI admin = parse(adminUrl);
+    URI engineer = parse(engineerUrl);
+    putIfPresent(MattermostChannel.ADMIN, admin != null ? admin : defaultUri);
+    putIfPresent(MattermostChannel.ENGINEER, engineer != null ? engineer : defaultUri);
+    if (channelUris.isEmpty()) {
       this.restClient = null;
     } else {
       HttpClient httpClient =
@@ -37,24 +45,33 @@ public class MattermostWebhookClient {
       requestFactory.setReadTimeout(Duration.ofMillis(readTimeoutMs));
       this.restClient = RestClient.builder().requestFactory(requestFactory).build();
     }
-    log.info("Mattermost webhook notifications {}", isEnabled() ? "enabled" : "disabled");
+    for (MattermostChannel channel : MattermostChannel.values()) {
+      log.info("Mattermost webhook notifications for {} {}", channel,
+          isEnabled(channel) ? "enabled" : "disabled");
+    }
   }
 
-  public boolean isEnabled() {
-    return restClient != null;
+  public boolean isEnabled(MattermostChannel channel) {
+    return restClient != null && channelUris.containsKey(channel);
   }
 
-  public void send(Map<String, Object> payload) {
-    if (!isEnabled()) {
+  public void send(MattermostChannel channel, Map<String, Object> payload) {
+    if (!isEnabled(channel)) {
       return;
     }
     try {
-      restClient.post().uri(webhookUri).contentType(MediaType.APPLICATION_JSON).body(payload)
-          .retrieve().toBodilessEntity();
+      restClient.post().uri(channelUris.get(channel)).contentType(MediaType.APPLICATION_JSON)
+          .body(payload).retrieve().toBodilessEntity();
     } catch (RestClientResponseException e) {
       log.warn("Mattermost webhook rejected the notification: HTTP {}", e.getStatusCode().value());
     } catch (Exception e) {
       log.warn("Mattermost webhook call failed: {}", e.getClass().getSimpleName());
+    }
+  }
+
+  private void putIfPresent(MattermostChannel channel, URI uri) {
+    if (uri != null) {
+      channelUris.put(channel, uri);
     }
   }
 
@@ -71,7 +88,7 @@ public class MattermostWebhookClient {
     } catch (IllegalArgumentException e) {
       // Falls through to the disabled state; the message would expose the URL.
     }
-    log.warn("mattermost.webhook.url is not a valid http(s) URL; notifications are disabled");
+    log.warn("A mattermost.webhook url is not a valid http(s) URL; it is ignored");
     return null;
   }
 }

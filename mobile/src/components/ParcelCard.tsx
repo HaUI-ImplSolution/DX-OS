@@ -23,6 +23,8 @@ export function ParcelCard({ parcel, version }: Props) {
       <Text style={styles.code}>{parcel.code}</Text>
       <Text style={styles.meta}>Diện tích {parcel.areaHectares} ha</Text>
       {parcel.location && <Text style={styles.meta}>{parcel.location}</Text>}
+      {parcel.approvalStatus === "PENDING" && <StatusChip label="Chờ duyệt" tone="warning" />}
+      {parcel.approvalStatus === "REJECTED" && <StatusChip label="Bị từ chối" tone="danger" />}
       {isolated && <StatusChip label="Đang cách ly" tone="warning" />}
     </Card>
   );

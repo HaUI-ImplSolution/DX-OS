@@ -11,26 +11,25 @@ import {
 import { AppState } from "react-native";
 import NetInfo from "@react-native-community/netinfo";
 import { ApiError } from "@/api/client";
-import { createDiseaseReport } from "@/api/endpoints";
+import { createCropSeason, createDiseaseReport, createParcel } from "@/api/endpoints";
 import { useAuth } from "@/auth/AuthProvider";
 import {
   deleteQueuedPhoto,
+  kindOf,
   loadQueue,
   saveQueue,
   storeQueuedPhoto,
   type QueueItem,
+  type QueueKind,
 } from "./queue";
 
 const MAX_ATTEMPTS = 8;
 const BASE_DELAY_MS = 5_000;
 const MAX_DELAY_MS = 300_000;
 
-interface EnqueueInput {
-  id: string;
-  cropSeasonId: number;
-  parcelCode: string | null;
-  uri: string;
-}
+type EnqueueInput =
+  | { id: string; kind?: "report"; cropSeasonId: number; retakeOf?: number; parcelCode: string | null; uri: string }
+  | { id: string; kind: "parcel" | "season"; parcelCode: string | null; payload: string };
 
 interface QueueContextValue {
   // Items of the signed-in user.
@@ -49,6 +48,24 @@ const backoff = (attempts: number) => Math.min(BASE_DELAY_MS * 2 ** (attempts - 
 const isRetryable = (error: unknown) =>
   error instanceof ApiError &&
   (error.status === 0 || error.status >= 500 || [408, 409, 429].includes(error.status));
+
+// Sends one queued item; its id is the Idempotency-Key, so a repeat can never create a second one.
+async function send(item: QueueItem) {
+  const kind: QueueKind = kindOf(item);
+  if (kind === "parcel") {
+    await createParcel(JSON.parse(item.payload ?? "{}"), item.id);
+  } else if (kind === "season") {
+    await createCropSeason(item.parcelCode ?? "", JSON.parse(item.payload ?? "{}"), item.id);
+  } else {
+    await createDiseaseReport(
+      item.cropSeasonId ?? 0,
+      { uri: item.uri ?? "", name: "report.jpg", type: "image/jpeg" },
+      undefined,
+      item.id,
+      item.retakeOf,
+    );
+  }
+}
 
 export function QueueProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
@@ -98,13 +115,8 @@ export function QueueProvider({ children }: { children: ReactNode }) {
           if (!next) break;
           patch(next.id, { status: "sending" });
           try {
-            await createDiseaseReport(
-              next.cropSeasonId,
-              { uri: next.uri, name: "report.jpg", type: "image/jpeg" },
-              undefined,
-              next.id,
-            );
-            deleteQueuedPhoto(next.uri);
+            await send(next);
+            if (next.uri) deleteQueuedPhoto(next.uri);
             commit(itemsRef.current.filter((item) => item.id !== next.id));
             setSentCount((count) => count + 1);
           } catch (error) {
@@ -174,12 +186,26 @@ export function QueueProvider({ children }: { children: ReactNode }) {
   const enqueue = useCallback(
     async (input: EnqueueInput) => {
       if (!username) return;
+      const base =
+        "payload" in input
+          ? {
+              kind: input.kind,
+              cropSeasonId: null,
+              parcelCode: input.parcelCode,
+              uri: null,
+              payload: input.payload,
+            }
+          : {
+              kind: "report" as const,
+              cropSeasonId: input.cropSeasonId,
+              retakeOf: input.retakeOf,
+              parcelCode: input.parcelCode,
+              uri: storeQueuedPhoto(input.id, input.uri),
+            };
       const item: QueueItem = {
         id: input.id,
         username,
-        cropSeasonId: input.cropSeasonId,
-        parcelCode: input.parcelCode,
-        uri: storeQueuedPhoto(input.id, input.uri),
+        ...base,
         createdAt: new Date().toISOString(),
         attempts: 1,
         status: "pending",
@@ -196,7 +222,7 @@ export function QueueProvider({ children }: { children: ReactNode }) {
     (id: string) => {
       const item = itemsRef.current.find((existing) => existing.id === id);
       if (!item || item.status === "sending") return;
-      deleteQueuedPhoto(item.uri);
+      if (item.uri) deleteQueuedPhoto(item.uri);
       commit(itemsRef.current.filter((existing) => existing.id !== id));
     },
     [commit],

@@ -13,3 +13,9 @@ export function formatDateTime(value: string): string {
   const date = new Date(value);
   return `${pad(date.getHours())}:${pad(date.getMinutes())} ${formatDate(value)}`;
 }
+
+// Today on the phone's own calendar as yyyy-mm-dd (toISOString would give the UTC day).
+export function todayLocal(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+}

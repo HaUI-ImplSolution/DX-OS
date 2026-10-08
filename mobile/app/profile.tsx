@@ -5,7 +5,7 @@ import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { StatusChip } from "@/components/StatusChip";
 import { formatDateTime } from "@/format";
-import type { QueueItem } from "@/offline/queue";
+import { kindOf, type QueueItem } from "@/offline/queue";
 import { useQueue } from "@/offline/QueueProvider";
 import { colors, fontSize, radius, spacing } from "@/theme";
 
@@ -17,8 +17,9 @@ const STATUS = {
 
 function QueueRow({ item, onRemove }: { item: QueueItem; onRemove: () => void }) {
   const status = STATUS[item.status];
+  const kind = kindOf(item);
   const confirmRemove = () =>
-    Alert.alert("Xoá ảnh chờ gửi", "Ảnh này sẽ bị xoá và không được gửi. Bạn có chắc không?", [
+    Alert.alert("Xoá mục chờ gửi", "Mục này sẽ bị xoá và không được gửi. Bạn có chắc không?", [
       { text: "Huỷ", style: "cancel" },
       { text: "Xoá", style: "destructive", onPress: onRemove },
     ]);
@@ -26,10 +27,18 @@ function QueueRow({ item, onRemove }: { item: QueueItem; onRemove: () => void })
   return (
     <Card>
       <View style={styles.row}>
-        <Image source={{ uri: item.uri }} style={styles.thumbnail} accessibilityLabel="Ảnh chờ gửi" />
+        {item.uri && (
+          <Image source={{ uri: item.uri }} style={styles.thumbnail} accessibilityLabel="Ảnh chờ gửi" />
+        )}
         <View style={styles.rowText}>
           <Text style={styles.rowTitle}>
-            {item.parcelCode ? `Thửa ${item.parcelCode}` : `Vụ mùa #${item.cropSeasonId}`}
+            {kind === "parcel"
+              ? "Thửa ruộng mới"
+              : kind === "season"
+                ? `Vụ mùa mới của thửa ${item.parcelCode}`
+                : item.parcelCode
+                  ? `Báo cáo thửa ${item.parcelCode}`
+                  : `Báo cáo vụ mùa #${item.cropSeasonId}`}
           </Text>
           <Text style={styles.caption}>{formatDateTime(item.createdAt)}</Text>
           <StatusChip label={status.label} tone={status.tone} />

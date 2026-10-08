@@ -9,6 +9,19 @@
       { "name": "ADMIN", "description": "Quản trị viên" }
     ]
   },
+  "components": {
+    "org.keycloak.userprofile.UserProfileProvider": [
+      {
+        "providerId": "declarative-user-profile",
+        "subComponents": {},
+        "config": {
+          "kc.user.profile.config": [
+            "{\"attributes\": [{\"name\": \"username\", \"displayName\": \"${username}\", \"validations\": {\"length\": {\"min\": 3, \"max\": 255}, \"username-prohibited-characters\": {}, \"up-username-not-idn-homograph\": {}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"multivalued\": false}, {\"name\": \"email\", \"displayName\": \"${email}\", \"validations\": {\"email\": {}, \"length\": {\"max\": 255}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"multivalued\": false}, {\"name\": \"firstName\", \"displayName\": \"${firstName}\", \"validations\": {\"length\": {\"max\": 255}, \"person-name-prohibited-characters\": {}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"multivalued\": false, \"required\": {\"roles\": [\"user\"]}}, {\"name\": \"lastName\", \"displayName\": \"${lastName}\", \"validations\": {\"length\": {\"max\": 255}, \"person-name-prohibited-characters\": {}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"multivalued\": false, \"required\": {\"roles\": [\"user\"]}}]}"
+          ]
+        }
+      }
+    ]
+  },
   "clients": [
     {
       "clientId": "dxfarm-frontend",
@@ -22,18 +35,32 @@
       "serviceAccountsEnabled": false,
       "consentRequired": false,
       "redirectUris": [
-        "http://localhost:8082/*",
+        "http://localhost:9080/*",
         "http://localhost:5173/*"
       ],
       "webOrigins": [
-        "http://localhost:8082",
+        "http://localhost:9080",
         "http://localhost:5173"
       ],
       "attributes": {
         "pkce.code.challenge.method": "S256",
-        "post.logout.redirect.uris": "http://localhost:8082/*##http://localhost:5173/*"
+        "post.logout.redirect.uris": "http://localhost:9080/*##http://localhost:5173/*"
       },
+      "protocolMappers": [
+        {
+          "name": "dxfarm-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.custom.audience": "dxfarm-api",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ],
       "defaultClientScopes": [
+        "basic",
         "web-origins",
         "acr",
         "profile",
@@ -60,7 +87,21 @@
         "pkce.code.challenge.method": "S256",
         "post.logout.redirect.uris": "dxfarm://*##exp://*"
       },
+      "protocolMappers": [
+        {
+          "name": "dxfarm-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.custom.audience": "dxfarm-api",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ],
       "defaultClientScopes": [
+        "basic",
         "web-origins",
         "acr",
         "profile",
@@ -73,22 +114,22 @@
       "name": "DX-Farm Superset",
       "protocol": "openid-connect",
       "publicClient": false,
-      "secret": "dxfarm_superset_demo_secret",
+      "secret": "${SUPERSET_OIDC_CLIENT_SECRET}",
       "standardFlowEnabled": true,
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": false,
       "consentRequired": false,
       "redirectUris": [
-        "http://localhost:8088/oauth-authorized/keycloak"
+        "http://localhost:9081/oauth-authorized/keycloak"
       ],
       "webOrigins": [
-        "http://localhost:8088"
+        "http://localhost:9081"
       ],
       "frontchannelLogout": true,
       "attributes": {
-        "post.logout.redirect.uris": "http://localhost:8088/*",
-        "frontchannel.logout.url": "http://localhost:8088/logout/"
+        "post.logout.redirect.uris": "http://localhost:9081/*",
+        "frontchannel.logout.url": "http://localhost:9081/logout/"
       },
       "defaultClientScopes": [
         "web-origins",
@@ -97,9 +138,30 @@
         "roles",
         "email"
       ]
+    },
+    {
+      "clientId": "dxfarm-backend-admin",
+      "name": "DX-Farm backend (account management)",
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "${KEYCLOAK_ADMIN_CLIENT_SECRET}",
+      "bearerOnly": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "consentRequired": false
     }
   ],
   "users": [
+    {
+      "username": "service-account-dxfarm-backend-admin",
+      "enabled": true,
+      "serviceAccountClientId": "dxfarm-backend-admin",
+      "clientRoles": {
+        "realm-management": ["manage-users", "view-users", "view-realm"]
+      }
+    },
     {
       "username": "farmer1",
       "enabled": true,

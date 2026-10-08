@@ -9,7 +9,7 @@ Sơ đồ viết bằng Mermaid, GitHub hiển thị trực tiếp.
 flowchart TB
   subgraph T3["Tầng 3: ứng dụng DX-Farm (Agri-Carbon)"]
     direction LR
-    APP["package <b>app</b>: Parcel, CropSeason, DiseaseReport, Diagnosis,<br/>Disease, Pesticide, TreatmentRule<br/>AI Service (CV, RAG, LangGraph) · web · mobile · Superset · Mattermost"]
+    APP["Parcel, CropSeason, DiseaseReport, Diagnosis,<br/>Disease, Pesticide, TreatmentRule<br/>AI Service (CV, RAG, LangGraph) · web · mobile · Superset · Mattermost"]
   end
 
   subgraph T2["Tầng 2: bốn không gian H-P-D-I"]
@@ -42,7 +42,7 @@ flowchart TB
 
 ## 2. Ranh giới Core và ứng dụng
 
-- Core không import gì từ nghiệp vụ nông nghiệp.
+- Core không import gì từ nghiệp vụ nông nghiệp; nó chỉ dùng chung `dto` (`ApiResponse`, `PageResponse`) và `exception` của backend.
   `WorkflowService` nhận `caseType`, `entityType`, `entityId` dạng chuỗi và số, không biết `Diagnosis` là gì.
   `StorageService` nhận khóa object và byte, không biết đó là ảnh báo cáo.
 - Ứng dụng gọi Core qua các điểm vào cố định:

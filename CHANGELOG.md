@@ -23,7 +23,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
   Open-Meteo không gọi được thì trả điểm tham chiếu gần nhất trong `weather-snapshot.json` kèm `isSnapshot=true` và ghi chú.
   Thửa chưa có GPS trả `422 PARCEL_LOCATION_MISSING`; nông dân chỉ xem được thời tiết thửa của hộ mình.
 - `POST /api/v1/knowledge/ask` trả các đoạn tài liệu phù hợp nhất từ RAG, mỗi đoạn kèm nguồn (tên, tổ chức, link, giấy phép, trạng thái duyệt).
-  Đoạn được trích nguyên văn, không sinh thêm; câu hỏi không liên quan trả danh sách rỗng (ngưỡng `KNOWLEDGE_MIN_SCORE`).
+  Đoạn được trích nguyên văn, không sinh thêm; câu hỏi không liên quan trả danh sách rỗng (ngưỡng `knowledge.min-score` trong `application.yaml`, mặc định 0.40).
   Bảng ánh xạ nguồn nằm ở `knowledge-sources.json`, lấy từ `data/rag/source_registry.json`.
 - Gateway giới hạn 60 câu hỏi mỗi phút cho mỗi địa chỉ ở `/api/v1/knowledge/ask`.
 - `WEATHER_BASE_URL` (mặc định `https://api.open-meteo.com`) đổi được địa chỉ Open-Meteo qua `deploy/.env`.
@@ -46,7 +46,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
   Cảnh báo gồm báo cáo chưa có kết quả duyệt và khuyến nghị đã duyệt chưa ghi nhận phun.
 - `PATCH /api/v1/crop-seasons/{id}/reschedule-harvest` (FARMER, ADMIN) đổi ngày dự kiến từ hôm nay đến 90 ngày tới, kèm lý do.
   `GET /api/v1/crop-seasons/{id}/harvest-reschedules` trả đủ các lần đổi theo thứ tự.
-- Job `HarvestReminderScheduler` chạy 07:00 giờ `Asia/Ho_Chi_Minh` (cấu hình `HARVEST_REMINDER_CRON`).
+- Job `HarvestReminderScheduler` chạy 07:00 giờ `Asia/Ho_Chi_Minh` (`app.harvest-reminder-cron` trong `application.yaml`).
   Vụ `ACTIVE` đã duyệt tới hoặc quá ngày dự kiến nhận một thông báo mỗi ngày (`dedup_key` duy nhất).
 - Nông dân khai phun thuốc: `POST /api/v1/disease-reports/{reportId}/treatment-application/self-report` (FARMER) tạo bản ghi `PENDING_CONFIRMATION` và case `TREATMENT_CONFIRMATION` trong hàng đợi kỹ sư.
   `POST .../confirm` và `POST .../reject` (ENGINEER, ADMIN, từ chối cần lý do) quyết định bản khai; `GET .../treatment-application` trả bản ghi của báo cáo.
@@ -91,11 +91,11 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - `V5__parcel_season_approval.sql`, `V6__rice_variety_seed.sql`: trạng thái duyệt, mã, GPS và khóa `client_request_id` cho `parcels` và `crop_seasons`; bảng `rice_varieties`, `household_parcel_counter`, `parcel_edit_requests`.
   Thửa và vụ có sẵn coi như đã duyệt; thửa chưa có tọa độ mang cờ `location_missing`.
 - Mã thửa `HTX01-H0042-T03` và mã vụ `HTX01-H0042-T03-2026DX` do backend sinh, quy tắc ở `development/docs/PARCEL_SEASON_CODES.md`; `POST /api/v1/parcels` không nhận `code`, bắt buộc `latitude` và `longitude`.
-- Nông dân phải gửi `gpsAccuracyMeters` không quá `GPS_MAX_ACCURACY_METERS` (30 m) và không `mockedLocation` (`422`).
+- Nông dân phải gửi `gpsAccuracyMeters` không quá `app.gps-max-accuracy-meters` (30 m) và không `mockedLocation` (`422`).
 - Thửa và vụ của nông dân chờ quản trị viên duyệt; của quản trị viên được duyệt ngay.
   Core `workflow` có `WorkflowDecisionHandler` theo `caseType`; `PATCH /api/v1/workflow-cases/{id}/approve` và `/reject` (ADMIN, từ chối cần lý do) áp quyết định lên thửa, vụ hoặc yêu cầu chỉnh sửa.
 - `POST /api/v1/parcels/{id}/resubmit`, `POST /api/v1/crop-seasons/{id}/resubmit` (gửi lại sau khi bị từ chối), `POST /api/v1/parcels/{id}/edit-requests` (đổi diện tích hoặc vị trí thửa đã duyệt).
-- Tạo vụ trên thửa chưa duyệt, gửi báo cáo hoặc thu hoạch trên vụ chưa duyệt trả `422`; tối đa `MAX_PENDING_REQUESTS` (3) yêu cầu chờ mỗi nông dân.
+- Tạo vụ trên thửa chưa duyệt, gửi báo cáo hoặc thu hoạch trên vụ chưa duyệt trả `422`; tối đa `app.max-pending-requests` (3) yêu cầu chờ mỗi nông dân.
 - `Idempotency-Key` cho `POST /api/v1/parcels` và `POST /api/v1/parcels/{code}/crop-seasons`.
 - `GET /api/v1/rice-varieties` và `GET /api/v1/crop-seasons/suggestion`; `riceVarietyCode` thay `riceVariety`, ngày thu hoạch gợi ý là trung bình số ngày sinh trưởng, lệch khỏi khoảng phải kèm `reasonForOverride`.
   Danh mục giống ghi nguồn và `reviewStatus`; mọi giống còn `IN_REVIEW`.
@@ -112,7 +112,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
   Chẩn đoán đã có được dựng case và lịch sử từ cột quyết định hiện có.
 - Mỗi chẩn đoán mới mở case `DIAGNOSIS_APPROVAL`; duyệt hoặc từ chối ghi đúng một `workflow_event` cùng người thực hiện và lý do.
 - `GET /api/v1/workflow-cases` (phân trang, lọc `caseType`, `status`, `assignedTo` hoặc `me`), `PATCH /api/v1/workflow-cases/{id}/assign` (nhận việc; case của người khác chỉ ADMIN nhận lại được), `GET /api/v1/workflow-cases/{id}/events`; chỉ ENGINEER và ADMIN.
-- Ảnh báo cáo lưu trong bucket MinIO riêng tư với metadata `uploaded-by`, `source`; `StorageService` ký link có hạn (`STORAGE_PRESIGN_TTL`, mặc định 15 phút) theo đúng host mà client dùng để gọi API.
+- Ảnh báo cáo lưu trong bucket MinIO riêng tư với metadata `uploaded-by`, `source`; `StorageService` ký link có hạn (`storage.presign-ttl` trong `application.yaml`, mặc định 15 phút) theo đúng host mà client dùng để gọi API.
 - `DiseaseReportResponse.imageRef` thành `imageUrl` (link có hạn).
   AI nhận link nội bộ hiệu lực 10 phút, thông báo Mattermost nhận link công khai hiệu lực 7 ngày.
 - Bỏ `GET /uploads/**`, `app.upload-dir` và `app.public-base-url`; thêm `MINIO_ENDPOINT`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`, `MINIO_BUCKET`, `STORAGE_PUBLIC_URL` (không có giá trị mặc định).
@@ -134,10 +134,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 **Đã xong — Khóa PHI và ràng buộc vụ mùa:**
 
-- `POST .../diagnosis/{id}/apply` nhận `appliedAt` trong khoảng từ hôm nay lùi tối đa 30 ngày; ngoài khoảng trả `422` với `errorCode` `INVALID_APPLIED_AT`.
+- `POST .../diagnosis/apply` nhận `appliedAt` trong khoảng từ hôm nay lùi tối đa 30 ngày; ngoài khoảng trả `422` với `errorCode` `INVALID_APPLIED_AT`.
 - Ngày nghiệp vụ (hạn cách ly, trạng thái cách ly, thu hoạch, thời điểm duyệt) tính theo `Clock` cố định `Asia/Ho_Chi_Minh` (`TimeConfig`); image backend đặt `TZ=Asia/Ho_Chi_Minh`.
 - Tạo báo cáo trên vụ đã `HARVESTED` trả `422` `CROP_SEASON_HARVESTED` trước khi lưu ảnh.
-- Mỗi thửa chỉ có một vụ `ACTIVE`: service trả `409`, partial unique index `uq_crop_seasons_one_active_per_parcel` (`schema.sql`) chặn race. `expectedHarvestDate` trước `startDate` trả `400`.
+- Mỗi thửa chỉ có một vụ `ACTIVE`: service trả `409`, partial unique index `uq_crop_seasons_one_active_per_parcel` (`V1__baseline.sql`, `V5__parcel_season_approval.sql`) chặn race. `expectedHarvestDate` trước `startDate` trả `400`.
 - `Diagnosis` và `CropSeason` có cột `version` (optimistic lock); ghi đè đồng thời trả `409`. `apply` tăng version của vụ mùa để không lọt qua một lần thu hoạch đang chạy song song.
 - Upload ảnh: chỉ nhận JPEG/PNG theo nội dung thật (không theo `Content-Type` hay đuôi file), giới hạn 40 megapixel, giải mã rồi mã hóa lại nên file lưu không còn EXIF/GPS; hướng chụp EXIF được áp vào điểm ảnh.
 - Mọi mật khẩu/secret trong `application.yaml` bắt buộc khai báo qua biến môi trường, không còn giá trị mặc định; log package ứng dụng mặc định `INFO` (`LOG_LEVEL_APP`).
@@ -771,6 +771,14 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - **Còn thiếu**: SPDX header đầu mỗi file mã nguồn tự viết — việc sửa hàng loạt file, để riêng một lượt khác.
 
 ## Tài liệu (root, `development/docs`, `ai/`)
+
+### 2026-10-07
+
+- `README.md` có bảng mức hoàn thiện từng tính năng (trong code, kiểm thử, dữ liệu demo), hướng dẫn dữ liệu demo, kiểm thử và E2E.
+- `development/docs/submission/`: kịch bản demo, bộ trả lời hội đồng và dàn ý báo cáo kỹ thuật.
+- `development/docs/PARCEL_SEASON_CODES.md`: mã thửa, mã vụ, GPS và quy tắc duyệt.
+- `deploy/demo/README.md`: script seed demo, E2E và workflow `E2E`.
+- Phase 5 đến 8 của `development/docs/improvement_docs` có kế hoạch, checklist và kết quả kiểm thử.
 
 ### 2026-10-06
 

@@ -137,7 +137,7 @@ docker compose down        # dừng, giữ dữ liệu trong deploy/data
 ./reset.sh                 # xóa toàn bộ deploy/data và dựng lại (hỏi xác nhận, --yes để bỏ qua)
 ```
 
-`reset.sh` giữ volume model Ollama.
+`reset.sh` giữ volume model Ollama; `--keep-images` bỏ bước build lại image.
 Dựng một phần: `./reset.sh --yes postgres backend keycloak`.
 
 ## Dữ liệu

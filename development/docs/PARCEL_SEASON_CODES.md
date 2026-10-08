@@ -22,7 +22,7 @@
 | Thu Đông (`THU_DONG`) | `TD` | 6, 7, 8 |
 
 - Năm là năm của ngày bắt đầu vụ.
-- Mốc tháng nằm ở `app.season-start-months` (`SEASON_MONTHS_*`), tự biên soạn, chưa có kỹ sư nông nghiệp xác nhận.
+- Mốc tháng nằm ở `app.season-start-months` trong `application.yaml`, tự biên soạn, chưa có kỹ sư nông nghiệp xác nhận.
   Tháng ngoài các mốc không có gợi ý, nông dân tự chọn loại vụ.
 - Một thửa có tối đa một vụ mỗi loại mỗi năm và một vụ `ACTIVE` tại một thời điểm; vụ bị từ chối không giữ chỗ.
 - Vụ tạo trước khi có quy tắc này không có mã và loại vụ.
@@ -30,7 +30,7 @@
 ## GPS
 
 - Tạo thửa bắt buộc có `latitude`, `longitude`; nông dân gửi thêm `gpsAccuracyMeters` lấy từ điện thoại.
-- Sai số lớn hơn `GPS_MAX_ACCURACY_METERS` (30 m) hoặc `mockedLocation=true` bị từ chối (`422`, `GPS_ACCURACY_TOO_LOW`, `GPS_ACCURACY_MISSING`, `GPS_MOCKED`).
+- Sai số lớn hơn `app.gps-max-accuracy-meters` (30 m) hoặc `mockedLocation=true` bị từ chối (`422`, `GPS_ACCURACY_TOO_LOW`, `GPS_ACCURACY_MISSING`, `GPS_MOCKED`).
 - Quản trị viên nhập hộ không cần sai số.
 - Thửa cũ chưa có tọa độ mang cờ `locationMissing`.
 
@@ -41,4 +41,4 @@
 - Chưa duyệt thì chưa tạo được vụ trên thửa (`422 PARCEL_NOT_APPROVED`), chưa gửi báo cáo hay thu hoạch trên vụ (`422 CROP_SEASON_NOT_APPROVED`).
 - Bị từ chối thì nông dân sửa và gửi lại (`POST /parcels/{id}/resubmit`, `POST /crop-seasons/{id}/resubmit`); lịch sử nằm ở timeline của case.
 - Sửa thửa đã duyệt là một yêu cầu riêng (`POST /parcels/{id}/edit-requests`), thửa giữ giá trị cũ tới khi được duyệt.
-- Mỗi nông dân có tối đa `MAX_PENDING_REQUESTS` (3) yêu cầu chờ duyệt cùng lúc (`422 TOO_MANY_PENDING_REQUESTS`).
+- Mỗi nông dân có tối đa `app.max-pending-requests` (3) yêu cầu chờ duyệt cùng lúc (`422 TOO_MANY_PENDING_REQUESTS`).

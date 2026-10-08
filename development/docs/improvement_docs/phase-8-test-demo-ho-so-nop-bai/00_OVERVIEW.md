@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Code và tài liệu đã làm, chờ chạy kiểm thử và Q2 (chuyên gia duyệt treatment rule); Q1 đã chốt |
+| Trạng thái | Code, tài liệu và kiểm thử T8-01 đến T8-05 đã đạt; còn hồ sơ nộp bài (báo cáo, slide, video, tag) và Q2 (chuyên gia duyệt treatment rule); Q1 đã chốt |
 | Mức độ | Nghiêm trọng (hạn nộp) |
 | Nhóm ưu tiên | A |
 | Ước lượng | 5-6 ngày, chạy xuyên suốt |

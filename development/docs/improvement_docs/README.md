@@ -48,5 +48,5 @@ Gợi ý câu lệnh cho Claude: "Tạo phase {N} từ `improvement_docs/_templa
 | [P5](./phase-5-vong-doi-vu-mua-thong-bao/00_OVERVIEW.md) | Vòng đời vụ mùa và thông báo cho farmer | 4, 10, 13, 15 | Quan trọng | Xong (việc chưa làm ghi ở `00_OVERVIEW.md` mục 11) |
 | [P6](./phase-6-ai-kiem-tra-chan-doan-danh-gia/00_OVERVIEW.md) | AI: kiểm tra ảnh, chẩn đoán | 5, 11 | Quan trọng | Xong (việc chưa làm ghi ở `04_TRADEOFFS_RISKS.md` mục 3) |
 | [P7](./phase-7-du-lieu-bi-tri-thuc/00_OVERVIEW.md) | Dữ liệu, BI và tri thức | 14, 21 | Quan trọng | Xong (hoãn test thời tiết T7-04, T7-05; việc chưa làm và chưa chốt ghi ở `00_OVERVIEW.md` mục 11) |
-| [P8](./phase-8-test-demo-ho-so-nop-bai/00_OVERVIEW.md) | Kiểm thử, dữ liệu demo, hồ sơ nộp bài | 17, 18, 19, 20 | Nghiêm trọng (hạn nộp) | Code và tài liệu đã làm; chờ chạy kiểm thử, hồ sơ nộp bài và Q2 (việc chưa làm ghi ở `00_OVERVIEW.md` mục 11) |
+| [P8](./phase-8-test-demo-ho-so-nop-bai/00_OVERVIEW.md) | Kiểm thử, dữ liệu demo, hồ sơ nộp bài | 17, 18, 19, 20 | Nghiêm trọng (hạn nộp) | Code, tài liệu và kiểm thử đã đạt; còn hồ sơ nộp bài và Q2 (việc chưa làm ghi ở `00_OVERVIEW.md` mục 11) |
 | [P10](./phase-10-de-sau/00_OVERVIEW.md) | Để sau (backlog) | 24, 15 (phần hoàn thiện) | Theo dõi | Backlog |

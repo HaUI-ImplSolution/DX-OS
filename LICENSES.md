@@ -96,7 +96,7 @@ giữ Apache-2.0.
 
 | Thành phần | License | OSI-approved | Ghi chú |
 |---|---|---|---|
-| Apache Superset (`apache/superset` image) | Apache-2.0 | ✅ | BI dashboard, thêm ở lượt này — xem `bi/` |
+| Apache Superset (`apache/superset` image) | Apache-2.0 | ✅ | BI dashboard — xem `bi/` |
 | Authlib (pip, cài lúc container Superset khởi động cho SSO OAuth) | BSD-3-Clause | ✅ | |
 | Python (`python:3.11-slim`, base image của AI Service) | PSF-2.0 | ✅ | |
 | Node.js (`node:20-alpine`, chỉ ở bước build frontend) | MIT | ✅ | |

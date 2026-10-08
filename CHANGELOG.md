@@ -352,7 +352,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ### 2026-10-08
 
-- Docker/E2E nạp classifier trực tiếp từ file local; bỏ script và bước tải classifier trong E2E. Theo yêu cầu mới, ignore cả `ai/weights/`, cấp hai artifact riêng trước khi dựng stack.
+- Docker/E2E nạp classifier trực tiếp từ file local; bỏ script và bước tải classifier trong E2E. Đưa `best.pt` và `crop_classifier.onnx` vào Git để checkout sạch có đủ trọng số, chỉ ignore cache tải.
 - Bỏ SHA-256 và cấu hình checksum của crop classifier; giữ kiểm file/task/mapping/shape/dtype/output, ngưỡng và SHA-256 của detector bệnh.
 - Kiểm chứng local: AI 64 test, Backend 79 test và E2E 10/10 bước qua; hai model nạp/suy luận được trong container không có mạng.
 

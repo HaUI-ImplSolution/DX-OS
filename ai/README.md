@@ -47,7 +47,7 @@ Mọi endpoint ngoài `/health` và `/class-contract` đều yêu cầu `X-Servi
 Cổng AI không publish ra host, chỉ truy cập được trong mạng compose.
 Gợi ý triệu chứng chỉ hỗ trợ tra cứu; kỹ sư chốt bệnh tại Backend.
 
-Thư mục `ai/weights/` được ignore. Cấp `best.pt` và `crop_classifier.onnx` từ bộ trọng số của nhóm trước khi dựng stack; Compose mount read-only và service nạp trực tiếp, không tải model. Xem [hợp đồng CV](app/cv/README.md#phân-loại-lúa-trước-chẩn-đoán).
+Checkout có sẵn `best.pt` và `crop_classifier.onnx` trong `ai/weights/`; Compose mount read-only và service nạp trực tiếp, không tải model. Xem [hợp đồng CV](app/cv/README.md#phân-loại-lúa-trước-chẩn-đoán).
 
 `POST /api/v1/diagnose` tải ảnh từ `image_url`, chạy CV, gọi Backend lấy structured facts, truy vấn RAG và trả recommendation. Nếu structured facts không khả dụng, request thất bại; AI không đưa ra recommendation chỉ dựa trên RAG.
 
@@ -81,7 +81,7 @@ Cấu hình Docker Compose nằm tại [`deploy/.env.example`](../deploy/.env.ex
 | `CV_DEVICE` | `auto`, `cpu` hoặc `cuda` |
 | `CV_WEIGHTS_PATH` | Đường dẫn checkpoint `best.pt` (mặc định `ai/weights/best.pt`); service không tự tải |
 | `CV_WEIGHTS_SHA256` | SHA-256 kỳ vọng của checkpoint; bắt buộc khi nạp model |
-| `AI_CV_WEIGHTS_PATH` | Đường dẫn phía host mà Compose bind-mount; mặc định dùng checkpoint local trong `ai/weights/` |
+| `AI_CV_WEIGHTS_PATH` | Đường dẫn phía host mà Compose bind-mount; mặc định dùng checkpoint chuẩn trong `ai/weights/` |
 | `AI_CV_WEIGHTS_SHA256` | Giá trị phía host được Compose truyền vào `CV_WEIGHTS_SHA256` |
 | `CROP_CLASSIFIER_PATH` | Đường dẫn artifact cây trồng có sẵn; kiểm file và contract khi nạp |
 | `AI_CROP_CLASSIFIER_PATH` | Đường dẫn classifier phía host dùng cho Compose |

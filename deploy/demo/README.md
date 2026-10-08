@@ -47,7 +47,7 @@ Các bước: trạng thái hệ thống công khai, engineer bị chặn tạo 
 Khi có treatment rule: bản khai phun chặn thu hoạch tới khi kỹ sư xác nhận, sau đó khóa cách ly chặn thu hoạch tới `harvestLockedUntil`.
 Không có rule, kịch bản kiểm chẩn đoán ở trạng thái chỉ xem xét; `--require-rule` coi việc thiếu rule là lỗi.
 
-Cấp `best.pt` và `crop_classifier.onnx` trong `ai/weights/` trước khi dựng stack; thư mục này được ignore. Stack mount read-only và nạp trực tiếp, không có bước tải classifier. CI cần được cấp artifact trước bước tạo cấu hình/dựng stack; checkout hiện không cung cấp trọng số.
+Checkout có sẵn `best.pt` và `crop_classifier.onnx` trong `ai/weights/`. Stack mount read-only và nạp trực tiếp; E2E không có bước download classifier.
 
 Workflow `E2E` trên GitHub chạy chuỗi: checkout, dựng stack rút gọn, `seed_demo.py`, thêm rule thử nghiệm của CI, `e2e.py --require-rule`.
 Rule này nằm trong database tạm của CI, không thuộc dữ liệu demo hay seed.

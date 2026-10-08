@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -9,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import HaUI.ImplSolution.DX_Farm.core.workflow.WorkflowService;
 import HaUI.ImplSolution.DX_Farm.dto.CropSeasonCreateRequest;
+import HaUI.ImplSolution.DX_Farm.dto.HarvestRequest;
 import HaUI.ImplSolution.DX_Farm.exception.InvalidStateException;
 import HaUI.ImplSolution.DX_Farm.exception.PokaYokeViolationException;
 import HaUI.ImplSolution.DX_Farm.model.ApprovalStatus;
@@ -18,10 +20,15 @@ import HaUI.ImplSolution.DX_Farm.model.Parcel;
 import HaUI.ImplSolution.DX_Farm.model.RiceVariety;
 import HaUI.ImplSolution.DX_Farm.model.SeasonType;
 import HaUI.ImplSolution.DX_Farm.model.TreatmentApplication;
+import HaUI.ImplSolution.DX_Farm.model.TreatmentConfirmationStatus;
 import HaUI.ImplSolution.DX_Farm.repository.CropSeasonRepository;
+import HaUI.ImplSolution.DX_Farm.repository.DiagnosisRepository;
+import HaUI.ImplSolution.DX_Farm.repository.DiseaseReportRepository;
+import HaUI.ImplSolution.DX_Farm.repository.HarvestRescheduleRepository;
 import HaUI.ImplSolution.DX_Farm.repository.ParcelRepository;
 import HaUI.ImplSolution.DX_Farm.repository.RiceVarietyRepository;
 import HaUI.ImplSolution.DX_Farm.repository.TreatmentApplicationRepository;
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -51,6 +58,14 @@ class CropSeasonServiceTest {
   @Mock
   private RiceVarietyRepository riceVarietyRepository;
   @Mock
+  private DiagnosisRepository diagnosisRepository;
+  @Mock
+  private DiseaseReportRepository diseaseReportRepository;
+  @Mock
+  private HarvestRescheduleRepository harvestRescheduleRepository;
+  @Mock
+  private NotificationService notificationService;
+  @Mock
   private CurrentUserService currentUserService;
   @Mock
   private WorkflowService workflowService;
@@ -59,17 +74,22 @@ class CropSeasonServiceTest {
   @Mock
   private ApplicationEventPublisher eventPublisher;
 
+  private static final HarvestRequest HARVEST =
+      new HarvestRequest(null, new BigDecimal("1000"), null, null, null, null);
+
   private CropSeasonService service;
   private Parcel parcel;
 
   @BeforeEach
   void setUp() {
     service = new CropSeasonService(cropSeasonRepository, parcelRepository,
-        treatmentApplicationRepository, riceVarietyRepository, currentUserService, workflowService,
+        treatmentApplicationRepository, riceVarietyRepository, diagnosisRepository,
+        diseaseReportRepository, harvestRescheduleRepository, notificationService,
+        currentUserService, workflowService,
         new SeasonCalendar(List.of(11, 12, 1), List.of(3, 4, 5), List.of(6, 7, 8)),
         pendingRequestLimiter, eventPublisher, CLOCK);
     parcel = Parcel.builder().id(7L).code("P-01").farmerName("A")
-        .approvalStatus(ApprovalStatus.APPROVED).build();
+        .areaHectares(new BigDecimal("1.00")).approvalStatus(ApprovalStatus.APPROVED).build();
   }
 
   private void varietyExists() {
@@ -118,14 +138,17 @@ class CropSeasonServiceTest {
         .approvalStatus(ApprovalStatus.APPROVED).build();
     when(cropSeasonRepository.findById(1L)).thenReturn(Optional.of(season));
     when(currentUserService.canAccess(parcel)).thenReturn(true);
+    when(currentUserService.isFarmer()).thenReturn(true);
     // The lock ends on the Vietnamese "today"; a UTC-based date (6 Oct) would still block it.
     TreatmentApplication application =
         TreatmentApplication.builder().harvestLockedUntil(LocalDate.of(2026, 10, 7)).build();
-    when(treatmentApplicationRepository.findTopByCropSeasonIdOrderByHarvestLockedUntilDesc(1L))
+    when(treatmentApplicationRepository
+        .findTopByCropSeasonIdAndConfirmationStatusOrderByHarvestLockedUntilDesc(1L,
+            TreatmentConfirmationStatus.CONFIRMED))
         .thenReturn(Optional.of(application));
     when(cropSeasonRepository.save(season)).thenReturn(season);
 
-    var response = service.harvest(1L);
+    var response = service.harvest(1L, HARVEST);
 
     assertThat(response.status()).isEqualTo("HARVESTED");
   }
@@ -137,12 +160,16 @@ class CropSeasonServiceTest {
         .approvalStatus(ApprovalStatus.APPROVED).build();
     when(cropSeasonRepository.findById(1L)).thenReturn(Optional.of(season));
     when(currentUserService.canAccess(parcel)).thenReturn(true);
+    when(currentUserService.isFarmer()).thenReturn(true);
     TreatmentApplication application =
         TreatmentApplication.builder().harvestLockedUntil(LocalDate.of(2026, 10, 8)).build();
-    when(treatmentApplicationRepository.findTopByCropSeasonIdOrderByHarvestLockedUntilDesc(1L))
+    when(treatmentApplicationRepository
+        .findTopByCropSeasonIdAndConfirmationStatusOrderByHarvestLockedUntilDesc(1L,
+            TreatmentConfirmationStatus.CONFIRMED))
         .thenReturn(Optional.of(application));
 
-    assertThatThrownBy(() -> service.harvest(1L)).isInstanceOf(PokaYokeViolationException.class);
+    assertThatThrownBy(() -> service.harvest(1L, HARVEST))
+        .isInstanceOf(PokaYokeViolationException.class);
     assertThat(season.getStatus()).isEqualTo(CropSeasonStatus.ACTIVE);
   }
 }

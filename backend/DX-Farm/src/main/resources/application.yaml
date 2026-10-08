@@ -58,6 +58,8 @@ app:
   gps-max-accuracy-meters: ${GPS_MAX_ACCURACY_METERS:30}
   # Requests a farmer may have waiting for a decision at the same time.
   max-pending-requests: ${MAX_PENDING_REQUESTS:3}
+  # Cron (Asia/Ho_Chi_Minh) of the daily reminder for seasons that reached their expected harvest date.
+  harvest-reminder-cron: ${HARVEST_REMINDER_CRON:0 0 7 * * *}
   # Start months (1-12) that suggest a season type. Self-compiled, not yet confirmed by an
   # agronomist; months outside every list make the farmer pick the type.
   season-start-months:
@@ -98,6 +100,17 @@ superset:
   readonly:
     # Mật khẩu role Postgres chỉ-đọc cho BI dashboard. Xem SupersetReadOnlyRoleSeeder.
     password: ${SUPERSET_RO_PASSWORD}
+
+weather:
+  # Open-Meteo forecast API, no key. When unreachable the stored snapshot (weather-snapshot.json) is served.
+  base-url: ${WEATHER_BASE_URL:https://api.open-meteo.com}
+  connect-timeout-ms: ${WEATHER_CONNECT_TIMEOUT_MS:2000}
+  read-timeout-ms: ${WEATHER_READ_TIMEOUT_MS:3000}
+  cache-ttl: ${WEATHER_CACHE_TTL:1h}
+
+knowledge:
+  # Passages less similar to the question than this (0-1) are not shown.
+  min-score: ${KNOWLEDGE_MIN_SCORE:0.40}
 
 mattermost:
   db:

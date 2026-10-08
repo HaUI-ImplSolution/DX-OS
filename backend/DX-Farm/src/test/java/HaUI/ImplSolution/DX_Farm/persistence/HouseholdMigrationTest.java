@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -100,7 +101,7 @@ class HouseholdMigrationTest {
           .containsExactly("H0001:Lê Văn C");
       assertThat(
           column(statement, "SELECT version FROM flyway_schema_history ORDER BY installed_rank"))
-          .containsExactly("1", "2", "3", "4", "5", "6", "7");
+          .containsExactly("1", "2", "3", "4", "5", "6", "7", "8", "9", "10");
     }
   }
 

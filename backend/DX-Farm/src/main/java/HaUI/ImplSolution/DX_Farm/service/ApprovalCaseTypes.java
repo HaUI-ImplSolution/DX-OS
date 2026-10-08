@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.service;
 
 import java.util.List;
@@ -13,6 +14,8 @@ public final class ApprovalCaseTypes {
   public static final String CROP_SEASON_ENTITY = "CROP_SEASON";
   public static final String DIAGNOSIS_APPROVAL = "DIAGNOSIS_APPROVAL";
   public static final String DIAGNOSIS_ENTITY = "DIAGNOSIS";
+  public static final String TREATMENT_CONFIRMATION = "TREATMENT_CONFIRMATION";
+  public static final String TREATMENT_ENTITY = "TREATMENT_APPLICATION";
 
   // Requests that count against a farmer's limit of waiting requests.
   public static final List<String> FARMER_REQUESTS =

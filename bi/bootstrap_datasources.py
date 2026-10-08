@@ -17,12 +17,14 @@ ADMIN_PASSWORD = os.environ["SUPERSET_ADMIN_PASSWORD"]
 DXFARM_DB_URI = os.environ["DXFARM_DB_URI"]
 DASHBOARD_EXPORT_PATH = "/app/pythonpath/dxfarm_dashboard_export.zip"
 
+# Views of approved/settled records only (V9__bi_views.sql); superset_ro cannot read the tables.
 DATASET_TABLES = [
-    "parcels",
-    "crop_seasons",
-    "disease_reports",
-    "diagnoses",
-    "treatment_applications",
+    "vw_parcels_approved",
+    "vw_crop_seasons_approved",
+    "vw_disease_reports_processed",
+    "vw_diagnoses_approved",
+    "vw_treatment_applications_confirmed",
+    "vw_ai_diagnosis_outcomes",
 ]
 
 
@@ -91,7 +93,7 @@ def ensure_database(headers, cookies) -> int | None:
         "database_name": "DX-Farm",
         "sqlalchemy_uri": DXFARM_DB_URI,
         "expose_in_sqllab": True,
-        "allow_run_async": True,
+        "allow_run_async": False,
     }
     resp = requests.post(
         f"{BASE_URL}/api/v1/database/", headers=headers, cookies=cookies, json=payload, timeout=15

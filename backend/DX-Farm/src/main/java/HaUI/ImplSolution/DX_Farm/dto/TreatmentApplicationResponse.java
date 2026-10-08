@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.dto;
 
 import java.math.BigDecimal;
@@ -30,5 +31,14 @@ public record TreatmentApplicationResponse(
   LocalDate appliedAt,
 
   // Ngày được phép thu hoạch trở lại
-  LocalDate harvestLockedUntil
+  LocalDate harvestLockedUntil,
+
+  // PENDING_CONFIRMATION, CONFIRMED or REJECTED
+  String confirmationStatus,
+
+  // True when the farmer reported the spraying
+  boolean reportedByFarmer,
+
+  // Reason the engineer rejected the report
+  String rejectionReason
 ){}

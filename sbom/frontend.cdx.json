@@ -1,0 +1,717 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "serialNumber": "urn:uuid:71f569e8-3ba7-4f33-9864-1b906ba947d9",
+  "metadata": {
+    "timestamp": "2026-10-07T07:26:06.967Z",
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "name": "npm",
+          "version": "11.16.0"
+        },
+        {
+          "type": "application",
+          "name": "cyclonedx-npm",
+          "group": "@cyclonedx",
+          "version": "6.0.1",
+          "author": "Jan Kowalleck",
+          "description": "Create CycloneDX Software Bill of Materials (SBOM) from NPM projects.",
+          "licenses": [
+            {
+              "license": {
+                "id": "Apache-2.0"
+              }
+            }
+          ],
+          "externalReferences": [
+            {
+              "url": "git+https://github.com/CycloneDX/cyclonedx-node-npm.git",
+              "type": "vcs",
+              "comment": "as detected from PackageJson property \"repository.url\""
+            },
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-node-npm#readme",
+              "type": "website",
+              "comment": "as detected from PackageJson property \"homepage\""
+            },
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-node-npm/issues",
+              "type": "issue-tracker",
+              "comment": "as detected from PackageJson property \"bugs.url\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:constraint:engine:node",
+              "value": ">=20.18.0"
+            },
+            {
+              "name": "cdx:npm:package:constraint:engine:npm",
+              "value": ">=9"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "name": "cyclonedx-library",
+          "group": "@cyclonedx",
+          "version": "10.3.0",
+          "author": "Jan Kowalleck",
+          "description": "Core functionality of CycloneDX for JavaScript (Node.js or WebBrowser).",
+          "licenses": [
+            {
+              "license": {
+                "id": "Apache-2.0"
+              }
+            }
+          ],
+          "externalReferences": [
+            {
+              "url": "git+https://github.com/CycloneDX/cyclonedx-javascript-library.git",
+              "type": "vcs",
+              "comment": "as detected from PackageJson property \"repository.url\""
+            },
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-javascript-library#readme",
+              "type": "website",
+              "comment": "as detected from PackageJson property \"homepage\""
+            },
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-javascript-library/issues",
+              "type": "issue-tracker",
+              "comment": "as detected from PackageJson property \"bugs.url\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:constraint:engine:node",
+              "value": ">=20.18.0"
+            }
+          ]
+        }
+      ]
+    },
+    "component": {
+      "type": "application",
+      "name": "dx-farm-frontend",
+      "version": "0.0.1",
+      "bom-ref": "dx-farm-frontend@0.0.1",
+      "purl": "pkg:npm/dx-farm-frontend@0.0.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:private",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": ""
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "oidc-client-ts",
+      "version": "3.5.0",
+      "bom-ref": "dx-farm-frontend@0.0.1|oidc-client-ts@3.5.0",
+      "description": "OpenID Connect (OIDC) & OAuth2 client library",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/oidc-client-ts@3.5.0",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/authts/oidc-client-ts.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/authts/oidc-client-ts#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/authts/oidc-client-ts/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/oidc-client-ts/-/oidc-client-ts-3.5.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "976abc97d0930933a56d7f809cae29dccfb8084a4aa7242195ee9b95091d1619b422c06ab319b5e5b61a49ad751bba5676c62be9ea5db116712690b20916d3f0"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=18"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/oidc-client-ts"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "react-dom",
+      "version": "18.3.1",
+      "bom-ref": "dx-farm-frontend@0.0.1|react-dom@18.3.1",
+      "description": "React package for working with the DOM.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/react-dom@18.3.1",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/facebook/react.git#packages/react-dom",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://reactjs.org/",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/facebook/react/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/react-dom/-/react-dom-18.3.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "e66e2740aa7ead945bd3d2cd1f9f463380714e1f76e75ff295b2886e97bb4e91b17c9fbd92fe812e42c15c88e3b296e06e720136a948db7b519d3593d2c9d423"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/react-dom"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "react-router-dom",
+      "version": "6.30.6",
+      "bom-ref": "dx-farm-frontend@0.0.1|react-router-dom@6.30.6",
+      "author": "Remix Software",
+      "description": "Declarative routing for React web applications",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/react-router-dom@6.30.6",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/remix-run/react-router.git#packages/react-router-dom",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/remix-run/react-router#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/remix-run/react-router/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/react-router-dom/-/react-router-dom-6.30.6.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "d111ca673ef0c1f7ef914fb6305553d8d9e32b8e2cb0b115fa6d02009692d8ab26a2baf08fb5b11f4d233b448e096dbafed20d5272474e85db943b37dc8dfc61"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=14.0.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/react-router-dom"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "react",
+      "version": "18.3.1",
+      "bom-ref": "dx-farm-frontend@0.0.1|react@18.3.1",
+      "description": "React is a JavaScript library for building user interfaces.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/react@18.3.1",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/facebook/react.git#packages/react",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://reactjs.org/",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/facebook/react/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/react/-/react-18.3.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "c12fa1020252851d0a844bcf240adfb8f54dd7e1f3d6dd18ea7e632eb1906e46f8bab80f13fd11bdefb590c075bffa16807826e1621c57e8bb176a53563fb689"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=0.10.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/react"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jwt-decode",
+      "version": "4.0.0",
+      "bom-ref": "dx-farm-frontend@0.0.1|jwt-decode@4.0.0",
+      "author": "Jose F. Romaniello",
+      "description": "Decode JWT tokens, mostly useful for browser applications.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/jwt-decode@4.0.0",
+      "externalReferences": [
+        {
+          "url": "git://github.com/auth0/jwt-decode.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/auth0/jwt-decode#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/auth0/jwt-decode/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/jwt-decode/-/jwt-decode-4.0.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "f8a2462321e0906b88ab720404d7ed7e15bf2df5a15d4218e8e9b25568e58aee4a1f5cb47f0ed543c627744d8ee2a65d31277d4aa6e70bc18e719132d0e9bbb0"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=18"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/jwt-decode"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "loose-envify",
+      "version": "1.4.0",
+      "bom-ref": "dx-farm-frontend@0.0.1|loose-envify@1.4.0",
+      "author": "Andres Suarez",
+      "description": "Fast (and loose) selective `process.env` replacer using js-tokens instead of an AST",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/loose-envify@1.4.0",
+      "externalReferences": [
+        {
+          "url": "git://github.com/zertosh/loose-envify.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/zertosh/loose-envify",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/zertosh/loose-envify/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/loose-envify/-/loose-envify-1.4.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "972bb13c6aff59f86b95e9b608bfd472751cd7372a280226043cee918ed8e45ff242235d928ebe7d12debe5c351e03324b0edfeb5d54218e34f04b71452a0add"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/loose-envify"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "scheduler",
+      "version": "0.23.2",
+      "bom-ref": "dx-farm-frontend@0.0.1|scheduler@0.23.2",
+      "description": "Cooperative scheduler for the browser environment.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/scheduler@0.23.2",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/facebook/react.git#packages/scheduler",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://reactjs.org/",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/facebook/react/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/scheduler/-/scheduler-0.23.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "50e4a1b0fc33ecdacc52a851eadd215a315dbaf3b36edbfbb680c7d7f848adf44d2030679c159dd02c094c6bd3a67815966c0609d3fdfd997fb55ac3a9cb98cd"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/scheduler"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "router",
+      "group": "@remix-run",
+      "version": "1.23.4",
+      "bom-ref": "dx-farm-frontend@0.0.1|@remix-run/router@1.23.4",
+      "author": "Remix Software",
+      "description": "Nested/Data-driven/Framework-agnostic Routing",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40remix-run/router@1.23.4",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/remix-run/react-router.git#packages/router",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/remix-run/react-router#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/remix-run/react-router/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/@remix-run/router/-/router-1.23.4.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "abb8f981e2bbc6cdd4252766f7f8b2b5435c9419cb998c7512749e0855c73debad76a80831e15e1ed519812dc48652b1741100bbc3b0b490b098bac4ce94aced"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=14.0.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@remix-run/router"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "react-router",
+      "version": "6.30.6",
+      "bom-ref": "dx-farm-frontend@0.0.1|react-router@6.30.6",
+      "author": "Remix Software",
+      "description": "Declarative routing for React",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/react-router@6.30.6",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/remix-run/react-router.git#packages/react-router",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/remix-run/react-router#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/remix-run/react-router/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/react-router/-/react-router-6.30.6.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "e477caee4e629bb2d3381d04a824267efcb80b5dc6f764ac8f55539a8b932b7009bf28ca4e716e095d2f70c003fc94be242e03bc320146b9407892058e1e555a"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=14.0.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/react-router"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "js-tokens",
+      "version": "4.0.0",
+      "bom-ref": "dx-farm-frontend@0.0.1|js-tokens@4.0.0",
+      "author": "Simon Lydell",
+      "description": "A regex that tokenizes JavaScript.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/js-tokens@4.0.0",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/lydell/js-tokens.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/lydell/js-tokens#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/lydell/js-tokens/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/js-tokens/-/js-tokens-4.0.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "45d2547e5704ddc5332a232a420b02bb4e853eef5474824ed1b7986cf84737893a6a9809b627dca02b53f5b7313a9601b690f690233a49bce0e026aeb16fcf29"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/js-tokens"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "dx-farm-frontend@0.0.1",
+      "dependsOn": [
+        "dx-farm-frontend@0.0.1|oidc-client-ts@3.5.0",
+        "dx-farm-frontend@0.0.1|react-dom@18.3.1",
+        "dx-farm-frontend@0.0.1|react-router-dom@6.30.6",
+        "dx-farm-frontend@0.0.1|react@18.3.1"
+      ]
+    },
+    {
+      "ref": "dx-farm-frontend@0.0.1|oidc-client-ts@3.5.0",
+      "dependsOn": [
+        "dx-farm-frontend@0.0.1|jwt-decode@4.0.0"
+      ]
+    },
+    {
+      "ref": "dx-farm-frontend@0.0.1|react-dom@18.3.1",
+      "dependsOn": [
+        "dx-farm-frontend@0.0.1|loose-envify@1.4.0",
+        "dx-farm-frontend@0.0.1|react@18.3.1",
+        "dx-farm-frontend@0.0.1|scheduler@0.23.2"
+      ]
+    },
+    {
+      "ref": "dx-farm-frontend@0.0.1|react-router-dom@6.30.6",
+      "dependsOn": [
+        "dx-farm-frontend@0.0.1|@remix-run/router@1.23.4",
+        "dx-farm-frontend@0.0.1|react-dom@18.3.1",
+        "dx-farm-frontend@0.0.1|react-router@6.30.6",
+        "dx-farm-frontend@0.0.1|react@18.3.1"
+      ]
+    },
+    {
+      "ref": "dx-farm-frontend@0.0.1|react@18.3.1",
+      "dependsOn": [
+        "dx-farm-frontend@0.0.1|loose-envify@1.4.0"
+      ]
+    },
+    {
+      "ref": "dx-farm-frontend@0.0.1|jwt-decode@4.0.0"
+    },
+    {
+      "ref": "dx-farm-frontend@0.0.1|loose-envify@1.4.0",
+      "dependsOn": [
+        "dx-farm-frontend@0.0.1|js-tokens@4.0.0"
+      ]
+    },
+    {
+      "ref": "dx-farm-frontend@0.0.1|scheduler@0.23.2",
+      "dependsOn": [
+        "dx-farm-frontend@0.0.1|loose-envify@1.4.0"
+      ]
+    },
+    {
+      "ref": "dx-farm-frontend@0.0.1|@remix-run/router@1.23.4"
+    },
+    {
+      "ref": "dx-farm-frontend@0.0.1|react-router@6.30.6",
+      "dependsOn": [
+        "dx-farm-frontend@0.0.1|@remix-run/router@1.23.4",
+        "dx-farm-frontend@0.0.1|react@18.3.1"
+      ]
+    },
+    {
+      "ref": "dx-farm-frontend@0.0.1|js-tokens@4.0.0"
+    }
+  ]
+}

@@ -27,13 +27,12 @@ Thứ tự: WP7-01 → WP7-02 → (WP7-03 ∥ WP7-04 ∥ WP7-05).
 |---|---|---|
 | Superset đọc thửa chưa duyệt (P4) | Đọc được (join thẳng bảng `parcels`) | Chỉ đọc được qua `vw_parcels_approved` (lọc `approval_status = APPROVED`) |
 | Superset đọc chẩn đoán/báo cáo chưa xử lý xong | Đọc được | Chỉ đọc qua view tương ứng, lọc theo trạng thái cuối cùng hợp lý (ví dụ `diagnoses` đã `APPROVED`) |
-| Bảng mới tạo sau này (ví dụ `rice_varieties`, `notifications` từ P4/P5) | Tự động được `superset_ro` SELECT (do `ALTER DEFAULT PRIVILEGES`) | Vẫn tự động được cấp quyền mặc định — chấp nhận được cho bảng danh mục không nhạy cảm; với bảng nghiệp vụ có trạng thái duyệt, cần `REVOKE` tường minh sau khi tạo view tương ứng |
+| Bảng mới tạo sau này (ví dụ `notifications`, `training_labels`) | Tự động được `superset_ro` SELECT (do `ALTER DEFAULT PRIVILEGES`) | Đóng; chỉ đọc được khi có view và được thêm vào danh sách trong seeder |
 
 **Hướng làm**
 
-- Tạo `vw_parcels_approved`, `vw_crop_seasons_approved`, `vw_disease_reports_processed`, `vw_diagnoses_approved` (tên cụ thể rà lại khi code theo đúng tên bảng/cột thật), mỗi view `SELECT` các cột cần cho BI, lọc đúng trạng thái "đã duyệt"/"đã xử lý xong" của từng bảng.
-- `REVOKE SELECT ON parcels, crop_seasons, disease_reports, diagnoses, treatment_applications FROM superset_ro`, sau đó `GRANT SELECT ON vw_parcels_approved, ... TO superset_ro`.
-- Giữ nguyên `ALTER DEFAULT PRIVILEGES` cho bảng mới nói chung (danh mục như `rice_varieties` không nhạy cảm), nhưng thêm `REVOKE` tường minh ngay sau khi tạo bất kỳ bảng nghiệp vụ có trạng thái duyệt mới trong các phase sau — ghi thành quy ước trong README cho người làm phase sau biết.
+- Sáu view trong `V9__bi_views.sql`: `vw_parcels_approved`, `vw_crop_seasons_approved`, `vw_disease_reports_processed`, `vw_diagnoses_approved`, `vw_treatment_applications_confirmed`, `vw_ai_diagnosis_outcomes`. Mỗi view chỉ có cột cần cho BI, lọc theo trạng thái đã duyệt/đã xử lý của chính nó và của thửa, vụ cha.
+- `SupersetReadOnlyRoleSeeder` chạy mỗi lần khởi động: bỏ `ALTER DEFAULT PRIVILEGES`, `REVOKE ALL` trên mọi bảng, rồi `GRANT SELECT` cho danh sách (sáu view và `diseases`, `pesticides`, `rice_varieties`). Bảng thêm về sau đóng sẵn; quy ước thêm view nằm ở `bi/README.md`.
 - `bi/bootstrap_datasources.py`: đổi 5 dataset đang trỏ bảng gốc sang trỏ view mới; export lại dashboard theo đúng quy trình ở `bi/README.md`.
 
 **Phạm vi ảnh hưởng**
@@ -142,7 +141,7 @@ Không đổi hành vi nếu giữ nguyên quyết định "nền trắng" — p
 
 - `service/WeatherService.java` (mới): gọi Open-Meteo REST API (không cần key) theo toạ độ, cache ngắn hạn (ví dụ 1 giờ) để tránh gọi quá nhiều.
 - Fallback: nếu gọi API thất bại (timeout, lỗi mạng), đọc từ file snapshot JSON tĩnh (theo Q1) đã chuẩn bị sẵn cho các thửa demo, trả về kèm cờ `isSnapshot = true`.
-- Endpoint `GET /api/v1/parcels/{code}/weather` (hoặc gắn vào response chi tiết thửa).
+- Endpoint `GET /api/v1/parcels/{code}/weather`. Snapshot là `weather-snapshot.json` trong resources của backend, gồm 5 điểm tham chiếu ĐBSCL; thửa nào cũng nhận điểm gần nhất.
 
 **Phạm vi ảnh hưởng**
 
@@ -173,7 +172,7 @@ Không đổi hành vi nếu giữ nguyên quyết định "nền trắng" — p
 
 | Tình huống | Hành vi hiện tại | Hành vi sau thay đổi |
 |---|---|---|
-| Người dùng (farmer/engineer/admin) muốn tra cứu tài liệu VietGAP, hướng dẫn | Không có giao diện, chỉ có API kỹ thuật | Trang `/knowledge` (web), nhập câu hỏi, nhận đoạn trả lời kèm danh sách nguồn (`source_ids` → tên tài liệu) |
+| Người dùng (farmer/engineer/admin) muốn tra cứu tài liệu bệnh lúa | Không có giao diện, chỉ có API kỹ thuật | Trang `/knowledge` (web), nhập câu hỏi, nhận đoạn trả lời kèm danh sách nguồn (`source_ids` → tên tài liệu); câu hỏi ngoài kho tài liệu (điểm tương đồng dưới ngưỡng) trả danh sách rỗng |
 
 **Hướng làm**
 
@@ -190,7 +189,7 @@ Không đổi hành vi nếu giữ nguyên quyết định "nền trắng" — p
 
 **Kết quả đầu ra**
 
-- Nhập câu hỏi về VietGAP/hướng dẫn, nhận câu trả lời kèm ít nhất 1 nguồn trích dẫn xác định được.
+- Nhập câu hỏi về bệnh lúa, nhận đoạn trả lời kèm ít nhất 1 nguồn trích dẫn xác định được.
 - README mục "RAG trả lời có trích nguồn" chuyển sang đã tick.
 
 **Phụ thuộc, lưu ý**: tái dùng nguyên `/disease/knowledge/retrieve` đã có, không viết retriever mới; không phụ thuộc WP khác trong phase này.
@@ -202,11 +201,11 @@ Không đổi hành vi nếu giữ nguyên quyết định "nền trắng" — p
 | Endpoint | `GET /api/v1/parcels/{code}/weather` | Mới | Không |
 | Endpoint | `POST /api/v1/knowledge/ask` | Mới | Không |
 | Quyền DB | `superset_ro` | `REVOKE SELECT` trên 5 bảng gốc, `GRANT SELECT` trên view mới | Có (dashboard cũ phải đổi dataset) |
-| Bảng DB | `vw_parcels_approved`, `vw_crop_seasons_approved`, `vw_disease_reports_processed`, `vw_diagnoses_approved` | View mới | Không |
+| Bảng DB | `vw_parcels_approved`, `vw_crop_seasons_approved`, `vw_disease_reports_processed`, `vw_diagnoses_approved`, `vw_treatment_applications_confirmed`, `vw_ai_diagnosis_outcomes` | View mới | Không |
 
 ## Dữ liệu, migration và rollback
 
-- Migration: tạo 4 view qua Flyway (đã có từ P2), kèm `REVOKE`/`GRANT` trong cùng migration hoặc trong `SupersetReadOnlyRoleSeeder`.
+- Migration: tạo 6 view qua Flyway; `REVOKE`/`GRANT` nằm trong `SupersetReadOnlyRoleSeeder` vì role được tạo lúc khởi động, sau migration.
 - Dữ liệu cũ: không ảnh hưởng, view chỉ là lớp đọc.
 - Rollback: `REVOKE`/`GRANT` có thể đảo ngược bằng migration ngược; xoá view không mất dữ liệu gốc.
 

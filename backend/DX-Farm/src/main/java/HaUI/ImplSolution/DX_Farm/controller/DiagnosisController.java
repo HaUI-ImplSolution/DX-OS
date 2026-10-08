@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.controller;
 
 import HaUI.ImplSolution.DX_Farm.dto.ApiResponse;
@@ -5,13 +6,17 @@ import HaUI.ImplSolution.DX_Farm.dto.DiagnosisApplyRequest;
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisCreateRequest;
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisRejectRequest;
 import HaUI.ImplSolution.DX_Farm.dto.DiagnosisResponse;
+import HaUI.ImplSolution.DX_Farm.dto.SymptomSuggestRequest;
+import HaUI.ImplSolution.DX_Farm.dto.SymptomSuggestionResponse;
 import HaUI.ImplSolution.DX_Farm.dto.TreatmentApplicationResponse;
 import HaUI.ImplSolution.DX_Farm.service.DiagnosisService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,16 +38,32 @@ public class DiagnosisController {
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(
-      summary = "Record CV diagnosis manually (testing/demo) + deterministic treatment lookup")
+  @Operation(summary = "Record an engineer diagnosis, with optional symptom text",
+      description = "Preserves diagnosis history. Missing treatment rules produce review-only recommendations, never a fabricated dose or PHI.")
   public ApiResponse<DiagnosisResponse> create(@PathVariable Long reportId,
       @Valid @RequestBody DiagnosisCreateRequest request) {
     return ApiResponse.success("Diagnosis recorded", diagnosisService.create(reportId, request));
   }
 
+  @PostMapping("/suggest")
+  @Operation(summary = "Rank catalog diseases from symptom text",
+      description = "RAG evidence only; scores are similarities, not diagnostic confidence. Does not save a diagnosis.")
+  public ApiResponse<List<SymptomSuggestionResponse>> suggest(@PathVariable Long reportId,
+      @Valid @RequestBody SymptomSuggestRequest request) {
+    return ApiResponse.success(diagnosisService.suggest(reportId, request.symptomText()));
+  }
+
+  @GetMapping("/history")
+  @Operation(summary = "List all diagnoses for this report, newest first",
+      description = "Staff only. Earlier diagnoses and treatment locks are preserved.")
+  public ApiResponse<List<DiagnosisResponse>> history(@PathVariable Long reportId) {
+    return ApiResponse.success(diagnosisService.history(reportId));
+  }
+
   @PostMapping("/ai")
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(summary = "Trigger AI Service diagnosis + deterministic treatment lookup")
+  @Operation(summary = "Run or rerun AI diagnosis outside the database transaction",
+      description = "Preserves earlier diagnoses. 409 if a newer diagnosis arrives during inference or the report needs retake. Latest saved id is current.")
   public ApiResponse<DiagnosisResponse> createFromAi(@PathVariable Long reportId) {
     return ApiResponse.success("Diagnosis recorded", diagnosisService.createFromAi(reportId));
   }

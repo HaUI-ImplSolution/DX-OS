@@ -3,6 +3,7 @@ export interface ApiResponse<T> {
   message: string;
   data: T;
   timestamp: string;
+  errorCode?: string;
 }
 
 export interface Parcel {
@@ -52,6 +53,12 @@ export interface CropSeason {
   approvalStatus: ApprovalStatus;
   rejectionReason: string | null;
   harvestedAt: string | null;
+  actualHarvestDate: string | null;
+  yieldKg: number | null;
+  harvestedAreaHectares: number | null;
+  harvestedByName: string | null;
+  earlyReason: string | null;
+  harvestOnBehalfReason: string | null;
 }
 
 export interface CropSeasonInput {
@@ -128,4 +135,105 @@ export interface DiseaseReport {
   reportedBy: string;
   reportedAt: string;
   diagnosis: Diagnosis | null;
+  status: "PENDING" | "NEEDS_RETAKE" | "PROCESSED";
+  retakeReason: string | null;
+  retakeOf: number | null;
+  retakeIds: number[];
+  quality: ImagePrecheck | null;
+}
+
+export interface ImagePrecheck {
+  passed: boolean;
+  reasons: string[];
+  width: number;
+  height: number;
+  sharpness: number;
+  brightness: number;
+}
+
+export interface HarvestWarning {
+  code: "PENDING_REPORTS" | "UNTREATED_RECOMMENDATIONS";
+  message: string;
+}
+
+export interface HarvestReadiness {
+  cropSeasonId: number;
+  expectedHarvestDate: string | null;
+  daysBeforeExpected: number;
+  earlyConfirmationRequired: boolean;
+  isolation: IsolationStatus;
+  warnings: HarvestWarning[];
+}
+
+export interface HarvestInput {
+  actualHarvestDate?: string;
+  yieldKg: number;
+  harvestedAreaHectares?: number;
+  confirmEarly?: boolean;
+  earlyReason?: string;
+}
+
+export interface HarvestReschedule {
+  id: number;
+  previousDate: string;
+  newDate: string;
+  reason: string;
+  rescheduledByName: string | null;
+  rescheduledAt: string;
+}
+
+export type TreatmentConfirmationStatus = "PENDING_CONFIRMATION" | "CONFIRMED" | "REJECTED";
+
+export interface TreatmentApplication {
+  id: number;
+  cropSeasonId: number;
+  diagnosisId: number | null;
+  pesticideCode: string;
+  doseAmountSnapshot: number;
+  doseUnitSnapshot: string;
+  phiDaysSnapshot: number;
+  appliedAt: string;
+  harvestLockedUntil: string;
+  confirmationStatus: TreatmentConfirmationStatus;
+  reportedByFarmer: boolean;
+  rejectionReason: string | null;
+}
+
+export interface TreatmentInput {
+  doseAmount: number;
+  appliedAt?: string;
+}
+
+export type NotificationType =
+  | "PARCEL_APPROVED"
+  | "PARCEL_REJECTED"
+  | "PARCEL_EDIT_APPROVED"
+  | "PARCEL_EDIT_REJECTED"
+  | "CROP_SEASON_APPROVED"
+  | "CROP_SEASON_REJECTED"
+  | "DIAGNOSIS_APPROVED"
+  | "DIAGNOSIS_REJECTED"
+  | "TREATMENT_CONFIRMED"
+  | "TREATMENT_REJECTED"
+  | "HARVEST_REMINDER"
+  | "HARVEST_RECORDED"
+  | "RETAKE_REQUESTED";
+
+export interface AppNotification {
+  id: number;
+  type: NotificationType;
+  title: string;
+  body: string;
+  relatedEntityType: "PARCEL" | "CROP_SEASON" | "DISEASE_REPORT" | null;
+  relatedEntityRef: string | null;
+  readAt: string | null;
+  createdAt: string;
+}
+
+export interface Page<T> {
+  items: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
 }

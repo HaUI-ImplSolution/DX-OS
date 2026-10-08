@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.core.workflow;
 
 // Applies a decision on a case to the application entity it tracks. The workflow core only finds

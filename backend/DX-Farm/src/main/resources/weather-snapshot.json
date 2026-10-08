@@ -1,0 +1,63 @@
+{
+  "source": "Open-Meteo (https://open-meteo.com)",
+  "license": "CC BY 4.0",
+  "capturedAt": "2026-10-07",
+  "note": "Mekong Delta reference points captured once; served only when the live API cannot be reached.",
+  "points": [
+    {
+      "name": "Cần Thơ", "latitude": 10.03, "longitude": 105.78,
+      "current": {"temperatureC": 30.7, "humidityPercent": 70, "precipitationMm": 0.1, "windSpeedKmh": 7.5, "weatherCode": 95},
+      "daily": [
+        {"date": "2026-10-07", "tempMaxC": 30.7, "tempMinC": 24.6, "precipitationMm": 17.9, "precipitationProbabilityPercent": 87},
+        {"date": "2026-10-08", "tempMaxC": 30.9, "tempMinC": 24.2, "precipitationMm": 29.2, "precipitationProbabilityPercent": 99},
+        {"date": "2026-10-09", "tempMaxC": 30.6, "tempMinC": 23.7, "precipitationMm": 24.1, "precipitationProbabilityPercent": 99},
+        {"date": "2026-10-10", "tempMaxC": 29.8, "tempMinC": 24.5, "precipitationMm": 16.9, "precipitationProbabilityPercent": 98},
+        {"date": "2026-10-11", "tempMaxC": 30.4, "tempMinC": 23.9, "precipitationMm": 7.2, "precipitationProbabilityPercent": 98}
+      ]
+    },
+    {
+      "name": "An Giang", "latitude": 10.38, "longitude": 105.43,
+      "current": {"temperatureC": 30.8, "humidityPercent": 69, "precipitationMm": 0.0, "windSpeedKmh": 6.8, "weatherCode": 3},
+      "daily": [
+        {"date": "2026-10-07", "tempMaxC": 30.8, "tempMinC": 24.2, "precipitationMm": 9.4, "precipitationProbabilityPercent": 88},
+        {"date": "2026-10-08", "tempMaxC": 31.4, "tempMinC": 23.7, "precipitationMm": 27.5, "precipitationProbabilityPercent": 100},
+        {"date": "2026-10-09", "tempMaxC": 31.1, "tempMinC": 24.3, "precipitationMm": 12.0, "precipitationProbabilityPercent": 94},
+        {"date": "2026-10-10", "tempMaxC": 31.0, "tempMinC": 24.7, "precipitationMm": 8.0, "precipitationProbabilityPercent": 98},
+        {"date": "2026-10-11", "tempMaxC": 31.8, "tempMinC": 23.6, "precipitationMm": 10.8, "precipitationProbabilityPercent": 90}
+      ]
+    },
+    {
+      "name": "Đồng Tháp", "latitude": 10.46, "longitude": 105.63,
+      "current": {"temperatureC": 30.9, "humidityPercent": 66, "precipitationMm": 0.0, "windSpeedKmh": 6.2, "weatherCode": 3},
+      "daily": [
+        {"date": "2026-10-07", "tempMaxC": 31.2, "tempMinC": 24.3, "precipitationMm": 14.5, "precipitationProbabilityPercent": 86},
+        {"date": "2026-10-08", "tempMaxC": 31.6, "tempMinC": 23.8, "precipitationMm": 20.1, "precipitationProbabilityPercent": 100},
+        {"date": "2026-10-09", "tempMaxC": 31.5, "tempMinC": 24.5, "precipitationMm": 8.1, "precipitationProbabilityPercent": 97},
+        {"date": "2026-10-10", "tempMaxC": 30.8, "tempMinC": 24.5, "precipitationMm": 12.5, "precipitationProbabilityPercent": 100},
+        {"date": "2026-10-11", "tempMaxC": 31.6, "tempMinC": 23.7, "precipitationMm": 14.4, "precipitationProbabilityPercent": 92}
+      ]
+    },
+    {
+      "name": "Sóc Trăng", "latitude": 9.6, "longitude": 105.97,
+      "current": {"temperatureC": 30.0, "humidityPercent": 78, "precipitationMm": 0.2, "windSpeedKmh": 5.6, "weatherCode": 95},
+      "daily": [
+        {"date": "2026-10-07", "tempMaxC": 30.4, "tempMinC": 25.0, "precipitationMm": 27.6, "precipitationProbabilityPercent": 98},
+        {"date": "2026-10-08", "tempMaxC": 30.9, "tempMinC": 23.8, "precipitationMm": 14.5, "precipitationProbabilityPercent": 100},
+        {"date": "2026-10-09", "tempMaxC": 30.4, "tempMinC": 23.9, "precipitationMm": 9.7, "precipitationProbabilityPercent": 100},
+        {"date": "2026-10-10", "tempMaxC": 30.1, "tempMinC": 24.1, "precipitationMm": 20.3, "precipitationProbabilityPercent": 100},
+        {"date": "2026-10-11", "tempMaxC": 30.3, "tempMinC": 24.1, "precipitationMm": 15.2, "precipitationProbabilityPercent": 100}
+      ]
+    },
+    {
+      "name": "Cà Mau", "latitude": 9.18, "longitude": 105.15,
+      "current": {"temperatureC": 30.6, "humidityPercent": 72, "precipitationMm": 0.1, "windSpeedKmh": 0.4, "weatherCode": 95},
+      "daily": [
+        {"date": "2026-10-07", "tempMaxC": 30.5, "tempMinC": 24.5, "precipitationMm": 14.7, "precipitationProbabilityPercent": 92},
+        {"date": "2026-10-08", "tempMaxC": 30.5, "tempMinC": 24.3, "precipitationMm": 13.9, "precipitationProbabilityPercent": 96},
+        {"date": "2026-10-09", "tempMaxC": 30.8, "tempMinC": 24.2, "precipitationMm": 13.5, "precipitationProbabilityPercent": 96},
+        {"date": "2026-10-10", "tempMaxC": 30.3, "tempMinC": 24.8, "precipitationMm": 10.4, "precipitationProbabilityPercent": 99},
+        {"date": "2026-10-11", "tempMaxC": 28.8, "tempMinC": 24.1, "precipitationMm": 20.0, "precipitationProbabilityPercent": 100}
+      ]
+    }
+  ]
+}

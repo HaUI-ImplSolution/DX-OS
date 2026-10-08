@@ -1,9 +1,11 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.repository;
 
 import HaUI.ImplSolution.DX_Farm.model.CropSeason;
 import HaUI.ImplSolution.DX_Farm.model.CropSeasonStatus;
 import HaUI.ImplSolution.DX_Farm.model.ApprovalStatus;
 import HaUI.ImplSolution.DX_Farm.model.SeasonType;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -31,4 +33,8 @@ public interface CropSeasonRepository extends JpaRepository<CropSeason, Long> {
   List<CropSeason> findByIdIn(Collection<Long> ids);
 
   boolean existsByParcel_IdAndDeletedAtIsNull(Long parcelId);
+
+  // Approved seasons still growing whose expected harvest date has come.
+  List<CropSeason> findByStatusAndApprovalStatusAndDeletedAtIsNullAndExpectedHarvestDateLessThanEqual(
+      CropSeasonStatus status, ApprovalStatus approvalStatus, LocalDate date);
 }

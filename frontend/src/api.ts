@@ -1,4 +1,5 @@
 import { clearSession, getToken } from "./auth";
+import { errorMessageFor } from "./errorMessages";
 import type {
   ApiResponse,
   ApprovalRequest,
@@ -9,14 +10,18 @@ import type {
   CropSeasonSuggestion,
   Diagnosis,
   DiagnosisApplyRequest,
+  HarvestReadiness,
+  HarvestRequest,
   DiagnosisCreateRequest,
   DiagnosisRejectRequest,
   Disease,
   DiseaseReport,
+  SymptomSuggestion,
   Household,
   HouseholdCreateRequest,
   HouseholdCreateResult,
   IsolationStatus,
+  KnowledgeAnswer,
   Page,
   Parcel,
   ParcelCreateRequest,
@@ -56,7 +61,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     clearSession();
   }
   if (!response.ok || !body?.success) {
-    const message = body?.message ?? `Lỗi HTTP ${response.status}`;
+    const message = errorMessageFor(body?.errorCode, body?.message ?? `Lỗi HTTP ${response.status}`);
     throw new ApiError(message, response.status, body?.data);
   }
   return body.data;
@@ -92,8 +97,10 @@ export const listCropSeasons = (parcelCode: string) =>
   request<CropSeason[]>(`/parcels/${encodeURIComponent(parcelCode)}/crop-seasons`);
 export const createCropSeason = (parcelCode: string, payload: CropSeasonCreateRequest) =>
   request<CropSeason>(`/parcels/${encodeURIComponent(parcelCode)}/crop-seasons`, json("POST", payload));
-export const harvestCropSeason = (id: number) =>
-  request<CropSeason>(`/crop-seasons/${id}/harvest`, { method: "POST" });
+export const harvestCropSeason = (id: number, payload: HarvestRequest) =>
+  request<CropSeason>(`/crop-seasons/${id}/harvest`, json("POST", payload));
+export const getHarvestReadiness = (id: number) =>
+  request<HarvestReadiness>(`/crop-seasons/${id}/harvest-readiness`);
 export const getIsolationStatus = (id: number) =>
   request<IsolationStatus>(`/crop-seasons/${id}/isolation-status`);
 
@@ -142,6 +149,15 @@ export const approveDiagnosis = (reportId: number) =>
   request<Diagnosis>(`/disease-reports/${reportId}/diagnosis/approve`, { method: "POST" });
 export const rejectDiagnosis = (reportId: number, payload: DiagnosisRejectRequest) =>
   request<Diagnosis>(`/disease-reports/${reportId}/diagnosis/reject`, json("POST", payload));
+export const confirmTreatment = (reportId: number) =>
+  request<TreatmentApplication>(`/disease-reports/${reportId}/treatment-application/confirm`, {
+    method: "POST",
+  });
+export const rejectTreatment = (reportId: number, payload: DiagnosisRejectRequest) =>
+  request<TreatmentApplication>(
+    `/disease-reports/${reportId}/treatment-application/reject`,
+    json("POST", payload),
+  );
 export const applyDiagnosis = (reportId: number, payload: DiagnosisApplyRequest) =>
   request<TreatmentApplication>(`/disease-reports/${reportId}/diagnosis/apply`, json("POST", payload));
 
@@ -149,3 +165,13 @@ export const applyDiagnosis = (reportId: number, payload: DiagnosisApplyRequest)
 export const listDiseases = () => request<Disease[]>("/diseases");
 export const listPesticides = () => request<Pesticide[]>("/pesticides");
 export const listTreatmentRules = () => request<TreatmentRule[]>("/treatment-rules");
+
+export const askKnowledge = (question: string, diseaseCode?: string) =>
+  request<KnowledgeAnswer>("/knowledge/ask", json("POST", { question, diseaseCode: diseaseCode || null }));
+
+export const suggestDiagnosis = (reportId: number, symptomText: string) =>
+  request<SymptomSuggestion[]>(`/disease-reports/${reportId}/diagnosis/suggest`, json("POST", { symptomText }));
+export const requestReportRetake = (reportId: number, reason: string) =>
+  request<DiseaseReport>(`/disease-reports/${reportId}/request-retake`, json("PATCH", { reason }));
+export const diagnosisHistory = (reportId: number) =>
+  request<Diagnosis[]>(`/disease-reports/${reportId}/diagnosis/history`);

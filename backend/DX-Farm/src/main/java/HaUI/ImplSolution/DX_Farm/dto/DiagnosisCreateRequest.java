@@ -1,9 +1,11 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.dto;
 
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 
 // @formatter:off
@@ -20,5 +22,12 @@ public record DiagnosisCreateRequest(
 
   // Phiên bản model AI đã dùng để chẩn đoán
   @NotBlank
-  String modelVersion
-){}
+  String modelVersion,
+
+  // Symptoms the engineer observed; kept with the diagnosis and copied to the training label on approval
+  @Size(max = 4000) String symptomText
+){
+  public DiagnosisCreateRequest(String diseaseCode, BigDecimal confidence, String modelVersion) {
+    this(diseaseCode, confidence, modelVersion, null);
+  }
+}

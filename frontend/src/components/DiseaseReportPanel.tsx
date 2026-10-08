@@ -14,6 +14,7 @@ interface DiseaseReportPanelProps {
 }
 
 function diagnosisBadge(report: DiseaseReport) {
+  if (report.status === "NEEDS_RETAKE") return <Badge tone="danger">Cần chụp lại</Badge>;
   if (!report.diagnosis) return <Badge tone="neutral">Chưa chẩn đoán</Badge>;
   const status = report.diagnosis.approvalStatus;
   const tone = status === "APPROVED" ? "success" : status === "REJECTED" ? "danger" : "warning";

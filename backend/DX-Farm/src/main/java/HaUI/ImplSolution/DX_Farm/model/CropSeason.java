@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.model;
 
 import jakarta.persistence.Column;
@@ -12,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -87,6 +89,28 @@ public class CropSeason {
 
   // Thời điểm thực tế đã thu hoạch
   private Instant harvestedAt;
+
+  // Day the harvest took place, as declared
+  private LocalDate actualHarvestDate;
+
+  // Harvested weight in kilograms
+  @Column(precision = 12, scale = 2)
+  private BigDecimal yieldKg;
+
+  // Harvested area in hectares, never above the parcel area
+  @Column(precision = 10, scale = 2)
+  private BigDecimal harvestedAreaHectares;
+
+  // Token "sub" and display name of whoever declared the harvest
+  private String harvestedByUserId;
+
+  private String harvestedByName;
+
+  // Reason given when the harvest was declared before the expected date
+  private String earlyReason;
+
+  // Reason an administrator gave for declaring the harvest in place of the farmer
+  private String harvestOnBehalfReason;
 
   // Xóa mềm: khác null nghĩa là vụ mùa đã bị admin xóa
   private Instant deletedAt;

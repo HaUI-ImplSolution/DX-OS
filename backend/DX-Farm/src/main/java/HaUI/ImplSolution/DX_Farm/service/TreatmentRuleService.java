@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.service;
 
 import HaUI.ImplSolution.DX_Farm.dto.TreatmentRuleResponse;
@@ -5,6 +6,7 @@ import HaUI.ImplSolution.DX_Farm.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.DX_Farm.model.TreatmentRule;
 import HaUI.ImplSolution.DX_Farm.repository.TreatmentRuleRepository;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +23,10 @@ public class TreatmentRuleService {
   public List<TreatmentRuleResponse> listAll() {
     return treatmentRuleRepository.findAllByActiveTrueOrderByIdAsc().stream()
         .map(TreatmentRuleService::toResponse).toList();
+  }
+
+  public Optional<TreatmentRule> findByDiseaseCode(String code) {
+    return treatmentRuleRepository.findFirstByDisease_CodeAndActiveTrueOrderByIdAsc(code);
   }
 
   public TreatmentRule findByDiseaseCodeOrThrow(String diseaseCode) {

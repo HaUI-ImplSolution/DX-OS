@@ -1,9 +1,11 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.service;
 
 import HaUI.ImplSolution.DX_Farm.event.CropSeasonCreatedEvent;
 import HaUI.ImplSolution.DX_Farm.event.DiagnosisPendingEvent;
 import HaUI.ImplSolution.DX_Farm.event.DiseaseReportCreatedEvent;
 import HaUI.ImplSolution.DX_Farm.event.ParcelCreatedEvent;
+import HaUI.ImplSolution.DX_Farm.event.TreatmentReportedEvent;
 import java.util.Map;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
@@ -39,6 +41,12 @@ public class MattermostNotificationListener {
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onDiagnosisPending(DiagnosisPendingEvent event) {
     dispatch(MattermostChannel.ENGINEER, () -> messageBuilder.diagnosisPending(event));
+  }
+
+  @Async("mattermostNotifyExecutor")
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onTreatmentReported(TreatmentReportedEvent event) {
+    dispatch(MattermostChannel.ENGINEER, () -> messageBuilder.treatmentReported(event));
   }
 
   @Async("mattermostNotifyExecutor")

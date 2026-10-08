@@ -16,6 +16,7 @@ import {
 import CaseDetail from "./pages/CaseDetail";
 import DemoFlow from "./pages/DemoFlow";
 import Households from "./pages/Households";
+import Knowledge from "./pages/Knowledge";
 import Queue from "./pages/Queue";
 import Requests from "./pages/Requests";
 
@@ -174,6 +175,11 @@ export default function App() {
               Hàng đợi chẩn đoán
             </NavLink>
           )}
+          {staff && (
+            <NavLink to="/knowledge" className={({ isActive }) => (isActive ? "tab tab-active" : "tab")}>
+              Tài liệu
+            </NavLink>
+          )}
         </nav>
       </header>
 
@@ -189,6 +195,7 @@ export default function App() {
         <Route path="/requests" element={<Requests role={user.role} onError={showError} />} />
         <Route path="/requests/:caseId" element={<CaseDetail role={user.role} onError={showError} />} />
         {user.role === "ADMIN" && <Route path="/households" element={<Households onError={showError} />} />}
+        {staff && <Route path="/knowledge" element={<Knowledge onError={showError} />} />}
         <Route path="/queue" element={<Queue role={user.role} onError={showError} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

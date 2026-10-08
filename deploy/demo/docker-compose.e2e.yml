@@ -1,0 +1,20 @@
+# Reduced stack for the E2E run: no BI, chat, RAG ingest or local LLM.
+#   docker compose -f docker-compose.yml -f demo/docker-compose.e2e.yml up -d --build --wait \
+#     postgres minio keycloak backend ai frontend portal apisix
+services:
+  apisix:
+    depends_on: !override
+      backend:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+      portal:
+        condition: service_healthy
+  ai:
+    depends_on: !override
+      backend:
+        condition: service_healthy

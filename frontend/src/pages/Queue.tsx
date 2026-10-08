@@ -14,18 +14,21 @@ interface QueueProps {
 }
 
 type Tab = "mine" | "free";
+type Kind = "DIAGNOSIS_APPROVAL" | "TREATMENT_CONFIRMATION";
 
 const PAGE_SIZE = 10;
 
-// Diagnoses waiting for an engineer: the ones taken by me, and the ones nobody has taken yet.
+// Diagnoses and spraying reports waiting for an engineer: the ones taken by me, and the ones
+// nobody has taken yet.
 export default function Queue({ role, onError }: QueueProps) {
   const [tab, setTab] = useState<Tab>("mine");
+  const [kind, setKind] = useState<Kind>("DIAGNOSIS_APPROVAL");
   const [page, setPage] = useState(0);
   const [result, setResult] = useState<Page<ApprovalRequest> | null>(null);
 
   const load = useCallback(() => {
     listApprovalRequests({
-      caseType: "DIAGNOSIS_APPROVAL",
+      caseType: kind,
       status: "PENDING",
       assignedTo: tab === "mine" ? "me" : undefined,
       unassigned: tab === "free" ? true : undefined,
@@ -34,7 +37,7 @@ export default function Queue({ role, onError }: QueueProps) {
     })
       .then(setResult)
       .catch((err) => onError(err.message));
-  }, [tab, page, onError]);
+  }, [tab, kind, page, onError]);
 
   useEffect(load, [load]);
 
@@ -43,8 +46,27 @@ export default function Queue({ role, onError }: QueueProps) {
     setPage(0);
   };
 
+  const switchKind = (next: Kind) => {
+    setKind(next);
+    setPage(0);
+  };
+
   return (
-    <Section step="🧑‍🔧" title="Hàng đợi chẩn đoán" subtitle="Nhận việc, xem ảnh và kết quả AI rồi duyệt hoặc từ chối">
+    <Section step="🧑‍🔧" title="Hàng đợi kỹ sư" subtitle="Nhận việc rồi duyệt chẩn đoán hoặc xác nhận việc phun thuốc">
+      <nav className="tabs">
+        <button
+          className={kind === "DIAGNOSIS_APPROVAL" ? "tab tab-active" : "tab"}
+          onClick={() => switchKind("DIAGNOSIS_APPROVAL")}
+        >
+          Chẩn đoán
+        </button>
+        <button
+          className={kind === "TREATMENT_CONFIRMATION" ? "tab tab-active" : "tab"}
+          onClick={() => switchKind("TREATMENT_CONFIRMATION")}
+        >
+          Khai phun thuốc
+        </button>
+      </nav>
       <nav className="tabs">
         <button className={tab === "mine" ? "tab tab-active" : "tab"} onClick={() => switchTab("mine")}>
           Việc của tôi
@@ -56,7 +78,7 @@ export default function Queue({ role, onError }: QueueProps) {
 
       {result && result.items.length === 0 && (
         <p className="empty-hint">
-          {tab === "mine" ? "Bạn chưa nhận việc nào." : "Không còn chẩn đoán nào chờ người nhận."}
+          {tab === "mine" ? "Bạn chưa nhận việc nào." : "Không còn việc nào chờ người nhận."}
         </p>
       )}
 
@@ -67,7 +89,7 @@ export default function Queue({ role, onError }: QueueProps) {
             <Badge tone={STATUS_TONE[request.status]}>{STATUS_LABEL[request.status]}</Badge>
           </div>
           <div className="cell-sub">
-            {request.details.diseaseName ?? "—"} · {request.farmerName ?? "—"} (hộ {request.householdCode ?? "—"}) ·{" "}
+            {request.details.diseaseName ?? request.details.pesticide ?? "—"} · {request.farmerName ?? "—"} (hộ {request.householdCode ?? "—"}) ·{" "}
             {formatDateTime(request.createdAt)}
           </div>
           <div className="form-actions">

@@ -3,6 +3,7 @@ export interface ApiResponse<T> {
   message: string;
   data: T;
   timestamp: string;
+  errorCode?: string;
 }
 
 export type Role = "FARMER" | "ENGINEER" | "ADMIN";
@@ -74,6 +75,30 @@ export interface CropSeason {
   approvalStatus: ApprovalStatus;
   rejectionReason: string | null;
   harvestedAt: string | null;
+  actualHarvestDate: string | null;
+  yieldKg: number | null;
+  harvestedAreaHectares: number | null;
+  harvestedByName: string | null;
+  earlyReason: string | null;
+  harvestOnBehalfReason: string | null;
+}
+
+export interface HarvestRequest {
+  actualHarvestDate?: string;
+  yieldKg: number;
+  harvestedAreaHectares?: number;
+  confirmEarly?: boolean;
+  earlyReason?: string;
+  reasonOnBehalf: string;
+}
+
+export interface HarvestReadiness {
+  cropSeasonId: number;
+  expectedHarvestDate: string | null;
+  daysBeforeExpected: number;
+  earlyConfirmationRequired: boolean;
+  isolation: IsolationStatus;
+  warnings: { code: string; message: string }[];
 }
 
 export interface CropSeasonCreateRequest {
@@ -150,9 +175,15 @@ export interface DiseaseReport {
   reportedBy: string;
   reportedAt: string;
   diagnosis: Diagnosis | null;
+  status: "PENDING" | "NEEDS_RETAKE" | "PROCESSED";
+  retakeReason: string | null;
+  retakeOf: number | null;
+  retakeIds: number[];
+  quality: ImagePrecheck | null;
 }
 
 export interface DiagnosisCreateRequest {
+  symptomText?: string;
   diseaseCode: string;
   confidence: number;
   modelVersion: string;
@@ -177,6 +208,9 @@ export interface TreatmentApplication {
   phiDaysSnapshot: number;
   appliedAt: string;
   harvestLockedUntil: string;
+  confirmationStatus: "PENDING_CONFIRMATION" | "CONFIRMED" | "REJECTED";
+  reportedByFarmer: boolean;
+  rejectionReason: string | null;
 }
 
 export interface Disease {
@@ -198,11 +232,29 @@ export interface PokaYokeErrorData {
   harvestLockedUntil: string | null;
 }
 
+export interface ImagePrecheck {
+  passed: boolean;
+  reasons: string[];
+  width: number;
+  height: number;
+  sharpness: number;
+  brightness: number;
+}
+
+export interface SymptomSuggestion {
+  disease_code: string;
+  disease_name: string;
+  score: number;
+  evidence: string;
+  source_ids: string[];
+}
+
 export type CaseType =
   | "PARCEL_APPROVAL"
   | "PARCEL_EDIT_REQUEST"
   | "CROP_SEASON_APPROVAL"
-  | "DIAGNOSIS_APPROVAL";
+  | "DIAGNOSIS_APPROVAL"
+  | "TREATMENT_CONFIRMATION";
 
 export type CaseStatus = ApprovalStatus | "CANCELLED";
 
@@ -255,4 +307,26 @@ export interface ApprovalRequestFilter {
   to?: string;
   page?: number;
   size?: number;
+}
+
+export interface KnowledgeSource {
+  sourceId: string;
+  title: string;
+  organization: string | null;
+  url: string | null;
+  license: string | null;
+  reviewStatus: string | null;
+}
+
+export interface KnowledgePassage {
+  content: string;
+  documentTitle: string;
+  diseaseCode: string | null;
+  score: number;
+  sources: KnowledgeSource[];
+}
+
+export interface KnowledgeAnswer {
+  question: string;
+  passages: KnowledgePassage[];
 }

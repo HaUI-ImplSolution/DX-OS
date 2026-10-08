@@ -25,6 +25,7 @@ Nội dung là dữ liệu nguồn do AI bàn giao để Backend tham khảo và
    Không bulk-seed toàn bộ file có chữ `candidates`.
 4. Seed phải idempotent: chạy lại không sinh bản ghi trùng.
 5. `source_ids` phải truy được về `rag/source_registry.json` để audit nguồn.
+6. Khi `rag/source_registry.json` đổi, cập nhật `backend/DX-Farm/src/main/resources/knowledge-sources.json` (sourceId, title, organization, url, license, reviewStatus) để trang hỏi đáp hiện đúng nguồn.
 
 ## Danh mục file
 

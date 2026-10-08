@@ -1,9 +1,14 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.controller;
 
 import HaUI.ImplSolution.DX_Farm.dto.ApiResponse;
 import HaUI.ImplSolution.DX_Farm.dto.CropSeasonCreateRequest;
 import HaUI.ImplSolution.DX_Farm.dto.CropSeasonResponse;
 import HaUI.ImplSolution.DX_Farm.dto.CropSeasonSuggestionResponse;
+import HaUI.ImplSolution.DX_Farm.dto.HarvestReadinessResponse;
+import HaUI.ImplSolution.DX_Farm.dto.HarvestRequest;
+import HaUI.ImplSolution.DX_Farm.dto.HarvestRescheduleRequest;
+import HaUI.ImplSolution.DX_Farm.dto.HarvestRescheduleResponse;
 import HaUI.ImplSolution.DX_Farm.dto.IsolationStatusResponse;
 import HaUI.ImplSolution.DX_Farm.service.CropSeasonService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -103,14 +109,48 @@ public class CropSeasonController {
     return ApiResponse.success(cropSeasonService.getIsolationStatus(id));
   }
 
+  @GetMapping("/crop-seasons/{id}/harvest-readiness")
+  @Operation(summary = "What to know before declaring a harvest",
+      description = "FARMER: 404 if the season's parcel belongs to another farmer. Returns how many"
+          + " days early today is, the isolation state and the open work (reports without a"
+          + " decision, approved recommendations not yet sprayed) that does not block the harvest.")
+  public ApiResponse<HarvestReadinessResponse> harvestReadiness(@PathVariable Long id) {
+    return ApiResponse.success(cropSeasonService.harvestReadiness(id));
+  }
+
   @PostMapping("/crop-seasons/{id}/harvest")
   @PreAuthorize("hasAnyRole('FARMER','ADMIN')")
   @Operation(
       summary = "Declare harvest (poka-yoke: 422 POKA_YOKE_VIETGAP_VIOLATION if still isolated)",
-      description = "FARMER or ADMIN only (ENGINEER gets 403). FARMER: 404 if the season's parcel belongs to another farmer."
-          + " 409 if the season was modified concurrently.")
-  public ApiResponse<CropSeasonResponse> harvest(@PathVariable Long id) {
-    return ApiResponse.success("Harvest recorded", cropSeasonService.harvest(id));
+      description = "FARMER or ADMIN only (ENGINEER gets 403). FARMER: 404 if the season's parcel"
+          + " belongs to another farmer. yieldKg is required; actualHarvestDate defaults to today"
+          + " (not in the future, at most 30 days back) and harvestedAreaHectares to the parcel"
+          + " area (400 above it). Before the expected date 422 HARVEST_TOO_EARLY unless"
+          + " confirmEarly=true comes with earlyReason. 422 TREATMENT_PENDING_CONFIRMATION while a"
+          + " spraying report waits for an engineer. An ADMIN must give reasonOnBehalf (400) and the"
+          + " farmer is notified. 409 if the season was modified concurrently.")
+  public ApiResponse<CropSeasonResponse> harvest(@PathVariable Long id,
+      @Valid @RequestBody HarvestRequest request) {
+    return ApiResponse.success("Harvest recorded", cropSeasonService.harvest(id, request));
+  }
+
+  @PatchMapping("/crop-seasons/{id}/reschedule-harvest")
+  @PreAuthorize("hasAnyRole('FARMER','ADMIN')")
+  @Operation(summary = "Move the expected harvest date of an active season",
+      description = "FARMER or ADMIN only. newExpectedHarvestDate is today or later and at most 90"
+          + " days ahead (400); reason is required. Each change is kept in the history. 409 unless"
+          + " the season is active.")
+  public ApiResponse<CropSeasonResponse> rescheduleHarvest(@PathVariable Long id,
+      @Valid @RequestBody HarvestRescheduleRequest request) {
+    return ApiResponse.success("Harvest date changed",
+        cropSeasonService.rescheduleHarvest(id, request));
+  }
+
+  @GetMapping("/crop-seasons/{id}/harvest-reschedules")
+  @Operation(summary = "History of expected harvest date changes, oldest first",
+      description = "FARMER: 404 if the season's parcel belongs to another farmer.")
+  public ApiResponse<List<HarvestRescheduleResponse>> listReschedules(@PathVariable Long id) {
+    return ApiResponse.success(cropSeasonService.listReschedules(id));
   }
 
   @DeleteMapping("/crop-seasons/{id}")

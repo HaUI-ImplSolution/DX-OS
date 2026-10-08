@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Sẵn sàng code (plan + Q1 đã chốt, chưa bắt đầu implement) |
+| Trạng thái | Xong (hoãn test thời tiết T7-04, T7-05; việc chưa làm và chưa chốt ở mục 11) |
 | Mức độ | Quan trọng |
 | Nhóm ưu tiên | B |
 | Ước lượng | 4-5 ngày |
@@ -51,8 +51,8 @@
 
 ## 6. Kết quả đầu ra mong đợi (Definition of Done)
 
-- Demo được: Superset chỉ hiện dữ liệu đã duyệt; có ít nhất 3 chart mới (báo cáo theo bệnh theo thời gian, thửa đang cách ly, tỷ lệ AI đúng/sai); trang hỏi đáp trả lời có trích nguồn từ corpus RAG; nguồn thời tiết hoạt động, có snapshot khi API ngoài ngừng.
-- Sản phẩm bàn giao: migration VIEW + đổi quyền, `bi/dxfarm_dashboard_export.zip` cập nhật (commit theo đúng quy trình ở `bi/README.md`), trang web hỏi đáp mới, script/endpoint snapshot thời tiết.
+- Demo được: Superset chỉ hiện dữ liệu đã duyệt; có 5 chart mới (báo cáo theo bệnh theo tuần, điểm nóng, thửa đang cách ly, lịch thu hoạch, tỷ lệ AI đúng/sai); trang hỏi đáp trả lời có trích nguồn từ corpus RAG; nguồn thời tiết hoạt động, có snapshot khi API ngoài ngừng.
+- Sản phẩm bàn giao: migration `V9__bi_views.sql` (sáu view), quyền `superset_ro` theo danh sách trong seeder, `bi/dxfarm_dashboard_export.zip` cập nhật (commit theo đúng quy trình ở `bi/README.md`), trang web hỏi đáp mới, script/endpoint snapshot thời tiết.
 - Tiêu chí đo được: `superset_ro` không còn `SELECT` được trực tiếp trên bảng gốc chứa bản ghi chưa duyệt; mục "RAG trả lời có trích nguồn" trong README chuyển từ chưa tick sang đã tick.
 - Bằng chứng: ảnh chụp dashboard mới, log test T7-xx, ảnh chụp màn hỏi đáp có trích nguồn.
 
@@ -74,6 +74,29 @@
 
 ## 10. Tài liệu cần cập nhật khi xong
 
-- [ ] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối, tick mục "RAG trả lời có trích nguồn").
-- [ ] `bi/README.md` (VIEW mới, chart mới, cập nhật phần "Dashboard mẫu hiện có").
-- [ ] `bi/dxfarm_dashboard_export.zip` (export lại và commit theo đúng quy trình đã có).
+- [x] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối, tick mục "RAG trả lời có trích nguồn").
+- [x] `bi/README.md` (view mới, chart mới, nền bản đồ).
+- [x] `bi/dxfarm_dashboard_export.zip` (export lại từ Superset đang chạy).
+
+## 11. Việc chưa làm và chưa chốt
+
+**Chưa làm**
+
+- Test thủ công thời tiết T7-04 và T7-05: endpoint chưa có màn hình nên chưa thử qua UI.
+- Dữ liệu mẫu cho chart "Thửa đang cách ly" và "Tỷ lệ AI đúng/sai" (thuộc P8); hiện hai chart này hiện "No results".
+- Thời tiết chưa có màn hình web hay mobile, chỉ có API.
+- Chưa có chart thời tiết trong dashboard.
+- Trang `/knowledge` chỉ có trên web (kỹ sư, admin); mobile của nông dân chưa có.
+- Kho RAG chỉ có 6 tài liệu bệnh lúa (IRRI, LSU); chưa có tài liệu VietGAP hay quy trình canh tác.
+- Snapshot thời tiết chụp ngày 07/10/2026 và chỉ có 5 điểm ĐBSCL; cần chụp lại nếu muốn dữ liệu dự phòng mới hơn.
+- `knowledge-sources.json` của Backend sao từ `data/rag/source_registry.json` bằng tay, chưa có kiểm tra lệch.
+- Export dashboard chưa có `query_context` cho từng chart (tạo qua API); dashboard hiển thị bình thường.
+
+**Chưa chốt**
+
+- Nền bản đồ: đang giữ nền trắng (WP7-03-DOC-01), chờ người phụ trách xác nhận.
+- Tài khoản `engineer1` (role Gamma) vào Superset thấy danh sách dashboard rỗng; chưa xác định nguyên nhân (nghi thiếu quyền dataset của Gamma) và chưa quyết định cho kỹ sư xem dashboard hay chỉ admin.
+- Cách nhận biết chẩn đoán do AI trong `vw_ai_diagnosis_outcomes` (`symptom_text` rỗng và `model_version` khác `manual-input-v1`): dễ sai nếu kỹ sư đổi tên model; phương án chắc hơn là thêm cột nguồn vào `diagnoses`.
+- Ngưỡng `KNOWLEDGE_MIN_SCORE=0.40` chọn theo vài câu hỏi thử, chưa hiệu chỉnh trên bộ câu hỏi thật; điểm câu hỏi đúng chủ đề khoảng 0.45 đến 0.50.
+- Giới hạn gateway 60 câu hỏi mỗi phút cho mỗi địa chỉ IP là số tạm.
+- Hệ quả của việc đóng quyền mặc định: bảng danh mục mới phải được thêm tay vào `READABLE_RELATIONS`.

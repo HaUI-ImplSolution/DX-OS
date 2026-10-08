@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.service;
 
 import HaUI.ImplSolution.DX_Farm.core.identity.Household;
@@ -12,10 +13,12 @@ import HaUI.ImplSolution.DX_Farm.model.CropSeason;
 import HaUI.ImplSolution.DX_Farm.model.Diagnosis;
 import HaUI.ImplSolution.DX_Farm.model.Parcel;
 import HaUI.ImplSolution.DX_Farm.model.ParcelEditRequest;
+import HaUI.ImplSolution.DX_Farm.model.TreatmentApplication;
 import HaUI.ImplSolution.DX_Farm.repository.CropSeasonRepository;
 import HaUI.ImplSolution.DX_Farm.repository.DiagnosisRepository;
 import HaUI.ImplSolution.DX_Farm.repository.ParcelEditRequestRepository;
 import HaUI.ImplSolution.DX_Farm.repository.ParcelRepository;
+import HaUI.ImplSolution.DX_Farm.repository.TreatmentApplicationRepository;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -42,17 +45,21 @@ public class ApprovalRequestService {
   private final CropSeasonRepository cropSeasonRepository;
   private final ParcelEditRequestRepository editRequestRepository;
   private final DiagnosisRepository diagnosisRepository;
+  private final TreatmentApplicationRepository treatmentApplicationRepository;
   private final StorageService storageService;
   private final Clock clock;
 
   public ApprovalRequestService(WorkflowService workflowService, ParcelRepository parcelRepository,
       CropSeasonRepository cropSeasonRepository, ParcelEditRequestRepository editRequestRepository,
-      DiagnosisRepository diagnosisRepository, StorageService storageService, Clock clock) {
+      DiagnosisRepository diagnosisRepository,
+      TreatmentApplicationRepository treatmentApplicationRepository, StorageService storageService,
+      Clock clock) {
     this.workflowService = workflowService;
     this.parcelRepository = parcelRepository;
     this.cropSeasonRepository = cropSeasonRepository;
     this.editRequestRepository = editRequestRepository;
     this.diagnosisRepository = diagnosisRepository;
+    this.treatmentApplicationRepository = treatmentApplicationRepository;
     this.storageService = storageService;
     this.clock = clock;
   }
@@ -111,10 +118,12 @@ public class ApprovalRequestService {
     List<Long> editIds = editRequestRepository.findByParcel_IdIn(parcelIds).stream()
         .map(ParcelEditRequest::getId).toList();
     List<Long> diagnosisIds = diagnosisRepository.findIdsByParcelIds(parcelIds);
+    List<Long> treatmentIds = treatmentApplicationRepository.findIdsByParcelIds(parcelIds);
     Specification<WorkflowCase> spec = entityIn(ApprovalCaseTypes.PARCEL_ENTITY, parcelIds);
     spec = spec.or(entityIn(ApprovalCaseTypes.CROP_SEASON_ENTITY, seasonIds));
     spec = spec.or(entityIn(ApprovalCaseTypes.PARCEL_EDIT_ENTITY, editIds));
-    return spec.or(entityIn(ApprovalCaseTypes.DIAGNOSIS_ENTITY, diagnosisIds));
+    spec = spec.or(entityIn(ApprovalCaseTypes.DIAGNOSIS_ENTITY, diagnosisIds));
+    return spec.or(entityIn(ApprovalCaseTypes.TREATMENT_ENTITY, treatmentIds));
   }
 
   private static Specification<WorkflowCase> entityIn(String entityType, Collection<Long> ids) {
@@ -127,9 +136,9 @@ public class ApprovalRequestService {
 
   // Loads the entities in one query per type.
   private Map<Long, ApprovalRequestResponse> toResponses(List<WorkflowCase> cases) {
-    Map<String,List<Long>>idsByType=cases.stream().collect(Collectors.groupingBy(WorkflowCase::getEntityType,Collectors.mapping(WorkflowCase::getEntityId,Collectors.toList())));Map<Long,Parcel>parcels=byId(parcelRepository.findByIdIn(idsByType.getOrDefault(ApprovalCaseTypes.PARCEL_ENTITY,List.of())),Parcel::getId);Map<Long,CropSeason>seasons=byId(cropSeasonRepository.findByIdIn(idsByType.getOrDefault(ApprovalCaseTypes.CROP_SEASON_ENTITY,List.of())),CropSeason::getId);Map<Long,ParcelEditRequest>edits=byId(editRequestRepository.findAllById(idsByType.getOrDefault(ApprovalCaseTypes.PARCEL_EDIT_ENTITY,List.of())),ParcelEditRequest::getId);Map<Long,Diagnosis>diagnoses=byId(diagnosisRepository.findAllById(idsByType.getOrDefault(ApprovalCaseTypes.DIAGNOSIS_ENTITY,List.of())),Diagnosis::getId);
+    Map<String,List<Long>>idsByType=cases.stream().collect(Collectors.groupingBy(WorkflowCase::getEntityType,Collectors.mapping(WorkflowCase::getEntityId,Collectors.toList())));Map<Long,Parcel>parcels=byId(parcelRepository.findByIdIn(idsByType.getOrDefault(ApprovalCaseTypes.PARCEL_ENTITY,List.of())),Parcel::getId);Map<Long,CropSeason>seasons=byId(cropSeasonRepository.findByIdIn(idsByType.getOrDefault(ApprovalCaseTypes.CROP_SEASON_ENTITY,List.of())),CropSeason::getId);Map<Long,ParcelEditRequest>edits=byId(editRequestRepository.findAllById(idsByType.getOrDefault(ApprovalCaseTypes.PARCEL_EDIT_ENTITY,List.of())),ParcelEditRequest::getId);Map<Long,Diagnosis>diagnoses=byId(diagnosisRepository.findAllById(idsByType.getOrDefault(ApprovalCaseTypes.DIAGNOSIS_ENTITY,List.of())),Diagnosis::getId);Map<Long,TreatmentApplication>treatments=byId(treatmentApplicationRepository.findAllById(idsByType.getOrDefault(ApprovalCaseTypes.TREATMENT_ENTITY,List.of())),TreatmentApplication::getId);
 
-    Map<Long,ApprovalRequestResponse>result=new HashMap<>();for(WorkflowCase workflowCase:cases){Long entityId=workflowCase.getEntityId();ApprovalRequestResponse response=switch(workflowCase.getEntityType()){case ApprovalCaseTypes.PARCEL_ENTITY->parcelRequest(workflowCase,parcels.get(entityId));case ApprovalCaseTypes.CROP_SEASON_ENTITY->seasonRequest(workflowCase,seasons.get(entityId));case ApprovalCaseTypes.PARCEL_EDIT_ENTITY->editRequest(workflowCase,edits.get(entityId));case ApprovalCaseTypes.DIAGNOSIS_ENTITY->diagnosisRequest(workflowCase,diagnoses.get(entityId));default->build(workflowCase,"#"+entityId,null,null,Map.of());};result.put(workflowCase.getId(),response);}return result;
+    Map<Long,ApprovalRequestResponse>result=new HashMap<>();for(WorkflowCase workflowCase:cases){Long entityId=workflowCase.getEntityId();ApprovalRequestResponse response=switch(workflowCase.getEntityType()){case ApprovalCaseTypes.PARCEL_ENTITY->parcelRequest(workflowCase,parcels.get(entityId));case ApprovalCaseTypes.CROP_SEASON_ENTITY->seasonRequest(workflowCase,seasons.get(entityId));case ApprovalCaseTypes.PARCEL_EDIT_ENTITY->editRequest(workflowCase,edits.get(entityId));case ApprovalCaseTypes.DIAGNOSIS_ENTITY->diagnosisRequest(workflowCase,diagnoses.get(entityId));case ApprovalCaseTypes.TREATMENT_ENTITY->treatmentRequest(workflowCase,treatments.get(entityId));default->build(workflowCase,"#"+entityId,null,null,Map.of());};result.put(workflowCase.getId(),response);}return result;
   }
 
   private ApprovalRequestResponse parcelRequest(WorkflowCase workflowCase, Parcel parcel) {
@@ -195,6 +204,32 @@ public class ApprovalRequestService {
     details.put("imageUrl", storageService.presignedUrl(report.getImageRef()));
     return build(workflowCase, "Báo cáo #" + report.getId() + " · " + parcel.getCode(),
         parcel.getHousehold(), parcel.getFarmerName(), details);
+  }
+
+  private ApprovalRequestResponse treatmentRequest(WorkflowCase workflowCase,
+      TreatmentApplication application) {
+    if (application == null) {
+      return build(workflowCase, "#" + workflowCase.getEntityId(), null, null, Map.of());
+    }
+    Parcel parcel = application.getCropSeason().getParcel();
+    Diagnosis diagnosis = application.getDiagnosis();
+    Map<String, Object> details = new LinkedHashMap<>();
+    details.put("parcelCode", parcel.getCode());
+    details.put("seasonId", application.getCropSeason().getId());
+    if (diagnosis != null) {
+      details.put("reportId", diagnosis.getDiseaseReport().getId());
+      details.put("diseaseName", diagnosis.getDisease().getName());
+    }
+    details.put("pesticide", application.getPesticide().getName());
+    details.put("doseAmount", application.getDoseAmountSnapshot());
+    details.put("doseUnit", application.getDoseUnitSnapshot());
+    details.put("appliedAt", application.getAppliedAt());
+    details.put("harvestLockedUntil", application.getHarvestLockedUntil());
+    details.put("rejectionReason", application.getRejectionReason());
+    String title = diagnosis != null
+        ? "Phun thuốc · báo cáo #" + diagnosis.getDiseaseReport().getId() + " · " + parcel.getCode()
+        : "Phun thuốc · " + parcel.getCode();
+    return build(workflowCase, title, parcel.getHousehold(), parcel.getFarmerName(), details);
   }
 
   private static Map<String, Object> parcelValues(Parcel parcel) {

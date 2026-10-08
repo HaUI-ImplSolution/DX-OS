@@ -4,32 +4,43 @@
 
 | # | Quyết định | Phương án | Chọn | Được | Mất | Chi phí đảo ngược |
 |---|---|---|---|---|---|---|
-| TO1 | Lớp lọc "không phải lúa/ảnh linh tinh" | Huấn luyện lại model với lớp background mới / Chỉ dựa vào `confidence = 0.0` của fallback hiện có, không huấn luyện lại | Không huấn luyện lại trong phạm vi phase này | Không tốn công thu dữ liệu lớp background + huấn luyện lại (việc AI tốn nhiều thời gian, không khả thi ngắn hạn) | Ảnh không phải lúa vẫn có thể lọt qua nếu người xem không chú ý `confidence = 0.0` — rủi ro gốc chưa giải quyết triệt để, chỉ giảm nhẹ bằng precheck (WP6-01, kiểm mờ/nhỏ, không kiểm "có phải lúa không") | Cao — huấn luyện lại model là việc riêng, cần dữ liệu và thời gian, không làm được "thêm vào" giữa chừng |
-| TO2 | Quan hệ `Diagnosis`-`DiseaseReport` | Giữ 1-1 (bắt buộc báo cáo mới mới chẩn đoán lại được) / Đổi sang 1-N (chẩn đoán lại trên cùng báo cáo) | 1-N | Đúng yêu cầu "chẩn đoán lại được" của mục 11, không bắt farmer gửi lại ảnh chỉ vì kỹ sư muốn thử lại | Mọi nơi đang giả định 1-1 phải rà lại (rủi ro bỏ sót, xem R1) | Cao — đổi ngược lại 1-1 sau khi đã có dữ liệu nhiều chẩn đoán/báo cáo sẽ phải chọn 1 để giữ, mất dữ liệu |
-| TO3 | Đường nhập tay bỏ điều kiện treatment rule active | Giữ bắt buộc rule (và chấp nhận 404 cho tới khi mục 18 có rule) / Bỏ bắt buộc, cho trạng thái "chờ khuyến nghị" | Bỏ bắt buộc | Đường nhập tay dùng được ngay trên database sạch, không phải chờ mục 18 xong mới demo được | Chẩn đoán "chờ khuyến nghị" không có khuyến nghị điều trị cụ thể cho tới khi có rule — farmer/kỹ sư thấy thiếu thông tin tạm thời | Thấp — khi mục 18 có rule, tự động hết tình trạng "chờ khuyến nghị" cho chẩn đoán mới, không cần đổi code |
+| TO1 | Lớp lọc "không phải lúa/ảnh linh tinh" | Huấn luyện lại model với lớp background / Chỉ dựa vào `confidence = 0.0` của fallback, không huấn luyện lại | Không huấn luyện lại | Không tốn công thu dữ liệu và huấn luyện lại | Ảnh không phải lúa vẫn có thể lọt qua; precheck chỉ kiểm chất lượng, không kiểm nội dung; fallback confidence 0 không chứng minh cây khỏe | Cao: huấn luyện lại là việc riêng, cần dữ liệu và thời gian |
+| TO2 | Quan hệ `Diagnosis`-`DiseaseReport` | Giữ 1-1 / Đổi sang 1-N | 1-N, bản có `id` lớn nhất là hiện hành | Chạy lại chẩn đoán trên cùng báo cáo, không bắt farmer gửi lại ảnh | Mọi nơi giả định 1-1 phải rà lại (R1) | Cao: quay lại 1-1 sau khi có nhiều chẩn đoán/báo cáo phải chọn một bản để giữ |
+| TO3 | Đường nhập tay khi thiếu treatment rule | Giữ bắt buộc rule (404) / Cho lưu "chờ khuyến nghị" | Cho lưu | Dùng được ngay trên database sạch | Không có khuyến nghị điều trị, không cho ghi nhận phun cho tới khi có rule | Thấp: có rule thì chẩn đoán mới tự có khuyến nghị |
+| TO4 | Kiểm chất lượng ảnh khi nộp báo cáo | Từ chối nếu AI không chạy / Nhận ảnh chưa kiểm khi AI không chạy | Từ chối (503), hàng đợi offline thử lại | Không nhận ảnh chưa kiểm | Farmer không nộp được báo cáo khi AI service dừng | Thấp: đổi thành nhận và đánh dấu `quality_passed = NULL` |
+| TO5 | Nhãn huấn luyện của kỹ sư | Ghi khi nhập chẩn đoán / Ghi khi duyệt | Ghi khi duyệt | Nhãn chỉ phản ánh điều kỹ sư đã chốt; chẩn đoán bị từ chối hoặc bị thay không làm nhiễu | Phải lưu `symptomText` trên chẩn đoán cho tới lúc duyệt | Thấp |
+| TO6 | Độ nét của ảnh | Phương sai Laplacian đơn giản / Chuẩn hóa độ phân giải, trung vị theo vùng, trừ nhiễu | Chuẩn hóa và trung vị theo vùng | Không bị đánh lừa bởi sọc màn hình, nhiễu, chữ và viền sắc | Thuật toán phức tạp hơn, ngưỡng 20 chưa hiệu chuẩn bằng ảnh ngoài ruộng (R3) | Thấp: đổi thuật toán hoặc ngưỡng ở `ai/app/cv/policy.py`, `plant_disease_service.py` |
 
-Kết luận: TO1-TO3 áp dụng ngay.
+Kết luận: TO1-TO6 áp dụng ngay.
 
 ## 2. Rủi ro
 
 | # | Rủi ro | Xác suất | Ảnh hưởng | Giảm thiểu | Dấu hiệu sớm | Dự phòng |
 |---|---|---|---|---|---|---|
-| R1 | Đổi `Diagnosis`-`DiseaseReport` từ 1-1 sang 1-N (WP6-05) bỏ sót một nơi vẫn giả định 1-1, gây lấy sai chẩn đoán (ví dụ lấy chẩn đoán cũ thay vì mới nhất) | Vừa | Cao (sai dữ liệu nghiệp vụ, ảnh hưởng khóa PHI nếu lấy sai `treatmentRule`) | Rà toàn bộ `grep` tham chiếu `Diagnosis`/`diseaseReport` trước khi đổi, không chỉ sửa chỗ biết trước; test T6-01 xác nhận lấy đúng chẩn đoán mới nhất | Khóa PHI hoặc khuyến nghị hiển thị sai sau khi có chẩn đoán lại | Thêm cột `isLatest` rõ ràng thay vì chỉ dựa vào `ORDER BY diagnosedAt`, giảm rủi ro lấy nhầm nếu có nhiều bản ghi cùng thời điểm |
-| R2 | Precheck (WP6-01) cho qua ảnh không phải lúa (vì chỉ kiểm mờ/nhỏ, không kiểm nội dung), farmer hiểu nhầm "đã qua precheck" là ảnh chắc chắn dùng được | Vừa | Thấp-Vừa | UI ghi rõ precheck chỉ kiểm độ nét/kích thước, không đảm bảo ảnh đúng là lúa | Tỷ lệ ảnh "linh tinh" vẫn cao sau khi có precheck | Không có dự phòng kỹ thuật trong phạm vi phase này — ghi nhận là giới hạn đã biết trong báo cáo đánh giá AI (WP6-06) |
-| R3 | Bộ ảnh test độc lập (Q2, WP6-06) không thu thập được kịp (cần người đi thu ảnh thật ngoài ruộng) | Vừa | Cao (không có báo cáo đánh giá AI đúng yêu cầu — điều kiện không bị loại) | Giao việc thu ảnh sớm, song song với các WP code khác trong phase, không chờ tới cuối | Gần hết thời gian phase mà chưa có bộ ảnh test | Dùng tạm một phần ảnh trong dataset huấn luyện (ít khách quan hơn) kèm ghi chú rõ giới hạn này trong báo cáo, không chờ hoàn hảo |
+| R1 | Đổi 1-1 sang 1-N bỏ sót một nơi vẫn giả định 1-1, lấy nhầm chẩn đoán cũ | Vừa | Cao (sai khuyến nghị, ảnh hưởng khóa PHI) | Rà mọi tham chiếu `Diagnosis`/`diseaseReport`; lấy hiện hành theo `id`; khóa PHI tính trên mọi lần phun; T6-01 và hồi quy PHI | Khuyến nghị hoặc khóa PHI sai sau khi chẩn đoán lại | Thêm cột `is_latest` thay vì chỉ dựa vào `id` |
+| R2 | Farmer hiểu "đã qua precheck" là ảnh chắc chắn là lúa | Vừa | Thấp-Vừa | UI ghi rõ precheck chỉ kiểm chất lượng; kỹ sư chốt bệnh | Tỷ lệ ảnh không phải lúa vẫn cao | Ghi là giới hạn đã biết trong báo cáo đánh giá AI |
+| R3 | Ngưỡng độ nét 20 và độ sáng 20–245 chặn nhầm ảnh tốt hoặc cho lọt ảnh mờ ngoài ruộng | Vừa | Vừa | Hiệu chuẩn bằng ảnh thật khi có; server là nơi quyết định, ngưỡng nằm ở một chỗ | Farmer báo ảnh rõ bị từ chối | Hạ ngưỡng hoặc chuyển sang cảnh báo thay vì chặn |
+| R4 | AI service dừng làm farmer không nộp được báo cáo (TO4) | Thấp-Vừa | Vừa | Hàng đợi offline thử lại lỗi dịch vụ; báo lỗi 503 rõ ràng | Nhiều báo cáo ở trạng thái "Lỗi" hoặc chờ gửi | Chuyển TO4 sang nhận ảnh chưa kiểm |
 
 ## 3. Nợ kỹ thuật chấp nhận
 
-- Không huấn luyện lại model để có lớp "không phải lúa" (TO1) — ghi rõ là giới hạn trong báo cáo đánh giá AI, để sau cuộc thi.
-- Mô hình nhận diện sâu hại (ngoài 5 bệnh lá) không làm ở phase này, theo D7 (phase 0).
-- Ngưỡng chuyển người xem (`0.70`) có thể vẫn chưa đổi nếu Q1 chưa có đủ số liệu khi kết thúc phase — ghi rõ "chưa có căn cứ đo đầy đủ" trong báo cáo, không tự bịa số.
+- Không huấn luyện lại model để có lớp "không phải lúa" (TO1); ghi rõ là giới hạn khi trả lời hội đồng.
+- Mô hình nhận diện sâu hại (ngoài 5 bệnh lá) không làm, theo D7.
+- Không có báo cáo đánh giá AI (test set độc lập, chỉ số theo lớp, confusion matrix): bỏ khỏi phase, nên không có số liệu độ chính xác của model và ngưỡng `0.70` không được đo lại.
+- Ngưỡng độ nét 20, độ sáng 20–245 chưa hiệu chuẩn bằng ảnh ngoài ruộng (R3); điểm độ nét cũ không so sánh trực tiếp với điểm mới và không tự đổi trạng thái báo cáo đã lưu.
+- Precheck không tách vùng lá: nền sắc hoặc chủ thể ngoài trung tâm có thể làm sai điểm nét.
+- Nộp báo cáo cần AI service chạy (TO4); chưa có đường nhận ảnh chưa kiểm khi AI dừng.
+- Yêu cầu chụp lại (thông báo, hủy workflow chờ, chặn khi đã `APPROVED`) chưa có test tự động; đã kiểm tay trên giao diện web và điện thoại.
+- Chưa có seed thuốc và treatment rule được duyệt: chẩn đoán thiếu rule vẫn lưu nhưng không áp dụng thuốc; demo khóa PHI thật cần phác đồ do chuyên gia duyệt (P8, Q2).
+- Báo cáo `PROCESSED` nghĩa là đã có chẩn đoán, kể cả chẩn đoán đang chờ duyệt.
+- Nhãn kỹ sư chỉ có cho chẩn đoán đã duyệt; chart tỷ lệ AI đúng/sai thuộc P7.
 
 ## 4. Điều kiện dừng và rollback
 
-- Dừng và xem lại plan khi: R1 xảy ra (phát hiện khóa PHI tính sai sau khi đổi quan hệ 1-N) trong lúc test — dừng ngay, không merge WP6-05 cho tới khi rà xong toàn bộ chỗ tham chiếu.
-- Rollback: đổi `Diagnosis.diseaseReport` về `@OneToOne` là migration một chiều khó (mất dữ liệu nếu đã có nhiều chẩn đoán/báo cáo) — ưu tiên sửa tiếp thay vì rollback nếu phát hiện lỗi sau khi đã có dữ liệu thật dùng tính năng chẩn đoán lại.
+- Dừng và xem lại plan khi phát hiện sai chẩn đoán hiện hành hoặc sai khóa PHI: không merge cho tới khi rà xong mọi chỗ tham chiếu và chạy lại hồi quy.
+- Rollback: đổi `Diagnosis.diseaseReport` về `@OneToOne` là migration một chiều khó (mất dữ liệu nếu đã có nhiều chẩn đoán/báo cáo); ưu tiên sửa tiếp, không thêm lại unique 1-1 khi còn báo cáo có nhiều chẩn đoán.
 
 ## 5. Tác động ngoài phase
 
-- Lên các phase sau: P7 (BI) dùng nhãn huấn luyện đã lưu (WP6-04) để làm chart tỷ lệ AI đúng/sai so với kỹ sư chốt.
-- Lên demo, tài liệu nộp bài, thời hạn: báo cáo đánh giá AI (WP6-06) là bằng chứng bắt buộc cho điều kiện không bị loại (đề mục 4.2 phần I), phải xong trước khi P8 chốt hồ sơ nộp bài.
+- Lên các phase sau: P7 (BI) dùng `training_labels` để làm chart tỷ lệ AI đúng/sai so với kỹ sư chốt.
+- Lên demo, tài liệu nộp bài, thời hạn: không có số liệu đánh giá AI để đưa vào hồ sơ; khi trả lời hội đồng về AI phải nêu rõ các giới hạn ở mục 3.

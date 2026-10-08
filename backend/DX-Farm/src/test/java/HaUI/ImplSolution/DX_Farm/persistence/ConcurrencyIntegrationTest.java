@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,6 +26,7 @@ import HaUI.ImplSolution.DX_Farm.repository.ParcelRepository;
 import HaUI.ImplSolution.DX_Farm.service.AiDiagnosisClient;
 import HaUI.ImplSolution.DX_Farm.service.CurrentUserService;
 import HaUI.ImplSolution.DX_Farm.service.DiagnosisService;
+import HaUI.ImplSolution.DX_Farm.service.NotificationService;
 import HaUI.ImplSolution.DX_Farm.service.TreatmentRuleService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -61,7 +63,8 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @DataJpaTest(properties = "spring.flyway.enabled=false")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
-@Import({DiagnosisService.class, WorkflowService.class, TimeConfig.class})
+@Import({DiagnosisService.class, WorkflowService.class, NotificationService.class,
+    TimeConfig.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class ConcurrencyIntegrationTest {
 
@@ -123,10 +126,13 @@ class ConcurrencyIntegrationTest {
     CropSeason season = newSeason(newParcel(), CropSeasonStatus.ACTIVE);
     DiseaseReport report = diseaseReportRepository.save(DiseaseReport.builder().cropSeason(season)
         .imageRef("x.jpg").reportedBy("Test Farmer").build());
-    return diagnosisRepository.save(Diagnosis.builder().diseaseReport(report)
+    Diagnosis diagnosis = diagnosisRepository.save(Diagnosis.builder().diseaseReport(report)
         .disease(diseaseRepository.findByCodeAndActiveTrue("Rice___Blast").orElseThrow())
         .confidence(new BigDecimal("0.9000")).modelVersion("test").recommendationText("test")
         .approvalStatus(ApprovalStatus.PENDING).build());
+    workflowService.createCase("DIAGNOSIS_APPROVAL", "DIAGNOSIS", diagnosis.getId(),
+        new WorkflowActor("eng-1", "Engineer"));
+    return diagnosis;
   }
 
   @Test
@@ -197,9 +203,8 @@ class ConcurrencyIntegrationTest {
   void concurrentApprovalsLetExactlyOneRequestWin() throws Exception {
     Diagnosis diagnosis = newPendingDiagnosis();
     Long reportId = diagnosis.getDiseaseReport().getId();
-    workflowService.createCase("DIAGNOSIS_APPROVAL", "DIAGNOSIS", diagnosis.getId(),
-        new WorkflowActor("eng-1", "Engineer"));
     when(currentUserService.currentFullName()).thenReturn("Engineer");
+    when(currentUserService.currentUserId()).thenReturn("engineer-test");
     int callers = 2;
     CyclicBarrier start = new CyclicBarrier(callers);
     ExecutorService executor = Executors.newFixedThreadPool(callers);
@@ -231,4 +236,43 @@ class ConcurrencyIntegrationTest {
     assertThat(diagnosisRepository.findById(diagnosis.getId()).orElseThrow().getApprovalStatus())
         .isEqualTo(ApprovalStatus.APPROVED);
   }
+
+  @Test
+  void concurrentAiRerunsKeepOnlyOneNewCurrentDiagnosis() throws Exception {
+    Diagnosis original = newPendingDiagnosis();
+    Long reportId = original.getDiseaseReport().getId();
+    CyclicBarrier aiCalls = new CyclicBarrier(2);
+    org.mockito.Mockito.when(aiDiagnosisClient.diagnose(org.mockito.ArgumentMatchers.any()))
+        .thenAnswer(call -> {
+          aiCalls.await(20, java.util.concurrent.TimeUnit.SECONDS);
+          return new HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseResponse("concurrent-test",
+              new HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseResponse.CvResult(
+                  original.getDisease().getCode(), original.getDisease().getName(),
+                  new BigDecimal("0.91"), "YOLO", "test"),
+              List.of(),
+              new HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseResponse.StructuredContext(
+                  "review_required", List.of()),
+              new HaUI.ImplSolution.DX_Farm.dto.AiDiagnoseResponse.Recommendation(null,
+                  "Review required", true));
+        });
+    ExecutorService executor = Executors.newFixedThreadPool(2);
+    try {
+      Callable<Boolean> rerun = () -> {
+        try {
+          diagnosisService.createFromAi(reportId);
+          return true;
+        } catch (InvalidStateException | ObjectOptimisticLockingFailureException
+            | jakarta.persistence.OptimisticLockException e) {
+          return false;
+        }
+      };
+      Future<Boolean> first = executor.submit(rerun);
+      Future<Boolean> second = executor.submit(rerun);
+      assertThat((first.get() ? 1 : 0) + (second.get() ? 1 : 0)).isEqualTo(1);
+      assertThat(diagnosisService.history(reportId)).hasSize(2);
+    } finally {
+      executor.shutdownNow();
+    }
+  }
+
 }

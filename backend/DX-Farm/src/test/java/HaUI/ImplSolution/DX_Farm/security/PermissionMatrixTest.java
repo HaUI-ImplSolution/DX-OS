@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.DX_Farm.security;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -28,6 +29,7 @@ import HaUI.ImplSolution.DX_Farm.service.DiagnosisService;
 import HaUI.ImplSolution.DX_Farm.service.DiseaseReportService;
 import HaUI.ImplSolution.DX_Farm.core.identity.HouseholdService;
 import HaUI.ImplSolution.DX_Farm.service.ParcelService;
+import HaUI.ImplSolution.DX_Farm.service.WeatherService;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -68,6 +70,8 @@ class PermissionMatrixTest {
   private HouseholdService householdService;
   @MockitoBean
   private WorkflowService workflowService;
+  @MockitoBean
+  private WeatherService weatherService;
 
   private static JwtRequestPostProcessor token(String role, String client) {
     return jwt().authorities(new SimpleGrantedAuthority("ROLE_" + role))
@@ -108,16 +112,24 @@ class PermissionMatrixTest {
         .content("{\"fullName\":\"Nguyen Van A\",\"username\":\"nguyenvana\"}");
   }
 
+  private RequestBuilder harvest(JwtRequestPostProcessor user) {
+    return post("/api/v1/crop-seasons/1/harvest").with(user).contentType(MediaType.APPLICATION_JSON)
+        .content("{\"yieldKg\":1000}");
+  }
+
   private void servicesAnswer() {
     when(parcelService.create(any(), any())).thenReturn(new ParcelResponse(1L, "TD-01", "H0001",
         "A", null, null, null, null, null, false, "APPROVED", null, null, null));
     when(parcelService.listAll(anyBoolean())).thenReturn(List.of());
-    when(cropSeasonService.create(any(), any(), any())).thenReturn(new CropSeasonResponse(1L, null,
-        "TD-01", "OM 5451", "OM5451", null, null, null, null, "ACTIVE", "APPROVED", null, null));
-    when(cropSeasonService.harvest(any())).thenReturn(new CropSeasonResponse(1L, null, "TD-01",
-        "OM 5451", "OM5451", null, null, null, null, "HARVESTED", "APPROVED", null, null));
-    when(diseaseReportService.create(any(), any(), any()))
-        .thenReturn(new DiseaseReportResponse(1L, 1L, "x.jpg", "A", null, null));
+    when(cropSeasonService.create(any(), any(), any()))
+        .thenReturn(new CropSeasonResponse(1L, null, "TD-01", "OM 5451", "OM5451", null, null, null,
+            null, "ACTIVE", "APPROVED", null, null, null, null, null, null, null, null));
+    when(cropSeasonService.harvest(any(), any()))
+        .thenReturn(new CropSeasonResponse(1L, null, "TD-01", "OM 5451", "OM5451", null, null, null,
+            null, "HARVESTED", "APPROVED", null, null, null, null, null, null, null, null));
+    when(diseaseReportService.create(any(), any(), any(), any()))
+        .thenReturn(new DiseaseReportResponse(1L, 1L, "x.jpg", "A", null, null, "PENDING", null,
+            null, List.of(), null));
     when(householdService.listAll()).thenReturn(List.of());
     when(householdService.create(any())).thenReturn(new HouseholdCreateResponse(
         new HouseholdResponse(1L, "H0001", "A", null, null, true, null), "a", "pw"));
@@ -127,8 +139,7 @@ class PermissionMatrixTest {
   void engineerCannotCreateParcelsSeasonsOrHarvest() throws Exception {
     mockMvc.perform(createParcel(engineer())).andExpect(status().isForbidden());
     mockMvc.perform(createSeason(engineer())).andExpect(status().isForbidden());
-    mockMvc.perform(post("/api/v1/crop-seasons/1/harvest").with(engineer()))
-        .andExpect(status().isForbidden());
+    mockMvc.perform(harvest(engineer())).andExpect(status().isForbidden());
   }
 
   @Test
@@ -138,10 +149,8 @@ class PermissionMatrixTest {
     mockMvc.perform(createParcel(admin())).andExpect(status().isCreated());
     mockMvc.perform(createSeason(farmer())).andExpect(status().isCreated());
     mockMvc.perform(createSeason(admin())).andExpect(status().isCreated());
-    mockMvc.perform(post("/api/v1/crop-seasons/1/harvest").with(farmer()))
-        .andExpect(status().isOk());
-    mockMvc.perform(post("/api/v1/crop-seasons/1/harvest").with(admin()))
-        .andExpect(status().isOk());
+    mockMvc.perform(harvest(farmer())).andExpect(status().isOk());
+    mockMvc.perform(harvest(admin())).andExpect(status().isOk());
   }
 
   @Test
@@ -230,4 +239,46 @@ class PermissionMatrixTest {
     mockMvc.perform(get("/api/v1/parcels").with(token("ADMIN", "dxfarm-mobile")))
         .andExpect(status().isOk());
   }
+
+  @Test
+  void onlyFarmersCanPrecheckPhotos() throws Exception {
+    when(diseaseReportService.precheck(any()))
+        .thenReturn(new HaUI.ImplSolution.DX_Farm.dto.ImagePrecheckResponse(true, List.of(), 256,
+            256, 100, 100));
+    mockMvc.perform(multipart("/api/v1/disease-reports/precheck")
+        .file(new MockMultipartFile("image", "leaf.png", "image/png", new byte[] {1}))
+        .with(farmer())).andExpect(status().isOk());
+    mockMvc.perform(multipart("/api/v1/disease-reports/precheck")
+        .file(new MockMultipartFile("image", "leaf.png", "image/png", new byte[] {1}))
+        .with(engineer())).andExpect(status().isForbidden());
+    mockMvc.perform(multipart("/api/v1/disease-reports/precheck")
+        .file(new MockMultipartFile("image", "leaf.png", "image/png", new byte[] {1}))
+        .with(admin())).andExpect(status().isForbidden());
+  }
+
+  @Test
+  void farmerCannotRequestRetakeSuggestOrReadDiagnosisHistory() throws Exception {
+    mockMvc
+        .perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+            .patch("/api/v1/disease-reports/1/request-retake").with(farmer())
+            .contentType(MediaType.APPLICATION_JSON).content("{\"reason\":\"Ảnh mờ\"}"))
+        .andExpect(status().isForbidden());
+    mockMvc
+        .perform(post("/api/v1/disease-reports/1/diagnosis/suggest").with(farmer())
+            .contentType(MediaType.APPLICATION_JSON).content("{\"symptomText\":\"Vết hình thoi\"}"))
+        .andExpect(status().isForbidden());
+    mockMvc
+        .perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+            .get("/api/v1/disease-reports/1/diagnosis/history").with(farmer()))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void reportLockConflictReturns409() throws Exception {
+    when(cropSeasonService.getById(1L))
+        .thenThrow(new jakarta.persistence.OptimisticLockException("Stale record"));
+    mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+        .get("/api/v1/crop-seasons/1").with(farmer())).andExpect(status().isConflict());
+  }
+
 }

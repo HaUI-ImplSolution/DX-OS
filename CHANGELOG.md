@@ -5,6 +5,85 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Backend (Spring Boot — `backend/DX-Farm`)
 
+### 2026-10-07
+
+**Đã xong — Kiểm thử, dữ liệu demo, hồ sơ nộp bài:**
+
+- `ApiResponse` lỗi có thêm trường `errorCode` ổn định (ví dụ `ERR_FORBIDDEN`, `ERR_NOT_FOUND`, `ERR_VALIDATION`, `ERR_INTERNAL`); lỗi poka-yoke giữ mã riêng (`HARVEST_TOO_EARLY`, `POKA_YOKE_VIETGAP_VIOLATION`, ...).
+- `GET /api/v1/system/status` công khai, trả `UP`/`DOWN` của backend, AI Service và lưu trữ ảnh cho portal.
+- Mọi file Java có SPDX header `Apache-2.0`.
+
+**Đã xong — Dữ liệu, BI và hỏi đáp tài liệu:**
+
+- `V9__bi_views.sql` thêm sáu view chỉ đọc cho BI: `vw_parcels_approved`, `vw_crop_seasons_approved`, `vw_disease_reports_processed`, `vw_diagnoses_approved`, `vw_treatment_applications_confirmed`, `vw_ai_diagnosis_outcomes`.
+  View chỉ chứa bản ghi đã duyệt hoặc đã xử lý, không có tên chủ hộ, người báo cáo hay đường dẫn ảnh.
+- `SupersetReadOnlyRoleSeeder` cấp cho `superset_ro` quyền đọc theo danh sách: sáu view trên và ba bảng danh mục (`diseases`, `pesticides`, `rice_varieties`).
+  Mọi bảng khác, kể cả bảng thêm về sau, đóng cho tới khi được thêm vào danh sách.
+- `GET /api/v1/parcels/{code}/weather` trả thời tiết hiện tại và dự báo 5 ngày tại vị trí thửa từ Open-Meteo (không cần key, cache 1 giờ).
+  Open-Meteo không gọi được thì trả điểm tham chiếu gần nhất trong `weather-snapshot.json` kèm `isSnapshot=true` và ghi chú.
+  Thửa chưa có GPS trả `422 PARCEL_LOCATION_MISSING`; nông dân chỉ xem được thời tiết thửa của hộ mình.
+- `POST /api/v1/knowledge/ask` trả các đoạn tài liệu phù hợp nhất từ RAG, mỗi đoạn kèm nguồn (tên, tổ chức, link, giấy phép, trạng thái duyệt).
+  Đoạn được trích nguyên văn, không sinh thêm; câu hỏi không liên quan trả danh sách rỗng (ngưỡng `KNOWLEDGE_MIN_SCORE`).
+  Bảng ánh xạ nguồn nằm ở `knowledge-sources.json`, lấy từ `data/rag/source_registry.json`.
+- Gateway giới hạn 60 câu hỏi mỗi phút cho mỗi địa chỉ ở `/api/v1/knowledge/ask`.
+- `WEATHER_BASE_URL` (mặc định `https://api.open-meteo.com`) đổi được địa chỉ Open-Meteo qua `deploy/.env`.
+- Kết nối `DX-Farm` trong Superset chạy truy vấn đồng bộ vì stack không có Celery worker, SQL Lab dùng được.
+
+**Đã xong — Vòng đời vụ mùa và thông báo cho nông dân:**
+
+- `V7__season_lifecycle_notifications.sql` thêm bảng `notifications` và `harvest_reschedules`.
+  `crop_seasons` có thêm cột thu hoạch, `treatment_applications` có thêm cột xác nhận (bản ghi có sẵn là `CONFIRMED`).
+- Hộp thông báo trong app: `GET /api/v1/notifications` (phân trang, `unreadOnly`), `GET /api/v1/notifications/unread-count`, `PATCH /api/v1/notifications/{id}/read`, `PATCH /api/v1/notifications/read-all`.
+  Mỗi tài khoản chỉ thấy thông báo của mình, trạng thái đã đọc lưu ở server.
+  Thông báo được ghi cùng giao dịch khi duyệt hoặc từ chối thửa, vụ, yêu cầu sửa thửa, chẩn đoán và việc phun thuốc.
+  Hộ cũng nhận thông báo khi admin khai thu hoạch thay và khi đến hạn thu hoạch.
+- `POST /api/v1/crop-seasons/{id}/harvest` nhận `yieldKg` (bắt buộc), `actualHarvestDate` và `harvestedAreaHectares`, và lưu người khai.
+  `actualHarvestDate` mặc định hôm nay, không ở tương lai, tối đa 30 ngày trước.
+  `harvestedAreaHectares` mặc định cả thửa, không vượt diện tích thửa (`400`).
+  Trước ngày dự kiến trả `422 HARVEST_TOO_EARLY` trừ khi có `confirmEarly=true` kèm `earlyReason`.
+  Admin khai thay hộ phải có `reasonOnBehalf` (`400` nếu thiếu); lý do và người khai nằm trên vụ.
+- `GET /api/v1/crop-seasons/{id}/harvest-readiness` trả số ngày còn lại tới ngày dự kiến, trạng thái cách ly và các cảnh báo không chặn.
+  Cảnh báo gồm báo cáo chưa có kết quả duyệt và khuyến nghị đã duyệt chưa ghi nhận phun.
+- `PATCH /api/v1/crop-seasons/{id}/reschedule-harvest` (FARMER, ADMIN) đổi ngày dự kiến từ hôm nay đến 90 ngày tới, kèm lý do.
+  `GET /api/v1/crop-seasons/{id}/harvest-reschedules` trả đủ các lần đổi theo thứ tự.
+- Job `HarvestReminderScheduler` chạy 07:00 giờ `Asia/Ho_Chi_Minh` (cấu hình `HARVEST_REMINDER_CRON`).
+  Vụ `ACTIVE` đã duyệt tới hoặc quá ngày dự kiến nhận một thông báo mỗi ngày (`dedup_key` duy nhất).
+- Nông dân khai phun thuốc: `POST /api/v1/disease-reports/{reportId}/treatment-application/self-report` (FARMER) tạo bản ghi `PENDING_CONFIRMATION` và case `TREATMENT_CONFIRMATION` trong hàng đợi kỹ sư.
+  `POST .../confirm` và `POST .../reject` (ENGINEER, ADMIN, từ chối cần lý do) quyết định bản khai; `GET .../treatment-application` trả bản ghi của báo cáo.
+  Bản khai chờ xác nhận chặn thu hoạch (`422 TREATMENT_PENDING_CONFIRMATION`).
+  Khóa PHI tính từ ngày phun nông dân khai và có hiệu lực khi kỹ sư xác nhận.
+  Bị từ chối thì nông dân khai lại trên cùng bản ghi.
+  `POST .../diagnosis/apply` của kỹ sư ghi nhận ngay ở trạng thái `CONFIRMED`; mỗi chẩn đoán có tối đa một lần phun.
+- Mattermost kênh kỹ sư nhận tin khi có bản khai phun thuốc mới.
+
+**Chưa làm:**
+
+- Push thật (FCM, UnifiedPush): hộp thông báo chỉ kéo về khi mở app (P10).
+- Hộp thông báo cho engineer và admin: họ thấy việc chờ ở hàng đợi và Mattermost.
+- Phun lặp lại nhiều lần trên cùng một chẩn đoán.
+- SLA nhắc kỹ sư khi bản khai phun chờ xác nhận quá lâu.
+- Lịch sử thu hoạch thay hộ trong timeline workflow (hiện nằm trên vụ và log backend).
+
+**Đã xong — Kiểm tra ảnh, yêu cầu chụp lại, chẩn đoán lại và gợi ý theo triệu chứng:**
+
+- `V8__report_quality_and_diagnosis_history.sql`: `diagnoses` không còn unique theo `disease_report_id` và có `symptom_text`; `disease_reports` có trạng thái, lý do và liên kết chụp lại, kết quả chất lượng ảnh, `version`; bảng `training_labels`.
+- `POST /api/v1/disease-reports/precheck` (FARMER) kiểm kích thước, độ sáng và độ nét của ảnh, không lưu gì; không xác nhận ảnh là lúa.
+  Nộp báo cáo kiểm lại chất lượng ngoài transaction: ảnh không đạt trả `422`, AI không chạy trả `503`, ảnh lưu bỏ EXIF/GPS và báo cáo ghi kết quả chất lượng.
+- `PATCH /api/v1/disease-reports/{id}/request-retake` (ENGINEER, ADMIN, lý do bắt buộc) đặt báo cáo `NEEDS_RETAKE` mà không đổi quyết định chẩn đoán.
+  Hộ nhận thông báo `RETAKE_REQUESTED`, chẩn đoán đang chờ duyệt đóng thành `CANCELLED`; chẩn đoán đã `APPROVED` hoặc báo cáo đã yêu cầu rồi trả `409`.
+  `POST .../disease-reports?retakeOf={id}` gửi ảnh thay thế: báo cáo gốc phải `NEEDS_RETAKE`, cùng vụ, chưa có ảnh thay thế; báo cáo trả `retakeOf` và `retakeIds`.
+- Một báo cáo có nhiều chẩn đoán, bản mới nhất là hiện hành.
+  `POST .../diagnosis/ai` chạy lại được, gọi AI ngoài transaction và trả `409` nếu có chẩn đoán mới hơn trong lúc chờ; `GET .../diagnosis/history` trả mọi bản.
+  Chẩn đoán mới đóng workflow chờ của bản cũ; khóa PHI tính trên mọi lần phun của vụ.
+- `POST .../diagnosis/suggest` (ENGINEER, ADMIN) xếp hạng bệnh trong danh mục từ triệu chứng, kèm evidence và nguồn, không lưu gì.
+  `POST .../diagnosis` nhận `symptomText` tùy chọn; thiếu treatment rule được duyệt vẫn lưu chẩn đoán chờ khuyến nghị, không áp dụng được thuốc.
+  Khi kỹ sư duyệt, `training_labels` ghi triệu chứng, mã bệnh, người duyệt và chẩn đoán bị thay.
+
+**Chưa làm:**
+
+- Hiệu chuẩn ngưỡng ảnh bằng ảnh ngoài ruộng.
+- Báo cáo đánh giá AI (test set độc lập, chỉ số theo lớp): bỏ khỏi phase.
+
 ### 2026-10-06
 
 **Đã xong — Khôi phục seed treatment rule đã duyệt:**
@@ -181,12 +260,6 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - **Operational Data**: `Parcel` (thửa ruộng), `CropSeason` (vụ mùa), `DiseaseReport` (báo cáo sự cố kèm ảnh, upload multipart lưu local disk), `Diagnosis` (chẩn đoán + khuyến nghị + trạng thái duyệt), `TreatmentApplication` (bản ghi đã phun thuốc, snapshot liều/PHI).
 - Luồng nghiệp vụ đầy đủ: báo bệnh có ảnh → tra `Disease`→`TreatmentRule` deterministic (không qua LLM) → tự sinh khuyến nghị tiếng Việt → kỹ sư Approve/Reject (có state machine chặn duyệt/áp dụng sai thứ tự) → ghi nhận đã phun thuốc, tự tính ngày hết cách ly → **poka-yoke**: gọi thu hoạch khi còn cách ly bị chặn cứng, trả `HTTP 422` kèm mã lỗi `POKA_YOKE_VIETGAP_VIOLATION`.
 
-**Chưa làm** (ngoài phạm vi backend hoặc chưa cần ở Phase 0):
-
-- Vision API và RAG prototype đã có trên nhánh `feature/make-data`, nhưng backend chưa có HTTP client gọi AI Service; `Diagnosis` vẫn nhận sẵn `disease_id/confidence/model_version`.
-- Chưa có Carbon/AWD Estimator, IoT simulator, BI dashboard (Superset/Metabase), SSO nặng (Keycloak/Authentik) hay kênh chat nội bộ (Mattermost) — thuộc Giai đoạn 1–3 theo roadmap trong `README.md`.
-  Auth/role cơ bản (JWT, FARMER/ENGINEER/ADMIN) đã xong ở trên.
-
 ## Dữ liệu (`data`)
 
 ### 2026-09-30
@@ -198,6 +271,28 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Generator, validator đối chiếu workbook, seed check và RAG dry-run đều đạt; `data.sql` được sinh deterministic từ dữ liệu chuẩn.
 
 ## Mobile (`mobile`, Expo)
+
+### 2026-10-07
+
+- Thông báo lỗi từ Backend hiển thị bằng tiếng Việt theo `errorCode` (`src/api/errorMessages.ts`).
+- Màn `notifications` là hộp thông báo của nông dân, chạm một thông báo để mở thửa, vụ hoặc báo cáo liên quan.
+  Nút "Thông báo (n)" ở đầu màn Thửa.
+  Số chưa đọc được tải khi mở app, mỗi lần app trở lại foreground, mỗi lần quay lại màn Thửa và khi kéo làm mới.
+- Màn `seasons/harvest` khai báo thu hoạch (ngày, sản lượng kg, diện tích ha), hiện banner cách ly và các việc chưa xử lý.
+  Thu hoạch trước ngày dự kiến phải bật xác nhận và nhập lý do.
+- Màn `seasons/reschedule` đổi ngày dự kiến thu hoạch kèm lý do và liệt kê các lần đổi.
+- Màn Chi tiết báo cáo cho nông dân khai "Tôi đã phun thuốc" (liều, ngày phun) khi chẩn đoán đã duyệt.
+  Màn hiện trạng thái chờ hoặc đã được kỹ sư xác nhận, và lý do khi bị từ chối để khai lại.
+
+- Màn `capture` kiểm ảnh trước khi gửi: kích thước và dung lượng trên máy, độ sáng và độ nét qua Backend; ảnh không đạt khóa nút gửi và hiện lý do.
+  Mất mạng thì ảnh vào hàng đợi, Backend kiểm khi gửi.
+- Báo cáo `NEEDS_RETAKE` hiện chip "Cần chụp lại" và lý do; nút "Chụp lại" gửi ảnh thay thế liên kết báo cáo cũ (`retakeOf` giữ trong hàng đợi offline), màn chi tiết có liên kết xem ảnh trước và ảnh chụp lại.
+  Chẩn đoán bị từ chối hiện "Khuyến nghị bị từ chối", không còn nút chụp lại.
+
+**Chưa làm:**
+
+- Chưa xác nhận camera, hàng đợi offline và chuỗi chụp lại trên điện thoại thật.
+- Hộp thông báo chỉ tải trang đầu (30 thông báo mới nhất), chưa có cuộn tải thêm.
 
 ### 2026-10-06
 
@@ -260,6 +355,19 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - `mobile/README.md`: chạy thử trên điện thoại thật với IP LAN, biến môi trường, tài khoản demo, kiểm tra mã nguồn.
 
 ## AI Service (Python)
+
+### 2026-10-07
+
+- `requirements.lock` khóa phiên bản chính xác mọi gói Python; Dockerfile cài `requirements.txt` với file này làm constraints.
+- Mọi file Python có SPDX header `Apache-2.0`.
+- `POST /api/v1/disease/precheck` kiểm chất lượng ảnh (JPEG/PNG, tối đa 40 megapixel, mỗi chiều từ 160px, độ sáng 20–245, độ nét từ 20) và trả `passed`, `reasons`, kích thước, độ nét, độ sáng; không chạy YOLO.
+  `predict` dùng chung bước kiểm này.
+  Độ nét đo trên ảnh xám tối đa 640px, bỏ viền, trung vị theo 16 vùng và trừ nhiễu, nên sọc màn hình, nhiễu hạt, chữ và viền sắc không che được ảnh mờ.
+- `POST /api/v1/disease/symptoms/suggest` xếp hạng các mã bệnh trong danh mục từ triệu chứng bằng RAG, kèm evidence và nguồn; điểm là độ tương đồng tài liệu, không phải confidence.
+
+**Chưa làm:**
+
+- Ngưỡng ảnh chưa hiệu chuẩn bằng ảnh ngoài ruộng; precheck không xác nhận ảnh là lúa.
 
 ### 2026-10-06
 
@@ -339,12 +447,21 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - RAG prototype local: ingest 38 tài liệu tri thức bệnh cây trồng, tìm kiếm cosine similarity và tích hợp Qwen2.5-1.5B qua Ollama để giải thích ngữ cảnh.
 - Vision API cơ bản: FastAPI endpoint `POST /api/v1/disease/predict` nhận ảnh và phân loại bệnh dựa trên mô hình PyTorch EfficientNet-B4.
 
-**Chưa làm:**
-
-- Chưa nối HTTP client giữa Spring Boot backend và AI Service (API workflow AI chạy local độc lập).
-- 8 candidate quy tắc điều trị trạng thái HOLD được giữ riêng để audit, không seed vào CSDL chính thức.
-
 ## Frontend (`frontend`)
+
+### 2026-10-07
+
+- Thông báo lỗi từ Backend hiển thị bằng tiếng Việt theo `errorCode` (`src/errorMessages.ts`).
+- Trang `/knowledge` ("Tài liệu") cho kỹ sư và admin: nhập câu hỏi, tùy chọn giới hạn theo bệnh, nhận các đoạn tài liệu kèm danh sách nguồn (link, giấy phép, trạng thái duyệt).
+
+- Panel Chẩn đoán cho kỹ sư nhập triệu chứng, xem gợi ý bệnh kèm evidence và nguồn rồi chọn mã, chạy lại chẩn đoán AI và xem lịch sử chẩn đoán.
+  Kỹ sư yêu cầu ảnh mới kèm lý do; báo cáo hiện "Cần chụp lại" và khóa việc chẩn đoán, duyệt, ghi nhận phun cho tới khi có ảnh mới.
+- Hàng đợi kỹ sư có thêm tab "Khai phun thuốc".
+  Kỹ sư nhận việc, bấm "Xác nhận đã phun" hoặc từ chối kèm lý do.
+  Danh sách yêu cầu có thêm loại "Khai phun thuốc".
+- Panel Vụ mùa cho admin khai thu hoạch thay nông hộ bằng form có sản lượng, diện tích và lý do thao tác thay mặt.
+  Thu hoạch trước ngày dự kiến cần xác nhận và lý do.
+  Form hiện cảnh báo cách ly và việc chưa xử lý trước khi gửi.
 
 ### 2026-10-06
 
@@ -408,6 +525,14 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Đã test qua trình duyệt thật với từng role, xác nhận UI và 401/403 đúng chỗ.
 
 ## Deploy (`deploy`)
+
+### 2026-10-07
+
+- `demo/seed_demo.py` tạo dữ liệu demo qua API: nông hộ (gắn `farmer1`), thửa có tọa độ ĐBSCL, vụ đang canh tác và đã thu hoạch, báo cáo kèm ảnh, chẩn đoán đã duyệt và đang chờ, yêu cầu chụp lại, một thửa chờ duyệt.
+  Chạy lại không tạo trùng.
+- `demo/e2e.py` chạy kịch bản đầu-cuối qua gateway: phạm vi dữ liệu, poka-yoke GPS và ngày thu hoạch, duyệt qua workflow, upload idempotent, kiểm tra chất lượng ảnh, duyệt chẩn đoán, khai phun thuốc và khóa thu hoạch.
+- Workflow `E2E` (`.github/workflows/e2e.yml`) dựng stack rút gọn bằng `demo/docker-compose.e2e.yml`, nạp dữ liệu demo, thêm một rule thử nghiệm riêng cho CI (`demo/ci_fixture_rule.sql`) rồi chạy `e2e.py`.
+- Gateway thêm route công khai `GET /api/v1/system/status`, giới hạn 120 lần mỗi phút.
 
 ### 2026-10-06
 
@@ -564,6 +689,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Portal (`portal`)
 
+### 2026-10-07
+
+- Mục "Trạng thái dịch vụ" ở cuối trang hiện hoạt động hoặc ngừng của ứng dụng chính, backend, AI, lưu trữ ảnh, Keycloak, BI và chat, làm mới mỗi 30 giây.
+
 ### 2026-10-06
 
 - Portal phục vụ ở `/portal/` của gateway; link app chính, Keycloak Admin Console và Swagger là đường dẫn tương đối, thêm card MinIO Console; link Superset, MinIO Console và chat tự theo tên máy đang mở trang.
@@ -623,6 +752,12 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Mattermost là nền tảng chat tách biệt có chủ đích, không nối SSO — xem `chat/README.md`.
 
 ## Rà soát license (PoF)
+
+### 2026-10-07
+
+- `LICENSES.md` khớp dependency hiện có (Resilience4j, AspectJ, Hibernate Validator, react-router-dom, expo-location, pgvector, base image).
+- SBOM CycloneDX của backend, AI, frontend, mobile ở `sbom/`.
+- `CONTRIBUTING.md`, mẫu issue và pull request ở `.github/`.
 
 ### 2026-09-11
 

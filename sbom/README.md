@@ -1,7 +1,7 @@
 # SBOM
 
 Danh mục thành phần phần mềm định dạng CycloneDX (JSON; đặc tả 1.6, riêng `ai.cdx.json` là 1.5), chỉ gồm dependency chạy thật (không gồm scope test và dev).
-Công cụ đánh giá RAG (`ai/requirements-eval.txt`, Langfuse, k6) chỉ chạy trong môi trường đánh giá riêng nên không nằm trong SBOM; giấy phép của chúng ở [`LICENSES.md`](../LICENSES.md).
+Công cụ đánh giá RAG (`ai/requirements-eval.txt`, Langfuse, k6) chỉ chạy trong môi trường đánh giá riêng nên không nằm trong SBOM; giấy phép của chúng ở [`COPYRIGHT.txt`](../COPYRIGHT.txt).
 
 | File | Nguồn |
 |---|---|
@@ -27,7 +27,7 @@ cd frontend && npx @cyclonedx/cyclonedx-npm --omit dev --output-format JSON --ou
 cd mobile && npx @cyclonedx/cyclonedx-npm --omit dev --ignore-npm-errors --output-format JSON --output-file ../sbom/mobile.cdx.json
 ```
 
-Sinh lại sau khi đổi dependency; giấy phép từng thành phần ở [`LICENSES.md`](../LICENSES.md).
+Sinh lại sau khi đổi dependency; giấy phép từng thành phần ở [`COPYRIGHT.txt`](../COPYRIGHT.txt).
 Workflow `CI Dependencies` (`ci-deps.yml`) quét lỗ hổng của các dependency này bằng Trivy khi file khai báo đổi và mỗi tuần.
 Workflow này sinh lại SBOM của backend ngay trong CI và quét nó, vì `pom.xml` không ghi phiên bản của các gói do Spring Boot quản lý.
 Quét SBOM chặn CI khi có lỗi HIGH hoặc CRITICAL đã có bản vá.

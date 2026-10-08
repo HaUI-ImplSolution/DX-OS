@@ -78,7 +78,7 @@ Mức hoàn thiện và độ phủ kiểm thử từng tính năng ở [`docs/T
 | Chat | Mattermost Team Edition (chạy nguyên bản) | AGPL-3.0 |
 
 Mã tự viết theo Apache-2.0 ([`LICENSE`](./LICENSE)), riêng mã nguồn `ai/` theo AGPL-3.0 ([`ai/LICENSE`](./ai/LICENSE)).
-Bảng dependency và giấy phép đầy đủ ở [`LICENSES.md`](./LICENSES.md); SBOM CycloneDX ở [`sbom/`](./sbom/README.md).
+Bảng dependency và giấy phép đầy đủ ở [`COPYRIGHT.txt`](./COPYRIGHT.txt); SBOM CycloneDX ở [`sbom/`](./sbom/README.md).
 
 ## 🚀 Cài đặt và chạy
 
@@ -149,7 +149,7 @@ Cấu hình riêng của từng ứng dụng ở [`backend/app-farm/README.md`](
 Máy chủ công khai chạy sau Cloudflare Tunnel, không mở cổng vào.
 Bật bằng overlay [`deploy/docker-compose.cloudflared.yml`](./deploy/docker-compose.cloudflared.yml) (hướng dẫn ở đầu file).
 Khái niệm và cấu hình Cloudflare ở [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE.md); xem log, giới hạn tốc độ, audit, sao lưu và khôi phục ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
-Workflow [`online.yml`](./.github/workflows/online.yml) gọi các đường công khai mỗi 30 phút và báo lỗi khi không truy cập được.
+Script [`deploy/online-check.sh`](./deploy/online-check.sh) gọi các đường công khai, chạy bằng cron trên máy chủ và báo sang Mattermost khi không truy cập được.
 
 ### 🔑 Tài khoản demo
 
@@ -210,7 +210,7 @@ Hướng dẫn kiểm thử đầy đủ ở [`docs/TESTING.md`](./docs/TESTING.
 | [`sso/`](./sso/README.md) · [`bi/`](./bi/README.md) · [`chat/`](./chat/README.md) · [`seaweedfs/`](./seaweedfs/README.md) · [`portal/`](./portal/README.md) | Keycloak, Superset, Mattermost, SeaweedFS, portal |
 | [`docs/`](./docs) | Tồn đọng, kiểm thử, đánh giá AI, hồ sơ nộp bài, câu hỏi hội đồng, mẫu phase (`_template/`), tài liệu tham chiếu |
 
-Tài liệu gốc: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./CHANGELOG.md) · [`LICENSES.md`](./LICENSES.md).
+Tài liệu gốc: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./CHANGELOG.md) · [`COPYRIGHT.txt`](./COPYRIGHT.txt).
 
 ## 🤝 Đóng góp
 
@@ -228,6 +228,6 @@ Tài liệu gốc: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./
 
 ## 📜 Giấy phép
 
-Apache License 2.0, xem [`LICENSE`](./LICENSE); thư mục `ai/` theo AGPL-3.0, xem [`ai/LICENSE`](./ai/LICENSE) và [`LICENSES.md`](./LICENSES.md).
+Apache License 2.0, xem [`LICENSE`](./LICENSE); thư mục `ai/` theo AGPL-3.0, xem [`ai/LICENSE`](./ai/LICENSE) và [`COPYRIGHT.txt`](./COPYRIGHT.txt).
 
 Tham khảo: [chủ đề cuộc thi](https://vfossa.vn/tin-tuc/gioi-thieu-mo-hinh-dx-os-va-chu-de-cuoc-thi-phan-mem-nguon-mo-olp-2026-761.html) · [giáo trình DX-OS](https://opendigitransform.gitbook.io/dx-os)

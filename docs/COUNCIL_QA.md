@@ -19,7 +19,7 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE.md`](../ARCHITECTURE.md).
 - Backend Java và Spring Boot vì ranh giới Core/ứng dụng cần kiểm tra lúc biên dịch bằng module Maven; AI viết bằng Python vì hệ sinh thái CV và RAG.
 - Mã tự viết Apache-2.0.
   Dependency chính: Spring, Keycloak, APISIX, PostgreSQL, Superset, Ollama (Apache-2.0 hoặc MIT); PyTorch/Torchvision (BSD-3-Clause); Mattermost và crop classifier là AGPL-3.0; phần fine-tune model bệnh của nhóm theo Apache-2.0.
-- Dẫn: `LICENSES.md` (bảng đầy đủ, nguồn và vai trò), `sbom/` (CycloneDX).
+- Dẫn: `COPYRIGHT.txt` (bảng đầy đủ, nguồn và vai trò), `sbom/` (CycloneDX).
 
 ## 3. Nếu thay đổi ứng dụng nghiệp vụ, Open-Core có phải thay đổi theo không? Vì sao?
 
@@ -137,7 +137,7 @@ Hướng mở rộng:
   Phần fine-tune checkpoint bệnh do nhóm phát hành theo Apache-2.0, giữ điều khoản pretrained Torchvision.
 - Thư mục `ai/` giữ AGPL-3.0 (`ai/LICENSE`); phần còn lại giữ Apache-2.0.
   AI Service là tiến trình riêng giao tiếp với Backend qua HTTP, nên Backend không là tác phẩm phái sinh của `ai/`.
-- Bảng đầy đủ: `LICENSES.md`.
+- Bảng đầy đủ: `COPYRIGHT.txt`.
 
 ### C. Hệ thống được bảo vệ thế nào khi mở ra Internet?
 

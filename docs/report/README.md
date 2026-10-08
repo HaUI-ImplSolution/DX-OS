@@ -1,7 +1,7 @@
 # Sườn báo cáo kỹ thuật (8-10 trang)
 
 Sườn của báo cáo kỹ thuật nộp theo mục 10 của đề.
-Báo cáo đi cùng mạch với bộ slide ở [`../slides/README.md`](../slides/README.md): vấn đề, câu hỏi nghiên cứu, phương pháp, giải pháp, kiểm chứng, giới hạn.
+Báo cáo đi theo mạch: vấn đề, câu hỏi nghiên cứu, phương pháp, giải pháp, kiểm chứng, giới hạn.
 Mỗi mục ghi số trang dự kiến, nội dung cần viết, hình và bảng, và nơi lấy số liệu trong repository.
 
 ## Quy ước viết
@@ -151,7 +151,7 @@ Nguồn: [`../TESTING.md`](../TESTING.md) mục 7, 8 và 10, log workflow `E2E` 
 - Bốn bản phát hành `v1.0.0` đến `v1.0.3`, image trên GHCR, CHANGELOG theo phiên bản.
 - Cộng đồng: hướng dẫn đóng góp và cách thêm ứng dụng mới, quy tắc ứng xử, mẫu issue và pull request, Dependabot.
 
-Nguồn: [`../../LICENSES.md`](../../LICENSES.md), [`../../sbom/README.md`](../../sbom/README.md), [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md), [`../../CHANGELOG.md`](../../CHANGELOG.md).
+Nguồn: [`../../COPYRIGHT.txt`](../../COPYRIGHT.txt), [`../../sbom/README.md`](../../sbom/README.md), [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md), [`../../CHANGELOG.md`](../../CHANGELOG.md).
 
 ### 10. Hạn chế và hướng phát triển
 
@@ -177,10 +177,9 @@ Nguồn: [`../BACKLOG.md`](../BACKLOG.md) mục 4 đến 8, [`../COUNCIL_QA.md`]
 - Lewis, P. và cộng sự (2020). Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks. NeurIPS 2020.
 - Shingo, S. (1986). Zero Quality Control: Source Inspection and the Poka-yoke System. Productivity Press.
 - Cormack, G. V., Clarke, C. L. A., Büttcher, S. (2009). Reciprocal Rank Fusion Outperforms Condorcet and Individual Rank Learning Methods. SIGIR 2009.
-- Tài liệu của các thành phần nguồn mở dùng trong lõi, theo [`../../LICENSES.md`](../../LICENSES.md).
+- Tài liệu của các thành phần nguồn mở dùng trong lõi, theo [`../../COPYRIGHT.txt`](../../COPYRIGHT.txt).
 
 ### Phụ lục
 
-- A. Đối chiếu tiêu chí chấm với mục báo cáo, theo bảng ở [`../slides/README.md`](../slides/README.md#đối-chiếu-tiêu-chí-chấm).
-- B. Hướng dẫn dựng và chạy thử, tài khoản demo, theo [`../../README.md`](../../README.md).
-- C. Danh sách API chính, theo [`../../README.md`](../../README.md) mục API.
+- A. Hướng dẫn dựng và chạy thử, tài khoản demo, theo [`../../README.md`](../../README.md).
+- B. Danh sách API chính, theo [`../../README.md`](../../README.md) mục API.

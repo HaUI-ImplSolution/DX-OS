@@ -63,7 +63,7 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 | Quét lỗ hổng phụ thuộc, SBOM đã phân giải của backend và image của bên thứ ba bằng Trivy (`ci-deps.yml`, hằng tuần) | Có | Chạy thử ở local, CI | Không áp dụng |
 | Mọi route gateway không kiểm token đều nằm trong danh sách công khai (`deploy/demo/check_gateway_routes.py`) | Có | Job CI `gateway`, thử route thêm vào và route đổi trạng thái | Không áp dụng |
 | Luật phân lớp và ranh giới gói của backend (`ArchitectureTest`) | Có | Test đơn vị trong `mvn verify` | Không áp dụng |
-| Giám sát từ ngoài: web, portal, đăng nhập, backend và kho ảnh (`online.yml`, 30 phút một lần) | Có | Workflow theo lịch, chạy các lệnh của nó lên site thật | Không áp dụng |
+| Giám sát từ ngoài: web, portal, đăng nhập, backend và kho ảnh (`deploy/online-check.sh`, chạy bằng cron trên máy chủ) | Có | Chạy thử với site thật, địa chỉ không kết nối được và phản hồi không phải JSON | Không áp dụng |
 | Kiểm tra máy và `deploy/.env` trước khi chạy (`deploy/doctor.sh`) | Có | Chạy thử với `.env` đủ, thiếu, để trống và còn tên biến cũ | Không áp dụng |
 
 ## 2. Chuẩn bị

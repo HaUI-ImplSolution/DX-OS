@@ -10,10 +10,10 @@ Việc còn lại của hồ sơ nằm ở [`BACKLOG.md`](./BACKLOG.md); câu tr
 | Repository công khai, lịch sử commit | GitHub, nhánh `main` |
 | Release và tag có phiên bản | GitHub Releases (`v1.0.0` đến `v1.0.3`); thay đổi theo phiên bản ở [`CHANGELOG.md`](../CHANGELOG.md) |
 | `README.md`: kiến trúc 3 tầng, H-P-D-I, tính năng, cài đặt, cấu hình, chạy thử, API, tài khoản demo | [`README.md`](../README.md) |
-| `LICENSE` và bảng dependency, license | [`LICENSE`](../LICENSE), [`LICENSES.md`](../LICENSES.md), [`sbom/`](../sbom/README.md) |
+| `LICENSE` và bảng dependency, license | [`LICENSE`](../LICENSE), [`COPYRIGHT.txt`](../COPYRIGHT.txt), [`sbom/`](../sbom/README.md) |
 | `CHANGELOG.md`, issue tracker, `CONTRIBUTING.md` | [`CHANGELOG.md`](../CHANGELOG.md), GitHub Issues, [`CONTRIBUTING.md`](../CONTRIBUTING.md) |
 | Sơ đồ kiến trúc và luồng gọi dịch vụ | [`ARCHITECTURE.md`](../ARCHITECTURE.md) |
-| Báo cáo kỹ thuật 8-10 trang, slide tối đa 12 | Sườn báo cáo ở [`report/README.md`](./report/README.md), sườn slide ở [`slides/README.md`](./slides/README.md) |
+| Báo cáo kỹ thuật 8-10 trang, slide tối đa 12 | Sườn báo cáo ở [`report/README.md`](./report/README.md) |
 | Video demo 3-5 phút | Mục 3, dựa trên kịch bản ở mục 2 |
 
 ## 2. Kịch bản demo 10 phút

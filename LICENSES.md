@@ -79,8 +79,7 @@ Khi bật lại cần rà license tương ứng: POI Apache-2.0 OK, các cái c�
 **Checkpoint gốc:** `YOLOv8n-RiceLeafBD` phiên bản `3.0.0`, do
 [`@nddKhanh`](https://github.com/nddKhanh) fine-tune trong
 [notebook Kaggle](https://www.kaggle.com/code/baodark/dx-farm-8169e1/notebook), được nhóm
-đồng ý công khai theo AGPL-3.0. Bản thay thế `3.1.0` do người dùng cung cấp trong nhánh này; giữ license model hiện có. File `ai/weights/best.pt` có SHA-256
-`e5ae985cb87723f0b39c3833d8230ac48c13c2e075296b18faffc1302aa6debe`; toàn văn license
+đồng ý công khai theo AGPL-3.0. Bản thay thế `3.1.0` do người dùng cung cấp trong nhánh này; giữ license model hiện có. Checkpoint nằm tại `ai/weights/best.pt`; toàn văn license
 nằm tại [`ai/MODEL_LICENSE`](./ai/MODEL_LICENSE).
 
 **Dataset:** [RiceLeafDiseaseBD Version 3](https://doi.org/10.17632/86s4jzj2m4.3), theo

@@ -67,7 +67,7 @@ Ví dụ kết quả:
 ## Đặc điểm vận hành
 
 Artifact hiện tại: YOLOv8n RiceLeafBD, phiên bản `3.1.0`, checkpoint huấn luyện 150 epochs ngày 2026-10-07.
-SHA-256: `e5ae985cb87723f0b39c3833d8230ac48c13c2e075296b18faffc1302aa6debe`. Checkpoint nằm tại `ai/weights/best.pt`, được quản lý bằng Git cùng mã nguồn.
+Checkpoint nằm tại `ai/weights/best.pt`, được quản lý bằng Git cùng mã nguồn.
 
 - Model được nạp một lần khi FastAPI khởi động, lưu tại `app.state.plant_model` và giải phóng khi service dừng.
 - Weights phải có sẵn tại `CV_WEIGHTS_PATH`; service không tự tải checkpoint. Khi chạy Compose, `best.pt` được bind-mount read-only.

@@ -47,7 +47,7 @@ Mọi endpoint ngoài `/health` và `/class-contract` đều yêu cầu `X-Servi
 Cổng AI không publish ra host, chỉ truy cập được trong mạng compose.
 Gợi ý triệu chứng chỉ hỗ trợ tra cứu; kỹ sư chốt bệnh tại Backend.
 
-Trước khi chạy Compose, tải artifact cây trồng bằng `python3 ai/scripts/download_crop_classifier.py` từ thư mục gốc; xem [hợp đồng CV](app/cv/README.md#phân-loại-lúa-trước-chẩn-đoán).
+Thư mục `ai/weights/` được ignore. Cấp `best.pt` và `crop_classifier.onnx` từ bộ trọng số của nhóm trước khi dựng stack; Compose mount read-only và service nạp trực tiếp, không tải model. Xem [hợp đồng CV](app/cv/README.md#phân-loại-lúa-trước-chẩn-đoán).
 
 `POST /api/v1/diagnose` tải ảnh từ `image_url`, chạy CV, gọi Backend lấy structured facts, truy vấn RAG và trả recommendation. Nếu structured facts không khả dụng, request thất bại; AI không đưa ra recommendation chỉ dựa trên RAG.
 
@@ -81,10 +81,10 @@ Cấu hình Docker Compose nằm tại [`deploy/.env.example`](../deploy/.env.ex
 | `CV_DEVICE` | `auto`, `cpu` hoặc `cuda` |
 | `CV_WEIGHTS_PATH` | Đường dẫn checkpoint `best.pt` (mặc định `ai/weights/best.pt`); service không tự tải |
 | `CV_WEIGHTS_SHA256` | SHA-256 kỳ vọng của checkpoint; bắt buộc khi nạp model |
-| `AI_CV_WEIGHTS_PATH` | Đường dẫn phía host mà Compose bind-mount; mặc định dùng checkpoint chuẩn trong repo |
+| `AI_CV_WEIGHTS_PATH` | Đường dẫn phía host mà Compose bind-mount; mặc định dùng checkpoint local trong `ai/weights/` |
 | `AI_CV_WEIGHTS_SHA256` | Giá trị phía host được Compose truyền vào `CV_WEIGHTS_SHA256` |
-| `CROP_CLASSIFIER_PATH`, `CROP_CLASSIFIER_SHA256` | Artifact cây trồng và checksum đã pin; xem CV README |
-| `AI_CROP_CLASSIFIER_PATH`, `AI_CROP_CLASSIFIER_SHA256` | Đường dẫn/checksum phía host dùng cho Compose |
+| `CROP_CLASSIFIER_PATH` | Đường dẫn artifact cây trồng có sẵn; kiểm file và contract khi nạp |
+| `AI_CROP_CLASSIFIER_PATH` | Đường dẫn classifier phía host dùng cho Compose |
 
 Hai service key phải được cấu hình và khớp theo từng chiều. Khi key đầu vào AI để trống, `/api/v1/diagnose` trả `503` theo cơ chế fail-closed.
 
@@ -95,7 +95,6 @@ cd ai
 python -m venv .venv
 source .venv/bin/activate
 pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
-python scripts/download_crop_classifier.py
 uvicorn app.main:app --reload --port 8000
 ```
 
@@ -121,9 +120,8 @@ Job chỉ ghi `documents` và `document_chunks`. Model embedding khi ingest ph�
 Từ thư mục gốc repository:
 
 ```bash
-python3 ai/scripts/download_crop_classifier.py
 cp deploy/.env.example deploy/.env
-# Điền các biến bắt buộc trong Compose; BACKEND_TO_AI_API_KEY và AI_TO_BACKEND_API_KEY phải khác rỗng.
+# Mọi biến trong compose là bắt buộc; BACKEND_TO_AI_API_KEY và AI_TO_BACKEND_API_KEY phải khác rỗng.
 cd deploy
 docker compose up -d --build postgres backend ai
 ```

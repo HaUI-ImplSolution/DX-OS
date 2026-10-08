@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 from io import BytesIO
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 
 import numpy as np
@@ -103,10 +105,42 @@ def test_runtime_failure_is_service_error():
 
 
 def test_loader_fails_closed_on_missing_artifact():
-    with pytest.raises(ValueError, match="SHA-256"):
+    with pytest.raises(ValueError, match="missing or empty"):
         load_crop_classifier(
             Settings(crop_classifier_path="/missing/model.onnx", _env_file=None)
         )
+
+
+@pytest.mark.parametrize("kind", ["empty", "directory"])
+def test_loader_rejects_empty_file_and_directory(kind):
+    with TemporaryDirectory() as directory:
+        path = Path(directory) / "model.onnx"
+        if kind == "empty":
+            path.touch()
+        else:
+            path.mkdir()
+        with pytest.raises(ValueError, match="missing or empty"):
+            load_crop_classifier(Settings(crop_classifier_path=path, _env_file=None))
+
+
+def test_loader_reads_local_artifact_without_checksum(monkeypatch):
+    import onnxruntime as ort
+
+    calls = []
+
+    def session(path, **kwargs):
+        calls.append((path, kwargs["providers"]))
+        return Session([0.1] * 10)
+
+    monkeypatch.setattr(ort, "InferenceSession", session)
+    with TemporaryDirectory() as directory:
+        path = Path(directory) / "model.onnx"
+        path.write_bytes(b"local artifact supplied to runtime")
+        classifier = load_crop_classifier(
+            Settings(crop_classifier_path=path, _env_file=None)
+        )
+        assert isinstance(classifier, CropClassifier)
+        assert calls == [(str(path), ["CPUExecutionProvider"])]
 
 
 def test_wrong_class_order_or_shape_fails_startup():

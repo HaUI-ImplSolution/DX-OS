@@ -65,7 +65,7 @@ Khi bật lại cần rà license tương ứng: POI Apache-2.0 OK, các cái c�
 | PyMuPDF | AGPL-3.0 hoặc Artifex commercial | ✅ với AGPL-3.0 | Repo dùng nhánh open-source AGPL-3.0 |
 | PyTorch | Apache-2.0 và các license nguồn mở đi kèm | ✅ | Dependency trực tiếp |
 | [ONNX Runtime](https://github.com/microsoft/onnxruntime/blob/main/LICENSE) | MIT | ✅ | Crop classifier CPU 1.30.0; FlatBuffers Apache-2.0, Protobuf BSD-3-Clause |
-| [Crop classifier YOLO26s-cls](https://huggingface.co/RaiyanKhaan/KrishokTech-Models/tree/c339988a6eceb5e22943ee27e4731a1a1dc9160a/01_crop_classifier) | AGPL-3.0 (metadata artifact) | ✅ | Model card repository ghi Apache-2.0; giữ điều kiện AGPL của artifact, không coi metadata repository là phép đổi license artifact |
+| [Crop classifier YOLO26s-cls](https://huggingface.co/RaiyanKhaan/KrishokTech-Models/tree/c339988a6eceb5e22943ee27e4731a1a1dc9160a/01_crop_classifier) | AGPL-3.0 (metadata artifact) | ✅ | Artifact `ai/weights/crop_classifier.onnx` được cung cấp riêng ngoài Git, từ revision `c339988a6eceb5e22943ee27e4731a1a1dc9160a`; model card repository ghi Apache-2.0, giữ điều kiện AGPL của artifact |
 | NumPy | BSD-3-Clause và các license nguồn mở đi kèm | ✅ | Dependency trực tiếp |
 | Pillow | MIT-CMU | ✅ | Dependency trực tiếp |
 | [OpenCV](https://opencv.org/license/) | Apache-2.0 | ✅ | Dependency runtime do Ultralytics kéo theo; áp dụng cho OpenCV 4.5.0 trở lên |

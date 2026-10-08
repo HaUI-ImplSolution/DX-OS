@@ -350,6 +350,12 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## AI Service (Python)
 
+### 2026-10-08
+
+- Docker/E2E nạp classifier trực tiếp từ file local; bỏ script và bước tải classifier trong E2E. Theo yêu cầu mới, ignore cả `ai/weights/`, cấp hai artifact riêng trước khi dựng stack.
+- Bỏ SHA-256 và cấu hình checksum của crop classifier; giữ kiểm file/task/mapping/shape/dtype/output, ngưỡng và SHA-256 của detector bệnh.
+- Kiểm chứng local: AI 64 test, Backend 79 test và E2E 10/10 bước qua; hai model nạp/suy luận được trong container không có mạng.
+
 ### 2026-10-07
 
 - Thêm crop classifier ONNX vào precheck và chẩn đoán; Backend kiểm lại trước lưu, Mobile hiển thị lý do riêng cho chất lượng/chưa nhận là lúa. Rice threshold 0.80, margin 0.20; lỗi model trả 503. Model còn nhận nhầm ngô/cỏ/lúa mì, đang thử trong sản phẩm.

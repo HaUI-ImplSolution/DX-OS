@@ -1,46 +1,55 @@
 # CV Rice — Tóm tắt triển khai và kiểm chứng
 
-## 1. Đã làm gì
+*Cập nhật: 2026-10-08.*
 
-Tích hợp crop classifier YOLO26s-cls vào bước kiểm ảnh trước chẩn đoán; thay checkpoint bệnh YOLOv8n bằng bản `3.1.0` do người dùng cung cấp.
-Backend kiểm lại ảnh trước lưu báo cáo, kể cả client bỏ qua precheck. Mobile hiển thị lý do chất lượng ảnh hoặc chưa nhận diện là lúa; offline và retake vẫn theo luồng hiện có.
+## 1. Đã triển khai
 
-## 2. Xử lý như thế nào, ở đâu
+- Classifier YOLO26s-cls kiểm ảnh lúa trước detector bệnh YOLOv8n `3.1.0`.
+- Hai artifact local đặt trong thư mục `ai/weights/` được ignore: `crop_classifier.onnx` và `best.pt`. Docker mount read-only, nạp một lần khi AI Service khởi động; E2E không tải classifier.
+- Đã xóa script download, bước download trong workflow và SHA-256/config tương ứng của classifier. Classifier vẫn kiểm file không rỗng, task, mapping, shape, dtype và output; detector bệnh giữ SHA-256 theo nhánh cha.
 
-Luồng: **Ảnh → kiểm kích thước/độ sáng/độ nét → phân loại lúa → nhận diện bệnh → Backend facts/RAG → kỹ sư duyệt.**
-Precheck dừng sau phân loại lúa; không chạy detector bệnh.
+## 2. Luồng xử lý và vị trí code
+
+**Ảnh → kiểm chất lượng → phân loại lúa → nhận diện bệnh → Backend facts/RAG → kỹ sư duyệt.**
+Precheck dừng sau phân loại lúa. Backend kiểm lại trước lưu báo cáo/ảnh; offline được kiểm khi đồng bộ, retake giữ liên kết ảnh cũ/mới và idempotency.
 
 | Thành phần | Vị trí | Vai trò |
 |---|---|---|
-| Crop classifier | `ai/app/cv/crop_classifier.py` | ONNX Runtime CPU; RGB, resize cạnh ngắn 224, center crop, /255; kiểm output và điều kiện Rice |
-| Kiểm ảnh dùng chung | `ai/app/services/plant_disease_service.py` | `assess_image` dùng cho precheck và predict; diagnose gọi predict trước facts/RAG |
-| Nạp model/API | `ai/app/core/lifespan.py`, `ai/app/api/router.py` | Nạp hai model một lần, health phản ánh cả hai; phân biệt ảnh không đạt và lỗi dịch vụ |
-| Backend/Mobile | `DiseaseReportService`, `mobile/app/capture.tsx` | Server kiểm trước lưu; app hiển thị lý do và chặn gửi ảnh không đạt |
-| Cung cấp artifact | `ai/scripts/download_crop_classifier.py`, `deploy/docker-compose.yml` | Tải revision/checksum cố định trước triển khai; mount ONNX read-only |
-| Test hồi quy | `ai/tests/test_crop_classifier.py` | Kiểm policy, chất lượng trước crop, precheck/predict/diagnose, lỗi 422/503 và lifespan |
+| Nhận diện lúa | `ai/app/cv/crop_classifier.py` | ONNX Runtime CPU; RGB, resize cạnh ngắn 224, center crop, /255; kiểm điều kiện Rice |
+| Kiểm ảnh dùng chung | `ai/app/services/plant_disease_service.py` | `assess_image` dùng cho precheck và predict; diagnose kiểm trước facts/RAG |
+| Khởi động và API | `ai/app/core/lifespan.py`, `ai/app/api/router.py` | Nạp hai model; health chỉ sẵn sàng khi cả hai đã nạp |
+| Backend/Mobile | `DiseaseReportService`, `mobile/app/capture.tsx` | Kiểm trước lưu, hiển thị lý do và chặn gửi ảnh không đạt |
+| Triển khai/E2E | `deploy/docker-compose.yml`, `.github/workflows/e2e.yml` | Dùng artifact được cấp sẵn ngoài Git, không có bước download classifier |
+| Test hồi quy | `ai/tests/test_crop_classifier.py` | Kiểm loader, policy, precheck/predict/diagnose và lỗi dịch vụ |
 
-Cho qua khi top1 là Rice, P(Rice) ≥ **0.80**, chênh với lớp khác cao nhất ≥ **0.20**. Confidence bệnh trong code là **0.70**; local từng được hạ riêng xuống **0.00** để thử theo yêu cầu.
-Precheck trả 200 với `passed=false` khi ảnh không đạt; predict/diagnose và nộp báo cáo bị gate chặn trả 422. Classifier lỗi trả 503, không coi là ảnh không phải lúa.
+Ngưỡng: Rice ≥ **0.80**, top1 là Rice, chênh lớp khác ≥ **0.20**; confidence bệnh trong code **0.70**. Ngưỡng bệnh từng hạ riêng xuống 0.00 trong local để thử; E2E/container không mạng lần kiểm mới dùng code 0.70.
+Precheck trả 200 với `passed=false` khi ảnh không đạt; predict/diagnose hoặc nộp báo cáo bị chặn trả 422. Classifier lỗi trả 503, không báo nhầm ảnh không phải lúa.
 
-**Tải lại:** Docker không gọi script tải. Khi chủ động chạy script, file đúng SHA-256 được giữ nguyên; thiếu/sai file thì tải vào file tạm, kiểm hash rồi mới thay thế. Tải lỗi không ghi đè file hiện có; file tạm được dọn. E2E CI gọi script trước khi dựng stack; service không tải model lúc khởi động.
+## 3. Kết quả kiểm chứng mới nhất
 
-## 3. Kết quả đã kiểm chứng — 2026-10-07
-
-- **61 test AI**, Ruff và pip check qua; **79 test Backend**, không bỏ qua test; Mobile typecheck/export Android và Web build qua.
-- Chạy script tải hai lần với truy cập mạng bị chặn: file model giữ nguyên inode, thời gian sửa và SHA-256; không tải lại.
-- Compose template hợp lệ; thiếu secret bắt buộc bị từ chối. Backend, AI và storage local đều `UP` lúc kiểm tra.
-- Qua Backend: ảnh lúa mẫu đạt; ảnh người đủ nét bị từ chối với lý do chưa nhận diện là lúa. Gửi thẳng ảnh người trả 422, số báo cáo không đổi; test Backend xác nhận không gọi lưu ảnh.
-- Người dùng thử trên app và phản hồi “có vẻ ổn”; chưa có kết quả riêng từng kịch bản để kết luận toàn bộ ảnh thực địa đạt.
-- Nhánh `tung/cv-rice-image-validation` đã push tại `ffe0622`, dựa trên nhánh cha `4fb1169`. CI GitHub chưa được kích hoạt tại lần kiểm tra sau push vì chưa có PR.
-
-## 4. Kiểm lại và giới hạn
-
-| Kịch bản | Kết quả cần kiểm tra |
+| Kiểm tra | Kết quả |
 |---|---|
-| Lá lúa rõ, đủ sáng | Qua precheck; gửi được báo cáo |
-| Người/đồ vật hoặc ảnh mờ/tối | Bị từ chối với đúng lý do; không tạo báo cáo |
-| Ngô/cỏ/lúa mì | Ghi nhận ca lọt; model hiện còn nhận nhầm |
-| Offline, chụp lại, chạy AI lại | Kiểm khi đồng bộ; không tạo trùng, giữ liên kết retake và chẩn đoán cũ khi bị từ chối |
+| AI, Ruff, pip check | **64 test qua**, lint và dependency check qua |
+| Backend `verify` | **79 test qua**, không bỏ qua |
+| E2E local | **10/10 bước qua**: role, duyệt, idempotency, ảnh trắng bị chặn, chẩn đoán và PHI |
+| Container không mạng | Hai lần nạp/giải phóng model và suy luận thành công; nội dung trọng số không đổi; file thiếu/rỗng/hỏng bị từ chối |
+| Kiểm ảnh qua Backend | Lúa mẫu đạt; ảnh người đủ nét bị gate cây trồng chặn; gửi trực tiếp trả 422, không thêm báo cáo |
 
-Model chưa giải quyết hoàn toàn ảnh ngoài miền: trong 15 ảnh thử trước tích hợp, classifier nhận nhầm 3 ảnh ngoài lúa; 2 ảnh còn qua cả chất lượng (ngô/lúa mì). Đối chiếu ONNX/PyTorch trên cùng tensor cho cùng top1, sai lệch xác suất < `5e-7` ở 5 ảnh. Tăng threshold không sửa các ca Rice gần 100%.
-Ảnh tải thử và checkpoint PyTorch đối chiếu đã xóa; ONNX đang dùng được ignore. Chi tiết hợp đồng/model tại [CV README](../../../ai/app/cv/README.md#phân-loại-lúa-trước-chẩn-đoán).
+E2E dùng stack riêng từ snapshot các file Git có ONNX thật, images runtime có sẵn và image AI lắp mã mới. Build toàn stack từ đầu/CI GitHub cho thay đổi này chưa được kiểm chứng. Người dùng đã thử app và phản hồi “có vẻ ổn”; chưa có kết quả riêng cho toàn bộ kịch bản thực địa.
+
+## 4. Giới hạn và dọn dẹp
+
+- Model vẫn nhận nhầm ngô/cỏ/lúa mì: lần thử 15 ảnh có 3 ảnh ngoài lúa qua classifier, 2 ảnh còn qua chất lượng. Chuyển cách lưu trọng số không cải thiện độ chính xác; tăng threshold không sửa ca Rice gần 100%.
+- Bỏ SHA-256 classifier cho phép trọng số khác cùng contract được nạp. Phiên bản artifact được ghi trong tài liệu model; nguồn tại [CV README](../../../ai/app/cv/README.md#phân-loại-lúa-trước-chẩn-đoán).
+- Đã dọn plan tạm, ảnh tải thử, checkpoint PyTorch đối chiếu, stack E2E thử, bản sao build Backend và log thử. Trang classifier riêng `crop-test/`, container/image tester đã xóa; cổng 39083 không còn trang thử.
+- Giữ artifact sản phẩm, test hồi quy, tài liệu module và cấu hình/dữ liệu Docker local cần dùng. `backend-image/app.jar` còn cần cho build local; cấu hình/dữ liệu local được ignore. README tổng giữ nguyên.
+
+## 5. Rà soát sau thay đổi
+
+- Fetch mới nhất: nhánh cha có commit tài liệu `482b905` chưa merge vào nhánh này. Mô phỏng merge phần đã commit và kiểm áp dụng patch cha lên working tree hiện tại đều không phát hiện conflict.
+- Rà skill AI: dùng loader/contract hiện có, không thêm dependency cho đợt bỏ download/SHA; giữ kiểm input/output và test hồi quy. Giới hạn chấp nhận model khác cùng contract có comment `ponytail:` tại loader.
+- Script download, plan tạm, trang thử riêng và bản sao build/log thử đã dọn. Các file còn lại phục vụ sản phẩm, kiểm hồi quy hoặc cấu hình/dữ liệu local đang dùng. README tổng không sửa.
+
+## 6. Cung cấp trọng số ngoài Git
+
+Theo yêu cầu mới, ignore cả thư mục `ai/weights/`; hai file vẫn giữ trên máy nhưng được bỏ theo dõi trong Git. Clone mới cần được cấp `best.pt` và `crop_classifier.onnx` trước khi tạo cấu hình/dựng stack. CI hiện chưa có bước cung cấp artifact ngoài Git, nên chưa đáp ứng việc chạy từ checkout sạch; cần xác định cách cấp trọng số cho runner/server. E2E và startup tiếp tục không tải model. Các kết quả kiểm chứng mục 3 là trước thay đổi cách phân phối này.

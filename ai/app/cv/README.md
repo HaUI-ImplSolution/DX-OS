@@ -67,7 +67,7 @@ Ví dụ kết quả:
 ## Đặc điểm vận hành
 
 Artifact hiện tại: YOLOv8n RiceLeafBD, phiên bản `3.1.0`, checkpoint huấn luyện 150 epochs ngày 2026-10-07.
-SHA-256: `e5ae985cb87723f0b39c3833d8230ac48c13c2e075296b18faffc1302aa6debe`. Checkpoint nằm tại `ai/weights/best.pt`, được quản lý cùng mã nguồn theo nhánh cha.
+SHA-256: `e5ae985cb87723f0b39c3833d8230ac48c13c2e075296b18faffc1302aa6debe`. Checkpoint nằm tại `ai/weights/best.pt`, được cung cấp riêng trong thư mục local được ignore.
 
 - Model được nạp một lần khi FastAPI khởi động, lưu tại `app.state.plant_model` và giải phóng khi service dừng.
 - Weights phải có sẵn tại `CV_WEIGHTS_PATH`; service không tự tải checkpoint. Khi chạy Compose, `best.pt` được bind-mount read-only.
@@ -110,9 +110,9 @@ Workflow giữ ngưỡng confidence 0.70 và từ chối fallback confidence 0 t
 ## Phân loại lúa trước chẩn đoán
 
 - `crop_classifier.py` dùng ONNX Runtime CPU 1.30.0; giữ Ultralytics 8.3.40 cho detector bệnh.
-- [Artifact YOLO26s-cls](https://huggingface.co/RaiyanKhaan/KrishokTech-Models/tree/c339988a6eceb5e22943ee27e4731a1a1dc9160a/01_crop_classifier): 10 lớp, `Rice=8`, `Others=6`; revision và SHA-256 được cố định trong script tải.
-- Tải trước khi chạy: `python3 ai/scripts/download_crop_classifier.py` từ gốc repo. ONNX được ignore, mount read-only; service không tải mạng và không bỏ qua gate khi thiếu/sai model.
-- `CROP_CLASSIFIER_PATH` mặc định `ai/weights/crop_classifier.onnx`, `CROP_CLASSIFIER_SHA256` mặc định `b9c34acf76a3d8a04820d7f26c8318736478f54c568a655c09a73f55190837a5`. Compose tương ứng dùng `AI_CROP_CLASSIFIER_PATH` và `AI_CROP_CLASSIFIER_SHA256`.
+- [Artifact YOLO26s-cls](https://huggingface.co/RaiyanKhaan/KrishokTech-Models/tree/c339988a6eceb5e22943ee27e4731a1a1dc9160a/01_crop_classifier): 10 lớp, `Rice=8`, `Others=6`; artifact từ revision này đặt tại `ai/weights/crop_classifier.onnx`, được cung cấp riêng ngoài Git.
+- Cấp hai artifact trong `ai/weights/` trước khi dựng stack; cả thư mục được ignore. Compose mount read-only. Startup và E2E không tải classifier; thiếu/rỗng/không nạp được model hoặc sai contract làm khởi động thất bại.
+- `CROP_CLASSIFIER_PATH` mặc định `ai/weights/crop_classifier.onnx`; Compose dùng `AI_CROP_CLASSIFIER_PATH`. Classifier kiểm file, task, mapping, shape và dtype; không đối chiếu SHA-256 nên model khác cùng contract có thể được nạp. SHA-256 của detector bệnh `best.pt` giữ theo nhánh cha.
 - RGB, sửa hướng EXIF, resize cạnh ngắn 224 bằng bilinear, center crop 224, NCHW float32 /255 theo preprocessing Ultralytics. Output đã Softmax; không chuẩn hóa lần nữa.
 - Cho qua khi top1 là Rice, P(Rice) ≥ 0.80 và chênh với lớp khác cao nhất ≥ 0.20. Confidence bệnh vẫn **0.70**, độc lập với classifier.
 - `passed` là kết quả chất lượng **và** classifier; các số đo sharpness/brightness chỉ đo chất lượng. Ảnh mới lưu `quality_passed` theo kết quả tổng hợp, không backfill ảnh cũ.

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Pinned crop classifier; its score is not proof that an image depicts rice."""
+"""Local crop classifier; its score is not proof that an image depicts rice."""
 
 import ast
 
@@ -7,9 +7,7 @@ import numpy as np
 from PIL import Image
 
 from app.core.config import Settings, get_settings
-from app.cv.loader import _sha256
 
-CROP_SHA256 = "b9c34acf76a3d8a04820d7f26c8318736478f54c568a655c09a73f55190837a5"
 CROP_CLASSES = (
     "Cabbage",
     "Cauliflower",
@@ -104,15 +102,11 @@ class CropClassifier:
 
 def load_crop_classifier(settings: Settings | None = None) -> CropClassifier:
     settings = settings or get_settings()
+    # ponytail: same-contract weight replacements are accepted; version supplied
+    # artifacts and regression-test each replacement.
     path = settings.crop_classifier_path
-    if (
-        settings.crop_classifier_sha256 != CROP_SHA256
-        or not path.is_file()
-        or _sha256(path) != CROP_SHA256
-    ):
-        raise ValueError(
-            "Crop classifier missing or SHA-256 does not match pinned artifact"
-        )
+    if not path.is_file() or not path.stat().st_size:
+        raise ValueError(f"Crop classifier file is missing or empty: {path}")
     import onnxruntime as ort
 
     options = ort.SessionOptions()

@@ -29,9 +29,6 @@ class Settings(BaseSettings):
         AI_ROOT.parent / "data" / "structured" / "class_contract.json"
     )
     crop_classifier_path: Path = AI_ROOT / "weights" / "crop_classifier.onnx"
-    crop_classifier_sha256: str = (
-        "b9c34acf76a3d8a04820d7f26c8318736478f54c568a655c09a73f55190837a5"
-    )
     cv_device: str = "auto"
     llm_timeout_seconds: float = 5.0
 

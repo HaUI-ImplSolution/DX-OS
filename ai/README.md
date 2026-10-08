@@ -35,17 +35,19 @@ Tài liệu chi tiết theo module:
 
 | Method | Endpoint | Mô tả |
 |---|---|---|
-| `GET` | `/api/v1/disease/health` | Trạng thái model CV và thiết bị chạy (công khai) |
+| `GET` | `/api/v1/disease/health` | Readiness của detector bệnh + crop classifier, thiết bị detector (công khai) |
 | `GET` | `/api/v1/disease/class-contract` | Contract 5 lớp CV, fallback và `disease_code` canonical (công khai) |
 | `POST` | `/api/v1/disease/predict` | Nhận ảnh multipart và trả kết quả CV, yêu cầu header `X-Service-Api-Key` |
 | `POST` | `/api/v1/disease/knowledge/retrieve` | Truy vấn RAG theo câu hỏi và `disease_code` tùy chọn, yêu cầu header `X-Service-Api-Key` |
-| `POST` | `/api/v1/disease/precheck` | Multipart ảnh; kiểm chất lượng, không chạy YOLO |
+| `POST` | `/api/v1/disease/precheck` | Multipart ảnh; kiểm chất lượng + phân loại lúa, không chạy detector bệnh |
 | `POST` | `/api/v1/disease/symptoms/suggest` | `symptom_text`, `top_k` 1–6; mã bệnh có score, evidence và source IDs |
 | `POST` | `/api/v1/diagnose` | Contract nội bộ Backend → AI, yêu cầu header `X-Service-Api-Key` |
 
 Mọi endpoint ngoài `/health` và `/class-contract` đều yêu cầu `X-Service-Api-Key` khớp `AI_SERVICE_API_KEY`; thiếu hoặc sai key trả `401`, chưa cấu hình key trả `503`.
 Cổng AI không publish ra host, chỉ truy cập được trong mạng compose.
 Gợi ý triệu chứng chỉ hỗ trợ tra cứu; kỹ sư chốt bệnh tại Backend.
+
+Checkout có sẵn `best.pt` và `crop_classifier.onnx` trong `ai/weights/`; Compose mount read-only và service nạp trực tiếp, không tải model. Xem [hợp đồng CV](app/cv/README.md#phân-loại-lúa-trước-chẩn-đoán).
 
 `POST /api/v1/diagnose` tải ảnh từ `image_url`, chạy CV, gọi Backend lấy structured facts, truy vấn RAG và trả recommendation. Nếu structured facts không khả dụng, request thất bại; AI không đưa ra recommendation chỉ dựa trên RAG.
 
@@ -79,8 +81,10 @@ Cấu hình Docker Compose nằm tại [`deploy/.env.example`](../deploy/.env.ex
 | `CV_DEVICE` | `auto`, `cpu` hoặc `cuda` |
 | `CV_WEIGHTS_PATH` | Đường dẫn checkpoint `best.pt` (mặc định `ai/weights/best.pt`); service không tự tải |
 | `CV_WEIGHTS_SHA256` | SHA-256 kỳ vọng của checkpoint; bắt buộc khi nạp model |
-| `AI_CV_WEIGHTS_PATH` | Đường dẫn phía host mà Compose bind-mount; mặc định dùng checkpoint chuẩn trong repo |
+| `AI_CV_WEIGHTS_PATH` | Đường dẫn phía host mà Compose bind-mount; mặc định dùng checkpoint chuẩn trong `ai/weights/` |
 | `AI_CV_WEIGHTS_SHA256` | Giá trị phía host được Compose truyền vào `CV_WEIGHTS_SHA256` |
+| `CROP_CLASSIFIER_PATH` | Đường dẫn artifact cây trồng có sẵn; kiểm file và contract khi nạp |
+| `AI_CROP_CLASSIFIER_PATH` | Đường dẫn classifier phía host dùng cho Compose |
 
 Hai service key phải được cấu hình và khớp theo từng chiều. Khi key đầu vào AI để trống, `/api/v1/diagnose` trả `503` theo cơ chế fail-closed.
 

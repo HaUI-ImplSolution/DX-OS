@@ -350,18 +350,28 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## AI Service (Python)
 
+### 2026-10-08
+
+- Docker/E2E nạp classifier trực tiếp từ file local; bỏ script và bước tải classifier trong E2E. Đưa `best.pt` và `crop_classifier.onnx` vào Git để checkout sạch có đủ trọng số, chỉ ignore cache tải.
+- Bỏ SHA-256 và cấu hình checksum của crop classifier; giữ kiểm file/task/mapping/shape/dtype/output, ngưỡng và SHA-256 của detector bệnh.
+- Kiểm chứng local: AI 64 test, Backend 79 test và E2E 10/10 bước qua; hai model nạp/suy luận được trong container không có mạng.
+
 ### 2026-10-07
+
+- Thêm crop classifier ONNX vào precheck và chẩn đoán; Backend kiểm lại trước lưu, Mobile hiển thị lý do riêng cho chất lượng/chưa nhận là lúa. Rice threshold 0.80, margin 0.20; lỗi model trả 503. Model còn nhận nhầm ngô/cỏ/lúa mì, đang thử trong sản phẩm.
+- Cập nhật checkpoint YOLOv8n RiceLeafBD lên artifact `3.1.0` (150 epochs); giữ class contract và confidence threshold 0.70.
+- ONNX tải riêng theo revision/checksum cố định; Compose mount read-only, E2E tải trước khi dựng stack. README module, OpenAPI và license đã cập nhật.
 
 - `requirements.lock` khóa phiên bản chính xác mọi gói Python; Dockerfile cài `requirements.txt` với file này làm constraints.
 - Mọi file Python có SPDX header `Apache-2.0`.
-- `POST /api/v1/disease/precheck` kiểm chất lượng ảnh (JPEG/PNG, tối đa 40 megapixel, mỗi chiều từ 160px, độ sáng 20–245, độ nét từ 20) và trả `passed`, `reasons`, kích thước, độ nét, độ sáng; không chạy YOLO.
+- `POST /api/v1/disease/precheck` kiểm chất lượng ảnh (JPEG/PNG, tối đa 40 megapixel, mỗi chiều từ 160px, độ sáng 20–245, độ nét từ 20) và trả `passed`, `reasons`, kích thước, độ nét, độ sáng; chạy thêm crop classifier, không chạy detector bệnh.
   `predict` dùng chung bước kiểm này.
   Độ nét đo trên ảnh xám tối đa 640px, bỏ viền, trung vị theo 16 vùng và trừ nhiễu, nên sọc màn hình, nhiễu hạt, chữ và viền sắc không che được ảnh mờ.
 - `POST /api/v1/disease/symptoms/suggest` xếp hạng các mã bệnh trong danh mục từ triệu chứng bằng RAG, kèm evidence và nguồn; điểm là độ tương đồng tài liệu, không phải confidence.
 
 **Chưa làm:**
 
-- Ngưỡng ảnh chưa hiệu chuẩn bằng ảnh ngoài ruộng; precheck không xác nhận ảnh là lúa.
+- Ngưỡng ảnh chưa hiệu chuẩn bằng ảnh ngoài ruộng; crop classifier còn nhận nhầm ngô/cỏ/lúa mì, chưa nghiệm thu khả năng chặn toàn bộ ảnh ngoài miền.
 
 ### 2026-10-06
 

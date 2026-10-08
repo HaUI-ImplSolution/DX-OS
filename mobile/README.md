@@ -29,11 +29,11 @@ Ngoài Expo Go, có thể build APK bằng EAS mà không cần cài Android Stu
   Lỗi mạng trả `ApiError` với `status` `0`.
 - **Chụp và gửi ảnh**: `expo-image-picker` mở camera hệ thống; `expo-image-manipulator` thu nhỏ cạnh dài tối đa 1280px và nén JPEG 0.7 để nằm xa giới hạn multipart 10MB.
   Ảnh gửi dạng multipart, part `image`, qua `XMLHttpRequest` để có thanh tiến trình.
-  App kiểm mỗi chiều từ 160px và dung lượng tối đa 10 MiB; Backend kiểm độ sáng và độ nét ngay sau khi chọn ảnh và khi nộp thật.
-  Ảnh không đạt phải chụp lại; precheck không xác nhận ảnh là lúa.
+  App kiểm mỗi chiều từ 160px và dung lượng tối đa 10 MiB; Backend kiểm độ sáng, độ nét và phân loại lúa ngay sau khi chụp ảnh và khi nộp thật.
+  Ảnh không đạt phải chụp lại; precheck dùng classifier cây trồng, chưa kết luận bệnh và có thể nhận nhầm cây gần giống lúa.
 - **Hàng đợi offline**: khi không có mạng hoặc gặp lỗi kết nối lúc gửi, ảnh được copy vào thư mục dữ liệu của app và ghi vào hàng đợi (`@react-native-async-storage/async-storage`).
   Mỗi ảnh có một UUID dùng làm header `Idempotency-Key`, nên gửi lại nhiều lần vẫn chỉ tạo một báo cáo.
-  Ảnh thay thế giữ `retakeOf` trong hàng đợi; Backend kiểm chất lượng khi có mạng, lỗi 422 không tạo báo cáo.
+  Ảnh thay thế giữ `retakeOf` trong hàng đợi; Backend kiểm chất lượng và phân loại lúa khi có mạng, lỗi 422 không tạo báo cáo.
   Hàng đợi tự gửi khi `NetInfo` báo có mạng và khi app trở lại foreground; lỗi tạm thời được thử lại với khoảng chờ tăng dần (5 giây đến tối đa 5 phút, tối đa 8 lần).
   Lỗi `4xx` khác `408`, `409`, `429` đánh dấu "Lỗi" và không thử lại.
   Hàng đợi tách theo tài khoản; danh sách "Chờ gửi" và nút xoá nằm ở màn Hồ sơ, số lượng hiện ở đầu màn Báo cáo của vụ.

@@ -10,11 +10,9 @@ Kết quả đầu ra: không còn link gãy; sơ đồ khớp sản phẩm.
 **Spec và tài liệu**
 
 - [ ] WPC7-01-DOC-01 `submission/ARCHITECTURE_OPEN_CORE.md`: sơ đồ module, đồ thị phụ thuộc, interface, luồng request cho hai app.
-- [ ] WPC7-01-DOC-02 `README.md` mục kiến trúc: sơ đồ 3 tầng với hai app; sửa link kiến trúc.
-- [ ] WPC7-01-DOC-03 `CONTRIBUTING.md`, `CHANGELOG.md`: sửa link kiến trúc và mã thửa/vụ (`legacy_docs/`).
-- [ ] WPC7-01-DOC-04 `submission/COUNCIL_QA.md`, `submission/DEMO_SCRIPT.md`: sửa link kiến trúc.
-- [ ] WPC7-01-DOC-05 `improvement_docs/README.md`, `PHASE_PLAN.md`: sửa link `_template`.
-- [ ] WPC7-01-DOC-06 `improvement_docs/phase-3-*/00_OVERVIEW.md`, `phase-4-*/00_OVERVIEW.md`, `02_CHECKLIST.md`: sửa link tài liệu đã chuyển.
+- [ ] WPC7-01-DOC-02 `README.md` mục kiến trúc: sơ đồ 3 tầng với hai app.
+- [ ] WPC7-01-DOC-03 `CONTRIBUTING.md`, `LICENSES.md`, `CHANGELOG.md`, `data/README.md`, `sbom/README.md`: thay `backend/DX-Farm` bằng đường dẫn mới.
+- [ ] WPC7-01-DOC-04 `legacy_docs/AI_EVENT_SCHEMA_README.md`, `pending_docs/MATTERMOST_WEBHOOK_NOTIFICATION_PLAN.md`: sửa link và đường dẫn tới file Java đã chuyển module.
 
 **Test** (chi tiết ở `03_TEST_PLAN.md`)
 

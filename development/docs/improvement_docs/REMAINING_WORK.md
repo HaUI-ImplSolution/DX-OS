@@ -2,6 +2,7 @@
 
 Tổng hợp ngắn các việc còn lại của 8 phase đã làm.
 Chi tiết, lý do và cách xử lý nằm ở file được trỏ tới ở mỗi mục.
+Kế hoạch refactor Open-Core và đa ứng dụng nằm ở [`../refactor_docs/README.md`](../refactor_docs/README.md).
 
 ## Cần làm trước khi nộp bài
 

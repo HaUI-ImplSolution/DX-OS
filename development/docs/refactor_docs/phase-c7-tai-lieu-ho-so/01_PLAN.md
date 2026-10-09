@@ -19,7 +19,7 @@ WPC7-01 → WPC7-02 → WPC7-03; WPC7-04 làm song song được.
 |---|---|---|
 | `ARCHITECTURE_OPEN_CORE.md` mục 2 | Ranh giới là quy ước package, một module | Sơ đồ module, đồ thị phụ thuộc, danh sách interface, luồng request cho Farm và Lab |
 | Sơ đồ 3 tầng | Core, H-P-D-I, DX-Farm | Core, H-P-D-I, hai app |
-| Link tới tài liệu đã chuyển | Trỏ đường dẫn cũ | Trỏ đường dẫn mới |
+| Đường dẫn `backend/DX-Farm` | Còn ở README, CONTRIBUTING, LICENSES, `data/README.md`, `sbom/README.md` | Trỏ `backend/` và module đích |
 
 **Hướng làm**
 
@@ -28,7 +28,8 @@ WPC7-01 → WPC7-02 → WPC7-03; WPC7-04 làm song song được.
 
 **Phạm vi ảnh hưởng**
 
-- File chính: `submission/ARCHITECTURE_OPEN_CORE.md`, `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `submission/COUNCIL_QA.md`, `submission/DEMO_SCRIPT.md`, `improvement_docs/README.md`, `improvement_docs/PHASE_PLAN.md`, phase-3 và phase-4 của `improvement_docs`.
+- File chính: `submission/ARCHITECTURE_OPEN_CORE.md`, `README.md`, `CONTRIBUTING.md`, `LICENSES.md`, `CHANGELOG.md` (tiêu đề mục backend), `data/README.md`, `sbom/README.md`, `legacy_docs/AI_EVENT_SCHEMA_README.md` (link tới file Java đã chuyển module), `pending_docs/MATTERMOST_WEBHOOK_NOTIFICATION_PLAN.md`.
+- Các link tới `ARCHITECTURE_OPEN_CORE.md`, `PARCEL_SEASON_CODES.md` và `_template` đã đúng đường dẫn; phase cũ của `improvement_docs` giữ nguyên làm lịch sử.
 - Endpoint, bảng DB, biến môi trường: không.
 
 **Kết quả đầu ra**

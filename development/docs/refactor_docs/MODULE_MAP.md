@@ -54,7 +54,7 @@ Chi tiết từng interface ở [`SPI_CATALOG.md`](./SPI_CATALOG.md).
 | Controller | `ParcelController`, `CropSeasonController`, `DiseaseReportController`, `DiagnosisController`, `DiseaseController`, `PesticideController`, `RiceVarietyController`, `TreatmentApplicationController`, `TreatmentRuleController`, `InternalAiContextController` |
 | DTO | Khoảng 28 DTO nghiệp vụ (parcel, crop season, diagnosis, report, harvest, treatment, weather...) |
 | Cấu hình | Hạn chế client FARMER chỉ dùng mobile, `RoleProvider` (FARMER, ENGINEER, ADMIN), `BiDatasetProvider` (`vw_*`), `app.*`, `weather.*` |
-| Dữ liệu | Migration của Farm, `data.sql`, `knowledge-sources.json`, `weather-snapshot.json` |
+| Dữ liệu | Migration của Farm (V1 đến V10, trừ phần của core), `data.sql` (sinh bởi `data/scripts/generate_seed_sql.py` từ `data/structured/*.json`, gồm thuốc và treatment rule đã duyệt), `knowledge-sources.json`, `weather-snapshot.json` |
 | Ngoài backend | `mobile/`, CV trong `ai/`, dashboard Superset của Farm, `data/` |
 
 ## app-lab
@@ -88,3 +88,6 @@ Chi tiết từng interface ở [`SPI_CATALOG.md`](./SPI_CATALOG.md).
 | 6 | Bảng `notifications` nằm trong migration V7 của Farm | Chuyển vào migration core cùng đợt đổi `NotificationType` | C2 |
 | 7 | `WorkflowStatus` là enum cố định 4 trạng thái | RD10: trạng thái do `CaseTypeDefinition` khai báo | C2 |
 | 8 | Realm `dxfarm` có sẵn vai và user mẫu của Farm | Realm trung tính, vai của app được tạo lúc khởi động | C3 |
+| 9 | `data.sql` ở gốc classpath, chạy qua `spring.sql.init` | Tài nguyên riêng của Farm, nạp theo `application-farm.yaml`; generator và CI đổi đường dẫn | C1 |
+| 10 | Spring Boot chỉ tự cấu hình một Flyway | Hai bean Flyway (core, Farm), bảng lịch sử riêng, core chạy trước | C1 |
+| 11 | `HouseholdMigrationTest`, `WorkflowMigrationTest` kiểm backfill của V2, V4 | Bỏ hoặc viết lại khi bỏ backfill | C1 |

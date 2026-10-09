@@ -82,7 +82,7 @@ Sửa các link gãy do chuyển file.
 |---|---|---|---|---|
 | Q1 | Tên repository và sản phẩm | Giữ `DX---Farm` hay đổi sang tên trung tính | Đầu phase | Chốt giữ tên `DX---Farm` (09/10/2026); đổi tên repository để sau |
 | Q2 | Nơi đặt hướng dẫn thêm app | `CONTRIBUTING.md` hay tài liệu riêng trong `development/docs` | Đầu phase | Chốt `CONTRIBUTING.md` kèm liên kết (09/10/2026) đề xuất `CONTRIBUTING.md` kèm liên kết |
-| Q3 | Đường dẫn cũ cần sửa | `development/docs/ARCHITECTURE_OPEN_CORE.md` → `submission/`, `PARCEL_SEASON_CODES.md` → `legacy_docs/`, `improvement_docs/_template` → `development/docs/_template`, `backend/DX-Farm` → `backend/` | Đầu phase | Danh sách cố định, không cần chốt thêm |
+| Q3 | Đường dẫn cũ cần sửa | `backend/DX-Farm` → `backend/` và module đích (README, CONTRIBUTING, LICENSES, `data/README.md`, `sbom/README.md`, link tới file Java); các link tài liệu đã chuyển (`submission/`, `legacy_docs/`, `_template`) đã đúng | Đầu phase | Danh sách cố định, không cần chốt thêm |
 
 ## 10. Tài liệu cần cập nhật khi xong
 

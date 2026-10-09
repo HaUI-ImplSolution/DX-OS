@@ -28,6 +28,7 @@ WPC4-07 cần WPC4-03; WPC4-08 làm cuối.
 **Hướng làm**
 
 - Auto-configuration có điều kiện `dxos.app=lab`; `AppModule` (id `lab`, tên, menu); `application-lab.yaml`.
+- `application-lab.yaml` không nạp `data.sql` của Farm (seed Farm nằm trong tài nguyên riêng của `app-farm`).
 - Core/App: không chỉnh `dx-core`.
 
 **Phạm vi ảnh hưởng**

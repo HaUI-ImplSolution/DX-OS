@@ -80,7 +80,8 @@ WPC0-01 → WPC0-02; WPC0-03 làm song song được.
 
 **Hướng làm**
 
-- Ghi số test backend, AI, số bước E2E hiện đạt (backend 79, AI 64, E2E 10/10 tại `64dc2bc`).
+- Ghi số test backend, AI, số bước E2E hiện đạt (backend 79, AI 64, E2E 10/10 tại `64dc2bc`); từ `eeb962f` backend có thêm `SeedDataIntegrationTest` (2 test) nên đo lại bằng `./mvnw verify`.
+- Ghi kết quả `python data/scripts/generate_seed_sql.py --check` và unit test của generator (CI chạy ở `ci-ai.yml`).
 - Xuất `/v3/api-docs` của backend hiện tại để so sánh sau C1 (người dùng chạy).
 
 **Phạm vi ảnh hưởng**

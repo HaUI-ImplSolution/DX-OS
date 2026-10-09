@@ -68,6 +68,7 @@ Kết quả đầu ra: CI xanh cho cả hai app.
 - [ ] WPC6-04-INFRA-01 `e2e.yml`: ma trận `DXOS_APP`.
 - [ ] WPC6-04-INFRA-02 `ci.yml`: build toàn bộ module, đường dẫn kích hoạt gồm module mới.
 - [ ] WPC6-04-INFRA-03 `ci-frontend.yml`: kiểm `tsc` cho vỏ và hai module app.
+- [ ] WPC6-04-INFRA-04 `ci-ai.yml`: giữ bước kiểm seed Farm (`--check`, unit test generator) với đường dẫn mới.
 
 **Test** (chi tiết ở `03_TEST_PLAN.md`)
 

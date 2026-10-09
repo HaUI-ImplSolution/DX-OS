@@ -13,7 +13,7 @@ Chạy stack hoặc thử hướng dẫn trên máy sạch chỉ khi người d�
 
 | ID | WP | Loại | Mô tả và bước | Kết quả mong đợi | Người chạy | Kết quả |
 |---|---|---|---|---|---|---|
-| TC7-01 | WPC7-01 | Tài liệu | Tìm `docs/ARCHITECTURE_OPEN_CORE`, `docs/PARCEL_SEASON_CODES`, `improvement_docs/_template`, `backend/DX-Farm` | Không còn đường dẫn cũ | | |
+| TC7-01 | WPC7-01 | Tài liệu | Tìm `backend/DX-Farm` ngoài `improvement_docs` và các mục lịch sử của `CHANGELOG.md` | Không còn đường dẫn cũ | | |
 | TC7-02 | WPC7-02 | Happy path | Làm theo README trên clone sạch, chạy `farm` | Hệ thống lên, đăng nhập được | | |
 | TC7-03 | WPC7-02 | Happy path | Làm theo hướng dẫn thêm app, tạo app mẫu rỗng | App nạp được khi đặt `DXOS_APP`, core không sửa | | |
 | TC7-04 | WPC7-03 | Rà soát | Đối chiếu 10 câu hỏi mục 13 với `COUNCIL_QA.md` | Mỗi câu có câu trả lời và tham chiếu | | |

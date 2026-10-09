@@ -6,7 +6,7 @@
 |---|---|---|---|---|---|---|
 | TO1 | Thứ tự tách và tổng quát hóa | A: tách cơ học ở C1 rồi tổng quát hóa ở C2. B: làm cùng lúc | A | Diff dễ đọc; so được với baseline; test hiện có là lưới an toàn | Hai đợt chạm cùng file (đổi tên `Household` ở C2) | Thấp |
 | TO2 | Schema DB (RD9) | A: giữ `public`, tách Flyway theo location và bảng lịch sử. B: schema `core`, `farm`, `lab` | A | Không phải đổi view `vw_*`, quyền Superset, cấu hình JPA | Bảng của các app cùng namespace; chỉ ổn khi mỗi lần chạy một app | Vừa: chuyển schema về sau cần migration và sửa view |
-| TO3 | Re-baseline migration | A: bỏ backfill, đánh số lại. B: giữ V1 đến V9 và để core phụ thuộc bảng Farm | A | Core không đọc bảng của app; số phiên bản sạch | DB đã có không áp dụng được, phải dựng lại | Thấp (DB luôn dựng sạch bằng `deploy/reset.sh`) |
+| TO3 | Re-baseline migration | A: bỏ backfill, đánh số lại. B: giữ V1 đến V10 và để core phụ thuộc bảng Farm | A | Core không đọc bảng của app; số phiên bản sạch | DB đã có không áp dụng được, phải dựng lại | Thấp (DB luôn dựng sạch bằng `deploy/reset.sh`) |
 | TO4 | Quan hệ `Parcel` và nông hộ | A: app giữ id số, tra qua `WorkspaceDirectory`. B: chia sẻ entity qua `dx-core` | A | Hai module không chia sẻ entity | Mất quan hệ JPA; truy vấn lọc theo nông hộ viết lại theo id | Vừa |
 | TO5 | `ApprovalRequestService` ở C1 | A: chuyển nguyên khối sang Farm rồi tách ở C2. B: tách ngay | A | Giữ hành vi, hoàn thành ranh giới nhanh | Core tạm thời chưa có hộp duyệt chung | Thấp |
 
@@ -22,6 +22,8 @@ Kết luận: TO1 đến TO5 áp dụng ngay; TO2 đã chốt ngày 09/10/2026 (
 | R4 | Auto-configuration có điều kiện làm entity hoặc repository không được quét | Vừa | Cao | Giới hạn quét theo package app; kiểm tra khởi động | `No qualifying bean` hoặc bảng không tồn tại khi chạy | Khai báo `@EntityScan`, `@EnableJpaRepositories` rõ cho từng app |
 | R5 | Thứ tự Flyway sai, migration Farm chạy trước core | Thấp | Cao | Core chạy trước bằng cấu hình rõ | Lỗi `relation households does not exist` | Thêm ràng buộc thứ tự khởi tạo |
 | R6 | Cấu hình bảo mật tách đôi gây hở hoặc chặn nhầm endpoint | Thấp | Cao | Giữ nguyên quy tắc hiện có; đối chiếu ma trận quyền trước và sau | Test phân quyền fail; endpoint công khai bị 401 | Đưa cấu hình về một chỗ trong C1, tách ở C2 |
+| R7 | Fat jar của `dx-host` chứa `data.sql` của Farm, Spring chạy file đó khi khởi động app khác | Vừa | Cao | `data.sql` là tài nguyên riêng của Farm, nạp theo `application-farm.yaml`; Lab không khai báo | Lỗi `relation diseases does not exist` khi chạy `lab` | Đặt `spring.sql.init.mode=never` ở app không có seed |
+| R8 | Test migration cũ (`HouseholdMigrationTest`, `WorkflowMigrationTest`) fail vì backfill đã bỏ | Cao | Thấp | Quyết định bỏ hoặc viết lại ngay trong WPC1-05 | Test fail khi chạy `verify` | Giữ test cũ trên nhánh trước, xóa ở nhánh này |
 
 ## 3. Nợ kỹ thuật chấp nhận
 

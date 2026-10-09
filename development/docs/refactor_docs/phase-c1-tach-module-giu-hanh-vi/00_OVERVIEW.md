@@ -66,6 +66,7 @@ Hành vi nhìn từ client không đổi.
   - `app-farm` không có import nào vào gói của `dx-core`; chỉ có `dx-core-api`.
   - `dx-core-api` và `dx-core` không import gói của Farm.
   - `DXOS_APP` lạ làm backend dừng khi khởi động với thông báo rõ.
+  - `data.sql` không còn ở gốc classpath; chỉ nạp khi `DXOS_APP=farm`.
   - OpenAPI sau phase không khác baseline ở C0 ngoài thông tin đóng gói.
 - Bằng chứng: kết quả compile, diff OpenAPI, kết quả test và E2E do người dùng chạy.
 

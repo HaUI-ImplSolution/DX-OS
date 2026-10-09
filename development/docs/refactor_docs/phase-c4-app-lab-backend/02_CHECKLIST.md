@@ -15,6 +15,7 @@ Kết quả đầu ra: `DXOS_APP=lab` lên được; `GET /api/v1/app` trả man
 - [ ] WPC4-01-BE-02 [lab] Auto-configuration có điều kiện `dxos.app=lab`; giới hạn quét entity, repository, Flyway.
 - [ ] WPC4-01-BE-03 [lab] `AppModule` (id `lab`, tên, menu theo vai).
 - [ ] WPC4-01-BE-04 [host] Thêm `app-lab` vào `dx-host`; `application-lab.yaml`.
+- [ ] WPC4-01-BE-05 [lab] `application-lab.yaml` không nạp seed của Farm; khởi động `lab` trên DB sạch không lỗi.
 
 **Test** (chi tiết ở `03_TEST_PLAN.md`)
 
@@ -146,6 +147,7 @@ Kết quả đầu ra: gợi ý có giải thích; hỏi đáp có nguồn và g
 **Data, seed, migration**
 
 - [ ] WPC4-07-DATA-01 [lab] Soạn 8 đến 10 tài liệu tri thức; ghi giấy phép CC BY 4.0 và nguồn.
+- [ ] WPC4-07-DATA-03 [lab] Đặt tài liệu tri thức ở `data/rag/` theo namespace `lab`; ghi nguồn vào registry cùng định dạng `source_registry.json`.
 
 **Test** (chi tiết ở `03_TEST_PLAN.md`)
 

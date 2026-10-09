@@ -22,8 +22,10 @@ Không thêm file test mới; test hiện có đi theo module chứa code đư�
 | TC1-06 | WPC1-05 | Dữ liệu | Dựng DB trống, so schema cuối với baseline | Cùng bảng, cột, ràng buộc, view | | |
 | TC1-07 | WPC1-06 | Tài liệu | Tìm `backend/DX-Farm` trong repo | Không còn | | |
 | TC1-08 | WPC1-03 | Hồi quy API | So `/v3/api-docs` với baseline ở C0 | Không khác ngoài thông tin đóng gói | | |
-| TC1-09 | WPC1-03 | Hồi quy | `./mvnw verify` ở `backend/` | Số test không ít hơn baseline (79), không bỏ qua | | |
+| TC1-09 | WPC1-03 | Hồi quy | `./mvnw verify` ở `backend/` | Số test bằng baseline trừ các test bỏ có chủ đích (`HouseholdMigrationTest`, `WorkflowMigrationTest`); không bỏ qua | | |
 | TC1-10 | WPC1-03 | Hồi quy | E2E hiện có chạy với `DXOS_APP=farm` | 10/10 bước đạt | | |
+| TC1-11 | WPC1-05 | Dữ liệu | `python data/scripts/generate_seed_sql.py --check` và unit test của generator | Đạt với đường dẫn `data.sql` mới | | |
+| TC1-12 | WPC1-05 | Dữ liệu | Khởi động `DXOS_APP=farm`, rồi xem seed | `data.sql` được nạp một lần; treatment rule đạo ôn và khô vằn có trong DB | | |
 
 ## 3. Hồi quy (không được hỏng)
 
@@ -46,7 +48,7 @@ Không thêm file test mới; test hiện có đi theo module chứa code đư�
 
 ## 4. Tiêu chí đạt của phase (exit criteria)
 
-- TC1-01 đến TC1-10 đạt.
+- TC1-01 đến TC1-12 đạt.
 - Không còn lỗi nghiêm trọng mở; lỗi còn lại có issue và được chấp nhận ở `04_TRADEOFFS_RISKS.md`.
 - Các tiêu chí ở `00_OVERVIEW.md` mục 6 đều có bằng chứng.
 

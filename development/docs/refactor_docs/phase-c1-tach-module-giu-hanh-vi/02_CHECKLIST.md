@@ -96,13 +96,19 @@ Kết quả đầu ra: DB trống dựng xong, schema cuối giống trước re
 
 - [ ] WPC1-05-DATA-01 [core] `db/migration/core`: `households`, `workflow_case`, `workflow_event` (không backfill).
 - [ ] WPC1-05-DATA-02 [farm] `db/migration/farm`: bảng Farm, thêm `parcels.household_id` tham chiếu `households`, V3 chuyển hẳn sang đây.
-- [ ] WPC1-05-DATA-03 [host] Hai bảng lịch sử Flyway; core chạy trước Farm.
-- [ ] WPC1-05-DATA-04 [farm] `data.sql` và seed giữ ở Farm, kiểm tra thứ tự chạy.
+- [ ] WPC1-05-DATA-03 [host] Hai bean Flyway (core, Farm) với bảng lịch sử riêng; core chạy trước Farm; bỏ `baseline-on-migrate`.
+- [ ] WPC1-05-DATA-04 [farm] `data.sql` thành tài nguyên riêng của Farm, nạp qua `application-farm.yaml`; kiểm thứ tự chạy sau Flyway.
 - [ ] WPC1-05-DATA-05 [core] Bảng `notifications` còn ở migration Farm; ghi chú chuyển ở C2.
+- [ ] WPC1-05-DATA-06 [farm] V10 (`treatment_rules.notes` kiểu `text`) vào migration Farm.
+
+**Infra, deploy, CI**
+
+- [ ] WPC1-05-INFRA-01 `data/scripts/generate_seed_sql.py` ghi ra đường dẫn mới; `test_generate_seed_sql.py`, `ci-ai.yml` (`paths` và bước `--check`), `data/README.md`, `README.md` mục seed khớp.
 
 **Test** (chi tiết ở `03_TEST_PLAN.md`)
 
 - [ ] WPC1-05-TEST-01 So sánh schema cuối với baseline (TC1-06).
+- [ ] WPC1-05-TEST-02 Xử lý `HouseholdMigrationTest`, `WorkflowMigrationTest` (kiểm backfill đã bỏ) theo quyết định của người dùng; cập nhật `MigratedDatabase`, `SeedDataIntegrationTest`, `ConcurrencyIntegrationTest` (TC1-11, TC1-12).
 
 ## WPC1-06: Cập nhật build, triển khai và tài liệu
 

@@ -161,7 +161,7 @@ WPC1-05 (migration) làm song song với WPC1-03 sau khi WPC1-01 xong.
 
 | Tình huống | Hành vi hiện tại | Hành vi sau thay đổi |
 |---|---|---|
-| Vị trí migration | Một thư mục V1 đến V9 | `db/migration/core` và `db/migration/farm`, mỗi nơi một bảng lịch sử |
+| Vị trí migration | Một thư mục V1 đến V10 | `db/migration/core` và `db/migration/farm`, mỗi nơi một bảng lịch sử |
 | `households`, `workflow_*` | V2, V4 kèm backfill đọc `parcels`, `diagnoses` | Bảng nằm ở core, không backfill |
 | `parcels.household_id` | Thêm trong V2 | Thêm trong migration Farm (Farm tham chiếu core) |
 | V3 | Trộn nhiều bảng Farm | Chuyển hẳn sang Farm |
@@ -171,12 +171,21 @@ WPC1-05 (migration) làm song song với WPC1-03 sau khi WPC1-01 xong.
 - Re-baseline: đánh số lại từng location, bỏ bước backfill dữ liệu cũ (DB luôn dựng sạch).
 - Thứ tự chạy: core trước, Farm sau.
 - Bảng `notifications` vẫn ở migration Farm ở phase này; C2 chuyển.
+- V10 (`treatment_rules.notes` kiểu `text`) thuộc migration Farm.
+- Spring Boot chỉ tự cấu hình một Flyway; core và Farm mỗi bên một bean với location và bảng lịch sử riêng, core chạy trước.
+  `baseline-on-migrate` bỏ vì DB luôn dựng sạch.
+- `data.sql` do `data/scripts/generate_seed_sql.py` sinh, chạy sau Flyway nhờ `spring.sql.init`.
+  File chuyển thành tài nguyên riêng của Farm và chỉ nạp khi `DXOS_APP=farm` qua `application-farm.yaml` (`spring.sql.init.data-locations`).
+  Không để ở gốc classpath, vì fat jar của `dx-host` chứa cả hai app và Spring sẽ chạy file đó cho app khác.
+- Generator, bước `--check` và `paths` trong `ci-ai.yml`, `data/README.md` đổi theo đường dẫn mới; `SeedDataIntegrationTest` đi theo Farm.
+- `HouseholdMigrationTest` và `WorkflowMigrationTest` kiểm các bước backfill đã bỏ: bỏ hoặc viết lại, do người dùng quyết định.
+  `MigratedDatabase`, `SeedDataIntegrationTest`, `ConcurrencyIntegrationTest` đổi sang hai location.
 - Core/App: không có `REFERENCES` từ bảng core sang bảng app.
 
 **Phạm vi ảnh hưởng**
 
 - Module: `dx-core`, `app-farm`.
-- File chính: `V1` đến `V9` hiện tại, cấu hình Flyway.
+- File chính: `V1` đến `V10` hiện tại, cấu hình Flyway, `data.sql`, `data/scripts/generate_seed_sql.py`, `.github/workflows/ci-ai.yml`, `data/README.md`.
 - Endpoint, bảng DB, biến môi trường: tên bảng không đổi; thêm một bảng lịch sử Flyway.
 - Role và client bị ảnh hưởng: không.
 - Tương thích ngược và dữ liệu cũ: DB đã có không áp dụng được; phải `deploy/reset.sh`.

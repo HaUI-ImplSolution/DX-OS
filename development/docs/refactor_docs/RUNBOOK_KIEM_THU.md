@@ -33,8 +33,9 @@ git status          # sạch
 | Ranh giới core | Tìm `Household`, `Parcel`, tên view `vw_` trong `dx-core-api`, `dx-core` | Không có | C2 |
 | Tên cũ | Tìm `dxfarm` ngoài tài liệu lịch sử, scheme và bundle mobile | Không có | C3 |
 | Đường dẫn cũ | Tìm `backend/DX-Farm`, `docs/ARCHITECTURE_OPEN_CORE`, `improvement_docs/_template` | Không có | C1, C7 |
-| Backend đầy đủ (có thể bỏ qua nếu chỉ kiểm nhanh) | `cd backend && ./mvnw verify` | Số test không ít hơn baseline (79), không bỏ qua | C1, C2, C4 |
+| Backend đầy đủ (có thể bỏ qua nếu chỉ kiểm nhanh) | `cd backend && ./mvnw verify` | Số test bằng baseline đã đo lại ở C0 (79 tại `64dc2bc` cộng 2 test của `SeedDataIntegrationTest`), trừ các test migration bỏ có chủ đích ở C1; không bỏ qua | C1, C2, C4 |
 | AI | `cd ai && pytest` | Số test không ít hơn baseline (64) | C2, C4 |
+| Seed Farm nhất quán | `python data/scripts/generate_seed_sql.py --check` và `python -m unittest data.scripts.test_generate_seed_sql` | Đạt; CI chạy lại ở `ci-ai.yml` | C1 |
 
 ## 3. Dựng stack
 
@@ -111,6 +112,7 @@ python3 deploy/demo/e2e.py [--require-rule]
 ```
 
 Kết quả mong đợi: 10/10 bước đạt, giống baseline ở C0.
+Treatment rule của đạo ôn và khô vằn đã có trong seed Backend, nên `--require-rule` dùng được sau khi seed.
 
 ### 4.4 So với baseline
 
@@ -126,9 +128,10 @@ Kết quả mong đợi: 10/10 bước đạt, giống baseline ở C0.
 | F3 | Đăng nhập mobile bằng `farmer1` (xem 4.6), gửi báo cáo kèm ảnh | Gửi được; ảnh không phải lúa bị chặn |
 | F4 | `admin1` duyệt thửa chờ duyệt (An Giang) | Duyệt được; `farmer1` có thông báo |
 | F5 | `engineer1` chạy chẩn đoán, duyệt | Trạng thái và lịch sử như trước |
-| F6 | Khai phun thuốc rồi xác nhận (khi có rule được duyệt) | Vụ vào cách ly; thu hoạch bị chặn tới hết hạn |
+| F6 | Khai phun thuốc rồi xác nhận trên chẩn đoán đạo ôn hoặc khô vằn (đã có rule được duyệt trong seed) | Vụ vào cách ly; thu hoạch bị chặn tới hết hạn |
+| F6b | Chẩn đoán bệnh chưa có rule (đốm nâu) | Chỉ xem xét (`review_required`), không có liều và PHI |
 | F7 | Hỏi đáp tri thức | Đoạn trích có nguồn |
-| F8 | Mở Superset bằng `admin1` | Dashboard của Farm hiển thị |
+| F8 | Mở Superset bằng `admin1` | Dashboard của Farm hiển thị; chart "Thửa đang cách ly" có dữ liệu sau khi seed khai phun; chart "Tỷ lệ AI đúng/sai" trống nếu chưa chẩn đoán AI bằng ảnh thật |
 | F9 | Hai người cùng quyết định một case | Một bên 409 |
 
 ### 4.6 Mobile
@@ -239,7 +242,7 @@ Khi muốn kiểm giữa chừng, chỉ cần chạy tới đây là đủ.
 | Mục 2: kiểm tra tĩnh | | | | |
 | Mục 4.3: E2E Farm | | | | |
 | Mục 4.4: OpenAPI so baseline | | | | |
-| Mục 4.5: F1 đến F9 | | | | |
+| Mục 4.5: F1 đến F9 (kể cả F6b) | | | | |
 | Mục 5: E2E Lab | | | | |
 | Mục 5.2: L1 đến L17 | | | | |
 | Mục 6: B1 đến B6 | | | | |

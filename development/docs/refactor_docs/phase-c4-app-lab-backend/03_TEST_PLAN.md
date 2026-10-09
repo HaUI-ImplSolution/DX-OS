@@ -14,7 +14,7 @@ Không thêm file test mới nếu người dùng không yêu cầu; các case d
 
 | ID | WP | Loại | Mô tả và bước | Kết quả mong đợi | Người chạy | Kết quả |
 |---|---|---|---|---|---|---|
-| TC4-01 | WPC4-01 | Ranh giới | Khởi động `DXOS_APP=lab`, xem bảng | Có bảng Lab, không có bảng Farm | | |
+| TC4-01 | WPC4-01 | Ranh giới | Khởi động `DXOS_APP=lab`, xem bảng | Có bảng Lab, không có bảng Farm, không lỗi seed | | |
 | TC4-02 | WPC4-01 | Ranh giới | Khởi động `DXOS_APP=farm`, xem bảng | Có bảng Farm, không có bảng Lab | | |
 | TC4-03 | WPC4-02 | Happy path | TECHNICIAN thêm phòng và thiết bị | Lưu được; mã tài sản trùng bị 409 | | |
 | TC4-04 | WPC4-02 | Phân quyền | STUDENT thêm thiết bị, sửa SLA | 403 | | |

@@ -3,6 +3,7 @@
 Thư mục này chứa các phase để implement các vấn đề trong [`PROJECT_IMPROVEMENTS.md`](./PROJECT_IMPROVEMENTS.md).
 Mỗi phase là một folder, sinh từ [`_template/`](../_template/).
 Kế hoạch chia phase (P0 đến P10) nằm ở [`PHASE_PLAN.md`](./PHASE_PLAN.md); việc còn lại sau P0 đến P8 tổng hợp ở [`REMAINING_WORK.md`](./REMAINING_WORK.md).
+Kế hoạch refactor Open-Core và đa ứng dụng (các phase C0 đến C7) nằm ở [`../refactor_docs/README.md`](../refactor_docs/README.md).
 
 ## Cấu trúc một phase
 

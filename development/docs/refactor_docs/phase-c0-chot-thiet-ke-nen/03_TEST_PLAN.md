@@ -29,6 +29,6 @@ Phase chỉ có tài liệu nên kiểm tra bằng đọc lại.
 
 ## 5. Bằng chứng và báo lỗi
 
-- Baseline (ghi tại `64dc2bc`): backend 79 test, AI 64 test, E2E 10/10 bước, AI/Backend/E2E chạy trong container không mạng đạt.
+- Baseline: tại `64dc2bc` backend 79 test, AI 64 test, E2E 10/10 bước, AI/Backend/E2E chạy trong container không mạng đạt; từ `eeb962f` backend có thêm `SeedDataIntegrationTest` (2 test), số cuối do `./mvnw verify` đo lại; kiểm seed Farm bằng `generate_seed_sql.py --check` đạt.
 - OpenAPI baseline: {đường dẫn file do người dùng xuất}.
 - Lỗi phát hiện: tạo issue, ghi mã vào cột "Kết quả".

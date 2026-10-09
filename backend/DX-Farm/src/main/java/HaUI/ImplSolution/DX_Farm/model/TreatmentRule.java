@@ -52,6 +52,8 @@ public class TreatmentRule {
   @Column(nullable = false)
   private Integer phiDays;
 
+  // Seed provenance and application guidance can legitimately exceed varchar(255).
+  @Column(columnDefinition = "text")
   private String notes;
 
   private String source;

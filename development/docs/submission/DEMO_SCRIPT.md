@@ -20,7 +20,7 @@ Mobile của nông dân (`farmer1`) chạy trên điện thoại hoặc emulator
 |---|---|---|
 | 0:00-1:00 | Mở sơ đồ 3 tầng, rồi portal | "Đây là Tầng 1 Core, đây là bốn không gian H-P-D-I, đây là Tầng 3 ứng dụng." Portal hiện trạng thái từng dịch vụ đang hoạt động |
 | 1:00-2:30 | Mobile: đăng nhập `farmer1`, xem thửa và vụ, hộp thông báo | [H] một lần đăng nhập Keycloak, nông dân chỉ thấy thửa của hộ mình, web và Superset từ chối tài khoản này |
-| 2:30-4:00 | Mobile: tạo thửa mới (GPS), chụp ảnh sâu bệnh và gửi | Ảnh được kiểm tra chất lượng trước khi gửi và kiểm lại ở server; gửi lại tự động khi mất mạng |
+| 2:30-4:00 | Mobile: tạo thửa mới (GPS), chụp ảnh sâu bệnh và gửi | Ảnh được kiểm tra chất lượng và nhận diện lúa trước khi gửi, kiểm lại ở server; gửi lại tự động khi mất mạng |
 | 4:00-5:30 | Web admin: hàng chờ duyệt, duyệt thửa vừa tạo, mở timeline | [P] workflow dùng chung: mỗi quyết định là một sự kiện chỉ thêm, có người phụ trách; Mattermost nhận thông báo |
 | 5:30-7:00 | Web kỹ sư: mở báo cáo, chạy chẩn đoán AI, xem kết quả, duyệt | [I] CV, độ tin cậy, ngưỡng 0.70, nguồn RAG; kỹ sư là người chốt; liều và PHI chỉ lấy từ dữ liệu có cấu trúc |
 | 7:00-8:00 | Phun thuốc và khóa thu hoạch | Có rule được duyệt: nông dân khai phun, kỹ sư xác nhận, thu hoạch bị chặn `POKA_YOKE_VIETGAP_VIOLATION`. Chưa có rule: nói rõ chẩn đoán ở trạng thái `review_required`, không có liều hay PHI, và chỉ ra vì sao không bịa số liệu |

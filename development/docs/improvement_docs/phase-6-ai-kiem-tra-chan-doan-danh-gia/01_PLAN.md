@@ -61,30 +61,30 @@ Phần đánh giá AI (dataset, công cụ, báo cáo chỉ số) không thuộc
 |---|---|---|
 | Chụp ảnh trên mobile | Gửi thẳng vào báo cáo | Kiểm kích thước và dung lượng trên máy, gọi precheck ngay sau khi chọn ảnh; không đạt thì khóa nút gửi và hiện lý do |
 | Kiểm ảnh trước khi nộp | Không có | `POST /api/v1/disease-reports/precheck` (FARMER, không lưu DB hay file) |
-| Nộp ảnh mờ bỏ qua precheck | Nhận, kỹ sư phát hiện sau | Backend kiểm lại ngoài transaction, trả 422, không lưu ảnh |
+| Nộp ảnh mờ hoặc không phải lúa, bỏ qua precheck | Nhận, kỹ sư phát hiện sau | Backend kiểm lại ngoài transaction, trả 422, không lưu ảnh |
 | Báo cáo đã lưu | Không có thông tin chất lượng | Lưu `quality_*` đo lúc nộp |
 | Mất mạng lúc chụp | Không áp dụng | Ảnh vào hàng đợi, server kiểm khi gửi; 422 không tự thử lại, lỗi dịch vụ thử lại |
 
 **Hướng làm**
 
-- AI: `POST /api/v1/disease/precheck` (`authorize_backend`) và `predict` dùng chung `inspect_image`; precheck không chạy YOLO.
-- Điều kiện: JPEG/PNG, tối đa 40 megapixel, mỗi chiều từ 160px, độ sáng 20–245, độ nét từ 20.
+- AI: `POST /api/v1/disease/precheck` (`authorize_backend`) và `predict` dùng chung `assess_image` (chất lượng trước, crop classifier sau); precheck không chạy detector bệnh.
+- Điều kiện: JPEG/PNG, tối đa 40 megapixel, mỗi chiều từ 160px, độ sáng 20–245, độ nét từ 20; crop classifier cho qua khi top1 là Rice, P(Rice) ≥ 0.80 và chênh với lớp khác cao nhất ≥ 0.20.
 - Độ nét: ảnh xám tối đa 640px, bỏ 10% viền, làm mượt Gaussian 5×5, trung vị phương sai Laplacian của 16 vùng, trừ nhiễu ước lượng bằng MAD.
 - Backend: `FileStorageService.sanitize` giải mã và mã hóa lại (bỏ EXIF/GPS) trước khi chuyển sang AI; `AiDiagnosisClient.precheck`.
 
 **Phạm vi ảnh hưởng**
 
-- Module và file chính: `ai/app/api/router.py`, `ai/app/services/plant_disease_service.py`, `ai/app/cv/policy.py`, `controller/DiseaseReportController.java`, `service/DiseaseReportService.java`, `service/AiDiagnosisClient.java`, `mobile/app/capture.tsx`.
-- Endpoint, bảng DB, biến môi trường: hai endpoint precheck mới; `disease_reports` thêm `quality_passed`, `quality_sharpness`, `quality_brightness`, `quality_width`, `quality_height`.
+- Module và file chính: `ai/app/api/router.py`, `ai/app/services/plant_disease_service.py`, `ai/app/cv/policy.py`, `ai/app/cv/crop_classifier.py`, `controller/DiseaseReportController.java`, `service/DiseaseReportService.java`, `service/AiDiagnosisClient.java`, `mobile/app/capture.tsx`.
+- Endpoint, bảng DB, biến môi trường: hai endpoint precheck mới; biến `CROP_CLASSIFIER_PATH` (Compose: `AI_CROP_CLASSIFIER_PATH`); `disease_reports` thêm `quality_passed`, `quality_sharpness`, `quality_brightness`, `quality_width`, `quality_height`.
 - Role và client bị ảnh hưởng: farmer (mobile).
 - Tương thích ngược và dữ liệu cũ: báo cáo cũ có quality `NULL`; điểm độ nét cũ không so sánh trực tiếp với điểm mới.
 
 **Kết quả đầu ra**
 
-- Ảnh mờ, quá tối, quá sáng hoặc quá nhỏ bị precheck từ chối trước khi tạo báo cáo.
-- Server từ chối được ảnh kém khi nộp thật dù client bỏ qua precheck.
+- Ảnh mờ, quá tối, quá sáng, quá nhỏ hoặc không được nhận là lúa bị precheck từ chối trước khi tạo báo cáo.
+- Server từ chối được ảnh kém hoặc không phải lúa khi nộp thật dù client bỏ qua precheck.
 
-**Phụ thuộc, lưu ý**: cần WP6-05; ngưỡng chưa hiệu chuẩn bằng ảnh ngoài ruộng (R3); precheck không xác nhận ảnh là lúa (R2).
+**Phụ thuộc, lưu ý**: cần WP6-05; ngưỡng chưa hiệu chuẩn bằng ảnh ngoài ruộng (R3); crop classifier còn nhận nhầm cây gần giống lúa (R2, TO7).
 
 ## WP6-03: Trạng thái "cần chụp lại" tách khỏi từ chối chẩn đoán
 
@@ -165,7 +165,7 @@ Phần đánh giá AI (dataset, công cụ, báo cáo chỉ số) không thuộc
 
 | Loại | Đối tượng | Thay đổi | Phá tương thích? |
 |---|---|---|---|
-| Endpoint | `POST /disease-reports/precheck` | Mới (FARMER, multipart `image`): `passed`, `reasons`, kích thước, độ nét, độ sáng | Không |
+| Endpoint | `POST /disease-reports/precheck` | Mới (FARMER, multipart `image`): `passed` (chất lượng và nhận diện lúa), `reasons`, kích thước, độ nét, độ sáng | Không |
 | Endpoint | `POST /crop-seasons/{id}/disease-reports` | Thêm query `retakeOf`; ảnh không đạt chất lượng trả 422 | Không |
 | Endpoint | `PATCH /disease-reports/{id}/request-retake` | Mới (ENGINEER/ADMIN): `reason` | Không |
 | Endpoint | `POST /disease-reports/{id}/diagnosis/suggest` | Mới (ENGINEER/ADMIN): `symptomText` | Không |

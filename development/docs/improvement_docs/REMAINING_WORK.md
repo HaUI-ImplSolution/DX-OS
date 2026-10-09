@@ -37,7 +37,7 @@ Chi tiết, lý do và cách xử lý nằm ở file được trỏ tới ở m�
 | Việc | Nơi theo dõi |
 |---|---|
 | Không có báo cáo đánh giá AI (test set độc lập, chỉ số theo lớp); ngưỡng `0.70` chưa đo lại | `phase-6-*/04_TRADEOFFS_RISKS.md` mục 3 |
-| Không có lớp "không phải lúa"; precheck chỉ kiểm chất lượng ảnh | `phase-6-*/04_TRADEOFFS_RISKS.md` mục 3 |
+| Crop classifier còn nhận nhầm ngô, cỏ, lúa mì thành lúa; chưa nghiệm thu khả năng chặn mọi ảnh ngoài miền; build toàn stack từ đầu trên CI chưa kiểm chứng | `phase-6-*/04_TRADEOFFS_RISKS.md` TO7; `pending_docs/CV_RICE_IMAGE_VALIDATION_SUMMARY.md` |
 | Ngưỡng độ nét 20 và độ sáng 20-245 chưa hiệu chuẩn bằng ảnh ngoài ruộng | `phase-6-*/04_TRADEOFFS_RISKS.md` R3 |
 | Nộp báo cáo cần AI service chạy, chưa có đường nhận ảnh chưa kiểm | `phase-6-*/04_TRADEOFFS_RISKS.md` R4 |
 | Kho RAG chỉ có 6 tài liệu bệnh lúa, chưa có VietGAP hay quy trình canh tác | `phase-7-*/00_OVERVIEW.md` mục 11 |

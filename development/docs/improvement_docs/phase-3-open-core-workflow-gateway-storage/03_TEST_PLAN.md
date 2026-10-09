@@ -39,7 +39,6 @@ Phase này đụng hạ tầng (gateway, storage) nên một số case bắt bu�
 - [x] Đăng nhập SSO qua Keycloak (web, mobile, Superset) vẫn hoạt động qua APISIX.
   Web và Superset kiểm bằng trình duyệt, mobile trên máy thật.
 - [x] Thông báo Mattermost vẫn gửi, ảnh trong thông báo load được bằng presigned URL mới. Kiểm ở P4 bằng báo cáo thật: thông báo vào kênh `ky-su-nong-nghiep`, link ảnh trả 200.
-  Hoãn sang P4: webhook đã cấu hình, chờ giao diện tạo nông hộ để gửi báo cáo thật.
   Link ảnh công khai đã kiểm bằng `StorageServiceTest`.
 - [x] Dựng từ clone sạch (gồm APISIX, MinIO mới) bằng `docker compose up -d --build` vẫn lên đủ dịch vụ healthy.
   Đã chạy `deploy/reset.sh` từ thư mục dữ liệu trống, mọi service healthy.

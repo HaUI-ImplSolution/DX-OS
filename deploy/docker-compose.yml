@@ -192,6 +192,12 @@ services:
           # Fail clearly instead of letting Docker create a root-owned directory
           # when a machine-specific override points to a missing file.
           create_host_path: false
+      - type: bind
+        source: ${AI_CROP_CLASSIFIER_PATH:-../ai/weights/crop_classifier.onnx}
+        target: /app/weights/crop_classifier.onnx
+        read_only: true
+        bind:
+          create_host_path: false
     # No published port: only Backend (and AI-internal jobs) reach AI over the compose network.
 
   rag-ingest:

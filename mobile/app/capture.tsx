@@ -51,15 +51,15 @@ export default function CaptureScreen() {
       idempotencyKey.current = randomUUID();
       setPhoto(prepared);
       if ((await NetInfo.fetch()).isConnected === false) {
-        setQualityNote("Chưa kiểm tra độ nét do mất mạng. Máy chủ sẽ kiểm tra khi gửi.");
+        setQualityNote("Chưa kiểm tra ảnh do mất mạng. Máy chủ sẽ kiểm tra chất lượng và nhận diện lúa khi gửi.");
       } else {
         const quality = await precheckDiseaseReport(prepared);
         setQualityRejected(!quality.passed);
-        setQualityNote(quality.passed ? "Ảnh đạt kiểm tra chất lượng. Kiểm tra này chưa xác nhận ảnh là lúa." : quality.reasons.join(" "));
+        setQualityNote(quality.passed ? "Ảnh đạt bước kiểm tra đầu vào. Kỹ sư sẽ đánh giá bệnh." : quality.reasons.join(" "));
       }
     } catch (e) {
       if (isNetworkError(e)) {
-        setQualityNote("Chưa kiểm tra độ nét do mất mạng. Máy chủ sẽ kiểm tra khi gửi.");
+        setQualityNote("Chưa kiểm tra ảnh do mất mạng. Máy chủ sẽ kiểm tra chất lượng và nhận diện lúa khi gửi.");
       } else {
         setQualityRejected(true);
         setError(e instanceof Error ? e.message : "Không xử lý được ảnh. Hãy chụp lại.");

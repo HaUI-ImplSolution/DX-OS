@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     cv_class_contract_path: Path = (
         AI_ROOT.parent / "data" / "structured" / "class_contract.json"
     )
+    crop_classifier_path: Path = AI_ROOT / "weights" / "crop_classifier.onnx"
     cv_device: str = "auto"
     llm_timeout_seconds: float = 5.0
 

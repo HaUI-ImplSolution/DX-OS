@@ -64,6 +64,8 @@ Khi bật lại cần rà license tương ứng: POI Apache-2.0 OK, các cái c�
 | psycopg / psycopg-binary | LGPL-3.0-only | ✅ | Dependency trực tiếp |
 | PyMuPDF | AGPL-3.0 hoặc Artifex commercial | ✅ với AGPL-3.0 | Repo dùng nhánh open-source AGPL-3.0 |
 | PyTorch | Apache-2.0 và các license nguồn mở đi kèm | ✅ | Dependency trực tiếp |
+| [ONNX Runtime](https://github.com/microsoft/onnxruntime/blob/main/LICENSE) | MIT | ✅ | Crop classifier CPU 1.30.0; FlatBuffers Apache-2.0, Protobuf BSD-3-Clause |
+| [Crop classifier YOLO26s-cls](https://huggingface.co/RaiyanKhaan/KrishokTech-Models/tree/c339988a6eceb5e22943ee27e4731a1a1dc9160a/01_crop_classifier) | AGPL-3.0 (metadata artifact) | ✅ | Artifact `ai/weights/crop_classifier.onnx` được quản lý bằng Git, từ revision `c339988a6eceb5e22943ee27e4731a1a1dc9160a`; model card repository ghi Apache-2.0, giữ điều kiện AGPL của artifact |
 | NumPy | BSD-3-Clause và các license nguồn mở đi kèm | ✅ | Dependency trực tiếp |
 | Pillow | MIT-CMU | ✅ | Dependency trực tiếp |
 | [OpenCV](https://opencv.org/license/) | Apache-2.0 | ✅ | Dependency runtime do Ultralytics kéo theo; áp dụng cho OpenCV 4.5.0 trở lên |
@@ -71,14 +73,13 @@ Khi bật lại cần rà license tương ứng: POI Apache-2.0 OK, các cái c�
 | [Ollama](https://github.com/ollama/ollama) (`ollama/ollama:0.34.2`) | MIT | ✅ | Runtime phục vụ LLM trong Compose |
 | [Qwen2.5 1.5B](https://ollama.com/library/qwen2.5) | Apache-2.0 | ✅ | Model mặc định `qwen2.5:1.5b` |
 | [`paraphrase-multilingual-MiniLM-L12-v2`](https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2) | Apache-2.0 | ✅ | Model embedding mặc định |
-| `YOLOv8n-RiceLeafBD` / `ai/weights/best.pt` | AGPL-3.0 | ✅ | Phiên bản `3.0.0`, fine-tune từ pretrained `yolov8n.pt` |
+| `YOLOv8n-RiceLeafBD` / `ai/weights/best.pt` | AGPL-3.0 | ✅ | Phiên bản `3.1.0`, fine-tune từ pretrained `yolov8n.pt` |
 | RiceLeafDiseaseBD | CC BY 4.0 | N/A | License dữ liệu, không phải software license do OSI phê duyệt |
 
-**Checkpoint:** `YOLOv8n-RiceLeafBD` phiên bản `3.0.0`, do
+**Checkpoint gốc:** `YOLOv8n-RiceLeafBD` phiên bản `3.0.0`, do
 [`@nddKhanh`](https://github.com/nddKhanh) fine-tune trong
 [notebook Kaggle](https://www.kaggle.com/code/baodark/dx-farm-8169e1/notebook), được nhóm
-đồng ý công khai theo AGPL-3.0. File `ai/weights/best.pt` có SHA-256
-`573db0871f39396f2bbec5e6aa5988d36b79b13e01cb00f03eee29b32a12c60b`; toàn văn license
+đồng ý công khai theo AGPL-3.0. Bản thay thế `3.1.0` do người dùng cung cấp trong nhánh này; giữ license model hiện có. Checkpoint nằm tại `ai/weights/best.pt`; toàn văn license
 nằm tại [`ai/MODEL_LICENSE`](./ai/MODEL_LICENSE).
 
 **Dataset:** [RiceLeafDiseaseBD Version 3](https://doi.org/10.17632/86s4jzj2m4.3), theo
@@ -96,7 +97,7 @@ giữ Apache-2.0.
 
 | Thành phần | License | OSI-approved | Ghi chú |
 |---|---|---|---|
-| Apache Superset (`apache/superset` image) | Apache-2.0 | ✅ | BI dashboard, thêm ở lượt này — xem `bi/` |
+| Apache Superset (`apache/superset` image) | Apache-2.0 | ✅ | BI dashboard — xem `bi/` |
 | Authlib (pip, cài lúc container Superset khởi động cho SSO OAuth) | BSD-3-Clause | ✅ | |
 | Python (`python:3.11-slim`, base image của AI Service) | PSF-2.0 | ✅ | |
 | Node.js (`node:20-alpine`, chỉ ở bước build frontend) | MIT | ✅ | |

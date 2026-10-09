@@ -18,7 +18,9 @@ class DiseaseDetectionResponse(BaseModel):
 
 class CVHealthResponse(BaseModel):
     status: str = Field(..., description="Health status, e.g., 'ok'")
-    model_loaded: bool = Field(..., description="Whether the CV model is loaded")
+    model_loaded: bool = Field(
+        ..., description="Whether both disease detector and crop classifier are loaded"
+    )
     model_name: str | None = Field(None, description="Name of the loaded model")
     model_version: str | None = Field(None, description="Version of the loaded model")
     device: str | None = Field(
@@ -107,7 +109,9 @@ class DiagnoseResponse(BaseModel):
 
 
 class ImagePrecheckResponse(BaseModel):
-    passed: bool
+    passed: bool = Field(
+        description="Passed image quality and rice classification; not a disease diagnosis"
+    )
     reasons: list[str]
     width: int
     height: int

@@ -24,7 +24,7 @@ Lần dựng đầu mất khoảng 2 phút, các lần sau dùng cache của Doc
 - Bucket `MINIO_BUCKET` (mặc định `dxfarm-uploads`) riêng tư, Backend tự tạo lúc khởi động.
 - Khóa object là `<uuid>.jpg` hoặc `<uuid>.png`; metadata đi kèm gồm `uploaded-by` (claim `sub` của người upload) và `source`.
 - Backend làm sạch ảnh (giải mã lại, bỏ EXIF/GPS) rồi mới lưu; client không bao giờ ghi thẳng vào MinIO.
-- Client nhận link có hạn (`imageUrl`, mặc định 15 phút, đổi bằng `STORAGE_PRESIGN_TTL`) trong response báo cáo.
+- Client nhận link có hạn (`imageUrl`, mặc định 15 phút, cấu hình ở `storage.presign-ttl` trong `application.yaml`) trong response báo cáo.
   Link ký theo địa chỉ mà client dùng để gọi API, nên web (`localhost`) và điện thoại (IP LAN) đều tải được.
 - Cổng của MinIO không publish ra host.
   Link công khai đi qua gateway APISIX (route `/<bucket>/*`, chỉ `GET` và `HEAD`, đường dẫn giữ nguyên vì chữ ký phủ cả đường dẫn).

@@ -3,7 +3,7 @@ from io import BytesIO
 
 import numpy as np
 import pytest
-from conftest import leaf_scene
+from conftest import AcceptCrop, leaf_scene
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from PIL import Image, ImageDraw, ImageFilter
@@ -11,8 +11,12 @@ from PIL import Image, ImageDraw, ImageFilter
 from app.api.router import router
 from app.core.config import Settings, get_settings
 from app.db.session import get_db
-from app.services.plant_disease_service import precheck_image
+from app.services.plant_disease_service import inspect_image
 from app.services.symptom_service import suggest_diseases
+
+
+def precheck_image(data):
+    return inspect_image(data)[1]
 
 
 def encode(image):
@@ -23,6 +27,7 @@ def encode(image):
 
 def client():
     app = FastAPI()
+    app.state.crop_classifier = AcceptCrop()
     app.include_router(router, prefix="/api/v1")
     app.dependency_overrides[get_settings] = lambda: Settings(
         ai_service_api_key="test-key", _env_file=None

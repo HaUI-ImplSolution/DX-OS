@@ -21,4 +21,4 @@ Không publish cổng riêng: gateway APISIX phục vụ portal ở `http://loca
 
 ## Giới hạn hiện tại
 
-- Link ứng dụng chính, Keycloak và Swagger là đường dẫn tương đối của gateway; link Superset (cổng `APISIX_SUPERSET_HOST_PORT`) và Mattermost (`MATTERMOST_HOST_PORT`) tự lấy tên máy của trang đang mở nhưng giữ cổng viết sẵn trong `index.html` (9081 và 8065), nên đổi cổng trong `.env` thì sửa `data-port` tương ứng.
+- Link ứng dụng chính, Keycloak và Swagger là đường dẫn tương đối của gateway; link Superset (cổng `APISIX_SUPERSET_HOST_PORT`), MinIO Console (`APISIX_MINIO_HOST_PORT`) và Mattermost (`MATTERMOST_HOST_PORT`) tự lấy tên máy của trang đang mở nhưng giữ cổng viết sẵn trong `index.html` (9081, 9082 và 8065), nên đổi cổng trong `.env` thì sửa `data-port` tương ứng.

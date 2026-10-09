@@ -22,6 +22,8 @@ Theo D6 (phase 0): chỉ test case ảnh hưởng logic/an toàn hệ thống, k
 | T6-08 | WP6-04 | Hồi quy | Nhập tay trên database sạch chưa có treatment rule | Chờ khuyến nghị, không trả 404 | | Đạt: `manualDiagnosisWithoutRuleStoresStructuredEngineerLabel` |
 | T6-09 | WP6-03 | Poka-yoke | Yêu cầu chụp lại khi chẩn đoán đang chờ duyệt, rồi khi đã `APPROVED` | Hộ nhận `RETAKE_REQUESTED`, workflow chờ thành `CANCELLED`; chẩn đoán `APPROVED` trả 409 | | Đạt: thử tay trên giao diện web và điện thoại |
 | T6-10 | WP6-04 | Logic | Ghi chẩn đoán kèm triệu chứng, kiểm nhãn trước và sau khi duyệt | Chưa có nhãn trước khi duyệt; sau khi duyệt có nhãn kèm triệu chứng và người duyệt | | Đạt: `manualDiagnosisWithoutRuleStoresStructuredEngineerLabel` |
+| T6-11 | WP6-01 | Poka-yoke | Bỏ qua precheck, nộp ảnh không được nhận là lúa | 422, không lưu DB hay file | | Đạt: `serverRejectsNonRiceEvenWhenClientSkipsPrecheck` |
+| T6-12 | WP6-01 | Hồi quy | Crop classifier: nạp model, ngưỡng Rice 0.80 và chênh 0.20, precheck/predict/diagnose, lỗi dịch vụ | Ảnh không đạt: precheck 200 `passed=false`, predict/diagnose 422; classifier lỗi 503 | | Đạt: `ai/tests/test_crop_classifier.py` |
 
 ## 3. Hồi quy (không được hỏng)
 
@@ -37,7 +39,7 @@ Theo D6 (phase 0): chỉ test case ảnh hưởng logic/an toàn hệ thống, k
 
 ## 4. Tiêu chí đạt của phase (exit criteria)
 
-- T6-01 đến T6-10 đạt.
+- T6-01 đến T6-12 đạt.
 - Mọi case hồi quy ở mục 3 đạt.
 - Không còn lỗi nghiêm trọng mở; lỗi còn lại đã ghi ở `04_TRADEOFFS_RISKS.md`.
 - Các tiêu chí ở `00_OVERVIEW.md` mục 6 đều có bằng chứng.
@@ -47,6 +49,7 @@ Theo D6 (phase 0): chỉ test case ảnh hưởng logic/an toàn hệ thống, k
 - Bằng chứng: log test và kết quả thử trên điện thoại.
 - Kết quả chạy: backend `./mvnw clean test` 75 test đạt sau khi hợp nhánh `Khuong/main` tại `6e03bc6`; AI `pytest tests` 48 test đạt; web và mobile `npx tsc --noEmit` đạt.
 - Thử tay trên giao diện web và điện thoại thật đạt: camera, offline, gợi ý triệu chứng, chẩn đoán lại, nhãn kỹ sư, yêu cầu chụp lại, chẩn đoán bị từ chối; dựng lại stack sạch bằng `deploy/reset.sh` đạt.
+- Sau khi thêm crop classifier: AI 64 test, Backend `verify` 79 test, E2E local 10/10 bước đạt; hai model nạp và suy luận được trong container không mạng. Build toàn stack từ đầu trên CI GitHub chưa kiểm chứng. Chi tiết ở `pending_docs/CV_RICE_IMAGE_VALIDATION_SUMMARY.md`.
 - Unit và integration test mock ở ranh giới HTTP AI: chứng minh logic, không đo độ chính xác model.
 - Ảnh mờ có chữ/viền sắc, sọc màn hình hoặc nhiễu bị chặn, ảnh lá lúa rõ được nhận (điểm nét 30.113 so với ngưỡng 20; ảnh mờ 9.613 bị từ chối); bỏ qua precheck và nộp ảnh mờ trực tiếp trả 422.
 - Lỗi phát hiện: tạo issue GitHub, ghi mã vào cột "Kết quả" (ví dụ `Fail #123`).

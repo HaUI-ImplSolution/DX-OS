@@ -18,10 +18,10 @@ Chi tiết, lý do và cách xử lý nằm ở file được trỏ tới ở m�
 
 | Việc | Ảnh hưởng | Nơi theo dõi |
 |---|---|---|
-| Q2: chuyên gia duyệt treatment rule và thuốc mẫu | Chưa có rule thì không demo được phun thuốc và khóa PHI thật; chart "Thửa đang cách ly" và "Tỷ lệ AI đúng/sai" trống | `phase-8-*/00_OVERVIEW.md` Q2; `phase-5-*/04_TRADEOFFS_RISKS.md` |
-| Kỹ sư nông nghiệp xác nhận mốc tháng loại vụ và danh mục giống (đang `IN_REVIEW`) | Gợi ý loại vụ và ngày thu hoạch dựa trên số tạm | `phase-4-*/04_TRADEOFFS_RISKS.md` R1; `PARCEL_SEASON_CODES.md` |
+| Chuyên gia duyệt treatment rule cho các bệnh còn lại (đốm nâu, Help 400SC đang `IN_REVIEW`) | Đạo ôn và khô vằn đã có rule được duyệt; bệnh khác chỉ ở trạng thái chỉ xem xét, không có liều và PHI | `phase-8-*/00_OVERVIEW.md` Q2; `data/README.md` |
+| Kỹ sư nông nghiệp xác nhận mốc tháng loại vụ và danh mục giống (đang `IN_REVIEW`) | Gợi ý loại vụ và ngày thu hoạch dựa trên số tạm | `phase-4-*/04_TRADEOFFS_RISKS.md` R1; `legacy_docs/PARCEL_SEASON_CODES.md` |
 | Người phụ trách xác nhận nền bản đồ Superset (đang nền trắng) | Dashboard bản đồ | `phase-7-*/02_CHECKLIST.md` WP7-03-DOC-01 |
-| Ảnh lá lúa thật cho `seed_demo.py --images` | Demo chẩn đoán AI có ý nghĩa | `phase-8-*/00_OVERVIEW.md` mục 11 |
+| Ảnh lá lúa thật cho `seed_demo.py --images` | Demo chẩn đoán AI có ý nghĩa; chart "Tỷ lệ AI đúng/sai" có dữ liệu | `phase-8-*/00_OVERVIEW.md` mục 11 |
 
 ## Chưa kiểm thử
 

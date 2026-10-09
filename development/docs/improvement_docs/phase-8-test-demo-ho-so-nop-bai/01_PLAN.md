@@ -250,4 +250,4 @@ Không áp dụng.
 |---|---|---|
 | D6 (kế thừa phase 0) | Test case ảnh hưởng logic/an toàn hệ thống, rải suốt P1-P6 | Xem `phase-0-chot-quyet-dinh-pham-vi/01_PLAN.md` |
 | Q1 | Chuyển repo public ngay khi rà xong lịch sử commit | Tránh rủi ro quên/hết thời gian nếu để tới sát hạn |
-| Q2 | _(chưa chốt — phụ thuộc chuyên gia duyệt treatment rule)_ | |
+| Q2 | Có, một phần: rule đạo ôn và khô vằn được duyệt và seed; đốm nâu đi nhánh `review_required` | Demo trọn luồng khóa PHI với dữ liệu thật cho đạo ôn |

@@ -11,8 +11,8 @@ Kết quả đầu ra: database sạch có đủ dữ liệu demo; rõ ràng v�
 
 - [x] WP8-02-DATA-01 Viết script seed demo riêng (hộ, thửa có GPS thật ở ĐBSCL, vụ nhiều trạng thái, báo cáo kèm ảnh thật).
   `deploy/demo/seed_demo.py` (qua API, chạy lại không trùng, `--images` cho ảnh thật).
-- [ ] WP8-02-DATA-02 Theo dõi tiến độ duyệt treatment rule mẫu (Q2), cập nhật kết luận khi có.
-  Q2 chưa chốt; chưa có rule được duyệt nên seed demo đi nhánh `review_required`.
+- [x] WP8-02-DATA-02 Theo dõi tiến độ duyệt treatment rule mẫu (Q2), cập nhật kết luận khi có.
+  Rule đạo ôn và khô vằn được duyệt ngày 2026-10-05 và seed; seed demo khai phun trên đạo ôn, bệnh khác đi nhánh `review_required`.
 
 **Test**
 

@@ -83,4 +83,4 @@
 
 - [x] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
 - [x] Swagger cho endpoint mới (tạo thửa/vụ, danh sách, duyệt).
-- [x] Tài liệu quy chuẩn mã thửa/mã vụ: `development/docs/PARCEL_SEASON_CODES.md`.
+- [x] Tài liệu quy chuẩn mã thửa/mã vụ: `development/docs/legacy_docs/PARCEL_SEASON_CODES.md`.

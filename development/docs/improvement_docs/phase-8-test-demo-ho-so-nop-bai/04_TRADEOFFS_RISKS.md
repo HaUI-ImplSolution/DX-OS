@@ -7,7 +7,7 @@
 | TO1 | Treatment rule chưa duyệt kịp (Q2) | Chờ chuyên gia duyệt, trì hoãn demo trọn luồng khóa PHI thật / Demo trung thực nhánh `review_required`, ghi rõ giới hạn | Demo trung thực nhánh `review_required` nếu Q2 = không | Không dựng số liệu giả, giữ đúng nguyên tắc "không tự bịa" của dự án | Mất điểm nhấn "khóa PHI hoạt động trọn luồng" trong demo nếu hội đồng mong đợi thấy đủ | Thấp — khi có rule được duyệt thật (bất kỳ lúc nào sau đó), chuyển demo sang luồng đầy đủ không cần đổi code |
 | TO2 | Thời điểm chuyển repo public | Ngay khi rà xong lịch sử commit / Sát ngày nộp | Ngay khi rà xong (đã chốt Q1) | Giảm rủi ro quên/hết thời gian | Secret cũ (nếu còn sót) có thời gian lộ công khai dài hơn trước khi phát hiện | Thấp — repo có thể chuyển lại Private nếu phát hiện vấn đề sau khi public, GitHub hỗ trợ việc này |
 
-Kết luận: TO1 phụ thuộc kết quả Q2 thật (không tự quyết được); TO2 áp dụng ngay theo Q1 đã chốt.
+Kết luận: TO1 theo kết quả Q2 (rule đạo ôn và khô vằn đã duyệt, bệnh khác đi nhánh `review_required`); TO2 áp dụng theo Q1 đã chốt.
 
 ## 2. Rủi ro
 
@@ -19,7 +19,7 @@ Kết luận: TO1 phụ thuộc kết quả Q2 thật (không tự quyết đư�
 
 ## 3. Nợ kỹ thuật chấp nhận
 
-- Nếu Q2 = không (chưa có rule duyệt thật), chấp nhận giới hạn "chưa demo trọn luồng khóa PHI với dữ liệu thật" — ghi rõ trong báo cáo, không che giấu.
+- Bệnh ngoài đạo ôn và khô vằn chưa có rule duyệt nên chỉ demo nhánh `review_required`; ghi rõ trong báo cáo, không che giấu.
 - Portal (WP8-05) chỉ hiện trạng thái up/down cơ bản, không có giám sát/alerting đầy đủ (Prometheus/Grafana vẫn là "không bắt buộc" theo mục 17).
 
 ## 4. Điều kiện dừng và rollback

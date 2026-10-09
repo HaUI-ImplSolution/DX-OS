@@ -34,25 +34,28 @@ Kết quả đầu ra: ảnh không đạt chuẩn bị chặn trước khi tạ
 
 **AI**
 
-- [x] WP6-01-AI-01 Endpoint `POST /api/v1/disease/precheck` (`authorize_backend`), dùng chung `inspect_image` với `predict`.
+- [x] WP6-01-AI-01 Endpoint `POST /api/v1/disease/precheck` (`authorize_backend`), dùng chung `assess_image` với `predict`.
 - [x] WP6-01-AI-02 Đo độ nét ổn định với sọc màn hình, nhiễu hạt, chữ và viền sắc; thêm kiểm độ sáng.
+- [x] WP6-01-AI-03 Crop classifier ONNX (`ai/app/cv/crop_classifier.py`) kiểm ảnh là lúa sau bước chất lượng; nạp một lần khi khởi động, health chỉ sẵn sàng khi cả hai model đã nạp; classifier lỗi trả 503.
 
 **Backend**
 
 - [x] WP6-01-BE-01 Endpoint `POST /api/v1/disease-reports/precheck` (FARMER, không lưu DB), bỏ EXIF/GPS rồi forward sang AI.
 - [x] WP6-01-BE-02 `DiseaseReport`: cột lưu kết quả chất lượng ảnh lúc nộp.
-- [x] WP6-01-BE-03 Nộp báo cáo kiểm lại chất lượng ngoài transaction; không đạt trả 422, không lưu ảnh.
+- [x] WP6-01-BE-03 Nộp báo cáo kiểm lại chất lượng và nhận diện lúa ngoài transaction; không đạt trả 422, không lưu ảnh.
 
 **Mobile**
 
 - [x] WP6-01-MB-01 Kiểm kích thước và dung lượng trên máy trước khi gọi precheck.
-- [x] WP6-01-MB-02 Gọi precheck sau khi chọn ảnh, chặn nút gửi nếu không đạt, hiện lý do.
+- [x] WP6-01-MB-02 Gọi precheck sau khi chọn ảnh, chặn nút gửi nếu không đạt, hiện lý do chất lượng hoặc chưa nhận là lúa.
 - [x] WP6-01-MB-03 Mất mạng thì ảnh vào hàng đợi, server kiểm khi gửi.
 
 **Test**
 
 - [x] WP6-01-TEST-01 Gửi ảnh mờ qua precheck → không đạt, không tạo báo cáo (T6-03).
 - [x] WP6-01-TEST-02 Bỏ qua precheck, nộp báo cáo thật với ảnh mờ → server vẫn từ chối (T6-04).
+- [x] WP6-01-TEST-03 Bỏ qua precheck, nộp báo cáo thật với ảnh không được nhận là lúa → server vẫn từ chối, không lưu (T6-11).
+- [x] WP6-01-TEST-04 Loader, policy, precheck/predict/diagnose và lỗi dịch vụ của crop classifier (T6-12).
 
 ## WP6-03: Trạng thái "cần chụp lại" tách khỏi từ chối chẩn đoán
 

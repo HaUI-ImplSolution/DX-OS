@@ -5,6 +5,14 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Backend (Spring Boot — `backend/DX-Farm`)
 
+### 2026-10-09
+
+**Đã xong — Seed treatment rule đã duyệt:**
+
+- Seed idempotent `NEWTEC_300SC` cùng hai rule `EXPERT_APPROVED` cho đạo ôn (`Rice___Blast`) và khô vằn (`Rice___Sheath_blight`); rule Help 400SC cho đốm nâu ở trạng thái `IN_REVIEW`, không seed.
+- `V10__treatment_rule_notes_text.sql` mở rộng `treatment_rules.notes` sang `text`; integration test kiểm tra migration, số rule active và chạy seed lặp không sinh trùng.
+- CI xác minh `data.sql` luôn khớp dữ liệu nguồn trong `data/`; file SQL vẫn được commit nhưng không sửa tay.
+
 ### 2026-10-07
 
 **Đã xong — Kiểm thử, dữ liệu demo, hồ sơ nộp bài:**
@@ -90,7 +98,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 - `V5__parcel_season_approval.sql`, `V6__rice_variety_seed.sql`: trạng thái duyệt, mã, GPS và khóa `client_request_id` cho `parcels` và `crop_seasons`; bảng `rice_varieties`, `household_parcel_counter`, `parcel_edit_requests`.
   Thửa và vụ có sẵn coi như đã duyệt; thửa chưa có tọa độ mang cờ `location_missing`.
-- Mã thửa `HTX01-H0042-T03` và mã vụ `HTX01-H0042-T03-2026DX` do backend sinh, quy tắc ở `development/docs/PARCEL_SEASON_CODES.md`; `POST /api/v1/parcels` không nhận `code`, bắt buộc `latitude` và `longitude`.
+- Mã thửa `HTX01-H0042-T03` và mã vụ `HTX01-H0042-T03-2026DX` do backend sinh, quy tắc ở `development/docs/legacy_docs/PARCEL_SEASON_CODES.md`; `POST /api/v1/parcels` không nhận `code`, bắt buộc `latitude` và `longitude`.
 - Nông dân phải gửi `gpsAccuracyMeters` không quá `app.gps-max-accuracy-meters` (30 m) và không `mockedLocation` (`422`).
 - Thửa và vụ của nông dân chờ quản trị viên duyệt; của quản trị viên được duyệt ngay.
   Core `workflow` có `WorkflowDecisionHandler` theo `caseType`; `PATCH /api/v1/workflow-cases/{id}/approve` và `/reject` (ADMIN, từ chối cần lý do) áp quyết định lên thửa, vụ hoặc yêu cầu chỉnh sửa.
@@ -107,7 +115,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 **Đã xong — Open-Core: workflow dùng chung, lưu ảnh có link hạn, package Core:**
 
 - Package `core.identity` (`Household`, `HouseholdService`, `KeycloakAdminClient`), `core.workflow`, `core.storage` là phần Core; ứng dụng DX-Farm giữ các package còn lại.
-  Sơ đồ ở `development/docs/ARCHITECTURE_OPEN_CORE.md`.
+  Sơ đồ ở `development/docs/submission/ARCHITECTURE_OPEN_CORE.md`.
 - `V4__workflow.sql`: bảng `workflow_case` (trạng thái, `assigned_to`, optimistic lock) và `workflow_event` (chỉ thêm; trigger chặn `UPDATE` và `DELETE`, cột `metadata` JSONB).
   Chẩn đoán đã có được dựng case và lịch sử từ cột quyết định hiện có.
 - Mỗi chẩn đoán mới mở case `DIAGNOSIS_APPROVAL`; duyệt hoặc từ chối ghi đúng một `workflow_event` cùng người thực hiện và lý do.
@@ -256,6 +264,12 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Dữ liệu (`data`)
 
+### 2026-10-09
+
+- `pesticides_candidates_master.json` có 2 sản phẩm (`NEWTEC_300SC` được seed, `HELP_400SC` chờ duyệt); `treatment_rules_candidates_master.json` có 3 rule (2 `EXPERT_APPROVED` được seed, rule đốm nâu bị chặn).
+- `rag/source_registry.json` có 10 nguồn, thêm `SRC_ADC_HELP_400SC`.
+- `data/README.md` mô tả quy trình sinh lại `data.sql`: commit dữ liệu nguồn và file đã sinh cùng lúc, CI chạy `--check` và unit test của generator.
+
 ### 2026-09-30
 
 **Đã xong — Thay bộ dữ liệu PlantVillage bằng dữ liệu bệnh lá lúa:**
@@ -350,18 +364,28 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## AI Service (Python)
 
+### 2026-10-08
+
+- Docker/E2E nạp classifier trực tiếp từ file local; bỏ script và bước tải classifier trong E2E. Đưa `best.pt` và `crop_classifier.onnx` vào Git để checkout sạch có đủ trọng số, chỉ ignore cache tải.
+- Bỏ SHA-256 và cấu hình checksum của crop classifier; giữ kiểm file/task/mapping/shape/dtype/output, ngưỡng và SHA-256 của detector bệnh.
+- Kiểm chứng local: AI 64 test, Backend 79 test và E2E 10/10 bước qua; hai model nạp/suy luận được trong container không có mạng.
+
 ### 2026-10-07
+
+- Thêm crop classifier ONNX vào precheck và chẩn đoán; Backend kiểm lại trước lưu, Mobile hiển thị lý do riêng cho chất lượng/chưa nhận là lúa. Rice threshold 0.80, margin 0.20; lỗi model trả 503. Model còn nhận nhầm ngô/cỏ/lúa mì, đang thử trong sản phẩm.
+- Cập nhật checkpoint YOLOv8n RiceLeafBD lên artifact `3.1.0` (150 epochs); giữ class contract và confidence threshold 0.70.
+- ONNX tải riêng theo revision/checksum cố định; Compose mount read-only, E2E tải trước khi dựng stack. README module, OpenAPI và license đã cập nhật.
 
 - `requirements.lock` khóa phiên bản chính xác mọi gói Python; Dockerfile cài `requirements.txt` với file này làm constraints.
 - Mọi file Python có SPDX header `Apache-2.0`.
-- `POST /api/v1/disease/precheck` kiểm chất lượng ảnh (JPEG/PNG, tối đa 40 megapixel, mỗi chiều từ 160px, độ sáng 20–245, độ nét từ 20) và trả `passed`, `reasons`, kích thước, độ nét, độ sáng; không chạy YOLO.
+- `POST /api/v1/disease/precheck` kiểm chất lượng ảnh (JPEG/PNG, tối đa 40 megapixel, mỗi chiều từ 160px, độ sáng 20–245, độ nét từ 20) và trả `passed`, `reasons`, kích thước, độ nét, độ sáng; chạy thêm crop classifier, không chạy detector bệnh.
   `predict` dùng chung bước kiểm này.
   Độ nét đo trên ảnh xám tối đa 640px, bỏ viền, trung vị theo 16 vùng và trừ nhiễu, nên sọc màn hình, nhiễu hạt, chữ và viền sắc không che được ảnh mờ.
 - `POST /api/v1/disease/symptoms/suggest` xếp hạng các mã bệnh trong danh mục từ triệu chứng bằng RAG, kèm evidence và nguồn; điểm là độ tương đồng tài liệu, không phải confidence.
 
 **Chưa làm:**
 
-- Ngưỡng ảnh chưa hiệu chuẩn bằng ảnh ngoài ruộng; precheck không xác nhận ảnh là lúa.
+- Ngưỡng ảnh chưa hiệu chuẩn bằng ảnh ngoài ruộng; crop classifier còn nhận nhầm ngô/cỏ/lúa mì, chưa nghiệm thu khả năng chặn toàn bộ ảnh ngoài miền.
 
 ### 2026-10-06
 
@@ -772,17 +796,25 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Tài liệu (root, `development/docs`, `ai/`)
 
+### 2026-10-09
+
+- `development/docs/_template/`: mẫu phase dùng chung, không gắn với một core cụ thể.
+- `development/docs/legacy_docs/PARCEL_SEASON_CODES.md`, `development/docs/submission/ARCHITECTURE_OPEN_CORE.md`: vị trí hiện hành của quy chuẩn mã thửa/vụ và sơ đồ Open-Core.
+- `development/docs/improvement_docs/REMAINING_WORK.md`: tổng hợp việc còn lại sau P0 đến P8.
+- `development/docs/pending_docs/CV_RICE_IMAGE_VALIDATION_SUMMARY.md`: tóm tắt kiểm ảnh lúa bằng crop classifier.
+- Trạng thái treatment rule trong `README.md`, `data/README.md`, `deploy/demo/README.md`, `development/docs/submission/` và `improvement_docs/` khớp seed hiện hành.
+
 ### 2026-10-07
 
 - `README.md` có bảng mức hoàn thiện từng tính năng (trong code, kiểm thử, dữ liệu demo), hướng dẫn dữ liệu demo, kiểm thử và E2E.
 - `development/docs/submission/`: kịch bản demo, bộ trả lời hội đồng và dàn ý báo cáo kỹ thuật.
-- `development/docs/PARCEL_SEASON_CODES.md`: mã thửa, mã vụ, GPS và quy tắc duyệt.
+- `development/docs/legacy_docs/PARCEL_SEASON_CODES.md`: mã thửa, mã vụ, GPS và quy tắc duyệt.
 - `deploy/demo/README.md`: script seed demo, E2E và workflow `E2E`.
 - Phase 5 đến 8 của `development/docs/improvement_docs` có kế hoạch, checklist và kết quả kiểm thử.
 
 ### 2026-10-06
 
-- `development/docs/ARCHITECTURE_OPEN_CORE.md`: sơ đồ 3 tầng Open-Core và sơ đồ luồng request (Mermaid), ranh giới Core và ứng dụng.
+- `development/docs/submission/ARCHITECTURE_OPEN_CORE.md`: sơ đồ 3 tầng Open-Core và sơ đồ luồng request (Mermaid), ranh giới Core và ứng dụng.
 - `README.md` gốc có bảng đăng nhập vào từng service (tài khoản ứng dụng và tài khoản quản trị riêng); `minio/README.md` mô tả thư mục MinIO và console; `README.md` mô tả gateway, workflow dùng chung, lưu ảnh có link hạn; `LICENSES.md` thêm APISIX, MinIO và MinIO Java SDK.
 - `README.md` có bảng tài khoản demo, hướng dẫn `deploy/reset.sh` và cách chạy test backend; `LICENSES.md` ghi thêm Testcontainers, JUnit/Mockito/AssertJ, gitleaks và pytest (chỉ dùng cho test/CI).
 - Phase 1 của `development/docs/improvement_docs` ở trạng thái Xong, kèm kết quả kiểm thử.

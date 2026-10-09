@@ -18,3 +18,8 @@ def leaf_scene():
             draw.line([(x + 31, y), (x + 54, y + 10)], fill=(90, 150, 55), width=2)
             draw.ellipse((x + 30, y + 3, x + 39, y + 11), fill=(165, 105, 55))
     return image
+
+
+class AcceptCrop:
+    def rejection_reason(self, image):
+        return None

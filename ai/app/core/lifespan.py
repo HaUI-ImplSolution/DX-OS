@@ -11,17 +11,22 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    """Load the CV model once and release it when FastAPI shuts down."""
+    """Load both CV models once and release it when FastAPI shuts down."""
 
     # Keep Ultralytics lazy so non-CV tooling can import the application package.
+    from app.cv.crop_classifier import load_crop_classifier
     from app.cv.loader import load_model
 
     logger.info("Loading plant disease model")
-    app.state.plant_model = load_model()
-    logger.info("Plant disease model loaded")
+    model = load_model()
+    crop_classifier = load_crop_classifier()
+    app.state.plant_model = model
+    app.state.crop_classifier = crop_classifier
+    logger.info("Disease detector and crop classifier loaded")
 
     try:
         yield
     finally:
         app.state.plant_model = None
+        app.state.crop_classifier = None
         logger.info("Plant disease model released")

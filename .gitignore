@@ -84,7 +84,7 @@ Thumbs.db
 .ua/
 .local/
 
-# The validated rice-leaf checkpoint is a runtime artifact shared by every clone.
-# Keep all other model weights local.
-ai/weights/*
-!ai/weights/best.pt
+# Runtime CV weights are included with the repository.
+!ai/weights/
+!ai/weights/**
+ai/weights/.cache/

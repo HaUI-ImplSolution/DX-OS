@@ -83,6 +83,6 @@ Mọi quyết định công nghệ (D2 workflow, D3 gateway, D4 storage) đã ch
 ## 10. Tài liệu cần cập nhật khi xong
 
 - [x] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
-- [x] Sơ đồ 3 tầng, sơ đồ luồng request: `development/docs/ARCHITECTURE_OPEN_CORE.md`.
+- [x] Sơ đồ 3 tầng, sơ đồ luồng request: `development/docs/submission/ARCHITECTURE_OPEN_CORE.md`.
 - [x] Swagger cho endpoint `workflow`/danh sách chờ mới.
 - [x] `deploy/.env.example`, `sso/README.md` nếu đổi cấu hình hostname/Keycloak qua gateway.

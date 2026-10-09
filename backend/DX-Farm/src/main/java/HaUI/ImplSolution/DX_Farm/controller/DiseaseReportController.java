@@ -63,8 +63,8 @@ public class DiseaseReportController {
 
   @PostMapping(value = "/disease-reports/precheck", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @PreAuthorize("hasRole('FARMER')")
-  @Operation(summary = "Check image quality without storing a report",
-      description = "Checks dimensions, brightness and sharpness only. Does not verify rice content. AI failures return 503.")
+  @Operation(summary = "Check image quality and rice content without storing a report",
+      description = "Checks dimensions, brightness, sharpness and rice classification. Does not diagnose disease. AI failures return 503.")
   public ApiResponse<ImagePrecheckResponse> precheck(@RequestPart("image") MultipartFile image) {
     return ApiResponse.success(diseaseReportService.precheck(image));
   }

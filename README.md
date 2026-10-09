@@ -10,7 +10,7 @@ Lịch sử thay đổi theo từng module ở [`CHANGELOG.md`](./CHANGELOG.md);
 ## Kiến trúc
 
 Ba tầng Open-Core.
-Sơ đồ đầy đủ và luồng request ở [`development/docs/ARCHITECTURE_OPEN_CORE.md`](./development/docs/ARCHITECTURE_OPEN_CORE.md).
+Sơ đồ đầy đủ và luồng request ở [`development/docs/submission/ARCHITECTURE_OPEN_CORE.md`](./development/docs/submission/ARCHITECTURE_OPEN_CORE.md).
 
 | Tầng | Nội dung |
 |---|---|
@@ -54,16 +54,16 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 | Nông dân tạo thửa và vụ (GPS, mã tự sinh), admin duyệt qua workflow | Có | Test workflow, E2E | Có |
 | Báo cáo sâu bệnh: kiểm tra chất lượng ảnh, idempotency, chụp lại | Có | Test tích hợp, E2E | Có |
 | Chẩn đoán AI, nhập triệu chứng, chẩn đoán lại, kỹ sư duyệt | Có | Test tích hợp, pytest | Có (chẩn đoán thủ công; AI khi có ảnh thật) |
-| Khai phun thuốc, xác nhận, khóa thu hoạch theo PHI | Có | Test đơn vị và tích hợp, E2E | Chưa: chưa có treatment rule được chuyên gia duyệt |
+| Khai phun thuốc, xác nhận, khóa thu hoạch theo PHI | Có | Test đơn vị và tích hợp, E2E | Có cho đạo ôn (rule được chuyên gia duyệt) |
 | Thu hoạch (sớm cần xác nhận), nhắc hạn, hộp thông báo | Có | Test đơn vị | Có |
-| Dashboard BI trên view đã duyệt | Có | Kiểm tay | Một phần: chart "Thửa đang cách ly" và "Tỷ lệ AI đúng/sai" cần rule và chẩn đoán AI |
+| Dashboard BI trên view đã duyệt | Có | Kiểm tay | Một phần: chart "Tỷ lệ AI đúng/sai" cần chẩn đoán AI bằng ảnh thật |
 | Thời tiết theo thửa (Open-Meteo, snapshot dự phòng) | Có | Chưa qua giao diện | Có |
 | Hỏi đáp tài liệu có trích nguồn | Có | Kiểm tay | Có (6 tài liệu bệnh lúa) |
 | Portal hiện trạng dịch vụ, lỗi hiển thị tiếng Việt | Có | Kiểm tay | Không áp dụng |
 
-Treatment rule và thuốc chưa có bản ghi nào được duyệt, nên `data.sql` không seed chúng.
-Chẩn đoán trên bệnh chưa có rule ở trạng thái chỉ xem xét (`review_required`), không có liều hay PHI.
-Khi rule được duyệt và thêm vào `data/structured/`, chạy lại `python3 data/scripts/generate_seed_sql.py` để mở luồng phun thuốc và khóa thu hoạch.
+`data.sql` seed thuốc `NEWTEC_300SC` và hai treatment rule đã được chuyên gia duyệt cho đạo ôn (`Rice___Blast`) và khô vằn (`Rice___Sheath_blight`).
+Chẩn đoán trên bệnh chưa có rule (ví dụ đốm nâu) ở trạng thái chỉ xem xét (`review_required`), không có liều hay PHI.
+Khi rule mới được duyệt và thêm vào `data/structured/`, chạy lại `python3 data/scripts/generate_seed_sql.py` để mở luồng phun thuốc và khóa thu hoạch cho bệnh đó.
 
 ## Cài đặt và chạy
 
@@ -148,6 +148,8 @@ Hai database trên cùng một Postgres:
 - `dx_farm_ai_vector_db`: `documents` và `document_chunks` cho RAG; AI dùng role chỉ đọc, job ingest dùng role ghi riêng.
 
 Seed nghiệp vụ nằm ở `backend/DX-Farm/src/main/resources/data.sql`, sinh từ `data/structured/*.json` bằng `data/scripts/generate_seed_sql.py`; chỉ record được duyệt (`eligible_for_seed=true`) mới được seed.
+Không sửa tay `data.sql`; khi thay đổi dữ liệu, cần commit đồng thời dữ liệu nguồn và file đã sinh.
+CI chạy `generate_seed_sql.py --check` cùng unit test của generator để phát hiện dữ liệu nguồn và `data.sql` bị lệch.
 Hạ tầng Postgres (role, database, extension) do các `*Seeder` trong `config`.
 
 ## Giấy phép và hồ sơ PoF
@@ -161,4 +163,4 @@ Hạ tầng Postgres (role, database, extension) do các `*Seeder` trong `config
 
 ## Tài liệu theo module
 
-[`mobile/README.md`](./mobile/README.md), [`ai/README.md`](./ai/README.md), [`sso/README.md`](./sso/README.md), [`bi/README.md`](./bi/README.md), [`minio/README.md`](./minio/README.md), [`chat/README.md`](./chat/README.md), [`portal/README.md`](./portal/README.md), [`data/README.md`](./data/README.md), [`development/docs/PARCEL_SEASON_CODES.md`](./development/docs/PARCEL_SEASON_CODES.md).
+[`mobile/README.md`](./mobile/README.md), [`ai/README.md`](./ai/README.md), [`sso/README.md`](./sso/README.md), [`bi/README.md`](./bi/README.md), [`minio/README.md`](./minio/README.md), [`chat/README.md`](./chat/README.md), [`portal/README.md`](./portal/README.md), [`data/README.md`](./data/README.md), [`development/docs/legacy_docs/PARCEL_SEASON_CODES.md`](./development/docs/legacy_docs/PARCEL_SEASON_CODES.md).

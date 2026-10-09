@@ -1,7 +1,7 @@
 # Kế hoạch chia phase
 
 Chia các vấn đề trong [`PROJECT_IMPROVEMENTS.md`](./PROJECT_IMPROVEMENTS.md) thành các phase theo mức độ nghiêm trọng và phụ thuộc kỹ thuật.
-Mỗi phase khi bắt đầu làm sẽ có một folder riêng sinh từ [`_template/`](./_template/) (xem [`README.md`](./README.md)).
+Mỗi phase khi bắt đầu làm sẽ có một folder riêng sinh từ [`_template/`](../_template/) (xem [`README.md`](./README.md)).
 Số ngày là ước lượng người-ngày, chưa tính thời gian chờ chuyên gia hay duyệt.
 
 ## 1. Tổng quan
@@ -48,7 +48,7 @@ Giữ bảng dưới làm phương án dự phòng — chỉ áp dụng lại n�
 | P2 | Household gắn `sub`, ma trận quyền, chặn farmer ở web và Superset | Onboarding qua Keycloak Admin API, xóa mềm |
 | P3 | Workflow dùng chung có lịch sử + `assignedTo` + danh sách chờ (tự làm, theo D2), cửa API bằng APISIX standalone (theo D3), MinIO (theo D4), sơ đồ 3 tầng | Flowable (đã loại theo D2) |
 | P4 | Duyệt thửa/vụ qua workflow, trang quản lý tối thiểu cho admin và engineer | GPS nâng cao, danh mục giống đầy đủ, định tuyến Mattermost |
-| P6 | Precheck ảnh cơ bản | Vòng phản hồi nhãn, nhập triệu chứng bằng text |
+| P6 | Precheck ảnh (chất lượng, nhận diện lúa) | Vòng phản hồi nhãn, nhập triệu chứng bằng text |
 | P8 | Toàn bộ | |
 | P5, P7, P10 | | Hoãn |
 
@@ -193,22 +193,22 @@ Tất cả D1-D10 đã chốt ngày 05/10/2026, xem `phase-0-chot-quyet-dinh-pha
 
 - Mức độ: Quan trọng. Nhóm B. Ước lượng 5-6 ngày. Mục tham chiếu: 5, 11.
 - Thay đổi tổng quát:
-  - Endpoint precheck ảnh qua backend, mobile kiểm kích thước và dung lượng, server kiểm độ sáng và độ nét.
+  - Endpoint precheck ảnh qua backend, mobile kiểm kích thước và dung lượng, server kiểm độ sáng, độ nét và nhận diện lúa bằng crop classifier.
   - Báo cáo có trạng thái "cần chụp lại" riêng, tách khỏi từ chối chẩn đoán, farmer chụp lại được liên kết với báo cáo cũ.
   - Nhập triệu chứng thay luồng nhập kết quả tay: truy xuất RAG xếp hạng bệnh trong danh mục, kỹ sư chốt.
   - Gọi AI ngoài transaction, cho phép chẩn đoán lại, lưu nhãn kỹ sư chốt làm dữ liệu huấn luyện.
-  - Giữ ngưỡng confidence 0.70; precheck chỉ kiểm chất lượng ảnh, không xác nhận ảnh là lúa.
+  - Giữ ngưỡng confidence 0.70 cho detector bệnh; crop classifier cho qua khi Rice ≥ 0.80 và chênh lớp khác ≥ 0.20, còn nhận nhầm ngô, cỏ, lúa mì.
 - Phạm vi: AI service, backend (trạng thái báo cáo, luồng chẩn đoán), mobile (màn chụp), web (màn kỹ sư).
 
 | Tình huống | Hiện tại | Sau phase |
 |---|---|---|
 | Ảnh mờ/nhỏ/tối/chói | Chỉ kiểm khi chẩn đoán | Precheck trước khi gửi và kiểm lại ở server |
-| Ảnh không phải lúa | Không có lớp lọc riêng | Vẫn là giới hạn của model; precheck chỉ kiểm chất lượng ảnh |
+| Ảnh không phải lúa | Không có lớp lọc riêng | Crop classifier chặn ở precheck và khi nộp; vẫn là giới hạn với cây gần giống lúa |
 | Kỹ sư cần ảnh khác | Không có đường | Yêu cầu chụp lại kèm lý do, farmer được báo |
 | AI nhận không ra | Nhập tay (lỗi trên DB sạch) | Nhập triệu chứng, hệ thống gợi ý trong danh mục |
 | Kỹ sư không đồng ý AI | Không chạy lại được | Chẩn đoán lại có lịch sử |
 
-- Trade-off: precheck thêm độ trễ và có thể từ chối ảnh dùng được. Giữ kỹ sư chốt bệnh và điều trị; sâu hại chưa có mô hình.
+- Trade-off: precheck và crop classifier thêm độ trễ, thêm model phải nạp, và có thể từ chối ảnh dùng được. Giữ kỹ sư chốt bệnh và điều trị; sâu hại chưa có mô hình.
 - Rủi ro: AI không hoạt động khiến server chưa thể nhận ảnh. Mobile giữ ảnh trong hàng đợi để gửi lại khi dịch vụ phục hồi.
 - Kết quả mong muốn: precheck, chụp lại, gợi ý bệnh qua triệu chứng và chẩn đoán lại hoạt động; nhãn kỹ sư được lưu có cấu trúc.
 

@@ -31,6 +31,7 @@ CV không chịu trách nhiệm:
   → API kiểm tra đây là ảnh và giới hạn dung lượng
   → PlantDiseaseService đọc ảnh RGB
   → kiểm tra kích thước tối thiểu, độ sắc nét và độ sáng
+  → crop classifier kiểm điều kiện Rice
   → YOLOv8n suy luận với kích thước ảnh 640
   → lọc bounding box theo confidence và IoU
   → chọn detection có confidence cao nhất
@@ -46,7 +47,7 @@ Ví dụ kết quả:
   "disease_name": "Bệnh đạo ôn trên lúa",
   "confidence": 0.932,
   "model_name": "YOLOv8n-RiceLeafBD",
-  "model_version": "3.0.0"
+  "model_version": "3.1.0"
 }
 ```
 
@@ -64,6 +65,9 @@ Ví dụ kết quả:
 | `app/services/plant_disease_service.py` | Service bên ngoài thư mục `cv/` điều phối kiểm tra ảnh, suy luận và định dạng kết quả trả về. |
 
 ## Đặc điểm vận hành
+
+Artifact hiện tại: YOLOv8n RiceLeafBD, phiên bản `3.1.0`, checkpoint huấn luyện 150 epochs ngày 2026-10-07.
+Checkpoint nằm tại `ai/weights/best.pt`, được quản lý bằng Git cùng mã nguồn.
 
 - Model được nạp một lần khi FastAPI khởi động, lưu tại `app.state.plant_model` và giải phóng khi service dừng.
 - Weights phải có sẵn tại `CV_WEIGHTS_PATH`; service không tự tải checkpoint. Khi chạy Compose, `best.pt` được bind-mount read-only.
@@ -84,7 +88,7 @@ Kết quả CV là tín hiệu chẩn đoán, không phải chỉ định canh t
 ## Kiểm tra chất lượng ảnh
 
 `POST /api/v1/disease/precheck` nhận multipart ảnh, yêu cầu `X-Service-Api-Key`; trả `passed`, `reasons`, `width`, `height`, `sharpness`, `brightness`.
-Precheck và predict dùng chung `inspect_image`; precheck không chạy YOLO.
+Precheck và predict dùng chung `assess_image`: chất lượng trước, crop classifier sau; precheck không chạy detector bệnh.
 Backend bỏ EXIF/GPS, kiểm lại khi nộp và chỉ lưu ảnh đạt chuẩn.
 Ảnh kém chất lượng trả `passed=false`; dữ liệu ảnh không hợp lệ/định dạng không hỗ trợ trả 400.
 
@@ -99,6 +103,21 @@ Backend bỏ EXIF/GPS, kiểm lại khi nộp và chỉ lưu ảnh đạt chuẩ
 Sau đó lấy trung vị phương sai Laplacian của 16 vùng, trừ phần nhiễu ước lượng bằng MAD của sai phân chéo 2×2.
 Phép tính dùng số thực để tránh clipping 8-bit.
 
-Precheck không xác nhận ảnh là lúa và chưa tách vùng lá; nền sắc hoặc chủ thể ngoài trung tâm có thể gây sai đánh giá.
+Kiểm chất lượng chưa tách vùng lá; nền sắc hoặc chủ thể ngoài trung tâm có thể gây sai đánh giá.
 Ngưỡng 20 cần đối chiếu camera thực địa.
 Workflow giữ ngưỡng confidence 0.70 và từ chối fallback confidence 0 trước khi gọi Backend facts/RAG.
+
+## Phân loại lúa trước chẩn đoán
+
+- `crop_classifier.py` dùng ONNX Runtime CPU 1.30.0; giữ Ultralytics 8.3.40 cho detector bệnh.
+- [Artifact YOLO26s-cls](https://huggingface.co/RaiyanKhaan/KrishokTech-Models/tree/c339988a6eceb5e22943ee27e4731a1a1dc9160a/01_crop_classifier): 10 lớp, `Rice=8`, `Others=6`; artifact từ revision này đặt tại `ai/weights/crop_classifier.onnx`, được quản lý bằng Git.
+- Checkout có sẵn hai artifact trong `ai/weights/`. Compose mount read-only. Startup và E2E không tải classifier; thiếu/rỗng/không nạp được model hoặc sai contract làm khởi động thất bại.
+- `CROP_CLASSIFIER_PATH` mặc định `ai/weights/crop_classifier.onnx`; Compose dùng `AI_CROP_CLASSIFIER_PATH`. Classifier kiểm file, task, mapping, shape và dtype; không đối chiếu SHA-256 nên model khác cùng contract có thể được nạp. SHA-256 của detector bệnh `best.pt` giữ theo nhánh cha.
+- RGB, sửa hướng EXIF, resize cạnh ngắn 224 bằng bilinear, center crop 224, NCHW float32 /255 theo preprocessing Ultralytics. Output đã Softmax; không chuẩn hóa lần nữa.
+- Cho qua khi top1 là Rice, P(Rice) ≥ 0.80 và chênh với lớp khác cao nhất ≥ 0.20. Confidence bệnh vẫn **0.70**, độc lập với classifier.
+- `passed` là kết quả chất lượng **và** classifier; các số đo sharpness/brightness chỉ đo chất lượng. Ảnh mới lưu `quality_passed` theo kết quả tổng hợp, không backfill ảnh cũ.
+- Precheck: HTTP 200 `passed=false` khi ảnh không đạt; predict/diagnose: 422 và không gọi detector/Backend facts/RAG/LLM. Ảnh hỏng: precheck/predict 400, diagnose 422. Classifier lỗi: 503; không báo ảnh không phải lúa.
+- Backend kiểm lại trước ghi báo cáo/MinIO, kể cả bỏ qua precheck. Offline/retake dùng cùng gate khi gửi; replay idempotency trả báo cáo đã tồn tại.
+- Hai model nạp một lần; health `model_loaded` chỉ true khi cả hai sẵn sàng. `model_name`/`model_version` vẫn mô tả detector bệnh.
+
+**Giới hạn đã biết:** model nhận nhầm ngô, lúa mì và cỏ thành Rice với điểm rất cao. Tích hợp theo yêu cầu để thử trong sản phẩm; chưa nghiệm thu khả năng chặn mọi ảnh ngoài miền. Tăng threshold không sửa được các ca Rice gần 100%. Các mẫu thử, đối chiếu và kịch bản thủ công ở [tóm tắt triển khai và kiểm chứng](../../../development/docs/pending_docs/CV_RICE_IMAGE_VALIDATION_SUMMARY.md).

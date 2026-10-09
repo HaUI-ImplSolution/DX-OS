@@ -3,7 +3,7 @@ import math
 from io import BytesIO
 
 import numpy as np
-from PIL import Image, ImageStat
+from PIL import Image, ImageOps, ImageStat
 
 from app.core.config import Settings, get_settings
 from app.cv.contract import class_contract, class_entry
@@ -91,7 +91,8 @@ def inspect_image(image_bytes: bytes) -> tuple[Image.Image, dict]:
             if width * height > 40_000_000:
                 raise ValueError("Image resolution is too large")
             original.load()
-            image = original.convert("RGB")
+            image = ImageOps.exif_transpose(original).convert("RGB")
+            width, height = image.size
     except (OSError, ValueError, Image.DecompressionBombError) as exc:
         raise ValueError("Invalid image data or unsupported resolution/format") from exc
     reasons = []
@@ -120,19 +121,30 @@ def inspect_image(image_bytes: bytes) -> tuple[Image.Image, dict]:
     }
 
 
-def precheck_image(image_bytes: bytes) -> dict:
-    return inspect_image(image_bytes)[1]
+def assess_image(image_bytes: bytes, crop_classifier) -> tuple[Image.Image, dict]:
+    image, quality = inspect_image(image_bytes)
+    if quality["passed"]:
+        reason = crop_classifier.rejection_reason(image)
+        if reason:
+            quality["passed"] = False
+            quality["reasons"].append(reason)
+    return image, quality
+
+
+def precheck_image(image_bytes: bytes, crop_classifier) -> dict:
+    return assess_image(image_bytes, crop_classifier)[1]
 
 
 class PlantDiseaseService:
-    def __init__(self, model, settings: Settings | None = None):
+    def __init__(self, model, crop_classifier, settings: Settings | None = None):
         self.model = model
+        self.crop_classifier = crop_classifier
         self.settings = settings or get_settings()
         self.contract = class_contract(self.settings.cv_class_contract_path)
         self.device = getattr(model, "_dxfarm_device", self.settings.cv_device)
 
     def predict(self, image_bytes: bytes) -> dict:
-        image, quality = inspect_image(image_bytes)
+        image, quality = assess_image(image_bytes, self.crop_classifier)
         if not quality["passed"]:
             raise CvTriageError(" ".join(quality["reasons"]))
 

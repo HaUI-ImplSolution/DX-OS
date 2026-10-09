@@ -7,7 +7,7 @@ Thời lượng: 10 phút demo và tối đa 5 phút trả lời.
 - Core gồm `core.identity`, `core.workflow`, `core.storage` và gateway APISIX; DX-Farm là package ứng dụng bên trên.
 - Đổi ứng dụng thì thêm package ứng dụng và loại yêu cầu mới cho workflow; Core không đổi.
 - Chưa có ứng dụng thứ hai chạy thật; bằng chứng là ranh giới package và sơ đồ.
-- Dẫn: `development/docs/ARCHITECTURE_OPEN_CORE.md`, `CONTRIBUTING.md` mục "Thêm một quy trình hoặc ứng dụng mới".
+- Dẫn: `development/docs/submission/ARCHITECTURE_OPEN_CORE.md`, `CONTRIBUTING.md` mục "Thêm một quy trình hoặc ứng dụng mới".
 
 ## 2. Nguồn dữ liệu hoặc API ngừng thì sao?
 
@@ -48,20 +48,21 @@ Hướng mở rộng:
 
 ## 6. AI dùng ở đâu, đánh giá, giới hạn?
 
-- CV: YOLOv8n (checkpoint `YOLOv8n-RiceLeafBD` 3.0.0, AGPL-3.0), dữ liệu RiceLeafDiseaseBD v3 (CC BY 4.0), 5 bệnh lá lúa.
+- CV: YOLOv8n (checkpoint `YOLOv8n-RiceLeafBD` 3.1.0, AGPL-3.0), dữ liệu RiceLeafDiseaseBD v3 (CC BY 4.0), 5 bệnh lá lúa. Trước detector có crop classifier YOLO26s-cls (ONNX) kiểm ảnh là lúa; hai trọng số nằm trong `ai/weights/`.
 - RAG: pgvector, embedding `paraphrase-multilingual-MiniLM-L12-v2` (Apache-2.0), 6 tài liệu IRRI và LSU.
 - LLM: Qwen2.5-1.5B (Apache-2.0) chỉ diễn đạt dữ kiện đã tra, không sinh số.
-- Giới hạn: ngưỡng chuyển cho người xem `0.70` chưa có căn cứ đo trên ảnh ngoài ruộng; precheck chỉ kiểm chất lượng ảnh, không xác nhận ảnh là lúa; sâu hại chưa có mô hình; chưa có báo cáo đánh giá độc lập (test set, chỉ số theo lớp).
+- Giới hạn: ngưỡng chuyển cho người xem `0.70` chưa có căn cứ đo trên ảnh ngoài ruộng; crop classifier còn nhận nhầm ngô, cỏ, lúa mì thành lúa, chưa nghiệm thu khả năng chặn mọi ảnh ngoài miền; sâu hại chưa có mô hình; chưa có báo cáo đánh giá độc lập (test set, chỉ số theo lớp).
 - Kỹ sư luôn là người chốt bệnh và điều trị; nhãn kỹ sư chốt được lưu có cấu trúc cho dữ liệu huấn luyện về sau.
 
-## 7. Vì sao không có thuốc và liều trong dữ liệu seed?
+## 7. Vì sao chỉ có hai rule thuốc trong dữ liệu seed?
 
 - Nguyên tắc dự án: số liệu thuốc, liều, PHI phải do chuyên gia duyệt, không tự bịa.
-- Rule và thuốc ứng viên nằm ở `data/structured/` với trạng thái chưa được phép seed; có quyết định duyệt thì chạy lại generator và luồng khóa PHI mở ra.
-- Khóa PHI đã được kiểm chứng bằng test đơn vị, test tích hợp và E2E (CI dùng một rule thử nghiệm riêng, không phải dữ liệu thật).
+- Rule đạo ôn và khô vằn với `NEWTEC_300SC` đã được chuyên gia dự án xác nhận ngày 2026-10-05 nên được seed.
+- Rule đốm nâu (Help 400SC) còn là ứng viên ở `data/structured/` với trạng thái chưa được phép seed; có quyết định duyệt thì chạy lại generator và luồng khóa PHI mở ra cho bệnh đó.
+- Khóa PHI đã được kiểm chứng bằng test đơn vị, test tích hợp và E2E (CI thêm một rule thử nghiệm riêng, không phải dữ liệu thật).
 
 ## 8. Giấy phép
 
 - Mã tự viết Apache-2.0, SPDX header ở file Java và Python.
-- AGPL-3.0: Ultralytics, PyMuPDF, MinIO, checkpoint CV; Mattermost Team Edition chạy nguyên bản, không đụng `server/enterprise/`.
+- AGPL-3.0: Ultralytics, PyMuPDF, MinIO, checkpoint CV (detector bệnh và crop classifier); Mattermost Team Edition chạy nguyên bản, không đụng `server/enterprise/`.
 - Bảng đầy đủ: `LICENSES.md`.

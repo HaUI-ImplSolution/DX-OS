@@ -4,7 +4,8 @@
 |---|---|
 | Trạng thái | Draft / Đang làm / Xong |
 | Mức độ | Nghiêm trọng / Quan trọng / Theo dõi |
-| Nhóm ưu tiên | A / B / C (theo mục 23 của `PROJECT_IMPROVEMENTS.md`) |
+| Nhóm ưu tiên | A / B / C (theo kế hoạch phase của đợt làm) |
+| Ứng dụng và module chính | core / app-farm / app-lab / host / dùng chung |
 | Ước lượng | {n ngày} |
 | Người phụ trách | {tên} |
 | Bắt đầu, dự kiến xong | {dd/mm/yyyy}, {dd/mm/yyyy} |
@@ -12,9 +13,9 @@
 
 ## 1. Tham chiếu
 
-| Mục `PROJECT_IMPROVEMENTS.md` | Nội dung | Mức độ | Phạm vi trong phase này |
+| Nguồn yêu cầu | Nội dung | Mức độ | Phạm vi trong phase này |
 |---|---|---|---|
-| mục {X} | {tên mục} | {mức} | Toàn bộ / Một phần ({phần nào}) |
+| mục {X} của `PROJECT_IMPROVEMENTS.md`, mục {Y} của đề thi HaUI, hoặc quyết định {Dz} | {tên mục} | {mức} | Toàn bộ / Một phần ({phần nào}) |
 
 _Gợi ý: ghi thêm đề mục nào của đề thi HaUI và hạng mục rubric nào phase này đáp ứng._
 
@@ -27,9 +28,13 @@ _Gợi ý: ghi thêm đề mục nào của đề thi HaUI và hạng mục rubr
 
 {3 đến 7 dòng: phase làm gì, theo thứ tự nào.}
 
-| Lớp | Có thay đổi | Ghi chú ngắn |
+| Module hoặc lớp | Có thay đổi | Ghi chú ngắn |
 |---|---|---|
-| Backend | Có / Không | |
+| `dx-core-api` (interface, DTO) | Có / Không | |
+| `dx-core` (cài đặt dùng chung) | Có / Không | |
+| `app-farm` | Có / Không | |
+| `app-lab` | Có / Không | |
+| `dx-host` (chạy, chọn app) | Có / Không | |
 | Frontend (web) | Có / Không | |
 | Mobile | Có / Không | |
 | AI | Có / Không | |
@@ -42,6 +47,7 @@ _Gợi ý: ghi thêm đề mục nào của đề thi HaUI và hạng mục rubr
 - Trong phạm vi: {danh sách}.
 - Ngoài phạm vi (không làm ở phase này): {danh sách, ghi phase nào làm}.
 - Giả định: {điều kiện đã coi là đúng}.
+- Ranh giới Core/App: {interface nào thêm hoặc đổi ở `dx-core-api`, app nào cài; phần dùng chung đặt ở `dx-core`, phần riêng ở app; core không phụ thuộc app}.
 
 ## 5. Ưu điểm và hạn chế
 
@@ -53,7 +59,8 @@ _Gợi ý: ghi thêm đề mục nào của đề thi HaUI và hạng mục rubr
 
 - Demo được: {kịch bản ngắn, ai làm gì, thấy gì}.
 - Sản phẩm bàn giao: {code, tài liệu, sơ đồ, dữ liệu mẫu}.
-- Tiêu chí đo được: {số hoặc điều kiện đúng/sai, ví dụ "farmer gọi API bằng token mobile vào web bị 403"}.
+- Tiêu chí đo được: {số hoặc điều kiện đúng/sai, ví dụ "tài khoản vai X gọi API Y bằng client Z bị 403"}.
+- Với mỗi app đang hỗ trợ: khởi động được sau khi đổi `DXOS_APP`, và core không phải sửa để nhận app đó.
 - Bằng chứng: {link log, ảnh, video, test report}.
 
 ## 7. Phụ thuộc và thứ tự
@@ -64,7 +71,7 @@ _Gợi ý: ghi thêm đề mục nào của đề thi HaUI và hạng mục rubr
 ## 8. Ảnh hưởng đến thi (PoF và sản phẩm)
 
 - Điểm rubric liên quan: {tiêu chí, số điểm}.
-- Dùng làm bằng chứng cho: báo cáo / slide / video / câu trả lời hội đồng số {n}.
+- Dùng làm bằng chứng cho: báo cáo / slide / video / câu hỏi định hướng số {n} ở mục 13 của đề.
 
 ## 9. Câu hỏi mở và quyết định cần chốt
 
@@ -76,4 +83,5 @@ _Gợi ý: ghi thêm đề mục nào của đề thi HaUI và hạng mục rubr
 
 - [ ] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
 - [ ] Swagger (springdoc) nếu đổi API.
-- [ ] Sơ đồ kiến trúc, `LICENSES.md`, `.env.example` nếu có đổi.
+- [ ] Tài liệu interface ở `dx-core-api` và hướng dẫn tạo app mới nếu đổi interface.
+- [ ] Sơ đồ kiến trúc, `LICENSES.md`, `.env.example` (kể cả `DXOS_APP`) nếu có đổi.

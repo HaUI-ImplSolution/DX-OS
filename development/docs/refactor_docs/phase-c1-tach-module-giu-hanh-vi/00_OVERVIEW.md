@@ -89,7 +89,9 @@ Hành vi nhìn từ client không đổi.
 
 ## 10. Tài liệu cần cập nhật khi xong
 
-- [ ] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
-- [ ] Lệnh build ở `README.md`, `CONTRIBUTING.md`, workflow `ci.yml`.
-- [ ] `ARCHITECTURE_OPEN_CORE.md` mục 2 (ranh giới ở mức biên dịch).
-- [ ] `.env.example` nếu thêm `DXOS_APP`.
+- [x] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
+- [x] Lệnh build ở `README.md`, `CONTRIBUTING.md`, workflow `ci.yml`.
+- [x] `ARCHITECTURE_OPEN_CORE.md` mục 2 (ranh giới ở mức biên dịch).
+- [x] `.env.example` nếu thêm `DXOS_APP`.
+
+Phần còn tồn đọng khi đóng phase ở mục 3 của `04_TRADEOFFS_RISKS.md`.

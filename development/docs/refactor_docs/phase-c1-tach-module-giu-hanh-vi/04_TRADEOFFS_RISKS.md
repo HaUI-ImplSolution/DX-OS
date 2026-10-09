@@ -32,6 +32,17 @@ Kết luận: TO1 đến TO5 áp dụng ngay; TO2 đã chốt ngày 09/10/2026 (
 - Bảng `notifications` còn ở migration Farm; C2 chuyển về core.
 - Hộp duyệt (`ApprovalRequestService`) tạm nằm ở Farm.
 
+## 3. Tồn đọng khi đóng phase
+
+| # | Nội dung | Xử lý ở |
+|---|---|---|
+| B2 | `backend/DX-Farm` còn trong `development/docs/legacy_docs/AI_EVENT_SCHEMA_README.md`, `development/docs/pending_docs/MATTERMOST_WEBHOOK_NOTIFICATION_PLAN.md` | WPC7-01-DOC-04 |
+| B3 | `backend/DX-Farm` còn trong `development/docs/improvement_docs/*` (kế hoạch cũ) và các mục lịch sử của `CHANGELOG.md` (dòng 609, 628, 633) | Giữ nguyên, là ghi chép lịch sử |
+| B4 | Người phụ trách và ngày bắt đầu/xong của phase để trống ở `00_OVERVIEW.md` | Người dùng điền |
+| B5 | `NotificationType`, `WorkflowStatus` còn là enum cố định; `notifications` còn ở migration Farm; `ApprovalRequestService` còn ở Farm; `SecurityConfig` còn biết endpoint công khai của Farm | C2 |
+| B6 | Đổi tên `Household` thành `Workspace` | C2 |
+| B7 | Branch `Khuong/refactor-c1-module-split` chưa merge vào `Khuong/main` | Người dùng quyết định |
+
 ## 4. Điều kiện dừng và rollback
 
 - Dừng và xem lại plan khi: OpenAPI lệch baseline ngoài thông tin đóng gói, hoặc test hiện có giảm số lượng.

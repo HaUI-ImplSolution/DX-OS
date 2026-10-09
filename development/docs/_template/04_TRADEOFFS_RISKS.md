@@ -29,4 +29,5 @@ Kết luận: {chấp nhận hay không, ai chốt, ngày chốt}.
 ## 5. Tác động ngoài phase
 
 - Lên các phase sau: {…}.
+- Lên core và các app khác (Farm, Lab): {…}.
 - Lên demo, tài liệu nộp bài, thời hạn: {…}.

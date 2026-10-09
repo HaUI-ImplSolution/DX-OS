@@ -5,13 +5,13 @@ Mỗi mục nêu nội dung cần viết và nơi lấy số liệu, bằng ch�
 | Mục báo cáo | Trang | Nội dung | Nguồn |
 |---|---|---|---|
 | 1. Bài toán và phạm vi | 1 | Agri-Carbon DX-OS, người dùng, luồng xương sống | `README.md` |
-| 2. Kiến trúc 3 tầng và H-P-D-I | 1-2 | Sơ đồ, ranh giới Core và ứng dụng, luồng request | `development/docs/ARCHITECTURE_OPEN_CORE.md` |
-| 3. Quy trình và an toàn | 1-2 | Workflow, ma trận quyền, poka-yoke (PHI, GPS, ngày thu hoạch), vòng đời vụ mùa | `PARCEL_SEASON_CODES.md`, phase 1-5 trong `improvement_docs/` |
+| 2. Kiến trúc 3 tầng và H-P-D-I | 1-2 | Sơ đồ, ranh giới Core và ứng dụng, luồng request | `development/docs/submission/ARCHITECTURE_OPEN_CORE.md` |
+| 3. Quy trình và an toàn | 1-2 | Workflow, ma trận quyền, poka-yoke (PHI, GPS, ngày thu hoạch), vòng đời vụ mùa | `legacy_docs/PARCEL_SEASON_CODES.md`, phase 1-5 trong `improvement_docs/` |
 | 4. Dữ liệu | 1 | PostgreSQL, view cho BI, MinIO, thời tiết và snapshot | `bi/README.md`, `CHANGELOG.md` |
 | 5. Trí tuệ nhân tạo | 1-2 | CV, RAG, LangGraph, LLM; ngưỡng, giới hạn, vai trò kỹ sư | `ai/README.md`, phase 6 |
 | 6. Kiểm thử và kiểm chứng | 1 | Test backend và AI, E2E trên stack sạch, số bước đạt | log workflow `E2E`, `deploy/demo/README.md` |
 | 7. Mã nguồn mở và giấy phép | 1 | Bảng license, SBOM, lockfile, SPDX, CONTRIBUTING, issue tracker | `LICENSES.md`, `sbom/` |
-| 8. Giới hạn và hướng phát triển | 0.5 | Chưa có rule thuốc được duyệt, điểm nghẽn mở rộng, mục để sau | `COUNCIL_QA.md`, `phase-10-de-sau/` |
+| 8. Giới hạn và hướng phát triển | 0.5 | Mới có rule thuốc được duyệt cho đạo ôn và khô vằn, điểm nghẽn mở rộng, mục để sau | `COUNCIL_QA.md`, `phase-10-de-sau/` |
 
 ## Slide (12)
 

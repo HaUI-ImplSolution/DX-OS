@@ -60,7 +60,7 @@ Script tạo thêm `demo.hogd2` và `demo.hogd3`; mật khẩu tạm in ra một
 - Hàng chờ có hai việc: thửa An Giang (admin) và chẩn đoán số 2 (kỹ sư).
 - `farmer1` có thông báo từ các lần duyệt thửa, vụ, chẩn đoán và yêu cầu chụp lại.
 - Superset có dữ liệu cho 4 thửa đã duyệt, 4 vụ và 1 chẩn đoán đã duyệt.
-  Hai chart "Thửa đang cách ly" và "Tỷ lệ AI đúng/sai" trống cho tới khi có rule được duyệt và chẩn đoán AI.
+  Chart "Tỷ lệ AI đúng/sai" trống cho tới khi có chẩn đoán AI; chart "Thửa đang cách ly" lấy dữ liệu từ bản khai phun theo rule đạo ôn.
 
 Script không tạo thuốc, treatment rule, tài liệu RAG hay danh mục giống; các dữ liệu này đến từ seed của Backend và job `rag-ingest` lúc dựng stack.
 
@@ -69,9 +69,9 @@ Chạy lại khi đã có dữ liệu demo thì không tạo thêm.
 **Ảnh.** Không có `--images`, script dùng ảnh tổng hợp: đủ cho các màn hình và kiểm tra chất lượng ảnh, không đủ cho chẩn đoán AI có ý nghĩa; chẩn đoán khi đó nhập thủ công (`Rice___Blast`, `manual-input-v1`).
 Có `--images DIR` (các file `.jpg` ảnh lá lúa thật), script gọi chẩn đoán AI cho báo cáo.
 
-**Treatment rule.** Script không tạo thuốc hay rule.
-Chưa có rule được duyệt cho bệnh đó thì chẩn đoán ở trạng thái chỉ xem xét, không có liều và PHI.
-Có rule được duyệt thì script ghi thêm bản khai phun thuốc và xác nhận, vụ vào trạng thái cách ly.
+**Treatment rule.** Thuốc và rule đến từ seed của Backend, script không tạo thêm.
+Bệnh có rule được duyệt (đạo ôn, khô vằn) thì script ghi thêm bản khai phun thuốc và xác nhận, vụ vào trạng thái cách ly.
+Bệnh chưa có rule thì chẩn đoán ở trạng thái chỉ xem xét, không có liều và PHI.
 
 ## Kiểm thử đầu-cuối
 

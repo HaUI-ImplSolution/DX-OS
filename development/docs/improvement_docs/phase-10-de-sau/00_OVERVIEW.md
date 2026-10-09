@@ -12,7 +12,7 @@
 
 Phase này không có `01_PLAN.md`/`02_CHECKLIST.md`/`03_TEST_PLAN.md` — đây là danh sách backlog, không phải kế hoạch thi công.
 Tạo WP/checklist/test case cho việc chưa quyết định làm là việc thừa, không có giá trị tham chiếu.
-Khi một mục dưới đây được quyết định đưa vào làm, tạo phase mới riêng từ `_template/`, không mở lại phase này.
+Khi một mục dưới đây được quyết định đưa vào làm, tạo phase mới riêng từ `development/docs/_template/`, không mở lại phase này.
 
 ## 1. Tham chiếu
 

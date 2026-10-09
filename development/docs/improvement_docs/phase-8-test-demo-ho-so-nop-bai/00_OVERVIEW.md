@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Code, tài liệu và kiểm thử T8-01 đến T8-05 đã đạt; còn hồ sơ nộp bài (báo cáo, slide, video, tag) và Q2 (chuyên gia duyệt treatment rule); Q1 đã chốt |
+| Trạng thái | Code, tài liệu và kiểm thử T8-01 đến T8-05 đã đạt; còn hồ sơ nộp bài (báo cáo, slide, video, tag); Q1, Q2 đã chốt (Q2: duyệt cho đạo ôn và khô vằn) |
 | Mức độ | Nghiêm trọng (hạn nộp) |
 | Nhóm ưu tiên | A |
 | Ước lượng | 5-6 ngày, chạy xuyên suốt |
@@ -73,7 +73,7 @@
 | # | Câu hỏi | Lựa chọn | Hạn chốt | Kết luận |
 |---|---|---|---|---|
 | Q1 | Thời điểm chuyển repo từ Private sang Public | Ngay khi rà xong lịch sử commit không còn secret / Chỉ chuyển sát ngày nộp để tránh lộ sớm | 05/10/2026 | Ngay khi rà xong lịch sử commit — tránh rủi ro quên/hết thời gian nếu để tới sát hạn, không có lợi ích thực sự khi trì hoãn sau khi đã sạch secret |
-| Q2 | Treatment rule mẫu có kịp được duyệt thật trước hạn không | Có, demo trọn luồng khóa PHI thật / Không, demo trung thực nhánh `review_required` | {ngày} | _(chưa chốt — phụ thuộc chuyên gia duyệt rule, không tự quyết được)_ |
+| Q2 | Treatment rule mẫu có kịp được duyệt thật trước hạn không | Có, demo trọn luồng khóa PHI thật / Không, demo trung thực nhánh `review_required` | 05/10/2026 | Có, một phần: chuyên gia dự án duyệt rule đạo ôn và khô vằn (`NEWTEC_300SC`) ngày 2026-10-05, đã seed; đốm nâu chưa duyệt, đi nhánh `review_required` |
 
 ## 10. Tài liệu cần cập nhật khi xong
 
@@ -89,9 +89,8 @@
 - Báo cáo kỹ thuật, slide, video và rehearsal; mới có kịch bản demo, bộ trả lời hội đồng và dàn ý ở `development/docs/submission/`.
 - Test tích hợp phạm vi dữ liệu giữa hai nông hộ và idempotency của thửa/vụ.
 - Ảnh lá lúa thật cho `seed_demo.py --images` và cho chẩn đoán AI trong demo.
-- Chart "Thửa đang cách ly" và "Tỷ lệ AI đúng/sai" trên Superset vẫn trống cho tới khi có rule được duyệt và chẩn đoán AI.
+- Chart "Tỷ lệ AI đúng/sai" trên Superset vẫn trống cho tới khi có chẩn đoán AI.
 
 **Chưa chốt**
 
-- Q2: treatment rule mẫu có kịp được chuyên gia duyệt trước hạn không.
 - Ngày hạn nộp thật.

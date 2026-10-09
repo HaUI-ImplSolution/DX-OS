@@ -1,7 +1,7 @@
 # Kế hoạch chia phase
 
 Chia các vấn đề trong [`PROJECT_IMPROVEMENTS.md`](./PROJECT_IMPROVEMENTS.md) thành các phase theo mức độ nghiêm trọng và phụ thuộc kỹ thuật.
-Mỗi phase khi bắt đầu làm sẽ có một folder riêng sinh từ [`_template/`](./_template/) (xem [`README.md`](./README.md)).
+Mỗi phase khi bắt đầu làm sẽ có một folder riêng sinh từ [`_template/`](../_template/) (xem [`README.md`](./README.md)).
 Số ngày là ước lượng người-ngày, chưa tính thời gian chờ chuyên gia hay duyệt.
 
 ## 1. Tổng quan

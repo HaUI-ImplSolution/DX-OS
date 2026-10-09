@@ -64,4 +64,4 @@ DX-Farm tách Core dùng chung (`core.identity`, `core.workflow`, `core.storage`
 3. Khai báo route mới trong `deploy/apisix/apisix.yaml` nếu cần giới hạn tốc độ.
 4. Thêm view `vw_*` và dataset Superset nếu cần báo cáo.
 
-Sơ đồ ở [`development/docs/ARCHITECTURE_OPEN_CORE.md`](./development/docs/ARCHITECTURE_OPEN_CORE.md).
+Sơ đồ ở [`development/docs/submission/ARCHITECTURE_OPEN_CORE.md`](./development/docs/submission/ARCHITECTURE_OPEN_CORE.md).

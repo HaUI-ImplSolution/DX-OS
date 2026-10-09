@@ -9,7 +9,7 @@ Kết quả đầu ra: mã sinh đúng quy chuẩn, không trùng khi đồng th
 
 **Spec và tài liệu**
 
-- [x] WP4-01-DOC-01 Tài liệu quy chuẩn mã thửa/mã vụ: `development/docs/PARCEL_SEASON_CODES.md`.
+- [x] WP4-01-DOC-01 Tài liệu quy chuẩn mã thửa/mã vụ: `development/docs/legacy_docs/PARCEL_SEASON_CODES.md`.
 - [x] WP4-01-DOC-02 Cập nhật Swagger cho `POST /api/v1/parcels`, `POST .../crop-seasons`.
 
 **Backend**

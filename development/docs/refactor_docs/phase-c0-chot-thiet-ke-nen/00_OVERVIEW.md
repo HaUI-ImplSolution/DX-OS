@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Đang làm (quyết định đã chốt; còn baseline) |
+| Trạng thái | Hoàn tất |
 | Mức độ | Nghiêm trọng |
 | Nhóm ưu tiên | A |
 | Ứng dụng và module chính | Dùng chung (chưa đụng code) |
@@ -89,4 +89,4 @@ Không đổi code.
 ## 10. Tài liệu cần cập nhật khi xong
 
 - [x] `README.md` của `refactor_docs/`: trạng thái quyết định RD8 đến RD12.
-- [ ] `MODULE_MAP.md`, `SPI_CATALOG.md` khớp quyết định.
+- [x] `MODULE_MAP.md`, `SPI_CATALOG.md` khớp quyết định.

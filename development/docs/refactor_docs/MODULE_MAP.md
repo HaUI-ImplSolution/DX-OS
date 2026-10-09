@@ -33,9 +33,9 @@ Chi tiết từng interface ở [`SPI_CATALOG.md`](./SPI_CATALOG.md).
 
 | Nhóm | Nguồn hiện tại | Ghi chú |
 |---|---|---|
-| Identity | `core/identity/*` (Household, HouseholdService, HouseholdController, KeycloakAdminClient), `CurrentUserService` | `Household` thành `Workspace` + `WorkspaceMember`; `isFarmer/isAdmin` thành kiểm tra theo vai |
-| Workflow | `core/workflow/*`, `ApprovalRequestService`, `ApprovalRequestController`, `PendingRequestLimiter` | Làm giàu hộp duyệt qua `CaseSummaryProvider`; giới hạn yêu cầu chờ lấy case type từ cấu hình app |
-| Storage | `core/storage/*` | Giữ nguyên |
+| Identity | `core/identity/*` (Household, HouseholdService, HouseholdController, KeycloakAdminClient), `KeycloakAdminException`, `CurrentUserService` | `Household` thành `Workspace` + `WorkspaceMember`; `isFarmer/isAdmin` thành kiểm tra theo vai |
+| Workflow | `core/workflow/*` (gồm `WorkflowActor`, `WorkflowController`), `ApprovalRequestService`, `ApprovalRequestController`, `PendingRequestLimiter` | Làm giàu hộp duyệt qua `CaseSummaryProvider`; giới hạn yêu cầu chờ lấy case type từ cấu hình app |
+| Storage | `core/storage/*` (gồm `StorageBucketInitializer`) | Giữ nguyên |
 | Notification | `NotificationService`, `Notification`, `NotificationRepository`, `NotificationController`, `NotificationResponse` | `NotificationType` từ enum thành mã chuỗi do app đăng ký |
 | Kênh chat | `MattermostWebhookClient` | Khóa kênh là chuỗi do app khai báo; lời nhắn do app viết |
 | AI gateway | Phần chung của `AiDiagnosisClient` (khóa dịch vụ, health, retrieve), `KnowledgeService`, `KnowledgeController` | `namespace` cho RAG |
@@ -48,8 +48,9 @@ Chi tiết từng interface ở [`SPI_CATALOG.md`](./SPI_CATALOG.md).
 
 | Nhóm | Nội dung |
 |---|---|
-| Model và repository | `Parcel`, `ParcelEditRequest`, `CropSeason`, `HarvestReschedule`, `DiseaseReport`, `Diagnosis`, `Disease`, `Pesticide`, `TreatmentRule`, `TreatmentApplication`, `DiseaseManagementPolicy`, `RiceVariety`, `TrainingLabel` và enum đi kèm |
-| Service | `ParcelService`, `CropSeasonService`, `DiseaseReportService`, `DiagnosisService`, `DiseaseService`, `PesticideService`, `RiceVarietyService`, `TreatmentRuleService`, `WeatherService`, `HarvestReminderService`, `HarvestReminderScheduler`, `GpsFixValidator`, `ParcelCodeGenerator`, `SeasonCalendar`, `InternalAiContextService`, ba handler duyệt, `ApprovalCaseTypes`, `MattermostMessageBuilder` |
+| Sự kiện | Năm event nghiệp vụ trong `event/` (`ParcelCreatedEvent`, `CropSeasonCreatedEvent`, `DiseaseReportCreatedEvent`, `DiagnosisPendingEvent`, `TreatmentReportedEvent`); `MattermostChannel` (ADMIN, ENGINEER) |
+| Model và repository | `Parcel`, `ParcelEditRequest`, `CropSeason`, `HarvestReschedule`, `DiseaseReport`, `Diagnosis`, `Disease`, `Pesticide`, `TreatmentRule`, `TreatmentApplication`, `DiseaseManagementPolicy`, `RiceVariety`, `TrainingLabel` và enum đi kèm (`ApprovalStatus`, `CropSeasonStatus`, `SeasonType`, `DiseaseReportStatus`, `TreatmentConfirmationStatus`) |
+| Service | `ParcelService`, `CropSeasonService`, `DiseaseReportService`, `DiagnosisService`, `DiseaseService`, `PesticideService`, `RiceVarietyService`, `TreatmentRuleService`, `WeatherService`, `HarvestReminderService`, `HarvestReminderScheduler`, `MattermostNotificationListener`, `GpsFixValidator`, `ParcelCodeGenerator`, `SeasonCalendar`, `InternalAiContextService`, ba handler duyệt, `ApprovalCaseTypes`, `MattermostMessageBuilder` |
 | AI riêng của Farm | Phần precheck, diagnose, symptoms của `AiDiagnosisClient`; `AiTriageException`; `FileStorageService` (xóa EXIF, thành `FileProcessor`) |
 | Controller | `ParcelController`, `CropSeasonController`, `DiseaseReportController`, `DiagnosisController`, `DiseaseController`, `PesticideController`, `RiceVarietyController`, `TreatmentApplicationController`, `TreatmentRuleController`, `InternalAiContextController` |
 | DTO | Khoảng 28 DTO nghiệp vụ (parcel, crop season, diagnosis, report, harvest, treatment, weather...) |

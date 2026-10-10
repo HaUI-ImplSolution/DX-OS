@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/workflow-cases")
 @Tag(name = "Workflow", description = "Pending work queue, assignees and case history")
-@PreAuthorize("hasAnyRole('ENGINEER','ADMIN')")
+@PreAuthorize("@currentUserService.isStaff()")
 public class WorkflowController {
 
   private final WorkflowService workflowService;
@@ -37,11 +37,11 @@ public class WorkflowController {
 
   @GetMapping
   @Operation(summary = "List workflow cases, oldest first",
-      description = "ENGINEER or ADMIN only. Filter by caseType (e.g. DIAGNOSIS_APPROVAL), status"
+      description = "Staff only. Filter by caseType (e.g. DIAGNOSIS_APPROVAL), status"
           + " and assignedTo (a user id, or `me`). size is capped at 100.")
   public ApiResponse<PageResponse<WorkflowCaseResponse>> list(
       @RequestParam(required = false) String caseType,
-      @RequestParam(required = false) WorkflowStatus status,
+      @RequestParam(required = false) String status,
       @RequestParam(required = false) String assignedTo, @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "20") int size, @AuthenticationPrincipal Jwt jwt) {
     String assignee = "me".equals(assignedTo) ? jwt.getSubject() : assignedTo;
@@ -51,7 +51,7 @@ public class WorkflowController {
 
   @PatchMapping("/{id}/assign")
   @Operation(summary = "Take a pending case (assignee = logged-in user)",
-      description = "ENGINEER or ADMIN only. 409 if the case is not pending, or is already"
+      description = "Staff only. 409 if the case is not pending, or is already"
           + " assigned to someone else (an ADMIN may take it over).")
   public ApiResponse<WorkflowCaseResponse> assign(@PathVariable Long id,
       @AuthenticationPrincipal Jwt jwt, Authentication authentication) {
@@ -85,7 +85,7 @@ public class WorkflowController {
 
   @GetMapping("/{id}/events")
   @Operation(summary = "Timeline of a case, oldest first",
-      description = "ENGINEER or ADMIN only. Events are never modified or removed.")
+      description = "Staff only. Events are never modified or removed.")
   public ApiResponse<List<WorkflowEventResponse>> events(@PathVariable Long id) {
     return ApiResponse.success(workflowService.events(id));
   }

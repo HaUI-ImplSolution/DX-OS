@@ -30,10 +30,10 @@ public class CropSeasonApprovalHandler implements WorkflowDecisionHandler {
   }
 
   @Override
-  public void onDecision(CaseView workflowCase, WorkflowStatus target, String reason) {
+  public void onDecision(CaseView workflowCase, String target, String reason) {
     CropSeason season = cropSeasonRepository.findById(workflowCase.entityId()).orElseThrow(
         () -> new ResourceNotFoundException("Crop season not found: " + workflowCase.entityId()));
-    if (target == WorkflowStatus.APPROVED) {
+    if (WorkflowStatus.APPROVED.equals(target)) {
       season.setApprovalStatus(ApprovalStatus.APPROVED);
       season.setRejectionReason(null);
     } else {
@@ -41,7 +41,7 @@ public class CropSeasonApprovalHandler implements WorkflowDecisionHandler {
       season.setRejectionReason(reason);
     }
     cropSeasonRepository.save(season);
-    boolean approved = target == WorkflowStatus.APPROVED;
+    boolean approved = WorkflowStatus.APPROVED.equals(target);
     String label = season.getCode() != null ? season.getCode() : "#" + season.getId();
     notificationService.notifyHousehold(season.getParcel().getHouseholdId(),
         approved ? NotificationType.CROP_SEASON_APPROVED : NotificationType.CROP_SEASON_REJECTED,

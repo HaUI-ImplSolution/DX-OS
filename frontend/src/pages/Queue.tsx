@@ -5,7 +5,7 @@ import Badge from "../components/Badge";
 import DecisionActions from "../components/DecisionActions";
 import Pagination from "../components/Pagination";
 import Section from "../components/Section";
-import { STATUS_LABEL, STATUS_TONE, formatDateTime } from "../labels";
+import { formatDateTime, statusLabel, statusTone } from "../labels";
 import type { ApprovalRequest, Page, Role } from "../types";
 
 interface QueueProps {
@@ -86,7 +86,7 @@ export default function Queue({ role, onError }: QueueProps) {
         <article key={request.caseId} className="queue-card">
           <div>
             <strong>{request.title}</strong>
-            <Badge tone={STATUS_TONE[request.status]}>{STATUS_LABEL[request.status]}</Badge>
+            <Badge tone={statusTone(request.status)}>{statusLabel(request.status)}</Badge>
           </div>
           <div className="cell-sub">
             {request.details.diseaseName ?? request.details.pesticide ?? "—"} · {request.farmerName ?? "—"} (hộ {request.householdCode ?? "—"}) ·{" "}

@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.core.workflow;
 
-import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -45,9 +42,9 @@ public class WorkflowCase {
   @Column(nullable = false)
   private Long entityId;
 
-  @Enumerated(EnumType.STRING)
+  // A status declared by the case type
   @Column(nullable = false)
-  private WorkflowStatus status;
+  private String status;
 
   // Token "sub" of whoever opened the case; null for cases rebuilt from older data
   private String createdBy;

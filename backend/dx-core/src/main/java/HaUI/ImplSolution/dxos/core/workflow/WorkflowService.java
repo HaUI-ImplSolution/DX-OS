@@ -8,11 +8,15 @@ import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowAction;
 import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowActor;
 import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowDecisionHandler;
 import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowEventResponse;
-import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowStatus;
+import HaUI.ImplSolution.dxos.core.api.workflow.CaseStatus;
+import HaUI.ImplSolution.dxos.core.api.workflow.CaseTransition;
+import HaUI.ImplSolution.dxos.core.api.workflow.CaseTypeDefinition;
 import HaUI.ImplSolution.dxos.core.api.dto.PageResponse;
+import HaUI.ImplSolution.dxos.core.api.exception.ActionNotAllowedException;
 import HaUI.ImplSolution.dxos.core.api.exception.InvalidStateException;
 import HaUI.ImplSolution.dxos.core.api.exception.ResourceNotFoundException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,8 +27,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-// Generic approval workflow: a case per entity plus an append-only event log. It knows nothing
-// about the entities it tracks, so every application reuses it as is.
+// Generic workflow: a case per entity plus an append-only event log. The statuses and steps of a
+// case come from the registered case type definition, and the service knows nothing about the
+// entities it tracks, so every application reuses it as is.
 @Service
 @Transactional(readOnly = true)
 public class WorkflowService implements WorkflowOperations {
@@ -33,12 +38,15 @@ public class WorkflowService implements WorkflowOperations {
 
   private final WorkflowCaseRepository caseRepository;
   private final WorkflowEventRepository eventRepository;
+  private final WorkflowDefinitions definitions;
   private final Map<String, WorkflowDecisionHandler> decisionHandlers = new HashMap<>();
 
   public WorkflowService(WorkflowCaseRepository caseRepository,
-      WorkflowEventRepository eventRepository, List<WorkflowDecisionHandler> handlers) {
+      WorkflowEventRepository eventRepository, WorkflowDefinitions definitions,
+      List<WorkflowDecisionHandler> handlers) {
     this.caseRepository = caseRepository;
     this.eventRepository = eventRepository;
+    this.definitions = definitions;
     handlers.forEach(handler -> decisionHandlers.put(handler.caseType(), handler));
   }
 
@@ -54,19 +62,19 @@ public class WorkflowService implements WorkflowOperations {
   @Transactional
   public CaseView createCase(String caseType, String entityType, Long entityId, WorkflowActor actor,
       Map<String, Object> metadata) {
+    String initial = definitions.require(caseType).initialStatus();
     WorkflowCase created =
         caseRepository.save(WorkflowCase.builder().caseType(caseType).entityType(entityType)
-            .entityId(entityId).status(WorkflowStatus.PENDING).createdBy(actor.userId()).build());
-    appendEvent(created, WorkflowAction.SUBMITTED, null, WorkflowStatus.PENDING, actor, null,
-        metadata);
+            .entityId(entityId).status(initial).createdBy(actor.userId()).build());
+    appendEvent(created, WorkflowAction.SUBMITTED, null, initial, actor, null, metadata);
     return toView(created);
   }
 
   // Moves the case of an entity to a new status and logs the step. Earlier events stay untouched.
   @Override
   @Transactional
-  public CaseView recordTransition(String caseType, String entityType, Long entityId,
-      WorkflowStatus target, WorkflowActor actor, String reason, Map<String, Object> metadata) {
+  public CaseView recordTransition(String caseType, String entityType, Long entityId, String target,
+      WorkflowActor actor, String reason, Map<String, Object> metadata) {
     WorkflowCase workflowCase =
         caseRepository.findByCaseTypeAndEntityTypeAndEntityId(caseType, entityType, entityId)
             .orElseThrow(() -> new ResourceNotFoundException(
@@ -74,13 +82,10 @@ public class WorkflowService implements WorkflowOperations {
     return toView(move(workflowCase, target, actor, reason, metadata));
   }
 
-  // Decides a pending case and hands the decision to the handler of its case type.
+  // Moves a case and hands the decision to the handler of its case type.
   @Override
   @Transactional
-  public CaseView decide(Long caseId, WorkflowStatus target, WorkflowActor actor, String reason) {
-    if (target != WorkflowStatus.APPROVED && target != WorkflowStatus.REJECTED) {
-      throw new IllegalArgumentException("A decision is APPROVED or REJECTED");
-    }
+  public CaseView decide(Long caseId, String target, WorkflowActor actor, String reason) {
     WorkflowCase workflowCase = findOrThrow(caseId);
     WorkflowDecisionHandler handler = decisionHandlers.get(workflowCase.getCaseType());
     if (handler == null) {
@@ -94,20 +99,25 @@ public class WorkflowService implements WorkflowOperations {
   }
 
   // Moves a case to a new status and logs the step. Earlier events stay untouched.
-  private WorkflowCase move(WorkflowCase workflowCase, WorkflowStatus target, WorkflowActor actor,
+  private WorkflowCase move(WorkflowCase workflowCase, String target, WorkflowActor actor,
       String reason, Map<String, Object> metadata) {
-    WorkflowStatus current = workflowCase.getStatus();
-    if (!current.allowedNext().contains(target)) {
-      throw new InvalidStateException("Workflow case %d cannot move from %s to %s"
-          .formatted(workflowCase.getId(), current, target));
+    CaseTypeDefinition definition = definitions.require(workflowCase.getCaseType());
+    String current = workflowCase.getStatus();
+    CaseTransition transition = definition.transition(current, target)
+        .orElseThrow(() -> new InvalidStateException("Workflow case %d cannot move from %s to %s"
+            .formatted(workflowCase.getId(), current, target)));
+    if (!transition.roles().isEmpty() && actor.roles() != null
+        && Collections.disjoint(transition.roles(), actor.roles())) {
+      throw new ActionNotAllowedException("Moving a %s case from %s to %s needs one of the roles %s"
+          .formatted(workflowCase.getCaseType(), current, target, transition.roles()));
     }
     workflowCase.setStatus(target);
-    if (target == WorkflowStatus.PENDING) {
+    if (target.equals(definition.initialStatus())) {
       workflowCase.setAssignedTo(null);
       workflowCase.setAssignedToName(null);
     }
     caseRepository.save(workflowCase);
-    appendEvent(workflowCase, actionFor(current, target), current, target, actor, reason, metadata);
+    appendEvent(workflowCase, transition.action(), current, target, actor, reason, metadata);
     return workflowCase;
   }
 
@@ -116,7 +126,9 @@ public class WorkflowService implements WorkflowOperations {
   @Transactional
   public CaseView assign(Long caseId, WorkflowActor actor, boolean override) {
     WorkflowCase workflowCase = findOrThrow(caseId);
-    if (workflowCase.getStatus() != WorkflowStatus.PENDING) {
+    boolean pending = definitions.require(workflowCase.getCaseType())
+        .status(workflowCase.getStatus()).map(CaseStatus::pending).orElse(false);
+    if (!pending) {
       throw new InvalidStateException("Only a pending case can be assigned: " + caseId);
     }
     String owner = workflowCase.getAssignedTo();
@@ -133,8 +145,9 @@ public class WorkflowService implements WorkflowOperations {
   }
 
   @Override
-  public PageResponse<CaseView> list(String caseType, WorkflowStatus status, String assignedTo,
-      int page, int size) {
+  public PageResponse<CaseView> list(String caseType, String status, String assignedTo, int page,
+      int size) {
+    requireKnownStatus(caseType, status);
     Specification<WorkflowCase> filter = Specification.unrestricted();
     if (caseType != null) {
       filter = filter.and((root, query, cb) -> cb.equal(root.get("caseType"), caseType));
@@ -153,6 +166,7 @@ public class WorkflowService implements WorkflowOperations {
   // Query for application layers that need filters the generic list does not offer.
   @Override
   public PageResponse<CaseView> search(CaseQuery query, int page, int size) {
+    requireKnownStatus(query.caseType(), query.status());
     Specification<WorkflowCase> filter = Specification.unrestricted();
     if (query.caseType() != null) {
       filter = filter.and((root, q, cb) -> cb.equal(root.get("caseType"), query.caseType()));
@@ -203,15 +217,17 @@ public class WorkflowService implements WorkflowOperations {
   // Number of cases a user opened that are still waiting for a decision.
   @Override
   public long countPending(String createdBy, Collection<String> caseTypes) {
-    return caseRepository.countByCreatedByAndStatusAndCaseTypeIn(createdBy, WorkflowStatus.PENDING,
-        caseTypes);
+    return caseTypes.stream()
+        .mapToLong(caseType -> caseRepository.countByCreatedByAndCaseTypeAndStatusIn(createdBy,
+            caseType, definitions.require(caseType).pendingStatuses()))
+        .sum();
   }
 
   @Override
   public boolean hasPending(String caseType, String entityType, Collection<Long> entityIds) {
     return !entityIds.isEmpty()
-        && caseRepository.existsByCaseTypeAndEntityTypeAndEntityIdInAndStatus(caseType, entityType,
-            entityIds, WorkflowStatus.PENDING);
+        && caseRepository.existsByCaseTypeAndEntityTypeAndEntityIdInAndStatusIn(caseType,
+            entityType, entityIds, definitions.require(caseType).pendingStatuses());
   }
 
   @Override
@@ -232,18 +248,24 @@ public class WorkflowService implements WorkflowOperations {
         .orElseThrow(() -> new ResourceNotFoundException("Workflow case not found: " + caseId));
   }
 
-  private void appendEvent(WorkflowCase workflowCase, WorkflowAction action, WorkflowStatus from,
-      WorkflowStatus to, WorkflowActor actor, String reason, Map<String, Object> metadata) {
+  // A status filter must name a status the case type (or, without one, any case type) declares.
+  private void requireKnownStatus(String caseType, String status) {
+    if (status == null) {
+      return;
+    }
+    boolean known = caseType != null
+        ? definitions.find(caseType).map(d -> d.status(status).isPresent()).orElse(false)
+        : definitions.knowsStatus(status);
+    if (!known) {
+      throw new IllegalArgumentException("Unknown status: " + status);
+    }
+  }
+
+  private void appendEvent(WorkflowCase workflowCase, String action, String from, String to,
+      WorkflowActor actor, String reason, Map<String, Object> metadata) {
     eventRepository.save(WorkflowEvent.builder().workflowCase(workflowCase).action(action)
         .fromStatus(from).toStatus(to).actorUserId(actor.userId())
         .actorDisplayName(actor.displayName()).reason(reason).metadata(metadata).build());
-  }
-
-  private static WorkflowAction actionFor(WorkflowStatus from, WorkflowStatus to) {
-    if (from == WorkflowStatus.REJECTED && to == WorkflowStatus.PENDING) {
-      return WorkflowAction.RESUBMITTED;
-    }
-    return WorkflowAction.valueOf(to.name());
   }
 
   static CaseView toView(WorkflowCase workflowCase) {
@@ -254,9 +276,8 @@ public class WorkflowService implements WorkflowOperations {
   }
 
   static WorkflowEventResponse toResponse(WorkflowEvent event) {
-    return new WorkflowEventResponse(event.getId(), event.getAction().name(),
-        event.getFromStatus() != null ? event.getFromStatus().name() : null,
-        event.getToStatus().name(), event.getActorUserId(), event.getActorDisplayName(),
-        event.getReason(), event.getOccurredAt(), event.getMetadata());
+    return new WorkflowEventResponse(event.getId(), event.getAction(), event.getFromStatus(),
+        event.getToStatus(), event.getActorUserId(), event.getActorDisplayName(), event.getReason(),
+        event.getOccurredAt(), event.getMetadata());
   }
 }

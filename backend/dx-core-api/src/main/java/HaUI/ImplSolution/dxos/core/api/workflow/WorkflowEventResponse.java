@@ -9,7 +9,7 @@ public record WorkflowEventResponse(
   // Primary key
   Long id,
 
-  // SUBMITTED, APPROVED, REJECTED, CANCELLED, RESUBMITTED or ASSIGNED
+  // Step name, e.g. SUBMITTED, APPROVED, REJECTED, CANCELLED, RESUBMITTED or ASSIGNED
   String action,
 
   // Null for the step that opens the case

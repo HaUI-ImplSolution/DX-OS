@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowActor;
+import HaUI.ImplSolution.dxos.core.workflow.WorkflowDefinitions;
+import HaUI.ImplSolution.dxos.farm.FarmWorkflowConfig;
 import HaUI.ImplSolution.dxos.core.workflow.WorkflowEvent;
 import HaUI.ImplSolution.dxos.core.workflow.WorkflowEventRepository;
 import HaUI.ImplSolution.dxos.core.workflow.WorkflowService;
@@ -29,7 +31,8 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @DataJpaTest(properties = "spring.flyway.enabled=false")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
-@Import({WorkflowService.class, PersistenceTestConfig.class})
+@Import({WorkflowService.class, WorkflowDefinitions.class, FarmWorkflowConfig.class,
+    PersistenceTestConfig.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class WorkflowServiceIntegrationTest {
 
@@ -88,7 +91,7 @@ class WorkflowServiceIntegrationTest {
         null);
 
     var events = eventRepository.findByWorkflowCaseIdOrderByOccurredAtAscIdAsc(created.id());
-    assertThat(events).extracting(event -> event.getAction().name()).containsExactly("SUBMITTED",
+    assertThat(events).extracting(event -> event.getAction()).containsExactly("SUBMITTED",
         "REJECTED", "RESUBMITTED", "APPROVED");
     assertThat(events.get(1).getReason()).isEqualTo("Blurry photo");
   }

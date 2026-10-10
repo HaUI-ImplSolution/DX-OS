@@ -30,10 +30,10 @@ public class ParcelApprovalHandler implements WorkflowDecisionHandler {
   }
 
   @Override
-  public void onDecision(CaseView workflowCase, WorkflowStatus target, String reason) {
+  public void onDecision(CaseView workflowCase, String target, String reason) {
     Parcel parcel = parcelRepository.findById(workflowCase.entityId()).orElseThrow(
         () -> new ResourceNotFoundException("Parcel not found: " + workflowCase.entityId()));
-    if (target == WorkflowStatus.APPROVED) {
+    if (WorkflowStatus.APPROVED.equals(target)) {
       parcel.setApprovalStatus(ApprovalStatus.APPROVED);
       parcel.setRejectionReason(null);
     } else {
@@ -41,7 +41,7 @@ public class ParcelApprovalHandler implements WorkflowDecisionHandler {
       parcel.setRejectionReason(reason);
     }
     parcelRepository.save(parcel);
-    boolean approved = target == WorkflowStatus.APPROVED;
+    boolean approved = WorkflowStatus.APPROVED.equals(target);
     notificationService.notifyHousehold(parcel.getHouseholdId(),
         approved ? NotificationType.PARCEL_APPROVED : NotificationType.PARCEL_REJECTED,
         approved ? "Thửa ruộng đã được duyệt" : "Thửa ruộng bị từ chối",

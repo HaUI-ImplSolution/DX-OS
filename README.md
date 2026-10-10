@@ -15,27 +15,27 @@
 Nền tảng **Open-Core** mã nguồn mở dùng chung cho chuyển đổi số, dự thi **OLP Phần mềm nguồn mở 2026** (khối thi DX-OS, VFOSSA).
 Một lõi headless cung cấp định danh và SSO, API Gateway, dữ liệu, workflow, thông báo và cổng AI; hai ứng dụng nghiệp vụ cắm vào lõi qua interface.
 
-## Mục lục
+## 📑 Mục lục
 
-1. [Giới thiệu](#giới-thiệu)
-2. [Điểm nổi bật](#điểm-nổi-bật)
-3. [Kiến trúc 3 tầng](#kiến-trúc-3-tầng)
-4. [Tính năng](#tính-năng)
-5. [Công nghệ và giấy phép](#công-nghệ-và-giấy-phép)
-6. [Cài đặt và chạy](#cài-đặt-và-chạy)
-   - [Yêu cầu hệ thống](#yêu-cầu-hệ-thống)
-   - [Các bước](#các-bước)
-   - [Cấu hình](#cấu-hình)
-7. [Chạy thử](#chạy-thử)
-   - [Tài khoản demo](#tài-khoản-demo)
-8. [Kiểm thử](#kiểm-thử)
-9. [Xử lý sự cố](#xử-lý-sự-cố)
-10. [Cấu trúc repository](#cấu-trúc-repository)
-11. [Đóng góp](#đóng-góp)
-12. [Liên hệ](#liên-hệ)
-13. [Giấy phép](#giấy-phép)
+1. [Giới thiệu](#-giới-thiệu)
+2. [Điểm nổi bật](#-điểm-nổi-bật)
+3. [Kiến trúc 3 tầng](#-kiến-trúc-3-tầng)
+4. [Tính năng](#-tính-năng)
+5. [Công nghệ và giấy phép](#-công-nghệ-và-giấy-phép)
+6. [Cài đặt và chạy](#-cài-đặt-và-chạy)
+   - [Yêu cầu hệ thống](#-yêu-cầu-hệ-thống)
+   - [Các bước](#-các-bước)
+   - [Cấu hình](#-cấu-hình)
+7. [Chạy thử](#-chạy-thử)
+   - [Tài khoản demo](#-tài-khoản-demo)
+8. [Kiểm thử](#-kiểm-thử)
+9. [Xử lý sự cố](#-xử-lý-sự-cố)
+10. [Cấu trúc repository](#-cấu-trúc-repository)
+11. [Đóng góp](#-đóng-góp)
+12. [Liên hệ](#-liên-hệ)
+13. [Giấy phép](#-giấy-phép)
 
-## Giới thiệu
+## 💡 Giới thiệu
 
 | Ứng dụng | Bài toán | Luồng chính |
 |---|---|---|
@@ -43,15 +43,15 @@ Một lõi headless cung cấp định danh và SSO, API Gateway, dữ liệu, w
 | **DX-Lab** | Trạm vận hành CNTT của khoa | Sinh viên báo sự cố có gợi ý, kỹ thuật viên xử lý theo SLA, mượn thiết bị và đặt phòng máy có duyệt, hỏi đáp quy chế, quản trị xem thống kê |
 
 
-## Điểm nổi bật
+## ✨ Điểm nổi bật
 
-- **Một lõi, nhiều ứng dụng:** DX-Lab và DX-Farm hoạt động cùng nhau mà không sửa dòng nào trong `dx-core`, `dx-core-api` hay `app-farm`.
+- **Một lõi, nhiều ứng dụng:** DX-Lab và DX-Farm hoạt động cùng nhau mà không sửa dòng nào trong `dx-core` hay `dx-core-api`.
 - **Poka-yoke ở Backend:** khóa thu hoạch theo PHI, kiểm GPS, đặt phòng chống trùng giờ ngay ở cơ sở dữ liệu, không chỉ ẩn nút trên giao diện.
 - **AI có kiểm soát:** thuốc, liều, PHI luôn lấy từ dữ liệu có cấu trúc được chuyên gia duyệt, LLM không sinh con số; kỹ sư là người chốt bệnh và điều trị.
 - **Tái lập một lệnh:** `./deploy/start.sh farm|lab` dựng cả stack và nạp dữ liệu demo; CI chạy E2E trên stack sạch cho cả hai ứng dụng.
 - **Nguồn mở minh bạch:** bảng dependency và giấy phép, SBOM CycloneDX, SPDX header, quét secret bằng gitleaks.
 
-## Kiến trúc 3 tầng
+## 🧱 Kiến trúc 3 tầng
 
 ```mermaid
 flowchart TB
@@ -86,7 +86,7 @@ flowchart TB
 Mọi client chỉ gọi gateway APISIX (cổng `9080`), gateway kiểm JWT Keycloak và Backend kiểm lần hai.
 Sơ đồ đầy đủ, luồng request và danh sách interface ở [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
-## Tính năng
+## 🧩 Tính năng
 
 **DX-Farm:** nông hộ và thửa có GPS, vụ mùa, báo cáo sâu bệnh kèm kiểm tra chất lượng ảnh, chẩn đoán AI và kỹ sư duyệt, khai phun thuốc, khóa thu hoạch theo PHI, nhắc hạn, hộp thông báo, thời tiết theo thửa, hỏi đáp tài liệu có trích nguồn, dashboard BI; mobile offline-first cho nông dân.
 
@@ -94,7 +94,7 @@ Sơ đồ đầy đủ, luồng request và danh sách interface ở [`ARCHITECT
 
 Mức hoàn thiện và độ phủ kiểm thử từng tính năng ở [`docs/TESTING.md`](./docs/TESTING.md); việc chưa làm ở [`docs/BACKLOG.md`](./docs/BACKLOG.md).
 
-## Công nghệ và giấy phép
+## 🧰 Công nghệ và giấy phép
 
 | Thành phần | Công nghệ | Giấy phép |
 |---|---|---|
@@ -109,9 +109,9 @@ Mức hoàn thiện và độ phủ kiểm thử từng tính năng ở [`docs/T
 Mã tự viết theo Apache-2.0 ([`LICENSE`](./LICENSE)), riêng `ai/` theo AGPL-3.0 vì import Ultralytics ([`ai/LICENSE`](./ai/LICENSE)).
 Bảng dependency và giấy phép đầy đủ ở [`LICENSES.md`](./LICENSES.md); SBOM CycloneDX ở [`sbom/`](./sbom/README.md).
 
-## Cài đặt và chạy
+## 🚀 Cài đặt và chạy
 
-### Yêu cầu hệ thống
+### 💻 Yêu cầu hệ thống
 
 | Hạng mục | Tối thiểu | Ghi chú |
 |---|---|---|
@@ -121,7 +121,7 @@ Bảng dependency và giấy phép đầy đủ ở [`LICENSES.md`](./LICENSES.m
 | Ổ đĩa | 40 GB trống | Image AI khoảng 3 GB, Ollama khoảng 9 GB cùng model Qwen2.5 |
 | Cổng | `9080`, `9081`, `9082`, `8065` | Đổi bằng biến `*_HOST_PORT` |
 
-### Các bước
+### 📝 Các bước
 
 ```bash
 git clone https://github.com/HaUI-ImplSolution/DX-OS.git && cd DX-OS
@@ -143,7 +143,7 @@ docker compose down                     # dừng, giữ dữ liệu trong deploy
 Chạy lại `start.sh` không tạo dữ liệu trùng.
 Dữ liệu demo nạp riêng xem chi tiết ở [`deploy/demo/README.md`](./deploy/demo/README.md).
 
-### Cấu hình
+### 🔧 Cấu hình
 
 Mọi cấu hình nằm ở `deploy/.env` (mẫu [`deploy/.env.example`](./deploy/.env.example)); thiếu biến nào, Compose dừng và báo tên biến đó.
 
@@ -158,7 +158,7 @@ Mọi cấu hình nằm ở `deploy/.env` (mẫu [`deploy/.env.example`](./deplo
 
 Cấu hình riêng của từng ứng dụng ở [`backend/app-farm/README.md`](./backend/app-farm/README.md) và [`backend/app-lab/README.md`](./backend/app-lab/README.md).
 
-## Chạy thử
+## 🌐 Chạy thử
 
 | Dịch vụ | Địa chỉ | Đăng nhập |
 |---|---|---|
@@ -170,7 +170,7 @@ Cấu hình riêng của từng ứng dụng ở [`backend/app-farm/README.md`](
 | Quản trị lưu ảnh (MinIO) | http://localhost:9082 | `MINIO_ACCESS_KEY` / `MINIO_SECRET_KEY` |
 | Chat (Mattermost) | http://localhost:8065 | `MATTERMOST_ADMIN_USERNAME` / `MATTERMOST_ADMIN_PASSWORD` |
 
-### Tài khoản demo
+### 🔑 Tài khoản demo
 
 `seed_demo.py` tạo các tài khoản này trong realm `dxos` chỉ để demo và chấm thi; đổi mật khẩu hoặc xóa trước khi dùng cho dữ liệu thật.
 
@@ -183,7 +183,7 @@ Cấu hình riêng của từng ứng dụng ở [`backend/app-farm/README.md`](
 | Lab | `lecturer1` | `lecturer123` | LECTURER |
 | Lab | `tech1`, `tech2` | `tech123` | TECHNICIAN |
 
-## Kiểm thử
+## 🧪 Kiểm thử
 
 - Backend: `./mvnw verify` trong `backend` (cần Docker cho Testcontainers); AI: `pytest` trong `ai/`.
 - Web và mobile: `npx tsc --noEmit`.
@@ -191,7 +191,7 @@ Cấu hình riêng của từng ứng dụng ở [`backend/app-farm/README.md`](
 
 Hướng dẫn kiểm thử đầy đủ ở [`docs/TESTING.md`](./docs/TESTING.md).
 
-## Xử lý sự cố
+## 🐛 Xử lý sự cố
 
 | Dấu hiệu | Cách xử lý |
 |---|---|
@@ -203,7 +203,7 @@ Hướng dẫn kiểm thử đầy đủ ở [`docs/TESTING.md`](./docs/TESTING.
 
 Bảng đầy đủ ở [`docs/TESTING.md`](./docs/TESTING.md) mục 8.
 
-## Cấu trúc repository
+## 📁 Cấu trúc repository
 
 | Thư mục | Nội dung |
 |---|---|
@@ -217,19 +217,19 @@ Bảng đầy đủ ở [`docs/TESTING.md`](./docs/TESTING.md) mục 8.
 
 Tài liệu gốc: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./CHANGELOG.md) · [`LICENSES.md`](./LICENSES.md).
 
-## Đóng góp
+## 🤝 Đóng góp
 
 - **Báo lỗi:** [tạo bug report](https://github.com/HaUI-ImplSolution/DX-OS/issues/new?template=bug_report.md).
 - **Đề xuất tính năng:** [tạo feature request](https://github.com/HaUI-ImplSolution/DX-OS/issues/new?template=feature_request.md).
 - **Gửi mã:** đọc [`CONTRIBUTING.md`](./CONTRIBUTING.md) (quy trình, quy ước, hướng dẫn thêm ứng dụng mới) và tuân theo [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
 
-## Liên hệ
+## 📞 Liên hệ
 
 | Vai trò | Tên | Liên hệ |
 |---|---|---|
 | Người duy trì | KhuongSpring | pkhuong535@gmail.com |
 
-## Giấy phép
+## 📜 Giấy phép
 
 Apache License 2.0, xem [`LICENSE`](./LICENSE); thư mục `ai/` theo AGPL-3.0, xem [`ai/LICENSE`](./ai/LICENSE) và [`LICENSES.md`](./LICENSES.md).
 

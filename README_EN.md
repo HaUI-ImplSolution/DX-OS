@@ -15,27 +15,27 @@
 An open-source, shared **Open-Core** platform for digital transformation, built for the **OLP Open Source Software 2026** contest (DX-OS track, VFOSSA).
 A headless core provides identity and SSO, an API gateway, data, workflow, notifications and an AI gateway; two business applications plug into it through interfaces.
 
-## Table of contents
+## 📑 Table of contents
 
-1. [Overview](#overview)
-2. [Highlights](#highlights)
-3. [Three-tier architecture](#three-tier-architecture)
-4. [Features](#features)
-5. [Technology and licenses](#technology-and-licenses)
-6. [Install and run](#install-and-run)
-   - [System requirements](#system-requirements)
-   - [Steps](#steps)
-   - [Configuration](#configuration)
-7. [Try it](#try-it)
-   - [Demo accounts](#demo-accounts)
-8. [Testing](#testing)
-9. [Troubleshooting](#troubleshooting)
-10. [Repository layout](#repository-layout)
-11. [Contributing](#contributing)
-12. [Contact](#contact)
-13. [License](#license)
+1. [Overview](#-overview)
+2. [Highlights](#-highlights)
+3. [Three-tier architecture](#-three-tier-architecture)
+4. [Features](#-features)
+5. [Technology and licenses](#-technology-and-licenses)
+6. [Install and run](#-install-and-run)
+   - [System requirements](#-system-requirements)
+   - [Steps](#-steps)
+   - [Configuration](#-configuration)
+7. [Try it](#-try-it)
+   - [Demo accounts](#-demo-accounts)
+8. [Testing](#-testing)
+9. [Troubleshooting](#-troubleshooting)
+10. [Repository layout](#-repository-layout)
+11. [Contributing](#-contributing)
+12. [Contact](#-contact)
+13. [License](#-license)
 
-## Overview
+## 💡 Overview
 
 | Application | Problem | Main flow |
 |---|---|---|
@@ -44,7 +44,7 @@ A headless core provides identity and SSO, an API gateway, data, workflow, notif
 
 Module and reference documents linked below are written in Vietnamese.
 
-## Highlights
+## ✨ Highlights
 
 - **One core, many applications:** DX-Lab and DX-Farm work together without changing a single line in `dx-core`, `dx-core-api` or `app-farm`.
 - **Poka-yoke in the Backend:** PHI harvest lock, GPS validation and database-level booking conflict prevention, not just hidden buttons in the UI.
@@ -52,7 +52,7 @@ Module and reference documents linked below are written in Vietnamese.
 - **One-command reproducibility:** `./deploy/start.sh farm|lab` builds the whole stack and loads demo data; CI runs E2E on a clean stack for both applications.
 - **Transparent open source:** dependency and license table, CycloneDX SBOMs, SPDX headers, secret scanning with gitleaks.
 
-## Three-tier architecture
+## 🧱 Three-tier architecture
 
 ```mermaid
 flowchart TB
@@ -87,7 +87,7 @@ flowchart TB
 Every client talks only to the APISIX gateway (port `9080`); the gateway validates the Keycloak JWT and the Backend validates it again.
 Full diagrams, request flows and the interface catalog are in [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
-## Features
+## 🧩 Features
 
 **DX-Farm:** households and GPS-tagged parcels, crop seasons, disease reports with image quality checks, AI diagnosis with engineer approval, spraying records, PHI harvest lock, reminders, notification inbox, per-parcel weather, document Q&A with citations, BI dashboard; offline-first mobile app for farmers.
 
@@ -95,7 +95,7 @@ Full diagrams, request flows and the interface catalog are in [`ARCHITECTURE.md`
 
 Feature maturity and test coverage are in [`docs/TESTING.md`](./docs/TESTING.md); outstanding work is in [`docs/BACKLOG.md`](./docs/BACKLOG.md).
 
-## Technology and licenses
+## 🧰 Technology and licenses
 
 | Component | Technology | License |
 |---|---|---|
@@ -110,9 +110,9 @@ Feature maturity and test coverage are in [`docs/TESTING.md`](./docs/TESTING.md)
 Original code is Apache-2.0 ([`LICENSE`](./LICENSE)); `ai/` is AGPL-3.0 because it imports Ultralytics ([`ai/LICENSE`](./ai/LICENSE)).
 Full dependency and license table: [`LICENSES.md`](./LICENSES.md); CycloneDX SBOMs: [`sbom/`](./sbom/README.md).
 
-## Install and run
+## 🚀 Install and run
 
-### System requirements
+### 💻 System requirements
 
 | Item | Minimum | Notes |
 |---|---|---|
@@ -122,7 +122,7 @@ Full dependency and license table: [`LICENSES.md`](./LICENSES.md); CycloneDX SBO
 | Disk | 40 GB free | AI image about 3 GB, Ollama about 9 GB plus the Qwen2.5 model |
 | Ports | `9080`, `9081`, `9082`, `8065` | Change with the `*_HOST_PORT` variables |
 
-### Steps
+### 📝 Steps
 
 ```bash
 git clone https://github.com/HaUI-ImplSolution/DX-OS.git && cd DX-OS
@@ -144,7 +144,7 @@ docker compose down                     # stop, keep data in deploy/data (run in
 Re-running `start.sh` does not create duplicate data.
 Load demo data separately; see [`deploy/demo/README.md`](./deploy/demo/README.md) for details.
 
-### Configuration
+### 🔧 Configuration
 
 All configuration lives in `deploy/.env` (template: [`deploy/.env.example`](./deploy/.env.example)); Compose stops and names any missing variable.
 
@@ -159,7 +159,7 @@ All configuration lives in `deploy/.env` (template: [`deploy/.env.example`](./de
 
 Per-application settings: [`backend/app-farm/README.md`](./backend/app-farm/README.md) and [`backend/app-lab/README.md`](./backend/app-lab/README.md).
 
-## Try it
+## 🌐 Try it
 
 | Service | Address | Login |
 |---|---|---|
@@ -171,7 +171,7 @@ Per-application settings: [`backend/app-farm/README.md`](./backend/app-farm/READ
 | Image storage admin (MinIO) | http://localhost:9082 | `MINIO_ACCESS_KEY` / `MINIO_SECRET_KEY` |
 | Chat (Mattermost) | http://localhost:8065 | `MATTERMOST_ADMIN_USERNAME` / `MATTERMOST_ADMIN_PASSWORD` |
 
-### Demo accounts
+### 🔑 Demo accounts
 
 `seed_demo.py` creates these accounts in the `dxos` realm for demo and judging only; change or delete the passwords before using real data.
 
@@ -184,7 +184,7 @@ Per-application settings: [`backend/app-farm/README.md`](./backend/app-farm/READ
 | Lab | `lecturer1` | `lecturer123` | LECTURER |
 | Lab | `tech1`, `tech2` | `tech123` | TECHNICIAN |
 
-## Testing
+## 🧪 Testing
 
 - Backend: `./mvnw verify` in `backend` (Docker required for Testcontainers); AI: `pytest` in `ai/`.
 - Web and mobile: `npx tsc --noEmit`.
@@ -192,7 +192,7 @@ Per-application settings: [`backend/app-farm/README.md`](./backend/app-farm/READ
 
 Full testing guide: [`docs/TESTING.md`](./docs/TESTING.md).
 
-## Troubleshooting
+## 🐛 Troubleshooting
 
 | Symptom | Fix |
 |---|---|
@@ -204,7 +204,7 @@ Full testing guide: [`docs/TESTING.md`](./docs/TESTING.md).
 
 Full table: [`docs/TESTING.md`](./docs/TESTING.md) section 8.
 
-## Repository layout
+## 📁 Repository layout
 
 | Folder | Contents |
 |---|---|
@@ -218,19 +218,19 @@ Full table: [`docs/TESTING.md`](./docs/TESTING.md) section 8.
 
 Top-level documents: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./CHANGELOG.md) · [`LICENSES.md`](./LICENSES.md).
 
-## Contributing
+## 🤝 Contributing
 
 - **Report a bug:** [open a bug report](https://github.com/HaUI-ImplSolution/DX-OS/issues/new?template=bug_report.md).
 - **Suggest a feature:** [open a feature request](https://github.com/HaUI-ImplSolution/DX-OS/issues/new?template=feature_request.md).
 - **Submit code:** read [`CONTRIBUTING.md`](./CONTRIBUTING.md) (workflow, conventions, how to add a new application) and follow [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
 
-## Contact
+## 📞 Contact
 
 | Role | Name | Contact |
 |---|---|---|
 | Maintainer | KhuongSpring | pkhuong535@gmail.com |
 
-## License
+## 📜 License
 
 Apache License 2.0, see [`LICENSE`](./LICENSE); the `ai/` directory is AGPL-3.0, see [`ai/LICENSE`](./ai/LICENSE) and [`LICENSES.md`](./LICENSES.md).
 

@@ -1,34 +1,81 @@
-# DX-OS: DX-Farm and DX-Lab
+# DX-OS: DX-Farm and DX-Lab (Open Source Software 2026 Contest Entry)
 
 [Tiếng Việt](./README.md) · **English**
 
-A shared **Open-Core** platform for digital transformation, built for the **OLP Open Source Software 2026** contest (DX-OS track, VFOSSA).
-A headless core provides identity and SSO, an API gateway, data, workflow, notifications and an AI gateway; two business applications plug into it through interfaces:
+[![E2E](https://github.com/HaUI-ImplSolution/DX---Farm/actions/workflows/e2e.yml/badge.svg?branch=main)](https://github.com/HaUI-ImplSolution/DX---Farm/actions/workflows/e2e.yml)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
+[![AI License](https://img.shields.io/badge/ai%2F-AGPL--3.0-orange.svg)](./ai/LICENSE)
+![Java](https://img.shields.io/badge/Java-21-007396?logo=openjdk&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-React%20%7C%20Expo-3178C6?logo=typescript&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 
-- **DX-Farm**: a digital operating system for a rice-growing agricultural cooperative in the Mekong Delta.
-  Farmers report plant disease with photos, AI diagnoses it, the system looks up deterministic treatment rules, engineers approve, spraying is recorded and harvest is locked for the pre-harvest interval (PHI).
-- **DX-Lab**: an IT operations desk for a university faculty.
-  Students report incidents with suggestions, technicians resolve them within SLA, equipment loans and computer-lab bookings are approved, regulations Q&A, and admins view statistics.
+**Team:** HaUI-ImplSolution · **School:** School of Information and Communication Technology, Hanoi University of Industry
 
-One application runs per start, selected by the `DXOS_APP` variable (`farm` or `lab`); the core stays unchanged when you switch.
+An open-source, shared **Open-Core** platform for digital transformation, built for the **OLP Open Source Software 2026** contest (DX-OS track, VFOSSA).
+A headless core provides identity and SSO, an API gateway, data, workflow, notifications and an AI gateway; two business applications plug into it through interfaces.
+
+## Table of contents
+
+1. [Overview](#overview)
+2. [Highlights](#highlights)
+3. [Three-tier architecture](#three-tier-architecture)
+4. [Features](#features)
+5. [Technology and licenses](#technology-and-licenses)
+6. [Install and run](#install-and-run)
+   - [System requirements](#system-requirements)
+   - [Steps](#steps)
+   - [Configuration](#configuration)
+7. [Try it](#try-it)
+   - [Demo accounts](#demo-accounts)
+8. [Testing](#testing)
+9. [Troubleshooting](#troubleshooting)
+10. [Repository layout](#repository-layout)
+11. [Contributing](#contributing)
+12. [Contact](#contact)
+13. [License](#license)
+
+## Overview
+
+| Application | Problem | Main flow |
+|---|---|---|
+| **DX-Farm** | A digital operating system for a rice-growing agricultural cooperative in the Mekong Delta | Farmers report plant disease with photos, AI diagnoses it, the system looks up deterministic treatment rules, engineers approve, spraying is recorded and harvest is locked for the pre-harvest interval (PHI) |
+| **DX-Lab** | An IT operations desk for a university faculty | Students report incidents with suggestions, technicians resolve them within SLA, equipment loans and computer-lab bookings are approved, regulations Q&A, admins view statistics |
 
 Module and reference documents linked below are written in Vietnamese.
+
+## Highlights
+
+- **One core, many applications:** DX-Lab and DX-Farm work together without changing a single line in `dx-core`, `dx-core-api` or `app-farm`.
+- **Poka-yoke in the Backend:** PHI harvest lock, GPS validation and database-level booking conflict prevention, not just hidden buttons in the UI.
+- **Controlled AI:** drugs, doses and PHI always come from expert-approved structured data and the LLM never generates numbers; the engineer decides the disease and treatment.
+- **One-command reproducibility:** `./deploy/start.sh farm|lab` builds the whole stack and loads demo data; CI runs E2E on a clean stack for both applications.
+- **Transparent open source:** dependency and license table, CycloneDX SBOMs, SPDX headers, secret scanning with gitleaks.
 
 ## Three-tier architecture
 
 ```mermaid
 flowchart TB
-  T3["<b>Tier 3: business applications</b><br/>DX-Farm · DX-Lab (selected by DXOS_APP)"]
-  T2["<b>Tier 2: H-P-D-I</b><br/>Human · Process · Data · Intelligence"]
-  T1["<b>Tier 1: headless Open-Core</b><br/>Keycloak SSO · APISIX Gateway · PostgreSQL, MinIO · Workflow · Notifications · AI gateway"]
+  subgraph T3["Tier 3: Business applications"]
+    direction LR
+    FARM["DX-Farm"] ~~~ LAB["DX-Lab"]
+  end
+  subgraph T2["Tier 2: H-P-D-I"]
+    direction LR
+    H["Human"] ~~~ P["Process"] ~~~ D["Data"] ~~~ I["Intelligence"]
+  end
+  subgraph T1["Tier 1: Headless Open-Core"]
+    direction LR
+    SSO["Keycloak<br/>SSO"] ~~~ GW["APISIX<br/>Gateway"] ~~~ DATA["PostgreSQL<br/>MinIO"] ~~~ WF["Workflow<br/>Notifications"] ~~~ AI["AI gateway"]
+  end
   T3 --> T2 --> T1
 ```
 
 | Tier | Components |
 |---|---|
-| 1. Open-Core (headless, no end-user UI) | Backend `dx-core`: `core.identity`, `core.workflow`, `core.notification`, `core.storage`, `core.ai`, `core.knowledge`, `core.security`; Keycloak (SSO), APISIX (gateway), PostgreSQL, MinIO |
+| 1. Open-Core (headless, no end-user UI) | Backend core, Keycloak (SSO), APISIX, PostgreSQL, MinIO |
 | 2. H-P-D-I | Web (React) and mobile (Expo) UIs on top of the core services, plus the AI Service, BI and chat |
-| 3. Applications | `backend/app-farm` and `backend/app-lab`, depending only on `dx-core-api`, so the compiler rejects any import of core internals |
+| 3. Applications | `App Farm` and `App Lab` |
 
 | Space | Farm | Lab |
 |---|---|---|
@@ -42,9 +89,9 @@ Full diagrams, request flows and the interface catalog are in [`ARCHITECTURE.md`
 
 ## Features
 
-**DX-Farm**: households and GPS-tagged parcels, crop seasons, disease reports with image quality checks, AI diagnosis with engineer approval, spraying records, PHI harvest lock, reminders, notification inbox, per-parcel weather, document Q&A with citations, BI dashboard; offline-first mobile app for farmers.
+**DX-Farm:** households and GPS-tagged parcels, crop seasons, disease reports with image quality checks, AI diagnosis with engineer approval, spraying records, PHI harvest lock, reminders, notification inbox, per-parcel weather, document Q&A with citations, BI dashboard; offline-first mobile app for farmers.
 
-**DX-Lab**: support tickets with SLA and internal comments, rule-based type and priority suggestions, equipment loans with repair log, room booking with database-level conflict prevention, regulations Q&A with source and license, statistics.
+**DX-Lab:** support tickets with SLA and internal comments, rule-based type and priority suggestions, equipment loans with repair log, room booking with database-level conflict prevention, regulations Q&A with source and license, statistics.
 
 Feature maturity and test coverage are in [`docs/TESTING.md`](./docs/TESTING.md); outstanding work is in [`docs/BACKLOG.md`](./docs/BACKLOG.md).
 
@@ -60,31 +107,42 @@ Feature maturity and test coverage are in [`docs/TESTING.md`](./docs/TESTING.md)
 | Data, BI | PostgreSQL, MinIO, Apache Superset | PostgreSQL License, AGPL-3.0, Apache-2.0 |
 | Chat | Mattermost Team Edition (unmodified) | AGPL-3.0 |
 
-- Original code: Apache-2.0 ([`LICENSE`](./LICENSE)) with SPDX headers in Java and Python files; `ai/` is AGPL-3.0 because it imports Ultralytics ([`ai/LICENSE`](./ai/LICENSE)).
-- Full dependency and license table: [`LICENSES.md`](./LICENSES.md); CycloneDX SBOMs: [`sbom/`](./sbom/README.md).
+Original code is Apache-2.0 ([`LICENSE`](./LICENSE)); `ai/` is AGPL-3.0 because it imports Ultralytics ([`ai/LICENSE`](./ai/LICENSE)).
+Full dependency and license table: [`LICENSES.md`](./LICENSES.md); CycloneDX SBOMs: [`sbom/`](./sbom/README.md).
 
 ## Install and run
 
-Requirements: Docker and Docker Compose.
-The first build downloads and builds a lot: the AI image is about 3 GB, Ollama about 9 GB plus the Qwen2.5 model, and MinIO is built from Go source (about 2 minutes).
+### System requirements
+
+| Item | Minimum | Notes |
+|---|---|---|
+| Software | Docker and Docker Compose v2, Git | No JDK, Node or Python needed to run (only `pillow` for the demo script) |
+| RAM | 8 GB | 16 GB recommended when building and running the LLM together |
+| CPU | 4 vCPU | No GPU needed |
+| Disk | 40 GB free | AI image about 3 GB, Ollama about 9 GB plus the Qwen2.5 model |
+| Ports | `9080`, `9081`, `9082`, `8065` | Change with the `*_HOST_PORT` variables |
+
+### Steps
 
 ```bash
+git clone https://github.com/HaUI-ImplSolution/DX---Farm.git && cd DX---Farm
 cp deploy/.env.example deploy/.env      # fill in every empty variable
 python3 -m pip install pillow           # for the demo data script
 ./deploy/start.sh                       # build, run the app in DXOS_APP, load demo data
 ```
 
+The first build downloads and builds a lot (MinIO is built from Go source, about 2 minutes).
 Switch applications with one command; the web app follows without a rebuild:
 
 ```bash
 ./deploy/start.sh farm                  # run Farm, load Farm demo data
 ./deploy/start.sh lab                   # switch to Lab, load Lab demo data (about 1 minute)
 ./deploy/start.sh farm --reset --yes    # wipe deploy/data and rebuild from scratch
-docker compose down                     # stop, keep data in deploy/data
+docker compose down                     # stop, keep data in deploy/data (run inside deploy/)
 ```
 
 Re-running `start.sh` does not create duplicate data.
-Load demo data separately with `python3 deploy/demo/seed_demo.py [--app farm|lab] [--images DIR]`; details in [`deploy/demo/README.md`](./deploy/demo/README.md).
+Load demo data separately; see [`deploy/demo/README.md`](./deploy/demo/README.md) for details.
 
 ### Configuration
 
@@ -95,9 +153,9 @@ All configuration lives in `deploy/.env` (template: [`deploy/.env.example`](./de
 | `DXOS_APP` | Application to run: `farm` (default) or `lab` |
 | `POSTGRES_*`, `MINIO_*`, `KEYCLOAK_*`, `SUPERSET_*`, `MATTERMOST_*` | Per-service accounts and passwords, empty in the template, never committed |
 | `BACKEND_TO_AI_API_KEY`, `AI_TO_BACKEND_API_KEY` | Service keys for each direction between Backend and AI |
+| `GATEWAY_PUBLIC_URL`, `SUPERSET_PUBLIC_URL` | Public addresses of the gateway and Superset; change from `localhost` when running on a server |
 | `MATTERMOST_WEBHOOK_URL_*` | Webhook for each chat channel; empty disables that channel's notifications |
 | `OLLAMA_MODEL` | LLM model, default `qwen2.5:1.5b` |
-| `*_HOST_PORT` | Ports published on the host (gateway `9080`, Superset `9081`, MinIO `9082`, Mattermost `8065`) |
 
 Per-application settings: [`backend/app-farm/README.md`](./backend/app-farm/README.md) and [`backend/app-lab/README.md`](./backend/app-lab/README.md).
 
@@ -126,16 +184,6 @@ Per-application settings: [`backend/app-farm/README.md`](./backend/app-farm/READ
 | Lab | `lecturer1` | `lecturer123` | LECTURER |
 | Lab | `tech1`, `tech2` | `tech123` | TECHNICIAN |
 
-The 10-minute demo script is in [`docs/SUBMISSION.md`](./docs/SUBMISSION.md); the mobile app is in [`mobile/README.md`](./mobile/README.md).
-
-## API
-
-Interactive docs at `/swagger-ui.html` (OpenAPI), generated from code.
-Every response is wrapped in `ApiResponse` (`success`, `message`, `data`, `timestamp`); errors add a stable `errorCode`.
-Shared endpoint groups: `workflow-cases`, `approval-requests`, `workspaces`, `notifications`, `knowledge/ask`, `system/status`, `app`.
-Farm adds `parcels`, `crop-seasons`, `disease-reports`, `households`; Lab adds `tickets`, `device-loans`, `devices`, `rooms`, `room-bookings`, `lab-stats/summary`.
-An application loads only its own controllers: routes of the other application return 404.
-
 ## Testing
 
 - Backend: `./mvnw verify` in `backend` (Docker required for Testcontainers); AI: `pytest` in `ai/`.
@@ -143,6 +191,18 @@ An application loads only its own controllers: routes of the other application r
 - End-to-end on a clean stack: `python3 deploy/demo/e2e.py [--app farm|lab]`; CI runs the `E2E` workflow for both applications.
 
 Full testing guide: [`docs/TESTING.md`](./docs/TESTING.md).
+
+## Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| Compose reports a missing variable | Fill in the named variable in `deploy/.env` |
+| Web or API returns 401 after a rebuild | Sign out and sign in again (the browser kept the token from the previous build) |
+| Web shows the old app after switching | Hard-reload and wait until `/api/v1/system/status` reports the right app |
+| Q&A returns nothing | Check `docker compose logs rag-ingest`; the knowledge ingest job has not finished or failed |
+| Out of disk space while building | `docker system df`, then prune unused images and cache |
+
+Full table: [`docs/TESTING.md`](./docs/TESTING.md) section 8.
 
 ## Repository layout
 
@@ -156,9 +216,22 @@ Full testing guide: [`docs/TESTING.md`](./docs/TESTING.md).
 | [`sso/`](./sso/README.md) · [`bi/`](./bi/README.md) · [`chat/`](./chat/README.md) · [`minio/`](./minio/README.md) · [`portal/`](./portal/README.md) | Keycloak, Superset, Mattermost, MinIO, portal |
 | [`docs/`](./docs) | Backlog, testing, submission pack, council Q&A, phase template (`_template/`), reference material |
 
-## Documentation and contributing
+Top-level documents: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./CHANGELOG.md) · [`LICENSES.md`](./LICENSES.md).
 
-[`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./CHANGELOG.md) · [`CONTRIBUTING.md`](./CONTRIBUTING.md) (includes how to add a new application) · [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md) · [`LICENSES.md`](./LICENSES.md) · [`docs/`](./docs).
+## Contributing
 
-Report bugs and suggestions through GitHub Issues (bug report and feature request templates).
-Official contest topic: https://vfossa.vn/tin-tuc/gioi-thieu-mo-hinh-dx-os-va-chu-de-cuoc-thi-phan-mem-nguon-mo-olp-2026-761.html · DX-OS textbook: https://opendigitransform.gitbook.io/dx-os
+- **Report a bug:** [open a bug report](https://github.com/HaUI-ImplSolution/DX---Farm/issues/new?template=bug_report.md).
+- **Suggest a feature:** [open a feature request](https://github.com/HaUI-ImplSolution/DX---Farm/issues/new?template=feature_request.md).
+- **Submit code:** read [`CONTRIBUTING.md`](./CONTRIBUTING.md) (workflow, conventions, how to add a new application) and follow [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
+
+## Contact
+
+| Role | Name | Contact |
+|---|---|---|
+| Maintainer | KhuongSpring | pkhuong535@gmail.com |
+
+## License
+
+Apache License 2.0, see [`LICENSE`](./LICENSE); the `ai/` directory is AGPL-3.0, see [`ai/LICENSE`](./ai/LICENSE) and [`LICENSES.md`](./LICENSES.md).
+
+References: [contest topic](https://vfossa.vn/tin-tuc/gioi-thieu-mo-hinh-dx-os-va-chu-de-cuoc-thi-phan-mem-nguon-mo-olp-2026-761.html) · [DX-OS textbook](https://opendigitransform.gitbook.io/dx-os)

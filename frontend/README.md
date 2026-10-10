@@ -40,7 +40,7 @@ Dev cần Backend và Keycloak chạy qua gateway (`./deploy/start.sh`); client 
 
 ## Cấu hình
 
-Biến `VITE_*` nhúng vào bundle lúc build:
+Biến `VITE_*` nhúng vào bundle lúc build; mẫu ở [`.env.example`](./.env.example) (sao chép thành `.env` khi chạy `npm run dev`):
 
 | Biến | Mặc định | Ý nghĩa |
 |---|---|---|

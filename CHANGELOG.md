@@ -1,7 +1,36 @@
 # Changelog
 
-Nhật ký thay đổi của DX-Farm, theo từng module.
-Định dạng dựa trên [Keep a Changelog](https://keepachangelog.com/).
+Nhật ký thay đổi của DX-OS (DX-Farm và DX-Lab).
+Định dạng theo [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/), đánh phiên bản theo [Semantic Versioning](https://semver.org/lang/vi/).
+
+Hai mục đầu liệt kê các bản phát hành; lịch sử chi tiết theo ngày của từng module (Backend, Dữ liệu, Mobile, AI Service, Frontend, Deploy, BI, Chat, Portal, SSO, Giấy phép và SBOM, Tài liệu) nằm ở các mục sau.
+
+## [Unreleased]
+
+### Đã thêm
+
+- `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), `README_EN.md` bản tiếng Anh, `NOTICE`, `frontend/.env.example`.
+- `docs/_template/`: mẫu tài liệu cho một đợt làm mới.
+
+### Đã thay đổi
+
+- README song ngữ có mục lục, yêu cầu hệ thống và xử lý sự cố; sơ đồ kiến trúc chia theo từng tầng.
+- Repository đổi tên thành `DX-OS`; liên kết trong tài liệu và danh mục nguồn tri thức Lab trỏ về tên mới.
+
+## [1.0.0] - 2026-10-13
+
+Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng dụng nghiệp vụ.
+
+### Đã thêm
+
+- **Open-Core (`dx-core-api`, `dx-core`, `dx-host`):** định danh theo workspace và thành viên, workflow dùng chung với loại case cấu hình được và lịch sử chỉ thêm, hộp duyệt, thông báo, lưu trữ S3 với link có hạn, cổng AI và tri thức theo namespace; chọn ứng dụng bằng `DXOS_APP`.
+- **DX-Farm (`app-farm`):** nông hộ, thửa có GPS, vụ mùa, báo cáo sâu bệnh kèm kiểm tra chất lượng ảnh, chẩn đoán AI và kỹ sư duyệt, khai phun thuốc, khóa thu hoạch theo PHI, nhắc hạn, thời tiết theo thửa, hỏi đáp tài liệu có trích nguồn.
+- **DX-Lab (`app-lab`):** yêu cầu hỗ trợ có SLA, gợi ý loại và ưu tiên bằng luật, mượn trả thiết bị, đặt phòng chống trùng giờ, hỏi đáp quy chế, thống kê.
+- **AI Service:** CV (YOLOv8n và crop classifier), RAG trên pgvector, LangGraph, LLM Qwen2.5 qua Ollama.
+- **Giao diện:** web React dùng chung cho hai ứng dụng, mobile Expo cho nông dân với hàng đợi offline, portal trạng thái dịch vụ.
+- **Hạ tầng:** Keycloak SSO (realm `dxos`), APISIX gateway, PostgreSQL, MinIO, Superset BI, Mattermost; dựng bằng Docker Compose với `deploy/start.sh farm|lab` và dữ liệu demo.
+- **Kiểm thử và CI:** E2E cho cả hai ứng dụng, CI backend, AI, web, mobile, hạ tầng.
+- **Nguồn mở:** `LICENSE` (Apache-2.0, riêng `ai/` AGPL-3.0), `LICENSES.md`, SBOM CycloneDX, `CONTRIBUTING.md`, mẫu issue và pull request, SPDX header.
 
 ## Backend (Spring Boot — `backend`)
 
@@ -956,7 +985,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
   Chi tiết: `sso/README.md`.
 - Mattermost là nền tảng chat tách biệt có chủ đích, không nối SSO — xem `chat/README.md`.
 
-## Rà soát license (PoF)
+## Giấy phép và SBOM
 
 ### 2026-10-13
 
@@ -1047,3 +1076,6 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 ### 2026-09-15
 
 - Cập nhật `README.md`, `ai/README.md`, `ai/app/graph/README.md` để mô tả trạng thái kiến trúc AI và Backend.
+
+[Unreleased]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/HaUI-ImplSolution/DX-OS/releases/tag/v1.0.0

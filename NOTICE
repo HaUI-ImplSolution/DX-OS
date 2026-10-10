@@ -1,0 +1,22 @@
+DX-OS (DX-Farm và DX-Lab)
+Copyright 2026 HaUI-ImplSolution
+
+Sản phẩm dự thi OLP Phần mềm nguồn mở 2026 (khối thi DX-OS, VFOSSA),
+phát triển tại Trường Công nghệ Thông tin và Truyền thông, Đại học Công nghiệp Hà Nội.
+
+Mã nguồn do nhóm tự viết được cấp phép theo Apache License 2.0 (xem LICENSE).
+Thư mục ai/ được phân phối theo GNU AGPL-3.0 (xem ai/LICENSE) vì import Ultralytics.
+
+Sản phẩm này sử dụng phần mềm và dữ liệu của bên thứ ba, giữ nguyên giấy phép gốc:
+
+- Spring Boot, Keycloak, Apache APISIX, Apache Superset, Flyway, Qwen2.5 (Apache-2.0).
+- PostgreSQL và pgvector (PostgreSQL License).
+- React, Expo, FastAPI, LangGraph, Ollama (MIT).
+- Ultralytics YOLO, MinIO, Mattermost Team Edition (AGPL-3.0), chạy nguyên bản, không sửa mã nguồn.
+
+Dữ liệu huấn luyện detector bệnh lá lúa: RiceLeafDiseaseBD Version 3
+(Mohammad Mehedi Hasan Munna và cộng sự, https://doi.org/10.17632/86s4jzj2m4.3),
+theo CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/).
+Thay đổi: chỉ dùng 5 lớp bệnh, resize ảnh về 640 và áp dụng augmentation.
+
+Danh sách thành phần đầy đủ ở LICENSES.md; SBOM CycloneDX ở thư mục sbom/.

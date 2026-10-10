@@ -34,7 +34,7 @@ Không thêm file test mới nếu người dùng không yêu cầu; các case d
 | TC4-18 | WPC4-05 | Poka-yoke | Đặt chồng giờ cùng phòng | Bị từ chối | Claude, stack `DXOS_APP=lab`, 12/10/2026 | Đạt |
 | TC4-19 | WPC4-05 | Đồng thời | Hai phiên đặt cùng phòng cùng giờ gần như đồng thời | Chỉ một lịch hiệu lực | Claude, stack `DXOS_APP=lab`, 12/10/2026 | Đạt: 4 yêu cầu song song chỉ 1 thành công; chèn trực tiếp vào DB bị ràng buộc `room_bookings_no_overlap` chặn |
 | TC4-20 | WPC4-05 | Poka-yoke | Đặt quá 4 giờ, quá khứ, vượt sức chứa, phòng bảo trì; STUDENT tự đặt | 422 hoặc 403 | Claude, stack `DXOS_APP=lab`, 12/10/2026 | Đạt |
-| TC4-21 | WPC4-06 | Happy path | Ticket được nhận, được trả lời, đã xử lý | Người liên quan có thông báo; kỹ thuật viên có tin ở kênh chat khi ticket mới | Claude, stack `DXOS_APP=lab`, 12/10/2026 | Đạt một phần: thông báo trong app đạt; kênh chat: payload được Mattermost nhận (HTTP 200) với webhook tạo mới, webhook cũ trong `.env` trả 400 nên chưa thấy bài đăng ở kênh kỹ thuật viên |
+| TC4-21 | WPC4-06 | Happy path | Ticket được nhận, được trả lời, đã xử lý | Người liên quan có thông báo; kỹ thuật viên có tin ở kênh chat khi ticket mới | Claude, stack `DXOS_APP=lab`, 12/10/2026 | Đạt: thông báo trong app đúng người; ticket mới hiện ở kênh Mattermost `ky-thuat-vien` với mã, tiêu đề, loại, ưu tiên, người gửi |
 | TC4-22 | WPC4-06 | Lịch | Ticket đạt 80% rồi quá hạn xử lý (rút ngắn SLA khi thử) | Cảnh báo, rồi đánh dấu quá hạn và báo cho người liên quan; không gửi trùng | Claude, stack `DXOS_APP=lab`, 12/10/2026 | Đạt (SLA NORMAL rút còn 6 phút, cron mỗi phút): cảnh báo ở 80% rồi quá hạn, mỗi loại đúng 1 thông báo sau thêm 2 lượt kiểm tra |
 | TC4-23 | WPC4-07 | Happy path | `suggest` với "máy chiếu phòng A2 không lên hình" | Loại thiết bị, từ khóa khớp, lý do; kèm đoạn tri thức liên quan | Claude, stack `DXOS_APP=lab`, 12/10/2026 | Đạt |
 | TC4-24 | WPC4-07 | Happy path | `suggest` với "cả phòng máy mất mạng giữa giờ thi" | Ưu tiên khẩn, lý do nêu rõ | Claude, stack `DXOS_APP=lab`, 12/10/2026 | Đạt |
@@ -51,9 +51,9 @@ Không thêm file test mới nếu người dùng không yêu cầu; các case d
 **Dùng chung (mọi app)**
 
 - [x] Đăng nhập SSO qua Keycloak (web, Superset) vẫn hoạt động (đăng nhập PKCE của các tài khoản qua client `dxos-web`).
-- [~] Người dùng chỉ thấy dữ liệu thuộc workspace của mình (Lab giới hạn theo người gửi; theo workspace chưa kiểm).
+- [x] Lab phân quyền theo vai và người gửi; loại workspace (`CLASS`, `DEPARTMENT`) chỉ khai báo, chưa dùng để lọc dữ liệu. Phạm vi xem theo người gửi đã kiểm ở TC4-07.
 - [x] Workflow ghi đủ lịch sử, người phụ trách và chặn ghi đè đồng thời (HTTP 409).
-- [ ] Link ảnh có hạn hoạt động, hết hạn thì bị từ chối (chưa kiểm với tệp đính kèm Lab).
+- [x] Link ảnh có hạn hoạt động, hết hạn thì bị từ chối (tệp đính kèm ticket: còn hạn 200, sửa chữ ký 403, sau 15 phút 403).
 - [x] Thông báo trong app và Mattermost vẫn gửi, lỗi webhook không làm hỏng nghiệp vụ (webhook 400 chỉ ghi cảnh báo).
 - [x] Gửi lại yêu cầu với `Idempotency-Key` cũ không tạo bản ghi trùng (tạo ticket).
 - [x] Dựng từ clone sạch bằng `reset.sh` lên đủ dịch vụ healthy với `DXOS_APP=lab` và `DXOS_APP=farm`.

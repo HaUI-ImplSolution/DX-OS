@@ -165,7 +165,7 @@ Kết quả đầu ra: thống kê đúng trên dữ liệu mẫu; vai chỉ đ�
 **Data, seed, migration**
 
 - [x] WPC4-08-DATA-01 [lab] View `vw_lab_*` không chứa nội dung tự do hay thông tin cá nhân không cần thiết.
-- [ ] WPC4-08-DATA-02 [lab] Tệp dữ liệu mẫu: 8 loại sự cố, 4 chính sách SLA, 6 phòng, khoảng 30 thiết bị, khoảng 25 ticket, khoảng 10 lịch đặt phòng, 6 phiếu mượn; ngày tương đối. Seed qua API ở C6.
+- [x] WPC4-08-DATA-02 [lab] Tệp dữ liệu mẫu `data/lab/sample_data.json`: 6 phòng, 32 thiết bị, 25 ticket, 10 lịch đặt phòng, 6 phiếu mượn, 6 tài khoản; ngày tương đối. 8 loại sự cố và 4 chính sách SLA nằm ở migration V3. Seed qua API ở C6.
 
 **Spec và tài liệu**
 

@@ -1,0 +1,1186 @@
+{
+ "note": "Synthetic data for the DX-Lab demo; no real people or assets. Dates are relative to the moment of loading. Ticket categories and SLA policies come from the V3 migration.",
+ "users": [
+  {
+   "username": "student1",
+   "role": "STUDENT"
+  },
+  {
+   "username": "student2",
+   "role": "STUDENT"
+  },
+  {
+   "username": "lecturer1",
+   "role": "LECTURER"
+  },
+  {
+   "username": "tech1",
+   "role": "TECHNICIAN"
+  },
+  {
+   "username": "tech2",
+   "role": "TECHNICIAN"
+  },
+  {
+   "username": "admin1",
+   "role": "ADMIN"
+  }
+ ],
+ "rooms": [
+  {
+   "code": "A101",
+   "building": "A1",
+   "name": "Phòng máy A101",
+   "roomType": "COMPUTER_LAB",
+   "capacity": 40
+  },
+  {
+   "code": "A102",
+   "building": "A1",
+   "name": "Phòng máy A102",
+   "roomType": "COMPUTER_LAB",
+   "capacity": 40
+  },
+  {
+   "code": "A201",
+   "building": "A2",
+   "name": "Phòng thực hành mạng A201",
+   "roomType": "COMPUTER_LAB",
+   "capacity": 30
+  },
+  {
+   "code": "B105",
+   "building": "B1",
+   "name": "Phòng học B105",
+   "roomType": "CLASSROOM",
+   "capacity": 60
+  },
+  {
+   "code": "B203",
+   "building": "B2",
+   "name": "Phòng học B203",
+   "roomType": "CLASSROOM",
+   "capacity": 80
+  },
+  {
+   "code": "C301",
+   "building": "C3",
+   "name": "Phòng họp khoa C301",
+   "roomType": "MEETING_ROOM",
+   "capacity": 20
+  }
+ ],
+ "devices": [
+  {
+   "assetCode": "LAB-PC-001",
+   "deviceType": "PC",
+   "model": "Dell OptiPlex 7010",
+   "serialNumber": "SN-LABPC001",
+   "roomCode": "A101",
+   "purchasedOn": "2023-08-15",
+   "warrantyUntil": "2026-08-15"
+  },
+  {
+   "assetCode": "LAB-PC-002",
+   "deviceType": "PC",
+   "model": "Dell OptiPlex 7010",
+   "serialNumber": "SN-LABPC002",
+   "roomCode": "A101",
+   "purchasedOn": "2023-08-15",
+   "warrantyUntil": "2026-08-15"
+  },
+  {
+   "assetCode": "LAB-PC-003",
+   "deviceType": "PC",
+   "model": "Dell OptiPlex 7010",
+   "serialNumber": "SN-LABPC003",
+   "roomCode": "A101",
+   "purchasedOn": "2023-08-15",
+   "warrantyUntil": "2026-08-15"
+  },
+  {
+   "assetCode": "LAB-PC-004",
+   "deviceType": "PC",
+   "model": "Dell OptiPlex 7010",
+   "serialNumber": "SN-LABPC004",
+   "roomCode": "A101",
+   "purchasedOn": "2023-08-15",
+   "warrantyUntil": "2026-08-15"
+  },
+  {
+   "assetCode": "LAB-PC-005",
+   "deviceType": "PC",
+   "model": "Dell OptiPlex 7010",
+   "serialNumber": "SN-LABPC005",
+   "roomCode": "A101",
+   "purchasedOn": "2023-08-15",
+   "warrantyUntil": "2026-08-15"
+  },
+  {
+   "assetCode": "LAB-PC-006",
+   "deviceType": "PC",
+   "model": "Dell OptiPlex 7010",
+   "serialNumber": "SN-LABPC006",
+   "roomCode": "A101",
+   "purchasedOn": "2023-08-15",
+   "warrantyUntil": "2026-08-15"
+  },
+  {
+   "assetCode": "LAB-PC-007",
+   "deviceType": "PC",
+   "model": "Dell OptiPlex 7010",
+   "serialNumber": "SN-LABPC007",
+   "roomCode": "A102",
+   "purchasedOn": "2023-08-15",
+   "warrantyUntil": "2026-08-15"
+  },
+  {
+   "assetCode": "LAB-PC-008",
+   "deviceType": "PC",
+   "model": "Dell OptiPlex 7010",
+   "serialNumber": "SN-LABPC008",
+   "roomCode": "A102",
+   "purchasedOn": "2023-08-15",
+   "warrantyUntil": "2026-08-15"
+  },
+  {
+   "assetCode": "LAB-PC-009",
+   "deviceType": "PC",
+   "model": "Dell OptiPlex 7010",
+   "serialNumber": "SN-LABPC009",
+   "roomCode": "A102",
+   "purchasedOn": "2023-08-15",
+   "warrantyUntil": "2026-08-15"
+  },
+  {
+   "assetCode": "LAB-PC-010",
+   "deviceType": "PC",
+   "model": "Dell OptiPlex 7010",
+   "serialNumber": "SN-LABPC010",
+   "roomCode": "A102",
+   "purchasedOn": "2023-08-15",
+   "warrantyUntil": "2026-08-15"
+  },
+  {
+   "assetCode": "LAB-PC-011",
+   "deviceType": "PC",
+   "model": "HP ProDesk 400 G7",
+   "serialNumber": "SN-LABPC011",
+   "roomCode": "A201",
+   "purchasedOn": "2022-03-10",
+   "warrantyUntil": "2025-03-10"
+  },
+  {
+   "assetCode": "LAB-PC-012",
+   "deviceType": "PC",
+   "model": "HP ProDesk 400 G7",
+   "serialNumber": "SN-LABPC012",
+   "roomCode": "A201",
+   "purchasedOn": "2022-03-10",
+   "warrantyUntil": "2025-03-10"
+  },
+  {
+   "assetCode": "LAB-LT-001",
+   "deviceType": "LAPTOP",
+   "model": "Lenovo ThinkPad E14",
+   "serialNumber": "SN-LABLT001",
+   "roomCode": null,
+   "purchasedOn": "2024-02-20",
+   "warrantyUntil": "2027-02-20"
+  },
+  {
+   "assetCode": "LAB-LT-002",
+   "deviceType": "LAPTOP",
+   "model": "Lenovo ThinkPad E14",
+   "serialNumber": "SN-LABLT002",
+   "roomCode": null,
+   "purchasedOn": "2024-02-20",
+   "warrantyUntil": "2027-02-20"
+  },
+  {
+   "assetCode": "LAB-LT-003",
+   "deviceType": "LAPTOP",
+   "model": "Lenovo ThinkPad E14",
+   "serialNumber": "SN-LABLT003",
+   "roomCode": null,
+   "purchasedOn": "2024-02-20",
+   "warrantyUntil": "2027-02-20"
+  },
+  {
+   "assetCode": "LAB-LT-004",
+   "deviceType": "LAPTOP",
+   "model": "Lenovo ThinkPad E14",
+   "serialNumber": "SN-LABLT004",
+   "roomCode": null,
+   "purchasedOn": "2024-02-20",
+   "warrantyUntil": "2027-02-20"
+  },
+  {
+   "assetCode": "LAB-LT-005",
+   "deviceType": "LAPTOP",
+   "model": "Lenovo ThinkPad E14",
+   "serialNumber": "SN-LABLT005",
+   "roomCode": null,
+   "purchasedOn": "2024-02-20",
+   "warrantyUntil": "2027-02-20"
+  },
+  {
+   "assetCode": "LAB-LT-006",
+   "deviceType": "LAPTOP",
+   "model": "Dell Latitude 3440",
+   "serialNumber": "SN-LABLT006",
+   "roomCode": null,
+   "purchasedOn": "2024-09-05",
+   "warrantyUntil": "2027-09-05"
+  },
+  {
+   "assetCode": "LAB-LT-007",
+   "deviceType": "LAPTOP",
+   "model": "Dell Latitude 3440",
+   "serialNumber": "SN-LABLT007",
+   "roomCode": null,
+   "purchasedOn": "2024-09-05",
+   "warrantyUntil": "2027-09-05"
+  },
+  {
+   "assetCode": "LAB-LT-008",
+   "deviceType": "LAPTOP",
+   "model": "Dell Latitude 3440",
+   "serialNumber": "SN-LABLT008",
+   "roomCode": null,
+   "purchasedOn": "2024-09-05",
+   "warrantyUntil": "2027-09-05"
+  },
+  {
+   "assetCode": "LAB-PJ-001",
+   "deviceType": "PROJECTOR",
+   "model": "Epson EB-X49",
+   "serialNumber": "SN-LABPJ001",
+   "roomCode": "A101",
+   "purchasedOn": "2022-06-01",
+   "warrantyUntil": "2025-06-01"
+  },
+  {
+   "assetCode": "LAB-PJ-002",
+   "deviceType": "PROJECTOR",
+   "model": "Epson EB-X49",
+   "serialNumber": "SN-LABPJ002",
+   "roomCode": "A102",
+   "purchasedOn": "2022-06-01",
+   "warrantyUntil": "2025-06-01"
+  },
+  {
+   "assetCode": "LAB-PJ-003",
+   "deviceType": "PROJECTOR",
+   "model": "Epson EB-X49",
+   "serialNumber": "SN-LABPJ003",
+   "roomCode": "A201",
+   "purchasedOn": "2022-06-01",
+   "warrantyUntil": "2025-06-01"
+  },
+  {
+   "assetCode": "LAB-PJ-004",
+   "deviceType": "PROJECTOR",
+   "model": "Epson EB-X49",
+   "serialNumber": "SN-LABPJ004",
+   "roomCode": "B105",
+   "purchasedOn": "2022-06-01",
+   "warrantyUntil": "2025-06-01"
+  },
+  {
+   "assetCode": "LAB-PJ-005",
+   "deviceType": "PROJECTOR",
+   "model": "Epson EB-X49",
+   "serialNumber": "SN-LABPJ005",
+   "roomCode": "B203",
+   "purchasedOn": "2022-06-01",
+   "warrantyUntil": "2025-06-01"
+  },
+  {
+   "assetCode": "LAB-PJ-006",
+   "deviceType": "PROJECTOR",
+   "model": "Epson EB-X49",
+   "serialNumber": "SN-LABPJ006",
+   "roomCode": "C301",
+   "purchasedOn": "2022-06-01",
+   "warrantyUntil": "2025-06-01"
+  },
+  {
+   "assetCode": "LAB-PR-001",
+   "deviceType": "PRINTER",
+   "model": "HP LaserJet Pro M404dn",
+   "serialNumber": "SN-LABPR001",
+   "roomCode": "C301",
+   "purchasedOn": "2023-01-12",
+   "warrantyUntil": "2026-01-12"
+  },
+  {
+   "assetCode": "LAB-PR-002",
+   "deviceType": "PRINTER",
+   "model": "Canon imageRUNNER 2425",
+   "serialNumber": "SN-LABPR002",
+   "roomCode": "A101",
+   "purchasedOn": "2022-11-30",
+   "warrantyUntil": "2025-11-30"
+  },
+  {
+   "assetCode": "LAB-SW-001",
+   "deviceType": "SWITCH",
+   "model": "Cisco Catalyst 2960",
+   "serialNumber": "SN-LABSW001",
+   "roomCode": "A201",
+   "purchasedOn": "2021-05-18",
+   "warrantyUntil": "2024-05-18"
+  },
+  {
+   "assetCode": "LAB-SW-002",
+   "deviceType": "SWITCH",
+   "model": "TP-Link TL-SG1024",
+   "serialNumber": "SN-LABSW002",
+   "roomCode": "A101",
+   "purchasedOn": "2023-04-02",
+   "warrantyUntil": "2026-04-02"
+  },
+  {
+   "assetCode": "LAB-AP-001",
+   "deviceType": "ACCESS_POINT",
+   "model": "Ubiquiti UniFi U6",
+   "serialNumber": "SN-LABAP001",
+   "roomCode": "B105",
+   "purchasedOn": "2024-01-15",
+   "warrantyUntil": "2027-01-15"
+  },
+  {
+   "assetCode": "LAB-WC-001",
+   "deviceType": "WEBCAM",
+   "model": "Logitech C920",
+   "serialNumber": "SN-LABWC001",
+   "roomCode": null,
+   "purchasedOn": "2024-03-03",
+   "warrantyUntil": "2026-03-03"
+  }
+ ],
+ "tickets": [
+  {
+   "requester": "student1",
+   "daysAgo": 58,
+   "categoryCode": "NETWORK",
+   "priority": null,
+   "roomCode": "A101",
+   "deviceAssetCode": null,
+   "title": "Wi-Fi phòng A101 chập chờn",
+   "description": "Wi-Fi ở phòng A101 hay rớt kết nối khi đang làm bài thực hành.",
+   "steps": [
+    {
+     "action": "assign",
+     "actor": "tech1",
+     "assignee": "tech1"
+    },
+    {
+     "action": "start",
+     "actor": "tech1"
+    },
+    {
+     "action": "comment",
+     "actor": "tech1",
+     "body": "Đã kiểm tra, access point bị quá tải.",
+     "internal": false
+    },
+    {
+     "action": "resolve",
+     "actor": "tech1",
+     "resolutionNote": "Chuyển một nửa máy sang AP khác.",
+     "rootCause": "Quá nhiều thiết bị cùng kết nối vào một access point."
+    },
+    {
+     "action": "confirm",
+     "actor": "student1",
+     "rating": 5,
+     "comment": "Mạng ổn định hơn rồi."
+    }
+   ]
+  },
+  {
+   "requester": "lecturer1",
+   "daysAgo": 52,
+   "categoryCode": "PROJECTOR",
+   "priority": null,
+   "roomCode": "B105",
+   "deviceAssetCode": "LAB-PJ-004",
+   "title": "Máy chiếu B105 không lên hình",
+   "description": "Cắm HDMI nhưng máy chiếu báo no signal.",
+   "steps": [
+    {
+     "action": "assign",
+     "actor": "tech2",
+     "assignee": "tech2"
+    },
+    {
+     "action": "start",
+     "actor": "tech2"
+    },
+    {
+     "action": "resolve",
+     "actor": "tech2",
+     "resolutionNote": "Thay cáp HDMI mới.",
+     "rootCause": "Cáp HDMI bị đứt ngầm."
+    },
+    {
+     "action": "confirm",
+     "actor": "lecturer1",
+     "rating": 4,
+     "comment": null
+    }
+   ]
+  },
+  {
+   "requester": "student2",
+   "daysAgo": 47,
+   "categoryCode": "ACCOUNT",
+   "priority": null,
+   "roomCode": null,
+   "deviceAssetCode": null,
+   "title": "Quên mật khẩu email trường",
+   "description": "Em không đăng nhập được email trường, cần đặt lại mật khẩu.",
+   "steps": [
+    {
+     "action": "assign",
+     "actor": "tech1",
+     "assignee": "tech1"
+    },
+    {
+     "action": "start",
+     "actor": "tech1"
+    },
+    {
+     "action": "resolve",
+     "actor": "tech1",
+     "resolutionNote": "Đặt lại mật khẩu và gửi hướng dẫn.",
+     "rootCause": "Người dùng quên mật khẩu."
+    },
+    {
+     "action": "confirm",
+     "actor": "student2",
+     "rating": 5,
+     "comment": null
+    }
+   ]
+  },
+  {
+   "requester": "student1",
+   "daysAgo": 40,
+   "categoryCode": "COMPUTER",
+   "priority": null,
+   "roomCode": "A102",
+   "deviceAssetCode": "LAB-PC-008",
+   "title": "Máy A102-08 bị treo liên tục",
+   "description": "Máy treo khi mở Visual Studio, phải khởi động lại nhiều lần.",
+   "steps": [
+    {
+     "action": "assign",
+     "actor": "tech2",
+     "assignee": "tech2"
+    },
+    {
+     "action": "start",
+     "actor": "tech2"
+    },
+    {
+     "action": "wait",
+     "actor": "tech2",
+     "message": "Em cho biết máy treo từ khi nào?"
+    },
+    {
+     "action": "comment",
+     "actor": "student1",
+     "body": "Từ tuần trước ạ.",
+     "internal": false
+    },
+    {
+     "action": "resolve",
+     "actor": "tech2",
+     "resolutionNote": "Nâng RAM lên 16GB.",
+     "rootCause": "RAM 8GB không đủ cho IDE."
+    },
+    {
+     "action": "reopen",
+     "actor": "student1",
+     "reason": "Máy vẫn treo khi mở dự án lớn."
+    },
+    {
+     "action": "start",
+     "actor": "tech2"
+    },
+    {
+     "action": "resolve",
+     "actor": "tech2",
+     "resolutionNote": "Cài lại hệ điều hành.",
+     "rootCause": "Hệ điều hành lỗi sau khi nâng cấp RAM."
+    },
+    {
+     "action": "confirm",
+     "actor": "student1",
+     "rating": 4,
+     "comment": null
+    }
+   ]
+  },
+  {
+   "requester": "lecturer1",
+   "daysAgo": 33,
+   "categoryCode": "EXAM_SUPPORT",
+   "priority": "HIGH",
+   "roomCode": "A101",
+   "deviceAssetCode": null,
+   "title": "Cần cài lại phần mềm trước ca thi",
+   "description": "Ca thi thực hành sáng mai cần cài Python 3.12 và PyCharm.",
+   "steps": [
+    {
+     "action": "assign",
+     "actor": "admin1",
+     "assignee": "tech1"
+    },
+    {
+     "action": "start",
+     "actor": "tech1"
+    },
+    {
+     "action": "resolve",
+     "actor": "tech1",
+     "resolutionNote": "Cài đặt hàng loạt bằng image.",
+     "rootCause": "Image phòng máy chưa cập nhật."
+    },
+    {
+     "action": "confirm",
+     "actor": "lecturer1",
+     "rating": 5,
+     "comment": "Kịp ca thi."
+    }
+   ]
+  },
+  {
+   "requester": "student2",
+   "daysAgo": 27,
+   "categoryCode": "PRINTER",
+   "priority": null,
+   "roomCode": "C301",
+   "deviceAssetCode": "LAB-PR-001",
+   "title": "Máy in tầng 3 kẹt giấy",
+   "description": "Máy in hiện lỗi kẹt giấy và không in được.",
+   "steps": [
+    {
+     "action": "assign",
+     "actor": "tech1",
+     "assignee": "tech1"
+    },
+    {
+     "action": "start",
+     "actor": "tech1"
+    },
+    {
+     "action": "resolve",
+     "actor": "tech1",
+     "resolutionNote": "Gỡ giấy kẹt và vệ sinh trục.",
+     "rootCause": "Giấy ẩm gây kẹt."
+    },
+    {
+     "action": "confirm",
+     "actor": "student2",
+     "rating": 4,
+     "comment": null
+    }
+   ]
+  },
+  {
+   "requester": "student1",
+   "daysAgo": 20,
+   "categoryCode": "SOFTWARE",
+   "priority": null,
+   "roomCode": "A201",
+   "deviceAssetCode": null,
+   "title": "Không cài được Packet Tracer",
+   "description": "Cài Packet Tracer báo lỗi thiếu quyền quản trị.",
+   "steps": [
+    {
+     "action": "assign",
+     "actor": "tech2",
+     "assignee": "tech2"
+    },
+    {
+     "action": "start",
+     "actor": "tech2"
+    },
+    {
+     "action": "resolve",
+     "actor": "tech2",
+     "resolutionNote": "Cấp quyền cài đặt tạm thời.",
+     "rootCause": "Tài khoản học viên bị giới hạn quyền."
+    },
+    {
+     "action": "confirm",
+     "actor": "student1",
+     "rating": 3,
+     "comment": "Xử lý hơi chậm."
+    }
+   ]
+  },
+  {
+   "requester": "student2",
+   "daysAgo": 12,
+   "categoryCode": "COMPUTER",
+   "priority": null,
+   "roomCode": "A101",
+   "deviceAssetCode": "LAB-PC-002",
+   "title": "Máy A101-02 không lên nguồn",
+   "description": "Bấm nút nguồn nhưng máy không có phản ứng.",
+   "steps": [
+    {
+     "action": "assign",
+     "actor": "tech1",
+     "assignee": "tech1"
+    },
+    {
+     "action": "start",
+     "actor": "tech1"
+    },
+    {
+     "action": "resolve",
+     "actor": "tech1",
+     "resolutionNote": "Thay bộ nguồn.",
+     "rootCause": "Bộ nguồn hỏng."
+    }
+   ]
+  },
+  {
+   "requester": "lecturer1",
+   "daysAgo": 9,
+   "categoryCode": "NETWORK",
+   "priority": "HIGH",
+   "roomCode": "A201",
+   "deviceAssetCode": "LAB-SW-001",
+   "title": "Phòng mạng A201 mất kết nối LAN",
+   "description": "Nhiều máy trong A201 không nhận LAN.",
+   "steps": [
+    {
+     "action": "assign",
+     "actor": "admin1",
+     "assignee": "tech2"
+    },
+    {
+     "action": "start",
+     "actor": "tech2"
+    },
+    {
+     "action": "resolve",
+     "actor": "tech2",
+     "resolutionNote": "Khởi động lại switch và cập nhật firmware.",
+     "rootCause": "Switch treo do firmware cũ."
+    }
+   ]
+  },
+  {
+   "requester": "student1",
+   "daysAgo": 6,
+   "categoryCode": "ACCOUNT",
+   "priority": null,
+   "roomCode": null,
+   "deviceAssetCode": null,
+   "title": "Tài khoản bị khóa do nhập sai nhiều lần",
+   "description": "Tài khoản trường bị khóa sau khi nhập sai mật khẩu.",
+   "steps": [
+    {
+     "action": "assign",
+     "actor": "tech1",
+     "assignee": "tech1"
+    },
+    {
+     "action": "start",
+     "actor": "tech1"
+    },
+    {
+     "action": "resolve",
+     "actor": "tech1",
+     "resolutionNote": "Mở khóa tài khoản.",
+     "rootCause": "Nhập sai mật khẩu nhiều lần."
+    }
+   ]
+  },
+  {
+   "requester": "student2",
+   "daysAgo": 5,
+   "categoryCode": "SOFTWARE",
+   "priority": null,
+   "roomCode": "A102",
+   "deviceAssetCode": null,
+   "title": "MATLAB báo hết bản quyền",
+   "description": "MATLAB hiện thông báo license expired khi mở.",
+   "steps": [
+    {
+     "action": "assign",
+     "actor": "tech2",
+     "assignee": "tech2"
+    },
+    {
+     "action": "start",
+     "actor": "tech2"
+    },
+    {
+     "action": "comment",
+     "actor": "tech2",
+     "body": "Đang liên hệ phòng quản trị để gia hạn license.",
+     "internal": true
+    }
+   ]
+  },
+  {
+   "requester": "lecturer1",
+   "daysAgo": 4,
+   "categoryCode": "PROJECTOR",
+   "priority": null,
+   "roomCode": "B203",
+   "deviceAssetCode": "LAB-PJ-005",
+   "title": "Máy chiếu B203 bị mờ",
+   "description": "Hình chiếu mờ, khó nhìn từ cuối lớp.",
+   "steps": [
+    {
+     "action": "assign",
+     "actor": "admin1",
+     "assignee": "tech1"
+    },
+    {
+     "action": "start",
+     "actor": "tech1"
+    },
+    {
+     "action": "comment",
+     "actor": "tech1",
+     "body": "Sẽ kiểm tra bóng đèn trong chiều nay.",
+     "internal": false
+    }
+   ]
+  },
+  {
+   "requester": "student1",
+   "daysAgo": 3,
+   "categoryCode": "NETWORK",
+   "priority": "URGENT",
+   "roomCode": "A101",
+   "deviceAssetCode": null,
+   "title": "Cả phòng máy mất mạng giữa giờ thi",
+   "description": "Toàn bộ máy phòng A101 mất mạng khi đang thi thực hành.",
+   "steps": [
+    {
+     "action": "assign",
+     "actor": "admin1",
+     "assignee": "tech1"
+    },
+    {
+     "action": "start",
+     "actor": "tech1"
+    },
+    {
+     "action": "comment",
+     "actor": "tech1",
+     "body": "Đang kiểm tra switch tại tủ mạng.",
+     "internal": false
+    }
+   ]
+  },
+  {
+   "requester": "student2",
+   "daysAgo": 2,
+   "categoryCode": "COMPUTER",
+   "priority": null,
+   "roomCode": "A102",
+   "deviceAssetCode": "LAB-PC-009",
+   "title": "Màn hình máy A102-09 nhấp nháy",
+   "description": "Màn hình nhấp nháy liên tục sau 10 phút sử dụng.",
+   "steps": [
+    {
+     "action": "assign",
+     "actor": "tech2",
+     "assignee": "tech2"
+    },
+    {
+     "action": "start",
+     "actor": "tech2"
+    }
+   ]
+  },
+  {
+   "requester": "student1",
+   "daysAgo": 4,
+   "categoryCode": "PRINTER",
+   "priority": null,
+   "roomCode": "A101",
+   "deviceAssetCode": "LAB-PR-002",
+   "title": "Máy in A101 in mờ",
+   "description": "Bản in bị mờ nhiều vệt.",
+   "steps": [
+    {
+     "action": "assign",
+     "actor": "tech1",
+     "assignee": "tech1"
+    },
+    {
+     "action": "start",
+     "actor": "tech1"
+    },
+    {
+     "action": "wait",
+     "actor": "tech1",
+     "message": "Em gửi giúp ảnh chụp bản in mờ để anh kiểm tra nhé."
+    }
+   ]
+  },
+  {
+   "requester": "lecturer1",
+   "daysAgo": 3,
+   "categoryCode": "SOFTWARE",
+   "priority": null,
+   "roomCode": "B105",
+   "deviceAssetCode": null,
+   "title": "Cần cài phần mềm vẽ sơ đồ cho lớp",
+   "description": "Cần cài Draw.io bản desktop trên máy giảng viên B105.",
+   "steps": [
+    {
+     "action": "assign",
+     "actor": "tech2",
+     "assignee": "tech2"
+    },
+    {
+     "action": "start",
+     "actor": "tech2"
+    },
+    {
+     "action": "wait",
+     "actor": "tech2",
+     "message": "Thầy/cô cho biết phiên bản cần cài và đã có phê duyệt của khoa chưa?"
+    }
+   ]
+  },
+  {
+   "requester": "student2",
+   "daysAgo": 2,
+   "categoryCode": "ACCOUNT",
+   "priority": null,
+   "roomCode": null,
+   "deviceAssetCode": null,
+   "title": "Không nhận được mã OTP",
+   "description": "Đăng nhập báo đã gửi OTP nhưng em không nhận được.",
+   "steps": [
+    {
+     "action": "assign",
+     "actor": "admin1",
+     "assignee": "tech1"
+    }
+   ]
+  },
+  {
+   "requester": "lecturer1",
+   "daysAgo": 1,
+   "categoryCode": "EXAM_SUPPORT",
+   "priority": "HIGH",
+   "roomCode": "A102",
+   "deviceAssetCode": null,
+   "title": "Chuẩn bị phòng máy cho kỳ thi giữa kỳ",
+   "description": "Cần kiểm tra toàn bộ 40 máy trước thứ Hai.",
+   "steps": [
+    {
+     "action": "assign",
+     "actor": "admin1",
+     "assignee": "tech2"
+    }
+   ]
+  },
+  {
+   "requester": "student1",
+   "daysAgo": 1,
+   "categoryCode": "COMPUTER",
+   "priority": null,
+   "roomCode": "A201",
+   "deviceAssetCode": "LAB-PC-011",
+   "title": "Bàn phím máy A201-11 mất phím",
+   "description": "Một số phím không nhận.",
+   "steps": [
+    {
+     "action": "assign",
+     "actor": "tech1",
+     "assignee": "tech1"
+    }
+   ]
+  },
+  {
+   "requester": "student2",
+   "daysAgo": 0,
+   "categoryCode": "NETWORK",
+   "priority": null,
+   "roomCode": "B105",
+   "deviceAssetCode": "LAB-AP-001",
+   "title": "Wi-Fi B105 yếu",
+   "description": "Sóng Wi-Fi ở cuối phòng B105 rất yếu.",
+   "steps": []
+  },
+  {
+   "requester": "student1",
+   "daysAgo": 0,
+   "categoryCode": "OTHER",
+   "priority": null,
+   "roomCode": null,
+   "deviceAssetCode": null,
+   "title": "Đề xuất thêm ổ cắm điện phòng A101",
+   "description": "Phòng thiếu ổ cắm cho laptop cá nhân.",
+   "steps": []
+  },
+  {
+   "requester": "lecturer1",
+   "daysAgo": 0,
+   "categoryCode": "PROJECTOR",
+   "priority": null,
+   "roomCode": "C301",
+   "deviceAssetCode": "LAB-PJ-006",
+   "title": "Máy chiếu phòng họp không nhận laptop",
+   "description": "Kết nối không dây không hoạt động.",
+   "steps": []
+  },
+  {
+   "requester": "student2",
+   "daysAgo": 15,
+   "categoryCode": "OTHER",
+   "priority": null,
+   "roomCode": null,
+   "deviceAssetCode": null,
+   "title": "Xin cài game lên máy phòng lab",
+   "description": "Em muốn cài game giải trí trên máy phòng thực hành.",
+   "steps": [
+    {
+     "action": "reject",
+     "actor": "admin1",
+     "reason": "Không thuộc phạm vi hỗ trợ theo quy chế phòng máy."
+    }
+   ]
+  },
+  {
+   "requester": "student1",
+   "daysAgo": 11,
+   "categoryCode": "NETWORK",
+   "priority": null,
+   "roomCode": "A102",
+   "deviceAssetCode": null,
+   "title": "Wi-Fi chậm",
+   "description": "Mạng chậm, sau đó tự ổn định.",
+   "steps": [
+    {
+     "action": "cancel",
+     "actor": "student1"
+    }
+   ]
+  },
+  {
+   "requester": "student2",
+   "daysAgo": 8,
+   "categoryCode": "COMPUTER",
+   "priority": null,
+   "roomCode": "A101",
+   "deviceAssetCode": "LAB-PC-003",
+   "title": "Máy A101-03 chạy chậm",
+   "description": "Đã tự khắc phục sau khi khởi động lại.",
+   "steps": [
+    {
+     "action": "cancel",
+     "actor": "student2"
+    }
+   ]
+  }
+ ],
+ "roomBookings": [
+  {
+   "requester": "lecturer1",
+   "roomCode": "A101",
+   "title": "Thực hành Lập trình Java - Lớp KTPM1",
+   "attendees": 35,
+   "dayOffset": 1,
+   "startHour": 7.5,
+   "durationHours": 3,
+   "outcome": "approve",
+   "decidedBy": "tech1",
+   "reason": null
+  },
+  {
+   "requester": "lecturer1",
+   "roomCode": "A102",
+   "title": "Thực hành Cơ sở dữ liệu - Lớp KTPM2",
+   "attendees": 38,
+   "dayOffset": 1,
+   "startHour": 13,
+   "durationHours": 3,
+   "outcome": "approve",
+   "decidedBy": "tech1",
+   "reason": null
+  },
+  {
+   "requester": "lecturer1",
+   "roomCode": "A201",
+   "title": "Thực hành Mạng máy tính",
+   "attendees": 28,
+   "dayOffset": 2,
+   "startHour": 7.5,
+   "durationHours": 4,
+   "outcome": "approve",
+   "decidedBy": "tech1",
+   "reason": null
+  },
+  {
+   "requester": "lecturer1",
+   "roomCode": "B203",
+   "title": "Seminar chuyên đề AI",
+   "attendees": 70,
+   "dayOffset": 3,
+   "startHour": 14,
+   "durationHours": 2,
+   "outcome": "approve",
+   "decidedBy": "tech1",
+   "reason": null
+  },
+  {
+   "requester": "lecturer1",
+   "roomCode": "C301",
+   "title": "Họp bộ môn Công nghệ phần mềm",
+   "attendees": 15,
+   "dayOffset": 4,
+   "startHour": 9,
+   "durationHours": 2,
+   "outcome": "approve",
+   "decidedBy": "tech1",
+   "reason": null
+  },
+  {
+   "requester": "lecturer1",
+   "roomCode": "A101",
+   "title": "Ôn tập cuối kỳ",
+   "attendees": 40,
+   "dayOffset": 5,
+   "startHour": 18,
+   "durationHours": 2,
+   "outcome": "reject",
+   "decidedBy": "tech1",
+   "reason": "Phòng được dành cho bảo trì định kỳ."
+  },
+  {
+   "requester": "lecturer1",
+   "roomCode": "B105",
+   "title": "Báo cáo đồ án",
+   "attendees": 50,
+   "dayOffset": 6,
+   "startHour": 8,
+   "durationHours": 3,
+   "outcome": "cancel",
+   "decidedBy": "tech1",
+   "reason": null
+  },
+  {
+   "requester": "tech1",
+   "roomCode": "A102",
+   "title": "Cài đặt phần mềm hàng loạt",
+   "attendees": 5,
+   "dayOffset": 7,
+   "startHour": 12,
+   "durationHours": 2,
+   "outcome": "approve",
+   "decidedBy": "admin1",
+   "reason": null
+  },
+  {
+   "requester": "lecturer1",
+   "roomCode": "A101",
+   "title": "Thi thực hành giữa kỳ",
+   "attendees": 38,
+   "dayOffset": 9,
+   "startHour": 7.5,
+   "durationHours": 4,
+   "outcome": "pending",
+   "decidedBy": "tech1",
+   "reason": null
+  },
+  {
+   "requester": "lecturer1",
+   "roomCode": "C301",
+   "title": "Họp hội đồng khoa",
+   "attendees": 18,
+   "dayOffset": 10,
+   "startHour": 14,
+   "durationHours": 2,
+   "outcome": "pending",
+   "decidedBy": "tech1",
+   "reason": null
+  }
+ ],
+ "deviceLoans": [
+  {
+   "borrower": "student1",
+   "deviceAssetCode": "LAB-LT-001",
+   "purpose": "Làm đồ án tốt nghiệp",
+   "dueInDays": 5,
+   "outcome": "returned",
+   "approver": "lecturer1",
+   "returnCondition": "GOOD",
+   "returnNote": "Trả đủ phụ kiện.",
+   "reason": null
+  },
+  {
+   "borrower": "student2",
+   "deviceAssetCode": "LAB-LT-002",
+   "purpose": "Demo ứng dụng trước hội đồng",
+   "dueInDays": 3,
+   "outcome": "returned",
+   "approver": "lecturer1",
+   "returnCondition": "DAMAGED",
+   "returnNote": "Màn hình bị nứt góc.",
+   "reason": null
+  },
+  {
+   "borrower": "student1",
+   "deviceAssetCode": "LAB-LT-003",
+   "purpose": "Thực hành ngoài giờ",
+   "dueInDays": 6,
+   "outcome": "approved",
+   "approver": "lecturer1",
+   "returnCondition": null,
+   "returnNote": null,
+   "reason": null
+  },
+  {
+   "borrower": "lecturer1",
+   "deviceAssetCode": "LAB-WC-001",
+   "purpose": "Dạy học trực tuyến",
+   "dueInDays": 7,
+   "outcome": "approved",
+   "approver": "tech1",
+   "returnCondition": null,
+   "returnNote": null,
+   "reason": null
+  },
+  {
+   "borrower": "student2",
+   "deviceAssetCode": "LAB-LT-004",
+   "purpose": "Báo cáo nhóm",
+   "dueInDays": 4,
+   "outcome": "pending",
+   "approver": null,
+   "returnCondition": null,
+   "returnNote": null,
+   "reason": null
+  },
+  {
+   "borrower": "student1",
+   "deviceAssetCode": "LAB-LT-005",
+   "purpose": "Học tập cá nhân",
+   "dueInDays": 4,
+   "outcome": "rejected",
+   "approver": "lecturer1",
+   "returnCondition": null,
+   "returnNote": null,
+   "reason": "Thiết bị dành cho đồ án."
+  }
+ ]
+}

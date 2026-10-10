@@ -5,6 +5,7 @@ import HaUI.ImplSolution.dxos.core.api.workspace.WorkspaceDirectory;
 import HaUI.ImplSolution.dxos.core.api.workspace.WorkspaceView;
 import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowActor;
 import HaUI.ImplSolution.dxos.core.api.workflow.CaseView;
+import HaUI.ImplSolution.dxos.core.api.workflow.PendingRequestLimit;
 import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowOperations;
 import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowStatus;
 import HaUI.ImplSolution.dxos.farm.dto.ParcelCreateRequest;
@@ -45,7 +46,7 @@ public class ParcelService {
   private final WorkflowOperations workflowService;
   private final ParcelCodeGenerator codeGenerator;
   private final GpsFixValidator gpsFixValidator;
-  private final PendingRequestLimiter pendingRequestLimiter;
+  private final PendingRequestLimit pendingRequestLimiter;
   private final ApplicationEventPublisher eventPublisher;
   private final Clock clock;
 
@@ -53,7 +54,7 @@ public class ParcelService {
       CropSeasonRepository cropSeasonRepository, ParcelEditRequestRepository editRequestRepository,
       CurrentUser currentUserService, WorkflowOperations workflowService,
       ParcelCodeGenerator codeGenerator, GpsFixValidator gpsFixValidator,
-      PendingRequestLimiter pendingRequestLimiter, ApplicationEventPublisher eventPublisher,
+      PendingRequestLimit pendingRequestLimiter, ApplicationEventPublisher eventPublisher,
       Clock clock) {
     this.parcelRepository = parcelRepository;
     this.workspaceDirectory = workspaceDirectory;
@@ -111,7 +112,7 @@ public class ParcelService {
       pendingRequestLimiter.requireCapacity();
     }
     Parcel parcel = Parcel.builder().code(codeGenerator.next(household)).householdId(household.id())
-        .farmerName(household.fullName()).areaHectares(request.areaHectares())
+        .farmerName(household.name()).areaHectares(request.areaHectares())
         .location(request.location()).latitude(request.latitude()).longitude(request.longitude())
         .gpsAccuracyMeters(request.gpsAccuracyMeters()).approvalStatus(ApprovalStatus.PENDING)
         .clientRequestId(clientRequestId).build();

@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.core.identity;
 
+import HaUI.ImplSolution.dxos.core.api.workspace.WorkspaceMemberRole;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -14,43 +17,34 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
+// An account that belongs to a workspace.
 @Entity
-@Table(name = "households")
+@Table(name = "workspace_members")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Household {
+public class WorkspaceMember {
 
-  // Khoá chính
+  // Primary key
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  // Mã hộ tuần tự (vd: H0042)
-  @Column(nullable = false, unique = true)
-  private String code;
-
-  // Họ tên chủ hộ
   @Column(nullable = false)
-  private String fullName;
+  private Long workspaceId;
 
-  private String phone;
+  // Claim "sub" of the Keycloak account
+  @Column(nullable = false)
+  private String userId;
 
-  private String address;
-
-  // Claim "sub" của tài khoản Keycloak; null khi hộ chưa gắn tài khoản
-  @Column(unique = true)
-  private String keycloakUserId;
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private WorkspaceMemberRole role;
 
   @CreationTimestamp
   @Column(nullable = false, updatable = false)
   private Instant createdAt;
-
-  @UpdateTimestamp
-  @Column(nullable = false)
-  private Instant updatedAt;
 }

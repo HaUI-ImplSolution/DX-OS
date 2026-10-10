@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-package HaUI.ImplSolution.dxos.core.identity;
+package HaUI.ImplSolution.dxos.farm.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

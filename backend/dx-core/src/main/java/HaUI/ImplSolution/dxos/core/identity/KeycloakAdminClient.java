@@ -22,8 +22,6 @@ import org.springframework.web.client.RestClientResponseException;
 @Component
 public class KeycloakAdminClient {
 
-  private static final String FARMER_ROLE = "FARMER";
-
   private final RestClient restClient;
   private final String realm;
   private final String clientId;
@@ -45,19 +43,48 @@ public class KeycloakAdminClient {
     this.clientSecret = clientSecret;
   }
 
-  // Creates an enabled user with a temporary password (changed at first login) and the FARMER
+  // Creates an enabled user with a temporary password (changed at first login) and the given
   // realm role. Returns the new user id (the token "sub"). A half-created user is removed again.
-  public String createFarmerUser(String username, String fullName, String email,
-      String temporaryPassword) {
+  public String createUser(String username, String fullName, String email, String temporaryPassword,
+      String realmRole) {
     String token = accessToken();
-    String userId = createUser(token, username, fullName, email, temporaryPassword);
+    String userId = createAccount(token, username, fullName, email, temporaryPassword);
     try {
-      assignFarmerRole(token, userId);
+      assignRealmRole(token, userId, realmRole);
     } catch (RuntimeException e) {
       deleteUserQuietly(token, userId);
       throw e;
     }
     return userId;
+  }
+
+  // Creates the realm role when it does not exist yet; an existing role is left as it is.
+  public void ensureRealmRole(String name, String description) {
+    String token = accessToken();
+    try {
+      restClient.get().uri("/admin/realms/{realm}/roles/{name}", realm, name)
+          .headers(h -> h.setBearerAuth(token)).retrieve().toBodilessEntity();
+      return;
+    } catch (RestClientResponseException e) {
+      if (e.getStatusCode().value() != 404) {
+        throw new KeycloakAdminException(
+            "Keycloak refused a role lookup: HTTP " + e.getStatusCode().value(), e);
+      }
+    } catch (RuntimeException e) {
+      throw new KeycloakAdminException("Keycloak is unreachable", e);
+    }
+    try {
+      restClient.post().uri("/admin/realms/{realm}/roles", realm)
+          .headers(h -> h.setBearerAuth(token)).contentType(MediaType.APPLICATION_JSON)
+          .body(Map.of("name", name, "description", description)).retrieve().toBodilessEntity();
+    } catch (RestClientResponseException e) {
+      if (e.getStatusCode().value() != 409) {
+        throw new KeycloakAdminException(
+            "Keycloak refused to create a role: HTTP " + e.getStatusCode().value(), e);
+      }
+    } catch (RuntimeException e) {
+      throw new KeycloakAdminException("Keycloak is unreachable", e);
+    }
   }
 
   public void deleteUser(String userId) {
@@ -132,7 +159,7 @@ public class KeycloakAdminClient {
     }
   }
 
-  private String createUser(String token, String username, String fullName, String email,
+  private String createAccount(String token, String username, String fullName, String email,
       String temporaryPassword) {
     // Keycloak builds the token "name" claim as "firstName lastName", so the first word goes to
     // firstName and the rest to lastName to reproduce fullName exactly.
@@ -171,17 +198,18 @@ public class KeycloakAdminClient {
   }
 
   @SuppressWarnings("unchecked")
-  private void assignFarmerRole(String token, String userId) {
+  private void assignRealmRole(String token, String userId, String roleName) {
     try {
       Map<String, Object> role =
-          restClient.get().uri("/admin/realms/{realm}/roles/{name}", realm, FARMER_ROLE)
+          restClient.get().uri("/admin/realms/{realm}/roles/{name}", realm, roleName)
               .headers(h -> h.setBearerAuth(token)).retrieve().body(Map.class);
       restClient.post().uri("/admin/realms/{realm}/users/{id}/role-mappings/realm", realm, userId)
           .headers(h -> h.setBearerAuth(token)).contentType(MediaType.APPLICATION_JSON)
           .body(List.of(role)).retrieve().toBodilessEntity();
     } catch (RestClientResponseException e) {
       throw new KeycloakAdminException(
-          "Keycloak refused to assign the FARMER role: HTTP " + e.getStatusCode().value(), e);
+          "Keycloak refused to assign the " + roleName + " role: HTTP " + e.getStatusCode().value(),
+          e);
     } catch (RuntimeException e) {
       throw new KeycloakAdminException("Keycloak is unreachable", e);
     }

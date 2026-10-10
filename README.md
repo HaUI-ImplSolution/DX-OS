@@ -2,7 +2,7 @@
 
 **Tiếng Việt** · [English](./README_EN.md)
 
-[![E2E](https://github.com/HaUI-ImplSolution/DX---Farm/actions/workflows/e2e.yml/badge.svg?branch=main)](https://github.com/HaUI-ImplSolution/DX---Farm/actions/workflows/e2e.yml)
+[![E2E](https://github.com/HaUI-ImplSolution/DX-OS/actions/workflows/e2e.yml/badge.svg?branch=main)](https://github.com/HaUI-ImplSolution/DX-OS/actions/workflows/e2e.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
 [![AI License](https://img.shields.io/badge/ai%2F-AGPL--3.0-orange.svg)](./ai/LICENSE)
 ![Java](https://img.shields.io/badge/Java-21-007396?logo=openjdk&logoColor=white)
@@ -124,7 +124,7 @@ Bảng dependency và giấy phép đầy đủ ở [`LICENSES.md`](./LICENSES.m
 ### Các bước
 
 ```bash
-git clone https://github.com/HaUI-ImplSolution/DX---Farm.git && cd DX---Farm
+git clone https://github.com/HaUI-ImplSolution/DX-OS.git && cd DX-OS
 cp deploy/.env.example deploy/.env      # điền mọi biến đang để trống
 python3 -m pip install pillow           # cho script dữ liệu demo
 ./deploy/start.sh                       # dựng, chạy ứng dụng trong DXOS_APP và nạp dữ liệu demo
@@ -219,8 +219,8 @@ Tài liệu gốc: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./
 
 ## Đóng góp
 
-- **Báo lỗi:** [tạo bug report](https://github.com/HaUI-ImplSolution/DX---Farm/issues/new?template=bug_report.md).
-- **Đề xuất tính năng:** [tạo feature request](https://github.com/HaUI-ImplSolution/DX---Farm/issues/new?template=feature_request.md).
+- **Báo lỗi:** [tạo bug report](https://github.com/HaUI-ImplSolution/DX-OS/issues/new?template=bug_report.md).
+- **Đề xuất tính năng:** [tạo feature request](https://github.com/HaUI-ImplSolution/DX-OS/issues/new?template=feature_request.md).
 - **Gửi mã:** đọc [`CONTRIBUTING.md`](./CONTRIBUTING.md) (quy trình, quy ước, hướng dẫn thêm ứng dụng mới) và tuân theo [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
 
 ## Liên hệ

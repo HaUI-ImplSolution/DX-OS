@@ -2,7 +2,7 @@
 
 [Tiếng Việt](./README.md) · **English**
 
-[![E2E](https://github.com/HaUI-ImplSolution/DX---Farm/actions/workflows/e2e.yml/badge.svg?branch=main)](https://github.com/HaUI-ImplSolution/DX---Farm/actions/workflows/e2e.yml)
+[![E2E](https://github.com/HaUI-ImplSolution/DX-OS/actions/workflows/e2e.yml/badge.svg?branch=main)](https://github.com/HaUI-ImplSolution/DX-OS/actions/workflows/e2e.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
 [![AI License](https://img.shields.io/badge/ai%2F-AGPL--3.0-orange.svg)](./ai/LICENSE)
 ![Java](https://img.shields.io/badge/Java-21-007396?logo=openjdk&logoColor=white)
@@ -125,7 +125,7 @@ Full dependency and license table: [`LICENSES.md`](./LICENSES.md); CycloneDX SBO
 ### Steps
 
 ```bash
-git clone https://github.com/HaUI-ImplSolution/DX---Farm.git && cd DX---Farm
+git clone https://github.com/HaUI-ImplSolution/DX-OS.git && cd DX-OS
 cp deploy/.env.example deploy/.env      # fill in every empty variable
 python3 -m pip install pillow           # for the demo data script
 ./deploy/start.sh                       # build, run the app in DXOS_APP, load demo data
@@ -220,8 +220,8 @@ Top-level documents: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](
 
 ## Contributing
 
-- **Report a bug:** [open a bug report](https://github.com/HaUI-ImplSolution/DX---Farm/issues/new?template=bug_report.md).
-- **Suggest a feature:** [open a feature request](https://github.com/HaUI-ImplSolution/DX---Farm/issues/new?template=feature_request.md).
+- **Report a bug:** [open a bug report](https://github.com/HaUI-ImplSolution/DX-OS/issues/new?template=bug_report.md).
+- **Suggest a feature:** [open a feature request](https://github.com/HaUI-ImplSolution/DX-OS/issues/new?template=feature_request.md).
 - **Submit code:** read [`CONTRIBUTING.md`](./CONTRIBUTING.md) (workflow, conventions, how to add a new application) and follow [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
 
 ## Contact

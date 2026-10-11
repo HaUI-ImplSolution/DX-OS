@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
-package HaUI.ImplSolution.dxos.farm.controller;
+package HaUI.ImplSolution.dxos.core.status;
 
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
-import HaUI.ImplSolution.dxos.farm.dto.ServiceStatusResponse;
-import HaUI.ImplSolution.dxos.farm.service.SystemStatusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;

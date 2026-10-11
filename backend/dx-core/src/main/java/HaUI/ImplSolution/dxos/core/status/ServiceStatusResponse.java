@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-package HaUI.ImplSolution.dxos.farm.dto;
+package HaUI.ImplSolution.dxos.core.status;
 
 import java.util.List;
 

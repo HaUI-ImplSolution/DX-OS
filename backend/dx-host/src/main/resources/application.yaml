@@ -72,7 +72,7 @@ security:
 
 keycloak:
   admin:
-    # Service account (client credentials) used to create household accounts.
+    # Service account (client credentials) used to create workspace accounts.
     base-url: ${KEYCLOAK_ADMIN_BASE_URL:http://keycloak:8080}
     realm: dxfarm
     client-id: ${KEYCLOAK_ADMIN_CLIENT_ID}
@@ -87,12 +87,31 @@ superset:
     password: ${SUPERSET_RO_PASSWORD}
 
 mattermost:
+  webhook:
+    # Empty disables notifications. Internal hostname, e.g. http://mattermost:8065/hooks/<key>.
+    # A channel may have its own url under url-<channel key>; without one it uses this url.
+    url: ${MATTERMOST_WEBHOOK_URL:}
+    connect-timeout-ms: ${MATTERMOST_WEBHOOK_CONNECT_TIMEOUT_MS:2000}
+    read-timeout-ms: ${MATTERMOST_WEBHOOK_READ_TIMEOUT_MS:3000}
   db:
     # Mật khẩu role Postgres riêng của Mattermost. Xem MattermostDatabaseSeeder.
     password: ${MATTERMOST_DB_PASSWORD}
 
+app:
+  # Requests a user may have waiting for a decision at the same time.
+  max-pending-requests: ${MAX_PENDING_REQUESTS:3}
+
+knowledge:
+  # Passages less similar to the question than this (0-1) are not shown.
+  min-score: ${KNOWLEDGE_MIN_SCORE:0.40}
+
 ai:
   service:
+    base-url: ${AI_SERVICE_BASE_URL:http://ai:8000}
+    # Service token/API key nội bộ cho chiều Backend -> AI
+    api-key: ${AI_SERVICE_API_KEY}
+    connect-timeout-ms: ${AI_SERVICE_CONNECT_TIMEOUT_MS:3000}
+    read-timeout-ms: ${AI_SERVICE_READ_TIMEOUT_MS:120000}
     # Service API key nội bộ cho chiều AI -> Backend (/internal/v1/**, header X-Service-Api-Key).
     inbound-api-key: ${AI_SERVICE_INBOUND_API_KEY}
   vector-db:

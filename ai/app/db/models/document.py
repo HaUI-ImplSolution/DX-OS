@@ -44,6 +44,15 @@ class Document(Base):
 
     disease_code: Mapped[str | None] = mapped_column(String(100), index=True)
 
+    # Corpus the document belongs to; each app reads only its own.
+    namespace: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+        default="farm",
+        server_default="farm",
+        index=True,
+    )
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=datetime.utcnow,

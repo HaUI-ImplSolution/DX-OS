@@ -8,8 +8,6 @@ app:
   htx-code: ${HTX_CODE:HTX01}
   # A farmer's GPS fix is rejected when its reported error is larger than this (meters).
   gps-max-accuracy-meters: ${GPS_MAX_ACCURACY_METERS:30}
-  # Requests a farmer may have waiting for a decision at the same time.
-  max-pending-requests: ${MAX_PENDING_REQUESTS:3}
   # Cron (Asia/Ho_Chi_Minh) of the daily reminder for seasons that reached their expected harvest date.
   harvest-reminder-cron: ${HARVEST_REMINDER_CRON:0 0 7 * * *}
   # Start months (1-12) that suggest a season type. Self-compiled, not yet confirmed by an
@@ -31,30 +29,15 @@ weather:
   read-timeout-ms: ${WEATHER_READ_TIMEOUT_MS:3000}
   cache-ttl: ${WEATHER_CACHE_TTL:1h}
 
-knowledge:
-  # Passages less similar to the question than this (0-1) are not shown.
-  min-score: ${KNOWLEDGE_MIN_SCORE:0.40}
-
 mattermost:
   webhook:
-    # Empty disables notifications. Internal hostname, e.g. http://mattermost:8065/hooks/<key>.
-    url: ${MATTERMOST_WEBHOOK_URL:}
-    # Own channel for new parcel and crop season requests; empty falls back to the default url.
+    # Own channel for new parcel and crop season requests; empty falls back to the default url
+    # (mattermost.webhook.url).
     url-admin: ${MATTERMOST_WEBHOOK_URL_ADMIN:}
     # Own channel for new reports and pending diagnoses; empty falls back to the default url.
     url-engineer: ${MATTERMOST_WEBHOOK_URL_ENGINEER:}
     # Browser-reachable gateway origin used to attach the report photo; empty omits the image.
     image-base-url: ${MATTERMOST_IMAGE_BASE_URL:}
-    connect-timeout-ms: ${MATTERMOST_WEBHOOK_CONNECT_TIMEOUT_MS:2000}
-    read-timeout-ms: ${MATTERMOST_WEBHOOK_READ_TIMEOUT_MS:3000}
-
-ai:
-  service:
-    base-url: ${AI_SERVICE_BASE_URL:http://ai:8000}
-    # Service token/API key nội bộ cho chiều Backend -> AI
-    api-key: ${AI_SERVICE_API_KEY}
-    connect-timeout-ms: ${AI_SERVICE_CONNECT_TIMEOUT_MS:3000}
-    read-timeout-ms: ${AI_SERVICE_READ_TIMEOUT_MS:120000}
 
 resilience4j:
   circuitbreaker:

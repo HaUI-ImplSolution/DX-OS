@@ -20,6 +20,7 @@ DATA_FILE = (
 )
 
 DOCUMENT_TYPE = "disease_knowledge"
+NAMESPACE = "farm"
 VERSION = "riceleafbd-v3-workbook-v1"
 REQUIRED_FIELDS = {
     "disease_code",
@@ -130,7 +131,9 @@ def _ingest_disease_knowledge(db: Session) -> dict[str, int]:
     # Serialize replacements of this corpus, including simultaneous CLI runs.
     db.execute(text("SELECT pg_advisory_xact_lock(674507)"))
     existing_documents = db.scalars(
-        select(Document).where(Document.document_type == DOCUMENT_TYPE)
+        select(Document).where(
+            Document.document_type == DOCUMENT_TYPE, Document.namespace == NAMESPACE
+        )
     ).all()
 
     replaced_count = len(existing_documents)
@@ -145,6 +148,7 @@ def _ingest_disease_knowledge(db: Session) -> dict[str, int]:
             title=item["class_name_vi"],
             source=",".join(source_ids),
             document_type=DOCUMENT_TYPE,
+            namespace=NAMESPACE,
             version=VERSION,
             disease_code=item["disease_code"],
         )

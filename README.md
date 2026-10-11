@@ -2,54 +2,28 @@
 
 **Tiếng Việt** · [English](./README_EN.md)
 
-[![E2E](https://github.com/HaUI-ImplSolution/DX-OS/actions/workflows/e2e.yml/badge.svg?branch=main)](https://github.com/HaUI-ImplSolution/DX-OS/actions/workflows/e2e.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
 [![AI License](https://img.shields.io/badge/ai%2F-AGPL--3.0-orange.svg)](./ai/LICENSE)
-![Java](https://img.shields.io/badge/Java-21-007396?logo=openjdk&logoColor=white)
-![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-React%20%7C%20Expo-3178C6?logo=typescript&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 
 **Đội:** HaUI-ImplSolution · **Trường:** Trường Công nghệ Thông tin và Truyền thông, Đại học Công nghiệp Hà Nội
 
-Nền tảng **Open-Core** mã nguồn mở dùng chung cho chuyển đổi số, dự thi **OLP Phần mềm nguồn mở 2026** (khối thi DX-OS, VFOSSA).
-Một lõi headless cung cấp định danh và SSO, API Gateway, dữ liệu, workflow, thông báo và cổng AI; hai ứng dụng nghiệp vụ cắm vào lõi qua interface.
-
-## 📑 Mục lục
-
-1. [Giới thiệu](#-giới-thiệu)
-2. [Điểm nổi bật](#-điểm-nổi-bật)
-3. [Kiến trúc 3 tầng](#-kiến-trúc-3-tầng)
-4. [Tính năng](#-tính-năng)
-5. [Công nghệ và giấy phép](#-công-nghệ-và-giấy-phép)
-6. [Cài đặt và chạy](#-cài-đặt-và-chạy)
-   - [Yêu cầu hệ thống](#-yêu-cầu-hệ-thống)
-   - [Các bước](#-các-bước)
-   - [Cấu hình](#-cấu-hình)
-7. [Chạy thử](#-chạy-thử)
-   - [Tài khoản demo](#-tài-khoản-demo)
-8. [Kiểm thử](#-kiểm-thử)
-9. [Xử lý sự cố](#-xử-lý-sự-cố)
-10. [Cấu trúc repository](#-cấu-trúc-repository)
-11. [Đóng góp](#-đóng-góp)
-12. [Liên hệ](#-liên-hệ)
-13. [Giấy phép](#-giấy-phép)
+Nền tảng mã nguồn mở dùng chung cho chuyển đổi số, dự thi **OLP Phần mềm nguồn mở 2026** (khối thi DX-OS, VFOSSA).
+Một lõi dùng chung lo đăng nhập, dữ liệu, quy trình, thông báo và AI; hai ứng dụng nghiệp vụ được xây trên lõi đó.
 
 ## 💡 Giới thiệu
 
 | Ứng dụng | Bài toán | Luồng chính |
 |---|---|---|
-| **DX-Farm** | Hệ điều hành chuyển đổi số cho Hợp tác xã Nông nghiệp Số chuyên canh lúa nước (ĐBSCL) | Nông dân báo bệnh bằng ảnh, AI chẩn đoán, hệ thống tra quy tắc xử lý xác định, kỹ sư duyệt, ghi nhận phun thuốc và khóa thu hoạch theo thời gian cách ly (PHI) |
-| **DX-Lab** | Trạm vận hành CNTT của khoa | Sinh viên báo sự cố có gợi ý, kỹ thuật viên xử lý theo SLA, mượn thiết bị và đặt phòng máy có duyệt, hỏi đáp quy chế, quản trị xem thống kê |
-
+| **DX-Farm** | Chuyển đổi số cho Hợp tác xã Nông nghiệp Số chuyên canh lúa nước (ĐBSCL) | Nông dân chụp ảnh báo bệnh, AI chẩn đoán, kỹ sư duyệt và hướng dẫn xử lý, ghi nhận phun thuốc, hệ thống chặn thu hoạch khi chưa hết thời gian cách ly |
+| **DX-Lab** | Trạm vận hành CNTT của khoa | Sinh viên báo sự cố, kỹ thuật viên xử lý đúng hạn, mượn thiết bị và đặt phòng máy có duyệt, hỏi đáp quy chế, quản trị xem thống kê |
 
 ## ✨ Điểm nổi bật
 
-- **Một lõi, nhiều ứng dụng:** DX-Lab và DX-Farm hoạt động cùng nhau mà không sửa dòng nào trong `dx-core` hay `dx-core-api`.
-- **Poka-yoke ở Backend:** khóa thu hoạch theo PHI, kiểm GPS, đặt phòng chống trùng giờ ngay ở cơ sở dữ liệu, không chỉ ẩn nút trên giao diện.
-- **AI có kiểm soát:** thuốc, liều, PHI luôn lấy từ dữ liệu có cấu trúc được chuyên gia duyệt, LLM không sinh con số; kỹ sư là người chốt bệnh và điều trị.
-- **Tái lập một lệnh:** `./deploy/start.sh farm|lab` dựng cả stack và nạp dữ liệu demo; CI chạy E2E trên stack sạch cho cả hai ứng dụng.
-- **Nguồn mở minh bạch:** bảng dependency và giấy phép, SBOM CycloneDX, SPDX header, quét secret bằng gitleaks.
+- **Một lõi, nhiều ứng dụng:** Farm và Lab dùng chung một lõi, thêm ứng dụng không phải sửa core.
+- **An toàn nghiệp vụ:** các quy tắc quan trọng được kiểm ngay ở Backend và cơ sở dữ liệu, không chỉ ở giao diện.
+- **AI có kiểm soát:** AI chỉ hỗ trợ, thông tin thuốc và liều lấy từ dữ liệu chuyên gia đã duyệt, kỹ sư là người quyết định.
+- **Chạy một lệnh:** dựng toàn bộ hệ thống kèm dữ liệu demo, có kiểm thử tự động trên môi trường sạch.
+- **Nguồn mở minh bạch:** công khai giấy phép và danh sách thành phần phần mềm, quét lộ mật khẩu tự động.
 
 ## 🧱 Kiến trúc 3 tầng
 
@@ -59,38 +33,38 @@ flowchart TB
     direction LR
     FARM["DX-Farm"] ~~~ LAB["DX-Lab"]
   end
-  subgraph T2["Tầng 2: H-P-D-I"]
+  subgraph T2["Tầng 2: Con người, Quy trình, Dữ liệu, Trí tuệ"]
     direction LR
-    H["Human"] ~~~ P["Process"] ~~~ D["Data"] ~~~ I["Intelligence"]
+    H["Con người"] ~~~ P["Quy trình"] ~~~ D["Dữ liệu"] ~~~ I["Trí tuệ AI"]
   end
-  subgraph T1["Tầng 1: Open-Core headless"]
+  subgraph T1["Tầng 1: Lõi dùng chung"]
     direction LR
-    SSO["Keycloak<br/>SSO"] ~~~ GW["APISIX<br/>Gateway"] ~~~ DATA["PostgreSQL<br/>MinIO"] ~~~ WF["Workflow<br/>Thông báo"] ~~~ AI["Cổng AI"]
+    SSO["Đăng nhập<br/>một lần"] ~~~ GW["Cổng vào<br/>hệ thống"] ~~~ DATA["Dữ liệu<br/>và ảnh"] ~~~ WF["Quy trình<br/>và thông báo"] ~~~ AI["Cổng AI"]
   end
   T3 --> T2 --> T1
 ```
 
 | Tầng | Thành phần |
 |---|---|
-| 1. Open-Core (headless, không có giao diện người dùng) | Core của Backend, Keycloak (SSO), APISIX, PostgreSQL, MinIO |
-| 2. H-P-D-I | Giao diện web (React) và mobile (Expo) trên các dịch vụ của Core, kèm AI Service, BI và chat |
-| 3. Ứng dụng | `App Farm` và `App Lab` |
+| 1. Lõi dùng chung (không có giao diện người dùng) | Xử lý nghiệp vụ lõi, đăng nhập một lần, cổng vào hệ thống, cơ sở dữ liệu, kho ảnh |
+| 2. Con người, Quy trình, Dữ liệu, Trí tuệ | Giao diện web và di động trên các dịch vụ của lõi, kèm AI, báo cáo và chat |
+| 3. Ứng dụng | Farm và Lab |
 
 | Không gian | Farm | Lab |
 |---|---|---|
-| **H** Human | Keycloak, workspace nông hộ, vai FARMER, ENGINEER, ADMIN | Keycloak, workspace lớp và bộ môn, vai STUDENT, LECTURER, TECHNICIAN, ADMIN |
-| **P** Process | Duyệt thửa, vụ, chẩn đoán, khai phun; khóa thu hoạch theo PHI | Ticket có SLA, mượn thiết bị có duyệt, đặt phòng chống trùng giờ |
-| **D** Data | PostgreSQL, MinIO, 6 view BI, Superset, thời tiết Open-Meteo | PostgreSQL, MinIO, 5 view `vw_lab_*`, thống kê SLA và mức dùng phòng |
-| **I** Intelligence | CV (YOLOv8n), RAG, LangGraph, Qwen2.5 | Luật phân loại giải thích được, RAG quy chế |
+| **Con người** | Tài khoản nông hộ; vai nông dân, kỹ sư, quản trị | Tài khoản lớp và bộ môn; vai sinh viên, giảng viên, kỹ thuật viên, quản trị |
+| **Quy trình** | Duyệt thửa, vụ mùa, chẩn đoán và khai phun; chặn thu hoạch khi chưa hết thời gian cách ly | Yêu cầu hỗ trợ có hạn xử lý, mượn thiết bị có duyệt, đặt phòng chống trùng giờ |
+| **Dữ liệu** | Cơ sở dữ liệu, kho ảnh, báo cáo tổng hợp, thời tiết | Cơ sở dữ liệu, kho ảnh, thống kê hạn xử lý và mức dùng phòng |
+| **Trí tuệ** | Nhận diện bệnh từ ảnh, hỏi đáp tài liệu | Gợi ý phân loại có giải thích, hỏi đáp quy chế |
 
-Mọi client chỉ gọi gateway APISIX (cổng `9080`), gateway kiểm JWT Keycloak và Backend kiểm lần hai.
-Sơ đồ đầy đủ, luồng request và danh sách interface ở [`ARCHITECTURE.md`](./ARCHITECTURE.md).
+Mọi ứng dụng chỉ đi qua một cổng vào duy nhất để kiểm tra đăng nhập, Backend kiểm tra lại lần nữa.
+Sơ đồ đầy đủ và luồng xử lý ở [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 ## 🧩 Tính năng
 
-**DX-Farm:** nông hộ và thửa có GPS, vụ mùa, báo cáo sâu bệnh kèm kiểm tra chất lượng ảnh, chẩn đoán AI và kỹ sư duyệt, khai phun thuốc, khóa thu hoạch theo PHI, nhắc hạn, hộp thông báo, thời tiết theo thửa, hỏi đáp tài liệu có trích nguồn, dashboard BI; mobile offline-first cho nông dân.
+**DX-Farm:** quản lý nông hộ và thửa ruộng có vị trí, vụ mùa, báo cáo sâu bệnh kèm kiểm tra chất lượng ảnh, chẩn đoán AI và kỹ sư duyệt, khai báo phun thuốc, chặn thu hoạch khi chưa hết thời gian cách ly, nhắc hạn, hộp thông báo, thời tiết theo thửa, hỏi đáp tài liệu có trích nguồn, báo cáo tổng hợp; ứng dụng di động cho nông dân dùng được cả khi mất mạng.
 
-**DX-Lab:** yêu cầu hỗ trợ có SLA và trao đổi nội bộ, gợi ý loại và ưu tiên bằng luật, mượn trả thiết bị và nhật ký sửa chữa, đặt phòng máy chống trùng giờ ở cơ sở dữ liệu, hỏi đáp quy chế có trích nguồn và giấy phép, thống kê.
+**DX-Lab:** yêu cầu hỗ trợ có hạn xử lý và trao đổi nội bộ, gợi ý loại và mức ưu tiên, mượn trả thiết bị và nhật ký sửa chữa, đặt phòng máy không trùng giờ, hỏi đáp quy chế có trích nguồn và giấy phép, thống kê.
 
 Mức hoàn thiện và độ phủ kiểm thử từng tính năng ở [`docs/TESTING.md`](./docs/TESTING.md); việc chưa làm ở [`docs/BACKLOG.md`](./docs/BACKLOG.md).
 
@@ -221,7 +195,7 @@ Tài liệu gốc: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./
 
 - **Báo lỗi:** [tạo bug report](https://github.com/HaUI-ImplSolution/DX-OS/issues/new?template=bug_report.md).
 - **Đề xuất tính năng:** [tạo feature request](https://github.com/HaUI-ImplSolution/DX-OS/issues/new?template=feature_request.md).
-- **Gửi mã:** đọc [`CONTRIBUTING.md`](./CONTRIBUTING.md) (quy trình, quy ước, hướng dẫn thêm ứng dụng mới) và tuân theo [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
+- **Gửi mã:** đọc [`CONTRIBUTING.md`](./CONTRIBUTING.md) và tuân theo [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
 
 ## 📞 Liên hệ
 

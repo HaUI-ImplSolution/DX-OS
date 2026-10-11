@@ -2,55 +2,28 @@
 
 [Tiếng Việt](./README.md) · **English**
 
-[![E2E](https://github.com/HaUI-ImplSolution/DX-OS/actions/workflows/e2e.yml/badge.svg?branch=main)](https://github.com/HaUI-ImplSolution/DX-OS/actions/workflows/e2e.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
 [![AI License](https://img.shields.io/badge/ai%2F-AGPL--3.0-orange.svg)](./ai/LICENSE)
-![Java](https://img.shields.io/badge/Java-21-007396?logo=openjdk&logoColor=white)
-![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-React%20%7C%20Expo-3178C6?logo=typescript&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 
 **Team:** HaUI-ImplSolution · **School:** School of Information and Communication Technology, Hanoi University of Industry
 
-An open-source, shared **Open-Core** platform for digital transformation, built for the **OLP Open Source Software 2026** contest (DX-OS track, VFOSSA).
-A headless core provides identity and SSO, an API gateway, data, workflow, notifications and an AI gateway; two business applications plug into it through interfaces.
-
-## 📑 Table of contents
-
-1. [Overview](#-overview)
-2. [Highlights](#-highlights)
-3. [Three-tier architecture](#-three-tier-architecture)
-4. [Features](#-features)
-5. [Technology and licenses](#-technology-and-licenses)
-6. [Install and run](#-install-and-run)
-   - [System requirements](#-system-requirements)
-   - [Steps](#-steps)
-   - [Configuration](#-configuration)
-7. [Try it](#-try-it)
-   - [Demo accounts](#-demo-accounts)
-8. [Testing](#-testing)
-9. [Troubleshooting](#-troubleshooting)
-10. [Repository layout](#-repository-layout)
-11. [Contributing](#-contributing)
-12. [Contact](#-contact)
-13. [License](#-license)
+A shared open-source platform for digital transformation, built for the **OLP Open Source Software 2026** contest (DX-OS track, VFOSSA).
+One shared core handles sign-in, data, workflows, notifications and AI; two business applications are built on top of it.
 
 ## 💡 Overview
 
 | Application | Problem | Main flow |
 |---|---|---|
-| **DX-Farm** | A digital operating system for a rice-growing agricultural cooperative in the Mekong Delta | Farmers report plant disease with photos, AI diagnoses it, the system looks up deterministic treatment rules, engineers approve, spraying is recorded and harvest is locked for the pre-harvest interval (PHI) |
-| **DX-Lab** | An IT operations desk for a university faculty | Students report incidents with suggestions, technicians resolve them within SLA, equipment loans and computer-lab bookings are approved, regulations Q&A, admins view statistics |
-
-Module and reference documents linked below are written in Vietnamese.
+| **DX-Farm** | Digital transformation for a rice-growing agricultural cooperative in the Mekong Delta | Farmers photograph and report plant disease, AI diagnoses it, engineers approve and advise treatment, spraying is recorded, and harvest is blocked until the waiting period ends |
+| **DX-Lab** | An IT operations desk for a university faculty | Students report incidents, technicians resolve them on time, equipment loans and computer-lab bookings are approved, regulations Q&A, admins view statistics |
 
 ## ✨ Highlights
 
-- **One core, many applications:** DX-Lab and DX-Farm work together without changing a single line in `dx-core`, `dx-core-api` or `app-farm`.
-- **Poka-yoke in the Backend:** PHI harvest lock, GPS validation and database-level booking conflict prevention, not just hidden buttons in the UI.
-- **Controlled AI:** drugs, doses and PHI always come from expert-approved structured data and the LLM never generates numbers; the engineer decides the disease and treatment.
-- **One-command reproducibility:** `./deploy/start.sh farm|lab` builds the whole stack and loads demo data; CI runs E2E on a clean stack for both applications.
-- **Transparent open source:** dependency and license table, CycloneDX SBOMs, SPDX headers, secret scanning with gitleaks.
+- **One core, many applications:** Farm and Lab share one core; adding an application needs no change to the core.
+- **Business safety:** key rules are checked in the Backend and the database, not just in the UI.
+- **Controlled AI:** AI only assists; drug and dose information comes from expert-approved data and the engineer makes the decision.
+- **One-command run:** builds the whole system with demo data, with automated tests on a clean environment.
+- **Transparent open source:** licenses and the list of software components are public, with automatic scanning for leaked passwords.
 
 ## 🧱 Three-tier architecture
 
@@ -60,38 +33,38 @@ flowchart TB
     direction LR
     FARM["DX-Farm"] ~~~ LAB["DX-Lab"]
   end
-  subgraph T2["Tier 2: H-P-D-I"]
+  subgraph T2["Tier 2: People, Process, Data, Intelligence"]
     direction LR
-    H["Human"] ~~~ P["Process"] ~~~ D["Data"] ~~~ I["Intelligence"]
+    H["People"] ~~~ P["Process"] ~~~ D["Data"] ~~~ I["AI intelligence"]
   end
-  subgraph T1["Tier 1: Headless Open-Core"]
+  subgraph T1["Tier 1: Shared core"]
     direction LR
-    SSO["Keycloak<br/>SSO"] ~~~ GW["APISIX<br/>Gateway"] ~~~ DATA["PostgreSQL<br/>MinIO"] ~~~ WF["Workflow<br/>Notifications"] ~~~ AI["AI gateway"]
+    SSO["Single<br/>sign-on"] ~~~ GW["System<br/>gateway"] ~~~ DATA["Data<br/>and images"] ~~~ WF["Workflows<br/>and notifications"] ~~~ AI["AI gateway"]
   end
   T3 --> T2 --> T1
 ```
 
 | Tier | Components |
 |---|---|
-| 1. Open-Core (headless, no end-user UI) | Backend core, Keycloak (SSO), APISIX, PostgreSQL, MinIO |
-| 2. H-P-D-I | Web (React) and mobile (Expo) UIs on top of the core services, plus the AI Service, BI and chat |
-| 3. Applications | `App Farm` and `App Lab` |
+| 1. Shared core (no end-user UI) | Core business logic, single sign-on, system gateway, database, image storage |
+| 2. People, Process, Data, Intelligence | Web and mobile UIs on top of the core services, plus AI, reports and chat |
+| 3. Applications | Farm and Lab |
 
 | Space | Farm | Lab |
 |---|---|---|
-| **H** Human | Keycloak, household workspaces, roles FARMER, ENGINEER, ADMIN | Keycloak, class and department workspaces, roles STUDENT, LECTURER, TECHNICIAN, ADMIN |
-| **P** Process | Approval of parcels, seasons, diagnoses and spraying; PHI harvest lock | Tickets with SLA, approved equipment loans, double-booking-proof room reservations |
-| **D** Data | PostgreSQL, MinIO, 6 BI views, Superset, Open-Meteo weather | PostgreSQL, MinIO, 5 `vw_lab_*` views, SLA and room-usage statistics |
-| **I** Intelligence | CV (YOLOv8n), RAG, LangGraph, Qwen2.5 | Explainable classification rules, regulations RAG |
+| **People** | Household accounts; roles farmer, engineer, admin | Class and department accounts; roles student, lecturer, technician, admin |
+| **Process** | Approval of parcels, seasons, diagnoses and spraying; harvest blocked until the waiting period ends | Support requests with deadlines, approved equipment loans, double-booking-proof room reservations |
+| **Data** | Database, image storage, summary reports, weather | Database, image storage, deadline and room-usage statistics |
+| **Intelligence** | Disease recognition from photos, document Q&A | Explainable classification suggestions, regulations Q&A |
 
-Every client talks only to the APISIX gateway (port `9080`); the gateway validates the Keycloak JWT and the Backend validates it again.
-Full diagrams, request flows and the interface catalog are in [`ARCHITECTURE.md`](./ARCHITECTURE.md).
+Every application goes through a single gateway that checks sign-in, and the Backend checks it again.
+Full diagrams and request flows are in [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 ## 🧩 Features
 
-**DX-Farm:** households and GPS-tagged parcels, crop seasons, disease reports with image quality checks, AI diagnosis with engineer approval, spraying records, PHI harvest lock, reminders, notification inbox, per-parcel weather, document Q&A with citations, BI dashboard; offline-first mobile app for farmers.
+**DX-Farm:** households and parcels with locations, crop seasons, disease reports with image quality checks, AI diagnosis with engineer approval, spraying records, harvest blocked until the waiting period ends, reminders, notification inbox, per-parcel weather, document Q&A with citations, summary reports; a mobile app for farmers that works offline.
 
-**DX-Lab:** support tickets with SLA and internal comments, rule-based type and priority suggestions, equipment loans with repair log, room booking with database-level conflict prevention, regulations Q&A with source and license, statistics.
+**DX-Lab:** support requests with deadlines and internal comments, type and priority suggestions, equipment loans with repair log, room booking without time conflicts, regulations Q&A with source and license, statistics.
 
 Feature maturity and test coverage are in [`docs/TESTING.md`](./docs/TESTING.md); outstanding work is in [`docs/BACKLOG.md`](./docs/BACKLOG.md).
 
@@ -222,7 +195,7 @@ Top-level documents: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](
 
 - **Report a bug:** [open a bug report](https://github.com/HaUI-ImplSolution/DX-OS/issues/new?template=bug_report.md).
 - **Suggest a feature:** [open a feature request](https://github.com/HaUI-ImplSolution/DX-OS/issues/new?template=feature_request.md).
-- **Submit code:** read [`CONTRIBUTING.md`](./CONTRIBUTING.md) (workflow, conventions, how to add a new application) and follow [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
+- **Submit code:** read [`CONTRIBUTING.md`](./CONTRIBUTING.md) and follow [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
 
 ## 📞 Contact
 

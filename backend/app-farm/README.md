@@ -48,7 +48,7 @@ Cột trạng thái trên bảng của Farm phản chiếu trạng thái đó.
 ## Interface của core đã cài
 
 Cấu hình bằng bean ở `FarmAppModule` (id `farm`, workspace `HOUSEHOLD`), `FarmSecurityPolicies` (vai, danh mục công khai, FARMER chỉ qua mobile), `FarmWorkflowConfig` (5 loại duyệt), `FarmNotificationConfig` (13 loại thông báo, kênh `ADMIN` và `ENGINEER`), `FarmPlatformConfig` (6 view `vw_*` và 3 bảng danh mục), `FarmKnowledgeNamespace` (`farm`) và `DiseaseImageProcessor` (chỉ JPEG/PNG, xóa EXIF).
-Bảng interface đầy đủ ở [`ARCHITECTURE.md`](../../ARCHITECTURE.md) mục 3.
+Những gì ứng dụng khai báo ở [`ARCHITECTURE.md`](../../ARCHITECTURE.md) mục 3.
 
 ## Mã thửa, mã vụ và duyệt
 

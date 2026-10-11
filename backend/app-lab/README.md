@@ -70,7 +70,7 @@ Cột `status` trên bảng của Lab phản chiếu trạng thái đó, do hand
 ## Interface của core đã cài
 
 Cấu hình bằng bean ở `LabAppModule` (id `lab`, workspace `CLASS` và `DEPARTMENT`), `LabSecurityPolicies` (4 vai), `LabWorkflowConfig` (`TICKET`, `DEVICE_LOAN`, `ROOM_BOOKING`), `LabNotificationConfig` (12 loại thông báo, kênh `technician` và `admin`), `LabPlatformConfig` (các view `vw_lab_*`), `LabKnowledgeNamespace` (`lab`) và `TicketAttachmentProcessor` (JPEG, PNG, PDF tối đa 5 MiB, loại theo nội dung).
-Bảng interface đầy đủ ở [`ARCHITECTURE.md`](../../ARCHITECTURE.md) mục 3.
+Những gì ứng dụng khai báo ở [`ARCHITECTURE.md`](../../ARCHITECTURE.md) mục 3.
 
 ## Dữ liệu
 

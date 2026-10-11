@@ -84,7 +84,7 @@ Mỗi mục nêu nội dung cần viết và nơi lấy số liệu, bằng ch�
 | Mục báo cáo | Trang | Nội dung | Nguồn |
 |---|---|---|---|
 | 1. Bài toán và phạm vi | 1 | DX-OS Open-Core, hai ứng dụng minh họa (DX-Farm, DX-Lab), người dùng, luồng xương sống của từng ứng dụng | `README.md` |
-| 2. Kiến trúc Open-Core 3 tầng | 1-2 | Sơ đồ 3 tầng, module và ranh giới biên dịch, danh sách interface, cách chọn ứng dụng lúc chạy | `ARCHITECTURE.md` mục 1 đến 4 |
+| 2. Kiến trúc Open-Core 3 tầng | 1-2 | Sơ đồ 3 tầng, module và ranh giới biên dịch, những gì ứng dụng khai báo, cách chọn ứng dụng lúc chạy | `ARCHITECTURE.md` mục 1 đến 4 |
 | 3. Dịch vụ dùng chung của Core | 1 | Identity/SSO, API Gateway, dữ liệu, workflow, thông báo, cổng AI: ai cung cấp, ứng dụng khai báo gì | `ARCHITECTURE.md` mục 3, `sso/README.md`, `deploy/apisix/` |
 | 4. H-P-D-I qua hai ứng dụng | 2 | Farm: vai và phạm vi hộ, duyệt và khóa PHI, view BI, CV và RAG. Lab: vai, ba loại case, SLA, view BI, luật phân loại và RAG | `backend/app-farm/README.md`, `backend/app-lab/README.md` |
 | 5. Trí tuệ nhân tạo | 1 | CV, RAG, LangGraph, LLM, luật phân loại; ngưỡng, giới hạn, vai trò kỹ sư; dữ liệu và nguồn gốc | `ai/README.md`, `COUNCIL_QA.md` câu 6 |

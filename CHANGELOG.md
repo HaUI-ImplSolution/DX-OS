@@ -14,7 +14,7 @@ Hai mục đầu liệt kê các bản phát hành; lịch sử chi tiết theo 
 
 ### Đã thay đổi
 
-- README song ngữ có mục lục, yêu cầu hệ thống và xử lý sự cố; sơ đồ kiến trúc chia theo từng tầng.
+- README song ngữ viết ngắn gọn, có yêu cầu hệ thống và xử lý sự cố; `ARCHITECTURE.md` có tổng quan các dịch vụ và sơ đồ theo từng tầng.
 - Repository đổi tên thành `DX-OS`; liên kết trong tài liệu và danh mục nguồn tri thức Lab trỏ về tên mới.
 
 ## [1.0.0] - 2026-10-13

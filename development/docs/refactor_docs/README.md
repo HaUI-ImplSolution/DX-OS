@@ -66,7 +66,7 @@ flowchart TB
 |---|---|---|---|---|
 | [C0](./phase-c0-chot-thiet-ke-nen/00_OVERVIEW.md) | Chốt thiết kế và nền | 1 ngày | Không | Hoàn tất |
 | [C1](./phase-c1-tach-module-giu-hanh-vi/00_OVERVIEW.md) | Tách Maven đa module, giữ nguyên hành vi | 4-5 ngày | C0 | Hoàn tất |
-| [C2](./phase-c2-tong-quat-hoa-core-spi/00_OVERVIEW.md) | Tổng quát hóa core và các interface | 5-6 ngày | C1 | Draft |
+| [C2](./phase-c2-tong-quat-hoa-core-spi/00_OVERVIEW.md) | Tổng quát hóa core và các interface | 5-6 ngày | C1 | Hoàn tất |
 | [C3](./phase-c3-ten-trung-tinh-realm/00_OVERVIEW.md) | Tên trung tính cho realm và client | 2 ngày | C1 | Draft |
 | [C4](./phase-c4-app-lab-backend/00_OVERVIEW.md) | App Lab: backend | 6-7 ngày | C2 | Draft |
 | [C5](./phase-c5-web-shell-lab-ui/00_OVERVIEW.md) | Web: vỏ chọn app và giao diện Lab | 4-5 ngày | C2, C4 | Draft |

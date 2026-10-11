@@ -9,6 +9,7 @@
 | TO3 | Đường dẫn workspace | A: đổi `/households` thành `/workspaces`. B: core có `/workspaces`, Farm giữ `/households` làm bí danh | B | Farm không đổi hợp đồng; web, seed, E2E giữ nguyên | Thêm một controller bí danh ở Farm | Thấp |
 | TO4 | Loại thông báo | A: enum ở core. B: mã chuỗi do app đăng ký | B | Lab thêm loại không sửa core | Mất kiểm tra loại lúc biên dịch | Vừa |
 | TO5 | Interface hóa | A: interface cho mọi dịch vụ. B: chỉ cho điểm Farm và Lab khác nhau | B | Ít trừu tượng thừa | Có thể thiếu interface khi app thứ ba cần | Thấp |
+| TO6 | Nơi đặt controller có tên trường riêng của app (`households`, `approval-requests`, `knowledge/ask`) | A: controller trung tính ở core, Farm đổi JSON. B: core giữ khung xử lý và facade, controller ở app | B | Farm giữ nguyên hợp đồng; core không có từ vựng nông nghiệp | Mỗi app tự viết lớp HTTP mỏng cho các path này | Thấp |
 
 Kết luận: TO1 đã chốt ngày 09/10/2026 (RD10); các mục còn lại áp dụng ngay.
 
@@ -27,6 +28,9 @@ Kết luận: TO1 đã chốt ngày 09/10/2026 (RD10); các mục còn lại áp
 - Interface cho thời tiết, lịch nhắc, CV vẫn chỉ của Farm; Lab không dùng.
 - Không viết test mới cho việc "cắm app" (RD6).
 - Web chưa có vỏ chọn app (C5); đổi tên trang ở phase này theo từng trang.
+- Service account của backend chưa có quyền tạo vai Keycloak; `RoleBootstrap` chỉ ghi log khi bị từ chối. Cấp quyền ở C3.
+- Bảng `documents` của AI vector DB vẫn có cột `disease_code` (schema của AI, không phải core).
+- OpenAPI lệch baseline ở hậu tố `operationId`, mô tả `workflow-cases` và kiểu tham số `status` của `workflow-cases`.
 
 ## 4. Điều kiện dừng và rollback
 

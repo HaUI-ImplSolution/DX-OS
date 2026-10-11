@@ -5,6 +5,28 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Backend (Spring Boot — `backend`)
 
+### 2026-10-11
+
+**Đã xong — Core trung tính cho nhiều ứng dụng:**
+
+- Đơn vị dữ liệu là `Workspace` (`code`, `type`, `name`, liên hệ, thuộc tính) với `WorkspaceMember` nhiều-nhiều (vai `OWNER` hoặc `MEMBER`).
+  Tiền tố mã theo loại do app đăng ký; Farm đăng ký `HOUSEHOLD` với tiền tố `H`.
+  Core có `/api/v1/workspaces`; Farm giữ `/api/v1/households` với JSON như cũ.
+- Workflow cấu hình được: mỗi loại case khai báo trạng thái, bước chuyển và vai bằng `CaseTypeDefinition`; trạng thái là chuỗi.
+  Farm đăng ký năm loại theo luồng duyệt chuẩn (`PENDING` → `APPROVED`, `REJECTED`, `CANCELLED`; `REJECTED` → `PENDING`).
+  Loại case chưa đăng ký bị từ chối.
+- Hộp duyệt chạy ở core (`ApprovalInbox`); app mô tả entity qua `CaseSummaryProvider`.
+  Giới hạn số yêu cầu chờ (`MAX_PENDING_REQUESTS`) thuộc core, loại case tính giới hạn do app khai báo.
+- Thông báo trong app ở core: `notifications` nằm ở migration core, `type` là mã chuỗi do app đăng ký.
+  Khóa kênh chat là chuỗi; webhook của kênh đọc từ `mattermost.webhook.url-<khóa>` và lùi về `mattermost.webhook.url`.
+- Bảo mật theo interface: `RoleProvider` (core tạo vai thiếu trong Keycloak lúc khởi động, thử lại nền khi Keycloak chưa lên; thiếu quyền tạo vai thì chỉ ghi log), `EndpointPolicyContributor`, `ClientRestrictionPolicy`.
+  `UserContext` có `roles`, `hasRole`, `isStaff`.
+- `GET /api/v1/app` trả id, tên, vai, menu và loại workspace của app đang chạy.
+- Cổng AI (`AiGateway`) và hỏi đáp tri thức (`KnowledgeGateway`) ở core; AI service nhận `namespace` (mặc định `farm`) ở `POST /api/v1/disease/knowledge/retrieve`.
+- `SupersetReadOnlyRoleSeeder` cấp quyền theo `BiDatasetProvider`; `GET /api/v1/system/status` gom `HealthContributor`; `FileStore` chạy `FileProcessor` của mục đích trước khi lưu tệp.
+- Lỗi poka-yoke mang dữ liệu đi kèm dạng `data` (Farm đưa `harvestLockedUntil` vào đó).
+- Web và mobile nhận trạng thái case và loại thông báo ngoài danh sách đã biết, hiển thị nguyên giá trị.
+
 ### 2026-10-09
 
 **Đã xong — Backend đa module:**
@@ -291,6 +313,12 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Mobile (`mobile`, Expo)
 
+### 2026-10-11
+
+**Đã xong — Loại thông báo mở rộng:**
+
+- `AppNotification.type` và `relatedEntityType` nhận giá trị ngoài danh sách đã biết; thông báo không điều hướng được vẫn hiển thị tiêu đề và nội dung.
+
 ### 2026-10-07
 
 - Thông báo lỗi từ Backend hiển thị bằng tiếng Việt theo `errorCode` (`src/api/errorMessages.ts`).
@@ -374,6 +402,13 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - `mobile/README.md`: chạy thử trên điện thoại thật với IP LAN, biến môi trường, tài khoản demo, kiểm tra mã nguồn.
 
 ## AI Service (Python)
+
+### 2026-10-11
+
+**Đã xong — Namespace cho truy vấn RAG:**
+
+- `POST /api/v1/disease/knowledge/retrieve` nhận `namespace` (mặc định `farm`); retriever chỉ đọc tài liệu cùng namespace.
+- Bảng `documents` có cột `namespace` (mặc định `farm`); ingest của bệnh lúa ghi `farm`.
 
 ### 2026-10-08
 
@@ -478,6 +513,12 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Frontend (`frontend`)
 
+### 2026-10-11
+
+**Đã xong — Trạng thái case dạng chuỗi:**
+
+- `CaseStatus` là chuỗi; `labels.ts` có `statusLabel` và `statusTone`, trạng thái chưa biết hiển thị nguyên giá trị với tông trung tính.
+
 ### 2026-10-07
 
 - Thông báo lỗi từ Backend hiển thị bằng tiếng Việt theo `errorCode` (`src/errorMessages.ts`).
@@ -554,6 +595,13 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Đã test qua trình duyệt thật với từng role, xác nhận UI và 401/403 đúng chỗ.
 
 ## Deploy (`deploy`)
+
+### 2026-10-11
+
+**Đã xong — Dữ liệu demo theo workspace:**
+
+- `deploy/demo/seed_demo.py` thêm nông hộ mẫu vào bảng `workspaces` (loại `HOUSEHOLD`) và lấy mã từ `workspace_code_counter`.
+- `application.yaml` giữ cấu hình dùng chung của core (`ai.service.*`, `knowledge.min-score`, `app.max-pending-requests`, `mattermost.webhook.url`); `application-farm.yaml` chỉ giữ phần của Farm.
 
 ### 2026-10-07
 

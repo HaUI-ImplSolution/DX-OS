@@ -16,7 +16,7 @@ Sơ đồ đầy đủ và luồng request ở [`development/docs/submission/ARC
 |---|---|
 | Ứng dụng DX-Farm | Thửa, vụ mùa, báo cáo sâu bệnh, chẩn đoán, khai phun thuốc, thu hoạch; web (kỹ sư, admin) và mobile (nông dân) |
 | H-P-D-I | [H] Keycloak, Mattermost, nông hộ; [P] workflow duyệt, vòng đời vụ mùa, thông báo; [D] PostgreSQL, MinIO, Superset, thời tiết; [I] CV, RAG, LangGraph |
-| Core dùng chung | `core.identity`, `core.workflow`, `core.storage` của Backend; cổng API APISIX |
+| Core dùng chung | `core.identity` (workspace, thành viên), `core.workflow` (loại case cấu hình được, hộp duyệt), `core.notification`, `core.storage`, `core.ai`, `core.knowledge`, `core.security` của Backend; cổng API APISIX |
 
 Mọi client chỉ gọi gateway APISIX (cổng `9080`).
 Gateway kiểm JWT Keycloak, giới hạn tốc độ các thao tác tốn tài nguyên và chuyển tới Backend, Keycloak, MinIO, web và portal.
@@ -128,7 +128,7 @@ Nông dân chỉ dùng app mobile; web và Superset từ chối tài khoản ch�
 
 Tài liệu tương tác ở `/swagger-ui.html`, sinh từ code.
 Mọi response bọc trong `ApiResponse` (`success`, `message`, `data`, `timestamp`); response lỗi có thêm `errorCode` ổn định để client hiển thị tiếng Việt.
-Nhóm endpoint chính: `parcels`, `crop-seasons`, `disease-reports`, `disease-reports/{id}/diagnosis`, `workflow-cases`, `approval-requests`, `households`, `notifications`, `knowledge/ask`, `system/status`.
+Nhóm endpoint chính: `parcels`, `crop-seasons`, `disease-reports`, `disease-reports/{id}/diagnosis`, `workflow-cases`, `approval-requests`, `households`, `workspaces`, `notifications`, `knowledge/ask`, `system/status`, `app`.
 
 ### Dừng và dựng lại
 

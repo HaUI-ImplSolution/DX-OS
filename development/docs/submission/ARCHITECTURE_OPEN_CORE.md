@@ -14,7 +14,7 @@ flowchart TB
 
   subgraph T2["Tầng 2: bốn không gian H-P-D-I"]
     direction LR
-    H["<b>H</b> Human<br/>Keycloak, Household,<br/>ma trận quyền"]
+    H["<b>H</b> Human<br/>Keycloak, Workspace,<br/>ma trận quyền"]
     P["<b>P</b> Process<br/>workflow_case,<br/>workflow_event"]
     D["<b>D</b> Data<br/>PostgreSQL, MinIO,<br/>Superset"]
     I["<b>I</b> Intelligence<br/>AI Service"]
@@ -22,9 +22,10 @@ flowchart TB
 
   subgraph T1["Tầng 1: Core dùng chung"]
     direction LR
-    ID["<b>core.identity</b><br/>Household, KeycloakAdminClient"]
-    WF["<b>core.workflow</b><br/>WorkflowCase, WorkflowEvent,<br/>WorkflowService"]
+    ID["<b>core.identity</b><br/>Workspace, WorkspaceMember,<br/>KeycloakAdminClient"]
+    WF["<b>core.workflow</b><br/>WorkflowCase, WorkflowEvent,<br/>WorkflowService, ApprovalInbox"]
     ST["<b>core.storage</b><br/>StorageService (S3, link có hạn)"]
+    NT["<b>core.notification</b><br/>Notification, kênh chat"]
     GW["<b>Gateway</b><br/>APISIX standalone"]
   end
 
@@ -36,6 +37,8 @@ flowchart TB
 | 1. Core | Identity | `backend/dx-core/.../core/identity`, `sso/` (Keycloak) |
 | 1. Core | Workflow | `backend/dx-core/.../core/workflow`, bảng `workflow_case`, `workflow_event` |
 | 1. Core | Storage | `backend/dx-core/.../core/storage`, `minio/` |
+| 1. Core | Notification | `backend/dx-core/.../core/notification`, bảng `notifications` |
+| 1. Core | AI gateway, tri thức | `backend/dx-core/.../core/ai`, `.../core/knowledge` |
 | 1. Core | Gateway | `deploy/apisix/` |
 | 2. H-P-D-I | Human, Process, Data, Intelligence | các thành phần Core ở trên cộng `ai/`, `bi/`, `chat/` |
 | 3. Ứng dụng | DX-Farm | `backend/app-farm`, `frontend/`, `mobile/`, `ai/`, `data/` |
@@ -44,16 +47,20 @@ flowchart TB
 
 - Backend gồm bốn module Maven: `dx-core-api` (interface, DTO, lỗi), `dx-core` (cài đặt dùng chung), `app-farm` (nghiệp vụ nông nghiệp) và `dx-host` (chạy được, chọn app bằng `DXOS_APP`).
 - `dx-core` không import gì từ nghiệp vụ nông nghiệp; nó chỉ phụ thuộc `dx-core-api`.
-  `WorkflowService` nhận `caseType`, `entityType`, `entityId` dạng chuỗi và số, không biết `Diagnosis` là gì.
+  `WorkflowService` nhận `caseType`, `entityType`, `entityId` dạng chuỗi và số, không biết `Diagnosis` là gì; trạng thái và bước chuyển của mỗi loại case do app khai báo bằng `CaseTypeDefinition`.
   `StorageService` nhận khóa object và byte, không biết đó là ảnh báo cáo.
+  Vai, endpoint công khai, loại workspace, loại thông báo, kênh chat, view BI và nguồn tri thức do app khai báo qua interface; core chỉ gom các bean đó lúc khởi động.
 - `app-farm` chỉ có `dx-core-api` trên classpath và gọi Core qua các facade của module này:
   - `DiagnosisService` mở case `DIAGNOSIS_APPROVAL` và ghi bước duyệt qua `WorkflowOperations`.
   - `DiagnosisService` mở case `TREATMENT_CONFIRMATION` khi nông dân khai phun thuốc và ghi bước xác nhận của kỹ sư.
-  - `FileStorageService` làm sạch ảnh rồi lưu qua `ObjectStorage`.
+  - `FileStorageService` lưu ảnh qua `FileStore`; `DiseaseImageProcessor` làm sạch ảnh trước khi lưu.
   - `ParcelService` tra nông hộ qua `WorkspaceDirectory` và giữ `household_id` dạng số.
+  - Hộp duyệt chạy ở core (`ApprovalInbox`); Farm mô tả từng loại entity qua `CaseSummaryProvider`.
+  - Thông báo ghi qua `NotificationPublisher`, hỏi đáp tri thức qua `KnowledgeGateway`, gọi AI qua `AiGateway`.
 - Đổi ứng dụng (ví dụ làm ứng dụng thứ hai) chỉ thêm module ứng dụng mới.
   `dx-core-api`, `dx-core` và cấu hình `deploy/apisix/` giữ nguyên.
-  Ứng dụng mới chọn `caseType` riêng, ví dụ `PARCEL_APPROVAL`, và dùng lại bảng `workflow_case`, `workflow_event` và API `/api/v1/workflow-cases`.
+  Ứng dụng mới khai báo `caseType` riêng, ví dụ `PARCEL_APPROVAL`, và dùng lại bảng `workflow_case`, `workflow_event` và API `/api/v1/workflow-cases`.
+  `GET /api/v1/app` trả id, tên, vai và menu của app đang chạy cho client.
 - Ranh giới là ràng buộc lúc biên dịch: compiler từ chối mọi import từ `app-farm` vào ruột `dx-core`.
 
 ## 3. Sơ đồ luồng request

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
-package HaUI.ImplSolution.dxos.farm.repository;
+package HaUI.ImplSolution.dxos.core.notification;
 
-import HaUI.ImplSolution.dxos.farm.model.Notification;
 import java.time.Instant;
 import java.util.Optional;
 import org.springframework.data.domain.Page;

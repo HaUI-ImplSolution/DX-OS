@@ -1,10 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
-package HaUI.ImplSolution.dxos.farm.model;
+package HaUI.ImplSolution.dxos.core.notification;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -35,9 +33,9 @@ public class Notification {
   @Column(nullable = false)
   private String recipientUserId;
 
-  @Enumerated(EnumType.STRING)
+  // A type the running app registered
   @Column(nullable = false)
-  private NotificationType type;
+  private String type;
 
   @Column(nullable = false)
   private String title;
@@ -45,8 +43,7 @@ public class Notification {
   @Column(nullable = false, length = 1000)
   private String body;
 
-  // Entity the message is about, so the app can open it: PARCEL (parcel code), CROP_SEASON
-  // (season id) or DISEASE_REPORT (report id)
+  // Entity the message is about, so a client can open it
   private String relatedEntityType;
 
   private String relatedEntityRef;

@@ -1,10 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
-package HaUI.ImplSolution.dxos.farm.controller;
+package HaUI.ImplSolution.dxos.core.notification;
 
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
-import HaUI.ImplSolution.dxos.farm.dto.NotificationResponse;
 import HaUI.ImplSolution.dxos.core.api.dto.PageResponse;
-import HaUI.ImplSolution.dxos.farm.service.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Map;
@@ -20,9 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Notification", description = "In-app inbox of the signed-in account")
 public class NotificationController {
 
-  private final NotificationService notificationService;
+  private final NotificationInboxService notificationService;
 
-  public NotificationController(NotificationService notificationService) {
+  public NotificationController(NotificationInboxService notificationService) {
     this.notificationService = notificationService;
   }
 

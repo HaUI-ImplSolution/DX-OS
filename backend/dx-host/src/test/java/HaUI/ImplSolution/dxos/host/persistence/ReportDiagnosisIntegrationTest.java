@@ -6,10 +6,18 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import HaUI.ImplSolution.dxos.core.config.TimeConfig;
-import HaUI.ImplSolution.dxos.core.identity.Household;
+import HaUI.ImplSolution.dxos.core.identity.Workspace;
 import HaUI.ImplSolution.dxos.core.api.storage.ObjectStorage;
-import HaUI.ImplSolution.dxos.core.identity.HouseholdWorkspaceDirectory;
+import HaUI.ImplSolution.dxos.core.identity.WorkspaceDirectoryService;
 import HaUI.ImplSolution.dxos.core.workflow.WorkflowService;
+import HaUI.ImplSolution.dxos.core.workflow.PendingRequestLimiter;
+import HaUI.ImplSolution.dxos.core.notification.NotificationInboxService;
+import HaUI.ImplSolution.dxos.core.notification.NotificationTypes;
+import HaUI.ImplSolution.dxos.farm.FarmNotificationConfig;
+import HaUI.ImplSolution.dxos.core.workflow.WorkflowDefinitions;
+import HaUI.ImplSolution.dxos.core.api.user.UserContext;
+import HaUI.ImplSolution.dxos.farm.FarmAppModule;
+import HaUI.ImplSolution.dxos.farm.FarmWorkflowConfig;
 import HaUI.ImplSolution.dxos.core.workflow.WorkflowCaseRepository;
 import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowStatus;
 import HaUI.ImplSolution.dxos.core.api.dto.*;
@@ -49,9 +57,11 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
 @Import({DiagnosisService.class, DiseaseReportService.class, TreatmentRuleService.class,
-    CropSeasonService.class, SeasonCalendar.class, PendingRequestLimiter.class,
-    WorkflowService.class, NotificationService.class, HouseholdWorkspaceDirectory.class,
-    TimeConfig.class, PersistenceTestConfig.class})
+    CropSeasonService.class, SeasonCalendar.class, PendingRequestLimiter.class, FarmAppModule.class,
+    WorkflowService.class, WorkflowDefinitions.class, FarmWorkflowConfig.class,
+    NotificationService.class, NotificationInboxService.class, NotificationTypes.class,
+    FarmNotificationConfig.class, WorkspaceDirectoryService.class, TimeConfig.class,
+    PersistenceTestConfig.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class ReportDiagnosisIntegrationTest {
   @Container
@@ -88,6 +98,8 @@ class ReportDiagnosisIntegrationTest {
   @MockitoBean
   CurrentUser user;
   @MockitoBean
+  UserContext userContext;
+  @MockitoBean
   FileStorageService storage;
   @MockitoBean
   ObjectStorage objectStorage;
@@ -101,8 +113,8 @@ class ReportDiagnosisIntegrationTest {
   void setup() {
     tx = new TransactionTemplate(transactionManager);
     tx.executeWithoutResult(status -> {
-      Household household =
-          Household.builder().code("H-" + UUID.randomUUID()).fullName("Test farmer").build();
+      Workspace household = Workspace.builder().code("H-" + UUID.randomUUID()).type("HOUSEHOLD")
+          .name("Test farmer").build();
       em.persist(household);
       Parcel parcel = Parcel.builder().code("P-" + UUID.randomUUID()).householdId(household.getId())
           .farmerName("Test farmer").areaHectares(BigDecimal.ONE)

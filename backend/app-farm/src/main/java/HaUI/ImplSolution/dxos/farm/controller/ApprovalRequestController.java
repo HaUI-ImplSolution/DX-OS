@@ -1,13 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.farm.controller;
 
-import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowStatus;
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
+import HaUI.ImplSolution.dxos.core.api.workflow.ApprovalInbox;
+import HaUI.ImplSolution.dxos.core.api.workflow.InboxDetail;
+import HaUI.ImplSolution.dxos.core.api.workflow.InboxItem;
+import HaUI.ImplSolution.dxos.core.api.workflow.InboxQuery;
+import java.util.LinkedHashMap;
 import HaUI.ImplSolution.dxos.farm.dto.ApprovalRequestDetailResponse;
 import HaUI.ImplSolution.dxos.farm.dto.ApprovalRequestResponse;
 import HaUI.ImplSolution.dxos.core.api.dto.PageResponse;
-import HaUI.ImplSolution.dxos.farm.service.ApprovalRequestService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -26,10 +31,10 @@ import org.springframework.web.bind.annotation.RestController;
 @PreAuthorize("hasAnyRole('ENGINEER','ADMIN')")
 public class ApprovalRequestController {
 
-  private final ApprovalRequestService approvalRequestService;
+  private final ApprovalInbox approvalInbox;
 
-  public ApprovalRequestController(ApprovalRequestService approvalRequestService) {
-    this.approvalRequestService = approvalRequestService;
+  public ApprovalRequestController(ApprovalInbox approvalInbox) {
+    this.approvalInbox = approvalInbox;
   }
 
   @GetMapping
@@ -41,7 +46,9 @@ public class ApprovalRequestController {
           + " (yyyy-MM-dd, inclusive). size is capped at 100.")
   public ApiResponse<PageResponse<ApprovalRequestResponse>> list(
       @RequestParam(required = false) String caseType,
-      @RequestParam(required = false) WorkflowStatus status,
+      @Parameter(
+          schema = @Schema(allowableValues = {"PENDING", "APPROVED", "REJECTED", "CANCELLED"}))
+      @RequestParam(required = false) String status,
       @RequestParam(required = false) String householdCode,
       @RequestParam(required = false) String assignedTo,
       @RequestParam(defaultValue = "false") boolean unassigned,
@@ -50,14 +57,27 @@ public class ApprovalRequestController {
       @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size,
       @AuthenticationPrincipal Jwt jwt) {
     String assignee = "me".equals(assignedTo) ? jwt.getSubject() : assignedTo;
-    return ApiResponse.success(approvalRequestService.list(caseType, status, householdCode,
-        assignee, unassigned, from, to, page, size));
+    InboxQuery query =
+        new InboxQuery(caseType, status, householdCode, assignee, unassigned, from, to);
+    return ApiResponse
+        .success(approvalInbox.list(query, page, size).map(ApprovalRequestController::toResponse));
   }
 
   @GetMapping("/{caseId}")
   @Operation(summary = "One request with its timeline",
       description = "ENGINEER or ADMIN only. 404 for an unknown case id.")
   public ApiResponse<ApprovalRequestDetailResponse> detail(@PathVariable Long caseId) {
-    return ApiResponse.success(approvalRequestService.detail(caseId));
+    InboxDetail detail = approvalInbox.detail(caseId);
+    return ApiResponse
+        .success(new ApprovalRequestDetailResponse(toResponse(detail.item()), detail.events()));
+  }
+
+  private static ApprovalRequestResponse toResponse(InboxItem item) {
+    var workflowCase = item.workflowCase();
+    return new ApprovalRequestResponse(workflowCase.id(), workflowCase.caseType(),
+        workflowCase.status(), item.summary().title(),
+        item.workspace() != null ? item.workspace().code() : null, item.summary().requesterName(),
+        new LinkedHashMap<>(item.summary().details()), workflowCase.createdAt(),
+        workflowCase.assignedTo(), workflowCase.assignedToName(), workflowCase.updatedAt());
   }
 }

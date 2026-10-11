@@ -3,6 +3,7 @@ package HaUI.ImplSolution.dxos.farm.service;
 
 import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowActor;
 import HaUI.ImplSolution.dxos.core.api.workflow.CaseView;
+import HaUI.ImplSolution.dxos.core.api.workflow.PendingRequestLimit;
 import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowOperations;
 import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowStatus;
 import HaUI.ImplSolution.dxos.farm.dto.CropSeasonCreateRequest;
@@ -42,6 +43,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,7 +75,7 @@ public class CropSeasonService {
   private final CurrentUser currentUserService;
   private final WorkflowOperations workflowService;
   private final SeasonCalendar seasonCalendar;
-  private final PendingRequestLimiter pendingRequestLimiter;
+  private final PendingRequestLimit pendingRequestLimiter;
   private final ApplicationEventPublisher eventPublisher;
   private final Clock clock;
 
@@ -85,7 +87,7 @@ public class CropSeasonService {
       HarvestRescheduleRepository harvestRescheduleRepository,
       NotificationService notificationService, CurrentUser currentUserService,
       WorkflowOperations workflowService, SeasonCalendar seasonCalendar,
-      PendingRequestLimiter pendingRequestLimiter, ApplicationEventPublisher eventPublisher,
+      PendingRequestLimit pendingRequestLimiter, ApplicationEventPublisher eventPublisher,
       Clock clock) {
     this.cropSeasonRepository = cropSeasonRepository;
     this.parcelRepository = parcelRepository;
@@ -492,7 +494,7 @@ public class CropSeasonService {
     return new PokaYokeViolationException("POKA_YOKE_VIETGAP_VIOLATION",
         "Crop season is still under pesticide isolation until "
             + application.getHarvestLockedUntil(),
-        application.getHarvestLockedUntil());
+        Map.of("harvestLockedUntil", application.getHarvestLockedUntil()));
   }
 
   private IsolationStatusResponse toIsolationStatus(CropSeason season,

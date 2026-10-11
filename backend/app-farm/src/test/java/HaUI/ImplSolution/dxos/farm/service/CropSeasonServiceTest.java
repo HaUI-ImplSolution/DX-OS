@@ -8,6 +8,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import HaUI.ImplSolution.dxos.core.api.workflow.PendingRequestLimit;
 import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowOperations;
 import HaUI.ImplSolution.dxos.farm.dto.CropSeasonCreateRequest;
 import HaUI.ImplSolution.dxos.farm.dto.HarvestRequest;
@@ -70,7 +71,7 @@ class CropSeasonServiceTest {
   @Mock
   private WorkflowOperations workflowService;
   @Mock
-  private PendingRequestLimiter pendingRequestLimiter;
+  private PendingRequestLimit pendingRequestLimiter;
   @Mock
   private ApplicationEventPublisher eventPublisher;
 

@@ -3,6 +3,7 @@ package HaUI.ImplSolution.dxos.farm.service;
 
 import HaUI.ImplSolution.dxos.core.api.user.UserContext;
 import HaUI.ImplSolution.dxos.core.api.workspace.WorkspaceView;
+import HaUI.ImplSolution.dxos.farm.FarmSecurityPolicies;
 import HaUI.ImplSolution.dxos.farm.model.Parcel;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
@@ -33,11 +34,11 @@ public class CurrentUser {
   // A FARMER without ENGINEER/ADMIN is limited to their own household's parcels and approved
   // diagnoses.
   public boolean isFarmer() {
-    return userContext.isFarmer();
+    return userContext.hasRole(FarmSecurityPolicies.FARMER) && !userContext.isStaff();
   }
 
   public boolean isAdmin() {
-    return userContext.isAdmin();
+    return userContext.hasRole(FarmSecurityPolicies.ADMIN);
   }
 
   // A farmer only accesses parcels of their own household; other roles access all.

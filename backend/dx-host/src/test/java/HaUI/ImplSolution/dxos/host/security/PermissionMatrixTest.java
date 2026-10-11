@@ -20,22 +20,25 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import HaUI.ImplSolution.dxos.farm.controller.CropSeasonController;
-import HaUI.ImplSolution.dxos.farm.security.FarmSecurityConfig;
+import HaUI.ImplSolution.dxos.core.identity.CurrentUserService;
+import HaUI.ImplSolution.dxos.core.security.AppRoles;
+import HaUI.ImplSolution.dxos.farm.FarmSecurityPolicies;
 import HaUI.ImplSolution.dxos.farm.controller.DiagnosisController;
 import HaUI.ImplSolution.dxos.farm.controller.DiseaseReportController;
-import HaUI.ImplSolution.dxos.core.identity.HouseholdController;
+import HaUI.ImplSolution.dxos.farm.controller.HouseholdController;
 import HaUI.ImplSolution.dxos.farm.controller.ParcelController;
 import HaUI.ImplSolution.dxos.core.workflow.WorkflowController;
 import HaUI.ImplSolution.dxos.core.workflow.WorkflowService;
 import HaUI.ImplSolution.dxos.farm.dto.CropSeasonResponse;
 import HaUI.ImplSolution.dxos.farm.dto.DiseaseReportResponse;
-import HaUI.ImplSolution.dxos.core.identity.HouseholdCreateResponse;
-import HaUI.ImplSolution.dxos.core.identity.HouseholdResponse;
+import HaUI.ImplSolution.dxos.core.api.workspace.WorkspaceAdministration;
+import HaUI.ImplSolution.dxos.core.api.workspace.WorkspaceCreated;
+import HaUI.ImplSolution.dxos.core.api.workspace.WorkspaceDirectory;
+import HaUI.ImplSolution.dxos.core.api.workspace.WorkspaceView;
 import HaUI.ImplSolution.dxos.farm.dto.ParcelResponse;
 import HaUI.ImplSolution.dxos.farm.service.CropSeasonService;
 import HaUI.ImplSolution.dxos.farm.service.DiagnosisService;
 import HaUI.ImplSolution.dxos.farm.service.DiseaseReportService;
-import HaUI.ImplSolution.dxos.core.identity.HouseholdService;
 import HaUI.ImplSolution.dxos.farm.service.ParcelService;
 import HaUI.ImplSolution.dxos.farm.service.WeatherService;
 import java.util.List;
@@ -44,6 +47,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
@@ -59,12 +64,22 @@ import org.springframework.test.web.servlet.RequestBuilder;
 @WebMvcTest(controllers = {ParcelController.class, CropSeasonController.class,
     DiseaseReportController.class, DiagnosisController.class, HouseholdController.class,
     WorkflowController.class}, properties = "ai.service.inbound-api-key=test-key")
-@Import({SecurityConfig.class, FarmSecurityConfig.class, RestAuthenticationEntryPoint.class,
-    RestAccessDeniedHandler.class, ServiceApiKeyAuthenticationFilter.class,
-    GlobalExceptionHandler.class, ParcelController.class, CropSeasonController.class,
-    DiseaseReportController.class, DiagnosisController.class, HouseholdController.class,
-    WorkflowController.class})
+@Import({SecurityConfig.class, FarmSecurityPolicies.class, CurrentUserService.class, AppRoles.class,
+    RestAuthenticationEntryPoint.class, RestAccessDeniedHandler.class,
+    ServiceApiKeyAuthenticationFilter.class, GlobalExceptionHandler.class, ParcelController.class,
+    CropSeasonController.class, DiseaseReportController.class, DiagnosisController.class,
+    HouseholdController.class, WorkflowController.class})
 class PermissionMatrixTest {
+
+  // The controllers refer to this bean by name in their security expressions.
+  @TestConfiguration
+  static class CurrentUserBeans {
+    @Bean
+    CurrentUserService currentUserService(WorkspaceDirectory workspaceDirectory,
+        AppRoles appRoles) {
+      return new CurrentUserService(workspaceDirectory, appRoles);
+    }
+  }
 
   @Autowired
   private MockMvc mockMvc;
@@ -78,7 +93,9 @@ class PermissionMatrixTest {
   @MockitoBean
   private DiagnosisService diagnosisService;
   @MockitoBean
-  private HouseholdService householdService;
+  private WorkspaceDirectory workspaceDirectory;
+  @MockitoBean
+  private WorkspaceAdministration workspaceAdministration;
   @MockitoBean
   private WorkflowService workflowService;
   @MockitoBean
@@ -141,9 +158,10 @@ class PermissionMatrixTest {
     when(diseaseReportService.create(any(), any(), any(), any()))
         .thenReturn(new DiseaseReportResponse(1L, 1L, "x.jpg", "A", null, null, "PENDING", null,
             null, List.of(), null));
-    when(householdService.listAll()).thenReturn(List.of());
-    when(householdService.create(any())).thenReturn(new HouseholdCreateResponse(
-        new HouseholdResponse(1L, "H0001", "A", null, null, true, null), "a", "pw"));
+    when(workspaceDirectory.findAll(any())).thenReturn(List.of());
+    when(workspaceAdministration.create(any())).thenReturn(new WorkspaceCreated(
+        new WorkspaceView(1L, "H0001", "HOUSEHOLD", "A", null, null, "owner", null, null), "a",
+        "pw"));
   }
 
   @Test

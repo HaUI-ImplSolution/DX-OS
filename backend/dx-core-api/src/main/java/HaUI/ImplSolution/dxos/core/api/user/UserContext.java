@@ -3,6 +3,7 @@ package HaUI.ImplSolution.dxos.core.api.user;
 
 import HaUI.ImplSolution.dxos.core.api.workspace.WorkspaceView;
 import java.util.Optional;
+import java.util.Set;
 
 // The signed-in user of the current request, read from the verified token.
 public interface UserContext {
@@ -15,8 +16,11 @@ public interface UserContext {
   // The workspace linked to the signed-in account, if an administrator has linked one.
   Optional<WorkspaceView> currentWorkspace();
 
-  // A FARMER without ENGINEER or ADMIN.
-  boolean isFarmer();
+  // Realm roles of the signed-in user, without the ROLE_ prefix.
+  Set<String> roles();
 
-  boolean isAdmin();
+  boolean hasRole(String role);
+
+  // Holds one of the roles the running app declares as staff.
+  boolean isStaff();
 }

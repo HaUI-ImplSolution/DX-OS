@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.core.security;
 
+import HaUI.ImplSolution.dxos.core.api.security.ClientRestrictionPolicy;
+import HaUI.ImplSolution.dxos.core.api.security.EndpointPolicyContributor;
 import java.util.Collection;
 import java.util.List;
 import org.springframework.beans.factory.ObjectProvider;
@@ -11,7 +13,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
@@ -41,6 +42,9 @@ public class SecurityConfig {
   // Docker healthcheck gọi endpoint này không kèm Authorization header.
   private static final String ACTUATOR_HEALTH_ENDPOINT = "/actuator/health/**";
 
+  // Used by the web client to show whether the backing services are up.
+  private static final String SYSTEM_STATUS_ENDPOINT = "/api/v1/system/status";
+
   // Validates the signature and expiry like the default decoder, plus the audience: tokens that
   // were not issued for this API are rejected. The issuer is deliberately not checked, see
   // sso/README.md.
@@ -64,8 +68,11 @@ public class SecurityConfig {
       RestAuthenticationEntryPoint authenticationEntryPoint,
       RestAccessDeniedHandler accessDeniedHandler,
       ServiceApiKeyAuthenticationFilter serviceApiKeyAuthenticationFilter,
-      ObjectProvider<Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry>> appAuthorizations,
-      ObjectProvider<Customizer<HttpSecurity>> appCustomizers) throws Exception {
+      ObjectProvider<EndpointPolicyContributor> endpointPolicies,
+      ObjectProvider<ClientRestrictionPolicy> clientPolicies, AppRoles appRoles) throws Exception {
+    List<String> publicGetPaths = endpointPolicies.orderedStream()
+        .flatMap(policy -> policy.publicGetPaths().stream()).toList();
+    List<ClientRestrictionPolicy> restrictions = clientPolicies.orderedStream().toList();
     http.csrf(csrf -> csrf.disable()).cors(Customizer.withDefaults())
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -74,8 +81,11 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> {
           auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
               .requestMatchers(SWAGGER_ENDPOINTS).permitAll()
-              .requestMatchers(HttpMethod.GET, ACTUATOR_HEALTH_ENDPOINT).permitAll();
-          appAuthorizations.orderedStream().forEach(rules -> rules.customize(auth));
+              .requestMatchers(HttpMethod.GET, ACTUATOR_HEALTH_ENDPOINT, SYSTEM_STATUS_ENDPOINT)
+              .permitAll();
+          if (!publicGetPaths.isEmpty()) {
+            auth.requestMatchers(HttpMethod.GET, publicGetPaths.toArray(String[]::new)).permitAll();
+          }
           // AI chỉ được gọi GET qua service API key - mọi method khác ở /internal/v1/**
           // bị chặn hẳn, kể cả nếu lỡ có endpoint ghi được thêm sau này.
           auth.requestMatchers(HttpMethod.GET, "/internal/v1/**").hasAuthority("ROLE_AI_SERVICE")
@@ -83,7 +93,11 @@ public class SecurityConfig {
         }).addFilterBefore(serviceApiKeyAuthenticationFilter, BearerTokenAuthenticationFilter.class)
         .oauth2ResourceServer(oauth2 -> oauth2.authenticationEntryPoint(authenticationEntryPoint)
             .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
-    appCustomizers.orderedStream().forEach(customizer -> customizer.customize(http));
+    if (!restrictions.isEmpty()) {
+      http.addFilterAfter(
+          new ClientRestrictionFilter(restrictions, appRoles.staffRoles(), accessDeniedHandler),
+          BearerTokenAuthenticationFilter.class);
+    }
     return http.build();
   }
 

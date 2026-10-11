@@ -33,31 +33,31 @@ flowchart TB
     direction LR
     FARM["DX-Farm"] ~~~ LAB["DX-Lab"]
   end
-  subgraph T2["Tier 2: People, Process, Data, Intelligence"]
+  subgraph T2["Tier 2: H-P-D-I"]
     direction LR
-    H["People"] ~~~ P["Process"] ~~~ D["Data"] ~~~ I["AI intelligence"]
+    H["Human"] ~~~ P["Process"] ~~~ D["Data"] ~~~ I["Intelligence"]
   end
-  subgraph T1["Tier 1: Shared core"]
+  subgraph T1["Tier 1: Shared Open-Core"]
     direction LR
-    SSO["Single<br/>sign-on"] ~~~ GW["System<br/>gateway"] ~~~ DATA["Data<br/>and images"] ~~~ WF["Workflows<br/>and notifications"] ~~~ AI["AI gateway"]
+    SSO["SSO"] ~~~ GW["Gateway"] ~~~ DATA["Data<br/>and images"] ~~~ WF["Workflow<br/>and notifications"] ~~~ AI["AI gateway"]
   end
   T3 --> T2 --> T1
 ```
 
 | Tier | Components |
 |---|---|
-| 1. Shared core (no end-user UI) | Core business logic, single sign-on, system gateway, database, image storage |
-| 2. People, Process, Data, Intelligence | Web and mobile UIs on top of the core services, plus AI, reports and chat |
+| 1. Open-Core (no end-user UI) | Core business logic, SSO, Gateway, database, image storage |
+| 2. H-P-D-I | Web and mobile UIs on top of the core services, plus AI, reports and chat |
 | 3. Applications | Farm and Lab |
 
 | Space | Farm | Lab |
 |---|---|---|
-| **People** | Household accounts; roles farmer, engineer, admin | Class and department accounts; roles student, lecturer, technician, admin |
-| **Process** | Approval of parcels, seasons, diagnoses and spraying; harvest blocked until the waiting period ends | Support requests with deadlines, approved equipment loans, double-booking-proof room reservations |
-| **Data** | Database, image storage, summary reports, weather | Database, image storage, deadline and room-usage statistics |
-| **Intelligence** | Disease recognition from photos, document Q&A | Explainable classification suggestions, regulations Q&A |
+| **H** Human | Household accounts; roles farmer, engineer, admin | Class and department accounts; roles student, lecturer, technician, admin |
+| **P** Process | Approval of parcels, seasons, diagnoses and spraying; harvest blocked until the waiting period ends | Support requests with deadlines, approved equipment loans, double-booking-proof room reservations |
+| **D** Data | Database, image storage, summary reports, weather | Database, image storage, deadline and room-usage statistics |
+| **I** Intelligence | Disease recognition from photos, document Q&A | Explainable classification suggestions, regulations Q&A |
 
-Every application goes through a single gateway that checks sign-in, and the Backend checks it again.
+Every application goes through a single Gateway that checks sign-in, and the Backend checks it again.
 Full diagrams and request flows are in [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 ## 🧩 Features

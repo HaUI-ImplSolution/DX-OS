@@ -33,31 +33,31 @@ flowchart TB
     direction LR
     FARM["DX-Farm"] ~~~ LAB["DX-Lab"]
   end
-  subgraph T2["Tầng 2: Con người, Quy trình, Dữ liệu, Trí tuệ"]
+  subgraph T2["Tầng 2: H-P-D-I"]
     direction LR
-    H["Con người"] ~~~ P["Quy trình"] ~~~ D["Dữ liệu"] ~~~ I["Trí tuệ AI"]
+    H["Human"] ~~~ P["Process"] ~~~ D["Data"] ~~~ I["Intelligence"]
   end
-  subgraph T1["Tầng 1: Lõi dùng chung"]
+  subgraph T1["Tầng 1: Open-Core dùng chung"]
     direction LR
-    SSO["Đăng nhập<br/>một lần"] ~~~ GW["Cổng vào<br/>hệ thống"] ~~~ DATA["Dữ liệu<br/>và ảnh"] ~~~ WF["Quy trình<br/>và thông báo"] ~~~ AI["Cổng AI"]
+    SSO["SSO"] ~~~ GW["Gateway"] ~~~ DATA["Dữ liệu<br/>và ảnh"] ~~~ WF["Workflow<br/>và thông báo"] ~~~ AI["Cổng AI"]
   end
   T3 --> T2 --> T1
 ```
 
 | Tầng | Thành phần |
 |---|---|
-| 1. Lõi dùng chung (không có giao diện người dùng) | Xử lý nghiệp vụ lõi, đăng nhập một lần, cổng vào hệ thống, cơ sở dữ liệu, kho ảnh |
-| 2. Con người, Quy trình, Dữ liệu, Trí tuệ | Giao diện web và di động trên các dịch vụ của lõi, kèm AI, báo cáo và chat |
+| 1. Open-Core (không có giao diện người dùng) | Xử lý nghiệp vụ lõi, SSO, Gateway, cơ sở dữ liệu, kho ảnh |
+| 2. H-P-D-I | Giao diện web và di động trên các dịch vụ của lõi, kèm AI, báo cáo và chat |
 | 3. Ứng dụng | Farm và Lab |
 
 | Không gian | Farm | Lab |
 |---|---|---|
-| **Con người** | Tài khoản nông hộ; vai nông dân, kỹ sư, quản trị | Tài khoản lớp và bộ môn; vai sinh viên, giảng viên, kỹ thuật viên, quản trị |
-| **Quy trình** | Duyệt thửa, vụ mùa, chẩn đoán và khai phun; chặn thu hoạch khi chưa hết thời gian cách ly | Yêu cầu hỗ trợ có hạn xử lý, mượn thiết bị có duyệt, đặt phòng chống trùng giờ |
-| **Dữ liệu** | Cơ sở dữ liệu, kho ảnh, báo cáo tổng hợp, thời tiết | Cơ sở dữ liệu, kho ảnh, thống kê hạn xử lý và mức dùng phòng |
-| **Trí tuệ** | Nhận diện bệnh từ ảnh, hỏi đáp tài liệu | Gợi ý phân loại có giải thích, hỏi đáp quy chế |
+| **H** Human | Tài khoản nông hộ; vai nông dân, kỹ sư, quản trị | Tài khoản lớp và bộ môn; vai sinh viên, giảng viên, kỹ thuật viên, quản trị |
+| **P** Process | Duyệt thửa, vụ mùa, chẩn đoán và khai phun; chặn thu hoạch khi chưa hết thời gian cách ly | Yêu cầu hỗ trợ có hạn xử lý, mượn thiết bị có duyệt, đặt phòng chống trùng giờ |
+| **D** Data | Cơ sở dữ liệu, kho ảnh, báo cáo tổng hợp, thời tiết | Cơ sở dữ liệu, kho ảnh, thống kê hạn xử lý và mức dùng phòng |
+| **I** Intelligence | Nhận diện bệnh từ ảnh, hỏi đáp tài liệu | Gợi ý phân loại có giải thích, hỏi đáp quy chế |
 
-Mọi ứng dụng chỉ đi qua một cổng vào duy nhất để kiểm tra đăng nhập, Backend kiểm tra lại lần nữa.
+Mọi ứng dụng chỉ đi qua một Gateway duy nhất để kiểm tra đăng nhập, Backend kiểm tra lại lần nữa.
 Sơ đồ đầy đủ và luồng xử lý ở [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 ## 🧩 Tính năng

@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Draft |
+| Trạng thái | Hoàn tất |
 | Mức độ | Quan trọng |
 | Nhóm ưu tiên | A |
 | Ứng dụng và module chính | Dùng chung (hạ tầng, `dx-core`, web, mobile, demo) |
@@ -87,6 +87,8 @@ Realm import chỉ còn phần nền tảng; vai của app do core tạo lúc kh
 
 ## 10. Tài liệu cần cập nhật khi xong
 
-- [ ] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
-- [ ] `sso/README.md`, `mobile/README.md`, `deploy/demo/README.md`.
-- [ ] `LICENSES.md`, `.env.example` nếu có đổi.
+- [x] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
+- [x] `sso/README.md`, `mobile/README.md`, `deploy/demo/README.md`.
+- [x] `LICENSES.md`, `.env.example` nếu có đổi.
+
+Phần còn tồn đọng khi đóng phase ở mục 3 của `04_TRADEOFFS_RISKS.md`.

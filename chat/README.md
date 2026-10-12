@@ -37,8 +37,8 @@ Ghi vào [`LICENSES.md`](../LICENSES.md) đúng caveat này để minh bạch kh
 
 - **System Console** (UI, dễ đọc nhất): `http://localhost:${MATTERMOST_HOST_PORT}/admin_console` — đăng nhập bằng tài khoản System Admin ở trên.
   Xem/quản lý user, team, channel, plugin, cấu hình... tại đây, không cần đụng SQL.
-- **DBeaver / SQL trực tiếp**: cùng Postgres server với CSDL nghiệp vụ (`dxfarm`) — chỉ cần đổi database sang `mattermost` trong connection, hoặc tạo connection mới:
-  - Host/Port: giống connection tới `dxfarm` (`localhost`, cổng `POSTGRES_HOST_PORT`)
+- **DBeaver / SQL trực tiếp**: cùng Postgres server với CSDL nghiệp vụ (`dxos`) — chỉ cần đổi database sang `mattermost` trong connection, hoặc tạo connection mới:
+  - Host/Port: giống connection tới `dxos` (`localhost`, cổng `POSTGRES_HOST_PORT`)
   - Database: `mattermost`
   - User: `mattermost_app`
   - Password: giá trị `MATTERMOST_DB_PASSWORD` trong `deploy/.env`

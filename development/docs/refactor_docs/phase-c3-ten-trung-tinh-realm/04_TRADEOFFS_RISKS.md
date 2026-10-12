@@ -23,6 +23,9 @@ Kết luận: TO1 đã chốt ngày 09/10/2026 (RD4, tên `dxos`).
 
 - Scheme `dxfarm://` và bundle `vn.dxfarm.mobile` giữ nguyên.
 - Tên repository `DX---Farm` chưa đổi.
+- `slug` trong `mobile/app.json` và `name` trong `mobile/package.json` là `dxfarm-mobile`: định danh Expo của app Farm, đổi thì mất liên kết dự án EAS.
+- `.gitleaks.toml` còn chuỗi `dxfarm_superset_demo_secret` trong danh sách bỏ qua vì chuỗi này còn trong lịch sử git.
+- `sbom/mobile.cdx.json` và `mobile/package-lock.json` còn tên gói `dxfarm-mobile`, sinh lại cùng bản build mobile.
 
 ## 4. Điều kiện dừng và rollback
 
@@ -33,3 +36,12 @@ Kết luận: TO1 đã chốt ngày 09/10/2026 (RD4, tên `dxos`).
 
 - Lên các phase sau: C4 dùng realm và vai theo `RoleProvider`; C6 seed theo app.
 - Lên demo, tài liệu nộp bài, thời hạn: ảnh chụp, kịch bản demo và README dùng tên mới.
+
+## 6. Tồn đọng khi đóng phase
+
+| # | Nội dung | Xử lý ở |
+|---|---|---|
+| B1 | `deploy/.env` cũ còn tên `dxfarm` ở `MINIO_ACCESS_KEY` và `SUPERSET_OIDC_CLIENT_SECRET` (giá trị bí mật, không đổi tự động) | Người dùng |
+| B2 | Webhook Mattermost trong `deploy/.env` trả HTTP 400 sau khi dựng lại, nghiệp vụ không bị ảnh hưởng | Tạo lại webhook theo `chat/README.md` |
+| B3 | Người phụ trách và ngày bắt đầu/xong để trống ở `00_OVERVIEW.md` | Người dùng điền |
+| B4 | Branch `Khuong/refactor-c3-neutral-names` chưa merge vào `Khuong/main` | Người dùng quyết định |

@@ -21,7 +21,7 @@ Lần dựng đầu mất khoảng 2 phút, các lần sau dùng cache của Doc
 
 ## Cách hoạt động
 
-- Bucket `MINIO_BUCKET` (mặc định `dxfarm-uploads`) riêng tư, Backend tự tạo lúc khởi động.
+- Bucket `MINIO_BUCKET` (mặc định `dxos-uploads`) riêng tư, Backend tự tạo lúc khởi động.
 - Khóa object là `<uuid>.jpg` hoặc `<uuid>.png`; metadata đi kèm gồm `uploaded-by` (claim `sub` của người upload) và `source`.
 - Backend làm sạch ảnh (giải mã lại, bỏ EXIF/GPS) rồi mới lưu; client không bao giờ ghi thẳng vào MinIO.
 - Client nhận link có hạn (`imageUrl`, mặc định 15 phút, cấu hình ở `storage.presign-ttl` trong `application.yaml`) trong response báo cáo.
@@ -45,7 +45,7 @@ Lần dựng đầu mất khoảng 2 phút, các lần sau dùng cache của Doc
 |---|---|
 | `MINIO_ENDPOINT` | Địa chỉ nội bộ của MinIO, mặc định `http://minio:9000` |
 | `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY` | Tài khoản gốc của MinIO, Backend dùng chung; bắt buộc, secret tối thiểu 8 ký tự |
-| `MINIO_BUCKET` | Tên bucket; route ảnh ở `deploy/apisix/apisix.yaml` đang trỏ `/dxfarm-uploads/*`, đổi tên bucket thì sửa route theo |
+| `MINIO_BUCKET` | Tên bucket; route ảnh ở `deploy/apisix/apisix.yaml` đang trỏ `/dxos-uploads/*`, đổi tên bucket thì sửa route theo |
 | `APISIX_MINIO_HOST_PORT` | Cổng của listener console trên gateway, mặc định `9082` |
 | `GATEWAY_PUBLIC_URL` | Địa chỉ gateway mà trình duyệt truy cập, dùng ký link khi không có request (thông báo chat) |
 

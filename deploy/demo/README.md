@@ -1,13 +1,13 @@
 # Dữ liệu demo và kiểm thử đầu-cuối
 
 Các script dùng Python 3 (thư viện chuẩn, thêm `pillow` để tạo ảnh tổng hợp) và gọi API qua gateway `http://localhost:9080`.
-Đăng nhập bằng tài khoản demo (`admin1`, `engineer1`, `farmer1`) qua luồng Authorization Code + PKCE của Keycloak, nên token mang đúng client như app thật (`farmer1` đi qua client mobile).
+Đăng nhập bằng tài khoản demo (`admin1`, `engineer1`, `farmer1`, do `seed_demo.py` tạo) qua luồng Authorization Code + PKCE của Keycloak, nên token mang đúng client như app thật (`farmer1` đi qua client mobile).
 
 | File | Việc làm |
 |---|---|
 | `seed_demo.py` | Nạp dữ liệu demo |
 | `e2e.py` | Chạy kịch bản đầu-cuối, thoát mã 0 khi mọi bước đạt |
-| `dxfarm_client.py` | Đăng nhập và gọi API dùng chung |
+| `dxos_client.py` | Đăng nhập, gọi API và Keycloak Admin API dùng chung |
 | `docker-compose.e2e.yml` | Stack rút gọn cho CI: không BI, chat, nạp RAG, Ollama |
 | `ci_fixture_rule.sql` | Một rule thử nghiệm riêng cho CI |
 | `make_ci_env.py` | Sinh `deploy/.env` cho stack CI |
@@ -20,11 +20,12 @@ python3 deploy/demo/seed_demo.py [--base-url URL] [--images DIR]
 ```
 
 Chạy trên stack mới dựng (`deploy/reset.sh`, đợi đến khi báo mọi service sẵn sàng) và cần `deploy/.env`.
-Script đọc `.env` và gọi `docker compose exec postgres`, nên chạy trên máy đang chạy stack.
+Script đọc `.env` (tài khoản quản trị Keycloak và Postgres) và gọi `docker compose exec postgres`, nên chạy trên máy đang chạy stack.
+`e2e.py` dùng các tài khoản do seed tạo, nên chạy `seed_demo.py` trước.
 
 ### Dữ liệu được tạo
 
-**Tài khoản.** `farmer1`, `engineer1`, `admin1` có sẵn từ realm Keycloak.
+**Tài khoản.** `farmer1`, `engineer1`, `admin1` được tạo qua Keycloak Admin API cùng vai `FARMER`, `ENGINEER`, `ADMIN`; tài khoản và vai đã có thì giữ nguyên.
 Script tạo thêm `demo.hogd2` và `demo.hogd3`; mật khẩu tạm in ra một lần ở cuối lúc chạy.
 
 **Nông hộ.**

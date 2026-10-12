@@ -6,7 +6,7 @@ import DecisionActions from "../components/DecisionActions";
 import Pagination from "../components/Pagination";
 import RequestDetails from "../components/RequestDetails";
 import Section from "../components/Section";
-import { CASE_TYPE_LABEL, STATUS_LABEL, STATUS_TONE, formatDateTime } from "../labels";
+import { CASE_TYPE_LABEL, STATUS_LABEL, formatDateTime, statusLabel, statusTone } from "../labels";
 import type { ApprovalRequest, CaseStatus, CaseType, Page, Role } from "../types";
 
 interface RequestsProps {
@@ -76,7 +76,7 @@ export default function Requests({ role, onError }: RequestsProps) {
           <option value="">Mọi trạng thái</option>
           {(Object.keys(STATUS_LABEL) as CaseStatus[]).map((s) => (
             <option key={s} value={s}>
-              {STATUS_LABEL[s]}
+              {statusLabel(s)}
             </option>
           ))}
         </select>
@@ -157,7 +157,7 @@ function RequestRow({
         </td>
         <td>{formatDateTime(request.createdAt)}</td>
         <td>
-          <Badge tone={STATUS_TONE[request.status]}>{STATUS_LABEL[request.status]}</Badge>
+          <Badge tone={statusTone(request.status)}>{statusLabel(request.status)}</Badge>
         </td>
         <td>{request.assignedToName ?? "—"}</td>
         <td>

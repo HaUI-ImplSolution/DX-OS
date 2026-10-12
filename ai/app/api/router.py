@@ -130,7 +130,11 @@ def retrieve(payload: RetrieveRequest, db: Annotated[Session, Depends(get_db)]):
     if not payload.query.strip():
         raise HTTPException(422, "query must not be blank")
     return RAGRetriever().retrieve(
-        db, payload.query, top_k=payload.top_k, disease_code=payload.disease_code
+        db,
+        payload.query,
+        top_k=payload.top_k,
+        disease_code=payload.disease_code,
+        namespace=payload.namespace,
     )
 
 

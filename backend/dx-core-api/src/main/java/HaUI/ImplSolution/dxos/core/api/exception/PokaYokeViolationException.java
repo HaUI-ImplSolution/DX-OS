@@ -1,29 +1,30 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.core.api.exception;
 
-import java.time.LocalDate;
+import java.util.Map;
 
+// A business rule that protects the data refused the action. data: extra values the client shows
+// with the error, keyed by field name.
 public class PokaYokeViolationException extends RuntimeException {
 
   private final String errorCode;
-  private final LocalDate harvestLockedUntil;
+  private final Map<String, Object> data;
 
   public PokaYokeViolationException(String errorCode, String message) {
-    this(errorCode, message, null);
+    this(errorCode, message, Map.of());
   }
 
-  public PokaYokeViolationException(String errorCode, String message,
-      LocalDate harvestLockedUntil) {
+  public PokaYokeViolationException(String errorCode, String message, Map<String, Object> data) {
     super(message);
     this.errorCode = errorCode;
-    this.harvestLockedUntil = harvestLockedUntil;
+    this.data = data == null ? Map.of() : data;
   }
 
   public String getErrorCode() {
     return errorCode;
   }
 
-  public LocalDate getHarvestLockedUntil() {
-    return harvestLockedUntil;
+  public Map<String, Object> getData() {
+    return data;
   }
 }

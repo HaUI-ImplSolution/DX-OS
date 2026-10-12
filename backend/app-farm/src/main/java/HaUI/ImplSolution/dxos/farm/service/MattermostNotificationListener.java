@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.farm.service;
 
+import HaUI.ImplSolution.dxos.core.api.notification.ChatWebhook;
 import HaUI.ImplSolution.dxos.farm.event.CropSeasonCreatedEvent;
 import HaUI.ImplSolution.dxos.farm.event.DiagnosisPendingEvent;
 import HaUI.ImplSolution.dxos.farm.event.DiseaseReportCreatedEvent;
@@ -22,10 +23,10 @@ public class MattermostNotificationListener {
 
   private static final Logger log = LoggerFactory.getLogger(MattermostNotificationListener.class);
 
-  private final MattermostWebhookClient webhookClient;
+  private final ChatWebhook webhookClient;
   private final MattermostMessageBuilder messageBuilder;
 
-  public MattermostNotificationListener(MattermostWebhookClient webhookClient,
+  public MattermostNotificationListener(ChatWebhook webhookClient,
       MattermostMessageBuilder messageBuilder) {
     this.webhookClient = webhookClient;
     this.messageBuilder = messageBuilder;
@@ -62,11 +63,11 @@ public class MattermostNotificationListener {
   }
 
   private void dispatch(MattermostChannel channel, Supplier<Map<String, Object>> payload) {
-    if (!webhookClient.isEnabled(channel)) {
+    if (!webhookClient.isEnabled(channel.key())) {
       return;
     }
     try {
-      webhookClient.send(channel, payload.get());
+      webhookClient.send(channel.key(), payload.get());
     } catch (Exception e) {
       log.warn("Mattermost notification failed: {}", e.getClass().getSimpleName());
     }

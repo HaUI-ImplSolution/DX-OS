@@ -1,4 +1,4 @@
-import type { CaseStatus, CaseType } from "./types";
+import type { CaseStatus, CaseType, KnownCaseStatus } from "./types";
 
 export const CASE_TYPE_LABEL: Record<CaseType, string> = {
   PARCEL_APPROVAL: "Thửa ruộng mới",
@@ -8,19 +8,28 @@ export const CASE_TYPE_LABEL: Record<CaseType, string> = {
   TREATMENT_CONFIRMATION: "Khai phun thuốc",
 };
 
-export const STATUS_LABEL: Record<CaseStatus, string> = {
+export const STATUS_LABEL: Record<KnownCaseStatus, string> = {
   PENDING: "Chờ duyệt",
   APPROVED: "Đã duyệt",
   REJECTED: "Bị từ chối",
   CANCELLED: "Đã huỷ",
 };
 
-export const STATUS_TONE: Record<CaseStatus, "neutral" | "success" | "warning" | "danger"> = {
+export const STATUS_TONE: Record<KnownCaseStatus, "neutral" | "success" | "warning" | "danger"> = {
   PENDING: "warning",
   APPROVED: "success",
   REJECTED: "danger",
   CANCELLED: "neutral",
 };
+
+// A status the app does not know is shown as it is, in a neutral tone.
+export function statusLabel(status: CaseStatus): string {
+  return (STATUS_LABEL as Record<string, string>)[status] ?? status;
+}
+
+export function statusTone(status: CaseStatus): "neutral" | "success" | "warning" | "danger" {
+  return (STATUS_TONE as Record<string, "neutral" | "success" | "warning" | "danger">)[status] ?? "neutral";
+}
 
 export const ACTION_LABEL: Record<string, string> = {
   SUBMITTED: "Gửi yêu cầu",

@@ -1,63 +1,84 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.farm.service;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import HaUI.ImplSolution.dxos.core.api.ai.AiGateway;
+import HaUI.ImplSolution.dxos.core.api.exception.AiRequestRejectedException;
 import HaUI.ImplSolution.dxos.core.api.exception.AiServiceException;
-import com.sun.net.httpserver.HttpServer;
-import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
+import HaUI.ImplSolution.dxos.farm.dto.ImagePrecheckResponse;
+import HaUI.ImplSolution.dxos.farm.exception.AiTriageException;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
-import tools.jackson.databind.ObjectMapper;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.Resource;
+import org.springframework.util.MultiValueMap;
 
 class AiDiagnosisClientPrecheckTest {
-  @Test
-  void forwardsSanitizedImageAsAuthenticatedMultipart() throws Exception {
-    HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
-    AtomicReference<String> contentType = new AtomicReference<>();
-    AtomicReference<String> body = new AtomicReference<>();
-    AtomicReference<String> apiKey = new AtomicReference<>();
-    server.createContext("/api/v1/disease/precheck", exchange -> {
-      contentType.set(exchange.getRequestHeaders().getFirst("Content-Type"));
-      apiKey.set(exchange.getRequestHeaders().getFirst("X-Service-Api-Key"));
-      body.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.ISO_8859_1));
-      byte[] response =
-          "{\"passed\":true,\"reasons\":[],\"width\":256,\"height\":256,\"sharpness\":100,\"brightness\":120}"
-              .getBytes(StandardCharsets.UTF_8);
-      exchange.getResponseHeaders().set("Content-Type", "application/json");
-      exchange.sendResponseHeaders(200, response.length);
-      exchange.getResponseBody().write(response);
-      exchange.close();
-    });
-    server.start();
-    try {
-      var client = new AiDiagnosisClient("http://127.0.0.1:" + server.getAddress().getPort(),
-          "test-key", 1000, 3000, new ObjectMapper());
-      assertThat(client.precheck(new byte[] {(byte) 0x89, 'P', 'N', 'G'}).passed()).isTrue();
-      assertThat(contentType.get()).startsWith("multipart/form-data");
-      assertThat(apiKey.get()).isEqualTo("test-key");
-      assertThat(body.get()).contains("name=\"image\"", "Content-Type: image/png");
-    } finally {
-      server.stop(0);
+
+  // Answers every multipart call with the configured result or failure.
+  private static final class FakeGateway implements AiGateway {
+    final AtomicReference<String> path = new AtomicReference<>();
+    final AtomicReference<String> filename = new AtomicReference<>();
+    RuntimeException failure;
+
+    @Override
+    public boolean isAvailable() {
+      return true;
+    }
+
+    @Override
+    public <T> T postJson(String path, Object body, Class<T> responseType) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <T> T postJson(String path, Object body, ParameterizedTypeReference<T> responseType) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <T> T postMultipart(String path, MultiValueMap<String, Object> parts,
+        Class<T> responseType) {
+      this.path.set(path);
+      this.filename.set(((Resource) parts.getFirst("image")).getFilename());
+      if (failure != null) {
+        throw failure;
+      }
+      return responseType
+          .cast(new ImagePrecheckResponse(true, java.util.List.of(), 256, 256, 100.0, 120.0));
     }
   }
 
   @Test
-  void serviceAuthenticationFailureIsNotReportedAsPoorImageQuality() throws Exception {
-    HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
-    server.createContext("/api/v1/disease/precheck", exchange -> {
-      exchange.sendResponseHeaders(401, -1);
-      exchange.close();
-    });
-    server.start();
-    try {
-      var client = new AiDiagnosisClient("http://127.0.0.1:" + server.getAddress().getPort(),
-          "test-key", 1000, 3000, new ObjectMapper());
-      assertThatThrownBy(() -> client.precheck(new byte[] {1}))
-          .isInstanceOf(AiServiceException.class);
-    } finally {
-      server.stop(0);
-    }
+  void forwardsSanitizedImageAsMultipartNamedByItsFormat() {
+    FakeGateway gateway = new FakeGateway();
+    var client = new AiDiagnosisClient(gateway);
+
+    assertThat(client.precheck(new byte[] {(byte) 0x89, 'P', 'N', 'G'}).passed()).isTrue();
+
+    assertThat(gateway.path.get()).isEqualTo("/api/v1/disease/precheck");
+    assertThat(gateway.filename.get()).isEqualTo("image.png");
+  }
+
+  @Test
+  void serviceFailureIsNotReportedAsPoorImageQuality() {
+    FakeGateway gateway = new FakeGateway();
+    gateway.failure = new AiServiceException("AI call failed", null);
+    var client = new AiDiagnosisClient(gateway);
+
+    assertThatThrownBy(() -> client.precheck(new byte[] {1})).isInstanceOf(AiServiceException.class)
+        .isNotInstanceOf(AiTriageException.class);
+  }
+
+  @Test
+  void rejectedImageIsReportedWithTheServiceExplanation() {
+    FakeGateway gateway = new FakeGateway();
+    gateway.failure = new AiRequestRejectedException(422, "Ảnh bị mờ", null);
+    var client = new AiDiagnosisClient(gateway);
+
+    assertThatThrownBy(() -> client.precheck(new byte[] {1})).isInstanceOf(AiTriageException.class)
+        .hasMessage("Ảnh bị mờ");
   }
 }

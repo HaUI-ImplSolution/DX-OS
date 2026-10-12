@@ -82,11 +82,16 @@ public class AiVectorDatabaseSeeder implements CommandLineRunner {
             document_type VARCHAR(100),
             version VARCHAR(50),
             disease_code VARCHAR(100),
+            namespace VARCHAR(50) NOT NULL DEFAULT 'farm',
             created_at TIMESTAMPTZ NOT NULL
           )
           """);
       statement.execute(
           "CREATE INDEX IF NOT EXISTS ix_documents_disease_code ON documents (disease_code)");
+      statement.execute(
+          "ALTER TABLE documents ADD COLUMN IF NOT EXISTS namespace VARCHAR(50) NOT NULL DEFAULT 'farm'");
+      statement
+          .execute("CREATE INDEX IF NOT EXISTS ix_documents_namespace ON documents (namespace)");
 
       statement.execute("""
           CREATE TABLE IF NOT EXISTS document_chunks (

@@ -8,7 +8,9 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
+import HaUI.ImplSolution.dxos.core.api.storage.FileStore;
 import HaUI.ImplSolution.dxos.core.api.storage.ObjectStorage;
+import HaUI.ImplSolution.dxos.core.api.storage.ProcessedFile;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -31,7 +33,22 @@ class FileStorageServiceTest {
     ObjectStorage storage = mock(ObjectStorage.class);
     doAnswer(invocation -> stored.put(invocation.getArgument(0), invocation.getArgument(1)))
         .when(storage).putObject(anyString(), any(), anyString(), any());
-    service = new FileStorageService(storage);
+    DiseaseImageProcessor processor = new DiseaseImageProcessor();
+    FileStore fileStore = new FileStore() {
+      @Override
+      public ProcessedFile process(String purpose, byte[] original, String filename) {
+        return processor.process(original, filename);
+      }
+
+      @Override
+      public String store(String purpose, byte[] original, String filename, String uploadedBy) {
+        ProcessedFile processed = process(purpose, original, filename);
+        String key = java.util.UUID.randomUUID() + "." + processed.extension();
+        storage.putObject(key, processed.data(), processed.contentType(), Map.of());
+        return key;
+      }
+    };
+    service = new FileStorageService(fileStore);
   }
 
   private static byte[] encode(int width, int height, String format) throws IOException {

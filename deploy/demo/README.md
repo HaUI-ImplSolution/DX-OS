@@ -31,7 +31,7 @@ Script tạo thêm `demo.hogd2` và `demo.hogd3`; mật khẩu tạm in ra một
 
 | Hộ | Tài khoản | Cách tạo |
 |---|---|---|
-| Nguyễn Văn Hậu (Cần Thơ) | `farmer1` | Thêm một hàng `households` bằng `psql`, rồi gắn tài khoản qua API |
+| Nguyễn Văn Hậu (Cần Thơ) | `farmer1` | Thêm một hàng `workspaces` (loại `HOUSEHOLD`) bằng `psql`, rồi gắn tài khoản qua API |
 | Trần Thị Mai (Tháp Mười, Đồng Tháp) | `demo.hogd2` | Admin tạo |
 | Lê Văn Phước (Vĩnh Thuận, Kiên Giang) | `demo.hogd3` | Admin tạo |
 

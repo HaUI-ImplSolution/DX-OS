@@ -95,7 +95,7 @@ WPC2-05, WPC2-06, WPC2-07 làm song song được sau WPC2-01.
 
 **Hướng làm**
 
-- Endpoint `/api/v1/approval-requests` giữ nguyên đường dẫn và JSON.
+- Core giữ khung lọc, phân trang và làm giàu (`ApprovalInbox`); controller và DTO `/api/v1/approval-requests` ở Farm, giữ nguyên đường dẫn và JSON (`householdCode`, `farmerName`).
 - Core/App: core không biết thửa hay vụ mùa.
 
 **Phạm vi ảnh hưởng**
@@ -199,6 +199,7 @@ WPC2-05, WPC2-06, WPC2-07 làm song song được sau WPC2-01.
 **Hướng làm**
 
 - AI service nhận `namespace`; dữ liệu RAG hiện có thuộc `farm`.
+- Core giữ `KnowledgeGateway` (gọi RAG, lọc theo ngưỡng điểm, gắn nguồn); controller `/api/v1/knowledge/ask` và `diseaseCode` ở Farm.
 - Core/App: core không biết bệnh hay thuốc.
 
 **Phạm vi ảnh hưởng**

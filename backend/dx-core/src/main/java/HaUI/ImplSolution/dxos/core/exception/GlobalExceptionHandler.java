@@ -2,6 +2,7 @@
 package HaUI.ImplSolution.dxos.core.exception;
 
 import HaUI.ImplSolution.dxos.core.api.exception.AccountNotLinkedException;
+import HaUI.ImplSolution.dxos.core.api.exception.ActionNotAllowedException;
 import HaUI.ImplSolution.dxos.core.api.exception.AiServiceException;
 import HaUI.ImplSolution.dxos.core.api.exception.InvalidStateException;
 import HaUI.ImplSolution.dxos.core.api.exception.PokaYokeViolationException;
@@ -64,7 +65,7 @@ public class GlobalExceptionHandler {
       PokaYokeViolationException ex) {
     Map<String, Object> data = new LinkedHashMap<>();
     data.put("errorCode", ex.getErrorCode());
-    data.put("harvestLockedUntil", ex.getHarvestLockedUntil());
+    data.putAll(ex.getData());
     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
         .body(ApiResponse.error(ex.getErrorCode(), ex.getMessage(), data));
   }
@@ -75,6 +76,12 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.CONFLICT)
         .body(ApiResponse.error("ERR_CONCURRENT_MODIFICATION",
             "The record was modified by someone else, reload and try again"));
+  }
+
+  @ExceptionHandler(ActionNotAllowedException.class)
+  public ResponseEntity<ApiResponse<Void>> handleActionNotAllowed(ActionNotAllowedException ex) {
+    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+        .body(ApiResponse.error("ERR_ACTION_NOT_ALLOWED", ex.getMessage()));
   }
 
   @ExceptionHandler(AccountNotLinkedException.class)
@@ -88,7 +95,7 @@ public class GlobalExceptionHandler {
     log.warn("Keycloak admin call failed: {}", ex.getMessage());
     return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
         .body(ApiResponse.error("ERR_ACCOUNT_SERVICE_UNAVAILABLE",
-            "Account service is unavailable, the household was not created"));
+            "Account service is unavailable, the workspace was not created"));
   }
 
   @ExceptionHandler(AuthenticationException.class)

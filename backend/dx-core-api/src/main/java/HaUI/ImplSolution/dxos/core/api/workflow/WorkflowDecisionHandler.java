@@ -8,6 +8,6 @@ public interface WorkflowDecisionHandler {
 
   String caseType();
 
-  // Runs in the transaction that records the decision; target is APPROVED or REJECTED.
-  void onDecision(CaseView caseView, WorkflowStatus target, String reason);
+  // Runs in the transaction that records the decision; target is the status the case moved to.
+  void onDecision(CaseView caseView, String target, String reason);
 }

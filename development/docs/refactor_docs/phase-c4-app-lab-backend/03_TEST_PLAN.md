@@ -44,6 +44,7 @@ Không thêm file test mới nếu người dùng không yêu cầu; các case d
 | TC4-28 | WPC4-01 | Ranh giới | Tìm import ngoài `dx-core-api` trong `app-lab` | Không có | | |
 | TC4-29 | WPC4-01 | Hồi quy | Kiểm diff `dx-core`, `app-farm` | Không đổi ngoài bổ sung interface | | |
 | TC4-30 | WPC4-03 | Hồi quy | Hộp duyệt liệt kê case Lab | Có ticket, phiếu mượn, đặt phòng với tóm tắt đúng | | |
+| TC4-31 | WPC4-01 | Ranh giới | Khởi động `dx-host` với `DXOS_APP=lab`, chưa cài interface nào ngoài `AppModule` (kiểm của TC2-14) | Core lên được, `GET /api/v1/app` trả id `lab` | | |
 
 ## 3. Hồi quy (không được hỏng)
 

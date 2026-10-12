@@ -61,8 +61,9 @@ Backend gồm `dx-core-api` (interface và DTO), `dx-core` (dịch vụ dùng ch
 Để thêm quy trình mới:
 
 1. Thêm package vào module của ứng dụng (`app-farm`), không sửa `dx-core`.
-2. Đăng ký loại yêu cầu mới qua `WorkflowOperations` (`caseType`, `entityType`) để có sẵn lịch sử, người phụ trách và danh sách việc chờ.
-3. Khai báo route mới trong `deploy/apisix/apisix.yaml` nếu cần giới hạn tốc độ.
-4. Thêm view `vw_*` và dataset Superset nếu cần báo cáo.
+2. Khai báo loại yêu cầu mới bằng một bean `CaseTypeDefinition` (trạng thái, bước chuyển, vai) và mở case qua `WorkflowOperations` (`caseType`, `entityType`) để có sẵn lịch sử, người phụ trách và danh sách việc chờ.
+3. Cài `CaseSummaryProvider` để yêu cầu hiện trong hộp duyệt, và `NotificationTypeDefinition` cho từng loại thông báo mới.
+4. Khai báo route mới trong `deploy/apisix/apisix.yaml` nếu cần giới hạn tốc độ.
+5. Thêm view `vw_*` và đăng ký qua `BiDatasetProvider` nếu cần báo cáo.
 
 Sơ đồ ở [`development/docs/submission/ARCHITECTURE_OPEN_CORE.md`](./development/docs/submission/ARCHITECTURE_OPEN_CORE.md).

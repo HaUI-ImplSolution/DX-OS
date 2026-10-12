@@ -7,6 +7,9 @@ from app.db.models.document_chunk import DocumentChunk
 from app.rag.embedding_service import EmbeddingService
 
 
+DEFAULT_NAMESPACE = "farm"
+
+
 class RAGRetriever:
     def __init__(self, embedding_service=None):
         self.embedding_service = embedding_service
@@ -18,6 +21,7 @@ class RAGRetriever:
         top_k: int = 5,
         document_type: str = "disease_knowledge",
         disease_code: str | None = None,
+        namespace: str = DEFAULT_NAMESPACE,
     ) -> list[dict]:
         if not query.strip() or not 1 <= top_k <= 20:
             raise ValueError("query must not be empty; top_k must be between 1 and 20")
@@ -36,6 +40,7 @@ class RAGRetriever:
             .where(
                 DocumentChunk.embedding.is_not(None),
                 Document.document_type == document_type,
+                Document.namespace == namespace,
             )
             .order_by(distance)
             .limit(top_k)
@@ -73,6 +78,12 @@ class RAGRetriever:
 
 
 def retrieve_knowledge(
-    db: Session, query: str, disease_code: str | None = None, top_k: int = 3
+    db: Session,
+    query: str,
+    disease_code: str | None = None,
+    top_k: int = 3,
+    namespace: str = DEFAULT_NAMESPACE,
 ) -> list[dict]:
-    return RAGRetriever().retrieve(db, query, top_k=top_k, disease_code=disease_code)
+    return RAGRetriever().retrieve(
+        db, query, top_k=top_k, disease_code=disease_code, namespace=namespace
+    )

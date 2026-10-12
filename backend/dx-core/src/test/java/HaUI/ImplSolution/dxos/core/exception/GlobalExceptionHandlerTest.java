@@ -21,8 +21,9 @@ class GlobalExceptionHandlerTest {
   @Test
   void pokaYokeKeepsItsOwnCodeAtTopLevelAndInData() {
     LocalDate until = LocalDate.of(2026, 11, 1);
-    ResponseEntity<ApiResponse<Map<String, Object>>> response = handler.handlePokaYoke(
-        new PokaYokeViolationException("POKA_YOKE_VIETGAP_VIOLATION", "isolated", until));
+    ResponseEntity<ApiResponse<Map<String, Object>>> response =
+        handler.handlePokaYoke(new PokaYokeViolationException("POKA_YOKE_VIETGAP_VIOLATION",
+            "isolated", Map.of("harvestLockedUntil", until)));
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
     assertThat(response.getBody().errorCode()).isEqualTo("POKA_YOKE_VIETGAP_VIOLATION");

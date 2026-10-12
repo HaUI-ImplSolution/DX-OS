@@ -44,6 +44,7 @@ Kết quả đầu ra: dựng sạch rồi seed có đủ vai và ba tài khoả
 **Infra, deploy, CI**
 
 - [ ] WPC3-02-INFRA-01 `deploy/demo/make_ci_env.py`, `e2e.py`: đi qua seed thay vì user có sẵn.
+- [ ] WPC3-02-INFRA-02 Cấp cho service account của backend quyền tạo vai realm (`manage-realm` hoặc tương đương) để `RoleBootstrap` tạo được vai của app (HTTP 403 khi thiếu quyền).
 
 **Test** (chi tiết ở `03_TEST_PLAN.md`)
 

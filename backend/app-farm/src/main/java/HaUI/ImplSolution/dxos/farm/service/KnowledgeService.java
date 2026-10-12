@@ -1,69 +1,48 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.farm.service;
 
+import HaUI.ImplSolution.dxos.core.api.knowledge.KnowledgeAnswer;
+import HaUI.ImplSolution.dxos.core.api.knowledge.KnowledgeGateway;
+import HaUI.ImplSolution.dxos.core.api.knowledge.KnowledgePassage;
+import HaUI.ImplSolution.dxos.core.api.knowledge.KnowledgeSource;
 import HaUI.ImplSolution.dxos.farm.dto.KnowledgeAnswerResponse;
 import HaUI.ImplSolution.dxos.farm.dto.KnowledgeAnswerResponse.Passage;
 import HaUI.ImplSolution.dxos.farm.dto.KnowledgeAnswerResponse.Source;
 import HaUI.ImplSolution.dxos.farm.dto.KnowledgeAskRequest;
-import jakarta.annotation.PostConstruct;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 
-// Question answering over the RAG corpus: passages come from the AI retriever and carry the
-// documents they are based on. Nothing is generated.
+// Question answering over the rice disease corpus, optionally limited to one disease.
 @Service
 public class KnowledgeService {
 
-  private static final String SOURCES_RESOURCE = "knowledge-sources.json";
   private static final int TOP_K = 4;
 
-  private final AiDiagnosisClient aiClient;
-  private final ObjectMapper objectMapper;
-  private final double minScore;
-  private final Map<String, Source> sourcesById = new HashMap<>();
+  private final KnowledgeGateway knowledgeGateway;
 
-  public KnowledgeService(AiDiagnosisClient aiClient, ObjectMapper objectMapper,
-      @Value("${knowledge.min-score}") double minScore) {
-    this.aiClient = aiClient;
-    this.objectMapper = objectMapper;
-    this.minScore = minScore;
-  }
-
-  @PostConstruct
-  void loadSources() throws IOException {
-    try (InputStream in = new ClassPathResource(SOURCES_RESOURCE).getInputStream()) {
-      for (JsonNode node : objectMapper.readTree(in)) {
-        Source source = new Source(node.path("sourceId").asText(), node.path("title").asText(),
-            node.path("organization").asText(null), node.path("url").asText(null),
-            node.path("license").asText(null), node.path("reviewStatus").asText(null));
-        sourcesById.put(source.sourceId(), source);
-      }
-    }
+  public KnowledgeService(KnowledgeGateway knowledgeGateway) {
+    this.knowledgeGateway = knowledgeGateway;
   }
 
   public KnowledgeAnswerResponse ask(KnowledgeAskRequest request) {
-    String diseaseCode = request.diseaseCode() == null || request.diseaseCode().isBlank() ? null
-        : request.diseaseCode().trim();
-    List<Passage> passages =
-        aiClient.retrieveKnowledge(request.question().trim(), diseaseCode, TOP_K).stream()
-            .filter(chunk -> chunk.score() >= minScore).map(this::toPassage).toList();
-    return new KnowledgeAnswerResponse(request.question().trim(), passages);
+    Map<String, String> filters =
+        request.diseaseCode() == null || request.diseaseCode().isBlank() ? Map.of()
+            : Map.of("disease_code", request.diseaseCode().trim());
+    KnowledgeAnswer answer = knowledgeGateway.ask(FarmKnowledgeNamespace.NAMESPACE,
+        request.question().trim(), filters, TOP_K);
+    return new KnowledgeAnswerResponse(answer.question(),
+        answer.passages().stream().map(KnowledgeService::toPassage).toList());
   }
 
-  private Passage toPassage(AiDiagnosisClient.KnowledgeChunk chunk) {
-    // An id missing from the mapping is still shown, by its id, rather than dropped.
-    List<Source> sources = chunk.sourceIds().stream()
-        .map(id -> sourcesById.getOrDefault(id, new Source(id, id, null, null, null, null)))
-        .toList();
-    return new Passage(chunk.content(), chunk.documentTitle(), chunk.diseaseCode(), chunk.score(),
-        sources);
+  private static Passage toPassage(KnowledgePassage passage) {
+    List<Source> sources = passage.sources().stream().map(KnowledgeService::toSource).toList();
+    return new Passage(passage.content(), passage.documentTitle(),
+        passage.attributes().get("disease_code"), passage.score(), sources);
+  }
+
+  private static Source toSource(KnowledgeSource source) {
+    return new Source(source.sourceId(), source.title(), source.organization(), source.url(),
+        source.license(), source.reviewStatus());
   }
 }

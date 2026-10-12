@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Draft |
+| Trạng thái | Hoàn tất |
 | Mức độ | Nghiêm trọng |
 | Nhóm ưu tiên | A |
 | Ứng dụng và module chính | `dx-core-api`, `dx-core`, `app-farm` |
@@ -64,8 +64,8 @@ Mỗi bước giữ Farm chạy đúng như trước, chỉ đổi cách Farm c�
 - Tiêu chí đo được:
   - Tìm `Household`, `Parcel`, `Farm`, `Mattermost` ADMIN/ENGINEER trong `dx-core-api` và `dx-core` không ra kết quả.
   - `dx-core` không còn danh sách endpoint, vai hay tên bảng của Farm.
-  - Core khởi động với một app giả không có interface nào ngoài `AppModule` vẫn lên được (kiểm tay).
-  - OpenAPI của Farm (kể cả `/api/v1/households`) không đổi so với baseline; core chỉ thêm `/api/v1/workspaces` và `/api/v1/app`.
+  - Core khởi động với một app giả không có interface nào ngoài `AppModule` vẫn lên được (kiểm tay ở C4, khi có `app-lab`).
+  - OpenAPI của Farm (kể cả `/api/v1/households`) không đổi path và schema so với baseline; core chỉ thêm `/api/v1/workspaces` và `/api/v1/app`. Mô tả của `workflow-cases` ghi "Staff only" và tham số `status` của `workflow-cases` là chuỗi.
 - Bằng chứng: kết quả tìm kiếm, diff OpenAPI, log test và E2E do người dùng chạy.
 
 ## 7. Phụ thuộc và thứ tự
@@ -88,7 +88,7 @@ Mỗi bước giữ Farm chạy đúng như trước, chỉ đổi cách Farm c�
 
 ## 10. Tài liệu cần cập nhật khi xong
 
-- [ ] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
-- [ ] Swagger (springdoc) cho `/workspaces`, `/app`.
-- [ ] `SPI_CATALOG.md` khớp chữ ký thực tế; hướng dẫn tạo app mới (nháp cho C7).
-- [ ] `LICENSES.md`, `.env.example` nếu có đổi.
+- [x] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
+- [x] Swagger (springdoc) cho `/workspaces`, `/app`.
+- [x] `SPI_CATALOG.md` khớp chữ ký thực tế; hướng dẫn tạo app mới (nháp cho C7).
+- [x] `LICENSES.md`, `.env.example` nếu có đổi (không đổi).

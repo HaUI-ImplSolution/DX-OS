@@ -63,9 +63,13 @@ def ensure_farmer_household(admin, farmer):
     if households and households[0]["accountLinked"]:
         return
     if not households:
-        psql("INSERT INTO households (code, full_name, address, created_at, updated_at) "
-             "VALUES ('H' || lpad(nextval('household_code_seq')::text, 4, '0'), "
-             f"'{FARMER_HOUSEHOLD_NAME}', 'Cần Thơ', now(), now())")
+        psql("WITH n AS (INSERT INTO workspace_code_counter (type, last_number) "
+             "VALUES ('HOUSEHOLD', 1) ON CONFLICT (type) "
+             "DO UPDATE SET last_number = workspace_code_counter.last_number + 1 "
+             "RETURNING last_number) "
+             "INSERT INTO workspaces (code, type, name, address, created_at, updated_at) "
+             "SELECT 'H' || lpad(last_number::text, 4, '0'), 'HOUSEHOLD', "
+             f"'{FARMER_HOUSEHOLD_NAME}', 'Cần Thơ', now(), now() FROM n")
         households = [h for h in admin.ok("GET", "/households") if h["fullName"] == FARMER_HOUSEHOLD_NAME]
     admin.ok("PATCH", f"/households/{households[0]['code']}/account", {"username": "farmer1"})
     print(f"Linked farmer1 to household {households[0]['code']}")

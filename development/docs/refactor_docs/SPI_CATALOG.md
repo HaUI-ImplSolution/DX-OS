@@ -6,35 +6,59 @@ Phần giống nhau nằm trực tiếp trong `dx-core` (RBAC, base entity, erro
 
 ## Interface app cài
 
-| Interface | Mục đích | Farm cài | Lab cài | Phase |
-|---|---|---|---|---|
-| `AppModule` | Khai báo app: id, tên, route, manifest cho web | `farm` | `lab` | C1, C2 |
-| `RoleProvider` | Vai và quyền của app; core tạo vai trong Keycloak lúc khởi động | FARMER, ENGINEER, ADMIN | STUDENT, LECTURER, TECHNICIAN, ADMIN | C2, C3 |
-| `CaseTypeDefinition` | Loại case, trạng thái, bước chuyển và vai được phép | duyệt thửa, vụ, chẩn đoán, xác nhận phun | `TICKET` (nhiều trạng thái), `DEVICE_LOAN`, `ROOM_BOOKING` | C2 |
-| `WorkflowDecisionHandler` | Áp dụng quyết định lên entity của app | 3 handler hiện có | handler ticket và mượn thiết bị | C1, C2 |
-| `CaseSummaryProvider` | Làm giàu hộp duyệt bằng thông tin entity | thửa, vụ, chẩn đoán, phun | ticket, phiếu mượn, đặt phòng | C2 |
-| `NotificationChannel` | Gửi lời nhắn ra kênh ngoài | Mattermost (kênh ADMIN, ENGINEER) | Mattermost (kênh kỹ thuật viên, quản trị) | C2 |
-| `BiDatasetProvider` | Đăng ký view và bảng cho vai chỉ đọc của Superset | `vw_*` nông nghiệp | `vw_lab_*` ticket, SLA, phòng, thiết bị | C2 |
-| `FileProcessor` | Xử lý tệp trước khi lưu | xóa EXIF ảnh lá | giới hạn loại và dung lượng tệp đính kèm | C2 |
-| `KnowledgeNamespace` | Tập tài liệu RAG và danh mục nguồn | tài liệu bệnh lúa | quy chế, hướng dẫn CNTT | C2, C4 |
-| `EndpointPolicyContributor` | Endpoint công khai và quy tắc truy cập riêng | `diseases`, `pesticides`, `treatment-rules` | không có (danh mục cần đăng nhập) | C2 |
-| `ClientRestrictionPolicy` | Vai nào chỉ được dùng client nào | FARMER chỉ dùng mobile | không có | C2 |
-| `HealthContributor` | Thêm dịch vụ vào trạng thái hệ thống | AI chẩn đoán, thời tiết | không có | C2 |
+App khai báo mỗi interface bằng một Spring bean; core gom các bean đó lúc khởi động và không cần interface nào có mặt.
+
+| Interface | Mục đích | Farm cài | Lab cài |
+|---|---|---|---|
+| `AppModule` | id, tên, menu, loại workspace, loại case tính giới hạn yêu cầu chờ | `farm` | `lab` |
+| `RoleProvider` | Vai của app (`RoleDefinition`: tên, mô tả, cờ nhân sự); core tạo vai thiếu trong Keycloak lúc khởi động (cần service account có quyền tạo vai; thiếu quyền thì chỉ ghi log) | FARMER, ENGINEER, ADMIN | STUDENT, LECTURER, TECHNICIAN, ADMIN |
+| `CaseTypeDefinition` | Loại case: trạng thái (`CaseStatus`), bước chuyển (`CaseTransition`) và vai được thực hiện; bean, không phải interface | 5 loại duyệt, dùng `CaseTypeDefinition.approval(...)` | `TICKET` (nhiều trạng thái), `DEVICE_LOAN`, `ROOM_BOOKING` |
+| `WorkflowDecisionHandler` | Áp dụng quyết định lên entity của app | 3 handler | handler ticket và mượn thiết bị |
+| `CaseSummaryProvider` | Mô tả entity của một `entityType` cho hộp duyệt, theo lô; liệt kê id entity của một workspace | thửa, vụ, sửa thửa, chẩn đoán, phun | ticket, phiếu mượn, đặt phòng |
+| `NotificationTypeDefinition` | Loại thông báo (mã, nhãn, biểu tượng); bean | 13 loại | loại của Lab |
+| `NotificationChannel` | Kênh chat app đăng bài (khóa, nhãn); URL webhook đọc từ `mattermost.webhook.url-<khóa>` | `admin`, `engineer` | kênh kỹ thuật viên, quản trị |
+| `BiDatasetProvider` | View và bảng vai chỉ đọc của Superset được `SELECT` | `vw_*` nông nghiệp và danh mục | `vw_lab_*` |
+| `FileProcessor` | Kiểm tra và làm sạch tệp theo mục đích trước khi lưu | ảnh lá: chỉ JPEG/PNG, xóa EXIF | giới hạn loại và dung lượng tệp đính kèm |
+| `KnowledgeNamespace` | Tên corpus RAG và danh mục nguồn của corpus | `farm` | `lab` |
+| `EndpointPolicyContributor` | Đường dẫn GET công khai | `diseases`, `pesticides`, `treatment-rules` | không có |
+| `ClientRestrictionPolicy` | Vai chỉ được dùng một số client | FARMER chỉ dùng mobile | không có |
+| `HealthContributor` | Thêm dịch vụ vào `GET /api/v1/system/status` | AI | không có |
 
 ## Facade app gọi (core cài)
 
-| Facade | Thay cho | Dùng bởi | Phase |
-|---|---|---|---|
-| `WorkflowOperations` | `WorkflowService` | mở case, ghi bước, gán người phụ trách, đếm case chờ, tìm case theo `CaseQuery` | C1 |
-| `WorkspaceDirectory` | `HouseholdService`, `HouseholdRepository` | tra workspace theo id, mã hoặc tài khoản, tra nhiều id một lần | C1 |
-| `ObjectStorage` | `StorageService` | lưu, tạo link có hạn, kiểm tra sẵn sàng | C1 |
-| `UserContext` | `CurrentUserService` | id, tên, vai và workspace của người đang đăng nhập | C1 |
-| `NotificationPublisher` | `NotificationService.notify*` | gửi thông báo trong app, có khóa chống trùng | C2 |
-| `KnowledgeGateway` | `KnowledgeService` | hỏi đáp RAG theo namespace | C2 |
-| `AiGateway` | phần chung của `AiDiagnosisClient` | gọi AI service với khóa dịch vụ, circuit breaker, health | C2 |
+| Facade | Dùng bởi |
+|---|---|
+| `WorkflowOperations` | mở case, ghi bước, gán người phụ trách, đếm case chờ, tìm case theo `CaseQuery` |
+| `ApprovalInbox` | danh sách và chi tiết yêu cầu chờ duyệt, lọc theo workspace và ngày |
+| `PendingRequestLimit` | chặn người dùng gửi thêm khi đã có đủ yêu cầu chờ |
+| `WorkspaceDirectory` | tra workspace theo id, mã, tài khoản; liệt kê theo loại; thành viên |
+| `WorkspaceAdministration` | tạo workspace kèm tài khoản chủ, gắn tài khoản chủ, thêm thành viên |
+| `UserContext` | id, tên, vai (`roles`, `hasRole`, `isStaff`) và workspace của người đang đăng nhập |
+| `ObjectStorage` | lưu, tạo link có hạn, kiểm tra sẵn sàng |
+| `FileStore` | xử lý và lưu tệp qua `FileProcessor` của mục đích |
+| `NotificationPublisher` | ghi thông báo trong app, có khóa chống trùng |
+| `ChatWebhook` | đăng một payload lên webhook của kênh chat |
+| `AiGateway` | gọi AI service kèm khóa dịch vụ: health, JSON, multipart |
+| `KnowledgeGateway` | hỏi đáp RAG theo namespace, lọc theo ngưỡng điểm, gắn nguồn |
 
 ## Kiểu dữ liệu công khai
 
-- `CaseView`: id, caseType, entityType, entityId, status, createdBy, assignedTo, thời điểm; thay cho entity `WorkflowCase`.
-- `WorkspaceView`: id, code, fullName, keycloakUserId ở C1; thêm type, owner, thuộc tính ở C2; thay cho entity `Household`.
-- Entity của core (`WorkflowCase`, `Workspace`, `Notification`) không nằm trong `dx-core-api`.
+- `CaseView`: id, caseType, entityType, entityId, status (chuỗi), createdBy, assignedTo, thời điểm; thay cho entity `WorkflowCase`.
+- `WorkspaceView`: id, code, type, name, phone, address, ownerUserId, attributes, createdAt; thay cho entity `Workspace`.
+- `WorkspaceMemberView`: workspaceId, userId, role (`OWNER` hoặc `MEMBER`), createdAt.
+- `InboxItem`: case, `CaseSummary` của entity và workspace của entity.
+- Entity của core (`WorkflowCase`, `Workspace`, `WorkspaceMember`, `Notification`) không nằm trong `dx-core-api`.
+
+## Quy ước
+
+- Trạng thái và hành động của case là chuỗi; `WorkflowStatus` và `WorkflowAction` chỉ liệt kê tên của luồng duyệt chuẩn.
+- Loại thông báo là chuỗi; core từ chối loại chưa được app đăng ký.
+- Controller có tên trường riêng của app (`/api/v1/households`, `/api/v1/approval-requests`, `/api/v1/knowledge/ask`) nằm ở app và dựng từ facade; core chỉ có controller với JSON trung tính.
+
+## Dựng một app mới
+
+1. Thêm module Maven chỉ phụ thuộc `dx-core-api` và đăng ký auto-configuration có điều kiện `dxos.app=<id>`.
+2. Cài `AppModule` và `RoleProvider`; khai báo `CaseTypeDefinition`, `NotificationTypeDefinition` cho từng loại cần dùng.
+3. Với mỗi loại case có hộp duyệt, cài `WorkflowDecisionHandler` và `CaseSummaryProvider`.
+4. Thêm migration vào location riêng và bảng lịch sử Flyway riêng; core chạy trước.
+5. Thêm `application-<id>.yaml` và id vào danh sách app hợp lệ của `dx-host`.

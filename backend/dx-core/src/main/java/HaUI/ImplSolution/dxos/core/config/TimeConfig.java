@@ -6,7 +6,7 @@ import java.time.Clock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-// Single source of "today" for business rules (isolation dates, harvest checks), independent of
+// Single source of "today" for business rules (deadlines, date checks), independent of
 // the container time zone.
 @Configuration
 public class TimeConfig {

@@ -15,7 +15,7 @@ UPDATE parcels SET location_missing = true WHERE latitude IS NULL OR longitude I
 
 -- Next parcel number per household, so a generated code is never reused after a delete.
 CREATE TABLE household_parcel_counter (
-    household_id bigint PRIMARY KEY REFERENCES households (id),
+    household_id bigint PRIMARY KEY REFERENCES workspaces (id),
     last_number integer NOT NULL
 );
 

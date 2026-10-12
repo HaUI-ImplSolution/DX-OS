@@ -33,8 +33,8 @@ git status          # sạch
 | Ranh giới core | Tìm `Household`, `Parcel`, tên view `vw_` trong `dx-core-api`, `dx-core` | Không có | C2 |
 | Tên cũ | Tìm `dxfarm` ngoài tài liệu lịch sử, scheme và bundle mobile | Không có | C3 |
 | Đường dẫn cũ | Tìm `backend/DX-Farm`, `docs/ARCHITECTURE_OPEN_CORE`, `improvement_docs/_template` | Không có | C1, C7 |
-| Backend đầy đủ (có thể bỏ qua nếu chỉ kiểm nhanh) | `cd backend && ./mvnw verify` | Số test bằng baseline đã đo lại ở C0 (80 tại `304c810`), trừ các test migration bỏ có chủ đích ở C1; không bỏ qua | C1, C2, C4 |
-| AI | `cd ai && pytest` | Số test không ít hơn baseline (64) | C2, C4 |
+| Backend đầy đủ (có thể bỏ qua nếu chỉ kiểm nhanh) | `cd backend && ./mvnw verify` | Số test bằng baseline đã đo lại ở C0 (80 tại `304c810`), trừ các test migration bỏ có chủ đích ở C1; không bỏ qua. Sau C2: 80 test (13 `dx-core`, 21 `app-farm`, 46 `dx-host`) | C1, C2, C4 |
+| AI | `cd ai && pytest` | Số test không ít hơn baseline (64); sau C2 đạt 64 | C2, C4 |
 | Seed Farm nhất quán | `python data/scripts/generate_seed_sql.py --check` và `python -m unittest data.scripts.test_generate_seed_sql` | Đạt; CI chạy lại ở `ci-ai.yml` | C1 |
 
 ## 3. Dựng stack
@@ -71,7 +71,7 @@ Bắt buộc dựng lại sạch ở lần đầu sau refactor: migration đư�
 |---|---|---|
 | Dịch vụ healthy | `docker compose ps` | Mọi service healthy hoặc job đã thoát mã 0 |
 | Backend | `curl -s http://localhost:9080/api/v1/system/status` | Có `backend`, `ai`, `storage` ở trạng thái UP; có tên app đang chạy **(thiết kế, C6)** |
-| Manifest app | Với token hợp lệ: `GET /api/v1/app` | `id` đúng `farm` hoặc `lab` **(thiết kế, C2)** |
+| Manifest app | Với token hợp lệ: `GET /api/v1/app` | `id` đúng `farm` hoặc `lab`; kèm vai, menu và loại workspace |
 | Portal | http://localhost:9080/portal/ | Hiện hạ tầng và app đang chạy |
 
 ### 3.4 Nạp dữ liệu demo
@@ -117,7 +117,8 @@ Treatment rule của đạo ôn và khô vằn đã có trong seed Backend, nên
 ### 4.4 So với baseline
 
 - Xuất `/v3/api-docs` rồi so với bản baseline ở C0: không có endpoint nào của Farm đổi, kể cả `/api/v1/households`.
-- Chỉ được thêm `/api/v1/workspaces` và `/api/v1/app`.
+- Chỉ được thêm `/api/v1/workspaces` (kèm `/{code}/account` và `/{code}/members`) và `/api/v1/app`.
+- Khác biệt còn lại chỉ là hậu tố `operationId` của thao tác trùng tên, mô tả "Staff only" và kiểu chuỗi của tham số `status` ở `workflow-cases`.
 
 ### 4.5 Kiểm tay Farm
 

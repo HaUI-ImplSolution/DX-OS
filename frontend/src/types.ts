@@ -256,7 +256,10 @@ export type CaseType =
   | "DIAGNOSIS_APPROVAL"
   | "TREATMENT_CONFIRMATION";
 
-export type CaseStatus = ApprovalStatus | "CANCELLED";
+// Statuses of the standard approval flow; a case type may declare others, so a status is a string.
+export type KnownCaseStatus = ApprovalStatus | "CANCELLED";
+
+export type CaseStatus = string;
 
 export interface ApprovalRequest {
   caseId: number;

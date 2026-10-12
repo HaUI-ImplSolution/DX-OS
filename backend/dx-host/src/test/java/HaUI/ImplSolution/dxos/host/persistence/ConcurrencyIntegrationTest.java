@@ -7,22 +7,28 @@ import static org.mockito.Mockito.when;
 
 import HaUI.ImplSolution.dxos.core.config.TimeConfig;
 import HaUI.ImplSolution.dxos.core.api.storage.ObjectStorage;
-import HaUI.ImplSolution.dxos.core.identity.HouseholdWorkspaceDirectory;
+import HaUI.ImplSolution.dxos.core.identity.WorkspaceDirectoryService;
 import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowActor;
 import HaUI.ImplSolution.dxos.core.workflow.WorkflowService;
+import HaUI.ImplSolution.dxos.core.api.user.UserContext;
+import HaUI.ImplSolution.dxos.core.notification.NotificationInboxService;
+import HaUI.ImplSolution.dxos.core.notification.NotificationTypes;
+import HaUI.ImplSolution.dxos.farm.FarmNotificationConfig;
+import HaUI.ImplSolution.dxos.core.workflow.WorkflowDefinitions;
+import HaUI.ImplSolution.dxos.farm.FarmWorkflowConfig;
 import HaUI.ImplSolution.dxos.core.api.exception.InvalidStateException;
 import HaUI.ImplSolution.dxos.farm.model.ApprovalStatus;
 import HaUI.ImplSolution.dxos.farm.model.CropSeason;
 import HaUI.ImplSolution.dxos.farm.model.CropSeasonStatus;
 import HaUI.ImplSolution.dxos.farm.model.Diagnosis;
-import HaUI.ImplSolution.dxos.core.identity.Household;
+import HaUI.ImplSolution.dxos.core.identity.Workspace;
 import HaUI.ImplSolution.dxos.farm.model.DiseaseReport;
 import HaUI.ImplSolution.dxos.farm.model.Parcel;
 import HaUI.ImplSolution.dxos.farm.repository.CropSeasonRepository;
 import HaUI.ImplSolution.dxos.farm.repository.DiagnosisRepository;
 import HaUI.ImplSolution.dxos.farm.repository.DiseaseReportRepository;
 import HaUI.ImplSolution.dxos.farm.repository.DiseaseRepository;
-import HaUI.ImplSolution.dxos.core.identity.HouseholdRepository;
+import HaUI.ImplSolution.dxos.core.identity.WorkspaceRepository;
 import HaUI.ImplSolution.dxos.farm.repository.ParcelRepository;
 import HaUI.ImplSolution.dxos.farm.service.AiDiagnosisClient;
 import HaUI.ImplSolution.dxos.farm.service.CurrentUser;
@@ -64,8 +70,10 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @DataJpaTest(properties = "spring.flyway.enabled=false")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
-@Import({DiagnosisService.class, WorkflowService.class, NotificationService.class,
-    HouseholdWorkspaceDirectory.class, TimeConfig.class, PersistenceTestConfig.class})
+@Import({DiagnosisService.class, WorkflowService.class, WorkflowDefinitions.class,
+    FarmWorkflowConfig.class, NotificationService.class, NotificationInboxService.class,
+    NotificationTypes.class, FarmNotificationConfig.class, WorkspaceDirectoryService.class,
+    TimeConfig.class, PersistenceTestConfig.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class ConcurrencyIntegrationTest {
 
@@ -87,6 +95,8 @@ class ConcurrencyIntegrationTest {
   @MockitoBean
   private CurrentUser currentUserService;
   @MockitoBean
+  private UserContext userContext;
+  @MockitoBean
   private ObjectStorage storageService;
 
   @Autowired
@@ -98,7 +108,7 @@ class ConcurrencyIntegrationTest {
   @Autowired
   private ParcelRepository parcelRepository;
   @Autowired
-  private HouseholdRepository householdRepository;
+  private WorkspaceRepository workspaceRepository;
   @Autowired
   private CropSeasonRepository cropSeasonRepository;
   @Autowired
@@ -110,8 +120,8 @@ class ConcurrencyIntegrationTest {
 
   private Parcel newParcel() {
     String code = "P-" + UUID.randomUUID();
-    Household household = householdRepository
-        .save(Household.builder().code("T-" + UUID.randomUUID()).fullName("Test Farmer").build());
+    Workspace household = workspaceRepository.save(Workspace.builder()
+        .code("T-" + UUID.randomUUID()).type("HOUSEHOLD").name("Test Farmer").build());
     return parcelRepository
         .save(Parcel.builder().code(code).householdId(household.getId()).farmerName("Test Farmer")
             .areaHectares(BigDecimal.ONE).approvalStatus(ApprovalStatus.APPROVED).build());

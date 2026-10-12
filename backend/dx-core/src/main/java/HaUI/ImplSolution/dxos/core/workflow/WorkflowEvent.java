@@ -1,12 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.core.workflow;
 
-import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowAction;
-import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -46,18 +42,15 @@ public class WorkflowEvent {
   @JoinColumn(name = "workflow_case_id", nullable = false)
   private WorkflowCase workflowCase;
 
-  // SUBMITTED, APPROVED, REJECTED, CANCELLED, RESUBMITTED or ASSIGNED
-  @Enumerated(EnumType.STRING)
+  // Step name, e.g. SUBMITTED, APPROVED, REJECTED, CANCELLED, RESUBMITTED or ASSIGNED
   @Column(nullable = false)
-  private WorkflowAction action;
+  private String action;
 
   // Null for the step that opens the case
-  @Enumerated(EnumType.STRING)
-  private WorkflowStatus fromStatus;
+  private String fromStatus;
 
-  @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private WorkflowStatus toStatus;
+  private String toStatus;
 
   // Token "sub" of the actor; null for history rebuilt from older data
   private String actorUserId;

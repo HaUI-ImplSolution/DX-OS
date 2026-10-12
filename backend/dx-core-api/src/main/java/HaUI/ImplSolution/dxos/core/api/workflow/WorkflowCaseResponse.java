@@ -15,7 +15,7 @@ public record WorkflowCaseResponse(
   String entityType,
   Long entityId,
 
-  // PENDING, APPROVED, REJECTED or CANCELLED
+  // A status declared by the case type, e.g. PENDING, APPROVED, REJECTED or CANCELLED
   String status,
 
   // Token "sub" of whoever opened the case (null for older data)
@@ -32,7 +32,7 @@ public record WorkflowCaseResponse(
 
   public static WorkflowCaseResponse of(CaseView view) {
     return new WorkflowCaseResponse(view.id(), view.caseType(), view.entityType(), view.entityId(),
-        view.status().name(), view.createdBy(), view.createdAt(), view.assignedTo(),
+        view.status(), view.createdBy(), view.createdAt(), view.assignedTo(),
         view.assignedToName(), view.updatedAt());
   }
 }

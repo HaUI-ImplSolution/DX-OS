@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: Apache-2.0
+package HaUI.ImplSolution.dxos.core.identity;
+
+import java.util.List;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface WorkspaceRepository extends JpaRepository<Workspace, Long> {
+
+  Optional<Workspace> findByCode(String code);
+
+  List<Workspace> findAllByOrderByCodeAsc();
+
+  List<Workspace> findAllByTypeOrderByCodeAsc(String type);
+}

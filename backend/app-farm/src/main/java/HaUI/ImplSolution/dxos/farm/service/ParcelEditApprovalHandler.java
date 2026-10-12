@@ -33,12 +33,12 @@ public class ParcelEditApprovalHandler implements WorkflowDecisionHandler {
   }
 
   @Override
-  public void onDecision(CaseView workflowCase, WorkflowStatus target, String reason) {
+  public void onDecision(CaseView workflowCase, String target, String reason) {
     ParcelEditRequest edit = editRequestRepository.findById(workflowCase.entityId())
         .orElseThrow(() -> new ResourceNotFoundException(
             "Parcel edit request not found: " + workflowCase.entityId()));
     Parcel parcel = edit.getParcel();
-    boolean approved = target == WorkflowStatus.APPROVED;
+    boolean approved = WorkflowStatus.APPROVED.equals(target);
     if (approved) {
       parcel.setAreaHectares(edit.getAreaHectares());
       parcel.setLocation(edit.getLocation());

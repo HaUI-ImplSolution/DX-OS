@@ -4,6 +4,7 @@ package HaUI.ImplSolution.dxos.core.identity;
 import HaUI.ImplSolution.dxos.core.api.user.UserContext;
 import HaUI.ImplSolution.dxos.core.api.workspace.WorkspaceDirectory;
 import HaUI.ImplSolution.dxos.core.api.workspace.WorkspaceView;
+import HaUI.ImplSolution.dxos.core.security.AppRoles;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -17,14 +18,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class CurrentUserService implements UserContext {
 
-  private static final String ROLE_FARMER = "ROLE_FARMER";
-  private static final String ROLE_ADMIN = "ROLE_ADMIN";
-  private static final Set<String> STAFF_ROLES = Set.of("ROLE_ENGINEER", ROLE_ADMIN);
+  private static final String ROLE_PREFIX = "ROLE_";
 
   private final WorkspaceDirectory workspaceDirectory;
+  private final AppRoles appRoles;
 
-  public CurrentUserService(WorkspaceDirectory workspaceDirectory) {
+  public CurrentUserService(WorkspaceDirectory workspaceDirectory, AppRoles appRoles) {
     this.workspaceDirectory = workspaceDirectory;
+    this.appRoles = appRoles;
   }
 
   public Jwt getCurrentJwt() {
@@ -53,25 +54,26 @@ public class CurrentUserService implements UserContext {
     return workspaceDirectory.findByAccount(currentUserId());
   }
 
-  // A FARMER without ENGINEER/ADMIN is limited to their own household's parcels and approved
-  // diagnoses.
   @Override
-  public boolean isFarmer() {
-    Set<String> roles = currentRoles();
-    return roles.contains(ROLE_FARMER) && STAFF_ROLES.stream().noneMatch(roles::contains);
-  }
-
-  @Override
-  public boolean isAdmin() {
-    return currentRoles().contains(ROLE_ADMIN);
-  }
-
-  private Set<String> currentRoles() {
+  public Set<String> roles() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null) {
       return Set.of();
     }
     return authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority)
-        .collect(Collectors.toSet());
+        .filter(authority -> authority.startsWith(ROLE_PREFIX))
+        .map(authority -> authority.substring(ROLE_PREFIX.length()))
+        .collect(Collectors.toUnmodifiableSet());
+  }
+
+  @Override
+  public boolean hasRole(String role) {
+    return roles().contains(role);
+  }
+
+  @Override
+  public boolean isStaff() {
+    Set<String> roles = roles();
+    return appRoles.staffRoles().stream().anyMatch(roles::contains);
   }
 }

@@ -6,7 +6,7 @@ import DecisionActions from "../components/DecisionActions";
 import RequestDetails from "../components/RequestDetails";
 import Section from "../components/Section";
 import Timeline from "../components/Timeline";
-import { CASE_TYPE_LABEL, STATUS_LABEL, STATUS_TONE } from "../labels";
+import { CASE_TYPE_LABEL, statusLabel, statusTone } from "../labels";
 import type { ApprovalRequestDetail, Role } from "../types";
 
 interface CaseDetailProps {
@@ -39,7 +39,7 @@ export default function CaseDetail({ role, onError }: CaseDetailProps) {
         }`}
       >
         <p>
-          <Badge tone={STATUS_TONE[request.status]}>{STATUS_LABEL[request.status]}</Badge>
+          <Badge tone={statusTone(request.status)}>{statusLabel(request.status)}</Badge>
           {request.assignedToName && <span> · Đang xử lý: {request.assignedToName}</span>}
         </p>
         <RequestDetails request={request} />

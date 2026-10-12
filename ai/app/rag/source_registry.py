@@ -20,11 +20,18 @@ REQUIRED_FIELDS = {
 }
 
 
-@lru_cache(maxsize=1)
-def load_source_registry() -> dict[str, dict[str, Any]]:
-    """Load and validate the RAG source registry, indexed by source ID."""
+def load_source_registry(path: Path | None = None) -> dict[str, dict[str, Any]]:
+    """Load and validate a RAG source registry, indexed by source ID.
 
-    with REGISTRY_FILE.open(encoding="utf-8") as file:
+    Without a path the registry of the farm corpus is read.
+    """
+
+    return _load_registry(path or REGISTRY_FILE)
+
+
+@lru_cache(maxsize=4)
+def _load_registry(path: Path) -> dict[str, dict[str, Any]]:
+    with path.open(encoding="utf-8") as file:
         records = json.load(file)
 
     if not isinstance(records, list):

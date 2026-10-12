@@ -19,7 +19,7 @@ class RAGRetriever:
         db: Session,
         query: str,
         top_k: int = 5,
-        document_type: str = "disease_knowledge",
+        document_type: str | None = "disease_knowledge",
         disease_code: str | None = None,
         namespace: str = DEFAULT_NAMESPACE,
     ) -> list[dict]:
@@ -39,12 +39,13 @@ class RAGRetriever:
             .options(joinedload(DocumentChunk.document))
             .where(
                 DocumentChunk.embedding.is_not(None),
-                Document.document_type == document_type,
                 Document.namespace == namespace,
             )
             .order_by(distance)
             .limit(top_k)
         )
+        if document_type is not None:
+            stmt = stmt.where(Document.document_type == document_type)
         if disease_code is not None:
             stmt = stmt.where(Document.disease_code == disease_code)
 

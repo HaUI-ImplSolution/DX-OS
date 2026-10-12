@@ -83,7 +83,7 @@ def backend_client(
 @router.get("/health", response_model=CVHealthResponse)
 def health(request: Request):
     model = getattr(request.app.state, "plant_model", None)
-    device = getattr(model, "_dxfarm_device", None)
+    device = getattr(model, "_device", None)
     ready = (
         model is not None
         and getattr(request.app.state, "crop_classifier", None) is not None

@@ -87,7 +87,7 @@ python3 deploy/demo/seed_demo.py                 # ảnh tổng hợp
 python3 deploy/demo/seed_demo.py --images DIR    # ảnh lá lúa thật (.jpg), chẩn đoán qua AI
 ```
 
-Script tạo nông hộ (gắn `farmer1`), thửa có tọa độ ĐBSCL, vụ ở nhiều trạng thái, báo cáo kèm ảnh, một thửa chờ duyệt.
+Script tạo ba tài khoản demo và vai của chúng trong Keycloak, nông hộ (gắn `farmer1`), thửa có tọa độ ĐBSCL, vụ ở nhiều trạng thái, báo cáo kèm ảnh, một thửa chờ duyệt.
 Chạy lại không tạo trùng.
 Chi tiết ở [`deploy/demo/README.md`](./deploy/demo/README.md).
 
@@ -112,7 +112,7 @@ Chi tiết ở [`deploy/demo/README.md`](./deploy/demo/README.md).
 
 ### Tài khoản demo
 
-Realm Keycloak tạo sẵn 3 tài khoản chỉ để demo và chấm thi.
+`seed_demo.py` tạo 3 tài khoản này trong realm `dxos` chỉ để demo và chấm thi.
 Đổi mật khẩu hoặc xóa trước khi dùng cho dữ liệu thật.
 
 | Username | Mật khẩu | Role |
@@ -144,7 +144,7 @@ Dựng một phần: `./reset.sh --yes postgres backend keycloak`.
 
 Hai database trên cùng một Postgres:
 
-- `dxfarm`: dữ liệu nghiệp vụ và tri thức có cấu trúc (Disease, Pesticide, TreatmentRule, DiseaseManagementPolicy).
+- `dxos`: dữ liệu nghiệp vụ và tri thức có cấu trúc (Disease, Pesticide, TreatmentRule, DiseaseManagementPolicy).
 - `dx_farm_ai_vector_db`: `documents` và `document_chunks` cho RAG; AI dùng role chỉ đọc, job ingest dùng role ghi riêng.
 
 Seed nghiệp vụ của Farm nằm ở `backend/app-farm/src/main/resources/farm/data.sql`, sinh từ `data/structured/*.json` bằng `data/scripts/generate_seed_sql.py`; chỉ record được duyệt (`eligible_for_seed=true`) mới được seed.

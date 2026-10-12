@@ -20,7 +20,7 @@ app:
 security:
   # Keycloak clients a FARMER-only token may come from (comma separated). Farmers use the mobile
   # app only.
-  farmer-client-ids: ${FARMER_CLIENT_IDS:dxfarm-mobile}
+  farmer-client-ids: ${FARMER_CLIENT_IDS:farm-mobile}
 
 weather:
   # Open-Meteo forecast API, no key. When unreachable the stored snapshot (weather-snapshot.json) is served.

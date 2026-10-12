@@ -16,7 +16,7 @@ import io
 import sys
 import uuid
 
-import dxfarm_client as dx
+import dxos_client as dx
 import seed_demo
 
 DISEASE = "Rice___Blast"

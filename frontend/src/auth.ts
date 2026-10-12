@@ -3,8 +3,8 @@ import type { Role } from "./types";
 
 // Empty in the packaged build: Keycloak is served by the gateway on the same origin as the app.
 const KEYCLOAK_URL =
-  import.meta.env.VITE_KEYCLOAK_URL || `${window.location.origin}/realms/dxfarm`;
-const CLIENT_ID = import.meta.env.VITE_KEYCLOAK_CLIENT_ID ?? "dxfarm-frontend";
+  import.meta.env.VITE_KEYCLOAK_URL || `${window.location.origin}/realms/dxos`;
+const CLIENT_ID = import.meta.env.VITE_KEYCLOAK_CLIENT_ID ?? "dxos-web";
 // Highest privilege first: a user holding several roles acts with the strongest one.
 const ROLES: Role[] = ["ADMIN", "ENGINEER", "FARMER"];
 
@@ -68,7 +68,7 @@ export async function getToken(): Promise<string | null> {
   return oidcUser && !oidcUser.expired ? oidcUser.access_token : null;
 }
 
-const RETURN_PATH_KEY = "dxfarm.returnPath";
+const RETURN_PATH_KEY = "dxos.returnPath";
 
 // Remembers the page that asked for a login, so the callback can return to it.
 export function signIn(): Promise<void> {

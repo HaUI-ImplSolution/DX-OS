@@ -537,7 +537,7 @@
 
       function refresh() {
         probe("web", "/", true);
-        probe("sso", "/realms/dxfarm/.well-known/openid-configuration", true);
+        probe("sso", "/realms/dxos/.well-known/openid-configuration", true);
         probe("bi", otherPort(9081, "/health"), false);
         probe("chat", otherPort(8065, "/api/v4/system/ping"), false);
         fetch("/api/v1/system/status", { cache: "no-store" })

@@ -107,15 +107,15 @@ class PermissionMatrixTest {
   }
 
   private static JwtRequestPostProcessor farmer() {
-    return token("FARMER", "dxfarm-mobile");
+    return token("FARMER", "farm-mobile");
   }
 
   private static JwtRequestPostProcessor engineer() {
-    return token("ENGINEER", "dxfarm-frontend");
+    return token("ENGINEER", "dxos-web");
   }
 
   private static JwtRequestPostProcessor admin() {
-    return token("ADMIN", "dxfarm-frontend");
+    return token("ADMIN", "dxos-web");
   }
 
   private RequestBuilder createParcel(JwtRequestPostProcessor user) {
@@ -244,7 +244,7 @@ class PermissionMatrixTest {
   }
 
   static Stream<String> webClients() {
-    return Stream.of("dxfarm-frontend", "dxfarm-superset", "unknown");
+    return Stream.of("dxos-web", "dxos-superset", "unknown");
   }
 
   @ParameterizedTest
@@ -258,16 +258,16 @@ class PermissionMatrixTest {
   @Test
   void farmerTokenFromTheMobileClientIsAccepted() throws Exception {
     servicesAnswer();
-    mockMvc.perform(get("/api/v1/parcels").with(token("FARMER", "dxfarm-mobile")))
+    mockMvc.perform(get("/api/v1/parcels").with(token("FARMER", "farm-mobile")))
         .andExpect(status().isOk());
   }
 
   @Test
   void staffTokensAreNotRestrictedByClient() throws Exception {
     servicesAnswer();
-    mockMvc.perform(get("/api/v1/parcels").with(token("ENGINEER", "dxfarm-frontend")))
+    mockMvc.perform(get("/api/v1/parcels").with(token("ENGINEER", "dxos-web")))
         .andExpect(status().isOk());
-    mockMvc.perform(get("/api/v1/parcels").with(token("ADMIN", "dxfarm-mobile")))
+    mockMvc.perform(get("/api/v1/parcels").with(token("ADMIN", "farm-mobile")))
         .andExpect(status().isOk());
   }
 

@@ -24,8 +24,8 @@ SUPERSET_URL = os.environ["SUPERSET_PUBLIC_URL"].rstrip("/")
 
 # api_base_url/access_token_url gọi Keycloak qua hostname nội bộ (server-to-server, trong mạng
 # docker); authorize_url dùng hostname trình duyệt - xem "Lưu ý kỹ thuật" trong sso/README.md.
-KEYCLOAK_INTERNAL_BASE = "http://keycloak:8080/realms/dxfarm/protocol/openid-connect"
-KEYCLOAK_BROWSER_BASE = GATEWAY_URL + "/realms/dxfarm/protocol/openid-connect"
+KEYCLOAK_INTERNAL_BASE = "http://keycloak:8080/realms/dxos/protocol/openid-connect"
+KEYCLOAK_BROWSER_BASE = GATEWAY_URL + "/realms/dxos/protocol/openid-connect"
 
 
 def _decode_jwt_payload(token: str) -> dict:

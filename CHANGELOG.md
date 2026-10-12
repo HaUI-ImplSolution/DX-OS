@@ -5,6 +5,13 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Backend (Spring Boot — `backend`)
 
+### 2026-10-12
+
+**Đã xong — Tên trung tính cho realm và client:**
+
+- Realm `dxos`, audience `dxos-api`; client Farm mobile cho FARMER là `farm-mobile` (`security.farmer-client-ids`).
+- Service account `dxos-backend-admin` giữ `manage-realm` để `RoleBootstrap` tạo vai của app lúc khởi động.
+
 ### 2026-10-11
 
 **Đã xong — Core trung tính cho nhiều ứng dụng:**
@@ -313,6 +320,13 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Mobile (`mobile`, Expo)
 
+### 2026-10-12
+
+**Đã xong — Client `farm-mobile`:**
+
+- Realm `dxos`, client `farm-mobile`; scheme `dxfarm://` và bundle `vn.dxfarm.mobile` là nhận diện của app.
+- Khóa lưu phiên và hàng đợi tải lên có tiền tố `farm.`.
+
 ### 2026-10-11
 
 **Đã xong — Loại thông báo mở rộng:**
@@ -402,6 +416,12 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - `mobile/README.md`: chạy thử trên điện thoại thật với IP LAN, biến môi trường, tài khoản demo, kiểm tra mã nguồn.
 
 ## AI Service (Python)
+
+### 2026-10-12
+
+**Đã xong — Thuộc tính thiết bị của mô hình:**
+
+- Thiết bị chạy mô hình CV lưu ở thuộc tính `_device`.
 
 ### 2026-10-11
 
@@ -513,6 +533,12 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Frontend (`frontend`)
 
+### 2026-10-12
+
+**Đã xong — Client `dxos-web`:**
+
+- Web đăng nhập realm `dxos` bằng client `dxos-web`; khóa lưu đường dẫn quay lại là `dxos.returnPath`.
+
 ### 2026-10-11
 
 **Đã xong — Trạng thái case dạng chuỗi:**
@@ -595,6 +621,14 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Đã test qua trình duyệt thật với từng role, xác nhận UI và 401/403 đúng chỗ.
 
 ## Deploy (`deploy`)
+
+### 2026-10-12
+
+**Đã xong — Tên nền tảng `dxos` ở hạ tầng:**
+
+- Database và tài khoản Postgres `dxos`, bucket `dxos-uploads` với route ảnh `/dxos-uploads/*`, email quản trị mặc định `admin@dxos.local`.
+- `seed_demo.py` tạo vai và tài khoản `farmer1`, `engineer1`, `admin1` qua Keycloak Admin API bằng tài khoản quản trị trong `deploy/.env`; `e2e.py` chạy sau seed.
+- `dxos_client.py` là client dùng chung của seed và E2E, gồm Keycloak Admin API.
 
 ### 2026-10-11
 
@@ -682,6 +716,12 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Service `backend` nhận thêm secret cho auth (`JWT_SECRET`, `JWT_EXPIRATION`, `SUPER_ADMIN_USERNAME/PASSWORD`) từ `deploy/.env` (mẫu ở `.env.example`).
 
 ## BI Dashboard (`bi`, Apache Superset)
+
+### 2026-10-12
+
+**Đã xong — Bundle dashboard của Farm:**
+
+- Bundle là `bi/farm_dashboard_export.zip`, trỏ tới database `dxos`; Superset đăng nhập bằng client `dxos-superset`.
 
 ### 2026-10-06
 
@@ -796,6 +836,13 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - **Còn thiếu**: mỗi app đích vẫn đăng nhập riêng — portal chỉ là danh sách link tĩnh, sẽ trở thành landing page thật khi SSO (Keycloak/Authentik) được triển khai.
 
 ## Identity Provider (`sso`, Keycloak)
+
+### 2026-10-12
+
+**Đã xong — Realm nền tảng `dxos`:**
+
+- `sso/realm-dxos.json` chứa client `dxos-web`, `farm-mobile`, `dxos-superset`, `dxos-backend-admin`, mapper audience `dxos-api` và vai `ADMIN` của nền tảng.
+- Vai của app do backend tạo lúc khởi động; tài khoản mẫu do seed của app tạo.
 
 ### 2026-10-06
 

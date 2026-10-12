@@ -46,7 +46,7 @@ spring:
       resourceserver:
         jwt:
           # Hostname nội bộ, không dùng issuer-uri - xem sso/README.md.
-          jwk-set-uri: http://keycloak:8080/realms/dxfarm/protocol/openid-connect/certs
+          jwk-set-uri: http://keycloak:8080/realms/dxos/protocol/openid-connect/certs
 
 dxos:
   # App loaded next to the core; the value must match a known app (farm).
@@ -67,14 +67,14 @@ storage:
 
 security:
   jwt:
-    # Access tokens must carry this audience (added by the dxfarm-api client scope in Keycloak).
-    audience: ${JWT_AUDIENCE:dxfarm-api}
+    # Access tokens must carry this audience (added by the dxos-api client scope in Keycloak).
+    audience: ${JWT_AUDIENCE:dxos-api}
 
 keycloak:
   admin:
     # Service account (client credentials) used to create workspace accounts.
     base-url: ${KEYCLOAK_ADMIN_BASE_URL:http://keycloak:8080}
-    realm: dxfarm
+    realm: dxos
     client-id: ${KEYCLOAK_ADMIN_CLIENT_ID}
     client-secret: ${KEYCLOAK_ADMIN_CLIENT_SECRET}
   db:

@@ -18,7 +18,7 @@ Không chọn Metabase (AGPL-3.0, copyleft mạnh hơn dù vẫn OSI-approved) �
 - Backend tự tạo role Postgres **chỉ-đọc** `superset_ro` lúc khởi động (`SupersetReadOnlyRoleSeeder`, xem backend).
   Superset không bao giờ có quyền ghi vào CSDL nghiệp vụ và không đọc được bảng nghiệp vụ: role chỉ có `SELECT` trên các view `vw_*` (bản ghi đã duyệt hoặc đã xử lý, không có dữ liệu cá nhân) và ba bảng danh mục `diseases`, `pesticides`, `rice_varieties`.
 - `bi/bootstrap_datasources.py` chạy sau khi server lên, tự đăng ký mọi thứ qua REST API công khai của chính Superset (không đụng ORM nội bộ, ổn định qua version):
-  - Nếu **đã có** `dxfarm_dashboard_export.zip` (trường hợp bình thường, file này đã commit sẵn trong repo): import trọn bộ database connection + dataset + chart + dashboard từ bundle này — đây là **nguồn sự thật duy nhất**.
+  - Nếu **đã có** `farm_dashboard_export.zip` (trường hợp bình thường, file này đã commit sẵn trong repo): import trọn bộ database connection + dataset + chart + dashboard từ bundle này — đây là **nguồn sự thật duy nhất**.
     Mật khẩu Postgres bị Superset mask thành `XXXXXXXXXX` lúc export nên bootstrap phải truyền lại mật khẩu thật qua tham số `passwords` của API import, khớp theo đường dẫn file trong zip đã bỏ thư mục gốc (`databases/DX-Farm.yaml`).
   - Nếu **chưa có** export nào (lần đầu dựng dashboard mới, trước khi có ai build+export) thì fallback: tự tạo database connection `DX-Farm` (role `superset_ro`) + 6 dataset trỏ vào các view `vw_*`.
     Chart/dashboard thì để build tay theo hướng dẫn bên dưới.
@@ -37,11 +37,11 @@ Không chọn Metabase (AGPL-3.0, copyleft mạnh hơn dù vẫn OSI-approved) �
 
 ## Xem/quản trị dữ liệu
 
-- **Dữ liệu nghiệp vụ Superset đọc**: các view `vw_*` trong Postgres `dxfarm` — cùng CSDL với backend, không tách riêng (định nghĩa ở `V9__bi_views.sql`).
+- **Dữ liệu nghiệp vụ Superset đọc**: các view `vw_*` trong Postgres `dxos` — cùng CSDL với backend, không tách riêng (định nghĩa ở `V9__bi_views.sql`).
   Superset chỉ đọc qua role `superset_ro` (chỉ có quyền `SELECT` trên danh sách view và bảng danh mục, đã seed sẵn).
-  Xem qua DBeaver bằng connection tới `dxfarm` hiện có, hoặc tạo connection mới:
-  - Host/Port: giống connection tới `dxfarm` (`localhost`, cổng `POSTGRES_HOST_PORT`)
-  - Database: `dxfarm`
+  Xem qua DBeaver bằng connection tới `dxos` hiện có, hoặc tạo connection mới:
+  - Host/Port: giống connection tới `dxos` (`localhost`, cổng `POSTGRES_HOST_PORT`)
+  - Database: `dxos`
   - User: `superset_ro`
   - Password: giá trị `SUPERSET_READONLY_DB_PASSWORD` trong `deploy/.env`
 
@@ -104,7 +104,7 @@ Sau khi chỉnh xong, export lại và commit đè lên bundle cũ để lần `
 
 1. Vào UI bằng tài khoản `admin1`, chỉnh dashboard "DX-Farm — Bản đồ & Trạng thái thửa ruộng" cho tới khi ưng ý.
 2. **⋯ → Export** trên trang dashboard (hoặc gọi `GET /api/v1/dashboard/export/?q=!(<id>)` bằng token admin).
-3. Đè file tải về vào đúng `bi/dxfarm_dashboard_export.zip`.
+3. Đè file tải về vào đúng `bi/farm_dashboard_export.zip`.
 4. Trong thư mục `deploy/`: `docker compose up -d --force-recreate superset` để test lại từ đầu, xác nhận dashboard vẫn hiện đúng.
    Nếu thấy chart nhân đôi nghĩa là `position_json` thiếu `meta.uuid` khớp đúng UUID thật của chart, phải sửa lại qua UI thay vì build tay.
 5. Commit file zip mới.

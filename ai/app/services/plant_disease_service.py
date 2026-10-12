@@ -141,7 +141,7 @@ class PlantDiseaseService:
         self.crop_classifier = crop_classifier
         self.settings = settings or get_settings()
         self.contract = class_contract(self.settings.cv_class_contract_path)
-        self.device = getattr(model, "_dxfarm_device", self.settings.cv_device)
+        self.device = getattr(model, "_device", self.settings.cv_device)
 
     def predict(self, image_bytes: bytes) -> dict:
         image, quality = assess_image(image_bytes, self.crop_classifier)

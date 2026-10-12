@@ -19,7 +19,7 @@ Ngoài Expo Go, có thể build APK bằng EAS mà không cần cài Android Stu
 
 - **Điều hướng**: `expo-router` theo cấu trúc file trong `app/`, dạng stack, không có tab bar.
   Route guard bằng `Stack.Protected` ở `app/_layout.tsx`: chưa đăng nhập chỉ thấy màn Đăng nhập.
-- **Xác thực**: Authorization Code + PKCE với client public `dxfarm-mobile` của Keycloak, qua `expo-auth-session` và trình duyệt hệ thống.
+- **Xác thực**: Authorization Code + PKCE với client public `farm-mobile` của Keycloak, qua `expo-auth-session` và trình duyệt hệ thống.
   Endpoint dựng trực tiếp từ `EXPO_PUBLIC_KEYCLOAK_URL`, không dùng discovery.
   Access token và refresh token lưu ở `expo-secure-store`; token tự refresh trước khi hết hạn.
   Refresh bị từ chối hoặc Backend trả `401` thì phiên bị xoá và app về màn Đăng nhập.
@@ -91,7 +91,7 @@ Ngoài Expo Go, có thể build APK bằng EAS mà không cần cài Android Stu
   | `engineer1` | `engineer123` | ENGINEER | Bị đăng xuất kèm thông báo |
   | `admin1` | `admin123` | ADMIN | Bị đăng xuất kèm thông báo |
 
-- Redirect URI đã đăng ký cho client `dxfarm-mobile`: `dxfarm://*` (app đã build) và `exp://*` (Expo Go, chỉ dùng khi dev).
+- Redirect URI đã đăng ký cho client `farm-mobile`: `dxfarm://*` (app đã build) và `exp://*` (Expo Go, chỉ dùng khi dev).
 
 ## Phạm vi dữ liệu của nông dân
 
@@ -99,8 +99,8 @@ Ngoài Expo Go, có thể build APK bằng EAS mà không cần cài Android Stu
   Tài khoản chưa gắn nông hộ thấy danh sách rỗng và không tạo được thửa; admin tạo hộ cùng tài khoản bằng `POST /api/v1/households` hoặc gắn tài khoản có sẵn bằng `PATCH /api/v1/households/{code}/account`.
   Thửa, vụ mùa, báo cáo hoặc thao tác thu hoạch trên dữ liệu của hộ khác trả `404`.
   Thửa do FARMER tạo luôn thuộc hộ của chính họ.
-- Token của `FARMER` chỉ được chấp nhận khi cấp cho client `dxfarm-mobile` (claim `azp`); cùng token đó cấp qua client web bị backend từ chối `403`.
-  Mọi access token phải có `aud` chứa `dxfarm-api`; realm tự thêm vào token của client web và mobile, nên token cấp trước khi có cấu hình này (không có `aud`) bị `401` và phải đăng nhập lại.
+- Token của `FARMER` chỉ được chấp nhận khi cấp cho client `farm-mobile` (claim `azp`); cùng token đó cấp qua client web bị backend từ chối `403`.
+  Mọi access token phải có `aud` chứa `dxos-api`; realm tự thêm vào token của client web và mobile, nên token cấp trước khi có cấu hình này (không có `aud`) bị `401` và phải đăng nhập lại.
 - Nội dung chẩn đoán (bệnh, khuyến nghị, thuốc, liều) chỉ có khi diagnosis đã `APPROVED`.
   Đặc tả: [`development/docs/pending_docs/mobile/BACKEND_CHANGES.md`](../development/docs/pending_docs/mobile/BACKEND_CHANGES.md).
 
@@ -111,11 +111,12 @@ Khai báo trong `mobile/.env` (không commit); mẫu ở [`.env.example`](./.env
 | Biến | Ý nghĩa | Ví dụ |
 |---|---|---|
 | `EXPO_PUBLIC_API_BASE_URL` | Địa chỉ gateway (API và ảnh) | `http://192.168.1.10:9080` |
-| `EXPO_PUBLIC_KEYCLOAK_URL` | Realm URL của Keycloak, cũng qua gateway | `http://192.168.1.10:9080/realms/dxfarm` |
-| `EXPO_PUBLIC_KEYCLOAK_CLIENT_ID` | Client OIDC | `dxfarm-mobile` |
+| `EXPO_PUBLIC_KEYCLOAK_URL` | Realm URL của Keycloak, cũng qua gateway | `http://192.168.1.10:9080/realms/dxos` |
+| `EXPO_PUBLIC_KEYCLOAK_CLIENT_ID` | Client OIDC | `farm-mobile` |
 
 Biến `EXPO_PUBLIC_*` được nhúng vào bundle lúc build nên chỉ chứa giá trị công khai.
 Thiếu biến nào thì app báo lỗi ngay lúc khởi động.
+Realm và client được nhúng lúc build, nên đổi `EXPO_PUBLIC_KEYCLOAK_URL` hoặc `EXPO_PUBLIC_KEYCLOAK_CLIENT_ID` thì phải build và cài lại app.
 
 ## Chạy trên điện thoại thật
 
@@ -138,7 +139,7 @@ docker compose up -d --build
 
 - Điện thoại phải truy cập được cổng `9080` (gateway) của máy dev; mở cổng trên firewall nếu cần.
 - Keycloak chỉ import realm khi realm chưa tồn tại.
-  Với volume Postgres cũ, thêm client `dxfarm-mobile` qua Admin Console hoặc xoá `deploy/data/postgres` để import lại (mất dữ liệu demo).
+  Với volume Postgres cũ, thêm client `farm-mobile` qua Admin Console hoặc xoá `deploy/data/postgres` để import lại (mất dữ liệu demo).
 - Thửa cần có `farmerName` là `Nguyễn Văn Nông` để `farmer1` nhìn thấy; đăng nhập web bằng `farmer1` để tạo thửa (tên được gán tự động), hoặc dùng `admin1`/`engineer1` tạo thửa với đúng tên đó.
 
 ### 3. Cài đặt và chạy app
@@ -165,7 +166,7 @@ Cấu hình nằm ở [`eas.json`](./eas.json), profile `preview` xuất file `.
 
 - Tài khoản Expo miễn phí tại https://expo.dev.
 - Backend và Keycloak đã chạy với địa chỉ điện thoại truy cập được (xem mục "Chạy trên điện thoại thật", bước 2).
-- Client `dxfarm-mobile` có redirect URI `dxfarm://*` — có sẵn trong realm import.
+- Client `farm-mobile` có redirect URI `dxfarm://*` — có sẵn trong realm import.
 
 ### Các bước
 
@@ -210,7 +211,7 @@ npx expo export --platform android
 
 | Triệu chứng | Nguyên nhân thường gặp |
 |---|---|
-| "Không đăng nhập được, thử lại" hoặc Keycloak báo redirect URI không hợp lệ | Realm chưa có client `dxfarm-mobile` (volume cũ); xem bước 2 |
+| "Không đăng nhập được, thử lại" hoặc Keycloak báo redirect URI không hợp lệ | Realm chưa có client `farm-mobile` (volume cũ); xem bước 2 |
 | Trang đăng nhập Keycloak không tải, hoặc đăng nhập xong bị chuyển về `localhost` và Safari không mở được | `EXPO_PUBLIC_KEYCLOAK_URL` trong `.env` đang là `localhost` hoặc sai IP; đặt IP LAN của máy dev rồi chạy `npm start -- -c` |
 | "Không kết nối được. Kiểm tra mạng rồi thử lại." | Điện thoại không tới được Backend: sai IP trong `.env`, khác mạng WiFi hoặc firewall chặn cổng `9080` |
 | Danh sách thửa trống | `farmerName` của thửa không khớp tên trong token |

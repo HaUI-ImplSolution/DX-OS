@@ -55,9 +55,9 @@ Checkout có sẵn `best.pt` và `crop_classifier.onnx` trong `ai/weights/`; Com
 
 | Dữ liệu | Nơi sở hữu | Quyền của AI runtime |
 |---|---|---|
-| Parcel, CropSeason, DiseaseReport, Diagnosis, TrainingLabel, TreatmentApplication | Backend DB `dxfarm` | Không có credential DB; chỉ nhận dữ liệu cần thiết qua REST |
-| Disease, Pesticide, TreatmentRule | Backend DB `dxfarm` | Chỉ đọc qua internal REST API |
-| DiseaseManagementPolicy | Backend DB `dxfarm` | Chỉ đọc qua internal REST API khi endpoint tương ứng được mở |
+| Parcel, CropSeason, DiseaseReport, Diagnosis, TrainingLabel, TreatmentApplication | Backend DB `dxos` | Không có credential DB; chỉ nhận dữ liệu cần thiết qua REST |
+| Disease, Pesticide, TreatmentRule | Backend DB `dxos` | Chỉ đọc qua internal REST API |
+| DiseaseManagementPolicy | Backend DB `dxos` | Chỉ đọc qua internal REST API khi endpoint tương ứng được mở |
 | Document, DocumentChunk và embedding | AI Vector DB `dx_farm_ai_vector_db` | Role `ai_vector_ro` chỉ có quyền đọc |
 | Corpus ingest | Thư mục `data/` ở gốc repository (mount read-only vào job `rag-ingest`) | Job riêng dùng role `ai_vector_ingest` |
 

@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Draft |
+| Trạng thái | Hoàn tất |
 | Mức độ | Nghiêm trọng |
 | Nhóm ưu tiên | A |
 | Ứng dụng và module chính | `app-lab` |
@@ -121,7 +121,7 @@ Phạm vi đã cắt gọn (RD11): chỉ làm các WP dưới đây; các mục 
 
 ## 10. Tài liệu cần cập nhật khi xong
 
-- [ ] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
-- [ ] Swagger (springdoc) cho API Lab.
-- [ ] `app-lab/README.md` (domain, vai, interface đã cài, quy tắc SLA và đặt phòng).
-- [ ] `LICENSES.md` (nguồn dữ liệu mẫu và tri thức), `.env.example` nếu có đổi.
+- [x] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
+- [x] Swagger (springdoc) cho API Lab.
+- [x] `app-lab/README.md` (domain, vai, interface đã cài, quy tắc SLA và đặt phòng).
+- [x] `LICENSES.md` (nguồn dữ liệu mẫu và tri thức), `.env.example` nếu có đổi.

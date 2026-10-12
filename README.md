@@ -93,7 +93,7 @@ Chi tiết ở [`deploy/demo/README.md`](./deploy/demo/README.md).
 
 ### Kiểm thử
 
-- Backend: `./mvnw verify` trong `backend/DX-Farm` (cần Docker cho Testcontainers).
+- Backend: `./mvnw verify` trong `backend` (cần Docker cho Testcontainers).
 - AI: `pytest` trong `ai/`.
 - Frontend và mobile: `npx tsc --noEmit`.
 - E2E trên stack sạch: `python3 deploy/demo/e2e.py` (chạy tự động bởi workflow `E2E`).
@@ -147,10 +147,10 @@ Hai database trên cùng một Postgres:
 - `dxfarm`: dữ liệu nghiệp vụ và tri thức có cấu trúc (Disease, Pesticide, TreatmentRule, DiseaseManagementPolicy).
 - `dx_farm_ai_vector_db`: `documents` và `document_chunks` cho RAG; AI dùng role chỉ đọc, job ingest dùng role ghi riêng.
 
-Seed nghiệp vụ nằm ở `backend/DX-Farm/src/main/resources/data.sql`, sinh từ `data/structured/*.json` bằng `data/scripts/generate_seed_sql.py`; chỉ record được duyệt (`eligible_for_seed=true`) mới được seed.
+Seed nghiệp vụ của Farm nằm ở `backend/app-farm/src/main/resources/farm/data.sql`, sinh từ `data/structured/*.json` bằng `data/scripts/generate_seed_sql.py`; chỉ record được duyệt (`eligible_for_seed=true`) mới được seed.
 Không sửa tay `data.sql`; khi thay đổi dữ liệu, cần commit đồng thời dữ liệu nguồn và file đã sinh.
 CI chạy `generate_seed_sql.py --check` cùng unit test của generator để phát hiện dữ liệu nguồn và `data.sql` bị lệch.
-Hạ tầng Postgres (role, database, extension) do các `*Seeder` trong `config`.
+Hạ tầng Postgres (role, database, extension) do các `*Seeder` trong `dx-core`.
 
 ## Giấy phép và hồ sơ PoF
 

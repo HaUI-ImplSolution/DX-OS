@@ -36,11 +36,11 @@ Chi tiết từng interface ở [`SPI_CATALOG.md`](./SPI_CATALOG.md).
 | Identity | `core/identity/*` (Household, HouseholdService, HouseholdController, KeycloakAdminClient), `KeycloakAdminException`, `CurrentUserService` | `Household` thành `Workspace` + `WorkspaceMember`; `isFarmer/isAdmin` thành kiểm tra theo vai |
 | Workflow | `core/workflow/*` (gồm `WorkflowActor`, `WorkflowController`), `ApprovalRequestService`, `ApprovalRequestController`, `PendingRequestLimiter` | Làm giàu hộp duyệt qua `CaseSummaryProvider`; giới hạn yêu cầu chờ lấy case type từ cấu hình app |
 | Storage | `core/storage/*` (gồm `StorageBucketInitializer`) | Giữ nguyên |
-| Notification | `NotificationService`, `Notification`, `NotificationRepository`, `NotificationController`, `NotificationResponse` | `NotificationType` từ enum thành mã chuỗi do app đăng ký |
-| Kênh chat | `MattermostWebhookClient` | Khóa kênh là chuỗi do app khai báo; lời nhắn do app viết |
-| AI gateway | Phần chung của `AiDiagnosisClient` (khóa dịch vụ, health, retrieve), `KnowledgeService`, `KnowledgeController` | `namespace` cho RAG |
+| Notification | `NotificationService`, `Notification`, `NotificationRepository`, `NotificationController`, `NotificationResponse` | `NotificationType` từ enum thành mã chuỗi do app đăng ký; nằm ở `app-farm` cho tới C2 |
+| Kênh chat | `MattermostWebhookClient` | Khóa kênh là chuỗi do app khai báo; lời nhắn do app viết; nằm ở `app-farm` cho tới C2 |
+| AI gateway | Phần chung của `AiDiagnosisClient` (khóa dịch vụ, health, retrieve), `KnowledgeService`, `KnowledgeController` | `namespace` cho RAG; nằm ở `app-farm` cho tới C2 |
 | Bảo mật | `SecurityConfig`, `KeycloakRoleConverter`, `RestAccessDeniedHandler`, `RestAuthenticationEntryPoint`, `ServiceApiKeyAuthenticationFilter`, bộ lọc hạn chế client (từ `FarmerClientRestrictionFilter`) | Endpoint công khai và hạn chế client lấy từ interface |
-| Nền tảng | `GlobalExceptionHandler`, `AsyncConfig`, `SchedulingConfig`, `TimeConfig`, `OpenApiConfig`, `SystemStatusService`, `SystemStatusController` | Trạng thái hệ thống gom từ `HealthContributor` |
+| Nền tảng | `GlobalExceptionHandler`, `AsyncConfig`, `SchedulingConfig`, `TimeConfig`, `OpenApiConfig`, `SystemStatusService`, `SystemStatusController` | Trạng thái hệ thống gom từ `HealthContributor`; `SystemStatusService` và controller nằm ở `app-farm` cho tới C2 |
 | Khởi tạo hạ tầng | `KeycloakDatabaseSeeder`, `MattermostDatabaseSeeder`, `AiVectorDatabaseSeeder`, `SupersetReadOnlyRoleSeeder` | Seeder Superset đọc view từ `BiDatasetProvider` |
 | Migration | `households`, `workflow_case`, `workflow_event`, `notifications` | `db/migration/core`, bảng lịch sử riêng |
 

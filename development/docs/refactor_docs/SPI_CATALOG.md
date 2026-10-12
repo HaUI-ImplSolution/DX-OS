@@ -23,18 +23,18 @@ Phần giống nhau nằm trực tiếp trong `dx-core` (RBAC, base entity, erro
 
 ## Facade app gọi (core cài)
 
-| Facade | Thay cho | Dùng bởi |
-|---|---|---|
-| `WorkflowOperations` | `WorkflowService` | mở case, ghi bước, gán người phụ trách, đếm case chờ |
-| `WorkspaceDirectory` | `HouseholdService`, `HouseholdRepository` | tra workspace theo mã hoặc tài khoản, thành viên |
-| `NotificationPublisher` | `NotificationService.notify*` | gửi thông báo trong app, có khóa chống trùng |
-| `ObjectStorage` | `StorageService` | lưu, đọc, tạo link có hạn, kiểm tra sẵn sàng |
-| `UserContext` | `CurrentUserService` | id, tên, vai và workspace của người đang đăng nhập |
-| `KnowledgeGateway` | `KnowledgeService` | hỏi đáp RAG theo namespace |
-| `AiGateway` | phần chung của `AiDiagnosisClient` | gọi AI service với khóa dịch vụ, circuit breaker, health |
+| Facade | Thay cho | Dùng bởi | Phase |
+|---|---|---|---|
+| `WorkflowOperations` | `WorkflowService` | mở case, ghi bước, gán người phụ trách, đếm case chờ, tìm case theo `CaseQuery` | C1 |
+| `WorkspaceDirectory` | `HouseholdService`, `HouseholdRepository` | tra workspace theo id, mã hoặc tài khoản, tra nhiều id một lần | C1 |
+| `ObjectStorage` | `StorageService` | lưu, tạo link có hạn, kiểm tra sẵn sàng | C1 |
+| `UserContext` | `CurrentUserService` | id, tên, vai và workspace của người đang đăng nhập | C1 |
+| `NotificationPublisher` | `NotificationService.notify*` | gửi thông báo trong app, có khóa chống trùng | C2 |
+| `KnowledgeGateway` | `KnowledgeService` | hỏi đáp RAG theo namespace | C2 |
+| `AiGateway` | phần chung của `AiDiagnosisClient` | gọi AI service với khóa dịch vụ, circuit breaker, health | C2 |
 
 ## Kiểu dữ liệu công khai
 
 - `CaseView`: id, caseType, entityType, entityId, status, createdBy, assignedTo, thời điểm; thay cho entity `WorkflowCase`.
-- `WorkspaceView`: id, code, type, name, owner, thuộc tính; thay cho entity `Household`.
+- `WorkspaceView`: id, code, fullName, keycloakUserId ở C1; thêm type, owner, thuộc tính ở C2; thay cho entity `Household`.
 - Entity của core (`WorkflowCase`, `Workspace`, `Notification`) không nằm trong `dx-core-api`.

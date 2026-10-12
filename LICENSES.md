@@ -3,7 +3,7 @@
 Tiêu chí PoF của OLP yêu cầu **mọi thành phần trong stack phải dùng license OSI-approved** (xem [danh sách OSI](https://opensource.org/licenses)).
 Bảng dưới liệt kê từng thành phần đang thực sự chạy trong repo (không tính thành phần đã comment-out/chưa dùng), license, và tình trạng OSI-approved.
 
-## Backend (`backend/DX-Farm`, Maven)
+## Backend (`backend`, Maven đa module)
 
 | Thành phần | License | OSI-approved | Ghi chú |
 |---|---|---|---|

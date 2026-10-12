@@ -39,7 +39,7 @@ services:
 
   backend:
     build:
-      context: ../backend/DX-Farm
+      context: ../backend
       dockerfile: Dockerfile
     depends_on:
       postgres:
@@ -51,6 +51,7 @@ services:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       SERVER_PORT: 8081
+      DXOS_APP: ${DXOS_APP:-farm}
       MINIO_ENDPOINT: ${MINIO_ENDPOINT:?}
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:?}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:?}

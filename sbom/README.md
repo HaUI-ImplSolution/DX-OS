@@ -4,7 +4,7 @@ Danh mục thành phần phần mềm định dạng CycloneDX 1.5 (JSON), chỉ
 
 | File | Nguồn |
 |---|---|
-| `backend.cdx.json` | Maven, `backend/DX-Farm` |
+| `backend.cdx.json` | Maven, `backend` |
 | `ai.cdx.json` | `ai/requirements.lock` |
 | `frontend.cdx.json` | npm, `frontend` |
 | `mobile.cdx.json` | npm, `mobile` |
@@ -13,7 +13,7 @@ Danh mục thành phần phần mềm định dạng CycloneDX 1.5 (JSON), chỉ
 
 ```bash
 # Backend
-cd backend/DX-Farm
+cd backend
 ./mvnw org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -DoutputFormat=json -DoutputName=backend.cdx -DincludeTestScope=false
 cp target/backend.cdx.json ../../sbom/
 

@@ -33,27 +33,28 @@ flowchart TB
 
 | Tầng | Thành phần | Nơi nằm trong repo |
 |---|---|---|
-| 1. Core | Identity | `backend/.../core/identity`, `sso/` (Keycloak) |
-| 1. Core | Workflow | `backend/.../core/workflow`, bảng `workflow_case`, `workflow_event` |
-| 1. Core | Storage | `backend/.../core/storage`, `minio/` |
+| 1. Core | Identity | `backend/dx-core/.../core/identity`, `sso/` (Keycloak) |
+| 1. Core | Workflow | `backend/dx-core/.../core/workflow`, bảng `workflow_case`, `workflow_event` |
+| 1. Core | Storage | `backend/dx-core/.../core/storage`, `minio/` |
 | 1. Core | Gateway | `deploy/apisix/` |
 | 2. H-P-D-I | Human, Process, Data, Intelligence | các thành phần Core ở trên cộng `ai/`, `bi/`, `chat/` |
-| 3. Ứng dụng | DX-Farm | các package còn lại của `backend/` (`model`, `service`, `controller`, `repository`, `dto`), `frontend/`, `mobile/`, `ai/`, `data/` |
+| 3. Ứng dụng | DX-Farm | `backend/app-farm`, `frontend/`, `mobile/`, `ai/`, `data/` |
 
 ## 2. Ranh giới Core và ứng dụng
 
-- Core không import gì từ nghiệp vụ nông nghiệp; nó chỉ dùng chung `dto` (`ApiResponse`, `PageResponse`) và `exception` của backend.
+- Backend gồm bốn module Maven: `dx-core-api` (interface, DTO, lỗi), `dx-core` (cài đặt dùng chung), `app-farm` (nghiệp vụ nông nghiệp) và `dx-host` (chạy được, chọn app bằng `DXOS_APP`).
+- `dx-core` không import gì từ nghiệp vụ nông nghiệp; nó chỉ phụ thuộc `dx-core-api`.
   `WorkflowService` nhận `caseType`, `entityType`, `entityId` dạng chuỗi và số, không biết `Diagnosis` là gì.
   `StorageService` nhận khóa object và byte, không biết đó là ảnh báo cáo.
-- Ứng dụng gọi Core qua các điểm vào cố định:
-  - `DiagnosisService` mở case `DIAGNOSIS_APPROVAL` và ghi bước duyệt qua `WorkflowService`.
+- `app-farm` chỉ có `dx-core-api` trên classpath và gọi Core qua các facade của module này:
+  - `DiagnosisService` mở case `DIAGNOSIS_APPROVAL` và ghi bước duyệt qua `WorkflowOperations`.
   - `DiagnosisService` mở case `TREATMENT_CONFIRMATION` khi nông dân khai phun thuốc và ghi bước xác nhận của kỹ sư.
-  - `FileStorageService` làm sạch ảnh rồi lưu qua `StorageService`.
-  - `ParcelService` dùng `Household` của `core.identity`.
-- Đổi ứng dụng (ví dụ làm ứng dụng thứ hai) chỉ thêm package ứng dụng mới.
-  `core.identity`, `core.workflow`, `core.storage` và cấu hình `deploy/apisix/` giữ nguyên.
+  - `FileStorageService` làm sạch ảnh rồi lưu qua `ObjectStorage`.
+  - `ParcelService` tra nông hộ qua `WorkspaceDirectory` và giữ `household_id` dạng số.
+- Đổi ứng dụng (ví dụ làm ứng dụng thứ hai) chỉ thêm module ứng dụng mới.
+  `dx-core-api`, `dx-core` và cấu hình `deploy/apisix/` giữ nguyên.
   Ứng dụng mới chọn `caseType` riêng, ví dụ `PARCEL_APPROVAL`, và dùng lại bảng `workflow_case`, `workflow_event` và API `/api/v1/workflow-cases`.
-- Ranh giới là quy ước package trong một module Maven, không phải ràng buộc lúc biên dịch.
+- Ranh giới là ràng buộc lúc biên dịch: compiler từ chối mọi import từ `app-farm` vào ruột `dx-core`.
 
 ## 3. Sơ đồ luồng request
 

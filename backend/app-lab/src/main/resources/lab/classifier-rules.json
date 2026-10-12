@@ -1,0 +1,65 @@
+{
+  "defaultCategory": "OTHER",
+  "categories": [
+    {
+      "code": "NETWORK",
+      "keywords": ["mạng", "mất mạng", "wifi", "wi-fi", "internet", "vpn", "lan", "dns", "mất kết nối", "đường truyền", "không vào được mạng", "chậm mạng"]
+    },
+    {
+      "code": "ACCOUNT",
+      "keywords": ["mật khẩu", "password", "tài khoản", "đăng nhập", "quên mật khẩu", "khóa tài khoản", "đặt lại mật khẩu", "otp", "email trường", "sso"]
+    },
+    {
+      "code": "PROJECTOR",
+      "keywords": ["máy chiếu", "projector", "màn chiếu", "màn hình", "không lên hình", "hdmi", "vga", "loa", "micro", "mất tiếng"]
+    },
+    {
+      "code": "PRINTER",
+      "keywords": ["máy in", "in ấn", "hết mực", "kẹt giấy", "máy quét", "scan", "photocopy", "máy photocopy"]
+    },
+    {
+      "code": "COMPUTER",
+      "keywords": ["máy tính", "pc", "laptop", "bàn phím", "chuột", "ổ cứng", "treo máy", "đơ máy", "không khởi động", "màn hình xanh", "không lên nguồn", "ram", "ổ đĩa"]
+    },
+    {
+      "code": "SOFTWARE",
+      "keywords": ["phần mềm", "cài đặt", "cài phần mềm", "bản quyền", "license", "office", "matlab", "visual studio", "python", "lỗi ứng dụng", "cập nhật", "ứng dụng"]
+    },
+    {
+      "code": "EXAM_SUPPORT",
+      "keywords": ["kỳ thi", "bài thi", "coi thi", "ca thi", "phòng thi", "thi thực hành", "giờ thi"]
+    }
+  ],
+  "priorityRules": [
+    {
+      "id": "exam-in-progress",
+      "raiseTo": "URGENT",
+      "keywords": ["giữa giờ thi", "đang thi", "trong giờ thi", "đang trong giờ thi", "ca thi đang diễn ra"],
+      "reason": "Sự cố xảy ra trong giờ thi"
+    },
+    {
+      "id": "exam-soon",
+      "raiseTo": "HIGH",
+      "keywords": ["sắp thi", "chuẩn bị thi", "ngày mai thi", "kỳ thi", "buổi thi", "ca thi"],
+      "reason": "Liên quan đến kỳ thi sắp diễn ra"
+    },
+    {
+      "id": "whole-room",
+      "raiseTo": "HIGH",
+      "keywords": ["cả phòng", "toàn bộ phòng", "tất cả máy", "nhiều máy", "toàn bộ máy", "cả lớp", "mất hết"],
+      "reason": "Ảnh hưởng nhiều máy hoặc cả phòng"
+    },
+    {
+      "id": "teaching-now",
+      "raiseTo": "HIGH",
+      "keywords": ["đang dạy", "đang học", "giờ học", "tiết học", "đang giảng"],
+      "reason": "Đang ảnh hưởng đến buổi dạy học"
+    },
+    {
+      "id": "safety",
+      "raiseTo": "URGENT",
+      "keywords": ["cháy", "khói", "chập điện", "nổ", "giật điện"],
+      "reason": "Có nguy cơ mất an toàn"
+    }
+  ]
+}

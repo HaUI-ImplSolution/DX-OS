@@ -13,6 +13,7 @@ final class MigratedDatabase {
   static void migrate(PostgreSQLContainer postgres) {
     migrate(postgres, "classpath:db/migration/core", "flyway_schema_history_core");
     migrate(postgres, "classpath:db/migration/farm", "flyway_schema_history_farm");
+    migrate(postgres, "classpath:db/migration/lab", "flyway_schema_history_lab");
   }
 
   private static void migrate(PostgreSQLContainer postgres, String location, String table) {

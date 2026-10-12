@@ -1,0 +1,31 @@
+spring:
+  sql:
+    init:
+      # Lab data is created through the API, so no seed script runs.
+      mode: never
+
+lab:
+  sla:
+    # Cron (Asia/Ho_Chi_Minh) of the check that warns about and marks tickets past their deadline.
+    check-cron: ${LAB_SLA_CHECK_CRON:0 */5 * * * *}
+    # Share of the resolution time after which the assignee is warned (0-1).
+    warning-ratio: ${LAB_SLA_WARNING_RATIO:0.8}
+  reminder:
+    # Cron (Asia/Ho_Chi_Minh) of the daily loan reminders.
+    loan-cron: ${LAB_LOAN_REMINDER_CRON:0 0 7 * * *}
+    # A loan due within this many days is reminded as due soon.
+    loan-due-soon-days: ${LAB_LOAN_DUE_SOON_DAYS:1}
+  classifier:
+    # Keyword and priority rules of the ticket classifier.
+    rules-path: ${LAB_CLASSIFIER_RULES_PATH:classpath:lab/classifier-rules.json}
+  stats:
+    # Hours a room is open for use per day, the base of its utilisation rate.
+    room-open-hours-per-day: ${LAB_ROOM_OPEN_HOURS_PER_DAY:10}
+
+mattermost:
+  webhook:
+    # Own channel for new tickets and overdue alerts; empty falls back to the default url
+    # (mattermost.webhook.url).
+    url-technician: ${MATTERMOST_WEBHOOK_URL_TECHNICIAN:}
+    # Own channel for overdue alerts; empty falls back to the default url.
+    url-admin: ${MATTERMOST_WEBHOOK_URL_ADMIN:}

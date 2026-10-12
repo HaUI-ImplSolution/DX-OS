@@ -6,6 +6,7 @@ COPY mvnw pom.xml eclipse-java-google-style.xml ./
 COPY dx-core-api/pom.xml dx-core-api/pom.xml
 COPY dx-core/pom.xml dx-core/pom.xml
 COPY app-farm/pom.xml app-farm/pom.xml
+COPY app-lab/pom.xml app-lab/pom.xml
 COPY dx-host/pom.xml dx-host/pom.xml
 # Make sure to run with linux line endings
 RUN sed -i 's/\r$//' mvnw
@@ -14,6 +15,7 @@ RUN chmod +x ./mvnw
 COPY dx-core-api/src/ dx-core-api/src/
 COPY dx-core/src/ dx-core/src/
 COPY app-farm/src/ app-farm/src/
+COPY app-lab/src/ app-lab/src/
 COPY dx-host/src/ dx-host/src/
 RUN ./mvnw clean package -DskipTests -pl dx-host -am
 

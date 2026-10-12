@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Small DX-Farm API client shared by the demo seed and the E2E run (standard library + Pillow)."""
+"""Small DX-OS API client shared by the demo seed and the E2E run (standard library + Pillow)."""
 import base64
 import hashlib
 import html
@@ -15,15 +15,85 @@ import uuid
 from urllib.parse import urljoin
 
 DEFAULT_BASE_URL = "http://localhost:9080"
-REALM = "dxfarm"
-WEB_CLIENT = ("dxfarm-frontend", "http://localhost:9080/callback")
-MOBILE_CLIENT = ("dxfarm-mobile", "dxfarm://callback")
+REALM = "dxos"
+WEB_CLIENT = ("dxos-web", "http://localhost:9080/callback")
+MOBILE_CLIENT = ("farm-mobile", "dxfarm://callback")
 
 ACCOUNTS = {
     "admin": ("admin1", "admin123", WEB_CLIENT),
     "engineer": ("engineer1", "engineer123", WEB_CLIENT),
     "farmer": ("farmer1", "farmer123", MOBILE_CLIENT),
 }
+
+
+class KeycloakAdmin:
+    """Keycloak Admin REST API through the gateway, signed in as the master realm administrator."""
+
+    def __init__(self, base_url, username, password):
+        self.base_url = base_url
+        request = urllib.request.Request(
+            f"{base_url}/realms/master/protocol/openid-connect/token",
+            urllib.parse.urlencode(
+                {"grant_type": "password", "client_id": "admin-cli", "username": username, "password": password}
+            ).encode(),
+        )
+        with urllib.request.urlopen(request) as response:
+            self.token = json.load(response)["access_token"]
+
+    def call(self, method, path, body=None):
+        """Returns (status, parsed JSON body or None) of a call under /admin/realms/{REALM}."""
+        headers = {"Authorization": f"Bearer {self.token}"}
+        payload = None
+        if body is not None:
+            payload = json.dumps(body).encode()
+            headers["Content-Type"] = "application/json"
+        request = urllib.request.Request(
+            f"{self.base_url}/admin/realms/{REALM}{path}", payload, headers, method=method
+        )
+        try:
+            with urllib.request.urlopen(request) as response:
+                status, text = response.status, response.read().decode()
+        except urllib.error.HTTPError as error:
+            status, text = error.code, error.read().decode()
+        try:
+            return status, json.loads(text)
+        except ValueError:
+            return status, None
+
+    def ensure_role(self, name):
+        """Returns the realm role representation, creating the role when it does not exist."""
+        status, role = self.call("GET", f"/roles/{urllib.parse.quote(name)}")
+        if status == 404:
+            self.call("POST", "/roles", {"name": name})
+            status, role = self.call("GET", f"/roles/{urllib.parse.quote(name)}")
+        if status != 200:
+            raise RuntimeError(f"Realm role {name} is not available: HTTP {status}")
+        return role
+
+    def ensure_user(self, username, password, first_name, last_name, email, role_name):
+        """Creates the account when missing and makes sure it holds the realm role."""
+        role = self.ensure_role(role_name)
+        status, _ = self.call(
+            "POST",
+            "/users",
+            {
+                "username": username,
+                "enabled": True,
+                "emailVerified": True,
+                "firstName": first_name,
+                "lastName": last_name,
+                "email": email,
+                "credentials": [{"type": "password", "value": password, "temporary": False}],
+            },
+        )
+        if status not in (201, 409):
+            raise RuntimeError(f"Account {username} was not created: HTTP {status}")
+        status, found = self.call("GET", f"/users?username={urllib.parse.quote(username)}&exact=true")
+        if status != 200 or not found:
+            raise RuntimeError(f"Account {username} is not available: HTTP {status}")
+        status, _ = self.call("POST", f"/users/{found[0]['id']}/role-mappings/realm", [role])
+        if status >= 300:
+            raise RuntimeError(f"Role {role_name} was not assigned to {username}: HTTP {status}")
 
 
 class ApiError(Exception):

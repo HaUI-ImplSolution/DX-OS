@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0
-"""Seeds demo data through the public API: households, parcels, seasons and disease reports.
+"""Seeds the Farm demo: sample accounts, households, parcels, seasons and disease reports.
 
     python3 deploy/demo/seed_demo.py [--base-url URL] [--images DIR]
 
-Run it once against a fresh stack (deploy/reset.sh). Everything goes through the same endpoints
-the apps use, so the approval workflow, quality check and audit columns are exercised for real.
+Run it once against a fresh stack (deploy/reset.sh). The sample accounts are created through the
+Keycloak Admin API with the administrator of deploy/.env; everything else goes through the same
+endpoints the apps use, so the approval workflow, quality check and audit columns are exercised
+for real.
 Photos come from --images (real leaf photos); without it a synthetic photo is used, which is
 enough for the screens but not for a meaningful AI diagnosis.
 """
@@ -18,7 +20,7 @@ import subprocess
 import sys
 import uuid
 
-import dxfarm_client as dx
+import dxos_client as dx
 
 DEMO_MARK = "Demo:"
 DEPLOY_DIR = pathlib.Path(__file__).resolve().parent.parent
@@ -37,6 +39,13 @@ OTHER_HOUSEHOLDS = [
 ]
 FARMER_HOUSEHOLD_NAME = "Nguyễn Văn Hậu"
 
+# Sample accounts of the Farm app: key of dx.ACCOUNTS -> (realm role, first name, last name).
+SAMPLE_ACCOUNTS = {
+    "admin": ("ADMIN", "Quản Trị", "Viên"),
+    "engineer": ("ENGINEER", "Trần", "Kỹ Sư"),
+    "farmer": ("FARMER", "Nguyễn Văn", "Nông"),
+}
+
 
 def read_env(path):
     values = {}
@@ -48,13 +57,22 @@ def read_env(path):
     return values
 
 
+def ensure_accounts(base_url):
+    """Creates the sample accounts and their realm roles in Keycloak; existing ones are kept."""
+    env = read_env(pathlib.Path(os.environ.get("DEMO_ENV_FILE", DEPLOY_DIR / ".env")))
+    keycloak = dx.KeycloakAdmin(base_url, env["KEYCLOAK_ADMIN_USERNAME"], env["KEYCLOAK_ADMIN_PASSWORD"])
+    for key, (role, first_name, last_name) in SAMPLE_ACCOUNTS.items():
+        username, password, _ = dx.ACCOUNTS[key]
+        keycloak.ensure_user(username, password, first_name, last_name, f"{username}@dxos.local", role)
+
+
 def psql(sql):
     """Runs SQL in the compose postgres; DEMO_COMPOSE and DEMO_ENV_FILE select another project."""
     env = read_env(pathlib.Path(os.environ.get("DEMO_ENV_FILE", DEPLOY_DIR / ".env")))
     compose = shlex.split(os.environ.get("DEMO_COMPOSE", "docker compose"))
     subprocess.run(
         [*compose, "exec", "-T", "postgres", "psql", "-U", env["POSTGRES_USER"],
-         "-d", env.get("POSTGRES_DB", "dxfarm"), "-v", "ON_ERROR_STOP=1", "-c", sql],
+         "-d", env.get("POSTGRES_DB", "dxos"), "-v", "ON_ERROR_STOP=1", "-c", sql],
         cwd=DEPLOY_DIR, check=True, capture_output=True)
 
 
@@ -100,6 +118,7 @@ def main():
     parser.add_argument("--images", help="directory of real leaf photos (.jpg)")
     args = parser.parse_args()
 
+    ensure_accounts(args.base_url)
     admin = dx.sign_in(args.base_url, "admin")
     engineer = dx.sign_in(args.base_url, "engineer")
     farmer = dx.sign_in(args.base_url, "farmer")

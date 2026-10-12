@@ -10,7 +10,7 @@ import secrets
 import sys
 
 DEPLOY_DIR = pathlib.Path(__file__).resolve().parent.parent
-FIXED = {"POSTGRES_USER": "dxfarm", "MINIO_ACCESS_KEY": "dxfarm-minio"}
+FIXED = {"POSTGRES_USER": "dxos", "MINIO_ACCESS_KEY": "dxos-minio"}
 OPTIONAL_BLANK = {"MATTERMOST_WEBHOOK_URL", "MATTERMOST_WEBHOOK_URL_ADMIN", "MATTERMOST_WEBHOOK_URL_ENGINEER"}
 
 

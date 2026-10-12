@@ -14,8 +14,8 @@ import requests
 BASE_URL = "http://localhost:8088"
 ADMIN_USERNAME = os.environ.get("SUPERSET_ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.environ["SUPERSET_ADMIN_PASSWORD"]
-DXFARM_DB_URI = os.environ["DXFARM_DB_URI"]
-DASHBOARD_EXPORT_PATH = "/app/pythonpath/dxfarm_dashboard_export.zip"
+DXOS_DB_URI = os.environ["DXOS_DB_URI"]
+DASHBOARD_EXPORT_PATH = "/app/pythonpath/farm_dashboard_export.zip"
 
 # Views of approved/settled records only (V9__bi_views.sql); superset_ro cannot read the tables.
 DATASET_TABLES = [
@@ -91,7 +91,7 @@ def ensure_database(headers, cookies) -> int | None:
 
     payload = {
         "database_name": "DX-Farm",
-        "sqlalchemy_uri": DXFARM_DB_URI,
+        "sqlalchemy_uri": DXOS_DB_URI,
         "expose_in_sqllab": True,
         "allow_run_async": False,
     }
@@ -134,12 +134,12 @@ def import_dashboard_bundle(headers, cookies) -> bool:
     with zipfile.ZipFile(DASHBOARD_EXPORT_PATH) as zf:
         db_yaml_paths = [n for n in zf.namelist() if n.endswith("/databases/DX-Farm.yaml")]
 
-    real_password = urlparse(DXFARM_DB_URI).password or ""
+    real_password = urlparse(DXOS_DB_URI).password or ""
     # Superset khớp mật khẩu theo đường dẫn đã bỏ thư mục gốc của zip.
     passwords = {path.split("/", 1)[1]: real_password for path in db_yaml_paths}
 
     with open(DASHBOARD_EXPORT_PATH, "rb") as f:
-        files = {"formData": ("dxfarm_dashboard_export.zip", f.read(), "application/zip")}
+        files = {"formData": ("farm_dashboard_export.zip", f.read(), "application/zip")}
     data = {"overwrite": "true", "passwords": json.dumps(passwords)}
     resp = requests.post(
         f"{BASE_URL}/api/v1/dashboard/import/",

@@ -226,7 +226,7 @@ services:
         # Served by the gateway on the same origin as the API and Keycloak, so both stay empty.
         VITE_API_BASE_URL: ""
         VITE_KEYCLOAK_URL: ""
-        VITE_KEYCLOAK_CLIENT_ID: dxfarm-frontend
+        VITE_KEYCLOAK_CLIENT_ID: dxos-web
     depends_on:
       - backend
     # No published port: the gateway serves the web app.
@@ -267,11 +267,11 @@ services:
       KC_DB_USERNAME: keycloak_app
       KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?}
       KC_HEALTH_ENABLED: "true"
-      # Substituted into realm-dxfarm.json (${SUPERSET_OIDC_CLIENT_SECRET}) at import time.
+      # Substituted into realm-dxos.json (${SUPERSET_OIDC_CLIENT_SECRET}) at import time.
       SUPERSET_OIDC_CLIENT_SECRET: ${SUPERSET_OIDC_CLIENT_SECRET:?}
       KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET:?}
     volumes:
-      - ../sso/realm-dxfarm.json:/opt/keycloak/data/import/realm-dxfarm.json:ro
+      - ../sso/realm-dxos.json:/opt/keycloak/data/import/realm-dxos.json:ro
     # No published port: the gateway routes /realms, /resources and /admin to it.
     # The Keycloak image has no curl; probe the management port (KC_HEALTH_ENABLED) over bash.
     healthcheck:
@@ -309,7 +309,7 @@ services:
       SUPERSET_ADMIN_USERNAME: ${SUPERSET_ADMIN_USERNAME:?}
       SUPERSET_ADMIN_PASSWORD: ${SUPERSET_ADMIN_PASSWORD:?}
       SUPERSET_ADMIN_EMAIL: ${SUPERSET_ADMIN_EMAIL:?}
-      DXFARM_DB_URI: postgresql+psycopg2://superset_ro:${SUPERSET_READONLY_DB_PASSWORD:?}@postgres:5432/${POSTGRES_DB:?}
+      DXOS_DB_URI: postgresql+psycopg2://superset_ro:${SUPERSET_READONLY_DB_PASSWORD:?}@postgres:5432/${POSTGRES_DB:?}
       GATEWAY_PUBLIC_URL: ${GATEWAY_PUBLIC_URL:?}
       SUPERSET_PUBLIC_URL: ${SUPERSET_PUBLIC_URL:?}
       KEYCLOAK_SUPERSET_CLIENT_ID: ${SUPERSET_OIDC_CLIENT_ID:?}
@@ -318,7 +318,7 @@ services:
       - ../bi/bootstrap.sh:/app/pythonpath/bootstrap.sh:ro
       - ../bi/bootstrap_datasources.py:/app/pythonpath/bootstrap_datasources.py:ro
       - ../bi/superset_config.py:/app/pythonpath/superset_config.py:ro
-      - ../bi/dxfarm_dashboard_export.zip:/app/pythonpath/dxfarm_dashboard_export.zip:ro
+      - ../bi/farm_dashboard_export.zip:/app/pythonpath/farm_dashboard_export.zip:ro
       - ./data/superset:/app/superset_home
     entrypoint: ["/bin/bash", "/app/pythonpath/bootstrap.sh"]
     # No published port: the gateway forwards its second listener (APISIX_SUPERSET_HOST_PORT) here.

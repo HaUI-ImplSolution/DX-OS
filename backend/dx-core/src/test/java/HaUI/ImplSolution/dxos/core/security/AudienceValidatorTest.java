@@ -20,12 +20,12 @@ class AudienceValidatorTest {
   }
 
   private static boolean accepts(Object audience) {
-    return !SecurityConfig.audienceValidator("dxfarm-api").validate(token(audience)).hasErrors();
+    return !SecurityConfig.audienceValidator("dxos-api").validate(token(audience)).hasErrors();
   }
 
   @Test
   void acceptsTokensIssuedForTheApi() {
-    assertThat(accepts(List.of("account", "dxfarm-api"))).isTrue();
+    assertThat(accepts(List.of("account", "dxos-api"))).isTrue();
   }
 
   @Test

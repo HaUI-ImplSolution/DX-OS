@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Directory, File, Paths } from "expo-file-system";
 
-const STORAGE_KEY = "dxfarm.uploadQueue";
+const STORAGE_KEY = "farm.uploadQueue";
 
 export type QueueStatus = "pending" | "sending" | "failed";
 

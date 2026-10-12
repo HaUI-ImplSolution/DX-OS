@@ -1,12 +1,10 @@
 {
-  "realm": "dxfarm",
+  "realm": "dxos",
   "enabled": true,
   "sslRequired": "none",
   "roles": {
     "realm": [
-      { "name": "FARMER", "description": "Nông hộ - gửi báo cáo bệnh, xem thửa ruộng của mình" },
-      { "name": "ENGINEER", "description": "Kỹ sư nông nghiệp - duyệt/từ chối chẩn đoán, xác nhận đã phun" },
-      { "name": "ADMIN", "description": "Quản trị viên" }
+      { "name": "ADMIN", "description": "Quản trị nền tảng" }
     ]
   },
   "components": {
@@ -24,8 +22,8 @@
   },
   "clients": [
     {
-      "clientId": "dxfarm-frontend",
-      "name": "DX-Farm frontend",
+      "clientId": "dxos-web",
+      "name": "DX-OS web",
       "protocol": "openid-connect",
       "publicClient": true,
       "bearerOnly": false,
@@ -48,12 +46,12 @@
       },
       "protocolMappers": [
         {
-          "name": "dxfarm-api-audience",
+          "name": "dxos-api-audience",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-audience-mapper",
           "consentRequired": false,
           "config": {
-            "included.custom.audience": "dxfarm-api",
+            "included.custom.audience": "dxos-api",
             "id.token.claim": "false",
             "access.token.claim": "true"
           }
@@ -69,7 +67,7 @@
       ]
     },
     {
-      "clientId": "dxfarm-mobile",
+      "clientId": "farm-mobile",
       "name": "DX-Farm mobile",
       "protocol": "openid-connect",
       "publicClient": true,
@@ -89,12 +87,12 @@
       },
       "protocolMappers": [
         {
-          "name": "dxfarm-api-audience",
+          "name": "dxos-api-audience",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-audience-mapper",
           "consentRequired": false,
           "config": {
-            "included.custom.audience": "dxfarm-api",
+            "included.custom.audience": "dxos-api",
             "id.token.claim": "false",
             "access.token.claim": "true"
           }
@@ -110,8 +108,8 @@
       ]
     },
     {
-      "clientId": "dxfarm-superset",
-      "name": "DX-Farm Superset",
+      "clientId": "dxos-superset",
+      "name": "DX-OS Superset",
       "protocol": "openid-connect",
       "publicClient": false,
       "secret": "${SUPERSET_OIDC_CLIENT_SECRET}",
@@ -140,8 +138,8 @@
       ]
     },
     {
-      "clientId": "dxfarm-backend-admin",
-      "name": "DX-Farm backend (account management)",
+      "clientId": "dxos-backend-admin",
+      "name": "DX-OS backend (account and role management)",
       "protocol": "openid-connect",
       "publicClient": false,
       "secret": "${KEYCLOAK_ADMIN_CLIENT_SECRET}",
@@ -155,48 +153,12 @@
   ],
   "users": [
     {
-      "username": "service-account-dxfarm-backend-admin",
+      "username": "service-account-dxos-backend-admin",
       "enabled": true,
-      "serviceAccountClientId": "dxfarm-backend-admin",
+      "serviceAccountClientId": "dxos-backend-admin",
       "clientRoles": {
-        "realm-management": ["manage-users", "view-users", "view-realm"]
+        "realm-management": ["manage-users", "view-users", "view-realm", "manage-realm"]
       }
-    },
-    {
-      "username": "farmer1",
-      "enabled": true,
-      "emailVerified": true,
-      "firstName": "Nguyễn Văn",
-      "lastName": "Nông",
-      "email": "farmer1@dxfarm.local",
-      "credentials": [
-        { "type": "password", "value": "farmer123", "temporary": false }
-      ],
-      "realmRoles": ["FARMER"]
-    },
-    {
-      "username": "engineer1",
-      "enabled": true,
-      "emailVerified": true,
-      "firstName": "Trần",
-      "lastName": "Kỹ Sư",
-      "email": "engineer1@dxfarm.local",
-      "credentials": [
-        { "type": "password", "value": "engineer123", "temporary": false }
-      ],
-      "realmRoles": ["ENGINEER"]
-    },
-    {
-      "username": "admin1",
-      "enabled": true,
-      "emailVerified": true,
-      "firstName": "Quản Trị",
-      "lastName": "Viên",
-      "email": "admin1@dxfarm.local",
-      "credentials": [
-        { "type": "password", "value": "admin123", "temporary": false }
-      ],
-      "realmRoles": ["ADMIN"]
     }
   ]
 }

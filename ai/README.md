@@ -165,3 +165,9 @@ Chạy từ thư mục `ai/`:
 - RAG chỉ tìm được kiến thức đã ingest và không thay thế structured facts từ Backend.
 - Ollama có thể fallback khi lỗi hoặc timeout, nhưng thiếu structured facts luôn làm lượt chẩn đoán thất bại.
 - `/predict` và `/knowledge/retrieve` là endpoint kỹ thuật; luồng nghiệp vụ chính đi qua Backend và `POST /api/v1/diagnose`.
+
+## Giấy phép
+
+Thư mục `ai/` phân phối theo AGPL-3.0 (toàn văn ở [`LICENSE`](./LICENSE)): mã của dịch vụ import Ultralytics (AGPL-3.0) ở `app/cv/loader.py`, và trọng số trong `weights/` cũng theo AGPL-3.0.
+Phần còn lại của repo giữ Apache-2.0 theo `LICENSE` ở gốc; Backend gọi AI Service qua HTTP nên không là tác phẩm phái sinh của thư mục này.
+Danh sách thành phần và nguồn ở [`LICENSES.md`](../LICENSES.md).

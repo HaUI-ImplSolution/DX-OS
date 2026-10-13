@@ -142,4 +142,4 @@ Không có.
 | # | Quyết định | Lý do ngắn |
 |---|---|---|
 | D1 | Dùng `app-lab` làm ví dụ mẫu cho hướng dẫn thêm app | Có sẵn, chạy được, đã kiểm |
-| D2 | Giấy phép AGPL cho `ai/` để sau (RD7) | Người dùng chốt hoãn |
+| D2 | Giấy phép của `ai/` xử lý riêng sau phase này (RD7) | Đã chốt AGPL-3.0 cho `ai/` |

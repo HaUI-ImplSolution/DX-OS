@@ -46,7 +46,7 @@ Sửa các link gãy do chuyển file.
 ## 4. Phạm vi
 
 - Trong phạm vi: tài liệu kiến trúc và vận hành, hướng dẫn thêm app, tài liệu nộp bài, link, danh sách việc còn lại.
-- Ngoài phạm vi: giấy phép AGPL cho `ai/` (RD7, xử lý sau); tag release và chuyển repository sang public (theo `REMAINING_WORK.md`); video và slide cuối.
+- Ngoài phạm vi: giấy phép AGPL cho `ai/` (RD7, xử lý riêng sau phase này); tag release và chuyển repository sang public (theo `REMAINING_WORK.md`); video và slide cuối.
 - Giả định: C1 đến C6 hoàn tất; ảnh chụp và log có sẵn.
 - Ranh giới Core/App: tài liệu mô tả đúng ranh giới biên dịch của `dx-core-api`.
 

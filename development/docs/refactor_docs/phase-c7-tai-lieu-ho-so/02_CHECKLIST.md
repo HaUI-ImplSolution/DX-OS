@@ -44,7 +44,7 @@ Kết quả đầu ra: mỗi câu hỏi mục 13 có câu trả lời và tham c
 - [x] WPC7-03-DOC-03 `submission/REPORT_OUTLINE.md`: dàn ý theo core, H-P-D-I, hai app.
 - [x] WPC7-03-DOC-04 `LICENSES.md`: nguồn dữ liệu mẫu và tri thức của Lab.
 - [x] WPC7-03-DOC-05 `CHANGELOG.md`: trạng thái cuối của core, hai app, hạ tầng.
-- [x] WPC7-03-DOC-06 `improvement_docs/REMAINING_WORK.md`: cập nhật; ghi RD7 (AGPL cho `ai/`) còn mở.
+- [x] WPC7-03-DOC-06 `improvement_docs/REMAINING_WORK.md`: cập nhật; ghi RD7 (AGPL cho `ai/`) xử lý riêng.
 
 **Test** (chi tiết ở `03_TEST_PLAN.md`)
 

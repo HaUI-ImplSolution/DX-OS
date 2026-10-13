@@ -19,7 +19,6 @@ Kế hoạch refactor Open-Core và đa ứng dụng nằm ở [`../refactor_doc
 
 | Việc | Nơi theo dõi |
 |---|---|
-| Giấy phép cho thư mục `ai/` (có phụ thuộc AGPL-3.0) còn mở (RD7) | `development/docs/refactor_docs/README.md` RD7; `LICENSES.md` |
 | `POST` multipart thiếu `Content-Type` (`/api/v1/tickets`, `/api/v1/crop-seasons/{id}/disease-reports`) trả 500, nên trả 415 | `development/docs/refactor_docs/phase-c6-switch-deploy-ci-demo/03_TEST_PLAN.md` mục 5 |
 | Tên database vector `dx_farm_ai_vector_db` còn mang tên Farm; đổi cần sửa `AiVectorDatabaseSeeder` và AI service | `backend/dx-core/.../config/AiVectorDatabaseSeeder.java` |
 | Lịch nền (SLA, nhắc mượn trả, nhắc thu hoạch) chạy ở mọi bản backend; chạy nhiều bản cần khóa lịch | `backend/app-lab/README.md`, `COUNCIL_QA.md` câu 9 |

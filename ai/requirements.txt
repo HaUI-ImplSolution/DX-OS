@@ -27,7 +27,6 @@ langchain-ollama>=0.2,<1.0
 # RAG / Document ingestion
 sentence-transformers>=3.0,<6.0
 pypdf>=5.0,<7.0
-pymupdf>=1.24,<2.0
 python-docx>=1.1,<2.0
 
 # CV inference / image handling

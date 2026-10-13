@@ -53,6 +53,7 @@ Hướng dẫn đầy đủ ở [`README.md`](./README.md).
 ## Giấy phép của dependency
 
 Mọi thành phần phải có giấy phép OSI-approved.
+Đóng góp mã cho thư mục `ai/` theo AGPL-3.0 (`ai/LICENSE`); các phần còn lại theo Apache-2.0 (`LICENSE`).
 Thêm dependency thì cập nhật [`LICENSES.md`](./LICENSES.md) và sinh lại SBOM theo [`sbom/README.md`](./sbom/README.md).
 Dữ liệu thuốc, treatment rule và policy chỉ được seed khi có quyết định duyệt rõ ràng trong `data/structured/`.
 

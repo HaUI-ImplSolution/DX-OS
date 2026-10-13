@@ -18,7 +18,7 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE_OPEN_CORE.md`](./ARCHITECTURE_OPEN_
   Phần tự viết là `dx-core` (workflow, workspace, thông báo, cổng AI) và các ứng dụng.
 - Backend Java và Spring Boot vì ranh giới Core/ứng dụng cần kiểm tra lúc biên dịch bằng module Maven; AI viết bằng Python vì hệ sinh thái CV và RAG.
 - Mã tự viết Apache-2.0.
-  Dependency chính: Spring, Keycloak, APISIX, PostgreSQL, Superset, Ollama (Apache-2.0 hoặc MIT); MinIO, Mattermost, Ultralytics, PyMuPDF và checkpoint CV là AGPL-3.0, dùng nguyên bản và không sửa mã.
+  Dependency chính: Spring, Keycloak, APISIX, PostgreSQL, Superset, Ollama (Apache-2.0 hoặc MIT); MinIO, Mattermost, Ultralytics và checkpoint CV là AGPL-3.0; MinIO và Mattermost chạy nguyên bản, không sửa mã.
 - Dẫn: `LICENSES.md` (bảng đầy đủ, nguồn và vai trò), `sbom/` (CycloneDX).
 
 ## 3. Nếu thay đổi ứng dụng nghiệp vụ, Open-Core có phải thay đổi theo không? Vì sao?
@@ -128,6 +128,7 @@ Hướng mở rộng:
 ### B. Giấy phép
 
 - Mã tự viết Apache-2.0, SPDX header ở file Java và Python.
-- AGPL-3.0: Ultralytics, PyMuPDF, MinIO, checkpoint CV (detector bệnh và crop classifier); Mattermost Team Edition chạy nguyên bản, không đụng `server/enterprise/`.
-- Giấy phép cho thư mục `ai/` (có phụ thuộc AGPL) còn là việc mở; xem `improvement_docs/REMAINING_WORK.md`.
+- AGPL-3.0: Ultralytics, MinIO, checkpoint CV (detector bệnh và crop classifier); Mattermost Team Edition chạy nguyên bản, không đụng `server/enterprise/`.
+- Thư mục `ai/` phân phối theo AGPL-3.0 vì import Ultralytics (`ai/LICENSE`); phần còn lại giữ Apache-2.0.
+  AI Service là tiến trình riêng giao tiếp với Backend qua HTTP, nên Backend không là tác phẩm phái sinh của `ai/`.
 - Bảng đầy đủ: `LICENSES.md`.

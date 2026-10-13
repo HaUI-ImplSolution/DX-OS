@@ -52,7 +52,7 @@ flowchart TB
 | RD4 | Tên realm, client và audience Keycloak đổi sang tên trung tính `dxos` | Đã chốt |
 | RD5 | App Lab làm web trước, mobile để sau; CV chỉ của Farm; AI của Lab gồm RAG, phân loại và gợi ý bằng luật | Đã chốt |
 | RD6 | Không viết test tự động riêng cho việc "cắm app" ở đợt này | Đã chốt |
-| RD7 | Giấy phép AGPL cho `ai/` xử lý sau đợt refactor | Đã chốt |
+| RD7 | `ai/` phân phối theo AGPL-3.0 (import Ultralytics), phần còn lại Apache-2.0; bỏ PyMuPDF không dùng | Đã chốt |
 | RD8 | Package `HaUI.ImplSolution.dxos.*`; artifact `dx-os-parent`, `dx-core-api`, `dx-core`, `app-farm`, `app-lab`, `dx-host`; bố cục `backend/` đa module | Đã chốt |
 | RD9 | Giữ schema `public`, tách Flyway theo location và bảng lịch sử riêng | Đã chốt |
 | RD10 | Workflow cấu hình được trạng thái qua `CaseTypeDefinition` thay cho enum cố định | Đã chốt |

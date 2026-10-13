@@ -1,5 +1,7 @@
 # DX-OS: DX-Farm và DX-Lab
 
+**Tiếng Việt** · [English](./README_EN.md)
+
 Nền tảng **Open-Core** dùng chung cho chuyển đổi số, dự thi **OLP Phần mềm nguồn mở 2026** (khối thi DX-OS, VFOSSA).
 Lõi headless cung cấp định danh và SSO, API Gateway, dữ liệu, workflow, thông báo và cổng AI; hai ứng dụng nghiệp vụ cắm vào qua interface:
 
@@ -154,7 +156,7 @@ Hướng dẫn kiểm thử đầy đủ ở [`docs/TESTING.md`](./docs/TESTING.
 
 ## Tài liệu và đóng góp
 
-[`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./CHANGELOG.md) · [`CONTRIBUTING.md`](./CONTRIBUTING.md) (kèm hướng dẫn thêm ứng dụng mới) · [`LICENSES.md`](./LICENSES.md) · [`docs/`](./docs).
+[`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./CHANGELOG.md) · [`CONTRIBUTING.md`](./CONTRIBUTING.md) (kèm hướng dẫn thêm ứng dụng mới) · [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md) · [`LICENSES.md`](./LICENSES.md) · [`docs/`](./docs).
 
 Báo lỗi và đề xuất qua GitHub Issues (mẫu bug report và feature request).
 Chủ đề chính thức: https://vfossa.vn/tin-tuc/gioi-thieu-mo-hinh-dx-os-va-chu-de-cuoc-thi-phan-mem-nguon-mo-olp-2026-761.html · Giáo trình DX-OS: https://opendigitransform.gitbook.io/dx-os

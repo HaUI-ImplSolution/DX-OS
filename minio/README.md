@@ -45,7 +45,7 @@ Lần dựng đầu mất khoảng 2 phút, các lần sau dùng cache của Doc
 |---|---|
 | `MINIO_ENDPOINT` | Địa chỉ nội bộ của MinIO, mặc định `http://minio:9000` |
 | `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY` | Tài khoản gốc của MinIO, Backend dùng chung; bắt buộc, secret tối thiểu 8 ký tự |
-| `MINIO_BUCKET` | Tên bucket; route ảnh ở `deploy/apisix/apisix.yaml` đang trỏ `/dxos-uploads/*`, đổi tên bucket thì sửa route theo |
+| `MINIO_BUCKET` | Tên bucket; route ảnh ở `deploy/apisix/common.yaml` đang trỏ `/dxos-uploads/*`, đổi tên bucket thì sửa route theo |
 | `APISIX_MINIO_HOST_PORT` | Cổng của listener console trên gateway, mặc định `9082` |
 | `GATEWAY_PUBLIC_URL` | Địa chỉ gateway mà trình duyệt truy cập, dùng ký link khi không có request (thông báo chat) |
 

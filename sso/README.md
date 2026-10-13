@@ -53,6 +53,11 @@ Tên nền tảng: realm `dxos`, audience `dxos-api`, client `dxos-web`, `dxos-s
 | `farmer1` | `farmer123` | FARMER |
 | `engineer1` | `engineer123` | ENGINEER |
 | `admin1` | `admin123` | ADMIN |
+| `student1`, `student2` | `student123` | STUDENT |
+| `lecturer1` | `lecturer123` | LECTURER |
+| `tech1`, `tech2` | `tech123` | TECHNICIAN |
+
+Farm dùng ba tài khoản đầu, Lab dùng `admin1` và bốn nhóm còn lại; `deploy/demo/seed_demo.py` tạo tài khoản của app đang chạy.
 
 Quản lý user (tạo/xoá/đổi role) qua Keycloak Admin Console: `http://localhost:${KEYCLOAK_HOST_PORT}/admin`, đăng nhập bằng `KEYCLOAK_ADMIN_PASSWORD`.
 

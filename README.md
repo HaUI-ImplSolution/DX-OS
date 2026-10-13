@@ -80,15 +80,31 @@ docker compose up -d --build
 Thiếu biến nào trong `.env`, Compose dừng và báo tên biến đó.
 Lần dựng đầu build MinIO từ mã nguồn Go (khoảng 2 phút).
 
+### Chọn ứng dụng
+
+Mỗi lần khởi động chạy một ứng dụng trên cùng core, chọn bằng `DXOS_APP` (`farm` hoặc `lab`) trong `deploy/.env`.
+Đổi ứng dụng bằng một lệnh; web đổi theo mà không build lại.
+
+```bash
+./deploy/switch-app.sh lab            # ghi DXOS_APP, dựng lại gateway, backend, nạp tri thức và Superset
+./deploy/switch-app.sh farm --reset   # kèm xóa deploy/data và dựng lại sạch
+```
+
+Bảng của ứng dụng trước nằm lại trong database, không dùng tới; `--reset` dọn sạch.
+Gateway chỉ có route và giới hạn tốc độ của ứng dụng đang chạy (`deploy/apisix/common.yaml` cùng `deploy/apisix/apps/<app>.yaml`).
+
 ### Dữ liệu demo
 
 ```bash
 python3 -m pip install pillow
-python3 deploy/demo/seed_demo.py                 # ảnh tổng hợp
-python3 deploy/demo/seed_demo.py --images DIR    # ảnh lá lúa thật (.jpg), chẩn đoán qua AI
+python3 deploy/demo/seed_demo.py                 # ứng dụng đang chạy, Farm dùng ảnh tổng hợp
+python3 deploy/demo/seed_demo.py --images DIR    # Farm: ảnh lá lúa thật (.jpg), chẩn đoán qua AI
+python3 deploy/demo/seed_demo.py --app lab       # chọn ứng dụng rõ ràng
 ```
 
-Script tạo ba tài khoản demo và vai của chúng trong Keycloak, nông hộ (gắn `farmer1`), thửa có tọa độ ĐBSCL, vụ ở nhiều trạng thái, báo cáo kèm ảnh, một thửa chờ duyệt.
+- Farm: ba tài khoản demo và vai trong Keycloak, nông hộ (gắn `farmer1`), thửa có tọa độ ĐBSCL, vụ ở nhiều trạng thái, báo cáo kèm ảnh, một thửa chờ duyệt.
+- Lab: sáu tài khoản demo, lớp và bộ môn, phòng và thiết bị, yêu cầu hỗ trợ ở mọi trạng thái, phiếu mượn và lịch đặt phòng.
+
 Chạy lại không tạo trùng.
 Chi tiết ở [`deploy/demo/README.md`](./deploy/demo/README.md).
 
@@ -97,7 +113,7 @@ Chi tiết ở [`deploy/demo/README.md`](./deploy/demo/README.md).
 - Backend: `./mvnw verify` trong `backend` (cần Docker cho Testcontainers).
 - AI: `pytest` trong `ai/`.
 - Frontend và mobile: `npx tsc --noEmit`.
-- E2E trên stack sạch: `python3 deploy/demo/e2e.py` (chạy tự động bởi workflow `E2E`).
+- E2E trên stack sạch: `python3 deploy/demo/e2e.py` cho ứng dụng đang chạy (`--app farm|lab`); workflow `E2E` chạy cả hai ứng dụng.
 
 ### Địa chỉ
 
@@ -113,14 +129,17 @@ Chi tiết ở [`deploy/demo/README.md`](./deploy/demo/README.md).
 
 ### Tài khoản demo
 
-`seed_demo.py` tạo 3 tài khoản này trong realm `dxos` chỉ để demo và chấm thi.
+`seed_demo.py` tạo các tài khoản này trong realm `dxos` chỉ để demo và chấm thi.
 Đổi mật khẩu hoặc xóa trước khi dùng cho dữ liệu thật.
 
-| Username | Mật khẩu | Role |
-|---|---|---|
-| `farmer1` | `farmer123` | FARMER |
-| `engineer1` | `engineer123` | ENGINEER |
-| `admin1` | `admin123` | ADMIN |
+| Ứng dụng | Username | Mật khẩu | Role |
+|---|---|---|---|
+| Farm | `farmer1` | `farmer123` | FARMER |
+| Farm | `engineer1` | `engineer123` | ENGINEER |
+| Farm, Lab | `admin1` | `admin123` | ADMIN |
+| Lab | `student1`, `student2` | `student123` | STUDENT |
+| Lab | `lecturer1` | `lecturer123` | LECTURER |
+| Lab | `tech1`, `tech2` | `tech123` | TECHNICIAN |
 
 Nông dân chỉ dùng app mobile; web và Superset từ chối tài khoản chỉ có role `FARMER`.
 `seed_demo.py` gắn `farmer1` vào một nông hộ; không chạy script thì admin gắn qua `PATCH /api/v1/households/{code}/account` hoặc tạo hộ mới ở `POST /api/v1/households`.

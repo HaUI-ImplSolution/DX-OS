@@ -74,7 +74,7 @@ Cách hoạt động:
 2. Vào Integrations → Incoming Webhooks → Add Incoming Webhook, chọn channel trong team `DX-Farm HTX` (`Ban quản trị` hoặc `Kỹ sư nông nghiệp`), bật **Lock to this channel** để webhook chỉ đăng được vào channel đó.
   Làm một webhook cho mỗi channel.
 3. Sao chép URL, đổi host `localhost:<cổng>` thành `mattermost:8065` (Backend gọi qua mạng nội bộ của compose), ví dụ `http://mattermost:8065/hooks/<key>`.
-4. Điền vào `MATTERMOST_WEBHOOK_URL_ADMIN` (channel `Ban quản trị`) và `MATTERMOST_WEBHOOK_URL_ENGINEER` (channel `Kỹ sư nông nghiệp`) trong `deploy/.env`, rồi chạy lại service `backend`: `docker compose up -d backend`.
+4. Bỏ dấu `#` và điền `MATTERMOST_WEBHOOK_URL_ADMIN` (channel `Ban quản trị`) và `MATTERMOST_WEBHOOK_URL_ENGINEER` (channel `Kỹ sư nông nghiệp`) trong `deploy/.env`, rồi chạy lại service `backend`: `docker compose up -d backend`.
    Chỉ có một webhook thì điền vào `MATTERMOST_WEBHOOK_URL`, mọi thông báo vào channel đó.
 
 URL chứa khóa truy cập nên chỉ nằm trong `deploy/.env`, không đưa vào Git.

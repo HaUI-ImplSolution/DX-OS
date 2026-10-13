@@ -70,7 +70,24 @@ Chi tiết từng interface ở [`SPI_CATALOG.md`](./SPI_CATALOG.md).
 | Cấu hình | `LabAutoConfiguration`, `LabNotificationConfig`, `LabPlatformConfig` (`BiDatasetProvider`, `HealthContributor`), `lab.*` |
 | Dữ liệu | Migration `db/migration/lab` (V1 schema và extension `btree_gist`, V2 view `vw_lab_*`, V3 loại sự cố và SLA mặc định), `lab/classifier-rules.json`, `lab/knowledge-sources.json` |
 | Tri thức | `data/rag/lab/` (10 bài tự soạn CC BY 4.0, registry nguồn), nạp bằng `ingest_diseases --corpus lab` |
-| Giao diện | Web trong `frontend/` (C5); mobile để sau |
+| Giao diện | Web trong `frontend/src/apps/lab/`; mobile để sau |
+
+## frontend
+
+| Thư mục | Nội dung |
+|---|---|
+| `src/shell/` | Vỏ dùng chung: `auth`, `api` (client, hộp duyệt, thông báo, workspace, tri thức), khung trang và menu theo manifest, `Requests`, `CaseDetail`, `Knowledge`, `Workspaces`, `Notifications`, thành phần dùng chung; `index.ts` là cửa duy nhất của app vào vỏ |
+| `src/apps/farm/` | Module Farm: trang, panel, `api`, `types`, nhãn và thông báo lỗi riêng |
+| `src/apps/lab/` | Module Lab: tổng quan, yêu cầu hỗ trợ, hàng đợi, mượn trả, đặt phòng, tài sản, thống kê, danh mục, hỏi đáp |
+| `src/appRegistry.ts` | Ánh xạ `id` của app sang hàm nạp module (`import()`), nằm ngoài `shell/` |
+| `src/App.tsx` | Đăng nhập, đọc manifest, nạp module, dựng vỏ |
+
+Thêm giao diện cho app mới:
+
+1. Tạo `src/apps/<id>/index.tsx` xuất mặc định một `AppUiModule` (lời giới thiệu, nhãn vai, `routes`, nhãn trạng thái và thông báo lỗi riêng nếu có).
+2. Mỗi `route` có `path` trùng đường dẫn của mục menu trong manifest; trang chi tiết đặt `menuPath` về mục menu của nó để dùng chung quyền.
+3. Thêm một dòng vào `src/appRegistry.ts`.
+4. Chỉ import từ `src/shell` (qua `index.ts`) và từ chính thư mục app.
 
 ## dx-host
 

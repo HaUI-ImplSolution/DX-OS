@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Draft |
+| Trạng thái | Hoàn tất |
 | Mức độ | Nghiêm trọng |
 | Nhóm ưu tiên | A |
 | Ứng dụng và module chính | Frontend (web), dùng chung |
@@ -87,5 +87,5 @@ Lab có giao diện cho bốn khu vực: ticket (báo sự cố có gợi ý, tr
 
 ## 10. Tài liệu cần cập nhật khi xong
 
-- [ ] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
-- [ ] Hướng dẫn thêm module giao diện cho app mới (nháp cho C7).
+- [x] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
+- [x] Hướng dẫn thêm module giao diện cho app mới (mục `frontend` ở `MODULE_MAP.md`).

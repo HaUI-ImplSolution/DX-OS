@@ -1,20 +1,20 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getApprovalRequest } from "../api";
+import type { CaseUi } from "../appModule";
 import Badge from "../components/Badge";
-import DecisionActions from "../components/DecisionActions";
-import RequestDetails from "../components/RequestDetails";
 import Section from "../components/Section";
 import Timeline from "../components/Timeline";
-import { CASE_TYPE_LABEL, statusLabel, statusTone } from "../labels";
-import type { ApprovalRequestDetail, Role } from "../types";
+import { statusLabel, statusTone } from "../labels";
+import type { ApprovalRequestDetail } from "../types";
 
 interface CaseDetailProps {
-  role: Role;
+  role: string;
   onError: (message: string) => void;
+  ui: CaseUi;
 }
 
-export default function CaseDetail({ role, onError }: CaseDetailProps) {
+export default function CaseDetail({ role, onError, ui }: CaseDetailProps) {
   const { caseId } = useParams();
   const [detail, setDetail] = useState<ApprovalRequestDetail | null>(null);
 
@@ -28,22 +28,23 @@ export default function CaseDetail({ role, onError }: CaseDetailProps) {
 
   if (!detail) return <Section step="…" title="Đang tải yêu cầu" children={null} />;
   const { request, events } = detail;
+  const unit = ui.unit.display(request);
 
   return (
     <>
       <Section
         step="🔎"
         title={request.title}
-        subtitle={`${CASE_TYPE_LABEL[request.caseType] ?? request.caseType} · hộ ${request.householdCode ?? "—"}${
-          request.farmerName ? ` (${request.farmerName})` : ""
-        }`}
+        subtitle={`${ui.caseTypeLabels[request.caseType] ?? request.caseType} · ${ui.unit.detailPrefix} ${
+          unit.code ?? "—"
+        }${unit.person ? ` (${unit.person})` : ""}`}
       >
         <p>
           <Badge tone={statusTone(request.status)}>{statusLabel(request.status)}</Badge>
           {request.assignedToName && <span> · Đang xử lý: {request.assignedToName}</span>}
         </p>
-        <RequestDetails request={request} />
-        <DecisionActions request={request} role={role} onDone={load} onError={onError} />
+        {ui.renderDetails(request)}
+        {ui.renderActions(request, { role, onDone: load, onError })}
       </Section>
       <Section step="🕓" title="Lịch sử xử lý" subtitle="Mỗi bước được ghi lại, không sửa hay xoá">
         <Timeline events={events} />

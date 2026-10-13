@@ -1,17 +1,17 @@
 import { UserManager, WebStorageStateStore, type User as OidcUser } from "oidc-client-ts";
-import type { Role } from "./types";
 
 // Empty in the packaged build: Keycloak is served by the gateway on the same origin as the app.
 const KEYCLOAK_URL =
   import.meta.env.VITE_KEYCLOAK_URL || `${window.location.origin}/realms/dxos`;
 const CLIENT_ID = import.meta.env.VITE_KEYCLOAK_CLIENT_ID ?? "dxos-web";
-// Highest privilege first: a user holding several roles acts with the strongest one.
-const ROLES: Role[] = ["ADMIN", "ENGINEER", "FARMER"];
 
+// The realm roles of the signed-in account; the shell picks the one that counts from the app manifest.
 export interface CurrentUser {
+  // Subject of the account: the id the backend stores on records the user owns.
+  id: string;
   username: string;
   fullName: string;
-  role: Role;
+  roles: string[];
 }
 
 const userManager = new UserManager({
@@ -40,13 +40,12 @@ function toCurrentUser(oidcUser: OidcUser): CurrentUser | null {
   const claims = oidcUser.profile as Record<string, unknown>;
   const accessTokenClaims = decodeJwtPayload(oidcUser.access_token);
   const realmAccess = accessTokenClaims.realm_access as { roles?: string[] } | undefined;
-  const role = ROLES.find((r) => realmAccess?.roles?.includes(r));
-  if (!role) return null;
   const preferredUsername = (claims.preferred_username as string) ?? "";
   return {
+    id: (claims.sub as string) ?? "",
     username: preferredUsername,
     fullName: (claims.name as string) ?? preferredUsername,
-    role,
+    roles: realmAccess?.roles ?? [],
   };
 }
 

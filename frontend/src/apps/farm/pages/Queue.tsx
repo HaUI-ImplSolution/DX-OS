@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { listApprovalRequests } from "../api";
-import Badge from "../components/Badge";
 import DecisionActions from "../components/DecisionActions";
-import Pagination from "../components/Pagination";
-import Section from "../components/Section";
 import { formatDateTime, statusLabel, statusTone } from "../labels";
 import type { ApprovalRequest, Page, Role } from "../types";
+import { Badge, Pagination, Section } from "../../../shell";
 
 interface QueueProps {
   role: Role;

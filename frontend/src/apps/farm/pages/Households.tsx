@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { createHousehold, linkHouseholdAccount, listHouseholds } from "../api";
-import Badge from "../components/Badge";
-import Section from "../components/Section";
 import { formatDateTime } from "../labels";
 import type { Household, HouseholdCreateResult } from "../types";
+import { Badge, Section } from "../../../shell";
 
 interface HouseholdsProps {
   onError: (message: string) => void;

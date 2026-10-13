@@ -18,9 +18,7 @@ import type {
   RiceVariety,
   SeasonType,
 } from "../types";
-import Badge from "./Badge";
-import DeleteButton from "./DeleteButton";
-import Section from "./Section";
+import { Badge, DeleteButton, Section } from "../../../shell";
 
 interface CropSeasonPanelProps {
   parcelCode: string;

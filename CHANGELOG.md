@@ -555,6 +555,16 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Frontend (`frontend`)
 
+### 2026-10-13
+
+**Đã xong — Vỏ web theo app và giao diện Lab:**
+
+- Một image web phục vụ mọi app: sau đăng nhập web đọc `GET /api/v1/app`, nạp module giao diện theo `id` (tải lười), dựng menu từ manifest, chọn vai mạnh nhất trong các vai của app và đặt tiêu đề trang.
+- `src/shell/` chứa phần dùng chung: đăng nhập, khung trang, menu, chuông thông báo, hộp duyệt và chi tiết case, hỏi đáp tri thức, đơn vị (workspace); app chỉ vào vỏ qua `src/shell/index.ts`, vỏ không import `src/apps/`.
+- `src/apps/farm/` giữ trang Farm; `src/apps/lab/` có tổng quan theo vai, yêu cầu hỗ trợ (gợi ý loại, ưu tiên và bài liên quan khi gõ mô tả, đính kèm, trao đổi, SLA, xác nhận và đánh giá), hàng đợi kỹ thuật viên, mượn trả thiết bị, lịch tuần và đặt phòng, phòng và thiết bị kèm nhật ký bảo trì, thống kê, danh mục, hỏi đáp quy chế.
+- Route theo menu của manifest: vai không có trong menu mở thẳng đường dẫn thì thấy "Không đủ quyền".
+- Tài khoản chỉ được dùng trên di động (gateway trả 403) thấy thông báo "Tài khoản không dùng được trên web"; sau thao tác bị từ chối, trang Lab tải lại trạng thái hiện tại.
+
 ### 2026-10-12
 
 **Đã xong — Client `dxos-web`:**

@@ -1,8 +1,6 @@
 import { deleteDiseaseReport } from "../api";
 import type { DiseaseReport } from "../types";
-import Badge from "./Badge";
-import DeleteButton from "./DeleteButton";
-import Section from "./Section";
+import { Badge, DeleteButton, Section } from "../../../shell";
 
 interface DiseaseReportPanelProps {
   reports: DiseaseReport[];

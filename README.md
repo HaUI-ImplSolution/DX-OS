@@ -30,7 +30,7 @@ Backend, Keycloak, AI, MinIO không publish cổng ra host; Backend tự kiểm 
 - **Workflow dùng chung** ghi mỗi quyết định thành một `workflow_event` chỉ thêm, mỗi yêu cầu có người phụ trách; danh sách việc chờ ở `GET /api/v1/workflow-cases`.
 - **AI Service (Python, FastAPI)** gồm CV (YOLOv8n), RAG trên pgvector, LangGraph và Qwen2.5-1.5B qua Ollama.
   AI không có quyền vào database của Backend; gọi API nội bộ của Backend để lấy dữ kiện có cấu trúc.
-- **Web (React, Vite)** dành cho kỹ sư và admin: hàng chờ duyệt, chi tiết yêu cầu, nông hộ, tài liệu.
+- **Web (React, Vite)**: một image phục vụ cả hai app, đọc `GET /api/v1/app` rồi nạp giao diện của app đang chạy. Farm dành cho kỹ sư và admin (hàng chờ duyệt, chi tiết yêu cầu, nông hộ, tài liệu); Lab dành cho sinh viên, giảng viên, kỹ thuật viên và quản trị (yêu cầu hỗ trợ, mượn thiết bị, đặt phòng, thống kê, hỏi đáp).
 - **Mobile (Expo)** dành cho nông dân: đăng nhập Keycloak (PKCE), tạo thửa và vụ, chụp và gửi ảnh, hộp thông báo, hàng đợi gửi lại khi mất mạng.
 - **BI (Superset)** chỉ đọc 6 view `vw_*` của bản ghi đã duyệt; dashboard 7 chart ([`bi/README.md`](./bi/README.md)).
 - **Lưu ảnh (MinIO)** bucket riêng tư, client nhận link có hạn (mặc định 15 phút).

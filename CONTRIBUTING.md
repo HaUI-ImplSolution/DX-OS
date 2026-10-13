@@ -2,6 +2,7 @@
 
 DX-OS (DX-Farm, DX-Lab) là mã nguồn mở theo Apache-2.0; riêng `ai/` theo AGPL-3.0.
 Mã, tài liệu và báo lỗi đều được hoan nghênh qua GitHub Issues và Pull Request.
+Mọi người tham gia tuân theo [Quy tắc ứng xử](./CODE_OF_CONDUCT.md).
 
 ## Báo lỗi và đề xuất
 

@@ -1,52 +1,37 @@
-# SSO thật (Keycloak)
+# SSO (Keycloak)
 
-Thư mục riêng ngang hàng `backend/`, `frontend/`, `ai/`, `bi/`, `chat/` — chỉ chứa realm import và ghi chú, không có mã nguồn tự viết (Keycloak chạy bằng image chính thức).
-Dựng cho tiêu chí **Giai đoạn 2 [H]** (không gian Human) — đăng nhập một lần dùng chung.
-
-Service `keycloak` khai báo trong [`deploy/docker-compose.yml`](../deploy/docker-compose.yml), tự import realm `dxos` từ [`realm-dxos.json`](./realm-dxos.json) lúc khởi động.
-Không cần thao tác tay nào thêm sau `docker compose up -d --build`.
-Keycloak không publish cổng ra host: gateway APISIX (`APISIX_HOST_PORT`, mặc định `9080`) chuyển tiếp `/realms`, `/resources`, `/admin` và `/js` tới Keycloak.
-
-## Vì sao chọn Keycloak
-
-Chuẩn công nghiệp cho OIDC/SAML, license Apache-2.0 (OSI-approved), có tài liệu tích hợp chuẩn cho cả Spring Boot, Superset và Mattermost.
+Đăng nhập một lần dùng chung cho Backend, web, mobile và Superset.
+Keycloak chạy bằng image chính thức (Apache-2.0), tự import realm `dxos` từ [`realm-dxos.json`](./realm-dxos.json) lúc khởi động; service khai báo trong [`deploy/docker-compose.yml`](../deploy/docker-compose.yml).
+Keycloak không publish cổng ra host: gateway APISIX chuyển tiếp `/realms`, `/resources`, `/admin`, `/js` tới Keycloak.
 
 ## Phạm vi
 
-- Backend Spring Boot: OAuth2 Resource Server, xác thực token do Keycloak cấp.
-- Frontend: tự redirect sang Keycloak (Authorization Code + PKCE) ngay khi chưa có phiên — không cần bấm nút đăng nhập trung gian, vào thẳng từ portal cũng được.
-- Mobile (Expo, chỉ FARMER): client public `farm-mobile`, Authorization Code + PKCE, không dùng direct access grants.
-  Chi tiết: [`mobile/README.md`](../mobile/README.md).
-- BI Dashboard (Superset): đăng nhập bằng redirect sang Keycloak (`AUTH_OAUTH`), role realm map sang role Superset.
-  Chi tiết: [`bi/README.md`](../bi/README.md).
-- **Không làm**: Mattermost (Team Edition không hỗ trợ OpenID Connect với IdP tuỳ ý — cần Enterprise license).
-  Chi tiết: [`chat/README.md`](../chat/README.md).
+| Thành phần | Cách dùng |
+|---|---|
+| Backend | OAuth2 Resource Server, xác thực token bằng `jwk-set-uri` |
+| Web | Authorization Code + PKCE, tự chuyển sang Keycloak khi chưa có phiên |
+| Mobile (chỉ FARMER) | Client public `farm-mobile`, PKCE, không direct access grants ([`mobile/README.md`](../mobile/README.md)) |
+| Superset | `AUTH_OAUTH`, role realm map sang role Superset ([`bi/README.md`](../bi/README.md)) |
+| Mattermost | Không dùng SSO: Team Edition không hỗ trợ OIDC với IdP tùy ý ([`chat/README.md`](../chat/README.md)) |
 
-## Cách hoạt động
+## Realm `dxos`
 
-- `keycloak` dùng CSDL Postgres riêng (`keycloak`), cùng pattern với Mattermost/Superset.
-  Backend tự tạo role `keycloak_app` + database `keycloak` lúc khởi động (`KeycloakDatabaseSeeder`).
-- Realm `dxos` dùng chung cho mọi app: realm role `ADMIN` (quản trị nền tảng), client public `dxos-web` và `farm-mobile` (Standard Flow + PKCE, không dùng client secret), client confidential `dxos-superset` (Superset trao đổi token server-to-server nên cần secret) và `dxos-backend-admin` (service account của backend).
-  Realm import không chứa vai hay tài khoản của app.
-  Secret của client này lấy từ `SUPERSET_OIDC_CLIENT_SECRET` trong `deploy/.env`: Keycloak thay `${SUPERSET_OIDC_CLIENT_SECRET}` trong `realm-dxos.json` lúc import, nên file realm không chứa secret thật.
-  Keycloak chỉ import khi realm chưa tồn tại; đổi giá trị này sau khi đã import thì cập nhật secret client trong Admin Console hoặc dựng lại bằng `deploy/reset.sh`.
-- Vai của app (`FARMER`, `ENGINEER`, ... theo `RoleProvider`) do backend tạo lúc khởi động; vai đã có thì giữ nguyên.
-- 3 tài khoản demo của Farm do `deploy/demo/seed_demo.py` tạo qua Admin API — xem bảng dưới.
-  Chỉ dùng để demo, đổi mật khẩu/secret thật trước khi triển khai ngoài môi trường dev.
-- Backend giới hạn dữ liệu của FARMER theo nông hộ: claim `sub` của token phải khớp `Household.keycloakUserId`.
-  Tên hiển thị (claim `name`) đổi được mà không ảnh hưởng quyền truy cập.
-  Các tài khoản demo chưa gắn nông hộ: admin tạo hộ kèm tài khoản mới ở trang "Nông hộ" của web, hoặc gắn tài khoản có sẵn vào hộ ở cùng trang bằng tên đăng nhập.
+- Database Postgres riêng `keycloak`; Backend tạo role `keycloak_app` và database lúc khởi động (`KeycloakDatabaseSeeder`).
+- Realm role `ADMIN`; client public `dxos-web`, `farm-mobile` (Standard Flow + PKCE, không secret); client confidential `dxos-superset` (secret `SUPERSET_OIDC_CLIENT_SECRET`) và `dxos-backend-admin` (service account của Backend).
+- Realm import không chứa vai hay tài khoản của app: vai (`FARMER`, `ENGINEER`, `STUDENT`... theo `RoleProvider`) do Backend tạo lúc khởi động, tài khoản demo do `deploy/demo/seed_demo.py` tạo.
+- Keycloak chỉ import realm khi realm chưa tồn tại; đổi `realm-dxos.json` hoặc secret sau đó thì sửa trong Admin Console hoặc `deploy/reset.sh`.
+- `dxos-backend-admin` chỉ giữ `manage-users`, `view-users`, `view-realm`, `manage-realm`; Backend dùng nó để tạo tài khoản workspace và vai của app qua Admin REST API.
 
-## Audience và giới hạn client
+## Token và phân quyền
 
-- Client `dxos-web` và `farm-mobile` có protocol mapper `dxos-api-audience` thêm `dxos-api` vào `aud` của access token.
-  Backend (`security.jwt.audience`, mặc định `dxos-api`) từ chối `401` mọi token không có audience đó; vẫn không kiểm `iss` như đã ghi ở mục hostname bên dưới.
-- Nông dân chỉ dùng app mobile: token chỉ mang role `FARMER` phải có `azp` thuộc `security.farmer-client-ids` (mặc định `farm-mobile`), nếu không backend trả `403`.
-  Web hiển thị màn "dùng ứng dụng di động" cho tài khoản này và không gọi API nghiệp vụ.
-  Superset từ chối đăng nhập tài khoản chỉ có role `FARMER`.
-- Client confidential `dxos-backend-admin` (service account, secret `KEYCLOAK_ADMIN_CLIENT_SECRET`) chỉ giữ role `manage-users`, `view-users`, `view-realm`, `manage-realm` của `realm-management`; backend dùng nó để tạo tài khoản workspace và tạo vai của app qua Admin REST API.
+- `dxos-web` và `farm-mobile` có mapper `dxos-api-audience` thêm `dxos-api` vào `aud`; Backend (`security.jwt.audience`) trả `401` cho token thiếu audience.
+- Token chỉ có role `FARMER` phải có `azp` thuộc `security.farmer-client-ids` (mặc định `farm-mobile`), nếu không Backend trả `403`; web hiện màn "dùng ứng dụng di động", Superset từ chối.
+- Phạm vi dữ liệu của FARMER theo nông hộ gắn với claim `sub`, không phụ thuộc tên hiển thị.
+  Tài khoản chưa gắn hộ thì admin tạo hộ kèm tài khoản hoặc gắn tài khoản có sẵn ở trang "Nông hộ" của web.
 
-Tên nền tảng: realm `dxos`, audience `dxos-api`, client `dxos-web`, `dxos-superset`, `dxos-backend-admin`; client của app Farm: `farm-mobile`.
+## Tài khoản demo
+
+Chỉ để demo; đổi mật khẩu trước khi triển khai ngoài môi trường dev.
 
 | Username | Mật khẩu | Role |
 |---|---|---|
@@ -57,37 +42,25 @@ Tên nền tảng: realm `dxos`, audience `dxos-api`, client `dxos-web`, `dxos-s
 | `lecturer1` | `lecturer123` | LECTURER |
 | `tech1`, `tech2` | `tech123` | TECHNICIAN |
 
-Farm dùng ba tài khoản đầu, Lab dùng `admin1` và bốn nhóm còn lại; `deploy/demo/seed_demo.py` tạo tài khoản của app đang chạy.
+Farm dùng ba tài khoản đầu, Lab dùng `admin1` và các nhóm còn lại; `seed_demo.py` tạo tài khoản của app đang chạy.
+Quản lý user qua Admin Console `http://localhost:${APISIX_HOST_PORT}/admin` (`KEYCLOAK_ADMIN_USERNAME` / `KEYCLOAK_ADMIN_PASSWORD`).
 
-Quản lý user (tạo/xoá/đổi role) qua Keycloak Admin Console: `http://localhost:${KEYCLOAK_HOST_PORT}/admin`, đăng nhập bằng `KEYCLOAK_ADMIN_PASSWORD`.
+## Client mobile
 
-## Client mobile `farm-mobile`
+- Redirect URI: `dxfarm://*` (app đã build) và `exp://*` (Expo Go, chỉ dev).
+- Điện thoại truy cập Keycloak qua IP LAN của máy dev; Keycloak không đặt `KC_HOSTNAME` nên URL theo địa chỉ request, web (`localhost:9080`) và điện thoại (`<IP-LAN>:9080`) chạy song song không cần đổi `.env`.
+- Volume Postgres cũ chưa có client `farm-mobile`: thêm qua Admin Console (cấu hình như `realm-dxos.json`) hoặc xóa `deploy/data/postgres` để import lại.
 
-- Redirect URI: `dxfarm://*` (app đã build) và `exp://*` (Expo Go, chỉ dùng khi dev).
-- Backend xác thực bằng `jwk-set-uri` và không kiểm tra `iss`, nên token cấp qua IP LAN vẫn hợp lệ.
-- Điện thoại phải truy cập được Keycloak và backend qua IP LAN của máy dev cùng mạng.
-  Keycloak không đặt `KC_HOSTNAME` nên URL trong form đăng nhập và redirect theo địa chỉ request: web vào `localhost:9080`, điện thoại vào `<IP-LAN>:9080`, hai bên chạy song song mà không cần đổi `deploy/.env`.
-- Keycloak chỉ import realm khi realm chưa tồn tại.
-  Với volume Postgres cũ, thêm client `farm-mobile` qua Admin Console (cấu hình như trong `realm-dxos.json`) hoặc xoá `deploy/data/postgres` để import lại.
+## Hostname nội bộ và hostname trình duyệt
 
-## Lưu ý kỹ thuật: hostname nội bộ vs. hostname trình duyệt
+Trình duyệt gọi Keycloak qua gateway (`http://localhost:9080`), Backend và Superset trong mạng docker gọi `http://keycloak:8080`, nên claim `iss` của token mang hostname trình duyệt.
+Vì vậy Backend dùng `jwk-set-uri` (chỉ lấy public key) thay cho `issuer-uri` và không kiểm `iss`; Superset chỉ định từng endpoint (`authorize_url` hostname trình duyệt, `access_token_url`/`api_base_url`/`jwks_uri` hostname nội bộ) và lấy thông tin user từ access token thay vì `/userinfo`.
+Triển khai thật cần reverse proxy để hai bên dùng cùng một hostname, khi đó bật lại `issuer-uri`.
 
-Trình duyệt gọi Keycloak qua `http://localhost:${APISIX_HOST_PORT}` (qua gateway), backend/Superset trong mạng docker gọi qua `http://keycloak:8080` — hai hostname khác nhau cho cùng một Keycloak.
-Backend xác thực token bằng `jwk-set-uri` (chỉ lấy public key verify chữ ký) thay vì `issuer-uri` (sẽ lệch claim `iss` vì token mang hostname trình duyệt).
-Superset (`bi/superset_config.py`) tự chỉ định từng endpoint (`authorize_url` dùng hostname trình duyệt, `access_token_url`/`api_base_url`/`jwks_uri` dùng hostname nội bộ) thay vì dùng `server_metadata_url` tự khám phá — cùng lý do.
-Tên, email và role của user lấy thẳng từ access token nhận qua kênh server-to-server, không gọi `/userinfo` (Keycloak từ chối token có issuer khác hostname của request).
+## Đăng xuất một lần
 
-Đây là đánh đổi chấp nhận được cho docker-compose chạy trên một máy.
-Triển khai thật cần reverse proxy để trình duyệt và backend cùng gọi Keycloak qua một hostname, khi đó bật lại `issuer-uri`.
+- Web → Superset: đăng xuất web kết thúc phiên Keycloak, Keycloak gọi front-channel logout của `dxos-superset` (`http://localhost:8088/logout/`).
+- Superset → Web: `LOGOUT_REDIRECT_URL` trong `bi/superset_config.py` kết thúc phiên Keycloak; web đang mở tự phát hiện qua `monitorSession` của `oidc-client-ts` và đăng xuất.
+- Đăng xuất ở Keycloak Account Console kích hoạt cả hai.
 
-## Đăng xuất một lần (Single Logout)
-
-Đăng xuất ở app này thì các app khác đang mở cũng tự đăng xuất theo, không cần vào từng app đăng xuất tay:
-
-- **App chính → Superset**: đăng xuất frontend gọi Keycloak kết thúc phiên SSO; Keycloak trả về front-channel logout (`frontchannelLogout` trên client `dxos-superset`, trỏ `http://localhost:8088/logout/`) — trình duyệt tự tải ngầm URL này, xoá luôn cookie Superset.
-- **Superset → App chính**: `LOGOUT_REDIRECT_URL` trong `bi/superset_config.py` khiến đăng xuất Superset cũng gọi Keycloak kết thúc phiên SSO (không chỉ xoá cookie Superset).
-  Frontend đang mở tab thì tự phát hiện qua session monitoring (`monitorSession: true` trong `oidc-client-ts`, poll trạng thái phiên Keycloak vài giây/lần) và tự đăng xuất.
-- **Đăng xuất ở Keycloak Account Console**: kích hoạt cả hai cơ chế trên vì phiên SSO kết thúc trực tiếp.
-
-**Giới hạn**: đây là cơ chế phía trình duyệt (front-channel + polling định kỳ), không phải backchannel logout chuẩn OIDC (server-to-server, hoạt động kể cả khi không có tab nào đang mở).
-Superset (Flask-AppBuilder) dùng cookie session ký sẵn, không có nơi lưu để server tự thu hồi — backchannel logout thật cần thêm server-side session store + endpoint xác thực logout token, không làm ở mức này.
+Đây là cơ chế phía trình duyệt, không phải backchannel logout chuẩn OIDC: không hoạt động khi không có tab nào mở, vì session của Superset là cookie ký sẵn không thu hồi được từ server.

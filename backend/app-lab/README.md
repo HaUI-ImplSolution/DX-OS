@@ -69,18 +69,8 @@ Cột `status` trên bảng của Lab phản chiếu trạng thái đó, do hand
 
 ## Interface của core đã cài
 
-| Interface | Lab cài |
-|---|---|
-| `AppModule` | `LabAppModule`: id `lab`, menu, loại workspace `CLASS` và `DEPARTMENT` |
-| `RoleProvider` | `LabSecurityPolicies`: `STUDENT`, `LECTURER`, `TECHNICIAN`, `ADMIN` |
-| `CaseTypeDefinition` | `LabWorkflowConfig`: `TICKET`, `DEVICE_LOAN`, `ROOM_BOOKING` |
-| `WorkflowDecisionHandler` | `TicketDecisionHandler`, `DeviceLoanDecisionHandler`, `RoomBookingDecisionHandler` |
-| `CaseSummaryProvider` | `TicketSummaryProvider`, `DeviceLoanSummaryProvider`, `RoomBookingSummaryProvider` |
-| `NotificationTypeDefinition`, `NotificationChannel` | `LabNotificationConfig`: 12 loại thông báo, kênh `technician` và `admin` |
-| `BiDatasetProvider` | `LabPlatformConfig`: các view `vw_lab_*` |
-| `FileProcessor` | `TicketAttachmentProcessor`: JPEG, PNG, PDF tối đa 5 MiB, loại theo nội dung |
-| `KnowledgeNamespace` | `LabKnowledgeNamespace`: namespace `lab` |
-| `HealthContributor` | `ai` |
+Cấu hình bằng bean ở `LabAppModule` (id `lab`, workspace `CLASS` và `DEPARTMENT`), `LabSecurityPolicies` (4 vai), `LabWorkflowConfig` (`TICKET`, `DEVICE_LOAN`, `ROOM_BOOKING`), `LabNotificationConfig` (12 loại thông báo, kênh `technician` và `admin`), `LabPlatformConfig` (các view `vw_lab_*`), `LabKnowledgeNamespace` (`lab`) và `TicketAttachmentProcessor` (JPEG, PNG, PDF tối đa 5 MiB, loại theo nội dung).
+Bảng interface đầy đủ ở [`ARCHITECTURE.md`](../../ARCHITECTURE.md) mục 3.
 
 ## Dữ liệu
 

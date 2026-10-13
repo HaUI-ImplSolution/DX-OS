@@ -47,18 +47,8 @@ Cột trạng thái trên bảng của Farm phản chiếu trạng thái đó.
 
 ## Interface của core đã cài
 
-| Interface | Farm cài |
-|---|---|
-| `AppModule` | `FarmAppModule`: id `farm`, menu, loại workspace `HOUSEHOLD`, loại case tính giới hạn yêu cầu chờ |
-| `RoleProvider`, `EndpointPolicyContributor`, `ClientRestrictionPolicy` | `FarmSecurityPolicies`: `FARMER`, `ENGINEER`, `ADMIN`; danh mục công khai; nông dân chỉ qua client mobile |
-| `CaseTypeDefinition` | `FarmWorkflowConfig`: 5 loại duyệt |
-| `WorkflowDecisionHandler` | `ParcelApprovalHandler`, `ParcelEditApprovalHandler`, `CropSeasonApprovalHandler` |
-| `CaseSummaryProvider` | 5 provider (thửa, sửa thửa, vụ, chẩn đoán, khai phun) |
-| `NotificationTypeDefinition`, `NotificationChannel` | `FarmNotificationConfig`: 13 loại thông báo, kênh chat `ADMIN` và `ENGINEER` |
-| `BiDatasetProvider` | `FarmPlatformConfig`: 6 view `vw_*` đã duyệt và 3 bảng danh mục |
-| `FileProcessor` | `DiseaseImageProcessor`: chỉ JPEG và PNG, xóa EXIF |
-| `KnowledgeNamespace` | `FarmKnowledgeNamespace`: namespace `farm` |
-| `HealthContributor` | `ai` |
+Cấu hình bằng bean ở `FarmAppModule` (id `farm`, workspace `HOUSEHOLD`), `FarmSecurityPolicies` (vai, danh mục công khai, FARMER chỉ qua mobile), `FarmWorkflowConfig` (5 loại duyệt), `FarmNotificationConfig` (13 loại thông báo, kênh `ADMIN` và `ENGINEER`), `FarmPlatformConfig` (6 view `vw_*` và 3 bảng danh mục), `FarmKnowledgeNamespace` (`farm`) và `DiseaseImageProcessor` (chỉ JPEG/PNG, xóa EXIF).
+Bảng interface đầy đủ ở [`ARCHITECTURE.md`](../../ARCHITECTURE.md) mục 3.
 
 ## Mã thửa, mã vụ và duyệt
 
@@ -94,7 +84,7 @@ Quản trị viên nhập hộ không cần sai số.
 
 - Migration `db/migration/farm` (bảng lịch sử `flyway_schema_history_farm`), chạy sau migration của core.
 - `farm/data.sql` seed thuốc và treatment rule đã duyệt, sinh từ `data/structured/*.json` bằng `data/scripts/generate_seed_sql.py`; không sửa tay.
-- `farm/weather-snapshot.json` là snapshot thời tiết dự phòng; `farm/knowledge-sources.json` là danh mục nguồn tài liệu RAG.
+- `weather-snapshot.json` là snapshot thời tiết dự phòng; `knowledge-sources.json` là danh mục nguồn tài liệu RAG (cùng thư mục `resources`).
 
 ## Cấu hình
 

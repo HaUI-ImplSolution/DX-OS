@@ -11,7 +11,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Video demo 3-5 phút, rehearsal ít nhất một lần | Kịch bản ở [`SUBMISSION.md`](./SUBMISSION.md) mục 2 |
 | Tag `v0.1.0` và bản chốt trên GitHub | Đề yêu cầu ít nhất một release có phiên bản |
 | Bật GitHub Issues, tạo vài issue mẫu | Đề yêu cầu issue/bug tracker |
-| Chuyển repository sang public | Không chấm PoF nếu repository không công khai lúc chấm |
+| Chuyển repository sang public | Đề yêu cầu repository công khai tại thời điểm chấm |
 | Quét lại gitleaks ngay trước khi chuyển public | Lần quét gần nhất (336 commit và cây làm việc) không có phát hiện |
 | Chụp ảnh giao diện hai chế độ (Farm, Lab) lưu vào repository cho hồ sơ | Chưa có |
 | Chốt ngày hạn nộp thật | Chưa chốt |

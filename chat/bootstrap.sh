@@ -14,6 +14,7 @@ CHANNELS=(
   "thong-bao-chung|Thông báo chung|O|Thông báo chung toàn hợp tác xã"
   "ky-su-nong-nghiep|Kỹ sư nông nghiệp|O|Trao đổi chẩn đoán và khuyến nghị điều trị"
   "ban-quan-tri|Ban quản trị|P|Kênh riêng của Ban quản trị"
+  "ky-thuat-vien|Kỹ thuật viên|O|Yêu cầu hỗ trợ mới và yêu cầu quá hạn của DX-Lab"
 )
 
 log() { echo "[mattermost-bootstrap] $*"; }

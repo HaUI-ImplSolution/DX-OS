@@ -4,31 +4,31 @@ Mỗi mục nêu nội dung cần viết và nơi lấy số liệu, bằng ch�
 
 | Mục báo cáo | Trang | Nội dung | Nguồn |
 |---|---|---|---|
-| 1. Bài toán và phạm vi | 1 | Agri-Carbon DX-OS, người dùng, luồng xương sống | `README.md` |
-| 2. Kiến trúc 3 tầng và H-P-D-I | 1-2 | Sơ đồ, ranh giới Core và ứng dụng, luồng request | `development/docs/submission/ARCHITECTURE_OPEN_CORE.md` |
-| 3. Quy trình và an toàn | 1-2 | Workflow, ma trận quyền, poka-yoke (PHI, GPS, ngày thu hoạch), vòng đời vụ mùa | `legacy_docs/PARCEL_SEASON_CODES.md`, phase 1-5 trong `improvement_docs/` |
-| 4. Dữ liệu | 1 | PostgreSQL, view cho BI, MinIO, thời tiết và snapshot | `bi/README.md`, `CHANGELOG.md` |
-| 5. Trí tuệ nhân tạo | 1-2 | CV, RAG, LangGraph, LLM; ngưỡng, giới hạn, vai trò kỹ sư | `ai/README.md`, phase 6 |
-| 6. Kiểm thử và kiểm chứng | 1 | Test backend và AI, E2E trên stack sạch, số bước đạt | log workflow `E2E`, `deploy/demo/README.md` |
-| 7. Mã nguồn mở và giấy phép | 1 | Bảng license, SBOM, lockfile, SPDX, CONTRIBUTING, issue tracker | `LICENSES.md`, `sbom/` |
-| 8. Giới hạn và hướng phát triển | 0.5 | Mới có rule thuốc được duyệt cho đạo ôn và khô vằn, điểm nghẽn mở rộng, mục để sau | `COUNCIL_QA.md`, `phase-10-de-sau/` |
+| 1. Bài toán và phạm vi | 1 | DX-OS Open-Core, hai ứng dụng minh họa (DX-Farm, DX-Lab), người dùng, luồng xương sống của từng ứng dụng | `README.md` |
+| 2. Kiến trúc Open-Core 3 tầng | 1-2 | Sơ đồ 3 tầng, module và ranh giới biên dịch, danh sách interface, cách chọn ứng dụng lúc chạy | `development/docs/submission/ARCHITECTURE_OPEN_CORE.md`, `development/docs/refactor_docs/SPI_CATALOG.md` |
+| 3. Dịch vụ dùng chung của Core | 1 | Identity/SSO, API Gateway, dữ liệu, workflow, thông báo, cổng AI: ai cung cấp, ứng dụng khai báo gì | `ARCHITECTURE_OPEN_CORE.md` mục 2, `sso/README.md`, `deploy/apisix/` |
+| 4. H-P-D-I qua hai ứng dụng | 2 | Farm: vai và phạm vi hộ, duyệt và khóa PHI, view BI, CV và RAG. Lab: vai, ba loại case, SLA, view BI, luật phân loại và RAG | `backend/app-farm/README.md`, `backend/app-lab/README.md` |
+| 5. Trí tuệ nhân tạo | 1 | CV, RAG, LangGraph, LLM, luật phân loại; ngưỡng, giới hạn, vai trò kỹ sư; dữ liệu và nguồn gốc | `ai/README.md`, `COUNCIL_QA.md` câu 6 |
+| 6. Kiểm thử và kiểm chứng | 1 | Test backend, E2E hai ứng dụng trên stack sạch (Farm 10 bước, Lab 16 bước), bằng chứng Core không đổi khi thêm ứng dụng, ứng dụng mẫu rỗng | log workflow `E2E`, `deploy/demo/README.md`, `development/docs/refactor_docs/phase-c*/03_TEST_PLAN.md` |
+| 7. Mã nguồn mở và giấy phép | 1 | Bảng license, SBOM, lockfile, SPDX, CONTRIBUTING và hướng dẫn thêm ứng dụng, issue tracker | `LICENSES.md`, `sbom/`, `CONTRIBUTING.md` |
+| 8. Giới hạn và hướng phát triển | 0.5 | Rule thuốc được duyệt mới có hai bệnh, điểm nghẽn mở rộng, mục chưa làm của Lab (mobile, dashboard Superset, ticket tương tự), giấy phép của `ai/` | `COUNCIL_QA.md`, `improvement_docs/REMAINING_WORK.md` |
 
 ## Slide (12)
 
-1. Bài toán và người dùng
-2. Sơ đồ 3 tầng
-3. H: danh tính và phân quyền
-4. P: workflow và vòng đời vụ mùa
-5. Poka-yoke: khóa PHI, GPS, ngày thu hoạch
-6. I: CV, RAG và vai trò kỹ sư
-7. D: dữ liệu, BI, thời tiết
-8. Demo: chuỗi báo bệnh đến khóa thu hoạch
-9. Kiểm thử: E2E và test lõi
-10. Mã nguồn mở: license, SBOM, đóng góp
-11. Giới hạn trung thực
-12. Hướng phát triển
+1. Bài toán và người dùng: hai ứng dụng trên một nền tảng
+2. Sơ đồ 3 tầng và ranh giới Core / ứng dụng
+3. Dịch vụ dùng chung: Identity/SSO, Gateway, Data, Workflow
+4. H: danh tính và phân quyền theo vai
+5. P: workflow cấu hình được và vòng đời (Farm, Lab)
+6. Poka-yoke: khóa PHI, GPS, SLA, chống trùng giờ đặt phòng
+7. I: CV, RAG, luật phân loại và vai trò con người
+8. D: dữ liệu, BI, thời tiết
+9. Demo: chuỗi Farm, đổi ứng dụng, chuỗi Lab
+10. Kiểm thử: E2E hai ứng dụng và test lõi
+11. Mã nguồn mở: license, SBOM, đóng góp, thêm ứng dụng mới
+12. Giới hạn trung thực và hướng phát triển
 
 ## Video 3-5 phút
 
-Quay từ bản chạy thật theo `DEMO_SCRIPT.md`, rút gọn ở các bước 1, 3, 5, 8.
+Quay từ bản chạy thật theo `DEMO_SCRIPT.md`, rút gọn: sơ đồ, một chuỗi Farm (duyệt, chẩn đoán, khóa thu hoạch), lệnh đổi ứng dụng, một chuỗi Lab (yêu cầu, xử lý, đặt phòng), thống kê.
 Quay thử toàn bộ một lần trước khi quay bản nộp.

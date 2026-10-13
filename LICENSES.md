@@ -57,7 +57,7 @@ Khi bật lại cần rà license tương ứng: POI Apache-2.0 OK, các cái c�
 
 | Thành phần | License | OSI-approved | Ghi chú |
 |---|---|---|---|
-| Mã nguồn AI do DX-Farm tự viết | Apache-2.0 | ✅ | Theo `LICENSE` ở gốc repo |
+| Mã nguồn AI do nhóm tự viết | Apache-2.0 | ✅ | Theo `LICENSE` ở gốc repo |
 | FastAPI, Pydantic, SQLAlchemy, pgvector, LangGraph, LangChain, python-docx, Ruff | MIT | ✅ | Dependency trực tiếp; Ruff chỉ dùng khi phát triển |
 | Uvicorn, HTTPX, python-dotenv, pypdf | BSD-3-Clause | ✅ | Dependency trực tiếp |
 | python-multipart, sentence-transformers | Apache-2.0 | ✅ | Dependency trực tiếp |
@@ -142,3 +142,4 @@ LangGraph (Apache-2.0) đảm nhận vai trò orchestrator cho luồng vision �
 
 - SPDX header đã có ở file Java của Backend và file Python; file TypeScript chưa có.
 - Chưa có inventory thành phần bundle trong từng Docker image phát hành (chỉ có dependency khai báo ở trên).
+- Giấy phép áp dụng cho thư mục `ai/` (phụ thuộc Ultralytics và PyMuPDF theo AGPL-3.0) còn mở; xem `development/docs/improvement_docs/REMAINING_WORK.md`.

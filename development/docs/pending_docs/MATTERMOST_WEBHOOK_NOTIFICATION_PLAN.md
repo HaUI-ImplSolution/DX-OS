@@ -135,7 +135,7 @@ mattermost:
 
 ## 4. Các công việc cần thực hiện
 
-**Backend** (`backend/DX-Farm`)
+**Backend** (`backend/app-farm`; `AsyncConfig` ở `backend/dx-core`)
 
 - [x] Package `event/` với hai record `DiseaseReportCreatedEvent` và `DiagnosisPendingEvent`, chỉ chứa giá trị thuần.
 - [x] `DiseaseReportService.create()` publish `DiseaseReportCreatedEvent` sau `saveAndFlush` của báo cáo mới (không publish ở nhánh idempotent); `DiagnosisService.create()` và `createFromAi()` publish `DiagnosisPendingEvent` sau `save`.
@@ -226,7 +226,7 @@ mattermost:
 ## 8. Definition of done
 
 - Toàn bộ hạng mục ở mục 4 hoàn tất.
-- `./mvnw compile` (chạy trong `backend/DX-Farm`) pass và diff đã được đọc lại.
+- `./mvnw compile` (chạy trong `backend`) pass và diff đã được đọc lại.
 - Khi `MATTERMOST_WEBHOOK_URL` rỗng, Backend khởi động và tạo báo cáo/chẩn đoán bình thường, không gọi Mattermost.
 - Khi URL hợp lệ, tạo báo cáo mới và chẩn đoán chờ duyệt (cả nhập tay lẫn qua AI) đều sinh đúng một thông báo vào channel `Kỹ sư nông nghiệp`; gửi lại báo cáo cùng `Idempotency-Key` không sinh thêm (kiểm tra thủ công khi người dùng chạy stack).
 - Khi Mattermost tắt hoặc URL sai, request tạo báo cáo/chẩn đoán vẫn trả thành công và log có đúng một dòng WARN không chứa URL.

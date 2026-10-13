@@ -1,6 +1,6 @@
-# Việc chưa đạt sau P0 đến P8
+# Việc chưa đạt sau P0 đến P8 và sau refactor Open-Core
 
-Tổng hợp ngắn các việc còn lại của 8 phase đã làm.
+Tổng hợp ngắn các việc còn lại của 8 phase cải thiện (P0 đến P8) và của đợt refactor Open-Core đa ứng dụng (C0 đến C7).
 Chi tiết, lý do và cách xử lý nằm ở file được trỏ tới ở mỗi mục.
 Kế hoạch refactor Open-Core và đa ứng dụng nằm ở [`../refactor_docs/README.md`](../refactor_docs/README.md).
 
@@ -11,9 +11,26 @@ Kế hoạch refactor Open-Core và đa ứng dụng nằm ở [`../refactor_doc
 | Báo cáo kỹ thuật 8-10 trang, slide tối đa 12 (mới có dàn ý) | `phase-8-*/02_CHECKLIST.md` WP8-06-DOC-03, 04; `development/docs/submission/` |
 | Video demo 3-5 phút, rehearsal ít nhất 1 lần | `phase-8-*/02_CHECKLIST.md` WP8-06-DOC-05, 06 |
 | Tag `v0.1.0` và bản chốt, bật GitHub Issues, tạo issue mẫu, chuyển repo sang public | `phase-8-*/02_CHECKLIST.md` WP8-03-DOC-01, 03 |
-| Quét lại gitleaks trước khi chuyển public | `phase-8-*/02_CHECKLIST.md` mục "Đóng phase" |
+| Quét lại gitleaks trước khi chuyển public (đã quét sau refactor, xem `phase-c7-*/03_TEST_PLAN.md`) | `phase-8-*/02_CHECKLIST.md` mục "Đóng phase" |
 | Chốt ngày hạn nộp thật | `phase-8-*/00_OVERVIEW.md` mục 11 |
 | Đóng P8: đủ bằng chứng cho DoD, cập nhật trạng thái ở `improvement_docs/README.md` | `phase-8-*/02_CHECKLIST.md` mục "Đóng phase" |
+
+## Sau refactor Open-Core và đa ứng dụng (C0 đến C7)
+
+| Việc | Nơi theo dõi |
+|---|---|
+| Giấy phép cho thư mục `ai/` (có phụ thuộc AGPL-3.0) còn mở (RD7) | `development/docs/refactor_docs/README.md` RD7; `LICENSES.md` |
+| `POST` multipart thiếu `Content-Type` (`/api/v1/tickets`, `/api/v1/crop-seasons/{id}/disease-reports`) trả 500, nên trả 415 | `development/docs/refactor_docs/phase-c6-switch-deploy-ci-demo/03_TEST_PLAN.md` mục 5 |
+| Tên database vector `dx_farm_ai_vector_db` còn mang tên Farm; đổi cần sửa `AiVectorDatabaseSeeder` và AI service | `backend/dx-core/.../config/AiVectorDatabaseSeeder.java` |
+| Lịch nền (SLA, nhắc mượn trả, nhắc thu hoạch) chạy ở mọi bản backend; chạy nhiều bản cần khóa lịch | `backend/app-lab/README.md`, `COUNCIL_QA.md` câu 9 |
+| Lab chưa có test tự động riêng ngoài kịch bản E2E hai app; kiểm tay theo vai (`RUNBOOK_KIEM_THU.md` mục 5.2, 5.3, 4.5) chưa ghi kết quả đủ | `development/docs/refactor_docs/RUNBOOK_KIEM_THU.md` mục 9 |
+| Chưa có ảnh chụp hai chế độ (Farm, Lab) lưu trong repo cho hồ sơ | `development/docs/refactor_docs/phase-c7-tai-lieu-ho-so/03_TEST_PLAN.md` |
+| Backend chưa tự gọi AI sau khi upload ảnh; chẩn đoán AI vẫn do kỹ sư bấm | `README.md` bảng mức hoàn thiện |
+
+### Backlog của Lab
+
+Mobile cho Lab; ticket tương tự (`pg_trgm`); cảnh báo thiết bị hỏng lặp lại; leo thang và tự đóng ticket; dashboard Superset riêng của Lab; tích hợp email và thời khóa biểu thật; biến ticket đã giải quyết thành bài tri thức.
+Chi tiết ở [`../refactor_docs/phase-c4-app-lab-backend/00_OVERVIEW.md`](../refactor_docs/phase-c4-app-lab-backend/00_OVERVIEW.md) mục 4.
 
 ## Phụ thuộc người ngoài
 
@@ -82,3 +99,4 @@ Chi tiết ở [`phase-10-de-sau/00_OVERVIEW.md`](./phase-10-de-sau/00_OVERVIEW.
 | P6 | Các mục "Giới hạn đã biết của AI" |
 | P7 | Thời tiết chưa test, nền bản đồ, các mục chưa chốt ở `00_OVERVIEW.md` mục 11 |
 | P8 | Mục "Cần làm trước khi nộp bài" và Q2 |
+| C0 đến C7 | Mục "Sau refactor Open-Core và đa ứng dụng" |

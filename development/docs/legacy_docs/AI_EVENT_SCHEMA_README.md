@@ -16,8 +16,8 @@ Thuốc, `dose_min`/`dose_max`, `dose_unit`, `phi_days` và `version` phải gi�
 Backend kiểm tra lại rule version và lưu recommendation ở trạng thái `PENDING`.
 
 Contract thực thi được khóa bởi DTO Backend
-[`AiDiagnoseRequest.java`](../../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/dto/AiDiagnoseRequest.java),
-[`AiDiagnoseResponse.java`](../../../backend/DX-Farm/src/main/java/HaUI/ImplSolution/DX_Farm/dto/AiDiagnoseResponse.java)
+[`AiDiagnoseRequest.java`](../../../backend/app-farm/src/main/java/HaUI/ImplSolution/dxos/farm/dto/AiDiagnoseRequest.java),
+[`AiDiagnoseResponse.java`](../../../backend/app-farm/src/main/java/HaUI/ImplSolution/dxos/farm/dto/AiDiagnoseResponse.java)
 và schema AI [`schemas.py`](../../../ai/app/api/schemas.py); script
 [`check_diagnose_contract.py`](../../../ai/scripts/check_diagnose_contract.py) kiểm tra sự tương thích giữa hai phía.
 

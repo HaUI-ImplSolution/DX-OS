@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Draft |
+| Trạng thái | Hoàn tất |
 | Mức độ | Nghiêm trọng |
 | Nhóm ưu tiên | A |
 | Ứng dụng và module chính | Dùng chung (tài liệu, hồ sơ) |
@@ -86,6 +86,6 @@ Sửa các link gãy do chuyển file.
 
 ## 10. Tài liệu cần cập nhật khi xong
 
-- [ ] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
-- [ ] Swagger (springdoc) nếu còn lệch.
-- [ ] Sơ đồ kiến trúc, `LICENSES.md`, `.env.example`.
+- [x] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
+- [x] Swagger (springdoc) nếu còn lệch.
+- [x] Sơ đồ kiến trúc, `LICENSES.md`, `.env.example`.

@@ -25,7 +25,7 @@ git status          # sạch
 
 | Bước | Lệnh | Kết quả mong đợi | Phase |
 |---|---|---|---|
-| Backend biên dịch toàn bộ module | `cd backend && ./mvnw compile` | Cả bốn module đạt (sau C4 thêm `app-lab`) | C1 trở đi |
+| Backend biên dịch toàn bộ module | `cd backend && ./mvnw compile` | Cả năm module đạt | C1 trở đi |
 | Web | `cd frontend && npx tsc --noEmit` | Không lỗi | C2, C5 |
 | Mobile | `cd mobile && npx tsc --noEmit` | Không lỗi | C2, C3 |
 | Ranh giới app | Tìm `core.` hoặc `dx-core` trong `app-farm` và `app-lab` | Không có (chỉ `dx-core-api`) | C1, C2, C4 |
@@ -271,7 +271,7 @@ Khi muốn kiểm giữa chừng, chỉ cần chạy tới đây là đủ.
 
 | Mục | Người chạy | Ngày | Kết quả (Đạt hoặc `Fail #issue`) | Ghi chú |
 |---|---|---|---|---|
-| Mục 2: kiểm tra tĩnh | | | | |
+| Mục 2: kiểm tra tĩnh | Claude | 13/10/2026 | Đạt | `mvnw clean verify` (67 test), `tsc` frontend và mobile, ranh giới app và core không có kết quả, seed Farm nhất quán (`--check`, unit test generator); chưa chạy `pytest` của AI |
 | Mục 4.3: E2E Farm | Claude | 13/10/2026 | Đạt | 10/10 bước với `--require-rule`, trước và sau khi chuyển app |
 | Mục 4.4: OpenAPI so baseline | Claude | 13/10/2026 | Đạt | Không endpoint nào của baseline bị bỏ; thêm `/api/v1/app` và 5 thao tác của `/api/v1/workspaces` |
 | Mục 4.5: F1 đến F9 (kể cả F6b) | | | | |

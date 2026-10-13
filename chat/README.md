@@ -23,7 +23,7 @@ Ghi vào [`LICENSES.md`](../LICENSES.md) đúng caveat này để minh bạch kh
 - Dữ liệu (config, tin nhắn, file đính kèm, log, plugin) persist qua bind mount `deploy/data/mattermost/` — không mất khi `docker compose down`.
 - Service phụ `mattermost-init` (image `alpine`, chạy 1 lần rồi tắt) tự `chown` các thư mục bind mount trên về `uid 2000` — Mattermost chạy bằng user không phải root nhưng thư mục bind mount tạo lần đầu thuộc `root`, nếu không chown trước thì container chính báo lỗi `permission denied` lúc khởi động.
 - Service `mattermost-bootstrap` (cùng image Mattermost, chạy 1 lần rồi tắt) chạy [`bootstrap.sh`](./bootstrap.sh) qua REST API: tạo tài khoản System Admin, team `dx-farm` và các channel mặc định; chạy lại nhiều lần không tạo trùng.
-  Channel mặc định: `Thông báo chung` (public), `Kỹ sư nông nghiệp` (public), `Ban quản trị` (private).
+  Channel mặc định: `Thông báo chung` (public), `Kỹ sư nông nghiệp` (public, Farm), `Kỹ thuật viên` (public, Lab), `Ban quản trị` (private, cả hai ứng dụng).
 - Tài khoản Mattermost tách biệt khỏi tài khoản backend (`FARMER`/`ENGINEER`/`ADMIN`).
   Đây là nền tảng tách biệt hoàn toàn có chủ đích: App chính và BI Dashboard đăng nhập qua Keycloak (xem [`sso/README.md`](../sso/README.md)), còn Mattermost dùng tài khoản/role riêng của chính nó, không nối SSO chung — Team Edition (bản free) không hỗ trợ OpenID Connect với IdP tuỳ ý (tính năng đó thuộc Mattermost Enterprise, trả phí).
 
@@ -47,7 +47,9 @@ Ghi vào [`LICENSES.md`](../LICENSES.md) đúng caveat này để minh bạch kh
 
 ## Thông báo tự động từ Backend
 
-Backend post qua Incoming Webhook, mỗi loại sự kiện vào một channel:
+Backend post qua Incoming Webhook, mỗi loại sự kiện vào một channel; kênh nào dùng phụ thuộc ứng dụng đang chạy (`DXOS_APP`).
+
+### DX-Farm
 
 - `Ban quản trị` (`MATTERMOST_WEBHOOK_URL_ADMIN`): **yêu cầu thửa ruộng mới** và **yêu cầu vụ mùa mới** (cả khi gửi lại sau khi bị từ chối), kèm mã, hộ, diện tích hoặc giống lúa.
 - `Kỹ sư nông nghiệp` (`MATTERMOST_WEBHOOK_URL_ENGINEER`):
@@ -67,6 +69,14 @@ Cách hoạt động:
 - Tên người báo cáo, mã thửa, giống lúa và tên bệnh được cắt tối đa 100 ký tự, bỏ xuống dòng và vô hiệu mention, link, markdown.
   Thời điểm hiển thị theo múi giờ `Asia/Ho_Chi_Minh`.
 - Thông báo không kèm deep link; kỹ sư tìm báo cáo trong web app theo mã thửa và mã báo cáo. Hướng bổ sung deep link và danh sách chờ xử lý nằm ở mục 9 của tài liệu thiết kế.
+
+
+### DX-Lab
+
+- `Kỹ thuật viên` (`MATTERMOST_WEBHOOK_URL_TECHNICIAN`): **yêu cầu hỗ trợ mới** và **yêu cầu quá hạn xử lý**.
+- `Ban quản trị` (`MATTERMOST_WEBHOOK_URL_ADMIN`): **yêu cầu quá hạn xử lý**.
+- Cách hoạt động như Farm: gửi sau khi transaction commit, chạy nền, best-effort; kênh không có webhook riêng dùng `MATTERMOST_WEBHOOK_URL`.
+- Cảnh báo sắp quá hạn và nhắc mượn trả chỉ nằm trong hộp thông báo của web, không gửi sang chat.
 
 ### Cấp webhook (một lần cho mỗi môi trường)
 

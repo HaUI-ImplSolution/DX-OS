@@ -71,7 +71,7 @@ flowchart TB
 | [C4](./phase-c4-app-lab-backend/00_OVERVIEW.md) | App Lab: backend | 6-7 ngày | C2 | Hoàn tất |
 | [C5](./phase-c5-web-shell-lab-ui/00_OVERVIEW.md) | Web: vỏ chọn app và giao diện Lab | 4-5 ngày | C2, C4 | Hoàn tất |
 | [C6](./phase-c6-switch-deploy-ci-demo/00_OVERVIEW.md) | Chuyển app, triển khai, CI, dữ liệu demo | 3 ngày | C3, C4, C5 | Hoàn tất |
-| [C7](./phase-c7-tai-lieu-ho-so/00_OVERVIEW.md) | Tài liệu và hồ sơ nộp | 2 ngày | C6 | Draft |
+| [C7](./phase-c7-tai-lieu-ho-so/00_OVERVIEW.md) | Tài liệu và hồ sơ nộp | 2 ngày | C6 | Hoàn tất |
 
 Thứ tự: C0 → C1 → C2 → C4 → C5 → C6 → C7.
 C3 làm sau C1, song song với C2 hoặc C4; riêng WPC3-02 (vai và tài khoản mẫu) cần `RoleProvider` của C2.

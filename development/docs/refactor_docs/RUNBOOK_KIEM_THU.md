@@ -1,8 +1,7 @@
 # Hướng dẫn dựng và chạy app để kiểm thử sau refactor
 
 Tài liệu cho người kiểm thử: dựng stack, chạy từng app, chuyển app và kiểm tra theo thứ tự.
-Lệnh đánh dấu **(thiết kế)** chưa tồn tại trong repo; chúng được làm ở phase ghi kèm và có thể khác tên khi cài đặt xong, khi đó cập nhật tài liệu này.
-Các lệnh còn lại đang chạy được ở repo hiện tại hoặc là dạng đã dùng từ trước.
+Mọi lệnh trong tài liệu chạy được ở repo hiện tại.
 
 ## 1. Chuẩn bị
 
@@ -71,7 +70,7 @@ Bắt buộc dựng lại sạch ở lần đầu sau refactor: migration đư�
 | Việc | Cách | Kết quả |
 |---|---|---|
 | Dịch vụ healthy | `docker compose ps` | Mọi service healthy hoặc job đã thoát mã 0 |
-| Backend | `curl -s http://localhost:9080/api/v1/system/status` | Có `backend`, `ai`, `storage` ở trạng thái UP; có tên app đang chạy **(thiết kế, C6)** |
+| Backend | `curl -s http://localhost:9080/api/v1/system/status` | Có `backend`, `ai`, `storage` ở trạng thái UP; `app.id` và `app.name` là app đang chạy |
 | Manifest app | Với token hợp lệ: `GET /api/v1/app` | `id` đúng `farm` hoặc `lab`; kèm vai, menu và loại workspace |
 | Portal | http://localhost:9080/portal/ | Hiện hạ tầng và app đang chạy |
 
@@ -81,7 +80,7 @@ Bắt buộc dựng lại sạch ở lần đầu sau refactor: migration đư�
 python3 deploy/demo/seed_demo.py [--app farm|lab]
 ```
 
-`--app` **(thiết kế, C6)**; nếu không truyền, script đọc `DXOS_APP`.
+`--app` chọn app; nếu không truyền, script đọc app đang chạy từ `GET /api/v1/system/status` và dừng khi `--app` khác app đó.
 Seed tạo tài khoản mẫu qua Admin API (realm không còn chứa sẵn), rồi nạp dữ liệu qua API nên đi qua kiểm tra nghiệp vụ.
 Chạy lại lần hai không tạo trùng.
 
@@ -153,9 +152,8 @@ cd mobile && npx expo start      # Expo Go, hoặc build APK bằng EAS
 ## 5. Chuyển sang Lab (`DXOS_APP=lab`)
 
 ```bash
-./deploy/switch-app.sh lab            # đổi biến và restart backend (thiết kế, C6)
-./deploy/switch-app.sh lab --reset    # kèm dựng lại sạch, dùng khi đổi schema lớn (thiết kế, C6)
-python3 deploy/demo/seed_demo.py --app lab
+./deploy/start.sh lab                 # đổi biến, dựng lại gateway, backend, nạp tri thức, Superset và nạp dữ liệu demo
+./deploy/start.sh lab --reset --yes   # kèm dựng lại sạch (reset.sh), dùng khi đổi schema lớn
 python3 deploy/demo/e2e.py --app lab
 ```
 
@@ -197,7 +195,7 @@ Mật khẩu do script seed in ra hoặc ghi trong `deploy/demo/README.md` sau C
 
 ### 5.3 Kiểm Lab qua API
 
-Dùng Swagger (`http://localhost:9080/swagger-ui.html`) hoặc client trong `deploy/demo/dxos_client.py`, sau khi `reset.sh` và `seed_demo.py --app lab` đã chạy xong **(thiết kế, C6)**.
+Dùng Swagger (`http://localhost:9080/swagger-ui.html`) hoặc client trong `deploy/demo/dxos_client.py`, sau khi `reset.sh` và `seed_demo.py --app lab` đã chạy xong.
 Tài khoản ở mục 5.1; mỗi bước đối chiếu với test case của phase C4.
 
 | Bước | Gọi | Kiểm | Test case |
@@ -274,10 +272,10 @@ Khi muốn kiểm giữa chừng, chỉ cần chạy tới đây là đủ.
 | Mục | Người chạy | Ngày | Kết quả (Đạt hoặc `Fail #issue`) | Ghi chú |
 |---|---|---|---|---|
 | Mục 2: kiểm tra tĩnh | | | | |
-| Mục 4.3: E2E Farm | | | | |
-| Mục 4.4: OpenAPI so baseline | | | | |
+| Mục 4.3: E2E Farm | Claude | 13/10/2026 | Đạt | 10/10 bước với `--require-rule`, trước và sau khi chuyển app |
+| Mục 4.4: OpenAPI so baseline | Claude | 13/10/2026 | Đạt | Không endpoint nào của baseline bị bỏ; thêm `/api/v1/app` và 5 thao tác của `/api/v1/workspaces` |
 | Mục 4.5: F1 đến F9 (kể cả F6b) | | | | |
-| Mục 5: E2E Lab | | | | |
+| Mục 5: E2E Lab | Claude | 13/10/2026 | Đạt | 16/16 bước với `--require-knowledge`, trên stack dựng sạch bằng `switch-app.sh lab --reset` |
 | Mục 5.2: L1 đến L17 | | | | |
 | Mục 5.3: bước 1 đến 22 | | | | |
-| Mục 6: B1 đến B6 | | | | |
+| Mục 6: B1 đến B6 | Claude | 13/10/2026 | Đạt | B1 E2E Farm 10/10 sau khi chuyển về; B2 backend dừng với thông báo nêu `[farm, lab]`; B3, B4 route app khác 404; B5 bảng Lab còn khi chạy Farm; B6 không lỗi migration |

@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.core.status;
 
+import HaUI.ImplSolution.dxos.core.api.app.AppModule;
 import HaUI.ImplSolution.dxos.core.api.status.HealthContributor;
 import HaUI.ImplSolution.dxos.core.api.storage.ObjectStorage;
+import HaUI.ImplSolution.dxos.core.status.ServiceStatusResponse.App;
 import HaUI.ImplSolution.dxos.core.status.ServiceStatusResponse.Service;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,11 +21,13 @@ public class SystemStatusService {
 
   private final ObjectStorage objectStorage;
   private final ObjectProvider<HealthContributor> contributors;
+  private final ObjectProvider<AppModule> appModules;
 
   public SystemStatusService(ObjectStorage objectStorage,
-      ObjectProvider<HealthContributor> contributors) {
+      ObjectProvider<HealthContributor> contributors, ObjectProvider<AppModule> appModules) {
     this.objectStorage = objectStorage;
     this.contributors = contributors;
+    this.appModules = appModules;
   }
 
   public ServiceStatusResponse status() {
@@ -32,7 +36,9 @@ public class SystemStatusService {
     contributors.orderedStream()
         .forEach(contributor -> services.add(new Service(contributor.name(), state(contributor))));
     services.add(new Service("storage", objectStorage.isReady() ? UP : DOWN));
-    return new ServiceStatusResponse(services);
+    App app = appModules.orderedStream().findFirst()
+        .map(module -> new App(module.id(), module.name())).orElse(null);
+    return new ServiceStatusResponse(app, services);
   }
 
   private static String state(HealthContributor contributor) {

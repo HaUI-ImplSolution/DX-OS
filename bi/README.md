@@ -17,11 +17,13 @@ Không chọn Metabase (AGPL-3.0, copyleft mạnh hơn dù vẫn OSI-approved) �
   Không có Celery worker nên kết nối `DX-Farm` chạy truy vấn đồng bộ (`allow_run_async: false`), SQL Lab dùng được ngay.
 - Backend tự tạo role Postgres **chỉ-đọc** `superset_ro` lúc khởi động (`SupersetReadOnlyRoleSeeder`, xem backend).
   Superset không bao giờ có quyền ghi vào CSDL nghiệp vụ và không đọc được bảng nghiệp vụ: role chỉ có `SELECT` trên các view `vw_*` (bản ghi đã duyệt hoặc đã xử lý, không có dữ liệu cá nhân) và ba bảng danh mục `diseases`, `pesticides`, `rice_varieties`.
-- `bi/bootstrap_datasources.py` chạy sau khi server lên, tự đăng ký mọi thứ qua REST API công khai của chính Superset (không đụng ORM nội bộ, ổn định qua version):
+- `bi/bootstrap_datasources.py` chạy sau khi server lên và đọc `DXOS_APP` (`farm` hoặc `lab`) để biết app nào cần BI; giá trị khác làm bước này dừng.
+  Nó tự đăng ký mọi thứ qua REST API công khai của chính Superset (không đụng ORM nội bộ, ổn định qua version):
   - Nếu **đã có** `farm_dashboard_export.zip` (trường hợp bình thường, file này đã commit sẵn trong repo): import trọn bộ database connection + dataset + chart + dashboard từ bundle này — đây là **nguồn sự thật duy nhất**.
     Mật khẩu Postgres bị Superset mask thành `XXXXXXXXXX` lúc export nên bootstrap phải truyền lại mật khẩu thật qua tham số `passwords` của API import, khớp theo đường dẫn file trong zip đã bỏ thư mục gốc (`databases/DX-Farm.yaml`).
   - Nếu **chưa có** export nào (lần đầu dựng dashboard mới, trước khi có ai build+export) thì fallback: tự tạo database connection `DX-Farm` (role `superset_ro`) + 6 dataset trỏ vào các view `vw_*`.
     Chart/dashboard thì để build tay theo hướng dẫn bên dưới.
+  - Với `DXOS_APP=lab` không có bundle: script tạo kết nối `DX-Lab` (cùng role `superset_ro`) và 5 dataset `vw_lab_rooms`, `vw_lab_devices`, `vw_lab_tickets`, `vw_lab_device_loans`, `vw_lab_room_bookings`; dashboard dựng tay từ các dataset này, số liệu có sẵn ở trang thống kê của web Lab.
   - Toàn bộ script idempotent (`overwrite=true`, tìm-theo-tên trước khi tạo mới) và có retry vì một vài request đầu tiên ngay sau khi Superset vừa khởi động đôi khi thất bại thoáng qua.
 - `bi/superset_config.py` (bind mount vào `/app/pythonpath/`, Superset tự nạp) cấu hình SSO thật qua Keycloak.
   `authlib` không có sẵn trong image gốc nên `bootstrap.sh` tự `pip install` lúc container khởi động, không build lại image.
@@ -31,7 +33,8 @@ Không chọn Metabase (AGPL-3.0, copyleft mạnh hơn dù vẫn OSI-approved) �
 - URL: `http://localhost:${APISIX_SUPERSET_HOST_PORT}` (mặc định `http://localhost:9081`), cổng thứ hai của gateway APISIX; Superset không publish cổng riêng.
   Superset 3.1 không chạy được dưới đường dẫn con nên cần listener riêng.
 - Đăng nhập qua UI bằng SSO thật (Keycloak) — bấm "Sign In with keycloak", dùng tài khoản demo trong [`sso/README.md`](../sso/README.md).
-  Role realm map sang role Superset: `ADMIN` → `Admin`, `ENGINEER` → `Gamma`; tài khoản chỉ có role `FARMER` bị từ chối đăng nhập (nông dân chỉ dùng app mobile).
+  Role realm map sang role Superset: `ADMIN` → `Admin`, `ENGINEER` → `Gamma`; tài khoản không có một trong hai role này (ví dụ `FARMER`) bị từ chối đăng nhập.
+  Khi chạy Lab, `admin1` (role `ADMIN`) xem được dataset `vw_lab_*`.
   Role Postgres `superset_ro` không đọc được bảng `workspaces` (thông tin liên hệ nông hộ) hay bất kỳ bảng nghiệp vụ nào ngoài các view.
 - Tài khoản `SUPERSET_ADMIN_USERNAME`/`SUPERSET_ADMIN_PASSWORD` (seed lúc khởi động) vẫn tồn tại song song, chỉ dùng cho REST API/automation (`bi/bootstrap_datasources.py` tự đăng nhập bằng tài khoản này) — không đăng nhập được qua UI nữa vì đã bật `AUTH_TYPE = AUTH_OAUTH`.
 

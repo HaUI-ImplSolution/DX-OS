@@ -51,13 +51,13 @@ WPC6-05 làm song song với WPC6-03.
 
 | Tình huống | Hành vi hiện tại | Hành vi sau thay đổi |
 |---|---|---|
-| Route của Farm | Trong `apisix.yaml` chung (`disease-reports`, `diagnosis/ai`, `knowledge/ask`) | Trong phần cấu hình riêng của Farm |
+| Route của Farm | Trong `apisix.yaml` chung (`disease-reports`, `diagnosis/ai`, `knowledge/ask`) | `disease-reports` và `diagnosis/ai` trong `apps/farm.yaml`; `knowledge/ask` ở phần chung vì cả hai app có route này |
 | Route của Lab | Không có | Giới hạn tốc độ cho tạo ticket, tải tệp đính kèm, đặt phòng, hỏi đáp, gợi ý phân loại |
-| Route chung | Lẫn trong một file | Phần chung: Keycloak, portal, ảnh, health, `/api/*` |
+| Route chung | Lẫn trong một file | `common.yaml`: Keycloak, portal, ảnh, trạng thái hệ thống, hỏi đáp tri thức, `/api/*` |
 
 **Hướng làm**
 
-- Ghép phần chung với phần theo app thành file cấu hình mà compose mount theo `DXOS_APP`.
+- Service `apisix-config` ghép `common.yaml` với `apps/<DXOS_APP>.yaml` thành `deploy/data/apisix/apisix.yaml`, gateway mount file đó; app không có file thì compose dừng.
 - Core/App: phần chung không nhắc `crop`, `disease`, `ticket`.
 
 **Phạm vi ảnh hưởng**
@@ -66,7 +66,7 @@ WPC6-05 làm song song với WPC6-03.
 - File chính: `deploy/apisix/*`, compose.
 - Endpoint, bảng DB, biến môi trường: giới hạn tốc độ theo app.
 - Role và client bị ảnh hưởng: mọi client.
-- Tương thích ngược và dữ liệu cũ: Farm giữ giới hạn như trước.
+- Tương thích ngược và dữ liệu cũ: Farm giữ giới hạn 30 lần mỗi phút cho upload ảnh và chẩn đoán AI.
 
 **Kết quả đầu ra**
 
@@ -87,7 +87,7 @@ WPC6-05 làm song song với WPC6-03.
 | Seed | `seed_demo.py` tạo hộ, thửa, vụ, báo cáo | Phần chung (client, tài khoản) và `seed_farm`, `seed_lab`; chọn theo `DXOS_APP` |
 | E2E | `e2e.py` 10 bước của Farm | Phần chung và kịch bản theo app |
 | Tài khoản mẫu | `farmer1`, `engineer1`, `admin1` | Thêm `student1`, `student2`, `lecturer1`, `tech1`, `tech2`, `admin1` cho Lab |
-| Dữ liệu mẫu Lab | Không có | Nạp bằng API từ tệp dữ liệu của C4: danh mục, phòng, thiết bị, ticket ở mọi trạng thái trải trong 60 ngày, lịch đặt phòng, phiếu mượn; ngày tính tương đối so với lúc nạp |
+| Dữ liệu mẫu Lab | Không có | Nạp bằng API: lớp và bộ môn, phòng, thiết bị, ticket ở mọi trạng thái, lịch đặt phòng, phiếu mượn; ngày đặt phòng tính theo ngày chạy, thời điểm tạo ticket là lúc nạp (`workflow_event` chỉ thêm, không sửa) |
 
 **Hướng làm**
 
@@ -98,7 +98,7 @@ WPC6-05 làm song song với WPC6-03.
 **Phạm vi ảnh hưởng**
 
 - Module: `deploy/demo`.
-- File chính: `seed_demo.py`, `e2e.py`, `dxos_client.py`, `make_ci_env.py`, `docker-compose.e2e.yml`.
+- File chính: `seed_demo.py`, `seed_farm.py`, `seed_lab.py`, `e2e.py`, `e2e_farm.py`, `e2e_lab.py`, `dxos_client.py`, `make_ci_env.py`, `docker-compose.e2e.yml`.
 - Endpoint, bảng DB, biến môi trường: tham số `--app` hoặc đọc `DXOS_APP`.
 - Role và client bị ảnh hưởng: tài khoản mẫu.
 - Tương thích ngược và dữ liệu cũ: seed Farm giữ nội dung.
@@ -155,7 +155,7 @@ WPC6-05 làm song song với WPC6-03.
 
 **Hướng làm**
 
-- `bi/bootstrap_datasources.py` đọc `DXOS_APP`: Farm nạp dashboard như cũ; Lab chỉ khai báo dataset.
+- `bi/bootstrap_datasources.py` đọc `DXOS_APP`: Farm nạp bundle dashboard; Lab chỉ khai báo dataset.
 - Core/App: tên file dashboard do app đặt.
 
 **Phạm vi ảnh hưởng**
@@ -166,7 +166,7 @@ WPC6-05 làm song song với WPC6-03.
 
 **Kết quả đầu ra**
 
-- Farm có dashboard như trước; Lab đọc được view Lab.
+- Farm có dashboard của Farm; Lab đọc được view Lab.
 
 **Phụ thuộc, lưu ý**: cần C4 WPC4-05.
 

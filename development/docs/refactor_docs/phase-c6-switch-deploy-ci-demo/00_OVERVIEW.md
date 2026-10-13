@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Draft |
+| Trạng thái | Hoàn tất |
 | Mức độ | Nghiêm trọng |
 | Nhóm ưu tiên | A |
 | Ứng dụng và module chính | `dx-host`, hạ tầng, demo |
@@ -64,12 +64,12 @@ Thêm script `deploy/switch-app.sh` và kịch bản demo hai app.
 
 ## 6. Kết quả đầu ra mong đợi (Definition of Done)
 
-- Demo được: `./deploy/switch-app.sh lab` rồi mở web thấy Lab với dữ liệu mẫu; `./deploy/switch-app.sh farm` thấy Farm như trước.
+- Demo được: `./deploy/switch-app.sh lab` rồi mở web thấy Lab với dữ liệu mẫu; `./deploy/switch-app.sh farm` thấy Farm với dữ liệu mẫu.
 - Sản phẩm bàn giao: script chuyển app, cấu hình gateway theo app, seed và E2E theo app, workflow CI.
 - Tiêu chí đo được:
   - CI chạy E2E hai lần (`farm`, `lab`) và đạt.
   - Không có route hay giới hạn của app khác trong cấu hình gateway đang chạy.
-  - Superset: Farm có dashboard như trước; Lab đọc được view `vw_lab_*`.
+  - Superset: Farm hiện dashboard của Farm; Lab đọc được view `vw_lab_*`.
   - Đổi app mà không sửa code hay build lại image web.
 - Bằng chứng: log CI, ảnh chụp hai chế độ, kết quả chạy script chuyển app.
 
@@ -87,12 +87,12 @@ Thêm script `deploy/switch-app.sh` và kịch bản demo hai app.
 
 | # | Câu hỏi | Lựa chọn | Hạn chốt | Kết luận |
 |---|---|---|---|---|
-| Q1 | Cấu hình gateway theo app | A: hai file đầy đủ sinh từ phần chung và phần app. B: một file chung cho mọi route | Đầu phase | Chốt A (09/10/2026, theo đề xuất) đề xuất A |
+| Q1 | Cấu hình gateway theo app | A: hai file đầy đủ sinh từ phần chung và phần app. B: một file chung cho mọi route | Đầu phase | Chốt A (09/10/2026, theo đề xuất): `common.yaml` cộng `apps/<app>.yaml`, ghép lúc khởi động bởi `apisix-config` |
 | Q2 | Script chuyển app có reset DB không | A: chỉ đổi biến và restart. B: tùy chọn `--reset` | Đầu phase | Chốt B: tùy chọn `--reset` (09/10/2026) đề xuất B |
 | Q3 | Số bước E2E của Lab | Phủ ba luồng chính (ticket, mượn thiết bị, đặt phòng) cùng hỏi đáp và thống kê, tối thiểu 10 bước như Farm | Đầu phase | Chốt theo đề xuất (09/10/2026) |
 
 ## 10. Tài liệu cần cập nhật khi xong
 
-- [ ] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
-- [ ] `deploy/demo/README.md`, `CONTRIBUTING.md` mục chạy và kiểm.
-- [ ] `.env.example` (kể cả `DXOS_APP`).
+- [x] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
+- [x] `deploy/demo/README.md`, `CONTRIBUTING.md` mục chạy và kiểm.
+- [x] `.env.example` (kể cả `DXOS_APP`).

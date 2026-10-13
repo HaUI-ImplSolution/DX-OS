@@ -19,6 +19,8 @@ python3 -m pip install pillow
 python3 demo/seed_demo.py
 ```
 
+`DXOS_APP` trong `.env` chọn ứng dụng (`farm` hoặc `lab`); `./start.sh [app]` chạy ứng dụng đó kèm dữ liệu demo và cũng dùng để đổi ứng dụng.
+
 Hướng dẫn đầy đủ ở [`README.md`](./README.md).
 
 ## Quy trình
@@ -34,7 +36,7 @@ Hướng dẫn đầy đủ ở [`README.md`](./README.md).
 | AI (`ai`) | `pytest` |
 | Web (`frontend`) | `npx tsc --noEmit` |
 | Mobile (`mobile`) | `npx tsc --noEmit` |
-| Toàn stack | `python3 deploy/demo/e2e.py` trên stack mới dựng |
+| Toàn stack | `python3 deploy/demo/e2e.py` trên stack mới dựng, lần lượt với `DXOS_APP=farm` và `DXOS_APP=lab` |
 
 ## Quy ước mã
 
@@ -63,7 +65,7 @@ Backend gồm `dx-core-api` (interface và DTO), `dx-core` (dịch vụ dùng ch
 1. Thêm package vào module của ứng dụng (`app-farm`), không sửa `dx-core`.
 2. Khai báo loại yêu cầu mới bằng một bean `CaseTypeDefinition` (trạng thái, bước chuyển, vai) và mở case qua `WorkflowOperations` (`caseType`, `entityType`) để có sẵn lịch sử, người phụ trách và danh sách việc chờ.
 3. Cài `CaseSummaryProvider` để yêu cầu hiện trong hộp duyệt, và `NotificationTypeDefinition` cho từng loại thông báo mới.
-4. Khai báo route mới trong `deploy/apisix/apisix.yaml` nếu cần giới hạn tốc độ.
+4. Khai báo route cần giới hạn tốc độ trong `deploy/apisix/apps/<app>.yaml`; phần chung cho mọi ứng dụng ở `deploy/apisix/common.yaml`.
 5. Thêm view `vw_*` và đăng ký qua `BiDatasetProvider` nếu cần báo cáo.
 
 Sơ đồ ở [`development/docs/submission/ARCHITECTURE_OPEN_CORE.md`](./development/docs/submission/ARCHITECTURE_OPEN_CORE.md).

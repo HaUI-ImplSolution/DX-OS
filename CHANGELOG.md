@@ -5,6 +5,12 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Backend (Spring Boot — `backend`)
 
+### 2026-10-13
+
+**Đã xong — Trạng thái hệ thống nêu app đang chạy:**
+
+- `GET /api/v1/system/status` (công khai) trả thêm `app` gồm `id` và `name` của app đang chạy; portal và các script seed, E2E đọc từ đây.
+
 ### 2026-10-12
 
 **Đã xong — App Lab (`app-lab`):**
@@ -654,6 +660,27 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Deploy (`deploy`)
 
+### 2026-10-13
+
+**Đã xong — Chuyển app, gateway và dữ liệu demo theo app:**
+
+- `deploy/switch-app.sh <app> [--seed] [--build] [--reset] [--yes]` ghi `DXOS_APP` vào `deploy/.env`, dựng lại gateway, backend, job nạp tri thức và Superset, khởi động các dịch vụ còn lại rồi đợi `GET /api/v1/system/status` báo đúng app; `--seed` nạp dữ liệu demo, `--reset` gọi `reset.sh`.
+  Chạy được cả khi stack đang tắt.
+- `deploy/start.sh [app]` là lệnh một bước: chạy `switch-app.sh` với `--seed`, app lấy từ đối số hoặc từ `DXOS_APP` trong `.env`.
+- Gateway: `deploy/apisix/common.yaml` (upstream, kiểm JWT, route chung, giới hạn hỏi đáp và trạng thái hệ thống) cộng `deploy/apisix/apps/<app>.yaml`.
+  Service `apisix-config` ghép hai file thành `deploy/data/apisix/apisix.yaml` theo `DXOS_APP` trước khi gateway khởi động; app không có file thì Compose dừng với thông báo rõ.
+  Farm giới hạn upload ảnh báo cáo và chẩn đoán AI; Lab giới hạn tạo yêu cầu hỗ trợ, tải tệp đính kèm, gợi ý phân loại và đặt phòng.
+- `seed_demo.py` và `e2e.py` nhận `--app farm|lab`, mặc định đọc app đang chạy từ trạng thái hệ thống:
+  - `seed_farm.py` và `e2e_farm.py` giữ dữ liệu và 10 bước của Farm.
+  - `seed_lab.py` tạo sáu tài khoản (`student1`, `student2`, `lecturer1`, `tech1`, `tech2`, `admin1`), lớp và bộ môn, phòng và thiết bị, 12 yêu cầu hỗ trợ ở các trạng thái, 5 phiếu mượn, 5 lịch đặt phòng; yêu cầu, phiếu và lịch mang `Idempotency-Key` cố định nên chạy lại không tạo trùng.
+  - `e2e_lab.py` chạy 16 bước: gợi ý loại, báo sự cố kèm ảnh, hai kỹ thuật viên nhận cùng lúc (409), ghi chú nội bộ ẩn với sinh viên, thiếu nguyên nhân gốc (422), xác nhận kèm đánh giá, mượn và trả hỏng, đặt phòng và chồng giờ, quá giờ, vượt sức chứa, sinh viên đặt phòng (403), hỏi đáp, thống kê.
+- `make_ci_env.py --app` ghi `DXOS_APP` vào env của CI; `DXOS_APP` được truyền cho Superset.
+- Workflow `E2E` chạy ma trận `farm` và `lab`, mỗi app một stack riêng: kiểm gateway chỉ có route của app, seed hai lần, rồi `e2e.py`.
+  Workflow `CI Infra` kiểm Compose với cả hai giá trị `DXOS_APP` và kiểm hai file gateway ghép được.
+- `docker-compose.yml` chia nhóm dịch vụ (dữ liệu, backend và web, định danh, gateway, AI, BI, chat) và nhóm biến của backend (chung, riêng Farm, riêng Lab); comment bằng tiếng Anh.
+- `.env.example` chia bảy mục: ứng dụng, địa chỉ và cổng, tài khoản, secret nội bộ, cấu hình chung, riêng Farm, riêng Lab.
+  Biến để trống là biến bắt buộc điền; biến tùy chọn (webhook Mattermost, `LAB_*`) nằm ở dạng `# TÊN=`.
+
 ### 2026-10-12
 
 - `MATTERMOST_WEBHOOK_URL_TECHNICIAN` là webhook của kênh kỹ thuật viên khi chạy `DXOS_APP=lab`.
@@ -751,6 +778,13 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## BI Dashboard (`bi`, Apache Superset)
 
+### 2026-10-13
+
+**Đã xong — Dataset theo app:**
+
+- `bootstrap_datasources.py` đọc `DXOS_APP`: Farm import bundle dashboard; Lab đăng ký kết nối `DX-Lab` và năm dataset `vw_lab_*` (dashboard Lab nằm ở backlog, trang thống kê trong web thay thế).
+- Giá trị `DXOS_APP` không hợp lệ làm bước khởi tạo dừng với thông báo nêu các giá trị hợp lệ.
+
 ### 2026-10-12
 
 **Đã xong — Bundle dashboard của Farm:**
@@ -839,6 +873,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Tài khoản Mattermost tách biệt hoàn toàn khỏi tài khoản backend (FARMER/ENGINEER/ADMIN) có chủ đích — nền tảng riêng, không dùng SSO chung.
 
 ## Portal (`portal`)
+
+### 2026-10-13
+
+- Tên ứng dụng đang chạy lấy từ `app.name` của `GET /api/v1/system/status` và hiện ở tiêu đề trang; mô tả các card dùng nội dung chung cho mọi app.
 
 ### 2026-10-07
 

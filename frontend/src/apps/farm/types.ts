@@ -1,10 +1,16 @@
-export interface ApiResponse<T> {
-  success: boolean;
-  message: string;
-  data: T;
-  timestamp: string;
-  errorCode?: string;
-}
+import type { ApprovalRequest as BaseApprovalRequest } from "../../shell";
+
+export type {
+  ApiResponse,
+  ApprovalRequestDetail,
+  ApprovalRequestFilter,
+  CaseStatus,
+  KnowledgeAnswer,
+  KnowledgePassage,
+  KnowledgeSource,
+  Page,
+  WorkflowEvent,
+} from "../../shell";
 
 export type Role = "FARMER" | "ENGINEER" | "ADMIN";
 
@@ -256,80 +262,11 @@ export type CaseType =
   | "DIAGNOSIS_APPROVAL"
   | "TREATMENT_CONFIRMATION";
 
-// Statuses of the standard approval flow; a case type may declare others, so a status is a string.
+// Statuses of the standard approval flow.
 export type KnownCaseStatus = ApprovalStatus | "CANCELLED";
 
-export type CaseStatus = string;
-
-export interface ApprovalRequest {
-  caseId: number;
+export interface ApprovalRequest extends BaseApprovalRequest {
   caseType: CaseType;
-  status: CaseStatus;
-  title: string;
   householdCode: string | null;
   farmerName: string | null;
-  details: Record<string, string | number | boolean | null>;
-  createdAt: string;
-  assignedTo: string | null;
-  assignedToName: string | null;
-  updatedAt: string;
-}
-
-export interface WorkflowEvent {
-  id: number;
-  action: string;
-  fromStatus: string | null;
-  toStatus: string;
-  actorUserId: string | null;
-  actorDisplayName: string | null;
-  reason: string | null;
-  occurredAt: string;
-  metadata: Record<string, unknown> | null;
-}
-
-export interface ApprovalRequestDetail {
-  request: ApprovalRequest;
-  events: WorkflowEvent[];
-}
-
-export interface Page<T> {
-  items: T[];
-  page: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-}
-
-export interface ApprovalRequestFilter {
-  caseType?: CaseType;
-  status?: CaseStatus;
-  householdCode?: string;
-  assignedTo?: string;
-  unassigned?: boolean;
-  from?: string;
-  to?: string;
-  page?: number;
-  size?: number;
-}
-
-export interface KnowledgeSource {
-  sourceId: string;
-  title: string;
-  organization: string | null;
-  url: string | null;
-  license: string | null;
-  reviewStatus: string | null;
-}
-
-export interface KnowledgePassage {
-  content: string;
-  documentTitle: string;
-  diseaseCode: string | null;
-  score: number;
-  sources: KnowledgeSource[];
-}
-
-export interface KnowledgeAnswer {
-  question: string;
-  passages: KnowledgePassage[];
 }

@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { createParcel, deleteParcel } from "../api";
 import type { Household, Parcel } from "../types";
-import Badge from "./Badge";
-import DeleteButton from "./DeleteButton";
-import Section from "./Section";
+import { Badge, DeleteButton, Section } from "../../../shell";
 
 interface ParcelPanelProps {
   parcels: Parcel[];

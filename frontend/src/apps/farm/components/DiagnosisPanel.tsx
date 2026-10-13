@@ -18,8 +18,7 @@ import type {
   TreatmentRule,
   SymptomSuggestion,
 } from "../types";
-import Badge from "./Badge";
-import Section from "./Section";
+import { Badge, Section } from "../../../shell";
 
 interface DiagnosisPanelProps {
   onReportUpdated: (report: DiseaseReport) => void;

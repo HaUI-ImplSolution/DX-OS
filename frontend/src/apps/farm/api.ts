@@ -1,9 +1,13 @@
-import { clearSession, getToken } from "./auth";
-import { errorMessageFor } from "./errorMessages";
+import {
+  assignCase,
+  approveCase,
+  json,
+  listApprovalRequests as listCases,
+  rejectCase,
+  request,
+} from "../../shell";
 import type {
-  ApiResponse,
   ApprovalRequest,
-  ApprovalRequestDetail,
   ApprovalRequestFilter,
   CropSeason,
   CropSeasonCreateRequest,
@@ -21,8 +25,6 @@ import type {
   HouseholdCreateRequest,
   HouseholdCreateResult,
   IsolationStatus,
-  KnowledgeAnswer,
-  Page,
   Parcel,
   ParcelCreateRequest,
   Pesticide,
@@ -31,49 +33,8 @@ import type {
   TreatmentRule,
 } from "./types";
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? "http://localhost:9080").replace(/\/$/, "");
-const API_V1 = `${API_BASE}/api/v1`;
-
-export class ApiError extends Error {
-  status: number;
-  data: unknown;
-
-  constructor(message: string, status: number, data: unknown) {
-    super(message);
-    this.name = "ApiError";
-    this.status = status;
-    this.data = data;
-  }
-}
-
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const token = await getToken();
-  const headers = new Headers(init?.headers);
-  if (token) headers.set("Authorization", `Bearer ${token}`);
-
-  const response = await fetch(`${API_V1}${path}`, { ...init, headers });
-  const contentType = response.headers.get("content-type") ?? "";
-  const body: ApiResponse<T> | null = contentType.includes("application/json")
-    ? await response.json()
-    : null;
-
-  if (response.status === 401) {
-    clearSession();
-  }
-  if (!response.ok || !body?.success) {
-    const message = errorMessageFor(body?.errorCode, body?.message ?? `Lỗi HTTP ${response.status}`);
-    throw new ApiError(message, response.status, body?.data);
-  }
-  return body.data;
-}
-
-function json(method: string, payload: unknown): RequestInit {
-  return {
-    method,
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  };
-}
+export { ApiError } from "../../shell";
+export { assignCase, approveCase, rejectCase };
 
 // Parcel
 export const listHouseholds = () => request<Household[]>("/households");
@@ -111,21 +72,8 @@ export const suggestCropSeason = (riceVarietyCode: string, startDate: string) =>
   );
 
 // Requests waiting for a decision (ENGINEER, ADMIN)
-export const listApprovalRequests = (filter: ApprovalRequestFilter) => {
-  const params = new URLSearchParams();
-  Object.entries(filter).forEach(([key, value]) => {
-    if (value !== undefined && value !== "") params.set(key, String(value));
-  });
-  return request<Page<ApprovalRequest>>(`/approval-requests?${params}`);
-};
-export const getApprovalRequest = (caseId: number) =>
-  request<ApprovalRequestDetail>(`/approval-requests/${caseId}`);
-export const assignCase = (caseId: number) =>
-  request<unknown>(`/workflow-cases/${caseId}/assign`, { method: "PATCH" });
-export const approveCase = (caseId: number) =>
-  request<unknown>(`/workflow-cases/${caseId}/approve`, { method: "PATCH" });
-export const rejectCase = (caseId: number, reason: string) =>
-  request<unknown>(`/workflow-cases/${caseId}/reject`, json("PATCH", { reason }));
+export const listApprovalRequests = (filter: ApprovalRequestFilter) =>
+  listCases<ApprovalRequest>(filter);
 
 // Disease report (reportedBy lấy từ user đang đăng nhập, không gửi từ client)
 export const listDiseaseReports = (cropSeasonId: number) =>
@@ -165,9 +113,6 @@ export const applyDiagnosis = (reportId: number, payload: DiagnosisApplyRequest)
 export const listDiseases = () => request<Disease[]>("/diseases");
 export const listPesticides = () => request<Pesticide[]>("/pesticides");
 export const listTreatmentRules = () => request<TreatmentRule[]>("/treatment-rules");
-
-export const askKnowledge = (question: string, diseaseCode?: string) =>
-  request<KnowledgeAnswer>("/knowledge/ask", json("POST", { question, diseaseCode: diseaseCode || null }));
 
 export const suggestDiagnosis = (reportId: number, symptomText: string) =>
   request<SymptomSuggestion[]>(`/disease-reports/${reportId}/diagnosis/suggest`, json("POST", { symptomText }));

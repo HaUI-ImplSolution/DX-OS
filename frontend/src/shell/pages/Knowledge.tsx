@@ -1,44 +1,53 @@
-import { useEffect, useState, type FormEvent } from "react";
-import { askKnowledge, listDiseases } from "../api";
+import { useState, type FormEvent } from "react";
+import { askKnowledge } from "../api";
 import Badge from "../components/Badge";
 import Section from "../components/Section";
-import type { Disease, KnowledgeAnswer } from "../types";
+import type { KnowledgeAnswer } from "../types";
+
+export interface KnowledgeScope {
+  label: string;
+  allLabel: string;
+  // Body field the selected value is sent in.
+  param: string;
+  options: { value: string; label: string }[];
+}
 
 interface KnowledgeProps {
   onError: (message: string) => void;
+  title: string;
+  subtitle: string;
+  placeholder: string;
+  emptyHint: string;
+  scope?: KnowledgeScope;
 }
 
-// Questions about rice diseases answered from the knowledge base: passages are quoted from the
+// Questions answered from the knowledge base of the running app: passages are quoted from the
 // documents, each with the sources it is based on.
-export default function Knowledge({ onError }: KnowledgeProps) {
+export default function Knowledge({
+  onError,
+  title,
+  subtitle,
+  placeholder,
+  emptyHint,
+  scope,
+}: KnowledgeProps) {
   const [question, setQuestion] = useState("");
-  const [diseaseCode, setDiseaseCode] = useState("");
-  const [diseases, setDiseases] = useState<Disease[]>([]);
+  const [scopeValue, setScopeValue] = useState("");
   const [answer, setAnswer] = useState<KnowledgeAnswer | null>(null);
   const [asking, setAsking] = useState(false);
-
-  useEffect(() => {
-    listDiseases()
-      .then(setDiseases)
-      .catch((err) => onError(err.message));
-  }, [onError]);
 
   const ask = (event: FormEvent) => {
     event.preventDefault();
     if (!question.trim()) return;
     setAsking(true);
-    askKnowledge(question.trim(), diseaseCode)
+    askKnowledge(question.trim(), scope ? { [scope.param]: scopeValue || null } : {})
       .then(setAnswer)
       .catch((err) => onError(err.message))
       .finally(() => setAsking(false));
   };
 
   return (
-    <Section
-      step="📚"
-      title="Tài liệu và hỏi đáp"
-      subtitle="Hỏi về triệu chứng, điều kiện phát sinh và phòng ngừa bệnh lúa; mỗi đoạn trả lời kèm nguồn trích dẫn"
-    >
+    <Section step="📚" title={title} subtitle={subtitle}>
       <form onSubmit={ask} className="harvest-box">
         <label className="field-label">
           Câu hỏi
@@ -46,21 +55,23 @@ export default function Knowledge({ onError }: KnowledgeProps) {
             value={question}
             maxLength={1000}
             onChange={(e) => setQuestion(e.target.value)}
-            placeholder="Ví dụ: Làm sao nhận biết lúa bị khô vằn?"
+            placeholder={placeholder}
             required
           />
         </label>
-        <label className="field-label">
-          Giới hạn theo bệnh (không bắt buộc)
-          <select value={diseaseCode} onChange={(e) => setDiseaseCode(e.target.value)}>
-            <option value="">Tất cả bệnh</option>
-            {diseases.map((disease) => (
-              <option key={disease.code} value={disease.code}>
-                {disease.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        {scope && (
+          <label className="field-label">
+            {scope.label}
+            <select value={scopeValue} onChange={(e) => setScopeValue(e.target.value)}>
+              <option value="">{scope.allLabel}</option>
+              {scope.options.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <div className="form-actions">
           <button className="btn btn-primary" type="submit" disabled={asking || !question.trim()}>
             {asking ? "Đang tìm…" : "Hỏi"}
@@ -68,11 +79,7 @@ export default function Knowledge({ onError }: KnowledgeProps) {
         </div>
       </form>
 
-      {answer && answer.passages.length === 0 && (
-        <p className="empty-hint">
-          Chưa tìm thấy nội dung đủ liên quan trong tài liệu. Hãy hỏi cụ thể hơn về một bệnh lúa.
-        </p>
-      )}
+      {answer && answer.passages.length === 0 && <p className="empty-hint">{emptyHint}</p>}
 
       {answer?.passages.map((passage, index) => (
         <article key={index} className="harvest-box">

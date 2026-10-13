@@ -1,4 +1,6 @@
-import type { CaseStatus, CaseType, KnownCaseStatus } from "./types";
+import type { CaseType } from "./types";
+
+export { formatDateTime, statusLabel, statusTone } from "../../shell";
 
 export const CASE_TYPE_LABEL: Record<CaseType, string> = {
   PARCEL_APPROVAL: "Thửa ruộng mới",
@@ -6,38 +8,6 @@ export const CASE_TYPE_LABEL: Record<CaseType, string> = {
   CROP_SEASON_APPROVAL: "Vụ mùa mới",
   DIAGNOSIS_APPROVAL: "Chẩn đoán",
   TREATMENT_CONFIRMATION: "Khai phun thuốc",
-};
-
-export const STATUS_LABEL: Record<KnownCaseStatus, string> = {
-  PENDING: "Chờ duyệt",
-  APPROVED: "Đã duyệt",
-  REJECTED: "Bị từ chối",
-  CANCELLED: "Đã huỷ",
-};
-
-export const STATUS_TONE: Record<KnownCaseStatus, "neutral" | "success" | "warning" | "danger"> = {
-  PENDING: "warning",
-  APPROVED: "success",
-  REJECTED: "danger",
-  CANCELLED: "neutral",
-};
-
-// A status the app does not know is shown as it is, in a neutral tone.
-export function statusLabel(status: CaseStatus): string {
-  return (STATUS_LABEL as Record<string, string>)[status] ?? status;
-}
-
-export function statusTone(status: CaseStatus): "neutral" | "success" | "warning" | "danger" {
-  return (STATUS_TONE as Record<string, "neutral" | "success" | "warning" | "danger">)[status] ?? "neutral";
-}
-
-export const ACTION_LABEL: Record<string, string> = {
-  SUBMITTED: "Gửi yêu cầu",
-  APPROVED: "Duyệt",
-  REJECTED: "Từ chối",
-  CANCELLED: "Huỷ",
-  RESUBMITTED: "Gửi lại",
-  ASSIGNED: "Nhận việc",
 };
 
 export const DETAIL_LABEL: Record<string, string> = {
@@ -73,10 +43,6 @@ export const SEASON_TYPE_LABEL: Record<string, string> = {
   HE_THU: "Hè Thu",
   THU_DONG: "Thu Đông",
 };
-
-export function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("vi-VN");
-}
 
 export function formatValue(key: string, value: string | number | boolean | null): string {
   if (value === null || value === "") return "—";

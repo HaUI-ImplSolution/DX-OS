@@ -1,34 +1,32 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { listApprovalRequests } from "../api";
+import type { CaseUi } from "../appModule";
 import Badge from "../components/Badge";
-import DecisionActions from "../components/DecisionActions";
 import Pagination from "../components/Pagination";
-import RequestDetails from "../components/RequestDetails";
 import Section from "../components/Section";
-import { CASE_TYPE_LABEL, STATUS_LABEL, formatDateTime, statusLabel, statusTone } from "../labels";
-import type { ApprovalRequest, CaseStatus, CaseType, Page, Role } from "../types";
+import { formatDateTime, statusLabel, statusTone } from "../labels";
+import type { ApprovalRequest, Page } from "../types";
 
 interface RequestsProps {
-  role: Role;
+  role: string;
   onError: (message: string) => void;
+  ui: CaseUi;
 }
 
 const PAGE_SIZE = 10;
 
 // Filters live in the URL so a filtered list can be bookmarked and survives a reload.
-export default function Requests({ role, onError }: RequestsProps) {
+export default function Requests({ role, onError, ui }: RequestsProps) {
   const [params, setParams] = useSearchParams();
   const [result, setResult] = useState<Page<ApprovalRequest> | null>(null);
   const [expanded, setExpanded] = useState<number | null>(null);
 
-  const caseType = (params.get("type") ?? "") as CaseType | "";
+  const caseType = params.get("type") ?? "";
   // No status in the URL means the default view: only what still waits. "ALL" lifts the filter.
   const rawStatus = params.get("status");
-  const status = (rawStatus === null ? "PENDING" : rawStatus === "ALL" ? "" : rawStatus) as
-    | CaseStatus
-    | "";
-  const household = params.get("household") ?? "";
+  const status = rawStatus === null ? "PENDING" : rawStatus === "ALL" ? "" : rawStatus;
+  const unit = params.get(ui.unit.urlKey) ?? "";
   const from = params.get("from") ?? "";
   const to = params.get("to") ?? "";
   const page = Number(params.get("page") ?? 0);
@@ -45,7 +43,7 @@ export default function Requests({ role, onError }: RequestsProps) {
     listApprovalRequests({
       caseType: caseType || undefined,
       status: status || undefined,
-      householdCode: household || undefined,
+      [ui.unit.filterParam]: unit || undefined,
       from: from || undefined,
       to: to || undefined,
       page,
@@ -53,37 +51,33 @@ export default function Requests({ role, onError }: RequestsProps) {
     })
       .then(setResult)
       .catch((err) => onError(err.message));
-  }, [caseType, status, household, from, to, page, onError]);
+  }, [caseType, status, unit, from, to, page, onError, ui.unit.filterParam]);
 
   useEffect(load, [load]);
 
   return (
-    <Section
-      step="📋"
-      title="Yêu cầu"
-      subtitle="Thửa, vụ mùa và chẩn đoán đang chờ xử lý, cũ nhất ở trên"
-    >
+    <Section step="📋" title={ui.title} subtitle={ui.subtitle}>
       <div className="filter-bar">
         <select value={caseType} onChange={(e) => setFilter("type", e.target.value)}>
           <option value="">Mọi loại</option>
-          {(Object.keys(CASE_TYPE_LABEL) as CaseType[]).map((type) => (
+          {Object.keys(ui.caseTypeLabels).map((type) => (
             <option key={type} value={type}>
-              {CASE_TYPE_LABEL[type]}
+              {ui.caseTypeLabels[type]}
             </option>
           ))}
         </select>
         <select value={status} onChange={(e) => setFilter("status", e.target.value || "ALL")}>
           <option value="">Mọi trạng thái</option>
-          {(Object.keys(STATUS_LABEL) as CaseStatus[]).map((s) => (
+          {ui.statusOptions.map((s) => (
             <option key={s} value={s}>
               {statusLabel(s)}
             </option>
           ))}
         </select>
         <input
-          placeholder="Mã hộ (vd. H0042)"
-          value={household}
-          onChange={(e) => setFilter("household", e.target.value.trim().toUpperCase())}
+          placeholder={ui.unit.filterPlaceholder}
+          value={unit}
+          onChange={(e) => setFilter(ui.unit.urlKey, e.target.value.trim().toUpperCase())}
         />
         <label className="field-label">
           Từ ngày
@@ -103,7 +97,7 @@ export default function Requests({ role, onError }: RequestsProps) {
             <tr>
               <th>Yêu cầu</th>
               <th>Loại</th>
-              <th>Hộ</th>
+              <th>{ui.unit.columnLabel}</th>
               <th>Gửi lúc</th>
               <th>Trạng thái</th>
               <th>Người xử lý</th>
@@ -115,6 +109,7 @@ export default function Requests({ role, onError }: RequestsProps) {
               <RequestRow
                 key={request.caseId}
                 request={request}
+                ui={ui}
                 role={role}
                 open={expanded === request.caseId}
                 onToggle={() => setExpanded(expanded === request.caseId ? null : request.caseId)}
@@ -133,6 +128,7 @@ export default function Requests({ role, onError }: RequestsProps) {
 
 function RequestRow({
   request,
+  ui,
   role,
   open,
   onToggle,
@@ -140,20 +136,22 @@ function RequestRow({
   onError,
 }: {
   request: ApprovalRequest;
-  role: Role;
+  ui: CaseUi;
+  role: string;
   open: boolean;
   onToggle: () => void;
   onDone: () => void;
   onError: (message: string) => void;
 }) {
+  const unit = ui.unit.display(request);
   return (
     <>
       <tr>
         <td>{request.title}</td>
-        <td>{CASE_TYPE_LABEL[request.caseType] ?? request.caseType}</td>
+        <td>{ui.caseTypeLabels[request.caseType] ?? request.caseType}</td>
         <td>
-          {request.householdCode ?? "—"}
-          {request.farmerName && <div className="cell-sub">{request.farmerName}</div>}
+          {unit.code ?? "—"}
+          {unit.person && <div className="cell-sub">{unit.person}</div>}
         </td>
         <td>{formatDateTime(request.createdAt)}</td>
         <td>
@@ -169,8 +167,8 @@ function RequestRow({
       {open && (
         <tr className="expanded-row">
           <td colSpan={7}>
-            <RequestDetails request={request} />
-            <DecisionActions request={request} role={role} onDone={onDone} onError={onError} />
+            {ui.renderDetails(request)}
+            {ui.renderActions(request, { role, onDone, onError })}
             <Link className="btn btn-link" to={`/requests/${request.caseId}`}>
               Mở trang chi tiết và lịch sử →
             </Link>

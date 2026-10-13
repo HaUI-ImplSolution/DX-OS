@@ -1,4 +1,4 @@
-import { ACTION_LABEL, formatDateTime } from "../labels";
+import { actionLabel, formatDateTime } from "../labels";
 import type { WorkflowEvent } from "../types";
 
 export default function Timeline({ events }: { events: WorkflowEvent[] }) {
@@ -7,7 +7,7 @@ export default function Timeline({ events }: { events: WorkflowEvent[] }) {
       {events.map((event) => (
         <li key={event.id}>
           <div>
-            <strong>{ACTION_LABEL[event.action] ?? event.action}</strong>
+            <strong>{actionLabel(event.action)}</strong>
             {event.actorDisplayName && <span> — {event.actorDisplayName}</span>}
           </div>
           <div className="timeline-time">{formatDateTime(event.occurredAt)}</div>

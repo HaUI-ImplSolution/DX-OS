@@ -135,6 +135,7 @@ def retrieve(payload: RetrieveRequest, db: Annotated[Session, Depends(get_db)]):
         top_k=payload.top_k,
         disease_code=payload.disease_code,
         namespace=payload.namespace,
+        document_type=payload.document_type,
     )
 
 

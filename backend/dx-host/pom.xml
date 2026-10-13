@@ -24,6 +24,10 @@
 			<artifactId>app-farm</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>HaUI.ImplSolution</groupId>
+			<artifactId>app-lab</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>

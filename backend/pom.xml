@@ -18,6 +18,7 @@
 		<module>dx-core-api</module>
 		<module>dx-core</module>
 		<module>app-farm</module>
+		<module>app-lab</module>
 		<module>dx-host</module>
 	</modules>
 	<properties>
@@ -38,6 +39,11 @@
 			<dependency>
 				<groupId>HaUI.ImplSolution</groupId>
 				<artifactId>app-farm</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>HaUI.ImplSolution</groupId>
+				<artifactId>app-lab</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 		</dependencies>

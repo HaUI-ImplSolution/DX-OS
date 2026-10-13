@@ -61,13 +61,16 @@ Chi tiết từng interface ở [`SPI_CATALOG.md`](./SPI_CATALOG.md).
 
 | Nhóm | Nội dung |
 |---|---|
-| Domain | Ticket (bình luận, tệp đính kèm, SLA, đánh giá), loại sự cố, chính sách SLA; phòng; thiết bị, nhật ký bảo trì, phiếu mượn trả; đặt phòng máy |
-| Workflow | `CaseTypeDefinition` cho `TICKET`, `DEVICE_LOAN`, `ROOM_BOOKING` |
-| Vai | STUDENT, LECTURER, TECHNICIAN, ADMIN (qua `RoleProvider`); workspace `CLASS`, `DEPARTMENT` |
-| Lịch chạy | Cảnh báo SLA, nhắc mượn trả |
-| Thông minh | Phân loại và ưu tiên bằng luật, gợi ý bài tri thức, hỏi đáp RAG namespace `lab` |
-| Dữ liệu | Migration riêng (extension `btree_gist`), `BiDatasetProvider` (`vw_lab_*`), dữ liệu mẫu giả lập, tri thức tự soạn CC BY 4.0 |
-| Giao diện | Web trong `frontend/`: ticket, thiết bị, đặt phòng, tổng quan và thống kê; mobile để sau |
+| Domain | `Ticket`, `TicketComment`, `TicketAttachment`, `TicketCategory`, `SlaPolicy`; `Room`, `Device`, `DeviceMaintenance`, `DeviceLoan`, `RoomBooking` |
+| Workflow | `CaseTypeDefinition` cho `TICKET`, `DEVICE_LOAN`, `ROOM_BOOKING` (`LabWorkflowConfig`); ba `*DecisionHandler`, ba `*SummaryProvider` |
+| Vai | STUDENT, LECTURER, TECHNICIAN, ADMIN (`LabSecurityPolicies`); workspace `CLASS`, `DEPARTMENT` (`LabAppModule`) |
+| Service | `TicketService`, `TicketSlaService`, `TicketClassifier`, `TicketSuggestionService`, `DeviceService`, `DeviceMaintenanceService`, `DeviceLoanService`, `RoomService`, `RoomBookingService`, `LoanReminderService`, `LabStatsService`, `KnowledgeService`, `LabNotifier`, `LabChatListener` |
+| Lịch chạy | `LabScheduler`: kiểm tra SLA, nhắc mượn trả |
+| Controller | `TicketController`, `DeviceController`, `RoomController`, `CatalogController`, `DeviceLoanController`, `RoomBookingController`, `LabStatsController`, `KnowledgeController`, `ApprovalRequestController` |
+| Cấu hình | `LabAutoConfiguration`, `LabNotificationConfig`, `LabPlatformConfig` (`BiDatasetProvider`, `HealthContributor`), `lab.*` |
+| Dữ liệu | Migration `db/migration/lab` (V1 schema và extension `btree_gist`, V2 view `vw_lab_*`, V3 loại sự cố và SLA mặc định), `lab/classifier-rules.json`, `lab/knowledge-sources.json` |
+| Tri thức | `data/rag/lab/` (10 bài tự soạn CC BY 4.0, registry nguồn), nạp bằng `ingest_diseases --corpus lab` |
+| Giao diện | Web trong `frontend/` (C5); mobile để sau |
 
 ## dx-host
 

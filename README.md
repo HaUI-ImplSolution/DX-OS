@@ -15,6 +15,7 @@ Sơ đồ đầy đủ và luồng request ở [`development/docs/submission/ARC
 | Tầng | Nội dung |
 |---|---|
 | Ứng dụng DX-Farm | Thửa, vụ mùa, báo cáo sâu bệnh, chẩn đoán, khai phun thuốc, thu hoạch; web (kỹ sư, admin) và mobile (nông dân) |
+| Ứng dụng DX-Lab | Yêu cầu hỗ trợ CNTT có SLA, thiết bị và mượn trả, đặt phòng máy chống trùng giờ, tri thức và hỏi đáp, thống kê ([`backend/app-lab/README.md`](./backend/app-lab/README.md)) |
 | H-P-D-I | [H] Keycloak, Mattermost, nông hộ; [P] workflow duyệt, vòng đời vụ mùa, thông báo; [D] PostgreSQL, MinIO, Superset, thời tiết; [I] CV, RAG, LangGraph |
 | Core dùng chung | `core.identity` (workspace, thành viên), `core.workflow` (loại case cấu hình được, hộp duyệt), `core.notification`, `core.storage`, `core.ai`, `core.knowledge`, `core.security` của Backend; cổng API APISIX |
 

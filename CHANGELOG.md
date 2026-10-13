@@ -7,6 +7,19 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ### 2026-10-12
 
+**Đã xong — App Lab (`app-lab`):**
+
+- Module `app-lab` chỉ phụ thuộc `dx-core-api`; `DXOS_APP=lab` nạp module, migration `db/migration/lab` (bảng lịch sử `flyway_schema_history_lab`) và `application-lab.yaml`.
+- Yêu cầu hỗ trợ: tạo kèm tệp (JPEG, PNG, PDF), trao đổi công khai và nội bộ, tự nhận hoặc được gán, `resolve` bắt buộc ghi chú và nguyên nhân gốc, xác nhận kèm đánh giá 1-5, mở lại tối đa 3 lần.
+  Hạn phản hồi và xử lý tính từ chính sách SLA theo ưu tiên; mã ticket `TK-<năm>-<số>`.
+- Thiết bị: nhật ký bảo trì, phiếu mượn có hạn 7 ngày (sinh viên do giảng viên duyệt, giảng viên do kỹ thuật viên duyệt), tối đa 2 phiếu mở mỗi người, trả hỏng mở nhật ký sửa chữa.
+- Đặt phòng: bước 30 phút, tối đa 4 giờ, trước tối đa 30 ngày, kiểm sức chứa; ràng buộc `EXCLUDE USING gist` ở PostgreSQL chặn hai lịch hiệu lực chồng giờ cùng phòng.
+- Ba loại case `TICKET`, `DEVICE_LOAN`, `ROOM_BOOKING` trên workflow dùng chung; lịch sử ở `workflow_event`, hai người xử lý cùng ticket thì một bên nhận 409.
+- Lịch cảnh báo SLA (80% thời hạn xử lý, quá hạn) và nhắc mượn trả hằng ngày; mỗi thông báo gửi một lần nhờ khóa chống trùng.
+- `POST /api/v1/tickets/suggest` gợi ý loại và ưu tiên bằng luật kèm lý do và tối đa 3 đoạn tri thức; `POST /api/v1/knowledge/ask` hỏi đáp namespace `lab`.
+- `GET /api/v1/lab-stats/summary` và 5 view `vw_lab_*` cho Superset; `GET /api/v1/approval-requests` liệt kê ticket, phiếu mượn và đặt phòng cho kỹ thuật viên.
+- Chi tiết ở [`backend/app-lab/README.md`](./backend/app-lab/README.md).
+
 **Đã xong — Tên trung tính cho realm và client:**
 
 - Realm `dxos`, audience `dxos-api`; client Farm mobile cho FARMER là `farm-mobile` (`security.farmer-client-ids`).
@@ -304,6 +317,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Dữ liệu (`data`)
 
+### 2026-10-12
+
+- `rag/lab/` có corpus của DX-Lab: 10 tài liệu tự soạn (CC BY 4.0) ở `processed/lab_knowledge.json` và registry nguồn `source_registry.json`.
+
 ### 2026-10-09
 
 - `pesticides_candidates_master.json` có 2 sản phẩm (`NEWTEC_300SC` được seed, `HELP_400SC` chờ duyệt); `treatment_rules_candidates_master.json` có 3 rule (2 `EXPERT_APPROVED` được seed, rule đốm nâu bị chặn).
@@ -418,6 +435,11 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 ## AI Service (Python)
 
 ### 2026-10-12
+
+**Đã xong — Corpus theo namespace:**
+
+- Job ingest nhận `--corpus farm|lab` và thay thế tài liệu của đúng namespace đó.
+- `POST /api/v1/disease/knowledge/retrieve` nhận `document_type` tùy chọn; không có thì tìm trong toàn namespace.
 
 **Đã xong — Thuộc tính thiết bị của mô hình:**
 
@@ -623,6 +645,8 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 ## Deploy (`deploy`)
 
 ### 2026-10-12
+
+- `MATTERMOST_WEBHOOK_URL_TECHNICIAN` là webhook của kênh kỹ thuật viên khi chạy `DXOS_APP=lab`.
 
 **Đã xong — Tên nền tảng `dxos` ở hạ tầng:**
 

@@ -75,12 +75,18 @@ Khi bật lại cần rà license tương ứng: POI Apache-2.0 OK, các cái c�
 | [`paraphrase-multilingual-MiniLM-L12-v2`](https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2) | Apache-2.0 | ✅ | Model embedding mặc định |
 | `YOLOv8n-RiceLeafBD` / `ai/weights/best.pt` | AGPL-3.0 | ✅ | Phiên bản `3.1.0`, fine-tune từ pretrained `yolov8n.pt` |
 | RiceLeafDiseaseBD | CC BY 4.0 | N/A | License dữ liệu, không phải software license do OSI phê duyệt |
+| Tài liệu tri thức DX-Lab (`data/rag/lab/`) | CC BY 4.0 | N/A | 10 bài do nhóm tự soạn (quy chế, quy trình, hướng dẫn); không sao chép từ văn bản của đơn vị khác. License dữ liệu, không phải software license |
 
 **Checkpoint gốc:** `YOLOv8n-RiceLeafBD` phiên bản `3.0.0`, do
 [`@nddKhanh`](https://github.com/nddKhanh) fine-tune trong
 [notebook Kaggle](https://www.kaggle.com/code/baodark/dx-farm-8169e1/notebook), được nhóm
 đồng ý công khai theo AGPL-3.0. Bản thay thế `3.1.0` do người dùng cung cấp trong nhánh này; giữ license model hiện có. Checkpoint nằm tại `ai/weights/best.pt`; toàn văn license
 nằm tại [`ai/MODEL_LICENSE`](./ai/MODEL_LICENSE).
+
+**Tri thức DX-Lab:** 10 tài liệu ở `data/rag/lab/processed/lab_knowledge.json` do nhóm phát triển tự soạn theo mẫu
+quy chế phòng máy, cấp phép [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+Registry nguồn ở `data/rag/lab/source_registry.json`; trạng thái duyệt là `IN_REVIEW` cho tới khi khoa xác nhận.
+Dữ liệu mẫu của Lab (phòng, thiết bị, yêu cầu) là dữ liệu giả lập, không chứa người thật.
 
 **Dataset:** [RiceLeafDiseaseBD Version 3](https://doi.org/10.17632/86s4jzj2m4.3), theo
 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), của Mohammad Mehedi Hasan Munna,

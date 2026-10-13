@@ -10,7 +10,7 @@ import org.springframework.core.Ordered;
 public class AppSelectionCheck
     implements ApplicationListener<ApplicationEnvironmentPreparedEvent>, Ordered {
 
-  static final Set<String> KNOWN_APPS = Set.of("farm");
+  static final Set<String> KNOWN_APPS = Set.of("farm", "lab");
 
   @Override
   public void onApplicationEvent(ApplicationEnvironmentPreparedEvent event) {

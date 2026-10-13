@@ -15,14 +15,14 @@ App khai báo mỗi interface bằng một Spring bean; core gom các bean đó 
 | `CaseTypeDefinition` | Loại case: trạng thái (`CaseStatus`), bước chuyển (`CaseTransition`) và vai được thực hiện; bean, không phải interface | 5 loại duyệt, dùng `CaseTypeDefinition.approval(...)` | `TICKET` (nhiều trạng thái), `DEVICE_LOAN`, `ROOM_BOOKING` |
 | `WorkflowDecisionHandler` | Áp dụng quyết định lên entity của app | 3 handler | handler ticket và mượn thiết bị |
 | `CaseSummaryProvider` | Mô tả entity của một `entityType` cho hộp duyệt, theo lô; liệt kê id entity của một workspace | thửa, vụ, sửa thửa, chẩn đoán, phun | ticket, phiếu mượn, đặt phòng |
-| `NotificationTypeDefinition` | Loại thông báo (mã, nhãn, biểu tượng); bean | 13 loại | loại của Lab |
-| `NotificationChannel` | Kênh chat app đăng bài (khóa, nhãn); URL webhook đọc từ `mattermost.webhook.url-<khóa>` | `admin`, `engineer` | kênh kỹ thuật viên, quản trị |
+| `NotificationTypeDefinition` | Loại thông báo (mã, nhãn, biểu tượng); bean | 13 loại | 12 loại: ticket, phiếu mượn, đặt phòng |
+| `NotificationChannel` | Kênh chat app đăng bài (khóa, nhãn); URL webhook đọc từ `mattermost.webhook.url-<khóa>` | `admin`, `engineer` | `technician`, `admin` |
 | `BiDatasetProvider` | View và bảng vai chỉ đọc của Superset được `SELECT` | `vw_*` nông nghiệp và danh mục | `vw_lab_*` |
-| `FileProcessor` | Kiểm tra và làm sạch tệp theo mục đích trước khi lưu | ảnh lá: chỉ JPEG/PNG, xóa EXIF | giới hạn loại và dung lượng tệp đính kèm |
+| `FileProcessor` | Kiểm tra và làm sạch tệp theo mục đích trước khi lưu | ảnh lá: chỉ JPEG/PNG, xóa EXIF | tệp đính kèm ticket: JPEG, PNG, PDF tối đa 5 MiB, loại theo nội dung |
 | `KnowledgeNamespace` | Tên corpus RAG và danh mục nguồn của corpus | `farm` | `lab` |
 | `EndpointPolicyContributor` | Đường dẫn GET công khai | `diseases`, `pesticides`, `treatment-rules` | không có |
 | `ClientRestrictionPolicy` | Vai chỉ được dùng một số client | FARMER chỉ dùng mobile | không có |
-| `HealthContributor` | Thêm dịch vụ vào `GET /api/v1/system/status` | AI | không có |
+| `HealthContributor` | Thêm dịch vụ vào `GET /api/v1/system/status` | AI | AI |
 
 ## Facade app gọi (core cài)
 

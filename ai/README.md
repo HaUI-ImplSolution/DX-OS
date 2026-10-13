@@ -111,7 +111,13 @@ Sau khi có/cập nhật corpus, chạy:
 export RAG_INGEST_DATABASE_URL=postgresql+psycopg://<ingest-user>:<password>@<host>:5432/dx_farm_ai_vector_db
 python -m scripts.ingest_diseases --dry-run
 python -m scripts.ingest_diseases
+# Corpus của DX-Lab (namespace lab): data/rag/lab/processed/lab_knowledge.json
+python -m scripts.ingest_diseases --corpus lab --dry-run
+python -m scripts.ingest_diseases --corpus lab
 ```
+
+Mỗi corpus thay thế tài liệu của chính namespace của nó; namespace khác không bị đụng tới.
+`POST /api/v1/disease/knowledge/retrieve` nhận `namespace` (mặc định `farm`) và `document_type` tùy chọn để thu hẹp theo loại tài liệu.
 
 Job chỉ ghi `documents` và `document_chunks`. Model embedding khi ingest phải giống model của runtime; đổi model hoặc số chiều vector yêu cầu ingest lại toàn bộ corpus.
 

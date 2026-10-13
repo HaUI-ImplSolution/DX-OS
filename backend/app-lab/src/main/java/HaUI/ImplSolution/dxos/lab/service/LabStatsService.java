@@ -99,8 +99,10 @@ public class LabStatsService {
     double openHours = days * roomOpenHoursPerDay;
     List<RoomUsage> rooms = jdbc.query("""
         SELECT r.id, r.code,
-               coalesce(sum(extract(epoch FROM (least(b.ends_at, ?) - greatest(b.starts_at, ?)))
-                            / 3600), 0) AS booked_hours
+               coalesce(sum(CASE WHEN b.id IS NULL THEN 0
+                                 ELSE extract(epoch FROM (least(b.ends_at, ?)
+                                                          - greatest(b.starts_at, ?))) / 3600
+                            END), 0) AS booked_hours
         FROM rooms r
         LEFT JOIN room_bookings b ON b.room_id = r.id AND b.status = 'APPROVED'
              AND b.starts_at < ? AND b.ends_at > ?

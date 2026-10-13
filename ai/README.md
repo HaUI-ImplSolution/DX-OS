@@ -1,173 +1,114 @@
-# AI Service (Python — FastAPI & LangGraph)
+# AI Service (Python, FastAPI, LangGraph)
 
-`ai/` là dịch vụ suy luận của DX-Farm. Dịch vụ nhận ảnh và ngữ cảnh báo cáo từ Backend, nhận diện bệnh bằng Computer Vision, lấy sự thật nghiệp vụ qua Backend REST API, truy xuất kiến thức giải thích trong AI Vector DB và trả recommendation về Backend.
+Dịch vụ suy luận của DX-OS: nhận diện bệnh lá lúa bằng CV cho Farm, hỏi đáp RAG theo namespace (`farm`, `lab`) cho cả hai ứng dụng.
+AI là **stateless và advisory**: không sở hữu dữ liệu nghiệp vụ, không quản lý phê duyệt, không tự xác nhận áp dụng thuốc.
+Backend là nguồn sự thật duy nhất; thuốc, liều, PHI luôn lấy từ structured facts của Backend, không từ RAG hay LLM.
 
-AI hoạt động theo nguyên tắc **Stateless & Advisory**: không sở hữu hoặc thay đổi dữ liệu nghiệp vụ, không quản lý vòng đời phê duyệt và không tự xác nhận áp dụng thuốc. Backend là nguồn sự thật duy nhất cho dữ liệu nghiệp vụ và các trạng thái `PENDING`, `APPROVED`, `REJECTED`, `APPLIED`.
-
-## Kiến trúc
+## Luồng chẩn đoán
 
 ```text
 Backend → POST /api/v1/diagnose
-              │
-              ├─ CV nhận diện disease_code
-              ├─ Backend REST trả structured facts
-              ├─ pgvector trả RAG evidence
-              └─ LangGraph tổng hợp recommendation
-                         │
-                         └─ Backend kiểm tra và lưu
+            ├─ CV nhận diện disease_code
+            ├─ Backend REST trả structured facts (treatment rule, liều, PHI)
+            ├─ pgvector trả RAG evidence
+            └─ LangGraph tổng hợp recommendation → Backend kiểm tra rule version và lưu
 ```
 
-Các thành phần chính:
-
-- **Computer Vision**: YOLOv8n (checkpoint cục bộ `best.pt`) phát hiện một trong 5 lớp bệnh lá lúa, dùng `Rice___healthy` làm fallback khi không có detection đạt ngưỡng; trả `disease_code`, confidence cùng metadata model.
-- **Structured facts**: AI gọi internal API chỉ đọc của Backend để lấy treatment rule, liều lượng, PHI và lịch sử phun. Những dữ liệu này không được lấy từ RAG hoặc tự sinh bởi LLM.
-- **RAG**: truy vấn `documents` và `document_chunks` trong PostgreSQL/pgvector bằng embedding 384 chiều, trả evidence kèm nguồn.
-- **LangGraph**: điều phối một lượt suy luận stateless; không lưu workflow hoặc trạng thái phê duyệt.
-- **Recommendation**: kết hợp kết quả CV, structured facts và RAG evidence. Backend kiểm tra lại rule version trước khi lưu.
-
-Tài liệu chi tiết theo module:
-
-- [`app/cv/README.md`](app/cv/README.md)
-- [`app/rag/README.md`](app/rag/README.md)
-- [`app/graph/README.md`](app/graph/README.md)
+| Thành phần | Vai trò | Tài liệu |
+|---|---|---|
+| Computer Vision | YOLOv8n phát hiện 5 lớp bệnh lá lúa, crop classifier kiểm ảnh là lúa | [`app/cv`](app/cv/README.md) |
+| RAG | Tra cứu tài liệu trong PostgreSQL/pgvector, trả evidence kèm nguồn | [`app/rag`](app/rag/README.md) |
+| LangGraph | Điều phối một lượt suy luận, không lưu trạng thái | [`app/graph`](app/graph/README.md) |
 
 ## API
 
 | Method | Endpoint | Mô tả |
 |---|---|---|
-| `GET` | `/api/v1/disease/health` | Readiness của detector bệnh + crop classifier, thiết bị detector (công khai) |
-| `GET` | `/api/v1/disease/class-contract` | Contract 5 lớp CV, fallback và `disease_code` canonical (công khai) |
-| `POST` | `/api/v1/disease/predict` | Nhận ảnh multipart và trả kết quả CV, yêu cầu header `X-Service-Api-Key` |
-| `POST` | `/api/v1/disease/knowledge/retrieve` | Truy vấn RAG theo câu hỏi và `disease_code` tùy chọn, yêu cầu header `X-Service-Api-Key` |
-| `POST` | `/api/v1/disease/precheck` | Multipart ảnh; kiểm chất lượng + phân loại lúa, không chạy detector bệnh |
-| `POST` | `/api/v1/disease/symptoms/suggest` | `symptom_text`, `top_k` 1–6; mã bệnh có score, evidence và source IDs |
-| `POST` | `/api/v1/diagnose` | Contract nội bộ Backend → AI, yêu cầu header `X-Service-Api-Key` |
+| `GET` | `/api/v1/disease/health` | Readiness của detector và crop classifier (công khai) |
+| `GET` | `/api/v1/disease/class-contract` | Contract 5 lớp CV và `disease_code` canonical (công khai) |
+| `POST` | `/api/v1/disease/precheck` | Ảnh multipart: kiểm chất lượng và phân loại lúa, không chạy detector |
+| `POST` | `/api/v1/disease/predict` | Ảnh multipart: kết quả CV |
+| `POST` | `/api/v1/disease/symptoms/suggest` | `symptom_text`, `top_k` 1–6: mã bệnh có score, evidence và source IDs |
+| `POST` | `/api/v1/disease/knowledge/retrieve` | Truy vấn RAG theo câu hỏi, `namespace` (mặc định `farm`), `disease_code` và `document_type` tùy chọn |
+| `POST` | `/api/v1/diagnose` | Contract nội bộ Backend → AI |
 
-Mọi endpoint ngoài `/health` và `/class-contract` đều yêu cầu `X-Service-Api-Key` khớp `AI_SERVICE_API_KEY`; thiếu hoặc sai key trả `401`, chưa cấu hình key trả `503`.
-Cổng AI không publish ra host, chỉ truy cập được trong mạng compose.
-Gợi ý triệu chứng chỉ hỗ trợ tra cứu; kỹ sư chốt bệnh tại Backend.
+- Mọi endpoint trừ `health` và `class-contract` yêu cầu header `X-Service-Api-Key` khớp `AI_SERVICE_API_KEY`: thiếu hoặc sai key trả `401`, chưa cấu hình key trả `503` (fail-closed).
+- Cổng AI không publish ra host, chỉ truy cập được trong mạng compose.
+- `diagnose` tải ảnh từ `image_url`, chạy CV, lấy structured facts, truy vấn RAG và trả recommendation; thiếu structured facts thì request thất bại, AI không đưa recommendation chỉ dựa trên RAG.
+- Request có `request_id`, `crop_season_id`, `image_url`, `field_context`; response có `request_id`, `cv_result`, `rag_evidence`, `structured_context`, `recommendation`.
+- Thuốc, `dose_min`/`dose_max`, `dose_unit`, `phi_days`, `version` giữ nguyên từ structured facts.
+- Contract được khóa bởi DTO `AiDiagnoseRequest`, `AiDiagnoseResponse` của `app-farm` và schema `app/api/schemas.py`; `scripts/check_diagnose_contract.py` kiểm tương thích hai phía.
 
-Checkout có sẵn `best.pt` và `crop_classifier.onnx` trong `ai/weights/`; Compose mount read-only và service nạp trực tiếp, không tải model. Xem [hợp đồng CV](app/cv/README.md#phân-loại-lúa-trước-chẩn-đoán).
+## Dữ liệu và quyền
 
-`POST /api/v1/diagnose` tải ảnh từ `image_url`, chạy CV, gọi Backend lấy structured facts, truy vấn RAG và trả recommendation. Nếu structured facts không khả dụng, request thất bại; AI không đưa ra recommendation chỉ dựa trên RAG.
-
-## Dữ liệu và quyền sở hữu
-
-| Dữ liệu | Nơi sở hữu | Quyền của AI runtime |
-|---|---|---|
-| Parcel, CropSeason, DiseaseReport, Diagnosis, TrainingLabel, TreatmentApplication | Backend DB `dxos` | Không có credential DB; chỉ nhận dữ liệu cần thiết qua REST |
-| Disease, Pesticide, TreatmentRule | Backend DB `dxos` | Chỉ đọc qua internal REST API |
-| DiseaseManagementPolicy | Backend DB `dxos` | Chỉ đọc qua internal REST API khi endpoint tương ứng được mở |
-| Document, DocumentChunk và embedding | AI Vector DB `dx_farm_ai_vector_db` | Role `ai_vector_ro` chỉ có quyền đọc |
-| Corpus ingest | Thư mục `data/` ở gốc repository (mount read-only vào job `rag-ingest`) | Job riêng dùng role `ai_vector_ingest` |
-
-Backend khởi tạo AI Vector DB, extension `vector`, hai bảng RAG và hai role PostgreSQL. Runtime không giữ credential ingest; `RAG_INGEST_DATABASE_URL` chỉ được cấp khi chạy job quản trị.
+- Dữ liệu nghiệp vụ (báo cáo, chẩn đoán, thuốc, rule) ở database `dxos` của Backend; AI không có credential, chỉ gọi REST nội bộ chỉ đọc.
+- `documents`, `document_chunks` và embedding ở database `dx_farm_ai_vector_db`: runtime dùng role `ai_vector_ro` (chỉ đọc), job `rag-ingest` dùng role `ai_vector_ingest`.
+- Backend khởi tạo database vector, extension `vector`, hai bảng RAG và hai role; runtime không giữ credential ingest.
 
 ## Biến môi trường
 
-Cấu hình Docker Compose nằm tại [`deploy/.env.example`](../deploy/.env.example); chạy local thì export các biến dưới đây trong shell.
+Compose lấy từ [`deploy/.env.example`](../deploy/.env.example); chạy local thì export trong shell.
 
 | Biến | Ý nghĩa |
 |---|---|
-| `DATABASE_URL` | Kết nối read-only của AI runtime tới `dx_farm_ai_vector_db` |
-| `RAG_INGEST_DATABASE_URL` | Kết nối read/write chỉ dành cho job ingest |
-| `BACKEND_BASE_URL` | Base URL Backend, mặc định local `http://localhost:8081` |
+| `DATABASE_URL` | Kết nối chỉ đọc tới `dx_farm_ai_vector_db` |
+| `RAG_INGEST_DATABASE_URL` | Kết nối ghi, chỉ cấp cho job ingest |
+| `BACKEND_BASE_URL` | Base URL Backend (local `http://localhost:8081`) |
 | `BACKEND_SERVICE_API_KEY` | Key AI gửi khi gọi `/internal/v1/**` của Backend |
-| `AI_SERVICE_API_KEY` | Key Backend phải gửi khi gọi `/api/v1/diagnose` |
-| `BACKEND_TIMEOUT_SECONDS` | Timeout mỗi lần AI gọi Backend |
-| `BACKEND_MAX_ATTEMPTS` | Tổng số lần gọi Backend, bao gồm lần đầu |
-| `OLLAMA_BASE_URL`, `OLLAMA_MODEL` | Cấu hình LLM diễn đạt recommendation |
-| `EMBEDDING_MODEL` | Model embedding dùng đồng nhất cho ingest và retrieval |
+| `AI_SERVICE_API_KEY` | Key Backend phải gửi khi gọi AI |
+| `BACKEND_TIMEOUT_SECONDS`, `BACKEND_MAX_ATTEMPTS` | Timeout và tổng số lần gọi Backend |
+| `OLLAMA_BASE_URL`, `OLLAMA_MODEL` | LLM diễn đạt recommendation |
+| `EMBEDDING_MODEL` | Embedding dùng chung cho ingest và retrieval |
 | `CV_DEVICE` | `auto`, `cpu` hoặc `cuda` |
-| `CV_WEIGHTS_PATH` | Đường dẫn checkpoint `best.pt` (mặc định `ai/weights/best.pt`); service không tự tải |
-| `CV_WEIGHTS_SHA256` | SHA-256 kỳ vọng của checkpoint; bắt buộc khi nạp model |
-| `AI_CV_WEIGHTS_PATH` | Đường dẫn phía host mà Compose bind-mount; mặc định dùng checkpoint chuẩn trong `ai/weights/` |
-| `AI_CV_WEIGHTS_SHA256` | Giá trị phía host được Compose truyền vào `CV_WEIGHTS_SHA256` |
-| `CROP_CLASSIFIER_PATH` | Đường dẫn artifact cây trồng có sẵn; kiểm file và contract khi nạp |
-| `AI_CROP_CLASSIFIER_PATH` | Đường dẫn classifier phía host dùng cho Compose |
+| `CV_WEIGHTS_PATH`, `CV_WEIGHTS_SHA256` | Checkpoint `best.pt` (mặc định `ai/weights/best.pt`) và SHA-256 bắt buộc khi nạp |
+| `CROP_CLASSIFIER_PATH` | Artifact crop classifier (mặc định `ai/weights/crop_classifier.onnx`) |
+| `AI_CV_WEIGHTS_PATH`, `AI_CV_WEIGHTS_SHA256`, `AI_CROP_CLASSIFIER_PATH` | Giá trị phía host mà Compose bind-mount và truyền vào các biến trên |
 
-Hai service key phải được cấu hình và khớp theo từng chiều. Khi key đầu vào AI để trống, `/api/v1/diagnose` trả `503` theo cơ chế fail-closed.
-
-## Chạy local
+## Chạy
 
 ```bash
-cd ai
-python -m venv .venv
-source .venv/bin/activate
+# Local
+cd ai && python -m venv .venv && source .venv/bin/activate
 pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
 uvicorn app.main:app --reload --port 8000
-```
 
-AI không dùng Alembic hoặc migration. Backend phải khởi tạo AI Vector DB trước khi endpoint RAG được gọi.
-
-`/health`, `/class-contract` và `/predict` không cần corpus RAG. `/knowledge/retrieve` và `/diagnose` cần schema vector; để có evidence, corpus phải được ingest trước.
-
-## Ingest RAG
-
-Corpus đã duyệt nằm tại `data/rag/processed/disease_knowledge.json` cùng registry nguồn `data/rag/source_registry.json` (thư mục `data/` ở gốc repository, dùng chung cho mọi dữ liệu seed/DB, không riêng AI).
-Sau khi có/cập nhật corpus, chạy:
-
-```bash
-export RAG_INGEST_DATABASE_URL=postgresql+psycopg://<ingest-user>:<password>@<host>:5432/dx_farm_ai_vector_db
-python -m scripts.ingest_diseases --dry-run
-python -m scripts.ingest_diseases
-# Corpus của DX-Lab (namespace lab): data/rag/lab/processed/lab_knowledge.json
-python -m scripts.ingest_diseases --corpus lab --dry-run
-python -m scripts.ingest_diseases --corpus lab
-```
-
-Mỗi corpus thay thế tài liệu của chính namespace của nó; namespace khác không bị đụng tới.
-`POST /api/v1/disease/knowledge/retrieve` nhận `namespace` (mặc định `farm`) và `document_type` tùy chọn để thu hẹp theo loại tài liệu.
-
-Job chỉ ghi `documents` và `document_chunks`. Model embedding khi ingest phải giống model của runtime; đổi model hoặc số chiều vector yêu cầu ingest lại toàn bộ corpus.
-
-## Docker Compose
-
-Từ thư mục gốc repository:
-
-```bash
-cp deploy/.env.example deploy/.env
-# Mọi biến trong compose là bắt buộc; BACKEND_TO_AI_API_KEY và AI_TO_BACKEND_API_KEY phải khác rỗng.
-cd deploy
+# Compose, từ thư mục deploy (BACKEND_TO_AI_API_KEY và AI_TO_BACKEND_API_KEY phải khác rỗng)
 docker compose up -d --build postgres backend ai
 ```
 
-Compose sử dụng:
+- Checkout có sẵn `best.pt` và `crop_classifier.onnx` trong `ai/weights/`; Compose mount read-only, service không tải model. Thiếu hoặc sai SHA-256 thì AI từ chối khởi động.
+- AI không dùng migration; Backend phải khởi tạo database vector trước khi gọi RAG.
+- Stack Compose có `ollama` và `ollama-init` (tải `OLLAMA_MODEL` trước khi AI khởi động) và job `rag-ingest` chạy trước AI.
+- Kiểm model: `docker compose exec ai python -c "import urllib.request; print(urllib.request.urlopen('http://localhost:8000/api/v1/disease/health').read().decode())"`.
 
-- `ai_vector_ro` qua `DATABASE_URL` cho AI runtime.
-- `ai_vector_ingest` qua `RAG_INGEST_DATABASE_URL` cho job `rag-ingest`, tự chạy trước khi AI khởi động.
-- Service `ollama` và `ollama-init` chạy cùng stack; `ollama-init` tải model `OLLAMA_MODEL` trước khi AI khởi động.
-- `http://ai:8000` cho chiều Backend → AI.
-- `http://backend:8081` cho chiều AI → Backend.
+### Ingest RAG
 
-Kiểm tra model sau khi service khởi động (cổng AI không publish ra host nên gọi từ bên trong container):
+Corpus đã duyệt ở `data/rag/processed/disease_knowledge.json` (Farm) và `data/rag/lab/processed/lab_knowledge.json` (Lab), cùng registry nguồn:
 
 ```bash
-docker compose exec ai python -c "import urllib.request; print(urllib.request.urlopen('http://localhost:8000/api/v1/disease/health').read().decode())"
+export RAG_INGEST_DATABASE_URL=postgresql+psycopg://<ingest-user>:<password>@<host>:5432/dx_farm_ai_vector_db
+python -m scripts.ingest_diseases --dry-run            # preview, không ghi
+python -m scripts.ingest_diseases                      # corpus farm
+python -m scripts.ingest_diseases --corpus lab         # corpus lab
 ```
 
-Checkpoint CV chuẩn nằm tại `ai/weights/best.pt`. Compose bind-mount file này ở chế độ read-only; `AI_CV_WEIGHTS_PATH` chỉ cần đổi khi máy dùng đường dẫn khác. Điền checksum được cấp cùng checkpoint vào `AI_CV_WEIGHTS_SHA256`; nếu thiếu hoặc không khớp, AI từ chối khởi động. Volume `ai_weights` chỉ lưu cache embedding. Nếu đường dẫn override không tồn tại, Compose báo lỗi và không tạo thư mục `best.pt` trên host.
+Mỗi lần ingest thay thế tài liệu của đúng namespace của nó.
+Đổi embedding model hoặc số chiều vector thì phải ingest lại toàn bộ corpus.
 
-## Script kiểm tra
+## Kiểm tra
 
-Chạy từ thư mục `ai/`:
+Chạy từ `ai/`:
 
 | Lệnh | Mục đích |
 |---|---|
-| `python -m scripts.check_backend_client` | Kiểm tra client gọi Backend bằng mock: retry giới hạn, không retry khi HTTP 401, đọc khoảng liều `dose_min`/`dose_max` |
-| `python -m scripts.check_diagnose_contract` | Kiểm tra luồng `/diagnose` chạy theo thứ tự CV, Backend, RAG; response đúng contract và phần diễn đạt không chứa số liệu tự sinh |
-| `python -m scripts.check_rag_access_boundary` | Xác nhận việc ghi RAG nằm ngoài runtime FastAPI |
-| `pip install -r requirements-dev.txt && python -m pytest tests` | Chạy test (CV, workflow, xác thực service key); CI chạy cùng lệnh |
+| `pip install -r requirements-dev.txt && python -m pytest tests` | Test CV, workflow, xác thực service key (CI chạy cùng lệnh) |
+| `python -m scripts.check_backend_client` | Client Backend: retry giới hạn, không retry khi 401, đọc khoảng liều |
+| `python -m scripts.check_diagnose_contract` | Luồng `diagnose` đúng thứ tự CV, Backend, RAG; diễn đạt không chứa số liệu tự sinh |
+| `python -m scripts.check_rag_access_boundary` | Việc ghi RAG nằm ngoài runtime FastAPI |
 
-## Giới hạn vận hành
+## Giới hạn và giấy phép
 
-- CV chỉ nhận diện 5 lớp bệnh lá lúa đã huấn luyện; kết quả là tín hiệu chẩn đoán, không phải quyết định điều trị.
-- RAG chỉ tìm được kiến thức đã ingest và không thay thế structured facts từ Backend.
-- Ollama có thể fallback khi lỗi hoặc timeout, nhưng thiếu structured facts luôn làm lượt chẩn đoán thất bại.
-- `/predict` và `/knowledge/retrieve` là endpoint kỹ thuật; luồng nghiệp vụ chính đi qua Backend và `POST /api/v1/diagnose`.
-
-## Giấy phép
-
-Thư mục `ai/` phân phối theo AGPL-3.0 (toàn văn ở [`LICENSE`](./LICENSE)): mã của dịch vụ import Ultralytics (AGPL-3.0) ở `app/cv/loader.py`, và trọng số trong `weights/` cũng theo AGPL-3.0.
-Phần còn lại của repo giữ Apache-2.0 theo `LICENSE` ở gốc; Backend gọi AI Service qua HTTP nên không là tác phẩm phái sinh của thư mục này.
-Danh sách thành phần và nguồn ở [`LICENSES.md`](../LICENSES.md).
+- CV chỉ nhận diện 5 lớp bệnh lá lúa đã huấn luyện; kết quả là tín hiệu chẩn đoán, kỹ sư chốt bệnh tại Backend.
+- RAG chỉ tìm được kiến thức đã ingest; Ollama lỗi hoặc timeout thì trả evidence nguyên văn.
+- `ai/` phân phối theo AGPL-3.0 ([`LICENSE`](./LICENSE)) vì import Ultralytics; Backend gọi AI qua HTTP nên không là tác phẩm phái sinh.
+  Danh sách thành phần ở [`LICENSES.md`](../LICENSES.md).

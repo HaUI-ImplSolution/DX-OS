@@ -1,7 +1,7 @@
 # Backend (Spring Boot)
 
 Backend của DX-OS: một core dùng chung và các ứng dụng cắm vào qua interface.
-Kiến trúc và sơ đồ ở [`development/docs/submission/ARCHITECTURE_OPEN_CORE.md`](../development/docs/submission/ARCHITECTURE_OPEN_CORE.md).
+Kiến trúc và sơ đồ ở [`ARCHITECTURE.md`](../ARCHITECTURE.md).
 
 ## Module
 
@@ -14,7 +14,7 @@ Kiến trúc và sơ đồ ở [`development/docs/submission/ARCHITECTURE_OPEN_C
 | `dx-host` | Chạy được: ghép core với ứng dụng chọn bằng `DXOS_APP`, đóng gói fat jar |
 
 Ứng dụng chỉ phụ thuộc `dx-core-api`; `dx-core` không phụ thuộc ứng dụng.
-Danh sách interface ở [`SPI_CATALOG.md`](../development/docs/refactor_docs/SPI_CATALOG.md), cách thêm ứng dụng ở [`CONTRIBUTING.md`](../CONTRIBUTING.md).
+Danh sách interface ở [`ARCHITECTURE.md`](../ARCHITECTURE.md) mục 3, cách thêm ứng dụng ở [`CONTRIBUTING.md`](../CONTRIBUTING.md).
 
 ## Build và kiểm tra
 

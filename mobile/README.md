@@ -1,226 +1,130 @@
-# Mobile (`mobile`, Expo)
+# Mobile (Expo)
 
-Thư mục riêng ngang hàng `backend/`, `frontend/`, `ai/`, `bi/`, `chat/` — ứng dụng React Native dành cho nông dân, chụp ảnh sâu bệnh ngay tại ruộng và gửi báo cáo về Backend.
-Kế hoạch, đặc tả backend và thiết kế UI nằm ở [`development/docs/pending_docs/mobile/`](../development/docs/pending_docs/mobile/README.md).
+Ứng dụng React Native dành cho nông dân (chỉ role `FARMER`): chụp ảnh sâu bệnh ngay tại ruộng và gửi báo cáo về Backend; ENGINEER và ADMIN dùng web vì việc duyệt cần xem ảnh, kết quả CV, khuyến nghị và PHI cùng lúc.
+Một codebase TypeScript cho Android và iOS, dependency đều MIT hoặc Apache-2.0 ([`LICENSES.md`](../LICENSES.md)); build APK bằng EAS, không cần Android Studio.
+Kiến trúc ở [`ARCHITECTURE.md`](../ARCHITECTURE.md); việc chưa làm ở [`docs/BACKLOG.md`](../docs/BACKLOG.md).
 
-## Vì sao chọn Expo (React Native)
-
-Một codebase TypeScript chạy trên Android và iOS, có sẵn module camera, nén ảnh, lưu trữ an toàn và đăng nhập OAuth2.
-Toàn bộ dependency đều là MIT hoặc Apache-2.0 (OSI-approved) — xem [`LICENSES.md`](../LICENSES.md).
-Ngoài Expo Go, có thể build APK bằng EAS mà không cần cài Android Studio.
-
-## Phạm vi
-
-- Chỉ role `FARMER`; ENGINEER và ADMIN tiếp tục dùng web (`frontend/`) vì việc duyệt cần xem ảnh, kết quả CV, khuyến nghị và quy tắc PHI cùng lúc.
-- Luồng hiện có: đăng nhập → chọn thửa → chọn vụ mùa → xem và gửi báo cáo → theo dõi kết quả kỹ sư duyệt → khai phun thuốc → khai báo thu hoạch; mất mạng thì ảnh chờ trong máy và tự gửi khi có mạng.
-- Chẩn đoán AI do kỹ sư kích hoạt thủ công trên web; nông dân thấy trạng thái "Chờ chẩn đoán" sau khi gửi.
+**Luồng:** đăng nhập → chọn thửa → chọn vụ → xem và gửi báo cáo → theo dõi kết quả kỹ sư duyệt → khai phun thuốc → khai báo thu hoạch.
+Chẩn đoán AI do kỹ sư kích hoạt trên web; nông dân thấy "Chờ chẩn đoán" sau khi gửi.
 
 ## Cách hoạt động
 
-- **Điều hướng**: `expo-router` theo cấu trúc file trong `app/`, dạng stack, không có tab bar.
-  Route guard bằng `Stack.Protected` ở `app/_layout.tsx`: chưa đăng nhập chỉ thấy màn Đăng nhập.
-- **Xác thực**: Authorization Code + PKCE với client public `farm-mobile` của Keycloak, qua `expo-auth-session` và trình duyệt hệ thống.
-  Endpoint dựng trực tiếp từ `EXPO_PUBLIC_KEYCLOAK_URL`, không dùng discovery.
-  Access token và refresh token lưu ở `expo-secure-store`; token tự refresh trước khi hết hạn.
-  Refresh bị từ chối hoặc Backend trả `401` thì phiên bị xoá và app về màn Đăng nhập.
-- **Phân quyền**: role đọc từ `realm_access.roles` của access token; tài khoản không có role `FARMER` bị đăng xuất kèm thông báo "Ứng dụng này dành cho nông dân".
-  Đăng xuất gọi endpoint logout của Keycloak để kết thúc luôn phiên SSO.
-- **API**: `src/api/client.ts` bọc `fetch` với header `Authorization`, timeout 30 giây và `ApiError`; mọi response đi qua khuôn `ApiResponse<T>` của Backend.
-  Lỗi mạng trả `ApiError` với `status` `0`.
-- **Chụp và gửi ảnh**: `expo-image-picker` mở camera hệ thống; `expo-image-manipulator` thu nhỏ cạnh dài tối đa 1280px và nén JPEG 0.7 để nằm xa giới hạn multipart 10MB.
-  Ảnh gửi dạng multipart, part `image`, qua `XMLHttpRequest` để có thanh tiến trình.
-  App kiểm mỗi chiều từ 160px và dung lượng tối đa 10 MiB; Backend kiểm độ sáng, độ nét và phân loại lúa ngay sau khi chụp ảnh và khi nộp thật.
-  Ảnh không đạt phải chụp lại; precheck dùng classifier cây trồng, chưa kết luận bệnh và có thể nhận nhầm cây gần giống lúa.
-- **Hàng đợi offline**: khi không có mạng hoặc gặp lỗi kết nối lúc gửi, ảnh được copy vào thư mục dữ liệu của app và ghi vào hàng đợi (`@react-native-async-storage/async-storage`).
-  Mỗi ảnh có một UUID dùng làm header `Idempotency-Key`, nên gửi lại nhiều lần vẫn chỉ tạo một báo cáo.
-  Ảnh thay thế giữ `retakeOf` trong hàng đợi; Backend kiểm chất lượng và phân loại lúa khi có mạng, lỗi 422 không tạo báo cáo.
-  Hàng đợi tự gửi khi `NetInfo` báo có mạng và khi app trở lại foreground; lỗi tạm thời được thử lại với khoảng chờ tăng dần (5 giây đến tối đa 5 phút, tối đa 8 lần).
-  Lỗi `4xx` khác `408`, `409`, `429` đánh dấu "Lỗi" và không thử lại.
-  Hàng đợi tách theo tài khoản; danh sách "Chờ gửi" và nút xoá nằm ở màn Hồ sơ, số lượng hiện ở đầu màn Báo cáo của vụ.
-- **Tạo thửa**: màn `parcels/new` lấy vị trí bằng `expo-location` (cần đứng tại ruộng), hiện sai số; sai số quá 30 m hoặc vị trí giả lập thì nút gửi bị khóa, Backend vẫn kiểm lại.
-  Thửa gửi đi ở trạng thái "Chờ duyệt"; bị từ chối thì thẻ thửa hiện lý do và nút "Sửa và gửi lại"; thửa đã duyệt có nút "Đề nghị chỉnh sửa thửa".
-- **Tạo vụ mùa**: màn `seasons/new` (chỉ với thửa đã duyệt) chọn giống từ danh mục, ngày bắt đầu và loại vụ; ngày thu hoạch gợi ý do Backend tính, chọn ngày ngoài khoảng gợi ý phải nêu lý do.
-  Cần mạng để tải danh mục giống.
-- **Hàng đợi thửa và vụ**: khi mất mạng lúc gửi, thửa và vụ mới vào cùng hàng đợi với ảnh, mỗi mục một `Idempotency-Key`; lỗi `422` (ví dụ sai số GPS) đánh dấu "Lỗi" và không thử lại.
-- **Hộp thông báo**: màn `notifications` đọc `GET /api/v1/notifications` (30 thông báo mới nhất).
-  `NotificationsProvider` hỏi số chưa đọc khi mở app, mỗi lần app trở lại foreground, mỗi lần quay lại màn Thửa và khi kéo làm mới, không dùng push.
-  Trạng thái đã đọc lưu ở Backend nên mọi thiết bị thấy như nhau.
-- **Thu hoạch**: màn `seasons/harvest` đọc `harvest-readiness` rồi gửi ngày, sản lượng và diện tích.
-  Ngày thu hoạch trước ngày dự kiến thì phải bật xác nhận và nhập lý do.
-  Vụ còn cách ly thì nút gửi bị khóa.
-  Màn `seasons/reschedule` đổi ngày dự kiến kèm lý do và liệt kê các lần đổi.
-- **Khai phun thuốc**: ở chi tiết báo cáo đã duyệt, nông dân nhập liều và ngày phun.
-  Bản khai chờ kỹ sư xác nhận, trong lúc chờ vụ chưa thu hoạch được.
-  Bị từ chối thì màn hiện lý do và cho khai lại.
-- **Hiển thị trạng thái**: `NEEDS_RETAKE` của báo cáo được ưu tiên, các quyết định còn lại lấy từ `diagnosis`.
-  Màn chi tiết có liên kết xem chuỗi ảnh thay thế.
+- **Điều hướng:** `expo-router` theo cấu trúc file trong `app/`, dạng stack, route guard `Stack.Protected` ở `app/_layout.tsx`.
+- **Xác thực:** Authorization Code + PKCE với client public `farm-mobile` (`expo-auth-session`), endpoint dựng từ `EXPO_PUBLIC_KEYCLOAK_URL`.
+  Token ở `expo-secure-store`, tự refresh; refresh bị từ chối hoặc Backend trả `401` thì xóa phiên.
+  Role đọc từ `realm_access.roles`, tài khoản không có `FARMER` bị đăng xuất; đăng xuất gọi logout Keycloak để kết thúc phiên SSO.
+- **API:** `src/api/client.ts` bọc `fetch` với `Authorization`, timeout 30 giây, `ApiError` (lỗi mạng có `status` `0`); response theo `ApiResponse<T>`.
+- **Chụp và gửi ảnh:** camera hệ thống (`expo-image-picker`), thu nhỏ cạnh dài 1280px, JPEG 0.7 (`expo-image-manipulator`), gửi multipart part `image` qua `XMLHttpRequest` để có tiến trình.
+  App kiểm mỗi chiều từ 160px và tối đa 10 MiB; Backend kiểm độ sáng, độ nét, phân loại lúa lúc precheck và lúc nộp, ảnh không đạt phải chụp lại.
+- **Hàng đợi offline:** mất mạng hoặc lỗi kết nối thì ảnh, thửa và vụ mới vào hàng đợi (`async-storage`), mỗi mục một UUID làm `Idempotency-Key` nên gửi lại không tạo trùng.
+  Tự gửi khi `NetInfo` báo có mạng và khi app trở lại foreground, thử lại với backoff 5 giây đến 5 phút, tối đa 8 lần; lỗi `4xx` khác `408`, `409`, `429` đánh dấu "Lỗi" và không thử lại.
+  Hàng đợi tách theo tài khoản; danh sách "Chờ gửi" và nút xóa ở màn Hồ sơ.
+- **Tạo thửa:** lấy vị trí bằng `expo-location`, hiện sai số; sai số quá 30 m hoặc vị trí giả lập thì khóa nút gửi (Backend kiểm lại).
+  Thửa gửi đi ở trạng thái chờ duyệt; bị từ chối thì sửa và gửi lại; thửa đã duyệt có "Đề nghị chỉnh sửa thửa".
+- **Tạo vụ:** chỉ với thửa đã duyệt; chọn giống từ danh mục, ngày bắt đầu và loại vụ; ngày thu hoạch gợi ý do Backend tính, chọn ngoài khoảng gợi ý phải nêu lý do.
+- **Hộp thông báo:** `GET /api/v1/notifications` (30 mới nhất), hỏi số chưa đọc khi mở app, khi foreground, khi quay lại màn Thửa và khi kéo làm mới; không có push.
+- **Thu hoạch:** đọc `harvest-readiness`, thu hoạch trước ngày dự kiến phải xác nhận kèm lý do, vụ còn cách ly thì khóa gửi; có màn đổi ngày dự kiến kèm lý do.
+- **Khai phun:** ở chi tiết báo cáo đã duyệt, nông dân nhập liều và ngày phun, chờ kỹ sư xác nhận (trong lúc chờ chưa thu hoạch được); bị từ chối thì khai lại.
+- **Ảnh báo cáo** tải từ `imageUrl` (URL MinIO có hạn qua gateway).
+- **HTTP cleartext** được phép ở mọi profile EAS trừ `production` (`app.config.ts`) để dev và preview gọi Backend qua IP LAN.
 
-  | `diagnosis` | Chip | Nội dung nông dân thấy |
-  |---|---|---|
-  | `null` | Chờ chẩn đoán | Ảnh và thời điểm gửi |
-  | `PENDING` | Chờ kỹ sư duyệt | Chỉ trạng thái |
-  | `APPROVED` | Đã duyệt | Bệnh, khuyến nghị, thuốc, liều, số ngày cách ly |
-  | `REJECTED` | Khuyến nghị bị từ chối | Lý do từ chối |
-  | Báo cáo `NEEDS_RETAKE` | Cần chụp lại | Lý do và nút chụp ảnh thay thế |
+Trạng thái hiển thị (`NEEDS_RETAKE` của báo cáo được ưu tiên, còn lại theo `diagnosis`):
 
-- **Banner cách ly**: hiển thị khi `IsolationStatus.isolated` là `true`, kèm số ngày còn lại và ngày hết cách ly.
-- **Ảnh báo cáo**: tải từ `imageUrl` do Backend trả về; đây là URL MinIO có thời hạn qua gateway.
-- **HTTP cleartext**: `app.config.ts` cho phép HTTP thường (Android `usesCleartextTraffic`, iOS ATS) ở mọi profile EAS trừ `production`, để dev và preview gọi được Backend qua IP LAN.
+| `diagnosis` | Chip | Nông dân thấy |
+|---|---|---|
+| `null` | Chờ chẩn đoán | Ảnh và thời điểm gửi |
+| `PENDING` | Chờ kỹ sư duyệt | Chỉ trạng thái |
+| `APPROVED` | Đã duyệt | Bệnh, khuyến nghị, thuốc, liều, số ngày cách ly (banner cách ly khi `isolated`) |
+| `REJECTED` | Khuyến nghị bị từ chối | Lý do |
+| báo cáo `NEEDS_RETAKE` | Cần chụp lại | Lý do và nút chụp ảnh thay thế |
 
-## Cấu trúc thư mục
+## Phạm vi dữ liệu
+
+- Backend chỉ trả cho `FARMER` thửa của nông hộ đã gắn với tài khoản (claim `sub`); chưa gắn hộ thì danh sách rỗng và không tạo được thửa.
+  Admin tạo hộ kèm tài khoản bằng `POST /api/v1/households` hoặc gắn tài khoản bằng `PATCH /api/v1/households/{code}/account`.
+  Dữ liệu của hộ khác trả `404`.
+- Token `FARMER` chỉ được chấp nhận khi `azp` là `farm-mobile`, và `aud` phải chứa `dxos-api`; token không đạt bị `403` hoặc `401` và phải đăng nhập lại.
+- Nội dung chẩn đoán chỉ có khi diagnosis `APPROVED`; `PENDING` chỉ trả trạng thái, `REJECTED` trả thêm lý do.
+- Gửi báo cáo nhận header tùy chọn `Idempotency-Key` (UUID): key đã dùng trả báo cáo cũ, sai định dạng `400`, thuộc vụ hoặc người khác `409`.
+
+## Cấu trúc
 
 | Đường dẫn | Nội dung |
 |---|---|
-| `app/` | Màn hình theo `expo-router`: `index` (Thửa), `parcels/[code]` (Vụ mùa), `parcels/new` (Tạo hoặc sửa thửa), `seasons/new` (Tạo hoặc sửa vụ), `seasons/[id]` (Báo cáo của vụ), `seasons/harvest` (Khai báo thu hoạch), `seasons/reschedule` (Đổi ngày thu hoạch), `notifications` (Hộp thông báo), `capture` (Chụp và gửi), `reports/[id]` (Chi tiết báo cáo), `login`, `profile` |
-| `src/api/` | `client.ts` (`request`, `upload`, `ApiError`) và `endpoints.ts` |
-| `src/auth/` | Đăng nhập PKCE (`AuthProvider`), lưu token (`session`), refresh (`tokens`), đọc claim (`claims`) |
-| `src/components/` | `Button`, `Card`, `Field`, `OptionList`, `ParcelCard`, `StatusChip`, `IsolationBanner`, `Timeline`, `ProgressBar`, `EmptyState`, `ErrorState`, `Skeleton`, `Screen` |
-| `src/offline/` | Hàng đợi gửi khi mất mạng: lưu trữ (`queue`) và tự gửi lại (`QueueProvider`) |
-| `src/hooks/` | `useAsync`, `useParcelIsolation` |
-| `src/theme/` | Màu, cỡ chữ, khoảng cách, kích thước vùng chạm |
-| `src/*.ts` | `config` (biến môi trường), `types` (kiểu dữ liệu phía nông dân), `format` (ngày giờ), `image` (nén ảnh), `reportStatus` (chip trạng thái) |
-| `app.json`, `app.config.ts` | Cấu hình Expo: scheme `dxfarm`, quyền camera, cleartext |
+| `app/` | Màn hình: `index` (Thửa), `parcels/[code]`, `parcels/new`, `seasons/new`, `seasons/[id]`, `seasons/harvest`, `seasons/reschedule`, `notifications`, `capture`, `reports/[id]`, `login`, `profile` |
+| `src/api/` | `client.ts` (`request`, `upload`, `ApiError`), `endpoints.ts` |
+| `src/auth/` | PKCE (`AuthProvider`), lưu token (`session`), refresh (`tokens`), claim (`claims`) |
+| `src/offline/` | Hàng đợi: lưu trữ (`queue`) và gửi lại (`QueueProvider`) |
+| `src/components/`, `src/hooks/`, `src/theme/` | Thành phần UI, `useAsync`, `useParcelIsolation`, màu, cỡ chữ, khoảng cách |
+| `src/*.ts` | `config` (biến môi trường), `types`, `format`, `image`, `reportStatus` |
 
-## Đăng nhập
+## Cấu hình và chạy
 
-- Tài khoản demo tạo sẵn trong realm Keycloak (xem [`sso/README.md`](../sso/README.md)):
+`mobile/.env` (không commit, mẫu [`.env.example`](./.env.example)); thiếu biến thì app báo lỗi lúc khởi động.
+Biến `EXPO_PUBLIC_*` nhúng vào bundle lúc build, đổi Keycloak URL hoặc client id thì phải build và cài lại.
 
-  | Username | Mật khẩu | Vai trò | Kết quả trên app |
-  |---|---|---|---|
-  | `farmer1` | `farmer123` | FARMER | Vào được app |
-  | `engineer1` | `engineer123` | ENGINEER | Bị đăng xuất kèm thông báo |
-  | `admin1` | `admin123` | ADMIN | Bị đăng xuất kèm thông báo |
+| Biến | Ví dụ |
+|---|---|
+| `EXPO_PUBLIC_API_BASE_URL` | `http://192.168.1.10:9080` (gateway) |
+| `EXPO_PUBLIC_KEYCLOAK_URL` | `http://192.168.1.10:9080/realms/dxos` |
+| `EXPO_PUBLIC_KEYCLOAK_CLIENT_ID` | `farm-mobile` |
 
-- Redirect URI đã đăng ký cho client `farm-mobile`: `dxfarm://*` (app đã build) và `exp://*` (Expo Go, chỉ dùng khi dev).
-
-## Phạm vi dữ liệu của nông dân
-
-- Backend chỉ trả cho `FARMER` những thửa thuộc nông hộ đã gắn với tài khoản (claim `sub` của token khớp `Household.keycloakUserId`), không phụ thuộc tên hiển thị.
-  Tài khoản chưa gắn nông hộ thấy danh sách rỗng và không tạo được thửa; admin tạo hộ cùng tài khoản bằng `POST /api/v1/households` hoặc gắn tài khoản có sẵn bằng `PATCH /api/v1/households/{code}/account`.
-  Thửa, vụ mùa, báo cáo hoặc thao tác thu hoạch trên dữ liệu của hộ khác trả `404`.
-  Thửa do FARMER tạo luôn thuộc hộ của chính họ.
-- Token của `FARMER` chỉ được chấp nhận khi cấp cho client `farm-mobile` (claim `azp`); cùng token đó cấp qua client web bị backend từ chối `403`.
-  Mọi access token phải có `aud` chứa `dxos-api`; realm tự thêm vào token của client web và mobile, nên token cấp trước khi có cấu hình này (không có `aud`) bị `401` và phải đăng nhập lại.
-- Nội dung chẩn đoán (bệnh, khuyến nghị, thuốc, liều) chỉ có khi diagnosis đã `APPROVED`.
-  Đặc tả: [`development/docs/pending_docs/mobile/BACKEND_CHANGES.md`](../development/docs/pending_docs/mobile/BACKEND_CHANGES.md).
-
-## Biến môi trường
-
-Khai báo trong `mobile/.env` (không commit); mẫu ở [`.env.example`](./.env.example).
-
-| Biến | Ý nghĩa | Ví dụ |
-|---|---|---|
-| `EXPO_PUBLIC_API_BASE_URL` | Địa chỉ gateway (API và ảnh) | `http://192.168.1.10:9080` |
-| `EXPO_PUBLIC_KEYCLOAK_URL` | Realm URL của Keycloak, cũng qua gateway | `http://192.168.1.10:9080/realms/dxos` |
-| `EXPO_PUBLIC_KEYCLOAK_CLIENT_ID` | Client OIDC | `farm-mobile` |
-
-Biến `EXPO_PUBLIC_*` được nhúng vào bundle lúc build nên chỉ chứa giá trị công khai.
-Thiếu biến nào thì app báo lỗi ngay lúc khởi động.
-Realm và client được nhúng lúc build, nên đổi `EXPO_PUBLIC_KEYCLOAK_URL` hoặc `EXPO_PUBLIC_KEYCLOAK_CLIENT_ID` thì phải build và cài lại app.
-
-## Chạy trên điện thoại thật
-
-Điện thoại và máy dev phải cùng mạng WiFi.
-
-### 1. Lấy IP LAN của máy dev
+Chạy trên điện thoại thật (cùng mạng WiFi với máy dev):
 
 ```bash
-hostname -I | awk '{print $1}'
+hostname -I | awk '{print $1}'              # IP LAN, thay vào mobile/.env
+cd deploy && docker compose up -d --build   # Backend, Keycloak; điện thoại phải tới được cổng 9080
+cd ../mobile && cp .env.example .env        # sửa IP trong .env
+npm install && npm start -- -c              # -c xóa cache Metro để nạp lại biến; Metro cổng 8083
 ```
 
-Các bước dưới dùng `192.168.1.10` làm ví dụ.
-
-### 2. Khởi động Backend và Keycloak
-
-```bash
-cd deploy
-docker compose up -d --build
-```
-
-- Điện thoại phải truy cập được cổng `9080` (gateway) của máy dev; mở cổng trên firewall nếu cần.
-- Keycloak chỉ import realm khi realm chưa tồn tại.
-  Với volume Postgres cũ, thêm client `farm-mobile` qua Admin Console hoặc xoá `deploy/data/postgres` để import lại (mất dữ liệu demo).
-- Thửa cần có `farmerName` là `Nguyễn Văn Nông` để `farmer1` nhìn thấy; đăng nhập web bằng `farmer1` để tạo thửa (tên được gán tự động), hoặc dùng `admin1`/`engineer1` tạo thửa với đúng tên đó.
-
-### 3. Cài đặt và chạy app
-
-```bash
-cd mobile
-cp .env.example .env
-# sửa .env: thay 192.168.1.10 bằng IP LAN của máy dev
-npm install
-npm start -- -c
-```
-
-- Cờ `-c` xoá cache Metro để nạp lại biến `EXPO_PUBLIC_*`; dùng lại mỗi khi đổi `.env`.
-- Metro chạy ở cổng `8083` (script `npm start`); điện thoại cần truy cập được cổng này của máy dev.
-- Quét mã QR bằng Expo Go trên điện thoại.
-  Expo Go phải hỗ trợ SDK 57; nếu không, dùng development build.
+Quét QR bằng Expo Go (cần hỗ trợ SDK 57, nếu không dùng development build).
+Tài khoản `farmer1` / `farmer123`; `engineer1`, `admin1` bị đăng xuất kèm thông báo.
+Keycloak chỉ import realm lần đầu: volume Postgres cũ chưa có client `farm-mobile` thì xem [`sso/README.md`](../sso/README.md).
 
 ## Đóng gói APK
 
-APK được build trên đám mây của EAS (Expo Application Services), không cần cài Android Studio hay Android SDK trên máy dev.
-Cấu hình nằm ở [`eas.json`](./eas.json), profile `preview` xuất file `.apk` để cài trực tiếp lên điện thoại Android.
+EAS build trên đám mây, profile `preview` trong [`eas.json`](./eas.json) xuất `.apk`.
 
-### Chuẩn bị
+1. Thay `192.168.1.10` trong ba biến `EXPO_PUBLIC_*` của profile `preview` bằng IP LAN của máy chạy Backend (nhúng vào APK lúc build, `.env` không lên EAS).
+2. Lần đầu: `npx eas-cli login` rồi `npx eas-cli init` (ghi `projectId` vào `app.json`).
+3. `npx eas-cli build --platform android --profile preview` (thêm `--local` để build trên máy, cần JDK và Android SDK).
+4. Mở link hoặc QR EAS in ra trên điện thoại để cài; đăng nhập bằng `farmer1`.
 
-- Tài khoản Expo miễn phí tại https://expo.dev.
-- Backend và Keycloak đã chạy với địa chỉ điện thoại truy cập được (xem mục "Chạy trên điện thoại thật", bước 2).
-- Client `farm-mobile` có redirect URI `dxfarm://*` — có sẵn trong realm import.
+Đổi IP máy dev hoặc mạng thì phải sửa `eas.json` và build lại; bản chạy thật cần HTTPS và profile `production` riêng.
+Tăng phiên bản bằng `version` trong `app.json` (thêm `android.versionCode` khi cần cài đè).
 
-### Các bước
+Kiểm mã: `npx tsc --noEmit` và `npx expo export --platform android`.
 
-1. Mở `eas.json` và thay `192.168.1.10` trong ba biến `EXPO_PUBLIC_*` của profile `preview` bằng IP LAN của máy chạy Backend và Keycloak.
-   Giá trị này được nhúng vào APK lúc build; file `.env` không được đưa lên EAS.
-2. Đăng nhập và gắn dự án với tài khoản Expo (chỉ lần đầu):
+## Sự cố thường gặp
 
-   ```bash
-   cd mobile
-   npx eas-cli login
-   npx eas-cli init
-   ```
-
-   Lệnh `init` ghi `projectId` của dự án vào `app.json`; commit thay đổi này nếu muốn dùng lại.
-3. Build:
-
-   ```bash
-   npx eas-cli build --platform android --profile preview
-   ```
-
-   Lần đầu EAS hỏi có tạo Android keystore không; chọn để EAS tự quản lý.
-4. Khi build xong (thường vài phút đến vài chục phút do hàng đợi), EAS in ra link và mã QR của file `.apk`.
-   Mở link trên điện thoại để tải về, cho phép cài ứng dụng từ nguồn không xác định khi hệ thống hỏi, rồi cài đặt.
-5. Mở app "DX-Farm Nông dân" và đăng nhập bằng `farmer1`.
-
-### Lưu ý
-
-- IP nhúng trong APK cố định: đổi IP máy dev (DHCP cấp lại) hoặc chuyển sang mạng khác thì phải sửa `eas.json` và build lại.
-- Profile `preview` cho phép HTTP thường để gọi Backend qua IP LAN; bản chạy thật cần HTTPS và một profile `production` riêng.
-- Muốn tăng số phiên bản, sửa `version` trong `app.json`, và thêm `android.versionCode` khi cần cài đè.
-- Build trên máy dev (không dùng đám mây) cần JDK và Android SDK, chạy `npx eas-cli build --platform android --profile preview --local`.
-- Nếu IP máy dev đổi, sửa `EXPO_PUBLIC_KEYCLOAK_URL` trong `eas.json` cho khớp rồi build lại.
-
-## Kiểm tra mã nguồn
-
-```bash
-npx tsc --noEmit
-npx expo export --platform android
-```
-
-## Xử lý sự cố
-
-| Triệu chứng | Nguyên nhân thường gặp |
+| Triệu chứng | Nguyên nhân |
 |---|---|
-| "Không đăng nhập được, thử lại" hoặc Keycloak báo redirect URI không hợp lệ | Realm chưa có client `farm-mobile` (volume cũ); xem bước 2 |
-| Trang đăng nhập Keycloak không tải, hoặc đăng nhập xong bị chuyển về `localhost` và Safari không mở được | `EXPO_PUBLIC_KEYCLOAK_URL` trong `.env` đang là `localhost` hoặc sai IP; đặt IP LAN của máy dev rồi chạy `npm start -- -c` |
-| "Không kết nối được. Kiểm tra mạng rồi thử lại." | Điện thoại không tới được Backend: sai IP trong `.env`, khác mạng WiFi hoặc firewall chặn cổng `9080` |
-| Danh sách thửa trống | `farmerName` của thửa không khớp tên trong token |
-| Ảnh báo cáo không hiển thị | Gateway trong `imageUrl` không truy cập được từ điện thoại hoặc link đã hết hạn; kiểm tra IP LAN và tải lại báo cáo |
-| Ảnh nằm mãi ở "Chờ gửi" | Chưa có mạng tới Backend hoặc đang chờ khoảng thử lại; đưa app về foreground để gửi ngay |
-| Ảnh ở trạng thái "Lỗi" | Backend từ chối ảnh (ví dụ sai định dạng, quá lớn hoặc vụ mùa không còn thuộc tài khoản); đọc thông báo dưới ảnh rồi xoá và chụp lại |
-| Đổi `.env` nhưng app vẫn dùng giá trị cũ | Chạy lại `npm start -- -c` |
+| "Không đăng nhập được" hoặc redirect URI không hợp lệ | Realm chưa có client `farm-mobile` (volume cũ) |
+| Trang đăng nhập không tải, hoặc quay về `localhost` | `EXPO_PUBLIC_KEYCLOAK_URL` là `localhost` hoặc sai IP; sửa rồi `npm start -- -c` |
+| "Không kết nối được" | Điện thoại không tới được Backend: sai IP, khác WiFi hoặc firewall chặn `9080` |
+| Danh sách thửa trống | Tài khoản chưa gắn nông hộ |
+| Ảnh báo cáo không hiện | Link hết hạn hoặc gateway trong `imageUrl` không truy cập được từ điện thoại; tải lại báo cáo |
+| Ảnh ở "Chờ gửi" mãi | Chưa có mạng tới Backend hoặc đang chờ khoảng thử lại; đưa app về foreground |
+| Ảnh ở "Lỗi" | Backend từ chối (sai định dạng, quá lớn, vụ không còn thuộc tài khoản); đọc thông báo, xóa và chụp lại |
+| Đổi `.env` mà không có tác dụng | Chạy lại `npm start -- -c` |
+
+## Thiết kế giao diện
+
+Mỗi màn hình có đúng một hành động chính, màu `primary`, đặt ở nửa dưới màn hình; font hệ thống, cỡ chữ nội dung tối thiểu 16sp, lưới 4dp, lề 16dp, bo góc 12dp, vùng chạm tối thiểu 48×48dp.
+
+| Token | Giá trị | Dùng cho |
+|---|---|---|
+| `bg` / `surface` / `border` | `#f4f6f3` / `#ffffff` / `#dfe4dc` | Nền, thẻ, viền |
+| `text` / `textMuted` | `#1f2a1c` / `#667066` | Chữ chính, chữ phụ |
+| `primary` / `primaryDark` | `#2e7d32` / `#1b5e20` | Nút chính, chip thành công |
+| `warning` | `#b26a00` | Chờ kỹ sư duyệt, banner cách ly |
+| `danger` | `#b3261e` | Cần chụp lại, lỗi |
+
+- Tương phản chữ và nền tối thiểu 4.5:1 để đọc được dưới nắng; chip luôn kèm chữ.
+- Thao tác phá hủy (đăng xuất, xóa mục chờ gửi) có xác nhận; thông báo lỗi nêu việc cần làm tiếp theo.
+- Dùng "số ngày cách ly" thay cho `PHI`; tải bằng khung xương thay cho spinner toàn màn hình.
 
 ## Còn thiếu
 
-- Push notification khi kỹ sư duyệt hoặc từ chối báo cáo.
-- Icon và splash vẫn là ảnh mặc định của Expo.
+Push notification, icon và splash riêng, endpoint gộp trạng thái cách ly theo thửa; chi tiết ở [`docs/BACKLOG.md`](../docs/BACKLOG.md).

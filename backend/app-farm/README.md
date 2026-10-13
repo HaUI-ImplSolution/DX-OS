@@ -47,24 +47,44 @@ Cột trạng thái trên bảng của Farm phản chiếu trạng thái đó.
 
 ## Interface của core đã cài
 
-| Interface | Farm cài |
-|---|---|
-| `AppModule` | `FarmAppModule`: id `farm`, menu, loại workspace `HOUSEHOLD`, loại case tính giới hạn yêu cầu chờ |
-| `RoleProvider`, `EndpointPolicyContributor`, `ClientRestrictionPolicy` | `FarmSecurityPolicies`: `FARMER`, `ENGINEER`, `ADMIN`; danh mục công khai; nông dân chỉ qua client mobile |
-| `CaseTypeDefinition` | `FarmWorkflowConfig`: 5 loại duyệt |
-| `WorkflowDecisionHandler` | `ParcelApprovalHandler`, `ParcelEditApprovalHandler`, `CropSeasonApprovalHandler` |
-| `CaseSummaryProvider` | 5 provider (thửa, sửa thửa, vụ, chẩn đoán, khai phun) |
-| `NotificationTypeDefinition`, `NotificationChannel` | `FarmNotificationConfig`: 13 loại thông báo, kênh chat `ADMIN` và `ENGINEER` |
-| `BiDatasetProvider` | `FarmPlatformConfig`: 6 view `vw_*` đã duyệt và 3 bảng danh mục |
-| `FileProcessor` | `DiseaseImageProcessor`: chỉ JPEG và PNG, xóa EXIF |
-| `KnowledgeNamespace` | `FarmKnowledgeNamespace`: namespace `farm` |
-| `HealthContributor` | `ai` |
+Cấu hình bằng bean ở `FarmAppModule` (id `farm`, workspace `HOUSEHOLD`), `FarmSecurityPolicies` (vai, danh mục công khai, FARMER chỉ qua mobile), `FarmWorkflowConfig` (5 loại duyệt), `FarmNotificationConfig` (13 loại thông báo, kênh `ADMIN` và `ENGINEER`), `FarmPlatformConfig` (6 view `vw_*` và 3 bảng danh mục), `FarmKnowledgeNamespace` (`farm`) và `DiseaseImageProcessor` (chỉ JPEG/PNG, xóa EXIF).
+Bảng interface đầy đủ ở [`ARCHITECTURE.md`](../../ARCHITECTURE.md) mục 3.
+
+## Mã thửa, mã vụ và duyệt
+
+**Mã thửa** `<MÃ HTX>-<MÃ HỘ>-T<STT>`, ví dụ `HTX01-H0042-T03`.
+
+- Mã HTX lấy từ `app.htx-code` (mặc định `HTX01`); mã hộ là mã nông hộ (`H0042`).
+- STT tăng dần theo từng hộ, hai chữ số trở lên, lấy từ bảng `household_parcel_counter` trong cùng transaction với việc lưu thửa; hai request đồng thời nhận hai số khác nhau, STT không dùng lại sau khi xóa hay bị từ chối.
+- Client không gửi mã, backend sinh; `POST /api/v1/parcels` bắt buộc `latitude` và `longitude`.
+
+**Mã vụ** `<MÃ THỬA>-<NĂM><LOẠI VỤ>`, ví dụ `HTX01-H0042-T03-2026DX`; năm là năm của ngày bắt đầu vụ.
+
+| Loại vụ | Hậu tố | Tháng bắt đầu gợi ý |
+|---|---|---|
+| Đông Xuân (`DONG_XUAN`) | `DX` | 11, 12, 1 |
+| Hè Thu (`HE_THU`) | `HT` | 3, 4, 5 |
+| Thu Đông (`THU_DONG`) | `TD` | 6, 7, 8 |
+
+- Mốc tháng ở `app.season-start-months` là số tạm, chưa có kỹ sư nông nghiệp xác nhận; tháng ngoài các mốc không có gợi ý, nông dân tự chọn loại vụ.
+- Một thửa có tối đa một vụ mỗi loại mỗi năm và một vụ `ACTIVE` tại một thời điểm; vụ bị từ chối không giữ chỗ.
+
+**GPS**: nông dân gửi thêm `gpsAccuracyMeters` lấy từ điện thoại; sai số lớn hơn `app.gps-max-accuracy-meters` hoặc `mockedLocation=true` bị từ chối (`422`: `GPS_ACCURACY_TOO_LOW`, `GPS_ACCURACY_MISSING`, `GPS_MOCKED`).
+Quản trị viên nhập hộ không cần sai số.
+
+**Duyệt**
+
+- Thửa và vụ do nông dân tạo ở trạng thái `PENDING` cho tới khi quản trị viên duyệt qua `PATCH /api/v1/workflow-cases/{id}/approve` hoặc `/reject` (kèm lý do); do quản trị viên tạo thì duyệt ngay.
+- Chưa duyệt thì chưa tạo được vụ trên thửa (`PARCEL_NOT_APPROVED`), chưa gửi báo cáo hay thu hoạch trên vụ (`CROP_SEASON_NOT_APPROVED`).
+- Bị từ chối thì nông dân sửa và gửi lại (`POST /parcels/{id}/resubmit`, `POST /crop-seasons/{id}/resubmit`); lịch sử nằm ở timeline của case.
+- Sửa thửa đã duyệt là một yêu cầu riêng (`POST /parcels/{id}/edit-requests`), thửa giữ giá trị cũ tới khi được duyệt.
+- Mỗi nông dân có tối đa `app.max-pending-requests` (3) yêu cầu chờ duyệt cùng lúc (`TOO_MANY_PENDING_REQUESTS`).
 
 ## Dữ liệu
 
 - Migration `db/migration/farm` (bảng lịch sử `flyway_schema_history_farm`), chạy sau migration của core.
 - `farm/data.sql` seed thuốc và treatment rule đã duyệt, sinh từ `data/structured/*.json` bằng `data/scripts/generate_seed_sql.py`; không sửa tay.
-- `farm/weather-snapshot.json` là snapshot thời tiết dự phòng; `farm/knowledge-sources.json` là danh mục nguồn tài liệu RAG.
+- `weather-snapshot.json` là snapshot thời tiết dự phòng; `knowledge-sources.json` là danh mục nguồn tài liệu RAG (cùng thư mục `resources`).
 
 ## Cấu hình
 

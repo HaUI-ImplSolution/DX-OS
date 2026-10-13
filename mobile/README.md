@@ -1,7 +1,7 @@
 # Mobile (`mobile`, Expo)
 
 Thư mục riêng ngang hàng `backend/`, `frontend/`, `ai/`, `bi/`, `chat/` — ứng dụng React Native dành cho nông dân, chụp ảnh sâu bệnh ngay tại ruộng và gửi báo cáo về Backend.
-Kế hoạch, đặc tả backend và thiết kế UI nằm ở [`development/docs/pending_docs/mobile/`](../development/docs/pending_docs/mobile/README.md).
+Kiến trúc hệ thống ở [`ARCHITECTURE.md`](../ARCHITECTURE.md); việc chưa làm ở [`docs/BACKLOG.md`](../docs/BACKLOG.md).
 
 ## Vì sao chọn Expo (React Native)
 
@@ -101,8 +101,8 @@ Ngoài Expo Go, có thể build APK bằng EAS mà không cần cài Android Stu
   Thửa do FARMER tạo luôn thuộc hộ của chính họ.
 - Token của `FARMER` chỉ được chấp nhận khi cấp cho client `farm-mobile` (claim `azp`); cùng token đó cấp qua client web bị backend từ chối `403`.
   Mọi access token phải có `aud` chứa `dxos-api`; realm tự thêm vào token của client web và mobile, nên token cấp trước khi có cấu hình này (không có `aud`) bị `401` và phải đăng nhập lại.
-- Nội dung chẩn đoán (bệnh, khuyến nghị, thuốc, liều) chỉ có khi diagnosis đã `APPROVED`.
-  Đặc tả: [`development/docs/pending_docs/mobile/BACKEND_CHANGES.md`](../development/docs/pending_docs/mobile/BACKEND_CHANGES.md).
+- Nội dung chẩn đoán (bệnh, khuyến nghị, thuốc, liều) chỉ có khi diagnosis đã `APPROVED`; `PENDING` chỉ trả trạng thái, `REJECTED` trả thêm lý do.
+- Gửi báo cáo nhận header tùy chọn `Idempotency-Key` (UUID): key đã dùng trả báo cáo cũ, key sai định dạng trả `400`, key thuộc vụ khác hoặc người khác trả `409`.
 
 ## Biến môi trường
 
@@ -220,7 +220,25 @@ npx expo export --platform android
 | Ảnh ở trạng thái "Lỗi" | Backend từ chối ảnh (ví dụ sai định dạng, quá lớn hoặc vụ mùa không còn thuộc tài khoản); đọc thông báo dưới ảnh rồi xoá và chụp lại |
 | Đổi `.env` nhưng app vẫn dùng giá trị cũ | Chạy lại `npm start -- -c` |
 
+## Thiết kế giao diện
+
+Bảng màu kế thừa web; mỗi màn hình có đúng một hành động chính, màu `primary`, đặt ở nửa dưới màn hình.
+
+| Token | Giá trị | Dùng cho |
+|---|---|---|
+| `bg` / `surface` / `border` | `#f4f6f3` / `#ffffff` / `#dfe4dc` | Nền màn hình, thẻ, viền |
+| `text` / `textMuted` | `#1f2a1c` / `#667066` | Chữ chính, chữ phụ |
+| `primary` / `primaryDark` | `#2e7d32` / `#1b5e20` | Nút chính, chip thành công |
+| `warning` | `#b26a00` | Chip "Chờ kỹ sư duyệt", banner cách ly |
+| `danger` | `#b3261e` | Chip "Cần chụp lại", lỗi |
+
+- Font hệ thống, cỡ chữ nội dung tối thiểu 16sp; lưới 4dp, lề 16dp, bo góc 12dp, vùng chạm tối thiểu 48×48dp.
+- Tương phản chữ và nền tối thiểu 4.5:1 để đọc được dưới nắng; chip luôn kèm chữ, không dùng màu làm tín hiệu duy nhất.
+- Thao tác phá hủy (đăng xuất, xóa mục chờ gửi) có bước xác nhận; thông báo lỗi nêu việc cần làm tiếp theo.
+- Dùng "số ngày cách ly" thay cho thuật ngữ `PHI`; tải bằng khung xương thay vì spinner toàn màn hình.
+
 ## Còn thiếu
 
 - Push notification khi kỹ sư duyệt hoặc từ chối báo cáo.
 - Icon và splash vẫn là ảnh mặc định của Expo.
+- Thẻ thửa gọi riêng trạng thái cách ly cho từng thửa.

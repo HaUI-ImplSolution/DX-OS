@@ -2,7 +2,7 @@
 
 Thời lượng: 10 phút demo và tối đa 5 phút trả lời.
 Mười câu đầu theo đúng thứ tự câu hỏi định hướng ở mục 13 của đề; hai câu cuối là câu hỏi phụ hay gặp.
-Sơ đồ và ranh giới ở [`ARCHITECTURE_OPEN_CORE.md`](./ARCHITECTURE_OPEN_CORE.md).
+Sơ đồ và ranh giới ở [`ARCHITECTURE.md`](../ARCHITECTURE.md).
 
 ## 1. Open-Core nằm ở đâu? Thành phần nào chạy headless và ứng dụng nào dùng dịch vụ đó?
 
@@ -10,7 +10,7 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE_OPEN_CORE.md`](./ARCHITECTURE_OPEN_
   Không thành phần nào có giao diện cho người dùng cuối; giao diện nằm ở `frontend/` và `mobile/` (tầng 2 và 3).
 - Hai ứng dụng dùng chung Tầng 1: **DX-Farm** (`app-farm`) và **DX-Lab** (`app-lab`), mỗi lần chạy một ứng dụng chọn bằng `DXOS_APP`.
 - Ranh giới là ràng buộc lúc biên dịch: ứng dụng chỉ có `dx-core-api` trên classpath.
-- Dẫn: `ARCHITECTURE_OPEN_CORE.md` mục 1 và 2; `backend/README.md`.
+- Dẫn: `ARCHITECTURE.md` mục 1 và 2; `backend/README.md`.
 
 ## 2. Vì sao chọn kiến trúc và stack này? Thành phần nào là nguồn mở, giấy phép gì?
 
@@ -29,7 +29,7 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE_OPEN_CORE.md`](./ARCHITECTURE_OPEN_
   - Một ứng dụng mẫu rỗng (chỉ có `AppModule`) khởi động được trên Core nguyên bản và trả `GET /api/v1/system/status` đúng id của nó.
   - Chuyển ứng dụng là đổi một biến rồi chạy `deploy/start.sh <app>`; web, gateway, BI và tri thức đổi theo.
 - Những gì không thuộc Core vẫn có thể đổi theo ứng dụng: module giao diện, route giới hạn tốc độ ở gateway, mục BI, dữ liệu demo.
-- Dẫn: `CONTRIBUTING.md` mục "Thêm một ứng dụng mới", `SPI_CATALOG.md`.
+- Dẫn: `CONTRIBUTING.md` mục "Thêm một ứng dụng mới", `ARCHITECTURE.md` mục 3.
 
 ## 4. Identity/SSO, API Gateway, Data và Workflow được cung cấp thành dịch vụ dùng chung thế nào?
 
@@ -41,7 +41,7 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE_OPEN_CORE.md`](./ARCHITECTURE_OPEN_
 | Dữ liệu phi cấu trúc | MinIO riêng tư, client nhận link có hạn; tệp qua `FileProcessor` của ứng dụng | Ảnh lá lúa (Farm), tệp đính kèm ticket (Lab) |
 | Workflow | `core.workflow`: loại case cấu hình được, lịch sử `workflow_event` chỉ thêm, người phụ trách, hộp duyệt | Farm 5 loại duyệt; Lab `TICKET`, `DEVICE_LOAN`, `ROOM_BOOKING` |
 
-- Dẫn: `ARCHITECTURE_OPEN_CORE.md` mục 2 và 3; `sso/README.md`; `deploy/apisix/`.
+- Dẫn: `ARCHITECTURE.md` mục 2, 3 và 4; `sso/README.md`; `deploy/apisix/`.
 
 ## 5. Điểm nào thể hiện H-P-D-I thay vì chỉ là một dashboard CRUD?
 
@@ -53,7 +53,7 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE_OPEN_CORE.md`](./ARCHITECTURE_OPEN_
 | **I** | CV, RAG, LangGraph; kỹ sư chốt bệnh và điều trị | Luật phân loại giải thích được (từ khóa và lý do), RAG quy chế có trích nguồn |
 
 - Trạng thái và quyết định là sự kiện chỉ thêm, có người phụ trách; hai người xử lý cùng một việc thì một bên nhận 409.
-- Dẫn: `DEMO_SCRIPT.md`, `backend/app-farm/README.md`, `backend/app-lab/README.md`.
+- Dẫn: `SUBMISSION.md` mục 2, `backend/app-farm/README.md`, `backend/app-lab/README.md`.
 
 ## 6. AI/ML được dùng ở đâu? Dữ liệu đầu vào, mô hình, đánh giá và giới hạn là gì?
 
@@ -69,7 +69,7 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE_OPEN_CORE.md`](./ARCHITECTURE_OPEN_
   - Chưa có báo cáo đánh giá độc lập (test set, chỉ số theo lớp).
   - Luật của Lab là luật tay, chưa đo độ chính xác trên dữ liệu thật.
 - Kỹ sư luôn là người chốt bệnh và điều trị; nhãn kỹ sư chốt được lưu có cấu trúc cho dữ liệu huấn luyện về sau.
-- Dẫn: `ai/README.md`, `pending_docs/CV_RICE_IMAGE_VALIDATION_SUMMARY.md`, `improvement_docs/REMAINING_WORK.md`.
+- Dẫn: `ai/README.md`, `ai/app/cv/README.md`, `BACKLOG.md` mục "Giới hạn của AI và dữ liệu".
 
 ## 7. Nếu một nguồn dữ liệu hoặc API ngừng hoạt động, hệ thống xử lý thế nào?
 

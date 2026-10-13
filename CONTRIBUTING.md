@@ -71,7 +71,7 @@ Quy trình mới nằm trong module của ứng dụng (`app-farm` hoặc `app-l
 
 Backend gồm `dx-core-api` (interface và DTO), `dx-core` (dịch vụ dùng chung), `app-farm`, `app-lab` và `dx-host` (chạy được, chọn app bằng `DXOS_APP`).
 Ứng dụng chỉ phụ thuộc `dx-core-api`; core không biết ứng dụng nào đang chạy.
-Ví dụ mẫu là `app-lab` ([`backend/app-lab/README.md`](./backend/app-lab/README.md)); sơ đồ ở [`development/docs/submission/ARCHITECTURE_OPEN_CORE.md`](./development/docs/submission/ARCHITECTURE_OPEN_CORE.md).
+Ví dụ mẫu là `app-lab` ([`backend/app-lab/README.md`](./backend/app-lab/README.md)); sơ đồ ở [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 Dưới đây `<id>` là mã của ứng dụng (chữ thường), cũng là giá trị `DXOS_APP`.
 
 ### Backend
@@ -89,7 +89,7 @@ Dưới đây `<id>` là mã của ứng dụng (chữ thường), cũng là gi�
    Thêm `<id>` vào `KNOWN_APPS` của `AppSelectionCheck` trong `dx-host`, và `application-<id>.yaml` cho cấu hình riêng (đặt `spring.sql.init.mode: never` nếu app không có script seed).
 5. **Schema.**
    Migration của app nằm ở `db/migration/<id>`; bảng của core (`workspaces`, `workflow_case`, `workflow_event`, `notifications`) dùng chung, không tạo lại.
-6. **Interface cần cài** (đầy đủ ở [`SPI_CATALOG.md`](./development/docs/refactor_docs/SPI_CATALOG.md)):
+6. **Interface cần cài** (đầy đủ ở [`ARCHITECTURE.md`](./ARCHITECTURE.md) mục 3):
 
    | Cần | Interface |
    |---|---|

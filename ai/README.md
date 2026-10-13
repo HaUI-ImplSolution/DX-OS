@@ -50,6 +50,9 @@ Gợi ý triệu chứng chỉ hỗ trợ tra cứu; kỹ sư chốt bệnh tạ
 Checkout có sẵn `best.pt` và `crop_classifier.onnx` trong `ai/weights/`; Compose mount read-only và service nạp trực tiếp, không tải model. Xem [hợp đồng CV](app/cv/README.md#phân-loại-lúa-trước-chẩn-đoán).
 
 `POST /api/v1/diagnose` tải ảnh từ `image_url`, chạy CV, gọi Backend lấy structured facts, truy vấn RAG và trả recommendation. Nếu structured facts không khả dụng, request thất bại; AI không đưa ra recommendation chỉ dựa trên RAG.
+Request bắt buộc có `request_id`, `crop_season_id`, `image_url` và `field_context`; response gồm `request_id`, `cv_result`, `rag_evidence`, `structured_context` và `recommendation`.
+Thuốc, `dose_min`/`dose_max`, `dose_unit`, `phi_days` và `version` giữ nguyên từ structured facts của Backend; Backend kiểm lại rule version và lưu recommendation ở trạng thái `PENDING`.
+Contract được khóa bởi DTO [`AiDiagnoseRequest`](../backend/app-farm/src/main/java/HaUI/ImplSolution/dxos/farm/dto/AiDiagnoseRequest.java), [`AiDiagnoseResponse`](../backend/app-farm/src/main/java/HaUI/ImplSolution/dxos/farm/dto/AiDiagnoseResponse.java) và schema [`app/api/schemas.py`](app/api/schemas.py); `scripts/check_diagnose_contract.py` kiểm tương thích hai phía.
 
 ## Dữ liệu và quyền sở hữu
 

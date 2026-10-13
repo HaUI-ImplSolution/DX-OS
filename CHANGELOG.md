@@ -157,7 +157,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 - `V5__parcel_season_approval.sql`, `V6__rice_variety_seed.sql`: trạng thái duyệt, mã, GPS và khóa `client_request_id` cho `parcels` và `crop_seasons`; bảng `rice_varieties`, `household_parcel_counter`, `parcel_edit_requests`.
   Thửa và vụ có sẵn coi như đã duyệt; thửa chưa có tọa độ mang cờ `location_missing`.
-- Mã thửa `HTX01-H0042-T03` và mã vụ `HTX01-H0042-T03-2026DX` do backend sinh, quy tắc ở `development/docs/legacy_docs/PARCEL_SEASON_CODES.md`; `POST /api/v1/parcels` không nhận `code`, bắt buộc `latitude` và `longitude`.
+- Mã thửa `HTX01-H0042-T03` và mã vụ `HTX01-H0042-T03-2026DX` do backend sinh, quy tắc ở `backend/app-farm/README.md`; `POST /api/v1/parcels` không nhận `code`, bắt buộc `latitude` và `longitude`.
 - Nông dân phải gửi `gpsAccuracyMeters` không quá `app.gps-max-accuracy-meters` (30 m) và không `mockedLocation` (`422`).
 - Thửa và vụ của nông dân chờ quản trị viên duyệt; của quản trị viên được duyệt ngay.
   Core `workflow` có `WorkflowDecisionHandler` theo `caseType`; `PATCH /api/v1/workflow-cases/{id}/approve` và `/reject` (ADMIN, từ chối cần lý do) áp quyết định lên thửa, vụ hoặc yêu cầu chỉnh sửa.
@@ -174,7 +174,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 **Đã xong — Open-Core: workflow dùng chung, lưu ảnh có link hạn, package Core:**
 
 - Package `core.identity` (`Household`, `HouseholdService`, `KeycloakAdminClient`), `core.workflow`, `core.storage` là phần Core; ứng dụng DX-Farm giữ các package còn lại.
-  Sơ đồ ở `development/docs/submission/ARCHITECTURE_OPEN_CORE.md`.
+  Sơ đồ ở `ARCHITECTURE.md`.
 - `V4__workflow.sql`: bảng `workflow_case` (trạng thái, `assigned_to`, optimistic lock) và `workflow_event` (chỉ thêm; trigger chặn `UPDATE` và `DELETE`, cột `metadata` JSONB).
   Chẩn đoán đã có được dựng case và lịch sử từ cột quyết định hiện có.
 - Mỗi chẩn đoán mới mở case `DIAGNOSIS_APPROVAL`; duyệt hoặc từ chối ghi đúng một `workflow_event` cùng người thực hiện và lý do.
@@ -249,7 +249,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Với FARMER, `diagnosis` lồng trong báo cáo chỉ đầy đủ khi `APPROVED`; `PENDING` chỉ có `id`, `diseaseReportId`, `approvalStatus`; `REJECTED` thêm `decidedAt`, `rejectionReason`.
   ENGINEER và ADMIN nhận dữ liệu đầy đủ như trước.
 - Swagger: `@Operation` của `ParcelController`, `CropSeasonController`, `DiseaseReportController` và schema `DiagnosisResponse` mô tả hành vi theo role.
-- Đặc tả: `development/docs/pending_docs/mobile/BACKEND_CHANGES.md`.
+- Đặc tả: `mobile/README.md`.
 
 **Đã xong — Chuyển seed sang bệnh lá lúa:**
 
@@ -987,82 +987,63 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Thêm `LICENSE` (Apache-2.0 toàn văn) ở gốc repo.
 - **Còn thiếu**: SPDX header đầu mỗi file mã nguồn tự viết — việc sửa hàng loạt file, để riêng một lượt khác.
 
-## Tài liệu (root, `development/docs`, `ai/`)
+## Tài liệu (root, `docs`, `ai/`)
 
 ### 2026-10-13
 
+**Đã xong — Gom tài liệu về một bộ gọn:**
+
+- Ở gốc repository: `README.md` ngắn gọn theo mục 10 của đề (kiến trúc 3 tầng, H-P-D-I, tính năng, cài đặt, cấu hình, chạy thử, API, tài khoản demo), `ARCHITECTURE.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `LICENSE`, `LICENSES.md`.
+- `ARCHITECTURE.md`: sơ đồ 3 tầng với hai ứng dụng, đồ thị module Maven, ranh giới biên dịch, danh mục interface của Core, luồng request của Farm và Lab, cách chọn ứng dụng lúc chạy, dữ liệu và nguyên tắc vận hành.
+- `docs/BACKLOG.md`: nguồn duy nhất cho việc chưa làm, chưa kiểm thử và giới hạn đã biết.
+- `docs/TESTING.md`: mức hoàn thiện theo tính năng, kiểm tĩnh, dựng stack, kiểm tay theo vai, sự cố thường gặp và kết quả kiểm gần nhất.
+- `docs/SUBMISSION.md`: hồ sơ theo mục 10 của đề, kịch bản demo 10 phút và dàn ý báo cáo, slide, video; `docs/COUNCIL_QA.md`: trả lời 10 câu hỏi mục 13 của đề.
+- `docs/reference/`: đề thi và hai tài liệu thiết kế gốc.
+- `backend/app-farm/README.md` có mục mã thửa, mã vụ, GPS và quy tắc duyệt; `ai/README.md` có contract chẩn đoán; `mobile/README.md` có thiết kế giao diện.
+
 **Đã xong — Tài liệu và hồ sơ theo Core dùng chung và hai ứng dụng:**
 
-- `development/docs/submission/ARCHITECTURE_OPEN_CORE.md`: sơ đồ 3 tầng với hai ứng dụng, đồ thị module Maven, ranh giới biên dịch, bảng cài interface của Farm và Lab, luồng request của Farm và Lab, cách chọn ứng dụng lúc chạy.
-- `README.md` mô tả DX-OS Open-Core, hai ứng dụng, `DXOS_APP`, mức hoàn thiện của từng ứng dụng và tài khoản demo; thêm `backend/README.md` và `backend/app-farm/README.md`.
+- Sơ đồ 3 tầng với hai ứng dụng, bảng cài interface của Farm và Lab, luồng request của Farm và Lab.
+- `README.md` mô tả DX-OS Open-Core, hai ứng dụng, `DXOS_APP` và tài khoản demo; thêm `backend/README.md`, `backend/app-farm/README.md` và `backend/app-lab/README.md`.
 - `CONTRIBUTING.md`: hướng dẫn từng bước thêm một ứng dụng mới (module, `AppModule`, nạp có điều kiện, migration, interface, gateway, BI, tri thức, dữ liệu demo, giao diện), đã kiểm bằng một ứng dụng mẫu rỗng.
-- `development/docs/submission/`: `COUNCIL_QA.md` trả lời 10 câu hỏi mục 13 của đề theo core và hai ứng dụng, `DEMO_SCRIPT.md` kịch bản 10 phút gồm Farm, đổi ứng dụng và Lab, `REPORT_OUTLINE.md` dàn ý theo core, H-P-D-I và hai ứng dụng.
-- `development/docs/improvement_docs/REMAINING_WORK.md` có mục việc còn lại sau refactor.
+- Bộ trả lời hội đồng theo 10 câu hỏi mục 13 của đề, kịch bản demo 10 phút gồm Farm, đổi ứng dụng và Lab, dàn ý báo cáo kỹ thuật.
 - `sbom/backend.cdx.json` gồm năm module; quét gitleaks lịch sử (336 commit) và cây làm việc không có phát hiện.
 
 ### 2026-10-09
 
-- `development/docs/_template/`: mẫu phase dùng chung, không gắn với một core cụ thể.
-- `development/docs/legacy_docs/PARCEL_SEASON_CODES.md`, `development/docs/submission/ARCHITECTURE_OPEN_CORE.md`: vị trí hiện hành của quy chuẩn mã thửa/vụ và sơ đồ Open-Core.
-- `development/docs/improvement_docs/REMAINING_WORK.md`: tổng hợp việc còn lại sau P0 đến P8.
-- `development/docs/pending_docs/CV_RICE_IMAGE_VALIDATION_SUMMARY.md`: tóm tắt kiểm ảnh lúa bằng crop classifier.
-- Trạng thái treatment rule trong `README.md`, `data/README.md`, `deploy/demo/README.md`, `development/docs/submission/` và `improvement_docs/` khớp seed hiện hành.
+- Trạng thái treatment rule trong `README.md`, `data/README.md`, `deploy/demo/README.md` khớp seed hiện hành.
+- Tóm tắt kiểm ảnh lúa bằng crop classifier ở `ai/app/cv/README.md`.
 
 ### 2026-10-07
 
 - `README.md` có bảng mức hoàn thiện từng tính năng (trong code, kiểm thử, dữ liệu demo), hướng dẫn dữ liệu demo, kiểm thử và E2E.
-- `development/docs/submission/`: kịch bản demo, bộ trả lời hội đồng và dàn ý báo cáo kỹ thuật.
-- `development/docs/legacy_docs/PARCEL_SEASON_CODES.md`: mã thửa, mã vụ, GPS và quy tắc duyệt.
+- Kịch bản demo, bộ trả lời hội đồng và dàn ý báo cáo kỹ thuật.
+- Quy chuẩn mã thửa, mã vụ, GPS và quy tắc duyệt.
 - `deploy/demo/README.md`: script seed demo, E2E và workflow `E2E`.
-- Phase 5 đến 8 của `development/docs/improvement_docs` có kế hoạch, checklist và kết quả kiểm thử.
 
 ### 2026-10-06
 
-- `development/docs/submission/ARCHITECTURE_OPEN_CORE.md`: sơ đồ 3 tầng Open-Core và sơ đồ luồng request (Mermaid), ranh giới Core và ứng dụng.
-- `README.md` gốc có bảng đăng nhập vào từng service (tài khoản ứng dụng và tài khoản quản trị riêng); `minio/README.md` mô tả thư mục MinIO và console; `README.md` mô tả gateway, workflow dùng chung, lưu ảnh có link hạn; `LICENSES.md` thêm APISIX, MinIO và MinIO Java SDK.
+- Sơ đồ 3 tầng Open-Core và sơ đồ luồng request (Mermaid), ranh giới Core và ứng dụng.
+- `README.md` gốc có bảng đăng nhập vào từng service (tài khoản ứng dụng và tài khoản quản trị riêng), mô tả gateway, workflow dùng chung, lưu ảnh có link hạn; `minio/README.md` mô tả thư mục MinIO và console; `LICENSES.md` thêm APISIX, MinIO và MinIO Java SDK.
 - `README.md` có bảng tài khoản demo, hướng dẫn `deploy/reset.sh` và cách chạy test backend; `LICENSES.md` ghi thêm Testcontainers, JUnit/Mockito/AssertJ, gitleaks và pytest (chỉ dùng cho test/CI).
-- Phase 1 của `development/docs/improvement_docs` ở trạng thái Xong, kèm kết quả kiểm thử.
 
 ### 2026-10-05
 
-**Đã xong:**
-
-- `development/docs/improvement_docs/`: `PROJECT_IMPROVEMENTS.md` tổng hợp vấn đề cải thiện và đối chiếu đề thi HaUI 2026, template phase (`_template/`) và kế hoạch chia phase.
-- `development/docs/pending_docs/`: tài liệu mobile và kế hoạch thông báo Mattermost.
-- `development/docs/De_thi_PMNM_HaUI_2026_BAN_CHINH_THUC.pdf`: đề thi tuyển chọn nội bộ.
+- Đề thi tuyển chọn nội bộ HaUI 2026 đặt trong repository.
 
 ### 2026-10-02
 
-**Đã xong:**
-
-- `development/docs/pending_docs/MATTERMOST_WEBHOOK_NOTIFICATION_PLAN.md`: thiết kế, danh sách công việc và hạn chế của thông báo Mattermost.
-- `chat/README.md` (mục thông báo tự động và cấp webhook), `README.md` gốc (Giai đoạn 2 [H], trạng thái, bảng truy cập).
+- `chat/README.md` (mục thông báo tự động và cấp webhook), `README.md` gốc (trạng thái, bảng truy cập).
 
 ### 2026-09-30
 
-**Đã xong:**
-
-- `development/docs/pending_docs/mobile/`: kế hoạch, đặc tả backend, thiết kế UI và `CHANGES_OVERVIEW.md` tổng hợp hành vi cũ và mới của nhánh mobile.
-- `mobile/README.md`, `LICENSES.md` (mục Mobile), `sso/README.md` (client `dxfarm-mobile`), `README.md` gốc (client mobile, trạng thái).
+- `mobile/README.md`, `LICENSES.md` (mục Mobile), `sso/README.md` (client mobile), `README.md` gốc (client mobile, trạng thái).
 
 ### 2026-09-24
 
-**Đã xong:**
-
 - Thống nhất luồng seed: `data/scripts/generate_seed_sql.py` sinh `data.sql` từ `data/structured/*.json`; chỉ seed record có cờ eligibility `true`.
-  Quy ước hai cơ chế seed ghi ở `README.md`.
-- Thêm entity `DiseaseManagementPolicy` (bảng `disease_management_policies`), seed 13 guardrail qua generator.
-  `treatment_rules` có ràng buộc duy nhất `(disease_id, pesticide_id)` nên seed chạy đồng thời vẫn không trùng.
-  `treatment_rules` chưa có dòng nào vì cả 16 candidate đều `eligible_for_seed=false`.
-- `ai/app/rag/source_registry.py`, `ai/app/rag/ingestion_service.py` đọc corpus từ `data/rag/...` ở gốc repository.
-- `deploy/docker-compose.yml`, `deploy/.env.example` bind-mount `data/` vào `/data` cho container `rag-ingest`.
 - `data/README.md`: mapping `dose_min`/`dose_max` khớp đúng `TreatmentRule` hiện tại.
-- `README.md`, `ai/README.md`: đánh dấu `DiseaseManagementPolicy` đang ở giai đoạn kế hoạch, chưa có entity/bảng thật.
 
 ### 2026-09-15
 
-**Đã xong:**
-
-- Từng bổ sung kế hoạch và checklist triển khai tách AI/Backend theo phase; hai tài liệu trung gian này được dọn sau khi hoàn tất và hợp nhất trạng thái cuối vào tài liệu hiện hành.
-- Cập nhật `README.md`, `ai/README.md`, `ai/app/graph/README.md`, `AI_EVENT_SCHEMA_README.md` để mô tả trạng thái kiến trúc tại thời điểm triển khai.
-- Dọn `development/docs/`: chỉ còn kế hoạch/checklist/contract hiện hành; tài liệu thiết kế gốc chuyển vào `legacy_docs/`.
+- Cập nhật `README.md`, `ai/README.md`, `ai/app/graph/README.md` để mô tả trạng thái kiến trúc AI và Backend.

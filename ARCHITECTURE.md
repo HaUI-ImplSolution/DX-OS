@@ -1,8 +1,7 @@
 # Kiến trúc Open-Core 3 tầng
 
-Tài liệu này mô tả ranh giới giữa phần lõi dùng chung (Core) và hai ứng dụng chạy trên nó: DX-Farm (nông nghiệp) và DX-Lab (vận hành CNTT của khoa).
+Tài liệu mô tả ranh giới giữa phần lõi dùng chung (Core) và hai ứng dụng chạy trên nó: DX-Farm (nông nghiệp) và DX-Lab (vận hành CNTT của khoa).
 Sơ đồ viết bằng Mermaid, GitHub hiển thị trực tiếp.
-Danh sách interface ở [`SPI_CATALOG.md`](../refactor_docs/SPI_CATALOG.md); danh sách file theo module ở [`MODULE_MAP.md`](../refactor_docs/MODULE_MAP.md).
 
 ## 1. Sơ đồ 3 tầng
 
@@ -75,24 +74,59 @@ flowchart BT
   - `StorageService` nhận khóa object và byte; việc làm sạch tệp do app cài `FileProcessor`.
   - Vai, endpoint công khai, loại workspace, loại thông báo, kênh chat, view BI, nguồn tri thức và chỉ báo sức khỏe do app khai báo qua interface; core chỉ gom các bean đó lúc khởi động.
 - Entity của core không lộ ra ứng dụng: app nhận `CaseView` và `WorkspaceView`, và lưu id dạng số thay cho quan hệ JPA xuyên module.
-- Ứng dụng gọi core qua facade của `dx-core-api`: `WorkflowOperations`, `ApprovalInbox`, `WorkspaceDirectory`, `NotificationPublisher`, `ObjectStorage`, `FileStore`, `UserContext`, `KnowledgeGateway`, `AiGateway`.
 - Đổi ứng dụng chỉ thêm module ứng dụng mới; `dx-core-api`, `dx-core` và `deploy/apisix/common.yaml` giữ nguyên.
-  Cách thêm ở [`CONTRIBUTING.md`](../../../CONTRIBUTING.md) mục "Thêm một ứng dụng mới".
+  Cách thêm ở [`CONTRIBUTING.md`](./CONTRIBUTING.md) mục "Thêm một ứng dụng mới".
 
-### Cách ứng dụng cắm vào
+## 3. Interface của Core
 
-| Việc | Cơ chế | Farm | Lab |
+Interface khai báo một lần ở `dx-core-api`, mỗi ứng dụng cài theo cách riêng.
+Chỉ có interface khi Farm và Lab thật sự khác nhau; phần giống nhau nằm trực tiếp trong `dx-core` (RBAC, base entity, error envelope, idempotency, giới hạn tốc độ, phân trang, audit và xóa mềm).
+
+### Interface ứng dụng cài
+
+Ứng dụng khai báo mỗi interface bằng một Spring bean; core gom các bean đó lúc khởi động và chỉ bắt buộc có `AppModule`.
+
+| Interface | Mục đích | Farm cài | Lab cài |
 |---|---|---|---|
-| Khai báo app | `AppModule` (id, tên, menu, loại workspace) | `FarmAppModule` | `LabAppModule` |
-| Vai | `RoleProvider`, core tạo vai thiếu trong Keycloak lúc khởi động | FARMER, ENGINEER, ADMIN | STUDENT, LECTURER, TECHNICIAN, ADMIN |
-| Quy trình | `CaseTypeDefinition`, `WorkflowDecisionHandler` | 5 loại: duyệt thửa, sửa thửa, duyệt vụ mùa, duyệt chẩn đoán, xác nhận khai phun | `TICKET`, `DEVICE_LOAN`, `ROOM_BOOKING` |
-| Hộp duyệt | `CaseSummaryProvider` | 5 provider | 3 provider |
-| Thông báo và chat | `NotificationTypeDefinition`, `NotificationChannel` | kênh `ADMIN`, `ENGINEER` | kênh `ADMIN`, `TECHNICIAN` |
-| Dữ liệu BI | `BiDatasetProvider` (view `vw_*`) | 6 view đã duyệt | 5 view `vw_lab_*` |
-| Tri thức | `KnowledgeNamespace` | `farm` | `lab` |
-| Schema | Flyway location riêng, bảng lịch sử riêng | `db/migration/farm` | `db/migration/lab` |
+| `AppModule` | id, tên, menu, loại workspace, loại case tính giới hạn yêu cầu chờ | `farm` | `lab` |
+| `RoleProvider` | Vai của app (tên, mô tả, cờ nhân sự); core tạo vai thiếu trong Keycloak lúc khởi động | FARMER, ENGINEER, ADMIN | STUDENT, LECTURER, TECHNICIAN, ADMIN |
+| `CaseTypeDefinition` | Loại case: trạng thái, bước chuyển và vai được thực hiện (bean) | 5 loại duyệt | `TICKET` (nhiều trạng thái), `DEVICE_LOAN`, `ROOM_BOOKING` |
+| `WorkflowDecisionHandler` | Áp dụng quyết định lên entity của app | 3 handler | handler ticket và mượn thiết bị |
+| `CaseSummaryProvider` | Mô tả entity cho hộp duyệt, theo lô | thửa, vụ, sửa thửa, chẩn đoán, phun | ticket, phiếu mượn, đặt phòng |
+| `NotificationTypeDefinition` | Loại thông báo (mã, nhãn, biểu tượng); bean | 13 loại | 12 loại |
+| `NotificationChannel` | Kênh chat app đăng bài; webhook đọc từ `mattermost.webhook.url-<khóa>` | `admin`, `engineer` | `technician`, `admin` |
+| `BiDatasetProvider` | View và bảng vai chỉ đọc của Superset được `SELECT` | `vw_*` nông nghiệp và danh mục | `vw_lab_*` |
+| `FileProcessor` | Kiểm tra và làm sạch tệp theo mục đích trước khi lưu | ảnh lá: chỉ JPEG/PNG, xóa EXIF | tệp đính kèm: JPEG, PNG, PDF tối đa 5 MiB, loại theo nội dung |
+| `KnowledgeNamespace` | Tên corpus RAG và danh mục nguồn | `farm` | `lab` |
+| `EndpointPolicyContributor` | Đường dẫn GET công khai | `diseases`, `pesticides`, `treatment-rules` | không có |
+| `ClientRestrictionPolicy` | Vai chỉ được dùng một số client | FARMER chỉ dùng mobile | không có |
+| `HealthContributor` | Thêm dịch vụ vào `GET /api/v1/system/status` | AI | AI |
 
-## 3. Chọn ứng dụng lúc chạy
+Schema: mỗi ứng dụng có Flyway location và bảng lịch sử riêng (`db/migration/farm`, `db/migration/lab`); core chạy trước với `db/migration/core`.
+
+### Facade ứng dụng gọi
+
+| Facade | Dùng để |
+|---|---|
+| `WorkflowOperations` | mở case, ghi bước, gán người phụ trách, đếm case chờ, tìm case theo `CaseQuery` |
+| `ApprovalInbox` | danh sách và chi tiết yêu cầu chờ duyệt, lọc theo workspace và ngày |
+| `PendingRequestLimit` | chặn người dùng gửi thêm khi đã có đủ yêu cầu chờ |
+| `WorkspaceDirectory` | tra workspace theo id, mã, tài khoản; liệt kê theo loại; thành viên |
+| `WorkspaceAdministration` | tạo workspace kèm tài khoản chủ, gắn tài khoản chủ, thêm thành viên |
+| `UserContext` | id, tên, vai và workspace của người đang đăng nhập |
+| `ObjectStorage`, `FileStore` | lưu, tạo link có hạn, xử lý tệp qua `FileProcessor` |
+| `NotificationPublisher`, `ChatWebhook` | ghi thông báo có khóa chống trùng, đăng lên webhook của kênh chat |
+| `AiGateway`, `KnowledgeGateway` | gọi AI service kèm khóa dịch vụ; hỏi đáp RAG theo namespace, lọc theo ngưỡng điểm, gắn nguồn |
+
+### Kiểu dữ liệu công khai
+
+- `CaseView`: id, caseType, entityType, entityId, status (chuỗi), createdBy, assignedTo, thời điểm.
+- `WorkspaceView`, `WorkspaceMemberView`: workspace và thành viên (`OWNER` hoặc `MEMBER`).
+- `InboxItem`: case, `CaseSummary` của entity và workspace của entity.
+- Trạng thái, hành động của case và loại thông báo là chuỗi; core từ chối loại thông báo chưa được app đăng ký.
+- Controller có tên trường riêng của app (`/api/v1/households`, `/api/v1/approval-requests`, `/api/v1/knowledge/ask`) nằm ở app và dựng từ facade; core chỉ có controller với JSON trung tính.
+
+## 4. Chọn ứng dụng lúc chạy
 
 - `DXOS_APP` (`farm` hoặc `lab`) chọn app; giá trị khác làm backend dừng trước khi tạo bean (`AppSelectionCheck`).
 - Mỗi app nạp bằng một cấu hình tự động có điều kiện `dxos.app=<app>`: chỉ app đang chạy có entity, bảng, controller và lịch chạy.
@@ -103,7 +137,34 @@ flowchart BT
   - Web: một image, đọc `GET /api/v1/app` rồi nạp module giao diện của app.
 - `deploy/start.sh <app>` đổi app bằng một lệnh; bảng của app trước nằm lại trong database, không dùng tới.
 
-## 4. Sơ đồ luồng request: Farm
+## 5. Thành phần
+
+- **Backend (Java, Spring Boot)** sở hữu dữ liệu nghiệp vụ trong PostgreSQL, state machine duyệt, poka-yoke (khóa PHI, ràng buộc vụ mùa), phân quyền theo vai và nông hộ; schema do Flyway quản lý.
+- **Workflow dùng chung** ghi mỗi quyết định thành một `workflow_event` chỉ thêm, mỗi yêu cầu có người phụ trách; danh sách việc chờ ở `GET /api/v1/workflow-cases`.
+- **AI Service (Python, FastAPI)** gồm CV (YOLOv8n), RAG trên pgvector, LangGraph và Qwen2.5-1.5B qua Ollama; không có quyền vào database của Backend, gọi API nội bộ của Backend để lấy dữ kiện có cấu trúc.
+- **Web (React, Vite)**: một image phục vụ cả hai app, đọc `GET /api/v1/app` rồi nạp giao diện của app đang chạy.
+- **Mobile (Expo)** dành cho nông dân: đăng nhập Keycloak (PKCE), tạo thửa và vụ, chụp và gửi ảnh, hộp thông báo, hàng đợi gửi lại khi mất mạng.
+- **BI (Superset)** chỉ đọc các view `vw_*` của bản ghi đã duyệt.
+- **Lưu ảnh (MinIO)** bucket riêng tư, client nhận link có hạn (mặc định 15 phút).
+- **Chat (Mattermost)** nhận thông báo một chiều từ Backend qua Incoming Webhook.
+- **Portal** trang liên kết tới các ứng dụng và hiện trạng thái từng dịch vụ.
+
+Dữ liệu:
+
+- Hai database trên cùng một Postgres: `dxos` (dữ liệu nghiệp vụ và tri thức có cấu trúc) và `dx_farm_ai_vector_db` (`documents`, `document_chunks` cho RAG; AI dùng role chỉ đọc, job ingest dùng role ghi riêng).
+- Seed nghiệp vụ của Farm ở `backend/app-farm/src/main/resources/farm/data.sql`, sinh từ `data/structured/*.json` bằng `data/scripts/generate_seed_sql.py`; chỉ record được duyệt (`eligible_for_seed=true`) mới được seed.
+  Không sửa tay `data.sql`; CI chạy `generate_seed_sql.py --check` để phát hiện dữ liệu nguồn và `data.sql` bị lệch.
+- Lab không có seed SQL: phòng, thiết bị, yêu cầu, phiếu và lịch mẫu nạp qua API bằng `deploy/demo/seed_demo.py`; tri thức quy chế ở `data/rag/lab/`.
+- Hạ tầng Postgres (role, database, extension) do các `*Seeder` trong `dx-core`.
+
+Nguyên tắc nghiệp vụ:
+
+1. Deterministic-first: thuốc, liều, PHI luôn lấy từ dữ liệu có cấu trúc, LLM không tự sinh con số.
+2. Human-in-the-loop: khuyến nghị có thuốc phải qua kỹ sư duyệt.
+3. PostgreSQL là nguồn sự thật; RAG chỉ để giải thích.
+4. Poka-yoke chặn ở Backend, không chỉ ẩn nút ở giao diện.
+
+## 6. Sơ đồ luồng request: Farm
 
 ```mermaid
 sequenceDiagram
@@ -139,7 +200,7 @@ sequenceDiagram
   B->>DB: ghi Diagnosis, mở workflow_case, ghi workflow_event
 ```
 
-## 5. Sơ đồ luồng request: Lab
+## 7. Sơ đồ luồng request: Lab
 
 ```mermaid
 sequenceDiagram
@@ -176,18 +237,17 @@ sequenceDiagram
   B->>DB: ticket CLOSED, workflow_event ghi từng bước
 ```
 
-## 6. Nguyên tắc vận hành
+## 8. Nguyên tắc vận hành
 
 - Mọi client chỉ biết một địa chỉ: gateway.
   Cổng của backend, Keycloak, AI, MinIO và portal không publish ra host.
   Gateway có ba listener: `9080` cho web, API, Keycloak, ảnh và portal (`/portal/`), `9081` riêng cho Superset (bản 3.1 không chạy được dưới đường dẫn con), `9082` riêng cho console MinIO.
 - Gateway chỉ có route và giới hạn tốc độ của app đang chạy.
-- Backend kiểm lại JWT độc lập với gateway.
-  Gateway sai cấu hình thì backend vẫn tự bảo vệ.
+- Backend kiểm lại JWT độc lập với gateway; gateway sai cấu hình thì backend vẫn tự bảo vệ.
 - AI Service không có route ở gateway, chỉ backend gọi được qua mạng nội bộ của compose.
 - `GET /api/v1/system/status` (công khai) trả app đang chạy và trạng thái từng dịch vụ; portal đọc từ đây.
 
-## 7. Đối chiếu với yêu cầu của đề
+## 9. Đối chiếu với yêu cầu của đề
 
 | Yêu cầu (đề mục 3 và 4.1) | Chứng minh |
 |---|---|

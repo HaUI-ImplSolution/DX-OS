@@ -75,10 +75,11 @@ Cách Claude nên vận hành trong thư mục này — về quy trình và hàn
 - **Bám theo pattern đã có** — domain mới đi theo layout và convention của các domain đã có trong repo; xem phần Kiến trúc trong [../README.md](../README.md) một khi có shape cụ thể (`ResponseDTO`, exception handling, controller split...) để bám theo.
 
 ## Quy tắc riêng của dự án
-- Java + Spring Boot, build bằng Maven (`./mvnw`), group ID **`HaUI.ImplSolution`**, artifact `DX-Farm`, base package `HaUI.ImplSolution.DX_Farm`.
+- Java + Spring Boot, build bằng Maven (`./mvnw` trong `backend/`), group ID **`HaUI.ImplSolution`**, parent `dx-os-parent`, bốn module `dx-core-api`, `dx-core`, `app-farm`, `dx-host`; base package `HaUI.ImplSolution.dxos.{core.api,core,farm,host}`.
+  `app-farm` chỉ phụ thuộc `dx-core-api`.
 - Có dùng Lombok: **có** — `@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder` trên JPA entity (mutable, cần no-arg constructor cho Hibernate).
   DTO vẫn ưu tiên Java record (đã bất biến, không cần Lombok) — chỉ dùng Lombok cho entity, không lạm dụng sang DTO.
-- Package-by-layer: `controller/`, `service/`, `repository/`, `model/`, `dto/`, `config/`, `exception/` dưới base package — theo đúng skill `spring-boot`.
+- Package-by-layer: `controller/`, `service/`, `repository/`, `model/`, `dto/`, `config/`, `exception/` dưới base package của module — theo đúng skill `spring-boot`.
   Domain mới bám theo layout của `Parcel` (model/repository/service/controller + `dto/ParcelCreateRequest`, `dto/ParcelResponse`) làm ví dụ tham chiếu.
 - Mọi response của controller bọc trong `dto/ApiResponse<T>` (record, static factory `success`/`error`) — kể cả lỗi, qua `exception/GlobalExceptionHandler`.
   Không trả entity JPA trực tiếp, không trả `Map`/raw object tuỳ tiện.

@@ -9,7 +9,7 @@ from app.core.lifespan import lifespan
 
 def create_app() -> FastAPI:
     application = FastAPI(
-        title="DX-Farm AI Service",
+        title="DX-OS AI Service",
         lifespan=lifespan,
     )
     application.include_router(api_router, prefix="/api/v1")

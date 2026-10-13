@@ -70,5 +70,5 @@ def load_model(settings: Settings | None = None):
     validate_model_contract(model, contract)
     device = _resolve_device(settings.cv_device)
     model.to(device)
-    model._dxfarm_device = device
+    model._device = device
     return model

@@ -4,7 +4,7 @@ set -euo pipefail
 
 BASE="${MATTERMOST_URL:-http://mattermost:8065}/api/v4"
 ADMIN_USERNAME="${MATTERMOST_ADMIN_USERNAME:-admin}"
-ADMIN_EMAIL="${MATTERMOST_ADMIN_EMAIL:-admin@dxfarm.local}"
+ADMIN_EMAIL="${MATTERMOST_ADMIN_EMAIL:-admin@dxos.local}"
 ADMIN_PASSWORD="${MATTERMOST_ADMIN_PASSWORD:?MATTERMOST_ADMIN_PASSWORD is required}"
 TEAM_NAME="dx-farm"
 TEAM_DISPLAY="DX-Farm HTX"
@@ -14,6 +14,7 @@ CHANNELS=(
   "thong-bao-chung|Thông báo chung|O|Thông báo chung toàn hợp tác xã"
   "ky-su-nong-nghiep|Kỹ sư nông nghiệp|O|Trao đổi chẩn đoán và khuyến nghị điều trị"
   "ban-quan-tri|Ban quản trị|P|Kênh riêng của Ban quản trị"
+  "ky-thuat-vien|Kỹ thuật viên|O|Yêu cầu hỗ trợ mới và yêu cầu quá hạn của DX-Lab"
 )
 
 log() { echo "[mattermost-bootstrap] $*"; }

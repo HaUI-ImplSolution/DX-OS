@@ -1,9 +1,9 @@
 import * as SecureStore from "expo-secure-store";
 
 const KEYS = {
-  accessToken: "dxfarm.accessToken",
-  refreshToken: "dxfarm.refreshToken",
-  expiresAt: "dxfarm.expiresAt",
+  accessToken: "farm.accessToken",
+  refreshToken: "farm.refreshToken",
+  expiresAt: "farm.expiresAt",
 } as const;
 
 export interface StoredTokens {

@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 import json
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -11,67 +12,123 @@ from app.db.models.document_chunk import DocumentChunk
 from app.rag.chunker import chunk_text
 from app.rag.source_registry import load_source_registry
 
-DATA_FILE = (
-    Path(__file__).resolve().parents[3]
-    / "data"
-    / "rag"
-    / "processed"
-    / "disease_knowledge.json"
+DATA_ROOT = Path(__file__).resolve().parents[3] / "data" / "rag"
+
+
+@dataclass(frozen=True)
+class Corpus:
+    """One namespace of the knowledge base and the files it is built from."""
+
+    namespace: str
+    document_type: str
+    data_file: Path
+    registry_file: Path | None
+    version: str
+    # Field holding the stable code of a document and the field holding its title.
+    code_field: str
+    title_field: str
+    required_fields: frozenset[str]
+    # Whether the code is stored in documents.disease_code (only disease corpora have one).
+    code_is_disease_code: bool
+    # Serializes replacements of this corpus, including simultaneous CLI runs.
+    lock_key: int
+    label: str
+
+
+FARM_CORPUS = Corpus(
+    namespace="farm",
+    document_type="disease_knowledge",
+    data_file=DATA_ROOT / "processed" / "disease_knowledge.json",
+    registry_file=None,
+    version="riceleafbd-v3-workbook-v1",
+    code_field="disease_code",
+    title_field="class_name_vi",
+    required_fields=frozenset(
+        {
+            "disease_code",
+            "class_name_vi",
+            "knowledge",
+            "provenance",
+            "governance",
+            "content",
+        }
+    ),
+    code_is_disease_code=True,
+    lock_key=674507,
+    label="Disease",
 )
 
-DOCUMENT_TYPE = "disease_knowledge"
-VERSION = "riceleafbd-v3-workbook-v1"
-REQUIRED_FIELDS = {
-    "disease_code",
-    "class_name_vi",
-    "knowledge",
-    "provenance",
-    "governance",
-    "content",
-}
+LAB_CORPUS = Corpus(
+    namespace="lab",
+    document_type="lab_knowledge",
+    data_file=DATA_ROOT / "lab" / "processed" / "lab_knowledge.json",
+    registry_file=DATA_ROOT / "lab" / "source_registry.json",
+    version="lab-knowledge-v1",
+    code_field="article_code",
+    title_field="title",
+    required_fields=frozenset({"article_code", "title", "provenance", "content"}),
+    code_is_disease_code=False,
+    lock_key=674508,
+    label="Article",
+)
+
+CORPORA = {"farm": FARM_CORPUS, "lab": LAB_CORPUS}
+
+# Kept for callers that predate the corpus argument.
+DATA_FILE = FARM_CORPUS.data_file
+DOCUMENT_TYPE = FARM_CORPUS.document_type
+NAMESPACE = FARM_CORPUS.namespace
+VERSION = FARM_CORPUS.version
+REQUIRED_FIELDS = set(FARM_CORPUS.required_fields)
 
 
-def load_disease_knowledge() -> list[dict[str, Any]]:
-    """Load processed disease knowledge and validate its source references."""
+def load_corpus(corpus: Corpus) -> list[dict[str, Any]]:
+    """Load the processed documents of a corpus and validate their source references."""
 
-    with DATA_FILE.open(encoding="utf-8") as file:
-        diseases = json.load(file)
+    with corpus.data_file.open(encoding="utf-8") as file:
+        documents = json.load(file)
 
-    if not isinstance(diseases, list):
-        raise TypeError("disease_knowledge.json must contain a JSON array")
+    if not isinstance(documents, list):
+        raise TypeError(f"{corpus.data_file.name} must contain a JSON array")
 
-    source_registry = load_source_registry()
+    source_registry = load_source_registry(corpus.registry_file)
     normalized_codes: set[str] = set()
 
-    for index, item in enumerate(diseases, start=1):
+    for index, item in enumerate(documents, start=1):
         if not isinstance(item, dict):
-            raise TypeError(f"Disease item {index} must be an object")
+            raise TypeError(f"{corpus.label} item {index} must be an object")
 
-        missing = REQUIRED_FIELDS - item.keys()
+        missing = corpus.required_fields - item.keys()
         if missing:
             missing_text = ", ".join(sorted(missing))
-            raise ValueError(f"Disease item {index} is missing fields: {missing_text}")
+            raise ValueError(
+                f"{corpus.label} item {index} is missing fields: {missing_text}"
+            )
 
-        code = item["disease_code"]
+        code = item[corpus.code_field]
         if not isinstance(code, str) or not code:
-            raise ValueError(f"Disease item {index} has an invalid disease_code")
+            raise ValueError(
+                f"{corpus.label} item {index} has an invalid {corpus.code_field}"
+            )
 
         normalized_code = code.casefold()
         if normalized_code in normalized_codes:
-            raise ValueError(f"Duplicate disease_code: {code}")
+            raise ValueError(f"Duplicate {corpus.code_field}: {code}")
         normalized_codes.add(normalized_code)
 
-        title = item["class_name_vi"]
+        title = item[corpus.title_field]
         if not isinstance(title, str) or not title:
-            raise ValueError(f"Disease item {index} has an invalid class_name_vi")
+            raise ValueError(
+                f"{corpus.label} item {index} has an invalid {corpus.title_field}"
+            )
 
         content = item["content"]
         if not isinstance(content, str) or not content.strip():
-            raise ValueError(f"Disease item {index} has empty content")
+            raise ValueError(f"{corpus.label} item {index} has empty content")
 
         provenance = item["provenance"]
         if not isinstance(provenance, dict):
-            raise TypeError(f"Disease item {index} has invalid provenance")
+            raise TypeError(f"{corpus.label} item {index} has invalid provenance")
 
         source_ids = provenance.get("source_ids")
         if (
@@ -79,7 +136,7 @@ def load_disease_knowledge() -> list[dict[str, Any]]:
             or not source_ids
             or not all(isinstance(source_id, str) for source_id in source_ids)
         ):
-            raise ValueError(f"Disease item {index} has invalid source_ids")
+            raise ValueError(f"{corpus.label} item {index} has invalid source_ids")
 
         unknown_sources = [
             source_id for source_id in source_ids if source_id not in source_registry
@@ -87,50 +144,52 @@ def load_disease_knowledge() -> list[dict[str, Any]]:
         if unknown_sources:
             unknown_text = ", ".join(unknown_sources)
             raise ValueError(
-                f"Disease {code} references unknown sources: {unknown_text}"
+                f"{corpus.label} {code} references unknown sources: {unknown_text}"
             )
 
-    return diseases
+    return documents
 
 
-def preview_disease_knowledge() -> list[dict[str, Any]]:
+def preview_corpus(corpus: Corpus) -> list[dict[str, Any]]:
     return [
         {
-            "code": item["disease_code"],
-            "title": item["class_name_vi"],
+            "code": item[corpus.code_field],
+            "title": item[corpus.title_field],
             "source_ids": item["provenance"]["source_ids"],
             "chunk_count": len(chunk_text(item["content"])),
             "content": item["content"],
         }
-        for item in load_disease_knowledge()
+        for item in load_corpus(corpus)
     ]
 
 
-def ingest_disease_knowledge(db: Session) -> dict[str, int]:
-    """Replace the disease corpus atomically; retain unrelated document types."""
+def ingest_corpus(db: Session, corpus: Corpus) -> dict[str, int]:
+    """Replace one corpus atomically; retain other namespaces and document types."""
     try:
-        return _ingest_disease_knowledge(db)
+        return _ingest_corpus(db, corpus)
     except Exception:
         db.rollback()
         raise
 
 
-def _ingest_disease_knowledge(db: Session) -> dict[str, int]:
+def _ingest_corpus(db: Session, corpus: Corpus) -> dict[str, int]:
     from app.rag.embedding_service import EmbeddingService
 
-    diseases = load_disease_knowledge()
+    documents = load_corpus(corpus)
     prepared = [
-        (item, list(dict.fromkeys(chunk_text(item["content"])))) for item in diseases
+        (item, list(dict.fromkeys(chunk_text(item["content"])))) for item in documents
     ]
     chunk_contents = [content for _, chunks in prepared for content in chunks]
 
     embedding_service = EmbeddingService()
     embeddings = iter(embedding_service.embed_texts(chunk_contents))
 
-    # Serialize replacements of this corpus, including simultaneous CLI runs.
-    db.execute(text("SELECT pg_advisory_xact_lock(674507)"))
+    db.execute(text(f"SELECT pg_advisory_xact_lock({int(corpus.lock_key)})"))
     existing_documents = db.scalars(
-        select(Document).where(Document.document_type == DOCUMENT_TYPE)
+        select(Document).where(
+            Document.document_type == corpus.document_type,
+            Document.namespace == corpus.namespace,
+        )
     ).all()
 
     replaced_count = len(existing_documents)
@@ -142,11 +201,12 @@ def _ingest_disease_knowledge(db: Session) -> dict[str, int]:
     for item, chunks in prepared:
         source_ids = item["provenance"]["source_ids"]
         document = Document(
-            title=item["class_name_vi"],
+            title=item[corpus.title_field],
             source=",".join(source_ids),
-            document_type=DOCUMENT_TYPE,
-            version=VERSION,
-            disease_code=item["disease_code"],
+            document_type=corpus.document_type,
+            namespace=corpus.namespace,
+            version=corpus.version,
+            disease_code=item[corpus.code_field] if corpus.code_is_disease_code else None,
         )
         db.add(document)
         db.flush()
@@ -166,7 +226,22 @@ def _ingest_disease_knowledge(db: Session) -> dict[str, int]:
     db.commit()
 
     return {
-        "documents_inserted": len(diseases),
+        "documents_inserted": len(documents),
         "chunks_inserted": chunks_inserted,
         "documents_replaced": replaced_count,
     }
+
+
+def load_disease_knowledge() -> list[dict[str, Any]]:
+    """Load processed disease knowledge and validate its source references."""
+
+    return load_corpus(FARM_CORPUS)
+
+
+def preview_disease_knowledge() -> list[dict[str, Any]]:
+    return preview_corpus(FARM_CORPUS)
+
+
+def ingest_disease_knowledge(db: Session) -> dict[str, int]:
+    """Replace the disease corpus atomically; retain unrelated document types."""
+    return ingest_corpus(db, FARM_CORPUS)

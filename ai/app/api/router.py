@@ -83,7 +83,7 @@ def backend_client(
 @router.get("/health", response_model=CVHealthResponse)
 def health(request: Request):
     model = getattr(request.app.state, "plant_model", None)
-    device = getattr(model, "_dxfarm_device", None)
+    device = getattr(model, "_device", None)
     ready = (
         model is not None
         and getattr(request.app.state, "crop_classifier", None) is not None
@@ -130,7 +130,12 @@ def retrieve(payload: RetrieveRequest, db: Annotated[Session, Depends(get_db)]):
     if not payload.query.strip():
         raise HTTPException(422, "query must not be blank")
     return RAGRetriever().retrieve(
-        db, payload.query, top_k=payload.top_k, disease_code=payload.disease_code
+        db,
+        payload.query,
+        top_k=payload.top_k,
+        disease_code=payload.disease_code,
+        namespace=payload.namespace,
+        document_type=payload.document_type,
     )
 
 

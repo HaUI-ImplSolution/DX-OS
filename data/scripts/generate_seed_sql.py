@@ -17,7 +17,7 @@ if hasattr(sys.stdout, "reconfigure"):
 REPO_ROOT = Path(__file__).resolve().parents[2]
 STRUCTURED_DIR = REPO_ROOT / "data" / "structured"
 DEFAULT_OUTPUT = (
-    REPO_ROOT / "backend" / "DX-Farm" / "src" / "main" / "resources" / "data.sql"
+    REPO_ROOT / "backend" / "app-farm" / "src" / "main" / "resources" / "farm" / "data.sql"
 )
 SEED_VERSION = "2026.09.30-rice-workbook-v1"
 PESTICIDE_CODE_PATTERN = re.compile(r"^[A-Z0-9]+(?:_[A-Z0-9]+)*$")

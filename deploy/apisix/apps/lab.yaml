@@ -1,0 +1,67 @@
+  # Routes and rate limits of the Lab app, appended to the routes of common.yaml.
+
+  # Reporting an incident can carry up to five attachments.
+  - id: api-ticket-create
+    vars: [["server_port", "==", "9080"]]
+    priority: 20
+    uri: /api/v1/tickets
+    methods: ["POST"]
+    upstream_id: backend
+    plugin_config_id: bearer-token
+    plugins:
+      limit-count:
+        count: 30
+        time_window: 60
+        key_type: var
+        key: remote_addr
+        rejected_code: 429
+        rejected_msg: "Too many requests, try again in a minute"
+
+  - id: api-ticket-attachment
+    vars: [["server_port", "==", "9080"]]
+    priority: 20
+    uri: /api/v1/tickets/:ticketId/attachments
+    methods: ["POST"]
+    upstream_id: backend
+    plugin_config_id: bearer-token
+    plugins:
+      limit-count:
+        count: 30
+        time_window: 60
+        key_type: var
+        key: remote_addr
+        rejected_code: 429
+        rejected_msg: "Too many uploads, try again in a minute"
+
+  # Each suggestion looks up related knowledge on the AI service.
+  - id: api-ticket-suggest
+    vars: [["server_port", "==", "9080"]]
+    priority: 20
+    uri: /api/v1/tickets/suggest
+    methods: ["POST"]
+    upstream_id: backend
+    plugin_config_id: bearer-token
+    plugins:
+      limit-count:
+        count: 60
+        time_window: 60
+        key_type: var
+        key: remote_addr
+        rejected_code: 429
+        rejected_msg: "Too many suggestions, try again in a minute"
+
+  - id: api-room-booking
+    vars: [["server_port", "==", "9080"]]
+    priority: 20
+    uri: /api/v1/room-bookings
+    methods: ["POST"]
+    upstream_id: backend
+    plugin_config_id: bearer-token
+    plugins:
+      limit-count:
+        count: 30
+        time_window: 60
+        key_type: var
+        key: remote_addr
+        rejected_code: 429
+        rejected_msg: "Too many booking requests, try again in a minute"

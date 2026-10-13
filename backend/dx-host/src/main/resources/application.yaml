@@ -1,0 +1,130 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+
+  application:
+    name: DX-OS
+
+  profiles:
+    # The profile of the selected app loads its own settings (application-<app>.yaml).
+    active: ${DXOS_APP:farm}
+
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      # Flyway owns the schema; Hibernate only checks that the entities still match it.
+      ddl-auto: validate
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  sql:
+    init:
+      # Seed data of the selected app runs after the Flyway migrations and before Hibernate
+      # validates.
+      mode: always
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  jackson:
+    date-format: yyyy-MM-dd'T'HH:mm:ss.SSS
+    time-zone: Asia/Ho_Chi_Minh
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Hostname nội bộ, không dùng issuer-uri - xem sso/README.md.
+          jwk-set-uri: http://keycloak:8080/realms/dxos/protocol/openid-connect/certs
+
+dxos:
+  # App loaded next to the core; the value must match a known app (farm or lab).
+  app: ${DXOS_APP:farm}
+
+server:
+  port: ${SERVER_PORT:8081}
+
+storage:
+  # S3-compatible object storage (MinIO); the bucket is private.
+  endpoint: ${MINIO_ENDPOINT}
+  access-key: ${MINIO_ACCESS_KEY}
+  secret-key: ${MINIO_SECRET_KEY}
+  bucket: ${MINIO_BUCKET}
+  # Origin of the gateway, used to sign links when no request is being served.
+  public-url: ${STORAGE_PUBLIC_URL}
+  presign-ttl: ${STORAGE_PRESIGN_TTL:15m}
+
+security:
+  jwt:
+    # Access tokens must carry this audience (added by the dxos-api client scope in Keycloak).
+    audience: ${JWT_AUDIENCE:dxos-api}
+
+keycloak:
+  admin:
+    # Service account (client credentials) used to create workspace accounts.
+    base-url: ${KEYCLOAK_ADMIN_BASE_URL:http://keycloak:8080}
+    realm: dxos
+    client-id: ${KEYCLOAK_ADMIN_CLIENT_ID}
+    client-secret: ${KEYCLOAK_ADMIN_CLIENT_SECRET}
+  db:
+    # Mật khẩu role Postgres riêng của Keycloak.
+    password: ${KEYCLOAK_DB_PASSWORD}
+
+superset:
+  readonly:
+    # Mật khẩu role Postgres chỉ-đọc cho BI dashboard. Xem SupersetReadOnlyRoleSeeder.
+    password: ${SUPERSET_RO_PASSWORD}
+
+mattermost:
+  webhook:
+    # Empty disables notifications. Internal hostname, e.g. http://mattermost:8065/hooks/<key>.
+    # A channel may have its own url under url-<channel key>; without one it uses this url.
+    url: ${MATTERMOST_WEBHOOK_URL:}
+    connect-timeout-ms: ${MATTERMOST_WEBHOOK_CONNECT_TIMEOUT_MS:2000}
+    read-timeout-ms: ${MATTERMOST_WEBHOOK_READ_TIMEOUT_MS:3000}
+  db:
+    # Mật khẩu role Postgres riêng của Mattermost. Xem MattermostDatabaseSeeder.
+    password: ${MATTERMOST_DB_PASSWORD}
+
+app:
+  # Requests a user may have waiting for a decision at the same time.
+  max-pending-requests: ${MAX_PENDING_REQUESTS:3}
+
+knowledge:
+  # Passages less similar to the question than this (0-1) are not shown.
+  min-score: ${KNOWLEDGE_MIN_SCORE:0.40}
+
+ai:
+  service:
+    base-url: ${AI_SERVICE_BASE_URL:http://ai:8000}
+    # Service token/API key nội bộ cho chiều Backend -> AI
+    api-key: ${AI_SERVICE_API_KEY}
+    connect-timeout-ms: ${AI_SERVICE_CONNECT_TIMEOUT_MS:3000}
+    read-timeout-ms: ${AI_SERVICE_READ_TIMEOUT_MS:120000}
+    # Service API key nội bộ cho chiều AI -> Backend (/internal/v1/**, header X-Service-Api-Key).
+    inbound-api-key: ${AI_SERVICE_INBOUND_API_KEY}
+  vector-db:
+    readonly:
+      # Mật khẩu role Postgres chỉ-đọc (ai_vector_ro) cho AI runtime. Xem AiVectorDatabaseSeeder.
+      password: ${AI_VECTOR_DB_RO_PASSWORD}
+    ingest:
+      # Mật khẩu role Postgres đọc/ghi (ai_vector_ingest) cho job ingest RAG. Xem AiVectorDatabaseSeeder.
+      password: ${AI_VECTOR_DB_INGEST_PASSWORD}
+
+logging:
+  level:
+    # INFO unless LOG_LEVEL_APP overrides it (set DEBUG for local development).
+    HaUI.ImplSolution.dxos: ${LOG_LEVEL_APP:INFO}
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN

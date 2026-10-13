@@ -1,0 +1,50 @@
+spring:
+  sql:
+    init:
+      data-locations: classpath:farm/data.sql
+
+app:
+  # Cooperative code opening every generated parcel code (e.g. HTX01-H0042-T03).
+  htx-code: ${HTX_CODE:HTX01}
+  # A farmer's GPS fix is rejected when its reported error is larger than this (meters).
+  gps-max-accuracy-meters: ${GPS_MAX_ACCURACY_METERS:30}
+  # Cron (Asia/Ho_Chi_Minh) of the daily reminder for seasons that reached their expected harvest date.
+  harvest-reminder-cron: ${HARVEST_REMINDER_CRON:0 0 7 * * *}
+  # Start months (1-12) that suggest a season type. Self-compiled, not yet confirmed by an
+  # agronomist; months outside every list make the farmer pick the type.
+  season-start-months:
+    dong-xuan: ${SEASON_MONTHS_DONG_XUAN:11,12,1}
+    he-thu: ${SEASON_MONTHS_HE_THU:3,4,5}
+    thu-dong: ${SEASON_MONTHS_THU_DONG:6,7,8}
+
+security:
+  # Keycloak clients a FARMER-only token may come from (comma separated). Farmers use the mobile
+  # app only.
+  farmer-client-ids: ${FARMER_CLIENT_IDS:farm-mobile}
+
+weather:
+  # Open-Meteo forecast API, no key. When unreachable the stored snapshot (weather-snapshot.json) is served.
+  base-url: ${WEATHER_BASE_URL:https://api.open-meteo.com}
+  connect-timeout-ms: ${WEATHER_CONNECT_TIMEOUT_MS:2000}
+  read-timeout-ms: ${WEATHER_READ_TIMEOUT_MS:3000}
+  cache-ttl: ${WEATHER_CACHE_TTL:1h}
+
+mattermost:
+  webhook:
+    # Own channel for new parcel and crop season requests; empty falls back to the default url
+    # (mattermost.webhook.url).
+    url-admin: ${MATTERMOST_WEBHOOK_URL_ADMIN:}
+    # Own channel for new reports and pending diagnoses; empty falls back to the default url.
+    url-engineer: ${MATTERMOST_WEBHOOK_URL_ENGINEER:}
+    # Browser-reachable gateway origin used to attach the report photo; empty omits the image.
+    image-base-url: ${MATTERMOST_IMAGE_BASE_URL:}
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      aiDiagnosis:
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3

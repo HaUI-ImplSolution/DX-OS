@@ -1,6 +1,6 @@
-"""Đăng ký kết nối Postgres (DX-Farm, role chỉ-đọc) + dataset qua REST API công khai của
-Superset. Idempotent - tìm theo tên trước khi tạo mới. Import dashboard mẫu ở cuối nếu có
-export sẵn trong repo.
+"""Đăng ký kết nối Postgres (role chỉ-đọc) + dataset của app đang chạy (DXOS_APP) qua REST API
+công khai của Superset. Idempotent - tìm theo tên trước khi tạo mới. App có bundle dashboard
+export sẵn trong repo thì import bundle đó thay cho việc khai báo dataset từng view.
 """
 
 import json
@@ -14,18 +14,41 @@ import requests
 BASE_URL = "http://localhost:8088"
 ADMIN_USERNAME = os.environ.get("SUPERSET_ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.environ["SUPERSET_ADMIN_PASSWORD"]
-DXFARM_DB_URI = os.environ["DXFARM_DB_URI"]
-DASHBOARD_EXPORT_PATH = "/app/pythonpath/dxfarm_dashboard_export.zip"
+DXOS_DB_URI = os.environ["DXOS_DB_URI"]
 
-# Views of approved/settled records only (V9__bi_views.sql); superset_ro cannot read the tables.
-DATASET_TABLES = [
-    "vw_parcels_approved",
-    "vw_crop_seasons_approved",
-    "vw_disease_reports_processed",
-    "vw_diagnoses_approved",
-    "vw_treatment_applications_confirmed",
-    "vw_ai_diagnosis_outcomes",
-]
+# Per app: the Superset connection name, the read-only views to expose (superset_ro cannot read the
+# tables) and the dashboard bundle to import (None: datasets only).
+APPS = {
+    "farm": {
+        "database": "DX-Farm",
+        "datasets": [
+            "vw_parcels_approved",
+            "vw_crop_seasons_approved",
+            "vw_disease_reports_processed",
+            "vw_diagnoses_approved",
+            "vw_treatment_applications_confirmed",
+            "vw_ai_diagnosis_outcomes",
+        ],
+        "dashboard": "/app/pythonpath/farm_dashboard_export.zip",
+    },
+    "lab": {
+        "database": "DX-Lab",
+        "datasets": [
+            "vw_lab_rooms",
+            "vw_lab_devices",
+            "vw_lab_tickets",
+            "vw_lab_device_loans",
+            "vw_lab_room_bookings",
+        ],
+        "dashboard": None,
+    },
+}
+APP_ID = os.environ.get("DXOS_APP", "farm")
+if APP_ID not in APPS:
+    raise SystemExit(f"[bootstrap] DXOS_APP={APP_ID} không hợp lệ, chọn một trong {sorted(APPS)}")
+APP = APPS[APP_ID]
+DATABASE_NAME = APP["database"]
+DASHBOARD_EXPORT_PATH = APP["dashboard"]
 
 
 def wait_until_healthy(timeout_seconds: int = 180) -> None:
@@ -84,14 +107,14 @@ def find_one(headers, cookies, endpoint: str, filter_col: str, filter_value: str
 def ensure_database(headers, cookies) -> int | None:
     """Trả về id nếu đã có sẵn hoặc tạo mới thành công; None nếu chưa xong, để main() lặp lại
     toàn bộ chu trình đăng nhập + kiểm tra + tạo mới."""
-    existing = find_one(headers, cookies, "/api/v1/database/", "database_name", "DX-Farm")
+    existing = find_one(headers, cookies, "/api/v1/database/", "database_name", DATABASE_NAME)
     if existing:
-        print(f"[bootstrap] database 'DX-Farm' đã tồn tại, id={existing['id']}")
+        print(f"[bootstrap] database '{DATABASE_NAME}' đã tồn tại, id={existing['id']}")
         return existing["id"]
 
     payload = {
-        "database_name": "DX-Farm",
-        "sqlalchemy_uri": DXFARM_DB_URI,
+        "database_name": DATABASE_NAME,
+        "sqlalchemy_uri": DXOS_DB_URI,
         "expose_in_sqllab": True,
         "allow_run_async": False,
     }
@@ -100,9 +123,9 @@ def ensure_database(headers, cookies) -> int | None:
     )
     if resp.status_code < 300:
         db_id = resp.json()["id"]
-        print(f"[bootstrap] tạo mới database 'DX-Farm', id={db_id}")
+        print(f"[bootstrap] tạo mới database '{DATABASE_NAME}', id={db_id}")
         return db_id
-    print(f"[bootstrap] thử tạo database 'DX-Farm' thất bại: {resp.status_code} {resp.text[:300]}")
+    print(f"[bootstrap] thử tạo database '{DATABASE_NAME}' thất bại: {resp.status_code} {resp.text[:300]}")
     return None
 
 
@@ -123,7 +146,7 @@ def ensure_dataset(headers, cookies, database_id: int, table_name: str) -> int:
 
 
 def has_dashboard_export() -> bool:
-    return os.path.exists(DASHBOARD_EXPORT_PATH) and os.path.getsize(DASHBOARD_EXPORT_PATH) > 0
+    return DASHBOARD_EXPORT_PATH is not None and os.path.exists(DASHBOARD_EXPORT_PATH) and os.path.getsize(DASHBOARD_EXPORT_PATH) > 0
 
 
 def import_dashboard_bundle(headers, cookies) -> bool:
@@ -132,14 +155,14 @@ def import_dashboard_bundle(headers, cookies) -> bool:
     khẩu Postgres thật qua tham số `passwords` khớp đường dẫn file trong zip vì Superset mask
     mật khẩu lúc export."""
     with zipfile.ZipFile(DASHBOARD_EXPORT_PATH) as zf:
-        db_yaml_paths = [n for n in zf.namelist() if n.endswith("/databases/DX-Farm.yaml")]
+        db_yaml_paths = [n for n in zf.namelist() if n.endswith(f"/databases/{DATABASE_NAME}.yaml")]
 
-    real_password = urlparse(DXFARM_DB_URI).password or ""
+    real_password = urlparse(DXOS_DB_URI).password or ""
     # Superset khớp mật khẩu theo đường dẫn đã bỏ thư mục gốc của zip.
     passwords = {path.split("/", 1)[1]: real_password for path in db_yaml_paths}
 
     with open(DASHBOARD_EXPORT_PATH, "rb") as f:
-        files = {"formData": ("dxfarm_dashboard_export.zip", f.read(), "application/zip")}
+        files = {"formData": (os.path.basename(DASHBOARD_EXPORT_PATH), f.read(), "application/zip")}
     data = {"overwrite": "true", "passwords": json.dumps(passwords)}
     resp = requests.post(
         f"{BASE_URL}/api/v1/dashboard/import/",
@@ -180,7 +203,7 @@ def main() -> None:
         else:
             database_id = ensure_database(headers, cookies)
             if database_id is not None:
-                for table in DATASET_TABLES:
+                for table in APP["datasets"]:
                     ensure_dataset(headers, cookies, database_id, table)
                 ok = True
 

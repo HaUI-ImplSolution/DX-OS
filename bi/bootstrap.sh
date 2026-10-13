@@ -11,8 +11,8 @@ superset db upgrade
 
 superset fab create-admin \
   --username "${SUPERSET_ADMIN_USERNAME:-admin}" \
-  --firstname Admin --lastname DXFarm \
-  --email "${SUPERSET_ADMIN_EMAIL:-admin@dxfarm.local}" \
+  --firstname Admin --lastname DXOS \
+  --email "${SUPERSET_ADMIN_EMAIL:-admin@dxos.local}" \
   --password "${SUPERSET_ADMIN_PASSWORD}" \
   || echo "[bootstrap] admin user already exists, skip"
 

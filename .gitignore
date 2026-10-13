@@ -1,9 +1,6 @@
 # Environment variables and local secrets
-.env
 .env.*
 *.env
-*.env.local
-!.env.example
 !**/.env.example
 
 # Python virtual environments
@@ -32,22 +29,19 @@ dist/
 .eggs/
 .ipynb_checkpoints/
 
-# Downloaded AI models and large generated artifacts
-ai/service/models/
-ai/src/weights/
-ai/AI_TASKS_PHASE_0.md
+# Model weights and large generated artifacts
 *.ckpt
 *.onnx
 *.pt
 *.pth
 *.safetensors
 
-# Node / frontend dependencies and generated output
+# Runtime CV weights are included with the repository
+!ai/weights/**
+ai/weights/.cache/
+
+# Node dependencies and logs
 node_modules/
-frontend/dist/
-frontend/build/
-frontend/coverage/
-frontend/static/js/vendor.dll.js
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -57,7 +51,7 @@ pnpm-debug.log*
 **/target/
 *.class
 
-# Local database and Docker runtime data
+# Docker runtime data
 deploy/data/
 
 # Logs and temporary files
@@ -79,12 +73,7 @@ deploy/data/
 .DS_Store
 Thumbs.db
 
+# Local tooling
 .claude/settings.local.json
-# Local codebase analysis artifacts
 .ua/
 .local/
-
-# Runtime CV weights are included with the repository.
-!ai/weights/
-!ai/weights/**
-ai/weights/.cache/

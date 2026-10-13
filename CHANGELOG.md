@@ -3,9 +3,68 @@
 Nhật ký thay đổi của DX-Farm, theo từng module.
 Định dạng dựa trên [Keep a Changelog](https://keepachangelog.com/).
 
-## Backend (Spring Boot — `backend/DX-Farm`)
+## Backend (Spring Boot — `backend`)
+
+### 2026-10-13
+
+**Đã xong — Trạng thái hệ thống nêu app đang chạy:**
+
+- `GET /api/v1/system/status` (công khai) trả thêm `app` gồm `id` và `name` của app đang chạy; portal và các script seed, E2E đọc từ đây.
+
+### 2026-10-12
+
+**Đã xong — App Lab (`app-lab`):**
+
+- Module `app-lab` chỉ phụ thuộc `dx-core-api`; `DXOS_APP=lab` nạp module, migration `db/migration/lab` (bảng lịch sử `flyway_schema_history_lab`) và `application-lab.yaml`.
+- Yêu cầu hỗ trợ: tạo kèm tệp (JPEG, PNG, PDF), trao đổi công khai và nội bộ, tự nhận hoặc được gán, `resolve` bắt buộc ghi chú và nguyên nhân gốc, xác nhận kèm đánh giá 1-5, mở lại tối đa 3 lần.
+  Hạn phản hồi và xử lý tính từ chính sách SLA theo ưu tiên; mã ticket `TK-<năm>-<số>`.
+- Thiết bị: nhật ký bảo trì, phiếu mượn có hạn 7 ngày (sinh viên do giảng viên duyệt, giảng viên do kỹ thuật viên duyệt), tối đa 2 phiếu mở mỗi người, trả hỏng mở nhật ký sửa chữa.
+- Đặt phòng: bước 30 phút, tối đa 4 giờ, trước tối đa 30 ngày, kiểm sức chứa; ràng buộc `EXCLUDE USING gist` ở PostgreSQL chặn hai lịch hiệu lực chồng giờ cùng phòng.
+- Ba loại case `TICKET`, `DEVICE_LOAN`, `ROOM_BOOKING` trên workflow dùng chung; lịch sử ở `workflow_event`, hai người xử lý cùng ticket thì một bên nhận 409.
+- Lịch cảnh báo SLA (80% thời hạn xử lý, quá hạn) và nhắc mượn trả hằng ngày; mỗi thông báo gửi một lần nhờ khóa chống trùng.
+- `POST /api/v1/tickets/suggest` gợi ý loại và ưu tiên bằng luật kèm lý do và tối đa 3 đoạn tri thức; `POST /api/v1/knowledge/ask` hỏi đáp namespace `lab`.
+- `GET /api/v1/lab-stats/summary` và 5 view `vw_lab_*` cho Superset; `GET /api/v1/approval-requests` liệt kê ticket, phiếu mượn và đặt phòng cho kỹ thuật viên.
+- Chi tiết ở [`backend/app-lab/README.md`](./backend/app-lab/README.md).
+
+**Đã xong — Tên trung tính cho realm và client:**
+
+- Realm `dxos`, audience `dxos-api`; client Farm mobile cho FARMER là `farm-mobile` (`security.farmer-client-ids`).
+- Service account `dxos-backend-admin` giữ `manage-realm` để `RoleBootstrap` tạo vai của app lúc khởi động.
+
+### 2026-10-11
+
+**Đã xong — Core trung tính cho nhiều ứng dụng:**
+
+- Đơn vị dữ liệu là `Workspace` (`code`, `type`, `name`, liên hệ, thuộc tính) với `WorkspaceMember` nhiều-nhiều (vai `OWNER` hoặc `MEMBER`).
+  Tiền tố mã theo loại do app đăng ký; Farm đăng ký `HOUSEHOLD` với tiền tố `H`.
+  Core có `/api/v1/workspaces`; Farm giữ `/api/v1/households` với JSON như cũ.
+- Workflow cấu hình được: mỗi loại case khai báo trạng thái, bước chuyển và vai bằng `CaseTypeDefinition`; trạng thái là chuỗi.
+  Farm đăng ký năm loại theo luồng duyệt chuẩn (`PENDING` → `APPROVED`, `REJECTED`, `CANCELLED`; `REJECTED` → `PENDING`).
+  Loại case chưa đăng ký bị từ chối.
+- Hộp duyệt chạy ở core (`ApprovalInbox`); app mô tả entity qua `CaseSummaryProvider`.
+  Giới hạn số yêu cầu chờ (`MAX_PENDING_REQUESTS`) thuộc core, loại case tính giới hạn do app khai báo.
+- Thông báo trong app ở core: `notifications` nằm ở migration core, `type` là mã chuỗi do app đăng ký.
+  Khóa kênh chat là chuỗi; webhook của kênh đọc từ `mattermost.webhook.url-<khóa>` và lùi về `mattermost.webhook.url`.
+- Bảo mật theo interface: `RoleProvider` (core tạo vai thiếu trong Keycloak lúc khởi động, thử lại nền khi Keycloak chưa lên; thiếu quyền tạo vai thì chỉ ghi log), `EndpointPolicyContributor`, `ClientRestrictionPolicy`.
+  `UserContext` có `roles`, `hasRole`, `isStaff`.
+- `GET /api/v1/app` trả id, tên, vai, menu và loại workspace của app đang chạy.
+- Cổng AI (`AiGateway`) và hỏi đáp tri thức (`KnowledgeGateway`) ở core; AI service nhận `namespace` (mặc định `farm`) ở `POST /api/v1/disease/knowledge/retrieve`.
+- `SupersetReadOnlyRoleSeeder` cấp quyền theo `BiDatasetProvider`; `GET /api/v1/system/status` gom `HealthContributor`; `FileStore` chạy `FileProcessor` của mục đích trước khi lưu tệp.
+- Lỗi poka-yoke mang dữ liệu đi kèm dạng `data` (Farm đưa `harvestLockedUntil` vào đó).
+- Web và mobile nhận trạng thái case và loại thông báo ngoài danh sách đã biết, hiển thị nguyên giá trị.
 
 ### 2026-10-09
+
+**Đã xong — Backend đa module:**
+
+- Backend là bốn module Maven: `dx-core-api` (interface, DTO, lỗi), `dx-core` (identity, workflow, storage, bảo mật, nền tảng), `app-farm` (nghiệp vụ nông nghiệp) và `dx-host` (fat jar).
+  Package gốc là `HaUI.ImplSolution.dxos`.
+- `app-farm` chỉ phụ thuộc `dx-core-api` và gọi core qua `WorkflowOperations`, `WorkspaceDirectory`, `ObjectStorage`, `UserContext`.
+  `Parcel` giữ `household_id` dạng số, không còn quan hệ JPA tới nông hộ.
+- `DXOS_APP` (mặc định `farm`) chọn app chạy cùng core; giá trị không hợp lệ làm backend dừng khi khởi động.
+- Flyway có hai location: `db/migration/core` (`households`, `workflow_case`, `workflow_event`) và `db/migration/farm`, mỗi nơi một bảng lịch sử, core chạy trước.
+  Database dựng lại bằng `deploy/reset.sh`.
+- `data.sql` của Farm nằm ở `app-farm/src/main/resources/farm/data.sql` và chỉ nạp khi `DXOS_APP=farm`.
 
 **Đã xong — Seed treatment rule đã duyệt:**
 
@@ -98,7 +157,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 - `V5__parcel_season_approval.sql`, `V6__rice_variety_seed.sql`: trạng thái duyệt, mã, GPS và khóa `client_request_id` cho `parcels` và `crop_seasons`; bảng `rice_varieties`, `household_parcel_counter`, `parcel_edit_requests`.
   Thửa và vụ có sẵn coi như đã duyệt; thửa chưa có tọa độ mang cờ `location_missing`.
-- Mã thửa `HTX01-H0042-T03` và mã vụ `HTX01-H0042-T03-2026DX` do backend sinh, quy tắc ở `development/docs/legacy_docs/PARCEL_SEASON_CODES.md`; `POST /api/v1/parcels` không nhận `code`, bắt buộc `latitude` và `longitude`.
+- Mã thửa `HTX01-H0042-T03` và mã vụ `HTX01-H0042-T03-2026DX` do backend sinh, quy tắc ở `backend/app-farm/README.md`; `POST /api/v1/parcels` không nhận `code`, bắt buộc `latitude` và `longitude`.
 - Nông dân phải gửi `gpsAccuracyMeters` không quá `app.gps-max-accuracy-meters` (30 m) và không `mockedLocation` (`422`).
 - Thửa và vụ của nông dân chờ quản trị viên duyệt; của quản trị viên được duyệt ngay.
   Core `workflow` có `WorkflowDecisionHandler` theo `caseType`; `PATCH /api/v1/workflow-cases/{id}/approve` và `/reject` (ADMIN, từ chối cần lý do) áp quyết định lên thửa, vụ hoặc yêu cầu chỉnh sửa.
@@ -115,7 +174,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 **Đã xong — Open-Core: workflow dùng chung, lưu ảnh có link hạn, package Core:**
 
 - Package `core.identity` (`Household`, `HouseholdService`, `KeycloakAdminClient`), `core.workflow`, `core.storage` là phần Core; ứng dụng DX-Farm giữ các package còn lại.
-  Sơ đồ ở `development/docs/submission/ARCHITECTURE_OPEN_CORE.md`.
+  Sơ đồ ở `ARCHITECTURE.md`.
 - `V4__workflow.sql`: bảng `workflow_case` (trạng thái, `assigned_to`, optimistic lock) và `workflow_event` (chỉ thêm; trigger chặn `UPDATE` và `DELETE`, cột `metadata` JSONB).
   Chẩn đoán đã có được dựng case và lịch sử từ cột quyết định hiện có.
 - Mỗi chẩn đoán mới mở case `DIAGNOSIS_APPROVAL`; duyệt hoặc từ chối ghi đúng một `workflow_event` cùng người thực hiện và lý do.
@@ -190,7 +249,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Với FARMER, `diagnosis` lồng trong báo cáo chỉ đầy đủ khi `APPROVED`; `PENDING` chỉ có `id`, `diseaseReportId`, `approvalStatus`; `REJECTED` thêm `decidedAt`, `rejectionReason`.
   ENGINEER và ADMIN nhận dữ liệu đầy đủ như trước.
 - Swagger: `@Operation` của `ParcelController`, `CropSeasonController`, `DiseaseReportController` và schema `DiagnosisResponse` mô tả hành vi theo role.
-- Đặc tả: `development/docs/pending_docs/mobile/BACKEND_CHANGES.md`.
+- Đặc tả: `mobile/README.md`.
 
 **Đã xong — Chuyển seed sang bệnh lá lúa:**
 
@@ -264,6 +323,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Dữ liệu (`data`)
 
+### 2026-10-12
+
+- `rag/lab/` có corpus của DX-Lab: 10 tài liệu tự soạn (CC BY 4.0) ở `processed/lab_knowledge.json` và registry nguồn `source_registry.json`.
+
 ### 2026-10-09
 
 - `pesticides_candidates_master.json` có 2 sản phẩm (`NEWTEC_300SC` được seed, `HELP_400SC` chờ duyệt); `treatment_rules_candidates_master.json` có 3 rule (2 `EXPERT_APPROVED` được seed, rule đốm nâu bị chặn).
@@ -279,6 +342,19 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Generator, validator đối chiếu workbook, seed check và RAG dry-run đều đạt; `data.sql` được sinh deterministic từ dữ liệu chuẩn.
 
 ## Mobile (`mobile`, Expo)
+
+### 2026-10-12
+
+**Đã xong — Client `farm-mobile`:**
+
+- Realm `dxos`, client `farm-mobile`; scheme `dxfarm://` và bundle `vn.dxfarm.mobile` là nhận diện của app.
+- Khóa lưu phiên và hàng đợi tải lên có tiền tố `farm.`.
+
+### 2026-10-11
+
+**Đã xong — Loại thông báo mở rộng:**
+
+- `AppNotification.type` và `relatedEntityType` nhận giá trị ngoài danh sách đã biết; thông báo không điều hướng được vẫn hiển thị tiêu đề và nội dung.
 
 ### 2026-10-07
 
@@ -363,6 +439,28 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - `mobile/README.md`: chạy thử trên điện thoại thật với IP LAN, biến môi trường, tài khoản demo, kiểm tra mã nguồn.
 
 ## AI Service (Python)
+
+### 2026-10-13
+
+- Tên dịch vụ trên OpenAPI là `DX-OS AI Service`; một dịch vụ phục vụ corpus `farm` và `lab`.
+
+### 2026-10-12
+
+**Đã xong — Corpus theo namespace:**
+
+- Job ingest nhận `--corpus farm|lab` và thay thế tài liệu của đúng namespace đó.
+- `POST /api/v1/disease/knowledge/retrieve` nhận `document_type` tùy chọn; không có thì tìm trong toàn namespace.
+
+**Đã xong — Thuộc tính thiết bị của mô hình:**
+
+- Thiết bị chạy mô hình CV lưu ở thuộc tính `_device`.
+
+### 2026-10-11
+
+**Đã xong — Namespace cho truy vấn RAG:**
+
+- `POST /api/v1/disease/knowledge/retrieve` nhận `namespace` (mặc định `farm`); retriever chỉ đọc tài liệu cùng namespace.
+- Bảng `documents` có cột `namespace` (mặc định `farm`); ingest của bệnh lúa ghi `farm`.
 
 ### 2026-10-08
 
@@ -467,6 +565,28 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Frontend (`frontend`)
 
+### 2026-10-13
+
+**Đã xong — Vỏ web theo app và giao diện Lab:**
+
+- Một image web phục vụ mọi app: sau đăng nhập web đọc `GET /api/v1/app`, nạp module giao diện theo `id` (tải lười), dựng menu từ manifest, chọn vai mạnh nhất trong các vai của app và đặt tiêu đề trang.
+- `src/shell/` chứa phần dùng chung: đăng nhập, khung trang, menu, chuông thông báo, hộp duyệt và chi tiết case, hỏi đáp tri thức, đơn vị (workspace); app chỉ vào vỏ qua `src/shell/index.ts`, vỏ không import `src/apps/`.
+- `src/apps/farm/` giữ trang Farm; `src/apps/lab/` có tổng quan theo vai, yêu cầu hỗ trợ (gợi ý loại, ưu tiên và bài liên quan khi gõ mô tả, đính kèm, trao đổi, SLA, xác nhận và đánh giá), hàng đợi kỹ thuật viên, mượn trả thiết bị, lịch tuần và đặt phòng, phòng và thiết bị kèm nhật ký bảo trì, thống kê, danh mục, hỏi đáp quy chế.
+- Route theo menu của manifest: vai không có trong menu mở thẳng đường dẫn thì thấy "Không đủ quyền".
+- Tài khoản chỉ được dùng trên di động (gateway trả 403) thấy thông báo "Tài khoản không dùng được trên web"; sau thao tác bị từ chối, trang Lab tải lại trạng thái hiện tại.
+
+### 2026-10-12
+
+**Đã xong — Client `dxos-web`:**
+
+- Web đăng nhập realm `dxos` bằng client `dxos-web`; khóa lưu đường dẫn quay lại là `dxos.returnPath`.
+
+### 2026-10-11
+
+**Đã xong — Trạng thái case dạng chuỗi:**
+
+- `CaseStatus` là chuỗi; `labels.ts` có `statusLabel` và `statusTone`, trạng thái chưa biết hiển thị nguyên giá trị với tông trung tính.
+
 ### 2026-10-07
 
 - Thông báo lỗi từ Backend hiển thị bằng tiếng Việt theo `errorCode` (`src/errorMessages.ts`).
@@ -543,6 +663,44 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Đã test qua trình duyệt thật với từng role, xác nhận UI và 401/403 đúng chỗ.
 
 ## Deploy (`deploy`)
+
+### 2026-10-13
+
+**Đã xong — Chuyển app, gateway và dữ liệu demo theo app:**
+
+- `deploy/switch-app.sh <app> [--seed] [--build] [--reset] [--yes]` ghi `DXOS_APP` vào `deploy/.env`, dựng lại gateway, backend, job nạp tri thức và Superset, khởi động các dịch vụ còn lại rồi đợi `GET /api/v1/system/status` báo đúng app; `--seed` nạp dữ liệu demo, `--reset` gọi `reset.sh`.
+  Chạy được cả khi stack đang tắt.
+- `deploy/start.sh [app]` là lệnh một bước: chạy `switch-app.sh` với `--seed`, app lấy từ đối số hoặc từ `DXOS_APP` trong `.env`.
+- Gateway: `deploy/apisix/common.yaml` (upstream, kiểm JWT, route chung, giới hạn hỏi đáp và trạng thái hệ thống) cộng `deploy/apisix/apps/<app>.yaml`.
+  Service `apisix-config` ghép hai file thành `deploy/data/apisix/apisix.yaml` theo `DXOS_APP` trước khi gateway khởi động; app không có file thì Compose dừng với thông báo rõ.
+  Farm giới hạn upload ảnh báo cáo và chẩn đoán AI; Lab giới hạn tạo yêu cầu hỗ trợ, tải tệp đính kèm, gợi ý phân loại và đặt phòng.
+- `seed_demo.py` và `e2e.py` nhận `--app farm|lab`, mặc định đọc app đang chạy từ trạng thái hệ thống:
+  - `seed_farm.py` và `e2e_farm.py` giữ dữ liệu và 10 bước của Farm.
+  - `seed_lab.py` tạo sáu tài khoản (`student1`, `student2`, `lecturer1`, `tech1`, `tech2`, `admin1`), lớp và bộ môn, phòng và thiết bị, 12 yêu cầu hỗ trợ ở các trạng thái, 5 phiếu mượn, 5 lịch đặt phòng; yêu cầu, phiếu và lịch mang `Idempotency-Key` cố định nên chạy lại không tạo trùng.
+  - `e2e_lab.py` chạy 16 bước: gợi ý loại, báo sự cố kèm ảnh, hai kỹ thuật viên nhận cùng lúc (409), ghi chú nội bộ ẩn với sinh viên, thiếu nguyên nhân gốc (422), xác nhận kèm đánh giá, mượn và trả hỏng, đặt phòng và chồng giờ, quá giờ, vượt sức chứa, sinh viên đặt phòng (403), hỏi đáp, thống kê.
+- `make_ci_env.py --app` ghi `DXOS_APP` vào env của CI; `DXOS_APP` được truyền cho Superset.
+- Workflow `E2E` chạy ma trận `farm` và `lab`, mỗi app một stack riêng: kiểm gateway chỉ có route của app, seed hai lần, rồi `e2e.py`.
+  Workflow `CI Infra` kiểm Compose với cả hai giá trị `DXOS_APP` và kiểm hai file gateway ghép được.
+- `docker-compose.yml` chia nhóm dịch vụ (dữ liệu, backend và web, định danh, gateway, AI, BI, chat) và nhóm biến của backend (chung, riêng Farm, riêng Lab); comment bằng tiếng Anh.
+- `.env.example` chia bảy mục: ứng dụng, địa chỉ và cổng, tài khoản, secret nội bộ, cấu hình chung, riêng Farm, riêng Lab.
+  Biến để trống là biến bắt buộc điền; biến tùy chọn (webhook Mattermost, `LAB_*`) nằm ở dạng `# TÊN=`.
+
+### 2026-10-12
+
+- `MATTERMOST_WEBHOOK_URL_TECHNICIAN` là webhook của kênh kỹ thuật viên khi chạy `DXOS_APP=lab`.
+
+**Đã xong — Tên nền tảng `dxos` ở hạ tầng:**
+
+- Database và tài khoản Postgres `dxos`, bucket `dxos-uploads` với route ảnh `/dxos-uploads/*`, email quản trị mặc định `admin@dxos.local`.
+- `seed_demo.py` tạo vai và tài khoản `farmer1`, `engineer1`, `admin1` qua Keycloak Admin API bằng tài khoản quản trị trong `deploy/.env`; `e2e.py` chạy sau seed.
+- `dxos_client.py` là client dùng chung của seed và E2E, gồm Keycloak Admin API.
+
+### 2026-10-11
+
+**Đã xong — Dữ liệu demo theo workspace:**
+
+- `deploy/demo/seed_demo.py` thêm nông hộ mẫu vào bảng `workspaces` (loại `HOUSEHOLD`) và lấy mã từ `workspace_code_counter`.
+- `application.yaml` giữ cấu hình dùng chung của core (`ai.service.*`, `knowledge.min-score`, `app.max-pending-requests`, `mattermost.webhook.url`); `application-farm.yaml` chỉ giữ phần của Farm.
 
 ### 2026-10-07
 
@@ -624,6 +782,19 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## BI Dashboard (`bi`, Apache Superset)
 
+### 2026-10-13
+
+**Đã xong — Dataset theo app:**
+
+- `bootstrap_datasources.py` đọc `DXOS_APP`: Farm import bundle dashboard; Lab đăng ký kết nối `DX-Lab` và năm dataset `vw_lab_*` (dashboard Lab nằm ở backlog, trang thống kê trong web thay thế).
+- Giá trị `DXOS_APP` không hợp lệ làm bước khởi tạo dừng với thông báo nêu các giá trị hợp lệ.
+
+### 2026-10-12
+
+**Đã xong — Bundle dashboard của Farm:**
+
+- Bundle là `bi/farm_dashboard_export.zip`, trỏ tới database `dxos`; Superset đăng nhập bằng client `dxos-superset`.
+
 ### 2026-10-06
 
 - Tài khoản bị Superset từ chối (farmer) bị kết thúc luôn phiên Keycloak và quay về trang đăng nhập kèm cảnh báo, nên bấm "Sign In with keycloak" lần sau hiện form đăng nhập Keycloak thay vì tự đăng nhập lại và bị từ chối tiếp (`KeycloakAuthOAuthView`).
@@ -668,6 +839,11 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Kênh chat nội bộ (`chat`, Mattermost)
 
+### 2026-10-13
+
+- `chat/bootstrap.sh` tạo thêm channel `Kỹ thuật viên` (public) cho thông báo của DX-Lab: yêu cầu hỗ trợ mới và yêu cầu quá hạn; yêu cầu quá hạn còn đi vào `Ban quản trị`.
+- `chat/README.md` mô tả kênh theo từng ứng dụng.
+
 ### 2026-10-06
 
 - Yêu cầu thửa và vụ mới đi vào kênh `Ban quản trị` qua `MATTERMOST_WEBHOOK_URL_ADMIN`; báo cáo mới và chẩn đoán chờ duyệt đi vào kênh `Kỹ sư nông nghiệp` qua `MATTERMOST_WEBHOOK_URL_ENGINEER`.
@@ -707,6 +883,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Portal (`portal`)
 
+### 2026-10-13
+
+- Tên ứng dụng đang chạy lấy từ `app.name` của `GET /api/v1/system/status` và hiện ở tiêu đề trang; mô tả các card dùng nội dung chung cho mọi app.
+
 ### 2026-10-07
 
 - Mục "Trạng thái dịch vụ" ở cuối trang hiện hoạt động hoặc ngừng của ứng dụng chính, backend, AI, lưu trữ ảnh, Keycloak, BI và chat, làm mới mỗi 30 giây.
@@ -737,6 +917,13 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - **Còn thiếu**: mỗi app đích vẫn đăng nhập riêng — portal chỉ là danh sách link tĩnh, sẽ trở thành landing page thật khi SSO (Keycloak/Authentik) được triển khai.
 
 ## Identity Provider (`sso`, Keycloak)
+
+### 2026-10-12
+
+**Đã xong — Realm nền tảng `dxos`:**
+
+- `sso/realm-dxos.json` chứa client `dxos-web`, `farm-mobile`, `dxos-superset`, `dxos-backend-admin`, mapper audience `dxos-api` và vai `ADMIN` của nền tảng.
+- Vai của app do backend tạo lúc khởi động; tài khoản mẫu do seed của app tạo.
 
 ### 2026-10-06
 
@@ -771,6 +958,12 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Rà soát license (PoF)
 
+### 2026-10-13
+
+- Thư mục `ai/` phân phối theo AGPL-3.0 (`ai/LICENSE`, trước là `ai/MODEL_LICENSE`) vì import Ultralytics; phần còn lại giữ Apache-2.0.
+- Bỏ `pymupdf` khỏi `ai/requirements.txt`, `ai/requirements.lock` và `sbom/ai.cdx.json`: không có mã nào import.
+- `LICENSES.md` ghi giấy phép theo thư mục và lý do AI Service không kéo theo Backend.
+
 ### 2026-10-07
 
 - `LICENSES.md` khớp dependency hiện có (Resilience4j, AspectJ, Hibernate Validator, react-router-dom, expo-location, pgvector, base image).
@@ -794,71 +987,63 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Thêm `LICENSE` (Apache-2.0 toàn văn) ở gốc repo.
 - **Còn thiếu**: SPDX header đầu mỗi file mã nguồn tự viết — việc sửa hàng loạt file, để riêng một lượt khác.
 
-## Tài liệu (root, `development/docs`, `ai/`)
+## Tài liệu (root, `docs`, `ai/`)
+
+### 2026-10-13
+
+**Đã xong — Gom tài liệu về một bộ gọn:**
+
+- Ở gốc repository: `README.md` ngắn gọn theo mục 10 của đề (kiến trúc 3 tầng, H-P-D-I, tính năng, cài đặt, cấu hình, chạy thử, API, tài khoản demo), `ARCHITECTURE.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `LICENSE`, `LICENSES.md`.
+- `ARCHITECTURE.md`: sơ đồ 3 tầng với hai ứng dụng, đồ thị module Maven, ranh giới biên dịch, danh mục interface của Core, luồng request của Farm và Lab, cách chọn ứng dụng lúc chạy, dữ liệu và nguyên tắc vận hành.
+- `docs/BACKLOG.md`: nguồn duy nhất cho việc chưa làm, chưa kiểm thử và giới hạn đã biết.
+- `docs/TESTING.md`: mức hoàn thiện theo tính năng, kiểm tĩnh, dựng stack, kiểm tay theo vai, sự cố thường gặp và kết quả kiểm gần nhất.
+- `docs/SUBMISSION.md`: hồ sơ theo mục 10 của đề, kịch bản demo 10 phút và dàn ý báo cáo, slide, video; `docs/COUNCIL_QA.md`: trả lời 10 câu hỏi mục 13 của đề.
+- `docs/reference/`: đề thi và hai tài liệu thiết kế gốc.
+- `backend/app-farm/README.md` có mục mã thửa, mã vụ, GPS và quy tắc duyệt; `ai/README.md` có contract chẩn đoán; `mobile/README.md` có thiết kế giao diện.
+
+**Đã xong — Tài liệu và hồ sơ theo Core dùng chung và hai ứng dụng:**
+
+- Sơ đồ 3 tầng với hai ứng dụng, bảng cài interface của Farm và Lab, luồng request của Farm và Lab.
+- `README.md` mô tả DX-OS Open-Core, hai ứng dụng, `DXOS_APP` và tài khoản demo; thêm `backend/README.md`, `backend/app-farm/README.md` và `backend/app-lab/README.md`.
+- `CONTRIBUTING.md`: hướng dẫn từng bước thêm một ứng dụng mới (module, `AppModule`, nạp có điều kiện, migration, interface, gateway, BI, tri thức, dữ liệu demo, giao diện), đã kiểm bằng một ứng dụng mẫu rỗng.
+- Bộ trả lời hội đồng theo 10 câu hỏi mục 13 của đề, kịch bản demo 10 phút gồm Farm, đổi ứng dụng và Lab, dàn ý báo cáo kỹ thuật.
+- `sbom/backend.cdx.json` gồm năm module; quét gitleaks lịch sử (336 commit) và cây làm việc không có phát hiện.
 
 ### 2026-10-09
 
-- `development/docs/_template/`: mẫu phase dùng chung, không gắn với một core cụ thể.
-- `development/docs/legacy_docs/PARCEL_SEASON_CODES.md`, `development/docs/submission/ARCHITECTURE_OPEN_CORE.md`: vị trí hiện hành của quy chuẩn mã thửa/vụ và sơ đồ Open-Core.
-- `development/docs/improvement_docs/REMAINING_WORK.md`: tổng hợp việc còn lại sau P0 đến P8.
-- `development/docs/pending_docs/CV_RICE_IMAGE_VALIDATION_SUMMARY.md`: tóm tắt kiểm ảnh lúa bằng crop classifier.
-- Trạng thái treatment rule trong `README.md`, `data/README.md`, `deploy/demo/README.md`, `development/docs/submission/` và `improvement_docs/` khớp seed hiện hành.
+- Trạng thái treatment rule trong `README.md`, `data/README.md`, `deploy/demo/README.md` khớp seed hiện hành.
+- Tóm tắt kiểm ảnh lúa bằng crop classifier ở `ai/app/cv/README.md`.
 
 ### 2026-10-07
 
 - `README.md` có bảng mức hoàn thiện từng tính năng (trong code, kiểm thử, dữ liệu demo), hướng dẫn dữ liệu demo, kiểm thử và E2E.
-- `development/docs/submission/`: kịch bản demo, bộ trả lời hội đồng và dàn ý báo cáo kỹ thuật.
-- `development/docs/legacy_docs/PARCEL_SEASON_CODES.md`: mã thửa, mã vụ, GPS và quy tắc duyệt.
+- Kịch bản demo, bộ trả lời hội đồng và dàn ý báo cáo kỹ thuật.
+- Quy chuẩn mã thửa, mã vụ, GPS và quy tắc duyệt.
 - `deploy/demo/README.md`: script seed demo, E2E và workflow `E2E`.
-- Phase 5 đến 8 của `development/docs/improvement_docs` có kế hoạch, checklist và kết quả kiểm thử.
 
 ### 2026-10-06
 
-- `development/docs/submission/ARCHITECTURE_OPEN_CORE.md`: sơ đồ 3 tầng Open-Core và sơ đồ luồng request (Mermaid), ranh giới Core và ứng dụng.
-- `README.md` gốc có bảng đăng nhập vào từng service (tài khoản ứng dụng và tài khoản quản trị riêng); `minio/README.md` mô tả thư mục MinIO và console; `README.md` mô tả gateway, workflow dùng chung, lưu ảnh có link hạn; `LICENSES.md` thêm APISIX, MinIO và MinIO Java SDK.
+- Sơ đồ 3 tầng Open-Core và sơ đồ luồng request (Mermaid), ranh giới Core và ứng dụng.
+- `README.md` gốc có bảng đăng nhập vào từng service (tài khoản ứng dụng và tài khoản quản trị riêng), mô tả gateway, workflow dùng chung, lưu ảnh có link hạn; `minio/README.md` mô tả thư mục MinIO và console; `LICENSES.md` thêm APISIX, MinIO và MinIO Java SDK.
 - `README.md` có bảng tài khoản demo, hướng dẫn `deploy/reset.sh` và cách chạy test backend; `LICENSES.md` ghi thêm Testcontainers, JUnit/Mockito/AssertJ, gitleaks và pytest (chỉ dùng cho test/CI).
-- Phase 1 của `development/docs/improvement_docs` ở trạng thái Xong, kèm kết quả kiểm thử.
 
 ### 2026-10-05
 
-**Đã xong:**
-
-- `development/docs/improvement_docs/`: `PROJECT_IMPROVEMENTS.md` tổng hợp vấn đề cải thiện và đối chiếu đề thi HaUI 2026, template phase (`_template/`) và kế hoạch chia phase.
-- `development/docs/pending_docs/`: tài liệu mobile và kế hoạch thông báo Mattermost.
-- `development/docs/De_thi_PMNM_HaUI_2026_BAN_CHINH_THUC.pdf`: đề thi tuyển chọn nội bộ.
+- Đề thi tuyển chọn nội bộ HaUI 2026 đặt trong repository.
 
 ### 2026-10-02
 
-**Đã xong:**
-
-- `development/docs/pending_docs/MATTERMOST_WEBHOOK_NOTIFICATION_PLAN.md`: thiết kế, danh sách công việc và hạn chế của thông báo Mattermost.
-- `chat/README.md` (mục thông báo tự động và cấp webhook), `README.md` gốc (Giai đoạn 2 [H], trạng thái, bảng truy cập).
+- `chat/README.md` (mục thông báo tự động và cấp webhook), `README.md` gốc (trạng thái, bảng truy cập).
 
 ### 2026-09-30
 
-**Đã xong:**
-
-- `development/docs/pending_docs/mobile/`: kế hoạch, đặc tả backend, thiết kế UI và `CHANGES_OVERVIEW.md` tổng hợp hành vi cũ và mới của nhánh mobile.
-- `mobile/README.md`, `LICENSES.md` (mục Mobile), `sso/README.md` (client `dxfarm-mobile`), `README.md` gốc (client mobile, trạng thái).
+- `mobile/README.md`, `LICENSES.md` (mục Mobile), `sso/README.md` (client mobile), `README.md` gốc (client mobile, trạng thái).
 
 ### 2026-09-24
 
-**Đã xong:**
-
 - Thống nhất luồng seed: `data/scripts/generate_seed_sql.py` sinh `data.sql` từ `data/structured/*.json`; chỉ seed record có cờ eligibility `true`.
-  Quy ước hai cơ chế seed ghi ở `README.md`.
-- Thêm entity `DiseaseManagementPolicy` (bảng `disease_management_policies`), seed 13 guardrail qua generator.
-  `treatment_rules` có ràng buộc duy nhất `(disease_id, pesticide_id)` nên seed chạy đồng thời vẫn không trùng.
-  `treatment_rules` chưa có dòng nào vì cả 16 candidate đều `eligible_for_seed=false`.
-- `ai/app/rag/source_registry.py`, `ai/app/rag/ingestion_service.py` đọc corpus từ `data/rag/...` ở gốc repository.
-- `deploy/docker-compose.yml`, `deploy/.env.example` bind-mount `data/` vào `/data` cho container `rag-ingest`.
 - `data/README.md`: mapping `dose_min`/`dose_max` khớp đúng `TreatmentRule` hiện tại.
-- `README.md`, `ai/README.md`: đánh dấu `DiseaseManagementPolicy` đang ở giai đoạn kế hoạch, chưa có entity/bảng thật.
 
 ### 2026-09-15
 
-**Đã xong:**
-
-- Từng bổ sung kế hoạch và checklist triển khai tách AI/Backend theo phase; hai tài liệu trung gian này được dọn sau khi hoàn tất và hợp nhất trạng thái cuối vào tài liệu hiện hành.
-- Cập nhật `README.md`, `ai/README.md`, `ai/app/graph/README.md`, `AI_EVENT_SCHEMA_README.md` để mô tả trạng thái kiến trúc tại thời điểm triển khai.
-- Dọn `development/docs/`: chỉ còn kế hoạch/checklist/contract hiện hành; tài liệu thiết kế gốc chuyển vào `legacy_docs/`.
+- Cập nhật `README.md`, `ai/README.md`, `ai/app/graph/README.md` để mô tả trạng thái kiến trúc AI và Backend.

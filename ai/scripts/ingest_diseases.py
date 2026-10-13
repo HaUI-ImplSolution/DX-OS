@@ -1,15 +1,18 @@
 # SPDX-License-Identifier: Apache-2.0
 import argparse
 
-from app.rag.ingestion_service import (
-    ingest_disease_knowledge,
-    preview_disease_knowledge,
-)
+from app.rag.ingestion_service import CORPORA, ingest_corpus, preview_corpus
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Preview or ingest disease knowledge into pgvector."
+        description="Preview or ingest the knowledge of one corpus into pgvector."
+    )
+    parser.add_argument(
+        "--corpus",
+        choices=sorted(CORPORA),
+        default="farm",
+        help="Corpus (namespace) to ingest (default: farm).",
     )
     parser.add_argument(
         "--dry-run",
@@ -25,11 +28,11 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def print_preview(limit: int) -> None:
+def print_preview(corpus: str, limit: int) -> None:
     if limit < 0:
         raise ValueError("--limit must be greater than or equal to 0")
 
-    documents = preview_disease_knowledge()
+    documents = preview_corpus(CORPORA[corpus])
     print(f"Validated documents: {len(documents)}")
     print(f"Previewing documents: {min(limit, len(documents))}")
 
@@ -44,7 +47,7 @@ def main() -> None:
     args = parse_args()
 
     if args.dry_run:
-        print_preview(args.limit)
+        print_preview(args.corpus, args.limit)
         return
 
     from sqlalchemy import create_engine
@@ -60,8 +63,8 @@ def main() -> None:
     db = Session(engine)
 
     try:
-        result = ingest_disease_knowledge(db)
-        print("RAG disease ingestion completed")
+        result = ingest_corpus(db, CORPORA[args.corpus])
+        print(f"RAG ingestion completed for corpus {args.corpus}")
         print(f"Documents inserted: {result['documents_inserted']}")
         print(f"Chunks inserted: {result['chunks_inserted']}")
         print(f"Previous documents replaced: {result['documents_replaced']}")

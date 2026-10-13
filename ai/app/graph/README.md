@@ -1,42 +1,29 @@
-# LangGraph — Điều phối suy luận AI
+# LangGraph: điều phối suy luận
 
-## Vai trò
+`app/graph/` điều phối một lượt suy luận stateless của `POST /api/v1/diagnose`: kết hợp kết quả CV, field context từ Backend, structured facts từ Backend REST và evidence từ AI Vector DB thành recommendation.
+Graph không lưu dữ liệu nghiệp vụ, không quản lý phê duyệt; Backend sở hữu trạng thái `PENDING`, `APPROVED`, `REJECTED`, `APPLIED`.
 
-`app/graph/` điều phối một lần suy luận stateless của `POST /api/v1/diagnose`.
-Graph kết hợp kết quả CV, field context từ request Backend, structured facts từ Backend REST API và evidence từ AI Vector DB để tạo recommendation.
-
-Graph không lưu dữ liệu nghiệp vụ, không quản lý phê duyệt và không tạo lịch sử áp dụng thuốc.
-Backend sở hữu toàn bộ trạng thái `PENDING`, `APPROVED`, `REJECTED` và `APPLIED`.
-
-## Luồng hoạt động
+## Luồng
 
 ```text
-resolve_request
-  → cv_diagnosis
-  → load_field_context
-  → treatment_lookup
-  → retrieve_knowledge
-  → generate_recommendation
-  → END
+resolve_request → cv_diagnosis → load_field_context → treatment_lookup
+  → retrieve_knowledge → generate_recommendation → END
 ```
 
-- `resolve_request` kiểm tra request ID, ảnh, crop season và field context.
-- `cv_diagnosis` tạo `disease_code` canonical cùng confidence và metadata model.
-- `load_field_context` sử dụng context do Backend gửi, không đọc Backend DB.
-- `treatment_lookup` gọi Backend REST client bằng `disease_code`.
-- `retrieve_knowledge` chỉ đọc `documents` và `document_chunks` trong AI Vector DB.
-- `generate_recommendation` kết hợp facts và evidence nhưng không được sửa thuốc, liều, PHI hoặc rule version.
+| Bước | Việc |
+|---|---|
+| `resolve_request` | Kiểm request ID, ảnh, crop season, field context |
+| `cv_diagnosis` | `disease_code` canonical, confidence, metadata model |
+| `load_field_context` | Dùng context do Backend gửi, không đọc Backend DB |
+| `treatment_lookup` | Gọi Backend REST theo `disease_code` |
+| `retrieve_knowledge` | Chỉ đọc `documents`, `document_chunks` |
+| `generate_recommendation` | Kết hợp facts và evidence, không sửa thuốc, liều, PHI, rule version |
 
-## State và runtime
-
-`FarmState` chỉ giữ dữ liệu của một lần suy luận.
-`WorkflowRuntime` inject CV predictor, Backend structured-facts tool, RAG retriever và recommendation writer mà không đưa connection hoặc service object vào state.
+`FarmState` chỉ giữ dữ liệu của một lượt; `WorkflowRuntime` inject CV predictor, structured-facts tool, RAG retriever và recommendation writer mà không đưa connection hay service object vào state.
 
 ## Ranh giới lỗi
 
-CV hoặc structured facts thất bại thì lượt suy luận thất bại.
-RAG không khả dụng thì graph vẫn có thể giữ structured recommendation và ghi nhận `RAG_UNAVAILABLE`.
-AI giới hạn mỗi lần gọi Backend ở 3 giây và retry một lần cho lỗi transport hoặc HTTP `502`/`503`/`504`.
-Khi Backend không cung cấp được structured facts, graph dừng ngay; không chạy RAG hoặc tạo recommendation chỉ dựa trên evidence.
-
-P2-3 hiện chưa cung cấp contract cho `management_policy` và `NO_CHEMICAL_CONTROL`.
+- CV hoặc structured facts thất bại thì lượt thất bại; không chạy RAG hay tạo recommendation chỉ từ evidence.
+- RAG không khả dụng thì giữ structured recommendation và ghi `RAG_UNAVAILABLE`.
+- Mỗi lần gọi Backend giới hạn 3 giây, retry một lần cho lỗi transport hoặc HTTP `502`/`503`/`504`.
+- Chưa có contract cho `management_policy` và `NO_CHEMICAL_CONTROL`.

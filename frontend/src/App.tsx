@@ -1,5 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
-import { NavLink, Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
+import appRegistry from "./appRegistry";
+import { ApiError, getAppManifest } from "./shell/api";
+import type { AppContext, AppUiModule } from "./shell/appModule";
 import {
   callbackError,
   clearCallbackParams,
@@ -12,19 +15,51 @@ import {
   signOut,
   takeReturnPath,
   type CurrentUser,
-} from "./auth";
-import CaseDetail from "./pages/CaseDetail";
-import DemoFlow from "./pages/DemoFlow";
-import Households from "./pages/Households";
-import Knowledge from "./pages/Knowledge";
-import Queue from "./pages/Queue";
-import Requests from "./pages/Requests";
+} from "./shell/auth";
+import { registerErrorMessages } from "./shell/errorMessages";
+import { registerLabels } from "./shell/labels";
+import Shell from "./shell/Shell";
+import type { AppManifest } from "./shell/types";
 
-const ROLE_LABEL: Record<CurrentUser["role"], string> = {
-  FARMER: "Nông dân",
-  ENGINEER: "Kỹ sư",
-  ADMIN: "Quản trị viên",
-};
+interface LoadedApp {
+  manifest: AppManifest;
+  module: AppUiModule;
+}
+
+type AppState =
+  | { phase: "loading" }
+  | { phase: "failed"; title: string; message: string; retry: boolean }
+  | { phase: "ready"; app: LoadedApp };
+
+function Notice({
+  title,
+  message,
+  actions,
+}: {
+  title: string;
+  message: string;
+  actions: ReactNode;
+}) {
+  return (
+    <div className="login-screen">
+      <section className="section login-card">
+        <header className="section-header">
+          <div>
+            <h2>{title}</h2>
+            <p className="section-subtitle">{message}</p>
+          </div>
+        </header>
+        <div className="form-actions">{actions}</div>
+      </section>
+    </div>
+  );
+}
+
+// The strongest role the account holds among the roles the app defines (roles are listed weakest first).
+function pickRole(manifest: AppManifest, accountRoles: string[]): string | null {
+  const held = manifest.roles.filter((role) => accountRoles.includes(role));
+  return held.length > 0 ? held[held.length - 1] : null;
+}
 
 export default function App() {
   const navigate = useNavigate();
@@ -32,8 +67,9 @@ export default function App() {
   const [authReady, setAuthReady] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [appState, setAppState] = useState<AppState>({ phase: "loading" });
 
-  // Token hết hạn -> api.ts đã xoá session OIDC (401), đồng bộ lại state để quay về màn đăng nhập.
+  // Token hết hạn -> api đã xoá session OIDC (401), đồng bộ lại state để quay về màn đăng nhập.
   const showError = useCallback((message: string) => {
     setError(message);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -80,6 +116,58 @@ export default function App() {
     return onSessionEnded(() => setUser(null));
   }, []);
 
+  // Once signed in, ask the backend which app it runs and load the web module for it.
+  const username = user?.username;
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  useEffect(() => {
+    if (!username) return;
+    let cancelled = false;
+    setAppState({ phase: "loading" });
+    (async () => {
+      try {
+        const manifest = await getAppManifest();
+        const loader = appRegistry[manifest.id];
+        if (!loader) {
+          if (!cancelled) {
+            setAppState({
+              phase: "failed",
+              title: "Chưa có giao diện cho ứng dụng này",
+              message: `Backend đang chạy ứng dụng "${manifest.id}" nhưng web chưa có giao diện tương ứng.`,
+              retry: false,
+            });
+          }
+          return;
+        }
+        const module = (await loader()).default;
+        registerLabels(module.labels ?? {});
+        registerErrorMessages(module.errorMessages ?? {});
+        document.title = manifest.name;
+        if (!cancelled) setAppState({ phase: "ready", app: { manifest, module } });
+      } catch (err) {
+        // The gateway refuses every call of an account that may only use the mobile client.
+        if (!cancelled && err instanceof ApiError && err.status === 403) {
+          setAppState({
+            phase: "failed",
+            title: "Tài khoản không dùng được trên web",
+            message: "Tài khoản này chỉ được dùng trên ứng dụng di động. Trang web dành cho các tài khoản quản lý.",
+            retry: false,
+          });
+          return;
+        }
+        if (!cancelled) {
+          setAppState({
+            phase: "failed",
+            title: "Không tải được ứng dụng",
+            message: err instanceof Error ? err.message : "Không đọc được thông tin ứng dụng từ máy chủ.",
+            retry: true,
+          });
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [username, loadAttempt]);
 
   if (!authReady) {
     return <div className="login-screen" />;
@@ -87,27 +175,21 @@ export default function App() {
 
   if (authError) {
     return (
-      <div className="login-screen">
-        <section className="section login-card">
-          <header className="section-header">
-            <div>
-              <h2>Đăng nhập thất bại</h2>
-              <p className="section-subtitle">{authError}</p>
-            </div>
-          </header>
-          <div className="form-actions">
-            <button
-              className="btn btn-primary"
-              onClick={() => {
-                setAuthError(null);
-                void signIn();
-              }}
-            >
-              Thử lại
-            </button>
-          </div>
-        </section>
-      </div>
+      <Notice
+        title="Đăng nhập thất bại"
+        message={authError}
+        actions={
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              setAuthError(null);
+              void signIn();
+            }}
+          >
+            Thử lại
+          </button>
+        }
+      />
     );
   }
 
@@ -116,89 +198,80 @@ export default function App() {
     return <div className="login-screen" />;
   }
 
-  if (user.role === "FARMER") {
+  if (appState.phase === "loading") {
     return (
       <div className="login-screen">
-        <section className="section login-card">
-          <header className="section-header">
-            <div>
-              <h2>Vui lòng dùng ứng dụng di động</h2>
-              <p className="section-subtitle">
-                Tài khoản nông dân ({user.fullName}) chỉ sử dụng được trên ứng dụng DX-Farm di động.
-                Trang web dành cho kỹ sư và quản trị viên.
-              </p>
-            </div>
-          </header>
-          <div className="form-actions">
-            <button className="btn btn-primary" onClick={logout}>
-              Đăng xuất
-            </button>
-          </div>
-        </section>
+        <p className="section-subtitle">Đang tải ứng dụng…</p>
       </div>
     );
   }
 
-  const staff = user.role === "ENGINEER" || user.role === "ADMIN";
+  if (appState.phase === "failed") {
+    return (
+      <Notice
+        title={appState.title}
+        message={appState.message}
+        actions={
+          <>
+            {appState.retry && (
+              <button className="btn btn-primary" onClick={() => setLoadAttempt((n) => n + 1)}>
+                Thử lại
+              </button>
+            )}
+            <button className="btn" onClick={logout}>
+              Đăng xuất
+            </button>
+          </>
+        }
+      />
+    );
+  }
 
-  return (
-    <div className="app">
-      <header className="app-header">
-        <div>
-          <h1>DX-Farm</h1>
-          <p>Quản lý thửa ruộng, vụ mùa và chẩn đoán sâu bệnh của hợp tác xã</p>
-        </div>
-        <div className="user-bar">
-          <span>
-            {user.fullName} ({ROLE_LABEL[user.role]})
-          </span>
-          <button className="btn" onClick={logout}>
+  const { manifest, module } = appState.app;
+  const role = pickRole(manifest, user.roles);
+
+  if (!role) {
+    return (
+      <Notice
+        title="Tài khoản chưa được cấp quyền"
+        message={`Tài khoản ${user.fullName} chưa có vai nào trong ứng dụng ${manifest.name}.`}
+        actions={
+          <button className="btn btn-primary" onClick={logout}>
             Đăng xuất
           </button>
-        </div>
-        <nav className="tabs">
-          <NavLink to="/" end className={({ isActive }) => (isActive ? "tab tab-active" : "tab")}>
-            Luồng demo
-          </NavLink>
-          {staff && (
-            <NavLink to="/requests" className={({ isActive }) => (isActive ? "tab tab-active" : "tab")}>
-              Yêu cầu
-            </NavLink>
-          )}
-          {user.role === "ADMIN" && (
-            <NavLink to="/households" className={({ isActive }) => (isActive ? "tab tab-active" : "tab")}>
-              Nông hộ
-            </NavLink>
-          )}
-          {staff && (
-            <NavLink to="/queue" className={({ isActive }) => (isActive ? "tab tab-active" : "tab")}>
-              Hàng đợi chẩn đoán
-            </NavLink>
-          )}
-          {staff && (
-            <NavLink to="/knowledge" className={({ isActive }) => (isActive ? "tab tab-active" : "tab")}>
-              Tài liệu
-            </NavLink>
-          )}
-        </nav>
-      </header>
+        }
+      />
+    );
+  }
 
-      {error && (
-        <div className="banner banner-danger banner-dismissible">
-          <span>{error}</span>
-          <button onClick={() => setError(null)}>✕</button>
-        </div>
-      )}
+  const blocked = module.blockedRoles?.[role];
+  if (blocked) {
+    return (
+      <Notice
+        title={blocked.title}
+        message={blocked.message(user.fullName)}
+        actions={
+          <button className="btn btn-primary" onClick={logout}>
+            Đăng xuất
+          </button>
+        }
+      />
+    );
+  }
 
-      <Routes>
-        <Route path="/" element={<DemoFlow role={user.role} onError={showError} />} />
-        <Route path="/requests" element={<Requests role={user.role} onError={showError} />} />
-        <Route path="/requests/:caseId" element={<CaseDetail role={user.role} onError={showError} />} />
-        {user.role === "ADMIN" && <Route path="/households" element={<Households onError={showError} />} />}
-        {staff && <Route path="/knowledge" element={<Knowledge onError={showError} />} />}
-        <Route path="/queue" element={<Queue role={user.role} onError={showError} />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </div>
+  const context: AppContext = {
+    user: { id: user.id, username: user.username, fullName: user.fullName, role },
+    manifest,
+    onError: showError,
+  };
+
+  return (
+    <Shell
+      context={context}
+      module={module}
+      error={error}
+      onDismissError={() => setError(null)}
+      onLogout={logout}
+    />
   );
 }

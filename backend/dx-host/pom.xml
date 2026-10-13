@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>HaUI.ImplSolution</groupId>
+		<artifactId>dx-os-parent</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+	<artifactId>dx-host</artifactId>
+	<name>dx-host</name>
+	<description>Runnable host: loads the core and the app selected by DXOS_APP</description>
+	<dependencies>
+		<dependency>
+			<groupId>HaUI.ImplSolution</groupId>
+			<artifactId>dx-core-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>HaUI.ImplSolution</groupId>
+			<artifactId>dx-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>HaUI.ImplSolution</groupId>
+			<artifactId>app-farm</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>HaUI.ImplSolution</groupId>
+			<artifactId>app-lab</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+	</dependencies>
+	<build>
+		<finalName>dx-host</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

@@ -62,7 +62,7 @@ class FakeModel:
         3: "Rice Tungro",
         4: "Sheath Blight",
     }
-    _dxfarm_device = "cpu"
+    _device = "cpu"
 
     def __init__(self, confidences, class_ids):
         self.result = FakeResult(confidences, class_ids)

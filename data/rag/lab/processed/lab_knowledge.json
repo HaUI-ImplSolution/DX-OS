@@ -1,0 +1,192 @@
+[
+  {
+    "article_code": "LAB_ROOM_RULES",
+    "title": "Quy chế sử dụng phòng máy",
+    "category": "Quy chế",
+    "content": "Quy chế sử dụng phòng máy\nĐối tượng: sinh viên, giảng viên và cán bộ của khoa.\n1. Chỉ vào phòng máy trong khung giờ đã được xếp lịch hoặc đã đặt phòng được duyệt.\n2. Không ăn uống, không hút thuốc và không mang chất lỏng vào phòng máy.\n3. Không tự ý cài đặt phần mềm, thay đổi cấu hình, tháo lắp linh kiện hoặc di chuyển thiết bị.\n4. Lưu bài vào ổ đĩa cá nhân hoặc dịch vụ lưu trữ của khoa; dữ liệu lưu trên máy dùng chung có thể bị xóa sau mỗi ca.\n5. Phát hiện hư hỏng hoặc sự cố phải báo cho kỹ thuật viên hoặc gửi yêu cầu hỗ trợ ngay trong ca sử dụng.\n6. Trước khi rời phòng: đăng xuất tài khoản, tắt máy theo đúng quy trình, sắp xếp lại ghế và bàn phím, chuột.\nVi phạm quy chế có thể bị đình chỉ quyền sử dụng phòng máy và thông báo cho giảng viên phụ trách.",
+    "provenance": {
+      "source_ids": [
+        "SRC_LAB_ROOM_RULES"
+      ],
+      "evidence_scope": "Tài liệu nội bộ tự soạn cho ứng dụng DX-Lab",
+      "reviewed_at": "2026-10-12"
+    },
+    "governance": {
+      "authoring": "SELF_AUTHORED",
+      "license": "CC BY 4.0"
+    },
+    "review_status": "IN_REVIEW",
+    "notes": "Mẫu quy chế và hướng dẫn tự soạn; cần khoa xác nhận trước khi áp dụng chính thức."
+  },
+  {
+    "article_code": "LAB_DEVICE_LOAN",
+    "title": "Quy trình mượn và trả thiết bị",
+    "category": "Quy trình",
+    "content": "Quy trình mượn và trả thiết bị\n1. Người mượn gửi phiếu mượn trên hệ thống, nêu mục đích và ngày trả; thiết bị phải đang ở trạng thái sẵn sàng.\n2. Thời hạn mượn tối đa 7 ngày kể từ ngày gửi phiếu; mỗi người có tối đa 2 phiếu đang chờ duyệt hoặc chưa trả.\n3. Phiếu của sinh viên do giảng viên duyệt; phiếu của giảng viên do kỹ thuật viên duyệt.\n4. Khi phiếu được duyệt, người mượn đến nhận thiết bị tại phòng kỹ thuật và kiểm tra tình trạng cùng kỹ thuật viên.\n5. Khi trả, kỹ thuật viên ghi tình trạng thiết bị. Thiết bị hỏng được chuyển sang sửa chữa và người mượn cần mô tả hư hỏng.\n6. Hệ thống nhắc trước hạn trả một ngày và nhắc hằng ngày khi quá hạn. Thiết bị trả muộn có thể làm phiếu mượn tiếp theo bị từ chối.",
+    "provenance": {
+      "source_ids": [
+        "SRC_LAB_DEVICE_LOAN"
+      ],
+      "evidence_scope": "Tài liệu nội bộ tự soạn cho ứng dụng DX-Lab",
+      "reviewed_at": "2026-10-12"
+    },
+    "governance": {
+      "authoring": "SELF_AUTHORED",
+      "license": "CC BY 4.0"
+    },
+    "review_status": "IN_REVIEW",
+    "notes": "Mẫu quy chế và hướng dẫn tự soạn; cần khoa xác nhận trước khi áp dụng chính thức."
+  },
+  {
+    "article_code": "LAB_ROOM_BOOKING",
+    "title": "Quy trình đặt phòng máy và phòng thực hành",
+    "category": "Quy trình",
+    "content": "Quy trình đặt phòng máy và phòng thực hành\n1. Giảng viên đặt phòng trên hệ thống, ghi tên học phần hoặc sự kiện, số người và khung giờ. Sinh viên không tự đặt phòng mà nhờ giảng viên phụ trách.\n2. Giờ bắt đầu và kết thúc theo bước 30 phút; mỗi lần đặt tối đa 4 giờ.\n3. Chỉ đặt trước tối đa 30 ngày và không đặt vào thời điểm đã qua.\n4. Số người không vượt quá sức chứa của phòng; phòng đang bảo trì không nhận đặt.\n5. Hai yêu cầu chồng giờ cùng một phòng không thể cùng tồn tại: yêu cầu đến sau bị từ chối ngay.\n6. Kỹ thuật viên duyệt hoặc từ chối yêu cầu. Người đặt có thể hủy khi chưa diễn ra để nhả lịch cho người khác.\n7. Lịch tuần của từng phòng hiển thị cho mọi người dùng để chọn khung giờ còn trống.",
+    "provenance": {
+      "source_ids": [
+        "SRC_LAB_ROOM_BOOKING"
+      ],
+      "evidence_scope": "Tài liệu nội bộ tự soạn cho ứng dụng DX-Lab",
+      "reviewed_at": "2026-10-12"
+    },
+    "governance": {
+      "authoring": "SELF_AUTHORED",
+      "license": "CC BY 4.0"
+    },
+    "review_status": "IN_REVIEW",
+    "notes": "Mẫu quy chế và hướng dẫn tự soạn; cần khoa xác nhận trước khi áp dụng chính thức."
+  },
+  {
+    "article_code": "LAB_WIFI_VPN",
+    "title": "Kết nối Wi-Fi và VPN của khoa",
+    "category": "Hướng dẫn",
+    "content": "Kết nối Wi-Fi và VPN của khoa\nWi-Fi: chọn mạng của khoa trong danh sách, đăng nhập bằng tài khoản được cấp. Nếu không nhận được địa chỉ IP, hãy quên mạng rồi kết nối lại; nếu vẫn lỗi, tắt bật Wi-Fi của thiết bị.\nNếu nhiều máy trong cùng một phòng mất mạng cùng lúc, đó là sự cố hạ tầng: hãy gửi yêu cầu hỗ trợ, nêu rõ tên phòng và thời điểm bắt đầu, không cần thử từng máy.\nVPN: cài ứng dụng VPN do khoa cung cấp, đăng nhập bằng tài khoản của khoa. Lỗi xác thực thường do sai mật khẩu hoặc tài khoản bị khóa; hãy đặt lại mật khẩu trước khi gửi yêu cầu.\nVPN chỉ dùng để truy cập tài nguyên học tập và làm việc của khoa, không dùng cho mục đích khác.",
+    "provenance": {
+      "source_ids": [
+        "SRC_LAB_WIFI_VPN"
+      ],
+      "evidence_scope": "Tài liệu nội bộ tự soạn cho ứng dụng DX-Lab",
+      "reviewed_at": "2026-10-12"
+    },
+    "governance": {
+      "authoring": "SELF_AUTHORED",
+      "license": "CC BY 4.0"
+    },
+    "review_status": "IN_REVIEW",
+    "notes": "Mẫu quy chế và hướng dẫn tự soạn; cần khoa xác nhận trước khi áp dụng chính thức."
+  },
+  {
+    "article_code": "LAB_PASSWORD_RESET",
+    "title": "Đặt lại mật khẩu tài khoản",
+    "category": "Hướng dẫn",
+    "content": "Đặt lại mật khẩu tài khoản\n1. Tại màn hình đăng nhập chọn \"Quên mật khẩu\" và nhập tên đăng nhập hoặc email của trường.\n2. Làm theo liên kết đặt lại gửi tới email; liên kết có hiệu lực trong thời gian ngắn.\n3. Mật khẩu mới tối thiểu 10 ký tự, gồm chữ hoa, chữ thường và chữ số; không dùng lại mật khẩu cũ.\n4. Tài khoản bị khóa sau nhiều lần đăng nhập sai sẽ tự mở sau một thời gian; nếu cần mở ngay, gửi yêu cầu hỗ trợ loại tài khoản kèm mã sinh viên hoặc mã cán bộ.\nKỹ thuật viên không bao giờ hỏi mật khẩu của bạn; không gửi mật khẩu qua tin nhắn hay email.",
+    "provenance": {
+      "source_ids": [
+        "SRC_LAB_PASSWORD_RESET"
+      ],
+      "evidence_scope": "Tài liệu nội bộ tự soạn cho ứng dụng DX-Lab",
+      "reviewed_at": "2026-10-12"
+    },
+    "governance": {
+      "authoring": "SELF_AUTHORED",
+      "license": "CC BY 4.0"
+    },
+    "review_status": "IN_REVIEW",
+    "notes": "Mẫu quy chế và hướng dẫn tự soạn; cần khoa xác nhận trước khi áp dụng chính thức."
+  },
+  {
+    "article_code": "LAB_PROJECTOR",
+    "title": "Xử lý lỗi máy chiếu không lên hình",
+    "category": "Hướng dẫn",
+    "content": "Xử lý lỗi máy chiếu không lên hình\n1. Kiểm tra máy chiếu đã bật và đèn báo nguồn sáng ổn định; chờ vài phút để máy khởi động xong.\n2. Chọn đúng nguồn tín hiệu (HDMI hoặc VGA) bằng nút Source trên máy chiếu hoặc điều khiển.\n3. Kiểm tra dây tín hiệu cắm chắc ở cả hai đầu và thử đổi sang cổng khác của máy tính.\n4. Trên máy tính nhấn Windows + P rồi chọn Duplicate hoặc Extend để xuất hình ra máy chiếu.\n5. Nếu máy chiếu báo đèn đỏ hoặc nhấp nháy, tắt máy, chờ làm nguội rồi mới bật lại.\nNếu vẫn không lên hình, gửi yêu cầu hỗ trợ loại máy chiếu, ghi rõ tên phòng và thông báo trên màn hình (nếu có).",
+    "provenance": {
+      "source_ids": [
+        "SRC_LAB_PROJECTOR"
+      ],
+      "evidence_scope": "Tài liệu nội bộ tự soạn cho ứng dụng DX-Lab",
+      "reviewed_at": "2026-10-12"
+    },
+    "governance": {
+      "authoring": "SELF_AUTHORED",
+      "license": "CC BY 4.0"
+    },
+    "review_status": "IN_REVIEW",
+    "notes": "Mẫu quy chế và hướng dẫn tự soạn; cần khoa xác nhận trước khi áp dụng chính thức."
+  },
+  {
+    "article_code": "LAB_PRINTER",
+    "title": "Xử lý lỗi máy in và máy quét",
+    "category": "Hướng dẫn",
+    "content": "Xử lý lỗi máy in và máy quét\n1. Kiểm tra máy in đã bật, còn giấy và mực; đèn báo lỗi sáng đỏ thường là hết mực hoặc kẹt giấy.\n2. Kẹt giấy: tắt máy, mở nắp theo hướng dẫn trên thân máy và rút giấy nhẹ nhàng theo chiều đi của giấy, không giật mạnh.\n3. Lệnh in bị treo: mở hàng đợi in, hủy các lệnh đang chờ rồi in lại.\n4. Máy in không hiện trong danh sách: kiểm tra máy tính cùng mạng với máy in và chọn lại máy in mặc định.\n5. Hết mực hoặc hết giấy ở máy in dùng chung của khoa cần báo kỹ thuật viên để thay vật tư.\nGửi yêu cầu hỗ trợ loại máy in khi đã thử các bước trên mà lỗi vẫn còn.",
+    "provenance": {
+      "source_ids": [
+        "SRC_LAB_PRINTER"
+      ],
+      "evidence_scope": "Tài liệu nội bộ tự soạn cho ứng dụng DX-Lab",
+      "reviewed_at": "2026-10-12"
+    },
+    "governance": {
+      "authoring": "SELF_AUTHORED",
+      "license": "CC BY 4.0"
+    },
+    "review_status": "IN_REVIEW",
+    "notes": "Mẫu quy chế và hướng dẫn tự soạn; cần khoa xác nhận trước khi áp dụng chính thức."
+  },
+  {
+    "article_code": "LAB_INFOSEC",
+    "title": "An toàn thông tin cơ bản",
+    "category": "Hướng dẫn",
+    "content": "An toàn thông tin cơ bản\n1. Dùng mật khẩu riêng cho từng hệ thống, đủ dài và không chia sẻ cho người khác.\n2. Không mở tệp đính kèm hoặc liên kết lạ trong email; kiểm tra địa chỉ người gửi trước khi trả lời.\n3. Luôn khóa màn hình hoặc đăng xuất khi rời máy, đặc biệt ở phòng máy dùng chung.\n4. Cập nhật hệ điều hành và phần mềm khi có thông báo; không tắt phần mềm diệt virus.\n5. Không cắm thiết bị lưu trữ lạ vào máy của khoa; sao lưu dữ liệu quan trọng ra nơi lưu trữ an toàn.\n6. Nghi ngờ tài khoản bị lộ hoặc máy nhiễm mã độc: đổi mật khẩu, ngắt kết nối mạng và gửi yêu cầu hỗ trợ ngay.",
+    "provenance": {
+      "source_ids": [
+        "SRC_LAB_INFOSEC"
+      ],
+      "evidence_scope": "Tài liệu nội bộ tự soạn cho ứng dụng DX-Lab",
+      "reviewed_at": "2026-10-12"
+    },
+    "governance": {
+      "authoring": "SELF_AUTHORED",
+      "license": "CC BY 4.0"
+    },
+    "review_status": "IN_REVIEW",
+    "notes": "Mẫu quy chế và hướng dẫn tự soạn; cần khoa xác nhận trước khi áp dụng chính thức."
+  },
+  {
+    "article_code": "LAB_TICKET_SLA",
+    "title": "Gửi yêu cầu hỗ trợ và thời gian xử lý",
+    "category": "Quy trình",
+    "content": "Gửi yêu cầu hỗ trợ và thời gian xử lý\nKhi gặp sự cố, hãy mô tả rõ: thiết bị hoặc dịch vụ nào, ở phòng nào, bắt đầu từ lúc nào và đã thử gì. Có thể đính kèm ảnh chụp màn hình hoặc ảnh thiết bị.\nHệ thống gợi ý loại sự cố và mức ưu tiên; bạn có thể chọn lại nếu chưa đúng.\nThời gian phản hồi và xử lý mục tiêu theo ưu tiên: khẩn 1 giờ và 4 giờ, cao 4 giờ và 1 ngày, thường 1 ngày và 3 ngày, thấp 2 ngày và 7 ngày.\nKỹ thuật viên có thể hỏi thêm thông tin; yêu cầu sẽ chờ bạn bổ sung và tiếp tục khi bạn trả lời.\nKhi xử lý xong, bạn xác nhận kết quả và đánh giá từ 1 đến 5 sao, hoặc mở lại nếu vấn đề chưa hết (tối đa 3 lần).",
+    "provenance": {
+      "source_ids": [
+        "SRC_LAB_TICKET_SLA"
+      ],
+      "evidence_scope": "Tài liệu nội bộ tự soạn cho ứng dụng DX-Lab",
+      "reviewed_at": "2026-10-12"
+    },
+    "governance": {
+      "authoring": "SELF_AUTHORED",
+      "license": "CC BY 4.0"
+    },
+    "review_status": "IN_REVIEW",
+    "notes": "Mẫu quy chế và hướng dẫn tự soạn; cần khoa xác nhận trước khi áp dụng chính thức."
+  },
+  {
+    "article_code": "LAB_EXAM_SUPPORT",
+    "title": "Hỗ trợ kỹ thuật trong kỳ thi",
+    "category": "Quy trình",
+    "content": "Hỗ trợ kỹ thuật trong kỳ thi\n1. Giảng viên phụ trách đặt phòng thi trước và báo kỹ thuật viên các yêu cầu đặc biệt về phần mềm, tài khoản và mạng.\n2. Kỹ thuật viên kiểm tra phòng, máy và phần mềm trước giờ thi và có mặt hoặc trực máy trong suốt ca thi.\n3. Sự cố xảy ra giữa giờ thi được xếp ưu tiên khẩn: báo ngay cho kỹ thuật viên trực và gửi yêu cầu hỗ trợ ghi rõ phòng và số máy.\n4. Máy gặp sự cố được thay thế bằng máy dự phòng; bài làm của thí sinh được lưu theo hướng dẫn của giảng viên.\n5. Sau kỳ thi, kỹ thuật viên ghi lại sự cố và nguyên nhân gốc để cải thiện cho các ca thi sau.",
+    "provenance": {
+      "source_ids": [
+        "SRC_LAB_EXAM_SUPPORT"
+      ],
+      "evidence_scope": "Tài liệu nội bộ tự soạn cho ứng dụng DX-Lab",
+      "reviewed_at": "2026-10-12"
+    },
+    "governance": {
+      "authoring": "SELF_AUTHORED",
+      "license": "CC BY 4.0"
+    },
+    "review_status": "IN_REVIEW",
+    "notes": "Mẫu quy chế và hướng dẫn tự soạn; cần khoa xác nhận trước khi áp dụng chính thức."
+  }
+]

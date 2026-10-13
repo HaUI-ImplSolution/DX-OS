@@ -219,12 +219,13 @@ export type NotificationType =
   | "HARVEST_RECORDED"
   | "RETAKE_REQUESTED";
 
+// An app may register other types; one the client does not know is shown by its title and body.
 export interface AppNotification {
   id: number;
-  type: NotificationType;
+  type: NotificationType | (string & {});
   title: string;
   body: string;
-  relatedEntityType: "PARCEL" | "CROP_SEASON" | "DISEASE_REPORT" | null;
+  relatedEntityType: "PARCEL" | "CROP_SEASON" | "DISEASE_REPORT" | (string & {}) | null;
   relatedEntityRef: string | null;
   readAt: string | null;
   createdAt: string;

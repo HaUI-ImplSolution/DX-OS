@@ -20,8 +20,21 @@ on:
 
 jobs:
   e2e:
+    name: E2E (${{ matrix.app }})
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: farm
+            e2e-args: --require-rule
+            gateway-has: api-upload
+            gateway-lacks: api-ticket-create
+          - app: lab
+            e2e-args: ''
+            gateway-has: api-ticket-create
+            gateway-lacks: api-upload
     env:
       COMPOSE: docker compose -f docker-compose.yml -f demo/docker-compose.e2e.yml
     steps:
@@ -35,23 +48,35 @@ jobs:
       - run: pip install pillow
 
       - name: Create deploy/.env
-        run: python3 deploy/demo/make_ci_env.py
+        run: python3 deploy/demo/make_ci_env.py --app ${{ matrix.app }}
 
       - name: Start the reduced stack
         working-directory: deploy
         run: $COMPOSE up -d --build --wait --wait-timeout 1500 postgres minio keycloak backend ai frontend portal apisix
 
+      - name: The gateway holds the routes of the running app only
+        run: |
+          config=deploy/data/apisix/apisix.yaml
+          grep -q "id: ${{ matrix.gateway-has }}" "$config"
+          if grep -q "id: ${{ matrix.gateway-lacks }}" "$config"; then
+            echo "gateway config of ${{ matrix.app }} holds a route of another app"; exit 1
+          fi
+
       - name: Seed demo data
-        run: python3 deploy/demo/seed_demo.py
+        run: python3 deploy/demo/seed_demo.py --app ${{ matrix.app }}
+
+      - name: Seed demo data again (nothing may be created twice)
+        run: python3 deploy/demo/seed_demo.py --app ${{ matrix.app }}
 
       - name: Add the CI treatment rule
+        if: matrix.app == 'farm'
         working-directory: deploy
         run: |
           set -a; . ./.env; set +a
           $COMPOSE exec -T postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1 < demo/ci_fixture_rule.sql
 
       - name: Run E2E
-        run: python3 deploy/demo/e2e.py --require-rule
+        run: python3 deploy/demo/e2e.py --app ${{ matrix.app }} ${{ matrix.e2e-args }}
 
       - name: Service logs
         if: failure()

@@ -1,10 +1,10 @@
 # SBOM
 
-Danh mục thành phần phần mềm định dạng CycloneDX 1.5 (JSON), chỉ gồm dependency chạy thật (không gồm scope test và dev).
+Danh mục thành phần phần mềm định dạng CycloneDX (JSON; đặc tả 1.6, riêng `ai.cdx.json` là 1.5), chỉ gồm dependency chạy thật (không gồm scope test và dev).
 
 | File | Nguồn |
 |---|---|
-| `backend.cdx.json` | Maven, `backend/DX-Farm` |
+| `backend.cdx.json` | Maven, `backend` (gốc `dx-os-parent`, cả năm module `dx-core-api`, `dx-core`, `app-farm`, `app-lab`, `dx-host`) |
 | `ai.cdx.json` | `ai/requirements.lock` |
 | `frontend.cdx.json` | npm, `frontend` |
 | `mobile.cdx.json` | npm, `mobile` |
@@ -13,9 +13,9 @@ Danh mục thành phần phần mềm định dạng CycloneDX 1.5 (JSON), chỉ
 
 ```bash
 # Backend
-cd backend/DX-Farm
+cd backend
 ./mvnw org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -DoutputFormat=json -DoutputName=backend.cdx -DincludeTestScope=false
-cp target/backend.cdx.json ../../sbom/
+cp target/backend.cdx.json ../sbom/
 
 # AI
 pip install cyclonedx-bom

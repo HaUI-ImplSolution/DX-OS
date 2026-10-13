@@ -75,6 +75,8 @@ Không thêm file test mới nếu người dùng không yêu cầu; các case d
 ## 5. Bằng chứng và báo lỗi
 
 - Bằng chứng: log khởi động hai chế độ, kết quả gọi API (script chạy qua `deploy/demo/dxos_client.py`: 77 bước đạt ở lượt đầu, 2 bước phân loại lỗi đã sửa và đạt ở lượt sau, SLA và nhắc mượn trả đạt).
+- Backend: `./mvnw verify` đạt 80 test (13 `dx-core`, 21 `app-farm`, 46 `dx-host`), 0 lỗi, 0 bỏ qua (Claude, 13/10/2026).
+- AI: `python -m pytest tests -q` đạt 64 test (Claude, 13/10/2026).
 - Lỗi phát hiện: tạo issue, ghi mã vào cột "Kết quả" (ví dụ `Fail #123`).
 
 ## 6. Hướng dẫn kiểm thử thủ công

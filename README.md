@@ -150,7 +150,7 @@ Hướng dẫn kiểm thử đầy đủ ở [`docs/TESTING.md`](./docs/TESTING.
 | [`data/`](./data/README.md) | Dữ liệu có cấu trúc, corpus RAG, script sinh seed |
 | [`deploy/`](./deploy) | Docker Compose, gateway, `start.sh`, dữ liệu demo và E2E |
 | [`sso/`](./sso/README.md) · [`bi/`](./bi/README.md) · [`chat/`](./chat/README.md) · [`minio/`](./minio/README.md) · [`portal/`](./portal/README.md) | Keycloak, Superset, Mattermost, MinIO, portal |
-| [`docs/`](./docs) | Tồn đọng, kiểm thử, hồ sơ nộp bài, câu hỏi hội đồng, tài liệu tham chiếu |
+| [`docs/`](./docs) | Tồn đọng, kiểm thử, hồ sơ nộp bài, câu hỏi hội đồng, mẫu phase (`_template/`), tài liệu tham chiếu |
 
 ## Tài liệu và đóng góp
 

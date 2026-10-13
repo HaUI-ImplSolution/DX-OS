@@ -57,12 +57,11 @@ Khi bật lại cần rà license tương ứng: POI Apache-2.0 OK, các cái c�
 
 | Thành phần | License | OSI-approved | Ghi chú |
 |---|---|---|---|
-| Mã nguồn AI do nhóm tự viết | Apache-2.0 | ✅ | Theo `LICENSE` ở gốc repo |
+| Mã nguồn `ai/` do nhóm tự viết | AGPL-3.0 (tác phẩm gộp với Ultralytics) | ✅ | Tác giả cấp Apache-2.0; thư mục `ai/` phân phối theo AGPL-3.0, toàn văn ở `ai/LICENSE` |
 | FastAPI, Pydantic, SQLAlchemy, pgvector, LangGraph, LangChain, python-docx, Ruff | MIT | ✅ | Dependency trực tiếp; Ruff chỉ dùng khi phát triển |
 | Uvicorn, HTTPX, python-dotenv, pypdf | BSD-3-Clause | ✅ | Dependency trực tiếp |
 | python-multipart, sentence-transformers | Apache-2.0 | ✅ | Dependency trực tiếp |
 | psycopg / psycopg-binary | LGPL-3.0-only | ✅ | Dependency trực tiếp |
-| PyMuPDF | AGPL-3.0 hoặc Artifex commercial | ✅ với AGPL-3.0 | Repo dùng nhánh open-source AGPL-3.0 |
 | PyTorch | Apache-2.0 và các license nguồn mở đi kèm | ✅ | Dependency trực tiếp |
 | [ONNX Runtime](https://github.com/microsoft/onnxruntime/blob/main/LICENSE) | MIT | ✅ | Crop classifier CPU 1.30.0; FlatBuffers Apache-2.0, Protobuf BSD-3-Clause |
 | [Crop classifier YOLO26s-cls](https://huggingface.co/RaiyanKhaan/KrishokTech-Models/tree/c339988a6eceb5e22943ee27e4731a1a1dc9160a/01_crop_classifier) | AGPL-3.0 (metadata artifact) | ✅ | Artifact `ai/weights/crop_classifier.onnx` được quản lý bằng Git, từ revision `c339988a6eceb5e22943ee27e4731a1a1dc9160a`; model card repository ghi Apache-2.0, giữ điều kiện AGPL của artifact |
@@ -81,7 +80,7 @@ Khi bật lại cần rà license tương ứng: POI Apache-2.0 OK, các cái c�
 [`@nddKhanh`](https://github.com/nddKhanh) fine-tune trong
 [notebook Kaggle](https://www.kaggle.com/code/baodark/dx-farm-8169e1/notebook), được nhóm
 đồng ý công khai theo AGPL-3.0. Bản thay thế `3.1.0` do người dùng cung cấp trong nhánh này; giữ license model hiện có. Checkpoint nằm tại `ai/weights/best.pt`; toàn văn license
-nằm tại [`ai/MODEL_LICENSE`](./ai/MODEL_LICENSE).
+nằm tại [`ai/LICENSE`](./ai/LICENSE).
 
 **Tri thức DX-Lab:** 10 tài liệu ở `data/rag/lab/processed/lab_knowledge.json` do nhóm phát triển tự soạn theo mẫu
 quy chế phòng máy, cấp phép [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
@@ -96,8 +95,12 @@ Ashraful Islam và M Ashraful Amin. Thay đổi: chỉ dùng 5 lớp bệnh, res
 áp dụng augmentation; lớp `Healthy` không được dùng làm class detection, còn
 `Rice___healthy` chỉ là fallback runtime.
 
-Ultralytics và PyMuPDF áp dụng AGPL-3.0 cho phần tương ứng; mã nguồn DX-Farm tự viết vẫn
-giữ Apache-2.0.
+**Giấy phép theo thư mục:**
+
+- Thư mục `ai/` phân phối theo AGPL-3.0: mã của `ai/` import Ultralytics (AGPL-3.0, `ai/app/cv/loader.py`) nên tác phẩm gộp theo AGPL-3.0; mã nguồn công khai trong repo đáp ứng nghĩa vụ công bố mã của AGPL-3.0 (mục 13) cho người dùng dịch vụ.
+- Phần còn lại của repo (`backend`, `frontend`, `mobile`, `deploy`, `bi`, `portal`...) giữ Apache-2.0 theo `LICENSE` ở gốc.
+  AI Service chạy là tiến trình riêng và chỉ giao tiếp với Backend qua HTTP, nên Backend không là tác phẩm phái sinh của `ai/`.
+- Trọng số `ai/weights/*` theo AGPL-3.0 (toàn văn `ai/LICENSE`).
 
 ## Deploy (`deploy`)
 
@@ -142,4 +145,3 @@ LangGraph (Apache-2.0) đảm nhận vai trò orchestrator cho luồng vision �
 
 - SPDX header đã có ở file Java của Backend và file Python; file TypeScript chưa có.
 - Chưa có inventory thành phần bundle trong từng Docker image phát hành (chỉ có dependency khai báo ở trên).
-- Giấy phép áp dụng cho thư mục `ai/` (phụ thuộc Ultralytics và PyMuPDF theo AGPL-3.0) còn mở; xem `development/docs/improvement_docs/REMAINING_WORK.md`.

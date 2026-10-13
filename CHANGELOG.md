@@ -958,6 +958,12 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Rà soát license (PoF)
 
+### 2026-10-13
+
+- Thư mục `ai/` phân phối theo AGPL-3.0 (`ai/LICENSE`, trước là `ai/MODEL_LICENSE`) vì import Ultralytics; phần còn lại giữ Apache-2.0.
+- Bỏ `pymupdf` khỏi `ai/requirements.txt`, `ai/requirements.lock` và `sbom/ai.cdx.json`: không có mã nào import.
+- `LICENSES.md` ghi giấy phép theo thư mục và lý do AI Service không kéo theo Backend.
+
 ### 2026-10-07
 
 - `LICENSES.md` khớp dependency hiện có (Resilience4j, AspectJ, Hibernate Validator, react-router-dom, expo-location, pgvector, base image).

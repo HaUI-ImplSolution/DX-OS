@@ -209,8 +209,8 @@ Hạ tầng Postgres (role, database, extension) do các `*Seeder` trong `dx-cor
 
 ## Giấy phép và hồ sơ PoF
 
-- Mã nguồn tự viết: Apache-2.0, SPDX header ở đầu file Java của Backend và file Python của AI; toàn văn ở [`LICENSE`](./LICENSE).
-- Rà soát license từng thành phần (kể cả AGPL-3.0 của Ultralytics, PyMuPDF, MinIO và checkpoint CV): [`LICENSES.md`](./LICENSES.md).
+- Mã nguồn tự viết: Apache-2.0 (SPDX header ở đầu file Java và Python); toàn văn ở [`LICENSE`](./LICENSE). Riêng thư mục `ai/` phân phối theo AGPL-3.0 vì import Ultralytics, toàn văn ở [`ai/LICENSE`](./ai/LICENSE).
+- Rà soát license từng thành phần (kể cả AGPL-3.0 của Ultralytics, MinIO và checkpoint CV): [`LICENSES.md`](./LICENSES.md).
 - SBOM CycloneDX của backend, AI, frontend, mobile: [`sbom/`](./sbom/README.md); phiên bản AI khóa ở `ai/requirements.lock`.
 - Nguồn tài liệu gốc: `development/docs/legacy_docs/`, đề thi `development/docs/De_thi_PMNM_HaUI_2026_BAN_CHINH_THUC.pdf`, kế hoạch cải thiện `development/docs/improvement_docs/`.
 - Chủ đề chính thức: https://vfossa.vn/tin-tuc/gioi-thieu-mo-hinh-dx-os-va-chu-de-cuoc-thi-phan-mem-nguon-mo-olp-2026-761.html

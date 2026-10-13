@@ -87,7 +87,7 @@ Cột `status` trên bảng của Lab phản chiếu trạng thái đó, do hand
 - Migration `db/migration/lab` (bảng lịch sử `flyway_schema_history_lab`), chạy sau migration của core.
 - `V3` nạp sẵn 8 loại sự cố và 4 chính sách SLA mặc định.
 - View BI `vw_lab_rooms`, `vw_lab_devices`, `vw_lab_tickets`, `vw_lab_device_loans`, `vw_lab_room_bookings` chỉ chứa mã, id và nhóm; không có nội dung ticket, tên người hay tiêu đề lịch.
-- Tri thức: `data/rag/lab/`, nạp bằng `python -m scripts.ingest_diseases --corpus lab`.
+- Tri thức: `data/rag/lab/`, job `rag-ingest` tự nạp vào namespace `lab` khi dựng stack với `DXOS_APP=lab`.
 
 ## Cấu hình
 

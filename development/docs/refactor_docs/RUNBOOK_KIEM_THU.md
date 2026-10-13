@@ -61,6 +61,7 @@ Thiếu biến nào, Compose dừng và báo tên biến đó.
 ```
 
 Đợi đến khi script báo mọi service sẵn sàng.
+Lệnh này dựng cả hạ tầng, migration, vai và tri thức của app đang chọn (job `rag-ingest` nạp corpus theo `DXOS_APP`); không có bước nạp riêng.
 Dùng `./reset.sh --yes --keep-images` khi chỉ đổi dữ liệu, không đổi code.
 
 Bắt buộc dựng lại sạch ở lần đầu sau refactor: migration được đánh số lại, tên realm, database và bucket đã đổi.
@@ -194,6 +195,38 @@ Mật khẩu do script seed in ra hoặc ghi trong `deploy/demo/README.md` sau C
 | L16 | `student1` | Mở ticket của người khác bằng đường dẫn trực tiếp | Bị chặn |
 | L17 | `tech1` | Rút ngắn SLA khi thử để ticket quá hạn | Cảnh báo, rồi đánh dấu quá hạn; thông báo không gửi trùng |
 
+### 5.3 Kiểm Lab qua API
+
+Dùng Swagger (`http://localhost:9080/swagger-ui.html`) hoặc client trong `deploy/demo/dxos_client.py`, sau khi `reset.sh` và `seed_demo.py --app lab` đã chạy xong **(thiết kế, C6)**.
+Tài khoản ở mục 5.1; mỗi bước đối chiếu với test case của phase C4.
+
+| Bước | Gọi | Kiểm | Test case |
+|---|---|---|---|
+| 1 | `GET /api/v1/app` | `id` là `lab`, có 4 vai và menu | TC4-31 |
+| 2 | `tech1` `POST /rooms` hai lần cùng `code`; `student1` `POST /devices` | Lần hai 409; `student1` 403 | TC4-03, 04 |
+| 3 | `student1` `POST /tickets` (multipart `ticket` + `files` là ảnh PNG) | Mã `TK-<năm>-<số>`, `NEW`, hạn theo ưu tiên | TC4-05 |
+| 4 | `tech1` `/assign`, `/start`, comment công khai; `student1` comment | `firstRespondedAt` có giá trị | TC4-06 |
+| 5 | `student1` `GET /tickets/{id}` và ticket của người khác | Không thấy ghi chú nội bộ; ticket người khác 404 | TC4-07 |
+| 6 | `tech1` `/wait` có `message`; `student1` comment | Về `IN_PROGRESS` | TC4-08 |
+| 7 | `/resolve` thiếu `rootCause` | 422 `ROOT_CAUSE_REQUIRED` | TC4-09 |
+| 8 | `/resolve` đủ, `student1` `/confirm` `{"rating":4}` | `CLOSED`, `timeline` đủ sự kiện | TC4-10 |
+| 9 | `/reopen` lần 4 trên ticket đã mở lại 3 lần | 422 `TICKET_REOPEN_LIMIT` | TC4-11 |
+| 10 | `tech1` và `tech2` cùng `/assign` một ticket `NEW` (hai luồng) | Một bên 409 | TC4-12 |
+| 11 | `student1` `POST /device-loans`, `lecturer1` `/approve`, `tech1` `/return` | Thiết bị `AVAILABLE` → `ON_LOAN` → `AVAILABLE` | TC4-13 |
+| 12 | Mượn thiết bị `ON_LOAN`; `dueDate` quá 7 ngày; phiếu thứ ba | 422 | TC4-14, 15 |
+| 13 | `/return` với `DAMAGED` | Thiết bị `UNDER_REPAIR`, có mục ở `/devices/{id}/maintenance` | TC4-16 |
+| 14 | `lecturer1` `POST /room-bookings`, `tech1` `/approve`, `GET /rooms/{id}/schedule` | Lịch có khung giờ | TC4-17 |
+| 15 | Đặt chồng giờ; hai luồng cùng phòng cùng giờ | 422 `ROOM_SLOT_TAKEN`; DB chỉ một bản ghi `active` | TC4-18, 19 |
+| 16 | Quá 4 giờ, quá khứ, vượt sức chứa, phòng `MAINTENANCE`; `student1` đặt | 422 hoặc 403 | TC4-20 |
+| 17 | `PUT /sla-policies/NORMAL` `{"responseMinutes":1,"resolutionMinutes":2}`, tạo ticket, đợi 5 phút | Cảnh báo ở 80%, rồi `overdue=true` và thông báo, không gửi trùng | TC4-22 |
+| 18 | `POST /tickets/suggest` với "máy chiếu phòng A2 không lên hình" và "cả phòng máy mất mạng giữa giờ thi" | Loại thiết bị; ưu tiên khẩn; có từ khóa, lý do, bài liên quan | TC4-23, 24 |
+| 19 | `POST /knowledge/ask` "Quy định khi sử dụng phòng máy" | Đoạn trích kèm nguồn và `CC BY 4.0` | TC4-25 |
+| 20 | `GET /lab-stats/summary`, đối chiếu `SELECT` ở DB | Số khớp | TC4-26 |
+| 21 | `GET /approval-requests` bằng `tech1` | Có ticket, phiếu mượn, đặt phòng | TC4-30 |
+| 22 | Đăng nhập role đọc BI, `SELECT` từ `vw_lab_tickets` và từ `tickets` | View đọc được, bảng bị từ chối | TC4-27 |
+
+Kiểm hai chế độ `DXOS_APP` ở mục 6 (B1, B5).
+
 ## 6. Chuyển ngược và kiểm tra ranh giới
 
 | # | Việc | Kết quả mong đợi |
@@ -214,7 +247,7 @@ Khi muốn kiểm giữa chừng, chỉ cần chạy tới đây là đủ.
 | C1 | Mục 2, mục 3 (Farm), mục 4.3 và 4.4 | `compile` đạt; ranh giới sạch; E2E 10/10; OpenAPI không đổi |
 | C2 | Mục 2, mục 3 (Farm), mục 4 đầy đủ | Như C1, thêm F1 đến F9 đạt; `/api/v1/app` trả `farm` |
 | C3 | Dựng sạch, seed, mục 4.5 và 4.6 | Đăng nhập web, mobile, Superset đều được; token audience cũ bị 401 |
-| C4 | Mục 3 với `DXOS_APP=lab`, gọi API qua Swagger | L2 đến L14 đạt qua API; chạy `farm` vẫn đạt |
+| C4 | Mục 3 với `DXOS_APP=lab`, mục 5.3 qua Swagger | Bước 1 đến 22 đạt qua API; chạy `farm` vẫn đạt |
 | C5 | Mục 5 đến hết L16 | Web Lab đi hết kịch bản từng vai; web Farm không đổi |
 | C6 | Mục 5, mục 6 và E2E hai app | `switch-app.sh` hoạt động; E2E hai app đạt; CI xanh |
 | C7 | Làm theo README trên clone sạch | Không còn link gãy; làm được theo hướng dẫn thêm app |
@@ -231,7 +264,7 @@ Khi muốn kiểm giữa chừng, chỉ cần chạy tới đây là đủ.
 | Web hiện giao diện Farm khi backend chạy Lab | Cache trình duyệt, hoặc backend chưa lên khi tải trang | Tải lại cứng, đợi `/api/v1/system/status` UP |
 | Route 404 hoặc không bị giới hạn tốc độ | Gateway mount sai file cấu hình theo app | Kiểm `DXOS_APP` và file gateway mà compose mount |
 | Không tạo được extension khi khởi động Lab | Vai của DB không đủ quyền với `btree_gist` | Dùng image PostgreSQL có extension; cấp quyền tạo extension cho vai chủ DB |
-| Hỏi đáp Lab không có kết quả | Chưa nạp tri thức namespace `lab` | Chạy lại job `rag-ingest` |
+| Hỏi đáp Lab không có kết quả | Job `rag-ingest` chưa xong hoặc lỗi, hoặc `DXOS_APP` không phải `lab` lúc dựng | `docker compose logs rag-ingest`; chạy lại bằng `docker compose up -d --force-recreate rag-ingest` |
 | Ảnh không hiện | Route ảnh hoặc tên bucket cũ | Kiểm `MINIO_BUCKET` và route `/dxos-uploads/*`; `./reset.sh --yes` |
 | Thiếu `best.pt` hoặc `crop_classifier.onnx` | Checkout không đủ trọng số | `git status`, `git pull`; xem `ai/weights/` |
 | Dựng lâu hoặc hết dung lượng | Lần đầu tải image lớn | Đợi, hoặc dọn Docker (`docker system df`) |
@@ -246,4 +279,5 @@ Khi muốn kiểm giữa chừng, chỉ cần chạy tới đây là đủ.
 | Mục 4.5: F1 đến F9 (kể cả F6b) | | | | |
 | Mục 5: E2E Lab | | | | |
 | Mục 5.2: L1 đến L17 | | | | |
+| Mục 5.3: bước 1 đến 22 | | | | |
 | Mục 6: B1 đến B6 | | | | |

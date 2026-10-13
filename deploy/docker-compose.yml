@@ -221,7 +221,8 @@ services:
     volumes:
       - ${AI_DATA_DIR:?}:/data:ro
       - ai_weights:/app/weights
-    command: ["python", "-m", "scripts.ingest_diseases"]
+    # Ingests the knowledge corpus of the app selected by DXOS_APP into its own namespace.
+    command: ["python", "-m", "scripts.ingest_diseases", "--corpus", "${DXOS_APP:-farm}"]
 
   frontend:
     build:

@@ -14,7 +14,7 @@ Nội dung là dữ liệu nguồn do AI bàn giao để Backend tham khảo và
 - **AI** đọc `rag/processed/disease_knowledge.json` và `rag/source_registry.json` qua job ingest (`ai/scripts/ingest_diseases.py`, chạy bằng `python -m scripts.ingest_diseases`) để tạo embedding và ghi vào AI Vector DB (`documents`, `document_chunks`).
   Xem [`ai/README.md`](../ai/README.md) mục "Ingest RAG".
 - Corpus của Lab nằm ở `rag/lab/`: `processed/lab_knowledge.json` (10 bài tự soạn, CC BY 4.0) và `source_registry.json`.
-  Job ingest nạp bằng `python -m scripts.ingest_diseases --corpus lab` vào namespace `lab`; `backend/app-lab/src/main/resources/lab/knowledge-sources.json` giữ danh mục nguồn để trang hỏi đáp hiện đúng nguồn.
+  Job `rag-ingest` tự nạp corpus của app đang chạy (`DXOS_APP`) khi dựng stack; nạp tay bằng `python -m scripts.ingest_diseases --corpus lab` vào namespace `lab`; `backend/app-lab/src/main/resources/lab/knowledge-sources.json` giữ danh mục nguồn để trang hỏi đáp hiện đúng nguồn.
 - Trong Docker Compose, `data/` được bind-mount read-only vào container `rag-ingest` tại `/data` (biến `AI_DATA_DIR` trong `deploy/.env`, giá trị mẫu `../data`) — xem [`deploy/docker-compose.yml`](../deploy/docker-compose.yml).
 - `data/` ở gốc repository là nguồn canonical duy nhất; không duy trì bản sao trong `ai/.local/data` vì dễ khiến ingest dùng dữ liệu cũ và không thể tái lập từ Git.
 

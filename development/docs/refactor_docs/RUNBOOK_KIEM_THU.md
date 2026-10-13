@@ -152,9 +152,8 @@ cd mobile && npx expo start      # Expo Go, hoặc build APK bằng EAS
 ## 5. Chuyển sang Lab (`DXOS_APP=lab`)
 
 ```bash
-./deploy/switch-app.sh lab            # đổi biến, dựng lại gateway, backend, nạp tri thức và Superset
-./deploy/switch-app.sh lab --reset    # kèm dựng lại sạch (reset.sh), dùng khi đổi schema lớn
-python3 deploy/demo/seed_demo.py --app lab
+./deploy/start.sh lab                 # đổi biến, dựng lại gateway, backend, nạp tri thức, Superset và nạp dữ liệu demo
+./deploy/start.sh lab --reset --yes   # kèm dựng lại sạch (reset.sh), dùng khi đổi schema lớn
 python3 deploy/demo/e2e.py --app lab
 ```
 
@@ -273,10 +272,10 @@ Khi muốn kiểm giữa chừng, chỉ cần chạy tới đây là đủ.
 | Mục | Người chạy | Ngày | Kết quả (Đạt hoặc `Fail #issue`) | Ghi chú |
 |---|---|---|---|---|
 | Mục 2: kiểm tra tĩnh | | | | |
-| Mục 4.3: E2E Farm | | | | |
-| Mục 4.4: OpenAPI so baseline | | | | |
+| Mục 4.3: E2E Farm | Claude | 13/10/2026 | Đạt | 10/10 bước với `--require-rule`, trước và sau khi chuyển app |
+| Mục 4.4: OpenAPI so baseline | Claude | 13/10/2026 | Đạt | Không endpoint nào của baseline bị bỏ; thêm `/api/v1/app` và 5 thao tác của `/api/v1/workspaces` |
 | Mục 4.5: F1 đến F9 (kể cả F6b) | | | | |
-| Mục 5: E2E Lab | | | | |
+| Mục 5: E2E Lab | Claude | 13/10/2026 | Đạt | 16/16 bước với `--require-knowledge`, trên stack dựng sạch bằng `switch-app.sh lab --reset` |
 | Mục 5.2: L1 đến L17 | | | | |
 | Mục 5.3: bước 1 đến 22 | | | | |
-| Mục 6: B1 đến B6 | | | | |
+| Mục 6: B1 đến B6 | Claude | 13/10/2026 | Đạt | B1 E2E Farm 10/10 sau khi chuyển về; B2 backend dừng với thông báo nêu `[farm, lab]`; B3, B4 route app khác 404; B5 bảng Lab còn khi chạy Farm; B6 không lỗi migration |

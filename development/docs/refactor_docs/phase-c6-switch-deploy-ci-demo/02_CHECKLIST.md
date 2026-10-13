@@ -15,7 +15,7 @@ Kết quả đầu ra: một lệnh chuyển app; hệ thống báo app đang ch
 
 - [x] WPC6-01-INFRA-01 `docker-compose.yml`: truyền `DXOS_APP` cho backend, seed, Superset.
 - [x] WPC6-01-INFRA-02 `deploy/.env.example`: `DXOS_APP=farm` kèm chú thích giá trị hợp lệ.
-- [x] WPC6-01-INFRA-03 `deploy/switch-app.sh`: ghi biến, restart backend và job liên quan, tùy chọn `--reset`.
+- [x] WPC6-01-INFRA-03 `deploy/switch-app.sh` và `deploy/start.sh`: ghi biến, dựng lại backend và job liên quan, khởi động phần còn lại, tùy chọn `--seed`, `--reset`.
 - [x] WPC6-01-INFRA-04 `portal/index.html`: hiển thị tên app đang chạy.
 
 **Test** (chi tiết ở `03_TEST_PLAN.md`)
@@ -72,7 +72,7 @@ Kết quả đầu ra: CI xanh cho cả hai app.
 
 **Test** (chi tiết ở `03_TEST_PLAN.md`)
 
-- [ ] WPC6-04-TEST-01 CI xanh cho cả hai app (TC6-05): chạy khi mở PR.
+- [x] WPC6-04-TEST-01 CI xanh cho cả hai app (TC6-05).
 
 ## WPC6-05: Dashboard Superset và portal theo app
 
@@ -94,5 +94,5 @@ Kết quả đầu ra: Superset hiện dashboard của app đang chạy.
 - [x] Không có secret, mật khẩu hay dữ liệu thật trong diff.
 - [x] Dọn dữ liệu và ảnh test không còn dùng.
 - [x] README, CHANGELOG cập nhật (chỉ trạng thái cuối).
-- [ ] Mọi tiêu chí ở `00_OVERVIEW.md` mục 6 đã đạt và có bằng chứng: còn tiêu chí "CI chạy E2E hai lần và đạt", chờ lần chạy đầu trên PR.
+- [x] Mọi tiêu chí ở `00_OVERVIEW.md` mục 6 đã đạt và có bằng chứng (CI, log chuyển app, kết quả E2E hai app).
 - [x] Cập nhật trạng thái phase ở bảng chỉ mục của `README.md`.

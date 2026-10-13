@@ -664,7 +664,9 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 **Đã xong — Chuyển app, gateway và dữ liệu demo theo app:**
 
-- `deploy/switch-app.sh <app> [--reset] [--yes]` ghi `DXOS_APP` vào `deploy/.env`, dựng lại gateway, backend, job nạp tri thức và Superset rồi đợi `GET /api/v1/system/status` báo đúng app; `--reset` gọi `reset.sh`.
+- `deploy/switch-app.sh <app> [--seed] [--build] [--reset] [--yes]` ghi `DXOS_APP` vào `deploy/.env`, dựng lại gateway, backend, job nạp tri thức và Superset, khởi động các dịch vụ còn lại rồi đợi `GET /api/v1/system/status` báo đúng app; `--seed` nạp dữ liệu demo, `--reset` gọi `reset.sh`.
+  Chạy được cả khi stack đang tắt.
+- `deploy/start.sh [app]` là lệnh một bước: chạy `switch-app.sh` với `--seed`, app lấy từ đối số hoặc từ `DXOS_APP` trong `.env`.
 - Gateway: `deploy/apisix/common.yaml` (upstream, kiểm JWT, route chung, giới hạn hỏi đáp và trạng thái hệ thống) cộng `deploy/apisix/apps/<app>.yaml`.
   Service `apisix-config` ghép hai file thành `deploy/data/apisix/apisix.yaml` theo `DXOS_APP` trước khi gateway khởi động; app không có file thì Compose dừng với thông báo rõ.
   Farm giới hạn upload ảnh báo cáo và chẩn đoán AI; Lab giới hạn tạo yêu cầu hỗ trợ, tải tệp đính kèm, gợi ý phân loại và đặt phòng.

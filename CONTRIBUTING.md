@@ -19,7 +19,7 @@ python3 -m pip install pillow
 python3 demo/seed_demo.py
 ```
 
-`DXOS_APP` trong `.env` chọn ứng dụng (`farm` hoặc `lab`); đổi bằng `./switch-app.sh <app>`.
+`DXOS_APP` trong `.env` chọn ứng dụng (`farm` hoặc `lab`); `./start.sh [app]` chạy ứng dụng đó kèm dữ liệu demo và cũng dùng để đổi ứng dụng.
 
 Hướng dẫn đầy đủ ở [`README.md`](./README.md).
 

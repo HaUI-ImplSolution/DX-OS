@@ -23,7 +23,8 @@ python3 -m pip install pillow
 python3 deploy/demo/seed_demo.py [--app farm|lab] [--base-url URL] [--images DIR]
 ```
 
-Chạy trên stack mới dựng (`deploy/reset.sh`, hoặc `deploy/switch-app.sh <app>`, đợi đến khi báo mọi service sẵn sàng) và cần `deploy/.env`.
+`deploy/start.sh [app]` đã gọi script này sau khi dựng stack.
+Chạy riêng khi cần nạp lại hoặc dùng `--images`, trên stack đã chạy và có `deploy/.env`.
 Script đọc `.env` (tài khoản quản trị Keycloak và Postgres) và gọi `docker compose exec postgres` khi cần, nên chạy trên máy đang chạy stack.
 `e2e.py` dùng các tài khoản do seed tạo, nên chạy `seed_demo.py` trước.
 Chạy lại khi đã có dữ liệu demo thì không tạo thêm.

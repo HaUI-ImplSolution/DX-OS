@@ -72,28 +72,33 @@ Yêu cầu: Docker và Docker Compose.
 Lần dựng đầu tải và build nhiều thứ: image AI khoảng 3 GB, Ollama khoảng 9 GB cùng model Qwen2.5.
 
 ```bash
-cd deploy
-cp .env.example .env      # điền mọi biến đang để trống
-docker compose up -d --build
+cp deploy/.env.example deploy/.env      # điền mọi biến đang để trống
+python3 -m pip install pillow           # cho script dữ liệu demo
+./deploy/start.sh                       # dựng, chạy ứng dụng trong DXOS_APP và nạp dữ liệu demo
 ```
 
 Thiếu biến nào trong `.env`, Compose dừng và báo tên biến đó.
 Lần dựng đầu build MinIO từ mã nguồn Go (khoảng 2 phút).
+`start.sh` chạy được cả khi stack đang tắt lẫn đang chạy; dữ liệu demo nạp lại không tạo trùng.
 
-### Chọn ứng dụng
+### Chọn và đổi ứng dụng
 
 Mỗi lần khởi động chạy một ứng dụng trên cùng core, chọn bằng `DXOS_APP` (`farm` hoặc `lab`) trong `deploy/.env`.
 Đổi ứng dụng bằng một lệnh; web đổi theo mà không build lại.
 
 ```bash
-./deploy/switch-app.sh lab            # ghi DXOS_APP, dựng lại gateway, backend, nạp tri thức và Superset
-./deploy/switch-app.sh farm --reset   # kèm xóa deploy/data và dựng lại sạch
+./deploy/start.sh farm                  # chạy Farm, nạp dữ liệu demo của Farm
+./deploy/start.sh lab                   # đổi sang Lab, nạp dữ liệu demo của Lab (khoảng 1 phút)
+./deploy/start.sh farm --reset --yes    # xóa deploy/data và dựng lại sạch với Farm
 ```
 
+`start.sh` gọi `switch-app.sh <app> --seed`: ghi `DXOS_APP`, dựng lại gateway, backend, job nạp tri thức và Superset, khởi động phần còn lại, đợi `GET /api/v1/system/status` báo đúng app rồi nạp dữ liệu demo.
 Bảng của ứng dụng trước nằm lại trong database, không dùng tới; `--reset` dọn sạch.
 Gateway chỉ có route và giới hạn tốc độ của ứng dụng đang chạy (`deploy/apisix/common.yaml` cùng `deploy/apisix/apps/<app>.yaml`).
 
 ### Dữ liệu demo
+
+`start.sh` đã nạp dữ liệu demo; chạy riêng khi cần nạp lại hoặc dùng ảnh thật:
 
 ```bash
 python3 -m pip install pillow

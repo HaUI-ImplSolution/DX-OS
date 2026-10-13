@@ -56,16 +56,76 @@ Mọi thành phần phải có giấy phép OSI-approved.
 Thêm dependency thì cập nhật [`LICENSES.md`](./LICENSES.md) và sinh lại SBOM theo [`sbom/README.md`](./sbom/README.md).
 Dữ liệu thuốc, treatment rule và policy chỉ được seed khi có quyết định duyệt rõ ràng trong `data/structured/`.
 
-## Thêm một quy trình hoặc ứng dụng mới
+## Thêm một quy trình mới vào ứng dụng có sẵn
 
-Backend gồm `dx-core-api` (interface và DTO), `dx-core` (dịch vụ dùng chung), `app-farm` (nghiệp vụ nông nghiệp) và `dx-host` (chạy được, chọn app bằng `DXOS_APP`).
-Ứng dụng chỉ phụ thuộc `dx-core-api`; core không biết ứng dụng nào đang chạy.
-Để thêm quy trình mới:
+Quy trình mới nằm trong module của ứng dụng (`app-farm` hoặc `app-lab`), không sửa `dx-core`:
 
-1. Thêm package vào module của ứng dụng (`app-farm`), không sửa `dx-core`.
-2. Khai báo loại yêu cầu mới bằng một bean `CaseTypeDefinition` (trạng thái, bước chuyển, vai) và mở case qua `WorkflowOperations` (`caseType`, `entityType`) để có sẵn lịch sử, người phụ trách và danh sách việc chờ.
+1. Thêm package vào module của ứng dụng.
+2. Khai báo loại yêu cầu bằng một bean `CaseTypeDefinition` (trạng thái, bước chuyển, vai) và mở case qua `WorkflowOperations` (`caseType`, `entityType`) để có sẵn lịch sử, người phụ trách và danh sách việc chờ.
 3. Cài `CaseSummaryProvider` để yêu cầu hiện trong hộp duyệt, và `NotificationTypeDefinition` cho từng loại thông báo mới.
-4. Khai báo route cần giới hạn tốc độ trong `deploy/apisix/apps/<app>.yaml`; phần chung cho mọi ứng dụng ở `deploy/apisix/common.yaml`.
+4. Khai báo route cần giới hạn tốc độ trong `deploy/apisix/apps/<app>.yaml`.
 5. Thêm view `vw_*` và đăng ký qua `BiDatasetProvider` nếu cần báo cáo.
 
-Sơ đồ ở [`development/docs/submission/ARCHITECTURE_OPEN_CORE.md`](./development/docs/submission/ARCHITECTURE_OPEN_CORE.md).
+## Thêm một ứng dụng mới
+
+Backend gồm `dx-core-api` (interface và DTO), `dx-core` (dịch vụ dùng chung), `app-farm`, `app-lab` và `dx-host` (chạy được, chọn app bằng `DXOS_APP`).
+Ứng dụng chỉ phụ thuộc `dx-core-api`; core không biết ứng dụng nào đang chạy.
+Ví dụ mẫu là `app-lab` ([`backend/app-lab/README.md`](./backend/app-lab/README.md)); sơ đồ ở [`development/docs/submission/ARCHITECTURE_OPEN_CORE.md`](./development/docs/submission/ARCHITECTURE_OPEN_CORE.md).
+Dưới đây `<id>` là mã của ứng dụng (chữ thường), cũng là giá trị `DXOS_APP`.
+
+### Backend
+
+1. **Module.**
+   Tạo `backend/app-<id>/pom.xml` theo `app-lab/pom.xml` (parent `dx-os-parent`, phụ thuộc `dx-core-api` và các starter Spring).
+   Thêm module vào `<modules>` và `<dependencyManagement>` của `backend/pom.xml`, thêm dependency vào `dx-host/pom.xml`, và hai dòng `COPY` (pom và `src`) vào `backend/Dockerfile`.
+2. **Khai báo app.**
+   Một bean `AppModule` có `id()` bằng `<id>`, tên hiển thị, menu (đường dẫn, vai được thấy) và loại workspace.
+   Bean này là interface duy nhất bắt buộc; core khởi động được với app chỉ có `AppModule`.
+3. **Nạp có điều kiện.**
+   Một lớp `@AutoConfiguration` với `@ConditionalOnProperty(name = "dxos.app", havingValue = "<id>")`, `@ComponentScan`, `@EntityScan`, `@EnableJpaRepositories`, đăng ký trong `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`.
+   Cùng lớp khai báo bean Flyway riêng (`locations` là `db/migration/<id>`, bảng lịch sử riêng, `@DependsOn("coreFlyway")`); lớp này chạy trước Flyway và Hibernate mặc định, theo `LabAutoConfiguration`.
+4. **Chọn app.**
+   Thêm `<id>` vào `KNOWN_APPS` của `AppSelectionCheck` trong `dx-host`, và `application-<id>.yaml` cho cấu hình riêng (đặt `spring.sql.init.mode: never` nếu app không có script seed).
+5. **Schema.**
+   Migration của app nằm ở `db/migration/<id>`; bảng của core (`workspaces`, `workflow_case`, `workflow_event`, `notifications`) dùng chung, không tạo lại.
+6. **Interface cần cài** (đầy đủ ở [`SPI_CATALOG.md`](./development/docs/refactor_docs/SPI_CATALOG.md)):
+
+   | Cần | Interface |
+   |---|---|
+   | Vai và quyền | `RoleProvider`, `EndpointPolicyContributor`, `ClientRestrictionPolicy` |
+   | Quy trình | `CaseTypeDefinition`, `WorkflowDecisionHandler`, `CaseSummaryProvider` |
+   | Thông báo và chat | `NotificationTypeDefinition`, `NotificationChannel` |
+   | Báo cáo | `BiDatasetProvider` (view `vw_<id>_*`) |
+   | Tri thức và tệp | `KnowledgeNamespace`, `FileProcessor` |
+   | Sức khỏe | `HealthContributor` |
+
+7. **Facade gọi core.**
+   `WorkflowOperations`, `ApprovalInbox`, `WorkspaceDirectory`, `NotificationPublisher`, `ObjectStorage`, `FileStore`, `UserContext`, `KnowledgeGateway`, `AiGateway`.
+
+### Hạ tầng và dữ liệu
+
+8. **Gateway.**
+   Tạo `deploy/apisix/apps/<id>.yaml` với các route cần giới hạn tốc độ (có thể chỉ chứa dòng chú thích); `apisix-config` dừng nếu file không tồn tại.
+9. **BI.**
+   Thêm một mục vào `APPS` của `bi/bootstrap_datasources.py` (tên kết nối, danh sách view, bundle dashboard hoặc `None`).
+10. **Tri thức.**
+    Thêm corpus vào `CORPORA` của `ai/app/rag/ingestion_service.py` và dữ liệu ở `data/rag/<id>/`; job `rag-ingest` nạp theo `DXOS_APP`.
+    Corpus là bắt buộc: giá trị `DXOS_APP` không có trong `CORPORA` làm job thất bại và dịch vụ `ai` (phụ thuộc job này) không khởi động.
+11. **Dữ liệu demo và E2E.**
+    Tạo `deploy/demo/seed_<id>.py` (hàm `seed`, danh sách `ACCOUNTS`) và `deploy/demo/e2e_<id>.py` (hàm `run`), đăng ký vào `SEEDS` của `seed_demo.py` và `SCENARIOS` của `e2e.py`; thêm một dòng vào ma trận của `.github/workflows/e2e.yml`.
+
+### Web
+
+12. Tạo `frontend/src/apps/<id>/index.tsx` xuất mặc định một `AppUiModule` (lời giới thiệu, nhãn vai, `routes`).
+13. Mỗi `route` có `path` trùng đường dẫn của mục menu trong `AppModule`; thêm một dòng vào `frontend/src/appRegistry.ts`.
+14. Chỉ import từ `src/shell` (qua `index.ts`) và từ thư mục của app.
+
+### Chạy thử
+
+```bash
+cd backend && ./mvnw formatter:validate verify
+./deploy/start.sh <id>                  # dựng, chạy app, nạp dữ liệu demo
+python3 deploy/demo/e2e.py --app <id>
+```
+
+Thêm giá trị `<id>` vào `README.md` (mục chọn ứng dụng) và comment `DXOS_APP` của `deploy/.env.example`.

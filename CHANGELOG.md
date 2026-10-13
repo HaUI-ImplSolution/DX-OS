@@ -440,6 +440,10 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## AI Service (Python)
 
+### 2026-10-13
+
+- Tên dịch vụ trên OpenAPI là `DX-OS AI Service`; một dịch vụ phục vụ corpus `farm` và `lab`.
+
 ### 2026-10-12
 
 **Đã xong — Corpus theo namespace:**
@@ -835,6 +839,11 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Kênh chat nội bộ (`chat`, Mattermost)
 
+### 2026-10-13
+
+- `chat/bootstrap.sh` tạo thêm channel `Kỹ thuật viên` (public) cho thông báo của DX-Lab: yêu cầu hỗ trợ mới và yêu cầu quá hạn; yêu cầu quá hạn còn đi vào `Ban quản trị`.
+- `chat/README.md` mô tả kênh theo từng ứng dụng.
+
 ### 2026-10-06
 
 - Yêu cầu thửa và vụ mới đi vào kênh `Ban quản trị` qua `MATTERMOST_WEBHOOK_URL_ADMIN`; báo cáo mới và chẩn đoán chờ duyệt đi vào kênh `Kỹ sư nông nghiệp` qua `MATTERMOST_WEBHOOK_URL_ENGINEER`.
@@ -973,6 +982,17 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - **Còn thiếu**: SPDX header đầu mỗi file mã nguồn tự viết — việc sửa hàng loạt file, để riêng một lượt khác.
 
 ## Tài liệu (root, `development/docs`, `ai/`)
+
+### 2026-10-13
+
+**Đã xong — Tài liệu và hồ sơ theo Core dùng chung và hai ứng dụng:**
+
+- `development/docs/submission/ARCHITECTURE_OPEN_CORE.md`: sơ đồ 3 tầng với hai ứng dụng, đồ thị module Maven, ranh giới biên dịch, bảng cài interface của Farm và Lab, luồng request của Farm và Lab, cách chọn ứng dụng lúc chạy.
+- `README.md` mô tả DX-OS Open-Core, hai ứng dụng, `DXOS_APP`, mức hoàn thiện của từng ứng dụng và tài khoản demo; thêm `backend/README.md` và `backend/app-farm/README.md`.
+- `CONTRIBUTING.md`: hướng dẫn từng bước thêm một ứng dụng mới (module, `AppModule`, nạp có điều kiện, migration, interface, gateway, BI, tri thức, dữ liệu demo, giao diện), đã kiểm bằng một ứng dụng mẫu rỗng.
+- `development/docs/submission/`: `COUNCIL_QA.md` trả lời 10 câu hỏi mục 13 của đề theo core và hai ứng dụng, `DEMO_SCRIPT.md` kịch bản 10 phút gồm Farm, đổi ứng dụng và Lab, `REPORT_OUTLINE.md` dàn ý theo core, H-P-D-I và hai ứng dụng.
+- `development/docs/improvement_docs/REMAINING_WORK.md` có mục việc còn lại sau refactor.
+- `sbom/backend.cdx.json` gồm năm module; quét gitleaks lịch sử (336 commit) và cây làm việc không có phát hiện.
 
 ### 2026-10-09
 

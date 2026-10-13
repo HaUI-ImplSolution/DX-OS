@@ -1,26 +1,35 @@
-# DX-Farm
+# DX-OS: DX-Farm và DX-Lab
 
 MVP dự thi **OLP Phần mềm nguồn mở 2026** (khối thi DX-OS, VFOSSA).
-Bài toán: **Agri-Carbon DX-OS**, hệ điều hành chuyển đổi số nội bộ cho một Hợp tác xã Nông nghiệp Số chuyên canh lúa nước (ĐBSCL), theo kiến trúc 4 không gian **H-P-D-I** (Human, Process, Data, Intelligence).
+Sản phẩm là một nền tảng **Open-Core** dùng chung (định danh và SSO, API Gateway, dữ liệu, workflow, thông báo, cổng AI) theo kiến trúc 4 không gian **H-P-D-I** (Human, Process, Data, Intelligence), trên đó chạy hai ứng dụng nghiệp vụ cắm vào qua interface:
 
-Luồng xương sống: nông dân báo bệnh bằng ảnh, AI chẩn đoán, hệ thống tra quy tắc xử lý xác định, kỹ sư duyệt, ghi nhận phun thuốc và khóa thu hoạch theo thời gian cách ly (PHI).
+- **DX-Farm**: hệ điều hành chuyển đổi số cho Hợp tác xã Nông nghiệp Số chuyên canh lúa nước (ĐBSCL).
+  Luồng xương sống: nông dân báo bệnh bằng ảnh, AI chẩn đoán, hệ thống tra quy tắc xử lý xác định, kỹ sư duyệt, ghi nhận phun thuốc và khóa thu hoạch theo thời gian cách ly (PHI).
+- **DX-Lab**: trạm vận hành CNTT của khoa.
+  Luồng xương sống: sinh viên báo sự cố có gợi ý, kỹ thuật viên xử lý theo SLA, mượn thiết bị và đặt phòng máy có duyệt, hỏi đáp quy chế, quản trị xem thống kê.
 
-Lịch sử thay đổi theo từng module ở [`CHANGELOG.md`](./CHANGELOG.md); cách đóng góp ở [`CONTRIBUTING.md`](./CONTRIBUTING.md).
+Mỗi lần khởi động chạy một ứng dụng, chọn bằng biến `DXOS_APP` (`farm` hoặc `lab`); core giữ nguyên khi đổi ứng dụng.
+Repository giữ tên `DX---Farm`.
+
+Lịch sử thay đổi theo từng module ở [`CHANGELOG.md`](./CHANGELOG.md); cách đóng góp và thêm ứng dụng mới ở [`CONTRIBUTING.md`](./CONTRIBUTING.md).
 
 ## Kiến trúc
 
 Ba tầng Open-Core.
-Sơ đồ đầy đủ và luồng request ở [`development/docs/submission/ARCHITECTURE_OPEN_CORE.md`](./development/docs/submission/ARCHITECTURE_OPEN_CORE.md).
+Sơ đồ đầy đủ, ranh giới biên dịch và luồng request ở [`development/docs/submission/ARCHITECTURE_OPEN_CORE.md`](./development/docs/submission/ARCHITECTURE_OPEN_CORE.md).
 
 | Tầng | Nội dung |
 |---|---|
-| Ứng dụng DX-Farm | Thửa, vụ mùa, báo cáo sâu bệnh, chẩn đoán, khai phun thuốc, thu hoạch; web (kỹ sư, admin) và mobile (nông dân) |
-| Ứng dụng DX-Lab | Yêu cầu hỗ trợ CNTT có SLA, thiết bị và mượn trả, đặt phòng máy chống trùng giờ, tri thức và hỏi đáp, thống kê ([`backend/app-lab/README.md`](./backend/app-lab/README.md)) |
-| H-P-D-I | [H] Keycloak, Mattermost, nông hộ; [P] workflow duyệt, vòng đời vụ mùa, thông báo; [D] PostgreSQL, MinIO, Superset, thời tiết; [I] CV, RAG, LangGraph |
-| Core dùng chung | `core.identity` (workspace, thành viên), `core.workflow` (loại case cấu hình được, hộp duyệt), `core.notification`, `core.storage`, `core.ai`, `core.knowledge`, `core.security` của Backend; cổng API APISIX |
+| 1. Open-Core (headless, không có giao diện người dùng) | `dx-core` của Backend: `core.identity` (workspace, thành viên), `core.workflow` (loại case cấu hình được, hộp duyệt), `core.notification`, `core.storage`, `core.ai`, `core.knowledge`, `core.security`; Keycloak (SSO), cổng API APISIX, PostgreSQL, MinIO |
+| 2. H-P-D-I | [H] Keycloak, workspace, vai, Mattermost; [P] workflow duyệt, vòng đời, thông báo; [D] PostgreSQL, MinIO, view BI, Superset; [I] CV, RAG, LangGraph, luật phân loại; giao diện web và mobile |
+| 3. Ứng dụng DX-Farm | Thửa, vụ mùa, báo cáo sâu bệnh, chẩn đoán, khai phun thuốc, thu hoạch; web (kỹ sư, admin) và mobile (nông dân) ([`backend/app-farm/README.md`](./backend/app-farm/README.md)) |
+| 3. Ứng dụng DX-Lab | Yêu cầu hỗ trợ CNTT có SLA, thiết bị và mượn trả, đặt phòng máy chống trùng giờ, tri thức và hỏi đáp, thống kê; web ([`backend/app-lab/README.md`](./backend/app-lab/README.md)) |
+
+Backend gồm năm module Maven ([`backend/README.md`](./backend/README.md)): `dx-core-api` (interface), `dx-core`, `app-farm`, `app-lab` và `dx-host` (chạy được).
+Ứng dụng chỉ phụ thuộc `dx-core-api`, nên compiler chặn việc ứng dụng import ruột core.
 
 Mọi client chỉ gọi gateway APISIX (cổng `9080`).
-Gateway kiểm JWT Keycloak, giới hạn tốc độ các thao tác tốn tài nguyên và chuyển tới Backend, Keycloak, MinIO, web và portal.
+Gateway kiểm JWT Keycloak, giới hạn tốc độ các thao tác tốn tài nguyên của ứng dụng đang chạy và chuyển tới Backend, Keycloak, MinIO, web và portal.
 Backend, Keycloak, AI, MinIO không publish cổng ra host; Backend tự kiểm JWT lần hai.
 
 ### Thành phần
@@ -48,6 +57,8 @@ Backend, Keycloak, AI, MinIO không publish cổng ra host; Backend tự kiểm 
 
 Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 
+### DX-Farm
+
 | Tính năng | Trong code | Kiểm thử | Dữ liệu demo |
 |---|---|---|---|
 | Đăng nhập SSO, phân quyền role, phạm vi dữ liệu theo nông hộ | Có | Test ma trận quyền, E2E | Có (`farmer1`, `engineer1`, `admin1`) |
@@ -65,6 +76,22 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 `data.sql` seed thuốc `NEWTEC_300SC` và hai treatment rule đã được chuyên gia duyệt cho đạo ôn (`Rice___Blast`) và khô vằn (`Rice___Sheath_blight`).
 Chẩn đoán trên bệnh chưa có rule (ví dụ đốm nâu) ở trạng thái chỉ xem xét (`review_required`), không có liều hay PHI.
 Khi rule mới được duyệt và thêm vào `data/structured/`, chạy lại `python3 data/scripts/generate_seed_sql.py` để mở luồng phun thuốc và khóa thu hoạch cho bệnh đó.
+
+### DX-Lab
+
+| Tính năng | Trong code | Kiểm thử | Dữ liệu demo |
+|---|---|---|---|
+| Vai STUDENT, LECTURER, TECHNICIAN, ADMIN; sinh viên chỉ thấy yêu cầu của mình | Có | E2E Lab, kiểm tay | Có (`student1`, `lecturer1`, `tech1`, `admin1`) |
+| Yêu cầu hỗ trợ: gửi kèm ảnh, trao đổi công khai và nội bộ, nhận, xử lý, xác nhận và đánh giá, mở lại | Có | E2E Lab, kiểm tay | Có (12 yêu cầu ở mọi trạng thái) |
+| SLA theo ưu tiên, cảnh báo ở 80% và đánh dấu quá hạn theo lịch | Có | Kiểm tay với SLA rút ngắn | Có |
+| Hai kỹ thuật viên nhận cùng yêu cầu: một bên 409 | Có | E2E Lab | Không áp dụng |
+| Gợi ý loại và ưu tiên bằng luật, bài tri thức liên quan | Có | E2E Lab, kiểm tay | Có (10 bài quy chế và hướng dẫn) |
+| Mượn thiết bị có hạn, duyệt theo vai, trả hỏng mở nhật ký sửa chữa | Có | E2E Lab, kiểm tay | Có (7 thiết bị, 5 phiếu) |
+| Đặt phòng chống trùng giờ ở cơ sở dữ liệu, lịch tuần | Có | E2E Lab, kiểm tay | Có (5 phòng, 5 lịch) |
+| Hỏi đáp quy chế có trích nguồn và giấy phép | Có | E2E Lab (`--require-knowledge`) | Có |
+| Thống kê SLA, tải kỹ thuật viên, mức dùng phòng; view `vw_lab_*` cho BI | Có | E2E Lab, kiểm tay | Có |
+
+Lab chưa có test tự động riêng ngoài kịch bản E2E; dashboard Superset của Lab và mobile cho Lab nằm ở backlog.
 
 ## Cài đặt và chạy
 
@@ -125,7 +152,7 @@ Chi tiết ở [`deploy/demo/README.md`](./deploy/demo/README.md).
 | Dịch vụ | Địa chỉ | Đăng nhập |
 |---|---|---|
 | Portal | http://localhost:9080/portal/ | Không cần |
-| Ứng dụng web | http://localhost:9080 | SSO Keycloak, `engineer1` hoặc `admin1` |
+| Ứng dụng web | http://localhost:9080 | SSO Keycloak: Farm `engineer1` hoặc `admin1`; Lab `student1`, `lecturer1`, `tech1` hoặc `admin1` |
 | Swagger | http://localhost:9080/swagger-ui.html | Access token Keycloak, bấm Authorize |
 | Keycloak Admin | http://localhost:9080/admin | `KEYCLOAK_ADMIN_USERNAME` / `KEYCLOAK_ADMIN_PASSWORD` |
 | BI (Superset) | http://localhost:9081 | SSO Keycloak; `admin1` vào trang quản trị |
@@ -154,6 +181,8 @@ Nông dân chỉ dùng app mobile; web và Superset từ chối tài khoản ch�
 Tài liệu tương tác ở `/swagger-ui.html`, sinh từ code.
 Mọi response bọc trong `ApiResponse` (`success`, `message`, `data`, `timestamp`); response lỗi có thêm `errorCode` ổn định để client hiển thị tiếng Việt.
 Nhóm endpoint chính: `parcels`, `crop-seasons`, `disease-reports`, `disease-reports/{id}/diagnosis`, `workflow-cases`, `approval-requests`, `households`, `workspaces`, `notifications`, `knowledge/ask`, `system/status`, `app`.
+DX-Lab thêm `tickets`, `device-loans`, `devices`, `rooms`, `room-bookings`, `ticket-categories`, `sla-policies`, `lab-stats/summary`.
+Một ứng dụng chỉ nạp controller của nó: route của ứng dụng kia trả 404.
 
 ### Dừng và dựng lại
 
@@ -175,6 +204,7 @@ Hai database trên cùng một Postgres:
 Seed nghiệp vụ của Farm nằm ở `backend/app-farm/src/main/resources/farm/data.sql`, sinh từ `data/structured/*.json` bằng `data/scripts/generate_seed_sql.py`; chỉ record được duyệt (`eligible_for_seed=true`) mới được seed.
 Không sửa tay `data.sql`; khi thay đổi dữ liệu, cần commit đồng thời dữ liệu nguồn và file đã sinh.
 CI chạy `generate_seed_sql.py --check` cùng unit test của generator để phát hiện dữ liệu nguồn và `data.sql` bị lệch.
+DX-Lab không có script seed SQL: phòng, thiết bị, yêu cầu, phiếu và lịch mẫu nạp qua API bằng `deploy/demo/seed_demo.py`; tri thức quy chế ở `data/rag/lab/`.
 Hạ tầng Postgres (role, database, extension) do các `*Seeder` trong `dx-core`.
 
 ## Giấy phép và hồ sơ PoF
@@ -188,4 +218,4 @@ Hạ tầng Postgres (role, database, extension) do các `*Seeder` trong `dx-cor
 
 ## Tài liệu theo module
 
-[`mobile/README.md`](./mobile/README.md), [`ai/README.md`](./ai/README.md), [`sso/README.md`](./sso/README.md), [`bi/README.md`](./bi/README.md), [`minio/README.md`](./minio/README.md), [`chat/README.md`](./chat/README.md), [`portal/README.md`](./portal/README.md), [`data/README.md`](./data/README.md), [`development/docs/legacy_docs/PARCEL_SEASON_CODES.md`](./development/docs/legacy_docs/PARCEL_SEASON_CODES.md).
+[`backend/README.md`](./backend/README.md), [`backend/app-farm/README.md`](./backend/app-farm/README.md), [`backend/app-lab/README.md`](./backend/app-lab/README.md), [`mobile/README.md`](./mobile/README.md), [`ai/README.md`](./ai/README.md), [`sso/README.md`](./sso/README.md), [`bi/README.md`](./bi/README.md), [`minio/README.md`](./minio/README.md), [`chat/README.md`](./chat/README.md), [`portal/README.md`](./portal/README.md), [`data/README.md`](./data/README.md), [`development/docs/legacy_docs/PARCEL_SEASON_CODES.md`](./development/docs/legacy_docs/PARCEL_SEASON_CODES.md).

@@ -15,7 +15,7 @@ backend/
   dx-host/                HaUI.ImplSolution.dxos.host   (fat jar, Dockerfile)
 ```
 
-`backend/DX-Farm` hiện tại được thay bằng bố cục trên.
+`backend/` có bố cục trên; mỗi module ứng dụng có README riêng (`app-farm/README.md`, `app-lab/README.md`).
 
 ## dx-core-api
 

@@ -1,4 +1,5 @@
-# APISIX in standalone mode: routes live in apisix.yaml, there is no etcd and no admin API.
+# APISIX in standalone mode: routes live in apisix.yaml (common.yaml plus apps/<DXOS_APP>.yaml,
+# joined by the apisix-config service), there is no etcd and no admin API.
 deployment:
   role: data_plane
   role_data_plane:

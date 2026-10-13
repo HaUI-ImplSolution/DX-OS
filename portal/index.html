@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>DX-Farm — Portal</title>
+<title>DX-OS — Portal</title>
 <style>
   :root {
     color-scheme: light;
@@ -332,11 +332,11 @@
 
   <section class="hero">
     <div class="hero-inner">
-      <span class="eyebrow"><span class="dot"></span> Agri-Carbon DX-OS · Hợp tác xã Nông nghiệp Số</span>
-      <h1>Cổng vào <span class="brand">DX-Farm</span></h1>
+      <span class="eyebrow"><span class="dot"></span> DX-OS · Hệ điều hành chuyển đổi số nội bộ</span>
+      <h1>Cổng vào <span class="brand" id="app-name">DX-OS</span></h1>
       <p class="subtitle">
-        Một điểm truy cập duy nhất cho toàn bộ hệ thống chuyển đổi số của hợp tác xã —
-        báo cáo đồng ruộng, giám sát dữ liệu và trao đổi nội bộ.
+        Một điểm truy cập duy nhất cho toàn bộ hệ thống chuyển đổi số của đơn vị —
+        ứng dụng nghiệp vụ, thống kê dữ liệu và trao đổi nội bộ.
       </p>
 
       <div class="hpdi">
@@ -361,7 +361,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 6v6c0 5 3.8 8.7 9 10 5.2-1.3 9-5 9-10V6l-9-4Z"/><path d="m9 12 2 2 4-4"/></svg>
         </div>
         <div class="app-name">Ứng dụng chính</div>
-        <div class="app-desc">Báo sâu bệnh, chẩn đoán AI, duyệt xử lý và ghi nhận thu hoạch.</div>
+        <div class="app-desc">Ứng dụng nghiệp vụ của hệ thống đang chạy.</div>
         <div class="app-meta">
           <span class="app-url">/</span>
           <span class="app-cta">Mở →</span>
@@ -374,7 +374,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12.5" y="8" width="3" height="10"/><rect x="18" y="5" width="3" height="13"/></svg>
         </div>
         <div class="app-name">BI Dashboard</div>
-        <div class="app-desc">Bản đồ và trạng thái thửa ruộng theo thời gian thực (Apache Superset).</div>
+        <div class="app-desc">Dashboard thống kê của ứng dụng đang chạy (Apache Superset).</div>
         <div class="app-meta">
           <span class="app-url">localhost:9081</span>
           <span class="app-cta">Mở →</span>
@@ -387,7 +387,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg>
         </div>
         <div class="app-name">Kênh chat nội bộ</div>
-        <div class="app-desc">Trao đổi nội bộ giữa nông dân và kỹ sư (Mattermost).</div>
+        <div class="app-desc">Trao đổi nội bộ và nhận thông báo từ hệ thống (Mattermost).</div>
         <div class="app-meta">
           <span class="app-url">localhost:8065</span>
           <span class="app-cta">Mở →</span>
@@ -486,7 +486,7 @@
 
 
   <footer>
-    <span class="foot-brand">DX-Farm</span> — MVP Agri-Carbon DX-OS · OLP Phần mềm nguồn mở 2026 (VFOSSA)
+    <span class="foot-brand">DX-OS</span> — Hệ điều hành chuyển đổi số nội bộ · OLP Phần mềm nguồn mở 2026 (VFOSSA)
   </footer>
 
   <script>
@@ -531,7 +531,7 @@
         return location.protocol + "//" + location.hostname + ":" + port + path;
       }
 
-      [["web", "Ứng dụng chính"], ["backend", "Backend API"], ["ai", "AI chẩn đoán"],
+      [["web", "Ứng dụng chính"], ["backend", "Backend API"], ["ai", "Dịch vụ AI"],
         ["storage", "Lưu trữ ảnh"], ["sso", "Keycloak (đăng nhập)"], ["bi", "BI Dashboard"],
         ["chat", "Kênh chat"]].forEach(function (s) { row(s[0], s[1]); });
 
@@ -543,9 +543,12 @@
         fetch("/api/v1/system/status", { cache: "no-store" })
           .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
           .then(function (body) {
-            var seen = {};
+            if (body.data.app && body.data.app.name) {
+              document.getElementById("app-name").textContent = body.data.app.name;
+              document.title = body.data.app.name + " — Portal";
+            }
             body.data.services.forEach(function (s) {
-              if (rows[s.name]) { set(s.name, s.status === "UP"); seen[s.name] = true; }
+              if (rows[s.name]) set(s.name, s.status === "UP");
             });
           })
           .catch(function () { ["backend", "ai", "storage"].forEach(function (k) { set(k, false); }); });

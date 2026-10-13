@@ -1,6 +1,11 @@
-# Single entry point of the stack: port 9080 serves the web app, API, Keycloak, photos and portal;
-# port 9081 serves Superset only and port 9082 the MinIO console only. Clients reach the web app, the API, Keycloak and the photo
-# storage only through this gateway. The AI service and the internal API are not routed.
+# Shared part of the gateway configuration. The `apisix-config` service of docker-compose.yml
+# appends apps/<DXOS_APP>.yaml (more routes) and the #END marker to build the file APISIX loads.
+#
+# Single entry point of the stack:
+# - port 9080 serves the web app, API, Keycloak, photos and portal;
+# - port 9081 serves Superset only and port 9082 the MinIO console only.
+# Clients reach the web app, the API, Keycloak and the photo storage only through this gateway.
+# The AI service and the internal API are not routed.
 upstreams:
   - id: backend
     type: roundrobin
@@ -47,40 +52,6 @@ plugin_configs:
         set_id_token_header: false
 
 routes:
-  # Photo upload: authenticated, and limited per client address.
-  - id: api-upload
-    vars: [["server_port", "==", "9080"]]
-    priority: 20
-    uri: /api/v1/crop-seasons/:cropSeasonId/disease-reports
-    methods: ["POST"]
-    upstream_id: backend
-    plugin_config_id: bearer-token
-    plugins:
-      limit-count:
-        count: 30
-        time_window: 60
-        key_type: var
-        key: remote_addr
-        rejected_code: 429
-        rejected_msg: "Too many uploads, try again in a minute"
-
-  # Triggering the AI diagnosis is the other expensive call.
-  - id: api-ai-diagnosis
-    vars: [["server_port", "==", "9080"]]
-    priority: 20
-    uri: /api/v1/disease-reports/:reportId/diagnosis/ai
-    methods: ["POST"]
-    upstream_id: backend
-    plugin_config_id: bearer-token
-    plugins:
-      limit-count:
-        count: 30
-        time_window: 60
-        key_type: var
-        key: remote_addr
-        rejected_code: 429
-        rejected_msg: "Too many diagnosis requests, try again in a minute"
-
   # Each question runs an embedding on the AI service.
   - id: api-knowledge-ask
     vars: [["server_port", "==", "9080"]]
@@ -190,4 +161,3 @@ routes:
     uri: /*
     upstream_id: frontend
 
-#END

@@ -1,13 +1,19 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Small DX-OS API client shared by the demo seed and the E2E run (standard library + Pillow)."""
+"""Small DX-OS API client shared by the demo seed and the E2E run of every app (standard library
++ Pillow). Nothing here names an app: accounts, data and scenarios live in the per-app modules."""
 import base64
+import collections
 import hashlib
 import html
 import http.cookiejar
 import io
 import json
+import os
+import pathlib
 import re
 import secrets
+import shlex
+import subprocess
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -17,13 +23,48 @@ from urllib.parse import urljoin
 DEFAULT_BASE_URL = "http://localhost:9080"
 REALM = "dxos"
 WEB_CLIENT = ("dxos-web", "http://localhost:9080/callback")
-MOBILE_CLIENT = ("farm-mobile", "dxfarm://callback")
+DEPLOY_DIR = pathlib.Path(__file__).resolve().parent.parent
 
-ACCOUNTS = {
-    "admin": ("admin1", "admin123", WEB_CLIENT),
-    "engineer": ("engineer1", "engineer123", WEB_CLIENT),
-    "farmer": ("farmer1", "farmer123", MOBILE_CLIENT),
-}
+# A sample account: realm role, name parts and the OIDC client its sign-in goes through.
+Account = collections.namedtuple("Account", "username password client role first_name last_name")
+
+
+def read_env(path=None):
+    """Values of deploy/.env (DEMO_ENV_FILE selects another file)."""
+    path = pathlib.Path(path or os.environ.get("DEMO_ENV_FILE", DEPLOY_DIR / ".env"))
+    values = {}
+    if path.exists():
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if line.strip() and not line.startswith("#") and "=" in line:
+                key, _, value = line.partition("=")
+                values[key.strip()] = value.strip()
+    return values
+
+
+def psql(sql):
+    """Runs SQL in the compose postgres; DEMO_COMPOSE and DEMO_ENV_FILE select another project."""
+    env = read_env()
+    compose = shlex.split(os.environ.get("DEMO_COMPOSE", "docker compose"))
+    subprocess.run(
+        [*compose, "exec", "-T", "postgres", "psql", "-U", env["POSTGRES_USER"],
+         "-d", env.get("POSTGRES_DB", "dxos"), "-v", "ON_ERROR_STOP=1", "-c", sql],
+        cwd=DEPLOY_DIR, check=True, capture_output=True)
+
+
+def ensure_accounts(base_url, accounts):
+    """Creates the sample accounts and their realm roles in Keycloak; existing ones are kept."""
+    env = read_env()
+    keycloak = KeycloakAdmin(base_url, env["KEYCLOAK_ADMIN_USERNAME"], env["KEYCLOAK_ADMIN_PASSWORD"])
+    for account in accounts:
+        keycloak.ensure_user(account.username, account.password, account.first_name,
+                             account.last_name, f"{account.username}@dxos.local", account.role)
+
+
+def running_app(base_url):
+    """Id of the app the backend runs, from the public system status; None when it is not known."""
+    status, body = Api(base_url, "").call("GET", "/system/status")
+    app = (body or {}).get("data", {}).get("app") if status == 200 else None
+    return app["id"] if app else None
 
 
 class KeycloakAdmin:
@@ -165,14 +206,20 @@ def login(base_url, username, password, client):
         return json.load(response)["access_token"]
 
 
-def multipart(field, filename, content, content_type):
+def multipart_parts(parts):
+    """Body and Content-Type of a multipart request; parts are (field, filename, content, type)."""
     boundary = uuid.uuid4().hex
-    head = (
-        f"--{boundary}\r\nContent-Disposition: form-data; name=\"{field}\"; "
-        f"filename=\"{filename}\"\r\nContent-Type: {content_type}\r\n\r\n"
-    ).encode()
-    body = head + content + f"\r\n--{boundary}--\r\n".encode()
+    body = b""
+    for field, filename, content, content_type in parts:
+        disposition = f'form-data; name="{field}"' + (f'; filename="{filename}"' if filename else "")
+        body += (f"--{boundary}\r\nContent-Disposition: {disposition}\r\n"
+                 f"Content-Type: {content_type}\r\n\r\n").encode() + content + b"\r\n"
+    body += f"--{boundary}--\r\n".encode()
     return body, f"multipart/form-data; boundary={boundary}"
+
+
+def multipart(field, filename, content, content_type):
+    return multipart_parts([(field, filename, content, content_type)])
 
 
 class Api:
@@ -216,35 +263,59 @@ class Api:
             raise ApiError(method, path, status, parsed)
         return parsed
 
-    def upload_report(self, season_id, image, key=None, filename="leaf"):
-        png = image.startswith(b"\x89PNG")
-        content, content_type = multipart(
-            "image", f"{filename}.{'png' if png else 'jpg'}", image, "image/png" if png else "image/jpeg"
-        )
-        headers = {"Content-Type": content_type, "Idempotency-Key": key or str(uuid.uuid4())}
-        return self.ok("POST", f"/crop-seasons/{season_id}/disease-reports", headers=headers, raw=content)
+
+def sign_in(base_url, account):
+    return Api(base_url, login(base_url, account.username, account.password, account.client))
 
 
-def sign_in(base_url, role):
-    username, password, client = ACCOUNTS[role]
-    return Api(base_url, login(base_url, username, password, client))
-
-
-def leaf_photo(variant=0):
-    """Synthetic leaf-like PNG that passes the image-quality check (no model weights needed)."""
+def png_image(draw_with, size=(640, 480), color=(255, 255, 255)):
+    """PNG bytes of a synthetic picture; draw_with(ImageDraw) paints on it."""
     from PIL import Image, ImageDraw
 
-    image = Image.new("RGB", (640, 480), (95 + variant % 5 * 3, 125, 65))
-    draw = ImageDraw.Draw(image)
-    for x in range(-40 - variant * 7, 680, 80):
-        draw.polygon([(x, 480), (x + 24, 0), (x + 66, 480)], fill=(35, 105, 38))
-        draw.line([(x + 25, 0), (x + 32, 480)], fill=(145, 180, 80), width=3)
-        for y in range(20, 480, 14):
-            draw.line([(x + 31, y), (x + 54, y + 10)], fill=(90, 150, 55), width=2)
-            draw.ellipse((x + 30, y + 3, x + 39, y + 11), fill=(165, 105, 55))
+    image = Image.new("RGB", size, color)
+    draw_with(ImageDraw.Draw(image))
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
     return buffer.getvalue()
+
+
+class Steps:
+    """Runs named E2E steps: a failing step is reported and the run continues."""
+
+    def __init__(self):
+        self.results = []
+
+    def __call__(self, name):
+        def decorate(function):
+            try:
+                function()
+                self.results.append((name, None))
+                print(f"PASS  {name}")
+            except Exception as error:  # noqa: BLE001 - every failure is reported, the run continues
+                self.results.append((name, error))
+                print(f"FAIL  {name}: {error}")
+            return function
+
+        return decorate
+
+    def fail(self, name, error):
+        self.results.append((name, error))
+        print(f"FAIL  {name}")
+
+    def summary(self):
+        """Prints the totals and returns the process exit code."""
+        failed = [name for name, error in self.results if error]
+        print(f"\n{len(self.results) - len(failed)}/{len(self.results)} steps passed")
+        return 1 if failed else 0
+
+
+def expect(condition, message):
+    if not condition:
+        raise AssertionError(message)
+
+
+def error_code(body):
+    return body.get("errorCode") if body else None
 
 
 def case_for(admin, case_type, entity_id):

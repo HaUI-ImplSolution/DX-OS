@@ -1,9 +1,12 @@
 # Reduced stack for the E2E run: no BI, chat, RAG ingest or local LLM.
 #   docker compose -f docker-compose.yml -f demo/docker-compose.e2e.yml up -d --build --wait \
 #     postgres minio keycloak backend ai frontend portal apisix
+# DXOS_APP selects the app (farm or lab) in deploy/.env.
 services:
   apisix:
     depends_on: !override
+      apisix-config:
+        condition: service_completed_successfully
       backend:
         condition: service_healthy
       keycloak:

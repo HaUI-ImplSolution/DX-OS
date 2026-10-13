@@ -1,0 +1,35 @@
+  # Routes and rate limits of the Farm app, appended to the routes of common.yaml.
+
+  # Photo upload: authenticated, and limited per client address.
+  - id: api-upload
+    vars: [["server_port", "==", "9080"]]
+    priority: 20
+    uri: /api/v1/crop-seasons/:cropSeasonId/disease-reports
+    methods: ["POST"]
+    upstream_id: backend
+    plugin_config_id: bearer-token
+    plugins:
+      limit-count:
+        count: 30
+        time_window: 60
+        key_type: var
+        key: remote_addr
+        rejected_code: 429
+        rejected_msg: "Too many uploads, try again in a minute"
+
+  # Triggering the AI diagnosis is the other expensive call.
+  - id: api-ai-diagnosis
+    vars: [["server_port", "==", "9080"]]
+    priority: 20
+    uri: /api/v1/disease-reports/:reportId/diagnosis/ai
+    methods: ["POST"]
+    upstream_id: backend
+    plugin_config_id: bearer-token
+    plugins:
+      limit-count:
+        count: 30
+        time_window: 60
+        key_type: var
+        key: remote_addr
+        rejected_code: 429
+        rejected_msg: "Too many diagnosis requests, try again in a minute"

@@ -1,5 +1,6 @@
 import { ApiError, json, request, upload, type UploadFile } from "./client";
 import type {
+  AppManifest,
   AppNotification,
   CropSeason,
   CropSeasonInput,
@@ -61,6 +62,10 @@ export const suggestCropSeason = (riceVarietyCode: string, startDate: string) =>
 
 export const listCropSeasons = (parcelCode: string) =>
   request<CropSeason[]>(`/parcels/${encodeURIComponent(parcelCode)}/crop-seasons`);
+
+export const getAppManifest = () => request<AppManifest>("/app");
+
+export const listIsolatedSeasons = () => request<IsolationStatus[]>("/crop-seasons/isolated");
 
 export const getIsolationStatus = (cropSeasonId: number) =>
   request<IsolationStatus>(`/crop-seasons/${cropSeasonId}/isolation-status`);

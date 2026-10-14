@@ -7,7 +7,7 @@ import { ApiError, isNetworkError } from "@/api/client";
 import { createParcel, listParcels, requestParcelEdit, resubmitParcel } from "@/api/endpoints";
 import { Button } from "@/components/Button";
 import { Field } from "@/components/Field";
-import { GPS_MAX_ACCURACY_METERS } from "@/config";
+import { useGpsMaxAccuracy } from "@/hooks/useGpsMaxAccuracy";
 import { readGpsFix, GpsPermissionError, type GpsFix } from "@/gps";
 import { useQueue } from "@/offline/QueueProvider";
 import { colors, fontSize, spacing } from "@/theme";
@@ -26,6 +26,7 @@ export default function ParcelFormScreen() {
   const { mode: modeParam, id } = useLocalSearchParams<{ mode?: Mode; id?: string }>();
   const mode: Mode = modeParam ?? "create";
   const { enqueue } = useQueue();
+  const maxAccuracyMeters = useGpsMaxAccuracy();
   const [area, setArea] = useState("");
   const [location, setLocation] = useState("");
   const [reason, setReason] = useState("");
@@ -63,7 +64,7 @@ export default function ParcelFormScreen() {
   };
 
   const areaValue = Number(area.replace(",", "."));
-  const accurate = fix !== null && fix.accuracyMeters <= GPS_MAX_ACCURACY_METERS && !fix.mocked;
+  const accurate = fix !== null && fix.accuracyMeters <= maxAccuracyMeters && !fix.mocked;
   const valid = areaValue > 0 && accurate && (mode !== "edit" || reason.trim() !== "");
 
   const buildInput = (): ParcelInput => ({
@@ -150,8 +151,8 @@ export default function ParcelFormScreen() {
               Sai số khoảng {Math.round(fix.accuracyMeters)} m
               {fix.mocked
                 ? ". Vị trí có dấu hiệu giả lập, hãy tắt ứng dụng giả vị trí."
-                : fix.accuracyMeters > GPS_MAX_ACCURACY_METERS
-                  ? `. Quá lớn (tối đa ${GPS_MAX_ACCURACY_METERS} m), hãy ra chỗ thoáng rồi lấy lại.`
+                : fix.accuracyMeters > maxAccuracyMeters
+                  ? `. Quá lớn (tối đa ${maxAccuracyMeters} m), hãy ra chỗ thoáng rồi lấy lại.`
                   : ". Đạt yêu cầu."}
             </Text>
           </>

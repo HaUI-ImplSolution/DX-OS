@@ -2,6 +2,7 @@
 package HaUI.ImplSolution.dxos.host;
 
 import java.util.List;
+import java.util.Map;
 
 // @formatter:off
 public record AppManifestResponse(
@@ -17,7 +18,10 @@ public record AppManifestResponse(
   List<MenuEntry> menu,
 
   // Workspace types the app registers
-  List<String> workspaceTypes
+  List<String> workspaceTypes,
+
+  // Values the app asks its clients to use, e.g. gpsMaxAccuracyMeters for Farm
+  Map<String, String> settings
 ){
 
   public record MenuEntry(

@@ -102,6 +102,14 @@ public class CropSeasonController {
     return ApiResponse.success(cropSeasonService.getById(id));
   }
 
+  @GetMapping("/crop-seasons/isolated")
+  @Operation(summary = "Active crop seasons that are under pesticide isolation (PHI)",
+      description = "FARMER: only seasons of the household linked to the account."
+          + " Other roles: all active seasons. Seasons that are not isolated are left out.")
+  public ApiResponse<List<IsolationStatusResponse>> listIsolated() {
+    return ApiResponse.success(cropSeasonService.listIsolated());
+  }
+
   @GetMapping("/crop-seasons/{id}/isolation-status")
   @Operation(summary = "Check whether a crop season is still under pesticide isolation (PHI)",
       description = "FARMER: 404 if the season's parcel belongs to another farmer.")

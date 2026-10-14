@@ -16,10 +16,9 @@ Hai mục đầu liệt kê các bản phát hành; lịch sử chi tiết theo 
 
 - README song ngữ viết ngắn gọn, có yêu cầu hệ thống và xử lý sự cố; `ARCHITECTURE.md` có tổng quan các dịch vụ và sơ đồ theo từng tầng.
 - Repository đổi tên thành `DX-OS`; liên kết trong tài liệu và danh mục nguồn tri thức Lab trỏ về tên mới.
-- Kiểm tra độ nét xét thêm ảnh nền đơn sắc theo tỉ lệ năng lượng cạnh mất khi làm mờ lại; ảnh làm mờ và ảnh mờ có nhiễu bị chặn.
-- Hộp duyệt chỉ liệt kê case thuộc các loại của app đang chạy.
-- Lỗi request của client trả 415, 405 hoặc 400 theo từng nguyên nhân.
-- Hỏi đáp tài liệu xếp đoạn của bệnh được nêu trong câu hỏi lên đầu.
+- Ảnh nền đơn sắc được kiểm độ nét theo cạnh sau khi làm mờ lại; hỏi đáp xếp đoạn của bệnh được nêu lên đầu.
+- Hộp duyệt chỉ liệt kê case của app đang chạy; lỗi request trả 415, 405 hoặc 400.
+- Ngưỡng GPS và danh sách vụ cách ly do Backend cung cấp cho mobile; giới hạn và ngưỡng đặt được qua `deploy/.env`.
 
 ## [1.0.0] - 2026-10-13
 
@@ -40,14 +39,13 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 ### 2026-10-14
 
-**Đã xong — Mã lỗi cho lỗi request, hộp duyệt theo app:**
+**Đã xong — Mã lỗi request, hộp duyệt theo app, cài đặt cho client:**
 
-- `GlobalExceptionHandler` trả 415 `ERR_UNSUPPORTED_MEDIA_TYPE` cho sai `Content-Type`, 405 `ERR_METHOD_NOT_ALLOWED` cho sai phương thức và 400 `ERR_BAD_REQUEST` cho thiếu phần multipart hoặc JSON hỏng.
-- `WorkflowService.list` và `search` chỉ trả case thuộc loại đã đăng ký của app đang chạy.
-- `FarmScopeAndSeasonIntegrationTest`: phạm vi dữ liệu theo nông hộ, idempotency của thửa và vụ, vòng đời thu hoạch, thông báo thu hoạch hộ.
-- `LabBookingConstraintIntegrationTest`: ràng buộc chống trùng giờ đặt phòng ở database.
-- `TicketClassifierTest` và `TicketSlaServiceTest` trong `app-lab`: phân loại ticket và cảnh báo SLA.
-- `WorkflowServiceIntegrationTest` và `GlobalExceptionHandlerTest`: danh sách case theo loại đã đăng ký, mã lỗi 415, 405, 400.
+- `GlobalExceptionHandler` trả 415, 405 và 400 cho sai `Content-Type`, sai phương thức, thiếu phần multipart hoặc JSON hỏng.
+- `WorkflowService.list` và `search` chỉ trả loại case của app đang chạy.
+- `GET /api/v1/app` có `settings`; Farm khai báo `gpsMaxAccuracyMeters`.
+- `GET /api/v1/crop-seasons/isolated` trả vụ đang cách ly, theo hộ của nông dân hoặc toàn bộ cho vai khác.
+- Test mới: phạm vi nông hộ và idempotency, thu hoạch, thông báo và nhắc hạn, mượn trả thiết bị, vòng đời ticket, phân loại và SLA, chống trùng giờ đặt phòng.
 
 ### 2026-10-13
 
@@ -387,6 +385,13 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 ## Mobile (`mobile`, Expo)
 
+### 2026-10-14
+
+**Đã xong — Ngưỡng GPS và nhãn cách ly lấy từ Backend:**
+
+- Ngưỡng sai số GPS đọc từ `settings` của `GET /api/v1/app`, dùng 30 m khi chưa tải được.
+- Danh sách thửa gọi `GET /api/v1/crop-seasons/isolated` một lần để hiện nhãn "Đang cách ly".
+
 ### 2026-10-12
 
 **Đã xong — Client `farm-mobile`:**
@@ -488,14 +493,9 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 **Đã xong — Độ nét ảnh nền đơn sắc, truy xuất theo tên bệnh:**
 
-- Ảnh có ít nhất 6 trong 16 vùng gần như không có cạnh được xét theo tỉ lệ năng lượng cạnh mất khi làm mờ lại, đạt từ 0.22.
-  Nhiễu hạt và sọc làm vùng nào cũng có cạnh nên không thuộc trường hợp này.
-  Kết quả trên 100 ảnh công khai và ảnh làm mờ nhân tạo ở `docs/AI_EVALUATION.md`.
-- Ingest embed tiêu đề tài liệu cùng từng đoạn.
-  Truy xuất xếp đoạn của tài liệu mà câu hỏi gọi tên lên trước (`TOPIC_MATCH_BOOST`); điểm trả về là độ tương đồng cosine.
-  Đoạn đầu đúng bệnh ở 15/15 câu hỏi theo tên bệnh.
-- `test_plain_background_sharpness.py`: ảnh rõ đạt; ảnh mờ, mờ kèm nhiễu và ảnh phẳng bị chặn.
-- `test_rag_ranking.py`: tên chủ đề từ tiêu đề, xếp lại theo tên bệnh, embed kèm tiêu đề lúc nạp.
+- Ảnh nền đơn sắc được xét theo tỉ lệ năng lượng cạnh mất khi làm mờ lại, đạt từ 0.22; nhiễu hạt và sọc không thuộc trường hợp này.
+- Ingest embed tiêu đề cùng từng đoạn; truy xuất xếp đoạn của tài liệu được gọi tên lên trước.
+- Test cho độ nét nền đơn sắc, tên chủ đề, xếp hạng và embed kèm tiêu đề.
 
 ### 2026-10-13
 
@@ -720,6 +720,12 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - Đã test qua trình duyệt thật với từng role, xác nhận UI và 401/403 đúng chỗ.
 
 ## Deploy (`deploy`)
+
+### 2026-10-14
+
+**Đã xong — Giới hạn và ngưỡng qua `deploy/.env`:**
+
+- Compose truyền `MAX_PENDING_REQUESTS`, `KNOWLEDGE_MIN_SCORE`, `STORAGE_PRESIGN_TTL`, `GPS_MAX_ACCURACY_METERS` và `HARVEST_REMINDER_CRON`; `.env.example` có giá trị mặc định.
 
 ### 2026-10-13
 
@@ -1048,9 +1054,9 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 ### 2026-10-14
 
-**Đã xong — Báo cáo đánh giá AI trên 100 ảnh công khai:**
+**Đã xong — Đánh giá AI, việc còn lại, kết quả kiểm:**
 
-- `docs/AI_EVALUATION.md`: kết quả toàn pipeline, bộ lọc ảnh, detector khi bỏ qua bộ lọc, bộ phân loại cây trồng với ảnh ngô và mía.
+- `docs/AI_EVALUATION.md`: đánh giá pipeline CV trên 100 ảnh công khai.
 - `docs/BACKLOG.md` và `docs/TESTING.md`: việc còn lại và kết quả kiểm ngày 14/10/2026.
 
 ### 2026-10-13

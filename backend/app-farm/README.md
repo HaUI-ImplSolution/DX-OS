@@ -100,6 +100,7 @@ Quản trị viên nhập hộ không cần sai số.
 | `mattermost.webhook.url-admin`, `url-engineer` | `MATTERMOST_WEBHOOK_URL_ADMIN`, `MATTERMOST_WEBHOOK_URL_ENGINEER` | trống: dùng URL mặc định |
 
 Cấu hình nằm ở `dx-host/src/main/resources/application-farm.yaml`.
+Mobile đọc `app.gps-max-accuracy-meters` từ `settings.gpsMaxAccuracyMeters` của `GET /api/v1/app`.
 Gọi AI chẩn đoán có circuit breaker `aiDiagnosis` (Resilience4j).
 
 ## API
@@ -109,7 +110,7 @@ Swagger UI ở `/swagger-ui.html`.
 | Nhóm | Đường dẫn |
 |---|---|
 | Nông hộ | `/api/v1/households` (bí danh của `/api/v1/workspaces` với loại `HOUSEHOLD`) |
-| Thửa, vụ | `/api/v1/parcels`, `/api/v1/crop-seasons` (`harvest`, `disease-reports`) |
+| Thửa, vụ | `/api/v1/parcels`, `/api/v1/crop-seasons` (`harvest`, `disease-reports`, `isolated`) |
 | Báo cáo, chẩn đoán | `/api/v1/disease-reports` (`diagnosis`, `diagnosis/ai`, `request-retake`, `treatment-application`) |
 | Danh mục | `/api/v1/diseases`, `/api/v1/pesticides`, `/api/v1/treatment-rules`, `/api/v1/rice-varieties` |
 | Hộp duyệt | `/api/v1/approval-requests`, `/api/v1/workflow-cases` |

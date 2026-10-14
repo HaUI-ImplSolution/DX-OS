@@ -35,6 +35,10 @@ import HaUI.ImplSolution.dxos.farm.model.ApprovalStatus;
 import HaUI.ImplSolution.dxos.farm.model.CropSeason;
 import HaUI.ImplSolution.dxos.farm.model.CropSeasonStatus;
 import HaUI.ImplSolution.dxos.farm.model.Parcel;
+import HaUI.ImplSolution.dxos.farm.model.Pesticide;
+import HaUI.ImplSolution.dxos.farm.model.TreatmentApplication;
+import HaUI.ImplSolution.dxos.farm.model.TreatmentConfirmationStatus;
+import HaUI.ImplSolution.dxos.farm.dto.IsolationStatusResponse;
 import HaUI.ImplSolution.dxos.farm.model.SeasonType;
 import HaUI.ImplSolution.dxos.farm.repository.CropSeasonRepository;
 import HaUI.ImplSolution.dxos.farm.repository.ParcelRepository;
@@ -351,5 +355,49 @@ class FarmScopeAndSeasonIntegrationTest {
     assertThat(inbox.unreadCount()).isEqualTo(1);
     inbox.markRead(messages.getFirst().id());
     assertThat(inbox.unreadCount()).isZero();
+  }
+
+  private void isolate(CropSeason season, LocalDate lockedUntil) {
+    tx.executeWithoutResult(status -> {
+      Pesticide pesticide = Pesticide.builder().code("PST-" + UUID.randomUUID())
+          .name("Test pesticide").unit("l/ha").build();
+      em.persist(pesticide);
+      em.persist(TreatmentApplication.builder()
+          .cropSeason(em.getReference(CropSeason.class, season.getId())).pesticide(pesticide)
+          .doseAmountSnapshot(BigDecimal.ONE).doseUnitSnapshot("l/ha").phiDaysSnapshot(14)
+          .appliedAt(today.minusDays(1)).harvestLockedUntil(lockedUntil)
+          .confirmationStatus(TreatmentConfirmationStatus.CONFIRMED).build());
+    });
+  }
+
+  @Test
+  void isolatedSeasonsAreListedOnceAndOnlyForTheirOwnHousehold() {
+    WorkspaceView first = household();
+    WorkspaceView second = household();
+    CropSeason isolated = approvedSeason(approvedParcel(first), today.plusDays(10));
+    CropSeason clear = approvedSeason(approvedParcel(first), today.plusDays(10));
+    CropSeason foreign = approvedSeason(approvedParcel(second), today.plusDays(10));
+    isolate(isolated, today.plusDays(7));
+    isolate(foreign, today.plusDays(7));
+
+    asFarmer(first);
+    assertThat(seasons.listIsolated()).extracting(IsolationStatusResponse::cropSeasonId)
+        .containsExactly(isolated.getId()).doesNotContain(clear.getId(), foreign.getId());
+    assertThat(seasons.listIsolated().getFirst().parcelCode())
+        .isEqualTo(isolated.getParcel().getCode());
+
+    asAdmin();
+    assertThat(seasons.listIsolated()).extracting(IsolationStatusResponse::cropSeasonId)
+        .contains(isolated.getId(), foreign.getId());
+  }
+
+  @Test
+  void seasonWhoseIsolationEndedIsNotListed() {
+    WorkspaceView household = household();
+    CropSeason season = approvedSeason(approvedParcel(household), today.plusDays(10));
+    isolate(season, today.minusDays(1));
+
+    asFarmer(household);
+    assertThat(seasons.listIsolated()).isEmpty();
   }
 }

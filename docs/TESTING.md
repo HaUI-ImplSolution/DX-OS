@@ -253,12 +253,13 @@ Dùng Swagger (`http://localhost:9080/swagger-ui.html`) hoặc client trong `dep
 | Dựng từ clone sạch theo README | Đạt | `start.sh farm` 113 giây, `start.sh lab` 56 giây, mọi dịch vụ healthy |
 | Thêm ứng dụng mẫu rỗng theo CONTRIBUTING | Đạt | Backend lên với `DXOS_APP=sample`, `system/status` trả id `sample`, không sửa `dx-core` |
 | gitleaks | Đạt | 336 commit và cây làm việc, không có phát hiện |
-| 14/10: `./mvnw verify` | Đạt | 102 test: dx-core 14, app-farm 21, app-lab 9, dx-host 58 |
+| 14/10: `./mvnw verify` | Đạt | 125 test: dx-core 14, app-farm 23, app-lab 9, dx-host 79 |
 | 14/10: `pytest` trong `ai/` | Đạt | 79 test |
 | 14/10: E2E Farm và Lab | Đạt | Farm 10/10 với `--require-rule`, Lab 16/16 với `--require-knowledge`, đổi app không `--reset` |
-| 14/10: kiểm tay web Farm | Đạt | F1 (vào `engineer1`), F2 (`farmer1` bị báo chỉ dùng trên mobile), F7 (hỏi đáp có nguồn) |
-| 14/10: API Lab ngoài E2E | Đạt | Bước 2, 6, 9, 12, 15, 16, 18, 19, 20, 21 và đặt phòng đồng thời |
-| 14/10: lỗi request | Đạt | Sai `Content-Type` trả 415, sai phương thức 405, JSON hỏng 400 |
-| 14/10: hộp duyệt theo app | Đạt | Lab chỉ có TICKET, DEVICE_LOAN, ROOM_BOOKING; Farm chỉ có loại của Farm |
+| 14/10: kiểm tay Farm | Đạt | F1, F2, F4 đến F9; hộp duyệt chỉ có loại case của Farm; F3 (mobile) chưa chạy |
+| 14/10: kiểm tay Lab | Đạt | L1 đến L17, API bước 1 đến 22, các màn hình web; hộp duyệt chỉ có loại case của Lab |
+| 14/10: API và lỗi request | Đạt | 415, 405, 400; `settings` của `GET /api/v1/app`; `GET /api/v1/crop-seasons/isolated` |
+| 14/10: thời tiết | Đạt | Open-Meteo trả dữ liệu thật; địa chỉ không tới được trả snapshot kèm ghi chú |
+| 14/10: gitleaks | Đạt | 353 commit, không có phát hiện |
 
-Các mục kiểm tay chưa chạy là F3 (mobile), F6b, F8, L17 và các bước API 17, 22, theo dõi ở [`BACKLOG.md`](./BACKLOG.md).
+Mục kiểm tay chưa chạy là F3 (mobile), theo dõi ở [`BACKLOG.md`](./BACKLOG.md).

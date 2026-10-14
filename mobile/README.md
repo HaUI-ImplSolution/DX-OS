@@ -19,7 +19,7 @@ Chẩn đoán AI do kỹ sư kích hoạt trên web; nông dân thấy "Chờ ch
 - **Hàng đợi offline:** mất mạng hoặc lỗi kết nối thì ảnh, thửa và vụ mới vào hàng đợi (`async-storage`), mỗi mục một UUID làm `Idempotency-Key` nên gửi lại không tạo trùng.
   Tự gửi khi `NetInfo` báo có mạng và khi app trở lại foreground, thử lại với backoff 5 giây đến 5 phút, tối đa 8 lần; lỗi `4xx` khác `408`, `409`, `429` đánh dấu "Lỗi" và không thử lại.
   Hàng đợi tách theo tài khoản; danh sách "Chờ gửi" và nút xóa ở màn Hồ sơ.
-- **Tạo thửa:** lấy vị trí bằng `expo-location`, hiện sai số; sai số quá 30 m hoặc vị trí giả lập thì khóa nút gửi (Backend kiểm lại).
+- **Tạo thửa:** lấy vị trí bằng `expo-location`, hiện sai số; sai số quá ngưỡng của Backend (lấy từ `GET /api/v1/app`, dùng 30 m khi chưa tải được) hoặc vị trí giả lập thì khóa nút gửi (Backend kiểm lại).
   Thửa gửi đi ở trạng thái chờ duyệt; bị từ chối thì sửa và gửi lại; thửa đã duyệt có "Đề nghị chỉnh sửa thửa".
 - **Tạo vụ:** chỉ với thửa đã duyệt; chọn giống từ danh mục, ngày bắt đầu và loại vụ; ngày thu hoạch gợi ý do Backend tính, chọn ngoài khoảng gợi ý phải nêu lý do.
 - **Hộp thông báo:** `GET /api/v1/notifications` (30 mới nhất), hỏi số chưa đọc khi mở app, khi foreground, khi quay lại màn Thửa và khi kéo làm mới; không có push.

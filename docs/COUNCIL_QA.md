@@ -64,12 +64,13 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE.md`](../ARCHITECTURE.md).
 - Lab, luật phân loại: từ khóa theo loại và luật nâng ưu tiên (`classifier-rules.json`), trả kèm từ khóa khớp và lý do; người dùng quyết định.
 - Giới hạn:
   - Ngưỡng chuyển cho người xem `0.70` chưa có căn cứ đo trên ảnh ngoài ruộng.
-  - Crop classifier còn nhận nhầm ngô, cỏ, lúa mì thành lúa.
+  - Crop classifier nhận 6/15 ảnh ngô và 15/15 ảnh mía là lúa, và chặn 8/50 ảnh lúa nền ruộng.
   - Sâu hại chưa có mô hình.
-  - Chưa có báo cáo đánh giá độc lập (test set, chỉ số theo lớp).
+  - Đánh giá mới dùng 100 ảnh công khai: detector chẩn đoán đúng 4/80 ảnh và không ảnh nào đạt `0.70`.
+  - Chưa có đánh giá trên ảnh ruộng thật có nhãn kỹ sư.
   - Luật của Lab là luật tay, chưa đo độ chính xác trên dữ liệu thật.
 - Kỹ sư luôn là người chốt bệnh và điều trị; nhãn kỹ sư chốt được lưu có cấu trúc cho dữ liệu huấn luyện về sau.
-- Dẫn: `ai/README.md`, `ai/app/cv/README.md`, `BACKLOG.md` mục "Giới hạn của AI và dữ liệu".
+- Dẫn: `ai/README.md`, `ai/app/cv/README.md`, `AI_EVALUATION.md`, `BACKLOG.md` mục "Giới hạn của AI và dữ liệu".
 
 ## 7. Nếu một nguồn dữ liệu hoặc API ngừng hoạt động, hệ thống xử lý thế nào?
 

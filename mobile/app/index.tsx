@@ -9,6 +9,7 @@ import { ParcelCard } from "@/components/ParcelCard";
 import { Screen } from "@/components/Screen";
 import { SkeletonCards } from "@/components/Skeleton";
 import { useAsync } from "@/hooks/useAsync";
+import { useIsolatedParcels } from "@/hooks/useIsolatedParcels";
 import { useNotifications } from "@/notifications/NotificationsProvider";
 import { useQueue } from "@/offline/QueueProvider";
 import { colors, spacing } from "@/theme";
@@ -16,6 +17,7 @@ import { colors, spacing } from "@/theme";
 export default function ParcelsScreen() {
   const { data, error, loading, refreshing, reload, refresh } = useAsync(listParcels, []);
   const [version, setVersion] = useState(0);
+  const isolated = useIsolatedParcels(version);
   const { sentCount } = useQueue();
   const { refreshUnread } = useNotifications();
 
@@ -52,7 +54,7 @@ export default function ParcelsScreen() {
       <FlatList
         data={data ?? []}
         keyExtractor={(parcel) => parcel.code}
-        renderItem={({ item }) => <ParcelCard parcel={item} version={version} />}
+        renderItem={({ item }) => <ParcelCard parcel={item} isolated={isolated.has(item.code)} />}
         contentContainerStyle={styles.list}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         ListEmptyComponent={

@@ -242,23 +242,23 @@ Dùng Swagger (`http://localhost:9080/swagger-ui.html`) hoặc client trong `dep
 | Thiếu `best.pt` hoặc `crop_classifier.onnx` | Checkout không đủ trọng số | `git status`, `git pull`; xem `ai/weights/` |
 | Dựng lâu hoặc hết dung lượng | Lần đầu tải image lớn | Đợi, hoặc dọn Docker (`docker system df`) |
 
-## 9. Kết quả kiểm gần nhất (13 đến 14/10/2026)
+## 9. Kết quả kiểm gần nhất
 
 | Mục | Kết quả | Ghi chú |
 |---|---|---|
-| Kiểm tĩnh (mục 3) | Đạt | `mvnw clean verify`, `tsc` frontend và mobile, ranh giới app và core không có kết quả, seed Farm nhất quán |
-| E2E Farm | Đạt | 10/10 bước với `--require-rule`, trước và sau khi chuyển app |
-| E2E Lab | Đạt | 16/16 bước với `--require-knowledge`, trên stack dựng sạch bằng `switch-app.sh lab --reset` |
+| Backend `./mvnw verify` | Đạt | 129 test: dx-core 14, app-farm 23, app-lab 9, dx-host 83 |
+| AI `pytest` trong `ai/` | Đạt | 79 test |
+| Web và mobile `tsc` | Đạt | Không lỗi |
+| Ranh giới app và core, seed Farm, nguồn tri thức khớp registry | Đạt | Không có kết quả vi phạm |
+| E2E Farm | Đạt | 10/10 bước với `--require-rule` |
+| E2E Lab | Đạt | 16/16 bước với `--require-knowledge`, kể cả sau khi đổi app không `--reset` |
 | Đổi ứng dụng B1 đến B6 | Đạt | B2 dừng với thông báo nêu `[farm, lab]`; B3, B4 route app khác 404; B6 không lỗi migration |
+| Kiểm tay Farm | Đạt | F1, F2, F4 đến F9 (kỹ sư cũng thấy dashboard Superset); hộp duyệt chỉ có loại case của Farm; F3 (mobile) chưa chạy |
+| Kiểm tay Lab | Đạt | L1 đến L17, API bước 1 đến 22, các màn hình web; hộp duyệt chỉ có loại case của Lab |
+| API và lỗi request | Đạt | 415, 405, 400; `settings` của `GET /api/v1/app`; `GET /api/v1/crop-seasons/isolated` |
+| Thời tiết | Đạt | Open-Meteo trả dữ liệu thật; địa chỉ không tới được trả snapshot kèm ghi chú |
 | Dựng từ clone sạch theo README | Đạt | `start.sh farm` 113 giây, `start.sh lab` 56 giây, mọi dịch vụ healthy |
 | Thêm ứng dụng mẫu rỗng theo CONTRIBUTING | Đạt | Backend lên với `DXOS_APP=sample`, `system/status` trả id `sample`, không sửa `dx-core` |
-| gitleaks | Đạt | 336 commit và cây làm việc, không có phát hiện |
-| 14/10: `./mvnw verify` | Đạt | 102 test: dx-core 14, app-farm 21, app-lab 9, dx-host 58 |
-| 14/10: `pytest` trong `ai/` | Đạt | 79 test |
-| 14/10: E2E Farm và Lab | Đạt | Farm 10/10 với `--require-rule`, Lab 16/16 với `--require-knowledge`, đổi app không `--reset` |
-| 14/10: kiểm tay web Farm | Đạt | F1 (vào `engineer1`), F2 (`farmer1` bị báo chỉ dùng trên mobile), F7 (hỏi đáp có nguồn) |
-| 14/10: API Lab ngoài E2E | Đạt | Bước 2, 6, 9, 12, 15, 16, 18, 19, 20, 21 và đặt phòng đồng thời |
-| 14/10: lỗi request | Đạt | Sai `Content-Type` trả 415, sai phương thức 405, JSON hỏng 400 |
-| 14/10: hộp duyệt theo app | Đạt | Lab chỉ có TICKET, DEVICE_LOAN, ROOM_BOOKING; Farm chỉ có loại của Farm |
+| gitleaks | Đạt | 355 commit, không có phát hiện |
 
-Các mục kiểm tay chưa chạy là F3 (mobile), F6b, F8, L17 và các bước API 17, 22, theo dõi ở [`BACKLOG.md`](./BACKLOG.md).
+Mục kiểm tay chưa chạy là F3 (mobile), theo dõi ở [`BACKLOG.md`](./BACKLOG.md).

@@ -187,7 +187,7 @@ Full table: [`docs/TESTING.md`](./docs/TESTING.md) section 8.
 | [`data/`](./data/README.md) | Structured data, RAG corpora, seed generation scripts |
 | [`deploy/`](./deploy) | Docker Compose, gateway, `start.sh`, demo data and E2E |
 | [`sso/`](./sso/README.md) · [`bi/`](./bi/README.md) · [`chat/`](./chat/README.md) · [`minio/`](./minio/README.md) · [`portal/`](./portal/README.md) | Keycloak, Superset, Mattermost, MinIO, portal |
-| [`docs/`](./docs) | Backlog, testing, submission pack, council Q&A, phase template (`_template/`), reference material |
+| [`docs/`](./docs) | Backlog, testing, AI evaluation, submission pack, council Q&A, phase template (`_template/`), reference material |
 
 Top-level documents: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./CHANGELOG.md) · [`LICENSES.md`](./LICENSES.md).
 

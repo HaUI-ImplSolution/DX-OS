@@ -95,6 +95,12 @@ export interface IsolationStatus {
   message: string;
 }
 
+export interface AppManifest {
+  id: string;
+  name: string;
+  settings: Record<string, string>;
+}
+
 export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED";
 
 export interface TreatmentRule {

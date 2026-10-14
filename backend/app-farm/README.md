@@ -100,6 +100,7 @@ Quản trị viên nhập hộ không cần sai số.
 | `mattermost.webhook.url-admin`, `url-engineer` | `MATTERMOST_WEBHOOK_URL_ADMIN`, `MATTERMOST_WEBHOOK_URL_ENGINEER` | trống: dùng URL mặc định |
 
 Cấu hình nằm ở `dx-host/src/main/resources/application-farm.yaml`.
+Mobile đọc `app.gps-max-accuracy-meters` từ `settings.gpsMaxAccuracyMeters` của `GET /api/v1/app`.
 Gọi AI chẩn đoán có circuit breaker `aiDiagnosis` (Resilience4j).
 
 ## API

@@ -18,6 +18,11 @@ public interface CropSeasonRepository extends JpaRepository<CropSeason, Long> {
 
   List<CropSeason> findByParcel_CodeOrderByIdAsc(String parcelCode);
 
+  List<CropSeason> findByStatusAndDeletedAtIsNullOrderByIdAsc(CropSeasonStatus status);
+
+  List<CropSeason> findByParcel_HouseholdIdAndStatusAndDeletedAtIsNullOrderByIdAsc(Long householdId,
+      CropSeasonStatus status);
+
   // A rejected season is a draft and holds no slot on the parcel.
   boolean existsByParcel_IdAndStatusAndDeletedAtIsNullAndApprovalStatusNotAndIdNot(Long parcelId,
       CropSeasonStatus status, ApprovalStatus excluded, Long ignoredId);

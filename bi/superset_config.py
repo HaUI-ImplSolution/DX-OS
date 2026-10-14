@@ -91,7 +91,7 @@ AUTH_USER_REGISTRATION_ROLE = "Public"
 AUTH_ROLES_SYNC_AT_LOGIN = True
 AUTH_ROLES_MAPPING = {
     "ADMIN": ["Admin"],
-    "ENGINEER": ["Gamma"],
+    "ENGINEER": ["Gamma", "DXOS Engineer"],
 }
 
 # Đăng xuất ở Superset cũng kết thúc luôn phiên SSO ở Keycloak (không chỉ xoá cookie Superset) -

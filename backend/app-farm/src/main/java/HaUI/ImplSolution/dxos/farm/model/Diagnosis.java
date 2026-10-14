@@ -86,6 +86,12 @@ public class Diagnosis {
   // Lý do từ chối (chỉ có giá trị khi bị REJECTED)
   private String rejectionReason;
 
+  // Do AI hay kỹ sư tạo ra chẩn đoán này
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false, length = 16)
+  @Builder.Default
+  private DiagnosisSource source = DiagnosisSource.ENGINEER;
+
   // Symptoms the engineer described when recording the diagnosis; copied to the label on approval
   @Column(columnDefinition = "text")
   private String symptomText;

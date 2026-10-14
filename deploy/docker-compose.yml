@@ -105,10 +105,16 @@ services:
       MATTERMOST_WEBHOOK_URL: ${MATTERMOST_WEBHOOK_URL:-}
       MATTERMOST_WEBHOOK_URL_ADMIN: ${MATTERMOST_WEBHOOK_URL_ADMIN:-}
       MATTERMOST_IMAGE_BASE_URL: ${MATTERMOST_IMAGE_BASE_URL:-}
+      # Limits, both apps
+      MAX_PENDING_REQUESTS: ${MAX_PENDING_REQUESTS:-3}
+      KNOWLEDGE_MIN_SCORE: ${KNOWLEDGE_MIN_SCORE:-0.40}
+      STORAGE_PRESIGN_TTL: ${STORAGE_PRESIGN_TTL:-15m}
       # Farm only
       MATTERMOST_WEBHOOK_URL_ENGINEER: ${MATTERMOST_WEBHOOK_URL_ENGINEER:-}
       HTX_CODE: ${HTX_CODE:-HTX01}
       WEATHER_BASE_URL: ${WEATHER_BASE_URL:-https://api.open-meteo.com}
+      GPS_MAX_ACCURACY_METERS: ${GPS_MAX_ACCURACY_METERS:-30}
+      HARVEST_REMINDER_CRON: ${HARVEST_REMINDER_CRON:-0 0 7 * * *}
       # Lab only
       MATTERMOST_WEBHOOK_URL_TECHNICIAN: ${MATTERMOST_WEBHOOK_URL_TECHNICIAN:-}
       LAB_SLA_CHECK_CRON: ${LAB_SLA_CHECK_CRON:-0 */5 * * * *}
@@ -290,7 +296,7 @@ services:
     restart: on-failure
     environment:
       <<: *ai-common-env
-      RAG_INGEST_DATABASE_URL: postgresql+psycopg://ai_vector_ingest:${AI_VECTOR_DB_INGEST_PASSWORD:?}@postgres:5432/dx_farm_ai_vector_db
+      RAG_INGEST_DATABASE_URL: postgresql+psycopg://ai_vector_ingest:${AI_VECTOR_DB_INGEST_PASSWORD:?}@postgres:5432/dxos_ai_vector_db
     volumes:
       - ${AI_DATA_DIR:?}:/data:ro
       - ai_weights:/app/weights
@@ -309,7 +315,7 @@ services:
       <<: *ai-common-env
       # The read-only role and the vector database are created by the backend at startup
       # (AiVectorDatabaseSeeder) and hold documents and chunks only, apart from the business data.
-      DATABASE_URL: postgresql+psycopg://ai_vector_ro:${AI_VECTOR_DB_READONLY_PASSWORD:?}@postgres:5432/dx_farm_ai_vector_db
+      DATABASE_URL: postgresql+psycopg://ai_vector_ro:${AI_VECTOR_DB_READONLY_PASSWORD:?}@postgres:5432/dxos_ai_vector_db
       BACKEND_BASE_URL: ${BACKEND_BASE_URL:?}
       BACKEND_SERVICE_API_KEY: ${AI_TO_BACKEND_API_KEY:?}
       AI_SERVICE_API_KEY: ${BACKEND_TO_AI_API_KEY:?}
@@ -373,6 +379,7 @@ services:
     volumes:
       - ../bi/bootstrap.sh:/app/pythonpath/bootstrap.sh:ro
       - ../bi/bootstrap_datasources.py:/app/pythonpath/bootstrap_datasources.py:ro
+      - ../bi/grant_engineer_access.py:/app/pythonpath/grant_engineer_access.py:ro
       - ../bi/superset_config.py:/app/pythonpath/superset_config.py:ro
       - ../bi/farm_dashboard_export.zip:/app/pythonpath/farm_dashboard_export.zip:ro
       - ./data/superset:/app/superset_home

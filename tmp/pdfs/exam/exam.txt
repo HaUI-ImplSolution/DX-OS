@@ -1,0 +1,420 @@
+
+===== PAGE 1 =====
+
+                                                                                             PMNM HaUI 2026  |  DX-Lab –
+
+                                   ĐẠI HỌC CÔNG NGHIỆP HÀ NỘI
+                         TRƯỜNG CÔNG NGHỆ THÔNG TIN & TRUYỀN THÔNG
+                        ĐỀ THI TUYỂN CHỌN ĐỘI TUYỂN
+                    PHẦN MỀM NGUỒN MỞ – PMNM HaUI 2026
+              DX-Lab HaUI – Trạm điều hành số trên nền tảng DX-OS Open-Core
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Hình minh họa 1. Chủ đề bài thi Phần mềm nguồn mở OLP 2026 – DX-OS Open-Core, nhấn mạnh định
+     hướng xây dựng Hệ điều hành Chuyển đổi số bằng Công nghệ Lõi nguồn mở. Nguồn: VFOSSA.
+
+
+
+
+ Đối tượng                                                 Sinh viên HaUI; mỗi đội tối đa 03 thí sinh, có giảng viên
+                                                           hướng dẫn.
+ Hình thức                                                 Hackathon phát triển và tích hợp sản phẩm nguồn mở
+                                                           theo đội.
+ Thời gian vòng HaUI                                       14 ngày kể từ thời điểm công bố đề thi nội bộ.
+ Thang điểm                                                100 điểm: 50 điểm PoF/nguồn mở + 50 điểm sản phẩm.
+ Demo vòng HaUI                                            10 phút/đội + tối đa 5 phút trả lời câu hỏi của Hội đồng.
+ Định hướng                                                Bám chủ đề OLP PMNM 2026 của VFOSSA: DX-OS
+                                                           Open-Core.
+
+
+1. CƠ SỞ VÀ BỐI CẢNH
+  ĐIỂM NHẤN BẮT BUỘC: Đội thi cần xây dựng phần lõi Open-Core trước, sau đó mới phát triển
+  ứng dụng nghiệp vụ. Phần lõi phải thể hiện rõ vai trò nền tảng dùng chung, không phụ thuộc vào
+  một giao diện cụ thể; ứng dụng phía trên phải khai thác được các dịch vụ của lõi. Khi trình bày,
+
+
+
+
+                                    Đề thi tuyển chọn nội bộ HaUI – Phần mềm nguồn mở 2026
+
+===== PAGE 2 =====
+
+                                                                                                                PMNM HaUI 2026  |  DX-Lab –
+
+   đội cần chỉ ra rõ kiến trúc 3 tầng, mối liên hệ H-P-D-I và cách các thành phần nguồn mở được tích
+   hợp thành một hệ thống thống nhất.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Hình minh họa 2. Khung kiến trúc 3 tầng của Hệ điều hành Chuyển đổi số (DX-OS): Tầng Nền tảng Dịch
+vụ Lõi số ở dưới, Không gian Năng lực số H-P-D-I ở giữa và Tầng Nền tảng Kinh doanh số ở trên. Sơ đồ
+ cho thấy các dịch vụ lõi cung cấp nền tảng dùng chung cho các năng lực số và ứng dụng nghiệp vụ phía
+                                                       trên. Nguồn: VFOSSA.
+
+   Gợi ý đọc hình: Đội thi cần hiểu kiến trúc theo hướng từ dưới lên. Tầng lõi cung cấp các dịch vụ nền tảng dùng
+   chung; tầng H-P-D-I là không gian năng lực số hóa; tầng trên cùng là nơi triển khai bài toán/ứng dụng nghiệp vụ.
+   Vì vậy, phần demo không nên chỉ tập trung vào giao diện mà phải chứng minh được mối liên kết giữa ứng dụng
+   và Open-Core.
+
+
+
+
+
+
+
+
+Theo đề thi OLP Phần mềm nguồn mở 2026 của VFOSSA, chủ đề năm nay là “Xây dựng Hệ điều hành Chuyển đổi số bằng
+Công nghệ Lõi nguồn mở (DX-OS Open-Core)”. Khung DX-OS được tổ chức theo kiến trúc 3 tầng, trong đó tầng nền tảng
+dịch vụ lõi hoạt động theo mô hình headless/PaaS, tầng không gian năng lực số phát triển theo chuỗi H-P-D-I, và tầng trên
+cùng chứa các ứng dụng nghiệp vụ chuyên ngành.
+Vòng tuyển chọn HaUI cụ thể hóa định hướng trên thành bài toán DX-Lab – một trạm điều hành số phục vụ khoa,
+phòng, trung tâm hoặc đơn vị đào tạo. Mục tiêu của đề là buộc đội thi thể hiện đúng tư duy “Open-Core trước – ứng
+dụng sau”, thay vì chỉ xây dựng một ứng dụng web độc lập có dashboard hoặc AI.
+Lưu ý quan trọng: Các yêu cầu về 14 ngày, demo 10 + 5 phút, hồ sơ nội bộ và rubric 100 điểm là quy định của vòng tuyển
+chọn HaUI; khi tham dự vòng Quốc gia, đội tuyển phải tuân thủ quy định chính thức của BTC OLP/VFOSSA.
+
+
+
+                                           Đề thi tuyển chọn nội bộ HaUI – Phần mềm nguồn mở 2026
+
+===== PAGE 3 =====
+
+                                                                                                                PMNM HaUI 2026  |  DX-Lab –
+
+2. TÊN VÀ MỤC TIÊU BÀI TOÁN
+DX-Lab HaUI – Trạm điều hành số trên nền tảng DX-OS Open-Core
+Đội thi phát triển một mô hình DX-OS Open-Core có thể tái sử dụng cho môi trường đơn vị đào tạo. Sản phẩm phải kết nối
+được dịch vụ lõi, con người, quy trình, dữ liệu và trí tuệ số; đồng thời có ít nhất một ứng dụng minh họa có giá trị sử dụng
+thực tế.
+3. KIẾN TRÚC BẮT BUỘC – ĐỂ KHÔNG LỆCH HƯỚNG
+Đội thi phải thể hiện rõ kiến trúc 3 tầng của DX-OS. Không được hiểu bài toán đơn thuần là xây dựng một ứng dụng H-P-D-I
+độc lập.
+                Tầng                                          Vai trò                                   Thành phần tối thiểu
+      Tầng 1 – DX-OS                 Nền tảng dịch vụ lõi chạy ngầm, headless, không              Identity/SSO; API Gateway;
+      Open-Core                      cung cấp UI cho người dùng cuối. Đóng vai trò                dữ liệu cấu trúc/phi cấu trúc;
+                                     PaaS cho ứng dụng phía trên.                                 Workflow.
+      Tầng 2 – Không gian            Lớp năng lực số hóa hoạt động quản trị và cung               H – Human; P – Process; D –
+      H-P-D-I                        cấp giao diện người dùng cuối.                               Data; I – Intelligence.
+      Tầng 3 – Ứng dụng              Ít nhất một ứng dụng minh họa phục vụ bài toán               Ví dụ: quản lý yêu cầu CNTT,
+      nghiệp vụ                      cụ thể của khoa/phòng/trung tâm/đơn vị đào tạo.              phòng học, thiết bị, tài liệu,
+                                                                                                  công việc, dữ liệu đào tạo…
+
+
+Nguyên tắc cốt lõi: Tầng 1 phải có khả năng cung cấp dịch vụ cho tầng trên; giao diện người dùng thuộc tầng 2/3. Đội được
+phép sử dụng và tích hợp các nền tảng/thành phần nguồn mở sẵn có; không bắt buộc tự viết lại toàn bộ Open-Core, nhưng phải
+chứng minh được kiến trúc, vai trò, cấu hình, giấy phép và cách các thành phần kết nối với nhau.
+   TRÁNH LỆCH HƯỚNG: Không coi website/demo nghiệp vụ là sản phẩm chính duy nhất. Điểm
+   cốt lõi của bài thi là khả năng tổ chức và tích hợp một nền tảng Open-Core có các dịch vụ dùng
+   chung (Identity/SSO, API Gateway, Data và Workflow), trên đó ứng dụng nghiệp vụ được xây
+   dựng và khai thác.
+
+
+4. NHIỆM VỤ VÀ YÊU CẦU BẮT BUỘC
+4.1. Tầng 1 – DX-OS Open-Core / Headless Core
+Đây là phần bắt buộc và có tính chất định hướng kiến trúc. Đội thi phải cung cấp tối thiểu các dịch vụ lõi sau:
+    Identity / Authentication / Authorization: quản lý định danh, đăng nhập, vai trò/quyền; có thể sử dụng SSO/Keycloak
+     hoặc thành phần nguồn mở tương đương.
+    API Gateway hoặc lớp API trung gian: cung cấp điểm truy cập có kiểm soát cho các dịch vụ và ứng dụng.
+    Quản trị dữ liệu cấu trúc và/hoặc phi cấu trúc: CSDL, object/file storage, metadata hoặc dịch vụ headless tương đương.
+    Workflow Engine: quản lý trạng thái, luồng xử lý/phê duyệt và lịch sử nghiệp vụ.
+    Tách biệt UI khỏi Core: Open-Core không được chỉ là một giao diện CRUD; phải thể hiện vai trò nền tảng dịch vụ dùng
+     chung.
+    Có sơ đồ kiến trúc và luồng gọi dịch vụ chứng minh ứng dụng tầng trên sử dụng Open-Core.
+4.2. Tầng 2 – H-P-D-I
+Đội phải thể hiện đủ bốn không gian năng lực:
+     Không gian                                                  Yêu cầu                                                 Minh chứng
+                                                                                                                             cần có
+                        Đăng nhập, người dùng/nhóm/quyền; workspace/knowledge hub; thông tin nội                        Demo +
+    H – Human           bộ hoặc tài liệu.                                                                               repository +
+                                                                                                                        tài liệu
+    P – Process         Số hóa tối thiểu 01 quy trình có trạng thái, người tạo, người xử lý, thời gian và               Demo +
+
+
+
+                                           Đề thi tuyển chọn nội bộ HaUI – Phần mềm nguồn mở 2026
+
+===== PAGE 4 =====
+
+                                                                                                                   PMNM HaUI 2026  |  DX-Lab –
+
+     Không gian                                                    Yêu cầu                                                  Minh chứng
+                                                                                                                                cần có
+                        lịch sử thay đổi; có cơ chế theo dõi yêu cầu chờ xử lý.                                            repository +
+                                                                                                                           tài liệu
+                        Nguồn dữ liệu thống nhất; metadata/provenance; tìm kiếm/lọc/thống kê;                              Demo +
+    D – Data            dashboard; có API REST hoặc GraphQL cho ít nhất một nhóm dữ liệu.                                  repository +
+                                                                                                                           tài liệu
+    I –                 Ít nhất 01 chức năng thông minh: RAG/hỏi–đáp tài liệu, semantic search, dự                         Demo +
+    Intelligence        báo, phân loại, phát hiện bất thường, ưu tiên công việc hoặc cơ chế suy luận                       repository +
+                        bằng luật.                                                                                         tài liệu
+
+
+Đối với I – Intelligence, ưu tiên công nghệ nguồn mở. Đội phải ghi rõ tên mô hình/công cụ, phiên bản, giấy phép, dữ liệu đầu
+vào và giới hạn kết quả. Khi phù hợp, kết quả phải có căn cứ hoặc khả năng giải thích.
+4.3. Tầng 3 – Ứng dụng nghiệp vụ minh họa
+Đội lựa chọn tối thiểu 01 bài toán thực tế của môi trường đại học và xây dựng thành ứng dụng minh họa. Có thể chọn: đăng ký
+phòng, đề nghị thiết bị, xử lý yêu cầu hỗ trợ CNTT, phê duyệt tài liệu, quản lý công việc, quản lý hồ sơ/tài liệu, điều hành dữ
+liệu đào tạo hoặc bài toán tương đương.
+Ứng dụng phải chứng minh được việc sử dụng các dịch vụ của Open-Core và H-P-D-I. Hội đồng ưu tiên sản phẩm giải quyết
+một bài toán rõ ràng, có dữ liệu mẫu và có kịch bản demo đầu-cuối.
+5. YÊU CẦU NGUỒN MỞ BẮT BUỘC
+Đây là nhóm yêu cầu PoF/Proof of FOSS. Đội không đáp ứng yêu cầu nguồn mở có thể bị loại hoặc không được tính điểm
+nhóm PoF trước khi chấm sâu sản phẩm.
+    Kho mã nguồn công khai trên GitHub/GitLab hoặc nền tảng tương đương; có lịch sử commit thực tế.
+    Có LICENSE rõ ràng; sản phẩm và các thành phần được sử dụng phải tuân thủ giấy phép nguồn mở phù hợp. Đội phải lập
+     bảng dependency + license.
+    Có ít nhất 01 release/tag có phiên bản.
+    Có thể build/install/run từ source theo README; Docker/Compose được khuyến khích để tái lập môi trường.
+    Có README.md mô tả kiến trúc, công nghệ, cài đặt, cấu hình, chạy thử, API và tài khoản demo.
+    Có CHANGELOG và issue/bug tracker; CONTRIBUTING.md được khuyến khích để thể hiện khả năng phát triển cộng
+     đồng.
+    Không commit API key, mật khẩu, token, dữ liệu cá nhân nhạy cảm hoặc thông tin bí mật.
+    Không sử dụng thành phần đóng hoặc thành phần có giấy phép không rõ ràng cho phần cốt lõi của sản phẩm.
+    Các thành phần bên ngoài phải được ghi nhận nguồn gốc, phiên bản, giấy phép và vai trò trong kiến trúc.
+6. GỢI Ý HỆ SINH THÁI CÔNG NGHỆ
+Đội được toàn quyền lựa chọn công nghệ. Danh sách dưới đây chỉ là gợi ý để định hướng, không phải danh sách bắt buộc.
+            Nhóm                                     Ví dụ nguồn mở                                                Vai trò
+    Identity / SSO              Keycloak hoặc tương đương                                          Định danh, SSO, RBAC
+    API Gateway                 Apache APISIX hoặc tương đương                                     Cửa ngõ API, routing
+    Data                        PostgreSQL, MongoDB, MinIO, Directus/Supabase                      Dữ liệu cấu trúc/phi cấu trúc
+                                hoặc tương đương
+    Workflow                    Flowable, n8n hoặc tương đương                                     BPMN, workflow, automation
+    AI / Intelligence           Ollama, vLLM, Transformers, scikit-learn,                          LLM, RAG, ML, semantic search
+                                Qdrant/Meilisearch hoặc tương đương
+    Observability               Prometheus/Grafana hoặc tương đương                                Giám sát, metrics, log
+    Frontend                    Vue/Nuxt, React, Flutter hoặc tương đương                          Ứng dụng H-P-D-I / nghiệp vụ
+
+
+
+
+
+
+                                             Đề thi tuyển chọn nội bộ HaUI – Phần mềm nguồn mở 2026
+
+===== PAGE 5 =====
+
+                                                                                                                PMNM HaUI 2026  |  DX-Lab –
+
+7. YÊU CẦU KỸ THUẬT TỐI THIỂU
+              Thành phần                                                        Yêu cầu tối thiểu
+    Ngôn ngữ/Framework                      Tự chọn; ưu tiên nguồn mở.
+    CSDL/Lưu trữ                            Có lớp lưu trữ có cấu trúc và/hoặc phi cấu trúc phù hợp.
+    API                                     REST hoặc GraphQL; ưu tiên OpenAPI/Swagger.
+    Triển khai                              Chạy được từ source; Docker/Compose được khuyến khích.
+    AI/ML                                   Ít nhất 01 chức năng Intelligence; không bắt buộc LLM nếu bài toán phù hợp
+                                            ML/rule-based.
+    Kiểm thử                                Có kiểm thử tối thiểu cho các chức năng lõi.
+    Bảo mật                                 RBAC; hash mật khẩu; quản lý secret; .env.example; không hard-code secret.
+    Dữ liệu                                 Có dữ liệu mẫu đủ để demo; nếu dùng API ngoài phải có phương án fallback.
+
+
+8. DỮ LIỆU VÀ TÍCH HỢP
+Không bắt buộc đội phải sử dụng đúng hai nguồn dữ liệu mở. Tuy nhiên, đội được khuyến khích tích hợp tối thiểu 02 nguồn
+dữ liệu mở/dữ liệu công khai khi bài toán phù hợp. Tối thiểu phải có dữ liệu đủ để chứng minh D – Data và phục vụ chức năng
+I – Intelligence.
+    Mỗi nguồn dữ liệu phải có nguồn gốc và mô tả quyền sử dụng.
+    Dữ liệu tích hợp cần có metadata/provenance ở mức phù hợp.
+    Nếu nguồn/API bên ngoài không ổn định, đội phải chuẩn bị snapshot/dữ liệu mẫu để demo offline.
+    Không sử dụng dữ liệu cá nhân nhạy cảm hoặc dữ liệu không có quyền sử dụng.
+9. TRẢI NGHIỆM, DEMO VÀ MINH CHỨNG
+    Giao diện rõ ràng, ưu tiên tiếng Việt hoặc song ngữ.
+    Có dashboard/landing page thể hiện trạng thái vận hành.
+    Có dữ liệu mẫu đủ để Hội đồng chạy thử.
+    Kịch bản demo phải thể hiện chuỗi: người dùng → Open-Core → quy trình → dữ liệu → Intelligence → kết quả.
+    Phải chỉ ra trực tiếp trong demo thành phần nào thuộc Tầng 1, thành phần nào thuộc H-P-D-I và ứng dụng nào thuộc Tầng
+     3.
+    Thời lượng vòng HaUI: 10 phút demo + tối đa 5 phút trả lời Hội đồng.
+    Khi tham dự OLP Quốc gia, đội tuân thủ thời lượng và nội dung trình diễn của BTC OLP/VFOSSA.
+10. HỒ SƠ VÀ KẾT QUẢ NỘP BÀI
+    Repository công khai: https://github.com/<team_name>/<project_name> hoặc tương đương.
+    Release/tag của sản phẩm.
+    README.md: kiến trúc 3 tầng, H-P-D-I, tính năng, cài đặt, cấu hình, chạy thử, API và tài khoản demo.
+    LICENSE và bảng dependency/license.
+    CHANGELOG.md, issue/bug tracker; CONTRIBUTING.md được khuyến khích.
+    Báo cáo kỹ thuật: khuyến nghị 8–10 trang, tập trung vào kiến trúc Open-Core, H-P-D-I, ứng dụng minh họa, luồng dữ
+     liệu, AI/ML, license và đánh giá; không bắt buộc kéo dài chỉ để đủ số trang.
+    Slide demo: tối đa 12 slide.
+    Video demo 3–5 phút: khuyến nghị, đặc biệt hữu ích khi cần tái kiểm tra sản phẩm.
+11. TIÊU CHÍ CHẤM ĐIỂM VÒNG TUYỂN CHỌN HaUI – 100 ĐIỂM
+Rubric nội bộ giữ cấu trúc 50 điểm PoF/nguồn mở + 50 điểm sản phẩm, đồng thời bổ sung yêu cầu kiến trúc DX-OS Open-
+Core để tránh lệch hướng so với đề OLP 2026.
+          Nhóm                                                      Tiêu chí                                                  Điểm
+      I. PoF              Repository công khai, lịch sử commit và khả năng truy cập                                              5
+
+
+
+                                           Đề thi tuyển chọn nội bộ HaUI – Phần mềm nguồn mở 2026
+
+===== PAGE 6 =====
+
+                                                                                                                PMNM HaUI 2026  |  DX-Lab –
+
+          Nhóm                                                      Tiêu chí                                                   Điểm
+      I. PoF              License nguồn mở, tương thích license/dependency và provenance                                        10
+      I. PoF              Release/tag có phiên bản                                                                               5
+      I. PoF              Build/install from source, Docker hoặc quy trình tái lập rõ ràng                                      10
+      I. PoF              Quản lý thư viện/phụ thuộc, nguồn gốc và phiên bản                                                    10
+      I. PoF              README, CHANGELOG, issue/bug tracker và chất lượng tài liệu                                           10
+      II. Product         Đúng kiến trúc 3 tầng; Open-Core headless có vai trò thực; liên kết H-P-D-I rõ                        10
+                          ràng
+      II. Product         Mức độ hoàn thiện và độ ổn định khi chạy demo                                                         10
+      II. Product         Tính thân thiện và giá trị sử dụng của ứng dụng minh họa                                              10
+      II. Product         Khả năng mở rộng, phát triển bền vững và chất lượng kỹ thuật                                          10
+      II. Product         Phong cách trình diễn, khả năng giải thích và tiềm năng cộng đồng                                     10
+Lưu ý: Tổng điểm là 100. Hội đồng có thể không tính điểm phần sản phẩm nếu sản phẩm vi phạm nghiêm trọng yêu cầu
+nguồn mở, giấy phép hoặc an toàn thông tin.
+12. LỖI BỊ TRỪ ĐIỂM / CÓ THỂ BỊ LOẠI
+                                Lỗi                                                             Mức xử lý
+    Repository không công khai tại thời điểm chấm                   Không chấm PoF; Hội đồng xem xét loại.
+    Không có LICENSE hoặc license không rõ                          -5 đến -10; lỗi nghiêm trọng có thể loại.
+    Không có release/tag                                            -5.
+    Không build/install được từ source                              -5 đến -10 tùy mức độ.
+    Không có README/hướng dẫn chạy                                  -5.
+    Không có CHANGELOG hoặc bug tracker                             -3 đến -5.
+    Commit secret/API key/dữ liệu nhạy cảm                          Trừ điểm nghiêm trọng; yêu cầu khắc phục trước demo.
+    Sử dụng thành phần đóng/không rõ giấy phép                      Không tính phần liên quan; lỗi nghiêm trọng có thể loại.
+    Không thể chứng minh Open-Core headless hoặc                    Trừ mạnh ở tiêu chí kiến trúc; có thể không đạt điều kiện
+    chỉ làm một app CRUD độc lập                                    tuyển chọn.
+    Demo không chạy nhưng repository có thể tái lập                 Chấm theo repository và trừ điểm hoàn thiện.
+
+
+13. CÂU HỎI ĐỊNH HƯỚNG HỘI ĐỒNG CHẤT VẤN
+    Open-Core của đội nằm ở đâu? Thành phần nào chạy headless và ứng dụng nào sử dụng dịch vụ đó?
+    Tại sao đội chọn kiến trúc và stack này? Thành phần nào là nguồn mở và giấy phép gì?
+    Nếu thay đổi ứng dụng nghiệp vụ, Open-Core có phải thay đổi theo không? Vì sao?
+    Identity/SSO, API Gateway, Data và Workflow được cung cấp như những dịch vụ dùng chung thế nào?
+    Điểm nào thể hiện H-P-D-I thay vì chỉ là một dashboard CRUD?
+    AI/ML được dùng ở đâu? Dữ liệu đầu vào, mô hình, đánh giá và giới hạn của kết quả là gì?
+    Nếu một nguồn dữ liệu/API ngừng hoạt động, hệ thống xử lý thế nào?
+    Đội có thể build toàn bộ hệ thống từ source trên một máy mới không?
+    Nếu tăng từ 100 lên 100.000 người dùng, kiến trúc sẽ thay đổi thế nào?
+    Nếu cộng đồng muốn đóng góp một module mới, quy trình contribution của dự án là gì?
+14. LỘ TRÌNH THỰC HIỆN 14 NGÀY
+      Thời gian                 Giai đoạn                                              Kết quả cần đạt
+    Ngày 1–2            Phân tích đề + kiến trúc        Chọn bài toán; vẽ 3 tầng; xác định Open-Core; chọn stack và license.
+    Ngày 3–4            Open-Core foundation            Identity/RBAC, API Gateway, Data services, Workflow; skeleton
+                                                        repository.
+
+
+
+                                           Đề thi tuyển chọn nội bộ HaUI – Phần mềm nguồn mở 2026
+
+===== PAGE 7 =====
+
+                                                                                                                 PMNM HaUI 2026  |  DX-Lab –
+
+      Thời gian                 Giai đoạn                                              Kết quả cần đạt
+    Ngày 5–7            H-P-D-I                         Xây dựng H, P, D; kết nối các dịch vụ từ Core.
+    Ngày 8–10           Intelligence + App              I/AI và ứng dụng nghiệp vụ minh họa; hoàn thiện luồng end-to-end.
+    Ngày 11             Integration & test              Tích hợp, kiểm thử, dữ liệu mẫu, fallback.
+    Ngày 12             Open-source hardening           LICENSE, dependency audit, README, CHANGELOG, issue,
+                                                        secret scan.
+    Ngày 13             Release                         Build from source, Docker/Compose, release/tag, bug fixing.
+    Ngày 14             Demo & submission               Báo cáo, slide, rehearsal, kiểm tra repository và showcase 10 phút.
+
+
+15. MỨC ĐỘ ƯU TIÊN KHI TUYỂN CHỌN ĐỘI HaUI
+    Đúng kiến trúc DX-OS: Open-Core headless ở Tầng 1, H-P-D-I ở Tầng 2 và ứng dụng minh họa ở Tầng 3.
+    Sản phẩm chạy ổn định, giải quyết đúng bài toán và có repository nguồn mở sạch.
+    Tận dụng tốt hệ sinh thái nguồn mở, quản trị license/dependency chuyên nghiệp.
+    AI/ML có giá trị thực tế, có đánh giá và căn cứ; không sử dụng AI chỉ để “trang trí”.
+    Khả năng trình diễn, trả lời câu hỏi kiến trúc và chứng minh khả năng tái lập.
+    Có tiềm năng tiếp tục phát triển thành nền tảng, không chỉ là một ứng dụng đơn lẻ.
+16. TÀI LIỆU THAM CHIẾU
+Nguồn chính: VFOSSA, “Đề thi Phần mềm nguồn mở – OLP 2026: Xây dựng Hệ điều hành Chuyển đổi số bằng Công
+nghệ Lõi nguồn mở (DX-OS Open-Core)”, đăng ngày 30/09/2026. Đề chính thức mô tả kiến trúc DX-OS 3 tầng, yêu
+cầu Open-Core headless ở Tầng 1 và ít nhất một ứng dụng minh họa trong không gian H-P-D-I ở Tầng 2.
+Tham khảo trực tiếp: https://vfossa.vn/tin-tuc/de-thi-phan-mem-nguon-mo-olp-2026-798.html
+Tài liệu này là đề tuyển chọn nội bộ HaUI; các mốc thời gian, rubric và yêu cầu hồ sơ nội bộ được thiết kế để chuẩn bị đội
+tuyển và không thay thế thể lệ chính thức của BTC OLP/VFOSSA.
+
+                                                  PMNM HaUI 2026  •  DX-Lab HaUI  •
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                            Đề thi tuyển chọn nội bộ HaUI – Phần mềm nguồn mở 2026

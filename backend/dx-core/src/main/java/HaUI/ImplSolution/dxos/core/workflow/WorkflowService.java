@@ -148,7 +148,7 @@ public class WorkflowService implements WorkflowOperations {
   public PageResponse<CaseView> list(String caseType, String status, String assignedTo, int page,
       int size) {
     requireKnownStatus(caseType, status);
-    Specification<WorkflowCase> filter = Specification.unrestricted();
+    Specification<WorkflowCase> filter = registeredCaseTypes();
     if (caseType != null) {
       filter = filter.and((root, query, cb) -> cb.equal(root.get("caseType"), caseType));
     }
@@ -163,11 +163,16 @@ public class WorkflowService implements WorkflowOperations {
     return PageResponse.of(caseRepository.findAll(filter, pageRequest), WorkflowService::toView);
   }
 
+  // Cases of another app that stay in the database are not listed.
+  private Specification<WorkflowCase> registeredCaseTypes() {
+    return (root, query, cb) -> root.get("caseType").in(definitions.caseTypes());
+  }
+
   // Query for application layers that need filters the generic list does not offer.
   @Override
   public PageResponse<CaseView> search(CaseQuery query, int page, int size) {
     requireKnownStatus(query.caseType(), query.status());
-    Specification<WorkflowCase> filter = Specification.unrestricted();
+    Specification<WorkflowCase> filter = registeredCaseTypes();
     if (query.caseType() != null) {
       filter = filter.and((root, q, cb) -> cb.equal(root.get("caseType"), query.caseType()));
     }

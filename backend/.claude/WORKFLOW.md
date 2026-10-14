@@ -69,6 +69,14 @@ Cách Claude nên vận hành trong thư mục này — về quy trình và hàn
 - Trong một bullet/list item, nếu có nhiều câu thì câu thứ hai trở đi xuống dòng mới (thụt lề theo item cha), không dồn chung dòng với câu đầu.
 - Lý do: mỗi câu một dòng khiến diff khi sửa một câu chỉ đổi đúng dòng đó, không làm cả đoạn bị reflow và đổi trắng những dòng không liên quan — dễ review hơn nhiều trên git.
 
+## 12. Thêm vào tài liệu thì xét cả danh sách, không chỉ phần mình làm
+- Khi một thay đổi cần ghi vào tài liệu có dạng danh sách hoặc bảng (bảng cấu hình trong `README.md`, danh sách biến môi trường, danh sách endpoint...), trước hết đọc cả danh sách đó và đánh giá các mục liên quan khác.
+  Chỉ thêm khi danh sách vẫn nhất quán sau khi thêm, không để một danh sách chỉ phản ánh những gì làm trong session này.
+- Nếu để đầy đủ cần thêm nhiều mục liên quan, thì **không thêm** vào tài liệu tổng: để file nguồn (ví dụ `deploy/.env.example`) là danh sách đầy đủ, tài liệu tổng chỉ trỏ tới nguồn đó.
+- Sau khi viết xong, đọc lại và hỏi hai câu: viết thế này có cần thêm thông tin gì nữa để không bị thiếu không, và tài liệu có đang dài quá không.
+  Dài quá thì viết gọn lại hoặc bỏ phần không thiết yếu, theo mục 10.
+- Lý do: user từng gặp bảng cấu hình ở `README.md` chỉ có thêm vài biến vừa làm trong session, trong khi `.env.example` còn nhiều biến tùy chọn khác — danh sách dở dang vừa thiếu vừa gây hiểu lầm.
+
 ## Nguyên tắc cốt lõi
 - **Đơn giản trước tiên** — thay đổi nhỏ nhất giải quyết được vấn đề; tối thiểu hoá code sinh ra.
 - **Không lười biếng** — sửa tận gốc, không vá tạm.

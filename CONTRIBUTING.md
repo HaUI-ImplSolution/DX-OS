@@ -80,7 +80,7 @@ Dưới đây `<id>` là mã ứng dụng (chữ thường), cũng là giá tr�
 5. **Schema.**
    Migration ở `db/migration/<id>`; bảng của core (`workspaces`, `workflow_case`, `workflow_event`, `notifications`) dùng chung, không tạo lại.
 6. **Interface và facade.**
-   Cài các interface cần dùng (vai, quy trình, thông báo, BI, tri thức, tệp, sức khỏe) và gọi core qua facade; danh mục ở [`ARCHITECTURE.md`](./ARCHITECTURE.md) mục 3.
+   Cài các interface cần dùng (vai, quy trình, thông báo, BI, tri thức, tệp, sức khỏe) và gọi core qua facade; những gì ứng dụng khai báo và core cung cấp ở [`ARCHITECTURE.md`](./ARCHITECTURE.md) mục 3.
 
 ### Hạ tầng và dữ liệu
 

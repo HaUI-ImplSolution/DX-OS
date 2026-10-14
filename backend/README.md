@@ -14,7 +14,7 @@ Kiến trúc và sơ đồ ở [`ARCHITECTURE.md`](../ARCHITECTURE.md).
 | `dx-host` | Chạy được: ghép core với ứng dụng chọn bằng `DXOS_APP`, đóng gói fat jar |
 
 Ứng dụng chỉ phụ thuộc `dx-core-api`; `dx-core` không phụ thuộc ứng dụng.
-Danh sách interface ở [`ARCHITECTURE.md`](../ARCHITECTURE.md) mục 3, cách thêm ứng dụng ở [`CONTRIBUTING.md`](../CONTRIBUTING.md).
+Những gì ứng dụng khai báo và core cung cấp ở [`ARCHITECTURE.md`](../ARCHITECTURE.md) mục 3, cách thêm ứng dụng ở [`CONTRIBUTING.md`](../CONTRIBUTING.md).
 
 ## Build và kiểm tra
 

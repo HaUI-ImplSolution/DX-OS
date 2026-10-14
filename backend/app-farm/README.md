@@ -48,7 +48,7 @@ Cột trạng thái trên bảng của Farm phản chiếu trạng thái đó.
 ## Interface của core đã cài
 
 Cấu hình bằng bean ở `FarmAppModule` (id `farm`, workspace `HOUSEHOLD`), `FarmSecurityPolicies` (vai, danh mục công khai, FARMER chỉ qua mobile), `FarmWorkflowConfig` (5 loại duyệt), `FarmNotificationConfig` (13 loại thông báo, kênh `ADMIN` và `ENGINEER`), `FarmPlatformConfig` (6 view `vw_*` và 3 bảng danh mục), `FarmKnowledgeNamespace` (`farm`) và `DiseaseImageProcessor` (chỉ JPEG/PNG, xóa EXIF).
-Bảng interface đầy đủ ở [`ARCHITECTURE.md`](../../ARCHITECTURE.md) mục 3.
+Những gì ứng dụng khai báo ở [`ARCHITECTURE.md`](../../ARCHITECTURE.md) mục 3.
 
 ## Mã thửa, mã vụ và duyệt
 
@@ -100,6 +100,7 @@ Quản trị viên nhập hộ không cần sai số.
 | `mattermost.webhook.url-admin`, `url-engineer` | `MATTERMOST_WEBHOOK_URL_ADMIN`, `MATTERMOST_WEBHOOK_URL_ENGINEER` | trống: dùng URL mặc định |
 
 Cấu hình nằm ở `dx-host/src/main/resources/application-farm.yaml`.
+Mobile đọc `app.gps-max-accuracy-meters` từ `settings.gpsMaxAccuracyMeters` của `GET /api/v1/app`.
 Gọi AI chẩn đoán có circuit breaker `aiDiagnosis` (Resilience4j).
 
 ## API

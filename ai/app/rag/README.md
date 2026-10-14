@@ -13,7 +13,7 @@ Mỗi corpus đi kèm registry nguồn ở `data/rag/`.
 corpus + source_registry
   → kiểm trường bắt buộc, source_id, disease_code
   → chunk tối đa 350 ký tự, overlap một dòng
-  → embedding 384 chiều (multilingual MiniLM)
+  → embedding 384 chiều (multilingual MiniLM) của "tiêu đề tài liệu + đoạn"
   → khóa advisory transaction, thay thế atomically corpus của namespace
   → lưu documents, document_chunks
 ```
@@ -36,6 +36,9 @@ câu hỏi (+ namespace, disease_code, document_type) → embedding → cosine s
 ```
 
 Có `disease_code` từ CV thì workflow truyền vào để giới hạn context đúng bệnh.
+Câu hỏi gọi tên chủ đề của một tài liệu thì đoạn của tài liệu đó được xếp lên trước.
+Tên chủ đề là tiêu đề bỏ "Bệnh" và "trên lúa", hoặc tên trong ngoặc.
+Điểm trả về là độ tương đồng cosine.
 
 ## Thành phần
 

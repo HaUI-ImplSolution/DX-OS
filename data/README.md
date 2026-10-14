@@ -16,7 +16,7 @@ Job `rag-ingest` nạp corpus của app đang chạy theo `DXOS_APP` (xem [`ai/R
 2. Tên thuốc, liều, đơn vị, PHI là dữ liệu deterministic: không lấy từ RAG, không để LLM sửa.
 3. Chỉ seed treatment rule khi có quyết định rõ trong dữ liệu nguồn (`eligible_for_seed=true` kèm `seed_authorization`); không bulk-seed file `candidates`.
 4. Seed idempotent; `source_ids` truy được về registry để audit.
-5. Khi `rag/source_registry.json` đổi, cập nhật `backend/app-farm/src/main/resources/knowledge-sources.json` để trang hỏi đáp hiện đúng nguồn.
+5. Khi `rag/source_registry.json` đổi, cập nhật `backend/app-farm/src/main/resources/knowledge-sources.json` để trang hỏi đáp hiện đúng nguồn; `python -m unittest data.scripts.test_knowledge_sources` kiểm hai bên khớp nhau (cả corpus Lab).
 
 ## Đổi dữ liệu nguồn
 

@@ -55,10 +55,15 @@ Backend bỏ EXIF/GPS, kiểm lại khi nộp và chỉ lưu ảnh đạt chuẩ
 | Định dạng, độ phân giải | JPEG/PNG, tối đa 40 megapixel |
 | Kích thước | Mỗi chiều từ 160px |
 | Độ sáng trung bình | 20–245 |
-| Độ nét | `sharpness >= 20` |
+| Độ nét | `sharpness >= 20`, hoặc ảnh nền đơn sắc có cạnh sắc (đoạn dưới) |
 
 Độ nét tính trên ảnh xám tối đa 640px: bỏ 10% viền, làm mượt Gaussian 5×5, lấy trung vị phương sai Laplacian của 16 vùng, trừ nhiễu ước lượng bằng MAD.
-Chưa tách vùng lá và ngưỡng chưa hiệu chuẩn bằng ảnh ngoài ruộng.
+Ảnh nền đơn sắc (từ 6 trong 16 vùng gần như không có cạnh) được xét thêm theo tỉ lệ năng lượng cạnh mất đi khi làm mờ lại.
+Phép đo dùng Gaussian 1 px trên ảnh 640px và chỉ tính cạnh trên 14.
+Ảnh đạt khi trung vị tỉ lệ mất của các vùng có ít nhất 300 điểm cạnh từ 0.22.
+Nhiễu hạt và sọc làm vùng nào cũng có cạnh nên không được coi là nền đơn sắc.
+Chưa tách vùng lá.
+Ngưỡng mới thử trên ảnh công khai nền ruộng, nền trắng và ảnh làm mờ nhân tạo.
 
 ## Phân loại lúa
 
@@ -71,6 +76,6 @@ Chưa tách vùng lá và ngưỡng chưa hiệu chuẩn bằng ảnh ngoài ru�
 - Precheck không đạt: 200 `passed=false`; predict/diagnose: 422, không gọi detector, Backend facts, RAG, LLM. Ảnh hỏng: 400 (diagnose 422). Classifier lỗi: 503.
 - Health `model_loaded` chỉ true khi cả hai model sẵn sàng.
 
-**Giới hạn:** model nhận nhầm ngô, lúa mì và cỏ thành Rice với điểm rất cao; tăng ngưỡng không sửa được ca gần 100%.
-Lần thử 15 ảnh có 3 ảnh ngoài lúa qua classifier, 2 ảnh trong đó còn qua kiểm chất lượng.
+**Giới hạn:** model nhận ngô và mía thành Rice với điểm rất cao (6/15 và 15/15 ảnh thử) và chặn 8/50 ảnh lúa nền ruộng.
+Tăng ngưỡng không sửa được ca gần 100%; số liệu ở `docs/AI_EVALUATION.md`.
 Việc chưa làm ở [`docs/BACKLOG.md`](../../../docs/BACKLOG.md).

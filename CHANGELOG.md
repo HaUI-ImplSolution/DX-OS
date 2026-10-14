@@ -1,9 +1,54 @@
 # Changelog
 
-Nhật ký thay đổi của DX-Farm, theo từng module.
-Định dạng dựa trên [Keep a Changelog](https://keepachangelog.com/).
+Nhật ký thay đổi của DX-OS (DX-Farm và DX-Lab).
+Định dạng theo [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/), đánh phiên bản theo [Semantic Versioning](https://semver.org/lang/vi/).
+
+Hai mục đầu liệt kê các bản phát hành; lịch sử chi tiết theo ngày của từng module (Backend, Dữ liệu, Mobile, AI Service, Frontend, Deploy, BI, Chat, Portal, SSO, Giấy phép và SBOM, Tài liệu) nằm ở các mục sau.
+
+## [Unreleased]
+
+### Đã thêm
+
+- `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), `README_EN.md` bản tiếng Anh, `NOTICE`, `frontend/.env.example`.
+- `docs/_template/`: mẫu tài liệu cho một đợt làm mới.
+
+### Đã thay đổi
+
+- README song ngữ viết ngắn gọn, có yêu cầu hệ thống và xử lý sự cố; `ARCHITECTURE.md` có tổng quan các dịch vụ và sơ đồ theo từng tầng.
+- Repository đổi tên thành `DX-OS`; liên kết trong tài liệu và danh mục nguồn tri thức Lab trỏ về tên mới.
+- Ảnh nền đơn sắc được kiểm độ nét theo cạnh sau khi làm mờ lại; hỏi đáp xếp đoạn của bệnh được nêu lên đầu.
+- Hộp duyệt chỉ liệt kê case của app đang chạy; lỗi request trả 415, 405 hoặc 400.
+- Ngưỡng GPS và danh sách vụ cách ly do Backend cung cấp cho mobile; giới hạn và ngưỡng đặt được qua `deploy/.env`.
+
+## [1.0.0] - 2026-10-13
+
+Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng dụng nghiệp vụ.
+
+### Đã thêm
+
+- **Open-Core (`dx-core-api`, `dx-core`, `dx-host`):** định danh theo workspace và thành viên, workflow dùng chung với loại case cấu hình được và lịch sử chỉ thêm, hộp duyệt, thông báo, lưu trữ S3 với link có hạn, cổng AI và tri thức theo namespace; chọn ứng dụng bằng `DXOS_APP`.
+- **DX-Farm (`app-farm`):** nông hộ, thửa có GPS, vụ mùa, báo cáo sâu bệnh kèm kiểm tra chất lượng ảnh, chẩn đoán AI và kỹ sư duyệt, khai phun thuốc, khóa thu hoạch theo PHI, nhắc hạn, thời tiết theo thửa, hỏi đáp tài liệu có trích nguồn.
+- **DX-Lab (`app-lab`):** yêu cầu hỗ trợ có SLA, gợi ý loại và ưu tiên bằng luật, mượn trả thiết bị, đặt phòng chống trùng giờ, hỏi đáp quy chế, thống kê.
+- **AI Service:** CV (YOLOv8n và crop classifier), RAG trên pgvector, LangGraph, LLM Qwen2.5 qua Ollama.
+- **Giao diện:** web React dùng chung cho hai ứng dụng, mobile Expo cho nông dân với hàng đợi offline, portal trạng thái dịch vụ.
+- **Hạ tầng:** Keycloak SSO (realm `dxos`), APISIX gateway, PostgreSQL, MinIO, Superset BI, Mattermost; dựng bằng Docker Compose với `deploy/start.sh farm|lab` và dữ liệu demo.
+- **Kiểm thử và CI:** E2E cho cả hai ứng dụng, CI backend, AI, web, mobile, hạ tầng.
+- **Nguồn mở:** `LICENSE` (Apache-2.0, riêng `ai/` AGPL-3.0), `LICENSES.md`, SBOM CycloneDX, `CONTRIBUTING.md`, mẫu issue và pull request, SPDX header.
 
 ## Backend (Spring Boot — `backend`)
+
+### 2026-10-14
+
+**Đã xong — Mã lỗi request, hộp duyệt theo app, cài đặt cho client:**
+
+- `GlobalExceptionHandler` trả 415, 405 và 400 cho sai `Content-Type`, sai phương thức, thiếu phần multipart hoặc JSON hỏng.
+- `WorkflowService.list` và `search` chỉ trả loại case của app đang chạy.
+- `GET /api/v1/app` có `settings`; Farm khai báo `gpsMaxAccuracyMeters`.
+- `GET /api/v1/crop-seasons/isolated` trả vụ đang cách ly, theo hộ của nông dân hoặc toàn bộ cho vai khác.
+- Test mới: phạm vi nông hộ và idempotency, thu hoạch, thông báo và nhắc hạn, mượn trả thiết bị, vòng đời ticket, phân loại và SLA, chống trùng giờ đặt phòng.
+- Lịch nền (SLA, nhắc mượn trả, nhắc thu hoạch) chạy qua `JobLock`, mỗi lần chỉ một bản backend thực hiện.
+- `diagnoses.source` (`AI` hoặc `ENGINEER`); `vw_ai_diagnosis_outcomes` lấy theo cột này.
+- Database vector tên `dxos_ai_vector_db`; nạp lại tri thức bằng job `rag-ingest` sau khi đổi.
 
 ### 2026-10-13
 
@@ -343,6 +388,13 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 
 ## Mobile (`mobile`, Expo)
 
+### 2026-10-14
+
+**Đã xong — Ngưỡng GPS và nhãn cách ly lấy từ Backend:**
+
+- Ngưỡng sai số GPS đọc từ `settings` của `GET /api/v1/app`, dùng 30 m khi chưa tải được.
+- Danh sách thửa gọi `GET /api/v1/crop-seasons/isolated` một lần để hiện nhãn "Đang cách ly".
+
 ### 2026-10-12
 
 **Đã xong — Client `farm-mobile`:**
@@ -439,6 +491,14 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - `mobile/README.md`: chạy thử trên điện thoại thật với IP LAN, biến môi trường, tài khoản demo, kiểm tra mã nguồn.
 
 ## AI Service (Python)
+
+### 2026-10-14
+
+**Đã xong — Độ nét ảnh nền đơn sắc, truy xuất theo tên bệnh:**
+
+- Ảnh nền đơn sắc được xét theo tỉ lệ năng lượng cạnh mất khi làm mờ lại, đạt từ 0.22; nhiễu hạt và sọc không thuộc trường hợp này.
+- Ingest embed tiêu đề cùng từng đoạn; truy xuất xếp đoạn của tài liệu được gọi tên lên trước.
+- Test cho độ nét nền đơn sắc, tên chủ đề, xếp hạng và embed kèm tiêu đề.
 
 ### 2026-10-13
 
@@ -663,6 +723,14 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - Đã test qua trình duyệt thật với từng role, xác nhận UI và 401/403 đúng chỗ.
 
 ## Deploy (`deploy`)
+
+### 2026-10-14
+
+**Đã xong — Giới hạn và ngưỡng qua `deploy/.env`:**
+
+- Compose truyền `MAX_PENDING_REQUESTS`, `KNOWLEDGE_MIN_SCORE`, `STORAGE_PRESIGN_TTL`, `GPS_MAX_ACCURACY_METERS` và `HARVEST_REMINDER_CRON`; `.env.example` có giá trị mặc định.
+- Role Superset `DXOS Engineer` cấp quyền đọc dataset, nên kỹ sư thấy dashboard của app.
+- CI AI chạy thêm kiểm tra nguồn tri thức của Farm và Lab khớp registry.
 
 ### 2026-10-13
 
@@ -956,7 +1024,7 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
   Chi tiết: `sso/README.md`.
 - Mattermost là nền tảng chat tách biệt có chủ đích, không nối SSO — xem `chat/README.md`.
 
-## Rà soát license (PoF)
+## Giấy phép và SBOM
 
 ### 2026-10-13
 
@@ -988,6 +1056,13 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 - **Còn thiếu**: SPDX header đầu mỗi file mã nguồn tự viết — việc sửa hàng loạt file, để riêng một lượt khác.
 
 ## Tài liệu (root, `docs`, `ai/`)
+
+### 2026-10-14
+
+**Đã xong — Đánh giá AI, việc còn lại, kết quả kiểm:**
+
+- `docs/AI_EVALUATION.md`: đánh giá pipeline CV trên 100 ảnh công khai.
+- `docs/BACKLOG.md` và `docs/TESTING.md`: việc còn lại và kết quả kiểm ngày 14/10/2026.
 
 ### 2026-10-13
 
@@ -1047,3 +1122,6 @@ Nhật ký thay đổi của DX-Farm, theo từng module.
 ### 2026-09-15
 
 - Cập nhật `README.md`, `ai/README.md`, `ai/app/graph/README.md` để mô tả trạng thái kiến trúc AI và Backend.
+
+[Unreleased]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/HaUI-ImplSolution/DX-OS/releases/tag/v1.0.0

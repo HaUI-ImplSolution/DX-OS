@@ -4,6 +4,7 @@ package HaUI.ImplSolution.dxos.host.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import HaUI.ImplSolution.dxos.core.api.workflow.CaseQuery;
 import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowActor;
 import HaUI.ImplSolution.dxos.core.workflow.WorkflowDefinitions;
 import HaUI.ImplSolution.dxos.farm.FarmWorkflowConfig;
@@ -150,5 +151,28 @@ class WorkflowServiceIntegrationTest {
     assertThatThrownBy(
         () -> jdbcTemplate.update("DELETE FROM workflow_event WHERE id = ?", event.getId()))
         .isInstanceOf(DataAccessException.class);
+  }
+
+  @Test
+  void casesOfAnotherAppAreNeitherListedNorSearched() {
+    long foreignId = newEntityId();
+    jdbcTemplate.update(
+        "INSERT INTO workflow_case (case_type, entity_type, entity_id, status,"
+            + " created_at, updated_at) VALUES ('TICKET', 'TICKET', ?, 'NEW', now(), now())",
+        foreignId);
+    long ownId = newEntityId();
+    workflowService.createCase(TYPE, ENTITY, ownId, ENGINEER);
+
+    var listed = workflowService.list(null, null, null, 0, 1000);
+    var searched =
+        workflowService.search(new CaseQuery(null, null, null, false, null, null, null), 0, 1000);
+    var byForeignType = workflowService
+        .search(new CaseQuery("TICKET", null, null, false, null, null, null), 0, 1000);
+
+    assertThat(listed.items()).extracting(item -> item.entityId()).contains(ownId)
+        .doesNotContain(foreignId);
+    assertThat(searched.items()).extracting(item -> item.entityId()).contains(ownId)
+        .doesNotContain(foreignId);
+    assertThat(byForeignType.totalElements()).isZero();
   }
 }

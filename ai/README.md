@@ -42,7 +42,7 @@ Backend → POST /api/v1/diagnose
 ## Dữ liệu và quyền
 
 - Dữ liệu nghiệp vụ (báo cáo, chẩn đoán, thuốc, rule) ở database `dxos` của Backend; AI không có credential, chỉ gọi REST nội bộ chỉ đọc.
-- `documents`, `document_chunks` và embedding ở database `dx_farm_ai_vector_db`: runtime dùng role `ai_vector_ro` (chỉ đọc), job `rag-ingest` dùng role `ai_vector_ingest`.
+- `documents`, `document_chunks` và embedding ở database `dxos_ai_vector_db`: runtime dùng role `ai_vector_ro` (chỉ đọc), job `rag-ingest` dùng role `ai_vector_ingest`.
 - Backend khởi tạo database vector, extension `vector`, hai bảng RAG và hai role; runtime không giữ credential ingest.
 
 ## Biến môi trường
@@ -51,7 +51,7 @@ Compose lấy từ [`deploy/.env.example`](../deploy/.env.example); chạy local
 
 | Biến | Ý nghĩa |
 |---|---|
-| `DATABASE_URL` | Kết nối chỉ đọc tới `dx_farm_ai_vector_db` |
+| `DATABASE_URL` | Kết nối chỉ đọc tới `dxos_ai_vector_db` |
 | `RAG_INGEST_DATABASE_URL` | Kết nối ghi, chỉ cấp cho job ingest |
 | `BACKEND_BASE_URL` | Base URL Backend (local `http://localhost:8081`) |
 | `BACKEND_SERVICE_API_KEY` | Key AI gửi khi gọi `/internal/v1/**` của Backend |
@@ -86,7 +86,7 @@ docker compose up -d --build postgres backend ai
 Corpus đã duyệt ở `data/rag/processed/disease_knowledge.json` (Farm) và `data/rag/lab/processed/lab_knowledge.json` (Lab), cùng registry nguồn:
 
 ```bash
-export RAG_INGEST_DATABASE_URL=postgresql+psycopg://<ingest-user>:<password>@<host>:5432/dx_farm_ai_vector_db
+export RAG_INGEST_DATABASE_URL=postgresql+psycopg://<ingest-user>:<password>@<host>:5432/dxos_ai_vector_db
 python -m scripts.ingest_diseases --dry-run            # preview, không ghi
 python -m scripts.ingest_diseases                      # corpus farm
 python -m scripts.ingest_diseases --corpus lab         # corpus lab

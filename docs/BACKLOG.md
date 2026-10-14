@@ -9,53 +9,41 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 |---|---|
 | Báo cáo kỹ thuật 8-10 trang, slide tối đa 12 | Có dàn ý ở [`SUBMISSION.md`](./SUBMISSION.md) mục 3 |
 | Video demo 3-5 phút, rehearsal ít nhất một lần | Kịch bản ở [`SUBMISSION.md`](./SUBMISSION.md) mục 2 |
-| Tag `v0.1.0` và bản chốt trên GitHub | Đề yêu cầu ít nhất một release có phiên bản |
-| Bật GitHub Issues, tạo vài issue mẫu | Đề yêu cầu issue/bug tracker |
-| Chuyển repository sang public | Đề yêu cầu repository công khai tại thời điểm chấm |
-| Quét lại gitleaks ngay trước khi chuyển public | Lần quét gần nhất (336 commit và cây làm việc) không có phát hiện |
+| Tạo vài issue mẫu trên GitHub | Issues đã bật, hiện chưa có issue nào; lấy từ mục 5 và 6 của tài liệu này |
 | Chụp ảnh giao diện hai chế độ (Farm, Lab) lưu vào repository cho hồ sơ | Chưa có |
+| Bổ sung các thành viên còn lại vào mục Liên hệ của `README.md` và `README_EN.md` | Hiện chỉ có người duy trì |
+| Quét lại gitleaks nếu có commit mới trước ngày chấm | Lần gần nhất 14/10/2026: 355 commit, không có phát hiện |
 | Chốt ngày hạn nộp thật | Chưa chốt |
 
 ## 2. Việc cần sửa trong mã và cấu hình
 
 | Việc | Chi tiết |
 |---|---|
-| `POST` multipart thiếu `Content-Type` trả 500, nên trả 415 | Áp dụng cho `/api/v1/tickets` và `/api/v1/crop-seasons/{id}/disease-reports`; `HttpMediaTypeNotSupportedException` đang rơi vào xử lý lỗi chung. Không ảnh hưởng client của web |
-| Tên database vector còn là `dx_farm_ai_vector_db` | Đổi sang tên trung tính cần sửa `AiVectorDatabaseSeeder` và AI service |
-| Lịch nền (SLA, nhắc mượn trả, nhắc thu hoạch) chạy ở mọi bản backend | Thông báo có khóa chống trùng nên không gửi lặp, nhưng chạy nhiều bản cần khóa lịch hoặc một bản giữ lịch |
-| Tham số `app.*`, `knowledge.*`, `storage.presign-ttl` chỉ đổi được trong `application.yaml` | Chưa truyền qua `deploy/.env`; `HARVEST_REMINDER_CRON` cũng chưa có trong `.env.example` |
-| Bảng danh mục mới phải thêm tay vào `READABLE_RELATIONS` của `SupersetReadOnlyRoleSeeder` | Quyền mặc định của role BI đóng; quên thì Superset không đọc được bảng |
-| Mobile viết cứng ngưỡng GPS 30 m | `mobile/src/config.ts`; backend đã cấu hình được qua `app.gps-max-accuracy-meters` |
-| `knowledge-sources.json` của Farm sao tay từ `data/rag/source_registry.json` | Chưa có kiểm tra lệch |
-| Thẻ thửa trên mobile gọi riêng trạng thái cách ly cho từng thửa | Cần endpoint gộp theo danh sách thửa |
 | Export dashboard Superset chưa có `query_context` cho từng chart | Dashboard vẫn hiển thị bình thường |
-| `vw_ai_diagnosis_outcomes` nhận biết chẩn đoán AI qua `symptom_text` rỗng và `model_version` khác `manual-input-v1` | Dễ sai nếu đổi tên model; nên có cột nguồn trong `diagnoses` |
-| `engineer1` vào Superset thấy danh sách dashboard rỗng | Nghi thiếu quyền dataset của role Gamma; chưa quyết định cho kỹ sư xem dashboard hay chỉ admin |
 
 ## 3. Chưa kiểm thử
 
 | Việc | Ghi chú |
 |---|---|
-| Kiểm tay Farm F1 đến F9, Lab L1 đến L17, API Lab bước 1 đến 22 | Kịch bản ở [`TESTING.md`](./TESTING.md); chưa ghi kết quả đầy đủ |
-| Thời tiết: gọi endpoint thật và giả lập Open-Meteo lỗi | Chưa có màn hình nên chưa thử qua giao diện |
-| Test tích hợp phạm vi dữ liệu giữa hai nông hộ và idempotency của thửa, vụ | |
-| Test tự động cho vòng đời vụ mùa, thông báo, yêu cầu chụp lại | Đã kiểm tay trên web và điện thoại |
-| Test tự động riêng cho Lab ngoài kịch bản E2E hai app | |
-| Dashboard Superset | Kiểm tay, chưa có test tự động |
+| Kiểm tay Farm F3 trên điện thoại, kèm ngưỡng GPS và nhãn "Đang cách ly" | Kịch bản ở [`TESTING.md`](./TESTING.md); các mục kiểm tay còn lại đã đạt |
+| Test tự động cho thông báo khi duyệt hoặc từ chối chẩn đoán và khi xác nhận phun thuốc | |
+| Test tự động cho luật đặt phòng của Lab (quá 4 giờ, sức chứa, quyền theo vai) | Ràng buộc chống trùng giờ đã có test; các luật còn lại chỉ có E2E |
+| Dashboard Superset | Chưa có test tự động |
 
 ## 4. Giới hạn của AI và dữ liệu
 
 | Việc | Ghi chú |
 |---|---|
-| Chưa có báo cáo đánh giá AI | Thiếu test set độc lập, chỉ số theo lớp, confusion matrix; ngưỡng chẩn đoán `0.70` chưa đo lại |
-| Crop classifier còn nhận nhầm ngô, cỏ, lúa mì thành lúa | Thử 15 ảnh có 3 ảnh ngoài lúa qua classifier; tăng ngưỡng không sửa ca Rice gần 100%. Hướng xử lý: thay classifier hoặc bổ sung dữ liệu ngoài miền; kỹ sư vẫn là người chốt bệnh |
+| Đánh giá AI mới dùng ảnh công khai | Chẩn đoán đúng 4/80 ảnh (detector riêng 21/80), độ tin cậy cao nhất 0.57, xem [`AI_EVALUATION.md`](./AI_EVALUATION.md); cần ít nhất 100 ảnh ruộng thật có nhãn kỹ sư để đo lại ngưỡng 0.70 và huấn luyện thêm |
+| Crop classifier nhận 6/15 ảnh ngô và 15/15 ảnh mía là lúa, chặn 8/50 ảnh lúa nền ruộng | Classifier 10 lớp không có lớp ngô, mía, cỏ; cần thay classifier hoặc thêm dữ liệu ngoài miền; kỹ sư vẫn chốt bệnh |
 | Classifier không đối chiếu SHA-256 | Model khác cùng contract vẫn nạp được; chỉ `best.pt` có SHA-256 |
-| Ngưỡng độ nét 20 và độ sáng 20-245 chưa hiệu chuẩn bằng ảnh ngoài ruộng | Có thể chặn nhầm ảnh tốt hoặc cho lọt ảnh mờ; kiểm chất lượng chưa tách vùng lá |
+| Ngưỡng độ nét mới thử trên ảnh công khai và ảnh mờ nhân tạo | Chưa có ảnh mờ thật ngoài ruộng; chưa tách vùng lá |
 | Nộp báo cáo cần AI service chạy | Chưa có đường nhận ảnh chưa kiểm khi AI dừng; hàng đợi offline thử lại |
 | Chưa có mô hình nhận diện sâu hại | Detector chỉ có 5 bệnh lá |
 | Chẩn đoán chưa trả `management_policy` cho nhánh `NO_CHEMICAL_CONTROL` | Bảng `disease_management_policies` đã có dữ liệu seed nhưng contract AI và Backend chưa có trường này |
 | Kho RAG của Farm chỉ có 6 tài liệu bệnh lúa | Chưa có VietGAP hay quy trình canh tác |
-| Ngưỡng `knowledge.min-score` 0.40 và giới hạn 60 câu hỏi mỗi phút mỗi IP là số tạm | Điểm câu hỏi đúng chủ đề khoảng 0.45 đến 0.50; chưa hiệu chỉnh trên bộ câu hỏi thật |
+| Truy xuất tri thức dựa trên MiniLM đa ngữ | Câu nêu tên bệnh được xếp đúng; câu chỉ tả triệu chứng phụ thuộc embedding; bộ thử có 15 câu |
+| Giới hạn 60 câu hỏi mỗi phút mỗi IP là số tạm, chưa thử tải | `knowledge.min-score` 0.40 loại 7/8 câu ngoài chủ đề; điểm đoạn đầu của câu đúng chủ đề từ 0.50 đến 0.83 |
 | Luật phân loại của Lab là luật tay | Chưa đo độ chính xác trên dữ liệu thật |
 | Snapshot thời tiết chỉ có 5 điểm ĐBSCL, chụp ngày 07/10/2026 | Chụp lại nếu cần dữ liệu dự phòng mới hơn |
 | Giới hạn tốc độ ở gateway tính theo IP là số tạm; chưa thử tải | Superset dùng SQLite cho metadata, AI service là một tiến trình không có hàng đợi |

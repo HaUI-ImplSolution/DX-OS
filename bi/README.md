@@ -39,6 +39,6 @@ Nền bản đồ để trắng vì mọi nền miễn phí đều cần thẻ t
 
 ## Thêm view hoặc cập nhật dashboard
 
-- `superset_ro` không tự đọc được bảng mới: tạo view lọc đúng trạng thái đã duyệt trong một migration rồi thêm tên vào `READABLE_RELATIONS` của `SupersetReadOnlyRoleSeeder`.
+- `superset_ro` không tự đọc được bảng mới: tạo view lọc đúng trạng thái đã duyệt trong một migration rồi thêm tên vào `BiDatasetProvider` của app (`FarmPlatformConfig`, `LabPlatformConfig`).
 - Chỉnh dashboard trong UI (đăng nhập `admin1`), **⋯ → Export**, đè file tải về lên `bi/farm_dashboard_export.zip` rồi commit (file không chứa mật khẩu thật).
   Kiểm lại bằng `docker compose up -d --force-recreate superset`; chart bị nhân đôi nghĩa là `position_json` thiếu `meta.uuid` khớp UUID thật, phải sửa qua UI.

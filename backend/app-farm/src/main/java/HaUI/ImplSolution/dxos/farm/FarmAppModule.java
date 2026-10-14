@@ -5,8 +5,11 @@ import HaUI.ImplSolution.dxos.core.api.app.AppMenuItem;
 import HaUI.ImplSolution.dxos.core.api.app.AppModule;
 import HaUI.ImplSolution.dxos.core.api.workspace.WorkspaceType;
 import HaUI.ImplSolution.dxos.farm.service.ApprovalCaseTypes;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 // Declares the Farm app: a rice cooperative whose members are farming households.
@@ -15,6 +18,14 @@ public class FarmAppModule implements AppModule {
 
   public static final String ID = "farm";
   public static final String HOUSEHOLD = "HOUSEHOLD";
+  public static final String GPS_MAX_ACCURACY_SETTING = "gpsMaxAccuracyMeters";
+
+  private final BigDecimal gpsMaxAccuracyMeters;
+
+  public FarmAppModule(
+      @Value("${app.gps-max-accuracy-meters:30}") BigDecimal gpsMaxAccuracyMeters) {
+    this.gpsMaxAccuracyMeters = gpsMaxAccuracyMeters;
+  }
 
   @Override
   public String id() {
@@ -39,6 +50,12 @@ public class FarmAppModule implements AppModule {
   @Override
   public List<WorkspaceType> workspaceTypes() {
     return List.of(new WorkspaceType(HOUSEHOLD, "H", "Nông hộ"));
+  }
+
+  @Override
+  public Map<String, String> settings() {
+    return Map.of(GPS_MAX_ACCURACY_SETTING,
+        gpsMaxAccuracyMeters.stripTrailingZeros().toPlainString());
   }
 
   @Override

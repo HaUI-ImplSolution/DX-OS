@@ -2,18 +2,15 @@ import { router } from "expo-router";
 import { StyleSheet, Text } from "react-native";
 import { Card } from "@/components/Card";
 import { StatusChip } from "@/components/StatusChip";
-import { useParcelIsolation } from "@/hooks/useParcelIsolation";
 import { colors, fontSize } from "@/theme";
 import type { Parcel } from "@/types";
 
 interface Props {
   parcel: Parcel;
-  // Changes when the list is refreshed so the isolation badge is reloaded too.
-  version: number;
+  isolated: boolean;
 }
 
-export function ParcelCard({ parcel, version }: Props) {
-  const isolated = useParcelIsolation(parcel.code, version);
+export function ParcelCard({ parcel, isolated }: Props) {
   return (
     <Card
       onPress={() =>

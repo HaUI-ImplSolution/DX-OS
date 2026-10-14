@@ -25,4 +25,7 @@ SERVER_PID=$!
 python3 /app/pythonpath/bootstrap_datasources.py \
   || echo "[bootstrap] datasource/dashboard bootstrap thất bại - Superset vẫn chạy, xem log để chạy tay lại"
 
+python3 /app/pythonpath/grant_engineer_access.py \
+  || echo "[bootstrap] cấp quyền dataset cho kỹ sư thất bại - kỹ sư chưa thấy dashboard, xem log"
+
 wait "$SERVER_PID"

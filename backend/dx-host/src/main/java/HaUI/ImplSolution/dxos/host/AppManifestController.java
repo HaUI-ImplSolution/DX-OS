@@ -32,8 +32,10 @@ public class AppManifestController {
   }
 
   @GetMapping
-  @Operation(summary = "Manifest of the running app: id, name, roles, menu and workspace types",
-      description = "Any signed-in user. The web client builds its navigation from the menu.")
+  @Operation(
+      summary = "Manifest of the running app: id, name, roles, menu, workspace types and settings",
+      description = "Any signed-in user. The web client builds its navigation from the menu;"
+          + " settings carry values clients use as they are, such as the GPS accuracy limit.")
   public ApiResponse<AppManifestResponse> manifest() {
     if (appModule == null) {
       throw new ResourceNotFoundException("No app is running");
@@ -41,7 +43,8 @@ public class AppManifestController {
     return ApiResponse.success(new AppManifestResponse(appModule.id(), appModule.name(),
         roles.stream().map(RoleDefinition::name).toList(),
         appModule.menu().stream().map(AppManifestController::toMenuEntry).toList(),
-        appModule.workspaceTypes().stream().map(WorkspaceType::type).toList()));
+        appModule.workspaceTypes().stream().map(WorkspaceType::type).toList(),
+        appModule.settings()));
   }
 
   private static AppManifestResponse.MenuEntry toMenuEntry(AppMenuItem item) {

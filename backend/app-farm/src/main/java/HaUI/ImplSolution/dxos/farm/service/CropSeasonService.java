@@ -127,6 +127,23 @@ public class CropSeasonService {
     return isolationOf(findAccessibleOrThrow(id));
   }
 
+  // Active seasons under isolation that the user can see, so a parcel list needs one request.
+  public List<IsolationStatusResponse> listIsolated() {
+    List<CropSeason> active;
+    if (currentUserService.isFarmer()) {
+      active = currentUserService.currentWorkspace()
+          .map(household -> cropSeasonRepository
+              .findByParcel_HouseholdIdAndStatusAndDeletedAtIsNullOrderByIdAsc(household.id(),
+                  CropSeasonStatus.ACTIVE))
+          .orElse(List.of());
+    } else {
+      active =
+          cropSeasonRepository.findByStatusAndDeletedAtIsNullOrderByIdAsc(CropSeasonStatus.ACTIVE);
+    }
+    return active.stream().map(this::isolationOf).filter(IsolationStatusResponse::isolated)
+        .toList();
+  }
+
   private IsolationStatusResponse isolationOf(CropSeason season) {
     Long id = season.getId();
     var pending = treatmentApplicationRepository

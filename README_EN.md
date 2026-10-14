@@ -27,27 +27,12 @@ One shared core handles sign-in, data, workflows, notifications and AI; two busi
 
 ## 🧱 Three-tier architecture
 
-```mermaid
-flowchart TB
-  subgraph T3["Tier 3: Business applications"]
-    direction LR
-    FARM["DX-Farm"] ~~~ LAB["DX-Lab"]
-  end
-  subgraph T2["Tier 2: H-P-D-I"]
-    direction LR
-    H["Human"] ~~~ P["Process"] ~~~ D["Data"] ~~~ I["Intelligence"]
-  end
-  subgraph T1["Tier 1: Shared Open-Core"]
-    direction LR
-    SSO["SSO"] ~~~ GW["Gateway"] ~~~ DATA["Data<br/>and images"] ~~~ WF["Workflow<br/>and notifications"] ~~~ AI["AI gateway"]
-  end
-  T3 --> T2 --> T1
-```
+![Three-tier architecture diagram](docs/images/so_do_3_tang.png)
 
 | Tier | Components |
 |---|---|
-| 1. Open-Core (no end-user UI) | Core business logic, SSO, Gateway, database, image storage |
-| 2. H-P-D-I | Web and mobile UIs on top of the core services, plus AI, reports and chat |
+| 1. Open-Core (no end-user UI) | Identity (SSO), Workflow, Notification, Storage, AI and Knowledge, Gateway, Security |
+| 2. H-P-D-I | Four spaces (Human, Process, Data, Intelligence) built from the Core modules, plus AI, reports and chat |
 | 3. Applications | Farm and Lab |
 
 | Space | Farm | Lab |

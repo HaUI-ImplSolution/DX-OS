@@ -12,7 +12,14 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.mock.http.MockHttpInputMessage;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 class GlobalExceptionHandlerTest {
 
@@ -41,6 +48,28 @@ class GlobalExceptionHandlerTest {
         .isEqualTo("ERR_FORBIDDEN");
     assertThat(handler.handleUnexpected(new RuntimeException("x")).getBody().errorCode())
         .isEqualTo("ERR_INTERNAL");
+  }
+
+  @Test
+  void clientRequestErrorsKeepTheirStatusInsteadOfBecomingServerErrors() {
+    var unsupported = handler.handleUnsupportedMediaType(
+        new HttpMediaTypeNotSupportedException(MediaType.TEXT_PLAIN, java.util.List.of()));
+    assertThat(unsupported.getStatusCode()).isEqualTo(HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+    assertThat(unsupported.getBody().errorCode()).isEqualTo("ERR_UNSUPPORTED_MEDIA_TYPE");
+
+    var method = handler.handleMethodNotAllowed(
+        new HttpRequestMethodNotSupportedException(HttpMethod.DELETE.name()));
+    assertThat(method.getStatusCode()).isEqualTo(HttpStatus.METHOD_NOT_ALLOWED);
+    assertThat(method.getBody().errorCode()).isEqualTo("ERR_METHOD_NOT_ALLOWED");
+
+    var missingPart =
+        handler.handleUnreadableRequest(new MissingServletRequestPartException("image"));
+    assertThat(missingPart.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    assertThat(missingPart.getBody().errorCode()).isEqualTo("ERR_BAD_REQUEST");
+
+    var brokenJson = handler.handleUnreadableRequest(
+        new HttpMessageNotReadableException("bad json", new MockHttpInputMessage(new byte[0])));
+    assertThat(brokenJson.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
   }
 
   @Test

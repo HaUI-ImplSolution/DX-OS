@@ -179,10 +179,15 @@ def _ingest_corpus(db: Session, corpus: Corpus) -> dict[str, int]:
     prepared = [
         (item, list(dict.fromkeys(chunk_text(item["content"])))) for item in documents
     ]
-    chunk_contents = [content for _, chunks in prepared for content in chunks]
+    # The title leads each embedded text so a chunk matches questions that name its topic.
+    embedded_texts = [
+        f"{item[corpus.title_field]}\n{content}"
+        for item, chunks in prepared
+        for content in chunks
+    ]
 
     embedding_service = EmbeddingService()
-    embeddings = iter(embedding_service.embed_texts(chunk_contents))
+    embeddings = iter(embedding_service.embed_texts(embedded_texts))
 
     db.execute(text(f"SELECT pg_advisory_xact_lock({int(corpus.lock_key)})"))
     existing_documents = db.scalars(

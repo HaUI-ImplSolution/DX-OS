@@ -3,7 +3,7 @@ import math
 from io import BytesIO
 
 import numpy as np
-from PIL import Image, ImageOps, ImageStat
+from PIL import Image, ImageFilter, ImageOps, ImageStat
 
 from app.core.config import Settings, get_settings
 from app.cv.contract import class_contract, class_entry
@@ -13,6 +13,11 @@ from app.cv.policy import (
     IOU_THRESHOLD,
     MIN_IMAGE_DIMENSION,
     MIN_SHARPNESS,
+    PLAIN_BACKGROUND_EDGE_FLOOR,
+    PLAIN_BACKGROUND_MIN_EDGE_LOSS,
+    PLAIN_BACKGROUND_MIN_EDGE_PIXELS,
+    PLAIN_BACKGROUND_MIN_FLAT_TILES,
+    PLAIN_BACKGROUND_REBLUR_RADIUS,
     SHARPNESS_GRID_SIZE,
     SHARPNESS_MAX_EDGE,
 )
@@ -82,6 +87,54 @@ def image_sharpness(grayscale: Image.Image) -> float:
     return max(0.0, float(np.median(scores)) - noise * LAPLACIAN_NOISE_GAIN)
 
 
+def _edge_magnitude(pixels: np.ndarray) -> np.ndarray:
+    return (
+        np.abs(np.diff(pixels, axis=1))[:-1, :]
+        + np.abs(np.diff(pixels, axis=0))[:, :-1]
+    )
+
+
+def sharp_on_plain_background(grayscale: Image.Image) -> bool:
+    # Plain-background images are judged by the edge energy a re-blur removes: large when
+    # sharp, small when blurry. Noise and stripes put edges in every tile, so they never
+    # count as a plain background.
+    normalized = grayscale.copy()
+    normalized.thumbnail(
+        (SHARPNESS_MAX_EDGE, SHARPNESS_MAX_EDGE), Image.Resampling.LANCZOS
+    )
+    reblurred = normalized.filter(
+        ImageFilter.GaussianBlur(radius=PLAIN_BACKGROUND_REBLUR_RADIUS)
+    )
+    pixels = np.asarray(normalized, dtype=np.float32)
+    height, width = pixels.shape
+    inner = (
+        slice(height // 10, height - height // 10),
+        slice(width // 10, width - width // 10),
+    )
+    edges = _edge_magnitude(pixels[inner])
+    softened = _edge_magnitude(np.asarray(reblurred, dtype=np.float32)[inner])
+    flat_tiles, losses = 0, []
+    for edge_row, soft_row in zip(
+        np.array_split(edges, SHARPNESS_GRID_SIZE),
+        np.array_split(softened, SHARPNESS_GRID_SIZE),
+    ):
+        for edge, soft in zip(
+            np.array_split(edge_row, SHARPNESS_GRID_SIZE, axis=1),
+            np.array_split(soft_row, SHARPNESS_GRID_SIZE, axis=1),
+        ):
+            strong = edge > PLAIN_BACKGROUND_EDGE_FLOOR
+            if strong.sum() < PLAIN_BACKGROUND_MIN_EDGE_PIXELS:
+                flat_tiles += 1
+            else:
+                lost = (edge[strong] - soft[strong]).clip(min=0).sum()
+                losses.append(float(lost / edge[strong].sum()))
+    return (
+        flat_tiles >= PLAIN_BACKGROUND_MIN_FLAT_TILES
+        and len(losses) >= 2
+        and float(np.median(losses)) >= PLAIN_BACKGROUND_MIN_EDGE_LOSS
+    )
+
+
 def inspect_image(image_bytes: bytes) -> tuple[Image.Image, dict]:
     try:
         with Image.open(BytesIO(image_bytes)) as original:
@@ -103,7 +156,7 @@ def inspect_image(image_bytes: bytes) -> tuple[Image.Image, dict]:
     grayscale = image.convert("L")
     brightness = float(ImageStat.Stat(grayscale).mean[0])
     sharpness = image_sharpness(grayscale)
-    if sharpness < MIN_SHARPNESS:
+    if sharpness < MIN_SHARPNESS and not sharp_on_plain_background(grayscale):
         reasons.append(
             "Ảnh có dấu hiệu bị mờ hoặc thiếu chi tiết. Vui lòng chụp lại rõ nét hơn."
         )

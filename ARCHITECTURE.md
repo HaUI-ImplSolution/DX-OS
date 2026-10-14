@@ -1,28 +1,14 @@
 # Kiến trúc Open-Core 3 tầng
 
 Tài liệu mô tả ranh giới giữa phần lõi dùng chung (Core) và hai ứng dụng chạy trên nó: DX-Farm (nông nghiệp) và DX-Lab (vận hành CNTT của khoa).
-Sơ đồ viết bằng Mermaid, GitHub hiển thị trực tiếp.
+Sơ đồ tổng quan và sơ đồ 3 tầng là ảnh; các sơ đồ còn lại viết bằng Mermaid, GitHub hiển thị trực tiếp.
 
 ## Tổng quan
 
 Mọi người dùng, web hay mobile, đều đi qua một cổng vào duy nhất.
 Backend xử lý nghiệp vụ, lưu dữ liệu và ảnh, nhờ AI Service chẩn đoán và hỏi đáp.
 
-```mermaid
-flowchart LR
-  U["Người dùng<br/>web · mobile"] --> GW["<b>Gateway</b><br/>cổng vào"]
-  GW --> WEB["<b>Web</b><br/>giao diện"]
-  GW --> KC["<b>Keycloak</b><br/>đăng nhập"]
-  GW --> BE["<b>Backend</b><br/>nghiệp vụ"]
-  GW --> S3["<b>MinIO</b><br/>lưu ảnh"]
-  BE --> PG[("<b>PostgreSQL</b><br/>dữ liệu")]
-  BE --> S3
-  BE --> AI["<b>AI Service</b><br/>chẩn đoán, hỏi đáp"]
-  AI --> OL["<b>Ollama</b><br/>mô hình ngôn ngữ"]
-  AI --> PG
-  BE -. thông báo .-> MM["<b>Mattermost</b><br/>chat"]
-  PG --> SS["<b>Superset</b><br/>báo cáo"]
-```
+![Sơ đồ tổng quan hệ thống](docs/images/tong_quan.gif)
 
 | Dịch vụ | Vai trò |
 |---|---|
@@ -41,34 +27,7 @@ flowchart LR
 
 ## 1. Sơ đồ 3 tầng
 
-```mermaid
-flowchart TB
-  subgraph T3["Tầng 3: ứng dụng nghiệp vụ (mỗi lần chạy một ứng dụng)"]
-    direction LR
-    FARM["<b>DX-Farm</b><br/>Thửa, vụ mùa, báo cáo sâu bệnh,<br/>chẩn đoán, khai phun thuốc, khóa thu hoạch<br/>web kỹ sư và admin · mobile nông dân"]
-    LAB["<b>DX-Lab</b><br/>Yêu cầu hỗ trợ, thiết bị và mượn trả,<br/>đặt phòng máy, hỏi đáp quy chế, thống kê<br/>web sinh viên, giảng viên, kỹ thuật viên, quản trị"]
-  end
-
-  subgraph T2["Tầng 2: bốn không gian H-P-D-I"]
-    direction LR
-    H["<b>H</b> Human<br/>tài khoản, vai,<br/>phạm vi dữ liệu"]
-    P["<b>P</b> Process<br/>quy trình duyệt,<br/>lịch sử quyết định"]
-    D["<b>D</b> Data<br/>cơ sở dữ liệu, kho ảnh,<br/>báo cáo"]
-    I["<b>I</b> Intelligence<br/>nhận diện ảnh, hỏi đáp,<br/>luật phân loại"]
-  end
-
-  subgraph T1["Tầng 1: Open-Core dùng chung (headless)"]
-    direction LR
-    ID["<b>Identity</b><br/>workspace, thành viên"]
-    WF["<b>Workflow</b><br/>loại yêu cầu cấu hình được,<br/>lịch sử chỉ thêm"]
-    ST["<b>Storage</b><br/>ảnh, link có hạn"]
-    NT["<b>Notification</b><br/>hộp thông báo, chat"]
-    AIG["<b>AI, Knowledge</b><br/>cổng AI, hỏi đáp có trích nguồn"]
-    GW["<b>Gateway</b><br/>kiểm tra đăng nhập,<br/>giới hạn tốc độ"]
-  end
-
-  T3 --> T2 --> T1
-```
+![Sơ đồ kiến trúc 3 tầng](docs/images/so_do_3_tang.png)
 
 | Tầng | Thành phần | Thư mục |
 |---|---|---|

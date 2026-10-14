@@ -27,27 +27,12 @@ Một lõi dùng chung lo đăng nhập, dữ liệu, quy trình, thông báo v�
 
 ## 🧱 Kiến trúc 3 tầng
 
-```mermaid
-flowchart TB
-  subgraph T3["Tầng 3: Ứng dụng nghiệp vụ"]
-    direction LR
-    FARM["DX-Farm"] ~~~ LAB["DX-Lab"]
-  end
-  subgraph T2["Tầng 2: H-P-D-I"]
-    direction LR
-    H["Human"] ~~~ P["Process"] ~~~ D["Data"] ~~~ I["Intelligence"]
-  end
-  subgraph T1["Tầng 1: Open-Core dùng chung"]
-    direction LR
-    SSO["SSO"] ~~~ GW["Gateway"] ~~~ DATA["Dữ liệu<br/>và ảnh"] ~~~ WF["Workflow<br/>và thông báo"] ~~~ AI["Cổng AI"]
-  end
-  T3 --> T2 --> T1
-```
+![Sơ đồ kiến trúc 3 tầng](docs/images/so_do_3_tang.png)
 
 | Tầng | Thành phần |
 |---|---|
-| 1. Open-Core (không có giao diện người dùng) | Xử lý nghiệp vụ lõi, SSO, Gateway, cơ sở dữ liệu, kho ảnh |
-| 2. H-P-D-I | Giao diện web và di động trên các dịch vụ của lõi, kèm AI, báo cáo và chat |
+| 1. Open-Core (không có giao diện người dùng) | Identity (SSO), Workflow, Notification, Storage, AI và Knowledge, Gateway, Security |
+| 2. H-P-D-I | Bốn không gian Human, Process, Data, Intelligence dựng từ các module Core, kèm AI, báo cáo và chat |
 | 3. Ứng dụng | Farm và Lab |
 
 | Không gian | Farm | Lab |

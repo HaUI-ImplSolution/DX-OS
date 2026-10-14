@@ -66,7 +66,7 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE.md`](../ARCHITECTURE.md).
   - Ngưỡng chuyển cho người xem `0.70` chưa có căn cứ đo trên ảnh ngoài ruộng.
   - Crop classifier nhận 6/15 ảnh ngô và 15/15 ảnh mía là lúa, và chặn 8/50 ảnh lúa nền ruộng.
   - Sâu hại chưa có mô hình.
-  - Đánh giá mới dùng 100 ảnh công khai: detector chẩn đoán đúng 4/80 ảnh và không ảnh nào đạt `0.70`.
+  - Đánh giá mới dùng 100 ảnh công khai: pipeline chẩn đoán đúng 4/80 ảnh (detector riêng 21/80) và không ảnh nào đạt `0.70`.
   - Chưa có đánh giá trên ảnh ruộng thật có nhãn kỹ sư.
   - Luật của Lab là luật tay, chưa đo độ chính xác trên dữ liệu thật.
 - Kỹ sư luôn là người chốt bệnh và điều trị; nhãn kỹ sư chốt được lưu có cấu trúc cho dữ liệu huấn luyện về sau.

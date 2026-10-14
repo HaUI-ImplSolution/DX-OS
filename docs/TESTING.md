@@ -259,6 +259,6 @@ Dùng Swagger (`http://localhost:9080/swagger-ui.html`) hoặc client trong `dep
 | Thời tiết | Đạt | Open-Meteo trả dữ liệu thật; địa chỉ không tới được trả snapshot kèm ghi chú |
 | Dựng từ clone sạch theo README | Đạt | `start.sh farm` 113 giây, `start.sh lab` 56 giây, mọi dịch vụ healthy |
 | Thêm ứng dụng mẫu rỗng theo CONTRIBUTING | Đạt | Backend lên với `DXOS_APP=sample`, `system/status` trả id `sample`, không sửa `dx-core` |
-| gitleaks | Đạt | 353 commit, không có phát hiện |
+| gitleaks | Đạt | 355 commit, không có phát hiện |
 
 Mục kiểm tay chưa chạy là F3 (mobile), theo dõi ở [`BACKLOG.md`](./BACKLOG.md).

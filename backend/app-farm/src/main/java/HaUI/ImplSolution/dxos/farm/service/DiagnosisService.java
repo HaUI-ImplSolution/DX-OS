@@ -25,6 +25,7 @@ import HaUI.ImplSolution.dxos.farm.model.CropSeason;
 import HaUI.ImplSolution.dxos.farm.model.CropSeasonStatus;
 import HaUI.ImplSolution.dxos.farm.model.Diagnosis;
 import HaUI.ImplSolution.dxos.farm.model.Disease;
+import HaUI.ImplSolution.dxos.farm.model.DiagnosisSource;
 import HaUI.ImplSolution.dxos.farm.model.DiseaseReport;
 import HaUI.ImplSolution.dxos.farm.model.DiseaseReportStatus;
 import HaUI.ImplSolution.dxos.farm.model.NotificationType;
@@ -181,7 +182,7 @@ public class DiagnosisService {
         Diagnosis.builder().diseaseReport(report).disease(disease).confidence(cvResult.confidence())
             .modelVersion(cvResult.modelName() + " " + cvResult.modelVersion())
             .treatmentRule(currentRule).recommendationText(aiResponse.recommendation().summary())
-            .approvalStatus(ApprovalStatus.PENDING).build();
+            .source(DiagnosisSource.AI).approvalStatus(ApprovalStatus.PENDING).build();
     return savePending(diagnosis);
   }
 

@@ -46,6 +46,9 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - `GET /api/v1/app` có `settings`; Farm khai báo `gpsMaxAccuracyMeters`.
 - `GET /api/v1/crop-seasons/isolated` trả vụ đang cách ly, theo hộ của nông dân hoặc toàn bộ cho vai khác.
 - Test mới: phạm vi nông hộ và idempotency, thu hoạch, thông báo và nhắc hạn, mượn trả thiết bị, vòng đời ticket, phân loại và SLA, chống trùng giờ đặt phòng.
+- Lịch nền (SLA, nhắc mượn trả, nhắc thu hoạch) chạy qua `JobLock`, mỗi lần chỉ một bản backend thực hiện.
+- `diagnoses.source` (`AI` hoặc `ENGINEER`); `vw_ai_diagnosis_outcomes` lấy theo cột này.
+- Database vector tên `dxos_ai_vector_db`; nạp lại tri thức bằng job `rag-ingest` sau khi đổi.
 
 ### 2026-10-13
 
@@ -726,6 +729,8 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 **Đã xong — Giới hạn và ngưỡng qua `deploy/.env`:**
 
 - Compose truyền `MAX_PENDING_REQUESTS`, `KNOWLEDGE_MIN_SCORE`, `STORAGE_PRESIGN_TTL`, `GPS_MAX_ACCURACY_METERS` và `HARVEST_REMINDER_CRON`; `.env.example` có giá trị mặc định.
+- Role Superset `DXOS Engineer` cấp quyền đọc dataset, nên kỹ sư thấy dashboard của app.
+- CI AI chạy thêm kiểm tra nguồn tri thức của Farm và Lab khớp registry.
 
 ### 2026-10-13
 

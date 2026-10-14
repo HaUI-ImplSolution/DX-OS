@@ -129,7 +129,6 @@ All configuration lives in `deploy/.env` (template: [`deploy/.env.example`](./de
 | `GATEWAY_PUBLIC_URL`, `SUPERSET_PUBLIC_URL` | Public addresses of the gateway and Superset; change from `localhost` when running on a server |
 | `MATTERMOST_WEBHOOK_URL_*` | Webhook for each chat channel; empty disables that channel's notifications |
 | `OLLAMA_MODEL` | LLM model, default `qwen2.5:1.5b` |
-| `MAX_PENDING_REQUESTS`, `KNOWLEDGE_MIN_SCORE`, `STORAGE_PRESIGN_TTL`, `GPS_MAX_ACCURACY_METERS`, `HARVEST_REMINDER_CRON` | Limits and thresholds, defaults in `deploy/.env.example` when unset |
 
 Per-application settings: [`backend/app-farm/README.md`](./backend/app-farm/README.md) and [`backend/app-lab/README.md`](./backend/app-lab/README.md).
 

@@ -19,13 +19,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 
 | Việc | Chi tiết |
 |---|---|
-| Tên database vector còn là `dx_farm_ai_vector_db` | Đổi sang tên trung tính cần sửa `AiVectorDatabaseSeeder` và AI service |
-| Lịch nền (SLA, nhắc mượn trả, nhắc thu hoạch) chạy ở mọi bản backend | Thông báo có khóa chống trùng nên không gửi lặp, nhưng chạy nhiều bản cần khóa lịch hoặc một bản giữ lịch |
-| Bảng danh mục mới phải thêm tay vào `READABLE_RELATIONS` của `SupersetReadOnlyRoleSeeder` | Quyền mặc định của role BI đóng; quên thì Superset không đọc được bảng |
-| `knowledge-sources.json` của Farm sao tay từ `data/rag/source_registry.json` | Chưa có kiểm tra lệch |
 | Export dashboard Superset chưa có `query_context` cho từng chart | Dashboard vẫn hiển thị bình thường |
-| `vw_ai_diagnosis_outcomes` nhận biết chẩn đoán AI qua `symptom_text` rỗng và `model_version` khác `manual-input-v1` | Dễ sai nếu đổi tên model; nên có cột nguồn trong `diagnoses` |
-| `engineer1` vào Superset thấy danh sách dashboard rỗng | Nghi thiếu quyền dataset của role Gamma; chưa quyết định cho kỹ sư xem dashboard hay chỉ admin |
 
 ## 3. Chưa kiểm thử
 

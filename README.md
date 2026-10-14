@@ -129,7 +129,6 @@ Mọi cấu hình nằm ở `deploy/.env` (mẫu [`deploy/.env.example`](./deplo
 | `GATEWAY_PUBLIC_URL`, `SUPERSET_PUBLIC_URL` | Địa chỉ công khai của gateway và Superset; đổi khỏi `localhost` khi chạy trên server |
 | `MATTERMOST_WEBHOOK_URL_*` | Webhook từng kênh chat; để trống thì tắt thông báo kênh đó |
 | `OLLAMA_MODEL` | Model LLM, mặc định `qwen2.5:1.5b` |
-| `MAX_PENDING_REQUESTS`, `KNOWLEDGE_MIN_SCORE`, `STORAGE_PRESIGN_TTL`, `GPS_MAX_ACCURACY_METERS`, `HARVEST_REMINDER_CRON` | Giới hạn và ngưỡng, không đặt thì dùng mặc định trong `deploy/.env.example` |
 
 Cấu hình riêng của từng ứng dụng ở [`backend/app-farm/README.md`](./backend/app-farm/README.md) và [`backend/app-lab/README.md`](./backend/app-lab/README.md).
 

@@ -11,7 +11,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-// Tạo database pgvector riêng (dx_farm_ai_vector_db) cho AI Vector DB lúc khởi động, idempotent.
+// Tạo database pgvector riêng (dxos_ai_vector_db) cho AI Vector DB lúc khởi động, idempotent.
 // Khác Keycloak/Mattermost (tự tạo schema của chính chúng), AI không dùng migration (xem
 // ai/README.md) nên Backend phải tự tạo luôn extension pgvector và 2 bảng
 // documents/document_chunks trong database mới này, không chỉ tạo database rỗng.
@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 @Order(4)
 public class AiVectorDatabaseSeeder implements CommandLineRunner {
 
-  private static final String DATABASE_NAME = "dx_farm_ai_vector_db";
+  private static final String DATABASE_NAME = "dxos_ai_vector_db";
   private static final String READONLY_ROLE = "ai_vector_ro";
   private static final String INGEST_ROLE = "ai_vector_ingest";
 

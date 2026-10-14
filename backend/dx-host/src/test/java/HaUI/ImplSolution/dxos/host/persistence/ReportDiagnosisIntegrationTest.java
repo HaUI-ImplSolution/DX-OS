@@ -28,6 +28,7 @@ import HaUI.ImplSolution.dxos.farm.model.*;
 import HaUI.ImplSolution.dxos.farm.repository.*;
 import HaUI.ImplSolution.dxos.farm.service.*;
 import jakarta.persistence.EntityManager;
+import org.springframework.jdbc.core.JdbcTemplate;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -219,6 +220,24 @@ class ReportDiagnosisIntegrationTest {
       assertThat(label.getSymptomText()).isEqualTo("Vết hình thoi trên lá");
       assertThat(label.getEngineerUserId()).isEqualTo("engineer-test");
     });
+  }
+
+  @Test
+  void diagnosisRecordsWhoProducedItAndOnlyAiOnesReachTheOutcomeView() {
+    when(ai.diagnose(any())).thenReturn(response());
+    var fromAi = diagnoses.createFromAi(reportId);
+    var typed = diagnoses.create(reportId, new DiagnosisCreateRequest("Rice___Leaf_smut",
+        new BigDecimal("0.8"), "engineer", "Vết hình thoi trên lá"));
+    diagnoses.approve(reportId);
+
+    assertThat(diagnosisRepository.findById(fromAi.id()).orElseThrow().getSource())
+        .isEqualTo(DiagnosisSource.AI);
+    assertThat(diagnosisRepository.findById(typed.id()).orElseThrow().getSource())
+        .isEqualTo(DiagnosisSource.ENGINEER);
+    var inView = new JdbcTemplate(dataSource).queryForList(
+        "SELECT diagnosis_id FROM vw_ai_diagnosis_outcomes WHERE diagnosis_id IN (?, ?)",
+        Long.class, fromAi.id(), typed.id());
+    assertThat(inView).doesNotContain(typed.id());
   }
 
   @Test

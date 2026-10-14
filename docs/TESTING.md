@@ -242,7 +242,7 @@ Dùng Swagger (`http://localhost:9080/swagger-ui.html`) hoặc client trong `dep
 | Thiếu `best.pt` hoặc `crop_classifier.onnx` | Checkout không đủ trọng số | `git status`, `git pull`; xem `ai/weights/` |
 | Dựng lâu hoặc hết dung lượng | Lần đầu tải image lớn | Đợi, hoặc dọn Docker (`docker system df`) |
 
-## 9. Kết quả kiểm gần nhất (13/10/2026)
+## 9. Kết quả kiểm gần nhất (13 đến 14/10/2026)
 
 | Mục | Kết quả | Ghi chú |
 |---|---|---|
@@ -253,5 +253,12 @@ Dùng Swagger (`http://localhost:9080/swagger-ui.html`) hoặc client trong `dep
 | Dựng từ clone sạch theo README | Đạt | `start.sh farm` 113 giây, `start.sh lab` 56 giây, mọi dịch vụ healthy |
 | Thêm ứng dụng mẫu rỗng theo CONTRIBUTING | Đạt | Backend lên với `DXOS_APP=sample`, `system/status` trả id `sample`, không sửa `dx-core` |
 | gitleaks | Đạt | 336 commit và cây làm việc, không có phát hiện |
+| 14/10: `./mvnw verify` | Đạt | 102 test: dx-core 14, app-farm 21, app-lab 9, dx-host 58 |
+| 14/10: `pytest` trong `ai/` | Đạt | 79 test |
+| 14/10: E2E Farm và Lab | Đạt | Farm 10/10 với `--require-rule`, Lab 16/16 với `--require-knowledge`, đổi app không `--reset` |
+| 14/10: kiểm tay web Farm | Đạt | F1 (vào `engineer1`), F2 (`farmer1` bị báo chỉ dùng trên mobile), F7 (hỏi đáp có nguồn) |
+| 14/10: API Lab ngoài E2E | Đạt | Bước 2, 6, 9, 12, 15, 16, 18, 19, 20, 21 và đặt phòng đồng thời |
+| 14/10: lỗi request | Đạt | Sai `Content-Type` trả 415, sai phương thức 405, JSON hỏng 400 |
+| 14/10: hộp duyệt theo app | Đạt | Lab chỉ có TICKET, DEVICE_LOAN, ROOM_BOOKING; Farm chỉ có loại của Farm |
 
-Các mục kiểm tay F1 đến F9, L1 đến L17 và bước 1 đến 22 qua API chưa ghi kết quả; theo dõi ở [`BACKLOG.md`](./BACKLOG.md).
+Các mục kiểm tay chưa chạy là F3 (mobile), F6b, F8, L17 và các bước API 17, 22, theo dõi ở [`BACKLOG.md`](./BACKLOG.md).

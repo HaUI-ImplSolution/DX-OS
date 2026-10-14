@@ -5,6 +5,7 @@ import HaUI.ImplSolution.dxos.core.api.workflow.CaseTypeDefinition;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 
@@ -32,6 +33,10 @@ public class WorkflowDefinitions {
 
   public Optional<CaseTypeDefinition> find(String caseType) {
     return Optional.ofNullable(byCaseType.get(caseType));
+  }
+
+  public Set<String> caseTypes() {
+    return Set.copyOf(byCaseType.keySet());
   }
 
   public boolean knowsStatus(String status) {

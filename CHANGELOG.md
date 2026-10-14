@@ -16,6 +16,10 @@ Hai mục đầu liệt kê các bản phát hành; lịch sử chi tiết theo 
 
 - README song ngữ viết ngắn gọn, có yêu cầu hệ thống và xử lý sự cố; `ARCHITECTURE.md` có tổng quan các dịch vụ và sơ đồ theo từng tầng.
 - Repository đổi tên thành `DX-OS`; liên kết trong tài liệu và danh mục nguồn tri thức Lab trỏ về tên mới.
+- Kiểm tra độ nét xét thêm ảnh nền đơn sắc theo tỉ lệ năng lượng cạnh mất khi làm mờ lại; ảnh làm mờ và ảnh mờ có nhiễu bị chặn.
+- Hộp duyệt chỉ liệt kê case thuộc các loại của app đang chạy.
+- Lỗi request của client trả 415, 405 hoặc 400 theo từng nguyên nhân.
+- Hỏi đáp tài liệu xếp đoạn của bệnh được nêu trong câu hỏi lên đầu.
 
 ## [1.0.0] - 2026-10-13
 
@@ -33,6 +37,17 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - **Nguồn mở:** `LICENSE` (Apache-2.0, riêng `ai/` AGPL-3.0), `LICENSES.md`, SBOM CycloneDX, `CONTRIBUTING.md`, mẫu issue và pull request, SPDX header.
 
 ## Backend (Spring Boot — `backend`)
+
+### 2026-10-14
+
+**Đã xong — Mã lỗi cho lỗi request, hộp duyệt theo app:**
+
+- `GlobalExceptionHandler` trả 415 `ERR_UNSUPPORTED_MEDIA_TYPE` cho sai `Content-Type`, 405 `ERR_METHOD_NOT_ALLOWED` cho sai phương thức và 400 `ERR_BAD_REQUEST` cho thiếu phần multipart hoặc JSON hỏng.
+- `WorkflowService.list` và `search` chỉ trả case thuộc loại đã đăng ký của app đang chạy.
+- `FarmScopeAndSeasonIntegrationTest`: phạm vi dữ liệu theo nông hộ, idempotency của thửa và vụ, vòng đời thu hoạch, thông báo thu hoạch hộ.
+- `LabBookingConstraintIntegrationTest`: ràng buộc chống trùng giờ đặt phòng ở database.
+- `TicketClassifierTest` và `TicketSlaServiceTest` trong `app-lab`: phân loại ticket và cảnh báo SLA.
+- `WorkflowServiceIntegrationTest` và `GlobalExceptionHandlerTest`: danh sách case theo loại đã đăng ký, mã lỗi 415, 405, 400.
 
 ### 2026-10-13
 
@@ -468,6 +483,19 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - `mobile/README.md`: chạy thử trên điện thoại thật với IP LAN, biến môi trường, tài khoản demo, kiểm tra mã nguồn.
 
 ## AI Service (Python)
+
+### 2026-10-14
+
+**Đã xong — Độ nét ảnh nền đơn sắc, truy xuất theo tên bệnh:**
+
+- Ảnh có ít nhất 6 trong 16 vùng gần như không có cạnh được xét theo tỉ lệ năng lượng cạnh mất khi làm mờ lại, đạt từ 0.22.
+  Nhiễu hạt và sọc làm vùng nào cũng có cạnh nên không thuộc trường hợp này.
+  Kết quả trên 100 ảnh công khai và ảnh làm mờ nhân tạo ở `docs/AI_EVALUATION.md`.
+- Ingest embed tiêu đề tài liệu cùng từng đoạn.
+  Truy xuất xếp đoạn của tài liệu mà câu hỏi gọi tên lên trước (`TOPIC_MATCH_BOOST`); điểm trả về là độ tương đồng cosine.
+  Đoạn đầu đúng bệnh ở 15/15 câu hỏi theo tên bệnh.
+- `test_plain_background_sharpness.py`: ảnh rõ đạt; ảnh mờ, mờ kèm nhiễu và ảnh phẳng bị chặn.
+- `test_rag_ranking.py`: tên chủ đề từ tiêu đề, xếp lại theo tên bệnh, embed kèm tiêu đề lúc nạp.
 
 ### 2026-10-13
 
@@ -1017,6 +1045,13 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - **Còn thiếu**: SPDX header đầu mỗi file mã nguồn tự viết — việc sửa hàng loạt file, để riêng một lượt khác.
 
 ## Tài liệu (root, `docs`, `ai/`)
+
+### 2026-10-14
+
+**Đã xong — Báo cáo đánh giá AI trên 100 ảnh công khai:**
+
+- `docs/AI_EVALUATION.md`: kết quả toàn pipeline, bộ lọc ảnh, detector khi bỏ qua bộ lọc, bộ phân loại cây trồng với ảnh ngô và mía.
+- `docs/BACKLOG.md` và `docs/TESTING.md`: việc còn lại và kết quả kiểm ngày 14/10/2026.
 
 ### 2026-10-13
 

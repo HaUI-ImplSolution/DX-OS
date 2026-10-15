@@ -1,10 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Builds the `query_context` of a Superset chart from its saved form data.
 
-Superset 3.1 clears `query_context` on every dashboard import because the dataset id of the target
-instance is not known in the bundle, and only the Explore UI writes it back. Without it
-`/api/v1/chart/{id}/data`, CSV export and scheduled reports have nothing to run, so the bootstrap
-generates it for each imported chart with this module.
+The dashboard import drops it, and `/api/v1/chart/{id}/data`, CSV export and reports need it.
 """
 
 import json

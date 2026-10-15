@@ -17,9 +17,11 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 | Báo cáo sâu bệnh: kiểm tra chất lượng ảnh, idempotency, chụp lại | Có | Test tích hợp, E2E | Có |
 | Chẩn đoán AI, nhập triệu chứng, chẩn đoán lại, kỹ sư duyệt | Có | Test tích hợp, pytest | Có (chẩn đoán thủ công; AI khi có ảnh thật) |
 | Khai phun thuốc, xác nhận, khóa thu hoạch theo PHI | Có | Test đơn vị và tích hợp, E2E | Có cho đạo ôn (rule được chuyên gia duyệt) |
-| Thu hoạch (sớm cần xác nhận), nhắc hạn, hộp thông báo | Có | Test đơn vị | Có |
-| Dashboard BI trên view đã duyệt | Có | Kiểm tay | Một phần: chart "Tỷ lệ AI đúng/sai" cần chẩn đoán AI bằng ảnh thật |
-| Thời tiết theo thửa (Open-Meteo, snapshot dự phòng) | Có | Chưa qua giao diện | Có |
+| Thu hoạch (sớm cần xác nhận), nhắc hạn, hộp thông báo | Có | Test đơn vị; test tích hợp thông báo duyệt, từ chối, xác nhận phun và nhắc hạn | Có |
+| Dashboard BI trên view đã duyệt (9 chart, `query_context` sinh lại sau mỗi lần import) | Có | Test bundle và `query_context`, kiểm tay | Một phần: chart "Tỷ lệ AI đúng/sai" cần chẩn đoán AI bằng ảnh thật |
+| Thời tiết theo thửa (Open-Meteo, snapshot dự phòng), panel trên web và thẻ trên mobile | Có | Kiểm tay trên web; mobile chưa | Có |
+| Báo cáo chưa chẩn đoán trong hàng đợi kỹ sư, mở báo cáo bằng `/?report=<id>` | Có | Kiểm tay | Có |
+| Thông báo Mattermost cho kết quả duyệt và phun thuốc, tiêu đề là liên kết mở báo cáo | Có | Kiểm tay | Cần webhook (xem `chat/README.md`) |
 | Hỏi đáp tài liệu có trích nguồn | Có | Kiểm tay | Có (6 tài liệu bệnh lúa) |
 | Portal hiện trạng dịch vụ, lỗi hiển thị tiếng Việt | Có | Kiểm tay | Không áp dụng |
 
@@ -33,7 +35,7 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 | Hai kỹ thuật viên nhận cùng yêu cầu: một bên 409 | Có | E2E Lab | Không áp dụng |
 | Gợi ý loại và ưu tiên bằng luật, bài tri thức liên quan | Có | E2E Lab, kiểm tay | Có (10 bài quy chế và hướng dẫn) |
 | Mượn thiết bị có hạn, duyệt theo vai, trả hỏng mở nhật ký sửa chữa | Có | E2E Lab, kiểm tay | Có (7 thiết bị, 5 phiếu) |
-| Đặt phòng chống trùng giờ ở cơ sở dữ liệu, lịch tuần | Có | E2E Lab, kiểm tay | Có (5 phòng, 5 lịch) |
+| Đặt phòng chống trùng giờ ở cơ sở dữ liệu, lịch tuần; luật độ dài, bước giờ, sức chứa, người duyệt | Có | Test tích hợp và phân quyền, E2E Lab, kiểm tay | Có (5 phòng, 5 lịch) |
 | Hỏi đáp quy chế có trích nguồn và giấy phép | Có | E2E Lab (`--require-knowledge`) | Có |
 | Thống kê SLA, tải kỹ thuật viên, mức dùng phòng; view `vw_lab_*` cho BI | Có | E2E Lab, kiểm tay | Có |
 
@@ -126,8 +128,11 @@ Treatment rule của đạo ôn và khô vằn có trong seed Backend, nên `--r
 | F6 | Khai phun thuốc rồi xác nhận trên chẩn đoán đạo ôn hoặc khô vằn | Vụ vào cách ly; thu hoạch bị chặn tới hết hạn |
 | F6b | Chẩn đoán bệnh chưa có rule (đốm nâu) | Chỉ xem xét (`review_required`), không có liều và PHI |
 | F7 | Hỏi đáp tri thức | Đoạn trích có nguồn |
-| F8 | Mở Superset bằng `admin1` | Dashboard của Farm hiển thị; chart "Thửa đang cách ly" có dữ liệu sau khi seed khai phun; chart "Tỷ lệ AI đúng/sai" trống nếu chưa chẩn đoán AI bằng ảnh thật |
+| F8 | Mở Superset bằng `admin1` | Dashboard của Farm hiển thị 9 chart, mỗi chart một ô; chart "Thửa đang cách ly" và hai chart thu hoạch có dữ liệu sau khi seed; chart "Tỷ lệ AI đúng/sai" trống nếu chưa chẩn đoán AI bằng ảnh thật |
 | F9 | Hai người cùng quyết định một case | Một bên 409 |
+| F10 | Chọn một thửa ở "Luồng demo" | Panel Thời tiết hiện nhiệt độ, độ ẩm, dự báo 5 ngày và nguồn |
+| F11 | Nông dân gửi báo cáo mới; `engineer1` mở Hàng đợi → "Chưa chẩn đoán" → "Mở để chẩn đoán" | Báo cáo có trong danh sách; liên kết mở đúng thửa, vụ và báo cáo |
+| F12 | Duyệt hoặc từ chối chẩn đoán, xác nhận hoặc từ chối khai phun (cần webhook, đặt `MATTERMOST_APP_BASE_URL`) | Kênh "Kỹ sư nông nghiệp" có tin kết quả; tiêu đề mở được báo cáo; `farmer1` có thông báo |
 
 ### 5.3 Mobile
 
@@ -247,19 +252,20 @@ Dùng Swagger (`http://localhost:9080/swagger-ui.html`) hoặc client trong `dep
 
 | Mục | Kết quả | Ghi chú |
 |---|---|---|
-| Backend `./mvnw verify` | Đạt | 129 test: dx-core 14, app-farm 23, app-lab 9, dx-host 83 |
+| Backend `./mvnw clean test` | Đạt | 148 test: dx-core 14, app-farm 23, app-lab 9, dx-host 102 |
+| BI `python -m unittest test_chart_query_context` trong `bi/` | Đạt | 22 test |
 | AI `pytest` trong `ai/` | Đạt | 79 test |
 | Web và mobile `tsc` | Đạt | Không lỗi |
 | Ranh giới app và core, seed Farm, nguồn tri thức khớp registry | Đạt | Không có kết quả vi phạm |
 | E2E Farm | Đạt | 10/10 bước với `--require-rule` |
 | E2E Lab | Đạt | 16/16 bước với `--require-knowledge`, kể cả sau khi đổi app không `--reset` |
 | Đổi ứng dụng B1 đến B6 | Đạt | B2 dừng với thông báo nêu `[farm, lab]`; B3, B4 route app khác 404; B6 không lỗi migration |
-| Kiểm tay Farm | Đạt | F1, F2, F4 đến F9 (kỹ sư cũng thấy dashboard Superset); hộp duyệt chỉ có loại case của Farm; F3 (mobile) chưa chạy |
+| Kiểm tay Farm | Đạt | F1, F2, F4 đến F12 (kỹ sư cũng thấy dashboard Superset); hộp duyệt chỉ có loại case của Farm; F3 (mobile) chưa chạy |
 | Kiểm tay Lab | Đạt | L1 đến L17, API bước 1 đến 22, các màn hình web; hộp duyệt chỉ có loại case của Lab |
 | API và lỗi request | Đạt | 415, 405, 400; `settings` của `GET /api/v1/app`; `GET /api/v1/crop-seasons/isolated` |
 | Thời tiết | Đạt | Open-Meteo trả dữ liệu thật; địa chỉ không tới được trả snapshot kèm ghi chú |
 | Dựng từ clone sạch theo README | Đạt | `start.sh farm` 113 giây, `start.sh lab` 56 giây, mọi dịch vụ healthy |
 | Thêm ứng dụng mẫu rỗng theo CONTRIBUTING | Đạt | Backend lên với `DXOS_APP=sample`, `system/status` trả id `sample`, không sửa `dx-core` |
-| gitleaks | Đạt | 355 commit, không có phát hiện |
+| gitleaks | Đạt | 358 commit, không có phát hiện |
 
-Mục kiểm tay chưa chạy là F3 (mobile), theo dõi ở [`BACKLOG.md`](./BACKLOG.md).
+Mục kiểm tay chưa chạy là F3 và các màn mới của mobile (icon, splash, hỏi đáp tài liệu, thẻ thời tiết), theo dõi ở [`BACKLOG.md`](./BACKLOG.md).

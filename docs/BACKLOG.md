@@ -11,7 +11,6 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Video demo 3-5 phút, rehearsal ít nhất một lần | Kịch bản ở [`SUBMISSION.md`](./SUBMISSION.md) mục 2 |
 | Tạo vài issue mẫu trên GitHub | Issues đã bật, hiện chưa có issue nào; lấy từ mục 5 và 6 của tài liệu này |
 | Chụp ảnh giao diện hai chế độ (Farm, Lab) lưu vào repository cho hồ sơ | Chưa có |
-| Bổ sung các thành viên còn lại vào mục Liên hệ của `README.md` và `README_EN.md` | Hiện chỉ có người duy trì |
 | Quét lại gitleaks nếu có commit mới trước ngày chấm | Lần gần nhất 15/10/2026: 358 commit, không có phát hiện |
 | Chốt ngày hạn nộp thật | Chưa chốt |
 
@@ -23,7 +22,7 @@ Không còn việc.
 
 | Việc | Ghi chú |
 |---|---|
-| Kiểm tay Farm F3 trên điện thoại, kèm ngưỡng GPS và nhãn "Đang cách ly" | Kịch bản ở [`TESTING.md`](./TESTING.md); các mục kiểm tay còn lại đã đạt |
+| Kiểm tay Farm F3 trên điện thoại, kèm ngưỡng GPS và nhãn "Đang cách ly"; icon, splash, màn hỏi đáp và thẻ thời tiết của mobile | Kịch bản ở [`TESTING.md`](./TESTING.md); các mục kiểm tay còn lại đã đạt |
 | Dashboard Superset hiển thị trên giao diện | Bundle và `query_context` đã có test; chưa có test tự động mở dashboard trên Superset thật |
 
 ## 4. Giới hạn của AI và dữ liệu

@@ -883,10 +883,10 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 **Đã xong — `query_context` của chart:**
 
-- Superset 3.1 xóa `query_context` khi import dashboard; sau khi import, `bootstrap_datasources.py` sinh lại cho từng chart của dashboard bằng `bi/chart_query_context.py` và lưu qua `PUT /api/v1/chart/{id}`.
+- Sau mỗi lần import dashboard, `bootstrap_datasources.py` sinh `query_context` cho từng chart bằng `bi/chart_query_context.py` và lưu qua `PUT /api/v1/chart/{id}`.
 - `/api/v1/chart/{id}/data` chạy được cho cả 9 chart của Farm.
 - Thêm hai chart: sản lượng và diện tích thu hoạch theo tháng (vụ `HARVESTED`, nhóm theo giống).
-- Bố cục dashboard Farm chỉ còn bốn hàng, mỗi chart một ô gắn bằng UUID (trước đó mỗi chart hiện hai lần).
+- Bố cục dashboard Farm gồm bốn hàng chart, mỗi chart một ô gắn bằng UUID.
 - Test bundle và `query_context`: `python -m unittest test_chart_query_context` trong `bi/`, CI chạy ở job `dashboard` của `ci-infra.yml`.
 
 ### 2026-10-13
@@ -1095,6 +1095,12 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - **Còn thiếu**: SPDX header đầu mỗi file mã nguồn tự viết — việc sửa hàng loạt file, để riêng một lượt khác.
 
 ## Tài liệu (root, `docs`, `ai/`)
+
+### 2026-10-15
+
+- `README.md` và `README_EN.md`: mục kiến trúc tổng thể kèm `docs/images/tong_quan.gif`, liên hệ ba người phát triển, biến `MATTERMOST_APP_BASE_URL`; bản EN khớp bản VI.
+- `docs/TESTING.md`: bảng mức hoàn thiện, mục kiểm tay F10 đến F12 và kết quả kiểm ngày 15/10/2026 (148 test backend, 22 test BI, gitleaks 358 commit).
+- `docs/SUBMISSION.md`: dashboard 9 chart; `docs/BACKLOG.md`: bỏ việc đã xong.
 
 ### 2026-10-14
 

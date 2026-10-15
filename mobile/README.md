@@ -53,7 +53,7 @@ Trạng thái hiển thị (`NEEDS_RETAKE` của báo cáo được ưu tiên, c
 
 | Đường dẫn | Nội dung |
 |---|---|
-| `app/` | Màn hình: `index` (Thửa), `parcels/[code]`, `parcels/new`, `seasons/new`, `seasons/[id]`, `seasons/harvest`, `seasons/reschedule`, `notifications`, `capture`, `reports/[id]`, `login`, `profile` |
+| `app/` | Màn hình: `index` (Thửa), `parcels/[code]`, `parcels/new`, `seasons/new`, `seasons/[id]`, `seasons/harvest`, `seasons/reschedule`, `notifications`, `knowledge`, `capture`, `reports/[id]`, `login`, `profile` |
 | `src/api/` | `client.ts` (`request`, `upload`, `ApiError`), `endpoints.ts` |
 | `src/auth/` | PKCE (`AuthProvider`), lưu token (`session`), refresh (`tokens`), claim (`claims`) |
 | `src/offline/` | Hàng đợi: lưu trữ (`queue`) và gửi lại (`QueueProvider`) |

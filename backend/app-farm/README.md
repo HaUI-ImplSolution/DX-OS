@@ -97,7 +97,7 @@ Quản trị viên nhập hộ không cần sai số.
 | `security.farmer-client-ids` | `FARMER_CLIENT_IDS` | `farm-mobile` |
 | `weather.base-url` | `WEATHER_BASE_URL` | `https://api.open-meteo.com` |
 | `weather.cache-ttl` | `WEATHER_CACHE_TTL` | `1h` |
-| `mattermost.webhook.url-admin`, `url-engineer` | `MATTERMOST_WEBHOOK_URL_ADMIN`, `MATTERMOST_WEBHOOK_URL_ENGINEER` | trống: dùng URL mặc định |
+| `mattermost.webhook.url-admin`, `url-engineer` | `MATTERMOST_WEBHOOK_URL_ADMIN`, `MATTERMOST_WEBHOOK_URL_ENGINEER` | trống: dùng webhook tự tạo của channel |
 | `mattermost.webhook.image-base-url` | `MATTERMOST_IMAGE_BASE_URL` | trống: thông báo không kèm ảnh |
 | `mattermost.webhook.app-base-url` | `MATTERMOST_APP_BASE_URL` | trống: thông báo không kèm liên kết mở báo cáo |
 

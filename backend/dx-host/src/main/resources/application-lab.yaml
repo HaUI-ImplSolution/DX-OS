@@ -24,8 +24,7 @@ lab:
 
 mattermost:
   webhook:
-    # Own channel for new tickets and overdue alerts; empty falls back to the default url
-    # (mattermost.webhook.url).
+    # Technician channel webhook. Unset: its file under webhook.dir, then the default url.
     url-technician: ${MATTERMOST_WEBHOOK_URL_TECHNICIAN:}
-    # Own channel for overdue alerts; empty falls back to the default url.
+    # Admin channel webhook. Unset: same.
     url-admin: ${MATTERMOST_WEBHOOK_URL_ADMIN:}

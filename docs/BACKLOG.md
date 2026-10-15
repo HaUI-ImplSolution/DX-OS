@@ -55,7 +55,7 @@ Không còn việc.
 | Nhắc hạn thu hoạch không giới hạn số lần | Nhắc mỗi ngày tới khi thu hoạch hoặc đổi ngày |
 | Chưa có chart thời tiết trên Superset | Web và mobile hiện thời tiết theo thửa, dữ liệu thời tiết chưa lưu vào cơ sở dữ liệu |
 | Phạm vi phụ trách theo khu vực cho engineer | Phân quyền hiện theo thao tác, không theo khu vực |
-| Retry, hàng đợi bền vững hoặc outbox cho thông báo chat bị lỡ; tự tạo webhook lúc dựng compose | Hiện best-effort và cấp webhook bằng tay |
+| Retry, hàng đợi bền vững hoặc outbox cho thông báo chat bị lỡ | Hiện gửi một lần, lỗi thì bỏ |
 
 ## 6. Phụ thuộc người ngoài
 

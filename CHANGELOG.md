@@ -50,6 +50,7 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - `GET /api/v1/disease-reports/awaiting-diagnosis` (kỹ sư, quản trị) liệt kê báo cáo của vụ đang canh tác chưa có chẩn đoán, cũ nhất trước; `DiseaseReportResponse` có `parcelCode`.
 - Kênh Mattermost của kỹ sư nhận thêm kết quả duyệt hoặc từ chối chẩn đoán và kết quả ghi nhận, xác nhận hoặc từ chối việc phun thuốc.
 - `MATTERMOST_APP_BASE_URL` đặt thì tiêu đề thông báo của báo cáo là liên kết `<địa chỉ>/?report=<id>`.
+- `mattermost-bootstrap` tạo webhook cho từng channel và ghi vào `deploy/data/mattermost/webhooks/<khóa>.url`; Backend đọc file khi biến `MATTERMOST_WEBHOOK_URL*` rỗng (`MATTERMOST_WEBHOOK_DIR`).
 
 ### 2026-10-14
 

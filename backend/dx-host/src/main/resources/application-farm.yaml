@@ -31,15 +31,13 @@ weather:
 
 mattermost:
   webhook:
-    # Own channel for new parcel and crop season requests; empty falls back to the default url
-    # (mattermost.webhook.url).
+    # Admin channel webhook. Unset: its file under webhook.dir, then the default url.
     url-admin: ${MATTERMOST_WEBHOOK_URL_ADMIN:}
-    # Own channel for new reports and pending diagnoses; empty falls back to the default url.
+    # Engineer channel webhook. Unset: same.
     url-engineer: ${MATTERMOST_WEBHOOK_URL_ENGINEER:}
-    # Browser-reachable gateway origin used to attach the report photo; empty omits the image.
+    # Gateway origin for the report photo. Unset: no photo.
     image-base-url: ${MATTERMOST_IMAGE_BASE_URL:}
-    # Browser-reachable web origin; the titles of report messages link to <origin>/?report=<id>.
-    # Empty omits the link.
+    # Web origin for the report link <origin>/?report=<id>. Unset: no link.
     app-base-url: ${MATTERMOST_APP_BASE_URL:}
 
 resilience4j:

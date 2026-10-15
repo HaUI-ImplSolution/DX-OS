@@ -89,8 +89,8 @@ Những gì ứng dụng khai báo ở [`ARCHITECTURE.md`](../../ARCHITECTURE.md
 | `lab.reminder.loan-due-soon-days` | `LAB_LOAN_DUE_SOON_DAYS` | `1` |
 | `lab.classifier.rules-path` | `LAB_CLASSIFIER_RULES_PATH` | `classpath:lab/classifier-rules.json` |
 | `lab.stats.room-open-hours-per-day` | `LAB_ROOM_OPEN_HOURS_PER_DAY` | `10` |
-| `mattermost.webhook.url-technician` | `MATTERMOST_WEBHOOK_URL_TECHNICIAN` | trống: dùng URL mặc định |
-| `mattermost.webhook.url-admin` | `MATTERMOST_WEBHOOK_URL_ADMIN` | trống: dùng URL mặc định |
+| `mattermost.webhook.url-technician` | `MATTERMOST_WEBHOOK_URL_TECHNICIAN` | trống: dùng webhook tự tạo của channel |
+| `mattermost.webhook.url-admin` | `MATTERMOST_WEBHOOK_URL_ADMIN` | trống: dùng webhook tự tạo của channel |
 
 Luật phân loại ở `src/main/resources/lab/classifier-rules.json`: từ khóa theo loại và luật nâng ưu tiên, kèm lý do.
 Từ khóa quản trị viên thêm vào một loại sự cố (`keywords`) được so khớp cùng tệp luật; so khớp bỏ qua hoa thường, dấu và dấu câu, theo từ nguyên vẹn.

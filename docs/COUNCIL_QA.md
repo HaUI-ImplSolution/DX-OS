@@ -78,7 +78,7 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE.md`](../ARCHITECTURE.md).
   Snapshot chụp ngày 07/10/2026, chỉ có 5 điểm ĐBSCL.
 - AI: LLM không sẵn sàng thì AI dùng nhánh `evidence_fallback`, trả nguyên văn tài liệu; Backend có circuit breaker khi gọi AI.
 - Lab: gợi ý phân loại vẫn trả kết quả của luật khi AI không gọi được (`knowledgeAvailable=false`); ticket và đặt phòng không phụ thuộc AI.
-- Chat: thông báo gửi bất đồng bộ, Mattermost lỗi hoặc không đặt webhook thì ứng dụng vẫn chạy.
+- Chat: thông báo gửi bất đồng bộ, Mattermost lỗi hoặc chưa có webhook thì ứng dụng vẫn chạy.
 - Mobile giữ ảnh trong hàng đợi và gửi lại khi dịch vụ phục hồi.
 - Portal hiện trạng thái từng dịch vụ; `GET /api/v1/system/status` là công khai.
 

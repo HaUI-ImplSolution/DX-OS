@@ -21,7 +21,7 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 | Dashboard BI trên view đã duyệt (9 chart, `query_context` sinh lại sau mỗi lần import) | Có | Test bundle và `query_context`, kiểm tay | Một phần: chart "Tỷ lệ AI đúng/sai" cần chẩn đoán AI bằng ảnh thật |
 | Thời tiết theo thửa (Open-Meteo, snapshot dự phòng), panel trên web và thẻ trên mobile | Có | Kiểm tay trên web; mobile chưa | Có |
 | Báo cáo chưa chẩn đoán trong hàng đợi kỹ sư, mở báo cáo bằng `/?report=<id>` | Có | Kiểm tay | Có |
-| Thông báo Mattermost cho kết quả duyệt và phun thuốc, tiêu đề là liên kết mở báo cáo | Có | Kiểm tay | Cần webhook (xem `chat/README.md`) |
+| Thông báo Mattermost cho kết quả duyệt và phun thuốc, tiêu đề là liên kết mở báo cáo | Có | Kiểm tay | Có (webhook tự tạo khi dựng stack) |
 | Hỏi đáp tài liệu có trích nguồn | Có | Kiểm tay | Có (6 tài liệu bệnh lúa) |
 | Portal hiện trạng dịch vụ, lỗi hiển thị tiếng Việt | Có | Kiểm tay | Không áp dụng |
 
@@ -132,7 +132,7 @@ Treatment rule của đạo ôn và khô vằn có trong seed Backend, nên `--r
 | F9 | Hai người cùng quyết định một case | Một bên 409 |
 | F10 | Chọn một thửa ở "Luồng demo" | Panel Thời tiết hiện nhiệt độ, độ ẩm, dự báo 5 ngày và nguồn |
 | F11 | Nông dân gửi báo cáo mới; `engineer1` mở Hàng đợi → "Chưa chẩn đoán" → "Mở để chẩn đoán" | Báo cáo có trong danh sách; liên kết mở đúng thửa, vụ và báo cáo |
-| F12 | Duyệt hoặc từ chối chẩn đoán, xác nhận hoặc từ chối khai phun (cần webhook, đặt `MATTERMOST_APP_BASE_URL`) | Kênh "Kỹ sư nông nghiệp" có tin kết quả; tiêu đề mở được báo cáo; `farmer1` có thông báo |
+| F12 | Duyệt hoặc từ chối chẩn đoán, xác nhận hoặc từ chối khai phun (đặt `MATTERMOST_APP_BASE_URL` để tiêu đề có liên kết) | Kênh "Kỹ sư nông nghiệp" có tin kết quả; tiêu đề mở được báo cáo; `farmer1` có thông báo |
 
 ### 5.3 Mobile
 

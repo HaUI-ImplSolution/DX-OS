@@ -37,6 +37,14 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 ## Backend (Spring Boot — `backend`)
 
+### 2026-10-15
+
+**Đã xong — Test thông báo chẩn đoán, phun thuốc và luật đặt phòng:**
+
+- Test thông báo cho nông hộ khi chẩn đoán được duyệt hoặc bị từ chối và khi việc phun thuốc được xác nhận hoặc bị từ chối (kèm lý do và ngày hết cách ly).
+- Test luật đặt phòng của Lab: tối đa 4 giờ, bước 30 phút, giờ bắt đầu trong tương lai và trong 30 ngày, sức chứa, phòng bảo trì, trùng giờ, người duyệt, lý do từ chối, người hủy và phạm vi xem lịch.
+- Test phân quyền theo vai của `RoomBookingController` (sinh viên không đặt phòng, chỉ kỹ thuật viên và quản trị viên duyệt).
+
 ### 2026-10-14
 
 **Đã xong — Mã lỗi request, hộp duyệt theo app, cài đặt cho client:**
@@ -849,6 +857,15 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - Service `backend` nhận thêm secret cho auth (`JWT_SECRET`, `JWT_EXPIRATION`, `SUPER_ADMIN_USERNAME/PASSWORD`) từ `deploy/.env` (mẫu ở `.env.example`).
 
 ## BI Dashboard (`bi`, Apache Superset)
+
+### 2026-10-15
+
+**Đã xong — `query_context` của chart:**
+
+- Superset 3.1 xóa `query_context` khi import dashboard; sau khi import, `bootstrap_datasources.py` sinh lại cho từng chart của dashboard bằng `bi/chart_query_context.py` và lưu qua `PUT /api/v1/chart/{id}`.
+- `/api/v1/chart/{id}/data` chạy được cho cả 7 chart của Farm.
+- Bố cục dashboard Farm chỉ còn bốn hàng, mỗi chart một ô gắn bằng UUID (trước đó mỗi chart hiện hai lần).
+- Test bundle và `query_context`: `python -m unittest test_chart_query_context` trong `bi/`, CI chạy ở job `dashboard` của `ci-infra.yml`.
 
 ### 2026-10-13
 

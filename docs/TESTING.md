@@ -59,6 +59,7 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 | Ranh giới core | Tìm `Household`, `Parcel`, tên view `vw_` trong `dx-core-api`, `dx-core` | Không có |
 | Backend đầy đủ | `cd backend && ./mvnw verify` | Mọi test đạt, không bỏ qua |
 | AI | `cd ai && pytest` | Mọi test đạt |
+| Dashboard BI | `cd bi && python -m unittest test_chart_query_context` | Đạt; CI chạy ở job `dashboard` của `ci-infra.yml` |
 | Seed Farm nhất quán | `python data/scripts/generate_seed_sql.py --check` và `python -m unittest data.scripts.test_generate_seed_sql` | Đạt; CI chạy lại ở `ci-ai.yml` |
 
 ## 4. Dựng stack

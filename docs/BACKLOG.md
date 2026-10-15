@@ -17,18 +17,14 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 
 ## 2. Việc cần sửa trong mã và cấu hình
 
-| Việc | Chi tiết |
-|---|---|
-| Export dashboard Superset chưa có `query_context` cho từng chart | Dashboard vẫn hiển thị bình thường |
+Không còn việc.
 
 ## 3. Chưa kiểm thử
 
 | Việc | Ghi chú |
 |---|---|
 | Kiểm tay Farm F3 trên điện thoại, kèm ngưỡng GPS và nhãn "Đang cách ly" | Kịch bản ở [`TESTING.md`](./TESTING.md); các mục kiểm tay còn lại đã đạt |
-| Test tự động cho thông báo khi duyệt hoặc từ chối chẩn đoán và khi xác nhận phun thuốc | |
-| Test tự động cho luật đặt phòng của Lab (quá 4 giờ, sức chứa, quyền theo vai) | Ràng buộc chống trùng giờ đã có test; các luật còn lại chỉ có E2E |
-| Dashboard Superset | Chưa có test tự động |
+| Dashboard Superset hiển thị trên giao diện | Bundle và `query_context` đã có test; chưa có test tự động mở dashboard trên Superset thật |
 
 ## 4. Giới hạn của AI và dữ liệu
 

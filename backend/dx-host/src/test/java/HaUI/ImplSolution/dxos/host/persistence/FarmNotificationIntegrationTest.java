@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
+import HaUI.ImplSolution.dxos.core.api.storage.ObjectStorage;
 import HaUI.ImplSolution.dxos.core.api.user.UserContext;
 import HaUI.ImplSolution.dxos.core.api.workspace.WorkspaceDirectory;
 import HaUI.ImplSolution.dxos.core.api.workspace.WorkspaceMemberRole;
@@ -26,18 +27,27 @@ import HaUI.ImplSolution.dxos.farm.FarmAppModule;
 import HaUI.ImplSolution.dxos.farm.FarmNotificationConfig;
 import HaUI.ImplSolution.dxos.farm.FarmWorkflowConfig;
 import HaUI.ImplSolution.dxos.farm.dto.CropSeasonCreateRequest;
+import HaUI.ImplSolution.dxos.farm.dto.DiagnosisApplyRequest;
+import HaUI.ImplSolution.dxos.farm.dto.DiagnosisCreateRequest;
+import HaUI.ImplSolution.dxos.farm.dto.DiagnosisRejectRequest;
 import HaUI.ImplSolution.dxos.farm.dto.ParcelCreateRequest;
 import HaUI.ImplSolution.dxos.farm.dto.ParcelResponse;
 import HaUI.ImplSolution.dxos.farm.model.ApprovalStatus;
 import HaUI.ImplSolution.dxos.farm.model.CropSeason;
 import HaUI.ImplSolution.dxos.farm.model.CropSeasonStatus;
+import HaUI.ImplSolution.dxos.farm.model.Disease;
+import HaUI.ImplSolution.dxos.farm.model.DiseaseReport;
 import HaUI.ImplSolution.dxos.farm.model.Parcel;
+import HaUI.ImplSolution.dxos.farm.model.Pesticide;
 import HaUI.ImplSolution.dxos.farm.model.SeasonType;
+import HaUI.ImplSolution.dxos.farm.model.TreatmentRule;
 import HaUI.ImplSolution.dxos.farm.repository.CropSeasonRepository;
 import HaUI.ImplSolution.dxos.farm.repository.ParcelRepository;
+import HaUI.ImplSolution.dxos.farm.service.AiDiagnosisClient;
 import HaUI.ImplSolution.dxos.farm.service.CropSeasonApprovalHandler;
 import HaUI.ImplSolution.dxos.farm.service.CropSeasonService;
 import HaUI.ImplSolution.dxos.farm.service.CurrentUser;
+import HaUI.ImplSolution.dxos.farm.service.DiagnosisService;
 import HaUI.ImplSolution.dxos.farm.service.GpsFixValidator;
 import HaUI.ImplSolution.dxos.farm.service.HarvestReminderService;
 import HaUI.ImplSolution.dxos.farm.service.NotificationService;
@@ -45,6 +55,7 @@ import HaUI.ImplSolution.dxos.farm.service.ParcelApprovalHandler;
 import HaUI.ImplSolution.dxos.farm.service.ParcelCodeGenerator;
 import HaUI.ImplSolution.dxos.farm.service.ParcelService;
 import HaUI.ImplSolution.dxos.farm.service.SeasonCalendar;
+import HaUI.ImplSolution.dxos.farm.service.TreatmentRuleService;
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -70,8 +81,8 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
-// Decisions on parcels and seasons reach the household as notifications, and the daily harvest
-// reminder is sent once per season and day.
+// Decisions on parcels, seasons, diagnoses and spraying declarations reach the household as
+// notifications, and the daily harvest reminder is sent once per season and day.
 @DataJpaTest(properties = {"spring.flyway.enabled=false"})
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
@@ -81,7 +92,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
     NotificationService.class, NotificationInboxService.class, NotificationTypes.class,
     FarmNotificationConfig.class, WorkspaceDirectoryService.class, TimeConfig.class,
     ParcelApprovalHandler.class, CropSeasonApprovalHandler.class, HarvestReminderService.class,
-    PersistenceTestConfig.class})
+    DiagnosisService.class, TreatmentRuleService.class, PersistenceTestConfig.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class FarmNotificationIntegrationTest {
 
@@ -122,8 +133,14 @@ class FarmNotificationIntegrationTest {
   PlatformTransactionManager transactionManager;
   @Autowired
   Clock clock;
+  @Autowired
+  DiagnosisService diagnoses;
   @MockitoBean
   UserContext userContext;
+  @MockitoBean
+  AiDiagnosisClient ai;
+  @MockitoBean
+  ObjectStorage objectStorage;
 
   TransactionTemplate tx;
   LocalDate today;
@@ -182,6 +199,60 @@ class FarmNotificationIntegrationTest {
   private List<NotificationResponse> messagesOf(WorkspaceView household) {
     asFarmer(household);
     return inbox.listMine(false, 0, 50).items();
+  }
+
+  private void asEngineer() {
+    reset(userContext);
+    when(userContext.currentUserId()).thenReturn("engineer-1");
+    when(userContext.currentFullName()).thenReturn("Engineer");
+    when(userContext.currentWorkspace()).thenReturn(Optional.empty());
+    when(userContext.roles()).thenReturn(Set.of("ENGINEER"));
+    when(userContext.hasRole("ENGINEER")).thenReturn(true);
+    when(userContext.isStaff()).thenReturn(true);
+  }
+
+  // A rule of 1 to 2 L/ha with a 14 day pre-harvest interval for a disease of its own.
+  private String diseaseWithRule() {
+    return tx.execute(status -> {
+      Disease disease =
+          Disease.builder().code("D-" + UUID.randomUUID()).name("Đạo ôn test").build();
+      em.persist(disease);
+      Pesticide pesticide =
+          Pesticide.builder().code("X-" + UUID.randomUUID()).name("Thuốc test").unit("L").build();
+      em.persist(pesticide);
+      em.persist(
+          TreatmentRule.builder().disease(disease).pesticide(pesticide).doseMin(BigDecimal.ONE)
+              .doseMax(new BigDecimal("2")).doseUnit("L/ha").phiDays(14).version("test").build());
+      return disease.getCode();
+    });
+  }
+
+  private long reportOf(Parcel parcel) {
+    return tx.execute(status -> {
+      CropSeason season =
+          em.createQuery("select s from CropSeason s where s.parcel.id = :id", CropSeason.class)
+              .setParameter("id", parcel.getId()).getSingleResult();
+      DiseaseReport report = DiseaseReport.builder().cropSeason(season).imageRef("test.png")
+          .reportedBy("Farmer").reportedByUserId("farmer-1").build();
+      em.persist(report);
+      return report.getId();
+    });
+  }
+
+  // An approved diagnosis with a rule, waiting for the household to declare the spraying.
+  private long approvedDiagnosis(WorkspaceView household) {
+    Parcel parcel = approvedParcel(household);
+    season(parcel, today.plusDays(30), CropSeasonStatus.ACTIVE);
+    long reportId = reportOf(parcel);
+    asEngineer();
+    diagnoses.create(reportId,
+        new DiagnosisCreateRequest(diseaseWithRule(), new BigDecimal("0.9"), "engineer"));
+    diagnoses.approve(reportId);
+    return reportId;
+  }
+
+  private List<String> typesOf(WorkspaceView household) {
+    return messagesOf(household).stream().map(NotificationResponse::type).toList();
   }
 
   private void decide(String caseType, String entityType, long entityId, String target,
@@ -268,5 +339,83 @@ class FarmNotificationIntegrationTest {
     reminders.sendDueReminders();
 
     assertThat(messagesOf(household)).isEmpty();
+  }
+
+  @Test
+  void approvedDiagnosisNotifiesTheHousehold() {
+    WorkspaceView household = household();
+    Parcel parcel = approvedParcel(household);
+    season(parcel, today.plusDays(30), CropSeasonStatus.ACTIVE);
+    long reportId = reportOf(parcel);
+    asEngineer();
+    diagnoses.create(reportId,
+        new DiagnosisCreateRequest(diseaseWithRule(), new BigDecimal("0.9"), "engineer"));
+    assertThat(typesOf(household)).isEmpty();
+
+    asEngineer();
+    diagnoses.approve(reportId);
+
+    var messages = messagesOf(household);
+    assertThat(messages).extracting(NotificationResponse::type)
+        .containsExactly("DIAGNOSIS_APPROVED");
+    assertThat(messages.getFirst().relatedEntityRef()).isEqualTo(String.valueOf(reportId));
+    assertThat(messages.getFirst().body()).contains(parcel.getCode());
+  }
+
+  @Test
+  void rejectedDiagnosisCarriesTheReasonToTheHousehold() {
+    WorkspaceView household = household();
+    Parcel parcel = approvedParcel(household);
+    season(parcel, today.plusDays(30), CropSeasonStatus.ACTIVE);
+    long reportId = reportOf(parcel);
+    asEngineer();
+    diagnoses.create(reportId,
+        new DiagnosisCreateRequest(diseaseWithRule(), new BigDecimal("0.4"), "engineer"));
+
+    asEngineer();
+    diagnoses.reject(reportId, new DiagnosisRejectRequest("Ảnh không thấy triệu chứng"));
+
+    var messages = messagesOf(household);
+    assertThat(messages).extracting(NotificationResponse::type)
+        .containsExactly("DIAGNOSIS_REJECTED");
+    assertThat(messages.getFirst().body()).contains("Ảnh không thấy triệu chứng");
+  }
+
+  @Test
+  void confirmedSprayingNotifiesTheHouseholdWithTheLockDate() {
+    WorkspaceView household = household();
+    long reportId = approvedDiagnosis(household);
+    asFarmer(household);
+    diagnoses.selfReport(reportId, new DiagnosisApplyRequest(new BigDecimal("1.5"), null));
+    assertThat(typesOf(household)).containsExactly("DIAGNOSIS_APPROVED");
+
+    asEngineer();
+    diagnoses.confirmApplication(reportId);
+
+    var messages = messagesOf(household);
+    assertThat(messages).extracting(NotificationResponse::type)
+        .containsExactlyInAnyOrder("DIAGNOSIS_APPROVED", "TREATMENT_CONFIRMED");
+    var confirmed = messages.stream().filter(m -> m.type().equals("TREATMENT_CONFIRMED"))
+        .findFirst().orElseThrow();
+    assertThat(confirmed.relatedEntityRef()).isEqualTo(String.valueOf(reportId));
+    assertThat(confirmed.body()).contains(today.plusDays(14).toString());
+  }
+
+  @Test
+  void rejectedSprayingCarriesTheReasonToTheHousehold() {
+    WorkspaceView household = household();
+    long reportId = approvedDiagnosis(household);
+    asFarmer(household);
+    diagnoses.selfReport(reportId, new DiagnosisApplyRequest(new BigDecimal("1.5"), null));
+
+    asEngineer();
+    diagnoses.rejectApplication(reportId, new DiagnosisRejectRequest("Chưa thấy ghi nhận phun"));
+
+    var messages = messagesOf(household);
+    assertThat(messages).extracting(NotificationResponse::type)
+        .containsExactlyInAnyOrder("DIAGNOSIS_APPROVED", "TREATMENT_REJECTED");
+    var rejected = messages.stream().filter(m -> m.type().equals("TREATMENT_REJECTED")).findFirst()
+        .orElseThrow();
+    assertThat(rejected.body()).contains("Chưa thấy ghi nhận phun");
   }
 }

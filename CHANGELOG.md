@@ -1066,6 +1066,10 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 ## Giấy phép và SBOM
 
+### 2026-10-15
+
+- `sbom/mobile.cdx.json` sinh lại sau khi mobile thêm `expo-splash-screen` (MIT, nằm trong dòng `expo-*` của `LICENSES.md`).
+
 ### 2026-10-13
 
 - Thư mục `ai/` phân phối theo AGPL-3.0 (`ai/LICENSE`, trước là `ai/MODEL_LICENSE`) vì import Ultralytics; phần còn lại giữ Apache-2.0.

@@ -10,6 +10,9 @@ import zipfile
 from urllib.parse import urlparse
 
 import requests
+import yaml
+
+from chart_query_context import build_query_context, datasource_id_of, to_payload
 
 BASE_URL = "http://localhost:8088"
 ADMIN_USERNAME = os.environ.get("SUPERSET_ADMIN_USERNAME", "admin")
@@ -179,6 +182,62 @@ def import_dashboard_bundle(headers, cookies) -> bool:
     return True
 
 
+def bundle_dashboard_titles() -> list[str]:
+    with zipfile.ZipFile(DASHBOARD_EXPORT_PATH) as zf:
+        names = [n for n in zf.namelist() if "/dashboards/" in n and n.endswith(".yaml")]
+        return [yaml.safe_load(zf.read(n))["dashboard_title"] for n in names]
+
+
+def restore_query_contexts(headers, cookies) -> None:
+    """Superset xóa query_context của chart mỗi lần import, nên sinh lại cho các chart của
+    dashboard trong bundle để API dữ liệu chart, xuất CSV và báo cáo định kỳ chạy được."""
+    titles = set(bundle_dashboard_titles())
+    resp = requests.get(
+        f"{BASE_URL}/api/v1/dashboard/",
+        headers=headers,
+        cookies=cookies,
+        params={"q": "(columns:!(id,dashboard_title),page_size:100)"},
+        timeout=15,
+    )
+    resp.raise_for_status()
+    for dashboard in resp.json().get("result", []):
+        if dashboard["dashboard_title"] not in titles:
+            continue
+        charts = requests.get(
+            f"{BASE_URL}/api/v1/dashboard/{dashboard['id']}/charts",
+            headers=headers,
+            cookies=cookies,
+            timeout=15,
+        )
+        charts.raise_for_status()
+        for chart in charts.json().get("result", []):
+            restore_chart_query_context(headers, cookies, chart["id"], chart["slice_name"])
+
+
+def restore_chart_query_context(headers, cookies, chart_id: int, chart_name: str) -> None:
+    resp = requests.get(
+        f"{BASE_URL}/api/v1/chart/{chart_id}", headers=headers, cookies=cookies, timeout=15
+    )
+    resp.raise_for_status()
+    form_data = json.loads(resp.json()["result"]["params"])
+    datasource_id = datasource_id_of(form_data)
+    query_context = (
+        build_query_context(form_data, datasource_id) if datasource_id is not None else None
+    )
+    if query_context is None:
+        print(f"[bootstrap] chart '{chart_name}' ({form_data.get('viz_type')}) chưa hỗ trợ query_context, bỏ qua")
+        return
+    resp = requests.put(
+        f"{BASE_URL}/api/v1/chart/{chart_id}",
+        headers=headers,
+        cookies=cookies,
+        json=to_payload(query_context),
+        timeout=15,
+    )
+    resp.raise_for_status()
+    print(f"[bootstrap] chart '{chart_name}' đã có query_context")
+
+
 def main() -> None:
     wait_until_healthy()
 
@@ -200,6 +259,11 @@ def main() -> None:
             # Bundle export là nguồn sự thật duy nhất khi đã có (database+dataset+chart+
             # dashboard khớp UUID cố định).
             ok = import_dashboard_bundle(headers, cookies)
+            if ok:
+                try:
+                    restore_query_contexts(headers, cookies)
+                except requests.RequestException as exc:
+                    print(f"[bootstrap] sinh query_context cho chart thất bại, dashboard vẫn hiển thị: {exc}")
         else:
             database_id = ensure_database(headers, cookies)
             if database_id is not None:

@@ -25,6 +25,14 @@ Một lõi dùng chung lo đăng nhập, dữ liệu, quy trình, thông báo v�
 - **Chạy một lệnh:** dựng toàn bộ hệ thống kèm dữ liệu demo, có kiểm thử tự động trên môi trường sạch.
 - **Nguồn mở minh bạch:** công khai giấy phép và danh sách thành phần phần mềm, quét lộ mật khẩu tự động.
 
+## 🗺️ Kiến trúc tổng thể
+
+![Sơ đồ kiến trúc tổng thể](docs/images/tong_quan.gif)
+
+Người dùng, web hay mobile, chỉ đi qua một Gateway (APISIX) để vào mạng nội bộ.
+Backend xử lý nghiệp vụ, lưu ảnh ở MinIO và dữ liệu ở PostgreSQL, nhờ AI Service chẩn đoán và hỏi đáp, gửi thông báo sang Mattermost; Superset đọc dữ liệu để làm báo cáo.
+Vai trò từng dịch vụ ở [`ARCHITECTURE.md`](./ARCHITECTURE.md).
+
 ## 🧱 Kiến trúc 3 tầng
 
 ![Sơ đồ kiến trúc 3 tầng](docs/images/so_do_3_tang.png)
@@ -47,7 +55,7 @@ Sơ đồ đầy đủ và luồng xử lý ở [`ARCHITECTURE.md`](./ARCHITECTU
 
 ## 🧩 Tính năng
 
-**DX-Farm:** quản lý nông hộ và thửa ruộng có vị trí, vụ mùa, báo cáo sâu bệnh kèm kiểm tra chất lượng ảnh, chẩn đoán AI và kỹ sư duyệt, khai báo phun thuốc, chặn thu hoạch khi chưa hết thời gian cách ly, nhắc hạn, hộp thông báo, thời tiết theo thửa, hỏi đáp tài liệu có trích nguồn, báo cáo tổng hợp; ứng dụng di động cho nông dân dùng được cả khi mất mạng.
+**DX-Farm:** quản lý nông hộ và thửa ruộng có vị trí, vụ mùa, báo cáo sâu bệnh kèm kiểm tra chất lượng ảnh, chẩn đoán AI và kỹ sư duyệt, khai báo phun thuốc, chặn thu hoạch khi chưa hết thời gian cách ly, nhắc hạn, hộp thông báo, thông báo chat kèm liên kết mở thẳng báo cáo, thời tiết theo thửa, hỏi đáp tài liệu có trích nguồn, báo cáo tổng hợp; ứng dụng di động cho nông dân dùng được cả khi mất mạng.
 
 **DX-Lab:** yêu cầu hỗ trợ có hạn xử lý và trao đổi nội bộ, gợi ý loại và mức ưu tiên, mượn trả thiết bị và nhật ký sửa chữa, đặt phòng máy không trùng giờ, hỏi đáp quy chế có trích nguồn và giấy phép, thống kê.
 
@@ -160,8 +168,6 @@ Hướng dẫn kiểm thử đầy đủ ở [`docs/TESTING.md`](./docs/TESTING.
 | Hỏi đáp không có kết quả | Kiểm `docker compose logs rag-ingest`; job nạp tri thức chưa xong hoặc lỗi |
 | Hết dung lượng khi dựng | `docker system df`, dọn image và cache không dùng |
 
-Bảng đầy đủ ở [`docs/TESTING.md`](./docs/TESTING.md) mục 8.
-
 ## 📁 Cấu trúc repository
 
 | Thư mục | Nội dung |
@@ -186,7 +192,9 @@ Tài liệu gốc: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./
 
 | Vai trò | Tên | Liên hệ |
 |---|---|---|
-| Người duy trì | KhuongSpring | pkhuong535@gmail.com |
+| Người phát triển | Phạm Minh Khương | pkhuong535@gmail.com |
+| Người phát triển | Nguyễn Đình Duy Khánh | dinhkhanh19042006@gmail.com |
+| Người phát triển | Trần Quang Tùng | tung51652@gmail.com |
 
 ## 📜 Giấy phép
 

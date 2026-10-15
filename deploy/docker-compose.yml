@@ -105,6 +105,7 @@ services:
       MATTERMOST_WEBHOOK_URL: ${MATTERMOST_WEBHOOK_URL:-}
       MATTERMOST_WEBHOOK_URL_ADMIN: ${MATTERMOST_WEBHOOK_URL_ADMIN:-}
       MATTERMOST_IMAGE_BASE_URL: ${MATTERMOST_IMAGE_BASE_URL:-}
+      MATTERMOST_APP_BASE_URL: ${MATTERMOST_APP_BASE_URL:-}
       # Limits, both apps
       MAX_PENDING_REQUESTS: ${MAX_PENDING_REQUESTS:-3}
       KNOWLEDGE_MIN_SCORE: ${KNOWLEDGE_MIN_SCORE:-0.40}
@@ -379,6 +380,7 @@ services:
     volumes:
       - ../bi/bootstrap.sh:/app/pythonpath/bootstrap.sh:ro
       - ../bi/bootstrap_datasources.py:/app/pythonpath/bootstrap_datasources.py:ro
+      - ../bi/chart_query_context.py:/app/pythonpath/chart_query_context.py:ro
       - ../bi/grant_engineer_access.py:/app/pythonpath/grant_engineer_access.py:ro
       - ../bi/superset_config.py:/app/pythonpath/superset_config.py:ro
       - ../bi/farm_dashboard_export.zip:/app/pythonpath/farm_dashboard_export.zip:ro

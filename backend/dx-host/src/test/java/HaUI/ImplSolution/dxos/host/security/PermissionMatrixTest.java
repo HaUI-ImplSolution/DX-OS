@@ -156,8 +156,8 @@ class PermissionMatrixTest {
         .thenReturn(new CropSeasonResponse(1L, null, "TD-01", "OM 5451", "OM5451", null, null, null,
             null, "HARVESTED", "APPROVED", null, null, null, null, null, null, null, null));
     when(diseaseReportService.create(any(), any(), any(), any()))
-        .thenReturn(new DiseaseReportResponse(1L, 1L, "x.jpg", "A", null, null, "PENDING", null,
-            null, List.of(), null));
+        .thenReturn(new DiseaseReportResponse(1L, 1L, "TD-01", "x.jpg", "A", null, null, "PENDING",
+            null, null, List.of(), null));
     when(workspaceDirectory.findAll(any())).thenReturn(List.of());
     when(workspaceAdministration.create(any())).thenReturn(new WorkspaceCreated(
         new WorkspaceView(1L, "H0001", "HOUSEHOLD", "A", null, null, "owner", null, null), "a",

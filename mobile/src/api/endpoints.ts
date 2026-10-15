@@ -11,12 +11,14 @@ import type {
   HarvestReadiness,
   HarvestReschedule,
   IsolationStatus,
+  KnowledgeAnswer,
   Page,
   Parcel,
   ParcelInput,
   RiceVariety,
   TreatmentApplication,
   TreatmentInput,
+  Weather,
 } from "@/types";
 
 export const listParcels = () => request<Parcel[]>("/parcels");
@@ -124,6 +126,12 @@ export const reportSpraying = (reportId: number, input: TreatmentInput) =>
     `/disease-reports/${reportId}/treatment-application/self-report`,
     json("POST", input),
   );
+
+export const getParcelWeather = (code: string) =>
+  request<Weather>(`/parcels/${encodeURIComponent(code)}/weather`);
+
+export const askKnowledge = (question: string) =>
+  request<KnowledgeAnswer>("/knowledge/ask", json("POST", { question }));
 
 export const listNotifications = (page = 0, size = 30) =>
   request<Page<AppNotification>>(`/notifications?${new URLSearchParams({ page: String(page), size: String(size) })}`);

@@ -10,7 +10,7 @@ Chỉ phụ thuộc `dx-core-api`; khởi động khi `DXOS_APP=farm` (giá tr�
 | Nông hộ, thửa | Admin tạo nông hộ kèm tài khoản; nông dân đăng ký thửa kèm GPS, admin duyệt; sửa thửa qua yêu cầu có duyệt |
 | Vụ mùa | Nông dân đăng ký vụ theo giống lúa, admin duyệt; gợi ý loại vụ theo tháng gieo; thu hoạch, nhắc hạn thu hoạch hằng ngày |
 | Báo cáo sâu bệnh | Nông dân gửi ảnh lá (kiểm tra chất lượng và nhận diện lúa, idempotency, chụp lại theo yêu cầu) |
-| Chẩn đoán | Kỹ sư chạy chẩn đoán AI hoặc nhập tay, tra rule thuốc có cấu trúc, duyệt; nông dân chỉ thấy kết quả sau khi duyệt |
+| Chẩn đoán | Kỹ sư chạy chẩn đoán AI hoặc nhập tay, tra rule thuốc có cấu trúc, duyệt; nông dân chỉ thấy kết quả sau khi duyệt; danh sách báo cáo chưa chẩn đoán cho kỹ sư |
 | Phun thuốc | Nông dân khai phun, kỹ sư xác nhận, vụ vào cách ly và thu hoạch bị khóa tới hết PHI |
 | Tri thức | Hỏi đáp tài liệu bệnh lúa có trích nguồn (RAG namespace `farm`) |
 | Thời tiết | Dự báo theo thửa từ Open-Meteo, snapshot dự phòng khi không gọi được |
@@ -98,6 +98,8 @@ Quản trị viên nhập hộ không cần sai số.
 | `weather.base-url` | `WEATHER_BASE_URL` | `https://api.open-meteo.com` |
 | `weather.cache-ttl` | `WEATHER_CACHE_TTL` | `1h` |
 | `mattermost.webhook.url-admin`, `url-engineer` | `MATTERMOST_WEBHOOK_URL_ADMIN`, `MATTERMOST_WEBHOOK_URL_ENGINEER` | trống: dùng URL mặc định |
+| `mattermost.webhook.image-base-url` | `MATTERMOST_IMAGE_BASE_URL` | trống: thông báo không kèm ảnh |
+| `mattermost.webhook.app-base-url` | `MATTERMOST_APP_BASE_URL` | trống: thông báo không kèm liên kết mở báo cáo |
 
 Cấu hình nằm ở `dx-host/src/main/resources/application-farm.yaml`.
 Mobile đọc `app.gps-max-accuracy-meters` từ `settings.gpsMaxAccuracyMeters` của `GET /api/v1/app`.
@@ -111,7 +113,7 @@ Swagger UI ở `/swagger-ui.html`.
 |---|---|
 | Nông hộ | `/api/v1/households` (bí danh của `/api/v1/workspaces` với loại `HOUSEHOLD`) |
 | Thửa, vụ | `/api/v1/parcels`, `/api/v1/crop-seasons` (`harvest`, `disease-reports`) |
-| Báo cáo, chẩn đoán | `/api/v1/disease-reports` (`diagnosis`, `diagnosis/ai`, `request-retake`, `treatment-application`) |
+| Báo cáo, chẩn đoán | `/api/v1/disease-reports` (`diagnosis`, `diagnosis/ai`, `request-retake`, `treatment-application`, `awaiting-diagnosis` cho danh sách báo cáo chưa chẩn đoán) |
 | Danh mục | `/api/v1/diseases`, `/api/v1/pesticides`, `/api/v1/treatment-rules`, `/api/v1/rice-varieties` |
 | Hộp duyệt | `/api/v1/approval-requests`, `/api/v1/workflow-cases` |
 | Tri thức, thời tiết | `/api/v1/knowledge/ask`, `/api/v1/parcels/{code}/weather` |

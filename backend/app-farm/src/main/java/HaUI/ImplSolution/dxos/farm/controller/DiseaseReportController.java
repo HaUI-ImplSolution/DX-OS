@@ -2,6 +2,8 @@
 package HaUI.ImplSolution.dxos.farm.controller;
 
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
+import HaUI.ImplSolution.dxos.core.api.dto.PageResponse;
+import HaUI.ImplSolution.dxos.farm.dto.AwaitingReportResponse;
 import HaUI.ImplSolution.dxos.farm.dto.DiseaseReportResponse;
 import HaUI.ImplSolution.dxos.farm.dto.ImagePrecheckResponse;
 import HaUI.ImplSolution.dxos.farm.dto.RetakeRequest;
@@ -88,6 +90,17 @@ public class DiseaseReportController {
   public ApiResponse<List<DiseaseReportResponse>> listByCropSeason(@PathVariable Long cropSeasonId,
       @RequestParam(defaultValue = "false") boolean includeDeleted) {
     return ApiResponse.success(diseaseReportService.listByCropSeason(cropSeasonId, includeDeleted));
+  }
+
+  @GetMapping("/disease-reports/awaiting-diagnosis")
+  @PreAuthorize("hasAnyRole('ENGINEER','ADMIN')")
+  @Operation(summary = "List reports that have no diagnosis yet, oldest first",
+      description = "ENGINEER or ADMIN only. Reports of active crop seasons whose status is PENDING;"
+          + " a report leaves the list once a diagnosis is recorded or a retake is requested."
+          + " size is capped at 100.")
+  public ApiResponse<PageResponse<AwaitingReportResponse>> awaitingDiagnosis(
+      @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
+    return ApiResponse.success(diseaseReportService.listAwaitingDiagnosis(page, size));
   }
 
   @GetMapping("/disease-reports/{id}")

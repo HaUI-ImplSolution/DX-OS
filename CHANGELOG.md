@@ -37,6 +37,20 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 ## Backend (Spring Boot — `backend`)
 
+### 2026-10-15
+
+**Đã xong — Test thông báo chẩn đoán, phun thuốc và luật đặt phòng:**
+
+- Test thông báo cho nông hộ khi chẩn đoán được duyệt hoặc bị từ chối và khi việc phun thuốc được xác nhận hoặc bị từ chối (kèm lý do và ngày hết cách ly).
+- Test luật đặt phòng của Lab: tối đa 4 giờ, bước 30 phút, giờ bắt đầu trong tương lai và trong 30 ngày, sức chứa, phòng bảo trì, trùng giờ, người duyệt, lý do từ chối, người hủy và phạm vi xem lịch.
+- Test phân quyền theo vai của `RoomBookingController` (sinh viên không đặt phòng, chỉ kỹ thuật viên và quản trị viên duyệt).
+
+**Đã xong — Báo cáo chưa chẩn đoán và thông báo kết quả:**
+
+- `GET /api/v1/disease-reports/awaiting-diagnosis` (kỹ sư, quản trị) liệt kê báo cáo của vụ đang canh tác chưa có chẩn đoán, cũ nhất trước; `DiseaseReportResponse` có `parcelCode`.
+- Kênh Mattermost của kỹ sư nhận thêm kết quả duyệt hoặc từ chối chẩn đoán và kết quả ghi nhận, xác nhận hoặc từ chối việc phun thuốc.
+- `MATTERMOST_APP_BASE_URL` đặt thì tiêu đề thông báo của báo cáo là liên kết `<địa chỉ>/?report=<id>`.
+
 ### 2026-10-14
 
 **Đã xong — Mã lỗi request, hộp duyệt theo app, cài đặt cho client:**
@@ -388,6 +402,14 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 ## Mobile (`mobile`, Expo)
 
+### 2026-10-15
+
+**Đã xong — Icon, splash, hỏi đáp tài liệu, thời tiết:**
+
+- Icon, adaptive icon, splash và favicon riêng của DX-Farm; thêm `expo-splash-screen`.
+- Màn hỏi đáp tài liệu (`/knowledge`) trích đoạn kèm nguồn.
+- Thẻ thời tiết ở màn thửa đã duyệt có vị trí.
+
 ### 2026-10-14
 
 **Đã xong — Ngưỡng GPS và nhãn cách ly lấy từ Backend:**
@@ -625,6 +647,13 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 ## Frontend (`frontend`)
 
+### 2026-10-15
+
+**Đã xong — Thời tiết, báo cáo chưa chẩn đoán, mở báo cáo bằng liên kết:**
+
+- Farm: panel thời tiết của thửa đang chọn (hiện tại, dự báo 5 ngày, cảnh báo khi là dữ liệu tham khảo).
+- Hàng đợi kỹ sư có tab "Chưa chẩn đoán"; `/?report=<id>` mở thẳng thửa, vụ và báo cáo.
+
 ### 2026-10-13
 
 **Đã xong — Vỏ web theo app và giao diện Lab:**
@@ -850,6 +879,16 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 ## BI Dashboard (`bi`, Apache Superset)
 
+### 2026-10-15
+
+**Đã xong — `query_context` của chart:**
+
+- Sau mỗi lần import dashboard, `bootstrap_datasources.py` sinh `query_context` cho từng chart bằng `bi/chart_query_context.py` và lưu qua `PUT /api/v1/chart/{id}`.
+- `/api/v1/chart/{id}/data` chạy được cho cả 9 chart của Farm.
+- Thêm hai chart: sản lượng và diện tích thu hoạch theo tháng (vụ `HARVESTED`, nhóm theo giống).
+- Bố cục dashboard Farm gồm bốn hàng chart, mỗi chart một ô gắn bằng UUID.
+- Test bundle và `query_context`: `python -m unittest test_chart_query_context` trong `bi/`, CI chạy ở job `dashboard` của `ci-infra.yml`.
+
 ### 2026-10-13
 
 **Đã xong — Dataset theo app:**
@@ -1056,6 +1095,12 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - **Còn thiếu**: SPDX header đầu mỗi file mã nguồn tự viết — việc sửa hàng loạt file, để riêng một lượt khác.
 
 ## Tài liệu (root, `docs`, `ai/`)
+
+### 2026-10-15
+
+- `README.md` và `README_EN.md`: mục kiến trúc tổng thể kèm `docs/images/tong_quan.gif`, liên hệ ba người phát triển, biến `MATTERMOST_APP_BASE_URL`; bản EN khớp bản VI.
+- `docs/TESTING.md`: bảng mức hoàn thiện, mục kiểm tay F10 đến F12 và kết quả kiểm ngày 15/10/2026 (148 test backend, 22 test BI, gitleaks 358 commit).
+- `docs/SUBMISSION.md`: dashboard 9 chart; `docs/BACKLOG.md`: bỏ việc đã xong.
 
 ### 2026-10-14
 

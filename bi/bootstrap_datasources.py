@@ -188,10 +188,25 @@ def bundle_dashboard_titles() -> list[str]:
         return [yaml.safe_load(zf.read(n))["dashboard_title"] for n in names]
 
 
+def bundle_map_styles() -> dict[str, str]:
+    """Nền bản đồ (`mapbox_style`) của từng chart bản đồ trong bundle, theo tên chart.
+    Import không cập nhật chart đã tồn tại nên giá trị này được ghi lại sau import."""
+    styles: dict[str, str] = {}
+    with zipfile.ZipFile(DASHBOARD_EXPORT_PATH) as zf:
+        for name in zf.namelist():
+            if "/charts/" in name and name.endswith(".yaml"):
+                chart = yaml.safe_load(zf.read(name))
+                style = (chart.get("params") or {}).get("mapbox_style")
+                if style:
+                    styles[chart["slice_name"]] = style
+    return styles
+
+
 def restore_query_contexts(headers, cookies) -> None:
     """Superset xóa query_context của chart mỗi lần import, nên sinh lại cho các chart của
     dashboard trong bundle để API dữ liệu chart, xuất CSV và báo cáo định kỳ chạy được."""
     titles = set(bundle_dashboard_titles())
+    map_styles = bundle_map_styles()
     resp = requests.get(
         f"{BASE_URL}/api/v1/dashboard/",
         headers=headers,
@@ -211,15 +226,23 @@ def restore_query_contexts(headers, cookies) -> None:
         )
         charts.raise_for_status()
         for chart in charts.json().get("result", []):
-            restore_chart_query_context(headers, cookies, chart["id"], chart["slice_name"])
+            restore_chart_query_context(
+                headers, cookies, chart["id"], chart["slice_name"], map_styles.get(chart["slice_name"])
+            )
 
 
-def restore_chart_query_context(headers, cookies, chart_id: int, chart_name: str) -> None:
+def restore_chart_query_context(
+    headers, cookies, chart_id: int, chart_name: str, map_style: str | None = None
+) -> None:
     resp = requests.get(
         f"{BASE_URL}/api/v1/chart/{chart_id}", headers=headers, cookies=cookies, timeout=15
     )
     resp.raise_for_status()
     form_data = json.loads(resp.json()["result"]["params"])
+    payload = {}
+    if map_style and form_data.get("mapbox_style") != map_style:
+        form_data["mapbox_style"] = map_style
+        payload["params"] = json.dumps(form_data)
     datasource_id = datasource_id_of(form_data)
     query_context = (
         build_query_context(form_data, datasource_id) if datasource_id is not None else None
@@ -231,7 +254,7 @@ def restore_chart_query_context(headers, cookies, chart_id: int, chart_name: str
         f"{BASE_URL}/api/v1/chart/{chart_id}",
         headers=headers,
         cookies=cookies,
-        json=to_payload(query_context),
+        json=payload | to_payload(query_context),
         timeout=15,
     )
     resp.raise_for_status()

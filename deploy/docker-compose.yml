@@ -387,6 +387,7 @@ services:
       - ../bi/chart_query_context.py:/app/pythonpath/chart_query_context.py:ro
       - ../bi/grant_engineer_access.py:/app/pythonpath/grant_engineer_access.py:ro
       - ../bi/superset_config.py:/app/pythonpath/superset_config.py:ro
+      - ../bi/basemap_light.json:/app/superset/static/assets/basemap_light.json:ro
       - ../bi/farm_dashboard_export.zip:/app/pythonpath/farm_dashboard_export.zip:ro
       - ./data/superset:/app/superset_home
     entrypoint: ["/bin/bash", "/app/pythonpath/bootstrap.sh"]

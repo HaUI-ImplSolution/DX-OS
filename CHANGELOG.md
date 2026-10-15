@@ -882,6 +882,13 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 ### 2026-10-15
 
+**Đã xong — Nền bản đồ sáng:**
+
+- Hai chart deck.gl dùng `bi/basemap_light.json`: vector tile OpenFreeMap vẽ đất, nước, sông, đường và nhãn tỉnh, thành phố, thị xã bằng tên tiếng Việt.
+- Nhãn chỉ vẽ trong vùng kinh độ 102°E đến 110°E; style không có nhãn đảo, nhãn biển và đường biên giới.
+- Style được mount vào `/static/assets/basemap_light.json`; `superset_config.py` thêm `tiles.openfreemap.org` vào `connect-src` của CSP.
+- `bootstrap_datasources.py` ghi `mapbox_style` của chart bản đồ theo bundle sau mỗi lần import.
+
 **Đã xong — `query_context` của chart:**
 
 - Sau mỗi lần import dashboard, `bootstrap_datasources.py` sinh `query_context` cho từng chart bằng `bi/chart_query_context.py` và lưu qua `PUT /api/v1/chart/{id}`.

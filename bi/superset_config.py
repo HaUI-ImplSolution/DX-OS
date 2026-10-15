@@ -13,11 +13,23 @@ from flask_appbuilder import expose
 from flask_appbuilder.security.manager import AUTH_OAUTH
 from flask_appbuilder.security.views import AuthOAuthView
 from flask_login import current_user
+from superset.config import TALISMAN_CONFIG as DEFAULT_TALISMAN_CONFIG
 from superset.security import SupersetSecurityManager
 
 # Superset sits behind the gateway: ProxyFix reads the forwarded host, port and scheme so the
 # OAuth redirect it builds points at the gateway.
 ENABLE_PROXY_FIX = True
+
+# The deck.gl charts draw a label-free light basemap (style: basemap_light.json) from OpenFreeMap vector tiles.
+BASEMAP_TILE_HOST = "https://tiles.openfreemap.org"
+_csp = DEFAULT_TALISMAN_CONFIG["content_security_policy"]
+TALISMAN_CONFIG = {
+    **DEFAULT_TALISMAN_CONFIG,
+    "content_security_policy": {
+        **_csp,
+        "connect-src": [*_csp["connect-src"], BASEMAP_TILE_HOST],
+    },
+}
 
 GATEWAY_URL = os.environ["GATEWAY_PUBLIC_URL"].rstrip("/")
 SUPERSET_URL = os.environ["SUPERSET_PUBLIC_URL"].rstrip("/")

@@ -45,6 +45,12 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - Test luật đặt phòng của Lab: tối đa 4 giờ, bước 30 phút, giờ bắt đầu trong tương lai và trong 30 ngày, sức chứa, phòng bảo trì, trùng giờ, người duyệt, lý do từ chối, người hủy và phạm vi xem lịch.
 - Test phân quyền theo vai của `RoomBookingController` (sinh viên không đặt phòng, chỉ kỹ thuật viên và quản trị viên duyệt).
 
+**Đã xong — Báo cáo chưa chẩn đoán và thông báo kết quả:**
+
+- `GET /api/v1/disease-reports/awaiting-diagnosis` (kỹ sư, quản trị) liệt kê báo cáo của vụ đang canh tác chưa có chẩn đoán, cũ nhất trước; `DiseaseReportResponse` có `parcelCode`.
+- Kênh Mattermost của kỹ sư nhận thêm kết quả duyệt hoặc từ chối chẩn đoán và kết quả ghi nhận, xác nhận hoặc từ chối việc phun thuốc.
+- `MATTERMOST_APP_BASE_URL` đặt thì tiêu đề thông báo của báo cáo là liên kết `<địa chỉ>/?report=<id>`.
+
 ### 2026-10-14
 
 **Đã xong — Mã lỗi request, hộp duyệt theo app, cài đặt cho client:**
@@ -396,6 +402,14 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 ## Mobile (`mobile`, Expo)
 
+### 2026-10-15
+
+**Đã xong — Icon, splash, hỏi đáp tài liệu, thời tiết:**
+
+- Icon, adaptive icon, splash và favicon riêng của DX-Farm; thêm `expo-splash-screen`.
+- Màn hỏi đáp tài liệu (`/knowledge`) trích đoạn kèm nguồn.
+- Thẻ thời tiết ở màn thửa đã duyệt có vị trí.
+
 ### 2026-10-14
 
 **Đã xong — Ngưỡng GPS và nhãn cách ly lấy từ Backend:**
@@ -633,6 +647,13 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 ## Frontend (`frontend`)
 
+### 2026-10-15
+
+**Đã xong — Thời tiết, báo cáo chưa chẩn đoán, mở báo cáo bằng liên kết:**
+
+- Farm: panel thời tiết của thửa đang chọn (hiện tại, dự báo 5 ngày, cảnh báo khi là dữ liệu tham khảo).
+- Hàng đợi kỹ sư có tab "Chưa chẩn đoán"; `/?report=<id>` mở thẳng thửa, vụ và báo cáo.
+
 ### 2026-10-13
 
 **Đã xong — Vỏ web theo app và giao diện Lab:**
@@ -863,7 +884,8 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 **Đã xong — `query_context` của chart:**
 
 - Superset 3.1 xóa `query_context` khi import dashboard; sau khi import, `bootstrap_datasources.py` sinh lại cho từng chart của dashboard bằng `bi/chart_query_context.py` và lưu qua `PUT /api/v1/chart/{id}`.
-- `/api/v1/chart/{id}/data` chạy được cho cả 7 chart của Farm.
+- `/api/v1/chart/{id}/data` chạy được cho cả 9 chart của Farm.
+- Thêm hai chart: sản lượng và diện tích thu hoạch theo tháng (vụ `HARVESTED`, nhóm theo giống).
 - Bố cục dashboard Farm chỉ còn bốn hàng, mỗi chart một ô gắn bằng UUID (trước đó mỗi chart hiện hai lần).
 - Test bundle và `query_context`: `python -m unittest test_chart_query_context` trong `bi/`, CI chạy ở job `dashboard` của `ci-infra.yml`.
 

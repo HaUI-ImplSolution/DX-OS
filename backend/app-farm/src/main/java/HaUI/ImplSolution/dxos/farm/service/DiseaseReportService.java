@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.farm.service;
 
+import HaUI.ImplSolution.dxos.core.api.dto.PageResponse;
 import HaUI.ImplSolution.dxos.core.api.storage.ObjectStorage;
 import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowActor;
 import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowOperations;
 import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowStatus;
+import HaUI.ImplSolution.dxos.farm.dto.AwaitingReportResponse;
 import HaUI.ImplSolution.dxos.farm.dto.DiagnosisResponse;
 import HaUI.ImplSolution.dxos.farm.dto.DiseaseReportResponse;
 import HaUI.ImplSolution.dxos.farm.dto.ImagePrecheckResponse;
@@ -34,6 +36,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -45,6 +48,8 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @Transactional(readOnly = true)
 public class DiseaseReportService {
+
+  private static final int MAX_PAGE_SIZE = 100;
 
   private final DiseaseReportRepository diseaseReportRepository;
   private final CropSeasonRepository cropSeasonRepository;
@@ -106,6 +111,18 @@ public class DiseaseReportService {
                 Collectors.mapping(DiseaseReport::getId, Collectors.toList())));
     return reports.stream().map(report -> toResponse(report, farmerView, latest.get(report.getId()),
         retakes.getOrDefault(report.getId(), List.of()))).toList();
+  }
+
+  // Reports waiting for a first diagnosis; staff only (the controller restricts the roles).
+  public PageResponse<AwaitingReportResponse> listAwaitingDiagnosis(int page, int size) {
+    var result = diseaseReportRepository.findAwaitingDiagnosis(
+        PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), MAX_PAGE_SIZE)));
+    return PageResponse.of(result, report -> {
+      CropSeason season = report.getCropSeason();
+      return new AwaitingReportResponse(report.getId(), season.getId(),
+          season.getParcel().getCode(), season.getParcel().getFarmerName(), season.getRiceVariety(),
+          report.getReportedBy(), report.getReportedAt());
+    });
   }
 
   public DiseaseReportResponse getById(Long id) {
@@ -312,6 +329,7 @@ public class DiseaseReportService {
         : new ImagePrecheckResponse(report.getQualityPassed(), List.of(), report.getQualityWidth(),
             report.getQualityHeight(), report.getQualitySharpness(), report.getQualityBrightness());
     return new DiseaseReportResponse(report.getId(), report.getCropSeason().getId(),
+        report.getCropSeason().getParcel().getCode(),
         storageService.presignedUrl(report.getImageRef()), report.getReportedBy(),
         report.getReportedAt(), latest == null ? null : toDiagnosisView(latest, farmerView),
         report.getStatus().name(), report.getRetakeReason(),

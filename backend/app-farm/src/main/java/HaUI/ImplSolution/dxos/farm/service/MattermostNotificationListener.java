@@ -3,9 +3,11 @@ package HaUI.ImplSolution.dxos.farm.service;
 
 import HaUI.ImplSolution.dxos.core.api.notification.ChatWebhook;
 import HaUI.ImplSolution.dxos.farm.event.CropSeasonCreatedEvent;
+import HaUI.ImplSolution.dxos.farm.event.DiagnosisDecidedEvent;
 import HaUI.ImplSolution.dxos.farm.event.DiagnosisPendingEvent;
 import HaUI.ImplSolution.dxos.farm.event.DiseaseReportCreatedEvent;
 import HaUI.ImplSolution.dxos.farm.event.ParcelCreatedEvent;
+import HaUI.ImplSolution.dxos.farm.event.TreatmentDecidedEvent;
 import HaUI.ImplSolution.dxos.farm.event.TreatmentReportedEvent;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -48,6 +50,18 @@ public class MattermostNotificationListener {
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onTreatmentReported(TreatmentReportedEvent event) {
     dispatch(MattermostChannel.ENGINEER, () -> messageBuilder.treatmentReported(event));
+  }
+
+  @Async("mattermostNotifyExecutor")
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onDiagnosisDecided(DiagnosisDecidedEvent event) {
+    dispatch(MattermostChannel.ENGINEER, () -> messageBuilder.diagnosisDecided(event));
+  }
+
+  @Async("mattermostNotifyExecutor")
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onTreatmentDecided(TreatmentDecidedEvent event) {
+    dispatch(MattermostChannel.ENGINEER, () -> messageBuilder.treatmentDecided(event));
   }
 
   @Async("mattermostNotifyExecutor")

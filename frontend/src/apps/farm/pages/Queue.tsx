@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { listApprovalRequests } from "../api";
+import { listApprovalRequests, listAwaitingDiagnosis } from "../api";
 import DecisionActions from "../components/DecisionActions";
 import { formatDateTime, statusLabel, statusTone } from "../labels";
-import type { ApprovalRequest, Page, Role } from "../types";
+import type { ApprovalRequest, AwaitingReport, Page, Role } from "../types";
 import { Badge, Pagination, Section } from "../../../shell";
 
 interface QueueProps {
@@ -12,7 +12,7 @@ interface QueueProps {
 }
 
 type Tab = "mine" | "free";
-type Kind = "DIAGNOSIS_APPROVAL" | "TREATMENT_CONFIRMATION";
+type Kind = "AWAITING_DIAGNOSIS" | "DIAGNOSIS_APPROVAL" | "TREATMENT_CONFIRMATION";
 
 const PAGE_SIZE = 10;
 
@@ -20,11 +20,18 @@ const PAGE_SIZE = 10;
 // nobody has taken yet.
 export default function Queue({ role, onError }: QueueProps) {
   const [tab, setTab] = useState<Tab>("mine");
-  const [kind, setKind] = useState<Kind>("DIAGNOSIS_APPROVAL");
+  const [kind, setKind] = useState<Kind>("AWAITING_DIAGNOSIS");
   const [page, setPage] = useState(0);
   const [result, setResult] = useState<Page<ApprovalRequest> | null>(null);
+  const [awaiting, setAwaiting] = useState<Page<AwaitingReport> | null>(null);
 
   const load = useCallback(() => {
+    if (kind === "AWAITING_DIAGNOSIS") {
+      listAwaitingDiagnosis(page, PAGE_SIZE)
+        .then(setAwaiting)
+        .catch((err) => onError(err.message));
+      return;
+    }
     listApprovalRequests({
       caseType: kind,
       status: "PENDING",
@@ -50,8 +57,14 @@ export default function Queue({ role, onError }: QueueProps) {
   };
 
   return (
-    <Section step="🧑‍🔧" title="Hàng đợi kỹ sư" subtitle="Nhận việc rồi duyệt chẩn đoán hoặc xác nhận việc phun thuốc">
+    <Section step="🧑‍🔧" title="Hàng đợi kỹ sư" subtitle="Chẩn đoán báo cáo mới, duyệt chẩn đoán và xác nhận việc phun thuốc">
       <nav className="tabs">
+        <button
+          className={kind === "AWAITING_DIAGNOSIS" ? "tab tab-active" : "tab"}
+          onClick={() => switchKind("AWAITING_DIAGNOSIS")}
+        >
+          Chưa chẩn đoán
+        </button>
         <button
           className={kind === "DIAGNOSIS_APPROVAL" ? "tab tab-active" : "tab"}
           onClick={() => switchKind("DIAGNOSIS_APPROVAL")}
@@ -65,22 +78,50 @@ export default function Queue({ role, onError }: QueueProps) {
           Khai phun thuốc
         </button>
       </nav>
-      <nav className="tabs">
-        <button className={tab === "mine" ? "tab tab-active" : "tab"} onClick={() => switchTab("mine")}>
-          Việc của tôi
-        </button>
-        <button className={tab === "free" ? "tab tab-active" : "tab"} onClick={() => switchTab("free")}>
-          Chưa có người nhận
-        </button>
-      </nav>
+      {kind !== "AWAITING_DIAGNOSIS" && (
+        <nav className="tabs">
+          <button className={tab === "mine" ? "tab tab-active" : "tab"} onClick={() => switchTab("mine")}>
+            Việc của tôi
+          </button>
+          <button className={tab === "free" ? "tab tab-active" : "tab"} onClick={() => switchTab("free")}>
+            Chưa có người nhận
+          </button>
+        </nav>
+      )}
 
-      {result && result.items.length === 0 && (
+      {kind === "AWAITING_DIAGNOSIS" && awaiting && awaiting.items.length === 0 && (
+        <p className="empty-hint">Mọi báo cáo đã có chẩn đoán.</p>
+      )}
+
+      {kind === "AWAITING_DIAGNOSIS" &&
+        awaiting?.items.map((report) => (
+          <article key={report.reportId} className="queue-card">
+            <div>
+              <strong>
+                Báo cáo #{report.reportId} · thửa {report.parcelCode}
+              </strong>
+            </div>
+            <div className="cell-sub">
+              {report.riceVariety ?? "—"} · {report.farmerName ?? "—"} · người báo cáo {report.reportedBy} ·{" "}
+              {formatDateTime(report.reportedAt)}
+            </div>
+            <div className="form-actions">
+              <Link className="btn btn-primary" to={`/?report=${report.reportId}`}>
+                Mở để chẩn đoán
+              </Link>
+            </div>
+          </article>
+        ))}
+
+      {kind === "AWAITING_DIAGNOSIS" && awaiting && <Pagination page={awaiting} onChange={setPage} />}
+
+      {kind !== "AWAITING_DIAGNOSIS" && result && result.items.length === 0 && (
         <p className="empty-hint">
           {tab === "mine" ? "Bạn chưa nhận việc nào." : "Không còn việc nào chờ người nhận."}
         </p>
       )}
 
-      {result?.items.map((request) => (
+      {kind !== "AWAITING_DIAGNOSIS" && result?.items.map((request) => (
         <article key={request.caseId} className="queue-card">
           <div>
             <strong>{request.title}</strong>
@@ -99,7 +140,7 @@ export default function Queue({ role, onError }: QueueProps) {
         </article>
       ))}
 
-      {result && <Pagination page={result} onChange={setPage} />}
+      {kind !== "AWAITING_DIAGNOSIS" && result && <Pagination page={result} onChange={setPage} />}
     </Section>
   );
 }

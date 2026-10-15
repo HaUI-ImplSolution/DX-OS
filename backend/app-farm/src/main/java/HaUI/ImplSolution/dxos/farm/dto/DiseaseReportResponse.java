@@ -12,6 +12,9 @@ public record DiseaseReportResponse(
   // Crop season the report belongs to
   Long cropSeasonId,
 
+  // Parcel the crop season belongs to
+  String parcelCode,
+
   // Download link of the uploaded photo, valid for a short time only
   String imageUrl,
 

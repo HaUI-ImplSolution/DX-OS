@@ -38,6 +38,9 @@ mattermost:
     url-engineer: ${MATTERMOST_WEBHOOK_URL_ENGINEER:}
     # Browser-reachable gateway origin used to attach the report photo; empty omits the image.
     image-base-url: ${MATTERMOST_IMAGE_BASE_URL:}
+    # Browser-reachable web origin; the titles of report messages link to <origin>/?report=<id>.
+    # Empty omits the link.
+    app-base-url: ${MATTERMOST_APP_BASE_URL:}
 
 resilience4j:
   circuitbreaker:

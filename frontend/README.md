@@ -3,7 +3,7 @@
 Giao diện web của DX-OS: một image phục vụ cả hai ứng dụng.
 Sau khi đăng nhập, web đọc `GET /api/v1/app` rồi nạp module giao diện của ứng dụng đang chạy (`DXOS_APP`), nên đổi ứng dụng không cần build lại.
 
-- **Farm** dành cho kỹ sư và admin: hàng chờ duyệt, chi tiết yêu cầu, nông hộ, tài liệu. Nông dân chỉ dùng app mobile, web hiện màn "dùng ứng dụng di động".
+- **Farm** dành cho kỹ sư và admin: hàng chờ (báo cáo chưa chẩn đoán, chẩn đoán chờ duyệt, khai phun thuốc), chi tiết yêu cầu, nông hộ, thời tiết theo thửa, tài liệu. Địa chỉ `/?report=<id>` mở thẳng một báo cáo. Nông dân chỉ dùng app mobile, web hiện màn "dùng ứng dụng di động".
 - **Lab** dành cho sinh viên, giảng viên, kỹ thuật viên và quản trị: yêu cầu hỗ trợ, mượn thiết bị, đặt phòng, tài sản, thống kê, hỏi đáp.
 
 ## Cấu trúc

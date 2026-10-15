@@ -16,13 +16,14 @@ Service khai báo trong [`deploy/docker-compose.yml`](../deploy/docker-compose.y
 | App | Channel (biến webhook) | Sự kiện |
 |---|---|---|
 | Farm | `Ban quản trị` (`MATTERMOST_WEBHOOK_URL_ADMIN`) | Yêu cầu thửa mới, yêu cầu vụ mùa mới (kể cả gửi lại) |
-| Farm | `Kỹ sư nông nghiệp` (`MATTERMOST_WEBHOOK_URL_ENGINEER`) | Báo cáo sâu bệnh mới (kèm ảnh khi có `MATTERMOST_IMAGE_BASE_URL`), chẩn đoán chờ duyệt |
+| Farm | `Kỹ sư nông nghiệp` (`MATTERMOST_WEBHOOK_URL_ENGINEER`) | Báo cáo sâu bệnh mới (kèm ảnh khi có `MATTERMOST_IMAGE_BASE_URL`), chẩn đoán chờ duyệt, khai phun thuốc chờ xác nhận, kết quả duyệt hoặc từ chối chẩn đoán, kết quả ghi nhận, xác nhận hoặc từ chối việc phun thuốc |
 | Lab | `Kỹ thuật viên` (`MATTERMOST_WEBHOOK_URL_TECHNICIAN`) | Yêu cầu hỗ trợ mới, yêu cầu quá hạn xử lý |
 | Lab | `Ban quản trị` (`MATTERMOST_WEBHOOK_URL_ADMIN`) | Yêu cầu quá hạn xử lý |
 
 - Gửi nền sau khi transaction commit, best-effort không retry: lỗi thì bỏ thông báo và ghi một dòng WARN không chứa URL.
 - Kênh không có webhook riêng dùng `MATTERMOST_WEBHOOK_URL`; cả hai rỗng thì kênh đó tắt.
 - Gửi lại báo cáo với `Idempotency-Key` đã dùng không sinh thông báo thứ hai.
+- Có `MATTERMOST_APP_BASE_URL` thì tiêu đề thông báo của báo cáo là liên kết `<địa chỉ>/?report=<id>`, mở thẳng báo cáo trên web (cần đăng nhập vai kỹ sư hoặc quản trị); rỗng thì không kèm liên kết.
 - Tên, mã thửa, giống lúa, tên bệnh cắt tối đa 100 ký tự, vô hiệu mention, link, markdown; giờ theo `Asia/Ho_Chi_Minh`.
 
 ## Cấp webhook (một lần cho mỗi môi trường)
@@ -35,7 +36,7 @@ URL chứa khóa truy cập nên chỉ nằm trong `deploy/.env`; xóa `deploy/d
 
 ## Hạn chế
 
-- Một chiều: duyệt và từ chối vẫn làm trong web; thông báo không kèm deep link và không được cập nhật.
+- Một chiều: duyệt và từ chối làm trong web; thông báo không được cập nhật sau khi gửi.
 - Định tuyến theo loại sự kiện, không theo thửa hay người phụ trách; không có outbox nên thông báo lỡ không gửi lại.
 - `Kỹ sư nông nghiệp` là channel public: mọi thành viên team đọc được tên người báo cáo và mã thửa; muốn giới hạn thì chuyển sang private.
 

@@ -111,7 +111,7 @@ Swagger UI ở `/swagger-ui.html`.
 |---|---|
 | Nông hộ | `/api/v1/households` (bí danh của `/api/v1/workspaces` với loại `HOUSEHOLD`) |
 | Thửa, vụ | `/api/v1/parcels`, `/api/v1/crop-seasons` (`harvest`, `disease-reports`) |
-| Báo cáo, chẩn đoán | `/api/v1/disease-reports` (`diagnosis`, `diagnosis/ai`, `request-retake`, `treatment-application`) |
+| Báo cáo, chẩn đoán | `/api/v1/disease-reports` (`diagnosis`, `diagnosis/ai`, `request-retake`, `treatment-application`, `awaiting-diagnosis` cho danh sách báo cáo chưa chẩn đoán) |
 | Danh mục | `/api/v1/diseases`, `/api/v1/pesticides`, `/api/v1/treatment-rules`, `/api/v1/rice-varieties` |
 | Hộp duyệt | `/api/v1/approval-requests`, `/api/v1/workflow-cases` |
 | Tri thức, thời tiết | `/api/v1/knowledge/ask`, `/api/v1/parcels/{code}/weather` |

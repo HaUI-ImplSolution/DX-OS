@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { ErrorState } from "@/components/ErrorState";
 import { IsolationBanner } from "@/components/IsolationBanner";
 import { Screen } from "@/components/Screen";
+import { WeatherCard } from "@/components/WeatherCard";
 import { SkeletonCards } from "@/components/Skeleton";
 import { StatusChip } from "@/components/StatusChip";
 import { formatDate } from "@/format";
@@ -91,6 +92,7 @@ function ParcelActions({ parcel }: { parcel: Parcel }) {
       )}
       {parcel.approvalStatus === "APPROVED" && (
         <>
+          {!parcel.locationMissing && <WeatherCard parcelCode={parcel.code} />}
           <Button
             label="Bắt đầu vụ mùa mới"
             onPress={() =>

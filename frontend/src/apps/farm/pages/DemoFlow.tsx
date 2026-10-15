@@ -1,10 +1,19 @@
 import { useEffect, useState } from "react";
-import { listCropSeasons, listDiseaseReports, listDiseases, listHouseholds, listParcels } from "../api";
+import { useSearchParams } from "react-router-dom";
+import {
+  getDiseaseReport,
+  listCropSeasons,
+  listDiseaseReports,
+  listDiseases,
+  listHouseholds,
+  listParcels,
+} from "../api";
 import CropSeasonPanel from "../components/CropSeasonPanel";
 import DiagnosisPanel from "../components/DiagnosisPanel";
 import DiseaseReportPanel from "../components/DiseaseReportPanel";
 import ParcelPanel from "../components/ParcelPanel";
 import ReferencePanel from "../components/ReferencePanel";
+import WeatherPanel from "../components/WeatherPanel";
 import type {
   CropSeason,
   Diagnosis,
@@ -37,6 +46,23 @@ export default function DemoFlow({ role, onError }: DemoFlowProps) {
   const [selectedReportId, setSelectedReportId] = useState<number | null>(null);
 
   const [diseases, setDiseases] = useState<Disease[]>([]);
+
+  // A link such as /?report=42 (from a chat message or the to-do list) opens that report.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const linkedReportId = Number(searchParams.get("report")) || null;
+
+  useEffect(() => {
+    if (!linkedReportId) return;
+    getDiseaseReport(linkedReportId)
+      .then((report) => {
+        setTab("flow");
+        setSelectedParcelCode(report.parcelCode);
+        setSelectedCropSeasonId(report.cropSeasonId);
+        setSelectedReportId(report.id);
+      })
+      .catch((err) => onError(err.message))
+      .finally(() => setSearchParams({}, { replace: true }));
+  }, [linkedReportId, onError, setSearchParams]);
 
   useEffect(() => {
     listParcels().then(setParcels).catch((err) => onError(err.message));
@@ -116,6 +142,8 @@ export default function DemoFlow({ role, onError }: DemoFlowProps) {
             }}
             onError={onError}
           />
+
+          {selectedParcelCode && <WeatherPanel parcelCode={selectedParcelCode} />}
 
           {selectedParcelCode && (
             <CropSeasonPanel

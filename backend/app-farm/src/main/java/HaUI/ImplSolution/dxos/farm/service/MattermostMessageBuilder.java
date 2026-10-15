@@ -3,9 +3,11 @@ package HaUI.ImplSolution.dxos.farm.service;
 
 import HaUI.ImplSolution.dxos.core.api.storage.ObjectStorage;
 import HaUI.ImplSolution.dxos.farm.event.CropSeasonCreatedEvent;
+import HaUI.ImplSolution.dxos.farm.event.DiagnosisDecidedEvent;
 import HaUI.ImplSolution.dxos.farm.event.DiagnosisPendingEvent;
 import HaUI.ImplSolution.dxos.farm.event.DiseaseReportCreatedEvent;
 import HaUI.ImplSolution.dxos.farm.event.ParcelCreatedEvent;
+import HaUI.ImplSolution.dxos.farm.event.TreatmentDecidedEvent;
 import HaUI.ImplSolution.dxos.farm.event.TreatmentReportedEvent;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -14,6 +16,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,11 +44,23 @@ public class MattermostMessageBuilder {
 
   private final ObjectStorage storageService;
   private final String imageBaseUrl;
+  private final String appBaseUrl;
 
   public MattermostMessageBuilder(ObjectStorage storageService,
-      @Value("${mattermost.webhook.image-base-url:}") String imageBaseUrl) {
+      @Value("${mattermost.webhook.image-base-url:}") String imageBaseUrl,
+      @Value("${mattermost.webhook.app-base-url:}") String appBaseUrl) {
     this.storageService = storageService;
-    this.imageBaseUrl = imageBaseUrl == null ? "" : imageBaseUrl.strip().replaceAll("/+$", "");
+    this.imageBaseUrl = trimUrl(imageBaseUrl);
+    this.appBaseUrl = trimUrl(appBaseUrl);
+  }
+
+  private static String trimUrl(String url) {
+    return url == null ? "" : url.strip().replaceAll("/+$", "");
+  }
+
+  // Opens the report in the web app; empty when the app address is not configured.
+  private String reportLink(Long reportId) {
+    return appBaseUrl.isEmpty() ? null : appBaseUrl + "/?report=" + reportId;
   }
 
   public Map<String, Object> reportCreated(DiseaseReportCreatedEvent event) {
@@ -59,7 +74,7 @@ public class MattermostMessageBuilder {
             field("Giống lúa", markdown(event.riceVariety())),
             field("Người báo cáo", markdown(event.reportedBy())),
             field("Thời điểm", formatTime(event.reportedAt()))),
-        imageUrl(event.imageRef()));
+        imageUrl(event.imageRef()), reportLink(event.reportId()));
   }
 
   public Map<String, Object> diagnosisPending(DiagnosisPendingEvent event) {
@@ -75,7 +90,7 @@ public class MattermostMessageBuilder {
             field("Mã thửa", markdown(event.parcelCode())),
             field("Bệnh", markdown(event.diseaseCode()) + " — " + markdown(event.diseaseName())),
             field("Độ tin cậy", confidence), field("Phác đồ", rule)),
-        null);
+        null, reportLink(event.reportId()));
   }
 
   public Map<String, Object> treatmentReported(TreatmentReportedEvent event) {
@@ -91,7 +106,49 @@ public class MattermostMessageBuilder {
             field("Thuốc", markdown(event.pesticideName())), field("Liều", markdown(dose)),
             field("Ngày phun", formatDate(event.appliedAt())),
             field("Hết cách ly", formatDate(event.harvestLockedUntil()))),
-        null);
+        null, reportLink(event.reportId()));
+  }
+
+  public Map<String, Object> diagnosisDecided(DiagnosisDecidedEvent event) {
+    String title = event.approved() ? "Chẩn đoán đã được duyệt" : "Chẩn đoán bị từ chối";
+    List<Map<String, Object>> fields =
+        new ArrayList<>(List.of(field("Mã báo cáo", "#" + event.reportId()),
+            field("Mã thửa", markdown(event.parcelCode())),
+            field("Bệnh", markdown(event.diseaseName())),
+            field("Người xử lý", markdown(event.decidedBy()))));
+    if (!event.approved()) {
+      fields.add(field("Lý do", markdown(event.reason())));
+    }
+    String fallback = "%s: báo cáo #%d, thửa %s, bệnh %s, bởi %s%s".formatted(title,
+        event.reportId(), plain(event.parcelCode()), plain(event.diseaseName()),
+        plain(event.decidedBy()), event.approved() ? "" : ". Lý do: " + plain(event.reason()));
+    return payload(fallback, event.approved() ? COLOR_REQUEST : COLOR_REVIEW_REQUIRED, title,
+        fields, null, reportLink(event.reportId()));
+  }
+
+  public Map<String, Object> treatmentDecided(TreatmentDecidedEvent event) {
+    String title = switch (event.outcome()) {
+      case RECORDED -> "Đã ghi nhận việc phun thuốc";
+      case CONFIRMED -> "Đã xác nhận việc phun thuốc";
+      case REJECTED -> "Đã từ chối khai phun thuốc";
+    };
+    List<Map<String, Object>> fields = new ArrayList<>(
+        List.of(field("Mã báo cáo", "#" + event.reportId()),
+            field("Mã thửa", markdown(event.parcelCode())),
+            field("Thuốc", markdown(event.pesticideName())),
+            field("Người xử lý", markdown(event.decidedBy()))));
+    if (event.outcome() == TreatmentDecidedEvent.Outcome.REJECTED) {
+      fields.add(field("Lý do", markdown(event.reason())));
+    } else {
+      fields.add(field("Hết cách ly", formatDate(event.harvestLockedUntil())));
+    }
+    String fallback = "%s: báo cáo #%d, thửa %s, thuốc %s, bởi %s".formatted(title,
+        event.reportId(), plain(event.parcelCode()), plain(event.pesticideName()),
+        plain(event.decidedBy()));
+    return payload(fallback,
+        event.outcome() == TreatmentDecidedEvent.Outcome.REJECTED ? COLOR_REVIEW_REQUIRED
+            : COLOR_REQUEST,
+        title, fields, null, reportLink(event.reportId()));
   }
 
   public Map<String, Object> parcelCreated(ParcelCreatedEvent event) {
@@ -166,10 +223,18 @@ public class MattermostMessageBuilder {
 
   private static Map<String, Object> payload(String fallback, String color, String title,
       List<Map<String, Object>> fields, String imageUrl) {
+    return payload(fallback, color, title, fields, imageUrl, null);
+  }
+
+  private static Map<String, Object> payload(String fallback, String color, String title,
+      List<Map<String, Object>> fields, String imageUrl, String titleLink) {
     Map<String, Object> attachment = new LinkedHashMap<>();
     attachment.put("fallback", fallback);
     attachment.put("color", color);
     attachment.put("title", title);
+    if (titleLink != null) {
+      attachment.put("title_link", titleLink);
+    }
     attachment.put("fields", fields);
     if (imageUrl != null) {
       attachment.put("image_url", imageUrl);

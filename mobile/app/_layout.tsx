@@ -53,6 +53,7 @@ function RootStack() {
         <Stack.Screen name="index" options={{ title: "Thửa của tôi", headerRight: HeaderLinks }} />
         <Stack.Screen name="profile" options={{ title: "Hồ sơ" }} />
         <Stack.Screen name="notifications" options={{ title: "Thông báo" }} />
+        <Stack.Screen name="knowledge" options={{ title: "Hỏi đáp tài liệu" }} />
         <Stack.Screen name="seasons/harvest" options={{ title: "Khai báo thu hoạch" }} />
         <Stack.Screen name="seasons/reschedule" options={{ title: "Đổi ngày thu hoạch" }} />
         <Stack.Screen name="parcels/[code]" />

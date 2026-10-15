@@ -73,3 +73,21 @@ jobs:
               route["upstream_id"] for route in config["routes"] if "upstream_id" in route}
           PY
           done
+
+  dashboard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Dashboard bundle and chart query contexts
+        working-directory: ./bi
+        run: python -m unittest test_chart_query_context -v

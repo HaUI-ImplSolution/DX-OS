@@ -278,7 +278,7 @@ function ApplyTreatmentBox({
   if (result) {
     return (
       <div className="banner banner-success">
-        <strong>Đã ghi nhận phun thuốc (M6)</strong>
+        <strong>Đã ghi nhận phun thuốc</strong>
         <p>
           {result.pesticideCode} — {result.doseAmountSnapshot} {result.doseUnitSnapshot}, cách ly{" "}
           {result.phiDaysSnapshot} ngày. Ruộng bị khoá thu hoạch đến hết ngày{" "}
@@ -365,7 +365,7 @@ export default function DiagnosisPanel({
     <Section
       step="4"
       title="Chẩn đoán, duyệt & xử lý"
-      subtitle="Tra cứu deterministic (M3) → diễn đạt khuyến nghị (M4) → kỹ sư duyệt (M5) → ghi nhận đã phun (M6)"
+      subtitle="Tra cứu phác đồ → khuyến nghị → kỹ sư duyệt → ghi nhận đã phun"
     >
       {needsRetake && (
         <div className="banner banner-warning">Cần chụp lại: {report.retakeReason}</div>

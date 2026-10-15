@@ -88,9 +88,10 @@ superset:
 
 mattermost:
   webhook:
-    # Empty disables notifications. Internal hostname, e.g. http://mattermost:8065/hooks/<key>.
-    # A channel may have its own url under url-<channel key>; without one it uses this url.
+    # Default webhook url. Unset: the channel's file under dir, else its notifications are off.
     url: ${MATTERMOST_WEBHOOK_URL:}
+    # Folder of <channel key>.url files written by mattermost-bootstrap. Unset: no file is read.
+    dir: ${MATTERMOST_WEBHOOK_DIR:}
     connect-timeout-ms: ${MATTERMOST_WEBHOOK_CONNECT_TIMEOUT_MS:2000}
     read-timeout-ms: ${MATTERMOST_WEBHOOK_READ_TIMEOUT_MS:3000}
   db:

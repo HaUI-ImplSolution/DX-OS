@@ -63,6 +63,11 @@ export default function ParcelsScreen() {
         ListFooterComponent={
           <View style={styles.footer}>
             <Button label="Thêm thửa mới" onPress={() => router.push("/parcels/new")} />
+            <Button
+              label="Hỏi đáp tài liệu"
+              variant="secondary"
+              onPress={() => router.push("/knowledge")}
+            />
           </View>
         }
         refreshControl={
@@ -84,5 +89,5 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
   list: { padding: spacing.lg },
   separator: { height: spacing.md },
-  footer: { marginTop: spacing.lg },
+  footer: { marginTop: spacing.lg, gap: spacing.md },
 });

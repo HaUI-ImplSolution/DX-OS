@@ -15,7 +15,9 @@ import HaUI.ImplSolution.dxos.farm.dto.DiagnosisRejectRequest;
 import HaUI.ImplSolution.dxos.farm.dto.DiagnosisResponse;
 import HaUI.ImplSolution.dxos.farm.dto.SymptomSuggestionResponse;
 import HaUI.ImplSolution.dxos.farm.dto.TreatmentApplicationResponse;
+import HaUI.ImplSolution.dxos.farm.event.DiagnosisDecidedEvent;
 import HaUI.ImplSolution.dxos.farm.event.DiagnosisPendingEvent;
+import HaUI.ImplSolution.dxos.farm.event.TreatmentDecidedEvent;
 import HaUI.ImplSolution.dxos.farm.event.TreatmentReportedEvent;
 import HaUI.ImplSolution.dxos.core.api.exception.InvalidStateException;
 import HaUI.ImplSolution.dxos.core.api.exception.PokaYokeViolationException;
@@ -312,6 +314,9 @@ public class DiagnosisService {
                 ? "Có phác đồ, hãy xem hướng dẫn phun thuốc trong báo cáo."
                 : "Kỹ sư sẽ hướng dẫn thêm."),
         "DISEASE_REPORT", String.valueOf(report.getId()));
+    eventPublisher.publishEvent(
+        new DiagnosisDecidedEvent(report.getId(), report.getCropSeason().getParcel().getCode(),
+            saved.getDisease().getName(), true, null, currentUserService.currentFullName()));
     return toResponse(saved);
   }
 
@@ -333,6 +338,9 @@ public class DiagnosisService {
         "Báo cáo #%d thửa %s. Lý do: %s".formatted(report.getId(),
             report.getCropSeason().getParcel().getCode(), request.reason()),
         "DISEASE_REPORT", String.valueOf(report.getId()));
+    eventPublisher.publishEvent(new DiagnosisDecidedEvent(report.getId(),
+        report.getCropSeason().getParcel().getCode(), saved.getDisease().getName(), false,
+        request.reason(), currentUserService.currentFullName()));
     return toResponse(saved);
   }
 
@@ -371,6 +379,7 @@ public class DiagnosisService {
       workflowService.recordTransition(TREATMENT_CASE_TYPE, TREATMENT_ENTITY_TYPE, saved.getId(),
           WorkflowStatus.APPROVED, currentActor(), null, null);
     }
+    publishTreatmentDecision(reportId, saved, TreatmentDecidedEvent.Outcome.RECORDED, null);
     return toApplicationResponse(saved);
   }
 
@@ -429,6 +438,7 @@ public class DiagnosisService {
         "Thửa %s: cách ly đến hết ngày %s, sau ngày đó mới được thu hoạch."
             .formatted(saved.getCropSeason().getParcel().getCode(), saved.getHarvestLockedUntil()),
         "DISEASE_REPORT", String.valueOf(reportId));
+    publishTreatmentDecision(reportId, saved, TreatmentDecidedEvent.Outcome.CONFIRMED, null);
     return toApplicationResponse(saved);
   }
 
@@ -449,7 +459,17 @@ public class DiagnosisService {
         "Thửa %s. Lý do: %s. Bạn có thể khai lại."
             .formatted(saved.getCropSeason().getParcel().getCode(), request.reason()),
         "DISEASE_REPORT", String.valueOf(reportId));
+    publishTreatmentDecision(reportId, saved, TreatmentDecidedEvent.Outcome.REJECTED,
+        request.reason());
     return toApplicationResponse(saved);
+  }
+
+  private void publishTreatmentDecision(Long reportId, TreatmentApplication application,
+      TreatmentDecidedEvent.Outcome outcome, String reason) {
+    eventPublisher.publishEvent(
+        new TreatmentDecidedEvent(reportId, application.getCropSeason().getParcel().getCode(),
+            application.getPesticide().getName(), outcome, application.getHarvestLockedUntil(),
+            reason, currentUserService.currentFullName()));
   }
 
   // The spraying recorded for a report, if any.

@@ -11,24 +11,19 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Video demo 3-5 phút, rehearsal ít nhất một lần | Kịch bản ở [`SUBMISSION.md`](./SUBMISSION.md) mục 2 |
 | Tạo vài issue mẫu trên GitHub | Issues đã bật, hiện chưa có issue nào; lấy từ mục 5 và 6 của tài liệu này |
 | Chụp ảnh giao diện hai chế độ (Farm, Lab) lưu vào repository cho hồ sơ | Chưa có |
-| Bổ sung các thành viên còn lại vào mục Liên hệ của `README.md` và `README_EN.md` | Hiện chỉ có người duy trì |
-| Quét lại gitleaks nếu có commit mới trước ngày chấm | Lần gần nhất 14/10/2026: 355 commit, không có phát hiện |
+| Quét lại gitleaks nếu có commit mới trước ngày chấm | Lần gần nhất 15/10/2026: 358 commit, không có phát hiện |
 | Chốt ngày hạn nộp thật | Chưa chốt |
 
 ## 2. Việc cần sửa trong mã và cấu hình
 
-| Việc | Chi tiết |
-|---|---|
-| Export dashboard Superset chưa có `query_context` cho từng chart | Dashboard vẫn hiển thị bình thường |
+Không còn việc.
 
 ## 3. Chưa kiểm thử
 
 | Việc | Ghi chú |
 |---|---|
-| Kiểm tay Farm F3 trên điện thoại, kèm ngưỡng GPS và nhãn "Đang cách ly" | Kịch bản ở [`TESTING.md`](./TESTING.md); các mục kiểm tay còn lại đã đạt |
-| Test tự động cho thông báo khi duyệt hoặc từ chối chẩn đoán và khi xác nhận phun thuốc | |
-| Test tự động cho luật đặt phòng của Lab (quá 4 giờ, sức chứa, quyền theo vai) | Ràng buộc chống trùng giờ đã có test; các luật còn lại chỉ có E2E |
-| Dashboard Superset | Chưa có test tự động |
+| Kiểm tay Farm F3 trên điện thoại, kèm ngưỡng GPS và nhãn "Đang cách ly"; icon và splash của mobile (chỉ hiện ở bản build thật, không hiện ở Expo Go) | Kịch bản ở [`TESTING.md`](./TESTING.md); các mục kiểm tay còn lại đã đạt |
+| Dashboard Superset hiển thị trên giao diện | Bundle và `query_context` đã có test; chưa có test tự động mở dashboard trên Superset thật |
 
 ## 4. Giới hạn của AI và dữ liệu
 
@@ -40,7 +35,6 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Ngưỡng độ nét mới thử trên ảnh công khai và ảnh mờ nhân tạo | Chưa có ảnh mờ thật ngoài ruộng; chưa tách vùng lá |
 | Nộp báo cáo cần AI service chạy | Chưa có đường nhận ảnh chưa kiểm khi AI dừng; hàng đợi offline thử lại |
 | Chưa có mô hình nhận diện sâu hại | Detector chỉ có 5 bệnh lá |
-| Chẩn đoán chưa trả `management_policy` cho nhánh `NO_CHEMICAL_CONTROL` | Bảng `disease_management_policies` đã có dữ liệu seed nhưng contract AI và Backend chưa có trường này |
 | Kho RAG của Farm chỉ có 6 tài liệu bệnh lúa | Chưa có VietGAP hay quy trình canh tác |
 | Truy xuất tri thức dựa trên MiniLM đa ngữ | Câu nêu tên bệnh được xếp đúng; câu chỉ tả triệu chứng phụ thuộc embedding; bộ thử có 15 câu |
 | Giới hạn 60 câu hỏi mỗi phút mỗi IP là số tạm, chưa thử tải | `knowledge.min-score` 0.40 loại 7/8 câu ngoài chủ đề; điểm đoạn đầu của câu đúng chủ đề từ 0.50 đến 0.83 |
@@ -59,26 +53,15 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | SLA nhắc kỹ sư khi bản khai phun chờ xác nhận lâu | Admin xác nhận thay được |
 | Thu hoạch thay hộ không có trong timeline workflow | Thu hoạch không có case; thông tin nằm trên vụ và log backend |
 | Nhắc hạn thu hoạch không giới hạn số lần | Nhắc mỗi ngày tới khi thu hoạch hoặc đổi ngày |
-| Thời tiết chưa có màn hình web hay mobile, chưa có chart thời tiết | Chỉ có API |
-| Trang `/knowledge` chưa có trên mobile | Chỉ có trên web |
-| Chart sản lượng và diện tích thu hoạch trên Superset | Dữ liệu đã thu thập, chưa vẽ |
+| Chưa có chart thời tiết trên Superset | Web và mobile hiện thời tiết theo thửa, dữ liệu thời tiết chưa lưu vào cơ sở dữ liệu |
 | Phạm vi phụ trách theo khu vực cho engineer | Phân quyền hiện theo thao tác, không theo khu vực |
-| Icon và splash mobile vẫn là ảnh mặc định của Expo | |
-| Thông báo Mattermost khi chẩn đoán được duyệt, bị từ chối hoặc đã ghi nhận xử lý | |
-| Deep link từ thông báo Mattermost sang báo cáo, danh sách báo cáo chờ xử lý | Hướng làm bên dưới |
-| Retry, hàng đợi bền vững hoặc outbox cho thông báo chat bị lỡ; tự tạo webhook lúc dựng compose | Hiện best-effort và cấp webhook bằng tay |
-
-Hướng làm deep link:
-
-- Thông báo "Báo cáo sâu bệnh mới" và "Chẩn đoán chờ duyệt" kèm link `<MATTERMOST_APP_BASE_URL>/?report=<id>`; biến mới là địa chỉ web mà trình duyệt người xem truy cập được, rỗng thì không kèm link.
-- Web đọc query `report`, gọi `GET /api/v1/disease-reports/{id}` rồi tự chọn thửa, vụ và báo cáo; quyền vẫn do Backend kiểm (FARMER nhận 404 với thửa của người khác); `DiseaseReportResponse` thêm `parcelCode`.
-- Sau đó thêm tab "Chờ xử lý" liệt kê báo cáo chưa có chẩn đoán hoặc chẩn đoán `PENDING`, lọc theo thửa và farmer, cần endpoint list theo đúng phạm vi người xem.
-- Không làm nút chạy AI ngay trong Mattermost: cần Mattermost gọi ngược Backend kèm xác thực.
+| Retry, hàng đợi bền vững hoặc outbox cho thông báo chat bị lỡ | Hiện gửi một lần, lỗi thì bỏ |
 
 ## 6. Phụ thuộc người ngoài
 
 | Việc | Ảnh hưởng |
 |---|---|
+| Chuyên gia duyệt `disease_management_policies` (hiện 0/6 policy đủ điều kiện, bảng để trống) | Chẩn đoán chưa trả `management_policy` cho nhánh `NO_CHEMICAL_CONTROL`; có policy được duyệt thì mới thêm trường này vào contract AI và Backend |
 | Chuyên gia duyệt treatment rule cho bệnh còn lại (đốm nâu, Help 400SC đang `IN_REVIEW`) | Đạo ôn và khô vằn đã có rule được duyệt; bệnh khác chỉ ở `review_required`, không có liều và PHI. Có quyết định duyệt thì cập nhật `data/structured/` và chạy lại `generate_seed_sql.py` |
 | Kỹ sư nông nghiệp xác nhận mốc tháng loại vụ và danh mục giống (đang `IN_REVIEW`) | Gợi ý loại vụ và ngày thu hoạch dựa trên số tạm; đổi `app.season-start-months` khi có xác nhận, không cần migration |
 | Người phụ trách xác nhận nền bản đồ Superset (đang nền trắng) | Dashboard bản đồ |

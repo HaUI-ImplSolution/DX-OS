@@ -22,6 +22,8 @@ Chẩn đoán AI do kỹ sư kích hoạt trên web; nông dân thấy "Chờ ch
 - **Tạo thửa:** lấy vị trí bằng `expo-location`, hiện sai số; sai số quá ngưỡng của Backend (lấy từ `GET /api/v1/app`, dùng 30 m khi chưa tải được) hoặc vị trí giả lập thì khóa nút gửi (Backend kiểm lại).
   Thửa gửi đi ở trạng thái chờ duyệt; bị từ chối thì sửa và gửi lại; thửa đã duyệt có "Đề nghị chỉnh sửa thửa".
 - **Tạo vụ:** chỉ với thửa đã duyệt; chọn giống từ danh mục, ngày bắt đầu và loại vụ; ngày thu hoạch gợi ý do Backend tính, chọn ngoài khoảng gợi ý phải nêu lý do.
+- **Thời tiết:** thẻ ở màn thửa đã duyệt có vị trí, hiện thời tiết hiện tại và dự báo 3 ngày; mất mạng thì chỉ thẻ này báo lỗi.
+- **Hỏi đáp tài liệu:** màn `/knowledge` hỏi kho tài liệu bệnh lúa, trả đoạn trích kèm nguồn và giấy phép; cần mạng.
 - **Hộp thông báo:** `GET /api/v1/notifications` (30 mới nhất), hỏi số chưa đọc khi mở app, khi foreground, khi quay lại màn Thửa và khi kéo làm mới; không có push.
 - **Thu hoạch:** đọc `harvest-readiness`, thu hoạch trước ngày dự kiến phải xác nhận kèm lý do, vụ còn cách ly thì khóa gửi; có màn đổi ngày dự kiến kèm lý do.
 - **Khai phun:** ở chi tiết báo cáo đã duyệt, nông dân nhập liều và ngày phun, chờ kỹ sư xác nhận (trong lúc chờ chưa thu hoạch được); bị từ chối thì khai lại.
@@ -51,7 +53,7 @@ Trạng thái hiển thị (`NEEDS_RETAKE` của báo cáo được ưu tiên, c
 
 | Đường dẫn | Nội dung |
 |---|---|
-| `app/` | Màn hình: `index` (Thửa), `parcels/[code]`, `parcels/new`, `seasons/new`, `seasons/[id]`, `seasons/harvest`, `seasons/reschedule`, `notifications`, `capture`, `reports/[id]`, `login`, `profile` |
+| `app/` | Màn hình: `index` (Thửa), `parcels/[code]`, `parcels/new`, `seasons/new`, `seasons/[id]`, `seasons/harvest`, `seasons/reschedule`, `notifications`, `knowledge`, `capture`, `reports/[id]`, `login`, `profile` |
 | `src/api/` | `client.ts` (`request`, `upload`, `ApiError`), `endpoints.ts` |
 | `src/auth/` | PKCE (`AuthProvider`), lưu token (`session`), refresh (`tokens`), claim (`claims`) |
 | `src/offline/` | Hàng đợi: lưu trữ (`queue`) và gửi lại (`QueueProvider`) |
@@ -127,4 +129,4 @@ Mỗi màn hình có đúng một hành động chính, màu `primary`, đặt �
 
 ## Còn thiếu
 
-Push notification, icon và splash riêng, endpoint gộp trạng thái cách ly theo thửa; chi tiết ở [`docs/BACKLOG.md`](../docs/BACKLOG.md).
+Push notification; chi tiết ở [`docs/BACKLOG.md`](../docs/BACKLOG.md).

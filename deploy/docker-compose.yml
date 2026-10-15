@@ -24,6 +24,7 @@ x-mattermost-volumes: &mattermost-volumes
   - ./data/mattermost/plugins:/mattermost/plugins
   - ./data/mattermost/client-plugins:/mattermost/client/plugins
   - ./data/mattermost/bleve-indexes:/mattermost/bleve-indexes
+  - ./data/mattermost/webhooks:/mattermost/webhooks
 
 services:
   # ---------------------------------------------------------------------------
@@ -101,10 +102,12 @@ services:
       # Keycloak admin client (creates accounts and the roles of the app)
       KEYCLOAK_ADMIN_CLIENT_ID: ${KEYCLOAK_ADMIN_CLIENT_ID:?}
       KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET:?}
-      # Chat notifications, both apps
+      # Chat notifications, both apps; a URL left empty is read from the file mattermost-bootstrap writes
+      MATTERMOST_WEBHOOK_DIR: /run/mattermost-webhooks
       MATTERMOST_WEBHOOK_URL: ${MATTERMOST_WEBHOOK_URL:-}
       MATTERMOST_WEBHOOK_URL_ADMIN: ${MATTERMOST_WEBHOOK_URL_ADMIN:-}
       MATTERMOST_IMAGE_BASE_URL: ${MATTERMOST_IMAGE_BASE_URL:-}
+      MATTERMOST_APP_BASE_URL: ${MATTERMOST_APP_BASE_URL:-}
       # Limits, both apps
       MAX_PENDING_REQUESTS: ${MAX_PENDING_REQUESTS:-3}
       KNOWLEDGE_MIN_SCORE: ${KNOWLEDGE_MIN_SCORE:-0.40}
@@ -121,6 +124,8 @@ services:
       LAB_SLA_WARNING_RATIO: ${LAB_SLA_WARNING_RATIO:-0.8}
       LAB_LOAN_REMINDER_CRON: ${LAB_LOAN_REMINDER_CRON:-0 0 7 * * *}
       LAB_LOAN_DUE_SOON_DAYS: ${LAB_LOAN_DUE_SOON_DAYS:-1}
+    volumes:
+      - ./data/mattermost/webhooks:/run/mattermost-webhooks:ro
     # No published port: clients reach the API through the gateway.
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8081/actuator/health || exit 1"]
@@ -379,6 +384,7 @@ services:
     volumes:
       - ../bi/bootstrap.sh:/app/pythonpath/bootstrap.sh:ro
       - ../bi/bootstrap_datasources.py:/app/pythonpath/bootstrap_datasources.py:ro
+      - ../bi/chart_query_context.py:/app/pythonpath/chart_query_context.py:ro
       - ../bi/grant_engineer_access.py:/app/pythonpath/grant_engineer_access.py:ro
       - ../bi/superset_config.py:/app/pythonpath/superset_config.py:ro
       - ../bi/farm_dashboard_export.zip:/app/pythonpath/farm_dashboard_export.zip:ro
@@ -394,7 +400,7 @@ services:
     image: alpine:3.20
     command:
       ["chown", "-R", "2000:2000", "/mattermost/config", "/mattermost/data", "/mattermost/logs",
-        "/mattermost/plugins", "/mattermost/client/plugins", "/mattermost/bleve-indexes"]
+        "/mattermost/plugins", "/mattermost/client/plugins", "/mattermost/bleve-indexes", "/mattermost/webhooks"]
     volumes: *mattermost-volumes
 
   mattermost:
@@ -418,7 +424,8 @@ services:
     ports:
       - "${MATTERMOST_HOST_PORT:?}:8065"
 
-  # Creates the admin, team and default channels once Mattermost is up (idempotent, see chat/bootstrap.sh).
+  # Creates the admin, team, default channels and one incoming webhook per channel once Mattermost is up
+  # (idempotent, see chat/bootstrap.sh); the webhook URLs are written to data/mattermost/webhooks.
   mattermost-bootstrap:
     image: mattermost/mattermost-team-edition:10.5
     entrypoint: ["/bin/bash", "/bootstrap.sh"]
@@ -431,8 +438,10 @@ services:
       MATTERMOST_ADMIN_USERNAME: ${MATTERMOST_ADMIN_USERNAME:?}
       MATTERMOST_ADMIN_EMAIL: ${MATTERMOST_ADMIN_EMAIL:?}
       MATTERMOST_ADMIN_PASSWORD: ${MATTERMOST_ADMIN_PASSWORD:?}
+      WEBHOOKS_DIR: /mattermost/webhooks
     volumes:
       - ../chat/bootstrap.sh:/bootstrap.sh:ro
+      - ./data/mattermost/webhooks:/mattermost/webhooks
 
 volumes:
   ai_weights:

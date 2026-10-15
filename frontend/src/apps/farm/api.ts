@@ -8,6 +8,7 @@ import {
 } from "../../shell";
 import type {
   ApprovalRequest,
+  AwaitingReport,
   ApprovalRequestFilter,
   CropSeason,
   CropSeasonCreateRequest,
@@ -25,12 +26,14 @@ import type {
   HouseholdCreateRequest,
   HouseholdCreateResult,
   IsolationStatus,
+  Page,
   Parcel,
   ParcelCreateRequest,
   Pesticide,
   RiceVariety,
   TreatmentApplication,
   TreatmentRule,
+  Weather,
 } from "./types";
 
 export { ApiError } from "../../shell";
@@ -44,6 +47,8 @@ export const createHousehold = (payload: HouseholdCreateRequest) =>
   request<HouseholdCreateResult>("/households", json("POST", payload));
 
 export const listParcels = () => request<Parcel[]>("/parcels");
+export const getParcelWeather = (code: string) =>
+  request<Weather>(`/parcels/${encodeURIComponent(code)}/weather`);
 export const createParcel = (payload: ParcelCreateRequest) =>
   request<Parcel>("/parcels", json("POST", payload));
 
@@ -79,6 +84,8 @@ export const listApprovalRequests = (filter: ApprovalRequestFilter) =>
 export const listDiseaseReports = (cropSeasonId: number) =>
   request<DiseaseReport[]>(`/crop-seasons/${cropSeasonId}/disease-reports`);
 export const getDiseaseReport = (id: number) => request<DiseaseReport>(`/disease-reports/${id}`);
+export const listAwaitingDiagnosis = (page: number, size: number) =>
+  request<Page<AwaitingReport>>(`/disease-reports/awaiting-diagnosis?${new URLSearchParams({ page: String(page), size: String(size) })}`);
 export const createDiseaseReport = (cropSeasonId: number, image: File) => {
   const form = new FormData();
   form.append("image", image);

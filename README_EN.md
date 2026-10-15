@@ -25,6 +25,14 @@ One shared core handles sign-in, data, workflows, notifications and AI; two busi
 - **One-command run:** builds the whole system with demo data, with automated tests on a clean environment.
 - **Transparent open source:** licenses and the list of software components are public, with automatic scanning for leaked passwords.
 
+## 🗺️ Overall architecture
+
+![Overall architecture diagram](docs/images/tong_quan.gif)
+
+Users, on web or mobile, reach the internal network only through a single Gateway (APISIX).
+The Backend handles the business logic, stores photos in MinIO and data in PostgreSQL, asks the AI Service to diagnose and answer questions, and sends notifications to Mattermost; Superset reads the data for reports.
+The role of each service is in [`ARCHITECTURE.md`](./ARCHITECTURE.md).
+
 ## 🧱 Three-tier architecture
 
 ![Three-tier architecture diagram](docs/images/so_do_3_tang.png)
@@ -47,7 +55,7 @@ Full diagrams and request flows are in [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 ## 🧩 Features
 
-**DX-Farm:** households and parcels with locations, crop seasons, disease reports with image quality checks, AI diagnosis with engineer approval, spraying records, harvest blocked until the waiting period ends, reminders, notification inbox, per-parcel weather, document Q&A with citations, summary reports; a mobile app for farmers that works offline.
+**DX-Farm:** households and parcels with locations, crop seasons, disease reports with image quality checks, AI diagnosis with engineer approval, spraying records, harvest blocked until the waiting period ends, reminders, notification inbox, chat notifications that link straight to the report, per-parcel weather, document Q&A with citations, summary reports; a mobile app for farmers that works offline.
 
 **DX-Lab:** support requests with deadlines and internal comments, type and priority suggestions, equipment loans with repair log, room booking without time conflicts, regulations Q&A with source and license, statistics.
 
@@ -112,7 +120,7 @@ All configuration lives in `deploy/.env` (template: [`deploy/.env.example`](./de
 | `POSTGRES_*`, `MINIO_*`, `KEYCLOAK_*`, `SUPERSET_*`, `MATTERMOST_*` | Per-service accounts and passwords, empty in the template, never committed |
 | `BACKEND_TO_AI_API_KEY`, `AI_TO_BACKEND_API_KEY` | Service keys for each direction between Backend and AI |
 | `GATEWAY_PUBLIC_URL`, `SUPERSET_PUBLIC_URL` | Public addresses of the gateway and Superset; change from `localhost` when running on a server |
-| `MATTERMOST_WEBHOOK_URL_*` | Webhook for each chat channel; empty disables that channel's notifications |
+| `MATTERMOST_WEBHOOK_URL_*` | Overrides the webhook of a chat channel; empty uses the webhook created when the stack starts |
 | `OLLAMA_MODEL` | LLM model, default `qwen2.5:1.5b` |
 
 Per-application settings: [`backend/app-farm/README.md`](./backend/app-farm/README.md) and [`backend/app-lab/README.md`](./backend/app-lab/README.md).
@@ -160,8 +168,6 @@ Full testing guide: [`docs/TESTING.md`](./docs/TESTING.md).
 | Q&A returns nothing | Check `docker compose logs rag-ingest`; the knowledge ingest job has not finished or failed |
 | Out of disk space while building | `docker system df`, then prune unused images and cache |
 
-Full table: [`docs/TESTING.md`](./docs/TESTING.md) section 8.
-
 ## 📁 Repository layout
 
 | Folder | Contents |
@@ -186,7 +192,9 @@ Top-level documents: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](
 
 | Role | Name | Contact |
 |---|---|---|
-| Maintainer | KhuongSpring | pkhuong535@gmail.com |
+| Developer | Phạm Minh Khương | pkhuong535@gmail.com |
+| Developer | Nguyễn Đình Duy Khánh | dinhkhanh19042006@gmail.com |
+| Developer | Trần Quang Tùng | tung51652@gmail.com |
 
 ## 📜 License
 

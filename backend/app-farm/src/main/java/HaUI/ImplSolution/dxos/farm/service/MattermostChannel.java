@@ -8,7 +8,7 @@ import java.util.Locale;
 public enum MattermostChannel {
   // New parcel and crop season requests for the administrators
   ADMIN,
-  // New reports and pending diagnoses for the engineers
+  // New reports, pending diagnoses and their outcomes for the engineers
   ENGINEER;
 
   // Channel key understood by the chat webhook.

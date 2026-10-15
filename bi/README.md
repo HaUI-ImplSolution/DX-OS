@@ -11,6 +11,8 @@ Service `superset` khai báo trong [`deploy/docker-compose.yml`](../deploy/docke
 - `bootstrap_datasources.py` đọc `DXOS_APP` (giá trị khác thì dừng) và đăng ký qua REST API của Superset, idempotent và có retry:
   - **Farm:** import `farm_dashboard_export.zip` (database, dataset, chart, dashboard; nguồn sự thật duy nhất) và truyền lại mật khẩu Postgres vì export mask mật khẩu. Chưa có bundle thì chỉ tạo kết nối `DX-Farm` và 6 dataset.
   - **Lab:** tạo kết nối `DX-Lab` và 5 dataset `vw_lab_*` (`rooms`, `devices`, `tickets`, `device_loans`, `room_bookings`); dashboard dựng tay.
+- Superset bỏ `query_context` khi import, nên `bootstrap_datasources.py` sinh lại cho từng chart của dashboard bằng `chart_query_context.py` rồi lưu qua `PUT /api/v1/chart/{id}`.
+  Hỗ trợ pie, cột theo thời gian, bảng thô, deck.gl scatter và heatmap; chart loại khác giữ nguyên.
 - `superset_config.py` cấu hình SSO Keycloak (`AUTH_OAUTH`).
 
 ## Đăng nhập
@@ -21,7 +23,7 @@ Service `superset` khai báo trong [`deploy/docker-compose.yml`](../deploy/docke
 
 ## Dashboard "DX-Farm — Bản đồ & Trạng thái thửa ruộng"
 
-7 chart, mỗi chart đọc một view chỉ chứa bản ghi đã duyệt hoặc đã xử lý, không có dữ liệu cá nhân:
+9 chart, mỗi chart đọc một view chỉ chứa bản ghi đã duyệt hoặc đã xử lý, không có dữ liệu cá nhân:
 
 | Chart | View |
 |---|---|
@@ -32,10 +34,22 @@ Service `superset` khai báo trong [`deploy/docker-compose.yml`](../deploy/docke
 | Thửa đang cách ly (bảng) | `vw_treatment_applications_confirmed` |
 | Lịch thu hoạch dự kiến (cột chồng) | `vw_crop_seasons_approved` |
 | Tỷ lệ AI đúng/sai (Pie) | `vw_ai_diagnosis_outcomes` (`CONFIRMED`, `REJECTED`, `OVERRIDDEN`) |
+| Sản lượng thu hoạch theo tháng (cột chồng) | `vw_crop_seasons_approved` (vụ `HARVESTED`) |
+| Diện tích thu hoạch theo tháng (cột chồng) | `vw_crop_seasons_approved` (vụ `HARVESTED`) |
 
 Còn `vw_disease_reports_processed` (báo cáo đã chẩn đoán, không ảnh và người báo cáo); view `vw_lab_*` của Lab chỉ chứa mã, id và nhóm.
 Chart chưa có dữ liệu hiện "No results" (chưa có việc phun thuốc đã xác nhận hoặc chẩn đoán AI).
 Nền bản đồ để trắng vì mọi nền miễn phí đều cần thẻ thanh toán hoặc gắn nhãn sai ở Hoàng Sa, Trường Sa; điểm vẫn đúng vị trí tương đối.
+
+## Kiểm thử
+
+```bash
+cd bi && python -m unittest test_chart_query_context
+```
+
+Cần PyYAML.
+Bài kiểm tra đọc `farm_dashboard_export.zip`: `query_context` sinh cho mọi chart, chart trỏ đúng dataset, mật khẩu database bị che, mọi dataset là view mà `superset_ro` đọc được, mỗi chart có đúng một ô trong dashboard và gắn bằng UUID, mỗi hàng không quá 12 cột.
+CI chạy ở job `dashboard` của `ci-infra.yml`.
 
 ## Thêm view hoặc cập nhật dashboard
 

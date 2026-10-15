@@ -237,6 +237,46 @@ export interface AppNotification {
   createdAt: string;
 }
 
+export interface Weather {
+  parcelCode: string;
+  isSnapshot: boolean;
+  note: string | null;
+  current: {
+    temperatureC: number;
+    humidityPercent: number;
+    precipitationMm: number;
+    windSpeedKmh: number;
+    weatherCode: number;
+  };
+  daily: {
+    date: string;
+    tempMaxC: number;
+    tempMinC: number;
+    precipitationMm: number;
+    precipitationProbabilityPercent: number;
+  }[];
+}
+
+export interface KnowledgeSource {
+  sourceId: string;
+  title: string;
+  organization: string | null;
+  url: string | null;
+  license: string | null;
+  reviewStatus: string | null;
+}
+
+export interface KnowledgePassage {
+  documentTitle: string;
+  content: string;
+  score: number;
+  sources: KnowledgeSource[];
+}
+
+export interface KnowledgeAnswer {
+  passages: KnowledgePassage[];
+}
+
 export interface Page<T> {
   items: T[];
   page: number;

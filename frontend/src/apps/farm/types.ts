@@ -143,6 +143,30 @@ export interface IsolationStatus {
 
 export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED";
 
+export interface Weather {
+  parcelCode: string;
+  latitude: number;
+  longitude: number;
+  isSnapshot: boolean;
+  source: string;
+  fetchedAt: string;
+  note: string | null;
+  current: {
+    temperatureC: number;
+    humidityPercent: number;
+    precipitationMm: number;
+    windSpeedKmh: number;
+    weatherCode: number;
+  };
+  daily: {
+    date: string;
+    tempMaxC: number;
+    tempMinC: number;
+    precipitationMm: number;
+    precipitationProbabilityPercent: number;
+  }[];
+}
+
 export interface TreatmentRule {
   id: number;
   diseaseCode: string;
@@ -177,6 +201,7 @@ export interface Diagnosis {
 export interface DiseaseReport {
   id: number;
   cropSeasonId: number;
+  parcelCode: string;
   imageUrl: string;
   reportedBy: string;
   reportedAt: string;
@@ -186,6 +211,17 @@ export interface DiseaseReport {
   retakeOf: number | null;
   retakeIds: number[];
   quality: ImagePrecheck | null;
+}
+
+// A report nobody has diagnosed yet, as the engineers' to-do list shows it.
+export interface AwaitingReport {
+  reportId: number;
+  cropSeasonId: number;
+  parcelCode: string;
+  farmerName: string | null;
+  riceVariety: string | null;
+  reportedBy: string;
+  reportedAt: string;
 }
 
 export interface DiagnosisCreateRequest {

@@ -3,9 +3,9 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
   "version": 1,
-  "serialNumber": "urn:uuid:22be07ef-cd0e-4c48-9d0c-4406c4c03e27",
+  "serialNumber": "urn:uuid:16d179cd-9a02-44ea-abf5-e953aa26b924",
   "metadata": {
-    "timestamp": "2026-10-07T07:26:14.589Z",
+    "timestamp": "2026-10-15T08:40:12.783Z",
     "tools": {
       "components": [
         {
@@ -1235,6 +1235,57 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/expo-secure-store"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "expo-splash-screen",
+      "version": "57.0.10",
+      "bom-ref": "dxfarm-mobile@1.0.0|expo-splash-screen@57.0.10",
+      "author": "650 Industries, Inc.",
+      "description": "Provides a module to allow keeping the native Splash Screen visible until you choose to hide it.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/expo-splash-screen@57.0.10",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/expo/expo.git#packages/expo-splash-screen",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://docs.expo.dev/versions/latest/sdk/splash-screen/",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/expo/expo/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/expo-splash-screen/-/expo-splash-screen-57.0.10.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "5bbfbeb4c8b254cbe258f4ef6935caa5c3b0c2ee526eb8b00369f47b01210be89cd4b15a50d4d45e2217afde4c54c48768b460b481bd746c824c26fe3647a490"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/expo-splash-screen"
         }
       ]
     },
@@ -2913,8 +2964,8 @@
       "type": "library",
       "name": "image-utils",
       "group": "@expo",
-      "version": "0.11.5",
-      "bom-ref": "dxfarm-mobile@1.0.0|@expo/image-utils@0.11.5",
+      "version": "0.11.6",
+      "bom-ref": "dxfarm-mobile@1.0.0|@expo/image-utils@0.11.6",
       "description": "A package used by Expo CLI for processing images",
       "licenses": [
         {
@@ -2924,7 +2975,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40expo/image-utils@0.11.5",
+      "purl": "pkg:npm/%40expo/image-utils@0.11.6",
       "externalReferences": [
         {
           "url": "git+https://github.com/expo/expo.git#packages/@expo/image-utils",
@@ -2942,12 +2993,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/@expo/image-utils/-/image-utils-0.11.5.tgz",
+          "url": "https://registry.npmjs.org/@expo/image-utils/-/image-utils-0.11.6.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "28f4014e99a901fcbf56ef72e303d6f34f3faad6718d89b2260f1c9b64023c0ba9a7ea84580ddbe739a4d2e94ec10f4e81e1f1b823e052a5a09301c5a3b52cad"
+              "content": "ae63299fb406a7aa54191090defbc1f513ffbeaab6abf3e94e8461e1d2ff15b85264e2d9d584e8b69b8b1dfef51463847e02a297fe0f09dde19167bf0827a212"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -4389,6 +4440,169 @@
     },
     {
       "type": "library",
+      "name": "config-plugins",
+      "group": "@expo",
+      "version": "57.0.10",
+      "bom-ref": "dxfarm-mobile@1.0.0|@expo/config-plugins@57.0.10",
+      "description": "A library for Expo config plugins",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40expo/config-plugins@57.0.10",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/expo/expo.git#packages/@expo/config-plugins",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://docs.expo.dev/guides/config-plugins/",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/expo/expo/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/@expo/config-plugins/-/config-plugins-57.0.10.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "5c5723d356e5a1f4a88683b189bacfb2bb053edda002282b716137b3a560fab487bcff505447e7c9f989355b2e2154f412363fd6b65527849a8cd0d1e5c263a4"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@expo/config-plugins"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "xml2js",
+      "version": "0.6.0",
+      "bom-ref": "dxfarm-mobile@1.0.0|xml2js@0.6.0",
+      "author": "Marek Kubica",
+      "description": "Simple XML to JavaScript object converter.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/xml2js@0.6.0",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/Leonidas-from-XIV/node-xml2js.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/Leonidas-from-XIV/node-xml2js",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/Leonidas-from-XIV/node-xml2js/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/xml2js/-/xml2js-0.6.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "78b4e1d2403cb8771ea9eb0fa9213e56f3b50830c958cc2541f07a2ee37a4fcc3a31a0c9f13c66f0feece5c1c3d26885d15f8619366b0d07f13d9415b2eaf7df"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=4.0.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/xml2js"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "xmlbuilder",
+          "version": "11.0.1",
+          "bom-ref": "dxfarm-mobile@1.0.0|xml2js@0.6.0|xmlbuilder@11.0.1",
+          "author": "Ozgur Ozcitak",
+          "description": "An XML builder for node.js",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/xmlbuilder@11.0.1",
+          "externalReferences": [
+            {
+              "url": "git://github.com/oozcitak/xmlbuilder-js.git",
+              "type": "vcs",
+              "comment": "as detected from PackageJson property \"repository.url\""
+            },
+            {
+              "url": "http://github.com/oozcitak/xmlbuilder-js",
+              "type": "website",
+              "comment": "as detected from PackageJson property \"homepage\""
+            },
+            {
+              "url": "http://github.com/oozcitak/xmlbuilder-js/issues",
+              "type": "issue-tracker",
+              "comment": "as detected from PackageJson property \"bugs.url\""
+            },
+            {
+              "url": "https://registry.npmjs.org/xmlbuilder/-/xmlbuilder-11.0.1.tgz",
+              "type": "distribution",
+              "hashes": [
+                {
+                  "alg": "SHA-512",
+                  "content": "7c396c23f905131ee02ef6de71cd3fa212c6e747ee810a7caf21f3313b96f6f49ad462745d858a9e1b14c7ba227b71bdf3eaf9e9a4d0214078921b78d91dc9bc"
+                }
+              ],
+              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:constraint:engine:node",
+              "value": ">=4.0"
+            },
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/xml2js/node_modules/xmlbuilder"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "runtime",
       "group": "@babel",
       "version": "7.29.7",
@@ -4440,57 +4654,6 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/@babel/runtime"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "config-plugins",
-      "group": "@expo",
-      "version": "57.0.9",
-      "bom-ref": "dxfarm-mobile@1.0.0|@expo/config-plugins@57.0.9",
-      "description": "A library for Expo config plugins",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/%40expo/config-plugins@57.0.9",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/expo/expo.git#packages/@expo/config-plugins",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
-        },
-        {
-          "url": "https://docs.expo.dev/guides/config-plugins/",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/expo/expo/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/@expo/config-plugins/-/config-plugins-57.0.9.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "84781f2f56af902744bc34b0ec8c252b045860d81cc736cd34c224e96ea54e426963431a8e29c07de2544b427ec0f0ac8d47c66d5a8e24cf9784f68ee6e954c6"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/@expo/config-plugins"
         }
       ]
     },
@@ -7340,8 +7503,8 @@
       "type": "library",
       "name": "require-utils",
       "group": "@expo",
-      "version": "57.0.5",
-      "bom-ref": "dxfarm-mobile@1.0.0|@expo/require-utils@57.0.5",
+      "version": "57.0.6",
+      "bom-ref": "dxfarm-mobile@1.0.0|@expo/require-utils@57.0.6",
       "description": "Reusable require and Node resolution utilities library for Expo",
       "licenses": [
         {
@@ -7351,7 +7514,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40expo/require-utils@57.0.5",
+      "purl": "pkg:npm/%40expo/require-utils@57.0.6",
       "externalReferences": [
         {
           "url": "git+https://github.com/expo/expo.git#packages/@expo/require-utils",
@@ -7369,12 +7532,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/@expo/require-utils/-/require-utils-57.0.5.tgz",
+          "url": "https://registry.npmjs.org/@expo/require-utils/-/require-utils-57.0.6.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "9130178fd94314420f32c6c03860866e305b305d288bb0aa91833bf4a397d030c3f704b05e694a2f5cf687c3b0b2b05fee66cea360e3951bd9bb80448eb2311b"
+              "content": "3ca59f15d320c16ae548fe8d1a99428b69cad1d10ce4c789d828f58a3af95564e667ea4ab09b09c36756901b65143cb1318f1e52308f67b868a851276dcd0f73"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -8588,6 +8751,416 @@
     },
     {
       "type": "library",
+      "name": "config-types",
+      "group": "@expo",
+      "version": "57.0.2",
+      "bom-ref": "dxfarm-mobile@1.0.0|@expo/config-types@57.0.2",
+      "description": "Types for the Expo config object app.config.ts",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40expo/config-types@57.0.2",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/expo/expo.git#packages/@expo/config-types",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/expo/expo/tree/main/packages/@expo/config-types#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/expo/expo/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/@expo/config-types/-/config-types-57.0.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "7b05b4f0ea27adc448b11288945bef72699a7c4e737a66f5a1cbb71e4370b553f246d8f6c38da964202430844e62971505a3e77379834fd5190f3c17582de2ea"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@expo/config-types"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "json-file",
+      "group": "@expo",
+      "version": "11.0.1",
+      "bom-ref": "dxfarm-mobile@1.0.0|@expo/json-file@11.0.1",
+      "description": "A module for reading, writing, and manipulating JSON files",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40expo/json-file@11.0.1",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/expo/expo.git#packages/@expo/json-file",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/expo/expo/tree/main/packages/@expo/json-file#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/expo/expo/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/@expo/json-file/-/json-file-11.0.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "cf11d68f830a28c00bdbd650498fc5b2cc784e196e938d099ae18d69e4b4efcc32fcd8651619d58beac71ee9ee944df124027408cef79bc54adbe1a417d791c1"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@expo/json-file"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "plist",
+      "group": "@expo",
+      "version": "0.8.1",
+      "bom-ref": "dxfarm-mobile@1.0.0|@expo/plist@0.8.1",
+      "description": "Mac OS X Plist parser/builder for Node.js and browsers",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40expo/plist@0.8.1",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/expo/expo.git#packages/@expo/plist",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/expo/expo/tree/main/packages/@expo/plist#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/expo/expo/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/@expo/plist/-/plist-0.8.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "de04d17862149b4a1168c0a5b00258c419d53c297a7d5a6c97c1d2f834d5c43856e06c95cb183d13f6679b706f707b54279d51249235e290b5c2facd8a50911f"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@expo/plist"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "sdk-runtime-versions",
+      "group": "@expo",
+      "version": "1.0.0",
+      "bom-ref": "dxfarm-mobile@1.0.0|@expo/sdk-runtime-versions@1.0.0",
+      "author": "Expo",
+      "description": "Functions for converting Expo SDK versions to EAS runtime versions",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40expo/sdk-runtime-versions@1.0.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@expo/sdk-runtime-versions/-/sdk-runtime-versions-1.0.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "0e8cf66df88f9dd5d814f311c0fc866b593941a28356963cd3a5098f9ef47a922233359a6320ada1b6acc9f0befaa7c85d56f939ccbbaf7b4ff5deb684043b21"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@expo/sdk-runtime-versions"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "glob",
+      "version": "13.0.6",
+      "bom-ref": "dxfarm-mobile@1.0.0|glob@13.0.6",
+      "author": "Isaac Z. Schlueter",
+      "description": "the most correct and second fastest glob implementation in JavaScript",
+      "licenses": [
+        {
+          "license": {
+            "id": "BlueOak-1.0.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/glob@13.0.6",
+      "externalReferences": [
+        {
+          "url": "git+ssh://git@github.com/isaacs/node-glob.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/isaacs/node-glob#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/isaacs/node-glob/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/glob/-/glob-13.0.6.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "5a3972ae89669bcb83a66fe8806c976576f567e09ad81f0d6c9c2a0558346b12bd19b05ea12ef2195eaf8d79d87469ba5f9de27a112ec716f288aa7c42637857"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": "18 || 20 || >=22"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/glob"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "slugify",
+      "version": "1.6.9",
+      "bom-ref": "dxfarm-mobile@1.0.0|slugify@1.6.9",
+      "author": "Simeon Velichkov",
+      "description": "Slugifies a String",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/slugify@1.6.9",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/simov/slugify.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/simov/slugify",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/simov/slugify/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/slugify/-/slugify-1.6.9.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "bd9eeb7de7a166e8bbc10b38dfc25705c9182e420875f1ce5ec6951143324b97c7a35e3cde5d5b31da3410349661c958d3264a14e8a90f2e0a1ee2aceacb2f76"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=8.0.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/slugify"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "xcode",
+      "version": "3.0.1",
+      "bom-ref": "dxfarm-mobile@1.0.0|xcode@3.0.1",
+      "author": "Apache Software Foundation",
+      "description": "parser for xcodeproj/project.pbxproj files",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/xcode@3.0.1",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/apache/cordova-node-xcode.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/apache/cordova-node-xcode#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/apache/cordova-node-xcode/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/xcode/-/xcode-3.0.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "902cf993b27b5db26d8c004ebe47399499a488387c5618d5086362a9d282b1c995a5d554a440325efd719822e4409e5db07ab1dc83cee175be3530e153f7dab4"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=10.0.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/xcode"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "sax",
+      "version": "1.6.1",
+      "bom-ref": "dxfarm-mobile@1.0.0|sax@1.6.1",
+      "author": "Isaac Z. Schlueter",
+      "description": "An evented streaming XML parser in JavaScript",
+      "licenses": [
+        {
+          "license": {
+            "id": "BlueOak-1.0.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/sax@1.6.1",
+      "externalReferences": [
+        {
+          "url": "git+ssh://git@github.com/isaacs/sax-js.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/isaacs/sax-js#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/isaacs/sax-js/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/sax/-/sax-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "e36b415702d69da42f5b9cdce076d9ad3b9671c1020997c18bdd850eec2dab16ac1fe25b3c1dff14e29bd66db6d8ae364785b1bb1cf332c4ecc1fce0b52bbae1"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=11.0.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/sax"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "code-signing-certificates",
       "group": "@expo",
       "version": "0.0.6",
@@ -8797,57 +9370,6 @@
     },
     {
       "type": "library",
-      "name": "json-file",
-      "group": "@expo",
-      "version": "11.0.1",
-      "bom-ref": "dxfarm-mobile@1.0.0|@expo/json-file@11.0.1",
-      "description": "A module for reading, writing, and manipulating JSON files",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/%40expo/json-file@11.0.1",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/expo/expo.git#packages/@expo/json-file",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
-        },
-        {
-          "url": "https://github.com/expo/expo/tree/main/packages/@expo/json-file#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/expo/expo/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/@expo/json-file/-/json-file-11.0.1.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "cf11d68f830a28c00bdbd650498fc5b2cc784e196e938d099ae18d69e4b4efcc32fcd8651619d58beac71ee9ee944df124027408cef79bc54adbe1a417d791c1"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/@expo/json-file"
-        }
-      ]
-    },
-    {
-      "type": "library",
       "name": "metro-file-map",
       "group": "@expo",
       "version": "57.0.3",
@@ -9000,57 +9522,6 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/@expo/package-manager"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "plist",
-      "group": "@expo",
-      "version": "0.8.1",
-      "bom-ref": "dxfarm-mobile@1.0.0|@expo/plist@0.8.1",
-      "description": "Mac OS X Plist parser/builder for Node.js and browsers",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/%40expo/plist@0.8.1",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/expo/expo.git#packages/@expo/plist",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
-        },
-        {
-          "url": "https://github.com/expo/expo/tree/main/packages/@expo/plist#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/expo/expo/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/@expo/plist/-/plist-0.8.1.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "de04d17862149b4a1168c0a5b00258c419d53c297a7d5a6c97c1d2f834d5c43856e06c95cb183d13f6679b706f707b54279d51249235e290b5c2facd8a50911f"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/@expo/plist"
         }
       ]
     },
@@ -9891,61 +10362,6 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/fetch-nodeshim"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "glob",
-      "version": "13.0.6",
-      "bom-ref": "dxfarm-mobile@1.0.0|glob@13.0.6",
-      "author": "Isaac Z. Schlueter",
-      "description": "the most correct and second fastest glob implementation in JavaScript",
-      "licenses": [
-        {
-          "license": {
-            "id": "BlueOak-1.0.0",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/glob@13.0.6",
-      "externalReferences": [
-        {
-          "url": "git+ssh://git@github.com/isaacs/node-glob.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/isaacs/node-glob#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/isaacs/node-glob/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/glob/-/glob-13.0.6.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "5a3972ae89669bcb83a66fe8806c976576f567e09ad81f0d6c9c2a0558346b12bd19b05ea12ef2195eaf8d79d87469ba5f9de27a112ec716f288aa7c42637857"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:constraint:engine:node",
-          "value": "18 || 20 || >=22"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/glob"
         }
       ]
     },
@@ -11191,61 +11607,6 @@
     },
     {
       "type": "library",
-      "name": "slugify",
-      "version": "1.6.9",
-      "bom-ref": "dxfarm-mobile@1.0.0|slugify@1.6.9",
-      "author": "Simeon Velichkov",
-      "description": "Slugifies a String",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/slugify@1.6.9",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/simov/slugify.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/simov/slugify",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/simov/slugify/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/slugify/-/slugify-1.6.9.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "bd9eeb7de7a166e8bbc10b38dfc25705c9182e420875f1ce5ec6951143324b97c7a35e3cde5d5b31da3410349661c958d3264a14e8a90f2e0a1ee2aceacb2f76"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:constraint:engine:node",
-          "value": ">=8.0.0"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/slugify"
-        }
-      ]
-    },
-    {
-      "type": "library",
       "name": "structured-headers",
       "version": "0.4.1",
       "bom-ref": "dxfarm-mobile@1.0.0|structured-headers@0.4.1",
@@ -11504,261 +11865,6 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/zod"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "config-types",
-      "group": "@expo",
-      "version": "57.0.2",
-      "bom-ref": "dxfarm-mobile@1.0.0|@expo/config-types@57.0.2",
-      "description": "Types for the Expo config object app.config.ts",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/%40expo/config-types@57.0.2",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/expo/expo.git#packages/@expo/config-types",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
-        },
-        {
-          "url": "https://github.com/expo/expo/tree/main/packages/@expo/config-types#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/expo/expo/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/@expo/config-types/-/config-types-57.0.2.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "7b05b4f0ea27adc448b11288945bef72699a7c4e737a66f5a1cbb71e4370b553f246d8f6c38da964202430844e62971505a3e77379834fd5190f3c17582de2ea"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/@expo/config-types"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "sdk-runtime-versions",
-      "group": "@expo",
-      "version": "1.0.0",
-      "bom-ref": "dxfarm-mobile@1.0.0|@expo/sdk-runtime-versions@1.0.0",
-      "author": "Expo",
-      "description": "Functions for converting Expo SDK versions to EAS runtime versions",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/%40expo/sdk-runtime-versions@1.0.0",
-      "externalReferences": [
-        {
-          "url": "https://registry.npmjs.org/@expo/sdk-runtime-versions/-/sdk-runtime-versions-1.0.0.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "0e8cf66df88f9dd5d814f311c0fc866b593941a28356963cd3a5098f9ef47a922233359a6320ada1b6acc9f0befaa7c85d56f939ccbbaf7b4ff5deb684043b21"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/@expo/sdk-runtime-versions"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "xcode",
-      "version": "3.0.1",
-      "bom-ref": "dxfarm-mobile@1.0.0|xcode@3.0.1",
-      "author": "Apache Software Foundation",
-      "description": "parser for xcodeproj/project.pbxproj files",
-      "licenses": [
-        {
-          "license": {
-            "id": "Apache-2.0",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/xcode@3.0.1",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/apache/cordova-node-xcode.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/apache/cordova-node-xcode#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/apache/cordova-node-xcode/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/xcode/-/xcode-3.0.1.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "902cf993b27b5db26d8c004ebe47399499a488387c5618d5086362a9d282b1c995a5d554a440325efd719822e4409e5db07ab1dc83cee175be3530e153f7dab4"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:constraint:engine:node",
-          "value": ">=10.0.0"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/xcode"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "xml2js",
-      "version": "0.6.0",
-      "bom-ref": "dxfarm-mobile@1.0.0|xml2js@0.6.0",
-      "author": "Marek Kubica",
-      "description": "Simple XML to JavaScript object converter.",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/xml2js@0.6.0",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/Leonidas-from-XIV/node-xml2js.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/Leonidas-from-XIV/node-xml2js",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/Leonidas-from-XIV/node-xml2js/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/xml2js/-/xml2js-0.6.0.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "78b4e1d2403cb8771ea9eb0fa9213e56f3b50830c958cc2541f07a2ee37a4fcc3a31a0c9f13c66f0feece5c1c3d26885d15f8619366b0d07f13d9415b2eaf7df"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:constraint:engine:node",
-          "value": ">=4.0.0"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/xml2js"
-        }
-      ],
-      "components": [
-        {
-          "type": "library",
-          "name": "xmlbuilder",
-          "version": "11.0.1",
-          "bom-ref": "dxfarm-mobile@1.0.0|xml2js@0.6.0|xmlbuilder@11.0.1",
-          "author": "Ozgur Ozcitak",
-          "description": "An XML builder for node.js",
-          "licenses": [
-            {
-              "license": {
-                "id": "MIT",
-                "acknowledgement": "declared"
-              }
-            }
-          ],
-          "purl": "pkg:npm/xmlbuilder@11.0.1",
-          "externalReferences": [
-            {
-              "url": "git://github.com/oozcitak/xmlbuilder-js.git",
-              "type": "vcs",
-              "comment": "as detected from PackageJson property \"repository.url\""
-            },
-            {
-              "url": "http://github.com/oozcitak/xmlbuilder-js",
-              "type": "website",
-              "comment": "as detected from PackageJson property \"homepage\""
-            },
-            {
-              "url": "http://github.com/oozcitak/xmlbuilder-js/issues",
-              "type": "issue-tracker",
-              "comment": "as detected from PackageJson property \"bugs.url\""
-            },
-            {
-              "url": "https://registry.npmjs.org/xmlbuilder/-/xmlbuilder-11.0.1.tgz",
-              "type": "distribution",
-              "hashes": [
-                {
-                  "alg": "SHA-512",
-                  "content": "7c396c23f905131ee02ef6de71cd3fa212c6e747ee810a7caf21f3313b96f6f49ad462745d858a9e1b14c7ba227b71bdf3eaf9e9a4d0214078921b78d91dc9bc"
-                }
-              ],
-              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-            }
-          ],
-          "properties": [
-            {
-              "name": "cdx:npm:package:constraint:engine:node",
-              "value": ">=4.0"
-            },
-            {
-              "name": "cdx:npm:package:path",
-              "value": "node_modules/xml2js/node_modules/xmlbuilder"
-            }
-          ]
         }
       ]
     },
@@ -18055,6 +18161,384 @@
     },
     {
       "type": "library",
+      "name": "xmldom",
+      "group": "@xmldom",
+      "version": "0.8.15",
+      "bom-ref": "dxfarm-mobile@1.0.0|@xmldom/xmldom@0.8.15",
+      "description": "A pure JavaScript W3C standard-based (XML DOM Level 2 Core) DOMParser and XMLSerializer module.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40xmldom/xmldom@0.8.15",
+      "externalReferences": [
+        {
+          "url": "git://github.com/xmldom/xmldom.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/xmldom/xmldom",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/xmldom/xmldom/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/@xmldom/xmldom/-/xmldom-0.8.15.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "ff9355fef0c02d51435e02e67eccbd4d108194ac0ed8b341173a73bdbf62223fa347e79273a0cb618bd539d8af4ff8e6eccb54e9379b62e466cc4388ef0e3450"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=10.0.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@xmldom/xmldom"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "xmlbuilder",
+      "version": "15.1.1",
+      "bom-ref": "dxfarm-mobile@1.0.0|xmlbuilder@15.1.1",
+      "author": "Ozgur Ozcitak",
+      "description": "An XML builder for node.js",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/xmlbuilder@15.1.1",
+      "externalReferences": [
+        {
+          "url": "git://github.com/oozcitak/xmlbuilder-js.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "http://github.com/oozcitak/xmlbuilder-js",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "http://github.com/oozcitak/xmlbuilder-js/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/xmlbuilder/-/xmlbuilder-15.1.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "c8ca8606ab57c9e3757b74c662f80d803559de3f385b873090e5d0b30821a25e803e065669f7fd9676ef37b3076093a25ecbc63d7b634d8244882f49db0bfd12"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=8.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/xmlbuilder"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "minipass",
+      "version": "7.1.3",
+      "bom-ref": "dxfarm-mobile@1.0.0|minipass@7.1.3",
+      "author": "Isaac Z. Schlueter",
+      "description": "minimal implementation of a PassThrough stream",
+      "licenses": [
+        {
+          "license": {
+            "id": "BlueOak-1.0.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/minipass@7.1.3",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/isaacs/minipass.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/isaacs/minipass#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/isaacs/minipass/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/minipass/-/minipass-7.1.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "b44047a839c8a0cff5ad7304d738246bd83a43695ca029311cbb9cece0c9e41c5b3f977873667970682d5c092ee7ddb4d02c7b762b874ce61f4810fc9fa9a6f0"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=16 || 14 >=14.17"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/minipass"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "path-scurry",
+      "version": "2.0.2",
+      "bom-ref": "dxfarm-mobile@1.0.0|path-scurry@2.0.2",
+      "author": "Isaac Z. Schlueter",
+      "description": "walk paths fast and efficiently",
+      "licenses": [
+        {
+          "license": {
+            "id": "BlueOak-1.0.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/path-scurry@2.0.2",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/isaacs/path-scurry.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/isaacs/path-scurry#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/isaacs/path-scurry/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/path-scurry/-/path-scurry-2.0.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "dcefe2555b0900fb0e9e9c1621e0fe77acffecf9aa029c9078f52d0a77636ad8fff48e4bca51efb79aa5b856814f7239877af57a37d1d39e9cf850aff8d9cd5e"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": "18 || 20 || >=22"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/path-scurry"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "lru-cache",
+          "version": "11.5.3",
+          "bom-ref": "dxfarm-mobile@1.0.0|path-scurry@2.0.2|lru-cache@11.5.3",
+          "author": "Isaac Z. Schlueter",
+          "description": "A cache object that deletes the least-recently-used items.",
+          "licenses": [
+            {
+              "license": {
+                "id": "BlueOak-1.0.0",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/lru-cache@11.5.3",
+          "externalReferences": [
+            {
+              "url": "git+ssh://git@github.com/isaacs/node-lru-cache.git",
+              "type": "vcs",
+              "comment": "as detected from PackageJson property \"repository.url\""
+            },
+            {
+              "url": "https://github.com/isaacs/node-lru-cache#readme",
+              "type": "website",
+              "comment": "as detected from PackageJson property \"homepage\""
+            },
+            {
+              "url": "https://github.com/isaacs/node-lru-cache/issues",
+              "type": "issue-tracker",
+              "comment": "as detected from PackageJson property \"bugs.url\""
+            },
+            {
+              "url": "https://registry.npmjs.org/lru-cache/-/lru-cache-11.5.3.tgz",
+              "type": "distribution",
+              "hashes": [
+                {
+                  "alg": "SHA-512",
+                  "content": "53837c160ce65b173c935547f0aafa950835f14ec58ef6f2eb05c75515ff659ec8c166d1320ad16cfd16adbe6ae4d5629ebca9e1241a9a91ca76fb5e708b7152"
+                }
+              ],
+              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:constraint:engine:node",
+              "value": "20 || >=22"
+            },
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/path-scurry/node_modules/lru-cache"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "simple-plist",
+      "version": "1.3.1",
+      "bom-ref": "dxfarm-mobile@1.0.0|simple-plist@1.3.1",
+      "author": "Joe Wollard",
+      "description": "A wrapper utility for interacting with plist data.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/simple-plist@1.3.1",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/wollardj/simple-plist.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/wollardj/simple-plist.git",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/wollardj/simple-plist/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/simple-plist/-/simple-plist-1.3.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "88c4b0e62d17b1e327ae1b48cd16fb5e94045dea5af71856c465288c704be37488a50b834248775a9cbaed96c3cd956be842b1bf0542867569765f211152c38b"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/simple-plist"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "uuid",
+      "version": "7.0.3",
+      "bom-ref": "dxfarm-mobile@1.0.0|uuid@7.0.3",
+      "description": "RFC4122 (v1, v4, and v5) UUIDs",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/uuid@7.0.3",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/uuidjs/uuid.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/uuidjs/uuid#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/uuidjs/uuid/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/uuid/-/uuid-7.0.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "0cf4a47b4a57853660a05fddf964add9068a3021527f1ed07a0c44593f893ae1c5e5a5ab2849f41beced8ee260fe01bcfc8b4afab6cf083ff236ff32ca287a0a"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/uuid"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "sudo-prompt",
       "group": "@expo",
       "version": "9.3.2",
@@ -18369,116 +18853,6 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/walker"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "xmldom",
-      "group": "@xmldom",
-      "version": "0.8.15",
-      "bom-ref": "dxfarm-mobile@1.0.0|@xmldom/xmldom@0.8.15",
-      "description": "A pure JavaScript W3C standard-based (XML DOM Level 2 Core) DOMParser and XMLSerializer module.",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/%40xmldom/xmldom@0.8.15",
-      "externalReferences": [
-        {
-          "url": "git://github.com/xmldom/xmldom.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/xmldom/xmldom",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/xmldom/xmldom/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/@xmldom/xmldom/-/xmldom-0.8.15.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "ff9355fef0c02d51435e02e67eccbd4d108194ac0ed8b341173a73bdbf62223fa347e79273a0cb618bd539d8af4ff8e6eccb54e9379b62e466cc4388ef0e3450"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:constraint:engine:node",
-          "value": ">=10.0.0"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/@xmldom/xmldom"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "xmlbuilder",
-      "version": "15.1.1",
-      "bom-ref": "dxfarm-mobile@1.0.0|xmlbuilder@15.1.1",
-      "author": "Ozgur Ozcitak",
-      "description": "An XML builder for node.js",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/xmlbuilder@15.1.1",
-      "externalReferences": [
-        {
-          "url": "git://github.com/oozcitak/xmlbuilder-js.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "http://github.com/oozcitak/xmlbuilder-js",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "http://github.com/oozcitak/xmlbuilder-js/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/xmlbuilder/-/xmlbuilder-15.1.1.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "c8ca8606ab57c9e3757b74c662f80d803559de3f385b873090e5d0b30821a25e803e065669f7fd9676ef37b3076093a25ecbc63d7b634d8244882f49db0bfd12"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:constraint:engine:node",
-          "value": ">=8.0"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/xmlbuilder"
         }
       ]
     },
@@ -19681,173 +20055,6 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/utils-merge"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "minipass",
-      "version": "7.1.3",
-      "bom-ref": "dxfarm-mobile@1.0.0|minipass@7.1.3",
-      "author": "Isaac Z. Schlueter",
-      "description": "minimal implementation of a PassThrough stream",
-      "licenses": [
-        {
-          "license": {
-            "id": "BlueOak-1.0.0",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/minipass@7.1.3",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/isaacs/minipass.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/isaacs/minipass#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/isaacs/minipass/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/minipass/-/minipass-7.1.3.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "b44047a839c8a0cff5ad7304d738246bd83a43695ca029311cbb9cece0c9e41c5b3f977873667970682d5c092ee7ddb4d02c7b762b874ce61f4810fc9fa9a6f0"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:constraint:engine:node",
-          "value": ">=16 || 14 >=14.17"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/minipass"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "path-scurry",
-      "version": "2.0.2",
-      "bom-ref": "dxfarm-mobile@1.0.0|path-scurry@2.0.2",
-      "author": "Isaac Z. Schlueter",
-      "description": "walk paths fast and efficiently",
-      "licenses": [
-        {
-          "license": {
-            "id": "BlueOak-1.0.0",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/path-scurry@2.0.2",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/isaacs/path-scurry.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/isaacs/path-scurry#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/isaacs/path-scurry/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/path-scurry/-/path-scurry-2.0.2.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "dcefe2555b0900fb0e9e9c1621e0fe77acffecf9aa029c9078f52d0a77636ad8fff48e4bca51efb79aa5b856814f7239877af57a37d1d39e9cf850aff8d9cd5e"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:constraint:engine:node",
-          "value": "18 || 20 || >=22"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/path-scurry"
-        }
-      ],
-      "components": [
-        {
-          "type": "library",
-          "name": "lru-cache",
-          "version": "11.5.3",
-          "bom-ref": "dxfarm-mobile@1.0.0|path-scurry@2.0.2|lru-cache@11.5.3",
-          "author": "Isaac Z. Schlueter",
-          "description": "A cache object that deletes the least-recently-used items.",
-          "licenses": [
-            {
-              "license": {
-                "id": "BlueOak-1.0.0",
-                "acknowledgement": "declared"
-              }
-            }
-          ],
-          "purl": "pkg:npm/lru-cache@11.5.3",
-          "externalReferences": [
-            {
-              "url": "git+ssh://git@github.com/isaacs/node-lru-cache.git",
-              "type": "vcs",
-              "comment": "as detected from PackageJson property \"repository.url\""
-            },
-            {
-              "url": "https://github.com/isaacs/node-lru-cache#readme",
-              "type": "website",
-              "comment": "as detected from PackageJson property \"homepage\""
-            },
-            {
-              "url": "https://github.com/isaacs/node-lru-cache/issues",
-              "type": "issue-tracker",
-              "comment": "as detected from PackageJson property \"bugs.url\""
-            },
-            {
-              "url": "https://registry.npmjs.org/lru-cache/-/lru-cache-11.5.3.tgz",
-              "type": "distribution",
-              "hashes": [
-                {
-                  "alg": "SHA-512",
-                  "content": "53837c160ce65b173c935547f0aafa950835f14ec58ef6f2eb05c75515ff659ec8c166d1320ad16cfd16adbe6ae4d5629ebca9e1241a9a91ca76fb5e708b7152"
-                }
-              ],
-              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-            }
-          ],
-          "properties": [
-            {
-              "name": "cdx:npm:package:constraint:engine:node",
-              "value": "20 || >=22"
-            },
-            {
-              "name": "cdx:npm:package:path",
-              "value": "node_modules/path-scurry/node_modules/lru-cache"
-            }
-          ]
         }
       ]
     },
@@ -21421,162 +21628,6 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/strip-ansi"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "simple-plist",
-      "version": "1.3.1",
-      "bom-ref": "dxfarm-mobile@1.0.0|simple-plist@1.3.1",
-      "author": "Joe Wollard",
-      "description": "A wrapper utility for interacting with plist data.",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/simple-plist@1.3.1",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/wollardj/simple-plist.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/wollardj/simple-plist.git",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/wollardj/simple-plist/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/simple-plist/-/simple-plist-1.3.1.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "88c4b0e62d17b1e327ae1b48cd16fb5e94045dea5af71856c465288c704be37488a50b834248775a9cbaed96c3cd956be842b1bf0542867569765f211152c38b"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/simple-plist"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "uuid",
-      "version": "7.0.3",
-      "bom-ref": "dxfarm-mobile@1.0.0|uuid@7.0.3",
-      "description": "RFC4122 (v1, v4, and v5) UUIDs",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/uuid@7.0.3",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/uuidjs/uuid.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/uuidjs/uuid#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/uuidjs/uuid/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/uuid/-/uuid-7.0.3.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "0cf4a47b4a57853660a05fddf964add9068a3021527f1ed07a0c44593f893ae1c5e5a5ab2849f41beced8ee260fe01bcfc8b4afab6cf083ff236ff32ca287a0a"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/uuid"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "sax",
-      "version": "1.6.1",
-      "bom-ref": "dxfarm-mobile@1.0.0|sax@1.6.1",
-      "author": "Isaac Z. Schlueter",
-      "description": "An evented streaming XML parser in JavaScript",
-      "licenses": [
-        {
-          "license": {
-            "id": "BlueOak-1.0.0",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/sax@1.6.1",
-      "externalReferences": [
-        {
-          "url": "git+ssh://git@github.com/isaacs/sax-js.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/isaacs/sax-js#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/isaacs/sax-js/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/sax/-/sax-1.6.1.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "e36b415702d69da42f5b9cdce076d9ad3b9671c1020997c18bdd850eec2dab16ac1fe25b3c1dff14e29bd66db6d8ae364785b1bb1cf332c4ecc1fce0b52bbae1"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:constraint:engine:node",
-          "value": ">=11.0.0"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/sax"
         }
       ]
     },
@@ -25177,6 +25228,118 @@
     },
     {
       "type": "library",
+      "name": "plist",
+      "version": "3.1.1",
+      "bom-ref": "dxfarm-mobile@1.0.0|plist@3.1.1",
+      "author": "Nathan Rajlich",
+      "description": "Apple's property list parser/builder for Node.js and browsers",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/plist@3.1.1",
+      "externalReferences": [
+        {
+          "url": "git://github.com/TooTallNate/node-plist.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/TooTallNate/node-plist#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/TooTallNate/node-plist/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/plist/-/plist-3.1.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "6487dc2c90beec4ec50459c3c66f4c3e6b7b0fe0e2772436ea57b089e3bbe407610366b232db094844b4896cea2506dc5514ab4ee7d0a32d0347de311ee7b4a0"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=10.4.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/plist"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "xmldom",
+          "group": "@xmldom",
+          "version": "0.9.12",
+          "bom-ref": "dxfarm-mobile@1.0.0|plist@3.1.1|@xmldom/xmldom@0.9.12",
+          "description": "A pure JavaScript W3C standard-based (XML DOM Level 2 Core) DOMParser and XMLSerializer module.",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/%40xmldom/xmldom@0.9.12",
+          "externalReferences": [
+            {
+              "url": "git://github.com/xmldom/xmldom.git",
+              "type": "vcs",
+              "comment": "as detected from PackageJson property \"repository.url\""
+            },
+            {
+              "url": "https://github.com/xmldom/xmldom",
+              "type": "website",
+              "comment": "as detected from PackageJson property \"homepage\""
+            },
+            {
+              "url": "https://github.com/xmldom/xmldom/issues",
+              "type": "issue-tracker",
+              "comment": "as detected from PackageJson property \"bugs.url\""
+            },
+            {
+              "url": "https://registry.npmjs.org/@xmldom/xmldom/-/xmldom-0.9.12.tgz",
+              "type": "distribution",
+              "hashes": [
+                {
+                  "alg": "SHA-512",
+                  "content": "e405e3adc302953af23def4b819af2829075963eecd12f44d3e5be0076952805721da9da7caf3a88f4af1b9c47552a7f8c2f951f5517bb44c0126636efdc47ec"
+                }
+              ],
+              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:constraint:engine:node",
+              "value": ">=14.6"
+            },
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/plist/node_modules/@xmldom/xmldom"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "bser",
       "version": "2.1.1",
       "bom-ref": "dxfarm-mobile@1.0.0|bser@2.1.1",
@@ -26583,118 +26746,6 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/ee-first"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "plist",
-      "version": "3.1.1",
-      "bom-ref": "dxfarm-mobile@1.0.0|plist@3.1.1",
-      "author": "Nathan Rajlich",
-      "description": "Apple's property list parser/builder for Node.js and browsers",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/plist@3.1.1",
-      "externalReferences": [
-        {
-          "url": "git://github.com/TooTallNate/node-plist.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/TooTallNate/node-plist#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/TooTallNate/node-plist/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/plist/-/plist-3.1.1.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "6487dc2c90beec4ec50459c3c66f4c3e6b7b0fe0e2772436ea57b089e3bbe407610366b232db094844b4896cea2506dc5514ab4ee7d0a32d0347de311ee7b4a0"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:constraint:engine:node",
-          "value": ">=10.4.0"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/plist"
-        }
-      ],
-      "components": [
-        {
-          "type": "library",
-          "name": "xmldom",
-          "group": "@xmldom",
-          "version": "0.9.12",
-          "bom-ref": "dxfarm-mobile@1.0.0|plist@3.1.1|@xmldom/xmldom@0.9.12",
-          "description": "A pure JavaScript W3C standard-based (XML DOM Level 2 Core) DOMParser and XMLSerializer module.",
-          "licenses": [
-            {
-              "license": {
-                "id": "MIT",
-                "acknowledgement": "declared"
-              }
-            }
-          ],
-          "purl": "pkg:npm/%40xmldom/xmldom@0.9.12",
-          "externalReferences": [
-            {
-              "url": "git://github.com/xmldom/xmldom.git",
-              "type": "vcs",
-              "comment": "as detected from PackageJson property \"repository.url\""
-            },
-            {
-              "url": "https://github.com/xmldom/xmldom",
-              "type": "website",
-              "comment": "as detected from PackageJson property \"homepage\""
-            },
-            {
-              "url": "https://github.com/xmldom/xmldom/issues",
-              "type": "issue-tracker",
-              "comment": "as detected from PackageJson property \"bugs.url\""
-            },
-            {
-              "url": "https://registry.npmjs.org/@xmldom/xmldom/-/xmldom-0.9.12.tgz",
-              "type": "distribution",
-              "hashes": [
-                {
-                  "alg": "SHA-512",
-                  "content": "e405e3adc302953af23def4b819af2829075963eecd12f44d3e5be0076952805721da9da7caf3a88f4af1b9c47552a7f8c2f951f5517bb44c0126636efdc47ec"
-                }
-              ],
-              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-            }
-          ],
-          "properties": [
-            {
-              "name": "cdx:npm:package:constraint:engine:node",
-              "value": ">=14.6"
-            },
-            {
-              "name": "cdx:npm:package:path",
-              "value": "node_modules/plist/node_modules/@xmldom/xmldom"
-            }
-          ]
         }
       ]
     },
@@ -30079,6 +30130,7 @@
         "dxfarm-mobile@1.0.0|expo-location@57.0.20",
         "dxfarm-mobile@1.0.0|expo-router@57.0.24",
         "dxfarm-mobile@1.0.0|expo-secure-store@57.0.4",
+        "dxfarm-mobile@1.0.0|expo-splash-screen@57.0.10",
         "dxfarm-mobile@1.0.0|expo-status-bar@57.0.1",
         "dxfarm-mobile@1.0.0|expo-web-browser@57.0.3",
         "dxfarm-mobile@1.0.0|expo@57.0.26",
@@ -30178,7 +30230,7 @@
     {
       "ref": "dxfarm-mobile@1.0.0|expo-location@57.0.20",
       "dependsOn": [
-        "dxfarm-mobile@1.0.0|@expo/image-utils@0.11.5",
+        "dxfarm-mobile@1.0.0|@expo/image-utils@0.11.6",
         "dxfarm-mobile@1.0.0|expo@57.0.26"
       ]
     },
@@ -30325,6 +30377,15 @@
       ]
     },
     {
+      "ref": "dxfarm-mobile@1.0.0|expo-splash-screen@57.0.10",
+      "dependsOn": [
+        "dxfarm-mobile@1.0.0|@expo/config-plugins@57.0.10",
+        "dxfarm-mobile@1.0.0|@expo/image-utils@0.11.6",
+        "dxfarm-mobile@1.0.0|expo@57.0.26",
+        "dxfarm-mobile@1.0.0|xml2js@0.6.0"
+      ]
+    },
+    {
       "ref": "dxfarm-mobile@1.0.0|expo-status-bar@57.0.1",
       "dependsOn": [
         "dxfarm-mobile@1.0.0|expo@57.0.26",
@@ -30344,7 +30405,7 @@
       "dependsOn": [
         "dxfarm-mobile@1.0.0|@babel/runtime@7.29.7",
         "dxfarm-mobile@1.0.0|expo@57.0.26|@expo/cli@57.0.27",
-        "dxfarm-mobile@1.0.0|@expo/config-plugins@57.0.9",
+        "dxfarm-mobile@1.0.0|@expo/config-plugins@57.0.10",
         "dxfarm-mobile@1.0.0|@expo/config@57.0.9",
         "dxfarm-mobile@1.0.0|@expo/devtools@57.0.1",
         "dxfarm-mobile@1.0.0|@expo/dom-webview@57.0.1",
@@ -30374,11 +30435,11 @@
       "ref": "dxfarm-mobile@1.0.0|expo@57.0.26|@expo/cli@57.0.27",
       "dependsOn": [
         "dxfarm-mobile@1.0.0|@expo/code-signing-certificates@0.0.6",
-        "dxfarm-mobile@1.0.0|@expo/config-plugins@57.0.9",
+        "dxfarm-mobile@1.0.0|@expo/config-plugins@57.0.10",
         "dxfarm-mobile@1.0.0|@expo/config@57.0.9",
         "dxfarm-mobile@1.0.0|@expo/devcert@1.2.1",
         "dxfarm-mobile@1.0.0|@expo/env@2.4.3",
-        "dxfarm-mobile@1.0.0|@expo/image-utils@0.11.5",
+        "dxfarm-mobile@1.0.0|@expo/image-utils@0.11.6",
         "dxfarm-mobile@1.0.0|@expo/inline-modules@0.1.7",
         "dxfarm-mobile@1.0.0|@expo/json-file@11.0.1",
         "dxfarm-mobile@1.0.0|@expo/log-box@57.0.4",
@@ -30389,7 +30450,7 @@
         "dxfarm-mobile@1.0.0|@expo/package-manager@1.13.1",
         "dxfarm-mobile@1.0.0|@expo/plist@0.8.1",
         "dxfarm-mobile@1.0.0|@expo/prebuild-config@57.0.16",
-        "dxfarm-mobile@1.0.0|@expo/require-utils@57.0.5",
+        "dxfarm-mobile@1.0.0|@expo/require-utils@57.0.6",
         "dxfarm-mobile@1.0.0|expo@57.0.26|@expo/cli@57.0.27|@expo/router-server@57.0.11",
         "dxfarm-mobile@1.0.0|@expo/schema-utils@57.0.2",
         "dxfarm-mobile@1.0.0|@expo/spawn-async@1.8.0",
@@ -30460,7 +30521,7 @@
         "dxfarm-mobile@1.0.0|@expo/env@2.4.3",
         "dxfarm-mobile@1.0.0|@expo/json-file@11.0.1",
         "dxfarm-mobile@1.0.0|@expo/metro@56.0.2",
-        "dxfarm-mobile@1.0.0|@expo/require-utils@57.0.5",
+        "dxfarm-mobile@1.0.0|@expo/require-utils@57.0.6",
         "dxfarm-mobile@1.0.0|@expo/spawn-async@1.8.0",
         "dxfarm-mobile@1.0.0|@jridgewell/gen-mapping@0.3.13",
         "dxfarm-mobile@1.0.0|@jridgewell/remapping@2.3.5",
@@ -30532,7 +30593,7 @@
     {
       "ref": "dxfarm-mobile@1.0.0|expo@57.0.26|expo-asset@57.0.18",
       "dependsOn": [
-        "dxfarm-mobile@1.0.0|@expo/image-utils@0.11.5",
+        "dxfarm-mobile@1.0.0|@expo/image-utils@0.11.6",
         "dxfarm-mobile@1.0.0|expo-constants@57.0.20",
         "dxfarm-mobile@1.0.0|expo@57.0.26",
         "dxfarm-mobile@1.0.0|react-native@0.86.3",
@@ -30693,9 +30754,9 @@
       ]
     },
     {
-      "ref": "dxfarm-mobile@1.0.0|@expo/image-utils@0.11.5",
+      "ref": "dxfarm-mobile@1.0.0|@expo/image-utils@0.11.6",
       "dependsOn": [
-        "dxfarm-mobile@1.0.0|@expo/require-utils@57.0.5",
+        "dxfarm-mobile@1.0.0|@expo/require-utils@57.0.6",
         "dxfarm-mobile@1.0.0|@expo/spawn-async@1.8.0",
         "dxfarm-mobile@1.0.0|chalk@4.1.2",
         "dxfarm-mobile@1.0.0|getenv@2.0.0",
@@ -30915,15 +30976,12 @@
       ]
     },
     {
-      "ref": "dxfarm-mobile@1.0.0|@babel/runtime@7.29.7"
-    },
-    {
-      "ref": "dxfarm-mobile@1.0.0|@expo/config-plugins@57.0.9",
+      "ref": "dxfarm-mobile@1.0.0|@expo/config-plugins@57.0.10",
       "dependsOn": [
         "dxfarm-mobile@1.0.0|@expo/config-types@57.0.2",
         "dxfarm-mobile@1.0.0|@expo/json-file@11.0.1",
         "dxfarm-mobile@1.0.0|@expo/plist@0.8.1",
-        "dxfarm-mobile@1.0.0|@expo/require-utils@57.0.5",
+        "dxfarm-mobile@1.0.0|@expo/require-utils@57.0.6",
         "dxfarm-mobile@1.0.0|@expo/sdk-runtime-versions@1.0.0",
         "dxfarm-mobile@1.0.0|chalk@4.1.2",
         "dxfarm-mobile@1.0.0|debug@4.4.3",
@@ -30936,12 +30994,25 @@
       ]
     },
     {
+      "ref": "dxfarm-mobile@1.0.0|xml2js@0.6.0",
+      "dependsOn": [
+        "dxfarm-mobile@1.0.0|sax@1.6.1",
+        "dxfarm-mobile@1.0.0|xml2js@0.6.0|xmlbuilder@11.0.1"
+      ]
+    },
+    {
+      "ref": "dxfarm-mobile@1.0.0|xml2js@0.6.0|xmlbuilder@11.0.1"
+    },
+    {
+      "ref": "dxfarm-mobile@1.0.0|@babel/runtime@7.29.7"
+    },
+    {
       "ref": "dxfarm-mobile@1.0.0|@expo/config@57.0.9",
       "dependsOn": [
-        "dxfarm-mobile@1.0.0|@expo/config-plugins@57.0.9",
+        "dxfarm-mobile@1.0.0|@expo/config-plugins@57.0.10",
         "dxfarm-mobile@1.0.0|@expo/config-types@57.0.2",
         "dxfarm-mobile@1.0.0|@expo/json-file@11.0.1",
-        "dxfarm-mobile@1.0.0|@expo/require-utils@57.0.5",
+        "dxfarm-mobile@1.0.0|@expo/require-utils@57.0.6",
         "dxfarm-mobile@1.0.0|deepmerge@4.3.1",
         "dxfarm-mobile@1.0.0|getenv@2.0.0",
         "dxfarm-mobile@1.0.0|glob@13.0.6",
@@ -31023,7 +31094,7 @@
     {
       "ref": "dxfarm-mobile@1.0.0|expo-modules-autolinking@57.0.13",
       "dependsOn": [
-        "dxfarm-mobile@1.0.0|@expo/require-utils@57.0.5",
+        "dxfarm-mobile@1.0.0|@expo/require-utils@57.0.6",
         "dxfarm-mobile@1.0.0|@expo/spawn-async@1.8.0",
         "dxfarm-mobile@1.0.0|chalk@4.1.2",
         "dxfarm-mobile@1.0.0|commander@7.2.0"
@@ -31270,7 +31341,7 @@
       "ref": "dxfarm-mobile@1.0.0|getenv@2.0.0"
     },
     {
-      "ref": "dxfarm-mobile@1.0.0|@expo/require-utils@57.0.5",
+      "ref": "dxfarm-mobile@1.0.0|@expo/require-utils@57.0.6",
       "dependsOn": [
         "dxfarm-mobile@1.0.0|@babel/code-frame@7.29.7",
         "dxfarm-mobile@1.0.0|@babel/core@7.29.7",
@@ -31434,6 +31505,48 @@
       ]
     },
     {
+      "ref": "dxfarm-mobile@1.0.0|@expo/config-types@57.0.2"
+    },
+    {
+      "ref": "dxfarm-mobile@1.0.0|@expo/json-file@11.0.1",
+      "dependsOn": [
+        "dxfarm-mobile@1.0.0|@babel/code-frame@7.29.7",
+        "dxfarm-mobile@1.0.0|json5@2.2.3"
+      ]
+    },
+    {
+      "ref": "dxfarm-mobile@1.0.0|@expo/plist@0.8.1",
+      "dependsOn": [
+        "dxfarm-mobile@1.0.0|@xmldom/xmldom@0.8.15",
+        "dxfarm-mobile@1.0.0|base64-js@1.5.1",
+        "dxfarm-mobile@1.0.0|xmlbuilder@15.1.1"
+      ]
+    },
+    {
+      "ref": "dxfarm-mobile@1.0.0|@expo/sdk-runtime-versions@1.0.0"
+    },
+    {
+      "ref": "dxfarm-mobile@1.0.0|glob@13.0.6",
+      "dependsOn": [
+        "dxfarm-mobile@1.0.0|minimatch@10.2.6",
+        "dxfarm-mobile@1.0.0|minipass@7.1.3",
+        "dxfarm-mobile@1.0.0|path-scurry@2.0.2"
+      ]
+    },
+    {
+      "ref": "dxfarm-mobile@1.0.0|slugify@1.6.9"
+    },
+    {
+      "ref": "dxfarm-mobile@1.0.0|xcode@3.0.1",
+      "dependsOn": [
+        "dxfarm-mobile@1.0.0|simple-plist@1.3.1",
+        "dxfarm-mobile@1.0.0|uuid@7.0.3"
+      ]
+    },
+    {
+      "ref": "dxfarm-mobile@1.0.0|sax@1.6.1"
+    },
+    {
       "ref": "dxfarm-mobile@1.0.0|@expo/code-signing-certificates@0.0.6",
       "dependsOn": [
         "dxfarm-mobile@1.0.0|node-forge@1.4.0"
@@ -31455,14 +31568,7 @@
     {
       "ref": "dxfarm-mobile@1.0.0|@expo/inline-modules@0.1.7",
       "dependsOn": [
-        "dxfarm-mobile@1.0.0|@expo/config-plugins@57.0.9"
-      ]
-    },
-    {
-      "ref": "dxfarm-mobile@1.0.0|@expo/json-file@11.0.1",
-      "dependsOn": [
-        "dxfarm-mobile@1.0.0|@babel/code-frame@7.29.7",
-        "dxfarm-mobile@1.0.0|json5@2.2.3"
+        "dxfarm-mobile@1.0.0|@expo/config-plugins@57.0.10"
       ]
     },
     {
@@ -31494,20 +31600,12 @@
       ]
     },
     {
-      "ref": "dxfarm-mobile@1.0.0|@expo/plist@0.8.1",
-      "dependsOn": [
-        "dxfarm-mobile@1.0.0|@xmldom/xmldom@0.8.15",
-        "dxfarm-mobile@1.0.0|base64-js@1.5.1",
-        "dxfarm-mobile@1.0.0|xmlbuilder@15.1.1"
-      ]
-    },
-    {
       "ref": "dxfarm-mobile@1.0.0|@expo/prebuild-config@57.0.16",
       "dependsOn": [
-        "dxfarm-mobile@1.0.0|@expo/config-plugins@57.0.9",
+        "dxfarm-mobile@1.0.0|@expo/config-plugins@57.0.10",
         "dxfarm-mobile@1.0.0|@expo/config-types@57.0.2",
         "dxfarm-mobile@1.0.0|@expo/config@57.0.9",
-        "dxfarm-mobile@1.0.0|@expo/image-utils@0.11.5",
+        "dxfarm-mobile@1.0.0|@expo/image-utils@0.11.6",
         "dxfarm-mobile@1.0.0|@expo/json-file@11.0.1",
         "dxfarm-mobile@1.0.0|@react-native/normalize-colors@0.86.3",
         "dxfarm-mobile@1.0.0|debug@4.4.3",
@@ -31607,14 +31705,6 @@
     },
     {
       "ref": "dxfarm-mobile@1.0.0|fetch-nodeshim@0.4.10"
-    },
-    {
-      "ref": "dxfarm-mobile@1.0.0|glob@13.0.6",
-      "dependsOn": [
-        "dxfarm-mobile@1.0.0|minimatch@10.2.6",
-        "dxfarm-mobile@1.0.0|minipass@7.1.3",
-        "dxfarm-mobile@1.0.0|path-scurry@2.0.2"
-      ]
     },
     {
       "ref": "dxfarm-mobile@1.0.0|lan-network@0.2.1"
@@ -31742,9 +31832,6 @@
       "ref": "dxfarm-mobile@1.0.0|send@0.19.2|statuses@2.0.2"
     },
     {
-      "ref": "dxfarm-mobile@1.0.0|slugify@1.6.9"
-    },
-    {
       "ref": "dxfarm-mobile@1.0.0|structured-headers@0.4.1"
     },
     {
@@ -31767,29 +31854,6 @@
     },
     {
       "ref": "dxfarm-mobile@1.0.0|zod@3.25.76"
-    },
-    {
-      "ref": "dxfarm-mobile@1.0.0|@expo/config-types@57.0.2"
-    },
-    {
-      "ref": "dxfarm-mobile@1.0.0|@expo/sdk-runtime-versions@1.0.0"
-    },
-    {
-      "ref": "dxfarm-mobile@1.0.0|xcode@3.0.1",
-      "dependsOn": [
-        "dxfarm-mobile@1.0.0|simple-plist@1.3.1",
-        "dxfarm-mobile@1.0.0|uuid@7.0.3"
-      ]
-    },
-    {
-      "ref": "dxfarm-mobile@1.0.0|xml2js@0.6.0",
-      "dependsOn": [
-        "dxfarm-mobile@1.0.0|sax@1.6.1",
-        "dxfarm-mobile@1.0.0|xml2js@0.6.0|xmlbuilder@11.0.1"
-      ]
-    },
-    {
-      "ref": "dxfarm-mobile@1.0.0|xml2js@0.6.0|xmlbuilder@11.0.1"
     },
     {
       "ref": "dxfarm-mobile@1.0.0|deepmerge@4.3.1"
@@ -32617,6 +32681,36 @@
       ]
     },
     {
+      "ref": "dxfarm-mobile@1.0.0|@xmldom/xmldom@0.8.15"
+    },
+    {
+      "ref": "dxfarm-mobile@1.0.0|xmlbuilder@15.1.1"
+    },
+    {
+      "ref": "dxfarm-mobile@1.0.0|minipass@7.1.3"
+    },
+    {
+      "ref": "dxfarm-mobile@1.0.0|path-scurry@2.0.2",
+      "dependsOn": [
+        "dxfarm-mobile@1.0.0|path-scurry@2.0.2|lru-cache@11.5.3",
+        "dxfarm-mobile@1.0.0|minipass@7.1.3"
+      ]
+    },
+    {
+      "ref": "dxfarm-mobile@1.0.0|path-scurry@2.0.2|lru-cache@11.5.3"
+    },
+    {
+      "ref": "dxfarm-mobile@1.0.0|simple-plist@1.3.1",
+      "dependsOn": [
+        "dxfarm-mobile@1.0.0|bplist-creator@0.1.0",
+        "dxfarm-mobile@1.0.0|bplist-parser@0.3.1",
+        "dxfarm-mobile@1.0.0|plist@3.1.1"
+      ]
+    },
+    {
+      "ref": "dxfarm-mobile@1.0.0|uuid@7.0.3"
+    },
+    {
       "ref": "dxfarm-mobile@1.0.0|@expo/sudo-prompt@9.3.2"
     },
     {
@@ -32652,12 +32746,6 @@
       "dependsOn": [
         "dxfarm-mobile@1.0.0|makeerror@1.0.12"
       ]
-    },
-    {
-      "ref": "dxfarm-mobile@1.0.0|@xmldom/xmldom@0.8.15"
-    },
-    {
-      "ref": "dxfarm-mobile@1.0.0|xmlbuilder@15.1.1"
     },
     {
       "ref": "dxfarm-mobile@1.0.0|js-yaml@4.3.2",
@@ -32770,19 +32858,6 @@
     },
     {
       "ref": "dxfarm-mobile@1.0.0|utils-merge@1.0.1"
-    },
-    {
-      "ref": "dxfarm-mobile@1.0.0|minipass@7.1.3"
-    },
-    {
-      "ref": "dxfarm-mobile@1.0.0|path-scurry@2.0.2",
-      "dependsOn": [
-        "dxfarm-mobile@1.0.0|path-scurry@2.0.2|lru-cache@11.5.3",
-        "dxfarm-mobile@1.0.0|minipass@7.1.3"
-      ]
-    },
-    {
-      "ref": "dxfarm-mobile@1.0.0|path-scurry@2.0.2|lru-cache@11.5.3"
     },
     {
       "ref": "dxfarm-mobile@1.0.0|hosted-git-info@7.0.2",
@@ -32913,20 +32988,6 @@
       "dependsOn": [
         "dxfarm-mobile@1.0.0|ansi-regex@5.0.1"
       ]
-    },
-    {
-      "ref": "dxfarm-mobile@1.0.0|simple-plist@1.3.1",
-      "dependsOn": [
-        "dxfarm-mobile@1.0.0|bplist-creator@0.1.0",
-        "dxfarm-mobile@1.0.0|bplist-parser@0.3.1",
-        "dxfarm-mobile@1.0.0|plist@3.1.1"
-      ]
-    },
-    {
-      "ref": "dxfarm-mobile@1.0.0|uuid@7.0.3"
-    },
-    {
-      "ref": "dxfarm-mobile@1.0.0|sax@1.6.1"
     },
     {
       "ref": "dxfarm-mobile@1.0.0|brace-expansion@5.0.12",
@@ -33280,6 +33341,17 @@
       ]
     },
     {
+      "ref": "dxfarm-mobile@1.0.0|plist@3.1.1",
+      "dependsOn": [
+        "dxfarm-mobile@1.0.0|plist@3.1.1|@xmldom/xmldom@0.9.12",
+        "dxfarm-mobile@1.0.0|base64-js@1.5.1",
+        "dxfarm-mobile@1.0.0|xmlbuilder@15.1.1"
+      ]
+    },
+    {
+      "ref": "dxfarm-mobile@1.0.0|plist@3.1.1|@xmldom/xmldom@0.9.12"
+    },
+    {
       "ref": "dxfarm-mobile@1.0.0|bser@2.1.1",
       "dependsOn": [
         "dxfarm-mobile@1.0.0|node-int64@0.4.0"
@@ -33399,17 +33471,6 @@
     },
     {
       "ref": "dxfarm-mobile@1.0.0|ee-first@1.1.1"
-    },
-    {
-      "ref": "dxfarm-mobile@1.0.0|plist@3.1.1",
-      "dependsOn": [
-        "dxfarm-mobile@1.0.0|plist@3.1.1|@xmldom/xmldom@0.9.12",
-        "dxfarm-mobile@1.0.0|base64-js@1.5.1",
-        "dxfarm-mobile@1.0.0|xmlbuilder@15.1.1"
-      ]
-    },
-    {
-      "ref": "dxfarm-mobile@1.0.0|plist@3.1.1|@xmldom/xmldom@0.9.12"
     },
     {
       "ref": "dxfarm-mobile@1.0.0|balanced-match@4.0.4"

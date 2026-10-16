@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""Computer-vision components for rice leaf disease detection.
+"""Computer-vision components for rice leaf disease recognition.
 
-Ultralytics is imported lazily by ``app.cv.loader`` so non-CV tooling does not
+Torchvision is imported lazily by ``app.cv.loader`` so non-CV tooling does not
 load the model or trigger any external checkpoint behavior.
 """

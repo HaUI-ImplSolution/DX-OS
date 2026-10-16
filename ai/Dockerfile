@@ -1,3 +1,9 @@
+FROM python:3.11-slim AS cv-weights
+WORKDIR /build
+COPY scripts/assemble_cv_weights.py ./assemble_cv_weights.py
+COPY weights/dx-farm-efficientnetv2m ./parts
+RUN python assemble_cv_weights.py --source /build/parts --output /build/model.pth
+
 FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -14,16 +20,10 @@ RUN apt-get update \
 COPY requirements.txt requirements.lock ./
 RUN pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt -c requirements.lock
 
-# Ultralytics imports OpenCV at startup. The non-headless OpenCV wheel needs
-# these shared libraries even though inference itself runs without a GUI.
-RUN sed -i 's|^URIs: http://deb.debian.org/debian$|URIs: http://mirror.bizflycloud.vn/debian|' \
-      /etc/apt/sources.list.d/debian.sources \
-    && apt-get update \
-    && apt-get install --no-install-recommends -y libgl1 libglib2.0-0 libxcb1 \
-    && rm -rf /var/lib/apt/lists/*
-
 COPY app ./app
 COPY scripts ./scripts
+COPY --from=cv-weights /build/model.pth /opt/dxos/models/efficientnetv2m_rice_disease.pth
+ENV CV_WEIGHTS_PATH=/opt/dxos/models/efficientnetv2m_rice_disease.pth
 
 RUN useradd --create-home --uid 10001 appuser \
     && mkdir /app/weights \
@@ -31,8 +31,7 @@ RUN useradd --create-home --uid 10001 appuser \
 
 USER appuser
 
-# Cache embedding assets here. The CV checkpoint is mounted separately as a
-# read-only file by Compose and is never downloaded by the service.
+# Cache embedding assets here; the bundled CV checkpoint stays outside this volume.
 VOLUME ["/app/weights"]
 
 EXPOSE 8000

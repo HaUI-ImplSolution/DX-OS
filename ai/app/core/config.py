@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     ollama_model: str = "qwen2.5:1.5b"
     embedding_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 
-    cv_weights_path: Path = AI_ROOT / "weights" / "best.pt"
+    cv_weights_path: Path = AI_ROOT / "models" / "efficientnetv2m_rice_disease.pth"
     cv_weights_sha256: str | None = None
     cv_class_contract_path: Path = (
         AI_ROOT.parent / "data" / "structured" / "class_contract.json"

@@ -1,8 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """Validated inference and input-quality policy for the CV workflow."""
 
-DETECTION_CONFIDENCE_THRESHOLD = 0.25
-IOU_THRESHOLD = 0.45
 WORKFLOW_CONFIDENCE_THRESHOLD = 0.70
 MIN_IMAGE_DIMENSION = 160
 MIN_SHARPNESS = 20.0

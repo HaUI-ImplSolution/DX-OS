@@ -5,6 +5,7 @@ from datetime import date
 
 from app.api.schemas import DiagnoseRequest
 from app.clients.backend_client import BackendClientError, DiagnosisContext
+from app.cv.model_profile import MODEL_NAME, MODEL_VERSION
 from app.services.inference_service import run_stateless_diagnose
 
 
@@ -18,8 +19,8 @@ def main() -> None:
                 "disease_code": "Rice___Blast",
                 "disease_name": "Bệnh đạo ôn trên lúa",
                 "confidence": 0.94,
-                "model_name": "YOLOv8n-RiceLeafBD",
-                "model_version": "3.0.0",
+                "model_name": MODEL_NAME,
+                "model_version": MODEL_VERSION,
             }
 
     class Backend:
@@ -142,8 +143,8 @@ def main() -> None:
                 "disease_code": "Rice___Blast",
                 "disease_name": "Bệnh đạo ôn trên lúa",
                 "confidence": 0.94,
-                "model_name": "YOLOv8n-RiceLeafBD",
-                "model_version": "3.0.0",
+                "model_name": MODEL_NAME,
+                "model_version": MODEL_VERSION,
             }
 
     class UnavailableBackend:

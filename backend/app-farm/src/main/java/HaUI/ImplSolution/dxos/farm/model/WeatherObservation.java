@@ -42,7 +42,7 @@ public class WeatherObservation {
   @Column(nullable = false)
   private Instant observedAt;
 
-  @Column(nullable = false)
+  @Column(name = "temperature_c", nullable = false)
   private double temperatureC;
 
   @Column(nullable = false)
@@ -56,10 +56,10 @@ public class WeatherObservation {
   private int weatherCode;
 
   // Forecast of the reading's own day, taken at the same time
-  @Column(nullable = false)
+  @Column(name = "day_temp_max_c", nullable = false)
   private double dayTempMaxC;
 
-  @Column(nullable = false)
+  @Column(name = "day_temp_min_c", nullable = false)
   private double dayTempMinC;
 
   @Column(nullable = false)

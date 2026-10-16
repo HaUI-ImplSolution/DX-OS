@@ -76,6 +76,7 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE.md`](../ARCHITECTURE.md).
 
 - Thời tiết: Open-Meteo không gọi được thì trả điểm tham chiếu gần nhất trong `weather-snapshot.json`, đánh dấu `isSnapshot=true`.
   Snapshot chụp ngày 07/10/2026, chỉ có 5 điểm ĐBSCL.
+- Thời tiết cho Superset: mỗi giờ Backend ghi số đo thật của từng vị trí thửa đã duyệt vào `weather_observations`; snapshot dự phòng không được ghi.
 - AI: LLM không sẵn sàng thì AI dùng nhánh `evidence_fallback`, trả nguyên văn tài liệu; Backend có circuit breaker khi gọi AI.
 - Lab: gợi ý phân loại vẫn trả kết quả của luật khi AI không gọi được (`knowledgeAvailable=false`); ticket và đặt phòng không phụ thuộc AI.
 - Chat: thông báo gửi bất đồng bộ, Mattermost lỗi hoặc chưa có webhook thì ứng dụng vẫn chạy.

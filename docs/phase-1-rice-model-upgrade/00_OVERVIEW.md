@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Đã duyệt kế hoạch, chưa triển khai |
+| Trạng thái | Model đã kiểm trên Khuong/main; cold start có lỗi ngoài phạm vi, không dựng thêm Docker |
 | Mức độ | Quan trọng |
 | Nhóm ưu tiên | A |
 | Ứng dụng và module chính | AI/CV của Farm |
@@ -97,8 +97,8 @@ Chỉ cập nhật kiểm tra, cấu hình và thông tin tài liệu trực ti�
 
 ## 10. Tài liệu cần cập nhật khi xong
 
-- [ ] Các đoạn model trong `ai/README.md`, `ai/app/cv/README.md` và tài liệu đánh giá hiện có khớp model mới.
-- [ ] `LICENSES.md`, `NOTICE`, `sbom/ai.cdx.json` khớp dependency/trọng số thực tế.
-- [ ] README gốc chỉ đổi thông tin model/giấy phép nếu cần; giữ nguyên hướng dẫn khởi động.
-- [ ] CHANGELOG chỉ bổ sung kết quả cuối; không xóa log cũ.
-- [ ] BACKLOG chỉ cập nhật đúng việc liên quan model; giữ hạn chế chưa được kiểm chứng.
+- [x] Các đoạn model trong `ai/README.md`, `ai/app/cv/README.md` và tài liệu đánh giá hiện có khớp model mới.
+- [x] `LICENSES.md`, `NOTICE`, `sbom/ai.cdx.json` khớp dependency/trọng số thực tế.
+- [x] README gốc chỉ đổi thông tin model/giấy phép nếu cần; giữ nguyên hướng dẫn khởi động.
+- [x] CHANGELOG chỉ bổ sung kết quả cuối; không xóa log cũ.
+- [x] BACKLOG chỉ cập nhật đúng việc liên quan model; giữ hạn chế chưa được kiểm chứng.

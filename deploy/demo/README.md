@@ -96,4 +96,4 @@ Mỗi lần chạy tạo phòng, thiết bị, yêu cầu riêng (mã có hậu 
 
 Workflow `E2E` chạy ma trận `farm` và `lab`, mỗi app một stack rút gọn: sinh `.env` (`make_ci_env.py --app`), dựng stack, kiểm file gateway chỉ có route của app, `seed_demo.py` hai lần, rồi `e2e.py`.
 Farm thêm `ci_fixture_rule.sql` trước `e2e.py --require-rule`; rule này nằm trong database tạm của CI, không thuộc dữ liệu demo hay seed.
-Trọng số `best.pt` và `crop_classifier.onnx` lấy từ checkout, không có bước download.
+Ba phần trọng số bệnh và `crop_classifier.onnx` lấy từ checkout; Docker build ghép checkpoint bệnh, không có bước download model bệnh.

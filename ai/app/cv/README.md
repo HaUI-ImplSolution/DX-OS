@@ -12,13 +12,13 @@ CV **không** quyết định thuốc, liều, PHI; không truy vấn RAG hay g�
 Ảnh → kiểm tra là ảnh, ≤ 10 MiB
     → kích thước tối thiểu, độ nét, độ sáng
     → crop classifier kiểm điều kiện Rice
-    → YOLOv8n (ảnh 640) → lọc theo confidence và IoU → chọn detection cao nhất
+    → EfficientNetV2-M (ảnh 480×480 bicubic, chuẩn hóa ImageNet) → softmax → chọn lớp cao nhất
     → class ID → disease_code qua class contract
 ```
 
 ```json
 { "disease_code": "Rice___Blast", "disease_name": "Bệnh đạo ôn trên lúa",
-  "confidence": 0.932, "model_name": "YOLOv8n-RiceLeafBD", "model_version": "3.1.0" }
+  "confidence": 0.932, "model_name": "DX-Farm-EfficientNetV2-M", "model_version": "4.0.0" }
 ```
 
 `disease_code` khớp chính xác `Disease.code` trong PostgreSQL, ánh xạ duy nhất từ `data/structured/class_contract.json`; không có fuzzy mapping.
@@ -27,7 +27,7 @@ CV **không** quyết định thuốc, liều, PHI; không truy vấn RAG hay g�
 
 | Thành phần | Vai trò |
 |---|---|
-| `loader.py` | Nạp checkpoint cục bộ, kiểm checksum, task, class contract, chọn CPU/CUDA |
+| `loader.py` | Nạp checkpoint cục bộ, kiểm checksum, metadata và class contract, chọn CPU/CUDA |
 | `contract.py` | Đọc và tra cứu ánh xạ class sang `disease_code` |
 | `model_profile.py` | Metadata cố định của checkpoint đã xác thực |
 | `policy.py` | Ngưỡng inference, workflow và chất lượng ảnh |
@@ -37,12 +37,12 @@ CV **không** quyết định thuốc, liều, PHI; không truy vấn RAG hay g�
 
 ## Vận hành
 
-- Checkpoint YOLOv8n RiceLeafBD `3.1.0` (150 epochs, 2026-10-07) ở `ai/weights/best.pt`, quản lý bằng Git; không tự tải.
-- Model nạp một lần lúc khởi động; phải khớp `CV_WEIGHTS_SHA256`, task `detect` và thứ tự class trong contract.
+- Checkpoint DX-Farm EfficientNetV2-M `4.0.0` ở `ai/weights/dx-farm-efficientnetv2m/`, ba phần quản lý bằng Git; ghép trong Docker build, không tự tải.
+- Model nạp một lần lúc khởi động; phải khớp `CV_WEIGHTS_SHA256`, kiến trúc, sáu lớp và recipe trong checkpoint.
 - `CV_DEVICE=auto` ưu tiên CUDA khi có GPU.
-- Confidence bệnh dưới `WORKFLOW_CONFIDENCE_THRESHOLD` (`0.70`) thì yêu cầu chụp lại, không truy vấn Backend, RAG hay LLM; fallback confidence `0` bị từ chối.
-- Model chỉ có 5 lớp: đạo ôn, đốm nâu, than lá, tungro, khô vằn.
-  `Rice___healthy` là fallback khi không có detection đạt ngưỡng, không khẳng định cây khỏe.
+- Confidence dưới `WORKFLOW_CONFIDENCE_THRESHOLD` (`0.70`) thì yêu cầu chụp lại, không truy vấn Backend, RAG hay LLM; điểm không làm tròn trước gate.
+- Model có 6 lớp: Healthy, đạo ôn, đốm nâu, than lá, tungro, khô vằn.
+  `Rice___healthy` là lớp được huấn luyện; metadata `fallback` giữ để tương thích consumer cũ, không dùng khi suy luận lỗi.
 
 ## Kiểm tra chất lượng ảnh
 
@@ -67,13 +67,13 @@ Ngưỡng mới thử trên ảnh công khai nền ruộng, nền trắng và �
 
 ## Phân loại lúa
 
-- Artifact [YOLO26s-cls](https://huggingface.co/RaiyanKhaan/KrishokTech-Models/tree/c339988a6eceb5e22943ee27e4731a1a1dc9160a/01_crop_classifier) (10 lớp, `Rice=8`) ở `ai/weights/crop_classifier.onnx`, quản lý bằng Git; ONNX Runtime 1.30.0, detector giữ Ultralytics 8.3.40.
+- Artifact [YOLO26s-cls](https://huggingface.co/RaiyanKhaan/KrishokTech-Models/tree/c339988a6eceb5e22943ee27e4731a1a1dc9160a/01_crop_classifier) (10 lớp, `Rice=8`) ở `ai/weights/crop_classifier.onnx`, quản lý bằng Git; ONNX Runtime 1.30.0.
 - `CROP_CLASSIFIER_PATH` mặc định `ai/weights/crop_classifier.onnx`; Compose dùng `AI_CROP_CLASSIFIER_PATH`.
   Khi nạp kiểm file, task, mapping, shape, dtype; không đối chiếu SHA-256 nên model khác cùng contract vẫn nạp được.
 - Tiền xử lý: RGB, sửa hướng EXIF, resize cạnh ngắn 224 (bilinear), center crop 224, float32 /255.
 - Cho qua khi top1 là Rice, P(Rice) ≥ 0.80 và chênh lớp khác cao nhất ≥ 0.20; độc lập với ngưỡng bệnh 0.70.
 - `passed` là kết quả chất lượng **và** classifier; ảnh mới lưu `quality_passed` tổng hợp, ảnh cũ không backfill.
-- Precheck không đạt: 200 `passed=false`; predict/diagnose: 422, không gọi detector, Backend facts, RAG, LLM. Ảnh hỏng: 400 (diagnose 422). Classifier lỗi: 503.
+- Precheck không đạt: 200 `passed=false`; predict/diagnose: 422, không gọi model bệnh, Backend facts, RAG, LLM. Ảnh hỏng: 400 (diagnose 422). Classifier lỗi: 503.
 - Health `model_loaded` chỉ true khi cả hai model sẵn sàng.
 
 **Giới hạn:** model nhận ngô và mía thành Rice với điểm rất cao (6/15 và 15/15 ảnh thử) và chặn 8/50 ảnh lúa nền ruộng.

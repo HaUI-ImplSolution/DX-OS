@@ -515,6 +515,18 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 ## AI Service (Python)
 
+### 2026-10-16
+
+**Đã xong — Nâng cấp model bệnh lá lúa:**
+
+- Thay YOLOv8n bằng DX-Farm EfficientNetV2-M 4.0.0, Healthy và 5 bệnh, resize 480×480 bicubic theo checkpoint; giữ payload chẩn đoán, ngưỡng 0.70 và quality/crop gate.
+- Dùng class contract và cấu trúc CV hiện có; Healthy là lớp được huấn luyện, confidence không làm tròn trước workflow.
+- Ba phần trọng số nằm trong Git, ghép khi Docker build và nạp từ image; checksum giữ trong env riêng. Chỉ đổi tham chiếu model bệnh trong Compose và script env CI, giữ workflow CI và script khởi động gốc.
+- Xóa checkpoint và dependency detector bệnh cũ; cập nhật lock, SBOM AI, giấy phép và thông tin model tại các tài liệu liên quan.
+- Kiểm chứng: 100 test AI, 5 test dữ liệu, contract diagnose, build image và API với checkpoint/ảnh thật khi tắt mạng; không chấm lại accuracy của người huấn luyện.
+- Trên stack dựng sạch, Farm đạt 10/10 khi AI sẵn sàng, Lab đạt 16/16 có nguồn tri thức; model thật giữ quy trình duyệt và restart/predict offline đạt. Lỗi seed trước AI ready được ghi trong BACKLOG; không đổi startup ngoài phạm vi.
+- Đồng bộ nền Khuong/main, giữ cập nhật bản đồ/thời tiết và workflow CI; kiểm lại 100 test AI, 5 test dữ liệu, Farm 10/10 và luồng model thật.
+
 ### 2026-10-14
 
 **Đã xong — Độ nét ảnh nền đơn sắc, truy xuất theo tên bệnh:**

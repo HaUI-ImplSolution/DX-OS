@@ -67,13 +67,13 @@ Feature maturity and test coverage are in [`docs/TESTING.md`](./docs/TESTING.md)
 |---|---|---|
 | Backend | Java 21, Spring Boot, Flyway | Apache-2.0 |
 | AI Service | Python, FastAPI, LangGraph, pgvector, Ollama (Qwen2.5-1.5B) | MIT, Apache-2.0 |
-| CV | YOLOv8n (Ultralytics) and ONNX crop classifier | AGPL-3.0 |
+| CV | EfficientNetV2-M (Torchvision) and ONNX crop classifier | BSD-3-Clause, Apache-2.0, AGPL-3.0 |
 | Web, Mobile | React, Vite, Expo | MIT |
 | SSO, Gateway | Keycloak, Apache APISIX | Apache-2.0 |
 | Data, BI | PostgreSQL, MinIO, Apache Superset | PostgreSQL License, AGPL-3.0, Apache-2.0 |
 | Chat | Mattermost Team Edition (unmodified) | AGPL-3.0 |
 
-Original code is Apache-2.0 ([`LICENSE`](./LICENSE)); `ai/` is AGPL-3.0 because it imports Ultralytics ([`ai/LICENSE`](./ai/LICENSE)).
+Original code is Apache-2.0 ([`LICENSE`](./LICENSE)); source code in `ai/` remains AGPL-3.0 ([`ai/LICENSE`](./ai/LICENSE)).
 Full dependency and license table: [`LICENSES.md`](./LICENSES.md); CycloneDX SBOMs: [`sbom/`](./sbom/README.md).
 
 ## 🚀 Install and run

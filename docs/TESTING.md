@@ -47,7 +47,7 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 | JDK 21 | Dùng Maven wrapper trong repo |
 | Node 20 trở lên | Cho `frontend` và `mobile` |
 | Python 3 và `pillow` | Cho `seed_demo.py` (`python3 -m pip install pillow`) |
-| Trọng số AI trong `ai/weights/` | `best.pt` và `crop_classifier.onnx` có sẵn trong Git sau checkout |
+| Trọng số AI trong `ai/weights/` | Ba phần EfficientNetV2-M và `crop_classifier.onnx` có sẵn trong Git; Docker build ghép model bệnh |
 | Dung lượng và RAM | Lần dựng đầu tải khoảng 3 GB (image AI) và 9 GB (Ollama và model); cần máy đủ RAM để chạy cả stack |
 
 ## 3. Kiểm tra tĩnh (không cần dựng stack)
@@ -245,7 +245,7 @@ Dùng Swagger (`http://localhost:9080/swagger-ui.html`) hoặc client trong `dep
 | Không tạo được extension khi khởi động Lab | Vai của DB không đủ quyền với `btree_gist` | Dùng image PostgreSQL có extension; cấp quyền tạo extension cho vai chủ DB |
 | Hỏi đáp Lab không có kết quả | Job `rag-ingest` chưa xong hoặc lỗi, hoặc `DXOS_APP` không phải `lab` lúc dựng | `docker compose logs rag-ingest`; chạy lại bằng `docker compose up -d --force-recreate rag-ingest` |
 | Ảnh không hiện | Route ảnh hoặc tên bucket sai | Kiểm `MINIO_BUCKET` và route `/dxos-uploads/*`; `./reset.sh --yes` |
-| Thiếu `best.pt` hoặc `crop_classifier.onnx` | Checkout không đủ trọng số | `git status`, `git pull`; xem `ai/weights/` |
+| Thiếu phần trọng số bệnh hoặc `crop_classifier.onnx` | Checkout không đủ trọng số | `git status`, `git pull`; xem `ai/weights/` |
 | Dựng lâu hoặc hết dung lượng | Lần đầu tải image lớn | Đợi, hoặc dọn Docker (`docker system df`) |
 
 ## 9. Kết quả kiểm gần nhất

@@ -67,13 +67,13 @@ Mức hoàn thiện và độ phủ kiểm thử từng tính năng ở [`docs/T
 |---|---|---|
 | Backend | Java 21, Spring Boot, Flyway | Apache-2.0 |
 | AI Service | Python, FastAPI, LangGraph, pgvector, Ollama (Qwen2.5-1.5B) | MIT, Apache-2.0 |
-| CV | YOLOv8n (Ultralytics) và crop classifier ONNX | AGPL-3.0 |
+| CV | EfficientNetV2-M (Torchvision) và crop classifier ONNX | BSD-3-Clause, Apache-2.0, AGPL-3.0 |
 | Web, Mobile | React, Vite, Expo | MIT |
 | SSO, Gateway | Keycloak, Apache APISIX | Apache-2.0 |
 | Dữ liệu, BI | PostgreSQL, MinIO, Apache Superset | PostgreSQL License, AGPL-3.0, Apache-2.0 |
 | Chat | Mattermost Team Edition (chạy nguyên bản) | AGPL-3.0 |
 
-Mã tự viết theo Apache-2.0 ([`LICENSE`](./LICENSE)), riêng `ai/` theo AGPL-3.0 vì import Ultralytics ([`ai/LICENSE`](./ai/LICENSE)).
+Mã tự viết theo Apache-2.0 ([`LICENSE`](./LICENSE)), riêng mã nguồn `ai/` theo AGPL-3.0 ([`ai/LICENSE`](./ai/LICENSE)).
 Bảng dependency và giấy phép đầy đủ ở [`LICENSES.md`](./LICENSES.md); SBOM CycloneDX ở [`sbom/`](./sbom/README.md).
 
 ## 🚀 Cài đặt và chạy

@@ -880,7 +880,22 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 ## BI Dashboard (`bi`, Apache Superset)
 
+### 2026-10-16
+
+**Đã xong — Rà soát nền bản đồ:**
+
+- `?v=` của style là hash nội dung `basemap_light.json`, do `bootstrap_datasources.py` ghi cùng `mapbox_style`.
+- `mapbox_style` vẫn được ghi cho chart chưa hỗ trợ `query_context`.
+- Nguồn tile khai báo `attribution` của OpenFreeMap, OpenMapTiles và OpenStreetMap.
+
 ### 2026-10-15
+
+**Đã xong — Nền bản đồ sáng:**
+
+- Hai chart deck.gl dùng `bi/basemap_light.json`: vector tile OpenFreeMap vẽ đất, nước, sông, đường và nhãn tỉnh, thành phố, thị xã bằng tên tiếng Việt.
+- Nhãn chỉ vẽ trong vùng kinh độ 102°E đến 110°E; style không có nhãn đảo, nhãn biển và đường biên giới.
+- Style được mount vào `/static/assets/basemap_light.json`; `superset_config.py` thêm `tiles.openfreemap.org` vào `connect-src` của CSP.
+- `bootstrap_datasources.py` ghi `mapbox_style` của chart bản đồ theo bundle sau mỗi lần import.
 
 **Đã xong — `query_context` của chart:**
 

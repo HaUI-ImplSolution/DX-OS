@@ -66,6 +66,7 @@ AI Service là tiến trình riêng, chỉ giao tiếp với Backend qua HTTP n�
 | [`paraphrase-multilingual-MiniLM-L12-v2`](https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2) | Apache-2.0 | Embedding cho RAG |
 | [RiceLeafDiseaseBD v3](https://doi.org/10.17632/86s4jzj2m4.3) | CC BY 4.0 | Dữ liệu huấn luyện detector |
 | Tri thức DX-Lab (`data/rag/lab/`) | CC BY 4.0 | 10 bài quy chế và hướng dẫn do nhóm tự soạn |
+| [OpenFreeMap](https://openfreemap.org) vector tile | ODbL (dữ liệu OpenStreetMap), CC BY 4.0 (OpenMapTiles) | Nền bản đồ của dashboard Superset |
 
 Nguồn dữ liệu: RiceLeafDiseaseBD Version 3 của Mohammad Mehedi Hasan Munna, Toriqul Islam, Smita Saha, Iqbal Hossain Safy, Saiful Bari, Jasmin Akter, Md Momtajur Rahman, Riya Akter, Nahid Hossain Antu, Acramul Haque Kabir, Reefka Fabliha Tulona, Ashraful Islam và M Ashraful Amin, theo [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 Thay đổi: chỉ dùng 5 lớp bệnh, resize ảnh về 640 và áp dụng augmentation.

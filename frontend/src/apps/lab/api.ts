@@ -27,6 +27,7 @@ import type {
   TicketFilter,
   TicketPriority,
   TicketSuggestion,
+  TicketUpdateRequest,
 } from "./types";
 
 // Tickets
@@ -43,6 +44,10 @@ export const createTicket = (payload: TicketCreateRequest, files: File[]) => {
     headers: { "Idempotency-Key": crypto.randomUUID() },
   });
 };
+export const updateTicket = (id: number, payload: TicketUpdateRequest) =>
+  request<Ticket>(`/tickets/${id}`, json("PUT", payload));
+export const removeTicketAttachment = (id: number, attachmentId: number) =>
+  request<null>(`/tickets/${id}/attachments/${attachmentId}`, { method: "DELETE" });
 export const suggestTicket = (title: string, description: string) =>
   request<TicketSuggestion>("/tickets/suggest", json("POST", { title, description }));
 export const listTechnicians = () => request<TechnicianLoad[]>("/tickets/technicians");

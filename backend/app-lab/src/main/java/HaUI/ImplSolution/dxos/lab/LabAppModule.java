@@ -26,11 +26,15 @@ public class LabAppModule implements AppModule {
     return "DX-Lab HaUI";
   }
 
+  // Technicians work from the queue; reporting, borrowing and booking are for the people who
+  // ask for support.
   @Override
   public List<AppMenuItem> menu() {
     Set<String> staff = Set.of(LabSecurityPolicies.TECHNICIAN, LabSecurityPolicies.ADMIN);
+    Set<String> requesters = Set.of(LabSecurityPolicies.STUDENT, LabSecurityPolicies.LECTURER,
+        LabSecurityPolicies.ADMIN);
     return List.of(new AppMenuItem("home", "Tổng quan", "/", Set.of()),
-        new AppMenuItem("tickets", "Yêu cầu hỗ trợ", "/tickets", Set.of()),
+        new AppMenuItem("tickets", "Yêu cầu hỗ trợ", "/tickets", requesters),
         new AppMenuItem("loans", "Mượn thiết bị", "/device-loans", Set.of()),
         new AppMenuItem("bookings", "Đặt phòng", "/room-bookings", Set.of()),
         new AppMenuItem("knowledge", "Tri thức", "/knowledge", Set.of()),
@@ -38,6 +42,11 @@ public class LabAppModule implements AppModule {
         new AppMenuItem("assets", "Phòng và thiết bị", "/assets", staff),
         new AppMenuItem("stats", "Thống kê", "/stats", staff),
         new AppMenuItem("catalog", "Danh mục", "/catalog", Set.of(LabSecurityPolicies.ADMIN)));
+  }
+
+  @Override
+  public Set<String> portalServices() {
+    return Set.of("chat");
   }
 
   @Override

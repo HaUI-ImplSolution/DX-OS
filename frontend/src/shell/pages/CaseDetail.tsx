@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { getApprovalRequest } from "../api";
 import type { CaseUi } from "../appModule";
 import Badge from "../components/Badge";
@@ -16,6 +16,9 @@ interface CaseDetailProps {
 
 export default function CaseDetail({ role, onError, ui }: CaseDetailProps) {
   const { caseId } = useParams();
+  const location = useLocation();
+  // Back to the list as it was opened, with its filters.
+  const from = (location.state as { from?: string } | null)?.from;
   const [detail, setDetail] = useState<ApprovalRequestDetail | null>(null);
 
   const load = useCallback(() => {
@@ -49,7 +52,7 @@ export default function CaseDetail({ role, onError, ui }: CaseDetailProps) {
       <Section step="🕓" title="Lịch sử xử lý" subtitle="Mỗi bước được ghi lại, không sửa hay xoá">
         <Timeline events={events} />
       </Section>
-      <Link className="btn btn-link" to="/requests">
+      <Link className="btn btn-link" to={from?.startsWith("/requests") ? from : "/requests"}>
         ← Về danh sách yêu cầu
       </Link>
     </>

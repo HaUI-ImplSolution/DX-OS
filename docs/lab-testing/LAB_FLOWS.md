@@ -23,13 +23,14 @@ Dữ liệu demo gồm 5 phòng (A103 đang bảo trì), 7 thiết bị, 12 tick
 ## 2. Vai và menu
 
 Menu lấy từ backend (`LabAppModule`); mục không thuộc vai thì không hiện và gõ đường dẫn trực tiếp sẽ báo "Không đủ quyền".
+Kỹ thuật viên làm việc từ **Hàng đợi xử lý**; họ không báo sự cố, không mượn thiết bị và không đặt phòng, chỉ duyệt phiếu mượn, nhận lại thiết bị và duyệt lịch đặt phòng.
 
 | Menu | Đường dẫn | Sinh viên | Giảng viên | Kỹ thuật viên | Quản trị |
 |---|---|---|---|---|---|
 | Tổng quan | `/` | có | có | có | có |
-| Yêu cầu hỗ trợ | `/tickets` | có | có | có | có |
-| Mượn thiết bị | `/device-loans` | có | có | có | có |
-| Đặt phòng | `/room-bookings` | chỉ xem lịch | có | có | có |
+| Yêu cầu hỗ trợ | `/tickets` | có | có | | có |
+| Mượn thiết bị | `/device-loans` | có | có | duyệt và nhận lại | có |
+| Đặt phòng | `/room-bookings` | chỉ xem lịch | có | duyệt | có |
 | Tri thức | `/knowledge` | có | có | có | có |
 | Hàng đợi xử lý | `/queue` | | | có | có |
 | Phòng và thiết bị | `/assets` | | | có | có |
@@ -44,11 +45,11 @@ Chuông **Thông báo** ở đầu trang mở hộp thông báo của chính tà
 |---|---|---|
 | Yêu cầu hỗ trợ (ticket) | Mọi vai gửi; kỹ thuật viên xử lý | 4.1 |
 | Mượn và trả thiết bị | Sinh viên, giảng viên mượn; giảng viên, kỹ thuật viên duyệt | 4.2 |
-| Đặt phòng | Giảng viên, kỹ thuật viên, quản trị đặt; kỹ thuật viên duyệt | 4.3 |
+| Đặt phòng | Giảng viên, quản trị đặt; kỹ thuật viên duyệt | 4.3 |
 | Quản lý phòng và thiết bị | Kỹ thuật viên, quản trị | 4.4 |
 | Hỏi đáp quy chế | Mọi vai | 4.5 |
 | Thông báo, nhắc việc, chat | Hệ thống | 4.6 |
-| Thống kê và BI | Kỹ thuật viên, quản trị | 4.7 |
+| Thống kê | Kỹ thuật viên, quản trị | 4.7 |
 | Danh mục: loại sự cố, SLA, lớp và bộ môn | Quản trị | 4.8 |
 
 ## 4. Luồng đầu cuối
@@ -59,10 +60,10 @@ Chuông **Thông báo** ở đầu trang mở hộp thông báo của chính tà
 
 | Bước | Ai | Màn hình và thao tác | Kết quả |
 |---|---|---|---|
-| 1 | Người gửi | **Yêu cầu hỗ trợ** → **Báo sự cố mới** → nhập tiêu đề và mô tả | Sau khoảng nửa giây ngừng gõ, hộp **Gợi ý** hiện loại sự cố, mức ưu tiên, từ khóa khớp, lý do và tối đa 3 bài tri thức liên quan |
-| 2 | Người gửi | Bấm **Dùng gợi ý này** hoặc tự chọn loại, ưu tiên, phòng, thiết bị; đính kèm tối đa 5 tệp JPEG, PNG hoặc PDF, mỗi tệp tối đa 5 MiB; **Gửi yêu cầu** | Ticket mã `TK-<năm>-<số>`, trạng thái `NEW`, hạn phản hồi và hạn xử lý tính theo SLA của mức ưu tiên; kênh chat kỹ thuật viên nhận tin ticket mới |
+| 1 | Người gửi | **Yêu cầu hỗ trợ** → **Báo sự cố mới** → nhập tiêu đề và mô tả | Sau khoảng nửa giây ngừng gõ, hộp **Gợi ý** hiện loại sự cố và các bài tri thức liên quan, gom theo từng tài liệu |
+| 2 | Người gửi | Bấm **Dùng gợi ý này** hoặc tự chọn loại, ưu tiên, phòng (hoặc **Phòng khác…** rồi nhập tay), thiết bị; đính kèm tối đa 5 ảnh JPEG hoặc PNG, mỗi ảnh tối đa 5 MiB; **Gửi yêu cầu** | Ticket mã `TK-<năm>-<số>`, trạng thái `NEW`, hạn phản hồi và hạn xử lý tính theo SLA của mức ưu tiên; kênh chat kỹ thuật viên nhận tin ticket mới kèm ảnh đầu tiên và liên kết mở ticket |
 | 3 | Kỹ thuật viên | **Hàng đợi xử lý** → tab **Chưa có người nhận** → **Nhận việc** | `ASSIGNED`; người gửi nhận thông báo "Yêu cầu được tiếp nhận"; hai người nhận cùng lúc thì một bên báo xung đột (409) |
-| 3' | Quản trị | Trong chi tiết ticket `NEW`, chọn kỹ thuật viên ở ô **Giao cho kỹ thuật viên…** → **Phân công** | `ASSIGNED`, người được giao nhận thông báo; quản trị còn gán lại được khi ticket `ASSIGNED` hoặc `IN_PROGRESS` |
+| 3' | Quản trị | Trong chi tiết ticket `NEW`, chọn kỹ thuật viên ở ô **Giao cho kỹ thuật viên…** → **Phân công**; với ticket `ASSIGNED` hoặc `IN_PROGRESS` thì ô **Giao lại cho…** → **Giao lại** | `ASSIGNED`, người được giao nhận thông báo; lịch sử ghi một bước "Phân công" kèm người được giao |
 | 4 | Người nhận việc | Chi tiết ticket → **Thao tác** → **Bắt đầu xử lý** | `IN_PROGRESS`; ghi mốc phản hồi đầu tiên |
 | 5 | Hai bên | Mục **Trao đổi**: viết phản hồi; kỹ thuật viên có thêm ô **Nội bộ** | Phản hồi công khai gửi thông báo cho bên kia; ghi chú nội bộ chỉ nhân sự thấy. Kỹ thuật viên trả lời công khai đầu tiên cũng tính là phản hồi đầu tiên |
 | 6 | Người nhận việc | Cần thêm thông tin → **Chờ người gửi bổ sung** và nhập câu hỏi (bắt buộc) | `WAITING_USER`; câu hỏi thành phản hồi công khai; người gửi nhận thông báo |
@@ -70,10 +71,12 @@ Chuông **Thông báo** ở đầu trang mở hộp thông báo của chính tà
 | 8 | Người nhận việc | **Hoàn tất xử lý**, nhập cách đã xử lý và nguyên nhân gốc (đều bắt buộc) | `RESOLVED`; người gửi nhận thông báo yêu cầu xác nhận |
 | 9a | Người gửi | **Xác nhận đã xử lý xong**, chọn 1 đến 5 sao, có thể thêm nhận xét | `CLOSED`, điểm được ghi |
 | 9b | Người gửi | **Chưa xong, mở lại**, ghi vấn đề còn lại | Về `IN_PROGRESS`; mở lại tối đa 3 lần, sau đó phải tạo ticket mới |
-| 10a | Người gửi | **Huỷ yêu cầu** khi ticket còn `NEW` | `CANCELLED` |
+| 10a | Người gửi | **Huỷ yêu cầu** (nút đỏ dưới cùng, có hộp xác nhận) khi ticket còn `NEW` | `CANCELLED` |
 | 10b | Quản trị | **Từ chối yêu cầu** khi ticket `NEW` hoặc `ASSIGNED`, nhập lý do (bắt buộc) | `REJECTED`; người gửi nhận thông báo kèm lý do |
 
-Tệp đính kèm thêm được ở chi tiết ticket cho đến khi ticket đóng; mỗi ticket tối đa 5 tệp.
+Người gửi bấm **Chỉnh sửa** để đổi tiêu đề, mô tả, phòng và thêm hoặc xoá ảnh khi ticket chưa xử lý xong; mỗi ticket tối đa 5 ảnh.
+Kỹ thuật viên và quản trị không sửa được nội dung báo cáo.
+Panel **Trao đổi** nằm ở cột phải và cuộn riêng; ticket đã đóng, bị từ chối hoặc huỷ không nhận thêm trao đổi.
 Mục **Lịch sử xử lý** ở cuối chi tiết liệt kê từng bước đã ghi, không sửa hay xóa được.
 
 **Ai thấy gì**
@@ -115,9 +118,9 @@ Phiếu quá hạn có nhãn **Quá hạn**; nhắc hạn ở 4.6.
 
 | Bước | Ai | Màn hình và thao tác | Kết quả |
 |---|---|---|---|
-| 1 | Mọi vai | **Đặt phòng** → mục **Lịch phòng**: chọn phòng, đổi tuần | Lưới tuần 06:00 đến 24:00; ô đã có lịch hiện tên và trạng thái, ô đã qua bị làm mờ |
-| 2 | Giảng viên, kỹ thuật viên, quản trị | Bấm một ô trống để chọn giờ bắt đầu, bấm thêm một ô phía dưới trong cùng ngày để kéo dài | Khoảng đã chọn được tô màu và điền sẵn vào form |
-| 3 | Người đặt | Mục **Đặt phòng**: phòng, mục đích, số người, ngày, từ giờ, đến giờ (hệ 24 giờ, bước 30 phút) → **Gửi yêu cầu đặt phòng** | Lịch `PENDING`, giữ khung giờ ngay từ lúc gửi |
+| 1 | Mọi vai | **Đặt phòng** → mục **Lịch phòng**: chọn phòng, đổi tuần | Lưới tuần từ 07:00 đến 21:00, mỗi ô một giờ; ô đã có lịch hiện mục đích và trạng thái |
+| 2 | Giảng viên, quản trị | Bấm một ô trống | Ô được tô đậm; form điền sẵn giờ bắt đầu là giờ của ô và giờ kết thúc sau đó 1 giờ |
+| 3 | Người đặt | Mục **Đặt phòng**: phòng, mục đích, số người, **Bắt đầu**, **Kết thúc** (ô ngày giờ của trình duyệt, bước 30 phút) → **Gửi yêu cầu đặt phòng** | Lịch `PENDING`, giữ khung giờ ngay từ lúc gửi |
 | 4 | Kỹ thuật viên hoặc quản trị | Mục **Yêu cầu đặt phòng** → **Duyệt** hoặc **Từ chối** (lý do bắt buộc) | Duyệt: `APPROVED`, người đặt nhận thông báo. Từ chối: `REJECTED`, nhả khung giờ, thông báo kèm lý do |
 | 5 | Người đặt hoặc nhân sự | **Huỷ lịch** khi `PENDING` hoặc `APPROVED` | `CANCELLED`, nhả khung giờ |
 
@@ -125,7 +128,7 @@ Phiếu quá hạn có nhãn **Quá hạn**; nhắc hạn ở 4.6.
 Hai lịch còn hiệu lực không thể chồng giờ cùng phòng, kể cả khi hai yêu cầu gửi cùng lúc (cơ sở dữ liệu chặn, báo `ROOM_SLOT_TAKEN`).
 Sinh viên xem được lịch phòng nhưng không đặt được.
 Giảng viên chỉ thấy lịch do mình đặt trong danh sách; kỹ thuật viên và quản trị thấy tất cả.
-Trong lưới tuần, tên người đặt chỉ hiện cho nhân sự và chính người đặt.
+Dữ liệu lịch phòng chỉ gồm tên người đặt cho nhân sự và chính người đặt; lưới tuần không hiển thị tên.
 
 ### 4.4 Quản lý phòng và thiết bị
 
@@ -147,8 +150,8 @@ Không bảo trì được thiết bị đang cho mượn hoặc đã thanh lý,
 
 | Bước | Ai | Màn hình và thao tác | Kết quả |
 |---|---|---|---|
-| 1 | Mọi vai | **Tri thức** → nhập câu hỏi hoặc bấm câu gợi ý → **Hỏi** | Tối đa 4 đoạn trích từ kho tài liệu, mỗi đoạn có tên tài liệu và độ liên quan |
-| 2 | | Đọc phần **Trích từ** dưới mỗi đoạn | Tên tài liệu, đơn vị soạn, giấy phép, và nhãn **Chưa chuyên gia duyệt** khi tài liệu chưa được duyệt |
+| 1 | Mọi vai | **Tri thức** → nhập câu hỏi → **Hỏi** | Tối đa 4 đoạn trích từ kho tài liệu, mỗi đoạn có tên tài liệu và độ liên quan |
+| 2 | | Đọc mục **Nguồn** dưới mỗi đoạn | Tên tài liệu (liên kết mở tab mới, hiện trỏ tới tệp tri thức trên GitHub), đơn vị soạn, giấy phép, và nhãn **Chưa chuyên gia duyệt** khi tài liệu chưa được duyệt |
 
 Đoạn trả lời được trích nguyên văn từ tài liệu, không do mô hình sinh ra.
 Không đoạn nào đủ liên quan thì hiện gợi ý hỏi cụ thể hơn hoặc gửi ticket; AI Service dừng thì báo lỗi 503.
@@ -181,14 +184,13 @@ Cùng kho này cấp bài liên quan cho hộp gợi ý ở bước 1 của lu�
 **Chat Mattermost** (`http://localhost:8065`): kênh kỹ thuật viên nhận tin khi có ticket mới; kênh kỹ thuật viên và kênh quản trị nhận tin khi ticket quá hạn xử lý.
 Phiếu mượn và đặt phòng không gửi sang chat.
 
-### 4.7 Thống kê và BI
+### 4.7 Thống kê
 
 | Nơi | Nội dung |
 |---|---|
 | **Tổng quan** (nhân sự) | Bộ đếm: ticket chưa có người nhận, đang giao cho tôi, quá hạn, lịch đặt phòng chờ duyệt, phiếu mượn chờ duyệt; danh sách ticket quá hạn; quản trị có thêm tổng quan 30 ngày |
 | **Tổng quan** (sinh viên, giảng viên) | Lối tắt, ticket gần đây, thiết bị đang mượn; giảng viên có thêm phiếu chờ duyệt và lịch đặt phòng của mình |
 | **Thống kê** | Chọn khoảng ngày (mặc định 30 ngày, tối đa 366): số ticket theo trạng thái và loại, tỷ lệ đúng hạn SLA, thời gian phản hồi và xử lý trung bình, số quá hạn, điểm hài lòng, tải kỹ thuật viên, mức dùng từng phòng, thiết bị theo trạng thái, phiếu mượn quá hạn |
-| Superset (`http://localhost:9081`) | Quản trị mở từ nút **Mở dashboard Superset** ở trang Thống kê; BI chỉ đọc các view `vw_lab_*`, không có nội dung ticket hay tên người |
 
 Mức dùng phòng tính trên số giờ mở cửa mỗi ngày (mặc định 10 giờ), chỉ tính lịch đã duyệt.
 

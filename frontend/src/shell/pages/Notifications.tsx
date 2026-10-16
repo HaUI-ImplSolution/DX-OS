@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { listNotifications, markAllNotificationsRead, markNotificationRead } from "../api";
 import Badge from "../components/Badge";
 import Pagination from "../components/Pagination";
@@ -10,12 +11,15 @@ interface NotificationsProps {
   onError: (message: string) => void;
   // Called after a notification is read so the unread counter in the header refreshes.
   onChanged: () => void;
+  // Page a notification leads to, when the app has one.
+  pathOf?: (notification: Notification) => string | null;
 }
 
 const PAGE_SIZE = 15;
 
 // The signed-in account's own notifications, newest first.
-export default function Notifications({ onError, onChanged }: NotificationsProps) {
+export default function Notifications({ onError, onChanged, pathOf }: NotificationsProps) {
+  const navigate = useNavigate();
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [page, setPage] = useState(0);
   const [result, setResult] = useState<Page<Notification> | null>(null);
@@ -28,12 +32,17 @@ export default function Notifications({ onError, onChanged }: NotificationsProps
 
   useEffect(load, [load]);
 
-  const read = (notification: Notification) => {
-    if (notification.readAt) return;
+  const open = (notification: Notification) => {
+    const path = pathOf?.(notification) ?? null;
+    if (notification.readAt) {
+      if (path) navigate(path, { state: { from: "/notifications" } });
+      return;
+    }
     markNotificationRead(notification.id)
       .then(() => {
-        load();
         onChanged();
+        if (path) navigate(path, { state: { from: "/notifications" } });
+        else load();
       })
       .catch((err) => onError(err.message));
   };
@@ -74,7 +83,7 @@ export default function Notifications({ onError, onChanged }: NotificationsProps
             <li
               key={notification.id}
               className={notification.readAt ? "notification" : "notification notification-unread"}
-              onClick={() => read(notification)}
+              onClick={() => open(notification)}
             >
               <div>
                 <strong>{notification.title}</strong>{" "}

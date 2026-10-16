@@ -2,8 +2,10 @@
 package HaUI.ImplSolution.dxos.lab.service;
 
 import HaUI.ImplSolution.dxos.core.api.notification.ChatWebhook;
+import HaUI.ImplSolution.dxos.core.api.storage.ObjectStorage;
 import HaUI.ImplSolution.dxos.core.api.time.BusinessTime;
 import HaUI.ImplSolution.dxos.lab.LabNotificationConfig;
+import java.time.Duration;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -11,6 +13,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
@@ -26,10 +29,21 @@ public class LabChatListener {
   private static final DateTimeFormatter TIME_FORMAT =
       DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(BusinessTime.ZONE);
 
-  private final ChatWebhook chatWebhook;
+  // Chat history keeps the message, so the photo link lives as long as a presigned URL can.
+  private static final Duration IMAGE_URL_TTL = Duration.ofDays(7);
 
-  public LabChatListener(ChatWebhook chatWebhook) {
+  private final ChatWebhook chatWebhook;
+  private final ObjectStorage objectStorage;
+  private final String imageBaseUrl;
+  private final String appBaseUrl;
+
+  public LabChatListener(ChatWebhook chatWebhook, ObjectStorage objectStorage,
+      @Value("${mattermost.webhook.image-base-url:}") String imageBaseUrl,
+      @Value("${mattermost.webhook.app-base-url:}") String appBaseUrl) {
     this.chatWebhook = chatWebhook;
+    this.objectStorage = objectStorage;
+    this.imageBaseUrl = trimUrl(imageBaseUrl);
+    this.appBaseUrl = trimUrl(appBaseUrl);
   }
 
   @Async("mattermostNotifyExecutor")
@@ -40,6 +54,7 @@ public class LabChatListener {
             "%s: %s, loại %s, ưu tiên %s, người gửi %s".formatted(plain(event.code()),
                 plain(event.title()), plain(event.categoryName()), event.priority(),
                 plain(event.requesterName())),
+            imageUrl(event.imageKey()), ticketLink(event.ticketId()),
             field("Mã", plain(event.code())), field("Tiêu đề", plain(event.title())),
             field("Loại", plain(event.categoryName())), field("Ưu tiên", event.priority()),
             field("Người gửi", plain(event.requesterName())),
@@ -54,8 +69,8 @@ public class LabChatListener {
             plain(event.title()), event.priority(),
             event.assigneeName() == null ? "chưa có" : plain(event.assigneeName()),
             TIME_FORMAT.format(event.dueAt())),
-        field("Mã", plain(event.code())), field("Tiêu đề", plain(event.title())),
-        field("Ưu tiên", event.priority()),
+        null, ticketLink(event.ticketId()), field("Mã", plain(event.code())),
+        field("Tiêu đề", plain(event.title())), field("Ưu tiên", event.priority()),
         field("Người xử lý",
             event.assigneeName() == null ? "Chưa có" : plain(event.assigneeName())),
         field("Hạn xử lý", TIME_FORMAT.format(event.dueAt())));
@@ -74,13 +89,35 @@ public class LabChatListener {
     }
   }
 
+  private String imageUrl(String imageKey) {
+    if (imageBaseUrl.isEmpty() || imageKey == null) {
+      return null;
+    }
+    return objectStorage.presignedUrl(imageBaseUrl, imageKey, IMAGE_URL_TTL);
+  }
+
+  // Opens the ticket in the web app; null when the app address is not configured.
+  private String ticketLink(Long ticketId) {
+    return appBaseUrl.isEmpty() ? null : appBaseUrl + "/tickets/" + ticketId;
+  }
+
+  private static String trimUrl(String url) {
+    return url == null ? "" : url.strip().replaceAll("/+$", "");
+  }
+
   private static Map<String, Object> payload(String color, String title, String fallback,
-      Map<String, Object>... fields) {
+      String imageUrl, String titleLink, Map<String, Object>... fields) {
     Map<String, Object> attachment = new LinkedHashMap<>();
     attachment.put("fallback", fallback);
     attachment.put("color", color);
     attachment.put("title", title);
+    if (titleLink != null) {
+      attachment.put("title_link", titleLink);
+    }
     attachment.put("fields", List.of(fields));
+    if (imageUrl != null) {
+      attachment.put("image_url", imageUrl);
+    }
     return Map.of("attachments", List.of(attachment));
   }
 

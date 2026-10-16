@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Badge, Pagination, Section, formatDateTime } from "../../../shell";
 import type { Page } from "../../../shell";
 import {
@@ -41,7 +42,9 @@ function addDays(date: Date, days: number): Date {
 }
 
 export default function Bookings({ userId, role, onError }: BookingsProps) {
-  const canBook = role !== "STUDENT";
+  // Technicians only decide on requests; they do not place bookings.
+  const canBook = role === "LECTURER" || role === "ADMIN";
+  const canList = role !== "STUDENT";
   const isStaff = role === "TECHNICIAN" || role === "ADMIN";
 
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -138,7 +141,7 @@ export default function Bookings({ userId, role, onError }: BookingsProps) {
         />
       )}
 
-      {canBook && (
+      {canList && (
         <BookingList
           userId={userId}
           isStaff={isStaff}
@@ -361,8 +364,9 @@ function BookingList({
   onError: (message: string) => void;
   onChanged: () => void;
 }) {
+  const [params] = useSearchParams();
   const [result, setResult] = useState<Page<Booking> | null>(null);
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState(params.get("status") ?? "");
   const [page, setPage] = useState(0);
   const [busy, setBusy] = useState(false);
   const [rejecting, setRejecting] = useState<number | null>(null);

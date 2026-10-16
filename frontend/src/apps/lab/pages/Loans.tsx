@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Badge, Pagination, Section, formatDate, formatDateTime } from "../../../shell";
 import type { Page } from "../../../shell";
 import { approveLoan, cancelLoan, createLoan, listDevices, listLoans, rejectLoan, returnLoan } from "../api";
@@ -27,8 +28,10 @@ function canDecide(loan: Loan, userId: string, role: string): boolean {
 export default function Loans({ userId, role, onError }: LoansProps) {
   const [available, setAvailable] = useState<Device[]>([]);
   const [result, setResult] = useState<Page<Loan> | null>(null);
-  const [status, setStatus] = useState("");
-  const [mine, setMine] = useState(false);
+  // Links from the overview open the list already filtered (?status=PENDING, ?mine=true).
+  const [params] = useSearchParams();
+  const [status, setStatus] = useState(params.get("status") ?? "");
+  const [mine, setMine] = useState(params.get("mine") === "true");
   const [page, setPage] = useState(0);
   const [busy, setBusy] = useState(false);
   const [expanded, setExpanded] = useState<number | null>(null);
@@ -59,7 +62,9 @@ export default function Loans({ userId, role, onError }: LoansProps) {
 
   return (
     <>
-      <RequestForm devices={available} onError={onError} onCreated={refresh} />
+      {role !== "TECHNICIAN" && (
+        <RequestForm devices={available} onError={onError} onCreated={refresh} />
+      )}
 
       <Section
         step="📦"

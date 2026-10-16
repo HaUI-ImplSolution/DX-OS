@@ -7,15 +7,10 @@ import { DEVICE_STATUS_LABEL, formatMinutes, formatPercent } from "../labels";
 import type { CountEntry, DeviceStatus, LabStats } from "../types";
 
 interface StatsProps {
-  isAdmin: boolean;
   onError: (message: string) => void;
 }
 
 const DEFAULT_RANGE_DAYS = 30;
-// Dashboards of the BI tool are served beside the app on this port; override for other hosts.
-const BI_URL =
-  import.meta.env.VITE_SUPERSET_URL ||
-  `${window.location.protocol}//${window.location.hostname}:9081/login/keycloak`;
 
 function Bars({ entries, label }: { entries: CountEntry[]; label: (key: string) => string }) {
   const max = Math.max(1, ...entries.map((entry) => entry.count));
@@ -45,7 +40,7 @@ function StatCard({ title, value, hint }: { title: string; value: string | numbe
   );
 }
 
-export default function Stats({ isAdmin, onError }: StatsProps) {
+export default function Stats({ onError }: StatsProps) {
   const today = new Date();
   const start = new Date();
   start.setDate(today.getDate() - DEFAULT_RANGE_DAYS);
@@ -71,11 +66,6 @@ export default function Stats({ isAdmin, onError }: StatsProps) {
             Đến ngày
             <input type="date" value={to} min={from} onChange={(e) => setTo(e.target.value)} />
           </label>
-          {isAdmin && (
-            <a className="btn btn-link" href={BI_URL} target="_blank" rel="noreferrer">
-              Mở dashboard Superset →
-            </a>
-          )}
         </div>
 
         {stats && (

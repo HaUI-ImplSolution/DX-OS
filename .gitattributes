@@ -2,3 +2,4 @@
 ai/.codex/skills/** -text
 *.bat text eol=crlf
 *.cmd text eol=crlf
+ai/weights/dx-farm-efficientnetv2m/model.pth.part-* binary

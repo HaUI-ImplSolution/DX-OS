@@ -42,7 +42,9 @@ Còn `vw_disease_reports_processed` (báo cáo đã chẩn đoán, không ảnh 
 Chart chưa có dữ liệu hiện "No results" (chưa có việc phun thuốc đã xác nhận hoặc chẩn đoán AI).
 Nền bản đồ là `basemap_light.json`: vector tile OpenFreeMap (dữ liệu OpenStreetMap) vẽ đất, nước, sông, đường và nhãn tỉnh, thành phố, thị xã.
 Nhãn chỉ vẽ trong vùng kinh độ 102°E đến 110°E; không có nhãn đảo, nhãn biển và đường biên giới.
-Style được mount vào `/static/assets/basemap_light.json`, hai chart bản đồ trỏ tới đó, và tham số `?v=` đổi khi sửa file để trình duyệt tải lại.
+Style được mount vào `/static/assets/basemap_light.json`, hai chart bản đồ trỏ tới đó.
+Tham số `?v=` là hash nội dung file, do `bootstrap_datasources.py` tính nên trình duyệt tự tải lại khi file đổi.
+Góc bản đồ hiện attribution OpenFreeMap, OpenMapTiles và OpenStreetMap.
 Tile tải từ `tiles.openfreemap.org`, địa chỉ này nằm trong `connect-src` của CSP ở `superset_config.py`.
 Ô Map Style trong Explore chỉ nhận URL `mapbox://styles/...`; đổi nền bằng cách sửa bundle.
 

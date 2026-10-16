@@ -20,7 +20,7 @@ from superset.security import SupersetSecurityManager
 # OAuth redirect it builds points at the gateway.
 ENABLE_PROXY_FIX = True
 
-# The deck.gl charts draw a label-free light basemap (style: basemap_light.json) from OpenFreeMap vector tiles.
+# The deck.gl charts draw a light basemap with province labels (style: basemap_light.json) from OpenFreeMap vector tiles.
 BASEMAP_TILE_HOST = "https://tiles.openfreemap.org"
 _csp = DEFAULT_TALISMAN_CONFIG["content_security_policy"]
 TALISMAN_CONFIG = {

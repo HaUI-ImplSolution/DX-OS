@@ -3,6 +3,7 @@ công khai của Superset. Idempotent - tìm theo tên trước khi tạo mới.
 export sẵn trong repo thì import bundle đó thay cho việc khai báo dataset từng view.
 """
 
+import hashlib
 import json
 import os
 import time
@@ -52,6 +53,7 @@ if APP_ID not in APPS:
 APP = APPS[APP_ID]
 DATABASE_NAME = APP["database"]
 DASHBOARD_EXPORT_PATH = APP["dashboard"]
+STATIC_ASSETS_DIR = "/app/superset/static/assets"
 
 
 def wait_until_healthy(timeout_seconds: int = 180) -> None:
@@ -188,6 +190,20 @@ def bundle_dashboard_titles() -> list[str]:
         return [yaml.safe_load(zf.read(n))["dashboard_title"] for n in names]
 
 
+def versioned_static_url(style: str) -> str:
+    """URL dưới `/static/assets/` được gắn `?v=<hash nội dung file>` để trình duyệt tải lại
+    style khi file đổi. URL khác hoặc file không có thì giữ nguyên."""
+    url_prefix = "/static/assets/"
+    if not style.startswith(url_prefix):
+        return style
+    base = style.split("?", 1)[0]
+    path = os.path.join(STATIC_ASSETS_DIR, base[len(url_prefix):])
+    if not os.path.isfile(path):
+        return style
+    with open(path, "rb") as f:
+        return f"{base}?v={hashlib.sha256(f.read()).hexdigest()[:8]}"
+
+
 def bundle_map_styles() -> dict[str, str]:
     """Nền bản đồ (`mapbox_style`) của từng chart bản đồ trong bundle, theo tên chart.
     Import không cập nhật chart đã tồn tại nên giá trị này được ghi lại sau import."""
@@ -198,7 +214,7 @@ def bundle_map_styles() -> dict[str, str]:
                 chart = yaml.safe_load(zf.read(name))
                 style = (chart.get("params") or {}).get("mapbox_style")
                 if style:
-                    styles[chart["slice_name"]] = style
+                    styles[chart["slice_name"]] = versioned_static_url(style)
     return styles
 
 
@@ -249,16 +265,19 @@ def restore_chart_query_context(
     )
     if query_context is None:
         print(f"[bootstrap] chart '{chart_name}' ({form_data.get('viz_type')}) chưa hỗ trợ query_context, bỏ qua")
+    else:
+        payload |= to_payload(query_context)
+    if not payload:
         return
     resp = requests.put(
         f"{BASE_URL}/api/v1/chart/{chart_id}",
         headers=headers,
         cookies=cookies,
-        json=payload | to_payload(query_context),
+        json=payload,
         timeout=15,
     )
     resp.raise_for_status()
-    print(f"[bootstrap] chart '{chart_name}' đã có query_context")
+    print(f"[bootstrap] chart '{chart_name}' đã cập nhật ({', '.join(payload)})")
 
 
 def main() -> None:

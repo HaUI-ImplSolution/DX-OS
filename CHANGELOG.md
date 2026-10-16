@@ -880,6 +880,14 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 ## BI Dashboard (`bi`, Apache Superset)
 
+### 2026-10-16
+
+**Đã xong — Rà soát nền bản đồ:**
+
+- `?v=` của style là hash nội dung `basemap_light.json`, do `bootstrap_datasources.py` ghi cùng `mapbox_style`.
+- `mapbox_style` vẫn được ghi cho chart chưa hỗ trợ `query_context`.
+- Nguồn tile khai báo `attribution` của OpenFreeMap, OpenMapTiles và OpenStreetMap.
+
 ### 2026-10-15
 
 **Đã xong — Nền bản đồ sáng:**

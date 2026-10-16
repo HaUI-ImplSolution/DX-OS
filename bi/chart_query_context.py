@@ -9,11 +9,12 @@ from typing import Any
 
 PIE = "pie"
 TIMESERIES_BAR = "echarts_timeseries_bar"
+TIMESERIES_LINE = "echarts_timeseries_line"
 TABLE = "table"
 DECK_SCATTER = "deck_scatter"
 DECK_HEATMAP = "deck_heatmap"
 
-SUPPORTED_VIZ_TYPES = (PIE, TIMESERIES_BAR, TABLE, DECK_SCATTER, DECK_HEATMAP)
+SUPPORTED_VIZ_TYPES = (PIE, TIMESERIES_BAR, TIMESERIES_LINE, TABLE, DECK_SCATTER, DECK_HEATMAP)
 
 DEFAULT_ROW_LIMIT = 10000
 
@@ -104,7 +105,7 @@ def _pie_query(form_data: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _timeseries_bar_query(form_data: dict[str, Any]) -> dict[str, Any]:
+def _timeseries_query(form_data: dict[str, Any]) -> dict[str, Any]:
     x_axis = form_data["x_axis"]
     groupby = list(form_data.get("groupby") or [])
     metrics = list(form_data.get("metrics") or [])
@@ -194,7 +195,8 @@ def _deck_heatmap_query(form_data: dict[str, Any]) -> dict[str, Any]:
 
 _QUERY_BUILDERS = {
     PIE: _pie_query,
-    TIMESERIES_BAR: _timeseries_bar_query,
+    TIMESERIES_BAR: _timeseries_query,
+    TIMESERIES_LINE: _timeseries_query,
     TABLE: _raw_table_query,
     DECK_SCATTER: _deck_scatter_query,
     DECK_HEATMAP: _deck_heatmap_query,

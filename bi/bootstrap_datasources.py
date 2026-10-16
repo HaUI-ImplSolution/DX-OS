@@ -32,6 +32,7 @@ APPS = {
             "vw_diagnoses_approved",
             "vw_treatment_applications_confirmed",
             "vw_ai_diagnosis_outcomes",
+            "vw_weather_daily",
         ],
         "dashboard": "/app/pythonpath/farm_dashboard_export.zip",
     },

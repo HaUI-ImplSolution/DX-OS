@@ -53,7 +53,6 @@ Không còn việc.
 | SLA nhắc kỹ sư khi bản khai phun chờ xác nhận lâu | Admin xác nhận thay được |
 | Thu hoạch thay hộ không có trong timeline workflow | Thu hoạch không có case; thông tin nằm trên vụ và log backend |
 | Nhắc hạn thu hoạch không giới hạn số lần | Nhắc mỗi ngày tới khi thu hoạch hoặc đổi ngày |
-| Chưa có chart thời tiết trên Superset | Web và mobile hiện thời tiết theo thửa, dữ liệu thời tiết chưa lưu vào cơ sở dữ liệu |
 | Phạm vi phụ trách theo khu vực cho engineer | Phân quyền hiện theo thao tác, không theo khu vực |
 | Retry, hàng đợi bền vững hoặc outbox cho thông báo chat bị lỡ | Hiện gửi một lần, lỗi thì bỏ |
 
@@ -64,7 +63,7 @@ Không còn việc.
 | Chuyên gia duyệt `disease_management_policies` (hiện 0/6 policy đủ điều kiện, bảng để trống) | Chẩn đoán chưa trả `management_policy` cho nhánh `NO_CHEMICAL_CONTROL`; có policy được duyệt thì mới thêm trường này vào contract AI và Backend |
 | Chuyên gia duyệt treatment rule cho bệnh còn lại (đốm nâu, Help 400SC đang `IN_REVIEW`) | Đạo ôn và khô vằn đã có rule được duyệt; bệnh khác chỉ ở `review_required`, không có liều và PHI. Có quyết định duyệt thì cập nhật `data/structured/` và chạy lại `generate_seed_sql.py` |
 | Kỹ sư nông nghiệp xác nhận mốc tháng loại vụ và danh mục giống (đang `IN_REVIEW`) | Gợi ý loại vụ và ngày thu hoạch dựa trên số tạm; đổi `app.season-start-months` khi có xác nhận, không cần migration |
-| Người phụ trách xác nhận nền bản đồ Superset (đang nền trắng) | Dashboard bản đồ |
+| Người phụ trách xác nhận nhãn nền bản đồ Superset | Nhãn tỉnh, thành phố, thị xã lấy từ OpenStreetMap; nhãn đảo, nhãn biển và biên giới đã bỏ; cần người có thẩm quyền xác nhận trước khi công bố |
 | Ảnh lá lúa thật cho `seed_demo.py --images` | Demo chẩn đoán AI có ý nghĩa; chart "Tỷ lệ AI đúng/sai" có dữ liệu |
 
 ## 7. Backlog của DX-Lab

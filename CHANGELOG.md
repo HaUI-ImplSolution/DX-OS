@@ -882,6 +882,14 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 ### 2026-10-16
 
+**Đã xong — Chart thời tiết:**
+
+- `V11__weather_observations.sql` thêm bảng `weather_observations` (một dòng cho mỗi vị trí làm tròn hai chữ số thập phân và mỗi giờ) và view `vw_weather_daily` (một dòng cho mỗi vị trí và ngày theo giờ `Asia/Ho_Chi_Minh`).
+- `WeatherObservationScheduler` chạy một phút sau khi Backend khởi động rồi mỗi `weather.collect-interval` (mặc định `1h`), một instance tại một thời điểm; `WeatherObservationService` ghi số đo thật cho mọi vị trí thửa đã duyệt có GPS.
+- Vị trí Open-Meteo không trả về thì bỏ qua, snapshot dự phòng không bao giờ được ghi.
+- `vw_weather_daily` nằm trong danh sách `superset_ro` được đọc.
+- Dashboard Farm có thêm chart "Nhiệt độ theo ngày" (đường) và "Lượng mưa theo ngày" (cột); `chart_query_context.py` hỗ trợ chart đường theo thời gian; chart "Nhiệt độ theo ngày" bật marker để ngày chỉ có một điểm vẫn hiện.
+
 **Đã xong — Rà soát nền bản đồ:**
 
 - `?v=` của style là hash nội dung `basemap_light.json`, do `bootstrap_datasources.py` ghi cùng `mapbox_style`.

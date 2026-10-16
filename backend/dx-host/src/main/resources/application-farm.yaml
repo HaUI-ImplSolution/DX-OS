@@ -28,6 +28,8 @@ weather:
   connect-timeout-ms: ${WEATHER_CONNECT_TIMEOUT_MS:2000}
   read-timeout-ms: ${WEATHER_READ_TIMEOUT_MS:3000}
   cache-ttl: ${WEATHER_CACHE_TTL:1h}
+  # How often the live weather of every approved parcel position is stored for BI.
+  collect-interval: ${WEATHER_COLLECT_INTERVAL:1h}
 
 mattermost:
   webhook:

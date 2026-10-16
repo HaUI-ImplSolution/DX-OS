@@ -19,8 +19,8 @@ public class FarmPlatformConfig {
   public BiDatasetProvider farmBiDatasets() {
     return () -> List.of("vw_parcels_approved", "vw_crop_seasons_approved",
         "vw_disease_reports_processed", "vw_diagnoses_approved",
-        "vw_treatment_applications_confirmed", "vw_ai_diagnosis_outcomes", "diseases", "pesticides",
-        "rice_varieties");
+        "vw_treatment_applications_confirmed", "vw_ai_diagnosis_outcomes", "vw_weather_daily",
+        "diseases", "pesticides", "rice_varieties");
   }
 
   @Bean

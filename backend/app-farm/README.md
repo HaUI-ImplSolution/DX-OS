@@ -13,7 +13,7 @@ Chỉ phụ thuộc `dx-core-api`; khởi động khi `DXOS_APP=farm` (giá tr�
 | Chẩn đoán | Kỹ sư chạy chẩn đoán AI hoặc nhập tay, tra rule thuốc có cấu trúc, duyệt; nông dân chỉ thấy kết quả sau khi duyệt; danh sách báo cáo chưa chẩn đoán cho kỹ sư |
 | Phun thuốc | Nông dân khai phun, kỹ sư xác nhận, vụ vào cách ly và thu hoạch bị khóa tới hết PHI |
 | Tri thức | Hỏi đáp tài liệu bệnh lúa có trích nguồn (RAG namespace `farm`) |
-| Thời tiết | Dự báo theo thửa từ Open-Meteo, snapshot dự phòng khi không gọi được |
+| Thời tiết | Dự báo theo thửa từ Open-Meteo, snapshot dự phòng khi không gọi được; mỗi giờ lưu số đo thật của từng vị trí thửa cho chart Superset |
 
 ## Vai
 
@@ -97,6 +97,7 @@ Quản trị viên nhập hộ không cần sai số.
 | `security.farmer-client-ids` | `FARMER_CLIENT_IDS` | `farm-mobile` |
 | `weather.base-url` | `WEATHER_BASE_URL` | `https://api.open-meteo.com` |
 | `weather.cache-ttl` | `WEATHER_CACHE_TTL` | `1h` |
+| `weather.collect-interval` | `WEATHER_COLLECT_INTERVAL` | `1h` |
 | `mattermost.webhook.url-admin`, `url-engineer` | `MATTERMOST_WEBHOOK_URL_ADMIN`, `MATTERMOST_WEBHOOK_URL_ENGINEER` | trống: dùng webhook tự tạo của channel |
 | `mattermost.webhook.image-base-url` | `MATTERMOST_IMAGE_BASE_URL` | trống: thông báo không kèm ảnh |
 | `mattermost.webhook.app-base-url` | `MATTERMOST_APP_BASE_URL` | trống: thông báo không kèm liên kết mở báo cáo |

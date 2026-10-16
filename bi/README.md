@@ -9,10 +9,10 @@ Service `superset` khai báo trong [`deploy/docker-compose.yml`](../deploy/docke
 - `bootstrap.sh` (entrypoint): `db upgrade`, tạo admin, `superset init`, cài `authlib` cho SSO, rồi `gunicorn`.
 - Backend tạo role Postgres **chỉ đọc** `superset_ro` (`SupersetReadOnlyRoleSeeder`): chỉ `SELECT` trên các view `vw_*` và bảng danh mục `diseases`, `pesticides`, `rice_varieties`; không đọc được `workspaces` hay bảng nghiệp vụ.
 - `bootstrap_datasources.py` đọc `DXOS_APP` (giá trị khác thì dừng) và đăng ký qua REST API của Superset, idempotent và có retry:
-  - **Farm:** import `farm_dashboard_export.zip` (database, dataset, chart, dashboard; nguồn sự thật duy nhất) và truyền lại mật khẩu Postgres vì export mask mật khẩu. Chưa có bundle thì chỉ tạo kết nối `DX-Farm` và 6 dataset.
+  - **Farm:** import `farm_dashboard_export.zip` (database, dataset, chart, dashboard; nguồn sự thật duy nhất) và truyền lại mật khẩu Postgres vì export mask mật khẩu. Chưa có bundle thì chỉ tạo kết nối `DX-Farm` và 7 dataset.
   - **Lab:** tạo kết nối `DX-Lab` và 5 dataset `vw_lab_*` (`rooms`, `devices`, `tickets`, `device_loans`, `room_bookings`); dashboard dựng tay.
 - Superset bỏ `query_context` khi import, nên `bootstrap_datasources.py` sinh lại cho từng chart của dashboard bằng `chart_query_context.py` rồi lưu qua `PUT /api/v1/chart/{id}`.
-  Hỗ trợ pie, cột theo thời gian, bảng thô, deck.gl scatter và heatmap; chart loại khác giữ nguyên.
+  Hỗ trợ pie, cột và đường theo thời gian, bảng thô, deck.gl scatter và heatmap; chart loại khác giữ nguyên.
 - Cùng bước đó ghi `mapbox_style` của chart bản đồ theo bundle.
 - `superset_config.py` cấu hình SSO Keycloak (`AUTH_OAUTH`).
 
@@ -24,7 +24,7 @@ Service `superset` khai báo trong [`deploy/docker-compose.yml`](../deploy/docke
 
 ## Dashboard "DX-Farm — Bản đồ & Trạng thái thửa ruộng"
 
-9 chart, mỗi chart đọc một view chỉ chứa bản ghi đã duyệt hoặc đã xử lý, không có dữ liệu cá nhân:
+11 chart, mỗi chart đọc một view chỉ chứa bản ghi đã duyệt hoặc đã xử lý, không có dữ liệu cá nhân:
 
 | Chart | View |
 |---|---|
@@ -37,9 +37,13 @@ Service `superset` khai báo trong [`deploy/docker-compose.yml`](../deploy/docke
 | Tỷ lệ AI đúng/sai (Pie) | `vw_ai_diagnosis_outcomes` (`CONFIRMED`, `REJECTED`, `OVERRIDDEN`) |
 | Sản lượng thu hoạch theo tháng (cột chồng) | `vw_crop_seasons_approved` (vụ `HARVESTED`) |
 | Diện tích thu hoạch theo tháng (cột chồng) | `vw_crop_seasons_approved` (vụ `HARVESTED`) |
+| Nhiệt độ theo ngày (đường) | `vw_weather_daily` (trung bình nhiệt độ cao nhất và thấp nhất của các vị trí thửa) |
+| Lượng mưa theo ngày (cột) | `vw_weather_daily` (trung bình lượng mưa trong ngày của các vị trí thửa) |
 
 Còn `vw_disease_reports_processed` (báo cáo đã chẩn đoán, không ảnh và người báo cáo); view `vw_lab_*` của Lab chỉ chứa mã, id và nhóm.
 Chart chưa có dữ liệu hiện "No results" (chưa có việc phun thuốc đã xác nhận hoặc chẩn đoán AI).
+Hai chart thời tiết đọc bảng `weather_observations`, mỗi giờ Backend ghi một dòng cho mỗi vị trí thửa đã duyệt từ dữ liệu Open-Meteo thật (không ghi snapshot dự phòng).
+Chart có điểm đầu tiên sau lần chạy đầu của job, khoảng một phút sau khi Backend khởi động.
 Nền bản đồ là `basemap_light.json`: vector tile OpenFreeMap (dữ liệu OpenStreetMap) vẽ đất, nước, sông, đường và nhãn tỉnh, thành phố, thị xã.
 Nhãn chỉ vẽ trong vùng kinh độ 102°E đến 110°E; không có nhãn đảo, nhãn biển và đường biên giới.
 Style được mount vào `/static/assets/basemap_light.json`, hai chart bản đồ trỏ tới đó.

@@ -17,43 +17,9 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 
 | Việc | Phạm vi |
 |---|---|
-| VPS chưa chạy các bản sửa lưu ảnh, portal, AI và SeaweedFS | Cần phát hành rồi kiểm trên VPS, xem việc 1 bên dưới |
-| Dữ liệu MinIO cũ còn trên VPS | `deploy/data/minio`, `deploy/.env.bak-before-seaweedfs` và các image `dxos-minio`; xóa sau khi kiểm xong việc 1 |
+| VPS chưa chạy các bản sửa lưu ảnh, portal, AI và SeaweedFS | Sau khi phát hành, kiểm: ảnh báo cáo #1 hiện với `img.src` là `https://`; `/portal/config` trả `cache-control: no-cache` và thẻ "Quản trị lưu ảnh" ra `https://files.khuongdev.io.vn`; câu hỏi tri thức đầu tiên sau khi AI khởi động lại mất khoảng 4 giây; log `seaweedfs` không còn `IAM gRPC service on filer is UNAUTHENTICATED` và trang quản trị vẫn mở danh sách user |
+| Dữ liệu MinIO cũ còn trên VPS | `deploy/data/minio`, `deploy/.env.bak-before-seaweedfs` và các image `dxos-minio`; ảnh cũ đã ở bucket SeaweedFS, xóa khi ảnh các báo cáo cũ (#1, #2, #5, #6) hiện trên màn hình duyệt yêu cầu |
 | `doctor.sh` cảnh báo dung lượng đĩa trên VPS | Trống 39 GiB, khuyến nghị 40 GiB; theo dõi dung lượng khi dữ liệu và ảnh Docker tăng |
-
-### Ngữ cảnh cho các việc trên VPS
-
-Phần này đủ để làm tiếp mà không cần lịch sử trò chuyện.
-
-**Trạng thái VPS khi ghi**
-
-- VPS chạy ảnh `latest` build từ `main` (merge #147); mọi container healthy, `deploy/doctor.sh` báo 0 lỗi và 1 cảnh báo đĩa.
-- `deploy/.env` của VPS dùng tên biến mới (`S3_*`, `PORTAL_STORAGE_URL`, `APISIX_STORAGE_ADMIN_HOST_PORT`); bản trước khi đổi nằm ở `deploy/.env.bak-before-seaweedfs` cũng trên VPS.
-- VPS giữ biến riêng `AI_ANSWER_GENERATION=false` và `AI_CHAT_CANDIDATE_COUNT=10`, nên không chép đè `.env` từ máy khác; đổi tên biến tại chỗ.
-- `COMPOSE_FILE=docker-compose.yml:docker-compose.cloudflared.yml` nằm trong `.env`, nên chạy `docker compose` trong `deploy/` là đủ.
-- Cập nhật: chạy workflow `Release` (workflow_dispatch) cho `main`, rồi trên VPS `git pull --ff-only` và `cd deploy && ./update.sh latest`.
-- Cấu hình Cloudflare (tunnel, Access, Transform Rule) ở [`CLOUDFLARE.md`](./CLOUDFLARE.md); Cloudflare chặn User-Agent mặc định của `urllib` bằng 403.
-- Đã kiểm bằng Chrome với tài khoản quản trị Keycloak; chưa có phiên tài khoản nông dân.
-
-**1. Phát hành và kiểm bản sửa trên VPS**
-
-- Link ảnh: trên màn "Yêu cầu" của báo cáo #1, `img.src` bắt đầu bằng `https://` và ảnh hiện; ảnh mới upload hiện ở web, app mobile tải được.
-- Portal: `curl -sI -A "Mozilla/5.0" https://khuongdev.io.vn/portal/config` trả `cache-control: no-cache` với `cf-cache-status: DYNAMIC`; thẻ "Quản trị lưu ảnh" ra `https://files.khuongdev.io.vn`, chú thích các thẻ không còn ghi `localhost`.
-- AI: log khởi động không có `Embedding model is not cached`; câu "Làm sao nhận biết lúa bị khô vằn?" gọi ngay sau khi AI khởi động lại mất khoảng 4 giây như các lần sau, thay vì cộng thêm khoảng 10 giây nạp model embedding.
-- SeaweedFS: sau khi tạo lại `seaweedfs` và `seaweedfs-admin`, log không còn `IAM gRPC service on filer is UNAUTHENTICATED`, `Failed to load IAM configuration` và cảnh báo cổng gRPC 33646 của admin; trang `https://files.khuongdev.io.vn` vẫn đăng nhập và mở danh sách user được.
-- Log SeaweedFS chỉ còn cảnh báo và lỗi (`-v=-1`): cảnh báo SSE-S3 KEK và `skipping default store dir` lúc khởi động là bình thường, kho không dùng SSE-S3.
-
-**2. Dọn dữ liệu MinIO cũ**
-
-- Ảnh cũ đã nằm trong bucket SeaweedFS; xóa `deploy/data/minio`, `deploy/.env.bak-before-seaweedfs` và các image `ghcr.io/haui-implsolution/dxos-minio` khi ảnh các báo cáo cũ (#1, #2, #5, #6) hiện trên màn hình duyệt yêu cầu.
-- Kiểm bằng trình duyệt cần một phiên đăng nhập do người vận hành tự đăng nhập.
-
-**3. Việc cần tài khoản nông dân**
-
-- Đăng nhập app Farm hoặc app mobile bằng tài khoản `FARMER`, upload ảnh báo cáo, rồi mở ảnh vừa tải (kết hợp việc 1).
-- Đăng nhập `https://files.khuongdev.io.vn` (SeaweedFS Admin, sau Cloudflare Access) bằng `S3_ACCESS_KEY` và `S3_SECRET_KEY` trong `deploy/.env` của VPS; không ghi giá trị vào repo.
-- Chạy `deploy/backup.sh` rồi `verify`, kiểm thư mục `data/seaweedfs` có trong bản sao lưu.
-- Thử giới hạn gọi API theo người dùng bằng một tài khoản thật qua Cloudflare, xem mục 3 (Chưa kiểm thử).
 
 ## 3. Chưa kiểm thử
 

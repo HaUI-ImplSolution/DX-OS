@@ -1,16 +1,20 @@
 # SPDX-License-Identifier: Apache-2.0
-import math
 from io import BytesIO
 
 import numpy as np
+import torch
 from PIL import Image, ImageFilter, ImageOps, ImageStat
 
 from app.core.config import Settings, get_settings
 from app.cv.contract import class_contract, class_entry
-from app.cv.model_profile import MODEL_IMAGE_SIZE, MODEL_NAME, MODEL_VERSION
+from app.cv.model_profile import (
+    MODEL_IMAGE_SIZE,
+    MODEL_MEAN,
+    MODEL_NAME,
+    MODEL_STD,
+    MODEL_VERSION,
+)
 from app.cv.policy import (
-    DETECTION_CONFIDENCE_THRESHOLD,
-    IOU_THRESHOLD,
     MIN_IMAGE_DIMENSION,
     MIN_SHARPNESS,
     PLAIN_BACKGROUND_EDGE_FLOOR,
@@ -195,55 +199,42 @@ class PlantDiseaseService:
         self.settings = settings or get_settings()
         self.contract = class_contract(self.settings.cv_class_contract_path)
         self.device = getattr(model, "_device", self.settings.cv_device)
+        from torchvision import transforms
+
+        self.transform = transforms.Compose(
+            [
+                transforms.Resize(
+                    (MODEL_IMAGE_SIZE, MODEL_IMAGE_SIZE),
+                    interpolation=transforms.InterpolationMode.BICUBIC,
+                    antialias=True,
+                ),
+                transforms.ToTensor(),
+                transforms.Normalize(MODEL_MEAN, MODEL_STD),
+            ]
+        )
 
     def predict(self, image_bytes: bytes) -> dict:
         image, quality = assess_image(image_bytes, self.crop_classifier)
         if not quality["passed"]:
             raise CvTriageError(" ".join(quality["reasons"]))
 
-        results = self.model.predict(
-            source=image,
-            imgsz=MODEL_IMAGE_SIZE,
-            conf=DETECTION_CONFIDENCE_THRESHOLD,
-            iou=IOU_THRESHOLD,
-            device=self.device,
-            verbose=False,
-        )
-        if not isinstance(results, list) or len(results) != 1:
-            raise ValueError("Invalid model output")
-
-        boxes = getattr(results[0], "boxes", None)
-        detections: list[tuple[float, int]] = []
-        if boxes is not None and len(boxes):
-            confidences = boxes.conf.detach().cpu().tolist()
-            class_ids = boxes.cls.detach().cpu().tolist()
-            if len(confidences) != len(class_ids):
+        tensor = self.transform(image).unsqueeze(0).to(self.device)
+        with torch.inference_mode():
+            logits = self.model(tensor)
+            if (
+                not isinstance(logits, torch.Tensor)
+                or logits.shape != (1, len(self.contract["classes"]))
+                or not logits.is_floating_point()
+                or not torch.isfinite(logits).all()
+            ):
                 raise ValueError("Invalid model output")
-            for raw_confidence, raw_class_id in zip(confidences, class_ids):
-                confidence = float(raw_confidence)
-                class_id = int(raw_class_id)
-                if (
-                    not math.isfinite(confidence)
-                    or confidence < DETECTION_CONFIDENCE_THRESHOLD
-                    or raw_class_id != class_id
-                ):
-                    continue
-                class_entry(class_id, self.contract)
-                detections.append((confidence, class_id))
-
-        if detections:
-            confidence, predicted_class = max(detections, key=lambda item: item[0])
-            entry = class_entry(predicted_class, self.contract)
-        else:
-            # The five-class checkpoint has no explicit healthy/non-leaf class. A missing
-            # detection is therefore uncertain and must pass through the workflow gate.
-            confidence = 0.0
-            entry = self.contract["fallback"]
+            confidence, predicted_class = logits.softmax(dim=1)[0].max(dim=0)
+        entry = class_entry(int(predicted_class.item()), self.contract)
 
         return {
             "disease_code": entry["disease_code"],
             "disease_name": entry["disease_name"],
-            "confidence": round(confidence, 3),
+            "confidence": float(confidence.item()),
             "model_name": MODEL_NAME,
             "model_version": MODEL_VERSION,
         }

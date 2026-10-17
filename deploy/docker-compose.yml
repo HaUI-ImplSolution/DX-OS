@@ -327,19 +327,12 @@ services:
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:?}
       OLLAMA_MODEL: ${OLLAMA_MODEL:?}
       CV_DEVICE: ${AI_CV_DEVICE:?}
+      CV_WEIGHTS_PATH: ${AI_CV_WEIGHTS_PATH:?}
       CV_WEIGHTS_SHA256: ${AI_CV_WEIGHTS_SHA256:?}
       LOG_LEVEL: ${AI_LOG_LEVEL:?}
     volumes:
       - ${AI_DATA_DIR:?}:/data:ro
       - ai_weights:/app/weights
-      - type: bind
-        source: ${AI_CV_WEIGHTS_PATH:-../ai/weights/best.pt}
-        target: /app/weights/best.pt
-        read_only: true
-        bind:
-          # Fail clearly instead of letting Docker create a root-owned directory
-          # when a machine-specific override points to a missing file.
-          create_host_path: false
       - type: bind
         source: ${AI_CROP_CLASSIFIER_PATH:-../ai/weights/crop_classifier.onnx}
         target: /app/weights/crop_classifier.onnx
@@ -391,6 +384,13 @@ services:
       - ../bi/farm_dashboard_export.zip:/app/pythonpath/farm_dashboard_export.zip:ro
       - ./data/superset:/app/superset_home
     entrypoint: ["/bin/bash", "/app/pythonpath/bootstrap.sh"]
+    # The server only starts after the first metadata migration, which takes minutes on an empty volume.
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f \"http://localhost:$${SUPERSET_PORT}/health\""]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 900s
     # No published port: the gateway forwards its second listener (APISIX_SUPERSET_HOST_PORT) here.
 
   # ---------------------------------------------------------------------------

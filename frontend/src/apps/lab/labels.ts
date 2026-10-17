@@ -27,6 +27,8 @@ export const LAB_LABELS: LabelRegistration = {
   },
   actions: {
     ACCEPTED: "Nhận việc",
+    ASSIGNED: "Được giao việc",
+    ASSIGNED_BY: "Phân công",
     STARTED: "Bắt đầu xử lý",
     WAITING_FOR_USER: "Chờ người gửi bổ sung",
     RESUMED: "Tiếp tục xử lý",

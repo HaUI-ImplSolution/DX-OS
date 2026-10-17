@@ -21,7 +21,7 @@ function TicketList({ tickets, empty }: { tickets: Ticket[]; empty: string }) {
     <ul className="plain-list">
       {tickets.map((ticket) => (
         <li key={ticket.id}>
-          <Link to={`/tickets/${ticket.id}`}>
+          <Link to={`/tickets/${ticket.id}`} state={{ from: "/" }}>
             <strong>{ticket.code}</strong> · {ticket.title}
           </Link>{" "}
           <PriorityBadge priority={ticket.priority} />{" "}
@@ -45,22 +45,36 @@ function Counter({ to, title, value }: { to: string; title: string; value: numbe
 // Landing page: what matters to the signed-in role first.
 export default function Home({ user, onError }: HomeProps) {
   const isStaff = user.role === "TECHNICIAN" || user.role === "ADMIN";
-  const canBook = user.role !== "STUDENT";
+  const isTechnician = user.role === "TECHNICIAN";
+  const canBook = user.role === "LECTURER" || user.role === "ADMIN";
 
   return (
     <>
       <Section step="👋" title={`Xin chào, ${user.fullName}`} subtitle="Chọn việc bạn cần làm">
         <div className="form-actions">
-          <Link className="btn btn-primary" to="/tickets">
-            Báo sự cố
-          </Link>
-          <Link className="btn" to="/device-loans">
-            Mượn thiết bị
-          </Link>
-          {canBook && (
-            <Link className="btn" to="/room-bookings">
-              Đặt phòng
-            </Link>
+          {isTechnician ? (
+            <>
+              <Link className="btn btn-primary" to="/queue">
+                Hàng đợi xử lý
+              </Link>
+              <Link className="btn" to="/assets">
+                Phòng và thiết bị
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link className="btn btn-primary" to="/tickets">
+                Báo sự cố
+              </Link>
+              <Link className="btn" to="/device-loans">
+                Mượn thiết bị
+              </Link>
+              {canBook && (
+                <Link className="btn" to="/room-bookings">
+                  Đặt phòng
+                </Link>
+              )}
+            </>
           )}
           <Link className="btn" to="/knowledge">
             Quy chế và hướng dẫn
@@ -129,7 +143,7 @@ function MemberHome({ user, onError }: HomeProps) {
             })}
           </ul>
         )}
-        <Link className="btn btn-link" to="/device-loans">
+        <Link className="btn btn-link" to="/device-loans?mine=true">
           Mượn hoặc trả thiết bị →
         </Link>
       </Section>
@@ -147,7 +161,7 @@ function MemberHome({ user, onError }: HomeProps) {
                 ))}
               </ul>
             )}
-            <Link className="btn btn-link" to="/device-loans">
+            <Link className="btn btn-link" to="/device-loans?status=PENDING">
               Duyệt phiếu mượn →
             </Link>
           </Section>
@@ -200,13 +214,13 @@ function StaffHome({ user, onError }: HomeProps) {
     listBookings({ status: "PENDING", size: 1 })
       .then((page) => setPendingBookings(page.totalElements))
       .catch(fail);
-    listLoans({ status: "PENDING", size: 1 })
+    listLoans({ toApprove: true, size: 1 })
       .then((page) => setPendingLoans(page.totalElements))
       .catch(fail);
     if (isAdmin) {
       const to = new Date();
       const from = new Date();
-      from.setDate(to.getDate() - STATS_DAYS);
+      from.setDate(to.getDate() - (STATS_DAYS - 1));
       getLabStats(toIsoDate(from), toIsoDate(to))
         .then(setStats)
         .catch(fail);
@@ -217,15 +231,18 @@ function StaffHome({ user, onError }: HomeProps) {
     <>
       <Section step="👷" title="Việc cần xử lý">
         <div className="stat-grid">
-          <Counter to="/queue" title="Yêu cầu chưa có người nhận" value={unassigned} />
-          <Counter to="/queue" title="Đang giao cho tôi" value={mine} />
-          <Counter to="/queue" title="Yêu cầu quá hạn" value={overdue} />
-          <Counter to="/room-bookings" title="Lịch đặt phòng chờ duyệt" value={pendingBookings} />
-          <Counter to="/device-loans" title="Phiếu mượn chờ duyệt" value={pendingLoans} />
+          <Counter to="/queue?tab=free" title="Yêu cầu chưa có người nhận" value={unassigned} />
+          <Counter to="/queue?tab=mine" title="Đang giao cho tôi" value={mine} />
+          <Counter to="/queue?tab=overdue" title="Yêu cầu quá hạn" value={overdue} />
+          <Counter to="/room-bookings?status=PENDING" title="Lịch đặt phòng chờ duyệt" value={pendingBookings} />
+          <Counter to="/device-loans?toApprove=true" title="Phiếu mượn chờ duyệt" value={pendingLoans} />
         </div>
       </Section>
       <Section step="⏰" title="Yêu cầu quá hạn xử lý">
         <TicketList tickets={overdueTickets} empty="Không có yêu cầu nào quá hạn." />
+        <Link className="btn btn-link" to="/queue?tab=overdue">
+          Xem tất cả trong hàng đợi →
+        </Link>
       </Section>
       {isAdmin && stats && (
         <Section step="📈" title={`Tổng quan ${STATS_DAYS} ngày qua`}>

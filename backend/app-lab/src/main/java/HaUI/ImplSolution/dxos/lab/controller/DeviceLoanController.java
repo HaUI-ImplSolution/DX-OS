@@ -39,7 +39,7 @@ public class DeviceLoanController {
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   @Operation(summary = "Ask to borrow a device",
-      description = "Any signed-in user. dueDate is today to 7 days ahead (422"
+      description = "Any signed-in user except a TECHNICIAN (403). dueDate is today to 7 days ahead (422"
           + " LOAN_PERIOD_INVALID). 422 DEVICE_NOT_AVAILABLE unless the device is AVAILABLE;"
           + " 422 TOO_MANY_OPEN_LOANS with 2 loans waiting or not returned. A student's loan"
           + " waits for a lecturer, a lecturer's for a technician. With an Idempotency-Key, a"
@@ -54,12 +54,14 @@ public class DeviceLoanController {
   @GetMapping
   @Operation(summary = "List loans, newest first",
       description = "Own loans for STUDENT; LECTURER, TECHNICIAN and ADMIN see all of them (mine=true"
-          + " limits the list to their own). Filters: status, deviceId. size is capped at 100.")
+          + " limits the list to their own, toApprove=true to the PENDING loans of others they"
+          + " may approve). Filters: status, deviceId. size is capped at 100.")
   public ApiResponse<PageResponse<LoanResponse>> list(@RequestParam(required = false) String status,
       @RequestParam(required = false) Long deviceId,
       @RequestParam(defaultValue = "false") boolean mine,
+      @RequestParam(defaultValue = "false") boolean toApprove,
       @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
-    return ApiResponse.success(loanService.list(status, deviceId, mine, page, size));
+    return ApiResponse.success(loanService.list(status, deviceId, mine, toApprove, page, size));
   }
 
   @GetMapping("/{id}")

@@ -4,6 +4,7 @@ package HaUI.ImplSolution.dxos.core.api.app;
 import HaUI.ImplSolution.dxos.core.api.workspace.WorkspaceType;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 // Declares the application the host is running. Exactly one app module is active per start.
 public interface AppModule {
@@ -26,6 +27,11 @@ public interface AppModule {
   // Values clients read from the manifest instead of fixing them in their own code.
   default Map<String, String> settings() {
     return Map.of();
+  }
+
+  // Ids of the services beside the app that the portal offers: "bi" (dashboards) and "chat".
+  default Set<String> portalServices() {
+    return Set.of("bi", "chat");
   }
 
   // Case types whose waiting requests count against a user's limit of open requests.

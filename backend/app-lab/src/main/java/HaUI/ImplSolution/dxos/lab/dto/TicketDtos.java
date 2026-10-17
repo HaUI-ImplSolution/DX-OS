@@ -15,13 +15,18 @@ public final class TicketDtos {
 
   public record TicketCreateRequest(@NotBlank @Size(max = 255) String title,
       @NotBlank @Size(max = 4000) String description, @NotBlank String categoryCode,
-      TicketPriority priority, Long roomId, Long deviceId) {}
+      TicketPriority priority, Long roomId, @Size(max = 255) String roomNote, Long deviceId) {}
+
+  // The requester's changes to a ticket that is still open.
+  public record TicketUpdateRequest(@NotBlank @Size(max = 255) String title,
+      @NotBlank @Size(max = 4000) String description, Long roomId, @Size(max = 255) String roomNote,
+      Long deviceId) {}
 
   public record TicketResponse(Long id, String code, String title, String description,
       String categoryCode, String categoryName, TicketPriority priority, String status,
-      Long roomId, String roomCode, Long deviceId, String deviceAssetCode, String requesterId,
-      String requesterName, String assigneeId, String assigneeName, Instant responseDueAt,
-      Instant resolutionDueAt, Instant firstRespondedAt, Instant resolvedAt, Instant closedAt,
+      Long roomId, String roomCode, String roomNote, Long deviceId, String deviceAssetCode,
+      String requesterId, String requesterName, String assigneeId, String assigneeName,
+      Instant responseDueAt, Instant resolutionDueAt, Instant firstRespondedAt, Instant resolvedAt, Instant closedAt,
       String resolutionNote, String rootCause, int reopenCount, Integer rating,
       String ratingComment, boolean overdue, Instant createdAt, Instant updatedAt) {
 
@@ -31,7 +36,8 @@ public final class TicketDtos {
       return new TicketResponse(ticket.getId(), ticket.getCode(), ticket.getTitle(),
           ticket.getDescription(), ticket.getCategory().getCode(), ticket.getCategory().getName(),
           ticket.getPriority(), ticket.getStatus(), room == null ? null : room.getId(),
-          room == null ? null : room.getCode(), device == null ? null : device.getId(),
+          room == null ? null : room.getCode(), ticket.getRoomNote(),
+          device == null ? null : device.getId(),
           device == null ? null : device.getAssetCode(), ticket.getRequesterId(),
           ticket.getRequesterName(), ticket.getAssigneeId(), ticket.getAssigneeName(),
           ticket.getResponseDueAt(), ticket.getResolutionDueAt(), ticket.getFirstRespondedAt(),

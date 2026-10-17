@@ -1,41 +1,47 @@
 {
-  "version": "riceleafbd-v3-yolov8n",
+  "version": "4.0.0",
   "identity": "Disease.code (exact lookup; no fuzzy mapping)",
   "review_status": "BLOCKED",
   "classes": [
     {
       "class_id": 0,
+      "model_label": "Healthy",
+      "disease_code": "Rice___healthy",
+      "disease_name": "Lá lúa không thấy triệu chứng bệnh"
+    },
+    {
+      "class_id": 1,
       "model_label": "Blast",
       "disease_code": "Rice___Blast",
       "disease_name": "Bệnh đạo ôn trên lúa"
     },
     {
-      "class_id": 1,
+      "class_id": 2,
       "model_label": "Brown Spot",
       "disease_code": "Rice___Brown_spot",
       "disease_name": "Bệnh đốm nâu trên lúa"
     },
     {
-      "class_id": 2,
+      "class_id": 3,
       "model_label": "Leaf Smut",
       "disease_code": "Rice___Leaf_smut",
       "disease_name": "Bệnh than lá lúa (leaf smut)"
     },
     {
-      "class_id": 3,
+      "class_id": 4,
       "model_label": "Rice Tungro",
       "disease_code": "Rice___Tungro",
       "disease_name": "Bệnh tungro trên lúa"
     },
     {
-      "class_id": 4,
+      "class_id": 5,
       "model_label": "Sheath Blight",
       "disease_code": "Rice___Sheath_blight",
       "disease_name": "Bệnh khô vằn trên lúa"
     }
   ],
   "fallback": {
-    "when": "no_detection_at_or_above_confidence_threshold",
+    "when": "legacy_metadata_only_not_used_by_classifier",
     "disease_code": "Rice___healthy",
     "disease_name": "Lá lúa không thấy triệu chứng bệnh"
   }

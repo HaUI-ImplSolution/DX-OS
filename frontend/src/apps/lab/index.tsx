@@ -1,4 +1,4 @@
-import type { AppUiModule } from "../../shell";
+import type { AppUiModule, Notification } from "../../shell";
 import { LAB_LABELS, ROLE_LABEL } from "./labels";
 import Assets from "./pages/Assets";
 import Bookings from "./pages/Bookings";
@@ -13,10 +13,25 @@ import Tickets from "./pages/Tickets";
 
 const isStaff = (role: string) => role === "TECHNICIAN" || role === "ADMIN";
 
+// Where a notification leads: the ticket itself, or the list that holds the loan or booking.
+function notificationPath(notification: Notification): string | null {
+  switch (notification.relatedEntityType) {
+    case "TICKET":
+      return notification.relatedEntityRef ? `/tickets/${notification.relatedEntityRef}` : "/tickets";
+    case "DEVICE_LOAN":
+      return "/device-loans";
+    case "ROOM_BOOKING":
+      return "/room-bookings";
+    default:
+      return null;
+  }
+}
+
 const labModule: AppUiModule = {
   tagline: "Yêu cầu hỗ trợ CNTT, thiết bị, phòng máy và quy chế của khoa",
   roleLabels: ROLE_LABEL,
   labels: LAB_LABELS,
+  notificationPath,
   routes: [
     { path: "/", render: ({ user, onError }) => <Home user={user} onError={onError} /> },
     {
@@ -25,7 +40,6 @@ const labModule: AppUiModule = {
     },
     {
       path: "/tickets/:id",
-      menuPath: "/tickets",
       render: ({ user, onError }) => <TicketDetail userId={user.id} role={user.role} onError={onError} />,
     },
     {
@@ -44,7 +58,7 @@ const labModule: AppUiModule = {
     { path: "/assets", render: ({ onError }) => <Assets onError={onError} /> },
     {
       path: "/stats",
-      render: ({ user, onError }) => <Stats isAdmin={user.role === "ADMIN"} onError={onError} />,
+      render: ({ onError }) => <Stats onError={onError} />,
     },
     {
       path: "/catalog",

@@ -1,0 +1,18 @@
+{
+  "filename": "efficientnetv2m_rice_disease.pth",
+  "bytes": 213048597,
+  "parts": [
+    {
+      "name": "model.pth.part-000",
+      "bytes": 83886080
+    },
+    {
+      "name": "model.pth.part-001",
+      "bytes": 83886080
+    },
+    {
+      "name": "model.pth.part-002",
+      "bytes": 45276437
+    }
+  ]
+}

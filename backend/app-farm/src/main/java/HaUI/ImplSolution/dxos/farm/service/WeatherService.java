@@ -96,6 +96,11 @@ public class WeatherService {
     }
   }
 
+  // Live reading for a position, never the snapshot; throws when Open-Meteo cannot be reached.
+  public WeatherResponse liveAt(double lat, double lon) {
+    return fetchLive(null, lat, lon, clock.instant());
+  }
+
   private WeatherResponse fetchLive(String parcelCode, double lat, double lon, Instant now) {
     JsonNode body = restClient.get().uri(QUERY, lat, lon).retrieve().body(JsonNode.class);
     if (body == null || body.path("current").isMissingNode()

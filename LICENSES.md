@@ -8,7 +8,7 @@ Danh mục đầy đủ theo phiên bản ở [`sbom/`](./sbom/README.md) (Cyclo
 | Phần | Giấy phép | Ghi chú |
 |---|---|---|
 | `backend`, `frontend`, `mobile`, `deploy`, `bi`, `portal`... | Apache-2.0 ([`LICENSE`](./LICENSE)) | SPDX header ở file Java và Python |
-| `ai/`, trọng số `ai/weights/*` | AGPL-3.0 ([`ai/LICENSE`](./ai/LICENSE)) | Mã `ai/` import Ultralytics (AGPL-3.0) nên phân phối theo AGPL-3.0 |
+| Mã nguồn `ai/` | AGPL-3.0 ([`ai/LICENSE`](./ai/LICENSE)) | Giữ giấy phép mã nguồn AI; giấy phép trọng số liệt kê riêng bên dưới |
 
 AI Service là tiến trình riêng, chỉ giao tiếp với Backend qua HTTP nên Backend giữ Apache-2.0.
 
@@ -48,28 +48,28 @@ AI Service là tiến trình riêng, chỉ giao tiếp với Backend qua HTTP n�
 | Uvicorn, HTTPX, python-dotenv, pypdf | BSD-3-Clause | Máy chủ, HTTP client, nạp tài liệu |
 | python-multipart, sentence-transformers | Apache-2.0 | Nhận upload, embedding |
 | psycopg | LGPL-3.0-only | Kết nối PostgreSQL |
-| PyTorch | Apache-2.0 | Chạy mô hình |
+| PyTorch, Torchvision | BSD-3-Clause | Chạy mô hình EfficientNetV2-M |
 | ONNX Runtime 1.30.0 | MIT | Chạy crop classifier trên CPU |
 | NumPy | BSD-3-Clause | Tính toán |
 | Pillow | MIT-CMU | Xử lý ảnh |
-| OpenCV | Apache-2.0 | Do Ultralytics kéo theo |
-| Ultralytics 8.3.40 | AGPL-3.0 | Detector bệnh lá lúa |
 | Ruff, pytest | MIT | Chỉ khi phát triển và test |
 
 ## Mô hình và dữ liệu
 
 | Thành phần | Giấy phép | Vai trò |
 |---|---|---|
-| `YOLOv8n-RiceLeafBD` 3.1.0 (`ai/weights/best.pt`) | AGPL-3.0 | Detector 5 bệnh lá lúa, fine-tune từ `yolov8n.pt` |
-| [Crop classifier YOLO26s-cls](https://huggingface.co/RaiyanKhaan/KrishokTech-Models/tree/c339988a6eceb5e22943ee27e4731a1a1dc9160a/01_crop_classifier) (`ai/weights/crop_classifier.onnx`) | AGPL-3.0 | Kiểm ảnh là lúa trước detector |
+| DX-Farm EfficientNetV2-M 4.0.0 (`ai/weights/dx-farm-efficientnetv2m/`) | Apache-2.0 cho phần fine-tune của nhóm ([`LICENSE`](./LICENSE)) | Healthy và 5 bệnh; trọng số khởi tạo giữ [điều khoản pretrained của Torchvision](https://github.com/pytorch/vision#pre-trained-model-license) |
+| [Crop classifier YOLO26s-cls](https://huggingface.co/RaiyanKhaan/KrishokTech-Models/tree/c339988a6eceb5e22943ee27e4731a1a1dc9160a/01_crop_classifier) (`ai/weights/crop_classifier.onnx`) | AGPL-3.0 | Kiểm ảnh là lúa trước model bệnh |
 | [Qwen2.5 1.5B](https://ollama.com/library/qwen2.5) | Apache-2.0 | LLM diễn đạt, chạy qua Ollama |
 | [`paraphrase-multilingual-MiniLM-L12-v2`](https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2) | Apache-2.0 | Embedding cho RAG |
-| [RiceLeafDiseaseBD v3](https://doi.org/10.17632/86s4jzj2m4.3) | CC BY 4.0 | Dữ liệu huấn luyện detector |
+| [RiceLeafDiseaseBD v3](https://doi.org/10.17632/86s4jzj2m4.3) | CC BY 4.0 | Dữ liệu huấn luyện model bệnh |
 | Tri thức DX-Lab (`data/rag/lab/`) | CC BY 4.0 | 10 bài quy chế và hướng dẫn do nhóm tự soạn |
+| [Open-Meteo](https://open-meteo.com) | CC BY 4.0 | Thời tiết theo thửa, snapshot dự phòng và chart thời tiết của Superset |
+| [OpenFreeMap](https://openfreemap.org) vector tile | ODbL (dữ liệu OpenStreetMap), CC BY 4.0 (OpenMapTiles) | Nền bản đồ của dashboard Superset |
 
 Nguồn dữ liệu: RiceLeafDiseaseBD Version 3 của Mohammad Mehedi Hasan Munna, Toriqul Islam, Smita Saha, Iqbal Hossain Safy, Saiful Bari, Jasmin Akter, Md Momtajur Rahman, Riya Akter, Nahid Hossain Antu, Acramul Haque Kabir, Reefka Fabliha Tulona, Ashraful Islam và M Ashraful Amin, theo [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
-Thay đổi: chỉ dùng 5 lớp bệnh, resize ảnh về 640 và áp dụng augmentation.
-Checkpoint `YOLOv8n-RiceLeafBD` do [`@nddKhanh`](https://github.com/nddKhanh) fine-tune ([notebook Kaggle](https://www.kaggle.com/code/baodark/dx-farm-8169e1/notebook)) và được công khai theo AGPL-3.0.
+Thay đổi: EfficientNetV2-M dùng 6 lớp, resize ảnh 480×480 và augmentation.
+Checkpoint do người huấn luyện của nhóm cung cấp, khởi tạo từ `EfficientNet_V2_M_Weights`; phần fine-tune theo Apache-2.0, giữ điều khoản pretrained Torchvision.
 Dữ liệu mẫu của Lab (phòng, thiết bị, yêu cầu) là dữ liệu giả lập, không chứa người thật.
 
 ## Hạ tầng và công cụ

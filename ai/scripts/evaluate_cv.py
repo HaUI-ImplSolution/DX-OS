@@ -5,16 +5,16 @@
 
 DIR holds one sub-folder per class, named like the model label in
 data/structured/class_contract.json (e.g. "Blast", "Brown Spot"). Any other folder name is
-treated as an untrained class: its images are expected to end as "healthy" or below the threshold.
+treated as an untrained class; confident predictions for it are counted as wrong.
+The healthy column counts Healthy predictions, which also enter the correct/wrong totals.
 """
 
 import argparse
 import hashlib
-import os
 from collections import Counter
 from pathlib import Path
 
-from app.core.config import AI_ROOT
+from app.core.config import get_settings
 from app.cv.contract import class_contract
 from app.cv.policy import WORKFLOW_CONFIDENCE_THRESHOLD
 
@@ -26,9 +26,9 @@ def main() -> None:
     parser.add_argument("directory", type=Path)
     directory = parser.parse_args().directory
 
-    if not os.environ.get("CV_WEIGHTS_SHA256"):
-        weights = AI_ROOT / "weights" / "best.pt"
-        os.environ["CV_WEIGHTS_SHA256"] = hashlib.sha256(weights.read_bytes()).hexdigest()
+    settings = get_settings()
+    if not settings.cv_weights_sha256:
+        settings.cv_weights_sha256 = hashlib.sha256(settings.cv_weights_path.read_bytes()).hexdigest()
 
     from app.cv.crop_classifier import load_crop_classifier
     from app.cv.loader import load_model
@@ -36,9 +36,8 @@ def main() -> None:
 
     contract = class_contract()
     code_by_label = {c["model_label"].lower(): c["disease_code"] for c in contract["classes"]}
-    fallback = contract["fallback"]["disease_code"]
     crop = load_crop_classifier()
-    service = PlantDiseaseService(load_model(), crop)
+    service = PlantDiseaseService(load_model(settings), crop, settings)
 
     header = f"{'class':<16}{'n':>4}{'rejected':>10}{'healthy':>9}{'correct':>9}{'wrong':>7}{'>=thr':>7}{'wrong>=thr':>12}"
     print(header)
@@ -53,9 +52,9 @@ def main() -> None:
                 continue
             result = service.predict(data)
             code, confident = result["disease_code"], result["confidence"] >= WORKFLOW_CONFIDENCE_THRESHOLD
-            if code == fallback:
+            if code == "Rice___healthy":
                 tally["healthy"] += 1
-            elif code == expected:
+            if code == expected:
                 tally["correct"] += 1
             else:
                 tally["wrong"] += 1

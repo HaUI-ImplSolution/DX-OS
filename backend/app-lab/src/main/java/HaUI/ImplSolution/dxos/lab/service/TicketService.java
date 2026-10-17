@@ -10,7 +10,9 @@ import HaUI.ImplSolution.dxos.core.api.storage.FileStore;
 import HaUI.ImplSolution.dxos.core.api.storage.ObjectStorage;
 import HaUI.ImplSolution.dxos.core.api.workflow.CaseView;
 import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowActor;
+import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowEventResponse;
 import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowOperations;
+import HaUI.ImplSolution.dxos.lab.LabWorkflowConfig;
 import HaUI.ImplSolution.dxos.lab.dto.TicketDtos.AssignRequest;
 import HaUI.ImplSolution.dxos.lab.dto.TicketDtos.ConfirmRequest;
 import HaUI.ImplSolution.dxos.lab.dto.TicketDtos.RejectRequest;
@@ -23,6 +25,7 @@ import HaUI.ImplSolution.dxos.lab.dto.TicketDtos.TicketCommentResponse;
 import HaUI.ImplSolution.dxos.lab.dto.TicketDtos.TicketCreateRequest;
 import HaUI.ImplSolution.dxos.lab.dto.TicketDtos.TicketDetailResponse;
 import HaUI.ImplSolution.dxos.lab.dto.TicketDtos.TicketResponse;
+import HaUI.ImplSolution.dxos.lab.dto.TicketDtos.TicketUpdateRequest;
 import HaUI.ImplSolution.dxos.lab.dto.TicketDtos.WaitRequest;
 import HaUI.ImplSolution.dxos.lab.model.Device;
 import HaUI.ImplSolution.dxos.lab.model.Room;
@@ -43,7 +46,10 @@ import java.io.IOException;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
@@ -63,6 +69,9 @@ public class TicketService {
   public static final int MAX_REOPENS = 3;
   public static final List<String> OPEN_STATUSES = List.of(TicketStatus.NEW, TicketStatus.ASSIGNED,
       TicketStatus.IN_PROGRESS, TicketStatus.WAITING_USER);
+
+  // Step shown when an administrator gives a new ticket to a technician
+  private static final String ASSIGNED_BY = "ASSIGNED_BY";
 
   private static final int MAX_PAGE_SIZE = 100;
 
@@ -133,9 +142,9 @@ public class TicketService {
         .code(codeGenerator.next(ZonedDateTime.ofInstant(now, clock.getZone()).getYear()))
         .title(request.title().strip()).description(request.description().strip())
         .category(category).priority(priority).room(roomOf(request.roomId()))
-        .device(deviceOf(request.deviceId())).workspaceId(user.workspaceId()).requesterId(user.id())
-        .requesterName(user.name()).status(TicketStatus.NEW)
-        .responseDueAt(now.plusSeconds(sla.getResponseMinutes() * 60L))
+        .roomNote(noteOf(request.roomId(), request.roomNote())).device(deviceOf(request.deviceId()))
+        .workspaceId(user.workspaceId()).requesterId(user.id()).requesterName(user.name())
+        .status(TicketStatus.NEW).responseDueAt(now.plusSeconds(sla.getResponseMinutes() * 60L))
         .resolutionDueAt(now.plusSeconds(sla.getResolutionMinutes() * 60L))
         .clientRequestId(clientRequestId).build();
     Ticket saved = ticketRepository.save(ticket);
@@ -147,7 +156,8 @@ public class TicketService {
     saved.setWorkflowCaseId(workflowCase.id());
     ticketRepository.save(saved);
     events.publishEvent(new LabEvents.TicketCreated(saved.getId(), saved.getCode(),
-        saved.getTitle(), category.getName(), priority.name(), saved.getRequesterName(), now));
+        saved.getTitle(), category.getName(), priority.name(), saved.getRequesterName(), now,
+        firstImageKey(saved)));
     return detailOf(saved);
   }
 
@@ -223,15 +233,44 @@ public class TicketService {
     return toResponse(comment);
   }
 
+  // Only the requester edits a report, and only while it is open.
   @Transactional
   public TicketAttachmentResponse addAttachment(Long id, MultipartFile file) {
-    Ticket ticket = findVisible(id);
-    requireNotFinished(ticket);
+    Ticket ticket = findEditable(id);
     if (attachmentRepository.countByTicket_Id(id) >= MAX_ATTACHMENTS) {
       throw new IllegalArgumentException(
           "A ticket takes at most %d attachments".formatted(MAX_ATTACHMENTS));
     }
-    return toResponse(store(ticket, file));
+    TicketAttachmentResponse stored = toResponse(store(ticket, file));
+    resumeAfterSupplement(ticket, "đã thêm ảnh");
+    return stored;
+  }
+
+  @Transactional
+  public void removeAttachment(Long id, Long attachmentId) {
+    Ticket ticket = findEditable(id);
+    TicketAttachment attachment = attachmentRepository.findById(attachmentId)
+        .filter(found -> found.getTicket().getId().equals(id))
+        .orElseThrow(() -> new ResourceNotFoundException("Attachment not found: " + attachmentId));
+    attachmentRepository.delete(attachment);
+    resumeAfterSupplement(ticket, "đã xoá một ảnh");
+  }
+
+  @Transactional
+  public TicketResponse update(Long id, TicketUpdateRequest request) {
+    Ticket ticket = findEditable(id);
+    ticket.setTitle(request.title().strip());
+    ticket.setDescription(request.description().strip());
+    ticket.setRoom(roomOf(request.roomId()));
+    ticket.setRoomNote(noteOf(request.roomId(), request.roomNote()));
+    ticket.setDevice(deviceOf(request.deviceId()));
+    ticketRepository.save(ticket);
+    saveComment(ticket, "Người gửi đã cập nhật nội dung yêu cầu.", false);
+    if (!resumeAfterSupplement(ticket, "đã cập nhật nội dung")) {
+      tellAssignee(ticket, "Người gửi đã cập nhật yêu cầu",
+          "Yêu cầu %s: người gửi đã cập nhật nội dung.");
+    }
+    return TicketResponse.of(ticket);
   }
 
   // A technician takes a new ticket. A second technician asking at the same moment gets a 409.
@@ -390,7 +429,33 @@ public class TicketService {
         attachmentRepository.findByTicket_IdOrderByIdAsc(ticket.getId()).stream()
             .map(this::toResponse).toList(),
         ticket.getWorkflowCaseId() == null ? List.of()
-            : workflow.events(ticket.getWorkflowCaseId()));
+            : timeline(workflow.events(ticket.getWorkflowCaseId())));
+  }
+
+  // Giving a ticket to someone logs the assignment and the acceptance back to back. They show as
+  // one step: the person who took it, or the person who handed it over with the assignee kept in
+  // the metadata.
+  static List<WorkflowEventResponse> timeline(List<WorkflowEventResponse> events) {
+    List<WorkflowEventResponse> steps = new ArrayList<>();
+    for (int i = 0; i < events.size(); i++) {
+      WorkflowEventResponse event = events.get(i);
+      WorkflowEventResponse next = i + 1 < events.size() ? events.get(i + 1) : null;
+      boolean handOver = "ASSIGNED".equals(event.action()) && next != null
+          && LabWorkflowConfig.ACCEPTED.equals(next.action());
+      if (!handOver) {
+        steps.add(event);
+        continue;
+      }
+      i++;
+      if (Objects.equals(event.actorUserId(), next.actorUserId())) {
+        steps.add(next);
+      } else {
+        steps.add(new WorkflowEventResponse(next.id(), ASSIGNED_BY, next.fromStatus(),
+            next.toStatus(), next.actorUserId(), next.actorDisplayName(), null, next.occurredAt(),
+            Map.of("assigneeName", event.actorDisplayName())));
+      }
+    }
+    return steps;
   }
 
   // Someone else's ticket does not show up for a user who cannot see all of them.
@@ -399,6 +464,36 @@ public class TicketService {
         .orElseThrow(() -> new ResourceNotFoundException("Ticket not found: " + id));
     if (!user.isStaff() && !ticket.getRequesterId().equals(user.id())) {
       throw new ResourceNotFoundException("Ticket not found: " + id);
+    }
+    return ticket;
+  }
+
+  // What the technician asked for may come as photos or edits instead of a reply: either puts a
+  // waiting ticket back to IN_PROGRESS and tells the technician. Returns whether it did.
+  private boolean resumeAfterSupplement(Ticket ticket, String what) {
+    if (!TicketStatus.WAITING_USER.equals(ticket.getStatus())) {
+      return false;
+    }
+    workflow.decide(ticket.getWorkflowCaseId(), TicketStatus.IN_PROGRESS, user.actor(), null);
+    tellAssignee(ticket, "Người gửi đã bổ sung thông tin",
+        "Yêu cầu %s: người gửi " + what + " và chờ bạn xử lý tiếp.");
+    return true;
+  }
+
+  private void tellAssignee(Ticket ticket, String title, String bodyFormat) {
+    if (ticket.getAssigneeId() == null) {
+      return;
+    }
+    notifier.tell(ticket.getAssigneeId(), LabNotificationTypes.TICKET_REPLIED, title,
+        bodyFormat.formatted(ticket.getCode()), LabCaseTypes.TICKET_ENTITY, ticket.getId());
+  }
+
+  private Ticket findEditable(Long id) {
+    Ticket ticket = findVisible(id);
+    requireRequester(ticket);
+    if (!OPEN_STATUSES.contains(ticket.getStatus())) {
+      throw new InvalidStateException("Ticket %s is %s and can no longer be edited"
+          .formatted(ticket.getCode(), ticket.getStatus()));
     }
     return ticket;
   }
@@ -476,6 +571,17 @@ public class TicketService {
     }
     return roomRepository.findById(roomId)
         .orElseThrow(() -> new IllegalArgumentException("Unknown room: " + roomId));
+  }
+
+  // A free-text room only applies when no catalogue room is chosen.
+  private static String noteOf(Long roomId, String note) {
+    return roomId != null || isBlank(note) ? null : note.strip();
+  }
+
+  private String firstImageKey(Ticket ticket) {
+    return attachmentRepository.findByTicket_IdOrderByIdAsc(ticket.getId()).stream()
+        .filter(attachment -> attachment.getContentType().startsWith("image/"))
+        .map(TicketAttachment::getObjectKey).findFirst().orElse(null);
   }
 
   private Device deviceOf(Long deviceId) {

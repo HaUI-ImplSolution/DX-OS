@@ -42,7 +42,8 @@ public class DeviceController {
 
   @GetMapping
   @Operation(summary = "List devices by asset code",
-      description = "Any signed-in user. Optional filters: roomId, status and deviceType.")
+      description = "Any signed-in user. Optional filters: roomId, status and deviceType (part of"
+          + " the type, ignoring case).")
   public ApiResponse<List<DeviceResponse>> list(@RequestParam(required = false) Long roomId,
       @RequestParam(required = false) DeviceStatus status,
       @RequestParam(required = false) String deviceType) {
@@ -59,7 +60,7 @@ public class DeviceController {
   @PreAuthorize("hasAnyRole('TECHNICIAN','ADMIN')")
   @ResponseStatus(HttpStatus.CREATED)
   @Operation(summary = "Register a device",
-      description = "TECHNICIAN or ADMIN only. The device starts AVAILABLE. 409 when the asset"
+      description = "TECHNICIAN or ADMIN only. The device starts AVAILABLE. 422 ASSET_CODE_TAKEN when the asset"
           + " code is already used; 400 for an unknown room.")
   public ApiResponse<DeviceResponse> create(@Valid @RequestBody DeviceRequest request) {
     return ApiResponse.success("Device created", deviceService.create(request));
@@ -69,7 +70,7 @@ public class DeviceController {
   @PreAuthorize("hasAnyRole('TECHNICIAN','ADMIN')")
   @Operation(summary = "Change the details of a device",
       description = "TECHNICIAN or ADMIN only. The status is not changed here: loans and"
-          + " maintenance move it. 409 when the new asset code is already used.")
+          + " maintenance move it. 422 ASSET_CODE_TAKEN when the new asset code is already used.")
   public ApiResponse<DeviceResponse> update(@PathVariable Long id,
       @Valid @RequestBody DeviceRequest request) {
     return ApiResponse.success("Device updated", deviceService.update(id, request));

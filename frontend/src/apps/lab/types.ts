@@ -25,6 +25,7 @@ export interface Ticket {
   status: TicketStatus;
   roomId: number | null;
   roomCode: string | null;
+  roomNote: string | null;
   deviceId: number | null;
   deviceAssetCode: string | null;
   requesterId: string;
@@ -78,6 +79,15 @@ export interface TicketCreateRequest {
   categoryCode: string;
   priority?: TicketPriority;
   roomId?: number;
+  roomNote?: string;
+  deviceId?: number;
+}
+
+export interface TicketUpdateRequest {
+  title: string;
+  description: string;
+  roomId?: number;
+  roomNote?: string;
   deviceId?: number;
 }
 

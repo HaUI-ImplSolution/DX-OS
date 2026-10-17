@@ -7,6 +7,7 @@ import torch
 
 from app.core.config import Settings, get_settings
 from app.cv.contract import class_contract
+from app.cv.model_profile import MODEL_IMAGE_SIZE, MODEL_MEAN, MODEL_STD
 
 
 def _sha256(path: Path) -> str:
@@ -17,28 +18,23 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _model_names(model) -> list[str]:
-    names = getattr(model, "names", None)
-    if isinstance(names, dict):
-        try:
-            return [names[index] for index in range(len(names))]
-        except KeyError as exc:
-            raise ValueError("YOLO class IDs are not contiguous from zero") from exc
-    if isinstance(names, (list, tuple)):
-        return list(names)
-    raise ValueError("YOLO checkpoint does not expose class names")
-
-
-def validate_model_contract(model, contract: dict) -> None:
-    task = getattr(model, "task", None)
-    if task != "detect":
-        raise ValueError(f"YOLO checkpoint task must be 'detect', got {task!r}")
-    expected_names = [item["model_label"] for item in contract["classes"]]
-    actual_names = _model_names(model)
-    if actual_names != expected_names:
+def validate_model_contract(checkpoint: dict, contract: dict) -> None:
+    names = [item["model_label"] for item in contract["classes"]]
+    expected = {
+        "architecture": "efficientnet_v2_m",
+        "img_size": MODEL_IMAGE_SIZE,
+        "class_names": names,
+        "class_to_idx": dict(zip(names, range(len(names)))),
+        "imagenet_mean": list(MODEL_MEAN),
+        "imagenet_std": list(MODEL_STD),
+    }
+    if (
+        len(names) != 6
+        or not isinstance(checkpoint, dict)
+        or any(checkpoint.get(key) != value for key, value in expected.items())
+    ):
         raise ValueError(
-            "YOLO checkpoint class order does not match class_contract.json: "
-            f"expected {expected_names}, got {actual_names}"
+            "CV checkpoint classes or preprocessing do not match the contract"
         )
 
 
@@ -52,7 +48,9 @@ def load_model(settings: Settings | None = None):
     settings = settings or get_settings()
     expected_sha256 = (settings.cv_weights_sha256 or "").strip().lower()
     if not re.fullmatch(r"[0-9a-f]{64}", expected_sha256):
-        raise ValueError("CV_WEIGHTS_SHA256 must be configured as 64 hexadecimal characters")
+        raise ValueError(
+            "CV_WEIGHTS_SHA256 must be configured as 64 hexadecimal characters"
+        )
 
     path = settings.cv_weights_path
     if not path.is_file():
@@ -62,13 +60,15 @@ def load_model(settings: Settings | None = None):
     if _sha256(path) != expected_sha256:
         raise ValueError("CV checkpoint SHA-256 does not match CV_WEIGHTS_SHA256")
 
-    # Import only after local file validation. No checkpoint is downloaded implicitly.
-    from ultralytics import YOLO
+    # Construct the architecture without downloading pretrained weights.
+    from torchvision.models import efficientnet_v2_m
 
-    model = YOLO(str(path), task="detect")
+    checkpoint = torch.load(path, map_location="cpu", weights_only=True)
     contract = class_contract(settings.cv_class_contract_path)
-    validate_model_contract(model, contract)
+    validate_model_contract(checkpoint, contract)
+    model = efficientnet_v2_m(weights=None, num_classes=6)
+    model.load_state_dict(checkpoint["state_dict"], strict=True)
     device = _resolve_device(settings.cv_device)
-    model.to(device)
+    model.to(device).eval()
     model._device = device
     return model

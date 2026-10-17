@@ -5,18 +5,20 @@ Sản phẩm dự thi OLP Phần mềm nguồn mở 2026 (khối thi DX-OS, VFOS
 phát triển tại Trường Công nghệ Thông tin và Truyền thông, Đại học Công nghiệp Hà Nội.
 
 Mã nguồn do nhóm tự viết được cấp phép theo Apache License 2.0 (xem LICENSE).
-Thư mục ai/ được phân phối theo GNU AGPL-3.0 (xem ai/LICENSE) vì import Ultralytics.
+Mã nguồn trong thư mục ai/ được phân phối theo GNU AGPL-3.0 (xem ai/LICENSE).
 
 Sản phẩm này sử dụng phần mềm và dữ liệu của bên thứ ba, giữ nguyên giấy phép gốc:
 
 - Spring Boot, Keycloak, Apache APISIX, Apache Superset, Flyway, Qwen2.5 (Apache-2.0).
 - PostgreSQL và pgvector (PostgreSQL License).
 - React, Expo, FastAPI, LangGraph, Ollama (MIT).
-- Ultralytics YOLO, MinIO, Mattermost Team Edition (AGPL-3.0), chạy nguyên bản, không sửa mã nguồn.
+- MinIO, Mattermost Team Edition (AGPL-3.0), chạy nguyên bản, không sửa mã nguồn.
 
-Dữ liệu huấn luyện detector bệnh lá lúa: RiceLeafDiseaseBD Version 3
+Dữ liệu huấn luyện model bệnh lá lúa: RiceLeafDiseaseBD Version 3
 (Mohammad Mehedi Hasan Munna và cộng sự, https://doi.org/10.17632/86s4jzj2m4.3),
 theo CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/).
-Thay đổi: chỉ dùng 5 lớp bệnh, resize ảnh về 640 và áp dụng augmentation.
+Thay đổi: EfficientNetV2-M dùng 6 lớp, resize ảnh 480×480 và augmentation.
+Phần fine-tune DX-Farm EfficientNetV2-M do nhóm phát hành theo Apache-2.0 (xem LICENSE).
+Trọng số khởi tạo EfficientNet_V2_M_Weights giữ điều khoản của Torchvision, xem LICENSES.md.
 
 Danh sách thành phần đầy đủ ở LICENSES.md; SBOM CycloneDX ở thư mục sbom/.

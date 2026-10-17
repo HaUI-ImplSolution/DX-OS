@@ -18,7 +18,7 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE.md`](../ARCHITECTURE.md).
   Phần tự viết là `dx-core` (workflow, workspace, thông báo, cổng AI) và các ứng dụng.
 - Backend Java và Spring Boot vì ranh giới Core/ứng dụng cần kiểm tra lúc biên dịch bằng module Maven; AI viết bằng Python vì hệ sinh thái CV và RAG.
 - Mã tự viết Apache-2.0.
-  Dependency chính: Spring, Keycloak, APISIX, PostgreSQL, Superset, Ollama (Apache-2.0 hoặc MIT); MinIO, Mattermost, Ultralytics và checkpoint CV là AGPL-3.0; MinIO và Mattermost chạy nguyên bản, không sửa mã.
+  Dependency chính: Spring, Keycloak, APISIX, PostgreSQL, Superset, Ollama (Apache-2.0 hoặc MIT); PyTorch/Torchvision (BSD-3-Clause); MinIO, Mattermost và crop classifier là AGPL-3.0; phần fine-tune model bệnh của nhóm theo Apache-2.0.
 - Dẫn: `LICENSES.md` (bảng đầy đủ, nguồn và vai trò), `sbom/` (CycloneDX).
 
 ## 3. Nếu thay đổi ứng dụng nghiệp vụ, Open-Core có phải thay đổi theo không? Vì sao?
@@ -57,8 +57,8 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE.md`](../ARCHITECTURE.md).
 
 ## 6. AI/ML được dùng ở đâu? Dữ liệu đầu vào, mô hình, đánh giá và giới hạn là gì?
 
-- Farm, CV: YOLOv8n (checkpoint `YOLOv8n-RiceLeafBD` 3.1.0, AGPL-3.0), dữ liệu RiceLeafDiseaseBD v3 (CC BY 4.0), 5 bệnh lá lúa.
-  Trước detector có crop classifier YOLO26s-cls (ONNX) kiểm ảnh là lúa; hai trọng số nằm trong `ai/weights/`.
+- Farm, CV: EfficientNetV2-M (checkpoint `DX-Farm-EfficientNetV2-M` 4.0.0, Apache-2.0 cho phần fine-tune của nhóm), dữ liệu RiceLeafDiseaseBD v3 (CC BY 4.0), Healthy và 5 bệnh lá lúa.
+  Trước model bệnh có crop classifier YOLO26s-cls (ONNX) kiểm ảnh là lúa; trọng số nằm trong `ai/weights/`, model bệnh được ghép vào image khi build.
 - RAG: pgvector, embedding `paraphrase-multilingual-MiniLM-L12-v2` (Apache-2.0); 6 tài liệu IRRI và LSU cho Farm, 10 bài quy chế và hướng dẫn tự soạn (CC BY 4.0) cho Lab, mỗi corpus một namespace.
 - LLM: Qwen2.5-1.5B (Apache-2.0) chỉ diễn đạt dữ kiện đã tra, không sinh số.
 - Lab, luật phân loại: từ khóa theo loại và luật nâng ưu tiên (`classifier-rules.json`), trả kèm từ khóa khớp và lý do; người dùng quyết định.
@@ -66,7 +66,7 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE.md`](../ARCHITECTURE.md).
   - Ngưỡng chuyển cho người xem `0.70` chưa có căn cứ đo trên ảnh ngoài ruộng.
   - Crop classifier nhận 6/15 ảnh ngô và 15/15 ảnh mía là lúa, và chặn 8/50 ảnh lúa nền ruộng.
   - Sâu hại chưa có mô hình.
-  - Đánh giá mới dùng 100 ảnh công khai: pipeline chẩn đoán đúng 4/80 ảnh (detector riêng 21/80) và không ảnh nào đạt `0.70`.
+  - Accuracy model bệnh 89,43%, macro-F1 88,13% trên 1.466 ảnh theo báo cáo người huấn luyện, chưa đo toàn pipeline hoặc riêng ngưỡng `0.70`.
   - Chưa có đánh giá trên ảnh ruộng thật có nhãn kỹ sư.
   - Luật của Lab là luật tay, chưa đo độ chính xác trên dữ liệu thật.
 - Kỹ sư luôn là người chốt bệnh và điều trị; nhãn kỹ sư chốt được lưu có cấu trúc cho dữ liệu huấn luyện về sau.
@@ -76,6 +76,7 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE.md`](../ARCHITECTURE.md).
 
 - Thời tiết: Open-Meteo không gọi được thì trả điểm tham chiếu gần nhất trong `weather-snapshot.json`, đánh dấu `isSnapshot=true`.
   Snapshot chụp ngày 07/10/2026, chỉ có 5 điểm ĐBSCL.
+- Thời tiết cho Superset: mỗi giờ Backend ghi số đo thật của từng vị trí thửa đã duyệt vào `weather_observations`; snapshot dự phòng không được ghi.
 - AI: LLM không sẵn sàng thì AI dùng nhánh `evidence_fallback`, trả nguyên văn tài liệu; Backend có circuit breaker khi gọi AI.
 - Lab: gợi ý phân loại vẫn trả kết quả của luật khi AI không gọi được (`knowledgeAvailable=false`); ticket và đặt phòng không phụ thuộc AI.
 - Chat: thông báo gửi bất đồng bộ, Mattermost lỗi hoặc chưa có webhook thì ứng dụng vẫn chạy.
@@ -129,7 +130,7 @@ Hướng mở rộng:
 ### B. Giấy phép
 
 - Mã tự viết Apache-2.0, SPDX header ở file Java và Python.
-- AGPL-3.0: Ultralytics, MinIO, checkpoint CV (detector bệnh và crop classifier); Mattermost Team Edition chạy nguyên bản, không đụng `server/enterprise/`.
-- Thư mục `ai/` phân phối theo AGPL-3.0 vì import Ultralytics (`ai/LICENSE`); phần còn lại giữ Apache-2.0.
+- AGPL-3.0: MinIO, crop classifier và mã nguồn `ai/`; Mattermost Team Edition chạy nguyên bản, không đụng `server/enterprise/`. Phần fine-tune checkpoint bệnh do nhóm phát hành theo Apache-2.0, giữ điều khoản pretrained Torchvision.
+- Thư mục `ai/` giữ AGPL-3.0 (`ai/LICENSE`); phần còn lại giữ Apache-2.0.
   AI Service là tiến trình riêng giao tiếp với Backend qua HTTP, nên Backend không là tác phẩm phái sinh của `ai/`.
 - Bảng đầy đủ: `LICENSES.md`.

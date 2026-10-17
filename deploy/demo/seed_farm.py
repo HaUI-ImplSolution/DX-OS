@@ -9,6 +9,7 @@ enough for the screens but not for a meaningful AI diagnosis.
 import datetime
 import pathlib
 import sys
+import time
 import uuid
 
 import dxos_client as dx
@@ -51,12 +52,36 @@ def leaf_photo(variant=0):
     return dx.png_image(paint, color=(95 + variant % 5 * 3, 125, 65))
 
 
+REPORT_COUNT = 3
+AI_WAIT_SECONDS = 300
+AI_RETRY_SECONDS = 5
+
+
+def when_ai_ready(call):
+    """Runs call, retrying while the backend answers that the AI service is not up yet."""
+    deadline = time.monotonic() + AI_WAIT_SECONDS
+    announced = False
+    while True:
+        try:
+            return call()
+        except dx.ApiError as error:
+            body = error.body if isinstance(error.body, dict) else {}
+            unavailable = error.status == 503 and body.get("errorCode") == "ERR_AI_UNAVAILABLE"
+            if not unavailable or time.monotonic() >= deadline:
+                raise
+            if not announced:
+                print("Waiting for the AI service to become ready...")
+                announced = True
+            time.sleep(AI_RETRY_SECONDS)
+
+
 def upload_report(api, season_id, image, key=None, filename="leaf"):
     png = image.startswith(b"\x89PNG")
     content, content_type = dx.multipart(
         "image", f"{filename}.{'png' if png else 'jpg'}", image, "image/png" if png else "image/jpeg")
     headers = {"Content-Type": content_type, "Idempotency-Key": key or str(uuid.uuid4())}
-    return api.ok("POST", f"/crop-seasons/{season_id}/disease-reports", headers=headers, raw=content)
+    return when_ai_ready(lambda: api.ok(
+        "POST", f"/crop-seasons/{season_id}/disease-reports", headers=headers, raw=content))
 
 
 def ensure_farmer_household(admin):
@@ -97,7 +122,7 @@ def photos(images_dir, count):
 
 def diagnose(engineer, report_id, use_ai):
     if use_ai:
-        engineer.ok("POST", f"/disease-reports/{report_id}/diagnosis/ai")
+        when_ai_ready(lambda: engineer.ok("POST", f"/disease-reports/{report_id}/diagnosis/ai"))
     else:
         engineer.ok("POST", f"/disease-reports/{report_id}/diagnosis",
                     {"diseaseCode": "Rice___Blast", "confidence": 0.85, "modelVersion": "manual-input-v1"})
@@ -110,16 +135,23 @@ def seed(base_url, images=None):
     farmer = dx.sign_in(base_url, ACCOUNTS["farmer"])
     ensure_farmer_household(admin)
 
-    if any(p["location"].startswith(DEMO_MARK) for p in farmer.ok("GET", "/parcels")):
-        print("Demo data already present, nothing to do.")
-        return
-
     varieties = admin.ok("GET", "/rice-varieties")
     if not varieties:
         sys.exit("No rice variety in the catalogue.")
     variety = varieties[0]
     today = datetime.date.today()
+    active_start = today - datetime.timedelta(days=45)
 
+    if any(p["location"].startswith(DEMO_MARK) for p in farmer.ok("GET", "/parcels")):
+        resume_reports(farmer, engineer, images, today)
+    else:
+        active = create_parcels_and_seasons(admin, farmer, variety, today, active_start)
+        seed_reports(farmer, engineer, active, images, today)
+    seed_other_households(admin, variety, active_start)
+    print("Demo data ready.")
+
+
+def create_parcels_and_seasons(admin, farmer, variety, today, active_start):
     # Two parcels and their seasons go through the farmer path: request, then administrator approval.
     parcels = []
     for spec in PARCELS[:2]:
@@ -129,7 +161,6 @@ def seed(base_url, images=None):
     for parcel in parcels:
         approve(admin, "PARCEL_APPROVAL", parcel["id"])
 
-    active_start = today - datetime.timedelta(days=45)
     harvested_start = today - datetime.timedelta(days=variety["growthDaysMax"] + 5)
     active = farmer.ok("POST", f"/parcels/{parcels[0]['code']}/crop-seasons",
                        {"riceVarietyCode": variety["code"], "startDate": active_start.isoformat(),
@@ -145,10 +176,28 @@ def seed(base_url, images=None):
     # A third parcel stays pending so the approval queue has an entry.
     farmer.ok("POST", "/parcels", parcel_body(PARCELS[2], gpsAccuracyMeters="12", mockedLocation=False),
               headers={"Idempotency-Key": str(uuid.uuid4())})
+    return active
 
+
+def resume_reports(farmer, engineer, images, today):
+    """Adds the reports to a seed that stopped before them; does nothing when they exist."""
+    first = next((p for p in farmer.ok("GET", "/parcels") if p["location"] == PARCELS[0]["location"]), None)
+    seasons = farmer.ok("GET", f"/parcels/{first['code']}/crop-seasons") if first else []
+    if not seasons:
+        sys.exit("The demo parcels have no season; run deploy/reset.sh and seed again.")
+    existing = len(farmer.ok("GET", f"/crop-seasons/{seasons[0]['id']}/disease-reports"))
+    if existing >= REPORT_COUNT:
+        print("Demo reports already present.")
+        return
+    if existing:
+        sys.exit("The demo reports are incomplete; run deploy/reset.sh and seed again.")
+    seed_reports(farmer, engineer, seasons[0], images, today)
+
+
+def seed_reports(farmer, engineer, active, images, today):
     # Reports on the active season: one diagnosed and approved, one waiting, one sent back for a retake.
     reports = [upload_report(farmer, active["id"], image, filename=f"leaf{i}")
-               for i, image in enumerate(photos(images, 3))]
+               for i, image in enumerate(photos(images, REPORT_COUNT))]
     diagnose(engineer, reports[0]["id"], use_ai=bool(images))
     approved = engineer.ok("POST", f"/disease-reports/{reports[0]['id']}/diagnosis/approve")
     diagnose(engineer, reports[1]["id"], use_ai=bool(images))
@@ -164,6 +213,8 @@ def seed(base_url, images=None):
     else:
         print("No approved treatment rule for this disease: the diagnosis stays review-only.")
 
+
+def seed_other_households(admin, variety, active_start):
     # Households without a login in the demo: their parcels and seasons are started by the administrator.
     existing = {h["fullName"] for h in admin.ok("GET", "/households")}
     for item in OTHER_HOUSEHOLDS:
@@ -177,5 +228,3 @@ def seed(base_url, images=None):
                   "seasonType": "THU_DONG"})
         print(f"Household {household['code']} {item['fullName']}: account {created['username']}, "
               f"temporary password {created['temporaryPassword']}")
-
-    print("Demo data created.")

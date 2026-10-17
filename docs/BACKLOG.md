@@ -16,11 +16,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 
 ## 2. Việc cần sửa trong mã và cấu hình
 
-| Việc | Ghi chú |
-|---|---|
-| Farm seed trước khi AI sẵn sàng | Dựng sạch 16/10/2026: `start.sh` gọi seed khi AI chưa nghe cổng, upload trả `503 ERR_AI_UNAVAILABLE`; AI healthy sau đó. Script gốc không đợi AI trước seed; chưa sửa vì ngoài phạm vi model. |
-| Farm seed không hoàn tất lại dữ liệu bị ngắt | Sau lỗi upload đầu tiên, chạy lại seed báo đã có dữ liệu vì đã có thửa mang dấu demo, bỏ qua báo cáo và nông hộ còn thiếu; chưa sửa demo theo giới hạn phạm vi. |
-| Dependency Superset khi khởi động | Smoke 16/10/2026: `bi/bootstrap.sh` cài Authlib 1.9.1 kéo cryptography 50.0.2, ngoài khoảng `>=42.0.4,<43.0.0` của Superset 3.1.3; pip báo xung đột dù dịch vụ vẫn healthy. Chưa sửa vì ngoài phạm vi nâng cấp model. |
+Chưa có việc nào.
 
 ## 3. Chưa kiểm thử
 

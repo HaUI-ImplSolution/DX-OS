@@ -384,6 +384,13 @@ services:
       - ../bi/farm_dashboard_export.zip:/app/pythonpath/farm_dashboard_export.zip:ro
       - ./data/superset:/app/superset_home
     entrypoint: ["/bin/bash", "/app/pythonpath/bootstrap.sh"]
+    # The server only starts after the first metadata migration, which takes minutes on an empty volume.
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f \"http://localhost:$${SUPERSET_PORT}/health\""]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 900s
     # No published port: the gateway forwards its second listener (APISIX_SUPERSET_HOST_PORT) here.
 
   # ---------------------------------------------------------------------------

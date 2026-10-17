@@ -97,7 +97,8 @@ python3 -m pip install pillow           # cho script dữ liệu demo
 ./deploy/start.sh                       # dựng, chạy ứng dụng trong DXOS_APP và nạp dữ liệu demo
 ```
 
-Lần dựng đầu tải và build nhiều thứ (MinIO build từ mã nguồn Go khoảng 2 phút).
+Lần dựng đầu tải và build nhiều thứ (MinIO build từ mã nguồn Go khoảng 2 phút), Superset khởi tạo metadata mất thêm vài phút.
+Lệnh chờ đến khi các dịch vụ sẵn sàng; nạp dữ liệu demo của Farm chờ dịch vụ AI tối đa 5 phút.
 Đổi ứng dụng bằng một lệnh, web đổi theo mà không build lại:
 
 ```bash

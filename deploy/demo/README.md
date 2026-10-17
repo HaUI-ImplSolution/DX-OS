@@ -21,6 +21,8 @@ python3 deploy/demo/seed_demo.py [--app farm|lab] [--base-url URL] [--images DIR
 
 `deploy/start.sh [app]` đã gọi script này sau khi dựng stack; chạy riêng khi cần nạp lại hoặc dùng `--images`.
 Script đọc `deploy/.env` và gọi `docker compose exec postgres`, nên chạy trên máy đang chạy stack; chạy lại không tạo trùng.
+Seed Farm upload ảnh nên chờ tối đa 300 giây khi dịch vụ AI chưa sẵn sàng.
+Seed bị dừng trước bước báo cáo thì lần chạy sau tạo tiếp báo cáo và nông hộ còn thiếu; thửa hoặc vụ dở dang thì script dừng và báo dùng `deploy/reset.sh`.
 `e2e.py` dùng tài khoản do seed tạo nên phải seed trước.
 
 ## Farm

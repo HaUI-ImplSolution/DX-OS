@@ -97,7 +97,8 @@ python3 -m pip install pillow           # for the demo data script
 ./deploy/start.sh                       # build, run the app in DXOS_APP, load demo data
 ```
 
-The first build downloads and builds a lot (MinIO is built from Go source, about 2 minutes).
+The first build downloads and builds a lot (MinIO is built from Go source, about 2 minutes), and Superset needs a few more minutes to initialise its metadata.
+The command waits until the services are ready; loading the Farm demo data waits up to 5 minutes for the AI service.
 Switch applications with one command; the web app follows without a rebuild:
 
 ```bash

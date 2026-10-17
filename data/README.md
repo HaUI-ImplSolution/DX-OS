@@ -33,7 +33,7 @@ CI chạy hai lệnh kiểm tra để chặn JSON và SQL lệch nhau.
 
 ## Seed hiện hành
 
-- 6 bệnh `active=TRUE` (5 lớp của CV và `Rice___healthy`); bệnh và thuốc `active=FALSE` không xuất hiện trong danh mục và lookup mới nhưng giữ lịch sử, chỉ bị xóa khi không còn diagnosis, rule hay bản khai phun tham chiếu.
+- 6 bệnh `active=TRUE` (6 lớp của CV, gồm `Rice___healthy`); bệnh và thuốc `active=FALSE` không xuất hiện trong danh mục và lookup mới nhưng giữ lịch sử, chỉ bị xóa khi không còn diagnosis, rule hay bản khai phun tham chiếu.
 - Thuốc `NEWTEC_300SC` và 2 treatment rule được chuyên gia xác nhận ngày 2026-10-05 (đạo ôn, khô vằn).
 - `HELP_400SC` và rule đốm nâu (`P-RICE-002`) giữ làm ứng viên: rule đốm nâu mới có `E2E_ASSUMPTION`, chưa có phê duyệt chuyên gia nên bị chặn.
   `blocked_reason`, `verification`, `eligible_for_seed` là hàng rào an toàn, không bỏ qua được.

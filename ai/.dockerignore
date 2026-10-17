@@ -1,3 +1,5 @@
 .idea
 .venv
-weights/
+weights/*
+!weights/dx-farm-efficientnetv2m/
+models/

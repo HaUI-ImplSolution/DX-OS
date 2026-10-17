@@ -2,9 +2,9 @@
 from datetime import date
 
 import pytest
-
 from app.api.schemas import DiagnoseRequest
 from app.clients.backend_client import DiagnosisContext
+from app.cv.model_profile import MODEL_NAME, MODEL_VERSION
 from app.cv.triage import CvTriageError
 from app.rag.ingestion_service import load_disease_knowledge
 from app.services.inference_service import run_stateless_diagnose
@@ -28,7 +28,8 @@ def test_rag_corpus_contains_exactly_six_canonical_rice_codes():
 
 
 @pytest.mark.parametrize("document", load_disease_knowledge())
-def test_each_rice_code_flows_through_rag_to_review_required(document):
+@pytest.mark.parametrize("confidence", [0.70, 0.91])
+def test_each_rice_code_flows_through_rag_to_review_required(document, confidence):
     code = document["disease_code"]
     name = document["class_name_vi"]
     calls = []
@@ -38,9 +39,9 @@ def test_each_rice_code_flows_through_rag_to_review_required(document):
             return {
                 "disease_code": code,
                 "disease_name": name,
-                "confidence": 0.91,
-                "model_name": "YOLOv8n-RiceLeafBD",
-                "model_version": "3.0.0",
+                "confidence": confidence,
+                "model_name": MODEL_NAME,
+                "model_version": MODEL_VERSION,
             }
 
     class BackendWithoutApprovedRule:
@@ -118,15 +119,16 @@ def test_each_rice_code_flows_through_rag_to_review_required(document):
     assert "0.75" not in summary
 
 
-def test_low_confidence_stops_before_backend_rag_and_llm():
+@pytest.mark.parametrize("confidence", [0.69, 0.6999])
+def test_low_confidence_stops_before_backend_rag_and_llm(confidence):
     class LowConfidencePredictor:
         def predict(self, _image: bytes) -> dict:
             return {
                 "disease_code": "Rice___Blast",
                 "disease_name": "Bệnh đạo ôn trên lúa",
-                "confidence": 0.69,
-                "model_name": "YOLOv8n-RiceLeafBD",
-                "model_version": "3.0.0",
+                "confidence": confidence,
+                "model_name": MODEL_NAME,
+                "model_version": MODEL_VERSION,
             }
 
     class MustNotRun:
@@ -142,7 +144,7 @@ def test_low_confidence_stops_before_backend_rag_and_llm():
         }
     )
 
-    with pytest.raises(CvTriageError, match="69.0%"):
+    with pytest.raises(CvTriageError, match="chưa đủ tin cậy"):
         run_stateless_diagnose(
             payload=payload,
             image_bytes=b"image",

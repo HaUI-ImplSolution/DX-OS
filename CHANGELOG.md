@@ -515,6 +515,18 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 ## AI Service (Python)
 
+### 2026-10-16
+
+**Đã xong — Nâng cấp model bệnh lá lúa:**
+
+- Thay YOLOv8n bằng DX-Farm EfficientNetV2-M 4.0.0, Healthy và 5 bệnh, resize 480×480 bicubic theo checkpoint; giữ payload chẩn đoán, ngưỡng 0.70 và quality/crop gate.
+- Dùng class contract và cấu trúc CV hiện có; Healthy là lớp được huấn luyện, confidence không làm tròn trước workflow.
+- Ba phần trọng số nằm trong Git, ghép khi Docker build và nạp từ image; checksum giữ trong env riêng. Chỉ đổi tham chiếu model bệnh trong Compose và script env CI, giữ workflow CI và script khởi động gốc.
+- Xóa checkpoint và dependency detector bệnh cũ; cập nhật lock, SBOM AI, giấy phép và thông tin model tại các tài liệu liên quan.
+- Kiểm chứng: 100 test AI, 5 test dữ liệu, contract diagnose, build image và API với checkpoint/ảnh thật khi tắt mạng; không chấm lại accuracy của người huấn luyện.
+- Trên stack dựng sạch, `./deploy/start.sh` hoàn tất, Farm đạt 10/10 và Lab đạt 16/16 có nguồn tri thức; model thật giữ quy trình duyệt và restart/predict offline đạt.
+- Đồng bộ nền Khuong/main, giữ cập nhật bản đồ/thời tiết và workflow CI; kiểm lại 100 test AI, 5 test dữ liệu, Farm 10/10 và luồng model thật.
+
 ### 2026-10-14
 
 **Đã xong — Độ nét ảnh nền đơn sắc, truy xuất theo tên bệnh:**
@@ -754,6 +766,14 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 ## Deploy (`deploy`)
 
+### 2026-10-17
+
+**Đã xong — Dựng sạch một lệnh:**
+
+- Seed Farm chờ khi Backend báo AI chưa sẵn sàng (`503 ERR_AI_UNAVAILABLE`, tối đa 300 giây, cùng `Idempotency-Key`); lỗi khác giữ nguyên.
+- Seed Farm chạy tiếp từ bước báo cáo khi bị dừng trước đó; chạy lại khi đã đủ dữ liệu không tạo thêm.
+- Superset có healthcheck với `start_period` 900 giây, nên migration lần đầu không làm `start.sh` dừng.
+
 ### 2026-10-14
 
 **Đã xong — Giới hạn và ngưỡng qua `deploy/.env`:**
@@ -879,6 +899,12 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - Service `backend` nhận thêm secret cho auth (`JWT_SECRET`, `JWT_EXPIRATION`, `SUPER_ADMIN_USERNAME/PASSWORD`) từ `deploy/.env` (mẫu ở `.env.example`).
 
 ## BI Dashboard (`bi`, Apache Superset)
+
+### 2026-10-17
+
+**Đã xong — Khởi động:**
+
+- `bootstrap.sh` cài `authlib==1.3.2` khi chưa có, giữ cryptography 42.0.4; `pip check` không báo xung đột.
 
 ### 2026-10-16
 

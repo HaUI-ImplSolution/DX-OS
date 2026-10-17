@@ -6,7 +6,8 @@ Service `superset` khai báo trong [`deploy/docker-compose.yml`](../deploy/docke
 ## Cách hoạt động
 
 - Metadata dùng SQLite riêng (`deploy/data/superset/`), không dùng Postgres nghiệp vụ; không có Celery nên truy vấn chạy đồng bộ.
-- `bootstrap.sh` (entrypoint): `db upgrade`, tạo admin, `superset init`, cài `authlib` cho SSO, rồi `gunicorn`.
+- `bootstrap.sh` (entrypoint): `db upgrade`, tạo admin, `superset init`, cài `authlib==1.3.2` cho SSO khi chưa có (giữ `cryptography` trong khoảng Superset 3.1.3 yêu cầu), rồi `gunicorn`.
+- Healthcheck của service có `start_period` 15 phút vì migration metadata lần đầu mất vài phút; các dịch vụ phụ thuộc chờ đến khi Superset healthy.
 - Backend tạo role Postgres **chỉ đọc** `superset_ro` (`SupersetReadOnlyRoleSeeder`): chỉ `SELECT` trên các view `vw_*` và bảng danh mục `diseases`, `pesticides`, `rice_varieties`; không đọc được `workspaces` hay bảng nghiệp vụ.
 - `bootstrap_datasources.py` đọc `DXOS_APP` (giá trị khác thì dừng) và đăng ký qua REST API của Superset, idempotent và có retry:
   - **Farm:** import `farm_dashboard_export.zip` (database, dataset, chart, dashboard; nguồn sự thật duy nhất) và truyền lại mật khẩu Postgres vì export mask mật khẩu. Chưa có bundle thì chỉ tạo kết nối `DX-Farm` và 7 dataset.

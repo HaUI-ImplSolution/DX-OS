@@ -16,7 +16,7 @@ Backend → POST /api/v1/diagnose
 
 | Thành phần | Vai trò | Tài liệu |
 |---|---|---|
-| Computer Vision | YOLOv8n phát hiện 5 lớp bệnh lá lúa, crop classifier kiểm ảnh là lúa | [`app/cv`](app/cv/README.md) |
+| Computer Vision | EfficientNetV2-M phân loại Healthy và 5 bệnh lá lúa, crop classifier kiểm ảnh là lúa | [`app/cv`](app/cv/README.md) |
 | RAG | Tra cứu tài liệu trong PostgreSQL/pgvector, trả evidence kèm nguồn | [`app/rag`](app/rag/README.md) |
 | LangGraph | Điều phối một lượt suy luận, không lưu trạng thái | [`app/graph`](app/graph/README.md) |
 
@@ -24,9 +24,9 @@ Backend → POST /api/v1/diagnose
 
 | Method | Endpoint | Mô tả |
 |---|---|---|
-| `GET` | `/api/v1/disease/health` | Readiness của detector và crop classifier (công khai) |
-| `GET` | `/api/v1/disease/class-contract` | Contract 5 lớp CV và `disease_code` canonical (công khai) |
-| `POST` | `/api/v1/disease/precheck` | Ảnh multipart: kiểm chất lượng và phân loại lúa, không chạy detector |
+| `GET` | `/api/v1/disease/health` | Readiness của model bệnh và crop classifier (công khai) |
+| `GET` | `/api/v1/disease/class-contract` | Contract 6 lớp CV và `disease_code` canonical (công khai) |
+| `POST` | `/api/v1/disease/precheck` | Ảnh multipart: kiểm chất lượng và phân loại lúa, không chạy model bệnh |
 | `POST` | `/api/v1/disease/predict` | Ảnh multipart: kết quả CV |
 | `POST` | `/api/v1/disease/symptoms/suggest` | `symptom_text`, `top_k` 1–6: mã bệnh có score, evidence và source IDs |
 | `POST` | `/api/v1/disease/knowledge/retrieve` | Truy vấn RAG theo câu hỏi, `namespace` (mặc định `farm`), `disease_code` và `document_type` tùy chọn |
@@ -60,9 +60,9 @@ Compose lấy từ [`deploy/.env.example`](../deploy/.env.example); chạy local
 | `OLLAMA_BASE_URL`, `OLLAMA_MODEL` | LLM diễn đạt recommendation |
 | `EMBEDDING_MODEL` | Embedding dùng chung cho ingest và retrieval |
 | `CV_DEVICE` | `auto`, `cpu` hoặc `cuda` |
-| `CV_WEIGHTS_PATH`, `CV_WEIGHTS_SHA256` | Checkpoint `best.pt` (mặc định `ai/weights/best.pt`) và SHA-256 bắt buộc khi nạp |
+| `CV_WEIGHTS_PATH`, `CV_WEIGHTS_SHA256` | Checkpoint `ai/models/efficientnetv2m_rice_disease.pth` khi chạy local; trong image là `/opt/dxos/models/efficientnetv2m_rice_disease.pth`; SHA-256 bắt buộc khi nạp |
 | `CROP_CLASSIFIER_PATH` | Artifact crop classifier (mặc định `ai/weights/crop_classifier.onnx`) |
-| `AI_CV_WEIGHTS_PATH`, `AI_CV_WEIGHTS_SHA256`, `AI_CROP_CLASSIFIER_PATH` | Giá trị phía host mà Compose bind-mount và truyền vào các biến trên |
+| `AI_CV_WEIGHTS_PATH`, `AI_CV_WEIGHTS_SHA256`, `AI_CROP_CLASSIFIER_PATH` | Đường dẫn model bệnh trong image, checksum riêng và đường dẫn crop classifier phía host |
 
 ## Chạy
 
@@ -70,13 +70,16 @@ Compose lấy từ [`deploy/.env.example`](../deploy/.env.example); chạy local
 # Local
 cd ai && python -m venv .venv && source .venv/bin/activate
 pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
+python -m scripts.assemble_cv_weights
+export CV_WEIGHTS_SHA256=$(cat weights/dx-farm-efficientnetv2m/model.pth.part-* | sha256sum | cut -d' ' -f1)
 uvicorn app.main:app --reload --port 8000
 
 # Compose, từ thư mục deploy (BACKEND_TO_AI_API_KEY và AI_TO_BACKEND_API_KEY phải khác rỗng)
 docker compose up -d --build postgres backend ai
 ```
 
-- Checkout có sẵn `best.pt` và `crop_classifier.onnx` trong `ai/weights/`; Compose mount read-only, service không tải model. Thiếu hoặc sai SHA-256 thì AI từ chối khởi động.
+- Checkout có ba phần model bệnh và `crop_classifier.onnx` trong `ai/weights/`; Docker build ghép model bệnh vào image, crop classifier vẫn mount read-only. Thiếu hoặc sai SHA-256 thì AI từ chối khởi động; restart không tải trọng số bệnh.
+  Giá trị `AI_CV_WEIGHTS_SHA256` trong `deploy/.env` là SHA-256 của ba phần nối đúng thứ tự; từ `ai/`, tính bằng `cat weights/dx-farm-efficientnetv2m/model.pth.part-* | sha256sum`, chỉ lưu giá trị vào env riêng.
 - AI không dùng migration; Backend phải khởi tạo database vector trước khi gọi RAG.
 - Stack Compose có `ollama` và `ollama-init` (tải `OLLAMA_MODEL` trước khi AI khởi động) và job `rag-ingest` chạy trước AI.
 - Kiểm model: `docker compose exec ai python -c "import urllib.request; print(urllib.request.urlopen('http://localhost:8000/api/v1/disease/health').read().decode())"`.
@@ -108,7 +111,7 @@ Chạy từ `ai/`:
 
 ## Giới hạn và giấy phép
 
-- CV chỉ nhận diện 5 lớp bệnh lá lúa đã huấn luyện; kết quả là tín hiệu chẩn đoán, kỹ sư chốt bệnh tại Backend.
+- CV nhận diện Healthy và 5 bệnh lá lúa; accuracy 89,43% trên 1.466 ảnh theo báo cáo người huấn luyện, chưa phải accuracy toàn pipeline; kỹ sư chốt bệnh tại Backend.
 - RAG chỉ tìm được kiến thức đã ingest; Ollama lỗi hoặc timeout thì trả evidence nguyên văn.
-- `ai/` phân phối theo AGPL-3.0 ([`LICENSE`](./LICENSE)) vì import Ultralytics; Backend gọi AI qua HTTP nên không là tác phẩm phái sinh.
+- `ai/` phân phối theo AGPL-3.0 ([`LICENSE`](./LICENSE)); Backend gọi AI qua HTTP nên không là tác phẩm phái sinh.
   Danh sách thành phần ở [`LICENSES.md`](../LICENSES.md).

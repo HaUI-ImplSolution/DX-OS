@@ -19,6 +19,7 @@ Lịch sử chi tiết theo ngày của từng module (Backend, Dữ liệu, Mob
   gRPC của filer chỉ nhận lời gọi ký bằng `S3_SECRET_KEY`, nên khóa này cần tối thiểu 16 ký tự; log của `seaweedfs` chỉ gồm cảnh báo và lỗi.
   `seaweedfs/migrate-uploads.sh` chuyển ảnh có sẵn vào bucket, chạy được trên CPU không có x86-64-v2.
 - Link ảnh ký sau Cloudflare dùng `https`; portal đọc địa chỉ dịch vụ ở `/portal/config`, đường dẫn Cloudflare không cache, và chú thích thẻ hiện địa chỉ thật.
+- `backup.sh` xóa snapshot cũ theo chính sách giữ cho mọi snapshot của dự án, kể cả khi danh sách thư mục sao lưu thay đổi.
 - AI nạp sẵn model embedding lúc khởi động; hỏi đáp Farm về một bệnh đã nêu tên chỉ giữ nguyên nhân và cách phòng có trong nguồn, và dòng "Tên khoa học" được giữ trong evidence.
 - Header `Idempotency-Key` của cả sáu endpoint tạo mới được đọc bằng `IdempotencyKey.parse` trong `dx-core-api`.
 - Dependabot mở pull request cập nhật Maven, npm, GitHub Actions và image gốc của Dockerfile; Trivy quét thêm các image của bên thứ ba trong compose mỗi tuần và báo bằng cảnh báo.
@@ -1133,6 +1134,10 @@ Bản phát hành đầu tiên của DX-OS.
 **Đã xong — Chuyển ảnh sang SeaweedFS trên CPU cũ:**
 
 - `seaweedfs/migrate-uploads.sh` tải lên và kiểm từng ảnh bằng curl có ký S3 (`curlimages/curl`), chạy được trên CPU không có x86-64-v2.
+
+**Đã xong — Xóa snapshot sao lưu cũ:**
+
+- `backup.sh` gom mọi snapshot có tag `dxos` vào một nhóm khi áp chính sách giữ 7 ngày, 4 tuần, 6 tháng (`restic forget --group-by tags`).
 
 **Đã xong — Log SeaweedFS:**
 

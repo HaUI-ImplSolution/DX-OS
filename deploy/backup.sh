@@ -65,7 +65,9 @@ do_backup() {
   echo "==> Writing the snapshot (${paths[*]})"
   restic -v "$STAGE:/stage:ro" -v "$(pwd)/data:/data:ro" -- backup --tag dxos "${paths[@]}"
   echo "==> Dropping old snapshots"
-  restic -- forget --tag dxos --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune
+  # One retention group for every snapshot: the restic container gets a new hostname on each run
+  # and the stored paths change with the services, both of which split the default grouping.
+  restic -- forget --tag dxos --group-by tags --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune
   restic -- check
   echo "Backup done."
 }

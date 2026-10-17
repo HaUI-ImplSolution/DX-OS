@@ -17,9 +17,8 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 
 | Việc | Phạm vi |
 |---|---|
-| VPS chưa chạy các bản sửa lưu ảnh, portal, AI và SeaweedFS | Sau khi phát hành, kiểm: ảnh báo cáo #1 hiện với `img.src` là `https://`; `/portal/config` trả `cache-control: no-cache` và thẻ "Quản trị lưu ảnh" ra `https://files.khuongdev.io.vn`; câu hỏi tri thức đầu tiên sau khi AI khởi động lại mất khoảng 4 giây; log `seaweedfs` không còn `IAM gRPC service on filer is UNAUTHENTICATED` và trang quản trị vẫn mở danh sách user |
-| Dữ liệu MinIO cũ còn trên VPS | `deploy/data/minio`, `deploy/.env.bak-before-seaweedfs` và các image `dxos-minio`; ảnh cũ đã ở bucket SeaweedFS, xóa khi ảnh các báo cáo cũ (#1, #2, #5, #6) hiện trên màn hình duyệt yêu cầu |
-| `doctor.sh` cảnh báo dung lượng đĩa trên VPS | Trống 39 GiB, khuyến nghị 40 GiB; theo dõi dung lượng khi dữ liệu và ảnh Docker tăng |
+| Kiểm bản phát hành ngày 29/10/2026 trên VPS phần cần đăng nhập | Đã đạt: câu hỏi tri thức đầu tiên sau khi AI khởi động lại 3,7 giây; `/portal/config` trả `no-cache`, `DYNAMIC` và đủ ba địa chỉ; log `seaweedfs` không còn cảnh báo IAM và cổng gRPC; sáu ảnh cũ trả 200 qua domain; `doctor.sh` 0 lỗi. Còn kiểm bằng phiên đăng nhập: `img.src` của ảnh báo cáo là `https://`, chú thích thẻ portal trên trình duyệt, danh sách user ở trang quản trị SeaweedFS |
+| `backup.sh` không bao giờ xóa snapshot cũ | `restic forget` nhóm theo host và thư mục, mà container restic đổi hostname mỗi lần chạy, nên mỗi snapshot là một nhóm riêng và chính sách 7 ngày, 4 tuần, 6 tháng không xóa bản nào; đã sửa trong mã bằng `--group-by tags`, chưa phát hành |
 
 ## 3. Chưa kiểm thử
 
@@ -32,7 +31,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Khởi động bản Qwen từ clone sạch | Đã kiểm bằng image/cache và các cặp phiên bản; chưa chạy lại full build/seed toàn stack từ clone sạch |
 | `backup.sh` với kho sao lưu từ xa | Đã chạy sao lưu và `verify` trên VPS với dữ liệu thật vào kho cục bộ; chưa thử `BACKUP_REPOSITORY` từ xa |
 | Cầu dao AI với tải thật | Đã thử khi AI dừng; chưa thử khi AI chậm vì tải, lúc đó lỗi đọc quá hạn cũng tính là lỗi dịch vụ |
-| Lưu ảnh SeaweedFS qua Cloudflare trên VPS | Đã kiểm trên Chrome với tài khoản quản trị: app Farm (4 tab), hỏi đáp, màn hình giám sát (10/10 dịch vụ), BI qua SSO và trang đăng nhập `files.khuongdev.io.vn` đều chạy; chưa thử upload ảnh mới bằng tài khoản nông dân và mở link ảnh vừa tải, đăng nhập SeaweedFS Admin, `backup.sh` với `data/seaweedfs` |
+| Lưu ảnh SeaweedFS qua Cloudflare trên VPS | Đã kiểm trên Chrome với tài khoản quản trị: app Farm (4 tab), hỏi đáp, màn hình giám sát (10/10 dịch vụ), BI qua SSO và trang đăng nhập `files.khuongdev.io.vn` đều chạy; `backup.sh` và `verify` ngày 29/10/2026 có `data/seaweedfs` và đạt; chưa thử upload ảnh mới bằng tài khoản nông dân và mở link ảnh vừa tải, đăng nhập SeaweedFS Admin |
 | Giới hạn gọi API theo người dùng trên VPS | Chưa thử với tài khoản thật qua Cloudflare, nơi `X-Forwarded-For` và địa chỉ client do Cloudflare đặt |
 
 ## 4. Giới hạn của AI và dữ liệu

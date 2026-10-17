@@ -9,6 +9,7 @@ import HaUI.ImplSolution.dxos.core.api.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.dxos.core.api.time.BusinessTime;
 import HaUI.ImplSolution.dxos.core.api.workflow.CaseView;
 import HaUI.ImplSolution.dxos.core.api.workflow.WorkflowOperations;
+import HaUI.ImplSolution.dxos.lab.LabSecurityPolicies;
 import HaUI.ImplSolution.dxos.lab.dto.BookingDtos.BookingCreateRequest;
 import HaUI.ImplSolution.dxos.lab.dto.BookingDtos.BookingRejectRequest;
 import HaUI.ImplSolution.dxos.lab.dto.BookingDtos.BookingResponse;
@@ -63,6 +64,10 @@ public class RoomBookingService {
 
   @Transactional
   public BookingResponse create(BookingCreateRequest request, UUID clientRequestId) {
+    // Technicians decide on bookings and do not place them.
+    if (LabSecurityPolicies.TECHNICIAN.equals(user.highestRole())) {
+      throw new ActionNotAllowedException("Technicians do not book rooms");
+    }
     if (clientRequestId != null) {
       var existing = bookingRepository.findByClientRequestId(clientRequestId);
       if (existing.isPresent()) {
@@ -145,6 +150,7 @@ public class RoomBookingService {
   public BookingResponse approve(Long id) {
     RoomBooking booking = findVisible(id);
     requireStatus(booking, BookingStatus.PENDING);
+    requireNotOwn(booking);
     if (!booking.getStartsAt().isAfter(clock.instant())) {
       throw new PokaYokeViolationException("BOOKING_IN_THE_PAST",
           "Khung giờ đặt phòng đã bắt đầu, không thể duyệt");
@@ -161,6 +167,7 @@ public class RoomBookingService {
   public BookingResponse reject(Long id, BookingRejectRequest request) {
     RoomBooking booking = findVisible(id);
     requireStatus(booking, BookingStatus.PENDING);
+    requireNotOwn(booking);
     String reason = request == null ? null : request.reason();
     if (reason == null || reason.isBlank()) {
       throw new PokaYokeViolationException("REJECTION_REASON_REQUIRED",
@@ -236,6 +243,13 @@ public class RoomBookingService {
       throw new ResourceNotFoundException("Room booking not found: " + id);
     }
     return booking;
+  }
+
+  // Nobody decides on their own booking.
+  private void requireNotOwn(RoomBooking booking) {
+    if (booking.getRequesterId().equals(user.id())) {
+      throw new ActionNotAllowedException("You cannot decide your own booking");
+    }
   }
 
   private static void requireStatus(RoomBooking booking, String expected) {

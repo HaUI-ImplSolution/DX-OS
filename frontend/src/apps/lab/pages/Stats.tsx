@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Section, statusLabel } from "../../../shell";
-import { getLabStats } from "../api";
+import { getLabStats, listCategories } from "../api";
 import { Stars } from "../components/common";
 import { toIsoDate } from "../components/common";
 import { DEVICE_STATUS_LABEL, formatMinutes, formatPercent } from "../labels";
@@ -43,16 +43,24 @@ function StatCard({ title, value, hint }: { title: string; value: string | numbe
 export default function Stats({ onError }: StatsProps) {
   const today = new Date();
   const start = new Date();
-  start.setDate(today.getDate() - DEFAULT_RANGE_DAYS);
+  start.setDate(today.getDate() - (DEFAULT_RANGE_DAYS - 1));
   const [from, setFrom] = useState(toIsoDate(start));
   const [to, setTo] = useState(toIsoDate(today));
   const [stats, setStats] = useState<LabStats | null>(null);
+  const [categoryNames, setCategoryNames] = useState<Record<string, string>>({});
 
   useEffect(() => {
     getLabStats(from, to)
       .then(setStats)
       .catch((err) => onError(err.message));
   }, [from, to, onError]);
+
+  // Inactive categories are listed for administrators only; other users see their code.
+  useEffect(() => {
+    listCategories(true)
+      .then((categories) => setCategoryNames(Object.fromEntries(categories.map((c) => [c.code, c.name]))))
+      .catch((err) => onError(err.message));
+  }, [onError]);
 
   return (
     <>
@@ -98,7 +106,7 @@ export default function Stats({ onError }: StatsProps) {
               </div>
               <div>
                 <h3>Theo loại sự cố</h3>
-                <Bars entries={stats.ticketsByCategory} label={(key) => key} />
+                <Bars entries={stats.ticketsByCategory} label={(key) => categoryNames[key] ?? key} />
               </div>
             </div>
           </Section>

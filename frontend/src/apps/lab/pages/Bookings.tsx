@@ -27,6 +27,8 @@ const HOURS = Array.from({ length: LAST_HOUR - FIRST_HOUR + 1 }, (_, i) => FIRST
 const DAY_LABEL = ["Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy", "Chủ nhật"];
 const PAGE_SIZE = 10;
 const STEP_SECONDS = 30 * 60;
+const MAX_ADVANCE_DAYS = 30;
+const MAX_HOURS = 4;
 
 function mondayOf(date: Date): Date {
   const monday = new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -87,70 +89,78 @@ export default function Bookings({ userId, role, onError }: BookingsProps) {
     setEndsAt(toLocalInput(new Date(start.getTime() + 60 * 60 * 1000)));
   };
 
+  const calendar = (
+    <Section
+      step="🗓️"
+      title="Lịch phòng"
+      subtitle={canBook ? "Chọn một ô trống trên lịch để điền sẵn giờ đặt phòng" : "Xem lịch đặt của phòng máy và phòng thực hành"}
+    >
+      <div className="filter-bar">
+        <select value={roomId ?? ""} onChange={(e) => setRoomId(Number(e.target.value))}>
+          {rooms.map((r) => (
+            <option key={r.id} value={r.id}>
+              {r.code} · {r.name} ({ROOM_TYPE_LABEL[r.roomType]}, {r.capacity} chỗ)
+            </option>
+          ))}
+        </select>
+        <button className="btn" onClick={() => setWeekStart(addDays(weekStart, -7))}>
+          ‹ Tuần trước
+        </button>
+        <button className="btn" onClick={() => setWeekStart(mondayOf(new Date()))}>
+          Tuần này
+        </button>
+        <button className="btn" onClick={() => setWeekStart(addDays(weekStart, 7))}>
+          Tuần sau ›
+        </button>
+        <span>
+          {weekStart.toLocaleDateString("vi-VN")} – {addDays(weekStart, 6).toLocaleDateString("vi-VN")}
+        </span>
+        {room && room.status === "MAINTENANCE" && (
+          <Badge tone={ROOM_STATUS_LABEL[room.status].tone}>{ROOM_STATUS_LABEL[room.status].label}</Badge>
+        )}
+      </div>
+      <WeekGrid
+        weekStart={weekStart}
+        entries={schedule?.entries ?? []}
+        selectable={canBook && room?.status !== "MAINTENANCE"}
+        selectedStart={startsAt}
+        onPick={pickSlot}
+      />
+    </Section>
+  );
+
+  if (!canBook && !canList) return calendar;
+
+  // The form and the list sit beside the calendar so they show without scrolling past it.
   return (
-    <>
-      <Section
-        step="🗓️"
-        title="Lịch phòng"
-        subtitle={canBook ? "Chọn một ô trống trên lịch để điền sẵn giờ đặt phòng" : "Xem lịch đặt của phòng máy và phòng thực hành"}
-      >
-        <div className="filter-bar">
-          <select value={roomId ?? ""} onChange={(e) => setRoomId(Number(e.target.value))}>
-            {rooms.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.code} · {r.name} ({ROOM_TYPE_LABEL[r.roomType]}, {r.capacity} chỗ)
-              </option>
-            ))}
-          </select>
-          <button className="btn" onClick={() => setWeekStart(addDays(weekStart, -7))}>
-            ‹ Tuần trước
-          </button>
-          <button className="btn" onClick={() => setWeekStart(mondayOf(new Date()))}>
-            Tuần này
-          </button>
-          <button className="btn" onClick={() => setWeekStart(addDays(weekStart, 7))}>
-            Tuần sau ›
-          </button>
-          <span>
-            {weekStart.toLocaleDateString("vi-VN")} – {addDays(weekStart, 6).toLocaleDateString("vi-VN")}
-          </span>
-          {room && room.status === "MAINTENANCE" && (
-            <Badge tone={ROOM_STATUS_LABEL[room.status].tone}>{ROOM_STATUS_LABEL[room.status].label}</Badge>
-          )}
-        </div>
-        <WeekGrid
-          weekStart={weekStart}
-          entries={schedule?.entries ?? []}
-          selectable={canBook && room?.status !== "MAINTENANCE"}
-          selectedStart={startsAt}
-          onPick={pickSlot}
-        />
-      </Section>
+    <div className="booking-layout">
+      <div className="booking-main">{calendar}</div>
+      <div className="booking-side">
+        {canBook && (
+          <BookingForm
+            rooms={rooms}
+            roomId={roomId}
+            onRoomChange={setRoomId}
+            startsAt={startsAt}
+            endsAt={endsAt}
+            onStartsAt={setStartsAt}
+            onEndsAt={setEndsAt}
+            onError={onError}
+            onCreated={refresh}
+          />
+        )}
 
-      {canBook && (
-        <BookingForm
-          rooms={rooms}
-          roomId={roomId}
-          onRoomChange={setRoomId}
-          startsAt={startsAt}
-          endsAt={endsAt}
-          onStartsAt={setStartsAt}
-          onEndsAt={setEndsAt}
-          onError={onError}
-          onCreated={refresh}
-        />
-      )}
-
-      {canList && (
-        <BookingList
-          userId={userId}
-          isStaff={isStaff}
-          version={listVersion}
-          onError={onError}
-          onChanged={refresh}
-        />
-      )}
-    </>
+        {canList && (
+          <BookingList
+            userId={userId}
+            isStaff={isStaff}
+            version={listVersion}
+            onError={onError}
+            onChanged={refresh}
+          />
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -168,6 +178,9 @@ function WeekGrid({
   onPick: (day: Date, hour: number) => void;
 }) {
   const days = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)), [weekStart]);
+  // Only slots the booking rules accept can be picked: not started yet and within the advance limit.
+  const now = Date.now();
+  const latest = addDays(new Date(), MAX_ADVANCE_DAYS).getTime();
 
   const overlapping = (day: Date, hour: number) => {
     const slotStart = new Date(day.getFullYear(), day.getMonth(), day.getDate(), hour).getTime();
@@ -198,24 +211,30 @@ function WeekGrid({
               <th>{String(hour).padStart(2, "0")}:00</th>
               {days.map((day, index) => {
                 const booked = overlapping(day, hour);
-                const slot = toLocalInput(new Date(day.getFullYear(), day.getMonth(), day.getDate(), hour));
+                const start = new Date(day.getFullYear(), day.getMonth(), day.getDate(), hour);
+                const slot = toLocalInput(start);
                 const selected = selectedStart === slot;
+                const pickable = selectable && start.getTime() > now && start.getTime() <= latest;
                 const className =
                   booked.length > 0
                     ? "cal-cell cal-booked"
                     : selected
                       ? "cal-cell cal-selected"
-                      : selectable
+                      : pickable
                         ? "cal-cell cal-free"
                         : "cal-cell";
                 return (
                   <td
                     key={index}
                     className={className}
-                    onClick={() => booked.length === 0 && selectable && onPick(day, hour)}
+                    onClick={() => booked.length === 0 && pickable && onPick(day, hour)}
                   >
                     {booked.map((entry) => (
-                      <div key={entry.bookingId} className={`cal-entry cal-${entry.status.toLowerCase()}`}>
+                      <div
+                        key={entry.bookingId}
+                        className={`cal-entry cal-${entry.status.toLowerCase()}`}
+                        title={entry.title}
+                      >
                         <strong>{entry.title}</strong>
                         <small>{BOOKING_STATUS_LABEL[entry.status]?.label ?? entry.status}</small>
                       </div>
@@ -229,6 +248,25 @@ function WeekGrid({
       </table>
     </div>
   );
+}
+
+// The booking rules of the backend, checked while the form is filled in.
+function bookingProblem(startsAt: string, endsAt: string, attendees: number, room: Room | null): string | null {
+  if (room && attendees > room.capacity) return `Phòng ${room.code} chỉ chứa tối đa ${room.capacity} người`;
+  if (!startsAt || !endsAt) return null;
+  const start = new Date(startsAt);
+  const end = new Date(endsAt);
+  if (end <= start) return "Giờ kết thúc phải sau giờ bắt đầu";
+  const stepMinutes = STEP_SECONDS / 60;
+  if (start.getMinutes() % stepMinutes !== 0 || end.getMinutes() % stepMinutes !== 0) {
+    return `Giờ đặt phòng phải theo bước ${stepMinutes} phút`;
+  }
+  if (end.getTime() - start.getTime() > MAX_HOURS * 60 * 60 * 1000) return `Mỗi lần đặt tối đa ${MAX_HOURS} giờ`;
+  if (start.getTime() <= Date.now()) return "Không thể đặt phòng vào thời điểm đã qua";
+  if (start.getTime() > addDays(new Date(), MAX_ADVANCE_DAYS).getTime()) {
+    return `Chỉ đặt phòng trước tối đa ${MAX_ADVANCE_DAYS} ngày`;
+  }
+  return null;
 }
 
 function BookingForm({
@@ -255,10 +293,12 @@ function BookingForm({
   const [title, setTitle] = useState("");
   const [attendees, setAttendees] = useState(1);
   const [submitting, setSubmitting] = useState(false);
+  const room = rooms.find((r) => r.id === roomId) ?? null;
+  const problem = bookingProblem(startsAt, endsAt, attendees, room);
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    if (roomId === null) return;
+    if (roomId === null || problem) return;
     setSubmitting(true);
     createBooking({
       roomId,
@@ -337,11 +377,12 @@ function BookingForm({
             />
           </label>
         </div>
+        {problem && <p className="form-error">{problem}</p>}
         <div className="form-actions">
           <button
             className="btn btn-primary"
             type="submit"
-            disabled={submitting || roomId === null || !title.trim() || !startsAt || !endsAt}
+            disabled={submitting || roomId === null || !title.trim() || !startsAt || !endsAt || !!problem}
           >
             Gửi yêu cầu đặt phòng
           </button>
@@ -408,100 +449,85 @@ function BookingList({
       {result && result.items.length === 0 && <p className="empty-hint">Chưa có yêu cầu đặt phòng nào.</p>}
 
       {result && result.items.length > 0 && (
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Phòng</th>
-              <th>Mục đích</th>
-              <th>Người đặt</th>
-              <th>Thời gian</th>
-              <th>Trạng thái</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {result.items.map((booking) => {
-              const definition = BOOKING_STATUS_LABEL[booking.status] ?? {
-                label: booking.status,
-                tone: "neutral" as const,
-              };
-              const own = booking.requesterId === userId;
-              const canDecide = isStaff && booking.status === "PENDING";
-              const canCancel =
-                ["PENDING", "APPROVED"].includes(booking.status) && (own || isStaff);
-              return (
-                <tr key={booking.id}>
-                  <td>{booking.roomCode}</td>
-                  <td>
-                    {booking.title}
-                    <div className="cell-sub">{booking.attendees} người</div>
-                    {booking.rejectionReason && (
-                      <div className="cell-sub">Lý do từ chối: {booking.rejectionReason}</div>
-                    )}
-                  </td>
-                  <td>{booking.requesterName}</td>
-                  <td>
-                    {formatDateTime(booking.startsAt)}
-                    <div className="cell-sub">đến {formatDateTime(booking.endsAt)}</div>
-                  </td>
-                  <td>
-                    <Badge tone={definition.tone}>{definition.label}</Badge>
-                  </td>
-                  <td>
-                    {rejecting === booking.id ? (
-                      <form
-                        className="inline-form"
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          void act(() => rejectBooking(booking.id, reason.trim())).then(() => {
-                            setRejecting(null);
-                            setReason("");
-                          });
-                        }}
-                      >
-                        <input
-                          placeholder="Lý do từ chối"
-                          value={reason}
-                          maxLength={1000}
-                          onChange={(e) => setReason(e.target.value)}
-                          required
-                        />
-                        <button type="submit" className="btn btn-secondary" disabled={busy}>
-                          Từ chối
-                        </button>
-                        <button type="button" className="btn" onClick={() => setRejecting(null)}>
-                          Huỷ
-                        </button>
-                      </form>
-                    ) : (
-                      <div className="form-actions">
-                        {canDecide && (
-                          <>
-                            <button
-                              className="btn btn-primary"
-                              disabled={busy}
-                              onClick={() => act(() => approveBooking(booking.id))}
-                            >
-                              Duyệt
-                            </button>
-                            <button className="btn btn-secondary" disabled={busy} onClick={() => setRejecting(booking.id)}>
-                              Từ chối
-                            </button>
-                          </>
-                        )}
-                        {canCancel && (
-                          <button className="btn" disabled={busy} onClick={() => act(() => cancelBooking(booking.id))}>
-                            Huỷ lịch
+        <ul className="plain-list">
+          {result.items.map((booking) => {
+            const definition = BOOKING_STATUS_LABEL[booking.status] ?? {
+              label: booking.status,
+              tone: "neutral" as const,
+            };
+            const own = booking.requesterId === userId;
+            const canDecide = isStaff && booking.status === "PENDING" && !own;
+            const canCancel = ["PENDING", "APPROVED"].includes(booking.status) && (own || isStaff);
+            return (
+              <li key={booking.id} className="booking-card">
+                <div className="booking-card-head">
+                  <strong>{booking.roomCode}</strong>
+                  <Badge tone={definition.tone}>{definition.label}</Badge>
+                </div>
+                <div>{booking.title}</div>
+                <div className="cell-sub">
+                  {formatDateTime(booking.startsAt)} đến {formatDateTime(booking.endsAt)}
+                </div>
+                <div className="cell-sub">
+                  {booking.requesterName} · {booking.attendees} người
+                </div>
+                {booking.rejectionReason && (
+                  <div className="cell-sub">Lý do từ chối: {booking.rejectionReason}</div>
+                )}
+                {rejecting === booking.id ? (
+                  <form
+                    className="inline-form"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      void act(() => rejectBooking(booking.id, reason.trim())).then(() => {
+                        setRejecting(null);
+                        setReason("");
+                      });
+                    }}
+                  >
+                    <input
+                      placeholder="Lý do từ chối"
+                      value={reason}
+                      maxLength={1000}
+                      onChange={(e) => setReason(e.target.value)}
+                      required
+                    />
+                    <button type="submit" className="btn btn-secondary" disabled={busy}>
+                      Từ chối
+                    </button>
+                    <button type="button" className="btn" onClick={() => setRejecting(null)}>
+                      Huỷ
+                    </button>
+                  </form>
+                ) : (
+                  (canDecide || canCancel) && (
+                    <div className="form-actions">
+                      {canDecide && (
+                        <>
+                          <button
+                            className="btn btn-primary"
+                            disabled={busy}
+                            onClick={() => act(() => approveBooking(booking.id))}
+                          >
+                            Duyệt
                           </button>
-                        )}
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                          <button className="btn btn-secondary" disabled={busy} onClick={() => setRejecting(booking.id)}>
+                            Từ chối
+                          </button>
+                        </>
+                      )}
+                      {canCancel && (
+                        <button className="btn" disabled={busy} onClick={() => act(() => cancelBooking(booking.id))}>
+                          Huỷ lịch
+                        </button>
+                      )}
+                    </div>
+                  )
+                )}
+              </li>
+            );
+          })}
+        </ul>
       )}
 
       {result && <Pagination page={result} onChange={setPage} noun="lịch đặt" />}

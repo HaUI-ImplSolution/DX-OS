@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.lab.service;
 
-import HaUI.ImplSolution.dxos.core.api.exception.InvalidStateException;
 import HaUI.ImplSolution.dxos.core.api.exception.PokaYokeViolationException;
 import HaUI.ImplSolution.dxos.core.api.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.dxos.lab.dto.CatalogDtos.DeviceRequest;
@@ -12,6 +11,7 @@ import HaUI.ImplSolution.dxos.lab.model.Room;
 import HaUI.ImplSolution.dxos.lab.repository.DeviceRepository;
 import HaUI.ImplSolution.dxos.lab.repository.RoomRepository;
 import java.util.List;
+import java.util.Locale;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -40,8 +40,11 @@ public class DeviceService {
       filter = filter.and((root, query, cb) -> cb.equal(root.get("status"), status));
     }
     if (deviceType != null && !deviceType.isBlank()) {
+      // Matches part of the type, ignoring case.
+      String pattern = "%" + deviceType.strip().toLowerCase(Locale.ROOT).replace("\\", "\\\\")
+          .replace("%", "\\%").replace("_", "\\_") + "%";
       filter =
-          filter.and((root, query, cb) -> cb.equal(root.get("deviceType"), deviceType.strip()));
+          filter.and((root, query, cb) -> cb.like(cb.lower(root.get("deviceType")), pattern, '\\'));
     }
     return deviceRepository.findAll(filter, Sort.by("assetCode")).stream().map(DeviceResponse::of)
         .toList();
@@ -55,7 +58,8 @@ public class DeviceService {
   public DeviceResponse create(DeviceRequest request) {
     String assetCode = request.assetCode().strip();
     if (deviceRepository.existsByAssetCode(assetCode)) {
-      throw new InvalidStateException("Asset code already exists: " + assetCode);
+      throw new PokaYokeViolationException("ASSET_CODE_TAKEN",
+          "Mã tài sản %s đã tồn tại".formatted(assetCode));
     }
     Device device = Device.builder().assetCode(assetCode).build();
     fill(device, request);
@@ -67,7 +71,8 @@ public class DeviceService {
     Device device = findOrThrow(id);
     String assetCode = request.assetCode().strip();
     if (!device.getAssetCode().equals(assetCode) && deviceRepository.existsByAssetCode(assetCode)) {
-      throw new InvalidStateException("Asset code already exists: " + assetCode);
+      throw new PokaYokeViolationException("ASSET_CODE_TAKEN",
+          "Mã tài sản %s đã tồn tại".formatted(assetCode));
     }
     device.setAssetCode(assetCode);
     fill(device, request);

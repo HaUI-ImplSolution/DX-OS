@@ -214,13 +214,13 @@ function StaffHome({ user, onError }: HomeProps) {
     listBookings({ status: "PENDING", size: 1 })
       .then((page) => setPendingBookings(page.totalElements))
       .catch(fail);
-    listLoans({ status: "PENDING", size: 1 })
+    listLoans({ toApprove: true, size: 1 })
       .then((page) => setPendingLoans(page.totalElements))
       .catch(fail);
     if (isAdmin) {
       const to = new Date();
       const from = new Date();
-      from.setDate(to.getDate() - STATS_DAYS);
+      from.setDate(to.getDate() - (STATS_DAYS - 1));
       getLabStats(toIsoDate(from), toIsoDate(to))
         .then(setStats)
         .catch(fail);
@@ -235,7 +235,7 @@ function StaffHome({ user, onError }: HomeProps) {
           <Counter to="/queue?tab=mine" title="Đang giao cho tôi" value={mine} />
           <Counter to="/queue?tab=overdue" title="Yêu cầu quá hạn" value={overdue} />
           <Counter to="/room-bookings?status=PENDING" title="Lịch đặt phòng chờ duyệt" value={pendingBookings} />
-          <Counter to="/device-loans?status=PENDING" title="Phiếu mượn chờ duyệt" value={pendingLoans} />
+          <Counter to="/device-loans?toApprove=true" title="Phiếu mượn chờ duyệt" value={pendingLoans} />
         </div>
       </Section>
       <Section step="⏰" title="Yêu cầu quá hạn xử lý">

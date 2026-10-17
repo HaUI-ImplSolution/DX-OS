@@ -117,7 +117,14 @@ export const completeMaintenance = (deviceId: number, maintenanceId: number, not
   );
 
 // Device loans
-export const listLoans = (filter: { status?: string; deviceId?: number; mine?: boolean; page?: number; size?: number }) =>
+export const listLoans = (filter: {
+  status?: string;
+  deviceId?: number;
+  mine?: boolean;
+  toApprove?: boolean;
+  page?: number;
+  size?: number;
+}) =>
   request<Page<Loan>>(`/device-loans${queryString(filter)}`);
 export const createLoan = (deviceId: number, purpose: string, dueDate: string) =>
   request<Loan>("/device-loans", json("POST", { deviceId, purpose, dueDate }));

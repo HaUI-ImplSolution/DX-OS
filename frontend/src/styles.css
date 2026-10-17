@@ -830,6 +830,7 @@ a.stat-card:hover {
 }
 
 .cal-free {
+  background: #f5faf4;
   cursor: pointer;
 }
 
@@ -851,12 +852,94 @@ a.stat-card:hover {
   overflow: hidden;
 }
 
+.cal-entry strong,
+.cal-entry small {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .cal-entry small {
   color: var(--text-muted);
 }
 
 .cal-approved strong {
   color: var(--primary-dark);
+}
+
+/* Lab: room bookings, calendar on the left, form and list on the right. The page is wider than
+   the app column so the calendar keeps its full width. */
+.booking-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 16px;
+  align-items: start;
+  width: min(1300px, calc(100vw - 40px));
+  margin-left: 50%;
+  transform: translateX(-50%);
+}
+
+.booking-main,
+.booking-side {
+  min-width: 0;
+}
+
+.booking-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.booking-side .field-label {
+  flex: 1 1 100%;
+}
+
+.booking-side .filter-bar input,
+.booking-side .filter-bar select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* The booking list scrolls on its own so the side column stays beside the calendar. */
+.booking-side .plain-list {
+  max-height: 440px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.booking-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+}
+
+.booking-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.booking-card .form-actions {
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.booking-card .inline-form input {
+  flex: 1 1 100%;
+}
+
+@media (max-width: 1180px) {
+  .booking-layout {
+    grid-template-columns: 1fr;
+    width: auto;
+    margin-left: 0;
+    transform: none;
+  }
 }
 
 @media (max-width: 640px) {

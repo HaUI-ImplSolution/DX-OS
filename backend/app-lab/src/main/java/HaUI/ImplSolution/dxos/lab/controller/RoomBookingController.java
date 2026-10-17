@@ -36,10 +36,10 @@ public class RoomBookingController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('LECTURER','TECHNICIAN','ADMIN')")
+  @PreAuthorize("hasAnyRole('LECTURER','ADMIN')")
   @ResponseStatus(HttpStatus.CREATED)
   @Operation(summary = "Book a room for a time range",
-      description = "LECTURER, TECHNICIAN or ADMIN (a STUDENT gets 403). Times fall on 30-minute"
+      description = "LECTURER or ADMIN (a STUDENT or TECHNICIAN gets 403). Times fall on 30-minute"
           + " marks, last at most 4 hours and start within the next 30 days. 422 with"
           + " BOOKING_STEP_INVALID, BOOKING_TOO_LONG, BOOKING_IN_THE_PAST, BOOKING_TOO_FAR,"
           + " ROOM_CAPACITY_EXCEEDED, ROOM_UNDER_MAINTENANCE, or ROOM_SLOT_TAKEN when another"
@@ -73,7 +73,8 @@ public class RoomBookingController {
   @PostMapping("/{id}/approve")
   @PreAuthorize("hasAnyRole('TECHNICIAN','ADMIN')")
   @Operation(summary = "Approve a booking",
-      description = "TECHNICIAN or ADMIN only. 409 unless PENDING. 422 BOOKING_IN_THE_PAST once"
+      description = "TECHNICIAN or ADMIN only, never on your own booking (403). 409 unless"
+          + " PENDING. 422 BOOKING_IN_THE_PAST once"
           + " the slot has started, ROOM_UNDER_MAINTENANCE while the room is closed.")
   public ApiResponse<BookingResponse> approve(@PathVariable Long id) {
     return ApiResponse.success("Booking approved", bookingService.approve(id));
@@ -82,7 +83,7 @@ public class RoomBookingController {
   @PostMapping("/{id}/reject")
   @PreAuthorize("hasAnyRole('TECHNICIAN','ADMIN')")
   @Operation(summary = "Reject a booking and free its slot",
-      description = "TECHNICIAN or ADMIN only. reason is required (422"
+      description = "TECHNICIAN or ADMIN only, never on your own booking (403). reason is required (422"
           + " REJECTION_REASON_REQUIRED). 409 unless PENDING.")
   public ApiResponse<BookingResponse> reject(@PathVariable Long id,
       @Valid @RequestBody(required = false) BookingRejectRequest request) {

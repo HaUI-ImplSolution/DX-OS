@@ -34,7 +34,7 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 | SLA theo ưu tiên, cảnh báo ở 80% và đánh dấu quá hạn theo lịch | Có | Kiểm tay với SLA rút ngắn | Có |
 | Hai kỹ thuật viên nhận cùng yêu cầu: một bên 409 | Có | E2E Lab | Không áp dụng |
 | Gợi ý loại và ưu tiên bằng luật, bài tri thức liên quan | Có | E2E Lab, kiểm tay | Có (10 bài quy chế và hướng dẫn) |
-| Mượn thiết bị có hạn, duyệt theo vai, trả hỏng mở nhật ký sửa chữa | Có | E2E Lab, kiểm tay | Có (7 thiết bị, 5 phiếu) |
+| Mượn thiết bị có hạn, duyệt theo vai, trả hỏng mở nhật ký sửa chữa | Có | E2E Lab, kiểm tay | Có (7 thiết bị, 5 phiếu, 1 phiếu quá hạn) |
 | Đặt phòng chống trùng giờ ở cơ sở dữ liệu, lịch tuần; luật độ dài, bước giờ, sức chứa, người duyệt | Có | Test tích hợp và phân quyền, E2E Lab, kiểm tay | Có (5 phòng, 5 lịch) |
 | Hỏi đáp quy chế có trích nguồn và giấy phép | Có | E2E Lab (`--require-knowledge`) | Có |
 | Thống kê SLA, tải kỹ thuật viên, mức dùng phòng; view `vw_lab_*` cho BI | Có | E2E Lab, kiểm tay | Có |
@@ -197,7 +197,7 @@ Dùng Swagger (`http://localhost:9080/swagger-ui.html`) hoặc client trong `dep
 | Bước | Gọi | Kiểm |
 |---|---|---|
 | 1 | `GET /api/v1/app` | `id` là `lab`, có 4 vai và menu |
-| 2 | `tech1` `POST /rooms` hai lần cùng `code`; `student1` `POST /devices` | Lần hai 409; `student1` 403 |
+| 2 | `tech1` `POST /rooms` hai lần cùng `code`; `student1` `POST /devices` | Lần hai 422 `ROOM_CODE_TAKEN`; `student1` 403 |
 | 3 | `student1` `POST /tickets` (multipart `ticket` + `files` là ảnh PNG) | Mã `TK-<năm>-<số>`, `NEW`, hạn theo ưu tiên |
 | 4 | `tech1` `/assign`, `/start`, comment công khai; `student1` comment | `firstRespondedAt` có giá trị |
 | 5 | `student1` `GET /tickets/{id}` và ticket của người khác | Không thấy ghi chú nội bộ; ticket người khác 404 |
@@ -211,7 +211,7 @@ Dùng Swagger (`http://localhost:9080/swagger-ui.html`) hoặc client trong `dep
 | 13 | `/return` với `DAMAGED` | Thiết bị `UNDER_REPAIR`, có mục ở `/devices/{id}/maintenance` |
 | 14 | `lecturer1` `POST /room-bookings`, `tech1` `/approve`, `GET /rooms/{id}/schedule` | Lịch có khung giờ |
 | 15 | Đặt chồng giờ; hai luồng cùng phòng cùng giờ | 422 `ROOM_SLOT_TAKEN`; DB chỉ một bản ghi `active` |
-| 16 | Quá 4 giờ, quá khứ, vượt sức chứa, phòng `MAINTENANCE`; `student1` đặt | 422 hoặc 403 |
+| 16 | Quá 4 giờ, quá khứ, vượt sức chứa, phòng `MAINTENANCE`; `student1` hoặc `tech1` đặt; `admin1` duyệt lịch của chính mình | 422 hoặc 403 |
 | 17 | `PUT /sla-policies/NORMAL` `{"responseMinutes":1,"resolutionMinutes":2}`, tạo ticket, đợi 5 phút | Cảnh báo ở 80%, rồi `overdue=true` và thông báo, không gửi trùng |
 | 18 | `POST /tickets/suggest` với "máy chiếu phòng A2 không lên hình" và "cả phòng máy mất mạng giữa giờ thi" | Loại thiết bị; ưu tiên khẩn; có từ khóa, lý do, bài liên quan |
 | 19 | `POST /knowledge/ask` "Quy định khi sử dụng phòng máy" | Đoạn trích kèm nguồn và `CC BY 4.0` |

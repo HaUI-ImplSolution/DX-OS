@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.lab.service;
 
-import HaUI.ImplSolution.dxos.core.api.exception.InvalidStateException;
+import HaUI.ImplSolution.dxos.core.api.exception.PokaYokeViolationException;
 import HaUI.ImplSolution.dxos.core.api.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.dxos.lab.dto.CatalogDtos.TicketCategoryRequest;
 import HaUI.ImplSolution.dxos.lab.dto.CatalogDtos.TicketCategoryResponse;
@@ -32,7 +32,8 @@ public class TicketCategoryService {
   public TicketCategoryResponse create(TicketCategoryRequest request) {
     String code = request.code().strip().toUpperCase();
     if (categoryRepository.existsByCode(code)) {
-      throw new InvalidStateException("Category code already exists: " + code);
+      throw new PokaYokeViolationException("CATEGORY_CODE_TAKEN",
+          "Mã loại sự cố %s đã tồn tại".formatted(code));
     }
     TicketCategory category = TicketCategory.builder().code(code).build();
     fill(category, request);

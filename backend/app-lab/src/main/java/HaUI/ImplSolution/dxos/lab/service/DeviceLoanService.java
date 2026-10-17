@@ -22,7 +22,9 @@ import HaUI.ImplSolution.dxos.lab.repository.DeviceLoanRepository;
 import HaUI.ImplSolution.dxos.lab.repository.DeviceRepository;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -61,6 +63,10 @@ public class DeviceLoanService {
 
   @Transactional
   public LoanResponse create(LoanCreateRequest request, UUID clientRequestId) {
+    // Technicians lend the devices out and do not borrow them.
+    if (LabSecurityPolicies.TECHNICIAN.equals(user.highestRole())) {
+      throw new ActionNotAllowedException("Technicians do not borrow devices");
+    }
     if (clientRequestId != null) {
       var existing = loanRepository.findByClientRequestId(clientRequestId);
       if (existing.isPresent()) {
@@ -93,11 +99,17 @@ public class DeviceLoanService {
   }
 
   // Own loans for most users; lecturers, technicians and administrators see all of them.
-  public PageResponse<LoanResponse> list(String status, Long deviceId, boolean mine, int page,
-      int size) {
+  public PageResponse<LoanResponse> list(String status, Long deviceId, boolean mine,
+      boolean toApprove, int page, int size) {
     Specification<DeviceLoan> spec = Specification.unrestricted();
     if (mine || !user.seesAllLoans()) {
       spec = spec.and((root, q, cb) -> cb.equal(root.get("borrowerId"), user.id()));
+    }
+    if (toApprove) {
+      Set<String> roles = approvableRoles();
+      spec = spec.and((root, q, cb) -> cb.and(cb.equal(root.get("status"), LoanStatus.PENDING),
+          cb.notEqual(root.get("borrowerId"), user.id()), user.isAdmin() ? cb.conjunction()
+              : roles.isEmpty() ? cb.disjunction() : root.get("borrowerRole").in(roles)));
     }
     if (status != null) {
       spec = spec.and((root, q, cb) -> cb.equal(root.get("status"), status));
@@ -208,8 +220,27 @@ public class DeviceLoanService {
 
   // A student's loan is approved by a lecturer and a lecturer's by a technician; an administrator
   // approves any. Nobody approves their own.
-  private void requireApprover(
-      DeviceLoan loan) {if(loan.getBorrowerId().equals(user.id())){throw new ActionNotAllowedException("You cannot decide your own loan");}if(user.isAdmin()){return;}boolean allowed=switch(loan.getBorrowerRole()){case LabSecurityPolicies.STUDENT->user.isLecturer();case LabSecurityPolicies.LECTURER->user.isTechnician();default->false;};if(!allowed){throw new ActionNotAllowedException("A %s loan needs approval from a higher role".formatted(loan.getBorrowerRole()));}}
+  private void requireApprover(DeviceLoan loan) {
+    if (loan.getBorrowerId().equals(user.id())) {
+      throw new ActionNotAllowedException("You cannot decide your own loan");
+    }
+    if (!user.isAdmin() && !approvableRoles().contains(loan.getBorrowerRole())) {
+      throw new ActionNotAllowedException(
+          "A %s loan needs approval from a higher role".formatted(loan.getBorrowerRole()));
+    }
+  }
+
+  // Borrower roles whose loans a lecturer or technician approves; an administrator approves any.
+  private Set<String> approvableRoles() {
+    Set<String> roles = new HashSet<>();
+    if (user.isLecturer()) {
+      roles.add(LabSecurityPolicies.STUDENT);
+    }
+    if (user.isTechnician()) {
+      roles.add(LabSecurityPolicies.LECTURER);
+    }
+    return roles;
+  }
 
   private LoanResponse toResponse(DeviceLoan loan) {
     return LoanResponse.of(loan, today());

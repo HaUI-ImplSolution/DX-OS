@@ -49,6 +49,9 @@ public class Ticket {
   @JoinColumn(name = "room_id")
   private Room room;
 
+  // Where the problem is when the room is not in the catalogue
+  private String roomNote;
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "device_id")
   private Device device;

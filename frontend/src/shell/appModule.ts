@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { LabelRegistration } from "./labels";
-import type { AppManifest, ApprovalRequest } from "./types";
+import type { AppManifest, ApprovalRequest, Notification } from "./types";
 
 export interface AppUser {
   id: string;
@@ -53,6 +53,8 @@ export interface AppUiModule {
   routes: AppRoute[];
   labels?: LabelRegistration;
   errorMessages?: Record<string, string>;
+  // Page a notification leads to; null keeps the user on the notifications list.
+  notificationPath?: (notification: Notification) => string | null;
   // Roles that cannot use the web client, with the message they see instead of the app.
   blockedRoles?: Record<string, { title: string; message: (fullName: string) => string }>;
 }

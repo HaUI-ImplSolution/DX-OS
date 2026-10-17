@@ -108,7 +108,11 @@ export default function Shell({ context, module, error, onDismissError, onLogout
         ))}
         <Route
           path="/notifications"
-          element={<Notifications onError={onError} onChanged={refreshUnread} />}
+          element={<Notifications
+              onError={onError}
+              onChanged={refreshUnread}
+              pathOf={module.notificationPath}
+            />}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

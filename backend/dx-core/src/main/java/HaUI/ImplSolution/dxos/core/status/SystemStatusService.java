@@ -36,8 +36,8 @@ public class SystemStatusService {
     contributors.orderedStream()
         .forEach(contributor -> services.add(new Service(contributor.name(), state(contributor))));
     services.add(new Service("storage", objectStorage.isReady() ? UP : DOWN));
-    App app = appModules.orderedStream().findFirst()
-        .map(module -> new App(module.id(), module.name())).orElse(null);
+    App app = appModules.orderedStream().findFirst().map(module -> new App(module.id(),
+        module.name(), module.portalServices().stream().sorted().toList())).orElse(null);
     return new ServiceStatusResponse(app, services);
   }
 

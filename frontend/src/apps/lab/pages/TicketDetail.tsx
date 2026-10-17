@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { Badge, Section, Timeline, formatDateTime, statusLabel, statusTone } from "../../../shell";
 import {
   addTicketAttachment,
@@ -8,16 +8,19 @@ import {
   cancelTicket,
   confirmTicket,
   getTicket,
+  listRooms,
   listTechnicians,
   rejectTicket,
+  removeTicketAttachment,
   reopenTicket,
   resolveTicket,
   startTicket,
+  updateTicket,
   waitTicket,
 } from "../api";
 import { PriorityBadge, SlaClock, Stars, runAction } from "../components/common";
 import { formatBytes } from "../labels";
-import type { TechnicianLoad, TicketDetail as TicketDetailData } from "../types";
+import type { Room, TechnicianLoad, Ticket, TicketDetail as TicketDetailData } from "../types";
 
 interface TicketDetailProps {
   userId: string;
@@ -26,16 +29,44 @@ interface TicketDetailProps {
 }
 
 const MAX_REOPENS = 3;
+const MAX_FILES = 5;
+const MAX_FILE_BYTES = 5 * 1024 * 1024;
+const IMAGE_TYPES = ["image/jpeg", "image/png"];
+const OTHER_ROOM = "other";
+const OPEN_STATUSES = ["NEW", "ASSIGNED", "IN_PROGRESS", "WAITING_USER"];
+const FINISHED_STATUSES = ["CLOSED", "REJECTED", "CANCELLED"];
+
+type Run = (action: () => Promise<unknown>) => Promise<void>;
+
+// Where the page returns to: the list it was opened from, with its filter or tab.
+function backTarget(from: unknown, isStaff: boolean, isAdmin: boolean) {
+  const path = typeof from === "string" && from.startsWith("/") ? from : null;
+  const target = path ?? (isStaff && !isAdmin ? "/queue" : "/tickets");
+  const base = target.split("?")[0];
+  const label =
+    base === "/queue"
+      ? "hàng đợi xử lý"
+      : base === "/"
+        ? "tổng quan"
+        : base === "/notifications"
+          ? "thông báo"
+          : "danh sách yêu cầu";
+  return { target, label };
+}
 
 export default function TicketDetail({ userId, role, onError }: TicketDetailProps) {
   const { id } = useParams();
+  const location = useLocation();
   const ticketId = Number(id);
   const [detail, setDetail] = useState<TicketDetailData | null>(null);
   const [busy, setBusy] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
+  const [editing, setEditing] = useState(false);
 
   const isStaff = role === "TECHNICIAN" || role === "ADMIN";
   const isAdmin = role === "ADMIN";
+
+  const back = backTarget((location.state as { from?: string } | null)?.from, isStaff, isAdmin);
 
   const load = useCallback(() => {
     getTicket(ticketId)
@@ -58,8 +89,8 @@ export default function TicketDetail({ userId, role, onError }: TicketDetailProp
         >
           {null}
         </Section>
-        <Link className="btn btn-link" to="/tickets">
-          ← Về danh sách yêu cầu
+        <Link className="btn btn-link" to={back.target}>
+          ← Về {back.label}
         </Link>
       </>
     );
@@ -67,150 +98,371 @@ export default function TicketDetail({ userId, role, onError }: TicketDetailProp
   if (!detail) return <Section step="…" title="Đang tải yêu cầu" children={null} />;
   const { ticket, comments, attachments, timeline } = detail;
   const isRequester = ticket.requesterId === userId;
-  const run = (action: () => Promise<unknown>) => runAction(action, setBusy, onError, load);
+  const canEdit = isRequester && OPEN_STATUSES.includes(ticket.status);
+  const run: Run = (action) => runAction(action, setBusy, onError, load);
+  return (
+    <div className="ticket-layout">
+      <div className="ticket-main">
+        <Section
+          step="🎫"
+          title={`${ticket.code} · ${ticket.title}`}
+          subtitle={`${ticket.categoryName} · gửi bởi ${ticket.requesterName} lúc ${formatDateTime(ticket.createdAt)}`}
+        >
+          {isRequester && ticket.status === "WAITING_USER" && (
+            <div className="banner banner-warning">
+              <p>
+                Kỹ thuật viên đang chờ bạn bổ sung. Trả lời ở khung Trao đổi, hoặc bấm Chỉnh sửa để
+                thêm ảnh. Khi bạn gửi, yêu cầu được chuyển lại cho kỹ thuật viên.
+              </p>
+            </div>
+          )}
+          {editing && canEdit ? (
+            <EditForm
+              ticket={ticket}
+              busy={busy}
+              run={run}
+              onError={onError}
+              onDone={() => setEditing(false)}
+            />
+          ) : (
+            <>
+              <TicketSummary ticket={ticket} />
+              {canEdit && (
+                <div className="form-actions">
+                  <button className="btn" onClick={() => setEditing(true)}>
+                    Chỉnh sửa
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </Section>
 
+        <Actions
+          ticket={ticket}
+          isStaff={isStaff}
+          isAdmin={isAdmin}
+          isRequester={isRequester}
+          busy={busy}
+          run={run}
+          onError={onError}
+        />
+
+        <Attachments
+          ticketId={ticketId}
+          attachments={attachments}
+          editable={editing && canEdit}
+          busy={busy}
+          run={run}
+          onError={onError}
+        />
+
+        <Section step="🕓" title="Lịch sử xử lý" subtitle="Mỗi bước được ghi lại, không sửa hay xoá">
+          <Timeline events={timeline} />
+        </Section>
+
+        {isRequester && ticket.status === "NEW" && (
+          <div className="danger-zone">
+            <button
+              className="btn btn-danger"
+              disabled={busy}
+              onClick={() => {
+                if (window.confirm("Huỷ yêu cầu này? Thao tác không thể hoàn tác.")) {
+                  void run(() => cancelTicket(ticketId));
+                }
+              }}
+            >
+              Huỷ yêu cầu
+            </button>
+          </div>
+        )}
+
+        <Link className="btn btn-link" to={back.target}>
+          ← Về {back.label}
+        </Link>
+      </div>
+
+      <aside className="ticket-side">
+        <ChatPanel
+          comments={comments}
+          isStaff={isStaff}
+          finished={FINISHED_STATUSES.includes(ticket.status)}
+          busy={busy}
+          onSubmit={(body, internal) => run(() => addTicketComment(ticketId, body, internal))}
+        />
+      </aside>
+    </div>
+  );
+}
+
+function roomOf(ticket: Ticket): string | null {
+  return ticket.roomCode ?? ticket.roomNote;
+}
+
+function TicketSummary({ ticket }: { ticket: Ticket }) {
+  const room = roomOf(ticket);
   return (
     <>
-      <Section
-        step="🎫"
-        title={`${ticket.code} · ${ticket.title}`}
-        subtitle={`${ticket.categoryName} · gửi bởi ${ticket.requesterName} lúc ${formatDateTime(ticket.createdAt)}`}
-      >
-        <p>
-          <Badge tone={statusTone(ticket.status)}>{statusLabel(ticket.status)}</Badge>{" "}
-          <PriorityBadge priority={ticket.priority} />
-          {ticket.assigneeName && <span> · Người xử lý: {ticket.assigneeName}</span>}
-          {ticket.reopenCount > 0 && <span> · Đã mở lại {ticket.reopenCount} lần</span>}
-        </p>
-        <p style={{ whiteSpace: "pre-line" }}>{ticket.description}</p>
-        <table className="kv-table">
-          <tbody>
-            {ticket.roomCode && (
-              <tr>
-                <th>Phòng</th>
-                <td>{ticket.roomCode}</td>
-              </tr>
-            )}
-            {ticket.deviceAssetCode && (
-              <tr>
-                <th>Thiết bị</th>
-                <td>{ticket.deviceAssetCode}</td>
-              </tr>
-            )}
-            {ticket.resolutionNote && (
-              <tr>
-                <th>Cách đã xử lý</th>
-                <td>{ticket.resolutionNote}</td>
-              </tr>
-            )}
-            {ticket.rootCause && (
-              <tr>
-                <th>Nguyên nhân gốc</th>
-                <td>{ticket.rootCause}</td>
-              </tr>
-            )}
-            {ticket.rating !== null && (
-              <tr>
-                <th>Đánh giá</th>
-                <td>
-                  <Stars value={ticket.rating} />
-                  {ticket.ratingComment && <div className="cell-sub">{ticket.ratingComment}</div>}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-        <SlaClock ticket={ticket} />
-      </Section>
-
-      <Actions
-        ticket={detail.ticket}
-        isStaff={isStaff}
-        isAdmin={isAdmin}
-        isRequester={isRequester}
-        busy={busy}
-        run={run}
-        onError={onError}
-      />
-
-      <Section step="📎" title="Tệp đính kèm">
-        {attachments.length === 0 && <p className="empty-hint">Chưa có tệp đính kèm.</p>}
-        <ul className="attachment-list">
-          {attachments.map((attachment) => (
-            <li key={attachment.id}>
-              {attachment.contentType.startsWith("image/") && (
-                <a href={attachment.url} target="_blank" rel="noreferrer">
-                  <img className="attachment-thumb" src={attachment.url} alt={attachment.filename} />
-                </a>
-              )}
-              <a href={attachment.url} target="_blank" rel="noreferrer">
-                {attachment.filename}
-              </a>{" "}
-              <small>({formatBytes(attachment.sizeBytes)})</small>
-            </li>
-          ))}
-        </ul>
-        <label className="field-label">
-          Thêm tệp (JPEG, PNG, PDF, tối đa 5 MB)
-          <input
-            type="file"
-            accept="image/jpeg,image/png,application/pdf"
-            disabled={busy}
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              e.target.value = "";
-              if (file) void run(() => addTicketAttachment(ticketId, file));
-            }}
-          />
-        </label>
-      </Section>
-
-      <CommentsSection
-        comments={comments}
-        isStaff={isStaff}
-        busy={busy}
-        onSubmit={(body, internal) => run(() => addTicketComment(ticketId, body, internal))}
-      />
-
-      <Section step="🕓" title="Lịch sử xử lý" subtitle="Mỗi bước được ghi lại, không sửa hay xoá">
-        <Timeline events={timeline} />
-      </Section>
-
-      <Link className="btn btn-link" to="/tickets">
-        ← Về danh sách yêu cầu
-      </Link>
+      <p>
+        <Badge tone={statusTone(ticket.status)}>{statusLabel(ticket.status)}</Badge>{" "}
+        <PriorityBadge priority={ticket.priority} />
+        {ticket.assigneeName && <span> · Người xử lý: {ticket.assigneeName}</span>}
+        {ticket.reopenCount > 0 && <span> · Đã mở lại {ticket.reopenCount} lần</span>}
+      </p>
+      <p style={{ whiteSpace: "pre-line" }}>{ticket.description}</p>
+      <table className="kv-table">
+        <tbody>
+          {room && (
+            <tr>
+              <th>Phòng</th>
+              <td>{room}</td>
+            </tr>
+          )}
+          {ticket.deviceAssetCode && (
+            <tr>
+              <th>Thiết bị</th>
+              <td>{ticket.deviceAssetCode}</td>
+            </tr>
+          )}
+          {ticket.resolutionNote && (
+            <tr>
+              <th>Cách đã xử lý</th>
+              <td>{ticket.resolutionNote}</td>
+            </tr>
+          )}
+          {ticket.rootCause && (
+            <tr>
+              <th>Nguyên nhân gốc</th>
+              <td>{ticket.rootCause}</td>
+            </tr>
+          )}
+          {ticket.rating !== null && (
+            <tr>
+              <th>Đánh giá</th>
+              <td>
+                <Stars value={ticket.rating} />
+                {ticket.ratingComment && <div className="cell-sub">{ticket.ratingComment}</div>}
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+      <SlaClock ticket={ticket} />
     </>
   );
 }
 
-function CommentsSection({
+// The requester changes the content of an open report here; attachments change in the section below.
+function EditForm({
+  ticket,
+  busy,
+  run,
+  onError,
+  onDone,
+}: {
+  ticket: Ticket;
+  busy: boolean;
+  run: Run;
+  onError: (message: string) => void;
+  onDone: () => void;
+}) {
+  const [title, setTitle] = useState(ticket.title);
+  const [description, setDescription] = useState(ticket.description);
+  const [roomId, setRoomId] = useState(
+    ticket.roomId ? String(ticket.roomId) : ticket.roomNote ? OTHER_ROOM : "",
+  );
+  const [roomNote, setRoomNote] = useState(ticket.roomNote ?? "");
+  const [rooms, setRooms] = useState<Room[]>([]);
+
+  useEffect(() => {
+    listRooms()
+      .then(setRooms)
+      .catch((err) => onError(err.message));
+  }, [onError]);
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    void run(() =>
+      updateTicket(ticket.id, {
+        title: title.trim(),
+        description: description.trim(),
+        roomId: roomId && roomId !== OTHER_ROOM ? Number(roomId) : undefined,
+        roomNote: roomId === OTHER_ROOM && roomNote.trim() ? roomNote.trim() : undefined,
+        deviceId: ticket.deviceId ?? undefined,
+      }),
+    ).then(onDone);
+  };
+
+  return (
+    <form className="harvest-box" onSubmit={submit}>
+      <label className="field-label">
+        Tiêu đề
+        <input value={title} maxLength={255} onChange={(e) => setTitle(e.target.value)} required />
+      </label>
+      <label className="field-label">
+        Mô tả sự cố
+        <textarea
+          value={description}
+          maxLength={4000}
+          onChange={(e) => setDescription(e.target.value)}
+          required
+        />
+      </label>
+      <label className="field-label">
+        Phòng
+        <select value={roomId} onChange={(e) => setRoomId(e.target.value)}>
+          <option value="">Không chọn</option>
+          {rooms.map((room) => (
+            <option key={room.id} value={room.id}>
+              {room.code} · {room.name}
+            </option>
+          ))}
+          <option value={OTHER_ROOM}>Phòng khác…</option>
+        </select>
+      </label>
+      {roomId === OTHER_ROOM && (
+        <label className="field-label">
+          Tên hoặc vị trí phòng
+          <input value={roomNote} maxLength={255} onChange={(e) => setRoomNote(e.target.value)} required />
+        </label>
+      )}
+      <div className="form-actions">
+        <button
+          className="btn btn-primary"
+          type="submit"
+          disabled={busy || !title.trim() || !description.trim()}
+        >
+          Lưu thay đổi
+        </button>
+        <button className="btn" type="button" onClick={onDone}>
+          Xong
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function Attachments({
+  ticketId,
+  attachments,
+  editable,
+  busy,
+  run,
+  onError,
+}: {
+  ticketId: number;
+  attachments: TicketDetailData["attachments"];
+  editable: boolean;
+  busy: boolean;
+  run: Run;
+  onError: (message: string) => void;
+}) {
+  if (attachments.length === 0 && !editable) return null;
+
+  const pick = (file: File | undefined) => {
+    if (!file) return;
+    if (!IMAGE_TYPES.includes(file.type) || file.size > MAX_FILE_BYTES) {
+      onError("Chỉ nhận ảnh JPEG hoặc PNG, tối đa 5 MB.");
+      return;
+    }
+    if (attachments.length >= MAX_FILES) {
+      onError(`Chỉ đính kèm tối đa ${MAX_FILES} ảnh.`);
+      return;
+    }
+    void run(() => addTicketAttachment(ticketId, file));
+  };
+
+  return (
+    <Section step="🖼️" title="Ảnh đính kèm">
+      {attachments.length === 0 && <p className="empty-hint">Chưa có ảnh nào.</p>}
+      <ul className="attachment-list">
+        {attachments.map((attachment) => (
+          <li key={attachment.id}>
+            {attachment.contentType.startsWith("image/") && (
+              <a href={attachment.url} target="_blank" rel="noreferrer">
+                <img className="attachment-thumb" src={attachment.url} alt={attachment.filename} />
+              </a>
+            )}
+            <a href={attachment.url} target="_blank" rel="noreferrer">
+              {attachment.filename}
+            </a>{" "}
+            <small>({formatBytes(attachment.sizeBytes)})</small>
+            {editable && (
+              <button
+                className="btn btn-danger-outline"
+                disabled={busy}
+                onClick={() => run(() => removeTicketAttachment(ticketId, attachment.id))}
+              >
+                Xoá
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+      {editable && (
+        <label className="field-label">
+          Thêm ảnh (JPEG hoặc PNG, tối đa 5 MB)
+          <input
+            type="file"
+            accept="image/jpeg,image/png"
+            disabled={busy}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              pick(file);
+            }}
+          />
+        </label>
+      )}
+    </Section>
+  );
+}
+
+// The conversation is a panel of its own that scrolls, so a long exchange never pushes the report
+// out of view.
+function ChatPanel({
   comments,
   isStaff,
+  finished,
   busy,
   onSubmit,
 }: {
   comments: TicketDetailData["comments"];
   isStaff: boolean;
+  finished: boolean;
   busy: boolean;
   onSubmit: (body: string, internal: boolean) => Promise<void>;
 }) {
   const [body, setBody] = useState("");
   const [internal, setInternal] = useState(false);
+  const messages = useRef<HTMLUListElement>(null);
 
+  useEffect(() => {
+    const list = messages.current;
+    if (list) list.scrollTop = list.scrollHeight;
+  }, [comments.length]);
+
+  const send = () => {
+    if (!body.trim()) return;
+    void onSubmit(body.trim(), internal).then(() => setBody(""));
+  };
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    void onSubmit(body.trim(), internal).then(() => setBody(""));
+    send();
   };
 
   return (
-    <Section step="💬" title="Trao đổi" subtitle="Người gửi và kỹ thuật viên trao đổi tại đây">
-      {comments.length === 0 && <p className="empty-hint">Chưa có trao đổi nào.</p>}
-      <ul className="comment-list">
+    <section className="section chat-panel">
+      <header className="section-header">
+        <span className="section-step">💬</span>
+        <div>
+          <h2>Trao đổi</h2>
+        </div>
+      </header>
+      <ul className="chat-messages comment-list" ref={messages}>
+        {comments.length === 0 && <li className="empty-hint">Chưa có trao đổi nào.</li>}
         {comments.map((comment) => (
-          <li
-            key={comment.id}
-            className={comment.internal ? "comment comment-internal" : "comment"}
-          >
+          <li key={comment.id} className={comment.internal ? "comment comment-internal" : "comment"}>
             <div>
               <strong>{comment.authorName}</strong>{" "}
               {comment.staff && <Badge tone="neutral">Kỹ thuật viên</Badge>}{" "}
@@ -221,33 +473,43 @@ function CommentsSection({
           </li>
         ))}
       </ul>
-      <form className="harvest-box" onSubmit={submit}>
-        <label className="field-label">
-          Nội dung
+      {finished ? (
+        <p className="empty-hint chat-closed">Yêu cầu đã kết thúc, không trao đổi thêm.</p>
+      ) : (
+        <form className="chat-composer" onSubmit={submit}>
           <textarea
             value={body}
             maxLength={4000}
+            placeholder="Nhập tin nhắn (Ctrl + Enter để gửi)"
             onChange={(e) => setBody(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                send();
+              }
+            }}
             required
           />
-        </label>
-        {isStaff && (
-          <label className="field-label check-label">
-            <input
-              type="checkbox"
-              checked={internal}
-              onChange={(e) => setInternal(e.target.checked)}
-            />{" "}
-            Ghi chú nội bộ (người gửi không thấy)
-          </label>
-        )}
-        <div className="form-actions">
-          <button className="btn btn-primary" type="submit" disabled={busy || !body.trim()}>
-            Gửi
-          </button>
-        </div>
-      </form>
-    </Section>
+          <div className="chat-composer-bar">
+            {isStaff ? (
+              <label className="check-label">
+                <input
+                  type="checkbox"
+                  checked={internal}
+                  onChange={(e) => setInternal(e.target.checked)}
+                />{" "}
+                Ghi chú nội bộ
+              </label>
+            ) : (
+              <span />
+            )}
+            <button className="btn btn-primary" type="submit" disabled={busy || !body.trim()}>
+              Gửi
+            </button>
+          </div>
+        </form>
+      )}
+    </section>
   );
 }
 
@@ -262,12 +524,12 @@ function Actions({
   run,
   onError,
 }: {
-  ticket: TicketDetailData["ticket"];
+  ticket: Ticket;
   isStaff: boolean;
   isAdmin: boolean;
   isRequester: boolean;
   busy: boolean;
-  run: (action: () => Promise<unknown>) => Promise<void>;
+  run: Run;
   onError: (message: string) => void;
 }) {
   const [dialog, setDialog] = useState<Dialog>(null);
@@ -277,13 +539,13 @@ function Actions({
   const [technicians, setTechnicians] = useState<TechnicianLoad[]>([]);
   const [assignee, setAssignee] = useState("");
 
-  const needsAssignment = isAdmin && ticket.status === "NEW";
+  const canAssign = isAdmin && ["NEW", "ASSIGNED", "IN_PROGRESS"].includes(ticket.status);
   useEffect(() => {
-    if (!needsAssignment) return;
+    if (!canAssign) return;
     listTechnicians()
       .then(setTechnicians)
       .catch((err) => onError(err.message));
-  }, [needsAssignment, onError]);
+  }, [canAssign, onError]);
 
   const id = ticket.id;
   const close = () => {
@@ -298,10 +560,11 @@ function Actions({
 
   const canAct =
     (isStaff && ["NEW", "ASSIGNED", "IN_PROGRESS"].includes(ticket.status)) ||
-    (isRequester && ["NEW", "RESOLVED"].includes(ticket.status));
+    (isRequester && ticket.status === "RESOLVED");
   if (!canAct) return null;
 
   const canReopen = ticket.reopenCount < MAX_REOPENS;
+  const candidates = technicians.filter((technician) => technician.userId !== ticket.assigneeId);
 
   return (
     <Section step="⚙️" title="Thao tác">
@@ -310,31 +573,6 @@ function Actions({
           <button className="btn btn-primary" disabled={busy} onClick={() => run(() => assignTicket(id))}>
             Nhận việc
           </button>
-        )}
-        {needsAssignment && (
-          <>
-            <select value={assignee} onChange={(e) => setAssignee(e.target.value)}>
-              <option value="">Giao cho kỹ thuật viên…</option>
-              {technicians.map((technician) => (
-                <option key={technician.userId} value={technician.userId}>
-                  {technician.name} ({technician.openTickets} đang xử lý)
-                </option>
-              ))}
-            </select>
-            <button
-              className="btn"
-              disabled={busy || !assignee}
-              onClick={() => {
-                const technician = technicians.find((t) => t.userId === assignee);
-                if (technician)
-                  void run(() =>
-                    assignTicket(id, { assigneeId: technician.userId, assigneeName: technician.name }),
-                  );
-              }}
-            >
-              Phân công
-            </button>
-          </>
         )}
         {isStaff && ticket.status === "ASSIGNED" && (
           <button className="btn btn-primary" disabled={busy} onClick={() => run(() => startTicket(id))}>
@@ -356,11 +594,6 @@ function Actions({
             Từ chối yêu cầu
           </button>
         )}
-        {isRequester && ticket.status === "NEW" && (
-          <button className="btn" disabled={busy} onClick={() => run(() => cancelTicket(id))}>
-            Huỷ yêu cầu
-          </button>
-        )}
         {isRequester && ticket.status === "RESOLVED" && (
           <>
             <button className="btn btn-primary" disabled={busy} onClick={() => setDialog("confirm")}>
@@ -377,20 +610,47 @@ function Actions({
         )}
       </div>
 
+      {canAssign && (
+        <div className="inline-form">
+          <select value={assignee} onChange={(e) => setAssignee(e.target.value)}>
+            <option value="">{ticket.assigneeName ? "Giao lại cho…" : "Giao cho kỹ thuật viên…"}</option>
+            {candidates.map((technician) => (
+              <option key={technician.userId} value={technician.userId}>
+                {technician.name} ({technician.openTickets} đang xử lý)
+              </option>
+            ))}
+          </select>
+          <button
+            className="btn"
+            disabled={busy || !assignee}
+            onClick={() => {
+              const technician = technicians.find((t) => t.userId === assignee);
+              if (technician)
+                void run(() =>
+                  assignTicket(id, { assigneeId: technician.userId, assigneeName: technician.name }),
+                ).then(() => setAssignee(""));
+            }}
+          >
+            {ticket.assigneeName ? "Giao lại" : "Phân công"}
+          </button>
+        </div>
+      )}
+
       {dialog === "wait" && (
-        <form className="inline-form" onSubmit={submit(() => waitTicket(id, text.trim()))}>
+        <form className="inline-form inline-form-wide" onSubmit={submit(() => waitTicket(id, text.trim()))}>
           <input
-            placeholder="Cần người gửi bổ sung điều gì? (bắt buộc)"
+            placeholder="Cần bổ sung gì?"
             value={text}
+            maxLength={1000}
             onChange={(e) => setText(e.target.value)}
             required
           />
-          <FormButtons busy={busy} onCancel={close} label="Gửi yêu cầu bổ sung" />
+          <FormButtons busy={busy} onCancel={close} label="Gửi" />
         </form>
       )}
       {dialog === "resolve" && (
         <form
-          className="inline-form"
+          className="inline-form inline-form-wide"
           onSubmit={submit(() => resolveTicket(id, text.trim(), rootCause.trim()))}
         >
           <input
@@ -411,7 +671,7 @@ function Actions({
         </form>
       )}
       {dialog === "reject" && (
-        <form className="inline-form" onSubmit={submit(() => rejectTicket(id, text.trim()))}>
+        <form className="inline-form inline-form-wide" onSubmit={submit(() => rejectTicket(id, text.trim()))}>
           <input
             placeholder="Lý do từ chối (bắt buộc)"
             value={text}
@@ -423,7 +683,10 @@ function Actions({
         </form>
       )}
       {dialog === "confirm" && (
-        <form className="inline-form" onSubmit={submit(() => confirmTicket(id, rating, text.trim()))}>
+        <form
+          className="inline-form inline-form-wide"
+          onSubmit={submit(() => confirmTicket(id, rating, text.trim()))}
+        >
           <label className="field-label">
             Đánh giá
             <select value={rating} onChange={(e) => setRating(Number(e.target.value))}>
@@ -444,7 +707,7 @@ function Actions({
         </form>
       )}
       {dialog === "reopen" && (
-        <form className="inline-form" onSubmit={submit(() => reopenTicket(id, text.trim()))}>
+        <form className="inline-form inline-form-wide" onSubmit={submit(() => reopenTicket(id, text.trim()))}>
           <input
             placeholder="Vấn đề còn lại là gì?"
             value={text}

@@ -61,7 +61,8 @@ public class RoomController {
   @PreAuthorize("hasAnyRole('TECHNICIAN','ADMIN')")
   @ResponseStatus(HttpStatus.CREATED)
   @Operation(summary = "Add a room",
-      description = "TECHNICIAN or ADMIN only. 409 when the code" + " is already used.")
+      description = "TECHNICIAN or ADMIN only. 422 ROOM_CODE_TAKEN when the code"
+          + " is already used.")
   public ApiResponse<RoomResponse> create(@Valid @RequestBody RoomRequest request) {
     return ApiResponse.success("Room created", roomService.create(request));
   }
@@ -69,7 +70,7 @@ public class RoomController {
   @PutMapping("/{id}")
   @PreAuthorize("hasAnyRole('TECHNICIAN','ADMIN')")
   @Operation(summary = "Change the details of a room",
-      description = "TECHNICIAN or ADMIN only. 409 when the new code is already used.")
+      description = "TECHNICIAN or ADMIN only. 422 ROOM_CODE_TAKEN when the new code is already used.")
   public ApiResponse<RoomResponse> update(@PathVariable Long id,
       @Valid @RequestBody RoomRequest request) {
     return ApiResponse.success("Room updated", roomService.update(id, request));

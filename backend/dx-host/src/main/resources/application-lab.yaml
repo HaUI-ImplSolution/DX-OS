@@ -28,3 +28,7 @@ mattermost:
     url-technician: ${MATTERMOST_WEBHOOK_URL_TECHNICIAN:}
     # Admin channel webhook. Unset: same.
     url-admin: ${MATTERMOST_WEBHOOK_URL_ADMIN:}
+    # Gateway origin for the ticket photo. Unset: no photo.
+    image-base-url: ${MATTERMOST_IMAGE_BASE_URL:}
+    # Web origin for the ticket link <origin>/tickets/<id>. Unset: no link.
+    app-base-url: ${MATTERMOST_APP_BASE_URL:}

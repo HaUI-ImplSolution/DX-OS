@@ -10,6 +10,9 @@ export default function Timeline({ events }: { events: WorkflowEvent[] }) {
             <strong>{actionLabel(event.action)}</strong>
             {event.actorDisplayName && <span> — {event.actorDisplayName}</span>}
           </div>
+          {typeof event.metadata?.assigneeName === "string" && (
+            <div className="timeline-reason">Giao cho: {event.metadata.assigneeName}</div>
+          )}
           <div className="timeline-time">{formatDateTime(event.occurredAt)}</div>
           {event.reason && <div className="timeline-reason">Lý do: {event.reason}</div>}
         </li>

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.lab.service;
 
-import HaUI.ImplSolution.dxos.core.api.exception.InvalidStateException;
+import HaUI.ImplSolution.dxos.core.api.exception.PokaYokeViolationException;
 import HaUI.ImplSolution.dxos.core.api.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.dxos.lab.dto.BookingDtos.BookingResponse;
 import HaUI.ImplSolution.dxos.lab.dto.CatalogDtos.RoomRequest;
@@ -48,7 +48,8 @@ public class RoomService {
   public RoomResponse create(RoomRequest request) {
     String code = request.code().strip();
     if (roomRepository.existsByCode(code)) {
-      throw new InvalidStateException("Room code already exists: " + code);
+      throw new PokaYokeViolationException("ROOM_CODE_TAKEN",
+          "Mã phòng %s đã tồn tại".formatted(code));
     }
     Room room =
         Room.builder().code(code).building(request.building().strip()).name(request.name().strip())
@@ -61,7 +62,8 @@ public class RoomService {
     Room room = findOrThrow(id);
     String code = request.code().strip();
     if (!room.getCode().equals(code) && roomRepository.existsByCode(code)) {
-      throw new InvalidStateException("Room code already exists: " + code);
+      throw new PokaYokeViolationException("ROOM_CODE_TAKEN",
+          "Mã phòng %s đã tồn tại".formatted(code));
     }
     room.setCode(code);
     room.setBuilding(request.building().strip());

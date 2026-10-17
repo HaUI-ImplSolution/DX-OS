@@ -42,6 +42,7 @@ export type {
   KnowledgeAnswer,
   KnowledgePassage,
   KnowledgeSource,
+  Notification,
   Page,
   Tone,
   Workspace,

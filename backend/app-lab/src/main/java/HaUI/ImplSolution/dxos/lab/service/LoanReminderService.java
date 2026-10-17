@@ -47,7 +47,7 @@ public class LoanReminderService {
         }
       } else if (notifier.tellOnce("loan:%d:due-soon:%s".formatted(loan.getId(), today),
           loan.getBorrowerId(), LabNotificationTypes.LOAN_DUE_SOON, "Sắp đến hạn trả thiết bị",
-          "Thiết bị %s cần trả trước ngày %s.".formatted(asset, loan.getDueDate()),
+          "Thiết bị %s đến hạn trả vào ngày %s.".formatted(asset, loan.getDueDate()),
           LabCaseTypes.DEVICE_LOAN_ENTITY, loan.getId())) {
         dueSoon++;
       }

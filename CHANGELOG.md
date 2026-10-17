@@ -19,6 +19,7 @@ Hai mục đầu liệt kê các bản phát hành; lịch sử chi tiết theo 
 - Ảnh nền đơn sắc được kiểm độ nét theo cạnh sau khi làm mờ lại; hỏi đáp xếp đoạn của bệnh được nêu lên đầu.
 - Hộp duyệt chỉ liệt kê case của app đang chạy; lỗi request trả 415, 405 hoặc 400.
 - Ngưỡng GPS và danh sách vụ cách ly do Backend cung cấp cho mobile; giới hạn và ngưỡng đặt được qua `deploy/.env`.
+- Lab: kỹ thuật viên không mượn thiết bị và không đặt phòng; không ai tự duyệt lịch đặt phòng của mình; trùng mã báo lỗi tiếng Việt; trang đặt phòng đặt lịch tuần cạnh form và danh sách.
 
 ## [1.0.0] - 2026-10-13
 
@@ -36,6 +37,17 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - **Nguồn mở:** `LICENSE` (Apache-2.0, riêng `ai/` AGPL-3.0), `LICENSES.md`, SBOM CycloneDX, `CONTRIBUTING.md`, mẫu issue và pull request, SPDX header.
 
 ## Backend (Spring Boot — `backend`)
+
+### 2026-10-17
+
+**Đã xong — Quy tắc mượn, đặt phòng và mã lỗi của Lab:**
+
+- `POST /api/v1/device-loans` và `POST /api/v1/room-bookings` trả 403 với `TECHNICIAN`; duyệt hoặc từ chối lịch đặt phòng của chính mình trả 403.
+- `GET /api/v1/device-loans?toApprove=true` trả các phiếu chờ duyệt của người khác mà người gọi duyệt được.
+- Trùng mã phòng, mã tài sản hoặc mã loại sự cố trả 422 `ROOM_CODE_TAKEN`, `ASSET_CODE_TAKEN`, `CATEGORY_CODE_TAKEN` kèm câu tiếng Việt.
+- `GET /api/v1/devices?deviceType=` khớp một phần của loại, không phân biệt hoa thường.
+- Thông báo nhắc trả ghi "Thiết bị … đến hạn trả vào ngày …".
+- `LabPermissionMatrixTest`: `STUDENT` và `TECHNICIAN` không đặt phòng.
 
 ### 2026-10-15
 
@@ -660,6 +672,17 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 ## Frontend (`frontend`)
 
+### 2026-10-17
+
+**Đã xong — Đặt phòng, mượn thiết bị, thiết bị và thống kê của Lab:**
+
+- Đặt phòng: lịch tuần bên trái, form và danh sách lịch đặt bên phải (danh sách dạng thẻ, cuộn riêng); màn hình hẹp hơn 1180px xếp thành một cột.
+- Lưới tuần chỉ cho chọn ô chưa bắt đầu và trong 30 ngày tới, ô chọn được có nền xanh nhạt; form báo lỗi giờ, độ dài, bước 30 phút và sức chứa trước khi gửi.
+- Không có nút duyệt trên lịch đặt phòng hay phiếu mượn của chính mình.
+- Mượn thiết bị có ô lọc **Chỉ phiếu chờ tôi duyệt**; bộ đếm phiếu chờ duyệt ở tổng quan chỉ đếm phiếu người xem duyệt được.
+- Thiết bị đang cho mượn hoặc còn đợt bảo trì mở không hiện form ghi bảo trì; thiết bị đang cho mượn không thanh lý được; nút ghi theo loại công việc.
+- Thống kê hiện tên loại sự cố; khoảng mặc định là 30 ngày tính cả hôm nay.
+
 ### 2026-10-15
 
 **Đã xong — Thời tiết, báo cáo chưa chẩn đoán, mở báo cáo bằng liên kết:**
@@ -773,6 +796,10 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - Seed Farm chờ khi Backend báo AI chưa sẵn sàng (`503 ERR_AI_UNAVAILABLE`, tối đa 300 giây, cùng `Idempotency-Key`); lỗi khác giữ nguyên.
 - Seed Farm chạy tiếp từ bước báo cáo khi bị dừng trước đó; chạy lại khi đã đủ dữ liệu không tạo thêm.
 - Superset có healthcheck với `start_period` 900 giây, nên migration lần đầu không làm `start.sh` dừng.
+
+**Đã xong — Dữ liệu demo Lab:**
+
+- `seed_lab.py`: phiếu mượn `LAP-002` của `student1` đã duyệt và quá hạn 2 ngày, để kiểm nhãn **Quá hạn**, thống kê và nhắc trả.
 
 ### 2026-10-14
 
@@ -1149,6 +1176,11 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - **Còn thiếu**: SPDX header đầu mỗi file mã nguồn tự viết — việc sửa hàng loạt file, để riêng một lượt khác.
 
 ## Tài liệu (root, `docs`, `ai/`)
+
+### 2026-10-17
+
+- `backend/app-lab/README.md`: vai và quy tắc mượn thiết bị, đặt phòng theo luật mới.
+- `docs/TESTING.md`: dữ liệu demo có phiếu quá hạn; kiểm API trùng mã phòng (422 `ROOM_CODE_TAKEN`), kỹ thuật viên đặt phòng và tự duyệt lịch của mình (403).
 
 ### 2026-10-15
 

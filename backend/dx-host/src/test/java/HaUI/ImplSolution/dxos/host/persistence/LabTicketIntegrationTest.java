@@ -110,7 +110,7 @@ class LabTicketIntegrationTest {
     actAs(student, "STUDENT");
     return tickets.create(
         new TicketCreateRequest("Máy chiếu không lên hình",
-            "Máy chiếu bật đèn nhưng không có tín hiệu", "PROJECTOR", null, null, null),
+            "Máy chiếu bật đèn nhưng không có tín hiệu", "PROJECTOR", null, null, null, null),
         null, UUID.randomUUID()).ticket();
   }
 

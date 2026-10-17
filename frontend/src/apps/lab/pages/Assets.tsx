@@ -524,6 +524,9 @@ function DevicePanel({
 
   const underRepair = device.status === "UNDER_REPAIR";
   const retired = device.status === "RETIRED";
+  const onLoan = device.status === "ON_LOAN";
+  // A device holds one open maintenance entry at a time and none while it is out on loan.
+  const canStart = !underRepair && !retired && !onLoan && maintenance.every((entry) => entry.completedAt);
 
   return (
     <div>
@@ -531,7 +534,11 @@ function DevicePanel({
         <button className="btn" disabled={busy || retired} onClick={onEdit}>
           Sửa thông tin
         </button>
-        <button className="btn btn-secondary" disabled={busy || retired} onClick={() => act(() => retireDevice(device.id))}>
+        <button
+          className="btn btn-secondary"
+          disabled={busy || retired || onLoan}
+          onClick={() => act(() => retireDevice(device.id))}
+        >
           Thanh lý
         </button>
       </div>
@@ -586,7 +593,7 @@ function DevicePanel({
                     </form>
                   ) : (
                     <button className="btn" disabled={busy} onClick={() => setCompleting(entry.id)}>
-                      Hoàn tất sửa chữa
+                      {entry.kind === "INSPECTION" ? "Hoàn tất kiểm tra" : "Hoàn tất sửa chữa"}
                     </button>
                   )}
                 </td>
@@ -596,7 +603,7 @@ function DevicePanel({
         </table>
       )}
 
-      {!underRepair && !retired && (
+      {canStart && (
         <form
           className="inline-form"
           onSubmit={(e) => {
@@ -619,7 +626,7 @@ function DevicePanel({
             required
           />
           <button className="btn btn-primary" type="submit" disabled={busy}>
-            Ghi nhật ký và đặt đang sửa
+            {kind === "INSPECTION" ? "Ghi nhật ký" : "Ghi nhật ký và đặt đang sửa"}
           </button>
         </form>
       )}

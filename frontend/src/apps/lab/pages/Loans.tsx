@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Badge, Pagination, Section, formatDate, formatDateTime } from "../../../shell";
 import type { Page } from "../../../shell";
 import { approveLoan, cancelLoan, createLoan, listDevices, listLoans, rejectLoan, returnLoan } from "../api";
@@ -27,8 +28,11 @@ function canDecide(loan: Loan, userId: string, role: string): boolean {
 export default function Loans({ userId, role, onError }: LoansProps) {
   const [available, setAvailable] = useState<Device[]>([]);
   const [result, setResult] = useState<Page<Loan> | null>(null);
-  const [status, setStatus] = useState("");
-  const [mine, setMine] = useState(false);
+  // Links from the overview open the list already filtered (?status=PENDING, ?mine=true, ?toApprove=true).
+  const [params] = useSearchParams();
+  const [status, setStatus] = useState(params.get("status") ?? "");
+  const [mine, setMine] = useState(params.get("mine") === "true");
+  const [toApprove, setToApprove] = useState(params.get("toApprove") === "true");
   const [page, setPage] = useState(0);
   const [busy, setBusy] = useState(false);
   const [expanded, setExpanded] = useState<number | null>(null);
@@ -37,10 +41,16 @@ export default function Loans({ userId, role, onError }: LoansProps) {
   const isStaff = role === "TECHNICIAN" || role === "ADMIN";
 
   const loadLoans = useCallback(() => {
-    listLoans({ status: status || undefined, mine: mine || undefined, page, size: PAGE_SIZE })
+    listLoans({
+      status: status || undefined,
+      mine: mine || undefined,
+      toApprove: toApprove || undefined,
+      page,
+      size: PAGE_SIZE,
+    })
       .then(setResult)
       .catch((err) => onError(err.message));
-  }, [status, mine, page, onError]);
+  }, [status, mine, toApprove, page, onError]);
 
   const loadDevices = useCallback(() => {
     listDevices({ status: "AVAILABLE" })
@@ -59,7 +69,9 @@ export default function Loans({ userId, role, onError }: LoansProps) {
 
   return (
     <>
-      <RequestForm devices={available} onError={onError} onCreated={refresh} />
+      {role !== "TECHNICIAN" && (
+        <RequestForm devices={available} onError={onError} onCreated={refresh} />
+      )}
 
       <Section
         step="📦"
@@ -88,10 +100,25 @@ export default function Loans({ userId, role, onError }: LoansProps) {
                 checked={mine}
                 onChange={(e) => {
                   setMine(e.target.checked);
+                  if (e.target.checked) setToApprove(false);
                   setPage(0);
                 }}
               />{" "}
               Chỉ phiếu của tôi
+            </label>
+          )}
+          {sees && (
+            <label className="field-label check-label">
+              <input
+                type="checkbox"
+                checked={toApprove}
+                onChange={(e) => {
+                  setToApprove(e.target.checked);
+                  if (e.target.checked) setMine(false);
+                  setPage(0);
+                }}
+              />{" "}
+              Chỉ phiếu chờ tôi duyệt
             </label>
           )}
         </div>

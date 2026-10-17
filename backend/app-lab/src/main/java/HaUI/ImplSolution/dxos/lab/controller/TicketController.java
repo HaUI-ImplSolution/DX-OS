@@ -17,6 +17,7 @@ import HaUI.ImplSolution.dxos.lab.dto.TicketDtos.TicketDetailResponse;
 import HaUI.ImplSolution.dxos.lab.dto.TicketDtos.TicketResponse;
 import HaUI.ImplSolution.dxos.lab.dto.TicketDtos.TicketSuggestRequest;
 import HaUI.ImplSolution.dxos.lab.dto.TicketDtos.TicketSuggestionResponse;
+import HaUI.ImplSolution.dxos.lab.dto.TicketDtos.TicketUpdateRequest;
 import HaUI.ImplSolution.dxos.lab.dto.TicketDtos.WaitRequest;
 import HaUI.ImplSolution.dxos.lab.model.TicketPriority;
 import HaUI.ImplSolution.dxos.lab.service.LabUser;
@@ -32,9 +33,11 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -143,14 +146,34 @@ public class TicketController {
     return ApiResponse.success("Comment added", ticketService.addComment(id, request));
   }
 
+  @PutMapping("/{id}")
+  @Operation(summary = "Edit the content of a ticket",
+      description = "The requester only (403 otherwise). 409 once the ticket is resolved, closed,"
+          + " rejected or cancelled. Changes title, description, room (a catalogue room, or"
+          + " roomNote when none is chosen) and device, and adds a public reply that says so.")
+  public ApiResponse<TicketResponse> update(@PathVariable Long id,
+      @Valid @RequestBody TicketUpdateRequest request) {
+    return ApiResponse.success("Ticket updated", ticketService.update(id, request));
+  }
+
   @PostMapping(value = "/{id}/attachments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(summary = "Attach a JPEG, PNG or PDF file of at most 5 MiB",
-      description = "The requester and staff. 400 for another type, a larger file or more than 5"
-          + " attachments.")
+  @Operation(summary = "Attach an image or PDF of at most 5 MiB",
+      description = "The requester only (403 otherwise), while the ticket is open (409 after"
+          + " that). 400 for another type, a larger file or more than 5 attachments.")
   public ApiResponse<TicketAttachmentResponse> addAttachment(@PathVariable Long id,
       @RequestPart("file") MultipartFile file) {
     return ApiResponse.success("Attachment added", ticketService.addAttachment(id, file));
+  }
+
+  @DeleteMapping("/{id}/attachments/{attachmentId}")
+  @Operation(summary = "Remove an attachment",
+      description = "The requester only (403 otherwise), while the ticket is open (409 after"
+          + " that). 404 for an attachment of another ticket.")
+  public ApiResponse<Void> removeAttachment(@PathVariable Long id,
+      @PathVariable Long attachmentId) {
+    ticketService.removeAttachment(id, attachmentId);
+    return ApiResponse.success("Attachment removed", null);
   }
 
   @PostMapping("/{id}/assign")

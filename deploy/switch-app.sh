@@ -66,6 +66,8 @@ else
   docker compose up -d ${BUILD_FLAG[@]+"${BUILD_FLAG[@]}"} --force-recreate apisix-config backend rag-ingest superset
   echo "==> Starting the remaining services"
   docker compose up -d ${BUILD_FLAG[@]+"${BUILD_FLAG[@]}"}
+  # APISIX workers keep the address of the replaced backend container until restarted.
+  docker compose restart apisix
 fi
 
 PORT="$(grep '^APISIX_HOST_PORT=' .env | cut -d= -f2)"
@@ -82,8 +84,20 @@ until curl -fsS "$URL" 2>/dev/null | grep -Eq "\"id\" *: *\"$APP\""; do
 done
 
 if [[ "$SEED" == true ]]; then
+  # On Windows `python3` may be the Microsoft Store alias, which exists but does not run Python.
+  PYTHON=""
+  for candidate in python3 python; do
+    if "$candidate" -c 'import sys' >/dev/null 2>&1; then
+      PYTHON="$candidate"
+      break
+    fi
+  done
+  if [[ -z "$PYTHON" ]]; then
+    echo "Python 3 not found; install it, then run: python demo/seed_demo.py --app $APP" >&2
+    exit 1
+  fi
   echo "==> Loading the demo data of '$APP'"
-  python3 demo/seed_demo.py --app "$APP"
+  "$PYTHON" demo/seed_demo.py --app "$APP"
 fi
 
 # Services that are not ready yet; the AI service starts last (model pull, knowledge ingest)

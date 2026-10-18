@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { askKnowledge } from "../api";
-import Badge from "../components/Badge";
 import Section from "../components/Section";
+import SourceList from "../components/SourceList";
 import type { KnowledgeAnswer } from "../types";
 
 export interface KnowledgeScope {
@@ -86,25 +86,7 @@ export default function Knowledge({
           <strong>{passage.documentTitle}</strong>
           <p style={{ whiteSpace: "pre-line" }}>{passage.content}</p>
           <small>Độ liên quan {Math.round(passage.score * 100)}%</small>
-          <div>
-            <small>Nguồn:</small>
-            <ul>
-              {passage.sources.map((source) => (
-                <li key={source.sourceId}>
-                  {source.url ? (
-                    <a href={source.url} target="_blank" rel="noreferrer">
-                      {source.title}
-                    </a>
-                  ) : (
-                    source.title
-                  )}
-                  {source.organization && <small> — {source.organization}</small>}{" "}
-                  {source.license && <Badge tone="neutral">{source.license}</Badge>}{" "}
-                  {source.reviewStatus === "IN_REVIEW" && <Badge tone="warning">Chưa chuyên gia duyệt</Badge>}
-                </li>
-              ))}
-            </ul>
-          </div>
+          <SourceList sources={passage.sources} />
         </article>
       ))}
     </Section>

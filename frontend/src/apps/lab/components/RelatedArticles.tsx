@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { SourceList } from "../../../shell";
+import type { KnowledgeSource } from "../../../shell";
 import type { RelatedPassage } from "../types";
 
 const NUMBERED = /^\d+\.\s+/;
@@ -39,11 +41,15 @@ function ArticleBody({ passages, title }: { passages: string[]; title: string })
   return <div className="kb-body">{blocks}</div>;
 }
 
-// Passages of the same article are shown once, under the article's title.
+// Passages of the same article are shown once, under the article's title, with its sources.
 export default function RelatedArticles({ passages }: { passages: RelatedPassage[] }) {
   const articles = new Map<string, string[]>();
+  const sources = new Map<string, Map<string, KnowledgeSource>>();
   passages.forEach((passage) => {
     articles.set(passage.documentTitle, [...(articles.get(passage.documentTitle) ?? []), passage.content]);
+    const known = sources.get(passage.documentTitle) ?? new Map<string, KnowledgeSource>();
+    passage.sources.forEach((source) => known.set(source.sourceId, source));
+    sources.set(passage.documentTitle, known);
   });
 
   return (
@@ -55,6 +61,7 @@ export default function RelatedArticles({ passages }: { passages: RelatedPassage
             <h3>{title}</h3>
           </header>
           <ArticleBody passages={contents} title={title} />
+          <SourceList sources={[...(sources.get(title)?.values() ?? [])]} />
         </article>
       ))}
     </div>

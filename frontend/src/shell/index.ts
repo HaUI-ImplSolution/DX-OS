@@ -4,6 +4,7 @@ export { default as DeleteButton } from "./components/DeleteButton";
 export { default as Pagination } from "./components/Pagination";
 export { default as RequestDetails } from "./components/RequestDetails";
 export { default as Section } from "./components/Section";
+export { default as SourceList } from "./components/SourceList";
 export { default as Timeline } from "./components/Timeline";
 export { default as CaseDetail } from "./pages/CaseDetail";
 export { default as Knowledge } from "./pages/Knowledge";

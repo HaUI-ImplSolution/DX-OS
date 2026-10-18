@@ -1,18 +1,16 @@
-# Phase 2: Hiển thị bằng chứng RAG trong kết quả chẩn đoán
+# Phase 2: Hiển thị tài liệu tham khảo (RAG) trong kết quả chẩn đoán
 
-Trạng thái: **Draft, chờ đánh giá**.
-Nền lập kế hoạch: code hiện tại của nhánh `feat/structured-siagnosis-result-ui`.
+Trạng thái: **Draft, chờ duyệt**.
+Nhánh: `feat/structured-siagnosis-result-ui`.
 
-Confidence, treatment rule và responsive layout hiện có là baseline.
-Phase chỉ bổ sung đường dữ liệu `rag_evidence` từ AI qua Backend tới web, đồng thời ngừng dùng đoạn summary ghép CV, rule và RAG.
+AI không ghép CV, treatment rule và RAG thành một đoạn `summary` nữa.
+Backend lưu evidence RAG vào một cột JSONB của diagnosis và trả qua `knowledgeEvidence`.
+Web thêm card "Thông tin tham khảo từ tài liệu" dưới treatment card.
 
 | File | Nội dung |
 |---|---|
-| [00_OVERVIEW.md](./00_OVERVIEW.md) | Mục tiêu, phạm vi và Definition of Done |
-| [01_PLAN.md](./01_PLAN.md) | Bốn work package AI → Backend → web → kiểm thử |
-| [02_CHECKLIST.md](./02_CHECKLIST.md) | Việc chi tiết cần triển khai từ code hiện tại |
-| [03_TEST_PLAN.md](./03_TEST_PLAN.md) | 14 test case và hồi quy trực tiếp |
-| [04_TRADEOFFS_RISKS.md](./04_TRADEOFFS_RISKS.md) | Trade-off JSONB, web-only và tương thích dữ liệu cũ |
-| [05_EXPECTED_OUTPUT_FORMAT.md](./05_EXPECTED_OUTPUT_FORMAT.md) | Thứ tự, thuật ngữ, ví dụ và trạng thái ngoại lệ của đầu ra web |
-
-Ngoài phạm vi: thay ingestion/ranking, re-ingest corpus, section hóa evidence, Knowledge, symptom suggestion, Lab, mobile và chuẩn hóa treatment notes.
+| [00_OVERVIEW.md](./00_OVERVIEW.md) | Lý do, phạm vi, quyết định đã chốt, Definition of Done |
+| [01_PLAN.md](./01_PLAN.md) | Bốn work package AI, Backend, web, kiểm chứng; mẫu payload; migration |
+| [02_CHECKLIST.md](./02_CHECKLIST.md) | Việc chi tiết để tick |
+| [03_TEST_PLAN.md](./03_TEST_PLAN.md) | 8 case kiểm thử thủ công và hồi quy |
+| [04_TRADEOFFS_RISKS.md](./04_TRADEOFFS_RISKS.md) | Trade-off, rủi ro, rollback |

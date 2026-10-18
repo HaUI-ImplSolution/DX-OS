@@ -18,9 +18,8 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Việc | Phạm vi |
 |---|---|
 | Hỏi đáp Farm có thể nêu ý không có trong nguồn | Câu hỏi về một bệnh đã nêu tên vẫn có thể nhận nguyên nhân hoặc cách phòng không có trong nguồn |
-| Ảnh cũ trên VPS chưa nằm trong bucket SeaweedFS | Bucket `dxos-uploads` được tạo mới khi backend khởi động; ảnh cũ còn ở `deploy/data/minio` (khoảng 364 KB) và chưa chạy `seaweedfs/migrate-uploads.sh`; ảnh của báo cáo cũ (ví dụ báo cáo #1) trả 404 và không hiện trên màn hình duyệt yêu cầu |
-| Link ảnh báo cáo ký với `http://khuongdev.io.vn` | Backend dựng link theo scheme `http` dù trang chạy qua HTTPS; trình duyệt tự nâng lên HTTPS nên chữ ký vẫn khớp, còn request `http` thật nhận 503; client không tự nâng (app mobile) chưa kiểm |
-| Cloudflare cache `/portal/config.js` 4 giờ | Origin trả đúng khóa `storage` nhưng edge gửi `cache-control: max-age=14400`, trình duyệt giữ bản cũ nên link "Quản trị lưu ảnh" trên portal hiện `https://khuongdev.io.vn:9082/` thay vì `files.`; cần Cache Rule bỏ qua cache cho `/portal/config.js` hoặc xóa cache sau mỗi lần `update.sh`; chú thích thẻ portal vẫn ghi `localhost:9081` và `localhost:8065`, kiểm lại sau khi cache hết hạn |
+| VPS chưa chạy bản sửa link ảnh `https` và địa chỉ `/portal/config` | Cần phát hành rồi kiểm trên VPS, xem việc 1 bên dưới |
+| Dữ liệu MinIO cũ còn trên VPS | `deploy/data/minio`, `deploy/.env.bak-before-seaweedfs` và các image `dxos-minio`; xóa sau khi kiểm xong việc 1 |
 | Hỏi đáp tri thức Farm chậm ở lần gọi đầu sau cập nhật | Câu "Làm sao nhận biết lúa bị khô vằn?" mất hơn 8 giây (chưa đo chính xác) khi `AI_ANSWER_GENERATION=false`; chưa biết do AI vừa khởi động lại hay do tải |
 | Log SeaweedFS khi khởi động có cảnh báo | `IAM gRPC service on filer is UNAUTHENTICATED`, `FILER LOCK: Error ... no lock server found`, `raft.Server: Not current leader`; chưa rõ cảnh báo nào chỉ là nhiễu lúc khởi động, cần xác nhận cổng filer không ra ngoài mạng compose |
 | `doctor.sh` cảnh báo dung lượng đĩa trên VPS | Trống 39 GiB, khuyến nghị 40 GiB; theo dõi dung lượng khi dữ liệu và ảnh Docker tăng |
@@ -40,52 +39,35 @@ Các giả thuyết đánh dấu "chưa kiểm" chưa được xác nhận bằn
 - Cấu hình Cloudflare (tunnel, Access, Transform Rule) ở [`CLOUDFLARE.md`](./CLOUDFLARE.md); Cloudflare chặn User-Agent mặc định của `urllib` bằng 403.
 - Đã kiểm bằng Chrome với tài khoản quản trị Keycloak; chưa có phiên tài khoản nông dân.
 
-**1. Link ảnh báo cáo ký bằng `http://`**
+**1. Phát hành và kiểm bản sửa trên VPS**
 
-- Biểu hiện: `src` của ảnh trên màn "Yêu cầu" (chi tiết báo cáo) bắt đầu bằng `http://khuongdev.io.vn/dxos-uploads/<khóa>.png?X-Amz-...`.
-  Trình duyệt tự nâng lên HTTPS và nhận 404; request `http` thật nhận 503.
-- Mã: `StorageService.requestBaseUrl()` trong `backend/dx-core/src/main/java/HaUI/ImplSolution/dxos/core/storage/StorageService.java` lấy host từ header `Host` và chỉ dùng `https` khi `X-Forwarded-Proto` bằng `https`, còn lại là `http`.
-- Chưa kiểm: backend nhận `X-Forwarded-Proto: http` vì APISIX hoặc `cloudflared` ghi lại header Cloudflare đã gửi (đã có Transform Rule `X-Forwarded-Port` làm tiền lệ, xem `CLOUDFLARE.md`).
-- Hướng dự kiến: xem header backend thật sự nhận (log tạm hoặc `curl -H` từ trong mạng compose); nếu bị ghi đè thì thêm Transform Rule `X-Forwarded-Proto: https` hoặc cho APISIX giữ header; hoặc ưu tiên `storage.public-url` khi nó là HTTPS.
-- Xong khi: `img.src` là `https://`, ảnh mới upload hiện ở web, app mobile tải được, network không còn request `http://`.
+- Mã đã sửa: `StorageService.requestBaseUrl()` (scheme của link ảnh), `portal/nginx.conf` và `portal/index.html` (địa chỉ dịch vụ ở `/config`).
+- Kiểm link ảnh: trên màn "Yêu cầu" của báo cáo #1, `img.src` bắt đầu bằng `https://` và ảnh hiện; ảnh mới upload hiện ở web, app mobile tải được.
+- Kiểm portal: `curl -sI -A "Mozilla/5.0" https://khuongdev.io.vn/portal/config` trả `cache-control: no-cache` với `cf-cache-status: DYNAMIC`; thẻ "Quản trị lưu ảnh" ra `https://files.khuongdev.io.vn`, chú thích các thẻ không còn ghi `localhost`.
 
-**2. Cloudflare cache `/portal/config.js`**
+**2. Dọn dữ liệu MinIO cũ**
 
-- Biểu hiện: `window.PORTAL_URLS` trên `https://khuongdev.io.vn/portal/` có khóa `minio` (bản cũ); thẻ "Quản trị lưu ảnh" ra `https://khuongdev.io.vn:9082/`.
-- Kiểm: `curl -sI -A "Mozilla/5.0" https://khuongdev.io.vn/portal/config.js` trả `cache-control: max-age=14400`.
-  Origin (`docker compose exec portal wget -qO- http://localhost/config.js` trên VPS) trả khóa `storage`.
-- Mã: `portal/nginx.conf` (location `= /config.js`, có `Cache-Control: no-cache`) và `portal/index.html` (đọc `window.PORTAL_URLS` quanh dòng 479).
-- Hướng dự kiến: Cache Rule cho đường dẫn `/portal/config.js` (cân nhắc cả `/portal/index.html`) đặt Bypass cache hoặc tôn trọng header của origin; ghi rule vào `CLOUDFLARE.md`.
-- Xong khi: header không còn `max-age=14400` và link ra `https://files.khuongdev.io.vn`; kiểm lại chú thích thẻ portal đang ghi `localhost:9081` và `localhost:8065`.
+- Ảnh cũ đã nằm trong bucket SeaweedFS; xóa `deploy/data/minio`, `deploy/.env.bak-before-seaweedfs` và các image `ghcr.io/haui-implsolution/dxos-minio` khi ảnh các báo cáo cũ (#1, #2, #5, #6) hiện trên màn hình duyệt yêu cầu.
 
-**3. Ảnh cũ ngoài bucket SeaweedFS**
-
-- Biểu hiện: ảnh báo cáo #1 (khóa `498540d9-544c-4e09-81a9-8679ee7e5046.png`) trả 404; các báo cáo cũ khác (#2, #5, #6) chưa mở, mọi ảnh upload trước lần cập nhật đều không có trong bucket mới.
-- Dữ liệu cũ: `deploy/data/minio/dxos-uploads/` trên VPS có 6 ảnh PNG ở định dạng nội bộ của MinIO (mỗi khóa là một thư mục chứa `xl.meta`), nên không thể chép thẳng vào bucket.
-- Image MinIO cũ còn trên VPS: `ghcr.io/haui-implsolution/dxos-minio:latest` (và `sha-1bc2276`).
-- Cách chuyển: chạy tạm image đó trên `data/minio` với khóa MinIO trong `.env.bak-before-seaweedfs`, tải ảnh ra một thư mục bằng `aws s3 sync`, rồi chạy `seaweedfs/migrate-uploads.sh <thư-mục>` (xem `seaweedfs/README.md`, mục "Chuyển ảnh có sẵn").
-- Chọn khác: bỏ 6 ảnh demo, khi đó báo cáo cũ cần ảnh mới hoặc xóa.
-- Dọn sau khi xong: `deploy/data/minio` và image `dxos-minio` trên VPS.
-
-**4. Cảnh báo trong log SeaweedFS lúc khởi động**
+**3. Cảnh báo trong log SeaweedFS lúc khởi động**
 
 - Xem: `docker compose logs seaweedfs` ở lần khởi động đầu; gồm `IAM gRPC service on filer is UNAUTHENTICATED`, `FILER LOCK: Error ... no lock server found` và `raft.Server: Not current leader`.
 - Mã: service `seaweedfs` trong `deploy/docker-compose.yml` (`weed server -s3 -filer.disableHttp`, không publish cổng ra host).
 - Chưa kiểm: hai dòng sau là nhiễu của lần bầu leader đầu; cảnh báo IAM chỉ có hại nếu cổng filer gRPC (18888) mở ra ngoài mạng compose, hiện không có `ports:`.
 - Xong khi: khởi động lại `seaweedfs` mà log không còn cảnh báo lặp, và xác nhận bằng `docker compose port seaweedfs 18888` rằng không có cổng nào được publish.
 
-**5. Hỏi đáp tri thức chậm ở lần gọi đầu**
+**4. Hỏi đáp tri thức chậm ở lần gọi đầu**
 
 - Biểu hiện: `POST /api/v1/knowledge/ask?includeAnswer=true` với câu "Làm sao nhận biết lúa bị khô vằn?" mất hơn 8 giây (khoảng 8 đến 18 giây), khi AI vừa khởi động lại sau `update.sh`.
-- Đo lại: gọi cùng câu ba lần liên tiếp và ghi thời gian từng lần; mục 4 nêu mức khoảng 5 giây khi `AI_ANSWER_GENERATION=false`.
+- Đo lại: gọi cùng câu ba lần liên tiếp và ghi thời gian từng lần; mục 4 (Giới hạn của AI và dữ liệu) nêu mức khoảng 5 giây khi `AI_ANSWER_GENERATION=false`.
 - Chậm kéo dài thì xem `AI_CHAT_CANDIDATE_COUNT` và hàng đợi rerank CPU (`ai/README.md`); gateway chờ tối đa 60 giây.
 
-**6. Việc cần tài khoản nông dân**
+**5. Việc cần tài khoản nông dân**
 
 - Đăng nhập app Farm hoặc app mobile bằng tài khoản `FARMER`, upload ảnh báo cáo, rồi mở ảnh vừa tải (kết hợp việc 1).
 - Đăng nhập `https://files.khuongdev.io.vn` (SeaweedFS Admin, sau Cloudflare Access) bằng `S3_ACCESS_KEY` và `S3_SECRET_KEY` trong `deploy/.env` của VPS; không ghi giá trị vào repo.
 - Chạy `deploy/backup.sh` rồi `verify`, kiểm thư mục `data/seaweedfs` có trong bản sao lưu.
-- Thử giới hạn gọi API theo người dùng bằng một tài khoản thật qua Cloudflare, xem mục 3.
+- Thử giới hạn gọi API theo người dùng bằng một tài khoản thật qua Cloudflare, xem mục 3 (Chưa kiểm thử).
 
 ## 3. Chưa kiểm thử
 

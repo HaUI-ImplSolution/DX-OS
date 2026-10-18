@@ -40,8 +40,8 @@ Dữ liệu ở `deploy/data/seaweedfs` (bind mount), mất khi chạy `deploy/r
 ./migrate-uploads.sh [thư-mục-ảnh]     # mặc định deploy/data/uploads; cần seaweedfs đang chạy
 ```
 
-Script copy bằng AWS CLI trong container và kiểm từng file đã có trong bucket, chạy lại được, không xóa thư mục cũ.
-Ảnh đang nằm trong một kho S3 khác thì tải về một thư mục bằng `aws s3 sync`, rồi chạy script trên với thư mục đó.
+Script copy bằng curl có ký S3 trong container `curlimages/curl` (chạy được trên CPU không có x86-64-v2) và kiểm từng file đã có trong bucket, chạy lại được, không xóa thư mục cũ.
+Ảnh đang nằm trong một kho S3 khác thì tải về một thư mục trước, rồi chạy script trên với thư mục đó.
 
 ## Giới hạn
 

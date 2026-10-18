@@ -473,7 +473,7 @@
     <span class="foot-brand">DX-OS</span> — Hệ điều hành chuyển đổi số nội bộ · OLP Phần mềm nguồn mở 2026 (VFOSSA)
   </footer>
 
-  <script src="config.js"></script>
+  <script src="config"></script>
   <script>
     // Address of a service beside the app: the configured public URL, else the page host on its own port.
     var serviceUrls = window.PORTAL_URLS || {};
@@ -485,6 +485,8 @@
     document.querySelectorAll("a[data-port]").forEach(function (link) {
       var url = new URL(link.href);
       link.href = serviceBase(link.dataset.base, link.dataset.port) + url.pathname + url.search;
+      var caption = link.querySelector(".app-url");
+      if (caption) caption.textContent = new URL(link.href).host + caption.textContent.replace(/^[^/]*/, "");
     });
 
     // Service status: same-origin services answer with their content, services on other ports are

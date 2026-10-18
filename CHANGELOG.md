@@ -87,6 +87,10 @@ Bản phát hành đầu tiên của DX-OS.
 
 ### 2026-10-29
 
+**Đã xong — Link ảnh sau HTTPS:**
+
+- `StorageService` lấy scheme của link ảnh từ `request.getScheme()` khi `ForwardedHeaderFilter` đã đọc `X-Forwarded-Proto`, nên link ký sau Cloudflare bắt đầu bằng `https://`.
+
 **Đã xong — Mô tả OpenAPI:**
 
 - Phần mô tả của OpenAPI nêu header `Idempotency-Key` và phản hồi `429` kèm `Retry-After`.
@@ -1113,6 +1117,10 @@ Bản phát hành đầu tiên của DX-OS.
 
 ### 2026-10-29
 
+**Đã xong — Chuyển ảnh sang SeaweedFS trên CPU cũ:**
+
+- `seaweedfs/migrate-uploads.sh` tải lên và kiểm từng ảnh bằng curl có ký S3 (`curlimages/curl`), chạy được trên CPU không có x86-64-v2.
+
 **Đã xong — Kiểm tra trước khi chạy và kiểm tra từ ngoài:**
 
 - `doctor.sh` chỉ đọc; thoát với mã 1 khi thiếu biến bắt buộc, cổng bị chiếm hoặc `docker compose config` lỗi.
@@ -1478,6 +1486,13 @@ Bản phát hành đầu tiên của DX-OS.
 - Tài khoản Mattermost tách biệt hoàn toàn khỏi tài khoản backend (FARMER/ENGINEER/ADMIN) có chủ đích — nền tảng riêng, không dùng SSO chung.
 
 ## Portal (`portal`)
+
+### 2026-10-29
+
+**Đã xong — Địa chỉ dịch vụ không bị cache:**
+
+- Địa chỉ BI, chat và trang quản trị lưu ảnh nằm ở `/config` (không có đuôi tệp), nên Cloudflare không cache ở edge và giữ `Cache-Control: no-cache`.
+- Chú thích dưới mỗi thẻ hiện địa chỉ thật của link thay cho `localhost:<cổng>`.
 
 ### 2026-10-26
 

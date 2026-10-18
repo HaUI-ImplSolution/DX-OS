@@ -10,7 +10,7 @@
     plugin_config_id: bearer-token
     plugins:
       limit-count:
-        count: 30
+        count: 60
         time_window: 60
         key_type: var
         key: remote_addr

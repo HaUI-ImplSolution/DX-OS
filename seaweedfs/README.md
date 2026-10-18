@@ -10,6 +10,7 @@ Hai service `seaweedfs` và `seaweedfs-admin` khai báo trong [`deploy/docker-co
 ## Cách hoạt động
 
 - `seaweedfs` chạy `weed server` với S3 gateway; master, volume và filer nằm trong cùng tiến trình, filer không mở HTTP nên object chỉ truy cập được qua API S3 với khóa `S3_ACCESS_KEY` / `S3_SECRET_KEY`.
+- gRPC của filer (quản lý user, policy và STS của S3) chỉ nhận lời gọi ký bằng `S3_SECRET_KEY` (`WEED_JWT_FILER_SIGNING_KEY`), nên container khác trong mạng compose không tự tạo được user S3.
 - Bucket `S3_BUCKET` (mặc định `dxos-uploads`) riêng tư, Backend tự tạo lúc khởi động.
 - Khóa object `<uuid>.jpg` hoặc `<uuid>.png`, metadata `uploaded-by` (`sub` của người upload) và `source`.
 - Khi bật ClamAV (`STORAGE_SCAN_HOST`, xem [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md)), Backend quét mã độc tệp trước khi xử lý; tệp nhiễm bị từ chối và không chạm kho.
@@ -25,7 +26,7 @@ Hai service `seaweedfs` và `seaweedfs-admin` khai báo trong [`deploy/docker-co
 | Biến | Ý nghĩa |
 |---|---|
 | `S3_ENDPOINT` | Địa chỉ nội bộ, mặc định `http://seaweedfs:8333` |
-| `S3_ACCESS_KEY`, `S3_SECRET_KEY` | Khóa S3 của Backend, cũng là tài khoản đăng nhập trang quản trị; secret tối thiểu 8 ký tự |
+| `S3_ACCESS_KEY`, `S3_SECRET_KEY` | Khóa S3 của Backend, cũng là tài khoản đăng nhập trang quản trị; secret tối thiểu 16 ký tự vì cũng là khóa ký gRPC của filer |
 | `S3_BUCKET` | Tên bucket; route ảnh ở `deploy/apisix/common.yaml` trỏ `/dxos-uploads/*`, đổi tên thì sửa route theo |
 | `APISIX_STORAGE_ADMIN_HOST_PORT` | Cổng trang quản trị trên gateway, mặc định `127.0.0.1:9082` |
 | `PORTAL_STORAGE_URL` | Link trang quản trị trên portal khi nó có địa chỉ riêng |

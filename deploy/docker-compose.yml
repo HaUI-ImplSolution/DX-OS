@@ -72,6 +72,8 @@ services:
     environment:
       AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY:?}
       AWS_SECRET_ACCESS_KEY: ${S3_SECRET_KEY:?}
+      # Filer gRPC (user and policy management, S3 STS) accepts only callers signed with this key.
+      WEED_JWT_FILER_SIGNING_KEY: ${S3_SECRET_KEY:?}
     volumes:
       - ./data/seaweedfs:/data
     # No published port: photos are read through presigned links, the admin page through the gateway.
@@ -85,9 +87,12 @@ services:
   seaweedfs-admin:
     logging: *default-logging
     image: chrislusf/seaweedfs:4.51@sha256:f7a49e3f3972ebed5be2ed4befa4a0c68eb7bdddba6e692d42729ceb545134b8
-    command: ["admin", "-master=seaweedfs:9333", "-port=23646", "-dataDir=/data",
+    # gRPC port below the Linux ephemeral range, so an outbound connection cannot take it first.
+    command: ["admin", "-master=seaweedfs:9333", "-port=23646", "-port.grpc=13646", "-dataDir=/data",
       "-adminUser=${S3_ACCESS_KEY:?}", "-adminPassword=${S3_SECRET_KEY:?}"]
     restart: unless-stopped
+    environment:
+      WEED_JWT_FILER_SIGNING_KEY: ${S3_SECRET_KEY:?}
     depends_on:
       seaweedfs:
         condition: service_healthy

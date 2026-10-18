@@ -768,6 +768,10 @@ Bản phát hành đầu tiên của DX-OS.
 
 ### 2026-10-29
 
+**Đã xong — Nạp sẵn model embedding:**
+
+- `chat_lifespan` nạp model embedding đã có trong cache trước khi nhận request, nên lần tìm kiếm đầu sau khi khởi động không phải chờ nạp model; chưa có trong cache thì lần tìm kiếm đầu nạp như cũ.
+
 **Đã xong — Thông báo khi thao tác quá nhanh:**
 
 - `errorMessages.ts` có `ERR_TOO_MANY_REQUESTS`; phản hồi `429` không có nội dung JSON (từ gateway) hiện thông báo tiếng Việt.
@@ -1120,6 +1124,11 @@ Bản phát hành đầu tiên của DX-OS.
 **Đã xong — Chuyển ảnh sang SeaweedFS trên CPU cũ:**
 
 - `seaweedfs/migrate-uploads.sh` tải lên và kiểm từng ảnh bằng curl có ký S3 (`curlimages/curl`), chạy được trên CPU không có x86-64-v2.
+
+**Đã xong — Khóa gRPC của filer SeaweedFS:**
+
+- `seaweedfs` và `seaweedfs-admin` đặt `WEED_JWT_FILER_SIGNING_KEY` bằng `S3_SECRET_KEY`, nên gRPC quản lý user và STS của filer chỉ nhận lời gọi có khóa; `S3_SECRET_KEY` tối thiểu 16 ký tự.
+- Cổng gRPC của `seaweedfs-admin` là `13646`, dưới dải cổng tạm của Linux.
 
 **Đã xong — Kiểm tra trước khi chạy và kiểm tra từ ngoài:**
 

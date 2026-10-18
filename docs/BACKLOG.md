@@ -18,16 +18,14 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Việc | Phạm vi |
 |---|---|
 | Hỏi đáp Farm có thể nêu ý không có trong nguồn | Câu hỏi về một bệnh đã nêu tên vẫn có thể nhận nguyên nhân hoặc cách phòng không có trong nguồn |
-| VPS chưa chạy bản sửa link ảnh `https` và địa chỉ `/portal/config` | Cần phát hành rồi kiểm trên VPS, xem việc 1 bên dưới |
+| VPS chưa chạy các bản sửa lưu ảnh, portal, AI và SeaweedFS | Cần phát hành rồi kiểm trên VPS, xem việc 1 bên dưới |
 | Dữ liệu MinIO cũ còn trên VPS | `deploy/data/minio`, `deploy/.env.bak-before-seaweedfs` và các image `dxos-minio`; xóa sau khi kiểm xong việc 1 |
-| Hỏi đáp tri thức Farm chậm ở lần gọi đầu sau cập nhật | Câu "Làm sao nhận biết lúa bị khô vằn?" mất hơn 8 giây (chưa đo chính xác) khi `AI_ANSWER_GENERATION=false`; chưa biết do AI vừa khởi động lại hay do tải |
-| Log SeaweedFS khi khởi động có cảnh báo | `IAM gRPC service on filer is UNAUTHENTICATED`, `FILER LOCK: Error ... no lock server found`, `raft.Server: Not current leader`; chưa rõ cảnh báo nào chỉ là nhiễu lúc khởi động, cần xác nhận cổng filer không ra ngoài mạng compose |
+| Log SeaweedFS ghi `LockRing` mỗi 30 giây | Chiếm khoảng 84% số dòng log của `seaweedfs` và che các cảnh báo thật; log đã xoay vòng theo `default-logging` |
 | `doctor.sh` cảnh báo dung lượng đĩa trên VPS | Trống 39 GiB, khuyến nghị 40 GiB; theo dõi dung lượng khi dữ liệu và ảnh Docker tăng |
 
-### Ngữ cảnh cho các việc về lưu ảnh và portal trên VPS
+### Ngữ cảnh cho các việc trên VPS
 
 Phần này đủ để làm tiếp mà không cần lịch sử trò chuyện.
-Các giả thuyết đánh dấu "chưa kiểm" chưa được xác nhận bằng log hay mã.
 
 **Trạng thái VPS khi ghi**
 
@@ -41,28 +39,18 @@ Các giả thuyết đánh dấu "chưa kiểm" chưa được xác nhận bằn
 
 **1. Phát hành và kiểm bản sửa trên VPS**
 
-- Mã đã sửa: `StorageService.requestBaseUrl()` (scheme của link ảnh), `portal/nginx.conf` và `portal/index.html` (địa chỉ dịch vụ ở `/config`).
-- Kiểm link ảnh: trên màn "Yêu cầu" của báo cáo #1, `img.src` bắt đầu bằng `https://` và ảnh hiện; ảnh mới upload hiện ở web, app mobile tải được.
-- Kiểm portal: `curl -sI -A "Mozilla/5.0" https://khuongdev.io.vn/portal/config` trả `cache-control: no-cache` với `cf-cache-status: DYNAMIC`; thẻ "Quản trị lưu ảnh" ra `https://files.khuongdev.io.vn`, chú thích các thẻ không còn ghi `localhost`.
+- Link ảnh: trên màn "Yêu cầu" của báo cáo #1, `img.src` bắt đầu bằng `https://` và ảnh hiện; ảnh mới upload hiện ở web, app mobile tải được.
+- Portal: `curl -sI -A "Mozilla/5.0" https://khuongdev.io.vn/portal/config` trả `cache-control: no-cache` với `cf-cache-status: DYNAMIC`; thẻ "Quản trị lưu ảnh" ra `https://files.khuongdev.io.vn`, chú thích các thẻ không còn ghi `localhost`.
+- AI: log khởi động không có `Embedding model is not cached`; câu "Làm sao nhận biết lúa bị khô vằn?" gọi ngay sau khi AI khởi động lại mất khoảng 4 giây như các lần sau, thay vì cộng thêm khoảng 10 giây nạp model embedding.
+- SeaweedFS: sau khi tạo lại `seaweedfs` và `seaweedfs-admin`, log không còn `IAM gRPC service on filer is UNAUTHENTICATED`, `Failed to load IAM configuration` và cảnh báo cổng gRPC 33646 của admin; trang `https://files.khuongdev.io.vn` vẫn đăng nhập và mở danh sách user được.
+- Log SeaweedFS lúc khởi động vẫn còn `raft.Server: Not current leader` và `FILER LOCK ... no lock server found` trong khoảng 10 giây đầu khi bầu leader, cùng cảnh báo SSE-S3 KEK; kho không dùng SSE-S3.
 
 **2. Dọn dữ liệu MinIO cũ**
 
 - Ảnh cũ đã nằm trong bucket SeaweedFS; xóa `deploy/data/minio`, `deploy/.env.bak-before-seaweedfs` và các image `ghcr.io/haui-implsolution/dxos-minio` khi ảnh các báo cáo cũ (#1, #2, #5, #6) hiện trên màn hình duyệt yêu cầu.
+- Kiểm bằng trình duyệt cần một phiên đăng nhập do người vận hành tự đăng nhập.
 
-**3. Cảnh báo trong log SeaweedFS lúc khởi động**
-
-- Xem: `docker compose logs seaweedfs` ở lần khởi động đầu; gồm `IAM gRPC service on filer is UNAUTHENTICATED`, `FILER LOCK: Error ... no lock server found` và `raft.Server: Not current leader`.
-- Mã: service `seaweedfs` trong `deploy/docker-compose.yml` (`weed server -s3 -filer.disableHttp`, không publish cổng ra host).
-- Chưa kiểm: hai dòng sau là nhiễu của lần bầu leader đầu; cảnh báo IAM chỉ có hại nếu cổng filer gRPC (18888) mở ra ngoài mạng compose, hiện không có `ports:`.
-- Xong khi: khởi động lại `seaweedfs` mà log không còn cảnh báo lặp, và xác nhận bằng `docker compose port seaweedfs 18888` rằng không có cổng nào được publish.
-
-**4. Hỏi đáp tri thức chậm ở lần gọi đầu**
-
-- Biểu hiện: `POST /api/v1/knowledge/ask?includeAnswer=true` với câu "Làm sao nhận biết lúa bị khô vằn?" mất hơn 8 giây (khoảng 8 đến 18 giây), khi AI vừa khởi động lại sau `update.sh`.
-- Đo lại: gọi cùng câu ba lần liên tiếp và ghi thời gian từng lần; mục 4 (Giới hạn của AI và dữ liệu) nêu mức khoảng 5 giây khi `AI_ANSWER_GENERATION=false`.
-- Chậm kéo dài thì xem `AI_CHAT_CANDIDATE_COUNT` và hàng đợi rerank CPU (`ai/README.md`); gateway chờ tối đa 60 giây.
-
-**5. Việc cần tài khoản nông dân**
+**3. Việc cần tài khoản nông dân**
 
 - Đăng nhập app Farm hoặc app mobile bằng tài khoản `FARMER`, upload ảnh báo cáo, rồi mở ảnh vừa tải (kết hợp việc 1).
 - Đăng nhập `https://files.khuongdev.io.vn` (SeaweedFS Admin, sau Cloudflare Access) bằng `S3_ACCESS_KEY` và `S3_SECRET_KEY` trong `deploy/.env` của VPS; không ghi giá trị vào repo.

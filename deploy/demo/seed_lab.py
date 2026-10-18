@@ -89,6 +89,15 @@ TICKETS = [
     {"key": "t12", "by": "student2", "category": "COMPUTER", "title": "Chuột phòng A102 bị hỏng",
      "description": "Hai chuột ở dãy cuối phòng A102 không di chuyển được con trỏ.",
      "room": "A102", "target": "CLOSED", "technician": "tech1", "rating": 3, "reopen": True},
+    {"key": "t13", "by": "student2", "category": "ACCOUNT", "title": "Không đăng nhập được email trường",
+     "description": "Đăng nhập mail.haui.edu.vn báo sai mật khẩu, cần đổi mật khẩu email.",
+     "target": "RESOLVED", "technician": "tech2"},
+    {"key": "t14", "by": "lecturer", "category": "SOFTWARE", "title": "Máy phòng A102 nhiễm virus, tường lửa bị tắt",
+     "description": "Cần bật lại tường lửa Windows và quét virus cho các máy dãy đầu.",
+     "room": "A102", "target": "IN_PROGRESS", "technician": "tech1"},
+    {"key": "t15", "by": "lecturer", "category": "SOFTWARE", "title": "Không khóa được màn hình sinh viên bằng Faronics",
+     "description": "Faronics Insight trên máy giảng viên phòng A101 không hiện máy sinh viên nên không dùng được Blank Screen.",
+     "room": "A101", "target": "NEW"},
 ]
 
 # Loans: device, borrower, approver and the state to reach: PENDING, APPROVED, RETURNED,

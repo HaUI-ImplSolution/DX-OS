@@ -57,7 +57,7 @@ Full diagrams and request flows are in [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 **DX-Farm:** households and parcels with locations, crop seasons, disease reports with image quality checks, AI diagnosis with engineer approval, spraying records, harvest blocked until the waiting period ends, reminders, notification inbox, chat notifications that link straight to the report, per-parcel weather, document Q&A with citations, summary reports; a mobile app for farmers that works offline.
 
-**DX-Lab:** support requests with deadlines and internal comments, type and priority suggestions, equipment loans with repair log, room booking without time conflicts, regulations Q&A with source and license, statistics.
+**DX-Lab:** support requests with deadlines and internal comments, type and priority suggestions, equipment loans with repair log, room booking without time conflicts, regulations Q&A quoted from the university's official documents, with each source opening the original page, statistics.
 
 Feature maturity and test coverage are in [`docs/TESTING.md`](./docs/TESTING.md); outstanding work is in [`docs/BACKLOG.md`](./docs/BACKLOG.md).
 

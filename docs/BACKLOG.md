@@ -39,6 +39,8 @@ Chưa có việc nào.
 | Truy xuất tri thức dựa trên MiniLM đa ngữ | Câu nêu tên bệnh được xếp đúng; câu chỉ tả triệu chứng phụ thuộc embedding; bộ thử có 15 câu |
 | Giới hạn 60 câu hỏi mỗi phút mỗi IP là số tạm, chưa thử tải | `knowledge.min-score` 0.40 loại 7/8 câu ngoài chủ đề; điểm đoạn đầu của câu đúng chủ đề từ 0.50 đến 0.83 |
 | Luật phân loại của Lab là luật tay | Chưa đo độ chính xác trên dữ liệu thật |
+| Kho tri thức Lab chỉ có 12 bài từ 9 văn bản công khai của HaUI | Chưa có bài về máy in, VPN, quy chế phòng máy của khoa, đặt phòng máy; sổ tay LMS là bản năm học 2019-2020 |
+| Câu hỏi Lab ngoài chủ đề vẫn có thể hiện đoạn trên ngưỡng 0.40 | "Máy in kẹt giấy" hiện quy định phòng thi ở 0.58 đến 0.64, cao hơn vài câu đúng (máy chiếu 0.52); đổi ngưỡng không tách được, cần embedding hoặc cách xếp hạng khác |
 | Snapshot thời tiết chỉ có 5 điểm ĐBSCL, chụp ngày 07/10/2026 | Chụp lại nếu cần dữ liệu dự phòng mới hơn |
 | Giới hạn tốc độ ở gateway tính theo IP là số tạm; chưa thử tải | Superset dùng SQLite cho metadata, AI service là một tiến trình không có hàng đợi |
 
@@ -64,6 +66,7 @@ Chưa có việc nào.
 | Chuyên gia duyệt treatment rule cho bệnh còn lại (đốm nâu, Help 400SC đang `IN_REVIEW`) | Đạo ôn và khô vằn đã có rule được duyệt; bệnh khác chỉ ở `review_required`, không có liều và PHI. Có quyết định duyệt thì cập nhật `data/structured/` và chạy lại `generate_seed_sql.py` |
 | Kỹ sư nông nghiệp xác nhận mốc tháng loại vụ và danh mục giống (đang `IN_REVIEW`) | Gợi ý loại vụ và ngày thu hoạch dựa trên số tạm; đổi `app.season-start-months` khi có xác nhận, không cần migration |
 | Người phụ trách xác nhận nhãn nền bản đồ Superset | Nhãn tỉnh, thành phố, thị xã lấy từ OpenStreetMap; nhãn đảo, nhãn biển và biên giới đã bỏ; cần người có thẩm quyền xác nhận trước khi công bố |
+| Khoa cung cấp văn bản về máy in, VPN, quy chế và đặt phòng máy | Có văn bản thì thêm bài vào `data/rag/lab/` theo nguyên tắc ở `data/README.md` |
 | Ảnh lá lúa thật cho `seed_demo.py --images` | Demo chẩn đoán AI có ý nghĩa; chart "Tỷ lệ AI đúng/sai" có dữ liệu |
 
 ## 7. Backlog của DX-Lab

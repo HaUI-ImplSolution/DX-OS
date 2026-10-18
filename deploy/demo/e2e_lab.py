@@ -190,7 +190,7 @@ def run(base_url, steps, require_knowledge=False, **_):
 
     @steps("a knowledge answer quotes its sources")
     def _():
-        answer = student1.ok("POST", "/knowledge/ask", {"question": "Quy định khi sử dụng phòng máy là gì?"})
+        answer = student1.ok("POST", "/knowledge/ask", {"question": "Quy định sử dụng máy tính trong thư viện là gì?"})
         passages = answer["passages"]
         if require_knowledge:
             expect(passages, "no passage: is the Lab corpus ingested?")

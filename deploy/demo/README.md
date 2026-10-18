@@ -66,7 +66,7 @@ Khi có treatment rule: bản khai phun chặn thu hoạch tới khi kỹ sư x�
 | `admin1` | `admin123` | ADMIN | Không |
 
 - **Phòng, thiết bị:** 5 phòng (`A101`, `A102` phòng máy 40 chỗ, `A103` đang bảo trì, `A201`, `B301`); 7 thiết bị (3 laptop, 2 máy chiếu cho mượn, 1 thiết bị mạng, 1 máy in).
-- **Yêu cầu hỗ trợ (12)** ở mọi trạng thái: 3 mới, 1 đã giao (khẩn), 1 đang xử lý, 1 chờ người dùng, 1 đã giải quyết, 3 đã đóng (có đánh giá, một đã mở lại, một có ảnh), 1 từ chối, 1 đã hủy.
+- **Yêu cầu hỗ trợ (15)** ở mọi trạng thái: 4 mới, 1 đã giao (khẩn), 2 đang xử lý, 1 chờ người dùng, 2 đã giải quyết, 3 đã đóng (có đánh giá, một đã mở lại, một có ảnh), 1 từ chối, 1 đã hủy.
 - **Phiếu mượn (5):** đang mượn, đã trả tốt, trả hỏng (máy chiếu sang "Đang sửa" kèm nhật ký), bị từ chối, chờ duyệt.
 - **Đặt phòng (5)** của `lecturer1`: 2 đã duyệt ở `A101`, 1 chờ duyệt ở `A102`, 1 bị từ chối ở `B301`, 1 đã hủy ở `A201`.
 - Mọi bản ghi mang `Idempotency-Key` cố định nên chạy lại không tạo trùng; bài quy chế do `rag-ingest` nạp lúc dựng stack với `DXOS_APP=lab`, script không nạp.

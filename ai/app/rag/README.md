@@ -4,7 +4,7 @@
 RAG chỉ giải thích: thuốc, liều, PHI, policy an toàn luôn lấy từ Backend qua REST.
 RAG không tự crawl nguồn mới, không seed bệnh, thuốc, rule và không thay phê duyệt của kỹ sư.
 
-Mỗi corpus là một namespace: `farm` (6 tài liệu bệnh lúa, `data/rag/processed/disease_knowledge.json`) và `lab` (10 bài quy chế, `data/rag/lab/processed/lab_knowledge.json`).
+Mỗi corpus là một namespace: `farm` (6 tài liệu bệnh lúa, `data/rag/processed/disease_knowledge.json`) và `lab` (12 bài trích từ văn bản của HaUI, `data/rag/lab/processed/lab_knowledge.json`).
 Mỗi corpus đi kèm registry nguồn ở `data/rag/`.
 
 ## Ingest

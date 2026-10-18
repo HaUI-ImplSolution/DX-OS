@@ -63,7 +63,7 @@ AI Service là tiến trình riêng, chỉ giao tiếp với Backend qua HTTP n�
 | [Qwen2.5 1.5B](https://ollama.com/library/qwen2.5) | Apache-2.0 | LLM diễn đạt, chạy qua Ollama |
 | [`paraphrase-multilingual-MiniLM-L12-v2`](https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2) | Apache-2.0 | Embedding cho RAG |
 | [RiceLeafDiseaseBD v3](https://doi.org/10.17632/86s4jzj2m4.3) | CC BY 4.0 | Dữ liệu huấn luyện model bệnh |
-| Tri thức DX-Lab (`data/rag/lab/`) | CC BY 4.0 | 10 bài quy chế và hướng dẫn do nhóm tự soạn |
+| Tri thức DX-Lab (`data/rag/lab/`) | © Đại học Công nghiệp Hà Nội | Trích nội quy, quy định và hướng dẫn công khai trên các trang haui.edu.vn, kèm bản PDF gốc |
 | [Open-Meteo](https://open-meteo.com) | CC BY 4.0 | Thời tiết theo thửa, snapshot dự phòng và chart thời tiết của Superset |
 | [OpenFreeMap](https://openfreemap.org) vector tile | ODbL (dữ liệu OpenStreetMap), CC BY 4.0 (OpenMapTiles) | Nền bản đồ của dashboard Superset |
 

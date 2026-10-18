@@ -1,192 +1,230 @@
 [
   {
-    "article_code": "LAB_ROOM_RULES",
-    "title": "Quy chế sử dụng phòng máy",
+    "article_code": "LAB_LIBRARY_COMPUTERS",
+    "title": "Sử dụng máy tính và tài sản tại Thư viện",
     "category": "Quy chế",
-    "content": "Quy chế sử dụng phòng máy\nĐối tượng: sinh viên, giảng viên và cán bộ của khoa.\n1. Chỉ vào phòng máy trong khung giờ đã được xếp lịch hoặc đã đặt phòng được duyệt.\n2. Không ăn uống, không hút thuốc và không mang chất lỏng vào phòng máy.\n3. Không tự ý cài đặt phần mềm, thay đổi cấu hình, tháo lắp linh kiện hoặc di chuyển thiết bị.\n4. Lưu bài vào ổ đĩa cá nhân hoặc dịch vụ lưu trữ của khoa; dữ liệu lưu trên máy dùng chung có thể bị xóa sau mỗi ca.\n5. Phát hiện hư hỏng hoặc sự cố phải báo cho kỹ thuật viên hoặc gửi yêu cầu hỗ trợ ngay trong ca sử dụng.\n6. Trước khi rời phòng: đăng xuất tài khoản, tắt máy theo đúng quy trình, sắp xếp lại ghế và bàn phím, chuột.\nVi phạm quy chế có thể bị đình chỉ quyền sử dụng phòng máy và thông báo cho giảng viên phụ trách.",
+    "content": "Sử dụng máy tính và tài sản tại Thư viện (Nội quy sử dụng thư viện, Quyết định 305/QĐ-ĐHCN)\nĐiều 2. Nội quy áp dụng đối với viên chức, người lao động và người học có nhu cầu sử dụng dịch vụ thư viện (gọi tắt là bạn đọc).\nĐiều 4.1. Bạn đọc xuất trình thẻ hợp lệ trước khi vào phòng, để vật dụng cá nhân tại tủ gửi đồ (tự bảo quản tiền và tài sản có giá trị).\nĐiều 6.1. Không mang theo và sử dụng trong Thư viện các chất cấm, chất gây nghiện, vật dễ cháy nổ theo quy định của pháp luật.\nĐiều 6.2. Khi sử dụng các thiết bị lưu trữ, sao chép thông tin từ máy tính của Thư viện cần có sự đồng ý của Thư viện viên. Bạn đọc không tự ý cài đặt, sửa chữa máy tính, sao chụp tài liệu của Thư viện.\nĐiều 6.3. Bạn đọc có trách nhiệm bảo quản tài liệu, tài sản của Thư viện và có nghĩa vụ cho thư viện viên kiểm tra các vật dụng mang ra khỏi Thư viện khi có yêu cầu.\nĐiều 7.1. Bạn đọc có trang phục nghiêm túc, ứng xử văn minh, đi nhẹ, nói khẽ, giữ vệ sinh chung, không hút thuốc; ăn uống đúng nơi quy định.\nĐiều 7.2. Không sử dụng máy tính hoặc các thiết bị công nghệ vào mục đích khác ngoài việc tra cứu thông tin, dữ liệu.\nĐiều 9.1. Bạn đọc có trách nhiệm quản lý tài khoản và mật khẩu của mình, không cho mượn tài khoản. Trường hợp quên mật khẩu, bạn đọc liên hệ với Thư viện để được hỗ trợ.\nĐiều 9.2. Khi truy cập thông tin qua mạng, tra cứu cơ sở dữ liệu, sử dụng tài liệu nghe nhìn tại Thư viện, bạn đọc phải có ý thức bảo vệ an toàn dữ liệu; không được thay đổi thông tin, gây hại đến cơ sở dữ liệu của Thư viện.\nĐiều 12.3. Trường hợp làm hư hỏng, mất tài sản, thiết bị, bạn đọc cần đền bù số tiền để khắc phục (theo giá thị trường).",
     "provenance": {
       "source_ids": [
-        "SRC_LAB_ROOM_RULES"
+        "SRC_HAUI_LIBRARY_RULES"
       ],
-      "evidence_scope": "Tài liệu nội bộ tự soạn cho ứng dụng DX-Lab",
-      "reviewed_at": "2026-10-12"
+      "evidence_scope": "Điều 2, 4, 6, 7, 9 và 12 Nội quy sử dụng thư viện",
+      "reviewed_at": "2026-10-19"
     },
     "governance": {
-      "authoring": "SELF_AUTHORED",
-      "license": "CC BY 4.0"
+      "authoring": "OFFICIAL_EXCERPT",
+      "license": "© Đại học Công nghiệp Hà Nội"
     },
-    "review_status": "IN_REVIEW",
-    "notes": "Mẫu quy chế và hướng dẫn tự soạn; cần khoa xác nhận trước khi áp dụng chính thức."
+    "review_status": "OFFICIAL",
+    "notes": "Trích từ văn bản chính thức của trường; giữ nguyên số điều, khoản và lời văn, chỉ lược bớt ý trùng."
   },
   {
-    "article_code": "LAB_DEVICE_LOAN",
-    "title": "Quy trình mượn và trả thiết bị",
-    "category": "Quy trình",
-    "content": "Quy trình mượn và trả thiết bị\n1. Người mượn gửi phiếu mượn trên hệ thống, nêu mục đích và ngày trả; thiết bị phải đang ở trạng thái sẵn sàng.\n2. Thời hạn mượn tối đa 7 ngày kể từ ngày gửi phiếu; mỗi người có tối đa 2 phiếu đang chờ duyệt hoặc chưa trả.\n3. Phiếu của sinh viên do giảng viên duyệt; phiếu của giảng viên do kỹ thuật viên duyệt.\n4. Khi phiếu được duyệt, người mượn đến nhận thiết bị tại phòng kỹ thuật và kiểm tra tình trạng cùng kỹ thuật viên.\n5. Khi trả, kỹ thuật viên ghi tình trạng thiết bị. Thiết bị hỏng được chuyển sang sửa chữa và người mượn cần mô tả hư hỏng.\n6. Hệ thống nhắc trước hạn trả một ngày và nhắc hằng ngày khi quá hạn. Thiết bị trả muộn có thể làm phiếu mượn tiếp theo bị từ chối.",
+    "article_code": "LAB_LIBRARY_LOAN",
+    "title": "Mượn trả tài liệu tại Thư viện",
+    "category": "Quy chế",
+    "content": "Mượn trả tài liệu tại Thư viện (Nội quy sử dụng thư viện, Quyết định 305/QĐ-ĐHCN)\nĐiều 3. Bạn đọc dùng thẻ viên chức, thẻ sinh viên, học viên, nghiên cứu sinh do Trường cấp có tích hợp chức năng sử dụng thư viện (thẻ đa năng). Không cho mượn thẻ hoặc sử dụng thẻ của người khác; người sở hữu thẻ chịu trách nhiệm về tài liệu được mượn bằng thẻ của mình.\nĐiều 4.2. Tại phòng đọc, bạn đọc ghi đầy đủ thông tin vào phiếu yêu cầu khi mượn tài liệu, không được mang tài liệu ra khỏi phòng đọc.\nĐiều 4.3. Khi mượn, nhận tài liệu phải kiểm tra kỹ hiện trạng, thấy bất thường (mất trang, rách nát) cần báo ngay cho thủ thư.\nĐiều 4.4. Không lấy nhiều hơn 02 cuốn tài liệu hoặc hơn 01 loại báo, tạp chí cho một lần sử dụng.\nĐiều 5.1. Tài liệu được mượn về nhà gồm giáo trình, tài liệu tham khảo.\nViên chức và người lao động được mượn mỗi lần không quá 05 đơn vị tài liệu và giữ trong sổ mượn không quá 10 đơn vị tài liệu.\nSinh viên, học viên được mượn mỗi lần 05 đơn vị tài liệu và giữ trong sổ mượn không quá 10 đơn vị tài liệu; thời gian mượn tối đa 15 ngày đối với tài liệu tham khảo, 01 kỳ đối với giáo trình.\nĐiều 5.2. Bạn đọc mượn sách về nhà phải đặt cọc số tiền bằng giá bìa của cuốn sách; sau khi trả sách, Thư viện hoàn trả đủ số tiền đặt cọc.\nĐiều 5.3. Bạn đọc kiểm tra kỹ tình trạng tài liệu và báo cho thư viện viên nếu tài liệu bị rách, bẩn trước khi đem sách ra khỏi Thư viện.\nĐiều 6.4. Người học trước khi ra trường hoặc thôi học, viên chức, người lao động trước khi nghỉ hoặc chuyển công tác có trách nhiệm hoàn trả hết tài liệu đã mượn, thanh toán các khoản bồi thường (nếu có).\nĐiều 12. Cho người khác mượn thẻ hoặc mang tài liệu ra khỏi phòng đọc sẽ không được sử dụng dịch vụ Thư viện trong 30 ngày. Làm rách, bẩn, mất trang tài liệu thì phải tự khắc phục hoặc đền bù theo giá tiền trên trang bìa.",
     "provenance": {
       "source_ids": [
-        "SRC_LAB_DEVICE_LOAN"
+        "SRC_HAUI_LIBRARY_RULES"
       ],
-      "evidence_scope": "Tài liệu nội bộ tự soạn cho ứng dụng DX-Lab",
-      "reviewed_at": "2026-10-12"
+      "evidence_scope": "Điều 3, 4, 5, 6 và 12 Nội quy sử dụng thư viện",
+      "reviewed_at": "2026-10-19"
     },
     "governance": {
-      "authoring": "SELF_AUTHORED",
-      "license": "CC BY 4.0"
+      "authoring": "OFFICIAL_EXCERPT",
+      "license": "© Đại học Công nghiệp Hà Nội"
     },
-    "review_status": "IN_REVIEW",
-    "notes": "Mẫu quy chế và hướng dẫn tự soạn; cần khoa xác nhận trước khi áp dụng chính thức."
+    "review_status": "OFFICIAL",
+    "notes": "Trích từ văn bản chính thức của trường; giữ nguyên số điều, khoản và lời văn, chỉ lược bớt ý trùng."
   },
   {
-    "article_code": "LAB_ROOM_BOOKING",
-    "title": "Quy trình đặt phòng máy và phòng thực hành",
-    "category": "Quy trình",
-    "content": "Quy trình đặt phòng máy và phòng thực hành\n1. Giảng viên đặt phòng trên hệ thống, ghi tên học phần hoặc sự kiện, số người và khung giờ. Sinh viên không tự đặt phòng mà nhờ giảng viên phụ trách.\n2. Giờ bắt đầu và kết thúc theo bước 30 phút; mỗi lần đặt tối đa 4 giờ.\n3. Chỉ đặt trước tối đa 30 ngày và không đặt vào thời điểm đã qua.\n4. Số người không vượt quá sức chứa của phòng; phòng đang bảo trì không nhận đặt.\n5. Hai yêu cầu chồng giờ cùng một phòng không thể cùng tồn tại: yêu cầu đến sau bị từ chối ngay.\n6. Kỹ thuật viên duyệt hoặc từ chối yêu cầu. Người đặt có thể hủy khi chưa diễn ra để nhả lịch cho người khác.\n7. Lịch tuần của từng phòng hiển thị cho mọi người dùng để chọn khung giờ còn trống.",
+    "article_code": "LAB_GROUP_ROOM",
+    "title": "Đăng ký sử dụng phòng thảo luận nhóm",
+    "category": "Quy chế",
+    "content": "Đăng ký sử dụng phòng thảo luận nhóm tại Thư viện (Nội quy sử dụng thư viện, Quyết định 305/QĐ-ĐHCN)\nĐiều 10.1. Bạn đọc có nhu cầu sử dụng phòng thảo luận nhóm phải đăng ký trực tiếp với thư viện viên quản lý.\na) Viên chức, người lao động cần trình thẻ viên chức, người lao động khi sử dụng phòng thảo luận nhóm.\nb) Sinh viên, học viên: trưởng nhóm cần trình thẻ đa năng, trường hợp không có thẻ đa năng cần có giấy giới thiệu kèm CMND để thay thế và nhận chìa khóa phòng, trang thiết bị và chịu hoàn toàn trách nhiệm trong thời gian sử dụng phòng thảo luận nhóm.\nĐiều 10.2. Bạn đọc không tự ý thay đổi, di chuyển các trang thiết bị có trong phòng khi chưa được sự đồng ý của thư viện viên.\nĐiều 10.3. Bạn đọc phải có ý thức giữ gìn vệ sinh, bảo vệ tài sản, giao tiếp lịch sự, không làm ảnh hưởng tới các phòng khác.\nĐiều 12.2. Thường xuyên gây ồn ào, làm mất vệ sinh chung hoặc vi phạm Nội quy, tùy mức độ, bạn đọc sẽ không được sử dụng dịch vụ tại Phòng đọc từ 07 ngày đến 30 ngày hoặc bị xử lý theo quy định của pháp luật và Nhà trường.",
     "provenance": {
       "source_ids": [
-        "SRC_LAB_ROOM_BOOKING"
+        "SRC_HAUI_LIBRARY_RULES"
       ],
-      "evidence_scope": "Tài liệu nội bộ tự soạn cho ứng dụng DX-Lab",
-      "reviewed_at": "2026-10-12"
+      "evidence_scope": "Điều 10 và 12 Nội quy sử dụng thư viện",
+      "reviewed_at": "2026-10-19"
     },
     "governance": {
-      "authoring": "SELF_AUTHORED",
-      "license": "CC BY 4.0"
+      "authoring": "OFFICIAL_EXCERPT",
+      "license": "© Đại học Công nghiệp Hà Nội"
     },
-    "review_status": "IN_REVIEW",
-    "notes": "Mẫu quy chế và hướng dẫn tự soạn; cần khoa xác nhận trước khi áp dụng chính thức."
+    "review_status": "OFFICIAL",
+    "notes": "Trích từ văn bản chính thức của trường; giữ nguyên số điều, khoản và lời văn, chỉ lược bớt ý trùng."
   },
   {
-    "article_code": "LAB_WIFI_VPN",
-    "title": "Kết nối Wi-Fi và VPN của khoa",
+    "article_code": "LAB_WIFI",
+    "title": "Kết nối Wi-Fi HaUI-Staffs",
     "category": "Hướng dẫn",
-    "content": "Kết nối Wi-Fi và VPN của khoa\nWi-Fi: chọn mạng của khoa trong danh sách, đăng nhập bằng tài khoản được cấp. Nếu không nhận được địa chỉ IP, hãy quên mạng rồi kết nối lại; nếu vẫn lỗi, tắt bật Wi-Fi của thiết bị.\nNếu nhiều máy trong cùng một phòng mất mạng cùng lúc, đó là sự cố hạ tầng: hãy gửi yêu cầu hỗ trợ, nêu rõ tên phòng và thời điểm bắt đầu, không cần thử từng máy.\nVPN: cài ứng dụng VPN do khoa cung cấp, đăng nhập bằng tài khoản của khoa. Lỗi xác thực thường do sai mật khẩu hoặc tài khoản bị khóa; hãy đặt lại mật khẩu trước khi gửi yêu cầu.\nVPN chỉ dùng để truy cập tài nguyên học tập và làm việc của khoa, không dùng cho mục đích khác.",
+    "content": "Kết nối Wi-Fi dùng chung của trường (Hướng dẫn cài đặt Wifi HaUI-STAFFS, Trung tâm Công nghệ thông tin)\nBước 1: Mở cài đặt mạng trên điện thoại hoặc biểu tượng mạng trên thanh công cụ của máy tính, chọn điểm phát wifi \"HaUI-Staffs\".\nBước 2: Sau khi kết nối thành công, cửa sổ đăng nhập tài khoản dùng Internet sẽ tự động hiển thị để chọn đường link các ứng dụng tự do hoặc nhập tài khoản như tài khoản egov.\nVới sinh viên: sau khi kết nối wifi xuất hiện cửa sổ đăng nhập tài khoản, bỏ qua việc đăng nhập và lựa chọn truy cập đường link miễn phí sử dụng mạng có sẵn phía dưới.\nLỗi có sóng wifi tốt nhưng không vào được Internet: máy đã kết nối nhưng chưa đăng nhập tài khoản, hoặc sau khi di chuyển chỗ ngồi máy vẫn giữ kết nối với bộ phát wifi cũ ở xa.\nCách xử lý lỗi wifi có sóng nhưng không vào được mạng: quên kết nối cũ và kết nối lại.\nNếu cửa sổ đăng nhập wifi không tự hiện (thường gặp trên iOS hoặc máy chặn PopUp), tự nhập \"http://staff.haui.edu.vn/\" vào thanh địa chỉ của trình duyệt để hiển thị cửa sổ đăng nhập.\nTrên iPhone: tắt mở wifi, vào Cài đặt, chọn biểu tượng chữ \"i\" bên phải tên bộ phát (ví dụ HaUI-Staffs), chọn \"Quên mạng này\", rồi kết nối lại.\nNếu mạng quá chậm sau khi di chuyển, chọn vị trí lệch hẳn về một điểm phát wifi rồi tắt bật wifi trên máy.\nGặp vấn đề về tài khoản egov thì liên hệ chuyên viên phụ trách của phòng Tổ chức - Hành chính; tài khoản egov bình thường nhưng không đăng nhập được wifi thì liên hệ cán bộ kỹ thuật của Trung tâm Công nghệ thông tin qua thư egov.",
     "provenance": {
       "source_ids": [
-        "SRC_LAB_WIFI_VPN"
+        "SRC_HAUI_ITC_WIFI"
       ],
-      "evidence_scope": "Tài liệu nội bộ tự soạn cho ứng dụng DX-Lab",
-      "reviewed_at": "2026-10-12"
+      "evidence_scope": "Toàn bộ hướng dẫn, trừ số điện thoại cá nhân của cán bộ kỹ thuật",
+      "reviewed_at": "2026-10-19"
     },
     "governance": {
-      "authoring": "SELF_AUTHORED",
-      "license": "CC BY 4.0"
+      "authoring": "OFFICIAL_EXCERPT",
+      "license": "© Đại học Công nghiệp Hà Nội"
     },
-    "review_status": "IN_REVIEW",
-    "notes": "Mẫu quy chế và hướng dẫn tự soạn; cần khoa xác nhận trước khi áp dụng chính thức."
+    "review_status": "OFFICIAL",
+    "notes": "Trích từ văn bản chính thức của trường; giữ nguyên số điều, khoản và lời văn, chỉ lược bớt ý trùng."
   },
   {
-    "article_code": "LAB_PASSWORD_RESET",
-    "title": "Đặt lại mật khẩu tài khoản",
+    "article_code": "LAB_EMAIL_PASSWORD",
+    "title": "Đăng nhập và đổi mật khẩu email của trường",
     "category": "Hướng dẫn",
-    "content": "Đặt lại mật khẩu tài khoản\n1. Tại màn hình đăng nhập chọn \"Quên mật khẩu\" và nhập tên đăng nhập hoặc email của trường.\n2. Làm theo liên kết đặt lại gửi tới email; liên kết có hiệu lực trong thời gian ngắn.\n3. Mật khẩu mới tối thiểu 10 ký tự, gồm chữ hoa, chữ thường và chữ số; không dùng lại mật khẩu cũ.\n4. Tài khoản bị khóa sau nhiều lần đăng nhập sai sẽ tự mở sau một thời gian; nếu cần mở ngay, gửi yêu cầu hỗ trợ loại tài khoản kèm mã sinh viên hoặc mã cán bộ.\nKỹ thuật viên không bao giờ hỏi mật khẩu của bạn; không gửi mật khẩu qua tin nhắn hay email.",
+    "content": "Đăng nhập, đổi mật khẩu và xác thực email HaUI (Hướng dẫn sử dụng hộp thư điện tử, Trung tâm Công nghệ thông tin)\nĐăng nhập hộp thư: B1: truy cập địa chỉ https://mail.haui.edu.vn. B2: nhập địa chỉ email và mật khẩu được cấp qua hệ thống eGov. B3: nhấn Đăng nhập.\nNếu hệ thống yêu cầu đổi mật khẩu: nhập mật khẩu hiện tại được cấp qua eGov, nhập mật khẩu mới, nhập lại mật khẩu mới và nhấn Đăng nhập.\nTrường hợp không xuất hiện yêu cầu đổi mật khẩu, người dùng có thể tự đặt lại: chọn tài khoản, nhấn \"Xem tài khoản\", nhấn \"THAY ĐỔI MẬT KHẨU\", nhập mật khẩu cũ, mật khẩu mới, xác nhận mật khẩu mới và nhấn Gửi.\nXác thực tài khoản: chọn một trong hai phương thức, qua số điện thoại hoặc qua một email khác chưa được sử dụng. Với số điện thoại: chọn Việt Nam (+84), nhập số và nhấn \"Nhắn tin cho tôi\" để nhận mã 6 số rồi nhấn Kiểm chứng, hoặc chọn \"Gọi tôi\" và làm theo hướng dẫn của cuộc gọi.\nThư từ hệ thống cũ được chuyển sang và lưu tại thư mục ngày-tháng-năm ở thanh menu bên trái; nếu không thấy thư mục này, đăng nhập https://webmail.haui.edu.vn bằng tên đăng nhập, mật khẩu của hệ thống cũ.",
     "provenance": {
       "source_ids": [
-        "SRC_LAB_PASSWORD_RESET"
+        "SRC_HAUI_ITC_EMAIL"
       ],
-      "evidence_scope": "Tài liệu nội bộ tự soạn cho ứng dụng DX-Lab",
-      "reviewed_at": "2026-10-12"
+      "evidence_scope": "Mục 2, 3 và 5 Hướng dẫn sử dụng hộp thư điện tử",
+      "reviewed_at": "2026-10-19"
     },
     "governance": {
-      "authoring": "SELF_AUTHORED",
-      "license": "CC BY 4.0"
+      "authoring": "OFFICIAL_EXCERPT",
+      "license": "© Đại học Công nghiệp Hà Nội"
     },
-    "review_status": "IN_REVIEW",
-    "notes": "Mẫu quy chế và hướng dẫn tự soạn; cần khoa xác nhận trước khi áp dụng chính thức."
+    "review_status": "OFFICIAL",
+    "notes": "Trích từ văn bản chính thức của trường; giữ nguyên số điều, khoản và lời văn, chỉ lược bớt ý trùng."
   },
   {
     "article_code": "LAB_PROJECTOR",
-    "title": "Xử lý lỗi máy chiếu không lên hình",
+    "title": "Sử dụng máy chiếu trong phòng học",
     "category": "Hướng dẫn",
-    "content": "Xử lý lỗi máy chiếu không lên hình\n1. Kiểm tra máy chiếu đã bật và đèn báo nguồn sáng ổn định; chờ vài phút để máy khởi động xong.\n2. Chọn đúng nguồn tín hiệu (HDMI hoặc VGA) bằng nút Source trên máy chiếu hoặc điều khiển.\n3. Kiểm tra dây tín hiệu cắm chắc ở cả hai đầu và thử đổi sang cổng khác của máy tính.\n4. Trên máy tính nhấn Windows + P rồi chọn Duplicate hoặc Extend để xuất hình ra máy chiếu.\n5. Nếu máy chiếu báo đèn đỏ hoặc nhấp nháy, tắt máy, chờ làm nguội rồi mới bật lại.\nNếu vẫn không lên hình, gửi yêu cầu hỗ trợ loại máy chiếu, ghi rõ tên phòng và thông báo trên màn hình (nếu có).",
+    "content": "Sử dụng máy chiếu (Hướng dẫn sử dụng máy chiếu, Trung tâm Công nghệ thông tin)\nBước 1: Mượn điều khiển máy chiếu. Liên hệ chuyên viên phòng quản trị quản lý phòng học tại mỗi tòa nhà để mượn điều khiển máy chiếu khi cần sử dụng và trả lại khi kết thúc buổi học.\nBước 2: Kết nối máy chiếu với máy tính. Cắm một đầu cáp RGB (hoặc HDMI) vào cổng input trên máy chiếu, đầu kia vào cổng VGA 15 chân màu xanh (hoặc HDMI) trên máy tính.\nBước 3: Bật máy chiếu. Bấm phím ON trên điều khiển, chọn chế độ video 1 hoặc video 2 để hiển thị từ máy tính ra máy chiếu.\nMáy chiếu không lên hình từ laptop: bấm tổ hợp Fn với phím có biểu tượng màn hình (Toshiba, HP, Sharp: Fn+F5; Sony, IBM: Fn+F7; Panasonic, NEC: Fn+F3; Dell, Epson: Fn+F8; Fujitsu: Fn+F10).\nTrên Windows có thể dùng phím Windows + P và chọn chế độ Duplicate để xuất hình ảnh ra máy chiếu.\nBước 4: Tắt máy chiếu. Bấm phím Stand by 2 lần trên điều khiển; quạt vẫn chạy để thổi hết hơi nóng và đèn Status nhấp nháy.\nChờ 2 đến 5 phút đến khi quạt máy chiếu dừng hẳn và đèn Status tắt hoặc chuyển màu vàng thì mới ngắt nguồn điện.\nChú ý: không để ánh nắng chiếu trực tiếp vào máy và màn chiếu. Khi tắt máy tuyệt đối không ngắt nguồn điện đột ngột bằng cách dập cầu dao hoặc rút phích điện; làm sai có thể giảm tuổi thọ hoặc hỏng máy.",
     "provenance": {
       "source_ids": [
-        "SRC_LAB_PROJECTOR"
+        "SRC_HAUI_ITC_PROJECTOR"
       ],
-      "evidence_scope": "Tài liệu nội bộ tự soạn cho ứng dụng DX-Lab",
-      "reviewed_at": "2026-10-12"
+      "evidence_scope": "Toàn bộ hướng dẫn, trừ bảng phím điều khiển",
+      "reviewed_at": "2026-10-19"
     },
     "governance": {
-      "authoring": "SELF_AUTHORED",
-      "license": "CC BY 4.0"
+      "authoring": "OFFICIAL_EXCERPT",
+      "license": "© Đại học Công nghiệp Hà Nội"
     },
-    "review_status": "IN_REVIEW",
-    "notes": "Mẫu quy chế và hướng dẫn tự soạn; cần khoa xác nhận trước khi áp dụng chính thức."
-  },
-  {
-    "article_code": "LAB_PRINTER",
-    "title": "Xử lý lỗi máy in và máy quét",
-    "category": "Hướng dẫn",
-    "content": "Xử lý lỗi máy in và máy quét\n1. Kiểm tra máy in đã bật, còn giấy và mực; đèn báo lỗi sáng đỏ thường là hết mực hoặc kẹt giấy.\n2. Kẹt giấy: tắt máy, mở nắp theo hướng dẫn trên thân máy và rút giấy nhẹ nhàng theo chiều đi của giấy, không giật mạnh.\n3. Lệnh in bị treo: mở hàng đợi in, hủy các lệnh đang chờ rồi in lại.\n4. Máy in không hiện trong danh sách: kiểm tra máy tính cùng mạng với máy in và chọn lại máy in mặc định.\n5. Hết mực hoặc hết giấy ở máy in dùng chung của khoa cần báo kỹ thuật viên để thay vật tư.\nGửi yêu cầu hỗ trợ loại máy in khi đã thử các bước trên mà lỗi vẫn còn.",
-    "provenance": {
-      "source_ids": [
-        "SRC_LAB_PRINTER"
-      ],
-      "evidence_scope": "Tài liệu nội bộ tự soạn cho ứng dụng DX-Lab",
-      "reviewed_at": "2026-10-12"
-    },
-    "governance": {
-      "authoring": "SELF_AUTHORED",
-      "license": "CC BY 4.0"
-    },
-    "review_status": "IN_REVIEW",
-    "notes": "Mẫu quy chế và hướng dẫn tự soạn; cần khoa xác nhận trước khi áp dụng chính thức."
+    "review_status": "OFFICIAL",
+    "notes": "Trích từ văn bản chính thức của trường; giữ nguyên số điều, khoản và lời văn, chỉ lược bớt ý trùng."
   },
   {
     "article_code": "LAB_INFOSEC",
-    "title": "An toàn thông tin cơ bản",
+    "title": "An toàn thông tin trên máy tính cá nhân",
     "category": "Hướng dẫn",
-    "content": "An toàn thông tin cơ bản\n1. Dùng mật khẩu riêng cho từng hệ thống, đủ dài và không chia sẻ cho người khác.\n2. Không mở tệp đính kèm hoặc liên kết lạ trong email; kiểm tra địa chỉ người gửi trước khi trả lời.\n3. Luôn khóa màn hình hoặc đăng xuất khi rời máy, đặc biệt ở phòng máy dùng chung.\n4. Cập nhật hệ điều hành và phần mềm khi có thông báo; không tắt phần mềm diệt virus.\n5. Không cắm thiết bị lưu trữ lạ vào máy của khoa; sao lưu dữ liệu quan trọng ra nơi lưu trữ an toàn.\n6. Nghi ngờ tài khoản bị lộ hoặc máy nhiễm mã độc: đổi mật khẩu, ngắt kết nối mạng và gửi yêu cầu hỗ trợ ngay.",
+    "content": "An toàn thông tin trên máy tính cá nhân (Hướng dẫn cài đặt sử dụng an toàn thông tin trên máy tính cá nhân, Trung tâm Công nghệ thông tin)\nSao lưu dữ liệu: kết nối ổ cứng ngoài qua cổng USB, vào Start > Settings > Update & Security > Backup > Add a drive, chọn ổ cứng ngoài và nhấn Back up now.\nDữ liệu được sao lưu tự động vào thư mục FileHistory trên ổ ngoài. Để khôi phục, mở thư mục đã sao lưu trong Explorer, chọn tab Home > History, chọn tệp cần khôi phục và nhấn nút khôi phục màu xanh lục.\nMật khẩu đăng nhập máy tính: nên đặt mật khẩu và đổi mật khẩu sau một khoảng thời gian. Nhấn Ctrl + Alt + Del, chọn Change a password, nhập mật khẩu cũ (để trống nếu chưa từng đặt), nhập mật khẩu mới hai lần rồi nhấn Submit và OK.\nTường lửa: Windows Firewall là phần mềm tích hợp trong Windows có tính năng bảo vệ máy tính, chống lại các chương trình độc hại như virus máy tính và hacker.\nWindows Firewall được bật mặc định trong Windows 10; không nên tắt trừ khi đã cài và bật tường lửa của bên thứ ba. Bật tắt tại Start > Settings > Update & Security > Windows Security > Firewall & network protection.\nMã hóa ổ đĩa: với máy có dữ liệu quan trọng, nhấp chuột phải vào ổ cứng, chọn Turn on BitLocker, chọn Use a password to unlock the drive, lưu khóa khôi phục rồi nhấn Start encrypting.\nNếu quên mật khẩu BitLocker thì không có cách nào mở được dữ liệu, nên kết hợp đồng bộ dữ liệu qua OneDrive hoặc Google Drive.\nMật khẩu tệp Word, Excel: chọn File > Save As > Tools > General Options, nhập Password to open (mật khẩu mở) và Password to modify (mật khẩu sửa), xác nhận rồi nhấn Save.",
     "provenance": {
       "source_ids": [
-        "SRC_LAB_INFOSEC"
+        "SRC_HAUI_ITC_INFOSEC"
       ],
-      "evidence_scope": "Tài liệu nội bộ tự soạn cho ứng dụng DX-Lab",
-      "reviewed_at": "2026-10-12"
+      "evidence_scope": "Mục 1.1 đến 1.5 và 2.1 Hướng dẫn an toàn thông tin",
+      "reviewed_at": "2026-10-19"
     },
     "governance": {
-      "authoring": "SELF_AUTHORED",
-      "license": "CC BY 4.0"
+      "authoring": "OFFICIAL_EXCERPT",
+      "license": "© Đại học Công nghiệp Hà Nội"
     },
-    "review_status": "IN_REVIEW",
-    "notes": "Mẫu quy chế và hướng dẫn tự soạn; cần khoa xác nhận trước khi áp dụng chính thức."
+    "review_status": "OFFICIAL",
+    "notes": "Trích từ văn bản chính thức của trường; giữ nguyên số điều, khoản và lời văn, chỉ lược bớt ý trùng."
   },
   {
-    "article_code": "LAB_TICKET_SLA",
-    "title": "Gửi yêu cầu hỗ trợ và thời gian xử lý",
+    "article_code": "LAB_IT_REPAIR",
+    "title": "Quy trình sửa chữa, bảo trì thiết bị tin học",
     "category": "Quy trình",
-    "content": "Gửi yêu cầu hỗ trợ và thời gian xử lý\nKhi gặp sự cố, hãy mô tả rõ: thiết bị hoặc dịch vụ nào, ở phòng nào, bắt đầu từ lúc nào và đã thử gì. Có thể đính kèm ảnh chụp màn hình hoặc ảnh thiết bị.\nHệ thống gợi ý loại sự cố và mức ưu tiên; bạn có thể chọn lại nếu chưa đúng.\nThời gian phản hồi và xử lý mục tiêu theo ưu tiên: khẩn 1 giờ và 4 giờ, cao 4 giờ và 1 ngày, thường 1 ngày và 3 ngày, thấp 2 ngày và 7 ngày.\nKỹ thuật viên có thể hỏi thêm thông tin; yêu cầu sẽ chờ bạn bổ sung và tiếp tục khi bạn trả lời.\nKhi xử lý xong, bạn xác nhận kết quả và đánh giá từ 1 đến 5 sao, hoặc mở lại nếu vấn đề chưa hết (tối đa 3 lần).",
+    "content": "Quy trình sửa chữa, bảo trì thiết bị tin học (Trung tâm Công nghệ thông tin)\nTiếp nhận yêu cầu: (1) Đơn vị đề nghị gửi yêu cầu. (2) Tổ trưởng tổ QTM Trung tâm CNTT tiếp nhận yêu cầu và (3) lập phiếu giao việc.\nTổ chức thực hiện: (4) Chuyên viên tổ QTM kiểm tra, xác định lỗi. Lỗi do phần mềm hoặc cấu hình thì (5) chuyên viên khắc phục lỗi.\nThiết bị tin học hỏng do phần cứng thì (6) kiểm tra thời hạn bảo hành; còn thời hạn bảo hành thì (7) Giám đốc hoặc Phó Giám đốc Trung tâm CNTT thực hiện thủ tục bảo hành.\nThiết bị hết thời hạn bảo hành thì (8) chuyên viên lập biên bản tình trạng thiết bị, (9) đơn vị đề nghị thay mới hoặc sửa chữa và (10) Phòng TCKT thực hiện thủ tục mua sắm.\n(11) Chuyên viên tổ QTM thay thế thiết bị bảo hành hoặc thiết bị mới.\nĐánh giá: (12) Đơn vị đề nghị xác nhận công việc. (13) Chuyên viên báo cáo kết quả. (14) Tổ trưởng tổ QTM kiểm tra, đánh giá; chưa đạt thì quay lại lập phiếu giao việc.\nLưu hồ sơ: (15) Đạt thì lưu hồ sơ.",
     "provenance": {
       "source_ids": [
-        "SRC_LAB_TICKET_SLA"
+        "SRC_HAUI_ITC_REPAIR"
       ],
-      "evidence_scope": "Tài liệu nội bộ tự soạn cho ứng dụng DX-Lab",
-      "reviewed_at": "2026-10-12"
+      "evidence_scope": "Sơ đồ 15 bước, chuyển thành lời",
+      "reviewed_at": "2026-10-19"
     },
     "governance": {
-      "authoring": "SELF_AUTHORED",
-      "license": "CC BY 4.0"
+      "authoring": "OFFICIAL_EXCERPT",
+      "license": "© Đại học Công nghiệp Hà Nội"
     },
-    "review_status": "IN_REVIEW",
-    "notes": "Mẫu quy chế và hướng dẫn tự soạn; cần khoa xác nhận trước khi áp dụng chính thức."
+    "review_status": "OFFICIAL",
+    "notes": "Trích từ văn bản chính thức của trường; giữ nguyên số điều, khoản và lời văn, chỉ lược bớt ý trùng."
   },
   {
-    "article_code": "LAB_EXAM_SUPPORT",
-    "title": "Hỗ trợ kỹ thuật trong kỳ thi",
-    "category": "Quy trình",
-    "content": "Hỗ trợ kỹ thuật trong kỳ thi\n1. Giảng viên phụ trách đặt phòng thi trước và báo kỹ thuật viên các yêu cầu đặc biệt về phần mềm, tài khoản và mạng.\n2. Kỹ thuật viên kiểm tra phòng, máy và phần mềm trước giờ thi và có mặt hoặc trực máy trong suốt ca thi.\n3. Sự cố xảy ra giữa giờ thi được xếp ưu tiên khẩn: báo ngay cho kỹ thuật viên trực và gửi yêu cầu hỗ trợ ghi rõ phòng và số máy.\n4. Máy gặp sự cố được thay thế bằng máy dự phòng; bài làm của thí sinh được lưu theo hướng dẫn của giảng viên.\n5. Sau kỳ thi, kỹ thuật viên ghi lại sự cố và nguyên nhân gốc để cải thiện cho các ca thi sau.",
+    "article_code": "LAB_COMPUTER_ROOM_SOFTWARE",
+    "title": "Phần mềm quản lý phòng máy dùng chung Faronics Insight",
+    "category": "Hướng dẫn",
+    "content": "Phần mềm quản lý phòng máy Faronics Insight (Hướng dẫn sử dụng Faronics Insight, Trung tâm Công nghệ thông tin, tháng 11/2020)\nFaronics Insight là phần mềm giảng viên dùng trong phòng máy dùng chung để theo dõi, giám sát, giao tiếp và quản lý các máy tính sinh viên từ máy giảng viên, cho phép hoặc ngăn chặn các ứng dụng không mong muốn trên máy sinh viên.\nChức năng thường dùng: View All quan sát các máy sinh viên; Show chiếu màn hình máy giảng viên lên máy sinh viên (dừng bằng Stop Showing Teacher's Screen); Blank Screen khóa màn hình sinh viên; Message gửi tin nhắn đến tất cả các máy hoặc một sinh viên.\nLimit cho phép hạn chế các ứng dụng trên máy sinh viên hay ngắt kết nối Internet, USB.\nNgắt kết nối Internet trên máy sinh viên: chọn máy cần ngắt, chọn Limit Apps.\nNgắt kết nối thiết bị lưu trữ USB trên máy sinh viên: chọn máy cần ngắt và chọn Limit USB.\nSend files to Student chuyển tập tin cho sinh viên, ví dụ đến thư mục gốc ổ T của máy sinh viên; thu tập tin từ máy sinh viên theo vị trí và phần mở rộng (ví dụ T:\\*.rar) về thư mục trên máy giảng viên. Lưu ý: không hỗ trợ tập tin có tên dùng dấu tiếng Việt.",
     "provenance": {
       "source_ids": [
-        "SRC_LAB_EXAM_SUPPORT"
+        "SRC_HAUI_ITC_FARONICS"
       ],
-      "evidence_scope": "Tài liệu nội bộ tự soạn cho ứng dụng DX-Lab",
-      "reviewed_at": "2026-10-12"
+      "evidence_scope": "Mục 1 và 2 Hướng dẫn sử dụng Faronics Insight",
+      "reviewed_at": "2026-10-19"
     },
     "governance": {
-      "authoring": "SELF_AUTHORED",
-      "license": "CC BY 4.0"
+      "authoring": "OFFICIAL_EXCERPT",
+      "license": "© Đại học Công nghiệp Hà Nội"
     },
-    "review_status": "IN_REVIEW",
-    "notes": "Mẫu quy chế và hướng dẫn tự soạn; cần khoa xác nhận trước khi áp dụng chính thức."
+    "review_status": "OFFICIAL",
+    "notes": "Trích từ văn bản chính thức của trường; giữ nguyên số điều, khoản và lời văn, chỉ lược bớt ý trùng."
+  },
+  {
+    "article_code": "LAB_LMS_QUIZ",
+    "title": "Đăng nhập LMS và thi trắc nghiệm trên máy trạm",
+    "category": "Hướng dẫn",
+    "content": "Đăng nhập LMS và thi trắc nghiệm trên máy trạm (Sổ tay vận hành hệ thống đào tạo dành cho sinh viên, Trung tâm Công nghệ thông tin, năm học 2019-2020)\nHệ thống LMS: truy cập http://lms.haui.edu.vn, chọn Đăng nhập ở góc trên bên phải. Tài khoản và mật khẩu giống tài khoản hệ thống Elearning cũ. Nếu quên mật khẩu, sinh viên liên hệ giáo viên giảng dạy của lớp mình để được đổi mật khẩu.\nTrên LMS, sinh viên chọn lớp, bài học để xem video bài giảng, tải dữ liệu thực hành, nộp bài thực hành theo hướng dẫn của giáo viên và xem điểm ở dòng \"Điểm số\".\nHệ thống thi trắc nghiệm https://quiz.haui.edu.vn/vi: thông tin tài khoản đăng nhập do cán bộ coi thi cung cấp. Thí sinh mở ứng dụng làm bài thi trên máy trạm, nhấn Bắt đầu, chọn môn thi, nhập mã sinh viên và mật khẩu được cấp tại phòng thi để vào bài thi.",
+    "provenance": {
+      "source_ids": [
+        "SRC_HAUI_ITC_STUDENT_SYSTEMS"
+      ],
+      "evidence_scope": "Mục 1 và 2 Sổ tay vận hành hệ thống đào tạo, năm học 2019-2020",
+      "reviewed_at": "2026-10-19"
+    },
+    "governance": {
+      "authoring": "OFFICIAL_EXCERPT",
+      "license": "© Đại học Công nghiệp Hà Nội"
+    },
+    "review_status": "OFFICIAL",
+    "notes": "Trích từ văn bản chính thức của trường; giữ nguyên số điều, khoản và lời văn, chỉ lược bớt ý trùng."
+  },
+  {
+    "article_code": "LAB_EXAM_ROOM_RULES",
+    "title": "Quy định khi vào phòng thi và thi trên máy tính",
+    "category": "Quy chế",
+    "content": "Quy định trong phòng thi (Điều 19, Quy định 721/QĐ-ĐHCN ngày 03/6/2024, trích lục của Trung tâm Khảo thí)\nNgười học theo dõi và thực hiện đúng kế hoạch thi trên các kênh thông tin nội bộ. Trùng ca thi thì đăng ký đổi lịch tại Trung tâm Khảo thí chậm nhất 24h trước ca thi. Phản ánh kịp thời với cán bộ coi thi, cán bộ tổ chức thi về những vấn đề liên quan đến tổ chức thi.\nKhi vào phòng thi, người học xuất trình với cán bộ coi thi thẻ sinh viên hoặc giấy tờ tùy thân có ảnh.\nNgười học chỉ được mang vào phòng thi bút viết, bút chì, thước kẻ, tẩy, compa, êke, máy tính cầm tay không có chức năng soạn thảo văn bản và thẻ nhớ.\nKhông được mang vào phòng thi giấy than, bút xóa, đồ uống có cồn, vũ khí, chất gây nổ, gây cháy, tài liệu, thiết bị truyền tin (thu, phát sóng, ghi âm, ghi hình); không hút thuốc trong phòng thi.\nKhi nhận đề thi phải kiểm tra số trang và chất lượng in; đề thiếu trang, rách, nhòe, mờ phải báo cán bộ coi thi chậm nhất 05 phút từ khi phát đề.\nKhông tự ý làm thay đổi trạng thái làm việc của thiết bị trong trường hợp thi trắc nghiệm trên máy tính.\nThí sinh đến chậm quá 15 phút sau hiệu lệnh tính giờ làm bài sẽ không được dự thi môn thi đó.\nTrong giờ thi không trao đổi, chép bài, dùng tài liệu trái phép; muốn có ý kiến phải giơ tay báo cán bộ coi thi. Nghiêm cấm truyền thông tin đề thi ra ngoài hoặc nhận thông tin từ ngoài vào phòng thi.\nHết giờ làm bài phải ngừng làm bài ngay. Thi tự luận chỉ được ra khỏi phòng thi sau 2/3 thời gian làm bài.",
+    "provenance": {
+      "source_ids": [
+        "SRC_HAUI_TAC_721"
+      ],
+      "evidence_scope": "Điều 19 Quy định 721/QĐ-ĐHCN",
+      "reviewed_at": "2026-10-19"
+    },
+    "governance": {
+      "authoring": "OFFICIAL_EXCERPT",
+      "license": "© Đại học Công nghiệp Hà Nội"
+    },
+    "review_status": "OFFICIAL",
+    "notes": "Trích từ văn bản chính thức của trường; giữ nguyên số điều, khoản và lời văn, chỉ lược bớt ý trùng."
+  },
+  {
+    "article_code": "LAB_EXAM_POSTPONE_REVIEW",
+    "title": "Hoãn thi, thi bổ sung, phúc khảo và xử lý vi phạm thi",
+    "category": "Quy chế",
+    "content": "Hoãn thi, phúc khảo và xử lý vi phạm (Quy định 721/QĐ-ĐHCN ngày 03/6/2024, trích lục của Trung tâm Khảo thí)\nĐiều 21.7. Thí sinh vắng mặt có lý do chính đáng (kết hôn, ốm, tai nạn, bố/mẹ/con qua đời...) được tham dự kỳ thi bổ sung trong vòng 02 kỳ chính tiếp theo và được tính điểm lần đầu.\nHoãn thi: người học nộp đơn xin hoãn thi trên hệ thống và báo cố vấn học tập trước giờ thi; trong 10 ngày làm việc kể từ ngày thi phải nộp đơn kèm minh chứng có xác nhận lên Trung tâm Khảo thí.\nThi bổ sung: ngay khi có thể thi, người học làm đơn xin thi bổ sung gửi Trung tâm Khảo thí; không dự thi bổ sung trong 02 học kỳ chính tiếp theo sẽ nhận điểm 0.\nĐiều 29. Người học được nộp đơn xem lại bài thi tự luận trong 02 ngày và đơn phúc khảo bài thi trong 05 ngày kể từ ngày công bố điểm; lệ phí phúc khảo được trả lại nếu điểm thay đổi.\nKhông phúc khảo các môn thi chấm điểm trực tiếp như vấn đáp, thực hành, đồ án. Điểm phúc khảo là kết quả chính thức và cuối cùng, được thông báo chậm nhất 15 ngày kể từ ngày công bố điểm lần đầu.\nĐiều 34. Khiển trách (trừ 25% điểm) khi nhìn bài hoặc trao đổi bài một lần; cảnh cáo (trừ 50% điểm) khi tái phạm, trao đổi giấy nháp hoặc chép bài.\nĐình chỉ thi (trừ 100% điểm) khi mang vật dụng trái phép vào phòng thi, đưa đề thi ra ngoài hoặc nhận bài giải từ ngoài vào.\nThi hộ hoặc nhờ người thi hộ bị đình chỉ học tập 01 năm với lần vi phạm thứ nhất và buộc thôi học với lần thứ hai.",
+    "provenance": {
+      "source_ids": [
+        "SRC_HAUI_TAC_721"
+      ],
+      "evidence_scope": "Điều 21 khoản 7, Điều 29 và Điều 34 Quy định 721/QĐ-ĐHCN",
+      "reviewed_at": "2026-10-19"
+    },
+    "governance": {
+      "authoring": "OFFICIAL_EXCERPT",
+      "license": "© Đại học Công nghiệp Hà Nội"
+    },
+    "review_status": "OFFICIAL",
+    "notes": "Trích từ văn bản chính thức của trường; giữ nguyên số điều, khoản và lời văn, chỉ lược bớt ý trùng."
   }
 ]

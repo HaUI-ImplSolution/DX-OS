@@ -11,6 +11,7 @@ Hai service `seaweedfs` và `seaweedfs-admin` khai báo trong [`deploy/docker-co
 
 - `seaweedfs` chạy `weed server` với S3 gateway; master, volume và filer nằm trong cùng tiến trình, filer không mở HTTP nên object chỉ truy cập được qua API S3 với khóa `S3_ACCESS_KEY` / `S3_SECRET_KEY`.
 - gRPC của filer (quản lý user, policy và STS của S3) chỉ nhận lời gọi ký bằng `S3_SECRET_KEY` (`WEED_JWT_FILER_SIGNING_KEY`), nên container khác trong mạng compose không tự tạo được user S3.
+- Log của `seaweedfs` chỉ gồm cảnh báo và lỗi (`-v=-1` trong compose); đổi thành `-v=0` để xem log thông tin.
 - Bucket `S3_BUCKET` (mặc định `dxos-uploads`) riêng tư, Backend tự tạo lúc khởi động.
 - Khóa object `<uuid>.jpg` hoặc `<uuid>.png`, metadata `uploaded-by` (`sub` của người upload) và `source`.
 - Khi bật ClamAV (`STORAGE_SCAN_HOST`, xem [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md)), Backend quét mã độc tệp trước khi xử lý; tệp nhiễm bị từ chối và không chạm kho.

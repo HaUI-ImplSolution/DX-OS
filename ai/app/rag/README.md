@@ -96,6 +96,8 @@ Nguồn của Lab được giới hạn theo namespace; giải thích chẩn đo
 - Chỉ chấp nhận nội dung đúng schema, nguồn thuộc evidence và không có mâu thuẫn đã được kiểm tra về bệnh hoặc điều kiện áp dụng.
 - Ở Lab, thời hạn (ví dụ 30 ngày) phải đi cùng điều kiện của câu nguồn nêu nó; ý chỉ có trong dòng "Với sinh viên:" hay "Với cán bộ, giảng viên:" phải nêu đúng đối tượng đó.
 - Evidence hỏi đáp Farm gửi Qwen không kèm dòng mã bệnh, tên bệnh và cây trồng.
+- Ở hỏi đáp Farm về một bệnh đã nêu tên, câu nêu nguyên nhân chỉ dùng từ có trong dòng tác nhân, tên khoa học hoặc loại bệnh của nguồn; câu nêu cách phòng phải lấy ít nhất một nửa số từ nội dung từ dòng phòng ngừa hoặc biện pháp canh tác.
+  Không đạt thì trả `insufficient_evidence` kèm đoạn trích.
 - Câu trả lời chỉ lặp lại câu hỏi hoặc tên tài liệu không được tính là `generated`.
 - Qwen không sinh thuốc, liều hoặc PHI, không sửa evidence và dữ liệu Backend; hỏi đáp không tự xác nhận bệnh cho người dùng.
 - Câu hỏi Farm tìm bệnh từ triệu chứng mà không nêu tên bệnh (ví dụ "... là bệnh gì", "... do đâu") không gọi Qwen; câu trả lời là các đoạn tài liệu đã rerank.

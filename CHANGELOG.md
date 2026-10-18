@@ -768,6 +768,11 @@ Bản phát hành đầu tiên của DX-OS.
 
 ### 2026-10-29
 
+**Đã xong — Nguyên nhân và cách phòng có trong nguồn:**
+
+- Hỏi đáp Farm về một bệnh đã nêu tên chỉ giữ câu trả lời Qwen khi câu nêu nguyên nhân dùng đúng từ của dòng tác nhân, tên khoa học hoặc loại bệnh, và câu nêu cách phòng lấy ít nhất một nửa số từ nội dung từ dòng phòng ngừa hoặc biện pháp canh tác.
+- Mẫu nhận diện thuốc chỉ khớp "hóa học" là một từ riêng, nên dòng "Tên khoa học" được giữ trong evidence.
+
 **Đã xong — Nạp sẵn model embedding:**
 
 - `chat_lifespan` nạp model embedding đã có trong cache trước khi nhận request, nên lần tìm kiếm đầu sau khi khởi động không phải chờ nạp model; chưa có trong cache thì lần tìm kiếm đầu nạp như cũ.
@@ -1124,6 +1129,10 @@ Bản phát hành đầu tiên của DX-OS.
 **Đã xong — Chuyển ảnh sang SeaweedFS trên CPU cũ:**
 
 - `seaweedfs/migrate-uploads.sh` tải lên và kiểm từng ảnh bằng curl có ký S3 (`curlimages/curl`), chạy được trên CPU không có x86-64-v2.
+
+**Đã xong — Log SeaweedFS:**
+
+- `seaweedfs` chạy với `-v=-1`, chỉ ghi cảnh báo và lỗi; đặt `-v=0` để xem lại log thông tin.
 
 **Đã xong — Khóa gRPC của filer SeaweedFS:**
 

@@ -3,7 +3,7 @@ import re
 
 
 MEDICATION = re.compile(
-    r"thuốc|hoạt\s*chất|liều|\bphi\b|cách\s*ly|nồng\s*độ|h[oó]a\s*học|hoá\s*học|phun|"
+    r"thuốc|hoạt\s*chất|liều|\bphi\b|cách\s*ly|nồng\s*độ|\bh[oó]a\s*học|\bhoá\s*học|phun|"
     r"\b(?:ml|mg|kg|g|l)\s*/\s*(?:ha|l|lít|sào)|\b\w+\s*\d+(?:\.\d+)?\s*(?:sc|ec|wp|wg)\b",
     re.IGNORECASE,
 )

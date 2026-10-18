@@ -105,7 +105,7 @@ WP2-03 làm sau WP2-02.
 - `DiagnosisPanel.tsx`: card mới theo mẫu `treatment-card`.
   Mỗi evidence là một `article` gồm `documentTitle`, `content` (text thuần, `white-space: pre-line`), "Độ liên quan của tài liệu: N%" và `SourceList`.
 - Dòng ghi chú trong card: "Chỉ để tham khảo, không thay thế phác đồ đã xác thực."
-- Đổi nhãn "Độ tin cậy" thành "Độ tin cậy của mô hình" và "Nguồn treatment rule" thành "Nguồn phác đồ".
+- Đổi nhãn "Độ tin cậy" thành "Độ tin cậy của mô hình".
 - Giữ confidence/progress, treatment card, responsive và điều kiện các nút.
 
 **Phạm vi ảnh hưởng**

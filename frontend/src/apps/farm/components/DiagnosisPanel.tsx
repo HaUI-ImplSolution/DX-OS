@@ -452,7 +452,7 @@ export default function DiagnosisPanel({
               </dl>
               {(diagnosis.treatmentRule.source || diagnosis.treatmentRule.version) && (
                 <div className="treatment-source">
-                  <span>Nguồn treatment rule</span>
+                  <span>Nguồn phác đồ</span>
                   {diagnosis.treatmentRule.source && (
                     <strong>{diagnosis.treatmentRule.source.split(",").join(" · ")}</strong>
                   )}

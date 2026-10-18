@@ -58,7 +58,7 @@ Kết quả đầu ra: card tham khảo hiện khi có evidence, ẩn khi rỗng
 - [ ] WP2-03-FE-01 `types.ts`: `Diagnosis.knowledgeEvidence: KnowledgePassage[] | null`.
 - [ ] WP2-03-FE-02 `DiagnosisPanel.tsx`: card "Thông tin tham khảo từ tài liệu" với `documentTitle`, `content`, "Độ liên quan của tài liệu", `SourceList`.
 - [ ] WP2-03-FE-03 Ẩn card khi evidence rỗng hoặc null.
-- [ ] WP2-03-FE-04 Đổi nhãn "Độ tin cậy của mô hình" và "Nguồn phác đồ".
+- [ ] WP2-03-FE-04 Đổi nhãn "Độ tin cậy" thành "Độ tin cậy của mô hình".
 - [ ] WP2-03-FE-05 Style cho card nếu cần, kiểm tra màn hình hẹp.
 
 **Test**

@@ -45,7 +45,7 @@ Evidence tái sử dụng `KnowledgeAnswerResponse.Passage` ở Backend, `Knowle
 | `app-farm` | Có | Lưu và trả `knowledgeEvidence`, ngừng lưu `summary` của AI |
 | `app-lab` | Không | |
 | `dx-host` | Không | |
-| Frontend (web) | Có | Một card mới và hai nhãn đổi tên |
+| Frontend (web) | Có | Một card mới và nhãn "Độ tin cậy của mô hình" |
 | Mobile | Không | |
 | AI | Có | Thêm `document_title`, bỏ `summary` và lời gọi LLM writer |
 | Data / Migration | Có | Một migration Farm |
@@ -57,7 +57,7 @@ Evidence tái sử dụng `KnowledgeAnswerResponse.Passage` ở Backend, `Knowle
 - Trong phạm vi: thêm `document_title` vào `rag_evidence` của AI.
 - Trong phạm vi: bỏ `summary` ghép chuỗi và lời gọi `GroundedRecommendationWriter` trong luồng diagnosis.
 - Trong phạm vi: lưu evidence theo thứ tự AI trả, nguồn đã resolve qua `FarmKnowledgeNamespace`.
-- Trong phạm vi: card tham khảo trên web, đổi nhãn "Độ tin cậy" thành "Độ tin cậy của mô hình" và "Nguồn treatment rule" thành "Nguồn phác đồ".
+- Trong phạm vi: card tham khảo trên web, đổi nhãn "Độ tin cậy" thành "Độ tin cậy của mô hình".
 - Ngoài phạm vi: ingestion, chunking, ranking, corpus, Knowledge page, symptom suggestion, Lab, mobile.
 - Ngoài phạm vi: chia evidence theo mục (triệu chứng, phòng ngừa, lây lan), cần phân loại corpus lúc ingest, ghi vào `docs/BACKLOG.md`.
 - Ngoài phạm vi: hiển thị `TreatmentRule.notes` và "Phương pháp áp dụng", cần field cấu trúc riêng.

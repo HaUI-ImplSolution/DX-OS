@@ -20,7 +20,7 @@ Các case dưới đây do người dùng chạy thủ công; cột "Kết quả
 | T2-04 | WP2-02 | Lưu và reload | Chẩn đoán AI rồi gọi lại `GET` diagnosis | `knowledgeEvidence` đúng nội dung, thứ tự và nguồn; `recommendationText = null` | | |
 | T2-05 | WP2-02 | Authority | AI trả rule ID lạ hoặc version cũ kèm evidence | Backend vẫn từ chối như trước | | |
 | T2-06 | WP2-02 | Phân quyền | FARMER đọc diagnosis PENDING, REJECTED, APPROVED; ENGINEER đọc PENDING | FARMER chỉ thấy `knowledgeEvidence` khi APPROVED; ENGINEER thấy đủ | | |
-| T2-07 | WP2-03 | Web có evidence | Mở diagnosis có rule và evidence | Ba khối riêng; nhãn "Độ tin cậy của mô hình", "Nguồn phác đồ", "Độ liên quan của tài liệu"; thuốc, liều, PHI chỉ ở treatment card | | |
+| T2-07 | WP2-03 | Web có evidence | Mở diagnosis có rule và evidence | Ba khối riêng; nhãn "Độ tin cậy của mô hình" và "Độ liên quan của tài liệu"; thuốc, liều, PHI chỉ ở treatment card | | |
 | T2-08 | WP2-03 | Web rỗng và hẹp | Mở diagnosis cũ hoặc không có evidence; thu cửa sổ về 640 px | Không có card tham khảo, các nút vẫn hoạt động; layout không tràn | | |
 
 ## 3. Hồi quy

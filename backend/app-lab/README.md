@@ -19,8 +19,8 @@ Chỉ phụ thuộc `dx-core-api`; khởi động khi `DXOS_APP=lab`.
 |---|---|
 | `STUDENT` | Gửi và theo dõi ticket của mình, mượn thiết bị, xem lịch phòng |
 | `LECTURER` | Như sinh viên, đặt phòng, duyệt phiếu mượn của sinh viên |
-| `TECHNICIAN` | Xử lý mọi ticket, quản lý phòng và thiết bị, duyệt đặt phòng và phiếu mượn của giảng viên, nhận lại thiết bị, xem thống kê |
-| `ADMIN` | Mọi việc của kỹ thuật viên, gán và từ chối ticket, danh mục loại sự cố và SLA, duyệt mọi phiếu |
+| `TECHNICIAN` | Xử lý mọi ticket, quản lý phòng và thiết bị, duyệt đặt phòng và phiếu mượn của giảng viên, nhận lại thiết bị, xem thống kê; không mượn thiết bị và không đặt phòng |
+| `ADMIN` | Mọi việc của kỹ thuật viên, mượn thiết bị và đặt phòng, gán và từ chối ticket, danh mục loại sự cố và SLA, duyệt mọi phiếu |
 
 `TECHNICIAN` và `ADMIN` là vai nhân sự: thấy mọi ticket và đặt phòng.
 Workspace của Lab có loại `CLASS` (lớp) và `DEPARTMENT` (bộ môn).
@@ -57,12 +57,14 @@ Cột `status` trên bảng của Lab phản chiếu trạng thái đó, do hand
 - Chỉ mượn thiết bị `AVAILABLE`; thời hạn trả tối đa 7 ngày kể từ hôm nay.
 - Mỗi người tối đa 2 phiếu đang chờ duyệt hoặc chưa trả.
 - Phiếu của sinh viên do giảng viên duyệt, của giảng viên do kỹ thuật viên duyệt; `ADMIN` duyệt được mọi phiếu; không ai tự duyệt phiếu của mình.
+- `TECHNICIAN` không mượn thiết bị.
 - Duyệt đặt thiết bị ở `ON_LOAN`; trả tốt về `AVAILABLE`, trả hỏng sang `UNDER_REPAIR` kèm nhật ký sửa chữa.
 
 **Đặt phòng**
 
 - Giờ theo bước 30 phút, tối đa 4 giờ mỗi lần, đặt trước tối đa 30 ngày, không đặt vào quá khứ.
-- Số người không vượt sức chứa; phòng `MAINTENANCE` không nhận đặt; `STUDENT` không tự đặt.
+- Số người không vượt sức chứa; phòng `MAINTENANCE` không nhận đặt; `STUDENT` và `TECHNICIAN` không đặt phòng.
+- `TECHNICIAN` hoặc `ADMIN` duyệt; không ai duyệt hay từ chối lịch của chính mình.
 - Yêu cầu giữ khung giờ từ lúc gửi đến khi bị từ chối hoặc hủy.
   Hai lịch còn hiệu lực không thể chồng giờ cùng phòng: ràng buộc `EXCLUDE USING gist` (extension `btree_gist`) chặn cả hai yêu cầu gửi cùng lúc.
 - Chuyển phòng sang bảo trì không hủy lịch; phản hồi liệt kê các lịch bị ảnh hưởng để người quản lý xử lý.
@@ -77,7 +79,8 @@ Những gì ứng dụng khai báo ở [`ARCHITECTURE.md`](../../ARCHITECTURE.md
 - Migration `db/migration/lab` (bảng lịch sử `flyway_schema_history_lab`), chạy sau migration của core.
 - `V3` nạp sẵn 8 loại sự cố và 4 chính sách SLA mặc định.
 - View BI `vw_lab_rooms`, `vw_lab_devices`, `vw_lab_tickets`, `vw_lab_device_loans`, `vw_lab_room_bookings` chỉ chứa mã, id và nhóm; không có nội dung ticket, tên người hay tiêu đề lịch.
-- Tri thức: `data/rag/lab/`, job `rag-ingest` tự nạp vào namespace `lab` khi dựng stack với `DXOS_APP=lab`.
+- Tri thức: `data/rag/lab/` (12 bài trích văn bản của HaUI), job `rag-ingest` tự nạp vào namespace `lab` khi dựng stack với `DXOS_APP=lab`.
+  Danh mục nguồn `src/main/resources/lab/knowledge-sources.json` khớp `data/rag/lab/source_registry.json`; mỗi nguồn trả `url` (trang của đơn vị) và `documentUrl` (file gốc).
 
 ## Cấu hình
 

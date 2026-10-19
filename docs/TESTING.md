@@ -18,7 +18,7 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 | Chẩn đoán AI, nhập triệu chứng, chẩn đoán lại, kỹ sư duyệt | Có | Test tích hợp, pytest | Có (chẩn đoán thủ công; AI khi có ảnh thật) |
 | Khai phun thuốc, xác nhận, khóa thu hoạch theo PHI | Có | Test đơn vị và tích hợp, E2E | Có cho đạo ôn (rule được chuyên gia duyệt) |
 | Thu hoạch (sớm cần xác nhận), nhắc hạn, hộp thông báo | Có | Test đơn vị; test tích hợp thông báo duyệt, từ chối, xác nhận phun và nhắc hạn | Có |
-| Dashboard BI trên view đã duyệt (9 chart, `query_context` sinh lại sau mỗi lần import) | Có | Test bundle và `query_context`, kiểm tay | Một phần: chart "Tỷ lệ AI đúng/sai" cần chẩn đoán AI bằng ảnh thật |
+| Dashboard BI trên view đã duyệt (11 chart, `query_context` sinh lại sau mỗi lần import) | Có | Test bundle và `query_context`, kiểm tay | Một phần: chart "Tỷ lệ AI đúng/sai" cần chẩn đoán AI bằng ảnh thật |
 | Thời tiết theo thửa (Open-Meteo, snapshot dự phòng), panel trên web và thẻ trên mobile | Có | Kiểm tay trên web và mobile | Có |
 | Báo cáo chưa chẩn đoán trong hàng đợi kỹ sư, mở báo cáo bằng `/?report=<id>` | Có | Kiểm tay | Có |
 | Thông báo Mattermost cho kết quả duyệt và phun thuốc, tiêu đề là liên kết mở báo cáo | Có | Kiểm tay | Có (webhook tự tạo khi dựng stack) |
@@ -30,13 +30,13 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 | Tính năng | Trong code | Kiểm thử | Dữ liệu demo |
 |---|---|---|---|
 | Vai STUDENT, LECTURER, TECHNICIAN, ADMIN; sinh viên chỉ thấy yêu cầu của mình | Có | E2E Lab, kiểm tay | Có (`student1`, `lecturer1`, `tech1`, `admin1`) |
-| Yêu cầu hỗ trợ: gửi kèm ảnh, trao đổi công khai và nội bộ, nhận, xử lý, xác nhận và đánh giá, mở lại | Có | E2E Lab, kiểm tay | Có (12 yêu cầu ở mọi trạng thái) |
+| Yêu cầu hỗ trợ: gửi kèm ảnh, trao đổi công khai và nội bộ, nhận, xử lý, xác nhận và đánh giá, mở lại | Có | E2E Lab, kiểm tay | Có (15 yêu cầu ở mọi trạng thái) |
 | SLA theo ưu tiên, cảnh báo ở 80% và đánh dấu quá hạn theo lịch | Có | Kiểm tay với SLA rút ngắn | Có |
 | Hai kỹ thuật viên nhận cùng yêu cầu: một bên 409 | Có | E2E Lab | Không áp dụng |
-| Gợi ý loại và ưu tiên bằng luật, bài tri thức liên quan | Có | E2E Lab, kiểm tay | Có (10 bài quy chế và hướng dẫn) |
-| Mượn thiết bị có hạn, duyệt theo vai, trả hỏng mở nhật ký sửa chữa | Có | E2E Lab, kiểm tay | Có (7 thiết bị, 5 phiếu) |
+| Gợi ý loại và ưu tiên bằng luật, bài tri thức liên quan | Có | E2E Lab, kiểm tay | Có (12 bài trích văn bản của HaUI) |
+| Mượn thiết bị có hạn, duyệt theo vai, trả hỏng mở nhật ký sửa chữa | Có | E2E Lab, kiểm tay | Có (7 thiết bị, 5 phiếu, 1 phiếu quá hạn) |
 | Đặt phòng chống trùng giờ ở cơ sở dữ liệu, lịch tuần; luật độ dài, bước giờ, sức chứa, người duyệt | Có | Test tích hợp và phân quyền, E2E Lab, kiểm tay | Có (5 phòng, 5 lịch) |
-| Hỏi đáp quy chế có trích nguồn và giấy phép | Có | E2E Lab (`--require-knowledge`) | Có |
+| Hỏi đáp quy chế trích văn bản của HaUI, nguồn mở trang gốc và bản PDF | Có | E2E Lab (`--require-knowledge`) | Có |
 | Thống kê SLA, tải kỹ thuật viên, mức dùng phòng; view `vw_lab_*` cho BI | Có | E2E Lab, kiểm tay | Có |
 
 ## 2. Chuẩn bị
@@ -47,7 +47,7 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 | JDK 21 | Dùng Maven wrapper trong repo |
 | Node 20 trở lên | Cho `frontend` và `mobile` |
 | Python 3 và `pillow` | Cho `seed_demo.py` (`python3 -m pip install pillow`) |
-| Trọng số AI trong `ai/weights/` | `best.pt` và `crop_classifier.onnx` có sẵn trong Git sau checkout |
+| Trọng số AI trong `ai/weights/` | Ba phần EfficientNetV2-M và `crop_classifier.onnx` có sẵn trong Git; Docker build ghép model bệnh |
 | Dung lượng và RAM | Lần dựng đầu tải khoảng 3 GB (image AI) và 9 GB (Ollama và model); cần máy đủ RAM để chạy cả stack |
 
 ## 3. Kiểm tra tĩnh (không cần dựng stack)
@@ -128,7 +128,7 @@ Treatment rule của đạo ôn và khô vằn có trong seed Backend, nên `--r
 | F6 | Khai phun thuốc rồi xác nhận trên chẩn đoán đạo ôn hoặc khô vằn | Vụ vào cách ly; thu hoạch bị chặn tới hết hạn |
 | F6b | Chẩn đoán bệnh chưa có rule (đốm nâu) | Chỉ xem xét (`review_required`), không có liều và PHI |
 | F7 | Hỏi đáp tri thức | Đoạn trích có nguồn |
-| F8 | Mở Superset bằng `admin1` | Dashboard của Farm hiển thị 9 chart, mỗi chart một ô; chart "Thửa đang cách ly" và hai chart thu hoạch có dữ liệu sau khi seed; chart "Tỷ lệ AI đúng/sai" trống nếu chưa chẩn đoán AI bằng ảnh thật |
+| F8 | Mở Superset bằng `admin1` | Dashboard của Farm hiển thị 11 chart, mỗi chart một ô; chart "Thửa đang cách ly" và hai chart thu hoạch có dữ liệu sau khi seed; hai chart thời tiết có điểm sau khi Backend chạy khoảng một phút; chart "Tỷ lệ AI đúng/sai" trống nếu chưa chẩn đoán AI bằng ảnh thật |
 | F9 | Hai người cùng quyết định một case | Một bên 409 |
 | F10 | Chọn một thửa ở "Luồng demo" | Panel Thời tiết hiện nhiệt độ, độ ẩm, dự báo 5 ngày và nguồn |
 | F11 | Nông dân gửi báo cáo mới; `engineer1` mở Hàng đợi → "Chưa chẩn đoán" → "Mở để chẩn đoán" | Báo cáo có trong danh sách; liên kết mở đúng thửa, vụ và báo cáo |
@@ -185,7 +185,7 @@ Web không cần build lại: web đọc `GET /api/v1/app` rồi nạp giao di�
 | L11 | `lecturer1` | Đặt chồng giờ cùng phòng, quá 4 giờ, vượt sức chứa | Bị từ chối kèm lý do bằng tiếng Việt |
 | L12 | Hai phiên | Đặt cùng phòng cùng giờ gần như đồng thời | Chỉ một lịch hiệu lực |
 | L13 | `student1` | Đặt phòng | Bị chặn |
-| L14 | Bất kỳ | Hỏi đáp "quy chế sử dụng phòng máy" | Đoạn trích kèm nguồn và giấy phép |
+| L14 | Bất kỳ | Hỏi đáp và gợi ý khi báo sự cố theo bảng ở mục 6.4 | Đúng bài, nguồn mở trang của HaUI và bản PDF gốc |
 | L15 | `admin1` | Mở trang thống kê | Số liệu khớp dữ liệu mẫu |
 | L16 | `student1` | Mở ticket của người khác bằng đường dẫn trực tiếp | Bị chặn |
 | L17 | `tech1` | Rút ngắn SLA khi thử để ticket quá hạn | Cảnh báo, rồi đánh dấu quá hạn; thông báo không gửi trùng |
@@ -197,7 +197,7 @@ Dùng Swagger (`http://localhost:9080/swagger-ui.html`) hoặc client trong `dep
 | Bước | Gọi | Kiểm |
 |---|---|---|
 | 1 | `GET /api/v1/app` | `id` là `lab`, có 4 vai và menu |
-| 2 | `tech1` `POST /rooms` hai lần cùng `code`; `student1` `POST /devices` | Lần hai 409; `student1` 403 |
+| 2 | `tech1` `POST /rooms` hai lần cùng `code`; `student1` `POST /devices` | Lần hai 422 `ROOM_CODE_TAKEN`; `student1` 403 |
 | 3 | `student1` `POST /tickets` (multipart `ticket` + `files` là ảnh PNG) | Mã `TK-<năm>-<số>`, `NEW`, hạn theo ưu tiên |
 | 4 | `tech1` `/assign`, `/start`, comment công khai; `student1` comment | `firstRespondedAt` có giá trị |
 | 5 | `student1` `GET /tickets/{id}` và ticket của người khác | Không thấy ghi chú nội bộ; ticket người khác 404 |
@@ -211,13 +211,45 @@ Dùng Swagger (`http://localhost:9080/swagger-ui.html`) hoặc client trong `dep
 | 13 | `/return` với `DAMAGED` | Thiết bị `UNDER_REPAIR`, có mục ở `/devices/{id}/maintenance` |
 | 14 | `lecturer1` `POST /room-bookings`, `tech1` `/approve`, `GET /rooms/{id}/schedule` | Lịch có khung giờ |
 | 15 | Đặt chồng giờ; hai luồng cùng phòng cùng giờ | 422 `ROOM_SLOT_TAKEN`; DB chỉ một bản ghi `active` |
-| 16 | Quá 4 giờ, quá khứ, vượt sức chứa, phòng `MAINTENANCE`; `student1` đặt | 422 hoặc 403 |
+| 16 | Quá 4 giờ, quá khứ, vượt sức chứa, phòng `MAINTENANCE`; `student1` hoặc `tech1` đặt; `admin1` duyệt lịch của chính mình | 422 hoặc 403 |
 | 17 | `PUT /sla-policies/NORMAL` `{"responseMinutes":1,"resolutionMinutes":2}`, tạo ticket, đợi 5 phút | Cảnh báo ở 80%, rồi `overdue=true` và thông báo, không gửi trùng |
 | 18 | `POST /tickets/suggest` với "máy chiếu phòng A2 không lên hình" và "cả phòng máy mất mạng giữa giờ thi" | Loại thiết bị; ưu tiên khẩn; có từ khóa, lý do, bài liên quan |
-| 19 | `POST /knowledge/ask` "Quy định khi sử dụng phòng máy" | Đoạn trích kèm nguồn và `CC BY 4.0` |
+| 19 | `POST /knowledge/ask` "Quy định sử dụng máy tính trong thư viện" | Đoạn trích Nội quy sử dụng thư viện, nguồn có `url` trang lic.haui.edu.vn và `documentUrl` bản PDF |
 | 20 | `GET /lab-stats/summary`, đối chiếu `SELECT` ở DB | Số khớp |
 | 21 | `GET /approval-requests` bằng `tech1` | Có ticket, phiếu mượn, đặt phòng |
 | 22 | Đăng nhập role đọc BI, `SELECT` từ `vw_lab_tickets` và từ `tickets` | View đọc được, bảng bị từ chối |
+
+### 6.4 Hỏi đáp và nguồn tri thức
+
+Mỗi bài trong kho Lab trích từ một văn bản công khai của HaUI; danh sách văn bản, trang gốc và link PDF ở `data/rag/lab/source_registry.json`.
+Đăng nhập `student1`, gõ ở trang Tri thức (hỏi đáp) hoặc ở form Báo sự cố mới (gợi ý), rồi đối chiếu cột cuối.
+Độ liên quan đo trên stack ngày 19/10/2026; chênh vài phần trăm sau khi nạp lại vẫn là bình thường.
+
+| # | Gõ ở | Câu hỏi hoặc tiêu đề và mô tả | Bài đứng đầu (độ liên quan) |
+|---|---|---|---|
+| K1 | Hỏi đáp | Quy định sử dụng máy tính trong thư viện là gì? | Sử dụng máy tính và tài sản tại Thư viện (85%) |
+| K2 | Hỏi đáp | Sinh viên được mượn tối đa bao nhiêu cuốn sách và trong bao lâu? | Mượn trả tài liệu tại Thư viện (86%) |
+| K3 | Hỏi đáp | Muốn dùng phòng thảo luận nhóm thì đăng ký thế nào? | Đăng ký sử dụng phòng thảo luận nhóm (78%) |
+| K4 | Hỏi đáp | Có sóng wifi nhưng không vào được mạng thì làm sao? | Kết nối Wi-Fi HaUI-Staffs (74%) |
+| K5 | Hỏi đáp | Làm sao đổi mật khẩu email trường? | Đăng nhập và đổi mật khẩu email của trường (72%) |
+| K6 | Hỏi đáp | Tắt máy chiếu đúng cách như thế nào? | Sử dụng máy chiếu trong phòng học (59%) |
+| K7 | Hỏi đáp | Cách mã hóa ổ đĩa bằng BitLocker? | An toàn thông tin trên máy tính cá nhân (69%) |
+| K8 | Hỏi đáp | Thiết bị tin học hỏng đã hết bảo hành thì xử lý thế nào? | Quy trình sửa chữa, bảo trì thiết bị tin học (60%) |
+| K9 | Hỏi đáp | Giảng viên chặn USB trên máy sinh viên bằng cách nào? | Phần mềm quản lý phòng máy dùng chung Faronics Insight (70%) |
+| K10 | Hỏi đáp | Quên mật khẩu LMS thì liên hệ ai? | Đăng nhập LMS và thi trắc nghiệm trên máy trạm (69%) |
+| K11 | Hỏi đáp | Được mang những gì vào phòng thi? | Quy định khi vào phòng thi và thi trên máy tính (51%) |
+| K12 | Hỏi đáp | Phúc khảo bài thi trong bao nhiêu ngày? | Hoãn thi, thi bổ sung, phúc khảo và xử lý vi phạm thi (64%) |
+| K13 | Báo sự cố | Không đăng nhập được email trường / Đăng nhập mail.haui.edu.vn báo sai mật khẩu, cần đổi mật khẩu email. | Đăng nhập và đổi mật khẩu email của trường (76%) |
+| K14 | Báo sự cố | Máy phòng A102 nhiễm virus, tường lửa bị tắt / Cần bật lại tường lửa Windows và quét virus cho các máy dãy đầu. | An toàn thông tin trên máy tính cá nhân (53%) |
+| K15 | Báo sự cố | Không khóa được màn hình sinh viên bằng Faronics / Faronics Insight trên máy giảng viên phòng A101 không hiện máy sinh viên nên không dùng được Blank Screen. | Phần mềm quản lý phòng máy dùng chung Faronics Insight (76%) |
+| K16 | Báo sự cố | Máy chiếu phòng A201 không lên hình / Máy chiếu bật đèn nhưng không có tín hiệu từ laptop, đã thử đổi cáp HDMI. | Sử dụng máy chiếu trong phòng học (52%) |
+| K17 | Hỏi đáp hoặc báo sự cố | Máy in kẹt giấy thì làm sao? | Không có văn bản nào về máy in; đoạn hiện ra (quy định phòng thi) không trả lời câu hỏi |
+
+Với mọi dòng có kết quả, kiểm thêm:
+
+- Dưới đoạn trích có "Nguồn:" gồm tên văn bản, đơn vị ban hành, nhãn "© Đại học Công nghiệp Hà Nội" và "Văn bản chính thức".
+- Bấm tên văn bản mở trang của đơn vị trên `lic.haui.edu.vn`, `itc.haui.edu.vn` hoặc `tac.haui.edu.vn`, không mở GitHub.
+- Bấm "[Bản PDF gốc]" mở file PDF trên máy chủ của trường; file trùng SHA-256 với bản lưu ở `data/rag/lab/raw/` khi văn bản chưa được trường thay.
 
 ## 7. Đổi ứng dụng và ranh giới
 
@@ -245,7 +277,7 @@ Dùng Swagger (`http://localhost:9080/swagger-ui.html`) hoặc client trong `dep
 | Không tạo được extension khi khởi động Lab | Vai của DB không đủ quyền với `btree_gist` | Dùng image PostgreSQL có extension; cấp quyền tạo extension cho vai chủ DB |
 | Hỏi đáp Lab không có kết quả | Job `rag-ingest` chưa xong hoặc lỗi, hoặc `DXOS_APP` không phải `lab` lúc dựng | `docker compose logs rag-ingest`; chạy lại bằng `docker compose up -d --force-recreate rag-ingest` |
 | Ảnh không hiện | Route ảnh hoặc tên bucket sai | Kiểm `MINIO_BUCKET` và route `/dxos-uploads/*`; `./reset.sh --yes` |
-| Thiếu `best.pt` hoặc `crop_classifier.onnx` | Checkout không đủ trọng số | `git status`, `git pull`; xem `ai/weights/` |
+| Thiếu phần trọng số bệnh hoặc `crop_classifier.onnx` | Checkout không đủ trọng số | `git status`, `git pull`; xem `ai/weights/` |
 | Dựng lâu hoặc hết dung lượng | Lần đầu tải image lớn | Đợi, hoặc dọn Docker (`docker system df`) |
 
 ## 9. Kết quả kiểm gần nhất
@@ -254,17 +286,21 @@ Dùng Swagger (`http://localhost:9080/swagger-ui.html`) hoặc client trong `dep
 |---|---|---|
 | Backend `./mvnw clean test` | Đạt | 148 test: dx-core 14, app-farm 23, app-lab 9, dx-host 102 |
 | BI `python -m unittest test_chart_query_context` trong `bi/` | Đạt | 22 test |
-| AI `pytest` trong `ai/` | Đạt | 79 test |
+| AI `pytest` trong `ai/` | Đạt | 100 test |
 | Web và mobile `tsc` | Đạt | Không lỗi |
 | Ranh giới app và core, seed Farm, nguồn tri thức khớp registry | Đạt | Không có kết quả vi phạm |
 | E2E Farm | Đạt | 10/10 bước với `--require-rule` |
 | E2E Lab | Đạt | 16/16 bước với `--require-knowledge`, kể cả sau khi đổi app không `--reset` |
 | Đổi ứng dụng B1 đến B6 | Đạt | B2 dừng với thông báo nêu `[farm, lab]`; B3, B4 route app khác 404; B6 không lỗi migration |
 | Kiểm tay Farm | Đạt | F1, F2, F4 đến F12 (kỹ sư cũng thấy dashboard Superset); hộp duyệt chỉ có loại case của Farm; trên mobile đạt thẻ thời tiết, màn hỏi đáp và danh sách thông báo hiện 30 mục mới nhất; F3 chưa chạy |
+| Tri thức Lab | Đạt, trừ K17 | Ngày 19/10/2026: K1 đến K16 đúng bài, nguồn mở trang của HaUI và bản PDF trên web và qua API; K17 (máy in) hiện đoạn không liên quan, xem `BACKLOG.md` |
 | Kiểm tay Lab | Đạt | L1 đến L17, API bước 1 đến 22, các màn hình web; hộp duyệt chỉ có loại case của Lab |
 | API và lỗi request | Đạt | 415, 405, 400; `settings` của `GET /api/v1/app`; `GET /api/v1/crop-seasons/isolated` |
 | Thời tiết | Đạt | Open-Meteo trả dữ liệu thật; địa chỉ không tới được trả snapshot kèm ghi chú |
+| Chart thời tiết trên Superset | Đạt | Một phút sau khi Backend lên, job ghi 4 dòng (4 vị trí thửa); `vw_weather_daily` có 4 dòng; `/api/v1/chart/{id}/data` trả dữ liệu cho cả 11 chart; chart "Nhiệt độ theo ngày" và "Lượng mưa theo ngày" hiển thị trên dashboard |
+| Nền bản đồ Superset | Đạt | Hai chart bản đồ vẽ nền sáng OpenFreeMap với nhãn tiếng Việt và hiện attribution OpenFreeMap, OpenMapTiles, OpenStreetMap; không thấy nhãn đảo hay biên giới ở vùng ĐBSCL |
 | Dựng từ clone sạch theo README | Đạt | `start.sh farm` 113 giây, `start.sh lab` 56 giây, mọi dịch vụ healthy |
+| Dựng sạch hoàn toàn (volume và `deploy/data` rỗng) | Đạt | `start.sh farm` thoát mã 0 sau khoảng 5 phút, seed Farm đủ dữ liệu; sau khi khởi động lại AI, E2E Farm 10/10 (seed chờ AI); `start.sh lab` rồi E2E Lab 16/16 |
 | Thêm ứng dụng mẫu rỗng theo CONTRIBUTING | Đạt | Backend lên với `DXOS_APP=sample`, `system/status` trả id `sample`, không sửa `dx-core` |
 | gitleaks | Đạt | 358 commit, không có phát hiện |
 

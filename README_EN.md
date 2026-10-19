@@ -57,7 +57,7 @@ Full diagrams and request flows are in [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 **DX-Farm:** households and parcels with locations, crop seasons, disease reports with image quality checks, AI diagnosis with engineer approval, spraying records, harvest blocked until the waiting period ends, reminders, notification inbox, chat notifications that link straight to the report, per-parcel weather, document Q&A with citations, summary reports; a mobile app for farmers that works offline.
 
-**DX-Lab:** support requests with deadlines and internal comments, type and priority suggestions, equipment loans with repair log, room booking without time conflicts, regulations Q&A with source and license, statistics.
+**DX-Lab:** support requests with deadlines and internal comments, type and priority suggestions, equipment loans with repair log, room booking without time conflicts, regulations Q&A quoted from the university's official documents, with each source opening the original page, statistics.
 
 Feature maturity and test coverage are in [`docs/TESTING.md`](./docs/TESTING.md); outstanding work is in [`docs/BACKLOG.md`](./docs/BACKLOG.md).
 
@@ -67,13 +67,13 @@ Feature maturity and test coverage are in [`docs/TESTING.md`](./docs/TESTING.md)
 |---|---|---|
 | Backend | Java 21, Spring Boot, Flyway | Apache-2.0 |
 | AI Service | Python, FastAPI, LangGraph, pgvector, Ollama (Qwen2.5-1.5B) | MIT, Apache-2.0 |
-| CV | YOLOv8n (Ultralytics) and ONNX crop classifier | AGPL-3.0 |
+| CV | EfficientNetV2-M (Torchvision) and ONNX crop classifier | BSD-3-Clause, Apache-2.0, AGPL-3.0 |
 | Web, Mobile | React, Vite, Expo | MIT |
 | SSO, Gateway | Keycloak, Apache APISIX | Apache-2.0 |
 | Data, BI | PostgreSQL, MinIO, Apache Superset | PostgreSQL License, AGPL-3.0, Apache-2.0 |
 | Chat | Mattermost Team Edition (unmodified) | AGPL-3.0 |
 
-Original code is Apache-2.0 ([`LICENSE`](./LICENSE)); `ai/` is AGPL-3.0 because it imports Ultralytics ([`ai/LICENSE`](./ai/LICENSE)).
+Original code is Apache-2.0 ([`LICENSE`](./LICENSE)); source code in `ai/` remains AGPL-3.0 ([`ai/LICENSE`](./ai/LICENSE)).
 Full dependency and license table: [`LICENSES.md`](./LICENSES.md); CycloneDX SBOMs: [`sbom/`](./sbom/README.md).
 
 ## 🚀 Install and run
@@ -97,7 +97,8 @@ python3 -m pip install pillow           # for the demo data script
 ./deploy/start.sh                       # build, run the app in DXOS_APP, load demo data
 ```
 
-The first build downloads and builds a lot (MinIO is built from Go source, about 2 minutes).
+The first build downloads and builds a lot (MinIO is built from Go source, about 2 minutes), and Superset needs a few more minutes to initialise its metadata.
+The command waits until the services are ready; loading the Farm demo data waits up to 5 minutes for the AI service.
 Switch applications with one command; the web app follows without a rebuild:
 
 ```bash

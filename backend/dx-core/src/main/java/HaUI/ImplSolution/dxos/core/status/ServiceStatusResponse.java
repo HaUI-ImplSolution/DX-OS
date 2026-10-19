@@ -10,7 +10,7 @@ public record ServiceStatusResponse(
   List<Service> services
 ) {
 
-  public record App(String id, String name) {}
+  public record App(String id, String name, List<String> portalServices) {}
 
   public record Service(String name, String status) {}
 }

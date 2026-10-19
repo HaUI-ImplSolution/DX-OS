@@ -7,7 +7,7 @@ import java.time.Instant;
 public final class LabEvents {
 
   public record TicketCreated(Long ticketId, String code, String title, String categoryName,
-      String priority, String requesterName, Instant createdAt) {}
+      String priority, String requesterName, Instant createdAt, String imageKey) {}
 
   public record TicketOverdue(Long ticketId, String code, String title, String priority,
       String assigneeName, Instant dueAt) {}

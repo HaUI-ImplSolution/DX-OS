@@ -12,11 +12,11 @@ public final class KnowledgeDtos {
   public record AskRequest(@NotBlank @Size(max = 1000) String question) {}
 
   public record Source(String sourceId, String title, String organization, String url,
-      String license, String reviewStatus) {
+      String documentUrl, String license, String reviewStatus) {
 
     public static Source of(KnowledgeSource source) {
       return new Source(source.sourceId(), source.title(), source.organization(), source.url(),
-          source.license(), source.reviewStatus());
+          source.documentUrl(), source.license(), source.reviewStatus());
     }
   }
 

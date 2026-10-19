@@ -110,12 +110,12 @@ def validate(path: Path) -> None:
 
     contract_by_code = {item["disease_code"]: item for item in contract["classes"]}
     cv_rows = sheets["02_CV_CLASSES"]
-    assert len(contract_by_code) == 5
+    assert len(contract_by_code) == 6
     for row in cv_rows:
         if row["observed_yolo_id"] in (None, "NONE"):
             continue
         actual = contract_by_code[row["disease_code"]]
-        assert actual["class_id"] == int(row["observed_yolo_id"])
+        # Workbook IDs describe the retired detector, not the classifier's class order.
         assert actual["model_label"].casefold() == row["model_label"].casefold()
     assert contract["fallback"]["disease_code"] == "Rice___healthy"
 

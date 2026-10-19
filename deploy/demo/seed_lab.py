@@ -3,7 +3,8 @@
 state, device loans and room bookings.
 
 Called by seed_demo.py when the running app is Lab. Everything goes through the Lab endpoints, so
-the workflow, SLA deadlines and booking rules are exercised for real. Requests, loans and bookings
+the workflow, SLA deadlines and booking rules are exercised for real; only the due date of the
+overdue loan is set in the database. Requests, loans and bookings
 carry fixed Idempotency-Keys and each item is driven only up to its target state, so a second run
 creates nothing twice. Booking times are relative to the day of the run.
 """
@@ -88,15 +89,24 @@ TICKETS = [
     {"key": "t12", "by": "student2", "category": "COMPUTER", "title": "Chuột phòng A102 bị hỏng",
      "description": "Hai chuột ở dãy cuối phòng A102 không di chuyển được con trỏ.",
      "room": "A102", "target": "CLOSED", "technician": "tech1", "rating": 3, "reopen": True},
+    {"key": "t13", "by": "student2", "category": "ACCOUNT", "title": "Không đăng nhập được email trường",
+     "description": "Đăng nhập mail.haui.edu.vn báo sai mật khẩu, cần đổi mật khẩu email.",
+     "target": "RESOLVED", "technician": "tech2"},
+    {"key": "t14", "by": "lecturer", "category": "SOFTWARE", "title": "Máy phòng A102 nhiễm virus, tường lửa bị tắt",
+     "description": "Cần bật lại tường lửa Windows và quét virus cho các máy dãy đầu.",
+     "room": "A102", "target": "IN_PROGRESS", "technician": "tech1"},
+    {"key": "t15", "by": "lecturer", "category": "SOFTWARE", "title": "Không khóa được màn hình sinh viên bằng Faronics",
+     "description": "Faronics Insight trên máy giảng viên phòng A101 không hiện máy sinh viên nên không dùng được Blank Screen.",
+     "room": "A101", "target": "NEW"},
 ]
 
 # Loans: device, borrower, approver and the state to reach: PENDING, APPROVED, RETURNED,
-# RETURNED_DAMAGED or REJECTED.
+# RETURNED_DAMAGED or REJECTED. `overdue_days` moves the due date of an approved loan into the past.
 LOANS = [
     {"key": "l1", "by": "student2", "device": "LAP-001", "purpose": "Làm bài tập lớn môn Lập trình web",
      "target": "REJECTED", "approver": "lecturer"},
     {"key": "l2", "by": "student1", "device": "LAP-002", "purpose": "Thuyết trình đồ án nhóm",
-     "target": "APPROVED", "approver": "lecturer"},
+     "target": "APPROVED", "approver": "lecturer", "overdue_days": 2},
     {"key": "l3", "by": "student1", "device": "LAP-003", "purpose": "Thực hành cài đặt hệ điều hành",
      "target": "RETURNED", "approver": "lecturer"},
     {"key": "l4", "by": "lecturer", "device": "PRJ-002", "purpose": "Dạy bù tại phòng không có máy chiếu",
@@ -236,6 +246,7 @@ def seed_tickets(users, rooms, devices):
 
 def seed_loans(users, devices):
     today = datetime.date.today()
+    overdue = []
     for spec in LOANS:
         borrower = users[spec["by"]]
         device = devices[spec["device"]]
@@ -243,6 +254,8 @@ def seed_loans(users, devices):
                            {"deviceId": device["id"], "purpose": spec["purpose"],
                             "dueDate": (today + datetime.timedelta(days=5)).isoformat()},
                            headers={"Idempotency-Key": request_key(spec["key"])})
+        if spec.get("overdue_days"):
+            overdue.append((loan["id"], spec["overdue_days"]))
         target = spec["target"]
         if loan["status"] != "PENDING" or target == "PENDING":
             continue
@@ -257,6 +270,10 @@ def seed_loans(users, devices):
         elif target == "RETURNED_DAMAGED":
             users["tech1"].ok("POST", f"/device-loans/{loan['id']}/return",
                               {"condition": "DAMAGED", "note": "Đèn chiếu mờ, cần kiểm tra bóng đèn."})
+    # The API refuses a due date in the past, so the overdue loan is moved back in the database.
+    for loan_id, days in overdue:
+        dx.psql(f"UPDATE device_loans SET due_date = CURRENT_DATE - {int(days)} "
+                f"WHERE id = {int(loan_id)} AND status = 'APPROVED'")
 
 
 def seed_maintenance(tech, devices):

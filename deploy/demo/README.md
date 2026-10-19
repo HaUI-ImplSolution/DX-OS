@@ -21,6 +21,8 @@ python3 deploy/demo/seed_demo.py [--app farm|lab] [--base-url URL] [--images DIR
 
 `deploy/start.sh [app]` đã gọi script này sau khi dựng stack; chạy riêng khi cần nạp lại hoặc dùng `--images`.
 Script đọc `deploy/.env` và gọi `docker compose exec postgres`, nên chạy trên máy đang chạy stack; chạy lại không tạo trùng.
+Seed Farm upload ảnh nên chờ tối đa 300 giây khi dịch vụ AI chưa sẵn sàng.
+Seed bị dừng trước bước báo cáo thì lần chạy sau tạo tiếp báo cáo và nông hộ còn thiếu; thửa hoặc vụ dở dang thì script dừng và báo dùng `deploy/reset.sh`.
 `e2e.py` dùng tài khoản do seed tạo nên phải seed trước.
 
 ## Farm
@@ -64,7 +66,7 @@ Khi có treatment rule: bản khai phun chặn thu hoạch tới khi kỹ sư x�
 | `admin1` | `admin123` | ADMIN | Không |
 
 - **Phòng, thiết bị:** 5 phòng (`A101`, `A102` phòng máy 40 chỗ, `A103` đang bảo trì, `A201`, `B301`); 7 thiết bị (3 laptop, 2 máy chiếu cho mượn, 1 thiết bị mạng, 1 máy in).
-- **Yêu cầu hỗ trợ (12)** ở mọi trạng thái: 3 mới, 1 đã giao (khẩn), 1 đang xử lý, 1 chờ người dùng, 1 đã giải quyết, 3 đã đóng (có đánh giá, một đã mở lại, một có ảnh), 1 từ chối, 1 đã hủy.
+- **Yêu cầu hỗ trợ (15)** ở mọi trạng thái: 4 mới, 1 đã giao (khẩn), 2 đang xử lý, 1 chờ người dùng, 2 đã giải quyết, 3 đã đóng (có đánh giá, một đã mở lại, một có ảnh), 1 từ chối, 1 đã hủy.
 - **Phiếu mượn (5):** đang mượn, đã trả tốt, trả hỏng (máy chiếu sang "Đang sửa" kèm nhật ký), bị từ chối, chờ duyệt.
 - **Đặt phòng (5)** của `lecturer1`: 2 đã duyệt ở `A101`, 1 chờ duyệt ở `A102`, 1 bị từ chối ở `B301`, 1 đã hủy ở `A201`.
 - Mọi bản ghi mang `Idempotency-Key` cố định nên chạy lại không tạo trùng; bài quy chế do `rag-ingest` nạp lúc dựng stack với `DXOS_APP=lab`, script không nạp.
@@ -96,4 +98,4 @@ Mỗi lần chạy tạo phòng, thiết bị, yêu cầu riêng (mã có hậu 
 
 Workflow `E2E` chạy ma trận `farm` và `lab`, mỗi app một stack rút gọn: sinh `.env` (`make_ci_env.py --app`), dựng stack, kiểm file gateway chỉ có route của app, `seed_demo.py` hai lần, rồi `e2e.py`.
 Farm thêm `ci_fixture_rule.sql` trước `e2e.py --require-rule`; rule này nằm trong database tạm của CI, không thuộc dữ liệu demo hay seed.
-Trọng số `best.pt` và `crop_classifier.onnx` lấy từ checkout, không có bước download.
+Ba phần trọng số bệnh và `crop_classifier.onnx` lấy từ checkout; Docker build ghép checkpoint bệnh, không có bước download model bệnh.

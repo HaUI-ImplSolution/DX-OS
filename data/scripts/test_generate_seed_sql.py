@@ -67,11 +67,12 @@ class GenerateSeedSqlTest(unittest.TestCase):
         )
 
         expected_classes = {
-            0: ("Blast", "Rice___Blast"),
-            1: ("Brown Spot", "Rice___Brown_spot"),
-            2: ("Leaf Smut", "Rice___Leaf_smut"),
-            3: ("Rice Tungro", "Rice___Tungro"),
-            4: ("Sheath Blight", "Rice___Sheath_blight"),
+            0: ("Healthy", "Rice___healthy"),
+            1: ("Blast", "Rice___Blast"),
+            2: ("Brown Spot", "Rice___Brown_spot"),
+            3: ("Leaf Smut", "Rice___Leaf_smut"),
+            4: ("Rice Tungro", "Rice___Tungro"),
+            5: ("Sheath Blight", "Rice___Sheath_blight"),
         }
         actual_classes = {
             item["class_id"]: (item["model_label"], item["disease_code"])

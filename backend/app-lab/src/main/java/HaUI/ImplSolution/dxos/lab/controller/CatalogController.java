@@ -55,7 +55,7 @@ public class CatalogController {
   @PreAuthorize("hasRole('ADMIN')")
   @ResponseStatus(HttpStatus.CREATED)
   @Operation(summary = "Add a ticket category",
-      description = "ADMIN only. 409 when the code is already used.")
+      description = "ADMIN only. 422 CATEGORY_CODE_TAKEN when the code is already used.")
   public ApiResponse<TicketCategoryResponse> createCategory(
       @Valid @RequestBody TicketCategoryRequest request) {
     return ApiResponse.success("Category created", categoryService.create(request));

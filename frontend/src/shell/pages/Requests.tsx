@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { listApprovalRequests } from "../api";
 import type { CaseUi } from "../appModule";
 import Badge from "../components/Badge";
@@ -143,6 +143,7 @@ function RequestRow({
   onDone: () => void;
   onError: (message: string) => void;
 }) {
+  const location = useLocation();
   const unit = ui.unit.display(request);
   return (
     <>
@@ -169,7 +170,11 @@ function RequestRow({
           <td colSpan={7}>
             {ui.renderDetails(request)}
             {ui.renderActions(request, { role, onDone, onError })}
-            <Link className="btn btn-link" to={`/requests/${request.caseId}`}>
+            <Link
+              className="btn btn-link"
+              to={`/requests/${request.caseId}`}
+              state={{ from: `${location.pathname}${location.search}` }}
+            >
               Mở trang chi tiết và lịch sử →
             </Link>
           </td>

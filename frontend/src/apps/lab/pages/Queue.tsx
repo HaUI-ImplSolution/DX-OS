@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { Badge, Pagination, Section, formatDateTime, statusLabel, statusTone } from "../../../shell";
 import type { Page } from "../../../shell";
 import { assignTicket, listTechnicians, listTickets, startTicket } from "../api";
@@ -23,8 +23,14 @@ const TAB_LABEL: Record<Tab, string> = {
 };
 
 // Work queue of the technicians: tickets nobody has taken, the ones taken by me, and the overdue ones.
+// The tab is kept in the address (?tab=free|mine|overdue) so links from the overview open it.
 export default function Queue({ userId, role, onError }: QueueProps) {
-  const [tab, setTab] = useState<Tab>("free");
+  const [params, setParams] = useSearchParams();
+  const location = useLocation();
+  // The detail page returns to this tab through the address it is opened from.
+  const from = { from: `${location.pathname}${location.search}` };
+  const requested = params.get("tab");
+  const tab: Tab = requested === "mine" || requested === "overdue" ? requested : "free";
   const [page, setPage] = useState(0);
   const [result, setResult] = useState<Page<Ticket> | null>(null);
   const [technicians, setTechnicians] = useState<TechnicianLoad[]>([]);
@@ -71,7 +77,7 @@ export default function Queue({ userId, role, onError }: QueueProps) {
               key={key}
               className={key === tab ? "chip chip-active" : "chip"}
               onClick={() => {
-                setTab(key);
+                setParams({ tab: key }, { replace: true });
                 setPage(0);
               }}
             >
@@ -85,7 +91,7 @@ export default function Queue({ userId, role, onError }: QueueProps) {
         {result?.items.map((ticket) => (
           <article key={ticket.id} className="queue-card">
             <div>
-              <Link to={`/tickets/${ticket.id}`}>
+              <Link to={`/tickets/${ticket.id}`} state={from}>
                 <strong>{ticket.code}</strong> · {ticket.title}
               </Link>{" "}
               <PriorityBadge priority={ticket.priority} />{" "}
@@ -109,7 +115,7 @@ export default function Queue({ userId, role, onError }: QueueProps) {
                   Bắt đầu xử lý
                 </button>
               )}
-              <Link className="btn btn-link" to={`/tickets/${ticket.id}`}>
+              <Link className="btn btn-link" to={`/tickets/${ticket.id}`} state={from}>
                 Mở chi tiết →
               </Link>
             </div>

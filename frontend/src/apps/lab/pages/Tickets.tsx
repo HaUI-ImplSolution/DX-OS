@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Badge, Pagination, Section, formatDateTime, statusLabel, statusTone } from "../../../shell";
 import type { Page } from "../../../shell";
 import { createTicket, listCategories, listDevices, listRooms, listTickets, suggestTicket } from "../api";
 import { PriorityBadge } from "../components/common";
+import RelatedArticles from "../components/RelatedArticles";
 import { PRIORITIES, PRIORITY_LABEL, TICKET_STATUSES } from "../labels";
 import type {
   Device,
@@ -22,7 +23,8 @@ interface TicketsProps {
 const PAGE_SIZE = 10;
 const MAX_FILES = 5;
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "application/pdf"];
+const ALLOWED_TYPES = ["image/jpeg", "image/png"];
+const OTHER_ROOM = "other";
 const SUGGEST_DELAY_MS = 700;
 const MIN_SUGGEST_LENGTH = 10;
 
@@ -70,6 +72,7 @@ function TicketList({
   reloadKey: number;
 }) {
   const [params, setParams] = useSearchParams();
+  const location = useLocation();
   const [result, setResult] = useState<Page<Ticket> | null>(null);
   const [categories, setCategories] = useState<TicketCategory[]>([]);
 
@@ -176,7 +179,12 @@ function TicketList({
             {result.items.map((ticket) => (
               <tr key={ticket.id}>
                 <td>
-                  <Link to={`/tickets/${ticket.id}`}>{ticket.code}</Link>
+                  <Link
+                    to={`/tickets/${ticket.id}`}
+                    state={{ from: `${location.pathname}${location.search}` }}
+                  >
+                    {ticket.code}
+                  </Link>
                 </td>
                 <td>
                   {ticket.title}
@@ -220,6 +228,7 @@ function ReportForm({
   const [categoryCode, setCategoryCode] = useState("");
   const [priority, setPriority] = useState<TicketPriority | "">("");
   const [roomId, setRoomId] = useState("");
+  const [roomNote, setRoomNote] = useState("");
   const [deviceId, setDeviceId] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [categories, setCategories] = useState<TicketCategory[]>([]);
@@ -263,7 +272,7 @@ function ReportForm({
     }
     const invalid = list.find((f) => !ALLOWED_TYPES.includes(f.type) || f.size > MAX_FILE_BYTES);
     if (invalid) {
-      onError(`Tệp "${invalid.name}" không hợp lệ: chỉ nhận JPEG, PNG hoặc PDF tối đa 5 MB.`);
+      onError(`Ảnh "${invalid.name}" không hợp lệ: chỉ nhận JPEG hoặc PNG, tối đa 5 MB.`);
       return;
     }
     setFiles(list);
@@ -284,7 +293,8 @@ function ReportForm({
         description: description.trim(),
         categoryCode,
         priority: priority || undefined,
-        roomId: roomId ? Number(roomId) : undefined,
+        roomId: roomId && roomId !== OTHER_ROOM ? Number(roomId) : undefined,
+        roomNote: roomId === OTHER_ROOM && roomNote.trim() ? roomNote.trim() : undefined,
         deviceId: deviceId ? Number(deviceId) : undefined,
       },
       files,
@@ -297,7 +307,8 @@ function ReportForm({
       .finally(() => setSubmitting(false));
   };
 
-  const roomDevices = roomId ? devices.filter((d) => d.roomId === Number(roomId)) : devices;
+  const roomDevices =
+    roomId && roomId !== OTHER_ROOM ? devices.filter((d) => d.roomId === Number(roomId)) : devices;
 
   return (
     <form className="harvest-box" onSubmit={submit}>
@@ -326,35 +337,13 @@ function ReportForm({
       {suggestion && !suggesting && (
         <div className="suggestion-box">
           <div>
-            <strong>Gợi ý:</strong> {suggestion.categoryName} · ưu tiên{" "}
-            <PriorityBadge priority={suggestion.priority} />
+            <strong>Gợi ý:</strong> {suggestion.categoryName}
             <button type="button" className="btn btn-link" onClick={applySuggestion}>
               Dùng gợi ý này
             </button>
           </div>
-          {suggestion.matchedKeywords.length > 0 && (
-            <small>Từ khóa khớp: {suggestion.matchedKeywords.join(", ")}</small>
-          )}
-          {suggestion.reasons.length > 0 && (
-            <ul>
-              {suggestion.reasons.map((reason) => (
-                <li key={reason}>{reason}</li>
-              ))}
-            </ul>
-          )}
           {suggestion.relatedKnowledge.length > 0 && (
-            <div>
-              <strong>Bài viết liên quan, có thể tự xử lý được:</strong>
-              {suggestion.relatedKnowledge.map((passage, index) => (
-                <article key={index} className="harvest-box">
-                  <strong>{passage.documentTitle}</strong>
-                  <p style={{ whiteSpace: "pre-line" }}>{passage.content}</p>
-                  <small>
-                    Nguồn: {passage.sources.map((source) => source.title).join("; ") || "—"}
-                  </small>
-                </article>
-              ))}
-            </div>
+            <RelatedArticles passages={suggestion.relatedKnowledge} />
           )}
         </div>
       )}
@@ -397,8 +386,21 @@ function ReportForm({
                 {room.code} · {room.name}
               </option>
             ))}
+            <option value={OTHER_ROOM}>Phòng khác…</option>
           </select>
         </label>
+        {roomId === OTHER_ROOM && (
+          <label className="field-label">
+            Tên hoặc vị trí phòng
+            <input
+              value={roomNote}
+              maxLength={255}
+              onChange={(e) => setRoomNote(e.target.value)}
+              placeholder="Ví dụ: Phòng họp tầng 3 nhà A1"
+              required
+            />
+          </label>
+        )}
         <label className="field-label">
           Thiết bị (nếu có)
           <select value={deviceId} onChange={(e) => setDeviceId(e.target.value)}>
@@ -413,11 +415,11 @@ function ReportForm({
       </div>
 
       <label className="field-label">
-        Ảnh hoặc tệp đính kèm (tối đa {MAX_FILES} tệp JPEG, PNG, PDF, mỗi tệp 5 MB)
+        Ảnh minh hoạ (tối đa {MAX_FILES} ảnh JPEG hoặc PNG, mỗi ảnh 5 MB)
         <input
           type="file"
           multiple
-          accept="image/jpeg,image/png,application/pdf"
+          accept="image/jpeg,image/png"
           onChange={(e) => pickFiles(e.target.files)}
         />
       </label>

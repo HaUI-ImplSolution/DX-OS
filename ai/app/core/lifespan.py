@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Load both CV models once and release it when FastAPI shuts down."""
 
-    # Keep Ultralytics lazy so non-CV tooling can import the application package.
+    # Keep model loading lazy so non-CV tooling can import the application package.
     from app.cv.crop_classifier import load_crop_classifier
     from app.cv.loader import load_model
 

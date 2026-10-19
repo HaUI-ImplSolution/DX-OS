@@ -27,9 +27,9 @@ public class KnowledgeController {
   @PostMapping("/ask")
   @Operation(summary = "Ask a question of the lab knowledge base",
       description = "Any signed-in user. Returns the best matching passages of the corpus, each"
-          + " with the documents it is based on (title, organization, link, license, review"
-          + " status). Passages are quoted, never generated; the list is empty when nothing is"
-          + " relevant enough. 503 when the AI service is unavailable.")
+          + " with the documents it is based on (title, organization, publisher page, original"
+          + " file, license, review status). Passages are quoted, never generated; the list is"
+          + " empty when nothing is relevant enough. 503 when the AI service is unavailable.")
   public ApiResponse<AnswerResponse> ask(@Valid @RequestBody AskRequest request) {
     return ApiResponse.success(knowledgeService.ask(request));
   }

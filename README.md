@@ -57,7 +57,7 @@ Sơ đồ đầy đủ và luồng xử lý ở [`ARCHITECTURE.md`](./ARCHITECTU
 
 **DX-Farm:** quản lý nông hộ và thửa ruộng có vị trí, vụ mùa, báo cáo sâu bệnh kèm kiểm tra chất lượng ảnh, chẩn đoán AI và kỹ sư duyệt, khai báo phun thuốc, chặn thu hoạch khi chưa hết thời gian cách ly, nhắc hạn, hộp thông báo, thông báo chat kèm liên kết mở thẳng báo cáo, thời tiết theo thửa, hỏi đáp tài liệu có trích nguồn, báo cáo tổng hợp; ứng dụng di động cho nông dân dùng được cả khi mất mạng.
 
-**DX-Lab:** yêu cầu hỗ trợ có hạn xử lý và trao đổi nội bộ, gợi ý loại và mức ưu tiên, mượn trả thiết bị và nhật ký sửa chữa, đặt phòng máy không trùng giờ, hỏi đáp quy chế có trích nguồn và giấy phép, thống kê.
+**DX-Lab:** yêu cầu hỗ trợ có hạn xử lý và trao đổi nội bộ, gợi ý loại và mức ưu tiên, mượn trả thiết bị và nhật ký sửa chữa, đặt phòng máy không trùng giờ, hỏi đáp quy chế trích từ văn bản chính thức của trường, bấm nguồn là mở trang gốc, thống kê.
 
 Mức hoàn thiện và độ phủ kiểm thử từng tính năng ở [`docs/TESTING.md`](./docs/TESTING.md); việc chưa làm ở [`docs/BACKLOG.md`](./docs/BACKLOG.md).
 
@@ -67,13 +67,13 @@ Mức hoàn thiện và độ phủ kiểm thử từng tính năng ở [`docs/T
 |---|---|---|
 | Backend | Java 21, Spring Boot, Flyway | Apache-2.0 |
 | AI Service | Python, FastAPI, LangGraph, pgvector, Ollama (Qwen2.5-1.5B) | MIT, Apache-2.0 |
-| CV | YOLOv8n (Ultralytics) và crop classifier ONNX | AGPL-3.0 |
+| CV | EfficientNetV2-M (Torchvision) và crop classifier ONNX | BSD-3-Clause, Apache-2.0, AGPL-3.0 |
 | Web, Mobile | React, Vite, Expo | MIT |
 | SSO, Gateway | Keycloak, Apache APISIX | Apache-2.0 |
 | Dữ liệu, BI | PostgreSQL, MinIO, Apache Superset | PostgreSQL License, AGPL-3.0, Apache-2.0 |
 | Chat | Mattermost Team Edition (chạy nguyên bản) | AGPL-3.0 |
 
-Mã tự viết theo Apache-2.0 ([`LICENSE`](./LICENSE)), riêng `ai/` theo AGPL-3.0 vì import Ultralytics ([`ai/LICENSE`](./ai/LICENSE)).
+Mã tự viết theo Apache-2.0 ([`LICENSE`](./LICENSE)), riêng mã nguồn `ai/` theo AGPL-3.0 ([`ai/LICENSE`](./ai/LICENSE)).
 Bảng dependency và giấy phép đầy đủ ở [`LICENSES.md`](./LICENSES.md); SBOM CycloneDX ở [`sbom/`](./sbom/README.md).
 
 ## 🚀 Cài đặt và chạy
@@ -97,7 +97,8 @@ python3 -m pip install pillow           # cho script dữ liệu demo
 ./deploy/start.sh                       # dựng, chạy ứng dụng trong DXOS_APP và nạp dữ liệu demo
 ```
 
-Lần dựng đầu tải và build nhiều thứ (MinIO build từ mã nguồn Go khoảng 2 phút).
+Lần dựng đầu tải và build nhiều thứ (MinIO build từ mã nguồn Go khoảng 2 phút), Superset khởi tạo metadata mất thêm vài phút.
+Lệnh chờ đến khi các dịch vụ sẵn sàng; nạp dữ liệu demo của Farm chờ dịch vụ AI tối đa 5 phút.
 Đổi ứng dụng bằng một lệnh, web đổi theo mà không build lại:
 
 ```bash

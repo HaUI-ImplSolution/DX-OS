@@ -4,8 +4,9 @@
 set -e
 
 # authlib không có sẵn trong image gốc, cần cho AUTH_OAUTH (superset_config.py) - không build lại
-# image, cài thẳng lúc container khởi động.
-pip install --no-cache-dir authlib
+# image, cài thẳng lúc container khởi động. Bản 1.3.2 giữ cryptography trong khoảng Superset 3.1.3 yêu cầu.
+python3 -c "import authlib; assert authlib.__version__ == '1.3.2'" 2>/dev/null \
+  || pip install --no-cache-dir "authlib==1.3.2" "cryptography>=42.0.4,<43.0.0"
 
 superset db upgrade
 

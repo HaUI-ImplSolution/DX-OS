@@ -85,13 +85,15 @@ class LabPermissionMatrixTest {
   }
 
   @Test
-  void studentCannotBookARoom() throws Exception {
-    mockMvc.perform(create(as("STUDENT"))).andExpect(status().isForbidden());
+  void studentAndTechnicianCannotBookARoom() throws Exception {
+    for (String role : new String[] {"STUDENT", "TECHNICIAN"}) {
+      mockMvc.perform(create(as(role))).andExpect(status().isForbidden());
+    }
   }
 
   @Test
-  void lecturerTechnicianAndAdminCanBookARoom() throws Exception {
-    for (String role : new String[] {"LECTURER", "TECHNICIAN", "ADMIN"}) {
+  void lecturerAndAdminCanBookARoom() throws Exception {
+    for (String role : new String[] {"LECTURER", "ADMIN"}) {
       mockMvc.perform(create(as(role))).andExpect(status().isCreated());
     }
   }

@@ -24,10 +24,10 @@ public class LabKnowledgeNamespace implements KnowledgeNamespace {
   public LabKnowledgeNamespace(ObjectMapper objectMapper) throws IOException {
     try (InputStream in = new ClassPathResource(SOURCES_RESOURCE).getInputStream()) {
       for (JsonNode node : objectMapper.readTree(in)) {
-        KnowledgeSource source =
-            new KnowledgeSource(node.path("sourceId").asText(), node.path("title").asText(),
-                node.path("organization").asText(null), node.path("url").asText(null),
-                node.path("license").asText(null), node.path("reviewStatus").asText(null));
+        KnowledgeSource source = new KnowledgeSource(node.path("sourceId").asText(),
+            node.path("title").asText(), node.path("organization").asText(null),
+            node.path("url").asText(null), node.path("documentUrl").asText(null),
+            node.path("license").asText(null), node.path("reviewStatus").asText(null));
         sources.put(source.sourceId(), source);
       }
     }

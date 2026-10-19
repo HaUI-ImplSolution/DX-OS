@@ -6,7 +6,7 @@ Nguồn duy nhất cho dữ liệu seed nghiệp vụ của Farm và corpus RAG 
 |---|---|---|
 | `structured/` | Bệnh, thuốc, treatment rule, policy, class contract của CV | `generate_seed_sql.py` sinh `backend/app-farm/src/main/resources/farm/data.sql`, Spring chạy lúc khởi động (Backend không đọc JSON) |
 | `rag/` | `processed/disease_knowledge.json` (6 tài liệu bệnh lúa) và `source_registry.json` (10 nguồn) | Job `rag-ingest` nạp vào AI Vector DB; không seed vào database nghiệp vụ |
-| `rag/lab/` | `processed/lab_knowledge.json` (10 bài tự soạn, CC BY 4.0) và `source_registry.json` | Job `rag-ingest` nạp vào namespace `lab` |
+| `rag/lab/` | `processed/lab_knowledge.json` (12 bài trích từ văn bản của HaUI), `source_registry.json` (trang gốc, link PDF, SHA-256) và `raw/` (bản PDF tải về ngày 19/10/2026) | Job `rag-ingest` nạp vào namespace `lab` |
 
 Job `rag-ingest` nạp corpus của app đang chạy theo `DXOS_APP` (xem [`ai/README.md`](../ai/README.md)); Compose bind-mount `data/` read-only tại `/data` (`AI_DATA_DIR`).
 
@@ -16,7 +16,9 @@ Job `rag-ingest` nạp corpus của app đang chạy theo `DXOS_APP` (xem [`ai/R
 2. Tên thuốc, liều, đơn vị, PHI là dữ liệu deterministic: không lấy từ RAG, không để LLM sửa.
 3. Chỉ seed treatment rule khi có quyết định rõ trong dữ liệu nguồn (`eligible_for_seed=true` kèm `seed_authorization`); không bulk-seed file `candidates`.
 4. Seed idempotent; `source_ids` truy được về registry để audit.
-5. Khi `rag/source_registry.json` đổi, cập nhật `backend/app-farm/src/main/resources/knowledge-sources.json` để trang hỏi đáp hiện đúng nguồn; `python -m unittest data.scripts.test_knowledge_sources` kiểm hai bên khớp nhau (cả corpus Lab).
+5. Khi registry nguồn đổi, cập nhật danh mục nguồn của Backend để trang hỏi đáp hiện đúng nguồn: `backend/app-farm/src/main/resources/knowledge-sources.json` cho Farm, `backend/app-lab/src/main/resources/lab/knowledge-sources.json` cho Lab; `python -m unittest data.scripts.test_knowledge_sources` kiểm hai bên khớp nhau.
+6. Bài tri thức Lab chỉ trích văn bản công khai của HaUI; mỗi nguồn có `url` (trang của đơn vị), `document_url` (file gốc), `archived_file` trong `rag/lab/raw/` và `sha256`.
+   Chủ đề chưa có văn bản thì không viết bài.
 
 ## Đổi dữ liệu nguồn
 

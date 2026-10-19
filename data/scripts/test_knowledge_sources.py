@@ -24,6 +24,7 @@ FIELDS = {
     "title": "title",
     "organization": "organization",
     "url": "url",
+    "documentUrl": "document_url",
     "license": "license",
     "reviewStatus": "review_status",
 }

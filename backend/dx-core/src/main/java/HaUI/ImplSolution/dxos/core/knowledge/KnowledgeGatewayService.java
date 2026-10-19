@@ -64,8 +64,8 @@ public class KnowledgeGatewayService implements KnowledgeGateway {
     List<String> sourceIds =
         chunk.get("source_ids") instanceof List<?> ids ? ids.stream().map(String::valueOf).toList()
             : List.of();
-    List<KnowledgeSource> resolved = sourceIds.stream()
-        .map(id -> sources.getOrDefault(id, new KnowledgeSource(id, id, null, null, null, null)))
+    List<KnowledgeSource> resolved = sourceIds.stream().map(
+        id -> sources.getOrDefault(id, new KnowledgeSource(id, id, null, null, null, null, null)))
         .toList();
     Map<String, String> attributes = new LinkedHashMap<>();
     chunk.forEach((key, value) -> {

@@ -57,6 +57,7 @@ export interface KnowledgeSource {
   title: string;
   organization: string | null;
   url: string | null;
+  documentUrl?: string | null;
   license: string | null;
   reviewStatus: string | null;
 }

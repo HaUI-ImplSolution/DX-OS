@@ -15,10 +15,11 @@ Hai mục đầu liệt kê các bản phát hành; lịch sử chi tiết theo 
 ### Đã thay đổi
 
 - README song ngữ viết ngắn gọn, có yêu cầu hệ thống và xử lý sự cố; `ARCHITECTURE.md` có tổng quan các dịch vụ và sơ đồ theo từng tầng.
-- Repository đổi tên thành `DX-OS`; liên kết trong tài liệu và danh mục nguồn tri thức Lab trỏ về tên mới.
+- Repository đổi tên thành `DX-OS`; liên kết trong tài liệu trỏ về tên mới.
 - Ảnh nền đơn sắc được kiểm độ nét theo cạnh sau khi làm mờ lại; hỏi đáp xếp đoạn của bệnh được nêu lên đầu.
 - Hộp duyệt chỉ liệt kê case của app đang chạy; lỗi request trả 415, 405 hoặc 400.
 - Ngưỡng GPS và danh sách vụ cách ly do Backend cung cấp cho mobile; giới hạn và ngưỡng đặt được qua `deploy/.env`.
+- Tri thức Lab: 12 bài trích từ nội quy, quy định và hướng dẫn chính thức của HaUI (Thư viện, Trung tâm Công nghệ thông tin, Trung tâm Khảo thí); nguồn mở trang gốc và bản PDF trên máy chủ của trường, bản PDF lưu kèm ở `data/rag/lab/raw/`; gợi ý bài liên quan khi gửi yêu cầu hỗ trợ cũng hiện nguồn.
 - Lab: kỹ thuật viên không mượn thiết bị và không đặt phòng; không ai tự duyệt lịch đặt phòng của mình; trùng mã báo lỗi tiếng Việt; trang đặt phòng đặt lịch tuần cạnh form và danh sách.
 
 ## [1.0.0] - 2026-10-13
@@ -37,6 +38,13 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - **Nguồn mở:** `LICENSE` (Apache-2.0, riêng `ai/` AGPL-3.0), `LICENSES.md`, SBOM CycloneDX, `CONTRIBUTING.md`, mẫu issue và pull request, SPDX header.
 
 ## Backend (Spring Boot — `backend`)
+
+### 2026-10-18
+
+**Đã xong — Nguồn tri thức có link bản gốc:**
+
+- Nguồn của mỗi đoạn trích có thêm `documentUrl` (file gốc trên máy chủ của đơn vị ban hành), cạnh `url` là trang của đơn vị.
+- `reviewStatus` nhận `OFFICIAL` cho văn bản do trường ban hành; danh mục `lab/knowledge-sources.json` trỏ tới các trang của HaUI.
 
 ### 2026-10-17
 
@@ -395,6 +403,14 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 ## Dữ liệu (`data`)
 
+### 2026-10-18
+
+**Đã xong — Tri thức Lab từ văn bản chính thức của HaUI:**
+
+- `rag/lab/processed/lab_knowledge.json` có 12 bài trích từ 9 văn bản của Trung tâm Thông tin - Thư viện, Trung tâm Công nghệ thông tin và Trung tâm Khảo thí, giữ số điều, khoản và lời văn gốc.
+- `rag/lab/source_registry.json` ghi trang gốc, link PDF, ngày truy cập, phiên bản và SHA-256 của từng văn bản; `rag/lab/raw/` lưu bản PDF tải ngày 19/10/2026.
+- Không có bài cho máy in, VPN, quy chế phòng máy của khoa và đặt phòng máy vì chưa có văn bản công khai.
+
 ### 2026-10-12
 
 - `rag/lab/` có corpus của DX-Lab: 10 tài liệu tự soạn (CC BY 4.0) ở `processed/lab_knowledge.json` và registry nguồn `source_registry.json`.
@@ -672,6 +688,10 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 ## Frontend (`frontend`)
 
+### 2026-10-18
+
+- `SourceList` dùng chung cho trang Tri thức và gợi ý khi báo sự cố: tên văn bản mở trang gốc, "[Bản PDF gốc]" mở file trên máy chủ của trường, nhãn "Văn bản chính thức".
+
 ### 2026-10-17
 
 **Đã xong — Đặt phòng, mượn thiết bị, thiết bị và thống kê của Lab:**
@@ -788,6 +808,13 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - Đã test qua trình duyệt thật với từng role, xác nhận UI và 401/403 đúng chỗ.
 
 ## Deploy (`deploy`)
+
+### 2026-10-18
+
+- Seed Lab có 15 yêu cầu, thêm email trường, máy nhiễm virus và Faronics Insight để mỗi nhóm bài tri thức có yêu cầu mẫu.
+- E2E Lab hỏi "Quy định sử dụng máy tính trong thư viện là gì?" ở bước tri thức.
+- `switch-app.sh --seed` chạy seed bằng `python3`, dùng `python` khi `python3` không chạy được (alias Microsoft Store trên Windows).
+- `switch-app.sh` khởi động lại APISIX sau khi tạo lại backend, nên seed và web không gặp 502.
 
 ### 2026-10-17
 
@@ -1176,6 +1203,11 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - **Còn thiếu**: SPDX header đầu mỗi file mã nguồn tự viết — việc sửa hàng loạt file, để riêng một lượt khác.
 
 ## Tài liệu (root, `docs`, `ai/`)
+
+### 2026-10-18
+
+- `docs/TESTING.md` mục 6.4: 17 câu hỏi và yêu cầu mẫu kèm bài đứng đầu, độ liên quan và cách kiểm nguồn.
+- `LICENSES.md`, `README.md`, `README_EN.md`, `data/README.md`, `docs/COUNCIL_QA.md`, `docs/SUBMISSION.md`, `docs/BACKLOG.md`: tri thức Lab trích văn bản của HaUI.
 
 ### 2026-10-17
 

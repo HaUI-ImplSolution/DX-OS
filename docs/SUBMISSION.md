@@ -56,7 +56,7 @@ Một lõi, hai ứng dụng: DX-Farm trước, đổi sang DX-Lab bằng một 
 | 5:30-6:30 | **Lab**, `student1`: mô tả "máy chiếu phòng A2 không lên hình", xem gợi ý, gửi yêu cầu kèm ảnh | [I] luật phân loại giải thích được: loại, ưu tiên, từ khóa khớp, bài tri thức liên quan. Mã `TK-<năm>-<số>`, hạn phản hồi và hạn xử lý theo SLA |
 | 6:30-7:30 | **Lab**, `tech1`: hàng đợi, nhận yêu cầu, trả lời công khai, ghi chú nội bộ, hoàn tất (ghi chú và nguyên nhân gốc); `student1` xác nhận 5 sao | [P] cùng workflow với Farm, loại case khác. Hai kỹ thuật viên nhận cùng lúc thì một bên 409. Sinh viên không thấy ghi chú nội bộ. Timeline đủ bước |
 | 7:30-8:30 | **Lab**, `lecturer1`: đặt phòng máy bằng ô trên lịch tuần, thử đặt chồng giờ; `tech1` duyệt | Chồng giờ bị từ chối với lý do tiếng Việt; chống trùng ở cơ sở dữ liệu (`EXCLUDE USING gist`) nên hai người đặt cùng lúc vẫn chỉ một lịch hiệu lực |
-| 8:30-9:30 | **Lab**, `admin1`: trang Thống kê; mượn thiết bị và trả hỏng; hỏi đáp "quy định khi sử dụng phòng máy" | [D] SLA đạt, thời gian xử lý, tải kỹ thuật viên, mức dùng phòng từ cùng PostgreSQL; view `vw_lab_*` cho BI. Hỏi đáp có nguồn và giấy phép CC BY 4.0 |
+| 8:30-9:30 | **Lab**, `admin1`: trang Thống kê; mượn thiết bị và trả hỏng; hỏi đáp "quy định sử dụng máy tính trong thư viện" | [D] SLA đạt, thời gian xử lý, tải kỹ thuật viên, mức dùng phòng từ cùng PostgreSQL; view `vw_lab_*` cho BI. Hỏi đáp trích văn bản của HaUI, bấm nguồn mở trang gốc hoặc bản PDF |
 | 9:30-10:00 | Tổng kết | Một Core, hai ứng dụng, đổi bằng một biến; kiểm chứng bằng E2E trong CI cho cả hai (Farm 10 bước, Lab 16 bước) |
 
 ### Phương án dự phòng

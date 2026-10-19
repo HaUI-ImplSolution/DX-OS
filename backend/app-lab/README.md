@@ -79,7 +79,8 @@ Những gì ứng dụng khai báo ở [`ARCHITECTURE.md`](../../ARCHITECTURE.md
 - Migration `db/migration/lab` (bảng lịch sử `flyway_schema_history_lab`), chạy sau migration của core.
 - `V3` nạp sẵn 8 loại sự cố và 4 chính sách SLA mặc định.
 - View BI `vw_lab_rooms`, `vw_lab_devices`, `vw_lab_tickets`, `vw_lab_device_loans`, `vw_lab_room_bookings` chỉ chứa mã, id và nhóm; không có nội dung ticket, tên người hay tiêu đề lịch.
-- Tri thức: `data/rag/lab/`, job `rag-ingest` tự nạp vào namespace `lab` khi dựng stack với `DXOS_APP=lab`.
+- Tri thức: `data/rag/lab/` (12 bài trích văn bản của HaUI), job `rag-ingest` tự nạp vào namespace `lab` khi dựng stack với `DXOS_APP=lab`.
+  Danh mục nguồn `src/main/resources/lab/knowledge-sources.json` khớp `data/rag/lab/source_registry.json`; mỗi nguồn trả `url` (trang của đơn vị) và `documentUrl` (file gốc).
 
 ## Cấu hình
 

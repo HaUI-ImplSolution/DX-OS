@@ -91,7 +91,11 @@ Nếu evidence nhắc tới hóa chất, nội dung đó vẫn chỉ là trích 
 - Backend lưu và trả lại evidence không đổi sau khi reload diagnosis.
 - Backend vẫn reload treatment rule từ database và từ chối rule ID/version không hợp lệ như hiện tại.
 - Web hiển thị confidence, treatment card và knowledge evidence card thành ba khu vực riêng.
+- Web tuân theo thứ tự và thuật ngữ trong `05_EXPECTED_OUTPUT_FORMAT.md`: vấn đề nghi ngờ → độ tin cậy mô hình → trạng thái → phác đồ đã xác thực → tài liệu tham khảo.
+- UI dùng “Độ tin cậy của mô hình”, không gọi confidence là “tỷ lệ chính xác”; similarity chỉ được gọi là “Độ liên quan của tài liệu”.
+- Nguồn được gắn đúng ngữ cảnh thành “Nguồn phác đồ” và “Nguồn tài liệu”, không dùng một nguồn chung gây hiểu nhầm.
 - Thuốc, liều và PHI không xuất hiện từ evidence hoặc `recommendationText` trên web.
+- Phương pháp áp dụng chỉ được hiển thị khi có field cấu trúc đã xác thực; Phase 2 không parse `TreatmentRule.notes` và không suy ra phương pháp từ evidence.
 - Evidence rỗng/RAG lỗi chỉ làm ẩn knowledge card; các thao tác duyệt, từ chối và ghi nhận phun vẫn hoạt động.
 - Diagnosis cũ và diagnosis thủ công vẫn đọc được; không parse hoặc backfill text cũ.
 - AI test, Backend integration test, frontend build và `git diff --check` đạt.
@@ -116,6 +120,8 @@ Nếu evidence nhắc tới hóa chất, nội dung đó vẫn chỉ là trích 
 | Q1 | Cách lưu evidence | JSONB snapshot / bảng con | JSONB snapshot vì payload nhỏ và chỉ đọc cùng diagnosis |
 | Q2 | Xử lý `recommendationText` | Xóa ngay / deprecate | Deprecate, cho phép null với AI mới và giữ dữ liệu cũ/manual |
 | Q3 | Cách trình bày evidence | Danh sách chunk / phân loại section | Danh sách chunk trong phase này; section hóa để follow-up |
+| Q4 | Thuật ngữ confidence | “Tỷ lệ chính xác” / “Độ tin cậy của mô hình” | “Độ tin cậy của mô hình” để không đồng nhất một dự đoán với accuracy kiểm định |
+| Q5 | Phương pháp áp dụng | Parse `notes` / chỉ dùng field cấu trúc | Chỉ dùng field cấu trúc đã xác thực; ẩn dòng trong Phase 2 nếu field chưa tồn tại |
 
 ## 11. Tài liệu cần cập nhật khi xong
 

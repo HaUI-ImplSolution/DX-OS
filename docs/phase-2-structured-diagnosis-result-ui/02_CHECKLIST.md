@@ -57,14 +57,18 @@ Kết quả đầu ra: web hiện treatment rule và RAG evidence thành hai kh�
 
 - [ ] WP2-03-FE-01 Thêm type `knowledgeEvidence` và source vào `Diagnosis`.
 - [ ] WP2-03-FE-02 Tạo knowledge evidence card dưới treatment card hiện có.
-- [ ] WP2-03-FE-03 Hiển thị document title, content, similarity và `SourceList` cho từng evidence.
+- [ ] WP2-03-FE-03 Hiển thị document title, content, “Độ liên quan của tài liệu” và `SourceList` cho từng evidence.
 - [ ] WP2-03-FE-04 Ẩn toàn bộ knowledge card khi evidence rỗng.
 - [ ] WP2-03-FE-05 Giữ confidence, treatment card, responsive và điều kiện nút nghiệp vụ hiện có.
 - [ ] WP2-03-FE-06 Không render `recommendationText`, HTML từ content hoặc field điều trị suy ra từ evidence.
+- [ ] WP2-03-FE-07 Áp dụng thứ tự, nhãn tiếng Việt và trạng thái ngoại lệ trong `05_EXPECTED_OUTPUT_FORMAT.md`.
+- [ ] WP2-03-FE-08 Ghi rõ “Nguồn phác đồ” và “Nguồn tài liệu”; không dùng một nhãn nguồn chung.
+- [ ] WP2-03-FE-09 Không gọi confidence là “tỷ lệ chính xác” và không trình bày similarity như xác suất mắc bệnh.
+- [ ] WP2-03-FE-10 Chỉ hiện phương pháp áp dụng từ field cấu trúc đã xác thực; nếu contract chưa có thì ẩn dòng, không parse `notes`.
 
 **Test**
 
-- [ ] WP2-03-TEST-01 Viết/chạy T2-10 đến T2-13.
+- [ ] WP2-03-TEST-01 Viết/chạy T2-10 đến T2-14.
 
 ## WP2-04: Kiểm thử và đóng phase
 
@@ -93,6 +97,7 @@ Kết quả đầu ra: contract, migration, UI và hồi quy nghiệp vụ trự
 - [ ] FARMER không thấy evidence khi diagnosis chưa được phép hiển thị.
 - [ ] Web hiện knowledge card khi có evidence và ẩn đúng khi rỗng.
 - [ ] Web không render `recommendationText` hoặc lặp thuốc/liều/PHI từ evidence.
+- [ ] Web dùng đúng format đầu ra, thuật ngữ confidence/similarity và nhãn nguồn theo `05_EXPECTED_OUTPUT_FORMAT.md`.
 - [ ] Duyệt, từ chối, ghi nhận phun và khóa thu hoạch theo PHI không hỏng.
 - [ ] Không đổi corpus, ingestion, embedding, Knowledge, symptom suggestion, Lab hoặc mobile.
 - [ ] Test/build bắt buộc và `git diff --check` đạt.

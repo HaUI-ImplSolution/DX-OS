@@ -29,6 +29,7 @@ Chỉ cập nhật kết quả sau khi chạy trên code và migration của pha
 | T2-11 | WP2-03 | Web evidence rỗng | Mở diagnosis không có evidence | Knowledge card không xuất hiện; treatment card và thao tác vẫn hoạt động |  |  |
 | T2-12 | WP2-03 | Không trùng | Kiểm màn hình có rule, evidence và text legacy trong payload | Web không render text legacy; thuốc/liều/PHI chỉ nằm trong treatment card |  |  |
 | T2-13 | WP2-03 | Responsive/a11y | Kiểm desktop, 640 px và màn hình nhỏ | Không tràn; heading, progress và link nguồn có accessible name phù hợp |  |  |
+| T2-14 | WP2-03 | Format và thuật ngữ | Kiểm PENDING, APPROVED, REJECTED, low-confidence, healthy, thiếu rule và thiếu evidence | Thứ tự/nhãn theo `05_EXPECTED_OUTPUT_FORMAT.md`; confidence khác similarity; nguồn rule khác nguồn tài liệu; không parse `notes` để tạo phương pháp |  |  |
 
 ## 3. Hồi quy bắt buộc
 
@@ -46,6 +47,8 @@ Chỉ cập nhật kết quả sau khi chạy trên code và migration của pha
 - [ ] Điều kiện nút duyệt, từ chối, yêu cầu chụp lại và ghi nhận phun không đổi.
 - [ ] PENDING/APPROVED/REJECTED vẫn hiển thị đúng vai trò.
 - [ ] Content evidence được render như text, không phải HTML.
+- [ ] Người dùng phân biệt được “Độ tin cậy của mô hình” với “Độ liên quan của tài liệu”.
+- [ ] Low-confidence, healthy, thiếu rule và evidence rỗng có thông điệp/ẩn hiện đúng đặc tả format.
 
 **Nghiệp vụ an toàn**
 
@@ -55,7 +58,7 @@ Chỉ cập nhật kết quả sau khi chạy trên code và migration của pha
 
 ## 4. Tiêu chí đạt
 
-- T2-01 đến T2-13 và các hồi quy bắt buộc đạt.
+- T2-01 đến T2-14 và các hồi quy bắt buộc đạt.
 - Migration chạy được với database sạch và dữ liệu cũ.
 - Không có code thay đổi ingestion, corpus, ranking, Lab hoặc mobile.
 - AI/Backend contract khớp OpenAPI; frontend build và `git diff --check` đạt.

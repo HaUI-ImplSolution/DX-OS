@@ -87,7 +87,8 @@ WP2-01 → WP2-02 → WP2-03 → WP2-04.
 ## WP2-03: Hiển thị evidence trên web hiện tại
 
 - Mục tham chiếu: WP2-02.
-- Mục tiêu: bổ sung giá trị RAG vào UI mà không thay lại confidence/treatment card đã có.
+- Mục tham chiếu format: `05_EXPECTED_OUTPUT_FORMAT.md`.
+- Mục tiêu: bổ sung giá trị RAG vào UI mà không thay lại dữ liệu confidence/treatment card đã có, đồng thời chuẩn hóa thứ tự và thuật ngữ để người dùng phân biệt dự đoán, phác đồ và tài liệu tham khảo.
 - Ước lượng: M.
 
 **Hành vi thay đổi**
@@ -102,8 +103,13 @@ WP2-01 → WP2-02 → WP2-03 → WP2-04.
 **Hướng làm**
 
 - Mở rộng type `Diagnosis` bằng `knowledgeEvidence` và type nguồn tương ứng.
+- Trình bày theo thứ tự: kết quả nhận diện → phác đồ điều trị đã xác thực → thông tin tham khảo từ tài liệu.
+- Dùng nhãn “Bệnh nghi ngờ” khi PENDING, “Bệnh đã xác nhận” khi APPROVED và “Độ tin cậy của mô hình” cho confidence; Việt hóa trạng thái nghiệp vụ ở nội dung chính.
 - Render mỗi evidence thành một article ngắn gồm document title, content, độ liên quan và `SourceList`.
+- Gọi similarity là “Độ liên quan của tài liệu”, không dùng làm confidence chẩn đoán hoặc mức nguy hiểm.
+- Phân biệt “Nguồn phác đồ” với “Nguồn tài liệu”; source/version của rule ở trong treatment card, nguồn evidence ở từng article.
 - Dùng content như text thuần; không render HTML và không suy ra thuốc/liều/PHI từ chuỗi.
+- Chỉ hiển thị “Phương pháp áp dụng” khi contract có field cấu trúc đã xác thực; không parse `TreatmentRule.notes`, không lấy từ evidence và ẩn dòng nếu chưa có.
 - Giữ responsive layout, confidence/progress, treatment card và điều kiện nút hiện có.
 - Không thêm section mapping, legacy text fallback hoặc `TreatmentRule.notes`.
 
@@ -117,7 +123,7 @@ WP2-01 → WP2-02 → WP2-03 → WP2-04.
 
 **Kết quả đầu ra**
 
-- Web hiển thị rule và evidence ở hai khối riêng; không hiển thị summary/text tổng hợp.
+- Web cho người dùng thấy ngay bệnh nghi ngờ/đã xác nhận, độ tin cậy và trạng thái; rule và evidence nằm ở hai khối riêng, có nguồn riêng và không hiển thị summary/text tổng hợp.
 
 **Phụ thuộc, lưu ý**: nội dung chunk có thể chứa nhiều dòng; `white-space: pre-line` là đủ trong phase này.
 

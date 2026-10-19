@@ -18,6 +18,8 @@
 | R3 | Backend/AI lệch contract khi triển khai | Vừa | Cao | Thay đổi additive, Backend chấp nhận summary nullable | Giữ AI response cũ trong cửa sổ chuyển tiếp |
 | R4 | Bản ghi cũ không có evidence | Cao | Thấp | Giữ dữ liệu cũ, không backfill giả | Web chỉ hiện treatment card như hiện tại |
 | R5 | Source ID không resolve được | Thấp | Thấp | Giữ và hiển thị source ID thay vì bỏ evidence | Ghi log để sửa catalogue riêng |
+| R6 | Confidence bị hiểu là accuracy hoặc similarity bị hiểu là xác suất mắc bệnh | Vừa | Cao | Dùng hai nhãn riêng theo format và đặt ở hai khối khác nhau | Ẩn similarity nếu UI không thể giải thích rõ |
+| R7 | Parse `TreatmentRule.notes` làm “phương pháp” sai hoặc lộ metadata nội bộ | Vừa | Cao | Chỉ hiển thị field cấu trúc đã xác thực; Phase 2 ẩn dòng nếu chưa có | Mở follow-up chuẩn hóa application method/water volume |
 
 ## 3. Nợ kỹ thuật chấp nhận
 
@@ -25,6 +27,7 @@
 - Mobile tiếp tục hành vi hiện tại và chưa nhận knowledge card mới.
 - `recommendationText` chưa bị xóa vì còn dữ liệu cũ và diagnosis thủ công.
 - Chưa chuẩn hóa `TreatmentRule.notes`, water volume hoặc application method.
+- Format đã chừa vị trí cho phương pháp áp dụng, nhưng Phase 2 chưa hiển thị cho đến khi có field cấu trúc được xác thực.
 
 ## 4. Điều kiện dừng và rollback
 

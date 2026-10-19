@@ -78,7 +78,87 @@ Quy tắc:
 - Hiển thị tối đa số evidence mà contract đã giới hạn và giữ thứ tự Backend trả về.
 - Khi evidence rỗng hoặc RAG lỗi, ẩn cả khối; kết quả nhận diện và phác đồ vẫn hoạt động.
 
-## 3. Trạng thái ngoại lệ
+## 3. Mẫu key–value dành cho người triển khai
+
+Mẫu chuẩn dưới đây mô tả payload `DiagnosisResponse` từ Backend sang web sau Phase 2. Tên key dùng đúng camelCase của DTO/type frontend hiện có; các key trong `knowledgeEvidence` là phần bổ sung đã được nêu trong kế hoạch.
+
+```json
+{
+  "id": 1201,
+  "diseaseReportId": 845,
+  "diseaseCode": "Rice___Blast",
+  "diseaseName": "Bệnh đạo ôn trên lúa",
+  "confidence": 0.92,
+  "modelVersion": "rice-disease-v3",
+  "diagnosedAt": "2026-10-20T08:30:00Z",
+  "recommendationText": null,
+  "approvalStatus": "PENDING",
+  "decidedBy": null,
+  "decidedAt": null,
+  "rejectionReason": null,
+  "treatmentRule": {
+    "id": 1,
+    "diseaseCode": "Rice___Blast",
+    "pesticideCode": "NEWTEC_300SC",
+    "doseMin": 0.75,
+    "doseMax": 1.0,
+    "doseUnit": "L/ha",
+    "phiDays": 10,
+    "notes": "Registered target: Đạo ôn. Application guidance: ...",
+    "source": "SRC_PPD_75_2025,SRC_PPD_28_2026,SRC_SYNGENTA_NEWTEC",
+    "version": "2026.10.05-expert-approved-v1"
+  },
+  "knowledgeEvidence": [
+    {
+      "chunkId": "farm-rice-blast-001",
+      "documentId": "doc-irri-rice-blast",
+      "documentTitle": "Rice Blast",
+      "documentVersion": "2026-09",
+      "content": "Đạo ôn thường tạo vết bệnh hình thoi, tâm xám và rìa nâu trên lá.",
+      "similarity": 0.86,
+      "sources": [
+        {
+          "sourceId": "SRC_IRRI_BLAST",
+          "title": "Rice Blast",
+          "organization": "International Rice Research Institute",
+          "url": "https://example.org/rice-blast",
+          "documentUrl": null,
+          "license": null,
+          "reviewStatus": "OFFICIAL"
+        }
+      ]
+    }
+  ]
+}
+```
+
+Các giá trị ID, URL, phiên bản và nội dung trong mẫu chỉ để minh họa hình dạng payload; người triển khai không hard-code chúng.
+
+### 3.1. Trạng thái của từng nhóm key
+
+| Đường dẫn key | Trạng thái | Nguồn trong dự án/kế hoạch | Cách dùng trên UI |
+|---|---|---|---|
+| `id`, `diseaseReportId` | Hiện có | `DiagnosisResponse`, frontend `Diagnosis` | Định danh; không cần làm nội dung nổi bật |
+| `diseaseCode`, `diseaseName` | Hiện có | `DiagnosisResponse`, frontend `Diagnosis` | Mã nội bộ và tên bệnh hiển thị |
+| `confidence` | Hiện có | `cvResult` → `DiagnosisResponse` | Nhân 100 để hiển thị “Độ tin cậy của mô hình”; giá trị gốc vẫn là 0–1 |
+| `modelVersion`, `diagnosedAt` | Hiện có | `DiagnosisResponse`, frontend `Diagnosis` | Metadata truy vết; chỉ hiện khi thiết kế cần |
+| `approvalStatus`, `decidedBy`, `decidedAt`, `rejectionReason` | Hiện có | `DiagnosisResponse`, frontend `Diagnosis` | Điều khiển trạng thái, quyền và thông báo quyết định |
+| `recommendationText` | Hiện có, deprecate trong Phase 2 | `DiagnosisResponse` | Có thể null; web không render và không dùng làm fallback |
+| `treatmentRule.id`, `diseaseCode`, `pesticideCode`, `doseMin`, `doseMax`, `doseUnit`, `phiDays`, `notes`, `source`, `version` | Hiện có | `TreatmentRuleResponse`, frontend `TreatmentRule` | Thuốc/liều/PHI/source/version dùng cho card phác đồ; `notes` không render trong Phase 2 |
+| `knowledgeEvidence` | Bổ sung trong Phase 2 | WP2-02/WP2-03 | Danh sách evidence đã lưu cùng diagnosis; mặc định `[]` với dữ liệu cũ |
+| `knowledgeEvidence[].chunkId`, `documentId`, `documentTitle`, `documentVersion` | Bổ sung trong Phase 2 | Contract `rag_evidence` tại WP2-01 | Truy vết chunk/tài liệu; UI ưu tiên `documentTitle` |
+| `knowledgeEvidence[].content`, `similarity` | Có từ AI, được lưu trong Phase 2 | `DiagnoseRagEvidence` và WP2-02 | Nội dung tham khảo và “Độ liên quan của tài liệu” |
+| `knowledgeEvidence[].sources[]` | Bổ sung/resolve trong Phase 2 | `sourceIds` + `FarmKnowledgeNamespace.sources()`; tái sử dụng `KnowledgeSource` | Dùng `SourceList`; mỗi source giữ `sourceId`, `title`, `organization`, `url`, `documentUrl`, `license`, `reviewStatus` |
+
+### 3.2. Key không được tự bổ sung trong Phase 2
+
+- Không thêm `accuracy`: dự án chỉ có `confidence` cho từng dự đoán.
+- Không thêm `applicationMethod`, `waterVolumeMin` hoặc `waterVolumeMax` vào payload Phase 2 vì các field này chưa có trong `TreatmentRuleResponse` và kế hoạch đang xếp việc chuẩn hóa chúng vào follow-up.
+- Không parse `treatmentRule.notes` để tạo key mới. `notes` hiện có thật nhưng chứa nhiều loại dữ liệu trộn lẫn và không phải contract cấu trúc cho phương pháp áp dụng.
+- Không đổi `similarity` thành `confidence`; hai giá trị có ý nghĩa khác nhau.
+- Các nhãn như “Bệnh nghi ngờ”, “Độ tin cậy của mô hình” và “Nguồn phác đồ” là presentation label được suy ra ở UI, không phải key mới trong API.
+
+## 4. Trạng thái ngoại lệ
 
 | Tình huống | Nội dung ưu tiên | Không được làm |
 |---|---|---|
@@ -90,7 +170,7 @@ Quy tắc:
 | Không có evidence | Không dựng khối tham khảo | Không hiện card rỗng hoặc lỗi kỹ thuật cho người dùng |
 | Lớp healthy | Giới hạn rõ phạm vi những bệnh mô hình không phát hiện | Không khẳng định cây/ruộng hoàn toàn khỏe |
 
-## 4. Tiêu chí nghiệm thu format
+## 5. Tiêu chí nghiệm thu format
 
 - Trong lần đọc đầu tiên, tên bệnh hoặc thông báo chưa đủ cơ sở phải là thông tin nổi bật nhất.
 - Các nhãn “Độ tin cậy của mô hình” và “Độ liên quan của tài liệu” không bị dùng lẫn nhau.
@@ -98,4 +178,5 @@ Quy tắc:
 - Nguồn được ghi theo đối tượng: “Nguồn phác đồ” và “Nguồn tài liệu”, không dùng một nhãn “Nguồn” mơ hồ cho toàn màn hình.
 - Trạng thái PENDING/APPROVED/REJECTED được trình bày bằng tiếng Việt và giữ nguyên logic phân quyền hiện có.
 - Format không làm thay đổi contract hoặc phạm vi Phase 2 chỉ để lấp một field còn thiếu; field tùy chọn được ẩn an toàn.
+- Payload thực tế khớp mẫu key–value về tên key, kiểu dữ liệu, nullable và nguồn dữ liệu; giá trị minh họa không bị hard-code.
 - Giao diện vẫn đọc được theo đúng thứ tự heading → facts → nguồn bằng bàn phím và screen reader, đồng thời không tràn ở màn hình hẹp.

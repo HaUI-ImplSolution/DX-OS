@@ -12,6 +12,7 @@ Kết quả đầu ra: AI trả evidence đầy đủ và không tạo summary g
 
 - [ ] WP2-01-DOC-01 Chốt ví dụ response AI có evidence và evidence rỗng.
 - [ ] WP2-01-DOC-02 Cập nhật OpenAPI: metadata evidence mới, `summary` nullable/deprecated.
+- [ ] WP2-01-DOC-03 Đối chiếu tên key, kiểu dữ liệu và nullable giữa OpenAPI với mẫu key–value trong `05_EXPECTED_OUTPUT_FORMAT.md`.
 
 **AI**
 
@@ -65,6 +66,7 @@ Kết quả đầu ra: web hiện treatment rule và RAG evidence thành hai kh�
 - [ ] WP2-03-FE-08 Ghi rõ “Nguồn phác đồ” và “Nguồn tài liệu”; không dùng một nhãn nguồn chung.
 - [ ] WP2-03-FE-09 Không gọi confidence là “tỷ lệ chính xác” và không trình bày similarity như xác suất mắc bệnh.
 - [ ] WP2-03-FE-10 Chỉ hiện phương pháp áp dụng từ field cấu trúc đã xác thực; nếu contract chưa có thì ẩn dòng, không parse `notes`.
+- [ ] WP2-03-FE-11 Map đúng payload key–value: không tự thêm `accuracy`/`applicationMethod`, không đổi tên hoặc ý nghĩa `confidence`/`similarity`.
 
 **Test**
 

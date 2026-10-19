@@ -29,7 +29,7 @@ Chỉ cập nhật kết quả sau khi chạy trên code và migration của pha
 | T2-11 | WP2-03 | Web evidence rỗng | Mở diagnosis không có evidence | Knowledge card không xuất hiện; treatment card và thao tác vẫn hoạt động |  |  |
 | T2-12 | WP2-03 | Không trùng | Kiểm màn hình có rule, evidence và text legacy trong payload | Web không render text legacy; thuốc/liều/PHI chỉ nằm trong treatment card |  |  |
 | T2-13 | WP2-03 | Responsive/a11y | Kiểm desktop, 640 px và màn hình nhỏ | Không tràn; heading, progress và link nguồn có accessible name phù hợp |  |  |
-| T2-14 | WP2-03 | Format và thuật ngữ | Kiểm PENDING, APPROVED, REJECTED, low-confidence, healthy, thiếu rule và thiếu evidence | Thứ tự/nhãn theo `05_EXPECTED_OUTPUT_FORMAT.md`; confidence khác similarity; nguồn rule khác nguồn tài liệu; không parse `notes` để tạo phương pháp |  |  |
+| T2-14 | WP2-03 | Format và contract | Đối chiếu payload mẫu và kiểm PENDING, APPROVED, REJECTED, low-confidence, healthy, thiếu rule/evidence | Đúng tên key, kiểu/nullable và thứ tự/nhãn trong `05_EXPECTED_OUTPUT_FORMAT.md`; confidence khác similarity; nguồn rule khác nguồn tài liệu; không parse `notes` để tạo phương pháp |  |  |
 
 ## 3. Hồi quy bắt buộc
 

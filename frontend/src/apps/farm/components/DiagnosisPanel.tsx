@@ -414,44 +414,54 @@ export default function DiagnosisPanel({
               {diagnosis.approvalStatus}
             </Badge>
           </div>
-          {diagnosis.confidence != null && diagnosis.diagnosedAt && (
-            <p className="diagnosis-meta">
-              Độ tin cậy {Math.round(diagnosis.confidence * 100)}% · model {diagnosis.modelVersion} ·{" "}
-              {new Date(diagnosis.diagnosedAt).toLocaleString("vi-VN")}
-            </p>
-          )}
-          {diagnosis.recommendationText && (
-            <blockquote className="recommendation">{diagnosis.recommendationText}</blockquote>
+          {diagnosis.confidence != null && (
+            <div className="diagnosis-confidence">
+              <div>
+                <span>Độ tin cậy</span>
+                <strong>{Math.round(diagnosis.confidence * 100)}%</strong>
+              </div>
+              <progress
+                aria-label="Độ tin cậy của chẩn đoán"
+                max="100"
+                value={Math.round(diagnosis.confidence * 100)}
+              />
+            </div>
           )}
 
           {diagnosis.treatmentRule && (
-            <table className="rule-table">
-              <tbody>
-                <tr>
-                  <th>Thuốc khuyến cáo</th>
-                  <td>{diagnosis.treatmentRule.pesticideCode}</td>
-                </tr>
-                <tr>
-                  <th>Liều lượng</th>
-                  <td>
+            <section className="treatment-card" aria-labelledby={`treatment-title-${diagnosis.id}`}>
+              <h4 id={`treatment-title-${diagnosis.id}`}>Phác đồ điều trị</h4>
+              <dl className="treatment-facts">
+                <div>
+                  <dt>Thuốc khuyến cáo</dt>
+                  <dd>{diagnosis.treatmentRule.pesticideCode}</dd>
+                </div>
+                <div>
+                  <dt>Liều lượng</dt>
+                  <dd>
                     {diagnosis.treatmentRule.doseMin === diagnosis.treatmentRule.doseMax
                       ? diagnosis.treatmentRule.doseMin
                       : `${diagnosis.treatmentRule.doseMin}–${diagnosis.treatmentRule.doseMax}`}{" "}
                     {diagnosis.treatmentRule.doseUnit}
-                  </td>
-                </tr>
-                <tr>
-                  <th>Cách ly (PHI)</th>
-                  <td>{diagnosis.treatmentRule.phiDays} ngày</td>
-                </tr>
-                <tr>
-                  <th>Nguồn</th>
-                  <td>
-                    {diagnosis.treatmentRule.source} {diagnosis.treatmentRule.version}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                  </dd>
+                </div>
+                <div>
+                  <dt>Thời gian cách ly</dt>
+                  <dd>{diagnosis.treatmentRule.phiDays} ngày</dd>
+                </div>
+              </dl>
+              {(diagnosis.treatmentRule.source || diagnosis.treatmentRule.version) && (
+                <div className="treatment-source">
+                  <span>Nguồn treatment rule</span>
+                  {diagnosis.treatmentRule.source && (
+                    <strong>{diagnosis.treatmentRule.source.split(",").join(" · ")}</strong>
+                  )}
+                  {diagnosis.treatmentRule.version && (
+                    <small>Phiên bản {diagnosis.treatmentRule.version}</small>
+                  )}
+                </div>
+              )}
+            </section>
           )}
 
           {diagnosis.approvalStatus === "PENDING" && canDecide && !needsRetake && (

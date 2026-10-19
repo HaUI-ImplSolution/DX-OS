@@ -1,62 +1,100 @@
 # Checklist: Phase 2
 
-Ký hiệu: `[ ]` chưa làm, `[~]` đang làm, `[x]` xong, `[-]` không áp dụng.
-Checklist này được lập trước khi triển khai; chỉ các mục chuẩn bị kế hoạch được đánh dấu hoàn tất.
+Ký hiệu: `[ ]` chưa làm, `[~]` đang làm, `[x]` xong, `[-]` bỏ và phải ghi lý do.
+Checklist mô tả phần việc còn lại từ code hiện tại của nhánh.
+Confidence, treatment card và responsive CSS hiện có là baseline cần giữ hồi quy.
 
-## WP2-01: Chốt cấu trúc kết quả chẩn đoán
+## WP2-01: Contract AI evidence
 
-Kết quả đầu ra: nội dung ưu tiên và hành vi với dữ liệu tùy chọn được mô tả rõ.
+Kết quả đầu ra: AI trả evidence đầy đủ và không tạo summary ghép CV/rule/RAG.
 
 **Spec và tài liệu**
 
-- [x] WP2-01-DOC-01 Khảo sát `DiagnosisPanel` và stylesheet trên `origin/Khuong/main` để xác định phạm vi UI.
-- [x] WP2-01-DOC-02 Ghi hành vi trước/sau, phạm vi và hợp đồng cần giữ nguyên trong plan.
-- [-] WP2-01-DOC-03 Không cập nhật Swagger vì endpoint và DTO không đổi.
+- [ ] WP2-01-DOC-01 Chốt ví dụ response AI có evidence và evidence rỗng.
+- [ ] WP2-01-DOC-02 Cập nhật OpenAPI: metadata evidence mới, `summary` nullable/deprecated.
 
-**Frontend (web)**
+**AI**
 
-- [ ] WP2-01-FE-01 Xác nhận confidence và treatment rule là thông tin chính trong kết quả có cấu trúc.
-- [ ] WP2-01-FE-02 Xác nhận điều kiện ẩn/hiện khi thiếu confidence, treatment rule, source hoặc version.
-
-## WP2-02: Triển khai card điều trị và responsive
-
-Kết quả đầu ra: kết quả chẩn đoán có phân cấp rõ trên desktop và màn hình hẹp.
-
-**Frontend (web)**
-
-- [ ] WP2-02-FE-01 Đổi confidence thành phần trăm và thanh `progress` có nhãn truy cập.
-- [ ] WP2-02-FE-02 Đổi treatment rule từ bảng sang `section` và description list.
-- [ ] WP2-02-FE-03 Tách thuốc, liều lượng và thời gian cách ly thành ba fact card.
-- [ ] WP2-02-FE-04 Tách source/version và định dạng danh sách source bằng dấu `·`.
-- [ ] WP2-02-FE-05 Bổ sung style riêng cho card, progress và layout một cột ở tối đa 640 px.
-- [ ] WP2-02-FE-06 Giữ nguyên điều kiện duyệt, từ chối, yêu cầu ảnh mới và ghi nhận phun.
-
-## WP2-03: Kiểm tra và chốt phạm vi
-
-Kết quả đầu ra: build đạt, giao diện đúng ở các trạng thái bắt buộc và không có thay đổi ngoài phạm vi.
+- [ ] WP2-01-AI-01 Mở rộng `DiagnoseRagEvidence` bằng chunk/document ID, title và version.
+- [ ] WP2-01-AI-02 Map metadata sẵn có từ retriever vào diagnosis response.
+- [ ] WP2-01-AI-03 Ngừng gọi recommendation writer và không ghép summary trong diagnosis path.
+- [ ] WP2-01-AI-04 Giữ rule selection, engineer approval và fallback evidence rỗng.
 
 **Test**
 
-- [ ] WP2-03-TEST-01 Chạy `npm run build` trong `frontend`.
-- [ ] WP2-03-TEST-02 Chạy `git diff --check` với diff triển khai của nhánh.
-- [ ] WP2-03-TEST-03 Kiểm tra thủ công các case T2-01 đến T2-08.
-- [ ] WP2-03-TEST-04 Chụp bằng chứng desktop và màn hình hẹp nếu quy trình review yêu cầu.
+- [ ] WP2-01-TEST-01 Viết/chạy T2-01 đến T2-03.
+
+## WP2-02: Persistence và Backend response
+
+Kết quả đầu ra: evidence được lưu, reload và trả đúng quyền; treatment rule vẫn là nguồn nghiệp vụ.
+
+**Backend**
+
+- [ ] WP2-02-BE-01 [farm] Mở rộng `AiDiagnoseResponse.RagEvidence`.
+- [ ] WP2-02-BE-02 [farm] Thêm field JSONB evidence vào entity `Diagnosis`.
+- [ ] WP2-02-BE-03 [farm] Validate giới hạn payload evidence trước khi lưu.
+- [ ] WP2-02-BE-04 [farm] Lưu evidence và cho AI diagnosis mới để `recommendationText` null.
+- [ ] WP2-02-BE-05 [farm] Thêm `KnowledgeEvidenceResponse` vào `DiagnosisResponse`.
+- [ ] WP2-02-BE-06 [farm] Resolve source metadata qua `FarmKnowledgeNamespace`.
+- [ ] WP2-02-BE-07 [farm] Giữ nguyên disease/rule/version validation.
+- [ ] WP2-02-BE-08 [farm] Cập nhật masking FARMER và mapper lịch sử diagnosis.
+
+**Data và migration**
+
+- [ ] WP2-02-DATA-01 [farm] Thêm `knowledge_evidence jsonb NOT NULL DEFAULT '[]'`.
+- [ ] WP2-02-DATA-02 [farm] Cho phép `recommendation_text` null mà không sửa dữ liệu cũ.
+- [ ] WP2-02-DATA-03 [farm] Kiểm tra migration trên database sạch và database có diagnosis cũ.
+
+**Test**
+
+- [ ] WP2-02-TEST-01 Viết/chạy T2-04 đến T2-09.
+
+## WP2-03: Hiển thị evidence trên web
+
+Kết quả đầu ra: web hiện treatment rule và RAG evidence thành hai khối riêng, không đưa summary trở lại.
+
+**Frontend web**
+
+- [ ] WP2-03-FE-01 Thêm type `knowledgeEvidence` và source vào `Diagnosis`.
+- [ ] WP2-03-FE-02 Tạo knowledge evidence card dưới treatment card hiện có.
+- [ ] WP2-03-FE-03 Hiển thị document title, content, similarity và `SourceList` cho từng evidence.
+- [ ] WP2-03-FE-04 Ẩn toàn bộ knowledge card khi evidence rỗng.
+- [ ] WP2-03-FE-05 Giữ confidence, treatment card, responsive và điều kiện nút nghiệp vụ hiện có.
+- [ ] WP2-03-FE-06 Không render `recommendationText`, HTML từ content hoặc field điều trị suy ra từ evidence.
+
+**Test**
+
+- [ ] WP2-03-TEST-01 Viết/chạy T2-10 đến T2-13.
+
+## WP2-04: Kiểm thử và đóng phase
+
+Kết quả đầu ra: contract, migration, UI và hồi quy nghiệp vụ trực tiếp đều có bằng chứng.
+
+**Test**
+
+- [ ] WP2-04-TEST-01 Chạy test AI liên quan đến diagnosis contract.
+- [ ] WP2-04-TEST-02 Chạy Backend integration test cho migration/persistence/masking/rule validation.
+- [ ] WP2-04-TEST-03 Chạy `npm run build` trong `frontend`.
+- [ ] WP2-04-TEST-04 Kiểm tra thủ công web với evidence có/rỗng và màn hình hẹp.
+- [ ] WP2-04-TEST-05 Chạy `git diff --check` và đọc toàn bộ diff.
 
 **Tài liệu**
 
-- [x] WP2-03-DOC-01 Tạo thư mục phase từ cấu trúc `docs/_template` trước khi triển khai.
-- [ ] WP2-03-DOC-02 Cập nhật trạng thái và kết quả test thực tế trước khi đóng phase.
-- [ ] WP2-03-DOC-03 Chuyển việc phát sinh vào `docs/BACKLOG.md`, nếu có.
+- [ ] WP2-04-DOC-01 Cập nhật AI/Backend OpenAPI theo code cuối.
+- [ ] WP2-04-DOC-02 Cập nhật README/CHANGELOG chỉ khi maintainer yêu cầu.
+- [ ] WP2-04-DOC-03 Ghi mobile/section hóa vào backlog nếu được duyệt làm follow-up.
 
 ## Đóng phase
 
-- [ ] `npm run build` đạt cho frontend và đã đọc lại toàn bộ diff.
-- [ ] `git diff --check` đạt, không có lỗi whitespace.
-- [ ] Không đổi Swagger, API, type, schema, migration hoặc biến môi trường.
-- [ ] Không đổi phân quyền và điều kiện nghiệp vụ của các thao tác chẩn đoán.
-- [ ] Confidence và treatment rule hiển thị đúng khi có dữ liệu và ẩn đúng khi thiếu dữ liệu.
-- [ ] Layout không tràn ngang ở desktop, 640 px và màn hình nhỏ hơn.
-- [ ] Nhãn `progress`, heading và description list dùng được với công nghệ hỗ trợ cơ bản.
-- [ ] Không có secret, mật khẩu, dữ liệu thật, ảnh hoặc log test trong diff.
-- [ ] Mọi tiêu chí ở `00_OVERVIEW.md` mục 6 đã đạt và có bằng chứng.
-- [ ] Cập nhật trạng thái cuối trong README phase; phần mô tả PR nằm ngoài phạm vi tài liệu này.
+- [ ] AI trả evidence có metadata đầy đủ và không còn summary ghép chuỗi cho diagnosis mới.
+- [ ] Backend lưu/reload evidence; dữ liệu cũ và manual diagnosis vẫn đọc được.
+- [ ] Backend không lấy thuốc, liều hoặc PHI từ evidence.
+- [ ] Rule ID/version sai vẫn bị từ chối như trước.
+- [ ] FARMER không thấy evidence khi diagnosis chưa được phép hiển thị.
+- [ ] Web hiện knowledge card khi có evidence và ẩn đúng khi rỗng.
+- [ ] Web không render `recommendationText` hoặc lặp thuốc/liều/PHI từ evidence.
+- [ ] Duyệt, từ chối, ghi nhận phun và khóa thu hoạch theo PHI không hỏng.
+- [ ] Không đổi corpus, ingestion, embedding, Knowledge, symptom suggestion, Lab hoặc mobile.
+- [ ] Test/build bắt buộc và `git diff --check` đạt.
+- [ ] Không có secret, dữ liệu người dùng thật hoặc artifact test thừa trong diff.
+- [ ] Cập nhật trạng thái cuối trong README phase.

@@ -1,140 +1,174 @@
 # Plan thực hiện: Phase 2
 
 Việc chi tiết nằm ở [02_CHECKLIST.md](./02_CHECKLIST.md).
-Thứ tự thực hiện: chốt cấu trúc thông tin → triển khai component/CSS → kiểm tra.
-Không có thay đổi Swagger, API hoặc schema.
+Thứ tự thực hiện: contract AI → persistence/API Backend → web → kiểm thử.
 
 ## Thứ tự và phụ thuộc
 
-WP2-01 → WP2-02 → WP2-03.
-WP2-03 chỉ bắt đầu sau khi component và responsive CSS hoàn tất.
+WP2-01 → WP2-02 → WP2-03 → WP2-04.
 
-## WP2-01: Chốt cấu trúc kết quả chẩn đoán
+## WP2-01: Trả RAG evidence đầy đủ, không tạo summary ghép chuỗi
 
-- Mục tham chiếu: `00_OVERVIEW.md`, mục 2–6.
-- Mục tiêu: xác định thông tin chính cần ưu tiên và hành vi khi dữ liệu tùy chọn bị thiếu.
-- Ước lượng: S.
+- Mục tham chiếu: `00_OVERVIEW.md`, mục 2–5.
+- Mục tiêu: sử dụng trực tiếp evidence mà retriever đã tạo và ngừng biến CV, rule và RAG thành một đoạn recommendation.
+- Ước lượng: M.
 
 **Hành vi thay đổi**
 
 | Tình huống | Hành vi hiện tại | Hành vi sau thay đổi |
 |---|---|---|
-| Có confidence | Một dòng metadata gồm confidence, model và thời điểm | Phần trăm nổi bật kèm thanh tiến trình |
-| Có recommendation dạng văn bản | Hiển thị trong blockquote | Không hiển thị trong khối kết quả chính |
-| Có treatment rule | Bảng bốn dòng | Card có ba nhóm thông tin chính và khu vực nguồn riêng |
-| Có nhiều nguồn ngăn bằng dấu phẩy | Hiển thị nguyên chuỗi | Hiển thị các nguồn ngăn bằng `·` |
-| Thiếu source hoặc version | Dòng nguồn vẫn phụ thuộc toàn bộ rule | Chỉ hiện phần có giá trị; ẩn cả khu vực nếu thiếu cả hai |
+| Retriever tìm được chunk | Metadata đầy đủ tồn tại trong retriever nhưng diagnosis response chỉ giữ content/source/similarity | Diagnosis response giữ thêm chunk/document ID, title và version |
+| Tạo recommendation | Writer chọn evidence rồi ghép với CV/rule thành `summary` | Không gọi writer cho diagnosis; recommendation chỉ giữ thông tin chọn rule và yêu cầu duyệt |
+| RAG lỗi hoặc rỗng | Rule path vẫn chạy, summary không có phần evidence | Giữ nguyên rule path; `rag_evidence=[]` |
 
 **Hướng làm**
 
-- Dùng dữ liệu sẵn có trong `diagnosis`; không biến đổi contract hoặc gọi thêm API.
-- Ưu tiên thuốc, liều và thời gian cách ly vì đây là dữ liệu có cấu trúc phục vụ thao tác tiếp theo.
-- Giữ nguyên điều kiện hiển thị theo `approvalStatus`, `canDecide`, `needsRetake` và `treatmentRule`.
+- Mở rộng `DiagnoseRagEvidence` bằng `chunk_id`, `document_id`, `document_title` và `document_version`.
+- Map trực tiếp các field đã có từ `RAGRetriever`; không đổi chunking, embedding, ranking hoặc corpus.
+- Cho `DiagnoseRecommendation.summary` nullable/deprecated trong contract chuyển tiếp.
+- Ngừng gọi `recommendation_writer` trong diagnosis path; không xóa class/dependency dùng chung trong phase này.
+- Giữ nguyên `selected_rule_id` và `requires_engineer_approval` để Backend tiếp tục xác thực rule.
 
 **Phạm vi ảnh hưởng**
 
-- Module: frontend web của Farm.
-- File chính: `frontend/src/apps/farm/components/DiagnosisPanel.tsx`.
-- Endpoint, bảng DB, biến môi trường: không đổi.
-- Role và client bị ảnh hưởng: người dùng web Farm nhìn thấy kết quả chẩn đoán; quyền thao tác không đổi.
-- Tương thích ngược và dữ liệu cũ: payload và dữ liệu cũ tiếp tục dùng được, không cần migration.
+- Module: AI.
+- File chính: `ai/app/api/schemas.py`, `ai/app/services/inference_service.py`, node tạo recommendation và test diagnosis.
+- Endpoint: `POST /api/v1/disease/diagnose`.
+- Data/infra: không migration vector DB, không re-ingest, không đổi biến môi trường.
+- Tương thích ngược: thay đổi metadata là additive; `summary` được giữ nullable trong cửa sổ chuyển tiếp.
 
 **Kết quả đầu ra**
 
-- Cấu trúc hiển thị mới dùng đúng các trường hiện có và không thay đổi điều kiện nghiệp vụ.
+- AI trả tối đa các evidence hiện có với metadata đầy đủ, nội dung nguyên retriever và không tạo đoạn summary tổng hợp.
 
-**Phụ thuộc, lưu ý**: quyết định Q1 ở `00_OVERVIEW.md` cần được xác nhận khi review.
+**Phụ thuộc, lưu ý**: không sửa endpoint Knowledge hoặc symptom suggestion.
 
-## WP2-02: Triển khai card điều trị và responsive
+## WP2-02: Lưu và trả knowledge evidence qua Backend
 
 - Mục tham chiếu: WP2-01.
-- Mục tiêu: hiện thực cấu trúc mới bằng markup ngữ nghĩa và CSS phù hợp desktop/mobile.
-- Ước lượng: S.
+- Mục tiêu: evidence không bị mất sau request và được trả đúng quyền cùng diagnosis.
+- Ước lượng: L.
 
 **Hành vi thay đổi**
 
 | Tình huống | Hành vi hiện tại | Hành vi sau thay đổi |
 |---|---|---|
-| Desktop | Treatment rule dạng bảng dọc | Ba fact card cùng hàng trong card điều trị |
-| Màn hình tối đa 640 px | Không có layout riêng cho bảng | Ba fact card xếp thành một cột |
-| Công nghệ hỗ trợ đọc nội dung | Confidence là văn bản thường | `progress` có `aria-label`; section nối với heading bằng `aria-labelledby` |
+| Lưu AI diagnosis | Backend chỉ lưu `recommendation.summary` | Backend lưu snapshot `rag_evidence`; `recommendationText` của AI mới có thể null |
+| Đọc diagnosis | Response có treatment rule và text | Response thêm `knowledgeEvidence`; text được giữ để tương thích nhưng web không dùng |
+| FARMER đọc PENDING/REJECTED | Các field diagnosis bị che theo trạng thái | Evidence bị che cùng các field hiện có |
+| AI trả rule không hợp lệ | Backend từ chối rule ID/version | Giữ nguyên hành vi, evidence không ảnh hưởng kết quả xác thực |
 
 **Hướng làm**
 
-- Thay markup bảng bằng `section`, `dl`, `dt` và `dd` trong `DiagnosisPanel`.
-- Tạo class riêng cho confidence, treatment card, facts và source; không dùng inline style.
-- Style pseudo-element của `progress` cho trình duyệt WebKit và Firefox.
-- Giữ màu từ biến theme hiện có; giới hạn CSS mới trong các class của khối chẩn đoán.
+- Migration Farm thêm `knowledge_evidence jsonb NOT NULL DEFAULT '[]'` và cho phép `recommendation_text` null.
+- Mở rộng `AiDiagnoseResponse.RagEvidence` theo contract AI.
+- Lưu snapshot evidence theo thứ tự trả về; áp giới hạn hợp lý cho số phần tử, content và source ID.
+- Thêm DTO `KnowledgeEvidenceResponse` vào `DiagnosisResponse`.
+- Resolve source ID bằng `FarmKnowledgeNamespace.sources()`; nếu thiếu metadata vẫn giữ source ID.
+- Giữ nguyên lookup disease, selected rule, rule version và `TreatmentRuleService.toResponse()`.
+- Diagnosis cũ nhận `knowledgeEvidence=[]`; không parse hoặc backfill `recommendationText`.
+- Diagnosis thủ công tiếp tục dùng text hiện có; không thay flow manual.
+- Cập nhật mapper che dữ liệu cho FARMER khi diagnosis chưa được phép hiển thị.
 
 **Phạm vi ảnh hưởng**
 
-- Module: frontend web.
-- File chính: `frontend/src/apps/farm/components/DiagnosisPanel.tsx`, `frontend/src/styles.css`.
-- Endpoint, bảng DB, biến môi trường: không đổi.
-- Role và client bị ảnh hưởng: mọi role được phép xem nội dung chẩn đoán trên web Farm.
-- Tương thích ngược và dữ liệu cũ: không ảnh hưởng.
+- Module: `app-farm`, migration Farm và integration test trong `dx-host`.
+- File chính: `Diagnosis`, `AiDiagnoseResponse`, `DiagnosisResponse`, `DiagnosisService`, `DiseaseReportService` và migration mới.
+- Endpoint: các endpoint hiện có trả `DiagnosisResponse`; không thêm endpoint.
+- Role: ENGINEER/ADMIN xem diagnosis PENDING; FARMER chỉ nhận nội dung khi trạng thái hiện tại cho phép.
+- Tương thích ngược: field response mới là additive; dữ liệu text cũ được giữ nguyên.
 
 **Kết quả đầu ra**
 
-- Card đúng bố cục ở desktop và chuyển một cột ở màn hình hẹp; nhãn và heading có liên kết truy cập rõ ràng.
+- Evidence còn nguyên sau reload, có source metadata và không tham gia quyết định thuốc/liều/PHI.
 
-**Phụ thuộc, lưu ý**: không thay đổi các selector chung ngoài phạm vi chẩn đoán.
+**Phụ thuộc, lưu ý**: JSONB chỉ là snapshot của diagnosis, không dùng cho search hoặc BI.
 
-## WP2-03: Kiểm tra và chốt phạm vi
+## WP2-03: Hiển thị evidence trên web hiện tại
+
+- Mục tham chiếu: WP2-02.
+- Mục tiêu: bổ sung giá trị RAG vào UI mà không thay lại confidence/treatment card đã có.
+- Ước lượng: M.
+
+**Hành vi thay đổi**
+
+| Tình huống | Hành vi hiện tại | Hành vi sau thay đổi |
+|---|---|---|
+| Có treatment rule | Web hiện card thuốc, liều, PHI, source và version | Giữ nguyên card hiện có |
+| Có evidence | Web không hiển thị | Hiện khối “Thông tin tham khảo từ tài liệu” dưới treatment card |
+| Evidence rỗng/RAG lỗi | Không có dấu hiệu riêng | Không dựng knowledge card; thao tác nghiệp vụ giữ nguyên |
+| Có `recommendationText` cũ | Web hiện không render | Tiếp tục không render; không đưa cục text trở lại UI |
+
+**Hướng làm**
+
+- Mở rộng type `Diagnosis` bằng `knowledgeEvidence` và type nguồn tương ứng.
+- Render mỗi evidence thành một article ngắn gồm document title, content, độ liên quan và `SourceList`.
+- Dùng content như text thuần; không render HTML và không suy ra thuốc/liều/PHI từ chuỗi.
+- Giữ responsive layout, confidence/progress, treatment card và điều kiện nút hiện có.
+- Không thêm section mapping, legacy text fallback hoặc `TreatmentRule.notes`.
+
+**Phạm vi ảnh hưởng**
+
+- Module: frontend web Farm.
+- File chính: `frontend/src/apps/farm/types.ts`, `DiagnosisPanel.tsx`, stylesheet nếu knowledge card cần class riêng.
+- Endpoint/data/config: chỉ dùng response WP2-02, không gọi thêm API.
+- Role: mọi role đang được phép thấy diagnosis; quyền không đổi.
+- Mobile/Lab: không thay đổi.
+
+**Kết quả đầu ra**
+
+- Web hiển thị rule và evidence ở hai khối riêng; không hiển thị summary/text tổng hợp.
+
+**Phụ thuộc, lưu ý**: nội dung chunk có thể chứa nhiều dòng; `white-space: pre-line` là đủ trong phase này.
+
+## WP2-04: Kiểm thử và chốt tài liệu
 
 - Mục tham chiếu: `03_TEST_PLAN.md`.
-- Mục tiêu: chứng minh thay đổi build được, không làm mất thao tác nghiệp vụ và không kéo theo phạm vi ngoài UI.
-- Ước lượng: S.
-
-**Hành vi thay đổi**
-
-| Tình huống | Hành vi hiện tại | Hành vi sau thay đổi |
-|---|---|---|
-| Kiểm tra phase | Chưa có bằng chứng riêng | Có build, diff check và kiểm tra thủ công theo ma trận dữ liệu |
+- Mục tiêu: kiểm chứng contract, persistence, phân quyền và UI trong đúng phạm vi phase.
+- Ước lượng: M.
 
 **Hướng làm**
 
-- Chạy `npm run build` tại `frontend` và `git diff --check`.
-- Kiểm tra thủ công với confidence/treatment rule có và không có dữ liệu tùy chọn.
-- Kiểm tra desktop, chiều rộng 640 px và nhỏ hơn 640 px.
-- Xác nhận nút duyệt, từ chối, yêu cầu ảnh mới và ghi nhận phun vẫn theo điều kiện cũ.
-- Đọc diff để bảo đảm không đổi API, type, backend hoặc stylesheet không liên quan.
+- Chạy unit/contract test AI cho evidence có/không có RAG và rule selection.
+- Chạy Backend integration test cho migration, persistence, rule validation và masking.
+- Build frontend; kiểm tra UI có evidence, evidence rỗng và responsive.
+- Chạy hồi quy duyệt/từ chối/ghi nhận phun và PHI liên quan trực tiếp.
+- Cập nhật OpenAPI và tài liệu trạng thái cuối sau khi test đạt.
 
 **Phạm vi ảnh hưởng**
 
-- Module: frontend web và tài liệu phase.
-- File chính: các file ở WP2-02 cùng thư mục plan này.
-- Endpoint, bảng DB, biến môi trường: không đổi.
-- Role và client bị ảnh hưởng: không đổi quyền; chỉ xác nhận hồi quy cho web Farm.
-- Tương thích ngược và dữ liệu cũ: không cần xử lý.
+- Module: AI, Backend Farm/host test, frontend web và docs.
+- Không chạy lại ingest/ranking test, Lab E2E hoặc mobile build vì các phần này không đổi.
 
 **Kết quả đầu ra**
 
-- Các case bắt buộc trong `03_TEST_PLAN.md` đạt và có bằng chứng; diff chỉ còn thay đổi thuộc phạm vi phase.
+- Các case bắt buộc đạt, diff chỉ nằm trong phạm vi đã chốt và có bằng chứng kiểm thử.
 
-**Phụ thuộc, lưu ý**: không ghi một case là đạt nếu chưa thực sự chạy.
-
-## Thay đổi hợp đồng (API, schema, cấu hình)
+## Thay đổi hợp đồng
 
 | Loại | Đối tượng | Thay đổi | Phá tương thích? |
 |---|---|---|---|
-| Endpoint | API chẩn đoán hiện có | Không đổi | Không |
-| Interface/DTO | `Diagnosis` và `TreatmentRule` phía frontend | Không đổi | Không |
-| Bảng DB | Chẩn đoán và treatment rule | Không đổi | Không |
-| Biến môi trường | Frontend và deploy | Không đổi | Không |
-| UI | Khối kết quả trong `DiagnosisPanel` | Đổi cấu trúc trình bày | Không đổi contract; có thay đổi thông tin hiển thị |
+| AI response | `DiagnoseRagEvidence` | Thêm chunk/document metadata | Không, additive |
+| AI response | `DiagnoseRecommendation.summary` | Nullable/deprecated | Không nếu Backend mới được triển khai cùng phase |
+| Backend response | `DiagnosisResponse` | Thêm `knowledgeEvidence` | Không, additive |
+| Backend response | `recommendationText` | Giữ field nhưng AI mới có thể trả null | Không; field đã nullable ở client |
+| Bảng DB | `diagnoses` | Thêm JSONB evidence, bỏ `NOT NULL` của text | Không mất dữ liệu cũ |
+| Vector DB/corpus | Không đổi | Không migration hoặc re-ingest | Không |
 
 ## Dữ liệu, migration và rollback
 
-- Migration: không có.
-- Dữ liệu cũ: tiếp tục hiển thị từ payload hiện có, không backfill hoặc chuyển đổi.
-- Rollback: revert markup và CSS của hai file frontend; không mất dữ liệu hoặc cần rollback backend.
+- Migration: thêm `knowledge_evidence jsonb NOT NULL DEFAULT '[]'`; bỏ ràng buộc `NOT NULL` của `recommendation_text`.
+- Dữ liệu cũ: giữ nguyên text, evidence mặc định rỗng, không backfill.
+- Dữ liệu mới: AI diagnosis lưu evidence và có thể để text null; manual diagnosis giữ hành vi hiện tại.
+- Rollback ứng dụng: web bỏ knowledge card, Backend ngừng ghi field mới, AI có thể trả contract cũ trong cửa sổ tương thích.
+- Không drop column trong rollback khẩn cấp để tránh mất evidence đã ghi.
 
-## Quyết định thiết kế đã chốt
+## Quyết định thiết kế đề xuất
 
 | # | Quyết định | Lý do ngắn |
 |---|---|---|
-| D1 | Ưu tiên treatment rule có cấu trúc trong khối kết quả | Thuốc, liều và PHI dễ quét và phục vụ thao tác tiếp theo |
-| D2 | Dùng HTML ngữ nghĩa thay cho bảng trình bày | Diễn đạt quan hệ nội dung rõ hơn và dễ responsive |
-| D3 | Responsive bằng breakpoint 640 px | Giữ ba cột trên desktop và tránh tràn trên màn hình hẹp |
-| D4 | Không đổi contract hoặc nghiệp vụ | Phase chỉ cải thiện giao diện kết quả |
+| D1 | Tái sử dụng `rag_evidence` và retriever hiện có | Đạt mục tiêu mà không đổi ingestion/ranking |
+| D2 | Treatment rule là nguồn duy nhất cho dữ liệu điều trị | Backend xác thực và dùng trực tiếp cho nghiệp vụ |
+| D3 | Lưu JSONB snapshot theo diagnosis | Payload nhỏ, cần giữ đúng evidence đã dùng tại thời điểm chẩn đoán |
+| D4 | Web không hiển thị legacy text | Không đưa “cục text” trở lại giao diện |
+| D5 | Mobile và section hóa evidence là follow-up | Giữ phase đúng phạm vi của nhánh hiện tại |

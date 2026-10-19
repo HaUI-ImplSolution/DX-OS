@@ -1,98 +1,125 @@
-# Phase 2: Cấu trúc hóa giao diện kết quả chẩn đoán
+# Phase 2: Hiển thị bằng chứng RAG trong kết quả chẩn đoán
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Đã lập kế hoạch, chờ triển khai |
+| Trạng thái | Draft, chờ đánh giá |
 | Mức độ | Quan trọng |
 | Nhóm ưu tiên | B |
-| Ứng dụng và module chính | Frontend web của `app-farm` |
-| Ước lượng | 0,5 ngày |
-| Người phụ trách | Nhóm Frontend |
-| Bắt đầu, dự kiến xong | Sau khi kế hoạch được duyệt; trong 0,5 ngày làm việc |
-| Phụ thuộc | API chẩn đoán và treatment rule hiện có |
+| Ứng dụng và module chính | AI, `app-farm`, frontend web |
+| Ước lượng | 2–3 ngày làm việc |
+| Người phụ trách | Nhóm AI, Backend và Frontend |
+| Bắt đầu, dự kiến xong | Sau khi kế hoạch được duyệt; trong 2–3 ngày làm việc |
+| Phụ thuộc | Luồng AI diagnosis, treatment rule và `rag_evidence` hiện có |
+
+Kế hoạch được xây dựng trên code hiện tại của nhánh `feat/structured-siagnosis-result-ui`.
+Khối confidence, treatment rule và responsive layout đã có trên web là baseline và không được triển khai lại.
 
 ## 1. Tham chiếu
 
 | Nguồn yêu cầu | Nội dung | Mức độ | Phạm vi trong phase này |
 |---|---|---|---|
-| Yêu cầu UI ngày 19/10/2026 | Cấu trúc hóa cách hiển thị kết quả chẩn đoán và điều trị | Quan trọng | Toàn bộ |
-| `DiagnosisPanel` trên `origin/Khuong/main` | Kết quả đang dùng dòng metadata, blockquote và bảng treatment rule | Quan trọng | Chỉ khối kết quả chẩn đoán |
-| [Frontend README](../../frontend/README.md) | Web dùng chung, Farm cung cấp màn hình nghiệp vụ chẩn đoán | Theo dõi | Chỉ giao diện Farm |
+| Yêu cầu ngày 19/10/2026 | Không ghép CV, treatment rule và RAG thành một đoạn `recommendationText` | Quan trọng | Toàn bộ |
+| AI diagnosis contract hiện tại | AI đã trả `rag_evidence` nhưng Backend chưa lưu | Quan trọng | Bổ sung metadata, lưu và trả evidence |
+| UI kết quả trên nhánh hiện tại | Web đã ưu tiên treatment rule và không còn render text tổng hợp | Quan trọng | Giữ UI hiện có, thêm khối evidence riêng |
 
 ## 2. Lý do
 
-- Kết quả hiện tại trình bày confidence, model, thời điểm chẩn đoán và phác đồ trong các dòng văn bản/bảng đơn giản nên khó quét nhanh.
-- Các dữ liệu hành động quan trọng gồm thuốc, liều lượng và thời gian cách ly cần được phân nhóm rõ hơn cho kỹ sư và quản trị viên.
-- Giao diện cần giữ khả năng đọc trên màn hình hẹp mà không thay đổi nghiệp vụ phía sau.
+- AI hiện ghép CV, treatment rule và nội dung RAG thành `recommendation.summary`; Backend lưu chuỗi này vào `recommendationText`.
+- AI đồng thời đã trả `rag_evidence` có cấu trúc, nhưng Backend bỏ qua trường này nên evidence và nguồn bị mất sau request.
+- Web hiện không render `recommendationText`; vì vậy RAG vẫn chạy nhưng chưa tạo giá trị trên màn hình kết quả chẩn đoán.
+- Treatment rule phải tiếp tục là nguồn duy nhất cho thuốc, liều và PHI; evidence RAG chỉ dùng làm thông tin tham khảo có nguồn.
 
 ## 3. Tổng quan sửa đổi
 
-Sẽ đổi confidence từ một dòng metadata thành phần trăm kèm thanh tiến trình có nhãn hỗ trợ truy cập.
-Sẽ thay bảng treatment rule bằng card ngữ nghĩa gồm thuốc, liều lượng và thời gian cách ly.
-Sẽ tách nguồn và phiên bản treatment rule thành khu vực riêng, đồng thời định dạng danh sách nguồn dễ đọc hơn.
-Khối kết quả chính sẽ ưu tiên dữ liệu có cấu trúc và không còn hiển thị recommendation dạng văn bản tự do, model version hoặc thời điểm chẩn đoán.
-Lưới ba cột sẽ chuyển về một cột trên màn hình rộng tối đa 640 px.
+AI sẽ ngừng tạo đoạn summary ghép CV, rule và RAG cho diagnosis, đồng thời chuyển metadata tài liệu/chunk đã có trong retriever vào `rag_evidence`.
+Backend sẽ tiếp tục xác thực disease và treatment rule như hiện tại, lưu snapshot evidence cùng diagnosis và trả evidence qua DTO riêng.
+Web sẽ giữ nguyên confidence/treatment card hiện có và bổ sung khối “Thông tin tham khảo từ tài liệu”.
+`recommendationText` được giữ trong database/API để đọc dữ liệu cũ và phục vụ chẩn đoán thủ công, nhưng web không hiển thị lại trường này.
 
 | Module hoặc lớp | Có thay đổi | Ghi chú ngắn |
 |---|---|---|
-| `dx-core-api` (interface, DTO) | Không | Giữ hợp đồng hiện tại |
-| `dx-core` (cài đặt dùng chung) | Không | Không ảnh hưởng |
-| `app-farm` | Không | Không đổi backend nghiệp vụ |
-| `app-lab` | Không | Không ảnh hưởng |
-| `dx-host` (chạy, chọn app) | Không | Không ảnh hưởng |
-| Frontend (web) | Có | `DiagnosisPanel` và CSS dùng cho kết quả chẩn đoán Farm |
-| Mobile | Không | Không thay đổi giao diện mobile |
-| AI | Không | Không đổi mô hình hoặc confidence |
-| Data / Seed / Migration | Không | Không có migration |
-| Infra / Deploy / CI | Không | Không đổi cấu hình |
-| Docs | Có | Bổ sung kế hoạch phase này |
+| `dx-core-api` | Không | Không đổi interface dùng chung |
+| `dx-core` | Không | Không đổi cài đặt dùng chung |
+| `app-farm` | Có | Lưu và trả evidence, giữ rule validation và masking |
+| `app-lab` | Không | Không đổi dữ liệu hoặc chức năng Lab |
+| `dx-host` | Có một phần | Bổ sung integration test Farm nếu cần |
+| Frontend web | Có | Bổ sung knowledge evidence card vào UI hiện có |
+| Mobile | Không | Để follow-up riêng |
+| AI | Có | Mở rộng evidence và ngừng tạo summary ghép chuỗi |
+| Data / Migration | Có | Thêm snapshot evidence và cho phép text nullable |
+| Infra / Deploy | Không | Không đổi cấu hình hoặc job ingest |
+| Docs | Có | Cập nhật contract và tài liệu phase |
 
 ## 4. Phạm vi
 
-- Trong phạm vi: bố cục confidence, treatment rule, nguồn, phiên bản và responsive của kết quả chẩn đoán trên web Farm.
-- Trong phạm vi: dùng phần tử HTML ngữ nghĩa `progress`, `section` và `dl` cùng nhãn truy cập phù hợp.
-- Ngoài phạm vi: tạo hoặc duyệt chẩn đoán, yêu cầu chụp lại, áp dụng điều trị, lịch sử chẩn đoán và mọi endpoint liên quan.
-- Ngoài phạm vi: thay đổi dữ liệu trả về, công thức confidence, nội dung treatment rule, phân quyền và giao diện mobile/Lab.
-- Giả định: `confidence` tiếp tục nằm trong khoảng 0–1; `treatmentRule` dùng cùng cấu trúc hiện có.
-- Ranh giới Core/App: không thêm hoặc đổi interface; thay đổi nằm hoàn toàn trong component và stylesheet frontend Farm.
+- Trong phạm vi: bổ sung `chunkId`, `documentId`, `documentTitle` và `documentVersion` vào `rag_evidence`; giữ `content`, `sourceIds` và `similarity` hiện có.
+- Trong phạm vi: Backend lưu evidence theo đúng thứ tự AI trả và resolve source ID bằng catalogue Farm hiện có.
+- Trong phạm vi: `treatmentRule` tiếp tục là nguồn duy nhất cho thuốc, liều, đơn vị, PHI, source và version của phác đồ.
+- Trong phạm vi: web hiển thị evidence thành các đoạn ngắn riêng, kèm tên tài liệu, độ liên quan và nguồn.
+- Trong phạm vi: evidence rỗng hoặc RAG lỗi không làm hỏng diagnosis có treatment rule.
+- Trong phạm vi: giữ masking PENDING/REJECTED đối với FARMER và giữ nguyên dữ liệu diagnosis cũ.
+- Ngoài phạm vi: đổi cách chunk, thêm section enum, re-ingest corpus hoặc thay ranking/embedding.
+- Ngoài phạm vi: sửa Knowledge page, symptom suggestion, Lab hoặc mobile.
+- Ngoài phạm vi: hiển thị lại `recommendationText` cũ trên web, hiển thị `TreatmentRule.notes` hoặc chuẩn hóa water volume/application method.
+- Ngoài phạm vi: xóa toàn bộ LLM writer/dependency; phase chỉ ngừng dùng writer để tạo summary cho diagnosis.
+- Ngoài phạm vi: mở rộng corpus hoặc đánh giá RAG production-grade.
+- Giả định: retriever tiếp tục trả tối đa ba chunk và source ID có thể resolve qua `FarmKnowledgeNamespace`.
 
-## 5. Ưu điểm và hạn chế
+## 5. Ranh giới dữ liệu
 
-- Ưu điểm: thông tin cần hành động được phân cấp rõ, dễ quét và phù hợp màn hình hẹp.
-- Ưu điểm: cấu trúc `progress`, `section`, `dl`, `dt`, `dd` diễn đạt ngữ nghĩa tốt hơn bảng trình bày cũ.
-- Hạn chế: model version, thời điểm chẩn đoán và recommendation dạng văn bản tự do không còn xuất hiện trong khối kết quả chính.
-- Hạn chế: màu thanh tiến trình chỉ biểu diễn confidence, không tự diễn giải đây là mức an toàn hoặc quyết định phê duyệt.
+| Nhóm | Nguồn đúng | Cách dùng |
+|---|---|---|
+| Nhận diện | `cvResult` | Tên bệnh, confidence và metadata model |
+| Điều trị | Backend `treatmentRule` | Thuốc, liều, PHI, nguồn và phiên bản rule |
+| Tham khảo | `knowledgeEvidence` từ RAG | Đoạn tài liệu, độ liên quan và nguồn; không tham gia thực thi nghiệp vụ |
+| Quyết định | Backend workflow và kỹ sư | Duyệt, từ chối và cho phép ghi nhận phun |
 
-## 6. Kết quả đầu ra mong đợi (Definition of Done)
+Nếu evidence nhắc tới hóa chất, nội dung đó vẫn chỉ là trích đoạn tham khảo và không được ghi đè treatment rule.
 
-- Demo được: mở một báo cáo có chẩn đoán và thấy confidence dạng phần trăm/thanh tiến trình cùng card phác đồ điều trị.
-- Card hiển thị đúng mã thuốc, một giá trị hoặc khoảng liều, đơn vị và số ngày cách ly từ payload hiện có.
-- Nguồn phân tách bằng dấu phẩy được trình bày thành các mục ngăn bằng `·`; phiên bản chỉ hiện khi có dữ liệu.
-- Khi không có confidence hoặc treatment rule, giao diện không dựng khối tương ứng và các thao tác còn lại vẫn hoạt động.
-- Ở chiều rộng tối đa 640 px, ba trường treatment chuyển thành một cột và không tràn ngang.
-- `npm run build` trong `frontend` đạt; `git diff --check` đạt.
-- Không có thay đổi API, schema, dữ liệu, backend, mobile, AI, deploy hoặc quyền người dùng.
-- Bằng chứng: kết quả build, đọc diff và ảnh chụp desktop/mobile khi kiểm tra thủ công.
+## 6. Ưu điểm và hạn chế
 
-## 7. Phụ thuộc và thứ tự
+- Ưu điểm: tận dụng contract/retriever hiện có, không tái thiết kế pipeline RAG.
+- Ưu điểm: giữ được giá trị RAG và provenance mà không lặp CV, thuốc, liều và PHI trong một đoạn văn.
+- Ưu điểm: không ảnh hưởng Knowledge, symptom suggestion, Lab hoặc mobile.
+- Hạn chế: evidence vẫn là chunk văn bản ngắn, chưa được phân loại thành triệu chứng/phòng ngừa/lây lan.
+- Hạn chế: bản ghi cũ không có evidence để khôi phục và web tiếp tục không hiển thị `recommendationText`.
+- Trade-off và rủi ro chính được ghi tại `04_TRADEOFFS_RISKS.md`.
 
-- WP2-01 chốt cấu trúc thông tin trước WP2-02.
-- WP2-02 hoàn tất trước kiểm tra responsive, accessibility và hồi quy ở WP2-03.
-- Không có phase sau phụ thuộc bắt buộc vào thay đổi này.
+## 7. Kết quả đầu ra mong đợi (Definition of Done)
 
-## 8. Ảnh hưởng đến thi
+- AI diagnosis trả evidence có đủ metadata tài liệu/chunk mà không cần một summary ghép CV, rule và RAG.
+- Backend lưu và trả lại evidence không đổi sau khi reload diagnosis.
+- Backend vẫn reload treatment rule từ database và từ chối rule ID/version không hợp lệ như hiện tại.
+- Web hiển thị confidence, treatment card và knowledge evidence card thành ba khu vực riêng.
+- Thuốc, liều và PHI không xuất hiện từ evidence hoặc `recommendationText` trên web.
+- Evidence rỗng/RAG lỗi chỉ làm ẩn knowledge card; các thao tác duyệt, từ chối và ghi nhận phun vẫn hoạt động.
+- Diagnosis cũ và diagnosis thủ công vẫn đọc được; không parse hoặc backfill text cũ.
+- AI test, Backend integration test, frontend build và `git diff --check` đạt.
+- Bằng chứng: contract test, persistence test và ảnh web cho trường hợp có/không có evidence.
 
-- Cải thiện khả năng trình diễn luồng AI chẩn đoán → kỹ sư duyệt → áp dụng phác đồ của DX-Farm.
-- Làm rõ các dữ liệu VietGAP quan trọng gồm thuốc, liều và thời gian cách ly mà không thay đổi luật poka-yoke phía backend.
+## 8. Phụ thuộc và thứ tự
 
-## 9. Câu hỏi mở và quyết định cần chốt
+- WP2-01 chốt contract AI trước WP2-02.
+- WP2-02 hoàn tất DTO/persistence trước khi WP2-03 nối UI.
+- WP2-04 kiểm tra toàn bộ sau khi ba lớp đã khớp contract.
 
-| # | Câu hỏi | Lựa chọn | Hạn chốt | Kết luận |
-|---|---|---|---|---|
-| Q1 | Có giữ recommendation dạng văn bản, model version và thời điểm chẩn đoán trong khối kết quả chính không? | Giữ / bỏ để ưu tiên dữ liệu có cấu trúc | Trước khi triển khai | Chọn bỏ khỏi khối kết quả chính trong phase này |
+## 9. Ảnh hưởng đến thi
 
-## 10. Tài liệu cần cập nhật khi xong
+- Làm rõ RAG cung cấp evidence có nguồn, không tự kê đơn.
+- Chứng minh treatment rule và human-in-the-loop vẫn kiểm soát dữ liệu an toàn.
+- Cho thấy RAG tạo giá trị trực tiếp trên kết quả chẩn đoán thay vì chỉ chạy trong pipeline.
 
-- [ ] Không thay đổi README hoặc CHANGELOG ở bước lập kế hoạch; chỉ cập nhật trạng thái cuối khi phase hoàn thành.
-- [ ] Chỉ cập nhật `CHANGELOG.md` nếu maintainer yêu cầu ghi thay đổi UI nhỏ này vào release note.
-- [ ] Không cập nhật Swagger, kiến trúc, `.env.example` hoặc migration vì hợp đồng và vận hành không đổi.
+## 10. Quyết định cần chốt
+
+| # | Quyết định | Lựa chọn | Đề xuất |
+|---|---|---|---|
+| Q1 | Cách lưu evidence | JSONB snapshot / bảng con | JSONB snapshot vì payload nhỏ và chỉ đọc cùng diagnosis |
+| Q2 | Xử lý `recommendationText` | Xóa ngay / deprecate | Deprecate, cho phép null với AI mới và giữ dữ liệu cũ/manual |
+| Q3 | Cách trình bày evidence | Danh sách chunk / phân loại section | Danh sách chunk trong phase này; section hóa để follow-up |
+
+## 11. Tài liệu cần cập nhật khi xong
+
+- [ ] OpenAPI/contract của AI và Backend.
+- [ ] `ai/README.md` về diagnosis response.
+- [ ] `CHANGELOG.md` nếu maintainer yêu cầu ghi thay đổi contract/UI.
+- [ ] `docs/BACKLOG.md` nếu quyết định mở follow-up cho mobile hoặc section hóa evidence.

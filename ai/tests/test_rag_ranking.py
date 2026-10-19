@@ -36,6 +36,7 @@ def row(title, code, distance, content="nội dung"):
         id=f"chunk-{code}-{distance}",
         document_id=f"doc-{code}",
         document=document,
+        chunk_index=0,
         content=content,
         page_number=None,
     )

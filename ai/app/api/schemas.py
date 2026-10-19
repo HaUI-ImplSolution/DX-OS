@@ -74,6 +74,7 @@ class DiagnoseCvResult(BaseModel):
 class DiagnoseRagEvidence(BaseModel):
     content: str = Field(min_length=1)
     document_title: str | None = None
+    chunk_index: int | None = None
     source_ids: list[str] = Field(default_factory=list)
     similarity: float
 

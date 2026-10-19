@@ -47,6 +47,7 @@ def main() -> None:
                 {
                     "content": "Ưu tiên biện pháp canh tác và quản lý nước hợp lý.",
                     "document_title": "Bệnh đạo ôn trên lúa",
+                    "chunk_index": 2,
                     "source_ids": ["SRC_IRRI_BLAST"],
                     "similarity": 0.91,
                 }
@@ -91,6 +92,7 @@ def main() -> None:
         "requires_engineer_approval": True,
     }
     assert body["rag_evidence"][0]["document_title"] == "Bệnh đạo ôn trên lúa"
+    assert body["rag_evidence"][0]["chunk_index"] == 2
     assert set(body) == {
         "request_id",
         "cv_result",

@@ -48,10 +48,14 @@ import java.time.Duration;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
@@ -196,24 +200,46 @@ public class DiagnosisService {
     return savePending(diagnosis);
   }
 
-  // Source ids are resolved against the catalogue when saved so the stored passage keeps its
-  // citations.
+  // Source ids are resolved against the catalogue when saved so the passage keeps its citations.
   private List<KnowledgeEvidence> toKnowledgeEvidence(
       List<AiDiagnoseResponse.RagEvidence> ragEvidence) {
     if (ragEvidence == null) {
       return List.of();
     }
     Map<String, KnowledgeSource> catalogue = knowledgeNamespace.sources();
-    return ragEvidence.stream().filter(item -> item.content() != null && !item.content().isBlank())
-        .limit(MAX_KNOWLEDGE_EVIDENCE)
-        .map(
-            item -> new KnowledgeEvidence(abbreviate(item.content(), MAX_EVIDENCE_CONTENT_LENGTH),
-                item.documentTitle(), item.similarity() == null ? 0 : item.similarity(),
+    return mergeByDocument(
+        ragEvidence.stream().filter(item -> item.content() != null && !item.content().isBlank())
+            .map(item -> new KnowledgeEvidence(item.content(), item.documentTitle(),
+                item.similarity() == null ? 0 : item.similarity(),
                 (item.sourceIds() == null ? List.<String>of() : item.sourceIds()).stream()
                     .map(id -> catalogue.getOrDefault(id,
                         new KnowledgeSource(id, id, null, null, null, null, null)))
                     .toList()))
-        .toList();
+            .toList());
+  }
+
+  // Passages of one document become one entry: its lines without repeats, the best score and the
+  // union of its sources. A passage without a title stays on its own.
+  private static List<KnowledgeEvidence> mergeByDocument(List<KnowledgeEvidence> passages) {
+    Map<String, List<KnowledgeEvidence>> byDocument = new LinkedHashMap<>();
+    for (KnowledgeEvidence passage : passages) {
+      String key = passage.documentTitle() != null ? passage.documentTitle() : passage.content();
+      byDocument.computeIfAbsent(key, k -> new ArrayList<>()).add(passage);
+    }
+    return byDocument.values().stream().limit(MAX_KNOWLEDGE_EVIDENCE).map(group -> {
+      Set<String> lines = new LinkedHashSet<>();
+      Map<String, KnowledgeSource> sources = new LinkedHashMap<>();
+      for (KnowledgeEvidence passage : group) {
+        passage.content().lines().map(String::strip).filter(line -> !line.isEmpty())
+            .forEach(lines::add);
+        passage.sources().forEach(source -> sources.putIfAbsent(source.sourceId(), source));
+      }
+      return new KnowledgeEvidence(
+          abbreviate(String.join("\n", lines), MAX_EVIDENCE_CONTENT_LENGTH),
+          group.get(0).documentTitle(),
+          group.stream().mapToDouble(KnowledgeEvidence::score).max().orElse(0),
+          List.copyOf(sources.values()));
+    }).toList();
   }
 
   private static String abbreviate(String text, int maxLength) {
@@ -668,7 +694,7 @@ public class DiagnosisService {
 
   private static List<KnowledgeAnswerResponse.Passage> toPassages(Diagnosis diagnosis) {
     String diseaseCode = diagnosis.getDisease().getCode();
-    return diagnosis.getKnowledgeEvidence().stream()
+    return mergeByDocument(diagnosis.getKnowledgeEvidence()).stream()
         .map(item -> new KnowledgeAnswerResponse.Passage(item.content(), item.documentTitle(),
             diseaseCode, item.score(),
             item.sources().stream()

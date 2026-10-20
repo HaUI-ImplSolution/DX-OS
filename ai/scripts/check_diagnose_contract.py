@@ -46,15 +46,11 @@ def main() -> None:
             return [
                 {
                     "content": "Ưu tiên biện pháp canh tác và quản lý nước hợp lý.",
+                    "document_title": "Bệnh đạo ôn trên lúa",
                     "source_ids": ["SRC_IRRI_BLAST"],
                     "similarity": 0.91,
                 }
             ]
-
-    class Writer:
-        def write(self, evidence: str) -> tuple[str, str]:
-            assert evidence == "Ưu tiên biện pháp canh tác và quản lý nước hợp lý."
-            return evidence, "evidence_fallback"
 
     payload = DiagnoseRequest.model_validate(
         {
@@ -82,7 +78,6 @@ def main() -> None:
         db=object(),
         backend_client=Backend(),
         rag_retriever=Retriever(),
-        recommendation_writer=Writer(),
     )
     body = response.model_dump(mode="json")
 
@@ -91,12 +86,11 @@ def main() -> None:
         "path": "review_required",
         "rules": [],
     }
-    summary = body["recommendation"]["summary"]
-    assert "Ưu tiên biện pháp canh tác và quản lý nước hợp lý." in summary
-    assert body["recommendation"]["selected_rule_id"] is None
-    assert "NEWTEC" not in summary
-    assert "0.75" not in summary
-    assert "1.0 L/ha" not in summary
+    assert body["recommendation"] == {
+        "selected_rule_id": None,
+        "requires_engineer_approval": True,
+    }
+    assert body["rag_evidence"][0]["document_title"] == "Bệnh đạo ôn trên lúa"
     assert set(body) == {
         "request_id",
         "cv_result",
@@ -122,17 +116,12 @@ def main() -> None:
         db=object(),
         backend_client=BackendWithoutRule(),
         rag_retriever=Retriever(),
-        recommendation_writer=Writer(),
     ).model_dump(mode="json")
     assert review_response["structured_context"] == {
         "path": "review_required",
         "rules": [],
     }
     assert review_response["recommendation"]["selected_rule_id"] is None
-    assert (
-        "Cần kỹ sư nông nghiệp đánh giá chuyên sâu"
-        in review_response["recommendation"]["summary"]
-    )
 
     failed_events: list[str] = []
 
@@ -157,11 +146,6 @@ def main() -> None:
             failed_events.append("rag")
             raise AssertionError("RAG must not run without structured facts")
 
-    class MustNotWrite:
-        def write(self, _evidence: str) -> tuple[str, str]:
-            failed_events.append("recommendation")
-            raise AssertionError("Recommendation must not run without structured facts")
-
     try:
         run_stateless_diagnose(
             payload=payload,
@@ -170,7 +154,6 @@ def main() -> None:
             db=object(),
             backend_client=UnavailableBackend(),
             rag_retriever=MustNotRetrieve(),
-            recommendation_writer=MustNotWrite(),
         )
     except BackendClientError:
         pass

@@ -26,7 +26,6 @@ from app.graph.graph import farm_graph
 if TYPE_CHECKING:
     from sqlalchemy.orm import Session
 
-    from app.llm.recommendation_writer import GroundedRecommendationWriter
     from app.rag.retriever import RAGRetriever
     from app.services.plant_disease_service import PlantDiseaseService
 
@@ -77,7 +76,6 @@ def run_stateless_diagnose(
     db: Session,
     backend_client: BackendClient,
     rag_retriever: RAGRetriever | None = None,
-    recommendation_writer: GroundedRecommendationWriter | None = None,
 ) -> DiagnoseResponse:
     """Run the existing LangGraph and adapt its result to Backend's DTO."""
     cv_result = DiagnoseCvResult.model_validate(predictor.predict(image_bytes))
@@ -93,10 +91,6 @@ def run_stateless_diagnose(
         from app.rag.retriever import RAGRetriever
 
         rag_retriever = RAGRetriever()
-    if recommendation_writer is None:
-        from app.llm.recommendation_writer import GroundedRecommendationWriter
-
-        recommendation_writer = GroundedRecommendationWriter()
 
     def load_structured_facts(disease_code: str) -> dict[str, Any]:
         context = backend_client.get_diagnosis_context(
@@ -130,7 +124,6 @@ def run_stateless_diagnose(
             vision_tool=predictor,
             treatment_tool=load_structured_facts,
             rag_tool=retrieve_rag,
-            recommendation_writer=recommendation_writer,
         ),
     )
 
@@ -138,6 +131,7 @@ def run_stateless_diagnose(
     rag_evidence = [
         DiagnoseRagEvidence(
             content=chunk["content"],
+            document_title=chunk.get("document_title"),
             source_ids=chunk.get("source_ids", []),
             similarity=float(chunk.get("similarity", 0.0)),
         )
@@ -168,7 +162,6 @@ def run_stateless_diagnose(
         structured_context=structured_context,
         recommendation=DiagnoseRecommendation(
             selected_rule_id=selected_rule_id,
-            summary=recommendation.get("summary", ""),
             requires_engineer_approval=True,
         ),
     )

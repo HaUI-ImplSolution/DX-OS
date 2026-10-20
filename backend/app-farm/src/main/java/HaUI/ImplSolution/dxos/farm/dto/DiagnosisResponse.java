@@ -4,6 +4,7 @@ package HaUI.ImplSolution.dxos.farm.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 // @formatter:off
 @Schema(description = "AI diagnosis of a disease report. For FARMER users, PENDING exposes only"
@@ -31,7 +32,7 @@ public record DiagnosisResponse(
   // Thời điểm chẩn đoán được ghi nhận
   Instant diagnosedAt,
 
-  // Khuyến nghị dạng văn bản sinh ra từ quy tắc xử lý
+  // Khuyến nghị dạng văn bản; null với chẩn đoán do AI tạo
   String recommendationText,
 
   // Trạng thái duyệt (PENDING/APPROVED/REJECTED)
@@ -47,5 +48,10 @@ public record DiagnosisResponse(
   String rejectionReason,
 
   // Quy tắc xử lý deterministic tương ứng với bệnh
-  TreatmentRuleResponse treatmentRule
+  TreatmentRuleResponse treatmentRule,
+
+  // Đoạn tài liệu tham khảo AI tìm được, theo thứ tự liên quan; không tham gia quyết định điều trị
+  @Schema(description = "Reference passages the AI retrieved, best first; never used to decide the"
+      + " pesticide, dose or PHI. Empty for manual and older diagnoses.")
+  List<KnowledgeAnswerResponse.Passage> knowledgeEvidence
 ){}

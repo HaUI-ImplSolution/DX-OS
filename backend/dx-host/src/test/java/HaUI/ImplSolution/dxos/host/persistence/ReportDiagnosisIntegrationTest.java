@@ -145,7 +145,7 @@ class ReportDiagnosisIntegrationTest {
         new AiDiagnoseResponse.CvResult("Rice___Blast", "Blast", new BigDecimal("0.91"), "YOLO",
             "test"),
         List.of(), new AiDiagnoseResponse.StructuredContext("review_required", List.of()),
-        new AiDiagnoseResponse.Recommendation(null, "Cần kỹ sư đánh giá", true));
+        new AiDiagnoseResponse.Recommendation(null, true));
   }
 
   @Test

@@ -263,8 +263,7 @@ class ConcurrencyIntegrationTest {
               List.of(),
               new HaUI.ImplSolution.dxos.farm.dto.AiDiagnoseResponse.StructuredContext(
                   "review_required", List.of()),
-              new HaUI.ImplSolution.dxos.farm.dto.AiDiagnoseResponse.Recommendation(null,
-                  "Review required", true));
+              new HaUI.ImplSolution.dxos.farm.dto.AiDiagnoseResponse.Recommendation(null, true));
         });
     ExecutorService executor = Executors.newFixedThreadPool(2);
     try {

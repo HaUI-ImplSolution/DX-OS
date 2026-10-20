@@ -290,7 +290,7 @@ Với mọi dòng có kết quả, kiểm thêm:
 | Web và mobile `tsc` | Đạt | Không lỗi |
 | Ranh giới app và core, seed Farm, nguồn tri thức khớp registry | Đạt | Không có kết quả vi phạm |
 | E2E Farm | Đạt | 10/10 bước với `--require-rule` |
-| Tài liệu tham khảo trong chẩn đoán Farm | Đạt | Ngày 20/10/2026: lưu, tải lại, gộp các đoạn cùng tài liệu thành một mục (cả dữ liệu đã lưu trước đó), che theo vai FARMER và ẩn card khi rỗng; web ở khung 556 px không tràn; AI thật chạy với bước CV cố định, Backend nhận JSON qua AI giả; chưa thử với ảnh lá lúa thật |
+| Tài liệu tham khảo trong chẩn đoán Farm | Đạt | Ngày 20/10/2026: lưu, tải lại, gộp các đoạn cùng tài liệu thành một mục (cả dữ liệu đã lưu trước đó), che theo vai FARMER và ẩn card khi rỗng; web ở khung 556 px không tràn; 5 ảnh lá lúa thật của bộ RiceLeafDiseaseBD (mỗi lớp bệnh một ảnh) qua AI thật đều ra đúng bệnh với độ tin cậy từ 0,94 đến 0,98 và mỗi ảnh một khối tham khảo |
 | E2E Lab | Đạt | 16/16 bước với `--require-knowledge`, kể cả sau khi đổi app không `--reset` |
 | Đổi ứng dụng B1 đến B6 | Đạt | B2 dừng với thông báo nêu `[farm, lab]`; B3, B4 route app khác 404; B6 không lỗi migration |
 | Kiểm tay Farm | Đạt | F1, F2, F4 đến F12 (kỹ sư cũng thấy dashboard Superset); hộp duyệt chỉ có loại case của Farm; trên mobile đạt thẻ thời tiết, màn hỏi đáp và danh sách thông báo hiện 30 mục mới nhất; F3 chưa chạy |

@@ -18,7 +18,7 @@ import type {
   TreatmentRule,
   SymptomSuggestion,
 } from "../types";
-import { Badge, Section } from "../../../shell";
+import { Badge, Section, SourceList } from "../../../shell";
 
 interface DiagnosisPanelProps {
   onReportUpdated: (report: DiseaseReport) => void;
@@ -417,11 +417,11 @@ export default function DiagnosisPanel({
           {diagnosis.confidence != null && (
             <div className="diagnosis-confidence">
               <div>
-                <span>Độ tin cậy</span>
+                <span>Độ tin cậy của mô hình</span>
                 <strong>{Math.round(diagnosis.confidence * 100)}%</strong>
               </div>
               <progress
-                aria-label="Độ tin cậy của chẩn đoán"
+                aria-label="Độ tin cậy của mô hình"
                 max="100"
                 value={Math.round(diagnosis.confidence * 100)}
               />
@@ -461,6 +461,26 @@ export default function DiagnosisPanel({
                   )}
                 </div>
               )}
+            </section>
+          )}
+
+          {diagnosis.knowledgeEvidence && diagnosis.knowledgeEvidence.length > 0 && (
+            <section
+              className="knowledge-card"
+              aria-labelledby={`knowledge-title-${diagnosis.id}`}
+            >
+              <h4 id={`knowledge-title-${diagnosis.id}`}>Thông tin tham khảo từ tài liệu</h4>
+              <p className="knowledge-note">
+                Chỉ để tham khảo, không thay thế phác đồ đã xác thực.
+              </p>
+              {diagnosis.knowledgeEvidence.map((passage, index) => (
+                <article key={index} className="knowledge-passage">
+                  {passage.documentTitle && <strong>{passage.documentTitle}</strong>}
+                  <p>{passage.content}</p>
+                  <small>Độ liên quan của tài liệu: {Math.round(passage.score * 100)}%</small>
+                  {passage.sources.length > 0 && <SourceList sources={passage.sources} />}
+                </article>
+              ))}
             </section>
           )}
 

@@ -34,6 +34,7 @@ WHERE code NOT IN (
 
 INSERT INTO pesticides (code, name, unit, active)
 VALUES
+  ('HELP_400SC', 'Help 400SC', 'L/ha', TRUE),
   ('NEWTEC_300SC', 'Newtec® 300SC', 'L/ha', TRUE)
 ON CONFLICT (code) DO UPDATE
 SET name = EXCLUDED.name,
@@ -48,7 +49,8 @@ SELECT d.id, p.id, seed.dose_min, seed.dose_max, seed.dose_unit,
        seed.phi_days, seed.notes, seed.source, seed.version, seed.active
 FROM (VALUES
   ('Rice___Blast', 'NEWTEC_300SC', 0.75::numeric, 1.00::numeric, 'L/ha', 10, 'Registered target: Đạo ôn. Application guidance: Phun khi tỷ lệ bệnh khoảng 5–10%. Water volume: 400-600 L/ha. Seed authorization: EXPERT_APPROVED. Chuyên gia dự án đã xác nhận treatment rule và mapping bệnh ngày 2026-10-05.', 'SRC_PPD_75_2025,SRC_PPD_28_2026,SRC_SYNGENTA_NEWTEC', '2026.10.05-expert-approved-v1', TRUE),
-  ('Rice___Sheath_blight', 'NEWTEC_300SC', 1.00::numeric, 1.00::numeric, 'L/ha', 10, 'Registered target: Khô vằn. Application guidance: Phun khi tỷ lệ bệnh khoảng 10–20%. Water volume: 400-600 L/ha. Seed authorization: EXPERT_APPROVED. Chuyên gia dự án đã xác nhận treatment rule và mapping bệnh ngày 2026-10-05.', 'SRC_PPD_75_2025,SRC_PPD_28_2026,SRC_SYNGENTA_NEWTEC', '2026.10.05-expert-approved-v1', TRUE)
+  ('Rice___Sheath_blight', 'NEWTEC_300SC', 1.00::numeric, 1.00::numeric, 'L/ha', 10, 'Registered target: Khô vằn. Application guidance: Phun khi tỷ lệ bệnh khoảng 10–20%. Water volume: 400-600 L/ha. Seed authorization: EXPERT_APPROVED. Chuyên gia dự án đã xác nhận treatment rule và mapping bệnh ngày 2026-10-05.', 'SRC_PPD_75_2025,SRC_PPD_28_2026,SRC_SYNGENTA_NEWTEC', '2026.10.05-expert-approved-v1', TRUE),
+  ('Rice___Brown_spot', 'HELP_400SC', 0.60::numeric, 0.60::numeric, 'L/ha', 14, 'Registered target: Đốm nâu. Application guidance: Phun khi bệnh chớm xuất hiện; lắc đều trước khi sử dụng. Water volume: 400 L/ha. Seed authorization: EXPERT_APPROVED. Chủ dự án yêu cầu gán EXPERT_APPROVED và mở phác đồ đốm nâu ngày 2026-10-20; thông số từ hướng dẫn ADC và đối tượng đối chiếu Phụ lục I Thông tư 75/2025, trang PDF 152. Chưa kèm văn bản chuyên môn riêng.', 'SRC_PPD_75_2025,SRC_PPD_28_2026,SRC_ADC_HELP_400SC', '2026.10.20-help-400sc-v1', TRUE)
 ) AS seed(
   disease_code, pesticide_code, dose_min, dose_max, dose_unit,
   phi_days, notes, source, version, active
@@ -75,7 +77,8 @@ WHERE tr.disease_id = d.id
     SELECT 1
     FROM (VALUES
   ('Rice___Blast', 'NEWTEC_300SC'),
-  ('Rice___Sheath_blight', 'NEWTEC_300SC')
+  ('Rice___Sheath_blight', 'NEWTEC_300SC'),
+  ('Rice___Brown_spot', 'HELP_400SC')
     ) AS desired(disease_code, pesticide_code)
     WHERE desired.disease_code = d.code
       AND desired.pesticide_code = p.code
@@ -95,6 +98,7 @@ DELETE FROM disease_management_policies;
 UPDATE pesticides
 SET active = FALSE
 WHERE code NOT IN (
+  ('HELP_400SC'),
   ('NEWTEC_300SC')
 );
 

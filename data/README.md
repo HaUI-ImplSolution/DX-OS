@@ -5,7 +5,7 @@ Nguồn duy nhất cho dữ liệu seed nghiệp vụ của Farm và corpus RAG 
 | Thư mục | Nội dung | Đi đâu |
 |---|---|---|
 | `structured/` | Bệnh, thuốc, treatment rule, policy, class contract của CV | `generate_seed_sql.py` sinh `backend/app-farm/src/main/resources/farm/data.sql`, Spring chạy lúc khởi động (Backend không đọc JSON) |
-| `rag/` | `processed/disease_knowledge.json` (6 tài liệu bệnh lúa) và `source_registry.json` (10 nguồn) | Job `rag-ingest` nạp vào AI Vector DB; không seed vào database nghiệp vụ |
+| `rag/` | `processed/disease_knowledge.json` (6 tài liệu bệnh lúa) và `source_registry.json` (13 nguồn) | Job `rag-ingest` nạp vào AI Vector DB; không seed vào database nghiệp vụ |
 | `rag/lab/` | `processed/lab_knowledge.json` (12 bài trích từ văn bản của HaUI), `source_registry.json` (trang gốc, link PDF, SHA-256) và `raw/` (bản PDF tải về ngày 19/10/2026) | Job `rag-ingest` nạp vào namespace `lab` |
 
 Job `rag-ingest` nạp corpus của app đang chạy theo `DXOS_APP` (xem [`ai/README.md`](../ai/README.md)); Compose bind-mount `data/` read-only tại `/data` (`AI_DATA_DIR`).
@@ -37,7 +37,7 @@ CI chạy hai lệnh kiểm tra để chặn JSON và SQL lệch nhau.
 
 - 6 bệnh `active=TRUE` (6 lớp của CV, gồm `Rice___healthy`); bệnh và thuốc `active=FALSE` không xuất hiện trong danh mục và lookup mới nhưng giữ lịch sử, chỉ bị xóa khi không còn diagnosis, rule hay bản khai phun tham chiếu.
 - Thuốc `NEWTEC_300SC` và 2 treatment rule được chuyên gia xác nhận ngày 2026-10-05 (đạo ôn, khô vằn).
-- `HELP_400SC` và rule đốm nâu (`P-RICE-002`) giữ làm ứng viên: rule đốm nâu mới có `E2E_ASSUMPTION`, chưa có phê duyệt chuyên gia nên bị chặn.
+- `HELP_400SC` và rule đốm nâu được mở với trạng thái `EXPERT_APPROVED` theo yêu cầu của chủ dự án ngày 2026-10-20; quyết định ghi trong `seed_authorization`, chưa kèm văn bản chuyên môn riêng. Seed có 2 thuốc và 3 treatment rule active.
   `blocked_reason`, `verification`, `eligible_for_seed` là hàng rào an toàn, không bỏ qua được.
 - `disease_management_policies` để trống vì chưa policy nào đủ điều kiện (`eligible_for_deterministic_guardrail=true`); bảng chỉ dùng để chặn và tra cứu, không sinh khuyến nghị hóa chất.
 

@@ -148,5 +148,50 @@
     "crop_target_locale": "Lúa; Việt Nam",
     "review_status": "IN_REVIEW",
     "notes": "Trang hướng dẫn chính thức của đơn vị đăng ký sản phẩm; cần tiếp tục lưu bản chụp/nhãn vật lý cho hồ sơ audit dài hạn."
+  },
+  {
+    "source_id": "SRC_KN_TUYEN_QUANG_BLAST_2026",
+    "title": "Tuyên Quang: Tăng cường phòng trừ bệnh đạo ôn, bảo vệ lúa vụ Xuân 2026",
+    "organization": "Chi cục Trồng trọt và BVTV tỉnh Tuyên Quang / Trung tâm Khuyến nông Quốc gia",
+    "source_type": "Vietnam local crop protection guidance",
+    "recommended_use": "Tham khảo tiếng Việt về theo dõi và quản lý đạo ôn tại Tuyên Quang; không thay rule thuốc hoặc hướng dẫn áp dụng cho mọi địa phương",
+    "url": "https://khuyennongvn.gov.vn/thien-tai-dich-hai/tuyen-quang-tang-cuong-phong-tru-benh-dao-on-bao-ve-lua-vu-xuan-2026-31951.html",
+    "authority_level": "Local crop protection agency guidance published by national extension service",
+    "accessed_at": "2026-10-20",
+    "version": "2026-03-25",
+    "license": null,
+    "crop_target_locale": "Lúa; Tuyên Quang, vụ Xuân 2026",
+    "review_status": "IN_REVIEW",
+    "notes": "Tác giả Hà Thu, Chi cục Trồng trọt và BVTV tỉnh Tuyên Quang. Đã kiểm tra nội dung và truy cập trực tiếp; chỉ bổ sung đường dẫn, chưa nạp nội dung vào RAG hoặc phê duyệt khuyến cáo."
+  },
+  {
+    "source_id": "SRC_KN_QUANG_TRI_SHEATH_BLIGHT_2025",
+    "title": "Quảng Trị: Tăng cường chăm sóc lúa trước, trong, sau trổ",
+    "organization": "Trung tâm Khuyến nông Quảng Trị / Trung tâm Khuyến nông Quốc gia",
+    "source_type": "Vietnam local crop protection guidance",
+    "recommended_use": "Tham khảo tiếng Việt về khô vằn ở giai đoạn làm đòng/trổ; đọc đúng đoạn về khô vằn, không chuyển toàn bài thành phác đồ",
+    "url": "https://khuyennongvn.gov.vn/thien-tai-dich-hai/quang-tri-tang-cuong-cham-soc-lua-truoc-trong-sau-tro-31028.html",
+    "authority_level": "Local extension service guidance published by national extension service",
+    "accessed_at": "2026-10-20",
+    "version": "2025-03-31",
+    "license": null,
+    "crop_target_locale": "Lúa; Quảng Trị, vụ Đông Xuân 2024–2025",
+    "review_status": "IN_REVIEW",
+    "notes": "Tác giả Phan Việt Toàn, Trung tâm Khuyến nông Quảng Trị. Bài gồm nhiều bệnh; chỉ bổ sung đường dẫn tham khảo cho khô vằn, không nhập thuốc hoặc định lượng từ bài vào RAG/rule."
+  },
+  {
+    "source_id": "SRC_HCM_GREEN_LEAFHOPPER_2019",
+    "title": "Rầy xanh đuôi đen",
+    "organization": "Chi cục Trồng trọt và Bảo vệ thực vật thành phố Hồ Chí Minh",
+    "source_type": "Vietnam crop protection vector guidance",
+    "recommended_use": "Tham khảo tiếng Việt về vai trò môi giới truyền Tungro của rầy xanh đuôi đen; không làm nguồn thuốc chữa virus",
+    "url": "https://chicucttbvtvhcm.gov.vn/cay-lua/ray-xanh-duoi-den-416.html",
+    "authority_level": "Local crop protection agency primary source",
+    "accessed_at": "2026-10-20",
+    "version": "2019-11-05",
+    "license": null,
+    "crop_target_locale": "Lúa; Việt Nam",
+    "review_status": "IN_REVIEW",
+    "notes": "Đọc mục Triệu chứng để đối chiếu môi giới truyền bệnh. Bài năm 2019; không tái sử dụng danh sách thuốc hoặc ngưỡng diệt rầy thành rule hiện hành cho Tungro. Chỉ bổ sung đường dẫn, chưa nạp nội dung vào RAG."
   }
 ]

@@ -28,7 +28,6 @@ export default function ReferencePanel({ onError }: ReferencePanelProps) {
         <table>
           <thead>
             <tr>
-              <th>Mã</th>
               <th>Tên</th>
               <th>Mô tả</th>
             </tr>
@@ -36,7 +35,6 @@ export default function ReferencePanel({ onError }: ReferencePanelProps) {
           <tbody>
             {diseases.map((d) => (
               <tr key={d.code}>
-                <td>{d.code}</td>
                 <td>{d.name}</td>
                 <td>{d.description}</td>
               </tr>
@@ -82,7 +80,7 @@ export default function ReferencePanel({ onError }: ReferencePanelProps) {
           <tbody>
             {rules.map((r) => (
               <tr key={r.id}>
-                <td>{r.diseaseCode}</td>
+                <td>{diseases.find((d) => d.code === r.diseaseCode)?.name ?? r.diseaseCode}</td>
                 <td>{r.pesticideCode}</td>
                 <td>
                   {r.doseMin === r.doseMax ? r.doseMin : `${r.doseMin}–${r.doseMax}`} {r.doseUnit}

@@ -25,7 +25,6 @@ export const DETAIL_LABEL: Record<string, string> = {
   reason: "Lý do",
   rejectionReason: "Lý do từ chối",
   reportId: "Mã báo cáo",
-  diseaseCode: "Mã bệnh",
   diseaseName: "Bệnh",
   confidence: "Độ tin cậy",
   hasTreatmentRule: "Có phác đồ",

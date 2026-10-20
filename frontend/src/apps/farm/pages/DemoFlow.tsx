@@ -111,7 +111,7 @@ export default function DemoFlow({ role, onError }: DemoFlowProps) {
     <>
       <nav className="tabs">
         <button className={tab === "flow" ? "tab tab-active" : "tab"} onClick={() => setTab("flow")}>
-          Luồng demo
+          Theo dõi đồng ruộng
         </button>
         <button
           className={tab === "reference" ? "tab tab-active" : "tab"}

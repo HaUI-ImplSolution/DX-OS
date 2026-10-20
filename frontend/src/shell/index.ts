@@ -2,6 +2,7 @@
 export { default as Badge } from "./components/Badge";
 export { default as DeleteButton } from "./components/DeleteButton";
 export { default as Pagination } from "./components/Pagination";
+export { default as PassageText } from "./components/PassageText";
 export { default as RequestDetails } from "./components/RequestDetails";
 export { default as Section } from "./components/Section";
 export { default as SourceList } from "./components/SourceList";

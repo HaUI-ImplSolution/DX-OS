@@ -18,7 +18,7 @@ import type {
   TreatmentRule,
   SymptomSuggestion,
 } from "../types";
-import { Badge, Section, SourceList } from "../../../shell";
+import { Badge, PassageText, Section, SourceList } from "../../../shell";
 
 interface DiagnosisPanelProps {
   onReportUpdated: (report: DiseaseReport) => void;
@@ -143,7 +143,7 @@ function CreateDiagnosisForm({
         <select value={diseaseCode} onChange={(e) => setDiseaseCode(e.target.value)} required>
           {diseases.map((d) => (
             <option key={d.code} value={d.code}>
-              {d.name} ({d.code})
+              {d.name}
             </option>
           ))}
         </select>
@@ -476,7 +476,7 @@ export default function DiagnosisPanel({
               {diagnosis.knowledgeEvidence.map((passage, index) => (
                 <article key={index} className="knowledge-passage">
                   {passage.documentTitle && <strong>{passage.documentTitle}</strong>}
-                  <p>{passage.content}</p>
+                  <PassageText content={passage.content} />
                   <small>Độ liên quan của tài liệu: {Math.round(passage.score * 100)}%</small>
                   {passage.sources.length > 0 && <SourceList sources={passage.sources} />}
                 </article>

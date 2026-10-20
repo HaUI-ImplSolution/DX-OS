@@ -50,8 +50,8 @@ public record DiagnosisResponse(
   // Quy tắc xử lý deterministic tương ứng với bệnh
   TreatmentRuleResponse treatmentRule,
 
-  // Đoạn tài liệu tham khảo AI tìm được, theo thứ tự liên quan; không tham gia quyết định điều trị
-  @Schema(description = "Reference passages the AI retrieved, best first; never used to decide the"
-      + " pesticide, dose or PHI. Empty for manual and older diagnoses.")
+  // Tài liệu tham khảo AI tìm được, mỗi tài liệu một mục; không tham gia quyết định điều trị
+  @Schema(description = "Reference documents the AI retrieved, one entry per document, best first;"
+      + " never used to decide the pesticide, dose or PHI. Empty for manual diagnoses.")
   List<KnowledgeAnswerResponse.Passage> knowledgeEvidence
 ){}

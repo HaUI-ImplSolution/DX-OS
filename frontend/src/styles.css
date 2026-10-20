@@ -485,10 +485,43 @@ body {
   overflow-wrap: anywhere;
 }
 
-.knowledge-passage p {
+.passage-text {
   margin: 6px 0;
   font-size: 0.9rem;
   white-space: pre-line;
+}
+
+.passage-fields {
+  margin: 8px 0;
+  font-size: 0.9rem;
+}
+
+.passage-fields > div {
+  display: grid;
+  grid-template-columns: 9.5rem 1fr;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--border);
+}
+
+.passage-fields > div:last-child {
+  border-bottom: 0;
+}
+
+.passage-fields dt {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.passage-fields dd {
+  margin: 0;
+}
+
+@media (max-width: 560px) {
+  .passage-fields > div {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
 }
 
 .knowledge-passage > small {

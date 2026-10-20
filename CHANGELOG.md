@@ -21,7 +21,8 @@ Hai mục đầu liệt kê các bản phát hành; lịch sử chi tiết theo 
 - Ngưỡng GPS và danh sách vụ cách ly do Backend cung cấp cho mobile; giới hạn và ngưỡng đặt được qua `deploy/.env`.
 - Tri thức Lab: 12 bài trích từ nội quy, quy định và hướng dẫn chính thức của HaUI (Thư viện, Trung tâm Công nghệ thông tin, Trung tâm Khảo thí); nguồn mở trang gốc và bản PDF trên máy chủ của trường, bản PDF lưu kèm ở `data/rag/lab/raw/`; gợi ý bài liên quan khi gửi yêu cầu hỗ trợ cũng hiện nguồn.
 - Kết quả chẩn đoán trên web Farm tách ba khối: độ tin cậy của mô hình, phác đồ điều trị đã xác thực và thông tin tham khảo từ tài liệu; không hiển thị `recommendationText`.
-- Chẩn đoán AI lưu các đoạn tài liệu tham khảo (RAG) cùng nguồn vào `diagnoses.knowledge_evidence` và trả qua `knowledgeEvidence`; AI không tạo đoạn tổng hợp, `recommendationText` của chẩn đoán AI để trống.
+- Chẩn đoán AI lưu các đoạn tài liệu tham khảo (RAG) cùng nguồn vào `diagnoses.knowledge_evidence` và trả qua `knowledgeEvidence`, mỗi tài liệu một mục với các dòng không lặp, điểm cao nhất và nguồn của cả tài liệu; AI không tạo đoạn tổng hợp, `recommendationText` của chẩn đoán AI để trống.
+- Web Farm không hiển thị mã bệnh (danh mục, ô chọn bệnh, chi tiết yêu cầu duyệt, đoạn tham khảo).
 - Lab: kỹ thuật viên không mượn thiết bị và không đặt phòng; không ai tự duyệt lịch đặt phòng của mình; trùng mã báo lỗi tiếng Việt; trang đặt phòng đặt lịch tuần cạnh form và danh sách.
 
 ## [1.0.0] - 2026-10-13

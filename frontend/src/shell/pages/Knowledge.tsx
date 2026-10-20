@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { askKnowledge } from "../api";
+import PassageText from "../components/PassageText";
 import Section from "../components/Section";
 import SourceList from "../components/SourceList";
 import type { KnowledgeAnswer } from "../types";
@@ -84,7 +85,7 @@ export default function Knowledge({
       {answer?.passages.map((passage, index) => (
         <article key={index} className="harvest-box">
           <strong>{passage.documentTitle}</strong>
-          <p style={{ whiteSpace: "pre-line" }}>{passage.content}</p>
+          <PassageText content={passage.content} />
           <small>Độ liên quan {Math.round(passage.score * 100)}%</small>
           <SourceList sources={passage.sources} />
         </article>

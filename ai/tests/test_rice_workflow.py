@@ -62,15 +62,11 @@ def test_each_rice_code_flows_through_rag_to_review_required(document, confidenc
             return [
                 {
                     "content": document["content"],
+                    "document_title": document["disease_name"],
                     "source_ids": document["provenance"]["source_ids"],
                     "similarity": 1.0,
                 }
             ]
-
-    class EvidenceWriter:
-        def write(self, evidence: str) -> tuple[str, str]:
-            assert evidence == document["content"]
-            return "Ưu tiên hướng dẫn IPM trong tài liệu đã kiểm chứng.", "test"
 
     payload = DiagnoseRequest.model_validate(
         {
@@ -99,11 +95,11 @@ def test_each_rice_code_flows_through_rag_to_review_required(document, confidenc
         db=object(),
         backend_client=BackendWithoutApprovedRule(),
         rag_retriever=Retriever(),
-        recommendation_writer=EvidenceWriter(),
     ).model_dump(mode="json")
 
     assert calls == [("backend", code), ("rag", code)]
     assert response["cv_result"]["disease_code"] == code
+    assert response["rag_evidence"][0]["document_title"] == document["disease_name"]
     assert (
         response["rag_evidence"][0]["source_ids"]
         == document["provenance"]["source_ids"]
@@ -113,10 +109,6 @@ def test_each_rice_code_flows_through_rag_to_review_required(document, confidenc
         "rules": [],
     }
     assert response["recommendation"]["selected_rule_id"] is None
-    summary = response["recommendation"]["summary"]
-    assert "Cần kỹ sư nông nghiệp đánh giá chuyên sâu" in summary
-    assert "NEWTEC" not in summary
-    assert "0.75" not in summary
 
 
 @pytest.mark.parametrize("confidence", [0.69, 0.6999])
@@ -152,5 +144,4 @@ def test_low_confidence_stops_before_backend_rag_and_llm(confidence):
             db=object(),
             backend_client=MustNotRun(),
             rag_retriever=MustNotRun(),
-            recommendation_writer=MustNotRun(),
         )

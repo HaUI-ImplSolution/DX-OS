@@ -30,7 +30,6 @@ class Settings(BaseSettings):
     )
     crop_classifier_path: Path = AI_ROOT / "weights" / "crop_classifier.onnx"
     cv_device: str = "auto"
-    llm_timeout_seconds: float = 5.0
 
     backend_base_url: str = "http://localhost:8081"
     backend_service_api_key: str | None = None

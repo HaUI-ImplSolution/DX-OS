@@ -73,6 +73,7 @@ class DiagnoseCvResult(BaseModel):
 
 class DiagnoseRagEvidence(BaseModel):
     content: str = Field(min_length=1)
+    document_title: str | None = None
     source_ids: list[str] = Field(default_factory=list)
     similarity: float
 
@@ -100,7 +101,6 @@ class DiagnoseStructuredContext(BaseModel):
 
 class DiagnoseRecommendation(BaseModel):
     selected_rule_id: str | None = None
-    summary: str = Field(min_length=1)
     requires_engineer_approval: bool = True
 
 

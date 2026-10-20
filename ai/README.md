@@ -11,7 +11,7 @@ Backend → POST /api/v1/diagnose
             ├─ CV nhận diện disease_code
             ├─ Backend REST trả structured facts (treatment rule, liều, PHI)
             ├─ pgvector trả RAG evidence
-            └─ LangGraph tổng hợp recommendation → Backend kiểm tra rule version và lưu
+            └─ LangGraph chọn rule và trả evidence → Backend kiểm tra rule version và lưu
 ```
 
 | Thành phần | Vai trò | Tài liệu |
@@ -36,6 +36,7 @@ Backend → POST /api/v1/diagnose
 - Cổng AI không publish ra host, chỉ truy cập được trong mạng compose.
 - `diagnose` tải ảnh từ `image_url`, chạy CV, lấy structured facts, truy vấn RAG và trả recommendation; thiếu structured facts thì request thất bại, AI không đưa recommendation chỉ dựa trên RAG.
 - Request có `request_id`, `crop_season_id`, `image_url`, `field_context`; response có `request_id`, `cv_result`, `rag_evidence`, `structured_context`, `recommendation`.
+- Mỗi phần tử `rag_evidence` có `content`, `document_title`, `source_ids`, `similarity`; `recommendation` chỉ có `selected_rule_id` và `requires_engineer_approval`, AI không tạo đoạn văn tổng hợp.
 - Thuốc, `dose_min`/`dose_max`, `dose_unit`, `phi_days`, `version` giữ nguyên từ structured facts.
 - Contract được khóa bởi DTO `AiDiagnoseRequest`, `AiDiagnoseResponse` của `app-farm` và schema `app/api/schemas.py`; `scripts/check_diagnose_contract.py` kiểm tương thích hai phía.
 
@@ -57,7 +58,7 @@ Compose lấy từ [`deploy/.env.example`](../deploy/.env.example); chạy local
 | `BACKEND_SERVICE_API_KEY` | Key AI gửi khi gọi `/internal/v1/**` của Backend |
 | `AI_SERVICE_API_KEY` | Key Backend phải gửi khi gọi AI |
 | `BACKEND_TIMEOUT_SECONDS`, `BACKEND_MAX_ATTEMPTS` | Timeout và tổng số lần gọi Backend |
-| `OLLAMA_BASE_URL`, `OLLAMA_MODEL` | LLM diễn đạt recommendation |
+| `OLLAMA_BASE_URL`, `OLLAMA_MODEL` | LLM diễn đạt câu trả lời hỏi đáp tri thức |
 | `EMBEDDING_MODEL` | Embedding dùng chung cho ingest và retrieval |
 | `CV_DEVICE` | `auto`, `cpu` hoặc `cuda` |
 | `CV_WEIGHTS_PATH`, `CV_WEIGHTS_SHA256` | Checkpoint `ai/models/efficientnetv2m_rice_disease.pth` khi chạy local; trong image là `/opt/dxos/models/efficientnetv2m_rice_disease.pth`; SHA-256 bắt buộc khi nạp |
@@ -106,7 +107,7 @@ Chạy từ `ai/`:
 |---|---|
 | `pip install -r requirements-dev.txt && python -m pytest tests` | Test CV, workflow, xác thực service key (CI chạy cùng lệnh) |
 | `python -m scripts.check_backend_client` | Client Backend: retry giới hạn, không retry khi 401, đọc khoảng liều |
-| `python -m scripts.check_diagnose_contract` | Luồng `diagnose` đúng thứ tự CV, Backend, RAG; diễn đạt không chứa số liệu tự sinh |
+| `python -m scripts.check_diagnose_contract` | Luồng `diagnose` đúng thứ tự CV, Backend, RAG; `recommendation` chỉ có rule được chọn và cờ duyệt, evidence có tên tài liệu |
 | `python -m scripts.check_rag_access_boundary` | Việc ghi RAG nằm ngoài runtime FastAPI |
 
 ## Giới hạn và giấy phép

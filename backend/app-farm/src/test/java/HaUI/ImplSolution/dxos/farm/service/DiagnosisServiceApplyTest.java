@@ -83,7 +83,8 @@ class DiagnosisServiceApplyTest {
         entityManager,
         org.mockito.Mockito.mock(org.springframework.transaction.PlatformTransactionManager.class),
         org.mockito.Mockito
-            .mock(HaUI.ImplSolution.dxos.farm.repository.TrainingLabelRepository.class));
+            .mock(HaUI.ImplSolution.dxos.farm.repository.TrainingLabelRepository.class),
+        org.mockito.Mockito.mock(FarmKnowledgeNamespace.class));
     Parcel parcel = Parcel.builder().id(1L).code("P-01").farmerName("A").build();
     season = CropSeason.builder().id(5L).parcel(parcel).build();
     DiseaseReport report = DiseaseReport.builder().id(9L).cropSeason(season).build();

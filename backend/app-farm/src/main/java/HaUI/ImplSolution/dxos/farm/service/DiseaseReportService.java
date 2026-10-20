@@ -346,6 +346,6 @@ public class DiseaseReportService {
     boolean rejected = status == ApprovalStatus.REJECTED;
     return new DiagnosisResponse(full.id(), full.diseaseReportId(), null, null, null, null, null,
         null, full.approvalStatus(), null, rejected ? full.decidedAt() : null,
-        rejected ? full.rejectionReason() : null, null);
+        rejected ? full.rejectionReason() : null, null, null);
   }
 }

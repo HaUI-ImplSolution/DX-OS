@@ -16,4 +16,3 @@ class WorkflowRuntime:
     field_context_tool: Any = None
     treatment_tool: Any = None
     rag_tool: Any = None
-    recommendation_writer: Any = None

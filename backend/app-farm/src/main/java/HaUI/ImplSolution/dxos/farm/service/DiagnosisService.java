@@ -13,6 +13,7 @@ import HaUI.ImplSolution.dxos.farm.dto.DiagnosisApplyRequest;
 import HaUI.ImplSolution.dxos.farm.dto.DiagnosisCreateRequest;
 import HaUI.ImplSolution.dxos.farm.dto.DiagnosisRejectRequest;
 import HaUI.ImplSolution.dxos.farm.dto.DiagnosisResponse;
+import HaUI.ImplSolution.dxos.farm.dto.KnowledgeAnswerResponse;
 import HaUI.ImplSolution.dxos.farm.dto.SymptomSuggestionResponse;
 import HaUI.ImplSolution.dxos.farm.dto.TreatmentApplicationResponse;
 import HaUI.ImplSolution.dxos.farm.event.DiagnosisDecidedEvent;
@@ -20,6 +21,7 @@ import HaUI.ImplSolution.dxos.farm.event.DiagnosisPendingEvent;
 import HaUI.ImplSolution.dxos.farm.event.TreatmentDecidedEvent;
 import HaUI.ImplSolution.dxos.farm.event.TreatmentReportedEvent;
 import HaUI.ImplSolution.dxos.core.api.exception.InvalidStateException;
+import HaUI.ImplSolution.dxos.core.api.knowledge.KnowledgeSource;
 import HaUI.ImplSolution.dxos.core.api.exception.PokaYokeViolationException;
 import HaUI.ImplSolution.dxos.core.api.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.dxos.farm.model.ApprovalStatus;
@@ -30,6 +32,7 @@ import HaUI.ImplSolution.dxos.farm.model.Disease;
 import HaUI.ImplSolution.dxos.farm.model.DiagnosisSource;
 import HaUI.ImplSolution.dxos.farm.model.DiseaseReport;
 import HaUI.ImplSolution.dxos.farm.model.DiseaseReportStatus;
+import HaUI.ImplSolution.dxos.farm.model.KnowledgeEvidence;
 import HaUI.ImplSolution.dxos.farm.model.NotificationType;
 import HaUI.ImplSolution.dxos.farm.model.TrainingLabel;
 import HaUI.ImplSolution.dxos.farm.model.TreatmentApplication;
@@ -45,9 +48,14 @@ import java.time.Duration;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
@@ -72,6 +80,8 @@ public class DiagnosisService {
   private static final int RECENT_TREATMENTS_LIMIT = 5;
   // Reports of spraying older than this are rejected so the harvest lock cannot be defeated.
   private static final int MAX_APPLIED_BACKDATE_DAYS = 30;
+  private static final int MAX_KNOWLEDGE_EVIDENCE = 5;
+  private static final int MAX_EVIDENCE_CONTENT_LENGTH = 2000;
 
   private final DiagnosisRepository diagnosisRepository;
   private final DiseaseReportRepository diseaseReportRepository;
@@ -89,6 +99,7 @@ public class DiagnosisService {
   private final TransactionTemplate readTransaction;
   private final TransactionTemplate writeTransaction;
   private final TrainingLabelRepository trainingLabelRepository;
+  private final FarmKnowledgeNamespace knowledgeNamespace;
 
   public DiagnosisService(DiagnosisRepository diagnosisRepository,
       DiseaseReportRepository diseaseReportRepository, DiseaseRepository diseaseRepository,
@@ -98,7 +109,7 @@ public class DiagnosisService {
       ApplicationEventPublisher eventPublisher, ObjectStorage storageService,
       NotificationService notificationService, Clock clock, EntityManager entityManager,
       PlatformTransactionManager transactionManager,
-      TrainingLabelRepository trainingLabelRepository) {
+      TrainingLabelRepository trainingLabelRepository, FarmKnowledgeNamespace knowledgeNamespace) {
     this.diagnosisRepository = diagnosisRepository;
     this.diseaseReportRepository = diseaseReportRepository;
     this.diseaseRepository = diseaseRepository;
@@ -116,6 +127,7 @@ public class DiagnosisService {
     this.readTransaction.setReadOnly(true);
     this.writeTransaction = new TransactionTemplate(transactionManager);
     this.trainingLabelRepository = trainingLabelRepository;
+    this.knowledgeNamespace = knowledgeNamespace;
   }
 
   // The AI call runs outside any transaction so it holds no database connection while it waits.
@@ -180,12 +192,58 @@ public class DiagnosisService {
       }
     }
 
-    Diagnosis diagnosis =
-        Diagnosis.builder().diseaseReport(report).disease(disease).confidence(cvResult.confidence())
-            .modelVersion(cvResult.modelName() + " " + cvResult.modelVersion())
-            .treatmentRule(currentRule).recommendationText(aiResponse.recommendation().summary())
-            .source(DiagnosisSource.AI).approvalStatus(ApprovalStatus.PENDING).build();
+    Diagnosis diagnosis = Diagnosis.builder().diseaseReport(report).disease(disease)
+        .confidence(cvResult.confidence())
+        .modelVersion(cvResult.modelName() + " " + cvResult.modelVersion())
+        .treatmentRule(currentRule).knowledgeEvidence(toKnowledgeEvidence(aiResponse.ragEvidence()))
+        .source(DiagnosisSource.AI).approvalStatus(ApprovalStatus.PENDING).build();
     return savePending(diagnosis);
+  }
+
+  // Source ids are resolved against the catalogue when saved so the passage keeps its citations.
+  private List<KnowledgeEvidence> toKnowledgeEvidence(
+      List<AiDiagnoseResponse.RagEvidence> ragEvidence) {
+    if (ragEvidence == null) {
+      return List.of();
+    }
+    Map<String, KnowledgeSource> catalogue = knowledgeNamespace.sources();
+    return mergeByDocument(
+        ragEvidence.stream().filter(item -> item.content() != null && !item.content().isBlank())
+            .map(item -> new KnowledgeEvidence(item.content(), item.documentTitle(),
+                item.similarity() == null ? 0 : item.similarity(),
+                (item.sourceIds() == null ? List.<String>of() : item.sourceIds()).stream()
+                    .map(id -> catalogue.getOrDefault(id,
+                        new KnowledgeSource(id, id, null, null, null, null, null)))
+                    .toList()))
+            .toList());
+  }
+
+  // Passages of one document become one entry: its lines without repeats, the best score and the
+  // union of its sources. A passage without a title stays on its own.
+  private static List<KnowledgeEvidence> mergeByDocument(List<KnowledgeEvidence> passages) {
+    Map<String, List<KnowledgeEvidence>> byDocument = new LinkedHashMap<>();
+    for (KnowledgeEvidence passage : passages) {
+      String key = passage.documentTitle() != null ? passage.documentTitle() : passage.content();
+      byDocument.computeIfAbsent(key, k -> new ArrayList<>()).add(passage);
+    }
+    return byDocument.values().stream().limit(MAX_KNOWLEDGE_EVIDENCE).map(group -> {
+      Set<String> lines = new LinkedHashSet<>();
+      Map<String, KnowledgeSource> sources = new LinkedHashMap<>();
+      for (KnowledgeEvidence passage : group) {
+        passage.content().lines().map(String::strip).filter(line -> !line.isEmpty())
+            .forEach(lines::add);
+        passage.sources().forEach(source -> sources.putIfAbsent(source.sourceId(), source));
+      }
+      return new KnowledgeEvidence(
+          abbreviate(String.join("\n", lines), MAX_EVIDENCE_CONTENT_LENGTH),
+          group.get(0).documentTitle(),
+          group.stream().mapToDouble(KnowledgeEvidence::score).max().orElse(0),
+          List.copyOf(sources.values()));
+    }).toList();
+  }
+
+  private static String abbreviate(String text, int maxLength) {
+    return text.length() <= maxLength ? text : text.substring(0, maxLength);
   }
 
   private static AiDiagnoseResponse.RuleFact findSelectedRule(AiDiagnoseResponse aiResponse) {
@@ -630,7 +688,20 @@ public class DiagnosisService {
         diagnosis.getDecidedBy(), diagnosis.getDecidedAt(), diagnosis.getRejectionReason(),
         diagnosis.getTreatmentRule() != null
             ? TreatmentRuleService.toResponse(diagnosis.getTreatmentRule())
-            : null);
+            : null,
+        toPassages(diagnosis));
+  }
+
+  private static List<KnowledgeAnswerResponse.Passage> toPassages(Diagnosis diagnosis) {
+    String diseaseCode = diagnosis.getDisease().getCode();
+    return mergeByDocument(diagnosis.getKnowledgeEvidence()).stream()
+        .map(item -> new KnowledgeAnswerResponse.Passage(item.content(), item.documentTitle(),
+            diseaseCode, item.score(),
+            item.sources().stream()
+                .map(source -> new KnowledgeAnswerResponse.Source(source.sourceId(), source.title(),
+                    source.organization(), source.url(), source.license(), source.reviewStatus()))
+                .toList()))
+        .toList();
   }
 
   private static TreatmentApplicationResponse toApplicationResponse(

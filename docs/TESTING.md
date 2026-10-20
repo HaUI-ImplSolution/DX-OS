@@ -130,7 +130,7 @@ Treatment rule của đạo ôn và khô vằn có trong seed Backend, nên `--r
 | F7 | Hỏi đáp tri thức | Đoạn trích có nguồn |
 | F8 | Mở Superset bằng `admin1` | Dashboard của Farm hiển thị 11 chart, mỗi chart một ô; chart "Thửa đang cách ly" và hai chart thu hoạch có dữ liệu sau khi seed; hai chart thời tiết có điểm sau khi Backend chạy khoảng một phút; chart "Tỷ lệ AI đúng/sai" trống nếu chưa chẩn đoán AI bằng ảnh thật |
 | F9 | Hai người cùng quyết định một case | Một bên 409 |
-| F10 | Chọn một thửa ở "Luồng demo" | Panel Thời tiết hiện nhiệt độ, độ ẩm, dự báo 5 ngày và nguồn |
+| F10 | Chọn một thửa ở "Theo dõi đồng ruộng" | Panel Thời tiết hiện nhiệt độ, độ ẩm, dự báo 5 ngày và nguồn |
 | F11 | Nông dân gửi báo cáo mới; `engineer1` mở Hàng đợi → "Chưa chẩn đoán" → "Mở để chẩn đoán" | Báo cáo có trong danh sách; liên kết mở đúng thửa, vụ và báo cáo |
 | F12 | Duyệt hoặc từ chối chẩn đoán, xác nhận hoặc từ chối khai phun (đặt `MATTERMOST_APP_BASE_URL` để tiêu đề có liên kết) | Kênh "Kỹ sư nông nghiệp" có tin kết quả; tiêu đề mở được báo cáo; `farmer1` có thông báo |
 
@@ -290,6 +290,7 @@ Với mọi dòng có kết quả, kiểm thêm:
 | Web và mobile `tsc` | Đạt | Không lỗi |
 | Ranh giới app và core, seed Farm, nguồn tri thức khớp registry | Đạt | Không có kết quả vi phạm |
 | E2E Farm | Đạt | 10/10 bước với `--require-rule` |
+| Tài liệu tham khảo trong chẩn đoán Farm | Đạt | Ngày 20/10/2026: lưu, tải lại, gộp các đoạn cùng tài liệu thành một mục (cả dữ liệu đã lưu trước đó), che theo vai FARMER và ẩn card khi rỗng; web ở khung 556 px không tràn; 5 ảnh lá lúa thật của bộ RiceLeafDiseaseBD (mỗi lớp bệnh một ảnh) qua AI thật đều ra đúng bệnh với độ tin cậy từ 0,94 đến 0,98 và mỗi ảnh một khối tham khảo |
 | E2E Lab | Đạt | 16/16 bước với `--require-knowledge`, kể cả sau khi đổi app không `--reset` |
 | Đổi ứng dụng B1 đến B6 | Đạt | B2 dừng với thông báo nêu `[farm, lab]`; B3, B4 route app khác 404; B6 không lỗi migration |
 | Kiểm tay Farm | Đạt | F1, F2, F4 đến F12 (kỹ sư cũng thấy dashboard Superset); hộp duyệt chỉ có loại case của Farm; trên mobile đạt thẻ thời tiết, màn hỏi đáp và danh sách thông báo hiện 30 mục mới nhất; F3 chưa chạy |

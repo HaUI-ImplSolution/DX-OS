@@ -15,12 +15,16 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "diagnoses")
@@ -64,9 +68,15 @@ public class Diagnosis {
   @JoinColumn(name = "treatment_rule_id")
   private TreatmentRule treatmentRule;
 
-  // Khuyến nghị dạng văn bản sinh ra từ treatmentRule
-  @Column(nullable = false, columnDefinition = "TEXT")
+  // Khuyến nghị dạng văn bản; null với chẩn đoán do AI tạo
+  @Column(columnDefinition = "TEXT")
   private String recommendationText;
+
+  // Đoạn tài liệu AI tìm được, lưu nguyên như lúc chẩn đoán
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(nullable = false)
+  @Builder.Default
+  private List<KnowledgeEvidence> knowledgeEvidence = new ArrayList<>();
 
   // Trạng thái duyệt của kỹ sư (PENDING/APPROVED/REJECTED)
   @Enumerated(EnumType.STRING)

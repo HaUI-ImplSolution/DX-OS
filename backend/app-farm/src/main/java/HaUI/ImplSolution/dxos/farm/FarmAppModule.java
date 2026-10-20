@@ -40,7 +40,7 @@ public class FarmAppModule implements AppModule {
   @Override
   public List<AppMenuItem> menu() {
     Set<String> staff = Set.of(FarmSecurityPolicies.ENGINEER, FarmSecurityPolicies.ADMIN);
-    return List.of(new AppMenuItem("demo", "Luồng demo", "/", Set.of()),
+    return List.of(new AppMenuItem("demo", "Theo dõi đồng ruộng", "/", Set.of()),
         new AppMenuItem("requests", "Yêu cầu", "/requests", staff),
         new AppMenuItem("households", "Nông hộ", "/households", Set.of(FarmSecurityPolicies.ADMIN)),
         new AppMenuItem("queue", "Hàng đợi chẩn đoán", "/queue", staff),

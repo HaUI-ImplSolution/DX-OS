@@ -1,4 +1,4 @@
-import type { ApprovalRequest as BaseApprovalRequest } from "../../shell";
+import type { ApprovalRequest as BaseApprovalRequest, KnowledgePassage } from "../../shell";
 
 export type {
   ApiResponse,
@@ -196,6 +196,8 @@ export interface Diagnosis {
   decidedAt: string | null;
   rejectionReason: string | null;
   treatmentRule: TreatmentRule | null;
+  // Reference passages, null while a farmer may not see the diagnosis
+  knowledgeEvidence: KnowledgePassage[] | null;
 }
 
 export interface DiseaseReport {

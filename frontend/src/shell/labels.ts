@@ -52,3 +52,11 @@ export function formatDateTime(iso: string): string {
 export function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("vi-VN");
 }
+
+// A disease passage drops the code and name lines that repeat the title, and the backend-facing
+// sentence of its legal note.
+export function passageText(content: string): string {
+  return content
+    .replace(/^(Mã bệnh|Tên tiếng Việt):.*\n?/gm, "")
+    .replace(/ Tên thuốc, liều và PHI phải do Backend.*$/gm, "");
+}

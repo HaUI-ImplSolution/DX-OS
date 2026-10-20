@@ -25,6 +25,7 @@ public record AiDiagnoseResponse(
 
   public record RagEvidence(
     String content,
+    @JsonProperty("document_title") String documentTitle,
     @JsonProperty("source_ids") List<String> sourceIds,
     Double similarity
   ){}
@@ -46,7 +47,6 @@ public record AiDiagnoseResponse(
 
   public record Recommendation(
     @JsonProperty("selected_rule_id") String selectedRuleId,
-    String summary,
     @JsonProperty("requires_engineer_approval") Boolean requiresEngineerApproval
   ){}
 }

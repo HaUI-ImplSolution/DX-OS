@@ -14,7 +14,7 @@ export default function RequestDetails({ request }: { request: ApprovalRequest }
         proposed: details[`proposed.${key}`] ?? null,
       }))
     : Object.entries(details)
-        .filter(([key]) => key !== "imageUrl" && key !== "rejectionReason")
+        .filter(([key]) => key !== "imageUrl" && key !== "rejectionReason" && key !== "diseaseCode")
         .map(([key, value]) => ({ key, current: value, proposed: undefined }));
 
   return (

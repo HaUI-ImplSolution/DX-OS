@@ -120,11 +120,11 @@ Hướng mở rộng:
 
 ## Câu hỏi phụ
 
-### A. Vì sao chỉ có hai rule thuốc trong dữ liệu seed?
+### A. Vì sao có ba rule thuốc trong dữ liệu seed?
 
 - Nguyên tắc dự án: số liệu thuốc, liều, PHI phải do chuyên gia duyệt, không tự bịa.
 - Rule đạo ôn và khô vằn với `NEWTEC_300SC` đã được chuyên gia dự án xác nhận ngày 2026-10-05 nên được seed.
-- Rule đốm nâu (Help 400SC) còn là ứng viên ở `data/structured/` với trạng thái chưa được phép seed; có quyết định duyệt thì chạy lại generator và luồng khóa PHI mở ra cho bệnh đó.
+- Rule đốm nâu (Help 400SC) được mở với trạng thái `EXPERT_APPROVED` theo yêu cầu chủ dự án ngày 2026-10-20; `seed_authorization` ghi căn cứ và người xác nhận ở vai trò chủ dự án, chưa kèm văn bản chuyên môn riêng.
 - Khóa PHI đã được kiểm chứng bằng test đơn vị, test tích hợp và E2E (CI thêm một rule thử nghiệm riêng, không phải dữ liệu thật).
 
 ### B. Giấy phép

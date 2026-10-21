@@ -41,6 +41,8 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -62,7 +64,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
     WorkflowService.class, WorkflowDefinitions.class, FarmWorkflowConfig.class,
     NotificationService.class, NotificationInboxService.class, NotificationTypes.class,
     FarmNotificationConfig.class, WorkspaceDirectoryService.class, TimeConfig.class,
-    PersistenceTestConfig.class})
+    PersistenceTestConfig.class, InternalAiContextService.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class ReportDiagnosisIntegrationTest {
   @Container
@@ -94,6 +96,8 @@ class ReportDiagnosisIntegrationTest {
   PlatformTransactionManager transactionManager;
   @Autowired
   DataSource dataSource;
+  @Autowired
+  InternalAiContextService context;
   @MockitoBean
   AiDiagnosisClient ai;
   @MockitoBean
@@ -146,6 +150,57 @@ class ReportDiagnosisIntegrationTest {
             "test"),
         List.of(), new AiDiagnoseResponse.StructuredContext("review_required", List.of()),
         new AiDiagnoseResponse.Recommendation(null, true));
+  }
+
+  @Test
+  void seededBrownSpotRuleRequiresApprovalAndLocksHarvestForFourteenDays() throws Exception {
+    try (var connection = dataSource.getConnection()) {
+      ScriptUtils.executeSqlScript(connection, new ClassPathResource("farm/data.sql"));
+    }
+    var facts = context.getDiagnosisContext("brown-spot-test", "Rice___Brown_spot", seasonId);
+    assertThat(facts.rules()).hasSize(1);
+    var rule = facts.rules().getFirst();
+    assertThat(rule.pesticide()).isEqualTo("Help 400SC");
+    assertThat(rule.doseMin()).isEqualByComparingTo("0.6");
+    assertThat(rule.doseMax()).isEqualByComparingTo("0.6");
+    assertThat(rule.phiDays()).isEqualTo(14);
+    var aiRule = new AiDiagnoseResponse.RuleFact(rule.ruleId(), rule.pesticide(), rule.doseMin(),
+        rule.doseMax(), rule.doseUnit(), rule.phiDays(), rule.version());
+    when(ai.diagnose(any())).thenReturn(new AiDiagnoseResponse("brown-spot-test",
+        new AiDiagnoseResponse.CvResult("Rice___Brown_spot", "Brown Spot", new BigDecimal("0.9"),
+            "test-fixture", "test"),
+        List.of(), new AiDiagnoseResponse.StructuredContext("treatment", List.of(aiRule)),
+        new AiDiagnoseResponse.Recommendation(rule.ruleId(), true)));
+
+    var diagnosis = diagnoses.createFromAi(reportId);
+    assertThat(diagnosis.approvalStatus()).isEqualTo("PENDING");
+    assertThat(diagnosis.treatmentRule().pesticideCode()).isEqualTo("HELP_400SC");
+    assertThat(diagnosis.treatmentRule().notes()).contains("400 L/ha", "khi bệnh chớm xuất hiện");
+    assertThatThrownBy(() -> diagnoses.selfReport(reportId,
+        new DiagnosisApplyRequest(new BigDecimal("0.6"), null)))
+        .isInstanceOf(InvalidStateException.class);
+
+    diagnoses.approve(reportId);
+    assertThatThrownBy(() -> diagnoses.selfReport(reportId,
+        new DiagnosisApplyRequest(new BigDecimal("0.61"), null)))
+        .isInstanceOf(InvalidStateException.class);
+    LocalDate appliedAt = LocalDate.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+    var application =
+        diagnoses.selfReport(reportId, new DiagnosisApplyRequest(new BigDecimal("0.6"), appliedAt));
+    assertThat(application.phiDaysSnapshot()).isEqualTo(14);
+    assertThat(application.harvestLockedUntil()).isEqualTo(appliedAt.plusDays(14));
+    diagnoses.confirmApplication(reportId);
+    var harvest = new HarvestRequest(null, new BigDecimal("1000"), null, null, null, "test");
+    assertThatThrownBy(() -> seasons.harvest(seasonId, harvest)).isInstanceOfSatisfying(
+        PokaYokeViolationException.class,
+        e -> assertThat(e.getErrorCode()).isEqualTo("POKA_YOKE_VIETGAP_VIOLATION"));
+
+    try (var connection = dataSource.getConnection()) {
+      ScriptUtils.executeSqlScript(connection, new ClassPathResource("farm/data.sql"));
+    }
+    assertThat(diagnoses.getApplication(reportId).harvestLockedUntil())
+        .isEqualTo(application.harvestLockedUntil());
+    assertThat(diagnoses.getApplication(reportId).phiDaysSnapshot()).isEqualTo(14);
   }
 
   @Test

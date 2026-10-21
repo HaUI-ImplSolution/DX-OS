@@ -52,9 +52,9 @@
         "SRC_ADC_HELP_400SC"
       ]
     },
-    "eligible_for_pesticide_seed": false,
-    "review_status": "IN_REVIEW",
-    "blocked_reason": "Chỉ có phê duyệt dạng E2E_ASSUMPTION trong lịch sử; chưa có xác nhận chuyên gia để dùng làm seed mặc định.",
-    "notes": "Ứng viên phục vụ nghiên cứu/demo. Đăng ký và đối tượng đã được đối chiếu; dữ liệu định lượng lấy từ hướng dẫn chính thức của ADC nhưng chưa được mở khóa cho production seed."
+    "eligible_for_pesticide_seed": true,
+    "review_status": "EXPERT_APPROVED",
+    "blocked_reason": null,
+    "notes": "Mở Help 400SC cho rule đốm nâu theo yêu cầu gán trạng thái EXPERT_APPROVED của chủ dự án ngày 2026-10-20. Thông số đối chiếu hướng dẫn ADC; chưa kèm văn bản chuyên môn riêng."
   }
 ]

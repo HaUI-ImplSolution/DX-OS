@@ -92,15 +92,18 @@
     "verification": {
       "regulatory_product_target": "VERIFIED_IN_75_2025",
       "quantitative_label_data": "VERIFIED_MANUFACTURER_WEB_GUIDANCE",
-      "cv_disease_to_registered_target_mapping": "CLEAR_MATCH"
+      "cv_disease_to_registered_target_mapping": "EXPERT_APPROVED"
     },
-    "eligible_for_seed": false,
-    "seed_authorization": null,
-    "seed_version": null,
-    "blocked_reason": [
-      "Lịch sử chỉ ghi nhận E2E_ASSUMPTION; cần chuyên gia phê duyệt trước khi đưa vào seed mặc định."
-    ],
-    "review_status": "IN_REVIEW",
-    "notes": "Rule đốm nâu dùng Help 400SC được giữ làm ứng viên có nguồn; không dùng để khuyến cáo hoặc seed tự động khi chưa có phê duyệt chuyên gia."
+    "eligible_for_seed": true,
+    "seed_authorization": {
+      "status": "EXPERT_APPROVED",
+      "authorized_by": "project_owner",
+      "authorized_on": "2026-10-20",
+      "note": "Chủ dự án yêu cầu gán EXPERT_APPROVED và mở phác đồ đốm nâu ngày 2026-10-20; thông số từ hướng dẫn ADC và đối tượng đối chiếu Phụ lục I Thông tư 75/2025, trang PDF 152. Chưa kèm văn bản chuyên môn riêng."
+    },
+    "seed_version": "2026.10.20-help-400sc-v1",
+    "blocked_reason": [],
+    "review_status": "EXPERT_APPROVED",
+    "notes": "Rule đốm nâu được mở theo xác nhận trực tiếp của chủ dự án ngày 2026-10-20; liều, lượng nước, thời điểm và PHI lấy từ hướng dẫn ADC."
   }
 ]

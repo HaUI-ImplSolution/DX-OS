@@ -11,6 +11,8 @@ Hai mục đầu liệt kê các bản phát hành; lịch sử chi tiết theo 
 
 - `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), `README_EN.md` bản tiếng Anh, `NOTICE`, `frontend/.env.example`.
 - `docs/_template/`: mẫu tài liệu cho một đợt làm mới.
+- Danh mục nguồn Farm bổ sung hướng dẫn ADC cho đốm nâu và ba nguồn tiếng Việt về đạo ôn, khô vằn, môi giới truyền Tungro; nội dung corpus giữ nguyên.
+- Seed Farm bổ sung Help 400SC cho đốm nâu, liều 0,6 L/ha và PHI 14 ngày, theo yêu cầu gán trạng thái `EXPERT_APPROVED` của chủ dự án ngày 2026-10-20; hai rule Newtec giữ nguyên.
 
 ### Đã thay đổi
 

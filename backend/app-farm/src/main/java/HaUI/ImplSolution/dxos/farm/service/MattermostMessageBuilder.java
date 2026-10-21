@@ -7,6 +7,7 @@ import HaUI.ImplSolution.dxos.farm.event.DiagnosisDecidedEvent;
 import HaUI.ImplSolution.dxos.farm.event.DiagnosisPendingEvent;
 import HaUI.ImplSolution.dxos.farm.event.DiseaseReportCreatedEvent;
 import HaUI.ImplSolution.dxos.farm.event.ParcelCreatedEvent;
+import HaUI.ImplSolution.dxos.farm.event.TreatmentConfirmationOverdueEvent;
 import HaUI.ImplSolution.dxos.farm.event.TreatmentDecidedEvent;
 import HaUI.ImplSolution.dxos.farm.event.TreatmentReportedEvent;
 import java.math.BigDecimal;
@@ -106,6 +107,20 @@ public class MattermostMessageBuilder {
             field("Thuốc", markdown(event.pesticideName())), field("Liều", markdown(dose)),
             field("Ngày phun", formatDate(event.appliedAt())),
             field("Hết cách ly", formatDate(event.harvestLockedUntil()))),
+        null, reportLink(event.reportId()));
+  }
+
+  public Map<String, Object> treatmentConfirmationOverdue(TreatmentConfirmationOverdueEvent event) {
+    String title = "Bản khai phun thuốc chờ xác nhận quá lâu";
+    String fallback = "%s: báo cáo #%d, thửa %s, thuốc %s, khai lúc %s".formatted(title,
+        event.reportId(), plain(event.parcelCode()), plain(event.pesticideName()),
+        formatTime(event.reportedAt()));
+    return payload(fallback, COLOR_REVIEW_REQUIRED, title,
+        List.of(field("Mã báo cáo", "#" + event.reportId()),
+            field("Mã thửa", markdown(event.parcelCode())),
+            field("Chủ hộ", markdown(event.farmerName())),
+            field("Thuốc", markdown(event.pesticideName())),
+            field("Khai lúc", formatTime(event.reportedAt()))),
         null, reportLink(event.reportId()));
   }
 

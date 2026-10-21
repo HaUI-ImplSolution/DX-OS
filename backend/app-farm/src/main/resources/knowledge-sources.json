@@ -70,5 +70,37 @@
     "url": "https://www.syngenta.com.vn/newtecr-300sc",
     "license": null,
     "reviewStatus": "IN_REVIEW"
+  },
+  {
+    "sourceId": "SRC_ADC_HELP_400SC",
+    "title": "Help 400SC – hướng dẫn sử dụng",
+    "organization": "ADC Agrotech / Công ty TNHH ADC",
+    "url": "https://www.adcgroup.net/shop/thuoc-bvtv/thuoc-tru-benh/help-400sc/",
+    "license": null,
+    "reviewStatus": "IN_REVIEW"
+  },
+  {
+    "sourceId": "SRC_KN_TUYEN_QUANG_BLAST_2026",
+    "title": "Tuyên Quang: Tăng cường phòng trừ bệnh đạo ôn, bảo vệ lúa vụ Xuân 2026",
+    "organization": "Chi cục Trồng trọt và BVTV tỉnh Tuyên Quang / Trung tâm Khuyến nông Quốc gia",
+    "url": "https://khuyennongvn.gov.vn/thien-tai-dich-hai/tuyen-quang-tang-cuong-phong-tru-benh-dao-on-bao-ve-lua-vu-xuan-2026-31951.html",
+    "license": null,
+    "reviewStatus": "IN_REVIEW"
+  },
+  {
+    "sourceId": "SRC_KN_QUANG_TRI_SHEATH_BLIGHT_2025",
+    "title": "Quảng Trị: Tăng cường chăm sóc lúa trước, trong, sau trổ",
+    "organization": "Trung tâm Khuyến nông Quảng Trị / Trung tâm Khuyến nông Quốc gia",
+    "url": "https://khuyennongvn.gov.vn/thien-tai-dich-hai/quang-tri-tang-cuong-cham-soc-lua-truoc-trong-sau-tro-31028.html",
+    "license": null,
+    "reviewStatus": "IN_REVIEW"
+  },
+  {
+    "sourceId": "SRC_HCM_GREEN_LEAFHOPPER_2019",
+    "title": "Rầy xanh đuôi đen",
+    "organization": "Chi cục Trồng trọt và Bảo vệ thực vật thành phố Hồ Chí Minh",
+    "url": "https://chicucttbvtvhcm.gov.vn/cay-lua/ray-xanh-duoi-den-416.html",
+    "license": null,
+    "reviewStatus": "IN_REVIEW"
   }
 ]

@@ -132,6 +132,7 @@ export interface Diagnosis {
   decidedAt: string | null;
   rejectionReason: string | null;
   treatmentRule: TreatmentRule | null;
+  knowledgeEvidence: KnowledgePassage[] | null;
 }
 
 export interface DiseaseReport {

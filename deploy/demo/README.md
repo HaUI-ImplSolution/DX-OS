@@ -41,7 +41,7 @@ Seed bị dừng trước bước báo cáo thì lần chạy sau tạo tiếp b
 - Ba báo cáo sâu bệnh trên vụ đang canh tác của `farmer1`: đã chẩn đoán và duyệt, chờ kỹ sư duyệt, kỹ sư yêu cầu chụp lại.
 - Hàng chờ có hai việc (thửa An Giang cho admin, chẩn đoán số 2 cho kỹ sư); `farmer1` có thông báo từ các lần duyệt.
 - Thuốc, treatment rule, tài liệu RAG và danh mục giống đến từ seed của Backend và job `rag-ingest`, script không tạo.
-- Bệnh có rule được duyệt (đạo ôn, khô vằn) thì script ghi thêm bản khai phun và xác nhận để vụ vào cách ly; bệnh chưa có rule chỉ ở trạng thái xem xét, không có liều và PHI.
+- Bệnh có rule được duyệt (đạo ôn, khô vằn, đốm nâu) thì script ghi thêm bản khai phun và xác nhận để vụ vào cách ly; bệnh chưa có rule chỉ ở trạng thái xem xét, không có liều và PHI.
 - **Ảnh:** không có `--images` thì dùng ảnh tổng hợp và chẩn đoán nhập thủ công (`Rice___Blast`, `manual-input-v1`); có `--images DIR` (`.jpg` lá lúa thật) thì gọi chẩn đoán AI. Chart "Tỷ lệ AI đúng/sai" trống tới khi có chẩn đoán AI.
 
 ### E2E Farm

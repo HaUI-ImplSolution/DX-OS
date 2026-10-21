@@ -63,6 +63,7 @@ def test_each_rice_code_flows_through_rag_to_review_required(document, confidenc
                 {
                     "content": document["content"],
                     "document_title": document["disease_name"],
+                    "chunk_index": 2,
                     "source_ids": document["provenance"]["source_ids"],
                     "similarity": 1.0,
                 }
@@ -100,6 +101,7 @@ def test_each_rice_code_flows_through_rag_to_review_required(document, confidenc
     assert calls == [("backend", code), ("rag", code)]
     assert response["cv_result"]["disease_code"] == code
     assert response["rag_evidence"][0]["document_title"] == document["disease_name"]
+    assert response["rag_evidence"][0]["chunk_index"] == 2
     assert (
         response["rag_evidence"][0]["source_ids"]
         == document["provenance"]["source_ids"]

@@ -7,8 +7,11 @@ import HaUI.ImplSolution.dxos.core.api.knowledge.KnowledgeGateway;
 import HaUI.ImplSolution.dxos.core.api.knowledge.KnowledgeNamespace;
 import HaUI.ImplSolution.dxos.core.api.knowledge.KnowledgePassage;
 import HaUI.ImplSolution.dxos.core.api.knowledge.KnowledgeSource;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -52,10 +55,36 @@ public class KnowledgeGatewayService implements KnowledgeGateway {
     body.put("namespace", namespace);
     List<Map<String, Object>> chunks = aiGateway.postJson(RETRIEVE_PATH, body,
         new ParameterizedTypeReference<List<Map<String, Object>>>() {});
-    List<KnowledgePassage> passages = chunks.stream()
+    List<Map<String, Object>> relevant = chunks.stream()
         .filter(chunk -> ((Number) chunk.getOrDefault("score", 0)).doubleValue() >= minScore)
-        .map(chunk -> toPassage(chunk, corpus.sources())).toList();
-    return new KnowledgeAnswer(question, passages);
+        .toList();
+    return new KnowledgeAnswer(question, mergeByDocument(relevant, corpus.sources()));
+  }
+
+  // The chunks of one document become one passage: its lines in document order without repeats,
+  // the best score and the union of its sources. Documents keep the order of their best chunk.
+  private List<KnowledgePassage> mergeByDocument(List<Map<String, Object>> chunks,
+      Map<String, KnowledgeSource> sources) {
+    Map<Object, List<Map<String, Object>>> byDocument = new LinkedHashMap<>();
+    for (Map<String, Object> chunk : chunks) {
+      Object key = chunk.getOrDefault("document_id", chunk.get("content"));
+      byDocument.computeIfAbsent(key, k -> new ArrayList<>()).add(chunk);
+    }
+    return byDocument.values().stream().map(group -> {
+      KnowledgePassage best = toPassage(group.get(0), sources);
+      Set<String> lines = new LinkedHashSet<>();
+      Map<String, KnowledgeSource> cited = new LinkedHashMap<>();
+      group.stream()
+          .sorted(Comparator.comparing(
+              chunk -> chunk.get("chunk_index") instanceof Number index ? index.intValue()
+                  : Integer.MAX_VALUE))
+          .forEach(chunk -> ((String) chunk.get("content")).lines().map(String::strip)
+              .filter(line -> !line.isEmpty()).forEach(lines::add));
+      group.forEach(chunk -> toPassage(chunk, sources).sources()
+          .forEach(source -> cited.putIfAbsent(source.sourceId(), source)));
+      return new KnowledgePassage(String.join("\n", lines), best.documentTitle(), best.score(),
+          best.attributes(), List.copyOf(cited.values()));
+    }).toList();
   }
 
   private KnowledgePassage toPassage(Map<String, Object> chunk,

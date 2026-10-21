@@ -38,8 +38,8 @@ class SeedDataIntegrationTest {
               statement.executeQuery("SELECT count(*), count(DISTINCT (disease_id, pesticide_id))"
                   + " FROM treatment_rules WHERE active = true")) {
         rows.next();
-        assertThat(rows.getInt(1)).isEqualTo(2);
-        assertThat(rows.getInt(2)).isEqualTo(2);
+        assertThat(rows.getInt(1)).isEqualTo(3);
+        assertThat(rows.getInt(2)).isEqualTo(3);
       }
 
       try (Statement statement = connection.createStatement();

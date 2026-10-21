@@ -107,7 +107,8 @@ Hướng mở rộng:
 
 - Superset dùng SQLite cho metadata.
 - AI Service là một tiến trình, không có hàng đợi.
-- Lịch chạy nền (kiểm SLA, nhắc mượn trả, nhắc thu hoạch) chạy ở mọi bản backend; thông báo có khóa chống trùng nên không gửi lặp, nhưng nhiều bản vẫn cần khóa lịch hoặc một bản giữ lịch.
+- Lịch chạy nền (kiểm SLA, nhắc mượn trả, nhắc thu hoạch, nhắc xác nhận khai phun, thu thập thời tiết) giữ khóa advisory của PostgreSQL nên hai bản backend không chạy cùng một việc cùng lúc.
+  Thông báo trong app có khóa chống trùng; tin chat nhắc có thể lặp nếu hai bản chạy lệch giờ.
 - Hạn mức tốc độ tính theo địa chỉ IP ở gateway là số tạm.
 - Chưa có thử tải.
 
@@ -120,11 +121,11 @@ Hướng mở rộng:
 
 ## Câu hỏi phụ
 
-### A. Vì sao chỉ có hai rule thuốc trong dữ liệu seed?
+### A. Vì sao có ba rule thuốc trong dữ liệu seed?
 
 - Nguyên tắc dự án: số liệu thuốc, liều, PHI phải do chuyên gia duyệt, không tự bịa.
 - Rule đạo ôn và khô vằn với `NEWTEC_300SC` đã được chuyên gia dự án xác nhận ngày 2026-10-05 nên được seed.
-- Rule đốm nâu (Help 400SC) còn là ứng viên ở `data/structured/` với trạng thái chưa được phép seed; có quyết định duyệt thì chạy lại generator và luồng khóa PHI mở ra cho bệnh đó.
+- Rule đốm nâu (Help 400SC) được mở với trạng thái `EXPERT_APPROVED` theo yêu cầu chủ dự án ngày 2026-10-20; `seed_authorization` ghi căn cứ và người xác nhận ở vai trò chủ dự án, chưa kèm văn bản chuyên môn riêng.
 - Khóa PHI đã được kiểm chứng bằng test đơn vị, test tích hợp và E2E (CI thêm một rule thử nghiệm riêng, không phải dữ liệu thật).
 
 ### B. Giấy phép

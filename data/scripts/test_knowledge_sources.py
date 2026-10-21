@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""The source lists the backend serves match the registries the corpora are built from."""
+"""The source lists served by the backend cover the corpora and Farm rules."""
 
 import json
 import unittest
@@ -38,13 +38,26 @@ class KnowledgeSourcesTest(unittest.TestCase):
     def test_every_cited_source_is_served_with_the_registry_values(self):
         for name, (registry_path, corpus_path, served_path) in NAMESPACES.items():
             with self.subTest(namespace=name):
-                registry = {item["source_id"]: item for item in load(registry_path)}
-                served = {item["sourceId"]: item for item in load(served_path)}
+                registry_items = load(registry_path)
+                served_items = load(served_path)
+                registry = {item["source_id"]: item for item in registry_items}
+                served = {item["sourceId"]: item for item in served_items}
+                self.assertEqual(len(registry_items), len(registry), "duplicate registry source")
+                self.assertEqual(len(served_items), len(served), "duplicate served source")
                 cited = {
                     source_id
                     for document in load(corpus_path)
                     for source_id in document["provenance"]["source_ids"]
                 }
+                if name == "farm":
+                    rules = load(
+                        ROOT / "data/structured/treatment_rules_candidates_master.json"
+                    )
+                    cited.update(
+                        source_id
+                        for rule in rules
+                        for source_id in rule["source_ids"]
+                    )
                 self.assertEqual(set(), cited - set(served), "cited but not served")
                 self.assertEqual(set(), set(served) - set(registry), "served but not in registry")
                 for source_id, item in served.items():

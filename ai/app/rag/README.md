@@ -32,7 +32,7 @@ python -m scripts.ingest_diseases [--corpus lab] [--dry-run]
 
 ```text
 câu hỏi (+ namespace, disease_code, document_type) → embedding → cosine search pgvector
-  → top-k (1–20) chunk, score, provenance
+  → top-k (1–20) chunk, score, provenance, vị trí chunk trong tài liệu (`chunk_index`)
 ```
 
 Có `disease_code` từ CV thì workflow truyền vào để giới hạn context đúng bệnh.

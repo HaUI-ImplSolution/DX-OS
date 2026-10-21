@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 import importlib.util
 import json
+from copy import deepcopy
+from unittest.mock import patch
 import unittest
 from pathlib import Path
 
@@ -17,10 +19,8 @@ class GenerateSeedSqlTest(unittest.TestCase):
         second_sql, second_blocked = GENERATOR.generate()
 
         self.assertEqual(first_sql, second_sql)
-        self.assertEqual(1, len(first_blocked))
+        self.assertEqual([], first_blocked)
         self.assertEqual(first_blocked, second_blocked)
-        self.assertTrue(all(rule["blocked_reason"] for rule in first_blocked))
-        self.assertEqual("TR-RICE-003", first_blocked[0]["candidate_rule_id"])
 
     def test_only_expert_approved_rice_candidates_are_seeded(self):
         sql, _ = GENERATOR.generate()
@@ -29,11 +29,47 @@ class GenerateSeedSqlTest(unittest.TestCase):
         self.assertIn("'Rice___healthy'", sql)
         self.assertIn("'NEWTEC_300SC'", sql)
         self.assertIn("'2026.10.05-expert-approved-v1'", sql)
-        self.assertNotIn("HELP_400SC", sql)
-        self.assertNotIn("2026.10.05-help-400sc-v1", sql)
+        self.assertIn("'HELP_400SC'", sql)
+        self.assertIn("'2026.10.20-help-400sc-v1'", sql)
         self.assertNotIn("No pesticide has eligible_for_pesticide_seed=true", sql)
         self.assertNotIn("No treatment rule has eligible_for_seed=true", sql)
         self.assertIn("No policy is approved for deterministic lookup", sql)
+
+    def test_brown_spot_rule_retains_the_verified_guidance(self):
+        rules = GENERATOR.load("treatment_rules_candidates_master.json")
+        rule = next(item for item in rules if item["candidate_rule_id"] == "TR-RICE-003")
+
+        self.assertEqual("Rice___Brown_spot", rule["disease_code"])
+        self.assertEqual("P-RICE-002", rule["pesticide_candidate_id"])
+        self.assertEqual((0.6, 0.6, "L/ha"),
+                         (rule["dose_min"], rule["dose_max"], rule["dose_unit"]))
+        self.assertEqual((400, 400, "L/ha"),
+                         (rule["water_volume_min"], rule["water_volume_max"],
+                          rule["water_volume_unit"]))
+        self.assertEqual(14, rule["phi_days"])
+        self.assertIn("khi bệnh chớm xuất hiện", rule["application_method"])
+        self.assertIn("SRC_ADC_HELP_400SC", rule["source_ids"])
+        self.assertEqual("project_owner", rule["seed_authorization"]["authorized_by"])
+
+    def test_revoking_brown_spot_excludes_it_without_changing_newtec(self):
+        original_load = GENERATOR.load
+        rules = deepcopy(original_load("treatment_rules_candidates_master.json"))
+        rule = next(item for item in rules if item["candidate_rule_id"] == "TR-RICE-003")
+        rule.update(eligible_for_seed=False, seed_authorization=None, seed_version=None,
+                    review_status="IN_REVIEW", blocked_reason=["Approval withdrawn"])
+
+        def revoked_load(name):
+            if name == "treatment_rules_candidates_master.json":
+                return rules
+            return original_load(name)
+
+        with patch.object(GENERATOR, "load", side_effect=revoked_load):
+            sql, blocked = GENERATOR.generate()
+
+        self.assertEqual(["TR-RICE-003"], [item["candidate_rule_id"] for item in blocked])
+        self.assertNotIn("2026.10.20-help-400sc-v1", sql)
+        self.assertIn("2026.10.05-expert-approved-v1", sql)
+        self.assertIn("WHERE tr.active = FALSE", sql)
 
     def test_legacy_rows_are_deactivated_and_cleaned_safely(self):
         sql, _ = GENERATOR.generate()
@@ -90,11 +126,11 @@ class GenerateSeedSqlTest(unittest.TestCase):
             self.assertTrue(set(item["provenance"]["source_ids"]) <= source_ids)
         pesticide_ids = {item["candidate_id"] for item in pesticides}
         self.assertEqual(
-            {"P-RICE-001"},
+            {"P-RICE-001", "P-RICE-002"},
             {item["candidate_id"] for item in pesticides if item["eligible_for_pesticide_seed"]},
         )
         seeded_rules = [item for item in rules if item["eligible_for_seed"]]
-        self.assertEqual({"TR-RICE-001", "TR-RICE-002"}, {
+        self.assertEqual({"TR-RICE-001", "TR-RICE-002", "TR-RICE-003"}, {
             item["candidate_rule_id"] for item in seeded_rules
         })
         self.assertTrue(

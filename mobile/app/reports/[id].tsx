@@ -7,6 +7,7 @@ import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { ErrorState } from "@/components/ErrorState";
 import { Field } from "@/components/Field";
+import { KnowledgePassageCard } from "@/components/KnowledgePassageCard";
 import { Screen } from "@/components/Screen";
 import { SkeletonCards } from "@/components/Skeleton";
 import { StatusChip } from "@/components/StatusChip";
@@ -59,18 +60,30 @@ function DiagnosisSection({ report }: { report: DiseaseReport }) {
     );
   }
   const rule = diagnosis.treatmentRule;
+  const evidence = diagnosis.knowledgeEvidence ?? [];
   return (
-    <Card>
-      <Text style={styles.cardTitle}>{diagnosis.diseaseName}</Text>
-      {diagnosis.recommendationText && <Text style={styles.body}>{diagnosis.recommendationText}</Text>}
-      {rule && (
-        <View style={styles.facts}>
-          <Text style={styles.body}>Thuốc: {rule.pesticideCode}</Text>
-          <Text style={styles.body}>Liều: {doseText(rule)}</Text>
-          <Text style={styles.body}>Số ngày cách ly: {rule.phiDays} ngày</Text>
+    <>
+      <Card>
+        <Text style={styles.cardTitle}>{diagnosis.diseaseName}</Text>
+        {diagnosis.recommendationText && <Text style={styles.body}>{diagnosis.recommendationText}</Text>}
+        {rule && (
+          <View style={styles.facts}>
+            <Text style={styles.body}>Thuốc: {rule.pesticideCode}</Text>
+            <Text style={styles.body}>Liều: {doseText(rule)}</Text>
+            <Text style={styles.body}>Số ngày cách ly: {rule.phiDays} ngày</Text>
+          </View>
+        )}
+      </Card>
+      {evidence.length > 0 && (
+        <View style={styles.evidence}>
+          <Text style={styles.cardTitle}>Thông tin tham khảo từ tài liệu</Text>
+          <Text style={styles.caption}>Chỉ để tham khảo, không thay thế phác đồ đã xác thực.</Text>
+          {evidence.map((passage, index) => (
+            <KnowledgePassageCard key={index} passage={passage} />
+          ))}
         </View>
       )}
-    </Card>
+    </>
   );
 }
 
@@ -243,6 +256,7 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: fontSize.cardTitle, fontWeight: "700", color: colors.text },
   body: { fontSize: fontSize.body, color: colors.text },
   facts: { marginTop: spacing.sm, gap: spacing.xs },
+  evidence: { gap: spacing.sm },
   caption: { fontSize: fontSize.caption, color: colors.textMuted },
   note: { fontSize: fontSize.body, color: colors.textMuted },
   rejected: { borderColor: colors.danger },

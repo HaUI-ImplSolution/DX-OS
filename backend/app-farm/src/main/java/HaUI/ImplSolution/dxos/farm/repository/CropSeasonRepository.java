@@ -39,7 +39,7 @@ public interface CropSeasonRepository extends JpaRepository<CropSeason, Long> {
 
   boolean existsByParcel_IdAndDeletedAtIsNull(Long parcelId);
 
-  // Approved seasons still growing whose expected harvest date has come.
-  List<CropSeason> findByStatusAndApprovalStatusAndDeletedAtIsNullAndExpectedHarvestDateLessThanEqual(
-      CropSeasonStatus status, ApprovalStatus approvalStatus, LocalDate date);
+  // Approved seasons still growing whose expected harvest date falls in the given range.
+  List<CropSeason> findByStatusAndApprovalStatusAndDeletedAtIsNullAndExpectedHarvestDateBetween(
+      CropSeasonStatus status, ApprovalStatus approvalStatus, LocalDate from, LocalDate to);
 }

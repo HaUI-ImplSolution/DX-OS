@@ -11,9 +11,17 @@ Hai mục đầu liệt kê các bản phát hành; lịch sử chi tiết theo 
 
 - `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), `README_EN.md` bản tiếng Anh, `NOTICE`, `frontend/.env.example`.
 - `docs/_template/`: mẫu tài liệu cho một đợt làm mới.
+- Workflow `Release` (chạy tay) build các image `backend`, `frontend`, `portal`, `ai`, `minio` và đẩy lên GHCR; máy chủ cập nhật bằng `deploy/update.sh` mà không build. Compose đọc tên image từ `DXOS_IMAGE_PREFIX` và `DXOS_IMAGE_TAG`.
+- Danh mục nguồn Farm bổ sung hướng dẫn ADC cho đốm nâu và ba nguồn tiếng Việt về đạo ôn, khô vằn, môi giới truyền Tungro; nội dung corpus giữ nguyên.
+- Seed Farm bổ sung Help 400SC cho đốm nâu, liều 0,6 L/ha và PHI 14 ngày, theo yêu cầu gán trạng thái `EXPERT_APPROVED` của chủ dự án ngày 2026-10-20; hai rule Newtec giữ nguyên.
+- Nhắc thu hoạch chỉ chạy trong `app.harvest-reminder-max-days` ngày (mặc định 14) kể từ ngày thu hoạch dự kiến.
+- Mobile: hộp thông báo cuộn tới cuối thì tải trang kế, 30 thông báo mỗi trang.
+- Farm: bản khai phun chờ kỹ sư xác nhận quá `app.treatment-confirmation-wait-hours` giờ (mặc định 24) được nhắc lên kênh kỹ sư mỗi sáng 08:00 tới khi có quyết định; cột `treatment_applications.reported_at` (migration V13) ghi lúc nông dân nộp bản khai.
+- Lab: ticket thứ `lab.device-alert.threshold` (mặc định 3) nêu cùng một thiết bị trong `lab.device-alert.window-days` ngày (mặc định 30) được đăng lên kênh kỹ thuật viên.
 
 ### Đã thay đổi
 
+- Một biến `PUBLIC_HOST` trong `deploy/.env` (`localhost` khi dev, IP hoặc tên miền khi triển khai) quyết định `GATEWAY_PUBLIC_URL`, `SUPERSET_PUBLIC_URL`, địa chỉ trong thông báo chat, `MM_SERVICESETTINGS_SITEURL` và redirect URI của `dxos-web` và `dxos-superset` trong `realm-dxos.json`; `localhost` vẫn nằm trong danh sách redirect URI. Image `frontend` build trực tiếp mặc định gọi Keycloak cùng origin.
 - README song ngữ viết ngắn gọn, có yêu cầu hệ thống và xử lý sự cố; `ARCHITECTURE.md` có tổng quan các dịch vụ và sơ đồ theo từng tầng.
 - Repository đổi tên thành `DX-OS`; liên kết trong tài liệu trỏ về tên mới.
 - Ảnh nền đơn sắc được kiểm độ nét theo cạnh sau khi làm mờ lại; hỏi đáp xếp đoạn của bệnh được nêu lên đầu.
@@ -21,8 +29,10 @@ Hai mục đầu liệt kê các bản phát hành; lịch sử chi tiết theo 
 - Ngưỡng GPS và danh sách vụ cách ly do Backend cung cấp cho mobile; giới hạn và ngưỡng đặt được qua `deploy/.env`.
 - Tri thức Lab: 12 bài trích từ nội quy, quy định và hướng dẫn chính thức của HaUI (Thư viện, Trung tâm Công nghệ thông tin, Trung tâm Khảo thí); nguồn mở trang gốc và bản PDF trên máy chủ của trường, bản PDF lưu kèm ở `data/rag/lab/raw/`; gợi ý bài liên quan khi gửi yêu cầu hỗ trợ cũng hiện nguồn.
 - Kết quả chẩn đoán trên web Farm tách ba khối: độ tin cậy của mô hình, phác đồ điều trị đã xác thực và thông tin tham khảo từ tài liệu; không hiển thị `recommendationText`.
-- Chẩn đoán AI lưu các đoạn tài liệu tham khảo (RAG) cùng nguồn vào `diagnoses.knowledge_evidence` và trả qua `knowledgeEvidence`, mỗi tài liệu một mục với các dòng không lặp, điểm cao nhất và nguồn của cả tài liệu; AI không tạo đoạn tổng hợp, `recommendationText` của chẩn đoán AI để trống.
+- Chẩn đoán AI lưu các đoạn tài liệu tham khảo (RAG) cùng nguồn vào `diagnoses.knowledge_evidence` và trả qua `knowledgeEvidence`, mỗi tài liệu một mục với các dòng không lặp theo thứ tự trong tài liệu (`chunk_index` do AI trả), điểm cao nhất và nguồn của cả tài liệu; AI không tạo đoạn tổng hợp, `recommendationText` của chẩn đoán AI để trống.
 - Web Farm không hiển thị mã bệnh (danh mục, ô chọn bệnh, chi tiết yêu cầu duyệt, đoạn tham khảo).
+- Hỏi đáp tài liệu (Farm và Lab) gộp các đoạn cùng tài liệu thành một đoạn theo thứ tự trong tài liệu; đoạn tham khảo hiện dạng danh sách trường trên web và mobile.
+- Mobile hiển thị tài liệu tham khảo trong chi tiết báo cáo đã duyệt.
 - Lab: kỹ thuật viên không mượn thiết bị và không đặt phòng; không ai tự duyệt lịch đặt phòng của mình; trùng mã báo lỗi tiếng Việt; trang đặt phòng đặt lịch tuần cạnh form và danh sách.
 
 ## [1.0.0] - 2026-10-13

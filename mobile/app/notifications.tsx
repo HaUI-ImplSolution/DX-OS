@@ -1,6 +1,14 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
-import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import {
   listNotifications,
   markAllNotificationsRead,
@@ -17,6 +25,8 @@ import { useNotifications } from "@/notifications/NotificationsProvider";
 import { colors, fontSize, radius, spacing } from "@/theme";
 import type { AppNotification } from "@/types";
 
+const PAGE_SIZE = 30;
+
 function open(notification: AppNotification) {
   const ref = notification.relatedEntityRef;
   if (!ref) return;
@@ -31,10 +41,48 @@ function open(notification: AppNotification) {
 
 export default function NotificationsScreen() {
   const { data, error, loading, refreshing, reload, refresh } = useAsync(
-    () => listNotifications(),
+    () => listNotifications(0, PAGE_SIZE),
     [],
   );
   const { refreshUnread } = useNotifications();
+  // The first page comes from `data`; scrolling to the end appends the next pages here.
+  const [loaded, setLoaded] = useState<AppNotification[]>([]);
+  const [nextPage, setNextPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+  // Changes with every first page, so a page requested for an older list is dropped.
+  const generation = useRef(0);
+
+  useEffect(() => {
+    if (!data) return;
+    generation.current += 1;
+    setLoadingMore(false);
+    setLoaded(data.items);
+    setNextPage(1);
+    setTotalPages(data.totalPages);
+  }, [data]);
+
+  const items = loaded.length > 0 ? loaded : (data?.items ?? []);
+
+  const loadMore = async () => {
+    if (loadingMore || nextPage >= totalPages) return;
+    setLoadingMore(true);
+    const requested = generation.current;
+    try {
+      const next = await listNotifications(nextPage, PAGE_SIZE);
+      if (requested !== generation.current) return;
+      setLoaded((prev) => {
+        const seen = new Set(prev.map((item) => item.id));
+        return [...prev, ...next.items.filter((item) => !seen.has(item.id))];
+      });
+      setNextPage(nextPage + 1);
+      setTotalPages(next.totalPages);
+    } catch {
+      // The next scroll to the end tries again.
+    } finally {
+      if (requested === generation.current) setLoadingMore(false);
+    }
+  };
 
   // Coming back from an opened item: the read state may have changed.
   useFocusEffect(
@@ -46,7 +94,8 @@ export default function NotificationsScreen() {
   const readOne = async (notification: AppNotification) => {
     if (!notification.readAt) {
       await markNotificationRead(notification.id).catch(() => undefined);
-      refresh();
+      const readAt = new Date().toISOString();
+      setLoaded(items.map((item) => (item.id === notification.id ? { ...item, readAt } : item)));
       refreshUnread();
     }
     open(notification);
@@ -54,7 +103,8 @@ export default function NotificationsScreen() {
 
   const readAll = async () => {
     await markAllNotificationsRead().catch(() => undefined);
-    refresh();
+    const readAt = new Date().toISOString();
+    setLoaded(items.map((item) => (item.readAt ? item : { ...item, readAt })));
     refreshUnread();
   };
 
@@ -73,7 +123,6 @@ export default function NotificationsScreen() {
     );
   }
 
-  const items = data?.items ?? [];
   return (
     <View style={styles.container}>
       <FlatList
@@ -89,6 +138,11 @@ export default function NotificationsScreen() {
           ) : null
         }
         ListEmptyComponent={<EmptyState message="Chưa có thông báo nào." />}
+        ListFooterComponent={
+          loadingMore ? <ActivityIndicator color={colors.primary} style={styles.more} /> : null
+        }
+        onEndReached={() => void loadMore()}
+        onEndReachedThreshold={0.4}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -123,6 +177,7 @@ const styles = StyleSheet.create({
   list: { padding: spacing.lg },
   header: { marginBottom: spacing.md },
   separator: { height: spacing.md },
+  more: { paddingVertical: spacing.lg },
   item: {
     backgroundColor: colors.surface,
     borderRadius: radius.card,

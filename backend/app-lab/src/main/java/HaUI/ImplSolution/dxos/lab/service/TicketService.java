@@ -44,6 +44,7 @@ import HaUI.ImplSolution.dxos.lab.repository.TicketCommentRepository;
 import HaUI.ImplSolution.dxos.lab.repository.TicketRepository;
 import java.io.IOException;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -51,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -90,6 +92,8 @@ public class TicketService {
   private final LabNotifier notifier;
   private final ApplicationEventPublisher events;
   private final Clock clock;
+  private final int deviceAlertThreshold;
+  private final int deviceAlertWindowDays;
 
   public TicketService(TicketRepository ticketRepository,
       TicketCategoryRepository categoryRepository, TicketCommentRepository commentRepository,
@@ -97,7 +101,9 @@ public class TicketService {
       DeviceRepository deviceRepository, SlaPolicyService slaPolicyService,
       TicketCodeGenerator codeGenerator, WorkflowOperations workflow, FileStore fileStore,
       ObjectStorage objectStorage, LabUser user, LabNotifier notifier,
-      ApplicationEventPublisher events, Clock clock) {
+      ApplicationEventPublisher events, Clock clock,
+      @Value("${lab.device-alert.threshold:3}") int deviceAlertThreshold,
+      @Value("${lab.device-alert.window-days:30}") int deviceAlertWindowDays) {
     this.ticketRepository = ticketRepository;
     this.categoryRepository = categoryRepository;
     this.commentRepository = commentRepository;
@@ -113,6 +119,8 @@ public class TicketService {
     this.notifier = notifier;
     this.events = events;
     this.clock = clock;
+    this.deviceAlertThreshold = deviceAlertThreshold;
+    this.deviceAlertWindowDays = deviceAlertWindowDays;
   }
 
   // The SLA deadlines are fixed from the policy of the chosen priority at creation time.
@@ -158,7 +166,23 @@ public class TicketService {
     events.publishEvent(new LabEvents.TicketCreated(saved.getId(), saved.getCode(),
         saved.getTitle(), category.getName(), priority.name(), saved.getRequesterName(), now,
         firstImageKey(saved)));
+    watchDevice(saved, now);
     return detailOf(saved);
+  }
+
+  // Tells the technicians once when the ticket is the threshold-th one on its device within the
+  // window.
+  private void watchDevice(Ticket ticket, Instant now) {
+    Device device = ticket.getDevice();
+    if (device == null) {
+      return;
+    }
+    long count = ticketRepository.countByDeviceIdAndCreatedAtGreaterThanEqual(device.getId(),
+        now.minus(Duration.ofDays(deviceAlertWindowDays)));
+    if (count == deviceAlertThreshold) {
+      events.publishEvent(new LabEvents.DeviceRepeatedFault(ticket.getId(), ticket.getCode(),
+          device.getAssetCode(), device.getDeviceType(), count, deviceAlertWindowDays));
+    }
   }
 
   public PageResponse<TicketResponse> list(TicketFilter filter, int page, int size) {

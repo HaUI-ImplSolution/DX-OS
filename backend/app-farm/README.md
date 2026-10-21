@@ -42,6 +42,7 @@ Cột trạng thái trên bảng của Farm phản chiếu trạng thái đó.
 - Thu hoạch trước ngày dự kiến cần xác nhận kèm lý do (`HARVEST_TOO_EARLY`).
 - Ảnh trắng hoặc không phải lúa không qua kiểm tra chất lượng; ảnh được xóa EXIF trước khi lưu.
 - Liều và PHI chỉ lấy từ `TreatmentRule` đã được chuyên gia duyệt; bệnh chưa có rule chỉ ở trạng thái `review_required`.
+- Bản khai phun chờ kỹ sư xác nhận quá `app.treatment-confirmation-wait-hours` giờ được nhắc lên kênh kỹ sư mỗi sáng tới khi có quyết định.
 - Bản khai phun chờ kỹ sư xác nhận thì chặn thu hoạch (`TREATMENT_PENDING_CONFIRMATION`); sau khi xác nhận, thu hoạch bị chặn tới `harvestLockedUntil` (`POKA_YOKE_VIETGAP_VIOLATION`).
 - Mỗi người có số yêu cầu chờ duyệt tối đa theo `app.max-pending-requests` của core, tính cho các loại case do `AppModule.limitedCaseTypes()` khai báo.
 
@@ -93,9 +94,13 @@ Quản trị viên nhập hộ không cần sai số.
 | `app.htx-code` | `HTX_CODE` | `HTX01` |
 | `app.gps-max-accuracy-meters` | `GPS_MAX_ACCURACY_METERS` | `30` |
 | `app.harvest-reminder-cron` | `HARVEST_REMINDER_CRON` | `0 0 7 * * *` |
+| `app.harvest-reminder-max-days` | `HARVEST_REMINDER_MAX_DAYS` | `14` |
+| `app.treatment-confirmation-reminder-cron` | `TREATMENT_CONFIRMATION_REMINDER_CRON` | `0 0 8 * * *` |
+| `app.treatment-confirmation-wait-hours` | `TREATMENT_CONFIRMATION_WAIT_HOURS` | `24` |
 | `app.season-start-months.*` | `SEASON_MONTHS_DONG_XUAN`, `SEASON_MONTHS_HE_THU`, `SEASON_MONTHS_THU_DONG` | `11,12,1`, `3,4,5`, `6,7,8` |
 | `security.farmer-client-ids` | `FARMER_CLIENT_IDS` | `farm-mobile` |
 | `weather.base-url` | `WEATHER_BASE_URL` | `https://api.open-meteo.com` |
+| `weather.connect-timeout-ms`, `read-timeout-ms` | `WEATHER_CONNECT_TIMEOUT_MS`, `WEATHER_READ_TIMEOUT_MS` | `2000`, `3000` |
 | `weather.cache-ttl` | `WEATHER_CACHE_TTL` | `1h` |
 | `weather.collect-interval` | `WEATHER_COLLECT_INTERVAL` | `1h` |
 | `mattermost.webhook.url-admin`, `url-engineer` | `MATTERMOST_WEBHOOK_URL_ADMIN`, `MATTERMOST_WEBHOOK_URL_ENGINEER` | trống: dùng webhook tự tạo của channel |

@@ -114,7 +114,7 @@ python3 deploy/demo/e2e.py [--require-rule]
 ```
 
 Kết quả mong đợi: 10/10 bước đạt.
-Treatment rule của đạo ôn và khô vằn có trong seed Backend, nên `--require-rule` dùng được sau khi seed.
+Treatment rule của đạo ôn, khô vằn và đốm nâu có trong seed Backend, nên `--require-rule` dùng được sau khi seed.
 
 ### 5.2 Kiểm tay
 
@@ -125,8 +125,8 @@ Treatment rule của đạo ôn và khô vằn có trong seed Backend, nên `--r
 | F3 | Đăng nhập mobile bằng `farmer1`, gửi báo cáo kèm ảnh | Gửi được; ảnh không phải lúa bị chặn |
 | F4 | `admin1` duyệt thửa chờ duyệt (An Giang) | Duyệt được; `farmer1` có thông báo |
 | F5 | `engineer1` chạy chẩn đoán, duyệt | Chẩn đoán chuyển trạng thái, timeline ghi đủ bước |
-| F6 | Khai phun thuốc rồi xác nhận trên chẩn đoán đạo ôn hoặc khô vằn | Vụ vào cách ly; thu hoạch bị chặn tới hết hạn |
-| F6b | Chẩn đoán bệnh chưa có rule (đốm nâu) | Chỉ xem xét (`review_required`), không có liều và PHI |
+| F6 | Khai phun thuốc rồi xác nhận trên chẩn đoán đạo ôn, khô vằn hoặc đốm nâu | Vụ vào cách ly; thu hoạch bị chặn tới hết hạn |
+| F6b | Chẩn đoán bệnh chưa có rule (than lá) | Chỉ xem xét (`review_required`), không có liều và PHI |
 | F7 | Hỏi đáp tri thức | Đoạn trích có nguồn |
 | F8 | Mở Superset bằng `admin1` | Dashboard của Farm hiển thị 11 chart, mỗi chart một ô; chart "Thửa đang cách ly" và hai chart thu hoạch có dữ liệu sau khi seed; hai chart thời tiết có điểm sau khi Backend chạy khoảng một phút; chart "Tỷ lệ AI đúng/sai" trống nếu chưa chẩn đoán AI bằng ảnh thật |
 | F9 | Hai người cùng quyết định một case | Một bên 409 |

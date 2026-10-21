@@ -90,7 +90,7 @@ Mỗi mục nêu nội dung cần viết và nơi lấy số liệu, bằng ch�
 | 5. Trí tuệ nhân tạo | 1 | CV, RAG, LangGraph, LLM, luật phân loại; ngưỡng, giới hạn, vai trò kỹ sư; dữ liệu và nguồn gốc | `ai/README.md`, `COUNCIL_QA.md` câu 6 |
 | 6. Kiểm thử và kiểm chứng | 1 | Test backend, E2E hai ứng dụng trên stack sạch (Farm 10 bước, Lab 16 bước), bằng chứng Core không đổi khi thêm ứng dụng, ứng dụng mẫu rỗng | log workflow `E2E`, `deploy/demo/README.md`, `TESTING.md` |
 | 7. Mã nguồn mở và giấy phép | 1 | Bảng license, SBOM, lockfile, SPDX, CONTRIBUTING và hướng dẫn thêm ứng dụng, issue tracker | `LICENSES.md`, `sbom/`, `CONTRIBUTING.md` |
-| 8. Giới hạn và hướng phát triển | 0.5 | Rule thuốc được duyệt mới có hai bệnh, điểm nghẽn mở rộng, mục chưa làm của Lab (mobile, dashboard Superset, ticket tương tự), giấy phép của `ai/` | `COUNCIL_QA.md`, `BACKLOG.md` |
+| 8. Giới hạn và hướng phát triển | 0.5 | Rule thuốc được duyệt mới có ba bệnh, điểm nghẽn mở rộng, mục chưa làm của Lab (mobile, dashboard Superset, ticket tương tự), giấy phép của `ai/` | `COUNCIL_QA.md`, `BACKLOG.md` |
 
 ### Slide (12)
 

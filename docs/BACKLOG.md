@@ -23,7 +23,7 @@ Chưa có việc nào.
 | Việc | Ghi chú |
 |---|---|
 | Kiểm tay Farm F3 trên điện thoại, kèm ngưỡng GPS và nhãn "Đang cách ly"; icon và splash của mobile (chỉ hiện ở bản build thật, không hiện ở Expo Go) | Kịch bản ở [`TESTING.md`](./TESTING.md); các mục kiểm tay còn lại đã đạt |
-| Mobile hiển thị tài liệu tham khảo (chi tiết báo cáo đã duyệt) và hỏi đáp dạng danh sách trường | Đã qua `tsc` và kiểm hàm tách dòng; chưa mở trên Expo Go hay máy thật |
+| Mobile hiển thị tài liệu tham khảo (chi tiết báo cáo đã duyệt), hỏi đáp dạng danh sách trường và hộp thông báo cuộn tải thêm | Đã qua `tsc` và kiểm hàm tách dòng; chưa mở trên Expo Go hay máy thật |
 | Dashboard Superset hiển thị trên giao diện | Bundle và `query_context` đã có test; chưa có test tự động mở dashboard trên Superset thật |
 
 ## 4. Giới hạn của AI và dữ liệu
@@ -51,11 +51,10 @@ Chưa có việc nào.
 |---|---|
 | Backend tự gọi AI sau khi upload ảnh | Chẩn đoán AI do kỹ sư bấm; đang giữ thủ công có chủ đích |
 | Push thật (FCM, UnifiedPush) | Hộp thông báo chỉ kéo về khi mở app |
-| Hộp thông báo cho engineer và admin | Họ dùng hàng chờ và Mattermost; mobile chỉ tải 30 thông báo mới nhất, chưa cuộn tải thêm |
+| Hộp thông báo cho engineer và admin | Họ dùng hàng chờ và Mattermost |
 | Phun lặp lại trên cùng một chẩn đoán | Mỗi chẩn đoán một lần phun; phun lại phải qua báo cáo và chẩn đoán mới |
 | SLA nhắc kỹ sư khi bản khai phun chờ xác nhận lâu | Admin xác nhận thay được |
 | Thu hoạch thay hộ không có trong timeline workflow | Thu hoạch không có case; thông tin nằm trên vụ và log backend |
-| Nhắc hạn thu hoạch không giới hạn số lần | Nhắc mỗi ngày tới khi thu hoạch hoặc đổi ngày |
 | Phạm vi phụ trách theo khu vực cho engineer | Phân quyền hiện theo thao tác, không theo khu vực |
 | Retry, hàng đợi bền vững hoặc outbox cho thông báo chat bị lỡ | Hiện gửi một lần, lỗi thì bỏ |
 | Trường "Phương pháp áp dụng" và lượng nước của phác đồ | `TreatmentRule.notes` trộn nhiều loại thông tin; cần field riêng được chuyên gia xác thực |

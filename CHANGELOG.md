@@ -13,6 +13,8 @@ Hai mục đầu liệt kê các bản phát hành; lịch sử chi tiết theo 
 - `docs/_template/`: mẫu tài liệu cho một đợt làm mới.
 - Danh mục nguồn Farm bổ sung hướng dẫn ADC cho đốm nâu và ba nguồn tiếng Việt về đạo ôn, khô vằn, môi giới truyền Tungro; nội dung corpus giữ nguyên.
 - Seed Farm bổ sung Help 400SC cho đốm nâu, liều 0,6 L/ha và PHI 14 ngày, theo yêu cầu gán trạng thái `EXPERT_APPROVED` của chủ dự án ngày 2026-10-20; hai rule Newtec giữ nguyên.
+- Nhắc thu hoạch chỉ chạy trong `app.harvest-reminder-max-days` ngày (mặc định 14) kể từ ngày thu hoạch dự kiến.
+- Mobile: hộp thông báo cuộn tới cuối thì tải trang kế, 30 thông báo mỗi trang.
 
 ### Đã thay đổi
 

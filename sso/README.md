@@ -48,7 +48,9 @@ Quản lý user qua Admin Console `http://localhost:${APISIX_HOST_PORT}/admin` (
 ## Client mobile
 
 - Redirect URI: `dxfarm://*` (app đã build) và `exp://*` (Expo Go, chỉ dev).
-- Điện thoại truy cập Keycloak qua IP LAN của máy dev; Keycloak không đặt `KC_HOSTNAME` nên URL theo địa chỉ request, web (`localhost:9080`) và điện thoại (`<IP-LAN>:9080`) chạy song song không cần đổi `.env`.
+- Điện thoại truy cập Keycloak qua IP LAN của máy dev.
+- Realm import lấy `GATEWAY_PUBLIC_URL` và `SUPERSET_PUBLIC_URL` làm redirect URI của `dxos-web` và `dxos-superset` (cùng `localhost` cho dev), nên đổi `PUBLIC_HOST` trước lần khởi động đầu tiên của Keycloak.
+- Keycloak không đặt `KC_HOSTNAME` nên URL theo địa chỉ request, web (`localhost:9080`) và điện thoại (`<IP-LAN>:9080`) chạy song song không cần đổi `.env`.
 - Volume Postgres cũ chưa có client `farm-mobile`: thêm qua Admin Console (cấu hình như `realm-dxos.json`) hoặc xóa `deploy/data/postgres` để import lại.
 
 ## Hostname nội bộ và hostname trình duyệt

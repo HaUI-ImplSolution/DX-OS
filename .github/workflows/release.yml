@@ -1,0 +1,109 @@
+name: Release
+run-name: Release ${{ inputs.services }} from ${{ github.ref_name }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      services:
+        description: "Images to build: all, or a comma list of backend,frontend,portal,ai,minio"
+        required: true
+        default: all
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      names: ${{ steps.pick.outputs.names }}
+    steps:
+      - name: Pick the images to build
+        id: pick
+        env:
+          REQUESTED: ${{ inputs.services }}
+        run: |
+          ALL="backend frontend portal ai minio"
+          if [[ "$REQUESTED" == "all" ]]; then
+            PICKED="$ALL"
+          else
+            PICKED="$(echo "$REQUESTED" | tr ',' ' ')"
+            for name in $PICKED; do
+              [[ " $ALL " == *" $name "* ]] || { echo "Unknown image: $name"; exit 1; }
+            done
+          fi
+          echo "names=$(printf '%s\n' $PICKED | jq -R . | jq -sc .)" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: plan
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        name: ${{ fromJSON(needs.plan.outputs.names) }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Resolve image name and build arguments
+        id: image
+        run: |
+          OWNER="${GITHUB_REPOSITORY_OWNER,,}"
+          echo "repo=ghcr.io/${OWNER}/dxos-${{ matrix.name }}" >> "$GITHUB_OUTPUT"
+          echo "sha=sha-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          {
+            echo "args<<EOF"
+            # Same values as the frontend build in deploy/docker-compose.yml: the web app calls the
+            # API and Keycloak on its own origin, so one image serves every address.
+            if [[ "${{ matrix.name }}" == "frontend" ]]; then
+              echo "VITE_API_BASE_URL="
+              echo "VITE_KEYCLOAK_URL="
+              echo "VITE_KEYCLOAK_CLIENT_ID=dxos-web"
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.name }}
+          push: true
+          provenance: false
+          platforms: linux/amd64
+          build-args: ${{ steps.image.outputs.args }}
+          tags: |
+            ${{ steps.image.outputs.repo }}:latest
+            ${{ steps.image.outputs.repo }}:${{ steps.image.outputs.sha }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=registry,ref=${{ steps.image.outputs.repo }}:buildcache
+          cache-to: type=registry,ref=${{ steps.image.outputs.repo }}:buildcache,mode=max,image-manifest=true,oci-mediatypes=true
+
+  summary:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print the update command for the server
+        run: |
+          {
+            echo "Published \`latest\` and \`sha-${GITHUB_SHA::7}\`. On the server:"
+            echo '```'
+            echo "cd DX-OS/deploy && git pull && ./update.sh"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

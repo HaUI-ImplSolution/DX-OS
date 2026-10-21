@@ -120,7 +120,7 @@ Mọi cấu hình nằm ở `deploy/.env` (mẫu [`deploy/.env.example`](./deplo
 | `DXOS_APP` | Ứng dụng chạy: `farm` (mặc định) hoặc `lab` |
 | `POSTGRES_*`, `MINIO_*`, `KEYCLOAK_*`, `SUPERSET_*`, `MATTERMOST_*` | Tài khoản và mật khẩu từng dịch vụ, để trống trong mẫu, không commit |
 | `BACKEND_TO_AI_API_KEY`, `AI_TO_BACKEND_API_KEY` | Khóa dịch vụ hai chiều giữa Backend và AI |
-| `GATEWAY_PUBLIC_URL`, `SUPERSET_PUBLIC_URL` | Địa chỉ công khai của gateway và Superset; đổi khỏi `localhost` khi chạy trên server |
+| `PUBLIC_HOST` | Địa chỉ trình duyệt dùng để vào hệ thống: `localhost` khi dev, IP hoặc tên miền của server khi triển khai; `GATEWAY_PUBLIC_URL`, `SUPERSET_PUBLIC_URL` và các địa chỉ trong thông báo chat tự theo biến này |
 | `MATTERMOST_WEBHOOK_URL_*` | Ghi đè webhook từng kênh chat; để trống thì dùng webhook tự tạo khi dựng stack |
 | `OLLAMA_MODEL` | Model LLM, mặc định `qwen2.5:1.5b` |
 

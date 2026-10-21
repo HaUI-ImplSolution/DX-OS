@@ -10,8 +10,8 @@ export function PassageText({ content }: { content: string }) {
   if (!fields) return <Text style={styles.value}>{lines.join("\n")}</Text>;
   return (
     <View style={styles.list}>
-      {fields.map((field) => (
-        <View key={field.label} style={styles.field}>
+      {fields.map((field, index) => (
+        <View key={`${index}-${field.label}`} style={styles.field}>
           <Text style={styles.label}>{field.label}</Text>
           <Text style={styles.value}>{field.value}</Text>
         </View>

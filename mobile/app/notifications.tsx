@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
 import {
   ActivityIndicator,
@@ -50,9 +50,13 @@ export default function NotificationsScreen() {
   const [nextPage, setNextPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
+  // Changes with every first page, so a page requested for an older list is dropped.
+  const generation = useRef(0);
 
   useEffect(() => {
     if (!data) return;
+    generation.current += 1;
+    setLoadingMore(false);
     setLoaded(data.items);
     setNextPage(1);
     setTotalPages(data.totalPages);
@@ -63,8 +67,10 @@ export default function NotificationsScreen() {
   const loadMore = async () => {
     if (loadingMore || nextPage >= totalPages) return;
     setLoadingMore(true);
+    const requested = generation.current;
     try {
       const next = await listNotifications(nextPage, PAGE_SIZE);
+      if (requested !== generation.current) return;
       setLoaded((prev) => {
         const seen = new Set(prev.map((item) => item.id));
         return [...prev, ...next.items.filter((item) => !seen.has(item.id))];
@@ -74,7 +80,7 @@ export default function NotificationsScreen() {
     } catch {
       // The next scroll to the end tries again.
     } finally {
-      setLoadingMore(false);
+      if (requested === generation.current) setLoadingMore(false);
     }
   };
 

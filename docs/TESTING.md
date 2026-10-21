@@ -17,7 +17,8 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 | Báo cáo sâu bệnh: kiểm tra chất lượng ảnh, idempotency, chụp lại | Có | Test tích hợp, E2E | Có |
 | Chẩn đoán AI, nhập triệu chứng, chẩn đoán lại, kỹ sư duyệt | Có | Test tích hợp, pytest | Có (chẩn đoán thủ công; AI khi có ảnh thật) |
 | Khai phun thuốc, xác nhận, khóa thu hoạch theo PHI | Có | Test đơn vị và tích hợp, E2E | Có cho đạo ôn (rule được chuyên gia duyệt) |
-| Thu hoạch (sớm cần xác nhận), nhắc hạn, hộp thông báo | Có | Test đơn vị; test tích hợp thông báo duyệt, từ chối, xác nhận phun và nhắc hạn | Có |
+| Thu hoạch (sớm cần xác nhận), nhắc hạn (dừng sau 14 ngày), hộp thông báo | Có | Test đơn vị; test tích hợp thông báo duyệt, từ chối, xác nhận phun và nhắc hạn; kiểm tay nhắc hạn | Có |
+| Nhắc kênh kỹ sư về bản khai phun chờ xác nhận quá 24 giờ | Có | Kiểm tay | Có |
 | Dashboard BI trên view đã duyệt (11 chart, `query_context` sinh lại sau mỗi lần import) | Có | Test bundle và `query_context`, kiểm tay | Một phần: chart "Tỷ lệ AI đúng/sai" cần chẩn đoán AI bằng ảnh thật |
 | Thời tiết theo thửa (Open-Meteo, snapshot dự phòng), panel trên web và thẻ trên mobile | Có | Kiểm tay trên web và mobile | Có |
 | Báo cáo chưa chẩn đoán trong hàng đợi kỹ sư, mở báo cáo bằng `/?report=<id>` | Có | Kiểm tay | Có |
@@ -32,6 +33,7 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 | Vai STUDENT, LECTURER, TECHNICIAN, ADMIN; sinh viên chỉ thấy yêu cầu của mình | Có | E2E Lab, kiểm tay | Có (`student1`, `lecturer1`, `tech1`, `admin1`) |
 | Yêu cầu hỗ trợ: gửi kèm ảnh, trao đổi công khai và nội bộ, nhận, xử lý, xác nhận và đánh giá, mở lại | Có | E2E Lab, kiểm tay | Có (15 yêu cầu ở mọi trạng thái) |
 | SLA theo ưu tiên, cảnh báo ở 80% và đánh dấu quá hạn theo lịch | Có | Kiểm tay với SLA rút ngắn | Có |
+| Cảnh báo kênh kỹ thuật viên khi một thiết bị có 3 ticket trong 30 ngày | Có | Kiểm tay | Có |
 | Hai kỹ thuật viên nhận cùng yêu cầu: một bên 409 | Có | E2E Lab | Không áp dụng |
 | Gợi ý loại và ưu tiên bằng luật, bài tri thức liên quan | Có | E2E Lab, kiểm tay | Có (12 bài trích văn bản của HaUI) |
 | Mượn thiết bị có hạn, duyệt theo vai, trả hỏng mở nhật ký sửa chữa | Có | E2E Lab, kiểm tay | Có (7 thiết bị, 5 phiếu, 1 phiếu quá hạn) |
@@ -133,6 +135,8 @@ Treatment rule của đạo ôn, khô vằn và đốm nâu có trong seed Backe
 | F10 | Chọn một thửa ở "Theo dõi đồng ruộng" | Panel Thời tiết hiện nhiệt độ, độ ẩm, dự báo 5 ngày và nguồn |
 | F11 | Nông dân gửi báo cáo mới; `engineer1` mở Hàng đợi → "Chưa chẩn đoán" → "Mở để chẩn đoán" | Báo cáo có trong danh sách; liên kết mở đúng thửa, vụ và báo cáo |
 | F12 | Duyệt hoặc từ chối chẩn đoán, xác nhận hoặc từ chối khai phun (đặt `MATTERMOST_APP_BASE_URL` để tiêu đề có liên kết) | Kênh "Kỹ sư nông nghiệp" có tin kết quả; tiêu đề mở được báo cáo; `farmer1` có thông báo |
+| F13 | `farmer1` nộp bản khai phun, để chờ; chạy backend với `TREATMENT_CONFIRMATION_WAIT_HOURS=0` và `TREATMENT_CONFIRMATION_REMINDER_CRON="0 * * * * *"` | Kênh "Kỹ sư nông nghiệp" có tin "Bản khai phun thuốc chờ xác nhận quá lâu" mỗi phút tới khi kỹ sư quyết định |
+| F14 | Đặt `expected_harvest_date` của một vụ đã duyệt lùi 20 ngày và một vụ lùi 5 ngày; chạy backend với `HARVEST_REMINDER_CRON="0 * * * * *"` | Chỉ vụ lùi 5 ngày có thông báo "Đến hạn thu hoạch" |
 
 ### 5.3 Mobile
 
@@ -189,6 +193,7 @@ Web không cần build lại: web đọc `GET /api/v1/app` rồi nạp giao di�
 | L15 | `admin1` | Mở trang thống kê | Số liệu khớp dữ liệu mẫu |
 | L16 | `student1` | Mở ticket của người khác bằng đường dẫn trực tiếp | Bị chặn |
 | L17 | `tech1` | Rút ngắn SLA khi thử để ticket quá hạn | Cảnh báo, rồi đánh dấu quá hạn; thông báo không gửi trùng |
+| L18 | `student1` | Gửi 4 ticket nêu cùng một `deviceId` | Kênh "Kỹ thuật viên" có đúng một tin "Thiết bị hỏng lặp lại" ở ticket thứ 3, ticket thứ 4 không đăng thêm |
 
 ### 6.3 Kiểm qua API
 
@@ -284,19 +289,20 @@ Với mọi dòng có kết quả, kiểm thêm:
 
 | Mục | Kết quả | Ghi chú |
 |---|---|---|
-| Backend `./mvnw clean test` | Đạt | 148 test: dx-core 14, app-farm 23, app-lab 9, dx-host 102 |
+| Backend `./mvnw clean verify` | Đạt | 149 test: dx-core 14, app-farm 23, app-lab 9, dx-host 103 |
 | BI `python -m unittest test_chart_query_context` trong `bi/` | Đạt | 22 test |
 | AI `pytest` trong `ai/` | Đạt | 100 test |
 | Web và mobile `tsc` | Đạt | Không lỗi |
 | Ranh giới app và core, seed Farm, nguồn tri thức khớp registry | Đạt | Không có kết quả vi phạm |
 | E2E Farm | Đạt | 10/10 bước với `--require-rule` |
 | Tài liệu tham khảo trong chẩn đoán Farm | Đạt | Ngày 20/10/2026: lưu, tải lại, gộp các đoạn cùng tài liệu thành một mục (cả dữ liệu đã lưu trước đó), che theo vai FARMER và ẩn card khi rỗng; web ở khung 556 px không tràn; 5 ảnh lá lúa thật của bộ RiceLeafDiseaseBD (mỗi lớp bệnh một ảnh) qua AI thật đều ra đúng bệnh với độ tin cậy từ 0,94 đến 0,98, mỗi ảnh một khối tham khảo có các dòng đúng thứ tự trong tài liệu |
+| Nhắc khai phun chờ lâu, nhắc thu hoạch có giới hạn, cảnh báo thiết bị hỏng lặp lại | Đạt | Ngày 21/10/2026 trên stack giữ nguyên dữ liệu: migration V13 chạy trên cơ sở dữ liệu có sẵn; E2E Farm 10/10 và `reported_at` được ghi khi nộp bản khai; F13 ra đúng một tin mỗi phút với chủ hộ, thửa, thuốc, giờ khai; F14 chỉ nhắc vụ lùi 5 ngày; L18 ra đúng một tin ở ticket thứ 3 (4 ticket) |
 | Hỏi đáp gộp theo tài liệu (Farm và Lab) | Đạt | Ngày 20/10/2026: mỗi tài liệu một đoạn, các dòng theo thứ tự trong tài liệu, nguồn gộp; E2E Farm 10/10 và E2E Lab 16/16 với `--require-knowledge`; `./mvnw verify` đạt (dx-core 14, app-farm 23, app-lab 9, dx-host 102), 100 test AI đạt |
 | E2E Lab | Đạt | 16/16 bước với `--require-knowledge`, kể cả sau khi đổi app không `--reset` |
 | Đổi ứng dụng B1 đến B6 | Đạt | B2 dừng với thông báo nêu `[farm, lab]`; B3, B4 route app khác 404; B6 không lỗi migration |
-| Kiểm tay Farm | Đạt | F1, F2, F4 đến F12 (kỹ sư cũng thấy dashboard Superset); hộp duyệt chỉ có loại case của Farm; trên mobile đạt thẻ thời tiết, màn hỏi đáp và danh sách thông báo hiện 30 mục mới nhất; F3 chưa chạy |
+| Kiểm tay Farm | Đạt | F1, F2, F4 đến F14 (kỹ sư cũng thấy dashboard Superset); hộp duyệt chỉ có loại case của Farm; trên mobile đạt thẻ thời tiết, màn hỏi đáp và danh sách thông báo hiện 30 mục mỗi trang (cuộn tải trang kế chưa thử trên máy); F3 chưa chạy |
 | Tri thức Lab | Đạt, trừ K17 | Ngày 19/10/2026: K1 đến K16 đúng bài, nguồn mở trang của HaUI và bản PDF trên web và qua API; K17 (máy in) hiện đoạn không liên quan, xem `BACKLOG.md` |
-| Kiểm tay Lab | Đạt | L1 đến L17, API bước 1 đến 22, các màn hình web; hộp duyệt chỉ có loại case của Lab |
+| Kiểm tay Lab | Đạt | L1 đến L18, API bước 1 đến 22, các màn hình web; hộp duyệt chỉ có loại case của Lab |
 | API và lỗi request | Đạt | 415, 405, 400; `settings` của `GET /api/v1/app`; `GET /api/v1/crop-seasons/isolated` |
 | Thời tiết | Đạt | Open-Meteo trả dữ liệu thật; địa chỉ không tới được trả snapshot kèm ghi chú |
 | Chart thời tiết trên Superset | Đạt | Một phút sau khi Backend lên, job ghi 4 dòng (4 vị trí thửa); `vw_weather_daily` có 4 dòng; `/api/v1/chart/{id}/data` trả dữ liệu cho cả 11 chart; chart "Nhiệt độ theo ngày" và "Lượng mưa theo ngày" hiển thị trên dashboard |

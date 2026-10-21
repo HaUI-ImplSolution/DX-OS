@@ -107,7 +107,8 @@ Hướng mở rộng:
 
 - Superset dùng SQLite cho metadata.
 - AI Service là một tiến trình, không có hàng đợi.
-- Lịch chạy nền (kiểm SLA, nhắc mượn trả, nhắc thu hoạch) chạy ở mọi bản backend; thông báo có khóa chống trùng nên không gửi lặp, nhưng nhiều bản vẫn cần khóa lịch hoặc một bản giữ lịch.
+- Lịch chạy nền (kiểm SLA, nhắc mượn trả, nhắc thu hoạch, nhắc xác nhận khai phun, thu thập thời tiết) giữ khóa advisory của PostgreSQL nên hai bản backend không chạy cùng một việc cùng lúc.
+  Thông báo trong app có khóa chống trùng; tin chat nhắc có thể lặp nếu hai bản chạy lệch giờ.
 - Hạn mức tốc độ tính theo địa chỉ IP ở gateway là số tạm.
 - Chưa có thử tải.
 

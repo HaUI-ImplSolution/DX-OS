@@ -30,6 +30,8 @@ public interface TicketRepository
 
   List<Ticket> findByWorkspaceId(Long workspaceId);
 
+  long countByDeviceIdAndCreatedAtGreaterThanEqual(Long deviceId, Instant from);
+
   // Open tickets whose resolution deadline passed and that were not marked overdue yet.
   @Query("""
       select t from Ticket t

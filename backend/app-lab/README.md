@@ -51,6 +51,7 @@ Cột `status` trên bảng của Lab phản chiếu trạng thái đó, do hand
 - Phản hồi đầu tiên là lúc kỹ thuật viên bắt đầu hoặc trả lời công khai đầu tiên.
 - Lịch kiểm tra (`lab.sla.check-cron`) cảnh báo người xử lý khi đã dùng 80% thời gian và đánh dấu quá hạn khi qua hạn; mỗi thông báo gửi một lần cho mỗi ticket.
 - Ticket quá hạn còn được đăng lên kênh chat kỹ thuật viên và quản trị.
+- Ticket thứ `lab.device-alert.threshold` nêu cùng một thiết bị trong `lab.device-alert.window-days` ngày được đăng lên kênh chat kỹ thuật viên, mỗi mốc một lần.
 
 **Mượn thiết bị**
 
@@ -88,6 +89,8 @@ Những gì ứng dụng khai báo ở [`ARCHITECTURE.md`](../../ARCHITECTURE.md
 |---|---|---|
 | `lab.sla.check-cron` | `LAB_SLA_CHECK_CRON` | `0 */5 * * * *` |
 | `lab.sla.warning-ratio` | `LAB_SLA_WARNING_RATIO` | `0.8` |
+| `lab.device-alert.threshold` | `LAB_DEVICE_ALERT_THRESHOLD` | `3` |
+| `lab.device-alert.window-days` | `LAB_DEVICE_ALERT_WINDOW_DAYS` | `30` |
 | `lab.reminder.loan-cron` | `LAB_LOAN_REMINDER_CRON` | `0 0 7 * * *` |
 | `lab.reminder.loan-due-soon-days` | `LAB_LOAN_DUE_SOON_DAYS` | `1` |
 | `lab.classifier.rules-path` | `LAB_CLASSIFIER_RULES_PATH` | `classpath:lab/classifier-rules.json` |

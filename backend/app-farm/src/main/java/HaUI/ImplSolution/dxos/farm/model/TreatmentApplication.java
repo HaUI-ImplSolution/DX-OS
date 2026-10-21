@@ -79,6 +79,9 @@ public class TreatmentApplication {
   // Token "sub" of the farmer who reported the spraying; null when staff recorded it
   private String reportedByUserId;
 
+  // When the farmer last submitted the report; null when staff recorded it
+  private Instant reportedAt;
+
   // Token "sub" of the engineer or admin who confirmed it
   private String confirmedByUserId;
 

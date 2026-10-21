@@ -93,6 +93,7 @@ Quản trị viên nhập hộ không cần sai số.
 | `app.htx-code` | `HTX_CODE` | `HTX01` |
 | `app.gps-max-accuracy-meters` | `GPS_MAX_ACCURACY_METERS` | `30` |
 | `app.harvest-reminder-cron` | `HARVEST_REMINDER_CRON` | `0 0 7 * * *` |
+| `app.harvest-reminder-max-days` | `HARVEST_REMINDER_MAX_DAYS` | `14` |
 | `app.season-start-months.*` | `SEASON_MONTHS_DONG_XUAN`, `SEASON_MONTHS_HE_THU`, `SEASON_MONTHS_THU_DONG` | `11,12,1`, `3,4,5`, `6,7,8` |
 | `security.farmer-client-ids` | `FARMER_CLIENT_IDS` | `farm-mobile` |
 | `weather.base-url` | `WEATHER_BASE_URL` | `https://api.open-meteo.com` |

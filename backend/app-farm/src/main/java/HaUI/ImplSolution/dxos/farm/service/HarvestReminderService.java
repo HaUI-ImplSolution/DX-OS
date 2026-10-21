@@ -9,11 +9,12 @@ import HaUI.ImplSolution.dxos.farm.repository.CropSeasonRepository;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 // Tells the farmer once a day that a season reached its expected harvest date and is still not
-// harvested.
+// harvested, for at most app.harvest-reminder-max-days days after that date.
 @Service
 public class HarvestReminderService {
 
@@ -22,12 +23,15 @@ public class HarvestReminderService {
   private final CropSeasonRepository cropSeasonRepository;
   private final NotificationService notificationService;
   private final Clock clock;
+  private final int maxDays;
 
   public HarvestReminderService(CropSeasonRepository cropSeasonRepository,
-      NotificationService notificationService, Clock clock) {
+      NotificationService notificationService, Clock clock,
+      @Value("${app.harvest-reminder-max-days:14}") int maxDays) {
     this.cropSeasonRepository = cropSeasonRepository;
     this.notificationService = notificationService;
     this.clock = clock;
+    this.maxDays = maxDays;
   }
 
   // Returns how many reminders were created; a season already reminded today is skipped.
@@ -36,8 +40,8 @@ public class HarvestReminderService {
     LocalDate today = LocalDate.now(clock);
     int created = 0;
     for (CropSeason season : cropSeasonRepository
-        .findByStatusAndApprovalStatusAndDeletedAtIsNullAndExpectedHarvestDateLessThanEqual(
-            CropSeasonStatus.ACTIVE, ApprovalStatus.APPROVED, today)) {
+        .findByStatusAndApprovalStatusAndDeletedAtIsNullAndExpectedHarvestDateBetween(
+            CropSeasonStatus.ACTIVE, ApprovalStatus.APPROVED, today.minusDays(maxDays), today)) {
       if (season.getParcel().getDeletedAt() != null) {
         continue;
       }

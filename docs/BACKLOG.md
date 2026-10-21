@@ -37,13 +37,12 @@ Chưa có việc nào.
 | Nộp báo cáo cần AI service chạy | Chưa có đường nhận ảnh chưa kiểm khi AI dừng; hàng đợi offline thử lại |
 | Chưa có mô hình nhận diện sâu hại | Classifier nhận Healthy và 5 bệnh lá |
 | Kho RAG của Farm chỉ có 6 tài liệu bệnh lúa | Chưa có VietGAP hay quy trình canh tác |
-| Truy xuất tri thức dựa trên MiniLM đa ngữ | Câu nêu tên bệnh được xếp đúng; câu chỉ tả triệu chứng phụ thuộc embedding; bộ thử có 15 câu |
-| Giới hạn 60 câu hỏi mỗi phút mỗi IP là số tạm, chưa thử tải | `knowledge.min-score` 0.40 loại 7/8 câu ngoài chủ đề; điểm đoạn đầu của câu đúng chủ đề từ 0.50 đến 0.83 |
+| Truy xuất tri thức dựa trên MiniLM đa ngữ | Câu nêu tên bệnh được xếp đúng; câu chỉ tả triệu chứng phụ thuộc embedding; bộ thử có 15 câu; `knowledge.min-score` 0.40 loại 7/8 câu ngoài chủ đề, điểm đoạn đầu của câu đúng chủ đề từ 0.50 đến 0.83 |
 | Luật phân loại của Lab là luật tay | Chưa đo độ chính xác trên dữ liệu thật |
 | Kho tri thức Lab chỉ có 12 bài từ 9 văn bản công khai của HaUI | Chưa có bài về máy in, VPN, quy chế phòng máy của khoa, đặt phòng máy; sổ tay LMS là bản năm học 2019-2020 |
 | Câu hỏi Lab ngoài chủ đề vẫn có thể hiện đoạn trên ngưỡng 0.40 | "Máy in kẹt giấy" hiện quy định phòng thi ở 0.58 đến 0.64, cao hơn vài câu đúng (máy chiếu 0.52); đổi ngưỡng không tách được, cần embedding hoặc cách xếp hạng khác |
 | Snapshot thời tiết chỉ có 5 điểm ĐBSCL, chụp ngày 07/10/2026 | Chụp lại nếu cần dữ liệu dự phòng mới hơn |
-| Giới hạn tốc độ ở gateway tính theo IP là số tạm; chưa thử tải | Superset dùng SQLite cho metadata, AI service là một tiến trình không có hàng đợi |
+| Giới hạn tốc độ ở gateway tính theo IP (60 câu hỏi tri thức mỗi phút, 30 lần upload hoặc chẩn đoán AI mỗi phút) là số tạm; chưa thử tải | Superset dùng SQLite cho metadata, AI service là một tiến trình không có hàng đợi |
 
 ## 5. Chức năng chưa có
 
@@ -53,7 +52,6 @@ Chưa có việc nào.
 | Push thật (FCM, UnifiedPush) | Hộp thông báo chỉ kéo về khi mở app |
 | Hộp thông báo cho engineer và admin | Họ dùng hàng chờ và Mattermost |
 | Phun lặp lại trên cùng một chẩn đoán | Mỗi chẩn đoán một lần phun; phun lại phải qua báo cáo và chẩn đoán mới |
-| SLA nhắc kỹ sư khi bản khai phun chờ xác nhận lâu | Admin xác nhận thay được |
 | Thu hoạch thay hộ không có trong timeline workflow | Thu hoạch không có case; thông tin nằm trên vụ và log backend |
 | Phạm vi phụ trách theo khu vực cho engineer | Phân quyền hiện theo thao tác, không theo khu vực |
 | Retry, hàng đợi bền vững hoặc outbox cho thông báo chat bị lỡ | Hiện gửi một lần, lỗi thì bỏ |
@@ -73,7 +71,6 @@ Chưa có việc nào.
 
 - Mobile cho Lab.
 - Ticket tương tự bằng `pg_trgm`.
-- Cảnh báo thiết bị hỏng lặp lại.
 - Leo thang và tự đóng ticket.
 - Dashboard Superset riêng của Lab.
 - Tích hợp email và thời khóa biểu thật.

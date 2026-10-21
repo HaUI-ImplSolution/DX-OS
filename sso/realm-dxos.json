@@ -33,16 +33,18 @@
       "serviceAccountsEnabled": false,
       "consentRequired": false,
       "redirectUris": [
+        "${GATEWAY_PUBLIC_URL}/*",
         "http://localhost:9080/*",
         "http://localhost:5173/*"
       ],
       "webOrigins": [
+        "${GATEWAY_PUBLIC_URL}",
         "http://localhost:9080",
         "http://localhost:5173"
       ],
       "attributes": {
         "pkce.code.challenge.method": "S256",
-        "post.logout.redirect.uris": "http://localhost:9080/*##http://localhost:5173/*"
+        "post.logout.redirect.uris": "${GATEWAY_PUBLIC_URL}/*##http://localhost:9080/*##http://localhost:5173/*"
       },
       "protocolMappers": [
         {
@@ -119,15 +121,17 @@
       "serviceAccountsEnabled": false,
       "consentRequired": false,
       "redirectUris": [
+        "${SUPERSET_PUBLIC_URL}/oauth-authorized/keycloak",
         "http://localhost:9081/oauth-authorized/keycloak"
       ],
       "webOrigins": [
+        "${SUPERSET_PUBLIC_URL}",
         "http://localhost:9081"
       ],
       "frontchannelLogout": true,
       "attributes": {
-        "post.logout.redirect.uris": "http://localhost:9081/*",
-        "frontchannel.logout.url": "http://localhost:9081/logout/"
+        "post.logout.redirect.uris": "${SUPERSET_PUBLIC_URL}/*##http://localhost:9081/*",
+        "frontchannel.logout.url": "${SUPERSET_PUBLIC_URL}/logout/"
       },
       "defaultClientScopes": [
         "web-origins",

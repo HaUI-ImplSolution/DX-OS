@@ -46,6 +46,7 @@ services:
 
   # The official MinIO images are no longer published, so the image is built from source.
   minio:
+    image: ${DXOS_IMAGE_PREFIX:-dxos}-minio:${DXOS_IMAGE_TAG:-local}
     build:
       context: ../minio
     command: ["server", "/data", "--console-address", ":9001"]
@@ -66,6 +67,7 @@ services:
   # Backend, web and portal
   # ---------------------------------------------------------------------------
   backend:
+    image: ${DXOS_IMAGE_PREFIX:-dxos}-backend:${DXOS_IMAGE_TAG:-local}
     build:
       context: ../backend
       dockerfile: Dockerfile
@@ -140,6 +142,7 @@ services:
       start_period: 30s
 
   frontend:
+    image: ${DXOS_IMAGE_PREFIX:-dxos}-frontend:${DXOS_IMAGE_TAG:-local}
     build:
       context: ../frontend
       dockerfile: Dockerfile
@@ -158,6 +161,7 @@ services:
       retries: 6
 
   portal:
+    image: ${DXOS_IMAGE_PREFIX:-dxos}-portal:${DXOS_IMAGE_TAG:-local}
     build:
       context: ../portal
       dockerfile: Dockerfile
@@ -191,6 +195,8 @@ services:
       KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?}
       KC_HEALTH_ENABLED: "true"
       # Substituted into the placeholders of realm-dxos.json at import time.
+      GATEWAY_PUBLIC_URL: ${GATEWAY_PUBLIC_URL:?}
+      SUPERSET_PUBLIC_URL: ${SUPERSET_PUBLIC_URL:?}
       SUPERSET_OIDC_CLIENT_SECRET: ${SUPERSET_OIDC_CLIENT_SECRET:?}
       KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET:?}
     volumes:
@@ -296,6 +302,7 @@ services:
 
   # Ingests the knowledge corpus of the app selected by DXOS_APP into its own namespace.
   rag-ingest:
+    image: ${DXOS_IMAGE_PREFIX:-dxos}-ai:${DXOS_IMAGE_TAG:-local}
     build:
       <<: *ai-build
     depends_on:
@@ -313,6 +320,7 @@ services:
     command: ["python", "-m", "scripts.ingest_diseases", "--corpus", "${DXOS_APP:-farm}"]
 
   ai:
+    image: ${DXOS_IMAGE_PREFIX:-dxos}-ai:${DXOS_IMAGE_TAG:-local}
     build:
       <<: *ai-build
     depends_on:
@@ -424,7 +432,7 @@ services:
     environment:
       MM_SQLSETTINGS_DRIVERNAME: postgres
       MM_SQLSETTINGS_DATASOURCE: "postgres://mattermost_app:${MATTERMOST_DB_PASSWORD:?}@postgres:5432/mattermost?sslmode=disable"
-      MM_SERVICESETTINGS_SITEURL: "http://localhost:${MATTERMOST_HOST_PORT:?}"
+      MM_SERVICESETTINGS_SITEURL: "http://${PUBLIC_HOST:?}:${MATTERMOST_HOST_PORT:?}"
       MM_SERVICESETTINGS_ENABLEINCOMINGWEBHOOKS: "true"
     volumes: *mattermost-volumes
     ports:

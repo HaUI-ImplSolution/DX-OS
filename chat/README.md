@@ -9,7 +9,7 @@ Service khai báo trong [`deploy/docker-compose.yml`](../deploy/docker-compose.y
 - Database Postgres riêng `mattermost`, Backend tạo role và database lúc khởi động (`MattermostDatabaseSeeder`); dữ liệu ở `deploy/data/mattermost/`.
 - [`bootstrap.sh`](./bootstrap.sh) chạy một lần qua REST API (idempotent): tạo System Admin, team `DX-Farm HTX` và channel `Thông báo chung`, `Kỹ sư nông nghiệp` (Farm), `Kỹ thuật viên` (Lab), `Ban quản trị` (private).
 - Đăng nhập tách khỏi Keycloak có chủ đích vì Team Edition không hỗ trợ OIDC với IdP tùy ý.
-- Truy cập `http://localhost:${MATTERMOST_HOST_PORT}` (mặc định `8065`) bằng `MATTERMOST_ADMIN_USERNAME` / `MATTERMOST_ADMIN_PASSWORD` trong `deploy/.env`.
+- Truy cập `http://${PUBLIC_HOST}:${MATTERMOST_HOST_PORT}` (mặc định `8065`) bằng `MATTERMOST_ADMIN_USERNAME` / `MATTERMOST_ADMIN_PASSWORD` trong `deploy/.env`.
 
 ## Thông báo từ Backend
 

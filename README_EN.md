@@ -120,7 +120,7 @@ All configuration lives in `deploy/.env` (template: [`deploy/.env.example`](./de
 | `DXOS_APP` | Application to run: `farm` (default) or `lab` |
 | `POSTGRES_*`, `MINIO_*`, `KEYCLOAK_*`, `SUPERSET_*`, `MATTERMOST_*` | Per-service accounts and passwords, empty in the template, never committed |
 | `BACKEND_TO_AI_API_KEY`, `AI_TO_BACKEND_API_KEY` | Service keys for each direction between Backend and AI |
-| `GATEWAY_PUBLIC_URL`, `SUPERSET_PUBLIC_URL` | Public addresses of the gateway and Superset; change from `localhost` when running on a server |
+| `PUBLIC_HOST` | Address the browser uses to reach the system: `localhost` for development, the IP or domain of the server when deployed; `GATEWAY_PUBLIC_URL`, `SUPERSET_PUBLIC_URL` and the links in chat notifications follow it |
 | `MATTERMOST_WEBHOOK_URL_*` | Overrides the webhook of a chat channel; empty uses the webhook created when the stack starts |
 | `OLLAMA_MODEL` | LLM model, default `qwen2.5:1.5b` |
 

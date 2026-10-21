@@ -478,6 +478,7 @@ public class DiagnosisService {
     fill(application, rule, actualDose, appliedAt);
     application.setConfirmationStatus(TreatmentConfirmationStatus.PENDING_CONFIRMATION);
     application.setReportedByUserId(currentUserService.currentUserId());
+    application.setReportedAt(clock.instant());
     application.setConfirmedByUserId(null);
     application.setConfirmedAt(null);
     application.setRejectionReason(null);

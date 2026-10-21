@@ -12,5 +12,8 @@ public final class LabEvents {
   public record TicketOverdue(Long ticketId, String code, String title, String priority,
       String assigneeName, Instant dueAt) {}
 
+  public record DeviceRepeatedFault(Long ticketId, String ticketCode, String assetCode,
+      String deviceType, long ticketCount, int windowDays) {}
+
   private LabEvents() {}
 }

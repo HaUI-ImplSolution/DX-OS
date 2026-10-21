@@ -7,6 +7,7 @@ import HaUI.ImplSolution.dxos.farm.event.DiagnosisDecidedEvent;
 import HaUI.ImplSolution.dxos.farm.event.DiagnosisPendingEvent;
 import HaUI.ImplSolution.dxos.farm.event.DiseaseReportCreatedEvent;
 import HaUI.ImplSolution.dxos.farm.event.ParcelCreatedEvent;
+import HaUI.ImplSolution.dxos.farm.event.TreatmentConfirmationOverdueEvent;
 import HaUI.ImplSolution.dxos.farm.event.TreatmentDecidedEvent;
 import HaUI.ImplSolution.dxos.farm.event.TreatmentReportedEvent;
 import java.util.Map;
@@ -50,6 +51,12 @@ public class MattermostNotificationListener {
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onTreatmentReported(TreatmentReportedEvent event) {
     dispatch(MattermostChannel.ENGINEER, () -> messageBuilder.treatmentReported(event));
+  }
+
+  @Async("mattermostNotifyExecutor")
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onTreatmentConfirmationOverdue(TreatmentConfirmationOverdueEvent event) {
+    dispatch(MattermostChannel.ENGINEER, () -> messageBuilder.treatmentConfirmationOverdue(event));
   }
 
   @Async("mattermostNotifyExecutor")

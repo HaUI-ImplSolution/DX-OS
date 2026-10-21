@@ -78,6 +78,20 @@ public class LabChatListener {
     dispatch(LabNotificationConfig.ADMIN_CHANNEL, message);
   }
 
+  @Async("mattermostNotifyExecutor")
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onDeviceRepeatedFault(LabEvents.DeviceRepeatedFault event) {
+    dispatch(LabNotificationConfig.TECHNICIAN_CHANNEL,
+        () -> payload("#F08C00", "Thiết bị hỏng lặp lại",
+            "%s (%s): %d yêu cầu trong %d ngày, mới nhất %s".formatted(plain(event.assetCode()),
+                plain(event.deviceType()), event.ticketCount(), event.windowDays(),
+                plain(event.ticketCode())),
+            null, ticketLink(event.ticketId()), field("Thiết bị", plain(event.assetCode())),
+            field("Loại", plain(event.deviceType())),
+            field("Số yêu cầu", event.ticketCount() + " trong " + event.windowDays() + " ngày"),
+            field("Yêu cầu mới nhất", plain(event.ticketCode()))));
+  }
+
   private void dispatch(String channel, Supplier<Map<String, Object>> payload) {
     if (!chatWebhook.isEnabled(channel)) {
       return;

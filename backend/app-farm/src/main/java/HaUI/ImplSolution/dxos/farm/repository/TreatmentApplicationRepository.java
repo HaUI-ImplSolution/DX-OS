@@ -3,6 +3,7 @@ package HaUI.ImplSolution.dxos.farm.repository;
 
 import HaUI.ImplSolution.dxos.farm.model.TreatmentApplication;
 import HaUI.ImplSolution.dxos.farm.model.TreatmentConfirmationStatus;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +21,10 @@ public interface TreatmentApplicationRepository extends JpaRepository<TreatmentA
       TreatmentConfirmationStatus status);
 
   Optional<TreatmentApplication> findByDiagnosisId(Long diagnosisId);
+
+  // Reports that have waited for an engineer since before the cutoff.
+  List<TreatmentApplication> findByConfirmationStatusAndReportedAtBefore(
+      TreatmentConfirmationStatus status, Instant cutoff);
 
   // A rejected report was never accepted, so it is not part of the spraying history.
   List<TreatmentApplication> findByCropSeasonIdAndConfirmationStatusNotOrderByAppliedAtDesc(

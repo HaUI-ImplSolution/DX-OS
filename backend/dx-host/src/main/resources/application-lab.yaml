@@ -10,6 +10,10 @@ lab:
     check-cron: ${LAB_SLA_CHECK_CRON:0 */5 * * * *}
     # Share of the resolution time after which the assignee is warned (0-1).
     warning-ratio: ${LAB_SLA_WARNING_RATIO:0.8}
+  device-alert:
+    # The technician channel is told when this many tickets name the same device within the window.
+    threshold: ${LAB_DEVICE_ALERT_THRESHOLD:3}
+    window-days: ${LAB_DEVICE_ALERT_WINDOW_DAYS:30}
   reminder:
     # Cron (Asia/Ho_Chi_Minh) of the daily loan reminders.
     loan-cron: ${LAB_LOAN_REMINDER_CRON:0 0 7 * * *}

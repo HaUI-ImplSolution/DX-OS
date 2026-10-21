@@ -83,6 +83,7 @@ class RAGRetriever:
                     "document_id": str(chunk.document_id),
                     "document_title": document.title,
                     "document_version": document.version,
+                    "chunk_index": chunk.chunk_index,
                     "source_ids": source_ids,
                     "content": chunk.content,
                     "page_number": chunk.page_number,

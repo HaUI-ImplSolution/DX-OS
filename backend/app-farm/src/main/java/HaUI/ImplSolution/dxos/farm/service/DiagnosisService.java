@@ -49,6 +49,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -207,15 +208,30 @@ public class DiagnosisService {
       return List.of();
     }
     Map<String, KnowledgeSource> catalogue = knowledgeNamespace.sources();
-    return mergeByDocument(
-        ragEvidence.stream().filter(item -> item.content() != null && !item.content().isBlank())
-            .map(item -> new KnowledgeEvidence(item.content(), item.documentTitle(),
-                item.similarity() == null ? 0 : item.similarity(),
-                (item.sourceIds() == null ? List.<String>of() : item.sourceIds()).stream()
-                    .map(id -> catalogue.getOrDefault(id,
-                        new KnowledgeSource(id, id, null, null, null, null, null)))
-                    .toList()))
-            .toList());
+    return mergeByDocument(inDocumentOrder(ragEvidence).stream()
+        .filter(item -> item.content() != null && !item.content().isBlank())
+        .map(item -> new KnowledgeEvidence(item.content(), item.documentTitle(),
+            item.similarity() == null ? 0 : item.similarity(),
+            (item.sourceIds() == null ? List.<String>of() : item.sourceIds()).stream()
+                .map(id -> catalogue.getOrDefault(id,
+                    new KnowledgeSource(id, id, null, null, null, null, null)))
+                .toList()))
+        .toList());
+  }
+
+  // Documents keep their relevance order; the passages of one document follow its own order.
+  private static List<AiDiagnoseResponse.RagEvidence> inDocumentOrder(
+      List<AiDiagnoseResponse.RagEvidence> passages) {
+    Map<String, List<AiDiagnoseResponse.RagEvidence>> byDocument = new LinkedHashMap<>();
+    for (AiDiagnoseResponse.RagEvidence passage : passages) {
+      String key = passage.documentTitle() != null ? passage.documentTitle() : passage.content();
+      byDocument.computeIfAbsent(key, k -> new ArrayList<>()).add(passage);
+    }
+    return byDocument.values().stream()
+        .flatMap(group -> group.stream()
+            .sorted(Comparator.comparing(AiDiagnoseResponse.RagEvidence::chunkIndex,
+                Comparator.nullsLast(Comparator.naturalOrder()))))
+        .toList();
   }
 
   // Passages of one document become one entry: its lines without repeats, the best score and the

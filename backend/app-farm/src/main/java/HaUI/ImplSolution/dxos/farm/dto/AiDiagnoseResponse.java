@@ -26,6 +26,7 @@ public record AiDiagnoseResponse(
   public record RagEvidence(
     String content,
     @JsonProperty("document_title") String documentTitle,
+    @JsonProperty("chunk_index") Integer chunkIndex,
     @JsonProperty("source_ids") List<String> sourceIds,
     Double similarity
   ){}

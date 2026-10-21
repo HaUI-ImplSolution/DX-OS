@@ -132,6 +132,7 @@ def run_stateless_diagnose(
         DiagnoseRagEvidence(
             content=chunk["content"],
             document_title=chunk.get("document_title"),
+            chunk_index=chunk.get("chunk_index"),
             source_ids=chunk.get("source_ids", []),
             similarity=float(chunk.get("similarity", 0.0)),
         )

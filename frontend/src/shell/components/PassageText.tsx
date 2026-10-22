@@ -1,6 +1,6 @@
 import { passageText } from "../labels";
 
-const FIELD_LINE = /^([^:]{2,30}):\s+(.+)$/;
+const FIELD_LINE = /^([^:]{2,40}):\s+(.+)$/;
 
 // A passage written as "Label: value" lines reads as a two-column list; any other passage keeps
 // its line breaks.

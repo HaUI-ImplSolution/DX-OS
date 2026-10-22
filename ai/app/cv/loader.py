@@ -6,6 +6,7 @@ from pathlib import Path
 import torch
 
 from app.core.config import Settings, get_settings
+from app.core.torch_cpu import configure_torch_cpu
 from app.cv.contract import class_contract
 from app.cv.model_profile import MODEL_IMAGE_SIZE, MODEL_MEAN, MODEL_STD
 
@@ -66,6 +67,7 @@ def load_model(settings: Settings | None = None):
     checkpoint = torch.load(path, map_location="cpu", weights_only=True)
     contract = class_contract(settings.cv_class_contract_path)
     validate_model_contract(checkpoint, contract)
+    configure_torch_cpu()
     model = efficientnet_v2_m(weights=None, num_classes=6)
     model.load_state_dict(checkpoint["state_dict"], strict=True)
     device = _resolve_device(settings.cv_device)

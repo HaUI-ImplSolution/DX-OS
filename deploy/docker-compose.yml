@@ -176,7 +176,10 @@ services:
   # Identity
   # ---------------------------------------------------------------------------
   keycloak:
-    image: quay.io/keycloak/keycloak:26.0
+    image: ${DXOS_IMAGE_PREFIX:-dxos}-sso:${DXOS_IMAGE_TAG:-local}
+    build:
+      context: ../sso
+      dockerfile: Dockerfile
     command: ["start-dev", "--import-realm"]
     depends_on:
       postgres:
@@ -202,10 +205,12 @@ services:
     volumes:
       - ../sso/realm-dxos.json:/opt/keycloak/data/import/realm-dxos.json:ro
     # No published port: the gateway routes /realms, /resources and /admin to it.
-    # The image has no curl; the health endpoint is probed over bash on the management port.
+    # The health endpoint is probed over bash on the management port.
     healthcheck:
       test:
-        - CMD-SHELL
+        - CMD
+        - bash
+        - -c
         - >-
           exec 3<>/dev/tcp/127.0.0.1/9000 &&
           printf 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 &&

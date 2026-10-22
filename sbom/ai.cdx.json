@@ -827,7 +827,7 @@
     },
     {
       "bom-ref": "requirements-L61",
-      "description": "requirements line 56: numpy==2.4.6",
+      "description": "requirements line 56: numpy==2.3.5",
       "externalReferences": [
         {
           "comment": "implicit dist url",
@@ -836,9 +836,9 @@
         }
       ],
       "name": "numpy",
-      "purl": "pkg:pypi/numpy@2.4.6",
+      "purl": "pkg:pypi/numpy@2.3.5",
       "type": "library",
-      "version": "2.4.6"
+      "version": "2.3.5"
     },
     {
       "bom-ref": "requirements-L62",

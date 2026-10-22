@@ -11,7 +11,7 @@ Hai mục đầu liệt kê các bản phát hành; lịch sử chi tiết theo 
 
 - `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), `README_EN.md` bản tiếng Anh, `NOTICE`, `frontend/.env.example`.
 - `docs/_template/`: mẫu tài liệu cho một đợt làm mới.
-- Workflow `Release` (chạy tay) build các image `backend`, `frontend`, `portal`, `ai`, `minio` và đẩy lên GHCR; máy chủ cập nhật bằng `deploy/update.sh` mà không build. Compose đọc tên image từ `DXOS_IMAGE_PREFIX` và `DXOS_IMAGE_TAG`.
+- Workflow `Release` (chạy tay) build các image `backend`, `frontend`, `portal`, `ai`, `minio`, `sso` và đẩy lên GHCR; máy chủ cập nhật bằng `deploy/update.sh` mà không build. Compose đọc tên image từ `DXOS_IMAGE_PREFIX` và `DXOS_IMAGE_TAG`.
 - Danh mục nguồn Farm bổ sung hướng dẫn ADC cho đốm nâu và ba nguồn tiếng Việt về đạo ôn, khô vằn, môi giới truyền Tungro; nội dung corpus giữ nguyên.
 - Seed Farm bổ sung Help 400SC cho đốm nâu, liều 0,6 L/ha và PHI 14 ngày, theo yêu cầu gán trạng thái `EXPERT_APPROVED` của chủ dự án ngày 2026-10-20; hai rule Newtec giữ nguyên.
 - Nhắc thu hoạch chỉ chạy trong `app.harvest-reminder-max-days` ngày (mặc định 14) kể từ ngày thu hoạch dự kiến.
@@ -23,6 +23,7 @@ Hai mục đầu liệt kê các bản phát hành; lịch sử chi tiết theo 
 
 - Hỏi đáp web: đoạn trích có nhãn tới 40 ký tự (như `Kiểm soát hóa học không định lượng`) hiển thị dạng hai cột như các đoạn khác.
 - Một biến `PUBLIC_HOST` trong `deploy/.env` (`localhost` khi dev, IP hoặc tên miền khi triển khai) quyết định `GATEWAY_PUBLIC_URL`, `SUPERSET_PUBLIC_URL`, địa chỉ trong thông báo chat, `MM_SERVICESETTINGS_SITEURL` và redirect URI của `dxos-web` và `dxos-superset` trong `realm-dxos.json`; `localhost` vẫn nằm trong danh sách redirect URI. Image `frontend` build trực tiếp mặc định gọi Keycloak cùng origin.
+- Stack chạy được trên CPU ảo x86-64 không có x86-64-v2 (như "Common KVM processor" của một số VPS): Keycloak 26.0.8 build từ gói phát hành trên nền Ubuntu (`sso/Dockerfile`, image `dxos-sso`); AI khóa `numpy` 2.3 và tự tắt oneDNN, NNPACK của PyTorch khi CPU không có SSE4.1, chẩn đoán ảnh khi đó chậm hơn.
 - README song ngữ viết ngắn gọn, có yêu cầu hệ thống và xử lý sự cố; `ARCHITECTURE.md` có tổng quan các dịch vụ và sơ đồ theo từng tầng.
 - Repository đổi tên thành `DX-OS`; liên kết trong tài liệu trỏ về tên mới.
 - Ảnh nền đơn sắc được kiểm độ nét theo cạnh sau khi làm mờ lại; hỏi đáp xếp đoạn của bệnh được nêu lên đầu.

@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       services:
-        description: "Images to build: all, or a comma list of backend,frontend,portal,ai,minio"
+        description: "Images to build: all, or a comma list of backend,frontend,portal,ai,minio,sso"
         required: true
         default: all
 
@@ -28,7 +28,7 @@ jobs:
         env:
           REQUESTED: ${{ inputs.services }}
         run: |
-          ALL="backend frontend portal ai minio"
+          ALL="backend frontend portal ai minio sso"
           if [[ "$REQUESTED" == "all" ]]; then
             PICKED="$ALL"
           else

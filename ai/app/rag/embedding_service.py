@@ -4,10 +4,12 @@ from functools import lru_cache
 from sentence_transformers import SentenceTransformer
 
 from app.core.config import get_settings
+from app.core.torch_cpu import configure_torch_cpu
 
 
 @lru_cache(maxsize=2)
 def _load_model(name: str):
+    configure_torch_cpu()
     return SentenceTransformer(name)
 
 

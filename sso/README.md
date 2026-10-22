@@ -1,7 +1,7 @@
 # SSO (Keycloak)
 
 Đăng nhập một lần dùng chung cho Backend, web, mobile và Superset.
-Keycloak chạy bằng image chính thức (Apache-2.0), tự import realm `dxos` từ [`realm-dxos.json`](./realm-dxos.json) lúc khởi động; service khai báo trong [`deploy/docker-compose.yml`](../deploy/docker-compose.yml).
+Keycloak (Apache-2.0) build từ gói phát hành trên nền Ubuntu ([`Dockerfile`](./Dockerfile)), chạy được cả trên CPU ảo không có x86-64-v2; Keycloak tự import realm `dxos` từ [`realm-dxos.json`](./realm-dxos.json) lúc khởi động; service khai báo trong [`deploy/docker-compose.yml`](../deploy/docker-compose.yml).
 Keycloak không publish cổng ra host: gateway APISIX chuyển tiếp `/realms`, `/resources`, `/admin`, `/js` tới Keycloak.
 
 ## Phạm vi

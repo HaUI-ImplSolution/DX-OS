@@ -8,6 +8,8 @@ description = "Placeholders and retired demo defaults that only survive in git h
 regexes = [
   # Demo passwords that used to be the defaults of deploy/.env.example (now left blank).
   '''(AiVectorRo123|AiVectorIngest123|Keycloak123|Superset123|Mattermost123|dxfarm_superset_demo_secret)''',
+  # Published SHA-1 of the Keycloak release archive checked in sso/Dockerfile.
+  '''d6939c3b290bd900a5cd7d3dfa2f4c95b6bce558''',
 ]
 # Third-party skill documentation contains example environment blocks with placeholders.
 paths = [

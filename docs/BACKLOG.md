@@ -18,6 +18,12 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Việc | Phạm vi |
 |---|---|
 | Hỏi đáp Farm có thể nêu ý không có trong nguồn | Câu hỏi về một bệnh đã nêu tên vẫn có thể nhận nguyên nhân hoặc cách phòng không có trong nguồn |
+| Ảnh cũ trên VPS chưa nằm trong bucket SeaweedFS | Bucket `dxos-uploads` được tạo mới khi backend khởi động; ảnh cũ còn ở `deploy/data/minio` (khoảng 364 KB) và chưa chạy `seaweedfs/migrate-uploads.sh`; ảnh của báo cáo cũ (ví dụ báo cáo #1) trả 404 và không hiện trên màn hình duyệt yêu cầu |
+| Link ảnh báo cáo ký với `http://khuongdev.io.vn` | Backend dựng link theo scheme `http` dù trang chạy qua HTTPS; trình duyệt tự nâng lên HTTPS nên chữ ký vẫn khớp, còn request `http` thật nhận 503; client không tự nâng (app mobile) chưa kiểm |
+| Cloudflare cache `/portal/config.js` 4 giờ | Origin trả đúng khóa `storage` nhưng edge gửi `cache-control: max-age=14400`, trình duyệt giữ bản cũ nên link "Quản trị lưu ảnh" trên portal hiện `https://khuongdev.io.vn:9082/` thay vì `files.`; cần Cache Rule bỏ qua cache cho `/portal/config.js` hoặc xóa cache sau mỗi lần `update.sh`; chú thích thẻ portal vẫn ghi `localhost:9081` và `localhost:8065`, kiểm lại sau khi cache hết hạn |
+| Hỏi đáp tri thức Farm chậm ở lần gọi đầu sau cập nhật | Câu "Làm sao nhận biết lúa bị khô vằn?" mất hơn 8 giây (chưa đo chính xác) khi `AI_ANSWER_GENERATION=false`; chưa biết do AI vừa khởi động lại hay do tải |
+| Log SeaweedFS khi khởi động có cảnh báo | `IAM gRPC service on filer is UNAUTHENTICATED`, `FILER LOCK: Error ... no lock server found`, `raft.Server: Not current leader`; chưa rõ cảnh báo nào chỉ là nhiễu lúc khởi động, cần xác nhận cổng filer không ra ngoài mạng compose |
+| `doctor.sh` cảnh báo dung lượng đĩa trên VPS | Trống 39 GiB, khuyến nghị 40 GiB; theo dõi dung lượng khi dữ liệu và ảnh Docker tăng |
 
 ## 3. Chưa kiểm thử
 
@@ -29,6 +35,8 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Khởi động bản Qwen từ clone sạch | Đã kiểm bằng image/cache và các cặp phiên bản; chưa chạy lại full build/seed toàn stack từ clone sạch |
 | `backup.sh` với kho sao lưu từ xa | Đã chạy sao lưu và `verify` trên VPS với dữ liệu thật vào kho cục bộ; chưa thử `BACKUP_REPOSITORY` từ xa |
 | Cầu dao AI với tải thật | Đã thử khi AI dừng; chưa thử khi AI chậm vì tải, lúc đó lỗi đọc quá hạn cũng tính là lỗi dịch vụ |
+| Lưu ảnh SeaweedFS qua Cloudflare trên VPS | Đã kiểm trên Chrome với tài khoản quản trị: app Farm (4 tab), hỏi đáp, màn hình giám sát (10/10 dịch vụ), BI qua SSO và trang đăng nhập `files.khuongdev.io.vn` đều chạy; chưa thử upload ảnh mới bằng tài khoản nông dân và mở link ảnh vừa tải, đăng nhập SeaweedFS Admin, `backup.sh` với `data/seaweedfs` |
+| Giới hạn gọi API theo người dùng trên VPS | Chưa thử với tài khoản thật qua Cloudflare, nơi `X-Forwarded-For` và địa chỉ client do Cloudflare đặt |
 
 ## 4. Giới hạn của AI và dữ liệu
 

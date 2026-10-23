@@ -16,6 +16,8 @@ Portal không có phiên, chỉ là danh sách link.
 Ứng dụng chính và Superset dùng SSO Keycloak ([`sso/README.md`](../sso/README.md)): chưa có phiên thì tự chuyển sang Keycloak, đã đăng nhập một app thì mở app kia không cần đăng nhập lại.
 Link BI trỏ thẳng `/login/keycloak`; Mattermost đăng nhập riêng.
 
-## Giới hạn
+## Địa chỉ dịch vụ
 
-Link ứng dụng chính, Keycloak và Swagger là đường dẫn tương đối của gateway; link Superset, MinIO Console và Mattermost lấy tên máy của trang đang mở nhưng giữ cổng viết sẵn trong `index.html` (`data-port`: 9081, 9082, 8065), nên đổi cổng trong `.env` thì sửa `data-port` tương ứng.
+Link ứng dụng chính, Keycloak và Swagger là đường dẫn tương đối của gateway.
+Link Superset, MinIO Console và Mattermost dùng địa chỉ đặt bằng `PORTAL_BI_URL`, `PORTAL_MINIO_URL` và `PORTAL_CHAT_URL` trong `deploy/.env`, ví dụ `https://bi.example.com`.
+Để trống thì link lấy tên máy của trang đang mở và cổng viết sẵn trong `index.html` (`data-port`: 9081, 9082, 8065), nên đổi cổng trong `.env` thì sửa `data-port` tương ứng.

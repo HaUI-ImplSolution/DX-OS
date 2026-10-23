@@ -1,0 +1,29 @@
+# Optional overlay that publishes the stack through a Cloudflare Tunnel, so the server opens no port.
+# Enable it in deploy/.env:
+#   COMPOSE_FILE=docker-compose.yml:docker-compose.cloudflared.yml
+#   CLOUDFLARE_TUNNEL_TOKEN=<token of the tunnel>
+# Tunnel public hostnames: apisix:9080 (app, Keycloak, portal), apisix:9081 (BI),
+# apisix:9082 (MinIO console), mattermost:8065 (chat).
+# Set GATEWAY_PUBLIC_URL, SUPERSET_PUBLIC_URL, PORTAL_BI_URL, PORTAL_MINIO_URL and PORTAL_CHAT_URL
+# to those hostnames before the first start; Keycloak imports its redirect URIs only once.
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:?}
+    restart: unless-stopped
+
+  keycloak:
+    environment:
+      KC_HOSTNAME: ${GATEWAY_PUBLIC_URL:?}
+
+  # Behind an HTTPS front the backend needs X-Forwarded-* to see the public origin, or every
+  # write request fails the CORS origin check.
+  backend:
+    environment:
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
+
+  mattermost:
+    environment:
+      MM_SERVICESETTINGS_SITEURL: ${PORTAL_CHAT_URL:?}

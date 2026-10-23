@@ -16,7 +16,10 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 
 ## 2. Việc cần sửa trong mã và cấu hình
 
-Chưa có việc nào.
+| Việc | Ghi chú |
+|---|---|
+| Chặn lượt chẩn đoán AI thứ hai khi báo cáo đang có một lượt chạy | Rời trang hoặc tải lại khi AI đang chạy rồi bấm lại thì lượt sau chạy hết thời gian rồi nhận 409 `Diagnosis changed while AI was processing`; kết quả của lượt đầu vẫn được lưu, nhưng có thể sinh hai chẩn đoán chờ duyệt cho một báo cáo |
+| Mobile hiển thị đoạn có nhãn dài hơn 30 ký tự dưới dạng văn bản thô | `mobile/src/passageText.ts` giữ giới hạn 30; web đã dùng 40 (nhãn dài nhất trong dữ liệu là 34 ký tự, `Kiểm soát hóa học không định lượng`) |
 
 ## 3. Chưa kiểm thử
 
@@ -34,6 +37,7 @@ Chưa có việc nào.
 | Crop classifier nhận 6/15 ảnh ngô và 15/15 ảnh mía là lúa, chặn 8/50 ảnh lúa nền ruộng | Classifier 10 lớp không có lớp ngô, mía, cỏ; cần thay classifier hoặc thêm dữ liệu ngoài miền; kỹ sư vẫn chốt bệnh |
 | Crop classifier không đối chiếu SHA-256 | Model khác cùng contract vẫn nạp được; chỉ checkpoint bệnh có SHA-256 |
 | Ngưỡng độ nét mới thử trên ảnh công khai và ảnh mờ nhân tạo | Chưa có ảnh mờ thật ngoài ruộng; chưa tách vùng lá |
+| Chẩn đoán AI chạy trên CPU mất khoảng 50 giây mỗi ảnh | Đo trên máy chủ 8 nhân; chưa có GPU hay mô hình nhỏ hơn để rút ngắn |
 | Nộp báo cáo cần AI service chạy | Chưa có đường nhận ảnh chưa kiểm khi AI dừng; hàng đợi offline thử lại |
 | Chưa có mô hình nhận diện sâu hại | Classifier nhận Healthy và 5 bệnh lá |
 | Kho RAG của Farm chỉ có 6 tài liệu bệnh lúa | Chưa có VietGAP hay quy trình canh tác |

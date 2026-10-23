@@ -59,6 +59,7 @@ Quy trình mới nằm trong module của ứng dụng (`app-farm` hoặc `app-l
 2. Cài `CaseSummaryProvider` để yêu cầu hiện trong hộp duyệt, và `NotificationTypeDefinition` cho từng loại thông báo mới.
 3. Khai báo route cần giới hạn tốc độ trong `deploy/apisix/apps/<app>.yaml`.
 4. Thêm view `vw_*` và đăng ký qua `BiDatasetProvider` nếu cần báo cáo.
+5. Thao tác quản trị hoặc xóa dữ liệu thì ghi vết bằng `AuditRecorder.record(AuditEvent.success(...))` sau khi thao tác xong (tên hành động viết hoa như `PARCEL_DELETED`); người thực hiện, địa chỉ client và `request_id` được lấy từ request. Quyết định duyệt của workflow đã có ở `workflow_event`, không ghi lại.
 
 ## Thêm một ứng dụng mới
 
@@ -78,7 +79,7 @@ Dưới đây `<id>` là mã ứng dụng (chữ thường), cũng là giá tr�
 4. **Chọn app.**
    Thêm `<id>` vào `KNOWN_APPS` của `AppSelectionCheck` trong `dx-host` và tạo `application-<id>.yaml` (đặt `spring.sql.init.mode: never` nếu không có script seed).
 5. **Schema.**
-   Migration ở `db/migration/<id>`; bảng của core (`workspaces`, `workflow_case`, `workflow_event`, `notifications`) dùng chung, không tạo lại.
+   Migration ở `db/migration/<id>`; bảng của core (`workspaces`, `workflow_case`, `workflow_event`, `notifications`, `audit_log`) dùng chung, không tạo lại.
 6. **Interface và facade.**
    Cài các interface cần dùng (vai, quy trình, thông báo, BI, tri thức, tệp, sức khỏe) và gọi core qua facade; những gì ứng dụng khai báo và core cung cấp ở [`ARCHITECTURE.md`](./ARCHITECTURE.md) mục 3.
 

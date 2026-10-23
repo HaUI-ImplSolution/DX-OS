@@ -35,11 +35,12 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE.md`](../ARCHITECTURE.md).
 
 | Dịch vụ | Cách cung cấp | Ứng dụng dùng |
 |---|---|---|
-| Identity/SSO | Keycloak realm `dxos`; core tạo vai do ứng dụng khai báo và tài khoản workspace qua Admin API | Farm: FARMER, ENGINEER, ADMIN; Lab: STUDENT, LECTURER, TECHNICIAN, ADMIN |
-| API Gateway | APISIX là cửa duy nhất: kiểm JWT, giới hạn tốc độ, route theo app; backend kiểm JWT lần hai | Giới hạn upload ảnh và chẩn đoán (Farm), tạo ticket và đặt phòng (Lab) |
+| Identity/SSO | Keycloak realm `dxos`; core tạo vai do ứng dụng khai báo và tài khoản workspace qua Admin API; ghi sự kiện đăng nhập và khóa tạm khi sai mật khẩu nhiều lần | Farm: FARMER, ENGINEER, ADMIN; Lab: STUDENT, LECTURER, TECHNICIAN, ADMIN |
+| API Gateway | APISIX là cửa duy nhất: kiểm JWT, giới hạn tốc độ, route theo app, log truy cập JSON kèm `X-Request-Id`; backend kiểm JWT lần hai | Giới hạn upload ảnh và chẩn đoán (Farm), tạo ticket và đặt phòng (Lab) |
 | Dữ liệu cấu trúc | PostgreSQL, Flyway: `db/migration/core` dùng chung và `db/migration/<app>` | Bảng riêng của từng ứng dụng, dùng chung `workspaces`, `notifications` |
 | Dữ liệu phi cấu trúc | MinIO riêng tư, client nhận link có hạn; tệp qua `FileProcessor` của ứng dụng | Ảnh lá lúa (Farm), tệp đính kèm ticket (Lab) |
 | Workflow | `core.workflow`: loại case cấu hình được, lịch sử `workflow_event` chỉ thêm, người phụ trách, hộp duyệt | Farm 5 loại duyệt; Lab `TICKET`, `DEVICE_LOAN`, `ROOM_BOOKING` |
+| Audit | `core.audit`: bảng `audit_log` chỉ thêm, ghi request bị từ chối và thao tác quản trị kèm người thực hiện, IP, `request_id`; ADMIN tra cứu qua API, cảnh báo lên kênh quản trị | Farm: xóa mềm, thu hoạch sớm hoặc thay; Lab: danh mục, SLA, tệp đính kèm |
 
 - Dẫn: `ARCHITECTURE.md` mục 2, 3 và 4; `sso/README.md`; `deploy/apisix/`.
 
@@ -135,3 +136,12 @@ Hướng mở rộng:
 - Thư mục `ai/` giữ AGPL-3.0 (`ai/LICENSE`); phần còn lại giữ Apache-2.0.
   AI Service là tiến trình riêng giao tiếp với Backend qua HTTP, nên Backend không là tác phẩm phái sinh của `ai/`.
 - Bảng đầy đủ: `LICENSES.md`.
+
+### C. Hệ thống được bảo vệ thế nào khi mở ra Internet?
+
+- Máy chủ nằm sau NAT và không mở cổng vào.
+- Cloudflare Tunnel là đường duy nhất vào.
+- Cloudflare bắt HTTPS, chặn bot, chặn gửi form đăng nhập dồn dập và đặt Cloudflare Access trước các trang quản trị (Superset, MinIO Console, Keycloak Admin).
+- Gateway giới hạn tốc độ theo IP thật, Keycloak khóa tạm tài khoản sau 5 lần sai mật khẩu và ghi sự kiện đăng nhập.
+- Backend phân quyền theo vai và ghi `audit_log` chỉ thêm cho request bị từ chối và thao tác quản trị.
+- Chi tiết: `docs/CLOUDFLARE.md` và `deploy/OPERATIONS.md`.

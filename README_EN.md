@@ -21,6 +21,7 @@ One shared core handles sign-in, data, workflows, notifications and AI; two busi
 
 - **One core, many applications:** Farm and Lab share one core; adding an application needs no change to the core.
 - **Business safety:** key rules are checked in the Backend and the database, not just in the UI.
+- **Traceability:** the gateway logs every request, Keycloak records sign-in events, and the Backend writes refused requests and administrative actions to an append-only audit log.
 - **Controlled AI:** AI only assists; drug and dose information comes from expert-approved data and the engineer makes the decision.
 - **One-command run:** builds the whole system with demo data, with automated tests on a clean environment.
 - **Transparent open source:** licenses and the list of software components are public, with automatic scanning for leaked passwords.
@@ -138,6 +139,12 @@ Per-application settings: [`backend/app-farm/README.md`](./backend/app-farm/READ
 | Image storage admin (MinIO) | http://localhost:9082 | `MINIO_ACCESS_KEY` / `MINIO_SECRET_KEY` |
 | Chat (Mattermost) | http://localhost:8065 | `MATTERMOST_ADMIN_USERNAME` / `MATTERMOST_ADMIN_PASSWORD` |
 
+### 🌐 Public server
+
+A public server runs behind a Cloudflare Tunnel and opens no inbound port.
+Enable it with the overlay [`deploy/docker-compose.cloudflared.yml`](./deploy/docker-compose.cloudflared.yml) (instructions at the top of the file).
+Cloudflare concepts and settings are in [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE.md); logs, rate limits and the audit log are in [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
+
 ### 🔑 Demo accounts
 
 `seed_demo.py` creates these accounts in the `dxos` realm for demo and judging only; change or delete the passwords before using real data.
@@ -177,7 +184,7 @@ Full testing guide: [`docs/TESTING.md`](./docs/TESTING.md).
 | [`frontend/`](./frontend/README.md) · [`mobile/`](./mobile/README.md) | React web (both applications) · Expo mobile for farmers |
 | [`ai/`](./ai/README.md) | AI Service: CV, RAG, LangGraph |
 | [`data/`](./data/README.md) | Structured data, RAG corpora, seed generation scripts |
-| [`deploy/`](./deploy) | Docker Compose, gateway, `start.sh`, demo data and E2E |
+| [`deploy/`](./deploy) | Docker Compose, gateway, `start.sh`, demo data and E2E; access logs in [`OPERATIONS.md`](./deploy/OPERATIONS.md) |
 | [`sso/`](./sso/README.md) · [`bi/`](./bi/README.md) · [`chat/`](./chat/README.md) · [`minio/`](./minio/README.md) · [`portal/`](./portal/README.md) | Keycloak, Superset, Mattermost, MinIO, portal |
 | [`docs/`](./docs) | Backlog, testing, AI evaluation, submission pack, council Q&A, phase template (`_template/`), reference material |
 

@@ -21,6 +21,22 @@ Hai mục đầu liệt kê các bản phát hành; lịch sử chi tiết theo 
 
 ### Đã thay đổi
 
+- Gateway ghi mỗi request một dòng JSON, có `X-Request-Id` và không có query string.
+  IP client lấy từ `CF-Connecting-IP` khi request đến từ mạng Docker, nên các giới hạn `limit-count` theo `remote_addr` tính riêng từng IP khi chạy sau Cloudflare Tunnel.
+  Mọi service xoay vòng log Docker; cách xem log ở `deploy/OPERATIONS.md`.
+- Keycloak ghi sự kiện đăng nhập (giữ 90 ngày) và sự kiện quản trị.
+  Tài khoản bị khóa tạm sau 5 lần đăng nhập sai.
+  Overlay Cloudflare cho Keycloak đọc IP thật từ gateway.
+- Gateway giới hạn mỗi IP 120 lượt mỗi phút cho form mật khẩu và token endpoint của Keycloak (tính chung), và 600 lượt mỗi phút cho `/api/*` với request có token hợp lệ.
+  `deploy/OPERATIONS.md` có danh sách cấu hình Cloudflare và Cloudflare Access cho cổng quản trị.
+- Backend ghi bảng `audit_log` (chỉ thêm) cho request bị từ chối (403, token bị backend từ chối) và thao tác quản trị của core, Farm và Lab.
+  Mỗi bản ghi có người thực hiện, địa chỉ client và `request_id` của gateway; log backend cũng mang `request_id`.
+  ADMIN tra cứu qua `GET /api/v1/audit-logs`.
+  Một địa chỉ bị từ chối nhiều lần được báo vào kênh Mattermost "Ban quản trị".
+  Tham số query sai kiểu trả `400`.
+- Tài liệu: README có mục Máy chủ công khai, `LICENSES.md` có `cloudflared`, `ARCHITECTURE.md`, `COUNCIL_QA.md`, `SUBMISSION.md`, `portal/`, `minio/`, `bi/` và `sso/` nêu Cloudflare Access và audit.
+- `docs/CLOUDFLARE.md` tổng hợp khái niệm và cấu hình Cloudflare của máy chủ công khai (Tunnel, HTTPS, Bot fight mode, rate limiting, Access).
+- Mobile: profile `preview` của `eas.json` và hướng dẫn trong `mobile/README.md`, `docs/TESTING.md`, `sso/README.md`, `.env.example` dùng được với máy chủ công khai qua Cloudflare Tunnel (HTTPS, không số cổng).
 - Hỏi đáp web: đoạn trích có nhãn tới 40 ký tự (như `Kiểm soát hóa học không định lượng`) hiển thị dạng hai cột như các đoạn khác.
 - Một biến `PUBLIC_HOST` trong `deploy/.env` (`localhost` khi dev, IP hoặc tên miền khi triển khai) quyết định `GATEWAY_PUBLIC_URL`, `SUPERSET_PUBLIC_URL`, địa chỉ trong thông báo chat, `MM_SERVICESETTINGS_SITEURL` và redirect URI của `dxos-web` và `dxos-superset` trong `realm-dxos.json`; `localhost` vẫn nằm trong danh sách redirect URI. Image `frontend` build trực tiếp mặc định gọi Keycloak cùng origin.
 - Stack chạy được trên CPU ảo x86-64 không có x86-64-v2 (như "Common KVM processor" của một số VPS): Keycloak 26.0.8 build từ gói phát hành trên nền Ubuntu (`sso/Dockerfile`, image `dxos-sso`); AI khóa `numpy` 2.3 và tự tắt oneDNN, NNPACK của PyTorch khi CPU không có SSE4.1, chẩn đoán ảnh khi đó chậm hơn.

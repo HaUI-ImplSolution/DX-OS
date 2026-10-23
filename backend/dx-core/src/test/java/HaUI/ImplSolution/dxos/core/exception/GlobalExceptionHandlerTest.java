@@ -7,9 +7,11 @@ import HaUI.ImplSolution.dxos.core.api.exception.ResourceNotFoundException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
+import HaUI.ImplSolution.dxos.core.audit.AuditService;
 import java.time.LocalDate;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpMethod;
@@ -23,7 +25,8 @@ import org.springframework.web.multipart.support.MissingServletRequestPartExcept
 
 class GlobalExceptionHandlerTest {
 
-  private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
+  private final GlobalExceptionHandler handler =
+      new GlobalExceptionHandler(Mockito.mock(AuditService.class));
 
   @Test
   void pokaYokeKeepsItsOwnCodeAtTopLevelAndInData() {

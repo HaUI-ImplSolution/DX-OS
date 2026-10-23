@@ -8,7 +8,7 @@ Kiến trúc và sơ đồ ở [`ARCHITECTURE.md`](../ARCHITECTURE.md).
 | Module | Vai trò |
 |---|---|
 | `dx-core-api` | Interface mà ứng dụng cài, facade mà ứng dụng gọi, DTO và lỗi dùng chung |
-| `dx-core` | Cài đặt dùng chung: định danh và workspace, workflow, hộp duyệt, thông báo, lưu trữ, cổng AI và tri thức, bảo mật, trạng thái hệ thống |
+| `dx-core` | Cài đặt dùng chung: định danh và workspace, workflow, hộp duyệt, thông báo, audit, lưu trữ, cổng AI và tri thức, bảo mật, trạng thái hệ thống |
 | `app-farm` | Ứng dụng nông nghiệp ([`app-farm/README.md`](./app-farm/README.md)) |
 | `app-lab` | Ứng dụng vận hành CNTT của khoa ([`app-lab/README.md`](./app-lab/README.md)) |
 | `dx-host` | Chạy được: ghép core với ứng dụng chọn bằng `DXOS_APP`, đóng gói fat jar |

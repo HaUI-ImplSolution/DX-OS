@@ -29,7 +29,8 @@ Chẩn đoán AI do kỹ sư kích hoạt trên web; nông dân thấy "Chờ ch
 - **Thu hoạch:** đọc `harvest-readiness`, thu hoạch trước ngày dự kiến phải xác nhận kèm lý do, vụ còn cách ly thì khóa gửi; có màn đổi ngày dự kiến kèm lý do.
 - **Khai phun:** ở chi tiết báo cáo đã duyệt, nông dân nhập liều và ngày phun, chờ kỹ sư xác nhận (trong lúc chờ chưa thu hoạch được); bị từ chối thì khai lại.
 - **Ảnh báo cáo** tải từ `imageUrl` (URL MinIO có hạn qua gateway).
-- **HTTP cleartext** được phép ở mọi profile EAS trừ `production` (`app.config.ts`) để dev và preview gọi Backend qua IP LAN.
+- **HTTP cleartext** được phép ở mọi profile EAS trừ `production` (`app.config.ts`) để gọi Backend qua IP LAN.
+  Địa chỉ HTTPS công khai dùng được ở mọi profile.
 
 Trạng thái hiển thị (`NEEDS_RETAKE` của báo cáo được ưu tiên, còn lại theo `diagnosis`):
 
@@ -66,13 +67,15 @@ Trạng thái hiển thị (`NEEDS_RETAKE` của báo cáo được ưu tiên, c
 `mobile/.env` (không commit, mẫu [`.env.example`](./.env.example)); thiếu biến thì app báo lỗi lúc khởi động.
 Biến `EXPO_PUBLIC_*` nhúng vào bundle lúc build, đổi Keycloak URL hoặc client id thì phải build và cài lại.
 
-| Biến | Ví dụ |
-|---|---|
-| `EXPO_PUBLIC_API_BASE_URL` | `http://192.168.1.10:9080` (gateway) |
-| `EXPO_PUBLIC_KEYCLOAK_URL` | `http://192.168.1.10:9080/realms/dxos` |
-| `EXPO_PUBLIC_KEYCLOAK_CLIENT_ID` | `farm-mobile` |
+| Biến | Gateway trong mạng LAN | Máy chủ công khai (Cloudflare Tunnel) |
+|---|---|---|
+| `EXPO_PUBLIC_API_BASE_URL` | `http://192.168.1.10:9080` | `https://khuongdev.io.vn` |
+| `EXPO_PUBLIC_KEYCLOAK_URL` | `http://192.168.1.10:9080/realms/dxos` | `https://khuongdev.io.vn/realms/dxos` |
+| `EXPO_PUBLIC_KEYCLOAK_CLIENT_ID` | `farm-mobile` | `farm-mobile` |
 
-Chạy trên điện thoại thật (cùng mạng WiFi với máy dev):
+Địa chỉ công khai đi qua cổng 443 nên không có số cổng, và phải khớp `GATEWAY_PUBLIC_URL` của máy chủ (Keycloak trả `issuer` theo địa chỉ đó).
+
+Chạy trên điện thoại thật với gateway trong mạng LAN (cùng mạng WiFi với máy dev):
 
 ```bash
 hostname -I | awk '{print $1}'              # IP LAN, thay vào mobile/.env
@@ -81,6 +84,7 @@ cd ../mobile && cp .env.example .env        # sửa IP trong .env
 npm install && npm start -- -c              # -c xóa cache Metro để nạp lại biến; Metro cổng 8083
 ```
 
+Với máy chủ công khai chỉ cần `.env` như cột bên phải rồi `npm install && npm start -- -c`.
 Quét QR bằng Expo Go (cần hỗ trợ SDK 57, nếu không dùng development build).
 Tài khoản `farmer1` / `farmer123`; `engineer1`, `admin1` bị đăng xuất kèm thông báo.
 Keycloak chỉ import realm lần đầu: volume Postgres cũ chưa có client `farm-mobile` thì xem [`sso/README.md`](../sso/README.md).
@@ -89,12 +93,14 @@ Keycloak chỉ import realm lần đầu: volume Postgres cũ chưa có client `
 
 EAS build trên đám mây, profile `preview` trong [`eas.json`](./eas.json) xuất `.apk`.
 
-1. Thay `192.168.1.10` trong ba biến `EXPO_PUBLIC_*` của profile `preview` bằng IP LAN của máy chạy Backend (nhúng vào APK lúc build, `.env` không lên EAS).
+1. Profile `preview` đặt ba biến `EXPO_PUBLIC_*` trỏ `https://khuongdev.io.vn` (nhúng vào APK lúc build, `.env` không lên EAS).
+   Build cho Backend khác thì sửa ba giá trị này.
 2. Lần đầu: `npx eas-cli login` rồi `npx eas-cli init` (ghi `projectId` vào `app.json`).
 3. `npx eas-cli build --platform android --profile preview` (thêm `--local` để build trên máy, cần JDK và Android SDK).
 4. Mở link hoặc QR EAS in ra trên điện thoại để cài; đăng nhập bằng `farmer1`.
 
-Đổi IP máy dev hoặc mạng thì phải sửa `eas.json` và build lại; bản chạy thật cần HTTPS và profile `production` riêng.
+Đổi địa chỉ Backend thì phải sửa `eas.json` và build lại.
+Bản chạy thật dùng profile `production` riêng.
 Tăng phiên bản bằng `version` trong `app.json` (thêm `android.versionCode` khi cần cài đè).
 
 Kiểm mã: `npx tsc --noEmit` và `npx expo export --platform android`.
@@ -104,8 +110,8 @@ Kiểm mã: `npx tsc --noEmit` và `npx expo export --platform android`.
 | Triệu chứng | Nguyên nhân |
 |---|---|
 | "Không đăng nhập được" hoặc redirect URI không hợp lệ | Realm chưa có client `farm-mobile` (volume cũ) |
-| Trang đăng nhập không tải, hoặc quay về `localhost` | `EXPO_PUBLIC_KEYCLOAK_URL` là `localhost` hoặc sai IP; sửa rồi `npm start -- -c` |
-| "Không kết nối được" | Điện thoại không tới được Backend: sai IP, khác WiFi hoặc firewall chặn `9080` |
+| Trang đăng nhập không tải, hoặc quay về `localhost` | `EXPO_PUBLIC_KEYCLOAK_URL` là `localhost`, sai IP hoặc khác `GATEWAY_PUBLIC_URL` của máy chủ; sửa rồi `npm start -- -c` |
+| "Không kết nối được" | Điện thoại không tới được Backend: sai địa chỉ, khác WiFi hoặc firewall chặn `9080` (gateway LAN); địa chỉ công khai thì kiểm tra không có số cổng |
 | Danh sách thửa trống | Tài khoản chưa gắn nông hộ |
 | Ảnh báo cáo không hiện | Link hết hạn hoặc gateway trong `imageUrl` không truy cập được từ điện thoại; tải lại báo cáo |
 | Ảnh ở "Chờ gửi" mãi | Chưa có mạng tới Backend hoặc đang chờ khoảng thử lại; đưa app về foreground |

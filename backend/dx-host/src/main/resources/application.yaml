@@ -124,8 +124,23 @@ ai:
       password: ${AI_VECTOR_DB_INGEST_PASSWORD}
 
 logging:
+  pattern:
+    # Every log line carries the id of its request (X-Request-Id from the gateway).
+    level: "%5p [%X{requestId:-}]"
   level:
     # INFO unless LOG_LEVEL_APP overrides it (set DEBUG for local development).
     HaUI.ImplSolution.dxos: ${LOG_LEVEL_APP:INFO}
     org.springframework.security: WARN
     org.hibernate.SQL: WARN
+
+audit:
+  denied:
+    # Refused requests recorded per client address and action each minute; the rest are counted.
+    max-per-minute: 20
+  alert:
+    # A client address refused at least `threshold` times within `window-minutes` is reported to
+    # the administrators' chat channel, once per `repeat-minutes`.
+    cron: "0 */5 * * * *"
+    window-minutes: 10
+    threshold: 10
+    repeat-minutes: 60

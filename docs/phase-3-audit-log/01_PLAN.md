@@ -25,10 +25,10 @@ WP3-05 (API đọc) và WP3-06 (cảnh báo) chỉ cần WP3-01 và WP3-03, làm
 
 **Hướng làm**
 
-- `dx-core-api`: interface `AuditRecorder`, record `AuditEvent` (action, target type, target id, outcome, metadata), enum `AuditOutcome` (`SUCCESS`, `DENIED`, `FAILED`).
+- `dx-core-api`: interface `AuditRecorder`, record `AuditEvent` (action, target type, target id, outcome, metadata; factory `AuditEvent.success`), enum `AuditOutcome` (`SUCCESS`, `DENIED`, `FAILED`).
 - `dx-core`: `AuditService` cài `AuditRecorder`, entity `AuditLogEntry` (Lombok như các entity khác), repository.
 - Migration core `V4__audit_log.sql`: bảng `audit_log` (`id`, `occurred_at`, `actor_user_id`, `actor_name`, `actor_roles`, `client_id`, `action`, `target_type`, `target_id`, `outcome`, `ip`, `request_id`, `metadata jsonb`), index theo `occurred_at`, `actor_user_id`, `action`; trigger chặn `UPDATE` và `DELETE` theo mẫu của `workflow_event`.
-- Ghi bằng giao dịch riêng (`REQUIRES_NEW`) để sự kiện `DENIED` vẫn lưu khi giao dịch chính bị hoàn tác.
+- Ghi bằng giao dịch riêng (`REQUIRES_NEW`) để sự kiện `DENIED` vẫn lưu khi giao dịch chính bị hoàn tác; lỗi ghi chỉ được log.
 - Core/App: interface ở `dx-core-api` vì app (Farm, Lab) cần ghi mà chỉ được phụ thuộc `dx-core-api`.
 
 **Phạm vi ảnh hưởng**
@@ -60,7 +60,7 @@ WP3-05 (API đọc) và WP3-06 (cảnh báo) chỉ cần WP3-01 và WP3-03, làm
 
 **Hướng làm**
 
-- `dx-core`: filter chạy sớm đọc `X-Request-Id` và IP, đặt vào MDC; xác nhận header nào APISIX chuyển cho backend (`X-Real-IP` hoặc `X-Forwarded-For`) và chỉ tin header đó.
+- `dx-core`: `RequestTraceFilter` chạy sớm đọc `X-Request-Id` và `X-Real-IP` (APISIX đặt `X-Real-IP` bằng `$remote_addr` sau khi lấy IP thật), đặt cùng method và đường dẫn vào MDC; không có header thì dùng địa chỉ kết nối và một mã mới.
 - `application.yml`: thêm `%X{requestId}` vào mẫu log.
 - Core/App: toàn bộ ở `dx-core`.
 
@@ -93,8 +93,8 @@ WP3-05 (API đọc) và WP3-06 (cảnh báo) chỉ cần WP3-01 và WP3-03, làm
 
 **Hướng làm**
 
-- `RestAccessDeniedHandler`, `RestAuthenticationEntryPoint` và `ClientRestrictionFilter` gọi `AuditRecorder` trước khi trả lỗi.
-- Bộ giới hạn trong bộ nhớ theo khóa (người dùng hoặc IP) để chống làm đầy bảng.
+- `RestAccessDeniedHandler` (cũng phục vụ `ClientRestrictionFilter`), `GlobalExceptionHandler` (403 do `@PreAuthorize`) và `RestAuthenticationEntryPoint` gọi `AuditService.recordDenial` trước khi trả lỗi.
+- `AuditDenialLimiter` giới hạn trong bộ nhớ theo khóa (IP và hành động), mặc định 20 bản ghi mỗi phút.
 - Core/App: toàn bộ ở `dx-core`.
 
 **Phạm vi ảnh hưởng**
@@ -127,8 +127,8 @@ WP3-05 (API đọc) và WP3-06 (cảnh báo) chỉ cần WP3-01 và WP3-03, làm
 
 **Hướng làm**
 
-- Chốt danh sách ở Q4; quét các controller có `@PreAuthorize("hasRole('ADMIN')")` và các endpoint `DELETE` để không bỏ sót.
-- `WorkspaceService`, `KeycloakAdminClient` gọi `AuditRecorder`; app gọi qua interface.
+- Danh sách đã chốt (Q4), ghi ở controller sau khi service trả về để bản ghi chỉ có khi thao tác đã hoàn tất: core `WORKSPACE_CREATED`, `WORKSPACE_LINKED`, `MEMBER_ADDED`; Farm `PARCEL_DELETED`, `SEASON_DELETED`, `REPORT_DELETED`, `HARVEST_OVERRIDE` (thu hoạch sớm hoặc thu hoạch thay); Lab `TICKET_CATEGORY_CREATED`, `TICKET_CATEGORY_CHANGED`, `SLA_POLICY_CHANGED`, `TICKET_ATTACHMENT_REMOVED`.
+- Việc gán vai ở Keycloak nằm trong `WORKSPACE_CREATED` (cờ `withAccount`), không có hành động riêng.
 - Core/App: tên hành động của app do app định nghĩa, không đưa vào enum của core.
 
 **Phạm vi ảnh hưởng**
@@ -189,8 +189,8 @@ WP3-05 (API đọc) và WP3-06 (cảnh báo) chỉ cần WP3-01 và WP3-03, làm
 
 **Hướng làm**
 
-- Job định kỳ trong `dx-core` dùng `JobLock` để chỉ một instance chạy; đếm `ACCESS_DENIED` và `AUTH_FAILED` theo nguồn.
-- Gửi qua `ChatWebhook` hiện có; ngưỡng và chu kỳ là thuộc tính cấu hình có mặc định, mô tả trong `deploy/.env.example` nếu đưa ra env.
+- `AuditAlertJob` trong `dx-core` dùng `JobLock` để chỉ một instance chạy; đếm bản ghi `DENIED` theo IP trong cửa sổ 10 phút, ngưỡng 10, nhắc lại sau 60 phút.
+- Gửi qua `ChatWebhook` vào kênh `admin` ("Ban quản trị", có ở cả hai ứng dụng); ngưỡng và chu kỳ là thuộc tính `audit.*` có mặc định trong `application.yaml`, không đưa ra biến môi trường.
 - Core/App: toàn bộ ở `dx-core`.
 
 **Phạm vi ảnh hưởng**
@@ -212,7 +212,7 @@ WP3-05 (API đọc) và WP3-06 (cảnh báo) chỉ cần WP3-01 và WP3-03, làm
 | Endpoint | `GET /api/v1/audit-logs` | Mới, chỉ ADMIN | Không |
 | Interface | `AuditRecorder` ở `dx-core-api` | Thêm | Không (app hiện có không phải sửa) |
 | Bảng DB | `audit_log` | Mới, append-only | Không |
-| Biến môi trường | Ngưỡng cảnh báo và giới hạn ghi 403 | Mới, có mặc định | Không |
+| Thuộc tính | `audit.denied.max-per-minute`, `audit.alert.*` | Mới, có mặc định trong `application.yaml` | Không |
 
 ## Dữ liệu, migration và rollback
 

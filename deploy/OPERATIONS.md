@@ -66,6 +66,7 @@ Gateway đếm theo IP thật của client (xem phần log), vượt ngưỡng t
 Request có token sai nhận `401` mà không bị đếm; phần này do Cloudflare lọc.
 Đổi ngưỡng ở `count` của `limit-count` trong file route tương ứng rồi chạy `./switch-app.sh <app>` để gateway nạp lại.
 Nhiều người dùng chung một IP (mạng di động) cùng dùng bộ đếm; thấy `429` trong thao tác thường ngày thì tăng ngưỡng.
+Script đăng nhập nhiều tài khoản liên tiếp từ một máy (như `deploy/demo/e2e.py` rồi chạy lại ngay) có thể chạm 30 lượt mỗi phút của form đăng nhập; chờ một phút hoặc chạy cách nhau.
 
 ## Cloudflare
 
@@ -98,3 +99,41 @@ Tạo ba ứng dụng:
 Không đặt Access cho API, web app, `/realms/*`, portal, chat và link ảnh, vì nông dân và mobile dùng các đường này.
 Giữ một phiên Admin Console đang mở khi tạo ứng dụng Access cho `admin/*`; nếu bị khóa ngoài thì gỡ ứng dụng đó trong Zero Trust.
 Sau khi bật, kiểm đăng nhập Superset bằng SSO với một tài khoản kỹ sư.
+
+## Audit trong backend
+
+Bảng `audit_log` (chỉ thêm, database từ chối sửa hoặc xóa) ghi lần truy cập bị từ chối và thao tác quản trị; không ghi mật khẩu, token hay nội dung request.
+Mỗi bản ghi có người thực hiện (`sub`, tên, vai ứng dụng, client của token), `ip`, `request_id`, method và đường dẫn.
+`request_id` là giá trị `X-Request-Id` của gateway, nên nối được với dòng log gateway (`request_id`) và log backend (trong `[...]` sau mức log).
+
+| Hành động | Khi nào |
+|---|---|
+| `ACCESS_DENIED` | Request nhận 403 |
+| `AUTH_FAILED` | Backend từ chối token đã tới nó (token không tới được backend nếu gateway đã từ chối) |
+| `WORKSPACE_CREATED`, `WORKSPACE_LINKED`, `MEMBER_ADDED` | ADMIN tạo workspace, gắn tài khoản chủ, thêm thành viên |
+| `PARCEL_DELETED`, `SEASON_DELETED`, `REPORT_DELETED`, `HARVEST_OVERRIDE` | Farm: xóa mềm, thu hoạch sớm hoặc thu hoạch thay nông dân |
+| `TICKET_CATEGORY_CREATED`, `TICKET_CATEGORY_CHANGED`, `SLA_POLICY_CHANGED`, `TICKET_ATTACHMENT_REMOVED` | Lab: danh mục, SLA, xóa tệp đính kèm |
+
+Quyết định duyệt của workflow nằm ở `workflow_event`; đăng nhập và đổi mật khẩu nằm ở sự kiện của Keycloak.
+Mỗi địa chỉ client chỉ có tối đa 20 bản ghi `ACCESS_DENIED` hoặc `AUTH_FAILED` mỗi phút; số bản ghi bị bỏ qua được ghi trong `metadata.suppressed` của bản ghi đầu phút kế tiếp (`audit.denied.max-per-minute` trong `application.yaml`).
+
+ADMIN tra cứu qua API (Swagger: `GET /api/v1/audit-logs`), lọc theo `actor` (user id hoặc username), `action`, `outcome`, `from`, `to`:
+
+```
+GET /api/v1/audit-logs?outcome=DENIED&from=2026-10-23T00:00:00Z&size=50
+```
+
+Hoặc truy vấn trực tiếp:
+
+```bash
+cd deploy
+docker compose exec postgres sh -c 'psql -U "$POSTGRES_USER" -d "${POSTGRES_DB:-dxos}" -c "select occurred_at, action, outcome, actor_name, ip, path from audit_log order by id desc limit 20"'
+```
+
+Bản ghi được giữ không giới hạn thời gian; bảng nhỏ và trigger chặn xóa, nên cần theo dõi dung lượng nếu chạy lâu.
+
+### Cảnh báo
+
+Mỗi 5 phút, một địa chỉ bị từ chối từ 10 lần trong 10 phút qua được báo vào kênh Mattermost "Ban quản trị", tối đa một tin mỗi địa chỉ trong 60 phút.
+Đổi ngưỡng ở `audit.alert.*` trong `backend/dx-host/src/main/resources/application.yaml`.
+Không có webhook của kênh thì không gửi.

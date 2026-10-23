@@ -91,9 +91,9 @@ Một job định kỳ cảnh báo lên Mattermost khi có nhiều lần bị t�
 | # | Câu hỏi | Lựa chọn | Hạn chốt | Kết luận |
 |---|---|---|---|---|
 | Q1 | Giữ audit bao lâu | A: giữ vô thời hạn, theo dõi dung lượng. B: phân vùng theo tháng để xóa được | Trước khi code | _(đề xuất A)_ |
-| Q2 | Kênh Mattermost nhận cảnh báo | A: kênh quản trị sẵn có. B: tạo kênh mới | Trước khi code | _(chưa chốt)_ |
+| Q2 | Kênh Mattermost nhận cảnh báo | A: kênh quản trị sẵn có. B: tạo kênh mới | Trước khi code | A: kênh `admin` ("Ban quản trị") |
 | Q3 | Dashboard Superset từ `audit_log` | A: làm ở phase này. B: để `docs/BACKLOG.md` | Trước khi code | _(đề xuất B)_ |
-| Q4 | Thao tác nào của Farm và Lab được ghi | Danh sách ở `01_PLAN.md` WP3-04 | Trước khi code | _(chưa chốt)_ |
+| Q4 | Thao tác nào của Farm và Lab được ghi | Danh sách ở `01_PLAN.md` WP3-04 | Trước khi code | Theo danh sách ở WP3-04 |
 
 ## 10. Tài liệu cần cập nhật khi xong
 

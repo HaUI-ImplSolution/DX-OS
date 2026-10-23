@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.core.identity;
 
+import HaUI.ImplSolution.dxos.core.api.audit.AuditEvent;
+import HaUI.ImplSolution.dxos.core.api.audit.AuditRecorder;
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
 import HaUI.ImplSolution.dxos.core.api.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.dxos.core.api.workspace.WorkspaceAdministration;
@@ -33,11 +35,13 @@ public class WorkspaceController {
 
   private final WorkspaceDirectory workspaceDirectory;
   private final WorkspaceAdministration workspaceAdministration;
+  private final AuditRecorder auditRecorder;
 
   public WorkspaceController(WorkspaceDirectory workspaceDirectory,
-      WorkspaceAdministration workspaceAdministration) {
+      WorkspaceAdministration workspaceAdministration, AuditRecorder auditRecorder) {
     this.workspaceDirectory = workspaceDirectory;
     this.workspaceAdministration = workspaceAdministration;
+    this.auditRecorder = auditRecorder;
   }
 
   @GetMapping
@@ -63,6 +67,9 @@ public class WorkspaceController {
         workspaceAdministration.create(new WorkspaceCreateCommand(request.type(), request.name(),
             request.phone(), request.address(), request.attributes(), request.username(),
             request.email(), request.accountRole()));
+    auditRecorder
+        .record(AuditEvent.success("WORKSPACE_CREATED", "WORKSPACE", created.workspace().code(),
+            java.util.Map.of("type", request.type(), "withAccount", created.username() != null)));
     return ApiResponse.success("Workspace created", new WorkspaceCreateResponse(
         toResponse(created.workspace()), created.username(), created.temporaryPassword()));
   }
@@ -76,8 +83,10 @@ public class WorkspaceController {
           + " exist.")
   public ApiResponse<WorkspaceResponse> linkAccount(@PathVariable String code,
       @Valid @RequestBody WorkspaceLinkRequest request) {
-    return ApiResponse.success("Account linked", toResponse(
-        workspaceAdministration.linkOwner(code, request.keycloakUserId(), request.username())));
+    WorkspaceView linked =
+        workspaceAdministration.linkOwner(code, request.keycloakUserId(), request.username());
+    auditRecorder.record(AuditEvent.success("WORKSPACE_LINKED", "WORKSPACE", code));
+    return ApiResponse.success("Account linked", toResponse(linked));
   }
 
   @GetMapping("/{code}/members")
@@ -102,6 +111,8 @@ public class WorkspaceController {
     WorkspaceMemberRole role = request.role() != null ? request.role() : WorkspaceMemberRole.MEMBER;
     WorkspaceMemberView member =
         workspaceAdministration.addMember(code, request.keycloakUserId(), request.username(), role);
+    auditRecorder.record(AuditEvent.success("MEMBER_ADDED", "WORKSPACE", code,
+        java.util.Map.of("userId", member.userId(), "role", member.role().name())));
     return ApiResponse.success("Member added", toMemberResponse(member));
   }
 

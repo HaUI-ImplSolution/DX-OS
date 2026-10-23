@@ -27,11 +27,11 @@ Chạy stack hoặc gọi thử endpoint chỉ khi người dùng yêu cầu rõ
 
 **Dùng chung (mọi app)**
 
-- [~] Đăng nhập SSO qua Keycloak vẫn hoạt động sau khi bật `KC_PROXY_HEADERS`: web đạt; mobile và Superset chưa kiểm.
-- [ ] Ảnh báo cáo tải được qua `/dxos-uploads/*`, link hết hạn bị từ chối.
+- [~] Đăng nhập SSO qua Keycloak vẫn hoạt động sau khi bật `KC_PROXY_HEADERS`: web (Chrome và E2E) và Superset (Chrome) đạt; mobile chưa kiểm.
+- [x] Ảnh báo cáo tải được qua `/dxos-uploads/*`, link hết hạn bị từ chối (thử với thời hạn 5 giây: link mới 200, chữ ký sai và link quá hạn 403).
 - [x] Giới hạn `limit-count` hiện có vẫn trả 429 khi vượt, tính theo IP (IP A nhận 429 sau 120 lượt, IP B vẫn 200).
-- [ ] Dựng từ clone sạch bằng `docker compose up -d --build` lên đủ dịch vụ healthy với từng giá trị `DXOS_APP`.
-- [ ] Chạy LAN không có overlay: cấu hình `real_ip_*` không làm hỏng gateway.
+- [x] Dựng từ clone sạch lên đủ dịch vụ healthy với từng giá trị `DXOS_APP` (clone sạch trong thư mục tạm, không overlay, không `--build`: Farm và Lab đều lên đủ dịch vụ healthy, migration và import realm từ đầu); chưa thử `--build` toàn bộ image.
+- [x] Chạy LAN không có overlay: cấu hình `real_ip_*` không làm hỏng gateway (stack sạch ở chế độ LAN, Chrome và E2E đạt; sự kiện Keycloak ghi IP container gateway).
 
 ## 4. Tiêu chí đạt của phase (exit criteria)
 

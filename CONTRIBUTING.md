@@ -59,6 +59,7 @@ Quy trình mới nằm trong module của ứng dụng (`app-farm` hoặc `app-l
 2. Cài `CaseSummaryProvider` để yêu cầu hiện trong hộp duyệt, và `NotificationTypeDefinition` cho từng loại thông báo mới.
 3. Khai báo route cần giới hạn tốc độ trong `deploy/apisix/apps/<app>.yaml`.
 4. Thêm view `vw_*` và đăng ký qua `BiDatasetProvider` nếu cần báo cáo.
+5. Thao tác quản trị hoặc xóa dữ liệu thì ghi vết bằng `AuditRecorder.record(AuditEvent.success(...))` sau khi thao tác xong (tên hành động viết hoa như `PARCEL_DELETED`); người thực hiện, địa chỉ client và `request_id` được lấy từ request. Quyết định duyệt của workflow đã có ở `workflow_event`, không ghi lại.
 
 ## Thêm một ứng dụng mới
 

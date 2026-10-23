@@ -29,19 +29,19 @@ Chạy stack hoặc gọi thử endpoint chỉ khi người dùng yêu cầu rõ
 
 **Dùng chung (mọi app)**
 
-- [~] Đăng nhập SSO qua Keycloak vẫn hoạt động: web đạt (lấy được token cho `farmer1` qua Authorization Code + PKCE); mobile và Superset chưa kiểm.
-- [ ] Người dùng chỉ thấy dữ liệu thuộc workspace của mình.
-- [ ] Link ảnh có hạn hoạt động, hết hạn thì bị từ chối.
-- [ ] Thông báo trong app và Mattermost vẫn gửi.
-- [~] Chat và Swagger vẫn mở như cũ: Swagger, `/v3/api-docs`, portal, trang chủ đạt; chat chưa kiểm.
-- [ ] Dựng từ clone sạch bằng `docker compose up -d --build` lên đủ dịch vụ healthy với từng giá trị `DXOS_APP`.
+- [~] Đăng nhập SSO qua Keycloak vẫn hoạt động: web (Chrome và E2E) và Superset (Chrome, SSO bằng `admin1`) đạt; mobile chưa kiểm.
+- [x] Người dùng chỉ thấy dữ liệu thuộc workspace của mình (E2E Lab: sinh viên khác nhận 404; Chrome: `student1` chỉ thấy yêu cầu và thiết bị của mình).
+- [x] Link ảnh có hạn hoạt động, hết hạn thì bị từ chối (thời hạn thử 5 giây: link mới 200, chữ ký sai và quá hạn 403).
+- [x] Thông báo trong app và Mattermost vẫn gửi (có bài đăng ở các kênh "Kỹ sư nông nghiệp" và "Ban quản trị"; Chrome: sinh viên thấy huy hiệu thông báo).
+- [x] Chat và Swagger vẫn mở như cũ (Chrome: Swagger, portal báo 7 dịch vụ hoạt động, trang đăng nhập Mattermost mở được).
+- [x] Dựng từ clone sạch lên đủ dịch vụ healthy với từng giá trị `DXOS_APP` (clone sạch trong thư mục tạm, không overlay, không `--build`: Farm và Lab đều lên đủ dịch vụ healthy, migration và import realm từ đầu); chưa thử `--build` toàn bộ image.
 
 **Theo app**
 
 - Farm:
-  - [ ] Nông dân gửi báo cáo kèm ảnh trên mobile thành công.
+  - [~] Nông dân gửi báo cáo kèm ảnh thành công: qua API (E2E Farm 10/10) đạt; trên điện thoại chưa thử.
 - Lab:
-  - [ ] Sinh viên tạo ticket thành công, giới hạn riêng của ticket vẫn hoạt động.
+  - [x] Sinh viên tạo ticket thành công, giới hạn riêng của ticket vẫn hoạt động (66 yêu cầu từ ba người dùng: 60 tạo được, 6 nhận 429 của gateway).
 
 ## 4. Tiêu chí đạt của phase (exit criteria)
 

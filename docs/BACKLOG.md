@@ -26,7 +26,8 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Việc | Ghi chú |
 |---|---|
 | Cấu hình Cloudflare (WAF, Bot Fight Mode, rate limiting, Access cho `bi.`, `files.`, `/admin/*`) và giới hạn đăng nhập, `/api/*` | Các bước ở `deploy/OPERATIONS.md`; chưa bật và chưa kiểm trên VPS |
-| Log truy cập JSON, IP thật và sự kiện Keycloak qua Cloudflare Tunnel thật | Đã đạt trên stack local (giả lập `CF-Connecting-IP`, gateway, Keycloak, đăng nhập web); chưa kiểm qua tunnel trên VPS, đăng nhập mobile và Superset, và với `DXOS_APP=lab` |
+| Audit log: IP thật qua tunnel, thao tác Farm trên điện thoại, `FAILED` khi thao tác lỗi, cảnh báo khi Mattermost tắt | Đã đạt trên stack local; chưa kiểm trên VPS và thiết bị |
+| Log truy cập JSON, IP thật và sự kiện Keycloak qua Cloudflare Tunnel thật | Đã đạt trên stack local (giả lập `CF-Connecting-IP`; clone sạch Farm và Lab; web, Superset, Admin Console qua Chrome); chưa kiểm qua tunnel trên VPS, đăng nhập mobile và `--build` toàn bộ image |
 | Kiểm tay Farm F3 trên điện thoại, kèm ngưỡng GPS và nhãn "Đang cách ly"; icon và splash của mobile (chỉ hiện ở bản build thật, không hiện ở Expo Go) | Kịch bản ở [`TESTING.md`](./TESTING.md); các mục kiểm tay còn lại đã đạt |
 | Mobile hiển thị tài liệu tham khảo (chi tiết báo cáo đã duyệt), hỏi đáp dạng danh sách trường và hộp thông báo cuộn tải thêm | Đã qua `tsc` và kiểm hàm tách dòng; chưa mở trên Expo Go hay máy thật |
 | Dashboard Superset hiển thị trên giao diện | Bundle và `query_context` đã có test; chưa có test tự động mở dashboard trên Superset thật |
@@ -54,7 +55,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 
 | Việc | Ghi chú |
 |---|---|
-| Bảng `audit_log` cho lần bị từ chối và thao tác quản trị, API đọc cho ADMIN, cảnh báo Mattermost | Kế hoạch ở `docs/phase-3-audit-log` |
+| Màn hình xem audit trên web, dashboard Superset từ `audit_log`, xóa audit theo thời hạn | Hiện chỉ có `GET /api/v1/audit-logs` và truy vấn SQL; bảng chỉ thêm, chưa có cách xóa theo thời hạn |
 | Backend tự gọi AI sau khi upload ảnh | Chẩn đoán AI do kỹ sư bấm; đang giữ thủ công có chủ đích |
 | Push thật (FCM, UnifiedPush) | Hộp thông báo chỉ kéo về khi mở app |
 | Hộp thông báo cho engineer và admin | Họ dùng hàng chờ và Mattermost |

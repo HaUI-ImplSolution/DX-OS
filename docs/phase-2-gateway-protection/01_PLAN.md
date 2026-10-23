@@ -25,8 +25,8 @@ WP2-02 và WP2-03 là cấu hình Cloudflare, làm song song được sau khi WP
 
 **Hướng làm**
 
-- `common.yaml`: thêm `limit-count` (khóa `remote_addr`, `rejected_code: 429`, `show_limit_quota_header: true`) vào route Keycloak cho hai đường dẫn đăng nhập; tách route Keycloak nếu cần để chỉ giới hạn đường dẫn đăng nhập, không giới hạn `/resources/*`.
-- `common.yaml`: thêm `limit-count` vào route `api` (cạnh `plugin_config_id: bearer-token`).
+- `common.yaml`: route `keycloak-login` (ưu tiên cao hơn route `keycloak`) cho `/realms/:realm/login-actions/*` và `/realms/:realm/protocol/openid-connect/token` với `limit-count` 30 lượt mỗi phút (khóa `remote_addr`, `rejected_code: 429`, `show_limit_quota_header: true`); `/resources/*` và trang đăng nhập không bị giới hạn.
+- `common.yaml`: thêm `limit-count` 600 lượt mỗi phút vào route `api` (cạnh `plugin_config_id: bearer-token`); plugin kiểm token chạy trước nên bộ đếm chỉ tính request có token hợp lệ, còn request token sai nhận 401 mà không bị đếm.
 - Thông báo 429 ngắn, bằng tiếng Anh, giống các `rejected_msg` hiện có.
 - Core/App: không đụng mã.
 
@@ -40,7 +40,7 @@ WP2-02 và WP2-03 là cấu hình Cloudflare, làm song song được sau khi WP
 
 **Kết quả đầu ra**
 
-- Vượt ngưỡng nhận 429 kèm header hạn mức; IP khác không bị ảnh hưởng.
+- Vượt ngưỡng nhận 429 kèm header `X-RateLimit-*`; IP khác không bị ảnh hưởng.
 
 **Phụ thuộc, lưu ý**: Q1 ở `00` mục 9; rủi ro R1 ở `04`.
 

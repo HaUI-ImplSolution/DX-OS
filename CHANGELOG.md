@@ -22,6 +22,7 @@ Hai mục đầu liệt kê các bản phát hành; lịch sử chi tiết theo 
 ### Đã thay đổi
 
 - Gateway ghi mỗi request một dòng JSON (có `X-Request-Id`, không có query string) và lấy IP thật từ `CF-Connecting-IP` khi request đến từ mạng Docker, nên các giới hạn `limit-count` theo `remote_addr` tính riêng từng IP khi chạy sau Cloudflare Tunnel; mọi service có xoay vòng log Docker (`deploy/OPERATIONS.md`).
+- Gateway giới hạn đăng nhập (30 lượt mỗi phút mỗi IP, trên form mật khẩu và token endpoint của Keycloak) và `/api/*` (600 lượt mỗi phút mỗi IP, tính request có token hợp lệ); `deploy/OPERATIONS.md` có danh sách cấu hình Cloudflare và Cloudflare Access cho cổng quản trị.
 - Keycloak ghi sự kiện đăng nhập (giữ 90 ngày) và sự kiện quản trị, khóa tạm tài khoản sau 5 lần đăng nhập sai; overlay Cloudflare cho Keycloak đọc IP thật từ gateway.
 - Mobile: profile `preview` của `eas.json` và hướng dẫn trong `mobile/README.md`, `docs/TESTING.md`, `sso/README.md`, `.env.example` dùng được với máy chủ công khai qua Cloudflare Tunnel (HTTPS, không số cổng).
 - Hỏi đáp web: đoạn trích có nhãn tới 40 ký tự (như `Kiểm soát hóa học không định lượng`) hiển thị dạng hai cột như các đoạn khác.

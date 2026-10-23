@@ -52,3 +52,49 @@ Hai lần sai cách nhau dưới 1 giây cũng khóa 1 phút (kiểm tra đăng 
 Gỡ khóa sớm: **Users** → chọn người dùng → tắt công tắc **Temporarily locked**.
 
 IP trong sự kiện là IP thật chỉ khi máy chủ chạy với overlay Cloudflare (`docker-compose.cloudflared.yml`), nơi Keycloak đọc `X-Forwarded-For` từ gateway.
+
+## Giới hạn tốc độ
+
+Gateway đếm theo IP thật của client (xem phần log), vượt ngưỡng thì trả `429` kèm `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`.
+
+| Đường dẫn | Ngưỡng mỗi IP mỗi phút |
+|---|---|
+| `/realms/<realm>/login-actions/*`, `/realms/<realm>/protocol/openid-connect/token` | 30 |
+| `/api/*` (request có token hợp lệ) | 600 |
+| Route riêng của Farm và Lab (upload ảnh, chẩn đoán AI, tạo ticket, đặt phòng, hỏi đáp, trạng thái hệ thống) | Xem `deploy/apisix/common.yaml` và `deploy/apisix/apps/<app>.yaml` |
+
+Request có token sai nhận `401` mà không bị đếm; phần này do Cloudflare lọc.
+Đổi ngưỡng ở `count` của `limit-count` trong file route tương ứng rồi chạy `./switch-app.sh <app>` để gateway nạp lại.
+Nhiều người dùng chung một IP (mạng di động) cùng dùng bộ đếm; thấy `429` trong thao tác thường ngày thì tăng ngưỡng.
+
+## Cloudflare
+
+Cấu hình nằm trên Cloudflare, không nằm trong repo.
+Sau khi bật mỗi mục, kiểm đăng nhập web, đăng nhập mobile, gửi ảnh báo cáo và chẩn đoán AI.
+
+Domain `khuongdev.io.vn`:
+
+- **Security → WAF → Managed rules**: bật Cloudflare Managed Ruleset.
+- **Security → Bots**: bật Bot Fight Mode.
+- **Security → WAF → Rate limiting rules**: một rule cho `login-actions` của Keycloak (đường dẫn bắt đầu bằng `/realms/` và chứa `/login-actions/`), tính theo IP, chọn chu kỳ và thời gian chặn nhỏ nhất mà gói cho phép.
+- **SSL/TLS → Edge Certificates**: bật Always Use HTTPS, đặt Minimum TLS Version 1.2.
+- **Rules → Transform Rules → Modify Request Header**: `X-Forwarded-Port` = `443` (đã có, bắt buộc).
+- **Security → Events**: xem request bị chặn hoặc thử thách; nếu ảnh báo cáo hoặc câu hỏi AI bị chặn nhầm thì thêm rule bỏ qua cho đường dẫn đó.
+
+Không chặn theo quốc gia vì hội đồng chấm có thể truy cập từ nước ngoài.
+Swagger (`/swagger-ui/`) để công khai.
+
+### Cổng quản trị sau Cloudflare Access
+
+Zero Trust → Access → Applications → Add an application → Self-hosted, chính sách Allow theo danh sách email của quản trị viên và kỹ sư (mã gửi qua email).
+Tạo ba ứng dụng:
+
+| Ứng dụng | Domain | Đường dẫn |
+|---|---|---|
+| BI (Superset) | `bi.khuongdev.io.vn` | để trống |
+| MinIO Console | `files.khuongdev.io.vn` | để trống |
+| Keycloak Admin Console | `khuongdev.io.vn` | `admin/*` |
+
+Không đặt Access cho API, web app, `/realms/*`, portal, chat và link ảnh, vì nông dân và mobile dùng các đường này.
+Giữ một phiên Admin Console đang mở khi tạo ứng dụng Access cho `admin/*`; nếu bị khóa ngoài thì gỡ ứng dụng đó trong Zero Trust.
+Sau khi bật, kiểm đăng nhập Superset bằng SSO với một tài khoản kỹ sư.

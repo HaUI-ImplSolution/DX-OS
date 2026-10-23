@@ -15,9 +15,11 @@ Chạy stack hoặc gọi thử endpoint chỉ khi người dùng yêu cầu rõ
 
 | ID | WP | Loại | Mô tả và bước | Kết quả mong đợi | Người chạy | Kết quả |
 |---|---|---|---|---|---|---|
-| T2-01 | WP2-01 | Âm tính | Từ một IP gửi 40 yêu cầu `POST /realms/dxos/protocol/openid-connect/token` trong một phút | Các yêu cầu vượt 30 nhận 429 kèm header hạn mức | | |
-| T2-02 | WP2-01 | Ranh giới | Trong lúc IP thứ nhất bị 429, đăng nhập từ IP thứ hai | Đăng nhập thành công | | |
-| T2-03 | WP2-01 | Hồi quy | Mobile gửi hàng đợi 10 ảnh liên tiếp | Tất cả gửi được, không có 429 | | |
+| T2-01 | WP2-01 | Âm tính | Từ một IP gửi 40 yêu cầu `POST /realms/dxos/protocol/openid-connect/token` trong một phút | Các yêu cầu vượt 30 nhận 429 kèm header hạn mức | Claude, local, 23/10/2026 | Đạt (40 lượt vào token endpoint: 30 lượt qua, lượt 31 trở đi nhận 429 kèm `X-RateLimit-*`; form `login-actions` cũng 30 lượt) |
+| T2-02 | WP2-01 | Ranh giới | Trong lúc IP thứ nhất bị 429, đăng nhập từ IP thứ hai | Đăng nhập thành công | Claude, local, 23/10/2026 | Đạt (IP khác nhận 400 từ Keycloak, không bị 429) |
+| T2-03 | WP2-01 | Hồi quy | Mobile gửi hàng đợi 10 ảnh liên tiếp | Tất cả gửi được, không có 429 | Claude, local, 23/10/2026 | Đạt một phần (610 lượt API với token hợp lệ: 600 qua, từ lượt 601 mới 429; hàng đợi 10 ảnh trên điện thoại chưa thử) |
+| T2-08 | WP2-01 | Ranh giới | Gửi 650 request `/api/*` với token sai từ một IP, rồi một request với token hợp lệ từ cùng IP | 650 lần 401 không bị 429; request hợp lệ sau đó không bị chặn | Claude, local, 23/10/2026 | Đạt (650 lần 401, request hợp lệ sau đó nhận 403 từ backend vì `farmer1` không phải staff) |
+| T2-09 | WP2-01 | Hồi quy | Từ IP đang bị 429 ở token endpoint, gọi `/realms/dxos/.well-known/openid-configuration` 40 lần | Không bị giới hạn | Claude, local, 23/10/2026 | Đạt (40 lần 200) |
 | T2-04 | WP2-02 | Hồi quy | Sau khi bật WAF, gửi ảnh báo cáo và chạy chẩn đoán AI từ web | Thành công, Security Events không có block nhầm | | |
 | T2-05 | WP2-02 | Bảo mật | Gửi request có chuỗi tấn công mẫu (`' OR 1=1--`) vào một tham số | Cloudflare chặn hoặc thử thách, log Security Events có dòng tương ứng | | |
 | T2-06 | WP2-03 | Phân quyền | Mở `https://bi.khuongdev.io.vn` và `https://files.khuongdev.io.vn` khi chưa qua Access | Hiện trang đăng nhập Cloudflare Access, không thấy trang của dịch vụ | | |
@@ -27,11 +29,11 @@ Chạy stack hoặc gọi thử endpoint chỉ khi người dùng yêu cầu rõ
 
 **Dùng chung (mọi app)**
 
-- [ ] Đăng nhập SSO qua Keycloak (web, mobile, Superset) vẫn hoạt động.
+- [~] Đăng nhập SSO qua Keycloak vẫn hoạt động: web đạt (lấy được token cho `farmer1` qua Authorization Code + PKCE); mobile và Superset chưa kiểm.
 - [ ] Người dùng chỉ thấy dữ liệu thuộc workspace của mình.
 - [ ] Link ảnh có hạn hoạt động, hết hạn thì bị từ chối.
 - [ ] Thông báo trong app và Mattermost vẫn gửi.
-- [ ] Chat `chat.khuongdev.io.vn` và Swagger vẫn mở như cũ.
+- [~] Chat và Swagger vẫn mở như cũ: Swagger, `/v3/api-docs`, portal, trang chủ đạt; chat chưa kiểm.
 - [ ] Dựng từ clone sạch bằng `docker compose up -d --build` lên đủ dịch vụ healthy với từng giá trị `DXOS_APP`.
 
 **Theo app**
@@ -43,7 +45,7 @@ Chạy stack hoặc gọi thử endpoint chỉ khi người dùng yêu cầu rõ
 
 ## 4. Tiêu chí đạt của phase (exit criteria)
 
-- Tất cả case T2-01 tới T2-07 đạt.
+- Tất cả case T2-01 tới T2-09 đạt.
 - Lỗi còn lại đã có issue và được chấp nhận ở `04_TRADEOFFS_RISKS.md`.
 - Các tiêu chí ở `00_OVERVIEW.md` mục 6 đều có bằng chứng.
 

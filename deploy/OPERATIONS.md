@@ -20,10 +20,12 @@ Mỗi request là một dòng JSON trên stdout của container `apisix`.
 | `user_agent` | Trình duyệt hoặc ứng dụng gọi |
 
 `remote_addr` là IP thật của người dùng khi vào qua Cloudflare Tunnel (đọc từ `CF-Connecting-IP`), và là IP trong mạng LAN khi vào trực tiếp.
-Header chỉ được tin khi request đến từ mạng Docker (`172.16.0.0/12`) hoặc loopback; ở máy có dải Docker khác thì sửa `real_ip_from` trong `apisix/config.yaml`.
+Header chỉ được tin khi request đến từ mạng Docker (`172.16.0.0/12`) hoặc loopback.
+Ở máy có dải Docker khác thì sửa `real_ip_from` trong `apisix/config.yaml`.
 
 Log của container còn có dòng không phải JSON (cảnh báo khi khởi động, error log của nginx), nên `jq` đọc từng dòng và bỏ qua dòng lỗi bằng `fromjson?`.
-Kiểm tra sức khỏe của container gửi một request từ `127.0.0.1` (đường dẫn `/`, mã 400) mỗi 10 giây; các ví dụ dưới loại dòng này.
+Kiểm tra sức khỏe của container gửi một request từ `127.0.0.1` (đường dẫn `/`, mã 400) mỗi 10 giây.
+Các ví dụ dưới loại dòng này.
 Ví dụ (cần `jq`):
 
 ```bash
@@ -63,11 +65,15 @@ Gateway đếm theo IP thật của client (xem phần log), vượt ngưỡng t
 | `/api/*` (request có token hợp lệ) | 600 |
 | Route riêng của Farm và Lab (upload ảnh, chẩn đoán AI, tạo ticket, đặt phòng, hỏi đáp, trạng thái hệ thống) | Xem `deploy/apisix/common.yaml` và `deploy/apisix/apps/<app>.yaml` |
 
-Request có token sai nhận `401` mà không bị đếm; phần này do Cloudflare lọc.
+Request có token sai nhận `401` mà không bị đếm.
+Phần này do Cloudflare lọc.
 Đổi ngưỡng ở `count` của `limit-count` trong file route tương ứng rồi chạy `./switch-app.sh <app>` để gateway nạp lại.
-Nhiều người dùng chung một IP (mạng di động) cùng dùng bộ đếm; thấy `429` trong thao tác thường ngày thì tăng ngưỡng.
-Mỗi lần đăng nhập tốn hai request (form và token), nên script đăng nhập hơn 60 tài khoản trong một phút từ một máy sẽ chạm giới hạn; chờ một phút hoặc chạy cách nhau.
-Giới hạn này chỉ chặn lượng request lớn từ một địa chỉ; đoán mật khẩu từng tài khoản do khóa tạm của Keycloak xử lý.
+Nhiều người dùng chung một IP (mạng di động) cùng dùng bộ đếm.
+Thấy `429` trong thao tác thường ngày thì tăng ngưỡng.
+Mỗi lần đăng nhập tốn hai request (form và token), nên script đăng nhập hơn 60 tài khoản trong một phút từ một máy sẽ chạm giới hạn.
+Chờ một phút hoặc chạy cách nhau.
+Giới hạn này chỉ chặn lượng request lớn từ một địa chỉ.
+Đoán mật khẩu từng tài khoản do khóa tạm của Keycloak xử lý.
 
 ## Cloudflare
 
@@ -81,7 +87,8 @@ Domain `khuongdev.io.vn`:
 - **Security → WAF → Rate limiting rules**: một rule cho `login-actions` của Keycloak (đường dẫn bắt đầu bằng `/realms/` và chứa `/login-actions/`), tính theo IP, chọn chu kỳ và thời gian chặn nhỏ nhất mà gói cho phép.
 - **SSL/TLS → Edge Certificates**: bật Always Use HTTPS, đặt Minimum TLS Version 1.2.
 - **Rules → Transform Rules → Modify Request Header**: `X-Forwarded-Port` = `443` (đã có, bắt buộc).
-- **Security → Events**: xem request bị chặn hoặc thử thách; nếu ảnh báo cáo hoặc câu hỏi AI bị chặn nhầm thì thêm rule bỏ qua cho đường dẫn đó.
+- **Security → Events**: xem request bị chặn hoặc thử thách.
+  Ảnh báo cáo hoặc câu hỏi AI bị chặn nhầm thì thêm rule bỏ qua cho đường dẫn đó.
 
 Không chặn theo quốc gia vì hội đồng chấm có thể truy cập từ nước ngoài.
 Swagger (`/swagger-ui/`) để công khai.
@@ -98,12 +105,14 @@ Tạo ba ứng dụng:
 | Keycloak Admin Console | `khuongdev.io.vn` | `admin/*` |
 
 Không đặt Access cho API, web app, `/realms/*`, portal, chat và link ảnh, vì nông dân và mobile dùng các đường này.
-Giữ một phiên Admin Console đang mở khi tạo ứng dụng Access cho `admin/*`; nếu bị khóa ngoài thì gỡ ứng dụng đó trong Zero Trust.
+Giữ một phiên Admin Console đang mở khi tạo ứng dụng Access cho `admin/*`.
+Nếu bị khóa ngoài thì gỡ ứng dụng đó trong Zero Trust.
 Sau khi bật, kiểm đăng nhập Superset bằng SSO với một tài khoản kỹ sư.
 
 ## Audit trong backend
 
-Bảng `audit_log` (chỉ thêm, database từ chối sửa hoặc xóa) ghi lần truy cập bị từ chối và thao tác quản trị; không ghi mật khẩu, token hay nội dung request.
+Bảng `audit_log` (chỉ thêm, database từ chối sửa hoặc xóa) ghi lần truy cập bị từ chối và thao tác quản trị.
+Bảng không ghi mật khẩu, token hay nội dung request.
 Mỗi bản ghi có người thực hiện (`sub`, tên, vai ứng dụng, client của token), `ip`, `request_id`, method và đường dẫn.
 `request_id` là giá trị `X-Request-Id` của gateway, nên nối được với dòng log gateway (`request_id`) và log backend (trong `[...]` sau mức log).
 
@@ -115,8 +124,10 @@ Mỗi bản ghi có người thực hiện (`sub`, tên, vai ứng dụng, clien
 | `PARCEL_DELETED`, `SEASON_DELETED`, `REPORT_DELETED`, `HARVEST_OVERRIDE` | Farm: xóa mềm, thu hoạch sớm hoặc thu hoạch thay nông dân |
 | `TICKET_CATEGORY_CREATED`, `TICKET_CATEGORY_CHANGED`, `SLA_POLICY_CHANGED`, `TICKET_ATTACHMENT_REMOVED` | Lab: danh mục, SLA, xóa tệp đính kèm |
 
-Quyết định duyệt của workflow nằm ở `workflow_event`; đăng nhập và đổi mật khẩu nằm ở sự kiện của Keycloak.
-Mỗi địa chỉ client chỉ có tối đa 20 bản ghi `ACCESS_DENIED` hoặc `AUTH_FAILED` mỗi phút; số bản ghi bị bỏ qua được ghi trong `metadata.suppressed` của bản ghi đầu phút kế tiếp (`audit.denied.max-per-minute` trong `application.yaml`).
+Quyết định duyệt của workflow nằm ở `workflow_event`.
+Đăng nhập và đổi mật khẩu nằm ở sự kiện của Keycloak.
+Mỗi địa chỉ client có tối đa 20 bản ghi `ACCESS_DENIED` hoặc `AUTH_FAILED` mỗi phút (`audit.denied.max-per-minute` trong `application.yaml`).
+Số bản ghi bị bỏ qua nằm trong `metadata.suppressed` của bản ghi đầu phút kế tiếp.
 
 ADMIN tra cứu qua API (Swagger: `GET /api/v1/audit-logs`), lọc theo `actor` (user id hoặc username), `action`, `outcome`, `from`, `to`:
 
@@ -131,7 +142,8 @@ cd deploy
 docker compose exec postgres sh -c 'psql -U "$POSTGRES_USER" -d "${POSTGRES_DB:-dxos}" -c "select occurred_at, action, outcome, actor_name, ip, path from audit_log order by id desc limit 20"'
 ```
 
-Bản ghi được giữ không giới hạn thời gian; bảng nhỏ và trigger chặn xóa, nên cần theo dõi dung lượng nếu chạy lâu.
+Bản ghi được giữ không giới hạn thời gian và trigger chặn xóa.
+Chạy lâu thì theo dõi dung lượng bảng.
 
 ### Cảnh báo
 

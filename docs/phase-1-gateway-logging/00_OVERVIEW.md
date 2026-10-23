@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Đang làm |
+| Trạng thái | Đang làm (chờ kiểm trên VPS) |
 | Mức độ | Quan trọng |
 | Nhóm ưu tiên | A (nền tảng của phase 2 và phase 3) |
 | Ứng dụng và module chính | dùng chung (Infra, SSO) |

@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Draft |
+| Trạng thái | Đang làm (chờ kiểm trên VPS) |
 | Mức độ | Quan trọng |
 | Nhóm ưu tiên | B |
 | Ứng dụng và module chính | core (dùng chung), app-farm, app-lab |

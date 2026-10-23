@@ -40,6 +40,7 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE.md`](../ARCHITECTURE.md).
 | Dữ liệu cấu trúc | PostgreSQL, Flyway: `db/migration/core` dùng chung và `db/migration/<app>` | Bảng riêng của từng ứng dụng, dùng chung `workspaces`, `notifications` |
 | Dữ liệu phi cấu trúc | MinIO riêng tư, client nhận link có hạn; tệp qua `FileProcessor` của ứng dụng | Ảnh lá lúa (Farm), tệp đính kèm ticket (Lab) |
 | Workflow | `core.workflow`: loại case cấu hình được, lịch sử `workflow_event` chỉ thêm, người phụ trách, hộp duyệt | Farm 5 loại duyệt; Lab `TICKET`, `DEVICE_LOAN`, `ROOM_BOOKING` |
+| Audit | `core.audit`: bảng `audit_log` chỉ thêm, ghi request bị từ chối và thao tác quản trị kèm người thực hiện, IP, `request_id`; ADMIN tra cứu qua API, cảnh báo lên kênh quản trị | Farm: xóa mềm, thu hoạch sớm hoặc thay; Lab: danh mục, SLA, tệp đính kèm |
 
 - Dẫn: `ARCHITECTURE.md` mục 2, 3 và 4; `sso/README.md`; `deploy/apisix/`.
 

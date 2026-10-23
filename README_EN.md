@@ -21,6 +21,7 @@ One shared core handles sign-in, data, workflows, notifications and AI; two busi
 
 - **One core, many applications:** Farm and Lab share one core; adding an application needs no change to the core.
 - **Business safety:** key rules are checked in the Backend and the database, not just in the UI.
+- **Traceability:** the gateway logs every request, Keycloak records sign-in events, and the Backend writes refused requests and administrative actions to an append-only audit log.
 - **Controlled AI:** AI only assists; drug and dose information comes from expert-approved data and the engineer makes the decision.
 - **One-command run:** builds the whole system with demo data, with automated tests on a clean environment.
 - **Transparent open source:** licenses and the list of software components are public, with automatic scanning for leaked passwords.

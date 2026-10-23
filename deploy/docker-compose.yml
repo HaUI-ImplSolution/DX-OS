@@ -165,6 +165,10 @@ services:
     build:
       context: ../portal
       dockerfile: Dockerfile
+    environment:
+      PORTAL_BI_URL: ${PORTAL_BI_URL:-}
+      PORTAL_MINIO_URL: ${PORTAL_MINIO_URL:-}
+      PORTAL_CHAT_URL: ${PORTAL_CHAT_URL:-}
     # No published port: the gateway serves the portal under /portal.
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/ || exit 1"]

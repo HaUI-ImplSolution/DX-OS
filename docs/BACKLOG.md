@@ -25,7 +25,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 
 | Việc | Ghi chú |
 |---|---|
-| Log truy cập JSON, IP thật qua Cloudflare Tunnel, sự kiện và khóa tạm của Keycloak | Cấu hình gateway và compose đã qua kiểm cú pháp và nạp route; chưa chạy trên stack thật. Cần kiểm: `remote_addr` là IP người dùng, header `CF-Connecting-IP` giả từ LAN bị bỏ qua, ba lần đăng nhập sai tạo `LOGIN_ERROR` kèm IP thật, đăng nhập web và mobile vẫn hoạt động |
+| Log truy cập JSON, IP thật và sự kiện Keycloak qua Cloudflare Tunnel thật | Đã đạt trên stack local (giả lập `CF-Connecting-IP`, gateway, Keycloak, đăng nhập web); chưa kiểm qua tunnel trên VPS, đăng nhập mobile và Superset, và với `DXOS_APP=lab` |
 | Kiểm tay Farm F3 trên điện thoại, kèm ngưỡng GPS và nhãn "Đang cách ly"; icon và splash của mobile (chỉ hiện ở bản build thật, không hiện ở Expo Go) | Kịch bản ở [`TESTING.md`](./TESTING.md); các mục kiểm tay còn lại đã đạt |
 | Mobile hiển thị tài liệu tham khảo (chi tiết báo cáo đã duyệt), hỏi đáp dạng danh sách trường và hộp thông báo cuộn tải thêm | Đã qua `tsc` và kiểm hàm tách dòng; chưa mở trên Expo Go hay máy thật |
 | Dashboard Superset hiển thị trên giao diện | Bundle và `query_context` đã có test; chưa có test tự động mở dashboard trên Superset thật |

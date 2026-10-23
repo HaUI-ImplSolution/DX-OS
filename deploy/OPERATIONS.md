@@ -22,14 +22,16 @@ Mỗi request là một dòng JSON trên stdout của container `apisix`.
 `remote_addr` là IP thật của người dùng khi vào qua Cloudflare Tunnel (đọc từ `CF-Connecting-IP`), và là IP trong mạng LAN khi vào trực tiếp.
 Header chỉ được tin khi request đến từ mạng Docker (`172.16.0.0/12`) hoặc loopback; ở máy có dải Docker khác thì sửa `real_ip_from` trong `apisix/config.yaml`.
 
+Log của container còn có dòng không phải JSON (cảnh báo khi khởi động, error log của nginx), nên `jq` đọc từng dòng và bỏ qua dòng lỗi bằng `fromjson?`.
+Kiểm tra sức khỏe của container gửi một request từ `127.0.0.1` (đường dẫn `/`, mã 400) mỗi 10 giây; các ví dụ dưới loại dòng này.
 Ví dụ (cần `jq`):
 
 ```bash
 cd deploy
-docker compose logs apisix --since 1h --no-log-prefix | jq -c 'select(.status >= 400)'
-docker compose logs apisix --since 24h --no-log-prefix | jq -r '.remote_addr' | sort | uniq -c | sort -rn | head
-docker compose logs apisix --no-log-prefix | jq -c 'select(.request_id == "<mã từ header X-Request-Id>")'
-docker compose logs apisix --since 1h --no-log-prefix | jq -c 'select(.status == 429)'
+docker compose logs apisix --since 1h --no-log-prefix | jq -cR 'fromjson? | select(.status >= 400 and .remote_addr != "127.0.0.1")'
+docker compose logs apisix --since 24h --no-log-prefix | jq -rR 'fromjson? | select(.remote_addr != "127.0.0.1") | .remote_addr' | sort | uniq -c | sort -rn | head
+docker compose logs apisix --no-log-prefix | jq -cR --arg id "<mã từ header X-Request-Id>" 'fromjson? | select(.request_id == $id)'
+docker compose logs apisix --since 1h --no-log-prefix | jq -cR 'fromjson? | select(.status == 429)'
 ```
 
 ## Giữ log
@@ -46,6 +48,7 @@ Admin Console → realm `dxos` → **Events**:
 - **Admin events**: thao tác quản trị trong Keycloak, kèm nội dung thay đổi.
 
 Sau 5 lần đăng nhập sai, tài khoản bị khóa tạm 1 phút, mỗi lần sai tiếp theo tăng thêm 1 phút, tối đa 15 phút.
+Hai lần sai cách nhau dưới 1 giây cũng khóa 1 phút (kiểm tra đăng nhập nhanh của Keycloak), nên script đăng nhập thử cần chờ giữa các lần.
 Gỡ khóa sớm: **Users** → chọn người dùng → tắt công tắc **Temporarily locked**.
 
 IP trong sự kiện là IP thật chỉ khi máy chủ chạy với overlay Cloudflare (`docker-compose.cloudflared.yml`), nơi Keycloak đọc `X-Forwarded-For` từ gateway.

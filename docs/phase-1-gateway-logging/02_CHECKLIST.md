@@ -72,10 +72,10 @@ Kết quả đầu ra: các ví dụ lệnh trong `OPERATIONS.md` chạy đượ
 - [x] Cấu hình YAML và JSON hợp lệ (`docker compose config`, parse `realm-dxos.json`) và đã đọc lại diff.
 - [x] Comment mới trong diff ngắn, chỉ nêu hành vi hiện tại, bằng tiếng Anh.
 - [x] Swagger: không áp dụng (không đổi API).
-- [ ] `.env.example`: không thêm biến; stack khởi động với từng giá trị `DXOS_APP`.
+- [x] `.env.example`: không thêm biến; stack khởi động với từng giá trị `DXOS_APP` (clone sạch Farm và Lab).
 - [x] `dx-core-api` và `dx-core` không bị đụng.
 - [x] Không có secret, mật khẩu hay dữ liệu thật trong diff.
-- [ ] Dọn dữ liệu test không còn dùng.
+- [x] Dọn dữ liệu test không còn dùng (stack sạch đã xóa; trong dữ liệu local còn sự kiện Keycloak thử).
 - [x] README, CHANGELOG cập nhật (chỉ trạng thái cuối).
 - [ ] Mọi tiêu chí ở `00_OVERVIEW.md` mục 6 đã đạt và có bằng chứng.
 - [ ] Cập nhật trạng thái phase: xóa thư mục phase khi xong, việc còn lại sang `docs/BACKLOG.md`.

@@ -8,6 +8,7 @@ import HaUI.ImplSolution.dxos.core.api.exception.InvalidStateException;
 import HaUI.ImplSolution.dxos.core.api.exception.PokaYokeViolationException;
 import HaUI.ImplSolution.dxos.core.api.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
+import HaUI.ImplSolution.dxos.core.audit.AuditService;
 import jakarta.persistence.LockTimeoutException;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.PessimisticLockException;
@@ -28,6 +29,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -35,6 +37,12 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 public class GlobalExceptionHandler {
 
   private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+  private final AuditService auditService;
+
+  public GlobalExceptionHandler(AuditService auditService) {
+    this.auditService = auditService;
+  }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ApiResponse<Void>> handleValidation(MethodArgumentNotValidException ex) {
@@ -139,10 +147,18 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(AccessDeniedException.class)
   public ResponseEntity<ApiResponse<Void>> handleAccessDenied(AccessDeniedException ex) {
+    auditService.recordDenial("ACCESS_DENIED");
     // @PreAuthorize ném exception này ngay trong lời gọi controller (AOP method security),
     // khác với vi phạm rule ở authorizeHttpRequests (đã xử lý bởi RestAccessDeniedHandler).
     return ResponseEntity.status(HttpStatus.FORBIDDEN)
         .body(ApiResponse.error("ERR_FORBIDDEN", "Không đủ quyền thực hiện thao tác này"));
+  }
+
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  public ResponseEntity<ApiResponse<Void>> handleTypeMismatch(
+      MethodArgumentTypeMismatchException ex) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(ApiResponse.error("ERR_BAD_REQUEST", "Invalid value for " + ex.getName()));
   }
 
   @ExceptionHandler(IllegalArgumentException.class)

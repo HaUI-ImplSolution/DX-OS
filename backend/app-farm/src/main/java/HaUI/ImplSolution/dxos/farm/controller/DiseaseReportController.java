@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.farm.controller;
 
+import HaUI.ImplSolution.dxos.core.api.audit.AuditEvent;
+import HaUI.ImplSolution.dxos.core.api.audit.AuditRecorder;
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
 import HaUI.ImplSolution.dxos.core.api.dto.PageResponse;
 import HaUI.ImplSolution.dxos.farm.dto.AwaitingReportResponse;
@@ -37,9 +39,12 @@ import org.springframework.web.multipart.MultipartFile;
 public class DiseaseReportController {
 
   private final DiseaseReportService diseaseReportService;
+  private final AuditRecorder auditRecorder;
 
-  public DiseaseReportController(DiseaseReportService diseaseReportService) {
+  public DiseaseReportController(DiseaseReportService diseaseReportService,
+      AuditRecorder auditRecorder) {
     this.diseaseReportService = diseaseReportService;
+    this.auditRecorder = auditRecorder;
   }
 
   @PostMapping(value = "/crop-seasons/{cropSeasonId}/disease-reports",
@@ -117,6 +122,8 @@ public class DiseaseReportController {
       description = "ADMIN only.")
   public ApiResponse<Void> delete(@PathVariable Long id) {
     diseaseReportService.delete(id);
+    auditRecorder
+        .record(AuditEvent.success("REPORT_DELETED", "DISEASE_REPORT", String.valueOf(id)));
     return ApiResponse.success("Disease report deleted", null);
   }
 }

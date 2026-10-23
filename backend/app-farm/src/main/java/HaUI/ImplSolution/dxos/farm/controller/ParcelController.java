@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.farm.controller;
 
+import HaUI.ImplSolution.dxos.core.api.audit.AuditEvent;
+import HaUI.ImplSolution.dxos.core.api.audit.AuditRecorder;
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
 import HaUI.ImplSolution.dxos.farm.dto.ParcelCreateRequest;
 import HaUI.ImplSolution.dxos.farm.dto.ParcelResponse;
@@ -34,10 +36,13 @@ public class ParcelController {
 
   private final ParcelService parcelService;
   private final WeatherService weatherService;
+  private final AuditRecorder auditRecorder;
 
-  public ParcelController(ParcelService parcelService, WeatherService weatherService) {
+  public ParcelController(ParcelService parcelService, WeatherService weatherService,
+      AuditRecorder auditRecorder) {
     this.parcelService = parcelService;
     this.weatherService = weatherService;
+    this.auditRecorder = auditRecorder;
   }
 
   @GetMapping
@@ -117,6 +122,7 @@ public class ParcelController {
       description = "ADMIN only. 409 while the parcel still has crop seasons.")
   public ApiResponse<Void> delete(@PathVariable Long id) {
     parcelService.delete(id);
+    auditRecorder.record(AuditEvent.success("PARCEL_DELETED", "PARCEL", String.valueOf(id)));
     return ApiResponse.success("Parcel deleted", null);
   }
 }

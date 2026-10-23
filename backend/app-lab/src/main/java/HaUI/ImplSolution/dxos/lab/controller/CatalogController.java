@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.lab.controller;
 
+import HaUI.ImplSolution.dxos.core.api.audit.AuditEvent;
+import HaUI.ImplSolution.dxos.core.api.audit.AuditRecorder;
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
 import HaUI.ImplSolution.dxos.lab.dto.CatalogDtos.SlaPolicyRequest;
 import HaUI.ImplSolution.dxos.lab.dto.CatalogDtos.SlaPolicyResponse;
@@ -32,11 +34,13 @@ public class CatalogController {
 
   private final TicketCategoryService categoryService;
   private final SlaPolicyService slaPolicyService;
+  private final AuditRecorder auditRecorder;
 
-  public CatalogController(TicketCategoryService categoryService,
-      SlaPolicyService slaPolicyService) {
+  public CatalogController(TicketCategoryService categoryService, SlaPolicyService slaPolicyService,
+      AuditRecorder auditRecorder) {
     this.categoryService = categoryService;
     this.slaPolicyService = slaPolicyService;
+    this.auditRecorder = auditRecorder;
   }
 
   @GetMapping("/ticket-categories")
@@ -58,7 +62,10 @@ public class CatalogController {
       description = "ADMIN only. 422 CATEGORY_CODE_TAKEN when the code is already used.")
   public ApiResponse<TicketCategoryResponse> createCategory(
       @Valid @RequestBody TicketCategoryRequest request) {
-    return ApiResponse.success("Category created", categoryService.create(request));
+    TicketCategoryResponse created = categoryService.create(request);
+    auditRecorder.record(AuditEvent.success("TICKET_CATEGORY_CREATED", "TICKET_CATEGORY",
+        String.valueOf(created.id())));
+    return ApiResponse.success("Category created", created);
   }
 
   @PutMapping("/ticket-categories/{id}")
@@ -68,7 +75,10 @@ public class CatalogController {
           + " category from the list users choose from.")
   public ApiResponse<TicketCategoryResponse> updateCategory(@PathVariable Long id,
       @Valid @RequestBody TicketCategoryRequest request) {
-    return ApiResponse.success("Category updated", categoryService.update(id, request));
+    TicketCategoryResponse updated = categoryService.update(id, request);
+    auditRecorder.record(
+        AuditEvent.success("TICKET_CATEGORY_CHANGED", "TICKET_CATEGORY", String.valueOf(id)));
+    return ApiResponse.success("Category updated", updated);
   }
 
   @GetMapping("/sla-policies")
@@ -85,6 +95,8 @@ public class CatalogController {
           + " time is shorter than the response time.")
   public ApiResponse<SlaPolicyResponse> putSlaPolicy(@PathVariable TicketPriority priority,
       @Valid @RequestBody SlaPolicyRequest request) {
-    return ApiResponse.success("SLA policy saved", slaPolicyService.put(priority, request));
+    SlaPolicyResponse saved = slaPolicyService.put(priority, request);
+    auditRecorder.record(AuditEvent.success("SLA_POLICY_CHANGED", "SLA_POLICY", priority.name()));
+    return ApiResponse.success("SLA policy saved", saved);
   }
 }

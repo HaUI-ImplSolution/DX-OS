@@ -57,7 +57,7 @@ Kết quả đầu ra: ba dịch vụ quản trị yêu cầu Cloudflare Access;
 - [x] YAML hợp lệ (`apisix.yaml` sinh ra cho cả hai app) và đã đọc lại diff.
 - [x] Comment mới trong diff ngắn, chỉ nêu hành vi hiện tại, bằng tiếng Anh.
 - [x] Swagger: không áp dụng (không đổi API).
-- [ ] `.env.example`: không thêm biến; stack khởi động với từng giá trị `DXOS_APP`.
+- [x] `.env.example`: không thêm biến; stack khởi động với từng giá trị `DXOS_APP` (clone sạch Farm và Lab).
 - [x] `dx-core-api` và `dx-core` không bị đụng.
 - [x] Không có secret, token tunnel hay email thật trong diff.
 - [x] README, CHANGELOG cập nhật (chỉ trạng thái cuối).

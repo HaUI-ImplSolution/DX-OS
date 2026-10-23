@@ -33,6 +33,7 @@ Backend xử lý nghiệp vụ, lưu dữ liệu và ảnh, nhờ AI Service ch�
 |---|---|---|
 | 1. Core | Identity, SSO | `backend/dx-core`, `sso/` |
 | 1. Core | Workflow, Notification | `backend/dx-core` |
+| 1. Core | Audit | `backend/dx-core` |
 | 1. Core | Storage | `backend/dx-core`, `minio/` |
 | 1. Core | AI, Knowledge | `backend/dx-core` |
 | 1. Core | Security, System status | `backend/dx-core` |

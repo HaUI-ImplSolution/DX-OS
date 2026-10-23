@@ -208,6 +208,8 @@ sequenceDiagram
 - Backend kiểm tra lại token độc lập với gateway; gateway cấu hình sai thì backend vẫn tự bảo vệ.
 - AI Service không có route ở gateway, chỉ backend gọi được qua mạng nội bộ.
 - Trạng thái hệ thống là API công khai, portal đọc từ đây.
+- Máy chủ công khai chạy sau Cloudflare Tunnel và không mở cổng vào.
+  Gateway ghi log JSON kèm `X-Request-Id`, backend ghi audit chỉ thêm; cấu hình Cloudflare ở [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE.md).
 
 ## 9. Đối chiếu với yêu cầu của đề
 

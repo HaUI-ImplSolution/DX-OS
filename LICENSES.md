@@ -84,6 +84,7 @@ Dữ liệu mẫu của Lab (phòng, thiết bị, yêu cầu) là dữ liệu g
 | Authlib | BSD-3-Clause | SSO OAuth cho Superset |
 | Mattermost Team Edition | AGPL-3.0 | Kênh chat nhận thông báo; chạy nguyên bản, không dùng `server/enterprise/` |
 | Ollama 0.34.2 | MIT | Phục vụ LLM |
+| cloudflared (`cloudflare/cloudflared`) | Apache-2.0 | Tunnel ra Cloudflare, chỉ khi dùng overlay `docker-compose.cloudflared.yml` |
 | Python 3.11 (`python:3.11-slim`) | PSF-2.0 | Base image AI Service |
 | Node.js 20 (`node:20-alpine`) | MIT | Chỉ khi build web |
 | AWS CLI | Apache-2.0 | Chỉ dùng trong `minio/migrate-uploads.sh` |

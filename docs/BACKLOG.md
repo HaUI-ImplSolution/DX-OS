@@ -11,7 +11,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Video demo 3-5 phút, rehearsal ít nhất một lần | Kịch bản ở [`SUBMISSION.md`](./SUBMISSION.md) mục 2 |
 | Tạo vài issue mẫu trên GitHub | Issues đã bật, hiện chưa có issue nào; lấy từ mục 5 và 6 của tài liệu này |
 | Chụp ảnh giao diện hai chế độ (Farm, Lab) lưu vào repository cho hồ sơ | Chưa có |
-| Quét lại gitleaks nếu có commit mới trước ngày chấm | Lần gần nhất 15/10/2026: 358 commit, không có phát hiện |
+| Quét lại gitleaks nếu có commit mới trước ngày chấm | Lần gần nhất 23/10/2026: 434 commit, không có phát hiện |
 | Chốt ngày hạn nộp thật | Chưa chốt |
 
 ## 2. Việc cần sửa trong mã và cấu hình
@@ -25,9 +25,9 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 
 | Việc | Ghi chú |
 |---|---|
-| Cấu hình Cloudflare (WAF, Bot Fight Mode, rate limiting, Access cho `bi.`, `files.`, `/admin/*`) và giới hạn đăng nhập, `/api/*` | Các bước ở `deploy/OPERATIONS.md`; chưa bật và chưa kiểm trên VPS |
-| Audit log: IP thật qua tunnel, thao tác Farm trên điện thoại, `FAILED` khi thao tác lỗi, cảnh báo khi Mattermost tắt | Đã đạt trên stack local; chưa kiểm trên VPS và thiết bị |
-| Log truy cập JSON, IP thật và sự kiện Keycloak qua Cloudflare Tunnel thật | Đã đạt trên stack local (giả lập `CF-Connecting-IP`; clone sạch Farm và Lab; web, Superset, Admin Console qua Chrome); chưa kiểm qua tunnel trên VPS, đăng nhập mobile và `--build` toàn bộ image |
+| Thao tác Farm ghi audit từ điện thoại | Qua API đã đạt trên VPS; chưa thử trên thiết bị |
+| Hàng đợi 10 ảnh trên điện thoại không bị 429 của gateway | Giới hạn `/api/*` là 600 lượt mỗi phút mỗi IP; đã đạt qua API (601 lượt qua trên VPS), chưa thử trên thiết bị |
+| Đăng nhập mobile qua địa chỉ công khai sau khi bật `KC_PROXY_HEADERS` và giới hạn đăng nhập | Log JSON, IP thật, sự kiện Keycloak và audit đã đạt trên VPS; CI đã dựng sạch bằng `--build` |
 | Kiểm tay Farm F3 trên điện thoại, kèm ngưỡng GPS và nhãn "Đang cách ly"; icon và splash của mobile (chỉ hiện ở bản build thật, không hiện ở Expo Go) | Kịch bản ở [`TESTING.md`](./TESTING.md); các mục kiểm tay còn lại đã đạt |
 | Mobile hiển thị tài liệu tham khảo (chi tiết báo cáo đã duyệt), hỏi đáp dạng danh sách trường và hộp thông báo cuộn tải thêm | Đã qua `tsc` và kiểm hàm tách dòng; chưa mở trên Expo Go hay máy thật |
 | Dashboard Superset hiển thị trên giao diện | Bundle và `query_context` đã có test; chưa có test tự động mở dashboard trên Superset thật |
@@ -40,7 +40,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Crop classifier nhận 6/15 ảnh ngô và 15/15 ảnh mía là lúa, chặn 8/50 ảnh lúa nền ruộng | Classifier 10 lớp không có lớp ngô, mía, cỏ; cần thay classifier hoặc thêm dữ liệu ngoài miền; kỹ sư vẫn chốt bệnh |
 | Crop classifier không đối chiếu SHA-256 | Model khác cùng contract vẫn nạp được; chỉ checkpoint bệnh có SHA-256 |
 | Ngưỡng độ nét mới thử trên ảnh công khai và ảnh mờ nhân tạo | Chưa có ảnh mờ thật ngoài ruộng; chưa tách vùng lá |
-| Chẩn đoán AI chạy trên CPU mất khoảng 50 giây mỗi ảnh | Đo trên máy chủ 8 nhân; chưa có GPU hay mô hình nhỏ hơn để rút ngắn |
+| Chẩn đoán AI chạy trên CPU mất khoảng 50 giây mỗi ảnh | Đo trên máy chủ 8 nhân; chưa có GPU hay mô hình nhỏ hơn để rút ngắn; lần gọi đầu sau khi khởi động lại AI nạp mô hình và có thể vượt 60 giây chờ của gateway, nhận 504 (kết quả vẫn được tạo) |
 | Nộp báo cáo cần AI service chạy | Chưa có đường nhận ảnh chưa kiểm khi AI dừng; hàng đợi offline thử lại |
 | Chưa có mô hình nhận diện sâu hại | Classifier nhận Healthy và 5 bệnh lá |
 | Kho RAG của Farm chỉ có 6 tài liệu bệnh lúa | Chưa có VietGAP hay quy trình canh tác |
@@ -49,12 +49,14 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Kho tri thức Lab chỉ có 12 bài từ 9 văn bản công khai của HaUI | Chưa có bài về máy in, VPN, quy chế phòng máy của khoa, đặt phòng máy; sổ tay LMS là bản năm học 2019-2020 |
 | Câu hỏi Lab ngoài chủ đề vẫn có thể hiện đoạn trên ngưỡng 0.40 | "Máy in kẹt giấy" hiện quy định phòng thi ở 0.58 đến 0.64, cao hơn vài câu đúng (máy chiếu 0.52); đổi ngưỡng không tách được, cần embedding hoặc cách xếp hạng khác |
 | Snapshot thời tiết chỉ có 5 điểm ĐBSCL, chụp ngày 07/10/2026 | Chụp lại nếu cần dữ liệu dự phòng mới hơn |
-| Giới hạn tốc độ ở gateway tính theo IP (60 câu hỏi tri thức, 30 lần upload hoặc chẩn đoán AI, 120 lượt đăng nhập, 600 lượt API mỗi phút) là số tạm; chưa thử tải | Superset dùng SQLite cho metadata, AI service là một tiến trình không có hàng đợi |
+| Giới hạn tốc độ ở gateway tính theo IP (60 câu hỏi tri thức, 60 lần tạo ticket, 30 lần upload ảnh, chẩn đoán AI, đặt phòng hoặc đính kèm, 120 lượt đăng nhập, 600 lượt API mỗi phút) là số tạm; chưa thử tải | Superset dùng SQLite cho metadata, AI service là một tiến trình không có hàng đợi |
 
 ## 5. Chức năng chưa có
 
 | Việc | Ghi chú |
 |---|---|
+| Chặn SQLi và XSS chung ở Cloudflare | Cần gói trả phí; gói Free chỉ có managed ruleset chặn khai thác đã biết, Backend dùng truy vấn tham số hóa |
+| Ghi `AuditOutcome.FAILED` khi thao tác quản trị lỗi | Hiện chỉ ghi `SUCCESS` và `DENIED`; thao tác lỗi trả mã lỗi mà không có bản ghi audit |
 | Màn hình xem audit trên web, dashboard Superset từ `audit_log`, xóa audit theo thời hạn | Hiện chỉ có `GET /api/v1/audit-logs` và truy vấn SQL; bảng chỉ thêm, chưa có cách xóa theo thời hạn |
 | Backend tự gọi AI sau khi upload ảnh | Chẩn đoán AI do kỹ sư bấm; đang giữ thủ công có chủ đích |
 | Push thật (FCM, UnifiedPush) | Hộp thông báo chỉ kéo về khi mở app |

@@ -139,6 +139,12 @@ Cấu hình riêng của từng ứng dụng ở [`backend/app-farm/README.md`](
 | Quản trị lưu ảnh (MinIO) | http://localhost:9082 | `MINIO_ACCESS_KEY` / `MINIO_SECRET_KEY` |
 | Chat (Mattermost) | http://localhost:8065 | `MATTERMOST_ADMIN_USERNAME` / `MATTERMOST_ADMIN_PASSWORD` |
 
+### 🌐 Máy chủ công khai
+
+Máy chủ công khai chạy sau Cloudflare Tunnel, không mở cổng vào.
+Bật bằng overlay [`deploy/docker-compose.cloudflared.yml`](./deploy/docker-compose.cloudflared.yml) (hướng dẫn ở đầu file).
+Khái niệm và cấu hình Cloudflare ở [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE.md); xem log, giới hạn tốc độ và audit ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
+
 ### 🔑 Tài khoản demo
 
 `seed_demo.py` tạo các tài khoản này trong realm `dxos` chỉ để demo và chấm thi; đổi mật khẩu hoặc xóa trước khi dùng cho dữ liệu thật.

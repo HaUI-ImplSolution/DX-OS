@@ -139,6 +139,12 @@ Per-application settings: [`backend/app-farm/README.md`](./backend/app-farm/READ
 | Image storage admin (MinIO) | http://localhost:9082 | `MINIO_ACCESS_KEY` / `MINIO_SECRET_KEY` |
 | Chat (Mattermost) | http://localhost:8065 | `MATTERMOST_ADMIN_USERNAME` / `MATTERMOST_ADMIN_PASSWORD` |
 
+### 🌐 Public server
+
+A public server runs behind a Cloudflare Tunnel and opens no inbound port.
+Enable it with the overlay [`deploy/docker-compose.cloudflared.yml`](./deploy/docker-compose.cloudflared.yml) (instructions at the top of the file).
+Cloudflare concepts and settings are in [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE.md); logs, rate limits and the audit log are in [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
+
 ### 🔑 Demo accounts
 
 `seed_demo.py` creates these accounts in the `dxos` realm for demo and judging only; change or delete the passwords before using real data.

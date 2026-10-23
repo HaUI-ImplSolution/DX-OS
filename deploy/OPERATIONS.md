@@ -26,7 +26,7 @@ Header chỉ được tin khi request đến từ mạng Docker (`172.16.0.0/12`
 Log của container còn có dòng không phải JSON (cảnh báo khi khởi động, error log của nginx), nên `jq` đọc từng dòng và bỏ qua dòng lỗi bằng `fromjson?`.
 Kiểm tra sức khỏe của container gửi một request từ `127.0.0.1` (đường dẫn `/`, mã 400) mỗi 10 giây.
 Các ví dụ dưới loại dòng này.
-Ví dụ (cần `jq`):
+Ví dụ (cần `jq`, cài bằng `apt install jq` nếu máy chủ chưa có):
 
 ```bash
 cd deploy
@@ -78,13 +78,16 @@ Giới hạn này chỉ chặn lượng request lớn từ một địa chỉ.
 ## Cloudflare
 
 Cấu hình nằm trên Cloudflare, không nằm trong repo.
+Khái niệm và tổng hợp cấu hình đang dùng ở [`docs/CLOUDFLARE.md`](../docs/CLOUDFLARE.md).
 Sau khi bật mỗi mục, kiểm đăng nhập web, đăng nhập mobile, gửi ảnh báo cáo và chẩn đoán AI.
 
 Domain `khuongdev.io.vn`:
 
-- **Security → WAF → Managed rules**: bật Cloudflare Managed Ruleset.
-- **Security → Bots**: bật Bot Fight Mode.
-- **Security → WAF → Rate limiting rules**: một rule cho `login-actions` của Keycloak (đường dẫn bắt đầu bằng `/realms/` và chứa `/login-actions/`), tính theo IP, chọn chu kỳ và thời gian chặn nhỏ nhất mà gói cho phép.
+- **Security → Settings → Bot traffic**: bật Bot fight mode.
+- **Security → Settings**: Cloudflare managed ruleset luôn bật ở gói Free, không có công tắc.
+  Nó chặn các khai thác đã biết, không chặn SQLi hay XSS chung; bộ đầy đủ cần gói trả phí.
+  Backend dùng truy vấn tham số hóa, nên gói Free là đủ cho chuỗi tấn công mẫu.
+- **Security → Security rules → Rate limiting rules** (gói Free có 1 rule, 10 lượt trong 10 giây mỗi IP, hành động Block): một rule cho `login-actions` của Keycloak (đường dẫn bắt đầu bằng `/realms/` và chứa `/login-actions/`), tính theo IP, chọn chu kỳ và thời gian chặn nhỏ nhất mà gói cho phép.
 - **SSL/TLS → Edge Certificates**: bật Always Use HTTPS, đặt Minimum TLS Version 1.2.
 - **Rules → Transform Rules → Modify Request Header**: `X-Forwarded-Port` = `443` (đã có, bắt buộc).
 - **Security → Events**: xem request bị chặn hoặc thử thách.
@@ -95,7 +98,9 @@ Swagger (`/swagger-ui/`) để công khai.
 
 ### Cổng quản trị sau Cloudflare Access
 
-Zero Trust → Access → Applications → Add an application → Self-hosted, chính sách Allow theo danh sách email của quản trị viên và kỹ sư (mã gửi qua email).
+Zero Trust → Access controls → Applications → Create new application → Self-hosted, một policy Allow theo danh sách email của quản trị viên và kỹ sư dùng chung cho cả ba ứng dụng.
+Người dùng đăng nhập vào Access bằng phương thức đã bật (tài khoản Cloudflare hoặc mã gửi qua email).
+Form mặc định mở ở chế độ Private IP; thêm một public hostname và xóa dòng Private IP trống.
 Tạo ba ứng dụng:
 
 | Ứng dụng | Domain | Đường dẫn |

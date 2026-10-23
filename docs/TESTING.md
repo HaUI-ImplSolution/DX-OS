@@ -307,7 +307,7 @@ Cần stack đang chạy. Cách đọc log và audit ở [`deploy/OPERATIONS.md`
 | Backend dừng với thông báo `DXOS_APP` | Giá trị biến sai chính tả | Dùng `farm` hoặc `lab` |
 | Web hiện giao diện Farm khi backend chạy Lab | Cache trình duyệt, hoặc backend chưa lên khi tải trang | Tải lại cứng, đợi `/api/v1/system/status` UP |
 | Route 404 hoặc không bị giới hạn tốc độ | Gateway mount sai file cấu hình theo app | Kiểm `DXOS_APP` và file gateway mà compose mount |
-| Tạo ticket hoặc upload nhận 429 | Giới hạn 30 lần mỗi phút theo địa chỉ | Đợi một phút rồi chạy lại |
+| Tạo ticket, upload ảnh, chẩn đoán AI, đặt phòng hoặc đính kèm nhận 429 | Giới hạn mỗi phút theo địa chỉ: 60 lần tạo ticket, 30 lần các thao tác còn lại | Đợi một phút rồi chạy lại |
 | Đăng nhập bị từ chối dù đúng mật khẩu | Keycloak khóa tạm tài khoản sau 5 lần đăng nhập sai | Đợi hết thời gian chờ (tối đa 15 phút) hoặc tắt **Temporarily locked** của người dùng trong Admin Console |
 | Log gateway có `remote_addr` là IP container | Dải mạng Docker nằm ngoài `real_ip_from` của `apisix/config.yaml`, hoặc request không đi qua Cloudflare | Kiểm `docker network inspect`, bổ sung dải vào `real_ip_from`; xem [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md) |
 | Không tạo được extension khi khởi động Lab | Vai của DB không đủ quyền với `btree_gist` | Dùng image PostgreSQL có extension; cấp quyền tạo extension cho vai chủ DB |
@@ -336,14 +336,15 @@ Cần stack đang chạy. Cách đọc log và audit ở [`deploy/OPERATIONS.md`
 | Kiểm tay Lab | Đạt | L1 đến L18, API bước 1 đến 22, các màn hình web; hộp duyệt chỉ có loại case của Lab |
 | API và lỗi request | Đạt | 415, 405, 400; `settings` của `GET /api/v1/app`; `GET /api/v1/crop-seasons/isolated` |
 | Thời tiết | Đạt | Open-Meteo trả dữ liệu thật; địa chỉ không tới được trả snapshot kèm ghi chú |
-| Gateway, log và audit G1 đến G10 | Đạt, trừ G1 qua tunnel thật | Ngày 23/10/2026 trên stack local; `remote_addr` thật qua Cloudflare Tunnel chưa kiểm |
+| Gateway, log và audit G1 đến G10 | Đạt | Ngày 23/10/2026 trên stack local và VPS (`remote_addr` thật `1.52.120.232` qua Cloudflare Tunnel, sự kiện Keycloak, khóa tạm, giới hạn tốc độ, `audit_log`, cảnh báo Mattermost) |
 | Khởi động từ clone sạch Farm và Lab, không overlay | Đạt | Ngày 23/10/2026: migration core V1 đến V4, import realm, E2E Farm 10/10 và Lab 16/16; chưa thử `--build` toàn bộ image ngoài CI |
-| Cấu hình Cloudflare (WAF, Access) và đăng nhập mobile qua địa chỉ công khai | Chưa kiểm | Cần máy chủ công khai và điện thoại |
+| Cấu hình Cloudflare (Bot fight mode, rate limiting, HTTPS và TLS, Access) | Đạt | Ngày 23/10/2026: `bi.`, `files.`, `admin/*` chuyển sang đăng nhập Access, vào được Superset sau khi qua Access; web app, API, `/realms/`, portal, chat vẫn mở; tải ảnh và chẩn đoán AI qua Cloudflare không bị chặn nhầm; 40 lượt gửi form đăng nhập trong 1,4 giây có 13 lượt bị Cloudflare chặn |
+| Đăng nhập mobile qua địa chỉ công khai | Chưa kiểm | Cần điện thoại |
 | Chart thời tiết trên Superset | Đạt | Một phút sau khi Backend lên, job ghi 4 dòng (4 vị trí thửa); `vw_weather_daily` có 4 dòng; `/api/v1/chart/{id}/data` trả dữ liệu cho cả 11 chart; chart "Nhiệt độ theo ngày" và "Lượng mưa theo ngày" hiển thị trên dashboard |
 | Nền bản đồ Superset | Đạt | Hai chart bản đồ vẽ nền sáng OpenFreeMap với nhãn tiếng Việt và hiện attribution OpenFreeMap, OpenMapTiles, OpenStreetMap; không thấy nhãn đảo hay biên giới ở vùng ĐBSCL |
 | Dựng từ clone sạch theo README | Đạt | `start.sh farm` 113 giây, `start.sh lab` 56 giây, mọi dịch vụ healthy |
 | Dựng sạch hoàn toàn (volume và `deploy/data` rỗng) | Đạt | `start.sh farm` thoát mã 0 sau khoảng 5 phút, seed Farm đủ dữ liệu; sau khi khởi động lại AI, E2E Farm 10/10 (seed chờ AI); `start.sh lab` rồi E2E Lab 16/16 |
 | Thêm ứng dụng mẫu rỗng theo CONTRIBUTING | Đạt | Backend lên với `DXOS_APP=sample`, `system/status` trả id `sample`, không sửa `dx-core` |
-| gitleaks | Đạt | 358 commit, không có phát hiện |
+| gitleaks | Đạt | Ngày 23/10/2026: 434 commit, không có phát hiện |
 
 Mục kiểm tay chưa chạy là F3 và icon, splash của mobile, theo dõi ở [`BACKLOG.md`](./BACKLOG.md).

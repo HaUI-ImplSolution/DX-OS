@@ -136,3 +136,12 @@ Hướng mở rộng:
 - Thư mục `ai/` giữ AGPL-3.0 (`ai/LICENSE`); phần còn lại giữ Apache-2.0.
   AI Service là tiến trình riêng giao tiếp với Backend qua HTTP, nên Backend không là tác phẩm phái sinh của `ai/`.
 - Bảng đầy đủ: `LICENSES.md`.
+
+### C. Hệ thống được bảo vệ thế nào khi mở ra Internet?
+
+- Máy chủ nằm sau NAT và không mở cổng vào.
+- Cloudflare Tunnel là đường duy nhất vào.
+- Cloudflare bắt HTTPS, chặn bot, chặn gửi form đăng nhập dồn dập và đặt Cloudflare Access trước các trang quản trị (Superset, MinIO Console, Keycloak Admin).
+- Gateway giới hạn tốc độ theo IP thật, Keycloak khóa tạm tài khoản sau 5 lần sai mật khẩu và ghi sự kiện đăng nhập.
+- Backend phân quyền theo vai và ghi `audit_log` chỉ thêm cho request bị từ chối và thao tác quản trị.
+- Chi tiết: `docs/CLOUDFLARE.md` và `deploy/OPERATIONS.md`.

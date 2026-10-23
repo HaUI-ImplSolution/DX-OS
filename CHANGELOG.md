@@ -34,6 +34,8 @@ Hai mục đầu liệt kê các bản phát hành; lịch sử chi tiết theo 
   ADMIN tra cứu qua `GET /api/v1/audit-logs`.
   Một địa chỉ bị từ chối nhiều lần được báo vào kênh Mattermost "Ban quản trị".
   Tham số query sai kiểu trả `400`.
+- Tài liệu: README có mục Máy chủ công khai, `LICENSES.md` có `cloudflared`, `ARCHITECTURE.md`, `COUNCIL_QA.md`, `SUBMISSION.md`, `portal/`, `minio/`, `bi/` và `sso/` nêu Cloudflare Access và audit.
+- `docs/CLOUDFLARE.md` tổng hợp khái niệm và cấu hình Cloudflare của máy chủ công khai (Tunnel, HTTPS, Bot fight mode, rate limiting, Access).
 - Mobile: profile `preview` của `eas.json` và hướng dẫn trong `mobile/README.md`, `docs/TESTING.md`, `sso/README.md`, `.env.example` dùng được với máy chủ công khai qua Cloudflare Tunnel (HTTPS, không số cổng).
 - Hỏi đáp web: đoạn trích có nhãn tới 40 ký tự (như `Kiểm soát hóa học không định lượng`) hiển thị dạng hai cột như các đoạn khác.
 - Một biến `PUBLIC_HOST` trong `deploy/.env` (`localhost` khi dev, IP hoặc tên miền khi triển khai) quyết định `GATEWAY_PUBLIC_URL`, `SUPERSET_PUBLIC_URL`, địa chỉ trong thông báo chat, `MM_SERVICESETTINGS_SITEURL` và redirect URI của `dxos-web` và `dxos-superset` trong `realm-dxos.json`; `localhost` vẫn nằm trong danh sách redirect URI. Image `frontend` build trực tiếp mặc định gọi Keycloak cùng origin.

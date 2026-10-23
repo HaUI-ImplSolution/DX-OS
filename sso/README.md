@@ -54,6 +54,12 @@ Quản lý user qua Admin Console `http://localhost:${APISIX_HOST_PORT}/admin` (
 - Overlay `docker-compose.cloudflared.yml` đặt `KC_HOSTNAME` bằng `GATEWAY_PUBLIC_URL`, nên web và điện thoại đều vào bằng địa chỉ HTTPS công khai.
 - Volume Postgres cũ chưa có client `farm-mobile`: thêm qua Admin Console (cấu hình như `realm-dxos.json`) hoặc xóa `deploy/data/postgres` để import lại.
 
+## Máy chủ công khai
+
+Trên máy chủ công khai, `/admin/*` (Admin Console) nằm sau Cloudflare Access.
+`/realms/*` mở cho người dùng web và mobile, và gateway giới hạn 120 lượt mỗi phút mỗi IP cho form mật khẩu và token endpoint.
+Chi tiết ở [`docs/CLOUDFLARE.md`](../docs/CLOUDFLARE.md).
+
 ## Sự kiện đăng nhập và khóa tạm
 
 - Realm import bật sự kiện người dùng (giữ 90 ngày), sự kiện quản trị kèm chi tiết, và khóa tạm sau 5 lần đăng nhập sai (chờ 1 phút, tăng dần, tối đa 15 phút, không khóa vĩnh viễn).

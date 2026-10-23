@@ -143,9 +143,12 @@ Treatment rule của đạo ôn, khô vằn và đốm nâu có trong seed Backe
 Đặt `mobile/.env`:
 
 ```bash
+EXPO_PUBLIC_API_BASE_URL=http://<ip-máy-chạy-stack>:9080
 EXPO_PUBLIC_KEYCLOAK_URL=http://<ip-máy-chạy-stack>:9080/realms/dxos
 EXPO_PUBLIC_KEYCLOAK_CLIENT_ID=farm-mobile
 ```
+
+Máy chủ công khai dùng `https://<tên-miền>` và `https://<tên-miền>/realms/dxos`, không có số cổng.
 
 ```bash
 cd mobile && npx expo start      # Expo Go, hoặc build APK bằng EAS

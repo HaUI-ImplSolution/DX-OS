@@ -9,8 +9,8 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "http://192.168.1.10:9080",
-        "EXPO_PUBLIC_KEYCLOAK_URL": "http://192.168.1.10:9080/realms/dxos",
+        "EXPO_PUBLIC_API_BASE_URL": "https://khuongdev.io.vn",
+        "EXPO_PUBLIC_KEYCLOAK_URL": "https://khuongdev.io.vn/realms/dxos",
         "EXPO_PUBLIC_KEYCLOAK_CLIENT_ID": "farm-mobile"
       }
     }

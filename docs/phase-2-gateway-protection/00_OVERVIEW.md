@@ -65,7 +65,7 @@ Mọi cấu hình Cloudflare được ghi thành danh sách kiểm trong `deploy
 - Demo được: gửi liên tục yêu cầu đăng nhập từ một IP thì nhận 429, trong lúc IP khác vẫn đăng nhập được.
 - Sản phẩm bàn giao: cấu hình gateway, `deploy/OPERATIONS.md` có danh sách kiểm Cloudflare.
 - Tiêu chí đo được:
-  - Vượt ngưỡng ở `/realms/dxos/protocol/openid-connect/token` trả 429 kèm `Retry-After`.
+  - Vượt ngưỡng ở `/realms/dxos/protocol/openid-connect/token` trả 429 kèm header `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`.
   - `bi.`, `files.` và `/admin/` yêu cầu đăng nhập Cloudflare Access trước khi tới ứng dụng.
   - `farmer1` đăng nhập, chụp và gửi ảnh báo cáo trên mobile vẫn thành công.
 - Với mỗi app đang hỗ trợ: khởi động được với `DXOS_APP=farm` và `DXOS_APP=lab`.

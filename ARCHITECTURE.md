@@ -12,7 +12,7 @@ Backend xử lý nghiệp vụ, lưu dữ liệu và ảnh, nhờ AI Service ch�
 
 | Dịch vụ | Vai trò |
 |---|---|
-| Gateway (APISIX) | Cổng vào duy nhất, kiểm tra đăng nhập và giới hạn tốc độ |
+| Gateway (APISIX) | Cổng vào duy nhất, kiểm tra đăng nhập, giới hạn tốc độ và ghi log truy cập |
 | Backend (Spring Boot) | Nghiệp vụ, phân quyền, quy trình duyệt, thông báo |
 | Web (React) | Giao diện cho Farm và Lab |
 | Mobile (Expo) | Ứng dụng cho nông dân, dùng được khi mất mạng |
@@ -214,7 +214,7 @@ sequenceDiagram
 |---|---|
 | Tầng 1 headless, không có giao diện người dùng cuối | Core chỉ có API; giao diện nằm ở `frontend/` và `mobile/` |
 | Identity, SSO | Đăng nhập một lần, vai do ứng dụng khai báo |
-| API Gateway | Kiểm tra đăng nhập, giới hạn tốc độ, một cửa cho mọi client |
+| API Gateway | Kiểm tra đăng nhập, giới hạn tốc độ, ghi log truy cập, một cửa cho mọi client |
 | Dữ liệu cấu trúc và phi cấu trúc | Cơ sở dữ liệu cho nghiệp vụ và hỏi đáp, kho lưu ảnh và tệp đính kèm |
 | Workflow | Loại yêu cầu duyệt cấu hình được, lịch sử chỉ thêm, hộp duyệt |
 | Ít nhất một ứng dụng ở tầng 3 | Hai ứng dụng: DX-Farm và DX-Lab, cùng một Core không đổi |

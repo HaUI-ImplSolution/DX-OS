@@ -54,6 +54,16 @@ Quản lý user qua Admin Console `http://localhost:${APISIX_HOST_PORT}/admin` (
 - Overlay `docker-compose.cloudflared.yml` đặt `KC_HOSTNAME` bằng `GATEWAY_PUBLIC_URL`, nên web và điện thoại đều vào bằng địa chỉ HTTPS công khai.
 - Volume Postgres cũ chưa có client `farm-mobile`: thêm qua Admin Console (cấu hình như `realm-dxos.json`) hoặc xóa `deploy/data/postgres` để import lại.
 
+## Sự kiện đăng nhập và khóa tạm
+
+- Realm import bật sự kiện người dùng (giữ 90 ngày), sự kiện quản trị kèm chi tiết, và khóa tạm sau 5 lần đăng nhập sai (chờ 1 phút, tăng dần, tối đa 15 phút, không khóa vĩnh viễn).
+- Cách xem sự kiện: [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md).
+- Realm chỉ import lần đầu, nên Keycloak đã có dữ liệu áp tay trong Admin Console (realm `dxos`):
+  1. **Realm settings → Events → User events settings**: bật **Save events**, **Expiration** 90 ngày, chọn các loại `LOGIN`, `LOGIN_ERROR`, `LOGOUT`, `UPDATE_PASSWORD`, `RESET_PASSWORD` và loại bị khóa.
+  2. **Realm settings → Events → Admin events settings**: bật **Save events** và **Include representation**.
+  3. **Realm settings → Security defenses → Brute force detection**: bật, chế độ **Lockout temporarily**, **Max login failures** 5, **Wait increment** 1 phút, **Max wait** 15 phút.
+- IP trong sự kiện là IP thật khi chạy overlay Cloudflare, nơi Keycloak đọc `X-Forwarded-For` do gateway đặt.
+
 ## Hostname nội bộ và hostname trình duyệt
 
 Trình duyệt gọi Keycloak qua gateway (`http://localhost:9080`), Backend và Superset trong mạng docker gọi `http://keycloak:8080`, nên claim `iss` của token mang hostname trình duyệt.

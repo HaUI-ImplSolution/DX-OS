@@ -59,14 +59,15 @@ Gateway đếm theo IP thật của client (xem phần log), vượt ngưỡng t
 
 | Đường dẫn | Ngưỡng mỗi IP mỗi phút |
 |---|---|
-| `/realms/<realm>/login-actions/*`, `/realms/<realm>/protocol/openid-connect/token` | 30 |
+| `/realms/<realm>/login-actions/*`, `/realms/<realm>/protocol/openid-connect/token` (chung một bộ đếm) | 120 |
 | `/api/*` (request có token hợp lệ) | 600 |
 | Route riêng của Farm và Lab (upload ảnh, chẩn đoán AI, tạo ticket, đặt phòng, hỏi đáp, trạng thái hệ thống) | Xem `deploy/apisix/common.yaml` và `deploy/apisix/apps/<app>.yaml` |
 
 Request có token sai nhận `401` mà không bị đếm; phần này do Cloudflare lọc.
 Đổi ngưỡng ở `count` của `limit-count` trong file route tương ứng rồi chạy `./switch-app.sh <app>` để gateway nạp lại.
 Nhiều người dùng chung một IP (mạng di động) cùng dùng bộ đếm; thấy `429` trong thao tác thường ngày thì tăng ngưỡng.
-Script đăng nhập nhiều tài khoản liên tiếp từ một máy (như `deploy/demo/e2e.py` rồi chạy lại ngay) có thể chạm 30 lượt mỗi phút của form đăng nhập; chờ một phút hoặc chạy cách nhau.
+Mỗi lần đăng nhập tốn hai request (form và token), nên script đăng nhập hơn 60 tài khoản trong một phút từ một máy sẽ chạm giới hạn; chờ một phút hoặc chạy cách nhau.
+Giới hạn này chỉ chặn lượng request lớn từ một địa chỉ; đoán mật khẩu từng tài khoản do khóa tạm của Keycloak xử lý.
 
 ## Cloudflare
 

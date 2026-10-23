@@ -15,7 +15,7 @@ Chạy stack hoặc gọi thử endpoint chỉ khi người dùng yêu cầu rõ
 
 | ID | WP | Loại | Mô tả và bước | Kết quả mong đợi | Người chạy | Kết quả |
 |---|---|---|---|---|---|---|
-| T2-01 | WP2-01 | Âm tính | Từ một IP gửi 40 yêu cầu `POST /realms/dxos/protocol/openid-connect/token` trong một phút | Các yêu cầu vượt 30 nhận 429 kèm header hạn mức | Claude, local, 23/10/2026 | Đạt (40 lượt vào token endpoint: 30 lượt qua, lượt 31 trở đi nhận 429 kèm `X-RateLimit-*`; form `login-actions` cũng 30 lượt) |
+| T2-01 | WP2-01 | Âm tính | Từ một IP gửi 130 yêu cầu `POST /realms/dxos/protocol/openid-connect/token` trong một phút | Các yêu cầu vượt 120 nhận 429 kèm header hạn mức | Claude, local, 23/10/2026 | Đạt (130 lượt vào token endpoint: 120 lượt qua, lượt 121 trở đi nhận 429; chạy seed hai lần rồi E2E Lab liên tiếp như CI không còn bị 429) |
 | T2-02 | WP2-01 | Ranh giới | Trong lúc IP thứ nhất bị 429, đăng nhập từ IP thứ hai | Đăng nhập thành công | Claude, local, 23/10/2026 | Đạt (IP khác nhận 400 từ Keycloak, không bị 429) |
 | T2-03 | WP2-01 | Hồi quy | Mobile gửi hàng đợi 10 ảnh liên tiếp | Tất cả gửi được, không có 429 | Claude, local, 23/10/2026 | Đạt một phần (610 lượt API với token hợp lệ: 600 qua, từ lượt 601 mới 429; hàng đợi 10 ảnh trên điện thoại chưa thử) |
 | T2-08 | WP2-01 | Ranh giới | Gửi 650 request `/api/*` với token sai từ một IP, rồi một request với token hợp lệ từ cùng IP | 650 lần 401 không bị 429; request hợp lệ sau đó không bị chặn | Claude, local, 23/10/2026 | Đạt (650 lần 401, request hợp lệ sau đó nhận 403 từ backend vì `farmer1` không phải staff) |

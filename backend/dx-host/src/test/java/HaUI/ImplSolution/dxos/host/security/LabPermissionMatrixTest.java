@@ -7,6 +7,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import HaUI.ImplSolution.dxos.core.audit.AuditService;
 import HaUI.ImplSolution.dxos.core.exception.GlobalExceptionHandler;
 import HaUI.ImplSolution.dxos.core.identity.CurrentUserService;
 import HaUI.ImplSolution.dxos.core.security.AppRoles;
@@ -57,6 +58,8 @@ class LabPermissionMatrixTest {
   @Autowired
   private MockMvc mockMvc;
 
+  @MockitoBean
+  private AuditService auditService;
   @MockitoBean
   private RoomBookingService bookingService;
   @MockitoBean

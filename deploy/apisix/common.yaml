@@ -133,7 +133,9 @@ routes:
     uris: ["/swagger-ui.html", "/swagger-ui/*", "/v3/api-docs", "/v3/api-docs/*"]
     upstream_id: backend
 
-  # Password form and token endpoint: limited per client address against password guessing.
+  # Password form and token endpoint share one counter per client address. A sign-in takes two
+# requests, so the limit leaves room for a script that signs in many accounts in a minute; Keycloak's
+# brute force protection locks the account after repeated wrong passwords.
   - id: keycloak-login
     vars: [["server_port", "==", "9080"]]
     priority: 10
@@ -142,7 +144,7 @@ routes:
     plugin_config_id: keycloak-client-address
     plugins:
       limit-count:
-        count: 30
+        count: 120
         time_window: 60
         key_type: var
         key: remote_addr

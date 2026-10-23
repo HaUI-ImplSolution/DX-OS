@@ -85,7 +85,7 @@ Mọi cấu hình Cloudflare được ghi thành danh sách kiểm trong `deploy
 
 | # | Câu hỏi | Lựa chọn | Hạn chốt | Kết luận |
 |---|---|---|---|---|
-| Q1 | Ngưỡng giới hạn | A: đăng nhập 30 lượt mỗi phút mỗi IP, API 600 lượt mỗi phút mỗi IP. B: chặt hơn | Trước khi code | _(đề xuất A)_ |
+| Q1 | Ngưỡng giới hạn | A: đăng nhập 120 lượt mỗi phút mỗi IP (form và token chung bộ đếm), API 600 lượt mỗi phút mỗi IP. B: chặt hơn | Trước khi code | _(đề xuất A)_ |
 | Q2 | Cổng quản trị sau Cloudflare Access | A: có, cho `bi.`, `files.`, `/admin*`. B: chặn theo IP ở gateway. C: để mở | Trước khi code | _(chưa chốt)_ |
 | Q3 | Swagger (`/swagger-ui`) | A: công khai cho hội đồng xem. B: sau Access | Trước khi code | _(đề xuất A)_ |
 | Q4 | Chặn theo quốc gia | A: không. B: chỉ cho phép Việt Nam | Trước khi code | _(đề xuất A, vì hội đồng có thể truy cập từ nước ngoài)_ |

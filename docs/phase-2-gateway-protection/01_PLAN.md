@@ -19,13 +19,13 @@ WP2-02 và WP2-03 là cấu hình Cloudflare, làm song song được sau khi WP
 
 | Tình huống | Hành vi hiện tại | Hành vi sau thay đổi |
 |---|---|---|
-| Gọi `/realms/*/protocol/openid-connect/token` và `/realms/*/login-actions/*` liên tục | Không giới hạn | 30 lượt mỗi phút mỗi IP, vượt thì 429 |
+| Gọi `/realms/*/protocol/openid-connect/token` và `/realms/*/login-actions/*` liên tục | Không giới hạn | 120 lượt mỗi phút mỗi IP, vượt thì 429 |
 | Gọi `/api/*` liên tục | Chỉ một số route có giới hạn | 600 lượt mỗi phút mỗi IP trên toàn bộ `/api/*`; các giới hạn riêng của route vẫn áp dụng |
 | Hai người dùng ở hai IP khác nhau | Chung bộ đếm khi đi qua tunnel | Bộ đếm riêng |
 
 **Hướng làm**
 
-- `common.yaml`: route `keycloak-login` (ưu tiên cao hơn route `keycloak`) cho `/realms/:realm/login-actions/*` và `/realms/:realm/protocol/openid-connect/token` với `limit-count` 30 lượt mỗi phút (khóa `remote_addr`, `rejected_code: 429`, `show_limit_quota_header: true`); `/resources/*` và trang đăng nhập không bị giới hạn.
+- `common.yaml`: route `keycloak-login` (ưu tiên cao hơn route `keycloak`) cho `/realms/:realm/login-actions/*` và `/realms/:realm/protocol/openid-connect/token` với `limit-count` 120 lượt mỗi phút (chung một bộ đếm, vì một lần đăng nhập tốn hai request và E2E của Lab đăng nhập 18 lần liên tiếp) (khóa `remote_addr`, `rejected_code: 429`, `show_limit_quota_header: true`); `/resources/*` và trang đăng nhập không bị giới hạn.
 - `common.yaml`: thêm `limit-count` 600 lượt mỗi phút vào route `api` (cạnh `plugin_config_id: bearer-token`); plugin kiểm token chạy trước nên bộ đếm chỉ tính request có token hợp lệ, còn request token sai nhận 401 mà không bị đếm.
 - Thông báo 429 ngắn, bằng tiếng Anh, giống các `rejected_msg` hiện có.
 - Core/App: không đụng mã.

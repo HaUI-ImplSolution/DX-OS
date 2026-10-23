@@ -9,7 +9,7 @@
 # GET /api/v1/system/status names the app.
 # --seed   loads the demo data of the app (deploy/demo/seed_demo.py), safe to repeat.
 # --build  rebuilds the images; the web image is otherwise reused when the app changes.
-# --reset  empties deploy/data first and rebuilds everything (reset.sh; --yes skips its prompt).
+# --reset  empties deploy/data first and starts from scratch (reset.sh; --yes skips its prompt).
 # The tables of the previous app stay in the database, unused, unless --reset is given.
 set -euo pipefail
 
@@ -60,7 +60,7 @@ fi
 echo "==> DXOS_APP=$APP written to deploy/.env"
 
 if [[ "$RESET" == true ]]; then
-  ./reset.sh ${ASSUME_YES[@]+"${ASSUME_YES[@]}"}
+  ./reset.sh ${ASSUME_YES[@]+"${ASSUME_YES[@]}"} ${BUILD_FLAG[@]+"${BUILD_FLAG[@]}"}
 else
   echo "==> Recreating the gateway routes, backend, knowledge ingest and Superset"
   docker compose up -d ${BUILD_FLAG[@]+"${BUILD_FLAG[@]}"} --force-recreate apisix-config backend rag-ingest superset
@@ -73,6 +73,9 @@ fi
 PORT="$(grep '^APISIX_HOST_PORT=' .env | cut -d= -f2)"
 URL="http://localhost:${PORT:-9080}/api/v1/system/status"
 TIMEOUT_SECONDS="${SWITCH_TIMEOUT_SECONDS:-900}"
+# The address browsers use; when Keycloak has a public hostname its login pages only work there.
+GATEWAY_URL="$(docker compose config 2>/dev/null | sed -n '/GATEWAY_PUBLIC_URL:/{s/^ *GATEWAY_PUBLIC_URL: *//;p;q}' | tr -d '"')" || true
+GATEWAY_URL="${GATEWAY_URL:-http://localhost:${PORT:-9080}}"
 echo "==> Waiting for $URL to report '$APP' (timeout ${TIMEOUT_SECONDS}s)"
 deadline=$((SECONDS + TIMEOUT_SECONDS))
 until curl -fsS "$URL" 2>/dev/null | grep -Eq "\"id\" *: *\"$APP\""; do
@@ -97,7 +100,7 @@ if [[ "$SEED" == true ]]; then
     exit 1
   fi
   echo "==> Loading the demo data of '$APP'"
-  "$PYTHON" demo/seed_demo.py --app "$APP"
+  "$PYTHON" demo/seed_demo.py --app "$APP" --base-url "$GATEWAY_URL"
 fi
 
 # Services that are not ready yet; the AI service starts last (model pull, knowledge ingest)
@@ -118,4 +121,4 @@ fi
 if docker compose ps --format '{{.Service}} {{.Status}}' | grep -E '^ai ' | grep -qv '(healthy)'; then
   echo "The AI service is still starting; questions and diagnosis work once it is healthy."
 fi
-echo "The stack runs '$APP'. Open http://localhost:${PORT:-9080} and reload the page if it was open."
+echo "The stack runs '$APP'. Open $GATEWAY_URL and reload the page if it was open."

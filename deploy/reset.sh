@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # Rebuilds the stack from scratch: stops the containers, wipes deploy/data and starts again.
 #
-#   ./reset.sh [--yes] [--keep-images] [service ...]
+#   ./reset.sh [--yes] [--build | --keep-images] [service ...]
 #
+# Images are built here unless DXOS_IMAGE_PREFIX is set in deploy/.env; then the published images
+# are used as pulled (update.sh pulls newer ones). --build or --keep-images decides either way.
 # DESTRUCTIVE: deletes every database, upload and chat/BI state under deploy/data.
 # The Ollama model volume is kept so the multi-GB model is not downloaded again.
 # deploy/data holds root-owned files, so it is emptied from a throwaway container.
@@ -11,13 +13,14 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
 ASSUME_YES=false
-BUILD_FLAG=(--build)
+BUILD=""
 SERVICES=()
 for arg in "$@"; do
   case "$arg" in
     --yes|-y) ASSUME_YES=true ;;
-    --keep-images) BUILD_FLAG=() ;;
-    -h|--help) sed -n '2,9p' "$0"; exit 0 ;;
+    --build) BUILD=true ;;
+    --keep-images) BUILD=false ;;
+    -h|--help) sed -n '2,10p' "$0"; exit 0 ;;
     -*) echo "Unknown option: $arg" >&2; exit 2 ;;
     *) SERVICES+=("$arg") ;;
   esac
@@ -27,6 +30,12 @@ if [[ ! -f .env ]]; then
   echo "deploy/.env not found. Run: cp .env.example .env and fill every blank variable." >&2
   exit 1
 fi
+
+if [[ -z "$BUILD" ]]; then
+  if grep -q '^DXOS_IMAGE_PREFIX=.' .env; then BUILD=false; else BUILD=true; fi
+fi
+BUILD_FLAG=()
+[[ "$BUILD" == true ]] && BUILD_FLAG=(--build)
 
 DATA_DIR="$(pwd)/data"
 TIMEOUT_SECONDS="${RESET_TIMEOUT_SECONDS:-1800}"

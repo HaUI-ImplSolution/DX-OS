@@ -21,6 +21,8 @@ Hai mục đầu liệt kê các bản phát hành; lịch sử chi tiết theo 
 
 ### Đã thay đổi
 
+- Gateway ghi mỗi request một dòng JSON (có `X-Request-Id`, không có query string) và lấy IP thật từ `CF-Connecting-IP` khi request đến từ mạng Docker, nên các giới hạn `limit-count` theo `remote_addr` tính riêng từng IP khi chạy sau Cloudflare Tunnel; mọi service có xoay vòng log Docker (`deploy/OPERATIONS.md`).
+- Keycloak ghi sự kiện đăng nhập (giữ 90 ngày) và sự kiện quản trị, khóa tạm tài khoản sau 5 lần đăng nhập sai; overlay Cloudflare cho Keycloak đọc IP thật từ gateway.
 - Mobile: profile `preview` của `eas.json` và hướng dẫn trong `mobile/README.md`, `docs/TESTING.md`, `sso/README.md`, `.env.example` dùng được với máy chủ công khai qua Cloudflare Tunnel (HTTPS, không số cổng).
 - Hỏi đáp web: đoạn trích có nhãn tới 40 ký tự (như `Kiểm soát hóa học không định lượng`) hiển thị dạng hai cột như các đoạn khác.
 - Một biến `PUBLIC_HOST` trong `deploy/.env` (`localhost` khi dev, IP hoặc tên miền khi triển khai) quyết định `GATEWAY_PUBLIC_URL`, `SUPERSET_PUBLIC_URL`, địa chỉ trong thông báo chat, `MM_SERVICESETTINGS_SITEURL` và redirect URI của `dxos-web` và `dxos-superset` trong `realm-dxos.json`; `localhost` vẫn nằm trong danh sách redirect URI. Image `frontend` build trực tiếp mặc định gọi Keycloak cùng origin.

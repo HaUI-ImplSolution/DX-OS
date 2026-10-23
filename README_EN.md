@@ -177,7 +177,7 @@ Full testing guide: [`docs/TESTING.md`](./docs/TESTING.md).
 | [`frontend/`](./frontend/README.md) · [`mobile/`](./mobile/README.md) | React web (both applications) · Expo mobile for farmers |
 | [`ai/`](./ai/README.md) | AI Service: CV, RAG, LangGraph |
 | [`data/`](./data/README.md) | Structured data, RAG corpora, seed generation scripts |
-| [`deploy/`](./deploy) | Docker Compose, gateway, `start.sh`, demo data and E2E |
+| [`deploy/`](./deploy) | Docker Compose, gateway, `start.sh`, demo data and E2E; access logs in [`OPERATIONS.md`](./deploy/OPERATIONS.md) |
 | [`sso/`](./sso/README.md) · [`bi/`](./bi/README.md) · [`chat/`](./chat/README.md) · [`minio/`](./minio/README.md) · [`portal/`](./portal/README.md) | Keycloak, Superset, Mattermost, MinIO, portal |
 | [`docs/`](./docs) | Backlog, testing, AI evaluation, submission pack, council Q&A, phase template (`_template/`), reference material |
 

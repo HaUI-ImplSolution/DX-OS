@@ -282,6 +282,8 @@ Với mọi dòng có kết quả, kiểm thêm:
 | Web hiện giao diện Farm khi backend chạy Lab | Cache trình duyệt, hoặc backend chưa lên khi tải trang | Tải lại cứng, đợi `/api/v1/system/status` UP |
 | Route 404 hoặc không bị giới hạn tốc độ | Gateway mount sai file cấu hình theo app | Kiểm `DXOS_APP` và file gateway mà compose mount |
 | Tạo ticket hoặc upload nhận 429 | Giới hạn 30 lần mỗi phút theo địa chỉ | Đợi một phút rồi chạy lại |
+| Đăng nhập bị từ chối dù đúng mật khẩu | Keycloak khóa tạm tài khoản sau 5 lần đăng nhập sai | Đợi hết thời gian chờ (tối đa 15 phút) hoặc tắt **Temporarily locked** của người dùng trong Admin Console |
+| Log gateway có `remote_addr` là IP container | Dải mạng Docker nằm ngoài `real_ip_from` của `apisix/config.yaml`, hoặc request không đi qua Cloudflare | Kiểm `docker network inspect`, bổ sung dải vào `real_ip_from`; xem [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md) |
 | Không tạo được extension khi khởi động Lab | Vai của DB không đủ quyền với `btree_gist` | Dùng image PostgreSQL có extension; cấp quyền tạo extension cho vai chủ DB |
 | Hỏi đáp Lab không có kết quả | Job `rag-ingest` chưa xong hoặc lỗi, hoặc `DXOS_APP` không phải `lab` lúc dựng | `docker compose logs rag-ingest`; chạy lại bằng `docker compose up -d --force-recreate rag-ingest` |
 | Ảnh không hiện | Route ảnh hoặc tên bucket sai | Kiểm `MINIO_BUCKET` và route `/dxos-uploads/*`; `./reset.sh --yes` |

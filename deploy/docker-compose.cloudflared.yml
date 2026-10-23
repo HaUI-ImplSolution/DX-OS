@@ -9,6 +9,7 @@
 # The tunnel hostnames need a Request Header Transform Rule that sets X-Forwarded-Port to 443,
 # otherwise the gateway forwards its listener port and Superset and the backend build wrong origins.
 # Every long-running service restarts with Docker, so the stack comes back after a server reboot.
+# The gateway reads the client address from CF-Connecting-IP (apisix/config.yaml).
 services:
   cloudflared:
     image: cloudflare/cloudflared:latest
@@ -16,11 +17,18 @@ services:
     environment:
       TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:?}
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
 
   keycloak:
     restart: unless-stopped
     environment:
       KC_HOSTNAME: ${GATEWAY_PUBLIC_URL:?}
+      # Login events record the client address the gateway forwards in X-Forwarded-For.
+      KC_PROXY_HEADERS: xforwarded
 
   # Behind an HTTPS front the backend needs X-Forwarded-* to see the public origin, or every
   # write request fails the CORS origin check.

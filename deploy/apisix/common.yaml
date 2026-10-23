@@ -51,6 +51,15 @@ plugin_configs:
         set_access_token_header: false
         set_id_token_header: false
 
+# Every request carries an X-Request-Id (kept when the client sends one), echoed in the response
+# and passed to the upstream so gateway and backend records can be matched.
+global_rules:
+  - id: request-id
+    plugins:
+      request-id:
+        header_name: X-Request-Id
+        include_in_response: true
+
 routes:
   # Each question runs an embedding on the AI service.
   - id: api-knowledge-ask
@@ -111,6 +120,12 @@ routes:
     priority: 5
     uris: ["/realms/*", "/resources/*", "/admin/*", "/js/*"]
     upstream_id: keycloak
+    plugins:
+      # Keycloak records the client address of this header; replace what the client sent.
+      proxy-rewrite:
+        headers:
+          set:
+            X-Forwarded-For: "$remote_addr"
 
   # Presigned photo links: the path is /<bucket>/<object>, passed through unchanged because the
   # signature covers it.

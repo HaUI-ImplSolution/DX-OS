@@ -4,6 +4,13 @@
 # Published ports: the gateway (apisix), Postgres and Mattermost.
 # Everything else is reached through the gateway.
 
+# Rotates the container logs so they cannot fill the disk; `docker compose logs` reads them.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
 x-postgres-env: &postgres-env
   POSTGRES_DB: ${POSTGRES_DB:?}
   POSTGRES_USER: ${POSTGRES_USER:?}
@@ -31,6 +38,7 @@ services:
   # Data and storage
   # ---------------------------------------------------------------------------
   postgres:
+    logging: *default-logging
     image: pgvector/pgvector:pg16
     environment:
       <<: *postgres-env
@@ -46,6 +54,7 @@ services:
 
   # The official MinIO images are no longer published, so the image is built from source.
   minio:
+    logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-minio:${DXOS_IMAGE_TAG:-local}
     build:
       context: ../minio
@@ -67,6 +76,7 @@ services:
   # Backend, web and portal
   # ---------------------------------------------------------------------------
   backend:
+    logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-backend:${DXOS_IMAGE_TAG:-local}
     build:
       context: ../backend
@@ -142,6 +152,7 @@ services:
       start_period: 30s
 
   frontend:
+    logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-frontend:${DXOS_IMAGE_TAG:-local}
     build:
       context: ../frontend
@@ -161,6 +172,7 @@ services:
       retries: 6
 
   portal:
+    logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-portal:${DXOS_IMAGE_TAG:-local}
     build:
       context: ../portal
@@ -180,6 +192,7 @@ services:
   # Identity
   # ---------------------------------------------------------------------------
   keycloak:
+    logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-sso:${DXOS_IMAGE_TAG:-local}
     build:
       context: ../sso
@@ -246,6 +259,12 @@ services:
       - ./data/apisix:/out
 
   apisix:
+    # The access log is the traffic record, so it keeps more history than the other services.
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "10"
     image: apache/apisix:3.11.0-debian
     restart: unless-stopped
     depends_on:
@@ -288,6 +307,7 @@ services:
   # AI: local LLM, knowledge ingest and the AI service
   # ---------------------------------------------------------------------------
   ollama:
+    logging: *default-logging
     image: ollama/ollama:0.34.2
     restart: unless-stopped
     volumes:
@@ -329,6 +349,7 @@ services:
     command: ["python", "-m", "scripts.ingest_diseases", "--corpus", "${DXOS_APP:-farm}"]
 
   ai:
+    logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-ai:${DXOS_IMAGE_TAG:-local}
     build:
       <<: *ai-build
@@ -374,6 +395,7 @@ services:
       - ./data/superset:/app/superset_home
 
   superset:
+    logging: *default-logging
     image: apache/superset:3.1.3
     depends_on:
       postgres:
@@ -427,6 +449,7 @@ services:
     volumes: *mattermost-volumes
 
   mattermost:
+    logging: *default-logging
     image: mattermost/mattermost-team-edition:10.5
     # A healthy backend does not mean its seeders have created the Mattermost role and database yet;
     # retry until the first Postgres connection succeeds.

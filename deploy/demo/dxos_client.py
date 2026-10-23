@@ -24,6 +24,17 @@ DEFAULT_BASE_URL = "http://localhost:9080"
 REALM = "dxos"
 WEB_CLIENT = ("dxos-web", "http://localhost:9080/callback")
 DEPLOY_DIR = pathlib.Path(__file__).resolve().parent.parent
+# Cloudflare rejects the default Python-urllib agent with 403.
+USER_AGENT = "DX-OS-demo/1.0"
+
+
+def _opener(*handlers):
+    opener = urllib.request.build_opener(*handlers)
+    opener.addheaders = [("User-Agent", USER_AGENT)]
+    return opener
+
+
+urllib.request.install_opener(_opener())
 
 # A sample account: realm role, name parts and the OIDC client its sign-in goes through.
 Account = collections.namedtuple("Account", "username password client role first_name last_name")
@@ -159,7 +170,7 @@ def login(base_url, username, password, client):
     verifier = secrets.token_urlsafe(64)
     challenge = _b64url(hashlib.sha256(verifier.encode()).digest())
     jar = http.cookiejar.CookieJar()
-    opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar), _NoRedirect)
+    opener = _opener(urllib.request.HTTPCookieProcessor(jar), _NoRedirect)
     endpoint = f"{base_url}/realms/{REALM}/protocol/openid-connect"
     query = urllib.parse.urlencode(
         {

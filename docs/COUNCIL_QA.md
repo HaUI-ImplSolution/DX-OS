@@ -133,7 +133,8 @@ Hướng mở rộng:
 ### B. Giấy phép
 
 - Mã tự viết Apache-2.0, SPDX header ở file Java và Python.
-- AGPL-3.0: crop classifier và mã nguồn `ai/`; Mattermost Team Edition chạy nguyên bản, không đụng `server/enterprise/`. Phần fine-tune checkpoint bệnh do nhóm phát hành theo Apache-2.0, giữ điều khoản pretrained Torchvision.
+- AGPL-3.0: crop classifier và mã nguồn `ai/`; Mattermost Team Edition chạy nguyên bản, không đụng `server/enterprise/`.
+  Phần fine-tune checkpoint bệnh do nhóm phát hành theo Apache-2.0, giữ điều khoản pretrained Torchvision.
 - Thư mục `ai/` giữ AGPL-3.0 (`ai/LICENSE`); phần còn lại giữ Apache-2.0.
   AI Service là tiến trình riêng giao tiếp với Backend qua HTTP, nên Backend không là tác phẩm phái sinh của `ai/`.
 - Bảng đầy đủ: `LICENSES.md`.

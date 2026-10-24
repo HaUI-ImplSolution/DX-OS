@@ -8,6 +8,7 @@ Lịch sử chi tiết theo ngày của từng module (Backend, Dữ liệu, Mob
 
 ## [Unreleased]
 
+- Web và mobile hiển thị thông báo tiếng Việt cho lỗi `ERR_TOO_MANY_REQUESTS` và cho phản hồi `429` của gateway.
 - `deploy/doctor.sh` kiểm Docker, RAM, ổ đĩa, `deploy/.env` và các cổng trước khi chạy hoặc cập nhật.
 - Backend chạy trên Spring Boot 4.1.2 (Tomcat 11.0.27, Jackson 2.21.7 và 3.1.7); SBOM của backend không còn lỗi HIGH hoặc CRITICAL đã có bản vá.
 - CI kiểm mọi route gateway không có token nằm trong danh sách công khai, quét SBOM đã phân giải của backend (chặn khi có lỗi đã có bản vá) và có luật phân lớp bằng ArchUnit.
@@ -85,6 +86,10 @@ Bản phát hành đầu tiên của DX-OS.
 ## Backend (Spring Boot — `backend`)
 
 ### 2026-10-29
+
+**Đã xong — Mô tả OpenAPI:**
+
+- Phần mô tả của OpenAPI nêu header `Idempotency-Key` và phản hồi `429` kèm `Retry-After`.
 
 **Đã xong — Spring Boot 4.1.2:**
 
@@ -759,6 +764,10 @@ Bản phát hành đầu tiên của DX-OS.
 
 ### 2026-10-29
 
+**Đã xong — Thông báo khi thao tác quá nhanh:**
+
+- `errorMessages.ts` có `ERR_TOO_MANY_REQUESTS`; phản hồi `429` không có nội dung JSON (từ gateway) hiện thông báo tiếng Việt.
+
 **Đã xong — Kho S3 của bộ chạy đánh giá RAG:**
 
 - Dịch vụ `storage` (SeaweedFS) làm kho S3 cho Langfuse; bucket `langfuse` tự tạo ở lần ghi đầu tiên.
@@ -945,6 +954,10 @@ Bản phát hành đầu tiên của DX-OS.
 ## Frontend (`frontend`)
 
 ### 2026-10-29
+
+**Đã xong — Thông báo khi thao tác quá nhanh:**
+
+- `errorMessages.ts` có `ERR_TOO_MANY_REQUESTS`; phản hồi `429` không có nội dung JSON (từ gateway) hiện thông báo tiếng Việt.
 
 **Đã xong — Hỏi đáp khi tắt Qwen:**
 
@@ -1623,6 +1636,12 @@ Bản phát hành đầu tiên của DX-OS.
 ## Tài liệu (root, `docs`, `ai/`)
 
 ### 2026-10-29
+
+**Đã xong — Đồng bộ tài liệu:**
+
+- `README.md` và `README_EN.md` có bước `doctor.sh`, nêu giới hạn tốc độ theo địa chỉ và theo người dùng, `429`, `Idempotency-Key` và `online.yml`.
+- `backend/README.md` nêu `ArchitectureTest`, `Idempotency-Key` và giới hạn theo người dùng.
+- `docs/TESTING.md` có dòng kiểm cho giới hạn theo người dùng và kết quả CI ngày 29/10/2026; `deploy/demo/README.md` có `check_gateway_routes.py`.
 
 **Đã xong — Chatbot trên máy chủ CPU yếu:**
 

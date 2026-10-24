@@ -57,6 +57,7 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 | Đăng nhập nhân sự bằng TOTP (`STAFF_OTP_FLOW`) và chính sách mật khẩu | Có | Kiểm tay bằng script đăng nhập qua Keycloak ở cả hai chế độ | Không áp dụng |
 | Quét mã độc tệp tải lên bằng ClamAV: tệp nhiễm bị từ chối, ClamAV ngừng thì 503 | Có | Test đơn vị, kiểm tay với ClamAV thật và tệp EICAR | Không áp dụng |
 | Che số điện thoại, email, dãy số dài trong tin chat và câu hỏi gửi sang AI | Có | Test đơn vị | Không áp dụng |
+| Giới hạn theo người dùng ở backend (`UserRateLimitFilter`): vượt ngưỡng nhận 429 kèm `Retry-After` | Có | Chưa có test tự động; kiểm tay: gọi 11 lần `POST /api/v1/tickets` (Lab) bằng một token, lần 11 nhận 429; E2E tắt giới hạn | Không áp dụng |
 | Cầu dao khi gọi AI: dịch vụ lỗi thì trả 503 ngay | Có | Test đơn vị, kiểm tay với AI dừng | Không áp dụng |
 | Cảnh báo một địa chỉ đăng nhập sai nhiều lần | Có | Test đơn vị, kiểm tay với Mattermost giả | Không áp dụng |
 | Quét lỗ hổng phụ thuộc, SBOM đã phân giải của backend và image của bên thứ ba bằng Trivy (`ci-deps.yml`, hằng tuần) | Có | Chạy thử ở local, CI | Không áp dụng |
@@ -374,7 +375,7 @@ Cách dùng và ý nghĩa từng khối ở [`backend/dx-monitor/README.md`](../
 | Backend dừng với thông báo `DXOS_APP` | Giá trị biến sai chính tả | Dùng `farm` hoặc `lab` |
 | Web hiện giao diện Farm khi backend chạy Lab | Cache trình duyệt, hoặc backend chưa lên khi tải trang | Tải lại cứng, đợi `/api/v1/system/status` UP |
 | Route 404 hoặc không bị giới hạn tốc độ | Gateway mount sai file cấu hình theo app | Kiểm `DXOS_APP` và file gateway mà compose mount |
-| Tạo ticket, upload ảnh, chẩn đoán AI, đặt phòng hoặc đính kèm nhận 429 | Giới hạn mỗi phút theo địa chỉ: 60 lần tạo ticket, 30 lần các thao tác còn lại | Đợi một phút rồi chạy lại |
+| Tạo ticket, upload ảnh, chẩn đoán AI, đặt phòng hoặc đính kèm nhận 429 | Gateway giới hạn mỗi phút theo địa chỉ (60 lần tạo ticket, 30 lần các thao tác còn lại); backend giới hạn thêm theo người dùng, bảng ngưỡng ở `deploy/OPERATIONS.md` | Đợi một phút rồi chạy lại; trả lời của backend có `Retry-After`. Khi thử tải, đặt `RATE_LIMIT_ENABLED=false` trong `deploy/.env` |
 | Đăng nhập bị từ chối dù đúng mật khẩu | Keycloak khóa tạm tài khoản sau 5 lần đăng nhập sai | Đợi hết thời gian chờ (tối đa 15 phút) hoặc tắt **Temporarily locked** của người dùng trong Admin Console |
 | Màn hình giám sát bắt đăng nhập lại hoặc tải lại trang | `monitor` vừa khởi động lại, phiên đăng nhập nằm trong bộ nhớ | Đăng nhập lại; đây là hành vi bình thường |
 | Màn hình giám sát không có sự kiện gateway | `MONITOR_INGEST_KEY` lệch giữa `monitor` và `apisix.yaml`, hoặc `monitor` chưa lên khi gateway gửi | `./switch-app.sh <app>` để gateway nhận khóa mới; `docker compose logs apisix \| grep "http logger"` |
@@ -389,10 +390,10 @@ Cách dùng và ý nghĩa từng khối ở [`backend/dx-monitor/README.md`](../
 
 | Mục | Kết quả | Ghi chú |
 |---|---|---|
-| CI trên pull request: Backend, AI, Infra, E2E Farm và Lab, Dependencies | Đạt | Ngày 28/10/2026 ở commit `6560c92`; gồm `mvn verify` cả sáu module, `pytest`, job `backup-drill`, gitleaks, quét Trivy |
-| Backend `mvn verify` (sáu module, Testcontainers) | Đạt | Job `CI Backend` ngày 28/10/2026; số test chạy xem ở log job |
+| CI trên pull request: Backend, AI, Infra, E2E Farm và Lab, Dependencies | Đạt | Ngày 29/10/2026 ở commit `1f61ab4`; gồm `mvn verify` cả sáu module, `pytest`, job `backup-drill`, gitleaks, quét Trivy (phụ thuộc, SBOM và image), kiểm route gateway |
+| Backend `mvn verify` (sáu module, Testcontainers) | Đạt | Job `CI Backend` ngày 29/10/2026; số test chạy xem ở log job |
 | BI `python -m unittest test_chart_query_context` trong `bi/` | Đạt | 22 test |
-| AI `pytest` trong `ai/` | Đạt | Job `CI AI` ngày 28/10/2026; số test chạy xem ở log job |
+| AI `pytest` trong `ai/` | Đạt | Job `CI AI` ngày 29/10/2026; số test chạy xem ở log job |
 | Đánh giá truy xuất RAG và thử tải HTTP retrieval | Đạt | Ngày 26 và 27/10/2026 qua `./ai/evaluate.sh`; số liệu ở mục 3 |
 | Web và mobile `tsc` | Đạt | Không lỗi |
 | Ranh giới app và core, seed Farm, nguồn tri thức khớp registry | Đạt | Không có kết quả vi phạm |

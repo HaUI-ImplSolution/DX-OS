@@ -185,7 +185,8 @@ Không có webhook của kênh thì không gửi.
 
 `./doctor.sh` (trong `deploy/`) chỉ đọc, không đổi gì và không in giá trị nào của `.env`.
 Nó kiểm Docker và Compose, RAM, ổ đĩa, `deploy/.env` và các cổng.
-`.env` được so với các biến `${NAME:?}` mà Compose bắt buộc phải có: biến thiếu hoặc để trống bị báo `FAIL`, biến không còn trong `.env.example` bị báo `WARN`.
+`.env` được so với các biến `${NAME:?}` mà Compose bắt buộc phải có: biến thiếu hoặc để trống bị báo `FAIL`.
+Biến có trong `.env` mà `.env.example` không liệt kê bị báo `WARN`.
 Các cổng đã bị chiếm chỉ được kiểm khi stack chưa chạy.
 Thoát với mã 1 khi có `FAIL`, nên chạy trước `./update.sh` và `./start.sh` trên máy chủ.
 

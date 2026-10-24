@@ -24,6 +24,8 @@ Những gì ứng dụng khai báo và core cung cấp ở [`ARCHITECTURE.md`](.
 ./mvnw verify                # compile, test, đóng gói (test tích hợp cần Docker cho Testcontainers)
 ```
 
+`ArchitectureTest` trong `dx-host` kiểm các luật phân lớp và ranh giới gói của cả sáu module.
+
 Chạy cả stack ở [`deploy/`](../deploy/): `./deploy/start.sh [farm|lab]`.
 
 ## Cấu hình
@@ -37,3 +39,6 @@ Chạy cả stack ở [`deploy/`](../deploy/): `./deploy/start.sh [farm|lab]`.
 
 Swagger UI ở `/swagger-ui.html`, JSON ở `/v3/api-docs`, sinh từ annotation springdoc trong mã.
 Mọi response bọc trong `ApiResponse`; lỗi có `errorCode` ổn định.
+Các lệnh tạo mới nhận header `Idempotency-Key` (UUID, đọc bằng `IdempotencyKey.parse`); giá trị không phải UUID trả `400`.
+Một người dùng gọi quá ngưỡng của một lệnh tốn tài nguyên trong một phút thì nhận `429` với `ERR_TOO_MANY_REQUESTS` và header `Retry-After`.
+Ngưỡng do mỗi app khai báo qua `RateLimitContributor`, mức chung của Core ở `SecurityConfig`; `RATE_LIMIT_ENABLED=false` tắt giới hạn này (xem [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md)).

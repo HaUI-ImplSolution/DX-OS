@@ -9,7 +9,8 @@ Mỗi script làm việc với app đang chạy; `--app farm|lab` chọn rõ rà
 | `seed_demo.py` | Chọn app, nạp dữ liệu demo (`seed_farm.py`, `seed_lab.py`) |
 | `e2e.py` | Chọn app, chạy kịch bản đầu-cuối (`e2e_farm.py`, `e2e_lab.py`), thoát mã 0 khi mọi bước đạt |
 | `dxos_client.py` | Đăng nhập, gọi API, Keycloak Admin API, bộ chạy bước dùng chung |
-| `docker-compose.e2e.yml`, `make_ci_env.py` | Stack rút gọn cho CI (không BI, chat, nạp RAG, Ollama); `make_ci_env.py` cũng sinh `deploy/.env` với mật khẩu ngẫu nhiên cho lần cài đầu, giữ nguyên tệp đã có trừ khi có `--force` |
+| `check_gateway_routes.py` | Kiểm trong CI: mọi route của gateway không có kiểm token đều nằm trong danh sách công khai có ghi lý do |
+| `docker-compose.e2e.yml`, `make_ci_env.py` | Stack rút gọn cho CI (không BI, chat, nạp RAG, Ollama; tắt giới hạn tốc độ theo người dùng vì seed và E2E tạo dữ liệu theo đợt); `make_ci_env.py` cũng sinh `deploy/.env` với mật khẩu ngẫu nhiên cho lần cài đầu, giữ nguyên tệp đã có trừ khi có `--force` |
 | `ci_fixture_rule.sql` | Rule thử nghiệm riêng cho CI của Farm |
 
 ## Nạp dữ liệu

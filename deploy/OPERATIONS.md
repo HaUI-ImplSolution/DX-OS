@@ -1,7 +1,8 @@
-# Vận hành: log truy cập và sự kiện đăng nhập
+# Vận hành: log truy cập, sự kiện đăng nhập và giám sát
 
 Mọi request vào stack đi qua gateway APISIX, nên log của gateway là bản ghi truy cập chính.
 Sự kiện đăng nhập nằm ở Keycloak.
+Màn hình giám sát `/monitor/` gom các nguồn này, xem [`backend/dx-monitor/README.md`](../backend/dx-monitor/README.md).
 
 ## Log của gateway
 
@@ -98,16 +99,17 @@ Swagger (`/swagger-ui/`) để công khai.
 
 ### Cổng quản trị sau Cloudflare Access
 
-Zero Trust → Access controls → Applications → Create new application → Self-hosted, một policy Allow theo danh sách email của quản trị viên và kỹ sư dùng chung cho cả ba ứng dụng.
+Zero Trust → Access controls → Applications → Create new application → Self-hosted, một policy Allow theo danh sách email của quản trị viên và kỹ sư dùng chung cho cả bốn ứng dụng.
 Người dùng đăng nhập vào Access bằng phương thức đã bật (tài khoản Cloudflare hoặc mã gửi qua email).
 Form mặc định mở ở chế độ Private IP; thêm một public hostname và xóa dòng Private IP trống.
-Tạo ba ứng dụng:
+Tạo bốn ứng dụng:
 
 | Ứng dụng | Domain | Đường dẫn |
 |---|---|---|
 | BI (Superset) | `bi.khuongdev.io.vn` | để trống |
 | MinIO Console | `files.khuongdev.io.vn` | để trống |
 | Keycloak Admin Console | `khuongdev.io.vn` | `admin/*` |
+| Màn hình giám sát | `khuongdev.io.vn` | `monitor/*` |
 
 Không đặt Access cho API, web app, `/realms/*`, portal, chat và link ảnh, vì nông dân và mobile dùng các đường này.
 Giữ một phiên Admin Console đang mở khi tạo ứng dụng Access cho `admin/*`.
@@ -126,12 +128,14 @@ Mỗi bản ghi có người thực hiện (`sub`, tên, vai ứng dụng, clien
 | `ACCESS_DENIED` | Request nhận 403 |
 | `AUTH_FAILED` | Backend từ chối token đã tới nó (token không tới được backend nếu gateway đã từ chối) |
 | `WORKSPACE_CREATED`, `WORKSPACE_LINKED`, `MEMBER_ADDED` | ADMIN tạo workspace, gắn tài khoản chủ, thêm thành viên |
+| `SERVER_ERROR` | Backend trả `500`, `502` hoặc `503`; `outcome` là `FAILED`, `metadata` có mã trả về và tên lớp ngoại lệ (không có thông điệp lỗi) |
+| `ADMIN_ACTION_FAILED` | ADMIN thực hiện thao tác thay đổi (POST, PUT, PATCH, DELETE) bị từ chối vì lý do nghiệp vụ (`409`, `422`); `outcome` là `FAILED` |
 | `PARCEL_DELETED`, `SEASON_DELETED`, `REPORT_DELETED`, `HARVEST_OVERRIDE` | Farm: xóa mềm, thu hoạch sớm hoặc thu hoạch thay nông dân |
 | `TICKET_CATEGORY_CREATED`, `TICKET_CATEGORY_CHANGED`, `SLA_POLICY_CHANGED`, `TICKET_ATTACHMENT_REMOVED` | Lab: danh mục, SLA, xóa tệp đính kèm |
 
 Quyết định duyệt của workflow nằm ở `workflow_event`.
 Đăng nhập và đổi mật khẩu nằm ở sự kiện của Keycloak.
-Mỗi địa chỉ client có tối đa 20 bản ghi `ACCESS_DENIED` hoặc `AUTH_FAILED` mỗi phút (`audit.denied.max-per-minute` trong `application.yaml`).
+Mỗi địa chỉ client có tối đa 20 bản ghi mỗi loại `ACCESS_DENIED`, `AUTH_FAILED`, `SERVER_ERROR` hoặc `ADMIN_ACTION_FAILED` mỗi phút (`audit.denied.max-per-minute` trong `application.yaml`).
 Số bản ghi bị bỏ qua nằm trong `metadata.suppressed` của bản ghi đầu phút kế tiếp.
 
 ADMIN tra cứu qua API (Swagger: `GET /api/v1/audit-logs`), lọc theo `actor` (user id hoặc username), `action`, `outcome`, `from`, `to`:
@@ -155,3 +159,8 @@ Chạy lâu thì theo dõi dung lượng bảng.
 Mỗi 5 phút, một địa chỉ bị từ chối từ 10 lần trong 10 phút qua được báo vào kênh Mattermost "Ban quản trị", tối đa một tin mỗi địa chỉ trong 60 phút.
 Đổi ngưỡng ở `audit.alert.*` trong `backend/dx-host/src/main/resources/application.yaml`.
 Không có webhook của kênh thì không gửi.
+
+## Màn hình giám sát
+
+Dịch vụ `monitor` gom log gateway, `audit_log`, sự kiện đăng nhập của Keycloak và trạng thái dịch vụ vào một màn hình `/monitor/` cho ADMIN, kèm cảnh báo Mattermost.
+Cách đọc, truy vết một sự cố, dữ liệu, cảnh báo và cấu hình ở [`backend/dx-monitor/README.md`](../backend/dx-monitor/README.md).

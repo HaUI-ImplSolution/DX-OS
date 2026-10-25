@@ -80,16 +80,19 @@ Cloudflare chỉ nhận người dùng qua cổng 443, nên mỗi dịch vụ c�
 
 ### Cloudflare Access
 
-Ba ứng dụng Self-hosted dùng chung policy `Admins and engineers` (Allow theo email):
+Bốn ứng dụng Self-hosted dùng chung policy `Admins and engineers` (Allow theo email):
 
 | Ứng dụng | Hostname | Đường dẫn |
 |---|---|---|
 | BI Superset | `bi.khuongdev.io.vn` | toàn bộ |
 | MinIO Console | `files.khuongdev.io.vn` | toàn bộ |
 | Keycloak Admin Console | `khuongdev.io.vn` | `admin/*` |
+| Màn hình giám sát | `khuongdev.io.vn` | `monitor/*` |
 
 - Request chưa có phiên Access nhận 302 sang trang đăng nhập Access (`*.cloudflareaccess.com`).
 - Người dùng đăng nhập bằng phương thức đã bật: tài khoản Cloudflare hoặc mã gửi qua email.
+- Màn hình giám sát còn đòi đăng nhập SSO Keycloak và vai ADMIN sau lớp Access.
+- Gateway gửi sự kiện cho `monitor` trong mạng Docker, không qua Cloudflare, nên Access không ảnh hưởng.
 - Không đặt Access cho web app, API, `/realms/*`, portal, chat và link ảnh, vì nông dân, sinh viên và mobile dùng các đường này.
 - Thêm người vào: Zero Trust → Access controls → Policies → `Admins and engineers` → thêm email.
 - Bị khóa ngoài thì gỡ ứng dụng `Keycloak Admin Console` ở trang Applications.
@@ -105,7 +108,7 @@ Ba ứng dụng Self-hosted dùng chung policy `Admins and engineers` (Allow the
 | Lớp | Chặn hoặc ghi gì |
 |---|---|
 | Cloudflare edge | HTTPS bắt buộc, TLS tối thiểu 1.2, bot, khai thác đã biết, form đăng nhập dồn dập |
-| Cloudflare Access | Người lạ vào trang quản trị (Superset, MinIO, Keycloak Admin) |
+| Cloudflare Access | Người lạ vào trang quản trị (Superset, MinIO, Keycloak Admin, màn hình giám sát) |
 | APISIX | 120 lượt mỗi phút mỗi IP cho form đăng nhập và token, 600 lượt cho `/api/*`, kiểm token, log JSON kèm `X-Request-Id` |
 | Keycloak | Khóa tạm tài khoản sau 5 lần sai mật khẩu, sự kiện đăng nhập kèm IP thật |
 | Backend | Phân quyền theo vai, `audit_log` cho request bị từ chối và thao tác quản trị |

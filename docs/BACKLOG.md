@@ -79,7 +79,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Email cho thông báo trong hộp thư | Chưa có. Cần `spring-boot-starter-mail`, tắt `management.health.mail` (biến `SPRING_MAIL_HOST` rỗng vẫn tạo bộ gửi và làm `/actuator/health` báo lỗi), hàng đợi gửi lại chung với tin chat, địa chỉ lấy từ Keycloak lúc gửi, bảng lựa chọn của từng tài khoản và màn hình bật tắt |
 | Che thông tin cá nhân trong log | Nội dung log chưa đi qua `PiiMask` |
 | Mật khẩu demo cũ của `tech1`, `tech2` | Stack có sẵn hai tài khoản này giữ mật khẩu `tech123`; chỉ stack dựng mới nhận `tech1234` |
-| Cải tiến core và vận hành chưa làm: metric, Alertmanager, giám sát từ bên ngoài, WAF Coraza, nâng cấp có đường lùi, compose profiles, kiểm giấy phép tự động, Dependabot, sổ kiểm toán chuỗi băm | Chưa làm; xem mục P1 của `docs/DX-Lab-core-ops-improvements.md` |
+| Cải tiến core và vận hành chưa làm: metric và Alertmanager, trang trạng thái công khai và cảnh báo sang chat cho giám sát từ bên ngoài, WAF Coraza, nâng cấp có đường lùi, compose profiles, kiểm giấy phép tự động, sổ kiểm toán chuỗi băm | Chưa làm |
 
 ## 6. Phụ thuộc người ngoài
 

@@ -1,74 +1,73 @@
 # Changelog
 
 Nhật ký thay đổi của DX-OS (DX-Farm và DX-Lab).
-Định dạng theo [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/), đánh phiên bản theo [Semantic Versioning](https://semver.org/lang/vi/).
+Định dạng theo [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/).
 
-Hai mục đầu liệt kê các bản phát hành; lịch sử chi tiết theo ngày của từng module (Backend, Dữ liệu, Mobile, AI Service, Frontend, Deploy, BI, Chat, Portal, SSO, Giấy phép và SBOM, Tài liệu) nằm ở các mục sau.
+Mục Chưa phát hành tóm tắt các điểm cốt lõi.
+Lịch sử chi tiết theo ngày của từng module (Backend, Dữ liệu, Mobile, AI Service, Frontend, Deploy, BI, Chat, Portal, SSO, Giấy phép và SBOM, Tài liệu) nằm ở các mục sau.
 
 ## [Unreleased]
 
-### Đã thêm
+Tóm tắt những gì chưa phát hành.
+Chi tiết theo ngày ở mục của từng module bên dưới.
 
-- `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), `README_EN.md` bản tiếng Anh, `NOTICE`, `frontend/.env.example`.
-- `docs/_template/`: mẫu tài liệu cho một đợt làm mới.
-- Workflow `Release` (chạy tay) build các image `backend`, `frontend`, `portal`, `ai`, `minio`, `sso` và đẩy lên GHCR; máy chủ cập nhật bằng `deploy/update.sh` mà không build. Compose đọc tên image từ `DXOS_IMAGE_PREFIX` và `DXOS_IMAGE_TAG`.
-- Danh mục nguồn Farm bổ sung hướng dẫn ADC cho đốm nâu và ba nguồn tiếng Việt về đạo ôn, khô vằn, môi giới truyền Tungro; nội dung corpus giữ nguyên.
-- Seed Farm bổ sung Help 400SC cho đốm nâu, liều 0,6 L/ha và PHI 14 ngày, theo yêu cầu gán trạng thái `EXPERT_APPROVED` của chủ dự án ngày 2026-10-20; hai rule Newtec giữ nguyên.
-- Nhắc thu hoạch chỉ chạy trong `app.harvest-reminder-max-days` ngày (mặc định 14) kể từ ngày thu hoạch dự kiến.
-- Mobile: hộp thông báo cuộn tới cuối thì tải trang kế, 30 thông báo mỗi trang.
-- Farm: bản khai phun chờ kỹ sư xác nhận quá `app.treatment-confirmation-wait-hours` giờ (mặc định 24) được nhắc lên kênh kỹ sư mỗi sáng 08:00 tới khi có quyết định; cột `treatment_applications.reported_at` (migration V13) ghi lúc nông dân nộp bản khai.
-- Lab: ticket thứ `lab.device-alert.threshold` (mặc định 3) nêu cùng một thiết bị trong `lab.device-alert.window-days` ngày (mặc định 30) được đăng lên kênh kỹ thuật viên.
+- Màn hình giám sát và truy vết `/monitor/` cho quản trị viên, chạy riêng nên vẫn hoạt động khi backend dừng.
+- Truy vết máy chủ công khai: log gateway kèm `X-Request-Id`, sự kiện đăng nhập của Keycloak và `audit_log` chỉ thêm.
+- Giới hạn tốc độ theo IP thật ở gateway.
+- Workflow `Release` phát hành image lên GHCR.
+- Farm: chẩn đoán kèm tài liệu tham khảo, nhắc khai phun chờ xác nhận.
+- Lab: tri thức từ văn bản chính thức của HaUI, cảnh báo thiết bị hỏng lặp lại.
 
-### Đã thay đổi
+## Backend (Spring Boot — `backend`)
 
-- Gateway ghi mỗi request một dòng JSON, có `X-Request-Id` và không có query string.
-  IP client lấy từ `CF-Connecting-IP` khi request đến từ mạng Docker, nên các giới hạn `limit-count` theo `remote_addr` tính riêng từng IP khi chạy sau Cloudflare Tunnel.
-  Mọi service xoay vòng log Docker; cách xem log ở `deploy/OPERATIONS.md`.
-- Keycloak ghi sự kiện đăng nhập (giữ 90 ngày) và sự kiện quản trị.
-  Tài khoản bị khóa tạm sau 5 lần đăng nhập sai.
-  Overlay Cloudflare cho Keycloak đọc IP thật từ gateway.
-- Gateway giới hạn mỗi IP 120 lượt mỗi phút cho form mật khẩu và token endpoint của Keycloak (tính chung), và 600 lượt mỗi phút cho `/api/*` với request có token hợp lệ.
-  `deploy/OPERATIONS.md` có danh sách cấu hình Cloudflare và Cloudflare Access cho cổng quản trị.
+### 2026-10-26
+
+**Đã xong — Màn hình giám sát (`dx-monitor`):**
+
+- Module `backend/dx-monitor`, jar và container riêng, không phụ thuộc `dx-core`.
+- Chỉ vai `ADMIN` vào được, đăng nhập qua client `dxos-monitor` của Keycloak.
+- `POST /monitor/ingest/gateway` nhận từng đợt request từ gateway bằng khóa riêng.
+- Giữ `429`, `401`, `404`, `5xx` và request chậm của gateway trong 30 ngày, ở schema `monitor`.
+- Dò trạng thái các dịch vụ mỗi 30 giây, ghi lúc đổi `UP` hoặc `DOWN`.
+- Đọc `audit_log` bằng role `monitor_app` và sự kiện đăng nhập của Keycloak bằng role `keycloak_ro`, cả hai chỉ đọc.
+- API chỉ đọc: tổng hợp, theo thời gian (phóng to bằng `from` và `to`), nguồn đáng ngờ, trạng thái dịch vụ, thao tác quản trị, tra cứu theo mã yêu cầu hoặc IP.
+- Cảnh báo Mattermost khi dịch vụ ngừng hoặc phục hồi, khi `5xx` dồn dập và khi một địa chỉ bị giới hạn tốc độ nhiều lần.
+- Xóa dữ liệu quá 30 ngày lúc 03:30 mỗi đêm.
+
+**Đã xong — `audit_log` ghi lỗi hệ thống:**
+
+- `audit_log` ghi `SERVER_ERROR` khi backend trả `500`, `502` hoặc `503`.
+- `audit_log` ghi `ADMIN_ACTION_FAILED` khi thao tác thay đổi của ADMIN bị `409` hoặc `422`.
+
+### 2026-10-23
+
+**Đã xong — Nhật ký `audit_log`:**
+
 - Backend ghi bảng `audit_log` (chỉ thêm) cho request bị từ chối (403, token bị backend từ chối) và thao tác quản trị của core, Farm và Lab.
   Mỗi bản ghi có người thực hiện, địa chỉ client và `request_id` của gateway; log backend cũng mang `request_id`.
   ADMIN tra cứu qua `GET /api/v1/audit-logs`.
   Một địa chỉ bị từ chối nhiều lần được báo vào kênh Mattermost "Ban quản trị".
   Tham số query sai kiểu trả `400`.
-- Tài liệu: README có mục Máy chủ công khai, `LICENSES.md` có `cloudflared`, `ARCHITECTURE.md`, `COUNCIL_QA.md`, `SUBMISSION.md`, `portal/`, `minio/`, `bi/` và `sso/` nêu Cloudflare Access và audit.
-- `docs/CLOUDFLARE.md` tổng hợp khái niệm và cấu hình Cloudflare của máy chủ công khai (Tunnel, HTTPS, Bot fight mode, rate limiting, Access).
-- Mobile: profile `preview` của `eas.json` và hướng dẫn trong `mobile/README.md`, `docs/TESTING.md`, `sso/README.md`, `.env.example` dùng được với máy chủ công khai qua Cloudflare Tunnel (HTTPS, không số cổng).
-- Hỏi đáp web: đoạn trích có nhãn tới 40 ký tự (như `Kiểm soát hóa học không định lượng`) hiển thị dạng hai cột như các đoạn khác.
-- Một biến `PUBLIC_HOST` trong `deploy/.env` (`localhost` khi dev, IP hoặc tên miền khi triển khai) quyết định `GATEWAY_PUBLIC_URL`, `SUPERSET_PUBLIC_URL`, địa chỉ trong thông báo chat, `MM_SERVICESETTINGS_SITEURL` và redirect URI của `dxos-web` và `dxos-superset` trong `realm-dxos.json`; `localhost` vẫn nằm trong danh sách redirect URI. Image `frontend` build trực tiếp mặc định gọi Keycloak cùng origin.
-- Stack chạy được trên CPU ảo x86-64 không có x86-64-v2 (như "Common KVM processor" của một số VPS): Keycloak 26.0.8 build từ gói phát hành trên nền Ubuntu (`sso/Dockerfile`, image `dxos-sso`); AI khóa `numpy` 2.3 và tự tắt oneDNN, NNPACK của PyTorch khi CPU không có SSE4.1, chẩn đoán ảnh khi đó chậm hơn.
-- README song ngữ viết ngắn gọn, có yêu cầu hệ thống và xử lý sự cố; `ARCHITECTURE.md` có tổng quan các dịch vụ và sơ đồ theo từng tầng.
-- Repository đổi tên thành `DX-OS`; liên kết trong tài liệu trỏ về tên mới.
-- Ảnh nền đơn sắc được kiểm độ nét theo cạnh sau khi làm mờ lại; hỏi đáp xếp đoạn của bệnh được nêu lên đầu.
-- Hộp duyệt chỉ liệt kê case của app đang chạy; lỗi request trả 415, 405 hoặc 400.
-- Ngưỡng GPS và danh sách vụ cách ly do Backend cung cấp cho mobile; giới hạn và ngưỡng đặt được qua `deploy/.env`.
-- Tri thức Lab: 12 bài trích từ nội quy, quy định và hướng dẫn chính thức của HaUI (Thư viện, Trung tâm Công nghệ thông tin, Trung tâm Khảo thí); nguồn mở trang gốc và bản PDF trên máy chủ của trường, bản PDF lưu kèm ở `data/rag/lab/raw/`; gợi ý bài liên quan khi gửi yêu cầu hỗ trợ cũng hiện nguồn.
-- Kết quả chẩn đoán trên web Farm tách ba khối: độ tin cậy của mô hình, phác đồ điều trị đã xác thực và thông tin tham khảo từ tài liệu; không hiển thị `recommendationText`.
+
+### 2026-10-21
+
+**Đã xong — Nhắc việc và cảnh báo:**
+
+- Farm: bản khai phun chờ kỹ sư xác nhận quá `app.treatment-confirmation-wait-hours` giờ (mặc định 24) được nhắc lên kênh kỹ sư mỗi sáng 08:00 tới khi có quyết định; cột `treatment_applications.reported_at` (migration V13) ghi lúc nông dân nộp bản khai.
+- Nhắc thu hoạch chỉ chạy trong `app.harvest-reminder-max-days` ngày (mặc định 14) kể từ ngày thu hoạch dự kiến.
+- Lab: ticket thứ `lab.device-alert.threshold` (mặc định 3) nêu cùng một thiết bị trong `lab.device-alert.window-days` ngày (mặc định 30) được đăng lên kênh kỹ thuật viên.
+
+### 2026-10-20
+
+**Đã xong — Đoạn tài liệu tham khảo trong chẩn đoán:**
+
 - Chẩn đoán AI lưu các đoạn tài liệu tham khảo (RAG) cùng nguồn vào `diagnoses.knowledge_evidence` và trả qua `knowledgeEvidence`, mỗi tài liệu một mục với các dòng không lặp theo thứ tự trong tài liệu (`chunk_index` do AI trả), điểm cao nhất và nguồn của cả tài liệu; AI không tạo đoạn tổng hợp, `recommendationText` của chẩn đoán AI để trống.
-- Web Farm không hiển thị mã bệnh (danh mục, ô chọn bệnh, chi tiết yêu cầu duyệt, đoạn tham khảo).
+
+### 2026-10-19
+
+**Đã xong — Hỏi đáp gộp theo tài liệu:**
+
 - Hỏi đáp tài liệu (Farm và Lab) gộp các đoạn cùng tài liệu thành một đoạn theo thứ tự trong tài liệu; đoạn tham khảo hiện dạng danh sách trường trên web và mobile.
-- Mobile hiển thị tài liệu tham khảo trong chi tiết báo cáo đã duyệt.
-- Lab: kỹ thuật viên không mượn thiết bị và không đặt phòng; không ai tự duyệt lịch đặt phòng của mình; trùng mã báo lỗi tiếng Việt; trang đặt phòng đặt lịch tuần cạnh form và danh sách.
-
-## [1.0.0] - 2026-10-13
-
-Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng dụng nghiệp vụ.
-
-### Đã thêm
-
-- **Open-Core (`dx-core-api`, `dx-core`, `dx-host`):** định danh theo workspace và thành viên, workflow dùng chung với loại case cấu hình được và lịch sử chỉ thêm, hộp duyệt, thông báo, lưu trữ S3 với link có hạn, cổng AI và tri thức theo namespace; chọn ứng dụng bằng `DXOS_APP`.
-- **DX-Farm (`app-farm`):** nông hộ, thửa có GPS, vụ mùa, báo cáo sâu bệnh kèm kiểm tra chất lượng ảnh, chẩn đoán AI và kỹ sư duyệt, khai phun thuốc, khóa thu hoạch theo PHI, nhắc hạn, thời tiết theo thửa, hỏi đáp tài liệu có trích nguồn.
-- **DX-Lab (`app-lab`):** yêu cầu hỗ trợ có SLA, gợi ý loại và ưu tiên bằng luật, mượn trả thiết bị, đặt phòng chống trùng giờ, hỏi đáp quy chế, thống kê.
-- **AI Service:** CV (YOLOv8n và crop classifier), RAG trên pgvector, LangGraph, LLM Qwen2.5 qua Ollama.
-- **Giao diện:** web React dùng chung cho hai ứng dụng, mobile Expo cho nông dân với hàng đợi offline, portal trạng thái dịch vụ.
-- **Hạ tầng:** Keycloak SSO (realm `dxos`), APISIX gateway, PostgreSQL, MinIO, Superset BI, Mattermost; dựng bằng Docker Compose với `deploy/start.sh farm|lab` và dữ liệu demo.
-- **Kiểm thử và CI:** E2E cho cả hai ứng dụng, CI backend, AI, web, mobile, hạ tầng.
-- **Nguồn mở:** `LICENSE` (Apache-2.0, riêng `ai/` AGPL-3.0), `LICENSES.md`, SBOM CycloneDX, `CONTRIBUTING.md`, mẫu issue và pull request, SPDX header.
-
-## Backend (Spring Boot — `backend`)
 
 ### 2026-10-18
 
@@ -115,6 +114,10 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - Lịch nền (SLA, nhắc mượn trả, nhắc thu hoạch) chạy qua `JobLock`, mỗi lần chỉ một bản backend thực hiện.
 - `diagnoses.source` (`AI` hoặc `ENGINEER`); `vw_ai_diagnosis_outcomes` lấy theo cột này.
 - Database vector tên `dxos_ai_vector_db`; nạp lại tri thức bằng job `rag-ingest` sau khi đổi.
+
+**Đã xong — Hộp duyệt và lỗi request:**
+
+- Hộp duyệt chỉ liệt kê case của app đang chạy; lỗi request trả 415, 405 hoặc 400.
 
 ### 2026-10-13
 
@@ -309,7 +312,6 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - `POST /api/v1/households` (ADMIN) tạo hộ và tài khoản Keycloak FARMER bằng service account `dxfarm-backend-admin`, trả mật khẩu tạm một lần; Keycloak lỗi thì không lưu hộ. `GET /api/v1/households` và `PATCH /api/v1/households/{code}/account` (gắn tài khoản có sẵn).
 - Role `superset_ro` không đọc được `households`.
 
-
 **Đã xong — Khóa PHI và ràng buộc vụ mùa:**
 
 - `POST .../diagnosis/apply` nhận `appliedAt` trong khoảng từ hôm nay lùi tối đa 30 ngày; ngoài khoảng trả `422` với `errorCode` `INVALID_APPLIED_AT`.
@@ -320,7 +322,6 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - Upload ảnh: chỉ nhận JPEG/PNG theo nội dung thật (không theo `Content-Type` hay đuôi file), giới hạn 40 megapixel, giải mã rồi mã hóa lại nên file lưu không còn EXIF/GPS; hướng chụp EXIF được áp vào điểm ảnh.
 - Mọi mật khẩu/secret trong `application.yaml` bắt buộc khai báo qua biến môi trường, không còn giá trị mặc định; log package ứng dụng mặc định `INFO` (`LOG_LEVEL_APP`).
 - Test: Mockito cho khóa PHI, vụ mùa, báo cáo, lưu ảnh; `ConcurrencyIntegrationTest` chạy PostgreSQL qua Testcontainers cho `@Version` và partial unique index.
-
 
 ### 2026-10-02
 
@@ -434,6 +435,13 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 ## Dữ liệu (`data`)
 
+### 2026-10-20
+
+**Đã xong — Nguồn tri thức và seed Farm:**
+
+- Seed Farm bổ sung Help 400SC cho đốm nâu, liều 0,6 L/ha và PHI 14 ngày, theo yêu cầu gán trạng thái `EXPERT_APPROVED` của chủ dự án ngày 2026-10-20; hai rule Newtec giữ nguyên.
+- Danh mục nguồn Farm bổ sung hướng dẫn ADC cho đốm nâu và ba nguồn tiếng Việt về đạo ôn, khô vằn, môi giới truyền Tungro; nội dung corpus giữ nguyên.
+
 ### 2026-10-18
 
 **Đã xong — Tri thức Lab từ văn bản chính thức của HaUI:**
@@ -461,6 +469,24 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - Generator, validator đối chiếu workbook, seed check và RAG dry-run đều đạt; `data.sql` được sinh deterministic từ dữ liệu chuẩn.
 
 ## Mobile (`mobile`, Expo)
+
+### 2026-10-23
+
+**Đã xong — Dùng với máy chủ công khai:**
+
+- Mobile: profile `preview` của `eas.json` và hướng dẫn trong `mobile/README.md`, `docs/TESTING.md`, `sso/README.md`, `.env.example` dùng được với máy chủ công khai qua Cloudflare Tunnel (HTTPS, không số cổng).
+
+### 2026-10-21
+
+**Đã xong — Hộp thông báo:**
+
+- Mobile: hộp thông báo cuộn tới cuối thì tải trang kế, 30 thông báo mỗi trang.
+
+### 2026-10-19
+
+**Đã xong — Tài liệu tham khảo:**
+
+- Mobile hiển thị tài liệu tham khảo trong chi tiết báo cáo đã duyệt.
 
 ### 2026-10-15
 
@@ -644,7 +670,6 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - Mọi endpoint ngoài `/disease/health` và `/disease/class-contract` (gồm `/disease/predict`, `/disease/knowledge/retrieve`, `/diagnose`) yêu cầu header `X-Service-Api-Key`; thiếu hoặc sai key trả `401`, chưa cấu hình key trả `503`.
 - Thêm `requirements-dev.txt` (pytest) và `tests/test_service_auth.py`.
 
-
 ### 2026-10-02
 
 - Đưa checkpoint YOLOv8n đã xác thực vào `ai/weights/best.pt` để clone mới có thể chạy Compose mà không phải chép model thủ công; vẫn kiểm tra SHA-256 trước khi nạp.
@@ -719,6 +744,34 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 ## Frontend (`frontend`)
 
+### 2026-10-26
+
+**Đã xong — Giao diện màn hình giám sát:**
+
+- Màn hình `/monitor/` nền sáng, nội dung viết cho người quản lý không chuyên IT.
+- Dải trạng thái chung và năm con số: dịch vụ đang chạy, truy cập bị chặn, lỗi hệ thống, truy cập quá nhiều, đăng nhập sai.
+- Biểu đồ sự việc và đăng nhập sai theo thời gian, có vạch dóng giờ.
+- Kéo chuột ngang để phóng to, vùng chọn bám theo mép cột.
+- Tooltip của cột ghi khoảng thời gian có sự việc, ví dụ `14:10 - 14:50 (40 phút)`.
+- Biểu đồ vành khuyên tỷ lệ các loại sự việc, thanh ngang nguồn đáng ngờ và chức năng gặp lỗi.
+- Mỗi dịch vụ một ô: trạng thái, tỷ lệ chạy được, thanh xanh đỏ vàng theo thời gian và danh sách các lần ngừng; không có lần ngừng thì ghi "Hoạt động tốt".
+- Danh sách thao tác quản trị gần đây.
+- Mục tra cứu chi tiết cho kỹ thuật viên: lọc theo mã yêu cầu hoặc IP, để trống thì xem 200 bản ghi mới nhất, 20 dòng mỗi trang.
+- Dữ liệu từ gateway hiển thị bằng `textContent` và CSP `default-src 'self'`.
+
+### 2026-10-22
+
+**Đã xong — Hỏi đáp:**
+
+- Hỏi đáp web: đoạn trích có nhãn tới 40 ký tự (như `Kiểm soát hóa học không định lượng`) hiển thị dạng hai cột như các đoạn khác.
+
+### 2026-10-20
+
+**Đã xong — Kết quả chẩn đoán trên web Farm:**
+
+- Kết quả chẩn đoán trên web Farm tách ba khối: độ tin cậy của mô hình, phác đồ điều trị đã xác thực và thông tin tham khảo từ tài liệu; không hiển thị `recommendationText`.
+- Web Farm không hiển thị mã bệnh (danh mục, ô chọn bệnh, chi tiết yêu cầu duyệt, đoạn tham khảo).
+
 ### 2026-10-18
 
 - `SourceList` dùng chung cho trang Tri thức và gợi ý khi báo sự cố: tên văn bản mở trang gốc, "[Bản PDF gốc]" mở file trên máy chủ của trường, nhãn "Văn bản chính thức".
@@ -791,7 +844,6 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - Tài khoản chỉ có role `FARMER` thấy màn "Vui lòng dùng ứng dụng di động" và không gọi API nghiệp vụ.
 - Admin chọn nông hộ khi đăng ký thửa; tạo vụ mùa và khai báo thu hoạch chỉ hiện với ADMIN; bỏ form gửi báo cáo (chỉ nông dân gửi từ mobile).
 
-
 ### 2026-10-01
 
 - Đăng xuất giữ `id_token_hint`: `signOut` không xoá user trước `signoutRedirect`, nên Keycloak kết thúc phiên SSO ngay thay vì hiện trang xác nhận, và Superset đăng xuất theo.
@@ -839,6 +891,40 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - Đã test qua trình duyệt thật với từng role, xác nhận UI và 401/403 đúng chỗ.
 
 ## Deploy (`deploy`)
+
+### 2026-10-26
+
+**Đã xong — Dịch vụ `monitor`:**
+
+- Service `monitor-init` tạo role, schema và view cho `monitor`; service `monitor` chạy dịch vụ giám sát.
+- Biến `MONITOR_DB_PASSWORD`, `KEYCLOAK_READONLY_DB_PASSWORD`, `MONITOR_INGEST_KEY` và `MONITOR_OIDC_CLIENT_SECRET` trong `deploy/.env`.
+- Route `/monitor/*` ở gateway có giới hạn tốc độ; `/monitor/ingest/` không đi ra ngoài.
+- Plugin `http-logger` gửi từng đợt request cho `monitor`, khóa điền vào lúc `apisix-config` ghép `apisix.yaml`.
+- `backend/Dockerfile` có hai đích: `backend` (mặc định) và `monitor`.
+- Release và CI e2e dựng image `monitor`; `update.sh` kéo và tạo lại `monitor`.
+
+### 2026-10-23
+
+**Đã xong — Log và giới hạn tốc độ ở gateway:**
+
+- Gateway ghi mỗi request một dòng JSON, có `X-Request-Id` và không có query string.
+  IP client lấy từ `CF-Connecting-IP` khi request đến từ mạng Docker, nên các giới hạn `limit-count` theo `remote_addr` tính riêng từng IP khi chạy sau Cloudflare Tunnel.
+  Mọi service xoay vòng log Docker; cách xem log ở `deploy/OPERATIONS.md`.
+- Gateway giới hạn mỗi IP 120 lượt mỗi phút cho form mật khẩu và token endpoint của Keycloak (tính chung), và 600 lượt mỗi phút cho `/api/*` với request có token hợp lệ.
+  `deploy/OPERATIONS.md` có danh sách cấu hình Cloudflare và Cloudflare Access cho cổng quản trị.
+
+### 2026-10-22
+
+**Đã xong — CPU ảo không có x86-64-v2:**
+
+- Stack chạy được trên CPU ảo x86-64 không có x86-64-v2 (như "Common KVM processor" của một số VPS): Keycloak 26.0.8 build từ gói phát hành trên nền Ubuntu (`sso/Dockerfile`, image `dxos-sso`); AI khóa `numpy` 2.3 và tự tắt oneDNN, NNPACK của PyTorch khi CPU không có SSE4.1, chẩn đoán ảnh khi đó chậm hơn.
+
+### 2026-10-21
+
+**Đã xong — Phát hành image và địa chỉ công khai:**
+
+- Workflow `Release` (chạy tay) build các image `backend`, `monitor`, `frontend`, `portal`, `ai`, `minio`, `sso` và đẩy lên GHCR; máy chủ cập nhật bằng `deploy/update.sh` mà không build. Compose đọc tên image từ `DXOS_IMAGE_PREFIX` và `DXOS_IMAGE_TAG`.
+- Một biến `PUBLIC_HOST` trong `deploy/.env` (`localhost` khi dev, IP hoặc tên miền khi triển khai) quyết định `GATEWAY_PUBLIC_URL`, `SUPERSET_PUBLIC_URL`, địa chỉ trong thông báo chat, `MM_SERVICESETTINGS_SITEURL` và redirect URI của `dxos-web` và `dxos-superset` trong `realm-dxos.json`; `localhost` vẫn nằm trong danh sách redirect URI. Image `frontend` build trực tiếp mặc định gọi Keycloak cùng origin.
 
 ### 2026-10-18
 
@@ -928,13 +1014,11 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - `minio/migrate-uploads.sh` chuyển ảnh cũ vào bucket và kiểm từng file đã có trong bucket, không xoá thư mục cũ.
 - `KEYCLOAK_ADMIN_CLIENT_ID` và `KEYCLOAK_ADMIN_CLIENT_SECRET` (secret bắt buộc, không mặc định) cho backend và Keycloak.
 
-
 - Không còn mật khẩu/secret mặc định trong `.env.example`; mọi biến secret dùng `:?` nên Compose dừng và báo tên biến thiếu.
 - `keycloak` nhận `SUPERSET_OIDC_CLIENT_SECRET` để thay vào realm lúc import.
 - Cổng AI không publish ra host; bỏ `AI_HOST_PORT`.
 - `reset.sh`: dừng stack, xoá `deploy/data` qua container tạm (tránh lỗi quyền root), dựng lại và chờ mọi service sẵn sàng.
 - CI: `ci.yml` (backend `mvn verify` gồm test), `ci-frontend.yml`, `ci-mobile.yml` (`tsc --noEmit`), `ci-ai.yml` (`pytest`), `ci-infra.yml` (gitleaks trên lịch sử commit, kiểm tra `docker compose config` và việc Compose dừng khi thiếu secret). Cấu hình gitleaks ở `.gitleaks.toml`.
-
 
 ### 2026-10-02
 
@@ -1044,7 +1128,6 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - Superset chạy sau gateway ở `http://localhost:9081` (`APISIX_SUPERSET_HOST_PORT`), `ENABLE_PROXY_FIX` bật để link và redirect OAuth theo địa chỉ gateway; không còn publish cổng 8088.
 - Tài khoản chỉ có role `FARMER` bị từ chối đăng nhập Superset; role `FARMER` không còn map sang role Superset.
 
-
 ### 2026-09-30
 
 - Import dashboard mẫu chạy được trên metadata DB trống: khóa `passwords` của API import dùng đường dẫn đã bỏ thư mục gốc của zip.
@@ -1125,6 +1208,12 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 ## Portal (`portal`)
 
+### 2026-10-26
+
+**Đã xong — Thẻ giám sát:**
+
+- Thẻ "Giám sát và truy vết" tới `/monitor/` và dòng trạng thái của `monitor`.
+
 ### 2026-10-13
 
 - Tên ứng dụng đang chạy lấy từ `app.name` của `GET /api/v1/system/status` và hiện ở tiêu đề trang; mô tả các card dùng nội dung chung cho mọi app.
@@ -1160,6 +1249,20 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 ## Identity Provider (`sso`, Keycloak)
 
+### 2026-10-26
+
+**Đã xong — Client của màn hình giám sát:**
+
+- Client confidential `dxos-monitor` cho màn hình giám sát, chỉ vai `ADMIN` được vào.
+
+### 2026-10-23
+
+**Đã xong — Sự kiện đăng nhập:**
+
+- Keycloak ghi sự kiện đăng nhập (giữ 90 ngày) và sự kiện quản trị.
+  Tài khoản bị khóa tạm sau 5 lần đăng nhập sai.
+  Overlay Cloudflare cho Keycloak đọc IP thật từ gateway.
+
 ### 2026-10-12
 
 **Đã xong — Realm nền tảng `dxos`:**
@@ -1174,9 +1277,7 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - Client `dxfarm-frontend` và `dxfarm-mobile` có mapper thêm `dxfarm-api` vào `aud` của access token.
 - Client `dxfarm-backend-admin` (service account, `manage-users`, `view-users`, `view-realm`) cho backend tạo tài khoản nông hộ; secret từ `KEYCLOAK_ADMIN_CLIENT_SECRET`.
 
-
 - `secret` của client `dxfarm-superset` trong `realm-dxfarm.json` là `${SUPERSET_OIDC_CLIENT_SECRET}`, lấy từ `deploy/.env` lúc import. Mật khẩu 3 tài khoản demo vẫn nằm trong realm và được ghi rõ là chỉ dùng demo.
-
 
 ### 2026-09-30
 
@@ -1235,6 +1336,21 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 ## Tài liệu (root, `docs`, `ai/`)
 
+### 2026-10-26
+
+**Đã xong — Màn hình giám sát:**
+
+- `backend/dx-monitor/README.md` mô tả màn hình giám sát: các khối, cách đọc, truy vết một sự cố, dữ liệu, cảnh báo, cấu hình.
+- `docs/TESTING.md` có các kiểm tay M1 đến M14.
+- `docs/CLOUDFLARE.md` có ứng dụng Access cho `monitor/*`.
+
+### 2026-10-23
+
+**Đã xong — Máy chủ công khai:**
+
+- `docs/CLOUDFLARE.md` tổng hợp khái niệm và cấu hình Cloudflare của máy chủ công khai (Tunnel, HTTPS, Bot fight mode, rate limiting, Access).
+- README có mục Máy chủ công khai, `LICENSES.md` có `cloudflared`, `ARCHITECTURE.md`, `COUNCIL_QA.md`, `SUBMISSION.md`, `portal/`, `minio/`, `bi/` và `sso/` nêu Cloudflare Access và audit.
+
 ### 2026-10-18
 
 - `docs/TESTING.md` mục 6.4: 17 câu hỏi và yêu cầu mẫu kèm bài đứng đầu, độ liên quan và cách kiểm nguồn.
@@ -1278,6 +1394,20 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 - Bộ trả lời hội đồng theo 10 câu hỏi mục 13 của đề, kịch bản demo 10 phút gồm Farm, đổi ứng dụng và Lab, dàn ý báo cáo kỹ thuật.
 - `sbom/backend.cdx.json` gồm năm module; quét gitleaks lịch sử (336 commit) và cây làm việc không có phát hiện.
 
+### 2026-10-11
+
+**Đã xong — README song ngữ:**
+
+- README song ngữ viết ngắn gọn, có yêu cầu hệ thống và xử lý sự cố; `ARCHITECTURE.md` có tổng quan các dịch vụ và sơ đồ theo từng tầng.
+
+### 2026-10-10
+
+**Đã xong — Tài liệu dự án:**
+
+- `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), `README_EN.md` bản tiếng Anh, `NOTICE`, `frontend/.env.example`.
+- `docs/_template/`: mẫu tài liệu cho một đợt làm mới.
+- Repository đổi tên thành `DX-OS`; liên kết trong tài liệu trỏ về tên mới.
+
 ### 2026-10-09
 
 - Trạng thái treatment rule trong `README.md`, `data/README.md`, `deploy/demo/README.md` khớp seed hiện hành.
@@ -1317,5 +1447,5 @@ Bản phát hành đầu tiên: một lõi Open-Core dùng chung và hai ứng d
 
 - Cập nhật `README.md`, `ai/README.md`, `ai/app/graph/README.md` để mô tả trạng thái kiến trúc AI và Backend.
 
-[Unreleased]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/HaUI-ImplSolution/DX-OS/releases/tag/v1.0.0
+[Unreleased]: https://github.com/HaUI-ImplSolution/DX-OS/commits/main
+

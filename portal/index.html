@@ -216,6 +216,7 @@
   .app-card.admin .app-icon { background: #efe9f8; color: #5a3d99; }
   .app-card.api .app-icon { background: #e3f3f0; color: #1f6b5e; }
   .app-card.bi-admin .app-icon { background: #e5eef8; color: #2a5f82; }
+  .app-card.monitor .app-icon { background: #f6e9e4; color: #8a3b22; }
   .app-card.chat-admin .app-icon { background: var(--gold-soft); color: #8a6410; }
   .app-card.storage-admin .app-icon { background: #fbe9e4; color: #a04a32; }
 
@@ -393,6 +394,19 @@
         </div>
       </a>
 
+      <a class="app-card monitor" href="/monitor/" target="_blank" rel="noopener">
+        <span class="pill sso">SSO</span>
+        <div class="app-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+        </div>
+        <div class="app-name">Giám sát và truy vết</div>
+        <div class="app-desc">Truy cập bị từ chối, lỗi hệ thống, đăng nhập sai và trạng thái dịch vụ (quản trị viên).</div>
+        <div class="app-meta">
+          <span class="app-url">/monitor/</span>
+          <span class="app-cta">Mở →</span>
+        </div>
+      </a>
+
       <a class="app-card bi-admin" href="http://localhost:9081/users/list/" data-base="bi" data-port="9081" data-service="bi" target="_blank" rel="noopener">
         <span class="pill sso">SSO</span>
         <div class="app-icon">
@@ -517,11 +531,12 @@
 
       [["web", "Ứng dụng chính"], ["backend", "Backend API"], ["ai", "Dịch vụ AI"],
         ["storage", "Lưu trữ ảnh"], ["sso", "Keycloak (đăng nhập)"], ["bi", "BI Dashboard"],
-        ["chat", "Kênh chat"]].forEach(function (s) { row(s[0], s[1]); });
+        ["chat", "Kênh chat"], ["monitor", "Giám sát"]].forEach(function (s) { row(s[0], s[1]); });
 
       function refresh() {
         probe("web", "/", true);
         probe("sso", "/realms/dxos/.well-known/openid-configuration", true);
+        probe("monitor", "/monitor/actuator/health", false);
         if (offered.bi) probe("bi", serviceBase("bi", 9081) + "/health", false);
         if (offered.chat) probe("chat", serviceBase("chat", 8065) + "/api/v4/system/ping", false);
         fetch("/api/v1/system/status", { cache: "no-store" })

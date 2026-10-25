@@ -31,14 +31,14 @@ if [[ $# -gt 0 ]]; then
   echo "==> DXOS_IMAGE_TAG=$1 written to deploy/.env"
 fi
 
-BEHIND_GATEWAY=(backend frontend portal keycloak)
+BEHIND_GATEWAY=(backend monitor frontend portal keycloak)
 declare -A BEFORE
 for service in "${BEHIND_GATEWAY[@]}"; do
   BEFORE[$service]="$(docker compose ps -q "$service")"
 done
 
 echo "==> Pulling images"
-for service in backend frontend portal ai minio keycloak; do
+for service in backend monitor frontend portal ai minio keycloak; do
   docker compose pull "$service"
 done
 

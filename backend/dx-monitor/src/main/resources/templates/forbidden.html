@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Giám sát và truy vết</title>
+  <link rel="stylesheet" th:href="@{/assets/monitor.css}">
+</head>
+<body class="plain">
+  <main class="notice">
+    <h1>Không đủ quyền truy cập</h1>
+    <p>Màn hình giám sát chỉ dành cho tài khoản quản trị viên.</p>
+    <p><a class="button" th:href="${signOutUrl}">Đăng nhập bằng tài khoản khác</a></p>
+  </main>
+</body>
+</html>

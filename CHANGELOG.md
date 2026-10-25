@@ -1301,6 +1301,13 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 
 ## Giấy phép và SBOM
 
+### 2026-10-25
+
+**Đã xong — Thành phần của `dx-monitor`:**
+
+- `LICENSES.md` liệt kê Thymeleaf, Spring Security OAuth2 Client, Nimbus OAuth 2.0 SDK và ASM.
+- `sbom/backend.cdx.json` gồm module `dx-monitor` và các thư viện của nó.
+
 ### 2026-10-15
 
 - `sbom/mobile.cdx.json` sinh lại sau khi mobile thêm `expo-splash-screen` (MIT, nằm trong dòng `expo-*` của `LICENSES.md`).

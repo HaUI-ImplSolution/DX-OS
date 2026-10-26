@@ -128,6 +128,7 @@ python3 -m venv /tmp/dx-rag-eval
 
 Langfuse self-host dùng [Compose chính thức](https://langfuse.com/self-hosting/deployment/docker-compose) bên ngoài repository, project và volume riêng; phiên bản đã kiểm tra là server 4.70.1 với SDK 5.0.4.
 Không thêm Langfuse vào `deploy/` của DX-OS hoặc bật toàn stack sản phẩm để chạy đánh giá.
+Giữ PostgreSQL của Langfuse trong mạng Docker nội bộ, tránh chiếm cổng `5432` của sản phẩm.
 Sau khi host sẵn sàng, thiết lập `LANGFUSE_BASE_URL`, `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY` trong phiên riêng và chạy lại lệnh publish bỏ `--dry-run`.
 SDK tạo ba experiment theo nhóm, replay kết quả đã lưu và gắn score; thời gian trace publish không phải latency retriever, `elapsed_ms` gốc nằm trong output.
 Trong Experiments, bật Columns → Expected Output và Output để xem nhãn/chunk bên cạnh điểm; mở chi tiết để xem metadata và cấu hình.

@@ -9,8 +9,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -351,9 +353,111 @@ def score(collect_path: Path, qrels_path: Path, output: Path) -> None:
     )
 
 
+def publish(collect_path: Path, score_path: Path, qrels_path: Path) -> None:
+    """Publish saved results; this never reruns retrieval."""
+    from langfuse import Langfuse
+
+    payload = json.loads(collect_path.read_text(encoding="utf-8"))
+    score_payload = json.loads(score_path.read_text(encoding="utf-8"))
+    metadata = json.loads((EVALUATION_ROOT / "metadata.json").read_text(encoding="utf-8"))
+    public_key = os.environ.get("LANGFUSE_PUBLIC_KEY")
+    secret_key = os.environ.get("LANGFUSE_SECRET_KEY")
+    host = os.environ.get("LANGFUSE_BASE_URL") or os.environ.get(
+        "LANGFUSE_HOST", "http://localhost:3000"
+    )
+    if not public_key or not secret_key:
+        raise RuntimeError(
+            "LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY are required for publish"
+        )
+
+    dataset_name = f"dx-farm/rag-evaluation/{metadata['dataset_version']}"
+    client = Langfuse(
+        public_key=public_key,
+        secret_key=secret_key,
+        host=host,
+        flush_at=1,
+    )
+    try:
+        try:
+            client.get_dataset(name=dataset_name)
+        except Exception:
+            client.create_dataset(
+                name=dataset_name,
+                description="DX-Farm Phase 1 retrieval evaluation",
+                metadata={
+                    "status": metadata["status"],
+                    "scope": metadata["scope"],
+                    "boundary": "RAGRetriever output before Backend filtering and evidence merging",
+                },
+            )
+
+        qrels_by_qid: dict[str, list[dict[str, Any]]] = {}
+        for line in qrels_path.read_text(encoding="utf-8").splitlines():
+            if not line.strip() or line.lstrip().startswith("#"):
+                continue
+            qid, _iteration, doc_id, relevance = line.split()
+            qrels_by_qid.setdefault(qid, []).append(
+                {"document_key": doc_id, "relevance": int(relevance)}
+            )
+        scores_by_qid: dict[str, dict[str, float]] = {}
+        for group in score_payload["groups"]:
+            for qid, values in group["queries"].items():
+                scores_by_qid[qid] = values
+
+        for question, record in zip(load_questions(), payload["records"]):
+            qid = question["qid"]
+            if qid != record["qid"]:
+                raise ValueError(f"collect question order mismatch at {qid}")
+            client.create_dataset_item(
+                dataset_name=dataset_name,
+                id=qid,
+                input={"qid": qid, "query": question["query"]},
+                expected_output={"qrels": qrels_by_qid.get(qid, [])},
+                metadata={
+                    "group": question["group"],
+                    "namespace": question["namespace"],
+                    "label_status": metadata["status"],
+                    "dataset_version": metadata["dataset_version"],
+                },
+            )
+            observation = client.start_observation(
+                name=f"rag-retrieval:{qid}",
+                as_type="retriever",
+                input={"qid": qid, "query": question["query"]},
+                output={"results": record["results"]},
+                metadata={
+                    "group": question["group"],
+                    "namespace": question["namespace"],
+                    "top_k": record["top_k"],
+                    "document_type": record["document_type"],
+                    "disease_code": record.get("disease_code"),
+                    "elapsed_ms": record["elapsed_ms"],
+                    "dataset_version": metadata["dataset_version"],
+                    "label_status": metadata["status"],
+                },
+            )
+            for metric_name, value in scores_by_qid[qid].items():
+                observation.score(
+                    name=metric_name.split("@", 1)[0],
+                    value=value,
+                    score_id=str(
+                        uuid.uuid5(
+                            uuid.NAMESPACE_URL,
+                            f"dx-farm:{metadata['dataset_version']}:{qid}:{metric_name}",
+                        )
+                    ),
+                    data_type="NUMERIC",
+                    comment=f"Replayed from saved score artifact; labels={metadata['status']}",
+                )
+            observation.end()
+        client.flush()
+    finally:
+        client.shutdown()
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("collect", "score", "self-check"))
+    parser.add_argument("command", choices=("collect", "score", "publish", "self-check"))
     parser.add_argument("--output", type=Path, default=REPO_ROOT / "rag-evaluation-output")
     parser.add_argument(
         "--collect",
@@ -367,6 +471,12 @@ def parse_args() -> argparse.Namespace:
         default=EVALUATION_ROOT / "qrels.draft.tsv",
         help="TREC qrels used by score.",
     )
+    parser.add_argument(
+        "--score-file",
+        type=Path,
+        default=REPO_ROOT / "rag-evaluation-output" / "score.json",
+        help="Saved score.json used by publish.",
+    )
     return parser.parse_args()
 
 
@@ -376,6 +486,8 @@ def main() -> None:
         self_check()
     elif args.command == "score":
         score(args.collect, args.qrels, args.output)
+    elif args.command == "publish":
+        publish(args.collect, args.score_file, args.qrels)
     else:
         collect(args.output)
 

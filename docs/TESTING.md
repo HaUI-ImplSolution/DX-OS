@@ -41,6 +41,17 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 | Hỏi đáp quy chế trích văn bản của HaUI, nguồn mở trang gốc và bản PDF | Có | E2E Lab (`--require-knowledge`) | Có |
 | Thống kê SLA, tải kỹ thuật viên, mức dùng phòng; view `vw_lab_*` cho BI | Có | E2E Lab, kiểm tay | Có |
 
+### Dùng chung: gateway, log và audit
+
+| Tính năng | Trong code | Kiểm thử | Dữ liệu demo |
+|---|---|---|---|
+| Log truy cập JSON kèm `X-Request-Id`, IP thật từ `CF-Connecting-IP` | Có | Kiểm tay trên stack local (giả lập header) | Không áp dụng |
+| Sự kiện đăng nhập và khóa tạm sau 5 lần sai của Keycloak | Có | Kiểm tay, Chrome | Không áp dụng |
+| Giới hạn đăng nhập (120 mỗi phút), `/api/*` (600 mỗi phút) và route riêng của từng app theo IP | Có | Kiểm tay, E2E | Không áp dụng |
+| `audit_log` chỉ thêm, `GET /api/v1/audit-logs` cho ADMIN, cảnh báo Mattermost | Có | Kiểm tay, E2E Farm và Lab | Không áp dụng |
+| Ghi `SERVER_ERROR` và `ADMIN_ACTION_FAILED` vào `audit_log` | Có | Kiểm tay (M1, M2) | Không áp dụng |
+| Màn hình giám sát `/monitor/`: sự kiện gateway, dò dịch vụ, truy vết, cảnh báo | Có | Kiểm tay, Chrome (M1 đến M14) | Không áp dụng |
+
 ## 2. Chuẩn bị
 
 | Cần có | Ghi chú |
@@ -56,7 +67,7 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 
 | Bước | Lệnh | Kết quả mong đợi |
 |---|---|---|
-| Backend biên dịch toàn bộ module | `cd backend && ./mvnw compile` | Cả năm module đạt |
+| Backend biên dịch toàn bộ module | `cd backend && ./mvnw compile` | Cả sáu module đạt |
 | Web | `cd frontend && npx tsc --noEmit` | Không lỗi |
 | Mobile | `cd mobile && npx tsc --noEmit` | Không lỗi |
 | Ranh giới app | Tìm `core.` hoặc `dx-core` trong `app-farm` và `app-lab` | Không có (chỉ `dx-core-api`) |
@@ -143,9 +154,12 @@ Treatment rule của đạo ôn, khô vằn và đốm nâu có trong seed Backe
 Đặt `mobile/.env`:
 
 ```bash
+EXPO_PUBLIC_API_BASE_URL=http://<ip-máy-chạy-stack>:9080
 EXPO_PUBLIC_KEYCLOAK_URL=http://<ip-máy-chạy-stack>:9080/realms/dxos
 EXPO_PUBLIC_KEYCLOAK_CLIENT_ID=farm-mobile
 ```
+
+Máy chủ công khai dùng `https://<tên-miền>` và `https://<tên-miền>/realms/dxos`, không có số cổng.
 
 ```bash
 cd mobile && npx expo start      # Expo Go, hoặc build APK bằng EAS
@@ -267,7 +281,46 @@ Với mọi dòng có kết quả, kiểm thêm:
 | B5 | Xem bảng trong DB sau B1 | Bảng Lab còn nhưng không dùng; Farm chạy bình thường |
 | B6 | Đổi app không dùng `--reset` | Không lỗi migration |
 
-## 8. Sự cố thường gặp
+## 8. Gateway, log và audit
+
+Cần stack đang chạy. Cách đọc log và audit ở [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md).
+
+| # | Việc | Kết quả mong đợi |
+|---|---|---|
+| G1 | Gọi `GET /api/v1/system/status` kèm header `CF-Connecting-IP: 203.0.113.9` từ máy chạy stack | Dòng log gateway có `remote_addr` là `203.0.113.9` và `request_id` bằng header `X-Request-Id` của response |
+| G2 | Cùng việc G1 từ máy khác trong LAN, đặt `CF-Connecting-IP: 1.2.3.4` | `remote_addr` là IP LAN của máy đó |
+| G3 | Gọi `/realms/dxos/protocol/openid-connect/auth` kèm `state` và `code` trong query | `uri` trong log không có query string |
+| G4 | Đăng nhập sai ba lần rồi đúng, mỗi lần cách nhau hơn một giây | Admin Console → Events có ba `LOGIN_ERROR` và một `LOGIN` |
+| G5 | Đăng nhập sai năm lần rồi nhập đúng mật khẩu | Bị từ chối trong thời gian chờ, vào lại được sau khoảng một phút |
+| G6 | Gửi 130 yêu cầu `POST` vào token endpoint từ một IP | 120 yêu cầu đầu qua, các yêu cầu sau nhận 429 kèm `X-RateLimit-*`; IP khác không bị ảnh hưởng |
+| G7 | Người dùng không phải ADMIN gọi `GET /api/v1/audit-logs` | 403 và một bản ghi `ACCESS_DENIED` có người dùng, vai, IP, đường dẫn, `request_id` |
+| G8 | ADMIN tạo workspace, thêm thành viên, xóa mềm một thửa (Farm) hoặc đổi SLA (Lab) | Mỗi thao tác một bản ghi `SUCCESS` ở `GET /api/v1/audit-logs` |
+| G9 | `UPDATE` hoặc `DELETE` một dòng của `audit_log` bằng `psql` | Database báo `audit_log is append-only` |
+| G10 | Tạo từ 10 bản ghi bị từ chối từ một IP trong 10 phút | Kênh Mattermost "Ban quản trị" nhận một tin cảnh báo trong 5 phút |
+
+### 8.1 Màn hình giám sát
+
+Cần stack đang chạy với `monitor` healthy.
+Cách dùng và ý nghĩa từng khối ở [`backend/dx-monitor/README.md`](../backend/dx-monitor/README.md).
+
+| # | Việc | Kết quả mong đợi |
+|---|---|---|
+| M1 | Dừng MinIO, tải ảnh báo cáo bằng token hợp lệ; `GET /api/v1/audit-logs?action=SERVER_ERROR` | Response `5xx`; một bản ghi `FAILED` có `request_id` bằng header `X-Request-Id`, `metadata` chỉ có mã và tên lớp ngoại lệ |
+| M2 | ADMIN gắn tài khoản chủ cho workspace đã có chủ (409) | Một bản ghi `ADMIN_ACTION_FAILED`; FARMER gây lỗi tương tự thì không có bản ghi |
+| M3 | Chưa đăng nhập mở `/monitor/`, rồi đăng nhập `admin1` | Chuyển sang Keycloak, đăng nhập xong vào trang; đã đăng nhập web app thì vào thẳng |
+| M4 | `engineer1` và tài khoản FARMER mở `/monitor/` và `/monitor/api/summary` | Trang 403 tiếng Việt cho trang, 403 cho API; không có dữ liệu |
+| M5 | `psql` bằng `monitor_app` đọc `audit_log`, bảng `monitor.*`, `workspaces`; bằng `keycloak_ro` đọc `vw_auth_events`, `credential`, `user_entity` | Hai nhóm đầu đọc được, `workspaces`, `credential`, `user_entity` bị `permission denied` |
+| M6 | Từ một IP xả 700 request tới `/api/*` trong một phút | Dòng `RATE_LIMITED` ở `monitor.gateway_event`; không quá 100 dòng mỗi IP mỗi phút; tạo lại container `apisix` thì dữ liệu còn |
+| M7 | Gọi `POST /monitor/ingest/gateway` không khóa, khóa sai, và từ ngoài qua gateway công khai | Không khóa và khóa sai bị `401`; qua gateway công khai `404` |
+| M8 | Dừng `backend` một phút rồi bật lại | `/monitor/` vẫn mở được, dịch vụ `backend` hiện `DOWN` rồi `UP` với thời gian ngừng; kênh Mattermost nhận tin ngừng và tin phục hồi |
+| M9 | Gọi API sai quyền 15 lần, xả 700 request, đăng nhập sai 6 lần; mở màn hình | Các con số, biểu đồ theo thời gian và thanh nguồn đáng ngờ khớp kịch bản trong 30 giây |
+| M10 | Mở mục Tra cứu chi tiết, lấy `X-Request-Id` của một request bị `403`, dán vào ô mã yêu cầu; rồi tra theo IP | Có dòng của gateway và `ACCESS_DENIED` của backend cùng `request_id`; tra theo IP thêm dòng đăng nhập của Keycloak |
+| M11 | Gửi request tới đường dẫn chứa `<script>alert(1)</script>`, mở màn hình | Chuỗi hiện nguyên văn, không có script chạy |
+| M12 | Gây 5 lỗi `5xx` trong 5 phút, xả request cho `429` | Kênh "Ban quản trị" nhận một tin mỗi loại, không lặp trong 60 phút |
+| M13 | Kéo chuột ngang trên biểu đồ "Sự việc bất thường theo thời gian", rồi bấm "Xem lại toàn bộ" | Hai biểu đồ theo thời gian cùng phóng vào khoảng chọn với cột mịn hơn, có dòng "Đang phóng to"; bấm nút thì trở về cột theo giờ |
+| M14 | Mở mục Tra cứu chi tiết, để trống hai ô; bấm một tên nguồn trong biểu đồ "Nguồn truy cập gây nhiều sự việc nhất" | Để trống: hiện các bản ghi mới nhất của cả ba nguồn, tối đa 200, số trang ở góc dưới bên phải; bấm tên nguồn thì tra theo IP đó |
+
+## 9. Sự cố thường gặp
 
 | Dấu hiệu | Nguyên nhân thường gặp | Cách xử lý |
 |---|---|---|
@@ -278,14 +331,18 @@ Với mọi dòng có kết quả, kiểm thêm:
 | Backend dừng với thông báo `DXOS_APP` | Giá trị biến sai chính tả | Dùng `farm` hoặc `lab` |
 | Web hiện giao diện Farm khi backend chạy Lab | Cache trình duyệt, hoặc backend chưa lên khi tải trang | Tải lại cứng, đợi `/api/v1/system/status` UP |
 | Route 404 hoặc không bị giới hạn tốc độ | Gateway mount sai file cấu hình theo app | Kiểm `DXOS_APP` và file gateway mà compose mount |
-| Tạo ticket hoặc upload nhận 429 | Giới hạn 30 lần mỗi phút theo địa chỉ | Đợi một phút rồi chạy lại |
+| Tạo ticket, upload ảnh, chẩn đoán AI, đặt phòng hoặc đính kèm nhận 429 | Giới hạn mỗi phút theo địa chỉ: 60 lần tạo ticket, 30 lần các thao tác còn lại | Đợi một phút rồi chạy lại |
+| Đăng nhập bị từ chối dù đúng mật khẩu | Keycloak khóa tạm tài khoản sau 5 lần đăng nhập sai | Đợi hết thời gian chờ (tối đa 15 phút) hoặc tắt **Temporarily locked** của người dùng trong Admin Console |
+| Màn hình giám sát bắt đăng nhập lại hoặc tải lại trang | `monitor` vừa khởi động lại, phiên đăng nhập nằm trong bộ nhớ | Đăng nhập lại; đây là hành vi bình thường |
+| Màn hình giám sát không có sự kiện gateway | `MONITOR_INGEST_KEY` lệch giữa `monitor` và `apisix.yaml`, hoặc `monitor` chưa lên khi gateway gửi | `./switch-app.sh <app>` để gateway nhận khóa mới; `docker compose logs apisix \| grep "http logger"` |
+| Log gateway có `remote_addr` là IP container | Dải mạng Docker nằm ngoài `real_ip_from` của `apisix/config.yaml`, hoặc request không đi qua Cloudflare | Kiểm `docker network inspect`, bổ sung dải vào `real_ip_from`; xem [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md) |
 | Không tạo được extension khi khởi động Lab | Vai của DB không đủ quyền với `btree_gist` | Dùng image PostgreSQL có extension; cấp quyền tạo extension cho vai chủ DB |
 | Hỏi đáp Lab không có kết quả | Job `rag-ingest` chưa xong hoặc lỗi, hoặc `DXOS_APP` không phải `lab` lúc dựng | `docker compose logs rag-ingest`; chạy lại bằng `docker compose up -d --force-recreate rag-ingest` |
 | Ảnh không hiện | Route ảnh hoặc tên bucket sai | Kiểm `MINIO_BUCKET` và route `/dxos-uploads/*`; `./reset.sh --yes` |
 | Thiếu phần trọng số bệnh hoặc `crop_classifier.onnx` | Checkout không đủ trọng số | `git status`, `git pull`; xem `ai/weights/` |
 | Dựng lâu hoặc hết dung lượng | Lần đầu tải image lớn | Đợi, hoặc dọn Docker (`docker system df`) |
 
-## 9. Kết quả kiểm gần nhất
+## 10. Kết quả kiểm gần nhất
 
 | Mục | Kết quả | Ghi chú |
 |---|---|---|
@@ -305,11 +362,18 @@ Với mọi dòng có kết quả, kiểm thêm:
 | Kiểm tay Lab | Đạt | L1 đến L18, API bước 1 đến 22, các màn hình web; hộp duyệt chỉ có loại case của Lab |
 | API và lỗi request | Đạt | 415, 405, 400; `settings` của `GET /api/v1/app`; `GET /api/v1/crop-seasons/isolated` |
 | Thời tiết | Đạt | Open-Meteo trả dữ liệu thật; địa chỉ không tới được trả snapshot kèm ghi chú |
+| Gateway, log và audit G1 đến G10 | Đạt | Ngày 23/10/2026 trên stack local và VPS (`remote_addr` thật `1.52.120.232` qua Cloudflare Tunnel, sự kiện Keycloak, khóa tạm, giới hạn tốc độ, `audit_log`, cảnh báo Mattermost) |
+| Khởi động từ clone sạch Farm và Lab, không overlay | Đạt | Ngày 23/10/2026: migration core V1 đến V4, import realm, E2E Farm 10/10 và Lab 16/16; chưa thử `--build` toàn bộ image ngoài CI |
+| Cấu hình Cloudflare (Bot fight mode, rate limiting, HTTPS và TLS, Access) | Đạt | Ngày 23/10/2026: `bi.`, `files.`, `admin/*` chuyển sang đăng nhập Access, vào được Superset sau khi qua Access; web app, API, `/realms/`, portal, chat vẫn mở; tải ảnh và chẩn đoán AI qua Cloudflare không bị chặn nhầm; 40 lượt gửi form đăng nhập trong 1,4 giây có 13 lượt bị Cloudflare chặn |
+| Đăng nhập mobile qua địa chỉ công khai | Chưa kiểm | Cần điện thoại |
+| Màn hình giám sát M1 đến M14 (stack local, Farm và Lab) | Đạt | Ngày 26/10/2026: đăng nhập `admin1` và từ chối `engineer1`, đăng xuất, sự kiện gateway nạp qua `http-logger` và còn sau khi tạo lại `apisix`, dừng backend và MinIO thì `monitor` vẫn mở và báo `DOWN` rồi phục hồi, cảnh báo Mattermost cho dịch vụ, `5xx` và `429`, truy vết theo IP, xóa theo thời hạn, `<script>` trong đường dẫn không chạy; E2E Farm 10/10 và Lab 16/16; `./mvnw verify` đạt 149 test |
+| Dựng sạch có `monitor` (volume và `deploy/data` rỗng, `./start.sh farm --reset --yes --build`) | Đạt | Ngày 26/10/2026: realm import có client `dxos-monitor`, `monitor-init` xong, migration `V1` của monitor, 12 dịch vụ healthy, E2E Farm 10/10, đăng nhập `admin1` vào `/monitor/`; CI e2e dựng sạch cả Farm và Lab có `monitor` |
+| Màn hình giám sát trên VPS qua Cloudflare Tunnel và Access | Đạt | Ngày 26/10/2026 qua `https://khuongdev.io.vn`: `admin1` đăng nhập và đọc đủ API, `engineer1` và `farmer1` nhận trang 403 và API 403, phiên web app vào thẳng `/monitor/`, `/monitor/ingest/gateway` từ ngoài 404; sự kiện gateway mang IP thật và tối đa 100 dòng mỗi IP mỗi phút; Keycloak dừng thì `/monitor/api/summary` vẫn trả dữ liệu; backend dừng thì báo `DOWN` sau 73 giây rồi `UP`; `monitor` dừng 30 giây thì gateway vẫn phục vụ; kênh "Ban quản trị" nhận tin backend ngừng, phục hồi và `429`; quyền `monitor_app`, `keycloak_ro` như M5; Superset từ chối `farmer1`, cấp `Gamma` cho `engineer1`, `Admin` cho `admin1`; Access chuyển mọi đường dẫn dưới `/monitor/` sang trang đăng nhập Access, web app, API và `/realms/*` vẫn mở; trên trình duyệt đăng nhập Access rồi Keycloak bằng `admin1` thì màn hình hiện đủ số liệu |
 | Chart thời tiết trên Superset | Đạt | Một phút sau khi Backend lên, job ghi 4 dòng (4 vị trí thửa); `vw_weather_daily` có 4 dòng; `/api/v1/chart/{id}/data` trả dữ liệu cho cả 11 chart; chart "Nhiệt độ theo ngày" và "Lượng mưa theo ngày" hiển thị trên dashboard |
 | Nền bản đồ Superset | Đạt | Hai chart bản đồ vẽ nền sáng OpenFreeMap với nhãn tiếng Việt và hiện attribution OpenFreeMap, OpenMapTiles, OpenStreetMap; không thấy nhãn đảo hay biên giới ở vùng ĐBSCL |
 | Dựng từ clone sạch theo README | Đạt | `start.sh farm` 113 giây, `start.sh lab` 56 giây, mọi dịch vụ healthy |
 | Dựng sạch hoàn toàn (volume và `deploy/data` rỗng) | Đạt | `start.sh farm` thoát mã 0 sau khoảng 5 phút, seed Farm đủ dữ liệu; sau khi khởi động lại AI, E2E Farm 10/10 (seed chờ AI); `start.sh lab` rồi E2E Lab 16/16 |
 | Thêm ứng dụng mẫu rỗng theo CONTRIBUTING | Đạt | Backend lên với `DXOS_APP=sample`, `system/status` trả id `sample`, không sửa `dx-core` |
-| gitleaks | Đạt | 358 commit, không có phát hiện |
+| gitleaks | Đạt | Ngày 23/10/2026: 434 commit, không có phát hiện |
 
 Mục kiểm tay chưa chạy là F3 và icon, splash của mobile, theo dõi ở [`BACKLOG.md`](./BACKLOG.md).

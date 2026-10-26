@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.lab.controller;
 
+import HaUI.ImplSolution.dxos.core.api.audit.AuditEvent;
+import HaUI.ImplSolution.dxos.core.api.audit.AuditRecorder;
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
 import HaUI.ImplSolution.dxos.core.api.dto.PageResponse;
 import HaUI.ImplSolution.dxos.lab.dto.TicketDtos.AssignRequest;
@@ -55,12 +57,14 @@ public class TicketController {
   private final TicketService ticketService;
   private final TicketSuggestionService suggestionService;
   private final LabUser user;
+  private final AuditRecorder auditRecorder;
 
   public TicketController(TicketService ticketService, TicketSuggestionService suggestionService,
-      LabUser user) {
+      LabUser user, AuditRecorder auditRecorder) {
     this.ticketService = ticketService;
     this.suggestionService = suggestionService;
     this.user = user;
+    this.auditRecorder = auditRecorder;
   }
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -173,6 +177,8 @@ public class TicketController {
   public ApiResponse<Void> removeAttachment(@PathVariable Long id,
       @PathVariable Long attachmentId) {
     ticketService.removeAttachment(id, attachmentId);
+    auditRecorder.record(AuditEvent.success("TICKET_ATTACHMENT_REMOVED", "TICKET",
+        String.valueOf(id), java.util.Map.of("attachmentId", attachmentId)));
     return ApiResponse.success("Attachment removed", null);
   }
 

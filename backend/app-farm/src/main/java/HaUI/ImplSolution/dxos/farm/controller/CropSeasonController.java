@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.farm.controller;
 
+import HaUI.ImplSolution.dxos.core.api.audit.AuditEvent;
+import HaUI.ImplSolution.dxos.core.api.audit.AuditRecorder;
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
 import HaUI.ImplSolution.dxos.farm.dto.CropSeasonCreateRequest;
 import HaUI.ImplSolution.dxos.farm.dto.CropSeasonResponse;
@@ -38,9 +40,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class CropSeasonController {
 
   private final CropSeasonService cropSeasonService;
+  private final AuditRecorder auditRecorder;
 
-  public CropSeasonController(CropSeasonService cropSeasonService) {
+  public CropSeasonController(CropSeasonService cropSeasonService, AuditRecorder auditRecorder) {
     this.cropSeasonService = cropSeasonService;
+    this.auditRecorder = auditRecorder;
   }
 
   @PostMapping("/parcels/{code}/crop-seasons")
@@ -139,7 +143,14 @@ public class CropSeasonController {
           + " farmer is notified. 409 if the season was modified concurrently.")
   public ApiResponse<CropSeasonResponse> harvest(@PathVariable Long id,
       @Valid @RequestBody HarvestRequest request) {
-    return ApiResponse.success("Harvest recorded", cropSeasonService.harvest(id, request));
+    CropSeasonResponse harvested = cropSeasonService.harvest(id, request);
+    boolean early = harvested.earlyReason() != null;
+    boolean onBehalf = request.reasonOnBehalf() != null && !request.reasonOnBehalf().isBlank();
+    if (early || onBehalf) {
+      auditRecorder.record(AuditEvent.success("HARVEST_OVERRIDE", "CROP_SEASON", String.valueOf(id),
+          java.util.Map.of("early", early, "onBehalf", onBehalf)));
+    }
+    return ApiResponse.success("Harvest recorded", harvested);
   }
 
   @PatchMapping("/crop-seasons/{id}/reschedule-harvest")
@@ -166,6 +177,7 @@ public class CropSeasonController {
   @Operation(summary = "Soft-delete a crop season entered by mistake", description = "ADMIN only.")
   public ApiResponse<Void> delete(@PathVariable Long id) {
     cropSeasonService.delete(id);
+    auditRecorder.record(AuditEvent.success("SEASON_DELETED", "CROP_SEASON", String.valueOf(id)));
     return ApiResponse.success("Crop season deleted", null);
   }
 }

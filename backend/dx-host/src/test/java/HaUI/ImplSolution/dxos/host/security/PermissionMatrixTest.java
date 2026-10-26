@@ -2,6 +2,7 @@
 package HaUI.ImplSolution.dxos.host.security;
 
 import HaUI.ImplSolution.dxos.core.api.dto.PageResponse;
+import HaUI.ImplSolution.dxos.core.audit.AuditService;
 import HaUI.ImplSolution.dxos.core.exception.GlobalExceptionHandler;
 import HaUI.ImplSolution.dxos.core.security.RestAccessDeniedHandler;
 import HaUI.ImplSolution.dxos.core.security.RestAuthenticationEntryPoint;
@@ -84,6 +85,8 @@ class PermissionMatrixTest {
   @Autowired
   private MockMvc mockMvc;
 
+  @MockitoBean
+  private AuditService auditService;
   @MockitoBean
   private ParcelService parcelService;
   @MockitoBean

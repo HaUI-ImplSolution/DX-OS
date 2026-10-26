@@ -4,7 +4,7 @@ Danh mục thành phần phần mềm định dạng CycloneDX (JSON; đặc t�
 
 | File | Nguồn |
 |---|---|
-| `backend.cdx.json` | Maven, `backend` (gốc `dx-os-parent`, cả năm module `dx-core-api`, `dx-core`, `app-farm`, `app-lab`, `dx-host`) |
+| `backend.cdx.json` | Maven, `backend` (gốc `dx-os-parent`, cả sáu module `dx-core-api`, `dx-core`, `app-farm`, `app-lab`, `dx-host`, `dx-monitor`) |
 | `ai.cdx.json` | `ai/requirements.lock` |
 | `frontend.cdx.json` | npm, `frontend` |
 | `mobile.cdx.json` | npm, `mobile` |

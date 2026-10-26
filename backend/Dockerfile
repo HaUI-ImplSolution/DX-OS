@@ -1,4 +1,7 @@
-FROM eclipse-temurin:21-jdk-alpine AS builder
+# Two images are built from this file, one per runnable module:
+#   docker build --target backend .   (default) the backend, dx-host.jar
+#   docker build --target monitor .             the monitoring service, dx-monitor.jar
+FROM eclipse-temurin:21-jdk-alpine AS base
 
 WORKDIR /app
 COPY .mvn/ .mvn/
@@ -8,10 +11,12 @@ COPY dx-core/pom.xml dx-core/pom.xml
 COPY app-farm/pom.xml app-farm/pom.xml
 COPY app-lab/pom.xml app-lab/pom.xml
 COPY dx-host/pom.xml dx-host/pom.xml
+COPY dx-monitor/pom.xml dx-monitor/pom.xml
 # Make sure to run with linux line endings
 RUN sed -i 's/\r$//' mvnw
 RUN chmod +x ./mvnw
 
+FROM base AS build-host
 COPY dx-core-api/src/ dx-core-api/src/
 COPY dx-core/src/ dx-core/src/
 COPY app-farm/src/ app-farm/src/
@@ -19,9 +24,21 @@ COPY app-lab/src/ app-lab/src/
 COPY dx-host/src/ dx-host/src/
 RUN ./mvnw clean package -DskipTests -pl dx-host -am
 
-FROM eclipse-temurin:21-jre-alpine
+FROM base AS build-monitor
+COPY dx-monitor/src/ dx-monitor/src/
+RUN ./mvnw clean package -DskipTests -pl dx-monitor -am
+
+FROM eclipse-temurin:21-jre-alpine AS monitor
 WORKDIR /app
 ENV TZ=Asia/Ho_Chi_Minh
-COPY --from=builder /app/dx-host/target/dx-host.jar app.jar
+COPY --from=build-monitor /app/dx-monitor/target/dx-monitor.jar app.jar
+EXPOSE 8090
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# Last stage, so it is the default target.
+FROM eclipse-temurin:21-jre-alpine AS backend
+WORKDIR /app
+ENV TZ=Asia/Ho_Chi_Minh
+COPY --from=build-host /app/dx-host/target/dx-host.jar app.jar
 EXPOSE 8081
 ENTRYPOINT ["java", "-jar", "app.jar"]

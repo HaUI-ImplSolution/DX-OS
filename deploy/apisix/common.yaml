@@ -2,7 +2,7 @@
 # appends apps/<DXOS_APP>.yaml (more routes) and the #END marker to build the file APISIX loads.
 #
 # Single entry point of the stack:
-# - port 9080 serves the web app, API, Keycloak, photos and portal;
+# - port 9080 serves the web app, API, Keycloak, photos, portal and the monitor screen;
 # - port 9081 serves Superset only and port 9082 the MinIO console only.
 # Clients reach the web app, the API, Keycloak and the photo storage only through this gateway.
 # The AI service and the internal API are not routed.
@@ -35,6 +35,10 @@ upstreams:
     type: roundrobin
     nodes:
       "minio:9001": 1
+  - id: monitor
+    type: roundrobin
+    nodes:
+      "monitor:8090": 1
 
 # Second check of the access token, on top of the one the backend does itself.
 plugin_configs:
@@ -50,6 +54,47 @@ plugin_configs:
         set_userinfo_header: false
         set_access_token_header: false
         set_id_token_header: false
+
+  # Keycloak records the client address of X-Forwarded-For; replace what the client sent.
+  - id: keycloak-client-address
+    plugins:
+      proxy-rewrite:
+        headers:
+          set:
+            X-Forwarded-For: "$remote_addr"
+
+# Every request carries an X-Request-Id (kept when the client sends one), echoed in the response
+# and passed to the upstream so gateway and backend records can be matched.
+global_rules:
+  - id: request-id
+    plugins:
+      request-id:
+        header_name: X-Request-Id
+        include_in_response: true
+      # Every request is reported to the monitor in batches; it keeps the unusual ones (rate
+      # limited, rejected, missing, failed, slow). apisix-config fills in the delivery key. A
+      # monitor that is down only costs the batches that cannot be delivered.
+      http-logger:
+        uri: http://monitor:8090/monitor/ingest/gateway
+        auth_header: "Monitor __MONITOR_INGEST_KEY__"
+        timeout: 3
+        batch_max_size: 50
+        inactive_timeout: 5
+        max_retry_count: 2
+        retry_delay: 1
+        include_req_body: false
+        log_format:
+          time: "$time_iso8601"
+          remote_addr: "$remote_addr"
+          host: "$host"
+          method: "$request_method"
+          uri: "$uri"
+          status: "$status"
+          request_time: "$request_time"
+          upstream_addr: "$upstream_addr"
+          request_id: "$http_x_request_id"
+          cf_ray: "$http_cf_ray"
+          user_agent: "$http_user_agent"
 
 routes:
   # Each question runs an embedding on the AI service.
@@ -99,6 +144,16 @@ routes:
     uri: /api/*
     upstream_id: backend
     plugin_config_id: bearer-token
+    plugins:
+      # Counts the requests that carry a valid token; routes above set stricter limits of their own.
+      limit-count:
+        count: 600
+        time_window: 60
+        key_type: var
+        key: remote_addr
+        rejected_code: 429
+        rejected_msg: "Too many requests, try again in a minute"
+        show_limit_quota_header: true
 
   - id: api-docs
     vars: [["server_port", "==", "9080"]]
@@ -106,11 +161,30 @@ routes:
     uris: ["/swagger-ui.html", "/swagger-ui/*", "/v3/api-docs", "/v3/api-docs/*"]
     upstream_id: backend
 
+  # Password form and token endpoint share one counter per client address, and a sign-in takes two
+# requests. Keycloak's brute force protection locks an account after repeated wrong passwords.
+  - id: keycloak-login
+    vars: [["server_port", "==", "9080"]]
+    priority: 10
+    uris: ["/realms/:realm/login-actions/*", "/realms/:realm/protocol/openid-connect/token"]
+    upstream_id: keycloak
+    plugin_config_id: keycloak-client-address
+    plugins:
+      limit-count:
+        count: 120
+        time_window: 60
+        key_type: var
+        key: remote_addr
+        rejected_code: 429
+        rejected_msg: "Too many login attempts, try again in a minute"
+        show_limit_quota_header: true
+
   - id: keycloak
     vars: [["server_port", "==", "9080"]]
     priority: 5
     uris: ["/realms/*", "/resources/*", "/admin/*", "/js/*"]
     upstream_id: keycloak
+    plugin_config_id: keycloak-client-address
 
   # Presigned photo links: the path is /<bucket>/<object>, passed through unchanged because the
   # signature covers it.
@@ -154,6 +228,32 @@ routes:
     plugins:
       proxy-rewrite:
         regex_uri: ["^/portal/(.*)", "/$1"]
+
+  # The delivery path of the monitor is for the gateway only and is never forwarded.
+  - id: monitor-ingest
+    vars: [["server_port", "==", "9080"]]
+    priority: 20
+    uri: /monitor/ingest/*
+    plugins:
+      fault-injection:
+        abort:
+          http_status: 404
+          body: "Not found\n"
+
+  # Screen of the administrators: the monitor signs them in through Keycloak itself.
+  - id: monitor
+    vars: [["server_port", "==", "9080"]]
+    priority: 5
+    uris: ["/monitor", "/monitor/*"]
+    upstream_id: monitor
+    plugins:
+      limit-count:
+        count: 300
+        time_window: 60
+        key_type: var
+        key: remote_addr
+        rejected_code: 429
+        rejected_msg: "Too many requests, try again in a minute"
 
   - id: web
     vars: [["server_port", "==", "9080"]]

@@ -16,3 +16,17 @@ apisix:
   router:
     # Routes such as /crop-seasons/:id/disease-reports need path parameters.
     http: radixtree_uri_with_parameter
+
+nginx_config:
+  http:
+    # Behind the Cloudflare Tunnel every request comes from the cloudflared container; the client
+    # address is taken from CF-Connecting-IP only when the request arrives from the Docker networks.
+    real_ip_header: CF-Connecting-IP
+    real_ip_from:
+      - 127.0.0.1
+      - "unix:"
+      - 172.16.0.0/12
+    # One JSON object per request; the query string is left out because OIDC callbacks carry
+    # the authorization code in it.
+    access_log_format: '{"time":"$time_iso8601","remote_addr":"$remote_addr","host":"$host","method":"$request_method","uri":"$uri","status":$status,"request_time":$request_time,"upstream_time":"$upstream_response_time","bytes_sent":$bytes_sent,"request_id":"$http_x_request_id","upstream_addr":"$upstream_addr","cf_ray":"$http_cf_ray","user_agent":"$http_user_agent"}'
+    access_log_format_escape: json

@@ -12,7 +12,7 @@ Backend xử lý nghiệp vụ, lưu dữ liệu và ảnh, nhờ AI Service ch�
 
 | Dịch vụ | Vai trò |
 |---|---|
-| Gateway (APISIX) | Cổng vào duy nhất, kiểm tra đăng nhập và giới hạn tốc độ |
+| Gateway (APISIX) | Cổng vào duy nhất, kiểm tra đăng nhập, giới hạn tốc độ và ghi log truy cập |
 | Backend (Spring Boot) | Nghiệp vụ, phân quyền, quy trình duyệt, thông báo |
 | Web (React) | Giao diện cho Farm và Lab |
 | Mobile (Expo) | Ứng dụng cho nông dân, dùng được khi mất mạng |
@@ -22,8 +22,9 @@ Backend xử lý nghiệp vụ, lưu dữ liệu và ảnh, nhờ AI Service ch�
 | AI Service (FastAPI) | Nhận diện bệnh từ ảnh, hỏi đáp tài liệu |
 | Ollama | Chạy mô hình ngôn ngữ cho AI Service |
 | Superset | Báo cáo tổng hợp |
-| Mattermost | Nhận thông báo từ Backend |
+| Mattermost | Nhận thông báo từ Backend và cảnh báo từ Monitor |
 | Portal | Trang liên kết và trạng thái các dịch vụ |
+| Monitor (Spring Boot) | Màn hình giám sát và truy vết cho quản trị viên, chạy riêng nên vẫn hoạt động khi Backend dừng |
 
 ## 1. Sơ đồ 3 tầng
 
@@ -33,10 +34,12 @@ Backend xử lý nghiệp vụ, lưu dữ liệu và ảnh, nhờ AI Service ch�
 |---|---|---|
 | 1. Core | Identity, SSO | `backend/dx-core`, `sso/` |
 | 1. Core | Workflow, Notification | `backend/dx-core` |
+| 1. Core | Audit | `backend/dx-core` |
 | 1. Core | Storage | `backend/dx-core`, `minio/` |
 | 1. Core | AI, Knowledge | `backend/dx-core` |
 | 1. Core | Security, System status | `backend/dx-core` |
 | 1. Core | Gateway | `deploy/apisix/` |
+| Vận hành | Giám sát và truy vết (chạy riêng, chỉ ADMIN) | `backend/dx-monitor` |
 | 2. H-P-D-I | Human, Process, Data, Intelligence | các thành phần Core ở trên, cộng `ai/`, `bi/`, `chat/` |
 | 3. Ứng dụng | DX-Farm | `backend/app-farm`, `frontend/`, `mobile/`, `data/` |
 | 3. Ứng dụng | DX-Lab | `backend/app-lab`, `frontend/`, `data/` |
@@ -50,6 +53,7 @@ flowchart BT
   farm["<b>app-farm</b>"]
   lab["<b>app-lab</b>"]
   host["<b>dx-host</b><br/>ghép và chạy"]
+  monitor["<b>dx-monitor</b><br/>giám sát, chạy riêng"]
 
   core --> api
   farm --> api
@@ -59,7 +63,8 @@ flowchart BT
   host --> lab
 ```
 
-- Backend gồm năm module: hợp đồng chung, dịch vụ dùng chung, hai ứng dụng và module ghép để chạy.
+- Backend gồm sáu module: hợp đồng chung, dịch vụ dùng chung, hai ứng dụng, module ghép để chạy và `dx-monitor`.
+- `dx-monitor` là dịch vụ giám sát chạy trong container riêng, không phụ thuộc module nào khác, nên màn hình và cảnh báo vẫn hoạt động khi backend dừng.
 - Ứng dụng chỉ nhìn thấy hợp đồng chung, không chạm được vào ruột của Core; trình biên dịch chặn việc này.
 - Core không biết ứng dụng nào đang chạy, mọi thứ riêng của ứng dụng đều do ứng dụng khai báo.
 - Thêm ứng dụng mới chỉ cần thêm một module, không sửa Core; cách làm ở [`CONTRIBUTING.md`](./CONTRIBUTING.md) mục "Thêm một ứng dụng mới".
@@ -207,6 +212,10 @@ sequenceDiagram
 - Backend kiểm tra lại token độc lập với gateway; gateway cấu hình sai thì backend vẫn tự bảo vệ.
 - AI Service không có route ở gateway, chỉ backend gọi được qua mạng nội bộ.
 - Trạng thái hệ thống là API công khai, portal đọc từ đây.
+- Máy chủ công khai chạy sau Cloudflare Tunnel và không mở cổng vào.
+  Gateway ghi log JSON kèm `X-Request-Id`, backend ghi audit chỉ thêm; cấu hình Cloudflare ở [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE.md).
+- Gateway gửi từng đợt request tới `dx-monitor`, nơi giữ lại `429`, `401`, `404`, `5xx` và request chậm trong 30 ngày.
+  `dx-monitor` dò trạng thái các dịch vụ, đọc `audit_log` và sự kiện đăng nhập của Keycloak qua role chỉ đọc, rồi phục vụ màn hình `/monitor/` cho ADMIN; chi tiết ở [`backend/dx-monitor/README.md`](./backend/dx-monitor/README.md).
 
 ## 9. Đối chiếu với yêu cầu của đề
 
@@ -214,7 +223,7 @@ sequenceDiagram
 |---|---|
 | Tầng 1 headless, không có giao diện người dùng cuối | Core chỉ có API; giao diện nằm ở `frontend/` và `mobile/` |
 | Identity, SSO | Đăng nhập một lần, vai do ứng dụng khai báo |
-| API Gateway | Kiểm tra đăng nhập, giới hạn tốc độ, một cửa cho mọi client |
+| API Gateway | Kiểm tra đăng nhập, giới hạn tốc độ, ghi log truy cập, một cửa cho mọi client |
 | Dữ liệu cấu trúc và phi cấu trúc | Cơ sở dữ liệu cho nghiệp vụ và hỏi đáp, kho lưu ảnh và tệp đính kèm |
 | Workflow | Loại yêu cầu duyệt cấu hình được, lịch sử chỉ thêm, hộp duyệt |
 | Ít nhất một ứng dụng ở tầng 3 | Hai ứng dụng: DX-Farm và DX-Lab, cùng một Core không đổi |

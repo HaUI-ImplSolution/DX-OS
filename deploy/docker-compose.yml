@@ -4,6 +4,13 @@
 # Published ports: the gateway (apisix), Postgres and Mattermost.
 # Everything else is reached through the gateway.
 
+# Rotates the container logs so they cannot fill the disk; `docker compose logs` reads them.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
 x-postgres-env: &postgres-env
   POSTGRES_DB: ${POSTGRES_DB:?}
   POSTGRES_USER: ${POSTGRES_USER:?}
@@ -31,6 +38,7 @@ services:
   # Data and storage
   # ---------------------------------------------------------------------------
   postgres:
+    logging: *default-logging
     image: pgvector/pgvector:pg16
     environment:
       <<: *postgres-env
@@ -46,6 +54,7 @@ services:
 
   # The official MinIO images are no longer published, so the image is built from source.
   minio:
+    logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-minio:${DXOS_IMAGE_TAG:-local}
     build:
       context: ../minio
@@ -67,6 +76,7 @@ services:
   # Backend, web and portal
   # ---------------------------------------------------------------------------
   backend:
+    logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-backend:${DXOS_IMAGE_TAG:-local}
     build:
       context: ../backend
@@ -142,6 +152,7 @@ services:
       start_period: 30s
 
   frontend:
+    logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-frontend:${DXOS_IMAGE_TAG:-local}
     build:
       context: ../frontend
@@ -161,6 +172,7 @@ services:
       retries: 6
 
   portal:
+    logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-portal:${DXOS_IMAGE_TAG:-local}
     build:
       context: ../portal
@@ -180,6 +192,7 @@ services:
   # Identity
   # ---------------------------------------------------------------------------
   keycloak:
+    logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-sso:${DXOS_IMAGE_TAG:-local}
     build:
       context: ../sso
@@ -205,6 +218,7 @@ services:
       GATEWAY_PUBLIC_URL: ${GATEWAY_PUBLIC_URL:?}
       SUPERSET_PUBLIC_URL: ${SUPERSET_PUBLIC_URL:?}
       SUPERSET_OIDC_CLIENT_SECRET: ${SUPERSET_OIDC_CLIENT_SECRET:?}
+      MONITOR_OIDC_CLIENT_SECRET: ${MONITOR_OIDC_CLIENT_SECRET:?}
       KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET:?}
     volumes:
       - ../sso/realm-dxos.json:/opt/keycloak/data/import/realm-dxos.json:ro
@@ -225,27 +239,100 @@ services:
       start_period: 30s
 
   # ---------------------------------------------------------------------------
+  # Monitoring
+  # ---------------------------------------------------------------------------
+  # Creates the Postgres roles and schema of the monitoring service and the view of Keycloak
+  # sign-in events it reads (idempotent, see monitor-init.sh). It waits for the backend (audit_log)
+  # and Keycloak (event_entity) because each creates its own tables.
+  monitor-init:
+    logging: *default-logging
+    image: pgvector/pgvector:pg16
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    environment:
+      PGHOST: postgres
+      PGUSER: ${POSTGRES_USER:?}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?}
+      POSTGRES_DB: ${POSTGRES_DB:?}
+      MONITOR_DB_PASSWORD: ${MONITOR_DB_PASSWORD:?}
+      KEYCLOAK_READONLY_DB_PASSWORD: ${KEYCLOAK_READONLY_DB_PASSWORD:?}
+    volumes:
+      - ./monitor-init.sh:/monitor-init.sh:ro
+    entrypoint: ["bash", "/monitor-init.sh"]
+
+  # Receives the unusual requests of the gateway, probes the services and serves the screen of
+  # administrators under /monitor. It runs apart from the backend so it works when the backend is down.
+  monitor:
+    logging: *default-logging
+    image: ${DXOS_IMAGE_PREFIX:-dxos}-monitor:${DXOS_IMAGE_TAG:-local}
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+      target: monitor
+    restart: unless-stopped
+    depends_on:
+      monitor-init:
+        condition: service_completed_successfully
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:?}
+      MONITOR_DB_PASSWORD: ${MONITOR_DB_PASSWORD:?}
+      KEYCLOAK_READONLY_DB_PASSWORD: ${KEYCLOAK_READONLY_DB_PASSWORD:?}
+      MONITOR_INGEST_KEY: ${MONITOR_INGEST_KEY:?}
+      MONITOR_OIDC_CLIENT_SECRET: ${MONITOR_OIDC_CLIENT_SECRET:?}
+      GATEWAY_PUBLIC_URL: ${GATEWAY_PUBLIC_URL:?}
+      # Alerts go to the administrators' channel; a URL left empty is read from the file
+      # mattermost-bootstrap writes.
+      MATTERMOST_WEBHOOK_DIR: /run/mattermost-webhooks
+      MATTERMOST_WEBHOOK_URL: ${MATTERMOST_WEBHOOK_URL:-}
+      MATTERMOST_WEBHOOK_URL_ADMIN: ${MATTERMOST_WEBHOOK_URL_ADMIN:-}
+    volumes:
+      - ./data/mattermost/webhooks:/run/mattermost-webhooks:ro
+    # No published port: the gateway forwards /monitor, and delivers its own events straight to it.
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8090/monitor/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  # ---------------------------------------------------------------------------
   # Gateway
   # ---------------------------------------------------------------------------
   # Builds the gateway routes of the running app: apisix/common.yaml followed by
-  # apisix/apps/<DXOS_APP>.yaml. A value without a file stops here, before the gateway starts.
+  # apisix/apps/<DXOS_APP>.yaml, with the delivery key of the monitor filled in. A value without a
+  # file stops here, before the gateway starts.
   apisix-config:
     image: alpine:3.20
     environment:
       DXOS_APP: ${DXOS_APP:-farm}
+      MONITOR_INGEST_KEY: ${MONITOR_INGEST_KEY:?}
     command:
       - sh
       - -c
       - >-
         test -f /src/apps/$$DXOS_APP.yaml ||
         { echo "No gateway routes for DXOS_APP=$$DXOS_APP (apisix/apps/$$DXOS_APP.yaml)" >&2; exit 1; };
-        cat /src/common.yaml /src/apps/$$DXOS_APP.yaml > /out/apisix.yaml &&
+        cat /src/common.yaml /src/apps/$$DXOS_APP.yaml |
+        sed "s|__MONITOR_INGEST_KEY__|$$MONITOR_INGEST_KEY|g" > /out/apisix.yaml &&
         echo '#END' >> /out/apisix.yaml
     volumes:
       - ./apisix:/src:ro
       - ./data/apisix:/out
 
   apisix:
+    # The access log is the traffic record, so it keeps more history than the other services.
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "10"
     image: apache/apisix:3.11.0-debian
     restart: unless-stopped
     depends_on:
@@ -288,6 +375,7 @@ services:
   # AI: local LLM, knowledge ingest and the AI service
   # ---------------------------------------------------------------------------
   ollama:
+    logging: *default-logging
     image: ollama/ollama:0.34.2
     restart: unless-stopped
     volumes:
@@ -329,6 +417,7 @@ services:
     command: ["python", "-m", "scripts.ingest_diseases", "--corpus", "${DXOS_APP:-farm}"]
 
   ai:
+    logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-ai:${DXOS_IMAGE_TAG:-local}
     build:
       <<: *ai-build
@@ -374,6 +463,7 @@ services:
       - ./data/superset:/app/superset_home
 
   superset:
+    logging: *default-logging
     image: apache/superset:3.1.3
     depends_on:
       postgres:
@@ -427,6 +517,7 @@ services:
     volumes: *mattermost-volumes
 
   mattermost:
+    logging: *default-logging
     image: mattermost/mattermost-team-edition:10.5
     # A healthy backend does not mean its seeders have created the Mattermost role and database yet;
     # retry until the first Postgres connection succeeds.

@@ -4,7 +4,7 @@
   "serialNumber" : "urn:uuid:b794c2cd-fb42-3247-810d-6ceb38fc2b87",
   "version" : 1,
   "metadata" : {
-    "timestamp" : "2026-10-13T04:48:15Z",
+    "timestamp" : "2026-10-26T09:53:20Z",
     "lifecycles" : [
       {
         "phase" : "build"
@@ -1208,6 +1208,205 @@
         {
           "type" : "vcs",
           "url" : "https://github.com/jakartaee/jaf-api"
+        }
+      ]
+    },
+    {
+      "type" : "library",
+      "bom-ref" : "pkg:maven/net.minidev/json-smart@2.6.0?type=jar",
+      "publisher" : "Chemouni Uriel",
+      "group" : "net.minidev",
+      "name" : "json-smart",
+      "version" : "2.6.0",
+      "description" : "JSON (JavaScript Object Notation) is a lightweight data-interchange format. It is easy for humans to read and write. It is easy for machines to parse and generate. It is based on a subset of the JavaScript Programming Language, Standard ECMA-262 3rd Edition - December 1999. JSON is a text format that is completely language independent but uses conventions that are familiar to programmers of the C-family of languages, including C, C++, C#, Java, JavaScript, Perl, Python, and many others. These properties make JSON an ideal data-interchange language.",
+      "scope" : "required",
+      "hashes" : [
+        {
+          "alg" : "MD5",
+          "content" : "fde8981f31c3b972355a5adf26a9ec65"
+        },
+        {
+          "alg" : "SHA-1",
+          "content" : "5f858a43a325a8673da6869ab2bc787a1bcb2244"
+        },
+        {
+          "alg" : "SHA-256",
+          "content" : "1ae4b561458afb540be8ec5c6dbb4f2e715a319a7ae64854998aaf924770d61b"
+        },
+        {
+          "alg" : "SHA-512",
+          "content" : "fc8269826394dbca52fa9366f28226e5e37bc64c1268d7a49e2dea7fb2c62da2be8c8bcf362da5561a3cf413816019d8c4f95199a585eb8b13e8a8b634259a00"
+        },
+        {
+          "alg" : "SHA-384",
+          "content" : "13db694eb1f73778d628452b6840bff4c044101f2dcf7c3782f4bb48798fbae8b752cb8f7536b5173e896de4c225c3a6"
+        },
+        {
+          "alg" : "SHA3-384",
+          "content" : "86c0dc99d98a7c70015b6158f76253cd16a4b2bfb754ea6526991860e2536880b95130044cbe953865b284eebadad781"
+        },
+        {
+          "alg" : "SHA3-256",
+          "content" : "edee009cc2977ff4c2aae9098d14e7e651168dca1735726772d6bda5b66e2e98"
+        },
+        {
+          "alg" : "SHA3-512",
+          "content" : "23f8d5a59cd7111680f65d9fc2ed80b9876ab3094a2048526b376ae16ad855680b1c90264c23c52468efe0646a30db8a22f6b279ec67e047f3951b55a6d0d104"
+        }
+      ],
+      "licenses" : [
+        {
+          "license" : {
+            "id" : "Apache-2.0"
+          }
+        }
+      ],
+      "purl" : "pkg:maven/net.minidev/json-smart@2.6.0?type=jar",
+      "externalReferences" : [
+        {
+          "type" : "website",
+          "url" : "https://urielch.github.io/"
+        },
+        {
+          "type" : "vcs",
+          "url" : "https://github.com/netplex/json-smart-v2"
+        }
+      ]
+    },
+    {
+      "type" : "library",
+      "bom-ref" : "pkg:maven/net.minidev/accessors-smart@2.6.0?type=jar",
+      "publisher" : "Chemouni Uriel",
+      "group" : "net.minidev",
+      "name" : "accessors-smart",
+      "version" : "2.6.0",
+      "description" : "Java reflect give poor performance on getter setter an constructor calls, accessors-smart use ASM to speed up those calls.",
+      "scope" : "required",
+      "hashes" : [
+        {
+          "alg" : "MD5",
+          "content" : "0ad72639eea293193f68898da9b0b902"
+        },
+        {
+          "alg" : "SHA-1",
+          "content" : "2d96f1d9b6ab7f13261aa81b15703574185747a0"
+        },
+        {
+          "alg" : "SHA-256",
+          "content" : "222c9f547bb20a99fc486403a398352d1306fb671b38abd7ecab6401df170e61"
+        },
+        {
+          "alg" : "SHA-512",
+          "content" : "220eb28c94fdd15e7ac9b7e80d238a9871fc78db3127db9ca6207251e0e5563c62cfd5ab7625d69eb9e2563fc726e71a25562a4081f089f564dc206e0569665f"
+        },
+        {
+          "alg" : "SHA-384",
+          "content" : "c861d37b7a3a5d3d42a699239e3437cf094a8359b2371bacce5f7a17da02f9a0eb65ca2456d0168c4870be36bddc135f"
+        },
+        {
+          "alg" : "SHA3-384",
+          "content" : "4fa8ea0794e22ccc34ecc9b73cb9cad062cd82561227b15f1261541180d584ba745611ff31e98653e4f5d481846de361"
+        },
+        {
+          "alg" : "SHA3-256",
+          "content" : "1b170bf2e79abd9a77bb330c51b73d695c17e5db41817efab22294f4ee65a2c1"
+        },
+        {
+          "alg" : "SHA3-512",
+          "content" : "224c001707e5b478f6503b88ab8c07b94f82bfb02bc81094a3ffdcf05d29f1377a8e518b223f9282d0147f386f13faf319692002d59f4c6f452b282aa6b000c0"
+        }
+      ],
+      "licenses" : [
+        {
+          "license" : {
+            "id" : "Apache-2.0"
+          }
+        }
+      ],
+      "purl" : "pkg:maven/net.minidev/accessors-smart@2.6.0?type=jar",
+      "externalReferences" : [
+        {
+          "type" : "website",
+          "url" : "https://urielch.github.io/"
+        },
+        {
+          "type" : "vcs",
+          "url" : "https://github.com/netplex/json-smart-v2"
+        }
+      ]
+    },
+    {
+      "type" : "library",
+      "bom-ref" : "pkg:maven/org.ow2.asm/asm@9.7.1?type=jar",
+      "publisher" : "OW2",
+      "group" : "org.ow2.asm",
+      "name" : "asm",
+      "version" : "9.7.1",
+      "description" : "ASM, a very small and fast Java bytecode manipulation framework",
+      "scope" : "required",
+      "hashes" : [
+        {
+          "alg" : "MD5",
+          "content" : "e2cdd32d198ad31427d298eee9d39d8d"
+        },
+        {
+          "alg" : "SHA-1",
+          "content" : "f0ed132a49244b042cd0e15702ab9f2ce3cc8436"
+        },
+        {
+          "alg" : "SHA-256",
+          "content" : "8cadd43ac5eb6d09de05faecca38b917a040bb9139c7edeb4cc81c740b713281"
+        },
+        {
+          "alg" : "SHA-512",
+          "content" : "4767b01603dad5c79cc1e2b5f3722f72b1059d928f184f446ba11badeb1b381b3a3a9a801cc43d25d396df950b09d19597c73173c411b1da890de808b94f1f50"
+        },
+        {
+          "alg" : "SHA-384",
+          "content" : "166e2be10a19ca6a6d7cadb542eb1c948562483f02557b467a50a3d19d01318e12e5c3b495c482f3f5369be1b7f20eed"
+        },
+        {
+          "alg" : "SHA3-384",
+          "content" : "e301862376e84df61c3547dbf637252750224fb5b74feb82f20e1527a8e3152c45f620192a9111a2db5e2f0e73ebd7ca"
+        },
+        {
+          "alg" : "SHA3-256",
+          "content" : "7edcc4ff09b3ace15091a8c550f552a324b5cee6c1527944db5823df7eba8d64"
+        },
+        {
+          "alg" : "SHA3-512",
+          "content" : "9d220edc5528e4d788605721490f3d29483dd4bd506765e85d781048419aa89b686a70e316b82ef2a856ead56bb7be6b5d52d77b7ca6f27d5e0e347e9669d731"
+        }
+      ],
+      "licenses" : [
+        {
+          "license" : {
+            "id" : "BSD-3-Clause",
+            "url" : "https://opensource.org/licenses/BSD-3-Clause"
+          }
+        }
+      ],
+      "purl" : "pkg:maven/org.ow2.asm/asm@9.7.1?type=jar",
+      "externalReferences" : [
+        {
+          "type" : "website",
+          "url" : "http://asm.ow2.io/"
+        },
+        {
+          "type" : "distribution-intake",
+          "url" : "https://repository.ow2.org/nexus/service/local/staging/deploy/maven2"
+        },
+        {
+          "type" : "issue-tracker",
+          "url" : "https://gitlab.ow2.org/asm/asm/issues"
+        },
+        {
+          "type" : "mailing-list",
+          "url" : "https://mail.ow2.org/wws/arc/asm/"
+        },
+        {
+          "type" : "vcs",
+          "url" : "https://gitlab.ow2.org/asm/asm/"
         }
       ]
     },
@@ -10478,6 +10677,885 @@
           "url" : "https://github.com/spring-projects/spring-boot/dx-os-parent/dx-host"
         }
       ]
+    },
+    {
+      "type" : "library",
+      "bom-ref" : "pkg:maven/HaUI.ImplSolution/dx-monitor@0.0.1-SNAPSHOT?type=jar",
+      "group" : "HaUI.ImplSolution",
+      "name" : "dx-monitor",
+      "version" : "0.0.1-SNAPSHOT",
+      "description" : "Runnable monitoring service: gateway events, service probes, audit and login trails for administrators",
+      "licenses" : [
+        {
+          "license" : {
+            "id" : "Apache-2.0"
+          }
+        }
+      ],
+      "purl" : "pkg:maven/HaUI.ImplSolution/dx-monitor@0.0.1-SNAPSHOT?type=jar",
+      "externalReferences" : [
+        {
+          "type" : "website",
+          "url" : "https://spring.io/projects/spring-boot/dx-os-parent/dx-monitor"
+        },
+        {
+          "type" : "vcs",
+          "url" : "https://github.com/spring-projects/spring-boot/dx-os-parent/dx-monitor"
+        }
+      ]
+    },
+    {
+      "type" : "library",
+      "bom-ref" : "pkg:maven/org.springframework.boot/spring-boot-starter-thymeleaf@4.1.1?type=jar",
+      "publisher" : "VMware, Inc.",
+      "group" : "org.springframework.boot",
+      "name" : "spring-boot-starter-thymeleaf",
+      "version" : "4.1.1",
+      "description" : "Starter for using Thymeleaf",
+      "scope" : "required",
+      "hashes" : [
+        {
+          "alg" : "MD5",
+          "content" : "9a814d09d97ae6c806b7426bff1813d2"
+        },
+        {
+          "alg" : "SHA-1",
+          "content" : "32a2d87c7f3b3f88e4243114770d2a20b3f0827f"
+        },
+        {
+          "alg" : "SHA-256",
+          "content" : "85e6e02b6c4df2b157e24eb88e75bf50ef64f3a30ac781a9027c2e3ebef4ee28"
+        },
+        {
+          "alg" : "SHA-512",
+          "content" : "f7db62af14c7143600a9c3866ef961651db240d2f9e6b537620b8eb66d923a07d900c549b8ada5e6580c9dc0868b468b407e70f462043303fb8b85c79ceb4b88"
+        },
+        {
+          "alg" : "SHA-384",
+          "content" : "52978f30d3b6605c63cfce0dad545a9374cbede5c8660bfd25d29b24d2405c3163e2a2e462494da4bef6f4f8f324f76e"
+        },
+        {
+          "alg" : "SHA3-384",
+          "content" : "f9311a10559b2bca6b5a35818a8b7ced1cc764466d56ac6ebbc4d726d9ecfdd5c2edb996cf9e91c80bd3e07970f289c5"
+        },
+        {
+          "alg" : "SHA3-256",
+          "content" : "46d580e1d1d41296c82106a28394c679ace0a4f2a71c85a7708538bcfc122990"
+        },
+        {
+          "alg" : "SHA3-512",
+          "content" : "68cce47d7faddb3d1124a123567f5224fdec2045aa75f0c7a2e4e465cefa8891366220dfb9749829e14c0c808bf7ea5658c021c0297138c3b28aa534e2ae24f5"
+        }
+      ],
+      "licenses" : [
+        {
+          "license" : {
+            "id" : "Apache-2.0"
+          }
+        }
+      ],
+      "purl" : "pkg:maven/org.springframework.boot/spring-boot-starter-thymeleaf@4.1.1?type=jar",
+      "externalReferences" : [
+        {
+          "type" : "website",
+          "url" : "https://spring.io/projects/spring-boot"
+        },
+        {
+          "type" : "issue-tracker",
+          "url" : "https://github.com/spring-projects/spring-boot/issues"
+        },
+        {
+          "type" : "vcs",
+          "url" : "https://github.com/spring-projects/spring-boot"
+        }
+      ]
+    },
+    {
+      "type" : "library",
+      "bom-ref" : "pkg:maven/org.springframework.boot/spring-boot-thymeleaf@4.1.1?type=jar",
+      "publisher" : "VMware, Inc.",
+      "group" : "org.springframework.boot",
+      "name" : "spring-boot-thymeleaf",
+      "version" : "4.1.1",
+      "description" : "Spring Boot Thymeleaf",
+      "scope" : "required",
+      "hashes" : [
+        {
+          "alg" : "MD5",
+          "content" : "041fcbcb610788acf0f86f4e932665e2"
+        },
+        {
+          "alg" : "SHA-1",
+          "content" : "ee3ff1d68c23151f176cc68197ca9d3aa965c845"
+        },
+        {
+          "alg" : "SHA-256",
+          "content" : "a74614ffe39bd63f54609b9bbcc01c16497de60e9530df3a6155284b5237bc86"
+        },
+        {
+          "alg" : "SHA-512",
+          "content" : "3db28e3e5d6f97aacb53070a7e04929062d23626a7bbe0d5a7648fa1fa40d1a401bdc16f9fd90c757820c9449f966cbf363fcdf11b0857aa69d466652a0f34e9"
+        },
+        {
+          "alg" : "SHA-384",
+          "content" : "5dd51cc278addcd7094942b2c7b55a8de8bde808eae144b8e5f9ba42f7dd6d9ca71ac9fbc667d99a47e8adc689a53d8b"
+        },
+        {
+          "alg" : "SHA3-384",
+          "content" : "4a75a3ffaac2956f4892cced1f0c319438fa6a791608f8fa58f588e46b4edd17b875ffddcac030160a6f8fc71bdcc296"
+        },
+        {
+          "alg" : "SHA3-256",
+          "content" : "f6e3648b413d955431a92257ee1a03695b35a95677ecd7d09e6398d7a2242ba3"
+        },
+        {
+          "alg" : "SHA3-512",
+          "content" : "e1c81fcf01dbe2f1c958192f8bcf23ccca094062a9206699a4a3e0f0b6a2d1360e3819df250cf2b37019c48b12d20073527f2200937b07a426150e2cc17e4506"
+        }
+      ],
+      "licenses" : [
+        {
+          "license" : {
+            "id" : "Apache-2.0"
+          }
+        }
+      ],
+      "purl" : "pkg:maven/org.springframework.boot/spring-boot-thymeleaf@4.1.1?type=jar",
+      "externalReferences" : [
+        {
+          "type" : "website",
+          "url" : "https://spring.io/projects/spring-boot"
+        },
+        {
+          "type" : "issue-tracker",
+          "url" : "https://github.com/spring-projects/spring-boot/issues"
+        },
+        {
+          "type" : "vcs",
+          "url" : "https://github.com/spring-projects/spring-boot"
+        }
+      ]
+    },
+    {
+      "type" : "library",
+      "bom-ref" : "pkg:maven/org.thymeleaf/thymeleaf-spring6@3.1.5.RELEASE?type=jar",
+      "publisher" : "Thymeleaf",
+      "group" : "org.thymeleaf",
+      "name" : "thymeleaf-spring6",
+      "version" : "3.1.5.RELEASE",
+      "description" : "Modern server-side Java template engine for both web and standalone environments",
+      "scope" : "required",
+      "hashes" : [
+        {
+          "alg" : "MD5",
+          "content" : "ba6d76a7c1c81ffbed318b165a72cc3a"
+        },
+        {
+          "alg" : "SHA-1",
+          "content" : "d9dcb89be976a321df29518cc634d89a83973800"
+        },
+        {
+          "alg" : "SHA-256",
+          "content" : "fd5d306052d7aa6769a8ec77778d328e6f7c83af5ac074df38035bbb1e9cd72b"
+        },
+        {
+          "alg" : "SHA-512",
+          "content" : "c8eef2951afd575d4c4d7b7f2e08845b8fe4838f4a97b39a115d5416e0b26edca40623a34cf61e5dbc78f13305f6f5d5f2b4cc8cf004497e874b098d401cae22"
+        },
+        {
+          "alg" : "SHA-384",
+          "content" : "90385cda4c91d04ae253bf09022681d5673148bc8f1883d7bef3946624601ec9e15e3e574f411d299b753d0e50ce975f"
+        },
+        {
+          "alg" : "SHA3-384",
+          "content" : "e2732ca5b7ac9cdd56a71cc884d9de2a0a1a91fd5d79aaa4f505182c409ebd63d4e9060735a83196bc0d58e90b606fac"
+        },
+        {
+          "alg" : "SHA3-256",
+          "content" : "57663d85c7efa9dc7a15224b30308426f3a79a61b9ac513289e38044153582ed"
+        },
+        {
+          "alg" : "SHA3-512",
+          "content" : "f78423b905dadeb4e2a8b6a67202bc2ab722423aa5689fbd414e558b904ba5cd8e971eb5002a2e8d08ecaa3837eb56f92ce3ce4610003e97c45e3e54e94e99e0"
+        }
+      ],
+      "licenses" : [
+        {
+          "license" : {
+            "id" : "Apache-2.0"
+          }
+        }
+      ],
+      "purl" : "pkg:maven/org.thymeleaf/thymeleaf-spring6@3.1.5.RELEASE?type=jar",
+      "externalReferences" : [
+        {
+          "type" : "website",
+          "url" : "http://www.thymeleaf.org/thymeleaf-lib/thymeleaf-spring6"
+        },
+        {
+          "type" : "vcs",
+          "url" : "https://github.com/thymeleaf/thymeleaf/thymeleaf-lib/thymeleaf-spring6"
+        }
+      ]
+    },
+    {
+      "type" : "library",
+      "bom-ref" : "pkg:maven/org.thymeleaf/thymeleaf@3.1.5.RELEASE?type=jar",
+      "publisher" : "Thymeleaf",
+      "group" : "org.thymeleaf",
+      "name" : "thymeleaf",
+      "version" : "3.1.5.RELEASE",
+      "description" : "Modern server-side Java template engine for both web and standalone environments",
+      "scope" : "required",
+      "hashes" : [
+        {
+          "alg" : "MD5",
+          "content" : "a98ce31b33c80805b77e26f24e531aad"
+        },
+        {
+          "alg" : "SHA-1",
+          "content" : "8986b45086f74f7773c440055a2f473817dd3fa8"
+        },
+        {
+          "alg" : "SHA-256",
+          "content" : "4011795f8494dd69e764b7709443dd13d3068ba8ac37624f61d7084f4429cbe2"
+        },
+        {
+          "alg" : "SHA-512",
+          "content" : "30fa6e8a821183f5b2b981e1f972d2b4ade00de35e0172dbd4a6680df69b5cfafce251e2e288d3e9b95399443aa2a1f88760715a5ba74afdf5f61ea6b6630c5d"
+        },
+        {
+          "alg" : "SHA-384",
+          "content" : "b35de36758814468d3f0309257ea8d08149307bfe497da006d9fecb5b74efab1b7c6d2e0407f84f5a8434a9f09a7f1f2"
+        },
+        {
+          "alg" : "SHA3-384",
+          "content" : "2823426d5c615c6f0c119a59e3728607fc2a2792414a4769191939e494d50d7e7afe9d898be88c767e945a744f04df8b"
+        },
+        {
+          "alg" : "SHA3-256",
+          "content" : "830c996116e906cc1135fd8c5038190a23846dbbc1f43bfce738415c146b5d5d"
+        },
+        {
+          "alg" : "SHA3-512",
+          "content" : "2f8cddd9ab822d54728b1e8ef8eea89f3ccbf8ec022c2087bbc1fd843a370d941d0bed50fe4ad90c84cce64f0252d64628c3c245fdbd5b46c541b02aa779f25c"
+        }
+      ],
+      "licenses" : [
+        {
+          "license" : {
+            "id" : "Apache-2.0"
+          }
+        }
+      ],
+      "purl" : "pkg:maven/org.thymeleaf/thymeleaf@3.1.5.RELEASE?type=jar",
+      "externalReferences" : [
+        {
+          "type" : "website",
+          "url" : "http://www.thymeleaf.org/thymeleaf-lib/thymeleaf"
+        },
+        {
+          "type" : "vcs",
+          "url" : "https://github.com/thymeleaf/thymeleaf/thymeleaf-lib/thymeleaf"
+        }
+      ]
+    },
+    {
+      "type" : "library",
+      "bom-ref" : "pkg:maven/org.attoparser/attoparser@2.0.7.RELEASE?type=jar",
+      "publisher" : "The ATTOPARSER team",
+      "group" : "org.attoparser",
+      "name" : "attoparser",
+      "version" : "2.0.7.RELEASE",
+      "description" : "Powerful, fast and easy to use HTML and XML parser for Java",
+      "scope" : "required",
+      "hashes" : [
+        {
+          "alg" : "MD5",
+          "content" : "fd09ceba7061e05460e74e0e1e64f233"
+        },
+        {
+          "alg" : "SHA-1",
+          "content" : "e5d0e988d9124139d645bb5872b24dfa23e283cc"
+        },
+        {
+          "alg" : "SHA-256",
+          "content" : "75dd1c045492bff8e1963aabb28bfe903c2064e11e27fe2f0f0aff1ad3d84476"
+        },
+        {
+          "alg" : "SHA-512",
+          "content" : "010a118a86e72ef9018cca65655e93be778039277d0a2aea5676eda4483b0a189d65b3fa944a9af2105dda502c3aebc3c1ab9b64c1a3207aa140c4d2fd054a8b"
+        },
+        {
+          "alg" : "SHA-384",
+          "content" : "62c6b9b08e9a2b853095d8b111dda1c5fc4342bc87020e3dab0ac53e897127653f2e0197d8d4d75e8b241883de43f65a"
+        },
+        {
+          "alg" : "SHA3-384",
+          "content" : "a3bdffc2e9dc90b04a5c6dc1937debd7ce3d7ccfab9bbac4dba4d95efab928d20ab8a94d481214c9b304430fac3451d4"
+        },
+        {
+          "alg" : "SHA3-256",
+          "content" : "e3f91ced9dd24f9babae34b35db9a42511d6fb22ea1e60ab5456954ad8fa5c4a"
+        },
+        {
+          "alg" : "SHA3-512",
+          "content" : "aa55fb1d0275582cfb972b0efdd9a8d16f111f3d363315555c3b1cccb5050c993dfaac55b910adaaec6a325ff6703875dc91d03eb05e907faa1a8f2e330b2bd5"
+        }
+      ],
+      "licenses" : [
+        {
+          "license" : {
+            "id" : "Apache-2.0"
+          }
+        }
+      ],
+      "purl" : "pkg:maven/org.attoparser/attoparser@2.0.7.RELEASE?type=jar",
+      "externalReferences" : [
+        {
+          "type" : "website",
+          "url" : "https://www.attoparser.org"
+        },
+        {
+          "type" : "distribution-intake",
+          "url" : "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+        },
+        {
+          "type" : "vcs",
+          "url" : "scm:git:git@github.com:attoparser/attoparser.git"
+        }
+      ]
+    },
+    {
+      "type" : "library",
+      "bom-ref" : "pkg:maven/org.unbescape/unbescape@1.1.6.RELEASE?type=jar",
+      "publisher" : "The UNBESCAPE team",
+      "group" : "org.unbescape",
+      "name" : "unbescape",
+      "version" : "1.1.6.RELEASE",
+      "description" : "Advanced yet easy-to-use escape/unescape library for Java",
+      "scope" : "required",
+      "hashes" : [
+        {
+          "alg" : "MD5",
+          "content" : "d95ed94e1624e307a1958ee105ccbf39"
+        },
+        {
+          "alg" : "SHA-1",
+          "content" : "7b90360afb2b860e09e8347112800d12c12b2a13"
+        },
+        {
+          "alg" : "SHA-256",
+          "content" : "597cf87d5b1a4f385b9d1cec974b7b483abb3ee85fc5b3f8b62af8e4bec95c2c"
+        },
+        {
+          "alg" : "SHA-512",
+          "content" : "6918e9579b06721942fdcd91e401f5b996fb4eac13056dbafdf594661f355a34874eb5266784bc2c4f82df9fdd9e219d71a96f52945a354f01665f85f8166bb3"
+        },
+        {
+          "alg" : "SHA-384",
+          "content" : "1b808b67c784b69afea64364ba4c0d433c7f042c512f5c18f07d5388fe7ac4741913f696424bd8fbde147383cfb3d8f9"
+        },
+        {
+          "alg" : "SHA3-384",
+          "content" : "6525bd20a12ff43a0089c0d59369574ae6c01e2b4b1aacf466847d4433ae403db08404a9b59be397c3034f972bcd6b06"
+        },
+        {
+          "alg" : "SHA3-256",
+          "content" : "a190c9bedccff959d08db12fe7080437fb4e98f05516b39d6540be718e151cc6"
+        },
+        {
+          "alg" : "SHA3-512",
+          "content" : "5d7b5edc0c2a0d47c9625936c14b4122330b96cdf54260fe2a6468289c2f4cbc4ee19770c1144acfa702f2f058a81544b4aea9258fe0e15166a1a331736d7b77"
+        }
+      ],
+      "licenses" : [
+        {
+          "license" : {
+            "id" : "Apache-2.0"
+          }
+        }
+      ],
+      "purl" : "pkg:maven/org.unbescape/unbescape@1.1.6.RELEASE?type=jar",
+      "externalReferences" : [
+        {
+          "type" : "website",
+          "url" : "http://www.unbescape.org"
+        },
+        {
+          "type" : "distribution-intake",
+          "url" : "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+        },
+        {
+          "type" : "vcs",
+          "url" : "scm:git:git@github.com:unbescape/unbescape.git"
+        }
+      ]
+    },
+    {
+      "type" : "library",
+      "bom-ref" : "pkg:maven/org.springframework.boot/spring-boot-starter-oauth2-client@4.1.1?type=jar",
+      "publisher" : "VMware, Inc.",
+      "group" : "org.springframework.boot",
+      "name" : "spring-boot-starter-oauth2-client",
+      "version" : "4.1.1",
+      "description" : "Starter for using Spring Security's OAuth2/OpenID Connect client features (deprecated in favor of spring-boot-starter-security-oauth2-client)",
+      "scope" : "required",
+      "hashes" : [
+        {
+          "alg" : "MD5",
+          "content" : "554d6fed24129644c298615757ac24ad"
+        },
+        {
+          "alg" : "SHA-1",
+          "content" : "4a0f819b01741e0a32db078fe063ec54b45ae4bb"
+        },
+        {
+          "alg" : "SHA-256",
+          "content" : "38d0ed03316db125a5122742495c90393e6cb0e22aac68064efba8543c3eac75"
+        },
+        {
+          "alg" : "SHA-512",
+          "content" : "8186bb204a0eaea08b4b47230c28e117286011afc8e67661fd06b33ed225e7d28ed992d2fbd624fbdb37a2d891b72a43328d58b896167b63c3e3b81d53cd4792"
+        },
+        {
+          "alg" : "SHA-384",
+          "content" : "f5132b5abc16cec4954628aab28bed4dc44f3fb3a276464be874c8b5c5843291ee77290142ef3e202f6ae7b2ddcddb84"
+        },
+        {
+          "alg" : "SHA3-384",
+          "content" : "e3df511a2f05237396bca8623580a65972e76f8512908baa91d7b12e11a6d3602029de5848fa0b2ac9caa9a97ca82c20"
+        },
+        {
+          "alg" : "SHA3-256",
+          "content" : "311b155940e97aa2040edf726492e7f53c19ce4608c9ed83f31d8c4e62718734"
+        },
+        {
+          "alg" : "SHA3-512",
+          "content" : "48cba8e6ec5db0001b9dd5ca8e118fbaa87557041a1598867b6d6c57ac9bd29dfbf4040f3fce9f2783c5508408d3646d4cf313e6ff170bf1d49bdcfd500cccde"
+        }
+      ],
+      "licenses" : [
+        {
+          "license" : {
+            "id" : "Apache-2.0"
+          }
+        }
+      ],
+      "purl" : "pkg:maven/org.springframework.boot/spring-boot-starter-oauth2-client@4.1.1?type=jar",
+      "externalReferences" : [
+        {
+          "type" : "website",
+          "url" : "https://spring.io/projects/spring-boot"
+        },
+        {
+          "type" : "issue-tracker",
+          "url" : "https://github.com/spring-projects/spring-boot/issues"
+        },
+        {
+          "type" : "vcs",
+          "url" : "https://github.com/spring-projects/spring-boot"
+        }
+      ]
+    },
+    {
+      "type" : "library",
+      "bom-ref" : "pkg:maven/org.springframework.boot/spring-boot-security-oauth2-client@4.1.1?type=jar",
+      "publisher" : "VMware, Inc.",
+      "group" : "org.springframework.boot",
+      "name" : "spring-boot-security-oauth2-client",
+      "version" : "4.1.1",
+      "description" : "Spring Boot Security OAuth2 Client",
+      "scope" : "required",
+      "hashes" : [
+        {
+          "alg" : "MD5",
+          "content" : "367149d18c3c39789eae62fde4f61c66"
+        },
+        {
+          "alg" : "SHA-1",
+          "content" : "37e49905413e22e4a4ba670b86e644442e55732d"
+        },
+        {
+          "alg" : "SHA-256",
+          "content" : "f194178e5ba4ea7e27b2c1ba172f4f4b9ebcce4abc7780c93b82ad45d0a2ba38"
+        },
+        {
+          "alg" : "SHA-512",
+          "content" : "9b0ae633d3c2ff88aeb73e3c63a9a9b4ad44f88419fcf207ba7157f6641fe3e27b14f95a39453bbd5ca7304975720f623df820e201ae213db8943c71922f8ec8"
+        },
+        {
+          "alg" : "SHA-384",
+          "content" : "cc9de6b9fe52eda52e74909995df45e735f59fc5f6f530c9b7c8008c746bc9e1f19aacfcd11eb3c11b403cb118d19772"
+        },
+        {
+          "alg" : "SHA3-384",
+          "content" : "a298663481037165a864c42f13214c3729b413a6dd5b2ad452a622df290e5b6711fef95f1bfde04e96627b5fc456dfce"
+        },
+        {
+          "alg" : "SHA3-256",
+          "content" : "a01f534d513e8b06d1618bbf3671cf61f5e1c814cc76da5b68b96a33eed14d80"
+        },
+        {
+          "alg" : "SHA3-512",
+          "content" : "daa8c03acd6f7d4c21750eebcfbb1f0687e2fab48bab298a576b872fe017a17b71f16b7c03d103d073c60160a3ee3f9327bbb1f253012e8f4e39cc761920253b"
+        }
+      ],
+      "licenses" : [
+        {
+          "license" : {
+            "id" : "Apache-2.0"
+          }
+        }
+      ],
+      "purl" : "pkg:maven/org.springframework.boot/spring-boot-security-oauth2-client@4.1.1?type=jar",
+      "externalReferences" : [
+        {
+          "type" : "website",
+          "url" : "https://spring.io/projects/spring-boot"
+        },
+        {
+          "type" : "issue-tracker",
+          "url" : "https://github.com/spring-projects/spring-boot/issues"
+        },
+        {
+          "type" : "vcs",
+          "url" : "https://github.com/spring-projects/spring-boot"
+        }
+      ]
+    },
+    {
+      "type" : "library",
+      "bom-ref" : "pkg:maven/org.springframework.security/spring-security-oauth2-client@7.1.1?type=jar",
+      "publisher" : "Pivotal Software, Inc.",
+      "group" : "org.springframework.security",
+      "name" : "spring-security-oauth2-client",
+      "version" : "7.1.1",
+      "description" : "Spring Security",
+      "scope" : "required",
+      "hashes" : [
+        {
+          "alg" : "MD5",
+          "content" : "cd1c9d731f5026108031e56f4fe05d3b"
+        },
+        {
+          "alg" : "SHA-1",
+          "content" : "37e4431b79feb1624a957ca638584f2601e4e8e9"
+        },
+        {
+          "alg" : "SHA-256",
+          "content" : "d871b3571201c69e0142cca3a61fbcca4fd4ec9c0dedb21fdd4fe4a77ff9991d"
+        },
+        {
+          "alg" : "SHA-512",
+          "content" : "6bae81b501fda6e481a09ece74e4e6941d3b3dafa11987e89f827fb001225a967e32840ad57b950ded943de16bfc1f54276e3f90cefe665140369b3e8bdebd4d"
+        },
+        {
+          "alg" : "SHA-384",
+          "content" : "ec4892513ba41ea9e2c343a51e01ddf8cc4d3853ac09b07c0e4d43a4105571e864a92e9c7b3e534be4d4dfe0d698afc2"
+        },
+        {
+          "alg" : "SHA3-384",
+          "content" : "f0d7631d8baee843ef32609455f4787c0d3a67232b6f4135156f370e2916505fe21217bbbbd8e6f5fabf077e3e4f9fe3"
+        },
+        {
+          "alg" : "SHA3-256",
+          "content" : "58ccfe52cf2890787c8c353887a01e1769e5dc90076a84bb36574a51856caec1"
+        },
+        {
+          "alg" : "SHA3-512",
+          "content" : "ae6f3c9840d28821e6be783c951bc30f5c523518a0ddce3350c3003853cee7bd5e711c5a074cfe1ab9f8d48b2a871c887285115b671c46747ab6009e887ffef3"
+        }
+      ],
+      "licenses" : [
+        {
+          "license" : {
+            "id" : "Apache-2.0"
+          }
+        }
+      ],
+      "purl" : "pkg:maven/org.springframework.security/spring-security-oauth2-client@7.1.1?type=jar",
+      "externalReferences" : [
+        {
+          "type" : "website",
+          "url" : "https://spring.io/projects/spring-security"
+        },
+        {
+          "type" : "issue-tracker",
+          "url" : "https://github.com/spring-projects/spring-security/issues"
+        },
+        {
+          "type" : "vcs",
+          "url" : "https://github.com/spring-projects/spring-security"
+        }
+      ]
+    },
+    {
+      "type" : "library",
+      "bom-ref" : "pkg:maven/com.nimbusds/oauth2-oidc-sdk@11.38.2?type=jar",
+      "publisher" : "Connect2id Ltd.",
+      "group" : "com.nimbusds",
+      "name" : "oauth2-oidc-sdk",
+      "version" : "11.38.2",
+      "description" : "OAuth 2.0 SDK with OpenID Connect and Federation extensions for developing client and server applications.",
+      "scope" : "required",
+      "hashes" : [
+        {
+          "alg" : "MD5",
+          "content" : "38e046019e13d821b2c4bc17b0aa7bb1"
+        },
+        {
+          "alg" : "SHA-1",
+          "content" : "633504f3430c148cc583d9d481f5f4e48e29cccf"
+        },
+        {
+          "alg" : "SHA-256",
+          "content" : "30e63220c15bd93006c557bd0d614bb57a5f00232188693577c222383ea4bbe7"
+        },
+        {
+          "alg" : "SHA-512",
+          "content" : "30928fd2dcb6680ad1a8bf0923b2e7125eca4ec22eae584695468db82529a17f43ac405ecd28e622446ea4c96755b9c111311deb7d53179cb9c435fa0140f114"
+        },
+        {
+          "alg" : "SHA-384",
+          "content" : "daec981126c784ad4214d7959e72f2c4464fa2cdfc35d41523d032448b0bea32a7d275908cea9d1afc9b3533be6a6159"
+        },
+        {
+          "alg" : "SHA3-384",
+          "content" : "4282a8dbfd0b80180b72883cb9a5cdb28be7c68fe2c571d36a8cbe5541cb87b79405214512a3dfdcbf539629062bd0e0"
+        },
+        {
+          "alg" : "SHA3-256",
+          "content" : "260ca92e0aeed607eb58bc11f06a4ca825ca03b7c6da048eb9fd231acab9fca2"
+        },
+        {
+          "alg" : "SHA3-512",
+          "content" : "5de230dd0e11e61afc711ed0c5e1e33526c955109b1edbaf4330d595aac565a51164b775d82f81caa1fa0a3a9b10d7dbbb64cde0d6d595b8c8618733c8229889"
+        }
+      ],
+      "licenses" : [
+        {
+          "license" : {
+            "id" : "Apache-2.0"
+          }
+        }
+      ],
+      "purl" : "pkg:maven/com.nimbusds/oauth2-oidc-sdk@11.38.2?type=jar",
+      "externalReferences" : [
+        {
+          "type" : "website",
+          "url" : "https://bitbucket.org/connect2id/oauth-2.0-sdk-with-openid-connect-extensions"
+        },
+        {
+          "type" : "distribution-intake",
+          "url" : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+        },
+        {
+          "type" : "vcs",
+          "url" : "https://bitbucket.org/connect2id/oauth-2.0-sdk-with-openid-connect-extensions"
+        }
+      ]
+    },
+    {
+      "type" : "library",
+      "bom-ref" : "pkg:maven/com.github.stephenc.jcip/jcip-annotations@1.0-1?type=jar",
+      "group" : "com.github.stephenc.jcip",
+      "name" : "jcip-annotations",
+      "version" : "1.0-1",
+      "description" : "A clean room implementation of the JCIP Annotations based entirely on the specification provided by the javadocs.",
+      "scope" : "required",
+      "hashes" : [
+        {
+          "alg" : "MD5",
+          "content" : "d62dbfa8789378457ada685e2f614846"
+        },
+        {
+          "alg" : "SHA-1",
+          "content" : "ef31541dd28ae2cefdd17c7ebf352d93e9058c63"
+        },
+        {
+          "alg" : "SHA-256",
+          "content" : "4fccff8382aafc589962c4edb262f6aa595e34f1e11e61057d1c6a96e8fc7323"
+        },
+        {
+          "alg" : "SHA-512",
+          "content" : "02fcd16a30d0e68b3e9e4899731181c6abb7117baa15c096ca940e01dde08bb86101cbeae552c497f8a90d923b5fa2f2b6f3850baf8dc94dbd399887924a9069"
+        },
+        {
+          "alg" : "SHA-384",
+          "content" : "88b0ecfde391a3d8468349c70e1539569768dfac3233dfe0b4660904df04e6c6bf26ed9c0784b9b22c122c3448e2a6b6"
+        },
+        {
+          "alg" : "SHA3-384",
+          "content" : "487b53f48b55b98a61ae60abedc43543887944867aa6bcb78d5ed46e2d0d7c19510c5fcadc362d939313feafdcfc55e1"
+        },
+        {
+          "alg" : "SHA3-256",
+          "content" : "3e79c8f58865d2d58a5311a8bb45772007f07e7f3ed2780784d1e4382dc934d0"
+        },
+        {
+          "alg" : "SHA3-512",
+          "content" : "ff32665e1b6d8176ccc7e8c836ca7343c2603dab053e42d79b4258d51a14ff63933c67d24034169ac91e11ebda21cc2c84a2a540072e656d2a8e6fcea7808421"
+        }
+      ],
+      "licenses" : [
+        {
+          "license" : {
+            "id" : "Apache-2.0"
+          }
+        }
+      ],
+      "purl" : "pkg:maven/com.github.stephenc.jcip/jcip-annotations@1.0-1?type=jar",
+      "externalReferences" : [
+        {
+          "type" : "website",
+          "url" : "http://stephenc.github.com/jcip-annotations"
+        },
+        {
+          "type" : "distribution-intake",
+          "url" : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+        },
+        {
+          "type" : "issue-tracker",
+          "url" : "http://github.com/stephenc/jcip-annotations/issues"
+        },
+        {
+          "type" : "vcs",
+          "url" : "http://github.com/stephenc/jcip-annotations/tree/master/"
+        }
+      ]
+    },
+    {
+      "type" : "library",
+      "bom-ref" : "pkg:maven/com.nimbusds/content-type@2.3?type=jar",
+      "publisher" : "Connect2id Ltd.",
+      "group" : "com.nimbusds",
+      "name" : "content-type",
+      "version" : "2.3",
+      "description" : "Java library for Content (Media) Type representation",
+      "scope" : "required",
+      "hashes" : [
+        {
+          "alg" : "MD5",
+          "content" : "f0fc0d6be73e838863e2197c03a27c3f"
+        },
+        {
+          "alg" : "SHA-1",
+          "content" : "e3aa0be212d7a42839a8f3f506f5b990bcce0222"
+        },
+        {
+          "alg" : "SHA-256",
+          "content" : "60349793e006fba96b532cb0c21e10e969fe0db8d87f91c3b9eaf82ba2998895"
+        },
+        {
+          "alg" : "SHA-512",
+          "content" : "58f7fe3b4303cecd6eac73c3345af71536479ce4bc38c88153bdcf6176a7cf5a0875420ea4a6024b4e734b78de08a8e544014b435cb63416c759b957ad3818e4"
+        },
+        {
+          "alg" : "SHA-384",
+          "content" : "9dbe31f543aaf807093fe1dd18a0ed33346252e2f6fce598e1b193b9d73fcebf79608fce6a620ede8ea7adf45f1a7422"
+        },
+        {
+          "alg" : "SHA3-384",
+          "content" : "67b8b5d051230739ee85678006758450cd6510c5fb9a6b3134d43f644c2d70bc6dc3cff6133b132b5b158a1f346880a9"
+        },
+        {
+          "alg" : "SHA3-256",
+          "content" : "b8046b3dd12321400b4643ff0c47ea5c1e77d6252177bdd8be6f0e0b234c80bf"
+        },
+        {
+          "alg" : "SHA3-512",
+          "content" : "734a6a5a383aac8dcfaca09c8e37637f74334ce2d5c050b519277ad7c20f065fad44b5a6417cdc32d6cd43f80c0e1e0c37d9daa9279651facb6c38cb88376396"
+        }
+      ],
+      "licenses" : [
+        {
+          "license" : {
+            "id" : "Apache-2.0"
+          }
+        }
+      ],
+      "purl" : "pkg:maven/com.nimbusds/content-type@2.3?type=jar",
+      "externalReferences" : [
+        {
+          "type" : "website",
+          "url" : "https://bitbucket.org/connect2id/nimbus-content-type"
+        },
+        {
+          "type" : "distribution-intake",
+          "url" : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+        },
+        {
+          "type" : "vcs",
+          "url" : "https://bitbucket.org/connect2id/nimbus-content-type"
+        }
+      ]
+    },
+    {
+      "type" : "library",
+      "bom-ref" : "pkg:maven/com.nimbusds/lang-tag@1.7?type=jar",
+      "publisher" : "Connect2id Ltd.",
+      "group" : "com.nimbusds",
+      "name" : "lang-tag",
+      "version" : "1.7",
+      "description" : "Java implementation of \"Tags for Identifying Languages\" (RFC 5646)",
+      "scope" : "required",
+      "hashes" : [
+        {
+          "alg" : "MD5",
+          "content" : "31b8a4f76fdbf21f1d667f9d6618e0b2"
+        },
+        {
+          "alg" : "SHA-1",
+          "content" : "97c73ecd70bc7e8eefb26c5eea84f251a63f1031"
+        },
+        {
+          "alg" : "SHA-256",
+          "content" : "e8c1c594e2425bdbea2d860de55c69b69fc5d59454452449a0f0913c2a5b8a31"
+        },
+        {
+          "alg" : "SHA-512",
+          "content" : "494267766c974ce16a99cb221953edc91fde8db0c920230758ecea0ea9d3006e95d86ad46f7a9d61b810d85b0fa6da9a3ce2b507cdbe4be320c499eaea93666b"
+        },
+        {
+          "alg" : "SHA-384",
+          "content" : "fdc2cde39a1b07a2542cbc07222afd6292ae19cb1f9ae008476f7ec1b8ebe1e3e84aca08e47e1ef81887a23ac5267d00"
+        },
+        {
+          "alg" : "SHA3-384",
+          "content" : "b0e673087533f60173a11a55b0fde554c0830e7b3b6609e1ea6546de19fc9a97fbfe6eee73580d09b2de66989d0603c7"
+        },
+        {
+          "alg" : "SHA3-256",
+          "content" : "ea208d4eb55212ce9835a9be60396861b0fc33f4161efee3736c3e7159acb9f7"
+        },
+        {
+          "alg" : "SHA3-512",
+          "content" : "450f819981d73711c30d838261ff55a7f1988c8b965c786708dc27fbd10a2018cfde82b8fee5d7d1022eacf085dfdabe22d9de92462eba80e2c15a116c3c73ed"
+        }
+      ],
+      "licenses" : [
+        {
+          "license" : {
+            "id" : "Apache-2.0"
+          }
+        }
+      ],
+      "purl" : "pkg:maven/com.nimbusds/lang-tag@1.7?type=jar",
+      "externalReferences" : [
+        {
+          "type" : "website",
+          "url" : "https://bitbucket.org/connect2id/nimbus-language-tags"
+        },
+        {
+          "type" : "distribution-intake",
+          "url" : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+        },
+        {
+          "type" : "vcs",
+          "url" : "https://bitbucket.org/connect2id/nimbus-language-tags.git"
+        }
+      ]
     }
   ],
   "dependencies" : [
@@ -10489,7 +11567,8 @@
         "pkg:maven/HaUI.ImplSolution/dx-core@0.0.1-SNAPSHOT?type=jar",
         "pkg:maven/HaUI.ImplSolution/app-farm@0.0.1-SNAPSHOT?type=jar",
         "pkg:maven/HaUI.ImplSolution/app-lab@0.0.1-SNAPSHOT?type=jar",
-        "pkg:maven/HaUI.ImplSolution/dx-host@0.0.1-SNAPSHOT?type=jar"
+        "pkg:maven/HaUI.ImplSolution/dx-host@0.0.1-SNAPSHOT?type=jar",
+        "pkg:maven/HaUI.ImplSolution/dx-monitor@0.0.1-SNAPSHOT?type=jar"
       ]
     },
     {
@@ -11616,6 +12695,125 @@
         "pkg:maven/org.postgresql/postgresql@42.7.13?type=jar",
         "pkg:maven/org.projectlombok/lombok@1.18.46?type=jar"
       ]
+    },
+    {
+      "ref" : "pkg:maven/HaUI.ImplSolution/dx-monitor@0.0.1-SNAPSHOT?type=jar",
+      "dependsOn" : [
+        "pkg:maven/org.springframework.boot/spring-boot-starter-web@4.1.1?type=jar",
+        "pkg:maven/org.springframework.boot/spring-boot-starter-thymeleaf@4.1.1?type=jar",
+        "pkg:maven/org.springframework.boot/spring-boot-starter-security@4.1.1?type=jar",
+        "pkg:maven/org.springframework.boot/spring-boot-starter-oauth2-client@4.1.1?type=jar",
+        "pkg:maven/org.springframework.boot/spring-boot-starter-jdbc@4.1.1?type=jar",
+        "pkg:maven/org.springframework.boot/spring-boot-starter-flyway@4.1.1?type=jar",
+        "pkg:maven/org.flywaydb/flyway-database-postgresql@12.4.0?type=jar",
+        "pkg:maven/org.springframework.boot/spring-boot-starter-actuator@4.1.1?type=jar",
+        "pkg:maven/org.springdoc/springdoc-openapi-starter-webmvc-ui@2.8.8?type=jar",
+        "pkg:maven/org.postgresql/postgresql@42.7.13?type=jar",
+        "pkg:maven/org.projectlombok/lombok@1.18.46?type=jar"
+      ]
+    },
+    {
+      "ref" : "pkg:maven/org.springframework.boot/spring-boot-starter-thymeleaf@4.1.1?type=jar",
+      "dependsOn" : [
+        "pkg:maven/org.springframework.boot/spring-boot-starter@4.1.1?type=jar",
+        "pkg:maven/org.springframework.boot/spring-boot-thymeleaf@4.1.1?type=jar"
+      ]
+    },
+    {
+      "ref" : "pkg:maven/org.springframework.boot/spring-boot-thymeleaf@4.1.1?type=jar",
+      "dependsOn" : [
+        "pkg:maven/org.springframework.boot/spring-boot@4.1.1?type=jar",
+        "pkg:maven/org.thymeleaf/thymeleaf-spring6@3.1.5.RELEASE?type=jar",
+        "pkg:maven/org.springframework/spring-web@7.0.9?type=jar"
+      ]
+    },
+    {
+      "ref" : "pkg:maven/org.thymeleaf/thymeleaf-spring6@3.1.5.RELEASE?type=jar",
+      "dependsOn" : [
+        "pkg:maven/org.thymeleaf/thymeleaf@3.1.5.RELEASE?type=jar",
+        "pkg:maven/org.slf4j/slf4j-api@2.0.18?type=jar"
+      ]
+    },
+    {
+      "ref" : "pkg:maven/org.thymeleaf/thymeleaf@3.1.5.RELEASE?type=jar",
+      "dependsOn" : [
+        "pkg:maven/org.attoparser/attoparser@2.0.7.RELEASE?type=jar",
+        "pkg:maven/org.unbescape/unbescape@1.1.6.RELEASE?type=jar",
+        "pkg:maven/org.slf4j/slf4j-api@2.0.18?type=jar"
+      ]
+    },
+    {
+      "ref" : "pkg:maven/org.attoparser/attoparser@2.0.7.RELEASE?type=jar",
+      "dependsOn" : [ ]
+    },
+    {
+      "ref" : "pkg:maven/org.unbescape/unbescape@1.1.6.RELEASE?type=jar",
+      "dependsOn" : [ ]
+    },
+    {
+      "ref" : "pkg:maven/org.springframework.boot/spring-boot-starter-oauth2-client@4.1.1?type=jar",
+      "dependsOn" : [
+        "pkg:maven/org.springframework.boot/spring-boot-starter@4.1.1?type=jar",
+        "pkg:maven/org.springframework.boot/spring-boot-starter-security@4.1.1?type=jar",
+        "pkg:maven/org.springframework.boot/spring-boot-security-oauth2-client@4.1.1?type=jar",
+        "pkg:maven/org.springframework.security/spring-security-oauth2-jose@7.1.1?type=jar"
+      ]
+    },
+    {
+      "ref" : "pkg:maven/org.springframework.boot/spring-boot-security-oauth2-client@4.1.1?type=jar",
+      "dependsOn" : [
+        "pkg:maven/org.springframework.boot/spring-boot@4.1.1?type=jar",
+        "pkg:maven/org.springframework.security/spring-security-oauth2-client@7.1.1?type=jar",
+        "pkg:maven/org.springframework.boot/spring-boot-security@4.1.1?type=jar"
+      ]
+    },
+    {
+      "ref" : "pkg:maven/org.springframework.security/spring-security-oauth2-client@7.1.1?type=jar",
+      "dependsOn" : [
+        "pkg:maven/org.springframework.security/spring-security-core@7.1.1?type=jar",
+        "pkg:maven/org.springframework.security/spring-security-oauth2-core@7.1.1?type=jar",
+        "pkg:maven/org.springframework.security/spring-security-web@7.1.1?type=jar",
+        "pkg:maven/org.springframework/spring-core@7.0.9?type=jar",
+        "pkg:maven/com.nimbusds/oauth2-oidc-sdk@11.38.2?type=jar"
+      ]
+    },
+    {
+      "ref" : "pkg:maven/com.nimbusds/oauth2-oidc-sdk@11.38.2?type=jar",
+      "dependsOn" : [
+        "pkg:maven/com.github.stephenc.jcip/jcip-annotations@1.0-1?type=jar",
+        "pkg:maven/com.nimbusds/content-type@2.3?type=jar",
+        "pkg:maven/net.minidev/json-smart@2.6.0?type=jar",
+        "pkg:maven/com.nimbusds/lang-tag@1.7?type=jar",
+        "pkg:maven/com.nimbusds/nimbus-jose-jwt@10.9.1?type=jar"
+      ]
+    },
+    {
+      "ref" : "pkg:maven/com.github.stephenc.jcip/jcip-annotations@1.0-1?type=jar",
+      "dependsOn" : [ ]
+    },
+    {
+      "ref" : "pkg:maven/com.nimbusds/content-type@2.3?type=jar",
+      "dependsOn" : [ ]
+    },
+    {
+      "ref" : "pkg:maven/net.minidev/json-smart@2.6.0?type=jar",
+      "dependsOn" : [
+        "pkg:maven/net.minidev/accessors-smart@2.6.0?type=jar"
+      ]
+    },
+    {
+      "ref" : "pkg:maven/net.minidev/accessors-smart@2.6.0?type=jar",
+      "dependsOn" : [
+        "pkg:maven/org.ow2.asm/asm@9.7.1?type=jar"
+      ]
+    },
+    {
+      "ref" : "pkg:maven/org.ow2.asm/asm@9.7.1?type=jar",
+      "dependsOn" : [ ]
+    },
+    {
+      "ref" : "pkg:maven/com.nimbusds/lang-tag@1.7?type=jar",
+      "dependsOn" : [ ]
     }
   ]
 }

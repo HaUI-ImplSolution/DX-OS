@@ -21,6 +21,7 @@ One shared core handles sign-in, data, workflows, notifications and AI; two busi
 
 - **One core, many applications:** Farm and Lab share one core; adding an application needs no change to the core.
 - **Business safety:** key rules are checked in the Backend and the database, not just in the UI.
+- **Traceability:** the gateway logs every request, Keycloak records sign-in events, the Backend writes refused requests, 5xx errors and administrative actions to an append-only audit log, and the administrators-only monitoring screen at `/monitor/` brings these together with service probes and chat alerts.
 - **Controlled AI:** AI only assists; drug and dose information comes from expert-approved data and the engineer makes the decision.
 - **One-command run:** builds the whole system with demo data, with automated tests on a clean environment.
 - **Transparent open source:** licenses and the list of software components are public, with automatic scanning for leaked passwords.
@@ -31,6 +32,7 @@ One shared core handles sign-in, data, workflows, notifications and AI; two busi
 
 Users, on web or mobile, reach the internal network only through a single Gateway (APISIX).
 The Backend handles the business logic, stores photos in MinIO and data in PostgreSQL, asks the AI Service to diagnose and answer questions, and sends notifications to Mattermost; Superset reads the data for reports.
+A separate monitoring service watches unusual traffic and the state of each service, and reports incidents to the administrators through Mattermost.
 The role of each service is in [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 ## 🧱 Three-tier architecture
@@ -132,11 +134,18 @@ Per-application settings: [`backend/app-farm/README.md`](./backend/app-farm/READ
 |---|---|---|
 | Web application | http://localhost:9080 | Keycloak SSO, accounts below |
 | Portal (service status) | http://localhost:9080/portal/ | None |
+| Monitoring and tracing | http://localhost:9080/monitor/ | Keycloak SSO, ADMIN role only (`admin1`) |
 | Swagger | http://localhost:9080/swagger-ui.html | Keycloak access token, click Authorize |
 | Keycloak Admin | http://localhost:9080/admin | `KEYCLOAK_ADMIN_USERNAME` / `KEYCLOAK_ADMIN_PASSWORD` |
 | BI (Superset) | http://localhost:9081 | Keycloak SSO; `admin1` for the admin area |
 | Image storage admin (MinIO) | http://localhost:9082 | `MINIO_ACCESS_KEY` / `MINIO_SECRET_KEY` |
 | Chat (Mattermost) | http://localhost:8065 | `MATTERMOST_ADMIN_USERNAME` / `MATTERMOST_ADMIN_PASSWORD` |
+
+### 🌐 Public server
+
+A public server runs behind a Cloudflare Tunnel and opens no inbound port.
+Enable it with the overlay [`deploy/docker-compose.cloudflared.yml`](./deploy/docker-compose.cloudflared.yml) (instructions at the top of the file).
+Cloudflare concepts and settings are in [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE.md); logs, rate limits and the audit log are in [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
 
 ### 🔑 Demo accounts
 
@@ -173,11 +182,11 @@ Full testing guide: [`docs/TESTING.md`](./docs/TESTING.md).
 
 | Folder | Contents |
 |---|---|
-| [`backend/`](./backend/README.md) | `dx-core-api`, `dx-core`, `app-farm`, `app-lab`, `dx-host` |
+| [`backend/`](./backend/README.md) | `dx-core-api`, `dx-core`, `app-farm`, `app-lab`, `dx-host`, `dx-monitor` |
 | [`frontend/`](./frontend/README.md) · [`mobile/`](./mobile/README.md) | React web (both applications) · Expo mobile for farmers |
 | [`ai/`](./ai/README.md) | AI Service: CV, RAG, LangGraph |
 | [`data/`](./data/README.md) | Structured data, RAG corpora, seed generation scripts |
-| [`deploy/`](./deploy) | Docker Compose, gateway, `start.sh`, demo data and E2E |
+| [`deploy/`](./deploy) | Docker Compose, gateway, `start.sh`, demo data and E2E; access logs in [`OPERATIONS.md`](./deploy/OPERATIONS.md) |
 | [`sso/`](./sso/README.md) · [`bi/`](./bi/README.md) · [`chat/`](./chat/README.md) · [`minio/`](./minio/README.md) · [`portal/`](./portal/README.md) | Keycloak, Superset, Mattermost, MinIO, portal |
 | [`docs/`](./docs) | Backlog, testing, AI evaluation, submission pack, council Q&A, phase template (`_template/`), reference material |
 

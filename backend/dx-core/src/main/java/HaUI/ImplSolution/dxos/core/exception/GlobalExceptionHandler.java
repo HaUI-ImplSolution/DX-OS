@@ -8,6 +8,7 @@ import HaUI.ImplSolution.dxos.core.api.exception.InvalidStateException;
 import HaUI.ImplSolution.dxos.core.api.exception.PokaYokeViolationException;
 import HaUI.ImplSolution.dxos.core.api.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
+import HaUI.ImplSolution.dxos.core.audit.AuditService;
 import jakarta.persistence.LockTimeoutException;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.PessimisticLockException;
@@ -28,6 +29,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -35,6 +37,12 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 public class GlobalExceptionHandler {
 
   private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+  private final AuditService auditService;
+
+  public GlobalExceptionHandler(AuditService auditService) {
+    this.auditService = auditService;
+  }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ApiResponse<Void>> handleValidation(MethodArgumentNotValidException ex) {
@@ -81,6 +89,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(InvalidStateException.class)
   public ResponseEntity<ApiResponse<Void>> handleInvalidState(InvalidStateException ex) {
+    auditService.recordAdminFailure(HttpStatus.CONFLICT.value(), ex);
     return ResponseEntity.status(HttpStatus.CONFLICT)
         .body(ApiResponse.error("ERR_INVALID_STATE", ex.getMessage()));
   }
@@ -88,6 +97,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(AiServiceException.class)
   public ResponseEntity<ApiResponse<Void>> handleAiService(AiServiceException ex) {
     log.warn("AI service unavailable: {}", ex.getMessage());
+    auditService.recordServerError(HttpStatus.SERVICE_UNAVAILABLE.value(), ex);
     return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
         .body(ApiResponse.error("ERR_AI_UNAVAILABLE",
             "AI diagnosis service is temporarily unavailable, please try again later"));
@@ -96,6 +106,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(PokaYokeViolationException.class)
   public ResponseEntity<ApiResponse<Map<String, Object>>> handlePokaYoke(
       PokaYokeViolationException ex) {
+    auditService.recordAdminFailure(HttpStatus.UNPROCESSABLE_ENTITY.value(), ex);
     Map<String, Object> data = new LinkedHashMap<>();
     data.put("errorCode", ex.getErrorCode());
     data.putAll(ex.getData());
@@ -106,6 +117,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler({ObjectOptimisticLockingFailureException.class, OptimisticLockException.class,
       PessimisticLockException.class, LockTimeoutException.class})
   public ResponseEntity<ApiResponse<Void>> handleOptimisticLock(Exception ex) {
+    auditService.recordAdminFailure(HttpStatus.CONFLICT.value(), ex);
     return ResponseEntity.status(HttpStatus.CONFLICT)
         .body(ApiResponse.error("ERR_CONCURRENT_MODIFICATION",
             "The record was modified by someone else, reload and try again"));
@@ -126,6 +138,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(KeycloakAdminException.class)
   public ResponseEntity<ApiResponse<Void>> handleKeycloakAdmin(KeycloakAdminException ex) {
     log.warn("Keycloak admin call failed: {}", ex.getMessage());
+    auditService.recordServerError(HttpStatus.BAD_GATEWAY.value(), ex);
     return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
         .body(ApiResponse.error("ERR_ACCOUNT_SERVICE_UNAVAILABLE",
             "Account service is unavailable, the workspace was not created"));
@@ -139,10 +152,18 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(AccessDeniedException.class)
   public ResponseEntity<ApiResponse<Void>> handleAccessDenied(AccessDeniedException ex) {
+    auditService.recordDenial("ACCESS_DENIED");
     // @PreAuthorize ném exception này ngay trong lời gọi controller (AOP method security),
     // khác với vi phạm rule ở authorizeHttpRequests (đã xử lý bởi RestAccessDeniedHandler).
     return ResponseEntity.status(HttpStatus.FORBIDDEN)
         .body(ApiResponse.error("ERR_FORBIDDEN", "Không đủ quyền thực hiện thao tác này"));
+  }
+
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  public ResponseEntity<ApiResponse<Void>> handleTypeMismatch(
+      MethodArgumentTypeMismatchException ex) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(ApiResponse.error("ERR_BAD_REQUEST", "Invalid value for " + ex.getName()));
   }
 
   @ExceptionHandler(IllegalArgumentException.class)
@@ -154,6 +175,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ApiResponse<Void>> handleUnexpected(Exception ex) {
     log.error("Unhandled exception", ex);
+    auditService.recordServerError(HttpStatus.INTERNAL_SERVER_ERROR.value(), ex);
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
         .body(ApiResponse.error("ERR_INTERNAL", "Internal server error"));
   }

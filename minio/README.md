@@ -12,6 +12,7 @@ Service `minio` khai báo trong [`deploy/docker-compose.yml`](../deploy/docker-c
 
 Image chính thức của MinIO không còn phát hành và repo upstream đã archived, nên `Dockerfile` build đúng tag chính thức của upstream thay vì dùng image đóng gói lại của bên thứ ba.
 AGPL-3.0, chạy nguyên bản không sửa mã; lần dựng đầu khoảng 2 phút, các lần sau dùng cache Docker.
+Trên máy chủ công khai, MinIO Console (`files.<tên miền>`) nằm sau Cloudflare Access, xem [`docs/CLOUDFLARE.md`](../docs/CLOUDFLARE.md).
 
 ## Cách hoạt động
 

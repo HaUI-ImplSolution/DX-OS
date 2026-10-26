@@ -32,6 +32,7 @@ One shared core handles sign-in, data, workflows, notifications and AI; two busi
 
 Users, on web or mobile, reach the internal network only through a single Gateway (APISIX).
 The Backend handles the business logic, stores photos in MinIO and data in PostgreSQL, asks the AI Service to diagnose and answer questions, and sends notifications to Mattermost; Superset reads the data for reports.
+A separate monitoring service watches unusual traffic and the state of each service, and reports incidents to the administrators through Mattermost.
 The role of each service is in [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 ## 🧱 Three-tier architecture

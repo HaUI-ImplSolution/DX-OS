@@ -22,8 +22,9 @@ Backend xử lý nghiệp vụ, lưu dữ liệu và ảnh, nhờ AI Service ch�
 | AI Service (FastAPI) | Nhận diện bệnh từ ảnh, hỏi đáp tài liệu |
 | Ollama | Chạy mô hình ngôn ngữ cho AI Service |
 | Superset | Báo cáo tổng hợp |
-| Mattermost | Nhận thông báo từ Backend |
+| Mattermost | Nhận thông báo từ Backend và cảnh báo từ Monitor |
 | Portal | Trang liên kết và trạng thái các dịch vụ |
+| Monitor (Spring Boot) | Màn hình giám sát và truy vết cho quản trị viên, chạy riêng nên vẫn hoạt động khi Backend dừng |
 
 ## 1. Sơ đồ 3 tầng
 

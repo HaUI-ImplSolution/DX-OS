@@ -32,6 +32,7 @@ Một lõi dùng chung lo đăng nhập, dữ liệu, quy trình, thông báo v�
 
 Người dùng, web hay mobile, chỉ đi qua một Gateway (APISIX) để vào mạng nội bộ.
 Backend xử lý nghiệp vụ, lưu ảnh ở MinIO và dữ liệu ở PostgreSQL, nhờ AI Service chẩn đoán và hỏi đáp, gửi thông báo sang Mattermost; Superset đọc dữ liệu để làm báo cáo.
+Dịch vụ giám sát chạy riêng, theo dõi lượt truy cập bất thường và tình trạng từng dịch vụ, báo sự cố cho quản trị viên qua Mattermost.
 Vai trò từng dịch vụ ở [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 ## 🧱 Kiến trúc 3 tầng

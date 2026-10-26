@@ -10,8 +10,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Báo cáo kỹ thuật 8-10 trang, slide tối đa 12 | Có dàn ý ở [`SUBMISSION.md`](./SUBMISSION.md) mục 3 |
 | Video demo 3-5 phút, rehearsal ít nhất một lần | Kịch bản ở [`SUBMISSION.md`](./SUBMISSION.md) mục 2 |
 | Tạo vài issue mẫu trên GitHub | Issues đã bật, hiện chưa có issue nào; lấy từ mục 5 và 6 của tài liệu này |
-| Triển khai màn hình giám sát lên VPS | Theo thứ tự: chạy workflow Release (image `backend` và `monitor`), chép `deploy/.env.dev` lên VPS (đã có bốn biến `MONITOR_*` và `KEYCLOAK_READONLY_DB_PASSWORD`), `git pull`, `./update.sh latest`, thêm client `dxos-monitor` vào Keycloak (Admin Console theo `sso/realm-dxos.json`, hoặc `./reset.sh --yes`), rồi kiểm theo `docs/TESTING.md` mục 8.1 |
-| Tạo ứng dụng Cloudflare Access thứ tư cho `khuongdev.io.vn`, đường dẫn `monitor/*` | Cùng policy `Admins and engineers`; chỉ làm được trên Cloudflare, xem [`CLOUDFLARE.md`](./CLOUDFLARE.md) |
+| Vẽ thêm Monitor vào `docs/images/tong_quan.gif` | README, README_EN và `ARCHITECTURE.md` đã có Monitor; ảnh thêm ô Monitor và ba đường Gateway → Monitor, Monitor → Mattermost, Monitor → PostgreSQL |
 | Chụp ảnh giao diện hai chế độ (Farm, Lab) và màn hình giám sát lưu vào repository cho hồ sơ | Chưa có; che IP và email thật khi chụp màn hình giám sát |
 | Quét lại gitleaks nếu có commit mới trước ngày chấm | Lần gần nhất 23/10/2026: 434 commit, không có phát hiện |
 | Chốt ngày hạn nộp thật | Chưa chốt |
@@ -27,10 +26,6 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 
 | Việc | Ghi chú |
 |---|---|
-| Màn hình giám sát `/monitor/` trên VPS: đăng nhập `dxos-monitor` qua Cloudflare Tunnel và Access, sự kiện gateway mang IP thật, `http-logger` gửi được từ APISIX trên VPS | Đạt trên stack local (xem `TESTING.md` mục 10); chưa bật trên VPS, cần xong hai việc triển khai ở mục 1 |
-| Workflow Release và CI e2e sau khi `backend/Dockerfile` có hai đích và thêm service `monitor` | Local đã build cả hai đích và dựng được; chưa chạy trên GitHub |
-| Dựng sạch Lab từ volume rỗng có `monitor` | Local mới dựng sạch Farm; Lab thử khi đổi app trên dữ liệu có sẵn (E2E 16/16); CI e2e dựng sạch cả hai app |
-| Màn hình giám sát: `farmer1` mở `/monitor/`, vào thẳng từ phiên đã có của web app, giữ `monitor` dừng 30 giây khi có traffic, `/api/summary` lúc Keycloak dừng, Superset vẫn từ chối FARMER | Đã thử với `engineer1` và các lỗi tham số; các tình huống này chưa thử riêng |
 | Thao tác Farm ghi audit từ điện thoại | Qua API đã đạt trên VPS; chưa thử trên thiết bị |
 | Hàng đợi 10 ảnh trên điện thoại không bị 429 của gateway | Giới hạn `/api/*` là 600 lượt mỗi phút mỗi IP; đã đạt qua API (601 lượt qua trên VPS), chưa thử trên thiết bị |
 | Đăng nhập mobile qua địa chỉ công khai sau khi bật `KC_PROXY_HEADERS` và giới hạn đăng nhập | Log JSON, IP thật, sự kiện Keycloak và audit đã đạt trên VPS; CI đã dựng sạch bằng `--build` |

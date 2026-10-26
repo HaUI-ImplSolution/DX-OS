@@ -1348,8 +1348,10 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 **Đã xong — Màn hình giám sát:**
 
 - `backend/dx-monitor/README.md` mô tả màn hình giám sát: các khối, cách đọc, truy vết một sự cố, dữ liệu, cảnh báo, cấu hình.
-- `docs/TESTING.md` có các kiểm tay M1 đến M14.
+- `docs/TESTING.md` có các kiểm tay M1 đến M14 và kết quả trên VPS qua Cloudflare Tunnel và Access.
 - `docs/CLOUDFLARE.md` có ứng dụng Access cho `monitor/*`.
+- `sso/README.md` có cách thêm client `dxos-monitor` vào Keycloak đã có dữ liệu.
+- `README.md`, `README_EN.md` và `ARCHITECTURE.md` có dịch vụ giám sát ở phần kiến trúc tổng thể; `portal/README.md` liệt kê bốn trang nằm sau Cloudflare Access.
 
 ### 2026-10-23
 

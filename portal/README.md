@@ -20,5 +20,6 @@ Link BI trỏ thẳng `/login/keycloak`; Mattermost đăng nhập riêng.
 
 Link ứng dụng chính, Keycloak và Swagger là đường dẫn tương đối của gateway.
 Link Superset, MinIO Console và Mattermost dùng địa chỉ đặt bằng `PORTAL_BI_URL`, `PORTAL_MINIO_URL` và `PORTAL_CHAT_URL` trong `deploy/.env`, ví dụ `https://bi.example.com`.
-Trên máy chủ công khai, BI và MinIO Console nằm sau Cloudflare Access: link mở trang đăng nhập Access trước, và phép kiểm trạng thái BI vẫn nhận phản hồi sau khi chuyển hướng.
+Trên máy chủ công khai, BI, MinIO Console, Keycloak Admin Console và màn hình giám sát nằm sau Cloudflare Access: link mở trang đăng nhập Access trước.
+Phép kiểm trạng thái BI và màn hình giám sát vẫn nhận phản hồi sau khi chuyển hướng, nên chỉ cho biết Access có trả lời.
 Để trống thì link lấy tên máy của trang đang mở và cổng viết sẵn trong `index.html` (`data-port`: 9081, 9082, 8065), nên đổi cổng trong `.env` thì sửa `data-port` tương ứng.

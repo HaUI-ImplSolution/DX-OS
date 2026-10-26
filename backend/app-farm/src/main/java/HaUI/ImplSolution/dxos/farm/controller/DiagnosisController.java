@@ -63,7 +63,7 @@ public class DiagnosisController {
   @PostMapping("/ai")
   @ResponseStatus(HttpStatus.CREATED)
   @Operation(summary = "Run or rerun AI diagnosis outside the database transaction",
-      description = "Preserves earlier diagnoses. 409 if a newer diagnosis arrives during inference or the report needs retake. Latest saved id is current.")
+      description = "Preserves earlier diagnoses. 409 at once if an AI diagnosis is already running for the report, and 409 if a newer diagnosis arrives during inference or the report needs retake. Latest saved id is current.")
   public ApiResponse<DiagnosisResponse> createFromAi(@PathVariable Long reportId) {
     return ApiResponse.success("Diagnosis recorded", diagnosisService.createFromAi(reportId));
   }

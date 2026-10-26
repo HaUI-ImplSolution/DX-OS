@@ -17,11 +17,9 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 - Workflow `Release` phát hành image lên GHCR.
 - Farm: chẩn đoán kèm tài liệu tham khảo, nhắc khai phun chờ xác nhận.
 - Lab: tri thức từ văn bản chính thức của HaUI, cảnh báo thiết bị hỏng lặp lại.
-- Phase 1 RAG evaluation: thêm bộ đề pilot Farm/Lab và 6 query chẩn đoán cùng qrels nháp trong `data/rag/evaluation/`; trạng thái vẫn là `draft` vì chưa có người kiểm tra nhãn độc lập.
-- Phase 1 RAG evaluation: thêm collector read-only, chấm artifact bằng `ir_measures`, publisher Langfuse và dry-run; publish thật vẫn cần Langfuse self-host đã host.
-- Hoàn thiện đánh giá truy xuất RAG: kiểm tra artifact đủ bộ đề, nguồn vector và quyền chỉ đọc; publish experiment lên Langfuse local, có hướng dẫn tái lập; nhãn pilot vẫn là bản nháp.
-- Bổ sung phép thử tải HTTP retrieval bằng k6 và lấy mẫu tài nguyên Docker, tách khỏi Recall/nDCG; kết quả và cấu hình đánh giá nằm ngoài repository.
-- Chốt bàn giao công cụ đánh giá RAG và thử tải HTTP; chủ dự án duyệt bộ câu hỏi/nhãn pilot, việc rà nhãn đầy đủ và tái lập độc lập chuyển sang `BACKLOG`.
+- Bộ câu hỏi và nhãn đánh giá truy xuất RAG cho Farm/Lab, gồm 36 câu hỏi đáp và 6 lượt tham khảo chẩn đoán.
+- Công cụ thu kết quả chỉ đọc, chấm Recall/nDCG bằng `ir_measures` và hiển thị câu hỏi, đoạn tài liệu, điểm trên Langfuse local.
+- Thử tải endpoint truy xuất bằng k6, đo độ trễ, request/giây, tỷ lệ lỗi và tài nguyên Docker; xuất dữ liệu để kiểm tra lại.
 
 ## Backend (Spring Boot — `backend`)
 

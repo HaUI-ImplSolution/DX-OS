@@ -8,6 +8,7 @@
   var hourFormat = new Intl.DateTimeFormat('vi-VN', { hour: '2-digit', minute: '2-digit' });
   var dayFormat = new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit' });
   var PAGE_SIZE = 20;
+  var PAGER_SPAN = 5;
 
   var EVENT_SERIES = [
     { key: 'blocked', label: 'Bị chặn', cls: 'blocked' },
@@ -16,18 +17,19 @@
     { key: 'slow', label: 'Phản hồi chậm', cls: 'slow' }
   ];
 
-  var SERVICE_NAMES = {
-    backend: 'Máy chủ ứng dụng',
-    database: 'Cơ sở dữ liệu',
-    keycloak: 'Đăng nhập (SSO)',
-    storage: 'Kho ảnh',
-    gateway: 'Cổng truy cập',
-    web: 'Giao diện web',
-    portal: 'Cổng thông tin',
-    ai: 'Trí tuệ nhân tạo (AI)',
-    bi: 'Báo cáo BI',
-    chat: 'Kênh chat'
-  };
+  // Names as on the portal; tiles follow the path of a request, then the supporting services.
+  var SERVICES = [
+    ['gateway', 'Gateway (APISIX)'],
+    ['web', 'Ứng dụng chính'],
+    ['backend', 'Backend API'],
+    ['keycloak', 'Keycloak (đăng nhập)'],
+    ['database', 'Cơ sở dữ liệu (PostgreSQL)'],
+    ['storage', 'Lưu trữ ảnh'],
+    ['ai', 'Dịch vụ AI'],
+    ['bi', 'BI Dashboard'],
+    ['chat', 'Kênh chat'],
+    ['portal', 'Trang cổng vào']
+  ];
 
   var ACTION_NAMES = {
     WORKSPACE_CREATED: 'Tạo đơn vị mới',
@@ -149,8 +151,18 @@
     return spanSeconds > 86400 * 2 ? dayFormat.format(date) : hourFormat.format(date);
   }
 
+  function serviceIndex(key) {
+    for (var i = 0; i < SERVICES.length; i++) {
+      if (SERVICES[i][0] === key) {
+        return i;
+      }
+    }
+    return SERVICES.length;
+  }
+
   function serviceName(key) {
-    return SERVICE_NAMES[key] || key;
+    var index = serviceIndex(key);
+    return index < SERVICES.length ? SERVICES[index][1] : key;
   }
 
   function featureName(path) {
@@ -478,7 +490,9 @@
     if (first !== Infinity) {
       start = Math.max(start, first - 60000);
     }
-    health.services.forEach(function (service) {
+    health.services.slice().sort(function (a, b) {
+      return serviceIndex(a.service) - serviceIndex(b.service);
+    }).forEach(function (service) {
       var data = availability(service.service, health.changes, start, end);
       var down = service.state === 'DOWN';
       var tile = node('div', null, 'tile ' + (down ? 'bad' : service.state === 'UP' ? 'ok' : 'unknown'));
@@ -746,19 +760,44 @@
       });
       body.appendChild(row);
     });
+    renderPager(pages);
+  }
+
+  function pagerButton(text, label, number, cls) {
+    var button = node('button', text, cls);
+    button.type = 'button';
+    button.setAttribute('aria-label', label);
+    button.addEventListener('click', goTo.bind(null, number));
+    return button;
+  }
+
+  // At most PAGER_SPAN page numbers around the current one, with "…" where pages are left out.
+  function renderPager(pages) {
     var pager = document.getElementById('trace-pager');
     clear(pager);
     pager.hidden = pages <= 1;
-    for (var number = 0; number < pages; number++) {
-      var button = node('button', String(number + 1), number === tracePage ? 'page current' : 'page');
-      button.type = 'button';
-      button.setAttribute('aria-label', 'Trang ' + (number + 1));
+    var first = Math.max(0, Math.min(tracePage - Math.floor(PAGER_SPAN / 2), pages - PAGER_SPAN));
+    var end = Math.min(pages, first + PAGER_SPAN);
+    var previous = pagerButton('‹', 'Trang trước', tracePage - 1, 'page step');
+    previous.disabled = tracePage === 0;
+    pager.appendChild(previous);
+    if (first > 0) {
+      pager.appendChild(node('span', '…', 'gap'));
+    }
+    for (var number = first; number < end; number++) {
+      var button = pagerButton(String(number + 1), 'Trang ' + (number + 1), number,
+        number === tracePage ? 'page current' : 'page');
       if (number === tracePage) {
         button.setAttribute('aria-current', 'page');
       }
-      button.addEventListener('click', goTo.bind(null, number));
       pager.appendChild(button);
     }
+    if (end < pages) {
+      pager.appendChild(node('span', '…', 'gap'));
+    }
+    var next = pagerButton('›', 'Trang sau', tracePage + 1, 'page step');
+    next.disabled = tracePage >= pages - 1;
+    pager.appendChild(next);
   }
 
   function goTo(number) {

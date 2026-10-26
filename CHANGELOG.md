@@ -22,6 +22,12 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 
 ### 2026-10-26
 
+**Đã xong — Giao diện màn hình giám sát:**
+
+- Ô dịch vụ mang tên như trên portal và xếp theo đường đi của một yêu cầu, sau đó là các dịch vụ hỗ trợ.
+- Thanh chọn trang của Tra cứu chi tiết hiện tối đa 5 số quanh trang đang xem, kèm "…" và nút trang trước, trang sau.
+- Mô tả của từng khối nêu rõ khối đo gì và cách xem chi tiết.
+
 **Đã xong — Màn hình giám sát (`dx-monitor`):**
 
 - Module `backend/dx-monitor`, jar và container riêng, không phụ thuộc `dx-core`.

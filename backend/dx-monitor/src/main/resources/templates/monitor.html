@@ -41,7 +41,7 @@
       <figure class="card span-8">
         <figcaption>
           <h2>Sự việc bất thường theo thời gian</h2>
-          <p>Cột càng cao càng có nhiều sự việc. Kéo chuột ngang trên biểu đồ để phóng to một khoảng thời gian.</p>
+          <p>Số sự việc bất thường theo từng mốc thời gian, phân theo loại. Kéo chọn một khoảng trên biểu đồ để xem chi tiết hơn.</p>
           <div id="zoom-events" class="zoom-note" hidden><span></span><button type="button" class="zoom-reset">Xem lại toàn bộ</button></div>
         </figcaption>
         <div id="chart-events" class="chart tall"></div>
@@ -51,7 +51,7 @@
       <figure class="card span-4">
         <figcaption>
           <h2>Tỷ lệ các loại sự việc</h2>
-          <p>Trong khoảng thời gian đang xem.</p>
+          <p>Cơ cấu sự việc bất thường theo loại trong khoảng thời gian đang xem.</p>
         </figcaption>
         <div id="chart-share" class="donut-wrap"></div>
       </figure>
@@ -59,7 +59,7 @@
       <figure class="card span-6">
         <figcaption>
           <h2>Đăng nhập sai theo thời gian</h2>
-          <p>Số lần nhập sai mật khẩu hoặc tài khoản. Kéo chuột ngang để phóng to.</p>
+          <p>Số lần đăng nhập không thành công do Keycloak ghi nhận. Kéo chọn một khoảng để xem chi tiết hơn.</p>
           <div id="zoom-logins" class="zoom-note" hidden><span></span><button type="button" class="zoom-reset">Xem lại toàn bộ</button></div>
         </figcaption>
         <div id="chart-logins" class="chart"></div>
@@ -68,7 +68,7 @@
       <figure class="card span-6">
         <figcaption>
           <h2>Nguồn truy cập gây nhiều sự việc nhất</h2>
-          <p>Bấm vào một nguồn để xem chi tiết ở phần cuối trang.</p>
+          <p>Năm địa chỉ IP phát sinh nhiều sự việc bất thường nhất. Chọn một địa chỉ để tra cứu chi tiết.</p>
         </figcaption>
         <div id="chart-sources" class="chart"></div>
       </figure>
@@ -76,7 +76,7 @@
       <figure class="card span-12">
         <figcaption>
           <h2>Tình trạng các dịch vụ</h2>
-          <p>Mỗi ô là một dịch vụ. Rê chuột vào thanh để xem từng khoảng thời gian.</p>
+          <p>Trạng thái hiện tại và tỷ lệ thời gian hoạt động của từng dịch vụ trong khoảng đang xem. Di chuột lên thanh thời gian để xem chi tiết từng giai đoạn.</p>
         </figcaption>
         <div id="chart-services" class="tiles"></div>
       </figure>
@@ -84,20 +84,23 @@
       <figure class="card span-6">
         <figcaption>
           <h2>Chức năng gặp lỗi nhiều nhất</h2>
-          <p>Nơi người dùng gặp lỗi hệ thống.</p>
+          <p>Các chức năng phát sinh nhiều lỗi máy chủ (5xx) nhất trong khoảng thời gian đang xem.</p>
         </figcaption>
         <div id="chart-features" class="chart"></div>
       </figure>
 
-      <div class="card span-6">
-        <h2>Thao tác quản trị gần đây</h2>
+      <figure class="card span-6">
+        <figcaption>
+          <h2>Thao tác quản trị gần đây</h2>
+          <p>Các thao tác quản trị mới nhất, kèm người thực hiện và kết quả.</p>
+        </figcaption>
         <ul id="activity" class="activity"></ul>
-      </div>
+      </figure>
     </section>
 
     <details class="tech" id="tech">
       <summary>Tra cứu chi tiết (dành cho kỹ thuật viên)</summary>
-      <p class="muted">Để trống để xem các bản ghi mới nhất. Nhập mã yêu cầu (X-Request-Id, có trong phản hồi của hệ thống) hoặc địa chỉ IP để lọc.</p>
+      <p class="muted">Tra cứu bản ghi của gateway, backend và Keycloak theo mã yêu cầu (X-Request-Id, trả về trong phản hồi của hệ thống) hoặc địa chỉ IP. Để trống cả hai ô để xem các bản ghi mới nhất.</p>
       <form id="trace-form" class="trace">
         <label>Mã yêu cầu
           <input id="trace-request" type="text" maxlength="64" autocomplete="off">

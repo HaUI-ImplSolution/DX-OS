@@ -17,10 +17,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 
 ## 2. Việc cần sửa trong mã và cấu hình
 
-| Việc | Ghi chú |
-|---|---|
-| Chặn lượt chẩn đoán AI thứ hai khi báo cáo đang có một lượt chạy | Rời trang hoặc tải lại khi AI đang chạy rồi bấm lại thì lượt sau chạy hết thời gian rồi nhận 409 `Diagnosis changed while AI was processing`; kết quả của lượt đầu vẫn được lưu, nhưng có thể sinh hai chẩn đoán chờ duyệt cho một báo cáo |
-| Mobile hiển thị đoạn có nhãn dài hơn 30 ký tự dưới dạng văn bản thô | `mobile/src/passageText.ts` giữ giới hạn 30; web đã dùng 40 (nhãn dài nhất trong dữ liệu là 34 ký tự, `Kiểm soát hóa học không định lượng`) |
+Hiện không có.
 
 ## 3. Chưa kiểm thử
 

@@ -22,6 +22,10 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 
 ### 2026-10-26
 
+**Đã xong — Một lượt chẩn đoán AI cho mỗi báo cáo:**
+
+- Báo cáo đang có lượt chẩn đoán AI chạy dở thì lượt bấm thêm nhận `409` ngay, không gọi AI lần nữa; lượt đầu vẫn lưu kết quả như thường.
+
 **Đã xong — Giao diện màn hình giám sát:**
 
 - Ô dịch vụ mang tên như trên portal và xếp theo đường đi của một yêu cầu, sau đó là các dịch vụ hỗ trợ.
@@ -475,6 +479,12 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 - Generator, validator đối chiếu workbook, seed check và RAG dry-run đều đạt; `data.sql` được sinh deterministic từ dữ liệu chuẩn.
 
 ## Mobile (`mobile`, Expo)
+
+### 2026-10-26
+
+**Đã xong — Tài liệu tham khảo dạng trường:**
+
+- Dòng có nhãn đến 40 ký tự hiện thành trường như trên web, kể cả nhãn dài nhất trong dữ liệu (`Kiểm soát hóa học không định lượng`, 34 ký tự).
 
 ### 2026-10-23
 

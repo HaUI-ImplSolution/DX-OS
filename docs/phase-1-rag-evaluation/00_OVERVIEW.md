@@ -15,6 +15,11 @@ Hiện chưa chỉ định người kiểm tra nhãn. Bộ câu hỏi và qrels 
 `data/rag/evaluation/` vì vậy chỉ là bản nháp nội bộ; chưa được dùng để công bố
 điểm đánh giá độc lập cho tới khi có người kiểm tra được ghi nhận.
 
+Phần setup/publish Langfuse hiện được xây dựng và kiểm thử theo giả định
+Langfuse self-host đã được host thành công tại môi trường đánh giá. Cần host
+Langfuse thật, có project và credential riêng để kiểm tra kết nối, publish
+experiment và xác nhận giao diện; dry-run không thay thế kiểm tra tích hợp thật.
+
 ## 1. Tham chiếu
 
 | Nguồn yêu cầu | Nội dung | Mức độ | Phạm vi trong phase này |

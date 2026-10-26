@@ -10,6 +10,7 @@ Khi được yêu cầu triển khai và chạy đánh giá, ghi người chạy
 - Thủ công: người kiểm tra nhãn, người xem Langfuse và người tái lập phép chấm.
 - Môi trường: môi trường đánh giá riêng, model có sẵn và database vector đã ingest bằng quy trình hiện có; không dựng toàn bộ Docker.
 - Langfuse chạy local bằng Compose chính thức bên ngoài repository; kiểm tra RAM/disk trước khi bật, không chia sẻ database hoặc volume của sản phẩm.
+- Phần code/publish hiện chỉ được kiểm tra bằng dry-run với giả định Langfuse đã host tại `http://localhost:3000`; các test giao diện, credential, restart và gửi lại chỉ đạt sau khi host Langfuse thật.
 - Dữ liệu: tài liệu công khai trong repository và câu hỏi đánh giá; không dùng tài khoản, ảnh hoặc báo cáo người dùng.
 - Mọi nhóm chấm tại đầu ra retriever, trước ngưỡng 0,40 và gộp tài liệu của Backend.
 - Nhóm đo: Farm hỏi đáp k=4; sáu query chẩn đoán mặc định k=3 có mã bệnh; Lab hỏi đáp k=4; query/tham số phải khớp caller thật.

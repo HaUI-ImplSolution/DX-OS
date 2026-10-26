@@ -10,6 +10,7 @@ WP1-01 → WP1-02 → WP1-03 → WP1-04.
 Việc chuẩn bị Langfuse self-host và project đánh giá có thể làm trong lúc người đánh giá kiểm tra nhãn, sau khi kiểm tra tài nguyên máy.
 Chỉ triển khai sau khi chốt câu hỏi mở của `00_OVERVIEW.md`; không tự ghi nhận có người duyệt hoặc tự tạo quyết định duyệt.
 Hiện chưa có người kiểm tra nhãn được chỉ định; mọi nhãn đang ở trạng thái `draft` và không được trình bày là đánh giá độc lập.
+Setup/publish Langfuse trong công cụ được viết theo giả lập host đã sẵn sàng; cần một Langfuse self-host thực tế để chạy T1-11 đến T1-15 và xác nhận tích hợp.
 Theo `ai/.codex/AGENTS.md`, chỉ một script có ba bước collect/score/publish và một self-check; không tạo framework đánh giá hoặc giao diện riêng.
 Trong lần chạy, có thể collect/score trước rồi mới bật Langfuse để publish, tránh giữ model AI và stack Langfuse cùng chiếm RAM khi không cần.
 

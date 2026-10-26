@@ -20,6 +20,9 @@ Hai mục đầu liệt kê các bản phát hành; lịch sử chi tiết theo 
 - Lab: ticket thứ `lab.device-alert.threshold` (mặc định 3) nêu cùng một thiết bị trong `lab.device-alert.window-days` ngày (mặc định 30) được đăng lên kênh kỹ thuật viên.
 - Phase 1 RAG evaluation: thêm bộ đề pilot Farm/Lab và 6 query chẩn đoán cùng qrels nháp trong `data/rag/evaluation/`; trạng thái vẫn là `draft` vì chưa có người kiểm tra nhãn độc lập.
 - Phase 1 RAG evaluation: thêm collector read-only, chấm artifact bằng `ir_measures`, publisher Langfuse và dry-run; publish thật vẫn cần Langfuse self-host đã host.
+- Hoàn thiện đánh giá truy xuất RAG: kiểm tra artifact đủ bộ đề, nguồn vector và quyền chỉ đọc; publish experiment lên Langfuse local, có hướng dẫn tái lập; nhãn pilot vẫn là bản nháp.
+- Bổ sung phép thử tải HTTP retrieval bằng k6 và lấy mẫu tài nguyên Docker, tách khỏi Recall/nDCG; kết quả và cấu hình đánh giá nằm ngoài repository.
+- Chốt bàn giao công cụ đánh giá RAG và thử tải HTTP; chủ dự án duyệt bộ câu hỏi/nhãn pilot, việc rà nhãn đầy đủ và tái lập độc lập chuyển sang `BACKLOG`.
 
 ### Đã thay đổi
 

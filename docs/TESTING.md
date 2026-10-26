@@ -75,23 +75,46 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 | Dashboard BI | `cd bi && python -m unittest test_chart_query_context` | Đạt; CI chạy ở job `dashboard` của `ci-infra.yml` |
 | Seed Farm nhất quán | `python data/scripts/generate_seed_sql.py --check` và `python -m unittest data.scripts.test_generate_seed_sql` | Đạt; CI chạy lại ở `ci-ai.yml` |
 
-### Đánh giá RAG Phase 1
+### Đánh giá truy xuất RAG
 
-Đây là phép đo riêng cho đầu ra retriever, không phải test câu trả lời cuối,
-CV hoặc Backend. Chạy `self-check` không cần database; `collect` cần database
-vector read-only và model embedding. `score` chạy trên artifact đã lưu, còn
-`publish` cần Langfuse self-host thật. Phần publish hiện đã được kiểm tra bằng
-dry-run với giả định Langfuse đã host, chưa phải bằng chứng tích hợp thực tế.
+RAG tìm các đoạn tài liệu liên quan để hỗ trợ trả lời câu hỏi. Phép đo kiểm tra bước tìm kiếm này trước xử lý Backend, với 42 câu/lượt, 18 tài liệu và 109 đoạn. Môi trường và lệnh chạy ở [`ai/README.md`](../ai/README.md#đánh-giá-truy-xuất-rag).
 
-```bash
-cd ai
-python scripts/evaluate_rag.py self-check
-python scripts/evaluate_rag.py collect --output <artifact-dir-outside-repository>
-python scripts/evaluate_rag.py score --collect <artifact-dir>\collect.json --output <artifact-dir>
-```
+| Kiểm tra | Cách | Kết quả |
+|---|---|---|
+| Công cụ chấm | Từ `ai/`: `python scripts/evaluate_rag.py self-check` | Đạt; kiểm metric, đầu vào, thứ hạng và kết quả rỗng |
+| Tái lập điểm | Chấm qrels/run bằng CLI `ir_measures`, provider `pytrec_eval` | Mọi câu và điểm nhóm khớp trong sai số `1e-8` |
+| Langfuse | Mở experiment, xem Expected Output, Output và score | Nhãn, chunk và điểm khớp artifact; replay kết quả đã lưu |
 
-Không đưa qrels/run, report, credential hoặc dữ liệu chạy vào Git. Không gọi
-`collect` trong CI sản phẩm.
+Kết quả pilot ngày 26/10/2026:
+
+| Nhóm | Số câu | k | Recall@k | nDCG@k |
+|---|---:|---:|---:|---:|
+| Farm hỏi đáp | 12 | 4 | 0,750000 | 0,596363 |
+| Lab hỏi đáp | 24 | 4 | 0,895833 | 0,807311 |
+| Tham khảo chẩn đoán Farm | 6 | 3 | 1,000000 | 1,000000 |
+
+- **Số câu:** số câu được kiểm tra; **k:** số đoạn tài liệu đầu tiên được chấm.
+- **Recall@k:** tỷ lệ đoạn liên quan tìm được trong k kết quả đầu theo bộ đáp án.
+- **nDCG@k:** mức độ ưu tiên các đoạn hữu ích ở đầu danh sách. Cả hai điểm từ 0–1, càng cao càng tốt.
+
+### Thử tải HTTP retrieval
+
+Dùng k6 gọi endpoint retrieval thật, k=4; Farm/Lab chạy riêng ở 1/2/5 VU, mỗi mức 30 giây, lặp ba lần sau khi làm nóng model. Mỗi VU đợi phản hồi rồi gửi tiếp; CPU/RAM lấy mẫu bằng `docker stats`. Cách chạy ở [`ai/README.md`](../ai/README.md#thử-tải-http-retrieval).
+
+Kết quả ngày 26/10/2026: 18 lượt, 14.164 request, không lỗi HTTP hoặc sai hợp đồng phản hồi. Các khoảng là min–max giữa ba lượt lặp:
+
+| Nhóm | VU | Request/giây | p95 mỗi lượt (ms) |
+|---|---:|---:|---:|
+| Farm | 1 | 31,04–37,29 | 35,57–55,62 |
+| Farm | 2 | 22,00–24,18 | 116,33–188,62 |
+| Farm | 5 | 21,88–26,88 | 303,60–579,19 |
+| Lab | 1 | 28,73–33,73 | 40,99–68,81 |
+| Lab | 2 | 21,74–22,45 | 178,73–197,90 |
+| Lab | 5 | 19,35–27,25 | 252,56–603,96 |
+
+AI giới hạn 2 CPU/1536 MiB, một worker; RAM đỉnh quan sát khi đo 1.042,4 MiB, pgvector 27 MiB. Đã đối chiếu metric với mẫu k6 thô trong sai số `1e-8`.
+Langfuse có run `load-2026-10-26-final`, mỗi dòng là một lượt; `SUMMARY/AVG` của p95 không phải p95 gộp. HTML k6 và mẫu tài nguyên lưu ngoài repository.
+Phép thử chỉ đo HTTP retrieval trên máy dùng chung, tắt CV lifespan; chưa gồm Backend, gateway hoặc mạng điện thoại, chưa kết luận năng lực production.
 
 ## 4. Dựng stack
 

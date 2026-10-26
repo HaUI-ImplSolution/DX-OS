@@ -225,6 +225,8 @@ figure.card .chart, figure.card .donut-wrap { flex: 1; }
 .pager[hidden] { display: none; }
 .pager button.page { min-width: 36px; background: var(--surface); color: var(--accent); border-color: var(--border); padding: 4px 10px; }
 .pager button.page.current { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.pager button.page:disabled { color: var(--muted); opacity: 0.5; cursor: default; }
+.pager .gap { min-width: 24px; align-self: center; text-align: center; color: var(--muted); }
 
 .tech { margin-top: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 18px; }
 .tech summary { cursor: pointer; font-weight: 600; }

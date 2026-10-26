@@ -318,7 +318,7 @@ Cách dùng và ý nghĩa từng khối ở [`backend/dx-monitor/README.md`](../
 | M11 | Gửi request tới đường dẫn chứa `<script>alert(1)</script>`, mở màn hình | Chuỗi hiện nguyên văn, không có script chạy |
 | M12 | Gây 5 lỗi `5xx` trong 5 phút, xả request cho `429` | Kênh "Ban quản trị" nhận một tin mỗi loại, không lặp trong 60 phút |
 | M13 | Kéo chuột ngang trên biểu đồ "Sự việc bất thường theo thời gian", rồi bấm "Xem lại toàn bộ" | Hai biểu đồ theo thời gian cùng phóng vào khoảng chọn với cột mịn hơn, có dòng "Đang phóng to"; bấm nút thì trở về cột theo giờ |
-| M14 | Mở mục Tra cứu chi tiết, để trống hai ô; bấm một tên nguồn trong biểu đồ "Nguồn truy cập gây nhiều sự việc nhất" | Để trống: hiện các bản ghi mới nhất của cả ba nguồn, tối đa 200, số trang ở góc dưới bên phải; bấm tên nguồn thì tra theo IP đó |
+| M14 | Mở mục Tra cứu chi tiết, để trống hai ô; bấm một tên nguồn trong biểu đồ "Nguồn truy cập gây nhiều sự việc nhất" | Để trống: hiện các bản ghi mới nhất của cả ba nguồn, tối đa 200, thanh chọn trang ở góc dưới bên phải hiện tối đa 5 số quanh trang đang xem (ở trang 5 là `‹ … 3 4 5 6 7 … ›`); bấm tên nguồn thì tra theo IP đó |
 
 ## 9. Sự cố thường gặp
 

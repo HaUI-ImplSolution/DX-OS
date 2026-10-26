@@ -40,10 +40,12 @@ Nội dung viết cho người quản lý không chuyên IT: biểu đồ là ch
   Cả hai biểu đồ theo thời gian cùng phóng và chia cột mịn hơn.
   Bấm "Xem lại toàn bộ" hoặc đổi khoảng xem để trở về.
   Cột mới mọc lên khi biểu đồ đổi; hiệu ứng tắt khi hệ điều hành bật giảm chuyển động.
+- Ô dịch vụ mang tên như trên portal, xếp theo đường đi của một yêu cầu (Gateway, ứng dụng chính, Backend API, Keycloak, cơ sở dữ liệu, lưu trữ ảnh) rồi tới dịch vụ AI, BI, chat và trang cổng vào.
 - Mỗi ô dịch vụ có thanh theo thời gian: xanh là Tốt, đỏ là Ngừng, vàng là Trống dữ liệu; rê chuột vào một khối để xem khoảng thời gian chính xác.
 - Ô dịch vụ liệt kê các lần ngừng (đỏ) và khoảng trống dữ liệu từ 5 phút (vàng), ví dụ `Ngừng 14:49 - 14:50 (1 phút)`; lần đang ngừng ghi `14:49 - nay`.
   Dịch vụ không có hai loại này ghi "Hoạt động tốt".
-- Tra cứu chi tiết: để trống thì xem 200 bản ghi mới nhất, nhập mã yêu cầu hoặc IP để lọc; mỗi trang 20 dòng, số trang ở góc dưới bên phải.
+- Tra cứu chi tiết: để trống thì xem 200 bản ghi mới nhất, nhập mã yêu cầu hoặc IP để lọc; mỗi trang 20 dòng.
+  Thanh chọn trang ở góc dưới bên phải hiện tối đa 5 số quanh trang đang xem, "…" ở phía còn trang và nút trang trước, trang sau.
 
 ## Truy vết một sự cố
 

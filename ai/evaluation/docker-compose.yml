@@ -1,0 +1,91 @@
+name: ${EVAL_PROJECT:?EVAL_PROJECT is required}
+
+services:
+  vector:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: ${EVAL_POSTGRES_DB:?}
+      POSTGRES_USER: ${EVAL_POSTGRES_USER:?}
+      POSTGRES_PASSWORD: ${EVAL_POSTGRES_PASSWORD:?}
+    volumes:
+      - eval_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${EVAL_POSTGRES_USER:?} -d ${EVAL_POSTGRES_DB:?}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  prepare:
+    build:
+      context: ..
+      dockerfile: evaluation/Dockerfile
+      args:
+        K6_VERSION: ${K6_VERSION:?}
+    image: dxos-rag-evaluation-tool:${K6_VERSION:?}
+    depends_on:
+      vector:
+        condition: service_healthy
+    environment:
+      EVAL_ADMIN_DATABASE_URL: postgresql+psycopg://${EVAL_POSTGRES_USER:?}:${EVAL_POSTGRES_PASSWORD:?}@vector:5432/${EVAL_POSTGRES_DB:?}
+      EVAL_POSTGRES_DB: ${EVAL_POSTGRES_DB:?}
+      EVAL_READONLY_USER: ${EVAL_READONLY_USER:?}
+      EVAL_READONLY_PASSWORD: ${EVAL_READONLY_PASSWORD:?}
+      EVAL_INGEST_RECORD: /artifacts/ingest.json
+      DATABASE_URL: postgresql+psycopg://${EVAL_READONLY_USER:?}:${EVAL_READONLY_PASSWORD:?}@vector:5432/${EVAL_POSTGRES_DB:?}
+      RAG_INGEST_DATABASE_URL: postgresql+psycopg://${EVAL_POSTGRES_USER:?}:${EVAL_POSTGRES_PASSWORD:?}@vector:5432/${EVAL_POSTGRES_DB:?}
+      EMBEDDING_MODEL: ${EVAL_EMBEDDING_MODEL:?}
+      HF_HOME: /app/weights/huggingface
+    volumes:
+      - ${EVAL_ARTIFACT_DIR:?}:/artifacts
+      - eval_model_cache:/app/weights
+      - ../../data/rag:/app/data/rag:ro
+    command: ["python", "evaluation/prepare.py"]
+
+  ai:
+    build:
+      context: ..
+      dockerfile: evaluation/Dockerfile
+      args:
+        K6_VERSION: ${K6_VERSION:?}
+    image: dxos-rag-evaluation-tool:${K6_VERSION:?}
+    depends_on:
+      prepare:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgresql+psycopg://${EVAL_READONLY_USER:?}:${EVAL_READONLY_PASSWORD:?}@vector:5432/${EVAL_POSTGRES_DB:?}
+      EMBEDDING_MODEL: ${EVAL_EMBEDDING_MODEL:?}
+      HF_HOME: /app/weights/huggingface
+      AI_SERVICE_API_KEY: ${EVAL_AI_SERVICE_API_KEY:?}
+      CV_DEVICE: cpu
+      LOG_LEVEL: INFO
+    volumes:
+      - ${EVAL_ARTIFACT_DIR:?}:/artifacts
+      - eval_model_cache:/app/weights
+      - ../../data/rag:/app/data/rag:ro
+    ports:
+      - "127.0.0.1:${EVAL_LOAD_PORT:?}:8000"
+
+  evaluator:
+    image: dxos-rag-evaluation-tool:${K6_VERSION:?}
+    depends_on:
+      vector:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg://${EVAL_READONLY_USER:?}:${EVAL_READONLY_PASSWORD:?}@vector:5432/${EVAL_POSTGRES_DB:?}
+      EMBEDDING_MODEL: ${EVAL_EMBEDDING_MODEL:?}
+      HF_HOME: /app/weights/huggingface
+      AI_SERVICE_API_KEY: ${EVAL_AI_SERVICE_API_KEY:?}
+      RAG_LOAD_URL: http://ai:8000/api/v1/disease/knowledge/retrieve
+      LANGFUSE_BASE_URL: ${LANGFUSE_BASE_URL:-http://host.docker.internal:3000}
+      LANGFUSE_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY:-}
+      LANGFUSE_SECRET_KEY: ${LANGFUSE_SECRET_KEY:-}
+    volumes:
+      - ${EVAL_ARTIFACT_DIR:?}:/artifacts
+      - eval_model_cache:/app/weights
+      - ../../data/rag:/app/data/rag:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    entrypoint: ["python"]
+
+volumes:
+  eval_pgdata:
+  eval_model_cache:

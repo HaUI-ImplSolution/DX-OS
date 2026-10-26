@@ -1,11 +1,8 @@
 # Quy ước làm việc của Claude (backend)
 
 Cách Claude nên vận hành trong thư mục này — về quy trình và hành vi, không phải sự thật về dự án.
-`backend/` là service **Spring Boot (Java)** của DX-Farm.
+`backend/` là service **Spring Boot (Java)** của DX-OS (DX-Farm và DX-Lab).
 Để biết dự án *là gì*, xem [../README.md](../README.md).
-
-> Backend đang ở giai đoạn khởi tạo, chưa có code (`backend/` hiện chỉ có `.claude/`).
-> Những sự thật cụ thể bên dưới (group ID, có dùng Lombok hay không, vị trí swagger...) sẽ được cập nhật ngay khi project Spring Boot được khởi tạo.
 
 ## 1. Mặc định vào Plan Mode
 - Vào plan mode cho mọi task không tầm thường (3+ bước, hoặc một quyết định kiến trúc thật sự).
@@ -83,8 +80,8 @@ Cách Claude nên vận hành trong thư mục này — về quy trình và hàn
 - **Bám theo pattern đã có** — domain mới đi theo layout và convention của các domain đã có trong repo; xem phần Kiến trúc trong [../README.md](../README.md) một khi có shape cụ thể (`ResponseDTO`, exception handling, controller split...) để bám theo.
 
 ## Quy tắc riêng của dự án
-- Java + Spring Boot, build bằng Maven (`./mvnw` trong `backend/`), group ID **`HaUI.ImplSolution`**, parent `dx-os-parent`, bốn module `dx-core-api`, `dx-core`, `app-farm`, `dx-host`; base package `HaUI.ImplSolution.dxos.{core.api,core,farm,host}`.
-  `app-farm` chỉ phụ thuộc `dx-core-api`.
+- Java + Spring Boot, build bằng Maven (`./mvnw` trong `backend/`), group ID **`HaUI.ImplSolution`**, parent `dx-os-parent`, sáu module `dx-core-api`, `dx-core`, `app-farm`, `app-lab`, `dx-host`, `dx-monitor`; base package `HaUI.ImplSolution.dxos.{core.api,core,farm,lab,host,monitor}`.
+  `app-farm` và `app-lab` chỉ phụ thuộc `dx-core-api`; `dx-monitor` không phụ thuộc module nào khác.
 - Có dùng Lombok: **có** — `@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder` trên JPA entity (mutable, cần no-arg constructor cho Hibernate).
   DTO vẫn ưu tiên Java record (đã bất biến, không cần Lombok) — chỉ dùng Lombok cho entity, không lạm dụng sang DTO.
 - Package-by-layer: `controller/`, `service/`, `repository/`, `model/`, `dto/`, `config/`, `exception/` dưới base package của module — theo đúng skill `spring-boot`.

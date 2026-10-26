@@ -29,7 +29,9 @@ public class AuditLogController {
   @PreAuthorize("hasRole('ADMIN')")
   @Operation(summary = "Search the audit log, newest first",
       description = "ADMIN only (403 otherwise). actor is a user id or username; action is an"
-          + " upper-case name such as ACCESS_DENIED, AUTH_FAILED or WORKSPACE_CREATED; outcome is"
+          + " upper-case name such as ACCESS_DENIED, AUTH_FAILED, SERVER_ERROR (a 5xx),"
+          + " ADMIN_ACTION_FAILED (an administrator's change refused with 409 or 422) or"
+          + " WORKSPACE_CREATED; outcome is"
           + " SUCCESS, DENIED or FAILED (400 for another value); from is inclusive and to"
           + " exclusive, both ISO-8601 instants. size is capped at 200.")
   public ApiResponse<PageResponse<AuditLogResponse>> search(

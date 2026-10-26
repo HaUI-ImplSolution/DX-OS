@@ -167,6 +167,36 @@
       ]
     },
     {
+      "clientId": "dxos-monitor",
+      "name": "DX-OS Monitor",
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "${MONITOR_OIDC_CLIENT_SECRET}",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "consentRequired": false,
+      "redirectUris": [
+        "${GATEWAY_PUBLIC_URL}/monitor/login/oauth2/code/keycloak",
+        "http://localhost:9080/monitor/login/oauth2/code/keycloak"
+      ],
+      "webOrigins": [
+        "${GATEWAY_PUBLIC_URL}",
+        "http://localhost:9080"
+      ],
+      "attributes": {
+        "post.logout.redirect.uris": "${GATEWAY_PUBLIC_URL}/monitor/*##http://localhost:9080/monitor/*"
+      },
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "profile",
+        "roles",
+        "email"
+      ]
+    },
+    {
       "clientId": "dxos-backend-admin",
       "name": "DX-OS backend (account and role management)",
       "protocol": "openid-connect",

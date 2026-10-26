@@ -20,6 +20,7 @@
 		<module>app-farm</module>
 		<module>app-lab</module>
 		<module>dx-host</module>
+		<module>dx-monitor</module>
 	</modules>
 	<properties>
 		<java.version>21</java.version>

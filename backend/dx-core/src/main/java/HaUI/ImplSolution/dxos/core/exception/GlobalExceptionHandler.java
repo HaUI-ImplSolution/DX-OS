@@ -89,6 +89,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(InvalidStateException.class)
   public ResponseEntity<ApiResponse<Void>> handleInvalidState(InvalidStateException ex) {
+    auditService.recordAdminFailure(HttpStatus.CONFLICT.value(), ex);
     return ResponseEntity.status(HttpStatus.CONFLICT)
         .body(ApiResponse.error("ERR_INVALID_STATE", ex.getMessage()));
   }
@@ -96,6 +97,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(AiServiceException.class)
   public ResponseEntity<ApiResponse<Void>> handleAiService(AiServiceException ex) {
     log.warn("AI service unavailable: {}", ex.getMessage());
+    auditService.recordServerError(HttpStatus.SERVICE_UNAVAILABLE.value(), ex);
     return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
         .body(ApiResponse.error("ERR_AI_UNAVAILABLE",
             "AI diagnosis service is temporarily unavailable, please try again later"));
@@ -104,6 +106,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(PokaYokeViolationException.class)
   public ResponseEntity<ApiResponse<Map<String, Object>>> handlePokaYoke(
       PokaYokeViolationException ex) {
+    auditService.recordAdminFailure(HttpStatus.UNPROCESSABLE_ENTITY.value(), ex);
     Map<String, Object> data = new LinkedHashMap<>();
     data.put("errorCode", ex.getErrorCode());
     data.putAll(ex.getData());
@@ -114,6 +117,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler({ObjectOptimisticLockingFailureException.class, OptimisticLockException.class,
       PessimisticLockException.class, LockTimeoutException.class})
   public ResponseEntity<ApiResponse<Void>> handleOptimisticLock(Exception ex) {
+    auditService.recordAdminFailure(HttpStatus.CONFLICT.value(), ex);
     return ResponseEntity.status(HttpStatus.CONFLICT)
         .body(ApiResponse.error("ERR_CONCURRENT_MODIFICATION",
             "The record was modified by someone else, reload and try again"));
@@ -134,6 +138,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(KeycloakAdminException.class)
   public ResponseEntity<ApiResponse<Void>> handleKeycloakAdmin(KeycloakAdminException ex) {
     log.warn("Keycloak admin call failed: {}", ex.getMessage());
+    auditService.recordServerError(HttpStatus.BAD_GATEWAY.value(), ex);
     return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
         .body(ApiResponse.error("ERR_ACCOUNT_SERVICE_UNAVAILABLE",
             "Account service is unavailable, the workspace was not created"));
@@ -170,6 +175,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ApiResponse<Void>> handleUnexpected(Exception ex) {
     log.error("Unhandled exception", ex);
+    auditService.recordServerError(HttpStatus.INTERNAL_SERVER_ERROR.value(), ex);
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
         .body(ApiResponse.error("ERR_INTERNAL", "Internal server error"));
   }

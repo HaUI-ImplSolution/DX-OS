@@ -40,7 +40,7 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE.md`](../ARCHITECTURE.md).
 | Dữ liệu cấu trúc | PostgreSQL, Flyway: `db/migration/core` dùng chung và `db/migration/<app>` | Bảng riêng của từng ứng dụng, dùng chung `workspaces`, `notifications` |
 | Dữ liệu phi cấu trúc | MinIO riêng tư, client nhận link có hạn; tệp qua `FileProcessor` của ứng dụng | Ảnh lá lúa (Farm), tệp đính kèm ticket (Lab) |
 | Workflow | `core.workflow`: loại case cấu hình được, lịch sử `workflow_event` chỉ thêm, người phụ trách, hộp duyệt | Farm 5 loại duyệt; Lab `TICKET`, `DEVICE_LOAN`, `ROOM_BOOKING` |
-| Audit | `core.audit`: bảng `audit_log` chỉ thêm, ghi request bị từ chối và thao tác quản trị kèm người thực hiện, IP, `request_id`; ADMIN tra cứu qua API, cảnh báo lên kênh quản trị | Farm: xóa mềm, thu hoạch sớm hoặc thay; Lab: danh mục, SLA, tệp đính kèm |
+| Audit | `core.audit`: bảng `audit_log` chỉ thêm, ghi request bị từ chối, lỗi `5xx`, thao tác quản trị (kể cả thất bại) kèm người thực hiện, IP, `request_id`; ADMIN tra cứu qua API, cảnh báo lên kênh quản trị | Farm: xóa mềm, thu hoạch sớm hoặc thay; Lab: danh mục, SLA, tệp đính kèm |
 
 - Dẫn: `ARCHITECTURE.md` mục 2, 3 và 4; `sso/README.md`; `deploy/apisix/`.
 
@@ -141,7 +141,8 @@ Hướng mở rộng:
 
 - Máy chủ nằm sau NAT và không mở cổng vào.
 - Cloudflare Tunnel là đường duy nhất vào.
-- Cloudflare bắt HTTPS, chặn bot, chặn gửi form đăng nhập dồn dập và đặt Cloudflare Access trước các trang quản trị (Superset, MinIO Console, Keycloak Admin).
+- Cloudflare bắt HTTPS, chặn bot, chặn gửi form đăng nhập dồn dập và đặt Cloudflare Access trước các trang quản trị (Superset, MinIO Console, Keycloak Admin, màn hình giám sát).
 - Gateway giới hạn tốc độ theo IP thật, Keycloak khóa tạm tài khoản sau 5 lần sai mật khẩu và ghi sự kiện đăng nhập.
-- Backend phân quyền theo vai và ghi `audit_log` chỉ thêm cho request bị từ chối và thao tác quản trị.
+- Backend phân quyền theo vai và ghi `audit_log` chỉ thêm cho request bị từ chối, lỗi `5xx` và thao tác quản trị.
+- Màn hình giám sát `/monitor/` (dịch vụ riêng, chỉ ADMIN) gom sự kiện bất thường của gateway, `audit_log`, đăng nhập sai của Keycloak và trạng thái dịch vụ; vẫn chạy khi backend dừng và có truy vết theo `request_id`.
 - Chi tiết: `docs/CLOUDFLARE.md` và `deploy/OPERATIONS.md`.

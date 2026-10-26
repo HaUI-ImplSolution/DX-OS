@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Giám sát hệ thống</title>
+  <link rel="stylesheet" th:href="@{/assets/monitor.css}">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <h1>Giám sát hệ thống</h1>
+      <span class="muted">DX-OS</span>
+    </div>
+    <div class="tools">
+      <label>Xem theo
+        <select id="window">
+          <option value="1h">1 giờ qua</option>
+          <option value="24h" selected>24 giờ qua</option>
+          <option value="7d">7 ngày qua</option>
+        </select>
+      </label>
+      <span id="updated" class="muted" role="status"></span>
+      <span class="user" th:text="${username}">admin</span>
+      <form th:action="@{/logout}" method="post">
+        <button type="submit" class="link">Đăng xuất</button>
+      </form>
+    </div>
+  </header>
+
+  <main>
+    <section id="banner" class="banner" aria-live="polite">
+      <div class="banner-title" id="banner-title">Đang tải…</div>
+      <div class="banner-text" id="banner-text"></div>
+    </section>
+
+    <section class="kpis" id="summary" aria-label="Tình hình chung"></section>
+
+    <section class="grid">
+      <figure class="card span-8">
+        <figcaption>
+          <h2>Sự việc bất thường theo thời gian</h2>
+          <p>Cột càng cao càng có nhiều sự việc. Kéo chuột ngang trên biểu đồ để phóng to một khoảng thời gian.</p>
+          <div id="zoom-events" class="zoom-note" hidden><span></span><button type="button" class="zoom-reset">Xem lại toàn bộ</button></div>
+        </figcaption>
+        <div id="chart-events" class="chart tall"></div>
+        <ul id="legend-events" class="legend"></ul>
+      </figure>
+
+      <figure class="card span-4">
+        <figcaption>
+          <h2>Tỷ lệ các loại sự việc</h2>
+          <p>Trong khoảng thời gian đang xem.</p>
+        </figcaption>
+        <div id="chart-share" class="donut-wrap"></div>
+      </figure>
+
+      <figure class="card span-6">
+        <figcaption>
+          <h2>Đăng nhập sai theo thời gian</h2>
+          <p>Số lần nhập sai mật khẩu hoặc tài khoản. Kéo chuột ngang để phóng to.</p>
+          <div id="zoom-logins" class="zoom-note" hidden><span></span><button type="button" class="zoom-reset">Xem lại toàn bộ</button></div>
+        </figcaption>
+        <div id="chart-logins" class="chart"></div>
+      </figure>
+
+      <figure class="card span-6">
+        <figcaption>
+          <h2>Nguồn truy cập gây nhiều sự việc nhất</h2>
+          <p>Bấm vào một nguồn để xem chi tiết ở phần cuối trang.</p>
+        </figcaption>
+        <div id="chart-sources" class="chart"></div>
+      </figure>
+
+      <figure class="card span-12">
+        <figcaption>
+          <h2>Tình trạng các dịch vụ</h2>
+          <p>Mỗi ô là một dịch vụ. Rê chuột vào thanh để xem từng khoảng thời gian.</p>
+        </figcaption>
+        <div id="chart-services" class="tiles"></div>
+      </figure>
+
+      <figure class="card span-6">
+        <figcaption>
+          <h2>Chức năng gặp lỗi nhiều nhất</h2>
+          <p>Nơi người dùng gặp lỗi hệ thống.</p>
+        </figcaption>
+        <div id="chart-features" class="chart"></div>
+      </figure>
+
+      <div class="card span-6">
+        <h2>Thao tác quản trị gần đây</h2>
+        <ul id="activity" class="activity"></ul>
+      </div>
+    </section>
+
+    <details class="tech" id="tech">
+      <summary>Tra cứu chi tiết (dành cho kỹ thuật viên)</summary>
+      <p class="muted">Để trống để xem các bản ghi mới nhất. Nhập mã yêu cầu (X-Request-Id, có trong phản hồi của hệ thống) hoặc địa chỉ IP để lọc.</p>
+      <form id="trace-form" class="trace">
+        <label>Mã yêu cầu
+          <input id="trace-request" type="text" maxlength="64" autocomplete="off">
+        </label>
+        <label>hoặc địa chỉ IP
+          <input id="trace-ip" type="text" maxlength="45" autocomplete="off">
+        </label>
+        <button type="submit">Tra cứu</button>
+      </form>
+      <p id="trace-message" class="muted" role="status"></p>
+      <div class="scroll">
+        <table id="trace">
+          <caption class="sr">Kết quả tra cứu</caption>
+          <thead><tr><th>Thời điểm</th><th>Nguồn</th><th>Sự kiện</th><th>Kết quả</th><th>Địa chỉ</th><th>Yêu cầu</th><th>Mã yêu cầu</th><th>Chi tiết</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="pager" id="trace-pager" hidden aria-label="Chọn trang"></div>
+    </details>
+  </main>
+  <script th:src="@{/assets/monitor.js}"></script>
+</body>
+</html>

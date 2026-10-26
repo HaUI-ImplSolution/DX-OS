@@ -1,0 +1,120 @@
+spring:
+  application:
+    name: DX-OS-Monitor
+
+  datasource:
+    # The schema monitor of the shared database; the role owns it and may read the audit log.
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?currentSchema=monitor
+    username: ${MONITOR_DB_USER:monitor_app}
+    password: ${MONITOR_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  flyway:
+    locations: classpath:db/migration/monitor
+    schemas: monitor
+    default-schema: monitor
+
+  jackson:
+    time-zone: Asia/Ho_Chi_Minh
+
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: ${MONITOR_OIDC_CLIENT_ID:dxos-monitor}
+            client-secret: ${MONITOR_OIDC_CLIENT_SECRET}
+            authorization-grant-type: authorization_code
+            scope: openid,profile
+            # Absolute, so the address does not depend on the headers the gateway forwards.
+            redirect-uri: ${GATEWAY_PUBLIC_URL}/monitor/login/oauth2/code/keycloak
+        provider:
+          keycloak:
+            # Browser side goes through the gateway, server side to Keycloak directly. The issuer
+            # is not checked because Keycloak has no fixed hostname, see sso/README.md.
+            authorization-uri: ${GATEWAY_PUBLIC_URL}/realms/dxos/protocol/openid-connect/auth
+            token-uri: ${KEYCLOAK_INTERNAL_URL:http://keycloak:8080}/realms/dxos/protocol/openid-connect/token
+            jwk-set-uri: ${KEYCLOAK_INTERNAL_URL:http://keycloak:8080}/realms/dxos/protocol/openid-connect/certs
+            user-name-attribute: sub
+
+server:
+  port: ${SERVER_PORT:8090}
+  servlet:
+    context-path: /monitor
+    session:
+      cookie:
+        http-only: true
+        same-site: lax
+  # Trusts X-Forwarded-* from the gateway (a private Docker address).
+  forward-headers-strategy: native
+  tomcat:
+    use-relative-redirects: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    HaUI.ImplSolution.dxos: ${LOG_LEVEL_APP:INFO}
+
+monitor:
+  # Address of the gateway as the browser sees it.
+  public-url: ${GATEWAY_PUBLIC_URL}
+  keycloak-logout-url: ${GATEWAY_PUBLIC_URL}/realms/dxos/protocol/openid-connect/logout
+  # Gateway events and service state changes older than this are deleted every night.
+  retention-days: 30
+
+  keycloak-db:
+    # Read-only role that sees the view of sign-in events only.
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/keycloak
+    username: ${KEYCLOAK_READONLY_DB_USER:keycloak_ro}
+    password: ${KEYCLOAK_READONLY_DB_PASSWORD}
+
+  gateway:
+    # Shared secret of the gateway; empty refuses every delivery.
+    ingest-key: ${MONITOR_INGEST_KEY:}
+    # A request at least this slow is kept, except when its path contains an exempt text (an AI
+    # diagnosis takes about 50 seconds).
+    slow-seconds: 10
+    slow-exempt-paths:
+      - /diagnosis/ai
+      - /knowledge/ask
+    max-per-ip-minute: 100
+
+  probe:
+    interval-ms: 30000
+    failures-before-down: 2
+    timeout-ms: 3000
+    # required false: a service that never answered is not reported as down.
+    targets:
+      - { name: backend, url: "http://backend:8081/actuator/health", body-contains: UP, required: true }
+      - { name: database, url: jdbc, required: true }
+      - { name: keycloak, url: "http://keycloak:8080/realms/dxos", body-contains: dxos, required: true }
+      - { name: storage, url: "http://minio:9000/minio/health/live", required: true }
+      - { name: gateway, url: "http://apisix:9080/", required: true }
+      - { name: web, url: "http://frontend/", required: true }
+      - { name: portal, url: "http://portal/", required: true }
+      - { name: ai, url: "http://ai:8000/api/v1/disease/health", required: false }
+      - { name: bi, url: "http://superset:8088/health", required: false }
+      - { name: chat, url: "http://mattermost:8065/api/v4/system/ping", required: false }
+
+  alert:
+    cron: "0 * * * * *"
+    server-error-count: 5
+    server-error-window-minutes: 5
+    rate-limited-count: 10
+    rate-limited-window-minutes: 10
+    repeat-minutes: 60
+
+  mattermost:
+    url: ${MATTERMOST_WEBHOOK_URL:}
+    admin-url: ${MATTERMOST_WEBHOOK_URL_ADMIN:}
+    dir: ${MATTERMOST_WEBHOOK_DIR:}
+    connect-timeout-ms: 2000
+    read-timeout-ms: 3000

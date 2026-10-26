@@ -12,4 +12,6 @@ public record AuditEvent(String action,String targetType,String targetId,AuditOu
 
 public static AuditEvent success(String action,String targetType,String targetId){return new AuditEvent(action,targetType,targetId,AuditOutcome.SUCCESS,null);}
 
-public static AuditEvent success(String action,String targetType,String targetId,Map<String,Object>metadata){return new AuditEvent(action,targetType,targetId,AuditOutcome.SUCCESS,metadata);}}
+public static AuditEvent success(String action,String targetType,String targetId,Map<String,Object>metadata){return new AuditEvent(action,targetType,targetId,AuditOutcome.SUCCESS,metadata);}
+
+public static AuditEvent failed(String action,String targetType,String targetId,Map<String,Object>metadata){return new AuditEvent(action,targetType,targetId,AuditOutcome.FAILED,metadata);}}

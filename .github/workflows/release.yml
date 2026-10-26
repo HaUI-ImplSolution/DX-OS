@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       services:
-        description: "Images to build: all, or a comma list of backend,frontend,portal,ai,minio,sso"
+        description: "Images to build: all, or a comma list of backend,monitor,frontend,portal,ai,minio,sso"
         required: true
         default: all
 
@@ -28,7 +28,7 @@ jobs:
         env:
           REQUESTED: ${{ inputs.services }}
         run: |
-          ALL="backend frontend portal ai minio sso"
+          ALL="backend monitor frontend portal ai minio sso"
           if [[ "$REQUESTED" == "all" ]]; then
             PICKED="$ALL"
           else
@@ -56,6 +56,14 @@ jobs:
           OWNER="${GITHUB_REPOSITORY_OWNER,,}"
           echo "repo=ghcr.io/${OWNER}/dxos-${{ matrix.name }}" >> "$GITHUB_OUTPUT"
           echo "sha=sha-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          # The monitor is built from the backend sources, with its own target of the same Dockerfile.
+          if [[ "${{ matrix.name }}" == "monitor" ]]; then
+            echo "context=backend" >> "$GITHUB_OUTPUT"
+            echo "target=monitor" >> "$GITHUB_OUTPUT"
+          else
+            echo "context=${{ matrix.name }}" >> "$GITHUB_OUTPUT"
+            echo "target=" >> "$GITHUB_OUTPUT"
+          fi
           {
             echo "args<<EOF"
             # Same values as the frontend build in deploy/docker-compose.yml: the web app calls the
@@ -81,7 +89,9 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: ${{ matrix.name }}
+          context: ${{ steps.image.outputs.context }}
+          file: ${{ steps.image.outputs.context }}/Dockerfile
+          target: ${{ steps.image.outputs.target }}
           push: true
           provenance: false
           platforms: linux/amd64

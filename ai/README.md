@@ -99,6 +99,30 @@ python -m scripts.ingest_diseases --corpus lab         # corpus lab
 Mỗi lần ingest thay thế tài liệu của đúng namespace của nó.
 Đổi embedding model hoặc số chiều vector thì phải ingest lại toàn bộ corpus.
 
+### Đánh giá RAG Phase 1
+
+Công cụ đánh giá nằm ngoài runtime và không ghi database vector. Bộ câu hỏi và
+qrels hiện là `draft`, chưa có người kiểm tra nhãn; vì vậy kết quả chỉ là nội bộ
+cho tới khi người kiểm tra được ghi nhận.
+
+```bash
+cd ai
+python -m venv .venv-eval
+# Windows: .venv-eval\Scripts\Activate.ps1
+# Linux/macOS: source .venv-eval/bin/activate
+pip install -r requirements-eval.txt
+python scripts/evaluate_rag.py self-check
+python scripts/evaluate_rag.py collect --output <artifact-dir-outside-repository>
+python scripts/evaluate_rag.py score --collect <artifact-dir>\collect.json --output <artifact-dir>
+```
+
+`collect` cần `DATABASE_URL` read-only, corpus/vector snapshot đúng model và
+model embedding đã sẵn sàng. Artifact phải đặt ngoài repository. Langfuse chỉ
+được publish sau khi self-host thật đã chạy và project/credential được cấp.
+
+`publish --dry-run` chỉ kiểm tra payload offline; không thay thế việc host
+Langfuse và kiểm tra UI/kết nối thật.
+
 ## Kiểm tra
 
 Chạy từ `ai/`:

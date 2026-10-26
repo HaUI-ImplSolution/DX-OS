@@ -75,6 +75,24 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 | Dashboard BI | `cd bi && python -m unittest test_chart_query_context` | Đạt; CI chạy ở job `dashboard` của `ci-infra.yml` |
 | Seed Farm nhất quán | `python data/scripts/generate_seed_sql.py --check` và `python -m unittest data.scripts.test_generate_seed_sql` | Đạt; CI chạy lại ở `ci-ai.yml` |
 
+### Đánh giá RAG Phase 1
+
+Đây là phép đo riêng cho đầu ra retriever, không phải test câu trả lời cuối,
+CV hoặc Backend. Chạy `self-check` không cần database; `collect` cần database
+vector read-only và model embedding. `score` chạy trên artifact đã lưu, còn
+`publish` cần Langfuse self-host thật. Phần publish hiện đã được kiểm tra bằng
+dry-run với giả định Langfuse đã host, chưa phải bằng chứng tích hợp thực tế.
+
+```bash
+cd ai
+python scripts/evaluate_rag.py self-check
+python scripts/evaluate_rag.py collect --output <artifact-dir-outside-repository>
+python scripts/evaluate_rag.py score --collect <artifact-dir>\collect.json --output <artifact-dir>
+```
+
+Không đưa qrels/run, report, credential hoặc dữ liệu chạy vào Git. Không gọi
+`collect` trong CI sản phẩm.
+
 ## 4. Dựng stack
 
 ### 4.1 Cấu hình

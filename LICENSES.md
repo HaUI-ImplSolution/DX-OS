@@ -47,6 +47,8 @@ AI Service là tiến trình riêng, chỉ giao tiếp với Backend qua HTTP n�
 | FastAPI, Pydantic, SQLAlchemy, pgvector, LangGraph, LangChain, python-docx | MIT | API, RAG, luồng suy luận |
 | Uvicorn, HTTPX, python-dotenv, pypdf | BSD-3-Clause | Máy chủ, HTTP client, nạp tài liệu |
 | python-multipart, sentence-transformers | Apache-2.0 | Nhận upload, embedding |
+| ir-measures | MIT | Chấm Recall và nDCG trong môi trường đánh giá riêng |
+| langfuse Python SDK | MIT | Publish dataset, observation và score trong môi trường đánh giá riêng |
 | psycopg | LGPL-3.0-only | Kết nối PostgreSQL |
 | PyTorch, Torchvision | BSD-3-Clause | Chạy mô hình EfficientNetV2-M |
 | ONNX Runtime 1.30.0 | MIT | Chạy crop classifier trên CPU |

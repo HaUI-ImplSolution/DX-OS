@@ -19,6 +19,7 @@ Hai mục đầu liệt kê các bản phát hành; lịch sử chi tiết theo 
 - Farm: bản khai phun chờ kỹ sư xác nhận quá `app.treatment-confirmation-wait-hours` giờ (mặc định 24) được nhắc lên kênh kỹ sư mỗi sáng 08:00 tới khi có quyết định; cột `treatment_applications.reported_at` (migration V13) ghi lúc nông dân nộp bản khai.
 - Lab: ticket thứ `lab.device-alert.threshold` (mặc định 3) nêu cùng một thiết bị trong `lab.device-alert.window-days` ngày (mặc định 30) được đăng lên kênh kỹ thuật viên.
 - Phase 1 RAG evaluation: thêm bộ đề pilot Farm/Lab và 6 query chẩn đoán cùng qrels nháp trong `data/rag/evaluation/`; trạng thái vẫn là `draft` vì chưa có người kiểm tra nhãn độc lập.
+- Phase 1 RAG evaluation: thêm collector read-only, chấm artifact bằng `ir_measures`, publisher Langfuse và dry-run; publish thật vẫn cần Langfuse self-host đã host.
 
 ### Đã thay đổi
 

@@ -216,6 +216,8 @@ def collect(output: Path) -> None:
 
 
 def self_check() -> None:
+    import ir_measures
+
     questions = load_questions()
     metadata = json.loads((EVALUATION_ROOT / "metadata.json").read_text(encoding="utf-8"))
     if metadata["status"] not in {"draft", "reviewed"}:
@@ -225,13 +227,146 @@ def self_check() -> None:
     }}
     if groups != {"farm_qa": 12, "lab_qa": 24, "farm_diagnostic": 6}:
         raise ValueError(f"unexpected question groups: {groups}")
+    qrels = [ir_measures.Qrel("self-check", "relevant-1", 1), ir_measures.Qrel("self-check", "relevant-2", 1)]
+    run = [
+        ir_measures.ScoredDoc("self-check", "relevant-1", 3),
+        ir_measures.ScoredDoc("self-check", "irrelevant", 2),
+        ir_measures.ScoredDoc("self-check", "relevant-2", 1),
+    ]
+    values = list(
+        ir_measures.iter_calc(
+            [ir_measures.R @ 3, ir_measures.nDCG(gains={0: 0, 1: 1, 2: 2}) @ 3],
+            qrels,
+            run,
+        )
+    )
+    metric_values = {str(value.measure): value.value for value in values}
+    if metric_values.get("R@3") != 1.0 or abs(metric_values["nDCG(gains={})@3"] - 0.9197207891481876) > 1e-12:
+        raise ValueError(f"unexpected metric self-check values: {metric_values}")
     print("RAG evaluation self-check: PASS")
+
+
+def score(collect_path: Path, qrels_path: Path, output: Path) -> None:
+    """Score a saved run without loading an embedding model or opening a DB."""
+    payload = json.loads(collect_path.read_text(encoding="utf-8"))
+    records = payload.get("records")
+    if not isinstance(records, list) or not records:
+        raise ValueError("collect artifact has no records")
+    qids = [record.get("qid") for record in records]
+    if any(not qid for qid in qids) or len(qids) != len(set(qids)):
+        raise ValueError("collect artifact has missing or duplicate qids")
+    failures = [record["qid"] for record in records if record.get("error")]
+    if failures:
+        raise ValueError(f"cannot score failed retrievals: {failures}")
+
+    qrel_rows: list[tuple[str, str, int]] = []
+    seen_qrels: set[tuple[str, str]] = set()
+    for line in qrels_path.read_text(encoding="utf-8").splitlines():
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        parts = line.split()
+        if len(parts) != 4:
+            raise ValueError(f"invalid qrels row: {line}")
+        qid, _iteration, doc_id, relevance_text = parts
+        relevance = int(relevance_text)
+        if relevance not in {0, 1, 2}:
+            raise ValueError(f"invalid relevance in qrels row: {line}")
+        key = (qid, doc_id)
+        if key in seen_qrels:
+            raise ValueError(f"duplicate qrels row: {key}")
+        seen_qrels.add(key)
+        qrel_rows.append((qid, doc_id, relevance))
+    if {row[0] for row in qrel_rows} != set(qids):
+        raise ValueError("qrels qids do not match collect artifact")
+
+    import ir_measures
+
+    qrels = [
+        ir_measures.Qrel(qid, doc_id, relevance)
+        for qid, doc_id, relevance in qrel_rows
+    ]
+    grouped: dict[tuple[str, int], list[dict[str, Any]]] = {}
+    for record in records:
+        grouped.setdefault((record["group"], record["top_k"]), []).append(record)
+
+    score_groups: list[dict[str, Any]] = []
+    for (group, top_k), group_records in sorted(grouped.items()):
+        group_qids = {record["qid"] for record in group_records}
+        run = [
+            ir_measures.ScoredDoc(
+                record["qid"],
+                result["document_key"],
+                top_k - result["rank"] + 1,
+            )
+            for record in group_records
+            for result in record["results"]
+        ]
+        group_qrels = [row for row in qrels if row.query_id in group_qids]
+        measures = [
+            ir_measures.R @ top_k,
+            ir_measures.nDCG(gains={0: 0, 1: 1, 2: 2}) @ top_k,
+        ]
+        values = list(ir_measures.iter_calc(measures, group_qrels, run))
+        per_query: dict[str, dict[str, float]] = {
+            qid: {} for qid in sorted(group_qids)
+        }
+        for value in values:
+            per_query[value.query_id][str(value.measure)] = value.value
+        if any(len(metrics) != 2 for metrics in per_query.values()):
+            raise ValueError(f"metric output missing a query in group {group}")
+        macro = {
+            metric: sum(metrics[metric] for metrics in per_query.values())
+            / len(per_query)
+            for metric in next(iter(per_query.values()))
+        }
+        score_groups.append(
+            {
+                "group": group,
+                "k": top_k,
+                "queries": per_query,
+                "macro_average": macro,
+            }
+        )
+
+    metadata = json.loads((EVALUATION_ROOT / "metadata.json").read_text(encoding="utf-8"))
+    output.mkdir(parents=True, exist_ok=True)
+    (output / "score.json").write_text(
+        json.dumps(
+            {
+                "dataset_version": payload.get("dataset_version"),
+                "label_status": metadata["status"],
+                "official": metadata["status"] == "reviewed",
+                "metric_definition": {
+                    "recall": "Recall@k",
+                    "ndcg": "nDCG@k with linear gain {0: 0, 1: 1, 2: 2}",
+                    "boundary": "RAGRetriever output before Backend filtering and evidence merging",
+                },
+                "groups": score_groups,
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("collect", "self-check"))
+    parser.add_argument("command", choices=("collect", "score", "self-check"))
     parser.add_argument("--output", type=Path, default=REPO_ROOT / "rag-evaluation-output")
+    parser.add_argument(
+        "--collect",
+        type=Path,
+        default=REPO_ROOT / "rag-evaluation-output" / "collect.json",
+        help="Saved collect.json used by score.",
+    )
+    parser.add_argument(
+        "--qrels",
+        type=Path,
+        default=EVALUATION_ROOT / "qrels.draft.tsv",
+        help="TREC qrels used by score.",
+    )
     return parser.parse_args()
 
 
@@ -239,6 +374,8 @@ def main() -> None:
     args = parse_args()
     if args.command == "self-check":
         self_check()
+    elif args.command == "score":
+        score(args.collect, args.qrels, args.output)
     else:
         collect(args.output)
 

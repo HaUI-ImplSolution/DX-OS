@@ -5,6 +5,7 @@ import HaUI.ImplSolution.dxos.core.api.audit.AuditEvent;
 import HaUI.ImplSolution.dxos.core.api.audit.AuditOutcome;
 import HaUI.ImplSolution.dxos.core.api.audit.AuditRecorder;
 import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -28,6 +29,8 @@ public class AuditService implements AuditRecorder {
   private static final Logger log = LoggerFactory.getLogger(AuditService.class);
   private static final String ROLE_PREFIX = "ROLE_";
   private static final Set<String> KEYCLOAK_ROLES = Set.of("offline_access", "uma_authorization");
+  private static final String ADMIN_AUTHORITY = ROLE_PREFIX + "ADMIN";
+  private static final Set<String> CHANGING_METHODS = Set.of("POST", "PUT", "PATCH", "DELETE");
 
   private final AuditLogRepository repository;
   private final AuditDenialLimiter denialLimiter;
@@ -52,16 +55,45 @@ public class AuditService implements AuditRecorder {
     }
   }
 
-  // A refused request: 403 or a rejected token. At most a set number of records per client address
-  // and action each minute; the rest are counted and reported with the next record.
+  // A refused request: 403 or a rejected token.
   public void recordDenial(String action) {
+    recordLimited(action, AuditOutcome.DENIED, Map.of());
+  }
+
+  // A request that ended in a server error or an unavailable dependency (5xx).
+  public void recordServerError(int status, Throwable cause) {
+    recordLimited("SERVER_ERROR", AuditOutcome.FAILED, failureFacts(status, cause));
+  }
+
+  // A change an administrator made that was refused for a business reason (409, 422...).
+  public void recordAdminFailure(int status, Throwable cause) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    boolean admin = authentication != null && authentication.getAuthorities().stream()
+        .anyMatch(authority -> ADMIN_AUTHORITY.equals(authority.getAuthority()));
+    if (admin && CHANGING_METHODS.contains(MDC.get(RequestContext.METHOD))) {
+      recordLimited("ADMIN_ACTION_FAILED", AuditOutcome.FAILED, failureFacts(status, cause));
+    }
+  }
+
+  // At most a set number of records per client address and action each minute; the rest are
+  // counted and reported with the next record.
+  private void recordLimited(String action, AuditOutcome outcome, Map<String, Object> facts) {
     String key = MDC.get(RequestContext.CLIENT_IP) + "|" + action;
     int carried = denialLimiter.admit(key, System.currentTimeMillis());
     if (carried < 0) {
       return;
     }
-    record(new AuditEvent(action, "HTTP", MDC.get(RequestContext.PATH), AuditOutcome.DENIED,
-        carried > 0 ? Map.of("suppressed", carried) : null));
+    Map<String, Object> metadata = new LinkedHashMap<>(facts);
+    if (carried > 0) {
+      metadata.put("suppressed", carried);
+    }
+    record(new AuditEvent(action, "HTTP", MDC.get(RequestContext.PATH), outcome,
+        metadata.isEmpty() ? null : metadata));
+  }
+
+  // The exception message is left out because it can hold request data.
+  private static Map<String, Object> failureFacts(int status, Throwable cause) {
+    return Map.of("status", status, "exception", cause.getClass().getSimpleName());
   }
 
   private static AuditLogEntry toEntry(AuditEvent event) {

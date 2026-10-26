@@ -75,7 +75,7 @@ Một lõi, hai ứng dụng: DX-Farm trước, đổi sang DX-Lab bằng một 
 
 - Log workflow `E2E` trên GitHub, hai job `farm` và `lab`.
 - Kết quả `./mvnw verify` và `pytest`.
-- Kết quả kiểm gateway, log, audit và cấu hình Cloudflare ở `docs/TESTING.md` mục 8 và 10.
+- Kết quả kiểm gateway, log, audit, màn hình giám sát và cấu hình Cloudflare ở `docs/TESTING.md` mục 8 và 10.
 - Video quay thử toàn bộ kịch bản.
 
 ## 3. Dàn ý báo cáo kỹ thuật (8-10 trang) và slide (tối đa 12)

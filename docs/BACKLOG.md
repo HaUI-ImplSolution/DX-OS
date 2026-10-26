@@ -10,7 +10,8 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Báo cáo kỹ thuật 8-10 trang, slide tối đa 12 | Có dàn ý ở [`SUBMISSION.md`](./SUBMISSION.md) mục 3 |
 | Video demo 3-5 phút, rehearsal ít nhất một lần | Kịch bản ở [`SUBMISSION.md`](./SUBMISSION.md) mục 2 |
 | Tạo vài issue mẫu trên GitHub | Issues đã bật, hiện chưa có issue nào; lấy từ mục 5 và 6 của tài liệu này |
-| Chụp ảnh giao diện hai chế độ (Farm, Lab) lưu vào repository cho hồ sơ | Chưa có |
+| Vẽ thêm Monitor vào `docs/images/tong_quan.gif` | README, README_EN và `ARCHITECTURE.md` đã có Monitor; ảnh thêm ô Monitor và ba đường Gateway → Monitor, Monitor → Mattermost, Monitor → PostgreSQL |
+| Chụp ảnh giao diện hai chế độ (Farm, Lab) và màn hình giám sát lưu vào repository cho hồ sơ | Chưa có; che IP và email thật khi chụp màn hình giám sát |
 | Quét lại gitleaks nếu có commit mới trước ngày chấm | Lần gần nhất 23/10/2026: 434 commit, không có phát hiện |
 | Chốt ngày hạn nộp thật | Chưa chốt |
 
@@ -58,8 +59,15 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Việc | Ghi chú |
 |---|---|
 | Chặn SQLi và XSS chung ở Cloudflare | Cần gói trả phí; gói Free chỉ có managed ruleset chặn khai thác đã biết, Backend dùng truy vấn tham số hóa |
-| Ghi `AuditOutcome.FAILED` khi thao tác quản trị lỗi | Hiện chỉ ghi `SUCCESS` và `DENIED`; thao tác lỗi trả mã lỗi mà không có bản ghi audit |
-| Màn hình xem audit trên web, dashboard Superset từ `audit_log`, xóa audit theo thời hạn | Hiện chỉ có `GET /api/v1/audit-logs` và truy vấn SQL; bảng chỉ thêm, chưa có cách xóa theo thời hạn |
+| Xóa audit theo thời hạn | Bảng `audit_log` chỉ thêm, chưa có cách xóa theo thời hạn; theo dõi dung lượng bảng |
+| Cảnh báo cho sự kiện đăng nhập sai của Keycloak | Màn hình giám sát chỉ hiển thị; khóa tạm của Keycloak và giới hạn tốc độ của gateway đã chặn |
+| Metric tài nguyên (CPU, RAM, đĩa) và phân vị độ trễ | Màn hình giám sát chỉ có sự kiện bất thường và trạng thái dịch vụ; thêm Prometheus nếu cần |
+| Gộp lớp gửi Mattermost của `monitor` với `ChatWebhook` của core | `dx-monitor` không được phụ thuộc core nên hai nơi cùng đọc webhook; cảnh báo `ACCESS_DENIED` theo địa chỉ vẫn do `AuditAlertJob` của backend gửi |
+| Phân trang tra cứu chi tiết ở phía máy chủ | Hiện lấy tối đa 200 bản ghi mới nhất rồi chia trang trong trình duyệt |
+| Tên chức năng ở biểu đồ lỗi lấy từ danh sách cố định trong `monitor.js` | Đường dẫn ngoài danh sách hiện là "Chức năng khác"; thêm app mới thì bổ sung danh sách |
+| Cảnh báo `monitor` không nhớ điều kiện đã báo sau khi khởi động lại | Khởi động lại trong lúc điều kiện còn thì tin được gửi lại; bộ nhớ chống lặp nằm trong tiến trình |
+| Cảnh báo khi chính `monitor` ngừng | Cần một kiểm tra từ ngoài (Cloudflare Health Check hoặc dịch vụ uptime); hiện kiểm bằng `docker compose ps` |
+| Truyền `request_id` từ Backend sang AI service | Truy vết dừng ở Backend; log của AI chưa mang `request_id` |
 | Backend tự gọi AI sau khi upload ảnh | Chẩn đoán AI do kỹ sư bấm; đang giữ thủ công có chủ đích |
 | Push thật (FCM, UnifiedPush) | Hộp thông báo chỉ kéo về khi mở app |
 | Hộp thông báo cho engineer và admin | Họ dùng hàng chờ và Mattermost |

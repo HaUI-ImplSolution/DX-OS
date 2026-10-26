@@ -17,7 +17,7 @@ Keycloak không publish cổng ra host: gateway APISIX chuyển tiếp `/realms`
 ## Realm `dxos`
 
 - Database Postgres riêng `keycloak`; Backend tạo role `keycloak_app` và database lúc khởi động (`KeycloakDatabaseSeeder`).
-- Realm role `ADMIN`; client public `dxos-web`, `farm-mobile` (Standard Flow + PKCE, không secret); client confidential `dxos-superset` (secret `SUPERSET_OIDC_CLIENT_SECRET`) và `dxos-backend-admin` (service account của Backend).
+- Realm role `ADMIN`; client public `dxos-web`, `farm-mobile` (Standard Flow + PKCE, không secret); client confidential `dxos-superset` (secret `SUPERSET_OIDC_CLIENT_SECRET`), `dxos-monitor` (màn hình giám sát `/monitor/`, secret `MONITOR_OIDC_CLIENT_SECRET`, chỉ vai `ADMIN` vào được) và `dxos-backend-admin` (service account của Backend).
 - Realm import không chứa vai hay tài khoản của app: vai (`FARMER`, `ENGINEER`, `STUDENT`... theo `RoleProvider`) do Backend tạo lúc khởi động, tài khoản demo do `deploy/demo/seed_demo.py` tạo.
 - Keycloak chỉ import realm khi realm chưa tồn tại; đổi `realm-dxos.json` hoặc secret sau đó thì sửa trong Admin Console hoặc `deploy/reset.sh`.
 - `dxos-backend-admin` chỉ giữ `manage-users`, `view-users`, `view-realm`, `manage-realm`; Backend dùng nó để tạo tài khoản workspace và vai của app qua Admin REST API.
@@ -52,7 +52,7 @@ Quản lý user qua Admin Console `http://localhost:${APISIX_HOST_PORT}/admin` (
 - Realm import lấy `GATEWAY_PUBLIC_URL` và `SUPERSET_PUBLIC_URL` làm redirect URI của `dxos-web` và `dxos-superset` (cùng `localhost` cho dev), nên đổi `PUBLIC_HOST` trước lần khởi động đầu tiên của Keycloak.
 - Mặc định Keycloak không đặt `KC_HOSTNAME` nên URL theo địa chỉ request, web (`localhost:9080`) và điện thoại (`<IP-LAN>:9080`) chạy song song không cần đổi `.env`.
 - Overlay `docker-compose.cloudflared.yml` đặt `KC_HOSTNAME` bằng `GATEWAY_PUBLIC_URL`, nên web và điện thoại đều vào bằng địa chỉ HTTPS công khai.
-- Volume Postgres cũ chưa có client `farm-mobile`: thêm qua Admin Console (cấu hình như `realm-dxos.json`) hoặc xóa `deploy/data/postgres` để import lại.
+- Volume Postgres cũ chưa có client `farm-mobile` hoặc `dxos-monitor`: thêm qua Admin Console (cấu hình như `realm-dxos.json`, secret của `dxos-monitor` là `MONITOR_OIDC_CLIENT_SECRET`) hoặc xóa `deploy/data/postgres` để import lại.
 
 ## Máy chủ công khai
 

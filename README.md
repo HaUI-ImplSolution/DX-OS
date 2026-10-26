@@ -21,7 +21,7 @@ Một lõi dùng chung lo đăng nhập, dữ liệu, quy trình, thông báo v�
 
 - **Một lõi, nhiều ứng dụng:** Farm và Lab dùng chung một lõi, thêm ứng dụng không phải sửa core.
 - **An toàn nghiệp vụ:** các quy tắc quan trọng được kiểm ngay ở Backend và cơ sở dữ liệu, không chỉ ở giao diện.
-- **Truy vết:** gateway ghi log từng request, Keycloak ghi sự kiện đăng nhập, Backend ghi lần bị từ chối và thao tác quản trị vào audit log chỉ thêm.
+- **Truy vết:** gateway ghi log từng request, Keycloak ghi sự kiện đăng nhập, Backend ghi lần bị từ chối, lỗi `5xx` và thao tác quản trị vào audit log chỉ thêm; màn hình giám sát `/monitor/` (chỉ ADMIN) gom các nguồn này, dò trạng thái dịch vụ và cảnh báo qua Mattermost.
 - **AI có kiểm soát:** AI chỉ hỗ trợ, thông tin thuốc và liều lấy từ dữ liệu chuyên gia đã duyệt, kỹ sư là người quyết định.
 - **Chạy một lệnh:** dựng toàn bộ hệ thống kèm dữ liệu demo, có kiểm thử tự động trên môi trường sạch.
 - **Nguồn mở minh bạch:** công khai giấy phép và danh sách thành phần phần mềm, quét lộ mật khẩu tự động.
@@ -32,6 +32,7 @@ Một lõi dùng chung lo đăng nhập, dữ liệu, quy trình, thông báo v�
 
 Người dùng, web hay mobile, chỉ đi qua một Gateway (APISIX) để vào mạng nội bộ.
 Backend xử lý nghiệp vụ, lưu ảnh ở MinIO và dữ liệu ở PostgreSQL, nhờ AI Service chẩn đoán và hỏi đáp, gửi thông báo sang Mattermost; Superset đọc dữ liệu để làm báo cáo.
+Dịch vụ giám sát chạy riêng, theo dõi lượt truy cập bất thường và tình trạng từng dịch vụ, báo sự cố cho quản trị viên qua Mattermost.
 Vai trò từng dịch vụ ở [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 ## 🧱 Kiến trúc 3 tầng
@@ -133,6 +134,7 @@ Cấu hình riêng của từng ứng dụng ở [`backend/app-farm/README.md`](
 |---|---|---|
 | Ứng dụng web | http://localhost:9080 | SSO Keycloak, tài khoản bên dưới |
 | Portal (trạng thái dịch vụ) | http://localhost:9080/portal/ | Không cần |
+| Giám sát và truy vết | http://localhost:9080/monitor/ | SSO Keycloak, chỉ vai ADMIN (`admin1`) |
 | Swagger | http://localhost:9080/swagger-ui.html | Access token Keycloak, bấm Authorize |
 | Keycloak Admin | http://localhost:9080/admin | `KEYCLOAK_ADMIN_USERNAME` / `KEYCLOAK_ADMIN_PASSWORD` |
 | BI (Superset) | http://localhost:9081 | SSO Keycloak; `admin1` vào trang quản trị |
@@ -180,7 +182,7 @@ Hướng dẫn kiểm thử đầy đủ ở [`docs/TESTING.md`](./docs/TESTING.
 
 | Thư mục | Nội dung |
 |---|---|
-| [`backend/`](./backend/README.md) | `dx-core-api`, `dx-core`, `app-farm`, `app-lab`, `dx-host` |
+| [`backend/`](./backend/README.md) | `dx-core-api`, `dx-core`, `app-farm`, `app-lab`, `dx-host`, `dx-monitor` |
 | [`frontend/`](./frontend/README.md) · [`mobile/`](./mobile/README.md) | Web React (hai ứng dụng) · Mobile Expo cho nông dân |
 | [`ai/`](./ai/README.md) | AI Service: CV, RAG, LangGraph |
 | [`data/`](./data/README.md) | Dữ liệu có cấu trúc, corpus RAG, script sinh seed |

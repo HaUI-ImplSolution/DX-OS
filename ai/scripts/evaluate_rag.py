@@ -353,13 +353,35 @@ def score(collect_path: Path, qrels_path: Path, output: Path) -> None:
     )
 
 
-def publish(collect_path: Path, score_path: Path, qrels_path: Path) -> None:
+def publish(
+    collect_path: Path,
+    score_path: Path,
+    qrels_path: Path,
+    *,
+    dry_run: bool = False,
+) -> None:
     """Publish saved results; this never reruns retrieval."""
-    from langfuse import Langfuse
-
     payload = json.loads(collect_path.read_text(encoding="utf-8"))
     score_payload = json.loads(score_path.read_text(encoding="utf-8"))
     metadata = json.loads((EVALUATION_ROOT / "metadata.json").read_text(encoding="utf-8"))
+    records = payload.get("records")
+    if not isinstance(records, list) or not records:
+        raise ValueError("collect artifact has no records")
+    if len(records) != len(load_questions()):
+        raise ValueError("collect artifact does not contain the complete dataset")
+    if any(record.get("error") for record in records):
+        raise ValueError("publish requires a collect artifact without retrieval errors")
+    if not score_payload.get("groups"):
+        raise ValueError("score artifact has no metric groups")
+    if dry_run:
+        print(
+            "Langfuse publish dry-run: PASS "
+            f"dataset_items={len(records)} host={os.environ.get('LANGFUSE_BASE_URL', 'http://localhost:3000')}"
+        )
+        return
+
+    from langfuse import Langfuse
+
     public_key = os.environ.get("LANGFUSE_PUBLIC_KEY")
     secret_key = os.environ.get("LANGFUSE_SECRET_KEY")
     host = os.environ.get("LANGFUSE_BASE_URL") or os.environ.get(
@@ -477,6 +499,11 @@ def parse_args() -> argparse.Namespace:
         default=REPO_ROOT / "rag-evaluation-output" / "score.json",
         help="Saved score.json used by publish.",
     )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Validate publish artifacts without contacting Langfuse.",
+    )
     return parser.parse_args()
 
 
@@ -487,7 +514,7 @@ def main() -> None:
     elif args.command == "score":
         score(args.collect, args.qrels, args.output)
     elif args.command == "publish":
-        publish(args.collect, args.score_file, args.qrels)
+        publish(args.collect, args.score_file, args.qrels, dry_run=args.dry_run)
     else:
         collect(args.output)
 

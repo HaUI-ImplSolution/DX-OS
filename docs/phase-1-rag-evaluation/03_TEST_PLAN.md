@@ -37,6 +37,8 @@ Khi được yêu cầu triển khai và chạy đánh giá, ghi người chạy
 | T1-15 | WP1-04 | Self-host | Kiểm tra tài nguyên, cổng, volume riêng; restart Langfuse rồi mở lại experiment | Đủ tài nguyên mới chạy, kết quả còn nguyên và không ảnh hưởng DX-OS | Chưa chạy | Chưa chạy |
 | T1-16 | WP1-02 | Nguồn vector | DB có nội dung khớp nhưng không có bằng chứng model đã dùng khi ingest | Không công bố baseline tái lập, không tự suy ra tên model từ số chiều vector | Chưa chạy | Chưa chạy |
 | T1-17 | WP1-03 | Dependency | Chạy score/self-check khi DB và Langfuse dừng; kiểm tra diff CI/requirements runtime | Vẫn chấm được artifact; không có dependency đánh giá lọt vào CI/runtime | Chưa chạy | Chưa chạy |
+| T1-18 | WP1-04 | Tài nguyên | Chạy collect/score, Ollama và Langfuse theo từng cấu hình; ghi CPU/RAM/disk đỉnh, latency/câu, timeout và restart | Đạt sizing pilot hoặc có quyết định tách máy/bước; không swap, hết disk hoặc ảnh hưởng DX-OS | Chưa chạy | Chưa chạy |
+| T1-19 | WP1-02/WP1-04 | Nhiều request | Gửi concurrency đã chốt; giữ collector baseline ở `concurrency=1`, không tạo request giả trong artifact chính | Mỗi request độc lập, không mất/nhân đôi kết quả; lỗi/timeout được ghi riêng; không tuyên bố queue/SLA khi chưa có | Chưa chạy | Chưa chạy |
 
 ## 3. Hồi quy (không được hỏng)
 

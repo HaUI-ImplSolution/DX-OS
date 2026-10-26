@@ -26,6 +26,7 @@ Kết quả đầu ra: kết quả của mọi câu từ retriever thật, khôn
 - [ ] WP1-02-AI-03 Xuất nguyên top-k, run và bản ghi câu rỗng/lỗi; không lọc lại hoặc dựng trace trung gian.
 - [ ] WP1-02-TEST-01 Kiểm tra nhóm Farm hỏi đáp và Farm chẩn đoán.
 - [ ] WP1-02-TEST-02 Kiểm tra nhóm Lab hỏi đáp và ranh giới namespace.
+- [ ] WP1-02-TEST-03 Xác nhận collector mặc định `concurrency=1`, không có queue/batching/retry riêng và ghi thời gian từng câu.
 
 ## WP1-03: Tính Recall và nDCG
 
@@ -51,6 +52,8 @@ Kết quả đầu ra: experiment trực quan, score khớp bản xuất và bê
 - [ ] WP1-04-TEST-02 Kiểm tra lỗi mạng/credential và gửi lại từ kết quả đã lưu.
 - [ ] WP1-04-DOC-02 Viết hướng dẫn ngắn để người khác cài môi trường đánh giá và tính lại điểm.
 - [ ] WP1-04-TEST-03 Ghi nhận lần tái lập của người khác; không tự tick thay.
+- [ ] WP1-04-INFRA-03 Đo CPU/RAM/disk đỉnh của collect/score, Ollama và Langfuse; đối chiếu sizing tối thiểu trước khi publish.
+- [ ] WP1-04-TEST-04 Kiểm tra nhiều request ở concurrency đã chốt; ghi timeout, lỗi, thời gian chờ và xác nhận không ảnh hưởng DX-OS.
 
 ## Đóng phase
 

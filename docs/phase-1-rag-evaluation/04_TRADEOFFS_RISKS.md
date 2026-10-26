@@ -27,6 +27,8 @@ Chủ dự án chọn localhost; quy mô bộ đề, người kiểm tra và tà
 | R9 | Langfuse dừng hoặc credential sai | Vừa | Vừa | Tách collect/score/publish, lưu artifact trước | Không gửi được experiment | Giữ kết quả tái lập và gửi lại cùng lần chạy |
 | R10 | Hứa có trace chi tiết nhưng chỉ thu được top-k cuối | Vừa | Cao | Một observation cho lời gọi thật, dữ liệu chunking là metadata | Có span/ứng viên không do collector thu | Giảm dữ liệu hiển thị đúng khả năng hiện có, không sửa runtime để lấy trace |
 | R11 | Recall thấp do nhiều chunk liên quan hơn k hoặc overlap | Vừa | Vừa | Ghi rõ đơn vị chunk và số nhãn liên quan; giải thích trần Recall@k | Điểm bị hiểu là độ đủ ý của câu trả lời | Giữ nhãn đúng, không xóa nhãn để tăng điểm; không thêm metric ngoài phạm vi |
+| R12 | Nhiều request làm Ollama quá tải vì chưa có queue/concurrency limit | Vừa | Cao | Collector chạy tuần tự; đo tải riêng; ghi rõ fallback 30 giây và giới hạn ngoài phase | Timeout tăng, RAM/swap cao, Ollama restart | Tách collect/score khỏi Ollama/Langfuse; mở phase riêng cho queue, backpressure và SLA |
+| R13 | Ước lượng tài nguyên không đủ khi chạy cùng DX-OS | Vừa | Cao | Chốt sizing pilot, đo CPU/RAM/disk trước publish, volume Langfuse riêng | Container restart, hết disk hoặc ảnh hưởng service sản phẩm | Dùng máy đánh giá riêng hoặc chỉ bàn giao artifact qrels/run |
 
 ## 3. Nợ kỹ thuật chấp nhận
 

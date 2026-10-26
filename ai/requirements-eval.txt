@@ -1,0 +1,2 @@
+# Evaluation-only dependencies; do not add these to the runtime or CI image.
+ir-measures==0.3.3

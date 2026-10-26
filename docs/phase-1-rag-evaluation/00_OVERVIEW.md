@@ -11,6 +11,10 @@
 | Bắt đầu, dự kiến xong | Lập kế hoạch 25/10/2026; ngày hoàn thành chưa chốt |
 | Phụ thuộc | Bộ nhãn được kiểm tra và Langfuse self-host dành riêng cho đánh giá |
 
+Hiện chưa chỉ định người kiểm tra nhãn. Bộ câu hỏi và qrels trong
+`data/rag/evaluation/` vì vậy chỉ là bản nháp nội bộ; chưa được dùng để công bố
+điểm đánh giá độc lập cho tới khi có người kiểm tra được ghi nhận.
+
 ## 1. Tham chiếu
 
 | Nguồn yêu cầu | Nội dung | Mức độ | Phạm vi trong phase này |
@@ -60,6 +64,23 @@ Metric được tính bằng thư viện công khai, dữ liệu gốc chạy l�
 Kết quả chỉ đại diện cho bộ đề đã chấm và phiên bản corpus được ghi nhận.
 Chỉ dùng Langfuse không biến nhãn nội bộ thành đánh giá độc lập.
 Rủi ro nhãn, dữ liệu đánh giá, self-host và phụ thuộc được ghi ở [`04_TRADEOFFS_RISKS.md`](./04_TRADEOFFS_RISKS.md).
+
+## 5.1. Đánh giá tính khả thi
+
+Phase khả thi cho pilot 36 câu hỏi đáp và sáu query chẩn đoán vì không sửa API, schema, runtime hoặc CI; collector chỉ đọc PostgreSQL, score chạy trên artifact và Langfuse được tách khỏi stack sản phẩm. Ước lượng 2–3 ngày cho công cụ chỉ khả thi sau khi corpus, nguồn vector, người kiểm tra nhãn và quyền truy cập môi trường đã sẵn sàng; việc kiểm tra nhãn, khởi tạo Langfuse và tái lập độc lập là các phần riêng.
+
+Giới hạn cần chốt: code hiện tại gọi Ollama đồng bộ với timeout 30 giây, chưa có queue, rate limit, batching hoặc giới hạn concurrency riêng. Phase này không giải quyết burst request production và không dùng LLM judge; lần collect mặc định chạy tuần tự (`concurrency=1`) để giữ baseline tái lập, ghi nhận thời gian/lỗi và không làm quá tải Ollama. Khi nhiều request hỏi đáp thật đến cùng lúc, mỗi request được xử lý độc lập; request có thể chờ tài nguyên Ollama, và nếu LLM lỗi/timeout thì RAG trả evidence nguyên văn theo hành vi hiện có. Queue/backpressure, giới hạn concurrency và SLA là backlog riêng.
+
+Ước lượng tài nguyên ban đầu, cần đo lại bằng T1-18 trước khi chạy chính thức:
+
+| Thành phần | Tối thiểu đề xuất | Ghi chú |
+|---|---:|---|
+| Collect/score, không bật Langfuse/Ollama | 2 vCPU, 4 GB RAM, 5 GB trống | Dùng embedding model/cache hiện có; DB vector là nguồn đọc |
+| Ollama + embedding khi chạy câu hỏi | 4 vCPU, 8 GB RAM, 5–10 GB trống | CPU chạy được nhưng latency phụ thuộc máy; model cache không tính là dữ liệu repo |
+| Langfuse self-host riêng | 4 vCPU, 8 GB RAM còn trống, 20 GB trống | Bao gồm image và volume thử nghiệm; không dùng chung volume sản phẩm |
+| Chạy đồng thời với DX-OS | Khuyến nghị 8 vCPU, 16 GB RAM | Nếu không đạt thì collect/score trước, publish sau |
+
+Đây là sizing cho pilot, không phải cam kết throughput hoặc production SLA. Nếu đo thực tế vượt ngưỡng hoặc container restart/swap, dừng publish và chuyển sang máy đánh giá riêng.
 
 ## 6. Kết quả đầu ra mong đợi (Definition of Done)
 

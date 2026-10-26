@@ -9,8 +9,17 @@ Không có thay đổi API nên không có bước sửa Swagger.
 WP1-01 → WP1-02 → WP1-03 → WP1-04.
 Việc chuẩn bị Langfuse self-host và project đánh giá có thể làm trong lúc người đánh giá kiểm tra nhãn, sau khi kiểm tra tài nguyên máy.
 Chỉ triển khai sau khi chốt câu hỏi mở của `00_OVERVIEW.md`; không tự ghi nhận có người duyệt hoặc tự tạo quyết định duyệt.
+Hiện chưa có người kiểm tra nhãn được chỉ định; mọi nhãn đang ở trạng thái `draft` và không được trình bày là đánh giá độc lập.
 Theo `ai/.codex/AGENTS.md`, chỉ một script có ba bước collect/score/publish và một self-check; không tạo framework đánh giá hoặc giao diện riêng.
 Trong lần chạy, có thể collect/score trước rồi mới bật Langfuse để publish, tránh giữ model AI và stack Langfuse cùng chiếm RAM khi không cần.
+
+## Xử lý nhiều request và tài nguyên
+
+- Với collector đánh giá, mặc định xử lý tuần tự (`concurrency=1`), một câu một lần; không tự thêm queue, batching, worker pool hoặc retry riêng. Cách này giữ thứ tự, thời gian đo được và tính tái lập; nếu cần smoke test tải thì chỉ tăng concurrency theo quyết định riêng và ghi rõ đó không phải baseline.
+- Với request hỏi đáp của runtime, mỗi request độc lập gọi retriever rồi gọi Ollama đồng bộ tối đa 30 giây theo cấu hình hiện tại. Code hiện chưa có hàng đợi, backpressure, rate limit hay giới hạn concurrency ở tầng ứng dụng; nhiều request có thể cùng chờ Ollama và chịu giới hạn tài nguyên của Ollama/máy chủ. Khi Ollama lỗi hoặc timeout, request dùng evidence nguyên văn theo fallback hiện có. Thiết kế queue/concurrency/SLA production không thuộc phase này.
+- Không dùng LLM để chấm trong phase; score/self-check không nạp model LLM, nên có thể chạy sau khi tắt Ollama. Publish Langfuse làm riêng sau collect/score để giảm đỉnh RAM.
+- Sizing pilot: collect/score cần tối thiểu 2 vCPU, 4 GB RAM và 5 GB trống; nếu chạy Ollama cùng embedding nên dành 4 vCPU, 8 GB RAM và 5–10 GB trống; Langfuse self-host riêng cần tối thiểu 4 vCPU, 8 GB RAM còn trống và 20 GB trống. Khi chạy đồng thời với DX-OS, khuyến nghị 8 vCPU/16 GB RAM; đây là ước lượng cần xác nhận bằng đo thực tế, không phải SLA.
+- Trước lần chạy chính thức phải ghi CPU/RAM đỉnh, thời gian/câu, số lỗi/timeout, dung lượng volume và concurrency thực tế. Nếu swap, container restart, hết disk hoặc latency tăng bất thường thì dừng publish, chạy tách collect/score và Langfuse hoặc chuyển máy.
 
 ## WP1-01: Bộ đề và nhãn chuẩn
 

@@ -6,7 +6,7 @@
       "SRC_KN_RICE_CLIMATE_19488"
     ],
     "topic": "cultivation_water_nutrition",
-    "review_status": "APPROVED",
+    "review_status": "IN_REVIEW",
     "review_flags": [
       "IN_REVIEW",
       "CHECK_LICENSE_TERMS",
@@ -17,8 +17,7 @@
       "Nguồn có được phép lưu và sử dụng nội dung cho RAG không?",
       "Nội dung có phù hợp với điều kiện Việt Nam và phạm vi topic không?",
       "Có đoạn thuốc/liều/PHI cần loại khỏi corpus giải thích không?"
-    ],
-    "approved_at": "2026-10-27"
+    ]
   },
   {
     "document_id": "SRC_KN_RICE_LOW_EMISSION_31656",
@@ -27,7 +26,7 @@
       "SRC_KN_RICE_LOW_EMISSION_31656"
     ],
     "topic": "cultivation_water_nutrition_ipm",
-    "review_status": "APPROVED",
+    "review_status": "IN_REVIEW",
     "review_flags": [
       "IN_REVIEW",
       "CHECK_LICENSE_TERMS",
@@ -38,8 +37,7 @@
       "Nguồn có được phép lưu và sử dụng nội dung cho RAG không?",
       "Nội dung có phù hợp với điều kiện Việt Nam và phạm vi topic không?",
       "Có đoạn thuốc/liều/PHI cần loại khỏi corpus giải thích không?"
-    ],
-    "approved_at": "2026-10-27"
+    ]
   },
   {
     "document_id": "SRC_KN_RICE_WEED_22126",
@@ -48,7 +46,7 @@
       "SRC_KN_RICE_WEED_22126"
     ],
     "topic": "weed_management",
-    "review_status": "APPROVED",
+    "review_status": "IN_REVIEW",
     "review_flags": [
       "IN_REVIEW",
       "CHECK_LICENSE_TERMS",
@@ -59,8 +57,7 @@
       "Nguồn có được phép lưu và sử dụng nội dung cho RAG không?",
       "Nội dung có phù hợp với điều kiện Việt Nam và phạm vi topic không?",
       "Có đoạn thuốc/liều/PHI cần loại khỏi corpus giải thích không?"
-    ],
-    "approved_at": "2026-10-27"
+    ]
   },
   {
     "document_id": "SRC_VAAS_RICE_LEAF_BIOLOGY",
@@ -69,7 +66,7 @@
       "SRC_VAAS_RICE_LEAF_BIOLOGY"
     ],
     "topic": "rice_biology_varieties_cultivation",
-    "review_status": "APPROVED",
+    "review_status": "IN_REVIEW",
     "review_flags": [
       "IN_REVIEW",
       "CHECK_LICENSE_TERMS",
@@ -79,8 +76,7 @@
       "Nguồn có được phép lưu và sử dụng nội dung cho RAG không?",
       "Nội dung có phù hợp với điều kiện Việt Nam và phạm vi topic không?",
       "Có đoạn thuốc/liều/PHI cần loại khỏi corpus giải thích không?"
-    ],
-    "approved_at": "2026-10-27"
+    ]
   },
   {
     "document_id": "SRC_KN_RICE_ORGANIC_32601",
@@ -89,7 +85,7 @@
       "SRC_KN_RICE_ORGANIC_32601"
     ],
     "topic": "organic_rice_sustainable_cultivation",
-    "review_status": "APPROVED",
+    "review_status": "IN_REVIEW",
     "review_flags": [
       "IN_REVIEW",
       "CHECK_LICENSE_TERMS",
@@ -100,8 +96,7 @@
       "Nguồn có được phép lưu và sử dụng nội dung cho RAG không?",
       "Nội dung có phù hợp với điều kiện Việt Nam và phạm vi topic không?",
       "Có đoạn thuốc/liều/PHI cần loại khỏi corpus giải thích không?"
-    ],
-    "approved_at": "2026-10-27"
+    ]
   },
   {
     "document_id": "SRC_KN_RICE_POSTHARVEST_31686",
@@ -110,7 +105,7 @@
       "SRC_KN_RICE_POSTHARVEST_31686"
     ],
     "topic": "harvest_postharvest",
-    "review_status": "APPROVED",
+    "review_status": "IN_REVIEW",
     "review_flags": [
       "IN_REVIEW",
       "CHECK_LICENSE_TERMS",
@@ -121,8 +116,7 @@
       "Nguồn có được phép lưu và sử dụng nội dung cho RAG không?",
       "Nội dung có phù hợp với điều kiện Việt Nam và phạm vi topic không?",
       "Có đoạn thuốc/liều/PHI cần loại khỏi corpus giải thích không?"
-    ],
-    "approved_at": "2026-10-27"
+    ]
   },
   {
     "document_id": "SRC_KN_RICE_SMART_PACKAGE_21736",
@@ -131,7 +125,7 @@
       "SRC_KN_RICE_SMART_PACKAGE_21736"
     ],
     "topic": "integrated_rice_cultivation_ipm",
-    "review_status": "APPROVED",
+    "review_status": "IN_REVIEW",
     "review_flags": [
       "IN_REVIEW",
       "CHECK_LICENSE_TERMS",
@@ -141,7 +135,6 @@
       "Nguồn có được phép lưu và sử dụng nội dung cho RAG không?",
       "Nội dung có phù hợp với điều kiện Việt Nam và phạm vi topic không?",
       "Có đoạn thuốc/liều/PHI cần loại khỏi corpus giải thích không?"
-    ],
-    "approved_at": "2026-10-27"
+    ]
   }
 ]

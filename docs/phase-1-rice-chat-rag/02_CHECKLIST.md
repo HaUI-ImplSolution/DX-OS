@@ -65,10 +65,10 @@ Kết quả đầu ra: ingest atomic, corpus version, smoke retrieval và rollba
 
 - [x] WP2-04-AI-01 Tái sử dụng `CorpusConfig`/`ingest_corpus`; chỉ thêm cấu hình tối thiểu cho corpus mới.
 - [x] WP2-04-AI-02 Mở rộng contract/validator để tài liệu không phải bệnh không bắt buộc `disease_code`.
-- [x] WP2-04-AI-03 Ingest version mới bằng credential write riêng.
-- [x] WP2-04-AI-04 Chạy dry-run và validate trước khi ghi.
+- [~] WP2-04-AI-03 Ingest version mới bằng credential write riêng; chưa chạy vì chưa có vector DB.
+- [x] WP2-04-AI-04 Chạy dry-run và validate artifact trước khi ghi.
 - [x] WP2-04-AI-05 Ghi corpus version vào citation/telemetry.
-- [x] WP2-04-DATA-01 Ingest corpus đã duyệt, không ingest raw chưa duyệt.
+- [~] WP2-04-DATA-01 Chỉ ingest corpus đã duyệt; dữ liệu hiện tại còn `IN_REVIEW`, chưa ingest thật.
 - [x] WP2-04-INFRA-01 Thêm job/command crawl và ingest ngoài runtime FastAPI.
 - [ ] WP2-04-TEST-01 Kiểm tra rollback về corpus cũ (cần vector DB).
 - [ ] WP2-04-TEST-02 Kiểm tra rollback độc lập cho namespace `farm` và `lab` (cần vector DB).
@@ -76,7 +76,7 @@ Kết quả đầu ra: ingest atomic, corpus version, smoke retrieval và rollba
 ## WP2-05 UI, vận hành và bàn giao
 
 - [x] WP2-05-DOC-01 Cập nhật README, runbook và sơ đồ luồng.
-- [x] WP2-05-FE-01 Kiểm tra build web; mobile không dùng status mới.
+- [~] WP2-05-FE-01 Mobile không dùng status mới; build web cần chạy trong môi trường Node đầy đủ.
 - [x] WP2-05-INFRA-01 Cập nhật env example, healthcheck và log không lộ nội dung nhạy cảm.
 - [ ] WP2-05-TEST-01 Lưu test report và bằng chứng demo (cần môi trường chạy thật).
 

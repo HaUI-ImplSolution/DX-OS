@@ -14,8 +14,8 @@ from app.core.config import get_settings
 from app.rag.answer_contract import AnswerDraft, AnswerReason, GeneratedAnswer, Profile
 from app.rag.prompt_builder import build_answer_messages, build_rag_prompt
 from app.rag.retriever import RAGRetriever
-from app.rag.source_registry import REGISTRY_FILE, load_source_registry
 from app.rag.scope_gate import ANSWERABLE, IN_SCOPE_NO_EVIDENCE, classify_scope
+from app.rag.source_registry import REGISTRY_FILE, load_source_registry
 
 logger = logging.getLogger(__name__)
 

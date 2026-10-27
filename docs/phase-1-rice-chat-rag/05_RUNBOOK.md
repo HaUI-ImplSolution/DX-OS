@@ -32,6 +32,7 @@ này vẫn phải đến từ Backend facts đã duyệt.
 
 ## Trạng thái hiện tại
 
-Farm staging/corpus đa chủ đề đã có artifact và pass offline validation. Corpus
-Lab hiện hữu đang cần quarantine vì các URL hiện tại không thuộc host SICT
-được policy Phase 2 cho phép; không tự động promote hoặc xóa các artifact đó.
+Farm staging đa chủ đề đã có artifact và pass offline validation; các document
+vẫn ở trạng thái `IN_REVIEW` cho đến khi có người duyệt thật. Corpus Lab hiện
+hữu đang được quarantine vì các URL hiện tại không thuộc host SICT được policy
+Phase 2 cho phép; validator chỉ tính source active và không ingest các source đó.

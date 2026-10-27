@@ -55,6 +55,16 @@ public class KnowledgeGatewayService implements KnowledgeGateway {
       return new KnowledgeAnswer(question, List.of(), "OUT_OF_SCOPE", scope.reasonCode(),
           namespace);
     }
+    return retrieve(namespace, question, filters, topK);
+  }
+
+  @Override
+  public KnowledgeAnswer retrieve(String namespace, String question, Map<String, String> filters,
+      int topK) {
+    KnowledgeNamespace corpus = namespaces.get(namespace);
+    if (corpus == null) {
+      throw new IllegalArgumentException("Knowledge namespace is not registered: " + namespace);
+    }
     Map<String, Object> body = new LinkedHashMap<>(filters);
     body.put("query", question);
     body.put("top_k", topK);

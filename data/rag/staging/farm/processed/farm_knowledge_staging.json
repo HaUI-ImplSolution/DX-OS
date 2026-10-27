@@ -26,7 +26,7 @@
       "raw_file": "raw/SRC_KN_RICE_CLIMATE_19488.html",
       "page_title": "\r\n\tTài liệu tập huấn: Canh tác lúa thông minh thích ứng với biến đổi khí hậu\r\n"
     },
-    "review_status": "APPROVED",
+    "review_status": "IN_REVIEW",
     "review_flags": [
       "IN_REVIEW",
       "CHECK_LICENSE_TERMS",
@@ -38,9 +38,7 @@
       "words": 179,
       "lines": 22
     },
-    "safety_note": "Không dùng làm nguồn thuốc, liều hoặc PHI nếu chưa được duyệt riêng.",
-    "approved_at": "2026-10-27",
-    "approval_note": "Operator-approved for grounded Farm knowledge RAG. Treatment facts remain subject to Backend safety rules."
+    "safety_note": "Không dùng làm nguồn thuốc, liều hoặc PHI nếu chưa được duyệt riêng."
   },
   {
     "document_id": "SRC_KN_RICE_LOW_EMISSION_31656",
@@ -73,7 +71,7 @@
       "raw_file": "raw/SRC_KN_RICE_LOW_EMISSION_31656.html",
       "page_title": "\r\n\tKỹ thuật canh tác lúa chất lượng cao và phát thải thấp vùng đồng bằng sông Cửu Long\r\n"
     },
-    "review_status": "APPROVED",
+    "review_status": "IN_REVIEW",
     "review_flags": [
       "IN_REVIEW",
       "CHECK_LICENSE_TERMS",
@@ -85,9 +83,7 @@
       "words": 1417,
       "lines": 64
     },
-    "safety_note": "Không dùng làm nguồn thuốc, liều hoặc PHI nếu chưa được duyệt riêng.",
-    "approved_at": "2026-10-27",
-    "approval_note": "Operator-approved for grounded Farm knowledge RAG. Treatment facts remain subject to Backend safety rules."
+    "safety_note": "Không dùng làm nguồn thuốc, liều hoặc PHI nếu chưa được duyệt riêng."
   },
   {
     "document_id": "SRC_KN_RICE_WEED_22126",
@@ -116,7 +112,7 @@
       "raw_file": "raw/SRC_KN_RICE_WEED_22126.html",
       "page_title": "\r\n\tHướng dẫn biện pháp kỹ thuật quản lý lúa cỏ (lúa ma)\r\n"
     },
-    "review_status": "APPROVED",
+    "review_status": "IN_REVIEW",
     "review_flags": [
       "IN_REVIEW",
       "CHECK_LICENSE_TERMS",
@@ -128,9 +124,7 @@
       "words": 1476,
       "lines": 41
     },
-    "safety_note": "Không dùng làm nguồn thuốc, liều hoặc PHI nếu chưa được duyệt riêng.",
-    "approved_at": "2026-10-27",
-    "approval_note": "Operator-approved for grounded Farm knowledge RAG. Treatment facts remain subject to Backend safety rules."
+    "safety_note": "Không dùng làm nguồn thuốc, liều hoặc PHI nếu chưa được duyệt riêng."
   },
   {
     "document_id": "SRC_VAAS_RICE_LEAF_BIOLOGY",
@@ -159,7 +153,7 @@
       "raw_file": "raw/SRC_VAAS_RICE_LEAF_BIOLOGY.html",
       "page_title": "NGÂN HÀNG KIẾN THỨC TRỒNG LÚA - Đem kiến thức nghề lúa đến mọi người bằng công nghệ thông tin"
     },
-    "review_status": "APPROVED",
+    "review_status": "IN_REVIEW",
     "review_flags": [
       "IN_REVIEW",
       "CHECK_LICENSE_TERMS",
@@ -170,9 +164,7 @@
       "words": 453,
       "lines": 32
     },
-    "safety_note": "Không dùng làm nguồn thuốc, liều hoặc PHI nếu chưa được duyệt riêng.",
-    "approved_at": "2026-10-27",
-    "approval_note": "Operator-approved for grounded Farm knowledge RAG. Treatment facts remain subject to Backend safety rules."
+    "safety_note": "Không dùng làm nguồn thuốc, liều hoặc PHI nếu chưa được duyệt riêng."
   },
   {
     "document_id": "SRC_KN_RICE_ORGANIC_32601",
@@ -202,7 +194,7 @@
       "raw_file": "raw/SRC_KN_RICE_ORGANIC_32601.html",
       "page_title": "\r\n\tKết quả nhân rộng mô hình canh tác lúa hữu cơ vụ hè - thu 2026 tại tỉnh An Giang\r\n"
     },
-    "review_status": "APPROVED",
+    "review_status": "IN_REVIEW",
     "review_flags": [
       "IN_REVIEW",
       "CHECK_LICENSE_TERMS",
@@ -214,9 +206,7 @@
       "words": 1829,
       "lines": 25
     },
-    "safety_note": "Không dùng làm nguồn thuốc, liều hoặc PHI nếu chưa được duyệt riêng.",
-    "approved_at": "2026-10-27",
-    "approval_note": "Operator-approved for grounded Farm knowledge RAG. Treatment facts remain subject to Backend safety rules."
+    "safety_note": "Không dùng làm nguồn thuốc, liều hoặc PHI nếu chưa được duyệt riêng."
   },
   {
     "document_id": "SRC_KN_RICE_POSTHARVEST_31686",
@@ -246,7 +236,7 @@
       "raw_file": "raw/SRC_KN_RICE_POSTHARVEST_31686.html",
       "page_title": "\r\n\tQuản lý thu hoạch và xử lý lúa sau thu hoạch\r\n"
     },
-    "review_status": "APPROVED",
+    "review_status": "IN_REVIEW",
     "review_flags": [
       "IN_REVIEW",
       "CHECK_LICENSE_TERMS",
@@ -258,9 +248,7 @@
       "words": 366,
       "lines": 17
     },
-    "safety_note": "Không dùng làm nguồn thuốc, liều hoặc PHI nếu chưa được duyệt riêng.",
-    "approved_at": "2026-10-27",
-    "approval_note": "Operator-approved for grounded Farm knowledge RAG. Treatment facts remain subject to Backend safety rules."
+    "safety_note": "Không dùng làm nguồn thuốc, liều hoặc PHI nếu chưa được duyệt riêng."
   },
   {
     "document_id": "SRC_KN_RICE_SMART_PACKAGE_21736",
@@ -292,7 +280,7 @@
       "raw_file": "raw/SRC_KN_RICE_SMART_PACKAGE_21736.html",
       "page_title": "\r\n\t“Gói” kỹ thuật trong canh tác lúa thông minh\r\n"
     },
-    "review_status": "APPROVED",
+    "review_status": "IN_REVIEW",
     "review_flags": [
       "IN_REVIEW",
       "CHECK_LICENSE_TERMS",
@@ -303,8 +291,6 @@
       "words": 1704,
       "lines": 41
     },
-    "safety_note": "Không dùng làm nguồn thuốc, liều hoặc PHI nếu chưa được duyệt riêng.",
-    "approved_at": "2026-10-27",
-    "approval_note": "Operator-approved for grounded Farm knowledge RAG. Treatment facts remain subject to Backend safety rules."
+    "safety_note": "Không dùng làm nguồn thuốc, liều hoặc PHI nếu chưa được duyệt riêng."
   }
 ]

@@ -29,6 +29,7 @@ export default function Knowledge({
   title,
   subtitle,
   placeholder,
+  emptyHint,
   scope,
 }: KnowledgeProps) {
   const [question, setQuestion] = useState("");

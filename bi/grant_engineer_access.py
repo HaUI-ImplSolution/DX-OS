@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Cho role DXOS Engineer quyền đọc mọi dataset đã đăng ký, để kỹ sư (Gamma) thấy dashboard của app.
 Chạy bằng ngữ cảnh ứng dụng của Superset sau bootstrap_datasources.py; idempotent.
 """

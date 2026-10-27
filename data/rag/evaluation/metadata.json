@@ -1,0 +1,33 @@
+{
+  "dataset_version": "phase-1-pilot-v2",
+  "status": "draft",
+  "reviewer": null,
+  "reviewed_at": null,
+  "questions_review": {
+    "status": "accepted",
+    "reviewer": "project_owner",
+    "accepted_on": "2026-10-26",
+    "scope": "Chủ dự án đã xem bộ câu hỏi và cho phép chạy pilot."
+  },
+  "owner_approval": {
+    "status": "approved",
+    "reviewer": "project_owner",
+    "approved_on": "2026-10-26",
+    "scope": "Chủ dự án xác nhận đã duyệt bộ câu hỏi và nhãn pilot hiện có khi chốt Phase 1."
+  },
+  "scope": {
+    "farm_qa": 12,
+    "lab_qa": 24,
+    "farm_diagnostic": 6
+  },
+  "label_scale": {
+    "0": "unsupported",
+    "1": "partially_supports",
+    "2": "directly_supports"
+  },
+  "corpora": {
+    "farm": "riceleafbd-v3-workbook-v1",
+    "lab": "lab-knowledge-v2"
+  },
+  "review_rule": "A domain reviewer must inspect the question and corpus chunks before seeing retrieval rankings."
+}

@@ -70,8 +70,9 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE.md`](../ARCHITECTURE.md).
   - Accuracy model bệnh 89,43%, macro-F1 88,13% trên 1.466 ảnh theo báo cáo người huấn luyện, chưa đo toàn pipeline hoặc riêng ngưỡng `0.70`.
   - Chưa có đánh giá trên ảnh ruộng thật có nhãn kỹ sư.
   - Luật của Lab là luật tay, chưa đo độ chính xác trên dữ liệu thật.
+  - Truy xuất RAG đo trên bộ pilot 42 câu (Recall@4 Farm 0,75, Lab 0,90; nDCG@4 0,60 và 0,81); nhãn do chủ dự án duyệt chỉ liệt kê đoạn liên quan, chưa rà đủ từng đoạn và chưa có bên thứ ba tái lập.
 - Kỹ sư luôn là người chốt bệnh và điều trị; nhãn kỹ sư chốt được lưu có cấu trúc cho dữ liệu huấn luyện về sau.
-- Dẫn: `ai/README.md`, `ai/app/cv/README.md`, `AI_EVALUATION.md`, `BACKLOG.md` mục "Giới hạn của AI và dữ liệu".
+- Dẫn: `ai/README.md`, `ai/app/cv/README.md`, `AI_EVALUATION.md`, `TESTING.md` mục 3 (đánh giá truy xuất RAG), `BACKLOG.md` mục "Giới hạn của AI và dữ liệu".
 
 ## 7. Nếu một nguồn dữ liệu hoặc API ngừng hoạt động, hệ thống xử lý thế nào?
 

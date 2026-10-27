@@ -1,0 +1,4 @@
+# Evaluation-only dependencies; do not add these to the runtime or CI image.
+ir-measures==0.3.3
+pytrec-eval-terrier==0.5.11
+langfuse==5.0.4

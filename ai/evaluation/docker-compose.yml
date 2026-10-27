@@ -1,0 +1,264 @@
+name: ${EVAL_PROJECT:?}
+
+x-owned: &owned
+  labels:
+    io.dxos.rag-evaluation.state: ${EVAL_STATE_DIR:?}
+  restart: "no"
+x-tool: &tool
+  <<: *owned
+  image: ${EVAL_TOOL_IMAGE:?}
+  user: ${EVAL_UID:?}:${EVAL_GID:?}
+  working_dir: /workspace/ai
+  volumes: &tool-volumes
+    - ${EVAL_REPO_DIR:?}/ai/app:/workspace/ai/app:ro
+    - ${EVAL_REPO_DIR:?}/ai/scripts:/workspace/ai/scripts:ro
+    - ${EVAL_REPO_DIR:?}/ai/evaluation/prepare.py:/workspace/ai/evaluation/prepare.py:ro
+    - ${EVAL_REPO_DIR:?}/data/rag:/workspace/data/rag:ro
+    - ${EVAL_STATE_DIR:?}/cache:/cache
+    - ${EVAL_STATE_DIR:?}/runs:/artifacts
+  environment: &tool-env
+    HOME: /tmp
+    PYTHONPATH: /workspace/ai:/workspace/ai/scripts
+    EMBEDDING_MODEL: /cache/model
+    HF_HOME: /cache/huggingface
+    HF_HUB_OFFLINE: "1"
+    HF_HUB_DISABLE_TELEMETRY: "1"
+    DO_NOT_TRACK: "1"
+    TOKENIZERS_PARALLELISM: "false"
+    TORCH_NUM_THREADS: "2"
+    TORCH_NUM_INTEROP_THREADS: "1"
+    OMP_NUM_THREADS: "2"
+    MKL_NUM_THREADS: "2"
+    DATABASE_URL: postgresql+psycopg://${EVAL_READONLY_USER:?}:${EVAL_READONLY_PASSWORD:?}@vector:5432/${EVAL_POSTGRES_DB:?}
+    AI_SERVICE_API_KEY: ${EVAL_AI_SERVICE_API_KEY:?}
+
+x-lf-env: &lf-env
+  DATABASE_URL: postgresql://postgres:${EVAL_LF_DB_PASSWORD:?}@lf-postgres:5432/langfuse
+  NEXTAUTH_URL: http://localhost:${EVAL_LANGFUSE_PORT:?}
+  SALT: ${EVAL_LF_SALT:?}
+  ENCRYPTION_KEY: ${EVAL_LF_ENCRYPTION_KEY:?}
+  TELEMETRY_ENABLED: "false"
+  CLICKHOUSE_MIGRATION_URL: clickhouse://clickhouse:9000
+  CLICKHOUSE_URL: http://clickhouse:8123
+  CLICKHOUSE_USER: clickhouse
+  CLICKHOUSE_PASSWORD: ${EVAL_CLICKHOUSE_PASSWORD:?}
+  CLICKHOUSE_CLUSTER_ENABLED: "false"
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+  REDIS_AUTH: ${EVAL_REDIS_PASSWORD:?}
+  LANGFUSE_S3_EVENT_UPLOAD_BUCKET: langfuse
+  LANGFUSE_S3_EVENT_UPLOAD_REGION: auto
+  LANGFUSE_S3_EVENT_UPLOAD_ACCESS_KEY_ID: ${EVAL_MINIO_USER:?}
+  LANGFUSE_S3_EVENT_UPLOAD_SECRET_ACCESS_KEY: ${EVAL_MINIO_PASSWORD:?}
+  LANGFUSE_S3_EVENT_UPLOAD_ENDPOINT: http://minio:9000
+  LANGFUSE_S3_EVENT_UPLOAD_FORCE_PATH_STYLE: "true"
+  LANGFUSE_S3_EVENT_UPLOAD_PREFIX: events/
+  LANGFUSE_S3_MEDIA_UPLOAD_BUCKET: langfuse
+  LANGFUSE_S3_MEDIA_UPLOAD_REGION: auto
+  LANGFUSE_S3_MEDIA_UPLOAD_ACCESS_KEY_ID: ${EVAL_MINIO_USER:?}
+  LANGFUSE_S3_MEDIA_UPLOAD_SECRET_ACCESS_KEY: ${EVAL_MINIO_PASSWORD:?}
+  LANGFUSE_S3_MEDIA_UPLOAD_ENDPOINT: http://minio:9000
+  LANGFUSE_S3_MEDIA_UPLOAD_FORCE_PATH_STYLE: "true"
+  LANGFUSE_S3_MEDIA_UPLOAD_PREFIX: media/
+
+services:
+  vector:
+    <<: *owned
+    image: ${EVAL_POSTGRES_IMAGE:?}
+    cpus: ${EVAL_VECTOR_CPUS:?}
+    mem_limit: ${EVAL_VECTOR_MEMORY:?}
+    environment:
+      POSTGRES_DB: ${EVAL_POSTGRES_DB:?}
+      POSTGRES_USER: ${EVAL_POSTGRES_USER:?}
+      POSTGRES_PASSWORD: ${EVAL_POSTGRES_PASSWORD:?}
+    volumes:
+      - vector:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U ${EVAL_POSTGRES_USER:?} -d ${EVAL_POSTGRES_DB:?}']
+      interval: 2s
+      timeout: 3s
+      retries: 60
+
+  prepare:
+    <<: *tool
+    environment:
+      <<: *tool-env
+      HF_HUB_OFFLINE: "0"
+      EVAL_EMBEDDING_MODEL: ${EVAL_EMBEDDING_MODEL:?}
+      EVAL_ADMIN_DATABASE_URL: postgresql+psycopg://${EVAL_POSTGRES_USER:?}:${EVAL_POSTGRES_PASSWORD:?}@vector:5432/${EVAL_POSTGRES_DB:?}
+      EVAL_READONLY_USER: ${EVAL_READONLY_USER:?}
+      EVAL_READONLY_PASSWORD: ${EVAL_READONLY_PASSWORD:?}
+      EVAL_POSTGRES_DB: ${EVAL_POSTGRES_DB:?}
+      EVAL_RUN: ${EVAL_RUN:?}
+    command: [evaluation/prepare.py, prepare]
+
+  evaluator:
+    <<: *tool
+
+  ai:
+    <<: *tool
+    cpus: ${EVAL_AI_CPUS:?}
+    mem_limit: ${EVAL_AI_MEMORY:?}
+    command: [scripts/benchmark_rag.py, serve, --host, 0.0.0.0, --port, '8000', --ingest-record, '/artifacts/${EVAL_RUN:?}/ingest.json', --output, '/artifacts/${EVAL_RUN:?}/server.json']
+    ports:
+      - '127.0.0.1:${EVAL_AI_PORT:?}:8000'
+    healthcheck:
+      test: [CMD, python, -c, "from urllib.request import urlopen; urlopen('http://127.0.0.1:8000/api/v1/disease/health', timeout=3)"]
+      interval: 3s
+      timeout: 5s
+      retries: 120
+
+  sampler:
+    <<: *tool
+    network_mode: host
+    group_add: ["${EVAL_DOCKER_GID:?}"]
+    volumes:
+      - ${EVAL_REPO_DIR:?}/ai/app:/workspace/ai/app:ro
+      - ${EVAL_REPO_DIR:?}/ai/scripts:/workspace/ai/scripts:ro
+      - ${EVAL_REPO_DIR:?}/ai/evaluation/prepare.py:/workspace/ai/evaluation/prepare.py:ro
+      - ${EVAL_REPO_DIR:?}/data/rag:/workspace/data/rag:ro
+      - ${EVAL_STATE_DIR:?}/runs:/artifacts
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      PYTHONPATH: /workspace/ai:/workspace/ai/scripts
+      RAG_LOAD_URL: http://127.0.0.1:${EVAL_AI_PORT:?}/api/v1/disease/knowledge/retrieve
+      AI_SERVICE_API_KEY: ${EVAL_AI_SERVICE_API_KEY:?}
+
+  publisher:
+    <<: *tool
+    network_mode: host
+    environment:
+      PYTHONPATH: /workspace/ai:/workspace/ai/scripts
+      LANGFUSE_BASE_URL: http://localhost:${EVAL_LANGFUSE_PORT:?}
+      LANGFUSE_PUBLIC_KEY: ${EVAL_LF_PUBLIC_KEY:?}
+      LANGFUSE_SECRET_KEY: ${EVAL_LF_SECRET_KEY:?}
+      OTEL_SDK_DISABLED: "false"
+
+  reports:
+    <<: *owned
+    image: ${EVAL_TOOL_IMAGE:?}
+    user: ${EVAL_UID:?}:${EVAL_GID:?}
+    working_dir: /artifacts
+    entrypoint: [python, -m, http.server]
+    command: ['8000', --bind, 0.0.0.0]
+    volumes:
+      - ${EVAL_STATE_DIR:?}/runs:/artifacts:ro
+    ports:
+      - '127.0.0.1:${EVAL_REPORT_PORT:?}:8000'
+
+  lf-postgres:
+    <<: *owned
+    image: ${EVAL_POSTGRES_IMAGE:?}
+    mem_limit: ${EVAL_LF_POSTGRES_MEMORY:?}
+    environment:
+      POSTGRES_DB: langfuse
+      POSTGRES_PASSWORD: ${EVAL_LF_DB_PASSWORD:?}
+    volumes:
+      - lf-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD, pg_isready, -U, postgres]
+      interval: 3s
+      timeout: 3s
+      retries: 60
+
+  clickhouse:
+    <<: *owned
+    image: ${EVAL_CLICKHOUSE_IMAGE:?}
+    user: '101:101'
+    cpus: ${EVAL_UI_CPUS:?}
+    mem_limit: ${EVAL_CLICKHOUSE_MEMORY:?}
+    environment:
+      CLICKHOUSE_DB: default
+      CLICKHOUSE_USER: clickhouse
+      CLICKHOUSE_PASSWORD: ${EVAL_CLICKHOUSE_PASSWORD:?}
+    volumes:
+      - clickhouse:/var/lib/clickhouse
+      - clickhouse-logs:/var/log/clickhouse-server
+    healthcheck:
+      test: [CMD-SHELL, 'test "$$(readlink /proc/1/exe)" = /usr/bin/clickhouse && clickhouse-client --host 127.0.0.1 --user "$$CLICKHOUSE_USER" --password "$$CLICKHOUSE_PASSWORD" --query "SELECT 1"']
+      interval: 3s
+      timeout: 3s
+      retries: 60
+
+  redis:
+    <<: *owned
+    image: ${EVAL_REDIS_IMAGE:?}
+    mem_limit: ${EVAL_REDIS_MEMORY:?}
+    command: [redis-server, --requirepass, '${EVAL_REDIS_PASSWORD:?}', --maxmemory-policy, noeviction, --appendonly, 'yes']
+    volumes:
+      - redis:/data
+    healthcheck:
+      test: [CMD-SHELL, 'REDISCLI_AUTH="$$REDIS_PASSWORD" redis-cli ping']
+      interval: 3s
+      timeout: 3s
+      retries: 60
+    environment:
+      REDIS_PASSWORD: ${EVAL_REDIS_PASSWORD:?}
+
+  minio:
+    <<: *owned
+    image: ${EVAL_MINIO_IMAGE:?}
+    mem_limit: ${EVAL_MINIO_MEMORY:?}
+    entrypoint: [sh, -c]
+    command: ['mkdir -p /data/langfuse && exec minio server --address :9000 /data']
+    environment:
+      MINIO_ROOT_USER: ${EVAL_MINIO_USER:?}
+      MINIO_ROOT_PASSWORD: ${EVAL_MINIO_PASSWORD:?}
+    volumes:
+      - minio:/data
+    healthcheck:
+      test: [CMD, curl, -fsS, http://localhost:9000/minio/health/live]
+      interval: 3s
+      timeout: 3s
+      retries: 60
+
+  langfuse-worker:
+    <<: *owned
+    image: ${EVAL_WORKER_IMAGE:?}
+    mem_limit: ${EVAL_WORKER_MEMORY:?}
+    cpus: ${EVAL_UI_CPUS:?}
+    environment:
+      <<: *lf-env
+      NODE_OPTIONS: --max-old-space-size=384
+
+  langfuse-web:
+    <<: *owned
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/api/public/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 3s
+      timeout: 5s
+      retries: 120
+    image: ${EVAL_LANGFUSE_IMAGE:?}
+    mem_limit: ${EVAL_WEB_MEMORY:?}
+    cpus: ${EVAL_UI_CPUS:?}
+    ports:
+      - '127.0.0.1:${EVAL_LANGFUSE_PORT:?}:3000'
+    environment:
+      <<: *lf-env
+      HOSTNAME: 0.0.0.0
+      NEXTAUTH_SECRET: ${EVAL_LF_AUTH_SECRET:?}
+      NODE_OPTIONS: --max-old-space-size=640
+      LANGFUSE_INIT_ORG_ID: dx-rag-evaluation
+      LANGFUSE_INIT_ORG_NAME: DX-OS RAG evaluation
+      LANGFUSE_INIT_PROJECT_ID: rag-baseline
+      LANGFUSE_INIT_PROJECT_NAME: RAG baseline
+      LANGFUSE_INIT_PROJECT_PUBLIC_KEY: ${EVAL_LF_PUBLIC_KEY:?}
+      LANGFUSE_INIT_PROJECT_SECRET_KEY: ${EVAL_LF_SECRET_KEY:?}
+      LANGFUSE_INIT_USER_EMAIL: ${EVAL_LOGIN_EMAIL:?}
+      LANGFUSE_INIT_USER_NAME: Local evaluator
+      LANGFUSE_INIT_USER_PASSWORD: ${EVAL_LOGIN_PASSWORD:?}
+      AUTH_DISABLE_SIGNUP: "true"
+
+volumes:
+  vector: &owned-volume
+    labels:
+      io.dxos.rag-evaluation.state: ${EVAL_STATE_DIR:?}
+  lf-postgres: *owned-volume
+  clickhouse: *owned-volume
+  clickhouse-logs: *owned-volume
+  redis: *owned-volume
+  minio: *owned-volume
+networks:
+  default:
+    labels:
+      io.dxos.rag-evaluation.state: ${EVAL_STATE_DIR:?}

@@ -57,3 +57,4 @@ Tên chủ đề là tiêu đề bỏ "Bệnh" và "trên lúa", hoặc tên tro
 - Kết quả luôn có `source_ids`, document/chunk ID, similarity và nội dung evidence.
 - `RAGService` chỉ nhận câu trả lời của LLM khi xuất hiện nguyên văn trong evidence; Ollama lỗi, timeout hoặc nội dung không chứng minh được thì trả excerpt evidence.
 - Chỉ truy xuất được kiến thức đã ingest; similarity cao không xác nhận một khuyến nghị là đúng.
+- Chất lượng truy xuất (Recall@k, nDCG@k) và độ trễ endpoint được đo bằng bộ đề ở `data/rag/evaluation/`; cách chạy ở [`../../README.md`](../../README.md#đánh-giá-truy-xuất-rag).

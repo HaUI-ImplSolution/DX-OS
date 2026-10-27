@@ -58,6 +58,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import org.springframework.context.ApplicationEventPublisher;
@@ -101,6 +102,8 @@ public class DiagnosisService {
   private final TransactionTemplate writeTransaction;
   private final TrainingLabelRepository trainingLabelRepository;
   private final FarmKnowledgeNamespace knowledgeNamespace;
+  // Reports with an AI run in progress in this backend; the stack runs a single backend.
+  private final Set<Long> aiRunning = ConcurrentHashMap.newKeySet();
 
   public DiagnosisService(DiagnosisRepository diagnosisRepository,
       DiseaseReportRepository diseaseReportRepository, DiseaseRepository diseaseRepository,
@@ -139,13 +142,22 @@ public class DiagnosisService {
   }
 
   // Runs or reruns the AI diagnosis; earlier diagnoses stay as history and the newest is current.
-  // A result is dropped with 409 when another diagnosis was saved while the AI was working.
+  // A second run for a report already being diagnosed is refused at once with 409; a result is
+  // also dropped with 409 when another diagnosis was saved while the AI was working.
   @Transactional(propagation = Propagation.NOT_SUPPORTED)
   public DiagnosisResponse createFromAi(Long reportId) {
-    PreparedDiagnosis prepared = prepareDiagnosis(reportId);
-    AiDiagnoseResponse response = aiDiagnosisClient.diagnose(prepared.request());
-    return writeTransaction
-        .execute(status -> saveAiDiagnosis(reportId, prepared.latestId(), response));
+    if (!aiRunning.add(reportId)) {
+      throw new InvalidStateException(
+          "AI diagnosis is already running for this report; wait for it to finish, then reload");
+    }
+    try {
+      PreparedDiagnosis prepared = prepareDiagnosis(reportId);
+      AiDiagnoseResponse response = aiDiagnosisClient.diagnose(prepared.request());
+      return writeTransaction
+          .execute(status -> saveAiDiagnosis(reportId, prepared.latestId(), response));
+    } finally {
+      aiRunning.remove(reportId);
+    }
   }
 
   private PreparedDiagnosis prepareDiagnosis(Long reportId) {

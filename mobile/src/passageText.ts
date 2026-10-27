@@ -5,7 +5,7 @@ export interface PassageField {
 
 const REPEATED_LINE = /^(Mã bệnh|Tên tiếng Việt):.*$/;
 const BACKEND_SENTENCE = / Tên thuốc, liều và PHI phải do Backend.*$/;
-const FIELD_LINE = /^([^:]{2,30}):\s+(.+)$/;
+const FIELD_LINE = /^([^:]{2,40}):\s+(.+)$/;
 
 // A disease passage drops the code and name lines that repeat its title and the backend-facing
 // sentence of its legal note.

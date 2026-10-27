@@ -35,6 +35,15 @@ function doseText(rule: NonNullable<Diagnosis["treatmentRule"]>) {
   return `${amount} ${rule.doseUnit}`;
 }
 
+function Fact({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.fact}>
+      <Text style={styles.factLabel}>{label}</Text>
+      <Text style={styles.body}>{value}</Text>
+    </View>
+  );
+}
+
 function DiagnosisSection({ report }: { report: DiseaseReport }) {
   if (report.status === "NEEDS_RETAKE") {
     return (
@@ -65,13 +74,17 @@ function DiagnosisSection({ report }: { report: DiseaseReport }) {
     <>
       <Card>
         <Text style={styles.cardTitle}>{diagnosis.diseaseName}</Text>
-        {diagnosis.recommendationText && <Text style={styles.body}>{diagnosis.recommendationText}</Text>}
-        {rule && (
+        {rule ? (
           <View style={styles.facts}>
-            <Text style={styles.body}>Thuốc: {rule.pesticideCode}</Text>
-            <Text style={styles.body}>Liều: {doseText(rule)}</Text>
-            <Text style={styles.body}>Số ngày cách ly: {rule.phiDays} ngày</Text>
+            {diagnosis.confidence != null && (
+              <Fact label="Độ tin cậy" value={`${(diagnosis.confidence * 100).toFixed(1)}%`} />
+            )}
+            <Fact label="Thuốc" value={rule.pesticideCode} />
+            <Fact label="Liều" value={doseText(rule)} />
+            <Fact label="Số ngày cách ly" value={`${rule.phiDays} ngày`} />
           </View>
+        ) : (
+          diagnosis.recommendationText && <Text style={styles.body}>{diagnosis.recommendationText}</Text>
         )}
       </Card>
       {evidence.length > 0 && (
@@ -255,7 +268,9 @@ const styles = StyleSheet.create({
   header: { gap: spacing.sm },
   cardTitle: { fontSize: fontSize.cardTitle, fontWeight: "700", color: colors.text },
   body: { fontSize: fontSize.body, color: colors.text },
-  facts: { marginTop: spacing.sm, gap: spacing.xs },
+  facts: { marginTop: spacing.sm, gap: spacing.sm },
+  fact: { gap: 2 },
+  factLabel: { fontSize: fontSize.caption, fontWeight: "700", color: colors.textMuted },
   evidence: { gap: spacing.sm },
   caption: { fontSize: fontSize.caption, color: colors.textMuted },
   note: { fontSize: fontSize.body, color: colors.textMuted },

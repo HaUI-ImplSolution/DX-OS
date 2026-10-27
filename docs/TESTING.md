@@ -357,7 +357,7 @@ Cách dùng và ý nghĩa từng khối ở [`backend/dx-monitor/README.md`](../
 | Hỏi đáp gộp theo tài liệu (Farm và Lab) | Đạt | Ngày 20/10/2026: mỗi tài liệu một đoạn, các dòng theo thứ tự trong tài liệu, nguồn gộp; E2E Farm 10/10 và E2E Lab 16/16 với `--require-knowledge`; `./mvnw verify` đạt (dx-core 14, app-farm 23, app-lab 9, dx-host 102), 100 test AI đạt |
 | E2E Lab | Đạt | 16/16 bước với `--require-knowledge`, kể cả sau khi đổi app không `--reset` |
 | Đổi ứng dụng B1 đến B6 | Đạt | B2 dừng với thông báo nêu `[farm, lab]`; B3, B4 route app khác 404; B6 không lỗi migration |
-| Kiểm tay Farm | Đạt | F1, F2, F4 đến F14 (kỹ sư cũng thấy dashboard Superset); hộp duyệt chỉ có loại case của Farm; trên mobile đạt thẻ thời tiết, màn hỏi đáp và danh sách thông báo hiện 30 mục mỗi trang (cuộn tải trang kế chưa thử trên máy); F3 chưa chạy |
+| Kiểm tay Farm | Đạt | F1 đến F14 (kỹ sư cũng thấy dashboard Superset); hộp duyệt chỉ có loại case của Farm; trên mobile đạt F3, nhãn "Đang cách ly", ngưỡng GPS, thẻ thời tiết, màn hỏi đáp, hộp thông báo cuộn tải thêm 30 mục mỗi trang, icon và splash của bản build |
 | Tri thức Lab | Đạt, trừ K17 | Ngày 19/10/2026: K1 đến K16 đúng bài, nguồn mở trang của HaUI và bản PDF trên web và qua API; K17 (máy in) hiện đoạn không liên quan, xem `BACKLOG.md` |
 | Kiểm tay Lab | Đạt | L1 đến L18, API bước 1 đến 22, các màn hình web; hộp duyệt chỉ có loại case của Lab |
 | API và lỗi request | Đạt | 415, 405, 400; `settings` của `GET /api/v1/app`; `GET /api/v1/crop-seasons/isolated` |
@@ -375,5 +375,3 @@ Cách dùng và ý nghĩa từng khối ở [`backend/dx-monitor/README.md`](../
 | Dựng sạch hoàn toàn (volume và `deploy/data` rỗng) | Đạt | `start.sh farm` thoát mã 0 sau khoảng 5 phút, seed Farm đủ dữ liệu; sau khi khởi động lại AI, E2E Farm 10/10 (seed chờ AI); `start.sh lab` rồi E2E Lab 16/16 |
 | Thêm ứng dụng mẫu rỗng theo CONTRIBUTING | Đạt | Backend lên với `DXOS_APP=sample`, `system/status` trả id `sample`, không sửa `dx-core` |
 | gitleaks | Đạt | Ngày 23/10/2026: 434 commit, không có phát hiện |
-
-Mục kiểm tay chưa chạy là F3 và icon, splash của mobile, theo dõi ở [`BACKLOG.md`](./BACKLOG.md).

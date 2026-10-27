@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -252,10 +253,12 @@ class ConcurrencyIntegrationTest {
   void concurrentAiRerunsKeepOnlyOneNewCurrentDiagnosis() throws Exception {
     Diagnosis original = newPendingDiagnosis();
     Long reportId = original.getDiseaseReport().getId();
-    CyclicBarrier aiCalls = new CyclicBarrier(2);
+    CountDownLatch firstInAi = new CountDownLatch(1);
+    CountDownLatch secondDone = new CountDownLatch(1);
     org.mockito.Mockito.when(aiDiagnosisClient.diagnose(org.mockito.ArgumentMatchers.any()))
         .thenAnswer(call -> {
-          aiCalls.await(20, java.util.concurrent.TimeUnit.SECONDS);
+          firstInAi.countDown();
+          secondDone.await(20, java.util.concurrent.TimeUnit.SECONDS);
           return new HaUI.ImplSolution.dxos.farm.dto.AiDiagnoseResponse("concurrent-test",
               new HaUI.ImplSolution.dxos.farm.dto.AiDiagnoseResponse.CvResult(
                   original.getDisease().getCode(), original.getDisease().getName(),
@@ -277,8 +280,11 @@ class ConcurrencyIntegrationTest {
         }
       };
       Future<Boolean> first = executor.submit(rerun);
-      Future<Boolean> second = executor.submit(rerun);
-      assertThat((first.get() ? 1 : 0) + (second.get() ? 1 : 0)).isEqualTo(1);
+      assertThat(firstInAi.await(20, java.util.concurrent.TimeUnit.SECONDS)).isTrue();
+      boolean second = executor.submit(rerun).get();
+      secondDone.countDown();
+      assertThat(second).isFalse();
+      assertThat(first.get()).isTrue();
       assertThat(diagnosisService.history(reportId)).hasSize(2);
     } finally {
       executor.shutdownNow();

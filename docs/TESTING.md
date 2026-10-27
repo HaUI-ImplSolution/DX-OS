@@ -86,6 +86,7 @@ RAG tìm các đoạn tài liệu liên quan để hỗ trợ trả lời câu h
 | Công cụ chấm | Từ `ai/`: `python scripts/evaluate_rag.py self-check` | Đạt; kiểm metric, đầu vào, thứ hạng và kết quả rỗng |
 | Tái lập điểm | Chấm qrels/run bằng CLI `ir_measures`, provider `pytrec_eval` | Mọi câu và điểm nhóm khớp trong sai số `1e-8` |
 | Langfuse | Mở experiment, xem Expected Output, Output và score | Nhãn, chunk và điểm khớp artifact; replay kết quả đã lưu |
+| Bộ chạy độc lập | `./ai/evaluate.sh quality`, `view`, `down` | Đạt ngày 27/10/2026: checkout/state mới, cache offline, giữ lịch sử; tự dọn khi Enter, timeout hoặc ngắt |
 
 Kết quả pilot ngày 26/10/2026:
 
@@ -117,6 +118,8 @@ Kết quả ngày 26/10/2026: 18 lượt, 14.164 request, không lỗi HTTP ho�
 AI giới hạn 2 CPU/1536 MiB, một worker; RAM đỉnh quan sát khi đo 1.042,4 MiB, pgvector 27 MiB. Đã đối chiếu metric với mẫu k6 thô trong sai số `1e-8`.
 Langfuse có run `load-2026-10-26-final`, mỗi dòng là một lượt; `SUMMARY/AVG` của p95 không phải p95 gộp. HTML k6 và mẫu tài nguyên lưu ngoài repository.
 Phép thử chỉ đo HTTP retrieval trên máy dùng chung, tắt CV lifespan; chưa gồm Backend, gateway hoặc mạng điện thoại, chưa kết luận năng lực production.
+
+Bộ chạy `./ai/evaluate.sh all` ngày 27/10/2026: 18 lượt, 11.936 request, không lỗi HTTP/hợp đồng; đối chiếu dữ liệu k6 thô trong sai số `1e-8`. Langfuse chỉ bật sau đo; đã kiểm tra HTML, CPU/RAM, ngắt k6, hai phiên và khôi phục bằng `down`, không ảnh hưởng container đối chứng.
 
 ## 4. Dựng stack
 

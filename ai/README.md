@@ -101,77 +101,58 @@ Mỗi lần ingest thay thế tài liệu của đúng namespace của nó.
 
 ### Đánh giá truy xuất RAG
 
-Công cụ nằm ngoài runtime; không đổi model, corpus, ranking hoặc dữ liệu sản phẩm.
-Bộ đề có 36 câu hỏi đáp và 6 query chẩn đoán, được chủ dự án duyệt cùng nhãn pilot; việc rà đủ nhãn và tái lập độc lập ở [`BACKLOG`](../docs/BACKLOG.md).
-Chỉ số đo tại đầu ra retriever, trước ngưỡng và gộp tài liệu của Backend.
-
-`collect` cần môi trường AI hiện có, model embedding và pgvector đúng corpus; tài khoản kết nối chỉ có quyền đọc.
-Bằng chứng ingest lưu ngoài repository trong `ingest.json`, gồm `embedding_model`, `source_model`, `model_artifact`, `corpora`, `completed_at` và `runtime_versions` của torch, sentence-transformers, transformers, SQLAlchemy, pgvector.
-Thiếu bằng chứng đúng model hoặc snapshot không khớp thì dừng; không tự ingest đè database sản phẩm.
+Từ thư mục gốc repository, trên Linux x86_64 có Bash, Docker Engine local và Docker Compose:
 
 ```bash
-cd ai
-# Trong môi trường đã cài dependency AI, cấu hình DATABASE_URL chỉ đọc và model đã có.
-python -m scripts.evaluate_rag collect --ingest-record /path/outside-repo/ingest.json --output /path/outside-repo/run-01
+./ai/evaluate.sh quality
 ```
 
-`score`, `self-check` và `publish` chỉ cần môi trường đánh giá riêng; không nạp model hoặc gọi lại retriever.
-Mọi artifact phải nằm ngoài repository; mỗi lần collect dùng thư mục mới.
+Lệnh tự chuẩn bị database đánh giá riêng, cache model embedding, công cụ chấm và Langfuse local; host không cần cài Python, k6 hoặc tạo env/tài khoản thủ công.
+Cần tối thiểu 2.500 MiB RAM trống; đĩa trống tối thiểu 16 GiB khi thiếu image, 6 GiB khi đã có cache, trên cả phân vùng state và Docker.
+Lần đầu cần mạng để tải/build; các lần sau dùng lại image và snapshot model.
+Giá trị mặc định ở [`evaluation/.env.example`](evaluation/.env.example); thư mục state mặc định là `~/.local/share/dx-os-rag-evaluation-runner/`, có thể chọn bằng `EVAL_STATE_DIR`.
 
-```bash
-python3 -m venv /tmp/dx-rag-eval
-/tmp/dx-rag-eval/bin/pip install -r requirements-eval.txt
-/tmp/dx-rag-eval/bin/python scripts/evaluate_rag.py self-check
-/tmp/dx-rag-eval/bin/python scripts/evaluate_rag.py score --collect /path/outside-repo/run-01/collect.json --output /path/outside-repo/run-01
-/tmp/dx-rag-eval/bin/python scripts/evaluate_rag.py publish --collect /path/outside-repo/run-01/collect.json --score-file /path/outside-repo/run-01/score.json --dry-run
-```
+Bộ đề gồm 36 câu hỏi đáp và 6 lượt tham khảo chẩn đoán, được chủ dự án duyệt cùng nhãn pilot.
+Chấm Recall/nDCG tại đầu ra retriever, trước ngưỡng và gộp tài liệu của Backend; việc rà đầy đủ nhãn và tái lập độc lập ở [`BACKLOG`](../docs/BACKLOG.md).
+Không cần bật stack Farm/Lab để chạy đánh giá.
 
-Langfuse self-host dùng [Compose chính thức](https://langfuse.com/self-hosting/deployment/docker-compose) bên ngoài repository, project và volume riêng; phiên bản đã kiểm tra là server 4.70.1 với SDK 5.0.4.
-Không thêm Langfuse vào `deploy/` của DX-OS hoặc bật toàn stack sản phẩm để chạy đánh giá.
-Giữ PostgreSQL của Langfuse trong mạng Docker nội bộ, tránh chiếm cổng `5432` của sản phẩm.
-Sau khi host sẵn sàng, thiết lập `LANGFUSE_BASE_URL`, `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY` trong phiên riêng và chạy lại lệnh publish bỏ `--dry-run`.
-SDK tạo ba experiment theo nhóm, replay kết quả đã lưu và gắn score; thời gian trace publish không phải latency retriever, `elapsed_ms` gốc nằm trong output.
-Trong Experiments, bật Columns → Expected Output và Output để xem nhãn/chunk bên cạnh điểm; mở chi tiết để xem metadata và cấu hình.
-Gửi lại lần đã publish thành công được nhận diện bằng `publish.json` bên ngoài Git; không ghi đè artifact đã bàn giao.
-Quy trình tự chấm lại bằng CLI và giới hạn kết quả ở [`docs/TESTING.md`](../docs/TESTING.md).
+Sau đo, AI/database đánh giá được dừng.
+Terminal in link Langfuse, link báo cáo, tài khoản local và thư mục kết quả; trong Experiments, bật Expected Output, Output và score để đối chiếu nhãn, chunk và điểm.
+Trace là replay kết quả đã lưu; thời gian trace publish không phải thời gian truy xuất.
+
+Nhấn Enter hoặc hết 600 giây thì tự down riêng môi trường đánh giá.
+Nếu stdin không phải terminal tương tác, lệnh publish và down ngay.
+Cache, volume, tài khoản và lịch sử được giữ; mở lại bằng `./ai/evaluate.sh view`.
+Khi phiên bị mất do tắt máy hoặc `SIGKILL`, dùng `./ai/evaluate.sh down` để dọn phiên dở.
+Không chạy `down` từ terminal khác khi phiên đang hoạt động; dùng Enter/Ctrl+C tại terminal của phiên đó.
+
+Mỗi lượt có thư mục mới dưới `state/runs/`, gồm thông tin ingest/model/runtime, bộ nhãn, `quality-*/collect.json`, `run.trec`, `qrels.trec`, `score.json`, receipt publish, log dịch vụ và `status.json`.
+Cấu hình/credential nằm ngoài Git; không chia sẻ `evaluation.env`.
+
+CLI thấp tầng vẫn dùng độc lập trong môi trường AI/đánh giá tương ứng: `scripts/evaluate_rag.py collect/score/publish`; `--ingest-record`, `--collect`, `--score-file` và `--output` trỏ tới artifact ngoài repository.
+`publish --dry-run` kiểm đầu ra trước khi gửi.
+Kiểm công cụ bằng `./ai/evaluate.sh --self-check`; cách đọc chỉ số ở [`docs/TESTING.md`](../docs/TESTING.md#đánh-giá-truy-xuất-rag).
 
 ### Thử tải HTTP retrieval
 
-`scripts/benchmark_rag.py` và `scripts/load_rag.js` đo endpoint retrieval thật bằng k6; không thay ứng dụng sản phẩm hoặc thêm dependency vào CI/image.
-Các lệnh bên dưới chạy từ thư mục `ai/` trong môi trường tương ứng.
-Farm/Lab hỏi đáp hiện lấy đoạn qua AI rồi Backend lọc/gộp, không gọi Ollama. Phép thử dưới đây chỉ gồm HTTP → embedding → pgvector → ranking → JSON; không đo Backend/gateway, CV hay toàn luồng điện thoại.
-
-Chuẩn bị container AI đánh giá riêng từ image có sẵn, database đánh giá dùng role mặc định chỉ đọc và model/provenance như bước collect. Bind cổng container vào `127.0.0.1:8088`, mount `ai/`, `data/`, model và thư mục artifact bên ngoài repository; không build lại DX-OS. Giới hạn đã thử: AI 2 CPU/1536 MiB, pgvector 1 CPU/256 MiB; dùng `OMP_NUM_THREADS=2`, `MKL_NUM_THREADS=2`, một worker.
-Trong container, dùng môi trường AI và khóa `AI_SERVICE_API_KEY` riêng để chạy:
-
 ```bash
-python scripts/benchmark_rag.py serve --host 0.0.0.0 --port 8000 \
-  --ingest-record /artifacts/ingest.json --output /artifacts/load-server.json
+./ai/evaluate.sh performance
+# Chấm chất lượng và đo tải tuần tự, dùng chung bước chuẩn bị:
+./ai/evaluate.sh all
 ```
 
-Lệnh này kiểm corpus, provenance và quyền đọc, làm nóng embedding, ghi server record rồi mở ứng dụng AI hiện có với CV lifespan tắt. Không dùng container này phục vụ chẩn đoán; record và credential ở ngoài repository. `DATABASE_URL` trỏ DB đánh giá, `EMBEDDING_MODEL` phải khớp record ingest; không đổi env của sản phẩm.
+Dùng k6 gọi endpoint retrieval thật: Farm/Lab chạy riêng 1/2/5 VU, 30 giây/mức, lặp ba lần, tổng 18 lượt; làm nóng model trước đo.
+Mỗi VU đợi phản hồi rồi gửi tiếp, không think time.
+CPU/RAM lấy mẫu bằng Docker; Langfuse chỉ bật sau đo, khi AI/vector đã dừng.
 
-Trên host, dùng môi trường đánh giá riêng và binary [k6 chính thức](https://grafana.com/docs/k6/latest/set-up/install-k6/) (đã thử 2.3.0); đặt cùng `AI_SERVICE_API_KEY` trong phiên riêng, không ghi khóa vào script hoặc lệnh có giá trị thật:
+Kết quả nằm trong `performance-*/`: `benchmark.json` và mỗi lượt có `summary.json`, `metrics.json.gz`, `resources.json`, `k6.log`, `dashboard.html`.
+Báo cáo HTML mở qua link local terminal in ra; Langfuse hiển thị tóm tắt từng lượt cùng cấu hình và score latency/RPS/lỗi/CPU/RAM.
+`SUMMARY/AVG` của p95 là trung bình p95 các lượt, không phải p95 chung của mọi request.
 
-```bash
-export RAG_LOAD_URL=http://127.0.0.1:8088/api/v1/disease/knowledge/retrieve
-/path/eval-venv/bin/python scripts/benchmark_rag.py self-check
-/path/eval-venv/bin/python scripts/benchmark_rag.py run \
-  --k6 /path/k6 --output /path/outside-repo/load-run-01 \
-  --server-record /path/outside-repo/artifacts/load-server.json \
-  --container dx-rag-load-ai --container dx-rag-vector --seconds 30 --repeats 3
-```
-
-Mỗi nhóm chạy riêng 1/2/5 VU, mỗi mức ba lượt; làm nóng câu hỏi ngoài cửa sổ đo, mỗi VU đợi phản hồi rồi gửi tiếp, không think time. Không đồng nghĩa 1/2/5 request mỗi giây. Mỗi lượt nghỉ 3 giây; giữ cả kết quả lỗi, không ghi đè thư mục cũ.
-Kết quả gồm `benchmark.json`, từng lượt có `summary.json`, `metrics.json.gz`, `resources.json`, `k6.log` và `dashboard.html` do k6 xuất. CPU/RAM là mẫu Docker, không phải số tự đo của Langfuse; cách đọc và giới hạn ở [`docs/TESTING.md`](../docs/TESTING.md#thử-tải-http-retrieval).
-
-Sau khi đo, dừng riêng container AI thử tải, bật lại Langfuse nếu đã tạm dừng vì thiếu RAM. Với các biến Langfuse trong phiên đánh giá, chạy:
-
-```bash
-/path/eval-venv/bin/python scripts/benchmark_rag.py publish --output /path/outside-repo/load-run-01
-```
-
-Trong Experiments, chọn run có tên thư mục đầu ra (pilot hiện tại: `load-2026-10-26-final`); mỗi dòng là một lượt thử tải. Bật Output để xem cấu hình/tài nguyên và các cột score latency/RPS/lỗi/CPU/RAM. Đây là replay tóm tắt k6 đã lưu; thời gian trace publish không phải latency HTTP, hai score chất lượng Recall/nDCG được giữ riêng. Đọc `latency_p95_ms` từng dòng: `SUMMARY / AVG` là trung bình các p95 của các lượt, không phải p95 chung của toàn bộ request.
+Phép đo chỉ gồm AI HTTP retrieval, tắt CV lifespan, một worker, Torch hai thread; mặc định AI 2 CPU/1536 MiB, vector 1 CPU/256 MiB.
+Chưa gồm Backend, gateway, LLM hoặc mạng điện thoại; không dùng kết quả để kết luận năng lực production.
+Điều kiện cache và tự down giống lệnh `quality`; trial lỗi vẫn giữ artifact và lệnh trả mã lỗi.
+Xem phương pháp/kết quả ở [`docs/TESTING.md`](../docs/TESTING.md#thử-tải-http-retrieval).
 
 ## Kiểm tra
 

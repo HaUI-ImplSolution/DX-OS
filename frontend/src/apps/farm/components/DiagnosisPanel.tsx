@@ -18,7 +18,7 @@ import type {
   TreatmentRule,
   SymptomSuggestion,
 } from "../types";
-import { Badge, PassageText, Section, SourceList } from "../../../shell";
+import { Badge, GeneratedAnswerCard, PassageText, Section, SourceList } from "../../../shell";
 
 interface DiagnosisPanelProps {
   onReportUpdated: (report: DiseaseReport) => void;
@@ -462,6 +462,10 @@ export default function DiagnosisPanel({
                 </div>
               )}
             </section>
+          )}
+
+          {diagnosis.generatedExplanation && (
+            <GeneratedAnswerCard answer={diagnosis.generatedExplanation} diagnosis />
           )}
 
           {diagnosis.knowledgeEvidence && diagnosis.knowledgeEvidence.length > 0 && (

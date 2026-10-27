@@ -76,4 +76,36 @@ class DiseaseReportServiceTest {
     verify(fileStorageService, never()).store(any(), any());
     verify(diseaseReportRepository, never()).saveAndFlush(any());
   }
+
+  @Test
+  void farmerOnlySeesExplanationAfterApproval() {
+    var parcel = Parcel.builder().id(1L).code("P-01").build();
+    var season = CropSeason.builder().id(5L).parcel(parcel).build();
+    var report = HaUI.ImplSolution.dxos.farm.model.DiseaseReport.builder().id(7L).cropSeason(season)
+        .imageRef("image").reportedBy("demo").build();
+    var disease = HaUI.ImplSolution.dxos.farm.model.Disease.builder().code("Rice___Blast")
+        .name("Đạo ôn").build();
+    var explanation = HaUI.ImplSolution.dxos.farm.model.GeneratedAnswer.fallback(true);
+    var diagnosis = HaUI.ImplSolution.dxos.farm.model.Diagnosis.builder().id(1L)
+        .diseaseReport(report).disease(disease).modelVersion("test")
+        .confidence(new java.math.BigDecimal("0.91")).generatedExplanation(explanation).build();
+    when(diseaseReportRepository.findById(7L)).thenReturn(Optional.of(report));
+    when(diagnosisRepository.findTopByDiseaseReportIdOrderByIdDesc(7L))
+        .thenReturn(Optional.of(diagnosis));
+    when(currentUserService.canAccess(parcel)).thenReturn(true);
+    when(currentUserService.isFarmer()).thenReturn(true);
+    var service = new DiseaseReportService(diseaseReportRepository, cropSeasonRepository,
+        diagnosisRepository, fileStorageService, storageService, currentUserService,
+        org.mockito.Mockito.mock(NotificationService.class),
+        org.mockito.Mockito.mock(HaUI.ImplSolution.dxos.core.api.workflow.WorkflowOperations.class),
+        eventPublisher, Clock.systemUTC(), org.mockito.Mockito.mock(AiDiagnosisClient.class),
+        org.mockito.Mockito.mock(org.springframework.transaction.PlatformTransactionManager.class),
+        org.mockito.Mockito.mock(jakarta.persistence.EntityManager.class));
+    for (ApprovalStatus status : ApprovalStatus.values()) {
+      diagnosis.setApprovalStatus(status);
+      var view = service.getById(7L).diagnosis();
+      assertThat(view.generatedExplanation())
+          .isEqualTo(status == ApprovalStatus.APPROVED ? explanation : null);
+    }
+  }
 }

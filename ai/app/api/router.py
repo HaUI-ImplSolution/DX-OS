@@ -23,6 +23,8 @@ from app.cv.crop_classifier import CropInferenceError
 from app.cv.model_profile import MODEL_NAME, MODEL_VERSION
 from app.cv.triage import CvTriageError
 from app.db.session import get_db
+from app.rag.answer_contract import GeneratedAnswer, KnowledgeAnswerRequest
+from app.rag.rag_service import synthesize_answer
 from app.rag.retriever import RAGRetriever
 from app.services.inference_service import (
     ImageFetchError,
@@ -136,6 +138,21 @@ def retrieve(payload: RetrieveRequest, db: Annotated[Session, Depends(get_db)]):
         disease_code=payload.disease_code,
         namespace=payload.namespace,
         document_type=payload.document_type,
+    )
+
+
+@inference_router.post(
+    "/knowledge/answer",
+    response_model=GeneratedAnswer,
+    summary="Synthesize a bounded answer from Backend-provided evidence",
+    dependencies=[Depends(authorize_backend)],
+)
+def answer_knowledge(payload: KnowledgeAnswerRequest):
+    return synthesize_answer(
+        payload.question,
+        [item.model_dump() for item in payload.passages],
+        f"{payload.namespace}_qa",
+        context={"disease_code": payload.disease_code} if payload.disease_code else {},
     )
 
 

@@ -1229,3 +1229,21 @@ a.stat-card:hover {
     height: 480px;
   }
 }
+
+.generated-answer {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--primary);
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin: 16px 0;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.generated-answer header { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between; }
+.generated-answer h4 { margin: 0; }
+.generated-answer-mode { font-size: 0.8rem; color: var(--text-muted); }
+.generated-answer ul { padding-left: 22px; margin: 8px 0; }
+.generated-answer li + li { margin-top: 8px; }
+.generated-answer-note { color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 12px; }
+.knowledge-references > summary { cursor: pointer; margin: 16px 0; font-weight: 600; }

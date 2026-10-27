@@ -156,6 +156,30 @@ def run_stateless_diagnose(
     if structured_context.path == "review_required" and selected_rule_id is not None:
         raise ValueError("Review-required recommendation cannot select a rule_id")
 
+    explanation = None
+    if payload.include_explanation:
+        from sqlalchemy.orm import Session
+
+        from app.rag.rag_service import synthesize_answer
+
+        if isinstance(db, Session) and db.in_transaction():
+            db.rollback()
+        explanation = synthesize_answer(
+            f"Theo tài liệu, {cv_result.disease_name} có đặc điểm gì để kỹ sư đối chiếu với gợi ý của mô hình?",
+            [item.model_dump() for item in rag_evidence],
+            "farm_diagnosis",
+            context={
+                "disease_code": cv_result.disease_code,
+                "disease_name": cv_result.disease_name,
+                "growth_stage": (
+                    payload.field_context.growth_stage
+                    if payload.field_context.growth_stage
+                    and len(payload.field_context.growth_stage) <= 120
+                    else None
+                ),
+            },
+        )
+
     return DiagnoseResponse(
         request_id=payload.request_id,
         cv_result=cv_result,
@@ -165,4 +189,5 @@ def run_stateless_diagnose(
             selected_rule_id=selected_rule_id,
             requires_engineer_approval=True,
         ),
+        generated_explanation=explanation,
     )

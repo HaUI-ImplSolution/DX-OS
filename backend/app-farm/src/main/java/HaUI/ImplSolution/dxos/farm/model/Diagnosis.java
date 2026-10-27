@@ -78,6 +78,11 @@ public class Diagnosis {
   @Builder.Default
   private List<KnowledgeEvidence> knowledgeEvidence = new ArrayList<>();
 
+  // Immutable wording snapshot of this diagnosis, exposed only through its approval rules.
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(columnDefinition = "jsonb")
+  private GeneratedAnswer generatedExplanation;
+
   // Trạng thái duyệt của kỹ sư (PENDING/APPROVED/REJECTED)
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)

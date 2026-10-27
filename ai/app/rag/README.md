@@ -49,12 +49,20 @@ Tên chủ đề là tiêu đề bỏ "Bệnh" và "trên lúa", hoặc tên tro
 | `chunker.py` | Chia theo dòng, tối đa 350 ký tự/chunk |
 | `retriever.py` | Embedding câu hỏi, cosine search |
 | `rag_service.py` | Ghép evidence, gọi Ollama khi khả dụng, tạo citations |
+| `answer_contract.py` | Schema câu trả lời sinh và giới hạn evidence do Backend cung cấp |
 | `prompt_builder.py` | Prompt có guardrail: chỉ trả lời từ context, không bịa thuốc, liều, PHI |
 | `source_registry.py` | Kiểm registry, ánh xạ `source_id` sang metadata trích dẫn |
 
 ## Guardrail và giới hạn
 
 - Kết quả luôn có `source_ids`, document/chunk ID, similarity và nội dung evidence.
-- `RAGService` chỉ nhận câu trả lời của LLM khi xuất hiện nguyên văn trong evidence; Ollama lỗi, timeout hoặc nội dung không chứng minh được thì trả excerpt evidence.
+- `synthesize_answer` dùng Qwen với ba profile: hỏi đáp Farm, hỏi đáp Lab và giải thích kết quả CV; hỏi đáp không xác nhận bệnh cá nhân, không sửa evidence hoặc structured facts.
+- Câu trả lời có summary ngắn, tối đa hai ý hướng dẫn khi phù hợp và nguồn thuộc evidence; không render Markdown/HTML, không sinh thuốc/liều/PHI.
+- Mode `generated` là đầu ra model đã qua kiểm tra; `extractive`/`insufficient_context` không trả văn bản dự phòng, reason cho biết lý do.
+- Lab chỉ sinh từ nguồn thuộc danh mục namespace hiện tại; vector local cũ cần được đồng bộ bằng quy trình ingest sẵn có.
+- Chẩn đoán khóa mã/tên bệnh CV và chỉ cấp một ý có căn cứ cho Qwen; chặn các mâu thuẫn cụ thể về bệnh/điều kiện, giữ evidence gốc nguyên vẹn.
+- Không yêu cầu câu sinh khớp từng từ nguồn hoặc có dấu chấm cuối; bỏ mục phụ lỗi định dạng, giữ phần trả lời chính hợp lệ.
+- Mỗi lượt nhận tối đa 2.000 ký tự evidence, sinh tối đa 192 token, chờ model tối đa 20 giây và không retry; thiếu evidence hoặc hỏi thuốc/liều/PHI thì không gọi model.
+- `RAGService.answer` giữ gate nguyên văn cho caller cũ; luồng tổng hợp mới dùng schema riêng.
 - Chỉ truy xuất được kiến thức đã ingest; similarity cao không xác nhận một khuyến nghị là đúng.
 - Chất lượng truy xuất (Recall@k, nDCG@k) và độ trễ endpoint được đo bằng bộ đề ở `data/rag/evaluation/`; cách chạy ở [`../../README.md`](../../README.md#đánh-giá-truy-xuất-rag).

@@ -3,6 +3,8 @@ from datetime import date, datetime
 
 from pydantic import AnyHttpUrl, BaseModel, Field, model_validator
 
+from app.rag.answer_contract import GeneratedAnswer
+
 
 class DiseaseDetectionResponse(BaseModel):
     disease_code: str = Field(
@@ -61,6 +63,7 @@ class DiagnoseRequest(BaseModel):
     crop_season_id: int = Field(gt=0)
     image_url: AnyHttpUrl
     field_context: DiagnoseFieldContext
+    include_explanation: bool = False
 
 
 class DiagnoseCvResult(BaseModel):
@@ -111,6 +114,9 @@ class DiagnoseResponse(BaseModel):
     rag_evidence: list[DiagnoseRagEvidence]
     structured_context: DiagnoseStructuredContext
     recommendation: DiagnoseRecommendation
+    generated_explanation: GeneratedAnswer | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
 
 
 class ImagePrecheckResponse(BaseModel):

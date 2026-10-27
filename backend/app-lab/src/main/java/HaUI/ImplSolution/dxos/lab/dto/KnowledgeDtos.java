@@ -2,6 +2,7 @@
 package HaUI.ImplSolution.dxos.lab.dto;
 
 import HaUI.ImplSolution.dxos.core.api.knowledge.KnowledgeSource;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.util.List;
@@ -22,7 +23,12 @@ public final class KnowledgeDtos {
 
   public record Passage(String content, String documentTitle, double score, List<Source> sources) {}
 
-  public record AnswerResponse(String question, List<Passage> passages) {}
+  public record AnswerResponse(String question, List<Passage> passages,
+      @JsonInclude(JsonInclude.Include.NON_NULL) GeneratedAnswer answer) {
+    public AnswerResponse(String question, List<Passage> passages) {
+      this(question, passages, null);
+    }
+  }
 
   private KnowledgeDtos() {}
 }

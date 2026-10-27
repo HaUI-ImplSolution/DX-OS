@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -63,9 +64,14 @@ public class DiagnosisController {
   @PostMapping("/ai")
   @ResponseStatus(HttpStatus.CREATED)
   @Operation(summary = "Run or rerun AI diagnosis outside the database transaction",
-      description = "Preserves earlier diagnoses. 409 at once if an AI diagnosis is already running for the report, and 409 if a newer diagnosis arrives during inference or the report needs retake. Latest saved id is current.")
-  public ApiResponse<DiagnosisResponse> createFromAi(@PathVariable Long reportId) {
-    return ApiResponse.success("Diagnosis recorded", diagnosisService.createFromAi(reportId));
+      description = "Preserves earlier diagnoses. includeExplanation defaults to false; when true,"
+          + " saves a structured Qwen explanation separately from CV, treatment facts and quoted"
+          + " evidence. Unavailable or rejected explanations carry an optional reason and are hidden by clients. Farmer visibility follows approval. 409 if a run is already in progress,"
+          + " a newer diagnosis arrives or the report needs retake. Latest saved id is current.")
+  public ApiResponse<DiagnosisResponse> createFromAi(@PathVariable Long reportId,
+      @RequestParam(defaultValue = "false") boolean includeExplanation) {
+    return ApiResponse.success("Diagnosis recorded",
+        diagnosisService.createFromAi(reportId, includeExplanation));
   }
 
   @PostMapping("/approve")

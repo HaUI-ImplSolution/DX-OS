@@ -17,13 +17,20 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 
 ## 2. Việc cần sửa trong mã và cấu hình
 
-Hiện không có.
+| Việc | Phạm vi |
+|---|---|
+| Giữ đúng điều kiện và đối tượng trong trả lời Lab | Có ca gán mức cấm thư viện 30 ngày vào sai hành vi; cần đối chiếu từng kết luận với điều kiện trong nguồn |
+| Làm rõ các nhánh hướng dẫn Wi-Fi | Còn câu trộn đăng nhập tài khoản với truy cập miễn phí; cần diễn đạt riêng theo đối tượng sử dụng |
+| Tăng độ bao phủ trả lời Qwen | Một số câu có tài liệu nhưng trả `generation_failed`; cần phân loại nguyên nhân và cải thiện khả năng sinh câu trả lời hợp lệ |
 
 ## 3. Chưa kiểm thử
 
 | Việc | Ghi chú |
 |---|---|
 | Bên thứ ba tái lập đánh giá RAG | Công cụ đã chạy thật và CLI khớp; cần người khác tự tính lại từ qrels/run, ghi riêng với việc chạy lại retrieval. Hướng dẫn ở [`ai/README.md`](../ai/README.md#đánh-giá-truy-xuất-rag) |
+| Chấm nội dung Qwen trên 36 câu hỏi và 6 chủ đề chẩn đoán | Chưa có bảng chấm trọng tâm, bám nguồn và dễ đọc do người duyệt xác nhận; tỷ lệ `generated` không phải độ đúng nội dung |
+| Chữ lớn trên mobile native | Đã typecheck, kiểm render và nghiệm thu chức năng; chưa đo riêng bố cục khi tăng cỡ chữ trên máy thật |
+| Khởi động bản Qwen từ clone sạch | Đã kiểm bằng image/cache và các cặp phiên bản; chưa chạy lại full build/seed toàn stack từ clone sạch |
 
 ## 4. Giới hạn của AI và dữ liệu
 

@@ -61,7 +61,7 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE.md`](../ARCHITECTURE.md).
 - Farm, CV: EfficientNetV2-M (checkpoint `DX-Farm-EfficientNetV2-M` 4.0.0, Apache-2.0 cho phần fine-tune của nhóm), dữ liệu RiceLeafDiseaseBD v3 (CC BY 4.0), Healthy và 5 bệnh lá lúa.
   Trước model bệnh có crop classifier YOLO26s-cls (ONNX) kiểm ảnh là lúa; trọng số nằm trong `ai/weights/`, model bệnh được ghép vào image khi build.
 - RAG: pgvector, embedding `paraphrase-multilingual-MiniLM-L12-v2` (Apache-2.0); 6 tài liệu IRRI và LSU cho Farm, 12 bài trích từ nội quy, quy định và hướng dẫn chính thức của HaUI cho Lab, mỗi corpus một namespace.
-- LLM: Qwen2.5-1.5B (Apache-2.0) chỉ diễn đạt câu trả lời hỏi đáp từ tài liệu đã tra, không sinh số; chẩn đoán không dùng LLM.
+- LLM: Qwen2.5-1.5B (Apache-2.0) diễn đạt hỏi đáp web Farm/Lab và giải thích chẩn đoán khi được yêu cầu, tách khỏi tài liệu trích dẫn; thuốc, liều, PHI và quyết định duyệt thuộc Backend.
 - Lab, luật phân loại: từ khóa theo loại và luật nâng ưu tiên (`classifier-rules.json`), trả kèm từ khóa khớp và lý do; người dùng quyết định.
 - Giới hạn:
   - Ngưỡng chuyển cho người xem `0.70` chưa có căn cứ đo trên ảnh ngoài ruộng.

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.farm.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -19,8 +20,16 @@ public record AiDiagnoseRequest(
   @JsonProperty("image_url") String imageUrl,
 
   // Ngữ cảnh thực địa: thửa, mùa vụ, lịch sử phun gần nhất
-  @JsonProperty("field_context") FieldContext fieldContext
+  @JsonProperty("field_context") FieldContext fieldContext,
+  @JsonProperty("include_explanation") @JsonInclude(JsonInclude.Include.NON_DEFAULT) boolean includeExplanation
 ){
+  public AiDiagnoseRequest(String requestId, Long cropSeasonId, String imageUrl, FieldContext fieldContext) {
+    this(requestId, cropSeasonId, imageUrl, fieldContext, false);
+  }
+
+  public AiDiagnoseRequest withExplanation(boolean include) {
+    return new AiDiagnoseRequest(requestId, cropSeasonId, imageUrl, fieldContext, include);
+  }
 
   public record FieldContext(
     @JsonProperty("parcel_code") String parcelCode,

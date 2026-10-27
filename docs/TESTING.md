@@ -121,6 +121,28 @@ Phép thử chỉ đo HTTP retrieval trên máy dùng chung, tắt CV lifespan; 
 
 Bộ chạy `./ai/evaluate.sh all` ngày 27/10/2026: 18 lượt, 11.936 request, không lỗi HTTP/hợp đồng; đối chiếu dữ liệu k6 thô trong sai số `1e-8`. Langfuse chỉ bật sau đo; đã kiểm tra HTML, CPU/RAM, ngắt k6, hai phiên và khôi phục bằng `down`, không ảnh hưởng container đối chứng.
 
+### Câu trả lời Qwen có cấu trúc
+
+Web Farm/Lab gửi `includeAnswer=true`; chẩn đoán Farm gửi `includeExplanation=true`.
+Request không có flag giữ luồng trích dẫn hiện có; thuốc, liều và PHI lấy từ Backend.
+
+| Kiểm tra | Cách | Kết quả |
+|---|---|---|
+| Hợp đồng và dự phòng AI | `cd ai && python -m pytest tests -q` | Đạt; toàn bộ AI 143 test, 45 subtest; kiểm schema/nguồn, mâu thuẫn bệnh, từ chối, nội dung cụt, timeout và opt-in |
+| Backend | Unit app và integration database riêng (fixture host, thêm 3 ca tại bản sao source) | 17 unit và 17 integration test database đạt; giữ request cũ, snapshot, quyền, chặn rerun/diagnosis mới hơn/rule đổi khi chờ AI |
+| Hiển thị dự phòng | Render component web/native và browser web với response mô phỏng | 53 kiểm tra render và 6 ca browser đạt; thêm web 360px/chữ lớn 200%/đoạn dài/payload cũ, không lỗi JavaScript |
+| Model thật | 36 câu hỏi dùng evidence Backend đã gộp và 6 chủ đề chẩn đoán lọc mã bệnh | Lượt đủ bộ: 37/42 generated; không phải điểm đúng nội dung. Hạn chế trả lời và chấm nội dung được theo dõi trong BACKLOG; Healthy thiếu nguồn bị chặn đúng |
+| Hồi quy ngữ cảnh | Test đỏ/xanh và Qwen thật với nguồn Lab | Giữ thứ tự tài liệu; chặn các ca đảo nghĩa sao lưu/ngắt điện đã biết, chấp nhận 05 và 5 cùng giá trị |
+| Tách nguồn Farm/Lab | SQL namespace, API Lab giả namespace=farm, job ingest Lab theo README | Nguồn truy xuất tách đúng; Farm giữ nguyên nội dung/vector; Lab đồng bộ 12 tài liệu/78 chunk |
+| Tương thích/rollback | Container Backend/AI cũ-mới; bản sao database có V14 | Đọc record null, snapshot giữ nguyên; endpoint sinh thiếu trả fallback và passages không đổi |
+| Thời gian/tài nguyên | Qua Backend: cold, warm, hai yêu cầu đồng thời; 11 mẫu Docker | 13,46s / 3,61s / 3,67–7,03s, cả bốn generated; AI tối đa 1364 MiB, Ollama 1266 MiB. Ollama dừng thì giữ evidence, không hiện nội dung sinh |
+| Nghiệm thu local | Hỏi đáp web hai app, chẩn đoán/duyệt/đọc lại, chi tiết mobile | Chủ dự án đã nghiệm thu chức năng và chấp nhận bàn giao với các hạn chế nội dung ghi trong BACKLOG; đồng thời/rollback đã kiểm |
+
+Kiểm tay: hỏi triệu chứng đạo ôn trên web Farm và quy định cài phần mềm trên máy thư viện ở Lab; mở nguồn đối chiếu.
+Tạo chẩn đoán Farm, kiểm giải thích tách khỏi phác đồ và bị ẩn khi dự phòng, duyệt rồi tải lại và xem trên mobile; trước duyệt nông dân không được thấy nội dung.
+Các hạn chế nội dung, chữ lớn native và kiểm khởi động từ clone sạch được theo dõi trong [`BACKLOG.md`](BACKLOG.md).
+Đợt này sử dụng image/cache hiện có, không chạy lại full build/seed toàn stack từ clone sạch.
+
 ## 4. Dựng stack
 
 ### 4.1 Cấu hình

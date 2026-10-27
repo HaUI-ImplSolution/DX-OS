@@ -10,7 +10,7 @@ Chỉ phụ thuộc `dx-core-api`; khởi động khi `DXOS_APP=lab`.
 | Yêu cầu hỗ trợ (ticket) | Gửi kèm ảnh, trao đổi công khai và nội bộ, tự nhận hoặc được gán, SLA theo ưu tiên, xác nhận và đánh giá, mở lại tối đa 3 lần |
 | Thiết bị | Danh mục, nhật ký bảo trì, mượn trả có hạn, nhắc trước hạn và quá hạn |
 | Đặt phòng | Đặt theo khung giờ, chống trùng giờ ở tầng cơ sở dữ liệu, duyệt, lịch theo phòng |
-| Tri thức | Gợi ý loại và ưu tiên bằng luật, bài liên quan, hỏi đáp quy chế (RAG namespace `lab`) |
+| Tri thức | Gợi ý loại và ưu tiên bằng luật, bài liên quan, hỏi đáp quy chế; `includeAnswer=true` thêm trả lời Qwen (namespace `lab`) |
 | Thống kê | SLA, thời gian phản hồi và xử lý, tải kỹ thuật viên, mức dùng phòng, thiết bị theo trạng thái |
 
 ## Vai

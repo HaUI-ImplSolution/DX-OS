@@ -99,7 +99,7 @@ export const createDiseaseReport = (cropSeasonId: number, image: File) => {
 export const createDiagnosis = (reportId: number, payload: DiagnosisCreateRequest) =>
   request<Diagnosis>(`/disease-reports/${reportId}/diagnosis`, json("POST", payload));
 export const createAiDiagnosis = (reportId: number) =>
-  request<Diagnosis>(`/disease-reports/${reportId}/diagnosis/ai`, { method: "POST" });
+  request<Diagnosis>(`/disease-reports/${reportId}/diagnosis/ai?includeExplanation=true`, { method: "POST" });
 export const approveDiagnosis = (reportId: number) =>
   request<Diagnosis>(`/disease-reports/${reportId}/diagnosis/approve`, { method: "POST" });
 export const rejectDiagnosis = (reportId: number, payload: DiagnosisRejectRequest) =>

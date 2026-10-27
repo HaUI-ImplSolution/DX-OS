@@ -85,7 +85,7 @@ export const rejectCase = (caseId: number, reason: string) =>
 
 // Knowledge: the namespace is the app that is running; extra fields narrow the question.
 export const askKnowledge = (question: string, extra: Record<string, unknown> = {}) =>
-  request<KnowledgeAnswer>("/knowledge/ask", json("POST", { question, ...extra }));
+  request<KnowledgeAnswer>("/knowledge/ask?includeAnswer=true", json("POST", { question, ...extra }));
 
 // Notifications of the signed-in account
 export const listNotifications = (unreadOnly: boolean, page: number, size: number) =>

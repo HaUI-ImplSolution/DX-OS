@@ -11,7 +11,8 @@ Backend → POST /api/v1/diagnose
             ├─ CV nhận diện disease_code
             ├─ Backend REST trả structured facts (treatment rule, liều, PHI)
             ├─ pgvector trả RAG evidence
-            └─ LangGraph chọn rule và trả evidence → Backend kiểm tra rule version và lưu
+            ├─ LangGraph chọn rule và trả evidence
+            └─ Qwen giải thích khi được yêu cầu → Backend kiểm tra rule version và lưu
 ```
 
 | Thành phần | Vai trò | Tài liệu |
@@ -30,13 +31,17 @@ Backend → POST /api/v1/diagnose
 | `POST` | `/api/v1/disease/predict` | Ảnh multipart: kết quả CV |
 | `POST` | `/api/v1/disease/symptoms/suggest` | `symptom_text`, `top_k` 1–6: mã bệnh có score, evidence và source IDs |
 | `POST` | `/api/v1/disease/knowledge/retrieve` | Truy vấn RAG theo câu hỏi, `namespace` (mặc định `farm`), `disease_code` và `document_type` tùy chọn |
+| `POST` | `/api/v1/knowledge/answer` | Tổng hợp câu trả lời từ evidence do Backend cung cấp, namespace `farm` hoặc `lab` |
 | `POST` | `/api/v1/diagnose` | Contract nội bộ Backend → AI |
 
 - Mọi endpoint trừ `health` và `class-contract` yêu cầu header `X-Service-Api-Key` khớp `AI_SERVICE_API_KEY`: thiếu hoặc sai key trả `401`, chưa cấu hình key trả `503` (fail-closed).
 - Cổng AI không publish ra host, chỉ truy cập được trong mạng compose.
 - `diagnose` tải ảnh từ `image_url`, chạy CV, lấy structured facts, truy vấn RAG và trả recommendation; thiếu structured facts thì request thất bại, AI không đưa recommendation chỉ dựa trên RAG.
 - Request có `request_id`, `crop_season_id`, `image_url`, `field_context`; response có `request_id`, `cv_result`, `rag_evidence`, `structured_context`, `recommendation`.
-- Mỗi phần tử `rag_evidence` có `content`, `document_title`, `chunk_index` (vị trí đoạn trong tài liệu), `source_ids`, `similarity`; `recommendation` chỉ có `selected_rule_id` và `requires_engineer_approval`, AI không tạo đoạn văn tổng hợp.
+- Mỗi phần tử `rag_evidence` có `content`, `document_title`, `chunk_index` (vị trí đoạn trong tài liệu), `source_ids`, `similarity`; `recommendation` chỉ có `selected_rule_id` và `requires_engineer_approval`.
+- `include_explanation=true` bổ sung `generated_explanation`, tách khỏi recommendation và evidence; không gửi flag thì giữ response hiện có.
+- Phần sinh gồm `summary`, `steps`, `note`, `source_ids`, mode, reason và metadata model/prompt; kiểm schema, nguồn và nhất quán bệnh trước khi chấp nhận.
+Chẩn đoán ẩn phần sinh không đạt; chatbot web dùng thông báo theo lý do, giữ nguồn ở mục tham khảo riêng.
 - Thuốc, `dose_min`/`dose_max`, `dose_unit`, `phi_days`, `version` giữ nguyên từ structured facts.
 - Contract được khóa bởi DTO `AiDiagnoseRequest`, `AiDiagnoseResponse` của `app-farm` và schema `app/api/schemas.py`; `scripts/check_diagnose_contract.py` kiểm tương thích hai phía.
 
@@ -58,7 +63,7 @@ Compose lấy từ [`deploy/.env.example`](../deploy/.env.example); chạy local
 | `BACKEND_SERVICE_API_KEY` | Key AI gửi khi gọi `/internal/v1/**` của Backend |
 | `AI_SERVICE_API_KEY` | Key Backend phải gửi khi gọi AI |
 | `BACKEND_TIMEOUT_SECONDS`, `BACKEND_MAX_ATTEMPTS` | Timeout và tổng số lần gọi Backend |
-| `OLLAMA_BASE_URL`, `OLLAMA_MODEL` | LLM diễn đạt câu trả lời hỏi đáp tri thức |
+| `OLLAMA_BASE_URL`, `OLLAMA_MODEL` | Qwen tổng hợp hỏi đáp web Farm/Lab và giải thích chẩn đoán Farm |
 | `EMBEDDING_MODEL` | Embedding dùng chung cho ingest và retrieval |
 | `CV_DEVICE` | `auto`, `cpu` hoặc `cuda` |
 | `CV_WEIGHTS_PATH`, `CV_WEIGHTS_SHA256` | Checkpoint `ai/models/efficientnetv2m_rice_disease.pth` khi chạy local; trong image là `/opt/dxos/models/efficientnetv2m_rice_disease.pth`; SHA-256 bắt buộc khi nạp |
@@ -164,10 +169,11 @@ Chạy từ `ai/`:
 | `python -m scripts.check_backend_client` | Client Backend: retry giới hạn, không retry khi 401, đọc khoảng liều |
 | `python -m scripts.check_diagnose_contract` | Luồng `diagnose` đúng thứ tự CV, Backend, RAG; `recommendation` chỉ có rule được chọn và cờ duyệt, evidence có tên tài liệu |
 | `python -m scripts.check_rag_access_boundary` | Việc ghi RAG nằm ngoài runtime FastAPI |
+| `python -m unittest discover -s tests -p test_generated_answers.py` | Hợp đồng phần sinh, nguồn, dự phòng, service key và opt-in chẩn đoán |
 
 ## Giới hạn và giấy phép
 
 - CV nhận diện Healthy và 5 bệnh lá lúa; accuracy 89,43% trên 1.466 ảnh theo báo cáo người huấn luyện, chưa phải accuracy toàn pipeline; kỹ sư chốt bệnh tại Backend.
-- RAG chỉ tìm được kiến thức đã ingest; Ollama lỗi hoặc timeout thì trả evidence nguyên văn.
+- RAG chỉ tìm được kiến thức đã ingest; Ollama lỗi hoặc quá ngân sách 20 giây thì không hiển thị nội dung sinh, giữ evidence nguyên văn.
 - `ai/` phân phối theo AGPL-3.0 ([`LICENSE`](./LICENSE)); Backend gọi AI qua HTTP nên không là tác phẩm phái sinh.
   Danh sách thành phần ở [`LICENSES.md`](../LICENSES.md).

@@ -7,6 +7,10 @@ Sau khi đăng nhập, web đọc `GET /api/v1/app` rồi nạp module giao di�
   Địa chỉ `/?report=<id>` mở thẳng một báo cáo. Nông dân chỉ dùng app mobile, web hiện màn "dùng ứng dụng di động".
 - **Lab** dành cho sinh viên, giảng viên, kỹ thuật viên và quản trị: yêu cầu hỗ trợ, mượn thiết bị, đặt phòng, tài sản, thống kê, hỏi đáp.
 
+Hỏi đáp hiển thị câu trả lời Qwen riêng với tài liệu tham khảo; không sinh được thì thông báo ngắn theo lý do, nguồn tham khảo thu gọn.
+Chẩn đoán chỉ hiển thị phần Qwen được chấp nhận, không hiện nội dung dự phòng.
+Chẩn đoán Farm có phần giải thích riêng, thuốc/liều/PHI vẫn dựng từ phác đồ Backend.
+
 ## Cấu trúc
 
 | Đường dẫn | Nội dung |

@@ -1,4 +1,5 @@
 // The one door an app module uses to reach the shell.
+export { default as GeneratedAnswerCard } from "./components/GeneratedAnswerCard";
 export { default as Badge } from "./components/Badge";
 export { default as DeleteButton } from "./components/DeleteButton";
 export { default as Pagination } from "./components/Pagination";
@@ -41,6 +42,7 @@ export type {
   ApprovalRequestDetail,
   ApprovalRequestFilter,
   CaseStatus,
+  GeneratedAnswer,
   KnowledgeAnswer,
   KnowledgePassage,
   KnowledgeSource,

@@ -165,6 +165,7 @@ Khái niệm và cấu hình Cloudflare ở [`docs/CLOUDFLARE.md`](./docs/CLOUDF
 - Backend: `./mvnw verify` trong `backend` (cần Docker cho Testcontainers); AI: `pytest` trong `ai/`.
 - Web và mobile: `npx tsc --noEmit`.
 - E2E trên stack sạch: `python3 deploy/demo/e2e.py [--app farm|lab]`; CI chạy workflow `E2E` cho cả hai ứng dụng.
+- Đánh giá truy xuất RAG và thử tải retrieval: `./ai/evaluate.sh quality|performance|all`, chạy riêng với stack Farm/Lab; xem [`ai/README.md`](./ai/README.md#đánh-giá-truy-xuất-rag).
 
 Hướng dẫn kiểm thử đầy đủ ở [`docs/TESTING.md`](./docs/TESTING.md).
 
@@ -185,7 +186,7 @@ Hướng dẫn kiểm thử đầy đủ ở [`docs/TESTING.md`](./docs/TESTING.
 | [`backend/`](./backend/README.md) | `dx-core-api`, `dx-core`, `app-farm`, `app-lab`, `dx-host`, `dx-monitor` |
 | [`frontend/`](./frontend/README.md) · [`mobile/`](./mobile/README.md) | Web React (hai ứng dụng) · Mobile Expo cho nông dân |
 | [`ai/`](./ai/README.md) | AI Service: CV, RAG, LangGraph |
-| [`data/`](./data/README.md) | Dữ liệu có cấu trúc, corpus RAG, script sinh seed |
+| [`data/`](./data/README.md) | Dữ liệu có cấu trúc, corpus RAG, bộ đề đánh giá RAG, script sinh seed |
 | [`deploy/`](./deploy) | Docker Compose, gateway, `start.sh`, dữ liệu demo và E2E; xem log truy cập ở [`OPERATIONS.md`](./deploy/OPERATIONS.md) |
 | [`sso/`](./sso/README.md) · [`bi/`](./bi/README.md) · [`chat/`](./chat/README.md) · [`minio/`](./minio/README.md) · [`portal/`](./portal/README.md) | Keycloak, Superset, Mattermost, MinIO, portal |
 | [`docs/`](./docs) | Tồn đọng, kiểm thử, đánh giá AI, hồ sơ nộp bài, câu hỏi hội đồng, mẫu phase (`_template/`), tài liệu tham chiếu |

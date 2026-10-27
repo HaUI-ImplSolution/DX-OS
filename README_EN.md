@@ -165,6 +165,7 @@ Cloudflare concepts and settings are in [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE
 - Backend: `./mvnw verify` in `backend` (Docker required for Testcontainers); AI: `pytest` in `ai/`.
 - Web and mobile: `npx tsc --noEmit`.
 - End-to-end on a clean stack: `python3 deploy/demo/e2e.py [--app farm|lab]`; CI runs the `E2E` workflow for both applications.
+- RAG retrieval evaluation and retrieval load test: `./ai/evaluate.sh quality|performance|all`, run separately from the Farm/Lab stack; see [`ai/README.md`](./ai/README.md#đánh-giá-truy-xuất-rag) (Vietnamese).
 
 Full testing guide: [`docs/TESTING.md`](./docs/TESTING.md).
 
@@ -185,7 +186,7 @@ Full testing guide: [`docs/TESTING.md`](./docs/TESTING.md).
 | [`backend/`](./backend/README.md) | `dx-core-api`, `dx-core`, `app-farm`, `app-lab`, `dx-host`, `dx-monitor` |
 | [`frontend/`](./frontend/README.md) · [`mobile/`](./mobile/README.md) | React web (both applications) · Expo mobile for farmers |
 | [`ai/`](./ai/README.md) | AI Service: CV, RAG, LangGraph |
-| [`data/`](./data/README.md) | Structured data, RAG corpora, seed generation scripts |
+| [`data/`](./data/README.md) | Structured data, RAG corpora, RAG evaluation set, seed generation scripts |
 | [`deploy/`](./deploy) | Docker Compose, gateway, `start.sh`, demo data and E2E; access logs in [`OPERATIONS.md`](./deploy/OPERATIONS.md) |
 | [`sso/`](./sso/README.md) · [`bi/`](./bi/README.md) · [`chat/`](./chat/README.md) · [`minio/`](./minio/README.md) · [`portal/`](./portal/README.md) | Keycloak, Superset, Mattermost, MinIO, portal |
 | [`docs/`](./docs) | Backlog, testing, AI evaluation, submission pack, council Q&A, phase template (`_template/`), reference material |

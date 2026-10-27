@@ -1,6 +1,7 @@
 # SBOM
 
 Danh mục thành phần phần mềm định dạng CycloneDX (JSON; đặc tả 1.6, riêng `ai.cdx.json` là 1.5), chỉ gồm dependency chạy thật (không gồm scope test và dev).
+Công cụ đánh giá RAG (`ai/requirements-eval.txt`, Langfuse, k6) chỉ chạy trong môi trường đánh giá riêng nên không nằm trong SBOM; giấy phép của chúng ở [`LICENSES.md`](../LICENSES.md).
 
 | File | Nguồn |
 |---|---|

@@ -2,6 +2,7 @@
 
 Kết quả model bệnh DX-Farm EfficientNetV2-M do người huấn luyện cung cấp; không chấm lại accuracy trong đợt tích hợp.
 Các phép thử bộ lọc ảnh ở mục 3.2 và 3.4 giữ kết quả trước đây vì bộ lọc không thay đổi.
+Tài liệu này chỉ đánh giá phần thị giác; chất lượng truy xuất RAG ở [`TESTING.md`](./TESTING.md#đánh-giá-truy-xuất-rag).
 
 ## 1. Phạm vi
 

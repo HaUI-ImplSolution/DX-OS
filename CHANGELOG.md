@@ -449,6 +449,14 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 
 ## Dữ liệu (`data`)
 
+### 2026-10-26
+
+**Đã xong — Bộ đề đánh giá truy xuất RAG:**
+
+- `rag/evaluation/` có 42 câu: 12 hỏi đáp Farm, 24 hỏi đáp Lab và 6 query tham khảo chẩn đoán.
+- Nhãn pilot dạng TREC (`qrels.draft.tsv`) chỉ liệt kê nhãn dương; chủ dự án đã duyệt bộ câu hỏi và nhãn ngày 26/10/2026.
+- `metadata.json` ghi phiên bản bộ đề, corpus và trạng thái rà nhãn.
+
 ### 2026-10-20
 
 **Đã xong — Nguồn tri thức và seed Farm:**
@@ -619,6 +627,16 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 - `mobile/README.md`: chạy thử trên điện thoại thật với IP LAN, biến môi trường, tài khoản demo, kiểm tra mã nguồn.
 
 ## AI Service (Python)
+
+### 2026-10-27
+
+**Đã xong — Đánh giá truy xuất RAG:**
+
+- `./ai/evaluate.sh quality` chạy một lệnh: dựng database đánh giá riêng, nạp corpus, thu kết quả truy xuất chỉ đọc, chấm Recall@k và nDCG@k bằng `ir_measures`, publish lên Langfuse local.
+- `./ai/evaluate.sh performance` thử tải endpoint retrieval bằng k6 (Farm/Lab, 1/2/5 VU, ba lượt lặp) kèm mẫu CPU/RAM; `all` chạy tuần tự cả hai.
+- `view` mở lại kết quả đã lưu, `down` dọn phiên dở, `--self-check` kiểm công cụ; phiên tự down khi nhấn Enter, hết 600 giây hoặc bị ngắt.
+- Cache model, volume và lịch sử được giữ; cấu hình và credential sinh ngoài Git; không cần bật stack Farm/Lab.
+- Phụ thuộc đánh giá nằm ở `ai/requirements-eval.txt`, không thuộc image runtime và CI.
 
 ### 2026-10-16
 
@@ -1321,6 +1339,13 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 
 ## Giấy phép và SBOM
 
+### 2026-10-27
+
+**Đã xong — Thành phần của môi trường đánh giá RAG:**
+
+- `LICENSES.md` liệt kê ir-measures, pytrec-eval-terrier, langfuse Python SDK, k6, Langfuse, ClickHouse, Redis và Docker CLI.
+- Các thành phần này chỉ chạy trong môi trường đánh giá riêng nên không nằm trong `sbom/ai.cdx.json`.
+
 ### 2026-10-25
 
 **Đã xong — Thành phần của `dx-monitor`:**
@@ -1362,6 +1387,15 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 - **Còn thiếu**: SPDX header đầu mỗi file mã nguồn tự viết — việc sửa hàng loạt file, để riêng một lượt khác.
 
 ## Tài liệu (root, `docs`, `ai/`)
+
+### 2026-10-27
+
+**Đã xong — Đánh giá truy xuất RAG:**
+
+- `ai/README.md` có cách chạy, yêu cầu máy, cách đọc kết quả và thư mục kết quả của `quality`, `performance`, `all`, `view`, `down`.
+- `docs/TESTING.md` mục 3 có kết quả pilot (Recall@k, nDCG@k) và thử tải HTTP retrieval; mục 10 tóm tắt kết quả.
+- `data/rag/evaluation/README.md` mô tả bộ đề và quy ước nhãn; `docs/BACKLOG.md` ghi việc rà nhãn đủ và tái lập bởi bên thứ ba.
+- `README.md`, `README_EN.md`, `data/README.md`, `ai/app/rag/README.md`, `docs/COUNCIL_QA.md`, `docs/SUBMISSION.md`, `docs/AI_EVALUATION.md` và `sbom/README.md` trỏ tới phần đánh giá.
 
 ### 2026-10-26
 

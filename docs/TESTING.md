@@ -393,6 +393,7 @@ Cách dùng và ý nghĩa từng khối ở [`backend/dx-monitor/README.md`](../
 | Backend `./mvnw clean verify` | Đạt | 149 test: dx-core 14, app-farm 23, app-lab 9, dx-host 103 |
 | BI `python -m unittest test_chart_query_context` trong `bi/` | Đạt | 22 test |
 | AI `pytest` trong `ai/` | Đạt | 100 test |
+| Đánh giá truy xuất RAG và thử tải HTTP retrieval | Đạt | Ngày 26 và 27/10/2026 qua `./ai/evaluate.sh`; số liệu ở mục 3 |
 | Web và mobile `tsc` | Đạt | Không lỗi |
 | Ranh giới app và core, seed Farm, nguồn tri thức khớp registry | Đạt | Không có kết quả vi phạm |
 | E2E Farm | Đạt | 10/10 bước với `--require-rule` |

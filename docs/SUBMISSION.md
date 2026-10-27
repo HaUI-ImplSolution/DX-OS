@@ -75,6 +75,7 @@ Một lõi, hai ứng dụng: DX-Farm trước, đổi sang DX-Lab bằng một 
 
 - Log workflow `E2E` trên GitHub, hai job `farm` và `lab`.
 - Kết quả `./mvnw verify` và `pytest`.
+- Kết quả đánh giá truy xuất RAG và thử tải retrieval ở `docs/TESTING.md` mục 3; chạy lại bằng `./ai/evaluate.sh all`.
 - Kết quả kiểm gateway, log, audit, màn hình giám sát và cấu hình Cloudflare ở `docs/TESTING.md` mục 8 và 10.
 - Video quay thử toàn bộ kịch bản.
 
@@ -88,7 +89,7 @@ Mỗi mục nêu nội dung cần viết và nơi lấy số liệu, bằng ch�
 | 2. Kiến trúc Open-Core 3 tầng | 1-2 | Sơ đồ 3 tầng, module và ranh giới biên dịch, những gì ứng dụng khai báo, cách chọn ứng dụng lúc chạy | `ARCHITECTURE.md` mục 1 đến 4 |
 | 3. Dịch vụ dùng chung của Core | 1 | Identity/SSO, API Gateway, dữ liệu, workflow, audit, thông báo, cổng AI: ai cung cấp, ứng dụng khai báo gì | `ARCHITECTURE.md` mục 3, `sso/README.md`, `deploy/apisix/`, `deploy/OPERATIONS.md` |
 | 4. H-P-D-I qua hai ứng dụng | 2 | Farm: vai và phạm vi hộ, duyệt và khóa PHI, view BI, CV và RAG. Lab: vai, ba loại case, SLA, view BI, luật phân loại và RAG | `backend/app-farm/README.md`, `backend/app-lab/README.md` |
-| 5. Trí tuệ nhân tạo | 1 | CV, RAG, LangGraph, LLM, luật phân loại; ngưỡng, giới hạn, vai trò kỹ sư; dữ liệu và nguồn gốc | `ai/README.md`, `COUNCIL_QA.md` câu 6 |
+| 5. Trí tuệ nhân tạo | 1 | CV, RAG, LangGraph, LLM, luật phân loại; ngưỡng, giới hạn, vai trò kỹ sư; dữ liệu và nguồn gốc | `ai/README.md`, `COUNCIL_QA.md` câu 6, `TESTING.md` mục 3 (đánh giá truy xuất RAG) |
 | 6. Kiểm thử và kiểm chứng | 1 | Test backend, E2E hai ứng dụng trên stack sạch (Farm 10 bước, Lab 16 bước), bằng chứng Core không đổi khi thêm ứng dụng, ứng dụng mẫu rỗng, kiểm gateway, log và audit trên máy chủ công khai | log workflow `E2E`, `deploy/demo/README.md`, `TESTING.md` mục 8 và 10 |
 | 7. Mã nguồn mở và giấy phép | 1 | Bảng license, SBOM, lockfile, SPDX, CONTRIBUTING và hướng dẫn thêm ứng dụng, issue tracker | `LICENSES.md`, `sbom/`, `CONTRIBUTING.md` |
 | 8. Giới hạn và hướng phát triển | 0.5 | Rule thuốc được duyệt mới có ba bệnh, điểm nghẽn mở rộng, mục chưa làm của Lab (mobile, dashboard Superset, ticket tương tự), giấy phép của `ai/` | `COUNCIL_QA.md`, `BACKLOG.md` |

@@ -50,6 +50,10 @@ AI Service là tiến trình riêng, chỉ giao tiếp với Backend qua HTTP n�
 | FastAPI, Pydantic, SQLAlchemy, pgvector, LangGraph, LangChain, python-docx | MIT | API, RAG, luồng suy luận |
 | Uvicorn, HTTPX, python-dotenv, pypdf | BSD-3-Clause | Máy chủ, HTTP client, nạp tài liệu |
 | python-multipart, sentence-transformers | Apache-2.0 | Nhận upload, embedding |
+| ir-measures 0.3.3 | Apache-2.0 | Chấm Recall và nDCG trong môi trường đánh giá riêng |
+| pytrec-eval-terrier 0.5.11 | MIT | Provider tính metric của ir-measures, chỉ dùng để đánh giá |
+| langfuse Python SDK 5.0.4 | MIT | Publish dataset, experiment và score trong môi trường đánh giá riêng |
+| Grafana k6 2.3.0 | AGPL-3.0 | Binary thử tải trong image công cụ đánh giá riêng; không đóng gói trong runtime/CI ([license](https://github.com/grafana/k6/blob/v2.3.0/LICENSE.md)) |
 | psycopg | LGPL-3.0-only | Kết nối PostgreSQL |
 | PyTorch, Torchvision | BSD-3-Clause | Chạy mô hình EfficientNetV2-M |
 | ONNX Runtime 1.30.0 | MIT | Chạy crop classifier trên CPU |
@@ -91,5 +95,9 @@ Dữ liệu mẫu của Lab (phòng, thiết bị, yêu cầu) là dữ liệu g
 | Python 3.11 (`python:3.11-slim`) | PSF-2.0 | Base image AI Service |
 | Node.js 20 (`node:20-alpine`) | MIT | Chỉ khi build web |
 | AWS CLI | Apache-2.0 | Chỉ dùng trong `minio/migrate-uploads.sh` |
+| Langfuse server/worker 4.70.1 | MIT cho phần core; phần EE theo điều khoản riêng | Giao diện đánh giá local, không bật tính năng Enterprise ([license](https://github.com/langfuse/langfuse/blob/main/LICENSE)) |
+| ClickHouse 25.12 | Apache-2.0 | Lưu kết quả Langfuse trong môi trường đánh giá ([license](https://github.com/ClickHouse/ClickHouse/blob/master/LICENSE)) |
+| Redis 7.4 | RSALv2 hoặc SSPLv1 | Queue/cache Langfuse local ([license](https://redis.io/legal/licenses/)) |
+| Docker CLI (Moby) | Apache-2.0 | Chỉ công cụ thử tải lấy mẫu container do bộ chạy tạo ([license](https://github.com/docker/cli/blob/master/LICENSE)) |
 | gitleaks | MIT | Quét secret trong CI |
 | CycloneDX (`cyclonedx-bom`, `@cyclonedx/cyclonedx-npm`, `cyclonedx-maven-plugin`) | Apache-2.0 | Sinh SBOM |

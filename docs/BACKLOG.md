@@ -17,21 +17,12 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 
 ## 2. Việc cần sửa trong mã và cấu hình
 
-| Việc | Ghi chú |
-|---|---|
-| Chặn lượt chẩn đoán AI thứ hai khi báo cáo đang có một lượt chạy | Rời trang hoặc tải lại khi AI đang chạy rồi bấm lại thì lượt sau chạy hết thời gian rồi nhận 409 `Diagnosis changed while AI was processing`; kết quả của lượt đầu vẫn được lưu, nhưng có thể sinh hai chẩn đoán chờ duyệt cho một báo cáo |
-| Mobile hiển thị đoạn có nhãn dài hơn 30 ký tự dưới dạng văn bản thô | `mobile/src/passageText.ts` giữ giới hạn 30; web đã dùng 40 (nhãn dài nhất trong dữ liệu là 34 ký tự, `Kiểm soát hóa học không định lượng`) |
+Hiện không có.
 
 ## 3. Chưa kiểm thử
 
 | Việc | Ghi chú |
 |---|---|
-| Thao tác Farm ghi audit từ điện thoại | Qua API đã đạt trên VPS; chưa thử trên thiết bị |
-| Hàng đợi 10 ảnh trên điện thoại không bị 429 của gateway | Giới hạn `/api/*` là 600 lượt mỗi phút mỗi IP; đã đạt qua API (601 lượt qua trên VPS), chưa thử trên thiết bị |
-| Đăng nhập mobile qua địa chỉ công khai sau khi bật `KC_PROXY_HEADERS` và giới hạn đăng nhập | Log JSON, IP thật, sự kiện Keycloak và audit đã đạt trên VPS; CI đã dựng sạch bằng `--build` |
-| Kiểm tay Farm F3 trên điện thoại, kèm ngưỡng GPS và nhãn "Đang cách ly"; icon và splash của mobile (chỉ hiện ở bản build thật, không hiện ở Expo Go) | Kịch bản ở [`TESTING.md`](./TESTING.md); các mục kiểm tay còn lại đã đạt |
-| Mobile hiển thị tài liệu tham khảo (chi tiết báo cáo đã duyệt), hỏi đáp dạng danh sách trường và hộp thông báo cuộn tải thêm | Đã qua `tsc` và kiểm hàm tách dòng; chưa mở trên Expo Go hay máy thật |
-| Dashboard Superset hiển thị trên giao diện | Bundle và `query_context` đã có test; chưa có test tự động mở dashboard trên Superset thật |
 | Bên thứ ba tái lập đánh giá RAG | Công cụ đã chạy thật và CLI khớp; cần người khác tự tính lại từ qrels/run, ghi riêng với việc chạy lại retrieval. Hướng dẫn ở [`ai/README.md`](../ai/README.md#đánh-giá-truy-xuất-rag) |
 
 ## 4. Giới hạn của AI và dữ liệu

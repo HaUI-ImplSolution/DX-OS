@@ -34,13 +34,13 @@ Chẩn đoán AI do kỹ sư kích hoạt trên web; nông dân thấy "Chờ ch
 
 Trạng thái hiển thị (`NEEDS_RETAKE` của báo cáo được ưu tiên, còn lại theo `diagnosis`):
 
-| `diagnosis` | Chip | Nông dân thấy |
-|---|---|---|
-| `null` | Chờ chẩn đoán | Ảnh và thời điểm gửi |
-| `PENDING` | Chờ kỹ sư duyệt | Chỉ trạng thái |
-| `APPROVED` | Đã duyệt | Bệnh, khuyến nghị, thuốc, liều, số ngày cách ly (banner cách ly khi `isolated`) |
-| `REJECTED` | Khuyến nghị bị từ chối | Lý do |
-| báo cáo `NEEDS_RETAKE` | Cần chụp lại | Lý do và nút chụp ảnh thay thế |
+| `diagnosis`              | Chip                        | Nông dân thấy                                                                           |
+| -------------------------- | --------------------------- | ------------------------------------------------------------------------------------------ |
+| `null`                   | Chờ chẩn đoán           | Ảnh và thời điểm gửi                                                                 |
+| `PENDING`                | Chờ kỹ sư duyệt         | Chỉ trạng thái                                                                          |
+| `APPROVED`               | Đã duyệt                 | Bệnh, khuyến nghị, thuốc, liều, số ngày cách ly (banner cách ly khi `isolated`) |
+| `REJECTED`               | Khuyến nghị bị từ chối | Lý do                                                                                     |
+| báo cáo `NEEDS_RETAKE` | Cần chụp lại             | Lý do và nút chụp ảnh thay thế                                                       |
 
 ## Phạm vi dữ liệu
 
@@ -53,25 +53,25 @@ Trạng thái hiển thị (`NEEDS_RETAKE` của báo cáo được ưu tiên, c
 
 ## Cấu trúc
 
-| Đường dẫn | Nội dung |
-|---|---|
-| `app/` | Màn hình: `index` (Thửa), `parcels/[code]`, `parcels/new`, `seasons/new`, `seasons/[id]`, `seasons/harvest`, `seasons/reschedule`, `notifications`, `knowledge`, `capture`, `reports/[id]`, `login`, `profile` |
-| `src/api/` | `client.ts` (`request`, `upload`, `ApiError`), `endpoints.ts` |
-| `src/auth/` | PKCE (`AuthProvider`), lưu token (`session`), refresh (`tokens`), claim (`claims`) |
-| `src/offline/` | Hàng đợi: lưu trữ (`queue`) và gửi lại (`QueueProvider`) |
-| `src/components/`, `src/hooks/`, `src/theme/` | Thành phần UI, `useAsync`, `useParcelIsolation`, màu, cỡ chữ, khoảng cách |
-| `src/*.ts` | `config` (biến môi trường), `types`, `format`, `image`, `reportStatus` |
+| Đường dẫn                                       | Nội dung                                                                                                                                                                                                                                   |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/`                                            | Màn hình: `index` (Thửa), `parcels/[code]`, `parcels/new`, `seasons/new`, `seasons/[id]`, `seasons/harvest`, `seasons/reschedule`, `notifications`, `knowledge`, `capture`, `reports/[id]`, `login`, `profile` |
+| `src/api/`                                        | `client.ts` (`request`, `upload`, `ApiError`), `endpoints.ts`                                                                                                                                                                     |
+| `src/auth/`                                       | PKCE (`AuthProvider`), lưu token (`session`), refresh (`tokens`), claim (`claims`)                                                                                                                                                 |
+| `src/offline/`                                    | Hàng đợi: lưu trữ (`queue`) và gửi lại (`QueueProvider`)                                                                                                                                                                        |
+| `src/components/`, `src/hooks/`, `src/theme/` | Thành phần UI, `useAsync`, `useParcelIsolation`, màu, cỡ chữ, khoảng cách                                                                                                                                                        |
+| `src/*.ts`                                        | `config` (biến môi trường), `types`, `format`, `image`, `reportStatus`                                                                                                                                                        |
 
 ## Cấu hình và chạy
 
 `mobile/.env` (không commit, mẫu [`.env.example`](./.env.example)); thiếu biến thì app báo lỗi lúc khởi động.
 Biến `EXPO_PUBLIC_*` nhúng vào bundle lúc build, đổi Keycloak URL hoặc client id thì phải build và cài lại.
 
-| Biến | Gateway trong mạng LAN | Máy chủ công khai (Cloudflare Tunnel) |
-|---|---|---|
-| `EXPO_PUBLIC_API_BASE_URL` | `http://192.168.1.10:9080` | `https://khuongdev.io.vn` |
-| `EXPO_PUBLIC_KEYCLOAK_URL` | `http://192.168.1.10:9080/realms/dxos` | `https://khuongdev.io.vn/realms/dxos` |
-| `EXPO_PUBLIC_KEYCLOAK_CLIENT_ID` | `farm-mobile` | `farm-mobile` |
+| Biến                              | Gateway trong mạng LAN                  | Máy chủ công khai (Cloudflare Tunnel) |
+| ---------------------------------- | ---------------------------------------- | ---------------------------------------- |
+| `EXPO_PUBLIC_API_BASE_URL`       | `http://192.168.1.10:9080`             | `https://khuongdev.io.vn`              |
+| `EXPO_PUBLIC_KEYCLOAK_URL`       | `http://192.168.1.10:9080/realms/dxos` | `https://khuongdev.io.vn/realms/dxos`  |
+| `EXPO_PUBLIC_KEYCLOAK_CLIENT_ID` | `farm-mobile`                          | `farm-mobile`                          |
 
 Địa chỉ công khai đi qua cổng 443 nên không có số cổng, và phải khớp `GATEWAY_PUBLIC_URL` của máy chủ (Keycloak trả `issuer` theo địa chỉ đó).
 
@@ -107,28 +107,28 @@ Kiểm mã: `npx tsc --noEmit` và `npx expo export --platform android`.
 
 ## Sự cố thường gặp
 
-| Triệu chứng | Nguyên nhân |
-|---|---|
-| "Không đăng nhập được" hoặc redirect URI không hợp lệ | Realm chưa có client `farm-mobile` (volume cũ) |
-| Trang đăng nhập không tải, hoặc quay về `localhost` | `EXPO_PUBLIC_KEYCLOAK_URL` là `localhost`, sai IP hoặc khác `GATEWAY_PUBLIC_URL` của máy chủ; sửa rồi `npm start -- -c` |
-| "Không kết nối được" | Điện thoại không tới được Backend: sai địa chỉ, khác WiFi hoặc firewall chặn `9080` (gateway LAN); địa chỉ công khai thì kiểm tra không có số cổng |
-| Danh sách thửa trống | Tài khoản chưa gắn nông hộ |
-| Ảnh báo cáo không hiện | Link hết hạn hoặc gateway trong `imageUrl` không truy cập được từ điện thoại; tải lại báo cáo |
-| Ảnh ở "Chờ gửi" mãi | Chưa có mạng tới Backend hoặc đang chờ khoảng thử lại; đưa app về foreground |
-| Ảnh ở "Lỗi" | Backend từ chối (sai định dạng, quá lớn, vụ không còn thuộc tài khoản); đọc thông báo, xóa và chụp lại |
-| Đổi `.env` mà không có tác dụng | Chạy lại `npm start -- -c` |
+| Triệu chứng                                                    | Nguyên nhân                                                                                                                                                                |
+| ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "Không đăng nhập được" hoặc redirect URI không hợp lệ | Realm chưa có client `farm-mobile` (volume cũ)                                                                                                                          |
+| Trang đăng nhập không tải, hoặc quay về `localhost`     | `EXPO_PUBLIC_KEYCLOAK_URL` là `localhost`, sai IP hoặc khác `GATEWAY_PUBLIC_URL` của máy chủ; sửa rồi `npm start -- -c`                                      |
+| "Không kết nối được"                                       | Điện thoại không tới được Backend: sai địa chỉ, khác WiFi hoặc firewall chặn `9080` (gateway LAN); địa chỉ công khai thì kiểm tra không có số cổng |
+| Danh sách thửa trống                                          | Tài khoản chưa gắn nông hộ                                                                                                                                             |
+| Ảnh báo cáo không hiện                                      | Link hết hạn hoặc gateway trong `imageUrl` không truy cập được từ điện thoại; tải lại báo cáo                                                              |
+| Ảnh ở "Chờ gửi" mãi                                         | Chưa có mạng tới Backend hoặc đang chờ khoảng thử lại; đưa app về foreground                                                                                    |
+| Ảnh ở "Lỗi"                                                   | Backend từ chối (sai định dạng, quá lớn, vụ không còn thuộc tài khoản); đọc thông báo, xóa và chụp lại                                                  |
+| Đổi `.env` mà không có tác dụng                         | Chạy lại `npm start -- -c`                                                                                                                                               |
 
 ## Thiết kế giao diện
 
 Mỗi màn hình có đúng một hành động chính, màu `primary`, đặt ở nửa dưới màn hình; font hệ thống, cỡ chữ nội dung tối thiểu 16sp, lưới 4dp, lề 16dp, bo góc 12dp, vùng chạm tối thiểu 48×48dp.
 
-| Token | Giá trị | Dùng cho |
-|---|---|---|
-| `bg` / `surface` / `border` | `#f4f6f3` / `#ffffff` / `#dfe4dc` | Nền, thẻ, viền |
-| `text` / `textMuted` | `#1f2a1c` / `#667066` | Chữ chính, chữ phụ |
-| `primary` / `primaryDark` | `#2e7d32` / `#1b5e20` | Nút chính, chip thành công |
-| `warning` | `#b26a00` | Chờ kỹ sư duyệt, banner cách ly |
-| `danger` | `#b3261e` | Cần chụp lại, lỗi |
+| Token                             | Giá trị                               | Dùng cho                            |
+| --------------------------------- | --------------------------------------- | ------------------------------------ |
+| `bg` / `surface` / `border` | `#f4f6f3` / `#ffffff` / `#dfe4dc` | Nền, thẻ, viền                    |
+| `text` / `textMuted`          | `#1f2a1c` / `#667066`               | Chữ chính, chữ phụ               |
+| `primary` / `primaryDark`     | `#2e7d32` / `#1b5e20`               | Nút chính, chip thành công       |
+| `warning`                       | `#b26a00`                             | Chờ kỹ sư duyệt, banner cách ly |
+| `danger`                        | `#b3261e`                             | Cần chụp lại, lỗi                |
 
 - Tương phản chữ và nền tối thiểu 4.5:1 để đọc được dưới nắng; chip luôn kèm chữ.
 - Thao tác phá hủy (đăng xuất, xóa mục chờ gửi) có xác nhận; thông báo lỗi nêu việc cần làm tiếp theo.

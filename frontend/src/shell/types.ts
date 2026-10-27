@@ -66,6 +66,7 @@ export interface KnowledgePassage {
   content: string;
   documentTitle: string;
   score: number;
+  corpusVersion: string | null;
   sources: KnowledgeSource[];
 }
 
@@ -84,6 +85,9 @@ export interface GeneratedAnswer {
 export interface KnowledgeAnswer {
   answer?: GeneratedAnswer | null;
   question: string;
+  scopeStatus: "ANSWERABLE" | "IN_SCOPE_NO_EVIDENCE" | "OUT_OF_SCOPE";
+  reasonCode: string;
+  namespace: string;
   passages: KnowledgePassage[];
 }
 

@@ -22,6 +22,11 @@ class Settings(BaseSettings):
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "qwen2.5:1.5b"
     embedding_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+    rag_scope_min_confidence: float = 0.80
+    rag_min_similarity: float = 0.40
+    rag_out_of_scope_message: str = (
+        "Câu hỏi nằm ngoài phạm vi kiến thức được hỗ trợ."
+    )
 
     cv_weights_path: Path = AI_ROOT / "models" / "efficientnetv2m_rice_disease.pth"
     cv_weights_sha256: str | None = None

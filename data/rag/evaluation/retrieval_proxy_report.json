@@ -1,0 +1,7 @@
+{
+  "queries": 42,
+  "k": 4,
+  "recall_at_k": 0.392857,
+  "ndcg_at_k": 0.389879,
+  "method": "lexical_proxy_not_pgvector"
+}

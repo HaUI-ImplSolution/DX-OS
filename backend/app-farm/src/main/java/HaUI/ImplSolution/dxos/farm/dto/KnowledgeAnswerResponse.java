@@ -8,6 +8,9 @@ import java.util.List;
 // @formatter:off
 public record KnowledgeAnswerResponse(
   String question,
+  String scopeStatus,
+  String reasonCode,
+  String namespace,
 
   // Passages of the knowledge base that answer the question, best first; empty when none is
   // relevant enough
@@ -16,6 +19,14 @@ public record KnowledgeAnswerResponse(
 ){
   public KnowledgeAnswerResponse(String question, List<Passage> passages) {
     this(question, passages, null);
+  }
+  public KnowledgeAnswerResponse(String question, List<Passage> passages, GeneratedAnswer answer) {
+    this(question, passages.isEmpty() ? "IN_SCOPE_NO_EVIDENCE" : "ANSWERABLE",
+        passages.isEmpty() ? "NO_EVIDENCE" : "EVIDENCE_FOUND", "farm", passages, answer);
+  }
+  public KnowledgeAnswerResponse(String question, String scopeStatus, String reasonCode,
+      String namespace, List<Passage> passages) {
+    this(question, scopeStatus, reasonCode, namespace, passages, null);
   }
   public record Passage(
     // Text taken from the document, never generated
@@ -28,9 +39,16 @@ public record KnowledgeAnswerResponse(
     // Similarity to the question, 0 to 1
     double score,
 
+    String corpusVersion,
+
     // Documents the passage is based on
     List<Source> sources
-  ){}
+  ){
+    public Passage(String content, String documentTitle, String diseaseCode, double score,
+        List<Source> sources) {
+      this(content, documentTitle, diseaseCode, score, null, sources);
+    }
+  }
 
   public record Source(
     String sourceId,

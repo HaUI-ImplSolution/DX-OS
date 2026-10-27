@@ -1,0 +1,13 @@
+{
+  "dataset": "scope_questions.jsonl",
+  "dataset_status": "draft_pending_independent_review",
+  "count": 75,
+  "tp": 45,
+  "fp": 0,
+  "fn": 0,
+  "tn": 30,
+  "precision": 1.0,
+  "recall": 1.0,
+  "f1": 1.0,
+  "note": "Rule-gate calibration result; not a substitute for retrieval Recall@k/nDCG@k or independent label review."
+}

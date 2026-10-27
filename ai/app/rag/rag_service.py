@@ -15,6 +15,7 @@ from app.rag.answer_contract import AnswerDraft, AnswerReason, GeneratedAnswer, 
 from app.rag.prompt_builder import build_answer_messages, build_rag_prompt
 from app.rag.retriever import RAGRetriever
 from app.rag.source_registry import REGISTRY_FILE, load_source_registry
+from app.rag.scope_gate import ANSWERABLE, IN_SCOPE_NO_EVIDENCE, classify_scope
 
 logger = logging.getLogger(__name__)
 
@@ -71,13 +72,41 @@ class RAGService:
         question: str,
         top_k: int = 3,
         disease_code: str | None = None,
+        namespace: str = "farm",
+        document_type: str | None = None,
     ) -> dict:
+        decision = classify_scope(question, namespace)
+        base = {
+            "question": question,
+            "namespace": namespace,
+            "scope": decision.scope,
+            "scope_confidence": decision.confidence,
+            "reason_code": decision.reason_code,
+            "sources": [],
+        }
+        if not decision.retrieval_allowed:
+            return {
+                **base,
+                "answer": "Xin lỗi, chatbot chỉ hỗ trợ kiến thức về lúa/nông nghiệp."
+                if namespace == "farm" else "Xin lỗi, câu hỏi nằm ngoài phạm vi tài liệu DX-Lab.",
+                "answer_mode": "out_of_scope",
+            }
+
         contexts = self.retriever.retrieve(
             db=db,
             query=question,
             top_k=top_k,
             disease_code=disease_code,
+            namespace=namespace,
+            document_type=document_type,
         )
+        if not contexts:
+            return {
+                **base,
+                "scope": IN_SCOPE_NO_EVIDENCE,
+                "answer": "Chưa có đủ tài liệu đã kiểm duyệt để trả lời câu hỏi này.",
+                "answer_mode": "no_evidence",
+            }
         prompt = build_rag_prompt(
             question=question,
             contexts=contexts,
@@ -101,7 +130,8 @@ class RAGService:
                 answer = fallback
 
         return {
-            "question": question,
+            **base,
+            "scope": ANSWERABLE,
             "answer": answer,
             "answer_mode": "grounded_excerpt",
             "sources": build_citations(contexts),

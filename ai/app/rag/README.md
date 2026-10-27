@@ -4,7 +4,9 @@
 RAG chỉ giải thích: thuốc, liều, PHI, policy an toàn luôn lấy từ Backend qua REST.
 RAG không tự crawl nguồn mới, không seed bệnh, thuốc, rule và không thay phê duyệt của kỹ sư.
 
-Mỗi corpus là một namespace: `farm` (6 tài liệu bệnh lúa, `data/rag/processed/disease_knowledge.json`) và `lab` (12 bài trích từ văn bản của HaUI, `data/rag/lab/processed/lab_knowledge.json`).
+Mỗi corpus là một namespace: `farm` (corpus bệnh lúa cũ và corpus `farm_knowledge` đa chủ đề), và `lab` (bài trích từ văn bản của HaUI). Farm knowledge đa chủ đề được validate bằng `python data/scripts/validate_phase2_rag.py` trước ingest.
+
+Hỏi đáp đi qua scope gate trước retrieval. Câu ngoài namespace trả `OUT_OF_SCOPE` không có citation; câu đúng phạm vi nhưng không có đoạn đạt ngưỡng trả `IN_SCOPE_NO_EVIDENCE`. `disease_code` và luồng diagnosis giữ contract cũ.
 Mỗi corpus đi kèm registry nguồn ở `data/rag/`.
 
 ## Ingest

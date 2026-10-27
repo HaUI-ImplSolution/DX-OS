@@ -80,7 +80,11 @@ export default function Knowledge({
         </div>
       </form>
 
-      {answer && <GeneratedAnswerCard answer={answer.answer} scope={scope?.param === "diseaseCode" ? "farm" : "lab"} />}
+      {answer?.scopeStatus === "OUT_OF_SCOPE" ? (
+        <p className="empty-hint">Câu hỏi nằm ngoài phạm vi kiến thức của ứng dụng này.</p>
+      ) : answer?.scopeStatus === "IN_SCOPE_NO_EVIDENCE" && !answer.answer ? (
+        <p className="empty-hint">{emptyHint}</p>
+      ) : answer && <GeneratedAnswerCard answer={answer.answer} scope={scope?.param === "diseaseCode" ? "farm" : "lab"} />}
 
       {answer && answer.passages.length > 0 && (
         <details
@@ -92,6 +96,7 @@ export default function Knowledge({
               <strong>{passage.documentTitle}</strong>
               <PassageText content={passage.content} />
               <small>Độ liên quan {Math.round(passage.score * 100)}%</small>
+              {passage.corpusVersion && <small> · Corpus {passage.corpusVersion}</small>}
               <SourceList sources={passage.sources} />
             </article>
           ))}

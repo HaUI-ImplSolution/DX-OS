@@ -1,0 +1,16 @@
+{
+  "policy": "Phase 2 chỉ cho phép https://sict.haui.edu.vn và URL con",
+  "status": "QUARANTINED_PENDING_SOURCE_OWNER_REVIEW",
+  "created_at": "2026-10-27",
+  "sources": [
+    {"source_id": "SRC_HAUI_LIBRARY_RULES", "host": "lic.haui.edu.vn", "reason": "outside_allowlist"},
+    {"source_id": "SRC_HAUI_ITC_WIFI", "host": "itc.haui.edu.vn", "reason": "outside_allowlist"},
+    {"source_id": "SRC_HAUI_ITC_EMAIL", "host": "itc.haui.edu.vn", "reason": "outside_allowlist"},
+    {"source_id": "SRC_HAUI_ITC_PROJECTOR", "host": "itc.haui.edu.vn", "reason": "outside_allowlist"},
+    {"source_id": "SRC_HAUI_ITC_INFOSEC", "host": "itc.haui.edu.vn", "reason": "outside_allowlist"},
+    {"source_id": "SRC_HAUI_ITC_REPAIR", "host": "itc.haui.edu.vn", "reason": "outside_allowlist"},
+    {"source_id": "SRC_HAUI_ITC_FARONICS", "host": "itc.haui.edu.vn", "reason": "outside_allowlist"},
+    {"source_id": "SRC_HAUI_ITC_STUDENT_SYSTEMS", "host": "itc.haui.edu.vn", "reason": "outside_allowlist"},
+    {"source_id": "SRC_HAUI_TAC_721", "host": "tac.haui.edu.vn", "reason": "outside_allowlist"}
+  ]
+}

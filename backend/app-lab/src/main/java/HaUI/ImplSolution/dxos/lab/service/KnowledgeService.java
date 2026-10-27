@@ -39,9 +39,11 @@ public class KnowledgeService {
   public AnswerResponse ask(AskRequest request, boolean includeAnswer) {
     KnowledgeAnswer answer = knowledgeGateway.ask(LabKnowledgeNamespace.NAMESPACE,
         request.question().strip(), Map.of(), TOP_K);
-    return new AnswerResponse(answer.question(),
+    return new AnswerResponse(answer.question(), answer.scopeStatus(), answer.reasonCode(),
+        answer.namespace(),
         answer.passages().stream()
             .map(passage -> new Passage(passage.content(), passage.documentTitle(), passage.score(),
+                passage.attributes().get("document_version"),
                 passage.sources().stream().map(Source::of).toList()))
             .toList(),
         includeAnswer ? generateAnswer(answer) : null);

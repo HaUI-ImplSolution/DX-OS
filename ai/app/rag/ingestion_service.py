@@ -3,6 +3,7 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
@@ -72,7 +73,35 @@ LAB_CORPUS = Corpus(
     label="Article",
 )
 
-CORPORA = {"farm": FARM_CORPUS, "lab": LAB_CORPUS}
+FARM_KNOWLEDGE_CORPUS = Corpus(
+    namespace="farm",
+    document_type="farm_knowledge",
+    data_file=DATA_ROOT / "processed" / "farm_knowledge.json",
+    registry_file=DATA_ROOT / "farm_knowledge_source_registry.json",
+    version="farm-knowledge-v1",
+    code_field="document_id",
+    title_field="title",
+    required_fields=frozenset(
+        {
+            "document_id",
+            "title",
+            "content",
+            "provenance",
+            "review_status",
+            "topic",
+            "language",
+        }
+    ),
+    code_is_disease_code=False,
+    lock_key=674509,
+    label="Farm knowledge",
+)
+
+CORPORA = {
+    "farm": FARM_CORPUS,
+    "farm_knowledge": FARM_KNOWLEDGE_CORPUS,
+    "lab": LAB_CORPUS,
+}
 
 # Kept for callers that predate the corpus argument.
 DATA_FILE = FARM_CORPUS.data_file
@@ -92,6 +121,12 @@ def load_corpus(corpus: Corpus) -> list[dict[str, Any]]:
         raise TypeError(f"{corpus.data_file.name} must contain a JSON array")
 
     source_registry = load_source_registry(corpus.registry_file)
+    if corpus.namespace == "lab" and corpus.registry_file:
+        for source_id, source in source_registry.items():
+            if urlparse(source["url"]).hostname != "sict.haui.edu.vn":
+                raise ValueError(
+                    f"Lab source {source_id} is outside the allowlist: {source['url']}"
+                )
     normalized_codes: set[str] = set()
 
     for index, item in enumerate(documents, start=1):
@@ -146,6 +181,19 @@ def load_corpus(corpus: Corpus) -> list[dict[str, Any]]:
             raise ValueError(
                 f"{corpus.label} {code} references unknown sources: {unknown_text}"
             )
+
+        if (
+            corpus.document_type == "farm_knowledge"
+            and item.get("review_status") != "APPROVED"
+        ):
+            raise ValueError(
+                f"Farm knowledge {code} is not approved for ingest: "
+                f"{item.get('review_status')!r}"
+            )
+        if corpus.document_type == "farm_knowledge" and item.get("language") not in {
+            "vi", "vi-VN"
+        }:
+            raise ValueError(f"Farm knowledge {code} is not Vietnamese")
 
     return documents
 

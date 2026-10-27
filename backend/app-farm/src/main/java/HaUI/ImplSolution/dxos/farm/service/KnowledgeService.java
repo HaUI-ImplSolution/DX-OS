@@ -44,15 +44,16 @@ public class KnowledgeService {
             : Map.of("disease_code", request.diseaseCode().trim());
     KnowledgeAnswer answer = knowledgeGateway.ask(FarmKnowledgeNamespace.NAMESPACE,
         request.question().trim(), filters, TOP_K);
-    return new KnowledgeAnswerResponse(answer.question(),
-        answer.passages().stream().map(KnowledgeService::toPassage).toList(),
+    return new KnowledgeAnswerResponse(answer.question(), answer.scopeStatus(), answer.reasonCode(),
+        answer.namespace(), answer.passages().stream().map(KnowledgeService::toPassage).toList(),
         includeAnswer ? generateAnswer(answer, request.diseaseCode()) : null);
   }
 
   private static Passage toPassage(KnowledgePassage passage) {
     List<Source> sources = passage.sources().stream().map(KnowledgeService::toSource).toList();
     return new Passage(passage.content(), passage.documentTitle(),
-        passage.attributes().get("disease_code"), passage.score(), sources);
+        passage.attributes().get("disease_code"), passage.score(),
+        passage.attributes().get("document_version"), sources);
   }
 
   private static Source toSource(KnowledgeSource source) {

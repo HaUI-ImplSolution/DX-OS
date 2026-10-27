@@ -15,6 +15,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.text.Normalizer;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -49,6 +50,11 @@ public class KnowledgeGatewayService implements KnowledgeGateway {
     if (corpus == null) {
       throw new IllegalArgumentException("Knowledge namespace is not registered: " + namespace);
     }
+    ScopeDecision scope = classify(namespace, question);
+    if (!scope.retrievalAllowed()) {
+      return new KnowledgeAnswer(question, List.of(), "OUT_OF_SCOPE", scope.reasonCode(),
+          namespace);
+    }
     Map<String, Object> body = new LinkedHashMap<>(filters);
     body.put("query", question);
     body.put("top_k", topK);
@@ -58,8 +64,47 @@ public class KnowledgeGatewayService implements KnowledgeGateway {
     List<Map<String, Object>> relevant = chunks.stream()
         .filter(chunk -> ((Number) chunk.getOrDefault("score", 0)).doubleValue() >= minScore)
         .toList();
-    return new KnowledgeAnswer(question, mergeByDocument(relevant, corpus.sources()));
+    List<KnowledgePassage> passages = mergeByDocument(relevant, corpus.sources());
+    return new KnowledgeAnswer(question, passages,
+        passages.isEmpty() ? "IN_SCOPE_NO_EVIDENCE" : "ANSWERABLE",
+        passages.isEmpty() ? "NO_EVIDENCE" : "EVIDENCE_FOUND", namespace);
   }
+
+  private ScopeDecision classify(String namespace, String question) {
+    String text = fold(question);
+    if ("farm".equals(namespace)) {
+      if (containsAny(text, "o to", "xe hoi", "chung khoan", "bong da", "du lich")) {
+        return new ScopeDecision(false, "EXPLICIT_UNRELATED_TOPIC");
+      }
+      return new ScopeDecision(containsAny(text, "lua", "ruong", "nong nghiep", "hat giong",
+          "phan bon", "tuoi", "benh", "co dai", "thu hoach", "dat"), "NO_FARM_DOMAIN_TERM");
+    }
+    if ("lab".equals(namespace)) {
+      if (containsAny(text, "o to", "xe hoi", "nau an")) {
+        return new ScopeDecision(false, "EXPLICIT_UNRELATED_TOPIC");
+      }
+      return new ScopeDecision(containsAny(text, "haui", "wifi", "email", "mat khau", "tai khoan",
+          "tin hoc", "cntt", "phan mem", "thiet bi", "quy dinh", "dich vu", "sict", "faronics",
+          "so tay", "an toan thong tin", "mang khong day"), "NO_LAB_DOMAIN_TERM");
+    }
+    return new ScopeDecision(false, "UNKNOWN_NAMESPACE");
+  }
+
+  private static String fold(String value) {
+    return Normalizer.normalize(value.toLowerCase(), Normalizer.Form.NFD).replaceAll("\\p{M}", "");
+  }
+
+  private static boolean containsAny(String text, String... terms) {
+    for (String term : terms) {
+      if (text
+          .matches(".*(?<![\\p{L}])" + java.util.regex.Pattern.quote(term) + "(?![\\p{L}]).*")) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private record ScopeDecision(boolean retrievalAllowed, String reasonCode) {}
 
   // The chunks of one document become one passage: its lines in document order without repeats,
   // the best score and the union of its sources. Documents keep the order of their best chunk.

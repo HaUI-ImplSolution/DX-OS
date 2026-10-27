@@ -24,6 +24,8 @@ Keycloak không publish cổng ra host: gateway APISIX chuyển tiếp `/realms`
 
 ## Token và phân quyền
 
+- Mật khẩu chỉ nằm ở Keycloak, lưu dạng băm Argon2id (mặc định của Keycloak 26); Backend chỉ gửi mật khẩu tạm lúc tạo tài khoản qua Admin API và không lưu mật khẩu.
+
 - `dxos-web` và `farm-mobile` có mapper `dxos-api-audience` thêm `dxos-api` vào `aud`; Backend (`security.jwt.audience`) trả `401` cho token thiếu audience.
 - Token chỉ có role `FARMER` phải có `azp` thuộc `security.farmer-client-ids` (mặc định `farm-mobile`), nếu không Backend trả `403`; web hiện màn "dùng ứng dụng di động", Superset từ chối.
 - Phạm vi dữ liệu của FARMER theo nông hộ gắn với claim `sub`, không phụ thuộc tên hiển thị.

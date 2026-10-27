@@ -3,24 +3,55 @@
 Nhật ký thay đổi của DX-OS (DX-Farm và DX-Lab).
 Định dạng theo [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/).
 
-Mục Chưa phát hành tóm tắt các điểm cốt lõi.
+Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Chưa phát hành gom những gì sau phiên bản mới nhất.
 Lịch sử chi tiết theo ngày của từng module (Backend, Dữ liệu, Mobile, AI Service, Frontend, Deploy, BI, Chat, Portal, SSO, Giấy phép và SBOM, Tài liệu) nằm ở các mục sau.
 
 ## [Unreleased]
 
-Tóm tắt những gì chưa phát hành.
+Chưa có thay đổi sau [1.0.3].
+
+## [1.0.3] - 2026-10-27
+
 Chi tiết theo ngày ở mục của từng module bên dưới.
 
 - Màn hình giám sát và truy vết `/monitor/` cho quản trị viên, chạy riêng nên vẫn hoạt động khi backend dừng.
 - Truy vết máy chủ công khai: log gateway kèm `X-Request-Id`, sự kiện đăng nhập của Keycloak và `audit_log` chỉ thêm.
 - Giới hạn tốc độ theo IP thật ở gateway.
-- Workflow `Release` phát hành image lên GHCR.
-- Farm: chẩn đoán kèm tài liệu tham khảo, nhắc khai phun chờ xác nhận.
-- Lab: tri thức từ văn bản chính thức của HaUI, cảnh báo thiết bị hỏng lặp lại.
+- Farm: báo cáo đang có lượt chẩn đoán AI chạy dở thì lượt thứ hai trả `409`.
 - Bộ câu hỏi và nhãn đánh giá truy xuất RAG cho Farm/Lab, gồm 36 câu hỏi đáp và 6 lượt tham khảo chẩn đoán.
 - Công cụ thu kết quả chỉ đọc, chấm Recall/nDCG bằng `ir_measures` và hiển thị câu hỏi, đoạn tài liệu, điểm trên Langfuse local.
 - Thử tải endpoint truy xuất bằng k6, đo độ trễ, request/giây, tỷ lệ lỗi và tài nguyên Docker; xuất dữ liệu để kiểm tra lại.
 - Bộ chạy đánh giá RAG độc lập bằng một lệnh, tự chuẩn bị Langfuse local, dùng lại cache và tự dọn sau khi xem.
+- Mọi file Java và Python tự viết có dòng `SPDX-License-Identifier: Apache-2.0`.
+- Tài liệu: README có mục API, CHANGELOG theo phiên bản, mật khẩu Keycloak băm Argon2id.
+
+## [1.0.2] - 2026-10-23
+
+- Model bệnh lá lúa DX-Farm EfficientNetV2-M (Healthy và 5 bệnh) thay detector cũ.
+- Workflow `Release` phát hành image lên GHCR; `deploy/update.sh` cập nhật stack từ image đã phát hành.
+- Overlay Cloudflare Tunnel cho máy chủ công khai; chạy được trên CPU ảo không có x86-64-v2.
+- Farm: chẩn đoán kèm tài liệu tham khảo, nhắc khai phun chờ xác nhận, nhắc thu hoạch có giới hạn ngày, bật rule đốm nâu, thời tiết lưu theo giờ và chart thời tiết trên Superset.
+- Lab: tri thức từ văn bản chính thức của HaUI kèm link tới trang gốc, cảnh báo thiết bị hỏng lặp lại, màn hình ticket và quy tắc mượn thiết bị, đặt phòng làm lại.
+- Portal lấy địa chỉ BI, MinIO và chat từ cấu hình; web và mobile hiển thị tài liệu tham khảo của chẩn đoán.
+
+## [1.0.1] - 2026-10-15
+
+- Farm: thời tiết theo thửa, danh sách báo cáo chưa chẩn đoán, thông báo chat kèm liên kết mở thẳng báo cáo, chart sản lượng thu hoạch.
+- Mobile: thẻ thời tiết, hỏi đáp, giới hạn GPS lấy từ backend.
+- Backend ghi người tạo chẩn đoán, khóa việc chạy định kỳ giữa nhiều bản chạy; kỹ sư xem được dashboard BI.
+- Webhook chat tạo lúc khởi động và backend đọc từ file; nhận ảnh nền đơn sắc.
+- Tài liệu: sơ đồ kiến trúc dạng ảnh, README tiếng Anh, quy tắc ứng xử.
+
+## [1.0.0] - 2026-10-13
+
+Bản phát hành đầu tiên của DX-OS.
+
+- Core dùng chung (`dx-core-api`, `dx-core`, `dx-host`): định danh và workspace, workflow, hộp duyệt, thông báo, lưu trữ, cổng AI và tri thức, bảo mật, trạng thái hệ thống.
+- Hai ứng dụng chọn bằng `DXOS_APP`: DX-Farm (`app-farm`) và DX-Lab (`app-lab`).
+- AI Service: nhận diện bệnh lá lúa, RAG theo namespace `farm` và `lab`, LangGraph.
+- Web React dùng chung; mobile Expo cho nông dân.
+- Hạ tầng Docker Compose: Keycloak, APISIX, PostgreSQL, MinIO, Superset, Mattermost, portal; E2E Farm và Lab trong CI.
+- Tài liệu và nguồn mở: `LICENSE`, `LICENSES.md`, SBOM CycloneDX, `CONTRIBUTING.md`, mẫu issue và pull request.
 
 ## Backend (Spring Boot — `backend`)
 
@@ -1397,6 +1428,16 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 - `data/rag/evaluation/README.md` mô tả bộ đề và quy ước nhãn; `docs/BACKLOG.md` ghi việc rà nhãn đủ và tái lập bởi bên thứ ba.
 - `README.md`, `README_EN.md`, `data/README.md`, `ai/app/rag/README.md`, `docs/COUNCIL_QA.md`, `docs/SUBMISSION.md`, `docs/AI_EVALUATION.md` và `sbom/README.md` trỏ tới phần đánh giá.
 
+**Đã xong — Rà soát tài liệu theo trạng thái hiện tại:**
+
+- `backend/app-farm/README.md` ghi đủ 7 view `vw_*` và việc chẩn đoán AI thứ hai trả `409` khi lượt đầu còn chạy.
+- `backend/README.md` nêu schema `monitor` của `dx-monitor`; `chat/README.md` nêu cảnh báo của `dx-monitor` ở kênh `Ban quản trị`.
+- `ai/README.md` liệt kê đủ biến môi trường của service và cách AI chạy trên CPU không có SSE4.1.
+- `docs/BACKLOG.md` bỏ việc vẽ Monitor vào sơ đồ tổng quan và việc quét gitleaks thủ công; `docs/TESTING.md` mục 3 viết mỗi câu một dòng và ghi gitleaks chạy trong CI.
+- `README.md` và `README_EN.md` có mục API; `CHANGELOG.md` có mục theo phiên bản `v1.0.0` đến `v1.0.3`.
+- `sso/README.md` và `docs/COUNCIL_QA.md` nêu mật khẩu chỉ nằm ở Keycloak dưới dạng băm Argon2id; câu 9 của `COUNCIL_QA.md` nêu phạm vi thử tải hiện có.
+- `docs/SUBMISSION.md` nêu màn hình giám sát trong kịch bản demo và slide 3.
+
 ### 2026-10-26
 
 **Đã xong — Màn hình giám sát:**
@@ -1510,5 +1551,9 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 
 - Cập nhật `README.md`, `ai/README.md`, `ai/app/graph/README.md` để mô tả trạng thái kiến trúc AI và Backend.
 
-[Unreleased]: https://github.com/HaUI-ImplSolution/DX-OS/commits/main
+[Unreleased]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.0.3...main
+[1.0.3]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.0.2...v1.0.3
+[1.0.2]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.0.1...v1.0.2
+[1.0.1]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/HaUI-ImplSolution/DX-OS/releases/tag/v1.0.0
 

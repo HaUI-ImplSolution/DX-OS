@@ -43,12 +43,13 @@ Cột trạng thái trên bảng của Farm phản chiếu trạng thái đó.
 - Ảnh trắng hoặc không phải lúa không qua kiểm tra chất lượng; ảnh được xóa EXIF trước khi lưu.
 - Liều và PHI chỉ lấy từ `TreatmentRule` đã được chuyên gia duyệt; bệnh chưa có rule chỉ ở trạng thái `review_required`.
 - Bản khai phun chờ kỹ sư xác nhận quá `app.treatment-confirmation-wait-hours` giờ được nhắc lên kênh kỹ sư mỗi sáng tới khi có quyết định.
+- Báo cáo đang có lượt chẩn đoán AI chạy dở thì lượt chẩn đoán AI thứ hai trả `409` ngay, không gọi AI lần nữa.
 - Bản khai phun chờ kỹ sư xác nhận thì chặn thu hoạch (`TREATMENT_PENDING_CONFIRMATION`); sau khi xác nhận, thu hoạch bị chặn tới `harvestLockedUntil` (`POKA_YOKE_VIETGAP_VIOLATION`).
 - Mỗi người có số yêu cầu chờ duyệt tối đa theo `app.max-pending-requests` của core, tính cho các loại case do `AppModule.limitedCaseTypes()` khai báo.
 
 ## Interface của core đã cài
 
-Cấu hình bằng bean ở `FarmAppModule` (id `farm`, workspace `HOUSEHOLD`), `FarmSecurityPolicies` (vai, danh mục công khai, FARMER chỉ qua mobile), `FarmWorkflowConfig` (5 loại duyệt), `FarmNotificationConfig` (13 loại thông báo, kênh `ADMIN` và `ENGINEER`), `FarmPlatformConfig` (6 view `vw_*` và 3 bảng danh mục), `FarmKnowledgeNamespace` (`farm`) và `DiseaseImageProcessor` (chỉ JPEG/PNG, xóa EXIF).
+Cấu hình bằng bean ở `FarmAppModule` (id `farm`, workspace `HOUSEHOLD`), `FarmSecurityPolicies` (vai, danh mục công khai, FARMER chỉ qua mobile), `FarmWorkflowConfig` (5 loại duyệt), `FarmNotificationConfig` (13 loại thông báo, kênh `ADMIN` và `ENGINEER`), `FarmPlatformConfig` (7 view `vw_*` và 3 bảng danh mục), `FarmKnowledgeNamespace` (`farm`) và `DiseaseImageProcessor` (chỉ JPEG/PNG, xóa EXIF).
 Những gì ứng dụng khai báo ở [`ARCHITECTURE.md`](../../ARCHITECTURE.md) mục 3.
 
 ## Mã thửa, mã vụ và duyệt

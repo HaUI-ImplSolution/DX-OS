@@ -27,7 +27,7 @@
   },
   "corpora": {
     "farm": "riceleafbd-v3-workbook-v1",
-    "lab": "lab-knowledge-v2",
+    "lab": "lab-knowledge-v3",
     "farm_knowledge": "farm-knowledge-v1"
   },
   "review_rule": "A domain reviewer must inspect the question and corpus chunks before seeing retrieval rankings.",

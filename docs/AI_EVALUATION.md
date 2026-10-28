@@ -143,11 +143,11 @@ Runner mặc định chạy 36 lượt, 30 giây mỗi mức, lặp ba lần; b�
 | Hạng mục | Hiện trạng |
 |---|---|
 | Bộ đề | 75 câu scope (45 trong miền, 30 ngoài miền) + 15 ca trong miền nhưng kho tri thức không đủ thông tin để trả lời |
-| Phép đo | `ChatSearch` thật qua `evaluate_scope.py --live`, đã nối vào runner `quality` |
+| Phép đo | `ChatSearch` thật qua `evaluate_scope.py`, đã nối vào runner `quality` |
 | Chỉ số | Precision, Recall, F1 về scope; số ca nhận biết đúng khi không đủ thông tin để trả lời |
 | Kết quả | Đã được kiểm tra; điểm scope chưa được ghi trong tài liệu này |
 
-Chế độ không có `--live` chỉ kiểm gate legacy, không đại diện chatbot hiện tại.
+Phép đo luôn chạy trên `ChatSearch` thật; không còn chế độ đo gate legacy riêng.
 
 ## 10. Chất lượng câu trả lời Qwen
 

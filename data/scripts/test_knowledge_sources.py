@@ -59,7 +59,10 @@ class KnowledgeSourcesTest(unittest.TestCase):
                     for source_id in document["provenance"]["source_ids"]
                 }
                 if name == "farm":
-                    cited.update(sid for doc in load(ROOT / "data/rag/processed/farm_knowledge.json") for sid in doc["provenance"]["source_ids"])
+                    generic = load(ROOT / "data/rag/processed/farm_knowledge.json")
+                    for document in generic:
+                        self.assertNotIn("sha256", document["provenance"])
+                    cited.update(sid for doc in generic for sid in doc["provenance"]["source_ids"])
                     rules = load(
                         ROOT / "data/structured/treatment_rules_candidates_master.json"
                     )

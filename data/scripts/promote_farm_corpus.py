@@ -68,6 +68,8 @@ def main() -> None:
     }
 
     for item in approved_documents:
+        # Run provenance computes fingerprints outside Git.
+        item.get("provenance", {}).pop("sha256", None)
         item["review_status"] = "APPROVED"
         item["approved_by"] = args.reviewer.strip()
         item["approved_at"] = datetime.now(timezone.utc).date().isoformat()

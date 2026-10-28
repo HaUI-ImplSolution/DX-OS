@@ -28,6 +28,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 
 | Việc | Ghi chú |
 |---|---|
+| Review UI cuối của chatbot hybrid | Đã smoke API/web và kiểm hồi quy; chưa có xác nhận riêng của chủ dự án về bản cuối cho câu tổng quan/cụ thể/từ chối và nguồn |
 | Bên thứ ba tái lập đánh giá RAG | Công cụ đã chạy thật và CLI khớp; cần người khác tự tính lại từ qrels/run, ghi riêng với việc chạy lại retrieval. Hướng dẫn ở [`ai/README.md`](../ai/README.md#đánh-giá-truy-xuất-rag) |
 | Chấm nội dung Qwen trên 36 câu hỏi và 6 chủ đề chẩn đoán | Chưa có bảng chấm trọng tâm, bám nguồn và dễ đọc do người duyệt xác nhận; tỷ lệ `generated` không phải độ đúng nội dung |
 | Chữ lớn trên mobile native | Đã typecheck, kiểm render và nghiệm thu chức năng; chưa đo riêng bố cục khi tăng cỡ chữ trên máy thật |

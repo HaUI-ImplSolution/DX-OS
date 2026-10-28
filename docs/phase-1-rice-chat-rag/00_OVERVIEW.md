@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Đang làm; đã triển khai engine/adapter, chưa đạt toàn bộ DoD và chưa nghiệm thu local |
+| Trạng thái | Đã đóng phạm vi triển khai kỹ thuật ngày 28/10/2026; các kiểm chứng mở rộng chưa hoàn tất chuyển BACKLOG |
 | Mức độ | Quan trọng |
 | Nhóm ưu tiên | A |
 | Ứng dụng và module chính | Chatbot web Farm/Lab, AI RAG, corpus và công cụ đánh giá độc lập |

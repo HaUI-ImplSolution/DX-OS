@@ -2,7 +2,7 @@
 
 ## 1. Chiến lược
 
-Đã kiểm chứng phần triển khai kỹ thuật; chỉ ghi đạt khi có bằng chứng mới. Ô chưa đủ được giữ chờ kiểm, không lấy kết quả phase cũ thay thế.
+Đã đóng phạm vi triển khai kỹ thuật ngày 28/10/2026; bảng dưới giữ đúng kết quả đã chạy và giới hạn còn lại. Ô chưa đủ được giữ chờ kiểm, không lấy kết quả phase cũ thay thế.
 
 - Unit/contract: scope, BM25/tokenizer, RRF, rerank, context QA và adapter envelope.
 - Integration: pgvector thực, source parity, ingest/rollback, quyền chỉ đọc và cache invalidation.
@@ -47,7 +47,7 @@
 | T2-30 | WP2-06 | Diagnosis | 6 query disease-filtered @3 và diagnosis thật cùng ảnh/facts | Ranking legacy không đổi, CV threshold/rule/approval/PHI và giải thích profile diagnosis không đổi | Codex, 28/10/2026 | Đạt 6 query ranking legacy; ảnh thật kiểm AI, lịch sử, quyền và snapshot/rule trước/sau duyệt |
 | T2-31 | WP2-06 | Ticket | Gợi ý ticket Lab trước/sau trên cùng dữ liệu | Vẫn dùng retrieve legacy, không scope/hybrid chatbot | Codex, 28/10/2026 | Đạt Lab E2E 16/16 với require-knowledge; unit caller giữ retrieve legacy |
 | T2-32 | WP2-06 | Startup | Build bằng cache, gọi cách khởi động README lần lượt Farm/Lab | Khởi động/ingest/model-cache/chatbot chạy, không cần lệnh setup bắt buộc mới | Codex, 28/10/2026 | Đạt startup/ingest theo luồng README bằng image/cache, Farm 10/10 và Lab 16/16; full clone sạch chưa chạy |
-| T2-33 | WP2-06 | Regression | AI pytest/contracts; Backend compile/test liên quan; web/mobile tsc | Có log đúng code hiện tại; lỗi ngoài domain ghi riêng, không sửa lan | Codex, 28/10/2026 | Đạt 168 test AI + 50 subtest; 24 test Backend và package sáu module; CI typecheck web/mobile đạt |
+| T2-33 | WP2-06 | Regression | AI pytest/contracts; Backend compile/test liên quan; web/mobile tsc | Có log đúng code hiện tại; lỗi ngoài domain ghi riêng, không sửa lan | Codex, 28/10/2026 | Đạt 168 test AI + 50 subtest; 24 test Backend và package sáu module; CI verify và typecheck web/mobile đạt |
 | T2-34 | WP2-06 | Review | Đối chiếu diff với bảng domain từng WP và quét secret/license/artifact | Core giữ Knowledge adapter và DTO/helper core-api dùng chung; không report/state/credential/.gitignore hoặc sửa ngoài phạm vi | Codex, 28/10/2026 | Đã đối chiếu domain, license, artifact và scan trước push; giữ DTO/helper core-api của đồng đội, không sửa deploy/CI/.gitignore |
 | T2-35 | WP2-01 | Core reuse | Đăng ký namespace giả lập qua KnowledgeNamespace, mock AI search; kiểm dependency/import và lỗi 401/403 | Adapter không cần nhánh Farm/Lab, không gọi trực tiếp app/Ollama; AiGateway giữ mapping lỗi, engine dùng chung | Codex, 28/10/2026 | Đạt unit namespace giả lập và HTTP transport; không sửa AiGateway |
 

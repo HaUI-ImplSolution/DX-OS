@@ -109,8 +109,8 @@ Kết quả: đủ bằng chứng DoD, owner test local trước commit/push.
 
 ## Đóng phase
 
-- [ ] Mọi test bắt buộc trong `03_TEST_PLAN.md` đạt, người chạy/ngày/bằng chứng có thật.
-- [ ] Đạt mục 6 overview hoặc chủ dự án chấp nhận rõ trade-off còn lại; không đổi ngưỡng sau holdout.
+- [x] Các kiểm tra kỹ thuật bắt buộc về boundary/safety/isolation/legacy/Core reuse đạt, có bằng chứng trong test plan; phạm vi chưa chạy đủ giữ rõ trạng thái và chuyển BACKLOG.
+- [x] Chủ dự án yêu cầu đóng phạm vi triển khai sau kiểm tra ngày 28/10/2026; chấp nhận giới hạn pilot và format không nghiêm trọng. Không coi toàn bộ DoD đánh giá độc lập đã đạt.
 - [x] Core không chứa từ khóa Farm/Lab hoặc import app; app chỉ phụ thuộc core-api.
 - [x] Giữ KnowledgeGatewayService cùng DTO/helper câu trả lời dùng chung do đồng đội bổ sung trong core-api; AiGateway/AiServiceGateway/interface/host và các Core service khác giữ nguyên.
 - [x] Một engine RAG/generation chung trong AI Service; giữ hai lượt gọi và gộp evidence Backend, không nhân bản thuật toán theo app.
@@ -120,7 +120,7 @@ Kết quả: đủ bằng chứng DoD, owner test local trước commit/push.
 - [x] Swagger, score/status, dependency/lock và LICENSES/SBOM nhất quán.
 - [x] Dọn file test tạm, corpus/raw dư, code chết và cấu hình không dùng; giữ fixture thật cần để tái lập.
 - [x] Không stage report/, state, credential, token, mã định danh/checksum không cần công khai hoặc sửa .gitignore.
-- [ ] Chủ dự án đã test local, đọc diff và cho phép commit/push riêng.
+- [x] Chủ dự án đã cho phép commit/push và yêu cầu đóng phase; diff tài liệu đã mở ở local. Review UI cuối chưa có xác nhận riêng, giữ WP2-06-TEST-07 chưa tích.
 - [x] Chuyển các giới hạn còn lại sang BACKLOG; giữ thư mục kế hoạch theo yêu cầu chủ dự án để review, không xóa tự động.
 
 ## Bằng chứng ngày 28/10/2026
@@ -136,5 +136,6 @@ Kết quả: đủ bằng chứng DoD, owner test local trước commit/push.
 
 ## Trạng thái bàn giao
 
-Phần triển khai và kiểm thử kỹ thuật đã sẵn sàng review; chưa tự đóng nghiệm thu người dùng hoặc đánh giá độc lập.
+Đóng phạm vi triển khai kỹ thuật ngày 28/10/2026 theo yêu cầu chủ dự án. CI mới nhất đạt toàn bộ 10 kiểm tra, gồm Backend verify, AI, typecheck và E2E Farm/Lab.
+Không xác nhận thay người dùng việc review UI cuối; không gọi pilot là đánh giá độc lập.
 Giữ nguyên kế hoạch theo yêu cầu chủ dự án. Các mục chờ review và giới hạn đo còn được ghi rõ ở checklist, [06_HANDOFF.md](06_HANDOFF.md) và BACKLOG.

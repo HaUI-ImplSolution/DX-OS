@@ -1,6 +1,6 @@
 # Bàn giao ngày 28/10/2026
 
-Nhánh: `feat/qwen-grounded-answers`. Đã hoàn thiện phần triển khai và kiểm thử kỹ thuật; chờ review cuối của chủ dự án.
+Nhánh: `feat/qwen-grounded-answers`. Đã đóng phạm vi triển khai kỹ thuật ngày 28/10/2026 theo yêu cầu chủ dự án; các kiểm chứng mở rộng giữ ở BACKLOG.
 Giữ thư mục kế hoạch theo yêu cầu, không xóa khi push.
 
 ## Đã triển khai
@@ -17,7 +17,7 @@ Giữ thư mục kế hoạch theo yêu cầu, không xóa khi push.
 | Hạng mục | Kết quả |
 |---|---|
 | AI | 168 test + 50 subtest; diagnose contract, access boundary và các self-check đạt |
-| Backend | 24 test gateway/Knowledge/codec; package sáu module đạt |
+| Backend | 24 test gateway/Knowledge/codec và package local đạt; CI chạy mvn --batch-mode verify đạt |
 | Data | 7 Farm/12 Lab, hai test parity/approval; offline ingest, corpus rỗng và rollback trên DB riêng đạt |
 | Quality | 4 × 72 query, 25 tài liệu/244 chunk; scope 90/90; CLI khớp 600 giá trị ≤1e-8 |
 | Performance | 12 lượt/888 request, 10 giây/mức, một lần lặp; không lỗi HTTP/hợp đồng/OOM, AI 2 CPU/1536 MiB |

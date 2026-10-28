@@ -1,3 +1,4 @@
+import type { GeneratedAnswer } from "../../shell";
 import type { ApprovalRequest as BaseApprovalRequest, KnowledgePassage } from "../../shell";
 
 export type {
@@ -183,6 +184,7 @@ export interface TreatmentRule {
 // For FARMER only id, diseaseReportId and approvalStatus are guaranteed;
 // REJECTED adds decidedAt and rejectionReason, and the rest is set once APPROVED.
 export interface Diagnosis {
+  generatedExplanation?: GeneratedAnswer | null;
   id: number;
   diseaseReportId: number;
   diseaseCode: string | null;

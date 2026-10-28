@@ -15,13 +15,22 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 
 ## 2. Việc cần sửa trong mã và cấu hình
 
-Hiện không có.
+| Việc | Phạm vi |
+|---|---|
+| Giữ đúng điều kiện và đối tượng trong trả lời Lab | Có ca gán mức cấm thư viện 30 ngày vào sai hành vi; cần đối chiếu từng kết luận với điều kiện trong nguồn |
+| Làm rõ các nhánh hướng dẫn Wi-Fi | Còn câu trộn đăng nhập tài khoản với truy cập miễn phí; cần diễn đạt riêng theo đối tượng sử dụng |
+| Tăng độ bao phủ trả lời Qwen | Có cách hỏi mô tả bệnh khiến JSON chưa hoàn chỉnh trong giới hạn 192 token; bản nháp bị ẩn, nguồn vẫn giữ. Cần cải thiện tỷ lệ trả lời hợp lệ, không bỏ chốt thuốc/liều/PHI và nguồn |
+| Gỡ đường trả lời RAG legacy trong AI | Router không còn gọi `RAGService.answer` và `scope_gate.py`; gate chatbot là `chat_search.outside_scope`. Gỡ cùng `tests/test_scope_gate.py` và `scripts/evaluate_scope.py`, bước scope trong `evaluate.sh` đang gọi script này |
+| Ổn định test biên 30 ngày đặt phòng Lab | `LabBookingIntegrationTest` đặt lúc 08:00 ngày thứ 30 nhưng service giới hạn 30 × 24 giờ; test phụ thuộc giờ chạy, cần cố định `Clock` |
 
 ## 3. Chưa kiểm thử
 
 | Việc | Ghi chú |
 |---|---|
-| Bên thứ ba tái lập đánh giá RAG | Công cụ đã chạy thật và CLI khớp; cần người khác tự tính lại từ qrels/run, ghi riêng với việc chạy lại retrieval. Hướng dẫn ở [`ai/README.md`](../ai/README.md#đánh-giá-truy-xuất-rag) |
+| Bên thứ ba tái lập đánh giá RAG | Cần người đánh giá độc lập kiểm tra nhãn và tính lại điểm từ qrels/run; cách chạy ở [`ai/README.md`](../ai/README.md#đánh-giá-truy-xuất-rag) |
+| Chấm nội dung Qwen trên 36 câu hỏi và 6 chủ đề chẩn đoán | Chưa có bảng chấm trọng tâm, bám nguồn và dễ đọc do người duyệt xác nhận; tỷ lệ `generated` không phải độ đúng nội dung |
+| Chữ lớn trên mobile native | Đã typecheck, kiểm render và nghiệm thu chức năng; chưa đo riêng bố cục khi tăng cỡ chữ trên máy thật |
+| Khởi động bản Qwen từ clone sạch | Đã kiểm bằng image/cache và các cặp phiên bản; chưa chạy lại full build/seed toàn stack từ clone sạch |
 | `backup.sh` và khôi phục trên máy chủ thật | Đã thử trên stack thử, chưa thử trên VPS với dữ liệu thật và kho từ xa |
 | Cầu dao AI với tải thật | Đã thử khi AI dừng; chưa thử khi AI chậm vì tải, lúc đó lỗi đọc quá hạn cũng tính là lỗi dịch vụ |
 
@@ -36,14 +45,17 @@ Hiện không có.
 | Chẩn đoán AI chạy trên CPU mất khoảng 50 giây mỗi ảnh | Đo trên máy chủ 8 nhân; chưa có GPU hay mô hình nhỏ hơn để rút ngắn; lần gọi đầu sau khi khởi động lại AI nạp mô hình và có thể vượt 60 giây chờ của gateway, nhận 504 (kết quả vẫn được tạo) |
 | Nộp báo cáo cần AI service chạy | Chưa có đường nhận ảnh chưa kiểm khi AI dừng; hàng đợi offline thử lại |
 | Chưa có mô hình nhận diện sâu hại | Classifier nhận Healthy và 5 bệnh lá |
-| Kho RAG của Farm chỉ có 6 tài liệu bệnh lúa | Chưa có VietGAP hay quy trình canh tác |
+| Hoàn thiện coverage tri thức canh tác Farm | Đã có 7 tài liệu tổng quát; trang tập huấn còn chủ yếu mục lục, cần nội dung tài liệu con và nguồn cho các chủ đề còn thiếu |
 | Rà nhãn RAG tường minh cho toàn bộ chunk | Chủ dự án đã duyệt bộ câu hỏi và nhãn pilot; qrels hiện chỉ có nhãn dương. Cần rà đủ 0/1/2 trước khi chuyển trạng thái `reviewed`, xem [`data/rag/evaluation/README.md`](../data/rag/evaluation/README.md) |
-| Truy xuất tri thức dựa trên MiniLM đa ngữ | Câu nêu tên bệnh được xếp đúng; câu chỉ tả triệu chứng phụ thuộc embedding; bộ thử có 15 câu; `knowledge.min-score` 0.40 loại 7/8 câu ngoài chủ đề, điểm đoạn đầu của câu đúng chủ đề từ 0.50 đến 0.83 |
+| Đánh giá chatbot hybrid mở rộng | Rà nhãn 30 câu bổ sung, tách bộ hiệu chỉnh và bộ kiểm tra độc lập. Câu hỏi gián tiếp về mượn tài liệu còn bị lọc ở ngưỡng cosine 0,40; độ bao phủ câu tổng quan Farm cần cải thiện |
+| Đánh giá truy xuất trên corpus lớn | Chưa đo gần giới hạn 20.000 đoạn mỗi chỉ mục BM25; số liệu hiện có trên 244 đoạn, với 1/2/5 người dùng đồng thời |
+| Đo đầy đủ tải chatbot hybrid | Mới đo rút gọn 12 lượt, 1.369 request; cần chạy đủ 36 lượt theo cấu hình mặc định và đo riêng nhóm câu hỏi bị từ chối |
+| Truy xuất legacy dựa trên MiniLM đa ngữ | Diagnosis/ticket vẫn dùng cosine và ngưỡng legacy; diễn đạt gián tiếp còn phụ thuộc embedding, không có reranker như chatbot |
 | Luật phân loại của Lab là luật tay | Chưa đo độ chính xác trên dữ liệu thật |
 | Kho tri thức Lab chỉ có 12 bài từ 9 văn bản công khai của HaUI | Chưa có bài về máy in, VPN, quy chế phòng máy của khoa, đặt phòng máy; sổ tay LMS là bản năm học 2019-2020 |
-| Câu hỏi Lab ngoài chủ đề vẫn có thể hiện đoạn trên ngưỡng 0.40 | "Máy in kẹt giấy" hiện quy định phòng thi ở 0.58 đến 0.64, cao hơn vài câu đúng (máy chiếu 0.52); đổi ngưỡng không tách được, cần embedding hoặc cách xếp hạng khác |
+| Gợi ý tri thức ticket Lab chưa có hybrid/gate chatbot | Ticket vẫn dùng retrieve legacy; đoạn gần nghĩa chưa chắc đúng sự cố. Chưa đánh giá riêng độ phù hợp trên dữ liệu ticket thật |
 | Snapshot thời tiết chỉ có 5 điểm ĐBSCL, chụp ngày 07/10/2026 | Chụp lại nếu cần dữ liệu dự phòng mới hơn |
-| Giới hạn tốc độ ở gateway tính theo IP (60 câu hỏi tri thức, 60 lần tạo ticket, 30 lần upload ảnh, chẩn đoán AI, đặt phòng hoặc đính kèm, 120 lượt đăng nhập, 600 lượt API mỗi phút) là số tạm; chưa thử tải | Superset dùng SQLite cho metadata, AI service là một tiến trình không có hàng đợi |
+| Giới hạn tốc độ ở gateway tính theo IP (60 câu hỏi tri thức, 60 lần tạo ticket, 30 lần upload ảnh, chẩn đoán AI, đặt phòng hoặc đính kèm, 120 lượt đăng nhập, 600 lượt API mỗi phút) là số tạm; chưa thử tải | Superset dùng SQLite cho metadata, AI service là một tiến trình; chatbot có hàng đợi rerank CPU giới hạn |
 
 ## 5. Chức năng chưa có
 

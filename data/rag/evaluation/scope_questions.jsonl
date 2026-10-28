@@ -1,0 +1,75 @@
+{"qid":"farm-scope-01","namespace":"farm","query":"Lúa giai đoạn đẻ nhánh quản lý nước thế nào?","label":"in_scope"}
+{"qid":"farm-scope-02","namespace":"farm","query":"Nên chọn giống lúa nào cho vụ hè thu?","label":"in_scope"}
+{"qid":"farm-scope-03","namespace":"farm","query":"Đất ruộng lúa cần cải tạo ra sao trước khi gieo?","label":"in_scope"}
+{"qid":"farm-scope-04","namespace":"farm","query":"Phân bón cho lúa giai đoạn làm đòng cần lưu ý gì?","label":"in_scope"}
+{"qid":"farm-scope-05","namespace":"farm","query":"Quản lý cỏ dại trong ruộng lúa như thế nào?","label":"in_scope"}
+{"qid":"farm-scope-06","namespace":"farm","query":"Sâu bệnh hại lúa thường phát sinh khi nào?","label":"in_scope"}
+{"qid":"farm-scope-07","namespace":"farm","query":"Lúa bị đạo ôn có triệu chứng gì?","label":"in_scope"}
+{"qid":"farm-scope-08","namespace":"farm","query":"Thu hoạch lúa đúng độ chín cần làm gì?","label":"in_scope"}
+{"qid":"farm-scope-09","namespace":"farm","query":"Bảo quản thóc sau thu hoạch ra sao?","label":"in_scope"}
+{"qid":"farm-scope-10","namespace":"farm","query":"Canh tác lúa giảm phát thải gồm những bước nào?","label":"in_scope"}
+{"qid":"farm-scope-11","namespace":"farm","query":"Lúa vùng hạn mặn cần quản lý nước thế nào?","label":"in_scope"}
+{"qid":"farm-scope-12","namespace":"farm","query":"Làm đất và gieo sạ lúa cần chuẩn bị gì?","label":"in_scope"}
+{"qid":"farm-scope-13","namespace":"farm","query":"Theo dõi sinh trưởng cây lúa như thế nào?","label":"in_scope"}
+{"qid":"farm-scope-14","namespace":"farm","query":"IPM trên ruộng lúa là gì?","label":"in_scope"}
+{"qid":"farm-scope-15","namespace":"farm","query":"Bệnh khô vằn trên lúa nhận biết thế nào?","label":"in_scope"}
+{"qid":"farm-scope-16","namespace":"farm","query":"Lúa hữu cơ cần quản lý đất và cỏ dại ra sao?","label":"in_scope"}
+{"qid":"farm-scope-17","namespace":"farm","query":"Kỹ thuật tưới tiết kiệm cho ruộng lúa?","label":"in_scope"}
+{"qid":"farm-scope-18","namespace":"farm","query":"Giống lúa ngắn ngày phù hợp điều kiện nào?","label":"in_scope"}
+{"qid":"farm-scope-19","namespace":"farm","query":"Sau thu hoạch cần sấy lúa thế nào?","label":"in_scope"}
+{"qid":"farm-scope-20","namespace":"farm","query":"Lúa bị vàng lá nên kiểm tra đất và dinh dưỡng gì?","label":"in_scope"}
+{"qid":"farm-scope-21","namespace":"farm","query":"Cỏ lúa ma trong ruộng xử lý ra sao?","label":"in_scope"}
+{"qid":"farm-scope-22","namespace":"farm","query":"Hạn và mặn ảnh hưởng đến cây lúa thế nào?","label":"in_scope"}
+{"qid":"farm-scope-23","namespace":"farm","query":"Mật độ gieo sạ lúa ảnh hưởng năng suất ra sao?","label":"in_scope"}
+{"qid":"farm-scope-24","namespace":"farm","query":"Bệnh tungro trên lúa do tác nhân nào?","label":"in_scope"}
+{"qid":"farm-scope-25","namespace":"farm","query":"Lá lúa phát triển qua những giai đoạn nào?","label":"in_scope"}
+{"qid":"farm-scope-26","namespace":"farm","query":"Ruộng lúa nhiều đạm dễ phát sinh bệnh gì?","label":"in_scope"}
+{"qid":"farm-scope-27","namespace":"farm","query":"Quản lý nước ruộng lúa theo mùa vụ?","label":"in_scope"}
+{"qid":"farm-scope-28","namespace":"farm","query":"An toàn trong sản xuất lúa cần chú ý gì?","label":"in_scope"}
+{"qid":"farm-scope-29","namespace":"farm","query":"VietGAP trong canh tác lúa gồm nội dung nào?","label":"in_scope"}
+{"qid":"farm-scope-30","namespace":"farm","query":"Phòng trừ sâu hại lúa theo IPM ra sao?","label":"in_scope"}
+{"qid":"lab-scope-01","namespace":"lab","query":"Cách kết nối WiFi HaUI?","label":"in_scope"}
+{"qid":"lab-scope-02","namespace":"lab","query":"Hướng dẫn sử dụng email trường?","label":"in_scope"}
+{"qid":"lab-scope-03","namespace":"lab","query":"Máy chiếu trong phòng học không hiển thị thì làm gì?","label":"in_scope"}
+{"qid":"lab-scope-04","namespace":"lab","query":"Quy trình sửa chữa thiết bị tin học?","label":"in_scope"}
+{"qid":"lab-scope-05","namespace":"lab","query":"Cách đổi mật khẩu tài khoản HaUI?","label":"in_scope"}
+{"qid":"lab-scope-06","namespace":"lab","query":"Hướng dẫn Faronics Insight?","label":"in_scope"}
+{"qid":"lab-scope-07","namespace":"lab","query":"Quy định sử dụng thư viện HaUI?","label":"in_scope"}
+{"qid":"lab-scope-08","namespace":"lab","query":"Sổ tay hệ thống đào tạo sinh viên?","label":"in_scope"}
+{"qid":"lab-scope-09","namespace":"lab","query":"Hướng dẫn an toàn thông tin trên máy tính cá nhân?","label":"in_scope"}
+{"qid":"lab-scope-10","namespace":"lab","query":"Tài khoản email sinh viên bị khóa xử lý thế nào?","label":"in_scope"}
+{"qid":"lab-scope-11","namespace":"lab","query":"Dịch vụ hỗ trợ thiết bị tin học gồm gì?","label":"in_scope"}
+{"qid":"lab-scope-12","namespace":"lab","query":"Quy định đánh giá kết quả học tập?","label":"in_scope"}
+{"qid":"lab-scope-13","namespace":"lab","query":"Mạng không dây trong trường cấu hình thế nào?","label":"in_scope"}
+{"qid":"lab-scope-14","namespace":"lab","query":"Phần mềm phòng máy cần hướng dẫn gì?","label":"in_scope"}
+{"qid":"lab-scope-15","namespace":"lab","query":"Liên hệ dịch vụ SICT ở đâu?","label":"in_scope"}
+{"qid":"farm-negative-01","namespace":"farm","query":"Xe ô tô nên thay dầu gì?","label":"out_of_scope"}
+{"qid":"farm-negative-02","namespace":"farm","query":"Tư vấn mua điện thoại mới?","label":"out_of_scope"}
+{"qid":"farm-negative-03","namespace":"farm","query":"Giá cổ phiếu hôm nay thế nào?","label":"out_of_scope"}
+{"qid":"farm-negative-04","namespace":"farm","query":"Đội bóng nào sẽ vô địch?","label":"out_of_scope"}
+{"qid":"farm-negative-05","namespace":"farm","query":"Lịch du lịch Đà Nẵng?","label":"out_of_scope"}
+{"qid":"farm-negative-06","namespace":"farm","query":"Cách nấu phở bò?","label":"out_of_scope"}
+{"qid":"farm-negative-07","namespace":"farm","query":"Bitcoin có nên mua không?","label":"out_of_scope"}
+{"qid":"farm-negative-08","namespace":"farm","query":"Viết bài thơ về mùa hè?","label":"out_of_scope"}
+{"qid":"farm-negative-09","namespace":"farm","query":"Kết quả bóng đá tối qua?","label":"out_of_scope"}
+{"qid":"farm-negative-10","namespace":"farm","query":"Sửa động cơ xe máy thế nào?","label":"out_of_scope"}
+{"qid":"farm-negative-11","namespace":"farm","query":"Phim nào hay cuối tuần này?","label":"out_of_scope"}
+{"qid":"farm-negative-12","namespace":"farm","query":"Thời tiết Hà Nội ngày mai?","label":"out_of_scope"}
+{"qid":"farm-negative-13","namespace":"farm","query":"Tư vấn mua bảo hiểm nhân thọ?","label":"out_of_scope"}
+{"qid":"farm-negative-14","namespace":"farm","query":"Cách học tiếng Anh giao tiếp?","label":"out_of_scope"}
+{"qid":"farm-negative-15","namespace":"farm","query":"Công thức làm bánh?","label":"out_of_scope"}
+{"qid":"lab-negative-01","namespace":"lab","query":"Xe ô tô nên thay dầu gì?","label":"out_of_scope"}
+{"qid":"lab-negative-02","namespace":"lab","query":"Cách nấu ăn cho gia đình?","label":"out_of_scope"}
+{"qid":"lab-negative-03","namespace":"lab","query":"Tư vấn mua điện thoại?","label":"out_of_scope"}
+{"qid":"lab-negative-04","namespace":"lab","query":"Bệnh đạo ôn trên lúa là gì?","label":"out_of_scope"}
+{"qid":"lab-negative-05","namespace":"lab","query":"Cách trồng rau thủy canh?","label":"out_of_scope"}
+{"qid":"lab-negative-06","namespace":"lab","query":"Giá vàng hôm nay?","label":"out_of_scope"}
+{"qid":"lab-negative-07","namespace":"lab","query":"Lịch thi đấu bóng đá?","label":"out_of_scope"}
+{"qid":"lab-negative-08","namespace":"lab","query":"Đặt phòng khách sạn?","label":"out_of_scope"}
+{"qid":"lab-negative-09","namespace":"lab","query":"Cách sửa xe máy?","label":"out_of_scope"}
+{"qid":"lab-negative-10","namespace":"lab","query":"Viết lời chúc sinh nhật?","label":"out_of_scope"}
+{"qid":"lab-negative-11","namespace":"lab","query":"Tư vấn dinh dưỡng?","label":"out_of_scope"}
+{"qid":"lab-negative-12","namespace":"lab","query":"Mua thuốc cảm ở đâu?","label":"out_of_scope"}
+{"qid":"lab-negative-13","namespace":"lab","query":"Kế hoạch du lịch miền Tây?","label":"out_of_scope"}
+{"qid":"lab-negative-14","namespace":"lab","query":"Cách chăm sóc cây cảnh?","label":"out_of_scope"}
+{"qid":"lab-negative-15","namespace":"lab","query":"Cách nấu phở bò?","label":"out_of_scope"}

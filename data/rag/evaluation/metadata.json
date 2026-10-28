@@ -1,5 +1,5 @@
 {
-  "dataset_version": "phase-1-pilot-v2",
+  "dataset_version": "chat-hybrid-pilot-v1",
   "status": "draft",
   "reviewer": null,
   "reviewed_at": null,
@@ -16,8 +16,8 @@
     "scope": "Chủ dự án xác nhận đã duyệt bộ câu hỏi và nhãn pilot hiện có khi chốt Phase 1."
   },
   "scope": {
-    "farm_qa": 12,
-    "lab_qa": 24,
+    "farm_qa": 27,
+    "lab_qa": 39,
     "farm_diagnostic": 6
   },
   "label_scale": {
@@ -27,7 +27,14 @@
   },
   "corpora": {
     "farm": "riceleafbd-v3-workbook-v1",
-    "lab": "lab-knowledge-v2"
+    "lab": "lab-knowledge-v2",
+    "farm_knowledge": "farm-knowledge-v1"
   },
-  "review_rule": "A domain reviewer must inspect the question and corpus chunks before seeing retrieval rankings."
+  "review_rule": "A domain reviewer must inspect the question and corpus chunks before seeing retrieval rankings.",
+  "additional_labels": {
+    "status": "draft",
+    "reviewer": null,
+    "scope": "30 câu tổng quan/diễn đạt gián tiếp và nhãn khởi tạo theo nội dung nguồn; chưa có rà nhãn độc lập hoặc duyệt mới.",
+    "original_pilot_questions": 42
+  }
 }

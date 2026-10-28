@@ -32,6 +32,7 @@ def versions() -> dict[str, str]:
             "transformers",
             "SQLAlchemy",
             "pgvector",
+            "rank-bm25",
         )
     }
 
@@ -43,14 +44,16 @@ def identifier(value: str) -> str:
 
 
 def prepare() -> None:
+    from evaluate_rag import code_identity, corpus_index, validate_snapshot
     from huggingface_hub import snapshot_download
     from psycopg import sql
     from sqlalchemy import create_engine, text
     from sqlalchemy.orm import Session
+
+    from app.core.config import get_settings
     from app.db.base import Base
     from app.db.models import document, document_chunk  # noqa: F401
-    from app.rag.ingestion_service import CORPORA, ingest_corpus
-    from evaluate_rag import corpus_index, validate_snapshot
+    from app.rag.ingestion_service import CORPORA, ingest_corpus, selected_corpora
 
     cache = Path("/cache")
     model = cache / "model"
@@ -71,12 +74,39 @@ def prepare() -> None:
         write(
             cache / "model-source.json", {"source": source, "snapshot": str(snapshot)}
         )
+    reranker = cache / "reranker"
+    reranker_source = os.environ["EVAL_RERANKER_MODEL"]
+    if reranker.exists():
+        if read(cache / "reranker-source.json")["source"] != reranker_source:
+            raise ValueError(
+                "Cached reranker source mismatch; use separate evaluation state"
+            )
+    else:
+        snapshot = Path(
+            snapshot_download(
+                reranker_source,
+                allow_patterns=["*.json", "*.txt", "*.model", "*.safetensors"],
+                ignore_patterns=["onnx/*", "openvino/*"],
+            )
+        )
+        reranker.symlink_to(snapshot, target_is_directory=True)
+        write(
+            cache / "reranker-source.json",
+            {"source": reranker_source, "snapshot": str(snapshot)},
+        )
     # All consumers now use the same immutable local snapshot, without a remote check.
     os.environ["HF_HUB_OFFLINE"] = "1"
     output = Path("/artifacts") / os.environ["EVAL_RUN"] / "ingest.json"
     expected = corpus_index()
     signature = {
         "source_model": read(cache / "model-source.json"),
+        "reranker": read(cache / "reranker-source.json"),
+        "chat_profiles": read(Path("/workspace/data/rag/chat_profiles.json")),
+        "chat_runtime": {
+            k: v
+            for k, v in get_settings().model_dump().items()
+            if k.startswith("chat_") and k != "chat_retrieval_strategy"
+        },
         "runtime_versions": versions(),
         "corpora": {k: c.version for k, c in CORPORA.items()},
         "snapshot": [[list(k), v] for k, v in sorted(expected.items())],
@@ -122,7 +152,7 @@ def prepare() -> None:
                 refresh = True
     if refresh:
         with Session(engine) as db:
-            for corpus in CORPORA.values():
+            for corpus in selected_corpora():
                 ingest_corpus(db, corpus)
         write(previous, signature)
     with Session(engine) as db:
@@ -141,8 +171,12 @@ def prepare() -> None:
     write(
         output,
         {
+            "code_identity": code_identity(),
             "embedding_model": str(model),
             "source_model": source,
+            "reranker": signature["reranker"],
+            "chat_profiles": signature["chat_profiles"],
+            "chat_runtime": signature["chat_runtime"],
             "model_artifact": str(model.resolve()),
             "corpora": signature["corpora"],
             "runtime_versions": signature["runtime_versions"],
@@ -161,14 +195,17 @@ def check_benchmark(path: Path) -> None:
 
     data = read(path / "benchmark.json")
     expected = {
-        (ns, vu, rep) for ns in ("farm", "lab") for vu in (1, 2, 5) for rep in (1, 2, 3)
+        (ns, vu, rep)
+        for ns in ("farm", "lab")
+        for vu in (1, 2, 5)
+        for rep in range(1, data["repeats"] + 1)
     }
     if (
         not data.get("completed_at")
-        or len(data["trials"]) != 18
+        or len(data["trials"]) != data["repeats"] * 6
         or {(t["namespace"], t["vus"], t["repeat"]) for t in data["trials"]} != expected
     ):
-        raise ValueError("Incomplete 18-trial benchmark; artifacts retained")
+        raise ValueError("Incomplete benchmark; artifacts retained")
     failed = False
     for trial in data["trials"]:
         folder = path / trial["directory"]
@@ -190,7 +227,7 @@ def check_benchmark(path: Path) -> None:
         raise ValueError(
             "Benchmark contains failed trials/responses; artifacts retained"
         )
-    print(f"Verified 18 trials / {sum(t['requests'] for t in data['trials'])} requests")
+    print(f"Verified {len(data['trials'])} trials / {sum(t['requests'] for t in data['trials'])} requests")
 
 
 def self_check() -> None:
@@ -204,14 +241,68 @@ def self_check() -> None:
     print("prepare self-check: PASS")
 
 
+def compare_quality(root: Path) -> None:
+    import csv
+    import html
+
+    variants = ("legacy", "bm25", "hybrid", "hybrid_rerank")
+    datasets, rows = [], []
+    for strategy in variants:
+        matches = list(root.glob(f"quality-{strategy}-*/score.json"))
+        if len(matches) != 1:
+            raise ValueError("Expected exactly one score file per strategy")
+        result = read(matches[0])
+        payload = read(matches[0].parent / "collect.json")
+        datasets.append((payload["dataset"], payload["snapshot"], payload["questions"]))
+        if datasets[-1] != datasets[0]:
+            raise ValueError("Cannot compare different datasets or corpus snapshots")
+        for group in result["groups"]:
+            rows.append(
+                dict(
+                    strategy=strategy,
+                    group=group["group"],
+                    k=group["k"],
+                    recall=group["macro_average"][f"Recall@{group['k']}"],
+                    ndcg=group["macro_average"][f"nDCG@{group['k']}"],
+                )
+            )
+    write(root / "comparison.json", {"status": datasets[0][0]["status"], "rows": rows})
+    with (root / "comparison.csv").open("w") as f:
+        writer = csv.DictWriter(f, fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
+    table = "".join(
+        "<tr>"
+        + "".join("<td>" + html.escape(str(v)) + "</td>" for v in row.values())
+        + "</tr>"
+        for row in rows
+    )
+    (root / "comparison.html").write_text(
+        '<!doctype html><meta charset="utf-8"><title>RAG comparison</title><style>body{font:16px system-ui;margin:32px}td,th{padding:10px;border:1px solid #ccc}table{border-collapse:collapse}</style><h1>RAG strategy comparison</h1><p>Dataset status: '
+        + html.escape(datasets[0][0]["status"])
+        + ". Scores measure retrieval, not generated-answer accuracy.</p><table><thead><tr><th>Strategy</th><th>Group</th><th>k</th><th>Recall</th><th>nDCG</th></tr></thead><tbody>"
+        + table
+        + "</tbody></table>"
+    )
+    print(
+        "Strategy comparison: comparison.json / comparison.csv / comparison.html",
+        flush=True,
+    )
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("prepare", "check-benchmark", "self-check"))
+    parser.add_argument(
+        "command",
+        choices=("prepare", "check-benchmark", "compare-quality", "self-check"),
+    )
     parser.add_argument("values", nargs="*")
     args = parser.parse_args()
     if args.command == "prepare":
         prepare()
     elif args.command == "check-benchmark":
         check_benchmark(Path(args.values[0]))
+    elif args.command == "compare-quality":
+        compare_quality(Path(args.values[0]))
     else:
         self_check()

@@ -24,7 +24,7 @@ Chẩn đoán AI do kỹ sư kích hoạt trên web; nông dân thấy "Chờ ch
 - **Tạo vụ:** chỉ với thửa đã duyệt; chọn giống từ danh mục, ngày bắt đầu và loại vụ; ngày thu hoạch gợi ý do Backend tính, chọn ngoài khoảng gợi ý phải nêu lý do.
 - **Thời tiết:** thẻ ở màn thửa đã duyệt có vị trí, hiện thời tiết hiện tại và dự báo 3 ngày; mất mạng thì chỉ thẻ này báo lỗi.
 - **Hỏi đáp tài liệu:** màn `/knowledge` hỏi kho tài liệu bệnh lúa, mỗi tài liệu một thẻ dạng danh sách trường kèm nguồn và giấy phép; cần mạng.
-- **Tài liệu tham khảo của chẩn đoán:** chi tiết báo cáo đã duyệt có thêm khối "Thông tin tham khảo từ tài liệu", mỗi tài liệu một thẻ; chỉ để tham khảo, thuốc và liều vẫn lấy từ phác đồ đã xác thực.
+- **Giải thích và tài liệu chẩn đoán:** chi tiết báo cáo đã duyệt hiển thị lời giải thích Qwen được chấp nhận và khối "Thông tin tham khảo từ tài liệu", mỗi tài liệu một thẻ; thuốc và liều vẫn lấy từ phác đồ đã xác thực; phần Qwen dự phòng được ẩn.
 - **Hộp thông báo:** `GET /api/v1/notifications` (30 mỗi trang, cuộn tới cuối thì tải trang kế), hỏi số chưa đọc khi mở app, khi foreground, khi quay lại màn Thửa và khi kéo làm mới; không có push.
 - **Thu hoạch:** đọc `harvest-readiness`, thu hoạch trước ngày dự kiến phải xác nhận kèm lý do, vụ còn cách ly thì khóa gửi; có màn đổi ngày dự kiến kèm lý do.
 - **Khai phun:** ở chi tiết báo cáo đã duyệt, nông dân nhập liều và ngày phun, chờ kỹ sư xác nhận (trong lúc chờ chưa thu hoạch được); bị từ chối thì khai lại.

@@ -12,7 +12,7 @@ Chỉ phụ thuộc `dx-core-api`; khởi động khi `DXOS_APP=farm` (giá tr�
 | Báo cáo sâu bệnh | Nông dân gửi ảnh lá (kiểm tra chất lượng và nhận diện lúa, idempotency, chụp lại theo yêu cầu) |
 | Chẩn đoán | Kỹ sư chạy chẩn đoán AI hoặc nhập tay, tra rule thuốc có cấu trúc, duyệt; nông dân chỉ thấy kết quả sau khi duyệt; danh sách báo cáo chưa chẩn đoán cho kỹ sư |
 | Phun thuốc | Nông dân khai phun, kỹ sư xác nhận, vụ vào cách ly và thu hoạch bị khóa tới hết PHI |
-| Tri thức | Hỏi đáp tài liệu bệnh lúa có trích nguồn (RAG namespace `farm`) |
+| Tri thức | Hỏi đáp tài liệu bệnh lúa có trích nguồn; `includeAnswer=true` thêm trả lời Qwen (namespace `farm`) |
 | Thời tiết | Dự báo theo thửa từ Open-Meteo, snapshot dự phòng khi không gọi được; mỗi giờ lưu số đo thật của từng vị trí thửa cho chart Superset |
 
 ## Vai
@@ -42,6 +42,7 @@ Cột trạng thái trên bảng của Farm phản chiếu trạng thái đó.
 - Thu hoạch trước ngày dự kiến cần xác nhận kèm lý do (`HARVEST_TOO_EARLY`).
 - Ảnh trắng hoặc không phải lúa không qua kiểm tra chất lượng; ảnh được xóa EXIF trước khi lưu.
 - Liều và PHI chỉ lấy từ `TreatmentRule` đã được chuyên gia duyệt; bệnh chưa có rule chỉ ở trạng thái `review_required`.
+- `includeExplanation=true` khi chẩn đoán AI lưu lời giải thích riêng cùng diagnosis; nông dân chỉ xem sau duyệt, đọc lại không gọi Qwen.
 - Bản khai phun chờ kỹ sư xác nhận quá `app.treatment-confirmation-wait-hours` giờ được nhắc lên kênh kỹ sư mỗi sáng tới khi có quyết định.
 - Báo cáo đang có lượt chẩn đoán AI chạy dở thì lượt chẩn đoán AI thứ hai trả `409` ngay, không gọi AI lần nữa.
 - Bản khai phun chờ kỹ sư xác nhận thì chặn thu hoạch (`TREATMENT_PENDING_CONFIRMATION`); sau khi xác nhận, thu hoạch bị chặn tới `harvestLockedUntil` (`POKA_YOKE_VIETGAP_VIOLATION`).

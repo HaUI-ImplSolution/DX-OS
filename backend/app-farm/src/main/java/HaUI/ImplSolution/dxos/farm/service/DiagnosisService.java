@@ -32,6 +32,7 @@ import HaUI.ImplSolution.dxos.farm.model.Disease;
 import HaUI.ImplSolution.dxos.farm.model.DiagnosisSource;
 import HaUI.ImplSolution.dxos.farm.model.DiseaseReport;
 import HaUI.ImplSolution.dxos.farm.model.DiseaseReportStatus;
+import HaUI.ImplSolution.dxos.core.api.ai.GeneratedAnswer;
 import HaUI.ImplSolution.dxos.farm.model.KnowledgeEvidence;
 import HaUI.ImplSolution.dxos.farm.model.NotificationType;
 import HaUI.ImplSolution.dxos.farm.model.TrainingLabel;
@@ -146,15 +147,21 @@ public class DiagnosisService {
   // also dropped with 409 when another diagnosis was saved while the AI was working.
   @Transactional(propagation = Propagation.NOT_SUPPORTED)
   public DiagnosisResponse createFromAi(Long reportId) {
+    return createFromAi(reportId, false);
+  }
+
+  @Transactional(propagation = Propagation.NOT_SUPPORTED)
+  public DiagnosisResponse createFromAi(Long reportId, boolean includeExplanation) {
     if (!aiRunning.add(reportId)) {
       throw new InvalidStateException(
           "AI diagnosis is already running for this report; wait for it to finish, then reload");
     }
     try {
       PreparedDiagnosis prepared = prepareDiagnosis(reportId);
-      AiDiagnoseResponse response = aiDiagnosisClient.diagnose(prepared.request());
-      return writeTransaction
-          .execute(status -> saveAiDiagnosis(reportId, prepared.latestId(), response));
+      AiDiagnoseResponse response =
+          aiDiagnosisClient.diagnose(prepared.request().withExplanation(includeExplanation));
+      return writeTransaction.execute(
+          status -> saveAiDiagnosis(reportId, prepared.latestId(), response, includeExplanation));
     } finally {
       aiRunning.remove(reportId);
     }
@@ -173,7 +180,7 @@ public class DiagnosisService {
   private record PreparedDiagnosis(AiDiagnoseRequest request, Long latestId) {}
 
   private DiagnosisResponse saveAiDiagnosis(Long reportId, Long previousId,
-      AiDiagnoseResponse aiResponse) {
+      AiDiagnoseResponse aiResponse, boolean includeExplanation) {
     DiseaseReport report = findActiveReportOrThrow(reportId);
     entityManager.lock(report, LockModeType.PESSIMISTIC_WRITE);
     requireUsableReport(report);
@@ -209,8 +216,26 @@ public class DiagnosisService {
         .confidence(cvResult.confidence())
         .modelVersion(cvResult.modelName() + " " + cvResult.modelVersion())
         .treatmentRule(currentRule).knowledgeEvidence(toKnowledgeEvidence(aiResponse.ragEvidence()))
+        .generatedExplanation(includeExplanation ? validExplanation(aiResponse) : null)
         .source(DiagnosisSource.AI).approvalStatus(ApprovalStatus.PENDING).build();
     return savePending(diagnosis);
+  }
+
+  private static GeneratedAnswer validExplanation(AiDiagnoseResponse response) {
+    GeneratedAnswer answer = response.generatedExplanation();
+    if (answer == null) {
+      return null;
+    }
+    Set<String> sources = new LinkedHashSet<>();
+    if (response.ragEvidence() != null) {
+      response.ragEvidence().stream().filter(p -> p.sourceIds() != null)
+          .forEach(p -> sources.addAll(p.sourceIds()));
+    }
+    if (!answer.supportedBy(sources) || answer.mode().equals("generated")
+        && !"farm_diagnosis-v2".equals(answer.promptVersion())) {
+      return GeneratedAnswer.fallback(!sources.isEmpty(), "conflicting_output");
+    }
+    return answer;
   }
 
   // Source ids are resolved against the catalogue when saved so the passage keeps its citations.
@@ -718,7 +743,7 @@ public class DiagnosisService {
         diagnosis.getTreatmentRule() != null
             ? TreatmentRuleService.toResponse(diagnosis.getTreatmentRule())
             : null,
-        toPassages(diagnosis));
+        toPassages(diagnosis), diagnosis.getGeneratedExplanation());
   }
 
   private static List<KnowledgeAnswerResponse.Passage> toPassages(Diagnosis diagnosis) {

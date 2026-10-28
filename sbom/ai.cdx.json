@@ -1604,6 +1604,20 @@
       "purl": "pkg:pypi/zstandard@0.25.0",
       "type": "library",
       "version": "0.25.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/rank-bm25@0.2.2",
+      "name": "rank-bm25",
+      "version": "0.2.2",
+      "type": "library",
+      "purl": "pkg:pypi/rank-bm25@0.2.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ]
     }
   ],
   "dependencies": [
@@ -1927,6 +1941,9 @@
     },
     {
       "ref": "requirements-L125"
+    },
+    {
+      "ref": "pkg:pypi/rank-bm25@0.2.2"
     }
   ],
   "metadata": {

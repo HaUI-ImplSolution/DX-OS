@@ -11,7 +11,8 @@ Backend → POST /api/v1/diagnose
             ├─ CV nhận diện disease_code
             ├─ Backend REST trả structured facts (treatment rule, liều, PHI)
             ├─ pgvector trả RAG evidence
-            └─ LangGraph chọn rule và trả evidence → Backend kiểm tra rule version và lưu
+            ├─ LangGraph chọn rule và trả evidence
+            └─ Qwen giải thích khi được yêu cầu → Backend kiểm tra rule version và lưu
 ```
 
 | Thành phần | Vai trò | Tài liệu |
@@ -19,6 +20,21 @@ Backend → POST /api/v1/diagnose
 | Computer Vision | EfficientNetV2-M phân loại Healthy và 5 bệnh lá lúa, crop classifier kiểm ảnh là lúa | [`app/cv`](app/cv/README.md) |
 | RAG | Tra cứu tài liệu trong PostgreSQL/pgvector, trả evidence kèm nguồn | [`app/rag`](app/rag/README.md) |
 | LangGraph | Điều phối một lượt suy luận, không lưu trạng thái | [`app/graph`](app/graph/README.md) |
+
+## Luồng chatbot
+
+```text
+Farm/Lab → KnowledgeGateway → AiGateway → AI search
+  BM25 + cosine pgvector → RRF → multilingual MiniLM rerank
+Backend gộp evidence, ánh xạ nguồn
+Farm/Lab → AiGateway → Qwen → câu trả lời có cấu trúc và nguồn
+```
+
+Farm/Lab dùng chung bộ máy RAG trong AI Service, với namespace và policy ở `data/rag/chat_profiles.json`.
+AiGateway giữ vai trò kết nối HTTP; thuốc, liều, PHI và phê duyệt vẫn do Backend quyết định.
+Chẩn đoán và gợi ý ticket dùng endpoint retrieve legacy, không qua hybrid chatbot.
+`app/rag/chat_search.py:outside_scope` là gate duy nhất của chatbot hybrid; `scope_gate.py` chỉ giữ cho đường RAG legacy và không được dùng để thay thế policy chatbot.
+Backend không tự phân loại lại scope.
 
 ## API
 
@@ -30,6 +46,8 @@ Backend → POST /api/v1/diagnose
 | `POST` | `/api/v1/disease/predict` | Ảnh multipart: kết quả CV |
 | `POST` | `/api/v1/disease/symptoms/suggest` | `symptom_text`, `top_k` 1–6: mã bệnh có score, evidence và source IDs |
 | `POST` | `/api/v1/disease/knowledge/retrieve` | Truy vấn RAG theo câu hỏi, `namespace` (mặc định `farm`), `disease_code` và `document_type` tùy chọn |
+| `POST` | `/api/v1/knowledge/search` | Chatbot hybrid; trả scope, evidence, ranking từng tầng và thời gian xử lý |
+| `POST` | `/api/v1/knowledge/answer` | Tổng hợp câu trả lời từ evidence do Backend cung cấp, namespace `farm` hoặc `lab` |
 | `POST` | `/api/v1/diagnose` | Contract nội bộ Backend → AI |
 
 - Mọi endpoint trừ `health` và `class-contract` yêu cầu header `X-Service-Api-Key` khớp `AI_SERVICE_API_KEY`: thiếu hoặc sai key trả `401`, chưa cấu hình key trả `503` (fail-closed).
@@ -38,7 +56,10 @@ Backend → POST /api/v1/diagnose
   Request không có mã hợp lệ thì AI tự sinh mã mới.
 - `diagnose` tải ảnh từ `image_url`, chạy CV, lấy structured facts, truy vấn RAG và trả recommendation; thiếu structured facts thì request thất bại, AI không đưa recommendation chỉ dựa trên RAG.
 - Request có `request_id`, `crop_season_id`, `image_url`, `field_context`; response có `request_id`, `cv_result`, `rag_evidence`, `structured_context`, `recommendation`.
-- Mỗi phần tử `rag_evidence` có `content`, `document_title`, `chunk_index` (vị trí đoạn trong tài liệu), `source_ids`, `similarity`; `recommendation` chỉ có `selected_rule_id` và `requires_engineer_approval`, AI không tạo đoạn văn tổng hợp.
+- Mỗi phần tử `rag_evidence` có `content`, `document_title`, `chunk_index` (vị trí đoạn trong tài liệu), `source_ids`, `similarity`; `recommendation` chỉ có `selected_rule_id` và `requires_engineer_approval`.
+- `include_explanation=true` bổ sung `generated_explanation`, tách khỏi recommendation và evidence; không gửi flag thì giữ response hiện có.
+- Phần sinh gồm `summary`, `steps`, `note`, `source_ids`, mode, reason và metadata model/prompt; kiểm schema, nguồn và nhất quán bệnh trước khi chấp nhận.
+Chẩn đoán ẩn phần sinh không đạt; chatbot web dùng thông báo theo lý do, giữ nguồn ở mục tham khảo riêng.
 - Thuốc, `dose_min`/`dose_max`, `dose_unit`, `phi_days`, `version` giữ nguyên từ structured facts.
 - Contract được khóa bởi DTO `AiDiagnoseRequest`, `AiDiagnoseResponse` của `app-farm` và schema `app/api/schemas.py`; `scripts/check_diagnose_contract.py` kiểm tương thích hai phía.
 
@@ -61,7 +82,7 @@ Compose lấy từ [`deploy/.env.example`](../deploy/.env.example); chạy local
 | `AI_SERVICE_API_KEY` | Key Backend phải gửi khi gọi AI |
 | `BACKEND_TIMEOUT_SECONDS`, `BACKEND_MAX_ATTEMPTS`, `BACKEND_RETRY_BACKOFF_SECONDS` | Timeout, tổng số lần gọi Backend và khoảng nghỉ giữa các lần thử (mặc định 3 giây, 2 lần, 0,2 giây) |
 | `LOG_LEVEL` | Mức log, mặc định `INFO`; Compose đặt qua `AI_LOG_LEVEL` |
-| `OLLAMA_BASE_URL`, `OLLAMA_MODEL` | LLM diễn đạt câu trả lời hỏi đáp tri thức |
+| `OLLAMA_BASE_URL`, `OLLAMA_MODEL` | Qwen tổng hợp hỏi đáp web Farm/Lab và giải thích chẩn đoán Farm |
 | `EMBEDDING_MODEL` | Embedding dùng chung cho ingest và retrieval |
 | `CV_DEVICE` | `auto`, `cpu` hoặc `cuda` |
 | `CV_WEIGHTS_PATH`, `CV_WEIGHTS_SHA256` | Checkpoint `ai/models/efficientnetv2m_rice_disease.pth` khi chạy local; trong image là `/opt/dxos/models/efficientnetv2m_rice_disease.pth`; SHA-256 bắt buộc khi nạp |
@@ -92,7 +113,7 @@ docker compose up -d --build postgres backend ai
 
 ### Ingest RAG
 
-Corpus đã duyệt ở `data/rag/processed/disease_knowledge.json` (Farm) và `data/rag/lab/processed/lab_knowledge.json` (Lab), cùng registry nguồn:
+Corpus đã duyệt ở `data/rag/processed/disease_knowledge.json`, phần Farm chỉ được nạp từ `farm_knowledge.json` sau khi review hoàn tất, và `data/rag/lab/processed/lab_knowledge.json` (Lab), cùng registry nguồn:
 
 ```bash
 export RAG_INGEST_DATABASE_URL=postgresql+psycopg://<ingest-user>:<password>@<host>:5432/dxos_ai_vector_db
@@ -101,63 +122,77 @@ python -m scripts.ingest_diseases                      # corpus farm
 python -m scripts.ingest_diseases --corpus lab         # corpus lab
 ```
 
-Mỗi lần ingest thay thế tài liệu của đúng namespace của nó.
+Lệnh Farm nạp corpus bệnh và phần kiến thức tổng quát đã duyệt; Lab nạp corpus Lab.
+Ingest thay đúng namespace + document_type, kể cả corpus đã thu hồi hết tài liệu, và chuẩn bị reranker trong cache Hugging Face hiện có; lần chạy sau dùng cache, request không tải model.
+Thiếu cache reranker không chặn khởi động CV; search chatbot trả trạng thái `RERANK_UNAVAILABLE` cho đến khi model sẵn sàng.
+Cấu hình chatbot mặc định nằm trong `app/core/config.py`; `CHAT_RETRIEVAL_STRATEGY`, `CHAT_RERANKER_MODEL`, `CHAT_CANDIDATE_COUNT`, `CHAT_COSINE_MIN_SCORE` và `CHAT_RERANK_MIN_SCORE` cho phép điều chỉnh khi đánh giá, không đổi cấu hình diagnosis.
 Đổi embedding model hoặc số chiều vector thì phải ingest lại toàn bộ corpus.
 
 ### Đánh giá truy xuất RAG
 
-Từ thư mục gốc repository, trên Linux x86_64 có Bash, Docker Engine local và Docker Compose:
+Chạy từ thư mục gốc repository, trên Linux x86_64 có Bash, Docker Engine và Docker Compose:
 
 ```bash
 ./ai/evaluate.sh quality
 ```
 
-Lệnh tự chuẩn bị database đánh giá riêng, cache model embedding, công cụ chấm và Langfuse local; host không cần cài Python, k6 hoặc tạo env/tài khoản thủ công.
-Cần tối thiểu 2.500 MiB RAM trống; đĩa trống tối thiểu 16 GiB khi thiếu image, 6 GiB khi đã có cache, trên cả phân vùng state và Docker.
-Lần đầu cần mạng để tải/build; các lần sau dùng lại image và snapshot model.
-Giá trị mặc định ở [`evaluation/.env.example`](evaluation/.env.example); thư mục state mặc định là `~/.local/share/dx-os-rag-evaluation-runner/`, có thể chọn bằng `EVAL_STATE_DIR`.
+Lệnh tạo database đánh giá riêng, nạp tri thức, chấm bằng `ir_measures` và hiển thị kết quả trên Langfuse local.
+Có thể chạy khi chưa bật Farm/Lab; không cần cài Python, k6 hoặc tạo tài khoản Langfuse thủ công.
+Lần đầu cần mạng để tải image và model; các lần sau dùng cache.
+Cần ít nhất 2.500 MiB RAM trống và 16 GiB đĩa trống (6 GiB nếu đã có cache), trên cả phân vùng state và Docker.
 
-Bộ đề gồm 36 câu hỏi đáp và 6 lượt tham khảo chẩn đoán, được chủ dự án duyệt cùng nhãn pilot.
-Chấm Recall/nDCG tại đầu ra retriever, trước ngưỡng và gộp tài liệu của Backend; việc rà đầy đủ nhãn và tái lập độc lập ở [`BACKLOG`](../docs/BACKLOG.md).
-Không cần bật stack Farm/Lab để chạy đánh giá.
+Bộ đề gồm 66 câu hỏi đáp và 6 câu tham khảo chẩn đoán, so sánh cosine, BM25, hybrid/RRF và hybrid + rerank.
+Trong đó, 42 câu pilot đã được chủ dự án duyệt; 30 câu mở rộng còn dùng nhãn nháp.
+Chatbot được chấm sau bước lọc truy xuất, trước khi Backend gộp đoạn; chẩn đoán dùng retriever hiện có.
+Kết quả và ý nghĩa chỉ số ở [`docs/AI_EVALUATION.md`](../docs/AI_EVALUATION.md#7-đánh-giá-truy-xuất-rag).
 
-Sau đo, AI/database đánh giá được dừng.
-Terminal in link Langfuse, link báo cáo, tài khoản local và thư mục kết quả; trong Experiments, bật Expected Output, Output và score để đối chiếu nhãn, chunk và điểm.
-Trace là replay kết quả đã lưu; thời gian trace publish không phải thời gian truy xuất.
+Sau khi đo, AI và database đánh giá được dừng; terminal in link Langfuse, tài khoản local và thư mục kết quả.
+Trong Experiments, bật **Expected Output**, **Output** và **score** để đối chiếu nhãn, đoạn truy xuất và điểm.
+Langfuse phát lại kết quả đã lưu; thời gian trace không dùng làm thời gian truy xuất.
 
-Nhấn Enter hoặc hết 600 giây thì tự down riêng môi trường đánh giá.
-Nếu stdin không phải terminal tương tác, lệnh publish và down ngay.
-Cache, volume, tài khoản và lịch sử được giữ; mở lại bằng `./ai/evaluate.sh view`.
-Khi phiên bị mất do tắt máy hoặc `SIGKILL`, dùng `./ai/evaluate.sh down` để dọn phiên dở.
-Không chạy `down` từ terminal khác khi phiên đang hoạt động; dùng Enter/Ctrl+C tại terminal của phiên đó.
+Nhấn Enter hoặc chờ 600 giây để tự dừng môi trường đánh giá; khi chạy không tương tác, lệnh kết thúc và dừng ngay sau khi publish.
+Dữ liệu, cache và lịch sử được giữ để mở lại:
 
-Mỗi lượt có thư mục mới dưới `state/runs/`, gồm thông tin ingest/model/runtime, bộ nhãn, `quality-*/collect.json`, `run.trec`, `qrels.trec`, `score.json`, receipt publish, log dịch vụ và `status.json`.
-Cấu hình/credential nằm ngoài Git; không chia sẻ `evaluation.env`.
+```bash
+./ai/evaluate.sh view   # xem kết quả đã lưu
+./ai/evaluate.sh down   # dọn phiên còn lại sau khi tắt máy hoặc tiến trình bị dừng đột ngột
+```
 
-CLI thấp tầng vẫn dùng độc lập trong môi trường AI/đánh giá tương ứng: `scripts/evaluate_rag.py collect/score/publish`; `--ingest-record`, `--collect`, `--score-file` và `--output` trỏ tới artifact ngoài repository.
-`publish --dry-run` kiểm đầu ra trước khi gửi.
-Kiểm công cụ bằng `./ai/evaluate.sh --self-check`; cách đọc chỉ số ở [`docs/TESTING.md`](../docs/TESTING.md#đánh-giá-truy-xuất-rag).
+Khi phiên đang chạy, dùng Enter hoặc Ctrl+C tại terminal đó để dừng.
+Cấu hình mặc định ở [`evaluation/.env.example`](evaluation/.env.example).
+State lưu tại `~/.local/share/dx-os-rag-evaluation-runner/`, đổi bằng `EVAL_STATE_DIR`.
+Mỗi lần chạy có thư mục `runs/` riêng chứa cấu hình đo, bộ nhãn, `collect.json`, `run.trec`, `qrels.trec`, `score.json` và log.
+Credential nằm ngoài repository; không chia sẻ `evaluation.env`.
+
+Các lệnh `scripts/evaluate_rag.py collect/score/publish` vẫn dùng độc lập; `publish --dry-run` kiểm đầu ra trước khi gửi.
+Kiểm công cụ bằng `./ai/evaluate.sh --self-check`.
 
 ### Thử tải HTTP retrieval
 
 ```bash
 ./ai/evaluate.sh performance
-# Chấm chất lượng và đo tải tuần tự, dùng chung bước chuẩn bị:
-./ai/evaluate.sh all
+./ai/evaluate.sh all           # chấm truy xuất rồi đo tải
 ```
 
-Dùng k6 gọi endpoint retrieval thật: Farm/Lab chạy riêng 1/2/5 VU, 30 giây/mức, lặp ba lần, tổng 18 lượt; làm nóng model trước đo.
-Mỗi VU đợi phản hồi rồi gửi tiếp, không think time.
-CPU/RAM lấy mẫu bằng Docker; Langfuse chỉ bật sau đo, khi AI/vector đã dừng.
+k6 gọi endpoint search của AI với cấu hình mặc định:
 
-Kết quả nằm trong `performance-*/`: `benchmark.json` và mỗi lượt có `summary.json`, `metrics.json.gz`, `resources.json`, `k6.log`, `dashboard.html`.
-Báo cáo HTML mở qua link local terminal in ra; Langfuse hiển thị tóm tắt từng lượt cùng cấu hình và score latency/RPS/lỗi/CPU/RAM.
-`SUMMARY/AVG` của p95 là trung bình p95 các lượt, không phải p95 chung của mọi request.
+| Tham số | Giá trị |
+|---|---|
+| Phương pháp | Cosine và hybrid + rerank, chạy lần lượt cho Farm/Lab |
+| Tải | 1, 2, 5 người dùng đồng thời; mỗi người đợi phản hồi rồi gửi tiếp |
+| Thời lượng | 30 giây mỗi mức, lặp ba lần; tổng 36 lượt, làm nóng model trước đo |
+| Timeout | HTTP 20 giây; chờ hàng đợi rerank tối đa 12 giây |
+| Tài nguyên | AI 2 CPU/1.536 MiB, một worker, Torch hai thread; pgvector 1 CPU/256 MiB |
 
-Phép đo chỉ gồm AI HTTP retrieval, tắt CV lifespan, một worker, Torch hai thread; mặc định AI 2 CPU/1536 MiB, vector 1 CPU/256 MiB.
-Chưa gồm Backend, gateway, LLM hoặc mạng điện thoại; không dùng kết quả để kết luận năng lực production.
-Điều kiện cache và tự down giống lệnh `quality`; trial lỗi vẫn giữ artifact và lệnh trả mã lỗi.
-Xem phương pháp/kết quả ở [`docs/TESTING.md`](../docs/TESTING.md#thử-tải-http-retrieval).
+Phép đo chỉ gồm HTTP retrieval của AI; CV bị tắt, Backend/gateway và Qwen không nằm trong phép đo.
+CPU/RAM được lấy mẫu bằng Docker.
+
+Terminal in link báo cáo HTML và Langfuse; mỗi lượt lưu số liệu k6, tài nguyên và log trong `performance-*/`.
+Langfuse hiển thị độ trễ, số yêu cầu mỗi giây, lỗi và CPU/RAM; chỉ khởi động sau khi đo xong và AI/database đánh giá đã dừng.
+Giá trị p95 ở dòng `SUMMARY/AVG` là trung bình p95 của các lượt.
+
+Môi trường tự dừng như lệnh `quality`; lượt lỗi vẫn giữ kết quả và trả mã lỗi.
+Phương pháp và kết quả đo ở [`docs/AI_EVALUATION.md`](../docs/AI_EVALUATION.md#8-thử-tải-http-retrieval).
 
 ## Kiểm tra
 
@@ -169,10 +204,11 @@ Chạy từ `ai/`:
 | `python -m scripts.check_backend_client` | Client Backend: retry giới hạn, không retry khi 401, đọc khoảng liều |
 | `python -m scripts.check_diagnose_contract` | Luồng `diagnose` đúng thứ tự CV, Backend, RAG; `recommendation` chỉ có rule được chọn và cờ duyệt, evidence có tên tài liệu |
 | `python -m scripts.check_rag_access_boundary` | Việc ghi RAG nằm ngoài runtime FastAPI |
+| `python -m unittest discover -s tests -p test_generated_answers.py` | Hợp đồng phần sinh, nguồn, dự phòng, service key và opt-in chẩn đoán |
 
 ## Giới hạn và giấy phép
 
 - CV nhận diện Healthy và 5 bệnh lá lúa; accuracy 89,43% trên 1.466 ảnh theo báo cáo người huấn luyện, chưa phải accuracy toàn pipeline; kỹ sư chốt bệnh tại Backend.
-- RAG chỉ tìm được kiến thức đã ingest; Ollama lỗi hoặc timeout thì trả evidence nguyên văn.
+- RAG chỉ tìm được kiến thức đã ingest; Ollama lỗi hoặc quá ngân sách 20 giây thì không hiển thị nội dung sinh, giữ evidence nguyên văn.
 - `ai/` phân phối theo AGPL-3.0 ([`LICENSE`](./LICENSE)); Backend gọi AI qua HTTP nên không là tác phẩm phái sinh.
   Danh sách thành phần ở [`LICENSES.md`](../LICENSES.md).

@@ -19,7 +19,8 @@ resolve_request → cv_diagnosis → load_field_context → treatment_lookup
 | `retrieve_knowledge` | Chỉ đọc `documents`, `document_chunks` |
 | `generate_recommendation` | Kết hợp facts và evidence, không sửa thuốc, liều, PHI, rule version |
 
-`FarmState` chỉ giữ dữ liệu của một lượt; `WorkflowRuntime` inject CV predictor, structured-facts tool, RAG retriever và recommendation writer mà không đưa connection hay service object vào state.
+`FarmState` chỉ giữ dữ liệu của một lượt; `WorkflowRuntime` inject CV predictor, structured-facts tool và RAG retriever mà không đưa connection hay service object vào state.
+Khi `include_explanation=true`, service tổng hợp lời giải thích sau graph và giải phóng giao dịch đọc trước khi chờ Qwen; quyết định rule không phụ thuộc phần sinh.
 
 ## Ranh giới lỗi
 

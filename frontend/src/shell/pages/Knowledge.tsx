@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { askKnowledge } from "../api";
+import GeneratedAnswerCard from "../components/GeneratedAnswerCard";
 import PassageText from "../components/PassageText";
 import Section from "../components/Section";
 import SourceList from "../components/SourceList";
@@ -22,8 +23,7 @@ interface KnowledgeProps {
   scope?: KnowledgeScope;
 }
 
-// Questions answered from the knowledge base of the running app: passages are quoted from the
-// documents, each with the sources it is based on.
+// Generated wording and original evidence stay separate.
 export default function Knowledge({
   onError,
   title,
@@ -40,6 +40,7 @@ export default function Knowledge({
   const ask = (event: FormEvent) => {
     event.preventDefault();
     if (!question.trim()) return;
+    setAnswer(null);
     setAsking(true);
     askKnowledge(question.trim(), scope ? { [scope.param]: scopeValue || null } : {})
       .then(setAnswer)
@@ -80,16 +81,28 @@ export default function Knowledge({
         </div>
       </form>
 
-      {answer && answer.passages.length === 0 && <p className="empty-hint">{emptyHint}</p>}
+      {answer?.scopeStatus === "OUT_OF_SCOPE" ? (
+        <p className="empty-hint">Câu hỏi nằm ngoài phạm vi kiến thức của ứng dụng này.</p>
+      ) : answer?.scopeStatus === "IN_SCOPE_NO_EVIDENCE" && !answer.answer ? (
+        <p className="empty-hint">{emptyHint}</p>
+      ) : answer && <GeneratedAnswerCard answer={answer.answer} scope={scope?.param === "diseaseCode" ? "farm" : "lab"} />}
 
-      {answer?.passages.map((passage, index) => (
-        <article key={index} className="harvest-box">
-          <strong>{passage.documentTitle}</strong>
-          <PassageText content={passage.content} />
-          <small>Độ liên quan {Math.round(passage.score * 100)}%</small>
-          <SourceList sources={passage.sources} />
-        </article>
-      ))}
+      {answer && answer.passages.length > 0 && (
+        <details
+          className="knowledge-references"
+        >
+          <summary>Tài liệu tham khảo ({answer.passages.length})</summary>
+          {answer.passages.map((passage, index) => (
+            <article key={index} className="harvest-box">
+              <strong>{passage.documentTitle}</strong>
+              <PassageText content={passage.content} />
+              <small>Điểm tương đồng cosine: {passage.score.toFixed(2)}</small>
+              {passage.corpusVersion && <small> · Corpus {passage.corpusVersion}</small>}
+              <SourceList sources={passage.sources} />
+            </article>
+          ))}
+        </details>
+      )}
     </Section>
   );
 }

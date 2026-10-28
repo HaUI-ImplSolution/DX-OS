@@ -20,6 +20,8 @@ x-tool: &tool
     HOME: /tmp
     PYTHONPATH: /workspace/ai:/workspace/ai/scripts
     EMBEDDING_MODEL: /cache/model
+    CHAT_RERANKER_MODEL: /cache/reranker
+    CHAT_RETRIEVAL_STRATEGY: ${EVAL_CHAT_STRATEGY:?}
     HF_HOME: /cache/huggingface
     HF_HUB_OFFLINE: "1"
     HF_HUB_DISABLE_TELEMETRY: "1"
@@ -85,6 +87,7 @@ services:
       <<: *tool-env
       HF_HUB_OFFLINE: "0"
       EVAL_EMBEDDING_MODEL: ${EVAL_EMBEDDING_MODEL:?}
+      EVAL_RERANKER_MODEL: ${EVAL_RERANKER_MODEL:?}
       EVAL_ADMIN_DATABASE_URL: postgresql+psycopg://${EVAL_POSTGRES_USER:?}:${EVAL_POSTGRES_PASSWORD:?}@vector:5432/${EVAL_POSTGRES_DB:?}
       EVAL_READONLY_USER: ${EVAL_READONLY_USER:?}
       EVAL_READONLY_PASSWORD: ${EVAL_READONLY_PASSWORD:?}
@@ -99,7 +102,7 @@ services:
     <<: *tool
     cpus: ${EVAL_AI_CPUS:?}
     mem_limit: ${EVAL_AI_MEMORY:?}
-    command: [scripts/benchmark_rag.py, serve, --host, 0.0.0.0, --port, '8000', --ingest-record, '/artifacts/${EVAL_RUN:?}/ingest.json', --output, '/artifacts/${EVAL_RUN:?}/server.json']
+    command: [scripts/benchmark_rag.py, serve, --host, 0.0.0.0, --port, '8000', --ingest-record, '/artifacts/${EVAL_RUN:?}/ingest.json', --output, '/artifacts/${EVAL_RUN:?}/server-${EVAL_CHAT_STRATEGY:?}.json']
     ports:
       - '127.0.0.1:${EVAL_AI_PORT:?}:8000'
     healthcheck:
@@ -121,7 +124,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       PYTHONPATH: /workspace/ai:/workspace/ai/scripts
-      RAG_LOAD_URL: http://127.0.0.1:${EVAL_AI_PORT:?}/api/v1/disease/knowledge/retrieve
+      RAG_LOAD_URL: http://127.0.0.1:${EVAL_AI_PORT:?}/api/v1/knowledge/search
       AI_SERVICE_API_KEY: ${EVAL_AI_SERVICE_API_KEY:?}
 
   publisher:

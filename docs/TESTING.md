@@ -51,6 +51,10 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 | `audit_log` chỉ thêm, `GET /api/v1/audit-logs` cho ADMIN, cảnh báo Mattermost | Có | Kiểm tay, E2E Farm và Lab | Không áp dụng |
 | Ghi `SERVER_ERROR` và `ADMIN_ACTION_FAILED` vào `audit_log` | Có | Kiểm tay (M1, M2) | Không áp dụng |
 | Màn hình giám sát `/monitor/`: sự kiện gateway, dò dịch vụ, truy vết, cảnh báo | Có | Kiểm tay, Chrome (M1 đến M14) | Không áp dụng |
+| Tin chat lỗi tạm thời được lưu ở `chat_outbox` và gửi lại có chờ tăng dần | Có | Test đơn vị và tích hợp (Testcontainers) | Không áp dụng |
+| Backend chuyển `X-Request-Id` sang AI, AI ghi log theo mã đó | Có | Test đơn vị (Java và pytest) | Không áp dụng |
+| Sao lưu và khôi phục `deploy/backup.sh` (restic, `verify`) | Có | Job CI `backup-drill`, kiểm tay khôi phục vào cluster mới | Không áp dụng |
+| Đăng nhập nhân sự bằng TOTP (`STAFF_OTP_FLOW`) và chính sách mật khẩu | Có | Kiểm tay bằng script đăng nhập qua Keycloak ở cả hai chế độ | Không áp dụng |
 
 ## 2. Chuẩn bị
 

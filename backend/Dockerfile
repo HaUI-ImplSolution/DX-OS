@@ -32,6 +32,9 @@ FROM eclipse-temurin:21-jre-alpine AS monitor
 WORKDIR /app
 ENV TZ=Asia/Ho_Chi_Minh
 COPY --from=build-monitor /app/dx-monitor/target/dx-monitor.jar app.jar
+# The service writes nothing outside /tmp, so it needs no privileges.
+RUN addgroup -S -g 10001 app && adduser -S -u 10001 -G app app
+USER app
 EXPOSE 8090
 ENTRYPOINT ["java", "-jar", "app.jar"]
 
@@ -40,5 +43,8 @@ FROM eclipse-temurin:21-jre-alpine AS backend
 WORKDIR /app
 ENV TZ=Asia/Ho_Chi_Minh
 COPY --from=build-host /app/dx-host/target/dx-host.jar app.jar
+# The service writes nothing outside /tmp, so it needs no privileges.
+RUN addgroup -S -g 10001 app && adduser -S -u 10001 -G app app
+USER app
 EXPOSE 8081
 ENTRYPOINT ["java", "-jar", "app.jar"]

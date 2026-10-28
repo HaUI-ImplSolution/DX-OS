@@ -51,6 +51,7 @@ Hiện không có.
 |---|---|
 | Chặn SQLi và XSS chung ở Cloudflare | Cần gói trả phí; gói Free chỉ có managed ruleset chặn khai thác đã biết, Backend dùng truy vấn tham số hóa |
 | Xóa audit theo thời hạn | Bảng `audit_log` chỉ thêm, chưa có cách xóa theo thời hạn; theo dõi dung lượng bảng |
+| Chạy `backup.sh` theo lịch và chép kho ra ngoài máy chủ | Có script, `verify` và job CI; lịch cron, kho từ xa và diễn tập khôi phục định kỳ do người vận hành đặt |
 | Cảnh báo cho sự kiện đăng nhập sai của Keycloak | Màn hình giám sát chỉ hiển thị; khóa tạm của Keycloak và giới hạn tốc độ của gateway đã chặn |
 | Metric tài nguyên (CPU, RAM, đĩa) và phân vị độ trễ | Màn hình giám sát chỉ có sự kiện bất thường và trạng thái dịch vụ; thêm Prometheus nếu cần |
 | Gộp lớp gửi Mattermost của `monitor` với `ChatWebhook` của core | `dx-monitor` không được phụ thuộc core nên hai nơi cùng đọc webhook; cảnh báo `ACCESS_DENIED` theo địa chỉ vẫn do `AuditAlertJob` của backend gửi |
@@ -58,14 +59,13 @@ Hiện không có.
 | Tên chức năng ở biểu đồ lỗi lấy từ danh sách cố định trong `monitor.js` | Đường dẫn ngoài danh sách hiện là "Chức năng khác"; thêm app mới thì bổ sung danh sách |
 | Cảnh báo `monitor` không nhớ điều kiện đã báo sau khi khởi động lại | Khởi động lại trong lúc điều kiện còn thì tin được gửi lại; bộ nhớ chống lặp nằm trong tiến trình |
 | Cảnh báo khi chính `monitor` ngừng | Cần một kiểm tra từ ngoài (Cloudflare Health Check hoặc dịch vụ uptime); hiện kiểm bằng `docker compose ps` |
-| Truyền `request_id` từ Backend sang AI service | Truy vết dừng ở Backend; log của AI chưa mang `request_id` |
 | Backend tự gọi AI sau khi upload ảnh | Chẩn đoán AI do kỹ sư bấm; đang giữ thủ công có chủ đích |
 | Push thật (FCM, UnifiedPush) | Hộp thông báo chỉ kéo về khi mở app |
 | Hộp thông báo cho engineer và admin | Họ dùng hàng chờ và Mattermost |
 | Phun lặp lại trên cùng một chẩn đoán | Mỗi chẩn đoán một lần phun; phun lại phải qua báo cáo và chẩn đoán mới |
 | Thu hoạch thay hộ không có trong timeline workflow | Thu hoạch không có case; thông tin nằm trên vụ và log backend |
 | Phạm vi phụ trách theo khu vực cho engineer | Phân quyền hiện theo thao tác, không theo khu vực |
-| Retry, hàng đợi bền vững hoặc outbox cho thông báo chat bị lỡ | Hiện gửi một lần, lỗi thì bỏ |
+| Thông báo chat chỉ có gửi lại khi lỗi tạm thời | `chat_outbox` lưu tin sau lần gửi đầu thất bại; tin chưa kịp vào bảng khi backend tắt giữa lúc commit và lúc gửi vẫn mất, chưa có cảnh báo khi tồn đọng |
 | Trường "Phương pháp áp dụng" và lượng nước của phác đồ | `TreatmentRule.notes` trộn nhiều loại thông tin; cần field riêng được chuyên gia xác thực |
 
 ## 6. Phụ thuộc người ngoài

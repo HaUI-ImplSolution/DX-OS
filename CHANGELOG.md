@@ -21,8 +21,29 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 - Công cụ thu kết quả chỉ đọc, chấm Recall/nDCG bằng `ir_measures` và hiển thị câu hỏi, đoạn tài liệu, điểm trên Langfuse local.
 - Thử tải endpoint truy xuất bằng k6, đo độ trễ, request/giây, tỷ lệ lỗi và tài nguyên Docker; xuất dữ liệu để kiểm tra lại.
 - Bộ chạy đánh giá RAG độc lập bằng một lệnh, tự chuẩn bị Langfuse local, dùng lại cache và tự dọn sau khi xem.
+- Sao lưu và khôi phục có mã hóa bằng `deploy/backup.sh` (restic), kèm lệnh `verify` và job CI `backup-drill`.
+- Tin chat gửi lỗi tạm thời được lưu ở `chat_outbox` và gửi lại có chờ tăng dần thay vì bị bỏ.
+- Backend chuyển `X-Request-Id` sang AI service, AI ghi log theo mã đó.
+- Keycloak: chính sách mật khẩu và bước TOTP cho ADMIN, ENGINEER, TECHNICIAN (bật bằng `STAFF_OTP_FLOW=CONDITIONAL`).
+- Cứng hóa container: backend, monitor, AI chạy không phải root, bỏ mọi Linux capability, `no-new-privileges`; console MinIO mặc định chỉ mở trên máy chủ.
 
 ## Backend (Spring Boot — `backend`)
+
+### 2026-10-28
+
+**Đã xong — Gửi lại tin chat bị lỡ:**
+
+- Tin gửi vào Mattermost thất bại vì lỗi mạng, HTTP 5xx hoặc 429 được lưu ở bảng `chat_outbox` (migration core `V5`).
+- Job `ChatOutboxJob` gửi lại mỗi phút với khoảng chờ 1, 2, 4 phút tăng dần tới 60 phút, tối đa 8 lần.
+- Tin bị webhook từ chối (HTTP 4xx khác) thì bỏ; tin quá số lần chuyển `FAILED` và bị xóa sau 7 ngày.
+
+**Đã xong — Chuyển mã request sang AI:**
+
+- `AiServiceGateway` gắn header `X-Request-Id` của request đang xử lý vào mọi lời gọi AI.
+
+**Đã xong — Chạy không phải root:**
+
+- Image `backend` và `monitor` chạy bằng user `app` (uid 10001).
 
 ### 2026-10-26
 
@@ -628,6 +649,12 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 
 ## AI Service (Python)
 
+### 2026-10-28
+
+**Đã xong — Log theo mã request:**
+
+- Middleware đọc `X-Request-Id` hợp lệ (tối đa 64 ký tự `A-Za-z0-9._-`) hoặc sinh mã mới, trả lại ở response và ghi một dòng log mỗi request.
+
 ### 2026-10-27
 
 **Đã xong — Đánh giá truy xuất RAG:**
@@ -929,6 +956,19 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 - Đã test qua trình duyệt thật với từng role, xác nhận UI và 401/403 đúng chỗ.
 
 ## Deploy (`deploy`)
+
+### 2026-10-28
+
+**Đã xong — Sao lưu và khôi phục:**
+
+- `backup.sh` chụp bản sao lưu mã hóa bằng restic gồm Postgres, MinIO, tệp Mattermost và metadata Superset.
+- `backup.sh verify` nạp dump mới nhất vào một Postgres tạm và kiểm tra; `backup.sh restore <dir>` lấy bản sao lưu ra thư mục.
+- Job CI `backup-drill` chạy backup và verify trên Postgres thật; cách khôi phục ở `OPERATIONS.md`.
+
+**Đã xong — Cứng hóa container:**
+
+- `backend`, `monitor`, `ai` và `rag-ingest` bỏ mọi Linux capability; các container này cùng `frontend` và `portal` đặt `no-new-privileges`.
+- Console MinIO mặc định chỉ mở trên máy chủ (`APISIX_MINIO_HOST_PORT=127.0.0.1:9082`).
 
 ### 2026-10-26
 
@@ -1287,6 +1327,14 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 
 ## Identity Provider (`sso`, Keycloak)
 
+### 2026-10-28
+
+**Đã xong — Xác thực hai bước và chính sách mật khẩu:**
+
+- Realm đặt chính sách mật khẩu `length(8) and notUsername`.
+- Luồng `dxos browser` hỏi mã TOTP với vai `ADMIN`, `ENGINEER`, `TECHNICIAN`; bật bằng `STAFF_OTP_FLOW=CONDITIONAL`, mặc định `DISABLED`.
+- Realm import có sẵn ba vai `ADMIN`, `ENGINEER`, `TECHNICIAN` để luồng tìm thấy vai cần hỏi mã.
+
 ### 2026-10-26
 
 **Đã xong — Client của màn hình giám sát:**
@@ -1338,6 +1386,12 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 - Mattermost là nền tảng chat tách biệt có chủ đích, không nối SSO — xem `chat/README.md`.
 
 ## Giấy phép và SBOM
+
+### 2026-10-28
+
+**Đã xong — restic:**
+
+- Thêm restic 0.17.3 (BSD-2-Clause) vào `LICENSES.md` như công cụ sao lưu chạy trong container, không đóng gói trong runtime.
 
 ### 2026-10-27
 

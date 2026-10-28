@@ -145,7 +145,7 @@ Per-application settings: [`backend/app-farm/README.md`](./backend/app-farm/READ
 
 A public server runs behind a Cloudflare Tunnel and opens no inbound port.
 Enable it with the overlay [`deploy/docker-compose.cloudflared.yml`](./deploy/docker-compose.cloudflared.yml) (instructions at the top of the file).
-Cloudflare concepts and settings are in [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE.md); logs, rate limits and the audit log are in [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
+Cloudflare concepts and settings are in [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE.md); logs, rate limits, the audit log, backup and restore are in [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
 
 ### 🔑 Demo accounts
 

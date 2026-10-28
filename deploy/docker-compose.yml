@@ -11,6 +11,14 @@ x-logging: &default-logging
     max-size: "20m"
     max-file: "5"
 
+# For containers that run as a normal user and need no Linux capability: nothing can gain more
+# privileges than it started with.
+x-hardened: &hardened
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
 x-postgres-env: &postgres-env
   POSTGRES_DB: ${POSTGRES_DB:?}
   POSTGRES_USER: ${POSTGRES_USER:?}
@@ -76,6 +84,7 @@ services:
   # Backend, web and portal
   # ---------------------------------------------------------------------------
   backend:
+    <<: *hardened
     logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-backend:${DXOS_IMAGE_TAG:-local}
     build:
@@ -152,6 +161,8 @@ services:
       start_period: 30s
 
   frontend:
+    security_opt:
+      - no-new-privileges:true
     logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-frontend:${DXOS_IMAGE_TAG:-local}
     build:
@@ -172,6 +183,8 @@ services:
       retries: 6
 
   portal:
+    security_opt:
+      - no-new-privileges:true
     logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-portal:${DXOS_IMAGE_TAG:-local}
     build:
@@ -220,6 +233,7 @@ services:
       SUPERSET_OIDC_CLIENT_SECRET: ${SUPERSET_OIDC_CLIENT_SECRET:?}
       MONITOR_OIDC_CLIENT_SECRET: ${MONITOR_OIDC_CLIENT_SECRET:?}
       KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET:?}
+      STAFF_OTP_FLOW: ${STAFF_OTP_FLOW:-DISABLED}
     volumes:
       - ../sso/realm-dxos.json:/opt/keycloak/data/import/realm-dxos.json:ro
     # No published port: the gateway routes /realms, /resources and /admin to it.
@@ -268,6 +282,7 @@ services:
   # Receives the unusual requests of the gateway, probes the services and serves the screen of
   # administrators under /monitor. It runs apart from the backend so it works when the backend is down.
   monitor:
+    <<: *hardened
     logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-monitor:${DXOS_IMAGE_TAG:-local}
     build:
@@ -399,6 +414,7 @@ services:
 
   # Ingests the knowledge corpus of the app selected by DXOS_APP into its own namespace.
   rag-ingest:
+    <<: *hardened
     image: ${DXOS_IMAGE_PREFIX:-dxos}-ai:${DXOS_IMAGE_TAG:-local}
     build:
       <<: *ai-build
@@ -417,6 +433,7 @@ services:
     command: ["python", "-m", "scripts.ingest_diseases", "--corpus", "${DXOS_APP:-farm}"]
 
   ai:
+    <<: *hardened
     logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-ai:${DXOS_IMAGE_TAG:-local}
     build:

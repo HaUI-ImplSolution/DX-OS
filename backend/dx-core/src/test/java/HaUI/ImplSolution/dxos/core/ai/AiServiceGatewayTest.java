@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
+import org.slf4j.MDC;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.util.LinkedMultiValueMap;
 import tools.jackson.databind.ObjectMapper;
@@ -55,6 +56,35 @@ class AiServiceGatewayTest {
       assertThat(contentType.get()).startsWith("multipart/form-data");
       assertThat(apiKey.get()).isEqualTo("test-key");
       assertThat(body.get()).contains("name=\"image\"", "Content-Type: image/png");
+    } finally {
+      server.stop(0);
+    }
+  }
+
+  @Test
+  void passesTheRequestIdOfTheCurrentRequestOn() throws Exception {
+    HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+    AtomicReference<String> requestId = new AtomicReference<>();
+    server.createContext("/echo", exchange -> {
+      requestId.set(exchange.getRequestHeaders().getFirst("X-Request-Id"));
+      byte[] response = "{}".getBytes(StandardCharsets.UTF_8);
+      exchange.getResponseHeaders().set("Content-Type", "application/json");
+      exchange.sendResponseHeaders(200, response.length);
+      exchange.getResponseBody().write(response);
+      exchange.close();
+    });
+    server.start();
+    try {
+      gateway(server).postJson("/echo", Map.of(), Map.class);
+      assertThat(requestId.get()).isNull();
+
+      MDC.put("requestId", "req-123");
+      try {
+        gateway(server).postJson("/echo", Map.of(), Map.class);
+      } finally {
+        MDC.remove("requestId");
+      }
+      assertThat(requestId.get()).isEqualTo("req-123");
     } finally {
       server.stop(0);
     }

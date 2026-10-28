@@ -20,6 +20,9 @@ Mỗi request là một dòng JSON trên stdout của container `apisix`.
 | `cf_ray` | Mã request của Cloudflare |
 | `user_agent` | Trình duyệt hoặc ứng dụng gọi |
 
+Backend chuyển `request_id` này sang AI service qua header `X-Request-Id`.
+AI ghi mỗi request thành một dòng `request_id=... POST /api/v1/... status=... ms`, nên `docker compose logs ai | grep <mã>` tìm lại được đúng lượt gọi.
+
 `remote_addr` là IP thật của người dùng khi vào qua Cloudflare Tunnel (đọc từ `CF-Connecting-IP`), và là IP trong mạng LAN khi vào trực tiếp.
 Header chỉ được tin khi request đến từ mạng Docker (`172.16.0.0/12`) hoặc loopback.
 Ở máy có dải Docker khác thì sửa `real_ip_from` trong `apisix/config.yaml`.
@@ -159,6 +162,46 @@ Chạy lâu thì theo dõi dung lượng bảng.
 Mỗi 5 phút, một địa chỉ bị từ chối từ 10 lần trong 10 phút qua được báo vào kênh Mattermost "Ban quản trị", tối đa một tin mỗi địa chỉ trong 60 phút.
 Đổi ngưỡng ở `audit.alert.*` trong `backend/dx-host/src/main/resources/application.yaml`.
 Không có webhook của kênh thì không gửi.
+
+## Sao lưu và khôi phục
+
+`./backup.sh` (trong `deploy/`) chụp một bản sao lưu mã hóa của những gì không dựng lại được từ repo.
+Gồm toàn bộ Postgres (dữ liệu nghiệp vụ, tài khoản Keycloak, Mattermost, kho vector), ảnh và tệp đính kèm trong MinIO, tệp của Mattermost và metadata của Superset.
+Script dùng restic chạy trong container nên chỉ cần Docker.
+Bản sao lưu khử trùng lặp và mã hóa bằng `BACKUP_PASSWORD`.
+Cất mật khẩu này ở nơi khác máy chủ, vì mất nó là không đọc lại được.
+
+```bash
+cd deploy
+./backup.sh              # chụp, rồi giữ 7 bản theo ngày, 4 theo tuần, 6 theo tháng
+./backup.sh verify       # nạp bản dump mới nhất vào một Postgres tạm và kiểm tra
+./backup.sh snapshots    # liệt kê các bản
+```
+
+Kho nằm ở `deploy/backups` (đổi bằng `BACKUP_DIR`) hoặc ở một kho restic từ xa (`BACKUP_REPOSITORY`, ví dụ `s3:...`).
+Kho cùng máy với dữ liệu không cứu được khi mất máy, nên chép nó ra ngoài (rsync, rclone) hoặc dùng kho từ xa.
+Chạy theo lịch bằng cron, ví dụ mỗi đêm: `0 2 * * * cd /đường/dẫn/deploy && ./backup.sh >> backups/backup.log 2>&1`, và chạy `verify` mỗi tuần.
+Máy chủ dùng tệp env khác `.env` thì đặt `ENV_FILE=.env.dev ./backup.sh`.
+CI chạy một lượt backup và verify trên Postgres thật ở job `backup-drill`.
+
+**Khôi phục** (máy mới hoặc sau khi mất dữ liệu):
+
+1. Dựng lại stack từ repo với cùng `deploy/.env`, giữ Postgres chạy và dừng các dịch vụ còn lại: `docker compose up -d postgres` rồi `docker compose stop` các dịch vụ khác.
+2. Lấy bản sao lưu ra thư mục tạm: `./backup.sh restore /tmp/dxos-restore`.
+3. Nạp Postgres: `gunzip -c /tmp/dxos-restore/stage/postgres.sql.gz | docker compose exec -T postgres psql -U "$POSTGRES_USER" postgres`.
+   Hai dòng lỗi `role "..." already exists` và `database "..." already exists` là bình thường vì tài khoản quản trị và database chính đã có sẵn.
+   Phần còn lại phải nạp không lỗi.
+4. Chép `data/minio`, `data/mattermost`, `data/superset` từ `/tmp/dxos-restore/data/` vào `deploy/data/` (các tệp thuộc root nên dùng `sudo`), rồi `docker compose up -d`.
+
+## Thông báo chat gửi lại
+
+Tin gửi vào Mattermost thất bại vì lỗi mạng, HTTP 5xx hoặc 429 được backend lưu vào bảng `chat_outbox` và gửi lại mỗi phút.
+Khoảng chờ giữa các lần là 1, 2, 4 phút và tăng dần tới tối đa 60 phút.
+Quá 8 lần thì tin chuyển `FAILED` và bị xóa sau 7 ngày.
+Tin bị webhook từ chối hẳn (HTTP 4xx khác) thì bỏ, vì gửi lại không đổi kết quả.
+Webhook nhận tin nhưng trả lời quá chậm có thể làm tin đến hai lần.
+Xem tồn đọng: `docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT channel_key, status, attempts, last_error, next_attempt_at FROM chat_outbox"`.
+Nhiều dòng `PENDING` kéo dài nghĩa là Mattermost hoặc webhook đang hỏng.
 
 ## Màn hình giám sát
 

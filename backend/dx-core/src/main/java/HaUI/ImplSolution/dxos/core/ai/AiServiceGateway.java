@@ -4,8 +4,10 @@ package HaUI.ImplSolution.dxos.core.ai;
 import HaUI.ImplSolution.dxos.core.api.ai.AiGateway;
 import HaUI.ImplSolution.dxos.core.api.exception.AiRequestRejectedException;
 import HaUI.ImplSolution.dxos.core.api.exception.AiServiceException;
+import HaUI.ImplSolution.dxos.core.audit.RequestContext;
 import java.net.http.HttpClient;
 import java.time.Duration;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
@@ -39,7 +41,16 @@ public class AiServiceGateway implements AiGateway {
 
     RestClient.Builder builder =
         RestClient.builder().baseUrl(baseUrl).requestFactory(requestFactory)
-            .defaultHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE);
+            .defaultHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+            // Lets the AI service log the id the gateway gave the request, so one id finds it in
+            // both logs; calls outside a request (jobs) carry none.
+            .requestInterceptor((request, body, execution) -> {
+              String requestId = MDC.get(RequestContext.REQUEST_ID);
+              if (requestId != null) {
+                request.getHeaders().set("X-Request-Id", requestId);
+              }
+              return execution.execute(request, body);
+            });
     if (StringUtils.hasText(apiKey)) {
       builder.defaultHeader("X-Service-Api-Key", apiKey);
     }

@@ -96,7 +96,7 @@ export default function Knowledge({
             <article key={index} className="harvest-box">
               <strong>{passage.documentTitle}</strong>
               <PassageText content={passage.content} />
-              <small>Độ liên quan {Math.round(passage.score * 100)}%</small>
+              <small>Điểm tương đồng cosine: {passage.score.toFixed(2)}</small>
               {passage.corpusVersion && <small> · Corpus {passage.corpusVersion}</small>}
               <SourceList sources={passage.sources} />
             </article>

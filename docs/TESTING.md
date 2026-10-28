@@ -79,7 +79,8 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 
 ### Đánh giá truy xuất RAG
 
-RAG tìm các đoạn tài liệu liên quan để hỗ trợ trả lời câu hỏi. Phép đo kiểm tra bước tìm kiếm này trước xử lý Backend, với 42 câu/lượt, 18 tài liệu và 109 đoạn. Môi trường và lệnh chạy ở [`ai/README.md`](../ai/README.md#đánh-giá-truy-xuất-rag).
+RAG tìm các đoạn tài liệu liên quan để hỗ trợ trả lời câu hỏi. Phép đo kiểm tra bước tìm kiếm trước gộp evidence Backend; bộ hiện tại có 72 query, 25 tài liệu và 244 đoạn.
+Bảng pilot ngày 26/10 dùng bộ cũ 42 query, 18 tài liệu và 109 đoạn. Môi trường và lệnh chạy ở [`ai/README.md`](../ai/README.md#đánh-giá-truy-xuất-rag).
 
 | Kiểm tra | Cách | Kết quả |
 |---|---|---|
@@ -99,6 +100,18 @@ Kết quả pilot ngày 26/10/2026:
 - **Số câu:** số câu được kiểm tra; **k:** số đoạn tài liệu đầu tiên được chấm.
 - **Recall@k:** tỷ lệ đoạn liên quan tìm được trong k kết quả đầu theo bộ đáp án.
 - **nDCG@k:** mức độ ưu tiên các đoạn hữu ích ở đầu danh sách. Cả hai điểm từ 0–1, càng cao càng tốt.
+
+Pilot hybrid ngày 28/10/2026, cùng corpus và bộ nhãn nháp; chatbot chấm sau gate/ngưỡng:
+
+| Strategy | Farm Recall@4 | Farm nDCG@4 | Lab Recall@4 | Lab nDCG@4 |
+|---|---:|---:|---:|---:|
+| Cosine + boost | 0,521605 | 0,458521 | 0,730769 | 0,674168 |
+| BM25 | 0,487654 | 0,500554 | 0,769231 | 0,749210 |
+| BM25 + cosine/RRF | 0,555556 | 0,492140 | 0,782051 | 0,733912 |
+| Hybrid + rerank | 0,648148 | 0,602363 | 0,775641 | 0,714736 |
+
+Sáu query chẩn đoán legacy giữ Recall@3/nDCG@3 = 1,0 ở cả bốn lượt.
+Chưa đạt toàn bộ mục tiêu nhóm tổng quan Farm; nhãn mở rộng cần người duyệt kiểm trước khi kết luận chính thức.
 
 ### Thử tải HTTP retrieval
 
@@ -120,6 +133,15 @@ Langfuse có run `load-2026-10-26-final`, mỗi dòng là một lượt; `SUMMAR
 Phép thử chỉ đo HTTP retrieval trên máy dùng chung, tắt CV lifespan; chưa gồm Backend, gateway hoặc mạng điện thoại, chưa kết luận năng lực production.
 
 Bộ chạy `./ai/evaluate.sh all` ngày 27/10/2026: 18 lượt, 11.936 request, không lỗi HTTP/hợp đồng; đối chiếu dữ liệu k6 thô trong sai số `1e-8`. Langfuse chỉ bật sau đo; đã kiểm tra HTML, CPU/RAM, ngắt k6, hai phiên và khôi phục bằng `down`, không ảnh hưởng container đối chứng.
+
+So sánh chatbot ngày 28/10/2026: 36 lượt, 8.974 request, không lỗi HTTP/hợp đồng. Cùng 2 CPU/1536 MiB, một worker; mỗi mức lặp ba lần:
+
+| Strategy | p95 1 VU (ms) | p95 5 VU (ms) | RAM AI đỉnh (MiB) |
+|---|---:|---:|---:|
+| Cosine + boost | 59,15–85,03 | 803,00–1438,90 | 1060,9 |
+| Hybrid + rerank | 1437,77–1799,23 | 5870,80–7897,73 | 1378,3 |
+
+Khoảng min–max gộp các lượt Farm/Lab, không phải percentile gộp. Rerank tăng độ trễ và RAM; kết quả chỉ áp dụng workload đã đo. Đợt `all` hoàn tất đo nhưng lỗi đối chiếu điểm khi publish; đã sửa thứ tự cộng điểm. Lượt quality sau đó publish đủ 12 experiment và scope; 36 lượt tải đã replay lên Langfuse, giao diện experiment và HTML so sánh đã kiểm bằng trình duyệt.
 
 ### Câu trả lời Qwen có cấu trúc
 

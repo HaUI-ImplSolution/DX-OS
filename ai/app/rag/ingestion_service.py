@@ -103,6 +103,29 @@ CORPORA = {
     "lab": LAB_CORPUS,
 }
 
+
+def selected_corpora(name: str | None = None) -> list[Corpus]:
+    """Select the approved corpora for an app without promoting staged content."""
+    if name == "farm_knowledge":
+        load_corpus(FARM_KNOWLEDGE_CORPUS)
+        return [FARM_KNOWLEDGE_CORPUS]
+    corpora = (
+        [FARM_CORPUS]
+        if name == "farm"
+        else [LAB_CORPUS]
+        if name == "lab"
+        else [FARM_CORPUS, LAB_CORPUS]
+    )
+    if name not in {None, "farm", "lab"}:
+        raise ValueError("Unknown corpus selection")
+    if name != "lab" and FARM_KNOWLEDGE_CORPUS.data_file.exists():
+        items = json.loads(FARM_KNOWLEDGE_CORPUS.data_file.read_text())
+        if items and all(item.get("review_status") == "APPROVED" for item in items):
+            load_corpus(FARM_KNOWLEDGE_CORPUS)
+            corpora.append(FARM_KNOWLEDGE_CORPUS)
+    return corpora
+
+
 # Kept for callers that predate the corpus argument.
 DATA_FILE = FARM_CORPUS.data_file
 DOCUMENT_TYPE = FARM_CORPUS.document_type
@@ -123,7 +146,10 @@ def load_corpus(corpus: Corpus) -> list[dict[str, Any]]:
     source_registry = load_source_registry(corpus.registry_file)
     if corpus.namespace == "lab" and corpus.registry_file:
         for source_id, source in source_registry.items():
-            if urlparse(source["url"]).hostname != "sict.haui.edu.vn":
+            allowed = json.loads((DATA_ROOT / "chat_profiles.json").read_text())["lab"][
+                "allowed_hosts"
+            ]
+            if urlparse(source["url"]).hostname not in allowed:
                 raise ValueError(
                     f"Lab source {source_id} is outside the allowlist: {source['url']}"
                 )
@@ -191,7 +217,8 @@ def load_corpus(corpus: Corpus) -> list[dict[str, Any]]:
                 f"{item.get('review_status')!r}"
             )
         if corpus.document_type == "farm_knowledge" and item.get("language") not in {
-            "vi", "vi-VN"
+            "vi",
+            "vi-VN",
         }:
             raise ValueError(f"Farm knowledge {code} is not Vietnamese")
 
@@ -259,7 +286,9 @@ def _ingest_corpus(db: Session, corpus: Corpus) -> dict[str, int]:
             document_type=corpus.document_type,
             namespace=corpus.namespace,
             version=corpus.version,
-            disease_code=item[corpus.code_field] if corpus.code_is_disease_code else None,
+            disease_code=item[corpus.code_field]
+            if corpus.code_is_disease_code
+            else None,
         )
         db.add(document)
         db.flush()

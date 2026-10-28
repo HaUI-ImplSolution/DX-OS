@@ -23,13 +23,15 @@ from evaluate_rag import load_questions, outside_repository, read_json, write_js
 def serve(args: argparse.Namespace) -> None:
     """Serve the existing application for retrieval only, without loading CV models."""
     import importlib.metadata
+
     import torch
     import uvicorn
+    from evaluate_rag import code_identity, corpus_index, validate_snapshot
+
     from app.core.config import get_settings
     from app.db.session import SessionLocal
     from app.main import create_app
     from app.rag.embedding_service import EmbeddingService
-    from evaluate_rag import corpus_index, validate_snapshot
 
     output = outside_repository(args.output)
     if output.exists():
@@ -43,6 +45,7 @@ def serve(args: argparse.Namespace) -> None:
             "transformers",
             "SQLAlchemy",
             "pgvector",
+            "rank-bm25",
         )
     }
     metadata = read_json(
@@ -74,7 +77,9 @@ def serve(args: argparse.Namespace) -> None:
     write_json(
         output,
         {
-            "boundary": "Existing AI app, HTTP retrieval only; CV lifespan disabled; no Backend/gateway/LLM",
+            "boundary": "Existing AI app, HTTP chatbot search; CV lifespan disabled; no Backend/gateway/LLM",
+            "strategy": settings.chat_retrieval_strategy,
+            "code_identity": code_identity(),
             "ingestion": provenance,
             "runtime_versions": versions,
             "python": platform.python_version(),
@@ -198,7 +203,7 @@ def run(args: argparse.Namespace) -> None:
         or parsed.username
         or parsed.password
         or parsed.query
-        or parsed.path != "/api/v1/disease/knowledge/retrieve"
+        or parsed.path != "/api/v1/knowledge/search"
         or not key
     ):
         raise ValueError(
@@ -271,8 +276,13 @@ def run(args: argparse.Namespace) -> None:
             )
             try:
                 with urllib.request.urlopen(request, timeout=90) as response:
-                    if len(json.load(response)) != 4:
-                        raise ValueError("Warmup did not return four passages")
+                    result = json.load(response)
+                    if (
+                        result.get("namespace") != namespace
+                        or result.get("reason_code") == "RERANK_UNAVAILABLE"
+                        or len(result.get("passages", [])) > 4
+                    ):
+                        raise ValueError("Warmup returned an invalid search envelope")
             except urllib.error.URLError:
                 raise RuntimeError(
                     "Local retrieval warmup failed; check the isolated AI service"

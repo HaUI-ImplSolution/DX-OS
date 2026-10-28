@@ -15,7 +15,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.text.Normalizer;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import HaUI.ImplSolution.dxos.core.api.exception.AiServiceException;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -50,13 +52,24 @@ public class KnowledgeGatewayService implements KnowledgeGateway {
     if (corpus == null) {
       throw new IllegalArgumentException("Knowledge namespace is not registered: " + namespace);
     }
-    ScopeDecision scope = classify(namespace, question);
-    if (!scope.retrievalAllowed()) {
-      return new KnowledgeAnswer(question, List.of(), "OUT_OF_SCOPE", scope.reasonCode(),
-          namespace);
+    Map<String, Object> body = new LinkedHashMap<>(filters);
+    body.put("query", question);
+    body.put("namespace", namespace);
+    body.put("top_k", topK);
+    SearchResult result = aiGateway.postJson("/api/v1/knowledge/search", body, SearchResult.class);
+    if (result == null || !namespace.equals(result.namespace()) || result.passages() == null
+        || !Set.of("ANSWERABLE", "OUT_OF_SCOPE", "IN_SCOPE_NO_EVIDENCE")
+            .contains(result.scopeStatus() == null ? "" : result.scopeStatus())
+        || "ANSWERABLE".equals(result.scopeStatus()) == result.passages().isEmpty()) {
+      throw new AiServiceException("Invalid knowledge search response", null);
     }
-    return retrieve(namespace, question, filters, topK);
+    return new KnowledgeAnswer(question, mergeByDocument(result.passages(), corpus.sources()),
+        result.scopeStatus(), result.reasonCode(), namespace);
   }
+
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  public record SearchResult(String namespace, @JsonProperty("scope_status") String scopeStatus,
+      @JsonProperty("reason_code") String reasonCode, List<Map<String, Object>> passages) {}
 
   @Override
   public KnowledgeAnswer retrieve(String namespace, String question, Map<String, String> filters,
@@ -79,42 +92,6 @@ public class KnowledgeGatewayService implements KnowledgeGateway {
         passages.isEmpty() ? "IN_SCOPE_NO_EVIDENCE" : "ANSWERABLE",
         passages.isEmpty() ? "NO_EVIDENCE" : "EVIDENCE_FOUND", namespace);
   }
-
-  private ScopeDecision classify(String namespace, String question) {
-    String text = fold(question);
-    if ("farm".equals(namespace)) {
-      if (containsAny(text, "o to", "xe hoi", "chung khoan", "bong da", "du lich")) {
-        return new ScopeDecision(false, "EXPLICIT_UNRELATED_TOPIC");
-      }
-      return new ScopeDecision(containsAny(text, "lua", "ruong", "nong nghiep", "hat giong",
-          "phan bon", "tuoi", "benh", "co dai", "thu hoach", "dat"), "NO_FARM_DOMAIN_TERM");
-    }
-    if ("lab".equals(namespace)) {
-      if (containsAny(text, "o to", "xe hoi", "nau an")) {
-        return new ScopeDecision(false, "EXPLICIT_UNRELATED_TOPIC");
-      }
-      return new ScopeDecision(containsAny(text, "haui", "wifi", "email", "mat khau", "tai khoan",
-          "tin hoc", "cntt", "phan mem", "thiet bi", "quy dinh", "dich vu", "sict", "faronics",
-          "so tay", "an toan thong tin", "mang khong day"), "NO_LAB_DOMAIN_TERM");
-    }
-    return new ScopeDecision(false, "UNKNOWN_NAMESPACE");
-  }
-
-  private static String fold(String value) {
-    return Normalizer.normalize(value.toLowerCase(), Normalizer.Form.NFD).replaceAll("\\p{M}", "");
-  }
-
-  private static boolean containsAny(String text, String... terms) {
-    for (String term : terms) {
-      if (text
-          .matches(".*(?<![\\p{L}])" + java.util.regex.Pattern.quote(term) + "(?![\\p{L}]).*")) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private record ScopeDecision(boolean retrievalAllowed, String reasonCode) {}
 
   // The chunks of one document become one passage: its lines in document order without repeats,
   // the best score and the union of its sources. Documents keep the order of their best chunk.

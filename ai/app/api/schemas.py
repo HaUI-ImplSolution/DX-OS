@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 from datetime import date, datetime
+from typing import Literal
 
 from pydantic import AnyHttpUrl, BaseModel, Field, model_validator
 
@@ -43,6 +44,49 @@ class RetrieveRequest(BaseModel):
     document_type: str | None = Field(default=None, max_length=100)
     disease_code: str | None = Field(default=None, max_length=100)
     top_k: int = Field(default=3, ge=1, le=20)
+
+
+class KnowledgeSearchRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+    query: str = Field(min_length=1, max_length=4000)
+    namespace: str = Field(min_length=1, max_length=50)
+    document_type: str | None = Field(default=None, max_length=100)
+    disease_code: str | None = Field(default=None, max_length=100)
+    top_k: int = Field(default=4, ge=1, le=20)
+
+
+class KnowledgeSearchPassage(BaseModel):
+    chunk_id: str
+    document_id: str
+    document_title: str
+    document_version: str | None = None
+    document_type: str | None = None
+    disease_code: str | None = None
+    namespace: str
+    chunk_index: int
+    content: str
+    page_number: int | None = None
+    source_ids: list[str]
+    distance: float
+    score: float = Field(description="Cosine similarity, not an accuracy probability")
+    similarity: float
+    score_kind: Literal["cosine"]
+    bm25_score: float | None = None
+    rrf_score: float | None = None
+    rerank_score: float | None = None
+    rank: int | None = None
+
+
+class KnowledgeSearchResponse(BaseModel):
+    question: str
+    namespace: str
+    scope_status: Literal["OUT_OF_SCOPE", "IN_SCOPE_NO_EVIDENCE", "ANSWERABLE"]
+    reason_code: str
+    corpus_version: str | None = None
+    strategy: str
+    passages: list[KnowledgeSearchPassage] = Field(default_factory=list)
+    rankings: dict[str, list[KnowledgeSearchPassage]] = Field(default_factory=dict)
+    timings_ms: dict[str, float] = Field(default_factory=dict)
 
 
 class DiagnoseRecentTreatment(BaseModel):

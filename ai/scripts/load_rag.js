@@ -15,7 +15,7 @@ if (!['farm', 'lab'].includes(namespace) || ![1, 2, 5].includes(vus)
 }
 const questions = open('../../data/rag/evaluation/questions.jsonl').trim().split('\n')
   .map(JSON.parse).filter(q => q.group === `${namespace}_qa`);
-if (questions.length !== (namespace === 'farm' ? 12 : 24)) {
+if (!questions.length) {
   throw new Error('Benchmark question count differs from the accepted pilot');
 }
 http.setResponseCallback(http.expectedStatuses(200));
@@ -39,15 +39,16 @@ export default function () {
   let valid = false;
   if (response.status === 200) {
     try {
-      const rows = response.json();
-      valid = Array.isArray(rows) && rows.length === 4 && rows.every(row =>
+      const envelope = response.json();
+      const rows = envelope.passages;
+      valid = envelope.namespace === namespace && ["ANSWERABLE", "OUT_OF_SCOPE", "IN_SCOPE_NO_EVIDENCE"].includes(envelope.scope_status) && envelope.reason_code !== "RERANK_UNAVAILABLE" && Array.isArray(rows) && rows.length <= 4 && rows.every(row =>
         typeof row.content === 'string' && row.content.length > 0
         && typeof row.document_title === 'string'
         && Number.isInteger(row.chunk_index) && Number.isFinite(row.score)
         && Number.isFinite(row.similarity) && Array.isArray(row.source_ids));
     } catch (_) { /* Count malformed responses; never dump bodies or credentials. */ }
   }
-  check(response, { 'HTTP 200 and four valid passages': () => valid });
+  check(response, { 'HTTP 200 and valid search envelope': () => valid });
   invalid.add(!valid);
 }
 

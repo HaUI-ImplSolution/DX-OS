@@ -29,9 +29,11 @@ def load_quarantined_source_ids(path: Path) -> set[str]:
 
 
 def validate_registry(
-    path: Path, namespace: str, quarantined_source_ids: set[str] | None = None
+    path: Path, namespace: str, quarantined_source_ids: set[str] | None = None,
+    allowed_hosts: set[str] | None = None,
 ) -> set[str]:
     quarantined_source_ids = quarantined_source_ids or set()
+    allowed_hosts = allowed_hosts or set(read(ROOT / "data/rag/chat_profiles.json")[namespace]["allowed_hosts"])
     records = read(path)
     if not isinstance(records, list) or not records:
         raise ValueError(f"{path}: registry must be a non-empty array")
@@ -52,8 +54,8 @@ def validate_registry(
         if source_id in quarantined_source_ids:
             continue
         active_ids.add(source_id)
-        if namespace == "lab" and parsed.hostname != "sict.haui.edu.vn":
-            raise ValueError(f"{path}: Lab source outside sict.haui.edu.vn: {item['url']}")
+        if parsed.hostname not in allowed_hosts:
+            raise ValueError(f"{path}: source outside approved hosts: {item['url']}")
         if namespace == "farm" and item.get("language", "vi") not in {"vi", "vi-VN"}:
             raise ValueError(f"{path}: Farm source is not Vietnamese: {source_id}")
     return active_ids
@@ -107,7 +109,7 @@ def main() -> None:
         root / "data/rag/staging/farm/processed/farm_knowledge_staging.json",
         farm_sources,
         "farm_knowledge",
-        required_review_status="IN_REVIEW",
+        required_review_status="APPROVED",
     )
     quarantined = load_quarantined_source_ids(root / "data/rag/lab/quarantine_manifest.json")
     lab_sources = validate_registry(

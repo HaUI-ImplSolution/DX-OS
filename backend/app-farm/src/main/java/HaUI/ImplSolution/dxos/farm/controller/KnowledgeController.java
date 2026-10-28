@@ -26,7 +26,7 @@ public class KnowledgeController {
   }
 
   @PostMapping("/ask")
-  @Operation(summary = "Ask a question of the disease knowledge base",
+  @Operation(summary = "Ask a question of the rice knowledge base",
       description = "Any signed-in user. Returns the best matching passages of the corpus, each"
           + " with the documents it is based on (title, organization, link, license, review"
           + " status). Passages remain verbatim evidence. includeAnswer defaults to false; when"

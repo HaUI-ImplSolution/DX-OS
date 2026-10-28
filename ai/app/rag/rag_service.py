@@ -88,7 +88,8 @@ class RAGService:
             return {
                 **base,
                 "answer": "Xin lỗi, chatbot chỉ hỗ trợ kiến thức về lúa/nông nghiệp."
-                if namespace == "farm" else "Xin lỗi, câu hỏi nằm ngoài phạm vi tài liệu DX-Lab.",
+                if namespace == "farm"
+                else "Xin lỗi, câu hỏi nằm ngoài phạm vi tài liệu DX-Lab.",
                 "answer_mode": "out_of_scope",
             }
 
@@ -261,6 +262,21 @@ def _known_conflict(text: str, passages: list[dict], target: str | None) -> bool
     return False
 
 
+def _qa_context(passages: list[dict], budget: int = 2000) -> list[dict]:
+    """Keep complete evidence lines and reserve room for each selected document."""
+    packed = []
+    per_document = budget // max(1, min(len(passages), 4))
+    for passage in passages[:4]:
+        lines, used = [], 0
+        for line in passage["content"].splitlines():
+            if line.strip() and used + len(line) + 1 <= per_document:
+                lines.append(line)
+                used += len(line) + 1
+        if lines:
+            packed.append({**passage, "content": "\n".join(lines)})
+    return packed
+
+
 def synthesize_answer(
     question: str,
     passages: list[dict],
@@ -419,7 +435,15 @@ def synthesize_answer(
             None,
         )
         safe = [{**fact[0], "content": fact[1]}] if fact else []
-    if profile == "lab_qa" and safe:
+    overview = profile != "farm_diagnosis" and bool(
+        re.search(
+            r"tong quan|cac dich vu|nhung dich vu|cham soc lua|quy trinh canh tac|dich vu ho tro|cac nhom",
+            _words(question),
+        )
+    )
+    if overview:
+        context["multi_source"] = True
+    if profile == "lab_qa" and safe and not overview:
         # Keep the retriever's document order; title keywords can select an unrelated policy.
         title = safe[0]["document_title"]
         safe = [p for p in safe if p["document_title"] == title]
@@ -430,7 +454,23 @@ def synthesize_answer(
             for role in ("sinh viên", "giảng viên", "cán bộ")
             if _mentions(question, {_words(role)})
         ]
-        if len(roles) == 1:
+        if len(roles) == 1 and overview:
+            other_roles = [
+                role for role in ("sinh viên", "giảng viên", "cán bộ") if role != roles[0]
+            ]
+            for passage in safe:
+                lines = [
+                    line
+                    for line in passage["content"].splitlines()
+                    if not any(
+                        re.match(rf"^(?:Với\s+)?{role}\s*:", line, re.IGNORECASE)
+                        for role in other_roles
+                    )
+                ]
+                if lines:
+                    role_context.append({**passage, "content": "\n".join(lines)})
+            safe = role_context
+        elif len(roles) == 1:
             for passage in safe:
                 lines = [
                     line
@@ -441,6 +481,8 @@ def synthesize_answer(
                     role_context.append({**passage, "content": "\n".join(lines)})
             if role_context:
                 safe = role_context
+    if profile != "farm_diagnosis":
+        safe = _qa_context(safe)
     allowed = set(s for p in safe for s in p["source_ids"])
     if not allowed or sum(len(p["content"]) for p in safe) > 2000:
         return fallback_answer(passages, reason="insufficient_evidence")
@@ -451,7 +493,9 @@ def synthesize_answer(
     schema["properties"]["steps"]["items"].pop("maxLength", None)
     schema["properties"]["note"] = {"type": "null"}
     schema["properties"]["source_ids"]["items"]["enum"] = sorted(allowed)
-    schema["properties"]["source_ids"]["maxItems"] = 1
+    schema["properties"]["source_ids"]["maxItems"] = (
+        min(4, len(allowed)) if overview else 1
+    )
     actions_requested = bool(
         re.search(
             r"làm gì|làm sao|cách |xử lý|điều trị|hướng dẫn|các bước|cần làm|khắc phục|phòng ngừa",

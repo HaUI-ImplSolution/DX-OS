@@ -12,6 +12,8 @@ from app.api.schemas import (
     DiagnoseResponse,
     DiseaseDetectionResponse,
     ImagePrecheckResponse,
+    KnowledgeSearchRequest,
+    KnowledgeSearchResponse,
     RetrieveRequest,
     SymptomSuggestion,
     SymptomSuggestRequest,
@@ -26,6 +28,7 @@ from app.db.session import get_db
 from app.rag.answer_contract import GeneratedAnswer, KnowledgeAnswerRequest
 from app.rag.rag_service import synthesize_answer
 from app.rag.retriever import RAGRetriever
+from app.rag.reranker import chat_lifespan
 from app.services.inference_service import (
     ImageFetchError,
     fetch_image,
@@ -35,7 +38,7 @@ from app.services.plant_disease_service import PlantDiseaseService, precheck_ima
 from app.services.symptom_service import suggest_diseases
 
 router = APIRouter(prefix="/disease", tags=["Disease Detection"])
-inference_router = APIRouter(tags=["Inference"])
+inference_router = APIRouter(tags=["Inference"], lifespan=chat_lifespan)
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
 
 
@@ -139,6 +142,30 @@ def retrieve(payload: RetrieveRequest, db: Annotated[Session, Depends(get_db)]):
         namespace=payload.namespace,
         document_type=payload.document_type,
     )
+
+
+@inference_router.post(
+    "/knowledge/search",
+    response_model=KnowledgeSearchResponse,
+    summary="Search approved chatbot knowledge with hybrid retrieval and reranking",
+    dependencies=[Depends(authorize_backend)],
+)
+def search_knowledge(
+    payload: KnowledgeSearchRequest, db: Annotated[Session, Depends(get_db)]
+):
+    from app.rag.chat_search import ChatSearch
+
+    try:
+        return ChatSearch().search(
+            db,
+            payload.query,
+            payload.namespace,
+            payload.top_k,
+            payload.document_type,
+            payload.disease_code,
+        )
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
 
 
 @inference_router.post(

@@ -1,108 +1,167 @@
-# Phase 2 Mở rộng hỏi đáp lúa và kiểm soát ngoài phạm vi
+# Phase 2: Mở rộng hỏi đáp Farm/Lab và tìm kiếm hybrid
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Draft |
+| Trạng thái | Đang làm; đã triển khai engine/adapter, chưa đạt toàn bộ DoD và chưa nghiệm thu local |
 | Mức độ | Quan trọng |
 | Nhóm ưu tiên | A |
-| Ứng dụng và module chính | app-farm, app-lab, AI RAG, data/rag |
-| Ước lượng | 7–10 ngày làm việc, chưa tính thời gian chuyên gia duyệt dữ liệu |
-| Người phụ trách | Chưa chốt; cần 1 kỹ sư AI/data và 1 người duyệt nông nghiệp |
+| Ứng dụng và module chính | Chatbot web Farm/Lab, AI RAG, corpus và công cụ đánh giá độc lập |
+| Ước lượng | 8–12 ngày làm việc, chưa tính thời gian duyệt nguồn và nhãn |
+| Người phụ trách | Kỹ sư triển khai; chủ dự án/người có chuyên môn duyệt nội dung và nhãn |
 | Bắt đầu, dự kiến xong | Chưa chốt |
-| Phụ thuộc | Kết quả baseline của Phase 1; quyền truy cập nguồn và người duyệt |
+| Phụ thuộc | Qwen có cấu trúc hiện có; corpus được phép dùng; Docker local và tài nguyên cho reranker |
 
 ## 1. Tham chiếu
 
-| Nguồn yêu cầu | Nội dung | Mức độ | Phạm vi trong phase này |
+| Nguồn yêu cầu | Nội dung | Mức độ | Phạm vi |
 |---|---|---|---|
-| Yêu cầu chủ dự án | Câu hỏi về ô tô hoặc chủ đề không liên quan phải nhận câu trả lời không biết | Quan trọng | Tầng scope gate trước RAG của Farm và Lab |
-| Yêu cầu chủ dự án | Hỏi về lúa nói chung phải trả lời được, không chỉ bệnh | Quan trọng | Corpus và pipeline ingest Farm mới |
-| Yêu cầu mở rộng | Câu hỏi ngoài chủ đề DX-Lab phải bị từ chối, câu hỏi đúng chủ đề nhưng thiếu tài liệu phải nói rõ chưa biết | Quan trọng | Scope gate theo namespace `lab` |
-| `docs/BACKLOG.md`, mục 4 | Farm RAG hiện chỉ có 6 tài liệu bệnh lúa | Quan trọng | Mở rộng nhóm tài liệu |
-| `ai/app/rag/README.md` | Runtime chỉ đọc, ingest tách riêng, câu trả lời phải có evidence | Bắt buộc | Giữ nguyên ranh giới an toàn |
-| `docs/_template` | Quy ước phase, checklist và test | Tham chiếu | Toàn bộ |
+| Chủ dự án, 28/10/2026 | Hỏi tổng quan đúng lĩnh vực phải tìm được kiến thức, không cần chỉ rõ bệnh/sự cố | Bắt buộc | Chatbot Farm/Lab |
+| Chủ dự án, 28/10/2026 | BM25 + cosine + rerank; nới chặn từ có kiểm soát | Bắt buộc | Chỉ chatbot |
+| Chủ dự án, 28/10/2026 | Chẩn đoán giữ trạng thái hiện tại | Bắt buộc | CV, Graph, evidence bệnh và giải thích chẩn đoán |
+| [ARCHITECTURE.md](../../ARCHITECTURE.md) và [CONTRIBUTING.md](../../CONTRIBUTING.md) | Core trung tính; interface/implementation/app registration tách nhau; Backend sở hữu facts | Bắt buộc | Backend/AI |
+| [Đề thi chính thức](../reference/De_thi_PMNM_HaUI_2026_BAN_CHINH_THUC.pdf), mục 3, 4.1–4.2 | Core headless dùng chung; RAG/semantic search thuộc năng lực I – Intelligence | Bắt buộc | Dịch vụ RAG chung được app sử dụng qua Core |
+| [ai/README.md](../../ai/README.md) | Runner độc lập, Langfuse local, một lệnh shell và tự dọn | Bắt buộc | Đánh giá |
+| [BACKLOG.md](../BACKLOG.md) | Corpus Farm ít chủ đề; nhãn RAG chưa rà đầy đủ; hạn chế Qwen Lab | Tham chiếu | Coverage và chất lượng trả lời |
+| [docs/_template](../_template/README.md) | Spec → Swagger → code; checklist cần bằng chứng | Bắt buộc | Toàn bộ |
 
-## 2. Lý do
+Đã đọc `ai/.codex/AGENTS.md`, skill RAG và verification trong `ai/.codex/skills/`, cùng workflow và skill Spring Boot trong `backend/.claude/`.
+Tái sử dụng pgvector, embedding, Qwen, gateway và runner; không đưa thêm framework RAG hoặc dịch vụ search riêng.
 
-- Retriever hiện mặc định lọc `document_type="disease_knowledge"`, nên câu hỏi canh tác lúa ngoài bệnh không có corpus phù hợp.
-- Chưa có scope gate trước truy xuất, nên câu hỏi như “xe ô tô nên thay dầu gì” vẫn có thể nhận các đoạn gần nhất trong kho bệnh.
-- Nguồn mới chỉ được đưa vào RAG sau khi kiểm tra nguồn, ngôn ngữ/domain, bản quyền, phạm vi áp dụng và duyệt nội dung; corpus hiện hữu cũng phải được audit lại.
+## 2. Lý do và hiện trạng khi bắt đầu
+
+Câu tổng quan có thể cần nhiều tài liệu, trong khi corpus và các chốt xử lý hiện thiên về một bệnh hoặc một hướng dẫn cụ thể.
+Điểm pilot Farm Recall@4 = 0,75 và nDCG@4 = 0,596363 cho thấy còn khoảng trống trên bộ nhãn đó, chưa xác định riêng lỗi do corpus, gate hay ranking.
+Cần đo các tầng riêng để kiểm chứng nguyên nhân thay vì mặc định thêm reranker sẽ tăng điểm.
+
+| Thành phần đã có | Hạn chế cần xử lý |
+|---|---|
+| Cosine pgvector, embedding multilingual MiniLM 384 chiều; boost tiêu đề 0,15 | Chưa có BM25 hoặc cross-encoder; câu rộng có thể thiếu bằng chứng nhiều khía cạnh |
+| Scope gate từ khóa ở AI và `KnowledgeGatewayService` | Hai bản logic khác nhau; thiếu từ khóa bị từ chối dù đúng lĩnh vực; Core đang chứa từ khóa app |
+| Chatbot Backend gọi endpoint retrieve rồi Qwen qua AiGateway | Đường chạy này không đi qua `RAGService.answer`; sửa riêng hàm đó không sửa được chatbot sản phẩm |
+| Qwen có schema và guard, Lab chỉ giữ tài liệu đầu; context tối đa 2.000 ký tự | Chặn mất bằng chứng cần cho câu tổng quan; không được nới giới hạn dùng chung làm ảnh hưởng diagnosis |
+| 7 tài liệu Farm mới và registry đã được chủ dự án duyệt ngày 28/10/2026 | Metadata đã APPROVED; có bài mới lấy được mục lục nên vẫn cần bổ sung nội dung để tăng coverage |
+| Lab có manifest cách ly 9 nguồn vì không thuộc SICT | Loader mới từ chối registry đang có; validator báo `lab_active=0`; chưa được coi là corpus phục vụ hợp lệ |
+| `--corpus farm` mặc định vẫn là corpus bệnh | Chưa nạp kiến thức tổng quát qua cách khởi động hiện có |
+| `ai/evaluate.sh` và Langfuse replay đã có | Bootstrap lặp mọi `CORPORA`; draft mới làm lỗi, collector nhầm key `farm_knowledge` là namespace; cần cập nhật theo manifest |
 
 ## 3. Tổng quan sửa đổi
 
-1. Tạo bộ phân loại phạm vi theo ứng dụng/namespace và trả lời từ chối ổn định với câu ngoài lĩnh vực.
-2. Tách trạng thái `OUT_OF_SCOPE`, `IN_SCOPE_NO_EVIDENCE` và `ANSWERABLE` để không nhầm “không biết” với “chưa có tài liệu”.
-3. Mở rộng corpus Farm theo chủ đề: canh tác, giống, đất/dinh dưỡng, nước, cỏ dại, sâu hại/IPM, bệnh, thu hoạch và sau thu hoạch.
-4. Áp dụng cùng scope contract cho Lab nhưng giữ namespace `lab`, nguồn HaUI và taxonomy hỗ trợ CNTT riêng.
-5. Xây job crawl/ingest allowlist có rate limit, lưu raw snapshot, checksum, thời điểm truy cập và provenance.
-6. Chuẩn hóa, kiểm duyệt, đánh giá retrieval rồi ingest atomic vào namespace tương ứng.
+1. Chốt baseline và hợp đồng chatbot riêng, giữ nguyên đường retrieve cho diagnosis và trợ giúp ticket.
+2. Rà nguồn, bổ sung kiến thức tổng quan có nội dung thực, duyệt trước khi ingest.
+3. Chatbot kết hợp BM25 và cosine bằng RRF, sau đó cross-encoder rerank.
+4. Câu mơ hồ được tìm trong namespace trước khi quyết định thiếu bằng chứng; không bắt buộc tên bệnh/sự cố.
+5. Qwen tổng hợp nhiều đoạn phù hợp theo bố cục hiện có, giữ nguồn và guard an toàn.
+6. Nâng runner hiện có để chấm so sánh, đo tải, xuất Langfuse local rồi tự dừng dịch vụ đánh giá.
 
-| Module hoặc lớp | Có thay đổi | Ghi chú ngắn |
+| Module hoặc lớp | Có thay đổi | Giới hạn |
 |---|---|---|
-| `dx-core-api`, `dx-core`, `dx-host` | Không | Không đổi nghiệp vụ dùng chung |
-| `app-farm` / `app-lab` / AI API | Có | Scope gate và response fields theo namespace |
-| Frontend web/mobile | Có thể có | Hiển thị thông báo ngoài phạm vi và nguồn theo trạng thái |
-| AI | Có | Classifier/gate, retriever filter, tests |
-| Data / Seed / Migration | Có, không đổi schema DB | Corpus, registry, raw/processed và version; dữ liệu mới chiếu vào bảng RAG hiện có |
-| Infra / Deploy / CI | Có | Job crawl/ingest riêng, credential write chỉ ở job |
-| Docs | Có | Tài liệu nguồn, đánh giá và vận hành |
+| `dx-core-api` | Không dự kiến | Dùng `KnowledgeGateway.ask/retrieve`, DTO scope và namespace đang có |
+| `dx-core` | Có, adapter Knowledge | Bỏ từ khóa Farm/Lab; `ask` gọi search chatbot, `retrieve` giữ đường cũ; không đổi Core nghiệp vụ |
+| `app-farm`, `app-lab` | Có, Knowledge và registry nguồn | Tích hợp evidence, metadata cần thiết; không đổi disease report, ticket workflow hoặc phê duyệt |
+| `dx-host` | Không | Không đổi chọn app, seed hoặc migration |
+| Frontend web | Có, màn Knowledge | Thông báo, nguồn, diễn giải điểm; không đổi giao diện chẩn đoán |
+| Mobile | Không | Không thêm chatbot hoặc nâng SDK |
+| AI | Có | Search chatbot, index BM25, reranker, gate và profile QA; giữ profile diagnosis |
+| Data / Seed / Migration | Corpus/registry có; seed/migration không | Thêm corpus chatbot; giữ nguyên nội dung, chunk và embedding của corpus bệnh |
+| Infra / Deploy / CI | Evaluation riêng có; `deploy/` và CI không | Tái dùng cache/model và entrypoint ingest hiện có; không thêm service sản phẩm |
+| Dependency, giấy phép | Có nếu thêm BM25 | Pin tối thiểu, cập nhật lock, LICENSES và SBOM theo quy ước |
+| Docs | Có | Chỉ mục liên quan trong AI README, RAG README, TESTING, BACKLOG, CHANGELOG và tài liệu nguồn |
 
 ## 4. Phạm vi
 
-- Trong phạm vi: hỏi đáp tiếng Việt về lúa và nông nghiệp liên quan trực tiếp đến sản xuất lúa; hỏi đáp DX-Lab trong các chủ đề tài liệu Lab đã được duyệt; scope gate; citation; đánh giá retrieval và từ chối.
-- Ràng buộc nguồn Farm: mọi dữ liệu về lúa và nông nghiệp phải lấy từ nguồn uy tín có nội dung tiếng Việt; nguồn tiếng Anh hoặc nguồn không xác minh được uy tín không được ingest.
-- Ràng buộc nguồn Lab: chỉ được crawl và ingest các URL thuộc `https://sict.haui.edu.vn` hoặc các đường dẫn con của domain này.
-- Ngoài phạm vi Farm: chatbot tư vấn ô tô hoặc nông nghiệp mọi cây trồng; tự động đưa liều thuốc/PHI; tự động biến nội dung crawl thành treatment rule.
-- Ngoài phạm vi Lab: hỗ trợ kỹ thuật chưa có tài liệu, yêu cầu truy cập hệ thống, thao tác thay đổi dữ liệu, chẩn đoán sự cố ngoài catalog và mọi câu hỏi không thuộc CNTT/quy định/dịch vụ Lab được công bố.
-- Ngoài phạm vi chung: LLM judge và GraphRAG.
-- Giả định: Backend vẫn là nguồn sự thật cho thuốc, liều, PHI và policy; RAG chỉ cung cấp giải thích có dẫn nguồn.
-- Ranh giới Core/App: thay đổi thuộc AI/app-farm và AI/app-lab; không đưa dependency của Farm hoặc Lab vào core.
+Domain là tìm kiếm và tổng hợp kiến thức cho chatbot web trong namespace đang được app chọn.
+Farm hỗ trợ kiến thức trồng lúa, canh tác và IPM; không mở sang mọi cây trồng.
+Lab hỗ trợ hướng dẫn sử dụng, quy định và dịch vụ CNTT/vận hành được tài liệu chính thức của Lab/HaUI bao phủ.
+Câu rộng vẫn cần evidence; không dùng kiến thức nền Qwen để bù corpus trống.
+
+Ngoài phạm vi: CV, ngưỡng 0,7, Graph chẩn đoán, truy xuất/giải thích `farm_diagnosis`, thuốc/liều/PHI, treatment rule, workflow, auth, schema nghiệp vụ, deploy và CI.
+Trợ giúp ticket tiếp tục dùng `KnowledgeGateway.retrieve` như hiện tại, không bị kéo vào chatbot hybrid.
+Không thêm bộ nhớ hội thoại, GraphRAG, LLM judge, tracing bắt buộc hoặc dịch vụ search mới.
+
+Core cung cấp KnowledgeGateway/AiGateway trung tính và gộp evidence theo cách hiện có.
+AiGateway chỉ chuyển request/response tới AI Service, gắn service key và chuyển đổi lỗi; không cài BM25, cosine, RRF, rerank hoặc chạy Qwen trong lớp gateway.
+Bộ máy retrieval và generation dùng chung được triển khai một lần trong AI Service; Farm/Lab dùng lại qua namespace/profile.
+App giữ namespace/registry và điều kiện nghiệp vụ; AI xử lý retrieval và scope theo namespace đã được server xác định.
+Giữ hai lượt gọi: search → Backend gộp evidence → gọi Qwen khi includeAnswer và evidence hợp lệ.
+Hợp đồng, bố cục và các chốt theo profile vẫn giữ riêng; cùng bộ máy không có nghĩa dùng chung dữ liệu hoặc bỏ safety.
+Client không được tự đổi namespace để đọc kho của app khác.
+Chủ dự án đã phê duyệt toàn bộ 7 tài liệu Farm do đồng đội đưa lên nhánh, ghi `approved_by=project_owner`, ngày 28/10/2026.
+Quyết định này không phải phê duyệt nhãn đánh giá, chứng nhận chuyên gia độc lập hoặc quyền tái phân phối nguồn.
+Nguồn bổ sung sau này cần quyết định duyệt riêng; không làm trống corpus Lab hiện hữu chỉ vì khác host SICT.
+
+### Domain và ranh giới được sửa
+
+| Domain được phép | Phạm vi file/lớp | Giới hạn |
+|---|---|---|
+| Cầu nối Knowledge của Core | `KnowledgeGatewayService` và test tương ứng | Đổi đường ask/đọc envelope; giữ đăng ký namespace, gộp và đường retrieve legacy |
+| Bộ máy RAG chatbot dùng chung | `ai/app/rag/`, schema/route search mới, Settings và test liên quan | BM25/cosine/RRF/rerank/scope/QA; không viết lại engine cho từng app hoặc chuyển thuật toán vào Java Core |
+| Tích hợp Knowledge theo app | Farm/Lab KnowledgeService/DTO, annotation KnowledgeController và registry nguồn | Giữ opt-in/profile/nguồn, không sửa workflow nghiệp vụ |
+| Nội dung chatbot | Corpus tổng quát, registry, crawler/ingest/validator và bộ nhãn | Giữ corpus bệnh, structured facts và SQL seed; không thu thập dữ liệu ngoài miền |
+| Màn chatbot web | Knowledge page, type/card trực tiếp liên quan | Format, scope, nguồn và ý nghĩa score; không đổi màn nghiệp vụ khác |
+| Công cụ đánh giá | evaluate.sh, evaluation/, collector/scorer/publisher/k6 | DB và lifecycle riêng; không sửa startup sản phẩm |
+| Đóng gói và tài liệu trực tiếp liên quan | Requirement/lock/license/SBOM, các mục tài liệu đã liệt kê | Chỉ dependency/model cần cho RAG; build bằng cache, không tái cấu trúc dự án |
+
+Không sửa interface Core hiện có, `AiServiceGateway`, auth/SSO, workflow, audit, notification, storage, BI/monitor hoặc cách chọn app.
+Không sửa CV/model/threshold, Graph, retriever legacy, prompt/guard diagnosis, treatment rules, thuốc/liều/PHI, ticket suggestions, mobile, schema/migration/seed nghiệp vụ, `deploy/`, CI hoặc `.gitignore`.
+Các file dùng chung như router, schema, config, rag_service và prompt_builder chỉ được sửa nhánh chatbot; phải có test chứng minh nhánh diagnosis giữ nguyên.
+Nếu một thay đổi cần vượt bảng này, dừng phần phụ thuộc, ghi rõ file/lý do/ảnh hưởng và chờ chủ dự án mở phạm vi; công việc độc lập trong domain vẫn tiếp tục.
+Lỗi có sẵn ngoài domain chỉ ghi BACKLOG, không sửa để làm xanh CI hoặc checklist.
 
 ## 5. Ưu điểm và hạn chế
 
-- Ưu điểm: giảm hallucination ngoài miền, câu hỏi lúa có coverage rộng hơn, mọi đoạn đều truy ngược được về nguồn, không làm lẫn dữ liệu Farm và Lab.
-- Hạn chế: scope gate có thể từ chối câu hỏi mơ hồ; dữ liệu địa phương cần chuyên gia duyệt; crawl không đồng nghĩa với được phép tái phân phối nội dung.
-- Trade-off lớn: ưu tiên precision của từ chối và an toàn nguồn hơn recall tuyệt đối; xem `04_TRADEOFFS_RISKS.md`.
+BM25 bổ sung khớp thuật ngữ; cosine tìm diễn đạt gần nghĩa; reranker xếp lại các ứng viên theo câu hỏi.
+Câu tổng quan có thể dùng nhiều tài liệu nhưng vẫn bị giới hạn ngân sách context và nguồn được phép dùng.
+Rerank không tạo được kiến thức chưa có, không bảo đảm tiếng Việt tốt trước khi đo, và tăng CPU/RAM/độ trễ.
+Xem [04_TRADEOFFS_RISKS.md](04_TRADEOFFS_RISKS.md).
 
-## 6. Kết quả đầu ra mong đợi Definition of Done
+## 6. Kết quả đầu ra mong đợi (Definition of Done)
 
-- Demo Farm: hỏi “xe ô tô thay dầu gì?” nhận thông báo chatbot chỉ hỗ trợ kiến thức nông nghiệp/lúa; hỏi “lúa giai đoạn đẻ nhánh cần quản lý nước thế nào?” nhận câu trả lời có nguồn.
-- Demo Lab: hỏi “cách đặt lại mật khẩu Wi-Fi HaUI?” chỉ trả lời nếu có tài liệu Lab; hỏi “cách sửa động cơ ô tô?” bị từ chối, không lấy nhầm tài liệu HaUI.
-- Demo: hỏi về bệnh lúa vẫn giữ luồng hiện tại; hỏi ngoài bệnh nhưng đúng lúa không bị lọc vào `disease_knowledge`.
-- API trả thêm trạng thái scope và reason ổn định, không phá client cũ nếu client bỏ qua field mới.
-- Corpus Farm có tối thiểu 8 nhóm chủ đề, mỗi nhóm có tài liệu đã duyệt và source registry hợp lệ.
-- Corpus hiện hữu được audit; nguồn Farm không phải tiếng Việt và nguồn Lab ngoài `sict.haui.edu.vn` được quarantine hoặc loại khỏi dữ liệu phục vụ.
-- 100% câu hỏi out-of-scope trong bộ test bắt buộc bị từ chối; không có citation sai namespace cho câu bị từ chối.
-- Câu hỏi in-scope có evidence đạt ngưỡng đã chốt từ baseline Phase 1; câu thiếu bằng chứng ở Farm hoặc Lab trả `IN_SCOPE_NO_EVIDENCE`.
-- Ingest là job quản trị, có dry-run, validate, version artifact và rollback bằng cách ingest lại corpus trước đó.
-- Giữ nguyên migration hiện tại; mở rộng contract ingest để dữ liệu không phải bệnh lúa không cần `disease_code` hoặc field đặc thù của bệnh.
-- Có báo cáo precision/recall của scope gate và Recall@k/nDCG@k của corpus mới.
-- Có bằng chứng: test report, manifest corpus, registry nguồn, log dry-run/ingest và ảnh demo.
+- Farm trả lời được câu tổng quan canh tác/chăm sóc và câu bệnh cụ thể khi corpus có hỗ trợ.
+- Lab trả lời được câu tổng quan dịch vụ, quy định và câu kỹ thuật cụ thể; nội dung thuộc nhiều tài liệu không bị ép vào tài liệu đầu.
+- Câu đúng lĩnh vực nhưng thiếu từ khóa được thử tìm kiếm; câu ngoài lĩnh vực rõ ràng, thiếu evidence hoặc cần thẩm quyền được phản hồi đúng trạng thái.
+- Chatbot dùng BM25 + cosine → RRF → rerank thật; chiến lược sử dụng và trạng thái suy giảm được ghi rõ.
+- Có một bộ máy RAG/generation chung trong AI Service, gọi qua AiGateway hiện có; hai lượt search và Qwen giữ Backend gộp evidence ở giữa.
+- Core tuân thủ interface/implementation/app registration hiện có; không cài từ khóa app hoặc thư viện AI vào Java Core, không đổi các dịch vụ Core ngoài Knowledge.
+- Mọi nguồn trả cho Qwen và web có registry, quyền dùng và locator; corpus mới chỉ nhận nội dung được duyệt.
+- Diagnosis và ticket giữ đường legacy; 6 query diagnosis có ranking/evidence không đổi trên cùng snapshot, threshold và thuốc/liều/PHI không đổi.
+- Bộ đánh giá có nhóm câu tổng quan/cụ thể/mơ hồ/no-evidence/ngoài miền riêng cho Farm và Lab; có calibration/holdout và nhãn theo snapshot.
+- Báo Recall@4/nDCG@4 thực đo của bốn strategy trên cùng corpus, tách app và nhóm câu hỏi; nêu rõ phần tăng/giảm và giới hạn nhãn. Theo chủ dự án ngày 28/10/2026, không bắt buộc vượt baseline để nghiệm thu.
+- Recall của gate trên câu đúng miền ít nhất 95% mỗi app; toàn bộ ca bắt buộc ngoài miền, chéo namespace và yêu cầu vượt thẩm quyền đều xử lý đúng.
+- Quality đo tại ranking chatbot cuối sau gate/ngưỡng trước gộp Backend; có ranking trung gian để phân tích và điểm CLI khớp trong sai số `1e-8`.
+- Các câu no-evidence không có nhãn dương không nhập chung Recall/nDCG của nhóm answerable; đo từ chối và false reject riêng.
+- Một lệnh `./ai/evaluate.sh quality`, `performance` hoặc `all` tự chuẩn bị DB/model/tool, đo và xuất Langfuse/báo cáo; `view`, `down` vẫn hoạt động.
+- Evaluation không kết nối DB/volume/network sản phẩm; Enter, timeout, lỗi và tín hiệu đều cleanup đúng project, giữ artifact/cache/lịch sử.
+- Đạt ngân sách retrieval dự kiến p95 ≤ 8 giây ở 1 VU, không OOM/HTTP lỗi ở tải đã chốt; ghi cả phần cứng và cold/warm, không coi đây là SLA production.
+- Build và kiểm thử thật cho Farm/Lab bằng cách khởi động trong README, dùng cache; không dựng thêm toàn bộ stack hoặc prune máy.
+
+Tiêu chí so sánh điểm đã được chủ dự án điều chỉnh ngày 28/10/2026; các chốt đúng miền, đúng nguồn, thẩm quyền và hồi quy hệ thống vẫn giữ nguyên.
 
 ## 7. Phụ thuộc và thứ tự
 
-- Cần từ Phase 1: baseline retrieval và bộ câu hỏi được kiểm tra nhãn.
-- Thứ tự: chốt taxonomy/contract → tạo bộ test scope → triển khai gate → chọn/crawl nguồn → chuẩn hóa/duyệt → ingest → đánh giá → demo.
-- Phase sau cần từ phase này: corpus version theo namespace, scope contract và danh sách backlog nguồn còn thiếu.
+`WP2-01` chốt contract/baseline → `WP2-02` corpus/nhãn → `WP2-03` hybrid → `WP2-04` gate/Qwen → `WP2-05` runner → `WP2-06` build, đo và bàn giao.
+Baseline và đối chứng dùng cùng snapshot, embedding và phần cứng cho mỗi phép so sánh.
+Duyệt corpus và nhãn là hai công việc riêng; không dùng sự đồng ý pilot cũ để duyệt dữ liệu mới.
 
 ## 8. Ảnh hưởng đến thi
 
-- Cải thiện phần AI/RAG, provenance, guardrail và khả năng giải thích trong demo Farm và Lab.
-- Dùng làm bằng chứng cho báo cáo kỹ thuật, slide và video hỏi đáp.
+Có demo hỏi tổng quan và hỏi cụ thể, nguồn kiểm chứng được và bảng so sánh từng chiến lược.
+Langfuse cho xem query, nhãn, ranking và điểm; ir_measures chấm truy xuất, không chứng nhận câu Qwen đúng hoặc accuracy chẩn đoán.
 
 ## 9. Câu hỏi mở và quyết định cần chốt
 
-| # | Câu hỏi | Lựa chọn | Hạn chốt | Kết luận |
-|---|---|---|---|---|
-| Q1 | Scope Farm hỗ trợ “nông nghiệp nói chung” hay chỉ lúa? | A: lúa trước, B: mọi cây trồng | Trước WP2 | A: lúa trước; ngoài lúa chỉ mở sau khi có corpus |
-| Q2 | Nguồn nào được phép nạp nội dung? | A: allowlist nguồn chính thống, B: crawl mở | Trước WP2 | A |
-| Q3 | Câu in-scope nhưng chưa có evidence trả gì? | A: nói chưa có dữ liệu và gợi ý hỏi lại, B: LLM trả theo kiến thức nền | Trước WP1 | A |
-| Q4 | Có cho phép tự động crawl định kỳ production không? | A: job staging + duyệt rồi ingest, B: tự động ingest | Trước WP2 | A |
+| # | Quyết định | Hướng trong kế hoạch | Mốc chốt |
+|---|---|---|---|
+| Q1 | Reranker và ngân sách máy | Dùng mMARCO multilingual MiniLM; BGE đo 20 cặp mất 24 giây và ~2,8 GiB RAM, MiniLM ~0,5 giây và ~926 MiB trong phép thử nhỏ | Đã đo 28/10/2026; chất lượng tiếng Việt tiếp tục kiểm bằng pilot |
+| Q2 | Nguồn Lab | Rà allowlist host chính thức theo registry hiện hữu và SICT; không áp dụng SICT-only cho toàn bộ kho | Trước ingest WP2-02 |
+| Q3 | Ngưỡng và tiêu chí | Calibration riêng từng app; khóa mục tiêu mục 6 và ngân sách trước holdout | Trước WP2-05 đo chính thức |
+| Q4 | Phê duyệt | Chủ dự án đã duyệt 7 tài liệu Farm hiện có; nhãn đánh giá và dữ liệu bổ sung sau này được duyệt riêng | Nội dung hiện có đã chốt 28/10/2026; nhãn trước công bố |
 
 ## 10. Tài liệu cần cập nhật khi xong
 
-- [ ] `ai/app/rag/README.md`, `ai/README.md` và tài liệu vận hành crawl/ingest.
-- [ ] `data/README.md`, `data/rag/source_registry.json` hoặc registry mới theo schema đã chốt.
-- [ ] `docs/BACKLOG.md`: xóa mục kho RAG chỉ có bệnh lúa nếu DoD đạt; thêm nguồn Farm/Lab chưa duyệt.
-- [ ] API/OpenAPI nếu response chat thêm field công khai.
-- [ ] `docs/AI_EVALUATION.md` hoặc báo cáo đánh giá mới nếu chốt công bố kết quả.
+- [ ] `ai/README.md`, `ai/app/rag/README.md`: luồng, cache và một lệnh đánh giá.
+- [ ] `data/README.md`, hướng dẫn corpus/evaluation: review, nhãn, snapshot và rollback.
+- [ ] `docs/TESTING.md`: phương pháp và kết quả thật, giữ số liệu lịch sử đúng nhãn.
+- [ ] `docs/BACKLOG.md`, `CHANGELOG.md`: chỉ cập nhật mục liên quan, giữ log cũ.
+- [ ] Swagger: search nội bộ và ý nghĩa score/status, không đổi contract diagnosis.
+- [ ] `LICENSES.md`, SBOM theo quy ước khi thay dependency/model; không gán license model cho nguồn crawl.
+- [ ] Chỉ cập nhật đoạn Knowledge trong `ARCHITECTURE.md` nếu cần phản ánh thay đổi adapter; không vẽ lại hệ thống.

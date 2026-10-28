@@ -891,3 +891,42 @@ class GeneratedAnswerChecks(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class OverviewAnswerChecks(unittest.TestCase):
+    def test_lab_overview_can_use_multiple_registered_sources(self):
+        passages = [
+            dict(
+                document_title="Wifi",
+                content="Với sinh viên: Nhà trường hỗ trợ kết nối mạng.\nVới cán bộ: Dùng quy trình nội bộ riêng.",
+                source_ids=["src_wifi"],
+            ),
+            dict(
+                document_title="Email",
+                content="Nhà trường cung cấp hộp thư cho sinh viên.",
+                source_ids=["src_email"],
+            ),
+        ]
+        model = Model(
+            dict(
+                summary="Có dịch vụ mạng và hộp thư cho sinh viên.",
+                steps=[],
+                note=None,
+                source_ids=["src_wifi", "src_email"],
+            )
+        )
+        with patch(
+            "app.rag.rag_service.load_source_registry",
+            return_value={"src_wifi": {}, "src_email": {}},
+        ):
+            answer = synthesize_answer(
+                "Có những dịch vụ hỗ trợ nào cho sinh viên?",
+                passages,
+                "lab_qa",
+                llm=model,
+            )
+        self.assertEqual(answer.mode, "generated")
+        supplied = json.loads(model.calls[0][1][1])["evidence"]
+        self.assertEqual(len(supplied), 2)
+        self.assertNotIn("quy trình nội bộ", str(supplied))
+        self.assertEqual(set(answer.source_ids), {"src_wifi", "src_email"})

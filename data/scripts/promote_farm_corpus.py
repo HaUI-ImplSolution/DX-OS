@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -24,9 +25,13 @@ def main() -> None:
         action="store_true",
         help="Record explicit operator approval for every staged document.",
     )
+    parser.add_argument("--reviewer", help="Identity of the person authorizing promotion.")
     args = parser.parse_args()
     if not args.approve_all:
         raise SystemExit("Refusing promotion: pass --approve-all after human review.")
+
+    if not args.reviewer or not args.reviewer.strip():
+        raise SystemExit("Refusing promotion: --reviewer is required after human review.")
 
     data_path = STAGING / "processed" / "farm_knowledge_staging.json"
     registry_path = STAGING / "source_registry.json"
@@ -37,7 +42,8 @@ def main() -> None:
 
     for item in documents:
         item["review_status"] = "APPROVED"
-        item["approved_at"] = "2026-10-27"
+        item["approved_by"] = args.reviewer.strip()
+        item["approved_at"] = datetime.now(timezone.utc).date().isoformat()
         item["approval_note"] = (
             "Operator-approved for grounded Farm knowledge RAG. "
             "Treatment facts remain subject to Backend safety rules."
@@ -46,7 +52,8 @@ def main() -> None:
 
     for item in registry:
         item["review_status"] = "APPROVED"
-        item["approved_at"] = "2026-10-27"
+        item["approved_by"] = args.reviewer.strip()
+        item["approved_at"] = datetime.now(timezone.utc).date().isoformat()
 
     (CANONICAL / "processed" / "farm_knowledge.json").write_text(
         json.dumps(documents, ensure_ascii=False, indent=2), encoding="utf-8"
@@ -64,7 +71,8 @@ def main() -> None:
     queue = json.loads((STAGING / "review_queue.json").read_text(encoding="utf-8"))
     for item in queue:
         item["review_status"] = "APPROVED"
-        item["approved_at"] = "2026-10-27"
+        item["approved_by"] = args.reviewer.strip()
+        item["approved_at"] = datetime.now(timezone.utc).date().isoformat()
     (STAGING / "review_queue.json").write_text(
         json.dumps(queue, ensure_ascii=False, indent=2), encoding="utf-8"
     )

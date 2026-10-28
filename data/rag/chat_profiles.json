@@ -1,0 +1,136 @@
+{
+  "farm": {
+    "terms": [
+      "lúa",
+      "ruộng",
+      "đạo ôn",
+      "đốm nâu",
+      "khô vằn",
+      "tungro",
+      "lúa cỏ"
+    ],
+    "excluded_terms": [
+      "ô tô",
+      "xe hơi",
+      "xe máy",
+      "chứng khoán",
+      "cổ phiếu",
+      "bóng đá",
+      "du lịch",
+      "bitcoin",
+      "crypto",
+      "wifi",
+      "máy chiếu",
+      "email",
+      "bảo hiểm",
+      "tiếng Anh",
+      "làm bánh",
+      "nấu ăn",
+      "khách sạn",
+      "giá vàng",
+      "sinh nhật",
+      "cây cảnh",
+      "trồng rau",
+      "cà chua",
+      "thời trang",
+      "mua điện thoại",
+      "đội bóng",
+      "vô địch",
+      "phở",
+      "bài thơ",
+      "phim"
+    ],
+    "allowed_hosts": [
+      "khuyennongvn.gov.vn",
+      "vaas.vn"
+    ],
+    "overview_terms": [
+      "chăm sóc lúa",
+      "tổng quan canh tác",
+      "quy trình canh tác",
+      "các kỹ thuật canh tác"
+    ],
+    "specific_terms": [
+      "đạo ôn",
+      "đốm nâu",
+      "khô vằn",
+      "tungro",
+      "đen lép",
+      "lúa cỏ"
+    ],
+    "overview_document_types": [
+      "farm_knowledge"
+    ],
+    "excluded_patterns": [
+      "\\bthoi tiet\\b.*\\b(hom nay|ngay mai)\\b"
+    ]
+  },
+  "lab": {
+    "terms": [
+      "haui",
+      "wifi",
+      "wi-fi",
+      "email",
+      "máy chiếu",
+      "mật khẩu",
+      "tài khoản",
+      "thư viện",
+      "sict",
+      "phòng máy",
+      "bitlocker",
+      "faronics",
+      "lms"
+    ],
+    "excluded_terms": [
+      "ô tô",
+      "xe hơi",
+      "xe máy",
+      "nấu ăn",
+      "bóng đá",
+      "chứng khoán",
+      "bitcoin",
+      "lúa",
+      "ruộng",
+      "đạo ôn",
+      "trồng rau",
+      "giá vàng",
+      "khách sạn",
+      "sinh nhật",
+      "dinh dưỡng",
+      "thuốc cảm",
+      "du lịch",
+      "cây cảnh",
+      "phở bò",
+      "mua điện thoại",
+      "đội bóng",
+      "vô địch",
+      "phở",
+      "bài thơ",
+      "phim"
+    ],
+    "allowed_hosts": [
+      "lic.haui.edu.vn",
+      "itc.haui.edu.vn",
+      "tac.haui.edu.vn",
+      "sict.haui.edu.vn"
+    ],
+    "overview_terms": [
+      "tổng quan",
+      "các dịch vụ",
+      "những dịch vụ",
+      "dịch vụ hỗ trợ"
+    ],
+    "specific_terms": [],
+    "overview_document_types": [
+      "lab_knowledge"
+    ],
+    "excluded_patterns": [
+      "\\bthoi tiet\\b.*\\b(hom nay|ngay mai)\\b"
+    ],
+    "audience_exclusions": {
+      "sinh viên": [
+        "SRC_HAUI_ITC_FARONICS"
+      ]
+    }
+  }
+}

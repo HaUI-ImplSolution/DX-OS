@@ -25,6 +25,7 @@ langchain-postgres>=0.0.12,<1.0
 langchain-ollama>=0.2,<1.0
 
 # RAG / Document ingestion
+rank-bm25==0.2.2
 sentence-transformers>=3.0,<6.0
 pypdf>=5.0,<7.0
 python-docx>=1.1,<2.0

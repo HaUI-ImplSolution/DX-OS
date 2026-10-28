@@ -2,7 +2,9 @@
 
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 AI_ROOT = Path(__file__).resolve().parents[2]
@@ -22,11 +24,17 @@ class Settings(BaseSettings):
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "qwen2.5:1.5b"
     embedding_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-    rag_scope_min_confidence: float = 0.80
-    rag_min_similarity: float = 0.40
-    rag_out_of_scope_message: str = (
-        "Câu hỏi nằm ngoài phạm vi kiến thức được hỗ trợ."
+    chat_retrieval_strategy: Literal["legacy", "bm25", "hybrid", "hybrid_rerank"] = (
+        "hybrid_rerank"
     )
+    chat_candidate_count: int = Field(default=20, ge=4, le=40)
+    chat_reranker_model: str = "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1"
+    chat_rerank_min_score: float = Field(default=0.005, ge=0, le=1)
+    chat_cosine_min_score: float = Field(default=0.40, ge=-1, le=1)
+    chat_rerank_max_length: int = Field(default=256, ge=64, le=512)
+    chat_rerank_batch_size: int = Field(default=4, ge=1, le=16)
+    chat_rerank_timeout_seconds: float = Field(default=6, gt=0, le=6)
+    chat_queue_timeout_seconds: float = Field(default=8, gt=0, le=8)
 
     cv_weights_path: Path = AI_ROOT / "models" / "efficientnetv2m_rice_disease.pth"
     cv_weights_sha256: str | None = None

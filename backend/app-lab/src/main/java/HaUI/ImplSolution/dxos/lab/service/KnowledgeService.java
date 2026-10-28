@@ -51,7 +51,9 @@ public class KnowledgeService {
 
   private GeneratedAnswer generateAnswer(KnowledgeAnswer evidence) {
     if (evidence.passages().isEmpty()) {
-      return GeneratedAnswer.fallback(false);
+      return GeneratedAnswer.fallback(false,
+          "RERANK_UNAVAILABLE".equals(evidence.reasonCode()) ? "generation_failed"
+              : "insufficient_evidence");
     }
     Set<String> sources = evidence.passages().stream().flatMap(p -> p.sources().stream())
         .map(source -> source.sourceId()).collect(Collectors.toSet());

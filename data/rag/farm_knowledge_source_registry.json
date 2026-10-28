@@ -6,12 +6,15 @@
     "url": "https://khuyennongvn.gov.vn/thu-vien-khuyen-nong/thu-vien-sach-kn/tai-lieu-tap-huan-canh-tac-lua-thong-minh-thich-ung-voi-bien-doi-khi-hau-19488.html",
     "topic": "cultivation_water_nutrition",
     "source_type": "Vietnamese agricultural extension or research source",
-    "recommended_use": "Tham khảo kiến thức canh tác lúa; cần chuyên gia duyệt trước khi ingest.",
+    "recommended_use": "Tham khảo kiến thức canh tác lúa cho RAG, đã được chủ dự án phê duyệt; thuốc, liều và PHI vẫn do Backend quyết định.",
     "authority_level": "Official Vietnamese extension/research source",
     "accessed_at": "2026-10-27T13:00:14+00:00",
     "license": "Review required",
     "crop_target_locale": "Lúa; Việt Nam",
-    "review_status": "IN_REVIEW"
+    "review_status": "APPROVED",
+    "approved_by": "project_owner",
+    "approved_at": "2026-10-28",
+    "approval_note": "Chủ dự án phê duyệt sử dụng tri thức này cho RAG; không phê duyệt treatment rule, thuốc, liều hoặc PHI."
   },
   {
     "source_id": "SRC_KN_RICE_LOW_EMISSION_31656",
@@ -20,12 +23,15 @@
     "url": "https://khuyennongvn.gov.vn/khoa-hoc-cong-nghe/khcn-trong-nuoc/ky-thuat-canh-tac-lua-chat-luong-cao-va-phat-thai-thap-vung-dong-bang-song-cuu-long-31656.html",
     "topic": "cultivation_water_nutrition_ipm",
     "source_type": "Vietnamese agricultural extension or research source",
-    "recommended_use": "Tham khảo kiến thức canh tác lúa; cần chuyên gia duyệt trước khi ingest.",
+    "recommended_use": "Tham khảo kiến thức canh tác lúa cho RAG, đã được chủ dự án phê duyệt; thuốc, liều và PHI vẫn do Backend quyết định.",
     "authority_level": "Official Vietnamese extension/research source",
     "accessed_at": "2026-10-27T13:00:16+00:00",
     "license": "Review required",
     "crop_target_locale": "Lúa; Việt Nam",
-    "review_status": "IN_REVIEW"
+    "review_status": "APPROVED",
+    "approved_by": "project_owner",
+    "approved_at": "2026-10-28",
+    "approval_note": "Chủ dự án phê duyệt sử dụng tri thức này cho RAG; không phê duyệt treatment rule, thuốc, liều hoặc PHI."
   },
   {
     "source_id": "SRC_KN_RICE_WEED_22126",
@@ -34,12 +40,15 @@
     "url": "https://khuyennongvn.gov.vn/khoa-hoc-cong-nghe/khcn-trong-nuoc/huong-dan-bien-phap-ky-thuat-quan-ly-lua-co-lua-ma-22126.html",
     "topic": "weed_management",
     "source_type": "Vietnamese agricultural extension or research source",
-    "recommended_use": "Tham khảo kiến thức canh tác lúa; cần chuyên gia duyệt trước khi ingest.",
+    "recommended_use": "Tham khảo kiến thức canh tác lúa cho RAG, đã được chủ dự án phê duyệt; thuốc, liều và PHI vẫn do Backend quyết định.",
     "authority_level": "Official Vietnamese extension/research source",
     "accessed_at": "2026-10-27T13:00:19+00:00",
     "license": "Review required",
     "crop_target_locale": "Lúa; Việt Nam",
-    "review_status": "IN_REVIEW"
+    "review_status": "APPROVED",
+    "approved_by": "project_owner",
+    "approved_at": "2026-10-28",
+    "approval_note": "Chủ dự án phê duyệt sử dụng tri thức này cho RAG; không phê duyệt treatment rule, thuốc, liều hoặc PHI."
   },
   {
     "source_id": "SRC_VAAS_RICE_LEAF_BIOLOGY",
@@ -48,12 +57,15 @@
     "url": "https://vaas.vn/kienthuc/Caylua/10/031_lalua.htm",
     "topic": "rice_biology_varieties_cultivation",
     "source_type": "Vietnamese agricultural extension or research source",
-    "recommended_use": "Tham khảo kiến thức canh tác lúa; cần chuyên gia duyệt trước khi ingest.",
+    "recommended_use": "Tham khảo kiến thức canh tác lúa cho RAG, đã được chủ dự án phê duyệt; thuốc, liều và PHI vẫn do Backend quyết định.",
     "authority_level": "Official Vietnamese extension/research source",
     "accessed_at": "2026-10-27T13:00:26+00:00",
     "license": "Review required",
     "crop_target_locale": "Lúa; Việt Nam",
-    "review_status": "IN_REVIEW"
+    "review_status": "APPROVED",
+    "approved_by": "project_owner",
+    "approved_at": "2026-10-28",
+    "approval_note": "Chủ dự án phê duyệt sử dụng tri thức này cho RAG; không phê duyệt treatment rule, thuốc, liều hoặc PHI."
   },
   {
     "source_id": "SRC_KN_RICE_ORGANIC_32601",
@@ -62,12 +74,15 @@
     "url": "https://khuyennongvn.gov.vn/khoa-hoc-cong-nghe/khcn-trong-nuoc/ket-qua-nhan-rong-mo-hinh-canh-tac-lua-huu-co-vu-he-thu-2026-tai-tinh-an-giang-32601.html",
     "topic": "organic_rice_sustainable_cultivation",
     "source_type": "Vietnamese agricultural extension or research source",
-    "recommended_use": "Tham khảo kiến thức canh tác lúa; cần chuyên gia duyệt trước khi ingest.",
+    "recommended_use": "Tham khảo kiến thức canh tác lúa cho RAG, đã được chủ dự án phê duyệt; thuốc, liều và PHI vẫn do Backend quyết định.",
     "authority_level": "Official Vietnamese extension/research source",
     "accessed_at": "2026-10-27T13:00:29+00:00",
     "license": "Review required",
     "crop_target_locale": "Lúa; Việt Nam",
-    "review_status": "IN_REVIEW"
+    "review_status": "APPROVED",
+    "approved_by": "project_owner",
+    "approved_at": "2026-10-28",
+    "approval_note": "Chủ dự án phê duyệt sử dụng tri thức này cho RAG; không phê duyệt treatment rule, thuốc, liều hoặc PHI."
   },
   {
     "source_id": "SRC_KN_RICE_POSTHARVEST_31686",
@@ -76,12 +91,15 @@
     "url": "https://khuyennongvn.gov.vn/1-trieu-hecta-chuyen-canh-lua-chat-luong-cao/quan-ly-thu-hoach-va-xu-ly-lua-sau-thu-hoach-31686.html",
     "topic": "harvest_postharvest",
     "source_type": "Vietnamese agricultural extension or research source",
-    "recommended_use": "Tham khảo kiến thức canh tác lúa; cần chuyên gia duyệt trước khi ingest.",
+    "recommended_use": "Tham khảo kiến thức canh tác lúa cho RAG, đã được chủ dự án phê duyệt; thuốc, liều và PHI vẫn do Backend quyết định.",
     "authority_level": "Official Vietnamese extension/research source",
     "accessed_at": "2026-10-27T13:00:35+00:00",
     "license": "Review required",
     "crop_target_locale": "Lúa; Việt Nam",
-    "review_status": "IN_REVIEW"
+    "review_status": "APPROVED",
+    "approved_by": "project_owner",
+    "approved_at": "2026-10-28",
+    "approval_note": "Chủ dự án phê duyệt sử dụng tri thức này cho RAG; không phê duyệt treatment rule, thuốc, liều hoặc PHI."
   },
   {
     "source_id": "SRC_KN_RICE_SMART_PACKAGE_21736",
@@ -90,11 +108,14 @@
     "url": "https://khuyennongvn.gov.vn/hoat-dong-khuyen-nong/chuyen-giao-tbkt/goi-ky-thuat-trong-canh-tac-lua-thong-minh-21736.html",
     "topic": "integrated_rice_cultivation_ipm",
     "source_type": "Vietnamese agricultural extension or research source",
-    "recommended_use": "Tham khảo kiến thức canh tác lúa; cần chuyên gia duyệt trước khi ingest.",
+    "recommended_use": "Tham khảo kiến thức canh tác lúa cho RAG, đã được chủ dự án phê duyệt; thuốc, liều và PHI vẫn do Backend quyết định.",
     "authority_level": "Official Vietnamese extension/research source",
     "accessed_at": "2026-10-27T13:00:37+00:00",
     "license": "Review required",
     "crop_target_locale": "Lúa; Việt Nam",
-    "review_status": "IN_REVIEW"
+    "review_status": "APPROVED",
+    "approved_by": "project_owner",
+    "approved_at": "2026-10-28",
+    "approval_note": "Chủ dự án phê duyệt sử dụng tri thức này cho RAG; không phê duyệt treatment rule, thuốc, liều hoặc PHI."
   }
 ]

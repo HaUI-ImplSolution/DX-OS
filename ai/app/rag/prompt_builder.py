@@ -42,7 +42,7 @@ def build_answer_messages(
     import json
 
     task = {
-        "farm_qa": "Rice disease knowledge. Do NOT diagnose the user or compare diseases unless asked.",
+        "farm_qa": "Rice cultivation and disease knowledge. Answer general questions from the supplied evidence. Do NOT diagnose the user or compare diseases unless asked.",
         "lab_qa": "Explain university regulations, not document titles. Never book, approve or change policy.",
         "farm_diagnosis": (
             "Explain ONLY the fixed CV disease_code/disease_name, pending engineer review. "
@@ -71,6 +71,11 @@ def build_answer_messages(
         "out_of_scope ONLY for unrelated domains; requires_authority for staff-only decisions. "
         "When abstaining: summary empty, steps=[], note=null, source_ids=[]; no answer text."
     )
+    if context.get("multi_source") and profile != "farm_diagnosis":
+        system = system.replace(
+            "ONE provided ID used", "the provided IDs actually used, at most four"
+        )
+        system += " For an overview, synthesize relevant aspects from multiple documents; preserve each policy condition and subject. Do not claim completeness beyond the evidence."
     if profile == "farm_diagnosis":
         system = (
             "Giải thích ngắn kết quả disease_code/disease_name của CV, chờ kỹ sư duyệt. "

@@ -22,6 +22,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Giữ đúng điều kiện và đối tượng trong trả lời Lab | Có ca gán mức cấm thư viện 30 ngày vào sai hành vi; cần đối chiếu từng kết luận với điều kiện trong nguồn |
 | Làm rõ các nhánh hướng dẫn Wi-Fi | Còn câu trộn đăng nhập tài khoản với truy cập miễn phí; cần diễn đạt riêng theo đối tượng sử dụng |
 | Tăng độ bao phủ trả lời Qwen | Một số câu có tài liệu nhưng trả `generation_failed`; cần phân loại nguyên nhân và cải thiện khả năng sinh câu trả lời hợp lệ |
+| Ổn định test biên 30 ngày đặt phòng Lab | `LabBookingIntegrationTest` đặt lúc 08:00 ngày thứ 30 nhưng service giới hạn 30 × 24 giờ; test phụ thuộc giờ chạy, cần cố định `Clock` |
 
 ## 3. Chưa kiểm thử
 
@@ -43,8 +44,9 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Chẩn đoán AI chạy trên CPU mất khoảng 50 giây mỗi ảnh | Đo trên máy chủ 8 nhân; chưa có GPU hay mô hình nhỏ hơn để rút ngắn; lần gọi đầu sau khi khởi động lại AI nạp mô hình và có thể vượt 60 giây chờ của gateway, nhận 504 (kết quả vẫn được tạo) |
 | Nộp báo cáo cần AI service chạy | Chưa có đường nhận ảnh chưa kiểm khi AI dừng; hàng đợi offline thử lại |
 | Chưa có mô hình nhận diện sâu hại | Classifier nhận Healthy và 5 bệnh lá |
-| Kho RAG của Farm chỉ có 6 tài liệu bệnh lúa | Chưa có VietGAP hay quy trình canh tác |
+| Hoàn thiện coverage tri thức canh tác Farm | Đã có 7 tài liệu tổng quát; trang tập huấn còn chủ yếu mục lục, cần nội dung tài liệu con và nguồn cho các chủ đề còn thiếu |
 | Rà nhãn RAG tường minh cho toàn bộ chunk | Chủ dự án đã duyệt bộ câu hỏi và nhãn pilot; qrels hiện chỉ có nhãn dương. Cần rà đủ 0/1/2 trước khi chuyển trạng thái `reviewed`, xem [`data/rag/evaluation/README.md`](../data/rag/evaluation/README.md) |
+| Đánh giá chatbot hybrid mở rộng | Bộ 72 query có thêm 30 câu nhãn nháp; cần rà đủ nhãn và người đánh giá độc lập. Recall nhóm tổng quan Farm còn hạn chế; so sánh trên cùng snapshot, không suy diễn điểm retrieval thành độ đúng Qwen. |
 | Truy xuất tri thức dựa trên MiniLM đa ngữ | Câu nêu tên bệnh được xếp đúng; câu chỉ tả triệu chứng phụ thuộc embedding; bộ thử có 15 câu; `knowledge.min-score` 0.40 loại 7/8 câu ngoài chủ đề, điểm đoạn đầu của câu đúng chủ đề từ 0.50 đến 0.83 |
 | Luật phân loại của Lab là luật tay | Chưa đo độ chính xác trên dữ liệu thật |
 | Kho tri thức Lab chỉ có 12 bài từ 9 văn bản công khai của HaUI | Chưa có bài về máy in, VPN, quy chế phòng máy của khoa, đặt phòng máy; sổ tay LMS là bản năm học 2019-2020 |

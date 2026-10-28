@@ -39,6 +39,8 @@ class KnowledgeSourcesTest(unittest.TestCase):
         for name, (registry_path, corpus_path, served_path) in NAMESPACES.items():
             with self.subTest(namespace=name):
                 registry_items = load(registry_path)
+                if name == "farm":
+                    registry_items += load(ROOT / "data/rag/farm_knowledge_source_registry.json")
                 served_items = load(served_path)
                 registry = {item["source_id"]: item for item in registry_items}
                 served = {item["sourceId"]: item for item in served_items}
@@ -50,6 +52,7 @@ class KnowledgeSourcesTest(unittest.TestCase):
                     for source_id in document["provenance"]["source_ids"]
                 }
                 if name == "farm":
+                    cited.update(sid for doc in load(ROOT / "data/rag/processed/farm_knowledge.json") for sid in doc["provenance"]["source_ids"])
                     rules = load(
                         ROOT / "data/structured/treatment_rules_candidates_master.json"
                     )

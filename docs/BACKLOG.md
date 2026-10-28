@@ -22,7 +22,6 @@ Hiện không có.
 | Việc | Ghi chú |
 |---|---|
 | Bên thứ ba tái lập đánh giá RAG | Công cụ đã chạy thật và CLI khớp; cần người khác tự tính lại từ qrels/run, ghi riêng với việc chạy lại retrieval. Hướng dẫn ở [`ai/README.md`](../ai/README.md#đánh-giá-truy-xuất-rag) |
-| Job CI `backup-drill` | Lượt đầu lỗi vì Compose tạo `deploy/data` bằng quyền root; đã tạo thư mục trước khi khởi động Postgres, chờ lượt chạy lại trên GitHub |
 | `backup.sh` và khôi phục trên máy chủ thật | Đã thử trên stack thử, chưa thử trên VPS với dữ liệu thật và kho từ xa |
 | Cầu dao AI với tải thật | Đã thử khi AI dừng; chưa thử khi AI chậm vì tải, lúc đó lỗi đọc quá hạn cũng tính là lỗi dịch vụ |
 
@@ -70,7 +69,7 @@ Hiện không có.
 | Phạm vi phụ trách theo khu vực cho engineer | Phân quyền hiện theo thao tác, không theo khu vực |
 | Thông báo chat chỉ có gửi lại khi lỗi tạm thời | `chat_outbox` lưu tin sau lần gửi đầu thất bại; tin chưa kịp vào bảng khi backend tắt giữa lúc commit và lúc gửi vẫn mất, chưa có cảnh báo khi tồn đọng |
 | Trường "Phương pháp áp dụng" và lượng nước của phác đồ | `TreatmentRule.notes` trộn nhiều loại thông tin; cần field riêng được chuyên gia xác thực |
-| Email cho thông báo trong hộp thư | Đã bỏ khỏi đợt này. Khi làm lại: cần `spring-boot-starter-mail`, tắt `management.health.mail` (biến `SPRING_MAIL_HOST` rỗng vẫn tạo bộ gửi và làm `/actuator/health` báo lỗi), hàng đợi gửi lại chung với tin chat, địa chỉ lấy từ Keycloak lúc gửi, bảng lựa chọn của từng tài khoản và màn hình bật tắt |
+| Email cho thông báo trong hộp thư | Chưa có. Cần `spring-boot-starter-mail`, tắt `management.health.mail` (biến `SPRING_MAIL_HOST` rỗng vẫn tạo bộ gửi và làm `/actuator/health` báo lỗi), hàng đợi gửi lại chung với tin chat, địa chỉ lấy từ Keycloak lúc gửi, bảng lựa chọn của từng tài khoản và màn hình bật tắt |
 | Che thông tin cá nhân ở mọi đường ra | Mới phủ tin chat và câu hỏi tri thức sang AI; chưa phủ văn bản triệu chứng của Farm gửi sang AI và nội dung log |
 | Realm Keycloak đã chạy trên máy chủ thiếu chính sách mật khẩu và luồng TOTP | Keycloak không nạp lại realm đã có; áp dụng bằng Admin Console theo `sso/README.md` hoặc dựng lại realm |
 | Mật khẩu demo cũ của `tech1`, `tech2` | Stack có sẵn hai tài khoản này giữ mật khẩu `tech123`; chỉ stack dựng mới nhận `tech1234` |

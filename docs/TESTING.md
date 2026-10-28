@@ -411,9 +411,10 @@ Cách dùng và ý nghĩa từng khối ở [`backend/dx-monitor/README.md`](../
 
 | Mục | Kết quả | Ghi chú |
 |---|---|---|
-| Backend `./mvnw clean verify` | Đạt | 149 test: dx-core 14, app-farm 23, app-lab 9, dx-host 103 |
+| CI trên pull request: Backend, AI, Infra, E2E Farm và Lab, Dependencies | Đạt | Ngày 28/10/2026 ở commit `6560c92`; gồm `mvn verify` cả sáu module, `pytest`, job `backup-drill`, gitleaks, quét Trivy |
+| Backend `mvn verify` (sáu module, Testcontainers) | Đạt | Job `CI Backend` ngày 28/10/2026; số test chạy xem ở log job |
 | BI `python -m unittest test_chart_query_context` trong `bi/` | Đạt | 22 test |
-| AI `pytest` trong `ai/` | Đạt | 100 test |
+| AI `pytest` trong `ai/` | Đạt | Job `CI AI` ngày 28/10/2026; số test chạy xem ở log job |
 | Đánh giá truy xuất RAG và thử tải HTTP retrieval | Đạt | Ngày 26 và 27/10/2026 qua `./ai/evaluate.sh`; số liệu ở mục 3 |
 | Web và mobile `tsc` | Đạt | Không lỗi |
 | Ranh giới app và core, seed Farm, nguồn tri thức khớp registry | Đạt | Không có kết quả vi phạm |

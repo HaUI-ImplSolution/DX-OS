@@ -108,7 +108,7 @@ docker compose up -d --build postgres backend ai
 
 ### Ingest RAG
 
-Corpus đã duyệt ở `data/rag/processed/disease_knowledge.json`, `farm_knowledge.json` (Farm) và `data/rag/lab/processed/lab_knowledge.json` (Lab), cùng registry nguồn:
+Corpus đã duyệt ở `data/rag/processed/disease_knowledge.json`, phần Farm chỉ được nạp từ `farm_knowledge.json` sau khi review hoàn tất, và `data/rag/lab/processed/lab_knowledge.json` (Lab), cùng registry nguồn:
 
 ```bash
 export RAG_INGEST_DATABASE_URL=postgresql+psycopg://<ingest-user>:<password>@<host>:5432/dxos_ai_vector_db

@@ -14,6 +14,7 @@ from app.core.config import get_settings
 from app.rag.answer_contract import AnswerDraft, AnswerReason, GeneratedAnswer, Profile
 from app.rag.prompt_builder import build_answer_messages, build_rag_prompt
 from app.rag.retriever import RAGRetriever
+from app.rag.safety import MEDICATION
 from app.rag.scope_gate import ANSWERABLE, IN_SCOPE_NO_EVIDENCE, classify_scope
 from app.rag.source_registry import REGISTRY_FILE, load_source_registry
 
@@ -139,11 +140,6 @@ class RAGService:
         }
 
 
-MEDICATION = re.compile(
-    r"thuốc|hoạt\s*chất|liều|\bphi\b|cách\s*ly|nồng\s*độ|h[oó]a\s*học|hoá\s*học|phun|"
-    r"\b(?:ml|mg|kg|g|l)\s*/\s*(?:ha|l|lít|sào)|\b\w+\s*\d+(?:\.\d+)?\s*(?:sc|ec|wp|wg)\b",
-    re.IGNORECASE,
-)
 UNSAFE_FORMAT = re.compile(
     r"[\u3400-\u9fff]|https?://|```|\*\*|__|<[/!A-Za-z]|(?:^|\n)\s*(?:[#*•-]|\d+[.)]\s)"
 )

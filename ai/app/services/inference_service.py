@@ -22,6 +22,7 @@ from app.cv.policy import WORKFLOW_CONFIDENCE_THRESHOLD
 from app.cv.triage import CvTriageError
 from app.graph.context import WorkflowRuntime
 from app.graph.graph import farm_graph
+from app.rag.safety import redact_medication_lines
 
 if TYPE_CHECKING:
     from sqlalchemy.orm import Session
@@ -130,14 +131,14 @@ def run_stateless_diagnose(
     cv_result = DiagnoseCvResult.model_validate(result.get("cv_result"))
     rag_evidence = [
         DiagnoseRagEvidence(
-            content=chunk["content"],
+            content=safe_content,
             document_title=chunk.get("document_title"),
             chunk_index=chunk.get("chunk_index"),
             source_ids=chunk.get("source_ids", []),
             similarity=float(chunk.get("similarity", 0.0)),
         )
         for chunk in result.get("rag_context", [])
-        if chunk.get("content")
+        if (safe_content := redact_medication_lines(chunk.get("content", "")))
     ]
     treatment = result.get("treatment_rule") or {}
     structured_context = DiagnoseStructuredContext(

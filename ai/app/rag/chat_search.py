@@ -19,6 +19,7 @@ from app.db.models.document import Document
 from app.db.models.document_chunk import DocumentChunk
 from app.rag.embedding_service import EmbeddingService
 from app.rag.reranker import rerank
+from app.rag.safety import redact_medication_lines
 from app.rag.source_registry import REGISTRY_FILE
 
 
@@ -336,8 +337,18 @@ class ChatSearch:
                     counts[key] = counts.get(key, 0) + 1
             selected = diverse
         selected = selected[:top_k]
-        result["passages"] = [{**p, "rank": i} for i, p in enumerate(selected, 1)]
-        if selected:
+        result["passages"] = [
+            {**p, "content": safe_content, "rank": i}
+            for i, p in enumerate(selected, 1)
+            if (
+                safe_content := (
+                    redact_medication_lines(p["content"])
+                    if result["namespace"] == "farm"
+                    else p["content"]
+                )
+            )
+        ]
+        if result["passages"]:
             result.update(scope_status="ANSWERABLE", reason_code="EVIDENCE_FOUND")
         result["timings_ms"]["total"] = (time.perf_counter() - started) * 1000
         return result

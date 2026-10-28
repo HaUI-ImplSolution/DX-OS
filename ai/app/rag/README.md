@@ -70,6 +70,7 @@ Tên chủ đề là tiêu đề bỏ "Bệnh" và "trên lúa", hoặc tên tro
 | `rag_service.py` | Ghép evidence, gọi Ollama khi khả dụng, tạo citations |
 | `answer_contract.py` | Schema câu trả lời sinh và giới hạn evidence do Backend cung cấp |
 | `prompt_builder.py` | Prompt có guardrail: chỉ trả lời từ context, không bịa thuốc, liều, PHI |
+| `safety.py` | Lọc dòng chứa thuốc, liều hoặc PHI trước khi evidence Farm rời AI |
 | `source_registry.py` | Kiểm registry, ánh xạ `source_id` sang metadata trích dẫn |
 
 ## Guardrail và giới hạn

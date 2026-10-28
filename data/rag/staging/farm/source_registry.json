@@ -11,10 +11,7 @@
     "accessed_at": "2026-10-27T13:00:14+00:00",
     "license": "Review required",
     "crop_target_locale": "Lúa; Việt Nam",
-    "review_status": "APPROVED",
-    "approved_by": "project_owner",
-    "approved_at": "2026-10-28",
-    "approval_note": "Chủ dự án phê duyệt sử dụng tri thức này cho RAG; không phê duyệt treatment rule, thuốc, liều hoặc PHI."
+    "review_status": "IN_REVIEW"
   },
   {
     "source_id": "SRC_KN_RICE_LOW_EMISSION_31656",
@@ -28,10 +25,7 @@
     "accessed_at": "2026-10-27T13:00:16+00:00",
     "license": "Review required",
     "crop_target_locale": "Lúa; Việt Nam",
-    "review_status": "APPROVED",
-    "approved_by": "project_owner",
-    "approved_at": "2026-10-28",
-    "approval_note": "Chủ dự án phê duyệt sử dụng tri thức này cho RAG; không phê duyệt treatment rule, thuốc, liều hoặc PHI."
+    "review_status": "IN_REVIEW"
   },
   {
     "source_id": "SRC_KN_RICE_WEED_22126",
@@ -45,10 +39,7 @@
     "accessed_at": "2026-10-27T13:00:19+00:00",
     "license": "Review required",
     "crop_target_locale": "Lúa; Việt Nam",
-    "review_status": "APPROVED",
-    "approved_by": "project_owner",
-    "approved_at": "2026-10-28",
-    "approval_note": "Chủ dự án phê duyệt sử dụng tri thức này cho RAG; không phê duyệt treatment rule, thuốc, liều hoặc PHI."
+    "review_status": "IN_REVIEW"
   },
   {
     "source_id": "SRC_VAAS_RICE_LEAF_BIOLOGY",
@@ -62,10 +53,7 @@
     "accessed_at": "2026-10-27T13:00:26+00:00",
     "license": "Review required",
     "crop_target_locale": "Lúa; Việt Nam",
-    "review_status": "APPROVED",
-    "approved_by": "project_owner",
-    "approved_at": "2026-10-28",
-    "approval_note": "Chủ dự án phê duyệt sử dụng tri thức này cho RAG; không phê duyệt treatment rule, thuốc, liều hoặc PHI."
+    "review_status": "IN_REVIEW"
   },
   {
     "source_id": "SRC_KN_RICE_ORGANIC_32601",
@@ -79,10 +67,7 @@
     "accessed_at": "2026-10-27T13:00:29+00:00",
     "license": "Review required",
     "crop_target_locale": "Lúa; Việt Nam",
-    "review_status": "APPROVED",
-    "approved_by": "project_owner",
-    "approved_at": "2026-10-28",
-    "approval_note": "Chủ dự án phê duyệt sử dụng tri thức này cho RAG; không phê duyệt treatment rule, thuốc, liều hoặc PHI."
+    "review_status": "IN_REVIEW"
   },
   {
     "source_id": "SRC_KN_RICE_POSTHARVEST_31686",
@@ -96,10 +81,7 @@
     "accessed_at": "2026-10-27T13:00:35+00:00",
     "license": "Review required",
     "crop_target_locale": "Lúa; Việt Nam",
-    "review_status": "APPROVED",
-    "approved_by": "project_owner",
-    "approved_at": "2026-10-28",
-    "approval_note": "Chủ dự án phê duyệt sử dụng tri thức này cho RAG; không phê duyệt treatment rule, thuốc, liều hoặc PHI."
+    "review_status": "IN_REVIEW"
   },
   {
     "source_id": "SRC_KN_RICE_SMART_PACKAGE_21736",
@@ -113,9 +95,6 @@
     "accessed_at": "2026-10-27T13:00:37+00:00",
     "license": "Review required",
     "crop_target_locale": "Lúa; Việt Nam",
-    "review_status": "APPROVED",
-    "approved_by": "project_owner",
-    "approved_at": "2026-10-28",
-    "approval_note": "Chủ dự án phê duyệt sử dụng tri thức này cho RAG; không phê duyệt treatment rule, thuốc, liều hoặc PHI."
+    "review_status": "IN_REVIEW"
   }
 ]

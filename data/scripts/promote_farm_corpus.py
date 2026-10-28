@@ -16,15 +16,18 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 STAGING = ROOT / "data" / "rag" / "staging" / "farm"
 CANONICAL = ROOT / "data" / "rag"
+BLOCKING_REVIEW_FLAGS = frozenset(
+    {"CHECK_LICENSE_TERMS", "CONTAINS_TREATMENT_REFERENCES"}
+)
 
 
-def is_treatment_reference(item: dict[str, object]) -> bool:
-    return "CONTAINS_TREATMENT_REFERENCES" in item.get("review_flags", [])
+def has_blocking_review_flag(item: dict[str, object]) -> bool:
+    return bool(BLOCKING_REVIEW_FLAGS.intersection(item.get("review_flags", [])))
 
 
 def promotable_documents(documents: list[dict[str, object]]) -> list[dict[str, object]]:
     """Keep treatment-bearing documents in staging until expert review."""
-    return [item for item in documents if not is_treatment_reference(item)]
+    return [item for item in documents if not has_blocking_review_flag(item)]
 
 
 def main() -> None:
@@ -51,10 +54,9 @@ def main() -> None:
 
     approved_documents = promotable_documents(documents)
     held_documents = [item for item in documents if item not in approved_documents]
-    if not approved_documents:
-        raise SystemExit("Refusing promotion: no document is eligible for promotion.")
     for item in held_documents:
         item["review_status"] = "IN_REVIEW"
+        item["document_type"] = "farm_knowledge_staging"
         for field in ("approved_by", "approved_at", "approval_note"):
             item.pop(field, None)
     # Keep the complete approved source catalogue available to the backend;
@@ -74,10 +76,21 @@ def main() -> None:
         )
         item["document_type"] = "farm_knowledge"
 
+    approved_source_ids = {
+        source_id
+        for item in approved_documents
+        for source_id in item.get("provenance", {}).get("source_ids", [])
+    }
     for item in registry:
-        item["review_status"] = "APPROVED"
-        item["approved_by"] = args.reviewer.strip()
-        item["approved_at"] = datetime.now(timezone.utc).date().isoformat()
+        source_ids = {item.get("source_id")}
+        if source_ids <= approved_source_ids:
+            item["review_status"] = "APPROVED"
+            item["approved_by"] = args.reviewer.strip()
+            item["approved_at"] = datetime.now(timezone.utc).date().isoformat()
+        else:
+            item["review_status"] = "IN_REVIEW"
+            for field in ("approved_by", "approved_at", "approval_note"):
+                item.pop(field, None)
 
     (CANONICAL / "processed" / "farm_knowledge.json").write_text(
         json.dumps(approved_documents, ensure_ascii=False, indent=2), encoding="utf-8"
@@ -109,7 +122,7 @@ def main() -> None:
     )
     held_ids = ", ".join(item.get("document_id", "<unknown>") for item in held_documents)
     print(f"Promoted approved Farm documents: {len(approved_documents)}")
-    print(f"Held for expert treatment review: {len(held_documents)} ({held_ids or 'none'})")
+    print(f"Held for license/treatment review: {len(held_documents)} ({held_ids or 'none'})")
     print(f"Canonical corpus: {CANONICAL / 'processed' / 'farm_knowledge.json'}")
 
 

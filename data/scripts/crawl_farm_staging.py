@@ -25,7 +25,6 @@ from lxml import html as lxml_html
 
 ROOT = Path(__file__).resolve().parents[2]
 STAGING = ROOT / "data" / "rag" / "staging" / "farm"
-RAW = STAGING / "raw"
 PROCESSED = STAGING / "processed"
 
 SOURCES = [
@@ -158,9 +157,6 @@ def fetch(source: dict[str, str], user_agent: str) -> dict[str, object]:
     response.raise_for_status()
     body = response.content
     digest = hashlib.sha256(body).hexdigest()
-    filename = f"{source['source_id']}.html"
-    (RAW / filename).write_bytes(body)
-
     root = lxml_html.fromstring(body)
     page_title = " ".join(root.xpath("//title//text()"))
     content_nodes = root.xpath(
@@ -216,7 +212,6 @@ def fetch(source: dict[str, str], user_agent: str) -> dict[str, object]:
             "url": url,
             "accessed_at": now(),
             "sha256": digest,
-            "raw_file": f"raw/{filename}",
             "page_title": page_title,
         },
         "review_status": "IN_REVIEW",
@@ -236,7 +231,6 @@ def main() -> None:
     parser.add_argument("--delay", type=float, default=2.0)
     parser.add_argument("--limit", type=int, default=len(SOURCES))
     args = parser.parse_args()
-    RAW.mkdir(parents=True, exist_ok=True)
     PROCESSED.mkdir(parents=True, exist_ok=True)
 
     user_agent = "DX-Farm-RAG-staging/0.1 (contact: project-operator)"

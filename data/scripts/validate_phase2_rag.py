@@ -67,8 +67,10 @@ def validate_corpus(
     label: str,
     quarantined_source_ids: set[str] | None = None,
     required_review_status: str | None = None,
+    blocked_review_flags: set[str] | None = None,
 ) -> int:
     quarantined_source_ids = quarantined_source_ids or set()
+    blocked_review_flags = blocked_review_flags or set()
     documents = read(path)
     if not isinstance(documents, list) or not documents:
         raise ValueError(f"{path}: corpus must be a non-empty array")
@@ -84,11 +86,15 @@ def validate_corpus(
         if label == "farm_knowledge":
             if item.get("language") not in {"vi", "vi-VN"}:
                 raise ValueError(f"{path}: Farm document is not Vietnamese {key}")
-        if required_review_status and item.get("review_status") != required_review_status:
+        blocked = bool(blocked_review_flags.intersection(item.get("review_flags", [])))
+        expected_status = "IN_REVIEW" if blocked else required_review_status
+        if expected_status and item.get("review_status") != expected_status:
             raise ValueError(
                 f"{path}: {key} has review_status {item.get('review_status')!r}; "
-                f"expected {required_review_status!r}"
+                f"expected {expected_status!r}"
             )
+        if blocked:
+            continue
         referenced = item.get("provenance", {}).get("source_ids", [])
         if set(referenced) & quarantined_source_ids:
             continue
@@ -110,6 +116,7 @@ def main() -> None:
         farm_sources,
         "farm_knowledge",
         required_review_status="APPROVED",
+        blocked_review_flags={"CHECK_LICENSE_TERMS", "CONTAINS_TREATMENT_REFERENCES"},
     )
     quarantined = load_quarantined_source_ids(root / "data/rag/lab/quarantine_manifest.json")
     lab_sources = validate_registry(

@@ -5,7 +5,7 @@ Nguồn duy nhất cho dữ liệu seed nghiệp vụ của Farm và corpus RAG 
 | Thư mục | Nội dung | Đi đâu |
 |---|---|---|
 | `structured/` | Bệnh, thuốc, treatment rule, policy, class contract của CV | `generate_seed_sql.py` sinh `backend/app-farm/src/main/resources/farm/data.sql`, Spring chạy lúc khởi động (Backend không đọc JSON) |
-| `rag/` | `processed/disease_knowledge.json` (6 tài liệu bệnh), `processed/farm_knowledge.json` (7 tài liệu tổng quát đã duyệt) và các registry nguồn | Job `rag-ingest` nạp vào AI Vector DB; không seed vào database nghiệp vụ |
+| `rag/` | `processed/disease_knowledge.json` (6 tài liệu bệnh), `processed/farm_knowledge.json` (chỉ chứa tài liệu Farm đã qua review) và các registry nguồn | Job `rag-ingest` nạp vào AI Vector DB; không seed vào database nghiệp vụ |
 | `rag/lab/` | `processed/lab_knowledge.json` (12 bài trích từ văn bản của HaUI), `source_registry.json` (trang gốc, link PDF, SHA-256) và `raw/` (bản PDF tải về ngày 19/10/2026) | Job `rag-ingest` nạp vào namespace `lab` |
 | `rag/evaluation/` | 72 câu hỏi/query, nhãn pilot và nhãn mở rộng dạng TREC và metadata của bộ đề đánh giá truy xuất | `./ai/evaluate.sh` đọc để chấm Recall/nDCG; xem [`rag/evaluation/README.md`](./rag/evaluation/README.md) |
 

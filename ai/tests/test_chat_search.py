@@ -9,6 +9,7 @@ from app.rag.chat_search import (
     profiles,
     tokens,
 )
+from app.rag.safety import redact_medication_lines
 
 
 def passages():
@@ -35,6 +36,13 @@ def passages():
 
 
 class ChatSearchTest(unittest.TestCase):
+    def test_public_evidence_redacts_medication_lines(self):
+        content = "Theo dõi ruộng thường xuyên.\nDùng thuốc Pretilachlor 2 ml/ha.\nGiữ nước phù hợp."
+        self.assertEqual(
+            redact_medication_lines(content),
+            "Theo dõi ruộng thường xuyên.\nGiữ nước phù hợp.",
+        )
+
     def test_chat_startup_loads_cached_ranker_before_serving(self):
         import asyncio
         from app.rag.reranker import chat_lifespan

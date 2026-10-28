@@ -10,7 +10,7 @@ import static org.mockito.Mockito.*;
 import HaUI.ImplSolution.dxos.core.api.ai.AiGateway;
 import HaUI.ImplSolution.dxos.core.api.exception.AiServiceException;
 import HaUI.ImplSolution.dxos.core.api.knowledge.*;
-import HaUI.ImplSolution.dxos.lab.dto.GeneratedAnswer;
+import HaUI.ImplSolution.dxos.core.api.ai.GeneratedAnswer;
 import HaUI.ImplSolution.dxos.lab.dto.KnowledgeDtos.AskRequest;
 import java.util.List;
 import java.util.Map;

@@ -32,7 +32,7 @@ import HaUI.ImplSolution.dxos.farm.model.Disease;
 import HaUI.ImplSolution.dxos.farm.model.DiagnosisSource;
 import HaUI.ImplSolution.dxos.farm.model.DiseaseReport;
 import HaUI.ImplSolution.dxos.farm.model.DiseaseReportStatus;
-import HaUI.ImplSolution.dxos.farm.model.GeneratedAnswer;
+import HaUI.ImplSolution.dxos.core.api.ai.GeneratedAnswer;
 import HaUI.ImplSolution.dxos.farm.model.KnowledgeEvidence;
 import HaUI.ImplSolution.dxos.farm.model.NotificationType;
 import HaUI.ImplSolution.dxos.farm.model.TrainingLabel;

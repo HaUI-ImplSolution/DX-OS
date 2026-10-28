@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.farm.model;
 
+import HaUI.ImplSolution.dxos.core.api.ai.GeneratedAnswer;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import HaUI.ImplSolution.dxos.farm.dto.AiDiagnoseRequest;

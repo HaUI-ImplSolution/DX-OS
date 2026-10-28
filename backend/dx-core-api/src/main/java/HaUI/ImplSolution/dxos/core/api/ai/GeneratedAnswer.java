@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-package HaUI.ImplSolution.dxos.farm.model;
+package HaUI.ImplSolution.dxos.core.api.ai;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import java.util.List;

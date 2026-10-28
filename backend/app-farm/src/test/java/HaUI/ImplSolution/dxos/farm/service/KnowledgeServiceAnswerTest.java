@@ -11,7 +11,7 @@ import HaUI.ImplSolution.dxos.core.api.ai.AiGateway;
 import HaUI.ImplSolution.dxos.core.api.exception.AiServiceException;
 import HaUI.ImplSolution.dxos.core.api.knowledge.*;
 import HaUI.ImplSolution.dxos.farm.dto.KnowledgeAskRequest;
-import HaUI.ImplSolution.dxos.farm.model.GeneratedAnswer;
+import HaUI.ImplSolution.dxos.core.api.ai.GeneratedAnswer;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;

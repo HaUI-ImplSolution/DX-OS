@@ -33,6 +33,8 @@ Farm/Lab → AiGateway → Qwen → câu trả lời có cấu trúc và nguồn
 Farm/Lab dùng chung bộ máy RAG trong AI Service, với namespace và policy ở `data/rag/chat_profiles.json`.
 AiGateway giữ vai trò kết nối HTTP; thuốc, liều, PHI và phê duyệt vẫn do Backend quyết định.
 Chẩn đoán và gợi ý ticket dùng endpoint retrieve legacy, không qua hybrid chatbot.
+`app/rag/chat_search.py:outside_scope` là gate duy nhất của chatbot hybrid; `scope_gate.py` chỉ giữ cho
+đường RAG legacy và không được dùng để thay thế policy chatbot. Backend không tự phân loại lại scope.
 
 ## API
 

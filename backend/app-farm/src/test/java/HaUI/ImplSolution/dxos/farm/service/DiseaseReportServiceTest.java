@@ -85,7 +85,7 @@ class DiseaseReportServiceTest {
         .imageRef("image").reportedBy("demo").build();
     var disease = HaUI.ImplSolution.dxos.farm.model.Disease.builder().code("Rice___Blast")
         .name("Đạo ôn").build();
-    var explanation = HaUI.ImplSolution.dxos.farm.model.GeneratedAnswer.fallback(true);
+    var explanation = HaUI.ImplSolution.dxos.core.api.ai.GeneratedAnswer.fallback(true);
     var diagnosis = HaUI.ImplSolution.dxos.farm.model.Diagnosis.builder().id(1L)
         .diseaseReport(report).disease(disease).modelVersion("test")
         .confidence(new java.math.BigDecimal("0.91")).generatedExplanation(explanation).build();

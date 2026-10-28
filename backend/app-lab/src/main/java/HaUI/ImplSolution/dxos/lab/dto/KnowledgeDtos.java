@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.lab.dto;
 
+import HaUI.ImplSolution.dxos.core.api.ai.GeneratedAnswer;
+
 import HaUI.ImplSolution.dxos.core.api.knowledge.KnowledgeSource;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.NotBlank;

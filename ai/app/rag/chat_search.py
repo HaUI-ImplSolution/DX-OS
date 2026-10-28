@@ -182,9 +182,15 @@ class ChatSearch:
             index, bm25, searchable_text = self._index(db, documents)
             if not index:
                 return result
-            identifiers = re.findall(r"(?i)\b[a-z]+[0-9][a-z0-9-]*\b", question)
+            formulas = {fold(term) for term in policy.get("formula_terms", [])}
+            identifiers = re.findall(
+                r"(?i)\b[a-z]+[0-9][a-z0-9-]*\b",
+                unicodedata.normalize("NFKC", question),
+            )
             if any(
-                fold(identifier) not in searchable_text for identifier in identifiers
+                fold(identifier) not in searchable_text
+                and fold(identifier) not in formulas
+                for identifier in identifiers
             ):
                 return {**result, "reason_code": "UNKNOWN_SUBJECT"}
             result["corpus_version"] = ";".join(

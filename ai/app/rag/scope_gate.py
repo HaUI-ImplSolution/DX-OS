@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Small, deterministic scope gate for namespace-aware RAG questions.
+"""Legacy scope gate used only by RAGService.answer.
+
+The chatbot gate is chat_search.outside_scope.
+
+Small, deterministic scope gate for namespace-aware RAG questions.
 
 The gate deliberately runs without an LLM or a database.  It is a first
 boundary only: retrieval still decides whether an in-scope question has

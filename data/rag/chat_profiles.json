@@ -63,6 +63,11 @@
     ],
     "excluded_patterns": [
       "\\bthoi tiet\\b.*\\b(hom nay|ngay mai)\\b"
+    ],
+    "formula_terms": [
+      "CO2",
+      "CH4",
+      "N2O"
     ]
   },
   "lab": {

@@ -17,6 +17,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 
 | Việc | Phạm vi |
 |---|---|
+| Rerank của chatbot quá thời gian trên VPS | CPU ảo không có SSE4.1/AVX nên rerank 20 ứng viên mất khoảng 9 giây, vượt ngân sách 6 giây; mọi câu trong phạm vi trả `RERANK_UNAVAILABLE`. Compose chưa chuyển biến `CHAT_*` vào AI nên không chỉnh được bằng `deploy/.env`; VPS đang chạy bản `sha-e97697c` |
 | Hỏi đáp Farm có thể tự gọi tên bệnh từ mô tả triệu chứng | Qwen thật từng trả tên bệnh không có trong nguồn (ví dụ "tuyết lúa") và nêu nguyên nhân hoặc cách phòng không có trong nguồn; chỉ chặn được tên bệnh đã biết trong contract CV |
 
 ## 3. Chưa kiểm thử
@@ -27,7 +28,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Chấm nội dung Qwen trên 36 câu hỏi và 6 chủ đề chẩn đoán | Chưa có bảng chấm trọng tâm, bám nguồn và dễ đọc do người duyệt xác nhận; tỷ lệ `generated` không phải độ đúng nội dung |
 | Chữ lớn trên mobile native | Đã typecheck, kiểm render và nghiệm thu chức năng; chưa đo riêng bố cục khi tăng cỡ chữ trên máy thật |
 | Khởi động bản Qwen từ clone sạch | Đã kiểm bằng image/cache và các cặp phiên bản; chưa chạy lại full build/seed toàn stack từ clone sạch |
-| `backup.sh` và khôi phục trên máy chủ thật | Đã thử trên stack thử, chưa thử trên VPS với dữ liệu thật và kho từ xa |
+| `backup.sh` với kho sao lưu từ xa | Đã chạy sao lưu và `verify` trên VPS với dữ liệu thật vào kho cục bộ; chưa thử `BACKUP_REPOSITORY` từ xa |
 | Cầu dao AI với tải thật | Đã thử khi AI dừng; chưa thử khi AI chậm vì tải, lúc đó lỗi đọc quá hạn cũng tính là lỗi dịch vụ |
 
 ## 4. Giới hạn của AI và dữ liệu

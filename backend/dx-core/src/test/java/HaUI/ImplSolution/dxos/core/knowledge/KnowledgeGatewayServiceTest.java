@@ -98,7 +98,7 @@ class KnowledgeGatewayServiceTest {
     server.start();
     try {
       var transport = new HaUI.ImplSolution.dxos.core.ai.AiServiceGateway(
-          "http://127.0.0.1:" + server.getAddress().getPort(), "test-key", 1000, 3000,
+          "http://127.0.0.1:" + server.getAddress().getPort(), "test-key", 1000, 3000, 30,
           new tools.jackson.databind.ObjectMapper());
       var result = transport.postJson("/api/v1/knowledge/search", Map.of(),
           KnowledgeGatewayService.SearchResult.class);

@@ -2,6 +2,8 @@
 
 Tài liệu tổng hợp chỉ số CV, truy xuất RAG và hiệu năng retrieval.
 
+![Tổng quan các luồng AI và đánh giá](images/ai/overview.png)
+
 Kết quả model bệnh DX-Farm EfficientNetV2-M do người huấn luyện cung cấp; không chấm lại accuracy trong đợt tích hợp.
 Các phép thử bộ lọc ảnh ở mục 3.2 và 3.4 giữ kết quả trước đây vì bộ lọc không thay đổi.
 
@@ -92,6 +94,8 @@ Healthy là lớp được huấn luyện, không suy ra từ việc model khôn
 - Ghi confusion matrix và chỉ số theo lớp khi có đủ mẫu.
 
 ## 7. Đánh giá truy xuất RAG
+
+![Các phép đo đánh giá RAG](images/ai/evaluation.png)
 
 Đo ngày 28/10/2026 bằng `ir_measures`: 27 câu Farm, 39 câu Lab trên 25 tài liệu, 244 đoạn.
 Tổng bộ đề có 72 câu, gồm thêm 6 câu chẩn đoán. Chủ dự án đã duyệt 42 câu pilot; 30 câu mở rộng còn nhãn nháp. Dataset vẫn là `draft`, chưa được đánh giá độc lập.

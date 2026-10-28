@@ -13,6 +13,8 @@ Diagnosis/ticket giữ `/api/v1/disease/knowledge/retrieve` và filter cũ.
 
 ## Ingest
 
+![Luồng chuẩn bị tri thức RAG](../../../docs/images/ai/ingestion.png)
+
 ```text
 corpus + source_registry
   → kiểm trường bắt buộc, source_id, disease_code
@@ -33,6 +35,8 @@ python -m scripts.ingest_diseases [--corpus lab] [--dry-run]
   Đổi embedding model thì phải ingest lại.
 
 ## Tra cứu
+
+![Luồng tra cứu và xếp hạng bằng chứng](../../../docs/images/ai/retrieval.png)
 
 ```text
 câu hỏi (+ namespace, disease_code, document_type) → embedding → cosine search pgvector

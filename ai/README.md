@@ -6,6 +6,8 @@ Backend là nguồn sự thật duy nhất; thuốc, liều, PHI luôn lấy t�
 
 ## Luồng chẩn đoán
 
+![Luồng chẩn đoán ảnh](../docs/images/ai/cv.png)
+
 ```text
 Backend → POST /api/v1/diagnose
             ├─ CV nhận diện disease_code
@@ -22,6 +24,8 @@ Backend → POST /api/v1/diagnose
 | LangGraph | Điều phối một lượt suy luận, không lưu trạng thái | [`app/graph`](app/graph/README.md) |
 
 ## Luồng chatbot
+
+![Luồng hỏi đáp từ tri thức](../docs/images/ai/retrieval.png)
 
 ```text
 Farm/Lab → KnowledgeGateway → AiGateway → AI search
@@ -113,6 +117,8 @@ docker compose up -d --build postgres backend ai
 
 ### Ingest RAG
 
+![Luồng chuẩn bị tri thức](../docs/images/ai/ingestion.png)
+
 Corpus đã duyệt ở `data/rag/processed/disease_knowledge.json`, phần Farm chỉ được nạp từ `farm_knowledge.json` sau khi review hoàn tất, và `data/rag/lab/processed/lab_knowledge.json` (Lab), cùng registry nguồn:
 
 ```bash
@@ -129,6 +135,8 @@ Cấu hình chatbot mặc định nằm trong `app/core/config.py`; `CHAT_RETRIE
 Đổi embedding model hoặc số chiều vector thì phải ingest lại toàn bộ corpus.
 
 ### Đánh giá truy xuất RAG
+
+![Tổng quan đánh giá RAG](../docs/images/ai/evaluation.png)
 
 Chạy từ thư mục gốc repository, trên Linux x86_64 có Bash, Docker Engine và Docker Compose:
 

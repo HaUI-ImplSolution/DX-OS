@@ -73,7 +73,7 @@ Tên chủ đề là tiêu đề bỏ "Bệnh" và "trên lúa", hoặc tên tro
 | `retriever.py` | Embedding câu hỏi, cosine legacy cho diagnosis/ticket |
 | `chat_search.py` | BM25/cosine, RRF, scope và chọn evidence chatbot |
 | `reranker.py` | CrossEncoder local, cache và ngân sách rerank |
-| `rag_service.py` | Ghép evidence, gọi Ollama khi khả dụng, tạo citations |
+| `rag_service.py` | Gọi Qwen sinh câu trả lời có cấu trúc và kiểm tra trước khi trả |
 | `answer_contract.py` | Schema câu trả lời sinh và giới hạn evidence do Backend cung cấp |
 | `prompt_builder.py` | Prompt có guardrail: chỉ trả lời từ context, không bịa thuốc, liều, PHI |
 | `safety.py` | Lọc dòng chứa thuốc, liều hoặc PHI trước khi evidence Farm rời AI |
@@ -86,16 +86,17 @@ Nguồn của Lab được giới hạn theo namespace; giải thích chẩn đo
 
 | Luồng | Ngữ cảnh và đầu ra | Giới hạn gọi model |
 |---|---|---|
-| Chatbot Farm/Lab | Tối đa 2.000 ký tự tài liệu, giữ nguyên dòng; câu trả lời gồm tóm tắt, tối đa hai ý hướng dẫn và nguồn. Câu tổng quan có thể dùng nhiều tài liệu | Chờ tối đa 30 giây |
+| Chatbot Farm/Lab | Tối đa 2.000 ký tự tài liệu, giữ nguyên dòng; câu trả lời gồm tóm tắt, tối đa hai ý hướng dẫn và nguồn. Câu tổng quan có thể dùng nhiều tài liệu | Tối đa 320 token, 30 giây |
 | Chẩn đoán Farm | Khóa mã/tên bệnh từ CV; giải thích một ý có căn cứ, tách khỏi phác đồ. Thiếu tài liệu hoặc hỏi thuốc/liều/PHI thì không gọi model | Tối đa 192 token, 20 giây, không thử lại |
 
 - Chỉ chấp nhận nội dung đúng schema, nguồn thuộc evidence và không có mâu thuẫn đã được kiểm tra về bệnh hoặc điều kiện áp dụng.
+- Ở Lab, thời hạn (ví dụ 30 ngày) phải đi cùng điều kiện của câu nguồn nêu nó; ý chỉ có trong dòng "Với sinh viên:" hay "Với cán bộ, giảng viên:" phải nêu đúng đối tượng đó.
+- Câu trả lời chỉ lặp lại câu hỏi hoặc tên tài liệu không được tính là `generated`.
 - Qwen không sinh thuốc, liều hoặc PHI, không sửa evidence và dữ liệu Backend; hỏi đáp không tự xác nhận bệnh cho người dùng.
 - Mode `generated` chứa nội dung đã qua kiểm tra.
   Mode `extractive`/`insufficient_context` không trả văn bản dự phòng; hệ thống trả mã lý do và giữ đoạn trích tham khảo.
 - Mục phụ sai định dạng được loại bỏ; phần trả lời chính hợp lệ vẫn được giữ.
   Giao diện không render Markdown/HTML từ model.
-- `RAGService.answer` và `scope_gate.py` là mã legacy; chatbot hybrid dùng `chat_search.py`.
 - Chatbot chờ CPU tối đa 12 giây, rerank tối đa 6 giây.
   Chỉ tìm được kiến thức đã ingest; điểm tương đồng không xác nhận nội dung trả lời là đúng.
 

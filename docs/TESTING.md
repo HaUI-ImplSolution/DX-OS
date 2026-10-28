@@ -55,6 +55,11 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 | Backend chuyển `X-Request-Id` sang AI, AI ghi log theo mã đó | Có | Test đơn vị (Java và pytest) | Không áp dụng |
 | Sao lưu và khôi phục `deploy/backup.sh` (restic, `verify`) | Có | Job CI `backup-drill`, kiểm tay khôi phục vào cluster mới | Không áp dụng |
 | Đăng nhập nhân sự bằng TOTP (`STAFF_OTP_FLOW`) và chính sách mật khẩu | Có | Kiểm tay bằng script đăng nhập qua Keycloak ở cả hai chế độ | Không áp dụng |
+| Quét mã độc tệp tải lên bằng ClamAV: tệp nhiễm bị từ chối, ClamAV ngừng thì 503 | Có | Test đơn vị, kiểm tay với ClamAV thật và tệp EICAR | Không áp dụng |
+| Che số điện thoại, email, dãy số dài trong tin chat và câu hỏi gửi sang AI | Có | Test đơn vị | Không áp dụng |
+| Cầu dao khi gọi AI: dịch vụ lỗi thì trả 503 ngay | Có | Test đơn vị, kiểm tay với AI dừng | Không áp dụng |
+| Cảnh báo một địa chỉ đăng nhập sai nhiều lần | Có | Test đơn vị, kiểm tay với Mattermost giả | Không áp dụng |
+| Quét lỗ hổng phụ thuộc bằng Trivy (`ci-deps.yml`, hằng tuần) | Có | Chạy thử ở local, CI | Không áp dụng |
 
 ## 2. Chuẩn bị
 
@@ -131,7 +136,7 @@ Bộ chạy `./ai/evaluate.sh all` ngày 27/10/2026: 18 lượt, 11.936 request,
 
 ```bash
 cd deploy
-cp .env.example .env     # điền mọi biến đang để trống (mật khẩu, khóa nội bộ)
+python3 demo/make_ci_env.py .env   # sinh .env, biến để trống (mật khẩu, khóa nội bộ) nhận giá trị ngẫu nhiên
 ```
 
 Đặt app muốn chạy trong `.env` (mặc định `farm`): `DXOS_APP=farm` hoặc `lab`.

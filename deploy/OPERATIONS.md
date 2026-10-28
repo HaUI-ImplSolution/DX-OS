@@ -55,6 +55,8 @@ Admin Console → realm `dxos` → **Events**:
 
 Sau 5 lần đăng nhập sai, tài khoản bị khóa tạm 1 phút, mỗi lần sai tiếp theo tăng thêm 1 phút, tối đa 15 phút.
 Hai lần sai cách nhau dưới 1 giây cũng khóa 1 phút (kiểm tra đăng nhập nhanh của Keycloak), nên script đăng nhập thử cần chờ giữa các lần.
+Một địa chỉ đăng nhập sai từ 10 lần trong 10 phút thì `monitor` báo vào kênh Mattermost "Ban quản trị" (ngưỡng ở `monitor.alert.login-failed-*`).
+Sự kiện đăng nhập sai của Keycloak không ghi tên tài khoản, nên chưa có cảnh báo theo tài khoản.
 Gỡ khóa sớm: **Users** → chọn người dùng → tắt công tắc **Temporarily locked**.
 
 IP trong sự kiện là IP thật chỉ khi máy chủ chạy với overlay Cloudflare (`docker-compose.cloudflared.yml`), nơi Keycloak đọc `X-Forwarded-For` từ gateway.
@@ -200,8 +202,29 @@ Khoảng chờ giữa các lần là 1, 2, 4 phút và tăng dần tới tối �
 Quá 8 lần thì tin chuyển `FAILED` và bị xóa sau 7 ngày.
 Tin bị webhook từ chối hẳn (HTTP 4xx khác) thì bỏ, vì gửi lại không đổi kết quả.
 Webhook nhận tin nhưng trả lời quá chậm có thể làm tin đến hai lần.
+Lịch sử chat giữ tin mãi, nên số điện thoại, email và dãy số từ 9 chữ số trở lên trong tin (tiêu đề yêu cầu, ghi chú) bị thay bằng `[đã ẩn]` trước khi gửi.
+Địa chỉ IP, mã yêu cầu như `TK-2026-000123` và đường dẫn không bị ẩn.
 Xem tồn đọng: `docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT channel_key, status, attempts, last_error, next_attempt_at FROM chat_outbox"`.
 Nhiều dòng `PENDING` kéo dài nghĩa là Mattermost hoặc webhook đang hỏng.
+
+## Quét mã độc tệp tải lên
+
+Khi bật, mọi tệp đính kèm và ảnh tải lên được ClamAV quét trước khi xử lý và lưu.
+Tệp nhiễm bị từ chối với HTTP 422 `ERR_FILE_INFECTED` và lần chặn được ghi vào `audit_log` (`FILE_INFECTED`, kèm tên mẫu mã độc).
+ClamAV không trả lời thì tệp không được lưu và người dùng nhận HTTP 503 `ERR_SCAN_UNAVAILABLE`, vì tệp chưa quét không được coi là sạch.
+Tắt mặc định vì ClamAV cần khoảng 1 GB RAM.
+Bật: bỏ dấu `#` ở `COMPOSE_PROFILES=av` và `STORAGE_SCAN_HOST=clamav` trong `deploy/.env`, rồi `docker compose up -d`.
+Chữ ký virus tải về lần đầu mất vài phút và được giữ trong volume `clamav_data`.
+Mỗi lần clamd nạp lại chữ ký (hằng ngày và sau khi khởi động) nó không quét được khoảng 10 giây, và người dùng gặp 503 trong lúc đó; chờ rồi tải lại.
+Thử bằng tệp EICAR (chuỗi kiểm thử chuẩn của ngành diệt virus): tệp chỉ gồm đúng chuỗi đó, đổi tên `.pdf` rồi đính vào một yêu cầu.
+
+## AI service tạm ngưng
+
+Khi một nửa trong 10 lần gọi AI gần nhất (tối thiểu 5 lần) gặp lỗi mạng hoặc HTTP 5xx, backend ngừng gọi AI trong 30 giây (`ai.service.breaker.open-seconds`) và trả ngay HTTP 503 `ERR_AI_UNAVAILABLE`, thay vì để mỗi yêu cầu chờ hết thời gian.
+Sau 30 giây backend thử lại vài lần; thành công thì mở lại.
+Lỗi 4xx (yêu cầu sai) không tính là lỗi dịch vụ.
+Backend không tự gọi lại một lượt AI đã lỗi, vì mỗi lượt chẩn đoán trên CPU mất khoảng 50 giây.
+Trong log backend, dòng `AI service is paused after repeated failures` cho biết cầu dao đang mở.
 
 ## Màn hình giám sát
 

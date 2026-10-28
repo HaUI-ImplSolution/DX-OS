@@ -22,12 +22,14 @@ class MattermostWebhookClientTest {
   private final ChatOutbox outbox = mock(ChatOutbox.class);
   private HttpServer server;
   private volatile int status;
+  private volatile String lastBody = "";
 
   @BeforeEach
   void startServer() throws Exception {
     server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
     server.createContext("/hooks/abc", exchange -> {
-      exchange.getRequestBody().readAllBytes();
+      lastBody = new String(exchange.getRequestBody().readAllBytes(),
+          java.nio.charset.StandardCharsets.UTF_8);
       exchange.sendResponseHeaders(status, -1);
       exchange.close();
     });
@@ -56,6 +58,25 @@ class MattermostWebhookClientTest {
     client(hook()).send("engineer", Map.of("text", "hi"));
 
     verify(outbox, never()).enqueue(any(), any(), any());
+  }
+
+  @Test
+  void personalDataIsHiddenBeforeTheMessageLeaves() {
+    status = 200;
+
+    client(hook()).send("engineer", Map.of("text", "Máy hỏng, gọi 0901234567 hoặc a@b.vn"));
+
+    assertThat(lastBody).contains("Máy hỏng, gọi [đã ẩn] hoặc [đã ẩn]")
+        .doesNotContain("0901234567");
+  }
+
+  @Test
+  void keptMessageIsAlreadyMasked() {
+    status = 503;
+
+    client(hook()).send("engineer", Map.of("text", "gọi 0901234567"));
+
+    verify(outbox).enqueue("engineer", Map.of("text", "gọi [đã ẩn]"), "HTTP 503");
   }
 
   @Test

@@ -94,7 +94,7 @@ Full dependency and license table: [`LICENSES.md`](./LICENSES.md); CycloneDX SBO
 
 ```bash
 git clone https://github.com/HaUI-ImplSolution/DX-OS.git && cd DX-OS
-cp deploy/.env.example deploy/.env      # fill in every empty variable
+python3 deploy/demo/make_ci_env.py      # writes deploy/.env, empty variables get random passwords
 python3 -m pip install pillow           # for the demo data script
 ./deploy/start.sh                       # build, run the app in DXOS_APP, load demo data
 ```
@@ -158,7 +158,7 @@ Cloudflare concepts and settings are in [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE
 | Farm, Lab | `admin1` | `admin123` | ADMIN |
 | Lab | `student1`, `student2` | `student123` | STUDENT |
 | Lab | `lecturer1` | `lecturer123` | LECTURER |
-| Lab | `tech1`, `tech2` | `tech123` | TECHNICIAN |
+| Lab | `tech1`, `tech2` | `tech1234` | TECHNICIAN |
 
 ## 🧪 Testing
 

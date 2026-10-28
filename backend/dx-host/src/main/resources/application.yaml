@@ -61,6 +61,10 @@ storage:
   access-key: ${MINIO_ACCESS_KEY}
   secret-key: ${MINIO_SECRET_KEY}
   bucket: ${MINIO_BUCKET}
+  # clamd of the virus scan of uploads; an empty host turns the scan off.
+  scan:
+    host: ${STORAGE_SCAN_HOST:}
+    port: 3310
   # Origin of the gateway, used to sign links when no request is being served.
   public-url: ${STORAGE_PUBLIC_URL}
   presign-ttl: ${STORAGE_PRESIGN_TTL:15m}
@@ -113,6 +117,10 @@ ai:
     api-key: ${AI_SERVICE_API_KEY}
     connect-timeout-ms: ${AI_SERVICE_CONNECT_TIMEOUT_MS:3000}
     read-timeout-ms: ${AI_SERVICE_READ_TIMEOUT_MS:120000}
+    # When half of the last 10 calls ended in a network error or a 5xx answer, calls fail at once for
+    # open-seconds.
+    breaker:
+      open-seconds: 30
     # Service API key nội bộ cho chiều AI -> Backend (/internal/v1/**, header X-Service-Api-Key).
     inbound-api-key: ${AI_SERVICE_INBOUND_API_KEY}
   vector-db:

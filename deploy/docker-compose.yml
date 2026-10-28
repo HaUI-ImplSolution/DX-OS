@@ -123,6 +123,8 @@ services:
       # Keycloak admin client (creates accounts and the roles of the app)
       KEYCLOAK_ADMIN_CLIENT_ID: ${KEYCLOAK_ADMIN_CLIENT_ID:?}
       KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET:?}
+      # Virus scan of uploads: the host of clamd (service clamav, profile av); empty turns it off
+      STORAGE_SCAN_HOST: ${STORAGE_SCAN_HOST:-}
       # Chat notifications, both apps; a URL left empty is read from the file mattermost-bootstrap writes
       MATTERMOST_WEBHOOK_DIR: /run/mattermost-webhooks
       MATTERMOST_WEBHOOK_URL: ${MATTERMOST_WEBHOOK_URL:-}
@@ -200,6 +202,24 @@ services:
       interval: 10s
       timeout: 5s
       retries: 6
+
+  # Virus scan of every upload before it is stored. Off by default (about 1 GB of RAM); start it
+  # with COMPOSE_PROFILES=av and STORAGE_SCAN_HOST=clamav in deploy/.env. The signatures are kept
+  # in a volume, and clamd answers no scan for about 10 seconds each time it reloads them.
+  clamav:
+    profiles:
+      - av
+    logging: *default-logging
+    image: clamav/clamav:1.5.4@sha256:638d90201ee7ee6a82d249a2fc23b132e578673b5f1f2766852b127676ca1ef6
+    restart: unless-stopped
+    environment:
+      CLAMD_CONF_ConcurrentDatabaseReload: "no"
+      CLAMD_CONF_TemporaryDirectory: /tmp
+    tmpfs:
+      - /tmp:size=512m,mode=1777
+    volumes:
+      - clamav_data:/var/lib/clamav
+    # No published port: only the backend reaches clamd.
 
   # ---------------------------------------------------------------------------
   # Identity
@@ -576,4 +596,5 @@ services:
 
 volumes:
   ai_weights:
+  clamav_data:
   ollama_models:

@@ -9,7 +9,7 @@ Mỗi script làm việc với app đang chạy; `--app farm|lab` chọn rõ rà
 | `seed_demo.py` | Chọn app, nạp dữ liệu demo (`seed_farm.py`, `seed_lab.py`) |
 | `e2e.py` | Chọn app, chạy kịch bản đầu-cuối (`e2e_farm.py`, `e2e_lab.py`), thoát mã 0 khi mọi bước đạt |
 | `dxos_client.py` | Đăng nhập, gọi API, Keycloak Admin API, bộ chạy bước dùng chung |
-| `docker-compose.e2e.yml`, `make_ci_env.py` | Stack rút gọn cho CI (không BI, chat, nạp RAG, Ollama) và sinh `deploy/.env` |
+| `docker-compose.e2e.yml`, `make_ci_env.py` | Stack rút gọn cho CI (không BI, chat, nạp RAG, Ollama); `make_ci_env.py` cũng sinh `deploy/.env` với mật khẩu ngẫu nhiên cho lần cài đầu, giữ nguyên tệp đã có trừ khi có `--force` |
 | `ci_fixture_rule.sql` | Rule thử nghiệm riêng cho CI của Farm |
 
 ## Nạp dữ liệu
@@ -62,7 +62,7 @@ Khi có treatment rule: bản khai phun chặn thu hoạch tới khi kỹ sư x�
 |---|---|---|---|
 | `student1`, `student2` | `student123` | STUDENT | Lớp CNTT K15A |
 | `lecturer1` | `lecturer123` | LECTURER | Bộ môn Công nghệ phần mềm |
-| `tech1`, `tech2` | `tech123` | TECHNICIAN | Không |
+| `tech1`, `tech2` | `tech1234` | TECHNICIAN | Không |
 | `admin1` | `admin123` | ADMIN | Không |
 
 - **Phòng, thiết bị:** 5 phòng (`A101`, `A102` phòng máy 40 chỗ, `A103` đang bảo trì, `A201`, `B301`); 7 thiết bị (3 laptop, 2 máy chiếu cho mượn, 1 thiết bị mạng, 1 máy in).

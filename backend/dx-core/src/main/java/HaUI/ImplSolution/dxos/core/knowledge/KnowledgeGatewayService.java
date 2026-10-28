@@ -7,6 +7,7 @@ import HaUI.ImplSolution.dxos.core.api.knowledge.KnowledgeGateway;
 import HaUI.ImplSolution.dxos.core.api.knowledge.KnowledgeNamespace;
 import HaUI.ImplSolution.dxos.core.api.knowledge.KnowledgePassage;
 import HaUI.ImplSolution.dxos.core.api.knowledge.KnowledgeSource;
+import HaUI.ImplSolution.dxos.core.api.privacy.PiiMask;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -50,7 +51,8 @@ public class KnowledgeGatewayService implements KnowledgeGateway {
       throw new IllegalArgumentException("Knowledge namespace is not registered: " + namespace);
     }
     Map<String, Object> body = new LinkedHashMap<>(filters);
-    body.put("query", question);
+    // The question may carry a phone number or an address of the person asking.
+    body.put("query", PiiMask.mask(question));
     body.put("top_k", topK);
     body.put("namespace", namespace);
     List<Map<String, Object>> chunks = aiGateway.postJson(RETRIEVE_PATH, body,

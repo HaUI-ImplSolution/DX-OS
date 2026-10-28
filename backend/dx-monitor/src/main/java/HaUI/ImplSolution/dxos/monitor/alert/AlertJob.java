@@ -3,6 +3,7 @@ package HaUI.ImplSolution.dxos.monitor.alert;
 
 import HaUI.ImplSolution.dxos.monitor.config.MonitorProperties;
 import HaUI.ImplSolution.dxos.monitor.health.ServiceStateChanged;
+import HaUI.ImplSolution.dxos.monitor.query.AuthEventReader;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
@@ -17,22 +18,26 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 // Tells the administrators' chat channel about a service going down or coming back, a burst of
-// 5xx answers, and a client address rate limited many times. The same condition is reported at
-// most once per repeat interval.
+// 5xx answers, a client address rate limited many times, and many failed sign-ins from one address.
+// The same condition is reported at most once per repeat interval.
 @Component
 public class AlertJob {
 
   private static final Logger log = LoggerFactory.getLogger(AlertJob.class);
+  private static final int FAILED_LOGIN_ROWS = 20;
 
   private final MonitorProperties.Alert settings;
   private final JdbcTemplate jdbc;
   private final MattermostSender sender;
+  private final AuthEventReader authEvents;
   private final Map<String, Instant> reported = new HashMap<>();
 
-  public AlertJob(MonitorProperties properties, JdbcTemplate jdbc, MattermostSender sender) {
+  public AlertJob(MonitorProperties properties, JdbcTemplate jdbc, MattermostSender sender,
+      AuthEventReader authEvents) {
     this.settings = properties.alert();
     this.jdbc = jdbc;
     this.sender = sender;
+    this.authEvents = authEvents;
   }
 
   @EventListener
@@ -83,6 +88,20 @@ public class AlertJob {
             .formatted(row[0], row[1], settings.rateLimitedWindowMinutes()));
       }
     }
+    checkFailedLogins(now);
+  }
+
+  void checkFailedLogins(Instant now) {
+    Instant from = now.minus(Duration.ofMinutes(settings.loginFailedWindowMinutes()));
+    authEvents.failedPerIp(from, FAILED_LOGIN_ROWS)
+        .ifPresent(counts -> counts.forEach((ip, total) -> {
+          if (total >= settings.loginFailedCount()
+              && reported.putIfAbsent("login|" + ip, now) == null) {
+            sender.send(
+                ":warning: %d lần đăng nhập sai từ địa chỉ %s trong %d phút qua. Xem màn hình giám sát."
+                    .formatted(total, ip, settings.loginFailedWindowMinutes()));
+          }
+        }));
   }
 
   private long count(String condition, Instant from) {

@@ -100,5 +100,7 @@ Dữ liệu mẫu của Lab (phòng, thiết bị, yêu cầu) là dữ liệu g
 | Redis 7.4 | RSALv2 hoặc SSPLv1 | Queue/cache Langfuse local ([license](https://redis.io/legal/licenses/)) |
 | Docker CLI (Moby) | Apache-2.0 | Chỉ công cụ thử tải lấy mẫu container do bộ chạy tạo ([license](https://github.com/docker/cli/blob/master/LICENSE)) |
 | gitleaks | MIT | Quét secret trong CI |
+| Trivy 0.58.1 | Apache-2.0 | Quét lỗ hổng phụ thuộc trong CI, chạy trong container |
+| ClamAV 1.5.4 (`clamav/clamav`) | GPL-2.0 | Quét mã độc tệp tải lên; dịch vụ riêng ở profile `av`, backend nói chuyện qua mạng, không liên kết mã |
 | restic 0.17.3 | BSD-2-Clause | Sao lưu mã hóa của `deploy/backup.sh`, chạy trong container, không đóng gói trong runtime ([license](https://github.com/restic/restic/blob/master/LICENSE)) |
 | CycloneDX (`cyclonedx-bom`, `@cyclonedx/cyclonedx-npm`, `cyclonedx-maven-plugin`) | Apache-2.0 | Sinh SBOM |

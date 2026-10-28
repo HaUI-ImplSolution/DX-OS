@@ -35,7 +35,7 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE.md`](../ARCHITECTURE.md).
 
 | Dịch vụ | Cách cung cấp | Ứng dụng dùng |
 |---|---|---|
-| Identity/SSO | Keycloak realm `dxos`; core tạo vai do ứng dụng khai báo và tài khoản workspace qua Admin API; ghi sự kiện đăng nhập và khóa tạm khi sai mật khẩu nhiều lần | Farm: FARMER, ENGINEER, ADMIN; Lab: STUDENT, LECTURER, TECHNICIAN, ADMIN |
+| Identity/SSO | Keycloak realm `dxos`; core tạo vai do ứng dụng khai báo và tài khoản workspace qua Admin API; ghi sự kiện đăng nhập và khóa tạm khi sai mật khẩu nhiều lần; mật khẩu chỉ nằm ở Keycloak dưới dạng băm Argon2id, backend không lưu | Farm: FARMER, ENGINEER, ADMIN; Lab: STUDENT, LECTURER, TECHNICIAN, ADMIN |
 | API Gateway | APISIX là cửa duy nhất: kiểm JWT, giới hạn tốc độ, route theo app, log truy cập JSON kèm `X-Request-Id`; backend kiểm JWT lần hai | Giới hạn upload ảnh và chẩn đoán (Farm), tạo ticket và đặt phòng (Lab) |
 | Dữ liệu cấu trúc | PostgreSQL, Flyway: `db/migration/core` dùng chung và `db/migration/<app>` | Bảng riêng của từng ứng dụng, dùng chung `workspaces`, `notifications` |
 | Dữ liệu phi cấu trúc | MinIO riêng tư, client nhận link có hạn; tệp qua `FileProcessor` của ứng dụng | Ảnh lá lúa (Farm), tệp đính kèm ticket (Lab) |
@@ -112,7 +112,7 @@ Hướng mở rộng:
 - Lịch chạy nền (kiểm SLA, nhắc mượn trả, nhắc thu hoạch, nhắc xác nhận khai phun, thu thập thời tiết) giữ khóa advisory của PostgreSQL nên hai bản backend không chạy cùng một việc cùng lúc.
   Thông báo trong app có khóa chống trùng; tin chat nhắc có thể lặp nếu hai bản chạy lệch giờ.
 - Hạn mức tốc độ tính theo địa chỉ IP ở gateway là số tạm.
-- Chưa có thử tải.
+- Thử tải mới đo endpoint truy xuất của AI (k6, 1/2/5 người dùng ảo, kết quả ở `TESTING.md` mục 3); chưa thử tải Backend, gateway hay toàn hệ thống.
 
 ## 10. Nếu cộng đồng muốn đóng góp một module mới, quy trình contribution là gì?
 

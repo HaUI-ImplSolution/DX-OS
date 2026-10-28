@@ -76,6 +76,7 @@ Nội dung viết cho người quản lý không chuyên IT: biểu đồ là ch
 | Dịch vụ ngừng, rồi phục hồi | Sau 2 lần dò thất bại liên tiếp |
 | Lỗi `5xx` tại cổng | 5 lần trong 5 phút |
 | Một địa chỉ bị giới hạn tốc độ | 10 lần trong 10 phút |
+| Một địa chỉ đăng nhập sai (sự kiện `LOGIN_ERROR` của Keycloak) | 10 lần trong 10 phút |
 
 - Một điều kiện được báo tối đa một tin mỗi 60 phút; `monitor` khởi động lại thì quên các điều kiện đã báo.
 - Ngưỡng ở `monitor.alert.*` và đích dò ở `monitor.probe.targets` trong `backend/dx-monitor/src/main/resources/application.yaml`.

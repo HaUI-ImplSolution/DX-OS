@@ -8,7 +8,7 @@ Việc còn lại của hồ sơ nằm ở [`BACKLOG.md`](./BACKLOG.md); câu tr
 | Yêu cầu | Nơi có |
 |---|---|
 | Repository công khai, lịch sử commit | GitHub, nhánh `main` |
-| Release và tag có phiên bản | GitHub Releases |
+| Release và tag có phiên bản | GitHub Releases (`v1.0.0` đến `v1.0.2`); thay đổi theo phiên bản ở [`CHANGELOG.md`](../CHANGELOG.md) |
 | `README.md`: kiến trúc 3 tầng, H-P-D-I, tính năng, cài đặt, cấu hình, chạy thử, API, tài khoản demo | [`README.md`](../README.md) |
 | `LICENSE` và bảng dependency, license | [`LICENSE`](../LICENSE), [`LICENSES.md`](../LICENSES.md), [`sbom/`](../sbom/README.md) |
 | `CHANGELOG.md`, issue tracker, `CONTRIBUTING.md` | [`CHANGELOG.md`](../CHANGELOG.md), GitHub Issues, [`CONTRIBUTING.md`](../CONTRIBUTING.md) |
@@ -48,7 +48,7 @@ Một lõi, hai ứng dụng: DX-Farm trước, đổi sang DX-Lab bằng một 
 
 | Phút | Việc làm | Nói và chỉ vào |
 |---|---|---|
-| 0:00-1:00 | Mở sơ đồ 3 tầng, rồi portal | "Tầng 1 là Core headless: Keycloak, APISIX, workflow, dữ liệu. Tầng 2 là H-P-D-I. Tầng 3 là hai ứng dụng chạy trên cùng Core." Portal hiện app đang chạy và trạng thái từng dịch vụ |
+| 0:00-1:00 | Mở sơ đồ 3 tầng, rồi portal | "Tầng 1 là Core headless: Keycloak, APISIX, workflow, dữ liệu. Tầng 2 là H-P-D-I. Tầng 3 là hai ứng dụng chạy trên cùng Core." Portal hiện app đang chạy và trạng thái từng dịch vụ; mở nhanh `/monitor/` bằng `admin1` để chỉ lớp giám sát chạy riêng, không phụ thuộc Backend |
 | 1:00-2:00 | **Farm**, web admin: hàng chờ duyệt, duyệt thửa mới, mở timeline | [H] SSO một lần, vai theo realm. [P] workflow dùng chung: mỗi quyết định là một sự kiện chỉ thêm, có người phụ trách; Mattermost nhận thông báo |
 | 2:00-3:30 | **Farm**, web kỹ sư: mở báo cáo, chạy chẩn đoán AI, duyệt; khai phun và khóa thu hoạch | [I] CV, độ tin cậy, nguồn RAG; kỹ sư chốt bệnh. Liều và PHI chỉ lấy từ dữ liệu có cấu trúc. Thu hoạch bị chặn `POKA_YOKE_VIETGAP_VIOLATION`; bệnh chưa có rule ở `review_required`, không có liều hay PHI |
 | 3:30-4:30 | **Farm**, Superset: dashboard 11 chart, kể cả nhiệt độ và lượng mưa theo ngày; web: trang Tài liệu, hỏi một câu | [D] chỉ đọc view của bản ghi đã duyệt, không có dữ liệu cá nhân. Hỏi đáp trích nguyên văn kèm nguồn và giấy phép |
@@ -87,7 +87,7 @@ Mỗi mục nêu nội dung cần viết và nơi lấy số liệu, bằng ch�
 |---|---|---|---|
 | 1. Bài toán và phạm vi | 1 | DX-OS Open-Core, hai ứng dụng minh họa (DX-Farm, DX-Lab), người dùng, luồng xương sống của từng ứng dụng | `README.md` |
 | 2. Kiến trúc Open-Core 3 tầng | 1-2 | Sơ đồ 3 tầng, module và ranh giới biên dịch, những gì ứng dụng khai báo, cách chọn ứng dụng lúc chạy | `ARCHITECTURE.md` mục 1 đến 4 |
-| 3. Dịch vụ dùng chung của Core | 1 | Identity/SSO, API Gateway, dữ liệu, workflow, audit, thông báo, cổng AI: ai cung cấp, ứng dụng khai báo gì | `ARCHITECTURE.md` mục 3, `sso/README.md`, `deploy/apisix/`, `deploy/OPERATIONS.md` |
+| 3. Dịch vụ dùng chung của Core | 1 | Identity/SSO, API Gateway, dữ liệu, workflow, audit, thông báo, cổng AI, giám sát (`dx-monitor`): ai cung cấp, ứng dụng khai báo gì | `ARCHITECTURE.md` mục 3, `sso/README.md`, `deploy/apisix/`, `deploy/OPERATIONS.md`, `backend/dx-monitor/README.md` |
 | 4. H-P-D-I qua hai ứng dụng | 2 | Farm: vai và phạm vi hộ, duyệt và khóa PHI, view BI, CV và RAG. Lab: vai, ba loại case, SLA, view BI, luật phân loại và RAG | `backend/app-farm/README.md`, `backend/app-lab/README.md` |
 | 5. Trí tuệ nhân tạo | 1 | CV, RAG, LangGraph, LLM, luật phân loại; ngưỡng, giới hạn, vai trò kỹ sư; dữ liệu và nguồn gốc | `ai/README.md`, `COUNCIL_QA.md` câu 6, `TESTING.md` mục 3 (đánh giá truy xuất RAG) |
 | 6. Kiểm thử và kiểm chứng | 1 | Test backend, E2E hai ứng dụng trên stack sạch (Farm 10 bước, Lab 16 bước), bằng chứng Core không đổi khi thêm ứng dụng, ứng dụng mẫu rỗng, kiểm gateway, log và audit trên máy chủ công khai | log workflow `E2E`, `deploy/demo/README.md`, `TESTING.md` mục 8 và 10 |
@@ -98,7 +98,7 @@ Mỗi mục nêu nội dung cần viết và nơi lấy số liệu, bằng ch�
 
 1. Bài toán và người dùng: hai ứng dụng trên một nền tảng
 2. Sơ đồ 3 tầng và ranh giới Core / ứng dụng
-3. Dịch vụ dùng chung: Identity/SSO, Gateway, Data, Workflow, Audit
+3. Dịch vụ dùng chung: Identity/SSO, Gateway, Data, Workflow, Audit, Giám sát
 4. H: danh tính và phân quyền theo vai
 5. P: workflow cấu hình được và vòng đời (Farm, Lab)
 6. Poka-yoke: khóa PHI, GPS, SLA, chống trùng giờ đặt phòng

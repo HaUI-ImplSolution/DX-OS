@@ -18,11 +18,12 @@ Trên máy chủ công khai, MinIO Console (`files.<tên miền>`) nằm sau Clo
 
 - Bucket `MINIO_BUCKET` (mặc định `dxos-uploads`) riêng tư, Backend tự tạo lúc khởi động.
 - Khóa object `<uuid>.jpg` hoặc `<uuid>.png`, metadata `uploaded-by` (`sub` của người upload) và `source`.
+- Khi bật ClamAV (`STORAGE_SCAN_HOST`, xem [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md)), Backend quét mã độc tệp trước khi xử lý; tệp nhiễm bị từ chối và không chạm kho.
 - Backend làm sạch tệp qua `FileProcessor` của app (ảnh: giải mã lại, bỏ EXIF/GPS) rồi mới lưu; client không ghi thẳng vào MinIO.
 - Client nhận link có hạn (`imageUrl`, mặc định 15 phút, `storage.presign-ttl`), ký theo địa chỉ client dùng gọi API nên web (`localhost`) và điện thoại (IP LAN) đều tải được.
 - Cổng MinIO không publish ra host: link đi qua gateway (route `/<bucket>/*`, chỉ `GET` và `HEAD`, giữ nguyên đường dẫn vì chữ ký phủ cả đường dẫn).
   AI Service nhận link nội bộ `http://minio:9000/...` hiệu lực 10 phút.
-- Console ở `http://localhost:9082` (`APISIX_MINIO_HOST_PORT`), đăng nhập `MINIO_ACCESS_KEY` / `MINIO_SECRET_KEY`; không dùng SSO vì Keycloak cố ý không cố định hostname.
+- Console ở `http://localhost:9082`, mặc định chỉ mở trên chính máy chủ (`APISIX_MINIO_HOST_PORT=127.0.0.1:9082`; đặt `9082` để mở ra mạng), đăng nhập `MINIO_ACCESS_KEY` / `MINIO_SECRET_KEY`; không dùng SSO vì Keycloak cố ý không cố định hostname.
   Bản community chỉ còn xem bucket và object.
 
 ## Biến môi trường (`deploy/.env`)

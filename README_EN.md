@@ -22,6 +22,7 @@ One shared core handles sign-in, data, workflows, notifications and AI; two busi
 - **One core, many applications:** Farm and Lab share one core; adding an application needs no change to the core.
 - **Business safety:** key rules are checked in the Backend and the database, not just in the UI.
 - **Traceability:** the gateway logs every request, Keycloak records sign-in events, the Backend writes refused requests, 5xx errors and administrative actions to an append-only audit log, and the administrators-only monitoring screen at `/monitor/` brings these together with service probes and chat alerts.
+- **Backup and restore:** `deploy/backup.sh` makes encrypted backups of the database and files, has a restore check, and CI rehearses it on every run.
 - **Controlled AI:** AI only assists; drug and dose information comes from expert-approved data and the engineer makes the decision.
 - **One-command run:** builds the whole system with demo data, with automated tests on a clean environment.
 - **Transparent open source:** licenses and the list of software components are public, with automatic scanning for leaked passwords.
@@ -94,7 +95,7 @@ Full dependency and license table: [`LICENSES.md`](./LICENSES.md); CycloneDX SBO
 
 ```bash
 git clone https://github.com/HaUI-ImplSolution/DX-OS.git && cd DX-OS
-cp deploy/.env.example deploy/.env      # fill in every empty variable
+python3 deploy/demo/make_ci_env.py      # writes deploy/.env, empty variables get random passwords
 python3 -m pip install pillow           # for the demo data script
 ./deploy/start.sh                       # build, run the app in DXOS_APP, load demo data
 ```
@@ -145,7 +146,7 @@ Per-application settings: [`backend/app-farm/README.md`](./backend/app-farm/READ
 
 A public server runs behind a Cloudflare Tunnel and opens no inbound port.
 Enable it with the overlay [`deploy/docker-compose.cloudflared.yml`](./deploy/docker-compose.cloudflared.yml) (instructions at the top of the file).
-Cloudflare concepts and settings are in [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE.md); logs, rate limits and the audit log are in [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
+Cloudflare concepts and settings are in [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE.md); logs, rate limits, the audit log, backup and restore are in [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
 
 ### 🔑 Demo accounts
 
@@ -158,7 +159,21 @@ Cloudflare concepts and settings are in [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE
 | Farm, Lab | `admin1` | `admin123` | ADMIN |
 | Lab | `student1`, `student2` | `student123` | STUDENT |
 | Lab | `lecturer1` | `lecturer123` | LECTURER |
-| Lab | `tech1`, `tech2` | `tech123` | TECHNICIAN |
+| Lab | `tech1`, `tech2` | `tech1234` | TECHNICIAN |
+
+## 🔌 API
+
+- Swagger UI is at `/swagger-ui.html` and the OpenAPI JSON at `/v3/api-docs`; the documentation is generated from springdoc annotations and covers only the running application (`DXOS_APP`).
+- Every call goes through the gateway `http://localhost:9080/api/v1/...` with `Authorization: Bearer <Keycloak access token>`; only `GET /api/v1/system/status` and the application's public catalogues need no token.
+- Responses are wrapped in `ApiResponse`; errors carry a stable `errorCode`, business errors return `422` and concurrent conflicts return `409`.
+- To try it: click **Authorize** in Swagger with an access token, or use `deploy/demo/dxos_client.py` (Authorization Code + PKCE sign-in, like the real apps).
+
+| Group | Main paths |
+|---|---|
+| Shared Core | `/api/v1/system/status`, `/api/v1/app` (manifest: roles, menu), `/api/v1/workspaces`, `/api/v1/workflow-cases` (`assign`, `approve`, `reject`, `events`), `/api/v1/notifications`, `/api/v1/audit-logs` (ADMIN) |
+| Farm | `/api/v1/households`, `/api/v1/parcels`, `/api/v1/crop-seasons`, `/api/v1/disease-reports`, `/api/v1/treatment-rules`, `/api/v1/knowledge/ask`; see [`backend/app-farm/README.md`](./backend/app-farm/README.md#api) (Vietnamese) |
+| Lab | `/api/v1/tickets`, `/api/v1/device-loans`, `/api/v1/room-bookings`, `/api/v1/lab-stats/summary`, `/api/v1/knowledge/ask`; see [`backend/app-lab/README.md`](./backend/app-lab/README.md#api) (Vietnamese) |
+| AI Service | Only the Backend can call it on the internal network; it has no gateway route; see [`ai/README.md`](./ai/README.md#api) (Vietnamese) |
 
 ## 🧪 Testing
 

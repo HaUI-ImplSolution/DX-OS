@@ -3,6 +3,7 @@ package HaUI.ImplSolution.dxos.core.notification;
 
 import HaUI.ImplSolution.dxos.core.api.notification.ChatWebhook;
 import HaUI.ImplSolution.dxos.core.api.notification.NotificationChannel;
+import HaUI.ImplSolution.dxos.core.api.privacy.PiiMask;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -27,6 +28,8 @@ import org.springframework.web.client.RestClientResponseException;
 // Posts to a Mattermost incoming webhook. A channel's URL comes from mattermost.webhook.url-<key>,
 // then <mattermost.webhook.dir>/<key>.url (read on every use), then the default url or default.url;
 // with none, its notifications are off. URLs carry the access key, so they are never logged.
+// A post that fails for a reason that may pass (network, 5xx, 429) is kept in ChatOutbox and sent
+// again by ChatOutboxJob; one the webhook rejects (other 4xx) is dropped.
 @Component
 public class MattermostWebhookClient implements ChatWebhook {
 
@@ -38,13 +41,15 @@ public class MattermostWebhookClient implements ChatWebhook {
   private final URI defaultUri;
   private final Path webhookDir;
   private final RestClient restClient;
+  private final ChatOutbox outbox;
 
-  public MattermostWebhookClient(Environment environment,
+  public MattermostWebhookClient(Environment environment, ChatOutbox outbox,
       ObjectProvider<NotificationChannel> channels, @Value("${mattermost.webhook.url:}") String url,
       @Value("${mattermost.webhook.dir:}") String dir,
       @Value("${mattermost.webhook.connect-timeout-ms:2000}") int connectTimeoutMs,
       @Value("${mattermost.webhook.read-timeout-ms:3000}") int readTimeoutMs) {
     this.environment = environment;
+    this.outbox = outbox;
     this.defaultUri = parse(url, true);
     this.webhookDir = dir == null || dir.isBlank() ? null : Path.of(dir.strip());
     HttpClient httpClient =
@@ -62,18 +67,44 @@ public class MattermostWebhookClient implements ChatWebhook {
   }
 
   @Override
-  public void send(String channelKey, Map<String, Object> payload) {
+  public void send(String channelKey, Map<String, Object> rawPayload) {
+    // Chat history keeps messages for good, so personal data is hidden before it is sent or kept.
+    Map<String, Object> payload = PiiMask.maskPayload(rawPayload);
+    String error = post(channelKey, payload);
+    if (error != null) {
+      try {
+        outbox.enqueue(channelKey, payload, error);
+      } catch (Exception e) {
+        log.warn("Mattermost notification lost, the outbox is not available: {}",
+            e.getClass().getSimpleName());
+      }
+    }
+  }
+
+  // Posts once. Returns null when the message is done (sent, the channel has no webhook, or the
+  // webhook rejected it for good) and the reason when it should be tried again.
+  String post(String channelKey, Map<String, Object> payload) {
     Optional<URI> uri = uriOf(channelKey);
     if (uri.isEmpty()) {
-      return;
+      return null;
     }
     try {
       restClient.post().uri(uri.get()).contentType(MediaType.APPLICATION_JSON).body(payload)
           .retrieve().toBodilessEntity();
+      return null;
     } catch (RestClientResponseException e) {
-      log.warn("Mattermost webhook rejected the notification: HTTP {}", e.getStatusCode().value());
+      int status = e.getStatusCode().value();
+      if (status == 408 || status == 429 || status >= 500) {
+        log.warn("Mattermost webhook answered HTTP {}; the notification will be sent again",
+            status);
+        return "HTTP " + status;
+      }
+      log.warn("Mattermost webhook rejected the notification: HTTP {}", status);
+      return null;
     } catch (Exception e) {
-      log.warn("Mattermost webhook call failed: {}", e.getClass().getSimpleName());
+      log.warn("Mattermost webhook call failed: {}; the notification will be sent again",
+          e.getClass().getSimpleName());
+      return e.getClass().getSimpleName();
     }
   }
 

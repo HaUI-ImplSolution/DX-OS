@@ -10,8 +10,10 @@ import com.sun.net.httpserver.HttpServer;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
+import org.slf4j.MDC;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.util.LinkedMultiValueMap;
 import tools.jackson.databind.ObjectMapper;
@@ -20,7 +22,7 @@ class AiServiceGatewayTest {
 
   private static AiServiceGateway gateway(HttpServer server) {
     return new AiServiceGateway("http://127.0.0.1:" + server.getAddress().getPort(), "test-key",
-        1000, 3000, new ObjectMapper());
+        1000, 3000, 30, new ObjectMapper());
   }
 
   @Test
@@ -55,6 +57,83 @@ class AiServiceGatewayTest {
       assertThat(contentType.get()).startsWith("multipart/form-data");
       assertThat(apiKey.get()).isEqualTo("test-key");
       assertThat(body.get()).contains("name=\"image\"", "Content-Type: image/png");
+    } finally {
+      server.stop(0);
+    }
+  }
+
+  @Test
+  void repeatedServerErrorsPauseTheCallsUntilTheServiceRecovers() throws Exception {
+    HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+    AtomicInteger hits = new AtomicInteger();
+    server.createContext("/work", exchange -> {
+      hits.incrementAndGet();
+      exchange.sendResponseHeaders(500, -1);
+      exchange.close();
+    });
+    server.start();
+    try {
+      AiServiceGateway gateway = gateway(server);
+      for (int i = 0; i < 5; i++) {
+        assertThatThrownBy(() -> gateway.postJson("/work", Map.of(), Map.class))
+            .isInstanceOf(AiServiceException.class);
+      }
+      assertThat(hits.get()).isEqualTo(5);
+
+      assertThatThrownBy(() -> gateway.postJson("/work", Map.of(), Map.class))
+          .isInstanceOf(AiServiceException.class).hasMessageContaining("paused");
+      assertThat(hits.get()).isEqualTo(5);
+    } finally {
+      server.stop(0);
+    }
+  }
+
+  @Test
+  void clientErrorsAndRejectionsDoNotPauseTheCalls() throws Exception {
+    HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+    AtomicInteger hits = new AtomicInteger();
+    server.createContext("/work", exchange -> {
+      hits.incrementAndGet();
+      exchange.sendResponseHeaders(422, -1);
+      exchange.close();
+    });
+    server.start();
+    try {
+      AiServiceGateway gateway = gateway(server);
+      for (int i = 0; i < 12; i++) {
+        assertThatThrownBy(() -> gateway.postJson("/work", Map.of(), Map.class))
+            .isInstanceOf(AiRequestRejectedException.class);
+      }
+      assertThat(hits.get()).isEqualTo(12);
+    } finally {
+      server.stop(0);
+    }
+  }
+
+  @Test
+  void passesTheRequestIdOfTheCurrentRequestOn() throws Exception {
+    HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+    AtomicReference<String> requestId = new AtomicReference<>();
+    server.createContext("/echo", exchange -> {
+      requestId.set(exchange.getRequestHeaders().getFirst("X-Request-Id"));
+      byte[] response = "{}".getBytes(StandardCharsets.UTF_8);
+      exchange.getResponseHeaders().set("Content-Type", "application/json");
+      exchange.sendResponseHeaders(200, response.length);
+      exchange.getResponseBody().write(response);
+      exchange.close();
+    });
+    server.start();
+    try {
+      gateway(server).postJson("/echo", Map.of(), Map.class);
+      assertThat(requestId.get()).isNull();
+
+      MDC.put("requestId", "req-123");
+      try {
+        gateway(server).postJson("/echo", Map.of(), Map.class);
+      } finally {
+        MDC.remove("requestId");
+      }
+      assertThat(requestId.get()).isEqualTo("req-123");
     } finally {
       server.stop(0);
     }

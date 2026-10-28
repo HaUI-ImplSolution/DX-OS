@@ -52,6 +52,8 @@ Chẩn đoán và gợi ý ticket dùng endpoint retrieve legacy, không qua hyb
 
 - Mọi endpoint trừ `health` và `class-contract` yêu cầu header `X-Service-Api-Key` khớp `AI_SERVICE_API_KEY`: thiếu hoặc sai key trả `401`, chưa cấu hình key trả `503` (fail-closed).
 - Cổng AI không publish ra host, chỉ truy cập được trong mạng compose.
+- Header `X-Request-Id` do Backend chuyển sang được echo lại ở response và ghi vào log, mỗi request một dòng `request_id=... status=... ms`.
+  Request không có mã hợp lệ thì AI tự sinh mã mới.
 - `diagnose` tải ảnh từ `image_url`, chạy CV, lấy structured facts, truy vấn RAG và trả recommendation; thiếu structured facts thì request thất bại, AI không đưa recommendation chỉ dựa trên RAG.
 - Request có `request_id`, `crop_season_id`, `image_url`, `field_context`; response có `request_id`, `cv_result`, `rag_evidence`, `structured_context`, `recommendation`.
 - Mỗi phần tử `rag_evidence` có `content`, `document_title`, `chunk_index` (vị trí đoạn trong tài liệu), `source_ids`, `similarity`; `recommendation` chỉ có `selected_rule_id` và `requires_engineer_approval`.
@@ -78,11 +80,13 @@ Compose lấy từ [`deploy/.env.example`](../deploy/.env.example); chạy local
 | `BACKEND_BASE_URL` | Base URL Backend (local `http://localhost:8081`) |
 | `BACKEND_SERVICE_API_KEY` | Key AI gửi khi gọi `/internal/v1/**` của Backend |
 | `AI_SERVICE_API_KEY` | Key Backend phải gửi khi gọi AI |
-| `BACKEND_TIMEOUT_SECONDS`, `BACKEND_MAX_ATTEMPTS` | Timeout và tổng số lần gọi Backend |
+| `BACKEND_TIMEOUT_SECONDS`, `BACKEND_MAX_ATTEMPTS`, `BACKEND_RETRY_BACKOFF_SECONDS` | Timeout, tổng số lần gọi Backend và khoảng nghỉ giữa các lần thử (mặc định 3 giây, 2 lần, 0,2 giây) |
+| `LOG_LEVEL` | Mức log, mặc định `INFO`; Compose đặt qua `AI_LOG_LEVEL` |
 | `OLLAMA_BASE_URL`, `OLLAMA_MODEL` | Qwen tổng hợp hỏi đáp web Farm/Lab và giải thích chẩn đoán Farm |
 | `EMBEDDING_MODEL` | Embedding dùng chung cho ingest và retrieval |
 | `CV_DEVICE` | `auto`, `cpu` hoặc `cuda` |
 | `CV_WEIGHTS_PATH`, `CV_WEIGHTS_SHA256` | Checkpoint `ai/models/efficientnetv2m_rice_disease.pth` khi chạy local; trong image là `/opt/dxos/models/efficientnetv2m_rice_disease.pth`; SHA-256 bắt buộc khi nạp |
+| `CV_CLASS_CONTRACT_PATH` | Class contract của CV (mặc định `data/structured/class_contract.json`) |
 | `CROP_CLASSIFIER_PATH` | Artifact crop classifier (mặc định `ai/weights/crop_classifier.onnx`) |
 | `AI_CV_WEIGHTS_PATH`, `AI_CV_WEIGHTS_SHA256`, `AI_CROP_CLASSIFIER_PATH` | Đường dẫn model bệnh trong image, checksum riêng và đường dẫn crop classifier phía host |
 
@@ -102,6 +106,7 @@ docker compose up -d --build postgres backend ai
 
 - Checkout có ba phần model bệnh và `crop_classifier.onnx` trong `ai/weights/`; Docker build ghép model bệnh vào image, crop classifier vẫn mount read-only. Thiếu hoặc sai SHA-256 thì AI từ chối khởi động; restart không tải trọng số bệnh.
   Giá trị `AI_CV_WEIGHTS_SHA256` trong `deploy/.env` là SHA-256 của ba phần nối đúng thứ tự; từ `ai/`, tính bằng `cat weights/dx-farm-efficientnetv2m/model.pth.part-* | sha256sum`, chỉ lưu giá trị vào env riêng.
+- Trên CPU x86 không có SSE4.1 (ví dụ CPU ảo "Common KVM processor"), AI tự tắt oneDNN và NNPACK của PyTorch để chạy được (`app/core/torch_cpu.py`).
 - AI không dùng migration; Backend phải khởi tạo database vector trước khi gọi RAG.
 - Stack Compose có `ollama` và `ollama-init` (tải `OLLAMA_MODEL` trước khi AI khởi động) và job `rag-ingest` chạy trước AI.
 - Kiểm model: `docker compose exec ai python -c "import urllib.request; print(urllib.request.urlopen('http://localhost:8000/api/v1/disease/health').read().decode())"`.

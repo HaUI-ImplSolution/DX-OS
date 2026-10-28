@@ -766,6 +766,14 @@ class GeneratedAnswerChecks(unittest.TestCase):
         self.assertIn("university regulations", prompts[2][0][1])
         self.assertEqual(json.loads(prompts[0][1][1])["context"], {})
 
+    def test_diagnosis_prompt_has_no_overwritten_general_template(self):
+        system = build_answer_messages(
+            "Bệnh là gì?", PASSAGES, "farm_diagnosis", {}
+        )[0][1]
+        self.assertIn("Chỉ diễn giải MỘT ý", system)
+        self.assertNotIn("Do NOT diagnose", system)
+        self.assertNotIn("Use ONLY evidence/context", system)
+
     def test_request_rejects_untrusted_profile_and_excess_context(self):
         from pydantic import ValidationError
 

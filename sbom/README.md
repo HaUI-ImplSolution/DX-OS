@@ -28,3 +28,4 @@ cd mobile && npx @cyclonedx/cyclonedx-npm --omit dev --ignore-npm-errors --outpu
 ```
 
 Sinh lại sau khi đổi dependency; giấy phép từng thành phần ở [`LICENSES.md`](../LICENSES.md).
+Workflow `CI Dependencies` (`ci-deps.yml`) quét lỗ hổng của các dependency này bằng Trivy khi file khai báo đổi và mỗi tuần.

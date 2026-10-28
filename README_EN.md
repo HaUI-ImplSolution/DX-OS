@@ -21,11 +21,12 @@ One shared core handles sign-in, data, workflows, notifications and AI; two busi
 
 - **One core, many applications:** Farm and Lab share one core; adding an application needs no change to the core.
 - **Business safety:** key rules are checked in the Backend and the database, not just in the UI.
-- **Traceability:** the gateway logs every request, Keycloak records sign-in events, the Backend writes refused requests, 5xx errors and administrative actions to an append-only audit log, and the administrators-only monitoring screen at `/monitor/` brings these together with service probes and chat alerts.
-- **Backup and restore:** `deploy/backup.sh` makes encrypted backups of the database and files, has a restore check, and CI rehearses it on every run.
-- **Controlled AI:** AI only assists; drug and dose information comes from expert-approved data and the engineer makes the decision.
+- **Traceability:** every request, sign-in, error and administrative action is recorded; a monitoring screen for administrators brings these together, watches the health of each service and reports incidents in the chat.
+- **Security:** staff can turn on two-step sign-in, uploaded files can be scanned for malware, and personal details are hidden before messages reach the chat or the AI.
+- **Backup and restore:** data and files are backed up with encryption, and restoring them is checked automatically.
+- **Controlled AI:** AI only assists, answers with its sources and declines questions that are out of scope or lack support; drug and dose information comes from expert-approved data and the engineer makes the decision.
 - **One-command run:** builds the whole system with demo data, with automated tests on a clean environment.
-- **Transparent open source:** licenses and the list of software components are public, with automatic scanning for leaked passwords.
+- **Transparent open source:** licenses and the list of software components are public, with automatic scanning for leaked passwords and vulnerable libraries.
 
 ## 🗺️ Overall architecture
 
@@ -89,7 +90,7 @@ Full dependency and license table: [`LICENSES.md`](./LICENSES.md); CycloneDX SBO
 | RAM | 8 GB | 16 GB recommended when building and running the LLM together |
 | CPU | 4 vCPU | No GPU needed |
 | Disk | 40 GB free | AI image about 3 GB, Ollama about 9 GB plus the Qwen2.5 model |
-| Ports | `9080`, `9081`, `9082`, `8065` | Change with the `*_HOST_PORT` variables |
+| Ports | `9080`, `9081`, `8065`; `9082` and `5432` open on the server itself only | Change with the `*_HOST_PORT` variables |
 
 ### 📝 Steps
 

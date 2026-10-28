@@ -33,10 +33,11 @@ Trên máy chủ công khai, MinIO Console (`files.<tên miền>`) nằm sau Clo
 | `MINIO_ENDPOINT` | Địa chỉ nội bộ, mặc định `http://minio:9000` |
 | `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY` | Tài khoản gốc, Backend dùng chung; secret tối thiểu 8 ký tự |
 | `MINIO_BUCKET` | Tên bucket; route ảnh ở `deploy/apisix/common.yaml` trỏ `/dxos-uploads/*`, đổi tên thì sửa route theo |
-| `APISIX_MINIO_HOST_PORT` | Cổng console trên gateway, mặc định `9082` |
+| `APISIX_MINIO_HOST_PORT` | Cổng console trên gateway, mặc định `127.0.0.1:9082` |
 | `GATEWAY_PUBLIC_URL` | Địa chỉ gateway mà trình duyệt truy cập, dùng ký link khi không có request (thông báo chat) |
 
 Dữ liệu ở `deploy/data/minio` (bind mount), mất khi chạy `deploy/reset.sh`.
+`deploy/backup.sh` sao lưu thư mục này cùng cơ sở dữ liệu, xem [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md).
 
 ## Chuyển ảnh cũ
 

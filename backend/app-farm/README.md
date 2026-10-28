@@ -12,7 +12,7 @@ Chỉ phụ thuộc `dx-core-api`; khởi động khi `DXOS_APP=farm` (giá tr�
 | Báo cáo sâu bệnh | Nông dân gửi ảnh lá (kiểm tra chất lượng và nhận diện lúa, idempotency, chụp lại theo yêu cầu) |
 | Chẩn đoán | Kỹ sư chạy chẩn đoán AI hoặc nhập tay, tra rule thuốc có cấu trúc, duyệt; nông dân chỉ thấy kết quả sau khi duyệt; danh sách báo cáo chưa chẩn đoán cho kỹ sư |
 | Phun thuốc | Nông dân khai phun, kỹ sư xác nhận, vụ vào cách ly và thu hoạch bị khóa tới hết PHI |
-| Tri thức | Hỏi đáp tài liệu bệnh lúa có trích nguồn; `includeAnswer=true` thêm trả lời Qwen (namespace `farm`) |
+| Tri thức | Hỏi đáp tài liệu bệnh và canh tác lúa có trích nguồn, từ chối câu ngoài phạm vi; `includeAnswer=true` thêm trả lời Qwen (namespace `farm`) |
 | Thời tiết | Dự báo theo thửa từ Open-Meteo, snapshot dự phòng khi không gọi được; mỗi giờ lưu số đo thật của từng vị trí thửa cho chart Superset |
 
 ## Vai

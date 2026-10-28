@@ -19,7 +19,7 @@ Service khai báo trong [`deploy/docker-compose.yml`](../deploy/docker-compose.y
 | Farm | `Kỹ sư nông nghiệp` (`MATTERMOST_WEBHOOK_URL_ENGINEER`) | Báo cáo sâu bệnh mới (kèm ảnh khi có `MATTERMOST_IMAGE_BASE_URL`), chẩn đoán chờ duyệt, khai phun thuốc chờ xác nhận, kết quả duyệt hoặc từ chối chẩn đoán, kết quả ghi nhận, xác nhận hoặc từ chối việc phun thuốc |
 | Lab | `Kỹ thuật viên` (`MATTERMOST_WEBHOOK_URL_TECHNICIAN`) | Yêu cầu hỗ trợ mới, yêu cầu quá hạn xử lý |
 | Lab | `Ban quản trị` (`MATTERMOST_WEBHOOK_URL_ADMIN`) | Yêu cầu quá hạn xử lý |
-| Farm, Lab | `Ban quản trị` (`MATTERMOST_WEBHOOK_URL_ADMIN`) | Backend báo khi một địa chỉ bị từ chối nhiều lần; `dx-monitor` báo khi dịch vụ ngừng hoặc phục hồi, lỗi `5xx` và địa chỉ bị giới hạn tốc độ ([`dx-monitor/README.md`](../backend/dx-monitor/README.md#cảnh-báo)) |
+| Farm, Lab | `Ban quản trị` (`MATTERMOST_WEBHOOK_URL_ADMIN`) | Backend báo khi một địa chỉ bị từ chối nhiều lần; `dx-monitor` báo khi dịch vụ ngừng hoặc phục hồi, lỗi `5xx`, địa chỉ bị giới hạn tốc độ và địa chỉ đăng nhập sai nhiều lần ([`dx-monitor/README.md`](../backend/dx-monitor/README.md#cảnh-báo)) |
 
 - Gửi nền sau khi transaction commit, best-effort không retry: lỗi thì bỏ thông báo và ghi một dòng WARN không chứa URL.
 - Webhook của từng channel do `mattermost-bootstrap` tạo khi dựng stack và ghi vào `deploy/data/mattermost/webhooks/<khóa>.url` (`engineer`, `admin`, `technician`, `default`).

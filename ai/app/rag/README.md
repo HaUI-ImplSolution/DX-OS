@@ -79,7 +79,7 @@ Tên chủ đề là tiêu đề bỏ "Bệnh" và "trên lúa", hoặc tên tro
 | `reranker.py` | CrossEncoder local, cache và ngân sách rerank |
 | `rag_service.py` | Gọi Qwen sinh câu trả lời có cấu trúc và kiểm tra trước khi trả |
 | `answer_contract.py` | Schema câu trả lời sinh và giới hạn evidence do Backend cung cấp |
-| `prompt_builder.py` | Prompt có guardrail: chỉ trả lời từ context, không bịa thuốc, liều, PHI |
+| `prompt_builder.py` | Prompt theo profile có guardrail: chỉ trả lời từ context, không bịa thuốc, liều, PHI |
 | `safety.py` | Lọc dòng chứa thuốc, liều hoặc PHI trước khi evidence Farm rời AI |
 | `source_registry.py` | Kiểm registry, ánh xạ `source_id` sang metadata trích dẫn |
 
@@ -95,6 +95,7 @@ Nguồn của Lab được giới hạn theo namespace; giải thích chẩn đo
 
 - Chỉ chấp nhận nội dung đúng schema, nguồn thuộc evidence và không có mâu thuẫn đã được kiểm tra về bệnh hoặc điều kiện áp dụng.
 - Ở Lab, thời hạn (ví dụ 30 ngày) phải đi cùng điều kiện của câu nguồn nêu nó; ý chỉ có trong dòng "Với sinh viên:" hay "Với cán bộ, giảng viên:" phải nêu đúng đối tượng đó.
+- Evidence hỏi đáp Farm gửi Qwen không kèm dòng mã bệnh, tên bệnh và cây trồng.
 - Câu trả lời chỉ lặp lại câu hỏi hoặc tên tài liệu không được tính là `generated`.
 - Qwen không sinh thuốc, liều hoặc PHI, không sửa evidence và dữ liệu Backend; hỏi đáp không tự xác nhận bệnh cho người dùng.
 - Mode `generated` chứa nội dung đã qua kiểm tra.

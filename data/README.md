@@ -5,9 +5,10 @@ Nguồn duy nhất cho dữ liệu seed nghiệp vụ của Farm và corpus RAG 
 | Thư mục | Nội dung | Đi đâu |
 |---|---|---|
 | `structured/` | Bệnh, thuốc, treatment rule, policy, class contract của CV | `generate_seed_sql.py` sinh `backend/app-farm/src/main/resources/farm/data.sql`, Spring chạy lúc khởi động (Backend không đọc JSON) |
-| `rag/` | `processed/disease_knowledge.json` (6 tài liệu bệnh), `processed/farm_knowledge.json` (chỉ chứa tài liệu Farm đã qua review) và các registry nguồn | Job `rag-ingest` nạp vào AI Vector DB; không seed vào database nghiệp vụ |
+| `rag/` | `processed/disease_knowledge.json` (6 tài liệu bệnh), `processed/farm_knowledge.json` (7 tài liệu canh tác đã qua review), các registry nguồn và `chat_profiles.json` (từ khóa trong/ngoài phạm vi và nguồn được phép của chatbot từng namespace) | Job `rag-ingest` nạp vào AI Vector DB; không seed vào database nghiệp vụ |
+| `rag/staging/farm/` | Tài liệu Farm crawl từ nguồn trong danh sách cho phép, registry nguồn, `review_queue.json` và `crawl_report.json` | Chỉ để review; không nạp vào AI Vector DB |
 | `rag/lab/` | `processed/lab_knowledge.json` (12 bài trích từ văn bản của HaUI), `source_registry.json` (trang gốc, link PDF, SHA-256) và `raw/` (bản PDF tải về ngày 19/10/2026) | Job `rag-ingest` nạp vào namespace `lab` |
-| `rag/evaluation/` | 72 câu hỏi/query, nhãn pilot và nhãn mở rộng dạng TREC và metadata của bộ đề đánh giá truy xuất | `./ai/evaluate.sh` đọc để chấm Recall/nDCG; xem [`rag/evaluation/README.md`](./rag/evaluation/README.md) |
+| `rag/evaluation/` | 72 câu hỏi/query, nhãn pilot và nhãn mở rộng dạng TREC, bộ câu kiểm tra phạm vi và metadata của bộ đề đánh giá truy xuất | `./ai/evaluate.sh` đọc để chấm Recall/nDCG và gate phạm vi; xem [`rag/evaluation/README.md`](./rag/evaluation/README.md) |
 
 Job `rag-ingest` nạp corpus của app đang chạy theo `DXOS_APP` (xem [`ai/README.md`](../ai/README.md)); Compose bind-mount `data/` read-only tại `/data` (`AI_DATA_DIR`).
 
@@ -33,6 +34,17 @@ python -m unittest data.scripts.test_generate_seed_sql
 
 CI chạy hai lệnh kiểm tra để chặn JSON và SQL lệch nhau.
 `scripts/validate_rice_workbook_export.py` đối chiếu JSON với workbook thu thập cục bộ (thủ công).
+
+Tri thức canh tác Farm đi qua staging trước khi vào corpus:
+
+```bash
+python data/scripts/crawl_farm_staging.py                          # crawl vào rag/staging/farm/
+python data/scripts/promote_farm_corpus.py --approve-all --reviewer <tên>
+python data/scripts/validate_phase2_rag.py                         # kiểm manifest và corpus, không cần database
+```
+
+`promote_farm_corpus.py` ghi tên người duyệt rồi chuyển tài liệu sang `rag/processed/farm_knowledge.json`; tài liệu có cờ nhắc thuốc mà chưa có bản ghi duyệt được giữ lại ở staging.
+Duyệt tài liệu chỉ cho phép dùng làm tri thức, không tạo thuốc, liều hay PHI.
 
 ## Seed hiện hành
 

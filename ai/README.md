@@ -152,6 +152,7 @@ Cần ít nhất 2.500 MiB RAM trống và 16 GiB đĩa trống (6 GiB nếu đ�
 Bộ đề gồm 66 câu hỏi đáp và 6 câu tham khảo chẩn đoán, so sánh cosine, BM25, hybrid/RRF và hybrid + rerank.
 Trong đó, 42 câu pilot đã được chủ dự án duyệt; 30 câu mở rộng còn dùng nhãn nháp.
 Chatbot được chấm sau bước lọc truy xuất, trước khi Backend gộp đoạn; chẩn đoán dùng retriever hiện có.
+Lệnh cũng chấm gate phạm vi của chatbot (`scripts/evaluate_scope.py`) trên 75 câu trong/ngoài phạm vi và 15 câu đúng chủ đề nhưng không có tài liệu; nhãn của hai bộ này còn là nháp.
 Kết quả và ý nghĩa chỉ số ở [`docs/AI_EVALUATION.md`](../docs/AI_EVALUATION.md#7-đánh-giá-truy-xuất-rag).
 
 Sau khi đo, AI và database đánh giá được dừng; terminal in link Langfuse, tài khoản local và thư mục kết quả.
@@ -208,7 +209,7 @@ Chạy từ `ai/`:
 
 | Lệnh | Mục đích |
 |---|---|
-| `pip install -r requirements-dev.txt && python -m pytest tests` | Test CV, workflow, xác thực service key (CI chạy cùng lệnh) |
+| `pip install -r requirements-dev.txt && python -m pytest tests` | Test CV, workflow, truy xuất và rerank của chatbot, phần sinh Qwen, `X-Request-Id`, xác thực service key (CI chạy cùng lệnh) |
 | `python -m scripts.check_backend_client` | Client Backend: retry giới hạn, không retry khi 401, đọc khoảng liều |
 | `python -m scripts.check_diagnose_contract` | Luồng `diagnose` đúng thứ tự CV, Backend, RAG; `recommendation` chỉ có rule được chọn và cờ duyệt, evidence có tên tài liệu |
 | `python -m scripts.check_rag_access_boundary` | Việc ghi RAG nằm ngoài runtime FastAPI |
@@ -217,6 +218,7 @@ Chạy từ `ai/`:
 ## Giới hạn và giấy phép
 
 - CV nhận diện Healthy và 5 bệnh lá lúa; accuracy 89,43% trên 1.466 ảnh theo báo cáo người huấn luyện, chưa phải accuracy toàn pipeline; kỹ sư chốt bệnh tại Backend.
-- RAG chỉ tìm được kiến thức đã ingest; Ollama lỗi hoặc quá ngân sách 20 giây thì không hiển thị nội dung sinh, giữ evidence nguyên văn.
+- RAG chỉ tìm được kiến thức đã ingest; Ollama lỗi hoặc quá thời gian (30 giây với hỏi đáp, 20 giây với giải thích chẩn đoán) thì không hiển thị nội dung sinh, giữ evidence nguyên văn.
+- Hỏi đáp Farm chỉ chặn được tên bệnh có trong contract CV; Qwen vẫn có thể nêu tên bệnh, nguyên nhân hoặc cách phòng không có trong nguồn ([`docs/BACKLOG.md`](../docs/BACKLOG.md)).
 - `ai/` phân phối theo AGPL-3.0 ([`LICENSE`](./LICENSE)); Backend gọi AI qua HTTP nên không là tác phẩm phái sinh.
   Danh sách thành phần ở [`LICENSES.md`](../LICENSES.md).

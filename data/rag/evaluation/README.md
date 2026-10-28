@@ -10,6 +10,8 @@ Chủ dự án đã duyệt bộ câu hỏi và nhãn pilot ngày 26/10/2026; x�
 | `questions.jsonl` | Câu hỏi, nhóm, namespace và mã tài liệu |
 | `qrels.draft.tsv` | Nhãn nháp chuẩn TREC: mã câu, iteration, khóa chunk, độ liên quan |
 | `metadata.json` | Phiên bản bộ đề, corpus, trạng thái nhãn và việc kiểm tra câu hỏi |
+| `scope_questions.jsonl` | 75 câu nhãn trong/ngoài phạm vi để chấm gate phạm vi của chatbot |
+| `no_evidence_questions.jsonl` | 15 câu đúng chủ đề nhưng không có tài liệu, mong đợi `IN_SCOPE_NO_EVIDENCE` |
 
 Nhãn 0 là không hỗ trợ, 1 hỗ trợ một phần và 2 trả lời trực tiếp.
 Khóa chunk là namespace/mã tài liệu/chunk_index; dùng đúng chunker và quy tắc bỏ trùng của ingest.

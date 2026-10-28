@@ -21,11 +21,12 @@ Một lõi dùng chung lo đăng nhập, dữ liệu, quy trình, thông báo v�
 
 - **Một lõi, nhiều ứng dụng:** Farm và Lab dùng chung một lõi, thêm ứng dụng không phải sửa core.
 - **An toàn nghiệp vụ:** các quy tắc quan trọng được kiểm ngay ở Backend và cơ sở dữ liệu, không chỉ ở giao diện.
-- **Truy vết:** gateway ghi log từng request, Keycloak ghi sự kiện đăng nhập, Backend ghi lần bị từ chối, lỗi `5xx` và thao tác quản trị vào audit log chỉ thêm; màn hình giám sát `/monitor/` (chỉ ADMIN) gom các nguồn này, dò trạng thái dịch vụ và cảnh báo qua Mattermost.
-- **Sao lưu và khôi phục:** `deploy/backup.sh` sao lưu mã hóa cơ sở dữ liệu và tệp, có lệnh kiểm tra khôi phục, CI chạy thử mỗi lần.
-- **AI có kiểm soát:** AI chỉ hỗ trợ, thông tin thuốc và liều lấy từ dữ liệu chuyên gia đã duyệt, kỹ sư là người quyết định.
+- **Truy vết:** mọi lượt truy cập, lần đăng nhập, lỗi và thao tác quản trị đều được ghi lại; màn hình giám sát dành cho quản trị viên gom các nguồn này, theo dõi tình trạng dịch vụ và báo sự cố qua kênh chat.
+- **Bảo mật:** nhân sự có thể bật xác thực hai bước, tệp tải lên có thể được quét mã độc, thông tin cá nhân được che trước khi gửi sang kênh chat và AI.
+- **Sao lưu và khôi phục:** dữ liệu và tệp được sao lưu mã hóa, việc khôi phục được kiểm tra tự động.
+- **AI có kiểm soát:** AI chỉ hỗ trợ, trả lời kèm nguồn và từ chối khi câu hỏi ngoài phạm vi hoặc thiếu căn cứ; thông tin thuốc và liều lấy từ dữ liệu chuyên gia đã duyệt, kỹ sư là người quyết định.
 - **Chạy một lệnh:** dựng toàn bộ hệ thống kèm dữ liệu demo, có kiểm thử tự động trên môi trường sạch.
-- **Nguồn mở minh bạch:** công khai giấy phép và danh sách thành phần phần mềm, quét lộ mật khẩu tự động.
+- **Nguồn mở minh bạch:** công khai giấy phép và danh sách thành phần phần mềm, tự động quét lộ mật khẩu và lỗ hổng thư viện.
 
 ## 🗺️ Kiến trúc tổng thể
 
@@ -89,7 +90,7 @@ Bảng dependency và giấy phép đầy đủ ở [`LICENSES.md`](./LICENSES.m
 | RAM | 8 GB | Khuyến nghị 16 GB nếu chạy LLM và build cùng lúc |
 | CPU | 4 vCPU | Không cần GPU |
 | Ổ đĩa | 40 GB trống | Image AI khoảng 3 GB, Ollama khoảng 9 GB cùng model Qwen2.5 |
-| Cổng | `9080`, `9081`, `9082`, `8065` | Đổi bằng biến `*_HOST_PORT` |
+| Cổng | `9080`, `9081`, `8065`; `9082` và `5432` chỉ mở trên chính máy chủ | Đổi bằng biến `*_HOST_PORT` |
 
 ### 📝 Các bước
 

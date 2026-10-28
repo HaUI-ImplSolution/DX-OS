@@ -119,10 +119,8 @@ def selected_corpora(name: str | None = None) -> list[Corpus]:
     if name not in {None, "farm", "lab"}:
         raise ValueError("Unknown corpus selection")
     if name != "lab" and FARM_KNOWLEDGE_CORPUS.data_file.exists():
-        items = json.loads(FARM_KNOWLEDGE_CORPUS.data_file.read_text())
-        if items and all(item.get("review_status") == "APPROVED" for item in items):
-            load_corpus(FARM_KNOWLEDGE_CORPUS)
-            corpora.append(FARM_KNOWLEDGE_CORPUS)
+        load_corpus(FARM_KNOWLEDGE_CORPUS)
+        corpora.append(FARM_KNOWLEDGE_CORPUS)
     return corpora
 
 
@@ -261,8 +259,7 @@ def _ingest_corpus(db: Session, corpus: Corpus) -> dict[str, int]:
         for content in chunks
     ]
 
-    embedding_service = EmbeddingService()
-    embeddings = iter(embedding_service.embed_texts(embedded_texts))
+    embeddings = iter(EmbeddingService().embed_texts(embedded_texts) if embedded_texts else [])
 
     db.execute(text(f"SELECT pg_advisory_xact_lock({int(corpus.lock_key)})"))
     existing_documents = db.scalars(

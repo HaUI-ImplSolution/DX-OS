@@ -336,10 +336,9 @@ class ChatSearch:
                     diverse.append(passage)
                     counts[key] = counts.get(key, 0) + 1
             selected = diverse
-        selected = selected[:top_k]
-        result["passages"] = [
-            {**p, "content": safe_content, "rank": i}
-            for i, p in enumerate(selected, 1)
+        selected = [
+            {**p, "content": safe_content}
+            for p in selected
             if (
                 safe_content := (
                     redact_medication_lines(p["content"])
@@ -347,6 +346,9 @@ class ChatSearch:
                     else p["content"]
                 )
             )
+        ]
+        result["passages"] = [
+            {**p, "rank": i} for i, p in enumerate(selected[:top_k], 1)
         ]
         if result["passages"]:
             result.update(scope_status="ANSWERABLE", reason_code="EVIDENCE_FOUND")

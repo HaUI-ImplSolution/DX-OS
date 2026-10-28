@@ -21,3 +21,6 @@ Việc rà nhãn tường minh toàn bộ chunk và tái lập bởi bên thứ 
 
 Qrels/run và snapshot của từng lần chạy được xuất ngoài repository, không đặt trong report hoặc thêm vào Git.
 Giữ riêng bộ đề hiện tại và artifact lần chạy; đổi nhãn/phiên bản thì collect lại sau khi đóng băng để tránh gắn nhãn đã duyệt cho kết quả draft cũ.
+
+Collect ghi `content_policy`: chatbot Farm đối chiếu đúng nội dung sau lọc dòng thuốc với snapshot gốc; diagnosis legacy vẫn đối chiếu nguyên văn.
+Policy này không cho phép sửa câu chữ hoặc bỏ kiểm nguồn/chunk; artifact không khai báo policy được hiểu là nguyên văn để giữ khả năng kiểm lại lịch sử.

@@ -2,7 +2,8 @@
 
 Thứ tự: spec → Swagger → code → build/đánh giá.
 Phần triển khai đang được kiểm thử; tiến độ và bằng chứng ghi ở checklist.
-Metadata của 7 tài liệu Farm đã ghi phê duyệt chủ dự án; nội dung corpus không đổi.
+Metadata của 7 tài liệu Farm ghi phê duyệt chủ dự án; nội dung corpus không đổi.
+Tiếp tục từ code đã được đồng đội bổ sung: giữ DTO/helper câu trả lời dùng chung trong core-api và policy lọc dòng thuốc; kiểm lại startup, ingest, rank và provenance của evaluator.
 
 ## Thứ tự và phụ thuộc
 

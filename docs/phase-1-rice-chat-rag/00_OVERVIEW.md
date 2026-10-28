@@ -55,7 +55,7 @@ Cần đo các tầng riêng để kiểm chứng nguyên nhân thay vì mặc �
 
 | Module hoặc lớp | Có thay đổi | Giới hạn |
 |---|---|---|
-| `dx-core-api` | Không dự kiến | Dùng `KnowledgeGateway.ask/retrieve`, DTO scope và namespace đang có |
+| `dx-core-api` | DTO/helper câu trả lời dùng chung đã có trên nhánh | Giữ `GeneratedAnswer`/`KnowledgeAnswerGenerator` do đồng đội bổ sung; không đổi interface AiGateway/KnowledgeGateway |
 | `dx-core` | Có, adapter Knowledge | Bỏ từ khóa Farm/Lab; `ask` gọi search chatbot, `retrieve` giữ đường cũ; không đổi Core nghiệp vụ |
 | `app-farm`, `app-lab` | Có, Knowledge và registry nguồn | Tích hợp evidence, metadata cần thiết; không đổi disease report, ticket workflow hoặc phê duyệt |
 | `dx-host` | Không | Không đổi chọn app, seed hoặc migration |
@@ -93,7 +93,7 @@ Nguồn bổ sung sau này cần quyết định duyệt riêng; không làm tr�
 
 | Domain được phép | Phạm vi file/lớp | Giới hạn |
 |---|---|---|
-| Cầu nối Knowledge của Core | `KnowledgeGatewayService` và test tương ứng | Đổi đường ask/đọc envelope; giữ đăng ký namespace, gộp và đường retrieve legacy |
+| Cầu nối Knowledge của Core | `KnowledgeGatewayService`, DTO/helper câu trả lời dùng chung và test tương ứng | Đổi đường ask/đọc envelope; giữ đăng ký namespace, gộp và đường retrieve legacy |
 | Bộ máy RAG chatbot dùng chung | `ai/app/rag/`, schema/route search mới, Settings và test liên quan | BM25/cosine/RRF/rerank/scope/QA; không viết lại engine cho từng app hoặc chuyển thuật toán vào Java Core |
 | Tích hợp Knowledge theo app | Farm/Lab KnowledgeService/DTO, annotation KnowledgeController và registry nguồn | Giữ opt-in/profile/nguồn, không sửa workflow nghiệp vụ |
 | Nội dung chatbot | Corpus tổng quát, registry, crawler/ingest/validator và bộ nhãn | Giữ corpus bệnh, structured facts và SQL seed; không thu thập dữ liệu ngoài miền |
@@ -101,8 +101,10 @@ Nguồn bổ sung sau này cần quyết định duyệt riêng; không làm tr�
 | Công cụ đánh giá | evaluate.sh, evaluation/, collector/scorer/publisher/k6 | DB và lifecycle riêng; không sửa startup sản phẩm |
 | Đóng gói và tài liệu trực tiếp liên quan | Requirement/lock/license/SBOM, các mục tài liệu đã liệt kê | Chỉ dependency/model cần cho RAG; build bằng cache, không tái cấu trúc dự án |
 
+Giữ DTO/helper dùng chung và bước lọc dòng thuốc khỏi evidence đã có trên nhánh.
+Không bổ sung thay đổi vào diagnosis; kiểm hồi quy riêng output đã lọc.
 Không sửa interface Core hiện có, `AiServiceGateway`, auth/SSO, workflow, audit, notification, storage, BI/monitor hoặc cách chọn app.
-Không sửa CV/model/threshold, Graph, retriever legacy, prompt/guard diagnosis, treatment rules, thuốc/liều/PHI, ticket suggestions, mobile, schema/migration/seed nghiệp vụ, `deploy/`, CI hoặc `.gitignore`.
+Không sửa CV/model/threshold, Graph, retriever legacy, prompt/guard diagnosis ngoài phần đã có, treatment rules, thuốc/liều/PHI, ticket suggestions, mobile, schema/migration/seed nghiệp vụ, `deploy/`, CI hoặc `.gitignore`.
 Các file dùng chung như router, schema, config, rag_service và prompt_builder chỉ được sửa nhánh chatbot; phải có test chứng minh nhánh diagnosis giữ nguyên.
 Nếu một thay đổi cần vượt bảng này, dừng phần phụ thuộc, ghi rõ file/lý do/ảnh hưởng và chờ chủ dự án mở phạm vi; công việc độc lập trong domain vẫn tiếp tục.
 Lỗi có sẵn ngoài domain chỉ ghi BACKLOG, không sửa để làm xanh CI hoặc checklist.

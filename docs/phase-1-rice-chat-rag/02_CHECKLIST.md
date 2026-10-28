@@ -112,10 +112,10 @@ Kết quả: đủ bằng chứng DoD, owner test local trước commit/push.
 - [ ] Mọi test bắt buộc trong `03_TEST_PLAN.md` đạt, người chạy/ngày/bằng chứng có thật.
 - [ ] Đạt mục 6 overview hoặc chủ dự án chấp nhận rõ trade-off còn lại; không đổi ngưỡng sau holdout.
 - [x] Core không chứa từ khóa Farm/Lab hoặc import app; app chỉ phụ thuộc core-api.
-- [x] Diff Java Core chỉ gồm KnowledgeGatewayService và test; AiGateway/AiServiceGateway/interface/host và các Core service khác giữ nguyên.
+- [x] Giữ KnowledgeGatewayService cùng DTO/helper câu trả lời dùng chung do đồng đội bổ sung trong core-api; AiGateway/AiServiceGateway/interface/host và các Core service khác giữ nguyên.
 - [x] Một engine RAG/generation chung trong AI Service; giữ hai lượt gọi và gộp evidence Backend, không nhân bản thuật toán theo app.
 - [ ] Đã đối chiếu bảng domain trước/sau từng WP; thay đổi cần vượt phạm vi phải được chủ dự án đồng ý riêng.
-- [x] Diff không đổi CV, diagnosis prompt/graph/filter, treatment facts, ticket workflow, deploy hoặc CI.
+- [x] Giữ CV/threshold, Graph/retriever legacy, treatment facts, ticket workflow, deploy và CI. Giữ bước lọc evidence chẩn đoán đã có trên nhánh; kiểm hồi quy riêng, không ghi là output nguyên văn.
 - [ ] Cách khởi động chính giữ nguyên; đánh giá chỉ chạy khi gọi evaluate.sh.
 - [x] Swagger, score/status, dependency/lock và LICENSES/SBOM nhất quán.
 - [ ] Dọn file test tạm, corpus/raw dư, code chết và cấu hình không dùng; giữ fixture thật cần để tái lập.
@@ -143,7 +143,9 @@ Fetch origin: nhánh local khớp remote trước commit và đã chứa `origin
 ## Tiếp tục trên phiên bản đồng đội đã bổ sung
 
 - [x] Khôi phục đúng quyết định chủ dự án duyệt 7 tài liệu Farm; đồng bộ corpus, staging, registry, queue và danh mục nguồn Backend. Validator đạt 7 Farm/12 Lab; hai test source parity/approval đạt.
-- [ ] Xác minh startup AI khi thiếu cache reranker, trạng thái suy giảm và bảo toàn CV; không thay deploy/CI.
-- [ ] Xác minh ingest corpus rỗng, thứ hạng sau lọc và policy nội dung của evaluator.
+- [x] Xác minh startup AI khi thiếu cache reranker: container không có mạng/cache dùng hai model CV thật, health đạt; unit kiểm trạng thái suy giảm. Không thay deploy/CI.
+- [x] Kiểm corpus rỗng vẫn được chọn để ingest, thứ hạng liên tục sau lọc và evaluator chỉ chấp nhận đúng phép lọc đã khai báo; chưa sửa nhãn để tăng điểm.
 - [ ] Chạy lại quality/scope/CLI/Langfuse trên evidence sau lọc, giữ lịch sử cũ.
 - [ ] Smoke Qwen Farm/Lab, diagnosis và ticket bằng code hiện tại; chỉ tick khi có bằng chứng mới.
+
+Xác minh phần sửa tiếp: 167 test AI và 50 subtest đạt; contract diagnosis, access boundary và self-check evaluator đạt. Backend giữ code dùng chung của đồng đội: 24 test liên quan và package sáu module đạt với JDK 21. Tài liệu nguồn có hai test parity/approval đạt. Các log nằm ngoài repository.

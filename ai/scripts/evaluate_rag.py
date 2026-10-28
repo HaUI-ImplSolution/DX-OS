@@ -327,6 +327,7 @@ def collect(output: Path, ingest_record: Path, strategy: str | None = None) -> N
         snapshot=list(expected.values()),
         records=records,
         strategy=strategy or "legacy_raw",
+        content_policy="farm-medication-lines-v1" if strategy else "verbatim",
         code_identity=code_identity(),
         chat_runtime={
             k: v for k, v in settings.model_dump().items() if k.startswith("chat_")
@@ -350,6 +351,9 @@ def collect(output: Path, ingest_record: Path, strategy: str | None = None) -> N
 
 
 def validate_records(payload: dict, questions: list[dict]) -> dict[str, dict]:
+    policy = payload.get("content_policy", "verbatim")
+    if policy not in {"verbatim", "farm-medication-lines-v1"}:
+        raise ValueError("Unknown evidence content policy")
     if (
         payload.get("dataset") != read_json(EVALUATION_ROOT / "metadata.json")
         or (payload.get("questions") != questions)
@@ -395,6 +399,11 @@ def validate_records(payload: dict, questions: list[dict]) -> dict[str, dict]:
             raise ValueError(f"Invalid ranks or duplicate chunks: {q['qid']}")
         for row in results:
             key = row["document_key"]
+            expected_chunk = chunks.get(key)
+            if expected_chunk and policy == "farm-medication-lines-v1" and q["group"] == "farm_qa":
+                from app.rag.safety import redact_medication_lines
+
+                expected_chunk = (redact_medication_lines(expected_chunk[0]), *expected_chunk[1:])
             if (
                 key not in chunks
                 or not key.startswith(namespace + "/")
@@ -404,7 +413,7 @@ def validate_records(payload: dict, questions: list[dict]) -> dict[str, dict]:
                     row["chunk_index"],
                     row["source_ids"],
                 )
-                != chunks[key]
+                != expected_chunk
             ):
                 raise ValueError(
                     f"Unknown, changed or cross-namespace chunk: {q['qid']}"
@@ -784,6 +793,22 @@ def self_check() -> None:
         }
     ]
     validate_records(low_score, questions)
+    sanitized = copy.deepcopy(low_score)
+    sanitized["content_policy"] = "farm-medication-lines-v1"
+    first_doc = next(
+        d for d in sanitized["snapshot"]
+        if document_key(d["namespace"], d["code"], 0) == first_key
+    )
+    first_doc["chunks"][0] = "Theo dõi ruộng.\nPhun thuốc theo liều."
+    sanitized["records"][0]["results"][0]["content"] = "Theo dõi ruộng."
+    validate_records(sanitized, questions)
+    sanitized["records"][0]["results"][0]["content"] = "Nội dung không có trong nguồn."
+    try:
+        validate_records(sanitized, questions)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("Changed sanitized evidence was accepted")
     for mutate in (
         lambda p: p["records"].pop(),
         lambda p: p["records"].append(p["records"][0]),

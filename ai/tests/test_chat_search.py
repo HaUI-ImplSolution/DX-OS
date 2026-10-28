@@ -36,6 +36,39 @@ def passages():
 
 
 class ChatSearchTest(unittest.TestCase):
+    def test_chat_startup_without_cache_keeps_other_endpoints_available(self):
+        import asyncio
+        from app.rag.reranker import chat_lifespan
+
+        async def start():
+            async with chat_lifespan(None):
+                pass
+
+        with patch("app.rag.reranker._model", side_effect=OSError("Missing cache")):
+            asyncio.run(start())
+
+    def test_empty_redacted_results_are_removed_before_top_k_and_ranking(self):
+        data = [{**p, "namespace": "farm"} for p in passages()]
+        data[0]["content"] = "Phun thuốc theo liều."
+        result = ChatSearch(reranker=lambda q, rows: [0.99, 0.9, 0.8]).rank(
+            "Theo dõi lúa", data, top_k=2
+        )
+        self.assertEqual([p["rank"] for p in result["passages"]], [1, 2])
+        self.assertTrue(all(p["chunk_id"] != "0" for p in result["passages"]))
+
+    def test_empty_approved_corpus_is_selected_for_removal(self):
+        import tempfile
+        from dataclasses import replace
+        from pathlib import Path
+        from app.rag.ingestion_service import FARM_KNOWLEDGE_CORPUS, selected_corpora
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "empty.json"
+            path.write_text("[]")
+            empty = replace(FARM_KNOWLEDGE_CORPUS, data_file=path)
+            with patch("app.rag.ingestion_service.FARM_KNOWLEDGE_CORPUS", empty):
+                self.assertIn(empty, selected_corpora("farm"))
+
     def test_public_evidence_redacts_medication_lines(self):
         content = "Theo dõi ruộng thường xuyên.\nDùng thuốc Pretilachlor 2 ml/ha.\nGiữ nước phù hợp."
         self.assertEqual(

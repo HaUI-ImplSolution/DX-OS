@@ -2,6 +2,7 @@
 """Bounded local CrossEncoder inference; assets are prepared outside requests."""
 
 from contextlib import asynccontextmanager
+import logging
 
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from functools import lru_cache
@@ -13,6 +14,7 @@ from app.core.torch_cpu import configure_torch_cpu
 
 _executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="chat-rerank")
 _slot = BoundedSemaphore(1)
+logger = logging.getLogger(__name__)
 
 
 @lru_cache(maxsize=1)
@@ -89,5 +91,8 @@ async def chat_lifespan(app):
     from starlette.concurrency import run_in_threadpool
 
     if get_settings().chat_retrieval_strategy == "hybrid_rerank":
-        await run_in_threadpool(_model)
+        try:
+            await run_in_threadpool(_model)
+        except (OSError, RuntimeError):
+            logger.warning("Chat reranker unavailable; chat retrieval will report RERANK_UNAVAILABLE")
     yield

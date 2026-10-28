@@ -118,7 +118,8 @@ python -m scripts.ingest_diseases --corpus lab         # corpus lab
 ```
 
 Lệnh Farm nạp corpus bệnh và phần kiến thức tổng quát đã duyệt; Lab nạp corpus Lab.
-Ingest thay đúng namespace + document_type và chuẩn bị reranker trong cache Hugging Face hiện có; lần chạy sau dùng cache, request không tải model.
+Ingest thay đúng namespace + document_type, kể cả corpus đã thu hồi hết tài liệu, và chuẩn bị reranker trong cache Hugging Face hiện có; lần chạy sau dùng cache, request không tải model.
+Thiếu cache reranker không chặn khởi động CV; search chatbot trả trạng thái `RERANK_UNAVAILABLE` cho đến khi model sẵn sàng.
 Cấu hình chatbot mặc định nằm trong `app/core/config.py`; `CHAT_RETRIEVAL_STRATEGY`, `CHAT_RERANKER_MODEL`, `CHAT_CANDIDATE_COUNT` và `CHAT_RERANK_MIN_SCORE` cho phép điều chỉnh khi đánh giá, không đổi cấu hình diagnosis.
 Đổi embedding model hoặc số chiều vector thì phải ingest lại toàn bộ corpus.
 

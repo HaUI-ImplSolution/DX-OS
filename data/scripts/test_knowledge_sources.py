@@ -35,6 +35,13 @@ def load(path: Path):
 
 
 class KnowledgeSourcesTest(unittest.TestCase):
+    def test_recorded_owner_approval_allows_flagged_rag_documents(self):
+        from data.scripts.promote_farm_corpus import promotable_documents
+
+        pending = {"review_status": "IN_REVIEW", "review_flags": ["CHECK_LICENSE_TERMS"]}
+        approved = {**pending, "review_status": "APPROVED", "approved_by": "project_owner"}
+        self.assertEqual(promotable_documents([pending, approved]), [approved])
+
     def test_every_cited_source_is_served_with_the_registry_values(self):
         for name, (registry_path, corpus_path, served_path) in NAMESPACES.items():
             with self.subTest(namespace=name):

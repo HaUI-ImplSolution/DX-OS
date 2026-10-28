@@ -22,11 +22,12 @@ BLOCKING_REVIEW_FLAGS = frozenset(
 
 
 def has_blocking_review_flag(item: dict[str, object]) -> bool:
-    return bool(BLOCKING_REVIEW_FLAGS.intersection(item.get("review_flags", [])))
+    approved = item.get("review_status") == "APPROVED" and item.get("approved_by")
+    return not approved and bool(BLOCKING_REVIEW_FLAGS.intersection(item.get("review_flags", [])))
 
 
 def promotable_documents(documents: list[dict[str, object]]) -> list[dict[str, object]]:
-    """Keep treatment-bearing documents in staging until expert review."""
+    """Honor recorded approval; hold flagged documents without an approval record."""
     return [item for item in documents if not has_blocking_review_flag(item)]
 
 

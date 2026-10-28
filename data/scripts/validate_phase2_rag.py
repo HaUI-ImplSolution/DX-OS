@@ -86,7 +86,8 @@ def validate_corpus(
         if label == "farm_knowledge":
             if item.get("language") not in {"vi", "vi-VN"}:
                 raise ValueError(f"{path}: Farm document is not Vietnamese {key}")
-        blocked = bool(blocked_review_flags.intersection(item.get("review_flags", [])))
+        approved = item.get("review_status") == "APPROVED" and item.get("approved_by")
+        blocked = not approved and bool(blocked_review_flags.intersection(item.get("review_flags", [])))
         expected_status = "IN_REVIEW" if blocked else required_review_status
         if expected_status and item.get("review_status") != expected_status:
             raise ValueError(

@@ -1,1 +1,296 @@
-[]
+[
+  {
+    "document_id": "SRC_KN_RICE_CLIMATE_19488",
+    "title": "Tài liệu tập huấn: Canh tác lúa thông minh thích ứng với biến đổi khí hậu",
+    "content": "Module 1: Tổng quan về canh tác lúa thông minh thích ứng với biến đổi khí hậu\n(Tài liệu hướng dẫn giảng dạy)\nModule 2: Thời vụ, giống và kỹ thuật gieo cấy\n(Tài liệu hướng dẫn giảng dạy)\nModule 3: Quản lý nước cho cây lúa\n(Tài liệu hướng dẫn giảng dạy)\nModule 4: Quản lý dinh dưỡng cho cây lúa\n(Tài liệu hướng dẫn giảng dạy)\nModule 5: Quản lý dịch hại cho cây lúa\n(Tài liệu hướng dẫn giảng dạy)\nModule 6: Thu hoạch và xử lý sản phẩm phụ\n(Tài liệu hướng dẫn giảng dạy)\nModule 7: Chuỗi giá trị lúa gạo và quản lý tài chính nông hộ\n(Tài liệu hướng dẫn giảng dạy)\nModule 8.1: Phương pháp, kỹ năng đào tạo P1\n(Tài liệu hướng dẫn giảng dạy)\nModule 8.2: Phương pháp, kỹ năng đào tạo P2\n(Tài liệu hướng dẫn giảng dạy)\nModule 8.3: Phương pháp, kỹ năng đào tạo P3\n(Tài liệu hướng dẫn giảng dạy)\nModule 8.4: Phương pháp, kỹ năng đào tạo P4\n(Tài liệu hướng dẫn giảng dạy)",
+    "namespace": "farm",
+    "document_type": "farm_knowledge",
+    "topic": "cultivation_water_nutrition",
+    "tags": [
+      "gieo_cay",
+      "quan_ly_nuoc",
+      "dinh_duong"
+    ],
+    "crop": "rice",
+    "region": "Việt Nam; cần giới hạn theo vùng nếu tài liệu có nêu địa phương",
+    "season": "Không chuẩn hóa nếu nguồn không nêu rõ",
+    "content_kind": "official_extension_or_research_article",
+    "language": "vi",
+    "provenance": {
+      "source_ids": [
+        "SRC_KN_RICE_CLIMATE_19488"
+      ],
+      "url": "https://khuyennongvn.gov.vn/thu-vien-khuyen-nong/thu-vien-sach-kn/tai-lieu-tap-huan-canh-tac-lua-thong-minh-thich-ung-voi-bien-doi-khi-hau-19488.html",
+      "accessed_at": "2026-10-27T13:00:14+00:00",
+      "sha256": "f18d824cd0d21dda111f750c0d1dfcf7b0ea1d87f1634245dc0ba5ff9b543eb2",
+      "page_title": "\r\n\tTài liệu tập huấn: Canh tác lúa thông minh thích ứng với biến đổi khí hậu\r\n"
+    },
+    "review_status": "APPROVED",
+    "review_flags": [
+      "CHECK_LICENSE_TERMS",
+      "CATALOG_PAGE_NEEDS_CHILD_DOCUMENTS"
+    ],
+    "content_stats": {
+      "characters": 858,
+      "words": 179,
+      "lines": 22
+    },
+    "safety_note": "Không dùng làm nguồn thuốc, liều hoặc PHI nếu chưa được duyệt riêng.",
+    "approved_by": "project_owner",
+    "approved_at": "2026-10-28",
+    "approval_note": "Operator-approved for grounded Farm knowledge RAG. Treatment facts remain subject to Backend safety rules."
+  },
+  {
+    "document_id": "SRC_KN_RICE_LOW_EMISSION_31656",
+    "title": "Kỹ thuật canh tác lúa chất lượng cao và phát thải thấp vùng đồng bằng sông Cửu Long",
+    "content": "Các nội dung này được xây dựng thống nhất, liên kết chặt chẽ, bảo đảm đồng bộ và tạo thành một hệ thống hướng dẫn hoàn chỉnh áp dụng cho sản xuất lúa trong phạm vi triển khai Đề án. Sau đây, chúng tôi xin giới thiệu nội dung kỹ thuật canh tác lúa với các bước chính: làm đất, chuẩn bị giống, gieo sạ, quản lý nước, bón phân và phòng chống sinh vật gây hại trên lúa.\n1. Làm đất\n- Hàng năm cần cày và phơi ải (sau thu hoạch vụ Đông Xuân). Các vụ còn lại áp dụng phương thức xới, trục và trạc.\n- Yêu cầu mặt ruộng bằng phẳng, chênh lệch giữa điểm cao nhất và thấp nhất tối đa không quá 5 cm. Áp dụng các biện pháp như san ủi dựa theo mực nước hoặc san phẳng bằng công nghệ điều khiển laser, ...\n- Vệ sinh đồng ruộng, gia cố bờ bao nhằm quản lý tốt nguồn nước, phay đất tơi xốp với độ sâu 7 - 15 cm; trục, trạc và tạo rãnh thoát nước (nhất là trong vụ Hè Thu) để thoát phèn, diệt ốc bươu vàng.\n- Sau khi làm đất, tiến hành rút nước khỏi mặt ruộng từ 6 - 12 giờ trước khi vận hành máy sạ hàng, sạ cụm. Khuyến cáo rút nước vào chiều tối và sạ vào sáng hôm sau để đảm bảo mặt ruộng có độ ẩm phù hợp cho máy vận hành hiệu quả và hạt giống tiếp xúc tốt với đất (không quá khô hoặc quá ướt).\n- Đối với đất phèn hoặc đất mặn: không cày, xới sâu quá 15 cm, để tránh bị xì phèn hoặc nhiễm mặn từ tầng đáy.\n2. Chuẩn bị giống\n- Sử dụng giống lúa xác nhận.\n- Lượng giống gieo sạ:\n+ Trước năm 2028: lượng giống 70 - 80 kg/ha.\n+ Từ năm 2028 trở đi: lượng giống không quá 70 kg/ha.\n- Xử lý miên trạng, ngâm ủ hạt giống theo khuyến cáo của nhà sản xuất và phù hợp với từng phương pháp gieo sạ.\n3. Gieo sạ\na) Thời điểm gieo sạ\nGieo sạ đồng loạt theo lịch thời vụ khuyến cáo của cơ quan chuyên ngành trồng trọt và bảo vệ thực vật ở địa phương.\nb) Phương pháp gieo sạ\n- Khuyến khích sử dụng máy sạ hàng hoặc máy sạ cụm:\n+ Sạ hàng: hàng cách hàng 25 x 25 cm (đối với sạ hàng đều); 10 x 40 cm (đối với sạ theo hiệu ứng hàng biên).\n+ Sạ cụm: cụm cách cụm 20 cm.\n- Hạt giống sau khi sạ cần được vùi nhẹ dưới lớp đất mỏng từ 0,1- 0,3 cm, để tiếp xúc tốt với đất ẩm, tránh bị trôi hoặc thất thoát hạt giống, giúp hạt giống nảy mầm và sinh trưởng đồng đều.\n- Có thể áp dụng công nghệ sạ bằng thiết bị bay không người lái (Drone) hoặc máy phun hạt, … nhưng cần chú ý điều chỉnh lượng giống sạ (70 kg hoặc 70-80kg trước hoặc sau năm 2028).\n- Nên kết hợp gieo sạ với vùi phân ở độ sâu 3 - 4 cm để hạn chế thất thoát dinh dưỡng, nâng cao hiệu quả sử dụng phân bón và giảm phát thải khí nhà kính.\n4. Quản lý nước giảm phát thải khí nhà kính\na) Quản lý nước trước khi làm đất: tùy theo mùa vụ, nên rút hết nước trên ruộng từ 10 - 15 ngày trước khi làm đất.\nb) Quản lý nước sau gieo\n- Từ 1 - 7 ngày sau sạ: giữ mặt ruộng đủ ẩm cho cây lúa sinh trưởng tốt.\n- Từ khi lúa bắt đầu đẻ nhánh đến trước khi lúa trỗ:\n+ Áp dụng rút nước theo nguyên lý tưới ướt khô xen kẽ (AWD), cần thực hiện rút nước tối thiểu 02 lần; mỗi lần rút nước tốt nhất sau bón phân thúc 5-7 ngày.\n+ Mỗi lần rút nước cần đảm bảo ruộng khô tối thiểu 03 ngày liên tục (tính từ khi mặt ruộng không còn nước đến khi mặt ruộng nứt chân chim nhẹ hoặc mực nước xuống mức âm 10 - 15 cm so với mặt ruộng), sau đó mới cho nước vào lại (mực nước không quá 5 cm).\n+ Đối với vùng ruộng trũng hoặc mùa vụ mưa nhiều thì rút nước tối thiểu 01 lần (trong giai đoạn từ 28 - 50 ngày sau sạ) và đảm bảo ruộng khô tối thiểu 03 ngày liên tục.\nLưu ý: tùy theo điều kiện mùa vụ, thời tiết và đặc điểm đất đai (phèn, mặn, vùng lũ, xâm nhập mặn, …) để điều chỉnh thời điểm rút nước phù hợp, khả thi và không ảnh hưởng đến sinh trưởng cây lúa cũng như quá trình lấy nước trở lại.\nc) Quản lý nước trước khi thu hoạch: rút nước trước thu hoạch từ 7 - 15 ngày.\n5. Bón phân\na) Nguyên tắc: bón phân hợp lý, cân đối theo nhu cầu của cây lúa ở từng giai đoạn sinh trưởng, đồng thời căn cứ vào đặc điểm mùa vụ và loại đất canh tác khác nhau.\nb) Lượng phân bón cho 01 ha đối với lúa gieo sạ\n- Phân hữu cơ: Khuyến khích bón 1,5 - 3,0 tấn phân hữu cơ.\n- Vôi (CaO):\n+ Đối với đất có độ chua vừa và trung bình (pH KCl 4,0 - 5,0): bón 200 - 300 kg;\n+ Đối với đất chua nhiều và đất phèn (pH KCl < 4,0): bón 400 - 500 kg.\n- Phân bón đa lượng cho vụ Đông Xuân:\n+ Đối với đất phù sa: 90-100 kg N, 30-40 kg P2O5 và 30-40 kg K2O.\n+ Đối với đất phèn nhẹ: 80-100 kg N, 40-50 kg P2O5 và 25-30 kg K2O.\n+ Đối với đất phèn trung bình: 60-80 kg N, 50-60 kg P2O5 và 25-30 kg K2O.\n- Lượng phân đạm sử dụng trong vụ Hè Thu và Thu Đông giảm 15 - 20% so với vụ Đông Xuân.\n- Khi sạ lúa kết hợp vùi phân: nên giảm 10 - 15% lượng đạm bón so với phương pháp sạ không kết hợp vùi phân.\n- Khuyến khích sử dụng bảng so màu lá lúa để điều chỉnh lượng đạm bón phù hợp theo tình trạng sinh trưởng thực tế của cây lúa.\nc) Thời kỳ bón phân\n- Bón phân lót: nên bón lót 100% phân hữu cơ, vôi và lân trước khi gieo sạ để đảm bảo chất lượng dinh dưỡng nền cho đất. Riêng đất chua nhiều và đất phèn (pH KCl < 4,0) nên dành 30% phân lân cho bón thúc lần 1.\n- Bón phân thúc:\n+ Lần 1 (7 - 10 ngày sau sạ): bón 40% N.\n+ Lần 2 (18 - 22 ngày sau sạ): bón 40% N + 40% K2O\n+ Lần 3 (38 - 42 ngày sau sạ): bón 20% N + 60% K2O\n* Trường hợp sạ hàng hoặc sạ cụm kết hợp vùi phân: sử dụng loại phân phù hợp cho bón vùi bằng máy như phân dạng viên đường kính từ 2- 4 mm, không bị tan chảy nhanh. Chia lượng phân bón làm 02 lần:\n• Lần 1: bón vùi khi sạ 70 - 80% tổng lượng phân,\n• Lần 2 (38 - 42 ngày sau sạ): bón đón đòng (bón vãi) lượng phân còn lại.\n* Khuyến khích sử dụng các loại phân bón có hiệu quả cao, phân bón chậm tan, … nhằm giảm thất thoát dinh dưỡng và giảm phát thải khí nhà kính.\n6. Phòng, chống sinh vật gây hại lúa\nÁp dụng quản lý sinh vật gây hại tổng hợp (IPM) trên nền tảng Quản lý sức khỏe cây trồng tổng hợp (IPHM):\n- Thực hiện thăm đồng thường xuyên.\n- Áp dụng biện pháp phòng chống sinh vật theo các quy trình, hướng dẫn của cơ quan chuyên ngành bảo vệ thực vật.\n- Sử dụng thuốc bảo vệ thực vật nguyên tắc 4 đúng (đúng thuốc, đúng lúc, đúng nồng độ liều lượng và đúng cách) và đảm bảo thời gian cách ly.\n- Luân phiên sử dụng các nhóm hoạt chất khác nhau để hạn chế tình trạng kháng thuốc; ưu tiên sử dụng các loại thuốc bảo vệ thực vật có nguồn gốc sinh học, thảo mộc.\nBBT",
+    "namespace": "farm",
+    "document_type": "farm_knowledge",
+    "topic": "cultivation_water_nutrition_ipm",
+    "tags": [
+      "lam_dat",
+      "giong",
+      "gieo_sa",
+      "quan_ly_nuoc",
+      "dinh_duong",
+      "ipm",
+      "thu_hoach"
+    ],
+    "crop": "rice",
+    "region": "Việt Nam; cần giới hạn theo vùng nếu tài liệu có nêu địa phương",
+    "season": "Không chuẩn hóa nếu nguồn không nêu rõ",
+    "content_kind": "official_extension_or_research_article",
+    "language": "vi",
+    "provenance": {
+      "source_ids": [
+        "SRC_KN_RICE_LOW_EMISSION_31656"
+      ],
+      "url": "https://khuyennongvn.gov.vn/khoa-hoc-cong-nghe/khcn-trong-nuoc/ky-thuat-canh-tac-lua-chat-luong-cao-va-phat-thai-thap-vung-dong-bang-song-cuu-long-31656.html",
+      "accessed_at": "2026-10-27T13:00:16+00:00",
+      "sha256": "857358ad4e20d043785733ab34636773d4bc490834b734804ccf5444c00b39a7",
+      "page_title": "\r\n\tKỹ thuật canh tác lúa chất lượng cao và phát thải thấp vùng đồng bằng sông Cửu Long\r\n"
+    },
+    "review_status": "APPROVED",
+    "review_flags": [
+      "CHECK_LICENSE_TERMS",
+      "CONTAINS_TREATMENT_REFERENCES"
+    ],
+    "content_stats": {
+      "characters": 6423,
+      "words": 1417,
+      "lines": 64
+    },
+    "safety_note": "Không dùng làm nguồn thuốc, liều hoặc PHI nếu chưa được duyệt riêng.",
+    "approved_by": "project_owner",
+    "approved_at": "2026-10-28",
+    "approval_note": "Operator-approved for grounded Farm knowledge RAG. Treatment facts remain subject to Backend safety rules."
+  },
+  {
+    "document_id": "SRC_KN_RICE_WEED_22126",
+    "title": "Hướng dẫn biện pháp kỹ thuật quản lý lúa cỏ (lúa ma)",
+    "content": "Lúa cỏ có tên gọi khác như lúa ma, lúa hoang, lúa dại,… cùng là loài lúa như lúa trồng nhưng là loài phụ. Lúa cỏ không có các đặc điểm về năng suất, chất lượng như mong muốn, gây ảnh hưởng đến canh tác lúa thông qua việc cạnh tranh dinh dưỡng, ánh sáng làm giảm sinh trưởng của cây với lúa trồng; lẫn hạt lúa cỏ làm giảm chất lượng thóc, gạo (lẫn tạp). Lúa cỏ có thời gian sinh trưởng ngắn, chín sớm, hạt rất dễ rụng nên có khả năng lây lan nhanh, khó phòng trừ và có thể gây thất thu năng suất, thậm chí mất trắng.\nĐể thống nhất biện pháp chỉ đạo phòng chống lúa cỏ, Cục Bảo vệ thực vật hướng dẫn biện pháp quản lý lúa cỏ tổng hợp để các địa phương phổ biến, tuyên truyền, hướng dẫn nông dân áp dụng phòng chống lúa cỏ, giảm thiệt hại cho người nông dân.\n1. Đặc điểm, tác hại và sự lây lan của lúa cỏ\na. Đặc điểm lúa cỏ\n- Đặc điểm hình thái và sinh trưởng:\n+ Giai đoạn 5 -10 ngày sau nảy mầm: Cây sinh trưởng nhanh, thân mảnh và đứng, phiến lá nhỏ, có màu vàng hơn lúa trồng.\n+ Giai đoạn đẻ nhánh đến đứng cái: Cây đẻ nhánh kém, thân mảnh, lóng vươn dài, lá thưa, phiến lá nhỏ, khóm lúa có màu vàng hơn lúa trồng.\n+ Giai đoạn trỗ bông: Lúa cỏ trỗ sớm hơn lúa trồng 5 - 7 ngày, thời gian trỗ dài, trên bông có hạt đang phơi màu, hạt ngậm sữa, hạt chắc xanh nên không có sự đồng đều về màu sắc bông lúa như lúa trồng; hạt có râu dài hoặc không có râu; hạt có dạng thon dài hoặc bầu dục màu vàng - vàng sẫm, dạng hạt có mỏ tím, tỉ lệ lép cao.\n- Một số đặc điểm sinh học, sinh thái: Lúa cỏ có sự giao phấn (tỷ lệ nhỏ) với lúa trồng, việc tự để giống khiến lúa phân ly với tính trạng xấu trở nên phức tạp, khó nhận biết và khó quản lý hơn.\nThời gian sinh trưởng ngắn hơn, hạt lúa rất dễ rụng ngay cả khi có gió thoảng qua. Sau khi hạt rụng xuống nếu gặp điều kiện thuận lợi có thể nảy mầm ngay, nếu gặp điều kiện bất thuận (khô hạn, vùi sâu trong bùn, …) hạt có thể ngủ nghỉ nhưng vẫn có sức sống cao, duy trì sức nảy mầm trong vài năm. Do vậy, lúa cỏ tồn tại, tích tụ lâu trong đất và tăng dần số lượng qua các vụ. Đặc tính này thể hiện sự khác nhau giữa các dòng lúa cỏ khác nhau, nhưng nhìn chung sức sống của hạt lúa cỏ thường cao hơn rất nhiều so với lúa trồng. Khả năng nảy mầm của lúa cỏ bị ảnh hưởng rất lớn ở tuổi hạt, kết cấu đất, chế độ nước trên đồng ruộng và độ sâu bị chôn vùi trong bùn. Cây lúa cỏ thường xuất hiện ở tất cả các vụ trồng lúa, xuất hiện nhiều ở vụ Mùa, vụ Hè Thu.\nb. Tác hại của lúa cỏ\nLúa cỏ có khả năng lây lan nhanh làm thất thu năng suất và khó phòng chống. Lúa cỏ sinh trưởng và phát triển rất mạnh, cạnh tranh trực tiếp về dinh dưỡng và ánh sáng với lúa trồng làm giảm năng suất của lúa. Lúa có có thể gây thất thu năng suất từ 15-20%, thậm chí mất trắng, đồng thời lây nhiễm càng trầm trọng cho những vụ sau. Ruộng bị nhiễm lúa cỏ nặng làm giảm phẩm chất gạo cũng như giảm giá trị tiêu dùng và xuất khẩu (chỉ tiêu độ lẫn tạp).\nc. Nguyên nhân lúa cỏ lây lan\n- Hạt giống bị lẫn lúa cỏ.\n- Thường xuyên sử dụng lúa thương phẩm làm giống lúa bị phân ly, thoái hóa và tính chất di truyền có xu hướng trở lại các đặc tính của nguồn gốc lúa hoang dại ban đầu (hiện tượng lại giống) và xuất hiện lúa cỏ với nhiều kiểu hình khác nhau.\n- Người dân tự để giống lúa, nhất là sử dụng giống trong vùng đã nhiễm lúa cỏ để gieo cấy cho vụ sau làm gia tăng lúa cỏ trên đồng ruộng.\n- Thời gian chuyển vụ ngắn nên nguồn hạt lúa cỏ lưu tồn trên đồng ruộng từ những vụ trước chưa được xử lý.\n- Hạt lúa cỏ có thể di chuyển, phát tán theo nguồn nước, nhờ chim hoặc theo máy móc nông cụ (máy làm đất, máy gặt, …) từ ruộng này sang ruộng khác, nơi này sang nơi khác.\n2. Biện pháp phòng chống lúa cỏ\na. Chọn giống lúa đảm bảo chất lượng\n- Sử dụng giống lúa đạt tiêu chuẩn chất lượng\n- Không để giống lúa đối với ruộng đã bị nhiễm lúa cỏ từ vụ trước; loại bỏ hạt lép lửng trước khi ngâm ủ.\nb. Biện pháp canh tác\n- Chuyển đổi phương thức gieo cấy: Những vùng có tập quán sạ lan (gieo vãi) nhiễm lúa cỏ cần chuyển sang sạ hàng hoặc cấy (cấy tay hoặc cấy bằng máy) để dễ dàng làm cỏ sục bùn và dễ nhận biết, loại bỏ lúa cỏ ngay từ khi cây còn nhỏ.\n- Luân canh cây trồng: Những khu vực đã nhiễm lúa cỏ nhiều cần luân canh lúa với cây trồng cạn hoặc cây trồng nước nhưng khác họ để dễ dàng nhận biết, loại bỏ hầu hết lúa cỏ sau 1 - 2 vụ.\n- Phòng chống lúa cỏ khi làm đất:\n+ Khi cho nước vào ruộng để làm đất cần đặt lưới chắn hạt lúa cỏ tại đầu đường dẫn nước vào ruộng; nếu có lúa cỏ, hạt thóc lép, lửng trôi dạt vào góc ruộng thì vớt mang đi tiêu hủy.\n+ Những ruộng bị nhiễm nặng lúa cỏ ở vụ trước nhưng chưa được xử lý thì đầu vụ sau khi thời tiết thuận lợi, nền nhiệt còn cao, lấy nước và tiến hành lồng bừa nông, san phẳng rồi rút cạn nước ruộng (như gieo mạ) để nhử lúa cỏ nẩy mầm. Khi cây lúa cỏ có 3 - 5 lá tiến hành lấy nước cày lật úp, làm đất nhuyễn để diệt lúa cỏ ngay khi còn non. Nếu có đủ thời gian, biện pháp này cần làm lặp lại 2 - 3 lần sẽ diệt được hầu hết hạt lúa cỏ bị vùi trong đất.\n- Ngăn chặn lây lan lúa cỏ theo máy móc: Vệ sinh máy gặt, máy cày để hạt lúa cỏ không theo máy móc lây lan sang khu ruộng khác, từ vùng bị nhiễm lúa cỏ sang vùng không bị nhiễm lúa cỏ.\n- Nhổ, khử lúa cỏ sau khi mọc:\n+ Giai đoạn lúa đẻ nhánh – phân hóa đòng:\nĐối với lúa cấy hoặc sạ hàng: Làm cỏ kết hợp sục bùn bằng tay, bằng dụng cụ hoặc bằng máy đồng thời diệt được lúa cỏ mọc ngoài khóm, ngoài hàng lúa.\nĐối với lúa gieo sạ: Đi theo từng lối hoặc băng, quan sát kỹ và nhổ bỏ những cây lúa có đặc điểm khác với giống lúa trồng về kiểu hình (màu sắc thân, màu sắc lá, chiều cao cây, góc lá, độ rộng phiến lá, …).\n+ Giai đoạn lúa đòng – trỗ: Cắt các bông lúa cỏ khi mới trỗ - ngậm sữa; riêng bông lúa cỏ chắc xanh - chín phải cắt cho vào túi tránh rơi vãi hạt và đem tiêu hủy (cho gia cầm ăn hoặc đốt). Tuyệt đối không được để bông lúa cỏ sắp chín, đã chín trên ruộng, bờ ruộng hoặc vứt xuống kênh mương dẫn nước.\nc. Biện pháp sinh học\n- Khi gặt xong có thể thả vịt vào ruộng để ăn các hạt lúa rụng trên ruộng trong đó có cả hạt lúa cỏ.\n- Những ruộng nhiễm lúa cỏ nặng không cho thu hoạch, cần tiêu hủy toàn bộ ruộng (bằng cách cắt cho gia súc ăn hoặc cày vùi), chậm nhất trước khi những bông lúa cỏ trỗ đầu tiên vào giai đoạn ngậm sữa. Khi cày vùi có thể sử dụng các chế phẩm vi sinh để nhanh phân hủy rơm rạ và cả hạt lúa cỏ.\nd. Biện pháp hóa học\n- Sử dụng thuốc bảo vệ thực vật có hoạt chất Pretilachlor trong Danh mục thuốc bảo vệ thực vật được phép sử dụng tại Việt Nam.\n- Sử dụng thuốc bảo vệ thực vật theo đúng hướng dẫn của nhà sản xuất và tuân thủ nguyên tắc 4 đúng.\nCục Bảo vệ thực vật",
+    "namespace": "farm",
+    "document_type": "farm_knowledge",
+    "topic": "weed_management",
+    "tags": [
+      "lua_co",
+      "co_dai",
+      "quan_ly_tong_hop"
+    ],
+    "crop": "rice",
+    "region": "Việt Nam; cần giới hạn theo vùng nếu tài liệu có nêu địa phương",
+    "season": "Không chuẩn hóa nếu nguồn không nêu rõ",
+    "content_kind": "official_extension_or_research_article",
+    "language": "vi",
+    "provenance": {
+      "source_ids": [
+        "SRC_KN_RICE_WEED_22126"
+      ],
+      "url": "https://khuyennongvn.gov.vn/khoa-hoc-cong-nghe/khcn-trong-nuoc/huong-dan-bien-phap-ky-thuat-quan-ly-lua-co-lua-ma-22126.html",
+      "accessed_at": "2026-10-27T13:00:19+00:00",
+      "sha256": "d76d95ac69fdf79477913e910f4c550c0318df16fc22a9f06a929edd11cae34e",
+      "page_title": "\r\n\tHướng dẫn biện pháp kỹ thuật quản lý lúa cỏ (lúa ma)\r\n"
+    },
+    "review_status": "APPROVED",
+    "review_flags": [
+      "CHECK_LICENSE_TERMS",
+      "CONTAINS_TREATMENT_REFERENCES"
+    ],
+    "content_stats": {
+      "characters": 6501,
+      "words": 1476,
+      "lines": 41
+    },
+    "safety_note": "Không dùng làm nguồn thuốc, liều hoặc PHI nếu chưa được duyệt riêng.",
+    "approved_by": "project_owner",
+    "approved_at": "2026-10-28",
+    "approval_note": "Operator-approved for grounded Farm knowledge RAG. Treatment facts remain subject to Backend safety rules."
+  },
+  {
+    "document_id": "SRC_VAAS_RICE_LEAF_BIOLOGY",
+    "title": "Sinh học cây lúa: cấu tạo và đặc điểm lá lúa",
+    "content": "Bài 31: LÁ CỦA CÂY LÚA\nLá lúa được hình thành từ các mầm lá ở mắt thân. Lá đầu\ntiên khi hạt nảy mầm hình thành là lá không hoàn toàn (không có phiến lá)\ncòn gọi là bao mầm, người ta không tính lá này. Lá mọc tiếp theo đó được\ntính là lá thật đầu tiên. Quá trình hình thành của lá qua 4 thời kỳ nhỏ (hay\ncòn gọi là bước): a) Mầm lá phân hoá, b) Hình thành phiến lá, c) Hình thành\nbẹ lá, d) Lá xuất hiện.\nMột lá của cây lúa bao gồm đầy đủ các chi tiết: bẹ lá, cổ\nlá, gốc bản lá, thìa lía, tai lá, phiến lá (gồm các gân lá song song). Các\nlá cỏ dại cũng có cổ lá nhưng chỉ có thể có hoặc thìa lìa hoặc tai lá, hoặc\nkhông có gì cả.\nCác lá trên cây lúa phát triển liên tục từ dưới gốc lên\ntrên, mỗi lá phát triển cách nhau một bước. Lá cuối cùng mọc ra gọi là lá\nđòng. Một giống lúa bao giờ cũng có một số lá nhất định đã được định trong\nphôi và là đặc điểm của giống. Tuy nhiên với cùng một giống lúa nhất định có\nnhiều yếu tố ảnh hưởng đến tổng số lá như: khí hậu, thời tiết, biện pháp bón\nphân, kỹ thăm chăm sóc, thời vụ cấy… Ở nước ta nhóm giống lúa ngắn ngày\nthường có 12-15 lá, nhóm trung ngày có 16-18 lá, nhóm dài ngày có 20-21 lá.\nThông thường trên cây lúa có khoảng 5-6 lá xanh cùng hoạt động, sau giai\nđoạn hoạt động thì các lá dưới gốc chuyển vàng rồi chết đi, các lá mới lại\ntiếp tục hoạt động.\nTốc độ ra lá thay đổi theo thời gian sinh trưởng và điều\nkiện ngoại cảnh: a) thờI kỳ mạ non trung bình 1-3 ngày ra 1 lá; b) thời kỳ\nmạ khoả 7-10 ngày ra 1 lá; c) sau cấy lúa bén rễ hồi xanh, tốc độ ra lá\nnhanh hơn, trung bình 5-7 ngày ra 1 lá hoặc nhiều ngày hơn tuỳ thuộc vào\nthời tiết; d) đến cuối thời kỳ đẻ nhánh, chuyển sang làm đốt, làm đòng thì\ntốc độ ra lá chậm lại khoảng 12-15 ngày/lá. Tổng thời gian hình thành 3 lá\ncuối cùng thường bằng thời gian làm đòng.\nCác lá lúa trên thân chính được tạo ra cùng một lúc, phát\ntriển kế tiếp nhau từ dướI lên và các lá lúa được sắp xếp so le nhau (mọc\ncách). Mỗi một lá mới được tạo ra (theo các bước nói trên) trung bình mất 7\nngày.",
+    "namespace": "farm",
+    "document_type": "farm_knowledge",
+    "topic": "rice_biology_varieties_cultivation",
+    "tags": [
+      "sinh_hoc_cay_lua",
+      "giong",
+      "sinh_truong"
+    ],
+    "crop": "rice",
+    "region": "Việt Nam; cần giới hạn theo vùng nếu tài liệu có nêu địa phương",
+    "season": "Không chuẩn hóa nếu nguồn không nêu rõ",
+    "content_kind": "official_extension_or_research_article",
+    "language": "vi",
+    "provenance": {
+      "source_ids": [
+        "SRC_VAAS_RICE_LEAF_BIOLOGY"
+      ],
+      "url": "https://vaas.vn/kienthuc/Caylua/10/031_lalua.htm",
+      "accessed_at": "2026-10-27T13:00:26+00:00",
+      "sha256": "eb84536370324c848c93f909852c085d355a2934353d2dde3f41c3caa82f7395",
+      "page_title": "NGÂN HÀNG KIẾN THỨC TRỒNG LÚA - Đem kiến thức nghề lúa đến mọi người bằng công nghệ thông tin"
+    },
+    "review_status": "APPROVED",
+    "review_flags": [
+      "CHECK_LICENSE_TERMS"
+    ],
+    "content_stats": {
+      "characters": 1985,
+      "words": 453,
+      "lines": 32
+    },
+    "safety_note": "Không dùng làm nguồn thuốc, liều hoặc PHI nếu chưa được duyệt riêng.",
+    "approved_by": "project_owner",
+    "approved_at": "2026-10-28",
+    "approval_note": "Operator-approved for grounded Farm knowledge RAG. Treatment facts remain subject to Backend safety rules."
+  },
+  {
+    "document_id": "SRC_KN_RICE_ORGANIC_32601",
+    "title": "Kết quả nhân rộng mô hình canh tác lúa hữu cơ vụ hè-thu 2026 tại An Giang",
+    "content": "Kết quả mô hình cho thấy, công thức sử dụng hoàn toàn phân bón hữu cơ Orga-One kết hợp phun đạm cá và dịch chuối mang lại hiệu quả nổi bật. Công thức này có chi phí đầu tư thấp nhất nhưng vẫn duy trì năng suất tương đương với phương pháp canh tác sử dụng hoàn toàn phân bón hóa học, đồng thời hướng đến sự an toàn cho nông sản, người sản xuất và môi trường. Thực tế đó cho thấy phân bón hữu cơ Orga-One có tiềm năng ứng dụng phù hợp với điều kiện thổ nhưỡng tại địa phương. Cây lúa sinh trưởng cân đối, hạn chế sâu bệnh và thể hiện ưu thế rõ rệt trên những chân đất nhiễm phèn.\nTrên cơ sở những kết quả đạt được, bước sang vụ Hè – Thu 2026, Công ty Eighty Nine tiếp tục đồng hành cùng bà con nông dân mở rộng diện tích canh tác lúa hữu cơ lên gần 370 ha, với sự tham gia của gần hộ nông dân. Tại một số vùng lúa trọng điểm của tỉnh An Giang như: xã Mỹ Thuận, Tân Hội, Vĩnh Điều, Giang Thành và Bình Sơn. Mô hình chủ yếu sử dụng giống lúa Nhật DS1, kết hợp một phần diện tích trồng các giống lúa thuần chất lượng cao như OM 18 và OM 5451.\nTrong suốt quá trình canh tác, Công ty đã bố trí đội ngũ cán bộ kỹ thuật phối hợp cùng nông dân thăm đồng định kỳ hằng tuần, hướng dẫn thực hiện đúng quy trình kỹ thuật và kịp thời xử lý các vấn đề phát sinh. Hoạt động đồng hành sát sao này không chỉ hỗ trợ bà con nâng cao hiệu quả sản xuất mà còn góp phần củng cố niềm tin, giúp nông dân an tâm áp dụng quy trình canh tác hữu cơ trên diện rộng.\nCán bộ kỹ thuật đồng hành cùng nông dân trong quá trình thực hiện mô hình\nKết quả thực tế: Năng suất ổn định, giảm chi phí, hạn chế đổ ngã\nĐến nay, nông dân trong mô hình đã hoàn thành thu hoạch lúa vụ Hè – Thu 2026. Kết quả ghi nhận cho thấy, toàn bộ diện tích canh tác sử dụng phân bón hữu cơ Orga-One không xảy ra tình trạng đổ ngã, mức độ sâu bệnh thấp, tỷ lệ hạt chắc trên bông cao. Hạt lúa phát triển đầy đặn, có màu vàng sáng, thể hiện chất lượng ngoại quan tích cực.\nTheo ghi nhận thực tế, trọng lượng mỗi bao lúa đạt trung bình 63–65 kg, cao hơn mức 57 - 60 kg/bao của phương pháp canh tác hóa học tại địa phương. Năng suất bình quân đạt 8 - 9 tấn/ha, tương đương với phương pháp canh tác sử dụng hoàn toàn phân bón hóa học. Đáng chú ý, tại một số ruộng có bổ sung phân bón hóa học gồm DAP, urê và kali vào giai đoạn lúa đẻ nhánh và làm đòng, với tổng lượng phân khoảng 200 - 300 kg/ha, năng suất ghi nhận đạt tới 10 tấn/ha. Kết quả này cho thấy tiềm năng nâng cao năng suất khi điều chỉnh chế độ dinh dưỡng phù hợp với điều kiện thực tế của từng ruộng.\nVề hiệu quả kinh tế, chi phí phân bón và thuốc bảo vệ thực vật bình quân của phương pháp canh tác hoàn toàn hữu cơ vào khoảng 9 triệu đồng/ha, thấp hơn mức 11 triệu đồng/ha của phương pháp canh tác hóa học. Với giá lúa trung bình trong vụ đạt 6.500 đồng/kg, tổng doanh thu ước tính đạt 52 – 58,5 triệu đồng/ha, lợi nhuận bình quân khoảng 16 - 18 triệu đồng/ha theo ghi nhận thực tế.\nĐặc biệt, nếu sản phẩm được liên kết tiêu thụ và thu mua theo mức giá dành cho lúa an toàn, chất lượng cao, hiệu quả kinh tế của mô hình có thể được cải thiện hơn nữa. Đây là cơ hội để nông dân từng bước nâng cao giá trị hạt gạo, thay vì chỉ tập trung vào sản lượng.\nƯu thế nổi bật trong điều kiện sản xuất vụ Hè – Thu\nTheo chia sẻ của nông dân trong vùng, sản xuất lúa vụ Hè – Thu thường gặp nhiều khó khăn do chi phí đầu tư tăng cao, thời tiết diễn biến thất thường và nguy cơ đổ ngã lớn. Khi lúa gặp mưa lớn, gió mạnh vào giai đoạn vào chắc hạt, tình trạng đổ ngã có thể làm giảm năng suất từ 30–60%, đồng thời tăng chi phí thu hoạch và gây thất thoát sau thu hoạch.\nVì vậy, tại địa phương, một số nông dân thường sử dụng Paclobutrazol nhằm ức chế sinh trưởng, hạn chế chiều cao cây và tăng khả năng chống đổ ngã của lúa. Tuy nhiên, trong mô hình canh tác hữu cơ sử dụng phân bón Orga-One, toàn bộ diện tích được ghi nhận không bị đổ ngã dù không sử dụng hóa chất ức chế sinh trưởng. Đây là một trong những kết quả đáng chú ý, cho thấy tiềm năng của giải pháp dinh dưỡng phù hợp trong việc nâng cao khả năng chống chịu của cây lúa trước điều kiện thời tiết bất lợi.\nCâu chuyện thực tế từ hộ nông dân tham gia mô hình\nTrong số các hộ tham gia mô hình canh tác lúa hữu cơ, ông Võ Văn Văn, ngụ tại Kênh 11, xã Mỹ Thuận, là một trong những nông dân có quy mô sản xuất lớn, với diện tích lúa của gia đình khoảng 100 ha.\nTheo ông Văn, trong vụ Hè – Thu năm trước, gia đình ông đầu tư chi phí sản xuất khá cao và ruộng lúa phát triển đẹp, nổi bật so với nhiều diện tích trong vùng. Tuy nhiên, vào giai đoạn lúa chắc hạt, mưa lớn kèm gió mạnh khiến khoảng 40% diện tích bị đổ ngã. Tình trạng này làm tăng chi phí thu hoạch, gây thất thoát năng suất và khiến gia đình ông thua lỗ hơn 2 triệu đồng/ha.\nTừ thực tế đó, nhận thấy phương pháp canh tác hữu cơ có tiềm năng giảm chi phí đầu tư, hạn chế rủi ro và vẫn bảo đảm năng suất, ông Văn đã mạnh dạn áp dụng mô hình trên toàn bộ diện tích lúa của gia đình trong vụ Hè – Thu 2026.\nChia sẻ về quá trình sản xuất, ông cho biết việc sử dụng phân bón hữu cơ Orga-One khá thuận tiện. Cây lúa có thân cứng, lá mọc thẳng và duy trì màu vàng chanh ổn định. Ở giai đoạn đầu, lúa sinh trưởng chậm hơn và ít đẻ nhánh hơn so với ruộng canh tác hóa học. Tuy nhiên, ở các giai đoạn sau, cây lúa phát triển khỏe, thân cứng, bông to và tỷ lệ hạt chắc cao. Toàn bộ diện tích lúa của gia đình trong vụ này không xảy ra tình trạng đổ ngã. Nhờ đó, năng suất cuối vụ vẫn tương đương với phương pháp canh tác hóa học.\nMột điểm đáng chú ý khác là trong suốt vụ sản xuất, gia đình ông không phải phun thuốc trừ sâu và chỉ phun một lần thuốc trừ bệnh vào giai đoạn lúa đã trỗ đều nhằm phòng ngừa bệnh khô cổ bông. Như vậy ngoài việc giảm chi phí phân bón, gia đình còn tiết kiệm đáng kể chi phí vật tư và công lao động phục vụ phun thuốc bảo vệ thực vật.\nBên cạnh hiệu quả thực tế trên đồng ruộng, ông Văn cũng đánh giá cao thành phần và đặc tính của phân bón hữu cơ Orga-One. Theo thông tin về sản phẩm, phân bón có hàm lượng hữu cơ trên 70%, chứa 4% N, 2% P₂O₅ và 1% K₂O, đồng thời có ba nhóm vi sinh vật hữu ích gồm vi khuẩn cố định đạm, vi khuẩn phân giải lân và vi khuẩn phân giải xác bã hữu cơ. Đây là những nhóm vi sinh vật có vai trò đáng quan tâm trong điều kiện sản xuất lúa tại Đồng bằng sông Cửu Long, đặc biệt vào thời điểm chuyển vụ. Do khoảng thời gian giữa hai vụ thường ngắn, nông dân phải nhanh chóng làm đất và gieo sạ sau khi thu hoạch lúa Đông – Xuân. Khi rơm rạ chưa kịp phân hủy hoàn toàn, nguy cơ phát sinh ngộ độc hữu cơ có thể ảnh hưởng đến sự sinh trưởng của cây lúa non. Trong điều kiện đó, các vi sinh vật có khả năng phân giải xác bã thực vật có thể góp phần thúc đẩy quá trình phân hủy xenluloza, hỗ trợ phân giải tàn dư hữu cơ và cải thiện quá trình chuyển hóa dinh dưỡng trong đất. Đây là một trong những yếu tố có ý nghĩa đối với việc duy trì độ phì đất và hướng đến hệ thống canh tác bền vững.\nNgoài ra, phân bón Orga-One có dạng viên, trọng lượng nhẹ, thuận tiện cho vận chuyển và sử dụng trên diện tích lớn. Đặc tính này cũng tạo điều kiện thuận lợi cho việc cơ giới hóa và ứng dụng công nghệ số trong quản lý, tổ chức sản xuất khi mô hình được mở rộng.\nHướng đến nền sản xuất lúa bền vững, phát thải thấp\nBên cạnh hiệu quả kinh tế trực tiếp, việc ứng dụng phân bón hữu cơ Orga-One trong mô hình còn hướng đến mục tiêu giảm áp lực môi trường, hạn chế nguy cơ ô nhiễm nguồn nước, góp phần duy trì độ phì nhiêu của đất và bảo vệ sức khỏe người sản xuất thông qua việc giảm sử dụng một số vật tư đầu vào.\nMô hình cũng phù hợp với định hướng phát triển nông nghiệp xanh, nâng cao chất lượng hạt gạo và sử dụng tài nguyên hiệu quả. Đây là những mục tiêu có mối liên hệ chặt chẽ với Đề án “Phát triển bền vững một triệu héc-ta chuyên canh lúa chất lượng cao, phát thải thấp gắn với tăng trưởng xanh vùng Đồng bằng sông Cửu Long đến năm 2030”.\nVới những kết quả bước đầu ghi nhận trong vụ Hè – Thu 2026, mô hình canh tác lúa hữu cơ sử dụng phân bón Orga-One mở ra triển vọng về một hướng sản xuất có chi phí đầu vào hợp lý, năng suất ổn định và khả năng thích ứng tốt hơn với điều kiện bất lợi của thời tiết. Sự phối hợp giữa doanh nghiệp, chính quyền địa phương và nông dân sẽ là nền tảng quan trọng để tiếp tục hoàn thiện quy trình, nâng cao chất lượng sản phẩm và phát triển các vùng sản xuất lúa bền vững trong thời gian tới.\nLê Thị Hồng",
+    "namespace": "farm",
+    "document_type": "farm_knowledge",
+    "topic": "organic_rice_sustainable_cultivation",
+    "tags": [
+      "lua_huu_co",
+      "ben_vung",
+      "quan_ly_dinh_duong",
+      "ipm"
+    ],
+    "crop": "rice",
+    "region": "Việt Nam; cần giới hạn theo vùng nếu tài liệu có nêu địa phương",
+    "season": "Không chuẩn hóa nếu nguồn không nêu rõ",
+    "content_kind": "official_extension_or_research_article",
+    "language": "vi",
+    "provenance": {
+      "source_ids": [
+        "SRC_KN_RICE_ORGANIC_32601"
+      ],
+      "url": "https://khuyennongvn.gov.vn/khoa-hoc-cong-nghe/khcn-trong-nuoc/ket-qua-nhan-rong-mo-hinh-canh-tac-lua-huu-co-vu-he-thu-2026-tai-tinh-an-giang-32601.html",
+      "accessed_at": "2026-10-27T13:00:29+00:00",
+      "sha256": "e6dd7c7b69cc61cb3cf4cbf177e274a5f699d8395ffcabd568b83f4823e0028d",
+      "page_title": "\r\n\tKết quả nhân rộng mô hình canh tác lúa hữu cơ vụ hè - thu 2026 tại tỉnh An Giang\r\n"
+    },
+    "review_status": "APPROVED",
+    "review_flags": [
+      "CHECK_LICENSE_TERMS",
+      "CONTAINS_TREATMENT_REFERENCES"
+    ],
+    "content_stats": {
+      "characters": 8269,
+      "words": 1829,
+      "lines": 25
+    },
+    "safety_note": "Không dùng làm nguồn thuốc, liều hoặc PHI nếu chưa được duyệt riêng.",
+    "approved_by": "project_owner",
+    "approved_at": "2026-10-28",
+    "approval_note": "Operator-approved for grounded Farm knowledge RAG. Treatment facts remain subject to Backend safety rules."
+  },
+  {
+    "document_id": "SRC_KN_RICE_POSTHARVEST_31686",
+    "title": "Quản lý thu hoạch và xử lý lúa sau thu hoạch",
+    "content": "Quy trình do Cục Trồng trọt và Bảo vệ thực vật hướng dẫn các kỹ thuật trong thu hoạch, sấy và bảo quản lúa theo nguyên tắc nâng cao chất lượng lúa gạo và giảm tổn thất sau thu hoạch, tiết kiệm năng lượng\na) Thu hoạch\n- Thời điểm thu hoạch: khi lúa chín khoảng 85 - 90% hoặc theo thời gian sinh trưởng của từng nhóm giống (ngắn ngày: 90 - 105 ngày, trung ngày: 106 - 120 ngày, dài ngày: trên 120 ngày).\n- Sử dụng máy gặt đập liên hợp để thu hoạch.\nb) Sấy lúa\nLúa cần được sấy khô trong vòng 24 giờ sau khi thu hoạch.\nc) Bảo quản lúa\n- Lúa đưa vào bảo quản phải đạt độ ẩm dưới 14% (đối với lúa thương phẩm) và phải được làm sạch trước khi bảo quản.\n- Có thể áp dụng một số công nghệ bảo quản phù hợp với điều kiện vùng Đồng bằng sông Cửu Long gồm:\n+ Bảo quản trong kho có hệ thống thông khí cưỡng bức, giúp điều hòa nhiệt - ẩm trong khối lúa.\n+ Bảo quản kín trong bao, kết hợp đặt trên kệ gỗ hoặc pallet để tránh ẩm từ nền đất.\n+ Bảo quản trong silo, có kiểm soát nhiệt độ và độ ẩm, phù hợp với quy mô sản xuất lớn và hệ thống logistics hiện đại.\n+ Bảo quản lạnh được khuyến khích áp dụng đối với các lô hàng chất lượng cao xuất khẩu.\n+ Hạn chế sử dụng biện pháp xông hơi khử trùng trong bảo quản và phải tuân thủ nghiêm quy định về giới hạn dư lượng thuốc bảo vệ thực vật.\n+ Khuyến khích áp dụng công nghệ số trong giám sát và quản lý kho bảo quản như: cảm biến đo nhiệt - ẩm tự động, bẫy phát hiện sâu mọt trong kho, nhật ký bảo quản số hóa và truy xuất nguồn gốc sau thu hoạch.\nNhững giải pháp này giúp giảm tổn thất sau thu hoạch, nâng cao chất lượng hạt gạo, và góp phần giảm phát thải khí nhà kính trong toàn chuỗi sản xuất – tiêu thụ.\nBBT",
+    "namespace": "farm",
+    "document_type": "farm_knowledge",
+    "topic": "harvest_postharvest",
+    "tags": [
+      "thu_hoach",
+      "say",
+      "bao_quan",
+      "giam_that_thoat"
+    ],
+    "crop": "rice",
+    "region": "Việt Nam; cần giới hạn theo vùng nếu tài liệu có nêu địa phương",
+    "season": "Không chuẩn hóa nếu nguồn không nêu rõ",
+    "content_kind": "official_extension_or_research_article",
+    "language": "vi",
+    "provenance": {
+      "source_ids": [
+        "SRC_KN_RICE_POSTHARVEST_31686"
+      ],
+      "url": "https://khuyennongvn.gov.vn/1-trieu-hecta-chuyen-canh-lua-chat-luong-cao/quan-ly-thu-hoach-va-xu-ly-lua-sau-thu-hoach-31686.html",
+      "accessed_at": "2026-10-27T13:00:35+00:00",
+      "sha256": "7e0dce5bff63e0bf4f7dd9c26ed66c4e3231c1dd6a8619608bf898830576e6a4",
+      "page_title": "\r\n\tQuản lý thu hoạch và xử lý lúa sau thu hoạch\r\n"
+    },
+    "review_status": "APPROVED",
+    "review_flags": [
+      "CHECK_LICENSE_TERMS",
+      "CONTAINS_TREATMENT_REFERENCES"
+    ],
+    "content_stats": {
+      "characters": 1699,
+      "words": 366,
+      "lines": 17
+    },
+    "safety_note": "Không dùng làm nguồn thuốc, liều hoặc PHI nếu chưa được duyệt riêng.",
+    "approved_by": "project_owner",
+    "approved_at": "2026-10-28",
+    "approval_note": "Operator-approved for grounded Farm knowledge RAG. Treatment facts remain subject to Backend safety rules."
+  },
+  {
+    "document_id": "SRC_KN_RICE_SMART_PACKAGE_21736",
+    "title": "Gói kỹ thuật trong canh tác lúa thông minh",
+    "content": "Canh tác lúa thông minh tại vùng Đồng bằng sông Cửu Long là chương trình hợp tác giữa Trung tâm Khuyến nông Quốc gia và Công ty Cổ phần Phân bón Bình Điền, với sự tham gia thực hiện của ngành nông nghiệp 13 tỉnh thành trong vùng.\nTrên cơ sở xác định, để ruộng lúa đạt được năng suất và hiệu quả kinh tế cao cần áp dụng tổng hợp và đồng bộ các biện pháp kỹ thuật. Do vậy, những tiến bộ kỹ thuật (TBKT) được chuyển giao trong chương trình canh tác lúa thông minh luôn xuyên suốt từ khâu chuẩn bị đất, giống và phương pháp xuống giống, phân bón, quản lý dịch hại, quản lý nước, thu hoạch…, tạo thành một “gói” kỹ thuật chuyển giao đồng bộ cho người sản xuất và cán bộ khuyến nông theo dõi, hướng dẫn thực hiện mô hình.\nTừ nhìn nhận trên, đồng thời qua thực tế kết quả vượt mong đợi của mô hình sạ lúa theo cụm triển khai lồng ghép với chương trình canh tác lúa thông minh ở vụ Hè Thu năm 2021 tại 04 tỉnh Vĩnh Long, Đồng Tháp, Cần Thơ và Long An, vụ Đông Xuân 2021 – 2022 Chương trình canh tác lúa thông minh tiếp tục phối hợp với Công ty TNHH TMDV Sài Gòn Kim Hồng hỗ trợ triển khai mô hình sạ lúa theo cụm đồng loạt ở 25/25 điểm mô hình (tuy nhiên, chỉ triển khai được 14/25 điểm mô hình tại 10/13 tỉnh thành vì trùng lịch thời vụ gieo sạ).\nThực tế kết quả mô hình sạ lúa theo cụm lồng ghép với mô hình canh tác lúa thông minh tại các địa phương đều gia tăng gấp bội lợi ích tăng thêm (năng suất tăng thêm, hiệu quả kinh tế tăng thêm) so với chỉ chuyển giao đơn lẻ 01 giải pháp kỹ thuật (ở đây là phân bón chuyên dùng của Bình Điền).\nThực tế kết quả của điểm mô hình sạ lúa theo cụm tại xã Ô Long Vỹ - huyện Châu Phú – An Giang ở vụ lúa Đông Xuân 2021 – 2022 phần nào ghi nhận cho điều này.\nMô hình sạ cụm trên nền phân bón chuyên dùng của Bình Điền tại Ô Long Vỹ\nMô hình gồm 04 hộ, mỗi hộ dành diện tích 0,5 ha (trong mô hình) bón phân chuyên dùng của Bình Điền (Đầu trâu phèn mặn, Đầu trâu TE A1 và Đầu trâu TE A2); phần diện tích còn lại của thửa ruộng (ngoài mô hình) bón phân tự do theo tập quán của địa phương.\nPhương thức sạ: Gồm 01 hộ sạ cụm trên diện tích cả trong và ngoài mô hình (60 kg giống/ha) và 03 hộ còn lại sạ lan (80 kg giống/ha trên diện tích trong mô hình và 110 kg giống/ha trên diện tích ngoài mô hình).\nNhư vậy, điểm mô hình tại Ô Long Vỹ bao gồm 04 mô hình nhỏ:\n-  Mô hình 1: Bao gồm diện tích sạ lan ngoài mô hình của 03 hộ (bón phân tự do theo tập quán của địa phương);\n-  Mô hình 2: Bao gồm diện tích sạ lan trong mô hình của 03 hộ (bón phân chuyên dùng của Bình Điền);\n- Mô hình 3: Bao gồm diện tích sạ cụm ngoài mô hình của hộ còn lại (bón phân tự do theo tập quán của địa phương);\n- Mô hình 4: Bao gồm diện tích sạ cụm trong mô hình của hộ còn lại (bón phân chuyên dùng của Bình Điền).\nỞ đây cái khác của phương pháp sạ cụm so với phương pháp sạ lan phổ biến hiện nay là hạt giống sau khi ngâm ủ được dùng máy sạ cụm nhập khẩu từ Hàn Quốc gieo sạ theo cụm, theo hàng như ruộng cấy, nghĩa là có thể điều chỉnh được cự li giữa các hàng, cự li giữa các cụm và số hạt giống ở mỗi cụm theo yêu cầu của mùa vụ canh tác, thời gian sinh trưởng của giống lúa, độ phì nhiêu của đất đai và trình độ thâm canh của người nông dân …\nĐồng thời, cái khác nữa và là cái khác cơ bản của phương pháp sạ cụm là chỉ sử dụng lượng hạt giống tối thiểu, từ 40 – 60 kg/ha, so với phương pháp sạ lan sử dụng phổ biến 120 – 150 kg/ha, nghĩa là giảm 60 – 70% lượng hạt giống so với tập quán sử dụng hiện nay.\nKết quả triển khai mô hình cho thấy:\n1.   Mô hình 1: Mô hình sạ lan trên nền bón phân tự do theo tập quán của địa phương cho năng suất 6,5 tấn/ha, lợi nhuận 17 triệu đồng;\n2.   Mô hình 2: Mô hình sạ lan trên nền phân bón chuyên dùng của Bình Điền cho năng suất 6,7 tấn/ha, lợi nhuận 18,8 triệu đồng;\n3.   Mô hình 3: Mô hình sạ cụm trên nền bón phân tự do theo tập quán của địa phương cho năng suất 7,2 tấn/ha, lợi nhuận 19,4 triệu đồng;\n4.   Mô hình 4: Mô hình sạ cụm trên nền phân bón chuyên dùng của Bình Điền cho năng suất 7,7 tấn/ha, lợi nhuận 23,4 triệu đồng;\nTừ kết quả thực tế các mô hình trên cho thấy:\n- Mô hình 2 so với mô hình 1 (chỉ chuyển giao TBKT về phân bón chuyên dùng của Bình Điền):\nTrên nền ruộng lúa sạ lan, mô hình sử dụng phân bón chuyên dùng của Bình Điền gia tăng năng suất 0,2 tấn/ha và qua đó lợi nhuận tăng thêm 1,8 triệu đồng/ha so với mô hình bón phân tự do theo tập quán của địa phương;\n- Mô hình 3 so với mô hình 1 (chỉ chuyển giao TBKT về hình thức sạ cụm của máy sạ cụm Hàn Quốc):\nTrên nền bón phân tự do theo tập quán của địa phương mô hình sạ cụm gia tăng năng suất 0,7 tấn/ha và qua đó lợi nhuận tăng thêm 2,4 triệu đồng/ha so với mô hình sạ lan;\n- Mô hình 4 so với mô hình 1 (chuyển giao đồng thời TBKT về phân bón chuyên dùng của Bình Điền và TBKT về hình thức sạ cụm của máy sạ cụm Hàn Quốc):\nMô hình sạ cụm trên nền phân bón chuyên dùng của Bình Điền gia tăng năng suất 1,2 tấn/ha và qua đó lợi nhuận tăng thêm 6,4 triệu đồng/ha so với mô hình sạ lan trên nền bón phân tự do theo tập quán của địa phương.\n- Ở đây, điểm nổi bật về năng suất và hiệu quả kinh tế tăng thêm của TBKT “kép” mang lại (năng suất tăng thêm 1,2 tấn/ha và hiệu quả kinh tế tăng thêm 6,4 triệu đồng/ha) không chỉ là sự cộng gộp lợi ích tăng thêm của từng TBKT đơn lẻ mà hơn thế nữa, do có sự tác động tương hỗ qua lại của các TBKT, TBKT này là cơ sở, là điều kiện để TBKT kia phát huy lợi thế và ngược lại (ở đây là việc sử dụng phân bón chuyên dùng của Bình Điền và hình thức sạ cụm cùng nhiều giải pháp kỹ thuật khác) nên lợi ích tăng thêm vượt lên trên lợi ích cộng gộp mang lại (năng suất vượt thêm 1,2 tấn – (0,2 + 0,7) tấn = 0,3 tấn/ha và hiệu quả kinh tế vượt thêm 6,4 triệu đồng – (1,8 + 2,4) triệu đồng = 2,2 triệu đồng/ha).\nTại các điểm mô hình khác cũng ghi nhận kết quả tương tự:\n-  Tại Ba Tri – Bến Tre:\nTrên nền sạ lan và bón phân chuyên dùng của Bình Điền tăng thêm năng suất 0,8 tấn/ha và gia tăng lợi nhuận 3,5 triệu đồng/ha so với trên nền sạ lan và bón phân tự do theo tập quán của địa phương;\nTrên nền sạ cụm bón phân chuyên dùng của Bình Điền tăng thêm năng suất 2,3 tấn/ha và gia tăng lợi nhuận 13,1 triệu đồng/ha so với trên nền sạ lan và bón phân tự do theo tập quán của địa phương;\n-  Tại Hòn Đất – Kiên Giang:\nTrên nền sạ lan và bón phân chuyên dùng của Bình Điền tăng thêm năng suất 0,1 tấn/ha và gia tăng lợi nhuận 3,2 triệu đồng/ha so với trên nền sạ lan và bón phân tự do theo tập quán của địa phương;\nTrên nền sạ cụm và bón phân chuyên dùng của Bình Điền tăng thêm năng suất 0,5 tấn/ha và gia tăng lợi nhuận 5,6 triệu đồng/ha so với trên nền sạ lan và bón phân tự do theo tập quán của địa phương;\n-  Tại Cầu Ngang – Trà Vinh:\nTrên nền sạ lan và bón phân chuyên dùng của Bình Điền tăng thêm năng suất 0,7 tấn/ha và gia tăng lợi nhuận 0,7 triệu đồng/ha so với trên nền sạ lan và bón phân tự do theo tập quán của địa phương;\nTrên nền sạ cụm và bón phân chuyên dùng của Bình Điền tăng thêm năng suất 1,8 tấn/ha và gia tăng lợi nhuận 7,2 triệu đồng/ha so với trên nền sạ lan và bón phân tự do theo tập quán của địa phương;\nNhư vậy, mỗi một TBKT chuyển giao vào sản xuất trong điều kiện thích hợp đều mang lại lợi ích tăng thêm năng suất và hiệu quả kinh tế. Hơn thế nữa, mỗi TBKT chuyển giao còn làm cơ sở, tiền đề để phát huy hơn nữa lợi ích tăng thêm của các TBKT khác. Do đó, lợi ích tổng thể mang lại sẽ lớn hơn nhiều so với lợi ích cộng gộp của từng TBKT đơn lẻ.\nNói cách khác, năng suất và hiệu quả kinh tế sản xuất lúa sẽ cao hơn, tốt hơn nếu là kết quả của một “gói” kỹ thuật được lựa chọn và chuyển giao đồng bộ. Mô hình sạ cụm trên nền phân bón chuyên dùng của Bình Điền tại Ô Long Vỹ và một số điểm mô hình khác là trường hợp ghi nhận./.\nNgô Văn Đây",
+    "namespace": "farm",
+    "document_type": "farm_knowledge",
+    "topic": "integrated_rice_cultivation_ipm",
+    "tags": [
+      "lam_dat",
+      "giong",
+      "dinh_duong",
+      "quan_ly_nuoc",
+      "ipm",
+      "thu_hoach"
+    ],
+    "crop": "rice",
+    "region": "Việt Nam; cần giới hạn theo vùng nếu tài liệu có nêu địa phương",
+    "season": "Không chuẩn hóa nếu nguồn không nêu rõ",
+    "content_kind": "official_extension_or_research_article",
+    "language": "vi",
+    "provenance": {
+      "source_ids": [
+        "SRC_KN_RICE_SMART_PACKAGE_21736"
+      ],
+      "url": "https://khuyennongvn.gov.vn/hoat-dong-khuyen-nong/chuyen-giao-tbkt/goi-ky-thuat-trong-canh-tac-lua-thong-minh-21736.html",
+      "accessed_at": "2026-10-27T13:00:37+00:00",
+      "sha256": "6b19dd83458f09c08438132e51372a145e19addd4eb4a936bc5d52db19ad8d71",
+      "page_title": "\r\n\t“Gói” kỹ thuật trong canh tác lúa thông minh\r\n"
+    },
+    "review_status": "APPROVED",
+    "review_flags": [
+      "CHECK_LICENSE_TERMS"
+    ],
+    "content_stats": {
+      "characters": 7624,
+      "words": 1704,
+      "lines": 41
+    },
+    "safety_note": "Không dùng làm nguồn thuốc, liều hoặc PHI nếu chưa được duyệt riêng.",
+    "approved_by": "project_owner",
+    "approved_at": "2026-10-28",
+    "approval_note": "Operator-approved for grounded Farm knowledge RAG. Treatment facts remain subject to Backend safety rules."
+  }
+]

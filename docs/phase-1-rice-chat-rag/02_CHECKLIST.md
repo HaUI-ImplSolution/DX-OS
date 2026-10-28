@@ -139,3 +139,11 @@ Xem [06_HANDOFF.md](06_HANDOFF.md) để tiếp tục. Người dùng yêu cầu
 ## Xác minh trước push bản bàn giao
 
 Fetch origin: nhánh local khớp remote trước commit và đã chứa `origin/Khuong/main` hiện tại. Lượt quality cuối publish đủ bốn strategy/scope, exit 0, tự cleanup. Sau cleanup, runner self-check đạt; không còn container evaluation hoặc container thử nghiệm riêng. Gitleaks v8.24.3 quét các file thay đổi bằng cấu hình repository: không phát hiện secret. Diff không thêm giá trị hash cố định; report/ và .gitignore không đổi.
+
+## Tiếp tục trên phiên bản đồng đội đã bổ sung
+
+- [x] Khôi phục đúng quyết định chủ dự án duyệt 7 tài liệu Farm; đồng bộ corpus, staging, registry, queue và danh mục nguồn Backend. Validator đạt 7 Farm/12 Lab; hai test source parity/approval đạt.
+- [ ] Xác minh startup AI khi thiếu cache reranker, trạng thái suy giảm và bảo toàn CV; không thay deploy/CI.
+- [ ] Xác minh ingest corpus rỗng, thứ hạng sau lọc và policy nội dung của evaluator.
+- [ ] Chạy lại quality/scope/CLI/Langfuse trên evidence sau lọc, giữ lịch sử cũ.
+- [ ] Smoke Qwen Farm/Lab, diagnosis và ticket bằng code hiện tại; chỉ tick khi có bằng chứng mới.

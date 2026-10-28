@@ -87,29 +87,30 @@ Chấm bằng `ir_measures` trước gộp evidence Backend, sau gate/ngưỡng;
 | Cosine + boost | 0,521605 | 0,458521 | 0,730769 | 0,674168 |
 | BM25 | 0,487654 | 0,500554 | 0,769231 | 0,749210 |
 | BM25 + cosine/RRF | 0,555556 | 0,492140 | 0,782051 | 0,733912 |
-| Hybrid + rerank | 0,648148 | 0,602363 | 0,775641 | 0,714736 |
+| Hybrid + rerank | 0,648148 | 0,602363 | 0,762821 | 0,703415 |
 
 Sáu query chẩn đoán legacy có Recall@3/nDCG@3 = 1,0 ở cả bốn strategy.
+Gate đạt 90/90 ca pilot; 16 ca hồi quy bổ sung bằng model thật và ba ca qua Backend Farm đạt. PG thực kiểm cache nóng, thay corpus cùng version, rollback và ingest đồng thời đạt; chỉ tải lại nội dung chunk khi index đổi.
 **Recall@k** là tỷ lệ đoạn liên quan tìm được trong k kết quả đầu; **nDCG@k** đo mức ưu tiên đoạn hữu ích ở đầu danh sách.
 Cả hai từ 0–1, càng cao càng tốt; không phải accuracy của CV hay độ đúng câu trả lời Qwen.
 Cách chạy và xem từng câu trên Langfuse ở [`ai/README.md`](../ai/README.md#đánh-giá-truy-xuất-rag).
 
 ### Thử tải HTTP retrieval
 
-Kết quả ngày 28/10/2026: 888 request qua 12 lượt, không lỗi HTTP/hợp đồng hoặc OOM.
+Kết quả ngày 28/10/2026: 1369 request qua 12 lượt, không lỗi HTTP/hợp đồng hoặc OOM.
 Mỗi strategy chạy Farm/Lab ở 1/2/5 VU, 10 giây/mức, một lần sau warm-up; AI 2 CPU/1536 MiB, một worker, HTTP timeout 20 giây.
 Mỗi VU đợi phản hồi rồi gửi tiếp; CPU/RAM lấy mẫu bằng `docker stats`.
 
 | Nhóm | VU | Cosine req/s | Cosine p95 (ms) | Hybrid + rerank req/s | Hybrid + rerank p95 (ms) |
 |---|---:|---:|---:|---:|---:|
-| Farm | 1 | 14,57 | 107,39 | 0,76 | 1617,23 |
-| Farm | 2 | 12,72 | 263,44 | 0,68 | 3194,14 |
-| Farm | 5 | 8,52 | 891,74 | 0,77 | 6697,19 |
-| Lab | 1 | 21,27 | 78,10 | 0,85 | 1624,20 |
-| Lab | 2 | 17,56 | 190,83 | 0,81 | 2797,67 |
-| Lab | 5 | 7,29 | 1044,76 | 0,67 | 8001,22 |
+| Farm | 1 | 33,78 | 45,54 | 0,83 | 1561,44 |
+| Farm | 2 | 17,06 | 294,65 | 0,91 | 2376,22 |
+| Farm | 5 | 7,95 | 931,89 | 0,87 | 6145,04 |
+| Lab | 1 | 36,37 | 35,67 | 1,07 | 1139,32 |
+| Lab | 2 | 22,42 | 168,70 | 0,98 | 2668,25 |
+| Lab | 5 | 11,84 | 598,11 | 1,07 | 4869,63 |
 
-RAM AI đỉnh quan sát: cosine 1027,1 MiB; hybrid + rerank 1512,4 MiB; pgvector 42,2 MiB.
+RAM AI đỉnh quan sát: cosine 1112,1 MiB; hybrid + rerank 1413,1 MiB; pgvector 34,3 MiB.
 **VU** là số người dùng đồng thời, **req/s** là số request xử lý mỗi giây, **p95** là mức thời gian mà 95% request không vượt quá.
 Phép đo chỉ gồm HTTP retrieval, không gồm CV, Backend/gateway hoặc Qwen; số liệu trên máy dùng chung không phải SLA production.
 Artifact/HTML và lịch sử Langfuse lưu ngoài repository; evaluation tự dừng và giữ nguyên container/DB sản phẩm.
@@ -122,7 +123,7 @@ Request không có flag giữ luồng trích dẫn hiện có; thuốc, liều v
 
 | Kiểm tra | Cách | Kết quả |
 |---|---|---|
-| Hợp đồng và dự phòng AI | `cd ai && python -m pytest tests -q` | Đạt; toàn bộ AI 168 test, 50 subtest; kiểm schema/nguồn, mâu thuẫn bệnh, từ chối, nội dung cụt, timeout và opt-in |
+| Hợp đồng và dự phòng AI | `cd ai && python -m pytest tests -q` | Đạt; toàn bộ AI 170 test, 50 subtest; kiểm schema/nguồn, mâu thuẫn bệnh, từ chối, nội dung cụt, timeout và opt-in |
 | Backend | Unit gateway/Knowledge/codec, package; integration database riêng | 24 unit liên quan và package sáu module đạt; kiểm request cũ, snapshot, quyền và rule đổi khi chờ AI |
 | Hiển thị dự phòng | Render component web/native và browser web với response mô phỏng | 53 kiểm tra render và 6 ca browser đạt; thêm web 360px/chữ lớn 200%/đoạn dài/payload cũ, không lỗi JavaScript |
 | Model thật | Qwen với evidence Backend đã gộp: Farm tổng quan/triệu chứng, Lab tổng quan/quy định; ảnh chẩn đoán thật | Có trả lời đúng nguồn và đối tượng trong các ca đã kiểm; draft JSON lỗi bị ẩn, nguồn giữ nguyên. Chấm nội dung đầy đủ theo BACKLOG |

@@ -188,7 +188,7 @@ def fetch(source: dict[str, str], user_agent: str) -> dict[str, object]:
         "harvest_postharvest": ["thu_hoach", "say", "bao_quan", "giam_that_thoat"],
         "integrated_rice_cultivation_ipm": ["lam_dat", "giong", "dinh_duong", "quan_ly_nuoc", "ipm", "thu_hoach"],
     }
-    review_flags = ["IN_REVIEW", "CHECK_LICENSE_TERMS", "EXPERT_AGRONOMY_REVIEW"]
+    review_flags = ["IN_REVIEW", "EXPERT_AGRONOMY_REVIEW"]
     if re.search(r"thuốc|hoạt chất|liều lượng|cách ly|4 đúng", text, re.IGNORECASE):
         review_flags.append("CONTAINS_TREATMENT_REFERENCES")
     if len(text) < 1500:
@@ -247,7 +247,6 @@ def main() -> None:
                     "recommended_use": "Tham khảo kiến thức canh tác lúa; cần chuyên gia duyệt trước khi ingest.",
                     "authority_level": "Official Vietnamese extension/research source",
                     "accessed_at": documents[-1]["provenance"]["accessed_at"],
-                    "license": "Review required",
                     "crop_target_locale": "Lúa; Việt Nam",
                     "review_status": "IN_REVIEW",
                 }

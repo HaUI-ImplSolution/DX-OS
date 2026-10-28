@@ -38,7 +38,7 @@ class KnowledgeSourcesTest(unittest.TestCase):
     def test_recorded_owner_approval_allows_flagged_rag_documents(self):
         from data.scripts.promote_farm_corpus import promotable_documents
 
-        pending = {"review_status": "IN_REVIEW", "review_flags": ["CHECK_LICENSE_TERMS"]}
+        pending = {"review_status": "IN_REVIEW", "review_flags": ["CONTAINS_TREATMENT_REFERENCES"]}
         approved = {**pending, "review_status": "APPROVED", "approved_by": "project_owner"}
         self.assertEqual(promotable_documents([pending, approved]), [approved])
 

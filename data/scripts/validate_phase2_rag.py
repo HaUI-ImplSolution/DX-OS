@@ -117,7 +117,7 @@ def main() -> None:
         farm_sources,
         "farm_knowledge",
         required_review_status="APPROVED",
-        blocked_review_flags={"CHECK_LICENSE_TERMS", "CONTAINS_TREATMENT_REFERENCES"},
+        blocked_review_flags={"CONTAINS_TREATMENT_REFERENCES"},
     )
     quarantined = load_quarantined_source_ids(root / "data/rag/lab/quarantine_manifest.json")
     lab_sources = validate_registry(

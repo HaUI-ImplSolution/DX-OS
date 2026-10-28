@@ -2,6 +2,7 @@
 """Shared chatbot retrieval; the legacy disease retriever is independent."""
 
 import json
+import heapq
 import math
 import re
 import time
@@ -11,8 +12,7 @@ from functools import lru_cache
 from threading import BoundedSemaphore, Lock
 
 from rank_bm25 import BM25Okapi
-from sqlalchemy import select
-from sqlalchemy.orm import joinedload
+from sqlalchemy import select, text
 
 from app.core.config import get_settings
 from app.db.models.document import Document
@@ -144,79 +144,196 @@ class ChatSearch:
         embedder = self.embedding_service or EmbeddingService()
         vector = embedder.embed_text(question)
         result["timings_ms"]["embedding"] = (time.perf_counter() - started) * 1000
-        distance = DocumentChunk.embedding.cosine_distance(vector)
-        stmt = (
-            select(DocumentChunk, distance.label("distance"))
-            .join(DocumentChunk.document)
-            .options(joinedload(DocumentChunk.document))
-            .where(
-                Document.namespace == namespace, DocumentChunk.embedding.is_not(None)
-            )
-            .order_by(DocumentChunk.id)
-        )
-        if document_type:
-            stmt = stmt.where(Document.document_type == document_type)
         policy = profiles()[namespace]
         normalized = fold(question)
         overview = any(
             fold(term) in normalized for term in policy["overview_terms"]
         ) and not any(fold(term) in normalized for term in policy["specific_terms"])
+        stmt = select(Document).where(Document.namespace == namespace)
+        if document_type:
+            stmt = stmt.where(Document.document_type == document_type)
         if overview and not disease_code and not document_type:
             stmt = stmt.where(
                 Document.document_type.in_(policy["overview_document_types"])
             )
         if disease_code:
             stmt = stmt.where(Document.disease_code == disease_code)
-        # Own the short read transaction; no connection is held during reranking.
+        # A replacement must not mix old cached chunks with newly committed vectors.
         with db.begin():
-            rows = db.execute(stmt).all()
-            passages = []
-            for chunk, dist in rows:
-                doc = chunk.document
-                source_ids = [s for s in (doc.source or "").split(",") if s]
-                if overview and not allowed_for_audience(question, source_ids, policy):
-                    continue
-                passages.append(
+            db.execute(
+                text("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
+            )
+            documents = [
+                dict(
+                    document_id=str(doc.id),
+                    document_title=doc.title,
+                    document_version=doc.version,
+                    document_type=doc.document_type,
+                    disease_code=doc.disease_code,
+                    namespace=doc.namespace,
+                    source_ids=tuple(s for s in (doc.source or "").split(",") if s),
+                )
+                for doc in db.scalars(stmt.order_by(Document.id)).all()
+                if not overview
+                or allowed_for_audience(question, (doc.source or "").split(","), policy)
+            ]
+            if not documents:
+                return result
+            index, bm25, searchable_text = self._index(db, documents)
+            if not index:
+                return result
+            identifiers = re.findall(r"(?i)\b[a-z]+[0-9][a-z0-9-]*\b", question)
+            if any(
+                fold(identifier) not in searchable_text for identifier in identifiers
+            ):
+                return {**result, "reason_code": "UNKNOWN_SUBJECT"}
+            result["corpus_version"] = ";".join(
+                sorted(
+                    {
+                        d["document_type"] + ":" + (d["document_version"] or "")
+                        for d in documents
+                    }
+                )
+            )
+            distance = DocumentChunk.embedding.cosine_distance(vector)
+            eligible = (
+                select(DocumentChunk.id, distance.label("distance"))
+                .join(DocumentChunk.document)
+                .where(
+                    DocumentChunk.document_id.in_(
+                        [d["document_id"] for d in documents]
+                    ),
+                    DocumentChunk.embedding.is_not(None),
+                )
+            )
+            count = self.settings.chat_candidate_count
+            dense_rows = db.execute(
+                eligible.order_by(
+                    distance,
+                    Document.title,
+                    DocumentChunk.chunk_index,
+                    Document.document_type,
+                    DocumentChunk.id,
+                ).limit(count)
+            ).all()
+            scores = bm25.get_scores(tokens(question))
+            by_id = {
+                p["chunk_id"]: (p, float(score)) for p, score in zip(index, scores)
+            }
+            dense = [
+                dict(
+                    by_id[str(row.id)][0],
+                    bm25_score=by_id[str(row.id)][1],
+                    score=1 - float(row.distance),
+                    similarity=1 - float(row.distance),
+                    distance=float(row.distance),
+                )
+                for row in dense_rows
+            ]
+            sparse_indices = heapq.nsmallest(
+                count,
+                (i for i, score in enumerate(scores) if score > 0),
+                key=lambda i: (-scores[i], _tie_key(index[i])),
+            )
+            sparse_ids = [index[i]["chunk_id"] for i in sparse_indices]
+            sparse_distances = (
+                {
+                    str(row.id): float(row.distance)
+                    for row in db.execute(
+                        eligible.where(DocumentChunk.id.in_(sparse_ids))
+                    ).all()
+                }
+                if sparse_ids
+                else {}
+            )
+            sparse = [
+                dict(
+                    index[i],
+                    bm25_score=float(scores[i]),
+                    score=1 - sparse_distances[index[i]["chunk_id"]],
+                    similarity=1 - sparse_distances[index[i]["chunk_id"]],
+                    distance=sparse_distances[index[i]["chunk_id"]],
+                )
+                for i in sparse_indices
+                if index[i]["chunk_id"] in sparse_distances
+            ]
+        # No DB connection is held during model inference.
+        return self.rank(
+            question, dense + sparse, top_k, result, started, dense=dense, sparse=sparse
+        )
+
+    def _index(self, db, documents):
+        # Ingest replaces documents with new UUIDs, even at the same corpus version.
+        # ponytail: read metadata per request; BM25 remains O(chunks), capped at 20,000.
+        signature = tuple(tuple(d.items()) for d in documents)
+        with self._cache_lock:
+            cached = self._cache.get(signature)
+            if cached is None:
+                metadata = {d["document_id"]: d for d in documents}
+                rows = db.execute(
+                    select(
+                        DocumentChunk.id,
+                        DocumentChunk.document_id,
+                        DocumentChunk.chunk_index,
+                        DocumentChunk.content,
+                        DocumentChunk.page_number,
+                    )
+                    .where(
+                        DocumentChunk.document_id.in_(metadata),
+                        DocumentChunk.embedding.is_not(None),
+                    )
+                    .order_by(DocumentChunk.id)
+                    .limit(20001)
+                ).all()
+                if len(rows) > 20000:
+                    raise ValueError("Chat corpus exceeds the in-memory index limit")
+                entries = tuple(
                     dict(
-                        chunk_id=str(chunk.id),
-                        document_id=str(doc.id),
-                        document_title=doc.title,
-                        document_version=doc.version,
-                        document_type=doc.document_type,
-                        disease_code=doc.disease_code,
-                        namespace=namespace,
-                        chunk_index=chunk.chunk_index,
-                        content=chunk.content,
-                        page_number=chunk.page_number,
-                        source_ids=source_ids,
-                        distance=float(dist),
-                        score=1 - float(dist),
-                        similarity=1 - float(dist),
+                        metadata[str(row.document_id)],
+                        chunk_id=str(row.id),
+                        chunk_index=row.chunk_index,
+                        content=row.content,
+                        page_number=row.page_number,
                         score_kind="cosine",
                     )
+                    for row in rows
                 )
-        if not passages:
-            return result
-        identifiers = re.findall(r"(?i)\b[a-z]+[0-9][a-z0-9-]*\b", question)
-        if any(
-            fold(identifier)
-            not in fold(
-                " ".join(p["document_title"] + " " + p["content"] for p in passages)
-            )
-            for identifier in identifiers
-        ):
-            return {**result, "reason_code": "UNKNOWN_SUBJECT"}
-        result["corpus_version"] = ";".join(
-            sorted(
-                {
-                    p["document_type"] + ":" + (p["document_version"] or "")
-                    for p in passages
-                }
-            )
-        )
-        return self.rank(question, passages, top_k, result, started)
+                cached = (
+                    entries,
+                    (
+                        BM25Okapi(
+                            [
+                                tokens(p["document_title"] + "\n" + p["content"])
+                                or [""]
+                                for p in entries
+                            ]
+                        )
+                        if entries
+                        else None
+                    ),
+                    fold(
+                        " ".join(
+                            p["document_title"] + " " + p["content"] for p in entries
+                        )
+                    ),
+                )
+                self._cache[signature] = cached
+                while len(self._cache) > 4:
+                    self._cache.popitem(last=False)
+            self._cache.move_to_end(signature)
+            return cached
 
-    def rank(self, question, passages, top_k=4, result=None, started=None):
+    def rank(
+        self,
+        question,
+        passages,
+        top_k=4,
+        result=None,
+        started=None,
+        *,
+        dense=None,
+        sparse=None,
+    ):
         started = started or time.perf_counter()
         result = result or dict(
             question=question,
@@ -229,41 +346,22 @@ class ChatSearch:
             rankings={},
             timings_ms={},
         )
-        # ponytail: full-corpus BM25 is bounded to small knowledge bases; move to a disk index when needed.
-        if len(passages) > 20000:
-            raise ValueError("Chat corpus exceeds the in-memory index limit")
-        signature = tuple(
-            (
-                p["chunk_id"],
-                p["document_title"],
-                p["content"],
-                p.get("document_version"),
-            )
-            for p in passages
-        )
-        with self._cache_lock:
-            bm25 = self._cache.get(signature)
-            if bm25 is None:
-                bm25 = BM25Okapi(
-                    [
-                        tokens(p["document_title"] + "\n" + p["content"]) or [""]
-                        for p in passages
-                    ]
-                )
-                self._cache[signature] = bm25
-                while len(self._cache) > 4:
-                    self._cache.popitem(last=False)
-            else:
-                self._cache.move_to_end(signature)
-        scores = bm25.get_scores(tokens(question))
-        for p, score in zip(passages, scores):
-            p["bm25_score"] = float(score)
         count = self.settings.chat_candidate_count
-        dense = sorted(passages, key=lambda p: (-p["score"], _tie_key(p)))[:count]
-        sparse = sorted(
-            (p for p in passages if p["bm25_score"] > 0),
-            key=lambda p: (-p["bm25_score"], _tie_key(p)),
-        )[:count]
+        if dense is None or sparse is None:
+            passages = [dict(p) for p in passages]
+            bm25 = BM25Okapi(
+                [
+                    tokens(p["document_title"] + "\n" + p["content"]) or [""]
+                    for p in passages
+                ]
+            )
+            for p, score in zip(passages, bm25.get_scores(tokens(question))):
+                p["bm25_score"] = float(score)
+            dense = sorted(passages, key=lambda p: (-p["score"], _tie_key(p)))[:count]
+            sparse = sorted(
+                (p for p in passages if p["bm25_score"] > 0),
+                key=lambda p: (-p["bm25_score"], _tie_key(p)),
+            )[:count]
         fused = {}
         for ranking in (dense, sparse):
             for rank, p in enumerate(ranking, 1):
@@ -301,6 +399,12 @@ class ChatSearch:
                 if p["score"] >= self.settings.chat_cosine_min_score
             ]
         else:
+            if (
+                not dense
+                or max(p["score"] for p in dense) < self.settings.chat_cosine_min_score
+            ):
+                result["reason_code"] = "LOW_RELEVANCE"
+                return result
             before = time.perf_counter()
             try:
                 values = self.reranker(question, candidates)

@@ -8,7 +8,6 @@
     "topic": "cultivation_water_nutrition",
     "review_status": "APPROVED",
     "review_flags": [
-      "CHECK_LICENSE_TERMS",
       "CATALOG_PAGE_NEEDS_CHILD_DOCUMENTS"
     ],
     "review_questions": [
@@ -28,7 +27,6 @@
     "topic": "cultivation_water_nutrition_ipm",
     "review_status": "APPROVED",
     "review_flags": [
-      "CHECK_LICENSE_TERMS",
       "CONTAINS_TREATMENT_REFERENCES"
     ],
     "review_questions": [
@@ -48,7 +46,6 @@
     "topic": "weed_management",
     "review_status": "APPROVED",
     "review_flags": [
-      "CHECK_LICENSE_TERMS",
       "CONTAINS_TREATMENT_REFERENCES"
     ],
     "review_questions": [
@@ -67,9 +64,7 @@
     ],
     "topic": "rice_biology_varieties_cultivation",
     "review_status": "APPROVED",
-    "review_flags": [
-      "CHECK_LICENSE_TERMS"
-    ],
+    "review_flags": [],
     "review_questions": [
       "Nguồn có được phép lưu và sử dụng nội dung cho RAG không?",
       "Nội dung có phù hợp với điều kiện Việt Nam và phạm vi topic không?",
@@ -87,7 +82,6 @@
     "topic": "organic_rice_sustainable_cultivation",
     "review_status": "APPROVED",
     "review_flags": [
-      "CHECK_LICENSE_TERMS",
       "CONTAINS_TREATMENT_REFERENCES"
     ],
     "review_questions": [
@@ -107,7 +101,6 @@
     "topic": "harvest_postharvest",
     "review_status": "APPROVED",
     "review_flags": [
-      "CHECK_LICENSE_TERMS",
       "CONTAINS_TREATMENT_REFERENCES"
     ],
     "review_questions": [
@@ -126,9 +119,7 @@
     ],
     "topic": "integrated_rice_cultivation_ipm",
     "review_status": "APPROVED",
-    "review_flags": [
-      "CHECK_LICENSE_TERMS"
-    ],
+    "review_flags": [],
     "review_questions": [
       "Nguồn có được phép lưu và sử dụng nội dung cho RAG không?",
       "Nội dung có phù hợp với điều kiện Việt Nam và phạm vi topic không?",

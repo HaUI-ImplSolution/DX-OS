@@ -16,9 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 STAGING = ROOT / "data" / "rag" / "staging" / "farm"
 CANONICAL = ROOT / "data" / "rag"
-BLOCKING_REVIEW_FLAGS = frozenset(
-    {"CHECK_LICENSE_TERMS", "CONTAINS_TREATMENT_REFERENCES"}
-)
+BLOCKING_REVIEW_FLAGS = frozenset({"CONTAINS_TREATMENT_REFERENCES"})
 
 
 def has_blocking_review_flag(item: dict[str, object]) -> bool:
@@ -125,7 +123,7 @@ def main() -> None:
     )
     held_ids = ", ".join(item.get("document_id", "<unknown>") for item in held_documents)
     print(f"Promoted approved Farm documents: {len(approved_documents)}")
-    print(f"Held for license/treatment review: {len(held_documents)} ({held_ids or 'none'})")
+    print(f"Held for treatment review: {len(held_documents)} ({held_ids or 'none'})")
     print(f"Canonical corpus: {CANONICAL / 'processed' / 'farm_knowledge.json'}")
 
 

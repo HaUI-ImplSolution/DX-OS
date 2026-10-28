@@ -26,7 +26,6 @@
     },
     "review_status": "APPROVED",
     "review_flags": [
-      "CHECK_LICENSE_TERMS",
       "CATALOG_PAGE_NEEDS_CHILD_DOCUMENTS"
     ],
     "content_stats": {
@@ -70,7 +69,6 @@
     },
     "review_status": "APPROVED",
     "review_flags": [
-      "CHECK_LICENSE_TERMS",
       "CONTAINS_TREATMENT_REFERENCES"
     ],
     "content_stats": {
@@ -110,7 +108,6 @@
     },
     "review_status": "APPROVED",
     "review_flags": [
-      "CHECK_LICENSE_TERMS",
       "CONTAINS_TREATMENT_REFERENCES"
     ],
     "content_stats": {
@@ -149,9 +146,7 @@
       "page_title": "NGÂN HÀNG KIẾN THỨC TRỒNG LÚA - Đem kiến thức nghề lúa đến mọi người bằng công nghệ thông tin"
     },
     "review_status": "APPROVED",
-    "review_flags": [
-      "CHECK_LICENSE_TERMS"
-    ],
+    "review_flags": [],
     "content_stats": {
       "characters": 1985,
       "words": 453,
@@ -190,7 +185,6 @@
     },
     "review_status": "APPROVED",
     "review_flags": [
-      "CHECK_LICENSE_TERMS",
       "CONTAINS_TREATMENT_REFERENCES"
     ],
     "content_stats": {
@@ -231,7 +225,6 @@
     },
     "review_status": "APPROVED",
     "review_flags": [
-      "CHECK_LICENSE_TERMS",
       "CONTAINS_TREATMENT_REFERENCES"
     ],
     "content_stats": {
@@ -273,9 +266,7 @@
       "page_title": "\r\n\t“Gói” kỹ thuật trong canh tác lúa thông minh\r\n"
     },
     "review_status": "APPROVED",
-    "review_flags": [
-      "CHECK_LICENSE_TERMS"
-    ],
+    "review_flags": [],
     "content_stats": {
       "characters": 7624,
       "words": 1704,

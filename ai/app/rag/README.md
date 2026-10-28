@@ -47,8 +47,13 @@ query + namespace/filter → BM25 và cosine cùng snapshot
   → ngưỡng evidence → top-k → Backend gộp → Qwen theo profile QA
 ```
 
-BM25 index chỉ đọc, cache theo tập chunk/title/content/version và tách namespace/filter.
+BM25 index chỉ đọc, cache theo metadata và UUID tài liệu, tách namespace/filter; ingest thay tài liệu bằng UUID mới nên cache tự đổi kể cả version không đổi.
+Chỉ tải nội dung chunk khi cache chưa có; request sau lấy top ứng viên cosine bằng SQL LIMIT và hợp với ứng viên BM25 toàn index trong cùng snapshot read-only/repeatable-read.
+Thay nội dung qua ingest, không cập nhật chunk trực tiếp trong DB vì cache theo vòng đời tài liệu.
+Index giới hạn 20.000 chunk, cache tối đa bốn snapshot; BM25 vẫn chạy trên RAM, chưa phải thiết kế cho kho lớn.
 Câu tổng quan có thể lấy nhiều tài liệu; rerank chạy ngoài transaction DB, có giới hạn concurrency và thời gian.
+Trước rerank, cosine tốt nhất của câu hỏi phải đạt `chat_cosine_min_score` (mặc định 0,40); sau đó từng đoạn vẫn phải đạt ngưỡng rerank. Câu thiếu liên quan trả `IN_SCOPE_NO_EVIDENCE`/`LOW_RELEVANCE`, không gọi Qwen.
+Một đoạn BM25 có cosine thấp vẫn có thể được chọn nếu câu hỏi vượt kiểm tra liên quan chung và đoạn đó đạt rerank.
 `score`/`similarity` vẫn là cosine; BM25, RRF và rerank có field riêng, không phải xác suất đúng.
 Reranker mặc định là `cross-encoder/mmarco-mMiniLMv2-L12-H384-v1`, cache model được chuẩn bị qua ingest.
 

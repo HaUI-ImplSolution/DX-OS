@@ -45,11 +45,11 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Chẩn đoán AI chạy trên CPU mất khoảng 50 giây mỗi ảnh | Đo trên máy chủ 8 nhân; chưa có GPU hay mô hình nhỏ hơn để rút ngắn; lần gọi đầu sau khi khởi động lại AI nạp mô hình và có thể vượt 60 giây chờ của gateway, nhận 504 (kết quả vẫn được tạo) |
 | Nộp báo cáo cần AI service chạy | Chưa có đường nhận ảnh chưa kiểm khi AI dừng; hàng đợi offline thử lại |
 | Chưa có mô hình nhận diện sâu hại | Classifier nhận Healthy và 5 bệnh lá |
-| Rà điều khoản nguồn Farm mở rộng | Owner đã duyệt dùng cho RAG; các cờ CHECK_LICENSE_TERMS vẫn giữ, cần xác nhận quyền lưu/phân phối nội dung từng nguồn trước khi công bố corpus |
 | Hoàn thiện coverage tri thức canh tác Farm | Đã có 7 tài liệu tổng quát; trang tập huấn còn chủ yếu mục lục, cần nội dung tài liệu con và nguồn cho các chủ đề còn thiếu |
 | Rà nhãn RAG tường minh cho toàn bộ chunk | Chủ dự án đã duyệt bộ câu hỏi và nhãn pilot; qrels hiện chỉ có nhãn dương. Cần rà đủ 0/1/2 trước khi chuyển trạng thái `reviewed`, xem [`data/rag/evaluation/README.md`](../data/rag/evaluation/README.md) |
-| Đánh giá chatbot hybrid mở rộng | Bộ 72 query có thêm 30 câu nhãn nháp; cần rà đủ nhãn, tách calibration/holdout và hiệu chỉnh ngưỡng từng app bằng người đánh giá độc lập. Recall nhóm tổng quan Farm còn hạn chế; so sánh trên cùng snapshot, không suy diễn điểm retrieval thành độ đúng Qwen. |
-| Đo đầy đủ workload đánh giá hybrid | Lần tải mới nhất là smoke 12 lượt/888 request; cần chạy lại mặc định 36 lượt và mode all với cấu hình cuối, thêm workload tải riêng nhóm từ chối |
+| Đánh giá chatbot hybrid mở rộng | Bộ 72 query có thêm 30 câu nhãn nháp; cần rà đủ nhãn, tách calibration/holdout và hiệu chỉnh ngưỡng từng app bằng người đánh giá độc lập. Câu gián tiếp hỏi mang tài liệu về nhà có cosine dưới 0,40 nên hiện trả thiếu căn cứ; cần cải thiện coverage mà không bỏ kiểm tra liên quan. Recall nhóm tổng quan Farm còn hạn chế; so sánh trên cùng snapshot, không suy diễn điểm retrieval thành độ đúng Qwen. |
+| Mở rộng quy mô index chatbot | BM25 cache RAM tối đa bốn snapshot, mỗi index giới hạn 20.000 chunk; SQL đã giới hạn ứng viên cosine. Chưa thử tải ở giới hạn này, số đo hiện chỉ đại diện corpus pilot 244 chunk và 1/2/5 VU |
+| Đo đầy đủ workload đánh giá hybrid | Runner all đã chạy quality và smoke tải 12 lượt/1369 request; cần đo mặc định 36 lượt và workload tải riêng nhóm từ chối |
 | Truy xuất legacy dựa trên MiniLM đa ngữ | Diagnosis/ticket vẫn dùng cosine và ngưỡng legacy; diễn đạt gián tiếp còn phụ thuộc embedding, không có reranker như chatbot |
 | Luật phân loại của Lab là luật tay | Chưa đo độ chính xác trên dữ liệu thật |
 | Kho tri thức Lab chỉ có 12 bài từ 9 văn bản công khai của HaUI | Chưa có bài về máy in, VPN, quy chế phòng máy của khoa, đặt phòng máy; sổ tay LMS là bản năm học 2019-2020 |

@@ -166,14 +166,69 @@ class ChatSearchTest(unittest.TestCase):
         email = next(p for p in fused if p["document_title"] == "Email")
         self.assertAlmostEqual(email["rrf_score"], 1 / 63 + 1 / 61)
 
-    def test_snapshot_changes_invalidate_bm25_cache(self):
+    def test_cached_index_reuses_text_and_invalidates_on_document_replacement(self):
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+
         ChatSearch._cache.clear()
         engine = ChatSearch(strategy="bm25")
-        engine.rank("email", passages())
-        changed = passages()
-        changed[0]["content"] = "New content"
-        engine.rank("email", changed)
-        self.assertEqual(len(ChatSearch._cache), 2)
+        documents = [
+            dict(
+                document_id="old",
+                document_title="Hướng dẫn",
+                namespace="lab",
+                document_type="lab_knowledge",
+                document_version="v1",
+                source_ids=(),
+            )
+        ]
+        db = Mock()
+        db.execute.return_value.all.return_value = [
+            SimpleNamespace(
+                id="chunk",
+                document_id="old",
+                chunk_index=0,
+                content="Nội dung cũ",
+                page_number=None,
+            )
+        ]
+        old = engine._index(db, documents)
+        self.assertIs(old, engine._index(db, documents))
+        self.assertEqual(db.execute.call_count, 1)
+        changed = [{**documents[0], "document_id": "new"}]
+        db.execute.return_value.all.return_value = [
+            SimpleNamespace(
+                id="new-chunk",
+                document_id="new",
+                chunk_index=0,
+                content="Nội dung mới",
+                page_number=None,
+            )
+        ]
+        new = engine._index(db, changed)
+        self.assertNotEqual(old[0][0]["content"], new[0][0]["content"])
+        self.assertEqual(db.execute.call_count, 2)
+        self.assertNotIn("Nội dung cũ", str(list(ChatSearch._cache)))
+
+    def test_low_cosine_query_cannot_be_rescued_by_a_high_reranker_score(self):
+        from unittest.mock import Mock
+
+        reranker = Mock(return_value=[0.99] * 3)
+        data = [{**p, "score": 0.2} for p in passages()]
+        result = ChatSearch(reranker=reranker).rank("Câu không liên quan", data)
+        self.assertEqual(result["scope_status"], "IN_SCOPE_NO_EVIDENCE")
+        self.assertEqual(result["reason_code"], "LOW_RELEVANCE")
+        reranker.assert_not_called()
+
+    def test_index_limit_refuses_partial_corpus(self):
+        from unittest.mock import Mock
+
+        ChatSearch._cache.clear()
+        db = Mock()
+        db.execute.return_value.all.return_value = [None] * 20001
+        with self.assertRaisesRegex(ValueError, "in-memory index limit"):
+            ChatSearch()._index(db, [dict(document_id="doc", namespace="lab")])
+        self.assertFalse(ChatSearch._cache)
 
     def test_unknown_namespace_never_embeds_or_queries(self):
         from unittest.mock import Mock
@@ -194,21 +249,15 @@ class ChatSearchTest(unittest.TestCase):
             id="doc",
             title="Hướng dẫn",
             version="v1",
+            namespace="lab",
             document_type="lab_knowledge",
             disease_code=None,
             source="source",
         )
-        chunk = SimpleNamespace(
-            id="chunk",
-            document=document,
-            document_id="doc",
-            chunk_index=0,
-            content="Nội dung hướng dẫn",
-            page_number=None,
-        )
 
         class Database:
             active = False
+            statements = []
 
             @contextmanager
             def begin(self):
@@ -218,9 +267,19 @@ class ChatSearchTest(unittest.TestCase):
                 finally:
                     self.active = False
 
-            def execute(self, stmt):
+            def scalars(self, stmt):
+                self.assert_active()
+                return SimpleNamespace(all=lambda: [document])
+
+            def assert_active(self):
                 assert self.active
-                return SimpleNamespace(all=lambda: [(chunk, 0.2)])
+
+            def execute(self, stmt):
+                self.assert_active()
+                self.statements.append(str(stmt))
+                return SimpleNamespace(
+                    all=lambda: [SimpleNamespace(id="chunk", distance=0.2)]
+                )
 
         db = Database()
 
@@ -230,11 +289,18 @@ class ChatSearchTest(unittest.TestCase):
 
         embedder = Mock()
         embedder.embed_text.return_value = [0.0] * 384
-        result = ChatSearch(embedding_service=embedder, reranker=reranker).search(
-            db, "Câu hỏi chung", "lab"
-        )
+        data = [dict(passages()[0], chunk_id="chunk")]
+        engine = ChatSearch(embedding_service=embedder, reranker=reranker)
+        with patch.object(
+            engine,
+            "_index",
+            return_value=(data, SimpleNamespace(get_scores=lambda q: [0]), "nội dung"),
+        ):
+            result = engine.search(db, "Câu hỏi chung", "lab")
         self.assertEqual(result["scope_status"], "ANSWERABLE")
         self.assertFalse(db.active)
+        dense_sql = next(q for q in db.statements if "ORDER BY" in q)
+        self.assertIn("LIMIT", dense_sql)
 
     def test_overview_keeps_multiple_documents_with_at_most_two_chunks_each(self):
         data = passages()

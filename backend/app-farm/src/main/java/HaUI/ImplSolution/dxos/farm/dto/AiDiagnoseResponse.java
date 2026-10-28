@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.farm.dto;
 
+import HaUI.ImplSolution.dxos.core.api.ai.GeneratedAnswer;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
 import java.util.List;
@@ -12,8 +14,13 @@ public record AiDiagnoseResponse(
   @JsonProperty("cv_result") CvResult cvResult,
   @JsonProperty("rag_evidence") List<RagEvidence> ragEvidence,
   @JsonProperty("structured_context") StructuredContext structuredContext,
-  Recommendation recommendation
+  Recommendation recommendation,
+  @JsonProperty("generated_explanation") @JsonInclude(JsonInclude.Include.NON_NULL) GeneratedAnswer generatedExplanation
 ){
+  public AiDiagnoseResponse(String requestId, CvResult cvResult, List<RagEvidence> ragEvidence,
+      StructuredContext structuredContext, Recommendation recommendation) {
+    this(requestId, cvResult, ragEvidence, structuredContext, recommendation, null);
+  }
 
   public record CvResult(
     @JsonProperty("disease_code") String diseaseCode,

@@ -35,10 +35,19 @@ def load(path: Path):
 
 
 class KnowledgeSourcesTest(unittest.TestCase):
+    def test_recorded_owner_approval_allows_flagged_rag_documents(self):
+        from data.scripts.promote_farm_corpus import promotable_documents
+
+        pending = {"review_status": "IN_REVIEW", "review_flags": ["CONTAINS_TREATMENT_REFERENCES"]}
+        approved = {**pending, "review_status": "APPROVED", "approved_by": "project_owner"}
+        self.assertEqual(promotable_documents([pending, approved]), [approved])
+
     def test_every_cited_source_is_served_with_the_registry_values(self):
         for name, (registry_path, corpus_path, served_path) in NAMESPACES.items():
             with self.subTest(namespace=name):
                 registry_items = load(registry_path)
+                if name == "farm":
+                    registry_items += load(ROOT / "data/rag/farm_knowledge_source_registry.json")
                 served_items = load(served_path)
                 registry = {item["source_id"]: item for item in registry_items}
                 served = {item["sourceId"]: item for item in served_items}
@@ -50,6 +59,10 @@ class KnowledgeSourcesTest(unittest.TestCase):
                     for source_id in document["provenance"]["source_ids"]
                 }
                 if name == "farm":
+                    generic = load(ROOT / "data/rag/processed/farm_knowledge.json")
+                    for document in generic:
+                        self.assertNotIn("sha256", document["provenance"])
+                    cited.update(sid for doc in generic for sid in doc["provenance"]["source_ids"])
                     rules = load(
                         ROOT / "data/structured/treatment_rules_candidates_master.json"
                     )

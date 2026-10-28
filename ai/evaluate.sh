@@ -9,8 +9,8 @@ die() { printf 'evaluate.sh: %s\n' "$*" >&2; exit 2; }
 usage() {
   cat <<'HELP'
 Usage: ./ai/evaluate.sh <quality|performance|all|view|down|--self-check|--help>
-  quality      Collect 42 retrieval queries, score and publish to local Langfuse
-  performance  Run 18 HTTP retrieval trials with k6 and Docker resource samples
+  quality      Compare retrieval strategies, score and publish to local Langfuse
+  performance  Run 36 HTTP retrieval trials with k6 and Docker resource samples
   all          Run quality then performance, sharing preparation
   view         Reopen saved Langfuse history and artifact reports
   down         Recover an interrupted evaluation session; keep data and cache
@@ -216,7 +216,11 @@ printf '%s\n' "$K6_VERSION" > "$context/k6-version"
 [[ -f "$context/built" ]] || rebuild=1
 if (( rebuild )) || ! docker image inspect "$EVAL_TOOL_IMAGE" >/dev/null 2>&1; then
   rm -f "$context/built"
-  run docker build --build-arg "K6_VERSION=$K6_VERSION" -t "$EVAL_TOOL_IMAGE" "$context"
+  base_image=python:3.11-slim
+  for candidate in "$EVAL_TOOL_IMAGE" dxos-rag-evaluation-tool:2; do
+    if docker image inspect "$candidate" >/dev/null 2>&1; then base_image="$candidate"; break; fi
+  done
+  run docker build --build-arg "EVAL_BASE_IMAGE=$base_image" --build-arg "K6_VERSION=$K6_VERSION" -t "$EVAL_TOOL_IMAGE" "$context"
   touch "$context/built"
 fi
 if [[ "$MODE" != view ]]; then
@@ -228,16 +232,24 @@ if [[ "$MODE" != view ]]; then
   run "${COMPOSE[@]}" up -d --wait --wait-timeout "$EVAL_START_TIMEOUT_SECONDS" vector
   run "${COMPOSE[@]}" run --rm --no-deps -T prepare
   if [[ "$MODE" == quality || "$MODE" == all ]]; then
-    run "${COMPOSE[@]}" run --rm --no-deps -T evaluator scripts/evaluate_rag.py collect --ingest-record "/artifacts/$EVAL_RUN/ingest.json" --output "/artifacts/$EVAL_RUN/quality-$EVAL_RUN"
-    run "${COMPOSE[@]}" run --rm --no-deps -T evaluator scripts/evaluate_rag.py score --collect "/artifacts/$EVAL_RUN/quality-$EVAL_RUN/collect.json" --output "/artifacts/$EVAL_RUN/quality-$EVAL_RUN"
+    for strategy in legacy bm25 hybrid hybrid_rerank; do
+      run "${COMPOSE[@]}" run --rm --no-deps -T evaluator scripts/evaluate_rag.py collect --strategy "$strategy" --ingest-record "/artifacts/$EVAL_RUN/ingest.json" --output "/artifacts/$EVAL_RUN/quality-$strategy-$EVAL_RUN"
+      run "${COMPOSE[@]}" run --rm --no-deps -T evaluator scripts/evaluate_rag.py score --collect "/artifacts/$EVAL_RUN/quality-$strategy-$EVAL_RUN/collect.json" --output "/artifacts/$EVAL_RUN/quality-$strategy-$EVAL_RUN"
+    done
+    run "${COMPOSE[@]}" run --rm --no-deps -T evaluator evaluation/prepare.py compare-quality "/artifacts/$EVAL_RUN"
+    run "${COMPOSE[@]}" run --rm --no-deps -T evaluator scripts/evaluate_scope.py --output "/artifacts/$EVAL_RUN/scope.json"
   fi
   if [[ "$MODE" == performance || "$MODE" == all ]]; then
-    run "${COMPOSE[@]}" up -d --wait --wait-timeout "$EVAL_START_TIMEOUT_SECONDS" ai
-    ai_id="$(docker inspect --format '{{.Name}}' "$("${COMPOSE[@]}" ps -q ai)")"
-    vector_id="$(docker inspect --format '{{.Name}}' "$("${COMPOSE[@]}" ps -q vector)")"
-    ai_id="${ai_id#/}"; vector_id="${vector_id#/}"
-    run "${COMPOSE[@]}" run --rm --no-deps -T sampler scripts/benchmark_rag.py run --k6 /usr/local/bin/k6 --output "/artifacts/$EVAL_RUN/performance-$EVAL_RUN" --server-record "/artifacts/$EVAL_RUN/server.json" --container "$ai_id" --container "$vector_id" --seconds 30 --repeats 3
-    run "${COMPOSE[@]}" run --rm --no-deps -T sampler evaluation/prepare.py check-benchmark "/artifacts/$EVAL_RUN/performance-$EVAL_RUN"
+    for strategy in legacy hybrid_rerank; do
+      export EVAL_CHAT_STRATEGY="$strategy"
+      run "${COMPOSE[@]}" up -d --force-recreate --wait --wait-timeout "$EVAL_START_TIMEOUT_SECONDS" ai
+      ai_id="$(docker inspect --format '{{.Name}}' "$("${COMPOSE[@]}" ps -q ai)")"
+      vector_id="$(docker inspect --format '{{.Name}}' "$("${COMPOSE[@]}" ps -q vector)")"
+      ai_id="${ai_id#/}"; vector_id="${vector_id#/}"
+      run "${COMPOSE[@]}" run --rm --no-deps -T sampler scripts/benchmark_rag.py run --k6 /usr/local/bin/k6 --output "/artifacts/$EVAL_RUN/performance-$strategy-$EVAL_RUN" --server-record "/artifacts/$EVAL_RUN/server-$strategy.json" --container "$ai_id" --container "$vector_id" --seconds "$EVAL_BENCH_SECONDS" --repeats "$EVAL_BENCH_REPEATS"
+      run "${COMPOSE[@]}" run --rm --no-deps -T sampler evaluation/prepare.py check-benchmark "/artifacts/$EVAL_RUN/performance-$strategy-$EVAL_RUN"
+      run "${COMPOSE[@]}" stop ai
+    done
   fi
   run "${COMPOSE[@]}" stop ai vector
 fi
@@ -252,10 +264,15 @@ run "${COMPOSE[@]}" up -d --wait --wait-timeout "$EVAL_START_TIMEOUT_SECONDS" lf
 run "${COMPOSE[@]}" up -d --wait --wait-timeout "$EVAL_START_TIMEOUT_SECONDS" langfuse-worker langfuse-web reports
 if [[ "$MODE" != view ]]; then
   if [[ "$MODE" == quality || "$MODE" == all ]]; then
-    run "${COMPOSE[@]}" run --rm --no-deps -T publisher scripts/evaluate_rag.py publish --collect "/artifacts/$EVAL_RUN/quality-$EVAL_RUN/collect.json" --score-file "/artifacts/$EVAL_RUN/quality-$EVAL_RUN/score.json"
+    run "${COMPOSE[@]}" run --rm --no-deps -T publisher scripts/evaluate_scope.py --publish "/artifacts/$EVAL_RUN/scope.json"
+    for strategy in legacy bm25 hybrid hybrid_rerank; do
+      run "${COMPOSE[@]}" run --rm --no-deps -T publisher scripts/evaluate_rag.py publish --collect "/artifacts/$EVAL_RUN/quality-$strategy-$EVAL_RUN/collect.json" --score-file "/artifacts/$EVAL_RUN/quality-$strategy-$EVAL_RUN/score.json"
+    done
   fi
   if [[ "$MODE" == performance || "$MODE" == all ]]; then
-    run "${COMPOSE[@]}" run --rm --no-deps -T publisher scripts/benchmark_rag.py publish --output "/artifacts/$EVAL_RUN/performance-$EVAL_RUN"
+    for strategy in legacy hybrid_rerank; do
+      run "${COMPOSE[@]}" run --rm --no-deps -T publisher scripts/benchmark_rag.py publish --output "/artifacts/$EVAL_RUN/performance-$strategy-$EVAL_RUN"
+    done
   fi
 fi
 printf 'Langfuse: http://localhost:%s\nReports: http://localhost:%s/\nLogin: %s\nPassword: %s\nState: %s\n' "$EVAL_LANGFUSE_PORT" "$EVAL_REPORT_PORT" "$EVAL_LOGIN_EMAIL" "$EVAL_LOGIN_PASSWORD" "$STATE_DIR"

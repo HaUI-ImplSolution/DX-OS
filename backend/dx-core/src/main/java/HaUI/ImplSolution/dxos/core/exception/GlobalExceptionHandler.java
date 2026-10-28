@@ -9,6 +9,7 @@ import HaUI.ImplSolution.dxos.core.api.exception.PokaYokeViolationException;
 import HaUI.ImplSolution.dxos.core.api.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
 import HaUI.ImplSolution.dxos.core.audit.AuditService;
+import HaUI.ImplSolution.dxos.core.storage.ScannerUnavailableException;
 import jakarta.persistence.LockTimeoutException;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.PessimisticLockException;
@@ -101,6 +102,15 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
         .body(ApiResponse.error("ERR_AI_UNAVAILABLE",
             "AI diagnosis service is temporarily unavailable, please try again later"));
+  }
+
+  @ExceptionHandler(ScannerUnavailableException.class)
+  public ResponseEntity<ApiResponse<Void>> handleScannerUnavailable(
+      ScannerUnavailableException ex) {
+    log.warn("Virus scanner unavailable: {}", ex.getMessage());
+    auditService.recordServerError(HttpStatus.SERVICE_UNAVAILABLE.value(), ex);
+    return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(ApiResponse.error(
+        "ERR_SCAN_UNAVAILABLE", "Files cannot be checked right now, please try again later"));
   }
 
   @ExceptionHandler(PokaYokeViolationException.class)

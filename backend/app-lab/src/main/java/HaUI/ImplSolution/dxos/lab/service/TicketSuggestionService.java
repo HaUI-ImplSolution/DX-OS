@@ -37,8 +37,8 @@ public class TicketSuggestionService {
     List<RelatedPassage> related = List.of();
     boolean available = true;
     try {
-      KnowledgeAnswer answer =
-          knowledgeGateway.ask(LabKnowledgeNamespace.NAMESPACE, text, Map.of(), RELATED_PASSAGES);
+      KnowledgeAnswer answer = knowledgeGateway.retrieve(LabKnowledgeNamespace.NAMESPACE, text,
+          Map.of(), RELATED_PASSAGES);
       related = answer.passages().stream().limit(RELATED_PASSAGES).map(RelatedPassage::of).toList();
     } catch (AiServiceException e) {
       // The suggestion by rules still works without the knowledge base.

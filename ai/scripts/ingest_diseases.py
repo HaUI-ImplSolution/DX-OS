@@ -1,7 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
 import argparse
 
-from app.rag.ingestion_service import CORPORA, ingest_corpus, preview_corpus
+from app.rag.ingestion_service import (
+    CORPORA,
+    ingest_corpus,
+    preview_corpus,
+    selected_corpora,
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -32,7 +37,11 @@ def print_preview(corpus: str, limit: int) -> None:
     if limit < 0:
         raise ValueError("--limit must be greater than or equal to 0")
 
-    documents = preview_corpus(CORPORA[corpus])
+    documents = [
+        item
+        for selected in selected_corpora(corpus)
+        for item in preview_corpus(selected)
+    ]
     print(f"Validated documents: {len(documents)}")
     print(f"Previewing documents: {min(limit, len(documents))}")
 
@@ -63,7 +72,13 @@ def main() -> None:
     db = Session(engine)
 
     try:
-        result = ingest_corpus(db, CORPORA[args.corpus])
+        from app.rag.reranker import prepare_reranker
+
+        prepare_reranker()
+        results = [
+            ingest_corpus(db, selected) for selected in selected_corpora(args.corpus)
+        ]
+        result = {key: sum(item[key] for item in results) for key in results[0]}
         print(f"RAG ingestion completed for corpus {args.corpus}")
         print(f"Documents inserted: {result['documents_inserted']}")
         print(f"Chunks inserted: {result['chunks_inserted']}")

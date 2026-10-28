@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.host.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;

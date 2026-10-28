@@ -1,0 +1,8 @@
+{
+  "policy": "Nguồn chính thức theo allowlist host trong chat_profiles.json",
+  "status": "SOURCE_OWNER_ACCEPTED",
+  "created_at": "2026-10-27",
+  "sources": [],
+  "reviewed_by": "project_owner",
+  "reviewed_at": "2026-10-28"
+}

@@ -11,6 +11,14 @@ x-logging: &default-logging
     max-size: "20m"
     max-file: "5"
 
+# For containers that run as a normal user and need no Linux capability: nothing can gain more
+# privileges than it started with.
+x-hardened: &hardened
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
 x-postgres-env: &postgres-env
   POSTGRES_DB: ${POSTGRES_DB:?}
   POSTGRES_USER: ${POSTGRES_USER:?}
@@ -76,6 +84,7 @@ services:
   # Backend, web and portal
   # ---------------------------------------------------------------------------
   backend:
+    <<: *hardened
     logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-backend:${DXOS_IMAGE_TAG:-local}
     build:
@@ -114,6 +123,8 @@ services:
       # Keycloak admin client (creates accounts and the roles of the app)
       KEYCLOAK_ADMIN_CLIENT_ID: ${KEYCLOAK_ADMIN_CLIENT_ID:?}
       KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET:?}
+      # Virus scan of uploads: the host of clamd (service clamav, profile av); empty turns it off
+      STORAGE_SCAN_HOST: ${STORAGE_SCAN_HOST:-}
       # Chat notifications, both apps; a URL left empty is read from the file mattermost-bootstrap writes
       MATTERMOST_WEBHOOK_DIR: /run/mattermost-webhooks
       MATTERMOST_WEBHOOK_URL: ${MATTERMOST_WEBHOOK_URL:-}
@@ -152,6 +163,8 @@ services:
       start_period: 30s
 
   frontend:
+    security_opt:
+      - no-new-privileges:true
     logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-frontend:${DXOS_IMAGE_TAG:-local}
     build:
@@ -172,6 +185,8 @@ services:
       retries: 6
 
   portal:
+    security_opt:
+      - no-new-privileges:true
     logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-portal:${DXOS_IMAGE_TAG:-local}
     build:
@@ -187,6 +202,24 @@ services:
       interval: 10s
       timeout: 5s
       retries: 6
+
+  # Virus scan of every upload before it is stored. Off by default (about 1 GB of RAM); start it
+  # with COMPOSE_PROFILES=av and STORAGE_SCAN_HOST=clamav in deploy/.env. The signatures are kept
+  # in a volume, and clamd answers no scan for about 10 seconds each time it reloads them.
+  clamav:
+    profiles:
+      - av
+    logging: *default-logging
+    image: clamav/clamav:1.5.4@sha256:638d90201ee7ee6a82d249a2fc23b132e578673b5f1f2766852b127676ca1ef6
+    restart: unless-stopped
+    environment:
+      CLAMD_CONF_ConcurrentDatabaseReload: "no"
+      CLAMD_CONF_TemporaryDirectory: /tmp
+    tmpfs:
+      - /tmp:size=512m,mode=1777
+    volumes:
+      - clamav_data:/var/lib/clamav
+    # No published port: only the backend reaches clamd.
 
   # ---------------------------------------------------------------------------
   # Identity
@@ -220,6 +253,7 @@ services:
       SUPERSET_OIDC_CLIENT_SECRET: ${SUPERSET_OIDC_CLIENT_SECRET:?}
       MONITOR_OIDC_CLIENT_SECRET: ${MONITOR_OIDC_CLIENT_SECRET:?}
       KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET:?}
+      STAFF_OTP_FLOW: ${STAFF_OTP_FLOW:-DISABLED}
     volumes:
       - ../sso/realm-dxos.json:/opt/keycloak/data/import/realm-dxos.json:ro
     # No published port: the gateway routes /realms, /resources and /admin to it.
@@ -268,6 +302,7 @@ services:
   # Receives the unusual requests of the gateway, probes the services and serves the screen of
   # administrators under /monitor. It runs apart from the backend so it works when the backend is down.
   monitor:
+    <<: *hardened
     logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-monitor:${DXOS_IMAGE_TAG:-local}
     build:
@@ -399,6 +434,7 @@ services:
 
   # Ingests the knowledge corpus of the app selected by DXOS_APP into its own namespace.
   rag-ingest:
+    <<: *hardened
     image: ${DXOS_IMAGE_PREFIX:-dxos}-ai:${DXOS_IMAGE_TAG:-local}
     build:
       <<: *ai-build
@@ -417,6 +453,7 @@ services:
     command: ["python", "-m", "scripts.ingest_diseases", "--corpus", "${DXOS_APP:-farm}"]
 
   ai:
+    <<: *hardened
     logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-ai:${DXOS_IMAGE_TAG:-local}
     build:
@@ -559,4 +596,5 @@ services:
 
 volumes:
   ai_weights:
+  clamav_data:
   ollama_models:

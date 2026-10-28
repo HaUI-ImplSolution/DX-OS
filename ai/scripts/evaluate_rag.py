@@ -18,7 +18,7 @@ from typing import Any
 AI_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = AI_ROOT.parent
 EVALUATION_ROOT = REPO_ROOT / "data/rag/evaluation"
-BOUNDARY = "RAGRetriever output before Backend filtering and evidence merging"
+BOUNDARY = "Retrieval ranking before Backend evidence merging; raw/filtered boundary recorded per run"
 PROFILES = {
     "farm_qa": ("farm", 4, None),
     "lab_qa": ("lab", 4, None),
@@ -26,6 +26,18 @@ PROFILES = {
 }
 if str(AI_ROOT) not in sys.path:
     sys.path.insert(0, str(AI_ROOT))
+
+
+def code_identity() -> str:
+    """Fingerprint mounted evaluation/runtime sources into private run provenance."""
+    import hashlib
+
+    digest = hashlib.sha256()
+    for directory in (AI_ROOT / "app", AI_ROOT / "scripts", AI_ROOT / "evaluation"):
+        for path in sorted([*directory.rglob("*.py"), *directory.rglob("*.js")]):
+            digest.update(str(path.relative_to(AI_ROOT)).encode())
+            digest.update(path.read_bytes())
+    return digest.hexdigest()
 
 
 def read_json(path: Path) -> Any:
@@ -87,10 +99,11 @@ def load_questions() -> list[dict[str, Any]]:
 
 def corpus_index() -> dict[tuple[str, str], dict[str, Any]]:
     from app.rag.chunker import chunk_text
-    from app.rag.ingestion_service import CORPORA, load_corpus
+    from app.rag.ingestion_service import load_corpus, selected_corpora
 
     index = {}
-    for namespace, corpus in CORPORA.items():
+    for corpus in selected_corpora():
+        namespace = corpus.namespace
         for item in load_corpus(corpus):
             key = (namespace, item[corpus.title_field])
             if key in index:
@@ -117,6 +130,7 @@ def document_key(namespace: str, code: str, index: int) -> str:
 def validate_snapshot(db: Any, expected: dict) -> None:
     from sqlalchemy import select
     from sqlalchemy.orm import joinedload
+
     from app.db.models.document import Document
 
     documents = (
@@ -160,10 +174,11 @@ def validate_snapshot(db: Any, expected: dict) -> None:
             raise ValueError(f"Missing or invalid embeddings: {key}")
 
 
-def collect(output: Path, ingest_record: Path) -> None:
+def collect(output: Path, ingest_record: Path, strategy: str | None = None) -> None:
+    from langgraph.runtime import Runtime
     from sqlalchemy import create_engine
     from sqlalchemy.orm import Session
-    from langgraph.runtime import Runtime
+
     from app.core.config import get_settings
     from app.graph.context import WorkflowRuntime
     from app.graph.nodes.retrieve_knowledge import retrieve_knowledge
@@ -175,19 +190,6 @@ def collect(output: Path, ingest_record: Path) -> None:
     questions, expected = load_questions(), corpus_index()
     metadata = read_json(EVALUATION_ROOT / "metadata.json")
     settings, provenance = get_settings(), read_json(ingest_record)
-    if not settings.database_url:
-        raise ValueError("DATABASE_URL is required")
-    if (
-        provenance.get("embedding_model") != settings.embedding_model
-        or (provenance.get("corpora") != metadata["corpora"])
-        or not all(
-            provenance.get(k)
-            for k in ("completed_at", "model_artifact", "runtime_versions")
-        )
-    ):
-        raise ValueError(
-            "Ingest provenance must identify the same model, corpora and runtime"
-        )
     versions = {
         n: importlib.metadata.version(n)
         for n in (
@@ -196,125 +198,162 @@ def collect(output: Path, ingest_record: Path) -> None:
             "transformers",
             "SQLAlchemy",
             "pgvector",
+            "rank-bm25",
         )
     }
-    if provenance["runtime_versions"] != versions:
-        raise ValueError(
-            "Collection runtime differs from the recorded ingestion runtime"
-        )
+    if (
+        not settings.database_url
+        or provenance.get("embedding_model") != settings.embedding_model
+        or provenance.get("corpora") != metadata["corpora"]
+        or provenance.get("runtime_versions") != versions
+        or not all(provenance.get(k) for k in ("completed_at", "model_artifact"))
+    ):
+        raise ValueError("Ingestion provenance differs from the collection runtime")
     records = []
     engine = create_engine(
         settings.database_url, pool_pre_ping=True, isolation_level="REPEATABLE READ"
     )
     try:
-        with engine.connect() as connection, connection.begin():
-            connection.exec_driver_sql("SET TRANSACTION READ ONLY")
-            with Session(bind=connection) as db:
-                validate_snapshot(db, expected)
-                retriever = RAGRetriever()
-                for q in questions:
-                    _, top_k, document_type = PROFILES[q["group"]]
-                    started = time.perf_counter()
-                    record = {
-                        "qid": q["qid"],
-                        "query": q["query"],
-                        "group": q["group"],
-                        "namespace": q["namespace"],
-                        "top_k": top_k,
-                        "document_type": document_type,
-                        "disease_code": q.get("disease_code"),
-                        "results": [],
-                        "error": None,
-                        "started_at": datetime.now(timezone.utc).isoformat(),
-                    }
-                    try:
+        with engine.connect() as connection:
+            if not connection.exec_driver_sql(
+                "SELECT NOT has_table_privilege(current_user, 'documents', 'INSERT,UPDATE,DELETE')"
+            ).scalar_one():
+                raise ValueError(
+                    "Collector requires a database role without write privileges"
+                )
+        with Session(engine) as db:
+            validate_snapshot(db, expected)
+        retriever = RAGRetriever()
+        if strategy == "hybrid_rerank":
+            from app.rag.reranker import _model
 
-                        def retrieve(
-                            query: str, disease_code: str | None, k: int
-                        ) -> list[dict]:
-                            if (query, disease_code, k) != (
-                                q["query"],
-                                q.get("disease_code"),
-                                top_k,
-                            ):
-                                raise ValueError(
-                                    "Actual workflow query differs from the pilot"
-                                )
-                            return retriever.retrieve(
-                                db,
-                                query,
-                                top_k=k,
-                                namespace=q["namespace"],
-                                document_type=document_type,
-                                disease_code=disease_code,
-                            )
+            _model()  # Match HTTP startup; cold loading is outside query inference time.
+        for q in questions:
+            _, top_k, kind = PROFILES[q["group"]]
+            started = time.perf_counter()
+            record = dict(
+                qid=q["qid"],
+                query=q["query"],
+                group=q["group"],
+                namespace=q["namespace"],
+                top_k=top_k,
+                document_type=kind,
+                disease_code=q.get("disease_code"),
+                results=[],
+                error=None,
+                started_at=datetime.now(timezone.utc).isoformat(),
+            )
+            try:
+                with Session(engine) as db:
 
-                        if q["group"] == "farm_diagnostic":
-                            state = retrieve_knowledge(
-                                {"cv_result": {"disease_code": q["disease_code"]}},
-                                Runtime(
-                                    context=WorkflowRuntime(db=db, rag_tool=retrieve)
-                                ),
-                            )
-                            if state["errors"]:
-                                raise RuntimeError(
-                                    "Diagnostic retrieval node reported an error"
+                    def retrieve(query, disease_code, k):
+                        return retriever.retrieve(
+                            db,
+                            query,
+                            top_k=k,
+                            namespace=q["namespace"],
+                            document_type=kind,
+                            disease_code=disease_code,
+                        )
+
+                    if q["group"] == "farm_diagnostic":
+                        state = retrieve_knowledge(
+                            {"cv_result": {"disease_code": q["disease_code"]}},
+                            Runtime(context=WorkflowRuntime(db=db, rag_tool=retrieve)),
+                        )
+                        if state["errors"]:
+                            raise RuntimeError("Diagnostic retrieval failed")
+                        retrieved = state["rag_context"]
+                    elif strategy:
+                        from app.rag.chat_search import ChatSearch
+
+                        response = ChatSearch(strategy=strategy).search(
+                            db, q["query"], q["namespace"], top_k
+                        )
+                        if response["reason_code"] == "RERANK_UNAVAILABLE":
+                            raise RuntimeError("Reranker unavailable")
+                        retrieved = response["passages"]
+                        record.update(
+                            {
+                                key: response[key]
+                                for key in (
+                                    "scope_status",
+                                    "reason_code",
+                                    "strategy",
+                                    "rankings",
+                                    "timings_ms",
                                 )
-                            retrieved = state["rag_context"]
-                        else:
-                            retrieved = retrieve(q["query"], None, top_k)
-                        for rank, item in enumerate(retrieved, 1):
-                            ref = expected[(q["namespace"], item["document_title"])]
-                            record["results"].append(
-                                {
-                                    "rank": rank,
-                                    "document_key": document_key(
-                                        q["namespace"], ref["code"], item["chunk_index"]
-                                    ),
-                                    **{
-                                        k: item[k]
-                                        for k in (
-                                            "document_title",
-                                            "chunk_index",
-                                            "content",
-                                            "similarity",
-                                            "score",
-                                            "source_ids",
-                                        )
-                                    },
-                                }
-                            )
-                    except Exception as exc:
-                        record["error"] = f"Retrieval failed ({type(exc).__name__})"
-                    record["elapsed_ms"] = (time.perf_counter() - started) * 1000
-                    records.append(record)
+                            }
+                        )
+                    else:
+                        retrieved = retrieve(q["query"], None, top_k)
+                for rank, item in enumerate(retrieved, 1):
+                    ref = expected[(q["namespace"], item["document_title"])]
+                    record["results"].append(
+                        {
+                            "rank": rank,
+                            "document_key": document_key(
+                                q["namespace"], ref["code"], item["chunk_index"]
+                            ),
+                            **{
+                                key: item[key]
+                                for key in (
+                                    "document_title",
+                                    "chunk_index",
+                                    "content",
+                                    "similarity",
+                                    "score",
+                                    "source_ids",
+                                )
+                            },
+                        }
+                    )
+            except Exception as exc:
+                record["error"] = f"Retrieval failed ({type(exc).__name__})"
+            record["elapsed_ms"] = (time.perf_counter() - started) * 1000
+            records.append(record)
+        with Session(engine) as db:
+            validate_snapshot(db, expected)
     finally:
         engine.dispose()
     output.mkdir(parents=True)
-    payload = {
-        "run_id": output.name,
-        "dataset": metadata,
-        "questions": questions,
-        "retrieval_boundary": BOUNDARY,
-        "ingestion": provenance,
-        "runtime_versions": versions,
-        "snapshot": list(expected.values()),
-        "records": records,
-    }
+    payload = dict(
+        run_id=output.name,
+        dataset=metadata,
+        questions=questions,
+        retrieval_boundary=BOUNDARY,
+        ingestion=provenance,
+        runtime_versions=versions,
+        snapshot=list(expected.values()),
+        records=records,
+        strategy=strategy or "legacy_raw",
+        content_policy="farm-medication-lines-v1" if strategy else "verbatim",
+        code_identity=code_identity(),
+        chat_runtime={
+            k: v for k, v in settings.model_dump().items() if k.startswith("chat_")
+        },
+        chatbot_boundary="after scope/threshold, before Backend merging"
+        if strategy
+        else "raw legacy retriever",
+    )
     write_json(output / "collect.json", payload)
     with (output / "run.trec").open("w", encoding="utf-8") as f:
         for rec in records:
             for row in rec["results"]:
                 f.write(
-                    f"{rec['qid']} Q0 {row['document_key']} {row['rank']} "
-                    f"{rec['top_k'] - row['rank'] + 1} rag-baseline\n"
+                    f"{rec['qid']} Q0 {row['document_key']} {row['rank']} {rec['top_k'] - row['rank'] + 1} {strategy or 'legacy_raw'}\n"
                 )
     if any(r["error"] for r in records):
         raise RuntimeError("Collection saved, but retrieval errors invalidate this run")
-    print(f"Collected {len(records)} queries; artifacts: {output}")
+    print(
+        f"Collected {len(records)} queries ({strategy or 'legacy_raw'}); artifacts: {output}"
+    )
 
 
 def validate_records(payload: dict, questions: list[dict]) -> dict[str, dict]:
+    policy = payload.get("content_policy", "verbatim")
+    if policy not in {"verbatim", "farm-medication-lines-v1"}:
+        raise ValueError("Unknown evidence content policy")
     if (
         payload.get("dataset") != read_json(EVALUATION_ROOT / "metadata.json")
         or (payload.get("questions") != questions)
@@ -360,6 +399,11 @@ def validate_records(payload: dict, questions: list[dict]) -> dict[str, dict]:
             raise ValueError(f"Invalid ranks or duplicate chunks: {q['qid']}")
         for row in results:
             key = row["document_key"]
+            expected_chunk = chunks.get(key)
+            if expected_chunk and policy == "farm-medication-lines-v1" and q["group"] == "farm_qa":
+                from app.rag.safety import redact_medication_lines
+
+                expected_chunk = (redact_medication_lines(expected_chunk[0]), *expected_chunk[1:])
             if (
                 key not in chunks
                 or not key.startswith(namespace + "/")
@@ -369,7 +413,7 @@ def validate_records(payload: dict, questions: list[dict]) -> dict[str, dict]:
                     row["chunk_index"],
                     row["source_ids"],
                 )
-                != chunks[key]
+                != expected_chunk
             ):
                 raise ValueError(
                     f"Unknown, changed or cross-namespace chunk: {q['qid']}"
@@ -448,7 +492,7 @@ def calculate(payload: dict, qrel_rows: list[tuple[str, str, int]]) -> dict:
             for x in r["results"]
         ]
         values = list(provider.iter_calc(measures, qrels, run))
-        per_query = {qid: {} for qid in qids}
+        per_query = {qid: {} for qid in sorted(qids)}
         for value in values:
             name = f"Recall@{k}" if value.measure == measures[0] else f"nDCG@{k}"
             per_query[value.query_id][name] = value.value
@@ -460,13 +504,39 @@ def calculate(payload: dict, qrel_rows: list[tuple[str, str, int]]) -> dict:
                 "k": k,
                 "queries": dict(sorted(per_query.items())),
                 "macro_average": {
-                    name: sum(v[name] for v in per_query.values()) / len(qids)
+                    name: math.fsum(v[name] for v in per_query.values()) / len(qids)
                     for name in next(iter(per_query.values()))
                 },
             }
         )
     return {
         "run_id": payload["run_id"],
+        "strategy": payload.get("strategy", "legacy_raw"),
+        "segments": {
+            f"{group['group']}/{kind}/{split}": {
+                metric: sum(
+                    group["queries"][q["qid"]][metric]
+                    for q in payload["questions"]
+                    if q["group"] == group["group"]
+                    and q.get("question_kind", "specific") == kind
+                    and q.get("split", "regression") == split
+                )
+                / sum(
+                    1
+                    for q in payload["questions"]
+                    if q["group"] == group["group"]
+                    and q.get("question_kind", "specific") == kind
+                    and q.get("split", "regression") == split
+                )
+                for metric in group["macro_average"]
+            }
+            for group in groups
+            for kind, split in {
+                (q.get("question_kind", "specific"), q.get("split", "regression"))
+                for q in payload["questions"]
+                if q["group"] == group["group"]
+            }
+        },
         "dataset": payload["dataset"],
         "official": payload["dataset"]["status"] == "reviewed",
         "groups": groups,
@@ -516,7 +586,7 @@ def publish(
             f"Publish validation: PASS, {len(records)} items, 3 experiments; no network used."
         )
         return
-    from langfuse import Langfuse, Evaluation
+    from langfuse import Evaluation, Langfuse
 
     receipt_path = outside_repository(collect_path.parent / "publish.json")
     if receipt_path.exists():
@@ -601,7 +671,7 @@ def publish(
                 ]
 
             result = client.run_experiment(
-                name=f"RAG baseline: {group['group']}",
+                name=f"RAG {payload.get('strategy', 'legacy_raw')}: {group['group']}",
                 run_name=f"{payload['run_id']}/{group['group']}",
                 experiment_id=Langfuse.create_trace_id(
                     seed=f"{payload['run_id']}:{group['group']}"
@@ -612,6 +682,8 @@ def publish(
                 max_concurrency=1,
                 metadata={
                     "recording": "replay of saved retrieval, not a new retrieval call",
+                    "strategy": payload.get("strategy", "legacy_raw"),
+                    "chatbot_boundary": payload.get("chatbot_boundary", BOUNDARY),
                     "run_id": payload["run_id"],
                     "label_status": payload["dataset"]["status"],
                     "boundary": BOUNDARY,
@@ -633,8 +705,9 @@ def publish(
 
 
 def self_check() -> None:
-    import ir_measures as ir
     import tempfile
+
+    import ir_measures as ir
 
     questions = load_questions()
     measures = [ir.R @ 3, ir.nDCG(gains={0: 0, 1: 1, 2: 2}) @ 3]
@@ -720,6 +793,22 @@ def self_check() -> None:
         }
     ]
     validate_records(low_score, questions)
+    sanitized = copy.deepcopy(low_score)
+    sanitized["content_policy"] = "farm-medication-lines-v1"
+    first_doc = next(
+        d for d in sanitized["snapshot"]
+        if document_key(d["namespace"], d["code"], 0) == first_key
+    )
+    first_doc["chunks"][0] = "Theo dõi ruộng.\nPhun thuốc theo liều."
+    sanitized["records"][0]["results"][0]["content"] = "Theo dõi ruộng."
+    validate_records(sanitized, questions)
+    sanitized["records"][0]["results"][0]["content"] = "Nội dung không có trong nguồn."
+    try:
+        validate_records(sanitized, questions)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("Changed sanitized evidence was accepted")
     for mutate in (
         lambda p: p["records"].pop(),
         lambda p: p["records"].append(p["records"][0]),
@@ -794,6 +883,9 @@ def main() -> None:
     )
     parser.add_argument("--score-file", type=Path)
     parser.add_argument("--ingest-record", type=Path)
+    parser.add_argument(
+        "--strategy", choices=("legacy", "bm25", "hybrid", "hybrid_rerank")
+    )
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     if args.command == "self-check":
@@ -801,7 +893,7 @@ def main() -> None:
     elif args.command == "collect":
         if not args.output or not args.ingest_record:
             parser.error("collect requires --output and --ingest-record")
-        collect(args.output, args.ingest_record)
+        collect(args.output, args.ingest_record, args.strategy)
     elif args.command == "score":
         if not args.collect or not args.output:
             parser.error("score requires --collect and --output")

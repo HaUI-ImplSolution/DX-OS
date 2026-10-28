@@ -22,7 +22,7 @@ public record Probe(int failuresBeforeDown,int timeoutMs,List<Target>targets){
 // answer; required false: a service that never answered is not reported as down
 public record Target(String name,String url,String bodyContains,boolean required){}}
 
-public record Alert(int serverErrorCount,int serverErrorWindowMinutes,int rateLimitedCount,int rateLimitedWindowMinutes,int repeatMinutes){}
+public record Alert(int serverErrorCount,int serverErrorWindowMinutes,int rateLimitedCount,int rateLimitedWindowMinutes,int loginFailedCount,int loginFailedWindowMinutes,int repeatMinutes){}
 
 public record KeycloakDb(String url,String username,String password){}
 

@@ -7,6 +7,7 @@ import HaUI.ImplSolution.dxos.core.api.knowledge.KnowledgeGateway;
 import HaUI.ImplSolution.dxos.core.api.knowledge.KnowledgeNamespace;
 import HaUI.ImplSolution.dxos.core.api.knowledge.KnowledgePassage;
 import HaUI.ImplSolution.dxos.core.api.knowledge.KnowledgeSource;
+import HaUI.ImplSolution.dxos.core.api.privacy.PiiMask;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -15,6 +16,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import HaUI.ImplSolution.dxos.core.api.exception.AiServiceException;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -50,7 +54,35 @@ public class KnowledgeGatewayService implements KnowledgeGateway {
       throw new IllegalArgumentException("Knowledge namespace is not registered: " + namespace);
     }
     Map<String, Object> body = new LinkedHashMap<>(filters);
-    body.put("query", question);
+    // The question may carry a phone number or an address of the person asking.
+    body.put("query", PiiMask.mask(question));
+    body.put("namespace", namespace);
+    body.put("top_k", topK);
+    SearchResult result = aiGateway.postJson("/api/v1/knowledge/search", body, SearchResult.class);
+    if (result == null || !namespace.equals(result.namespace()) || result.passages() == null
+        || !Set.of("ANSWERABLE", "OUT_OF_SCOPE", "IN_SCOPE_NO_EVIDENCE")
+            .contains(result.scopeStatus() == null ? "" : result.scopeStatus())
+        || "ANSWERABLE".equals(result.scopeStatus()) == result.passages().isEmpty()) {
+      throw new AiServiceException("Invalid knowledge search response", null);
+    }
+    return new KnowledgeAnswer(question, mergeByDocument(result.passages(), corpus.sources()),
+        result.scopeStatus(), result.reasonCode(), namespace);
+  }
+
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  public record SearchResult(String namespace, @JsonProperty("scope_status") String scopeStatus,
+      @JsonProperty("reason_code") String reasonCode, List<Map<String, Object>> passages) {}
+
+  @Override
+  public KnowledgeAnswer retrieve(String namespace, String question, Map<String, String> filters,
+      int topK) {
+    KnowledgeNamespace corpus = namespaces.get(namespace);
+    if (corpus == null) {
+      throw new IllegalArgumentException("Knowledge namespace is not registered: " + namespace);
+    }
+    Map<String, Object> body = new LinkedHashMap<>(filters);
+    // The question may carry a phone number or an address of the person asking.
+    body.put("query", PiiMask.mask(question));
     body.put("top_k", topK);
     body.put("namespace", namespace);
     List<Map<String, Object>> chunks = aiGateway.postJson(RETRIEVE_PATH, body,
@@ -58,7 +90,10 @@ public class KnowledgeGatewayService implements KnowledgeGateway {
     List<Map<String, Object>> relevant = chunks.stream()
         .filter(chunk -> ((Number) chunk.getOrDefault("score", 0)).doubleValue() >= minScore)
         .toList();
-    return new KnowledgeAnswer(question, mergeByDocument(relevant, corpus.sources()));
+    List<KnowledgePassage> passages = mergeByDocument(relevant, corpus.sources());
+    return new KnowledgeAnswer(question, passages,
+        passages.isEmpty() ? "IN_SCOPE_NO_EVIDENCE" : "ANSWERABLE",
+        passages.isEmpty() ? "NO_EVIDENCE" : "EVIDENCE_FOUND", namespace);
   }
 
   // The chunks of one document become one passage: its lines in document order without repeats,

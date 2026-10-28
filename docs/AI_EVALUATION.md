@@ -1,8 +1,11 @@
-# Đánh giá AI chẩn đoán bệnh lúa
+# Đánh giá AI
+
+Tài liệu tổng hợp chỉ số CV, truy xuất RAG và hiệu năng retrieval.
+
+![Tổng quan các luồng AI và đánh giá](images/ai/overview.png)
 
 Kết quả model bệnh DX-Farm EfficientNetV2-M do người huấn luyện cung cấp; không chấm lại accuracy trong đợt tích hợp.
 Các phép thử bộ lọc ảnh ở mục 3.2 và 3.4 giữ kết quả trước đây vì bộ lọc không thay đổi.
-Tài liệu này chỉ đánh giá phần thị giác; chất lượng truy xuất RAG ở [`TESTING.md`](./TESTING.md#đánh-giá-truy-xuất-rag).
 
 ## 1. Phạm vi
 
@@ -89,3 +92,83 @@ Healthy là lớp được huấn luyện, không suy ra từ việc model khôn
 - Bổ sung ảnh thực địa và dữ liệu cho Leaf Smut, kiểm tra các cặp bệnh hay nhầm trước khi huấn luyện thêm classifier.
 - Thay hoặc huấn luyện thêm bộ phân loại cây trồng với lớp ngô, mía, cỏ dại, lúa mì.
 - Ghi confusion matrix và chỉ số theo lớp khi có đủ mẫu.
+
+## 7. Đánh giá truy xuất RAG
+
+![Các phép đo đánh giá RAG](images/ai/evaluation.png)
+
+Đo ngày 28/10/2026 bằng `ir_measures`: 27 câu Farm, 39 câu Lab trên 25 tài liệu, 244 đoạn.
+Tổng bộ đề có 72 câu, gồm thêm 6 câu chẩn đoán. Chủ dự án đã duyệt 42 câu pilot; 30 câu mở rộng còn nhãn nháp. Dataset vẫn là `draft`, chưa được đánh giá độc lập.
+Điểm được tính sau bước lọc truy xuất, trước khi Backend gộp các đoạn tài liệu.
+
+| Strategy | Farm Recall@4 | Farm nDCG@4 | Lab Recall@4 | Lab nDCG@4 |
+|---|---:|---:|---:|---:|
+| Cosine + boost | 0,521605 | 0,458521 | 0,730769 | 0,674168 |
+| BM25 | 0,487654 | 0,500554 | 0,769231 | 0,749210 |
+| BM25 + cosine/RRF | 0,555556 | 0,492140 | 0,782051 | 0,733912 |
+| Hybrid + rerank | 0,648148 | 0,602363 | 0,762821 | 0,703415 |
+
+**Recall@4** đo tỷ lệ đoạn liên quan tìm được trong bốn kết quả đầu; **nDCG@4** đo mức ưu tiên đoạn hữu ích ở đầu danh sách.
+Điểm từ 0–1, càng cao càng tốt; chỉ đánh giá truy xuất tài liệu.
+Hybrid + rerank cao nhất trên Farm; Lab có Recall@4 cao nhất với hybrid/RRF, nDCG@4 cao nhất với BM25. Chatbot hiện mặc định dùng hybrid + rerank cho cả hai namespace.
+
+Sáu câu tham khảo chẩn đoán đạt Recall@3 và nDCG@3 bằng 1,0 với mã bệnh cho sẵn; không đo độ đúng CV hoặc toàn pipeline chẩn đoán.
+
+Cách chạy và xem kết quả trên Langfuse: [`ai/README.md`](../ai/README.md#đánh-giá-truy-xuất-rag).
+
+## 8. Thử tải HTTP retrieval
+
+Đo ngày 28/10/2026 bằng k6: 1.369 request qua 12 lượt, không ghi nhận lỗi HTTP, sai định dạng phản hồi hoặc hết bộ nhớ.
+Mỗi mức tải chạy 10 giây sau khi làm nóng model, lặp một lần; AI dùng 2 CPU, 1.536 MiB RAM và một worker.
+Mỗi người dùng gửi yêu cầu tiếp theo sau khi nhận phản hồi, với thời gian chờ tối đa 20 giây.
+
+| Nhóm | VU | Cosine req/s | Cosine p95 (ms) | Hybrid + rerank req/s | Hybrid + rerank p95 (ms) |
+|---|---:|---:|---:|---:|---:|
+| Farm | 1 | 33,78 | 45,54 | 0,83 | 1561,44 |
+| Farm | 2 | 17,06 | 294,65 | 0,91 | 2376,22 |
+| Farm | 5 | 7,95 | 931,89 | 0,87 | 6145,04 |
+| Lab | 1 | 36,37 | 35,67 | 1,07 | 1139,32 |
+| Lab | 2 | 22,42 | 168,70 | 0,98 | 2668,25 |
+| Lab | 5 | 11,84 | 598,11 | 1,07 | 4869,63 |
+
+**VU** là số người dùng đồng thời; **req/s** là số yêu cầu xử lý mỗi giây; **p95** là thời gian mà 95% yêu cầu không vượt quá.
+RAM đỉnh đo bằng `docker stats`: AI cosine 1.112,1 MiB, AI hybrid + rerank 1.413,1 MiB; pgvector 34,3 MiB.
+Hybrid + rerank đạt 0,83–1,07 req/s; p95 tăng tới 6,15 giây ở 5 VU. Phép đo chỉ gồm `/api/v1/knowledge/search` trên máy dùng chung; không gồm CV, Backend/gateway hoặc Qwen.
+
+Cách chạy và xem báo cáo: [`ai/README.md`](../ai/README.md#thử-tải-http-retrieval).
+Runner mặc định chạy 36 lượt, 30 giây mỗi mức, lặp ba lần; bảng trên là kết quả chạy rút gọn, chưa phải kết quả cấu hình mặc định.
+
+## 9. Đánh giá nhận biết phạm vi và khả năng trả lời
+
+| Hạng mục | Hiện trạng |
+|---|---|
+| Bộ đề | 75 câu scope (45 trong miền, 30 ngoài miền) + 15 ca trong miền nhưng kho tri thức không đủ thông tin để trả lời |
+| Phép đo | `ChatSearch` thật qua `evaluate_scope.py --live`, đã nối vào runner `quality` |
+| Chỉ số | Precision, Recall, F1 về scope; số ca nhận biết đúng khi không đủ thông tin để trả lời |
+| Kết quả | Đã được kiểm tra; điểm scope chưa được ghi trong tài liệu này |
+
+Chế độ không có `--live` chỉ kiểm gate legacy, không đại diện chatbot hiện tại.
+
+## 10. Chất lượng câu trả lời Qwen
+
+| Hạng mục | Hiện trạng |
+|---|---|
+| Phạm vi | Hỏi đáp Farm/Lab; giải thích chẩn đoán khi bật `include_explanation` |
+| Kiểm tra đã có | Test hợp đồng với model giả: schema, nguồn, nội dung bị cấm, fallback và giữ nguyên quy tắc điều trị |
+| Chất lượng nội dung | Chưa có bảng chấm bởi người duyệt; chưa có điểm chất lượng Qwen trong runner Langfuse |
+| Hiệu năng | Chưa nằm trong kết quả tải ở mục 8 |
+
+Tỷ lệ trả lời `generated` không phải tỷ lệ trả lời đúng. Phần cần chấm tiếp: đúng trọng tâm, bám nguồn, dễ đọc và từ chối đúng khi thiếu bằng chứng.
+
+## 11. Kết quả trên Langfuse
+
+Langfuse hiển thị kết quả đã lưu của ba nhóm: retrieval, scope và tải HTTP. Thời lượng trace là thời gian replay/publish, không phải độ trễ suy luận.
+
+| Kết quả cần đối chiếu | Artifact |
+|---|---|
+| Recall/nDCG và so sánh strategy | `score.json`, `comparison.json` |
+| Phạm vi và khả năng trả lời | `scope.json` |
+| Tải HTTP, CPU/RAM | `performance-*/benchmark.json` |
+| Phiên bản code, model và dữ liệu | `ingest.json`, `collect.json`, `dataset.json` |
+
+Các bảng ngày 28/10/2026 giữ số liệu đã công bố; chưa bổ sung run ID hoặc liên kết experiment để đối chiếu trực tiếp. Cách chạy và mở lịch sử: [`ai/README.md`](../ai/README.md#đánh-giá-truy-xuất-rag).

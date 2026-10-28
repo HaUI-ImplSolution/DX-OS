@@ -31,6 +31,7 @@ Chạy cả stack ở [`deploy/`](../deploy/): `./deploy/start.sh [farm|lab]`.
 - `dx-host/src/main/resources/application.yaml`: cấu hình chung; `application-farm.yaml` và `application-lab.yaml`: cấu hình riêng của từng app.
 - Biến môi trường đặt ở `deploy/.env` (mẫu `deploy/.env.example`).
 - Schema do Flyway quản lý: `db/migration/core` của core và `db/migration/<app>` của từng ứng dụng, mỗi nơi một bảng lịch sử.
+- `dx-monitor` chạy Flyway riêng với `db/migration/monitor` trong schema `monitor`, độc lập với core và ứng dụng.
 
 ## API
 

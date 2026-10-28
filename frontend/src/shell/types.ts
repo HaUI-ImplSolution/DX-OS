@@ -66,11 +66,28 @@ export interface KnowledgePassage {
   content: string;
   documentTitle: string;
   score: number;
+  corpusVersion: string | null;
   sources: KnowledgeSource[];
 }
 
+export interface GeneratedAnswer {
+  version: 1;
+  mode: "generated" | "extractive" | "insufficient_context";
+  summary: string;
+  steps: string[];
+  note?: string | null;
+  sourceIds: string[];
+  modelName?: string | null;
+  promptVersion?: string | null;
+  reason?: "insufficient_evidence" | "out_of_scope" | "requires_authority" | "generation_failed" | "conflicting_output" | null;
+}
+
 export interface KnowledgeAnswer {
+  answer?: GeneratedAnswer | null;
   question: string;
+  scopeStatus: "ANSWERABLE" | "IN_SCOPE_NO_EVIDENCE" | "OUT_OF_SCOPE";
+  reasonCode: string;
+  namespace: string;
   passages: KnowledgePassage[];
 }
 

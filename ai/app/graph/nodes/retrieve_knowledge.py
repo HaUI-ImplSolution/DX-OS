@@ -2,7 +2,7 @@
 """LangGraph node: retrieve_knowledge
 
 This node fetches relevant knowledge chunks from the pgvector store via the
-RAGRetriever (or RAGService) and stores them in the workflow state under
+RAGRetriever and stores them in the workflow state under
 `rag_context`.
 
 The node expects a question string in `state.get("rag_question")`. If the key

@@ -10,4 +10,8 @@ public interface KnowledgeGateway {
   // filters: narrows the search by fields of the retriever (such as one disease of a catalogue).
   // Throws AiServiceException when the AI service is unavailable.
   KnowledgeAnswer ask(String namespace, String question, Map<String, String> filters, int topK);
+
+  // Related passages for non-chatbot assistance; this deliberately skips the chatbot scope gate.
+  KnowledgeAnswer retrieve(String namespace, String question, Map<String, String> filters,
+      int topK);
 }

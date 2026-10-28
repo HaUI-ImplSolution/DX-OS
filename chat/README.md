@@ -1,6 +1,6 @@
 # Kênh chat nội bộ (Mattermost)
 
-Nhận thông báo một chiều từ Backend qua Incoming Webhook.
+Nhận thông báo một chiều từ Backend và cảnh báo từ `dx-monitor` qua Incoming Webhook.
 Chạy bằng image chính thức `mattermost/mattermost-team-edition`, không build lại và không dùng `server/enterprise/` (AGPL-3.0, giấy phép các thành phần ở [`LICENSES.md`](../LICENSES.md)).
 Service khai báo trong [`deploy/docker-compose.yml`](../deploy/docker-compose.yml).
 
@@ -19,6 +19,7 @@ Service khai báo trong [`deploy/docker-compose.yml`](../deploy/docker-compose.y
 | Farm | `Kỹ sư nông nghiệp` (`MATTERMOST_WEBHOOK_URL_ENGINEER`) | Báo cáo sâu bệnh mới (kèm ảnh khi có `MATTERMOST_IMAGE_BASE_URL`), chẩn đoán chờ duyệt, khai phun thuốc chờ xác nhận, kết quả duyệt hoặc từ chối chẩn đoán, kết quả ghi nhận, xác nhận hoặc từ chối việc phun thuốc |
 | Lab | `Kỹ thuật viên` (`MATTERMOST_WEBHOOK_URL_TECHNICIAN`) | Yêu cầu hỗ trợ mới, yêu cầu quá hạn xử lý |
 | Lab | `Ban quản trị` (`MATTERMOST_WEBHOOK_URL_ADMIN`) | Yêu cầu quá hạn xử lý |
+| Farm, Lab | `Ban quản trị` (`MATTERMOST_WEBHOOK_URL_ADMIN`) | Backend báo khi một địa chỉ bị từ chối nhiều lần; `dx-monitor` báo khi dịch vụ ngừng hoặc phục hồi, lỗi `5xx`, địa chỉ bị giới hạn tốc độ và địa chỉ đăng nhập sai nhiều lần ([`dx-monitor/README.md`](../backend/dx-monitor/README.md#cảnh-báo)) |
 
 - Gửi nền sau khi transaction commit, best-effort không retry: lỗi thì bỏ thông báo và ghi một dòng WARN không chứa URL.
 - Webhook của từng channel do `mattermost-bootstrap` tạo khi dựng stack và ghi vào `deploy/data/mattermost/webhooks/<khóa>.url` (`engineer`, `admin`, `technician`, `default`).
@@ -37,7 +38,9 @@ Dùng Mattermost bên ngoài stack thì đặt `MATTERMOST_WEBHOOK_URL_*` trong 
 ## Hạn chế
 
 - Một chiều: duyệt và từ chối làm trong web; thông báo không được cập nhật sau khi gửi.
-- Định tuyến theo loại sự kiện, không theo thửa hay người phụ trách; không có outbox nên thông báo lỡ không gửi lại.
+- Định tuyến theo loại sự kiện, không theo thửa hay người phụ trách.
+- Số điện thoại, email và dãy số từ 9 chữ số trở lên trong tin được thay bằng `[đã ẩn]` trước khi gửi, vì lịch sử chat giữ tin mãi.
+- Tin gửi lỗi tạm thời (mạng, HTTP 5xx, 429) được lưu ở bảng `chat_outbox` và gửi lại tối đa 8 lần; tin chưa kịp vào bảng khi backend tắt giữa lúc commit và lúc gửi thì mất.
 - `Kỹ sư nông nghiệp` là channel public: mọi thành viên team đọc được tên người báo cáo và mã thửa; muốn giới hạn thì chuyển sang private.
 
 Hướng mở rộng ở [`docs/BACKLOG.md`](../docs/BACKLOG.md).

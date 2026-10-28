@@ -116,9 +116,20 @@ export interface TreatmentRule {
   version: string | null;
 }
 
+export interface GeneratedExplanation {
+  version: 1;
+  mode: "generated" | "extractive" | "insufficient_context";
+  summary: string;
+  steps: string[];
+  note?: string | null;
+  sourceIds: string[];
+  reason?: "insufficient_evidence" | "out_of_scope" | "requires_authority" | "generation_failed" | "conflicting_output" | null;
+}
+
 // For FARMER only id, diseaseReportId and approvalStatus are guaranteed;
 // REJECTED adds decidedAt and rejectionReason, and the rest is set once APPROVED.
 export interface Diagnosis {
+  generatedExplanation?: GeneratedExplanation | null;
   id: number;
   diseaseReportId: number;
   approvalStatus: ApprovalStatus;

@@ -35,7 +35,7 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE.md`](../ARCHITECTURE.md).
 
 | Dịch vụ | Cách cung cấp | Ứng dụng dùng |
 |---|---|---|
-| Identity/SSO | Keycloak realm `dxos`; core tạo vai do ứng dụng khai báo và tài khoản workspace qua Admin API; ghi sự kiện đăng nhập và khóa tạm khi sai mật khẩu nhiều lần | Farm: FARMER, ENGINEER, ADMIN; Lab: STUDENT, LECTURER, TECHNICIAN, ADMIN |
+| Identity/SSO | Keycloak realm `dxos`; core tạo vai do ứng dụng khai báo và tài khoản workspace qua Admin API; ghi sự kiện đăng nhập và khóa tạm khi sai mật khẩu nhiều lần; mật khẩu chỉ nằm ở Keycloak dưới dạng băm Argon2id, backend không lưu | Farm: FARMER, ENGINEER, ADMIN; Lab: STUDENT, LECTURER, TECHNICIAN, ADMIN |
 | API Gateway | APISIX là cửa duy nhất: kiểm JWT, giới hạn tốc độ, route theo app, log truy cập JSON kèm `X-Request-Id`; backend kiểm JWT lần hai | Giới hạn upload ảnh và chẩn đoán (Farm), tạo ticket và đặt phòng (Lab) |
 | Dữ liệu cấu trúc | PostgreSQL, Flyway: `db/migration/core` dùng chung và `db/migration/<app>` | Bảng riêng của từng ứng dụng, dùng chung `workspaces`, `notifications` |
 | Dữ liệu phi cấu trúc | MinIO riêng tư, client nhận link có hạn; tệp qua `FileProcessor` của ứng dụng | Ảnh lá lúa (Farm), tệp đính kèm ticket (Lab) |
@@ -61,7 +61,7 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE.md`](../ARCHITECTURE.md).
 - Farm, CV: EfficientNetV2-M (checkpoint `DX-Farm-EfficientNetV2-M` 4.0.0, Apache-2.0 cho phần fine-tune của nhóm), dữ liệu RiceLeafDiseaseBD v3 (CC BY 4.0), Healthy và 5 bệnh lá lúa.
   Trước model bệnh có crop classifier YOLO26s-cls (ONNX) kiểm ảnh là lúa; trọng số nằm trong `ai/weights/`, model bệnh được ghép vào image khi build.
 - RAG: pgvector, embedding `paraphrase-multilingual-MiniLM-L12-v2` (Apache-2.0); 6 tài liệu IRRI và LSU cho Farm, 12 bài trích từ nội quy, quy định và hướng dẫn chính thức của HaUI cho Lab, mỗi corpus một namespace.
-- LLM: Qwen2.5-1.5B (Apache-2.0) chỉ diễn đạt câu trả lời hỏi đáp từ tài liệu đã tra, không sinh số; chẩn đoán không dùng LLM.
+- LLM: Qwen2.5-1.5B (Apache-2.0) diễn đạt hỏi đáp web Farm/Lab và giải thích chẩn đoán khi được yêu cầu, tách khỏi tài liệu trích dẫn; thuốc, liều, PHI và quyết định duyệt thuộc Backend.
 - Lab, luật phân loại: từ khóa theo loại và luật nâng ưu tiên (`classifier-rules.json`), trả kèm từ khóa khớp và lý do; người dùng quyết định.
 - Giới hạn:
   - Ngưỡng chuyển cho người xem `0.70` chưa có căn cứ đo trên ảnh ngoài ruộng.
@@ -112,7 +112,7 @@ Hướng mở rộng:
 - Lịch chạy nền (kiểm SLA, nhắc mượn trả, nhắc thu hoạch, nhắc xác nhận khai phun, thu thập thời tiết) giữ khóa advisory của PostgreSQL nên hai bản backend không chạy cùng một việc cùng lúc.
   Thông báo trong app có khóa chống trùng; tin chat nhắc có thể lặp nếu hai bản chạy lệch giờ.
 - Hạn mức tốc độ tính theo địa chỉ IP ở gateway là số tạm.
-- Chưa có thử tải.
+- Thử tải mới đo endpoint truy xuất của AI (k6, 1/2/5 người dùng ảo, kết quả ở `TESTING.md` mục 3); chưa thử tải Backend, gateway hay toàn hệ thống.
 
 ## 10. Nếu cộng đồng muốn đóng góp một module mới, quy trình contribution là gì?
 

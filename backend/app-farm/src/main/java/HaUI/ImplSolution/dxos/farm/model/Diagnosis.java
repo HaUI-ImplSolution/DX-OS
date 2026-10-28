@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.farm.model;
 
+import HaUI.ImplSolution.dxos.core.api.ai.GeneratedAnswer;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -77,6 +79,11 @@ public class Diagnosis {
   @Column(nullable = false)
   @Builder.Default
   private List<KnowledgeEvidence> knowledgeEvidence = new ArrayList<>();
+
+  // Immutable wording snapshot of this diagnosis, exposed only through its approval rules.
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(columnDefinition = "jsonb")
+  private GeneratedAnswer generatedExplanation;
 
   // Trạng thái duyệt của kỹ sư (PENDING/APPROVED/REJECTED)
   @Enumerated(EnumType.STRING)

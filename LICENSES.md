@@ -49,6 +49,7 @@ AI Service là tiến trình riêng, chỉ giao tiếp với Backend qua HTTP n�
 |---|---|---|
 | FastAPI, Pydantic, SQLAlchemy, pgvector, LangGraph, LangChain, python-docx | MIT | API, RAG, luồng suy luận |
 | Uvicorn, HTTPX, python-dotenv, pypdf | BSD-3-Clause | Máy chủ, HTTP client, nạp tài liệu |
+| rank-bm25 0.2.2 | Apache-2.0 | BM25 cho truy xuất chatbot |
 | python-multipart, sentence-transformers | Apache-2.0 | Nhận upload, embedding |
 | ir-measures 0.3.3 | Apache-2.0 | Chấm Recall và nDCG trong môi trường đánh giá riêng |
 | pytrec-eval-terrier 0.5.11 | MIT | Provider tính metric của ir-measures, chỉ dùng để đánh giá |
@@ -69,6 +70,7 @@ AI Service là tiến trình riêng, chỉ giao tiếp với Backend qua HTTP n�
 | [Crop classifier YOLO26s-cls](https://huggingface.co/RaiyanKhaan/KrishokTech-Models/tree/c339988a6eceb5e22943ee27e4731a1a1dc9160a/01_crop_classifier) (`ai/weights/crop_classifier.onnx`) | AGPL-3.0 | Kiểm ảnh là lúa trước model bệnh |
 | [Qwen2.5 1.5B](https://ollama.com/library/qwen2.5) | Apache-2.0 | LLM diễn đạt, chạy qua Ollama |
 | [`paraphrase-multilingual-MiniLM-L12-v2`](https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2) | Apache-2.0 | Embedding cho RAG |
+| [mMARCO multilingual MiniLM reranker](https://huggingface.co/cross-encoder/mmarco-mMiniLMv2-L12-H384-v1) | Apache-2.0 | Xếp hạng lại evidence chatbot, tách khỏi chẩn đoán |
 | [RiceLeafDiseaseBD v3](https://doi.org/10.17632/86s4jzj2m4.3) | CC BY 4.0 | Dữ liệu huấn luyện model bệnh |
 | Tri thức DX-Lab (`data/rag/lab/`) | © Đại học Công nghiệp Hà Nội | Trích nội quy, quy định và hướng dẫn công khai trên các trang haui.edu.vn, kèm bản PDF gốc |
 | [Open-Meteo](https://open-meteo.com) | CC BY 4.0 | Thời tiết theo thửa, snapshot dự phòng và chart thời tiết của Superset |
@@ -97,7 +99,10 @@ Dữ liệu mẫu của Lab (phòng, thiết bị, yêu cầu) là dữ liệu g
 | AWS CLI | Apache-2.0 | Chỉ dùng trong `minio/migrate-uploads.sh` |
 | Langfuse server/worker 4.70.1 | MIT cho phần core; phần EE theo điều khoản riêng | Giao diện đánh giá local, không bật tính năng Enterprise ([license](https://github.com/langfuse/langfuse/blob/main/LICENSE)) |
 | ClickHouse 25.12 | Apache-2.0 | Lưu kết quả Langfuse trong môi trường đánh giá ([license](https://github.com/ClickHouse/ClickHouse/blob/master/LICENSE)) |
-| Redis 7.4 | RSALv2 hoặc SSPLv1 | Queue/cache Langfuse local ([license](https://redis.io/legal/licenses/)) |
+| Redis 7.x (`redis:7`) | RSALv2 hoặc SSPLv1 (từ 7.4) | Queue/cache Langfuse local ([license](https://redis.io/legal/licenses/)) |
 | Docker CLI (Moby) | Apache-2.0 | Chỉ công cụ thử tải lấy mẫu container do bộ chạy tạo ([license](https://github.com/docker/cli/blob/master/LICENSE)) |
 | gitleaks | MIT | Quét secret trong CI |
+| Trivy 0.58.1 | Apache-2.0 | Quét lỗ hổng phụ thuộc trong CI, chạy trong container |
+| ClamAV 1.5.4 (`clamav/clamav`) | GPL-2.0 | Quét mã độc tệp tải lên; dịch vụ riêng ở profile `av`, backend nói chuyện qua mạng, không liên kết mã |
+| restic 0.17.3 | BSD-2-Clause | Sao lưu mã hóa của `deploy/backup.sh`, chạy trong container, không đóng gói trong runtime ([license](https://github.com/restic/restic/blob/master/LICENSE)) |
 | CycloneDX (`cyclonedx-bom`, `@cyclonedx/cyclonedx-npm`, `cyclonedx-maven-plugin`) | Apache-2.0 | Sinh SBOM |

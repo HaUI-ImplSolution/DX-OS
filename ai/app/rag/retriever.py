@@ -33,6 +33,8 @@ class RAGRetriever:
         db: Session,
         query: str,
         top_k: int = 5,
+        # Keep disease retrieval as the legacy default. Generic chat callers
+        # must pass None or an explicit document type intentionally.
         document_type: str | None = "disease_knowledge",
         disease_code: str | None = None,
         namespace: str = DEFAULT_NAMESPACE,
@@ -107,7 +109,9 @@ def retrieve_knowledge(
     disease_code: str | None = None,
     top_k: int = 3,
     namespace: str = DEFAULT_NAMESPACE,
+    document_type: str | None = "disease_knowledge",
 ) -> list[dict]:
     return RAGRetriever().retrieve(
-        db, query, top_k=top_k, disease_code=disease_code, namespace=namespace
+        db, query, top_k=top_k, disease_code=disease_code, namespace=namespace,
+        document_type=document_type,
     )

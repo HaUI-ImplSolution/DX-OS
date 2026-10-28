@@ -7,6 +7,7 @@ import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { ErrorState } from "@/components/ErrorState";
 import { Field } from "@/components/Field";
+import { GeneratedExplanationCard } from "@/components/GeneratedExplanationCard";
 import { KnowledgePassageCard } from "@/components/KnowledgePassageCard";
 import { Screen } from "@/components/Screen";
 import { SkeletonCards } from "@/components/Skeleton";
@@ -87,6 +88,7 @@ function DiagnosisSection({ report }: { report: DiseaseReport }) {
           diagnosis.recommendationText && <Text style={styles.body}>{diagnosis.recommendationText}</Text>
         )}
       </Card>
+      {diagnosis.generatedExplanation && <GeneratedExplanationCard answer={diagnosis.generatedExplanation} />}
       {evidence.length > 0 && (
         <View style={styles.evidence}>
           <Text style={styles.cardTitle}>Thông tin tham khảo từ tài liệu</Text>

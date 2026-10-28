@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -28,9 +29,11 @@ public class KnowledgeController {
   @Operation(summary = "Ask a question of the lab knowledge base",
       description = "Any signed-in user. Returns the best matching passages of the corpus, each"
           + " with the documents it is based on (title, organization, publisher page, original"
-          + " file, license, review status). Passages are quoted, never generated; the list is"
-          + " empty when nothing is relevant enough. 503 when the AI service is unavailable.")
-  public ApiResponse<AnswerResponse> ask(@Valid @RequestBody AskRequest request) {
-    return ApiResponse.success(knowledgeService.ask(request));
+          + " file, license, review status). Passages remain verbatim evidence. includeAnswer"
+          + " defaults to false; when true, adds a structured Qwen answer with explicit"
+          + " generation/fallback mode and an optional reason; failed generation returns no answer text. 503 when retrieval is unavailable.")
+  public ApiResponse<AnswerResponse> ask(@Valid @RequestBody AskRequest request,
+      @RequestParam(defaultValue = "false") boolean includeAnswer) {
+    return ApiResponse.success(knowledgeService.ask(request, includeAnswer));
   }
 }

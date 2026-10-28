@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.farm.dto;
 
+import HaUI.ImplSolution.dxos.core.api.ai.GeneratedAnswer;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -53,5 +55,7 @@ public record DiagnosisResponse(
   // Tài liệu tham khảo AI tìm được, mỗi tài liệu một mục; không tham gia quyết định điều trị
   @Schema(description = "Reference documents the AI retrieved, one entry per document, best first;"
       + " never used to decide the pesticide, dose or PHI. Empty for manual diagnoses.")
-  List<KnowledgeAnswerResponse.Passage> knowledgeEvidence
+  List<KnowledgeAnswerResponse.Passage> knowledgeEvidence,
+
+  @JsonInclude(JsonInclude.Include.NON_NULL) GeneratedAnswer generatedExplanation
 ){}

@@ -2,6 +2,165 @@
   "realm": "dxos",
   "enabled": true,
   "sslRequired": "none",
+  "passwordPolicy": "length(8) and notUsername",
+  "browserFlow": "dxos browser",
+  "authenticationFlows": [
+    {
+      "alias": "dxos browser",
+      "description": "Browser login; staff roles also give a one-time code (STAFF_OTP_FLOW)",
+      "providerId": "basic-flow",
+      "topLevel": true,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "auth-cookie",
+          "authenticatorFlow": false,
+          "requirement": "ALTERNATIVE",
+          "priority": 10,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticatorFlow": true,
+          "requirement": "ALTERNATIVE",
+          "priority": 20,
+          "flowAlias": "dxos browser forms",
+          "userSetupAllowed": false
+        }
+      ]
+    },
+    {
+      "alias": "dxos browser forms",
+      "description": "Username and password, then the code for staff roles",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "auth-username-password-form",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticatorFlow": true,
+          "requirement": "${STAFF_OTP_FLOW}",
+          "priority": 20,
+          "flowAlias": "dxos otp for ADMIN",
+          "userSetupAllowed": false
+        },
+        {
+          "authenticatorFlow": true,
+          "requirement": "${STAFF_OTP_FLOW}",
+          "priority": 30,
+          "flowAlias": "dxos otp for ENGINEER",
+          "userSetupAllowed": false
+        },
+        {
+          "authenticatorFlow": true,
+          "requirement": "${STAFF_OTP_FLOW}",
+          "priority": 40,
+          "flowAlias": "dxos otp for TECHNICIAN",
+          "userSetupAllowed": false
+        }
+      ]
+    },
+    {
+      "alias": "dxos otp for ADMIN",
+      "description": "One-time code for users with the ADMIN role",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "conditional-user-role",
+          "authenticatorConfig": "dxos role ADMIN",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "auth-otp-form",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 20,
+          "userSetupAllowed": false
+        }
+      ]
+    },
+    {
+      "alias": "dxos otp for ENGINEER",
+      "description": "One-time code for users with the ENGINEER role",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "conditional-user-role",
+          "authenticatorConfig": "dxos role ENGINEER",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "auth-otp-form",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 20,
+          "userSetupAllowed": false
+        }
+      ]
+    },
+    {
+      "alias": "dxos otp for TECHNICIAN",
+      "description": "One-time code for users with the TECHNICIAN role",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "conditional-user-role",
+          "authenticatorConfig": "dxos role TECHNICIAN",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "auth-otp-form",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 20,
+          "userSetupAllowed": false
+        }
+      ]
+    }
+  ],
+  "authenticatorConfig": [
+    {
+      "alias": "dxos role ADMIN",
+      "config": {
+        "condUserRole": "ADMIN",
+        "negate": "false"
+      }
+    },
+    {
+      "alias": "dxos role ENGINEER",
+      "config": {
+        "condUserRole": "ENGINEER",
+        "negate": "false"
+      }
+    },
+    {
+      "alias": "dxos role TECHNICIAN",
+      "config": {
+        "condUserRole": "TECHNICIAN",
+        "negate": "false"
+      }
+    }
+  ],
   "bruteForceProtected": true,
   "permanentLockout": false,
   "failureFactor": 5,
@@ -29,7 +188,9 @@
   "adminEventsDetailsEnabled": true,
   "roles": {
     "realm": [
-      { "name": "ADMIN", "description": "Quản trị nền tảng" }
+      { "name": "ADMIN", "description": "Quản trị nền tảng" },
+      { "name": "ENGINEER", "description": "Kỹ sư" },
+      { "name": "TECHNICIAN", "description": "Kỹ thuật viên" }
     ]
   },
   "components": {

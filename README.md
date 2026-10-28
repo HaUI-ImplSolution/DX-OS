@@ -21,10 +21,12 @@ Một lõi dùng chung lo đăng nhập, dữ liệu, quy trình, thông báo v�
 
 - **Một lõi, nhiều ứng dụng:** Farm và Lab dùng chung một lõi, thêm ứng dụng không phải sửa core.
 - **An toàn nghiệp vụ:** các quy tắc quan trọng được kiểm ngay ở Backend và cơ sở dữ liệu, không chỉ ở giao diện.
-- **Truy vết:** gateway ghi log từng request, Keycloak ghi sự kiện đăng nhập, Backend ghi lần bị từ chối, lỗi `5xx` và thao tác quản trị vào audit log chỉ thêm; màn hình giám sát `/monitor/` (chỉ ADMIN) gom các nguồn này, dò trạng thái dịch vụ và cảnh báo qua Mattermost.
-- **AI có kiểm soát:** AI chỉ hỗ trợ, thông tin thuốc và liều lấy từ dữ liệu chuyên gia đã duyệt, kỹ sư là người quyết định.
+- **Truy vết:** mọi lượt truy cập, lần đăng nhập, lỗi và thao tác quản trị đều được ghi lại; màn hình giám sát dành cho quản trị viên gom các nguồn này, theo dõi tình trạng dịch vụ và báo sự cố qua kênh chat.
+- **Bảo mật:** nhân sự có thể bật xác thực hai bước, tệp tải lên có thể được quét mã độc, thông tin cá nhân được che trước khi gửi sang kênh chat và AI.
+- **Sao lưu và khôi phục:** dữ liệu và tệp được sao lưu mã hóa, việc khôi phục được kiểm tra tự động.
+- **AI có kiểm soát:** AI chỉ hỗ trợ, trả lời kèm nguồn và từ chối khi câu hỏi ngoài phạm vi hoặc thiếu căn cứ; thông tin thuốc và liều lấy từ dữ liệu chuyên gia đã duyệt, kỹ sư là người quyết định.
 - **Chạy một lệnh:** dựng toàn bộ hệ thống kèm dữ liệu demo, có kiểm thử tự động trên môi trường sạch.
-- **Nguồn mở minh bạch:** công khai giấy phép và danh sách thành phần phần mềm, quét lộ mật khẩu tự động.
+- **Nguồn mở minh bạch:** công khai giấy phép và danh sách thành phần phần mềm, tự động quét lộ mật khẩu và lỗ hổng thư viện.
 
 ## 🗺️ Kiến trúc tổng thể
 
@@ -88,13 +90,13 @@ Bảng dependency và giấy phép đầy đủ ở [`LICENSES.md`](./LICENSES.m
 | RAM | 8 GB | Khuyến nghị 16 GB nếu chạy LLM và build cùng lúc |
 | CPU | 4 vCPU | Không cần GPU |
 | Ổ đĩa | 40 GB trống | Image AI khoảng 3 GB, Ollama khoảng 9 GB cùng model Qwen2.5 |
-| Cổng | `9080`, `9081`, `9082`, `8065` | Đổi bằng biến `*_HOST_PORT` |
+| Cổng | `9080`, `9081`, `8065`; `9082` và `5432` chỉ mở trên chính máy chủ | Đổi bằng biến `*_HOST_PORT` |
 
 ### 📝 Các bước
 
 ```bash
 git clone https://github.com/HaUI-ImplSolution/DX-OS.git && cd DX-OS
-cp deploy/.env.example deploy/.env      # điền mọi biến đang để trống
+python3 deploy/demo/make_ci_env.py      # sinh deploy/.env, biến để trống nhận mật khẩu ngẫu nhiên
 python3 -m pip install pillow           # cho script dữ liệu demo
 ./deploy/start.sh                       # dựng, chạy ứng dụng trong DXOS_APP và nạp dữ liệu demo
 ```
@@ -145,7 +147,7 @@ Cấu hình riêng của từng ứng dụng ở [`backend/app-farm/README.md`](
 
 Máy chủ công khai chạy sau Cloudflare Tunnel, không mở cổng vào.
 Bật bằng overlay [`deploy/docker-compose.cloudflared.yml`](./deploy/docker-compose.cloudflared.yml) (hướng dẫn ở đầu file).
-Khái niệm và cấu hình Cloudflare ở [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE.md); xem log, giới hạn tốc độ và audit ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
+Khái niệm và cấu hình Cloudflare ở [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE.md); xem log, giới hạn tốc độ, audit, sao lưu và khôi phục ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
 
 ### 🔑 Tài khoản demo
 
@@ -158,7 +160,21 @@ Khái niệm và cấu hình Cloudflare ở [`docs/CLOUDFLARE.md`](./docs/CLOUDF
 | Farm, Lab | `admin1` | `admin123` | ADMIN |
 | Lab | `student1`, `student2` | `student123` | STUDENT |
 | Lab | `lecturer1` | `lecturer123` | LECTURER |
-| Lab | `tech1`, `tech2` | `tech123` | TECHNICIAN |
+| Lab | `tech1`, `tech2` | `tech1234` | TECHNICIAN |
+
+## 🔌 API
+
+- Swagger UI ở `/swagger-ui.html`, OpenAPI JSON ở `/v3/api-docs`; tài liệu sinh từ annotation springdoc và chỉ có API của ứng dụng đang chạy (`DXOS_APP`).
+- Mọi lời gọi đi qua gateway `http://localhost:9080/api/v1/...` kèm `Authorization: Bearer <access token Keycloak>`; chỉ `GET /api/v1/system/status` và danh mục công khai của ứng dụng không cần token.
+- Response bọc trong `ApiResponse`; lỗi có `errorCode` ổn định, lỗi nghiệp vụ trả `422` và xung đột đồng thời trả `409`.
+- Để thử: bấm **Authorize** trong Swagger với access token, hoặc dùng `deploy/demo/dxos_client.py` (đăng nhập Authorization Code + PKCE như app thật).
+
+| Nhóm | Đường dẫn chính |
+|---|---|
+| Core dùng chung | `/api/v1/system/status`, `/api/v1/app` (manifest: vai, menu), `/api/v1/workspaces`, `/api/v1/workflow-cases` (`assign`, `approve`, `reject`, `events`), `/api/v1/notifications`, `/api/v1/audit-logs` (ADMIN) |
+| Farm | `/api/v1/households`, `/api/v1/parcels`, `/api/v1/crop-seasons`, `/api/v1/disease-reports`, `/api/v1/treatment-rules`, `/api/v1/knowledge/ask`; xem [`backend/app-farm/README.md`](./backend/app-farm/README.md#api) |
+| Lab | `/api/v1/tickets`, `/api/v1/device-loans`, `/api/v1/room-bookings`, `/api/v1/lab-stats/summary`, `/api/v1/knowledge/ask`; xem [`backend/app-lab/README.md`](./backend/app-lab/README.md#api) |
+| AI Service | Chỉ Backend gọi được trong mạng nội bộ, không có route ở gateway; xem [`ai/README.md`](./ai/README.md#api) |
 
 ## 🧪 Kiểm thử
 

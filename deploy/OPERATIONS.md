@@ -20,6 +20,9 @@ Mỗi request là một dòng JSON trên stdout của container `apisix`.
 | `cf_ray` | Mã request của Cloudflare |
 | `user_agent` | Trình duyệt hoặc ứng dụng gọi |
 
+Backend chuyển `request_id` này sang AI service qua header `X-Request-Id`.
+AI ghi mỗi request thành một dòng `request_id=... POST /api/v1/... status=... ms`, nên `docker compose logs ai | grep <mã>` tìm lại được đúng lượt gọi.
+
 `remote_addr` là IP thật của người dùng khi vào qua Cloudflare Tunnel (đọc từ `CF-Connecting-IP`), và là IP trong mạng LAN khi vào trực tiếp.
 Header chỉ được tin khi request đến từ mạng Docker (`172.16.0.0/12`) hoặc loopback.
 Ở máy có dải Docker khác thì sửa `real_ip_from` trong `apisix/config.yaml`.
@@ -52,6 +55,8 @@ Admin Console → realm `dxos` → **Events**:
 
 Sau 5 lần đăng nhập sai, tài khoản bị khóa tạm 1 phút, mỗi lần sai tiếp theo tăng thêm 1 phút, tối đa 15 phút.
 Hai lần sai cách nhau dưới 1 giây cũng khóa 1 phút (kiểm tra đăng nhập nhanh của Keycloak), nên script đăng nhập thử cần chờ giữa các lần.
+Một địa chỉ đăng nhập sai từ 10 lần trong 10 phút thì `monitor` báo vào kênh Mattermost "Ban quản trị" (ngưỡng ở `monitor.alert.login-failed-*`).
+Sự kiện đăng nhập sai của Keycloak không ghi tên tài khoản, nên chưa có cảnh báo theo tài khoản.
 Gỡ khóa sớm: **Users** → chọn người dùng → tắt công tắc **Temporarily locked**.
 
 IP trong sự kiện là IP thật chỉ khi máy chủ chạy với overlay Cloudflare (`docker-compose.cloudflared.yml`), nơi Keycloak đọc `X-Forwarded-For` từ gateway.
@@ -159,6 +164,67 @@ Chạy lâu thì theo dõi dung lượng bảng.
 Mỗi 5 phút, một địa chỉ bị từ chối từ 10 lần trong 10 phút qua được báo vào kênh Mattermost "Ban quản trị", tối đa một tin mỗi địa chỉ trong 60 phút.
 Đổi ngưỡng ở `audit.alert.*` trong `backend/dx-host/src/main/resources/application.yaml`.
 Không có webhook của kênh thì không gửi.
+
+## Sao lưu và khôi phục
+
+`./backup.sh` (trong `deploy/`) chụp một bản sao lưu mã hóa của những gì không dựng lại được từ repo.
+Gồm toàn bộ Postgres (dữ liệu nghiệp vụ, tài khoản Keycloak, Mattermost, kho vector), ảnh và tệp đính kèm trong MinIO, tệp của Mattermost và metadata của Superset.
+Script dùng restic chạy trong container nên chỉ cần Docker.
+Bản sao lưu khử trùng lặp và mã hóa bằng `BACKUP_PASSWORD`.
+Cất mật khẩu này ở nơi khác máy chủ, vì mất nó là không đọc lại được.
+
+```bash
+cd deploy
+./backup.sh              # chụp, rồi giữ 7 bản theo ngày, 4 theo tuần, 6 theo tháng
+./backup.sh verify       # nạp bản dump mới nhất vào một Postgres tạm và kiểm tra
+./backup.sh snapshots    # liệt kê các bản
+```
+
+Kho nằm ở `deploy/backups` (đổi bằng `BACKUP_DIR`) hoặc ở một kho restic từ xa (`BACKUP_REPOSITORY`, ví dụ `s3:...`).
+Kho cùng máy với dữ liệu không cứu được khi mất máy, nên chép nó ra ngoài (rsync, rclone) hoặc dùng kho từ xa.
+Chạy theo lịch bằng cron, ví dụ mỗi đêm: `0 2 * * * cd /đường/dẫn/deploy && ./backup.sh >> backups/backup.log 2>&1`, và chạy `verify` mỗi tuần.
+Máy chủ dùng tệp env khác `.env` thì đặt `ENV_FILE=.env.dev ./backup.sh`.
+CI chạy một lượt backup và verify trên Postgres thật ở job `backup-drill`.
+
+**Khôi phục** (máy mới hoặc sau khi mất dữ liệu):
+
+1. Dựng lại stack từ repo với cùng `deploy/.env`, giữ Postgres chạy và dừng các dịch vụ còn lại: `docker compose up -d postgres` rồi `docker compose stop` các dịch vụ khác.
+2. Lấy bản sao lưu ra thư mục tạm: `./backup.sh restore /tmp/dxos-restore`.
+3. Nạp Postgres: `gunzip -c /tmp/dxos-restore/stage/postgres.sql.gz | docker compose exec -T postgres psql -U "$POSTGRES_USER" postgres`.
+   Hai dòng lỗi `role "..." already exists` và `database "..." already exists` là bình thường vì tài khoản quản trị và database chính đã có sẵn.
+   Phần còn lại phải nạp không lỗi.
+4. Chép `data/minio`, `data/mattermost`, `data/superset` từ `/tmp/dxos-restore/data/` vào `deploy/data/` (các tệp thuộc root nên dùng `sudo`), rồi `docker compose up -d`.
+
+## Thông báo chat gửi lại
+
+Tin gửi vào Mattermost thất bại vì lỗi mạng, HTTP 5xx hoặc 429 được backend lưu vào bảng `chat_outbox` và gửi lại mỗi phút.
+Khoảng chờ giữa các lần là 1, 2, 4 phút và tăng dần tới tối đa 60 phút.
+Quá 8 lần thì tin chuyển `FAILED` và bị xóa sau 7 ngày.
+Tin bị webhook từ chối hẳn (HTTP 4xx khác) thì bỏ, vì gửi lại không đổi kết quả.
+Webhook nhận tin nhưng trả lời quá chậm có thể làm tin đến hai lần.
+Lịch sử chat giữ tin mãi, nên số điện thoại, email và dãy số từ 9 chữ số trở lên trong tin (tiêu đề yêu cầu, ghi chú) bị thay bằng `[đã ẩn]` trước khi gửi.
+Địa chỉ IP, mã yêu cầu như `TK-2026-000123` và đường dẫn không bị ẩn.
+Xem tồn đọng: `docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT channel_key, status, attempts, last_error, next_attempt_at FROM chat_outbox"`.
+Nhiều dòng `PENDING` kéo dài nghĩa là Mattermost hoặc webhook đang hỏng.
+
+## Quét mã độc tệp tải lên
+
+Khi bật, mọi tệp đính kèm và ảnh tải lên được ClamAV quét trước khi xử lý và lưu.
+Tệp nhiễm bị từ chối với HTTP 422 `ERR_FILE_INFECTED` và lần chặn được ghi vào `audit_log` (`FILE_INFECTED`, kèm tên mẫu mã độc).
+ClamAV không trả lời thì tệp không được lưu và người dùng nhận HTTP 503 `ERR_SCAN_UNAVAILABLE`, vì tệp chưa quét không được coi là sạch.
+Tắt mặc định vì ClamAV cần khoảng 1 GB RAM.
+Bật: bỏ dấu `#` ở `COMPOSE_PROFILES=av` và `STORAGE_SCAN_HOST=clamav` trong `deploy/.env`, rồi `docker compose up -d`.
+Chữ ký virus tải về lần đầu mất vài phút và được giữ trong volume `clamav_data`.
+Mỗi lần clamd nạp lại chữ ký (hằng ngày và sau khi khởi động) nó không quét được khoảng 10 giây, và người dùng gặp 503 trong lúc đó; chờ rồi tải lại.
+Thử bằng tệp EICAR (chuỗi kiểm thử chuẩn của ngành diệt virus): tệp chỉ gồm đúng chuỗi đó, đổi tên `.pdf` rồi đính vào một yêu cầu.
+
+## AI service tạm ngưng
+
+Khi một nửa trong 10 lần gọi AI gần nhất (tối thiểu 5 lần) gặp lỗi mạng hoặc HTTP 5xx, backend ngừng gọi AI trong 30 giây (`ai.service.breaker.open-seconds`) và trả ngay HTTP 503 `ERR_AI_UNAVAILABLE`, thay vì để mỗi yêu cầu chờ hết thời gian.
+Sau 30 giây backend thử lại vài lần; thành công thì mở lại.
+Lỗi 4xx (yêu cầu sai) không tính là lỗi dịch vụ.
+Backend không tự gọi lại một lượt AI đã lỗi, vì mỗi lượt chẩn đoán trên CPU mất khoảng 50 giây.
+Trong log backend, dòng `AI service is paused after repeated failures` cho biết cầu dao đang mở.
 
 ## Màn hình giám sát
 

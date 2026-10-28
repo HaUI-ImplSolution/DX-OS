@@ -1,0 +1,47 @@
+name: CI Dependencies
+on:
+  push:
+    branches:
+      - main
+      - Khuong/main
+    paths:
+      - 'backend/**/pom.xml'
+      - 'ai/requirements*.txt'
+      - 'ai/requirements.lock'
+      - 'frontend/package-lock.json'
+      - 'mobile/package-lock.json'
+      - '.trivyignore'
+      - '.github/workflows/ci-deps.yml'
+  pull_request:
+    types:
+      - opened
+      - synchronize
+    branches:
+      - main
+      - Khuong/main
+    paths:
+      - 'backend/**/pom.xml'
+      - 'ai/requirements*.txt'
+      - 'ai/requirements.lock'
+      - 'frontend/package-lock.json'
+      - 'mobile/package-lock.json'
+      - '.trivyignore'
+      - '.github/workflows/ci-deps.yml'
+  # New advisories appear without any change of ours, so the scan also runs every week.
+  schedule:
+    - cron: '17 3 * * 1'
+  workflow_dispatch:
+
+jobs:
+  vulnerabilities:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Fail on a fixable HIGH or CRITICAL vulnerability in the dependencies
+        run: >
+          docker run --rm -v "$PWD:/repo:ro" aquasec/trivy:0.58.1
+          fs --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1
+          --skip-dirs node_modules,deploy/data,target,dist
+          --ignorefile /repo/.trivyignore /repo

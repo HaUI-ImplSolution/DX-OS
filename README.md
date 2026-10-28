@@ -22,6 +22,7 @@ Một lõi dùng chung lo đăng nhập, dữ liệu, quy trình, thông báo v�
 - **Một lõi, nhiều ứng dụng:** Farm và Lab dùng chung một lõi, thêm ứng dụng không phải sửa core.
 - **An toàn nghiệp vụ:** các quy tắc quan trọng được kiểm ngay ở Backend và cơ sở dữ liệu, không chỉ ở giao diện.
 - **Truy vết:** gateway ghi log từng request, Keycloak ghi sự kiện đăng nhập, Backend ghi lần bị từ chối, lỗi `5xx` và thao tác quản trị vào audit log chỉ thêm; màn hình giám sát `/monitor/` (chỉ ADMIN) gom các nguồn này, dò trạng thái dịch vụ và cảnh báo qua Mattermost.
+- **Sao lưu và khôi phục:** `deploy/backup.sh` sao lưu mã hóa cơ sở dữ liệu và tệp, có lệnh kiểm tra khôi phục, CI chạy thử mỗi lần.
 - **AI có kiểm soát:** AI chỉ hỗ trợ, thông tin thuốc và liều lấy từ dữ liệu chuyên gia đã duyệt, kỹ sư là người quyết định.
 - **Chạy một lệnh:** dựng toàn bộ hệ thống kèm dữ liệu demo, có kiểm thử tự động trên môi trường sạch.
 - **Nguồn mở minh bạch:** công khai giấy phép và danh sách thành phần phần mềm, quét lộ mật khẩu tự động.

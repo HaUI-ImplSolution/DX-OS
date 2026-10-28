@@ -37,7 +37,9 @@ Dùng Mattermost bên ngoài stack thì đặt `MATTERMOST_WEBHOOK_URL_*` trong 
 ## Hạn chế
 
 - Một chiều: duyệt và từ chối làm trong web; thông báo không được cập nhật sau khi gửi.
-- Định tuyến theo loại sự kiện, không theo thửa hay người phụ trách; không có outbox nên thông báo lỡ không gửi lại.
+- Định tuyến theo loại sự kiện, không theo thửa hay người phụ trách.
+- Số điện thoại, email và dãy số từ 9 chữ số trở lên trong tin được thay bằng `[đã ẩn]` trước khi gửi, vì lịch sử chat giữ tin mãi.
+- Tin gửi lỗi tạm thời (mạng, HTTP 5xx, 429) được lưu ở bảng `chat_outbox` và gửi lại tối đa 8 lần; tin chưa kịp vào bảng khi backend tắt giữa lúc commit và lúc gửi thì mất.
 - `Kỹ sư nông nghiệp` là channel public: mọi thành viên team đọc được tên người báo cáo và mã thửa; muốn giới hạn thì chuyển sang private.
 
 Hướng mở rộng ở [`docs/BACKLOG.md`](../docs/BACKLOG.md).

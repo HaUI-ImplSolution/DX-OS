@@ -24,7 +24,7 @@ Hiện không có.
 | Việc | Ghi chú |
 |---|---|
 | Bên thứ ba tái lập đánh giá RAG | Công cụ đã chạy thật và CLI khớp; cần người khác tự tính lại từ qrels/run, ghi riêng với việc chạy lại retrieval. Hướng dẫn ở [`ai/README.md`](../ai/README.md#đánh-giá-truy-xuất-rag) |
-| Job CI `backup-drill` và `ci-deps` (Trivy) | Mới chạy các bước tương đương ở local; lượt chạy đầu trên GitHub sẽ cho kết quả thật |
+| Job CI `backup-drill` | Lượt đầu lỗi vì Compose tạo `deploy/data` bằng quyền root; đã tạo thư mục trước khi khởi động Postgres, chờ lượt chạy lại trên GitHub |
 | `backup.sh` và khôi phục trên máy chủ thật | Đã thử trên stack thử, chưa thử trên VPS với dữ liệu thật và kho từ xa |
 | Cầu dao AI với tải thật | Đã thử khi AI dừng; chưa thử khi AI chậm vì tải, lúc đó lỗi đọc quá hạn cũng tính là lỗi dịch vụ |
 

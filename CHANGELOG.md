@@ -988,7 +988,7 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 
 - `backup.sh` chụp bản sao lưu mã hóa bằng restic gồm Postgres, MinIO, tệp Mattermost và metadata Superset.
 - `backup.sh verify` nạp dump mới nhất vào một Postgres tạm và kiểm tra; `backup.sh restore <dir>` lấy bản sao lưu ra thư mục.
-- Job CI `backup-drill` chạy backup và verify trên Postgres thật; cách khôi phục ở `OPERATIONS.md`.
+- Job CI `backup-drill` chạy backup và verify trên Postgres thật, tạo `deploy/data/*` trước khi khởi động Postgres vì Compose tạo `deploy/data` bằng quyền root; cách khôi phục ở `OPERATIONS.md`.
 
 **Đã xong — Cứng hóa container:**
 
@@ -1267,6 +1267,13 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 
 ## Kênh chat nội bộ (`chat`, Mattermost)
 
+### 2026-10-28
+
+**Đã xong — Gửi lại và che thông tin cá nhân:**
+
+- Tin gửi lỗi tạm thời được lưu ở `chat_outbox` và gửi lại tối đa 8 lần.
+- Số điện thoại, email và dãy số từ 9 chữ số trở lên trong tin được thay bằng `[đã ẩn]`.
+
 ### 2026-10-13
 
 - `chat/bootstrap.sh` tạo thêm channel `Kỹ thuật viên` (public) cho thông báo của DX-Lab: yêu cầu hỗ trợ mới và yêu cầu quá hạn; yêu cầu quá hạn còn đi vào `Ban quản trị`.
@@ -1466,6 +1473,13 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 - **Còn thiếu**: SPDX header đầu mỗi file mã nguồn tự viết — việc sửa hàng loạt file, để riêng một lượt khác.
 
 ## Tài liệu (root, `docs`, `ai/`)
+
+### 2026-10-28
+
+**Đã xong — Đồng bộ với đợt hạ tầng:**
+
+- `README.md`, `README_EN.md` có mục sao lưu và khôi phục; `deploy/OPERATIONS.md` mô tả sao lưu, gửi lại tin chat, quét mã độc, cầu dao gọi AI và cảnh báo đăng nhập sai.
+- `chat/README.md`, `minio/README.md`, `sso/README.md`, `ai/README.md`, `docs/TESTING.md`, `docs/BACKLOG.md` khớp với hành vi hiện tại.
 
 ### 2026-10-27
 

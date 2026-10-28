@@ -12,7 +12,6 @@ import HaUI.ImplSolution.dxos.core.api.exception.PokaYokeViolationException;
 import HaUI.ImplSolution.dxos.core.api.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.dxos.core.api.time.BusinessTime;
 import HaUI.ImplSolution.dxos.core.api.user.UserContext;
-import HaUI.ImplSolution.dxos.core.config.TimeConfig;
 import HaUI.ImplSolution.dxos.core.notification.NotificationInboxService;
 import HaUI.ImplSolution.dxos.core.notification.NotificationTypes;
 import HaUI.ImplSolution.dxos.core.workflow.WorkflowDefinitions;
@@ -41,6 +40,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -59,11 +60,23 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @Import({RoomBookingService.class, RoomBookingDecisionHandler.class, LabUser.class,
     LabNotifier.class, NotificationInboxService.class, NotificationTypes.class,
     LabNotificationConfig.class, WorkflowService.class, WorkflowDefinitions.class,
-    LabWorkflowConfig.class, TimeConfig.class, PersistenceTestConfig.class})
+    LabWorkflowConfig.class, LabBookingIntegrationTest.NoonClock.class,
+    PersistenceTestConfig.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class LabBookingIntegrationTest {
 
   private static final int CAPACITY = 30;
+
+  // The 30-day lead limit counts hours, so the time of day must not depend on when tests run.
+  @TestConfiguration
+  static class NoonClock {
+    @Bean
+    Clock clock() {
+      return Clock.fixed(
+          LocalDate.now(BusinessTime.ZONE).atTime(12, 0).atZone(BusinessTime.ZONE).toInstant(),
+          BusinessTime.ZONE);
+    }
+  }
 
   @Container
   static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16-alpine");

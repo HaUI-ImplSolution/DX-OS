@@ -8,136 +8,14 @@ from httpx import HTTPError
 from langchain_ollama import ChatOllama
 from ollama import ResponseError
 from pydantic import TypeAdapter, ValidationError
-from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.rag.answer_contract import AnswerDraft, AnswerReason, GeneratedAnswer, Profile
-from app.rag.prompt_builder import build_answer_messages, build_rag_prompt
-from app.rag.retriever import RAGRetriever
+from app.rag.prompt_builder import build_answer_messages
 from app.rag.safety import MEDICATION
-from app.rag.scope_gate import ANSWERABLE, IN_SCOPE_NO_EVIDENCE, classify_scope
 from app.rag.source_registry import REGISTRY_FILE, load_source_registry
 
 logger = logging.getLogger(__name__)
-
-
-def build_citations(contexts: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Resolve unique source IDs in retrieval order to auditable citations."""
-
-    registry = load_source_registry()
-    citations: list[dict[str, Any]] = []
-    seen: set[str] = set()
-
-    for item in contexts:
-        for source_id in item.get("source_ids", []):
-            if source_id in seen:
-                continue
-            seen.add(source_id)
-
-            source = registry[source_id]
-            citations.append(
-                {
-                    "source_id": source_id,
-                    "title": source["title"],
-                    "organization": source["organization"],
-                    "url": source["url"],
-                    "authority_level": source["authority_level"],
-                    "accessed_at": source["accessed_at"],
-                    "document_id": item["document_id"],
-                    "chunk_id": item["chunk_id"],
-                    "similarity": item["similarity"],
-                }
-            )
-
-    return citations
-
-
-class RAGService:
-    def __init__(
-        self,
-        model_name: str | None = None,
-        base_url: str | None = None,
-    ):
-        settings = get_settings()
-        self.retriever = RAGRetriever()
-        self.llm = ChatOllama(
-            model=model_name or settings.ollama_model,
-            base_url=base_url or settings.ollama_base_url,
-            temperature=0,
-            client_kwargs={"timeout": 30},
-        )
-
-    def answer(
-        self,
-        db: Session,
-        question: str,
-        top_k: int = 3,
-        disease_code: str | None = None,
-        namespace: str = "farm",
-        document_type: str | None = None,
-    ) -> dict:
-        decision = classify_scope(question, namespace)
-        base = {
-            "question": question,
-            "namespace": namespace,
-            "scope": decision.scope,
-            "scope_confidence": decision.confidence,
-            "reason_code": decision.reason_code,
-            "sources": [],
-        }
-        if not decision.retrieval_allowed:
-            return {
-                **base,
-                "answer": "Xin lỗi, chatbot chỉ hỗ trợ kiến thức về lúa/nông nghiệp."
-                if namespace == "farm"
-                else "Xin lỗi, câu hỏi nằm ngoài phạm vi tài liệu DX-Lab.",
-                "answer_mode": "out_of_scope",
-            }
-
-        contexts = self.retriever.retrieve(
-            db=db,
-            query=question,
-            top_k=top_k,
-            disease_code=disease_code,
-            namespace=namespace,
-            document_type=document_type,
-        )
-        if not contexts:
-            return {
-                **base,
-                "scope": IN_SCOPE_NO_EVIDENCE,
-                "answer": "Chưa có đủ tài liệu đã kiểm duyệt để trả lời câu hỏi này.",
-                "answer_mode": "no_evidence",
-            }
-        prompt = build_rag_prompt(
-            question=question,
-            contexts=contexts,
-        )
-        # Conservative MVP gate: only verbatim evidence can leave the RAG layer.
-        # Structured drug/dose/PHI facts are returned by the SQL service separately.
-        evidence = "\n\n".join(item["content"] for item in contexts)
-        fallback = evidence or "Chưa có tài liệu phù hợp để trả lời."
-        answer = fallback
-        if contexts:
-            try:
-                draft = self.llm.invoke(prompt).content
-                if (
-                    isinstance(draft, str)
-                    and draft.strip()
-                    and draft.strip() in evidence
-                ):
-                    answer = draft.strip()
-            except (HTTPError, ResponseError, TimeoutError, ConnectionError):
-                # RAG evidence remains usable when the optional LLM is unavailable.
-                answer = fallback
-
-        return {
-            **base,
-            "scope": ANSWERABLE,
-            "answer": answer,
-            "answer_mode": "grounded_excerpt",
-            "sources": build_citations(contexts),
-        }
 
 
 UNSAFE_FORMAT = re.compile(
@@ -153,6 +31,7 @@ CONFIRMED = re.compile(
 )
 
 
+IDENTITY = re.compile(r"(?:Mã bệnh|Tên tiếng Việt|Cây trồng):")
 ABSTENTION = re.compile(
     r"^(?:(?:tôi|hiện tại|hiện|hệ thống|trợ lý)\s+)*"
     r"(?:(?:không|chưa)\s+(?:có\s+)?(?:đủ\s+(?:thông tin|tài liệu|căn cứ)|thể\s+(?:trả lời|kết luận))"
@@ -255,6 +134,106 @@ def _known_conflict(text: str, passages: list[dict], target: str | None) -> bool
         text, r"\b(?:la vang|cay lun|dom den|co vet benh)\b"
     ):
         return True
+    return False
+
+
+ROLES = ("sinh viên", "giảng viên", "cán bộ")
+# Function words and generic sanction wording that do not identify a condition.
+STOPWORDS = frozenset(
+    {
+        "và", "hoặc", "của", "các", "những", "một", "là", "có", "không", "chưa",
+        "được", "bị", "sẽ", "đã", "đang", "thì", "nếu", "khi", "để", "cho", "với",
+        "tại", "trong", "trên", "dưới", "từ", "đến", "theo", "như", "này", "đó",
+        "cần", "phải", "nên", "bạn", "thế", "nào", "gì", "sao", "làm", "sau",
+        "trước", "rồi", "cũng", "vào", "ra", "bao", "lâu", "ngày", "tuần", "tháng",
+        "năm", "giờ", "phút", "kỳ", "điều", "khoản", "cấm", "phạt", "xử", "lý", "dùng",
+    }
+)  # fmt: skip
+DURATION = re.compile(r"\b(\d+)\s*(ngày|tuần|tháng|năm|giờ|phút|kỳ)\b", re.IGNORECASE)
+
+
+def _terms(text: str) -> set[str]:
+    return {
+        word
+        for word in re.findall(r"\w+", text.casefold())
+        if not word.isdigit() and word not in STOPWORDS
+    }
+
+
+def _durations(text: str) -> set[tuple[int, str]]:
+    return {(int(value), unit.casefold()) for value, unit in DURATION.findall(text)}
+
+
+def _line_roles(line: str) -> set[str]:
+    """Roles named in a leading "Với sinh viên:" style prefix."""
+    prefix = re.match(r"^(?:Với\s+)?([^:]{1,40}):", line, re.IGNORECASE)
+    if not prefix:
+        return set()
+    named = prefix[1].casefold()
+    roles = {role for role in ROLES if role in named}
+    for role in roles:
+        named = named.replace(role, "")
+    return roles if roles and not re.sub(r"[\s,/]|\bvà\b", "", named) else set()
+
+
+def _role_conflict(text: str, passages: list[dict]) -> bool:
+    """A fact found only in one group's lines must name that group."""
+    owners: dict[str, set[frozenset[str]]] = {}
+    for passage in passages:
+        for line in passage["content"].splitlines():
+            roles = frozenset(_line_roles(line))
+            body = line.split(":", 1)[1] if roles else line
+            for term in _terms(body):
+                owners.setdefault(term, set()).add(roles)
+    exclusive = {
+        term: next(iter(keys))
+        for term, keys in owners.items()
+        if len(keys) == 1 and next(iter(keys))
+    }
+    for sentence in re.split(r"[.!?\n]", text):
+        named = {role for role in ROLES if role in sentence.casefold()}
+        # A negated phrase ("không cần nhập tài khoản") does not claim the fact.
+        claimed = re.sub(
+            r"\b(?:không|chưa|bỏ qua|tránh)\b(?:\s+[^\s,;]+){0,4}",
+            "",
+            sentence,
+            flags=re.IGNORECASE,
+        )
+        if any(not named & exclusive[t] for t in _terms(claimed) & exclusive.keys()):
+            return True
+    return False
+
+
+def _unbound_duration(text: str, passages: list[dict], question: str) -> bool:
+    """A duration must keep the condition of the evidence sentence that states it."""
+    sentences = [
+        sentence
+        for passage in passages
+        for line in passage["content"].splitlines()
+        for sentence in re.split(r"(?<=[.!?])\s+", line)
+        if sentence.strip()
+    ]
+    evidence = set().union(*map(_terms, sentences)) if sentences else set()
+    unsupported = _terms(question) - evidence
+    for clause in re.split(r"[;!?\n]|\.(?!\d)", text):
+        values = _durations(clause)
+        own = [s for s in sentences if values & _durations(s)]
+        if not own:
+            continue
+        terms = _terms(clause)
+        conditions = set().union(
+            *(
+                _terms(parts[0])
+                for s in own
+                if len(parts := re.split(r":|\bthì\b|\bsẽ\b", s, maxsplit=1)) > 1
+            )
+        )
+        if (
+            terms & (evidence - set().union(*map(_terms, own)))
+            or terms & unsupported
+            or (conditions and not terms & conditions)
+        ):
+            return True
     return False
 
 
@@ -384,6 +363,9 @@ def synthesize_answer(
         lines = [line for line in passage["content"].splitlines() if line.strip()]
         if profile.startswith("farm_"):
             lines = [line for line in lines if not MEDICATION.search(line)]
+        if profile == "farm_qa":
+            # Identity lines repeat the title; the model copies them instead of the facts.
+            lines = [line for line in lines if not IDENTITY.match(line)]
         if (
             profile == "farm_diagnosis"
             or profile == "farm_qa"
@@ -445,23 +427,13 @@ def synthesize_answer(
         safe = [p for p in safe if p["document_title"] == title]
     role_context = []
     if profile == "lab_qa":
-        roles = [
-            role
-            for role in ("sinh viên", "giảng viên", "cán bộ")
-            if _mentions(question, {_words(role)})
-        ]
+        roles = [role for role in ROLES if _mentions(question, {_words(role)})]
         if len(roles) == 1 and overview:
-            other_roles = [
-                role for role in ("sinh viên", "giảng viên", "cán bộ") if role != roles[0]
-            ]
             for passage in safe:
                 lines = [
                     line
                     for line in passage["content"].splitlines()
-                    if not any(
-                        re.match(rf"^(?:Với\s+)?{role}\s*:", line, re.IGNORECASE)
-                        for role in other_roles
-                    )
+                    if roles[0] in (_line_roles(line) or {roles[0]})
                 ]
                 if lines:
                     role_context.append({**passage, "content": "\n".join(lines)})
@@ -471,7 +443,7 @@ def synthesize_answer(
                 lines = [
                     line
                     for line in passage["content"].splitlines()
-                    if re.match(rf"^(?:Với\s+)?{roles[0]}\s*:", line, re.IGNORECASE)
+                    if roles[0] in _line_roles(line)
                 ]
                 if lines:
                     role_context.append({**passage, "content": "\n".join(lines)})
@@ -492,10 +464,16 @@ def synthesize_answer(
         catalog = []
         for passage in safe:
             role_lines = [
-                line for line in passage["content"].splitlines()
-                if len(roles) == 1 and re.match(rf"^(?:Với\s+)?{roles[0]}\s*:", line, re.IGNORECASE)
+                line
+                for line in passage["content"].splitlines()
+                if len(roles) == 1 and roles[0] in _line_roles(line)
             ]
-            catalog.append({**passage, "content": "\n".join([passage["document_title"], *role_lines])})
+            catalog.append(
+                {
+                    **passage,
+                    "content": "\n".join([passage["document_title"], *role_lines]),
+                }
+            )
         safe = catalog
         role_context = safe
         context["service_overview"] = True
@@ -532,7 +510,7 @@ def synthesize_answer(
                 base_url=settings.ollama_base_url,
                 temperature=0,
                 format=schema,
-                num_predict=192,
+                num_predict=192 if profile == "farm_diagnosis" else 320,
                 num_thread=4,
                 num_ctx=2048,
                 client_kwargs={"timeout": 20 if profile == "farm_diagnosis" else 30},
@@ -566,6 +544,15 @@ def synthesize_answer(
         text = "\n".join([draft.summary, *draft.steps, draft.note or ""])
         if ABSTENTION.search(draft.summary):
             return fallback_answer(passages, reason="insufficient_evidence")
+        restated = _terms(question).union(
+            *(_terms(p.get("document_title", "")) for p in passages)
+        )
+        if profile != "farm_diagnosis" and not _terms(draft.summary) - restated:
+            return fallback_answer(passages)
+        if profile == "lab_qa" and (
+            _role_conflict(text, passages) or _unbound_duration(text, safe, question)
+        ):
+            return fallback_answer(passages, reason="conflicting_output")
         if profile == "lab_qa" and re.search(
             r"\b(?:tôi|chúng tôi)\s+(?:đã|sẽ|đang)\s+(?:(?:phê\s+)?duyệt|tiếp nhận|tạo|lập|gửi|đặt|hủy|cập nhật|hoàn tất)\b",
             text,

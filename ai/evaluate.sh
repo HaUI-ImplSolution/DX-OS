@@ -237,7 +237,7 @@ if [[ "$MODE" != view ]]; then
       run "${COMPOSE[@]}" run --rm --no-deps -T evaluator scripts/evaluate_rag.py score --collect "/artifacts/$EVAL_RUN/quality-$strategy-$EVAL_RUN/collect.json" --output "/artifacts/$EVAL_RUN/quality-$strategy-$EVAL_RUN"
     done
     run "${COMPOSE[@]}" run --rm --no-deps -T evaluator evaluation/prepare.py compare-quality "/artifacts/$EVAL_RUN"
-    run "${COMPOSE[@]}" run --rm --no-deps -T evaluator scripts/evaluate_scope.py --live --output "/artifacts/$EVAL_RUN/scope.json"
+    run "${COMPOSE[@]}" run --rm --no-deps -T evaluator scripts/evaluate_scope.py --output "/artifacts/$EVAL_RUN/scope.json"
   fi
   if [[ "$MODE" == performance || "$MODE" == all ]]; then
     for strategy in legacy hybrid_rerank; do

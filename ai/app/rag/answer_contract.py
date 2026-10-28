@@ -48,6 +48,21 @@ class AnswerDraft(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
+    def drop_long_steps(cls, data):
+        # An over-long step is dropped; the summary stays usable on its own.
+        if isinstance(data, dict) and isinstance(data.get("steps"), list):
+            data = {
+                **data,
+                "steps": [
+                    step
+                    for step in data["steps"]
+                    if not isinstance(step, str) or len(step.strip()) <= 180
+                ],
+            }
+        return data
+
+    @model_validator(mode="before")
+    @classmethod
     def reflow_complete_sentences(cls, data):
         if (
             isinstance(data, dict)

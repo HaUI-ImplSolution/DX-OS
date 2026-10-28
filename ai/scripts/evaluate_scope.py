@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Measure scope decisions using saved labels; optionally run the real chatbot search."""
+"""Measure the real chatbot search against saved scope and missing-evidence labels."""
 
 from __future__ import annotations
 
@@ -7,30 +7,29 @@ import argparse
 import json
 from pathlib import Path
 
-from app.rag.scope_gate import classify_scope
-
 ROOT = Path(__file__).resolve().parents[2] / "data/rag/evaluation"
 
 
-def measure(path: Path, live: bool) -> dict:
-    rows = [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
-    if live:
-        from sqlalchemy import create_engine, text
-        from sqlalchemy.orm import Session
+def measure(path: Path) -> dict:
+    from sqlalchemy import create_engine, text
+    from sqlalchemy.orm import Session
 
-        from app.core.config import get_settings
-        from app.rag.chat_search import ChatSearch
+    from app.core.config import get_settings
+    from app.rag.chat_search import ChatSearch
 
-        if get_settings().chat_retrieval_strategy == "hybrid_rerank":
-            from app.rag.reranker import _model
+    if get_settings().chat_retrieval_strategy == "hybrid_rerank":
+        from app.rag.reranker import _model
 
-            _model()
-        rows += [
-            json.loads(line)
-            for line in (ROOT / "no_evidence_questions.jsonl").read_text().splitlines()
-            if line.strip()
-        ]
-        engine = create_engine(get_settings().database_url, hide_parameters=True)
+        _model()
+    rows = [
+        json.loads(line)
+        for source in (path, ROOT / "no_evidence_questions.jsonl")
+        for line in source.read_text().splitlines()
+        if line.strip()
+    ]
+    engine = create_engine(get_settings().database_url, hide_parameters=True)
+    records = []
+    try:
         with engine.connect() as connection:
             if connection.execute(
                 text(
@@ -38,28 +37,18 @@ def measure(path: Path, live: bool) -> dict:
                 )
             ).scalar_one():
                 raise ValueError("Scope evaluation requires a read-only role")
-    records = []
-    try:
         for row in rows:
-            if live:
-                with Session(engine) as db:
-                    answer = ChatSearch().search(db, row["query"], row["namespace"])
-                if answer["reason_code"] == "RERANK_UNAVAILABLE":
-                    raise RuntimeError(
-                        "Scope evaluation cannot score unavailable inference"
-                    )
-                actual = answer["scope_status"] != "OUT_OF_SCOPE"
-            else:
-                decision = classify_scope(row["query"], row["namespace"])
-                actual = decision.retrieval_allowed
-                answer = dict(
-                    scope_status=decision.scope, reason_code=decision.reason_code
+            with Session(engine) as db:
+                answer = ChatSearch().search(db, row["query"], row["namespace"])
+            if answer["reason_code"] == "RERANK_UNAVAILABLE":
+                raise RuntimeError(
+                    "Scope evaluation cannot score unavailable inference"
                 )
+            actual = answer["scope_status"] != "OUT_OF_SCOPE"
             expected = row["label"] == "in_scope"
             records.append({**row, "actual": answer, "correct": actual == expected})
     finally:
-        if live:
-            engine.dispose()
+        engine.dispose()
     tp = sum(r["label"] == "in_scope" and r["correct"] for r in records)
     fn = sum(r["label"] == "in_scope" and not r["correct"] for r in records)
     tn = sum(r["label"] == "out_of_scope" and r["correct"] for r in records)
@@ -69,7 +58,7 @@ def measure(path: Path, live: bool) -> dict:
     missing = [r for r in records if r.get("expected_status")]
     return dict(
         status="draft",
-        boundary="real chatbot search" if live else "legacy rule gate only",
+        boundary="real chatbot search",
         count=len(records),
         tp=tp,
         fp=fp,
@@ -144,14 +133,13 @@ def main() -> None:
     parser.add_argument(
         "path", nargs="?", type=Path, default=ROOT / "scope_questions.jsonl"
     )
-    parser.add_argument("--live", action="store_true")
     parser.add_argument("--output", type=Path)
     parser.add_argument("--publish", type=Path)
     args = parser.parse_args()
     if args.publish:
         publish(args.publish)
         return
-    result = measure(args.path, args.live)
+    result = measure(args.path)
     if args.output:
         from evaluate_rag import outside_repository, write_json
 

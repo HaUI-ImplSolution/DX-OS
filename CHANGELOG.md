@@ -14,6 +14,7 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 - Độ bền: tin chat lỗi tạm thời được gửi lại, cầu dao khi gọi AI service, mã request đi suốt từ gateway tới AI service.
 - Bảo mật: xác thực hai bước và chính sách mật khẩu ở Keycloak, quét mã độc tệp tải lên bằng ClamAV, che thông tin cá nhân trong tin chat và câu hỏi gửi sang AI, container chạy không phải root.
 - Giám sát: cảnh báo một địa chỉ đăng nhập sai nhiều lần.
+- Câu trả lời Qwen: Lab giữ đúng điều kiện và đối tượng của quy định; Farm trả lời được câu hỏi mô tả bệnh dài và câu "mô tả bệnh"; gỡ đường trả lời RAG legacy.
 - Vận hành và CI: sinh `deploy/.env` với mật khẩu ngẫu nhiên, quét lỗ hổng phụ thuộc bằng Trivy.
 
 ## [1.0.3] - 2026-10-27
@@ -530,6 +531,14 @@ Bản phát hành đầu tiên của DX-OS.
 
 ## Dữ liệu (`data`)
 
+### 2026-10-28
+
+**Đã xong — Tách điều kiện trong tri thức Lab (`lab-knowledge-v3`):**
+
+- Điều 12 nội quy thư viện tách thành hai dòng, mỗi hành vi đi với hậu quả riêng.
+- Bước 2 hướng dẫn Wi-Fi tách theo đối tượng theo văn bản gốc: cán bộ, giảng viên đăng nhập bằng tài khoản egov; sinh viên bỏ qua đăng nhập và chọn đường link miễn phí.
+- Nhãn `qrels.draft.tsv` của Wi-Fi được ánh xạ sang chỉ số đoạn mới; số đoạn của Lab không đổi.
+
 ### 2026-10-26
 
 **Đã xong — Bộ đề đánh giá truy xuất RAG:**
@@ -714,6 +723,13 @@ Bản phát hành đầu tiên của DX-OS.
 **Đã xong — Log theo mã request:**
 
 - Middleware đọc `X-Request-Id` hợp lệ (tối đa 64 ký tự `A-Za-z0-9._-`) hoặc sinh mã mới, trả lại ở response và ghi một dòng log mỗi request.
+
+**Đã xong — Kiểm tra câu trả lời Qwen:**
+
+- Hỏi đáp Lab chặn câu gán thời hạn vào sai hành vi và câu nêu ý của một đối tượng (sinh viên, cán bộ, giảng viên) mà không nêu đúng đối tượng.
+- Hỏi đáp dùng tối đa 320 token, giải thích chẩn đoán giữ 192 token; ý hướng dẫn quá 180 ký tự bị bỏ, phần tóm tắt vẫn giữ.
+- Evidence hỏi đáp Farm bỏ các dòng mã bệnh, tên bệnh, cây trồng; câu trả lời chỉ lặp câu hỏi hoặc tên tài liệu không được tính là `generated`.
+- Gỡ `RAGService.answer` và `scope_gate.py`; `scripts/evaluate_scope.py` chỉ đo gate của chatbot thật.
 
 ### 2026-10-27
 

@@ -122,7 +122,7 @@ Các hạn chế về nội dung Qwen, chữ lớn trên mobile và khởi độ
 
 ```bash
 cd deploy
-python3 demo/make_ci_env.py .env   # sinh .env, biến để trống (mật khẩu, khóa nội bộ) nhận giá trị ngẫu nhiên
+python3 demo/make_ci_env.py .env   # sinh .env, mật khẩu và khóa nội bộ để trống nhận giá trị ngẫu nhiên
 ```
 
 Đặt app muốn chạy trong `.env` (mặc định `farm`): `DXOS_APP=farm` hoặc `lab`.

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0
-"""Writes an env file from .env.example: every blank variable gets a random value.
-Used for the first setup of a stack (then set PUBLIC_HOST and the like before the first start) and by CI.
+"""Writes an env file from .env.example: blank passwords, secrets and keys get a random value,
+other blank variables stay blank. Used for the first setup of a stack (then set PUBLIC_HOST and the like before the first start) and by CI.
 
     python3 deploy/demo/make_ci_env.py [OUTPUT] [--app farm|lab] [--force]     (default: deploy/.env, farm)
 
@@ -13,6 +13,7 @@ import sys
 
 DEPLOY_DIR = pathlib.Path(__file__).resolve().parent.parent
 FIXED = {"POSTGRES_USER": "dxos", "MINIO_ACCESS_KEY": "dxos-minio"}
+SECRET_SUFFIXES = ("_PASSWORD", "_SECRET", "_KEY")
 
 
 def main():
@@ -38,8 +39,10 @@ def main():
         if separator and not line.startswith("#") and not value.strip():
             if key == "AI_CV_WEIGHTS_SHA256":
                 value = checksum
-            else:
-                value = FIXED.get(key, secrets.token_hex(16))
+            elif key in FIXED:
+                value = FIXED[key]
+            elif key.endswith(SECRET_SUFFIXES):
+                value = secrets.token_hex(16)
             line = f"{key}={value}"
         if key == "DXOS_APP":
             line = f"DXOS_APP={app}"

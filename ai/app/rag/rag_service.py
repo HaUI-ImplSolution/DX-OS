@@ -7,7 +7,7 @@ from typing import Any
 from httpx import HTTPError
 from langchain_ollama import ChatOllama
 from ollama import ResponseError
-from pydantic import ValidationError
+from pydantic import TypeAdapter, ValidationError
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
@@ -479,6 +479,26 @@ def synthesize_answer(
                 safe = role_context
     if profile != "farm_diagnosis":
         safe = _qa_context(safe)
+    service_overview = (
+        profile == "lab_qa"
+        and overview
+        and re.search(r"(?:cac|nhung) dich vu|dich vu.*\bnao\b", _words(question))
+        and not re.search(
+            r"\bcach\b|lam sao|the nao|huong dan|dieu kien|mien phi|\bphi\b|quyen|thu tuc",
+            _words(question),
+        )
+    )
+    if service_overview:
+        catalog = []
+        for passage in safe:
+            role_lines = [
+                line for line in passage["content"].splitlines()
+                if len(roles) == 1 and re.match(rf"^(?:Với\s+)?{roles[0]}\s*:", line, re.IGNORECASE)
+            ]
+            catalog.append({**passage, "content": "\n".join([passage["document_title"], *role_lines])})
+        safe = catalog
+        role_context = safe
+        context["service_overview"] = True
     allowed = set(s for p in safe for s in p["source_ids"])
     if not allowed or sum(len(p["content"]) for p in safe) > 2000:
         return fallback_answer(passages, reason="insufficient_evidence")
@@ -500,6 +520,11 @@ def synthesize_answer(
         )
     )
     schema["properties"]["steps"]["maxItems"] = 2 if actions_requested else 0
+    if profile != "farm_diagnosis":
+        schema["properties"].pop("note")
+        schema["properties"].pop("abstain_reason")
+        if not actions_requested:
+            schema["properties"].pop("steps")
     try:
         if llm is None:
             llm = ChatOllama(
@@ -510,12 +535,20 @@ def synthesize_answer(
                 num_predict=192,
                 num_thread=4,
                 num_ctx=2048,
-                client_kwargs={"timeout": 20},
+                client_kwargs={"timeout": 20 if profile == "farm_diagnosis" else 30},
             )
         response = llm.invoke(
             build_answer_messages(question, safe, profile, context), stream=False
         )
-        draft = AnswerDraft.model_validate_json(response.content)
+        raw = TypeAdapter(dict[str, Any]).validate_json(response.content)
+        if (
+            profile != "farm_diagnosis"
+            and not raw.get("abstain_reason")
+            and not raw.get("summary")
+            and raw.get("source_ids") == []
+        ):
+            return fallback_answer(passages, reason="insufficient_evidence")
+        draft = AnswerDraft.model_validate(raw)
         if draft.abstain_reason:
             return fallback_answer(passages, reason=draft.abstain_reason)
         if getattr(response, "response_metadata", {}).get("done_reason") == "length":

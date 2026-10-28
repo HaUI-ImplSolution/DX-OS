@@ -145,7 +145,15 @@ Fetch origin: nhánh local khớp remote trước commit và đã chứa `origin
 - [x] Khôi phục đúng quyết định chủ dự án duyệt 7 tài liệu Farm; đồng bộ corpus, staging, registry, queue và danh mục nguồn Backend. Validator đạt 7 Farm/12 Lab; hai test source parity/approval đạt.
 - [x] Xác minh startup AI khi thiếu cache reranker: container không có mạng/cache dùng hai model CV thật, health đạt; unit kiểm trạng thái suy giảm. Không thay deploy/CI.
 - [x] Kiểm corpus rỗng vẫn được chọn để ingest, thứ hạng liên tục sau lọc và evaluator chỉ chấp nhận đúng phép lọc đã khai báo; chưa sửa nhãn để tăng điểm.
-- [ ] Chạy lại quality/scope/CLI/Langfuse trên evidence sau lọc, giữ lịch sử cũ.
+- [x] Chạy lại bốn strategy × 72 query trên 25 tài liệu/244 chunk; scope 90/90, CLI khớp 600 giá trị ≤1e-8; publish đủ 12 experiment và scope lên Langfuse, tự down, giữ lịch sử cũ.
 - [ ] Smoke Qwen Farm/Lab, diagnosis và ticket bằng code hiện tại; chỉ tick khi có bằng chứng mới.
 
 Xác minh phần sửa tiếp: 167 test AI và 50 subtest đạt; contract diagnosis, access boundary và self-check evaluator đạt. Backend giữ code dùng chung của đồng đội: 24 test liên quan và package sáu module đạt với JDK 21. Tài liệu nguồn có hai test parity/approval đạt. Các log nằm ngoài repository.
+
+CI của bản sửa startup/evidence đã xanh toàn bộ, gồm E2E Farm/Lab từ checkout sạch trên GitHub Actions. E2E local chạy bằng image/cache hiện có đạt Farm 10/10 và Lab 16/16; không chạy thêm full stack hoặc sửa deploy/CI. QA đã kiểm phần tổng quan Lab theo nhóm dịch vụ/đối tượng và wire JSON không tự mâu thuẫn. Thời gian chờ QA 30 giây trong read-timeout Docker 120 giây có sẵn; không đổi Core/deploy. Diagnosis giữ profile/ngân sách riêng.
+
+- [x] QA: 168 test và 50 subtest; không đổi schema API. Farm tổng quan và Lab tổng quan có trả lời thực, giữ source_id đầy đủ. Câu thiếu căn cứ trả rỗng; thuốc/liều/PHI, xác nhận bệnh cá nhân và quyền phê duyệt vẫn được kiểm riêng.
+- [x] Ảnh thật: tạo report riêng, chạy AI, kiểm ẩn trước duyệt, lưu lịch sử và giữ nguyên explanation/treatment rule sau duyệt. Luồng đạt, AI khoảng 11,2 giây trên máy thử.
+- [x] Ghi ca JSON chưa hoàn chỉnh vào BACKLOG; giữ draft bị chặn. Người dùng chấp nhận lỗi diễn đạt/format không nghiêm trọng là tồn đọng, không yêu cầu mọi chỉ số vượt baseline.
+
+- [x] DB pgvector tách biệt: nạp corpus Farm tổng quát rỗng xóa đúng loại tài liệu, giữ nguyên bệnh/Lab; gây lỗi embedding sau xóa thì rollback nguyên dữ liệu. Container/volume thử nghiệm đã dọn.

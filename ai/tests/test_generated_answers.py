@@ -330,7 +330,16 @@ class GeneratedAnswerChecks(unittest.TestCase):
         wire = factory.call_args.kwargs["format"]
         self.assertNotIn("pattern", wire["properties"]["summary"])
         self.assertEqual(wire["properties"]["source_ids"]["maxItems"], 1)
-        self.assertEqual(factory.call_args.kwargs["client_kwargs"]["timeout"], 20)
+        self.assertNotIn("steps", wire["properties"])
+        self.assertNotIn("note", wire["properties"])
+        self.assertNotIn("abstain_reason", wire["properties"])
+        self.assertEqual(factory.call_args.kwargs["client_kwargs"]["timeout"], 30)
+
+    def test_empty_qa_draft_is_insufficient_evidence(self):
+        model = Model({"summary": "", "source_ids": []})
+        answer = synthesize_answer("Đạo ôn là gì?", PASSAGES, "farm_qa", llm=model)
+        self.assertEqual(answer.reason, "insufficient_evidence")
+        self.assertEqual(answer.summary, "")
 
     def test_complete_json_without_period_is_accepted_but_token_cutoff_is_not(self):
         context = {
@@ -917,7 +926,7 @@ class OverviewAnswerChecks(unittest.TestCase):
         ]
         model = Model(
             dict(
-                summary="Có dịch vụ mạng và hộp thư cho sinh viên.",
+                summary="Nhà trường có dịch vụ Wifi và Email.",
                 steps=[],
                 note=None,
                 source_ids=["src_wifi", "src_email"],
@@ -937,4 +946,6 @@ class OverviewAnswerChecks(unittest.TestCase):
         supplied = json.loads(model.calls[0][1][1])["evidence"]
         self.assertEqual(len(supplied), 2)
         self.assertNotIn("quy trình nội bộ", str(supplied))
+        self.assertTrue(supplied[0]["content"].startswith("Wifi\nVới sinh viên:"))
+        self.assertEqual(supplied[1]["content"], "Email")
         self.assertEqual(set(answer.source_ids), {"src_wifi", "src_email"})

@@ -237,6 +237,11 @@ Không sửa mobile, profile diagnosis hoặc màn DiseaseReport.
 Câu đúng miền không có từ khóa cụ thể được thử tìm; Qwen nhận evidence đa tài liệu phù hợp và giữ format hiện có.
 Bộ ca no-evidence, trái thẩm quyền và lỗi nguồn vẫn bị chặn.
 
+Câu hỏi liệt kê dịch vụ Lab chỉ dùng nhóm dịch vụ; câu hướng dẫn/điều kiện giữ nội dung chi tiết.
+Context QA giữ 2.000 ký tự theo nguồn; model QA chờ tối đa 30 giây trong mức read-timeout 120 giây của cấu hình Docker hiện có.
+Không đổi Core/deploy; profile diagnosis giữ ngân sách riêng.
+Wire JSON QA dùng summary/nguồn và steps khi cần; thiếu căn cứ trả rỗng, không yêu cầu model điền đồng thời nội dung và mã từ chối.
+
 ## WP2-05: Đánh giá ir_measures và Langfuse bằng runner hiện có
 
 - Tham chiếu: overview mục 6; ước lượng L.

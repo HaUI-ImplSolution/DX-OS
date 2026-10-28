@@ -83,6 +83,8 @@ Tên chủ đề là tiêu đề bỏ "Bệnh" và "trên lúa", hoặc tên tro
 - Chẩn đoán khóa mã/tên bệnh CV và chỉ cấp một ý có căn cứ cho Qwen; chặn các mâu thuẫn cụ thể về bệnh/điều kiện, giữ evidence gốc nguyên vẹn.
 - Không yêu cầu câu sinh khớp từng từ nguồn hoặc có dấu chấm cuối; bỏ mục phụ lỗi định dạng, giữ phần trả lời chính hợp lệ.
 - QA đóng gói tối đa 2.000 ký tự theo dòng nguyên vẹn; câu tổng quan dùng nhiều nguồn khi có hỗ trợ.
+- Câu liệt kê dịch vụ Lab dùng tên nhóm dịch vụ và dòng đúng đối tượng; câu hướng dẫn/điều kiện giữ nội dung chi tiết.
+- Wire JSON QA bỏ các trường không dùng; không đủ căn cứ thì trả nội dung rỗng, còn reason do hệ thống xác định. QA chờ model tối đa 30 giây; Core/deploy giữ cấu hình hiện có.
 - Diagnosis giữ một ý có căn cứ và ngân sách hiện tại; generation sinh tối đa 192 token, chờ model tối đa 20 giây và không retry; thiếu evidence hoặc hỏi thuốc/liều/PHI thì không gọi model.
 - `RAGService.answer` giữ gate nguyên văn cho caller cũ; luồng tổng hợp mới dùng schema riêng.
 - Chỉ truy xuất được kiến thức đã ingest; similarity cao không xác nhận một khuyến nghị là đúng.

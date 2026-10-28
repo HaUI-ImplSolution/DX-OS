@@ -11,11 +11,9 @@ _COMMON_RULES = (
     "summary: one short direct answer, max 180 characters; "
     "answer the question directly, no field headings or document lists. "
     "Include steps only for requested actions, max 2 short points. "
-    "For a supported answer: source_ids contains ONE provided ID used, abstain_reason=null. "
-    "Omit note and steps when unused. Never combine a nonempty answer with an abstention reason. "
-    "If unsupported/conflicting, abstain_reason=insufficient_evidence; "
-    "out_of_scope ONLY for unrelated domains; requires_authority for staff-only decisions. "
-    "When abstaining: summary empty, steps=[], note=null, source_ids=[]; no answer text."
+    "For a supported answer: source_ids contains ONE provided ID used. "
+    "Omit note and steps when unused. A relevant partial answer is allowed. "
+    "If unsupported or conflicting, return summary empty and source_ids=[]."
 )
 
 _SYSTEM_PROMPTS = {
@@ -85,6 +83,8 @@ def build_answer_messages(
             "ONE provided ID used", "the provided IDs actually used, at most four"
         )
         system += " For an overview, synthesize relevant aspects from multiple documents; preserve each policy condition and subject. Do not claim completeness beyond the evidence."
+    if context.get("service_overview") and profile == "lab_qa":
+        system += " Evidence contains service categories only. Name those services; do not add procedures, fees, eligibility, cards or benefits absent from this evidence."
     return [
         ("system", system),
         (

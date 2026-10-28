@@ -1,45 +1,55 @@
-# Bàn giao triển khai ngày 28/10/2026
+# Bàn giao ngày 28/10/2026
 
-Nhánh: `feat/qwen-grounded-answers`. Chủ dự án đã cho phép commit/push bản bàn giao trên nhánh này. Chưa đóng phase. Checklist là trạng thái có bằng chứng, không phải mọi việc đã hoàn tất.
+Nhánh: `feat/qwen-grounded-answers`. Đã hoàn thiện phần triển khai và kiểm thử kỹ thuật; chờ review cuối của chủ dự án.
+Giữ thư mục kế hoạch theo yêu cầu, không xóa khi push.
 
 ## Đã triển khai
 
-- Search chatbot riêng: BM25 + cosine → RRF → MiniLM đa ngôn ngữ rerank; giới hạn CPU, hàng đợi, timeout, cache và trạng thái lỗi. Model được chuẩn bị khi ingest, nạp từ cache trước khi phục vụ; không tải trong request.
-- Core chỉ đổi adapter `KnowledgeGatewayService` và test. Giữ hai lượt search → gộp evidence Backend → Qwen; `retrieve` cho diagnosis/ticket vẫn dùng đường cũ.
-- Scope/policy theo namespace trong `data/rag/chat_profiles.json`; câu thiếu từ khóa được thử truy xuất. Chatbot tổng quan dùng nhiều nguồn, giữ guard thuốc/liều/PHI và thẩm quyền.
-- Ghi owner duyệt 7 tài liệu Farm, mở ingest generic bằng lệnh Farm hiện có; khôi phục allowlist nguồn chính thức Lab. Không đổi nội dung corpus bệnh/chunker/embedding.
-- Runner một lệnh giữ các mode cũ, so bốn strategy, thử tải hai strategy, replay Langfuse và tự cleanup. Thêm dependency BM25, cập nhật lock/LICENSES/SBOM.
-- Bỏ script lexical proxy và hai báo cáo sinh sẵn không còn caller; kết quả đo nằm ngoài repository.
+- Chatbot web dùng BM25 + cosine → RRF → multilingual MiniLM rerank; Qwen tổng hợp từ evidence Backend đã gộp. Giữ hai lượt search/answer qua AiGateway.
+- Scope/profile theo namespace, hỗ trợ câu tổng quan và nhiều nguồn; giữ chốt thuốc/liều/PHI, xác nhận bệnh và thẩm quyền. Lab tổng quan chọn dịch vụ đúng đối tượng, câu thủ tục vẫn có context chi tiết.
+- Giữ Knowledge adapter và DTO/helper dùng chung trong core-api của đồng đội. Không đưa thuật toán AI vào Java Core; diagnosis/ticket dùng retriever legacy.
+- Khôi phục owner approval 7 tài liệu Farm, giữ nguồn chính thức Lab và ingest bằng lệnh hiện có. Corpus rỗng vẫn thu hồi đúng loại tài liệu; transaction lỗi rollback.
+- Model dùng cache, không tải trong request. Thiếu reranker không chặn startup CV; chatbot báo chưa sẵn sàng. Queue CPU tối đa 12 giây, rerank 6 giây; QA chờ model 30 giây, diagnosis giữ ngân sách riêng.
+- Runner một lệnh giữ quality/performance/all/view/down, DB/state riêng, artifact và lịch sử Langfuse ngoài repository, tự cleanup. Không sửa deploy/CI hoặc luồng startup chính.
 
-## Đã kiểm
+## Bằng chứng mới nhất
 
-| Hạng mục | Bằng chứng |
+| Hạng mục | Kết quả |
 |---|---|
-| AI | 162 test, 50 subtest; diagnose contract và RAG access boundary |
-| Backend | 24 test gateway/Knowledge/codec; package đủ 6 module |
-| Web/mobile | Typecheck đạt, frontend build đạt; không sửa mobile |
-| Data | Validator 7 Farm/12 Lab, source parity; ingest Lab offline 12 tài liệu/78 chunk; rollback và role chỉ đọc trên DB riêng |
-| Quality | 4 × 72 query, cùng 25 tài liệu/244 chunk; gate 90/90 ca pilot, gồm 15 ca thiếu evidence |
-| Đối chiếu điểm | CLI ir_measures khớp 600 giá trị trong sai số 1e-8 |
-| Performance | 36 lượt/8.974 request, không lỗi HTTP/hợp đồng; 2 CPU/1536 MiB, không gồm Qwen/Backend |
-| Langfuse | Publish 12 experiment quality, scope và cả 36 lượt tải; đăng nhập/xem experiment và HTML bằng trình duyệt; Enter tự down |
-| Trước push | Gitleaks v8.24.3 không phát hiện secret ở các file thay đổi; diff không thêm hash cố định; đã chứa origin/Khuong/main hiện tại |
-| Lab thật | API và web có Qwen trả lời câu tổng quan; câu Wi-Fi sinh viên được trả lời, câu trồng lúa không có evidence; không lỗi JavaScript |
+| AI | 168 test + 50 subtest; diagnose contract, access boundary và các self-check đạt |
+| Backend | 24 test gateway/Knowledge/codec; package sáu module đạt |
+| Data | 7 Farm/12 Lab, hai test parity/approval; offline ingest, corpus rỗng và rollback trên DB riêng đạt |
+| Quality | 4 × 72 query, 25 tài liệu/244 chunk; scope 90/90; CLI khớp 600 giá trị ≤1e-8 |
+| Performance | 12 lượt/888 request, 10 giây/mức, một lần lặp; không lỗi HTTP/hợp đồng/OOM, AI 2 CPU/1536 MiB |
+| Langfuse/isolation | Publish quality/scope/performance, đã xem experiment/HTML; tự down, ID/start-time container và số dòng DB sản phẩm giữ nguyên |
+| Farm/Lab thật | E2E 10/10 và 16/16; Qwen tổng quan/triệu chứng, từ chối đúng lý do; web Lab không lỗi JavaScript |
+| Chẩn đoán ảnh | Báo cáo mới, AI, ẩn trước duyệt, lịch sử, duyệt và đọc lại đạt; giữ explanation và treatment rule |
 
-Chi tiết điểm ở TESTING. Nhãn mới vẫn `draft`; không gọi đây là đánh giá độc lập hoặc accuracy chẩn đoán. Chủ dự án đã chấp nhận không bắt buộc điểm mới vượt baseline.
+Điểm chi tiết và p95/RPS mới nhất ở [`TESTING.md`](../TESTING.md).
+Lần tải trên là smoke; cấu hình mặc định vẫn 36 lượt, 30 giây/mức và ba lần lặp.
+Không coi generated là độ đúng nội dung hoặc ir_measures là accuracy chẩn đoán.
 
-## Việc cần tiếp tục, theo thứ tự
+## Việc còn lại
 
-1. **Kiểm lại đối tượng trong câu tổng quan Lab.** Trước sửa cuối, hỏi “Nhà trường có những dịch vụ hỗ trợ nào cho sinh viên?” có lúc Qwen liệt kê ngắt USB của Faronics như dịch vụ sinh viên. Đã bổ sung policy loại nguồn quản trị giảng viên khỏi câu tổng quan dành cho sinh viên và unit regression; lượt quality/scope chạy lại đạt. Chưa kiểm lại generation/web sau thay đổi cuối này. Giữ nguồn Faronics cho câu kỹ thuật/giảng viên; không đổi ticket.
-2. **Smoke Farm trên sản phẩm thật sau build.** Chăm sóc lúa/phát thải thấp, bệnh cụ thể, thiếu tài liệu, ngoài miền, hỏi thuốc/liều/PHI; kiểm summary/steps/note và nguồn bằng mắt. Sau đó kiểm lại diagnosis cùng ảnh/facts và gợi ý ticket Lab; hiện có unit/contract và 6 query diagnosis cùng ranking, chưa thay thế smoke nghiệp vụ.
-3. **Kiểm startup bàn giao.** Chạy theo README lần lượt Farm/Lab bằng cache, không full rebuild/prune. Local đã package và chạy adapter mới, ingest Lab offline; chưa coi đây là bằng chứng clone sạch đầy đủ trên máy khác. `deploy/`, CI và Core API không đổi.
-4. **Rà nội dung/nhãn.** Sáu bài Farm có nội dung thực; một bài khí hậu chỉ có mục lục 858 ký tự. Cần lấy nội dung module trước khi coi là hướng dẫn chi tiết; không tự suy diễn từ tên mục. Ngưỡng rerank hiện là ngưỡng pilot chung, chưa calibration độc lập theo từng app; workload tải hiện chủ yếu là câu có nhãn dương, chưa stress riêng nhóm từ chối. Rà nhãn 0/1/2 và coverage trước khi đổi dataset sang `reviewed`; approval nguồn không tự duyệt nhãn mới.
-5. **Chốt review.** Hoàn thiện các ô còn trống của test plan/checklist, kiểm diff/domain và quét secret trước khi commit. Không đưa report/, state, tài khoản, artifact/checksum cục bộ hoặc thay đổi .gitignore vào commit. Chưa xóa kế hoạch.
+- Chủ dự án review diff và kiểm lại UI trên bản cuối; chưa tự tick thay người dùng.
+- Rà nhãn 0/1/2 độc lập, chia calibration/holdout và đo riêng ngưỡng từng app. Nhãn mở rộng vẫn draft; owner duyệt nguồn không đồng nghĩa duyệt nhãn.
+- Bổ sung nội dung module của tài liệu Farm còn dạng mục lục, rà điều khoản sử dụng nguồn; không suy diễn hướng dẫn từ tên mục.
+- Theo dõi JSON Qwen chưa hoàn chỉnh và diễn đạt điều kiện Lab trong BACKLOG; giữ draft lỗi bị ẩn và nguồn tham khảo còn nguyên.
+- Đo tải riêng nhóm từ chối, chạy lại toàn bộ all với cấu hình cuối và xác minh full clone sạch trên máy khác. Local dùng cache; CI E2E checkout sạch đạt, không thay thế full stack từ clone sạch.
 
-## Tiếp tục đánh giá
+Các giới hạn trên nằm trong [`BACKLOG.md`](../BACKLOG.md), không mở rộng code ngoài domain để xử lý trong lần này.
 
-Từ thư mục gốc: `./ai/evaluate.sh quality`, `performance` hoặc `all`; `view` mở lịch sử, `down` phục hồi sau ngắt. Runner độc lập với sản phẩm, tự dừng dịch vụ khi thoát, giữ cache/volume/artifact. Không gọi runner từ luồng startup chính.
+## Chạy lại
 
-Máy hiện tại lưu bằng chứng ở `~/.local/share/dx-os-chat-rag/`; state runner ở thư mục con `evaluation-runner`, không nằm trong Git. Muốn xem đúng lịch sử local: `EVAL_STATE_DIR="$HOME/.local/share/dx-os-chat-rag/evaluation-runner" EVAL_PROJECT=dx-rag-evaluation-runner-chat ./ai/evaluate.sh view`. Không sao chép credential trong state vào PR.
+Từ repository: `./ai/evaluate.sh quality`, `performance` hoặc `all`; `view` xem lịch sử, `down` dọn phiên bị ngắt.
+Runner không cần bật sản phẩm, tự dừng môi trường đánh giá khi thoát, giữ cache/volume/artifact.
 
-AI sản phẩm đã được dừng để không tranh tài nguyên với lượt đánh giá cuối. Không tự mở thêm toàn bộ stack. Lỗi CI thời điểm `LabBookingIntegrationTest` có sẵn ngoài domain được giữ trong BACKLOG, chưa sửa.
+Bằng chứng máy hiện tại ở `~/.local/share/dx-os-chat-rag/`, state ở thư mục con `evaluation-runner`.
+Xem đúng lịch sử này:
+
+```bash
+EVAL_STATE_DIR="$HOME/.local/share/dx-os-chat-rag/evaluation-runner" EVAL_PROJECT=dx-rag-evaluation-runner-chat ./ai/evaluate.sh view
+```
+
+Credential ở state ngoài Git, không sao chép vào PR.
+Môi trường đánh giá đã dừng; sản phẩm đang chọn Farm, Backend/AI/storage UP.

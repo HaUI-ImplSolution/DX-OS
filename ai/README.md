@@ -168,7 +168,7 @@ Kiểm công cụ bằng `./ai/evaluate.sh --self-check`; cách đọc chỉ s�
 
 Dùng k6 gọi endpoint search chatbot thật: mỗi strategy chạy Farm/Lab riêng ở 1/2/5 VU, 30 giây/mức, lặp ba lần, 18 lượt.
 Cosine legacy và hybrid+rerank chạy tuần tự, tổng 36 lượt; làm nóng model trước đo.
-Mỗi VU đợi phản hồi rồi gửi tiếp, không think time.
+Mỗi VU đợi phản hồi rồi gửi tiếp, không think time; HTTP timeout 20 giây, hàng đợi rerank tối đa 12 giây.
 CPU/RAM lấy mẫu bằng Docker; Langfuse chỉ bật sau đo, khi AI/vector đã dừng.
 
 Kết quả nằm trong `performance-*/`: `benchmark.json` và mỗi lượt có `summary.json`, `metrics.json.gz`, `resources.json`, `k6.log`, `dashboard.html`.

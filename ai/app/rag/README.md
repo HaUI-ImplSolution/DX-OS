@@ -87,5 +87,6 @@ Tên chủ đề là tiêu đề bỏ "Bệnh" và "trên lúa", hoặc tên tro
 - Wire JSON QA bỏ các trường không dùng; không đủ căn cứ thì trả nội dung rỗng, còn reason do hệ thống xác định. QA chờ model tối đa 30 giây; Core/deploy giữ cấu hình hiện có.
 - Diagnosis giữ một ý có căn cứ và ngân sách hiện tại; generation sinh tối đa 192 token, chờ model tối đa 20 giây và không retry; thiếu evidence hoặc hỏi thuốc/liều/PHI thì không gọi model.
 - `RAGService.answer` giữ gate nguyên văn cho caller cũ; luồng tổng hợp mới dùng schema riêng.
+- Chatbot chờ CPU tối đa 12 giây và rerank tối đa 6 giây; benchmark dùng HTTP timeout 20 giây.
 - Chỉ truy xuất được kiến thức đã ingest; similarity cao không xác nhận một khuyến nghị là đúng.
 - Chất lượng truy xuất (Recall@k, nDCG@k) và độ trễ endpoint được đo bằng bộ đề ở `data/rag/evaluation/`; cách chạy ở [`../../README.md`](../../README.md#đánh-giá-truy-xuất-rag).

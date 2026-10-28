@@ -160,10 +160,10 @@ Langfuse cho xem query, nhãn, ranking và điểm; ir_measures chấm truy xu�
 
 ## 10. Tài liệu cần cập nhật khi xong
 
-- [ ] `ai/README.md`, `ai/app/rag/README.md`: luồng, cache và một lệnh đánh giá.
-- [ ] `data/README.md`, hướng dẫn corpus/evaluation: review, nhãn, snapshot và rollback.
-- [ ] `docs/TESTING.md`: phương pháp và kết quả thật, giữ số liệu lịch sử đúng nhãn.
-- [ ] `docs/BACKLOG.md`, `CHANGELOG.md`: chỉ cập nhật mục liên quan, giữ log cũ.
-- [ ] Swagger: search nội bộ và ý nghĩa score/status, không đổi contract diagnosis.
-- [ ] `LICENSES.md`, SBOM theo quy ước khi thay dependency/model; không gán license model cho nguồn crawl.
-- [ ] Chỉ cập nhật đoạn Knowledge trong `ARCHITECTURE.md` nếu cần phản ánh thay đổi adapter; không vẽ lại hệ thống.
+- [x] `ai/README.md`, `ai/app/rag/README.md`: luồng, cache và một lệnh đánh giá.
+- [x] `data/README.md`, hướng dẫn corpus/evaluation: review, nhãn, snapshot và rollback.
+- [x] `docs/TESTING.md`: phương pháp và số đo mới nhất; không giữ bảng đo cũ.
+- [x] `docs/BACKLOG.md`, `CHANGELOG.md`: chỉ cập nhật mục liên quan, giữ log cũ.
+- [x] Swagger: search nội bộ và ý nghĩa score/status, không đổi contract diagnosis.
+- [x] `LICENSES.md`, SBOM theo quy ước khi thay dependency/model; không gán license model cho nguồn crawl.
+- [-] Không sửa `ARCHITECTURE.md`: ranh giới Core/app và AiGateway giữ nguyên; luồng chatbot ghi ở AI README.

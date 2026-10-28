@@ -1,6 +1,7 @@
 # Mở rộng hỏi đáp Farm/Lab và tìm kiếm hybrid
 
-Trạng thái: đã triển khai phần chính, đang bàn giao kiểm thử local; chưa đóng phase; chủ dự án đã cho phép push bản bàn giao.
+Trạng thái: hoàn thiện triển khai và kiểm thử kỹ thuật, chờ chủ dự án review bản cuối; chưa đóng nghiệm thu.
+Giữ nguyên thư mục kế hoạch theo yêu cầu chủ dự án.
 Mục tiêu là trả lời được câu hỏi tổng quan lẫn câu hỏi cụ thể trong lĩnh vực của từng chatbot.
 BM25, cosine và rerank chỉ áp dụng cho chatbot web; chẩn đoán Farm giữ luồng hiện tại.
 Giữ đường dẫn thư mục hiện có để tránh đổi các liên kết của nhánh.

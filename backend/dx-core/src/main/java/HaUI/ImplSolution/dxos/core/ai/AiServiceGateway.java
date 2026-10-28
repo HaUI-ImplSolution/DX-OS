@@ -5,8 +5,12 @@ import HaUI.ImplSolution.dxos.core.api.ai.AiGateway;
 import HaUI.ImplSolution.dxos.core.api.exception.AiRequestRejectedException;
 import HaUI.ImplSolution.dxos.core.api.exception.AiServiceException;
 import HaUI.ImplSolution.dxos.core.audit.RequestContext;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import java.net.http.HttpClient;
 import java.time.Duration;
+import java.util.function.Supplier;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -22,18 +26,30 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 // HTTP client of the AI service: attaches the service key and turns failures into
-// AiServiceException.
+// AiServiceException. When half of the recent calls ended in a network error or a 5xx answer, a
+// circuit breaker fails calls at once for a while. A failed call is not repeated: AI calls are slow
+// and a repeat doubles the load.
 @Component
 public class AiServiceGateway implements AiGateway {
 
   private final RestClient restClient;
   private final ObjectMapper objectMapper;
+  private final CircuitBreaker breaker;
 
   public AiServiceGateway(@Value("${ai.service.base-url}") String baseUrl,
       @Value("${ai.service.api-key:}") String apiKey,
       @Value("${ai.service.connect-timeout-ms:3000}") int connectTimeoutMs,
-      @Value("${ai.service.read-timeout-ms:15000}") int readTimeoutMs, ObjectMapper objectMapper) {
+      @Value("${ai.service.read-timeout-ms:15000}") int readTimeoutMs,
+      @Value("${ai.service.breaker.open-seconds:30}") int breakerOpenSeconds,
+      ObjectMapper objectMapper) {
     this.objectMapper = objectMapper;
+    // A 4xx answer shows the service is alive, so only outages count as failures.
+    this.breaker = CircuitBreaker.of("ai-service",
+        CircuitBreakerConfig.custom().slidingWindowSize(10).minimumNumberOfCalls(5)
+            .failureRateThreshold(50)
+            .waitDurationInOpenState(Duration.ofSeconds(breakerOpenSeconds))
+            .permittedNumberOfCallsInHalfOpenState(3).recordException(AiServiceGateway::isOutage)
+            .build());
     HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1)
         .connectTimeout(Duration.ofMillis(connectTimeoutMs)).build();
     JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(httpClient);
@@ -69,37 +85,37 @@ public class AiServiceGateway implements AiGateway {
 
   @Override
   public <T> T postJson(String path, Object body, Class<T> responseType) {
-    try {
-      return required(restClient.post().uri(path).body(body).retrieve().body(responseType), path);
-    } catch (RestClientResponseException e) {
-      throw translate(path, e);
-    } catch (RestClientException e) {
-      throw new AiServiceException("AI call failed: " + path, e);
-    }
+    return call(path, () -> restClient.post().uri(path).body(body).retrieve().body(responseType));
   }
 
   @Override
   public <T> T postJson(String path, Object body, ParameterizedTypeReference<T> responseType) {
-    try {
-      return required(restClient.post().uri(path).body(body).retrieve().body(responseType), path);
-    } catch (RestClientResponseException e) {
-      throw translate(path, e);
-    } catch (RestClientException e) {
-      throw new AiServiceException("AI call failed: " + path, e);
-    }
+    return call(path, () -> restClient.post().uri(path).body(body).retrieve().body(responseType));
   }
 
   @Override
   public <T> T postMultipart(String path, MultiValueMap<String, Object> parts,
       Class<T> responseType) {
+    return call(path, () -> restClient.post().uri(path).contentType(MediaType.MULTIPART_FORM_DATA)
+        .body(parts).retrieve().body(responseType));
+  }
+
+  private <T> T call(String path, Supplier<T> request) {
     try {
-      return required(restClient.post().uri(path).contentType(MediaType.MULTIPART_FORM_DATA)
-          .body(parts).retrieve().body(responseType), path);
+      return required(breaker.executeSupplier(request), path);
+    } catch (CallNotPermittedException e) {
+      throw new AiServiceException("AI service is paused after repeated failures: " + path, null);
     } catch (RestClientResponseException e) {
       throw translate(path, e);
     } catch (RestClientException e) {
       throw new AiServiceException("AI call failed: " + path, e);
     }
+  }
+
+  private static boolean isOutage(Throwable error) {
+    return error instanceof RestClientResponseException response
+        ? response.getStatusCode().is5xxServerError()
+        : error instanceof RestClientException;
   }
 
   private static <T> T required(T response, String path) {

@@ -19,8 +19,8 @@ LOCAL_TZ = datetime.timezone(datetime.timedelta(hours=7))
 
 ACCOUNTS = {
     "admin": dx.Account("admin1", "admin123", dx.WEB_CLIENT, "ADMIN", "Quản Trị", "Viên"),
-    "tech1": dx.Account("tech1", "tech123", dx.WEB_CLIENT, "TECHNICIAN", "Phạm Quốc", "Dũng"),
-    "tech2": dx.Account("tech2", "tech123", dx.WEB_CLIENT, "TECHNICIAN", "Hoàng Thị", "Em"),
+    "tech1": dx.Account("tech1", "tech1234", dx.WEB_CLIENT, "TECHNICIAN", "Phạm Quốc", "Dũng"),
+    "tech2": dx.Account("tech2", "tech1234", dx.WEB_CLIENT, "TECHNICIAN", "Hoàng Thị", "Em"),
     "lecturer": dx.Account("lecturer1", "lecturer123", dx.WEB_CLIENT, "LECTURER", "Lê Minh", "Cường"),
     "student1": dx.Account("student1", "student123", dx.WEB_CLIENT, "STUDENT", "Nguyễn Văn", "An"),
     "student2": dx.Account("student2", "student123", dx.WEB_CLIENT, "STUDENT", "Trần Thị", "Bình"),

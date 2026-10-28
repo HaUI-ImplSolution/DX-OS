@@ -25,11 +25,29 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 - Tin chat gửi lỗi tạm thời được lưu ở `chat_outbox` và gửi lại có chờ tăng dần thay vì bị bỏ.
 - Backend chuyển `X-Request-Id` sang AI service, AI ghi log theo mã đó.
 - Keycloak: chính sách mật khẩu và bước TOTP cho ADMIN, ENGINEER, TECHNICIAN (bật bằng `STAFF_OTP_FLOW=CONDITIONAL`).
+- Quét mã độc tệp tải lên bằng ClamAV; che số điện thoại và email trong tin chat và câu hỏi gửi sang AI.
+- Cầu dao khi gọi AI, cảnh báo một địa chỉ đăng nhập sai nhiều lần, quét lỗ hổng phụ thuộc bằng Trivy (`ci-deps.yml`), sinh `deploy/.env` với mật khẩu ngẫu nhiên.
 - Cứng hóa container: backend, monitor, AI chạy không phải root, bỏ mọi Linux capability, `no-new-privileges`; console MinIO mặc định chỉ mở trên máy chủ.
 
 ## Backend (Spring Boot — `backend`)
 
 ### 2026-10-28
+
+**Đã xong — Quét mã độc tệp tải lên:**
+
+- `FileStoreService` đưa tệp cho ClamAV (`storage.scan.host`) trước khi xử lý và lưu; tệp nhiễm nhận HTTP 422 `ERR_FILE_INFECTED` và vào `audit_log` (`FILE_INFECTED`), ClamAV không trả lời thì HTTP 503 `ERR_SCAN_UNAVAILABLE`.
+
+**Đã xong — Che thông tin cá nhân:**
+
+- `PiiMask` (`dx-core-api`) thay email và dãy số từ 9 chữ số trở lên bằng `[đã ẩn]`, dùng cho mọi tin chat và câu hỏi tri thức gửi sang AI.
+
+**Đã xong — Cầu dao gọi AI:**
+
+- `AiServiceGateway` dùng Resilience4j: một nửa trong 10 lần gọi gần nhất lỗi mạng hoặc 5xx thì gọi AI thất bại ngay trong 30 giây (`ai.service.breaker.open-seconds`).
+
+**Đã xong — Cảnh báo đăng nhập sai:**
+
+- `monitor` báo vào kênh Ban quản trị khi một địa chỉ đăng nhập sai từ 10 lần trong 10 phút (`monitor.alert.login-failed-*`).
 
 **Đã xong — Gửi lại tin chat bị lỡ:**
 
@@ -958,6 +976,13 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 ## Deploy (`deploy`)
 
 ### 2026-10-28
+
+**Đã xong — Dịch vụ tùy chọn và công cụ cài đặt:**
+
+- `clamav` (profile `av`) quét mã độc tệp tải lên, tắt mặc định.
+- `make_ci_env.py` cũng dùng cho lần cài đầu: sinh `deploy/.env` với mật khẩu ngẫu nhiên và giữ nguyên tệp đã có trừ khi có `--force`.
+- Workflow `ci-deps.yml` quét lỗ hổng phụ thuộc bằng Trivy khi đổi tệp khai báo phụ thuộc và mỗi tuần; các lỗi được chấp nhận tạm ghi ở `.trivyignore` kèm ngày hết hạn.
+- Mật khẩu demo của `tech1`, `tech2` là `tech1234`, đủ 8 ký tự theo chính sách mật khẩu.
 
 **Đã xong — Sao lưu và khôi phục:**
 

@@ -3,6 +3,7 @@ package HaUI.ImplSolution.dxos.core.notification;
 
 import HaUI.ImplSolution.dxos.core.api.notification.ChatWebhook;
 import HaUI.ImplSolution.dxos.core.api.notification.NotificationChannel;
+import HaUI.ImplSolution.dxos.core.api.privacy.PiiMask;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -66,7 +67,9 @@ public class MattermostWebhookClient implements ChatWebhook {
   }
 
   @Override
-  public void send(String channelKey, Map<String, Object> payload) {
+  public void send(String channelKey, Map<String, Object> rawPayload) {
+    // Chat history keeps messages for good, so personal data is hidden before it is sent or kept.
+    Map<String, Object> payload = PiiMask.maskPayload(rawPayload);
     String error = post(channelKey, payload);
     if (error != null) {
       try {

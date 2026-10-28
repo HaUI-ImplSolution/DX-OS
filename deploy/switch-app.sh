@@ -46,7 +46,7 @@ if [[ ! -f "apisix/apps/$APP.yaml" ]]; then
   exit 2
 fi
 if [[ ! -f .env ]]; then
-  echo "deploy/.env not found. Run: cp .env.example .env and fill every blank variable." >&2
+  echo "deploy/.env not found. Run: python3 demo/make_ci_env.py .env (random secrets), or cp .env.example .env and fill every blank variable." >&2
   exit 1
 fi
 

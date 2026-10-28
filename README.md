@@ -94,7 +94,7 @@ Bảng dependency và giấy phép đầy đủ ở [`LICENSES.md`](./LICENSES.m
 
 ```bash
 git clone https://github.com/HaUI-ImplSolution/DX-OS.git && cd DX-OS
-cp deploy/.env.example deploy/.env      # điền mọi biến đang để trống
+python3 deploy/demo/make_ci_env.py      # sinh deploy/.env, biến để trống nhận mật khẩu ngẫu nhiên
 python3 -m pip install pillow           # cho script dữ liệu demo
 ./deploy/start.sh                       # dựng, chạy ứng dụng trong DXOS_APP và nạp dữ liệu demo
 ```
@@ -158,7 +158,7 @@ Khái niệm và cấu hình Cloudflare ở [`docs/CLOUDFLARE.md`](./docs/CLOUDF
 | Farm, Lab | `admin1` | `admin123` | ADMIN |
 | Lab | `student1`, `student2` | `student123` | STUDENT |
 | Lab | `lecturer1` | `lecturer123` | LECTURER |
-| Lab | `tech1`, `tech2` | `tech123` | TECHNICIAN |
+| Lab | `tech1`, `tech2` | `tech1234` | TECHNICIAN |
 
 ## 🧪 Kiểm thử
 

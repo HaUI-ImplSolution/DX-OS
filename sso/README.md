@@ -57,7 +57,7 @@ Chỉ để demo; đổi mật khẩu trước khi triển khai ngoài môi trư
 | `admin1` | `admin123` | ADMIN |
 | `student1`, `student2` | `student123` | STUDENT |
 | `lecturer1` | `lecturer123` | LECTURER |
-| `tech1`, `tech2` | `tech123` | TECHNICIAN |
+| `tech1`, `tech2` | `tech1234` | TECHNICIAN |
 
 Farm dùng ba tài khoản đầu, Lab dùng `admin1` và các nhóm còn lại; `seed_demo.py` tạo tài khoản của app đang chạy.
 Quản lý user qua Admin Console `http://localhost:${APISIX_HOST_PORT}/admin` (`KEYCLOAK_ADMIN_USERNAME` / `KEYCLOAK_ADMIN_PASSWORD`).

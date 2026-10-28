@@ -24,6 +24,9 @@ Hiện không có.
 | Việc | Ghi chú |
 |---|---|
 | Bên thứ ba tái lập đánh giá RAG | Công cụ đã chạy thật và CLI khớp; cần người khác tự tính lại từ qrels/run, ghi riêng với việc chạy lại retrieval. Hướng dẫn ở [`ai/README.md`](../ai/README.md#đánh-giá-truy-xuất-rag) |
+| Job CI `backup-drill` và `ci-deps` (Trivy) | Mới chạy các bước tương đương ở local; lượt chạy đầu trên GitHub sẽ cho kết quả thật |
+| `backup.sh` và khôi phục trên máy chủ thật | Đã thử trên stack thử, chưa thử trên VPS với dữ liệu thật và kho từ xa |
+| Cầu dao AI với tải thật | Đã thử khi AI dừng; chưa thử khi AI chậm vì tải, lúc đó lỗi đọc quá hạn cũng tính là lỗi dịch vụ |
 
 ## 4. Giới hạn của AI và dữ liệu
 
@@ -52,7 +55,7 @@ Hiện không có.
 | Chặn SQLi và XSS chung ở Cloudflare | Cần gói trả phí; gói Free chỉ có managed ruleset chặn khai thác đã biết, Backend dùng truy vấn tham số hóa |
 | Xóa audit theo thời hạn | Bảng `audit_log` chỉ thêm, chưa có cách xóa theo thời hạn; theo dõi dung lượng bảng |
 | Chạy `backup.sh` theo lịch và chép kho ra ngoài máy chủ | Có script, `verify` và job CI; lịch cron, kho từ xa và diễn tập khôi phục định kỳ do người vận hành đặt |
-| Cảnh báo cho sự kiện đăng nhập sai của Keycloak | Màn hình giám sát chỉ hiển thị; khóa tạm của Keycloak và giới hạn tốc độ của gateway đã chặn |
+| Cảnh báo đăng nhập sai theo tài khoản | Đã có cảnh báo theo địa chỉ; sự kiện `LOGIN_ERROR` của Keycloak không ghi tên tài khoản (chỉ `user_id`), nên cần thêm `user_id` vào view `vw_auth_events` |
 | Metric tài nguyên (CPU, RAM, đĩa) và phân vị độ trễ | Màn hình giám sát chỉ có sự kiện bất thường và trạng thái dịch vụ; thêm Prometheus nếu cần |
 | Gộp lớp gửi Mattermost của `monitor` với `ChatWebhook` của core | `dx-monitor` không được phụ thuộc core nên hai nơi cùng đọc webhook; cảnh báo `ACCESS_DENIED` theo địa chỉ vẫn do `AuditAlertJob` của backend gửi |
 | Phân trang tra cứu chi tiết ở phía máy chủ | Hiện lấy tối đa 200 bản ghi mới nhất rồi chia trang trong trình duyệt |
@@ -61,12 +64,19 @@ Hiện không có.
 | Cảnh báo khi chính `monitor` ngừng | Cần một kiểm tra từ ngoài (Cloudflare Health Check hoặc dịch vụ uptime); hiện kiểm bằng `docker compose ps` |
 | Backend tự gọi AI sau khi upload ảnh | Chẩn đoán AI do kỹ sư bấm; đang giữ thủ công có chủ đích |
 | Push thật (FCM, UnifiedPush) | Hộp thông báo chỉ kéo về khi mở app |
+| ClamAV bật mặc định | Đang tắt vì cần khoảng 1 GB RAM; chưa đo trên máy chủ thật |
+| Nâng `io.minio:minio` lên 8.6.0 | Sửa CVE-2025-59952 nhưng kéo theo OkHttp 5, cần đổi client lưu trữ và thử với MinIO thật; đang ghi nhận ở `.trivyignore` tới 31/12/2026 |
 | Hộp thông báo cho engineer và admin | Họ dùng hàng chờ và Mattermost |
 | Phun lặp lại trên cùng một chẩn đoán | Mỗi chẩn đoán một lần phun; phun lại phải qua báo cáo và chẩn đoán mới |
 | Thu hoạch thay hộ không có trong timeline workflow | Thu hoạch không có case; thông tin nằm trên vụ và log backend |
 | Phạm vi phụ trách theo khu vực cho engineer | Phân quyền hiện theo thao tác, không theo khu vực |
 | Thông báo chat chỉ có gửi lại khi lỗi tạm thời | `chat_outbox` lưu tin sau lần gửi đầu thất bại; tin chưa kịp vào bảng khi backend tắt giữa lúc commit và lúc gửi vẫn mất, chưa có cảnh báo khi tồn đọng |
 | Trường "Phương pháp áp dụng" và lượng nước của phác đồ | `TreatmentRule.notes` trộn nhiều loại thông tin; cần field riêng được chuyên gia xác thực |
+| Email cho thông báo trong hộp thư | Đã bỏ khỏi đợt này. Khi làm lại: cần `spring-boot-starter-mail`, tắt `management.health.mail` (biến `SPRING_MAIL_HOST` rỗng vẫn tạo bộ gửi và làm `/actuator/health` báo lỗi), hàng đợi gửi lại chung với tin chat, địa chỉ lấy từ Keycloak lúc gửi, bảng lựa chọn của từng tài khoản và màn hình bật tắt |
+| Che thông tin cá nhân ở mọi đường ra | Mới phủ tin chat và câu hỏi tri thức sang AI; chưa phủ văn bản triệu chứng của Farm gửi sang AI và nội dung log |
+| Realm Keycloak đã chạy trên máy chủ thiếu chính sách mật khẩu và luồng TOTP | Keycloak không nạp lại realm đã có; áp dụng bằng Admin Console theo `sso/README.md` hoặc dựng lại realm |
+| Mật khẩu demo cũ của `tech1`, `tech2` | Stack có sẵn hai tài khoản này giữ mật khẩu `tech123`; chỉ stack dựng mới nhận `tech1234` |
+| Cải tiến core và vận hành chưa làm: metric, Alertmanager, giám sát từ bên ngoài, WAF Coraza, nâng cấp có đường lùi, compose profiles, kiểm giấy phép tự động, Dependabot, sổ kiểm toán chuỗi băm | Chưa làm; xem mục P1 của `docs/DX-Lab-core-ops-improvements.md` |
 
 ## 6. Phụ thuộc người ngoài
 

@@ -52,7 +52,8 @@ Chỉ tải nội dung chunk khi cache chưa có; request sau lấy top ứng vi
 Thay nội dung qua ingest, không cập nhật chunk trực tiếp trong DB vì cache theo vòng đời tài liệu.
 Index giới hạn 20.000 chunk, cache tối đa bốn snapshot; BM25 vẫn chạy trên RAM, chưa phải thiết kế cho kho lớn.
 Câu tổng quan có thể lấy nhiều tài liệu; rerank chạy ngoài transaction DB, có giới hạn concurrency và thời gian.
-Trước rerank, cosine tốt nhất của câu hỏi phải đạt `chat_cosine_min_score` (mặc định 0,40); sau đó từng đoạn vẫn phải đạt ngưỡng rerank. Câu thiếu liên quan trả `IN_SCOPE_NO_EVIDENCE`/`LOW_RELEVANCE`, không gọi Qwen.
+Trước rerank, cosine tốt nhất của câu hỏi phải đạt `chat_cosine_min_score` (mặc định 0,40); sau đó từng đoạn vẫn phải đạt ngưỡng rerank.
+Câu thiếu liên quan trả `IN_SCOPE_NO_EVIDENCE`/`LOW_RELEVANCE`, không gọi Qwen.
 Một đoạn BM25 có cosine thấp vẫn có thể được chọn nếu câu hỏi vượt kiểm tra liên quan chung và đoạn đó đạt rerank.
 `score`/`similarity` vẫn là cosine; BM25, RRF và rerank có field riêng, không phải xác suất đúng.
 Reranker mặc định là `cross-encoder/mmarco-mMiniLMv2-L12-H384-v1`, cache model được chuẩn bị qua ingest.
@@ -89,7 +90,8 @@ Tên chủ đề là tiêu đề bỏ "Bệnh" và "trên lúa", hoặc tên tro
 - Không yêu cầu câu sinh khớp từng từ nguồn hoặc có dấu chấm cuối; bỏ mục phụ lỗi định dạng, giữ phần trả lời chính hợp lệ.
 - QA đóng gói tối đa 2.000 ký tự theo dòng nguyên vẹn; câu tổng quan dùng nhiều nguồn khi có hỗ trợ.
 - Câu liệt kê dịch vụ Lab dùng tên nhóm dịch vụ và dòng đúng đối tượng; câu hướng dẫn/điều kiện giữ nội dung chi tiết.
-- Wire JSON QA bỏ các trường không dùng; không đủ căn cứ thì trả nội dung rỗng, còn reason do hệ thống xác định. QA chờ model tối đa 30 giây; Core/deploy giữ cấu hình hiện có.
+- Wire JSON QA bỏ các trường không dùng; không đủ căn cứ thì trả nội dung rỗng, còn reason do hệ thống xác định.
+  QA chờ model tối đa 30 giây; Core/deploy giữ cấu hình hiện có.
 - Diagnosis giữ một ý có căn cứ và ngân sách hiện tại; generation sinh tối đa 192 token, chờ model tối đa 20 giây và không retry; thiếu evidence hoặc hỏi thuốc/liều/PHI thì không gọi model.
 - `RAGService.answer` giữ gate nguyên văn cho caller cũ; luồng tổng hợp mới dùng schema riêng.
 - Chatbot chờ CPU tối đa 12 giây và rerank tối đa 6 giây; benchmark dùng HTTP timeout 20 giây.

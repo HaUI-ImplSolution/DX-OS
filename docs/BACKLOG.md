@@ -20,6 +20,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Giữ đúng điều kiện và đối tượng trong trả lời Lab | Có ca gán mức cấm thư viện 30 ngày vào sai hành vi; cần đối chiếu từng kết luận với điều kiện trong nguồn |
 | Làm rõ các nhánh hướng dẫn Wi-Fi | Còn câu trộn đăng nhập tài khoản với truy cập miễn phí; cần diễn đạt riêng theo đối tượng sử dụng |
 | Tăng độ bao phủ trả lời Qwen | Có cách hỏi mô tả bệnh khiến JSON chưa hoàn chỉnh trong giới hạn 192 token; bản nháp bị ẩn, nguồn vẫn giữ. Cần cải thiện tỷ lệ trả lời hợp lệ, không bỏ chốt thuốc/liều/PHI và nguồn |
+| Gỡ đường trả lời RAG legacy trong AI | Router không còn gọi `RAGService.answer` và `scope_gate.py`; gate chatbot là `chat_search.outside_scope`. Gỡ cùng `tests/test_scope_gate.py` và `scripts/evaluate_scope.py`, bước scope trong `evaluate.sh` đang gọi script này |
 | Ổn định test biên 30 ngày đặt phòng Lab | `LabBookingIntegrationTest` đặt lúc 08:00 ngày thứ 30 nhưng service giới hạn 30 × 24 giờ; test phụ thuộc giờ chạy, cần cố định `Clock` |
 
 ## 3. Chưa kiểm thử

@@ -79,21 +79,24 @@ Tên chủ đề là tiêu đề bỏ "Bệnh" và "trên lúa", hoặc tên tro
 | `safety.py` | Lọc dòng chứa thuốc, liều hoặc PHI trước khi evidence Farm rời AI |
 | `source_registry.py` | Kiểm registry, ánh xạ `source_id` sang metadata trích dẫn |
 
-## Guardrail và giới hạn
+## Kiểm soát câu trả lời và giới hạn
 
-- Kết quả luôn có `source_ids`, document/chunk ID, similarity và nội dung evidence.
-- `synthesize_answer` dùng Qwen với ba profile: hỏi đáp Farm, hỏi đáp Lab và giải thích kết quả CV; hỏi đáp không xác nhận bệnh cá nhân, không sửa evidence hoặc structured facts.
-- Câu trả lời có summary ngắn, tối đa hai ý hướng dẫn khi phù hợp và nguồn thuộc evidence; không render Markdown/HTML, không sinh thuốc/liều/PHI.
-- Mode `generated` là đầu ra model đã qua kiểm tra; `extractive`/`insufficient_context` không trả văn bản dự phòng, reason cho biết lý do.
-- Lab chỉ sinh từ nguồn thuộc danh mục namespace hiện tại; vector local cũ cần được đồng bộ bằng quy trình ingest sẵn có.
-- Chẩn đoán khóa mã/tên bệnh CV và chỉ cấp một ý có căn cứ cho Qwen; chặn các mâu thuẫn cụ thể về bệnh/điều kiện, giữ evidence gốc nguyên vẹn.
-- Không yêu cầu câu sinh khớp từng từ nguồn hoặc có dấu chấm cuối; bỏ mục phụ lỗi định dạng, giữ phần trả lời chính hợp lệ.
-- QA đóng gói tối đa 2.000 ký tự theo dòng nguyên vẹn; câu tổng quan dùng nhiều nguồn khi có hỗ trợ.
-- Câu liệt kê dịch vụ Lab dùng tên nhóm dịch vụ và dòng đúng đối tượng; câu hướng dẫn/điều kiện giữ nội dung chi tiết.
-- Wire JSON QA bỏ các trường không dùng; không đủ căn cứ thì trả nội dung rỗng, còn reason do hệ thống xác định.
-  QA chờ model tối đa 30 giây; Core/deploy giữ cấu hình hiện có.
-- Diagnosis giữ một ý có căn cứ và ngân sách hiện tại; generation sinh tối đa 192 token, chờ model tối đa 20 giây và không retry; thiếu evidence hoặc hỏi thuốc/liều/PHI thì không gọi model.
-- `RAGService.answer` giữ gate nguyên văn cho caller cũ; luồng tổng hợp mới dùng schema riêng.
-- Chatbot chờ CPU tối đa 12 giây và rerank tối đa 6 giây; benchmark dùng HTTP timeout 20 giây.
-- Chỉ truy xuất được kiến thức đã ingest; similarity cao không xác nhận một khuyến nghị là đúng.
-- Chất lượng truy xuất (Recall@k, nDCG@k) và độ trễ endpoint được đo bằng bộ đề ở `data/rag/evaluation/`; cách chạy ở [`../../README.md`](../../README.md#đánh-giá-truy-xuất-rag).
+Qwen dùng ba profile riêng: hỏi đáp Farm, hỏi đáp Lab và giải thích chẩn đoán Farm.
+Nguồn của Lab được giới hạn theo namespace; giải thích chẩn đoán được giới hạn theo mã bệnh CV.
+
+| Luồng | Ngữ cảnh và đầu ra | Giới hạn gọi model |
+|---|---|---|
+| Chatbot Farm/Lab | Tối đa 2.000 ký tự tài liệu, giữ nguyên dòng; câu trả lời gồm tóm tắt, tối đa hai ý hướng dẫn và nguồn. Câu tổng quan có thể dùng nhiều tài liệu | Chờ tối đa 30 giây |
+| Chẩn đoán Farm | Khóa mã/tên bệnh từ CV; giải thích một ý có căn cứ, tách khỏi phác đồ. Thiếu tài liệu hoặc hỏi thuốc/liều/PHI thì không gọi model | Tối đa 192 token, 20 giây, không thử lại |
+
+- Chỉ chấp nhận nội dung đúng schema, nguồn thuộc evidence và không có mâu thuẫn đã được kiểm tra về bệnh hoặc điều kiện áp dụng.
+- Qwen không sinh thuốc, liều hoặc PHI, không sửa evidence và dữ liệu Backend; hỏi đáp không tự xác nhận bệnh cho người dùng.
+- Mode `generated` chứa nội dung đã qua kiểm tra.
+  Mode `extractive`/`insufficient_context` không trả văn bản dự phòng; hệ thống trả mã lý do và giữ đoạn trích tham khảo.
+- Mục phụ sai định dạng được loại bỏ; phần trả lời chính hợp lệ vẫn được giữ.
+  Giao diện không render Markdown/HTML từ model.
+- `RAGService.answer` và `scope_gate.py` là mã legacy; chatbot hybrid dùng `chat_search.py`.
+- Chatbot chờ CPU tối đa 12 giây, rerank tối đa 6 giây.
+  Chỉ tìm được kiến thức đã ingest; điểm tương đồng không xác nhận nội dung trả lời là đúng.
+
+Cách đo chất lượng truy xuất và độ trễ: [`ai/README.md`](../../README.md#đánh-giá-truy-xuất-rag).

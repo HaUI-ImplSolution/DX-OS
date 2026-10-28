@@ -130,60 +130,69 @@ Cấu hình chatbot mặc định nằm trong `app/core/config.py`; `CHAT_RETRIE
 
 ### Đánh giá truy xuất RAG
 
-Từ thư mục gốc repository, trên Linux x86_64 có Bash, Docker Engine local và Docker Compose:
+Chạy từ thư mục gốc repository, trên Linux x86_64 có Bash, Docker Engine và Docker Compose:
 
 ```bash
 ./ai/evaluate.sh quality
 ```
 
-Lệnh tự chuẩn bị database đánh giá riêng, cache model embedding/reranker, công cụ chấm và Langfuse local; host không cần cài Python, k6 hoặc tạo env/tài khoản thủ công.
-Cần tối thiểu 2.500 MiB RAM trống; đĩa trống tối thiểu 16 GiB khi thiếu image, 6 GiB khi đã có cache, trên cả phân vùng state và Docker.
-Lần đầu cần mạng để tải/build; các lần sau dùng lại image và snapshot model.
-Giá trị mặc định ở [`evaluation/.env.example`](evaluation/.env.example); thư mục state mặc định là `~/.local/share/dx-os-rag-evaluation-runner/`, có thể chọn bằng `EVAL_STATE_DIR`.
+Lệnh tạo database đánh giá riêng, nạp tri thức, chấm bằng `ir_measures` và hiển thị kết quả trên Langfuse local.
+Có thể chạy khi chưa bật Farm/Lab; không cần cài Python, k6 hoặc tạo tài khoản Langfuse thủ công.
+Lần đầu cần mạng để tải image và model; các lần sau dùng cache.
+Cần ít nhất 2.500 MiB RAM trống và 16 GiB đĩa trống (6 GiB nếu đã có cache), trên cả phân vùng state và Docker.
 
-Bộ đề gồm 66 câu hỏi đáp và 6 query tham khảo chẩn đoán; giữ 42 lượt pilot đã được chủ dự án duyệt, thêm 30 câu và nhãn nháp tổng quan/diễn đạt gián tiếp.
-So sánh cosine legacy, BM25, hybrid/RRF và hybrid+rerank trên cùng corpus; câu chatbot được chấm sau gate/ngưỡng, trước gộp Backend, còn diagnosis giữ retriever legacy.
-Nhãn mở rộng chưa được duyệt độc lập; việc rà đầy đủ nhãn và tái lập độc lập ở [`BACKLOG`](../docs/BACKLOG.md).
-Không cần bật stack Farm/Lab để chạy đánh giá.
+Bộ đề gồm 66 câu hỏi đáp và 6 câu tham khảo chẩn đoán, so sánh cosine, BM25, hybrid/RRF và hybrid + rerank.
+Trong đó, 42 câu pilot đã được chủ dự án duyệt; 30 câu mở rộng còn dùng nhãn nháp.
+Chatbot được chấm sau bước lọc truy xuất, trước khi Backend gộp đoạn; chẩn đoán dùng retriever hiện có.
+Kết quả và ý nghĩa chỉ số ở [`docs/AI_EVALUATION.md`](../docs/AI_EVALUATION.md#7-đánh-giá-truy-xuất-rag).
 
-Sau đo, AI/database đánh giá được dừng.
-Terminal in link Langfuse, link báo cáo, tài khoản local và thư mục kết quả; trong Experiments, bật Expected Output, Output và score để đối chiếu nhãn, chunk và điểm.
-Trace là replay kết quả đã lưu; thời gian trace publish không phải thời gian truy xuất.
+Sau khi đo, AI và database đánh giá được dừng; terminal in link Langfuse, tài khoản local và thư mục kết quả.
+Trong Experiments, bật **Expected Output**, **Output** và **score** để đối chiếu nhãn, đoạn truy xuất và điểm.
+Langfuse phát lại kết quả đã lưu; thời gian trace không dùng làm thời gian truy xuất.
 
-Nhấn Enter hoặc hết 600 giây thì tự down riêng môi trường đánh giá.
-Nếu stdin không phải terminal tương tác, lệnh publish và down ngay.
-Cache, volume, tài khoản và lịch sử được giữ; mở lại bằng `./ai/evaluate.sh view`.
-Khi phiên bị mất do tắt máy hoặc `SIGKILL`, dùng `./ai/evaluate.sh down` để dọn phiên dở.
-Không chạy `down` từ terminal khác khi phiên đang hoạt động; dùng Enter/Ctrl+C tại terminal của phiên đó.
+Nhấn Enter hoặc chờ 600 giây để tự dừng môi trường đánh giá; khi chạy không tương tác, lệnh kết thúc và dừng ngay sau khi publish.
+Dữ liệu, cache và lịch sử được giữ để mở lại:
 
-Mỗi lượt có thư mục mới dưới `state/runs/`, gồm thông tin ingest/model/runtime, bộ nhãn, bảng so sánh và `quality-*/collect.json`, `run.trec`, `qrels.trec`, `score.json`, receipt publish, log dịch vụ và `status.json`.
-Cấu hình/credential nằm ngoài Git; không chia sẻ `evaluation.env`.
+```bash
+./ai/evaluate.sh view   # xem kết quả đã lưu
+./ai/evaluate.sh down   # dọn phiên còn lại sau khi tắt máy hoặc tiến trình bị dừng đột ngột
+```
 
-CLI thấp tầng vẫn dùng độc lập trong môi trường AI/đánh giá tương ứng: `scripts/evaluate_rag.py collect/score/publish`; `--ingest-record`, `--collect`, `--score-file` và `--output` trỏ tới artifact ngoài repository.
-`publish --dry-run` kiểm đầu ra trước khi gửi.
-Kiểm công cụ bằng `./ai/evaluate.sh --self-check`; cách đọc chỉ số ở [`docs/TESTING.md`](../docs/TESTING.md#đánh-giá-truy-xuất-rag).
+Khi phiên đang chạy, dùng Enter hoặc Ctrl+C tại terminal đó để dừng.
+Cấu hình mặc định ở [`evaluation/.env.example`](evaluation/.env.example).
+State lưu tại `~/.local/share/dx-os-rag-evaluation-runner/`, đổi bằng `EVAL_STATE_DIR`.
+Mỗi lần chạy có thư mục `runs/` riêng chứa cấu hình đo, bộ nhãn, `collect.json`, `run.trec`, `qrels.trec`, `score.json` và log.
+Credential nằm ngoài repository; không chia sẻ `evaluation.env`.
+
+Các lệnh `scripts/evaluate_rag.py collect/score/publish` vẫn dùng độc lập; `publish --dry-run` kiểm đầu ra trước khi gửi.
+Kiểm công cụ bằng `./ai/evaluate.sh --self-check`.
 
 ### Thử tải HTTP retrieval
 
 ```bash
 ./ai/evaluate.sh performance
-# Chấm chất lượng và đo tải tuần tự, dùng chung bước chuẩn bị:
-./ai/evaluate.sh all
+./ai/evaluate.sh all           # chấm truy xuất rồi đo tải
 ```
 
-Dùng k6 gọi endpoint search chatbot thật: mỗi strategy chạy Farm/Lab riêng ở 1/2/5 VU, 30 giây/mức, lặp ba lần, 18 lượt.
-Cosine legacy và hybrid+rerank chạy tuần tự, tổng 36 lượt; làm nóng model trước đo.
-Mỗi VU đợi phản hồi rồi gửi tiếp, không think time; HTTP timeout 20 giây, hàng đợi rerank tối đa 12 giây.
-CPU/RAM lấy mẫu bằng Docker; Langfuse chỉ bật sau đo, khi AI/vector đã dừng.
+k6 gọi endpoint search của AI với cấu hình mặc định:
 
-Kết quả nằm trong `performance-*/`: `benchmark.json` và mỗi lượt có `summary.json`, `metrics.json.gz`, `resources.json`, `k6.log`, `dashboard.html`.
-Báo cáo HTML mở qua link local terminal in ra; Langfuse hiển thị tóm tắt từng lượt cùng cấu hình và score latency/RPS/lỗi/CPU/RAM.
-`SUMMARY/AVG` của p95 là trung bình p95 các lượt, không phải p95 chung của mọi request.
+| Tham số | Giá trị |
+|---|---|
+| Phương pháp | Cosine và hybrid + rerank, chạy lần lượt cho Farm/Lab |
+| Tải | 1, 2, 5 người dùng đồng thời; mỗi người đợi phản hồi rồi gửi tiếp |
+| Thời lượng | 30 giây mỗi mức, lặp ba lần; tổng 36 lượt, làm nóng model trước đo |
+| Timeout | HTTP 20 giây; chờ hàng đợi rerank tối đa 12 giây |
+| Tài nguyên | AI 2 CPU/1.536 MiB, một worker, Torch hai thread; pgvector 1 CPU/256 MiB |
 
-Phép đo chỉ gồm AI HTTP retrieval, tắt CV lifespan, một worker, Torch hai thread; mặc định AI 2 CPU/1536 MiB, vector 1 CPU/256 MiB.
-Chưa gồm Backend, gateway, LLM hoặc mạng điện thoại; không dùng kết quả để kết luận năng lực production.
-Điều kiện cache và tự down giống lệnh `quality`; trial lỗi vẫn giữ artifact và lệnh trả mã lỗi.
-Xem phương pháp/kết quả ở [`docs/TESTING.md`](../docs/TESTING.md#thử-tải-http-retrieval).
+Phép đo chỉ gồm HTTP retrieval của AI; CV bị tắt, Backend/gateway và Qwen không nằm trong phép đo.
+CPU/RAM được lấy mẫu bằng Docker.
+
+Terminal in link báo cáo HTML và Langfuse; mỗi lượt lưu số liệu k6, tài nguyên và log trong `performance-*/`.
+Langfuse hiển thị độ trễ, số yêu cầu mỗi giây, lỗi và CPU/RAM; chỉ khởi động sau khi đo xong và AI/database đánh giá đã dừng.
+Giá trị p95 ở dòng `SUMMARY/AVG` là trung bình p95 của các lượt.
+
+Môi trường tự dừng như lệnh `quality`; lượt lỗi vẫn giữ kết quả và trả mã lỗi.
+Phương pháp và kết quả đo ở [`docs/AI_EVALUATION.md`](../docs/AI_EVALUATION.md#8-thử-tải-http-retrieval).
 
 ## Kiểm tra
 

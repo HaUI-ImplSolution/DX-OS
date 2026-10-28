@@ -86,69 +86,35 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 | Dashboard BI | `cd bi && python -m unittest test_chart_query_context` | Đạt; CI chạy ở job `dashboard` của `ci-infra.yml` |
 | Seed Farm nhất quán | `python data/scripts/generate_seed_sql.py --check` và `python -m unittest data.scripts.test_generate_seed_sql` | Đạt; CI chạy lại ở `ci-ai.yml` |
 
-### Đánh giá truy xuất RAG
+### Công cụ đánh giá RAG
 
-Kết quả ngày 28/10/2026 trên bộ pilot nhãn nháp: 27 câu Farm, 39 câu Lab và 6 query chẩn đoán; cùng 25 tài liệu/244 đoạn.
-Chấm bằng `ir_measures` trước gộp evidence Backend, sau gate/ngưỡng; CLI khớp 600 giá trị trong sai số `1e-8`.
+| Kiểm tra | Kết quả |
+|---|---|
+| Điểm tính bằng công cụ và CLI `ir_measures` | Khớp 600 giá trị, sai số không quá `1e-8` |
+| Lọc câu hỏi theo phạm vi | Đạt 90/90 ca pilot, 16 ca với model thật và 3 ca qua Backend Farm |
+| Cache và tính nhất quán dữ liệu | Đạt khi dùng cache, thay corpus, rollback và ingest đồng thời trên PostgreSQL |
+| Thử tải HTTP retrieval | 12 lượt rút gọn, không ghi nhận lỗi HTTP, sai định dạng phản hồi hoặc hết bộ nhớ |
 
-| Strategy | Farm Recall@4 | Farm nDCG@4 | Lab Recall@4 | Lab nDCG@4 |
-|---|---:|---:|---:|---:|
-| Cosine + boost | 0,521605 | 0,458521 | 0,730769 | 0,674168 |
-| BM25 | 0,487654 | 0,500554 | 0,769231 | 0,749210 |
-| BM25 + cosine/RRF | 0,555556 | 0,492140 | 0,782051 | 0,733912 |
-| Hybrid + rerank | 0,648148 | 0,602363 | 0,762821 | 0,703415 |
-
-Sáu query chẩn đoán legacy có Recall@3/nDCG@3 = 1,0 ở cả bốn strategy.
-Gate đạt 90/90 ca pilot; 16 ca hồi quy bổ sung bằng model thật và ba ca qua Backend Farm đạt.
-PG thực kiểm cache nóng, thay corpus cùng version, rollback và ingest đồng thời đạt; chỉ tải lại nội dung chunk khi index đổi.
-**Recall@k** là tỷ lệ đoạn liên quan tìm được trong k kết quả đầu; **nDCG@k** đo mức ưu tiên đoạn hữu ích ở đầu danh sách.
-Cả hai từ 0–1, càng cao càng tốt; không phải accuracy của CV hay độ đúng câu trả lời Qwen.
-Cách chạy và xem từng câu trên Langfuse ở [`ai/README.md`](../ai/README.md#đánh-giá-truy-xuất-rag).
-
-### Thử tải HTTP retrieval
-
-Kết quả ngày 28/10/2026: 1369 request qua 12 lượt, không lỗi HTTP/hợp đồng hoặc OOM.
-Mỗi strategy chạy Farm/Lab ở 1/2/5 VU, 10 giây/mức, một lần sau warm-up; AI 2 CPU/1536 MiB, một worker, HTTP timeout 20 giây.
-Mỗi VU đợi phản hồi rồi gửi tiếp; CPU/RAM lấy mẫu bằng `docker stats`.
-
-| Nhóm | VU | Cosine req/s | Cosine p95 (ms) | Hybrid + rerank req/s | Hybrid + rerank p95 (ms) |
-|---|---:|---:|---:|---:|---:|
-| Farm | 1 | 33,78 | 45,54 | 0,83 | 1561,44 |
-| Farm | 2 | 17,06 | 294,65 | 0,91 | 2376,22 |
-| Farm | 5 | 7,95 | 931,89 | 0,87 | 6145,04 |
-| Lab | 1 | 36,37 | 35,67 | 1,07 | 1139,32 |
-| Lab | 2 | 22,42 | 168,70 | 0,98 | 2668,25 |
-| Lab | 5 | 11,84 | 598,11 | 1,07 | 4869,63 |
-
-RAM AI đỉnh quan sát: cosine 1112,1 MiB; hybrid + rerank 1413,1 MiB; pgvector 34,3 MiB.
-**VU** là số người dùng đồng thời, **req/s** là số request xử lý mỗi giây, **p95** là mức thời gian mà 95% request không vượt quá.
-Phép đo chỉ gồm HTTP retrieval, không gồm CV, Backend/gateway hoặc Qwen.
-Số liệu trên máy dùng chung không phải SLA production.
-Artifact/HTML và lịch sử Langfuse lưu ngoài repository; evaluation tự dừng và giữ nguyên container/DB sản phẩm.
-Cách chạy ở [`ai/README.md`](../ai/README.md#thử-tải-http-retrieval); mặc định runner đo 30 giây/mức, lặp ba lần mỗi strategy.
+Chỉ số chất lượng và hiệu năng ở [`AI_EVALUATION.md`](AI_EVALUATION.md#7-đánh-giá-truy-xuất-rag).
+Cách chạy công cụ và xem báo cáo ở [`ai/README.md`](../ai/README.md#đánh-giá-truy-xuất-rag).
 
 ### Câu trả lời Qwen có cấu trúc
 
-Web Farm/Lab gửi `includeAnswer=true`; chẩn đoán Farm gửi `includeExplanation=true`.
-Request không có flag giữ luồng trích dẫn hiện có; thuốc, liều và PHI lấy từ Backend.
+Qwen tổng hợp câu trả lời cho chatbot web Farm/Lab và giải thích chẩn đoán Farm.
+Thuốc, liều và thời gian cách ly (PHI) do Backend cung cấp.
 
-| Kiểm tra | Cách | Kết quả |
+| Phạm vi | Nội dung kiểm tra | Kết quả |
 |---|---|---|
-| Hợp đồng và dự phòng AI | `cd ai && python -m pytest tests -q` | Đạt; toàn bộ AI 170 test, 50 subtest; kiểm schema/nguồn, mâu thuẫn bệnh, từ chối, nội dung cụt, timeout và opt-in |
-| Backend | Unit gateway/Knowledge/codec, package; integration database riêng | 24 unit liên quan và package sáu module đạt; kiểm request cũ, snapshot, quyền và rule đổi khi chờ AI |
-| Hiển thị dự phòng | Render component web/native và browser web với response mô phỏng | 53 kiểm tra render và 6 ca browser đạt; thêm web 360px/chữ lớn 200%/đoạn dài/payload cũ, không lỗi JavaScript |
-| Model thật | Qwen với evidence Backend đã gộp: Farm tổng quan/triệu chứng, Lab tổng quan/quy định; ảnh chẩn đoán thật | Có trả lời đúng nguồn và đối tượng trong các ca đã kiểm; draft JSON lỗi bị ẩn, nguồn giữ nguyên. Chấm nội dung đầy đủ theo BACKLOG |
-| Hồi quy ngữ cảnh | Test đỏ/xanh và Qwen thật với nguồn Lab | Giữ thứ tự tài liệu; chặn các ca đảo nghĩa sao lưu/ngắt điện đã biết, chấp nhận 05 và 5 cùng giá trị |
-| Tách nguồn Farm/Lab | SQL namespace, API Lab giả namespace=farm, job ingest Lab theo README | Nguồn truy xuất tách đúng; Farm giữ nguyên nội dung/vector; Lab đồng bộ 12 tài liệu/78 chunk |
-| Tương thích/rollback | Container Backend/AI cũ-mới; bản sao database có V14 | Đọc record null, snapshot giữ nguyên; endpoint sinh thiếu trả fallback và passages không đổi |
-| Thời gian | Luồng ảnh thật qua Backend; QA có evidence và model cache | Chẩn đoán ảnh khoảng 11,2 giây; QA chờ model tối đa 30 giây, Docker giữ read-timeout 120 giây hiện có. Phần retrieval đo riêng ở bảng tải |
-| Nghiệm thu local | Hỏi đáp web hai app, chẩn đoán/duyệt/đọc lại, chi tiết mobile | Chức năng nền đã được chủ dự án kiểm; bản mở rộng chatbot đã smoke bằng API/web, chờ người dùng review cuối. E2E Farm 10/10 và Lab 16/16 |
+| AI | Định dạng, nguồn, nhất quán bệnh, từ chối và timeout | 170 test, 50 subtest đạt |
+| Backend | Gateway, lưu giải thích, phân quyền và thay đổi rule khi chờ AI | 24 unit test, kiểm thử tích hợp database và đóng gói sáu module đạt |
+| Giao diện | Nội dung hợp lệ, thông báo dự phòng, dữ liệu cũ, màn hình nhỏ và chữ lớn trên web | 53 kiểm tra render, 6 ca browser đạt |
+| Qwen thực tế | Hỏi đáp Farm/Lab và giải thích ảnh bệnh | Đã kiểm tra câu trả lời và nguồn; nội dung sinh sai định dạng được ẩn |
+| Phân tách dữ liệu | Truy xuất và nạp tri thức theo namespace Farm/Lab | Đạt; Lab có 12 tài liệu, 78 đoạn |
+| Tương thích | Request cũ, dữ liệu chưa có giải thích và quay về phiên bản trước | Đọc lại được dữ liệu, giữ nguyên đoạn trích tham khảo |
+| Luồng sử dụng | Hỏi đáp web Farm/Lab, chẩn đoán, duyệt và xem lại trên mobile | Chủ dự án đã kiểm tay; E2E Farm 10/10, Lab 16/16 |
 
-Kiểm tay: hỏi triệu chứng đạo ôn trên web Farm và quy định cài phần mềm trên máy thư viện ở Lab, rồi mở nguồn đối chiếu.
-Tạo chẩn đoán Farm, kiểm giải thích tách khỏi phác đồ và bị ẩn khi dự phòng, duyệt rồi tải lại và xem trên mobile.
-Trước duyệt nông dân không được thấy nội dung.
-Các hạn chế nội dung, chữ lớn native và kiểm khởi động từ clone sạch được theo dõi trong [`BACKLOG.md`](BACKLOG.md).
-Đợt này sử dụng image/cache hiện có, không chạy lại full build/seed toàn stack từ clone sạch.
+Khi kiểm tay, đối chiếu câu trả lời với nguồn; kiểm giải thích chẩn đoán tách khỏi phác đồ và chỉ hiển thị cho nông dân sau duyệt.
+Các hạn chế về nội dung Qwen, chữ lớn trên mobile và khởi động từ clone sạch được ghi trong [`BACKLOG.md`](BACKLOG.md).
 
 ## 4. Dựng stack
 

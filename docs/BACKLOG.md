@@ -27,8 +27,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 
 | Việc | Ghi chú |
 |---|---|
-| Review UI cuối của chatbot hybrid | Đã smoke API/web và kiểm hồi quy; chưa có xác nhận riêng của chủ dự án về bản cuối cho câu tổng quan/cụ thể/từ chối và nguồn |
-| Bên thứ ba tái lập đánh giá RAG | Công cụ đã chạy thật và CLI khớp; cần người khác tự tính lại từ qrels/run, ghi riêng với việc chạy lại retrieval. Hướng dẫn ở [`ai/README.md`](../ai/README.md#đánh-giá-truy-xuất-rag) |
+| Bên thứ ba tái lập đánh giá RAG | Cần người đánh giá độc lập kiểm tra nhãn và tính lại điểm từ qrels/run; cách chạy ở [`ai/README.md`](../ai/README.md#đánh-giá-truy-xuất-rag) |
 | Chấm nội dung Qwen trên 36 câu hỏi và 6 chủ đề chẩn đoán | Chưa có bảng chấm trọng tâm, bám nguồn và dễ đọc do người duyệt xác nhận; tỷ lệ `generated` không phải độ đúng nội dung |
 | Chữ lớn trên mobile native | Đã typecheck, kiểm render và nghiệm thu chức năng; chưa đo riêng bố cục khi tăng cỡ chữ trên máy thật |
 | Khởi động bản Qwen từ clone sạch | Đã kiểm bằng image/cache và các cặp phiên bản; chưa chạy lại full build/seed toàn stack từ clone sạch |
@@ -48,9 +47,9 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Chưa có mô hình nhận diện sâu hại | Classifier nhận Healthy và 5 bệnh lá |
 | Hoàn thiện coverage tri thức canh tác Farm | Đã có 7 tài liệu tổng quát; trang tập huấn còn chủ yếu mục lục, cần nội dung tài liệu con và nguồn cho các chủ đề còn thiếu |
 | Rà nhãn RAG tường minh cho toàn bộ chunk | Chủ dự án đã duyệt bộ câu hỏi và nhãn pilot; qrels hiện chỉ có nhãn dương. Cần rà đủ 0/1/2 trước khi chuyển trạng thái `reviewed`, xem [`data/rag/evaluation/README.md`](../data/rag/evaluation/README.md) |
-| Đánh giá chatbot hybrid mở rộng | Bộ 72 query có thêm 30 câu nhãn nháp; cần rà đủ nhãn, tách calibration/holdout và hiệu chỉnh ngưỡng từng app bằng người đánh giá độc lập. Câu gián tiếp hỏi mang tài liệu về nhà có cosine dưới 0,40 nên hiện trả thiếu căn cứ; cần cải thiện coverage mà không bỏ kiểm tra liên quan. Recall nhóm tổng quan Farm còn hạn chế; so sánh trên cùng snapshot, không suy diễn điểm retrieval thành độ đúng Qwen. |
-| Mở rộng quy mô index chatbot | BM25 cache RAM tối đa bốn snapshot, mỗi index giới hạn 20.000 chunk; SQL đã giới hạn ứng viên cosine. Chưa thử tải ở giới hạn này, số đo hiện chỉ đại diện corpus pilot 244 chunk và 1/2/5 VU |
-| Đo đầy đủ workload đánh giá hybrid | Runner all đã chạy quality và smoke tải 12 lượt/1369 request; cần đo mặc định 36 lượt và workload tải riêng nhóm từ chối |
+| Đánh giá chatbot hybrid mở rộng | Rà nhãn 30 câu bổ sung, tách bộ hiệu chỉnh và bộ kiểm tra độc lập. Câu hỏi gián tiếp về mượn tài liệu còn bị lọc ở ngưỡng cosine 0,40; độ bao phủ câu tổng quan Farm cần cải thiện |
+| Đánh giá truy xuất trên corpus lớn | Chưa đo gần giới hạn 20.000 đoạn mỗi chỉ mục BM25; số liệu hiện có trên 244 đoạn, với 1/2/5 người dùng đồng thời |
+| Đo đầy đủ tải chatbot hybrid | Mới đo rút gọn 12 lượt, 1.369 request; cần chạy đủ 36 lượt theo cấu hình mặc định và đo riêng nhóm câu hỏi bị từ chối |
 | Truy xuất legacy dựa trên MiniLM đa ngữ | Diagnosis/ticket vẫn dùng cosine và ngưỡng legacy; diễn đạt gián tiếp còn phụ thuộc embedding, không có reranker như chatbot |
 | Luật phân loại của Lab là luật tay | Chưa đo độ chính xác trên dữ liệu thật |
 | Kho tri thức Lab chỉ có 12 bài từ 9 văn bản công khai của HaUI | Chưa có bài về máy in, VPN, quy chế phòng máy của khoa, đặt phòng máy; sổ tay LMS là bản năm học 2019-2020 |

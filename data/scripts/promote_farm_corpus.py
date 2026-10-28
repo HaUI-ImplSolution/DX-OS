@@ -18,12 +18,21 @@ STAGING = ROOT / "data" / "rag" / "staging" / "farm"
 CANONICAL = ROOT / "data" / "rag"
 
 
+def is_treatment_reference(item: dict[str, object]) -> bool:
+    return "CONTAINS_TREATMENT_REFERENCES" in item.get("review_flags", [])
+
+
+def promotable_documents(documents: list[dict[str, object]]) -> list[dict[str, object]]:
+    """Keep treatment-bearing documents in staging until expert review."""
+    return [item for item in documents if not is_treatment_reference(item)]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--approve-all",
         action="store_true",
-        help="Record explicit operator approval for every staged document.",
+        help="Record explicit operator approval for each eligible staged document.",
     )
     parser.add_argument("--reviewer", help="Identity of the person authorizing promotion.")
     args = parser.parse_args()
@@ -40,7 +49,22 @@ def main() -> None:
     if not documents or not registry:
         raise ValueError("Staging corpus and registry must not be empty")
 
-    for item in documents:
+    approved_documents = promotable_documents(documents)
+    held_documents = [item for item in documents if item not in approved_documents]
+    if not approved_documents:
+        raise SystemExit("Refusing promotion: no document is eligible for promotion.")
+    for item in held_documents:
+        item["review_status"] = "IN_REVIEW"
+        for field in ("approved_by", "approved_at", "approval_note"):
+            item.pop(field, None)
+    # Keep the complete approved source catalogue available to the backend;
+    # only treatment-bearing documents are withheld from the ingest corpus.
+    approved_registry = registry
+    approved_document_ids = {
+        item.get("document_id") for item in approved_documents
+    }
+
+    for item in approved_documents:
         item["review_status"] = "APPROVED"
         item["approved_by"] = args.reviewer.strip()
         item["approved_at"] = datetime.now(timezone.utc).date().isoformat()
@@ -56,10 +80,10 @@ def main() -> None:
         item["approved_at"] = datetime.now(timezone.utc).date().isoformat()
 
     (CANONICAL / "processed" / "farm_knowledge.json").write_text(
-        json.dumps(documents, ensure_ascii=False, indent=2), encoding="utf-8"
+        json.dumps(approved_documents, ensure_ascii=False, indent=2), encoding="utf-8"
     )
     (CANONICAL / "farm_knowledge_source_registry.json").write_text(
-        json.dumps(registry, ensure_ascii=False, indent=2), encoding="utf-8"
+        json.dumps(approved_registry, ensure_ascii=False, indent=2), encoding="utf-8"
     )
     (STAGING / "processed" / "farm_knowledge_staging.json").write_text(
         json.dumps(documents, ensure_ascii=False, indent=2), encoding="utf-8"
@@ -70,13 +94,22 @@ def main() -> None:
 
     queue = json.loads((STAGING / "review_queue.json").read_text(encoding="utf-8"))
     for item in queue:
-        item["review_status"] = "APPROVED"
-        item["approved_by"] = args.reviewer.strip()
-        item["approved_at"] = datetime.now(timezone.utc).date().isoformat()
+        if item.get("document_id") in approved_document_ids:
+            item["review_status"] = "APPROVED"
+            item["approved_by"] = args.reviewer.strip()
+            item["approved_at"] = datetime.now(timezone.utc).date().isoformat()
+        elif item.get("document_id") in {
+            doc.get("document_id") for doc in held_documents
+        }:
+            item["review_status"] = "IN_REVIEW"
+            for field in ("approved_by", "approved_at", "approval_note"):
+                item.pop(field, None)
     (STAGING / "review_queue.json").write_text(
         json.dumps(queue, ensure_ascii=False, indent=2), encoding="utf-8"
     )
-    print(f"Promoted approved Farm documents: {len(documents)}")
+    held_ids = ", ".join(item.get("document_id", "<unknown>") for item in held_documents)
+    print(f"Promoted approved Farm documents: {len(approved_documents)}")
+    print(f"Held for expert treatment review: {len(held_documents)} ({held_ids or 'none'})")
     print(f"Canonical corpus: {CANONICAL / 'processed' / 'farm_knowledge.json'}")
 
 

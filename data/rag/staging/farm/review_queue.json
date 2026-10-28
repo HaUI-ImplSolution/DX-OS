@@ -27,7 +27,7 @@
       "SRC_KN_RICE_LOW_EMISSION_31656"
     ],
     "topic": "cultivation_water_nutrition_ipm",
-    "review_status": "APPROVED",
+    "review_status": "IN_REVIEW",
     "review_flags": [
       "CHECK_LICENSE_TERMS",
       "CONTAINS_TREATMENT_REFERENCES"
@@ -36,10 +36,7 @@
       "Nguồn có được phép lưu và sử dụng nội dung cho RAG không?",
       "Nội dung có phù hợp với điều kiện Việt Nam và phạm vi topic không?",
       "Có đoạn thuốc/liều/PHI cần loại khỏi corpus giải thích không?"
-    ],
-    "approved_by": "project_owner",
-    "approved_at": "2026-10-28",
-    "approval_note": "Chủ dự án phê duyệt sử dụng tri thức này cho RAG; không phê duyệt treatment rule, thuốc, liều hoặc PHI."
+    ]
   },
   {
     "document_id": "SRC_KN_RICE_WEED_22126",
@@ -48,7 +45,7 @@
       "SRC_KN_RICE_WEED_22126"
     ],
     "topic": "weed_management",
-    "review_status": "APPROVED",
+    "review_status": "IN_REVIEW",
     "review_flags": [
       "CHECK_LICENSE_TERMS",
       "CONTAINS_TREATMENT_REFERENCES"
@@ -57,10 +54,7 @@
       "Nguồn có được phép lưu và sử dụng nội dung cho RAG không?",
       "Nội dung có phù hợp với điều kiện Việt Nam và phạm vi topic không?",
       "Có đoạn thuốc/liều/PHI cần loại khỏi corpus giải thích không?"
-    ],
-    "approved_by": "project_owner",
-    "approved_at": "2026-10-28",
-    "approval_note": "Chủ dự án phê duyệt sử dụng tri thức này cho RAG; không phê duyệt treatment rule, thuốc, liều hoặc PHI."
+    ]
   },
   {
     "document_id": "SRC_VAAS_RICE_LEAF_BIOLOGY",
@@ -89,7 +83,7 @@
       "SRC_KN_RICE_ORGANIC_32601"
     ],
     "topic": "organic_rice_sustainable_cultivation",
-    "review_status": "APPROVED",
+    "review_status": "IN_REVIEW",
     "review_flags": [
       "CHECK_LICENSE_TERMS",
       "CONTAINS_TREATMENT_REFERENCES"
@@ -98,10 +92,7 @@
       "Nguồn có được phép lưu và sử dụng nội dung cho RAG không?",
       "Nội dung có phù hợp với điều kiện Việt Nam và phạm vi topic không?",
       "Có đoạn thuốc/liều/PHI cần loại khỏi corpus giải thích không?"
-    ],
-    "approved_by": "project_owner",
-    "approved_at": "2026-10-28",
-    "approval_note": "Chủ dự án phê duyệt sử dụng tri thức này cho RAG; không phê duyệt treatment rule, thuốc, liều hoặc PHI."
+    ]
   },
   {
     "document_id": "SRC_KN_RICE_POSTHARVEST_31686",
@@ -110,7 +101,7 @@
       "SRC_KN_RICE_POSTHARVEST_31686"
     ],
     "topic": "harvest_postharvest",
-    "review_status": "APPROVED",
+    "review_status": "IN_REVIEW",
     "review_flags": [
       "CHECK_LICENSE_TERMS",
       "CONTAINS_TREATMENT_REFERENCES"
@@ -119,10 +110,7 @@
       "Nguồn có được phép lưu và sử dụng nội dung cho RAG không?",
       "Nội dung có phù hợp với điều kiện Việt Nam và phạm vi topic không?",
       "Có đoạn thuốc/liều/PHI cần loại khỏi corpus giải thích không?"
-    ],
-    "approved_by": "project_owner",
-    "approved_at": "2026-10-28",
-    "approval_note": "Chủ dự án phê duyệt sử dụng tri thức này cho RAG; không phê duyệt treatment rule, thuốc, liều hoặc PHI."
+    ]
   },
   {
     "document_id": "SRC_KN_RICE_SMART_PACKAGE_21736",

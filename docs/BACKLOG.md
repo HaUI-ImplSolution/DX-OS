@@ -10,9 +10,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Báo cáo kỹ thuật 8-10 trang, slide tối đa 12 | Có dàn ý ở [`SUBMISSION.md`](./SUBMISSION.md) mục 3 |
 | Video demo 3-5 phút, rehearsal ít nhất một lần | Kịch bản ở [`SUBMISSION.md`](./SUBMISSION.md) mục 2 |
 | Tạo vài issue mẫu trên GitHub | Issues đã bật, hiện chưa có issue nào; lấy từ mục 5 và 6 của tài liệu này |
-| Vẽ thêm Monitor vào `docs/images/tong_quan.gif` | README, README_EN và `ARCHITECTURE.md` đã có Monitor; ảnh thêm ô Monitor và ba đường Gateway → Monitor, Monitor → Mattermost, Monitor → PostgreSQL |
 | Chụp ảnh giao diện hai chế độ (Farm, Lab) và màn hình giám sát lưu vào repository cho hồ sơ | Chưa có; che IP và email thật khi chụp màn hình giám sát |
-| Quét lại gitleaks nếu có commit mới trước ngày chấm | Lần gần nhất 23/10/2026: 434 commit, không có phát hiện |
 | Chốt ngày hạn nộp thật | Chưa chốt |
 
 ## 2. Việc cần sửa trong mã và cấu hình

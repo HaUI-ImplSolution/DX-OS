@@ -161,6 +161,20 @@ Cloudflare concepts and settings are in [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE
 | Lab | `lecturer1` | `lecturer123` | LECTURER |
 | Lab | `tech1`, `tech2` | `tech1234` | TECHNICIAN |
 
+## 🔌 API
+
+- Swagger UI is at `/swagger-ui.html` and the OpenAPI JSON at `/v3/api-docs`; the documentation is generated from springdoc annotations and covers only the running application (`DXOS_APP`).
+- Every call goes through the gateway `http://localhost:9080/api/v1/...` with `Authorization: Bearer <Keycloak access token>`; only `GET /api/v1/system/status` and the application's public catalogues need no token.
+- Responses are wrapped in `ApiResponse`; errors carry a stable `errorCode`, business errors return `422` and concurrent conflicts return `409`.
+- To try it: click **Authorize** in Swagger with an access token, or use `deploy/demo/dxos_client.py` (Authorization Code + PKCE sign-in, like the real apps).
+
+| Group | Main paths |
+|---|---|
+| Shared Core | `/api/v1/system/status`, `/api/v1/app` (manifest: roles, menu), `/api/v1/workspaces`, `/api/v1/workflow-cases` (`assign`, `approve`, `reject`, `events`), `/api/v1/notifications`, `/api/v1/audit-logs` (ADMIN) |
+| Farm | `/api/v1/households`, `/api/v1/parcels`, `/api/v1/crop-seasons`, `/api/v1/disease-reports`, `/api/v1/treatment-rules`, `/api/v1/knowledge/ask`; see [`backend/app-farm/README.md`](./backend/app-farm/README.md#api) (Vietnamese) |
+| Lab | `/api/v1/tickets`, `/api/v1/device-loans`, `/api/v1/room-bookings`, `/api/v1/lab-stats/summary`, `/api/v1/knowledge/ask`; see [`backend/app-lab/README.md`](./backend/app-lab/README.md#api) (Vietnamese) |
+| AI Service | Only the Backend can call it on the internal network; it has no gateway route; see [`ai/README.md`](./ai/README.md#api) (Vietnamese) |
+
 ## 🧪 Testing
 
 - Backend: `./mvnw verify` in `backend` (Docker required for Testcontainers); AI: `pytest` in `ai/`.

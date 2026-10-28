@@ -161,6 +161,20 @@ Khái niệm và cấu hình Cloudflare ở [`docs/CLOUDFLARE.md`](./docs/CLOUDF
 | Lab | `lecturer1` | `lecturer123` | LECTURER |
 | Lab | `tech1`, `tech2` | `tech1234` | TECHNICIAN |
 
+## 🔌 API
+
+- Swagger UI ở `/swagger-ui.html`, OpenAPI JSON ở `/v3/api-docs`; tài liệu sinh từ annotation springdoc và chỉ có API của ứng dụng đang chạy (`DXOS_APP`).
+- Mọi lời gọi đi qua gateway `http://localhost:9080/api/v1/...` kèm `Authorization: Bearer <access token Keycloak>`; chỉ `GET /api/v1/system/status` và danh mục công khai của ứng dụng không cần token.
+- Response bọc trong `ApiResponse`; lỗi có `errorCode` ổn định, lỗi nghiệp vụ trả `422` và xung đột đồng thời trả `409`.
+- Để thử: bấm **Authorize** trong Swagger với access token, hoặc dùng `deploy/demo/dxos_client.py` (đăng nhập Authorization Code + PKCE như app thật).
+
+| Nhóm | Đường dẫn chính |
+|---|---|
+| Core dùng chung | `/api/v1/system/status`, `/api/v1/app` (manifest: vai, menu), `/api/v1/workspaces`, `/api/v1/workflow-cases` (`assign`, `approve`, `reject`, `events`), `/api/v1/notifications`, `/api/v1/audit-logs` (ADMIN) |
+| Farm | `/api/v1/households`, `/api/v1/parcels`, `/api/v1/crop-seasons`, `/api/v1/disease-reports`, `/api/v1/treatment-rules`, `/api/v1/knowledge/ask`; xem [`backend/app-farm/README.md`](./backend/app-farm/README.md#api) |
+| Lab | `/api/v1/tickets`, `/api/v1/device-loans`, `/api/v1/room-bookings`, `/api/v1/lab-stats/summary`, `/api/v1/knowledge/ask`; xem [`backend/app-lab/README.md`](./backend/app-lab/README.md#api) |
+| AI Service | Chỉ Backend gọi được trong mạng nội bộ, không có route ở gateway; xem [`ai/README.md`](./ai/README.md#api) |
+
 ## 🧪 Kiểm thử
 
 - Backend: `./mvnw verify` trong `backend` (cần Docker cho Testcontainers); AI: `pytest` trong `ai/`.

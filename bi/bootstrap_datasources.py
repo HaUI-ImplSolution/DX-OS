@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Đăng ký kết nối Postgres (role chỉ-đọc) + dataset của app đang chạy (DXOS_APP) qua REST API
 công khai của Superset. Idempotent - tìm theo tên trước khi tạo mới. App có bundle dashboard
 export sẵn trong repo thì import bundle đó thay cho việc khai báo dataset từng view.

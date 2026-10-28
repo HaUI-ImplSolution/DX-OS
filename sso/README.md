@@ -17,12 +17,31 @@ Keycloak không publish cổng ra host: gateway APISIX chuyển tiếp `/realms`
 ## Realm `dxos`
 
 - Database Postgres riêng `keycloak`; Backend tạo role `keycloak_app` và database lúc khởi động (`KeycloakDatabaseSeeder`).
-- Realm role `ADMIN`; client public `dxos-web`, `farm-mobile` (Standard Flow + PKCE, không secret); client confidential `dxos-superset` (secret `SUPERSET_OIDC_CLIENT_SECRET`), `dxos-monitor` (màn hình giám sát `/monitor/`, secret `MONITOR_OIDC_CLIENT_SECRET`, chỉ vai `ADMIN` vào được) và `dxos-backend-admin` (service account của Backend).
+- Realm role `ADMIN`, `ENGINEER`, `TECHNICIAN` (ba vai nhân sự mà luồng đăng nhập hỏi mã; Backend vẫn tạo các vai khác của app đang chạy); client public `dxos-web`, `farm-mobile` (Standard Flow + PKCE, không secret); client confidential `dxos-superset` (secret `SUPERSET_OIDC_CLIENT_SECRET`), `dxos-monitor` (màn hình giám sát `/monitor/`, secret `MONITOR_OIDC_CLIENT_SECRET`, chỉ vai `ADMIN` vào được) và `dxos-backend-admin` (service account của Backend).
 - Realm import không chứa vai hay tài khoản của app: vai (`FARMER`, `ENGINEER`, `STUDENT`... theo `RoleProvider`) do Backend tạo lúc khởi động, tài khoản demo do `deploy/demo/seed_demo.py` tạo.
 - Keycloak chỉ import realm khi realm chưa tồn tại; đổi `realm-dxos.json` hoặc secret sau đó thì sửa trong Admin Console hoặc `deploy/reset.sh`.
 - `dxos-backend-admin` chỉ giữ `manage-users`, `view-users`, `view-realm`, `manage-realm`; Backend dùng nó để tạo tài khoản workspace và vai của app qua Admin REST API.
 
+## Xác thực hai bước và mật khẩu
+
+- Realm đặt chính sách mật khẩu `length(8) and notUsername`.
+- Luồng đăng nhập `dxos browser` hỏi mã TOTP với người có vai `ADMIN`, `ENGINEER` hoặc `TECHNICIAN`.
+  Lần đầu họ được hướng dẫn quét mã QR vào ứng dụng xác thực.
+  Vai khác (nông dân, sinh viên, giảng viên) không bị hỏi.
+  Client không bật direct access grants nên không có đường đăng nhập bằng mật khẩu né bước này.
+- Biến `STAFF_OTP_FLOW` trong `deploy/.env` bật (`CONDITIONAL`) hoặc tắt (`DISABLED`, mặc định) bước này.
+  Mặc định tắt để demo và CI đăng nhập được chỉ bằng mật khẩu.
+  Máy chủ thật đặt `STAFF_OTP_FLOW=CONDITIONAL` trước lần khởi động đầu, vì Keycloak chỉ import realm một lần.
+- Realm đã chạy từ bản cũ không có luồng này.
+  Dựng lại realm bằng `deploy/reset.sh` (xóa dữ liệu), hoặc tạo tay trong Admin Console.
+  Cách tạo tay: Authentication, nhân đôi luồng `browser` thành `dxos browser`, rồi trong luồng con `forms` thêm cho mỗi vai `ADMIN`, `ENGINEER`, `TECHNICIAN` một luồng con Conditional gồm hai bước.
+  Hai bước là "Condition - user role" (Required, chọn vai) và "OTP Form" (Required).
+  Cuối cùng chọn Bind flow, Browser flow.
+- Mất điện thoại: quản trị xóa credential OTP của người đó trong Admin Console (Users, Credentials), lần đăng nhập sau họ đăng ký lại.
+
 ## Token và phân quyền
+
+- Mật khẩu chỉ nằm ở Keycloak, lưu dạng băm Argon2id (mặc định của Keycloak 26); Backend chỉ gửi mật khẩu tạm lúc tạo tài khoản qua Admin API và không lưu mật khẩu.
 
 - `dxos-web` và `farm-mobile` có mapper `dxos-api-audience` thêm `dxos-api` vào `aud`; Backend (`security.jwt.audience`) trả `401` cho token thiếu audience.
 - Token chỉ có role `FARMER` phải có `azp` thuộc `security.farmer-client-ids` (mặc định `farm-mobile`), nếu không Backend trả `403`; web hiện màn "dùng ứng dụng di động", Superset từ chối.
@@ -40,7 +59,7 @@ Chỉ để demo; đổi mật khẩu trước khi triển khai ngoài môi trư
 | `admin1` | `admin123` | ADMIN |
 | `student1`, `student2` | `student123` | STUDENT |
 | `lecturer1` | `lecturer123` | LECTURER |
-| `tech1`, `tech2` | `tech123` | TECHNICIAN |
+| `tech1`, `tech2` | `tech1234` | TECHNICIAN |
 
 Farm dùng ba tài khoản đầu, Lab dùng `admin1` và các nhóm còn lại; `seed_demo.py` tạo tài khoản của app đang chạy.
 Quản lý user qua Admin Console `http://localhost:${APISIX_HOST_PORT}/admin` (`KEYCLOAK_ADMIN_USERNAME` / `KEYCLOAK_ADMIN_PASSWORD`).

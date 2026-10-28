@@ -1,0 +1,9 @@
+# Findings accepted for now. Every line expires, so it is looked at again.
+
+# io.minio:minio 8.5.17 (backend). The fix, 8.6.0, moves to OkHttp 5, which needs the storage client
+# changed and tried against a real MinIO first.
+CVE-2025-59952 exp:2026-12-31
+
+# Transitive packages of the mobile app (Expo) without a compatible fix.
+CVE-2026-93749 exp:2026-12-31
+CVE-2023-54404 exp:2026-12-31

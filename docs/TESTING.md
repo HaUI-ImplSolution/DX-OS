@@ -51,6 +51,15 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 | `audit_log` chỉ thêm, `GET /api/v1/audit-logs` cho ADMIN, cảnh báo Mattermost | Có | Kiểm tay, E2E Farm và Lab | Không áp dụng |
 | Ghi `SERVER_ERROR` và `ADMIN_ACTION_FAILED` vào `audit_log` | Có | Kiểm tay (M1, M2) | Không áp dụng |
 | Màn hình giám sát `/monitor/`: sự kiện gateway, dò dịch vụ, truy vết, cảnh báo | Có | Kiểm tay, Chrome (M1 đến M14) | Không áp dụng |
+| Tin chat lỗi tạm thời được lưu ở `chat_outbox` và gửi lại có chờ tăng dần | Có | Test đơn vị và tích hợp (Testcontainers) | Không áp dụng |
+| Backend chuyển `X-Request-Id` sang AI, AI ghi log theo mã đó | Có | Test đơn vị (Java và pytest) | Không áp dụng |
+| Sao lưu và khôi phục `deploy/backup.sh` (restic, `verify`) | Có | Job CI `backup-drill`, kiểm tay khôi phục vào cluster mới | Không áp dụng |
+| Đăng nhập nhân sự bằng TOTP (`STAFF_OTP_FLOW`) và chính sách mật khẩu | Có | Kiểm tay bằng script đăng nhập qua Keycloak ở cả hai chế độ | Không áp dụng |
+| Quét mã độc tệp tải lên bằng ClamAV: tệp nhiễm bị từ chối, ClamAV ngừng thì 503 | Có | Test đơn vị, kiểm tay với ClamAV thật và tệp EICAR | Không áp dụng |
+| Che số điện thoại, email, dãy số dài trong tin chat và câu hỏi gửi sang AI | Có | Test đơn vị | Không áp dụng |
+| Cầu dao khi gọi AI: dịch vụ lỗi thì trả 503 ngay | Có | Test đơn vị, kiểm tay với AI dừng | Không áp dụng |
+| Cảnh báo một địa chỉ đăng nhập sai nhiều lần | Có | Test đơn vị, kiểm tay với Mattermost giả | Không áp dụng |
+| Quét lỗ hổng phụ thuộc bằng Trivy (`ci-deps.yml`, hằng tuần) | Có | Chạy thử ở local, CI | Không áp dụng |
 
 ## 2. Chuẩn bị
 
@@ -79,7 +88,9 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 
 ### Đánh giá truy xuất RAG
 
-RAG tìm các đoạn tài liệu liên quan để hỗ trợ trả lời câu hỏi. Phép đo kiểm tra bước tìm kiếm này trước xử lý Backend, với 42 câu/lượt, 18 tài liệu và 109 đoạn. Môi trường và lệnh chạy ở [`ai/README.md`](../ai/README.md#đánh-giá-truy-xuất-rag).
+RAG tìm các đoạn tài liệu liên quan để hỗ trợ trả lời câu hỏi.
+Phép đo kiểm tra bước tìm kiếm này trước xử lý Backend, với 42 câu/lượt, 18 tài liệu và 109 đoạn.
+Môi trường và lệnh chạy ở [`ai/README.md`](../ai/README.md#đánh-giá-truy-xuất-rag).
 
 | Kiểm tra | Cách | Kết quả |
 |---|---|---|
@@ -98,13 +109,17 @@ Kết quả pilot ngày 26/10/2026:
 
 - **Số câu:** số câu được kiểm tra; **k:** số đoạn tài liệu đầu tiên được chấm.
 - **Recall@k:** tỷ lệ đoạn liên quan tìm được trong k kết quả đầu theo bộ đáp án.
-- **nDCG@k:** mức độ ưu tiên các đoạn hữu ích ở đầu danh sách. Cả hai điểm từ 0–1, càng cao càng tốt.
+- **nDCG@k:** mức độ ưu tiên các đoạn hữu ích ở đầu danh sách.
+  Cả hai điểm từ 0–1, càng cao càng tốt.
 
 ### Thử tải HTTP retrieval
 
-Dùng k6 gọi endpoint retrieval thật, k=4; Farm/Lab chạy riêng ở 1/2/5 VU, mỗi mức 30 giây, lặp ba lần sau khi làm nóng model. Mỗi VU đợi phản hồi rồi gửi tiếp; CPU/RAM lấy mẫu bằng `docker stats`. Cách chạy ở [`ai/README.md`](../ai/README.md#thử-tải-http-retrieval).
+Dùng k6 gọi endpoint retrieval thật, k=4; Farm/Lab chạy riêng ở 1/2/5 VU, mỗi mức 30 giây, lặp ba lần sau khi làm nóng model.
+Mỗi VU đợi phản hồi rồi gửi tiếp; CPU/RAM lấy mẫu bằng `docker stats`.
+Cách chạy ở [`ai/README.md`](../ai/README.md#thử-tải-http-retrieval).
 
-Kết quả ngày 26/10/2026: 18 lượt, 14.164 request, không lỗi HTTP hoặc sai hợp đồng phản hồi. Các khoảng là min–max giữa ba lượt lặp:
+Kết quả ngày 26/10/2026: 18 lượt, 14.164 request, không lỗi HTTP hoặc sai hợp đồng phản hồi.
+Các khoảng là min–max giữa ba lượt lặp:
 
 | Nhóm | VU | Request/giây | p95 mỗi lượt (ms) |
 |---|---:|---:|---:|
@@ -115,11 +130,17 @@ Kết quả ngày 26/10/2026: 18 lượt, 14.164 request, không lỗi HTTP ho�
 | Lab | 2 | 21,74–22,45 | 178,73–197,90 |
 | Lab | 5 | 19,35–27,25 | 252,56–603,96 |
 
-AI giới hạn 2 CPU/1536 MiB, một worker; RAM đỉnh quan sát khi đo 1.042,4 MiB, pgvector 27 MiB. Đã đối chiếu metric với mẫu k6 thô trong sai số `1e-8`.
-Langfuse có run `load-2026-10-26-final`, mỗi dòng là một lượt; `SUMMARY/AVG` của p95 không phải p95 gộp. HTML k6 và mẫu tài nguyên lưu ngoài repository.
-Phép thử chỉ đo HTTP retrieval trên máy dùng chung, tắt CV lifespan; chưa gồm Backend, gateway hoặc mạng điện thoại, chưa kết luận năng lực production.
+AI giới hạn 2 CPU/1536 MiB, một worker; RAM đỉnh quan sát khi đo 1.042,4 MiB, pgvector 27 MiB.
+Metric khớp mẫu k6 thô trong sai số `1e-8`.
+Langfuse có run `load-2026-10-26-final`, mỗi dòng là một lượt; `SUMMARY/AVG` của p95 không phải p95 gộp.
+HTML k6 và mẫu tài nguyên lưu ngoài repository.
+Phép thử chỉ đo HTTP retrieval trên máy dùng chung, tắt CV lifespan.
+Chưa gồm Backend, gateway hoặc mạng điện thoại, nên chưa kết luận năng lực production.
 
-Bộ chạy `./ai/evaluate.sh all` ngày 27/10/2026: 18 lượt, 11.936 request, không lỗi HTTP/hợp đồng; đối chiếu dữ liệu k6 thô trong sai số `1e-8`. Langfuse chỉ bật sau đo; đã kiểm tra HTML, CPU/RAM, ngắt k6, hai phiên và khôi phục bằng `down`, không ảnh hưởng container đối chứng.
+Bộ chạy `./ai/evaluate.sh all` ngày 27/10/2026: 18 lượt, 11.936 request, không lỗi HTTP/hợp đồng.
+Metric khớp dữ liệu k6 thô trong sai số `1e-8`.
+Langfuse chỉ bật sau đo.
+Đã kiểm tra HTML, CPU/RAM, ngắt k6, hai phiên và khôi phục bằng `down`, không ảnh hưởng container đối chứng.
 
 ## 4. Dựng stack
 
@@ -127,7 +148,7 @@ Bộ chạy `./ai/evaluate.sh all` ngày 27/10/2026: 18 lượt, 11.936 request,
 
 ```bash
 cd deploy
-cp .env.example .env     # điền mọi biến đang để trống (mật khẩu, khóa nội bộ)
+python3 demo/make_ci_env.py .env   # sinh .env, biến để trống (mật khẩu, khóa nội bộ) nhận giá trị ngẫu nhiên
 ```
 
 Đặt app muốn chạy trong `.env` (mặc định `farm`): `DXOS_APP=farm` hoặc `lab`.
@@ -390,9 +411,10 @@ Cách dùng và ý nghĩa từng khối ở [`backend/dx-monitor/README.md`](../
 
 | Mục | Kết quả | Ghi chú |
 |---|---|---|
-| Backend `./mvnw clean verify` | Đạt | 149 test: dx-core 14, app-farm 23, app-lab 9, dx-host 103 |
+| CI trên pull request: Backend, AI, Infra, E2E Farm và Lab, Dependencies | Đạt | Ngày 28/10/2026 ở commit `6560c92`; gồm `mvn verify` cả sáu module, `pytest`, job `backup-drill`, gitleaks, quét Trivy |
+| Backend `mvn verify` (sáu module, Testcontainers) | Đạt | Job `CI Backend` ngày 28/10/2026; số test chạy xem ở log job |
 | BI `python -m unittest test_chart_query_context` trong `bi/` | Đạt | 22 test |
-| AI `pytest` trong `ai/` | Đạt | 100 test |
+| AI `pytest` trong `ai/` | Đạt | Job `CI AI` ngày 28/10/2026; số test chạy xem ở log job |
 | Đánh giá truy xuất RAG và thử tải HTTP retrieval | Đạt | Ngày 26 và 27/10/2026 qua `./ai/evaluate.sh`; số liệu ở mục 3 |
 | Web và mobile `tsc` | Đạt | Không lỗi |
 | Ranh giới app và core, seed Farm, nguồn tri thức khớp registry | Đạt | Không có kết quả vi phạm |
@@ -419,4 +441,4 @@ Cách dùng và ý nghĩa từng khối ở [`backend/dx-monitor/README.md`](../
 | Dựng từ clone sạch theo README | Đạt | `start.sh farm` 113 giây, `start.sh lab` 56 giây, mọi dịch vụ healthy |
 | Dựng sạch hoàn toàn (volume và `deploy/data` rỗng) | Đạt | `start.sh farm` thoát mã 0 sau khoảng 5 phút, seed Farm đủ dữ liệu; sau khi khởi động lại AI, E2E Farm 10/10 (seed chờ AI); `start.sh lab` rồi E2E Lab 16/16 |
 | Thêm ứng dụng mẫu rỗng theo CONTRIBUTING | Đạt | Backend lên với `DXOS_APP=sample`, `system/status` trả id `sample`, không sửa `dx-core` |
-| gitleaks | Đạt | Ngày 23/10/2026: 434 commit, không có phát hiện |
+| gitleaks | Đạt | CI quét cây làm việc và toàn bộ lịch sử commit mỗi lần push (`ci-infra.yml`); xanh ngày 27/10/2026 |

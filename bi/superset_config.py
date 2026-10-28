@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """SSO thật qua Keycloak (AUTH_OAUTH) - xem sso/README.md.
 Tài khoản admin DB cục bộ (SUPERSET_ADMIN_USERNAME/PASSWORD) vẫn dùng được qua REST API
 (provider=db) cho bootstrap_datasources.py, không phụ thuộc AUTH_TYPE.

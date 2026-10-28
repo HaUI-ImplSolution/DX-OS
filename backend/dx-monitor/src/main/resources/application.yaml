@@ -110,6 +110,8 @@ monitor:
     server-error-window-minutes: 5
     rate-limited-count: 10
     rate-limited-window-minutes: 10
+    login-failed-count: 10
+    login-failed-window-minutes: 10
     repeat-minutes: 60
 
   mattermost:

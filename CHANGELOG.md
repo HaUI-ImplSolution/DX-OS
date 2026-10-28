@@ -3,26 +3,95 @@
 Nhật ký thay đổi của DX-OS (DX-Farm và DX-Lab).
 Định dạng theo [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/).
 
-Mục Chưa phát hành tóm tắt các điểm cốt lõi.
+Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Chưa phát hành gom những gì sau phiên bản mới nhất.
 Lịch sử chi tiết theo ngày của từng module (Backend, Dữ liệu, Mobile, AI Service, Frontend, Deploy, BI, Chat, Portal, SSO, Giấy phép và SBOM, Tài liệu) nằm ở các mục sau.
 
 ## [Unreleased]
 
-Tóm tắt những gì chưa phát hành.
+Chi tiết theo ngày ở mục của từng module bên dưới.
+
+- Sao lưu và khôi phục có mã hóa bằng `deploy/backup.sh`, có lệnh kiểm tra khôi phục và job CI chạy thử.
+- Độ bền: tin chat lỗi tạm thời được gửi lại, cầu dao khi gọi AI service, mã request đi suốt từ gateway tới AI service.
+- Bảo mật: xác thực hai bước và chính sách mật khẩu ở Keycloak, quét mã độc tệp tải lên bằng ClamAV, che thông tin cá nhân trong tin chat và câu hỏi gửi sang AI, container chạy không phải root.
+- Giám sát: cảnh báo một địa chỉ đăng nhập sai nhiều lần.
+- Vận hành và CI: sinh `deploy/.env` với mật khẩu ngẫu nhiên, quét lỗ hổng phụ thuộc bằng Trivy.
+
+## [1.0.3] - 2026-10-27
+
 Chi tiết theo ngày ở mục của từng module bên dưới.
 
 - Màn hình giám sát và truy vết `/monitor/` cho quản trị viên, chạy riêng nên vẫn hoạt động khi backend dừng.
 - Truy vết máy chủ công khai: log gateway kèm `X-Request-Id`, sự kiện đăng nhập của Keycloak và `audit_log` chỉ thêm.
 - Giới hạn tốc độ theo IP thật ở gateway.
-- Workflow `Release` phát hành image lên GHCR.
-- Farm: chẩn đoán kèm tài liệu tham khảo, nhắc khai phun chờ xác nhận.
-- Lab: tri thức từ văn bản chính thức của HaUI, cảnh báo thiết bị hỏng lặp lại.
+- Farm: báo cáo đang có lượt chẩn đoán AI chạy dở thì lượt thứ hai trả `409`.
 - Bộ câu hỏi và nhãn đánh giá truy xuất RAG cho Farm/Lab, gồm 36 câu hỏi đáp và 6 lượt tham khảo chẩn đoán.
 - Công cụ thu kết quả chỉ đọc, chấm Recall/nDCG bằng `ir_measures` và hiển thị câu hỏi, đoạn tài liệu, điểm trên Langfuse local.
 - Thử tải endpoint truy xuất bằng k6, đo độ trễ, request/giây, tỷ lệ lỗi và tài nguyên Docker; xuất dữ liệu để kiểm tra lại.
 - Bộ chạy đánh giá RAG độc lập bằng một lệnh, tự chuẩn bị Langfuse local, dùng lại cache và tự dọn sau khi xem.
+- Mọi file Java và Python tự viết có dòng `SPDX-License-Identifier: Apache-2.0`.
+- Tài liệu: README có mục API, CHANGELOG theo phiên bản, mật khẩu Keycloak băm Argon2id.
+
+## [1.0.2] - 2026-10-23
+
+- Model bệnh lá lúa DX-Farm EfficientNetV2-M (Healthy và 5 bệnh) thay detector cũ.
+- Workflow `Release` phát hành image lên GHCR; `deploy/update.sh` cập nhật stack từ image đã phát hành.
+- Overlay Cloudflare Tunnel cho máy chủ công khai; chạy được trên CPU ảo không có x86-64-v2.
+- Farm: chẩn đoán kèm tài liệu tham khảo, nhắc khai phun chờ xác nhận, nhắc thu hoạch có giới hạn ngày, bật rule đốm nâu, thời tiết lưu theo giờ và chart thời tiết trên Superset.
+- Lab: tri thức từ văn bản chính thức của HaUI kèm link tới trang gốc, cảnh báo thiết bị hỏng lặp lại, màn hình ticket và quy tắc mượn thiết bị, đặt phòng làm lại.
+- Portal lấy địa chỉ BI, MinIO và chat từ cấu hình; web và mobile hiển thị tài liệu tham khảo của chẩn đoán.
+
+## [1.0.1] - 2026-10-15
+
+- Farm: thời tiết theo thửa, danh sách báo cáo chưa chẩn đoán, thông báo chat kèm liên kết mở thẳng báo cáo, chart sản lượng thu hoạch.
+- Mobile: thẻ thời tiết, hỏi đáp, giới hạn GPS lấy từ backend.
+- Backend ghi người tạo chẩn đoán, khóa việc chạy định kỳ giữa nhiều bản chạy; kỹ sư xem được dashboard BI.
+- Webhook chat tạo lúc khởi động và backend đọc từ file; nhận ảnh nền đơn sắc.
+- Tài liệu: sơ đồ kiến trúc dạng ảnh, README tiếng Anh, quy tắc ứng xử.
+
+## [1.0.0] - 2026-10-13
+
+Bản phát hành đầu tiên của DX-OS.
+
+- Core dùng chung (`dx-core-api`, `dx-core`, `dx-host`): định danh và workspace, workflow, hộp duyệt, thông báo, lưu trữ, cổng AI và tri thức, bảo mật, trạng thái hệ thống.
+- Hai ứng dụng chọn bằng `DXOS_APP`: DX-Farm (`app-farm`) và DX-Lab (`app-lab`).
+- AI Service: nhận diện bệnh lá lúa, RAG theo namespace `farm` và `lab`, LangGraph.
+- Web React dùng chung; mobile Expo cho nông dân.
+- Hạ tầng Docker Compose: Keycloak, APISIX, PostgreSQL, MinIO, Superset, Mattermost, portal; E2E Farm và Lab trong CI.
+- Tài liệu và nguồn mở: `LICENSE`, `LICENSES.md`, SBOM CycloneDX, `CONTRIBUTING.md`, mẫu issue và pull request.
 
 ## Backend (Spring Boot — `backend`)
+
+### 2026-10-28
+
+**Đã xong — Gửi lại tin chat bị lỡ:**
+
+- Tin gửi vào Mattermost thất bại vì lỗi mạng, HTTP 5xx hoặc 429 được lưu ở bảng `chat_outbox` (migration core `V5`).
+- Job `ChatOutboxJob` gửi lại mỗi phút với khoảng chờ 1, 2, 4 phút tăng dần tới 60 phút, tối đa 8 lần.
+- Tin bị webhook từ chối (HTTP 4xx khác) thì bỏ; tin quá số lần chuyển `FAILED` và bị xóa sau 7 ngày.
+
+**Đã xong — Chuyển mã request sang AI:**
+
+- `AiServiceGateway` gắn header `X-Request-Id` của request đang xử lý vào mọi lời gọi AI.
+
+**Đã xong — Quét mã độc tệp tải lên:**
+
+- `FileStoreService` đưa tệp cho ClamAV (`storage.scan.host`) trước khi xử lý và lưu; tệp nhiễm nhận HTTP 422 `ERR_FILE_INFECTED` và vào `audit_log` (`FILE_INFECTED`), ClamAV không trả lời thì HTTP 503 `ERR_SCAN_UNAVAILABLE`.
+
+**Đã xong — Che thông tin cá nhân:**
+
+- `PiiMask` (`dx-core-api`) thay email và dãy số từ 9 chữ số trở lên bằng `[đã ẩn]`, dùng cho mọi tin chat và câu hỏi tri thức gửi sang AI.
+
+**Đã xong — Cầu dao gọi AI:**
+
+- `AiServiceGateway` dùng Resilience4j: một nửa trong 10 lần gọi gần nhất lỗi mạng hoặc 5xx thì gọi AI thất bại ngay trong 30 giây (`ai.service.breaker.open-seconds`).
+
+**Đã xong — Cảnh báo đăng nhập sai:**
+
+- `monitor` báo vào kênh Ban quản trị khi một địa chỉ đăng nhập sai từ 10 lần trong 10 phút (`monitor.alert.login-failed-*`).
+
+**Đã xong — Chạy không phải root:**
+
+- Image `backend` và `monitor` chạy bằng user `app` (uid 10001).
 
 ### 2026-10-26
 
@@ -628,6 +697,12 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 
 ## AI Service (Python)
 
+### 2026-10-28
+
+**Đã xong — Log theo mã request:**
+
+- Middleware đọc `X-Request-Id` hợp lệ (tối đa 64 ký tự `A-Za-z0-9._-`) hoặc sinh mã mới, trả lại ở response và ghi một dòng log mỗi request.
+
 ### 2026-10-27
 
 **Đã xong — Đánh giá truy xuất RAG:**
@@ -930,6 +1005,26 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 
 ## Deploy (`deploy`)
 
+### 2026-10-28
+
+**Đã xong — Dịch vụ tùy chọn và công cụ cài đặt:**
+
+- `clamav` (profile `av`) quét mã độc tệp tải lên, tắt mặc định.
+- `make_ci_env.py` cũng dùng cho lần cài đầu: sinh `deploy/.env` với mật khẩu ngẫu nhiên và giữ nguyên tệp đã có trừ khi có `--force`.
+- Workflow `ci-deps.yml` quét lỗ hổng phụ thuộc bằng Trivy khi đổi tệp khai báo phụ thuộc và mỗi tuần; các lỗi được chấp nhận tạm ghi ở `.trivyignore` kèm ngày hết hạn.
+- Mật khẩu demo của `tech1`, `tech2` là `tech1234`, đủ 8 ký tự theo chính sách mật khẩu.
+
+**Đã xong — Sao lưu và khôi phục:**
+
+- `backup.sh` chụp bản sao lưu mã hóa bằng restic gồm Postgres, MinIO, tệp Mattermost và metadata Superset.
+- `backup.sh verify` nạp dump mới nhất vào một Postgres tạm và kiểm tra; `backup.sh restore <dir>` lấy bản sao lưu ra thư mục.
+- Job CI `backup-drill` chạy backup và verify trên Postgres thật, tạo `deploy/data/*` trước khi khởi động Postgres vì Compose tạo `deploy/data` bằng quyền root; cách khôi phục ở `OPERATIONS.md`.
+
+**Đã xong — Cứng hóa container:**
+
+- `backend`, `monitor`, `ai` và `rag-ingest` bỏ mọi Linux capability; các container này cùng `frontend` và `portal` đặt `no-new-privileges`.
+- Console MinIO mặc định chỉ mở trên máy chủ (`APISIX_MINIO_HOST_PORT=127.0.0.1:9082`).
+
 ### 2026-10-26
 
 **Đã xong — Dịch vụ `monitor`:**
@@ -1202,6 +1297,13 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 
 ## Kênh chat nội bộ (`chat`, Mattermost)
 
+### 2026-10-28
+
+**Đã xong — Gửi lại và che thông tin cá nhân:**
+
+- Tin gửi lỗi tạm thời được lưu ở `chat_outbox` và gửi lại tối đa 8 lần.
+- Số điện thoại, email và dãy số từ 9 chữ số trở lên trong tin được thay bằng `[đã ẩn]`.
+
 ### 2026-10-13
 
 - `chat/bootstrap.sh` tạo thêm channel `Kỹ thuật viên` (public) cho thông báo của DX-Lab: yêu cầu hỗ trợ mới và yêu cầu quá hạn; yêu cầu quá hạn còn đi vào `Ban quản trị`.
@@ -1287,6 +1389,14 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 
 ## Identity Provider (`sso`, Keycloak)
 
+### 2026-10-28
+
+**Đã xong — Xác thực hai bước và chính sách mật khẩu:**
+
+- Realm đặt chính sách mật khẩu `length(8) and notUsername`.
+- Luồng `dxos browser` hỏi mã TOTP với vai `ADMIN`, `ENGINEER`, `TECHNICIAN`; bật bằng `STAFF_OTP_FLOW=CONDITIONAL`, mặc định `DISABLED`.
+- Realm import có sẵn ba vai `ADMIN`, `ENGINEER`, `TECHNICIAN` để luồng tìm thấy vai cần hỏi mã.
+
 ### 2026-10-26
 
 **Đã xong — Client của màn hình giám sát:**
@@ -1339,6 +1449,12 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 
 ## Giấy phép và SBOM
 
+### 2026-10-28
+
+**Đã xong — Công cụ vận hành mới:**
+
+- `LICENSES.md` thêm restic 0.17.3 (BSD-2-Clause, sao lưu), ClamAV 1.5.4 (GPL-2.0, dịch vụ riêng ở profile `av`) và Trivy 0.58.1 (Apache-2.0, chạy trong CI); cả ba chạy trong container, không đóng gói trong runtime.
+
 ### 2026-10-27
 
 **Đã xong — Thành phần của môi trường đánh giá RAG:**
@@ -1388,6 +1504,13 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 
 ## Tài liệu (root, `docs`, `ai/`)
 
+### 2026-10-28
+
+**Đã xong — Đồng bộ với đợt hạ tầng:**
+
+- `README.md`, `README_EN.md` có mục sao lưu và khôi phục; `deploy/OPERATIONS.md` mô tả sao lưu, gửi lại tin chat, quét mã độc, cầu dao gọi AI và cảnh báo đăng nhập sai.
+- `chat/README.md`, `minio/README.md`, `sso/README.md`, `ai/README.md`, `docs/TESTING.md`, `docs/BACKLOG.md` khớp với hành vi hiện tại.
+
 ### 2026-10-27
 
 **Đã xong — Đánh giá truy xuất RAG:**
@@ -1396,6 +1519,16 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 - `docs/TESTING.md` mục 3 có kết quả pilot (Recall@k, nDCG@k) và thử tải HTTP retrieval; mục 10 tóm tắt kết quả.
 - `data/rag/evaluation/README.md` mô tả bộ đề và quy ước nhãn; `docs/BACKLOG.md` ghi việc rà nhãn đủ và tái lập bởi bên thứ ba.
 - `README.md`, `README_EN.md`, `data/README.md`, `ai/app/rag/README.md`, `docs/COUNCIL_QA.md`, `docs/SUBMISSION.md`, `docs/AI_EVALUATION.md` và `sbom/README.md` trỏ tới phần đánh giá.
+
+**Đã xong — Rà soát tài liệu theo trạng thái hiện tại:**
+
+- `backend/app-farm/README.md` ghi đủ 7 view `vw_*` và việc chẩn đoán AI thứ hai trả `409` khi lượt đầu còn chạy.
+- `backend/README.md` nêu schema `monitor` của `dx-monitor`; `chat/README.md` nêu cảnh báo của `dx-monitor` ở kênh `Ban quản trị`.
+- `ai/README.md` liệt kê đủ biến môi trường của service và cách AI chạy trên CPU không có SSE4.1.
+- `docs/BACKLOG.md` bỏ việc vẽ Monitor vào sơ đồ tổng quan và việc quét gitleaks thủ công; `docs/TESTING.md` mục 3 viết mỗi câu một dòng và ghi gitleaks chạy trong CI.
+- `README.md` và `README_EN.md` có mục API; `CHANGELOG.md` có mục theo phiên bản `v1.0.0` đến `v1.0.3`.
+- `sso/README.md` và `docs/COUNCIL_QA.md` nêu mật khẩu chỉ nằm ở Keycloak dưới dạng băm Argon2id; câu 9 của `COUNCIL_QA.md` nêu phạm vi thử tải hiện có.
+- `docs/SUBMISSION.md` nêu màn hình giám sát trong kịch bản demo và slide 3.
 
 ### 2026-10-26
 
@@ -1510,5 +1643,9 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 
 - Cập nhật `README.md`, `ai/README.md`, `ai/app/graph/README.md` để mô tả trạng thái kiến trúc AI và Backend.
 
-[Unreleased]: https://github.com/HaUI-ImplSolution/DX-OS/commits/main
+[Unreleased]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.0.3...main
+[1.0.3]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.0.2...v1.0.3
+[1.0.2]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.0.1...v1.0.2
+[1.0.1]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/HaUI-ImplSolution/DX-OS/releases/tag/v1.0.0
 

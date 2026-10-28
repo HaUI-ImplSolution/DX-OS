@@ -249,6 +249,7 @@ def run(args: argparse.Namespace) -> None:
         },
         "containers": config,
         "seconds": args.seconds,
+        "http_timeout_seconds": 20,
         "repeats": args.repeats,
         "boundary": "AI HTTP retrieval only; CV lifespan excluded; no Backend, gateway or LLM",
         "server": server,

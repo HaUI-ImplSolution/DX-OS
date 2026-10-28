@@ -34,7 +34,7 @@ def code_identity() -> str:
 
     digest = hashlib.sha256()
     for directory in (AI_ROOT / "app", AI_ROOT / "scripts", AI_ROOT / "evaluation"):
-        for path in sorted(directory.rglob("*.py")):
+        for path in sorted([*directory.rglob("*.py"), *directory.rglob("*.js")]):
             digest.update(str(path.relative_to(AI_ROOT)).encode())
             digest.update(path.read_bytes())
     return digest.hexdigest()

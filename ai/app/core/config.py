@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     chat_rerank_max_length: int = Field(default=256, ge=64, le=512)
     chat_rerank_batch_size: int = Field(default=4, ge=1, le=16)
     chat_rerank_timeout_seconds: float = Field(default=6, gt=0, le=6)
-    chat_queue_timeout_seconds: float = Field(default=8, gt=0, le=8)
+    chat_queue_timeout_seconds: float = Field(default=12, gt=0, le=12)
 
     cv_weights_path: Path = AI_ROOT / "models" / "efficientnetv2m_rice_disease.pth"
     cv_weights_sha256: str | None = None

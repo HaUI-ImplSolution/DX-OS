@@ -34,7 +34,7 @@ export default function () {
     query: q.query, namespace, top_k: 4, document_type: null,
   }), {
     headers: { 'Content-Type': 'application/json', 'X-Service-Api-Key': __ENV.AI_SERVICE_API_KEY },
-    timeout: '10s', tags: { qid: q.qid },
+    timeout: '20s', tags: { qid: q.qid },
   });
   let valid = false;
   if (response.status === 200) {

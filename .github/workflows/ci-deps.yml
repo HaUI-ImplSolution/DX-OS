@@ -10,6 +10,7 @@ on:
       - 'ai/requirements.lock'
       - 'frontend/package-lock.json'
       - 'mobile/package-lock.json'
+      - 'deploy/docker-compose.yml'
       - '.trivyignore'
       - '.github/workflows/ci-deps.yml'
   pull_request:
@@ -25,6 +26,7 @@ on:
       - 'ai/requirements.lock'
       - 'frontend/package-lock.json'
       - 'mobile/package-lock.json'
+      - 'deploy/docker-compose.yml'
       - '.trivyignore'
       - '.github/workflows/ci-deps.yml'
   # New advisories appear without any change of ours, so the scan also runs every week.
@@ -45,3 +47,24 @@ jobs:
           fs --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1
           --skip-dirs node_modules,deploy/data,target,dist
           --ignorefile /repo/.trivyignore /repo
+
+  # Images of other projects in the compose file. Findings are reported as warnings: they come
+  # from upstream and are fixed by moving to a newer tag.
+  images:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Report fixable HIGH or CRITICAL vulnerabilities in the third-party images
+        run: |
+          images=$(grep -E '^\s+image:' deploy/docker-compose.yml | awk '{print $2}' | grep -v '\${' | sort -u)
+          for image in $images; do
+            echo "::group::$image"
+            if ! docker run --rm -v "$PWD:/repo:ro" aquasec/trivy:0.58.1 \
+              image --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 \
+              --ignorefile /repo/.trivyignore "$image"; then
+              echo "::warning title=Image vulnerabilities::$image has fixable HIGH or CRITICAL vulnerabilities"
+            fi
+            echo "::endgroup::"
+          done

@@ -8,6 +8,7 @@ Lịch sử chi tiết theo ngày của từng module (Backend, Dữ liệu, Mob
 
 ## [Unreleased]
 
+- Dependabot mở pull request cập nhật Maven, npm, GitHub Actions và image gốc của Dockerfile; Trivy quét thêm các image của bên thứ ba trong compose mỗi tuần và báo bằng cảnh báo.
 - Backend giới hạn số lần gọi theo người dùng (`sub` của token) ở các lệnh tốn tài nguyên, trả `429` kèm `Retry-After`; `RATE_LIMIT_ENABLED=false` tắt khi thử tải.
 
 ## [1.0.3] - 2026-10-29

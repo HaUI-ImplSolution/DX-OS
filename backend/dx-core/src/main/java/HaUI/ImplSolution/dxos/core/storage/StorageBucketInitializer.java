@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.core.storage;
 
-import io.minio.BucketExistsArgs;
-import io.minio.MakeBucketArgs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -28,11 +26,8 @@ public class StorageBucketInitializer implements ApplicationRunner {
     Exception last = null;
     for (int attempt = 1; attempt <= ATTEMPTS; attempt++) {
       try {
-        String bucket = storageService.bucket();
-        if (!storageService.client()
-            .bucketExists(BucketExistsArgs.builder().bucket(bucket).build())) {
-          storageService.client().makeBucket(MakeBucketArgs.builder().bucket(bucket).build());
-          log.info("Created storage bucket {}", bucket);
+        if (storageService.ensureBucket()) {
+          log.info("Created storage bucket {}", storageService.bucket());
         }
         return;
       } catch (Exception e) {

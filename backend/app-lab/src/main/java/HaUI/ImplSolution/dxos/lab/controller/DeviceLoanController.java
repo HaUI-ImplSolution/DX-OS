@@ -3,6 +3,7 @@ package HaUI.ImplSolution.dxos.lab.controller;
 
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
 import HaUI.ImplSolution.dxos.core.api.dto.PageResponse;
+import HaUI.ImplSolution.dxos.core.api.request.IdempotencyKey;
 import HaUI.ImplSolution.dxos.lab.dto.DeviceDtos.LoanCreateRequest;
 import HaUI.ImplSolution.dxos.lab.dto.DeviceDtos.LoanRejectRequest;
 import HaUI.ImplSolution.dxos.lab.dto.DeviceDtos.LoanResponse;
@@ -46,8 +47,8 @@ public class DeviceLoanController {
           + " repeated request returns the existing loan.")
   public ApiResponse<LoanResponse> create(@Valid @RequestBody LoanCreateRequest request,
       @Parameter(description = "Client-generated UUID that makes retries of this request safe")
-      @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
-    UUID clientRequestId = idempotencyKey == null ? null : UUID.fromString(idempotencyKey);
+      @RequestHeader(value = IdempotencyKey.HEADER, required = false) String idempotencyKey) {
+    UUID clientRequestId = IdempotencyKey.parse(idempotencyKey);
     return ApiResponse.success("Loan requested", loanService.create(request, clientRequestId));
   }
 

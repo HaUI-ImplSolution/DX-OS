@@ -46,7 +46,7 @@ Máy chủ tự kết nối ra Cloudflare qua tunnel, nên không cần IP công
 |---|---|---|
 | `khuongdev.io.vn` | `http://apisix:9080` | Web app, API, Keycloak, portal, Swagger, link ảnh |
 | `bi.khuongdev.io.vn` | `http://apisix:9081` | BI (Superset) |
-| `files.khuongdev.io.vn` | `http://apisix:9082` | MinIO Console |
+| `files.khuongdev.io.vn` | `http://apisix:9082` | Quản trị lưu ảnh |
 | `chat.khuongdev.io.vn` | `http://mattermost:8065` | Chat (Mattermost) |
 
 Token của tunnel nằm trong `deploy/.env` trên máy chủ (`CLOUDFLARE_TUNNEL_TOKEN`), không nằm trong repo.
@@ -85,7 +85,7 @@ Bốn ứng dụng Self-hosted dùng chung policy `Admins and engineers` (Allow 
 | Ứng dụng | Hostname | Đường dẫn |
 |---|---|---|
 | BI Superset | `bi.khuongdev.io.vn` | toàn bộ |
-| MinIO Console | `files.khuongdev.io.vn` | toàn bộ |
+| Quản trị lưu ảnh | `files.khuongdev.io.vn` | toàn bộ |
 | Keycloak Admin Console | `khuongdev.io.vn` | `admin/*` |
 | Màn hình giám sát | `khuongdev.io.vn` | `monitor/*` |
 
@@ -108,7 +108,7 @@ Bốn ứng dụng Self-hosted dùng chung policy `Admins and engineers` (Allow 
 | Lớp | Chặn hoặc ghi gì |
 |---|---|
 | Cloudflare edge | HTTPS bắt buộc, TLS tối thiểu 1.2, bot, khai thác đã biết, form đăng nhập dồn dập |
-| Cloudflare Access | Người lạ vào trang quản trị (Superset, MinIO, Keycloak Admin, màn hình giám sát) |
+| Cloudflare Access | Người lạ vào trang quản trị (Superset, quản trị lưu ảnh, Keycloak Admin, màn hình giám sát) |
 | APISIX | 120 lượt mỗi phút mỗi IP cho form đăng nhập và token, 600 lượt cho `/api/*`, kiểm token, log JSON kèm `X-Request-Id` |
 | Keycloak | Khóa tạm tài khoản sau 5 lần sai mật khẩu, sự kiện đăng nhập kèm IP thật |
 | Backend | Phân quyền theo vai, `audit_log` cho request bị từ chối và thao tác quản trị |

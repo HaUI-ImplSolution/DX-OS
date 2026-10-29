@@ -65,7 +65,7 @@ jobs:
         working-directory: deploy
         run: |
           # Made before Compose creates deploy/data as root through the Postgres bind mount.
-          mkdir -p data/minio data/mattermost data/superset
+          mkdir -p data/seaweedfs data/mattermost data/superset
           docker compose up -d --wait postgres
           docker compose exec -T postgres psql -U dxos -d dxos -c "CREATE TABLE backup_drill (id int); INSERT INTO backup_drill VALUES (1)"
 
@@ -98,6 +98,9 @@ jobs:
               route["upstream_id"] for route in config["routes"] if "upstream_id" in route}
           PY
           done
+
+      - name: Every route without a token check is on the public list
+        run: python3 deploy/demo/check_gateway_routes.py
 
   dashboard:
     runs-on: ubuntu-latest

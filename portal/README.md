@@ -1,6 +1,6 @@
 # Portal
 
-Trang tĩnh liệt kê link tới ứng dụng chính, BI Dashboard, kênh chat, các trang quản trị (Keycloak, Superset, Mattermost, MinIO Console), màn hình giám sát (`/monitor/`) và Swagger.
+Trang tĩnh liệt kê link tới ứng dụng chính, BI Dashboard, kênh chat, các trang quản trị (Keycloak, Superset, Mattermost, quản trị lưu ảnh), màn hình giám sát (`/monitor/`) và Swagger.
 Cuối trang có mục **Trạng thái dịch vụ**, tự làm mới mỗi 30 giây:
 
 - Tên ứng dụng đang chạy (hiện ở tiêu đề), Backend, AI và lưu trữ ảnh lấy từ `GET /api/v1/system/status` (công khai, qua gateway).
@@ -19,7 +19,7 @@ Link BI trỏ thẳng `/login/keycloak`; Mattermost đăng nhập riêng.
 ## Địa chỉ dịch vụ
 
 Link ứng dụng chính, Keycloak và Swagger là đường dẫn tương đối của gateway.
-Link Superset, MinIO Console và Mattermost dùng địa chỉ đặt bằng `PORTAL_BI_URL`, `PORTAL_MINIO_URL` và `PORTAL_CHAT_URL` trong `deploy/.env`, ví dụ `https://bi.example.com`.
-Trên máy chủ công khai, BI, MinIO Console, Keycloak Admin Console và màn hình giám sát nằm sau Cloudflare Access: link mở trang đăng nhập Access trước.
+Link Superset, quản trị lưu ảnh và Mattermost dùng địa chỉ đặt bằng `PORTAL_BI_URL`, `PORTAL_STORAGE_URL` và `PORTAL_CHAT_URL` trong `deploy/.env`, ví dụ `https://bi.example.com`.
+Trên máy chủ công khai, BI, quản trị lưu ảnh, Keycloak Admin Console và màn hình giám sát nằm sau Cloudflare Access: link mở trang đăng nhập Access trước.
 Phép kiểm trạng thái BI và màn hình giám sát vẫn nhận phản hồi sau khi chuyển hướng, nên chỉ cho biết Access có trả lời.
 Để trống thì link lấy tên máy của trang đang mở và cổng viết sẵn trong `index.html` (`data-port`: 9081, 9082, 8065), nên đổi cổng trong `.env` thì sửa `data-port` tương ứng.

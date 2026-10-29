@@ -8,6 +8,17 @@ Lịch sử chi tiết theo ngày của từng module (Backend, Dữ liệu, Mob
 
 ## [Unreleased]
 
+- `deploy/doctor.sh` kiểm Docker, RAM, ổ đĩa, `deploy/.env` và các cổng trước khi chạy hoặc cập nhật.
+- Backend chạy trên Spring Boot 4.1.2 (Tomcat 11.0.27, Jackson 2.21.7 và 3.1.7); SBOM của backend không còn lỗi HIGH hoặc CRITICAL đã có bản vá.
+- CI kiểm mọi route gateway không có token nằm trong danh sách công khai, quét SBOM đã phân giải của backend (chặn khi có lỗi đã có bản vá) và có luật phân lớp bằng ArchUnit.
+- Workflow `online.yml` kiểm site công khai mỗi 30 phút.
+- Lưu ảnh và tệp đính kèm chạy trên SeaweedFS, kèm trang quản trị `seaweedfs-admin`.
+  Bộ chạy đánh giá RAG dùng cùng image cho kho S3 của Langfuse.
+  Biến cấu hình là `S3_*`, `APISIX_STORAGE_ADMIN_HOST_PORT` và `PORTAL_STORAGE_URL`.
+- Header `Idempotency-Key` của cả sáu endpoint tạo mới được đọc bằng `IdempotencyKey.parse` trong `dx-core-api`.
+- Dependabot mở pull request cập nhật Maven, npm, GitHub Actions và image gốc của Dockerfile; Trivy quét thêm các image của bên thứ ba trong compose mỗi tuần và báo bằng cảnh báo.
+- Backend giới hạn số lần gọi theo người dùng (`sub` của token) ở các lệnh tốn tài nguyên, trả `429` kèm `Retry-After`; `RATE_LIMIT_ENABLED=false` tắt khi thử tải.
+
 ## [1.0.3] - 2026-10-29
 
 Chi tiết theo ngày ở mục của từng module bên dưới.
@@ -74,6 +85,29 @@ Bản phát hành đầu tiên của DX-OS.
 ## Backend (Spring Boot — `backend`)
 
 ### 2026-10-29
+
+**Đã xong — Spring Boot 4.1.2:**
+
+- Parent của `dx-os-parent` là Spring Boot 4.1.2; SBOM của backend sinh lại và Trivy quét ra 0 lỗi.
+
+**Đã xong — Luật phân lớp bằng ArchUnit:**
+
+- `ArchitectureTest` (`dx-host`) kiểm controller không gọi repository, service không gọi controller, entity và DTO không phụ thuộc các lớp trên, Farm và Lab không biết nhau, Core không biết các app, và các module không vòng phụ thuộc.
+
+**Đã xong — Client S3 của kho ảnh:**
+
+- `StorageService` dùng AWS SDK for Java v2 (client HTTP URL connection) để kiểm tra và tạo bucket, lưu object và ký link GET.
+- `StorageService.ensureBucket()` là thao tác tạo bucket duy nhất mà `StorageBucketInitializer` gọi.
+
+**Đã xong — Đọc `Idempotency-Key` ở Core:**
+
+- `IdempotencyKey.parse` (`dx-core-api`) đọc header của `Parcel`, `CropSeason`, báo cáo bệnh, `Ticket`, `DeviceLoan` và `RoomBooking`; key không phải UUID trả `400`.
+
+**Đã xong — Giới hạn tốc độ theo người dùng:**
+
+- `UserRateLimitFilter` đếm theo `sub` của token trong cửa sổ một phút, chạy sau bước xác thực; vượt ngưỡng trả `429` kèm `Retry-After`.
+- Mỗi app khai báo ngưỡng qua `RateLimitContributor` (Farm và Lab trong `*SecurityPolicies`, Core cho `/api/**` và hỏi đáp tri thức).
+- Request của AI service (khóa dịch vụ) không bị đếm.
 
 **Đã xong — Che thông tin cá nhân trong mô tả triệu chứng:**
 
@@ -725,6 +759,11 @@ Bản phát hành đầu tiên của DX-OS.
 
 ### 2026-10-29
 
+**Đã xong — Kho S3 của bộ chạy đánh giá RAG:**
+
+- Dịch vụ `storage` (SeaweedFS) làm kho S3 cho Langfuse; bucket `langfuse` tự tạo ở lần ghi đầu tiên.
+- Biến `EVAL_STORAGE_USER`, `EVAL_STORAGE_PASSWORD`, `EVAL_STORAGE_IMAGE` và `EVAL_STORAGE_MEMORY`.
+
 **Đã xong — Câu hỏi tìm bệnh từ triệu chứng:**
 
 - Hỏi đáp Farm không nêu tên bệnh mà hỏi "... là bệnh gì", "có phải bệnh không", hoặc tả triệu chứng (vết, đốm, vàng, cháy, thối...) rồi hỏi "... là gì", "... do đâu" thì không gọi Qwen, trả `extractive` không kèm `reason`.
@@ -1060,6 +1099,21 @@ Bản phát hành đầu tiên của DX-OS.
 ## Deploy (`deploy`)
 
 ### 2026-10-29
+
+**Đã xong — Kiểm tra trước khi chạy và kiểm tra từ ngoài:**
+
+- `doctor.sh` chỉ đọc; thoát với mã 1 khi thiếu biến bắt buộc, cổng bị chiếm hoặc `docker compose config` lỗi.
+- `check_gateway_routes.py` chạy trong job `gateway` của `ci-infra.yml`, với 13 route công khai có ghi lý do.
+- `online.yml` gọi web, portal, trang đăng nhập và trạng thái hệ thống mỗi 30 phút.
+- Job `backend-sbom` của `ci-deps.yml` sinh và quét SBOM đã phân giải của backend, và chặn CI khi có lỗi HIGH hoặc CRITICAL đã có bản vá.
+
+**Đã xong — Kho ảnh SeaweedFS:**
+
+- Service `seaweedfs` chạy `weed server` với S3 gateway, filer không mở HTTP; `seaweedfs-admin` đăng nhập bằng khóa S3.
+- Image `chrislusf/seaweedfs:4.51` ghim digest, dữ liệu ở `deploy/data/seaweedfs`.
+- Biến `S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_BUCKET`, `APISIX_STORAGE_ADMIN_HOST_PORT`, `PORTAL_STORAGE_URL`.
+- Gateway trỏ route ảnh tới `seaweedfs:8333` và route quản trị tới `seaweedfs-admin:23646`; `monitor` dò `http://seaweedfs:8333/healthz`.
+- Thư mục `seaweedfs/` giữ README và `migrate-uploads.sh`; `release.yml` chỉ dựng các image của dự án.
 
 **Đã xong — Cấu hình chatbot cho CPU chậm:**
 

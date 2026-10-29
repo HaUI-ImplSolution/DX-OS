@@ -1,8 +1,12 @@
 # Reduced stack for the E2E run: no BI, chat, RAG ingest or local LLM.
 #   docker compose -f docker-compose.yml -f demo/docker-compose.e2e.yml up -d --build --wait \
-#     postgres minio keycloak backend ai frontend portal apisix
+#     postgres seaweedfs keycloak backend ai frontend portal apisix
 # DXOS_APP selects the app (farm or lab) in deploy/.env.
 services:
+  # The seed and the E2E run create their data in bursts from a few accounts.
+  backend:
+    environment:
+      RATE_LIMIT_ENABLED: "false"
   apisix:
     depends_on: !override
       apisix-config:
@@ -11,7 +15,7 @@ services:
         condition: service_healthy
       keycloak:
         condition: service_healthy
-      minio:
+      seaweedfs:
         condition: service_healthy
       frontend:
         condition: service_healthy

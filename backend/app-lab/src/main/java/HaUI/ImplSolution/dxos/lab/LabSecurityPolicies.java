@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.lab;
 
+import HaUI.ImplSolution.dxos.core.api.security.RateLimitContributor;
+import HaUI.ImplSolution.dxos.core.api.security.RateLimitRule;
 import HaUI.ImplSolution.dxos.core.api.security.RoleDefinition;
 import HaUI.ImplSolution.dxos.core.api.security.RoleProvider;
 import java.util.List;
@@ -23,5 +25,15 @@ public class LabSecurityPolicies {
         new RoleDefinition(LECTURER, "Lecturer who books rooms and approves student loans", false),
         new RoleDefinition(TECHNICIAN, "IT technician who handles tickets and equipment", true),
         new RoleDefinition(ADMIN, "Lab administrator", true));
+  }
+
+  // Per user and minute: the calls that create records, upload a file or look up knowledge.
+  @Bean
+  public RateLimitContributor labRateLimits() {
+    return () -> List.of(RateLimitRule.post("/api/v1/tickets", 10),
+        RateLimitRule.post("/api/v1/tickets/suggest", 30),
+        RateLimitRule.post("/api/v1/tickets/{ticketId}/attachments", 20),
+        RateLimitRule.post("/api/v1/room-bookings", 10),
+        RateLimitRule.post("/api/v1/device-loans", 10));
   }
 }

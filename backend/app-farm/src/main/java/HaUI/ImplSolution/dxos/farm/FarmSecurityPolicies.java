@@ -3,6 +3,8 @@ package HaUI.ImplSolution.dxos.farm;
 
 import HaUI.ImplSolution.dxos.core.api.security.ClientRestrictionPolicy;
 import HaUI.ImplSolution.dxos.core.api.security.EndpointPolicyContributor;
+import HaUI.ImplSolution.dxos.core.api.security.RateLimitContributor;
+import HaUI.ImplSolution.dxos.core.api.security.RateLimitRule;
 import HaUI.ImplSolution.dxos.core.api.security.RoleDefinition;
 import HaUI.ImplSolution.dxos.core.api.security.RoleProvider;
 import java.util.List;
@@ -30,6 +32,16 @@ public class FarmSecurityPolicies {
   public EndpointPolicyContributor farmPublicEndpoints() {
     return () -> List.of("/api/v1/diseases/**", "/api/v1/pesticides/**",
         "/api/v1/treatment-rules/**");
+  }
+
+  // Per user and minute: the calls that upload an image or run the AI service.
+  @Bean
+  public RateLimitContributor farmRateLimits() {
+    return () -> List.of(
+        RateLimitRule.post("/api/v1/crop-seasons/{cropSeasonId}/disease-reports", 10),
+        RateLimitRule.post("/api/v1/disease-reports/precheck", 20),
+        RateLimitRule.post("/api/v1/disease-reports/{reportId}/diagnosis/ai", 6),
+        RateLimitRule.post("/api/v1/disease-reports/{reportId}/diagnosis/suggest", 20));
   }
 
   // Farmers use the mobile app only: the clients come from security.farmer-client-ids.

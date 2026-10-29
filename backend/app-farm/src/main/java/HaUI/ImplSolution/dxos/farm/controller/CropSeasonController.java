@@ -4,6 +4,7 @@ package HaUI.ImplSolution.dxos.farm.controller;
 import HaUI.ImplSolution.dxos.core.api.audit.AuditEvent;
 import HaUI.ImplSolution.dxos.core.api.audit.AuditRecorder;
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
+import HaUI.ImplSolution.dxos.core.api.request.IdempotencyKey;
 import HaUI.ImplSolution.dxos.farm.dto.CropSeasonCreateRequest;
 import HaUI.ImplSolution.dxos.farm.dto.CropSeasonResponse;
 import HaUI.ImplSolution.dxos.farm.dto.CropSeasonSuggestionResponse;
@@ -65,8 +66,8 @@ public class CropSeasonController {
   public ApiResponse<CropSeasonResponse> create(@PathVariable String code,
       @Valid @RequestBody CropSeasonCreateRequest request,
       @Parameter(description = "Client-generated UUID that makes retries of this request safe")
-      @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
-    UUID clientRequestId = idempotencyKey == null ? null : UUID.fromString(idempotencyKey);
+      @RequestHeader(value = IdempotencyKey.HEADER, required = false) String idempotencyKey) {
+    UUID clientRequestId = IdempotencyKey.parse(idempotencyKey);
     return ApiResponse.success("Crop season created",
         cropSeasonService.create(code, request, clientRequestId));
   }

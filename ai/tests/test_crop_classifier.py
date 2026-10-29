@@ -212,7 +212,7 @@ def test_crop_rejection_stops_diagnosis_before_backend_and_rag():
     payload = DiagnoseRequest(
         request_id="crop-rejection",
         crop_season_id=1,
-        image_url="http://minio/reports/x.jpg",
+        image_url="http://seaweedfs/reports/x.jpg",
         field_context={"parcel_code": "P001"},
     )
     # Bare objects fail if downstream services are called at all.

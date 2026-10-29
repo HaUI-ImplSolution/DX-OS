@@ -4,6 +4,7 @@ package HaUI.ImplSolution.dxos.farm.controller;
 import HaUI.ImplSolution.dxos.core.api.audit.AuditEvent;
 import HaUI.ImplSolution.dxos.core.api.audit.AuditRecorder;
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
+import HaUI.ImplSolution.dxos.core.api.request.IdempotencyKey;
 import HaUI.ImplSolution.dxos.farm.dto.ParcelCreateRequest;
 import HaUI.ImplSolution.dxos.farm.dto.ParcelResponse;
 import HaUI.ImplSolution.dxos.farm.dto.ParcelUpdateRequest;
@@ -88,8 +89,8 @@ public class ParcelController {
           + " key was used for another household.")
   public ApiResponse<ParcelResponse> create(@Valid @RequestBody ParcelCreateRequest request,
       @Parameter(description = "Client-generated UUID that makes retries of this request safe")
-      @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
-    UUID clientRequestId = idempotencyKey == null ? null : UUID.fromString(idempotencyKey);
+      @RequestHeader(value = IdempotencyKey.HEADER, required = false) String idempotencyKey) {
+    UUID clientRequestId = IdempotencyKey.parse(idempotencyKey);
     return ApiResponse.success("Parcel created", parcelService.create(request, clientRequestId));
   }
 

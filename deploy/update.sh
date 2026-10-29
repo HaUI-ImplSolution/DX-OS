@@ -38,7 +38,7 @@ for service in "${BEHIND_GATEWAY[@]}"; do
 done
 
 echo "==> Pulling images"
-for service in backend monitor frontend portal ai minio keycloak; do
+for service in backend monitor frontend portal ai keycloak; do
   docker compose pull "$service"
 done
 

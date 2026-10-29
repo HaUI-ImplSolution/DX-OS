@@ -13,7 +13,7 @@ import secrets
 import sys
 
 DEPLOY_DIR = pathlib.Path(__file__).resolve().parent.parent
-FIXED = {"POSTGRES_USER": "dxos", "MINIO_ACCESS_KEY": "dxos-minio"}
+FIXED = {"POSTGRES_USER": "dxos", "S3_ACCESS_KEY": "dxos-s3"}
 SECRET_SUFFIXES = ("_PASSWORD", "_SECRET", "_KEY")
 
 

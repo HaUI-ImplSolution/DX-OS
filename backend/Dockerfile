@@ -1,7 +1,7 @@
 # Two images are built from this file, one per runnable module:
 #   docker build --target backend .   (default) the backend, dx-host.jar
 #   docker build --target monitor .             the monitoring service, dx-monitor.jar
-FROM eclipse-temurin:21-jdk-alpine AS base
+FROM eclipse-temurin:25-jdk-alpine AS base
 
 WORKDIR /app
 COPY .mvn/ .mvn/
@@ -28,7 +28,7 @@ FROM base AS build-monitor
 COPY dx-monitor/src/ dx-monitor/src/
 RUN ./mvnw clean package -DskipTests -pl dx-monitor -am
 
-FROM eclipse-temurin:21-jre-alpine AS monitor
+FROM eclipse-temurin:25-jre-alpine AS monitor
 WORKDIR /app
 ENV TZ=Asia/Ho_Chi_Minh
 COPY --from=build-monitor /app/dx-monitor/target/dx-monitor.jar app.jar
@@ -39,7 +39,7 @@ EXPOSE 8090
 ENTRYPOINT ["java", "-jar", "app.jar"]
 
 # Last stage, so it is the default target.
-FROM eclipse-temurin:21-jre-alpine AS backend
+FROM eclipse-temurin:25-jre-alpine AS backend
 WORKDIR /app
 ENV TZ=Asia/Ho_Chi_Minh
 COPY --from=build-host /app/dx-host/target/dx-host.jar app.jar

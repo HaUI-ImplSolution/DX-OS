@@ -88,7 +88,7 @@ Bảng dependency và giấy phép đầy đủ ở [`LICENSES.md`](./LICENSES.m
 |---|---|---|
 | Phần mềm | Docker và Docker Compose v2, Git | Không cần cài JDK, Node, Python để chạy (chỉ cần `pillow` cho script demo) |
 | RAM | 8 GB | Khuyến nghị 16 GB nếu chạy LLM và build cùng lúc |
-| CPU | 4 vCPU | Không cần GPU |
+| CPU | 4 vCPU | Không cần GPU; Qwen cần CPU có AVX2, máy không có thì đặt `AI_ANSWER_GENERATION=false` |
 | Ổ đĩa | 40 GB trống | Image AI khoảng 3 GB, Ollama khoảng 9 GB cùng model Qwen2.5 |
 | Cổng | `9080`, `9081`, `8065`; `9082` và `5432` chỉ mở trên chính máy chủ | Đổi bằng biến `*_HOST_PORT` |
 

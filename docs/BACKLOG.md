@@ -17,7 +17,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 
 | Việc | Phạm vi |
 |---|---|
-| Rerank của chatbot quá thời gian trên VPS | CPU ảo không có SSE4.1/AVX nên rerank 20 ứng viên mất khoảng 9 giây, vượt ngân sách 6 giây; mọi câu trong phạm vi trả `RERANK_UNAVAILABLE`. Compose chưa chuyển biến `CHAT_*` vào AI nên không chỉnh được bằng `deploy/.env`; VPS đang chạy bản `sha-e97697c` |
+| Chatbot trên VPS | CPU ảo không có SSE4.1/AVX nên rerank 20 ứng viên vượt ngân sách 6 giây và Qwen luôn quá 30 giây. Khi lên bản mới đặt `AI_ANSWER_GENERATION=false`, `AI_CHAT_CANDIDATE_COUNT=10` rồi đo lại; VPS đang chạy bản `sha-e97697c` |
 | Hỏi đáp Farm có thể tự gọi tên bệnh từ mô tả triệu chứng | Qwen thật từng trả tên bệnh không có trong nguồn (ví dụ "tuyết lúa") và nêu nguyên nhân hoặc cách phòng không có trong nguồn; chỉ chặn được tên bệnh đã biết trong contract CV |
 
 ## 3. Chưa kiểm thử

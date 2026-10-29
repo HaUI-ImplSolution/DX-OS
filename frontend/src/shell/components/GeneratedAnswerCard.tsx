@@ -9,6 +9,9 @@ export default function GeneratedAnswerCard({ answer, diagnosis = false, scope }
   const generated = answer?.mode === "generated" && !answer.reason && answer.summary.trim();
   if (!generated) {
     if (diagnosis) return null;
+    if (answer?.mode === "extractive" && !answer.reason) {
+      return <p className="empty-hint" role="status">Câu trả lời nằm trong các tài liệu tham khảo bên dưới.</p>;
+    }
     const notices = {
       insufficient_evidence: "Chưa có đủ tài liệu phù hợp để trả lời. Bạn vui lòng làm rõ câu hỏi.",
       out_of_scope: `Câu hỏi này nằm ngoài phạm vi hỗ trợ của ${scope === "farm" ? "DX-Farm" : "DX-Lab"}.`,

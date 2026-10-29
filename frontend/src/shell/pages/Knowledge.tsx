@@ -90,6 +90,7 @@ export default function Knowledge({
       {answer && answer.passages.length > 0 && (
         <details
           className="knowledge-references"
+          open={answer.answer?.mode === "extractive" && !answer.answer.reason}
         >
           <summary>Tài liệu tham khảo ({answer.passages.length})</summary>
           {answer.passages.map((passage, index) => (

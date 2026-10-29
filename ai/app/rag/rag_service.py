@@ -278,6 +278,8 @@ def synthesize_answer(
         return fallback_answer([])
     if profile.startswith("farm_") and MEDICATION.search(question):
         return fallback_answer(passages, medication=True)
+    if not get_settings().answer_generation_enabled:
+        return GeneratedAnswer(mode="extractive", summary="")
     context = dict(context or {})
     aliases = _disease_aliases() if profile.startswith("farm_") else {}
     target = context.get("disease_code")

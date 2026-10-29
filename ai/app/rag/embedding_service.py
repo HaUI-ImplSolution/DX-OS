@@ -13,6 +13,23 @@ def _load_model(name: str):
     return SentenceTransformer(name)
 
 
+def preload_cached_model() -> bool:
+    """Load the embedding model at startup when it is already on disk; never download here."""
+    from pathlib import Path
+
+    from huggingface_hub import snapshot_download
+    from huggingface_hub.errors import LocalEntryNotFoundError
+
+    name = get_settings().embedding_model
+    if not Path(name).is_dir():
+        try:
+            snapshot_download(name, local_files_only=True)
+        except LocalEntryNotFoundError:
+            return False
+    _load_model(name)
+    return True
+
+
 class EmbeddingService:
     def __init__(self, model_name: str | None = None):
         settings = get_settings()

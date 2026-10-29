@@ -87,9 +87,16 @@ def rerank(query: str, passages: list[dict]) -> list[float]:
 
 @asynccontextmanager
 async def chat_lifespan(app):
-    """Load the cached ranker before accepting requests; never fetch assets here."""
+    """Load the cached embedding model and ranker before accepting requests; never fetch assets here."""
     from starlette.concurrency import run_in_threadpool
 
+    from app.rag.embedding_service import preload_cached_model
+
+    try:
+        if not await run_in_threadpool(preload_cached_model):
+            logger.warning("Embedding model is not cached; the first search loads it")
+    except (OSError, RuntimeError):
+        logger.warning("Embedding model failed to preload; the first search loads it")
     if get_settings().chat_retrieval_strategy == "hybrid_rerank":
         try:
             await run_in_threadpool(_model)

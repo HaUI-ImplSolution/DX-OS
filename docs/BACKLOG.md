@@ -17,7 +17,9 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 
 | Việc | Phạm vi |
 |---|---|
-| Hỏi đáp Farm có thể nêu ý không có trong nguồn | Câu hỏi về một bệnh đã nêu tên vẫn có thể nhận nguyên nhân hoặc cách phòng không có trong nguồn |
+| VPS chưa chạy các bản sửa lưu ảnh, portal, AI và SeaweedFS | Sau khi phát hành, kiểm: ảnh báo cáo #1 hiện với `img.src` là `https://`; `/portal/config` trả `cache-control: no-cache` và thẻ "Quản trị lưu ảnh" ra `https://files.khuongdev.io.vn`; câu hỏi tri thức đầu tiên sau khi AI khởi động lại mất khoảng 4 giây; log `seaweedfs` không còn `IAM gRPC service on filer is UNAUTHENTICATED` và trang quản trị vẫn mở danh sách user |
+| Dữ liệu MinIO cũ còn trên VPS | `deploy/data/minio`, `deploy/.env.bak-before-seaweedfs` và các image `dxos-minio`; ảnh cũ đã ở bucket SeaweedFS, xóa khi ảnh các báo cáo cũ (#1, #2, #5, #6) hiện trên màn hình duyệt yêu cầu |
+| `doctor.sh` cảnh báo dung lượng đĩa trên VPS | Trống 39 GiB, khuyến nghị 40 GiB; theo dõi dung lượng khi dữ liệu và ảnh Docker tăng |
 
 ## 3. Chưa kiểm thử
 
@@ -25,10 +27,13 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 |---|---|
 | Bên thứ ba tái lập đánh giá RAG | Cần người đánh giá độc lập kiểm tra nhãn và tính lại điểm từ qrels/run; cách chạy ở [`ai/README.md`](../ai/README.md#đánh-giá-truy-xuất-rag) |
 | Chấm nội dung Qwen trên 36 câu hỏi và 6 chủ đề chẩn đoán | Chưa có bảng chấm trọng tâm, bám nguồn và dễ đọc do người duyệt xác nhận; tỷ lệ `generated` không phải độ đúng nội dung |
+| Kiểm nguyên nhân và cách phòng của hỏi đáp Farm với Qwen thật | Đã thử bằng câu trả lời giả lập trên nội dung bệnh đạo ôn; chưa chạy lại bộ câu hỏi Farm với Qwen để xem tỷ lệ câu bị chuyển sang `insufficient_evidence` |
 | Chữ lớn trên mobile native | Đã typecheck, kiểm render và nghiệm thu chức năng; chưa đo riêng bố cục khi tăng cỡ chữ trên máy thật |
 | Khởi động bản Qwen từ clone sạch | Đã kiểm bằng image/cache và các cặp phiên bản; chưa chạy lại full build/seed toàn stack từ clone sạch |
 | `backup.sh` với kho sao lưu từ xa | Đã chạy sao lưu và `verify` trên VPS với dữ liệu thật vào kho cục bộ; chưa thử `BACKUP_REPOSITORY` từ xa |
 | Cầu dao AI với tải thật | Đã thử khi AI dừng; chưa thử khi AI chậm vì tải, lúc đó lỗi đọc quá hạn cũng tính là lỗi dịch vụ |
+| Lưu ảnh SeaweedFS qua Cloudflare trên VPS | Đã kiểm trên Chrome với tài khoản quản trị: app Farm (4 tab), hỏi đáp, màn hình giám sát (10/10 dịch vụ), BI qua SSO và trang đăng nhập `files.khuongdev.io.vn` đều chạy; chưa thử upload ảnh mới bằng tài khoản nông dân và mở link ảnh vừa tải, đăng nhập SeaweedFS Admin, `backup.sh` với `data/seaweedfs` |
+| Giới hạn gọi API theo người dùng trên VPS | Chưa thử với tài khoản thật qua Cloudflare, nơi `X-Forwarded-For` và địa chỉ client do Cloudflare đặt |
 
 ## 4. Giới hạn của AI và dữ liệu
 
@@ -47,6 +52,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Đánh giá truy xuất trên corpus lớn | Chưa đo gần giới hạn 20.000 đoạn mỗi chỉ mục BM25; số liệu hiện có trên 244 đoạn, với 1/2/5 người dùng đồng thời |
 | Đo đầy đủ tải chatbot hybrid | Mới đo rút gọn 12 lượt, 1.369 request; cần chạy đủ 36 lượt theo cấu hình mặc định và đo riêng nhóm câu hỏi bị từ chối |
 | Truy xuất legacy dựa trên MiniLM đa ngữ | Diagnosis/ticket vẫn dùng cosine và ngưỡng legacy; diễn đạt gián tiếp còn phụ thuộc embedding, không có reranker như chatbot |
+| Kiểm nguyên nhân và cách phòng của hỏi đáp Farm dựa trên từ | Câu cách phòng dùng lại từ của nguồn nhưng ngược nghĩa (ví dụ "bón nhiều đạm" khi nguồn ghi "tránh dư đạm") vẫn có thể qua; câu hỏi không nêu tên bệnh không qua bước kiểm này |
 | Luật phân loại của Lab là luật tay | Chưa đo độ chính xác trên dữ liệu thật |
 | Kho tri thức Lab chỉ có 12 bài từ 9 văn bản công khai của HaUI | Chưa có bài về máy in, VPN, quy chế phòng máy của khoa, đặt phòng máy; sổ tay LMS là bản năm học 2019-2020 |
 | Gợi ý tri thức ticket Lab chưa có hybrid/gate chatbot | Ticket vẫn dùng retrieve legacy; đoạn gần nghĩa chưa chắc đúng sự cố. Chưa đánh giá riêng độ phù hợp trên dữ liệu ticket thật |

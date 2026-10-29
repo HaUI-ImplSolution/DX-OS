@@ -171,8 +171,11 @@ public class StorageService implements ObjectStorage {
       HttpServletRequest request = servlet.getRequest();
       String host = request.getHeader("Host");
       if (host != null && HOST.matcher(host).matches()) {
-        String proto =
-            "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto")) ? "https" : "http";
+        // With server.forward-headers-strategy=framework the filter consumes X-Forwarded-Proto
+        // and exposes it as the request scheme; without it the raw header is still present.
+        String forwarded = request.getHeader("X-Forwarded-Proto");
+        String scheme = forwarded != null ? forwarded : request.getScheme();
+        String proto = "https".equalsIgnoreCase(scheme) ? "https" : "http";
         return proto + "://" + host;
       }
     }

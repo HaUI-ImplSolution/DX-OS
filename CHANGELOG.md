@@ -16,6 +16,10 @@ Lịch sử chi tiết theo ngày của từng module (Backend, Dữ liệu, Mob
 - Lưu ảnh và tệp đính kèm chạy trên SeaweedFS, kèm trang quản trị `seaweedfs-admin`.
   Bộ chạy đánh giá RAG dùng cùng image cho kho S3 của Langfuse.
   Biến cấu hình là `S3_*`, `APISIX_STORAGE_ADMIN_HOST_PORT` và `PORTAL_STORAGE_URL`.
+  gRPC của filer chỉ nhận lời gọi ký bằng `S3_SECRET_KEY`, nên khóa này cần tối thiểu 16 ký tự; log của `seaweedfs` chỉ gồm cảnh báo và lỗi.
+  `seaweedfs/migrate-uploads.sh` chuyển ảnh có sẵn vào bucket, chạy được trên CPU không có x86-64-v2.
+- Link ảnh ký sau Cloudflare dùng `https`; portal đọc địa chỉ dịch vụ ở `/portal/config`, đường dẫn Cloudflare không cache, và chú thích thẻ hiện địa chỉ thật.
+- AI nạp sẵn model embedding lúc khởi động; hỏi đáp Farm về một bệnh đã nêu tên chỉ giữ nguyên nhân và cách phòng có trong nguồn, và dòng "Tên khoa học" được giữ trong evidence.
 - Header `Idempotency-Key` của cả sáu endpoint tạo mới được đọc bằng `IdempotencyKey.parse` trong `dx-core-api`.
 - Dependabot mở pull request cập nhật Maven, npm, GitHub Actions và image gốc của Dockerfile; Trivy quét thêm các image của bên thứ ba trong compose mỗi tuần và báo bằng cảnh báo.
 - Backend giới hạn số lần gọi theo người dùng (`sub` của token) ở các lệnh tốn tài nguyên, trả `429` kèm `Retry-After`; `RATE_LIMIT_ENABLED=false` tắt khi thử tải.
@@ -86,6 +90,10 @@ Bản phát hành đầu tiên của DX-OS.
 ## Backend (Spring Boot — `backend`)
 
 ### 2026-10-29
+
+**Đã xong — Link ảnh sau HTTPS:**
+
+- `StorageService` lấy scheme của link ảnh từ `request.getScheme()` khi `ForwardedHeaderFilter` đã đọc `X-Forwarded-Proto`, nên link ký sau Cloudflare bắt đầu bằng `https://`.
 
 **Đã xong — Mô tả OpenAPI:**
 
@@ -764,6 +772,15 @@ Bản phát hành đầu tiên của DX-OS.
 
 ### 2026-10-29
 
+**Đã xong — Nguyên nhân và cách phòng có trong nguồn:**
+
+- Hỏi đáp Farm về một bệnh đã nêu tên chỉ giữ câu trả lời Qwen khi câu nêu nguyên nhân dùng đúng từ của dòng tác nhân, tên khoa học hoặc loại bệnh, và câu nêu cách phòng lấy ít nhất một nửa số từ nội dung từ dòng phòng ngừa hoặc biện pháp canh tác.
+- Mẫu nhận diện thuốc chỉ khớp "hóa học" là một từ riêng, nên dòng "Tên khoa học" được giữ trong evidence.
+
+**Đã xong — Nạp sẵn model embedding:**
+
+- `chat_lifespan` nạp model embedding đã có trong cache trước khi nhận request, nên lần tìm kiếm đầu sau khi khởi động không phải chờ nạp model; chưa có trong cache thì lần tìm kiếm đầu nạp như cũ.
+
 **Đã xong — Thông báo khi thao tác quá nhanh:**
 
 - `errorMessages.ts` có `ERR_TOO_MANY_REQUESTS`; phản hồi `429` không có nội dung JSON (từ gateway) hiện thông báo tiếng Việt.
@@ -1112,6 +1129,19 @@ Bản phát hành đầu tiên của DX-OS.
 ## Deploy (`deploy`)
 
 ### 2026-10-29
+
+**Đã xong — Chuyển ảnh sang SeaweedFS trên CPU cũ:**
+
+- `seaweedfs/migrate-uploads.sh` tải lên và kiểm từng ảnh bằng curl có ký S3 (`curlimages/curl`), chạy được trên CPU không có x86-64-v2.
+
+**Đã xong — Log SeaweedFS:**
+
+- `seaweedfs` chạy với `-v=-1`, chỉ ghi cảnh báo và lỗi; đặt `-v=0` để xem lại log thông tin.
+
+**Đã xong — Khóa gRPC của filer SeaweedFS:**
+
+- `seaweedfs` và `seaweedfs-admin` đặt `WEED_JWT_FILER_SIGNING_KEY` bằng `S3_SECRET_KEY`, nên gRPC quản lý user và STS của filer chỉ nhận lời gọi có khóa; `S3_SECRET_KEY` tối thiểu 16 ký tự.
+- Cổng gRPC của `seaweedfs-admin` là `13646`, dưới dải cổng tạm của Linux.
 
 **Đã xong — Kiểm tra trước khi chạy và kiểm tra từ ngoài:**
 
@@ -1478,6 +1508,13 @@ Bản phát hành đầu tiên của DX-OS.
 - Tài khoản Mattermost tách biệt hoàn toàn khỏi tài khoản backend (FARMER/ENGINEER/ADMIN) có chủ đích — nền tảng riêng, không dùng SSO chung.
 
 ## Portal (`portal`)
+
+### 2026-10-29
+
+**Đã xong — Địa chỉ dịch vụ không bị cache:**
+
+- Địa chỉ BI, chat và trang quản trị lưu ảnh nằm ở `/config` (không có đuôi tệp), nên Cloudflare không cache ở edge và giữ `Cache-Control: no-cache`.
+- Chú thích dưới mỗi thẻ hiện địa chỉ thật của link thay cho `localhost:<cổng>`.
 
 ### 2026-10-26
 

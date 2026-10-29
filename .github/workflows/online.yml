@@ -1,0 +1,33 @@
+name: Online check
+on:
+  schedule:
+    - cron: '7,37 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  online:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      # Set the repository variable PUBLIC_URL to check another address.
+      BASE_URL: ${{ vars.PUBLIC_URL || 'https://khuongdev.io.vn' }}
+    steps:
+      - name: The web client, the portal and the sign-in page answer
+        run: |
+          for path in / /portal/ /realms/dxos/.well-known/openid-configuration; do
+            curl --fail --silent --show-error --output /dev/null --max-time 20 \
+              --retry 3 --retry-delay 10 --retry-all-errors \
+              --user-agent dxos-online-check "$BASE_URL$path"
+            echo "ok  $path"
+          done
+
+      - name: The backend and the object store report UP
+        run: |
+          status="$(curl --fail --silent --show-error --max-time 20 \
+            --retry 3 --retry-delay 10 --retry-all-errors \
+            --user-agent dxos-online-check "$BASE_URL/api/v1/system/status")"
+          jq -r '.data.services[] | "\(.name) \(.status)"' <<<"$status"
+          jq -e '[.data.services[] | select(.name == "backend" or .name == "storage") | .status == "UP"] | length == 2 and all' <<<"$status" >/dev/null

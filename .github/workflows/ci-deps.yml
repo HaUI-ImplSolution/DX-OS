@@ -68,3 +68,34 @@ jobs:
             fi
             echo "::endgroup::"
           done
+
+  # The backend job above reads pom.xml, where the versions managed by Spring Boot are not written.
+  # The SBOM lists every resolved package, so Jackson, Tomcat and the like are checked too.
+  # Findings are reported as warnings: they are fixed by moving to a newer Spring Boot.
+  backend-sbom:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Generate the SBOM of the resolved backend dependencies
+        working-directory: backend
+        run: >
+          ./mvnw -B -q org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom
+          -DoutputFormat=json -DoutputName=backend.cdx -DincludeTestScope=false
+
+      - name: Report fixable HIGH or CRITICAL vulnerabilities in the resolved dependencies
+        run: |
+          if ! docker run --rm -v "$PWD:/repo:ro" aquasec/trivy:0.58.1 \
+            sbom --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 \
+            --ignorefile /repo/.trivyignore /repo/backend/target/backend.cdx.json; then
+            echo "::warning title=Backend dependency vulnerabilities::fixable HIGH or CRITICAL findings in the resolved backend dependencies, see the log of this step"
+          fi
+

@@ -99,6 +99,9 @@ jobs:
           PY
           done
 
+      - name: Every route without a token check is on the public list
+        run: python3 deploy/demo/check_gateway_routes.py
+
   dashboard:
     runs-on: ubuntu-latest
     steps:

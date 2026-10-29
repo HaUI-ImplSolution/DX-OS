@@ -52,7 +52,7 @@ jobs:
 
       - name: Start the reduced stack
         working-directory: deploy
-        run: $COMPOSE up -d --build --wait --wait-timeout 1500 postgres minio keycloak backend monitor ai frontend portal apisix
+        run: $COMPOSE up -d --build --wait --wait-timeout 1500 postgres seaweedfs keycloak backend monitor ai frontend portal apisix
 
       - name: The gateway holds the routes of the running app only
         run: |

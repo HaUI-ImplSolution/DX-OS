@@ -60,22 +60,39 @@ services:
       timeout: 5s
       retries: 5
 
-  # The official MinIO images are no longer published, so the image is built from source.
-  minio:
+  # S3-compatible object store for photos and attachments (SeaweedFS). Master, volume server, filer
+  # and S3 gateway run in one process; the filer has no HTTP interface, so objects are reachable
+  # only through the S3 API with the keys below.
+  seaweedfs:
     logging: *default-logging
-    image: ${DXOS_IMAGE_PREFIX:-dxos}-minio:${DXOS_IMAGE_TAG:-local}
-    build:
-      context: ../minio
-    command: ["server", "/data", "--console-address", ":9001"]
+    image: chrislusf/seaweedfs:4.51@sha256:f7a49e3f3972ebed5be2ed4befa4a0c68eb7bdddba6e692d42729ceb545134b8
+    command: ["server", "-ip=seaweedfs", "-dir=/data", "-s3", "-filer.disableHttp",
+      "-master.volumeSizeLimitMB=1024", "-volume.max=0"]
     restart: unless-stopped
     environment:
-      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:?}
-      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:?}
+      AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY:?}
+      AWS_SECRET_ACCESS_KEY: ${S3_SECRET_KEY:?}
     volumes:
-      - ./data/minio:/data
-    # No published port: photos are read through presigned links, the console through the gateway.
+      - ./data/seaweedfs:/data
+    # No published port: photos are read through presigned links, the admin page through the gateway.
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:9000/minio/health/live || exit 1"]
+      test: ["CMD-SHELL", "curl -sf http://localhost:8333/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  # Admin page of the object store, behind the login of the S3 key pair.
+  seaweedfs-admin:
+    logging: *default-logging
+    image: chrislusf/seaweedfs:4.51@sha256:f7a49e3f3972ebed5be2ed4befa4a0c68eb7bdddba6e692d42729ceb545134b8
+    command: ["admin", "-master=seaweedfs:9333", "-port=23646", "-dataDir=/data",
+      "-adminUser=${S3_ACCESS_KEY:?}", "-adminPassword=${S3_SECRET_KEY:?}"]
+    restart: unless-stopped
+    depends_on:
+      seaweedfs:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:23646/login || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 6
@@ -93,7 +110,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      minio:
+      seaweedfs:
         condition: service_healthy
     environment:
       <<: *postgres-env
@@ -103,10 +120,10 @@ services:
       # The app this backend runs; any other value stops the start.
       DXOS_APP: ${DXOS_APP:-farm}
       # Photo storage
-      MINIO_ENDPOINT: ${MINIO_ENDPOINT:?}
-      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:?}
-      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:?}
-      MINIO_BUCKET: ${MINIO_BUCKET:?}
+      S3_ENDPOINT: ${S3_ENDPOINT:?}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:?}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:?}
+      S3_BUCKET: ${S3_BUCKET:?}
       STORAGE_PUBLIC_URL: ${GATEWAY_PUBLIC_URL:?}
       # Passwords of the Postgres roles the backend creates at startup
       SUPERSET_RO_PASSWORD: ${SUPERSET_READONLY_DB_PASSWORD:?}
@@ -195,7 +212,7 @@ services:
       dockerfile: Dockerfile
     environment:
       PORTAL_BI_URL: ${PORTAL_BI_URL:-}
-      PORTAL_MINIO_URL: ${PORTAL_MINIO_URL:-}
+      PORTAL_STORAGE_URL: ${PORTAL_STORAGE_URL:-}
       PORTAL_CHAT_URL: ${PORTAL_CHAT_URL:-}
     # No published port: the gateway serves the portal under /portal.
     healthcheck:
@@ -378,7 +395,9 @@ services:
         condition: service_healthy
       keycloak:
         condition: service_healthy
-      minio:
+      seaweedfs:
+        condition: service_healthy
+      seaweedfs-admin:
         condition: service_healthy
       frontend:
         condition: service_healthy
@@ -392,7 +411,7 @@ services:
     ports:
       - "${APISIX_HOST_PORT:?}:9080"
       - "${APISIX_SUPERSET_HOST_PORT:?}:9081"
-      - "${APISIX_MINIO_HOST_PORT:?}:9082"
+      - "${APISIX_STORAGE_ADMIN_HOST_PORT:?}:9082"
     healthcheck:
       # The image has no curl; any answer below 500 on the web route means the gateway serves.
       test:

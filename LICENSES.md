@@ -22,7 +22,7 @@ AI Service là tiến trình riêng, chỉ giao tiếp với Backend qua HTTP n�
 | Spring Security OAuth2 Client, Nimbus OAuth 2.0 SDK (cùng json-smart, accessors-smart, content-type, lang-tag, jcip-annotations) | Apache-2.0 | Đăng nhập Keycloak của màn hình giám sát |
 | ASM | BSD-3-Clause | Phụ thuộc của json-smart |
 | Flyway | Apache-2.0 | Migration schema |
-| MinIO Java SDK | Apache-2.0 | Lưu ảnh và ký link có hạn |
+| AWS SDK for Java v2 (`s3`, `url-connection-client`) | Apache-2.0 | Lưu ảnh và ký link có hạn trên kho S3 |
 | Hibernate Validator | Apache-2.0 | Kiểm dữ liệu request |
 | Resilience4j | Apache-2.0 | Circuit breaker khi gọi AI Service |
 | AspectJ | EPL-2.0 | Method security |
@@ -88,7 +88,7 @@ Dữ liệu mẫu của Lab (phòng, thiết bị, yêu cầu) là dữ liệu g
 | PostgreSQL và pgvector (`pgvector/pgvector:pg16`) | PostgreSQL License | Dữ liệu nghiệp vụ và vector RAG |
 | Keycloak | Apache-2.0 | Định danh, SSO |
 | Apache APISIX (standalone) | Apache-2.0 | API Gateway: route, kiểm JWT, giới hạn tốc độ |
-| MinIO (build từ source tag `RELEASE.2025-10-15T17-29-55Z`) | AGPL-3.0 | Lưu ảnh và tệp đính kèm; chạy nguyên bản, không sửa mã |
+| SeaweedFS (image `chrislusf/seaweedfs:4.51`) | Apache-2.0 | Lưu ảnh, tệp đính kèm và kho S3 của Langfuse trong bộ chạy đánh giá RAG; chạy nguyên bản, không sửa mã |
 | Apache Superset | Apache-2.0 | BI dashboard |
 | Authlib | BSD-3-Clause | SSO OAuth cho Superset |
 | Mattermost Team Edition | AGPL-3.0 | Kênh chat nhận thông báo; chạy nguyên bản, không dùng `server/enterprise/` |
@@ -96,7 +96,7 @@ Dữ liệu mẫu của Lab (phòng, thiết bị, yêu cầu) là dữ liệu g
 | cloudflared (`cloudflare/cloudflared`) | Apache-2.0 | Tunnel ra Cloudflare, chỉ khi dùng overlay `docker-compose.cloudflared.yml` |
 | Python 3.11 (`python:3.11-slim`) | PSF-2.0 | Base image AI Service |
 | Node.js 20 (`node:20-alpine`) | MIT | Chỉ khi build web |
-| AWS CLI | Apache-2.0 | Chỉ dùng trong `minio/migrate-uploads.sh` |
+| AWS CLI | Apache-2.0 | Chỉ dùng trong `seaweedfs/migrate-uploads.sh` |
 | Langfuse server/worker 4.70.1 | MIT cho phần core; phần EE theo điều khoản riêng | Giao diện đánh giá local, không bật tính năng Enterprise ([license](https://github.com/langfuse/langfuse/blob/main/LICENSE)) |
 | ClickHouse 25.12 | Apache-2.0 | Lưu kết quả Langfuse trong môi trường đánh giá ([license](https://github.com/ClickHouse/ClickHouse/blob/master/LICENSE)) |
 | Redis 7.x (`redis:7`) | RSALv2 hoặc SSPLv1 (từ 7.4) | Queue/cache Langfuse local ([license](https://redis.io/legal/licenses/)) |

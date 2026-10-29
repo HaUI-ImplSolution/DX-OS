@@ -18,7 +18,7 @@ Backend xử lý nghiệp vụ, lưu dữ liệu và ảnh, nhờ AI Service ch�
 | Mobile (Expo) | Ứng dụng cho nông dân, dùng được khi mất mạng |
 | Keycloak | Đăng nhập một lần, quản lý tài khoản và vai |
 | PostgreSQL | Dữ liệu nghiệp vụ và dữ liệu cho hỏi đáp |
-| MinIO | Lưu ảnh và tệp đính kèm |
+| SeaweedFS | Lưu ảnh và tệp đính kèm |
 | AI Service (FastAPI) | Nhận diện bệnh từ ảnh, hỏi đáp tài liệu |
 | Ollama | Chạy mô hình ngôn ngữ cho AI Service |
 | Superset | Báo cáo tổng hợp |
@@ -36,7 +36,7 @@ Backend xử lý nghiệp vụ, lưu dữ liệu và ảnh, nhờ AI Service ch�
 | 1. Core | Identity, SSO | `backend/dx-core`, `sso/` |
 | 1. Core | Workflow, Notification | `backend/dx-core` |
 | 1. Core | Audit | `backend/dx-core` |
-| 1. Core | Storage | `backend/dx-core`, `minio/` |
+| 1. Core | Storage | `backend/dx-core`, `seaweedfs/` |
 | 1. Core | AI, Knowledge | `backend/dx-core` |
 | 1. Core | Security, System status | `backend/dx-core` |
 | 1. Core | Gateway | `deploy/apisix/` |

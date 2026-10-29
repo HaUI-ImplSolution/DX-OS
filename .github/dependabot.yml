@@ -58,7 +58,6 @@ updates:
       - /ai/evaluation
       - /backend
       - /frontend
-      - /minio
       - /portal
       - /sso
     target-branch: Khuong/main

@@ -12,7 +12,7 @@ Sản phẩm này sử dụng phần mềm và dữ liệu của bên thứ ba, 
 - Spring Boot, Keycloak, Apache APISIX, Apache Superset, Flyway, Qwen2.5 (Apache-2.0).
 - PostgreSQL và pgvector (PostgreSQL License).
 - React, Expo, FastAPI, LangGraph, Ollama (MIT).
-- MinIO, Mattermost Team Edition (AGPL-3.0), chạy nguyên bản, không sửa mã nguồn.
+- Mattermost Team Edition (AGPL-3.0), chạy nguyên bản, không sửa mã nguồn.
 
 Dữ liệu huấn luyện model bệnh lá lúa: RiceLeafDiseaseBD Version 3
 (Mohammad Mehedi Hasan Munna và cộng sự, https://doi.org/10.17632/86s4jzj2m4.3),

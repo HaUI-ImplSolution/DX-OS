@@ -128,7 +128,7 @@ Tạo bốn ứng dụng:
 | Ứng dụng | Domain | Đường dẫn |
 |---|---|---|
 | BI (Superset) | `bi.khuongdev.io.vn` | để trống |
-| MinIO Console | `files.khuongdev.io.vn` | để trống |
+| Quản trị lưu ảnh | `files.khuongdev.io.vn` | để trống |
 | Keycloak Admin Console | `khuongdev.io.vn` | `admin/*` |
 | Màn hình giám sát | `khuongdev.io.vn` | `monitor/*` |
 
@@ -184,7 +184,7 @@ Không có webhook của kênh thì không gửi.
 ## Sao lưu và khôi phục
 
 `./backup.sh` (trong `deploy/`) chụp một bản sao lưu mã hóa của những gì không dựng lại được từ repo.
-Gồm toàn bộ Postgres (dữ liệu nghiệp vụ, tài khoản Keycloak, Mattermost, kho vector), ảnh và tệp đính kèm trong MinIO, tệp của Mattermost và metadata của Superset.
+Gồm toàn bộ Postgres (dữ liệu nghiệp vụ, tài khoản Keycloak, Mattermost, kho vector), ảnh và tệp đính kèm trong SeaweedFS, tệp của Mattermost và metadata của Superset.
 Script dùng restic chạy trong container nên chỉ cần Docker.
 Bản sao lưu khử trùng lặp và mã hóa bằng `BACKUP_PASSWORD`.
 Cất mật khẩu này ở nơi khác máy chủ, vì mất nó là không đọc lại được.
@@ -209,7 +209,7 @@ CI chạy một lượt backup và verify trên Postgres thật ở job `backup-
 3. Nạp Postgres: `gunzip -c /tmp/dxos-restore/stage/postgres.sql.gz | docker compose exec -T postgres psql -U "$POSTGRES_USER" postgres`.
    Hai dòng lỗi `role "..." already exists` và `database "..." already exists` là bình thường vì tài khoản quản trị và database chính đã có sẵn.
    Phần còn lại phải nạp không lỗi.
-4. Chép `data/minio`, `data/mattermost`, `data/superset` từ `/tmp/dxos-restore/data/` vào `deploy/data/` (các tệp thuộc root nên dùng `sudo`), rồi `docker compose up -d`.
+4. Chép `data/seaweedfs`, `data/mattermost`, `data/superset` từ `/tmp/dxos-restore/data/` vào `deploy/data/` (các tệp thuộc root nên dùng `sudo`), rồi `docker compose up -d`.
 
 ## Thông báo chat gửi lại
 

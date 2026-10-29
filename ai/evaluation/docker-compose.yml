@@ -50,16 +50,16 @@ x-lf-env: &lf-env
   REDIS_AUTH: ${EVAL_REDIS_PASSWORD:?}
   LANGFUSE_S3_EVENT_UPLOAD_BUCKET: langfuse
   LANGFUSE_S3_EVENT_UPLOAD_REGION: auto
-  LANGFUSE_S3_EVENT_UPLOAD_ACCESS_KEY_ID: ${EVAL_MINIO_USER:?}
-  LANGFUSE_S3_EVENT_UPLOAD_SECRET_ACCESS_KEY: ${EVAL_MINIO_PASSWORD:?}
-  LANGFUSE_S3_EVENT_UPLOAD_ENDPOINT: http://minio:9000
+  LANGFUSE_S3_EVENT_UPLOAD_ACCESS_KEY_ID: ${EVAL_STORAGE_USER:?}
+  LANGFUSE_S3_EVENT_UPLOAD_SECRET_ACCESS_KEY: ${EVAL_STORAGE_PASSWORD:?}
+  LANGFUSE_S3_EVENT_UPLOAD_ENDPOINT: http://storage:8333
   LANGFUSE_S3_EVENT_UPLOAD_FORCE_PATH_STYLE: "true"
   LANGFUSE_S3_EVENT_UPLOAD_PREFIX: events/
   LANGFUSE_S3_MEDIA_UPLOAD_BUCKET: langfuse
   LANGFUSE_S3_MEDIA_UPLOAD_REGION: auto
-  LANGFUSE_S3_MEDIA_UPLOAD_ACCESS_KEY_ID: ${EVAL_MINIO_USER:?}
-  LANGFUSE_S3_MEDIA_UPLOAD_SECRET_ACCESS_KEY: ${EVAL_MINIO_PASSWORD:?}
-  LANGFUSE_S3_MEDIA_UPLOAD_ENDPOINT: http://minio:9000
+  LANGFUSE_S3_MEDIA_UPLOAD_ACCESS_KEY_ID: ${EVAL_STORAGE_USER:?}
+  LANGFUSE_S3_MEDIA_UPLOAD_SECRET_ACCESS_KEY: ${EVAL_STORAGE_PASSWORD:?}
+  LANGFUSE_S3_MEDIA_UPLOAD_ENDPOINT: http://storage:8333
   LANGFUSE_S3_MEDIA_UPLOAD_FORCE_PATH_STYLE: "true"
   LANGFUSE_S3_MEDIA_UPLOAD_PREFIX: media/
 
@@ -198,19 +198,18 @@ services:
     environment:
       REDIS_PASSWORD: ${EVAL_REDIS_PASSWORD:?}
 
-  minio:
+  storage:
     <<: *owned
-    image: ${EVAL_MINIO_IMAGE:?}
-    mem_limit: ${EVAL_MINIO_MEMORY:?}
-    entrypoint: [sh, -c]
-    command: ['mkdir -p /data/langfuse && exec minio server --address :9000 /data']
+    image: ${EVAL_STORAGE_IMAGE:?}
+    mem_limit: ${EVAL_STORAGE_MEMORY:?}
+    command: [server, -ip=storage, -dir=/data, -s3, -filer.disableHttp, -master.volumeSizeLimitMB=256, -volume.max=0]
     environment:
-      MINIO_ROOT_USER: ${EVAL_MINIO_USER:?}
-      MINIO_ROOT_PASSWORD: ${EVAL_MINIO_PASSWORD:?}
+      AWS_ACCESS_KEY_ID: ${EVAL_STORAGE_USER:?}
+      AWS_SECRET_ACCESS_KEY: ${EVAL_STORAGE_PASSWORD:?}
     volumes:
-      - minio:/data
+      - storage:/data
     healthcheck:
-      test: [CMD, curl, -fsS, http://localhost:9000/minio/health/live]
+      test: [CMD, curl, -fsS, http://localhost:8333/healthz]
       interval: 3s
       timeout: 3s
       retries: 60
@@ -260,7 +259,7 @@ volumes:
   clickhouse: *owned-volume
   clickhouse-logs: *owned-volume
   redis: *owned-volume
-  minio: *owned-volume
+  storage: *owned-volume
 networks:
   default:
     labels:

@@ -65,7 +65,7 @@ jobs:
         working-directory: deploy
         run: |
           # Made before Compose creates deploy/data as root through the Postgres bind mount.
-          mkdir -p data/minio data/mattermost data/superset
+          mkdir -p data/seaweedfs data/mattermost data/superset
           docker compose up -d --wait postgres
           docker compose exec -T postgres psql -U dxos -d dxos -c "CREATE TABLE backup_drill (id int); INSERT INTO backup_drill VALUES (1)"
 

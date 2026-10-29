@@ -344,7 +344,7 @@ Cách dùng và ý nghĩa từng khối ở [`backend/dx-monitor/README.md`](../
 
 | # | Việc | Kết quả mong đợi |
 |---|---|---|
-| M1 | Dừng MinIO, tải ảnh báo cáo bằng token hợp lệ; `GET /api/v1/audit-logs?action=SERVER_ERROR` | Response `5xx`; một bản ghi `FAILED` có `request_id` bằng header `X-Request-Id`, `metadata` chỉ có mã và tên lớp ngoại lệ |
+| M1 | Dừng SeaweedFS (`docker compose stop seaweedfs`), tải ảnh báo cáo bằng token hợp lệ; `GET /api/v1/audit-logs?action=SERVER_ERROR` | Response `5xx`; một bản ghi `FAILED` có `request_id` bằng header `X-Request-Id`, `metadata` chỉ có mã và tên lớp ngoại lệ |
 | M2 | ADMIN gắn tài khoản chủ cho workspace đã có chủ (409) | Một bản ghi `ADMIN_ACTION_FAILED`; FARMER gây lỗi tương tự thì không có bản ghi |
 | M3 | Chưa đăng nhập mở `/monitor/`, rồi đăng nhập `admin1` | Chuyển sang Keycloak, đăng nhập xong vào trang; đã đăng nhập web app thì vào thẳng |
 | M4 | `engineer1` và tài khoản FARMER mở `/monitor/` và `/monitor/api/summary` | Trang 403 tiếng Việt cho trang, 403 cho API; không có dữ liệu |
@@ -377,7 +377,7 @@ Cách dùng và ý nghĩa từng khối ở [`backend/dx-monitor/README.md`](../
 | Log gateway có `remote_addr` là IP container | Dải mạng Docker nằm ngoài `real_ip_from` của `apisix/config.yaml`, hoặc request không đi qua Cloudflare | Kiểm `docker network inspect`, bổ sung dải vào `real_ip_from`; xem [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md) |
 | Không tạo được extension khi khởi động Lab | Vai của DB không đủ quyền với `btree_gist` | Dùng image PostgreSQL có extension; cấp quyền tạo extension cho vai chủ DB |
 | Hỏi đáp Lab không có kết quả | Job `rag-ingest` chưa xong hoặc lỗi, hoặc `DXOS_APP` không phải `lab` lúc dựng | `docker compose logs rag-ingest`; chạy lại bằng `docker compose up -d --force-recreate rag-ingest` |
-| Ảnh không hiện | Route ảnh hoặc tên bucket sai | Kiểm `MINIO_BUCKET` và route `/dxos-uploads/*`; `./reset.sh --yes` |
+| Ảnh không hiện | Route ảnh hoặc tên bucket sai | Kiểm `S3_BUCKET` và route `/dxos-uploads/*`; `./reset.sh --yes` |
 | Thiếu phần trọng số bệnh hoặc `crop_classifier.onnx` | Checkout không đủ trọng số | `git status`, `git pull`; xem `ai/weights/` |
 | Dựng lâu hoặc hết dung lượng | Lần đầu tải image lớn | Đợi, hoặc dọn Docker (`docker system df`) |
 

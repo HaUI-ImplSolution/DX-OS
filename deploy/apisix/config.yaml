@@ -10,7 +10,7 @@ apisix:
     - 9080
     # Superset only runs at the root of its own origin, so it gets its own listener.
     - 9081
-    # MinIO console, same reason as Superset.
+    # Object store admin page, same reason as Superset.
     - 9082
   enable_ipv6: false
   router:

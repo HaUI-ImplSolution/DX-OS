@@ -96,7 +96,7 @@ monitor:
       - { name: backend, url: "http://backend:8081/actuator/health", body-contains: UP, required: true }
       - { name: database, url: jdbc, required: true }
       - { name: keycloak, url: "http://keycloak:8080/realms/dxos", body-contains: dxos, required: true }
-      - { name: storage, url: "http://minio:9000/minio/health/live", required: true }
+      - { name: storage, url: "http://seaweedfs:8333/healthz", required: true }
       - { name: gateway, url: "http://apisix:9080/", required: true }
       - { name: web, url: "http://frontend/", required: true }
       - { name: portal, url: "http://portal/", required: true }

@@ -8,6 +8,10 @@ Lịch sử chi tiết theo ngày của từng module (Backend, Dữ liệu, Mob
 
 ## [Unreleased]
 
+- Lưu ảnh và tệp đính kèm chạy trên SeaweedFS, kèm trang quản trị `seaweedfs-admin`.
+  Bộ chạy đánh giá RAG dùng cùng image cho kho S3 của Langfuse.
+  Biến cấu hình là `S3_*`, `APISIX_STORAGE_ADMIN_HOST_PORT` và `PORTAL_STORAGE_URL`.
+- Header `Idempotency-Key` của cả sáu endpoint tạo mới được đọc bằng `IdempotencyKey.parse` trong `dx-core-api`.
 - Dependabot mở pull request cập nhật Maven, npm, GitHub Actions và image gốc của Dockerfile; Trivy quét thêm các image của bên thứ ba trong compose mỗi tuần và báo bằng cảnh báo.
 - Backend giới hạn số lần gọi theo người dùng (`sub` của token) ở các lệnh tốn tài nguyên, trả `429` kèm `Retry-After`; `RATE_LIMIT_ENABLED=false` tắt khi thử tải.
 
@@ -77,6 +81,15 @@ Bản phát hành đầu tiên của DX-OS.
 ## Backend (Spring Boot — `backend`)
 
 ### 2026-10-29
+
+**Đã xong — Client S3 của kho ảnh:**
+
+- `StorageService` dùng AWS SDK for Java v2 (client HTTP URL connection) để kiểm tra và tạo bucket, lưu object và ký link GET.
+- `StorageService.ensureBucket()` là thao tác tạo bucket duy nhất mà `StorageBucketInitializer` gọi.
+
+**Đã xong — Đọc `Idempotency-Key` ở Core:**
+
+- `IdempotencyKey.parse` (`dx-core-api`) đọc header của `Parcel`, `CropSeason`, báo cáo bệnh, `Ticket`, `DeviceLoan` và `RoomBooking`; key không phải UUID trả `400`.
 
 **Đã xong — Giới hạn tốc độ theo người dùng:**
 
@@ -734,6 +747,11 @@ Bản phát hành đầu tiên của DX-OS.
 
 ### 2026-10-29
 
+**Đã xong — Kho S3 của bộ chạy đánh giá RAG:**
+
+- Dịch vụ `storage` (SeaweedFS) làm kho S3 cho Langfuse; bucket `langfuse` tự tạo ở lần ghi đầu tiên.
+- Biến `EVAL_STORAGE_USER`, `EVAL_STORAGE_PASSWORD`, `EVAL_STORAGE_IMAGE` và `EVAL_STORAGE_MEMORY`.
+
 **Đã xong — Câu hỏi tìm bệnh từ triệu chứng:**
 
 - Hỏi đáp Farm không nêu tên bệnh mà hỏi "... là bệnh gì", "có phải bệnh không", hoặc tả triệu chứng (vết, đốm, vàng, cháy, thối...) rồi hỏi "... là gì", "... do đâu" thì không gọi Qwen, trả `extractive` không kèm `reason`.
@@ -1069,6 +1087,14 @@ Bản phát hành đầu tiên của DX-OS.
 ## Deploy (`deploy`)
 
 ### 2026-10-29
+
+**Đã xong — Kho ảnh SeaweedFS:**
+
+- Service `seaweedfs` chạy `weed server` với S3 gateway, filer không mở HTTP; `seaweedfs-admin` đăng nhập bằng khóa S3.
+- Image `chrislusf/seaweedfs:4.51` ghim digest, dữ liệu ở `deploy/data/seaweedfs`.
+- Biến `S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_BUCKET`, `APISIX_STORAGE_ADMIN_HOST_PORT`, `PORTAL_STORAGE_URL`.
+- Gateway trỏ route ảnh tới `seaweedfs:8333` và route quản trị tới `seaweedfs-admin:23646`; `monitor` dò `http://seaweedfs:8333/healthz`.
+- Thư mục `seaweedfs/` giữ README và `migrate-uploads.sh`; `release.yml` chỉ dựng các image của dự án.
 
 **Đã xong — Cấu hình chatbot cho CPU chậm:**
 

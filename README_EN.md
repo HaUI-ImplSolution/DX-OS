@@ -33,7 +33,7 @@ One shared core handles sign-in, data, workflows, notifications and AI; two busi
 ![Overall architecture diagram](docs/images/tong_quan.gif)
 
 Users, on web or mobile, reach the internal network only through a single Gateway (APISIX).
-The Backend handles the business logic, stores photos in MinIO and data in PostgreSQL, asks the AI Service to diagnose and answer questions, and sends notifications to Mattermost; Superset reads the data for reports.
+The Backend handles the business logic, stores photos in SeaweedFS and data in PostgreSQL, asks the AI Service to diagnose and answer questions, and sends notifications to Mattermost; Superset reads the data for reports.
 A separate monitoring service watches unusual traffic and the state of each service, and reports incidents to the administrators through Mattermost.
 The role of each service is in [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
@@ -74,7 +74,7 @@ Feature maturity and test coverage are in [`docs/TESTING.md`](./docs/TESTING.md)
 | CV | EfficientNetV2-M (Torchvision) and ONNX crop classifier | BSD-3-Clause, Apache-2.0, AGPL-3.0 |
 | Web, Mobile | React, Vite, Expo | MIT |
 | SSO, Gateway | Keycloak, Apache APISIX | Apache-2.0 |
-| Data, BI | PostgreSQL, MinIO, Apache Superset | PostgreSQL License, AGPL-3.0, Apache-2.0 |
+| Data, BI | PostgreSQL, SeaweedFS, Apache Superset | PostgreSQL License, Apache-2.0, Apache-2.0 |
 | Chat | Mattermost Team Edition (unmodified) | AGPL-3.0 |
 
 Original code is Apache-2.0 ([`LICENSE`](./LICENSE)); source code in `ai/` remains AGPL-3.0 ([`ai/LICENSE`](./ai/LICENSE)).
@@ -101,7 +101,7 @@ python3 -m pip install pillow           # for the demo data script
 ./deploy/start.sh                       # build, run the app in DXOS_APP, load demo data
 ```
 
-The first build downloads and builds a lot (MinIO is built from Go source, about 2 minutes), and Superset needs a few more minutes to initialise its metadata.
+The first build downloads and builds a lot, and Superset needs a few more minutes to initialise its metadata.
 The command waits until the services are ready; loading the Farm demo data waits up to 5 minutes for the AI service.
 Switch applications with one command; the web app follows without a rebuild:
 
@@ -122,7 +122,7 @@ All configuration lives in `deploy/.env` (template: [`deploy/.env.example`](./de
 | Variable | Meaning |
 |---|---|
 | `DXOS_APP` | Application to run: `farm` (default) or `lab` |
-| `POSTGRES_*`, `MINIO_*`, `KEYCLOAK_*`, `SUPERSET_*`, `MATTERMOST_*` | Per-service accounts and passwords, empty in the template, never committed |
+| `POSTGRES_*`, `S3_*`, `KEYCLOAK_*`, `SUPERSET_*`, `MATTERMOST_*` | Per-service accounts and passwords, empty in the template, never committed |
 | `BACKEND_TO_AI_API_KEY`, `AI_TO_BACKEND_API_KEY` | Service keys for each direction between Backend and AI |
 | `PUBLIC_HOST` | Address the browser uses to reach the system: `localhost` for development, the IP or domain of the server when deployed; `GATEWAY_PUBLIC_URL`, `SUPERSET_PUBLIC_URL` and the links in chat notifications follow it |
 | `MATTERMOST_WEBHOOK_URL_*` | Overrides the webhook of a chat channel; empty uses the webhook created when the stack starts |
@@ -140,7 +140,7 @@ Per-application settings: [`backend/app-farm/README.md`](./backend/app-farm/READ
 | Swagger | http://localhost:9080/swagger-ui.html | Keycloak access token, click Authorize |
 | Keycloak Admin | http://localhost:9080/admin | `KEYCLOAK_ADMIN_USERNAME` / `KEYCLOAK_ADMIN_PASSWORD` |
 | BI (Superset) | http://localhost:9081 | Keycloak SSO; `admin1` for the admin area |
-| Image storage admin (MinIO) | http://localhost:9082 | `MINIO_ACCESS_KEY` / `MINIO_SECRET_KEY` |
+| Image storage admin (SeaweedFS) | http://localhost:9082 | `S3_ACCESS_KEY` / `S3_SECRET_KEY` |
 | Chat (Mattermost) | http://localhost:8065 | `MATTERMOST_ADMIN_USERNAME` / `MATTERMOST_ADMIN_PASSWORD` |
 
 ### 🌐 Public server
@@ -204,7 +204,7 @@ Full testing guide: [`docs/TESTING.md`](./docs/TESTING.md).
 | [`ai/`](./ai/README.md) | AI Service: CV, RAG, LangGraph |
 | [`data/`](./data/README.md) | Structured data, RAG corpora, RAG evaluation set, seed generation scripts |
 | [`deploy/`](./deploy) | Docker Compose, gateway, `start.sh`, demo data and E2E; access logs in [`OPERATIONS.md`](./deploy/OPERATIONS.md) |
-| [`sso/`](./sso/README.md) · [`bi/`](./bi/README.md) · [`chat/`](./chat/README.md) · [`minio/`](./minio/README.md) · [`portal/`](./portal/README.md) | Keycloak, Superset, Mattermost, MinIO, portal |
+| [`sso/`](./sso/README.md) · [`bi/`](./bi/README.md) · [`chat/`](./chat/README.md) · [`seaweedfs/`](./seaweedfs/README.md) · [`portal/`](./portal/README.md) | Keycloak, Superset, Mattermost, SeaweedFS, portal |
 | [`docs/`](./docs) | Backlog, testing, AI evaluation, submission pack, council Q&A, phase template (`_template/`), reference material |
 
 Top-level documents: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./CHANGELOG.md) · [`LICENSES.md`](./LICENSES.md).

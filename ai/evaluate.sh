@@ -90,7 +90,7 @@ STATE_DIR="$(realpath -m -- "${EVAL_STATE_DIR:-${XDG_DATA_HOME:-$HOME/.local/sha
 if [[ -f "$STATE_DIR/evaluation.env" ]]; then load_env "$STATE_DIR/evaluation.env"; fi
 load_env "$SCRIPT_DIR/evaluation/.env.example"
 [[ "$EVAL_PROJECT" =~ ^dx-rag-evaluation-runner(-[a-z0-9]+)*$ ]] || die 'project must belong to dx-rag-evaluation-runner namespace'
-[[ "$EVAL_TOOL_IMAGE" =~ ^dxos-rag-evaluation-tool:[a-zA-Z0-9_.-]+$ && "$EVAL_MINIO_IMAGE" =~ ^dxos-rag-evaluation-minio:[a-zA-Z0-9_.-]+$ ]] || die 'tool images must belong to evaluation namespaces'
+[[ "$EVAL_TOOL_IMAGE" =~ ^dxos-rag-evaluation-tool:[a-zA-Z0-9_.-]+$ ]] || die 'the tool image must belong to the evaluation namespace'
 [[ "$EVAL_EMBEDDING_MODEL" == "$(sed -n 's/^EVAL_EMBEDDING_MODEL=//p' "$SCRIPT_DIR/evaluation/.env.example")" ]] || die 'embedding source must match this baseline'
 [[ "$EVAL_VIEW_TIMEOUT_SECONDS" =~ ^[1-9][0-9]*$ && "$EVAL_START_TIMEOUT_SECONDS" =~ ^[1-9][0-9]*$ ]] || die 'timeouts must be positive integers'
 if [[ "$MODE" == down && ! -d "$STATE_DIR" ]]; then printf 'No evaluation state found.\n'; exit 0; fi
@@ -134,7 +134,7 @@ export EVAL_STATE_DIR="$STATE_DIR" EVAL_REPO_DIR="$REPO_DIR" EVAL_UID="$(id -u)"
 export EVAL_DOCKER_GID="$(stat -c %g /var/run/docker.sock)" EVAL_RUN=recovery
 # Random secrets are persisted only in private state; no service keys are printed.
 random() { od -An -N32 -tx1 /dev/urandom | tr -d ' \n'; }
-for key in POSTGRES_PASSWORD READONLY_PASSWORD AI_SERVICE_API_KEY LF_DB_PASSWORD LF_SALT LF_ENCRYPTION_KEY LF_AUTH_SECRET CLICKHOUSE_PASSWORD REDIS_PASSWORD MINIO_PASSWORD LOGIN_PASSWORD LF_PUBLIC_KEY LF_SECRET_KEY; do
+for key in POSTGRES_PASSWORD READONLY_PASSWORD AI_SERVICE_API_KEY LF_DB_PASSWORD LF_SALT LF_ENCRYPTION_KEY LF_AUTH_SECRET CLICKHOUSE_PASSWORD REDIS_PASSWORD STORAGE_PASSWORD LOGIN_PASSWORD LF_PUBLIC_KEY LF_SECRET_KEY; do
   key="EVAL_$key"
   [[ -v "$key" ]] || export "$key=$(random)"
 done
@@ -191,7 +191,7 @@ for port in "$EVAL_AI_PORT" "$EVAL_LANGFUSE_PORT" "$EVAL_REPORT_PORT"; do
 done
 [[ "$EVAL_MIN_AVAILABLE_MIB" =~ ^[0-9]+$ && "$EVAL_MIN_DISK_MIB" =~ ^[0-9]+$ && "$EVAL_MIN_COLD_DISK_MIB" =~ ^[0-9]+$ ]] || die 'resource minima must be integers'
 required_disk="$EVAL_MIN_DISK_MIB"
-for image in "$EVAL_TOOL_IMAGE" "$EVAL_MINIO_IMAGE" "$EVAL_POSTGRES_IMAGE" "$EVAL_LANGFUSE_IMAGE" "$EVAL_WORKER_IMAGE" "$EVAL_CLICKHOUSE_IMAGE" "$EVAL_REDIS_IMAGE"; do
+for image in "$EVAL_TOOL_IMAGE" "$EVAL_STORAGE_IMAGE" "$EVAL_POSTGRES_IMAGE" "$EVAL_LANGFUSE_IMAGE" "$EVAL_WORKER_IMAGE" "$EVAL_CLICKHOUSE_IMAGE" "$EVAL_REDIS_IMAGE"; do
   if ! docker image inspect "$image" >/dev/null 2>&1; then required_disk="$EVAL_MIN_COLD_DISK_MIB"; break; fi
 done
 available="$(awk '/MemAvailable:/ {print int($2/1024)}' /proc/meminfo)"
@@ -255,12 +255,8 @@ if [[ "$MODE" != view ]]; then
 fi
 # Start the UI only after measurement, so it does not compete with measured services.
 for image in "$EVAL_LANGFUSE_IMAGE" "$EVAL_WORKER_IMAGE" "$EVAL_CLICKHOUSE_IMAGE" "$EVAL_REDIS_IMAGE"; do ensure_image "$image"; done
-if ! docker image inspect "$EVAL_MINIO_IMAGE" >/dev/null 2>&1; then
-  context="$STATE_DIR/build/minio"; mkdir -p "$context"
-  cp "$REPO_DIR/minio/Dockerfile" "$context/Dockerfile"
-  run docker build -t "$EVAL_MINIO_IMAGE" "$context"
-fi
-run "${COMPOSE[@]}" up -d --wait --wait-timeout "$EVAL_START_TIMEOUT_SECONDS" lf-postgres clickhouse redis minio
+ensure_image "$EVAL_STORAGE_IMAGE"
+run "${COMPOSE[@]}" up -d --wait --wait-timeout "$EVAL_START_TIMEOUT_SECONDS" lf-postgres clickhouse redis storage
 run "${COMPOSE[@]}" up -d --wait --wait-timeout "$EVAL_START_TIMEOUT_SECONDS" langfuse-worker langfuse-web reports
 if [[ "$MODE" != view ]]; then
   if [[ "$MODE" == quality || "$MODE" == all ]]; then

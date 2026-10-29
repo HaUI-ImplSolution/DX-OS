@@ -6,7 +6,7 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE.md`](../ARCHITECTURE.md).
 
 ## 1. Open-Core nằm ở đâu? Thành phần nào chạy headless và ứng dụng nào dùng dịch vụ đó?
 
-- Tầng 1 gồm `dx-core` (kèm `dx-core-api`) của Backend, Keycloak (SSO), gateway APISIX, PostgreSQL và MinIO.
+- Tầng 1 gồm `dx-core` (kèm `dx-core-api`) của Backend, Keycloak (SSO), gateway APISIX, PostgreSQL và SeaweedFS.
   Không thành phần nào có giao diện cho người dùng cuối; giao diện nằm ở `frontend/` và `mobile/` (tầng 2 và 3).
 - Hai ứng dụng dùng chung Tầng 1: **DX-Farm** (`app-farm`) và **DX-Lab** (`app-lab`), mỗi lần chạy một ứng dụng chọn bằng `DXOS_APP`.
 - Ranh giới là ràng buộc lúc biên dịch: ứng dụng chỉ có `dx-core-api` trên classpath.
@@ -14,11 +14,11 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE.md`](../ARCHITECTURE.md).
 
 ## 2. Vì sao chọn kiến trúc và stack này? Thành phần nào là nguồn mở, giấy phép gì?
 
-- Chọn thành phần nguồn mở có sẵn cho Tầng 1 thay vì tự viết lại: Keycloak (OIDC), APISIX (gateway), PostgreSQL cùng pgvector, MinIO (S3), Superset (BI).
+- Chọn thành phần nguồn mở có sẵn cho Tầng 1 thay vì tự viết lại: Keycloak (OIDC), APISIX (gateway), PostgreSQL cùng pgvector, SeaweedFS (S3), Superset (BI).
   Phần tự viết là `dx-core` (workflow, workspace, thông báo, cổng AI) và các ứng dụng.
 - Backend Java và Spring Boot vì ranh giới Core/ứng dụng cần kiểm tra lúc biên dịch bằng module Maven; AI viết bằng Python vì hệ sinh thái CV và RAG.
 - Mã tự viết Apache-2.0.
-  Dependency chính: Spring, Keycloak, APISIX, PostgreSQL, Superset, Ollama (Apache-2.0 hoặc MIT); PyTorch/Torchvision (BSD-3-Clause); MinIO, Mattermost và crop classifier là AGPL-3.0; phần fine-tune model bệnh của nhóm theo Apache-2.0.
+  Dependency chính: Spring, Keycloak, APISIX, PostgreSQL, Superset, Ollama (Apache-2.0 hoặc MIT); PyTorch/Torchvision (BSD-3-Clause); Mattermost và crop classifier là AGPL-3.0; phần fine-tune model bệnh của nhóm theo Apache-2.0.
 - Dẫn: `LICENSES.md` (bảng đầy đủ, nguồn và vai trò), `sbom/` (CycloneDX).
 
 ## 3. Nếu thay đổi ứng dụng nghiệp vụ, Open-Core có phải thay đổi theo không? Vì sao?
@@ -38,7 +38,7 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE.md`](../ARCHITECTURE.md).
 | Identity/SSO | Keycloak realm `dxos`; core tạo vai do ứng dụng khai báo và tài khoản workspace qua Admin API; ghi sự kiện đăng nhập và khóa tạm khi sai mật khẩu nhiều lần; mật khẩu chỉ nằm ở Keycloak dưới dạng băm Argon2id, backend không lưu | Farm: FARMER, ENGINEER, ADMIN; Lab: STUDENT, LECTURER, TECHNICIAN, ADMIN |
 | API Gateway | APISIX là cửa duy nhất: kiểm JWT, giới hạn tốc độ, route theo app, log truy cập JSON kèm `X-Request-Id`; backend kiểm JWT lần hai | Giới hạn upload ảnh và chẩn đoán (Farm), tạo ticket và đặt phòng (Lab) |
 | Dữ liệu cấu trúc | PostgreSQL, Flyway: `db/migration/core` dùng chung và `db/migration/<app>` | Bảng riêng của từng ứng dụng, dùng chung `workspaces`, `notifications` |
-| Dữ liệu phi cấu trúc | MinIO riêng tư, client nhận link có hạn; tệp qua `FileProcessor` của ứng dụng | Ảnh lá lúa (Farm), tệp đính kèm ticket (Lab) |
+| Dữ liệu phi cấu trúc | SeaweedFS riêng tư, client nhận link có hạn; tệp qua `FileProcessor` của ứng dụng | Ảnh lá lúa (Farm), tệp đính kèm ticket (Lab) |
 | Workflow | `core.workflow`: loại case cấu hình được, lịch sử `workflow_event` chỉ thêm, người phụ trách, hộp duyệt | Farm 5 loại duyệt; Lab `TICKET`, `DEVICE_LOAN`, `ROOM_BOOKING` |
 | Audit | `core.audit`: bảng `audit_log` chỉ thêm, ghi request bị từ chối, lỗi `5xx`, thao tác quản trị (kể cả thất bại) kèm người thực hiện, IP, `request_id`; ADMIN tra cứu qua API, cảnh báo lên kênh quản trị | Farm: xóa mềm, thu hoạch sớm hoặc thay; Lab: danh mục, SLA, tệp đính kèm |
 
@@ -90,7 +90,7 @@ Sơ đồ và ranh giới ở [`ARCHITECTURE.md`](../ARCHITECTURE.md).
 - Được: `cp deploy/.env.example deploy/.env`, điền biến, `./deploy/start.sh farm` (hoặc `lab`); lệnh dựng stack, chờ đủ dịch vụ và nạp dữ liệu demo.
   `deploy/reset.sh` dựng lại từ đầu.
 - Workflow `E2E` dựng stack trên runner sạch và chạy kịch bản đầu-cuối cho cả hai ứng dụng.
-- Bản dựng nặng lần đầu: image AI khoảng 3 GB, Ollama khoảng 9 GB cùng model; MinIO build từ mã nguồn Go vì image chính thức không còn phát hành.
+- Bản dựng nặng lần đầu: image AI khoảng 3 GB, Ollama khoảng 9 GB cùng model.
   Máy đã có image dựng sạch trong khoảng hai phút.
 - Phiên bản Python khóa ở `ai/requirements.lock`; SBOM ở `sbom/`; Maven wrapper và npm lockfile khóa phần còn lại.
 - Dẫn: `README.md` mục "Cài đặt và chạy", `deploy/demo/README.md`, `.github/workflows/e2e.yml`.
@@ -133,7 +133,7 @@ Hướng mở rộng:
 ### B. Giấy phép
 
 - Mã tự viết Apache-2.0, SPDX header ở file Java và Python.
-- AGPL-3.0: MinIO, crop classifier và mã nguồn `ai/`; Mattermost Team Edition chạy nguyên bản, không đụng `server/enterprise/`. Phần fine-tune checkpoint bệnh do nhóm phát hành theo Apache-2.0, giữ điều khoản pretrained Torchvision.
+- AGPL-3.0: crop classifier và mã nguồn `ai/`; Mattermost Team Edition chạy nguyên bản, không đụng `server/enterprise/`. Phần fine-tune checkpoint bệnh do nhóm phát hành theo Apache-2.0, giữ điều khoản pretrained Torchvision.
 - Thư mục `ai/` giữ AGPL-3.0 (`ai/LICENSE`); phần còn lại giữ Apache-2.0.
   AI Service là tiến trình riêng giao tiếp với Backend qua HTTP, nên Backend không là tác phẩm phái sinh của `ai/`.
 - Bảng đầy đủ: `LICENSES.md`.
@@ -142,7 +142,7 @@ Hướng mở rộng:
 
 - Máy chủ nằm sau NAT và không mở cổng vào.
 - Cloudflare Tunnel là đường duy nhất vào.
-- Cloudflare bắt HTTPS, chặn bot, chặn gửi form đăng nhập dồn dập và đặt Cloudflare Access trước các trang quản trị (Superset, MinIO Console, Keycloak Admin, màn hình giám sát).
+- Cloudflare bắt HTTPS, chặn bot, chặn gửi form đăng nhập dồn dập và đặt Cloudflare Access trước các trang quản trị (Superset, quản trị lưu ảnh, Keycloak Admin, màn hình giám sát).
 - Gateway giới hạn tốc độ theo IP thật, Keycloak khóa tạm tài khoản sau 5 lần sai mật khẩu và ghi sự kiện đăng nhập.
 - Backend phân quyền theo vai và ghi `audit_log` chỉ thêm cho request bị từ chối, lỗi `5xx` và thao tác quản trị.
 - Màn hình giám sát `/monitor/` (dịch vụ riêng, chỉ ADMIN) gom sự kiện bất thường của gateway, `audit_log`, đăng nhập sai của Keycloak và trạng thái dịch vụ; vẫn chạy khi backend dừng và có truy vết theo `request_id`.

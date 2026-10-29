@@ -70,7 +70,6 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Backend tự gọi AI sau khi upload ảnh | Chẩn đoán AI do kỹ sư bấm; đang giữ thủ công có chủ đích |
 | Push thật (FCM, UnifiedPush) | Hộp thông báo chỉ kéo về khi mở app |
 | ClamAV bật mặc định | Đang tắt vì cần khoảng 1 GB RAM; chưa đo trên máy chủ thật |
-| Nâng `io.minio:minio` lên 8.6.0 | Sửa CVE-2025-59952 nhưng kéo theo OkHttp 5, cần đổi client lưu trữ và thử với MinIO thật; đang ghi nhận ở `.trivyignore` tới 31/12/2026 |
 | Hộp thông báo cho engineer và admin | Họ dùng hàng chờ và Mattermost |
 | Phun lặp lại trên cùng một chẩn đoán | Mỗi chẩn đoán một lần phun; phun lại phải qua báo cáo và chẩn đoán mới |
 | Thu hoạch thay hộ không có trong timeline workflow | Thu hoạch không có case; thông tin nằm trên vụ và log backend |

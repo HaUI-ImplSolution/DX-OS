@@ -3,7 +3,7 @@
 #
 # Single entry point of the stack:
 # - port 9080 serves the web app, API, Keycloak, photos, portal and the monitor screen;
-# - port 9081 serves Superset only and port 9082 the MinIO console only.
+# - port 9081 serves Superset only and port 9082 the object store admin page only.
 # Clients reach the web app, the API, Keycloak and the photo storage only through this gateway.
 # The AI service and the internal API are not routed.
 upstreams:
@@ -18,7 +18,7 @@ upstreams:
   - id: storage
     type: roundrobin
     nodes:
-      "minio:9000": 1
+      "seaweedfs:8333": 1
   - id: frontend
     type: roundrobin
     nodes:
@@ -31,10 +31,10 @@ upstreams:
     type: roundrobin
     nodes:
       "portal:80": 1
-  - id: minio-console
+  - id: storage-admin
     type: roundrobin
     nodes:
-      "minio:9001": 1
+      "seaweedfs-admin:23646": 1
   - id: monitor
     type: roundrobin
     nodes:
@@ -203,13 +203,12 @@ routes:
     vars: [["server_port", "==", "9081"]]
     upstream_id: superset
 
-  # MinIO console: its own listener, the console is served from the root path and uses websockets.
-  - id: minio-console
+  # Object store admin page: its own listener, it is served from the root path.
+  - id: storage-admin
     priority: 100
     uri: /*
     vars: [["server_port", "==", "9082"]]
-    enable_websocket: true
-    upstream_id: minio-console
+    upstream_id: storage-admin
 
   - id: portal-root
     vars: [["server_port", "==", "9080"]]

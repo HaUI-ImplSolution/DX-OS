@@ -3,8 +3,8 @@
 #   COMPOSE_FILE=docker-compose.yml:docker-compose.cloudflared.yml
 #   CLOUDFLARE_TUNNEL_TOKEN=<token of the tunnel>
 # Tunnel public hostnames: apisix:9080 (app, Keycloak, portal), apisix:9081 (BI),
-# apisix:9082 (MinIO console), mattermost:8065 (chat).
-# Set GATEWAY_PUBLIC_URL, SUPERSET_PUBLIC_URL, PORTAL_BI_URL, PORTAL_MINIO_URL and PORTAL_CHAT_URL
+# apisix:9082 (object store admin page), mattermost:8065 (chat).
+# Set GATEWAY_PUBLIC_URL, SUPERSET_PUBLIC_URL, PORTAL_BI_URL, PORTAL_STORAGE_URL and PORTAL_CHAT_URL
 # to those hostnames before the first start; Keycloak imports its redirect URIs only once.
 # The tunnel hostnames need a Request Header Transform Rule that sets X-Forwarded-Port to 443,
 # otherwise the gateway forwards its listener port and Superset and the backend build wrong origins.

@@ -33,7 +33,7 @@ Một lõi dùng chung lo đăng nhập, dữ liệu, quy trình, thông báo v�
 ![Sơ đồ kiến trúc tổng thể](docs/images/tong_quan.gif)
 
 Người dùng, web hay mobile, chỉ đi qua một Gateway (APISIX) để vào mạng nội bộ.
-Backend xử lý nghiệp vụ, lưu ảnh ở MinIO và dữ liệu ở PostgreSQL, nhờ AI Service chẩn đoán và hỏi đáp, gửi thông báo sang Mattermost; Superset đọc dữ liệu để làm báo cáo.
+Backend xử lý nghiệp vụ, lưu ảnh ở SeaweedFS và dữ liệu ở PostgreSQL, nhờ AI Service chẩn đoán và hỏi đáp, gửi thông báo sang Mattermost; Superset đọc dữ liệu để làm báo cáo.
 Dịch vụ giám sát chạy riêng, theo dõi lượt truy cập bất thường và tình trạng từng dịch vụ, báo sự cố cho quản trị viên qua Mattermost.
 Vai trò từng dịch vụ ở [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
@@ -74,7 +74,7 @@ Mức hoàn thiện và độ phủ kiểm thử từng tính năng ở [`docs/T
 | CV | EfficientNetV2-M (Torchvision) và crop classifier ONNX | BSD-3-Clause, Apache-2.0, AGPL-3.0 |
 | Web, Mobile | React, Vite, Expo | MIT |
 | SSO, Gateway | Keycloak, Apache APISIX | Apache-2.0 |
-| Dữ liệu, BI | PostgreSQL, MinIO, Apache Superset | PostgreSQL License, AGPL-3.0, Apache-2.0 |
+| Dữ liệu, BI | PostgreSQL, SeaweedFS, Apache Superset | PostgreSQL License, Apache-2.0, Apache-2.0 |
 | Chat | Mattermost Team Edition (chạy nguyên bản) | AGPL-3.0 |
 
 Mã tự viết theo Apache-2.0 ([`LICENSE`](./LICENSE)), riêng mã nguồn `ai/` theo AGPL-3.0 ([`ai/LICENSE`](./ai/LICENSE)).
@@ -101,7 +101,7 @@ python3 -m pip install pillow           # cho script dữ liệu demo
 ./deploy/start.sh                       # dựng, chạy ứng dụng trong DXOS_APP và nạp dữ liệu demo
 ```
 
-Lần dựng đầu tải và build nhiều thứ (MinIO build từ mã nguồn Go khoảng 2 phút), Superset khởi tạo metadata mất thêm vài phút.
+Lần dựng đầu tải và build nhiều thứ, Superset khởi tạo metadata mất thêm vài phút.
 Lệnh chờ đến khi các dịch vụ sẵn sàng; nạp dữ liệu demo của Farm chờ dịch vụ AI tối đa 5 phút.
 Đổi ứng dụng bằng một lệnh, web đổi theo mà không build lại:
 
@@ -122,7 +122,7 @@ Mọi cấu hình nằm ở `deploy/.env` (mẫu [`deploy/.env.example`](./deplo
 | Biến | Ý nghĩa |
 |---|---|
 | `DXOS_APP` | Ứng dụng chạy: `farm` (mặc định) hoặc `lab` |
-| `POSTGRES_*`, `MINIO_*`, `KEYCLOAK_*`, `SUPERSET_*`, `MATTERMOST_*` | Tài khoản và mật khẩu từng dịch vụ, để trống trong mẫu, không commit |
+| `POSTGRES_*`, `S3_*`, `KEYCLOAK_*`, `SUPERSET_*`, `MATTERMOST_*` | Tài khoản và mật khẩu từng dịch vụ, để trống trong mẫu, không commit |
 | `BACKEND_TO_AI_API_KEY`, `AI_TO_BACKEND_API_KEY` | Khóa dịch vụ hai chiều giữa Backend và AI |
 | `PUBLIC_HOST` | Địa chỉ trình duyệt dùng để vào hệ thống: `localhost` khi dev, IP hoặc tên miền của server khi triển khai; `GATEWAY_PUBLIC_URL`, `SUPERSET_PUBLIC_URL` và các địa chỉ trong thông báo chat tự theo biến này |
 | `MATTERMOST_WEBHOOK_URL_*` | Ghi đè webhook từng kênh chat; để trống thì dùng webhook tự tạo khi dựng stack |
@@ -140,7 +140,7 @@ Cấu hình riêng của từng ứng dụng ở [`backend/app-farm/README.md`](
 | Swagger | http://localhost:9080/swagger-ui.html | Access token Keycloak, bấm Authorize |
 | Keycloak Admin | http://localhost:9080/admin | `KEYCLOAK_ADMIN_USERNAME` / `KEYCLOAK_ADMIN_PASSWORD` |
 | BI (Superset) | http://localhost:9081 | SSO Keycloak; `admin1` vào trang quản trị |
-| Quản trị lưu ảnh (MinIO) | http://localhost:9082 | `MINIO_ACCESS_KEY` / `MINIO_SECRET_KEY` |
+| Quản trị lưu ảnh (SeaweedFS) | http://localhost:9082 | `S3_ACCESS_KEY` / `S3_SECRET_KEY` |
 | Chat (Mattermost) | http://localhost:8065 | `MATTERMOST_ADMIN_USERNAME` / `MATTERMOST_ADMIN_PASSWORD` |
 
 ### 🌐 Máy chủ công khai
@@ -204,7 +204,7 @@ Hướng dẫn kiểm thử đầy đủ ở [`docs/TESTING.md`](./docs/TESTING.
 | [`ai/`](./ai/README.md) | AI Service: CV, RAG, LangGraph |
 | [`data/`](./data/README.md) | Dữ liệu có cấu trúc, corpus RAG, bộ đề đánh giá RAG, script sinh seed |
 | [`deploy/`](./deploy) | Docker Compose, gateway, `start.sh`, dữ liệu demo và E2E; xem log truy cập ở [`OPERATIONS.md`](./deploy/OPERATIONS.md) |
-| [`sso/`](./sso/README.md) · [`bi/`](./bi/README.md) · [`chat/`](./chat/README.md) · [`minio/`](./minio/README.md) · [`portal/`](./portal/README.md) | Keycloak, Superset, Mattermost, MinIO, portal |
+| [`sso/`](./sso/README.md) · [`bi/`](./bi/README.md) · [`chat/`](./chat/README.md) · [`seaweedfs/`](./seaweedfs/README.md) · [`portal/`](./portal/README.md) | Keycloak, Superset, Mattermost, SeaweedFS, portal |
 | [`docs/`](./docs) | Tồn đọng, kiểm thử, đánh giá AI, hồ sơ nộp bài, câu hỏi hội đồng, mẫu phase (`_template/`), tài liệu tham chiếu |
 
 Tài liệu gốc: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./CHANGELOG.md) · [`LICENSES.md`](./LICENSES.md).

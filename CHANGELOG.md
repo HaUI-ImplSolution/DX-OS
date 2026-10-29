@@ -8,6 +8,8 @@ Lịch sử chi tiết theo ngày của từng module (Backend, Dữ liệu, Mob
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-10-29
+
 Chi tiết theo ngày ở mục của từng module bên dưới.
 
 - Sao lưu và khôi phục có mã hóa bằng `deploy/backup.sh`, có lệnh kiểm tra khôi phục và job CI chạy thử.
@@ -18,11 +20,6 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 - Máy chủ có CPU yếu tắt được câu trả lời Qwen và giảm số đoạn đưa vào rerank bằng `deploy/.env`.
 - Hỏi đáp Farm tìm bệnh từ triệu chứng trả tài liệu thay cho câu trả lời của Qwen; AI kiểm SHA-256 của crop classifier; mô tả triệu chứng gửi sang AI được che thông tin cá nhân.
 - Vận hành và CI: sinh `deploy/.env` với mật khẩu ngẫu nhiên, quét lỗ hổng phụ thuộc bằng Trivy.
-
-## [1.0.3] - 2026-10-27
-
-Chi tiết theo ngày ở mục của từng module bên dưới.
-
 - Chatbot Farm/Lab dùng chung hybrid retrieval BM25/cosine, RRF và multilingual rerank; giữ truy xuất chẩn đoán/ticket legacy, mở rộng corpus canh tác và tổng hợp QA đa nguồn.
 - Chatbot kiểm độ liên quan cosine trước rerank; truy vấn thiếu căn cứ không sinh câu trả lời.
   Cache BM25 theo metadata tài liệu, lấy top ứng viên cosine tại PostgreSQL và giữ snapshot nhất quán khi ingest đồng thời.

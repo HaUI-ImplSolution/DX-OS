@@ -237,6 +237,49 @@ def _unbound_duration(text: str, passages: list[dict], question: str) -> bool:
     return False
 
 
+# (claim pattern, evidence line pattern, share of claim words the evidence must contain).
+# A cause is a short fact, so every word must be sourced; a measure may be reworded.
+FARM_TOPICS = (
+    (
+        re.compile(r"\b(?:nguyên nhân|tác nhân|gây ra|do (?:nấm|vi khuẩn|virus|vi rút))\b"),
+        re.compile(r"\b(?:nguyên nhân|tác nhân|tên khoa học|loại bệnh)\b"),
+        1.0,
+    ),
+    (
+        re.compile(r"\b(?:phòng ngừa|phòng bệnh|phòng trừ|ngăn ngừa|để phòng|hạn chế bệnh)\b"),
+        re.compile(r"\b(?:phòng ngừa|phòng bệnh|phòng trừ|ngăn ngừa|biện pháp canh tác)\b"),
+        0.5,
+    ),
+)
+# Words that name the topic or the document rather than state a cause or a measure.
+TOPIC_WORDS = frozenset(
+    {
+        "nguyên", "nhân", "tác", "gây", "phòng", "ngừa", "ngăn", "trừ", "hạn", "chế",
+        "bệnh", "lúa", "cây", "tài", "liệu", "mô", "tả", "triệu", "chứng", "cách",
+        "thông", "tin", "nguồn", "biện", "pháp", "do",
+    }
+)  # fmt: skip
+
+
+def _unsupported_topic(text: str, passages: list[dict], question: str) -> bool:
+    """A stated cause or prevention measure must use the words of that topic in the evidence."""
+    lines = [line for p in passages for line in p["content"].splitlines()]
+    known = TOPIC_WORDS | _terms(question) | set().union(
+        *(_terms(p.get("document_title", "")) for p in passages)
+    )
+    for sentence in re.split(r"[.!?;\n]", text):
+        claim = _terms(sentence) - known
+        for asserted, supported, share in FARM_TOPICS:
+            if not claim or not asserted.search(sentence.casefold()):
+                continue
+            evidence = set().union(
+                *(_terms(line) for line in lines if supported.search(line.casefold()))
+            )
+            if len(claim & evidence) < share * len(claim):
+                return True
+    return False
+
+
 def _qa_context(passages: list[dict], budget: int = 2000) -> list[dict]:
     """Keep complete evidence lines and reserve room for each selected document."""
     packed = []
@@ -600,6 +643,8 @@ def synthesize_answer(
             )
             if _mentions(text, unrelated):
                 return fallback_answer(passages, reason="conflicting_output")
+            if _unsupported_topic(text, safe, question):
+                return fallback_answer(passages, reason="insufficient_evidence")
         if profile == "farm_diagnosis" and _mentions(text, foreign):
             return fallback_answer(passages, reason="conflicting_output")
         if profile.startswith("farm_") and _known_conflict(text, safe, target or focus):

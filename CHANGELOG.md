@@ -87,6 +87,10 @@ Bản phát hành đầu tiên của DX-OS.
 
 ### 2026-10-29
 
+**Đã xong — Link ảnh sau HTTPS:**
+
+- `StorageService` lấy scheme của link ảnh từ `request.getScheme()` khi `ForwardedHeaderFilter` đã đọc `X-Forwarded-Proto`, nên link ký sau Cloudflare bắt đầu bằng `https://`.
+
 **Đã xong — Mô tả OpenAPI:**
 
 - Phần mô tả của OpenAPI nêu header `Idempotency-Key` và phản hồi `429` kèm `Retry-After`.
@@ -764,6 +768,15 @@ Bản phát hành đầu tiên của DX-OS.
 
 ### 2026-10-29
 
+**Đã xong — Nguyên nhân và cách phòng có trong nguồn:**
+
+- Hỏi đáp Farm về một bệnh đã nêu tên chỉ giữ câu trả lời Qwen khi câu nêu nguyên nhân dùng đúng từ của dòng tác nhân, tên khoa học hoặc loại bệnh, và câu nêu cách phòng lấy ít nhất một nửa số từ nội dung từ dòng phòng ngừa hoặc biện pháp canh tác.
+- Mẫu nhận diện thuốc chỉ khớp "hóa học" là một từ riêng, nên dòng "Tên khoa học" được giữ trong evidence.
+
+**Đã xong — Nạp sẵn model embedding:**
+
+- `chat_lifespan` nạp model embedding đã có trong cache trước khi nhận request, nên lần tìm kiếm đầu sau khi khởi động không phải chờ nạp model; chưa có trong cache thì lần tìm kiếm đầu nạp như cũ.
+
 **Đã xong — Thông báo khi thao tác quá nhanh:**
 
 - `errorMessages.ts` có `ERR_TOO_MANY_REQUESTS`; phản hồi `429` không có nội dung JSON (từ gateway) hiện thông báo tiếng Việt.
@@ -1112,6 +1125,19 @@ Bản phát hành đầu tiên của DX-OS.
 ## Deploy (`deploy`)
 
 ### 2026-10-29
+
+**Đã xong — Chuyển ảnh sang SeaweedFS trên CPU cũ:**
+
+- `seaweedfs/migrate-uploads.sh` tải lên và kiểm từng ảnh bằng curl có ký S3 (`curlimages/curl`), chạy được trên CPU không có x86-64-v2.
+
+**Đã xong — Log SeaweedFS:**
+
+- `seaweedfs` chạy với `-v=-1`, chỉ ghi cảnh báo và lỗi; đặt `-v=0` để xem lại log thông tin.
+
+**Đã xong — Khóa gRPC của filer SeaweedFS:**
+
+- `seaweedfs` và `seaweedfs-admin` đặt `WEED_JWT_FILER_SIGNING_KEY` bằng `S3_SECRET_KEY`, nên gRPC quản lý user và STS của filer chỉ nhận lời gọi có khóa; `S3_SECRET_KEY` tối thiểu 16 ký tự.
+- Cổng gRPC của `seaweedfs-admin` là `13646`, dưới dải cổng tạm của Linux.
 
 **Đã xong — Kiểm tra trước khi chạy và kiểm tra từ ngoài:**
 
@@ -1478,6 +1504,13 @@ Bản phát hành đầu tiên của DX-OS.
 - Tài khoản Mattermost tách biệt hoàn toàn khỏi tài khoản backend (FARMER/ENGINEER/ADMIN) có chủ đích — nền tảng riêng, không dùng SSO chung.
 
 ## Portal (`portal`)
+
+### 2026-10-29
+
+**Đã xong — Địa chỉ dịch vụ không bị cache:**
+
+- Địa chỉ BI, chat và trang quản trị lưu ảnh nằm ở `/config` (không có đuôi tệp), nên Cloudflare không cache ở edge và giữ `Cache-Control: no-cache`.
+- Chú thích dưới mỗi thẻ hiện địa chỉ thật của link thay cho `localhost:<cổng>`.
 
 ### 2026-10-26
 

@@ -278,6 +278,8 @@ def synthesize_answer(
         return fallback_answer([])
     if profile.startswith("farm_") and MEDICATION.search(question):
         return fallback_answer(passages, medication=True)
+    if not get_settings().answer_generation_enabled:
+        return GeneratedAnswer(mode="extractive", summary="")
     context = dict(context or {})
     aliases = _disease_aliases() if profile.startswith("farm_") else {}
     target = context.get("disease_code")
@@ -305,15 +307,25 @@ def synthesize_answer(
             r"\b(?:cua (?:toi|minh|em)|(?:ruong|lua) (?:toi|minh|em)|(?:toi|minh|em) (?:thay|quan sat))\b",
             query,
         )
-        diagnosis = (
+        identify = not asked and (
             re.search(
-                r"\b(?:co phai|chac chan|chan doan|xac dinh benh|dung la)\b", query
+                r"\b(?:benh (?:gi|nao)|bi (?:benh )?gi|hien tuong gi|co phai (?:la )?benh)\b",
+                query,
             )
-            or not asked
-            and re.search(r"\b(?:benh (?:gi|nao)|bi gi)\b", query)
+            or re.search(
+                r"\b(?:vet|dom|soc|chau|vang|chay|thoi|lun|coi coc|heo|bien mau|lem|lep)\b",
+                query,
+            )
+            and re.search(r"\b(?:la gi|do dau)\b", query)
+        )
+        diagnosis = identify or re.search(
+            r"\b(?:co phai|chac chan|chan doan|xac dinh benh|dung la)\b", query
         )
         if personal and diagnosis:
             return fallback_answer(passages, reason="insufficient_evidence")
+        if identify:
+            # Qwen picks the wrong disease from symptoms; the reranked evidence is the answer.
+            return GeneratedAnswer(mode="extractive", summary="")
     if (
         profile == "farm_qa"
         and not asked

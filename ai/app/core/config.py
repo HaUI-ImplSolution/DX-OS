@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     rag_ingest_database_url: str | None = None
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "qwen2.5:1.5b"
+    # Off on CPUs too slow for Qwen: answers carry only the verbatim evidence.
+    answer_generation_enabled: bool = True
     embedding_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     chat_retrieval_strategy: Literal["legacy", "bm25", "hybrid", "hybrid_rerank"] = (
         "hybrid_rerank"
@@ -42,6 +44,7 @@ class Settings(BaseSettings):
         AI_ROOT.parent / "data" / "structured" / "class_contract.json"
     )
     crop_classifier_path: Path = AI_ROOT / "weights" / "crop_classifier.onnx"
+    crop_classifier_sha256: str | None = None
     cv_device: str = "auto"
 
     backend_base_url: str = "http://localhost:8081"

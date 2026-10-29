@@ -88,7 +88,7 @@ Full dependency and license table: [`LICENSES.md`](./LICENSES.md); CycloneDX SBO
 |---|---|---|
 | Software | Docker and Docker Compose v2, Git | No JDK, Node or Python needed to run (only `pillow` for the demo script) |
 | RAM | 8 GB | 16 GB recommended when building and running the LLM together |
-| CPU | 4 vCPU | No GPU needed |
+| CPU | 4 vCPU | No GPU needed; Qwen needs a CPU with AVX2, otherwise set `AI_ANSWER_GENERATION=false` |
 | Disk | 40 GB free | AI image about 3 GB, Ollama about 9 GB plus the Qwen2.5 model |
 | Ports | `9080`, `9081`, `8065`; `9082` and `5432` open on the server itself only | Change with the `*_HOST_PORT` variables |
 

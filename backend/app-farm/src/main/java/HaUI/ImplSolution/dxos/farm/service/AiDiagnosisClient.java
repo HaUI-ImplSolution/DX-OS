@@ -4,6 +4,7 @@ package HaUI.ImplSolution.dxos.farm.service;
 import HaUI.ImplSolution.dxos.core.api.ai.AiGateway;
 import HaUI.ImplSolution.dxos.core.api.exception.AiRequestRejectedException;
 import HaUI.ImplSolution.dxos.core.api.exception.AiServiceException;
+import HaUI.ImplSolution.dxos.core.api.privacy.PiiMask;
 import HaUI.ImplSolution.dxos.farm.dto.AiDiagnoseRequest;
 import HaUI.ImplSolution.dxos.farm.dto.AiDiagnoseResponse;
 import HaUI.ImplSolution.dxos.farm.dto.ImagePrecheckResponse;
@@ -67,7 +68,7 @@ public class AiDiagnosisClient {
   public List<SymptomSuggestionResponse> suggest(String symptomText) {
     try {
       return aiGateway.postJson("/api/v1/disease/symptoms/suggest",
-          Map.of("symptom_text", symptomText, "top_k", 6),
+          Map.of("symptom_text", PiiMask.mask(symptomText), "top_k", 6),
           new ParameterizedTypeReference<List<SymptomSuggestionResponse>>() {});
     } catch (AiServiceException e) {
       throw new AiServiceException("AI suggestions unavailable", e);

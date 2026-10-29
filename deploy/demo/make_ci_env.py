@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0
 """Writes an env file from .env.example: blank passwords, secrets and keys get a random value,
-other blank variables stay blank. Used for the first setup of a stack (then set PUBLIC_HOST and the like before the first start) and by CI.
+the model checksums are computed from ai/weights, other blank variables stay blank. Used for the first setup of a stack (then set PUBLIC_HOST and the like before the first start) and by CI.
 
     python3 deploy/demo/make_ci_env.py [OUTPUT] [--app farm|lab] [--force]     (default: deploy/.env, farm)
 
 An existing OUTPUT is kept unless --force is given.
 """
+import hashlib
 import pathlib
 import secrets
 import sys
@@ -33,12 +34,15 @@ def main():
     if output.exists() and not force:
         sys.exit(f"{output} already exists; pass --force to replace it.")
     checksum = verify_parts()
+    crop_checksum = hashlib.sha256((DEPLOY_DIR.parent / "ai/weights/crop_classifier.onnx").read_bytes()).hexdigest()
     lines = []
     for line in (DEPLOY_DIR / ".env.example").read_text(encoding="utf-8").splitlines():
         key, separator, value = line.partition("=")
         if separator and not line.startswith("#") and not value.strip():
             if key == "AI_CV_WEIGHTS_SHA256":
                 value = checksum
+            elif key == "AI_CROP_CLASSIFIER_SHA256":
+                value = crop_checksum
             elif key in FIXED:
                 value = FIXED[key]
             elif key.endswith(SECRET_SUFFIXES):

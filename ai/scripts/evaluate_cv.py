@@ -29,6 +29,8 @@ def main() -> None:
     settings = get_settings()
     if not settings.cv_weights_sha256:
         settings.cv_weights_sha256 = hashlib.sha256(settings.cv_weights_path.read_bytes()).hexdigest()
+    if not settings.crop_classifier_sha256:
+        settings.crop_classifier_sha256 = hashlib.sha256(settings.crop_classifier_path.read_bytes()).hexdigest()
 
     from app.cv.crop_classifier import load_crop_classifier
     from app.cv.loader import load_model

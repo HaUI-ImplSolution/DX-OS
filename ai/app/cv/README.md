@@ -69,6 +69,7 @@ Ngưỡng mới thử trên ảnh công khai nền ruộng, nền trắng và �
 
 - Artifact [YOLO26s-cls](https://huggingface.co/RaiyanKhaan/KrishokTech-Models/tree/c339988a6eceb5e22943ee27e4731a1a1dc9160a/01_crop_classifier) (10 lớp, `Rice=8`) ở `ai/weights/crop_classifier.onnx`, quản lý bằng Git; ONNX Runtime 1.30.0.
 - `CROP_CLASSIFIER_PATH` mặc định `ai/weights/crop_classifier.onnx`; Compose dùng `AI_CROP_CLASSIFIER_PATH`.
+- Tệp phải khớp `CROP_CLASSIFIER_SHA256` (Compose: `AI_CROP_CLASSIFIER_SHA256`), sai thì AI không khởi động.
   Khi nạp kiểm file, task, mapping, shape, dtype; không đối chiếu SHA-256 nên model khác cùng contract vẫn nạp được.
 - Tiền xử lý: RGB, sửa hướng EXIF, resize cạnh ngắn 224 (bilinear), center crop 224, float32 /255.
 - Cho qua khi top1 là Rice, P(Rice) ≥ 0.80 và chênh lớp khác cao nhất ≥ 0.20; độc lập với ngưỡng bệnh 0.70.

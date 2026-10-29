@@ -44,6 +44,7 @@ class Settings(BaseSettings):
         AI_ROOT.parent / "data" / "structured" / "class_contract.json"
     )
     crop_classifier_path: Path = AI_ROOT / "weights" / "crop_classifier.onnx"
+    crop_classifier_sha256: str | None = None
     cv_device: str = "auto"
 
     backend_base_url: str = "http://localhost:8081"

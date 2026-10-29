@@ -71,6 +71,22 @@ Gateway đếm theo IP thật của client (xem phần log), vượt ngưỡng t
 | `/api/*` (request có token hợp lệ) | 600 |
 | Route riêng của Farm và Lab (upload ảnh, chẩn đoán AI, tạo ticket, đặt phòng, hỏi đáp, trạng thái hệ thống) | Xem `deploy/apisix/common.yaml` và `deploy/apisix/apps/<app>.yaml` |
 
+Backend đếm thêm theo người dùng (`sub` của token), vượt ngưỡng thì trả `429` kèm `Retry-After`.
+Bộ đếm nằm trong bộ nhớ nên về 0 khi backend khởi động lại.
+`RATE_LIMIT_ENABLED=false` trong `deploy/.env` tắt phần này, dùng khi thử tải.
+
+| Lệnh gọi (mỗi người mỗi phút) | Ngưỡng |
+|---|---|
+| Mọi `/api/**` | 300 |
+| `POST /api/v1/knowledge/ask` | 20 |
+| Farm: tạo báo cáo bệnh kèm ảnh | 10 |
+| Farm: kiểm tra ảnh trước khi gửi | 20 |
+| Farm: chẩn đoán AI | 6 |
+| Farm: gợi ý bệnh từ triệu chứng | 20 |
+| Lab: tạo ticket, đặt phòng, tạo yêu cầu mượn thiết bị | 10 mỗi loại |
+| Lab: gợi ý ticket | 30 |
+| Lab: đính kèm tệp vào ticket | 20 |
+
 Request có token sai nhận `401` mà không bị đếm.
 Phần này do Cloudflare lọc.
 Đổi ngưỡng ở `count` của `limit-count` trong file route tương ứng rồi chạy `./switch-app.sh <app>` để gateway nạp lại.

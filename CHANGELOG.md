@@ -8,6 +8,8 @@ Lịch sử chi tiết theo ngày của từng module (Backend, Dữ liệu, Mob
 
 ## [Unreleased]
 
+- Backend giới hạn số lần gọi theo người dùng (`sub` của token) ở các lệnh tốn tài nguyên, trả `429` kèm `Retry-After`; `RATE_LIMIT_ENABLED=false` tắt khi thử tải.
+
 ## [1.0.3] - 2026-10-29
 
 Chi tiết theo ngày ở mục của từng module bên dưới.
@@ -74,6 +76,12 @@ Bản phát hành đầu tiên của DX-OS.
 ## Backend (Spring Boot — `backend`)
 
 ### 2026-10-29
+
+**Đã xong — Giới hạn tốc độ theo người dùng:**
+
+- `UserRateLimitFilter` đếm theo `sub` của token trong cửa sổ một phút, chạy sau bước xác thực; vượt ngưỡng trả `429` kèm `Retry-After`.
+- Mỗi app khai báo ngưỡng qua `RateLimitContributor` (Farm và Lab trong `*SecurityPolicies`, Core cho `/api/**` và hỏi đáp tri thức).
+- Request của AI service (khóa dịch vụ) không bị đếm.
 
 **Đã xong — Che thông tin cá nhân trong mô tả triệu chứng:**
 

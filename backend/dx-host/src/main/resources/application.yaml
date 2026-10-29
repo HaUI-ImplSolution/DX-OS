@@ -73,6 +73,9 @@ security:
   jwt:
     # Access tokens must carry this audience (added by the dxos-api client scope in Keycloak).
     audience: ${JWT_AUDIENCE:dxos-api}
+  rate-limit:
+    # Per signed-in user and minute, counted in memory; the limits are in each app's security config.
+    enabled: ${RATE_LIMIT_ENABLED:true}
 
 keycloak:
   admin:

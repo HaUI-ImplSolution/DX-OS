@@ -56,11 +56,11 @@ server:
   port: ${SERVER_PORT:8081}
 
 storage:
-  # S3-compatible object storage (MinIO); the bucket is private.
-  endpoint: ${MINIO_ENDPOINT}
-  access-key: ${MINIO_ACCESS_KEY}
-  secret-key: ${MINIO_SECRET_KEY}
-  bucket: ${MINIO_BUCKET}
+  # S3-compatible object storage (SeaweedFS); the bucket is private.
+  endpoint: ${S3_ENDPOINT}
+  access-key: ${S3_ACCESS_KEY}
+  secret-key: ${S3_SECRET_KEY}
+  bucket: ${S3_BUCKET}
   # clamd of the virus scan of uploads; an empty host turns the scan off.
   scan:
     host: ${STORAGE_SCAN_HOST:}
@@ -73,6 +73,9 @@ security:
   jwt:
     # Access tokens must carry this audience (added by the dxos-api client scope in Keycloak).
     audience: ${JWT_AUDIENCE:dxos-api}
+  rate-limit:
+    # Per signed-in user and minute, counted in memory; the limits are in each app's security config.
+    enabled: ${RATE_LIMIT_ENABLED:true}
 
 keycloak:
   admin:

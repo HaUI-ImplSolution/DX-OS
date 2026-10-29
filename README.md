@@ -22,18 +22,18 @@ Một lõi dùng chung lo đăng nhập, dữ liệu, quy trình, thông báo v�
 - **Một lõi, nhiều ứng dụng:** Farm và Lab dùng chung một lõi, thêm ứng dụng không phải sửa core.
 - **An toàn nghiệp vụ:** các quy tắc quan trọng được kiểm ngay ở Backend và cơ sở dữ liệu, không chỉ ở giao diện.
 - **Truy vết:** mọi lượt truy cập, lần đăng nhập, lỗi và thao tác quản trị đều được ghi lại; màn hình giám sát dành cho quản trị viên gom các nguồn này, theo dõi tình trạng dịch vụ và báo sự cố qua kênh chat.
-- **Bảo mật:** nhân sự có thể bật xác thực hai bước, tệp tải lên có thể được quét mã độc, thông tin cá nhân được che trước khi gửi sang kênh chat và AI.
+- **Bảo mật:** nhân sự có thể bật xác thực hai bước, tệp tải lên có thể được quét mã độc, thông tin cá nhân được che trước khi gửi sang kênh chat và AI, số lần gọi API bị giới hạn theo địa chỉ ở gateway và theo người dùng ở backend.
 - **Sao lưu và khôi phục:** dữ liệu và tệp được sao lưu mã hóa, việc khôi phục được kiểm tra tự động.
 - **AI có kiểm soát:** AI chỉ hỗ trợ, trả lời kèm nguồn và từ chối khi câu hỏi ngoài phạm vi hoặc thiếu căn cứ; thông tin thuốc và liều lấy từ dữ liệu chuyên gia đã duyệt, kỹ sư là người quyết định.
 - **Chạy một lệnh:** dựng toàn bộ hệ thống kèm dữ liệu demo, có kiểm thử tự động trên môi trường sạch.
-- **Nguồn mở minh bạch:** công khai giấy phép và danh sách thành phần phần mềm, tự động quét lộ mật khẩu và lỗ hổng thư viện.
+- **Nguồn mở minh bạch:** công khai giấy phép và danh sách thành phần phần mềm, tự động quét lộ mật khẩu, lỗ hổng của thư viện (kể cả danh mục đã phân giải) và image của bên thứ ba; Dependabot đề xuất cập nhật.
 
 ## 🗺️ Kiến trúc tổng thể
 
 ![Sơ đồ kiến trúc tổng thể](docs/images/tong_quan.gif)
 
 Người dùng, web hay mobile, chỉ đi qua một Gateway (APISIX) để vào mạng nội bộ.
-Backend xử lý nghiệp vụ, lưu ảnh ở MinIO và dữ liệu ở PostgreSQL, nhờ AI Service chẩn đoán và hỏi đáp, gửi thông báo sang Mattermost; Superset đọc dữ liệu để làm báo cáo.
+Backend xử lý nghiệp vụ, lưu ảnh ở SeaweedFS và dữ liệu ở PostgreSQL, nhờ AI Service chẩn đoán và hỏi đáp, gửi thông báo sang Mattermost; Superset đọc dữ liệu để làm báo cáo.
 Dịch vụ giám sát chạy riêng, theo dõi lượt truy cập bất thường và tình trạng từng dịch vụ, báo sự cố cho quản trị viên qua Mattermost.
 Vai trò từng dịch vụ ở [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
@@ -74,7 +74,7 @@ Mức hoàn thiện và độ phủ kiểm thử từng tính năng ở [`docs/T
 | CV | EfficientNetV2-M (Torchvision) và crop classifier ONNX | BSD-3-Clause, Apache-2.0, AGPL-3.0 |
 | Web, Mobile | React, Vite, Expo | MIT |
 | SSO, Gateway | Keycloak, Apache APISIX | Apache-2.0 |
-| Dữ liệu, BI | PostgreSQL, MinIO, Apache Superset | PostgreSQL License, AGPL-3.0, Apache-2.0 |
+| Dữ liệu, BI | PostgreSQL, SeaweedFS, Apache Superset | PostgreSQL License, Apache-2.0, Apache-2.0 |
 | Chat | Mattermost Team Edition (chạy nguyên bản) | AGPL-3.0 |
 
 Mã tự viết theo Apache-2.0 ([`LICENSE`](./LICENSE)), riêng mã nguồn `ai/` theo AGPL-3.0 ([`ai/LICENSE`](./ai/LICENSE)).
@@ -98,10 +98,11 @@ Bảng dependency và giấy phép đầy đủ ở [`LICENSES.md`](./LICENSES.m
 git clone https://github.com/HaUI-ImplSolution/DX-OS.git && cd DX-OS
 python3 deploy/demo/make_ci_env.py      # sinh deploy/.env, mật khẩu và khóa để trống nhận giá trị ngẫu nhiên
 python3 -m pip install pillow           # cho script dữ liệu demo
+./deploy/doctor.sh                      # kiểm Docker, RAM, ổ đĩa, biến trong deploy/.env và các cổng
 ./deploy/start.sh                       # dựng, chạy ứng dụng trong DXOS_APP và nạp dữ liệu demo
 ```
 
-Lần dựng đầu tải và build nhiều thứ (MinIO build từ mã nguồn Go khoảng 2 phút), Superset khởi tạo metadata mất thêm vài phút.
+Lần dựng đầu tải và build nhiều thứ, Superset khởi tạo metadata mất thêm vài phút.
 Lệnh chờ đến khi các dịch vụ sẵn sàng; nạp dữ liệu demo của Farm chờ dịch vụ AI tối đa 5 phút.
 Đổi ứng dụng bằng một lệnh, web đổi theo mà không build lại:
 
@@ -122,7 +123,7 @@ Mọi cấu hình nằm ở `deploy/.env` (mẫu [`deploy/.env.example`](./deplo
 | Biến | Ý nghĩa |
 |---|---|
 | `DXOS_APP` | Ứng dụng chạy: `farm` (mặc định) hoặc `lab` |
-| `POSTGRES_*`, `MINIO_*`, `KEYCLOAK_*`, `SUPERSET_*`, `MATTERMOST_*` | Tài khoản và mật khẩu từng dịch vụ, để trống trong mẫu, không commit |
+| `POSTGRES_*`, `S3_*`, `KEYCLOAK_*`, `SUPERSET_*`, `MATTERMOST_*` | Tài khoản và mật khẩu từng dịch vụ, để trống trong mẫu, không commit |
 | `BACKEND_TO_AI_API_KEY`, `AI_TO_BACKEND_API_KEY` | Khóa dịch vụ hai chiều giữa Backend và AI |
 | `PUBLIC_HOST` | Địa chỉ trình duyệt dùng để vào hệ thống: `localhost` khi dev, IP hoặc tên miền của server khi triển khai; `GATEWAY_PUBLIC_URL`, `SUPERSET_PUBLIC_URL` và các địa chỉ trong thông báo chat tự theo biến này |
 | `MATTERMOST_WEBHOOK_URL_*` | Ghi đè webhook từng kênh chat; để trống thì dùng webhook tự tạo khi dựng stack |
@@ -140,7 +141,7 @@ Cấu hình riêng của từng ứng dụng ở [`backend/app-farm/README.md`](
 | Swagger | http://localhost:9080/swagger-ui.html | Access token Keycloak, bấm Authorize |
 | Keycloak Admin | http://localhost:9080/admin | `KEYCLOAK_ADMIN_USERNAME` / `KEYCLOAK_ADMIN_PASSWORD` |
 | BI (Superset) | http://localhost:9081 | SSO Keycloak; `admin1` vào trang quản trị |
-| Quản trị lưu ảnh (MinIO) | http://localhost:9082 | `MINIO_ACCESS_KEY` / `MINIO_SECRET_KEY` |
+| Quản trị lưu ảnh (SeaweedFS) | http://localhost:9082 | `S3_ACCESS_KEY` / `S3_SECRET_KEY` |
 | Chat (Mattermost) | http://localhost:8065 | `MATTERMOST_ADMIN_USERNAME` / `MATTERMOST_ADMIN_PASSWORD` |
 
 ### 🌐 Máy chủ công khai
@@ -148,6 +149,7 @@ Cấu hình riêng của từng ứng dụng ở [`backend/app-farm/README.md`](
 Máy chủ công khai chạy sau Cloudflare Tunnel, không mở cổng vào.
 Bật bằng overlay [`deploy/docker-compose.cloudflared.yml`](./deploy/docker-compose.cloudflared.yml) (hướng dẫn ở đầu file).
 Khái niệm và cấu hình Cloudflare ở [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE.md); xem log, giới hạn tốc độ, audit, sao lưu và khôi phục ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
+Workflow [`online.yml`](./.github/workflows/online.yml) gọi các đường công khai mỗi 30 phút và báo lỗi khi không truy cập được.
 
 ### 🔑 Tài khoản demo
 
@@ -167,6 +169,7 @@ Khái niệm và cấu hình Cloudflare ở [`docs/CLOUDFLARE.md`](./docs/CLOUDF
 - Swagger UI ở `/swagger-ui.html`, OpenAPI JSON ở `/v3/api-docs`; tài liệu sinh từ annotation springdoc và chỉ có API của ứng dụng đang chạy (`DXOS_APP`).
 - Mọi lời gọi đi qua gateway `http://localhost:9080/api/v1/...` kèm `Authorization: Bearer <access token Keycloak>`; chỉ `GET /api/v1/system/status` và danh mục công khai của ứng dụng không cần token.
 - Response bọc trong `ApiResponse`; lỗi có `errorCode` ổn định, lỗi nghiệp vụ trả `422` và xung đột đồng thời trả `409`.
+- Gọi quá giới hạn số lần trả `429` kèm `Retry-After`; các lệnh tạo mới nhận header `Idempotency-Key`.
 - Để thử: bấm **Authorize** trong Swagger với access token, hoặc dùng `deploy/demo/dxos_client.py` (đăng nhập Authorization Code + PKCE như app thật).
 
 | Nhóm | Đường dẫn chính |
@@ -178,7 +181,7 @@ Khái niệm và cấu hình Cloudflare ở [`docs/CLOUDFLARE.md`](./docs/CLOUDF
 
 ## 🧪 Kiểm thử
 
-- Backend: `./mvnw verify` trong `backend` (cần Docker cho Testcontainers); AI: `pytest` trong `ai/`.
+- Backend: `./mvnw verify` trong `backend` (cần Docker cho Testcontainers, gồm luật phân lớp `ArchitectureTest`); AI: `pytest` trong `ai/`.
 - Web và mobile: `npx tsc --noEmit`.
 - E2E trên stack sạch: `python3 deploy/demo/e2e.py [--app farm|lab]`; CI chạy workflow `E2E` cho cả hai ứng dụng.
 - Đánh giá truy xuất RAG và thử tải retrieval: `./ai/evaluate.sh quality|performance|all`, chạy riêng với stack Farm/Lab; xem [`ai/README.md`](./ai/README.md#đánh-giá-truy-xuất-rag).
@@ -189,7 +192,7 @@ Hướng dẫn kiểm thử đầy đủ ở [`docs/TESTING.md`](./docs/TESTING.
 
 | Dấu hiệu | Cách xử lý |
 |---|---|
-| Compose báo thiếu biến | Điền biến được nêu tên trong `deploy/.env` |
+| Compose báo thiếu biến | Chạy `./deploy/doctor.sh` để liệt kê mọi biến thiếu hoặc để trống, rồi điền vào `deploy/.env` |
 | Web hoặc API trả 401 sau khi dựng lại | Đăng xuất, đăng nhập lại (trình duyệt giữ token của lần dựng trước) |
 | Web hiện giao diện app cũ sau khi đổi ứng dụng | Tải lại cứng, đợi `/api/v1/system/status` báo đúng app |
 | Hỏi đáp không có kết quả | Kiểm `docker compose logs rag-ingest`; job nạp tri thức chưa xong hoặc lỗi |
@@ -203,8 +206,8 @@ Hướng dẫn kiểm thử đầy đủ ở [`docs/TESTING.md`](./docs/TESTING.
 | [`frontend/`](./frontend/README.md) · [`mobile/`](./mobile/README.md) | Web React (hai ứng dụng) · Mobile Expo cho nông dân |
 | [`ai/`](./ai/README.md) | AI Service: CV, RAG, LangGraph |
 | [`data/`](./data/README.md) | Dữ liệu có cấu trúc, corpus RAG, bộ đề đánh giá RAG, script sinh seed |
-| [`deploy/`](./deploy) | Docker Compose, gateway, `start.sh`, dữ liệu demo và E2E; xem log truy cập ở [`OPERATIONS.md`](./deploy/OPERATIONS.md) |
-| [`sso/`](./sso/README.md) · [`bi/`](./bi/README.md) · [`chat/`](./chat/README.md) · [`minio/`](./minio/README.md) · [`portal/`](./portal/README.md) | Keycloak, Superset, Mattermost, MinIO, portal |
+| [`deploy/`](./deploy) | Docker Compose, gateway, `start.sh`, `doctor.sh`, dữ liệu demo và E2E; xem log truy cập ở [`OPERATIONS.md`](./deploy/OPERATIONS.md) |
+| [`sso/`](./sso/README.md) · [`bi/`](./bi/README.md) · [`chat/`](./chat/README.md) · [`seaweedfs/`](./seaweedfs/README.md) · [`portal/`](./portal/README.md) | Keycloak, Superset, Mattermost, SeaweedFS, portal |
 | [`docs/`](./docs) | Tồn đọng, kiểm thử, đánh giá AI, hồ sơ nộp bài, câu hỏi hội đồng, mẫu phase (`_template/`), tài liệu tham chiếu |
 
 Tài liệu gốc: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./CHANGELOG.md) · [`LICENSES.md`](./LICENSES.md).

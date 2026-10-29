@@ -3,6 +3,8 @@ package HaUI.ImplSolution.dxos.core.security;
 
 import HaUI.ImplSolution.dxos.core.api.security.ClientRestrictionPolicy;
 import HaUI.ImplSolution.dxos.core.api.security.EndpointPolicyContributor;
+import HaUI.ImplSolution.dxos.core.api.security.RateLimitContributor;
+import HaUI.ImplSolution.dxos.core.api.security.RateLimitRule;
 import java.util.Collection;
 import java.util.List;
 import org.springframework.beans.factory.ObjectProvider;
@@ -29,6 +31,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import tools.jackson.databind.ObjectMapper;
 
 // OAuth2 Resource Server: chỉ xác thực token do Keycloak cấp, không tự quản lý user/password.
 @Configuration
@@ -69,7 +72,10 @@ public class SecurityConfig {
       RestAccessDeniedHandler accessDeniedHandler,
       ServiceApiKeyAuthenticationFilter serviceApiKeyAuthenticationFilter,
       ObjectProvider<EndpointPolicyContributor> endpointPolicies,
-      ObjectProvider<ClientRestrictionPolicy> clientPolicies, AppRoles appRoles) throws Exception {
+      ObjectProvider<ClientRestrictionPolicy> clientPolicies,
+      ObjectProvider<RateLimitContributor> rateLimitContributors, UserRateLimiter userRateLimiter,
+      ObjectMapper objectMapper, AppRoles appRoles,
+      @Value("${security.rate-limit.enabled:true}") boolean rateLimitEnabled) throws Exception {
     List<String> publicGetPaths = endpointPolicies.orderedStream()
         .flatMap(policy -> policy.publicGetPaths().stream()).toList();
     List<ClientRestrictionPolicy> restrictions = clientPolicies.orderedStream().toList();
@@ -98,7 +104,26 @@ public class SecurityConfig {
           new ClientRestrictionFilter(restrictions, appRoles.staffRoles(), accessDeniedHandler),
           BearerTokenAuthenticationFilter.class);
     }
+    List<RateLimitRule> rateLimits = rateLimitContributors.orderedStream()
+        .flatMap(contributor -> contributor.rateLimits().stream()).toList();
+    if (rateLimitEnabled && !rateLimits.isEmpty()) {
+      http.addFilterAfter(new UserRateLimitFilter(rateLimits, userRateLimiter, objectMapper),
+          BearerTokenAuthenticationFilter.class);
+    }
     return http.build();
+  }
+
+  @Bean
+  public UserRateLimiter userRateLimiter() {
+    return new UserRateLimiter();
+  }
+
+  // Per signed-in user and minute: every API call, and the knowledge questions that run the
+  // retrieval and answer models.
+  @Bean
+  public RateLimitContributor coreRateLimits() {
+    return () -> List.of(new RateLimitRule(null, "/api/**", 300),
+        RateLimitRule.post("/api/v1/knowledge/ask", 20));
   }
 
   private JwtAuthenticationConverter jwtAuthenticationConverter() {

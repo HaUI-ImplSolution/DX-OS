@@ -2,12 +2,8 @@
 package HaUI.ImplSolution.dxos.core.storage;
 
 import HaUI.ImplSolution.dxos.core.api.storage.ObjectStorage;
-import io.minio.BucketExistsArgs;
-import io.minio.GetPresignedObjectUrlArgs;
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
-import io.minio.http.Method;
-import java.io.ByteArrayInputStream;
+import jakarta.annotation.PreDestroy;
+import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,6 +14,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.checksums.RequestChecksumCalculation;
+import software.amazon.awssdk.core.checksums.ResponseChecksumValidation;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3Configuration;
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
+import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
 // Object storage on an S3-compatible server. Objects are private; clients and other services read
 // them through time-limited presigned URLs.
@@ -25,18 +38,19 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 public class StorageService implements ObjectStorage {
 
   // Fixed so signing a URL is pure computation and never asks the server for the bucket region.
-  private static final String REGION = "us-east-1";
+  private static final Region REGION = Region.US_EAST_1;
   private static final Pattern HOST = Pattern.compile("[A-Za-z0-9.-]+(:\\d{1,5})?");
   private static final int MAX_CACHED_SIGNERS = 32;
+  private static final S3Configuration PATH_STYLE =
+      S3Configuration.builder().pathStyleAccessEnabled(true).build();
 
-  private final MinioClient client;
+  private final S3Client client;
   private final String bucket;
   private final String endpoint;
-  private final String accessKey;
-  private final String secretKey;
+  private final StaticCredentialsProvider credentials;
   private final String publicUrl;
   private final Duration presignTtl;
-  private final Map<String, MinioClient> signers = new ConcurrentHashMap<>();
+  private final Map<String, S3Presigner> signers = new ConcurrentHashMap<>();
 
   public StorageService(@Value("${storage.endpoint}") String endpoint,
       @Value("${storage.access-key}") String accessKey,
@@ -44,29 +58,38 @@ public class StorageService implements ObjectStorage {
       @Value("${storage.public-url}") String publicUrl,
       @Value("${storage.presign-ttl}") Duration presignTtl) {
     this.endpoint = trimTrailingSlash(endpoint);
-    this.accessKey = accessKey;
-    this.secretKey = secretKey;
+    this.credentials =
+        StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey));
     this.bucket = bucket;
     this.publicUrl = trimTrailingSlash(publicUrl);
     this.presignTtl = presignTtl;
-    this.client = signer(this.endpoint);
+    this.client = S3Client.builder().endpointOverride(URI.create(this.endpoint)).region(REGION)
+        .credentialsProvider(credentials).serviceConfiguration(PATH_STYLE)
+        .requestChecksumCalculation(RequestChecksumCalculation.WHEN_REQUIRED)
+        .responseChecksumValidation(ResponseChecksumValidation.WHEN_REQUIRED)
+        .httpClientBuilder(UrlConnectionHttpClient.builder()).build();
   }
 
   public String bucket() {
     return bucket;
   }
 
-  public MinioClient client() {
-    return client;
+  // Creates the bucket when it is missing; true when it was created. Fails while the server is
+  // unreachable.
+  public boolean ensureBucket() {
+    if (bucketExists()) {
+      return false;
+    }
+    client.createBucket(CreateBucketRequest.builder().bucket(bucket).build());
+    return true;
   }
 
   @Override
   public void putObject(String key, byte[] data, String contentType, Map<String, String> metadata) {
     try {
-      client.putObject(PutObjectArgs.builder().bucket(bucket).object(key)
-          .stream(new ByteArrayInputStream(data), data.length, -1).contentType(contentType)
-          .userMetadata(metadata).build());
-    } catch (Exception e) {
+      client.putObject(PutObjectRequest.builder().bucket(bucket).key(key).contentType(contentType)
+          .metadata(metadata).build(), RequestBody.fromBytes(data));
+    } catch (RuntimeException e) {
       throw new IllegalStateException("Failed to store object " + key, e);
     }
   }
@@ -93,28 +116,49 @@ public class StorageService implements ObjectStorage {
   @Override
   public boolean isReady() {
     try {
-      return client.bucketExists(BucketExistsArgs.builder().bucket(bucket).build());
-    } catch (Exception e) {
+      return bucketExists();
+    } catch (RuntimeException e) {
       return false;
+    }
+  }
+
+  @PreDestroy
+  void close() {
+    client.close();
+    signers.values().forEach(S3Presigner::close);
+  }
+
+  private boolean bucketExists() {
+    try {
+      client.headBucket(HeadBucketRequest.builder().bucket(bucket).build());
+      return true;
+    } catch (NoSuchBucketException e) {
+      return false;
+    } catch (S3Exception e) {
+      if (e.statusCode() == 404) {
+        return false;
+      }
+      throw e;
     }
   }
 
   private String presign(String baseUrl, String key, Duration ttl) {
     try {
-      return signer(baseUrl).getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder()
-          .method(Method.GET).bucket(bucket).object(key).expiry((int) ttl.toSeconds()).build());
-    } catch (Exception e) {
+      GetObjectPresignRequest request = GetObjectPresignRequest.builder().signatureDuration(ttl)
+          .getObjectRequest(GetObjectRequest.builder().bucket(bucket).key(key).build()).build();
+      return signer(baseUrl).presignGetObject(request).url().toString();
+    } catch (RuntimeException e) {
       throw new IllegalStateException("Failed to presign object " + key, e);
     }
   }
 
-  private MinioClient signer(String baseUrl) {
-    MinioClient cached = signers.get(baseUrl);
+  private S3Presigner signer(String baseUrl) {
+    S3Presigner cached = signers.get(baseUrl);
     if (cached != null) {
       return cached;
     }
-    MinioClient created = MinioClient.builder().endpoint(baseUrl).region(REGION)
-        .credentials(accessKey, secretKey).build();
+    S3Presigner created = S3Presigner.builder().endpointOverride(URI.create(baseUrl)).region(REGION)
+        .credentialsProvider(credentials).serviceConfiguration(PATH_STYLE).build();
     if (signers.size() < MAX_CACHED_SIGNERS) {
       signers.put(baseUrl, created);
     }

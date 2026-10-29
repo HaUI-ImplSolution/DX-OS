@@ -5,6 +5,7 @@ import HaUI.ImplSolution.dxos.core.api.audit.AuditEvent;
 import HaUI.ImplSolution.dxos.core.api.audit.AuditRecorder;
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
 import HaUI.ImplSolution.dxos.core.api.dto.PageResponse;
+import HaUI.ImplSolution.dxos.core.api.request.IdempotencyKey;
 import HaUI.ImplSolution.dxos.lab.dto.TicketDtos.AssignRequest;
 import HaUI.ImplSolution.dxos.lab.dto.TicketDtos.ConfirmRequest;
 import HaUI.ImplSolution.dxos.lab.dto.TicketDtos.RejectRequest;
@@ -79,8 +80,8 @@ public class TicketController {
       @Valid @RequestPart("ticket") TicketCreateRequest request,
       @RequestPart(value = "files", required = false) List<MultipartFile> files,
       @Parameter(description = "Client-generated UUID that makes retries of this request safe")
-      @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
-    UUID clientRequestId = idempotencyKey == null ? null : UUID.fromString(idempotencyKey);
+      @RequestHeader(value = IdempotencyKey.HEADER, required = false) String idempotencyKey) {
+    UUID clientRequestId = IdempotencyKey.parse(idempotencyKey);
     return ApiResponse.success("Ticket created",
         ticketService.create(request, files, clientRequestId));
   }

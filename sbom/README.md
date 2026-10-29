@@ -29,3 +29,7 @@ cd mobile && npx @cyclonedx/cyclonedx-npm --omit dev --ignore-npm-errors --outpu
 
 Sinh lại sau khi đổi dependency; giấy phép từng thành phần ở [`LICENSES.md`](../LICENSES.md).
 Workflow `CI Dependencies` (`ci-deps.yml`) quét lỗ hổng của các dependency này bằng Trivy khi file khai báo đổi và mỗi tuần.
+Workflow này sinh lại SBOM của backend ngay trong CI và quét nó, vì `pom.xml` không ghi phiên bản của các gói do Spring Boot quản lý.
+Quét SBOM chặn CI khi có lỗi HIGH hoặc CRITICAL đã có bản vá.
+Cùng workflow quét các image của bên thứ ba trong `deploy/docker-compose.yml` và chỉ báo bằng cảnh báo.
+Dependabot (`.github/dependabot.yml`) mở pull request cập nhật vào `Khuong/main`.

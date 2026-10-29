@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Encrypted backup of everything that cannot be rebuilt from the repository: every Postgres
-# database (business data, Keycloak accounts, Mattermost, vector store), the MinIO photos and
+# database (business data, Keycloak accounts, Mattermost, vector store), the object store photos and
 # attachments, Mattermost files and the Superset metadata. Uses restic (deduplicated, encrypted),
 # run from a container, so only Docker is needed.
 #
@@ -61,7 +61,7 @@ do_backup() {
   compose exec -T postgres pg_dumpall -U "$POSTGRES_USER" | gzip > "$STAGE/postgres.sql.gz"
   [[ -s "$STAGE/postgres.sql.gz" ]] || { echo "The database dump is empty." >&2; exit 1; }
   local paths=(/stage)
-  for dir in minio mattermost superset; do [[ -d "data/$dir" ]] && paths+=("/data/$dir"); done
+  for dir in seaweedfs mattermost superset; do [[ -d "data/$dir" ]] && paths+=("/data/$dir"); done
   echo "==> Writing the snapshot (${paths[*]})"
   restic -v "$STAGE:/stage:ro" -v "$(pwd)/data:/data:ro" -- backup --tag dxos "${paths[@]}"
   echo "==> Dropping old snapshots"

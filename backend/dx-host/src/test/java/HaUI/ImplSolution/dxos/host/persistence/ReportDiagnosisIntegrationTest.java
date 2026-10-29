@@ -236,11 +236,11 @@ class ReportDiagnosisIntegrationTest {
   void reportResponseAndAiRequestUseTheirOwnPresignedUrls() {
     when(objectStorage.presignedUrl("test.png")).thenReturn("https://public.test/test.png");
     when(objectStorage.internalPresignedUrl(eq("test.png"), any()))
-        .thenReturn("http://minio:9000/reports/test.png");
+        .thenReturn("http://seaweedfs:8333/reports/test.png");
     assertThat(reports.getById(reportId).imageUrl()).isEqualTo("https://public.test/test.png");
     when(ai.diagnose(any())).thenAnswer(call -> {
       AiDiagnoseRequest request = call.getArgument(0);
-      assertThat(request.imageUrl()).isEqualTo("http://minio:9000/reports/test.png");
+      assertThat(request.imageUrl()).isEqualTo("http://seaweedfs:8333/reports/test.png");
       assertThat(TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
       return response();
     });

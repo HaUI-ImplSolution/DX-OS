@@ -22,18 +22,18 @@ One shared core handles sign-in, data, workflows, notifications and AI; two busi
 - **One core, many applications:** Farm and Lab share one core; adding an application needs no change to the core.
 - **Business safety:** key rules are checked in the Backend and the database, not just in the UI.
 - **Traceability:** every request, sign-in, error and administrative action is recorded; a monitoring screen for administrators brings these together, watches the health of each service and reports incidents in the chat.
-- **Security:** staff can turn on two-step sign-in, uploaded files can be scanned for malware, and personal details are hidden before messages reach the chat or the AI.
+- **Security:** staff can turn on two-step sign-in, uploaded files can be scanned for malware, and personal details are hidden before messages reach the chat or the AI; API calls are rate limited per address at the gateway and per user in the backend.
 - **Backup and restore:** data and files are backed up with encryption, and restoring them is checked automatically.
 - **Controlled AI:** AI only assists, answers with its sources and declines questions that are out of scope or lack support; drug and dose information comes from expert-approved data and the engineer makes the decision.
 - **One-command run:** builds the whole system with demo data, with automated tests on a clean environment.
-- **Transparent open source:** licenses and the list of software components are public, with automatic scanning for leaked passwords and vulnerable libraries.
+- **Transparent open source:** licenses and the list of software components are public, with automatic scanning for leaked passwords, vulnerable libraries (including the resolved dependency list) and third-party images; Dependabot proposes updates.
 
 ## 🗺️ Overall architecture
 
 ![Overall architecture diagram](docs/images/tong_quan.gif)
 
 Users, on web or mobile, reach the internal network only through a single Gateway (APISIX).
-The Backend handles the business logic, stores photos in MinIO and data in PostgreSQL, asks the AI Service to diagnose and answer questions, and sends notifications to Mattermost; Superset reads the data for reports.
+The Backend handles the business logic, stores photos in SeaweedFS and data in PostgreSQL, asks the AI Service to diagnose and answer questions, and sends notifications to Mattermost; Superset reads the data for reports.
 A separate monitoring service watches unusual traffic and the state of each service, and reports incidents to the administrators through Mattermost.
 The role of each service is in [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
@@ -74,7 +74,7 @@ Feature maturity and test coverage are in [`docs/TESTING.md`](./docs/TESTING.md)
 | CV | EfficientNetV2-M (Torchvision) and ONNX crop classifier | BSD-3-Clause, Apache-2.0, AGPL-3.0 |
 | Web, Mobile | React, Vite, Expo | MIT |
 | SSO, Gateway | Keycloak, Apache APISIX | Apache-2.0 |
-| Data, BI | PostgreSQL, MinIO, Apache Superset | PostgreSQL License, AGPL-3.0, Apache-2.0 |
+| Data, BI | PostgreSQL, SeaweedFS, Apache Superset | PostgreSQL License, Apache-2.0, Apache-2.0 |
 | Chat | Mattermost Team Edition (unmodified) | AGPL-3.0 |
 
 Original code is Apache-2.0 ([`LICENSE`](./LICENSE)); source code in `ai/` remains AGPL-3.0 ([`ai/LICENSE`](./ai/LICENSE)).
@@ -98,10 +98,11 @@ Full dependency and license table: [`LICENSES.md`](./LICENSES.md); CycloneDX SBO
 git clone https://github.com/HaUI-ImplSolution/DX-OS.git && cd DX-OS
 python3 deploy/demo/make_ci_env.py      # writes deploy/.env, empty passwords and keys get random values
 python3 -m pip install pillow           # for the demo data script
+./deploy/doctor.sh                      # check Docker, RAM, disk, deploy/.env variables and ports
 ./deploy/start.sh                       # build, run the app in DXOS_APP, load demo data
 ```
 
-The first build downloads and builds a lot (MinIO is built from Go source, about 2 minutes), and Superset needs a few more minutes to initialise its metadata.
+The first build downloads and builds a lot, and Superset needs a few more minutes to initialise its metadata.
 The command waits until the services are ready; loading the Farm demo data waits up to 5 minutes for the AI service.
 Switch applications with one command; the web app follows without a rebuild:
 
@@ -122,7 +123,7 @@ All configuration lives in `deploy/.env` (template: [`deploy/.env.example`](./de
 | Variable | Meaning |
 |---|---|
 | `DXOS_APP` | Application to run: `farm` (default) or `lab` |
-| `POSTGRES_*`, `MINIO_*`, `KEYCLOAK_*`, `SUPERSET_*`, `MATTERMOST_*` | Per-service accounts and passwords, empty in the template, never committed |
+| `POSTGRES_*`, `S3_*`, `KEYCLOAK_*`, `SUPERSET_*`, `MATTERMOST_*` | Per-service accounts and passwords, empty in the template, never committed |
 | `BACKEND_TO_AI_API_KEY`, `AI_TO_BACKEND_API_KEY` | Service keys for each direction between Backend and AI |
 | `PUBLIC_HOST` | Address the browser uses to reach the system: `localhost` for development, the IP or domain of the server when deployed; `GATEWAY_PUBLIC_URL`, `SUPERSET_PUBLIC_URL` and the links in chat notifications follow it |
 | `MATTERMOST_WEBHOOK_URL_*` | Overrides the webhook of a chat channel; empty uses the webhook created when the stack starts |
@@ -140,7 +141,7 @@ Per-application settings: [`backend/app-farm/README.md`](./backend/app-farm/READ
 | Swagger | http://localhost:9080/swagger-ui.html | Keycloak access token, click Authorize |
 | Keycloak Admin | http://localhost:9080/admin | `KEYCLOAK_ADMIN_USERNAME` / `KEYCLOAK_ADMIN_PASSWORD` |
 | BI (Superset) | http://localhost:9081 | Keycloak SSO; `admin1` for the admin area |
-| Image storage admin (MinIO) | http://localhost:9082 | `MINIO_ACCESS_KEY` / `MINIO_SECRET_KEY` |
+| Image storage admin (SeaweedFS) | http://localhost:9082 | `S3_ACCESS_KEY` / `S3_SECRET_KEY` |
 | Chat (Mattermost) | http://localhost:8065 | `MATTERMOST_ADMIN_USERNAME` / `MATTERMOST_ADMIN_PASSWORD` |
 
 ### 🌐 Public server
@@ -148,6 +149,7 @@ Per-application settings: [`backend/app-farm/README.md`](./backend/app-farm/READ
 A public server runs behind a Cloudflare Tunnel and opens no inbound port.
 Enable it with the overlay [`deploy/docker-compose.cloudflared.yml`](./deploy/docker-compose.cloudflared.yml) (instructions at the top of the file).
 Cloudflare concepts and settings are in [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE.md); logs, rate limits, the audit log, backup and restore are in [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
+The workflow [`online.yml`](./.github/workflows/online.yml) calls the public paths every 30 minutes and reports a failure when they cannot be reached.
 
 ### 🔑 Demo accounts
 
@@ -167,6 +169,7 @@ Cloudflare concepts and settings are in [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE
 - Swagger UI is at `/swagger-ui.html` and the OpenAPI JSON at `/v3/api-docs`; the documentation is generated from springdoc annotations and covers only the running application (`DXOS_APP`).
 - Every call goes through the gateway `http://localhost:9080/api/v1/...` with `Authorization: Bearer <Keycloak access token>`; only `GET /api/v1/system/status` and the application's public catalogues need no token.
 - Responses are wrapped in `ApiResponse`; errors carry a stable `errorCode`, business errors return `422` and concurrent conflicts return `409`.
+- A call over the rate limit returns `429` with `Retry-After`; the calls that create a record accept an `Idempotency-Key` header.
 - To try it: click **Authorize** in Swagger with an access token, or use `deploy/demo/dxos_client.py` (Authorization Code + PKCE sign-in, like the real apps).
 
 | Group | Main paths |
@@ -178,7 +181,7 @@ Cloudflare concepts and settings are in [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE
 
 ## 🧪 Testing
 
-- Backend: `./mvnw verify` in `backend` (Docker required for Testcontainers); AI: `pytest` in `ai/`.
+- Backend: `./mvnw verify` in `backend` (Docker required for Testcontainers, includes the layering rules of `ArchitectureTest`); AI: `pytest` in `ai/`.
 - Web and mobile: `npx tsc --noEmit`.
 - End-to-end on a clean stack: `python3 deploy/demo/e2e.py [--app farm|lab]`; CI runs the `E2E` workflow for both applications.
 - RAG retrieval evaluation and retrieval load test: `./ai/evaluate.sh quality|performance|all`, run separately from the Farm/Lab stack; see [`ai/README.md`](./ai/README.md#đánh-giá-truy-xuất-rag) (Vietnamese).
@@ -189,7 +192,7 @@ Full testing guide: [`docs/TESTING.md`](./docs/TESTING.md).
 
 | Symptom | Fix |
 |---|---|
-| Compose reports a missing variable | Fill in the named variable in `deploy/.env` |
+| Compose reports a missing variable | Run `./deploy/doctor.sh` to list every missing or blank variable, then fill them in `deploy/.env` |
 | Web or API returns 401 after a rebuild | Sign out and sign in again (the browser kept the token from the previous build) |
 | Web shows the old app after switching | Hard-reload and wait until `/api/v1/system/status` reports the right app |
 | Q&A returns nothing | Check `docker compose logs rag-ingest`; the knowledge ingest job has not finished or failed |
@@ -203,8 +206,8 @@ Full testing guide: [`docs/TESTING.md`](./docs/TESTING.md).
 | [`frontend/`](./frontend/README.md) · [`mobile/`](./mobile/README.md) | React web (both applications) · Expo mobile for farmers |
 | [`ai/`](./ai/README.md) | AI Service: CV, RAG, LangGraph |
 | [`data/`](./data/README.md) | Structured data, RAG corpora, RAG evaluation set, seed generation scripts |
-| [`deploy/`](./deploy) | Docker Compose, gateway, `start.sh`, demo data and E2E; access logs in [`OPERATIONS.md`](./deploy/OPERATIONS.md) |
-| [`sso/`](./sso/README.md) · [`bi/`](./bi/README.md) · [`chat/`](./chat/README.md) · [`minio/`](./minio/README.md) · [`portal/`](./portal/README.md) | Keycloak, Superset, Mattermost, MinIO, portal |
+| [`deploy/`](./deploy) | Docker Compose, gateway, `start.sh`, `doctor.sh`, demo data and E2E; access logs in [`OPERATIONS.md`](./deploy/OPERATIONS.md) |
+| [`sso/`](./sso/README.md) · [`bi/`](./bi/README.md) · [`chat/`](./chat/README.md) · [`seaweedfs/`](./seaweedfs/README.md) · [`portal/`](./portal/README.md) | Keycloak, Superset, Mattermost, SeaweedFS, portal |
 | [`docs/`](./docs) | Backlog, testing, AI evaluation, submission pack, council Q&A, phase template (`_template/`), reference material |
 
 Top-level documents: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./CHANGELOG.md) · [`LICENSES.md`](./LICENSES.md).

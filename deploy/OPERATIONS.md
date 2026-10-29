@@ -71,6 +71,22 @@ Gateway đếm theo IP thật của client (xem phần log), vượt ngưỡng t
 | `/api/*` (request có token hợp lệ) | 600 |
 | Route riêng của Farm và Lab (upload ảnh, chẩn đoán AI, tạo ticket, đặt phòng, hỏi đáp, trạng thái hệ thống) | Xem `deploy/apisix/common.yaml` và `deploy/apisix/apps/<app>.yaml` |
 
+Backend đếm thêm theo người dùng (`sub` của token), vượt ngưỡng thì trả `429` kèm `Retry-After`.
+Bộ đếm nằm trong bộ nhớ nên về 0 khi backend khởi động lại.
+`RATE_LIMIT_ENABLED=false` trong `deploy/.env` tắt phần này, dùng khi thử tải.
+
+| Lệnh gọi (mỗi người mỗi phút) | Ngưỡng |
+|---|---|
+| Mọi `/api/**` | 300 |
+| `POST /api/v1/knowledge/ask` | 20 |
+| Farm: tạo báo cáo bệnh kèm ảnh | 10 |
+| Farm: kiểm tra ảnh trước khi gửi | 20 |
+| Farm: chẩn đoán AI | 6 |
+| Farm: gợi ý bệnh từ triệu chứng | 20 |
+| Lab: tạo ticket, đặt phòng, tạo yêu cầu mượn thiết bị | 10 mỗi loại |
+| Lab: gợi ý ticket | 30 |
+| Lab: đính kèm tệp vào ticket | 20 |
+
 Request có token sai nhận `401` mà không bị đếm.
 Phần này do Cloudflare lọc.
 Đổi ngưỡng ở `count` của `limit-count` trong file route tương ứng rồi chạy `./switch-app.sh <app>` để gateway nạp lại.
@@ -112,7 +128,7 @@ Tạo bốn ứng dụng:
 | Ứng dụng | Domain | Đường dẫn |
 |---|---|---|
 | BI (Superset) | `bi.khuongdev.io.vn` | để trống |
-| MinIO Console | `files.khuongdev.io.vn` | để trống |
+| Quản trị lưu ảnh | `files.khuongdev.io.vn` | để trống |
 | Keycloak Admin Console | `khuongdev.io.vn` | `admin/*` |
 | Màn hình giám sát | `khuongdev.io.vn` | `monitor/*` |
 
@@ -165,10 +181,25 @@ Mỗi 5 phút, một địa chỉ bị từ chối từ 10 lần trong 10 phút 
 Đổi ngưỡng ở `audit.alert.*` trong `backend/dx-host/src/main/resources/application.yaml`.
 Không có webhook của kênh thì không gửi.
 
+## Kiểm tra trước khi chạy
+
+`./doctor.sh` (trong `deploy/`) chỉ đọc, không đổi gì và không in giá trị nào của `.env`.
+Nó kiểm Docker và Compose, RAM, ổ đĩa, `deploy/.env` và các cổng.
+`.env` được so với các biến `${NAME:?}` mà Compose bắt buộc phải có: biến thiếu hoặc để trống bị báo `FAIL`.
+Biến có trong `.env` mà `.env.example` không liệt kê bị báo `WARN`.
+Các cổng đã bị chiếm chỉ được kiểm khi stack chưa chạy.
+Thoát với mã 1 khi có `FAIL`, nên chạy trước `./update.sh` và `./start.sh` trên máy chủ.
+
+## Giám sát từ ngoài
+
+Workflow `online.yml` chạy mỗi 30 phút trên GitHub, gọi web, portal, trang đăng nhập và `/api/v1/system/status`, rồi báo lỗi qua GitHub khi một đường không trả 200 hoặc khi `backend` hoặc `storage` không `UP`.
+Địa chỉ mặc định là `https://khuongdev.io.vn`; đặt biến repository `PUBLIC_URL` để kiểm địa chỉ khác.
+GitHub chỉ chạy workflow theo lịch từ nhánh mặc định, và tắt chúng sau 60 ngày repo không có hoạt động.
+
 ## Sao lưu và khôi phục
 
 `./backup.sh` (trong `deploy/`) chụp một bản sao lưu mã hóa của những gì không dựng lại được từ repo.
-Gồm toàn bộ Postgres (dữ liệu nghiệp vụ, tài khoản Keycloak, Mattermost, kho vector), ảnh và tệp đính kèm trong MinIO, tệp của Mattermost và metadata của Superset.
+Gồm toàn bộ Postgres (dữ liệu nghiệp vụ, tài khoản Keycloak, Mattermost, kho vector), ảnh và tệp đính kèm trong SeaweedFS, tệp của Mattermost và metadata của Superset.
 Script dùng restic chạy trong container nên chỉ cần Docker.
 Bản sao lưu khử trùng lặp và mã hóa bằng `BACKUP_PASSWORD`.
 Cất mật khẩu này ở nơi khác máy chủ, vì mất nó là không đọc lại được.
@@ -193,7 +224,7 @@ CI chạy một lượt backup và verify trên Postgres thật ở job `backup-
 3. Nạp Postgres: `gunzip -c /tmp/dxos-restore/stage/postgres.sql.gz | docker compose exec -T postgres psql -U "$POSTGRES_USER" postgres`.
    Hai dòng lỗi `role "..." already exists` và `database "..." already exists` là bình thường vì tài khoản quản trị và database chính đã có sẵn.
    Phần còn lại phải nạp không lỗi.
-4. Chép `data/minio`, `data/mattermost`, `data/superset` từ `/tmp/dxos-restore/data/` vào `deploy/data/` (các tệp thuộc root nên dùng `sudo`), rồi `docker compose up -d`.
+4. Chép `data/seaweedfs`, `data/mattermost`, `data/superset` từ `/tmp/dxos-restore/data/` vào `deploy/data/` (các tệp thuộc root nên dùng `sudo`), rồi `docker compose up -d`.
 
 ## Thông báo chat gửi lại
 

@@ -51,7 +51,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Kho tri thức Lab chỉ có 12 bài từ 9 văn bản công khai của HaUI | Chưa có bài về máy in, VPN, quy chế phòng máy của khoa, đặt phòng máy; sổ tay LMS là bản năm học 2019-2020 |
 | Gợi ý tri thức ticket Lab chưa có hybrid/gate chatbot | Ticket vẫn dùng retrieve legacy; đoạn gần nghĩa chưa chắc đúng sự cố. Chưa đánh giá riêng độ phù hợp trên dữ liệu ticket thật |
 | Snapshot thời tiết chỉ có 5 điểm ĐBSCL, chụp ngày 07/10/2026 | Chụp lại nếu cần dữ liệu dự phòng mới hơn |
-| Giới hạn tốc độ ở gateway tính theo IP (60 câu hỏi tri thức, 60 lần tạo ticket, 30 lần upload ảnh, chẩn đoán AI, đặt phòng hoặc đính kèm, 120 lượt đăng nhập, 600 lượt API mỗi phút) là số tạm; chưa thử tải | Superset dùng SQLite cho metadata, AI service là một tiến trình; chatbot có hàng đợi rerank CPU giới hạn |
+| Giới hạn tốc độ ở gateway tính theo IP và ở backend theo người dùng (60 câu hỏi tri thức, 60 lần tạo ticket, 30 lần upload ảnh, chẩn đoán AI, đặt phòng hoặc đính kèm, 120 lượt đăng nhập, 600 lượt API mỗi phút) là số tạm; chưa thử tải | Superset dùng SQLite cho metadata, AI service là một tiến trình; chatbot có hàng đợi rerank CPU giới hạn |
 
 ## 5. Chức năng chưa có
 
@@ -70,7 +70,6 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Backend tự gọi AI sau khi upload ảnh | Chẩn đoán AI do kỹ sư bấm; đang giữ thủ công có chủ đích |
 | Push thật (FCM, UnifiedPush) | Hộp thông báo chỉ kéo về khi mở app |
 | ClamAV bật mặc định | Đang tắt vì cần khoảng 1 GB RAM; chưa đo trên máy chủ thật |
-| Nâng `io.minio:minio` lên 8.6.0 | Sửa CVE-2025-59952 nhưng kéo theo OkHttp 5, cần đổi client lưu trữ và thử với MinIO thật; đang ghi nhận ở `.trivyignore` tới 31/12/2026 |
 | Hộp thông báo cho engineer và admin | Họ dùng hàng chờ và Mattermost |
 | Phun lặp lại trên cùng một chẩn đoán | Mỗi chẩn đoán một lần phun; phun lại phải qua báo cáo và chẩn đoán mới |
 | Thu hoạch thay hộ không có trong timeline workflow | Thu hoạch không có case; thông tin nằm trên vụ và log backend |
@@ -80,7 +79,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Email cho thông báo trong hộp thư | Chưa có. Cần `spring-boot-starter-mail`, tắt `management.health.mail` (biến `SPRING_MAIL_HOST` rỗng vẫn tạo bộ gửi và làm `/actuator/health` báo lỗi), hàng đợi gửi lại chung với tin chat, địa chỉ lấy từ Keycloak lúc gửi, bảng lựa chọn của từng tài khoản và màn hình bật tắt |
 | Che thông tin cá nhân trong log | Nội dung log chưa đi qua `PiiMask` |
 | Mật khẩu demo cũ của `tech1`, `tech2` | Stack có sẵn hai tài khoản này giữ mật khẩu `tech123`; chỉ stack dựng mới nhận `tech1234` |
-| Cải tiến core và vận hành chưa làm: metric, Alertmanager, giám sát từ bên ngoài, WAF Coraza, nâng cấp có đường lùi, compose profiles, kiểm giấy phép tự động, Dependabot, sổ kiểm toán chuỗi băm | Chưa làm; xem mục P1 của `docs/DX-Lab-core-ops-improvements.md` |
+| Cải tiến core và vận hành chưa làm: metric và Alertmanager, trang trạng thái công khai và cảnh báo sang chat cho giám sát từ bên ngoài, WAF Coraza, nâng cấp có đường lùi, compose profiles, kiểm giấy phép tự động, sổ kiểm toán chuỗi băm | Chưa làm |
 
 ## 6. Phụ thuộc người ngoài
 

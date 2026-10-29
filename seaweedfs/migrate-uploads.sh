@@ -21,25 +21,25 @@ set -a
 source .env
 set +a
 
-MINIO_CONTAINER="$(docker compose ps -q minio)"
-[[ -n "$MINIO_CONTAINER" ]] || { echo "The minio service is not running. Run: docker compose up -d minio" >&2; exit 1; }
-NETWORK="$(docker inspect -f '{{range $name, $_ := .NetworkSettings.Networks}}{{$name}}{{end}}' "$MINIO_CONTAINER")"
+STORE_CONTAINER="$(docker compose ps -q seaweedfs)"
+[[ -n "$STORE_CONTAINER" ]] || { echo "The seaweedfs service is not running. Run: docker compose up -d seaweedfs" >&2; exit 1; }
+NETWORK="$(docker inspect -f '{{range $name, $_ := .NetworkSettings.Networks}}{{$name}}{{end}}' "$STORE_CONTAINER")"
 
 SOURCE_DIR="$SOURCE"
 EXPECTED="$(find "$SOURCE_DIR" -type f | wc -l)"
 
 aws() {
   docker run --rm --network "$NETWORK" -v "$SOURCE_DIR:/source:ro" \
-    -e AWS_ACCESS_KEY_ID="$MINIO_ACCESS_KEY" -e AWS_SECRET_ACCESS_KEY="$MINIO_SECRET_KEY" \
-    -e AWS_DEFAULT_REGION=us-east-1 amazon/aws-cli --endpoint-url http://minio:9000 "$@"
+    -e AWS_ACCESS_KEY_ID="$S3_ACCESS_KEY" -e AWS_SECRET_ACCESS_KEY="$S3_SECRET_KEY" \
+    -e AWS_DEFAULT_REGION=us-east-1 amazon/aws-cli --endpoint-url http://seaweedfs:8333 "$@"
 }
 
-echo "==> Copying $EXPECTED file(s) from $SOURCE_DIR to bucket $MINIO_BUCKET"
-aws s3 sync /source "s3://$MINIO_BUCKET" --only-show-errors
+echo "==> Copying $EXPECTED file(s) from $SOURCE_DIR to bucket $S3_BUCKET"
+aws s3 sync /source "s3://$S3_BUCKET" --only-show-errors
 
 MISSING="$(comm -23 \
   <(cd "$SOURCE_DIR" && find . -type f | sed 's|^\./||' | sort) \
-  <(aws s3 ls "s3://$MINIO_BUCKET" --recursive | awk '{ $1=$2=$3=""; sub(/^ +/, ""); print }' | sort))"
+  <(aws s3 ls "s3://$S3_BUCKET" --recursive | awk '{ $1=$2=$3=""; sub(/^ +/, ""); print }' | sort))"
 if [[ -n "$MISSING" ]]; then
   echo "These files are not in the bucket yet; keep the old folder:" >&2
   echo "$MISSING" >&2

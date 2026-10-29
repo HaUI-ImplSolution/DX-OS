@@ -28,7 +28,7 @@ Chẩn đoán AI do kỹ sư kích hoạt trên web; nông dân thấy "Chờ ch
 - **Hộp thông báo:** `GET /api/v1/notifications` (30 mỗi trang, cuộn tới cuối thì tải trang kế), hỏi số chưa đọc khi mở app, khi foreground, khi quay lại màn Thửa và khi kéo làm mới; không có push.
 - **Thu hoạch:** đọc `harvest-readiness`, thu hoạch trước ngày dự kiến phải xác nhận kèm lý do, vụ còn cách ly thì khóa gửi; có màn đổi ngày dự kiến kèm lý do.
 - **Khai phun:** ở chi tiết báo cáo đã duyệt, nông dân nhập liều và ngày phun, chờ kỹ sư xác nhận (trong lúc chờ chưa thu hoạch được); bị từ chối thì khai lại.
-- **Ảnh báo cáo** tải từ `imageUrl` (URL MinIO có hạn qua gateway).
+- **Ảnh báo cáo** tải từ `imageUrl` (link có hạn của kho ảnh, qua gateway).
 - **HTTP cleartext** được phép ở mọi profile EAS trừ `production` (`app.config.ts`) để gọi Backend qua IP LAN.
   Địa chỉ HTTPS công khai dùng được ở mọi profile.
 

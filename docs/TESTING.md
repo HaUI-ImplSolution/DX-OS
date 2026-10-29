@@ -57,9 +57,14 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 | Đăng nhập nhân sự bằng TOTP (`STAFF_OTP_FLOW`) và chính sách mật khẩu | Có | Kiểm tay bằng script đăng nhập qua Keycloak ở cả hai chế độ | Không áp dụng |
 | Quét mã độc tệp tải lên bằng ClamAV: tệp nhiễm bị từ chối, ClamAV ngừng thì 503 | Có | Test đơn vị, kiểm tay với ClamAV thật và tệp EICAR | Không áp dụng |
 | Che số điện thoại, email, dãy số dài trong tin chat và câu hỏi gửi sang AI | Có | Test đơn vị | Không áp dụng |
+| Giới hạn theo người dùng ở backend (`UserRateLimitFilter`): vượt ngưỡng nhận 429 kèm `Retry-After` | Có | Chưa có test tự động; kiểm tay: gọi 11 lần `POST /api/v1/tickets` (Lab) bằng một token, lần 11 nhận 429; E2E tắt giới hạn | Không áp dụng |
 | Cầu dao khi gọi AI: dịch vụ lỗi thì trả 503 ngay | Có | Test đơn vị, kiểm tay với AI dừng | Không áp dụng |
 | Cảnh báo một địa chỉ đăng nhập sai nhiều lần | Có | Test đơn vị, kiểm tay với Mattermost giả | Không áp dụng |
-| Quét lỗ hổng phụ thuộc bằng Trivy (`ci-deps.yml`, hằng tuần) | Có | Chạy thử ở local, CI | Không áp dụng |
+| Quét lỗ hổng phụ thuộc, SBOM đã phân giải của backend và image của bên thứ ba bằng Trivy (`ci-deps.yml`, hằng tuần) | Có | Chạy thử ở local, CI | Không áp dụng |
+| Mọi route gateway không kiểm token đều nằm trong danh sách công khai (`deploy/demo/check_gateway_routes.py`) | Có | Job CI `gateway`, thử route thêm vào và route đổi trạng thái | Không áp dụng |
+| Luật phân lớp và ranh giới gói của backend (`ArchitectureTest`) | Có | Test đơn vị trong `mvn verify` | Không áp dụng |
+| Giám sát từ ngoài: web, portal, đăng nhập, backend và kho ảnh (`online.yml`, 30 phút một lần) | Có | Workflow theo lịch, chạy các lệnh của nó lên site thật | Không áp dụng |
+| Kiểm tra máy và `deploy/.env` trước khi chạy (`deploy/doctor.sh`) | Có | Chạy thử với `.env` đủ, thiếu, để trống và còn tên biến cũ | Không áp dụng |
 
 ## 2. Chuẩn bị
 
@@ -344,7 +349,7 @@ Cách dùng và ý nghĩa từng khối ở [`backend/dx-monitor/README.md`](../
 
 | # | Việc | Kết quả mong đợi |
 |---|---|---|
-| M1 | Dừng MinIO, tải ảnh báo cáo bằng token hợp lệ; `GET /api/v1/audit-logs?action=SERVER_ERROR` | Response `5xx`; một bản ghi `FAILED` có `request_id` bằng header `X-Request-Id`, `metadata` chỉ có mã và tên lớp ngoại lệ |
+| M1 | Dừng SeaweedFS (`docker compose stop seaweedfs`), tải ảnh báo cáo bằng token hợp lệ; `GET /api/v1/audit-logs?action=SERVER_ERROR` | Response `5xx`; một bản ghi `FAILED` có `request_id` bằng header `X-Request-Id`, `metadata` chỉ có mã và tên lớp ngoại lệ |
 | M2 | ADMIN gắn tài khoản chủ cho workspace đã có chủ (409) | Một bản ghi `ADMIN_ACTION_FAILED`; FARMER gây lỗi tương tự thì không có bản ghi |
 | M3 | Chưa đăng nhập mở `/monitor/`, rồi đăng nhập `admin1` | Chuyển sang Keycloak, đăng nhập xong vào trang; đã đăng nhập web app thì vào thẳng |
 | M4 | `engineer1` và tài khoản FARMER mở `/monitor/` và `/monitor/api/summary` | Trang 403 tiếng Việt cho trang, 403 cho API; không có dữ liệu |
@@ -370,14 +375,14 @@ Cách dùng và ý nghĩa từng khối ở [`backend/dx-monitor/README.md`](../
 | Backend dừng với thông báo `DXOS_APP` | Giá trị biến sai chính tả | Dùng `farm` hoặc `lab` |
 | Web hiện giao diện Farm khi backend chạy Lab | Cache trình duyệt, hoặc backend chưa lên khi tải trang | Tải lại cứng, đợi `/api/v1/system/status` UP |
 | Route 404 hoặc không bị giới hạn tốc độ | Gateway mount sai file cấu hình theo app | Kiểm `DXOS_APP` và file gateway mà compose mount |
-| Tạo ticket, upload ảnh, chẩn đoán AI, đặt phòng hoặc đính kèm nhận 429 | Giới hạn mỗi phút theo địa chỉ: 60 lần tạo ticket, 30 lần các thao tác còn lại | Đợi một phút rồi chạy lại |
+| Tạo ticket, upload ảnh, chẩn đoán AI, đặt phòng hoặc đính kèm nhận 429 | Gateway giới hạn mỗi phút theo địa chỉ (60 lần tạo ticket, 30 lần các thao tác còn lại); backend giới hạn thêm theo người dùng, bảng ngưỡng ở `deploy/OPERATIONS.md` | Đợi một phút rồi chạy lại; trả lời của backend có `Retry-After`. Khi thử tải, đặt `RATE_LIMIT_ENABLED=false` trong `deploy/.env` |
 | Đăng nhập bị từ chối dù đúng mật khẩu | Keycloak khóa tạm tài khoản sau 5 lần đăng nhập sai | Đợi hết thời gian chờ (tối đa 15 phút) hoặc tắt **Temporarily locked** của người dùng trong Admin Console |
 | Màn hình giám sát bắt đăng nhập lại hoặc tải lại trang | `monitor` vừa khởi động lại, phiên đăng nhập nằm trong bộ nhớ | Đăng nhập lại; đây là hành vi bình thường |
 | Màn hình giám sát không có sự kiện gateway | `MONITOR_INGEST_KEY` lệch giữa `monitor` và `apisix.yaml`, hoặc `monitor` chưa lên khi gateway gửi | `./switch-app.sh <app>` để gateway nhận khóa mới; `docker compose logs apisix \| grep "http logger"` |
 | Log gateway có `remote_addr` là IP container | Dải mạng Docker nằm ngoài `real_ip_from` của `apisix/config.yaml`, hoặc request không đi qua Cloudflare | Kiểm `docker network inspect`, bổ sung dải vào `real_ip_from`; xem [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md) |
 | Không tạo được extension khi khởi động Lab | Vai của DB không đủ quyền với `btree_gist` | Dùng image PostgreSQL có extension; cấp quyền tạo extension cho vai chủ DB |
 | Hỏi đáp Lab không có kết quả | Job `rag-ingest` chưa xong hoặc lỗi, hoặc `DXOS_APP` không phải `lab` lúc dựng | `docker compose logs rag-ingest`; chạy lại bằng `docker compose up -d --force-recreate rag-ingest` |
-| Ảnh không hiện | Route ảnh hoặc tên bucket sai | Kiểm `MINIO_BUCKET` và route `/dxos-uploads/*`; `./reset.sh --yes` |
+| Ảnh không hiện | Route ảnh hoặc tên bucket sai | Kiểm `S3_BUCKET` và route `/dxos-uploads/*`; `./reset.sh --yes` |
 | Thiếu phần trọng số bệnh hoặc `crop_classifier.onnx` | Checkout không đủ trọng số | `git status`, `git pull`; xem `ai/weights/` |
 | Dựng lâu hoặc hết dung lượng | Lần đầu tải image lớn | Đợi, hoặc dọn Docker (`docker system df`) |
 
@@ -385,10 +390,10 @@ Cách dùng và ý nghĩa từng khối ở [`backend/dx-monitor/README.md`](../
 
 | Mục | Kết quả | Ghi chú |
 |---|---|---|
-| CI trên pull request: Backend, AI, Infra, E2E Farm và Lab, Dependencies | Đạt | Ngày 28/10/2026 ở commit `6560c92`; gồm `mvn verify` cả sáu module, `pytest`, job `backup-drill`, gitleaks, quét Trivy |
-| Backend `mvn verify` (sáu module, Testcontainers) | Đạt | Job `CI Backend` ngày 28/10/2026; số test chạy xem ở log job |
+| CI trên pull request: Backend, AI, Infra, E2E Farm và Lab, Dependencies | Đạt | Ngày 29/10/2026 ở commit `1f61ab4`; gồm `mvn verify` cả sáu module, `pytest`, job `backup-drill`, gitleaks, quét Trivy (phụ thuộc, SBOM và image), kiểm route gateway |
+| Backend `mvn verify` (sáu module, Testcontainers) | Đạt | Job `CI Backend` ngày 29/10/2026; số test chạy xem ở log job |
 | BI `python -m unittest test_chart_query_context` trong `bi/` | Đạt | 22 test |
-| AI `pytest` trong `ai/` | Đạt | Job `CI AI` ngày 28/10/2026; số test chạy xem ở log job |
+| AI `pytest` trong `ai/` | Đạt | Job `CI AI` ngày 29/10/2026; số test chạy xem ở log job |
 | Đánh giá truy xuất RAG và thử tải HTTP retrieval | Đạt | Ngày 26 và 27/10/2026 qua `./ai/evaluate.sh`; số liệu ở mục 3 |
 | Web và mobile `tsc` | Đạt | Không lỗi |
 | Ranh giới app và core, seed Farm, nguồn tri thức khớp registry | Đạt | Không có kết quả vi phạm |

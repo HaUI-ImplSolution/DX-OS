@@ -20,10 +20,11 @@ public class OpenApiConfig {
   @Bean
   public OpenAPI dxosOpenApi(ObjectProvider<AppModule> appModules) {
     String appName = appModules.stream().findFirst().map(AppModule::name).orElse("DX-OS");
-    return new OpenAPI()
-        .info(new Info().title(appName + " API").version("v1")
-            .description("DX-OS backend — operational data, structured knowledge lookup and"
-                + " approval workflow of the running app."))
+    return new OpenAPI().info(new Info().title(appName + " API").version("v1")
+        .description("DX-OS backend — operational data, structured knowledge lookup and"
+            + " approval workflow of the running app. Calls that create a record accept an"
+            + " Idempotency-Key header (a UUID). A user who calls a costly endpoint too often in"
+            + " one minute gets 429 with a Retry-After header."))
         .components(new Components()
             .addSecuritySchemes(BEARER_SCHEME,
                 new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer")

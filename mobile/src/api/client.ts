@@ -1,7 +1,7 @@
 import { API_BASE_URL } from "@/config";
 import { clearSession } from "@/auth/session";
 import { getValidAccessToken } from "@/auth/tokens";
-import { errorMessageFor } from "./errorMessages";
+import { errorMessageFor, statusMessageFor } from "./errorMessages";
 import type { ApiResponse } from "@/types";
 
 const API_V1 = `${API_BASE_URL}/api/v1`;
@@ -51,7 +51,7 @@ async function unwrap<T>(status: number, body: ApiResponse<T> | null): Promise<T
     await clearSession();
   }
   if (status < 200 || status >= 300 || !body?.success) {
-    const message = errorMessageFor(body?.errorCode, body?.message ?? `Lỗi HTTP ${status}`);
+    const message = errorMessageFor(body?.errorCode, body?.message ?? statusMessageFor(status));
     throw new ApiError(message, status, body?.data);
   }
   return body.data;

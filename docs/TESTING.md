@@ -108,7 +108,7 @@ Thuốc, liều và thời gian cách ly (PHI) do Backend cung cấp.
 | AI | Định dạng, nguồn, nhất quán bệnh, từ chối và timeout | 169 test, 50 subtest đạt |
 | Backend | Gateway, lưu giải thích, phân quyền và thay đổi rule khi chờ AI | 24 unit test, kiểm thử tích hợp database và đóng gói sáu module đạt |
 | Giao diện | Nội dung hợp lệ, thông báo dự phòng, dữ liệu cũ, màn hình nhỏ và chữ lớn trên web | 53 kiểm tra render, 6 ca browser đạt |
-| Qwen thực tế | Hỏi đáp Farm/Lab và giải thích ảnh bệnh | Đã kiểm tra câu trả lời và nguồn; nội dung sinh sai định dạng, gán sai điều kiện hoặc đối tượng ở Lab được ẩn |
+| Qwen thực tế | Hỏi đáp Farm/Lab và giải thích ảnh bệnh | Đã kiểm tra câu trả lời và nguồn; nội dung sinh sai định dạng, gán sai điều kiện hoặc đối tượng ở Lab được ẩn; 15 câu tìm bệnh từ triệu chứng trả tài liệu thay vì để Qwen chọn bệnh |
 | Phân tách dữ liệu | Truy xuất và nạp tri thức theo namespace Farm/Lab | Đạt; Lab có 12 tài liệu, 78 đoạn |
 | Tương thích | Request cũ, dữ liệu chưa có giải thích và quay về phiên bản trước | Đọc lại được dữ liệu, giữ nguyên đoạn trích tham khảo |
 | Luồng sử dụng | Hỏi đáp web Farm/Lab, chẩn đoán, duyệt và xem lại trên mobile | Chủ dự án đã kiểm tay; E2E Farm 10/10, Lab 16/16 |

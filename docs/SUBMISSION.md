@@ -67,7 +67,7 @@ Một lõi, hai ứng dụng: DX-Farm trước, đổi sang DX-Lab bằng một 
 | AI hoặc Ollama chưa sẵn sàng | Portal hiện AI ngừng; Farm chuyển sang chẩn đoán nhập thủ công (`POST .../diagnosis`) và nói rõ đây là đường dự phòng; gợi ý phân loại của Lab vẫn chạy bằng luật |
 | Mạng không có | Thời tiết trả snapshot (`isSnapshot=true`); mobile gửi lại khi có mạng |
 | Điện thoại không kết nối | Bỏ đoạn mobile, hoặc dùng emulator hoặc video quay sẵn |
-| Máy yếu không chạy Ollama | Chatbot web thông báo chưa thể trả lời, nguồn tham khảo vẫn mở được; chẩn đoán giữ CV/rule/evidence và ẩn phần Qwen |
+| Máy yếu không chạy được Qwen (VPS hiện tại) | Đặt `AI_ANSWER_GENERATION=false`: chatbot web trả tài liệu tham khảo mở sẵn; chẩn đoán giữ CV/rule/evidence và ẩn phần Qwen |
 | Superset trống | Chạy lại `python3 deploy/demo/seed_demo.py`; chart "Thửa đang cách ly" và "Tỷ lệ AI đúng/sai" cần rule được duyệt và chẩn đoán AI |
 | Token cũ báo 401 sau khi dựng sạch | Đăng xuất rồi đăng nhập lại |
 

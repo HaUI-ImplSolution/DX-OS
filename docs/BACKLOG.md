@@ -17,7 +17,6 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 
 | Việc | Phạm vi |
 |---|---|
-| Chatbot trên VPS | CPU ảo không có SSE4.1/AVX nên rerank 20 ứng viên vượt ngân sách 6 giây và Qwen luôn quá 30 giây. Khi lên bản mới đặt `AI_ANSWER_GENERATION=false`, `AI_CHAT_CANDIDATE_COUNT=10` rồi đo lại; VPS đang chạy bản `sha-e97697c` |
 | Hỏi đáp Farm có thể nêu ý không có trong nguồn | Câu hỏi về một bệnh đã nêu tên vẫn có thể nhận nguyên nhân hoặc cách phòng không có trong nguồn |
 
 ## 3. Chưa kiểm thử
@@ -39,6 +38,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Crop classifier nhận 6/15 ảnh ngô và 15/15 ảnh mía là lúa, chặn 8/50 ảnh lúa nền ruộng | Classifier 10 lớp không có lớp ngô, mía, cỏ; cần thay classifier hoặc thêm dữ liệu ngoài miền; kỹ sư vẫn chốt bệnh |
 | Ngưỡng độ nét mới thử trên ảnh công khai và ảnh mờ nhân tạo | Chưa có ảnh mờ thật ngoài ruộng; chưa tách vùng lá |
 | Chẩn đoán AI chạy trên CPU mất khoảng 50 giây mỗi ảnh | Đo trên máy chủ 8 nhân; chưa có GPU hay mô hình nhỏ hơn để rút ngắn; lần gọi đầu sau khi khởi động lại AI nạp mô hình và có thể vượt 60 giây chờ của gateway, nhận 504 (kết quả vẫn được tạo) |
+| Qwen tắt trên VPS | CPU ảo chỉ có SSE2/SSE3 nên Qwen đọc prompt khoảng 2 token/giây; VPS đặt `AI_ANSWER_GENERATION=false` và `AI_CHAT_CANDIDATE_COUNT=10`, chatbot trả tài liệu nguyên văn trong khoảng 5 giây. Bật lại Qwen cần CPU có AVX2 |
 | Nộp báo cáo cần AI service chạy | Chưa có đường nhận ảnh chưa kiểm khi AI dừng; hàng đợi offline thử lại |
 | Chưa có mô hình nhận diện sâu hại | Classifier nhận Healthy và 5 bệnh lá |
 | Hoàn thiện coverage tri thức canh tác Farm | Đã có 7 tài liệu tổng quát; trang tập huấn còn chủ yếu mục lục, cần nội dung tài liệu con và nguồn cho các chủ đề còn thiếu |

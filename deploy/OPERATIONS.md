@@ -226,6 +226,12 @@ Lỗi 4xx (yêu cầu sai) không tính là lỗi dịch vụ.
 Backend không tự gọi lại một lượt AI đã lỗi, vì mỗi lượt chẩn đoán trên CPU mất khoảng 50 giây.
 Trong log backend, dòng `AI service is paused after repeated failures` cho biết cầu dao đang mở.
 
+## Máy chủ CPU yếu
+
+Qwen và rerank của chatbot chạy trên CPU; CPU không có AVX2 (kiểm bằng `grep -c avx2 /proc/cpuinfo`, kết quả `0`) chạy Qwen quá chậm cho giới hạn 30 giây.
+Trên máy như vậy, đặt `AI_ANSWER_GENERATION=false` trong `deploy/.env`: chatbot trả các đoạn tài liệu nguyên văn và không gọi Qwen.
+Câu hỏi trong phạm vi mà trả `RERANK_UNAVAILABLE` nghĩa là rerank vượt 6 giây; giảm `AI_CHAT_CANDIDATE_COUNT` (mặc định 20, ví dụ 10) rồi chạy lại `./update.sh`.
+
 ## Màn hình giám sát
 
 Dịch vụ `monitor` gom log gateway, `audit_log`, sự kiện đăng nhập của Keycloak và trạng thái dịch vụ vào một màn hình `/monitor/` cho ADMIN, kèm cảnh báo Mattermost.

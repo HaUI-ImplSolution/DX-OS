@@ -730,7 +730,8 @@ Bản phát hành đầu tiên của DX-OS.
 
 **Đã xong — Câu hỏi tìm bệnh từ triệu chứng:**
 
-- Hỏi đáp Farm không nêu tên bệnh mà hỏi "... là bệnh gì", "... do đâu", "có phải bệnh không" thì không gọi Qwen, trả `extractive` không kèm `reason`.
+- Hỏi đáp Farm không nêu tên bệnh mà hỏi "... là bệnh gì", "có phải bệnh không", hoặc tả triệu chứng (vết, đốm, vàng, cháy, thối...) rồi hỏi "... là gì", "... do đâu" thì không gọi Qwen, trả `extractive` không kèm `reason`.
+- Câu hỏi kiến thức không tả triệu chứng, như "Dấu hiệu lúa thiếu đạm là gì?", vẫn do Qwen trả lời.
 
 **Đã xong — SHA-256 của crop classifier:**
 
@@ -1569,6 +1570,14 @@ Bản phát hành đầu tiên của DX-OS.
 - **Còn thiếu**: SPDX header đầu mỗi file mã nguồn tự viết — việc sửa hàng loạt file, để riêng một lượt khác.
 
 ## Tài liệu (root, `docs`, `ai/`)
+
+### 2026-10-29
+
+**Đã xong — Chatbot trên máy chủ CPU yếu:**
+
+- `deploy/OPERATIONS.md` có mục "Máy chủ CPU yếu": cách kiểm AVX2, `AI_ANSWER_GENERATION` và `AI_CHAT_CANDIDATE_COUNT`.
+- `docs/BACKLOG.md` ghi Qwen tắt trên VPS; `docs/SUBMISSION.md` và `docs/TESTING.md` khớp với hành vi khi tắt Qwen và câu tìm bệnh từ triệu chứng.
+- `README.md`, `README_EN.md` nêu yêu cầu CPU có AVX2 cho Qwen; `ai/README.md`, `ai/app/rag/README.md`, `ai/app/cv/README.md` có hai biến mới và SHA-256 của crop classifier.
 
 ### 2026-10-28
 

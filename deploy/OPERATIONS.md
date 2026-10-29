@@ -181,6 +181,20 @@ Mỗi 5 phút, một địa chỉ bị từ chối từ 10 lần trong 10 phút 
 Đổi ngưỡng ở `audit.alert.*` trong `backend/dx-host/src/main/resources/application.yaml`.
 Không có webhook của kênh thì không gửi.
 
+## Kiểm tra trước khi chạy
+
+`./doctor.sh` (trong `deploy/`) chỉ đọc, không đổi gì và không in giá trị nào của `.env`.
+Nó kiểm Docker và Compose, RAM, ổ đĩa, `deploy/.env` và các cổng.
+`.env` được so với các biến `${NAME:?}` mà Compose bắt buộc phải có: biến thiếu hoặc để trống bị báo `FAIL`, biến không còn trong `.env.example` bị báo `WARN`.
+Các cổng đã bị chiếm chỉ được kiểm khi stack chưa chạy.
+Thoát với mã 1 khi có `FAIL`, nên chạy trước `./update.sh` và `./start.sh` trên máy chủ.
+
+## Giám sát từ ngoài
+
+Workflow `online.yml` chạy mỗi 30 phút trên GitHub, gọi web, portal, trang đăng nhập và `/api/v1/system/status`, rồi báo lỗi qua GitHub khi một đường không trả 200 hoặc khi `backend` hoặc `storage` không `UP`.
+Địa chỉ mặc định là `https://khuongdev.io.vn`; đặt biến repository `PUBLIC_URL` để kiểm địa chỉ khác.
+GitHub chỉ chạy workflow theo lịch từ nhánh mặc định, và tắt chúng sau 60 ngày repo không có hoạt động.
+
 ## Sao lưu và khôi phục
 
 `./backup.sh` (trong `deploy/`) chụp một bản sao lưu mã hóa của những gì không dựng lại được từ repo.

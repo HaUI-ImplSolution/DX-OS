@@ -59,7 +59,11 @@ Ba mức: có trong code, đã kiểm thử, có dữ liệu demo.
 | Che số điện thoại, email, dãy số dài trong tin chat và câu hỏi gửi sang AI | Có | Test đơn vị | Không áp dụng |
 | Cầu dao khi gọi AI: dịch vụ lỗi thì trả 503 ngay | Có | Test đơn vị, kiểm tay với AI dừng | Không áp dụng |
 | Cảnh báo một địa chỉ đăng nhập sai nhiều lần | Có | Test đơn vị, kiểm tay với Mattermost giả | Không áp dụng |
-| Quét lỗ hổng phụ thuộc và image của bên thứ ba bằng Trivy (`ci-deps.yml`, hằng tuần) | Có | Chạy thử ở local, CI | Không áp dụng |
+| Quét lỗ hổng phụ thuộc, SBOM đã phân giải của backend và image của bên thứ ba bằng Trivy (`ci-deps.yml`, hằng tuần) | Có | Chạy thử ở local, CI | Không áp dụng |
+| Mọi route gateway không kiểm token đều nằm trong danh sách công khai (`deploy/demo/check_gateway_routes.py`) | Có | Job CI `gateway`, thử route thêm vào và route đổi trạng thái | Không áp dụng |
+| Luật phân lớp và ranh giới gói của backend (`ArchitectureTest`) | Có | Test đơn vị trong `mvn verify` | Không áp dụng |
+| Giám sát từ ngoài: web, portal, đăng nhập, backend và kho ảnh (`online.yml`, 30 phút một lần) | Có | Workflow theo lịch, chạy các lệnh của nó lên site thật | Không áp dụng |
+| Kiểm tra máy và `deploy/.env` trước khi chạy (`deploy/doctor.sh`) | Có | Chạy thử với `.env` đủ, thiếu, để trống và còn tên biến cũ | Không áp dụng |
 
 ## 2. Chuẩn bị
 

@@ -17,6 +17,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 
 | Việc | Phạm vi |
 |---|---|
+| Nâng Spring Boot để Jackson và Tomcat lên bản đã vá | SBOM của backend có 14 lỗi HIGH hoặc CRITICAL ở Jackson 2.21.5 và 3.1.5, và Tomcat 11.0.24 (4 lỗi mức CRITICAL); job `backend-sbom` của `ci-deps.yml` đang cảnh báo, chưa chặn |
 | Hỏi đáp Farm có thể nêu ý không có trong nguồn | Câu hỏi về một bệnh đã nêu tên vẫn có thể nhận nguyên nhân hoặc cách phòng không có trong nguồn |
 
 ## 3. Chưa kiểm thử

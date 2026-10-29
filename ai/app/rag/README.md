@@ -98,8 +98,10 @@ Nguồn của Lab được giới hạn theo namespace; giải thích chẩn đo
 - Evidence hỏi đáp Farm gửi Qwen không kèm dòng mã bệnh, tên bệnh và cây trồng.
 - Câu trả lời chỉ lặp lại câu hỏi hoặc tên tài liệu không được tính là `generated`.
 - Qwen không sinh thuốc, liều hoặc PHI, không sửa evidence và dữ liệu Backend; hỏi đáp không tự xác nhận bệnh cho người dùng.
+- Câu hỏi Farm tìm bệnh từ triệu chứng mà không nêu tên bệnh (ví dụ "... là bệnh gì", "... do đâu") không gọi Qwen; câu trả lời là các đoạn tài liệu đã rerank.
 - Mode `generated` chứa nội dung đã qua kiểm tra.
   Mode `extractive`/`insufficient_context` không trả văn bản dự phòng; hệ thống trả mã lý do và giữ đoạn trích tham khảo.
+  `extractive` không kèm lý do nghĩa là đoạn trích chính là câu trả lời (Qwen bị tắt hoặc câu hỏi tìm bệnh từ triệu chứng).
 - Mục phụ sai định dạng được loại bỏ; phần trả lời chính hợp lệ vẫn được giữ.
   Giao diện không render Markdown/HTML từ model.
 - Chatbot chờ CPU tối đa 12 giây, rerank tối đa 6 giây.

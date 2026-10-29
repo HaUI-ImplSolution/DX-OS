@@ -16,6 +16,7 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 - Giám sát: cảnh báo một địa chỉ đăng nhập sai nhiều lần.
 - Câu trả lời Qwen: Lab giữ đúng điều kiện và đối tượng của quy định; Farm trả lời được câu hỏi mô tả bệnh dài và câu "mô tả bệnh"; gỡ đường trả lời RAG legacy.
 - Máy chủ có CPU yếu tắt được câu trả lời Qwen và giảm số đoạn đưa vào rerank bằng `deploy/.env`.
+- Hỏi đáp Farm tìm bệnh từ triệu chứng trả tài liệu thay cho câu trả lời của Qwen; AI kiểm SHA-256 của crop classifier; mô tả triệu chứng gửi sang AI được che thông tin cá nhân.
 - Vận hành và CI: sinh `deploy/.env` với mật khẩu ngẫu nhiên, quét lỗ hổng phụ thuộc bằng Trivy.
 
 ## [1.0.3] - 2026-10-27
@@ -74,6 +75,12 @@ Bản phát hành đầu tiên của DX-OS.
 - Tài liệu và nguồn mở: `LICENSE`, `LICENSES.md`, SBOM CycloneDX, `CONTRIBUTING.md`, mẫu issue và pull request.
 
 ## Backend (Spring Boot — `backend`)
+
+### 2026-10-29
+
+**Đã xong — Che thông tin cá nhân trong mô tả triệu chứng:**
+
+- Mô tả triệu chứng Farm gửi sang AI để gợi ý bệnh đi qua `PiiMask`.
 
 ### 2026-10-28
 
@@ -721,6 +728,14 @@ Bản phát hành đầu tiên của DX-OS.
 
 ### 2026-10-29
 
+**Đã xong — Câu hỏi tìm bệnh từ triệu chứng:**
+
+- Hỏi đáp Farm không nêu tên bệnh mà hỏi "... là bệnh gì", "... do đâu", "có phải bệnh không" thì không gọi Qwen, trả `extractive` không kèm `reason`.
+
+**Đã xong — SHA-256 của crop classifier:**
+
+- `CROP_CLASSIFIER_SHA256` bắt buộc; tệp ONNX không khớp thì AI không khởi động.
+
 **Đã xong — Chạy trên CPU chậm:**
 
 - `ANSWER_GENERATION_ENABLED=false` bỏ bước gọi Qwen: hỏi đáp trả `mode: "extractive"` không kèm `reason`, giải thích chẩn đoán không hiện.
@@ -1051,6 +1066,10 @@ Bản phát hành đầu tiên của DX-OS.
 **Đã xong — Cấu hình chatbot cho CPU chậm:**
 
 - `AI_ANSWER_GENERATION` (mặc định `true`) và `AI_CHAT_CANDIDATE_COUNT` (mặc định 20) được chuyển vào AI.
+
+**Đã xong — SHA-256 của crop classifier:**
+
+- `AI_CROP_CLASSIFIER_SHA256` bắt buộc; `make_ci_env.py` tính giá trị từ `ai/weights/crop_classifier.onnx`.
 
 ### 2026-10-28
 

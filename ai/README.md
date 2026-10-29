@@ -92,8 +92,8 @@ Compose lấy từ [`deploy/.env.example`](../deploy/.env.example); chạy local
 | `CV_DEVICE` | `auto`, `cpu` hoặc `cuda` |
 | `CV_WEIGHTS_PATH`, `CV_WEIGHTS_SHA256` | Checkpoint `ai/models/efficientnetv2m_rice_disease.pth` khi chạy local; trong image là `/opt/dxos/models/efficientnetv2m_rice_disease.pth`; SHA-256 bắt buộc khi nạp |
 | `CV_CLASS_CONTRACT_PATH` | Class contract của CV (mặc định `data/structured/class_contract.json`) |
-| `CROP_CLASSIFIER_PATH` | Artifact crop classifier (mặc định `ai/weights/crop_classifier.onnx`) |
-| `AI_CV_WEIGHTS_PATH`, `AI_CV_WEIGHTS_SHA256`, `AI_CROP_CLASSIFIER_PATH` | Đường dẫn model bệnh trong image, checksum riêng và đường dẫn crop classifier phía host |
+| `CROP_CLASSIFIER_PATH`, `CROP_CLASSIFIER_SHA256` | Artifact crop classifier (mặc định `ai/weights/crop_classifier.onnx`); SHA-256 bắt buộc khi nạp |
+| `AI_CV_WEIGHTS_PATH`, `AI_CV_WEIGHTS_SHA256`, `AI_CROP_CLASSIFIER_PATH`, `AI_CROP_CLASSIFIER_SHA256` | Đường dẫn model bệnh trong image, checksum riêng, đường dẫn crop classifier phía host và checksum của nó |
 
 ## Chạy
 
@@ -103,14 +103,17 @@ cd ai && python -m venv .venv && source .venv/bin/activate
 pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
 python -m scripts.assemble_cv_weights
 export CV_WEIGHTS_SHA256=$(cat weights/dx-farm-efficientnetv2m/model.pth.part-* | sha256sum | cut -d' ' -f1)
+export CROP_CLASSIFIER_SHA256=$(sha256sum weights/crop_classifier.onnx | cut -d' ' -f1)
 uvicorn app.main:app --reload --port 8000
 
 # Compose, từ thư mục deploy (BACKEND_TO_AI_API_KEY và AI_TO_BACKEND_API_KEY phải khác rỗng)
 docker compose up -d --build postgres backend ai
 ```
 
-- Checkout có ba phần model bệnh và `crop_classifier.onnx` trong `ai/weights/`; Docker build ghép model bệnh vào image, crop classifier vẫn mount read-only. Thiếu hoặc sai SHA-256 thì AI từ chối khởi động; restart không tải trọng số bệnh.
+- Checkout có ba phần model bệnh và `crop_classifier.onnx` trong `ai/weights/`; Docker build ghép model bệnh vào image, crop classifier vẫn mount read-only.
+  Thiếu hoặc sai SHA-256 của một trong hai model thì AI từ chối khởi động; restart không tải trọng số bệnh.
   Giá trị `AI_CV_WEIGHTS_SHA256` trong `deploy/.env` là SHA-256 của ba phần nối đúng thứ tự; từ `ai/`, tính bằng `cat weights/dx-farm-efficientnetv2m/model.pth.part-* | sha256sum`, chỉ lưu giá trị vào env riêng.
+  `AI_CROP_CLASSIFIER_SHA256` tính bằng `sha256sum weights/crop_classifier.onnx`; `deploy/demo/make_ci_env.py` tự điền cả hai giá trị khi sinh `deploy/.env`.
 - Trên CPU x86 không có SSE4.1 (ví dụ CPU ảo "Common KVM processor"), AI tự tắt oneDNN và NNPACK của PyTorch để chạy được (`app/core/torch_cpu.py`).
 - AI không dùng migration; Backend phải khởi tạo database vector trước khi gọi RAG.
 - Stack Compose có `ollama` và `ollama-init` (tải `OLLAMA_MODEL` trước khi AI khởi động) và job `rag-ingest` chạy trước AI.
@@ -222,6 +225,6 @@ Chạy từ `ai/`:
 - CV nhận diện Healthy và 5 bệnh lá lúa; accuracy 89,43% trên 1.466 ảnh theo báo cáo người huấn luyện, chưa phải accuracy toàn pipeline; kỹ sư chốt bệnh tại Backend.
 - RAG chỉ tìm được kiến thức đã ingest; Ollama lỗi hoặc quá thời gian (30 giây với hỏi đáp, 20 giây với giải thích chẩn đoán) thì không hiển thị nội dung sinh, giữ evidence nguyên văn.
 - CPU không có AVX chạy Qwen quá chậm cho các giới hạn trên (khoảng 2 token/giây khi đọc prompt), nên đặt `ANSWER_GENERATION_ENABLED=false`.
-- Hỏi đáp Farm chỉ chặn được tên bệnh có trong contract CV; Qwen vẫn có thể nêu tên bệnh, nguyên nhân hoặc cách phòng không có trong nguồn ([`docs/BACKLOG.md`](../docs/BACKLOG.md)).
+- Hỏi đáp Farm về một bệnh đã nêu tên vẫn có thể nhận nguyên nhân hoặc cách phòng không có trong nguồn ([`docs/BACKLOG.md`](../docs/BACKLOG.md)).
 - `ai/` phân phối theo AGPL-3.0 ([`LICENSE`](./LICENSE)); Backend gọi AI qua HTTP nên không là tác phẩm phái sinh.
   Danh sách thành phần ở [`LICENSES.md`](../LICENSES.md).

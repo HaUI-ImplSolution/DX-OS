@@ -18,7 +18,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Việc | Phạm vi |
 |---|---|
 | Chatbot trên VPS | CPU ảo không có SSE4.1/AVX nên rerank 20 ứng viên vượt ngân sách 6 giây và Qwen luôn quá 30 giây. Khi lên bản mới đặt `AI_ANSWER_GENERATION=false`, `AI_CHAT_CANDIDATE_COUNT=10` rồi đo lại; VPS đang chạy bản `sha-e97697c` |
-| Hỏi đáp Farm có thể tự gọi tên bệnh từ mô tả triệu chứng | Qwen thật từng trả tên bệnh không có trong nguồn (ví dụ "tuyết lúa") và nêu nguyên nhân hoặc cách phòng không có trong nguồn; chỉ chặn được tên bệnh đã biết trong contract CV |
+| Hỏi đáp Farm có thể nêu ý không có trong nguồn | Câu hỏi về một bệnh đã nêu tên vẫn có thể nhận nguyên nhân hoặc cách phòng không có trong nguồn |
 
 ## 3. Chưa kiểm thử
 
@@ -37,7 +37,6 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 |---|---|
 | Model bệnh chưa được đánh giá độc lập ngoài ruộng | Accuracy 89,43% trên 1.466 ảnh theo người huấn luyện, xem [`AI_EVALUATION.md`](./AI_EVALUATION.md); cần ít nhất 100 ảnh ruộng thật có nhãn kỹ sư để đo toàn pipeline và ngưỡng 0.70 |
 | Crop classifier nhận 6/15 ảnh ngô và 15/15 ảnh mía là lúa, chặn 8/50 ảnh lúa nền ruộng | Classifier 10 lớp không có lớp ngô, mía, cỏ; cần thay classifier hoặc thêm dữ liệu ngoài miền; kỹ sư vẫn chốt bệnh |
-| Crop classifier không đối chiếu SHA-256 | Model khác cùng contract vẫn nạp được; chỉ checkpoint bệnh có SHA-256 |
 | Ngưỡng độ nét mới thử trên ảnh công khai và ảnh mờ nhân tạo | Chưa có ảnh mờ thật ngoài ruộng; chưa tách vùng lá |
 | Chẩn đoán AI chạy trên CPU mất khoảng 50 giây mỗi ảnh | Đo trên máy chủ 8 nhân; chưa có GPU hay mô hình nhỏ hơn để rút ngắn; lần gọi đầu sau khi khởi động lại AI nạp mô hình và có thể vượt 60 giây chờ của gateway, nhận 504 (kết quả vẫn được tạo) |
 | Nộp báo cáo cần AI service chạy | Chưa có đường nhận ảnh chưa kiểm khi AI dừng; hàng đợi offline thử lại |
@@ -79,8 +78,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Thông báo chat chỉ có gửi lại khi lỗi tạm thời | `chat_outbox` lưu tin sau lần gửi đầu thất bại; tin chưa kịp vào bảng khi backend tắt giữa lúc commit và lúc gửi vẫn mất, chưa có cảnh báo khi tồn đọng |
 | Trường "Phương pháp áp dụng" và lượng nước của phác đồ | `TreatmentRule.notes` trộn nhiều loại thông tin; cần field riêng được chuyên gia xác thực |
 | Email cho thông báo trong hộp thư | Chưa có. Cần `spring-boot-starter-mail`, tắt `management.health.mail` (biến `SPRING_MAIL_HOST` rỗng vẫn tạo bộ gửi và làm `/actuator/health` báo lỗi), hàng đợi gửi lại chung với tin chat, địa chỉ lấy từ Keycloak lúc gửi, bảng lựa chọn của từng tài khoản và màn hình bật tắt |
-| Che thông tin cá nhân ở mọi đường ra | Mới phủ tin chat và câu hỏi tri thức sang AI; chưa phủ văn bản triệu chứng của Farm gửi sang AI và nội dung log |
-| Realm Keycloak đã chạy trên máy chủ thiếu chính sách mật khẩu và luồng TOTP | Keycloak không nạp lại realm đã có; áp dụng bằng Admin Console theo `sso/README.md` hoặc dựng lại realm |
+| Che thông tin cá nhân trong log | Nội dung log chưa đi qua `PiiMask` |
 | Mật khẩu demo cũ của `tech1`, `tech2` | Stack có sẵn hai tài khoản này giữ mật khẩu `tech123`; chỉ stack dựng mới nhận `tech1234` |
 | Cải tiến core và vận hành chưa làm: metric, Alertmanager, giám sát từ bên ngoài, WAF Coraza, nâng cấp có đường lùi, compose profiles, kiểm giấy phép tự động, Dependabot, sổ kiểm toán chuỗi băm | Chưa làm; xem mục P1 của `docs/DX-Lab-core-ops-improvements.md` |
 

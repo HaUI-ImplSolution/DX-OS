@@ -2,6 +2,8 @@
 """Local crop classifier; its score is not proof that an image depicts rice."""
 
 import ast
+import hashlib
+import re
 
 import numpy as np
 from PIL import Image
@@ -102,11 +104,19 @@ class CropClassifier:
 
 def load_crop_classifier(settings: Settings | None = None) -> CropClassifier:
     settings = settings or get_settings()
-    # ponytail: same-contract weight replacements are accepted; version supplied
-    # artifacts and regression-test each replacement.
+    expected_sha256 = (settings.crop_classifier_sha256 or "").strip().lower()
+    if not re.fullmatch(r"[0-9a-f]{64}", expected_sha256):
+        raise ValueError(
+            "CROP_CLASSIFIER_SHA256 must be configured as 64 hexadecimal characters"
+        )
     path = settings.crop_classifier_path
     if not path.is_file() or not path.stat().st_size:
         raise ValueError(f"Crop classifier file is missing or empty: {path}")
+    with path.open("rb") as stream:
+        if hashlib.file_digest(stream, "sha256").hexdigest() != expected_sha256:
+            raise ValueError(
+                "Crop classifier SHA-256 does not match CROP_CLASSIFIER_SHA256"
+            )
     import onnxruntime as ort
 
     options = ort.SessionOptions()

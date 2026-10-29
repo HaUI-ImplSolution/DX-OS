@@ -307,15 +307,19 @@ def synthesize_answer(
             r"\b(?:cua (?:toi|minh|em)|(?:ruong|lua) (?:toi|minh|em)|(?:toi|minh|em) (?:thay|quan sat))\b",
             query,
         )
-        diagnosis = (
-            re.search(
-                r"\b(?:co phai|chac chan|chan doan|xac dinh benh|dung la)\b", query
-            )
-            or not asked
-            and re.search(r"\b(?:benh (?:gi|nao)|bi gi)\b", query)
+        identify = not asked and re.search(
+            r"\b(?:benh (?:gi|nao)|bi (?:benh )?gi|do dau|hien tuong gi|co phai (?:la )?benh)\b"
+            r"|\b(?:vet|dom|soc|dau hieu|trieu chung)\b.*\bla gi\b",
+            query,
+        )
+        diagnosis = identify or re.search(
+            r"\b(?:co phai|chac chan|chan doan|xac dinh benh|dung la)\b", query
         )
         if personal and diagnosis:
             return fallback_answer(passages, reason="insufficient_evidence")
+        if identify:
+            # Qwen picks the wrong disease from symptoms; the reranked evidence is the answer.
+            return GeneratedAnswer(mode="extractive", summary="")
     if (
         profile == "farm_qa"
         and not asked

@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
+import hashlib
 from io import BytesIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -107,7 +108,11 @@ def test_runtime_failure_is_service_error():
 def test_loader_fails_closed_on_missing_artifact():
     with pytest.raises(ValueError, match="missing or empty"):
         load_crop_classifier(
-            Settings(crop_classifier_path="/missing/model.onnx", _env_file=None)
+            Settings(
+                crop_classifier_path="/missing/model.onnx",
+                crop_classifier_sha256="0" * 64,
+                _env_file=None,
+            )
         )
 
 
@@ -120,10 +125,16 @@ def test_loader_rejects_empty_file_and_directory(kind):
         else:
             path.mkdir()
         with pytest.raises(ValueError, match="missing or empty"):
-            load_crop_classifier(Settings(crop_classifier_path=path, _env_file=None))
+            load_crop_classifier(
+                Settings(
+                    crop_classifier_path=path,
+                    crop_classifier_sha256="0" * 64,
+                    _env_file=None,
+                )
+            )
 
 
-def test_loader_reads_local_artifact_without_checksum(monkeypatch):
+def test_loader_reads_local_artifact_only_with_matching_checksum(monkeypatch):
     import onnxruntime as ort
 
     calls = []
@@ -136,8 +147,24 @@ def test_loader_reads_local_artifact_without_checksum(monkeypatch):
     with TemporaryDirectory() as directory:
         path = Path(directory) / "model.onnx"
         path.write_bytes(b"local artifact supplied to runtime")
+        for checksum, message in [
+            (None, "must be configured"),
+            ("0" * 64, "does not match"),
+        ]:
+            with pytest.raises(ValueError, match=message):
+                load_crop_classifier(
+                    Settings(
+                        crop_classifier_path=path,
+                        crop_classifier_sha256=checksum,
+                        _env_file=None,
+                    )
+                )
         classifier = load_crop_classifier(
-            Settings(crop_classifier_path=path, _env_file=None)
+            Settings(
+                crop_classifier_path=path,
+                crop_classifier_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
+                _env_file=None,
+            )
         )
         assert isinstance(classifier, CropClassifier)
         assert calls == [(str(path), ["CPUExecutionProvider"])]

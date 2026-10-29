@@ -87,6 +87,7 @@ Compose lấy từ [`deploy/.env.example`](../deploy/.env.example); chạy local
 | `BACKEND_TIMEOUT_SECONDS`, `BACKEND_MAX_ATTEMPTS`, `BACKEND_RETRY_BACKOFF_SECONDS` | Timeout, tổng số lần gọi Backend và khoảng nghỉ giữa các lần thử (mặc định 3 giây, 2 lần, 0,2 giây) |
 | `LOG_LEVEL` | Mức log, mặc định `INFO`; Compose đặt qua `AI_LOG_LEVEL` |
 | `OLLAMA_BASE_URL`, `OLLAMA_MODEL` | Qwen tổng hợp hỏi đáp web Farm/Lab và giải thích chẩn đoán Farm |
+| `ANSWER_GENERATION_ENABLED` | `false` thì không gọi Qwen, câu trả lời chỉ gồm evidence nguyên văn (mặc định `true`); Compose đặt qua `AI_ANSWER_GENERATION` |
 | `EMBEDDING_MODEL` | Embedding dùng chung cho ingest và retrieval |
 | `CV_DEVICE` | `auto`, `cpu` hoặc `cuda` |
 | `CV_WEIGHTS_PATH`, `CV_WEIGHTS_SHA256` | Checkpoint `ai/models/efficientnetv2m_rice_disease.pth` khi chạy local; trong image là `/opt/dxos/models/efficientnetv2m_rice_disease.pth`; SHA-256 bắt buộc khi nạp |
@@ -132,6 +133,7 @@ Lệnh Farm nạp corpus bệnh và phần kiến thức tổng quát đã duy�
 Ingest thay đúng namespace + document_type, kể cả corpus đã thu hồi hết tài liệu, và chuẩn bị reranker trong cache Hugging Face hiện có; lần chạy sau dùng cache, request không tải model.
 Thiếu cache reranker không chặn khởi động CV; search chatbot trả trạng thái `RERANK_UNAVAILABLE` cho đến khi model sẵn sàng.
 Cấu hình chatbot mặc định nằm trong `app/core/config.py`; `CHAT_RETRIEVAL_STRATEGY`, `CHAT_RERANKER_MODEL`, `CHAT_CANDIDATE_COUNT`, `CHAT_COSINE_MIN_SCORE` và `CHAT_RERANK_MIN_SCORE` cho phép điều chỉnh khi đánh giá, không đổi cấu hình diagnosis.
+Compose đặt `CHAT_CANDIDATE_COUNT` qua `AI_CHAT_CANDIDATE_COUNT`; CPU chậm thì giảm số này để rerank xong trong ngân sách 6 giây.
 Đổi embedding model hoặc số chiều vector thì phải ingest lại toàn bộ corpus.
 
 ### Đánh giá truy xuất RAG
@@ -219,6 +221,7 @@ Chạy từ `ai/`:
 
 - CV nhận diện Healthy và 5 bệnh lá lúa; accuracy 89,43% trên 1.466 ảnh theo báo cáo người huấn luyện, chưa phải accuracy toàn pipeline; kỹ sư chốt bệnh tại Backend.
 - RAG chỉ tìm được kiến thức đã ingest; Ollama lỗi hoặc quá thời gian (30 giây với hỏi đáp, 20 giây với giải thích chẩn đoán) thì không hiển thị nội dung sinh, giữ evidence nguyên văn.
+- CPU không có AVX chạy Qwen quá chậm cho các giới hạn trên (khoảng 2 token/giây khi đọc prompt), nên đặt `ANSWER_GENERATION_ENABLED=false`.
 - Hỏi đáp Farm chỉ chặn được tên bệnh có trong contract CV; Qwen vẫn có thể nêu tên bệnh, nguyên nhân hoặc cách phòng không có trong nguồn ([`docs/BACKLOG.md`](../docs/BACKLOG.md)).
 - `ai/` phân phối theo AGPL-3.0 ([`LICENSE`](./LICENSE)); Backend gọi AI qua HTTP nên không là tác phẩm phái sinh.
   Danh sách thành phần ở [`LICENSES.md`](../LICENSES.md).

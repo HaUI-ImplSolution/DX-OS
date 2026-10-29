@@ -15,6 +15,7 @@ Chi tiết theo ngày ở mục của từng module bên dưới.
 - Bảo mật: xác thực hai bước và chính sách mật khẩu ở Keycloak, quét mã độc tệp tải lên bằng ClamAV, che thông tin cá nhân trong tin chat và câu hỏi gửi sang AI, container chạy không phải root.
 - Giám sát: cảnh báo một địa chỉ đăng nhập sai nhiều lần.
 - Câu trả lời Qwen: Lab giữ đúng điều kiện và đối tượng của quy định; Farm trả lời được câu hỏi mô tả bệnh dài và câu "mô tả bệnh"; gỡ đường trả lời RAG legacy.
+- Máy chủ có CPU yếu tắt được câu trả lời Qwen và giảm số đoạn đưa vào rerank bằng `deploy/.env`.
 - Vận hành và CI: sinh `deploy/.env` với mật khẩu ngẫu nhiên, quét lỗ hổng phụ thuộc bằng Trivy.
 
 ## [1.0.3] - 2026-10-27
@@ -718,6 +719,12 @@ Bản phát hành đầu tiên của DX-OS.
 
 ## AI Service (Python)
 
+### 2026-10-29
+
+**Đã xong — Chạy trên CPU chậm:**
+
+- `ANSWER_GENERATION_ENABLED=false` bỏ bước gọi Qwen: hỏi đáp trả `mode: "extractive"` không kèm `reason`, giải thích chẩn đoán không hiện.
+
 ### 2026-10-28
 
 **Đã xong — Log theo mã request:**
@@ -885,6 +892,12 @@ Bản phát hành đầu tiên của DX-OS.
 
 ## Frontend (`frontend`)
 
+### 2026-10-29
+
+**Đã xong — Hỏi đáp khi tắt Qwen:**
+
+- Câu trả lời `extractive` không kèm `reason` hiện lời nhắc xem tài liệu và mở sẵn phần tài liệu tham khảo.
+
 ### 2026-10-26
 
 **Đã xong — Giao diện màn hình giám sát:**
@@ -1032,6 +1045,12 @@ Bản phát hành đầu tiên của DX-OS.
 - Đã test qua trình duyệt thật với từng role, xác nhận UI và 401/403 đúng chỗ.
 
 ## Deploy (`deploy`)
+
+### 2026-10-29
+
+**Đã xong — Cấu hình chatbot cho CPU chậm:**
+
+- `AI_ANSWER_GENERATION` (mặc định `true`) và `AI_CHAT_CANDIDATE_COUNT` (mặc định 20) được chuyển vào AI.
 
 ### 2026-10-28
 

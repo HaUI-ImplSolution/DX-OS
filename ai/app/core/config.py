@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     rag_ingest_database_url: str | None = None
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "qwen2.5:1.5b"
+    # Off on CPUs too slow for Qwen: answers carry only the verbatim evidence.
+    answer_generation_enabled: bool = True
     embedding_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     chat_retrieval_strategy: Literal["legacy", "bm25", "hybrid", "hybrid_rerank"] = (
         "hybrid_rerank"

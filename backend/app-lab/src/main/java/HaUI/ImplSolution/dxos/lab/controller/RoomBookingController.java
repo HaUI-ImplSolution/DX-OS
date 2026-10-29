@@ -3,6 +3,7 @@ package HaUI.ImplSolution.dxos.lab.controller;
 
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
 import HaUI.ImplSolution.dxos.core.api.dto.PageResponse;
+import HaUI.ImplSolution.dxos.core.api.request.IdempotencyKey;
 import HaUI.ImplSolution.dxos.lab.dto.BookingDtos.BookingCreateRequest;
 import HaUI.ImplSolution.dxos.lab.dto.BookingDtos.BookingRejectRequest;
 import HaUI.ImplSolution.dxos.lab.dto.BookingDtos.BookingResponse;
@@ -47,8 +48,8 @@ public class RoomBookingController {
           + " existing booking.")
   public ApiResponse<BookingResponse> create(@Valid @RequestBody BookingCreateRequest request,
       @Parameter(description = "Client-generated UUID that makes retries of this request safe")
-      @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
-    UUID clientRequestId = idempotencyKey == null ? null : UUID.fromString(idempotencyKey);
+      @RequestHeader(value = IdempotencyKey.HEADER, required = false) String idempotencyKey) {
+    UUID clientRequestId = IdempotencyKey.parse(idempotencyKey);
     return ApiResponse.success("Booking requested",
         bookingService.create(request, clientRequestId));
   }

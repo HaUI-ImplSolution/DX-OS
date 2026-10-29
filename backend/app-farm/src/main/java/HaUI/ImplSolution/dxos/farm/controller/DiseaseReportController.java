@@ -5,6 +5,7 @@ import HaUI.ImplSolution.dxos.core.api.audit.AuditEvent;
 import HaUI.ImplSolution.dxos.core.api.audit.AuditRecorder;
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
 import HaUI.ImplSolution.dxos.core.api.dto.PageResponse;
+import HaUI.ImplSolution.dxos.core.api.request.IdempotencyKey;
 import HaUI.ImplSolution.dxos.farm.dto.AwaitingReportResponse;
 import HaUI.ImplSolution.dxos.farm.dto.DiseaseReportResponse;
 import HaUI.ImplSolution.dxos.farm.dto.ImagePrecheckResponse;
@@ -61,9 +62,9 @@ public class DiseaseReportController {
   public ApiResponse<DiseaseReportResponse> create(@PathVariable Long cropSeasonId,
       @RequestPart("image") MultipartFile image,
       @Parameter(description = "Client-generated UUID that makes retries of this request safe")
-      @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+      @RequestHeader(value = IdempotencyKey.HEADER, required = false) String idempotencyKey,
       @RequestParam(required = false) Long retakeOf) {
-    UUID clientRequestId = idempotencyKey == null ? null : UUID.fromString(idempotencyKey);
+    UUID clientRequestId = IdempotencyKey.parse(idempotencyKey);
     return ApiResponse.success("Disease report created",
         diseaseReportService.create(cropSeasonId, image, clientRequestId, retakeOf));
   }

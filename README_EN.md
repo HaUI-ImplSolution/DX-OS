@@ -7,6 +7,8 @@
 
 **Team:** HaUI-ImplSolution · **School:** School of Information and Communication Technology, Hanoi University of Industry
 
+**Documentation:** tracked on the [docs site](https://haui-implsolution.github.io/DX-OS-docs/).
+
 A shared open-source platform for digital transformation, built for the **OLP Open Source Software 2026** contest (DX-OS track, VFOSSA).
 One shared core handles sign-in, data, workflows, notifications and AI; two business applications are built on top of it.
 
@@ -26,7 +28,8 @@ One shared core handles sign-in, data, workflows, notifications and AI; two busi
 - **Backup and restore:** data and files are backed up with encryption, and restoring them is checked automatically.
 - **Controlled AI:** AI only assists, answers with its sources and declines questions that are out of scope or lack support; drug and dose information comes from expert-approved data and the engineer makes the decision.
 - **One-command run:** builds the whole system with demo data, with automated tests on a clean environment.
-- **Transparent open source:** licenses and the list of software components are public, with automatic scanning for leaked passwords, vulnerable libraries (including the resolved dependency list) and third-party images; Dependabot proposes updates.
+- **Transparent open source:** licenses and the list of software components are public; every source file has a license header, CI checks the license of each library and scans automatically for leaked passwords, vulnerable libraries (including the resolved dependency list) and third-party images; Dependabot proposes updates.
+- **Releases:** each `vX.Y.Z` release has a source `.tar.gz`, a `.sha256` file and the SBOMs on the Releases page; prebuilt images are on GHCR and `deploy/install.sh` installs them into another directory.
 
 ## 🗺️ Overall architecture
 
@@ -63,7 +66,7 @@ Full diagrams and request flows are in [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 **DX-Lab:** support requests with deadlines and internal comments, type and priority suggestions, equipment loans with repair log, room booking without time conflicts, regulations Q&A quoted from the university's official documents, with each source opening the original page, statistics.
 
-Feature maturity and test coverage are in [`docs/TESTING.md`](./docs/TESTING.md); outstanding work is in [`docs/BACKLOG.md`](./docs/BACKLOG.md).
+Feature maturity and test coverage are in [`docs/TESTING.md`](./docs/TESTING.md); outstanding work is tracked on the [docs site](https://haui-implsolution.github.io/DX-OS-docs/).
 
 ## 🧰 Technology and licenses
 
@@ -173,7 +176,7 @@ Per-application settings: [`backend/app-farm/README.md`](./backend/app-farm/READ
 
 A public server runs behind a Cloudflare Tunnel and opens no inbound port.
 Enable it with the overlay [`deploy/docker-compose.cloudflared.yml`](./deploy/docker-compose.cloudflared.yml) (instructions at the top of the file).
-Cloudflare concepts and settings are in [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE.md); logs, rate limits, the audit log, backup and restore are in [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
+Cloudflare concepts and settings are tracked on the [docs site](https://haui-implsolution.github.io/DX-OS-docs/); logs, rate limits, the audit log, backup and restore are in [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
 The script [`deploy/online-check.sh`](./deploy/online-check.sh) calls the public paths from a cron job on the server and posts to Mattermost when they cannot be reached.
 
 ### 🔑 Demo accounts
@@ -208,6 +211,7 @@ The script [`deploy/online-check.sh`](./deploy/online-check.sh) calls the public
 
 - Backend: `./mvnw verify` in `backend` (Docker required for Testcontainers, includes the layering rules of `ArchitectureTest`); AI: `pytest` in `ai/`.
 - Web and mobile: `npx tsc --noEmit`.
+- Licenses: `python3 .github/scripts/check_licenses.py` checks the header of every source file and the license of each library in `sbom/`.
 - End-to-end on a clean stack: `python3 deploy/demo/e2e.py [--app farm|lab]`; CI runs the `E2E` workflow for both applications.
 - RAG retrieval evaluation and retrieval load test: `./ai/evaluate.sh quality|performance|all`, run separately from the Farm/Lab stack; see [`ai/README.md`](./ai/README.md#đánh-giá-truy-xuất-rag) (Vietnamese).
 
@@ -233,9 +237,9 @@ Full testing guide: [`docs/TESTING.md`](./docs/TESTING.md).
 | [`data/`](./data/README.md) | Structured data, RAG corpora, RAG evaluation set, seed generation scripts |
 | [`deploy/`](./deploy) | Docker Compose, gateway, `start.sh`, `doctor.sh`, demo data and E2E; access logs in [`OPERATIONS.md`](./deploy/OPERATIONS.md) |
 | [`sso/`](./sso/README.md) · [`bi/`](./bi/README.md) · [`chat/`](./chat/README.md) · [`seaweedfs/`](./seaweedfs/README.md) · [`portal/`](./portal/README.md) | Keycloak, Superset, Mattermost, SeaweedFS, portal |
-| [`docs/`](./docs) | Backlog, testing, AI evaluation, submission pack, council Q&A, phase template (`_template/`), reference material |
+| [`docs/`](./docs) | Testing guide and diagrams; the other documents are on the [docs site](https://haui-implsolution.github.io/DX-OS-docs/) |
 
-Top-level documents: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./CHANGELOG.md) · [`COPYRIGHT.txt`](./COPYRIGHT.txt).
+Top-level documents: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./CHANGELOG.md) · [`COPYRIGHT.txt`](./COPYRIGHT.txt) · [Docs site](https://haui-implsolution.github.io/DX-OS-docs/).
 
 ## 🤝 Contributing
 

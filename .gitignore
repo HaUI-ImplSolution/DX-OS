@@ -78,3 +78,7 @@ Thumbs.db
 .claude/settings.local.json
 .ua/
 .local/
+
+# Agent tooling (Claude Code, Codex): rules, agents and skills stay on each machine
+**/.claude/
+**/.codex/

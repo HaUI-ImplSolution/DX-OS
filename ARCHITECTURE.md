@@ -214,7 +214,8 @@ sequenceDiagram
 - AI Service không có route ở gateway, chỉ backend gọi được qua mạng nội bộ.
 - Trạng thái hệ thống là API công khai, portal đọc từ đây.
 - Máy chủ công khai chạy sau Cloudflare Tunnel và không mở cổng vào.
-  Gateway ghi log JSON kèm `X-Request-Id`, backend ghi audit chỉ thêm; cấu hình Cloudflare ở [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE.md).
+  Gateway ghi log JSON kèm `X-Request-Id`, backend ghi audit chỉ thêm; chi tiết cấu hình Cloudflare theo dõi ở [trang docs](https://haui-implsolution.github.io/DX-OS-docs/).
+- Mỗi bản phát hành `vX.Y.Z` có gói mã nguồn, SBOM và image GHCR cùng tag; `deploy/install.sh` cài stack ra thư mục khác và `deploy/update.sh` cập nhật theo tag.
 - Gateway gửi từng đợt request tới `dx-monitor`, nơi giữ lại `429`, `401`, `404`, `5xx` và request chậm trong 30 ngày.
   `dx-monitor` dò trạng thái các dịch vụ, đọc `audit_log` và sự kiện đăng nhập của Keycloak qua role chỉ đọc, rồi phục vụ màn hình `/monitor/` cho ADMIN; chi tiết ở [`backend/dx-monitor/README.md`](./backend/dx-monitor/README.md).
 

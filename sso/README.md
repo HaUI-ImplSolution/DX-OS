@@ -76,7 +76,7 @@ Quản lý user qua Admin Console `http://localhost:${APISIX_HOST_PORT}/admin` (
 
 Trên máy chủ công khai, `/admin/*` (Admin Console) nằm sau Cloudflare Access.
 `/realms/*` mở cho người dùng web và mobile, và gateway giới hạn 120 lượt mỗi phút mỗi IP cho form mật khẩu và token endpoint.
-Chi tiết ở [`docs/CLOUDFLARE.md`](../docs/CLOUDFLARE.md).
+Chi tiết theo dõi ở [trang docs](https://haui-implsolution.github.io/DX-OS-docs/).
 
 ## Sự kiện đăng nhập và khóa tạm
 

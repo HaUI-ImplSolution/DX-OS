@@ -7,6 +7,8 @@
 
 **Đội:** HaUI-ImplSolution · **Trường:** Trường Công nghệ Thông tin và Truyền thông, Đại học Công nghiệp Hà Nội
 
+**Tài liệu:** theo dõi tại [trang docs](https://haui-implsolution.github.io/DX-OS-docs/).
+
 Nền tảng mã nguồn mở dùng chung cho chuyển đổi số, dự thi **OLP Phần mềm nguồn mở 2026** (khối thi DX-OS, VFOSSA).
 Một lõi dùng chung lo đăng nhập, dữ liệu, quy trình, thông báo và AI; hai ứng dụng nghiệp vụ được xây trên lõi đó.
 
@@ -26,7 +28,8 @@ Một lõi dùng chung lo đăng nhập, dữ liệu, quy trình, thông báo v�
 - **Sao lưu và khôi phục:** dữ liệu và tệp được sao lưu mã hóa, việc khôi phục được kiểm tra tự động.
 - **AI có kiểm soát:** AI chỉ hỗ trợ, trả lời kèm nguồn và từ chối khi câu hỏi ngoài phạm vi hoặc thiếu căn cứ; thông tin thuốc và liều lấy từ dữ liệu chuyên gia đã duyệt, kỹ sư là người quyết định.
 - **Chạy một lệnh:** dựng toàn bộ hệ thống kèm dữ liệu demo, có kiểm thử tự động trên môi trường sạch.
-- **Nguồn mở minh bạch:** công khai giấy phép và danh sách thành phần phần mềm, tự động quét lộ mật khẩu, lỗ hổng của thư viện (kể cả danh mục đã phân giải) và image của bên thứ ba; Dependabot đề xuất cập nhật.
+- **Nguồn mở minh bạch:** công khai giấy phép và danh sách thành phần phần mềm; mọi tệp mã có header giấy phép, CI kiểm giấy phép của từng thư viện, tự động quét lộ mật khẩu, lỗ hổng của thư viện (kể cả danh mục đã phân giải) và image của bên thứ ba; Dependabot đề xuất cập nhật.
+- **Phát hành:** mỗi bản `vX.Y.Z` có gói mã nguồn `.tar.gz`, tệp `.sha256` và SBOM trên trang Releases; image dựng sẵn ở GHCR, cài ra thư mục khác bằng `deploy/install.sh`.
 
 ## 🗺️ Kiến trúc tổng thể
 
@@ -63,7 +66,7 @@ Sơ đồ đầy đủ và luồng xử lý ở [`ARCHITECTURE.md`](./ARCHITECTU
 
 **DX-Lab:** yêu cầu hỗ trợ có hạn xử lý và trao đổi nội bộ, gợi ý loại và mức ưu tiên, mượn trả thiết bị và nhật ký sửa chữa, đặt phòng máy không trùng giờ, hỏi đáp quy chế trích từ văn bản chính thức của trường, bấm nguồn là mở trang gốc, thống kê.
 
-Mức hoàn thiện và độ phủ kiểm thử từng tính năng ở [`docs/TESTING.md`](./docs/TESTING.md); việc chưa làm ở [`docs/BACKLOG.md`](./docs/BACKLOG.md).
+Mức hoàn thiện và độ phủ kiểm thử từng tính năng ở [`docs/TESTING.md`](./docs/TESTING.md); việc chưa làm theo dõi ở [trang docs](https://haui-implsolution.github.io/DX-OS-docs/).
 
 ## 🧰 Công nghệ và giấy phép
 
@@ -173,7 +176,7 @@ Cấu hình riêng của từng ứng dụng ở [`backend/app-farm/README.md`](
 
 Máy chủ công khai chạy sau Cloudflare Tunnel, không mở cổng vào.
 Bật bằng overlay [`deploy/docker-compose.cloudflared.yml`](./deploy/docker-compose.cloudflared.yml) (hướng dẫn ở đầu file).
-Khái niệm và cấu hình Cloudflare ở [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE.md); xem log, giới hạn tốc độ, audit, sao lưu và khôi phục ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
+Khái niệm và cấu hình Cloudflare theo dõi ở [trang docs](https://haui-implsolution.github.io/DX-OS-docs/); xem log, giới hạn tốc độ, audit, sao lưu và khôi phục ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
 Script [`deploy/online-check.sh`](./deploy/online-check.sh) gọi các đường công khai, chạy bằng cron trên máy chủ và báo sang Mattermost khi không truy cập được.
 
 ### 🔑 Tài khoản demo
@@ -208,6 +211,7 @@ Script [`deploy/online-check.sh`](./deploy/online-check.sh) gọi các đường
 
 - Backend: `./mvnw verify` trong `backend` (cần Docker cho Testcontainers, gồm luật phân lớp `ArchitectureTest`); AI: `pytest` trong `ai/`.
 - Web và mobile: `npx tsc --noEmit`.
+- Giấy phép: `python3 .github/scripts/check_licenses.py` kiểm header của mọi tệp mã và giấy phép của từng thư viện trong `sbom/`.
 - E2E trên stack sạch: `python3 deploy/demo/e2e.py [--app farm|lab]`; CI chạy workflow `E2E` cho cả hai ứng dụng.
 - Đánh giá truy xuất RAG và thử tải retrieval: `./ai/evaluate.sh quality|performance|all`, chạy riêng với stack Farm/Lab; xem [`ai/README.md`](./ai/README.md#đánh-giá-truy-xuất-rag).
 
@@ -233,9 +237,9 @@ Hướng dẫn kiểm thử đầy đủ ở [`docs/TESTING.md`](./docs/TESTING.
 | [`data/`](./data/README.md) | Dữ liệu có cấu trúc, corpus RAG, bộ đề đánh giá RAG, script sinh seed |
 | [`deploy/`](./deploy) | Docker Compose, gateway, `start.sh`, `doctor.sh`, dữ liệu demo và E2E; xem log truy cập ở [`OPERATIONS.md`](./deploy/OPERATIONS.md) |
 | [`sso/`](./sso/README.md) · [`bi/`](./bi/README.md) · [`chat/`](./chat/README.md) · [`seaweedfs/`](./seaweedfs/README.md) · [`portal/`](./portal/README.md) | Keycloak, Superset, Mattermost, SeaweedFS, portal |
-| [`docs/`](./docs) | Tồn đọng, kiểm thử, đánh giá AI, hồ sơ nộp bài, câu hỏi hội đồng, mẫu phase (`_template/`), tài liệu tham chiếu |
+| [`docs/`](./docs) | Hướng dẫn kiểm thử và ảnh sơ đồ; các tài liệu còn lại ở [trang docs](https://haui-implsolution.github.io/DX-OS-docs/) |
 
-Tài liệu gốc: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./CHANGELOG.md) · [`COPYRIGHT.txt`](./COPYRIGHT.txt).
+Tài liệu gốc: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./CHANGELOG.md) · [`COPYRIGHT.txt`](./COPYRIGHT.txt) · [Trang docs](https://haui-implsolution.github.io/DX-OS-docs/).
 
 ## 🤝 Đóng góp
 

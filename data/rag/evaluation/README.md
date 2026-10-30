@@ -19,7 +19,7 @@ Bộ pilot hiện chỉ liệt kê nhãn dương, phần không liệt kê đư�
 Người kiểm tra cần rà toàn bộ chunk trong phạm vi từng câu trước khi xem ranking, bổ sung nhãn tường minh 0/1/2 và ghi reviewer, reviewed_at, review_scope trong metadata trước khi chuyển sang reviewed.
 Khi so sánh BM25/cosine/RRF/rerank, mọi strategy dùng cùng corpus/chunk và bộ nhãn; điểm truy xuất không đánh giá độ đúng văn bản Qwen.
 Công cụ từ chối trạng thái reviewed thiếu xác nhận hoặc còn chunk chưa được gắn nhãn.
-Việc rà nhãn tường minh toàn bộ chunk và tái lập bởi bên thứ ba được theo dõi ở [`docs/BACKLOG.md`](../../../docs/BACKLOG.md).
+Việc rà nhãn tường minh toàn bộ chunk và tái lập bởi bên thứ ba được theo dõi ở [trang docs](https://haui-implsolution.github.io/DX-OS-docs/).
 
 Qrels/run và snapshot của từng lần chạy được xuất ngoài repository, không đặt trong report hoặc thêm vào Git.
 Giữ riêng bộ đề hiện tại và artifact lần chạy; đổi nhãn/phiên bản thì collect lại sau khi đóng băng để tránh gắn nhãn đã duyệt cho kết quả draft cũ.

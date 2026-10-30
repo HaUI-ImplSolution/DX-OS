@@ -90,7 +90,7 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/license-exceptions.json.
 | @react-native-community/netinfo, react-native-screens,       |              |                                      |
 | react-native-safe-area-context                               |              |                                      |
 +--------------------------------------------------------------+--------------+--------------------------------------+
-| nginx                                                        | BSD-2-Clause | Image phục vụ web và portal          |
+| nginx 1.27                                                   | BSD-2-Clause | Image phục vụ web và portal          |
 +--------------------------------------------------------------+--------------+--------------------------------------+
 
 4. AI SERVICE (PYTHON)
@@ -191,30 +191,33 @@ Nội dung văn bản được giữ nguyên, quyền thuộc Đại học Công
 | PostgreSQL và pgvector               | PostgreSQL License                   | Dữ liệu nghiệp vụ và vector RAG      |
 | (pgvector/pgvector:pg16)             |                                      |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| Keycloak                             | Apache-2.0                           | Định danh, SSO                       |
+| Keycloak 26.0.8                      | Apache-2.0                           | Định danh, SSO                       |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| Apache APISIX (standalone)           | Apache-2.0                           | API Gateway: route, kiểm JWT, giới   |
+| Apache APISIX 3.11.0 (standalone)    | Apache-2.0                           | API Gateway: route, kiểm JWT, giới   |
 |                                      |                                      | hạn tốc độ                           |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | SeaweedFS (image                     | Apache-2.0                           | Lưu ảnh, tệp đính kèm và kho S3 của  |
 | chrislusf/seaweedfs:4.51)            |                                      | Langfuse trong bộ chạy đánh giá RAG; |
 |                                      |                                      | chạy nguyên bản, không sửa mã        |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| Apache Superset                      | Apache-2.0                           | BI dashboard                         |
+| Apache Superset 3.1.3                | Apache-2.0                           | BI dashboard                         |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | Authlib                              | BSD-3-Clause                         | SSO OAuth cho Superset               |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| Mattermost Team Edition              | AGPL-3.0                             | Kênh chat nhận thông báo; chạy       |
+| Mattermost Team Edition 10.5         | AGPL-3.0                             | Kênh chat nhận thông báo; chạy       |
 |                                      |                                      | nguyên bản, không dùng               |
 |                                      |                                      | server/enterprise/                   |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | Ollama 0.34.2                        | MIT                                  | Phục vụ LLM                          |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| cloudflared (cloudflare/cloudflared) | Apache-2.0                           | Tunnel ra Cloudflare, chỉ khi dùng   |
+| cloudflared 2026.10.6                | Apache-2.0                           | Tunnel ra Cloudflare, chỉ khi dùng   |
 |                                      |                                      | overlay                              |
 |                                      |                                      | docker-compose.cloudflared.yml       |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | Python 3.11 (python:3.11-slim)       | PSF-2.0                              | Base image AI Service                |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Alpine Linux 3.20 (alpine:3.20)      | MIT, GPL-2.0 (nhiều gói)             | Image phụ trợ chạy script khi dựng   |
+|                                      |                                      | stack                                |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | Node.js 20 (node:20-alpine)          | MIT                                  | Chỉ khi build web                    |
 +--------------------------------------+--------------------------------------+--------------------------------------+

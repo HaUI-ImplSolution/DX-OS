@@ -1,4 +1,5 @@
 #!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
 # Bootstrap Superset: migrate metadata DB, seed admin, đăng ký kết nối Postgres, import
 # dashboard mẫu - idempotent, chạy lại an toàn mỗi lần container khởi động.
 set -e

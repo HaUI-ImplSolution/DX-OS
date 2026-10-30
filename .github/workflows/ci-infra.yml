@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 name: CI Infra
 on:
   push:
@@ -25,6 +26,38 @@ jobs:
         run: >
           docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.24.3
           detect --source /repo --config /repo/.gitleaks.toml --redact
+
+  license:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Every source file has its license header and every dependency in the SBOMs has an allowed license
+        run: python3 .github/scripts/check_licenses.py
+
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Install the runtime files into a directory outside the source tree
+        run: deploy/install.sh "$RUNNER_TEMP/dx-os" v0.0.0
+
+      - name: Compose resolves there and every file it mounts was copied
+        working-directory: ${{ runner.temp }}/dx-os/deploy
+        run: |
+          for app in farm lab; do
+            DXOS_APP=$app docker compose config --quiet
+          done
+          docker compose config --format json \
+            | jq -r '.services[].volumes[]? | select(.type == "bind") | .source' | sort -u \
+            | while read -r source; do
+                # deploy/data holds runtime state that Compose creates on first start.
+                case "$source" in "$PWD"/data|"$PWD"/data/*) continue ;; esac
+                [[ -e "$source" ]] || { echo "not installed: $source"; exit 1; }
+              done
 
   compose:
     runs-on: ubuntu-latest

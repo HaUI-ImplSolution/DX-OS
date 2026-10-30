@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: Apache-2.0
 # Encrypted backup of everything that cannot be rebuilt from the repository: every Postgres
 # database (business data, Keycloak accounts, Mattermost, vector store), the object store photos and
 # attachments, Mattermost files and the Superset metadata. Uses restic (deduplicated, encrypted),
@@ -21,7 +22,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 
 ENV_FILE="${ENV_FILE:-.env}"
 RESTIC_IMAGE="restic/restic:0.17.3"
-POSTGRES_IMAGE="pgvector/pgvector:pg16"
+POSTGRES_IMAGE="pgvector/pgvector:pg16@sha256:7b822b0aac60967beb1ea5e576b8602c94c300a157d187f385ae3e0da199b90a"
 
 [[ -f "$ENV_FILE" ]] || { echo "$ENV_FILE not found. Run: python3 demo/make_ci_env.py .env (random secrets), or cp .env.example .env and fill every blank variable." >&2; exit 1; }
 env_value() { grep -E "^$1=" "$ENV_FILE" | tail -1 | cut -d= -f2- || true; }

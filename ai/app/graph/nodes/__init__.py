@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: AGPL-3.0-only
 """LangGraph workflow nodes."""
 
 from app.graph.nodes.cv_diagnosis import cv_diagnosis

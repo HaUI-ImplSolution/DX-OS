@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: AGPL-3.0-only
 """Validated inference and input-quality policy for the CV workflow."""
 
 WORKFLOW_CONFIDENCE_THRESHOLD = 0.70

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 name: Release
 run-name: Release ${{ inputs.services }} from ${{ github.ref_name }}
 
@@ -56,6 +57,12 @@ jobs:
           OWNER="${GITHUB_REPOSITORY_OWNER,,}"
           echo "repo=ghcr.io/${OWNER}/dxos-${{ matrix.name }}" >> "$GITHUB_OUTPUT"
           echo "sha=sha-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          # Run from a vX.Y.Z tag, the images also get that tag, which deploy/install.sh and update.sh accept.
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            echo "version=$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=sha-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          fi
           # The monitor is built from the backend sources, with its own target of the same Dockerfile.
           if [[ "${{ matrix.name }}" == "monitor" ]]; then
             echo "context=backend" >> "$GITHUB_OUTPUT"
@@ -99,6 +106,7 @@ jobs:
           tags: |
             ${{ steps.image.outputs.repo }}:latest
             ${{ steps.image.outputs.repo }}:${{ steps.image.outputs.sha }}
+            ${{ steps.image.outputs.repo }}:${{ steps.image.outputs.version }}
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}

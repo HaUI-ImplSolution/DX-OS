@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import type { GeneratedAnswer } from "../../shell";
 import type { ApprovalRequest as BaseApprovalRequest, KnowledgePassage } from "../../shell";
 

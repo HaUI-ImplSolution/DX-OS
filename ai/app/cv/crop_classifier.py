@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: AGPL-3.0-only
 """Local crop classifier; its score is not proof that an image depicts rice."""
 
 import ast

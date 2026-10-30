@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { Linking, StyleSheet, Text, View } from "react-native";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";

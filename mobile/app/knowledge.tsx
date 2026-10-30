@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text } from "react-native";
 import { askKnowledge } from "@/api/endpoints";

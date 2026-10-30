@@ -1,4 +1,5 @@
 #!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
 # Tạo admin, team, channel mặc định và một incoming webhook cho mỗi channel qua REST API. Idempotent.
 # URL webhook ghi ra $WEBHOOKS_DIR/<khóa>.url để Backend đọc.
 set -euo pipefail

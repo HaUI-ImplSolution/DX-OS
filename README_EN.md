@@ -70,7 +70,7 @@ Feature maturity and test coverage are in [`docs/TESTING.md`](./docs/TESTING.md)
 | Component | Technology | License |
 |---|---|---|
 | Backend | Java 21, Spring Boot, Flyway | Apache-2.0 |
-| AI Service | Python, FastAPI, LangGraph, pgvector, Ollama (Qwen2.5-1.5B) | MIT, Apache-2.0 |
+| AI Service | Python, FastAPI, LangGraph, pgvector, Ollama (Qwen2.5-1.5B) | AGPL-3.0 (`ai/` code); libraries MIT, Apache-2.0 |
 | CV | EfficientNetV2-M (Torchvision) and ONNX crop classifier | BSD-3-Clause, Apache-2.0, AGPL-3.0 |
 | Web, Mobile | React, Vite, Expo | MIT |
 | SSO, Gateway | Keycloak, Apache APISIX | Apache-2.0 |
@@ -115,6 +115,31 @@ docker compose down                     # stop, keep data in deploy/data (run in
 
 Re-running `start.sh` does not create duplicate data.
 Load demo data separately; see [`deploy/demo/README.md`](./deploy/demo/README.md) for details.
+
+### 📦 Run outside the source directory
+
+```bash
+./deploy/install.sh /opt/dx-os          # copies the runtime files to /opt/dx-os and writes deploy/.env; add an image tag if needed, default latest
+cd /opt/dx-os/deploy
+docker compose pull                     # fetches the prebuilt images ghcr.io/haui-implsolution/dxos-*, nothing is built
+./start.sh
+```
+
+The source directory can be deleted after the install; update with `./update.sh [tag]` inside `/opt/dx-os/deploy`.
+The Release workflow pushes the images to GHCR; to build the images from source, use the steps above.
+
+### 🛠️ Build from source without Docker
+
+Each component builds and tests on its own; running the services needs PostgreSQL, Keycloak and the gateway of the stack (`./deploy/start.sh`).
+
+| Component | Tools | Command |
+|---|---|---|
+| Backend | JDK 21 (Maven Wrapper included) | `cd backend && ./mvnw verify` produces `dx-host/target/dx-host.jar` and `dx-monitor/target/dx-monitor.jar`; integration tests need Docker for Testcontainers |
+| Web | Node 20 | `cd frontend && npm ci && npm run build` produces `dist/` |
+| Mobile | Node 20 | `cd mobile && npm ci && npx tsc --noEmit`; run and package as in [`mobile/README.md`](./mobile/README.md) |
+| AI Service | Python 3.11 | `cd ai && python -m venv .venv && . .venv/bin/activate && pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements-dev.txt && python -m pytest tests` |
+
+All the tools above are open source; details per component are in the README of its directory.
 
 ### 🔧 Configuration
 
@@ -214,8 +239,8 @@ Top-level documents: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](
 
 ## 🤝 Contributing
 
-- **Report a bug:** [open a bug report](https://github.com/HaUI-ImplSolution/DX-OS/issues/new?template=bug_report.md).
-- **Suggest a feature:** [open a feature request](https://github.com/HaUI-ImplSolution/DX-OS/issues/new?template=feature_request.md).
+- **Report a bug:** [open a bug report](https://github.com/HaUI-ImplSolution/DX-OS/issues/new?template=bug_report.yml).
+- **Suggest a feature:** [open a feature request](https://github.com/HaUI-ImplSolution/DX-OS/issues/new?template=feature_request.yml).
 - **Submit code:** read [`CONTRIBUTING.md`](./CONTRIBUTING.md) and follow [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
 
 ## 📞 Contact

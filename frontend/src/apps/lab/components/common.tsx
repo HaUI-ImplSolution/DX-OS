@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { Badge, formatDateTime } from "../../../shell";
 import { PRIORITY_LABEL, PRIORITY_TONE } from "../labels";
 import type { Ticket, TicketPriority } from "../types";

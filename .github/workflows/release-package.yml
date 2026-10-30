@@ -1,0 +1,77 @@
+# SPDX-License-Identifier: Apache-2.0
+name: Release Package
+run-name: Release package ${{ inputs.tag || github.ref_name }}
+
+# Attaches the release files to the GitHub Release of a vX.Y.Z tag: the source archive as .tar.gz,
+# its SHA-256 and the CycloneDX SBOMs. The Release is created from the CHANGELOG when it does not exist.
+# Run it by hand to add the files to a Release that already exists.
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to package, e.g. v1.1.0"
+        required: true
+      replace_notes:
+        description: "Replace the notes of an existing Release with the CHANGELOG section"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-package-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout the tag
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.tag || github.ref_name }}
+
+      - name: Build the source archive, checksums and SBOM files
+        run: |
+          VERSION="${TAG#v}"
+          mkdir dist
+          git archive --format=tar.gz --prefix="dx-os-${VERSION}/" -o "dist/dx-os-${VERSION}.tar.gz" HEAD
+          # Tags made before the SBOMs were committed have none.
+          for sbom in sbom/*.cdx.json; do
+            [[ -e "$sbom" ]] || continue
+            cp "$sbom" "dist/dx-os-${VERSION}-$(basename "$sbom")"
+          done
+          (cd dist && sha256sum -- * > "dx-os-${VERSION}.sha256")
+          cat "dist/dx-os-${VERSION}.sha256"
+
+      - name: Take the release notes from the CHANGELOG
+        run: |
+          VERSION="${TAG#v}"
+          awk -v v="$VERSION" '
+            $0 ~ "^## \\[" v "\\]" { on = 1; next }
+            on && /^## \[/ { exit }
+            on { print }
+          ' CHANGELOG.md > notes.md
+          [[ -s notes.md ]] || echo "Xem CHANGELOG.md." > notes.md
+          {
+            echo
+            echo "Tệp kèm theo: \`dx-os-${VERSION}.tar.gz\` là gói mã nguồn phát hành chính thức; \`dx-os-${VERSION}.sha256\` chứa SHA-256 của mọi tệp; các tệp \`.cdx.json\` là SBOM CycloneDX."
+          } >> notes.md
+
+      - name: Create the Release, or add the files to the one that exists
+        run: |
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release upload "$TAG" dist/* --clobber
+            if [[ "${{ inputs.replace_notes }}" == "true" ]]; then
+              gh release edit "$TAG" --notes-file notes.md
+            fi
+          else
+            gh release create "$TAG" dist/* --verify-tag --title "$TAG" --notes-file notes.md
+          fi

@@ -1,7 +1,7 @@
 {
   "bomFormat" : "CycloneDX",
   "specVersion" : "1.6",
-  "serialNumber" : "urn:uuid:bd839552-2561-3ed6-809e-30f742e65957",
+  "serialNumber" : "urn:uuid:8e7d4409-0dfc-342e-8c29-d903f55a36c0",
   "version" : 1,
   "metadata" : {
     "lifecycles" : [
@@ -57,10 +57,10 @@
     },
     "component" : {
       "type" : "library",
-      "bom-ref" : "pkg:maven/HaUI.ImplSolution/dx-os-parent@0.0.1-SNAPSHOT?type=pom",
+      "bom-ref" : "pkg:maven/HaUI.ImplSolution/dx-os-parent@1.1.1?type=pom",
       "group" : "HaUI.ImplSolution",
       "name" : "dx-os-parent",
-      "version" : "0.0.1-SNAPSHOT",
+      "version" : "1.1.1",
       "description" : "DX-OS Open-Core: shared core and pluggable business apps",
       "licenses" : [
         {
@@ -69,7 +69,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/HaUI.ImplSolution/dx-os-parent@0.0.1-SNAPSHOT?type=pom",
+      "purl" : "pkg:maven/HaUI.ImplSolution/dx-os-parent@1.1.1?type=pom",
       "externalReferences" : [
         {
           "type" : "website",
@@ -5631,10 +5631,10 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/HaUI.ImplSolution/dx-core-api@0.0.1-SNAPSHOT?type=jar",
+      "bom-ref" : "pkg:maven/HaUI.ImplSolution/dx-core-api@1.1.1?type=jar",
       "group" : "HaUI.ImplSolution",
       "name" : "dx-core-api",
-      "version" : "0.0.1-SNAPSHOT",
+      "version" : "1.1.1",
       "description" : "Interfaces, DTOs and errors shared between the core and the apps",
       "licenses" : [
         {
@@ -5643,7 +5643,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/HaUI.ImplSolution/dx-core-api@0.0.1-SNAPSHOT?type=jar",
+      "purl" : "pkg:maven/HaUI.ImplSolution/dx-core-api@1.1.1?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -5996,10 +5996,10 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/HaUI.ImplSolution/dx-core@0.0.1-SNAPSHOT?type=jar",
+      "bom-ref" : "pkg:maven/HaUI.ImplSolution/dx-core@1.1.1?type=jar",
       "group" : "HaUI.ImplSolution",
       "name" : "dx-core",
-      "version" : "0.0.1-SNAPSHOT",
+      "version" : "1.1.1",
       "description" : "Shared services: identity, workflow, storage, security, platform",
       "licenses" : [
         {
@@ -6008,7 +6008,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/HaUI.ImplSolution/dx-core@0.0.1-SNAPSHOT?type=jar",
+      "purl" : "pkg:maven/HaUI.ImplSolution/dx-core@1.1.1?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -10338,10 +10338,10 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/HaUI.ImplSolution/app-farm@0.0.1-SNAPSHOT?type=jar",
+      "bom-ref" : "pkg:maven/HaUI.ImplSolution/app-farm@1.1.1?type=jar",
       "group" : "HaUI.ImplSolution",
       "name" : "app-farm",
-      "version" : "0.0.1-SNAPSHOT",
+      "version" : "1.1.1",
       "description" : "DX-Farm business app: parcels, crop seasons, disease reports, diagnoses, treatment",
       "licenses" : [
         {
@@ -10350,7 +10350,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/HaUI.ImplSolution/app-farm@0.0.1-SNAPSHOT?type=jar",
+      "purl" : "pkg:maven/HaUI.ImplSolution/app-farm@1.1.1?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -11112,10 +11112,10 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/HaUI.ImplSolution/app-lab@0.0.1-SNAPSHOT?type=jar",
+      "bom-ref" : "pkg:maven/HaUI.ImplSolution/app-lab@1.1.1?type=jar",
       "group" : "HaUI.ImplSolution",
       "name" : "app-lab",
-      "version" : "0.0.1-SNAPSHOT",
+      "version" : "1.1.1",
       "description" : "DX-Lab business app: IT support tickets, devices, room bookings and the lab knowledge base",
       "licenses" : [
         {
@@ -11124,7 +11124,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/HaUI.ImplSolution/app-lab@0.0.1-SNAPSHOT?type=jar",
+      "purl" : "pkg:maven/HaUI.ImplSolution/app-lab@1.1.1?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -11138,10 +11138,10 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/HaUI.ImplSolution/dx-host@0.0.1-SNAPSHOT?type=jar",
+      "bom-ref" : "pkg:maven/HaUI.ImplSolution/dx-host@1.1.1?type=jar",
       "group" : "HaUI.ImplSolution",
       "name" : "dx-host",
-      "version" : "0.0.1-SNAPSHOT",
+      "version" : "1.1.1",
       "description" : "Runnable host: loads the core and the app selected by DXOS_APP",
       "licenses" : [
         {
@@ -11150,7 +11150,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/HaUI.ImplSolution/dx-host@0.0.1-SNAPSHOT?type=jar",
+      "purl" : "pkg:maven/HaUI.ImplSolution/dx-host@1.1.1?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -11164,10 +11164,10 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/HaUI.ImplSolution/dx-monitor@0.0.1-SNAPSHOT?type=jar",
+      "bom-ref" : "pkg:maven/HaUI.ImplSolution/dx-monitor@1.1.1?type=jar",
       "group" : "HaUI.ImplSolution",
       "name" : "dx-monitor",
-      "version" : "0.0.1-SNAPSHOT",
+      "version" : "1.1.1",
       "description" : "Runnable monitoring service: gateway events, service probes, audit and login trails for administrators",
       "licenses" : [
         {
@@ -11176,7 +11176,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/HaUI.ImplSolution/dx-monitor@0.0.1-SNAPSHOT?type=jar",
+      "purl" : "pkg:maven/HaUI.ImplSolution/dx-monitor@1.1.1?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -12044,15 +12044,15 @@
   ],
   "dependencies" : [
     {
-      "ref" : "pkg:maven/HaUI.ImplSolution/dx-os-parent@0.0.1-SNAPSHOT?type=pom",
+      "ref" : "pkg:maven/HaUI.ImplSolution/dx-os-parent@1.1.1?type=pom",
       "dependsOn" : [
         "pkg:maven/org.projectlombok/lombok@1.18.48?type=jar",
-        "pkg:maven/HaUI.ImplSolution/dx-core-api@0.0.1-SNAPSHOT?type=jar",
-        "pkg:maven/HaUI.ImplSolution/dx-core@0.0.1-SNAPSHOT?type=jar",
-        "pkg:maven/HaUI.ImplSolution/app-farm@0.0.1-SNAPSHOT?type=jar",
-        "pkg:maven/HaUI.ImplSolution/app-lab@0.0.1-SNAPSHOT?type=jar",
-        "pkg:maven/HaUI.ImplSolution/dx-host@0.0.1-SNAPSHOT?type=jar",
-        "pkg:maven/HaUI.ImplSolution/dx-monitor@0.0.1-SNAPSHOT?type=jar"
+        "pkg:maven/HaUI.ImplSolution/dx-core-api@1.1.1?type=jar",
+        "pkg:maven/HaUI.ImplSolution/dx-core@1.1.1?type=jar",
+        "pkg:maven/HaUI.ImplSolution/app-farm@1.1.1?type=jar",
+        "pkg:maven/HaUI.ImplSolution/app-lab@1.1.1?type=jar",
+        "pkg:maven/HaUI.ImplSolution/dx-host@1.1.1?type=jar",
+        "pkg:maven/HaUI.ImplSolution/dx-monitor@1.1.1?type=jar"
       ]
     },
     {
@@ -12060,7 +12060,7 @@
       "dependsOn" : [ ]
     },
     {
-      "ref" : "pkg:maven/HaUI.ImplSolution/dx-core-api@0.0.1-SNAPSHOT?type=jar",
+      "ref" : "pkg:maven/HaUI.ImplSolution/dx-core-api@1.1.1?type=jar",
       "dependsOn" : [
         "pkg:maven/org.springframework.boot/spring-boot-starter-validation@4.1.2?type=jar",
         "pkg:maven/com.fasterxml.jackson.core/jackson-annotations@2.21?type=jar",
@@ -12256,9 +12256,9 @@
       ]
     },
     {
-      "ref" : "pkg:maven/HaUI.ImplSolution/dx-core@0.0.1-SNAPSHOT?type=jar",
+      "ref" : "pkg:maven/HaUI.ImplSolution/dx-core@1.1.1?type=jar",
       "dependsOn" : [
-        "pkg:maven/HaUI.ImplSolution/dx-core-api@0.0.1-SNAPSHOT?type=jar",
+        "pkg:maven/HaUI.ImplSolution/dx-core-api@1.1.1?type=jar",
         "pkg:maven/org.springframework.boot/spring-boot-starter-data-jpa@4.1.2?type=jar",
         "pkg:maven/org.springframework.boot/spring-boot-starter-security@4.1.2?type=jar",
         "pkg:maven/org.springframework.boot/spring-boot-starter-oauth2-resource-server@4.1.2?type=jar",
@@ -13218,9 +13218,9 @@
       ]
     },
     {
-      "ref" : "pkg:maven/HaUI.ImplSolution/app-farm@0.0.1-SNAPSHOT?type=jar",
+      "ref" : "pkg:maven/HaUI.ImplSolution/app-farm@1.1.1?type=jar",
       "dependsOn" : [
-        "pkg:maven/HaUI.ImplSolution/dx-core-api@0.0.1-SNAPSHOT?type=jar",
+        "pkg:maven/HaUI.ImplSolution/dx-core-api@1.1.1?type=jar",
         "pkg:maven/org.springframework.boot/spring-boot-starter-data-jpa@4.1.2?type=jar",
         "pkg:maven/org.springframework.boot/spring-boot-starter-security@4.1.2?type=jar",
         "pkg:maven/org.springframework.boot/spring-boot-starter-oauth2-resource-server@4.1.2?type=jar",
@@ -13335,9 +13335,9 @@
       ]
     },
     {
-      "ref" : "pkg:maven/HaUI.ImplSolution/app-lab@0.0.1-SNAPSHOT?type=jar",
+      "ref" : "pkg:maven/HaUI.ImplSolution/app-lab@1.1.1?type=jar",
       "dependsOn" : [
-        "pkg:maven/HaUI.ImplSolution/dx-core-api@0.0.1-SNAPSHOT?type=jar",
+        "pkg:maven/HaUI.ImplSolution/dx-core-api@1.1.1?type=jar",
         "pkg:maven/org.springframework.boot/spring-boot-starter-data-jpa@4.1.2?type=jar",
         "pkg:maven/org.springframework.boot/spring-boot-starter-security@4.1.2?type=jar",
         "pkg:maven/org.springframework.boot/spring-boot-starter-oauth2-resource-server@4.1.2?type=jar",
@@ -13350,19 +13350,19 @@
       ]
     },
     {
-      "ref" : "pkg:maven/HaUI.ImplSolution/dx-host@0.0.1-SNAPSHOT?type=jar",
+      "ref" : "pkg:maven/HaUI.ImplSolution/dx-host@1.1.1?type=jar",
       "dependsOn" : [
-        "pkg:maven/HaUI.ImplSolution/dx-core-api@0.0.1-SNAPSHOT?type=jar",
-        "pkg:maven/HaUI.ImplSolution/dx-core@0.0.1-SNAPSHOT?type=jar",
-        "pkg:maven/HaUI.ImplSolution/app-farm@0.0.1-SNAPSHOT?type=jar",
-        "pkg:maven/HaUI.ImplSolution/app-lab@0.0.1-SNAPSHOT?type=jar",
+        "pkg:maven/HaUI.ImplSolution/dx-core-api@1.1.1?type=jar",
+        "pkg:maven/HaUI.ImplSolution/dx-core@1.1.1?type=jar",
+        "pkg:maven/HaUI.ImplSolution/app-farm@1.1.1?type=jar",
+        "pkg:maven/HaUI.ImplSolution/app-lab@1.1.1?type=jar",
         "pkg:maven/org.springframework.boot/spring-boot-starter-actuator@4.1.2?type=jar",
         "pkg:maven/org.postgresql/postgresql@42.7.14?type=jar",
         "pkg:maven/org.projectlombok/lombok@1.18.48?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/HaUI.ImplSolution/dx-monitor@0.0.1-SNAPSHOT?type=jar",
+      "ref" : "pkg:maven/HaUI.ImplSolution/dx-monitor@1.1.1?type=jar",
       "dependsOn" : [
         "pkg:maven/org.springframework.boot/spring-boot-starter-web@4.1.2?type=jar",
         "pkg:maven/org.springframework.boot/spring-boot-starter-thymeleaf@4.1.2?type=jar",

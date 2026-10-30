@@ -13,25 +13,28 @@ Mọi người tham gia tuân theo [Quy tắc ứng xử](./CODE_OF_CONDUCT.md).
 ## Dựng môi trường
 
 ```bash
-cp deploy/.env.example deploy/.env      # điền mọi biến đang để trống
+python3 deploy/demo/make_ci_env.py      # sinh deploy/.env, mật khẩu và khóa để trống nhận giá trị ngẫu nhiên
 python3 -m pip install pillow
 ./deploy/start.sh [farm|lab]            # dựng, chạy ứng dụng và nạp dữ liệu demo
 ```
 
+Điền tay thì `cp deploy/.env.example deploy/.env` rồi điền mọi biến đang để trống.
 Chi tiết ở [`README.md`](./README.md).
 
 ## Quy trình
 
-1. Tạo nhánh từ `main`, đặt tên theo việc làm (ví dụ `feature/ten-ngan`, `fix/ten-ngan`).
+1. Tạo nhánh từ `Khuong/main` (nhánh tích hợp), đặt tên theo việc làm (ví dụ `feature/ten-ngan`, `fix/ten-ngan`).
 2. Sửa nhỏ, mỗi PR một mục đích.
 3. Chạy kiểm tra của phần đã đổi (bảng dưới).
-4. Mở Pull Request theo mẫu; CI phải xanh.
+4. Mở Pull Request vào `Khuong/main` theo mẫu; CI phải xanh.
+5. Khi phát hành, nhóm gộp `Khuong/main` vào `main` và đặt tag trên `main` (mục Phát hành).
 
 | Phần | Kiểm tra |
 |---|---|
 | Backend (`backend`) | `./mvnw formatter:validate` và `./mvnw verify` (cần Docker cho Testcontainers) |
 | AI (`ai`) | `pytest` |
 | Web (`frontend`), Mobile (`mobile`) | `npx tsc --noEmit` |
+| Giấy phép | `python3 .github/scripts/check_licenses.py` |
 | Toàn stack | `python3 deploy/demo/e2e.py --app farm` và `--app lab` trên stack mới dựng |
 
 ## Quy ước
@@ -41,7 +44,8 @@ Chi tiết ở [`README.md`](./README.md).
 - Response của controller bọc trong `ApiResponse`; lỗi nghiệp vụ có `errorCode` ổn định.
 - Đổi API thì cập nhật `@Operation` trong cùng PR.
 - Đổi schema bằng migration Flyway mới, không sửa migration đã có.
-- File mã tự viết có dòng đầu `SPDX-License-Identifier: Apache-2.0` (`//` cho Java, `#` cho Python).
+- File mã tự viết có dòng `SPDX-License-Identifier` ở đầu: `Apache-2.0`, riêng trong `ai/` là `AGPL-3.0-only`; dùng `//` cho Java, TypeScript và JavaScript, `#` cho Python, shell và YAML (đặt sau dòng `#!`).
+- CI kiểm header và giấy phép của từng dependency trong `sbom/` bằng `.github/scripts/check_licenses.py`; dependency ngoài danh sách cho phép phải có lý do trong `.github/license-exceptions.json`.
 - Comment ngắn bằng tiếng Anh, chỉ nêu hành vi hiện tại; commit message bằng tiếng Anh.
 - Tài liệu Markdown viết mỗi câu một dòng.
 
@@ -50,6 +54,15 @@ Chi tiết ở [`README.md`](./README.md).
 - Mọi thành phần phải có giấy phép nguồn mở; thêm dependency thì cập nhật [`COPYRIGHT.txt`](./COPYRIGHT.txt) và sinh lại SBOM theo [`sbom/README.md`](./sbom/README.md).
 - Đóng góp mã cho `ai/` theo AGPL-3.0 (`ai/LICENSE`); các phần còn lại theo Apache-2.0 (`LICENSE`).
 - Dữ liệu thuốc, treatment rule và policy chỉ được seed khi có quyết định duyệt rõ ràng trong `data/structured/`.
+
+## Phát hành
+
+1. Gộp `Khuong/main` vào `main`.
+2. Đổi mục `[Unreleased]` của [`CHANGELOG.md`](./CHANGELOG.md) thành `[X.Y.Z] - ngày`, và đặt số `X.Y.Z` vào `backend/**/pom.xml`, `frontend/package.json`, `mobile/package.json` và `mobile/app.json`.
+3. Tạo tag `vX.Y.Z` trên `main` rồi đẩy tag; workflow `Release Package` tạo GitHub Release kèm gói `dx-os-X.Y.Z.tar.gz`, tệp `.sha256` và SBOM, ghi chú lấy từ CHANGELOG.
+4. Chạy workflow `Release` trên tag đó để đẩy image lên GHCR; `deploy/install.sh` và `deploy/update.sh` nhận tag này.
+
+Thêm file vào một Release có sẵn thì chạy tay `Release Package` với tag tương ứng.
 
 ## Thêm một quy trình vào ứng dụng có sẵn
 

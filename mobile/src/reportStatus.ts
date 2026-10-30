@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import type { Diagnosis, DiseaseReport } from "@/types";
 import type { chipTones } from "@/theme";
 

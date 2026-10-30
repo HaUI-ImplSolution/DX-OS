@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: AGPL-3.0-only
 """Recommendation-only LangGraph construction for the DX-Farm MVP."""
 
 from langgraph.graph import END, StateGraph

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: AGPL-3.0-only
 """Metadata and preprocessing of the bundled rice-leaf classifier."""
 
 MODEL_NAME = "DX-Farm-EfficientNetV2-M"

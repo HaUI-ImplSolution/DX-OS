@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 export const colors = {
   bg: "#f4f6f3",
   surface: "#ffffff",

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { clearSession, getToken } from "./auth";
 import { errorMessageFor, statusMessageFor } from "./errorMessages";
 import type {

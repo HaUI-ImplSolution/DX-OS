@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { refreshAsync, TokenError } from "expo-auth-session";
 import { clientId, discovery, toStoredTokens } from "./oidc";
 import { clearSession, loadTokens, saveTokens, type StoredTokens } from "./session";

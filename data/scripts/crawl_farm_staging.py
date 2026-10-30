@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Crawl a small allowlisted Vietnamese rice-knowledge batch into staging.
 
 This script deliberately does not touch PostgreSQL or the production corpus.

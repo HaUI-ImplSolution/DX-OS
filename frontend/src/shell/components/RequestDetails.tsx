@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { formatDateTime } from "../labels";
 import type { ApprovalRequest } from "../types";
 

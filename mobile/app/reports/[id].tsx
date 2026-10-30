@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { Image, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";

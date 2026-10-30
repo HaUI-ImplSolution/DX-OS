@@ -70,7 +70,7 @@ Mức hoàn thiện và độ phủ kiểm thử từng tính năng ở [`docs/T
 | Thành phần | Công nghệ | Giấy phép |
 |---|---|---|
 | Backend | Java 21, Spring Boot, Flyway | Apache-2.0 |
-| AI Service | Python, FastAPI, LangGraph, pgvector, Ollama (Qwen2.5-1.5B) | MIT, Apache-2.0 |
+| AI Service | Python, FastAPI, LangGraph, pgvector, Ollama (Qwen2.5-1.5B) | AGPL-3.0 (mã `ai/`); thư viện MIT, Apache-2.0 |
 | CV | EfficientNetV2-M (Torchvision) và crop classifier ONNX | BSD-3-Clause, Apache-2.0, AGPL-3.0 |
 | Web, Mobile | React, Vite, Expo | MIT |
 | SSO, Gateway | Keycloak, Apache APISIX | Apache-2.0 |
@@ -115,6 +115,31 @@ docker compose down                     # dừng, giữ dữ liệu trong deploy
 
 Chạy lại `start.sh` không tạo dữ liệu trùng.
 Dữ liệu demo nạp riêng xem chi tiết ở [`deploy/demo/README.md`](./deploy/demo/README.md).
+
+### 📦 Chạy ngoài thư mục mã nguồn
+
+```bash
+./deploy/install.sh /opt/dx-os          # chép file chạy sang /opt/dx-os, sinh deploy/.env; thêm tag image nếu cần, mặc định latest
+cd /opt/dx-os/deploy
+docker compose pull                     # lấy image dựng sẵn ở ghcr.io/haui-implsolution/dxos-*, không build
+./start.sh
+```
+
+Sau khi cài có thể xóa thư mục mã nguồn; cập nhật bằng `./update.sh [tag]` trong `/opt/dx-os/deploy`.
+Image do workflow `Release` đẩy lên GHCR; muốn dựng image từ mã nguồn thì dùng các bước ở mục trên.
+
+### 🛠️ Build từ mã nguồn không qua Docker
+
+Mỗi thành phần build và kiểm tra riêng được; dịch vụ chạy cần PostgreSQL, Keycloak và gateway của stack (`./deploy/start.sh`).
+
+| Thành phần | Công cụ | Lệnh |
+|---|---|---|
+| Backend | JDK 21 (kèm Maven Wrapper) | `cd backend && ./mvnw verify` ra `dx-host/target/dx-host.jar` và `dx-monitor/target/dx-monitor.jar`; test tích hợp cần Docker cho Testcontainers |
+| Web | Node 20 | `cd frontend && npm ci && npm run build` ra `dist/` |
+| Mobile | Node 20 | `cd mobile && npm ci && npx tsc --noEmit`; chạy và đóng gói ở [`mobile/README.md`](./mobile/README.md) |
+| AI Service | Python 3.11 | `cd ai && python -m venv .venv && . .venv/bin/activate && pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements-dev.txt && python -m pytest tests` |
+
+Toàn bộ công cụ trên là phần mềm nguồn mở; chi tiết từng thành phần ở README trong thư mục của nó.
 
 ### 🔧 Cấu hình
 
@@ -214,8 +239,8 @@ Tài liệu gốc: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./
 
 ## 🤝 Đóng góp
 
-- **Báo lỗi:** [tạo bug report](https://github.com/HaUI-ImplSolution/DX-OS/issues/new?template=bug_report.md).
-- **Đề xuất tính năng:** [tạo feature request](https://github.com/HaUI-ImplSolution/DX-OS/issues/new?template=feature_request.md).
+- **Báo lỗi:** [tạo bug report](https://github.com/HaUI-ImplSolution/DX-OS/issues/new?template=bug_report.yml).
+- **Đề xuất tính năng:** [tạo feature request](https://github.com/HaUI-ImplSolution/DX-OS/issues/new?template=feature_request.yml).
 - **Gửi mã:** đọc [`CONTRIBUTING.md`](./CONTRIBUTING.md) và tuân theo [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
 
 ## 📞 Liên hệ

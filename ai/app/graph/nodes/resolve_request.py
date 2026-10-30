@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: AGPL-3.0-only
 """Placeholder implementation for resolve_request node.
 It simply returns the received state unchanged. This allows the LangGraph
 pipeline to run in minimal mode before the full logic is added.

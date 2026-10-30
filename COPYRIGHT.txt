@@ -14,7 +14,7 @@ Danh mục đầy đủ theo phiên bản: thư mục sbom/ (CycloneDX); ai/requ
 +---------------------------------------------+-----------------------+----------------------------------------------+
 | Phần                                        | Giấy phép             | Ghi chú                                      |
 +=============================================+=======================+==============================================+
-| backend, frontend, mobile, deploy, bi,      | Apache-2.0 (LICENSE)  | SPDX header ở file Java và Python            |
+| backend, frontend, mobile, deploy, bi,      | Apache-2.0 (LICENSE)  | SPDX header ở mọi file mã nguồn              |
 | portal...                                   |                       |                                              |
 +---------------------------------------------+-----------------------+----------------------------------------------+
 | Mã nguồn ai/                                | AGPL-3.0 (ai/LICENSE) | Giữ giấy phép mã nguồn AI; giấy phép trọng   |
@@ -22,6 +22,10 @@ Danh mục đầy đủ theo phiên bản: thư mục sbom/ (CycloneDX); ai/requ
 +---------------------------------------------+-----------------------+----------------------------------------------+
 
 AI Service là tiến trình riêng, chỉ giao tiếp với Backend qua HTTP nên Backend giữ Apache-2.0.
+Header của file mã nguồn là SPDX-License-Identifier: Apache-2.0, riêng trong ai/ là AGPL-3.0-only.
+Dòng header nằm ở đầu file Java, TypeScript, JavaScript, Python, shell và YAML; các file còn lại (tài liệu, JSON, dữ liệu, ảnh) theo giấy phép của thư mục chứa chúng.
+.github/scripts/check_licenses.py kiểm header và giấy phép của từng dependency trong sbom/ ở mỗi pull request;
+ngoại lệ, nếu có, ghi kèm lý do ở .github/license-exceptions.json.
 
 2. BACKEND (MAVEN)
 ==================
@@ -172,6 +176,11 @@ Thay đổi: EfficientNetV2-M dùng 6 lớp, resize ảnh 480×480 và augmentat
 Checkpoint do người huấn luyện của nhóm cung cấp, khởi tạo từ EfficientNet_V2_M_Weights; phần fine-tune theo
 Apache-2.0, giữ điều khoản pretrained Torchvision.
 Dữ liệu mẫu của Lab (phòng, thiết bị, yêu cầu) là dữ liệu giả lập, không chứa người thật.
+Crop classifier: tệp ONNX lấy từ Hugging Face, RaiyanKhaan/KrishokTech-Models, thư mục 01_crop_classifier, commit [3].
+Thẻ mô hình ghi Apache-2.0, nhưng mô hình được tạo bằng thư viện Ultralytics (AGPL-3.0),
+nên nhóm áp dụng điều khoản chặt hơn là AGPL-3.0 cho tệp này, cùng giấy phép với mã nguồn ai/.
+Tri thức DX-Lab: mỗi văn bản có trang nguồn, địa chỉ file gốc, ngày truy cập, giấy phép và SHA-256 trong data/rag/lab/source_registry.json.
+Nội dung văn bản được giữ nguyên, quyền thuộc Đại học Công nghiệp Hà Nội; repository giữ bản PDF gốc để người dùng đối chiếu với trang nguồn.
 
 6. HẠ TẦNG VÀ CÔNG CỤ
 =====================

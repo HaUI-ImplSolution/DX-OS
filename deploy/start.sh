@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: Apache-2.0
 # Starts the whole stack with an app and loads its demo data.
 #
 #   ./start.sh [app] [--build] [--reset] [--yes]

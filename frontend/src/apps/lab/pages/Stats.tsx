@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { useEffect, useState } from "react";
 import { Section, statusLabel } from "../../../shell";
 import { getLabStats, listCategories } from "../api";

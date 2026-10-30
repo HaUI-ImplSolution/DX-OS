@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import type { AppUiModule, Notification } from "../../shell";
 import { LAB_LABELS, ROLE_LABEL } from "./labels";
 import Assets from "./pages/Assets";

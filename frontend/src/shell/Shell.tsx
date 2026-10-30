@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { useCallback, useEffect, useState } from "react";
 import { NavLink, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { getUnreadCount } from "./api";

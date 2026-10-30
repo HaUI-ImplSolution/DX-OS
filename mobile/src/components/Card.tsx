@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import type { ReactNode } from "react";
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 import { colors, radius, spacing } from "@/theme";

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 const pad = (value: number) => String(value).padStart(2, "0");
 
 // Accepts a date-only string (yyyy-mm-dd) or an ISO instant and returns dd/mm/yyyy.

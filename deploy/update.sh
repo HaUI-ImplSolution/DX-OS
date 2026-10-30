@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: Apache-2.0
 # Updates a running stack to the images published by the Release workflow; nothing is built here.
 #
 #   ./update.sh [tag]
 #
-# [tag] is latest or sha-<7 chars> and is written to DXOS_IMAGE_TAG in deploy/.env.
+# [tag] is latest, a release tag such as v1.1.1, or sha-<7 chars>, and is written to DXOS_IMAGE_TAG in deploy/.env.
 # Images are pulled one at a time, only the containers whose image changed are recreated,
 # the gateway restarts when a service behind it was replaced, and replaced images are removed.
 # The first start on a server is: COMPOSE_PARALLEL_LIMIT=1 docker compose pull && ./start.sh

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { API_BASE_URL } from "@/config";
 import { clearSession } from "@/auth/session";
 import { getValidAccessToken } from "@/auth/tokens";

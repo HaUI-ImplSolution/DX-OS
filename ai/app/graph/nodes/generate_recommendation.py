@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: AGPL-3.0-only
 """Build the structured recommendation from the CV result and treatment facts."""
 
 from typing import Any

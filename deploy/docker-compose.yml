@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 # DX-OS stack: the shared core plus the app chosen by DXOS_APP (farm or lab).
 # Every ${VAR:?} must be set in deploy/.env (copy .env.example); Compose stops and names the
 # missing variable.
@@ -47,7 +48,7 @@ services:
   # ---------------------------------------------------------------------------
   postgres:
     logging: *default-logging
-    image: pgvector/pgvector:pg16
+    image: pgvector/pgvector:pg16@sha256:7b822b0aac60967beb1ea5e576b8602c94c300a157d187f385ae3e0da199b90a
     environment:
       <<: *postgres-env
     volumes:
@@ -305,7 +306,7 @@ services:
   # and Keycloak (event_entity) because each creates its own tables.
   monitor-init:
     logging: *default-logging
-    image: pgvector/pgvector:pg16
+    image: pgvector/pgvector:pg16@sha256:7b822b0aac60967beb1ea5e576b8602c94c300a157d187f385ae3e0da199b90a
     depends_on:
       postgres:
         condition: service_healthy
@@ -369,7 +370,7 @@ services:
   # apisix/apps/<DXOS_APP>.yaml, with the delivery key of the monitor filled in. A value without a
   # file stops here, before the gateway starts.
   apisix-config:
-    image: alpine:3.20
+    image: alpine:3.20@sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc
     environment:
       DXOS_APP: ${DXOS_APP:-farm}
       MONITOR_INGEST_KEY: ${MONITOR_INGEST_KEY:?}
@@ -393,7 +394,7 @@ services:
       options:
         max-size: "100m"
         max-file: "10"
-    image: apache/apisix:3.11.0-debian
+    image: apache/apisix:3.11.0-debian@sha256:178d1f79c2c39834f50213bf6ace90284f6b985dc8189cc50f3666d9fb1037ad
     restart: unless-stopped
     depends_on:
       apisix-config:
@@ -438,7 +439,7 @@ services:
   # ---------------------------------------------------------------------------
   ollama:
     logging: *default-logging
-    image: ollama/ollama:0.34.2
+    image: ollama/ollama:0.34.2@sha256:da6e0dc5651df159e45686fd663c4dbe1624a52c44d7280eeac1551d8f865532
     restart: unless-stopped
     volumes:
       - ollama_models:/root/.ollama
@@ -449,7 +450,7 @@ services:
       retries: 12
 
   ollama-init:
-    image: ollama/ollama:0.34.2
+    image: ollama/ollama:0.34.2@sha256:da6e0dc5651df159e45686fd663c4dbe1624a52c44d7280eeac1551d8f865532
     depends_on:
       ollama:
         condition: service_healthy
@@ -524,14 +525,14 @@ services:
   # ---------------------------------------------------------------------------
   # Superset runs as uid 1000 but a new bind mount belongs to root; chown it once before it starts.
   superset-init:
-    image: alpine:3.20
+    image: alpine:3.20@sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc
     command: ["chown", "-R", "1000:1000", "/app/superset_home"]
     volumes:
       - ./data/superset:/app/superset_home
 
   superset:
     logging: *default-logging
-    image: apache/superset:3.1.3
+    image: apache/superset:3.1.3@sha256:7208d630cf38910c1146c31c10515c4f3f79ea44d8d6962570aac8f1c7b5548f
     depends_on:
       postgres:
         condition: service_healthy
@@ -577,7 +578,7 @@ services:
   # ---------------------------------------------------------------------------
   # Mattermost runs as uid 2000 but a new bind mount belongs to root; chown it once before it starts.
   mattermost-init:
-    image: alpine:3.20
+    image: alpine:3.20@sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc
     command:
       ["chown", "-R", "2000:2000", "/mattermost/config", "/mattermost/data", "/mattermost/logs",
         "/mattermost/plugins", "/mattermost/client/plugins", "/mattermost/bleve-indexes", "/mattermost/webhooks"]
@@ -585,7 +586,7 @@ services:
 
   mattermost:
     logging: *default-logging
-    image: mattermost/mattermost-team-edition:10.5
+    image: mattermost/mattermost-team-edition:10.5@sha256:e42ce95b1217d8ff178dad8d2ce1cb65e72ad7e19438ad3c32221cf5ad3918d2
     # A healthy backend does not mean its seeders have created the Mattermost role and database yet;
     # retry until the first Postgres connection succeeds.
     restart: on-failure
@@ -608,7 +609,7 @@ services:
   # Creates the admin, team, default channels and one incoming webhook per channel once Mattermost is up
   # (idempotent, see chat/bootstrap.sh); the webhook URLs are written to data/mattermost/webhooks.
   mattermost-bootstrap:
-    image: mattermost/mattermost-team-edition:10.5
+    image: mattermost/mattermost-team-edition:10.5@sha256:e42ce95b1217d8ff178dad8d2ce1cb65e72ad7e19438ad3c32221cf5ad3918d2
     entrypoint: ["/bin/bash", "/bootstrap.sh"]
     restart: on-failure
     depends_on:

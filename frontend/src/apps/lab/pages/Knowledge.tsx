@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { Knowledge as KnowledgePage } from "../../../shell";
 
 interface KnowledgeProps {

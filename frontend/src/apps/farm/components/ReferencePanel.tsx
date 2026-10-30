@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { useEffect, useState } from "react";
 import { listDiseases, listPesticides, listTreatmentRules } from "../api";
 import type { Disease, Pesticide, TreatmentRule } from "../types";

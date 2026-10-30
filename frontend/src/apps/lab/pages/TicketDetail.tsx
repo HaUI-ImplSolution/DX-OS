@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { Badge, Section, Timeline, formatDateTime, statusLabel, statusTone } from "../../../shell";

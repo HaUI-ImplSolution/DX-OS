@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, BackHandler, Image, Linking, StyleSheet, Text, View } from "react-native";
 import NetInfo from "@react-native-community/netinfo";

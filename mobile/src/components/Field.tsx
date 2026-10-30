@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { StyleSheet, Text, TextInput, View, type TextInputProps } from "react-native";
 import { colors, fontSize, radius, sizes, spacing } from "@/theme";
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { json, queryString, request } from "../../shell";
 import type { Page } from "../../shell";
 import type {

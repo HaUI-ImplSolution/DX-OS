@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Directory, File, Paths } from "expo-file-system";
 

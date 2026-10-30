@@ -7,19 +7,19 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 
 | Việc | Ghi chú |
 |---|---|
-| Báo cáo kỹ thuật 8-10 trang, slide tối đa 12 | Có dàn ý ở [`SUBMISSION.md`](./SUBMISSION.md) mục 3 |
-| Video demo 3-5 phút, rehearsal ít nhất một lần | Kịch bản ở [`SUBMISSION.md`](./SUBMISSION.md) mục 2 |
+| Báo cáo kỹ thuật 8-10 trang, slide tối đa 12 | Sườn báo cáo ở [`report/README.md`](./report/README.md) |
+| Video demo 3-5 phút, rehearsal ít nhất một lần | Kịch bản ở [`SUBMISSION.md`](./SUBMISSION.md) mục 2 và 3 |
 | Tạo vài issue mẫu trên GitHub | Issues đã bật, hiện chưa có issue nào; lấy từ mục 5 và 6 của tài liệu này |
 | Chụp ảnh giao diện hai chế độ (Farm, Lab) và màn hình giám sát lưu vào repository cho hồ sơ | Chưa có; che IP và email thật khi chụp màn hình giám sát |
 | Chốt ngày hạn nộp thật | Chưa chốt |
 
-## 2. Việc cần sửa trong mã và cấu hình
+## 2. Việc còn lại trên VPS
 
 | Việc | Phạm vi |
 |---|---|
-| VPS chưa chạy các bản sửa lưu ảnh, portal, AI và SeaweedFS | Sau khi phát hành, kiểm: ảnh báo cáo #1 hiện với `img.src` là `https://`; `/portal/config` trả `cache-control: no-cache` và thẻ "Quản trị lưu ảnh" ra `https://files.khuongdev.io.vn`; câu hỏi tri thức đầu tiên sau khi AI khởi động lại mất khoảng 4 giây; log `seaweedfs` không còn `IAM gRPC service on filer is UNAUTHENTICATED` và trang quản trị vẫn mở danh sách user |
-| Dữ liệu MinIO cũ còn trên VPS | `deploy/data/minio`, `deploy/.env.bak-before-seaweedfs` và các image `dxos-minio`; ảnh cũ đã ở bucket SeaweedFS, xóa khi ảnh các báo cáo cũ (#1, #2, #5, #6) hiện trên màn hình duyệt yêu cầu |
-| `doctor.sh` cảnh báo dung lượng đĩa trên VPS | Trống 39 GiB, khuyến nghị 40 GiB; theo dõi dung lượng khi dữ liệu và ảnh Docker tăng |
+| Phát hành bản sửa `backup.sh` (mục Unreleased của CHANGELOG) | Gộp vào `main` rồi `git pull` trên VPS; bản mới đã chạy thử trên VPS và gom mọi snapshot vào một nhóm giữ, nhưng chưa có snapshot nào quá 7 ngày nên việc xóa bản cũ chưa được kiểm |
+| Nạp cấu hình gateway mới và đo lại chẩn đoán AI trên VPS | Sau `git pull`: `./switch-app.sh farm`, rồi bấm chẩn đoán AI cho một báo cáo và kiểm nhận `200` trong 95 giây |
+| Đặt cron cho `deploy/online-check.sh` trên VPS | Sau `git pull`, chạy tay một lần rồi thêm `0 */12 * * *` theo `deploy/OPERATIONS.md`; script đã chạy thử trên VPS với bốn đường đều `OK` |
 
 ## 3. Chưa kiểm thử
 
@@ -27,14 +27,10 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 |---|---|
 | Bên thứ ba tái lập đánh giá RAG | Cần người đánh giá độc lập kiểm tra nhãn và tính lại điểm từ qrels/run; cách chạy ở [`ai/README.md`](../ai/README.md#đánh-giá-truy-xuất-rag) |
 | Chấm nội dung Qwen trên 36 câu hỏi và 6 chủ đề chẩn đoán | Chưa có bảng chấm trọng tâm, bám nguồn và dễ đọc do người duyệt xác nhận; tỷ lệ `generated` không phải độ đúng nội dung |
-| Kiểm nguyên nhân và cách phòng của hỏi đáp Farm với Qwen thật | Đã thử bằng câu trả lời giả lập trên nội dung bệnh đạo ôn; chưa chạy lại bộ câu hỏi Farm với Qwen để xem tỷ lệ câu bị chuyển sang `insufficient_evidence` |
-| Chữ lớn trên mobile native | Đã typecheck, kiểm render và nghiệm thu chức năng; chưa đo riêng bố cục khi tăng cỡ chữ trên máy thật |
-| Khởi động bản Qwen từ clone sạch | Đã kiểm bằng image/cache và các cặp phiên bản; chưa chạy lại full build/seed toàn stack từ clone sạch |
-| `backup.sh` với kho sao lưu từ xa | Đã chạy sao lưu và `verify` trên VPS với dữ liệu thật vào kho cục bộ; chưa thử `BACKUP_REPOSITORY` từ xa |
-| Cầu dao AI với tải thật | Đã thử khi AI dừng; chưa thử khi AI chậm vì tải, lúc đó lỗi đọc quá hạn cũng tính là lỗi dịch vụ |
-| Lưu ảnh SeaweedFS qua Cloudflare trên VPS | Đã kiểm trên Chrome với tài khoản quản trị: app Farm (4 tab), hỏi đáp, màn hình giám sát (10/10 dịch vụ), BI qua SSO và trang đăng nhập `files.khuongdev.io.vn` đều chạy; chưa thử upload ảnh mới bằng tài khoản nông dân và mở link ảnh vừa tải, đăng nhập SeaweedFS Admin, `backup.sh` với `data/seaweedfs` |
-| Giới hạn gọi API theo người dùng trên VPS | Chưa thử với tài khoản thật qua Cloudflare, nơi `X-Forwarded-For` và địa chỉ client do Cloudflare đặt |
-
+| Kiểm nguyên nhân và cách phòng của hỏi đáp Farm với Qwen thật | Chạy bộ câu hỏi Farm với Qwen để xem tỷ lệ câu bị chuyển sang `insufficient_evidence` |
+| Khởi động bản Qwen từ clone sạch | Chạy full build/seed toàn stack từ clone sạch |
+| `backup.sh` với kho sao lưu từ xa | Thử `BACKUP_REPOSITORY` từ xa |
+| Cầu dao AI với tải thật | Thử khi AI chậm vì tải, lúc đó lỗi đọc quá hạn cũng tính là lỗi dịch vụ |
 ## 4. Giới hạn của AI và dữ liệu
 
 | Việc | Ghi chú |
@@ -42,22 +38,22 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Model bệnh chưa được đánh giá độc lập ngoài ruộng | Accuracy 89,43% trên 1.466 ảnh theo người huấn luyện, xem [`AI_EVALUATION.md`](./AI_EVALUATION.md); cần ít nhất 100 ảnh ruộng thật có nhãn kỹ sư để đo toàn pipeline và ngưỡng 0.70 |
 | Crop classifier nhận 6/15 ảnh ngô và 15/15 ảnh mía là lúa, chặn 8/50 ảnh lúa nền ruộng | Classifier 10 lớp không có lớp ngô, mía, cỏ; cần thay classifier hoặc thêm dữ liệu ngoài miền; kỹ sư vẫn chốt bệnh |
 | Ngưỡng độ nét mới thử trên ảnh công khai và ảnh mờ nhân tạo | Chưa có ảnh mờ thật ngoài ruộng; chưa tách vùng lá |
-| Chẩn đoán AI chạy trên CPU mất khoảng 50 giây mỗi ảnh | Đo trên máy chủ 8 nhân; chưa có GPU hay mô hình nhỏ hơn để rút ngắn; lần gọi đầu sau khi khởi động lại AI nạp mô hình và có thể vượt 60 giây chờ của gateway, nhận 504 (kết quả vẫn được tạo) |
+| Chẩn đoán AI chạy trên CPU mất 50 đến 70 giây mỗi ảnh | Đo trên máy chủ 8 nhân; lượt đo ngày 30/10/2026 trên AI đã chạy 14 giờ mất 68 giây; gateway chờ tới 95 giây, lượt dài hơn nhận 504 nhưng chẩn đoán vẫn được tạo và hiện khi tải lại báo cáo; chưa có GPU hay mô hình nhỏ hơn để rút ngắn |
 | Qwen tắt trên VPS | CPU ảo chỉ có SSE2/SSE3 nên Qwen đọc prompt khoảng 2 token/giây; VPS đặt `AI_ANSWER_GENERATION=false` và `AI_CHAT_CANDIDATE_COUNT=10`, chatbot trả tài liệu nguyên văn trong khoảng 5 giây. Bật lại Qwen cần CPU có AVX2 |
 | Nộp báo cáo cần AI service chạy | Chưa có đường nhận ảnh chưa kiểm khi AI dừng; hàng đợi offline thử lại |
 | Chưa có mô hình nhận diện sâu hại | Classifier nhận Healthy và 5 bệnh lá |
-| Hoàn thiện coverage tri thức canh tác Farm | Đã có 7 tài liệu tổng quát; trang tập huấn còn chủ yếu mục lục, cần nội dung tài liệu con và nguồn cho các chủ đề còn thiếu |
-| Rà nhãn RAG tường minh cho toàn bộ chunk | Chủ dự án đã duyệt bộ câu hỏi và nhãn pilot; qrels hiện chỉ có nhãn dương. Cần rà đủ 0/1/2 trước khi chuyển trạng thái `reviewed`, xem [`data/rag/evaluation/README.md`](../data/rag/evaluation/README.md) |
+| Hoàn thiện coverage tri thức canh tác Farm | Trang tập huấn còn chủ yếu mục lục, cần nội dung tài liệu con và nguồn cho các chủ đề còn thiếu |
+| Rà nhãn RAG tường minh cho toàn bộ chunk | Qrels hiện chỉ có nhãn dương; cần rà đủ 0/1/2 trước khi chuyển trạng thái `reviewed`, xem [`data/rag/evaluation/README.md`](../data/rag/evaluation/README.md) |
 | Đánh giá chatbot hybrid mở rộng | Rà nhãn 30 câu bổ sung, tách bộ hiệu chỉnh và bộ kiểm tra độc lập. Câu hỏi gián tiếp về mượn tài liệu còn bị lọc ở ngưỡng cosine 0,40; độ bao phủ câu tổng quan Farm cần cải thiện |
 | Đánh giá truy xuất trên corpus lớn | Chưa đo gần giới hạn 20.000 đoạn mỗi chỉ mục BM25; số liệu hiện có trên 244 đoạn, với 1/2/5 người dùng đồng thời |
-| Đo đầy đủ tải chatbot hybrid | Mới đo rút gọn 12 lượt, 1.369 request; cần chạy đủ 36 lượt theo cấu hình mặc định và đo riêng nhóm câu hỏi bị từ chối |
+| Đo đầy đủ tải chatbot hybrid | Chạy đủ 36 lượt theo cấu hình mặc định và đo riêng nhóm câu hỏi bị từ chối |
 | Truy xuất legacy dựa trên MiniLM đa ngữ | Diagnosis/ticket vẫn dùng cosine và ngưỡng legacy; diễn đạt gián tiếp còn phụ thuộc embedding, không có reranker như chatbot |
 | Kiểm nguyên nhân và cách phòng của hỏi đáp Farm dựa trên từ | Câu cách phòng dùng lại từ của nguồn nhưng ngược nghĩa (ví dụ "bón nhiều đạm" khi nguồn ghi "tránh dư đạm") vẫn có thể qua; câu hỏi không nêu tên bệnh không qua bước kiểm này |
 | Luật phân loại của Lab là luật tay | Chưa đo độ chính xác trên dữ liệu thật |
 | Kho tri thức Lab chỉ có 12 bài từ 9 văn bản công khai của HaUI | Chưa có bài về máy in, VPN, quy chế phòng máy của khoa, đặt phòng máy; sổ tay LMS là bản năm học 2019-2020 |
 | Gợi ý tri thức ticket Lab chưa có hybrid/gate chatbot | Ticket vẫn dùng retrieve legacy; đoạn gần nghĩa chưa chắc đúng sự cố. Chưa đánh giá riêng độ phù hợp trên dữ liệu ticket thật |
 | Snapshot thời tiết chỉ có 5 điểm ĐBSCL, chụp ngày 07/10/2026 | Chụp lại nếu cần dữ liệu dự phòng mới hơn |
-| Giới hạn tốc độ ở gateway tính theo IP và ở backend theo người dùng (60 câu hỏi tri thức, 60 lần tạo ticket, 30 lần upload ảnh, chẩn đoán AI, đặt phòng hoặc đính kèm, 120 lượt đăng nhập, 600 lượt API mỗi phút) là số tạm; chưa thử tải | Superset dùng SQLite cho metadata, AI service là một tiến trình; chatbot có hàng đợi rerank CPU giới hạn |
+| Giới hạn tốc độ ở gateway tính theo IP và ở backend theo người dùng (60 câu hỏi tri thức, 60 lần tạo ticket, 30 lần upload ảnh, chẩn đoán AI, đặt phòng hoặc đính kèm, 120 lượt đăng nhập, 600 lượt API mỗi phút) là số tạm; mới thử giới hạn câu hỏi tri thức theo người dùng qua Cloudflare, chưa thử tải | Superset dùng SQLite cho metadata, AI service là một tiến trình; chatbot có hàng đợi rerank CPU giới hạn |
 
 ## 5. Chức năng chưa có
 
@@ -65,8 +61,8 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 |---|---|
 | Chặn SQLi và XSS chung ở Cloudflare | Cần gói trả phí; gói Free chỉ có managed ruleset chặn khai thác đã biết, Backend dùng truy vấn tham số hóa |
 | Xóa audit theo thời hạn | Bảng `audit_log` chỉ thêm, chưa có cách xóa theo thời hạn; theo dõi dung lượng bảng |
-| Chạy `backup.sh` theo lịch và chép kho ra ngoài máy chủ | Có script, `verify` và job CI; lịch cron, kho từ xa và diễn tập khôi phục định kỳ do người vận hành đặt |
-| Cảnh báo đăng nhập sai theo tài khoản | Đã có cảnh báo theo địa chỉ; sự kiện `LOGIN_ERROR` của Keycloak không ghi tên tài khoản (chỉ `user_id`), nên cần thêm `user_id` vào view `vw_auth_events` |
+| Chạy `backup.sh` theo lịch và chép kho ra ngoài máy chủ | Lịch cron, kho từ xa và diễn tập khôi phục định kỳ do người vận hành đặt |
+| Cảnh báo đăng nhập sai theo tài khoản | Sự kiện `LOGIN_ERROR` của Keycloak không ghi tên tài khoản (chỉ `user_id`), nên cần thêm `user_id` vào view `vw_auth_events` |
 | Metric tài nguyên (CPU, RAM, đĩa) và phân vị độ trễ | Màn hình giám sát chỉ có sự kiện bất thường và trạng thái dịch vụ; thêm Prometheus nếu cần |
 | Gộp lớp gửi Mattermost của `monitor` với `ChatWebhook` của core | `dx-monitor` không được phụ thuộc core nên hai nơi cùng đọc webhook; cảnh báo `ACCESS_DENIED` theo địa chỉ vẫn do `AuditAlertJob` của backend gửi |
 | Phân trang tra cứu chi tiết ở phía máy chủ | Hiện lấy tối đa 200 bản ghi mới nhất rồi chia trang trong trình duyệt |
@@ -85,7 +81,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Email cho thông báo trong hộp thư | Chưa có. Cần `spring-boot-starter-mail`, tắt `management.health.mail` (biến `SPRING_MAIL_HOST` rỗng vẫn tạo bộ gửi và làm `/actuator/health` báo lỗi), hàng đợi gửi lại chung với tin chat, địa chỉ lấy từ Keycloak lúc gửi, bảng lựa chọn của từng tài khoản và màn hình bật tắt |
 | Che thông tin cá nhân trong log | Nội dung log chưa đi qua `PiiMask` |
 | Mật khẩu demo cũ của `tech1`, `tech2` | Stack có sẵn hai tài khoản này giữ mật khẩu `tech123`; chỉ stack dựng mới nhận `tech1234` |
-| Cải tiến core và vận hành chưa làm: metric và Alertmanager, trang trạng thái công khai và cảnh báo sang chat cho giám sát từ bên ngoài, WAF Coraza, nâng cấp có đường lùi, compose profiles, kiểm giấy phép tự động, sổ kiểm toán chuỗi băm | Chưa làm |
+| Cải tiến core và vận hành chưa làm: metric và Alertmanager, trang trạng thái công khai, WAF Coraza, nâng cấp có đường lùi, compose profiles, kiểm giấy phép tự động, sổ kiểm toán chuỗi băm | Chưa làm |
 
 ## 6. Phụ thuộc người ngoài
 
@@ -95,7 +91,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Bổ sung văn bản chuyên môn cho rule đốm nâu | Help 400SC đã mở theo yêu cầu chủ dự án ngày 2026-10-20 với trạng thái `EXPERT_APPROVED`; chưa kèm văn bản chuyên môn riêng. Seed có ba rule; than lá, Tungro và lá khỏe không có rule thuốc |
 | Kỹ sư nông nghiệp xác nhận mốc tháng loại vụ và danh mục giống (đang `IN_REVIEW`) | Gợi ý loại vụ và ngày thu hoạch dựa trên số tạm; đổi `app.season-start-months` khi có xác nhận, không cần migration |
 | Khoa cung cấp văn bản về máy in, VPN, quy chế và đặt phòng máy | Có văn bản thì thêm bài vào `data/rag/lab/` theo nguyên tắc ở `data/README.md` |
-| Ảnh lá lúa thật cho `seed_demo.py --images` | Demo chẩn đoán AI có ý nghĩa; chart "Tỷ lệ AI đúng/sai" có dữ liệu; 5 ảnh RiceLeafDiseaseBD (CC BY 4.0) đã chạy thử ngoài repository, chưa kèm theo |
+| Ảnh lá lúa thật cho `seed_demo.py --images` | Demo chẩn đoán AI có ý nghĩa; chart "Tỷ lệ AI đúng/sai" có dữ liệu |
 
 ## 7. Backlog của DX-Lab
 

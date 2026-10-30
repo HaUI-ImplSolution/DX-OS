@@ -192,10 +192,11 @@ Thoát với mã 1 khi có `FAIL`, nên chạy trước `./update.sh` và `./sta
 
 ## Giám sát từ ngoài
 
-Workflow `online.yml` chạy mỗi 30 phút trên GitHub, gọi web, portal, trang đăng nhập và `/api/v1/system/status`, rồi báo lỗi qua GitHub khi một đường không trả 200 hoặc khi `backend` hoặc `storage` không `UP`.
-Địa chỉ mặc định là `https://khuongdev.io.vn`; đặt biến repository `PUBLIC_URL` để kiểm địa chỉ khác.
-GitHub chỉ chạy workflow theo lịch từ nhánh mặc định, và tắt chúng sau 60 ngày repo không có hoạt động.
-
+`./online-check.sh` (trong `deploy/`) gọi web, portal, trang đăng nhập và `/api/v1/system/status` qua địa chỉ công khai, rồi thoát với mã 1 khi một đường không trả 200 hoặc khi `backend` hoặc `storage` không `UP`.
+Địa chỉ lấy từ `GATEWAY_PUBLIC_URL` trong `.env`; biến `PUBLIC_URL` trong shell ghi đè để kiểm địa chỉ khác.
+Chạy theo lịch bằng cron, ví dụ mỗi 12 giờ: `0 */12 * * * cd /đường/dẫn/deploy && ./online-check.sh >> online-check.log 2>&1`.
+Khi `.env` có `MATTERMOST_WEBHOOK_URL_ADMIN` (hoặc `MATTERMOST_WEBHOOK_URL`), script gửi một tin vào kênh khi site chuyển sang lỗi và một tin khi site trở lại, không gửi lặp trong lúc còn lỗi.
+Script chạy trên chính máy chủ nên không phát hiện được việc máy chủ tắt hẳn; muốn phát hiện, thêm một dịch vụ ping ngoài (ví dụ UptimeRobot) trỏ vào `/api/v1/system/status`.
 ## Sao lưu và khôi phục
 
 `./backup.sh` (trong `deploy/`) chụp một bản sao lưu mã hóa của những gì không dựng lại được từ repo.
@@ -254,7 +255,9 @@ Thử bằng tệp EICAR (chuỗi kiểm thử chuẩn của ngành diệt virus
 Khi một nửa trong 10 lần gọi AI gần nhất (tối thiểu 5 lần) gặp lỗi mạng hoặc HTTP 5xx, backend ngừng gọi AI trong 30 giây (`ai.service.breaker.open-seconds`) và trả ngay HTTP 503 `ERR_AI_UNAVAILABLE`, thay vì để mỗi yêu cầu chờ hết thời gian.
 Sau 30 giây backend thử lại vài lần; thành công thì mở lại.
 Lỗi 4xx (yêu cầu sai) không tính là lỗi dịch vụ.
-Backend không tự gọi lại một lượt AI đã lỗi, vì mỗi lượt chẩn đoán trên CPU mất khoảng 50 giây.
+Backend không tự gọi lại một lượt AI đã lỗi, vì mỗi lượt chẩn đoán trên CPU mất 50 đến 70 giây.
+Route chẩn đoán của gateway chờ tới 95 giây (upstream `backend-ai` trong `deploy/apisix/common.yaml`), dưới giới hạn 100 giây của Cloudflare.
+Lượt dài hơn nhận `504` nhưng backend vẫn lưu chẩn đoán; tải lại báo cáo để thấy kết quả.
 Trong log backend, dòng `AI service is paused after repeated failures` cho biết cầu dao đang mở.
 
 ## Máy chủ CPU yếu

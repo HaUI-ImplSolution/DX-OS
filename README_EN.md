@@ -78,7 +78,7 @@ Feature maturity and test coverage are in [`docs/TESTING.md`](./docs/TESTING.md)
 | Chat | Mattermost Team Edition (unmodified) | AGPL-3.0 |
 
 Original code is Apache-2.0 ([`LICENSE`](./LICENSE)); source code in `ai/` remains AGPL-3.0 ([`ai/LICENSE`](./ai/LICENSE)).
-Full dependency and license table: [`LICENSES.md`](./LICENSES.md); CycloneDX SBOMs: [`sbom/`](./sbom/README.md).
+Full dependency and license table: [`COPYRIGHT.txt`](./COPYRIGHT.txt); CycloneDX SBOMs: [`sbom/`](./sbom/README.md).
 
 ## 🚀 Install and run
 
@@ -149,7 +149,7 @@ Per-application settings: [`backend/app-farm/README.md`](./backend/app-farm/READ
 A public server runs behind a Cloudflare Tunnel and opens no inbound port.
 Enable it with the overlay [`deploy/docker-compose.cloudflared.yml`](./deploy/docker-compose.cloudflared.yml) (instructions at the top of the file).
 Cloudflare concepts and settings are in [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE.md); logs, rate limits, the audit log, backup and restore are in [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
-The workflow [`online.yml`](./.github/workflows/online.yml) calls the public paths every 30 minutes and reports a failure when they cannot be reached.
+The script [`deploy/online-check.sh`](./deploy/online-check.sh) calls the public paths from a cron job on the server and posts to Mattermost when they cannot be reached.
 
 ### 🔑 Demo accounts
 
@@ -210,7 +210,7 @@ Full testing guide: [`docs/TESTING.md`](./docs/TESTING.md).
 | [`sso/`](./sso/README.md) · [`bi/`](./bi/README.md) · [`chat/`](./chat/README.md) · [`seaweedfs/`](./seaweedfs/README.md) · [`portal/`](./portal/README.md) | Keycloak, Superset, Mattermost, SeaweedFS, portal |
 | [`docs/`](./docs) | Backlog, testing, AI evaluation, submission pack, council Q&A, phase template (`_template/`), reference material |
 
-Top-level documents: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./CHANGELOG.md) · [`LICENSES.md`](./LICENSES.md).
+Top-level documents: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./CHANGELOG.md) · [`COPYRIGHT.txt`](./COPYRIGHT.txt).
 
 ## 🤝 Contributing
 
@@ -228,6 +228,6 @@ Top-level documents: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](
 
 ## 📜 License
 
-Apache License 2.0, see [`LICENSE`](./LICENSE); the `ai/` directory is AGPL-3.0, see [`ai/LICENSE`](./ai/LICENSE) and [`LICENSES.md`](./LICENSES.md).
+Apache License 2.0, see [`LICENSE`](./LICENSE); the `ai/` directory is AGPL-3.0, see [`ai/LICENSE`](./ai/LICENSE) and [`COPYRIGHT.txt`](./COPYRIGHT.txt).
 
 References: [contest topic](https://vfossa.vn/tin-tuc/gioi-thieu-mo-hinh-dx-os-va-chu-de-cuoc-thi-phan-mem-nguon-mo-olp-2026-761.html) · [DX-OS textbook](https://opendigitransform.gitbook.io/dx-os)

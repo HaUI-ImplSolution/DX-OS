@@ -142,8 +142,8 @@ public class MonitorQueryService {
         byIp.computeIfAbsent(rs.getString("ip"), k -> new long[5])[slot] = rs.getLong("total");
       }
     }, from);
-    authEvents.failedPerIp(from.toInstant(), 50).ifPresent(counts -> counts.forEach(
-        (ip, total) -> byIp.computeIfAbsent(ip, k -> new long[5])[4] = total));
+    authEvents.failedPerIp(from.toInstant(), 50).ifPresent(counts -> counts
+        .forEach((ip, total) -> byIp.computeIfAbsent(ip, k -> new long[5])[4] = total));
     List<Suspect> addresses = byIp.entrySet().stream()
         .map(e -> new Suspect(e.getKey(), e.getValue()[0], e.getValue()[1], e.getValue()[2],
             e.getValue()[3], e.getValue()[4]))
@@ -154,8 +154,7 @@ public class MonitorQueryService {
         SELECT path, count(*) + sum(suppressed) AS total FROM gateway_event
         WHERE kind IN ('SERVER_ERROR', 'UPSTREAM_DOWN') AND occurred_at >= ? AND path IS NOT NULL
         GROUP BY path ORDER BY total DESC, path LIMIT ?
-        """, (rs, i) -> new ErrorPath(rs.getString("path"), rs.getLong("total")), from,
-        PATH_LIMIT);
+        """, (rs, i) -> new ErrorPath(rs.getString("path"), rs.getLong("total")), from, PATH_LIMIT);
     return new Suspects(window.code(), addresses, paths);
   }
 
@@ -282,8 +281,18 @@ public class MonitorQueryService {
     private Instant first;
     private Instant last;
 
-    private void add(String kind, long total, Instant firstAt,
-        Instant lastAt) {switch(kind){case"RATE_LIMITED"->rateLimited+=total;case"AUTH_REJECTED"->authRejected+=total;case"NOT_FOUND"->notFound+=total;case"SLOW"->slow+=total;default->serverErrors+=total;}if(!"NOT_FOUND".equals(kind)){seen(firstAt,lastAt);}}
+    private void add(String kind, long total, Instant firstAt, Instant lastAt) {
+      switch (kind) {
+        case "RATE_LIMITED" -> rateLimited += total;
+        case "AUTH_REJECTED" -> authRejected += total;
+        case "NOT_FOUND" -> notFound += total;
+        case "SLOW" -> slow += total;
+        default -> serverErrors += total;
+      }
+      if (!"NOT_FOUND".equals(kind)) {
+        seen(firstAt, lastAt);
+      }
+    }
 
     private void seen(Instant firstAt, Instant lastAt) {
       first = first == null || firstAt.isBefore(first) ? firstAt : first;

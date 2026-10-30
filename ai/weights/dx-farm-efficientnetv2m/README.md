@@ -5,4 +5,4 @@ Sáu lớp theo [class contract](../../../data/structured/class_contract.json), 
 Ba phần checkpoint giữ nguyên byte; thứ tự và kích thước ở [parts.json](./parts.json).
 [assemble_cv_weights.py](../../scripts/assemble_cv_weights.py) ghép file trong Docker build hoặc khi phát triển local; không tải trọng số và không in checksum.
 Checksum được tính cục bộ, chỉ lưu trong env riêng.
-Phần fine-tune của nhóm theo [Apache-2.0](../../../LICENSE); điều khoản trọng số pretrained và dữ liệu theo [LICENSES.md](../../../LICENSES.md).
+Phần fine-tune của nhóm theo [Apache-2.0](../../../LICENSE); điều khoản trọng số pretrained và dữ liệu theo [COPYRIGHT.txt](../../../COPYRIGHT.txt).

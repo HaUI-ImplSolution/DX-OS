@@ -228,4 +228,4 @@ Chạy từ `ai/`:
 - CPU không có AVX chạy Qwen quá chậm cho các giới hạn trên (khoảng 2 token/giây khi đọc prompt), nên đặt `ANSWER_GENERATION_ENABLED=false`.
 - Hỏi đáp Farm về một bệnh đã nêu tên vẫn có thể nhận nguyên nhân hoặc cách phòng không có trong nguồn ([`docs/BACKLOG.md`](../docs/BACKLOG.md)).
 - `ai/` phân phối theo AGPL-3.0 ([`LICENSE`](./LICENSE)); Backend gọi AI qua HTTP nên không là tác phẩm phái sinh.
-  Danh sách thành phần ở [`LICENSES.md`](../LICENSES.md).
+  Danh sách thành phần ở [`COPYRIGHT.txt`](../COPYRIGHT.txt).

@@ -23,7 +23,7 @@
     priority: 20
     uri: /api/v1/disease-reports/:reportId/diagnosis/ai
     methods: ["POST"]
-    upstream_id: backend
+    upstream_id: backend-ai
     plugin_config_id: bearer-token
     plugins:
       limit-count:

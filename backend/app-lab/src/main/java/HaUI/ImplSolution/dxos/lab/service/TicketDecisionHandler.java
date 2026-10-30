@@ -66,18 +66,18 @@ public class TicketDecisionHandler implements WorkflowDecisionHandler {
           LabNotificationTypes.TICKET_ASSIGNED, "Yêu cầu được tiếp nhận",
           "Yêu cầu %s đã được %s tiếp nhận.".formatted(code, ticket.getAssigneeName()),
           LabCaseTypes.TICKET_ENTITY, ticket.getId());
-      case TicketStatus.WAITING_USER -> notifier.tell(ticket.getRequesterId(),
-          LabNotificationTypes.TICKET_WAITING_USER, "Cần bạn bổ sung thông tin",
-          "Yêu cầu %s đang chờ phản hồi của bạn.".formatted(code), LabCaseTypes.TICKET_ENTITY,
-          ticket.getId());
+      case TicketStatus.WAITING_USER ->
+        notifier.tell(ticket.getRequesterId(), LabNotificationTypes.TICKET_WAITING_USER,
+            "Cần bạn bổ sung thông tin", "Yêu cầu %s đang chờ phản hồi của bạn.".formatted(code),
+            LabCaseTypes.TICKET_ENTITY, ticket.getId());
       case TicketStatus.RESOLVED -> notifier.tell(ticket.getRequesterId(),
           LabNotificationTypes.TICKET_RESOLVED, "Yêu cầu đã xử lý xong",
           "Yêu cầu %s đã xử lý xong, hãy xác nhận và đánh giá.".formatted(code),
           LabCaseTypes.TICKET_ENTITY, ticket.getId());
-      case TicketStatus.REJECTED -> notifier.tell(ticket.getRequesterId(),
-          LabNotificationTypes.TICKET_RESOLVED, "Yêu cầu bị từ chối",
-          "Yêu cầu %s bị từ chối. Lý do: %s".formatted(code, reason),
-          LabCaseTypes.TICKET_ENTITY, ticket.getId());
+      case TicketStatus.REJECTED ->
+        notifier.tell(ticket.getRequesterId(), LabNotificationTypes.TICKET_RESOLVED,
+            "Yêu cầu bị từ chối", "Yêu cầu %s bị từ chối. Lý do: %s".formatted(code, reason),
+            LabCaseTypes.TICKET_ENTITY, ticket.getId());
       default -> {
       }
     }

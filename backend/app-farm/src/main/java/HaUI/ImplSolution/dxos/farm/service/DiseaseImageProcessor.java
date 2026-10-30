@@ -144,8 +144,44 @@ public class DiseaseImageProcessor implements FileProcessor {
   }
 
   // EXIF orientation is baked into the pixels because the tag itself is dropped on re-encode.
-  private static BufferedImage applyOrientation(BufferedImage image,
-      int orientation) {int w=image.getWidth();int h=image.getHeight();AffineTransform transform;boolean swap=false;switch(orientation){case 2->transform=new AffineTransform(-1,0,0,1,w,0);case 3->transform=new AffineTransform(-1,0,0,-1,w,h);case 4->transform=new AffineTransform(1,0,0,-1,0,h);case 5->{transform=new AffineTransform(0,1,1,0,0,0);swap=true;}case 6->{transform=new AffineTransform(0,1,-1,0,h,0);swap=true;}case 7->{transform=new AffineTransform(0,-1,-1,0,h,w);swap=true;}case 8->{transform=new AffineTransform(0,-1,1,0,0,w);swap=true;}default->{return image;}}BufferedImage rotated=new BufferedImage(swap?h:w,swap?w:h,image.getType());Graphics2D graphics=rotated.createGraphics();try{graphics.drawImage(image,transform,null);}finally{graphics.dispose();}return rotated;}
+  private static BufferedImage applyOrientation(BufferedImage image, int orientation) {
+    int w = image.getWidth();
+    int h = image.getHeight();
+    AffineTransform transform;
+    boolean swap = false;
+    switch (orientation) {
+      case 2 -> transform = new AffineTransform(-1, 0, 0, 1, w, 0);
+      case 3 -> transform = new AffineTransform(-1, 0, 0, -1, w, h);
+      case 4 -> transform = new AffineTransform(1, 0, 0, -1, 0, h);
+      case 5 -> {
+        transform = new AffineTransform(0, 1, 1, 0, 0, 0);
+        swap = true;
+      }
+      case 6 -> {
+        transform = new AffineTransform(0, 1, -1, 0, h, 0);
+        swap = true;
+      }
+      case 7 -> {
+        transform = new AffineTransform(0, -1, -1, 0, h, w);
+        swap = true;
+      }
+      case 8 -> {
+        transform = new AffineTransform(0, -1, 1, 0, 0, w);
+        swap = true;
+      }
+      default -> {
+        return image;
+      }
+    }
+    BufferedImage rotated = new BufferedImage(swap ? h : w, swap ? w : h, image.getType());
+    Graphics2D graphics = rotated.createGraphics();
+    try {
+      graphics.drawImage(image, transform, null);
+    } finally {
+      graphics.dispose();
+    }
+    return rotated;
+  }
 
   // Returns the EXIF orientation (1-8) of a JPEG, or 1 when absent or unreadable.
   static int readJpegOrientation(byte[] data) {

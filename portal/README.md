@@ -6,9 +6,11 @@ Cuối trang có mục **Trạng thái dịch vụ**, tự làm mới mỗi 30 g
 - Tên ứng dụng đang chạy (hiện ở tiêu đề), Backend, AI và lưu trữ ảnh lấy từ `GET /api/v1/system/status` (công khai, qua gateway).
 - Ứng dụng chính và Keycloak gọi qua gateway; BI (`9081`), chat (`8065`) và màn hình giám sát (`/monitor/actuator/health`) chỉ kiểm có phản hồi hay không.
 
+![Portal liệt kê ứng dụng, trang quản trị và trạng thái dịch vụ](../docs/images/demo/portal.png)
+
 ## Chạy
 
-Nằm trong `deploy/docker-compose.yml`, không publish cổng riêng: gateway phục vụ ở `http://localhost:9080/portal/`.
+Nằm trong `deploy/docker-compose.yml`, không publish cổng riêng: gateway phục vụ ở `https://khuongdev.io.vn/portal/`.
 
 ## Đăng nhập
 

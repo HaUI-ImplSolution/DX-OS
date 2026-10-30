@@ -8,6 +8,8 @@ Mở từ thẻ "Giám sát và truy vết" của portal hoặc tại `/monitor/
 Màn hình chỉ đọc, nền sáng, tự làm mới mỗi 30 giây.
 Nội dung viết cho người quản lý không chuyên IT: biểu đồ là chính và không hiện mã trạng thái.
 
+![Màn hình giám sát và truy vết](../../docs/images/demo/monitor.png)
+
 ## Chạy và build
 
 - Cổng nội bộ `8090`, đường dẫn gốc `/monitor`; gateway chuyển `/monitor/*` tới đây.

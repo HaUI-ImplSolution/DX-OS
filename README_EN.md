@@ -7,6 +7,8 @@
 
 **Team:** HaUI-ImplSolution · **School:** School of Information and Communication Technology, Hanoi University of Industry
 
+**Live project:** [khuongdev.io.vn/portal](https://khuongdev.io.vn/portal/)
+
 **Documentation:** tracked on the [docs site](https://haui-implsolution.github.io/DX-OS-docs/).
 
 A shared open-source platform for digital transformation, built for the **OLP Open Source Software 2026** contest (DX-OS track, VFOSSA).
@@ -30,6 +32,22 @@ One shared core handles sign-in, data, workflows, notifications and AI; two busi
 - **One-command run:** builds the whole system with demo data, with automated tests on a clean environment.
 - **Transparent open source:** licenses and the list of software components are public; every source file has a license header, CI checks the license of each library and scans automatically for leaked passwords, vulnerable libraries (including the resolved dependency list) and third-party images; Dependabot proposes updates.
 - **Releases:** each `vX.Y.Z` release has a source `.tar.gz`, a `.sha256` file and the SBOMs on the Releases page; prebuilt images are on GHCR and `deploy/install.sh` installs them into another directory.
+
+## 📸 Screenshots
+
+Taken from the live deployment at [khuongdev.io.vn/portal](https://khuongdev.io.vn/portal/).
+
+| Portal, no sign-in needed | Monitoring and tracing (administrators) |
+|---|---|
+| ![Portal listing the applications, admin pages and service status](docs/images/demo/portal.png) | ![Monitoring screen: abnormal events and the status of each service](docs/images/demo/monitor.png) |
+
+| Farm: the engineer's request queue | Farm: document Q&A with sources |
+|---|---|
+| ![Requests waiting for the engineer's approval](docs/images/demo/farm-review.png) | ![An answer about rice blast with its cited sources](docs/images/demo/farm-knowledge.png) |
+
+| Farm: the farmer's mobile app | Lab: handling a support request |
+|---|---|
+| ![Approved report on mobile: confidence, pesticide, dose, pre-harvest days](docs/images/demo/farm-mobile.png) | ![Support request detail: deadlines, history, discussion](docs/images/demo/lab-ticket.png) |
 
 ## 🗺️ Overall architecture
 
@@ -163,14 +181,14 @@ Per-application settings: [`backend/app-farm/README.md`](./backend/app-farm/READ
 
 | Service | Address | Login |
 |---|---|---|
-| Web application | http://localhost:9080 | Keycloak SSO, accounts below |
-| Portal (service status) | http://localhost:9080/portal/ | None |
-| Monitoring and tracing | http://localhost:9080/monitor/ | Keycloak SSO, ADMIN role only (`admin1`) |
-| Swagger | http://localhost:9080/swagger-ui.html | Keycloak access token, click Authorize |
-| Keycloak Admin | http://localhost:9080/admin | `KEYCLOAK_ADMIN_USERNAME` / `KEYCLOAK_ADMIN_PASSWORD` |
-| BI (Superset) | http://localhost:9081 | Keycloak SSO; `admin1` for the admin area |
-| Image storage admin (SeaweedFS) | http://localhost:9082 | `S3_ACCESS_KEY` / `S3_SECRET_KEY` |
-| Chat (Mattermost) | http://localhost:8065 | `MATTERMOST_ADMIN_USERNAME` / `MATTERMOST_ADMIN_PASSWORD` |
+| Web application | https://khuongdev.io.vn | Keycloak SSO, accounts below |
+| Portal (service status) | https://khuongdev.io.vn/portal/ | None |
+| Monitoring and tracing | https://khuongdev.io.vn/monitor/ | Keycloak SSO, ADMIN role only (`admin1`) |
+| Swagger | https://khuongdev.io.vn/swagger-ui.html | Keycloak access token, click Authorize |
+| Keycloak Admin | https://khuongdev.io.vn/admin | `KEYCLOAK_ADMIN_USERNAME` / `KEYCLOAK_ADMIN_PASSWORD` |
+| BI (Superset) | https://bi.khuongdev.io.vn | Cloudflare Access, then Keycloak SSO; `admin1` for the admin area |
+| Image storage admin (SeaweedFS) | https://files.khuongdev.io.vn | Cloudflare Access, then `S3_ACCESS_KEY` / `S3_SECRET_KEY` |
+| Chat (Mattermost) | https://chat.khuongdev.io.vn | `MATTERMOST_ADMIN_USERNAME` / `MATTERMOST_ADMIN_PASSWORD` |
 
 ### 🌐 Public server
 
@@ -195,7 +213,7 @@ The script [`deploy/online-check.sh`](./deploy/online-check.sh) calls the public
 ## 🔌 API
 
 - Swagger UI is at `/swagger-ui.html` and the OpenAPI JSON at `/v3/api-docs`; the documentation is generated from springdoc annotations and covers only the running application (`DXOS_APP`).
-- Every call goes through the gateway `http://localhost:9080/api/v1/...` with `Authorization: Bearer <Keycloak access token>`; only `GET /api/v1/system/status` and the application's public catalogues need no token.
+- Every call goes through the gateway `https://khuongdev.io.vn/api/v1/...` with `Authorization: Bearer <Keycloak access token>`; only `GET /api/v1/system/status` and the application's public catalogues need no token.
 - Responses are wrapped in `ApiResponse`; errors carry a stable `errorCode`, business errors return `422` and concurrent conflicts return `409`.
 - A call over the rate limit returns `429` with `Retry-After`; the calls that create a record accept an `Idempotency-Key` header.
 - To try it: click **Authorize** in Swagger with an access token, or use `deploy/demo/dxos_client.py` (Authorization Code + PKCE sign-in, like the real apps).

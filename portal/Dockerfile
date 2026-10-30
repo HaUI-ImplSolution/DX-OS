@@ -1,4 +1,4 @@
-FROM nginx:1.27-alpine
+FROM nginx:1.29-alpine
 ENV PORTAL_BI_URL="" PORTAL_CHAT_URL="" PORTAL_STORAGE_URL=""
 COPY index.html /usr/share/nginx/html/index.html
 COPY nginx.conf /etc/nginx/templates/default.conf.template

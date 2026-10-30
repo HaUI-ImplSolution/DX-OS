@@ -1,7 +1,7 @@
 # BI Dashboard (Apache Superset)
 
 Chỉ chứa cấu hình và script của Superset (image `apache/superset:3.1.3` chính thức, Apache-2.0).
-Trên máy chủ công khai, Superset (`bi.<tên miền>`) nằm sau Cloudflare Access rồi mới tới đăng nhập SSO Keycloak, xem [`docs/CLOUDFLARE.md`](../docs/CLOUDFLARE.md).
+Trên máy chủ công khai, Superset (`bi.<tên miền>`) nằm sau Cloudflare Access rồi mới tới đăng nhập SSO Keycloak, xem [Cấu hình Cloudflare](https://haui-implsolution.github.io/DX-OS-docs/docs/cloudflare).
 Service `superset` khai báo trong [`deploy/docker-compose.yml`](../deploy/docker-compose.yml).
 
 ## Cách hoạt động

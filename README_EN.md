@@ -63,7 +63,7 @@ Full diagrams and request flows are in [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 **DX-Lab:** support requests with deadlines and internal comments, type and priority suggestions, equipment loans with repair log, room booking without time conflicts, regulations Q&A quoted from the university's official documents, with each source opening the original page, statistics.
 
-Feature maturity and test coverage are in [`docs/TESTING.md`](./docs/TESTING.md); outstanding work is in [`docs/BACKLOG.md`](./docs/BACKLOG.md).
+Feature maturity and test coverage are in [`docs/TESTING.md`](./docs/TESTING.md); outstanding work is in [Backlog](https://haui-implsolution.github.io/DX-OS-docs/docs/backlog).
 
 ## 🧰 Technology and licenses
 
@@ -173,7 +173,7 @@ Per-application settings: [`backend/app-farm/README.md`](./backend/app-farm/READ
 
 A public server runs behind a Cloudflare Tunnel and opens no inbound port.
 Enable it with the overlay [`deploy/docker-compose.cloudflared.yml`](./deploy/docker-compose.cloudflared.yml) (instructions at the top of the file).
-Cloudflare concepts and settings are in [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE.md); logs, rate limits, the audit log, backup and restore are in [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
+Cloudflare concepts and settings are in [Cloudflare settings](https://haui-implsolution.github.io/DX-OS-docs/docs/cloudflare); logs, rate limits, the audit log, backup and restore are in [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
 The script [`deploy/online-check.sh`](./deploy/online-check.sh) calls the public paths from a cron job on the server and posts to Mattermost when they cannot be reached.
 
 ### 🔑 Demo accounts
@@ -233,9 +233,9 @@ Full testing guide: [`docs/TESTING.md`](./docs/TESTING.md).
 | [`data/`](./data/README.md) | Structured data, RAG corpora, RAG evaluation set, seed generation scripts |
 | [`deploy/`](./deploy) | Docker Compose, gateway, `start.sh`, `doctor.sh`, demo data and E2E; access logs in [`OPERATIONS.md`](./deploy/OPERATIONS.md) |
 | [`sso/`](./sso/README.md) · [`bi/`](./bi/README.md) · [`chat/`](./chat/README.md) · [`seaweedfs/`](./seaweedfs/README.md) · [`portal/`](./portal/README.md) | Keycloak, Superset, Mattermost, SeaweedFS, portal |
-| [`docs/`](./docs) | Backlog, testing, AI evaluation, submission pack, council Q&A, phase template (`_template/`), reference material |
+| [`docs/`](./docs) | Testing guide and diagrams; the other documents are on the [docs site](https://haui-implsolution.github.io/DX-OS-docs/) |
 
-Top-level documents: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./CHANGELOG.md) · [`COPYRIGHT.txt`](./COPYRIGHT.txt).
+Top-level documents: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./CHANGELOG.md) · [`COPYRIGHT.txt`](./COPYRIGHT.txt) · [Docs site](https://haui-implsolution.github.io/DX-OS-docs/).
 
 ## 🤝 Contributing
 

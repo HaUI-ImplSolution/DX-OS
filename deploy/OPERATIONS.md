@@ -100,7 +100,7 @@ Giới hạn này chỉ chặn lượng request lớn từ một địa chỉ.
 ## Cloudflare
 
 Cấu hình nằm trên Cloudflare, không nằm trong repo.
-Khái niệm và tổng hợp cấu hình đang dùng ở [`docs/CLOUDFLARE.md`](../docs/CLOUDFLARE.md).
+Khái niệm và tổng hợp cấu hình đang dùng ở [Cấu hình Cloudflare](https://haui-implsolution.github.io/DX-OS-docs/docs/cloudflare).
 Sau khi bật mỗi mục, kiểm đăng nhập web, đăng nhập mobile, gửi ảnh báo cáo và chẩn đoán AI.
 
 Domain `khuongdev.io.vn`:

@@ -63,7 +63,7 @@ Sơ đồ đầy đủ và luồng xử lý ở [`ARCHITECTURE.md`](./ARCHITECTU
 
 **DX-Lab:** yêu cầu hỗ trợ có hạn xử lý và trao đổi nội bộ, gợi ý loại và mức ưu tiên, mượn trả thiết bị và nhật ký sửa chữa, đặt phòng máy không trùng giờ, hỏi đáp quy chế trích từ văn bản chính thức của trường, bấm nguồn là mở trang gốc, thống kê.
 
-Mức hoàn thiện và độ phủ kiểm thử từng tính năng ở [`docs/TESTING.md`](./docs/TESTING.md); việc chưa làm ở [`docs/BACKLOG.md`](./docs/BACKLOG.md).
+Mức hoàn thiện và độ phủ kiểm thử từng tính năng ở [`docs/TESTING.md`](./docs/TESTING.md); việc chưa làm ở [Việc tồn đọng](https://haui-implsolution.github.io/DX-OS-docs/docs/backlog).
 
 ## 🧰 Công nghệ và giấy phép
 
@@ -173,7 +173,7 @@ Cấu hình riêng của từng ứng dụng ở [`backend/app-farm/README.md`](
 
 Máy chủ công khai chạy sau Cloudflare Tunnel, không mở cổng vào.
 Bật bằng overlay [`deploy/docker-compose.cloudflared.yml`](./deploy/docker-compose.cloudflared.yml) (hướng dẫn ở đầu file).
-Khái niệm và cấu hình Cloudflare ở [`docs/CLOUDFLARE.md`](./docs/CLOUDFLARE.md); xem log, giới hạn tốc độ, audit, sao lưu và khôi phục ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
+Khái niệm và cấu hình Cloudflare ở [Cấu hình Cloudflare](https://haui-implsolution.github.io/DX-OS-docs/docs/cloudflare); xem log, giới hạn tốc độ, audit, sao lưu và khôi phục ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
 Script [`deploy/online-check.sh`](./deploy/online-check.sh) gọi các đường công khai, chạy bằng cron trên máy chủ và báo sang Mattermost khi không truy cập được.
 
 ### 🔑 Tài khoản demo
@@ -233,9 +233,9 @@ Hướng dẫn kiểm thử đầy đủ ở [`docs/TESTING.md`](./docs/TESTING.
 | [`data/`](./data/README.md) | Dữ liệu có cấu trúc, corpus RAG, bộ đề đánh giá RAG, script sinh seed |
 | [`deploy/`](./deploy) | Docker Compose, gateway, `start.sh`, `doctor.sh`, dữ liệu demo và E2E; xem log truy cập ở [`OPERATIONS.md`](./deploy/OPERATIONS.md) |
 | [`sso/`](./sso/README.md) · [`bi/`](./bi/README.md) · [`chat/`](./chat/README.md) · [`seaweedfs/`](./seaweedfs/README.md) · [`portal/`](./portal/README.md) | Keycloak, Superset, Mattermost, SeaweedFS, portal |
-| [`docs/`](./docs) | Tồn đọng, kiểm thử, đánh giá AI, hồ sơ nộp bài, câu hỏi hội đồng, mẫu phase (`_template/`), tài liệu tham chiếu |
+| [`docs/`](./docs) | Hướng dẫn kiểm thử và ảnh sơ đồ; các tài liệu còn lại ở [trang docs](https://haui-implsolution.github.io/DX-OS-docs/) |
 
-Tài liệu gốc: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./CHANGELOG.md) · [`COPYRIGHT.txt`](./COPYRIGHT.txt).
+Tài liệu gốc: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`CHANGELOG.md`](./CHANGELOG.md) · [`COPYRIGHT.txt`](./COPYRIGHT.txt) · [Trang docs](https://haui-implsolution.github.io/DX-OS-docs/).
 
 ## 🤝 Đóng góp
 

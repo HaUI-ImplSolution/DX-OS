@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { Alert, Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import Constants from "expo-constants";
 import { useAuth } from "@/auth/AuthProvider";

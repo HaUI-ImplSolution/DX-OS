@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 // Vietnamese text per backend errorCode. Codes without an entry show the backend message,
 // which is already Vietnamese for them.
 const ERROR_MESSAGES: Record<string, string> = {

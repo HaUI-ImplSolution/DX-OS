@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import type { CaseType } from "./types";
 
 export { formatDateTime, statusLabel, statusTone } from "../../shell";

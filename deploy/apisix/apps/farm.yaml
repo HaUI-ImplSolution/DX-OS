@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
   # Routes and rate limits of the Farm app, appended to the routes of common.yaml.
 
   # Photo upload: authenticated, and limited per client address.

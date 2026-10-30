@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { ApiError, json, request, upload, type UploadFile } from "./client";
 import type {
   AppManifest,

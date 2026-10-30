@@ -13,6 +13,7 @@ Service `superset` khai báo trong [`deploy/docker-compose.yml`](../deploy/docke
 - `bootstrap_datasources.py` đọc `DXOS_APP` (giá trị khác thì dừng) và đăng ký qua REST API của Superset, idempotent và có retry:
   - **Farm:** import `farm_dashboard_export.zip` (database, dataset, chart, dashboard; nguồn sự thật duy nhất) và truyền lại mật khẩu Postgres vì export mask mật khẩu. Chưa có bundle thì chỉ tạo kết nối `DX-Farm` và 7 dataset.
   - **Lab:** tạo kết nối `DX-Lab` và 5 dataset `vw_lab_*` (`rooms`, `devices`, `tickets`, `device_loans`, `room_bookings`); dashboard dựng tay.
+- `farm_dashboard_export.zip` là định dạng export và import của Superset (một tệp zip chứa các tệp YAML của dashboard, chart, dataset và database), nên giữ nguyên dạng này.
 - Superset bỏ `query_context` khi import, nên `bootstrap_datasources.py` sinh lại cho từng chart của dashboard bằng `chart_query_context.py` rồi lưu qua `PUT /api/v1/chart/{id}`.
   Hỗ trợ pie, cột và đường theo thời gian, bảng thô, deck.gl scatter và heatmap; chart loại khác giữ nguyên.
 - Cùng bước đó ghi `mapbox_style` của chart bản đồ theo bundle.

@@ -1,0 +1,58 @@
+# SPDX-License-Identifier: Apache-2.0
+name: Bug report
+description: Báo lỗi của DX-OS (DX-Farm, DX-Lab)
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Không đưa mật khẩu, token hay dữ liệu thật vào issue.
+        Lỗ hổng bảo mật báo theo [`SECURITY.md`](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/SECURITY.md), không mở issue công khai.
+  - type: textarea
+    id: description
+    attributes:
+      label: Mô tả
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Các bước tái hiện
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Kết quả mong đợi
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Kết quả thực tế
+      description: Kèm thông báo lỗi, `errorCode` nếu có.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Phiên bản
+      description: Tag hoặc commit.
+      placeholder: v1.1.0
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Thành phần
+      multiple: true
+      options: [web, mobile, backend, AI, BI, chat, gateway, SSO, deploy]
+  - type: dropdown
+    id: run
+    attributes:
+      label: Cách chạy
+      options: [Docker Compose, Chạy tay từng thành phần]

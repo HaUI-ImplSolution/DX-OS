@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { router } from "expo-router";
 import { StyleSheet, Text } from "react-native";
 import { Card } from "@/components/Card";

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { useState, type FormEvent } from "react";
 import { askKnowledge } from "../api";
 import GeneratedAnswerCard from "../components/GeneratedAnswerCard";

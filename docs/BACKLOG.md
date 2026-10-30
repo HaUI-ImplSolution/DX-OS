@@ -9,17 +9,12 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 |---|---|
 | Báo cáo kỹ thuật 8-10 trang, slide tối đa 12 | Sườn báo cáo ở [`report/README.md`](./report/README.md) |
 | Video demo 3-5 phút, rehearsal ít nhất một lần | Kịch bản ở [`SUBMISSION.md`](./SUBMISSION.md) mục 2 và 3 |
-| Tạo vài issue mẫu trên GitHub | Issues đã bật, hiện chưa có issue nào; lấy từ mục 5 và 6 của tài liệu này |
 | Chụp ảnh giao diện hai chế độ (Farm, Lab) và màn hình giám sát lưu vào repository cho hồ sơ | Chưa có; che IP và email thật khi chụp màn hình giám sát |
 | Chốt ngày hạn nộp thật | Chưa chốt |
 
 ## 2. Việc còn lại trên VPS
 
-| Việc | Phạm vi |
-|---|---|
-| Phát hành bản sửa `backup.sh` (mục Unreleased của CHANGELOG) | Gộp vào `main` rồi `git pull` trên VPS; bản mới đã chạy thử trên VPS và gom mọi snapshot vào một nhóm giữ, nhưng chưa có snapshot nào quá 7 ngày nên việc xóa bản cũ chưa được kiểm |
-| Nạp cấu hình gateway mới và đo lại chẩn đoán AI trên VPS | Sau `git pull`: `./switch-app.sh farm`, rồi bấm chẩn đoán AI cho một báo cáo và kiểm nhận `200` trong 95 giây |
-| Đặt cron cho `deploy/online-check.sh` trên VPS | Sau `git pull`, chạy tay một lần rồi thêm `0 */12 * * *` theo `deploy/OPERATIONS.md`; script đã chạy thử trên VPS với bốn đường đều `OK` |
+VPS chạy `v1.1.0`; không còn việc ở mục này.
 
 ## 3. Chưa kiểm thử
 
@@ -29,6 +24,7 @@ Làm xong một mục thì xóa dòng đó; không ghi lại diễn biến, ch�
 | Chấm nội dung Qwen trên 36 câu hỏi và 6 chủ đề chẩn đoán | Chưa có bảng chấm trọng tâm, bám nguồn và dễ đọc do người duyệt xác nhận; tỷ lệ `generated` không phải độ đúng nội dung |
 | Kiểm nguyên nhân và cách phòng của hỏi đáp Farm với Qwen thật | Chạy bộ câu hỏi Farm với Qwen để xem tỷ lệ câu bị chuyển sang `insufficient_evidence` |
 | Khởi động bản Qwen từ clone sạch | Chạy full build/seed toàn stack từ clone sạch |
+| `backup.sh` xóa snapshot quá 7 ngày | Trên VPS mới kiểm việc gom mọi snapshot vào một nhóm và giữ bản mới nhất mỗi ngày; chưa có snapshot nào quá 7 ngày |
 | `backup.sh` với kho sao lưu từ xa | Thử `BACKUP_REPOSITORY` từ xa |
 | Cầu dao AI với tải thật | Thử khi AI chậm vì tải, lúc đó lỗi đọc quá hạn cũng tính là lỗi dịch vụ |
 ## 4. Giới hạn của AI và dữ liệu

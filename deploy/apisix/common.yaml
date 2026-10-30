@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 # Shared part of the gateway configuration. The `apisix-config` service of docker-compose.yml
 # appends apps/<DXOS_APP>.yaml (more routes) and the #END marker to build the file APISIX loads.
 #

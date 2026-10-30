@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { useCallback, useEffect, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
 import { FlatList, RefreshControl, StyleSheet, View } from "react-native";

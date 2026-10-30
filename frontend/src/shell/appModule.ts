@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import type { ReactNode } from "react";
 import type { LabelRegistration } from "./labels";
 import type { AppManifest, ApprovalRequest, Notification } from "./types";

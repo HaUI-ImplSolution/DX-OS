@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: AGPL-3.0-only
 """TypedDict definition for LangGraph workflow state.
 Only the fields required for the minimal flow are defined. Additional fields
 can be added later without breaking existing code.

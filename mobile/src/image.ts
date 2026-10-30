@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { File } from "expo-file-system";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import type { UploadFile } from "@/api/client";

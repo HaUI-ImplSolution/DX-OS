@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { useEffect, useState } from "react";
 import { Knowledge as KnowledgePage } from "../../../shell";
 import { listDiseases } from "../api";

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: Apache-2.0
 # Starts the stack with an app of the shared core, or switches a running stack to another app.
 #
 #   ./switch-app.sh <app> [--seed] [--build] [--reset] [--yes]

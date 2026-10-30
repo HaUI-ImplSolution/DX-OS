@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { UserManager, WebStorageStateStore, type User as OidcUser } from "oidc-client-ts";
 
 // Empty in the packaged build: Keycloak is served by the gateway on the same origin as the app.

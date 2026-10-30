@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 const required = (name: string, value: string | undefined): string => {
   if (!value) throw new Error(`Thiếu biến môi trường ${name}, xem mobile/.env.example`);
   return value.replace(/\/$/, "");

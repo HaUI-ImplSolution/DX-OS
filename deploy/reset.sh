@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: Apache-2.0
 # Rebuilds the stack from scratch: stops the containers, wipes deploy/data and starts again.
 #
 #   ./reset.sh [--yes] [--build | --keep-images] [service ...]
@@ -51,7 +52,7 @@ docker compose down --remove-orphans
 
 echo "==> Emptying $DATA_DIR"
 mkdir -p "$DATA_DIR"
-docker run --rm -v "$DATA_DIR:/data" alpine:3.20 find /data -mindepth 1 -delete
+docker run --rm -v "$DATA_DIR:/data" alpine:3.20@sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc find /data -mindepth 1 -delete
 
 echo "==> Starting the stack"
 docker compose up -d ${BUILD_FLAG[@]+"${BUILD_FLAG[@]}"} ${SERVICES[@]+"${SERVICES[@]}"}

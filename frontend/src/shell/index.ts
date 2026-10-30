@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 // The one door an app module uses to reach the shell.
 export { default as GeneratedAnswerCard } from "./components/GeneratedAnswerCard";
 export { default as Badge } from "./components/Badge";

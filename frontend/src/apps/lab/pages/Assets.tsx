@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { Badge, Section, formatDate, formatDateTime } from "../../../shell";
 import {

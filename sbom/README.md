@@ -18,16 +18,20 @@ cd backend
 ./mvnw org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -DoutputFormat=json -DoutputName=backend.cdx -DincludeTestScope=false
 cp target/backend.cdx.json ../sbom/
 
-# AI
+# AI (cyclonedx-py không ghi giấy phép; script bổ sung từ PyPI)
 pip install cyclonedx-bom
 cyclonedx-py requirements ai/requirements.lock --of JSON -o sbom/ai.cdx.json --sv 1.5
+python3 .github/scripts/enrich_sbom_licenses.py sbom/ai.cdx.json
 
 # Frontend và mobile
 cd frontend && npx @cyclonedx/cyclonedx-npm --omit dev --output-format JSON --output-file ../sbom/frontend.cdx.json
 cd mobile && npx @cyclonedx/cyclonedx-npm --omit dev --ignore-npm-errors --output-format JSON --output-file ../sbom/mobile.cdx.json
 ```
 
-Sinh lại sau khi đổi dependency; giấy phép từng thành phần ở [`COPYRIGHT.txt`](../COPYRIGHT.txt).
+Sinh lại sau khi đổi dependency hoặc số phiên bản của dự án; giấy phép từng thành phần ở [`COPYRIGHT.txt`](../COPYRIGHT.txt).
+Mọi thành phần trong các file này đều có giấy phép; `.github/scripts/check_licenses.py` (job `license` của workflow `CI Infra`) chặn thành phần không có giấy phép hoặc giấy phép ngoài danh sách cho phép, trừ ngoại lệ có lý do ở `.github/license-exceptions.json`.
+Các file SBOM chỉ gồm thư viện của mã do nhóm viết; image của bên thứ ba (Keycloak, Apache APISIX, Superset, Mattermost, PostgreSQL, SeaweedFS, Ollama, ClamAV) ghi ở mục 6 của [`COPYRIGHT.txt`](../COPYRIGHT.txt), ghim phiên bản và digest trong `deploy/docker-compose.yml`.
+Khi phát hành, workflow `Release Package` đính kèm các file này vào GitHub Release.
 Workflow `CI Dependencies` (`ci-deps.yml`) quét lỗ hổng của các dependency này bằng Trivy khi file khai báo đổi và mỗi tuần.
 Workflow này sinh lại SBOM của backend ngay trong CI và quét nó, vì `pom.xml` không ghi phiên bản của các gói do Spring Boot quản lý.
 Quét SBOM chặn CI khi có lỗi HIGH hoặc CRITICAL đã có bản vá.

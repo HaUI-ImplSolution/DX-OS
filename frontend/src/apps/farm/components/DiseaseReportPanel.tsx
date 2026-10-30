@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { deleteDiseaseReport } from "../api";
 import type { DiseaseReport } from "../types";
 import { Badge, DeleteButton, Section } from "../../../shell";

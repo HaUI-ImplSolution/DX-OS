@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: Apache-2.0
 # Copies the photos of the old local upload folder into the storage bucket, keeping every file name
 # as the object key, then checks that every file now exists as an object.
 #

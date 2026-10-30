@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { Pressable, StyleSheet, Text } from "react-native";
 import { colors, fontSize, radius, sizes } from "@/theme";
 

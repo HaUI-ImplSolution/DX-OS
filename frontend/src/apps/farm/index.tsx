@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import type { AppUiModule, CaseUi } from "../../shell";
 import { CaseDetail, Requests } from "../../shell";
 import DecisionActions from "./components/DecisionActions";

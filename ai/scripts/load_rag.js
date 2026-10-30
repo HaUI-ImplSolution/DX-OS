@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: AGPL-3.0-only
 // Run through benchmark_rag.py so each trial also has resource samples and provenance.
 import http from 'k6/http';
 import { check } from 'k6';

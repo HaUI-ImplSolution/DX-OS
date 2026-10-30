@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Promote an explicitly approved Farm staging corpus to the canonical corpus.
 
 The command is intentionally explicit: it refuses to promote unless

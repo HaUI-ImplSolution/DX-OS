@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 // Vietnamese text for the error codes only Farm raises, registered with the shell at load.
 export const FARM_ERROR_MESSAGES: Record<string, string> = {
   POKA_YOKE_VIETGAP_VIOLATION: "Vụ mùa đang trong thời gian cách ly thuốc, chưa được thu hoạch.",

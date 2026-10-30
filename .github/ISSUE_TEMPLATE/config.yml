@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: Apache-2.0
+blank_issues_enabled: false
+contact_links:
+  - name: Lỗ hổng bảo mật
+    url: https://github.com/HaUI-ImplSolution/DX-OS/security/advisories/new
+    about: Báo riêng cho nhóm phát triển, không mở issue công khai.
+  - name: Tài liệu và hướng dẫn cài đặt
+    url: https://github.com/HaUI-ImplSolution/DX-OS#readme
+    about: Xem README trước khi báo lỗi cài đặt.

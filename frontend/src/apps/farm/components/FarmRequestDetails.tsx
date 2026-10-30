@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { DETAIL_LABEL, formatValue } from "../labels";
 import type { ApprovalRequest } from "../types";
 

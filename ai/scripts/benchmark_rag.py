@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: AGPL-3.0-only
 """Run a local k6 retrieval pilot, sample Docker resources, and publish saved summaries."""
 
 from __future__ import annotations

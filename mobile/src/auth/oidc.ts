@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { makeRedirectUri, type DiscoveryDocument, type TokenResponse } from "expo-auth-session";
 import { KEYCLOAK_CLIENT_ID, KEYCLOAK_URL } from "@/config";
 import type { StoredTokens } from "./session";

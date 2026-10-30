@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { StyleSheet, Text, View } from "react-native";
 import { formatDate } from "@/format";
 import { chipTones, colors, fontSize, radius, spacing } from "@/theme";

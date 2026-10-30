@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { StyleSheet, Text, View } from "react-native";
 import { passageFields, passageLines } from "@/passageText";
 import { colors, fontSize, spacing } from "@/theme";

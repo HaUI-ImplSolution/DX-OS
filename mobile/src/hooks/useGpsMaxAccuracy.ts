@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { useEffect, useState } from "react";
 import { getAppManifest } from "@/api/endpoints";
 import { GPS_MAX_ACCURACY_METERS } from "@/config";

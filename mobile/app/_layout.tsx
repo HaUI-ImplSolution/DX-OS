@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { Link, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Pressable, StyleSheet, Text, View } from "react-native";

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """Fails when a gateway route has no token check and is not on the list of public routes below.
 
 Run from anywhere: python3 deploy/demo/check_gateway_routes.py

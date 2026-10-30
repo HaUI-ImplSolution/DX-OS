@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: Apache-2.0
 # Checks the public site from this machine: the web client, the portal and the sign-in page answer,
 # and the backend and the object store report UP.
 #

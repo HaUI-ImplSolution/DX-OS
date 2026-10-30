@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { StyleSheet, Text, View } from "react-native";
 import { Button } from "@/components/Button";
 import { colors, fontSize, spacing } from "@/theme";

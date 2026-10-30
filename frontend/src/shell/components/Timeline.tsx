@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { actionLabel, formatDateTime } from "../labels";
 import type { WorkflowEvent } from "../types";
 

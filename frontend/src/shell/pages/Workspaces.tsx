@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { createWorkspace, listWorkspaces } from "../api";
 import Badge from "../components/Badge";

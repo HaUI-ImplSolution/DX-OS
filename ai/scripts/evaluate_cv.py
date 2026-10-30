@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: AGPL-3.0-only
 """Runs the production CV pipeline on a labelled image folder and prints a per-class summary.
 
     python -m scripts.evaluate_cv DIR

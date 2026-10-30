@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: AGPL-3.0-only
 """Verify that RAG writes stay outside the FastAPI runtime."""
 
 from pathlib import Path

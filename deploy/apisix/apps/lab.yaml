@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
   # Routes and rate limits of the Lab app, appended to the routes of common.yaml.
 
   # Reporting an incident can carry up to five attachments.

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: AGPL-3.0-only
 """Gives every request the id the gateway chose, so one id finds it in the gateway, backend and AI
 logs. The backend forwards its X-Request-Id; a request without a usable one gets a new id."""
 

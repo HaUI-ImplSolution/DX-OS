@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 # Optional overlay that publishes the stack through a Cloudflare Tunnel, so the server opens no port.
 # Enable it in deploy/.env:
 #   COMPOSE_FILE=docker-compose.yml:docker-compose.cloudflared.yml

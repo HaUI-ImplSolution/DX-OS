@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 spring:
   application:
     name: DX-OS-Monitor

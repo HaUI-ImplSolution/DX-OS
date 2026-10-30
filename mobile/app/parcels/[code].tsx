@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { getIsolationStatus, getParcel, listCropSeasons } from "@/api/endpoints";

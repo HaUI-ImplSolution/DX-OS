@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: AGPL-3.0-only
 """Measure the real chatbot search against saved scope and missing-evidence labels."""
 
 from __future__ import annotations

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { passageText } from "../labels";
 
 const FIELD_LINE = /^([^:]{2,40}):\s+(.+)$/;

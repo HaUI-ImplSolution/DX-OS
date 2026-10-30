@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: AGPL-3.0-only
 """LangGraph node: retrieve_knowledge
 
 This node fetches relevant knowledge chunks from the pgvector store via the

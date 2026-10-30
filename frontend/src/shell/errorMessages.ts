@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 // Vietnamese text per backend errorCode. Codes without an entry show the backend message.
 const ERROR_MESSAGES: Record<string, string> = {
   ERR_AI_UNAVAILABLE: "Dịch vụ AI tạm thời không hoạt động, hãy thử lại sau.",

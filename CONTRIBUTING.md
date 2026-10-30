@@ -47,7 +47,7 @@ Chi tiết ở [`README.md`](./README.md).
 
 ## Dependency và dữ liệu
 
-- Mọi thành phần phải có giấy phép nguồn mở; thêm dependency thì cập nhật [`LICENSES.md`](./LICENSES.md) và sinh lại SBOM theo [`sbom/README.md`](./sbom/README.md).
+- Mọi thành phần phải có giấy phép nguồn mở; thêm dependency thì cập nhật [`COPYRIGHT.txt`](./COPYRIGHT.txt) và sinh lại SBOM theo [`sbom/README.md`](./sbom/README.md).
 - Đóng góp mã cho `ai/` theo AGPL-3.0 (`ai/LICENSE`); các phần còn lại theo Apache-2.0 (`LICENSE`).
 - Dữ liệu thuốc, treatment rule và policy chỉ được seed khi có quyết định duyệt rõ ràng trong `data/structured/`.
 

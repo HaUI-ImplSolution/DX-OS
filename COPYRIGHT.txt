@@ -1,0 +1,263 @@
+DX-OS (DX-Farm và DX-Lab)
+Copyright 2026 HaUI-ImplSolution
+
+Sản phẩm dự thi OLP Phần mềm nguồn mở 2026 (khối thi DX-OS, VFOSSA),
+phát triển tại Trường Công nghệ Thông tin và Truyền thông, Đại học Công nghiệp Hà Nội.
+
+Bản quyền và giấy phép của mã nguồn, thành phần bên thứ ba, mô hình và dữ liệu dùng trong sản phẩm.
+Văn bản giấy phép đầy đủ: LICENSE (Apache-2.0), ai/LICENSE (AGPL-3.0); thông báo ghi công: NOTICE.
+Danh mục đầy đủ theo phiên bản: thư mục sbom/ (CycloneDX); ai/requirements.lock khóa phiên bản gói Python.
+
+1. GIẤY PHÉP CỦA MÃ NGUỒN
+=========================
+
++---------------------------------------------+-----------------------+----------------------------------------------+
+| Phần                                        | Giấy phép             | Ghi chú                                      |
++=============================================+=======================+==============================================+
+| backend, frontend, mobile, deploy, bi,      | Apache-2.0 (LICENSE)  | SPDX header ở file Java và Python            |
+| portal...                                   |                       |                                              |
++---------------------------------------------+-----------------------+----------------------------------------------+
+| Mã nguồn ai/                                | AGPL-3.0 (ai/LICENSE) | Giữ giấy phép mã nguồn AI; giấy phép trọng   |
+|                                             |                       | số liệt kê riêng bên dưới                    |
++---------------------------------------------+-----------------------+----------------------------------------------+
+
+AI Service là tiến trình riêng, chỉ giao tiếp với Backend qua HTTP nên Backend giữ Apache-2.0.
+
+2. BACKEND (MAVEN)
+==================
+
++----------------------------------------+----------------------------------+----------------------------------------+
+| Thành phần                             | Giấy phép                        | Vai trò                                |
++========================================+==================================+========================================+
+| Spring Boot, Spring Framework, Spring  | Apache-2.0                       | Khung ứng dụng, xác thực token         |
+| Security                               |                                  | Keycloak                               |
++----------------------------------------+----------------------------------+----------------------------------------+
+| springdoc-openapi                      | Apache-2.0                       | Swagger UI và OpenAPI                  |
++----------------------------------------+----------------------------------+----------------------------------------+
+| Thymeleaf (cùng attoparser, unbescape) | Apache-2.0                       | Khung trang của màn hình giám sát      |
++----------------------------------------+----------------------------------+----------------------------------------+
+| Spring Security OAuth2 Client, Nimbus  | Apache-2.0                       | Đăng nhập Keycloak của màn hình giám   |
+| OAuth 2.0 SDK (cùng json-smart,        |                                  | sát                                    |
+| accessors-smart, content-type,         |                                  |                                        |
+| lang-tag, jcip-annotations)            |                                  |                                        |
++----------------------------------------+----------------------------------+----------------------------------------+
+| ASM                                    | BSD-3-Clause                     | Phụ thuộc của json-smart               |
++----------------------------------------+----------------------------------+----------------------------------------+
+| Flyway                                 | Apache-2.0                       | Migration schema                       |
++----------------------------------------+----------------------------------+----------------------------------------+
+| AWS SDK for Java v2 (s3,               | Apache-2.0                       | Lưu ảnh và ký link có hạn trên kho S3  |
+| url-connection-client)                 |                                  |                                        |
++----------------------------------------+----------------------------------+----------------------------------------+
+| Hibernate Validator                    | Apache-2.0                       | Kiểm dữ liệu request                   |
++----------------------------------------+----------------------------------+----------------------------------------+
+| Resilience4j                           | Apache-2.0                       | Circuit breaker khi gọi AI Service     |
++----------------------------------------+----------------------------------+----------------------------------------+
+| AspectJ                                | EPL-2.0                          | Method security                        |
++----------------------------------------+----------------------------------+----------------------------------------+
+| PostgreSQL JDBC Driver                 | BSD-2-Clause                     | Kết nối cơ sở dữ liệu                  |
++----------------------------------------+----------------------------------+----------------------------------------+
+| Lombok                                 | MIT                              | Sinh mã lúc build, không vào runtime   |
++----------------------------------------+----------------------------------+----------------------------------------+
+| Testcontainers, JUnit 5, Mockito,      | MIT, EPL-2.0, Apache-2.0         | Chỉ khi chạy test                      |
+| AssertJ                                |                                  |                                        |
++----------------------------------------+----------------------------------+----------------------------------------+
+| formatter-maven-plugin                 | Apache-2.0                       | Chỉ khi build, kiểm định dạng mã       |
++----------------------------------------+----------------------------------+----------------------------------------+
+| Eclipse Temurin (OpenJDK 21)           | GPL-2.0 with Classpath Exception | Base image build và runtime, chạy      |
+|                                        |                                  | nguyên bản                             |
++----------------------------------------+----------------------------------+----------------------------------------+
+
+3. WEB VÀ MOBILE (NPM)
+======================
+
++--------------------------------------------------------------+--------------+--------------------------------------+
+| Thành phần                                                   | Giấy phép    | Vai trò                              |
++==============================================================+==============+======================================+
+| React, React DOM, react-router-dom, Vite,                    | MIT          | Web                                  |
+| @vitejs/plugin-react                                         |              |                                      |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| oidc-client-ts                                               | MIT          | Đăng nhập OIDC cho web               |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| TypeScript                                                   | Apache-2.0   | Web và mobile                        |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| Expo và các module expo-*, React Native                      | MIT          | Mobile                               |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| @react-native-async-storage/async-storage,                   | MIT          | Mobile: hàng đợi offline, điều hướng |
+| @react-native-community/netinfo, react-native-screens,       |              |                                      |
+| react-native-safe-area-context                               |              |                                      |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| nginx                                                        | BSD-2-Clause | Image phục vụ web và portal          |
++--------------------------------------------------------------+--------------+--------------------------------------+
+
+4. AI SERVICE (PYTHON)
+======================
+
++-------------------------------------------------+---------------+--------------------------------------------------+
+| Thành phần                                      | Giấy phép     | Vai trò                                          |
++=================================================+===============+==================================================+
+| FastAPI, Pydantic, SQLAlchemy, pgvector,        | MIT           | API, RAG, luồng suy luận                         |
+| LangGraph, LangChain, python-docx               |               |                                                  |
++-------------------------------------------------+---------------+--------------------------------------------------+
+| Uvicorn, HTTPX, python-dotenv, pypdf            | BSD-3-Clause  | Máy chủ, HTTP client, nạp tài liệu               |
++-------------------------------------------------+---------------+--------------------------------------------------+
+| rank-bm25 0.2.2                                 | Apache-2.0    | BM25 cho truy xuất chatbot                       |
++-------------------------------------------------+---------------+--------------------------------------------------+
+| python-multipart, sentence-transformers         | Apache-2.0    | Nhận upload, embedding                           |
++-------------------------------------------------+---------------+--------------------------------------------------+
+| ir-measures 0.3.3                               | Apache-2.0    | Chấm Recall và nDCG trong môi trường đánh giá    |
+|                                                 |               | riêng                                            |
++-------------------------------------------------+---------------+--------------------------------------------------+
+| pytrec-eval-terrier 0.5.11                      | MIT           | Provider tính metric của ir-measures, chỉ dùng   |
+|                                                 |               | để đánh giá                                      |
++-------------------------------------------------+---------------+--------------------------------------------------+
+| langfuse Python SDK 5.0.4                       | MIT           | Publish dataset, experiment và score trong môi   |
+|                                                 |               | trường đánh giá riêng                            |
++-------------------------------------------------+---------------+--------------------------------------------------+
+| Grafana k6 2.3.0                                | AGPL-3.0      | Binary thử tải trong image công cụ đánh giá      |
+|                                                 |               | riêng; không đóng gói trong runtime/CI (license  |
+|                                                 |               | [1])                                             |
++-------------------------------------------------+---------------+--------------------------------------------------+
+| psycopg                                         | LGPL-3.0-only | Kết nối PostgreSQL                               |
++-------------------------------------------------+---------------+--------------------------------------------------+
+| PyTorch, Torchvision                            | BSD-3-Clause  | Chạy mô hình EfficientNetV2-M                    |
++-------------------------------------------------+---------------+--------------------------------------------------+
+| ONNX Runtime 1.30.0                             | MIT           | Chạy crop classifier trên CPU                    |
++-------------------------------------------------+---------------+--------------------------------------------------+
+| NumPy                                           | BSD-3-Clause  | Tính toán                                        |
++-------------------------------------------------+---------------+--------------------------------------------------+
+| Pillow                                          | MIT-CMU       | Xử lý ảnh                                        |
++-------------------------------------------------+---------------+--------------------------------------------------+
+| Ruff, pytest                                    | MIT           | Chỉ khi phát triển và test                       |
++-------------------------------------------------+---------------+--------------------------------------------------+
+
+5. MÔ HÌNH VÀ DỮ LIỆU
+=====================
+
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Thành phần                           | Giấy phép                            | Vai trò                              |
++======================================+======================================+======================================+
+| DX-Farm EfficientNetV2-M 4.0.0 (ai/w | Apache-2.0 cho phần fine-tune của    | Healthy và 5 bệnh; trọng số khởi tạo |
+| eights/dx-farm-efficientnetv2m/)     | nhóm (LICENSE)                       | giữ điều khoản pretrained của        |
+|                                      |                                      | Torchvision [2]                      |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Crop classifier YOLO26s-cls [3]      | AGPL-3.0                             | Kiểm ảnh là lúa trước model bệnh     |
+| (ai/weights/crop_classifier.onnx)    |                                      |                                      |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Qwen2.5 1.5B [4]                     | Apache-2.0                           | LLM diễn đạt, chạy qua Ollama        |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| paraphrase-multilingual-MiniLM-L12-v | Apache-2.0                           | Embedding cho RAG                    |
+| 2 [5]                                |                                      |                                      |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| mMARCO multilingual MiniLM reranker  | Apache-2.0                           | Xếp hạng lại evidence chatbot, tách  |
+| [6]                                  |                                      | khỏi chẩn đoán                       |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| RiceLeafDiseaseBD v3 [7]             | CC BY 4.0                            | Dữ liệu huấn luyện model bệnh        |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Tri thức DX-Lab (data/rag/lab/)      | © Đại học Công nghiệp Hà Nội         | Trích nội quy, quy định và hướng dẫn |
+|                                      |                                      | công khai trên các trang             |
+|                                      |                                      | haui.edu.vn, kèm bản PDF gốc         |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Open-Meteo [8]                       | CC BY 4.0                            | Thời tiết theo thửa, snapshot dự     |
+|                                      |                                      | phòng và chart thời tiết của         |
+|                                      |                                      | Superset                             |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| OpenFreeMap [9] vector tile          | ODbL (dữ liệu OpenStreetMap), CC BY  | Nền bản đồ của dashboard Superset    |
+|                                      | 4.0 (OpenMapTiles)                   |                                      |
++--------------------------------------+--------------------------------------+--------------------------------------+
+
+Nguồn dữ liệu: RiceLeafDiseaseBD Version 3 của Mohammad Mehedi Hasan Munna, Toriqul Islam, Smita Saha, Iqbal Hossain
+Safy, Saiful Bari, Jasmin Akter, Md Momtajur Rahman, Riya Akter, Nahid Hossain Antu, Acramul Haque Kabir, Reefka
+Fabliha Tulona, Ashraful Islam và M Ashraful Amin, theo CC BY 4.0 [10].
+Thay đổi: EfficientNetV2-M dùng 6 lớp, resize ảnh 480×480 và augmentation.
+Checkpoint do người huấn luyện của nhóm cung cấp, khởi tạo từ EfficientNet_V2_M_Weights; phần fine-tune theo
+Apache-2.0, giữ điều khoản pretrained Torchvision.
+Dữ liệu mẫu của Lab (phòng, thiết bị, yêu cầu) là dữ liệu giả lập, không chứa người thật.
+
+6. HẠ TẦNG VÀ CÔNG CỤ
+=====================
+
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Thành phần                           | Giấy phép                            | Vai trò                              |
++======================================+======================================+======================================+
+| PostgreSQL và pgvector               | PostgreSQL License                   | Dữ liệu nghiệp vụ và vector RAG      |
+| (pgvector/pgvector:pg16)             |                                      |                                      |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Keycloak                             | Apache-2.0                           | Định danh, SSO                       |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Apache APISIX (standalone)           | Apache-2.0                           | API Gateway: route, kiểm JWT, giới   |
+|                                      |                                      | hạn tốc độ                           |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| SeaweedFS (image                     | Apache-2.0                           | Lưu ảnh, tệp đính kèm và kho S3 của  |
+| chrislusf/seaweedfs:4.51)            |                                      | Langfuse trong bộ chạy đánh giá RAG; |
+|                                      |                                      | chạy nguyên bản, không sửa mã        |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Apache Superset                      | Apache-2.0                           | BI dashboard                         |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Authlib                              | BSD-3-Clause                         | SSO OAuth cho Superset               |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Mattermost Team Edition              | AGPL-3.0                             | Kênh chat nhận thông báo; chạy       |
+|                                      |                                      | nguyên bản, không dùng               |
+|                                      |                                      | server/enterprise/                   |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Ollama 0.34.2                        | MIT                                  | Phục vụ LLM                          |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| cloudflared (cloudflare/cloudflared) | Apache-2.0                           | Tunnel ra Cloudflare, chỉ khi dùng   |
+|                                      |                                      | overlay                              |
+|                                      |                                      | docker-compose.cloudflared.yml       |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Python 3.11 (python:3.11-slim)       | PSF-2.0                              | Base image AI Service                |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Node.js 20 (node:20-alpine)          | MIT                                  | Chỉ khi build web                    |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| AWS CLI                              | Apache-2.0                           | Chỉ dùng trong                       |
+|                                      |                                      | seaweedfs/migrate-uploads.sh         |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Langfuse server/worker 4.70.1        | MIT cho phần core; phần EE theo điều | Giao diện đánh giá local, không bật  |
+|                                      | khoản riêng                          | tính năng Enterprise (license [11])  |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| ClickHouse 25.12                     | Apache-2.0                           | Lưu kết quả Langfuse trong môi       |
+|                                      |                                      | trường đánh giá (license [12])       |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Redis 7.x (redis:7)                  | RSALv2 hoặc SSPLv1 (từ 7.4)          | Queue/cache Langfuse local (license  |
+|                                      |                                      | [13])                                |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Docker CLI (Moby)                    | Apache-2.0                           | Chỉ công cụ thử tải lấy mẫu          |
+|                                      |                                      | container do bộ chạy tạo (license    |
+|                                      |                                      | [14])                                |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| gitleaks                             | MIT                                  | Quét secret trong CI                 |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Trivy 0.58.1                         | Apache-2.0                           | Quét lỗ hổng phụ thuộc trong CI,     |
+|                                      |                                      | chạy trong container                 |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| ClamAV 1.5.4 (clamav/clamav)         | GPL-2.0                              | Quét mã độc tệp tải lên; dịch vụ     |
+|                                      |                                      | riêng ở profile av, backend nói      |
+|                                      |                                      | chuyện qua mạng, không liên kết mã   |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| restic 0.17.3                        | BSD-2-Clause                         | Sao lưu mã hóa của deploy/backup.sh, |
+|                                      |                                      | chạy trong container, không đóng gói |
+|                                      |                                      | trong runtime (license [15])         |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| CycloneDX (cyclonedx-bom,            | Apache-2.0                           | Sinh SBOM                            |
+| @cyclonedx/cyclonedx-npm,            |                                      |                                      |
+| cyclonedx-maven-plugin)              |                                      |                                      |
++--------------------------------------+--------------------------------------+--------------------------------------+
+
+7. LIÊN KẾT THAM CHIẾU
+======================
+
+[1] https://github.com/grafana/k6/blob/v2.3.0/LICENSE.md
+[2] https://github.com/pytorch/vision#pre-trained-model-license
+[3] https://huggingface.co/RaiyanKhaan/KrishokTech-Models/tree/c339988a6eceb5e22943ee27e4731a1a1dc9160a/01_crop_classifier
+[4] https://ollama.com/library/qwen2.5
+[5] https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+[6] https://huggingface.co/cross-encoder/mmarco-mMiniLMv2-L12-H384-v1
+[7] https://doi.org/10.17632/86s4jzj2m4.3
+[8] https://open-meteo.com
+[9] https://openfreemap.org
+[10] https://creativecommons.org/licenses/by/4.0/
+[11] https://github.com/langfuse/langfuse/blob/main/LICENSE
+[12] https://github.com/ClickHouse/ClickHouse/blob/master/LICENSE
+[13] https://redis.io/legal/licenses/
+[14] https://github.com/docker/cli/blob/master/LICENSE
+[15] https://github.com/restic/restic/blob/master/LICENSE

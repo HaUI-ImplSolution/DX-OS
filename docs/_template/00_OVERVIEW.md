@@ -84,5 +84,5 @@ _Gợi ý: ghi thêm đề mục nào của đề thi và hạng mục rubric n�
 - [ ] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
 - [ ] Swagger (springdoc) nếu đổi API.
 - [ ] `ARCHITECTURE.md` (mục 3, phần ứng dụng khai báo) và hướng dẫn thêm ứng dụng ở `CONTRIBUTING.md` nếu đổi interface.
-- [ ] Sơ đồ ở `ARCHITECTURE.md`, `LICENSES.md`, `.env.example` (kể cả `DXOS_APP`) nếu có đổi.
+- [ ] Sơ đồ ở `ARCHITECTURE.md`, `COPYRIGHT.txt`, `.env.example` (kể cả `DXOS_APP`) nếu có đổi.
 - [ ] `docs/BACKLOG.md`: xóa việc đã xong, thêm việc phát sinh.

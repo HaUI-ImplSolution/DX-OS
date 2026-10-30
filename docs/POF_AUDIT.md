@@ -105,7 +105,7 @@ Không có lỗi loại trừ ở mục 12 của đề: repository công khai, c
 | Không phát hành kèm thư viện đóng gói | ✅ | Không có `vendor/`, `node_modules/`, `third_party/` trong cây Git | |
 | Nguồn gốc tệp mô hình | ✅ | `ai/weights/README.md` ghi nguồn, commit và SHA-256 của `crop_classifier.onnx`, đã so với bản gốc trên Hugging Face: trùng từng byte | |
 | Tệp `.zip` của Superset | ✅ | `bi/README.md` ghi đây là định dạng export của Superset | |
-| Tài liệu của công cụ AI trong repo | ✅ | Thư mục `ai/.codex/skills/` và `backend/.claude/skills/` đã gỡ khỏi repo và nằm trong `.gitignore`; các tệp vẫn còn trên máy của nhóm. Lịch sử cũ vẫn chứa chúng | |
+| Tài liệu của công cụ AI trong repo | ✅ | Mọi tệp trong `.claude/` và `.codex/` (skill, agent, quy tắc làm việc) đã gỡ khỏi repo và nằm trong `.gitignore`; các tệp vẫn còn trên máy của nhóm. Lịch sử cũ vẫn chứa chúng | |
 | Tệp nhị phân trong repo | ⚠️ | `ai/weights/` khoảng 250 MB | Không gỡ khỏi lịch sử; cân nhắc tải lúc build nếu muốn clone nhẹ hơn |
 | Cập nhật phụ thuộc | ✅ | Dependabot, CI `Dependencies` chặn khi có lỗ hổng HIGH/CRITICAL đã có bản vá | |
 

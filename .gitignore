@@ -79,6 +79,6 @@ Thumbs.db
 .ua/
 .local/
 
-# Agent skills: third-party documentation, kept on each machine only
-**/.codex/skills/
-**/.claude/skills/
+# Agent tooling (Claude Code, Codex): rules, agents and skills stay on each machine
+**/.claude/
+**/.codex/

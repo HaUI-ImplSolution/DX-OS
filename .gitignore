@@ -78,3 +78,7 @@ Thumbs.db
 .claude/settings.local.json
 .ua/
 .local/
+
+# Agent skills: third-party documentation, kept on each machine only
+**/.codex/skills/
+**/.claude/skills/

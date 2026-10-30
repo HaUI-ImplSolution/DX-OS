@@ -8,7 +8,7 @@ Việc còn lại của hồ sơ nằm ở [`BACKLOG.md`](./BACKLOG.md); câu tr
 | Yêu cầu | Nơi có |
 |---|---|
 | Repository công khai, lịch sử commit | GitHub, nhánh `main` |
-| Release và tag có phiên bản | GitHub Releases (`v1.0.0` đến `v1.0.3`); thay đổi theo phiên bản ở [`CHANGELOG.md`](../CHANGELOG.md) |
+| Release và tag có phiên bản | GitHub Releases (`v1.0.0` đến `v1.1.0`); thay đổi theo phiên bản ở [`CHANGELOG.md`](../CHANGELOG.md) |
 | `README.md`: kiến trúc 3 tầng, H-P-D-I, tính năng, cài đặt, cấu hình, chạy thử, API, tài khoản demo | [`README.md`](../README.md) |
 | `LICENSE` và bảng dependency, license | [`LICENSE`](../LICENSE), [`COPYRIGHT.txt`](../COPYRIGHT.txt), [`sbom/`](../sbom/README.md) |
 | `CHANGELOG.md`, issue tracker, `CONTRIBUTING.md` | [`CHANGELOG.md`](../CHANGELOG.md), GitHub Issues, [`CONTRIBUTING.md`](../CONTRIBUTING.md) |

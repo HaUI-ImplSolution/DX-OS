@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: Apache-2.0
+format: 0
+name: notes
+roles:
+  - name: EDITOR
+    description: Người ghi chú
+entities:
+  note:
+    label: Ghi chú
+    fields:
+      title: {type: text, label: Tiêu đề, required: true}
+      body: {type: text, label: Nội dung}
+      author: {type: user, label: Tác giả}
+    access: {EDITOR: all}

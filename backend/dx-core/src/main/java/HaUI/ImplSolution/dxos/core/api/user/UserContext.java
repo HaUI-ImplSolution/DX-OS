@@ -16,6 +16,9 @@ public interface UserContext {
 
   boolean hasRole(String role);
 
+  // Names of the groups the signed-in user belongs to, from the token claim "groups".
+  Set<String> groups();
+
   // Holds one of the roles the running app declares as staff.
   boolean isStaff();
 }

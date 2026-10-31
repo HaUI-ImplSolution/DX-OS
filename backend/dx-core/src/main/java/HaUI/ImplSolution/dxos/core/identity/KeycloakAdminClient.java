@@ -22,6 +22,11 @@ import org.springframework.web.client.RestClientResponseException;
 @Component
 public class KeycloakAdminClient {
 
+  // A user as other users may see them.
+  public record Person(String id, String name) {}
+
+  private static final int MAX_PEOPLE = 500;
+
   private final RestClient restClient;
   private final String realm;
   private final String clientId;
@@ -82,6 +87,64 @@ public class KeycloakAdminClient {
         throw new KeycloakAdminException(
             "Keycloak refused to create a role: HTTP " + e.getStatusCode().value(), e);
       }
+    } catch (RuntimeException e) {
+      throw new KeycloakAdminException("Keycloak is unreachable", e);
+    }
+  }
+
+  // Creates the group when it does not exist yet; an existing group is left as it is.
+  public void ensureGroup(String name) {
+    try {
+      restClient.post().uri("/admin/realms/{realm}/groups", realm)
+          .headers(h -> h.setBearerAuth(accessToken())).contentType(MediaType.APPLICATION_JSON)
+          .body(Map.of("name", name)).retrieve().toBodilessEntity();
+    } catch (RestClientResponseException e) {
+      if (e.getStatusCode().value() != 409) {
+        throw new KeycloakAdminException(
+            "Keycloak refused to create a group: HTTP " + e.getStatusCode().value(), e);
+      }
+    } catch (KeycloakAdminException e) {
+      throw e;
+    } catch (RuntimeException e) {
+      throw new KeycloakAdminException("Keycloak is unreachable", e);
+    }
+  }
+
+  public List<Person> usersWithRole(String role) {
+    return people("/admin/realms/{realm}/roles/{name}/users?max=" + MAX_PEOPLE, role);
+  }
+
+  // The members of the group with exactly this name; none when there is no such group.
+  public List<Person> groupMembers(String group) {
+    return list("/admin/realms/{realm}/groups?search={name}&exact=true", group).stream()
+        .filter(found -> group.equals(found.get("name"))).findFirst()
+        .map(found -> people("/admin/realms/{realm}/groups/{name}/members?max=" + MAX_PEOPLE,
+            found.get("id").toString()))
+        .orElse(List.of());
+  }
+
+  private List<Person> people(String uri, String variable) {
+    return list(uri, variable).stream().map(KeycloakAdminClient::person).toList();
+  }
+
+  private static Person person(Map<String, Object> user) {
+    String name =
+        (user.getOrDefault("firstName", "") + " " + user.getOrDefault("lastName", "")).trim();
+    return new Person(user.get("id").toString(),
+        name.isEmpty() ? String.valueOf(user.get("username")) : name);
+  }
+
+  @SuppressWarnings("unchecked")
+  private List<Map<String, Object>> list(String uri, String variable) {
+    try {
+      List<Map<String, Object>> rows = restClient.get().uri(uri, realm, variable)
+          .headers(h -> h.setBearerAuth(accessToken())).retrieve().body(List.class);
+      return rows == null ? List.of() : rows;
+    } catch (RestClientResponseException e) {
+      throw new KeycloakAdminException(
+          "Keycloak refused a lookup: HTTP " + e.getStatusCode().value(), e);
+    } catch (KeycloakAdminException e) {
+      throw e;
     } catch (RuntimeException e) {
       throw new KeycloakAdminException("Keycloak is unreachable", e);
     }

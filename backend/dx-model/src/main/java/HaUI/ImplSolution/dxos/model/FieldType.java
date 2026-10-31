@@ -6,7 +6,7 @@ import java.util.Optional;
 
 // The kinds of value a field holds.
 public enum FieldType {
-  TEXT, NUMBER, DATETIME, CHOICE, REFERENCE, USER;
+  TEXT, NUMBER, DATETIME, CHOICE, REFERENCE, USER, UNIT;
 
   public String key() {
     return name().toLowerCase(Locale.ROOT);

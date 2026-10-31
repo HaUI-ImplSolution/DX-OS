@@ -1,0 +1,88 @@
+# SPDX-License-Identifier: Apache-2.0
+spring:
+  config:
+    import: optional:file:.env[.properties]
+
+  application:
+    name: DX-OS
+
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      # Flyway owns the schema; Hibernate only checks that the entities still match it.
+      ddl-auto: validate
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  jackson:
+    date-format: yyyy-MM-dd'T'HH:mm:ss.SSS
+    time-zone: Asia/Ho_Chi_Minh
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Hostname nội bộ, không dùng issuer-uri - xem sso/README.md.
+          jwk-set-uri: http://keycloak:8080/realms/dxos/protocol/openid-connect/certs
+
+server:
+  port: ${SERVER_PORT:8081}
+
+storage:
+  # S3-compatible object storage (SeaweedFS); the bucket is private.
+  endpoint: ${S3_ENDPOINT}
+  access-key: ${S3_ACCESS_KEY}
+  secret-key: ${S3_SECRET_KEY}
+  bucket: ${S3_BUCKET}
+  # clamd of the virus scan of uploads; an empty host turns the scan off.
+  scan:
+    host: ${STORAGE_SCAN_HOST:}
+    port: 3310
+  # Origin of the gateway, used to sign links when no request is being served.
+  public-url: ${STORAGE_PUBLIC_URL}
+  presign-ttl: ${STORAGE_PRESIGN_TTL:15m}
+
+security:
+  jwt:
+    # Access tokens must carry this audience (added by the dxos-api client scope in Keycloak).
+    audience: ${JWT_AUDIENCE:dxos-api}
+  rate-limit:
+    # Per signed-in user and minute, counted in memory.
+    enabled: ${RATE_LIMIT_ENABLED:true}
+
+keycloak:
+  admin:
+    # Service account (client credentials) used to create realm roles.
+    base-url: ${KEYCLOAK_ADMIN_BASE_URL:http://keycloak:8080}
+    realm: dxos
+    client-id: ${KEYCLOAK_ADMIN_CLIENT_ID}
+    client-secret: ${KEYCLOAK_ADMIN_CLIENT_SECRET}
+
+logging:
+  pattern:
+    # Every log line carries the id of its request (X-Request-Id from the gateway).
+    level: "%5p [%X{requestId:-}]"
+  level:
+    # INFO unless LOG_LEVEL_APP overrides it (set DEBUG for local development).
+    HaUI.ImplSolution.dxos: ${LOG_LEVEL_APP:INFO}
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+
+audit:
+  denied:
+    # Refused requests recorded per client address and action each minute; the rest are counted.
+    max-per-minute: 20

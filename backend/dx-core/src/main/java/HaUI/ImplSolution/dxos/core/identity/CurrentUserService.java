@@ -2,10 +2,7 @@
 package HaUI.ImplSolution.dxos.core.identity;
 
 import HaUI.ImplSolution.dxos.core.api.user.UserContext;
-import HaUI.ImplSolution.dxos.core.api.workspace.WorkspaceDirectory;
-import HaUI.ImplSolution.dxos.core.api.workspace.WorkspaceView;
 import HaUI.ImplSolution.dxos.core.security.AppRoles;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.security.core.Authentication;
@@ -14,17 +11,15 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
-// Actor cho reportedBy/decidedBy... lấy từ claim của token Keycloak đã xác thực.
+// The signed-in user, read from the claims of the verified Keycloak token.
 @Service
 public class CurrentUserService implements UserContext {
 
   private static final String ROLE_PREFIX = "ROLE_";
 
-  private final WorkspaceDirectory workspaceDirectory;
   private final AppRoles appRoles;
 
-  public CurrentUserService(WorkspaceDirectory workspaceDirectory, AppRoles appRoles) {
-    this.workspaceDirectory = workspaceDirectory;
+  public CurrentUserService(AppRoles appRoles) {
     this.appRoles = appRoles;
   }
 
@@ -47,11 +42,6 @@ public class CurrentUserService implements UserContext {
   @Override
   public String currentUserId() {
     return getCurrentJwt().getSubject();
-  }
-
-  @Override
-  public Optional<WorkspaceView> currentWorkspace() {
-    return workspaceDirectory.findByAccount(currentUserId());
   }
 
   @Override

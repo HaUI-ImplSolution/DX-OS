@@ -1,1 +1,3 @@
-{}
+{
+  "css-mediaquery": "BSD 3-clause text in its LICENSE file (Yahoo), OSI approved; the package metadata only says BSD. Needed by react-admin."
+}

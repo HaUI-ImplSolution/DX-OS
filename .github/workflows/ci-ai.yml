@@ -8,9 +8,6 @@ on:
     paths:
       - 'ai/**'
       - 'data/**'
-      - 'backend/app-farm/src/main/resources/farm/data.sql'
-      - 'backend/app-farm/src/main/resources/knowledge-sources.json'
-      - 'backend/app-lab/src/main/resources/lab/knowledge-sources.json'
       - '.github/workflows/ci-ai.yml'
   pull_request:
     types:
@@ -22,9 +19,6 @@ on:
     paths:
       - 'ai/**'
       - 'data/**'
-      - 'backend/app-farm/src/main/resources/farm/data.sql'
-      - 'backend/app-farm/src/main/resources/knowledge-sources.json'
-      - 'backend/app-lab/src/main/resources/lab/knowledge-sources.json'
       - '.github/workflows/ci-ai.yml'
 
 jobs:

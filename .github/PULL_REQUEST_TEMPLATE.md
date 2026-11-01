@@ -6,8 +6,7 @@
 
 - [ ] `./mvnw verify` (backend)
 - [ ] `pytest` (AI)
-- [ ] `npx tsc --noEmit` (web, mobile)
-- [ ] `python3 deploy/demo/e2e.py` (nếu đổi luồng nghiệp vụ)
+- [ ] `npx tsc --noEmit` (web)
 
 ## Danh sách kiểm
 

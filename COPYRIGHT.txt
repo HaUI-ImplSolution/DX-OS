@@ -1,4 +1,4 @@
-DX-OS (DX-Farm và DX-Lab)
+DX-OS
 Copyright 2026 HaUI-ImplSolution
 
 Sản phẩm dự thi OLP Phần mềm nguồn mở 2026 (khối thi DX-OS, VFOSSA),
@@ -14,8 +14,8 @@ Danh mục đầy đủ theo phiên bản: thư mục sbom/ (CycloneDX); ai/requ
 +---------------------------------------------+-----------------------+----------------------------------------------+
 | Phần                                        | Giấy phép             | Ghi chú                                      |
 +=============================================+=======================+==============================================+
-| backend, frontend, mobile, deploy, bi,      | Apache-2.0 (LICENSE)  | SPDX header ở mọi file mã nguồn              |
-| portal...                                   |                       |                                              |
+| backend, frontend, deploy, bi, portal...    | Apache-2.0 (LICENSE)  | SPDX header ở mọi file mã nguồn              |
+|                                             |                       |                                              |
 +---------------------------------------------+-----------------------+----------------------------------------------+
 | Mã nguồn ai/                                | AGPL-3.0 (ai/LICENSE) | Giữ giấy phép mã nguồn AI; giấy phép trọng   |
 |                                             |                       | số liệt kê riêng bên dưới                    |
@@ -54,7 +54,9 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/license-exceptions.json.
 +----------------------------------------+----------------------------------+----------------------------------------+
 | Hibernate Validator                    | Apache-2.0                       | Kiểm dữ liệu request                   |
 +----------------------------------------+----------------------------------+----------------------------------------+
-| Resilience4j                           | Apache-2.0                       | Circuit breaker khi gọi AI Service     |
+| Flowable (flowable-spring)             | Apache-2.0                       | Động cơ luồng công việc nhúng          |
++----------------------------------------+----------------------------------+----------------------------------------+
+| SnakeYAML                              | Apache-2.0                       | Đọc tệp mô hình                        |
 +----------------------------------------+----------------------------------+----------------------------------------+
 | AspectJ                                | EPL-2.0                          | Method security                        |
 +----------------------------------------+----------------------------------+----------------------------------------+
@@ -71,8 +73,8 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/license-exceptions.json.
 |                                        |                                  | nguyên bản                             |
 +----------------------------------------+----------------------------------+----------------------------------------+
 
-3. WEB VÀ MOBILE (NPM)
-======================
+3. WEB (NPM)
+============
 
 +--------------------------------------------------------------+--------------+--------------------------------------+
 | Thành phần                                                   | Giấy phép    | Vai trò                              |
@@ -82,13 +84,12 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/license-exceptions.json.
 +--------------------------------------------------------------+--------------+--------------------------------------+
 | oidc-client-ts                                               | MIT          | Đăng nhập OIDC cho web               |
 +--------------------------------------------------------------+--------------+--------------------------------------+
-| TypeScript                                                   | Apache-2.0   | Web và mobile                        |
+| react-admin, @mui/material, @mui/icons-material,             | MIT          | Giao diện dựng từ metadata của lõi   |
+| @emotion/react, @emotion/styled                              |              |                                      |
 +--------------------------------------------------------------+--------------+--------------------------------------+
-| Expo và các module expo-*, React Native                      | MIT          | Mobile                               |
+| TypeScript                                                   | Apache-2.0   | Web                                  |
 +--------------------------------------------------------------+--------------+--------------------------------------+
-| @react-native-async-storage/async-storage,                   | MIT          | Mobile: hàng đợi offline, điều hướng |
-| @react-native-community/netinfo, react-native-screens,       |              |                                      |
-| react-native-safe-area-context                               |              |                                      |
+| css-mediaquery (qua react-admin)                             | BSD-3-Clause | Truy vấn media của MUI               |
 +--------------------------------------------------------------+--------------+--------------------------------------+
 | nginx 1.27                                                   | BSD-2-Clause | Image phục vụ web và portal          |
 +--------------------------------------------------------------+--------------+--------------------------------------+

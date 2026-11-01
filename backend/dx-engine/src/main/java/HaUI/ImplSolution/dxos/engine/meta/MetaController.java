@@ -26,9 +26,10 @@ public class MetaController {
       List<String> options, String reference) {}
 
   public record EntityMeta(String name, String label, List<FieldMeta> fields, boolean hasProcess,
-      ProcessInfo process, boolean canRead, boolean canWrite, boolean canDecide) {}
+      ProcessInfo process, String unitField, boolean canRead, boolean canWrite, boolean canHandle,
+      boolean canAssign) {}
 
-  public record ModelMeta(String name, List<EntityMeta> entities) {}
+  public record ModelMeta(String name, List<Model.Unit> units, List<EntityMeta> entities) {}
 
   private final ModelRegistry registry;
   private final DataService data;
@@ -44,7 +45,7 @@ public class MetaController {
           + " entity left.")
   public ApiResponse<List<ModelMeta>> models() {
     return ApiResponse.success(registry.all().stream()
-        .map(model -> new ModelMeta(model.name(),
+        .map(model -> new ModelMeta(model.name(), model.units(),
             model.entities().values().stream().filter(entity -> data.access(entity).read())
                 .map(entity -> describe(entity)).toList()))
         .filter(model -> !model.entities().isEmpty()).toList());
@@ -65,8 +66,10 @@ public class MetaController {
         f.label(), f.type().key(), f.required(), f.unique(), f.options(), f.to())).toList();
     ProcessInfo process = entity.process() == null ? null
         : new ProcessInfo(entity.process().template(), entity.process().approver(),
-            entity.process().allowSelfDecision());
+            entity.process().allowSelfDecision(), entity.process().definition().states(),
+            entity.process().definition().actions());
+    String unitField = entity.unitField().map(Model.Field::name).orElse(null);
     return new EntityMeta(entity.name(), entity.label(), fields, process != null, process,
-        access.read(), access.write(), data.canDecide(entity));
+        unitField, access.read(), access.write(), data.canHandle(entity), data.canAssign(entity));
   }
 }

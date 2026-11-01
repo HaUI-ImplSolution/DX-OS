@@ -26,10 +26,14 @@ public class RecordStatus {
     Model model = registry.require((String) execution.getVariable("model"));
     Entity entity = model.entity((String) execution.getVariable("entity")).orElseThrow();
     long id = ((Number) execution.getVariable("recordId")).longValue();
-    jdbc.update(
-        "UPDATE " + Sql.table(model, entity)
-            + " SET status = ?, decided_by = ?, decided_at = now(), updated_at = now(),"
-            + " version = version + 1 WHERE id = ?",
-        status, execution.getVariable("decidedBy"), id);
+    boolean terminal = entity.process().definition().isTerminal(status);
+    String decision = terminal ? ", decided_by = ?, decided_at = now()" : "";
+    String sql = "UPDATE " + Sql.table(model, entity) + " SET status = ?" + decision
+        + ", updated_at = now(), version = version + 1 WHERE id = ?";
+    if (terminal) {
+      jdbc.update(sql, status, execution.getVariable("actor"), id);
+    } else {
+      jdbc.update(sql, status, id);
+    }
   }
 }

@@ -4,11 +4,13 @@ package HaUI.ImplSolution.dxos.engine.data;
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
 import HaUI.ImplSolution.dxos.core.api.dto.PageResponse;
 import HaUI.ImplSolution.dxos.core.api.exception.ResourceNotFoundException;
+import HaUI.ImplSolution.dxos.core.identity.KeycloakAdminClient.Person;
 import HaUI.ImplSolution.dxos.engine.registry.ModelRegistry;
 import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import java.util.Map;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,7 +40,7 @@ public class DataController {
   @Operation(summary = "List records",
       description = "filter.<field>=<value> (also filter.<field>.<op> with op eq, ne, lt, lte,"
           + " gt, gte, like or in), sort=<field>, order=asc|desc, page (from 0) and size (at most"
-          + " 200). A role with access own sees only the records it owns; 403 when no role of the"
+          + " 200). A role sees only the rows its access reaches; 403 when no role of the"
           + " caller reaches the entity.")
   public ApiResponse<PageResponse<Map<String, Object>>> list(@PathVariable String model,
       @PathVariable String entity, @RequestParam Map<String, String> params) {
@@ -81,15 +83,47 @@ public class DataController {
     return ApiResponse.success(null);
   }
 
-  @PostMapping("/{id}/decision")
-  @Operation(summary = "Approve or reject a record",
-      description = "The body is {\"outcome\": \"approve\"} or {\"outcome\": \"reject\"}. Only"
-          + " the approver role of the entity may decide (403); a record already decided answers"
-          + " 409. The record then shows decided_by and decided_at.")
-  public ApiResponse<Map<String, Object>> decide(@PathVariable String model,
+  @PostMapping("/{id}/actions/{action}")
+  @Operation(summary = "Take an action of the process of a record",
+      description = "The metadata lists the actions of an entity, the state each one starts from"
+          + " and who may take it. The body may carry {\"note\": \"...\"}, required by the"
+          + " actions that say so. 403 when the caller may not take it, or when the record is"
+          + " assigned to someone else; 409 when the record is in another state. A terminal state"
+          + " stores decided_by and decided_at.")
+  public ApiResponse<Map<String, Object>> act(@PathVariable String model,
+      @PathVariable String entity, @PathVariable long id, @PathVariable String action,
+      @RequestBody(required = false) Map<String, String> body) {
+    Model m = registry.require(model);
+    String note = body == null ? null : body.get("note");
+    return ApiResponse.success(service.act(m, entity(m, entity), id, action, note));
+  }
+
+  @PostMapping("/{id}/assign")
+  @Operation(summary = "Assign a record to a user who can handle it",
+      description = "The body is {\"assignee\": \"<user id>\"}, with null to release it. The"
+          + " handler role and roles writing to all rows or to their units may assign. 400 when that user cannot handle the record.")
+  public ApiResponse<Map<String, Object>> assign(@PathVariable String model,
       @PathVariable String entity, @PathVariable long id, @RequestBody Map<String, String> body) {
     Model m = registry.require(model);
-    return ApiResponse.success(service.decide(m, entity(m, entity), id, body.get("outcome")));
+    return ApiResponse.success(service.assign(m, entity(m, entity), id, body.get("assignee")));
+  }
+
+  @GetMapping("/{id}/handlers")
+  @Operation(summary = "The users a record can be assigned to")
+  public ApiResponse<List<Person>> handlers(@PathVariable String model, @PathVariable String entity,
+      @PathVariable long id) {
+    Model m = registry.require(model);
+    return ApiResponse.success(service.handlers(m, entity(m, entity), id));
+  }
+
+  @GetMapping("/{id}/events")
+  @Operation(summary = "The history of a record, oldest first",
+      description = "Who did what and when, with the states and the note of each action. Field"
+          + " values are not kept, only the names of the changed fields.")
+  public ApiResponse<List<Map<String, Object>>> events(@PathVariable String model,
+      @PathVariable String entity, @PathVariable long id) {
+    Model m = registry.require(model);
+    return ApiResponse.success(service.events(m, entity(m, entity), id));
   }
 
   private static Entity entity(Model model, String name) {

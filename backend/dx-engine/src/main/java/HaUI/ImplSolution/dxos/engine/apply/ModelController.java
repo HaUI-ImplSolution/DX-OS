@@ -47,7 +47,7 @@ public class ModelController {
 
   @PostMapping(value = "/apply", consumes = {YAML, "text/plain"})
   @Operation(summary = "Apply a model file",
-      description = "Creates the schema, tables, constraints and roles of the model and stores"
+      description = "Creates the schema, tables, constraints, roles and units of the model and stores"
           + " its version. Applying the same file again changes nothing or finishes an apply that"
           + " stopped midway. 409 for a different file while the model is applied or unfinished,"
           + " and while another apply of the model runs.")

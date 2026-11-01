@@ -203,6 +203,10 @@ public class ApplyService {
       steps.add(new Step(new PlannedStep("ENSURE_ROLE", role.name()),
           () -> keycloak.ensureRealmRole(role.name(), role.description())));
     }
+    for (Model.Unit unit : model.units()) {
+      steps.add(new Step(new PlannedStep("ENSURE_UNIT", unit.name()),
+          () -> keycloak.ensureGroup(unit.name())));
+    }
     steps.add(new Step(new PlannedStep("SAVE_VERSION", model.name()),
         () -> jdbc.update(
             "INSERT INTO engine.model_version (model, version, hash, content, applied_by) "

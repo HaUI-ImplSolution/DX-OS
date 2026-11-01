@@ -1,0 +1,59 @@
+// SPDX-License-Identifier: Apache-2.0
+package HaUI.ImplSolution.dxos.engine.data;
+
+import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
+import HaUI.ImplSolution.dxos.engine.registry.ModelRegistry;
+import HaUI.ImplSolution.dxos.model.FieldType;
+import HaUI.ImplSolution.dxos.model.Model;
+import HaUI.ImplSolution.dxos.model.Model.Entity;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/v1/inbox")
+@Tag(name = "Inbox", description = "The records waiting for the caller, on every applied model")
+public class InboxController {
+
+  public record Item(String model, String entity, String entityLabel, long id, String title,
+      String status, String assignee, Instant createdAt) {}
+
+  private final ModelRegistry registry;
+  private final DataService data;
+
+  public InboxController(ModelRegistry registry, DataService data) {
+    this.registry = registry;
+    this.data = data;
+  }
+
+  @GetMapping
+  @Operation(summary = "The records the caller can act on now, oldest first",
+      description = "Records in a state the handler role of the caller can act on, within the"
+          + " rows it reaches and held by nobody else, and the caller's own records waiting for"
+          + " them. At most 100 for each entity.")
+  public ApiResponse<List<Item>> inbox() {
+    List<Item> items = new ArrayList<>();
+    for (Model model : registry.all()) {
+      for (Entity entity : model.entities().values()) {
+        data.waiting(model, entity).forEach(row -> items.add(item(model, entity, row)));
+      }
+    }
+    items.sort(Comparator.comparing(Item::createdAt));
+    return ApiResponse.success(items);
+  }
+
+  private static Item item(Model model, Entity entity, Map<String, Object> row) {
+    Object title = entity.fields().values().stream().filter(field -> field.type() == FieldType.TEXT)
+        .findFirst().map(field -> row.get(field.name())).orElse(null);
+    return new Item(model.name(), entity.name(), entity.label(),
+        ((Number) row.get("id")).longValue(), title == null ? null : title.toString(),
+        (String) row.get("status"), (String) row.get("assignee"), (Instant) row.get("created_at"));
+  }
+}

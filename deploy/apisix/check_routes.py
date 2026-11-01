@@ -2,16 +2,15 @@
 # SPDX-License-Identifier: Apache-2.0
 """Fails when a gateway route has no token check and is not on the list of public routes below.
 
-Run from anywhere: python3 deploy/demo/check_gateway_routes.py
+Run from anywhere: python3 deploy/apisix/check_routes.py
 A route counts as checked when it uses the bearer-token plugin config or the openid-connect plugin.
 """
-import glob
 import os
 import sys
 
 import yaml
 
-APISIX = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "apisix")
+APISIX = os.path.dirname(os.path.abspath(__file__))
 
 # Route id -> why it may be reached without a token.
 PUBLIC = {
@@ -21,8 +20,6 @@ PUBLIC = {
     "keycloak-login": "sign-in and token exchange of Keycloak",
     "keycloak": "Keycloak pages, which sign users in themselves",
     "photos": "presigned links; the signature is the credential",
-    "superset": "Superset signs users in with Keycloak",
-    "storage-admin": "object store admin page with its own login",
     "portal-root": "static portal",
     "portal": "static portal",
     "monitor-ingest": "gateway events delivered with the monitor key",
@@ -42,8 +39,7 @@ def is_checked(route):
 
 
 def main():
-    files = [os.path.join(APISIX, "common.yaml")] + sorted(glob.glob(os.path.join(APISIX, "apps", "*.yaml")))
-    routes = [route for path in files for route in routes_of(path)]
+    routes = routes_of(os.path.join(APISIX, "common.yaml"))
     unchecked = {route["id"] for route in routes if not is_checked(route)}
     errors = [f"route {rid} has no token check and is not on the public list"
               for rid in sorted(unchecked - PUBLIC.keys())]

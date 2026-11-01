@@ -3,12 +3,11 @@
 # Enable it in deploy/.env:
 #   COMPOSE_FILE=docker-compose.yml:docker-compose.cloudflared.yml
 #   CLOUDFLARE_TUNNEL_TOKEN=<token of the tunnel>
-# Tunnel public hostnames: apisix:9080 (app, Keycloak, portal), apisix:9081 (BI),
-# apisix:9082 (object store admin page), mattermost:8065 (chat).
-# Set GATEWAY_PUBLIC_URL, SUPERSET_PUBLIC_URL, PORTAL_BI_URL, PORTAL_STORAGE_URL and PORTAL_CHAT_URL
-# to those hostnames before the first start; Keycloak imports its redirect URIs only once.
-# The tunnel hostnames need a Request Header Transform Rule that sets X-Forwarded-Port to 443,
-# otherwise the gateway forwards its listener port and Superset and the backend build wrong origins.
+# Tunnel public hostname: apisix:9080 (app, Keycloak, portal).
+# Set GATEWAY_PUBLIC_URL to that hostname before the first start; Keycloak imports its redirect URIs
+# only once.
+# The tunnel hostname needs a Request Header Transform Rule that sets X-Forwarded-Port to 443,
+# otherwise the gateway forwards its listener port and the backend builds wrong origins.
 # Every long-running service restarts with Docker, so the stack comes back after a server reboot.
 # The gateway reads the client address from CF-Connecting-IP (apisix/config.yaml).
 services:
@@ -38,11 +37,6 @@ services:
     environment:
       SERVER_FORWARD_HEADERS_STRATEGY: framework
 
-  mattermost:
-    restart: unless-stopped
-    environment:
-      MM_SERVICESETTINGS_SITEURL: ${PORTAL_CHAT_URL:?}
-
   postgres:
     restart: unless-stopped
 
@@ -50,10 +44,4 @@ services:
     restart: unless-stopped
 
   portal:
-    restart: unless-stopped
-
-  superset:
-    restart: unless-stopped
-
-  ai:
     restart: unless-stopped

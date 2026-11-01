@@ -7,13 +7,13 @@
 # [tag] is latest, a release tag such as v1.1.1, or sha-<7 chars>, and is written to DXOS_IMAGE_TAG in deploy/.env.
 # Images are pulled one at a time, only the containers whose image changed are recreated,
 # the gateway restarts when a service behind it was replaced, and replaced images are removed.
-# The first start on a server is: COMPOSE_PARALLEL_LIMIT=1 docker compose pull && ./start.sh
+# The first start on a server is: COMPOSE_PARALLEL_LIMIT=1 docker compose pull && docker compose up -d
 set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
 if [[ ! -f .env ]]; then
-  echo "deploy/.env not found. Run: python3 demo/make_ci_env.py .env (random secrets), or cp .env.example .env and fill every blank variable." >&2
+  echo "deploy/.env not found. Run: python3 make_env.py .env (random secrets), or cp .env.example .env and fill every blank variable." >&2
   exit 1
 fi
 if ! grep -q '^DXOS_IMAGE_PREFIX=' .env; then

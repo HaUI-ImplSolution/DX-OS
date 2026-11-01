@@ -6,8 +6,7 @@
 #
 # Images are built here unless DXOS_IMAGE_PREFIX is set in deploy/.env; then the published images
 # are used as pulled (update.sh pulls newer ones). --build or --keep-images decides either way.
-# DESTRUCTIVE: deletes every database, upload and chat/BI state under deploy/data.
-# The Ollama model volume is kept so the multi-GB model is not downloaded again.
+# DESTRUCTIVE: deletes every database and upload under deploy/data.
 # deploy/data holds root-owned files, so it is emptied from a throwaway container.
 set -euo pipefail
 
@@ -28,7 +27,7 @@ for arg in "$@"; do
 done
 
 if [[ ! -f .env ]]; then
-  echo "deploy/.env not found. Run: python3 demo/make_ci_env.py .env (random secrets), or cp .env.example .env and fill every blank variable." >&2
+  echo "deploy/.env not found. Run: python3 make_env.py .env (random secrets), or cp .env.example .env and fill every blank variable." >&2
   exit 1
 fi
 

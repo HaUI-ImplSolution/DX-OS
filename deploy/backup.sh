@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: Apache-2.0
 # Encrypted backup of everything that cannot be rebuilt from the repository: every Postgres
-# database (business data, Keycloak accounts, Mattermost, vector store), the object store photos and
-# attachments, Mattermost files and the Superset metadata. Uses restic (deduplicated, encrypted),
+# database (business data, Keycloak accounts), the object store files and attachments. Uses restic (deduplicated, encrypted),
 # run from a container, so only Docker is needed.
 #
 #   ./backup.sh                 snapshot now, then drop snapshots beyond 7 daily, 4 weekly, 6 monthly
@@ -24,7 +23,7 @@ ENV_FILE="${ENV_FILE:-.env}"
 RESTIC_IMAGE="restic/restic:0.17.3"
 POSTGRES_IMAGE="pgvector/pgvector:pg16@sha256:7b822b0aac60967beb1ea5e576b8602c94c300a157d187f385ae3e0da199b90a"
 
-[[ -f "$ENV_FILE" ]] || { echo "$ENV_FILE not found. Run: python3 demo/make_ci_env.py .env (random secrets), or cp .env.example .env and fill every blank variable." >&2; exit 1; }
+[[ -f "$ENV_FILE" ]] || { echo "$ENV_FILE not found. Run: python3 make_env.py .env (random secrets), or cp .env.example .env and fill every blank variable." >&2; exit 1; }
 env_value() { grep -E "^$1=" "$ENV_FILE" | tail -1 | cut -d= -f2- || true; }
 
 POSTGRES_USER="$(env_value POSTGRES_USER)"
@@ -62,7 +61,7 @@ do_backup() {
   compose exec -T postgres pg_dumpall -U "$POSTGRES_USER" | gzip > "$STAGE/postgres.sql.gz"
   [[ -s "$STAGE/postgres.sql.gz" ]] || { echo "The database dump is empty." >&2; exit 1; }
   local paths=(/stage)
-  for dir in seaweedfs mattermost superset; do [[ -d "data/$dir" ]] && paths+=("/data/$dir"); done
+  for dir in seaweedfs; do [[ -d "data/$dir" ]] && paths+=("/data/$dir"); done
   echo "==> Writing the snapshot (${paths[*]})"
   restic -v "$STAGE:/stage:ro" -v "$(pwd)/data:/data:ro" -- backup --tag dxos "${paths[@]}"
   echo "==> Dropping old snapshots"

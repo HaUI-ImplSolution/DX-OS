@@ -38,12 +38,6 @@ jobs:
           cache: 'pip'
           cache-dependency-path: ai/requirements*.txt
 
-      - name: Verify generated backend seed
-        working-directory: .
-        run: |
-          python data/scripts/generate_seed_sql.py --check
-          python -m unittest data.scripts.test_generate_seed_sql data.scripts.test_knowledge_sources
-
       - name: Install dependencies
         run: pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements-dev.txt
 

@@ -5,6 +5,7 @@ Settings by environment: DXOS_ENV_FILE (default deploy/.env), DXOS_BASE_URL (def
 """
 import json
 import os
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -51,12 +52,27 @@ def form(url, fields):
     return http("POST", url, body, {"Content-Type": "application/x-www-form-urlencoded"})
 
 
-def admin_token():
-    status, body = form(f"{BASE}/realms/master/protocol/openid-connect/token", {
-        "grant_type": "password", "client_id": "admin-cli",
-        "username": ENV["KEYCLOAK_ADMIN_USERNAME"], "password": ENV["KEYCLOAK_ADMIN_PASSWORD"]})
-    assert status == 200, (status, body)
+# The gateway limits logins per minute, so a burst of them waits for the next minute.
+def login(url, fields):
+    for _ in range(5):
+        status, body = form(url, fields)
+        if status != 429:
+            break
+        time.sleep(30)
+    assert status == 200, (fields.get("username"), status, body)
     return body["access_token"]
+
+
+_admin = {"token": None, "until": 0}
+
+
+def admin_token():
+    if time.time() >= _admin["until"]:
+        _admin["token"] = login(f"{BASE}/realms/master/protocol/openid-connect/token", {
+            "grant_type": "password", "client_id": "admin-cli",
+            "username": ENV["KEYCLOAK_ADMIN_USERNAME"], "password": ENV["KEYCLOAK_ADMIN_PASSWORD"]})
+        _admin["until"] = time.time() + 45
+    return _admin["token"]
 
 
 def kc(method, path, body=None):
@@ -71,16 +87,20 @@ def ensure_client():
     status, _ = kc("POST", "/clients", {
         "clientId": CLIENT, "publicClient": True, "directAccessGrantsEnabled": True,
         "standardFlowEnabled": False, "protocol": "openid-connect",
-        "protocolMappers": [{
-            "name": "dxos-api-audience", "protocol": "openid-connect",
-            "protocolMapper": "oidc-audience-mapper",
-            "config": {"included.custom.audience": "dxos-api", "access.token.claim": "true",
-                       "id.token.claim": "false"}}],
+        "protocolMappers": [
+            {"name": "dxos-api-audience", "protocol": "openid-connect",
+             "protocolMapper": "oidc-audience-mapper",
+             "config": {"included.custom.audience": "dxos-api", "access.token.claim": "true",
+                       "id.token.claim": "false"}},
+            {"name": "groups", "protocol": "openid-connect",
+             "protocolMapper": "oidc-group-membership-mapper",
+             "config": {"full.path": "false", "claim.name": "groups", "access.token.claim": "true",
+                        "id.token.claim": "false", "userinfo.token.claim": "false"}}],
     })
     assert status in (201, 409), status
 
 
-def ensure_user(name, roles):
+def ensure_user(name, roles, groups=()):
     status, found = kc("GET", f"/users?username={name}&exact=true")
     if not found:
         status, _ = kc("POST", "/users", {"username": name, "enabled": True, "firstName": name,
@@ -97,14 +117,17 @@ def ensure_user(name, roles):
         assert status == 200, (role, status, role_repr)
         status, _ = kc("POST", f"/users/{user_id}/role-mappings/realm", [role_repr])
         assert status == 204, status
+    for group in groups:
+        status, found = kc("GET", f"/groups?search={group}&exact=true")
+        assert status == 200 and found, (group, status, found)
+        status, _ = kc("PUT", f"/users/{user_id}/groups/{found[0]['id']}")
+        assert status == 204, status
     return user_id
 
 
 def token(user):
-    status, body = form(f"{BASE}/realms/dxos/protocol/openid-connect/token", {
+    return login(f"{BASE}/realms/dxos/protocol/openid-connect/token", {
         "grant_type": "password", "client_id": CLIENT, "username": user, "password": "Test1234!"})
-    assert status == 200, (user, status, body)
-    return body["access_token"]
 
 
 def api(user_token, method, path, body=None, content_type=None):

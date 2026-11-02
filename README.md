@@ -126,6 +126,8 @@ cd backend && ./mvnw verify            # test cần Docker (Testcontainers)
 cd frontend && npx tsc --noEmit
 python3 deploy/dev/check_api.py        # trên stack mới dựng, cơ sở dữ liệu rỗng
 python3 deploy/dev/check_recovery.py
+python3 deploy/dev/check_case.py
+python3 deploy/dev/check_change.py
 ```
 
 ## Đóng góp

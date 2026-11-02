@@ -128,5 +128,5 @@ Ngày 03/11/2026 trên clone sạch, stack dựng bằng `docker compose up -d -
 | `check_change.py` | Đạt | 59/59 |
 | Giao diện | Đạt | 20/20 bằng Chrome không giao diện: sinh viên nộp, cán bộ sai đơn vị không thấy, cán bộ đúng đơn vị nhận việc và trả lại, sinh viên sửa và nộp lại, cán bộ duyệt, kèm hộp việc và dòng lịch sử; 5/5 sau khi đổi tên và thêm trường, chỉ tải lại trang, không build lại |
 | Từ khóa ứng dụng cũ | Đạt | Không còn ngoài `ai/`, `data/`, `bi/`, `chat/` và các tài liệu mô tả bản cũ |
-| CI trên GitHub | Chưa chạy | Nhánh Phase 7 chưa được đẩy lên |
+| CI trên GitHub | Đạt | CI Backend và Infra của nhánh `Khuong/phase-7-model-change`; các workflow khác không chạy vì không đổi phần liên quan |
 | Chưa chạy | | Khởi động sau khi cập nhật từ bản `v1.1.1` (không có đường nâng cấp dữ liệu) |

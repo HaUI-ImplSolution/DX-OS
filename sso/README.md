@@ -34,6 +34,8 @@ Cơ sở dữ liệu `keycloak` và vai `keycloak_app` do [`deploy/postgres/init
 
 - Mật khẩu chỉ nằm ở Keycloak, lưu dạng băm Argon2id (mặc định của Keycloak 26).
 - `dxos-web` có mapper `dxos-api-audience` thêm `dxos-api` vào `aud`; dịch vụ lõi (`security.jwt.audience`) trả `401` cho token thiếu audience.
+- `dxos-web` có mapper `groups` đưa tên nhóm vào token; quyền `unit` của mô hình dựa trên claim này, nên đổi nhóm chỉ có hiệu lực khi người dùng lấy token mới.
+- Áp dụng mô hình tạo vai và nhóm bằng tài khoản dịch vụ `dxos-backend-admin`, và không xóa chúng khi mô hình bỏ đi.
 - Dịch vụ lõi đọc vai từ `realm_access.roles` của token và tính quyền theo mô hình; chủ sở hữu bản ghi là claim `sub`, không phụ thuộc tên hiển thị.
 
 ## Máy chủ công khai

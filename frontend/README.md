@@ -1,7 +1,7 @@
 # Web (React, Vite)
 
 Giao diện web của DX-OS.
-Hiện web có khung đăng nhập OIDC qua Keycloak; ứng dụng dựng từ metadata của lõi được thêm ở bước sau.
+Web đăng nhập OIDC qua Keycloak và dựng mọi màn hình từ metadata của lõi bằng react-admin: hộp việc, danh sách, biểu mẫu, chi tiết, hành động của quy trình, giao việc và dòng lịch sử.
 
 ## Cấu trúc
 
@@ -9,6 +9,7 @@ Hiện web có khung đăng nhập OIDC qua Keycloak; ứng dụng dựng từ m
 |---|---|
 | `src/App.tsx` | Đăng nhập OIDC, xử lý callback, đăng xuất một lần |
 | `src/shell/` | `auth` (OIDC), `api` (gọi backend, bóc `ApiResponse`), thông báo lỗi tiếng Việt theo `errorCode` |
+| `src/admin/` | Ứng dụng react-admin: đọc metadata, `dataProvider`, `authProvider`, màn hình dựng theo thực thể, hộp việc |
 
 ## Chạy
 

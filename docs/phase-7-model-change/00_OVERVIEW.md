@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Xong trên máy dev, chờ CI |
+| Trạng thái | Xong |
 | Mức độ | Nghiêm trọng |
 | Ứng dụng và module chính | `dx-model`, `dx-engine`, `deploy`, `backend/Dockerfile` |
 | Ước lượng | 7 ngày |

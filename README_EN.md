@@ -126,6 +126,8 @@ cd backend && ./mvnw verify            # tests need Docker (Testcontainers)
 cd frontend && npx tsc --noEmit
 python3 deploy/dev/check_api.py        # on a fresh stack, empty database
 python3 deploy/dev/check_recovery.py
+python3 deploy/dev/check_case.py
+python3 deploy/dev/check_change.py
 ```
 
 ## Contributing

@@ -20,7 +20,9 @@ public Optional<Field>field(String fieldName){return Optional.ofNullable(fields.
 // The field that names the unit a record belongs to.
 public Optional<Field>unitField(){return fields.values().stream().filter(f->f.type()==FieldType.UNIT).findFirst();}}
 
-public record Field(String name,FieldType type,String label,boolean required,boolean unique,List<String>options,String to){}
+// renamedFrom names the column this field had in the version before; defaultValue fills existing
+// and new rows.
+public record Field(String name,FieldType type,String label,boolean required,boolean unique,List<String>options,String to,String renamedFrom,String defaultValue){}
 
 // The workflow template an entity runs, the role that decides, and whether the creator of a
 // record may decide it.

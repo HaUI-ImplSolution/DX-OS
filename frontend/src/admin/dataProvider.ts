@@ -5,7 +5,17 @@ import { splitResource, type EntityMeta, type Page } from "./types";
 
 type Row = Record<string, unknown>;
 
-const SYSTEM_FIELDS = ["id", "created_by", "created_at", "updated_at", "version", "status"];
+const SYSTEM_FIELDS = [
+  "id",
+  "created_by",
+  "created_at",
+  "updated_at",
+  "version",
+  "status",
+  "assignee",
+  "decided_by",
+  "decided_at",
+];
 
 function path(resource: string) {
   const { model, entity } = splitResource(resource);

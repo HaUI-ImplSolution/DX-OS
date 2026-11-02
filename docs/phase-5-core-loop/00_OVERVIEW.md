@@ -139,4 +139,4 @@ Backend sau phase gồm bốn module: `dx-model` (định dạng và kiểm tra 
 - [x] `docs/dynamic-core/README.md`: ghi kết quả kiểm chứng, bỏ các mục đã xác minh khỏi "Chưa xác minh".
 - [x] `COPYRIGHT.txt`, `.env.example` nếu có thêm thành phần hoặc biến môi trường.
 - [x] README gốc, `README_EN.md`, README các module và `CONTRIBUTING.md`: bỏ nội dung về Farm, Lab, `DXOS_APP`; trỏ tới tag `v1.1.1` cho bản cũ.
-- [x] `docs/backlog.md` ở repo `DX-OS-docs`: thêm việc phát sinh.
+- [x] [`docs/dynamic-core/BACKLOG.md`](../dynamic-core/BACKLOG.md): thêm việc phát sinh.

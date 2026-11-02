@@ -20,8 +20,9 @@ The narrow loop from model file to end user runs:
 
 - Reading and checking a model file, with errors reported by line and column.
 - Applying a model to an empty system: schema, tables, constraints, Keycloak roles, a stored version and the history of each step; applying again does nothing, and an interrupted apply is finished by applying again.
-- One API for every entity, permissions by role and by row (`all`, `own`, `read`), required, unique and choice rules.
-- A single-level approval workflow on an embedded Flowable; the status of a record changes only through the workflow, in the same transaction as the write of the record.
+- One API for every entity, permissions by role and by row (`all`, `own`, `read`, `unit`, `assigned`), required, unique and choice rules.
+- A single-level approval workflow on an embedded Flowable, with a return for more information; the status of a record changes only through the workflow, in the same transaction as the write of the record.
+- Units declared in the model and kept as Keycloak groups; assignment, an inbox and the history of every record.
 - A react-admin UI built from metadata, with no code written for any entity.
 
 Not yet: changing a model that already holds data, file attachments, an event axis, chat notifications, AI, Superset reports.
@@ -78,10 +79,11 @@ entities:
     process: {template: approval, approver: KEEPER}
 ```
 
-- Field types: `text`, `number`, `datetime`, `choice`, `reference`, `user`.
-- Access by role: `all` (every row, read and write), `own` (the rows of the user), `read` (every row, read only); `owner_via` lets a child entity follow the owner of its parent.
-- Workflow: the `approval` template, one role approves or rejects.
-  A record that has been decided can no longer be edited or deleted.
+- Field types: `text`, `number`, `datetime`, `choice`, `reference`, `user`, `unit`.
+- Units: declared in `units`, each one a Keycloak group; a `unit` field says which unit a record belongs to. A full example is [`models/onestop.yaml`](./models/onestop.yaml).
+- Access by role: `all` (every row, read and write), `own` (the rows of the user), `read` (every row, read only), `unit` (the rows of the units of the user), `assigned` (the rows assigned to the user); `owner_via` lets a child entity follow the owner of its parent.
+- Workflow: the `approval` template, one role approves, rejects or returns with a note for the owner to fix and submit again.
+  A record that has been decided can no longer be edited or deleted; an assigned record can only be handled by its assignee.
   The creator of a record cannot decide it unless `allow_self_decision: true` is declared.
 - Schema for editors: [`model-v0.schema.json`](./backend/dx-model/src/main/resources/schema/model-v0.schema.json); sample bad files in [`models/invalid/`](./models/invalid).
 
@@ -93,7 +95,10 @@ entities:
 | `GET /api/v1/models`, `/models/{model}/runs` | Applied models and the history of each step (ADMIN) |
 | `GET /api/v1/meta/models` | Metadata the caller may see |
 | `/api/v1/data/{model}/{entity}` | List, create, read, update, delete; filter with `filter.<field>[.<op>]`, `sort`, `order`, `page`, `size` |
-| `POST /api/v1/data/{model}/{entity}/{id}/decision` | `approve` or `reject` by the approver role |
+| `POST /api/v1/data/{model}/{entity}/{id}/actions/{action}` | An action of the workflow; the metadata lists the actions, their starting state and who may take them |
+| `POST .../{id}/assign`, `GET .../{id}/handlers` | Assign a record and list who can take it |
+| `GET .../{id}/events` | The history of a record |
+| `GET /api/v1/inbox` | The records waiting for the caller, on every model |
 
 Every reply is wrapped in `ApiResponse`; errors carry a stable `errorCode`.
 

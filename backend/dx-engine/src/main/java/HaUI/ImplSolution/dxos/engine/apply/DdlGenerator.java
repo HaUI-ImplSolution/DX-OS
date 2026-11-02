@@ -9,6 +9,7 @@ import HaUI.ImplSolution.dxos.model.FieldType;
 import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
 import HaUI.ImplSolution.dxos.model.Model.Field;
+import HaUI.ImplSolution.dxos.model.ProcessTemplate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,7 +18,6 @@ import java.util.stream.Collectors;
 public final class DdlGenerator {
 
   public static final String REPORT_ROLE = "report_ro";
-  public static final List<String> STATUSES = List.of("submitted", "approved", "rejected");
 
   private DdlGenerator() {}
 
@@ -33,8 +33,12 @@ public final class DdlGenerator {
     columns.add("updated_at TIMESTAMPTZ NOT NULL DEFAULT now()");
     columns.add("version BIGINT NOT NULL DEFAULT 0");
     if (entity.process() != null) {
-      String values = STATUSES.stream().map(Sql::literal).collect(Collectors.joining(", "));
-      columns.add("status TEXT NOT NULL DEFAULT 'submitted' CHECK (status IN (" + values + "))");
+      ProcessTemplate template = entity.process().definition();
+      String values = template.states().stream().map(state -> literal(state.name()))
+          .collect(Collectors.joining(", "));
+      columns.add("status TEXT NOT NULL DEFAULT " + literal(template.initial())
+          + " CHECK (status IN (" + values + "))");
+      columns.add("assignee TEXT");
       columns.add("decided_by TEXT");
       columns.add("decided_at TIMESTAMPTZ");
     }
@@ -48,7 +52,7 @@ public final class DdlGenerator {
         column.append(" CONSTRAINT ").append(ident("uq_" + entity.name() + "_" + field.name()))
             .append(" UNIQUE");
       }
-      if (field.type() == FieldType.CHOICE) {
+      if (field.type() == FieldType.CHOICE || field.type() == FieldType.UNIT) {
         String values =
             field.options().stream().map(Sql::literal).collect(Collectors.joining(", "));
         column.append(" CONSTRAINT ").append(ident("ck_" + entity.name() + "_" + field.name()))
@@ -66,6 +70,11 @@ public final class DdlGenerator {
     List<String> statements = new ArrayList<>();
     statements.add("CREATE INDEX IF NOT EXISTS " + ident("ix_" + entity.name() + "_created_by")
         + " ON " + table(model, entity) + " (created_by)");
+    if (entity.process() != null) {
+      statements.add(index(model, entity, "status"));
+      statements.add(index(model, entity, "assignee"));
+    }
+    entity.unitField().ifPresent(field -> statements.add(index(model, entity, field.name())));
     for (Field field : entity.fields().values()) {
       if (field.type() != FieldType.REFERENCE) {
         continue;
@@ -84,6 +93,11 @@ public final class DdlGenerator {
     return statements;
   }
 
+  private static String index(Model model, Entity entity, String column) {
+    return "CREATE INDEX IF NOT EXISTS " + ident("ix_" + entity.name() + "_" + column) + " ON "
+        + table(model, entity) + " (" + ident(column) + ")";
+  }
+
   // A role that can read the tables of the model and write nothing, for reports.
   public static List<String> readOnlyAccess(Model model, String password) {
     String create =
@@ -96,9 +110,9 @@ public final class DdlGenerator {
             + ident(REPORT_ROLE));
   }
 
-  private static String sqlType(FieldType type) {
+  public static String sqlType(FieldType type) {
     return switch (type) {
-      case TEXT, CHOICE, USER -> "TEXT";
+      case TEXT, CHOICE, USER, UNIT -> "TEXT";
       case NUMBER -> "NUMERIC";
       case DATETIME -> "TIMESTAMPTZ";
       case REFERENCE -> "BIGINT";

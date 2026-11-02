@@ -1,11 +1,21 @@
 // SPDX-License-Identifier: Apache-2.0
 import { useEffect, useMemo, useState } from "react";
-import { Admin, Resource } from "react-admin";
+import { Admin, Layout, Menu, Resource, type LayoutProps } from "react-admin";
 import { listModels } from "./api";
 import authProvider from "./authProvider";
 import { createDataProvider } from "./dataProvider";
+import InboxPage from "./InboxPage";
 import { screens } from "./resources";
 import { resourceName, type EntityMeta, type ModelMeta } from "./types";
+
+const AppMenu = () => (
+  <Menu>
+    <Menu.DashboardItem primaryText="Hộp việc" />
+    <Menu.ResourceItems />
+  </Menu>
+);
+
+const AppLayout = ({ children }: LayoutProps) => <Layout menu={AppMenu}>{children}</Layout>;
 
 // Reads the metadata of the applied models and builds one resource per entity the user can reach.
 export default function AdminApp() {
@@ -27,7 +37,14 @@ export default function AdminApp() {
   if (!models) return <div className="login-screen" />;
 
   return (
-    <Admin dataProvider={dataProvider} authProvider={authProvider} requireAuth disableTelemetry>
+    <Admin
+      dataProvider={dataProvider}
+      authProvider={authProvider}
+      dashboard={() => <InboxPage models={models} />}
+      layout={AppLayout}
+      requireAuth
+      disableTelemetry
+    >
       {models.flatMap((model) =>
         model.entities.map((entity) => {
           const views = screens(model, entity);

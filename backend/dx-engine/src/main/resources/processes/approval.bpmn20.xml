@@ -5,7 +5,8 @@
              xmlns:flowable="http://flowable.org/bpmn"
              targetNamespace="http://dxos/processes">
 
-  <!-- One approver role decides once; the record status is written by the process only. -->
+  <!-- A handler role decides once or returns the record to its owner, who submits it again. The
+       record status is written by the process only. -->
   <process id="approval" name="Single-level approval" isExecutable="true">
     <startEvent id="start"/>
     <sequenceFlow id="toDecide" sourceRef="start" targetRef="decide"/>
@@ -15,16 +16,26 @@
 
     <exclusiveGateway id="outcome"/>
     <sequenceFlow id="toApproved" sourceRef="outcome" targetRef="approved">
-      <conditionExpression xsi:type="tFormalExpression">${decision == 'approve'}</conditionExpression>
+      <conditionExpression xsi:type="tFormalExpression">${action == 'approve'}</conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="toRejected" sourceRef="outcome" targetRef="rejected">
-      <conditionExpression xsi:type="tFormalExpression">${decision == 'reject'}</conditionExpression>
+      <conditionExpression xsi:type="tFormalExpression">${action == 'reject'}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="toReturned" sourceRef="outcome" targetRef="returned">
+      <conditionExpression xsi:type="tFormalExpression">${action == 'return'}</conditionExpression>
     </sequenceFlow>
 
     <serviceTask id="approved" flowable:expression="${recordStatus.set(execution, 'approved')}"/>
     <sequenceFlow id="approvedToEnd" sourceRef="approved" targetRef="end"/>
     <serviceTask id="rejected" flowable:expression="${recordStatus.set(execution, 'rejected')}"/>
     <sequenceFlow id="rejectedToEnd" sourceRef="rejected" targetRef="end"/>
+
+    <serviceTask id="returned" flowable:expression="${recordStatus.set(execution, 'returned')}"/>
+    <sequenceFlow id="returnedToResubmit" sourceRef="returned" targetRef="resubmit"/>
+    <userTask id="resubmit" name="Submit again" flowable:assignee="${ownerId}"/>
+    <sequenceFlow id="resubmitToSubmitted" sourceRef="resubmit" targetRef="submitted"/>
+    <serviceTask id="submitted" flowable:expression="${recordStatus.set(execution, 'submitted')}"/>
+    <sequenceFlow id="submittedToDecide" sourceRef="submitted" targetRef="decide"/>
 
     <endEvent id="end"/>
   </process>

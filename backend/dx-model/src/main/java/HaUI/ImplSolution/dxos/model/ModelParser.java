@@ -5,6 +5,7 @@ import HaUI.ImplSolution.dxos.model.Model.Entity;
 import HaUI.ImplSolution.dxos.model.Model.Field;
 import HaUI.ImplSolution.dxos.model.Model.Process;
 import HaUI.ImplSolution.dxos.model.Model.Role;
+import HaUI.ImplSolution.dxos.model.Model.Unit;
 import HaUI.ImplSolution.dxos.model.ModelException.Problem;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -32,10 +33,12 @@ public final class ModelParser {
   private static final Pattern NAME = Pattern.compile("[a-z][a-z0-9_]{0,39}");
   private static final Pattern ROLE = Pattern.compile("[A-Z][A-Z0-9_]{0,39}");
   private static final Set<String> RESERVED_FIELDS = Set.of("id", "created_by", "created_at",
-      "updated_at", "version", "status", "decided_by", "decided_at");
-  private static final Set<String> PROCESS_TEMPLATES = Set.of("approval");
+      "updated_at", "version", "status", "assignee", "decided_by", "decided_at");
 
   private final List<Problem> problems = new ArrayList<>();
+
+  private final Set<String> unitNames = new LinkedHashSet<>();
+  private final Map<String, Node> accessNodes = new LinkedHashMap<>();
 
   private ModelParser() {}
 
@@ -65,13 +68,15 @@ public final class ModelParser {
       problem(root, "the file must be a mapping with format, name, roles and entities");
       return null;
     }
-    Map<String, Node> keys = mapping(top, Set.of("format", "name", "roles", "entities"));
+    Map<String, Node> keys = mapping(top, Set.of("format", "name", "roles", "units", "entities"));
 
     int format = readFormat(top, keys.get("format"));
     String name = readName(top, keys.get("name"), "model name");
     List<Role> roles = readRoles(top, keys.get("roles"));
     Set<String> roleNames = new LinkedHashSet<>();
     roles.forEach(role -> roleNames.add(role.name()));
+    List<Unit> units = readUnits(keys.get("units"));
+    units.forEach(unit -> unitNames.add(unit.name()));
 
     Map<String, Entity> entities = new LinkedHashMap<>();
     Node entitiesNode = keys.get("entities");
@@ -91,10 +96,72 @@ public final class ModelParser {
         }
       }
     }
+    checkScopes(entities);
     if (!problems.isEmpty()) {
       return null;
     }
-    return new Model(format, name, List.copyOf(roles), entities);
+    return new Model(format, name, List.copyOf(roles), List.copyOf(units), entities);
+  }
+
+  private List<Unit> readUnits(Node node) {
+    List<Unit> units = new ArrayList<>();
+    if (node == null) {
+      return units;
+    }
+    if (!(node instanceof SequenceNode sequence) || sequence.getValue().isEmpty()) {
+      problem(node, "units must be a list with at least one unit");
+      return units;
+    }
+    Set<String> seen = new LinkedHashSet<>();
+    for (Node item : sequence.getValue()) {
+      if (!(item instanceof MappingNode map)) {
+        problem(item, "a unit is a mapping with name and label");
+        continue;
+      }
+      Map<String, Node> keys = mapping(map, Set.of("name", "label"));
+      Node nameNode = keys.get("name");
+      String unitName = nameNode instanceof ScalarNode s ? s.getValue() : null;
+      if (unitName == null || !ROLE.matcher(unitName).matches()) {
+        problem(nameNode == null ? map : nameNode,
+            "unit name must match [A-Z][A-Z0-9_]* and be at most 40 characters");
+        continue;
+      }
+      if (!seen.add(unitName)) {
+        problem(nameNode, "unit " + unitName + " is declared twice");
+        continue;
+      }
+      Node label = keys.get("label");
+      units.add(new Unit(unitName, label == null ? unitName : scalar(label)));
+    }
+    return units;
+  }
+
+  // A scope needs what it filters on, on the entity or on the record the entity belongs to.
+  private void checkScopes(Map<String, Entity> entities) {
+    for (Entity entity : entities.values()) {
+      Entity holder = entity;
+      if (entity.ownerVia() != null) {
+        Field via = entity.fields().get(entity.ownerVia());
+        holder = via == null ? null : entities.get(via.to());
+      }
+      if (entity.fields().values().stream().filter(f -> f.type() == FieldType.UNIT).count() > 1) {
+        problem(accessNodes.get(entity.name()),
+            "entity " + entity.name() + " has more than one unit field");
+      }
+      if (holder == null) {
+        continue;
+      }
+      for (Map.Entry<String, Scope> grant : entity.access().entrySet()) {
+        if (grant.getValue() == Scope.UNIT && holder.unitField().isEmpty()) {
+          problem(accessNodes.get(entity.name()),
+              "access unit of " + grant.getKey() + " needs a unit field on " + holder.name());
+        }
+        if (grant.getValue() == Scope.ASSIGNED && holder.process() == null) {
+          problem(accessNodes.get(entity.name()),
+              "access assigned of " + grant.getKey() + " needs a process on " + holder.name());
+        }
+      }
+    }
   }
 
   private int readFormat(Node parent, Node node) {
@@ -181,6 +248,7 @@ public final class ModelParser {
 
     Map<String, Field> fields = readFields(map, keys.get("fields"), entityNames);
     Map<String, Scope> access = readAccess(map, keys.get("access"), roleNames);
+    accessNodes.put(name, keys.get("access"));
     Process process = readProcess(keys.get("process"), roleNames, access);
 
     String ownerVia = null;
@@ -241,7 +309,7 @@ public final class ModelParser {
     FieldType type = FieldType.of(scalar(typeNode)).orElse(null);
     if (type == null) {
       problem(typeNode, "unknown type " + scalar(typeNode)
-          + ", use text, number, datetime, choice, reference or user");
+          + ", use text, number, datetime, choice, reference, user or unit");
       return null;
     }
     List<String> options = List.of();
@@ -249,6 +317,11 @@ public final class ModelParser {
       options = readOptions(spec, keys.get("options"));
     } else if (keys.get("options") != null) {
       problem(keys.get("options"), "options only applies to a choice field");
+    } else if (type == FieldType.UNIT) {
+      options = List.copyOf(unitNames);
+      if (options.isEmpty()) {
+        problem(typeNode, "a unit field needs units declared in the model");
+      }
     }
     String to = null;
     if (type == FieldType.REFERENCE) {
@@ -292,7 +365,7 @@ public final class ModelParser {
       return access;
     }
     if (!(node instanceof MappingNode map) || map.getValue().isEmpty()) {
-      problem(node, "access maps at least one role to all, own or read");
+      problem(node, "access maps at least one role to all, own, read, unit or assigned");
       return access;
     }
     for (NodeTuple tuple : map.getValue()) {
@@ -303,7 +376,8 @@ public final class ModelParser {
       }
       Scope scope = Scope.of(scalar(tuple.getValueNode()));
       if (scope == null) {
-        problem(tuple.getValueNode(), "access of " + role + " must be all, own or read");
+        problem(tuple.getValueNode(),
+            "access of " + role + " must be all, own, read, unit or assigned");
         continue;
       }
       access.put(role, scope);
@@ -322,9 +396,9 @@ public final class ModelParser {
     Map<String, Node> keys = mapping(map, Set.of("template", "approver", "allow_self_decision"));
     Node templateNode = keys.get("template");
     String template = templateNode == null ? null : scalar(templateNode);
-    if (template == null || !PROCESS_TEMPLATES.contains(template)) {
+    if (template == null || ProcessTemplate.find(template).isEmpty()) {
       problem(templateNode == null ? map : templateNode,
-          "unknown process template, available: " + String.join(", ", PROCESS_TEMPLATES));
+          "unknown process template, available: " + String.join(", ", ProcessTemplate.names()));
       return null;
     }
     Node approverNode = keys.get("approver");
@@ -335,8 +409,9 @@ public final class ModelParser {
       return null;
     }
     Scope approverScope = access.get(approver);
-    if (approverScope == null || !approverScope.reachesAll()) {
-      problem(approverNode, "the approver role " + approver + " must have access all or read");
+    if (approverScope == null || approverScope == Scope.OWN) {
+      problem(approverNode,
+          "the approver role " + approver + " must have access all, read, unit or assigned");
     }
     return new Process(template, approver,
         flag(keys.get("allow_self_decision"), "allow_self_decision"));

@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: Apache-2.0
+format: 0
+name: bad
+roles:
+  - name: OFFICER
+entities:
+  item:
+    fields:
+      title: {type: text}
+    access: {OFFICER: unit}

@@ -8,13 +8,19 @@ public enum Scope {
   // Every row; read, create, update and delete.
   ALL,
   // Every row; read only.
-  READ;
+  READ,
+  // The rows of the units the user belongs to; read, create, update and delete.
+  UNIT,
+  // The rows assigned to the user; read, update and delete.
+  ASSIGNED;
 
   public static Scope of(String key) {
     return switch (key) {
       case "all" -> ALL;
       case "own" -> OWN;
       case "read" -> READ;
+      case "unit" -> UNIT;
+      case "assigned" -> ASSIGNED;
       default -> null;
     };
   }
@@ -24,7 +30,7 @@ public enum Scope {
   }
 
   public boolean reachesAll() {
-    return this != OWN;
+    return this == ALL || this == READ;
   }
 
   public boolean canWrite() {

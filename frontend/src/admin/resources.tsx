@@ -1,6 +1,4 @@
 // SPDX-License-Identifier: Apache-2.0
-import { useState } from "react";
-import { Button as MuiButton } from "@mui/material";
 import {
   AutocompleteInput,
   Create,
@@ -8,6 +6,7 @@ import {
   DateField,
   DateTimeInput,
   Edit,
+  EditButton,
   FunctionField,
   List,
   NumberField,
@@ -22,16 +21,14 @@ import {
   TextInput,
   TopToolbar,
   required,
-  useGetIdentity,
-  useNotify,
   useRecordContext,
-  useRefresh,
 } from "react-admin";
-import { decide } from "./api";
+import { ActionButtons, AssignPanel, HistoryPanel } from "./caseParts";
 import { resourceName, type EntityMeta, type FieldMeta, type ModelMeta } from "./types";
 
 interface Catalog {
   model: string;
+  units: Record<string, string>;
   entities: Record<string, EntityMeta>;
 }
 
@@ -42,18 +39,13 @@ function displayField(entity: EntityMeta | undefined): string {
   return (preferred ?? texts[0])?.name ?? "id";
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  submitted: "Chờ duyệt",
-  approved: "Đã duyệt",
-  rejected: "Từ chối",
-};
-
-function statusField() {
+function statusField(entity: EntityMeta) {
+  const labels = Object.fromEntries((entity.process?.states ?? []).map((state) => [state.name, state.label]));
   return (
     <FunctionField
       key="status"
       label="Trạng thái"
-      render={(record: { status: string }) => STATUS_LABELS[record.status] ?? record.status}
+      render={(record: { status: string }) => labels[record.status] ?? record.status}
     />
   );
 }
@@ -63,7 +55,15 @@ function outputField(field: FieldMeta, catalog: Catalog) {
     case "number":
       return <NumberField key={field.name} source={field.name} label={field.label} />;
     case "datetime":
-      return <DateField key={field.name} source={field.name} label={field.label} showTime />;
+      return <DateField key={field.name} source={field.name} label={field.label} locales="vi-VN" showTime />;
+    case "unit":
+      return (
+        <FunctionField
+          key={field.name}
+          label={field.label}
+          render={(record: Record<string, string>) => catalog.units[record[field.name]] ?? record[field.name]}
+        />
+      );
     case "reference": {
       const target = catalog.entities[field.reference ?? ""];
       return (
@@ -91,12 +91,13 @@ function inputField(field: FieldMeta, catalog: Catalog) {
     case "datetime":
       return <DateTimeInput key={field.name} source={field.name} label={field.label} validate={validate} />;
     case "choice":
+    case "unit":
       return (
         <SelectInput
           key={field.name}
           source={field.name}
           label={field.label}
-          choices={field.options.map((option) => ({ id: option, name: option }))}
+          choices={field.options.map((option) => ({ id: option, name: catalog.units[option] ?? option }))}
           validate={validate}
         />
       );
@@ -118,36 +119,13 @@ function inputField(field: FieldMeta, catalog: Catalog) {
   }
 }
 
-function DecisionButtons({ model, entity }: { model: string; entity: EntityMeta }) {
+function ShowActions({ model, entity }: { model: string; entity: EntityMeta }) {
   const record = useRecordContext();
-  const { data: identity } = useGetIdentity();
-  const notify = useNotify();
-  const refresh = useRefresh();
-  const [busy, setBusy] = useState(false);
-  if (!record || !entity.canDecide || record.status !== "submitted") return null;
-  if (!entity.process?.allowSelfDecision && record.created_by === identity?.id) return null;
-
-  const send = async (outcome: "approve" | "reject") => {
-    setBusy(true);
-    try {
-      await decide(model, entity.name, record.id as number, outcome);
-      notify(outcome === "approve" ? "Đã duyệt" : "Đã từ chối", { type: "success" });
-      refresh();
-    } catch (error) {
-      notify(error instanceof Error ? error.message : "Không xử lý được", { type: "error" });
-    } finally {
-      setBusy(false);
-    }
-  };
-
+  const closed = entity.process?.states.find((state) => state.name === record?.status)?.terminal ?? false;
   return (
     <TopToolbar>
-      <MuiButton variant="contained" color="success" disabled={busy} onClick={() => send("approve")}>
-        Duyệt
-      </MuiButton>
-      <MuiButton variant="outlined" color="error" disabled={busy} onClick={() => send("reject")}>
-        Từ chối
-      </MuiButton>
+      {entity.canWrite && !closed && <EditButton label="Sửa" />}
+      <ActionButtons model={model} entity={entity} />
     </TopToolbar>
   );
 }
@@ -156,6 +134,7 @@ function DecisionButtons({ model, entity }: { model: string; entity: EntityMeta 
 export function screens(model: ModelMeta, entity: EntityMeta) {
   const catalog: Catalog = {
     model: model.name,
+    units: Object.fromEntries(model.units.map((unit) => [unit.name, unit.label])),
     entities: Object.fromEntries(model.entities.map((e) => [e.name, e])),
   };
   const filters = [
@@ -165,18 +144,19 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
             key="status"
             source="status"
             alwaysOn
-            choices={Object.entries(STATUS_LABELS).map(([id, name]) => ({ id, name }))}
+            label="Trạng thái"
+            choices={(entity.process?.states ?? []).map((state) => ({ id: state.name, name: state.label }))}
           />,
         ]
       : []),
     ...entity.fields
-      .filter((field) => field.type === "choice")
+      .filter((field) => field.type === "choice" || field.type === "unit")
       .map((field) => (
         <SelectInput
           key={field.name}
           source={field.name}
           label={field.label}
-          choices={field.options.map((option) => ({ id: option, name: option }))}
+          choices={field.options.map((option) => ({ id: option, name: catalog.units[option] ?? option }))}
         />
       )),
   ];
@@ -186,19 +166,21 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
       <Datagrid rowClick="show" bulkActionButtons={false}>
         <TextField source="id" />
         {entity.fields.map((field) => outputField(field, catalog))}
-        {entity.hasProcess && statusField()}
+        {entity.hasProcess && statusField(entity)}
       </Datagrid>
     </List>
   );
 
   const EntityShow = () => (
-    <Show actions={<DecisionButtons model={model.name} entity={entity} />}>
+    <Show actions={<ShowActions model={model.name} entity={entity} />}>
       <SimpleShowLayout>
         <TextField source="id" />
         {entity.fields.map((field) => outputField(field, catalog))}
-        {entity.hasProcess && statusField()}
-        <DateField source="created_at" label="Tạo lúc" showTime />
-        {entity.hasProcess && <DateField source="decided_at" label="Quyết định lúc" showTime />}
+        {entity.hasProcess && statusField(entity)}
+        <DateField source="created_at" label="Tạo lúc" locales="vi-VN" showTime />
+        {entity.hasProcess && <DateField source="decided_at" label="Quyết định lúc" locales="vi-VN" showTime />}
+        {entity.hasProcess && <AssignPanel model={model.name} entity={entity} />}
+        <HistoryPanel model={model.name} entity={entity} />
       </SimpleShowLayout>
     </Show>
   );
@@ -210,7 +192,7 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
   );
 
   const EntityEdit = () => (
-    <Edit mutationMode="pessimistic">
+    <Edit mutationMode="pessimistic" redirect="show">
       <SimpleForm>{entity.fields.map((field) => inputField(field, catalog))}</SimpleForm>
     </Edit>
   );

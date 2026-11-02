@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: Apache-2.0
+format: 0
+name: onestop
+roles:
+  - name: STUDENT
+    description: Sinh viên nộp hồ sơ
+  - name: OFFICER
+    description: Cán bộ một cửa, xử lý hồ sơ của đơn vị mình
+    staff: true
+  - name: SUPERVISOR
+    description: Người giám sát, xem mọi hồ sơ
+    staff: true
+units:
+  - name: DAO_TAO
+    label: Phòng Đào tạo
+  - name: CTSV
+    label: Phòng Công tác sinh viên
+entities:
+  request:
+    label: Hồ sơ
+    fields:
+      reason: {type: text, label: Lý do, required: true}
+      kind: {type: choice, label: Loại hồ sơ, required: true, options: [Giấy xác nhận, Phúc khảo, Hoãn thi]}
+      department: {type: unit, label: Đơn vị xử lý, required: true}
+      needed_at: {type: datetime, label: Cần trước ngày}
+    access: {STUDENT: own, OFFICER: unit, SUPERVISOR: read}
+    process: {template: approval, approver: OFFICER}
+  request_note:
+    label: Ghi chú hồ sơ
+    fields:
+      request: {type: reference, label: Hồ sơ, to: request, required: true}
+      note: {type: text, label: Nội dung, required: true}
+    access: {STUDENT: own, OFFICER: unit, SUPERVISOR: read}
+    owner_via: request

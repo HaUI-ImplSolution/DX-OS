@@ -1,0 +1,45 @@
+# Việc tồn đọng của lõi dynamic
+
+Nguồn duy nhất cho việc chưa làm, chưa kiểm thử và giới hạn đã biết của lõi dynamic.
+Hướng đi nằm ở [`README.md`](./README.md); kế hoạch từng phase nằm ở `docs/phase-N-*`.
+Làm xong một mục thì xóa dòng đó, không ghi lại diễn biến.
+
+## 1. Thứ tự đến hạn nộp
+
+Hạn gửi bài là 17:00 ngày 06/12/2026.
+Mốc dưới đây là dự kiến.
+
+| Phase | Nội dung | Dự kiến xong |
+|---|---|---|
+| 7 | Đổi mô hình khi có dữ liệu: so sánh phiên bản, đổi tên, xóa trường, báo dữ liệu vi phạm, báo hồ sơ đang xử lý bị ảnh hưởng | 16/11 |
+| 8 | Tệp đính kèm, mẫu xử lý có hạn, trục sự kiện, mô hình cấp phát dịch vụ IT | 23/11 |
+| 9 | Ứng dụng Một cửa sinh viên, màn hình kế hoạch và lịch sử áp dụng, E2E theo tám tiêu chí đạt | 30/11 |
+| 10 | Bản phát hành, giấy phép, SBOM, tài liệu, triển khai công khai, gửi bài | 06/12 |
+
+## 2. Phải xử lý trước khi phát hành
+
+| Việc | Ghi chú |
+|---|---|
+| Các mục "Tạm gác" và "Việc cần làm" của [Cam kết nguồn mở](./README.md#cam-kết-nguồn-mở) | Kho quy chế HaUI, Redis và Langfuse trong đánh giá RAG, mô hình AI, Mattermost |
+| `README.md` gốc, `README_EN.md`, trang docs | Trang docs vẫn mô tả bản `v1.1.1` đang chạy trên `main`; cập nhật khi bản mới lên `main` |
+| Triển khai công khai | VPS giữ bản cũ đến khi lõi mới đạt |
+| Cập nhật `deploy/.env` trên máy dev | Tệp này còn biến của bản cũ; dựng stack dev bằng `deploy/make_env.py` |
+
+## 3. Giới hạn đã biết
+
+| Việc | Ghi chú |
+|---|---|
+| Chưa có CLI `dxos` | Áp dụng mô hình qua REST |
+| Chưa cắt bớt service bằng compose profile | Mô hình không dùng thành phần nào vẫn phải chạy thành phần đó |
+| Quyền `own` chỉ tới một bước tham chiếu | Quan hệ nhiều bước chưa dùng được |
+| Hành động hoàn tất sau khi duyệt | Chờ trục sự kiện ở Phase 8 |
+| Hộp việc chưa phân trang | Tối đa 100 hồ sơ cho mỗi thực thể |
+| Đổi thành viên đơn vị | Chỉ có hiệu lực sau khi người đó lấy token mới |
+| Nhãn mặc định của react-admin | Các nút có sẵn của khung chưa dịch sang tiếng Việt |
+
+## 4. Chưa kiểm thử
+
+| Việc | Ghi chú |
+|---|---|
+| Khởi động bản mới trên dữ liệu của `v1.1.1` | Không có đường nâng cấp dữ liệu |
+| Mức tài nguyên của toàn bộ stack | Cần đo trước khi chọn cấu hình VPS |

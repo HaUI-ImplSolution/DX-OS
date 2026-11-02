@@ -50,11 +50,12 @@ flowchart TB
 `POST /api/v1/models/apply` (ADMIN) chạy các bước tuần tự và ghi từng bước vào `engine.apply_step`:
 
 1. `CREATE_SCHEMA`: schema `m_<tên mô hình>`.
-2. `CREATE_TABLE`: một bảng cho mỗi thực thể, kèm các cột hệ thống (`id`, `created_by`, `created_at`, `updated_at`, `version`, và `status`, `decided_by`, `decided_at` nếu có quy trình), ràng buộc `NOT NULL`, `UNIQUE`, `CHECK` cho lựa chọn.
+2. `CREATE_TABLE`: một bảng cho mỗi thực thể, kèm các cột hệ thống (`id`, `created_by`, `created_at`, `updated_at`, `version`, và `status`, `assignee`, `decided_by`, `decided_at` nếu có quy trình), ràng buộc `NOT NULL`, `UNIQUE`, `CHECK` cho lựa chọn.
 3. `ADD_LINKS`: khóa ngoại và chỉ mục, sau khi mọi bảng đã có.
 4. `GRANT_READ_ONLY`: vai `report_ro` chỉ có quyền đọc, dùng cho báo cáo.
 5. `ENSURE_ROLE`: vai của mô hình trong Keycloak.
-6. `SAVE_VERSION`: lưu nội dung và mã băm; từ đây mô hình có hiệu lực.
+6. `ENSURE_UNIT`: đơn vị của mô hình, là nhóm trong Keycloak.
+7. `SAVE_VERSION`: lưu nội dung và mã băm; từ đây mô hình có hiệu lực.
 
 Mỗi bước chạy lại được an toàn, nên áp dụng bị gián đoạn thì áp dụng lại để làm tiếp.
 Cùng một tệp áp dụng lại thì không làm gì; tệp khác cho mô hình đã áp dụng bị từ chối (đổi mô hình khi có dữ liệu là bước sau).
@@ -79,21 +80,24 @@ sequenceDiagram
 ```
 
 - **Tên và truy vấn:** tên bảng và cột chỉ lấy từ mô hình đã kiểm, giá trị luôn đi qua tham số; tên trường hay toán tử không có trong mô hình bị từ chối (400).
-- **Quyền:** vai lấy từ token Keycloak; vai `own` chỉ chạm các dòng có `created_by` là người gọi, hoặc dòng con của bản ghi cha do người gọi tạo (`owner_via`); gắn dòng con vào cha của người khác bị từ chối (403).
+- **Quyền:** vai và đơn vị lấy từ token Keycloak; các phạm vi của những vai người gọi có được hợp lại: `all`, `read` chạm mọi dòng, `own` chạm dòng do người gọi tạo, `unit` chạm dòng thuộc đơn vị của người gọi, `assigned` chạm dòng giao cho người gọi.
+  Thực thể con (`owner_via`) xét các phạm vi này trên bản ghi cha, và không gắn được vào bản ghi cha ngoài tầm với (403).
 - **Quy tắc:** bắt buộc, duy nhất và lựa chọn vừa được API kiểm để báo lỗi theo từng trường, vừa là ràng buộc trong cơ sở dữ liệu.
 
 ## 5. Trạng thái chỉ đổi qua quy trình
 
 - Flowable chạy nhúng, dùng chung nguồn dữ liệu và giao dịch Spring; bảng của nó nằm ở schema `engine`.
-- API chung từ chối mọi yêu cầu có cột `status` (403); `POST .../{id}/decision` do vai duyệt gọi, hoàn tất tác vụ, và bước kế của quy trình ghi `approved` hoặc `rejected` qua bean `recordStatus`.
-- Quyết định lần hai bị từ chối (409); lỗi sau bước quy trình làm cả hồ sơ lẫn quy trình quay về như cũ.
+- Mẫu quy trình khai báo trạng thái và hành động ở `ProcessTemplate`; các bước nằm ở tệp BPMN cùng tên.
+- API chung từ chối mọi yêu cầu có cột `status` (403); `POST .../{id}/actions/{action}` kiểm người được làm và trạng thái đầu, hoàn tất tác vụ, và bước kế của quy trình ghi trạng thái mới qua bean `recordStatus`.
+- Hồ sơ đã giao thì chỉ người được giao thực hiện được hành động của vai xử lý.
+- Hành động sai trạng thái bị từ chối (409); lỗi sau bước quy trình làm cả hồ sơ, quy trình lẫn dòng lịch sử quay về như cũ.
 - Dịch vụ lõi là kết nối ghi duy nhất vào dữ liệu nghiệp vụ; vai `report_ro` chỉ đọc.
 
 ## 6. Dữ liệu
 
 | Schema | Nội dung |
 |---|---|
-| `engine` | Phiên bản mô hình, lịch sử áp dụng, bảng của Flowable |
+| `engine` | Phiên bản mô hình, lịch sử áp dụng, dòng lịch sử của bản ghi, bảng của Flowable |
 | `m_<mô hình>` | Bảng nghiệp vụ sinh từ mô hình |
 | `public` (bảng `audit_log`) | Nhật ký truy cập và thao tác quản trị |
 | `monitor` | Dữ liệu của màn hình giám sát |

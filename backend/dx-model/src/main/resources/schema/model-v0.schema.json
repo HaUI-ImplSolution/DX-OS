@@ -22,6 +22,19 @@
         }
       }
     },
+    "units": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]{0,39}$" },
+          "label": { "type": "string" }
+        }
+      }
+    },
     "entities": {
       "type": "object",
       "minProperties": 1,
@@ -42,7 +55,7 @@
               "required": ["type"],
               "additionalProperties": false,
               "properties": {
-                "type": { "enum": ["text", "number", "datetime", "choice", "reference", "user"] },
+                "type": { "enum": ["text", "number", "datetime", "choice", "reference", "user", "unit"] },
                 "label": { "type": "string" },
                 "required": { "type": "boolean" },
                 "unique": { "type": "boolean" },
@@ -54,7 +67,7 @@
           "access": {
             "type": "object",
             "minProperties": 1,
-            "additionalProperties": { "enum": ["all", "own", "read"] }
+            "additionalProperties": { "enum": ["all", "own", "read", "unit", "assigned"] }
           },
           "process": {
             "type": "object",

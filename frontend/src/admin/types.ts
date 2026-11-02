@@ -12,6 +12,7 @@ export interface FieldMeta {
 export interface ProcessInfo {
   template: string;
   approver: string;
+  allowSelfDecision: boolean;
 }
 
 export interface EntityMeta {

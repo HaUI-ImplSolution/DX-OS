@@ -22,6 +22,7 @@ import {
   TextInput,
   TopToolbar,
   required,
+  useGetIdentity,
   useNotify,
   useRecordContext,
   useRefresh,
@@ -119,10 +120,12 @@ function inputField(field: FieldMeta, catalog: Catalog) {
 
 function DecisionButtons({ model, entity }: { model: string; entity: EntityMeta }) {
   const record = useRecordContext();
+  const { data: identity } = useGetIdentity();
   const notify = useNotify();
   const refresh = useRefresh();
   const [busy, setBusy] = useState(false);
   if (!record || !entity.canDecide || record.status !== "submitted") return null;
+  if (!entity.process?.allowSelfDecision && record.created_by === identity?.id) return null;
 
   const send = async (outcome: "approve" | "reject") => {
     setBusy(true);

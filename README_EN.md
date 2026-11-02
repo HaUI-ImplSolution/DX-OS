@@ -81,6 +81,8 @@ entities:
 - Field types: `text`, `number`, `datetime`, `choice`, `reference`, `user`.
 - Access by role: `all` (every row, read and write), `own` (the rows of the user), `read` (every row, read only); `owner_via` lets a child entity follow the owner of its parent.
 - Workflow: the `approval` template, one role approves or rejects.
+  A record that has been decided can no longer be edited or deleted.
+  The creator of a record cannot decide it unless `allow_self_decision: true` is declared.
 - Schema for editors: [`model-v0.schema.json`](./backend/dx-model/src/main/resources/schema/model-v0.schema.json); sample bad files in [`models/invalid/`](./models/invalid).
 
 ## API

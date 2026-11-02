@@ -40,6 +40,7 @@ public class DataService {
 
   public record Access(boolean read, boolean readAll, boolean write, boolean writeAll) {}
 
+  private static final String UNDECIDED = "submitted";
   private static final int MAX_PAGE_SIZE = 200;
   private static final int DEFAULT_PAGE_SIZE = 20;
   private static final Set<String> SYSTEM_COLUMNS =
@@ -168,6 +169,7 @@ public class DataService {
       throw new ModelValidationException("body", "no field to update");
     }
     requireOwnedParent(model, entity, access, values);
+    requireUndecided(model, entity, access, id);
     MapSqlParameterSource params = new MapSqlParameterSource("id", id);
     List<String> sets = new ArrayList<>();
     values.forEach((name, value) -> {
@@ -194,6 +196,7 @@ public class DataService {
     Access access = access(entity);
     requireRead(access);
     requireWrite(access);
+    requireUndecided(model, entity, access, id);
     MapSqlParameterSource params = new MapSqlParameterSource("id", id);
     String scope = scope(model, entity, access.writeAll(), params);
     if (entity.process() != null) {
@@ -222,7 +225,11 @@ public class DataService {
     if (!"approve".equals(outcome) && !"reject".equals(outcome)) {
       throw new ModelValidationException("outcome", "must be approve or reject");
     }
-    get(model, entity, id);
+    Map<String, Object> record = get(model, entity, id);
+    if (!entity.process().allowSelfDecision()
+        && user.currentUserId().equals(record.get("created_by"))) {
+      throw new ActionNotAllowedException("The creator of a record cannot decide it");
+    }
     process.decide(model, entity, id, outcome);
     return get(model, entity, id);
   }
@@ -241,6 +248,24 @@ public class DataService {
         Integer.class);
     if (owned == null || owned == 0) {
       throw new ActionNotAllowedException("The " + via + " is not yours");
+    }
+  }
+
+  // A record whose process has decided is frozen. The row stays locked until the transaction
+  // ends, so a decision cannot slip in between this check and the write.
+  private void requireUndecided(Model model, Entity entity, Access access, long id) {
+    if (entity.process() == null) {
+      return;
+    }
+    MapSqlParameterSource values = new MapSqlParameterSource("id", id);
+    String scope = scope(model, entity, access.writeAll(), values);
+    List<String> statuses = jdbc.queryForList("SELECT status FROM " + table(model, entity)
+        + " WHERE id = :id AND " + scope + " FOR UPDATE", values, String.class);
+    if (statuses.isEmpty()) {
+      throw notFound(entity, id);
+    }
+    if (!UNDECIDED.equals(statuses.get(0))) {
+      throw new InvalidStateException("The record is already decided");
     }
   }
 

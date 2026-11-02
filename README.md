@@ -81,6 +81,8 @@ entities:
 - Kiểu trường: `text`, `number`, `datetime`, `choice`, `reference`, `user`.
 - Quyền theo vai: `all` (mọi dòng, đọc và ghi), `own` (dòng của mình), `read` (mọi dòng, chỉ đọc); `owner_via` cho phép thực thể con theo chủ sở hữu của thực thể cha.
 - Quy trình: mẫu `approval`, một vai duyệt hoặc từ chối.
+  Hồ sơ đã được quyết định thì không sửa và không xóa được.
+  Người tạo hồ sơ không tự quyết định được, trừ khi khai báo `allow_self_decision: true`.
 - Đặc tả cho trình soạn thảo: [`dx-model/.../model-v0.schema.json`](./backend/dx-model/src/main/resources/schema/model-v0.schema.json); tệp sai mẫu ở [`models/invalid/`](./models/invalid).
 
 ## API

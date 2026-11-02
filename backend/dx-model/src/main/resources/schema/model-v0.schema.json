@@ -62,7 +62,8 @@
             "additionalProperties": false,
             "properties": {
               "template": { "enum": ["approval"] },
-              "approver": { "type": "string" }
+              "approver": { "type": "string" },
+              "allow_self_decision": { "type": "boolean" }
             }
           }
         }

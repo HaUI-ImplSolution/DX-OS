@@ -16,8 +16,9 @@ public Optional<Field>field(String fieldName){return Optional.ofNullable(fields.
 
 public record Field(String name,FieldType type,String label,boolean required,boolean unique,List<String>options,String to){}
 
-// The workflow template an entity runs and the role that decides.
-public record Process(String template,String approver){}
+// The workflow template an entity runs, the role that decides, and whether the creator of a
+// record may decide it.
+public record Process(String template,String approver,boolean allowSelfDecision){}
 
 // Name of the PostgreSQL schema that holds the tables of this model.
 public String schema(){return"m_"+name;}

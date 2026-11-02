@@ -319,7 +319,7 @@ public final class ModelParser {
       problem(node, "process is a mapping with template and approver");
       return null;
     }
-    Map<String, Node> keys = mapping(map, Set.of("template", "approver"));
+    Map<String, Node> keys = mapping(map, Set.of("template", "approver", "allow_self_decision"));
     Node templateNode = keys.get("template");
     String template = templateNode == null ? null : scalar(templateNode);
     if (template == null || !PROCESS_TEMPLATES.contains(template)) {
@@ -338,7 +338,8 @@ public final class ModelParser {
     if (approverScope == null || !approverScope.reachesAll()) {
       problem(approverNode, "the approver role " + approver + " must have access all or read");
     }
-    return new Process(template, approver);
+    return new Process(template, approver,
+        flag(keys.get("allow_self_decision"), "allow_self_decision"));
   }
 
   private boolean flag(Node node, String what) {

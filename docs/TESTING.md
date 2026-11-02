@@ -112,4 +112,5 @@ Ngày 02/11/2026 trên clone sạch, stack dựng bằng `docker compose up -d -
 | `check_recovery.py` | Đạt | 16/16 |
 | Giao diện | Đạt | Người mượn thấy phiếu của mình, người duyệt thấy tất cả và duyệt được trên màn chi tiết |
 | Từ khóa ứng dụng cũ | Đạt | Không còn ngoài `ai/`, `data/`, `bi/`, `chat/` và các tài liệu mô tả bản cũ |
-| Chưa chạy | | Khởi động sau khi cập nhật từ bản `v1.1.1` (không có đường nâng cấp dữ liệu); CI trên GitHub chưa chạy cho nhánh này |
+| CI trên GitHub | Đạt | Năm workflow của nhánh `Khuong/phase-5-core-loop` |
+| Chưa chạy | | Khởi động sau khi cập nhật từ bản `v1.1.1` (không có đường nâng cấp dữ liệu) |

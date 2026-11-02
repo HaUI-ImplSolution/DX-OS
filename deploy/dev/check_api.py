@@ -69,7 +69,7 @@ def main():
     equipment = read("models/equipment.yaml")
     status, body = kc.api(admin, "POST", "/models/plan", equipment, YAML)
     check("T5-01 plan lists steps", status == 200 and body["data"]["action"] == "create"
-          and len(body["data"]["steps"]) > 8, f"{status} steps={len(body['data']['steps'])}")
+          and len(body["data"]["statements"]) > 8, f"{status} statements={len(body['data']['statements'])}")
     status, body = kc.api(admin, "POST", "/models/apply", equipment, YAML)
     check("T5-01 apply", status == 200 and body["data"]["status"] == "applied", f"{status} {body}")
     code, tables = psql("select table_name from information_schema.tables where table_schema='m_equipment' order by 1")

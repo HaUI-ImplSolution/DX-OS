@@ -39,6 +39,8 @@ FROM eclipse-temurin:21-jre-alpine AS backend
 WORKDIR /app
 ENV TZ=Asia/Ho_Chi_Minh
 COPY --from=build-engine /app/dx-engine/target/dx-engine.jar app.jar
+# pgschema compares the tables with what a model declares and changes them.
+COPY --from=pgplex/pgschema:1.13.4@sha256:4e77c22878120b38f8548d6ea62b3b1564438a5fbe84fcde3019684a638f60b7 /usr/local/bin/pgschema /usr/local/bin/pgschema
 # The service writes nothing outside /tmp, so it needs no privileges.
 RUN addgroup -S -g 10001 app && adduser -S -u 10001 -G app app
 USER app

@@ -11,8 +11,7 @@ Mốc dưới đây là dự kiến.
 
 | Phase | Nội dung | Dự kiến xong |
 |---|---|---|
-| 7 | Đổi mô hình khi có dữ liệu: so sánh phiên bản, đổi tên, xóa trường, báo dữ liệu vi phạm, báo hồ sơ đang xử lý bị ảnh hưởng | 16/11 |
-| 8 | Tệp đính kèm, mẫu xử lý có hạn, trục sự kiện, mô hình cấp phát dịch vụ IT | 23/11 |
+| 8 | Tệp đính kèm, mẫu xử lý có hạn và chuyển hồ sơ đang chạy sang mẫu khác, trục sự kiện, mô hình cấp phát dịch vụ IT | 23/11 |
 | 9 | Ứng dụng Một cửa sinh viên, màn hình kế hoạch và lịch sử áp dụng, E2E theo tám tiêu chí đạt | 30/11 |
 | 10 | Bản phát hành, giấy phép, SBOM, tài liệu, triển khai công khai, gửi bài | 06/12 |
 
@@ -33,6 +32,8 @@ Mốc dưới đây là dự kiến.
 | Chưa cắt bớt service bằng compose profile | Mô hình không dùng thành phần nào vẫn phải chạy thành phần đó |
 | Quyền `own` chỉ tới một bước tham chiếu | Quan hệ nhiều bước chưa dùng được |
 | Hành động hoàn tất sau khi duyệt | Chờ trục sự kiện ở Phase 8 |
+| Áp dụng đã đổi tên chưa có đường hủy | Phải sửa nguyên nhân rồi chạy lại đúng tệp đó |
+| Xác nhận mất dữ liệu không tự sao lưu | Người vận hành chạy `deploy/backup.sh` trước |
 | Hộp việc chưa phân trang | Tối đa 100 hồ sơ cho mỗi thực thể |
 | Đổi thành viên đơn vị | Chỉ có hiệu lực sau khi người đó lấy token mới |
 | Nhãn mặc định của react-admin | Các nút có sẵn của khung chưa dịch sang tiếng Việt |

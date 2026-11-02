@@ -224,7 +224,7 @@ Thêm năng lực mới nghĩa là thêm provider, không phải sửa lõi.
 | ----------------------------------- | ------------------------------------------- | ----------------------------------------------------------------- |
 | Định danh, SSO                  | Keycloak                                  | Sinh vai từ mô hình                                          |
 | Cổng API                         | APISIX                                    | Sinh route khi cần                                             |
-| Dữ liệu có cấu trúc          | PostgreSQL, công cụ migration khai báo | Sinh schema và ràng buộc; mỗi mô hình một schema         |
+| Dữ liệu có cấu trúc          | PostgreSQL, pgschema                     | Sinh schema và ràng buộc; mỗi mô hình một schema         |
 | API dữ liệu, quyền từng dòng | API chung trong dịch vụ lõi            | Đọc mô hình, kiểm token Keycloak, dựng truy vấn an toàn |
 | Dữ liệu phi cấu trúc          | SeaweedFS, ClamAV                         | Dùng lại `dx-core/storage`, gắn với trường tệp           |
 | Luồng công việc                | Flowable chạy nhúng                     | Các mẫu BPMN, API đổi trạng thái                          |
@@ -339,7 +339,8 @@ Những chỗ khó:
 - **Định dạng mô hình đổi theo thời gian:** tệp ghi phiên bản định dạng, lõi tự nâng được tệp cũ.
 
 **Bản dự thi** làm thêm, đổi tên, xóa trường; thêm quy tắc và báo dữ liệu vi phạm; quay lui cho thay đổi an toàn ở mức nên có.
-Đổi kiểu trường và đổi luồng khi còn hồ sơ đang chờ bị từ chối kèm giải thích.
+Đổi kiểu trường bị từ chối kèm giải thích.
+Đổi mẫu quy trình khi còn hồ sơ đang chờ dùng `ProcessMigrationService` của Flowable, làm khi có mẫu thứ hai.
 
 ### 2. Quy trình không lách được
 
@@ -545,7 +546,7 @@ Rà soát ngày 2026-11-02 từ `COPYRIGHT.txt`, GitHub API và Hugging Face.
 
 | Thành phần                                                      | Giấy phép                                                                                                                                                                                                                                                    | Kết luận                                                        |
 | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| Keycloak, APISIX, Superset, SeaweedFS, Flowable, pgschema, pgroll | Apache-2.0                                                                                                                                                                                                                                                     | Đạt                                                             |
+| Keycloak, APISIX, Superset, SeaweedFS, Flowable, pgschema         | Apache-2.0                                                                                                                                                                                                                                                     | Đạt                                                             |
 | react-admin, Ollama                                               | MIT                                                                                                                                                                                                                                                            | Đạt; chỉ dùng phần MIT, không dùng gói Enterprise         |
 | PostgreSQL, pgvector                                              | PostgreSQL License                                                                                                                                                                                                                                             | Đạt                                                             |
 | ClamAV                                                            | GPL-2.0                                                                                                                                                                                                                                                        | Đạt; điều khoản của kho chữ ký mã độc cần kiểm thêm |
@@ -599,8 +600,7 @@ Số sao và giấy phép lấy từ GitHub API ngày 2026-11-02, trừ khi có 
 | Giao diện                | [react-admin](https://github.com/marmelab/react-admin)                      | MIT                            | 26.979             | Có sẵn field và input cho các kiểu trường của mô hình; chỉ dùng phần MIT |
 | Giao diện, dự phòng    | [Refine](https://github.com/refinedev/refine)                               | MIT                            | 35.977             | Dùng nếu react-admin không dựng được theo metadata đổi lúc chạy            |
 | Dựng form                | [react-jsonschema-form](https://github.com/rjsf-team/react-jsonschema-form) | Apache-2.0, theo trang dự án | Chưa lấy được | Dựng form từ JSON Schema                                                            |
-| Migration, chọn khi thử | [pgschema](https://pkg.go.dev/github.com/pgplex/pgschema@v1.7.4)            | Apache-2.0                     | 1.077              | Chỉ cho PostgreSQL, kiểu Terraform                                                  |
-| Migration, chọn khi thử | [pgroll](https://github.com/xataio/pgroll)                                  | Apache-2.0                     | 6.613              | Mở rộng rồi thu lại, có rollback                                                 |
+| Đổi lược đồ             | [pgschema](https://pkg.go.dev/github.com/pgplex/pgschema@v1.13.4)            | Apache-2.0                     | 1.077              | So sánh và đổi lược đồ kiểu Terraform; lõi lo đổi tên và chặn mất dữ liệu |
 
 ## Cần quyết khi thiết kế chi tiết
 
@@ -623,11 +623,13 @@ Kết quả ở [`docs/TESTING.md`](../TESTING.md), mục 8:
 - API chung dựng truy vấn lúc chạy: 10.000 dòng có bộ lọc và sắp xếp trả về ở phân vị 95 là 11 ms; giá trị, tên trường và toán tử có SQL không có tác dụng.
 - Quyền theo dòng cho vai `own` qua một bước tham chiếu về thực thể cha.
 - react-admin dựng form và danh sách từ metadata cho kiểu văn bản, số, ngày giờ, lựa chọn và tham chiếu; mô hình thứ hai nạp lúc chạy không cần build lại giao diện.
+- pgschema đưa lược đồ về trạng thái đích khi đã có dữ liệu, với điều kiện lõi đổi tên cột, ràng buộc và chỉ mục trước; tự nó biến đổi tên thành xóa rồi thêm, nên lõi chặn mọi thao tác xóa mà mô hình không yêu cầu.
+- Kế hoạch xem trước khớp với áp dụng thật khi có đổi tên, và áp dụng lại sau lỗi giữa chừng về đúng trạng thái đích; kết quả thử ở [`docs/phase-7-model-change/04_TRADEOFFS_RISKS.md`](../phase-7-model-change/04_TRADEOFFS_RISKS.md).
+- `ProcessMigrationService` của Flowable chuyển được hồ sơ đang chạy sang mẫu mới và báo trước khi mẫu mới bỏ bước hiện tại; kết quả thử ở [`docs/phase-6-case-core/04_TRADEOFFS_RISKS.md`](../phase-6-case-core/04_TRADEOFFS_RISKS.md).
 
 ## Chưa xác minh
 
 - Quyền theo dòng qua quan hệ nhiều bước.
-- Khả năng đổi tên trường của pgschema, pgroll.
 - Chất lượng tiếng Việt và tốc độ trên CPU của Apertus 8B, OLMo 2.
 - Các phụ thuộc và khả năng nối OIDC, webhook của Zulip.
 - Phông chữ, biểu tượng và tài nguyên tĩnh của giao diện.

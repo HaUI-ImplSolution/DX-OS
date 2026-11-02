@@ -33,7 +33,7 @@ cd ../frontend && npm install && npm run dev
 | Backend | `./mvnw formatter:validate` rồi `./mvnw verify` trong `backend/` |
 | Web | `npx tsc --noEmit` trong `frontend/` |
 | AI | `pytest` trong `ai/` |
-| Toàn stack | `python3 deploy/dev/check_api.py` và `check_recovery.py` trên stack mới dựng |
+| Toàn stack | `python3 deploy/dev/check_api.py`, `check_recovery.py`, `check_case.py` và `check_change.py`, theo thứ tự, trên stack mới dựng |
 | Giấy phép | `python3 .github/scripts/check_licenses.py` |
 
 ## Quy ước

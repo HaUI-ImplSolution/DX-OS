@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -38,21 +39,42 @@ public class ModelController {
   }
 
   @PostMapping(value = "/plan", consumes = {YAML, "text/plain"})
-  @Operation(summary = "Check a model file and list the steps an apply would run",
+  @Operation(summary = "Check a model file and show what applying it would do",
       description = "The body is the model file. 400 lists every problem with its line and"
-          + " column. Nothing is changed.")
+          + " column. The answer compares it with the running version: the changes by level (SAFE,"
+          + " MIGRATION, LOSS), what is refused, existing rows that break a new rule, open records"
+          + " of the touched processes and the statements to run. No record or table changes.")
   public ApiResponse<ApplyService.Plan> plan(@RequestBody String content) {
     return ApiResponse.success(service.plan(content));
   }
 
   @PostMapping(value = "/apply", consumes = {YAML, "text/plain"})
   @Operation(summary = "Apply a model file",
-      description = "Creates the schema, tables, constraints, roles and units of the model and stores"
-          + " its version. Applying the same file again changes nothing or finishes an apply that"
-          + " stopped midway. 409 for a different file while the model is applied or unfinished,"
-          + " and while another apply of the model runs.")
-  public ApiResponse<ApplyService.Applied> apply(@RequestBody String content) {
-    return ApiResponse.success(service.apply(content, user.currentUserId()));
+      description = "Brings tables, constraints, roles and units to the file and stores a new"
+          + " version. To change a running model pass base, the fromVersion of the plan, and accept"
+          + " with the level of the plan (SAFE by default). The same file again changes nothing or"
+          + " finishes an apply that stopped midway. 409 when the plan is out of date, the level is"
+          + " above accept, rows break a new rule, the change is refused, or another apply runs.")
+  public ApiResponse<ApplyService.Applied> apply(@RequestBody String content,
+      @RequestParam(required = false) Integer base,
+      @RequestParam(required = false) ModelDiff.Level accept) {
+    return ApiResponse.success(service.apply(content, user.currentUserId(), base, accept));
+  }
+
+  @PostMapping("/{model}/rollback/plan")
+  @Operation(summary = "Show what returning to the version before the running one would do")
+  public ApiResponse<ApplyService.Plan> planRollback(@PathVariable String model) {
+    return ApiResponse.success(service.planRollback(model));
+  }
+
+  @PostMapping("/{model}/rollback")
+  @Operation(summary = "Return to the version before the running one, as a new version",
+      description = "Goes the same way as apply, with base and accept. A field added since then is"
+          + " dropped with its values, so that needs accept=LOSS; a value removed earlier does not"
+          + " come back without a backup.")
+  public ApiResponse<ApplyService.Applied> rollback(@PathVariable String model,
+      @RequestParam Integer base, @RequestParam(required = false) ModelDiff.Level accept) {
+    return ApiResponse.success(service.rollback(model, user.currentUserId(), base, accept));
   }
 
   @GetMapping("/{model}/runs")

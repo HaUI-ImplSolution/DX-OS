@@ -260,6 +260,12 @@ public final class ModelParser {
         problem(ownerNode, "owner_via must name a reference field of " + name);
       }
     }
+    for (Field field : fields.values()) {
+      if (field.renamedFrom() != null && fields.containsKey(field.renamedFrom())) {
+        problem(keys.get("fields"), "field " + field.name() + " is renamed from "
+            + field.renamedFrom() + ", which still exists");
+      }
+    }
     Node label = keys.get("label");
     return new Entity(name, label == null ? name : scalar(label), fields, access, process,
         ownerVia);
@@ -299,8 +305,8 @@ public final class ModelParser {
   }
 
   private Field readField(String name, MappingNode spec, Set<String> entityNames) {
-    Map<String, Node> keys =
-        mapping(spec, Set.of("type", "label", "required", "unique", "options", "to"));
+    Map<String, Node> keys = mapping(spec,
+        Set.of("type", "label", "required", "unique", "options", "to", "renamed_from", "default"));
     Node typeNode = keys.get("type");
     if (typeNode == null) {
       problem(spec, "field " + name + " has no type");
@@ -336,9 +342,46 @@ public final class ModelParser {
     }
     boolean required = flag(keys.get("required"), "required");
     boolean unique = flag(keys.get("unique"), "unique");
+    String renamedFrom = readRenamedFrom(name, keys.get("renamed_from"));
+    String defaultValue = readDefault(type, options, unique, keys.get("default"));
     Node label = keys.get("label");
     return new Field(name, type, label == null ? name : scalar(label), required, unique, options,
-        to);
+        to, renamedFrom, defaultValue);
+  }
+
+  private String readRenamedFrom(String name, Node node) {
+    if (node == null) {
+      return null;
+    }
+    String value = scalar(node);
+    if (!NAME.matcher(value).matches() || value.equals(name)) {
+      problem(node, "renamed_from must be the earlier name of field " + name);
+      return null;
+    }
+    return value;
+  }
+
+  private String readDefault(FieldType type, List<String> options, boolean unique, Node node) {
+    if (node == null) {
+      return null;
+    }
+    String value = scalar(node);
+    if (unique) {
+      problem(node, "a unique field cannot have a default");
+    } else if (type == FieldType.NUMBER) {
+      try {
+        new java.math.BigDecimal(value);
+      } catch (NumberFormatException e) {
+        problem(node, "the default of a number field must be a number");
+      }
+    } else if (type == FieldType.CHOICE || type == FieldType.UNIT) {
+      if (!options.contains(value)) {
+        problem(node, "the default must be one of the options");
+      }
+    } else if (type != FieldType.TEXT) {
+      problem(node, "only text, number, choice and unit fields can have a default");
+    }
+    return value;
   }
 
   private List<String> readOptions(Node parent, Node node) {

@@ -62,8 +62,11 @@ public class MetaController {
 
   private EntityMeta describe(Entity entity) {
     Access access = data.access(entity);
-    List<FieldMeta> fields = entity.fields().values().stream().map(f -> new FieldMeta(f.name(),
-        f.label(), f.type().key(), f.required(), f.unique(), f.options(), f.to())).toList();
+    List<FieldMeta> fields =
+        entity.fields().values().stream()
+            .map(f -> new FieldMeta(f.name(), f.label(), f.type().key(),
+                f.required() && f.defaultValue() == null, f.unique(), f.options(), f.to()))
+            .toList();
     ProcessInfo process = entity.process() == null ? null
         : new ProcessInfo(entity.process().template(), entity.process().approver(),
             entity.process().allowSelfDecision(), entity.process().definition().states(),

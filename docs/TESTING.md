@@ -41,6 +41,7 @@ Chạy trên stack mới dựng, cơ sở dữ liệu rỗng, vì script áp d�
 python3 deploy/dev/check_api.py
 python3 deploy/dev/check_recovery.py        # sau check_api.py, trên cùng stack
 python3 deploy/dev/check_case.py            # sau check_recovery.py, trên cùng stack
+python3 deploy/dev/check_change.py          # sau check_case.py, trên cùng stack
 ```
 
 Script tạo client Keycloak `dxos-check` (cho phép đăng nhập bằng mật khẩu, chỉ dùng cho máy dev) và các người dùng thử `admin1`, `req1`, `req2`, `keeper1`, `multi1`, `none1`, `editor1`.
@@ -62,7 +63,7 @@ Biến `DXOS_ENV_FILE`, `DXOS_BASE_URL`, `DXOS_PROJECT` đổi tệp env, địa
 | T5-05 | Áp dụng khi Keycloak dừng, rồi áp dụng lại | 502 và lịch sử ghi bước lỗi `ENSURE_ROLE`; áp dụng lại hoàn tất, vai tạo một lần |
 | T5-11 | Lỗi cố ý sau bước quy trình của một quyết định | 500; hồ sơ vẫn `submitted` và tác vụ vẫn chờ; sau đó quyết định bình thường |
 | T5-19 | Quyết định một hồ sơ; gửi `decided_by` trong yêu cầu sửa | Hồ sơ lưu người và thời điểm quyết định; yêu cầu sửa bị 400 |
-| T5-20 | Áp dụng dở rồi áp dụng tệp khác | 409, không lưu phiên bản; đúng tệp cũ hoàn tất được |
+| T5-20 | Áp dụng dở chưa đổi tên, rồi áp dụng tệp khác | Áp dụng được, bảng khớp với tệp đó |
 | T5-21 | Bốn lần áp dụng song song cùng một mô hình mới | Một lần áp dụng, lịch sử có một lượt chạy |
 | T6-01, T6-02 | Áp dụng `models/onestop.yaml`; ba tệp sai về đơn vị và phạm vi | Có nhóm Keycloak và metadata; 400 kèm dòng |
 | T6-03 đến T6-06 | Quyền theo đơn vị, hợp phạm vi, thực thể con, chuyển đơn vị | Đúng đơn vị thấy, sai đơn vị 404; chuyển đơn vị 403 |
@@ -70,6 +71,12 @@ Biến `DXOS_ENV_FILE`, `DXOS_BASE_URL`, `DXOS_PROJECT` đổi tệp env, địa
 | T6-10 đến T6-12 | Giao việc, người không được giao, hộp việc | Chỉ người được giao xử lý được; hộp việc đúng từng người |
 | T6-13, T6-14 | Dòng lịch sử; lỗi cố ý sau bước quy trình | Đủ người, trạng thái, ghi chú, chỉ trường thực sự đổi; không có sự kiện của hành động lỗi |
 | T6-16 | Vai `assigned` và vai điều phối | Hồ sơ chưa giao ngoài tầm với; điều phối giao được, không quyết định được |
+| T7-01, T7-02 | Áp dụng lần đầu; thêm trường tùy chọn khi có 1.000 dòng | Cùng một đường; kế hoạch không đổi gì; thiếu hoặc sai `base` bị 409; API thấy ngay |
+| T7-03 | Đổi tên trường có `UNIQUE` và khóa ngoại | Kế hoạch chỉ gồm đổi tên; thiếu `accept` bị 409; dữ liệu và ràng buộc còn nguyên |
+| T7-04, T7-05 | Quy tắc mới mà dữ liệu vi phạm; trường bắt buộc có `default` | Từ chối kèm dòng vi phạm, không sót ràng buộc; `default` điền dòng cũ và mới |
+| T7-06, T7-07 | Đổi kiểu; xóa trường; quên `renamed_from` | Từ chối; mức `LOSS` và câu hỏi có phải đổi tên không; chỉ chạy với `accept=LOSS` |
+| T7-08 đến T7-10 | Hồ sơ đang xử lý; quay về phiên bản trước, cả khi có đổi tên | Có số hồ sơ; quay về là phiên bản mới, dữ liệu về tên cũ |
+| T7-11 | Áp dụng dừng sau khi đã đổi tên | Tệp khác bị 409; đúng tệp đó hoàn tất |
 
 T5-11 và T6-14 cần dịch vụ chạy với `ENGINE_FAULT_AFTER_DECISION=true`; các script tự bật rồi tắt bằng cách tạo lại service `backend`.
 
@@ -106,7 +113,7 @@ grep -rIlw -i -E 'farm|lab|farmer|DXOS_APP|dx-host|app-farm|app-lab|dx-core-api'
 
 ## 8. Kết quả kiểm gần nhất
 
-Ngày 02/11/2026 trên clone sạch, stack dựng bằng `docker compose up -d --build`.
+Ngày 03/11/2026 trên clone sạch, stack dựng bằng `docker compose up -d --build`.
 
 | Mục | Kết quả | Ghi chú |
 |---|---|---|
@@ -116,9 +123,10 @@ Ngày 02/11/2026 trên clone sạch, stack dựng bằng `docker compose up -d -
 | `docker compose config` | Đạt | Tám service, cộng `clamav` ở profile `av` |
 | Stack từ trạng thái sạch | Đạt | Tám service healthy |
 | `check_api.py` | Đạt | 51/51; danh sách 10.000 dòng có lọc và sắp xếp, phân vị 95 là 10 ms, trung vị 9 ms |
-| `check_recovery.py` | Đạt | 16/16 |
+| `check_recovery.py` | Đạt | 17/17 |
 | `check_case.py` | Đạt | 70/70 |
-| Giao diện | Đạt | 20/20 bằng Chrome không giao diện: sinh viên nộp, cán bộ sai đơn vị không thấy, cán bộ đúng đơn vị nhận việc và trả lại, sinh viên sửa và nộp lại, cán bộ duyệt, kèm hộp việc và dòng lịch sử |
+| `check_change.py` | Đạt | 59/59 |
+| Giao diện | Đạt | 20/20 bằng Chrome không giao diện: sinh viên nộp, cán bộ sai đơn vị không thấy, cán bộ đúng đơn vị nhận việc và trả lại, sinh viên sửa và nộp lại, cán bộ duyệt, kèm hộp việc và dòng lịch sử; 5/5 sau khi đổi tên và thêm trường, chỉ tải lại trang, không build lại |
 | Từ khóa ứng dụng cũ | Đạt | Không còn ngoài `ai/`, `data/`, `bi/`, `chat/` và các tài liệu mô tả bản cũ |
-| CI trên GitHub | Đạt | CI Backend, Frontend, Infra của nhánh `Khuong/phase-6-case-core`; CI AI và Dependencies không chạy lượt này |
+| CI trên GitHub | Đạt | CI Backend và Infra của nhánh `Khuong/phase-7-model-change`; các workflow khác không chạy vì không đổi phần liên quan |
 | Chưa chạy | | Khởi động sau khi cập nhật từ bản `v1.1.1` (không có đường nâng cấp dữ liệu) |

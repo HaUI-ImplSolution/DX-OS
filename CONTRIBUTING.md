@@ -1,125 +1,62 @@
 # Đóng góp cho DX-OS
 
-DX-OS (DX-Farm, DX-Lab) là mã nguồn mở theo Apache-2.0; riêng `ai/` theo AGPL-3.0.
-Mã, tài liệu và báo lỗi đều được hoan nghênh qua GitHub Issues và Pull Request.
-Mọi người tham gia tuân theo [Quy tắc ứng xử](./CODE_OF_CONDUCT.md).
+Cảm ơn bạn đã quan tâm.
+Tài liệu này nói cách báo lỗi, dựng môi trường và gửi thay đổi.
+Hướng thiết kế ở [`docs/dynamic-core/README.md`](./docs/dynamic-core/README.md), kiến trúc ở [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 ## Báo lỗi và đề xuất
 
-- Mở issue bằng mẫu có sẵn: **Bug report** hoặc **Feature request**.
-- Với lỗi, ghi các bước tái hiện, kết quả mong đợi, kết quả thực tế và phiên bản (tag hoặc commit).
-- Không đưa mật khẩu, token hay dữ liệu thật vào issue.
+- **Lỗi:** [tạo bug report](https://github.com/HaUI-ImplSolution/DX-OS/issues/new?template=bug_report.yml), ghi các bước tái hiện và phiên bản.
+- **Tính năng:** [tạo feature request](https://github.com/HaUI-ImplSolution/DX-OS/issues/new?template=feature_request.yml).
+- **Lỗ hổng bảo mật:** không đăng công khai, làm theo [`SECURITY.md`](./SECURITY.md).
 
 ## Dựng môi trường
 
-```bash
-python3 deploy/demo/make_ci_env.py      # sinh deploy/.env, mật khẩu và khóa để trống nhận giá trị ngẫu nhiên
-python3 -m pip install pillow
-./deploy/start.sh [farm|lab]            # dựng, chạy ứng dụng và nạp dữ liệu demo
-```
+Cần Docker với Compose v2, JDK 21, Node 20 và Python 3.
 
-Điền tay thì `cp deploy/.env.example deploy/.env` rồi điền mọi biến đang để trống.
-Chi tiết ở [`README.md`](./README.md).
+```bash
+python3 deploy/make_env.py                  # sinh deploy/.env
+cd deploy && docker compose up -d --build   # dựng cả stack
+cd ../backend && ./mvnw verify              # build và test backend
+cd ../frontend && npm install && npm run dev
+```
 
 ## Quy trình
 
-1. Tạo nhánh từ `Khuong/main` (nhánh tích hợp), đặt tên theo việc làm (ví dụ `feature/ten-ngan`, `fix/ten-ngan`).
-2. Sửa nhỏ, mỗi PR một mục đích.
-3. Chạy kiểm tra của phần đã đổi (bảng dưới).
-4. Mở Pull Request vào `Khuong/main` theo mẫu; CI phải xanh.
-5. Khi phát hành, nhóm gộp `Khuong/main` vào `main` và đặt tag trên `main` (mục Phát hành).
+1. Tạo nhánh từ `Khuong/main`.
+2. Sửa nhỏ, mỗi thay đổi một mục đích.
+3. Chạy các lệnh kiểm ở bảng dưới trước khi gửi.
+4. Gửi pull request vào `Khuong/main` và điền danh sách kiểm trong mẫu.
 
-| Phần | Kiểm tra |
+| Phần đổi | Lệnh kiểm |
 |---|---|
-| Backend (`backend`) | `./mvnw formatter:validate` và `./mvnw verify` (cần Docker cho Testcontainers) |
-| AI (`ai`) | `pytest` |
-| Web (`frontend`), Mobile (`mobile`) | `npx tsc --noEmit` |
+| Backend | `./mvnw formatter:validate` rồi `./mvnw verify` trong `backend/` |
+| Web | `npx tsc --noEmit` trong `frontend/` |
+| AI | `pytest` trong `ai/` |
+| Toàn stack | `python3 deploy/dev/check_api.py` và `check_recovery.py` trên stack mới dựng |
 | Giấy phép | `python3 .github/scripts/check_licenses.py` |
-| Toàn stack | `python3 deploy/demo/e2e.py --app farm` và `--app lab` trên stack mới dựng |
 
 ## Quy ước
 
-- Java: định dạng theo `eclipse-java-google-style.xml`, chạy `./mvnw formatter:format` trước khi commit (phiên bản plugin lấy từ `backend/pom.xml`).
-- Package theo lớp: `controller`, `service`, `repository`, `model`, `dto`, `config`, `exception`; tính năng dùng chung nằm trong `core`.
-- Response của controller bọc trong `ApiResponse`; lỗi nghiệp vụ có `errorCode` ổn định.
-- Đổi API thì cập nhật `@Operation` trong cùng PR.
-- Đổi schema bằng migration Flyway mới, không sửa migration đã có.
-- File mã tự viết có dòng `SPDX-License-Identifier` ở đầu: `Apache-2.0`, riêng trong `ai/` là `AGPL-3.0-only`; dùng `//` cho Java, TypeScript và JavaScript, `#` cho Python, shell và YAML (đặt sau dòng `#!`).
-- CI kiểm header và giấy phép của từng dependency trong `sbom/` bằng `.github/scripts/check_licenses.py`; dependency ngoài danh sách cho phép phải có lý do trong `.github/license-exceptions.json`.
-- Comment ngắn bằng tiếng Anh, chỉ nêu hành vi hiện tại; commit message bằng tiếng Anh.
-- Tài liệu Markdown viết mỗi câu một dòng.
+- **Commit:** tiếng Anh, thể mệnh lệnh, ví dụ `feat: add the approval template`.
+- **Mã:** Java 21, định dạng theo `backend/eclipse-java-google-style.xml` (chạy `./mvnw formatter:format`); comment ngắn, nêu hành vi hiện tại, tiếng Anh.
+- **API:** mô tả `@Operation` bằng tiếng Anh; mọi response bọc trong `ApiResponse`.
+- **Tài liệu:** tiếng Việt, mỗi câu một dòng, chỉ ghi trạng thái hiện tại.
+- **Mã lõi không chứa tên thực thể, vai hay luồng của một lĩnh vực**; nghiệp vụ nằm trong tệp mô hình.
+- **Header giấy phép:** `SPDX-License-Identifier: Apache-2.0` ở đầu mọi file mã nguồn.
 
 ## Dependency và dữ liệu
 
-- Mọi thành phần phải có giấy phép nguồn mở; thêm dependency thì cập nhật [`COPYRIGHT.txt`](./COPYRIGHT.txt) và sinh lại SBOM theo [`sbom/README.md`](./sbom/README.md).
-- Đóng góp mã cho `ai/` theo AGPL-3.0 (`ai/LICENSE`); các phần còn lại theo Apache-2.0 (`LICENSE`).
-- Dữ liệu thuốc, treatment rule và policy chỉ được seed khi có quyết định duyệt rõ ràng trong `data/structured/`.
+- Chỉ dùng thành phần theo giấy phép được OSI công nhận; `check_licenses.py` chặn giấy phép ngoài danh sách.
+- Đổi dependency thì sinh lại SBOM theo [`sbom/README.md`](./sbom/README.md) và cập nhật [`COPYRIGHT.txt`](./COPYRIGHT.txt).
+- Không đưa mật khẩu, khóa hay dữ liệu thật vào kho mã; `deploy/.env` nằm ngoài Git.
 
 ## Phát hành
 
-1. Gộp `Khuong/main` vào `main`.
-2. Đổi mục `[Unreleased]` của [`CHANGELOG.md`](./CHANGELOG.md) thành `[X.Y.Z] - ngày`, và đặt số `X.Y.Z` vào `backend/**/pom.xml`, `frontend/package.json`, `mobile/package.json` và `mobile/app.json`.
-3. Tạo tag `vX.Y.Z` trên `main` rồi đẩy tag; workflow `Release Package` tạo GitHub Release kèm gói `dx-os-X.Y.Z.tar.gz`, tệp `.sha256` và SBOM, ghi chú lấy từ CHANGELOG.
-4. Chạy workflow `Release` trên tag đó để đẩy image lên GHCR; `deploy/install.sh` và `deploy/update.sh` nhận tag này.
+Bản phát hành là tag `vX.Y.Z` nhẹ trên `main`, kèm mục tương ứng trong [`CHANGELOG.md`](./CHANGELOG.md).
+Workflow `Release` build và đẩy image lên GHCR; workflow `Release Package` đính kèm SBOM.
 
-Thêm file vào một Release có sẵn thì chạy tay `Release Package` với tag tương ứng.
+## Thêm một nghiệp vụ mới
 
-## Thêm một quy trình vào ứng dụng có sẵn
-
-Quy trình mới nằm trong module của ứng dụng (`app-farm` hoặc `app-lab`), không sửa `dx-core`:
-
-1. Khai báo loại yêu cầu bằng bean `CaseTypeDefinition` (trạng thái, bước chuyển, vai) và mở case qua `WorkflowOperations` để có sẵn lịch sử, người phụ trách và danh sách việc chờ.
-2. Cài `CaseSummaryProvider` để yêu cầu hiện trong hộp duyệt, và `NotificationTypeDefinition` cho từng loại thông báo mới.
-3. Khai báo route cần giới hạn tốc độ trong `deploy/apisix/apps/<app>.yaml`.
-4. Thêm view `vw_*` và đăng ký qua `BiDatasetProvider` nếu cần báo cáo.
-5. Thao tác quản trị hoặc xóa dữ liệu thì ghi vết bằng `AuditRecorder.record(AuditEvent.success(...))` sau khi thao tác xong (tên hành động viết hoa như `PARCEL_DELETED`); người thực hiện, địa chỉ client và `request_id` được lấy từ request. Quyết định duyệt của workflow đã có ở `workflow_event`, không ghi lại.
-
-## Thêm một ứng dụng mới
-
-Mẫu tham chiếu là `app-lab` ([`backend/app-lab/README.md`](./backend/app-lab/README.md)); ranh giới core và ứng dụng ở [`ARCHITECTURE.md`](./ARCHITECTURE.md).
-Dưới đây `<id>` là mã ứng dụng (chữ thường), cũng là giá trị `DXOS_APP`.
-
-### Backend
-
-1. **Module.**
-   Tạo `backend/app-<id>/pom.xml` theo `app-lab/pom.xml` (chỉ phụ thuộc `dx-core-api`).
-   Thêm module vào `<modules>` và `<dependencyManagement>` của `backend/pom.xml`, dependency vào `dx-host/pom.xml`, và hai dòng `COPY` (pom và `src`) vào `backend/Dockerfile`.
-2. **Khai báo app.**
-   Bean `AppModule` có `id()` bằng `<id>`, tên, menu (đường dẫn, vai được thấy) và loại workspace; đây là interface duy nhất bắt buộc.
-3. **Nạp có điều kiện.**
-   Lớp `@AutoConfiguration` với `@ConditionalOnProperty(name = "dxos.app", havingValue = "<id>")`, `@ComponentScan`, `@EntityScan`, `@EnableJpaRepositories`, đăng ký trong `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`.
-   Cùng lớp khai báo bean Flyway riêng (`db/migration/<id>`, bảng lịch sử riêng, `@DependsOn("coreFlyway")`), theo `LabAutoConfiguration`.
-4. **Chọn app.**
-   Thêm `<id>` vào `KNOWN_APPS` của `AppSelectionCheck` trong `dx-host` và tạo `application-<id>.yaml` (đặt `spring.sql.init.mode: never` nếu không có script seed).
-5. **Schema.**
-   Migration ở `db/migration/<id>`; bảng của core (`workspaces`, `workflow_case`, `workflow_event`, `notifications`, `audit_log`, `chat_outbox`) dùng chung, không tạo lại.
-6. **Interface và facade.**
-   Cài các interface cần dùng (vai, quy trình, thông báo, BI, tri thức, tệp, sức khỏe) và gọi core qua facade; những gì ứng dụng khai báo và core cung cấp ở [`ARCHITECTURE.md`](./ARCHITECTURE.md) mục 3.
-
-### Hạ tầng và dữ liệu
-
-7. **Gateway.**
-   Tạo `deploy/apisix/apps/<id>.yaml` với các route cần giới hạn tốc độ (có thể chỉ chứa chú thích); `apisix-config` dừng nếu thiếu file.
-8. **BI.**
-   Thêm một mục vào `APPS` của `bi/bootstrap_datasources.py` (tên kết nối, danh sách view, bundle dashboard hoặc `None`).
-9. **Tri thức.**
-   Thêm corpus vào `CORPORA` của `ai/app/rag/ingestion_service.py` và dữ liệu ở `data/rag/<id>/`.
-   Corpus là bắt buộc: `DXOS_APP` không có trong `CORPORA` làm job `rag-ingest` thất bại và dịch vụ `ai` không khởi động.
-10. **Dữ liệu demo và E2E.**
-    Tạo `deploy/demo/seed_<id>.py` (hàm `seed`, danh sách `ACCOUNTS`) và `deploy/demo/e2e_<id>.py` (hàm `run`), đăng ký vào `SEEDS` của `seed_demo.py` và `SCENARIOS` của `e2e.py`; thêm một dòng vào ma trận của `.github/workflows/e2e.yml`.
-
-### Web
-
-11. Tạo `frontend/src/apps/<id>/index.tsx` xuất mặc định một `AppUiModule` (lời giới thiệu, nhãn vai, `routes`).
-12. Mỗi `route` có `path` trùng đường dẫn của mục menu trong `AppModule`; thêm một dòng vào `frontend/src/appRegistry.ts`.
-13. Chỉ import từ `src/shell` (qua `index.ts`) và từ thư mục của app.
-
-### Chạy thử
-
-```bash
-cd backend && ./mvnw formatter:validate verify
-./deploy/start.sh <id>
-python3 deploy/demo/e2e.py --app <id>
-```
-
-Ghi `<id>` vào mục đổi ứng dụng của `README.md` và comment `DXOS_APP` của `deploy/.env.example`.
+Viết một tệp mô hình theo mẫu ở [`models/`](./models) và áp dụng bằng `POST /api/v1/models/apply`; không cần sửa mã lõi.
+Nếu nghiệp vụ cần một năng lực mà tệp mô hình chưa khai báo được, mở một issue mô tả: một năng lực mới chỉ được thêm khi cần ở ít nhất ba lĩnh vực và khai báo được mà không cần cú pháp mới.

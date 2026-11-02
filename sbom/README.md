@@ -5,10 +5,9 @@ Công cụ đánh giá RAG (`ai/requirements-eval.txt`, Langfuse, k6) chỉ ch�
 
 | File | Nguồn |
 |---|---|
-| `backend.cdx.json` | Maven, `backend` (gốc `dx-os-parent`, cả sáu module `dx-core-api`, `dx-core`, `app-farm`, `app-lab`, `dx-host`, `dx-monitor`) |
+| `backend.cdx.json` | Maven, `backend` (gốc `dx-os-parent`, cả ba module `dx-core`, `dx-engine`, `dx-monitor`) |
 | `ai.cdx.json` | `ai/requirements.lock` |
 | `frontend.cdx.json` | npm, `frontend` |
-| `mobile.cdx.json` | npm, `mobile` |
 
 ## Sinh lại
 
@@ -23,9 +22,8 @@ pip install cyclonedx-bom
 cyclonedx-py requirements ai/requirements.lock --of JSON -o sbom/ai.cdx.json --sv 1.5
 python3 .github/scripts/enrich_sbom_licenses.py sbom/ai.cdx.json
 
-# Frontend và mobile
+# Frontend
 cd frontend && npx @cyclonedx/cyclonedx-npm --omit dev --output-format JSON --output-file ../sbom/frontend.cdx.json
-cd mobile && npx @cyclonedx/cyclonedx-npm --omit dev --ignore-npm-errors --output-format JSON --output-file ../sbom/mobile.cdx.json
 ```
 
 Sinh lại sau khi đổi dependency hoặc số phiên bản của dự án; giấy phép từng thành phần ở [`COPYRIGHT.txt`](../COPYRIGHT.txt).

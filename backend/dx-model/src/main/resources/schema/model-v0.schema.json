@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/HaUI-ImplSolution/DX-OS/schemas/model-v0.schema.json",
+  "title": "DX-OS model file, format 0",
+  "type": "object",
+  "required": ["format", "name", "roles", "entities"],
+  "additionalProperties": false,
+  "properties": {
+    "format": { "const": 0 },
+    "name": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$" },
+    "roles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]{0,39}$" },
+          "description": { "type": "string" },
+          "staff": { "type": "boolean" }
+        }
+      }
+    },
+    "entities": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "pattern": "^[a-z][a-z0-9_]{0,39}$" },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["fields", "access"],
+        "additionalProperties": false,
+        "properties": {
+          "label": { "type": "string" },
+          "owner_via": { "type": "string" },
+          "fields": {
+            "type": "object",
+            "minProperties": 1,
+            "propertyNames": { "pattern": "^[a-z][a-z0-9_]{0,39}$" },
+            "additionalProperties": {
+              "type": "object",
+              "required": ["type"],
+              "additionalProperties": false,
+              "properties": {
+                "type": { "enum": ["text", "number", "datetime", "choice", "reference", "user"] },
+                "label": { "type": "string" },
+                "required": { "type": "boolean" },
+                "unique": { "type": "boolean" },
+                "options": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+                "to": { "type": "string" }
+              }
+            }
+          },
+          "access": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": { "enum": ["all", "own", "read"] }
+          },
+          "process": {
+            "type": "object",
+            "required": ["template", "approver"],
+            "additionalProperties": false,
+            "properties": {
+              "template": { "enum": ["approval"] },
+              "approver": { "type": "string" },
+              "allow_self_decision": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

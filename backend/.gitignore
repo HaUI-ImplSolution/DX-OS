@@ -4,7 +4,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 .agent/
-data/
+/data/
 uploads/
 
 ### STS ###

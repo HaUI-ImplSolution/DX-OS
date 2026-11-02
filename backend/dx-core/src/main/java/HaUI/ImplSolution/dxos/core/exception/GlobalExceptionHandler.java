@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.core.exception;
 
-import HaUI.ImplSolution.dxos.core.api.exception.AccountNotLinkedException;
 import HaUI.ImplSolution.dxos.core.api.exception.ActionNotAllowedException;
-import HaUI.ImplSolution.dxos.core.api.exception.AiServiceException;
 import HaUI.ImplSolution.dxos.core.api.exception.InvalidStateException;
 import HaUI.ImplSolution.dxos.core.api.exception.PokaYokeViolationException;
 import HaUI.ImplSolution.dxos.core.api.exception.ResourceNotFoundException;
@@ -95,15 +93,6 @@ public class GlobalExceptionHandler {
         .body(ApiResponse.error("ERR_INVALID_STATE", ex.getMessage()));
   }
 
-  @ExceptionHandler(AiServiceException.class)
-  public ResponseEntity<ApiResponse<Void>> handleAiService(AiServiceException ex) {
-    log.warn("AI service unavailable: {}", ex.getMessage());
-    auditService.recordServerError(HttpStatus.SERVICE_UNAVAILABLE.value(), ex);
-    return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-        .body(ApiResponse.error("ERR_AI_UNAVAILABLE",
-            "AI diagnosis service is temporarily unavailable, please try again later"));
-  }
-
   @ExceptionHandler(ScannerUnavailableException.class)
   public ResponseEntity<ApiResponse<Void>> handleScannerUnavailable(
       ScannerUnavailableException ex) {
@@ -139,19 +128,13 @@ public class GlobalExceptionHandler {
         .body(ApiResponse.error("ERR_ACTION_NOT_ALLOWED", ex.getMessage()));
   }
 
-  @ExceptionHandler(AccountNotLinkedException.class)
-  public ResponseEntity<ApiResponse<Void>> handleAccountNotLinked(AccountNotLinkedException ex) {
-    return ResponseEntity.status(HttpStatus.FORBIDDEN)
-        .body(ApiResponse.error("ERR_ACCOUNT_NOT_LINKED", ex.getMessage()));
-  }
-
   @ExceptionHandler(KeycloakAdminException.class)
   public ResponseEntity<ApiResponse<Void>> handleKeycloakAdmin(KeycloakAdminException ex) {
     log.warn("Keycloak admin call failed: {}", ex.getMessage());
     auditService.recordServerError(HttpStatus.BAD_GATEWAY.value(), ex);
     return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
         .body(ApiResponse.error("ERR_ACCOUNT_SERVICE_UNAVAILABLE",
-            "Account service is unavailable, the workspace was not created"));
+            "Account service is unavailable, please try again later"));
   }
 
   @ExceptionHandler(AuthenticationException.class)

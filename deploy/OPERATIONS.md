@@ -20,8 +20,7 @@ Mỗi request là một dòng JSON trên stdout của container `apisix`.
 | `cf_ray` | Mã request của Cloudflare |
 | `user_agent` | Trình duyệt hoặc ứng dụng gọi |
 
-Backend chuyển `request_id` này sang AI service qua header `X-Request-Id`.
-AI ghi mỗi request thành một dòng `request_id=... POST /api/v1/... status=... ms`, nên `docker compose logs ai | grep <mã>` tìm lại được đúng lượt gọi.
+Backend ghi `request_id` này vào log của nó (trong `[...]` sau mức log).
 
 `remote_addr` là IP thật của người dùng khi vào qua Cloudflare Tunnel (đọc từ `CF-Connecting-IP`), và là IP trong mạng LAN khi vào trực tiếp.
 Header chỉ được tin khi request đến từ mạng Docker (`172.16.0.0/12`) hoặc loopback.
@@ -55,7 +54,7 @@ Admin Console → realm `dxos` → **Events**:
 
 Sau 5 lần đăng nhập sai, tài khoản bị khóa tạm 1 phút, mỗi lần sai tiếp theo tăng thêm 1 phút, tối đa 15 phút.
 Hai lần sai cách nhau dưới 1 giây cũng khóa 1 phút (kiểm tra đăng nhập nhanh của Keycloak), nên script đăng nhập thử cần chờ giữa các lần.
-Một địa chỉ đăng nhập sai từ 10 lần trong 10 phút thì `monitor` báo vào kênh Mattermost "Ban quản trị" (ngưỡng ở `monitor.alert.login-failed-*`).
+Một địa chỉ đăng nhập sai từ 10 lần trong 10 phút thì `monitor` báo vào kênh quản trị khi có webhook (ngưỡng ở `monitor.alert.login-failed-*`).
 Sự kiện đăng nhập sai của Keycloak không ghi tên tài khoản, nên chưa có cảnh báo theo tài khoản.
 Gỡ khóa sớm: **Users** → chọn người dùng → tắt công tắc **Temporarily locked**.
 
@@ -69,7 +68,7 @@ Gateway đếm theo IP thật của client (xem phần log), vượt ngưỡng t
 |---|---|
 | `/realms/<realm>/login-actions/*`, `/realms/<realm>/protocol/openid-connect/token` (chung một bộ đếm) | 120 |
 | `/api/*` (request có token hợp lệ) | 600 |
-| Route riêng của Farm và Lab (upload ảnh, chẩn đoán AI, tạo ticket, đặt phòng, hỏi đáp, trạng thái hệ thống) | Xem `deploy/apisix/common.yaml` và `deploy/apisix/apps/<app>.yaml` |
+| `/api/v1/system/status` (công khai) | Xem `deploy/apisix/common.yaml` |
 
 Backend đếm thêm theo người dùng (`sub` của token), vượt ngưỡng thì trả `429` kèm `Retry-After`.
 Bộ đếm nằm trong bộ nhớ nên về 0 khi backend khởi động lại.
@@ -78,18 +77,10 @@ Bộ đếm nằm trong bộ nhớ nên về 0 khi backend khởi động lại.
 | Lệnh gọi (mỗi người mỗi phút) | Ngưỡng |
 |---|---|
 | Mọi `/api/**` | 300 |
-| `POST /api/v1/knowledge/ask` | 20 |
-| Farm: tạo báo cáo bệnh kèm ảnh | 10 |
-| Farm: kiểm tra ảnh trước khi gửi | 20 |
-| Farm: chẩn đoán AI | 6 |
-| Farm: gợi ý bệnh từ triệu chứng | 20 |
-| Lab: tạo ticket, đặt phòng, tạo yêu cầu mượn thiết bị | 10 mỗi loại |
-| Lab: gợi ý ticket | 30 |
-| Lab: đính kèm tệp vào ticket | 20 |
 
 Request có token sai nhận `401` mà không bị đếm.
 Phần này do Cloudflare lọc.
-Đổi ngưỡng ở `count` của `limit-count` trong file route tương ứng rồi chạy `./switch-app.sh <app>` để gateway nạp lại.
+Đổi ngưỡng ở `count` của `limit-count` trong `deploy/apisix/common.yaml` rồi chạy `docker compose up -d --force-recreate apisix-config && docker compose restart apisix` để gateway nạp lại.
 Nhiều người dùng chung một IP (mạng di động) cùng dùng bộ đếm.
 Thấy `429` trong thao tác thường ngày thì tăng ngưỡng.
 Mỗi lần đăng nhập tốn hai request (form và token), nên script đăng nhập hơn 60 tài khoản trong một phút từ một máy sẽ chạm giới hạn.
@@ -101,7 +92,7 @@ Giới hạn này chỉ chặn lượng request lớn từ một địa chỉ.
 
 Cấu hình nằm trên Cloudflare, không nằm trong repo.
 Khái niệm và tổng hợp cấu hình đang dùng theo dõi ở [trang docs](https://haui-implsolution.github.io/DX-OS-docs/).
-Sau khi bật mỗi mục, kiểm đăng nhập web, đăng nhập mobile, gửi ảnh báo cáo và chẩn đoán AI.
+Sau khi bật mỗi mục, kiểm đăng nhập web và một lượt ghi bản ghi qua API.
 
 Domain `khuongdev.io.vn`:
 
@@ -120,41 +111,36 @@ Swagger (`/swagger-ui/`) để công khai.
 
 ### Cổng quản trị sau Cloudflare Access
 
-Zero Trust → Access controls → Applications → Create new application → Self-hosted, một policy Allow theo danh sách email của quản trị viên và kỹ sư dùng chung cho cả bốn ứng dụng.
+Zero Trust → Access controls → Applications → Create new application → Self-hosted, một policy Allow theo danh sách email của quản trị viên và kỹ sư dùng chung cho cả hai ứng dụng.
 Người dùng đăng nhập vào Access bằng phương thức đã bật (tài khoản Cloudflare hoặc mã gửi qua email).
 Form mặc định mở ở chế độ Private IP; thêm một public hostname và xóa dòng Private IP trống.
-Tạo bốn ứng dụng:
+Tạo hai ứng dụng:
 
 | Ứng dụng | Domain | Đường dẫn |
 |---|---|---|
-| BI (Superset) | `bi.khuongdev.io.vn` | để trống |
-| Quản trị lưu ảnh | `files.khuongdev.io.vn` | để trống |
 | Keycloak Admin Console | `khuongdev.io.vn` | `admin/*` |
 | Màn hình giám sát | `khuongdev.io.vn` | `monitor/*` |
 
-Không đặt Access cho API, web app, `/realms/*`, portal, chat và link ảnh, vì nông dân và mobile dùng các đường này.
+Không đặt Access cho API, web app, `/realms/*`, portal và link tệp, vì người dùng cuối dùng các đường này.
 Giữ một phiên Admin Console đang mở khi tạo ứng dụng Access cho `admin/*`.
 Nếu bị khóa ngoài thì gỡ ứng dụng đó trong Zero Trust.
-Sau khi bật, kiểm đăng nhập Superset bằng SSO với một tài khoản kỹ sư.
+Sau khi bật, kiểm đăng nhập vào màn hình giám sát bằng SSO với tài khoản ADMIN.
 
 ## Audit trong backend
 
 Bảng `audit_log` (chỉ thêm, database từ chối sửa hoặc xóa) ghi lần truy cập bị từ chối và thao tác quản trị.
 Bảng không ghi mật khẩu, token hay nội dung request.
-Mỗi bản ghi có người thực hiện (`sub`, tên, vai ứng dụng, client của token), `ip`, `request_id`, method và đường dẫn.
+Mỗi bản ghi có người thực hiện (`sub`, tên, vai, client của token), `ip`, `request_id`, method và đường dẫn.
 `request_id` là giá trị `X-Request-Id` của gateway, nên nối được với dòng log gateway (`request_id`) và log backend (trong `[...]` sau mức log).
 
 | Hành động | Khi nào |
 |---|---|
 | `ACCESS_DENIED` | Request nhận 403 |
 | `AUTH_FAILED` | Backend từ chối token đã tới nó (token không tới được backend nếu gateway đã từ chối) |
-| `WORKSPACE_CREATED`, `WORKSPACE_LINKED`, `MEMBER_ADDED` | ADMIN tạo workspace, gắn tài khoản chủ, thêm thành viên |
 | `SERVER_ERROR` | Backend trả `500`, `502` hoặc `503`; `outcome` là `FAILED`, `metadata` có mã trả về và tên lớp ngoại lệ (không có thông điệp lỗi) |
 | `ADMIN_ACTION_FAILED` | ADMIN thực hiện thao tác thay đổi (POST, PUT, PATCH, DELETE) bị từ chối vì lý do nghiệp vụ (`409`, `422`); `outcome` là `FAILED` |
-| `PARCEL_DELETED`, `SEASON_DELETED`, `REPORT_DELETED`, `HARVEST_OVERRIDE` | Farm: xóa mềm, thu hoạch sớm hoặc thu hoạch thay nông dân |
-| `TICKET_CATEGORY_CREATED`, `TICKET_CATEGORY_CHANGED`, `SLA_POLICY_CHANGED`, `TICKET_ATTACHMENT_REMOVED` | Lab: danh mục, SLA, xóa tệp đính kèm |
 
-Quyết định duyệt của workflow nằm ở `workflow_event`.
+Quyết định duyệt nằm ở lịch sử của Flowable (schema `engine`), lịch sử áp dụng mô hình ở `engine.apply_run` và `engine.apply_step`.
 Đăng nhập và đổi mật khẩu nằm ở sự kiện của Keycloak.
 Mỗi địa chỉ client có tối đa 20 bản ghi mỗi loại `ACCESS_DENIED`, `AUTH_FAILED`, `SERVER_ERROR` hoặc `ADMIN_ACTION_FAILED` mỗi phút (`audit.denied.max-per-minute` trong `application.yaml`).
 Số bản ghi bị bỏ qua nằm trong `metadata.suppressed` của bản ghi đầu phút kế tiếp.
@@ -175,12 +161,6 @@ docker compose exec postgres sh -c 'psql -U "$POSTGRES_USER" -d "${POSTGRES_DB:-
 Bản ghi được giữ không giới hạn thời gian và trigger chặn xóa.
 Chạy lâu thì theo dõi dung lượng bảng.
 
-### Cảnh báo
-
-Mỗi 5 phút, một địa chỉ bị từ chối từ 10 lần trong 10 phút qua được báo vào kênh Mattermost "Ban quản trị", tối đa một tin mỗi địa chỉ trong 60 phút.
-Đổi ngưỡng ở `audit.alert.*` trong `backend/dx-host/src/main/resources/application.yaml`.
-Không có webhook của kênh thì không gửi.
-
 ## Kiểm tra trước khi chạy
 
 `./doctor.sh` (trong `deploy/`) chỉ đọc, không đổi gì và không in giá trị nào của `.env`.
@@ -188,7 +168,7 @@ Nó kiểm Docker và Compose, RAM, ổ đĩa, `deploy/.env` và các cổng.
 `.env` được so với các biến `${NAME:?}` mà Compose bắt buộc phải có: biến thiếu hoặc để trống bị báo `FAIL`.
 Biến có trong `.env` mà `.env.example` không liệt kê bị báo `WARN`.
 Các cổng đã bị chiếm chỉ được kiểm khi stack chưa chạy.
-Thoát với mã 1 khi có `FAIL`, nên chạy trước `./update.sh` và `./start.sh` trên máy chủ.
+Thoát với mã 1 khi có `FAIL`, nên chạy trước `./update.sh` và `docker compose up -d` trên máy chủ.
 
 ## Giám sát từ ngoài
 
@@ -200,7 +180,7 @@ Script chạy trên chính máy chủ nên không phát hiện được việc m
 ## Sao lưu và khôi phục
 
 `./backup.sh` (trong `deploy/`) chụp một bản sao lưu mã hóa của những gì không dựng lại được từ repo.
-Gồm toàn bộ Postgres (dữ liệu nghiệp vụ, tài khoản Keycloak, Mattermost, kho vector), ảnh và tệp đính kèm trong SeaweedFS, tệp của Mattermost và metadata của Superset.
+Gồm toàn bộ Postgres (dữ liệu nghiệp vụ, tài khoản Keycloak) và tệp trong SeaweedFS.
 Script dùng restic chạy trong container nên chỉ cần Docker.
 Bản sao lưu khử trùng lặp và mã hóa bằng `BACKUP_PASSWORD`.
 Cất mật khẩu này ở nơi khác máy chủ, vì mất nó là không đọc lại được.
@@ -225,19 +205,7 @@ CI chạy một lượt backup và verify trên Postgres thật ở job `backup-
 3. Nạp Postgres: `gunzip -c /tmp/dxos-restore/stage/postgres.sql.gz | docker compose exec -T postgres psql -U "$POSTGRES_USER" postgres`.
    Hai dòng lỗi `role "..." already exists` và `database "..." already exists` là bình thường vì tài khoản quản trị và database chính đã có sẵn.
    Phần còn lại phải nạp không lỗi.
-4. Chép `data/seaweedfs`, `data/mattermost`, `data/superset` từ `/tmp/dxos-restore/data/` vào `deploy/data/` (các tệp thuộc root nên dùng `sudo`), rồi `docker compose up -d`.
-
-## Thông báo chat gửi lại
-
-Tin gửi vào Mattermost thất bại vì lỗi mạng, HTTP 5xx hoặc 429 được backend lưu vào bảng `chat_outbox` và gửi lại mỗi phút.
-Khoảng chờ giữa các lần là 1, 2, 4 phút và tăng dần tới tối đa 60 phút.
-Quá 8 lần thì tin chuyển `FAILED` và bị xóa sau 7 ngày.
-Tin bị webhook từ chối hẳn (HTTP 4xx khác) thì bỏ, vì gửi lại không đổi kết quả.
-Webhook nhận tin nhưng trả lời quá chậm có thể làm tin đến hai lần.
-Lịch sử chat giữ tin mãi, nên số điện thoại, email và dãy số từ 9 chữ số trở lên trong tin (tiêu đề yêu cầu, ghi chú) bị thay bằng `[đã ẩn]` trước khi gửi.
-Địa chỉ IP, mã yêu cầu như `TK-2026-000123` và đường dẫn không bị ẩn.
-Xem tồn đọng: `docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT channel_key, status, attempts, last_error, next_attempt_at FROM chat_outbox"`.
-Nhiều dòng `PENDING` kéo dài nghĩa là Mattermost hoặc webhook đang hỏng.
+4. Chép `data/seaweedfs` từ `/tmp/dxos-restore/data/` vào `deploy/data/` (các tệp thuộc root nên dùng `sudo`), rồi `docker compose up -d`.
 
 ## Quét mã độc tệp tải lên
 
@@ -250,23 +218,7 @@ Chữ ký virus tải về lần đầu mất vài phút và được giữ tron
 Mỗi lần clamd nạp lại chữ ký (hằng ngày và sau khi khởi động) nó không quét được khoảng 10 giây, và người dùng gặp 503 trong lúc đó; chờ rồi tải lại.
 Thử bằng tệp EICAR (chuỗi kiểm thử chuẩn của ngành diệt virus): tệp chỉ gồm đúng chuỗi đó, đổi tên `.pdf` rồi đính vào một yêu cầu.
 
-## AI service tạm ngưng
-
-Khi một nửa trong 10 lần gọi AI gần nhất (tối thiểu 5 lần) gặp lỗi mạng hoặc HTTP 5xx, backend ngừng gọi AI trong 30 giây (`ai.service.breaker.open-seconds`) và trả ngay HTTP 503 `ERR_AI_UNAVAILABLE`, thay vì để mỗi yêu cầu chờ hết thời gian.
-Sau 30 giây backend thử lại vài lần; thành công thì mở lại.
-Lỗi 4xx (yêu cầu sai) không tính là lỗi dịch vụ.
-Backend không tự gọi lại một lượt AI đã lỗi, vì mỗi lượt chẩn đoán trên CPU mất 50 đến 70 giây.
-Route chẩn đoán của gateway chờ tới 95 giây (upstream `backend-ai` trong `deploy/apisix/common.yaml`), dưới giới hạn 100 giây của Cloudflare.
-Lượt dài hơn nhận `504` nhưng backend vẫn lưu chẩn đoán; tải lại báo cáo để thấy kết quả.
-Trong log backend, dòng `AI service is paused after repeated failures` cho biết cầu dao đang mở.
-
-## Máy chủ CPU yếu
-
-Qwen và rerank của chatbot chạy trên CPU; CPU không có AVX2 (kiểm bằng `grep -c avx2 /proc/cpuinfo`, kết quả `0`) chạy Qwen quá chậm cho giới hạn 30 giây.
-Trên máy như vậy, đặt `AI_ANSWER_GENERATION=false` trong `deploy/.env`: chatbot trả các đoạn tài liệu nguyên văn và không gọi Qwen.
-Câu hỏi trong phạm vi mà trả `RERANK_UNAVAILABLE` nghĩa là rerank vượt 6 giây; giảm `AI_CHAT_CANDIDATE_COUNT` (mặc định 20, ví dụ 10) rồi chạy lại `./update.sh`.
-
 ## Màn hình giám sát
 
-Dịch vụ `monitor` gom log gateway, `audit_log`, sự kiện đăng nhập của Keycloak và trạng thái dịch vụ vào một màn hình `/monitor/` cho ADMIN, kèm cảnh báo Mattermost.
+Dịch vụ `monitor` gom log gateway, `audit_log`, sự kiện đăng nhập của Keycloak và trạng thái dịch vụ vào một màn hình `/monitor/` cho ADMIN, kèm cảnh báo qua webhook khi có cấu hình.
 Cách đọc, truy vết một sự cố, dữ liệu, cảnh báo và cấu hình ở [`backend/dx-monitor/README.md`](../backend/dx-monitor/README.md).

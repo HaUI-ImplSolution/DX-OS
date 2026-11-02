@@ -5,12 +5,8 @@ import java.util.List;
 
 // @formatter:off
 public record ServiceStatusResponse(
-  // The app this backend runs; null when no app module is installed
-  App app,
   List<Service> services
 ) {
-
-  public record App(String id, String name, List<String> portalServices) {}
 
   public record Service(String name, String status) {}
 }

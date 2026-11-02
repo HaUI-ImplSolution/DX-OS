@@ -8,9 +8,6 @@ on:
     paths:
       - 'ai/**'
       - 'data/**'
-      - 'backend/app-farm/src/main/resources/farm/data.sql'
-      - 'backend/app-farm/src/main/resources/knowledge-sources.json'
-      - 'backend/app-lab/src/main/resources/lab/knowledge-sources.json'
       - '.github/workflows/ci-ai.yml'
   pull_request:
     types:
@@ -22,9 +19,6 @@ on:
     paths:
       - 'ai/**'
       - 'data/**'
-      - 'backend/app-farm/src/main/resources/farm/data.sql'
-      - 'backend/app-farm/src/main/resources/knowledge-sources.json'
-      - 'backend/app-lab/src/main/resources/lab/knowledge-sources.json'
       - '.github/workflows/ci-ai.yml'
 
 jobs:
@@ -43,12 +37,6 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
           cache-dependency-path: ai/requirements*.txt
-
-      - name: Verify generated backend seed
-        working-directory: .
-        run: |
-          python data/scripts/generate_seed_sql.py --check
-          python -m unittest data.scripts.test_generate_seed_sql data.scripts.test_knowledge_sources
 
       - name: Install dependencies
         run: pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements-dev.txt

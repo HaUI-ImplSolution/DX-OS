@@ -1,26 +1,16 @@
 # SPDX-License-Identifier: Apache-2.0
-# Shared part of the gateway configuration. The `apisix-config` service of docker-compose.yml
-# appends apps/<DXOS_APP>.yaml (more routes) and the #END marker to build the file APISIX loads.
+# Gateway configuration. The `apisix-config` service of docker-compose.yml adds the delivery key
+# of the monitor and the #END marker to build the file APISIX loads.
 #
-# Single entry point of the stack:
-# - port 9080 serves the web app, API, Keycloak, photos, portal and the monitor screen;
-# - port 9081 serves Superset only and port 9082 the object store admin page only.
-# Clients reach the web app, the API, Keycloak and the photo storage only through this gateway.
-# The AI service and the internal API are not routed.
+# Single entry point of the stack: port 9080 serves the web app, API, Keycloak, file storage,
+# portal and the monitor screen.
+# Clients reach the web app, the API, Keycloak and the file storage only through this gateway.
+# The internal API is not routed.
 upstreams:
   - id: backend
     type: roundrobin
     nodes:
       "backend:8081": 1
-  # The AI diagnosis takes up to about 70 seconds on a CPU; Cloudflare cuts a request at 100 seconds.
-  - id: backend-ai
-    type: roundrobin
-    nodes:
-      "backend:8081": 1
-    timeout:
-      connect: 6
-      send: 60
-      read: 95
   - id: keycloak
     type: roundrobin
     nodes:
@@ -33,18 +23,10 @@ upstreams:
     type: roundrobin
     nodes:
       "frontend:80": 1
-  - id: superset
-    type: roundrobin
-    nodes:
-      "superset:8088": 1
   - id: portal
     type: roundrobin
     nodes:
       "portal:80": 1
-  - id: storage-admin
-    type: roundrobin
-    nodes:
-      "seaweedfs-admin:23646": 1
   - id: monitor
     type: roundrobin
     nodes:
@@ -107,23 +89,6 @@ global_rules:
           user_agent: "$http_user_agent"
 
 routes:
-  # Each question runs an embedding on the AI service.
-  - id: api-knowledge-ask
-    vars: [["server_port", "==", "9080"]]
-    priority: 20
-    uri: /api/v1/knowledge/ask
-    methods: ["POST"]
-    upstream_id: backend
-    plugin_config_id: bearer-token
-    plugins:
-      limit-count:
-        count: 60
-        time_window: 60
-        key_type: var
-        key: remote_addr
-        rejected_code: 429
-        rejected_msg: "Too many questions, try again in a minute"
-
   # Service status for the portal: public, limited per client address.
   - id: api-system-status
     vars: [["server_port", "==", "9080"]]
@@ -204,21 +169,6 @@ routes:
     uri: /dxos-uploads/*
     methods: ["GET", "HEAD"]
     upstream_id: storage
-
-  # Everything arriving on the Superset port goes to Superset: version 3.1 cannot run under a path
-  # prefix, so it keeps the root of a second listener of this same gateway.
-  - id: superset
-    priority: 100
-    uri: /*
-    vars: [["server_port", "==", "9081"]]
-    upstream_id: superset
-
-  # Object store admin page: its own listener, it is served from the root path.
-  - id: storage-admin
-    priority: 100
-    uri: /*
-    vars: [["server_port", "==", "9082"]]
-    upstream_id: storage-admin
 
   - id: portal-root
     vars: [["server_port", "==", "9080"]]

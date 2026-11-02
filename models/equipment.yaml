@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: Apache-2.0
+format: 0
+name: equipment
+roles:
+  - name: BORROWER
+    description: Người mượn thiết bị
+  - name: KEEPER
+    description: Người quản lý thiết bị, duyệt phiếu mượn
+    staff: true
+entities:
+  device:
+    label: Thiết bị
+    fields:
+      code: {type: text, label: Mã thiết bị, required: true, unique: true}
+      name: {type: text, label: Tên thiết bị, required: true}
+      kind: {type: choice, label: Loại, options: [laptop, projector, camera]}
+    access: {BORROWER: read, KEEPER: all}
+  loan:
+    label: Phiếu mượn
+    fields:
+      device: {type: reference, label: Thiết bị, to: device, required: true}
+      reason: {type: text, label: Lý do, required: true}
+      from_at: {type: datetime, label: Từ ngày, required: true}
+      due_at: {type: datetime, label: Hạn trả}
+      quantity: {type: number, label: Số lượng}
+    access: {BORROWER: own, KEEPER: all}
+    process: {template: approval, approver: KEEPER}
+  loan_note:
+    label: Ghi chú phiếu mượn
+    fields:
+      loan: {type: reference, label: Phiếu mượn, to: loan, required: true}
+      note: {type: text, label: Ghi chú, required: true}
+    access: {BORROWER: own, KEEPER: all}
+    owner_via: loan

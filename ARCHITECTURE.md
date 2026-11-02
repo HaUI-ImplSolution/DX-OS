@@ -47,18 +47,26 @@ flowchart TB
 
 ## 3. Áp dụng một mô hình
 
-`POST /api/v1/models/apply` (ADMIN) chạy các bước tuần tự và ghi từng bước vào `engine.apply_step`:
+Mô hình đi qua một đường duy nhất, từ hệ thống rỗng hay từ phiên bản đang chạy.
 
-1. `CREATE_SCHEMA`: schema `m_<tên mô hình>`.
-2. `CREATE_TABLE`: một bảng cho mỗi thực thể, kèm các cột hệ thống (`id`, `created_by`, `created_at`, `updated_at`, `version`, và `status`, `assignee`, `decided_by`, `decided_at` nếu có quy trình), ràng buộc `NOT NULL`, `UNIQUE`, `CHECK` cho lựa chọn.
-3. `ADD_LINKS`: khóa ngoại và chỉ mục, sau khi mọi bảng đã có.
-4. `GRANT_READ_ONLY`: vai `report_ro` chỉ có quyền đọc, dùng cho báo cáo.
-5. `ENSURE_ROLE`: vai của mô hình trong Keycloak.
-6. `ENSURE_UNIT`: đơn vị của mô hình, là nhóm trong Keycloak.
-7. `SAVE_VERSION`: lưu nội dung và mã băm; từ đây mô hình có hiệu lực.
+`POST /api/v1/models/plan` không đổi bảng hay bản ghi nào, chỉ trả về:
 
-Mỗi bước chạy lại được an toàn, nên áp dụng bị gián đoạn thì áp dụng lại để làm tiếp.
-Cùng một tệp áp dụng lại thì không làm gì; tệp khác cho mô hình đã áp dụng bị từ chối (đổi mô hình khi có dữ liệu là bước sau).
+- Thay đổi theo ba mức, do `ModelDiff` so sánh hai phiên bản mô hình: `SAFE`, `MIGRATION`, `LOSS`; đổi kiểu trường và đổi mẫu quy trình bị từ chối.
+- Dòng đang vi phạm quy tắc mới, kèm một phần id.
+- Số hồ sơ đang xử lý của các quy trình bị ảnh hưởng.
+- Các câu lệnh sẽ chạy, do pgschema lập từ trạng thái đích mà `DdlGenerator` sinh ra.
+
+`POST /api/v1/models/apply?base=N&accept=<mức>` (ADMIN) chạy khi `base` đúng phiên bản đang chạy, mức rủi ro không vượt `accept` và không có dòng vi phạm, rồi ghi từng bước vào `engine.apply_step`:
+
+1. `RENAME_FIELD`: đổi tên cột theo `renamed_from`, cùng ràng buộc và chỉ mục mang tên trường.
+2. `CHANGE_SCHEMA`: pgschema đưa schema `m_<tên mô hình>` về trạng thái đích, gồm bảng, cột hệ thống, ràng buộc, chỉ mục và quyền đọc của `report_ro`.
+3. `ENSURE_ROLE`: vai của mô hình trong Keycloak.
+4. `ENSURE_UNIT`: đơn vị của mô hình, là nhóm trong Keycloak.
+5. `SAVE_VERSION`: lưu nội dung và mã băm; từ đây phiên bản có hiệu lực.
+
+Bảo vệ dữ liệu nằm ở lõi: nếu kế hoạch của pgschema có thao tác xóa bảng hoặc cột mà so sánh mô hình không có, áp dụng dừng lại.
+Mỗi bước chạy lại được an toàn, nên áp dụng bị gián đoạn thì áp dụng lại để làm tiếp; đã đổi tên thì chỉ đúng tệp đó mới hoàn tất được.
+`POST /api/v1/models/{model}/rollback` đi qua đúng đường này với nội dung phiên bản trước, đảo các lần đổi tên và ghi thành phiên bản mới.
 
 ## 4. Một yêu cầu đi qua API chung
 

@@ -23,9 +23,10 @@ Phiên bản trước của dự án (hai ứng dụng nghiệp vụ viết tay)
 - API chung cho mọi thực thể, quyền theo vai và theo dòng (`all`, `own`, `read`, `unit`, `assigned`), quy tắc bắt buộc, duy nhất và lựa chọn.
 - Quy trình phê duyệt một cấp trên Flowable nhúng, có trả lại để bổ sung; trạng thái hồ sơ chỉ đổi qua quy trình, cùng giao dịch với việc ghi hồ sơ.
 - Đơn vị khai báo trong mô hình và đồng bộ thành nhóm Keycloak; giao việc, hộp việc và dòng lịch sử của từng hồ sơ.
+- Đổi mô hình khi đã có dữ liệu: xem trước theo mức rủi ro, đổi tên giữ nguyên dữ liệu, báo dòng vi phạm, xác nhận riêng khi mất dữ liệu, quay về phiên bản trước.
 - Giao diện react-admin dựng từ metadata, không có mã riêng cho thực thể nào.
 
-Chưa có: đổi mô hình khi đã có dữ liệu, tệp đính kèm, trục sự kiện, thông báo chat, AI, báo cáo Superset.
+Chưa có: tệp đính kèm, trục sự kiện, thông báo chat, AI, báo cáo Superset.
 Các phần này nằm trong [hướng thiết kế](./docs/dynamic-core/README.md).
 
 ## Chạy thử
@@ -85,13 +86,15 @@ entities:
 - Quy trình: mẫu `approval`, một vai duyệt, từ chối hoặc trả lại kèm ghi chú để người nộp sửa và nộp lại.
   Hồ sơ đã được quyết định thì không sửa và không xóa được; hồ sơ đã giao thì chỉ người được giao xử lý được.
   Người tạo hồ sơ không tự quyết định được, trừ khi khai báo `allow_self_decision: true`.
+- Đổi mô hình: khai báo `renamed_from` khi đổi tên trường; `default` điền giá trị cho trường bắt buộc mới trên bảng đã có dòng.
 - Đặc tả cho trình soạn thảo: [`dx-model/.../model-v0.schema.json`](./backend/dx-model/src/main/resources/schema/model-v0.schema.json); tệp sai mẫu ở [`models/invalid/`](./models/invalid).
 
 ## API
 
 | Đường dẫn | Việc |
 |---|---|
-| `POST /api/v1/models/plan`, `/apply` | Kiểm tra và áp dụng tệp mô hình (ADMIN) |
+| `POST /api/v1/models/plan`, `/apply` | Xem trước và áp dụng tệp mô hình (ADMIN) |
+| `POST /api/v1/models/{model}/rollback/plan`, `/rollback` | Xem trước và quay về phiên bản trước (ADMIN) |
 | `GET /api/v1/models`, `/models/{model}/runs` | Mô hình đã áp dụng và lịch sử từng bước (ADMIN) |
 | `GET /api/v1/meta/models` | Metadata mà người gọi được xem |
 | `/api/v1/data/{model}/{entity}` | Danh sách, tạo, xem, sửa, xóa; lọc `filter.<trường>[.<phép>]`, `sort`, `order`, `page`, `size` |

@@ -23,9 +23,10 @@ The narrow loop from model file to end user runs:
 - One API for every entity, permissions by role and by row (`all`, `own`, `read`, `unit`, `assigned`), required, unique and choice rules.
 - A single-level approval workflow on an embedded Flowable, with a return for more information; the status of a record changes only through the workflow, in the same transaction as the write of the record.
 - Units declared in the model and kept as Keycloak groups; assignment, an inbox and the history of every record.
+- Changing a model that holds data: a preview by level of risk, renames that keep the values, a list of the rows breaking a new rule, a separate confirmation for losing data, and a return to the previous version.
 - A react-admin UI built from metadata, with no code written for any entity.
 
-Not yet: changing a model that already holds data, file attachments, an event axis, chat notifications, AI, Superset reports.
+Not yet: file attachments, an event axis, chat notifications, AI, Superset reports.
 These are in the [design](./docs/dynamic-core/README.md).
 
 ## Run it
@@ -85,13 +86,15 @@ entities:
 - Workflow: the `approval` template, one role approves, rejects or returns with a note for the owner to fix and submit again.
   A record that has been decided can no longer be edited or deleted; an assigned record can only be handled by its assignee.
   The creator of a record cannot decide it unless `allow_self_decision: true` is declared.
+- Changing a model: declare `renamed_from` when renaming a field; `default` fills a new required field on a table that has rows.
 - Schema for editors: [`model-v0.schema.json`](./backend/dx-model/src/main/resources/schema/model-v0.schema.json); sample bad files in [`models/invalid/`](./models/invalid).
 
 ## API
 
 | Path | Purpose |
 |---|---|
-| `POST /api/v1/models/plan`, `/apply` | Check and apply a model file (ADMIN) |
+| `POST /api/v1/models/plan`, `/apply` | Preview and apply a model file (ADMIN) |
+| `POST /api/v1/models/{model}/rollback/plan`, `/rollback` | Preview and return to the previous version (ADMIN) |
 | `GET /api/v1/models`, `/models/{model}/runs` | Applied models and the history of each step (ADMIN) |
 | `GET /api/v1/meta/models` | Metadata the caller may see |
 | `/api/v1/data/{model}/{entity}` | List, create, read, update, delete; filter with `filter.<field>[.<op>]`, `sort`, `order`, `page`, `size` |

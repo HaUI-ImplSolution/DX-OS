@@ -31,15 +31,33 @@ Thử ngày 02/11/2026 trên PostgreSQL 16 với 1.000 dòng, không đưa vào 
 | `ProcessMigrationService` | Mẫu mới bỏ bước hiện tại | Kiểm tra trước báo đúng bước chưa được ánh xạ; khai báo ánh xạ thì chuyển được |
 | Flowable | Không chuyển | Hồ sơ cũ ở phiên bản cũ, hồ sơ mới dùng phiên bản mới |
 
-Kết luận đề xuất cho Phase 7:
+Thử thêm cách đổi tên trước rồi mới đưa trạng thái đích cho pgschema 1.13.4:
 
-- **Lược đồ:** tự sinh `ALTER TABLE` từ so sánh hai phiên bản mô hình, chạy trong một giao dịch.
-  PostgreSQL có DDL theo giao dịch và tệp mô hình đã khai báo tên cũ, nên không cần công cụ để nhận ra đổi tên.
-  Dòng vi phạm do lõi tự truy vấn để liệt kê, điều cả hai công cụ đều không làm.
-- **pgschema:** không dùng, vì không đổi tên được.
-- **pgroll:** không dùng trong bản dự thi, vì thế mạnh của nó là đổi không gián đoạn, thuộc ngoài phạm vi, trong khi phải thêm một tệp thực thi và các schema phiên bản.
+| Tình huống | Kết quả |
+|---|---|
+| Đích giống hiện tại | Kế hoạch rỗng |
+| Đổi tên bằng `RENAME COLUMN`, rồi lập kế hoạch | Kế hoạch rỗng, dữ liệu còn đủ |
+| Thêm cột, thêm trạng thái vào ràng buộc | Áp dụng được, dữ liệu còn đủ |
+| Xóa cột | Kế hoạch ghi rõ thao tác, dạng JSON có loại thao tác và đường dẫn |
+| Thêm `NOT NULL` khi có dòng vi phạm | Áp dụng thất bại, để lại ràng buộc chưa xác thực |
+
+Hướng cho Phase 7, chốt sau khi đạt bốn điều kiện dưới đây:
+
+- **Lược đồ:** pgschema so sánh và sinh SQL; lõi đổi tên theo tên cũ khai báo trong tệp mô hình trước khi chạy nó, và tự liệt kê dòng vi phạm trước khi áp dụng.
+- **Chặn mất dữ liệu:** lõi đọc JSON của kế hoạch, thấy thao tác xóa thì dừng, chỉ chạy khi có xác nhận riêng và sao lưu; một trường bị xóa cùng một trường cùng kiểu được thêm thì kế hoạch hỏi có phải đổi tên không.
 - **Quy trình:** dùng `ProcessMigrationService`; bước xem trước gọi kiểm tra của Flowable để báo hồ sơ đang xử lý bị ảnh hưởng.
-  Việc đổi quy trình khi còn hồ sơ đang chờ vì vậy có thể làm được, thay vì từ chối, nếu tiến độ cho phép.
+- **pgroll:** không dùng trong bản dự thi, vì thế mạnh của nó là đổi không gián đoạn, thuộc ngoài phạm vi.
+
+Rủi ro còn lại: quên khai báo tên cũ thì so sánh hai trạng thái không nhận ra đổi tên, nên việc bảo vệ dữ liệu nằm ở lớp lõi tự viết, không nằm ở công cụ.
+
+Điều kiện kiểm ngay đầu Phase 7:
+
+1. Chạy được với DDL do lõi sinh ra, gồm khóa ngoại, `UNIQUE` và quyền `report_ro`.
+2. Áp dụng lại sau khi lỗi giữa chừng thì về đúng trạng thái đích, kể cả phần còn sót.
+3. Kế hoạch xem trước khớp với những gì áp dụng thật, khi có đổi tên.
+4. Đổi tên trường có `UNIQUE` và chỉ mục thì kế hoạch rỗng sau bước đổi tên, dữ liệu còn đủ.
+
+Không đạt thì tự sinh `ALTER TABLE` trong một giao dịch từ so sánh hai phiên bản mô hình.
 
 ## 4. Nợ kỹ thuật chấp nhận
 

@@ -53,7 +53,7 @@ Ký hiệu: `[ ]` chưa làm, `[~]` đang làm, `[x]` xong, `[-]` bỏ (ghi lý 
 
 ## Đóng phase
 
-- [~] `./mvnw clean verify`, `npx tsc --noEmit` đạt và đã đọc lại diff; CI chạy khi nhánh được đẩy lên.
+- [x] `./mvnw clean verify`, `npx tsc --noEmit`, CI đạt và đã đọc lại diff.
 - [x] Swagger khớp mã; comment ngắn, bằng tiếng Anh.
 - [x] Cập nhật `ARCHITECTURE.md`, `CHANGELOG.md`, `docs/TESTING.md`, `docs/dynamic-core/BACKLOG.md`.
 - [x] Mọi tiêu chí ở `00_OVERVIEW.md` mục 4 có bằng chứng.

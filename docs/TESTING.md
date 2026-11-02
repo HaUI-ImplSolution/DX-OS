@@ -120,5 +120,5 @@ Ngày 02/11/2026 trên clone sạch, stack dựng bằng `docker compose up -d -
 | `check_case.py` | Đạt | 70/70 |
 | Giao diện | Đạt | 20/20 bằng Chrome không giao diện: sinh viên nộp, cán bộ sai đơn vị không thấy, cán bộ đúng đơn vị nhận việc và trả lại, sinh viên sửa và nộp lại, cán bộ duyệt, kèm hộp việc và dòng lịch sử |
 | Từ khóa ứng dụng cũ | Đạt | Không còn ngoài `ai/`, `data/`, `bi/`, `chat/` và các tài liệu mô tả bản cũ |
-| CI trên GitHub | Chưa chạy | Nhánh Phase 6 chưa được đẩy lên |
+| CI trên GitHub | Đạt | CI Backend, Frontend, Infra của nhánh `Khuong/phase-6-case-core`; CI AI và Dependencies không chạy lượt này |
 | Chưa chạy | | Khởi động sau khi cập nhật từ bản `v1.1.1` (không có đường nâng cấp dữ liệu) |

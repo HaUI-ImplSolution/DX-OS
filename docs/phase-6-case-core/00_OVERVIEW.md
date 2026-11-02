@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Xong trên máy dev, chờ commit và CI |
+| Trạng thái | Xong |
 | Mức độ | Nghiêm trọng |
 | Ứng dụng và module chính | `dx-model`, `dx-core`, `dx-engine`, frontend, `sso` |
 | Ước lượng | 7 ngày |

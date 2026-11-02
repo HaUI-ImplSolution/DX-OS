@@ -1,7 +1,7 @@
 # dx-monitor: màn hình giám sát và truy vết
 
 Dịch vụ Spring Boot riêng của DX-OS, chạy trong container `monitor`.
-Không phụ thuộc `dx-core-api` hay `dx-core` và không biết app nào đang chạy, nên dùng chung cho Farm và Lab.
+Không phụ thuộc `dx-core` hay `dx-engine`, nên vẫn chạy khi dịch vụ lõi dừng.
 Chạy riêng nên vẫn hoạt động khi backend dừng.
 
 Mở từ thẻ "Giám sát và truy vết" của portal hoặc tại `/monitor/`, đăng nhập SSO Keycloak; chỉ vai `ADMIN` vào được.
@@ -71,7 +71,7 @@ Nội dung viết cho người quản lý không chuyên IT: biểu đồ là ch
 
 ## Cảnh báo
 
-`monitor` gửi vào kênh Mattermost "Ban quản trị", cùng webhook với cảnh báo của backend:
+`monitor` gửi vào kênh quản trị qua webhook khi có cấu hình:
 
 | Điều kiện | Ngưỡng mặc định |
 |---|---|
@@ -94,6 +94,6 @@ Nội dung viết cho người quản lý không chuyên IT: biểu đồ là ch
 | `MONITOR_OIDC_CLIENT_SECRET` | Secret của client `dxos-monitor` trong Keycloak |
 | `MONITOR_INGEST_KEY` | Khóa gateway dùng khi gửi sự kiện; chữ và số, không có `\|` hay `&` |
 
-- Gateway điền khóa vào cấu hình khi `apisix-config` chạy; đổi khóa thì chạy `./switch-app.sh <app>`.
+- Gateway điền khóa vào cấu hình khi `apisix-config` chạy; đổi khóa thì chạy `docker compose up -d --force-recreate apisix-config && docker compose restart apisix`.
 - Keycloak đang chạy chưa có client `dxos-monitor`: thêm client theo `sso/realm-dxos.json` trong Admin Console, hoặc dựng lại Keycloak từ đầu.
 - Đường nhận `/monitor/ingest/` chỉ dùng trong mạng Docker; gateway công khai trả `404` cho nó.

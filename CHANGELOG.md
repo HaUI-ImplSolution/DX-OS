@@ -13,9 +13,12 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Quy trình phê duyệt một cấp trên Flowable nhúng, cùng giao dịch với việc ghi hồ sơ; trạng thái chỉ đổi qua quy trình.
 - Hồ sơ lưu người quyết định và thời điểm quyết định.
 - Lần áp dụng dở chỉ hoàn tất được bằng đúng tệp đã bắt đầu, và mỗi mô hình chỉ có một lần áp dụng chạy tại một thời điểm.
-- Giao diện react-admin dựng từ metadata.
+- Hồ sơ là khái niệm của lõi: mẫu quy trình khai báo trạng thái và hành động, cán bộ trả lại kèm ghi chú để người nộp sửa và nộp lại.
+- Đơn vị khai báo trong mô hình và đồng bộ thành nhóm Keycloak; phạm vi quyền `unit` và `assigned`.
+- Giao việc, hộp việc `/api/v1/inbox`, dòng lịch sử của từng bản ghi ghi trong cùng giao dịch.
+- Giao diện react-admin dựng từ metadata, gồm hộp việc, nút hành động, giao việc và dòng lịch sử.
 - Stack chỉ gồm lõi và Tầng 2 (`postgres`, `keycloak`, `seaweedfs`, `backend`, `apisix`, `frontend`, `portal`, `monitor`, `clamav` qua profile); vai và cơ sở dữ liệu của Keycloak tạo bởi `deploy/postgres/init`; realm chỉ còn vai `ADMIN`.
-- Các script `deploy/dev/check_api.py` và `check_recovery.py` kiểm API và khả năng phục hồi.
+- Các script `deploy/dev/check_api.py`, `check_recovery.py` và `check_case.py` kiểm API, khả năng phục hồi và các tính năng của hồ sơ.
 - Hai ứng dụng nghiệp vụ và ứng dụng di động của phiên bản trước nằm ở tag `v1.1.1`.
 
 ## [1.1.1] - 2026-10-30

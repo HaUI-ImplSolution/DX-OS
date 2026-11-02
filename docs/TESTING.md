@@ -40,6 +40,7 @@ Chạy trên stack mới dựng, cơ sở dữ liệu rỗng, vì script áp d�
 ```bash
 python3 deploy/dev/check_api.py
 python3 deploy/dev/check_recovery.py        # sau check_api.py, trên cùng stack
+python3 deploy/dev/check_case.py            # sau check_recovery.py, trên cùng stack
 ```
 
 Script tạo client Keycloak `dxos-check` (cho phép đăng nhập bằng mật khẩu, chỉ dùng cho máy dev) và các người dùng thử `admin1`, `req1`, `req2`, `keeper1`, `multi1`, `none1`, `editor1`.
@@ -63,8 +64,14 @@ Biến `DXOS_ENV_FILE`, `DXOS_BASE_URL`, `DXOS_PROJECT` đổi tệp env, địa
 | T5-19 | Quyết định một hồ sơ; gửi `decided_by` trong yêu cầu sửa | Hồ sơ lưu người và thời điểm quyết định; yêu cầu sửa bị 400 |
 | T5-20 | Áp dụng dở rồi áp dụng tệp khác | 409, không lưu phiên bản; đúng tệp cũ hoàn tất được |
 | T5-21 | Bốn lần áp dụng song song cùng một mô hình mới | Một lần áp dụng, lịch sử có một lượt chạy |
+| T6-01, T6-02 | Áp dụng `models/onestop.yaml`; ba tệp sai về đơn vị và phạm vi | Có nhóm Keycloak và metadata; 400 kèm dòng |
+| T6-03 đến T6-06 | Quyền theo đơn vị, hợp phạm vi, thực thể con, chuyển đơn vị | Đúng đơn vị thấy, sai đơn vị 404; chuyển đơn vị 403 |
+| T6-07 đến T6-09 | Trả lại, sửa, nộp lại, duyệt; hành động sai | Đúng đường trạng thái; 400, 403, 404, 409 đúng chỗ |
+| T6-10 đến T6-12 | Giao việc, người không được giao, hộp việc | Chỉ người được giao xử lý được; hộp việc đúng từng người |
+| T6-13, T6-14 | Dòng lịch sử; lỗi cố ý sau bước quy trình | Đủ người, trạng thái, ghi chú, chỉ trường thực sự đổi; không có sự kiện của hành động lỗi |
+| T6-16 | Vai `assigned` và vai điều phối | Hồ sơ chưa giao ngoài tầm với; điều phối giao được, không quyết định được |
 
-T5-11 cần dịch vụ chạy với `ENGINE_FAULT_AFTER_DECISION=true`; `check_recovery.py` tự bật rồi tắt bằng cách tạo lại service `backend`.
+T5-11 và T6-14 cần dịch vụ chạy với `ENGINE_FAULT_AFTER_DECISION=true`; các script tự bật rồi tắt bằng cách tạo lại service `backend`.
 
 ## 5. Kiểm giao diện thủ công
 
@@ -108,9 +115,10 @@ Ngày 02/11/2026 trên clone sạch, stack dựng bằng `docker compose up -d -
 | `check_licenses.py`, `check_routes.py` | Đạt | 0 vấn đề; 12 route, 11 công khai có chủ đích |
 | `docker compose config` | Đạt | Tám service, cộng `clamav` ở profile `av` |
 | Stack từ trạng thái sạch | Đạt | Tám service healthy |
-| `check_api.py` | Đạt | 51/51; danh sách 10.000 dòng có lọc và sắp xếp, phân vị 95 là 12 ms, trung vị 9 ms |
+| `check_api.py` | Đạt | 51/51; danh sách 10.000 dòng có lọc và sắp xếp, phân vị 95 là 10 ms, trung vị 9 ms |
 | `check_recovery.py` | Đạt | 16/16 |
-| Giao diện | Đạt | Người mượn thấy phiếu của mình, người duyệt thấy tất cả và duyệt được trên màn chi tiết |
+| `check_case.py` | Đạt | 70/70 |
+| Giao diện | Đạt | 20/20 bằng Chrome không giao diện: sinh viên nộp, cán bộ sai đơn vị không thấy, cán bộ đúng đơn vị nhận việc và trả lại, sinh viên sửa và nộp lại, cán bộ duyệt, kèm hộp việc và dòng lịch sử |
 | Từ khóa ứng dụng cũ | Đạt | Không còn ngoài `ai/`, `data/`, `bi/`, `chat/` và các tài liệu mô tả bản cũ |
-| CI trên GitHub | Đạt | Năm workflow của nhánh `Khuong/phase-5-core-loop` |
+| CI trên GitHub | Chưa chạy | Nhánh Phase 6 chưa được đẩy lên |
 | Chưa chạy | | Khởi động sau khi cập nhật từ bản `v1.1.1` (không có đường nâng cấp dữ liệu) |

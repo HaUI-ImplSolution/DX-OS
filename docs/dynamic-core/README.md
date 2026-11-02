@@ -1,7 +1,7 @@
 # Lõi dynamic của DX-OS
 
 Định hướng và phạm vi đã chốt ngày 2026-11-02.
-Đây là thiết kế, chưa có thử nghiệm nào được chạy; các điểm cần kiểm chứng nằm ở mục [Chưa xác minh](#chưa-xác-minh).
+Vòng hẹp của lõi đã chạy và được kiểm chứng, kết quả ở mục [Đã xác minh](#đã-xác-minh); các điểm còn lại nằm ở mục [Chưa xác minh](#chưa-xác-minh).
 
 ## Tóm tắt
 

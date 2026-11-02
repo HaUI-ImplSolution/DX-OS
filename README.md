@@ -20,8 +20,9 @@ Phiên bản trước của dự án (hai ứng dụng nghiệp vụ viết tay)
 
 - Đọc và kiểm tra tệp mô hình, báo lỗi theo dòng và cột.
 - Áp dụng mô hình vào hệ thống rỗng: schema, bảng, ràng buộc, vai Keycloak, phiên bản và lịch sử từng bước; áp dụng lại thì không làm gì, bị gián đoạn thì áp dụng lại để làm tiếp.
-- API chung cho mọi thực thể, quyền theo vai và theo dòng (`all`, `own`, `read`), quy tắc bắt buộc, duy nhất và lựa chọn.
-- Quy trình phê duyệt một cấp trên Flowable nhúng; trạng thái hồ sơ chỉ đổi qua quy trình, cùng giao dịch với việc ghi hồ sơ.
+- API chung cho mọi thực thể, quyền theo vai và theo dòng (`all`, `own`, `read`, `unit`, `assigned`), quy tắc bắt buộc, duy nhất và lựa chọn.
+- Quy trình phê duyệt một cấp trên Flowable nhúng, có trả lại để bổ sung; trạng thái hồ sơ chỉ đổi qua quy trình, cùng giao dịch với việc ghi hồ sơ.
+- Đơn vị khai báo trong mô hình và đồng bộ thành nhóm Keycloak; giao việc, hộp việc và dòng lịch sử của từng hồ sơ.
 - Giao diện react-admin dựng từ metadata, không có mã riêng cho thực thể nào.
 
 Chưa có: đổi mô hình khi đã có dữ liệu, tệp đính kèm, trục sự kiện, thông báo chat, AI, báo cáo Superset.
@@ -78,10 +79,11 @@ entities:
     process: {template: approval, approver: KEEPER}
 ```
 
-- Kiểu trường: `text`, `number`, `datetime`, `choice`, `reference`, `user`.
-- Quyền theo vai: `all` (mọi dòng, đọc và ghi), `own` (dòng của mình), `read` (mọi dòng, chỉ đọc); `owner_via` cho phép thực thể con theo chủ sở hữu của thực thể cha.
-- Quy trình: mẫu `approval`, một vai duyệt hoặc từ chối.
-  Hồ sơ đã được quyết định thì không sửa và không xóa được.
+- Kiểu trường: `text`, `number`, `datetime`, `choice`, `reference`, `user`, `unit`.
+- Đơn vị: khai báo ở `units`, mỗi đơn vị là một nhóm Keycloak; trường kiểu `unit` cho biết hồ sơ thuộc đơn vị nào. Ví dụ đầy đủ ở [`models/onestop.yaml`](./models/onestop.yaml).
+- Quyền theo vai: `all` (mọi dòng, đọc và ghi), `own` (dòng của mình), `read` (mọi dòng, chỉ đọc), `unit` (dòng của đơn vị mình), `assigned` (dòng được giao cho mình); `owner_via` cho phép thực thể con theo chủ sở hữu của thực thể cha.
+- Quy trình: mẫu `approval`, một vai duyệt, từ chối hoặc trả lại kèm ghi chú để người nộp sửa và nộp lại.
+  Hồ sơ đã được quyết định thì không sửa và không xóa được; hồ sơ đã giao thì chỉ người được giao xử lý được.
   Người tạo hồ sơ không tự quyết định được, trừ khi khai báo `allow_self_decision: true`.
 - Đặc tả cho trình soạn thảo: [`dx-model/.../model-v0.schema.json`](./backend/dx-model/src/main/resources/schema/model-v0.schema.json); tệp sai mẫu ở [`models/invalid/`](./models/invalid).
 
@@ -93,7 +95,10 @@ entities:
 | `GET /api/v1/models`, `/models/{model}/runs` | Mô hình đã áp dụng và lịch sử từng bước (ADMIN) |
 | `GET /api/v1/meta/models` | Metadata mà người gọi được xem |
 | `/api/v1/data/{model}/{entity}` | Danh sách, tạo, xem, sửa, xóa; lọc `filter.<trường>[.<phép>]`, `sort`, `order`, `page`, `size` |
-| `POST /api/v1/data/{model}/{entity}/{id}/decision` | `approve` hoặc `reject` bởi vai duyệt |
+| `POST /api/v1/data/{model}/{entity}/{id}/actions/{action}` | Hành động của quy trình; metadata liệt kê hành động, trạng thái đầu và người được làm |
+| `POST .../{id}/assign`, `GET .../{id}/handlers` | Giao việc và danh sách người giao được |
+| `GET .../{id}/events` | Dòng lịch sử của bản ghi |
+| `GET /api/v1/inbox` | Hồ sơ đang chờ người gọi, trên mọi mô hình |
 
 Mọi phản hồi bọc trong `ApiResponse`; lỗi có `errorCode` ổn định.
 

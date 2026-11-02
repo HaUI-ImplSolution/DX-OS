@@ -1,0 +1,109 @@
+// SPDX-License-Identifier: Apache-2.0
+import { HttpError, type DataProvider } from "react-admin";
+import { ApiError, json, queryString, request } from "../shell/api";
+import { splitResource, type EntityMeta, type Page } from "./types";
+
+type Row = Record<string, unknown>;
+
+const SYSTEM_FIELDS = ["id", "created_by", "created_at", "updated_at", "version", "status"];
+
+function path(resource: string) {
+  const { model, entity } = splitResource(resource);
+  return `/data/${model}/${entity}`;
+}
+
+// A date typed without an offset becomes an instant in the browser's time zone.
+function toApiValue(meta: EntityMeta | undefined, name: string, value: unknown) {
+  const type = meta?.fields.find((field) => field.name === name)?.type;
+  if (type === "datetime" && typeof value === "string" && value !== "") {
+    return new Date(value).toISOString();
+  }
+  return value === "" ? null : value;
+}
+
+function body(meta: EntityMeta | undefined, data: Row) {
+  const payload: Row = {};
+  Object.entries(data).forEach(([name, value]) => {
+    if (!SYSTEM_FIELDS.includes(name)) payload[name] = toApiValue(meta, name, value);
+  });
+  return payload;
+}
+
+// The API answers a rule that failed with the problem of each field; react-admin shows them on the form.
+async function call<T>(action: () => Promise<T>): Promise<T> {
+  try {
+    return await action();
+  } catch (error) {
+    if (error instanceof ApiError) {
+      const errors = error.data && typeof error.data === "object" ? error.data : undefined;
+      throw new HttpError(error.message, error.status, errors ? { errors } : undefined);
+    }
+    throw error;
+  }
+}
+
+function filterParams(filter: Row | undefined, extra: Row = {}) {
+  const params: Record<string, string> = {};
+  Object.entries({ ...filter, ...extra }).forEach(([name, value]) => {
+    if (value === undefined || value === null || value === "") return;
+    if (Array.isArray(value)) params[`filter.${name}.in`] = value.join(",");
+    else params[`filter.${name}`] = String(value);
+  });
+  return params;
+}
+
+export function createDataProvider(metaOf: (resource: string) => EntityMeta | undefined): DataProvider {
+  const list = async (resource: string, params: Record<string, string | number | undefined>) => {
+    const page = await call(() => request<Page<Row>>(`${path(resource)}${queryString(params)}`));
+    return { data: page.items as never[], total: page.totalElements };
+  };
+
+  return {
+    getList: (resource, { pagination, sort, filter }) =>
+      list(resource, {
+        page: (pagination?.page ?? 1) - 1,
+        size: pagination?.perPage ?? 25,
+        sort: sort?.field,
+        order: sort?.order.toLowerCase(),
+        ...filterParams(filter),
+      }),
+    getOne: async (resource, { id }) => ({
+      data: (await call(() => request<Row>(`${path(resource)}/${id}`))) as never,
+    }),
+    getMany: (resource, { ids }) => list(resource, { size: 200, ...filterParams({ id: ids }) }),
+    getManyReference: (resource, { target, id, pagination, sort, filter }) =>
+      list(resource, {
+        page: (pagination?.page ?? 1) - 1,
+        size: pagination?.perPage ?? 25,
+        sort: sort?.field,
+        order: sort?.order.toLowerCase(),
+        ...filterParams(filter, { [target]: id }),
+      }),
+    create: async (resource, { data }) => ({
+      data: (await call(() =>
+        request<Row>(path(resource), json("POST", body(metaOf(resource), data))),
+      )) as never,
+    }),
+    update: async (resource, { id, data }) => ({
+      data: (await call(() =>
+        request<Row>(`${path(resource)}/${id}`, json("PATCH", body(metaOf(resource), data))),
+      )) as never,
+    }),
+    updateMany: async (resource, { ids, data }) => {
+      await Promise.all(
+        ids.map((id) =>
+          call(() => request<Row>(`${path(resource)}/${id}`, json("PATCH", body(metaOf(resource), data)))),
+        ),
+      );
+      return { data: ids };
+    },
+    delete: async (resource, { id, previousData }) => {
+      await call(() => request<null>(`${path(resource)}/${id}`, { method: "DELETE" }));
+      return { data: previousData as never };
+    },
+    deleteMany: async (resource, { ids }) => {
+      await Promise.all(ids.map((id) => call(() => request<null>(`${path(resource)}/${id}`, { method: "DELETE" }))));
+      return { data: ids };
+    },
+  };
+}

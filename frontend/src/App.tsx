@@ -9,12 +9,20 @@ import {
   isCallbackRedirect,
   onSessionEnded,
   signIn,
-  signOut,
   takeReturnPath,
   type CurrentUser,
 } from "./shell/auth";
+import AdminApp from "./admin/AdminApp";
 
-function Notice({ title, message, actions }: { title: string; message: string; actions: ReactNode }) {
+function Notice({
+  title,
+  message,
+  actions,
+}: {
+  title: string;
+  message: string;
+  actions: ReactNode;
+}) {
   return (
     <div className="login-screen">
       <section className="section login-card">
@@ -37,6 +45,8 @@ export default function App() {
   const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
+    // A Keycloak callback exchanges its code for a token; otherwise the existing OIDC session is read.
+    // A failed callback stops here instead of redirecting again, which would loop.
     (async () => {
       const failure = callbackError();
       if (failure) {
@@ -57,12 +67,18 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    // Not signed in and no failure to show: go straight to Keycloak.
     if (authReady && !user && !authError) void signIn();
   }, [authReady, user, authError]);
 
-  useEffect(() => onSessionEnded(() => setUser(null)), []);
+  useEffect(() => {
+    // Signing out in another app of the realm ends this session too (single logout).
+    return onSessionEnded(() => setUser(null));
+  }, []);
 
-  if (!authReady || (!user && !authError)) return <div className="login-screen" />;
+  if (!authReady || (!user && !authError)) {
+    return <div className="login-screen" />;
+  }
 
   if (authError) {
     return (
@@ -70,7 +86,13 @@ export default function App() {
         title="Đăng nhập thất bại"
         message={authError}
         actions={
-          <button className="btn btn-primary" onClick={() => { setAuthError(null); void signIn(); }}>
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              setAuthError(null);
+              void signIn();
+            }}
+          >
             Thử lại
           </button>
         }
@@ -78,15 +100,5 @@ export default function App() {
     );
   }
 
-  return (
-    <Notice
-      title="DX-OS"
-      message={`Đã đăng nhập với tài khoản ${user?.fullName ?? ""}.`}
-      actions={
-        <button className="btn btn-primary" onClick={() => void signOut()}>
-          Đăng xuất
-        </button>
-      }
-    />
-  );
+  return <AdminApp />;
 }

@@ -678,7 +678,7 @@ public class DataService {
     }
     if (creating) {
       for (Field field : entity.fields().values()) {
-        if (field.required() && !values.containsKey(field.name())
+        if (field.required() && field.defaultValue() == null && !values.containsKey(field.name())
             && !errors.containsKey(field.name())) {
           errors.put(field.name(), "is required");
         }

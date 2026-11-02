@@ -60,6 +60,9 @@ Biến `DXOS_ENV_FILE`, `DXOS_BASE_URL`, `DXOS_PROJECT` đổi tệp env, địa
 | T5-17 | Áp dụng mô hình `notes.yaml` khi dịch vụ đang chạy | Metadata và dữ liệu phục vụ ngay, mỗi vai chỉ thấy mô hình của mình |
 | T5-05 | Áp dụng khi Keycloak dừng, rồi áp dụng lại | 502 và lịch sử ghi bước lỗi `ENSURE_ROLE`; áp dụng lại hoàn tất, vai tạo một lần |
 | T5-11 | Lỗi cố ý sau bước quy trình của một quyết định | 500; hồ sơ vẫn `submitted` và tác vụ vẫn chờ; sau đó quyết định bình thường |
+| T5-19 | Quyết định một hồ sơ; gửi `decided_by` trong yêu cầu sửa | Hồ sơ lưu người và thời điểm quyết định; yêu cầu sửa bị 400 |
+| T5-20 | Áp dụng dở rồi áp dụng tệp khác | 409, không lưu phiên bản; đúng tệp cũ hoàn tất được |
+| T5-21 | Bốn lần áp dụng song song cùng một mô hình mới | Một lần áp dụng, lịch sử có một lượt chạy |
 
 T5-11 cần dịch vụ chạy với `ENGINE_FAULT_AFTER_DECISION=true`; `check_recovery.py` tự bật rồi tắt bằng cách tạo lại service `backend`.
 
@@ -105,8 +108,8 @@ Ngày 02/11/2026 trên clone sạch, stack dựng bằng `docker compose up -d -
 | `check_licenses.py`, `check_routes.py` | Đạt | 0 vấn đề; 12 route, 11 công khai có chủ đích |
 | `docker compose config` | Đạt | Tám service, cộng `clamav` ở profile `av` |
 | Stack từ trạng thái sạch | Đạt | Tám service healthy |
-| `check_api.py` | Đạt | 49/49; danh sách 10.000 dòng có lọc và sắp xếp, phân vị 95 là 11 ms, trung vị 8 ms |
-| `check_recovery.py` | Đạt | 12/12 |
+| `check_api.py` | Đạt | 51/51; danh sách 10.000 dòng có lọc và sắp xếp, phân vị 95 là 12 ms, trung vị 9 ms |
+| `check_recovery.py` | Đạt | 16/16 |
 | Giao diện | Đạt | Người mượn thấy phiếu của mình, người duyệt thấy tất cả và duyệt được trên màn chi tiết |
 | Từ khóa ứng dụng cũ | Đạt | Không còn ngoài `ai/`, `data/`, `bi/`, `chat/` và các tài liệu mô tả bản cũ |
 | Chưa chạy | | Khởi động sau khi cập nhật từ bản `v1.1.1` (không có đường nâng cấp dữ liệu); CI trên GitHub chưa chạy cho nhánh này |

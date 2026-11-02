@@ -73,6 +73,8 @@ Kết quả đầu ra: hệ thống rỗng nạp mô hình mẫu có đủ schem
 - [x] WP5-02-BE-04 [engine] Bộ chạy các bước tuần tự, mỗi bước chạy lại được an toàn, ghi lịch sử trước và sau.
 - [x] WP5-02-BE-05 [engine] Client Keycloak Admin tạo realm role từ mô hình.
 - [x] WP5-02-BE-06 [engine] Endpoint `plan` liệt kê bước sẽ chạy, endpoint `apply` thực hiện.
+- [x] WP5-02-BE-07 [engine] Từ chối tệp khác khi còn lần áp dụng dở của mô hình.
+- [x] WP5-02-BE-08 [engine] Khóa để mỗi mô hình chỉ có một lần áp dụng chạy tại một thời điểm.
 
 **Data, seed, migration**
 
@@ -120,6 +122,7 @@ Kết quả đầu ra: năm hành vi ở bảng đúng; bản ghi và quy trình
 - [x] WP5-04-BE-04 [engine] Tạo hồ sơ: ghi bản ghi, khởi động quy trình, đặt `submitted` trong một giao dịch.
 - [x] WP5-04-BE-05 [engine] Endpoint `decision`: kiểm vai, đổi trạng thái qua quy trình, 409 khi đã quyết định.
 - [x] WP5-04-BE-06 [engine] Chỗ gây lỗi có điều khiển sau khi đổi trạng thái để kiểm giao dịch, chỉ bật bằng biến môi trường.
+- [x] WP5-04-BE-07 [engine] Lưu người quyết định và thời điểm vào hồ sơ và tác vụ của quy trình.
 
 ## WP5-05: Giao diện react-admin dựng từ metadata
 
@@ -162,7 +165,7 @@ Kết quả đầu ra: mọi tiêu chí ở `00` mục 6 có bằng chứng.
 
 **Test** (chi tiết ở `03_TEST_PLAN.md`)
 
-- [x] WP5-06-TEST-01 Chạy các case T5-01 đến T5-18 và ghi kết quả (`deploy/dev/check_api.py`, `check_recovery.py`, kiểm giao diện thủ công).
+- [x] WP5-06-TEST-01 Chạy các case T5-01 đến T5-21 và ghi kết quả (`deploy/dev/check_api.py`, `check_recovery.py`, kiểm giao diện thủ công).
 
 ## Đóng phase
 

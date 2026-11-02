@@ -8,7 +8,7 @@
 | Ứng dụng và module chính | Toàn bộ backend, frontend, deploy |
 | Ước lượng | 14 ngày, chốt lại khi phân công |
 | Người phụ trách | Chưa phân công |
-| Bắt đầu, dự kiến xong | 03/11/2026, 16/11/2026 |
+| Đóng phase | 02/11/2026 |
 | Phụ thuộc | Không |
 
 ## 1. Tham chiếu
@@ -101,6 +101,8 @@ Backend sau phase gồm bốn module: `dx-model` (định dạng và kiểm tra 
   - Tên trường chứa ký tự ngoài `[a-z][a-z0-9_]*` bị bộ kiểm tra từ chối; tham số lọc chứa SQL không có tác dụng.
   - Danh sách 10.000 dòng có bộ lọc trả về dưới 500 ms ở phân vị 95; số đo được ghi lại.
   - Vai kết nối báo cáo không ghi được vào bảng nghiệp vụ.
+  - Mỗi quyết định lưu người quyết định và thời điểm; client không gửi được hai giá trị này.
+  - Lần áp dụng dở chỉ hoàn tất được bằng đúng tệp đã bắt đầu; mỗi mô hình chỉ có một lần áp dụng chạy tại một thời điểm.
   - Sáu kiểu trường (văn bản, số, ngày giờ, lựa chọn, tham chiếu, người dùng) dựng được form và danh sách từ metadata.
 - Không còn tham chiếu tới `DXOS_APP`, `app-farm`, `app-lab` trong mã, cấu hình và CI, ngoài `ai/`, `data/`, `bi/`, `chat/`; `./mvnw compile`, `npx tsc --noEmit` và CI đạt; stack lên đủ dịch vụ healthy.
 - Bằng chứng: kết quả từng case ở `03_TEST_PLAN.md`, số đo hiệu năng và mục 8 của [`docs/TESTING.md`](../TESTING.md).

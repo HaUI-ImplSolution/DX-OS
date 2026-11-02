@@ -11,6 +11,8 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - `dx-engine` áp dụng mô hình vào hệ thống rỗng (schema, bảng, ràng buộc, vai Keycloak, phiên bản, lịch sử từng bước, vai `report_ro` chỉ đọc).
 - API chung `/api/v1/data/{model}/{entity}` với quyền theo vai và theo dòng, lọc, sắp xếp, phân trang, quy tắc bắt buộc, duy nhất và lựa chọn; API metadata `/api/v1/meta/models`.
 - Quy trình phê duyệt một cấp trên Flowable nhúng, cùng giao dịch với việc ghi hồ sơ; trạng thái chỉ đổi qua quy trình.
+- Hồ sơ lưu người quyết định và thời điểm quyết định.
+- Lần áp dụng dở chỉ hoàn tất được bằng đúng tệp đã bắt đầu, và mỗi mô hình chỉ có một lần áp dụng chạy tại một thời điểm.
 - Giao diện react-admin dựng từ metadata.
 - Stack chỉ gồm lõi và Tầng 2 (`postgres`, `keycloak`, `seaweedfs`, `backend`, `apisix`, `frontend`, `portal`, `monitor`, `clamav` qua profile); vai và cơ sở dữ liệu của Keycloak tạo bởi `deploy/postgres/init`; realm chỉ còn vai `ADMIN`.
 - Các script `deploy/dev/check_api.py` và `check_recovery.py` kiểm API và khả năng phục hồi.

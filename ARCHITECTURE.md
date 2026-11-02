@@ -50,7 +50,7 @@ flowchart TB
 `POST /api/v1/models/apply` (ADMIN) chạy các bước tuần tự và ghi từng bước vào `engine.apply_step`:
 
 1. `CREATE_SCHEMA`: schema `m_<tên mô hình>`.
-2. `CREATE_TABLE`: một bảng cho mỗi thực thể, kèm các cột hệ thống (`id`, `created_by`, `created_at`, `updated_at`, `version`, và `status` nếu có quy trình), ràng buộc `NOT NULL`, `UNIQUE`, `CHECK` cho lựa chọn.
+2. `CREATE_TABLE`: một bảng cho mỗi thực thể, kèm các cột hệ thống (`id`, `created_by`, `created_at`, `updated_at`, `version`, và `status`, `decided_by`, `decided_at` nếu có quy trình), ràng buộc `NOT NULL`, `UNIQUE`, `CHECK` cho lựa chọn.
 3. `ADD_LINKS`: khóa ngoại và chỉ mục, sau khi mọi bảng đã có.
 4. `GRANT_READ_ONLY`: vai `report_ro` chỉ có quyền đọc, dùng cho báo cáo.
 5. `ENSURE_ROLE`: vai của mô hình trong Keycloak.

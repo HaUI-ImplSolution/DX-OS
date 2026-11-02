@@ -30,7 +30,7 @@ Kết quả của các rủi ro lớn khi đóng phase:
 - R2: các case T5-03, T5-06 đến T5-09, T5-14 đạt; một lỗi thật được tìm ra và sửa là gắn bản ghi con vào bản ghi cha của người khác.
 - R3: T5-11 đạt, hồ sơ và quy trình quay về cùng nhau khi có lỗi sau bước quy trình.
 - R4: react-admin dựng được từ metadata; không cần chuyển sang Refine.
-- R5: p95 11 ms cho 10.000 dòng.
+- R5: p95 12 ms cho 10.000 dòng.
 
 ## 3. Nợ kỹ thuật chấp nhận
 
@@ -38,6 +38,10 @@ Kết quả của các rủi ro lớn khi đóng phase:
 - Chưa có tệp đính kèm, mẫu xử lý có hạn, trục sự kiện: Phase 7.
 - Chưa có CLI `dxos`, chưa cắt bớt service bằng compose profile.
 - Quyền `own` mới tới một bước tham chiếu.
+- Trạng thái hồ sơ và hành động quyết định còn cố định theo mẫu phê duyệt, chưa do mẫu quy trình khai báo.
+- Chưa có hộp việc, giao việc, quyền theo đơn vị, yêu cầu bổ sung và dòng lịch sử của hồ sơ.
+- Nhật ký audit chưa ghi các thao tác thành công trên hồ sơ và mô hình.
+- Màn hình chi tiết chỉ hiện thời điểm quyết định; người quyết định lưu dưới dạng mã người dùng Keycloak.
 
 ## 4. Điều kiện dừng và rollback
 

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:flowable="http://flowable.org/bpmn"
+             targetNamespace="http://dxos/processes">
+
+  <!-- One approver role decides once; the record status is written by the process only. -->
+  <process id="approval" name="Single-level approval" isExecutable="true">
+    <startEvent id="start"/>
+    <sequenceFlow id="toDecide" sourceRef="start" targetRef="decide"/>
+
+    <userTask id="decide" name="Decision" flowable:candidateGroups="${approverRole}"/>
+    <sequenceFlow id="toOutcome" sourceRef="decide" targetRef="outcome"/>
+
+    <exclusiveGateway id="outcome"/>
+    <sequenceFlow id="toApproved" sourceRef="outcome" targetRef="approved">
+      <conditionExpression xsi:type="tFormalExpression">${decision == 'approve'}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="toRejected" sourceRef="outcome" targetRef="rejected">
+      <conditionExpression xsi:type="tFormalExpression">${decision == 'reject'}</conditionExpression>
+    </sequenceFlow>
+
+    <serviceTask id="approved" flowable:expression="${recordStatus.set(execution, 'approved')}"/>
+    <sequenceFlow id="approvedToEnd" sourceRef="approved" targetRef="end"/>
+    <serviceTask id="rejected" flowable:expression="${recordStatus.set(execution, 'rejected')}"/>
+    <sequenceFlow id="rejectedToEnd" sourceRef="rejected" targetRef="end"/>
+
+    <endEvent id="end"/>
+  </process>
+</definitions>

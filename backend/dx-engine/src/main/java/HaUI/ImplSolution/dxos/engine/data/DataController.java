@@ -85,7 +85,7 @@ public class DataController {
   @Operation(summary = "Approve or reject a record",
       description = "The body is {\"outcome\": \"approve\"} or {\"outcome\": \"reject\"}. Only"
           + " the approver role of the entity may decide (403); a record already decided answers"
-          + " 409.")
+          + " 409. The record then shows decided_by and decided_at.")
   public ApiResponse<Map<String, Object>> decide(@PathVariable String model,
       @PathVariable String entity, @PathVariable long id, @RequestBody Map<String, String> body) {
     Model m = registry.require(model);

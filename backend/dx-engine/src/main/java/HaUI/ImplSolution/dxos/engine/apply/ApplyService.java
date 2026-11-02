@@ -11,11 +11,17 @@ import HaUI.ImplSolution.dxos.model.ModelParser;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -65,6 +71,10 @@ public class ApplyService {
 
   public Applied apply(String content, String actor) {
     Model model = ModelParser.parse(content);
+    return exclusively(model, () -> run(model, content, actor));
+  }
+
+  private Applied run(Model model, String content, String actor) {
     String hash = hash(content);
     Decision decision = decide(model, hash);
     if (decision.unchanged()) {
@@ -111,13 +121,43 @@ public class ApplyService {
 
   private record Decision(boolean unchanged, int version) {}
 
-  // The first apply of a model creates version 1; the same content again changes nothing.
+  // One apply of a model at a time. The lock lives on its own connection, so it ends with the
+  // connection if the service dies, while every step commits on its own.
+  private <T> T exclusively(Model model, Supplier<T> work) {
+    String key = "dxos.apply." + model.name();
+    return jdbc.execute((ConnectionCallback<T>) connection -> {
+      if (!advisoryLock(connection, "pg_try_advisory_lock", key)) {
+        throw new InvalidStateException("Model " + model.name() + " is being applied right now");
+      }
+      try {
+        return work.get();
+      } finally {
+        advisoryLock(connection, "pg_advisory_unlock", key);
+      }
+    });
+  }
+
+  private static boolean advisoryLock(Connection connection, String function, String key)
+      throws SQLException {
+    try (PreparedStatement statement =
+        connection.prepareStatement("SELECT " + function + "(hashtext(?))")) {
+      statement.setString(1, key);
+      try (ResultSet result = statement.executeQuery()) {
+        result.next();
+        return result.getBoolean(1);
+      }
+    }
+  }
+
+  // The first apply of a model creates version 1; the same content again changes nothing. An
+  // apply that stopped midway left tables behind, so only its own file may finish it.
   private Decision decide(Model model, String hash) {
     List<Map<String, Object>> rows = jdbc.queryForList(
         "SELECT version, hash FROM engine.model_version WHERE model = ? ORDER BY version DESC "
             + "LIMIT 1",
         model.name());
     if (rows.isEmpty()) {
+      requireSameFileAsUnfinishedApply(model, hash);
       return new Decision(false, 1);
     }
     int version = ((Number) rows.get(0).get("version")).intValue();
@@ -126,6 +166,23 @@ public class ApplyService {
     }
     throw new InvalidStateException("Model " + model.name() + " is already applied with other "
         + "content; changing an applied model is not supported yet");
+  }
+
+  private void requireSameFileAsUnfinishedApply(Model model, String hash) {
+    Integer schemas = jdbc.queryForObject(
+        "SELECT count(*) FROM information_schema.schemata WHERE schema_name = ?", Integer.class,
+        model.schema());
+    if (schemas == null || schemas == 0) {
+      return;
+    }
+    List<String> last = jdbc.queryForList(
+        "SELECT hash FROM engine.apply_run WHERE model = ? ORDER BY id DESC LIMIT 1", String.class,
+        model.name());
+    if (last.isEmpty() || !hash.equals(last.get(0))) {
+      throw new InvalidStateException("An earlier apply of model " + model.name() + " stopped "
+          + "midway with other content; apply that file again, or drop schema " + model.schema()
+          + " first");
+    }
   }
 
   private List<Step> steps(Model model, String content, String hash, String actor) {

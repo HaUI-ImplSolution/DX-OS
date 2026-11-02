@@ -198,6 +198,7 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
         {entity.fields.map((field) => outputField(field, catalog))}
         {entity.hasProcess && statusField()}
         <DateField source="created_at" label="Tạo lúc" showTime />
+        {entity.hasProcess && <DateField source="decided_at" label="Quyết định lúc" showTime />}
       </SimpleShowLayout>
     </Show>
   );

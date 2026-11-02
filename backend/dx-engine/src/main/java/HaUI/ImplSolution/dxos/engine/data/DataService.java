@@ -44,7 +44,7 @@ public class DataService {
   private static final int MAX_PAGE_SIZE = 200;
   private static final int DEFAULT_PAGE_SIZE = 20;
   private static final Set<String> SYSTEM_COLUMNS =
-      Set.of("id", "created_by", "created_at", "updated_at", "version");
+      Set.of("id", "created_by", "created_at", "updated_at", "version", "decided_by", "decided_at");
   private static final Map<String, String> OPERATORS =
       Map.of("eq", "=", "ne", "<>", "lt", "<", "lte", "<=", "gt", ">", "gte", ">=");
 
@@ -230,7 +230,7 @@ public class DataService {
         && user.currentUserId().equals(record.get("created_by"))) {
       throw new ActionNotAllowedException("The creator of a record cannot decide it");
     }
-    process.decide(model, entity, id, outcome);
+    process.decide(model, entity, id, outcome, user.currentUserId());
     return get(model, entity, id);
   }
 
@@ -342,10 +342,13 @@ public class DataService {
     if ("id".equals(column) || "version".equals(column)) {
       return FieldType.REFERENCE;
     }
-    if ("created_by".equals(column) || ("status".equals(column) && entity.process() != null)) {
+    boolean decision = entity.process() != null;
+    if ("created_by".equals(column)
+        || (decision && Set.of("status", "decided_by").contains(column))) {
       return FieldType.TEXT;
     }
-    if ("created_at".equals(column) || "updated_at".equals(column)) {
+    if ("created_at".equals(column) || "updated_at".equals(column)
+        || (decision && "decided_at".equals(column))) {
       return FieldType.DATETIME;
     }
     Field field = entity.fields().get(column);
@@ -359,7 +362,7 @@ public class DataService {
     List<String> columns =
         new ArrayList<>(List.of("id", "created_by", "created_at", "updated_at", "version"));
     if (entity.process() != null) {
-      columns.add("status");
+      columns.addAll(List.of("status", "decided_by", "decided_at"));
     }
     columns.addAll(entity.fields().keySet());
     return columns.stream().map(name -> ident(name))

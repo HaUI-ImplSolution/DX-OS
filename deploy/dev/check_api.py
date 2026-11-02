@@ -152,6 +152,11 @@ def main():
     check("T5-13 requester cannot decide", status == 403, str(status))
     status, body = kc.api(keeper, "POST", f"/data/equipment/loan/{loan1}/decision", {"outcome": "approve"})
     check("T5-12 approve", status == 200 and body["data"]["status"] == "approved", f"{status} {body}")
+    code, keeper_id = psql("select assignee_ from engine.act_hi_taskinst where assignee_ is not null limit 1")
+    check("T5-19 decider and time are stored", body["data"]["decided_by"] == keeper_id != ""
+          and body["data"]["decided_at"] is not None, f"{body['data'].get('decided_by')} {keeper_id}")
+    status, sent = kc.api(keeper, "PATCH", f"/data/equipment/loan/{loan2}", {"decided_by": "someone"})
+    check("T5-19 decider cannot be sent", status == 400, str(status))
     status, body = kc.api(keeper, "POST", f"/data/equipment/loan/{loan1}/decision", {"outcome": "approve"})
     check("T5-12 second decision 409", status == 409, str(status))
     code, task_count = psql("select count(*) from engine.act_ru_task")

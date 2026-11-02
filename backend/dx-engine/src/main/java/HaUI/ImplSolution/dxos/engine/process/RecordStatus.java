@@ -9,8 +9,8 @@ import org.flowable.engine.delegate.DelegateExecution;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-// The only writer of the status column. A process calls it from its own steps, inside the
-// transaction of the step.
+// The only writer of the status column, and of who decided it and when. A process calls it from
+// its own steps, inside the transaction of the step.
 @Component("recordStatus")
 public class RecordStatus {
 
@@ -28,7 +28,8 @@ public class RecordStatus {
     long id = ((Number) execution.getVariable("recordId")).longValue();
     jdbc.update(
         "UPDATE " + Sql.table(model, entity)
-            + " SET status = ?, updated_at = now(), version = version + 1 WHERE id = ?",
-        status, id);
+            + " SET status = ?, decided_by = ?, decided_at = now(), updated_at = now(),"
+            + " version = version + 1 WHERE id = ?",
+        status, execution.getVariable("decidedBy"), id);
   }
 }

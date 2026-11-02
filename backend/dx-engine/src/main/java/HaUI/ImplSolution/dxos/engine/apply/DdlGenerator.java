@@ -35,6 +35,8 @@ public final class DdlGenerator {
     if (entity.process() != null) {
       String values = STATUSES.stream().map(Sql::literal).collect(Collectors.joining(", "));
       columns.add("status TEXT NOT NULL DEFAULT 'submitted' CHECK (status IN (" + values + "))");
+      columns.add("decided_by TEXT");
+      columns.add("decided_at TIMESTAMPTZ");
     }
     for (Field field : entity.fields().values()) {
       StringBuilder column =

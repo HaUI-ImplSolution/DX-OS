@@ -31,8 +31,8 @@ public final class ModelParser {
 
   private static final Pattern NAME = Pattern.compile("[a-z][a-z0-9_]{0,39}");
   private static final Pattern ROLE = Pattern.compile("[A-Z][A-Z0-9_]{0,39}");
-  private static final Set<String> RESERVED_FIELDS =
-      Set.of("id", "created_by", "created_at", "updated_at", "version", "status");
+  private static final Set<String> RESERVED_FIELDS = Set.of("id", "created_by", "created_at",
+      "updated_at", "version", "status", "decided_by", "decided_at");
   private static final Set<String> PROCESS_TEMPLATES = Set.of("approval");
 
   private final List<Problem> problems = new ArrayList<>();

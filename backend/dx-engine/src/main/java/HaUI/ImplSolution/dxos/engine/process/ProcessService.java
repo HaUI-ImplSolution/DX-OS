@@ -35,14 +35,15 @@ public class ProcessService {
             entity.name(), "recordId", id));
   }
 
-  public void decide(Model model, Entity entity, long id, String outcome) {
+  public void decide(Model model, Entity entity, long id, String outcome, String decidedBy) {
     Task task = tasks.createTaskQuery().processInstanceBusinessKey(key(model, entity, id)).active()
         .singleResult();
     if (task == null) {
       throw new InvalidStateException("The record is already decided");
     }
     try {
-      tasks.complete(task.getId(), Map.of("decision", outcome));
+      tasks.setAssignee(task.getId(), decidedBy);
+      tasks.complete(task.getId(), Map.of("decision", outcome, "decidedBy", decidedBy));
     } catch (FlowableException e) {
       throw new InvalidStateException("The record is already decided");
     }

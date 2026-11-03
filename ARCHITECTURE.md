@@ -43,6 +43,8 @@ flowchart TB
 | `dx-engine` | Dịch vụ chạy được, gồm phần điều khiển, API chung và Flowable nhúng |
 | `dx-monitor` | Dịch vụ giám sát chạy riêng, không phụ thuộc module nào ở trên |
 
+Dịch vụ `ai/` viết bằng Python (AGPL-3.0) chạy ở tiến trình riêng và chưa nằm trong compose: nó nạp tài liệu có nguồn và giấy phép vào PostgreSQL với pgvector rồi tìm bằng BM25 kết hợp cosine, chỉ trả bằng chứng kèm nguồn.
+
 `dx-model` không phụ thuộc module nào; `dx-core` không phụ thuộc `dx-engine`; mã lõi không chứa tên thực thể, vai hay luồng của một lĩnh vực.
 
 ## 3. Áp dụng một mô hình

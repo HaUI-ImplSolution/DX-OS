@@ -19,6 +19,7 @@ cd backend && ./mvnw verify          # formatter, compile, test của dx-model, 
 cd frontend && npx tsc --noEmit
 python3 .github/scripts/check_licenses.py
 python3 deploy/apisix/check_routes.py
+cd ai && python -m pytest tests -q   # cần pip install -r requirements-dev.txt
 ```
 
 `./mvnw verify` sau khi đổi tài nguyên nên chạy `clean verify`: tài nguyên cũ còn trong `target/` làm Flyway thấy hai migration cùng phiên bản.
@@ -105,12 +106,12 @@ T5-11 và T6-14 cần dịch vụ chạy với `ENGINE_FAULT_AFTER_DECISION=true
 - Đăng nhập SSO qua Keycloak ở web hoạt động (mục 5).
 - `docker compose up -d --build` từ clone sạch lên đủ tám service healthy: `postgres`, `keycloak`, `seaweedfs`, `backend`, `frontend`, `portal`, `monitor`, `apisix`.
 - Màn hình giám sát `/monitor/` mở được với tài khoản ADMIN.
-- Không còn từ khóa của ứng dụng cũ ngoài `ai/`, `data/`, `bi/`, `chat/`:
+- Không còn từ khóa của ứng dụng cũ ngoài `ai/`, `bi/`, `chat/`:
 
 ```bash
 grep -rIlw -i -E 'farm|lab|farmer|DXOS_APP|dx-host|app-farm|app-lab|dx-core-api' \
   --exclude-dir=node_modules --exclude-dir=target --exclude-dir=.git --exclude-dir=docs \
-  --exclude-dir=ai --exclude-dir=data --exclude-dir=bi --exclude-dir=chat --exclude-dir=dist .
+  --exclude-dir=ai --exclude-dir=bi --exclude-dir=chat --exclude-dir=dist .
 ```
 
 ## 7. Sự cố thường gặp
@@ -125,13 +126,16 @@ grep -rIlw -i -E 'farm|lab|farmer|DXOS_APP|dx-host|app-farm|app-lab|dx-core-api'
 
 ## 8. Kết quả kiểm gần nhất
 
-Ngày 03/11/2026 trên clone sạch, stack dựng bằng `docker compose up -d --build`.
+Ngày 03/11/2026 trên bản sao sạch của cây làm việc (nhánh `Khuong/phase-10-release`, gồm cả tệp chưa commit), stack dựng bằng `docker compose up -d --build`.
 
 | Mục | Kết quả | Ghi chú |
 |---|---|---|
 | `./mvnw clean verify` | Đạt | dx-core 20 test, dx-engine 8, dx-monitor 3; dx-model không có test |
 | `npx tsc --noEmit` | Đạt | Không lỗi |
-| `check_licenses.py`, `check_routes.py` | Đạt | 0 vấn đề; 12 route, 11 công khai có chủ đích |
+| `check_licenses.py`, `check_routes.py` | Đạt | 0 vấn đề, gồm header, giấy phép của SBOM và danh mục `.github/license-catalog.json` (image, mô hình, tệp trọng số, tài liệu, nén); 12 route, 11 công khai có chủ đích |
+| `pytest` của `ai/` | Đạt | 21 test, chạy trong image dựng từ `ai/Dockerfile` |
+| `ai/` chạy thật | Đạt | pgvector tạm: `init_db`, `ingest` 3 tài liệu kèm nguồn và giấy phép, tìm kiếm trả đúng tài liệu; câu ngoài kho và mã không có trong kho không có bằng chứng; thiếu khóa dịch vụ 401 |
+| `deploy/install.sh` | Đạt | Cài sang thư mục khác, `docker compose config` đạt |
 | `docker compose config` | Đạt | Tám service, cộng `clamav` ở profile `av` |
 | Stack từ trạng thái sạch | Đạt | Tám service healthy |
 | `check_api.py` | Đạt | 51/51; danh sách 10.000 dòng có lọc và sắp xếp, phân vị 95 là 10 ms, trung vị 9 ms |
@@ -143,6 +147,8 @@ Ngày 03/11/2026 trên clone sạch, stack dựng bằng `docker compose up -d -
 | `check_process.py` | Đạt | 56/56: hai họ mẫu, lý do, rút lại, hạn và quá hạn, hành động hoàn tất qua outbox kèm thử lại, tệp đính kèm |
 | Giao diện Phase 8 | Đạt | Chrome, tài khoản thử: tạo yêu cầu cấp quyền, hạn xử lý, tải tệp, rút lại, lịch sử đủ ba dòng |
 | Giao diện | Đạt | 20/20 bằng Chrome không giao diện: sinh viên nộp, cán bộ sai đơn vị không thấy, cán bộ đúng đơn vị nhận việc và trả lại, sinh viên sửa và nộp lại, cán bộ duyệt, kèm hộp việc và dòng lịch sử; 5/5 sau khi đổi tên và thêm trường, chỉ tải lại trang, không build lại |
-| Từ khóa ứng dụng cũ | Đạt | Không còn ngoài `ai/`, `data/`, `bi/`, `chat/` và các tài liệu mô tả bản cũ |
-| CI trên GitHub | Đạt | CI Backend và Infra của nhánh `Khuong/phase-7-model-change`; các workflow khác không chạy vì không đổi phần liên quan |
+| Giao diện Phase 10 | Đạt | Chrome, stack dựng từ bản sao sạch: đăng nhập, bảng điều khiển liệt kê mô hình, thư viện mẫu hiện sáu mẫu |
+| Từ khóa ứng dụng cũ | Đạt | Không còn ngoài `ai/`, `bi/`, `chat/` và các tài liệu mô tả bản cũ |
+| Tệp bản cũ và thành phần chưa mở | Đạt | Không còn `data/`, trọng số, PDF, `ai/evaluation`; Redis, Langfuse, Ollama, Qwen, mMARCO chỉ còn trong tài liệu mô tả việc đã gỡ |
+| CI trên GitHub | Chưa chạy | Nhánh phase 10 chưa push |
 | Chưa chạy | | Khởi động sau khi cập nhật từ bản `v1.1.1` (không có đường nâng cấp dữ liệu) |

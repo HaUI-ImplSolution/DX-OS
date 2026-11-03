@@ -36,10 +36,6 @@ dist/
 *.pth
 *.safetensors
 
-# Runtime CV weights are included with the repository
-!ai/weights/**
-ai/weights/.cache/
-
 # Node dependencies and logs
 node_modules/
 npm-debug.log*

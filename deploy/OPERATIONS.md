@@ -104,7 +104,7 @@ Domain `khuongdev.io.vn`:
 - **SSL/TLS → Edge Certificates**: bật Always Use HTTPS, đặt Minimum TLS Version 1.2.
 - **Rules → Transform Rules → Modify Request Header**: `X-Forwarded-Port` = `443` (đã có, bắt buộc).
 - **Security → Events**: xem request bị chặn hoặc thử thách.
-  Ảnh báo cáo hoặc câu hỏi AI bị chặn nhầm thì thêm rule bỏ qua cho đường dẫn đó.
+  Tệp tải lên bị chặn nhầm thì thêm rule bỏ qua cho đường dẫn đó.
 
 Không chặn theo quốc gia vì hội đồng chấm có thể truy cập từ nước ngoài.
 Swagger (`/swagger-ui/`) để công khai.

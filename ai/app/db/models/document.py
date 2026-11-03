@@ -42,14 +42,15 @@ class Document(Base):
         nullable=True,
     )
 
-    disease_code: Mapped[str | None] = mapped_column(String(100), index=True)
+    # Stable code the owner of the corpus gave the document.
+    code: Mapped[str | None] = mapped_column(String(100), index=True)
 
-    # Corpus the document belongs to; each app reads only its own.
+    # Corpus the document belongs to; a search reads one.
     namespace: Mapped[str] = mapped_column(
         String(50),
         nullable=False,
-        default="farm",
-        server_default="farm",
+        default="default",
+        server_default="default",
         index=True,
     )
 

@@ -7,6 +7,8 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-11-03
+
 - Lõi dynamic: tệp mô hình khai báo thực thể, trường, vai, quyền và quy trình; `dx-model` đọc và kiểm tra, báo lỗi theo dòng và cột.
 - `dx-engine` áp dụng mô hình vào hệ thống rỗng (schema, bảng, ràng buộc, vai Keycloak, phiên bản, lịch sử từng bước, vai `report_ro` chỉ đọc).
 - API chung `/api/v1/data/{model}/{entity}` với quyền theo vai và theo dòng, lọc, sắp xếp, phân trang, quy tắc bắt buộc, duy nhất và lựa chọn; API metadata `/api/v1/meta/models`.
@@ -40,6 +42,11 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Trường `required` kiểu text từ chối chuỗi rỗng và chuỗi chỉ có dấu cách.
 - Mô hình đã lưu không còn qua được bộ kiểm bị bỏ khỏi danh sách đang chạy và ghi lỗi vào log; các mô hình khác vẫn chạy và dịch vụ vẫn khởi động.
 - Hai ứng dụng nghiệp vụ và ứng dụng di động của phiên bản trước nằm ở tag `v1.1.1`.
+- Dịch vụ `ai/` là bộ tìm kiếm tri thức có nguồn: nạp tài liệu và registry nguồn kèm giấy phép từ tệp JSON, tìm bằng BM25 kết hợp cosine trên pgvector và chỉ trả bằng chứng; mô hình embedding paraphrase-multilingual-MiniLM-L12-v2, không dùng mô hình ngôn ngữ.
+- Gỡ khỏi cây mã `data/`, trọng số và mã nhận diện bệnh lúa, luồng chẩn đoán, bộ đánh giá RAG dùng Redis và Langfuse, kho văn bản của HaUI, reranker mMARCO và Qwen; bản cũ ở tag `v1.1.1`.
+- Danh mục `.github/license-catalog.json` khai báo image, mô hình và tệp trọng số, tài liệu, nén; `check_licenses.py` chặn mục thiếu hoặc có giấy phép ngoài danh sách.
+- `COPYRIGHT.txt`, `NOTICE` và ba tệp SBOM ghi đúng thành phần của bản phát hành; số phiên bản của backend, web và SBOM là `2.0.0`.
+- Không có đường nâng cấp dữ liệu từ `1.1.x`.
 
 ## [1.1.1] - 2026-10-30
 
@@ -146,7 +153,9 @@ Bản phát hành đầu tiên của DX-OS.
 - Backend, Keycloak và frontend không publish cổng, mọi truy cập đi qua gateway; `deploy/demo/seed_demo.py` tạo tài khoản và dữ liệu demo.
 - Tài liệu và nguồn mở: `LICENSE`, `LICENSES.md`, SBOM CycloneDX, `CONTRIBUTING.md`, mẫu issue và pull request.
 
-[Unreleased]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.1.0...main
+[Unreleased]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v2.0.0...main
+[2.0.0]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.1.1...v2.0.0
+[1.1.1]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.0.3...v1.1.0
 [1.0.3]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.0.1...v1.0.2

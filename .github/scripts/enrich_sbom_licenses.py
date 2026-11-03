@@ -32,6 +32,7 @@ TEXT = {
     "mit license": "MIT",
     "apache": "Apache-2.0",
     "apache 2.0": "Apache-2.0",
+    "apache2.0": "Apache-2.0",
     "apache-2.0": "Apache-2.0",
     "apache software license": "Apache-2.0",
     "apache license 2.0": "Apache-2.0",
@@ -51,7 +52,6 @@ TEXT = {
 OVERRIDES: dict[str, str] = {
     "sniffio": "MIT OR Apache-2.0",  # LICENSE.MIT and LICENSE.APACHE2 in the project
     "torch": "BSD-3-Clause",  # the +cpu build is not on PyPI; LICENSE of pytorch/pytorch
-    "torchvision": "BSD-3-Clause",  # LICENSE of pytorch/vision
     "tqdm": "MPL-2.0 AND MIT",  # LICENCE of tqdm/tqdm
     "transformers": "Apache-2.0",  # LICENSE of huggingface/transformers
 }

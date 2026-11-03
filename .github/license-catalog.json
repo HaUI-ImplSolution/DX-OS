@@ -1,0 +1,29 @@
+{
+  "images": {
+    "eclipse-temurin": {"license": "GPL-2.0-with-classpath-exception", "use": "Base image of backend, monitor and sso", "source": "https://adoptium.net"},
+    "node": {"license": "MIT", "use": "Builds the web, not in the runtime image", "source": "https://github.com/nodejs/node"},
+    "nginx": {"license": "BSD-2-Clause", "use": "Serves the web and the portal", "source": "https://nginx.org"},
+    "python": {"license": "PSF-2.0", "use": "Base image of the AI service", "source": "https://www.python.org"},
+    "alpine": {"license": "MIT", "use": "Runs setup scripts when the stack is built", "source": "https://alpinelinux.org"},
+    "pgvector/pgvector": {"license": "PostgreSQL", "use": "Business data and vectors", "source": "https://github.com/pgvector/pgvector"},
+    "chrislusf/seaweedfs": {"license": "Apache-2.0", "use": "Object storage for attachments", "source": "https://github.com/seaweedfs/seaweedfs"},
+    "apache/apisix": {"license": "Apache-2.0", "use": "API gateway", "source": "https://github.com/apache/apisix"},
+    "clamav/clamav": {"license": "GPL-2.0-only", "use": "Optional virus scan of uploaded files, a separate service reached over the network", "source": "https://github.com/Cisco-Talos/clamav", "optional": true},
+    "cloudflare/cloudflared": {"license": "Apache-2.0", "use": "Optional tunnel for a public deployment; the Cloudflare service it connects to is closed", "source": "https://github.com/cloudflare/cloudflared", "optional": true},
+    "aquasec/trivy": {"license": "Apache-2.0", "use": "Vulnerability scan in CI", "source": "https://github.com/aquasecurity/trivy", "optional": true},
+    "restic/restic": {"license": "BSD-2-Clause", "use": "Encrypted backup of deploy/backup.sh", "source": "https://github.com/restic/restic", "optional": true}
+  },
+  "models": {
+    "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2": {
+      "license": "Apache-2.0",
+      "use": "Embedding of the AI service",
+      "source": "https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "training_data": "not verified",
+      "note": "The weights are open; the training data is not documented in a way that meets the OSI Open Source AI definition."
+    }
+  },
+  "files": [
+    {"path": "bi/basemap_light.json", "license": "Apache-2.0", "note": "Style of the map for Superset; it reads OpenFreeMap tiles (ODbL data of OpenStreetMap, CC BY 4.0 for OpenMapTiles) at run time"},
+    {"path": "bi/farm_dashboard_export.zip", "license": "Apache-2.0", "note": "Superset dashboard written by the team; it reads Open-Meteo data (CC BY 4.0) at run time"}
+  ]
+}

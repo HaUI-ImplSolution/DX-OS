@@ -26,7 +26,7 @@ Không đưa dữ liệu thật của người dùng vào báo cáo.
 ## Phạm vi
 
 Trong phạm vi: mã nguồn của repository này và cấu hình triển khai ở `deploy/`.
-Ngoài phạm vi: lỗ hổng của phần mềm thượng nguồn (Keycloak, Apache APISIX, Apache Superset, Mattermost, PostgreSQL, SeaweedFS, Ollama) khi không do cấu hình của repository này gây ra; hãy báo cho dự án thượng nguồn.
+Ngoài phạm vi: lỗ hổng của phần mềm thượng nguồn (Keycloak, Apache APISIX, Apache Superset, Mattermost, PostgreSQL, SeaweedFS) khi không do cấu hình của repository này gây ra; hãy báo cho dự án thượng nguồn.
 
 ## Cơ chế đã có trong repository
 

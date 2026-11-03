@@ -4,7 +4,7 @@
 #
 #   ./update.sh [tag]
 #
-# [tag] is latest, a release tag such as v1.1.1, or sha-<7 chars>, and is written to DXOS_IMAGE_TAG in deploy/.env.
+# [tag] is latest, a release tag such as v2.0.0, or sha-<7 chars>, and is written to DXOS_IMAGE_TAG in deploy/.env.
 # Images are pulled one at a time, only the containers whose image changed are recreated,
 # the gateway restarts when a service behind it was replaced, and replaced images are removed.
 # The first start on a server is: COMPOSE_PARALLEL_LIMIT=1 docker compose pull && docker compose up -d
@@ -39,7 +39,7 @@ for service in "${BEHIND_GATEWAY[@]}"; do
 done
 
 echo "==> Pulling images"
-for service in backend monitor frontend portal ai keycloak; do
+for service in backend monitor frontend portal keycloak; do
   docker compose pull "$service"
 done
 

@@ -1,7 +1,6 @@
 # SBOM
 
 Danh mục thành phần phần mềm định dạng CycloneDX (JSON; đặc tả 1.6, riêng `ai.cdx.json` là 1.5), chỉ gồm dependency chạy thật (không gồm scope test và dev).
-Công cụ đánh giá RAG (`ai/requirements-eval.txt`, Langfuse, k6) chỉ chạy trong môi trường đánh giá riêng nên không nằm trong SBOM; giấy phép của chúng ở [`COPYRIGHT.txt`](../COPYRIGHT.txt).
 
 | File | Nguồn |
 |---|---|
@@ -28,7 +27,7 @@ cd frontend && npx @cyclonedx/cyclonedx-npm --omit dev --output-format JSON --ou
 
 Sinh lại sau khi đổi dependency hoặc số phiên bản của dự án; giấy phép từng thành phần ở [`COPYRIGHT.txt`](../COPYRIGHT.txt).
 Mọi thành phần trong các file này đều có giấy phép; `.github/scripts/check_licenses.py` (job `license` của workflow `CI Infra`) chặn thành phần không có giấy phép hoặc giấy phép ngoài danh sách cho phép, trừ ngoại lệ có lý do ở `.github/license-exceptions.json`.
-Các file SBOM chỉ gồm thư viện của mã do nhóm viết; image của bên thứ ba (Keycloak, Apache APISIX, Superset, Mattermost, PostgreSQL, SeaweedFS, Ollama, ClamAV) ghi ở mục 6 của [`COPYRIGHT.txt`](../COPYRIGHT.txt), ghim phiên bản và digest trong `deploy/docker-compose.yml`.
+Các file SBOM chỉ gồm thư viện của mã do nhóm viết; image của bên thứ ba và mô hình khai báo ở [`.github/license-catalog.json`](../.github/license-catalog.json), giấy phép của từng thành phần ở mục 6 của [`COPYRIGHT.txt`](../COPYRIGHT.txt); image ghim phiên bản và digest trong `deploy/docker-compose.yml`.
 Khi phát hành, workflow `Release Package` đính kèm các file này vào GitHub Release.
 Workflow `CI Dependencies` (`ci-deps.yml`) quét lỗ hổng của các dependency này bằng Trivy khi file khai báo đổi và mỗi tuần.
 Workflow này sinh lại SBOM của backend ngay trong CI và quét nó, vì `pom.xml` không ghi phiên bản của các gói do Spring Boot quản lý.

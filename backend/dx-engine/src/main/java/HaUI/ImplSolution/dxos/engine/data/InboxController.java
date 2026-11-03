@@ -2,6 +2,7 @@
 package HaUI.ImplSolution.dxos.engine.data;
 
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
+import HaUI.ImplSolution.dxos.core.api.dto.PageResponse;
 import HaUI.ImplSolution.dxos.engine.registry.ModelRegistry;
 import HaUI.ImplSolution.dxos.model.FieldType;
 import HaUI.ImplSolution.dxos.model.Model;
@@ -15,12 +16,15 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/inbox")
 @Tag(name = "Inbox", description = "The records waiting for the caller, on every applied model")
 public class InboxController {
+
+  private static final int MAX_SIZE = 100;
 
   public record Item(String model, String entity, String entityLabel, long id, String title,
       String status, String assignee, boolean overdue, Instant createdAt) {}
@@ -37,16 +41,25 @@ public class InboxController {
   @Operation(summary = "The records the caller can act on now, overdue first and then oldest first",
       description = "Records in a state the handler role of the caller can act on, within the"
           + " rows it reaches and held by nobody else, and the caller's own records waiting for"
-          + " them. At most 100 for each entity.")
-  public ApiResponse<List<Item>> inbox() {
+          + " them, on every applied model. page starts at 0 and size is at most " + MAX_SIZE + ".")
+  public ApiResponse<PageResponse<Item>> inbox(@RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "50") int size) {
+    int limit = Math.max(1, Math.min(size, MAX_SIZE));
+    int first = Math.max(0, page) * limit;
     List<Item> items = new ArrayList<>();
+    long total = 0;
     for (Model model : registry.all()) {
       for (Entity entity : model.entities().values()) {
-        data.waiting(model, entity).forEach(row -> items.add(item(model, entity, row)));
+        total += data.countWaiting(model, entity);
+        data.waiting(model, entity, first + limit)
+            .forEach(row -> items.add(item(model, entity, row)));
       }
     }
     items.sort(Comparator.comparing((Item item) -> !item.overdue()).thenComparing(Item::createdAt));
-    return ApiResponse.success(items);
+    List<Item> shown =
+        items.subList(Math.min(first, items.size()), Math.min(first + limit, items.size()));
+    return ApiResponse.success(new PageResponse<>(shown, Math.max(0, page), limit, total,
+        (int) ((total + limit - 1) / limit)));
   }
 
   private static Item item(Model model, Entity entity, Map<String, Object> row) {

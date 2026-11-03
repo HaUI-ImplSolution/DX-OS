@@ -30,6 +30,10 @@ public class CompletionHandler implements OutboxHandler {
       keycloak.addUserToGroup((String) payload.get("user"), (String) payload.get("group"));
       return;
     }
+    if (Completion.REMOVE_FROM_GROUP.equals(operation)) {
+      keycloak.removeUserFromGroup((String) payload.get("user"), (String) payload.get("group"));
+      return;
+    }
     throw new IllegalStateException("Unknown operation " + operation);
   }
 }

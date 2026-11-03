@@ -33,7 +33,7 @@ cd ../frontend && npm install && npm run dev
 | Backend | `./mvnw formatter:validate` rồi `./mvnw verify` trong `backend/` |
 | Web | `npx tsc --noEmit` trong `frontend/` |
 | AI | `pytest` trong `ai/` |
-| Toàn stack | `python3 deploy/dev/check_api.py`, `check_recovery.py`, `check_case.py` và `check_change.py`, theo thứ tự, trên stack mới dựng |
+| Toàn stack | `python3 deploy/dev/check_api.py`, `check_recovery.py`, `check_case.py`, `check_change.py`, `check_process.py`, `check_booking.py` và `check_demo.py`, theo thứ tự, trên stack mới dựng |
 | Giấy phép | `python3 .github/scripts/check_licenses.py` |
 
 ## Quy ước
@@ -43,12 +43,13 @@ cd ../frontend && npm install && npm run dev
 - **API:** mô tả `@Operation` bằng tiếng Anh; mọi response bọc trong `ApiResponse`.
 - **Tài liệu:** tiếng Việt, mỗi câu một dòng, chỉ ghi trạng thái hiện tại.
 - **Mã lõi không chứa tên thực thể, vai hay luồng của một lĩnh vực**; nghiệp vụ nằm trong tệp mô hình.
-- **Header giấy phép:** `SPDX-License-Identifier: Apache-2.0` ở đầu mọi file mã nguồn.
+- **Header giấy phép:** `SPDX-License-Identifier: Apache-2.0` ở đầu mọi file mã nguồn, riêng trong `ai/` là `AGPL-3.0-only`.
 
 ## Dependency và dữ liệu
 
 - Chỉ dùng thành phần theo giấy phép được OSI công nhận; `check_licenses.py` chặn giấy phép ngoài danh sách.
 - Đổi dependency thì sinh lại SBOM theo [`sbom/README.md`](./sbom/README.md) và cập nhật [`COPYRIGHT.txt`](./COPYRIGHT.txt).
+- Image, mô hình và tệp trọng số, tài liệu, nén phải khai báo ở [`.github/license-catalog.json`](./.github/license-catalog.json) với giấy phép được phép; `check_licenses.py` kiểm danh mục này.
 - Không đưa mật khẩu, khóa hay dữ liệu thật vào kho mã; `deploy/.env` nằm ngoài Git.
 
 ## Phát hành

@@ -11,15 +11,16 @@ Mốc dưới đây là dự kiến.
 
 | Phase | Nội dung | Dự kiến xong |
 |---|---|---|
-| 10 | Bản phát hành, giấy phép, SBOM, tài liệu, triển khai công khai, gửi bài | 06/12 |
+| Sau Phase 10 | Tag `v2.0.0` và GitHub Release, triển khai công khai, trang docs, gửi bài | 06/12 |
 
 ## 2. Phải xử lý trước khi phát hành
 
 | Việc | Ghi chú |
 |---|---|
-| Các mục "Tạm gác" và "Việc cần làm" của [Cam kết nguồn mở](./README.md#cam-kết-nguồn-mở) | Kho quy chế HaUI, Redis và Langfuse trong đánh giá RAG, mô hình AI, Mattermost |
-| `README.md` gốc, `README_EN.md`, trang docs | Trang docs vẫn mô tả bản `v1.1.1` đang chạy trên `main`; cập nhật khi bản mới lên `main` |
-| Triển khai công khai | VPS giữ bản cũ đến khi lõi mới đạt |
+| Tag `v2.0.0` và GitHub Release | Tạo sau khi nhánh phase 10 vào `main`; ngày của mục `[2.0.0]` trong `CHANGELOG.md` sửa theo ngày tag |
+| Trang docs `DX-OS-docs` | Vẫn mô tả bản `v1.1.1`; cập nhật cùng lúc triển khai |
+| Triển khai công khai | VPS giữ `v1.1.1`; `deploy/VPS.md` còn mô tả bản đó, và bản mới không có đường nâng cấp dữ liệu nên phải dựng lại |
+| Gửi bài | Thư tới BTC trước 17:00 ngày 06/12/2026 |
 | Cập nhật `deploy/.env` trên máy dev | Tệp này còn biến của bản cũ; dựng stack dev bằng `deploy/make_env.py` |
 
 ## 3. Giới hạn đã biết
@@ -27,6 +28,8 @@ Mốc dưới đây là dự kiến.
 | Việc | Ghi chú |
 |---|---|
 | Chưa có CLI `dxos` | Áp dụng mô hình qua REST |
+| Dịch vụ `ai/` | Chưa nằm trong compose; chỉ tìm kiếm tri thức có nguồn, chưa có hỏi đáp sinh câu trả lời vì chưa có mô hình ngôn ngữ đạt tiêu chuẩn mở; dữ liệu huấn luyện của mô hình embedding chưa kiểm theo định nghĩa của OSI |
+| `bi/` và `chat/` | Còn dashboard, script và kênh của bản `v1.1.1`, chưa nối với lõi và không nằm trong compose; Mattermost chưa đạt rõ ràng về giấy phép |
 | Chưa cắt bớt service bằng compose profile | Mô hình không dùng thành phần nào vẫn phải chạy thành phần đó |
 | Hành động hoàn tất | Chỉ có `add_to_group` và `remove_from_group`; nhóm Keycloak phải có sẵn, thiếu thì thông điệp được thử lại mãi và xem được ở tab Hàng đợi sự kiện; trường người dùng hoặc nhóm để trống thì thao tác bị bỏ qua, không để lại dấu vết |
 | Tệp đính kèm | Xóa đối tượng trong kho lỗi thì chỉ ghi log, không thử lại nên có thể còn đối tượng mồ côi; quét ClamAV chỉ kiểm bằng test đơn vị, chưa chạy E2E với profile `av` |

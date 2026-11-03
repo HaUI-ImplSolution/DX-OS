@@ -11,22 +11,13 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    """Load both CV models once and release it when FastAPI shuts down."""
+    """Load the embedding model at startup when it is already on disk."""
 
-    # Keep model loading lazy so non-CV tooling can import the application package.
-    from app.cv.crop_classifier import load_crop_classifier
-    from app.cv.loader import load_model
+    # Imported here so tooling can import the application package without PyTorch.
+    from app.rag.embedding_service import preload_cached_model
 
-    logger.info("Loading plant disease model")
-    model = load_model()
-    crop_classifier = load_crop_classifier()
-    app.state.plant_model = model
-    app.state.crop_classifier = crop_classifier
-    logger.info("Disease detector and crop classifier loaded")
-
-    try:
-        yield
-    finally:
-        app.state.plant_model = None
-        app.state.crop_classifier = None
-        logger.info("Plant disease model released")
+    if preload_cached_model():
+        logger.info("Embedding model loaded")
+    else:
+        logger.warning("Embedding model is not cached; it loads on the first search")
+    yield

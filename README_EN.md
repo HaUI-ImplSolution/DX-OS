@@ -12,7 +12,8 @@
 Entry of the **OLP Open Source Software 2026** contest (DX-OS track, VFOSSA).
 The core takes a model file that declares entities, fields, roles, permissions and workflows, and builds the tables, the login roles, an API with row-level permissions, an approval workflow and the screens.
 Changing the business means changing the model file, not the code.
-The previous version of the project (two hand-written business apps) is at tag `v1.1.1`.
+The current release is `2.0.0`.
+The previous version of the project (two hand-written business apps) is at tag `v1.1.1`, and there is no data upgrade path from `1.1.x` to `2.0.0`.
 
 ## Status
 
@@ -26,7 +27,8 @@ The narrow loop from model file to end user runs:
 - Changing a model that holds data: a preview by level of risk, renames that keep the values, a list of the rows breaking a new rule, a separate confirmation for losing data, and a return to the previous version.
 - A react-admin UI built from metadata, with no code written for any entity.
 
-Not yet: chat notifications, AI, Superset reports.
+Not yet connected: chat notifications, AI answers, Superset reports.
+The search service with cited sources in [`ai/`](./ai/README.md) runs on its own and is not in the stack.
 These are in the [design](./docs/dynamic-core/README.md).
 
 ## Run it
@@ -127,7 +129,8 @@ Every reply is wrapped in `ApiResponse`; errors carry a stable `errorCode`.
 | `deploy` | Compose, the APISIX gateway, operations scripts, check scripts in `deploy/dev` |
 | `sso`, `portal`, `seaweedfs` | Keycloak realm, portal page, file storage |
 | `models` | Sample models and sample bad files |
-| `ai`, `bi`, `chat`, `data` | AI, reports and chat, to be rebuilt around the model in later steps |
+| `ai` | A search service with cited sources (AGPL-3.0), run on its own outside the stack |
+| `bi`, `chat` | The Superset and Mattermost setup of the previous version, not connected to the core, to be rebuilt around the model in later steps |
 
 ## Tests
 

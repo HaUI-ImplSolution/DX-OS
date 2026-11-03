@@ -3,7 +3,7 @@
 Trang tĩnh liệt kê link tới ứng dụng chính, BI Dashboard, kênh chat, các trang quản trị (Keycloak, Superset, Mattermost, quản trị lưu ảnh), màn hình giám sát (`/monitor/`) và Swagger.
 Cuối trang có mục **Trạng thái dịch vụ**, tự làm mới mỗi 30 giây:
 
-- Tên ứng dụng đang chạy (hiện ở tiêu đề), Backend, AI và lưu trữ ảnh lấy từ `GET /api/v1/system/status` (công khai, qua gateway).
+- Tên ứng dụng đang chạy (hiện ở tiêu đề), Backend và lưu trữ tệp lấy từ `GET /api/v1/system/status` (công khai, qua gateway).
 - Ứng dụng chính và Keycloak gọi qua gateway; BI (`9081`), chat (`8065`) và màn hình giám sát (`/monitor/actuator/health`) chỉ kiểm có phản hồi hay không.
 
 ![Portal liệt kê ứng dụng, trang quản trị và trạng thái dịch vụ](../docs/images/demo/portal.png)

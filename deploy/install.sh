@@ -7,7 +7,7 @@
 # Copies deploy/ and what its compose file mounts (sso/) into <prefix>,
 # keeping their relative layout, and writes <prefix>/deploy/.env with random secrets.
 # Images are pulled from the registry in DXOS_IMAGE_PREFIX (ghcr.io/haui-implsolution/dxos), nothing is built there.
-# [image-tag] is latest (default) or a release tag such as v1.1.1.
+# [image-tag] is latest (default) or a release tag such as v2.0.0.
 set -euo pipefail
 
 if [[ $# -lt 1 || $# -gt 2 || "$1" == -* ]]; then

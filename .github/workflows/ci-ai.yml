@@ -7,7 +7,6 @@ on:
       - Khuong/main
     paths:
       - 'ai/**'
-      - 'data/**'
       - '.github/workflows/ci-ai.yml'
   pull_request:
     types:
@@ -18,7 +17,6 @@ on:
       - Khuong/main
     paths:
       - 'ai/**'
-      - 'data/**'
       - '.github/workflows/ci-ai.yml'
 
 jobs:

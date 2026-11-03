@@ -2,7 +2,7 @@
 
 Nhận thông báo một chiều từ Backend và cảnh báo từ `dx-monitor` qua Incoming Webhook.
 Chạy bằng image chính thức `mattermost/mattermost-team-edition`, không build lại và không dùng `server/enterprise/` (AGPL-3.0, giấy phép các thành phần ở [`COPYRIGHT.txt`](../COPYRIGHT.txt)).
-Service khai báo trong [`deploy/docker-compose.yml`](../deploy/docker-compose.yml).
+Chưa nối với lõi: script và kênh ở đây thuộc bản `v1.1.1` (hai ứng dụng cũ), service `mattermost` không nằm trong [`deploy/docker-compose.yml`](../deploy/docker-compose.yml) hiện tại và sẽ được dựng lại khi làm thông báo chat.
 
 ## Cách hoạt động
 

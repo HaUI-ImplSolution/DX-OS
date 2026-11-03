@@ -44,7 +44,6 @@ updates:
   - package-ecosystem: docker
     directories:
       - /ai
-      - /ai/evaluation
       - /backend
       - /frontend
       - /portal

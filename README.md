@@ -12,7 +12,8 @@
 Dự thi **OLP Phần mềm nguồn mở 2026** (khối thi DX-OS, VFOSSA).
 Lõi nhận một tệp mô hình khai báo thực thể, trường, vai, quyền và quy trình, rồi dựng bảng dữ liệu, vai đăng nhập, API có phân quyền từng dòng, quy trình phê duyệt và giao diện.
 Đổi nghiệp vụ là đổi tệp mô hình, không đổi mã.
-Phiên bản trước của dự án (hai ứng dụng nghiệp vụ viết tay) nằm ở tag `v1.1.1`.
+Bản phát hành hiện tại là `2.0.0`.
+Phiên bản trước của dự án (hai ứng dụng nghiệp vụ viết tay) nằm ở tag `v1.1.1`, và không có đường nâng cấp dữ liệu từ `1.1.x` lên `2.0.0`.
 
 ## Trạng thái
 
@@ -26,7 +27,8 @@ Phiên bản trước của dự án (hai ứng dụng nghiệp vụ viết tay)
 - Đổi mô hình khi đã có dữ liệu: xem trước theo mức rủi ro, đổi tên giữ nguyên dữ liệu, báo dòng vi phạm, xác nhận riêng khi mất dữ liệu, quay về phiên bản trước.
 - Giao diện react-admin dựng từ metadata, không có mã riêng cho thực thể nào.
 
-Chưa có: thông báo chat, AI, báo cáo Superset.
+Chưa nối vào hệ thống: thông báo chat, hỏi đáp bằng AI, báo cáo Superset.
+Dịch vụ tìm kiếm tri thức có nguồn ở [`ai/`](./ai/README.md) chạy riêng, chưa nằm trong stack.
 Các phần này nằm trong [hướng thiết kế](./docs/dynamic-core/README.md).
 
 ## Chạy thử
@@ -127,7 +129,8 @@ Mọi phản hồi bọc trong `ApiResponse`; lỗi có `errorCode` ổn định
 | `deploy` | Compose, gateway APISIX, script vận hành, script kiểm tra ở `deploy/dev` |
 | `sso`, `portal`, `seaweedfs` | Keycloak realm, trang portal, lưu trữ tệp |
 | `models` | Mô hình mẫu và tệp sai mẫu |
-| `ai`, `bi`, `chat`, `data` | Phần AI, báo cáo và chat, sẽ dựng lại theo mô hình ở các bước sau |
+| `ai` | Dịch vụ tìm kiếm tri thức có nguồn (AGPL-3.0), chạy riêng ngoài stack |
+| `bi`, `chat` | Cấu hình Superset và Mattermost của bản cũ, chưa nối với lõi, sẽ dựng lại theo mô hình ở các bước sau |
 
 ## Kiểm thử
 

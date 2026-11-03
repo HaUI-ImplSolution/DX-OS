@@ -67,6 +67,7 @@ Mốc dưới đây là dự kiến.
 | Việc | Đã quyết |
 |---|---|
 | Tài khoản người dùng | Không khai báo trong tệp mô hình: tệp mô hình là cấu trúc và nằm trong git, người dùng là dữ liệu có email và mật khẩu; tài khoản nằm ở Keycloak |
+| Cách ly vai và đơn vị giữa các mô hình | Bộ kiểm role trùng đã có, nhưng role chưa được namespace theo mô hình và đơn vị vẫn dùng chung theo tên; cần chốt cơ chế client role hoặc quy ước chia sẻ tường minh trước khi coi cách ly hoàn tất |
 | Tab Người dùng trong bảng điều khiển | Danh sách người dùng với vai theo từng ứng dụng và đơn vị; tạo người dùng với mật khẩu tạm; gán, gỡ vai và đơn vị; khóa, mở; đặt lại mật khẩu; xem theo ứng dụng ai giữ vai nào. Viết ít mã nhất, dùng tối đa Keycloak: lõi chỉ mở API ADMIN mỏng trên Admin REST API, phần Keycloak đã làm tốt (chính sách mật khẩu, MFA, phiên, đăng nhập bằng nhà cung cấp ngoài) để lại cho Keycloak và mở bằng link |
 
 ## 6. Đề xuất từ rà soát đề thi và hướng thiết kế, chưa quyết

@@ -5,6 +5,7 @@ import { Title } from "react-admin";
 import { getSchema, listFamilies, listTemplates, type Family, type Template } from "./api";
 import EditorTab from "./EditorTab";
 import ModelsTab from "./ModelsTab";
+import OutboxTab from "./OutboxTab";
 import { useModelSchema } from "./monacoSetup";
 import TemplatesTab from "./TemplatesTab";
 
@@ -63,6 +64,7 @@ export default function ConsolePage() {
         <Tab label="Mô hình đang chạy" />
         <Tab label="Thư viện mẫu" />
         <Tab label="Soạn và áp dụng" />
+        <Tab label="Hàng đợi sự kiện" />
       </Tabs>
       {tab === 0 && (
         <ModelsTab
@@ -89,6 +91,7 @@ export default function ConsolePage() {
           }}
         />
       )}
+      {tab === 3 && <OutboxTab />}
       <Snackbar open={note !== null} autoHideDuration={6000} onClose={() => setNote(null)} message={note ?? ""} />
     </Box>
   );

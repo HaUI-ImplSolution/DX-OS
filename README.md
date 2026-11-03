@@ -26,7 +26,7 @@ Phiên bản trước của dự án (hai ứng dụng nghiệp vụ viết tay)
 - Đổi mô hình khi đã có dữ liệu: xem trước theo mức rủi ro, đổi tên giữ nguyên dữ liệu, báo dòng vi phạm, xác nhận riêng khi mất dữ liệu, quay về phiên bản trước.
 - Giao diện react-admin dựng từ metadata, không có mã riêng cho thực thể nào.
 
-Chưa có: tệp đính kèm, trục sự kiện, thông báo chat, AI, báo cáo Superset.
+Chưa có: thông báo chat, AI, báo cáo Superset.
 Các phần này nằm trong [hướng thiết kế](./docs/dynamic-core/README.md).
 
 ## Chạy thử
@@ -77,15 +77,19 @@ entities:
       reason: {type: text, required: true}
       from_at: {type: datetime, required: true}
     access: {BORROWER: own, KEEPER: all}
-    process: {template: approval, approver: KEEPER}
+    process: {family: approval, handler: KEEPER}
 ```
 
 - Kiểu trường: `text`, `number`, `datetime`, `choice`, `reference`, `user`, `unit`.
 - Đơn vị: khai báo ở `units`, mỗi đơn vị là một nhóm Keycloak; trường kiểu `unit` cho biết hồ sơ thuộc đơn vị nào. Ví dụ đầy đủ ở [`models/onestop.yaml`](./models/onestop.yaml).
 - Quyền theo vai: `all` (mọi dòng, đọc và ghi), `own` (dòng của mình), `read` (mọi dòng, chỉ đọc), `unit` (dòng của đơn vị mình), `assigned` (dòng được giao cho mình); `owner_via` cho phép thực thể con theo chủ sở hữu của thực thể cha.
-- Quy trình: mẫu `approval`, một vai duyệt, từ chối hoặc trả lại kèm ghi chú để người nộp sửa và nộp lại.
-  Hồ sơ đã được quyết định thì không sửa và không xóa được; hồ sơ đã giao thì chỉ người được giao xử lý được.
+- Quy trình: `family` chọn họ mẫu (`approval` hoặc `work_item`), `handler` là vai xử lý, `deadline` là hạn xử lý tùy chọn (ví dụ `72h`).
+  Từ chối và trả lại bắt buộc có lý do; người nộp rút lại được hồ sơ chưa ở trạng thái cuối.
+  Hồ sơ có quy trình không xóa được; hồ sơ đã được quyết định thì không sửa được; hồ sơ đã giao thì chỉ người được giao xử lý được.
   Người tạo hồ sơ không tự quyết định được, trừ khi khai báo `allow_self_decision: true`.
+- Hành động hoàn tất: `after` gán danh sách thao tác cho một trạng thái cuối, ví dụ `after: {approved: [{do: add_to_group, user: created_by, group_from: nhom}]}`; thao tác chạy sau khi giao dịch xong và được thử lại nếu lỗi.
+  Ví dụ ở [`models/itaccess.yaml`](./models/itaccess.yaml).
+- Tệp đính kèm: trường `type: file`, tải lên bằng `POST /api/v1/data/{model}/{entity}/{id}/files`; quyền theo quyền của bản ghi.
 - Đổi mô hình: khai báo `renamed_from` khi đổi tên trường; `default` điền giá trị cho trường bắt buộc mới trên bảng đã có dòng.
 - Đặc tả cho trình soạn thảo: [`dx-model/.../model-v0.schema.json`](./backend/dx-model/src/main/resources/schema/model-v0.schema.json); tệp sai mẫu ở [`models/invalid/`](./models/invalid).
 

@@ -9,7 +9,7 @@ Hướng thiết kế ở [`docs/dynamic-core/README.md`](../docs/dynamic-core/R
 |---|---|
 | `dx-model` | Định dạng tệp mô hình: đọc và kiểm tra, không phụ thuộc Spring |
 | `dx-core` | Thư viện dùng chung: bảo mật, audit, lưu trữ và quét tệp, trạng thái hệ thống, client Keycloak, lỗi và kiểu phản hồi chung |
-| `dx-engine` | Dịch vụ chạy được, gồm phần điều khiển, API chung và Flowable nhúng, đóng gói fat jar |
+| `dx-engine` | Dịch vụ chạy được, gồm phần điều khiển, API chung, Flowable nhúng, trục sự kiện (outbox) và tệp đính kèm, đóng gói fat jar |
 | `dx-monitor` | Dịch vụ giám sát chạy riêng ([`dx-monitor/README.md`](./dx-monitor/README.md), cùng `Dockerfile`, đích `monitor`), không phụ thuộc module nào ở trên: nhận sự kiện bất thường của gateway, dò trạng thái dịch vụ, đọc `audit_log` và sự kiện đăng nhập của Keycloak, phục vụ màn hình `/monitor/` cho ADMIN và gửi cảnh báo Mattermost |
 
 `dx-monitor` không phụ thuộc `dx-core`, nên vẫn chạy khi backend dừng.

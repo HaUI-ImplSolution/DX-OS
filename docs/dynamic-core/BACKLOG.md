@@ -47,7 +47,16 @@ Mốc dưới đây là dự kiến.
 | Đổi thành viên đơn vị | Chỉ có hiệu lực sau khi người đó lấy token mới |
 | Ngôn ngữ giao diện | Chỉ có tiếng Việt; thông báo mới của backend chưa có mẫu ở `backendMessages.ts` hiện nguyên văn tiếng Anh, vài thông báo lỗi còn tên trạng thái hoặc hành động dạng mã, và ô chọn ngày giờ theo ngôn ngữ của trình duyệt |
 
-## 4. Chưa kiểm thử
+## 4. Rủi ro kỹ thuật cần xác minh
+
+| Rủi ro | Ghi chú |
+|---|---|
+| Áp dụng dở trên mô hình đang chạy | Các bước đổi schema, cập nhật Keycloak và lưu phiên bản commit riêng. Kịch bản phục hồi hiện chỉ kiểm lần áp dụng đầu; nếu đổi một mô hình đang chạy rồi lỗi sau bước schema, registry cũ có thể tiếp tục phục vụ trên schema đã đổi cho tới khi áp dụng lại |
+| Quyền đọc báo cáo bỏ qua phạm vi dòng | `report_ro` được đọc trực tiếp toàn bộ bảng nghiệp vụ, không đi qua các phạm vi `OWN`, `UNIT` và `ASSIGNED` của API. Trước khi nối BI cần xác định đây là biên tin cậy hay giới hạn dữ liệu bằng view hoặc RLS |
+| Outbox có thể giao lại tác dụng phụ | Khóa idempotency chỉ chống tạo trùng dòng outbox. Nếu hệ thống đích đã nhận nhưng backend dừng trước khi ghi `delivered_at`, handler sẽ chạy lại; mọi handler hiện tại và bổ sung sau này cần được chứng minh là idempotent |
+| Thay đổi ngoài engine gây drift | Schema, quyền cơ sở dữ liệu hoặc role và group Keycloak bị sửa trực tiếp chưa được phát hiện và hòa giải định kỳ. Sai lệch chỉ lộ ra khi áp dụng lại hoặc khi một yêu cầu thất bại |
+
+## 5. Chưa kiểm thử
 
 | Việc | Ghi chú |
 |---|---|

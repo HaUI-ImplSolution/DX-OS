@@ -112,9 +112,7 @@ public class KeycloakAdminClient {
 
   // Puts the user in the group with exactly this name; being in it already changes nothing.
   public void addUserToGroup(String userId, String group) {
-    String groupId = list("/admin/realms/{realm}/groups?search={name}&exact=true", group).stream()
-        .filter(found -> group.equals(found.get("name"))).findFirst()
-        .map(found -> found.get("id").toString())
+    String groupId = findGroupId(group)
         .orElseThrow(() -> new KeycloakAdminException("Keycloak has no group " + group));
     try {
       restClient.put()
@@ -128,6 +126,33 @@ public class KeycloakAdminClient {
     } catch (RuntimeException e) {
       throw new KeycloakAdminException("Keycloak is unreachable", e);
     }
+  }
+
+  // Takes the user out of the group with exactly this name; being out of it already, or a group
+  // that does not exist, changes nothing.
+  public void removeUserFromGroup(String userId, String group) {
+    String groupId = findGroupId(group).orElse(null);
+    if (groupId == null) {
+      return;
+    }
+    try {
+      restClient.delete()
+          .uri("/admin/realms/{realm}/users/{user}/groups/{group}", realm, userId, groupId)
+          .headers(h -> h.setBearerAuth(accessToken())).retrieve().toBodilessEntity();
+    } catch (RestClientResponseException e) {
+      throw new KeycloakAdminException(
+          "Keycloak refused to remove a user from a group: HTTP " + e.getStatusCode().value(), e);
+    } catch (KeycloakAdminException e) {
+      throw e;
+    } catch (RuntimeException e) {
+      throw new KeycloakAdminException("Keycloak is unreachable", e);
+    }
+  }
+
+  private java.util.Optional<String> findGroupId(String group) {
+    return list("/admin/realms/{realm}/groups?search={name}&exact=true", group).stream()
+        .filter(found -> group.equals(found.get("name"))).findFirst()
+        .map(found -> found.get("id").toString());
   }
 
   public List<Person> usersWithRole(String role) {

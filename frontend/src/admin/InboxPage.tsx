@@ -1,18 +1,22 @@
 // SPDX-License-Identifier: Apache-2.0
 import { useEffect, useState } from "react";
-import { Card, CardContent, Chip, Table, TableBody, TableCell, TableHead, TableRow, Typography } from "@mui/material";
+import { Card, CardContent, Chip, Pagination, Table, TableBody, TableCell, TableHead, TableRow, Typography } from "@mui/material";
 import { Link, Title } from "react-admin";
 import { listInbox } from "./api";
-import { resourceName, type InboxItem, type ModelMeta } from "./types";
+import { resourceName, type InboxItem, type ModelMeta, type Page } from "./types";
+
+const PAGE_SIZE = 50;
 
 // The records waiting for the signed-in user, on every model.
 export default function InboxPage({ models }: { models: ModelMeta[] }) {
-  const [items, setItems] = useState<InboxItem[] | null>(null);
+  const [data, setData] = useState<Page<InboxItem> | null>(null);
+  const [page, setPage] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const items = data?.items ?? null;
 
   useEffect(() => {
-    listInbox().then(setItems, (e: unknown) => setError(e instanceof Error ? e.message : "Không đọc được hộp việc"));
-  }, []);
+    listInbox(page, PAGE_SIZE).then(setData, (e: unknown) => setError(e instanceof Error ? e.message : "Không đọc được hộp việc"));
+  }, [page]);
 
   const stateLabel = (item: InboxItem) =>
     models
@@ -55,6 +59,9 @@ export default function InboxPage({ models }: { models: ModelMeta[] }) {
               ))}
             </TableBody>
           </Table>
+        )}
+        {data && data.totalPages > 1 && (
+          <Pagination sx={{ mt: 2 }} count={data.totalPages} page={page + 1} onChange={(_, next) => setPage(next - 1)} />
         )}
       </CardContent>
     </Card>

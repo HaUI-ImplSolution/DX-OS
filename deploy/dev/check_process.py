@@ -153,8 +153,8 @@ def main():
     status, body = kc.api(agent, "GET", f"{TICKETS}/{older}")
     rt.check("T8-08 a future deadline does not", body["data"]["overdue"] is False, str(body["data"]))
     status, body = kc.api(agent2, "GET", "/inbox")
-    order = [item["id"] for item in body["data"] if item["model"] == "desk8" and item["entity"] == "ticket"]
-    rt.check("T8-08 inbox puts overdue first", order[:2] == [newer, older] and body["data"][0]["overdue"] is True, str(order))
+    order = [item["id"] for item in body["data"]["items"] if item["model"] == "desk8" and item["entity"] == "ticket"]
+    rt.check("T8-08 inbox puts overdue first", order[:2] == [newer, older] and body["data"]["items"][0]["overdue"] is True, str(order))
 
     # T8-07: changing the handler and the deadline is safe and reports the records in flight.
     changed = DESK.replace("deadline: 1h", "deadline: 2d")

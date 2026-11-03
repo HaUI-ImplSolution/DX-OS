@@ -100,7 +100,7 @@
                     "required": ["do", "user"],
                     "additionalProperties": false,
                     "properties": {
-                      "do": { "enum": ["add_to_group"] },
+                      "do": { "enum": ["add_to_group", "remove_from_group"] },
                       "user": { "type": "string" },
                       "group": { "type": "string" },
                       "group_from": { "type": "string" }

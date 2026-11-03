@@ -70,9 +70,9 @@ def main():
     status, _ = kc.api(dt, "GET", f"{BASE}/{record}")
     rt.check("C2 the officer of the unit sees it", status == 200, str(status))
     status, inbox = kc.api(dt, "GET", "/inbox")
-    rt.check("C2 and finds it in the inbox", any(i["id"] == record and i["entity"] == "request" for i in inbox["data"]), str(status))
+    rt.check("C2 and finds it in the inbox", any(i["id"] == record and i["entity"] == "request" for i in inbox["data"]["items"]), str(status))
     status, inbox = kc.api(ct, "GET", "/inbox")
-    rt.check("C2 other units' inbox does not", not any(i["id"] == record and i["model"] == "onestop" for i in inbox["data"]), str(status))
+    rt.check("C2 other units' inbox does not", not any(i["id"] == record and i["model"] == "onestop" for i in inbox["data"]["items"]), str(status))
 
     # 3. A file attaches to the record.
     status, body = upload(stu1, BASE, record, "evidence", "giay-hen.pdf", b"%PDF-1.4 demo")

@@ -16,6 +16,7 @@ import HaUI.ImplSolution.dxos.model.Model.Entity;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,15 +35,20 @@ public class AttachmentService {
   private final ObjectStorage storage;
   private final EventLog events;
   private final UserContext user;
+  private final AttachmentCleaner cleaner;
+  private final int maxPerRecord;
 
   public AttachmentService(JdbcTemplate jdbc, DataService data, FileStore files,
-      ObjectStorage storage, EventLog events, UserContext user) {
+      ObjectStorage storage, EventLog events, UserContext user, AttachmentCleaner cleaner,
+      @Value("${engine.files.max-per-record:20}") int maxPerRecord) {
     this.jdbc = jdbc;
     this.data = data;
     this.files = files;
     this.storage = storage;
     this.events = events;
     this.user = user;
+    this.cleaner = cleaner;
+    this.maxPerRecord = maxPerRecord;
   }
 
   @Transactional
@@ -50,6 +56,12 @@ public class AttachmentService {
       MultipartFile upload) {
     requireFileField(entity, field);
     data.requireChangeable(model, entity, id);
+    Integer held = jdbc.queryForObject("SELECT count(*) FROM engine.attachment WHERE model = ? "
+        + "AND entity = ? AND record_id = ?", Integer.class, model.name(), entity.name(), id);
+    if (held != null && held >= maxPerRecord) {
+      throw new ModelValidationException("file",
+          "a record holds at most " + maxPerRecord + " files");
+    }
     String name = cleanName(upload.getOriginalFilename());
     String key;
     try {
@@ -59,6 +71,7 @@ public class AttachmentService {
     } catch (IllegalArgumentException e) {
       throw new ModelValidationException("file", e.getMessage());
     }
+    cleaner.deleteIfRolledBack(key);
     String type =
         upload.getContentType() == null ? "application/octet-stream" : upload.getContentType();
     Long attachment = jdbc.queryForObject(
@@ -86,7 +99,7 @@ public class AttachmentService {
     data.get(model, entity, id);
     Map<String, Object> row = find(model, entity, id, fileId);
     return Map.of("name", row.get("filename"), "url",
-        storage.presignedUrl((String) row.get("object_key")));
+        storage.presignedDownloadUrl((String) row.get("object_key"), (String) row.get("filename")));
   }
 
   @Transactional
@@ -97,6 +110,7 @@ public class AttachmentService {
       throw new ActionNotAllowedException("Only the user who added a file can remove it");
     }
     jdbc.update("DELETE FROM engine.attachment WHERE id = ?", fileId);
+    cleaner.deleteAfterCommit((String) row.get("object_key"));
     String latest = jdbc.query(
         "SELECT filename FROM engine.attachment WHERE model = ? AND entity = ? AND record_id = ? "
             + "AND field = ? ORDER BY id DESC LIMIT 1",

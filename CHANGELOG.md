@@ -32,6 +32,13 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - API đọc cho bảng điều khiển: `/api/v1/models/schema`, `families`, `templates` và `{model}/versions`.
 - Mẫu mô hình nằm ở `backend/dx-engine/src/main/resources/templates/` kèm `index.json`: Một cửa sinh viên, hỗ trợ kỹ thuật, đặt phòng, cấp quyền, mượn thiết bị, ghi chú.
 - Scripts `check_booking.py` và `check_demo.py` kiểm họ `reservation`, API của bảng điều khiển và tám tiêu chí của kịch bản trình diễn.
+- Hàng đợi sự kiện: `GET /api/v1/outbox` và `POST /api/v1/outbox/{id}/retry` cho ADMIN xem thông điệp theo trạng thái cùng lỗi gần nhất và thử lại thông điệp chưa gửi, kèm tab Hàng đợi sự kiện ở bảng điều khiển.
+- Thao tác hoàn tất `remove_from_group`.
+- Quyền `own`, `unit` và `assigned` của thực thể con đi theo chuỗi `owner_via` nhiều cấp; tệp mô hình có chuỗi `owner_via` quay vòng bị từ chối.
+- Tệp đính kèm: loại tệp nhận được đặt bằng `engine.files.allowed-extensions`, link tải luôn ở dạng đính kèm, và đối tượng trong kho bị xóa khi tệp hoặc hồ sơ bị gỡ hoặc khi giao dịch tải lên hỏng; mỗi hồ sơ giữ tối đa 20 tệp.
+- Hộp việc `/api/v1/inbox` phân trang bằng `page` và `size`, trả tổng số; giao diện hộp việc có chuyển trang.
+- Trường `required` kiểu text từ chối chuỗi rỗng và chuỗi chỉ có dấu cách.
+- Mô hình đã lưu không còn qua được bộ kiểm bị bỏ khỏi danh sách đang chạy và ghi lỗi vào log; các mô hình khác vẫn chạy và dịch vụ vẫn khởi động.
 - Hai ứng dụng nghiệp vụ và ứng dụng di động của phiên bản trước nằm ở tag `v1.1.1`.
 
 ## [1.1.1] - 2026-10-30

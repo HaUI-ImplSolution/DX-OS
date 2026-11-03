@@ -3,6 +3,7 @@ package HaUI.ImplSolution.dxos.engine.registry;
 
 import HaUI.ImplSolution.dxos.core.api.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.dxos.model.Model;
+import HaUI.ImplSolution.dxos.model.ModelException;
 import HaUI.ImplSolution.dxos.model.ModelParser;
 import jakarta.annotation.PostConstruct;
 import java.util.Collection;
@@ -10,15 +11,20 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 // The models in force: the latest applied version of each, kept in memory and refreshed after
-// every apply.
+// every apply. A stored model that no longer passes the checks is left out and logged, so the
+// others keep running.
 @Component
 @DependsOn("engineFlyway")
 public class ModelRegistry {
+
+  private static final Logger log = LoggerFactory.getLogger(ModelRegistry.class);
 
   private final JdbcTemplate jdbc;
   private volatile Map<String, Model> models = Map.of();
@@ -34,8 +40,12 @@ public class ModelRegistry {
         String.class);
     Map<String, Model> loaded = new LinkedHashMap<>();
     for (String content : contents) {
-      Model model = ModelParser.parse(content);
-      loaded.put(model.name(), model);
+      try {
+        Model model = ModelParser.parse(content);
+        loaded.put(model.name(), model);
+      } catch (ModelException e) {
+        log.error("A stored model is left out because it fails the checks: {}", e.problems());
+      }
     }
     models = Map.copyOf(loaded);
   }

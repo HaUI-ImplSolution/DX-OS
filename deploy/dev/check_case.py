@@ -151,7 +151,7 @@ def main():
 
     # T6-12: the inbox.
     def inbox(token):
-        return {(i["entity"], i["id"]) for i in kc.api(token, "GET", "/inbox")[1]["data"]}
+        return {(i["entity"], i["id"]) for i in kc.api(token, "GET", "/inbox")[1]["data"]["items"]}
 
     rt.check("T6-12 officer sees the unit's work", ("request", record) in inbox(officer))
     rt.check("T6-12 other unit does not", ("request", record) not in inbox(other))

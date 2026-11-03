@@ -87,6 +87,27 @@ export interface Run {
   steps: string;
 }
 
+export interface OutboxMessage {
+  id: number;
+  topic: string;
+  model: string;
+  entity: string;
+  record_id: number;
+  attempts: number;
+  last_error: string | null;
+  created_at: string;
+  next_attempt_at: string;
+  delivered_at: string | null;
+  payload: string;
+}
+
+export type OutboxStatus = "failed" | "pending" | "delivered";
+
+export interface OutboxPage {
+  counts: Record<OutboxStatus, number>;
+  page: { items: OutboxMessage[]; page: number; size: number; totalElements: number; totalPages: number };
+}
+
 const yaml = (method: string, text: string): RequestInit => ({
   method,
   headers: { "Content-Type": "application/yaml" },
@@ -115,3 +136,7 @@ export const applyModel = (text: string, base?: number, accept?: string) =>
 export const planRollback = (model: string) => request<Plan>(`/models/${model}/rollback/plan`, { method: "POST" });
 export const rollbackModel = (model: string, base: number, accept?: string) =>
   request<Applied>(`/models/${model}/rollback${query({ base, accept })}`, { method: "POST" });
+
+export const listOutbox = (status: OutboxStatus, page: number, size: number) =>
+  request<OutboxPage>(`/outbox${query({ status, page, size })}`);
+export const retryOutbox = (id: number) => request<null>(`/outbox/${id}/retry`, { method: "POST" });

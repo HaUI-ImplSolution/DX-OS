@@ -12,6 +12,12 @@ public interface ObjectStorage {
   // Time-limited link for the origin the current request was served from.
   String presignedUrl(String key);
 
+  // Like presignedUrl, but the browser saves the file under this name instead of showing it.
+  String presignedDownloadUrl(String key, String filename);
+
+  // Removes the object; one that is not there is not an error.
+  void deleteObject(String key);
+
   // Time-limited link for a fixed public origin, for messages sent outside any request.
   String presignedUrl(String baseUrl, String key, Duration ttl);
 

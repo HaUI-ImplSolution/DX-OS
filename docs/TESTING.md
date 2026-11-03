@@ -97,6 +97,8 @@ T5-11 và T6-14 cần dịch vụ chạy với `ENGINE_FAULT_AFTER_DECISION=true
 3. Danh sách Phiếu mượn chỉ có phiếu của mình; biểu mẫu tạo có đủ năm trường theo kiểu của mô hình (danh sách chọn thiết bị, hai ô ngày giờ, số lượng).
 4. Đăng xuất, đăng nhập bằng người dùng vai `KEEPER`: thấy mọi phiếu; mở một phiếu `Chờ duyệt` thì có nút Duyệt và Từ chối; bấm Duyệt thì trạng thái thành `Đã duyệt`.
 5. Bundle web không chứa tên thực thể hay vai nào của mô hình.
+6. Đăng nhập bằng người dùng vai `ADMIN`, mở `/console`, tab Hàng đợi sự kiện: có ba danh sách Lỗi, Chờ gửi, Đã gửi kèm số lượng; thông điệp lỗi hiện lỗi gần nhất và nút Thử lại ngay, bấm xong thì sau vài giây nó sang Đã gửi.
+7. Tải một tệp `.html` lên trường tệp của một hồ sơ: bị từ chối (400); tải một tệp `.pdf` rồi mở link tải: trình duyệt lưu thành tệp; gỡ tệp rồi mở lại link cũ: 404.
 
 ## 6. Hồi quy
 

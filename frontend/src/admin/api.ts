@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
 import { json, request } from "../shell/api";
-import type { AttachmentItem, EntityMeta, InboxItem, ModelMeta, Person, RecordEvent } from "./types";
+import type { AttachmentItem, EntityMeta, InboxItem, ModelMeta, Page, Person, RecordEvent } from "./types";
 
 export const listModels = () => request<ModelMeta[]>("/meta/models");
 
 export const getEntityMeta = (model: string, entity: string) =>
   request<EntityMeta>(`/meta/models/${model}/entities/${entity}`);
 
-export const listInbox = () => request<InboxItem[]>("/inbox");
+export const listInbox = (page: number, size: number) => request<Page<InboxItem>>(`/inbox?page=${page}&size=${size}`);
 
 const recordPath = (model: string, entity: string, id: number | string) => `/data/${model}/${entity}/${id}`;
 

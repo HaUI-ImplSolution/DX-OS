@@ -10,6 +10,7 @@ import HaUI.ImplSolution.dxos.model.ModelException.Problem;
 import java.io.StringReader;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -140,13 +141,15 @@ public final class ModelParser {
     return units;
   }
 
-  // A scope needs what it filters on, on the entity or on the record the entity belongs to.
+  // A scope needs what it filters on, on the entity or on the record at the end of its owner_via
+  // chain.
   private void checkScopes(Map<String, Entity> entities) {
     for (Entity entity : entities.values()) {
-      Entity holder = entity;
-      if (entity.ownerVia() != null) {
-        Field via = entity.fields().get(entity.ownerVia());
-        holder = via == null ? null : entities.get(via.to());
+      Entity holder = holder(entities, entity);
+      if (entity.ownerVia() != null && loops(entities, entity)) {
+        problem(accessNodes.get(entity.name()),
+            "owner_via of " + entity.name() + " leads back to " + entity.name());
+        continue;
       }
       if (entity.fields().values().stream().filter(f -> f.type() == FieldType.UNIT).count() > 1) {
         problem(accessNodes.get(entity.name()),
@@ -166,6 +169,37 @@ public final class ModelParser {
         }
       }
     }
+  }
+
+  private static boolean loops(Map<String, Entity> entities, Entity entity) {
+    Set<String> seen = new HashSet<>();
+    Entity current = entity;
+    while (current != null && current.ownerVia() != null) {
+      if (!seen.add(current.name())) {
+        return true;
+      }
+      Field via = current.fields().get(current.ownerVia());
+      current = via == null ? null : entities.get(via.to());
+    }
+    return false;
+  }
+
+  // The entity whose own columns decide who reaches a record of this entity; null when the chain
+  // is broken or loops back on itself.
+  private static Entity holder(Map<String, Entity> entities, Entity entity) {
+    Set<String> seen = new HashSet<>();
+    Entity current = entity;
+    while (current.ownerVia() != null) {
+      if (!seen.add(current.name())) {
+        return null;
+      }
+      Field via = current.fields().get(current.ownerVia());
+      current = via == null ? null : entities.get(via.to());
+      if (current == null) {
+        return null;
+      }
+    }
+    return current;
   }
 
   private int readFormat(Node parent, Node node) {

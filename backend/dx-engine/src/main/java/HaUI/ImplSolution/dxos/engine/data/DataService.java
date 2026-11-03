@@ -13,6 +13,7 @@ import HaUI.ImplSolution.dxos.core.identity.KeycloakAdminClient;
 import HaUI.ImplSolution.dxos.core.identity.KeycloakAdminClient.Person;
 import HaUI.ImplSolution.dxos.engine.apply.DdlGenerator;
 import HaUI.ImplSolution.dxos.engine.exception.ModelValidationException;
+import HaUI.ImplSolution.dxos.engine.files.AttachmentCleaner;
 import HaUI.ImplSolution.dxos.engine.process.BookingGuard;
 import HaUI.ImplSolution.dxos.engine.process.ProcessRules;
 import HaUI.ImplSolution.dxos.engine.process.ProcessService;
@@ -61,7 +62,6 @@ public class DataService {
   }
 
   private static final int MAX_PAGE_SIZE = 200;
-  private static final int INBOX_SIZE = 100;
   private static final int DEFAULT_PAGE_SIZE = 20;
   private static final Set<String> SYSTEM_COLUMNS = Set.of("id", "created_by", "created_at",
       "updated_at", "version", "assignee", "decided_by", "decided_at", "handle_by", "overdue");
@@ -75,9 +75,11 @@ public class DataService {
   private final BookingGuard bookings;
   private final EventLog events;
   private final KeycloakAdminClient keycloak;
+  private final AttachmentCleaner attachments;
 
   public DataService(NamedParameterJdbcTemplate jdbc, UserContext user, ProcessService process,
-      ProcessRules rules, BookingGuard bookings, EventLog events, KeycloakAdminClient keycloak) {
+      ProcessRules rules, BookingGuard bookings, EventLog events, KeycloakAdminClient keycloak,
+      AttachmentCleaner attachments) {
     this.jdbc = jdbc;
     this.user = user;
     this.process = process;
@@ -85,6 +87,7 @@ public class DataService {
     this.bookings = bookings;
     this.events = events;
     this.keycloak = keycloak;
+    this.attachments = attachments;
   }
 
   public Access access(Entity entity) {
@@ -281,6 +284,7 @@ public class DataService {
     if (deleted == 0) {
       throw notFound(entity, id);
     }
+    attachments.purge(model, entity, id);
     events.record(model, entity, id, "deleted", status, null, null, null);
   }
 
@@ -375,15 +379,40 @@ public class DataService {
   }
 
   // The records of an entity waiting for the caller: those its handler role can act on and nobody
-  // else holds, and the caller's own records waiting for them.
+  // else holds, and the caller's own records waiting for them. Overdue first, then oldest first.
   @Transactional(readOnly = true)
-  public List<Map<String, Object>> waiting(Model model, Entity entity) {
-    Access access = access(entity);
-    if (entity.process() == null || !access.read()) {
+  public List<Map<String, Object>> waiting(Model model, Entity entity, int limit) {
+    MapSqlParameterSource values = new MapSqlParameterSource("limit", limit);
+    String where = waitingCondition(model, entity, values);
+    if (where == null) {
       return List.of();
     }
-    MapSqlParameterSource values =
-        new MapSqlParameterSource("me", user.currentUserId()).addValue("limit", INBOX_SIZE);
+    return jdbc.queryForList("SELECT " + columns(entity) + " FROM " + table(model, entity)
+        + " WHERE " + where
+        + " ORDER BY (handle_by IS NOT NULL AND handle_by < now()) DESC, created_at, id LIMIT :limit",
+        values).stream().map(DataService::present).toList();
+  }
+
+  // How many records of an entity wait for the caller.
+  @Transactional(readOnly = true)
+  public long countWaiting(Model model, Entity entity) {
+    MapSqlParameterSource values = new MapSqlParameterSource();
+    String where = waitingCondition(model, entity, values);
+    if (where == null) {
+      return 0;
+    }
+    Long count = jdbc.queryForObject(
+        "SELECT count(*) FROM " + table(model, entity) + " WHERE " + where, values, Long.class);
+    return count == null ? 0 : count;
+  }
+
+  // The condition of the records waiting for the caller; null when nothing can wait.
+  private String waitingCondition(Model model, Entity entity, MapSqlParameterSource values) {
+    Access access = access(entity);
+    if (entity.process() == null || !access.read()) {
+      return null;
+    }
+    values.addValue("me", user.currentUserId());
     List<String> any = new ArrayList<>();
     Set<String> owner = fromStates(entity, Actor.OWNER);
     if (!owner.isEmpty()) {
@@ -397,13 +426,7 @@ public class DataService {
       any.add("(status IN (:handlerStates) AND (assignee IS NULL OR assignee = :me)" + notMine
           + " AND " + scope(model, entity, access.reads(), values) + ")");
     }
-    if (any.isEmpty()) {
-      return List.of();
-    }
-    return jdbc.queryForList("SELECT " + columns(entity) + " FROM " + table(model, entity)
-        + " WHERE " + String.join(" OR ", any)
-        + " ORDER BY (handle_by IS NOT NULL AND handle_by < now()) DESC, created_at, id LIMIT :limit",
-        values).stream().map(DataService::present).toList();
+    return any.isEmpty() ? null : "(" + String.join(" OR ", any) + ")";
   }
 
   private static Set<String> fromStates(Entity entity, Actor by) {
@@ -448,7 +471,7 @@ public class DataService {
     }
     Entity parent = model.entities().get(entity.fields().get(via).to());
     MapSqlParameterSource params = new MapSqlParameterSource("id", values.get(via));
-    String condition = rowCondition(parent, access.writes(), params);
+    String condition = reach(model, parent, access.writes(), params);
     Integer found = jdbc.queryForObject(
         "SELECT count(*) FROM " + table(model, parent) + " WHERE id = :id AND " + condition, params,
         Integer.class);
@@ -559,12 +582,18 @@ public class DataService {
     if (reachesAll(scopes)) {
       return "TRUE";
     }
+    return reach(model, entity, scopes, values);
+  }
+
+  // Follows owner_via up to the entity whose own columns decide who reaches a row.
+  private String reach(Model model, Entity entity, Set<Scope> scopes,
+      MapSqlParameterSource values) {
     if (entity.ownerVia() == null) {
       return rowCondition(entity, scopes, values);
     }
     Entity parent = model.entities().get(entity.fields().get(entity.ownerVia()).to());
     return ident(entity.ownerVia()) + " IN (SELECT id FROM " + table(model, parent) + " WHERE "
-        + rowCondition(parent, scopes, values) + ")";
+        + reach(model, parent, scopes, values) + ")";
   }
 
   private String rowCondition(Entity entity, Set<Scope> scopes, MapSqlParameterSource values) {
@@ -680,8 +709,7 @@ public class DataService {
         continue;
       }
       Object value = item.getValue();
-      if (value == null
-          || (value instanceof String text && text.isEmpty() && field.type() != FieldType.TEXT)) {
+      if (value == null || isEmpty(field, value)) {
         if (field.required()) {
           errors.put(name, "is required");
         } else {
@@ -707,6 +735,14 @@ public class DataService {
       throw new ModelValidationException(errors);
     }
     return values;
+  }
+
+  // No value: an empty string, which for a required text field includes one of only spaces.
+  private static boolean isEmpty(Field field, Object value) {
+    if (!(value instanceof String text)) {
+      return false;
+    }
+    return field.type() == FieldType.TEXT ? field.required() && text.isBlank() : text.isEmpty();
   }
 
   private static Object convert(Field field, Object value) {

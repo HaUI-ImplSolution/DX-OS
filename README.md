@@ -82,7 +82,7 @@ entities:
 
 - Kiểu trường: `text`, `number`, `datetime`, `choice`, `reference`, `user`, `unit`.
 - Đơn vị: khai báo ở `units`, mỗi đơn vị là một nhóm Keycloak; trường kiểu `unit` cho biết hồ sơ thuộc đơn vị nào. Ví dụ đầy đủ ở [`backend/dx-engine/src/main/resources/templates/onestop.yaml`](./backend/dx-engine/src/main/resources/templates/onestop.yaml).
-- Quyền theo vai: `all` (mọi dòng, đọc và ghi), `own` (dòng của mình), `read` (mọi dòng, chỉ đọc), `unit` (dòng của đơn vị mình), `assigned` (dòng được giao cho mình); `owner_via` cho phép thực thể con theo chủ sở hữu của thực thể cha.
+- Quyền theo vai: `all` (mọi dòng, đọc và ghi), `own` (dòng của mình), `read` (mọi dòng, chỉ đọc), `unit` (dòng của đơn vị mình), `assigned` (dòng được giao cho mình); `owner_via` cho phép thực thể con theo chủ sở hữu của thực thể cha, qua nhiều cấp.
 - Quy trình: `family` chọn họ mẫu (`approval` hoặc `work_item`), `handler` là vai xử lý, `deadline` là hạn xử lý tùy chọn (ví dụ `72h`).
   Từ chối và trả lại bắt buộc có lý do; người nộp rút lại được hồ sơ chưa ở trạng thái cuối.
   Hồ sơ có quy trình không xóa được; hồ sơ đã được quyết định thì không sửa được; hồ sơ đã giao thì chỉ người được giao xử lý được.
@@ -90,8 +90,11 @@ entities:
 - Đặt chỗ: `family: reservation` kèm `booking: {resource, starts, ends, capacity}`; hai lượt trùng khung giờ vượt sức chứa thì lượt sau bị từ chối, và ứng dụng có chế độ xem lịch.
   Ví dụ ở [`room_booking.yaml`](./backend/dx-engine/src/main/resources/templates/room_booking.yaml).
 - Hành động hoàn tất: `after` gán danh sách thao tác cho một trạng thái cuối, ví dụ `after: {approved: [{do: add_to_group, user: created_by, group_from: nhom}]}`; thao tác chạy sau khi giao dịch xong và được thử lại nếu lỗi.
+  Thao tác có sẵn là `add_to_group` và `remove_from_group`.
   Ví dụ ở [`backend/dx-engine/src/main/resources/templates/itaccess.yaml`](./backend/dx-engine/src/main/resources/templates/itaccess.yaml).
 - Tệp đính kèm: trường `type: file`, tải lên bằng `POST /api/v1/data/{model}/{entity}/{id}/files`; quyền theo quyền của bản ghi.
+  Loại tệp nhận được đặt bằng `engine.files.allowed-extensions`, và tệp luôn tải về dạng đính kèm.
+  Mỗi hồ sơ giữ tối đa 20 tệp, đặt bằng `engine.files.max-per-record`.
 - Đổi mô hình: khai báo `renamed_from` khi đổi tên trường; `default` điền giá trị cho trường bắt buộc mới trên bảng đã có dòng.
 - Đặc tả cho trình soạn thảo: [`dx-model/.../model-v0.schema.json`](./backend/dx-model/src/main/resources/schema/model-v0.schema.json); tệp sai mẫu ở [`models/invalid/`](./models/invalid).
 
@@ -107,7 +110,8 @@ entities:
 | `POST /api/v1/data/{model}/{entity}/{id}/actions/{action}` | Hành động của quy trình; metadata liệt kê hành động, trạng thái đầu và người được làm |
 | `POST .../{id}/assign`, `GET .../{id}/handlers` | Giao việc và danh sách người giao được |
 | `GET .../{id}/events` | Dòng lịch sử của bản ghi |
-| `GET /api/v1/inbox` | Hồ sơ đang chờ người gọi, trên mọi mô hình |
+| `GET /api/v1/inbox` | Hồ sơ đang chờ người gọi, trên mọi mô hình; `page`, `size` |
+| `GET /api/v1/outbox`, `POST /api/v1/outbox/{id}/retry` | Thông điệp gửi đi theo trạng thái (lỗi, chờ gửi, đã gửi) và thử lại thông điệp chưa gửi (ADMIN) |
 
 Mọi phản hồi bọc trong `ApiResponse`; lỗi có `errorCode` ổn định.
 

@@ -175,6 +175,11 @@ public class ApplyService {
     if (!dropRejections.isEmpty()) {
       throw new InvalidStateException(String.join("; ", dropRejections));
     }
+    List<String> processRejections =
+        processRuleChangesWithOpenRecords(diff, openRecords(running, diff));
+    if (!processRejections.isEmpty()) {
+      throw new InvalidStateException(String.join("; ", processRejections));
+    }
     if (diff.level().compareTo(accept) > 0) {
       throw new InvalidStateException("This change is at level " + diff.level()
           + "; read the plan and pass accept=" + diff.level());
@@ -186,11 +191,6 @@ public class ApplyService {
       throw new InvalidStateException(
           violations.size() + " rules are broken by existing rows, first " + first.entity() + "."
               + first.field() + " with " + first.rows() + " rows; see the plan");
-    }
-    List<String> processRejections =
-        processRuleChangesWithOpenRecords(diff, openRecords(running, diff));
-    if (!processRejections.isEmpty()) {
-      throw new InvalidStateException(String.join("; ", processRejections));
     }
     int version = nextVersion(hash, running);
     long runId = jdbc.queryForObject(

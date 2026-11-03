@@ -37,7 +37,7 @@ public class ModelRegistry {
   }
 
   @PostConstruct
-  public void reload() {
+  public synchronized void reload() {
     maintenance =
         Set.copyOf(jdbc.queryForList("SELECT model FROM (SELECT DISTINCT ON (model) model, status "
             + "FROM engine.apply_run ORDER BY model, id DESC) latest "
@@ -57,13 +57,13 @@ public class ModelRegistry {
     models = Map.copyOf(loaded);
   }
 
-  public void beginApply(String model) {
+  public synchronized void beginApply(String model) {
     java.util.LinkedHashSet<String> next = new java.util.LinkedHashSet<>(maintenance);
     next.add(model);
     maintenance = Set.copyOf(next);
   }
 
-  public void endApply(String model) {
+  public synchronized void endApply(String model) {
     java.util.LinkedHashSet<String> next = new java.util.LinkedHashSet<>(maintenance);
     next.remove(model);
     maintenance = Set.copyOf(next);

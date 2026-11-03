@@ -28,11 +28,12 @@ Mốc dưới đây là dự kiến.
 |---|---|
 | CLI `dxos` chưa có `plan` và `apply` | Áp dụng mô hình qua bảng điều khiển hoặc REST |
 | **Lỗ hổng: tên vai dành riêng của nền tảng** | Bộ kiểm không cấm mô hình khai báo vai `ADMIN` (vai quản trị nền tảng: áp dụng, đổi và quay lui mọi mô hình) hay vai mặc định của Keycloak (`offline_access`, `uma_authorization`, `default-roles-dxos`); gán vai đó cho người dùng của một ứng dụng là trao cho họ quyền quản trị cả nền tảng. Sửa cùng bộ kiểm vai trùng tên ở phần 5 |
+| Kiểm tra vai giữa các lần áp dụng chưa nguyên tử | Hai lần áp dụng khác mô hình có thể cùng vượt qua kiểm tra vai trùng trước khi một trong hai lưu phiên bản; cần khóa hoặc ràng buộc dùng chung khi xử lý role collision |
 | Dịch vụ `ai/` | Chưa nằm trong compose; chỉ tìm kiếm tri thức có nguồn, chưa có hỏi đáp sinh câu trả lời vì chưa có mô hình ngôn ngữ đạt tiêu chuẩn mở; dữ liệu huấn luyện của mô hình embedding chưa kiểm theo định nghĩa của OSI |
 | Chưa cắt bớt service bằng compose profile | Mô hình không dùng thành phần nào vẫn phải chạy thành phần đó |
 | Hành động hoàn tất | Chỉ có `add_to_group` và `remove_from_group`; nhóm Keycloak phải có sẵn, thiếu thì thông điệp được thử lại mãi và xem được ở tab Hàng đợi sự kiện; trường người dùng hoặc nhóm để trống thì thao tác bị bỏ qua, không để lại dấu vết |
 | Tệp đính kèm | Xóa đối tượng trong kho lỗi thì chỉ ghi log, không thử lại nên có thể còn đối tượng mồ côi |
-| Nhiều bản sao của backend | Danh sách mô hình đang chạy chỉ nạp lại ở bản sao vừa áp dụng; chạy hai bản sao thì bản kia giữ mô hình cũ đến khi khởi động lại |
+| Nhiều bản sao của backend | Trạng thái maintenance và lần nạp lại mô hình hiện chỉ được đồng bộ trong một bản sao; chạy hai bản sao có thể để bản kia tiếp tục phục vụ mô hình cũ đến khi có cơ chế đồng bộ dùng chung |
 | Trường kiểu `user` | Giá trị chưa được đối chiếu với người dùng có thật trong Keycloak |
 | Hạn xử lý | Bộ quét quá hạn chỉ ghi dòng lịch sử; chưa có người nghe để nhắc qua chat |
 | Đổi họ mẫu của một thực thể | Bị từ chối, kể cả khi mọi hồ sơ đã ở trạng thái cuối; muốn đổi hình dạng quy trình thì thêm thực thể mới; `docs/dynamic-core/README.md` còn mô tả việc chuyển hồ sơ đang chạy bằng `ProcessMigrationService`, chưa làm |

@@ -45,7 +45,7 @@ Mốc dưới đây là dự kiến.
 | Áp dụng đã đổi tên chưa có đường hủy | Phải sửa nguyên nhân rồi chạy lại đúng tệp đó |
 | Xác nhận mất dữ liệu không tự sao lưu | Người vận hành chạy `deploy/backup.sh` trước |
 | Đổi thành viên đơn vị | Chỉ có hiệu lực sau khi người đó lấy token mới |
-| Nhãn mặc định của react-admin | Các nút có sẵn của khung chưa dịch sang tiếng Việt |
+| Ngôn ngữ giao diện | Chỉ có tiếng Việt; thông báo mới của backend chưa có mẫu ở `backendMessages.ts` hiện nguyên văn tiếng Anh, vài thông báo lỗi còn tên trạng thái hoặc hành động dạng mã, và ô chọn ngày giờ theo ngôn ngữ của trình duyệt |
 
 ## 4. Chưa kiểm thử
 

@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
+import { translateBackend } from "./backendMessages";
+
 // Vietnamese text per backend errorCode. Codes without an entry show the backend message.
 const ERROR_MESSAGES: Record<string, string> = {
   ERR_CONCURRENT_MODIFICATION: "Bản ghi vừa được người khác thay đổi, hãy tải lại rồi thử lại.",
@@ -26,9 +28,12 @@ export function statusMessageFor(status: number): string {
   return status === 429 ? "Bạn thao tác quá nhanh, vui lòng thử lại sau ít phút." : `Lỗi HTTP ${status}`;
 }
 
-export function errorMessageFor(errorCode: string | undefined, fallback: string): string {
-  if (!errorCode) return fallback;
+export function errorMessageFor(errorCode: string | undefined, backendMessage: string): string {
+  const translated = translateBackend(backendMessage);
+  if (!errorCode) return translated;
   if (ERROR_MESSAGES[errorCode]) return ERROR_MESSAGES[errorCode];
+  // A message the translator knows already says what went wrong; any other keeps the summary of its kind.
+  if (translated !== backendMessage) return translated;
   const summary = DETAILED_ERROR_MESSAGES[errorCode];
-  return summary ? `${summary} (${fallback})` : fallback;
+  return summary ? `${summary} (${backendMessage})` : backendMessage;
 }

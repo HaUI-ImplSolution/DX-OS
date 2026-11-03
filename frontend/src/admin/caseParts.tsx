@@ -1,22 +1,27 @@
 // SPDX-License-Identifier: Apache-2.0
 import { useEffect, useState } from "react";
 import {
+  Avatar,
   Box,
   Button,
+  Card,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   MenuItem,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
   TextField as MuiTextField,
+  Tooltip,
   Typography,
+  type ButtonProps,
 } from "@mui/material";
+import AttachFileIcon from "@mui/icons-material/AttachFile";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { useGetIdentity, useNotify, useRecordContext, useRefresh } from "react-admin";
+import { formatDateTime, timeAgo } from "../shell/format";
+import { StatusChip, TONES } from "./StatusChip";
 import { assignRecord, fileLink, listEvents, listFiles, listHandlers, removeFile, takeAction, uploadFile } from "./api";
 import type { AttachmentItem, EntityMeta, Person, ProcessAction, RecordEvent } from "./types";
 
@@ -26,6 +31,28 @@ interface Props {
 }
 
 const message = (error: unknown) => (error instanceof Error ? error.message : "Không xử lý được");
+
+// A titled card; a panel that has nothing to show returns null before it gets here.
+export function Section({ title, action, children }: { title: string; action?: JSX.Element; children: React.ReactNode }) {
+  return (
+    <Card sx={{ p: 2.5 }}>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+          {title}
+        </Typography>
+        {action}
+      </Box>
+      {children}
+    </Card>
+  );
+}
+
+// A decision reads by what it leads to: approving is the main button, rejecting is red.
+function actionStyle(action: ProcessAction): Pick<ButtonProps, "variant" | "color"> {
+  const tone = TONES[action.to];
+  const color = tone === "success" || tone === "error" || tone === "warning" ? tone : "primary";
+  return { variant: tone === "success" ? "contained" : "outlined", color };
+}
 
 // The actions of the process the signed-in user can take on this record now.
 export function ActionButtons({ model, entity }: Props) {
@@ -68,7 +95,7 @@ export function ActionButtons({ model, entity }: Props) {
       {allowed.map((action) => (
         <Button
           key={action.name}
-          variant="outlined"
+          {...actionStyle(action)}
           sx={{ ml: 1 }}
           disabled={busy}
           onClick={() => (action.needsNote ? setNoteFor(action) : send(action))}
@@ -131,20 +158,28 @@ export function AssignPanel({ model, entity }: Props) {
   const holder = people.find((person) => person.id === record.assignee)?.name;
   const canClaim = people.some((person) => person.id === me) && record.assignee !== me;
   return (
-    <Box sx={{ mt: 1 }}>
-      <Typography variant="body2" sx={{ mb: 1 }}>
-        Người xử lý: {record.assignee ? (holder ?? "Đã giao") : "Chưa giao"}
-      </Typography>
-      <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+    <Section title="Người xử lý">
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
+        <Avatar sx={{ width: 36, height: 36, bgcolor: record.assignee ? "primary.main" : "action.disabledBackground" }}>
+          {record.assignee ? (holder ?? "?").charAt(0).toUpperCase() : "–"}
+        </Avatar>
+        <Box>
+          <Typography sx={{ fontWeight: 600 }}>{record.assignee ? (holder ?? "Đã giao") : "Chưa giao ai"}</Typography>
+          <Typography variant="caption" color="text.secondary">
+            {record.assignee ? "Đang giữ hồ sơ này" : "Cả vai xử lý đều nhận được"}
+          </Typography>
+        </Box>
+      </Box>
+      <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap" }}>
         {canClaim && (
-          <Button variant="outlined" onClick={() => assign(String(me))}>
+          <Button variant="contained" onClick={() => assign(String(me))}>
             Nhận việc
           </Button>
         )}
         <MuiTextField
           select
           size="small"
-          sx={{ minWidth: 220 }}
+          sx={{ minWidth: 200, flex: 1 }}
           label="Giao cho"
           value={people.some((person) => person.id === record.assignee) ? record.assignee : ""}
           onChange={(event) => assign(event.target.value)}
@@ -157,21 +192,21 @@ export function AssignPanel({ model, entity }: Props) {
         </MuiTextField>
         {record.assignee && <Button onClick={() => assign(null)}>Bỏ giao</Button>}
       </Box>
-    </Box>
+    </Section>
   );
 }
 
 const EVENT_LABELS: Record<string, string> = {
-  created: "Tạo",
-  updated: "Sửa",
+  created: "Tạo hồ sơ",
+  updated: "Sửa thông tin",
   deleted: "Xóa",
   assigned: "Giao việc",
   file_added: "Thêm tệp",
   file_removed: "Gỡ tệp",
-  overdue: "Quá hạn",
+  overdue: "Quá hạn xử lý",
 };
 
-// What happened to this record, oldest first.
+// What happened to this record, newest first, as a timeline.
 export function HistoryPanel({ model, entity }: Props) {
   const record = useRecordContext();
   const [events, setEvents] = useState<RecordEvent[]>([]);
@@ -183,42 +218,52 @@ export function HistoryPanel({ model, entity }: Props) {
   }, [model, entity.name, id, version]);
 
   const process = entity.process;
-  const stateLabel = (name: string | null) =>
-    process?.states.find((state) => state.name === name)?.label ?? name ?? "";
   const actionLabel = (name: string) =>
     EVENT_LABELS[name] ?? process?.actions.find((action) => action.name === name)?.label ?? name;
   const fieldLabel = (name: string) => entity.fields.find((field) => field.name === name)?.label ?? name;
+  const ordered = [...events].reverse();
 
   return (
-    <Box sx={{ mt: 2 }}>
-      <Typography variant="subtitle2">Lịch sử</Typography>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell>Thời điểm</TableCell>
-            <TableCell>Người thực hiện</TableCell>
-            <TableCell>Việc</TableCell>
-            <TableCell>Trạng thái</TableCell>
-            <TableCell>Ghi chú</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {events.map((event) => (
-            <TableRow key={event.id}>
-              <TableCell>{new Date(event.at).toLocaleString("vi-VN")}</TableCell>
-              <TableCell>{event.actor_name}</TableCell>
-              <TableCell>{actionLabel(event.action)}</TableCell>
-              <TableCell>{stateLabel(event.to_status)}</TableCell>
-              <TableCell>
-                {event.note ??
-                  (event.action === "updated" ? event.detail?.split(", ").map(fieldLabel).join(", ") : "")}
-                {event.action === "assigned" && (event.detail ?? "Bỏ giao")}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </Box>
+    <Section title="Lịch sử xử lý">
+      {ordered.length === 0 && (
+        <Typography variant="body2" color="text.secondary">
+          Chưa có hoạt động nào.
+        </Typography>
+      )}
+      <Box sx={{ position: "relative", pl: 3 }}>
+        <Box sx={{ position: "absolute", left: 7, top: 6, bottom: 6, width: 2, bgcolor: "divider" }} />
+        {ordered.map((event, index) => {
+          const detail =
+            event.note ?? (event.action === "updated" ? event.detail?.split(", ").map(fieldLabel).join(", ") : null);
+          const tone = event.to_status ? TONES[event.to_status] : undefined;
+          const color = !tone || tone === "default" ? "text.disabled" : `${tone}.main`;
+          return (
+            <Box key={event.id} sx={{ position: "relative", pb: index === ordered.length - 1 ? 0 : 2.25 }}>
+              <Box
+                sx={{ position: "absolute", left: -24, top: 5, width: 12, height: 12, borderRadius: "50%", bgcolor: color, border: 2, borderColor: "background.paper" }}
+              />
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+                <Typography sx={{ fontWeight: 600 }}>{actionLabel(event.action)}</Typography>
+                {event.to_status && event.to_status !== event.from_status && (
+                  <StatusChip entity={entity} status={event.to_status} />
+                )}
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                {event.actor_name} · {timeAgo(event.at)}
+                <Tooltip title={formatDateTime(event.at)}>
+                  <span> · {formatDateTime(event.at)}</span>
+                </Tooltip>
+              </Typography>
+              {(detail || (event.action === "assigned" && !event.detail)) && (
+                <Typography variant="body2" sx={{ mt: 0.5, p: 1, bgcolor: "action.hover", borderRadius: 1 }}>
+                  {event.action === "assigned" ? (event.detail ?? "Bỏ giao") : detail}
+                </Typography>
+              )}
+            </Box>
+          );
+        })}
+      </Box>
+    </Section>
   );
 }
 
@@ -263,41 +308,60 @@ export function FilesPanel({ model, entity }: Props) {
     });
 
   return (
-    <Box sx={{ mt: 2 }}>
-      {fileFields.map((field) => (
-        <Box key={field.name} sx={{ mb: 1 }}>
-          <Typography variant="subtitle2">{field.label}</Typography>
-          {files
-            .filter((item) => item.field === field.name)
-            .map((item) => (
-              <Box key={item.id} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Button size="small" disabled={busy} onClick={() => open(item)}>
-                  {item.name}
+    <>
+      {fileFields.map((field) => {
+        const own = files.filter((item) => item.field === field.name);
+        return (
+          <Section
+            key={field.name}
+            title={field.label}
+            action={
+              canAdd ? (
+                <Button component="label" size="small" variant="outlined" startIcon={<UploadFileIcon />} disabled={busy}>
+                  Tải lên
+                  <input
+                    hidden
+                    type="file"
+                    onChange={(event) => {
+                      const chosen = event.target.files?.[0];
+                      event.target.value = "";
+                      if (chosen) run(() => uploadFile(model, entity.name, id, field.name, chosen));
+                    }}
+                  />
                 </Button>
-                <Typography variant="caption">{Math.max(1, Math.round(item.size / 1024))} KB</Typography>
-                {canAdd && item.uploaded_by === identity?.id && (
-                  <Button size="small" color="error" disabled={busy} onClick={() => run(() => removeFile(model, entity.name, id, item.id))}>
-                    Gỡ
+              ) : undefined
+            }
+          >
+            {own.length === 0 && (
+              <Typography variant="body2" color="text.secondary">
+                Chưa có tệp nào.
+              </Typography>
+            )}
+            {own.map((item) => (
+              <Box key={item.id} sx={{ display: "flex", alignItems: "center", gap: 1, py: 0.75 }}>
+                <AttachFileIcon fontSize="small" color="action" />
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Button size="small" disabled={busy} onClick={() => open(item)} sx={{ p: 0, minWidth: 0, textAlign: "left" }}>
+                    <Typography noWrap sx={{ fontWeight: 600 }}>
+                      {item.name}
+                    </Typography>
                   </Button>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    {Math.max(1, Math.round(item.size / 1024))} KB
+                  </Typography>
+                </Box>
+                {canAdd && item.uploaded_by === identity?.id && (
+                  <Tooltip title="Gỡ tệp">
+                    <IconButton size="small" color="error" disabled={busy} onClick={() => run(() => removeFile(model, entity.name, id, item.id))}>
+                      <DeleteOutlineIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
                 )}
               </Box>
             ))}
-          {canAdd && (
-            <Button component="label" size="small" variant="outlined" disabled={busy}>
-              Thêm tệp
-              <input
-                hidden
-                type="file"
-                onChange={(event) => {
-                  const chosen = event.target.files?.[0];
-                  event.target.value = "";
-                  if (chosen) run(() => uploadFile(model, entity.name, id, field.name, chosen));
-                }}
-              />
-            </Button>
-          )}
-        </Box>
-      ))}
-    </Box>
+          </Section>
+        );
+      })}
+    </>
   );
 }

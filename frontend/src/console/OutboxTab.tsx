@@ -4,6 +4,7 @@ import {
   Alert,
   Box,
   Button,
+  Card,
   Pagination,
   Tab,
   Table,
@@ -19,6 +20,8 @@ import { listOutbox, retryOutbox, type OutboxPage, type OutboxStatus } from "./a
 const SIZE = 20;
 const STATUS_LABEL: Record<OutboxStatus, string> = { failed: "Lỗi", pending: "Chờ gửi", delivered: "Đã gửi" };
 const STATUSES: OutboxStatus[] = ["failed", "pending", "delivered"];
+
+const TOPIC_LABEL: Record<string, string> = { completion: "Hành động hoàn tất" };
 
 const message = (error: unknown) => (error instanceof Error ? error.message : "Không xử lý được");
 const when = (value: string | null) => (value ? new Date(value).toLocaleString("vi-VN") : "");
@@ -70,9 +73,16 @@ export default function OutboxTab() {
           <Tab key={name} value={name} label={`${STATUS_LABEL[name]} (${data?.counts[name] ?? 0})`} />
         ))}
       </Tabs>
-      {data && data.page.items.length === 0 && <Typography>Không có thông điệp nào.</Typography>}
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+        Các thông điệp gửi đi sau khi một thay đổi đã lưu, như thêm người dùng vào nhóm. Thông điệp lỗi được thử lại dần;
+        bấm "Thử lại ngay" khi đã sửa nguyên nhân.
+      </Typography>
+      {data && data.page.items.length === 0 && (
+        <Card sx={{ py: 6, textAlign: "center", color: "text.secondary" }}>Không có thông điệp nào.</Card>
+      )}
       {data && data.page.items.length > 0 && (
-        <Table size="small">
+        <Card>
+        <Table>
           <TableHead>
             <TableRow>
               <TableCell>Mã</TableCell>
@@ -88,7 +98,7 @@ export default function OutboxTab() {
             {data.page.items.map((item) => (
               <TableRow key={item.id}>
                 <TableCell>{item.id}</TableCell>
-                <TableCell>{item.topic}</TableCell>
+                <TableCell>{TOPIC_LABEL[item.topic] ?? item.topic}</TableCell>
                 <TableCell>{`${item.model}.${item.entity} #${item.record_id}`}</TableCell>
                 <TableCell>{item.attempts}</TableCell>
                 <TableCell>{when(item.delivered_at ?? item.next_attempt_at)}</TableCell>
@@ -104,6 +114,7 @@ export default function OutboxTab() {
             ))}
           </TableBody>
         </Table>
+        </Card>
       )}
       {data && data.page.totalPages > 1 && (
         <Pagination

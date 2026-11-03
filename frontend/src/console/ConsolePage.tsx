@@ -1,12 +1,17 @@
 // SPDX-License-Identifier: Apache-2.0
 import { useEffect, useState } from "react";
-import { Alert, Box, Snackbar, Tab, Tabs, Typography } from "@mui/material";
+import { Alert, Box, Skeleton, Snackbar, Tab, Tabs } from "@mui/material";
+import AutoAwesomeMosaicOutlinedIcon from "@mui/icons-material/AutoAwesomeMosaicOutlined";
+import EditNoteOutlinedIcon from "@mui/icons-material/EditNoteOutlined";
+import LayersOutlinedIcon from "@mui/icons-material/LayersOutlined";
+import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import { Title } from "react-admin";
+import PageHeader from "../shell/PageHeader";
 import { getSchema, listFamilies, listTemplates, type Family, type Template } from "./api";
 import EditorTab from "./EditorTab";
 import ModelsTab from "./ModelsTab";
-import OutboxTab from "./OutboxTab";
 import { useModelSchema } from "./monacoSetup";
+import OutboxTab from "./OutboxTab";
 import TemplatesTab from "./TemplatesTab";
 
 const BLANK = `# SPDX-License-Identifier: Apache-2.0
@@ -52,23 +57,37 @@ export default function ConsolePage() {
   };
 
   if (error) return <Alert severity="error">{error}</Alert>;
-  if (!schema) return <Typography sx={{ p: 2 }}>Đang tải...</Typography>;
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box>
       <Title title="Bảng điều khiển" />
-      <Typography variant="h5" sx={{ mb: 1 }}>
-        Bảng điều khiển
-      </Typography>
-      <Tabs value={tab} onChange={(_, next) => setTab(next)} sx={{ mb: 2 }}>
-        <Tab label="Mô hình đang chạy" />
-        <Tab label="Thư viện mẫu" />
-        <Tab label="Soạn và áp dụng" />
-        <Tab label="Hàng đợi sự kiện" />
+      <PageHeader
+        title="Bảng điều khiển"
+        subtitle="Dựng, thay đổi và theo dõi các mô hình nghiệp vụ. Sửa tệp mô hình là đổi nghiệp vụ, không đổi mã."
+      />
+      <Tabs
+        value={tab}
+        onChange={(_, next) => setTab(next)}
+        variant="scrollable"
+        scrollButtons="auto"
+        sx={{ mb: 2.5, borderBottom: 1, borderColor: "divider" }}
+      >
+        <Tab icon={<LayersOutlinedIcon fontSize="small" />} iconPosition="start" label="Mô hình đang chạy" />
+        <Tab icon={<AutoAwesomeMosaicOutlinedIcon fontSize="small" />} iconPosition="start" label="Thư viện mẫu" />
+        <Tab icon={<EditNoteOutlinedIcon fontSize="small" />} iconPosition="start" label="Soạn và áp dụng" />
+        <Tab icon={<SyncAltIcon fontSize="small" />} iconPosition="start" label="Hàng đợi sự kiện" />
       </Tabs>
-      {tab === 0 && (
+      {!schema && (
+        <Box>
+          <Skeleton height={48} />
+          <Skeleton height={48} />
+          <Skeleton height={48} />
+        </Box>
+      )}
+      {schema && tab === 0 && (
         <ModelsTab
           refresh={refresh}
+          onBrowse={() => setTab(1)}
           onOpen={(model, content, version) => edit(content, `${model}, phiên bản ${version}`)}
           onChanged={(message) => {
             setNote(message);
@@ -76,8 +95,10 @@ export default function ConsolePage() {
           }}
         />
       )}
-      {tab === 1 && <TemplatesTab templates={templates} families={families} onUse={(template) => edit(template.content, `Mẫu ${template.name}`)} />}
-      {tab === 2 && (
+      {schema && tab === 1 && (
+        <TemplatesTab templates={templates} onUse={(template) => edit(template.content, `Mẫu ${template.name}`)} />
+      )}
+      {schema && tab === 2 && (
         <EditorTab
           text={text}
           source={source}
@@ -91,7 +112,7 @@ export default function ConsolePage() {
           }}
         />
       )}
-      {tab === 3 && <OutboxTab />}
+      {schema && tab === 3 && <OutboxTab />}
       <Snackbar open={note !== null} autoHideDuration={6000} onClose={() => setNote(null)} message={note ?? ""} />
     </Box>
   );

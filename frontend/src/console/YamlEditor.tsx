@@ -45,5 +45,5 @@ export default function YamlEditor({ value, onChange, height = 520 }: Props) {
     monaco.editor.setTheme(dark ? "vs-dark" : "vs");
   }, [dark]);
 
-  return <Box ref={host} sx={{ height, border: 1, borderColor: "divider" }} />;
+  return <Box ref={host} sx={{ height, border: 1, borderColor: "divider", borderRadius: 1, overflow: "hidden" }} />;
 }

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
+import { translateBackend } from "../shell/backendMessages";
 import { request } from "../shell/api";
 
 export interface Change {
@@ -129,14 +130,29 @@ export const getVersion = (model: string, version: number) =>
   request<{ version: number; content: string }>(`/models/${model}/versions/${version}`);
 export const listRuns = (model: string) => request<Run[]>(`/models/${model}/runs`);
 
-export const planModel = (text: string) => request<Plan>("/models/plan", yaml("POST", text));
+// The texts of a plan are the backend's own; they are read in the language of the interface.
+const readable = (plan: Plan): Plan => ({
+  ...plan,
+  rejections: plan.rejections.map((text) => translateBackend(text)),
+  questions: plan.questions.map((text) => translateBackend(text)),
+  changes: plan.changes.map((change) => ({ ...change, detail: change.detail ? translateBackend(change.detail) : change.detail })),
+});
+
+export const planModel = async (text: string) => readable(await request<Plan>("/models/plan", yaml("POST", text)));
 export const applyModel = (text: string, base?: number, accept?: string) =>
   request<Applied>(`/models/apply${query({ base, accept })}`, yaml("POST", text));
 
-export const planRollback = (model: string) => request<Plan>(`/models/${model}/rollback/plan`, { method: "POST" });
+export const planRollback = async (model: string) =>
+  readable(await request<Plan>(`/models/${model}/rollback/plan`, { method: "POST" }));
 export const rollbackModel = (model: string, base: number, accept?: string) =>
   request<Applied>(`/models/${model}/rollback${query({ base, accept })}`, { method: "POST" });
 
-export const listOutbox = (status: OutboxStatus, page: number, size: number) =>
-  request<OutboxPage>(`/outbox${query({ status, page, size })}`);
+export const listOutbox = async (status: OutboxStatus, page: number, size: number) => {
+  const loaded = await request<OutboxPage>(`/outbox${query({ status, page, size })}`);
+  loaded.page.items = loaded.page.items.map((item) => ({
+    ...item,
+    last_error: item.last_error ? translateBackend(item.last_error) : item.last_error,
+  }));
+  return loaded;
+};
 export const retryOutbox = (id: number) => request<null>(`/outbox/${id}/retry`, { method: "POST" });

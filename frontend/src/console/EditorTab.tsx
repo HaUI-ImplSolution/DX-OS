@@ -1,11 +1,33 @@
 // SPDX-License-Identifier: Apache-2.0
 import { useEffect, useMemo, useState } from "react";
-import { Alert, Box, Button, MenuItem, TextField, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  Chip,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  MenuItem,
+  Step,
+  StepLabel,
+  Stepper,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import YAML from "yaml";
 import { ApiError } from "../shell/api";
 import { applyModel, planModel, type Family, type Plan } from "./api";
 import ModelForm from "./ModelForm";
 import PlanPanel from "./PlanPanel";
+import { FAMILY_LABEL } from "./labels";
 import ProcessDiagram from "./ProcessDiagram";
 import YamlEditor from "./YamlEditor";
 
@@ -44,6 +66,7 @@ export default function EditorTab({ text, source, schema, families, onText, onAp
   const [problems, setProblems] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [entity, setEntity] = useState("");
+  const [zoomed, setZoomed] = useState(false);
 
   useEffect(() => {
     setPlan(null);
@@ -96,55 +119,100 @@ export default function EditorTab({ text, source, schema, families, onText, onAp
       onApplied(`Đã áp dụng ${done.model} phiên bản ${done.version}`);
     });
 
+  const step = plan ? 2 : 1;
   return (
-    <Box>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
-        <ToggleButtonGroup size="small" exclusive value={mode} onChange={(_, next) => next && setMode(next)}>
-          <ToggleButton value="yaml">Soạn YAML</ToggleButton>
-          <ToggleButton value="form">Điền form</ToggleButton>
-        </ToggleButtonGroup>
-        <Typography variant="body2" sx={{ flexGrow: 1 }}>
-          {source}
-        </Typography>
-        <Button variant="contained" disabled={busy || parsed.error !== null} onClick={showPlan}>
-          Xem kế hoạch
-        </Button>
-      </Box>
-      {problems.length > 0 && (
-        <Alert severity="error" sx={{ mb: 1 }}>
-          {problems.map((problem) => (
-            <div key={problem}>{problem}</div>
+    <Box sx={{ display: "grid", gap: 2, alignItems: "start", gridTemplateColumns: { xs: "1fr", lg: "minmax(0, 3fr) minmax(0, 2fr)" } }}>
+      <Card sx={{ p: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1.5, flexWrap: "wrap" }}>
+          <ToggleButtonGroup size="small" exclusive value={mode} onChange={(_, next) => next && setMode(next)}>
+            <ToggleButton value="yaml">Soạn YAML</ToggleButton>
+            <ToggleButton value="form">Điền form</ToggleButton>
+          </ToggleButtonGroup>
+          <Chip size="small" variant="outlined" label={source} />
+          <Box sx={{ flexGrow: 1 }} />
+          <Button variant="contained" disabled={busy || parsed.error !== null} onClick={showPlan}>
+            Xem kế hoạch
+          </Button>
+        </Box>
+        {problems.length > 0 && (
+          <Alert severity="error" sx={{ mb: 1.5 }}>
+            {problems.map((problem) => (
+              <div key={problem}>{problem}</div>
+            ))}
+          </Alert>
+        )}
+        {mode === "yaml" && <YamlEditor value={text} onChange={onText} height="min(62vh, 640px)" />}
+        {mode === "form" &&
+          (parsed.error ? (
+            <Alert severity="warning">Sửa lỗi cú pháp ở chế độ YAML trước: {parsed.error}</Alert>
+          ) : (
+            <>
+              <Alert severity="info" sx={{ mb: 1.5 }}>
+                Điền form viết lại tệp, dòng chú thích đầu tệp được giữ.
+              </Alert>
+              <ModelForm schema={schema} value={parsed.value} onChange={fromForm} />
+            </>
           ))}
-        </Alert>
-      )}
-      {mode === "yaml" && <YamlEditor value={text} onChange={onText} />}
-      {mode === "form" &&
-        (parsed.error ? (
-          <Alert severity="warning">Sửa lỗi cú pháp ở chế độ YAML trước: {parsed.error}</Alert>
-        ) : (
-          <>
-            <Alert severity="info" sx={{ mb: 1 }}>
-              Điền form viết lại tệp, dòng chú thích đầu tệp được giữ.
-            </Alert>
-            <ModelForm schema={schema} value={parsed.value} onChange={fromForm} />
-          </>
-        ))}
-      {plan && <PlanPanel plan={plan} busy={busy} onApply={apply} />}
-      {processes.length > 0 && (
-        <Box sx={{ mt: 3 }}>
-          <Box sx={{ display: "flex", gap: 2, alignItems: "center", mb: 1 }}>
-            <Typography variant="h6">Sơ đồ quy trình</Typography>
-            <TextField select size="small" value={selected?.name ?? ""} onChange={(event) => setEntity(event.target.value)}>
+      </Card>
+      <Box sx={{ display: "grid", gap: 2 }}>
+        <Card sx={{ p: 2.5 }}>
+          <Stepper activeStep={step} alternativeLabel sx={{ mb: plan ? 2.5 : 0 }}>
+            <Step>
+              <StepLabel>Soạn mô hình</StepLabel>
+            </Step>
+            <Step>
+              <StepLabel>Xem kế hoạch</StepLabel>
+            </Step>
+            <Step>
+              <StepLabel>Áp dụng</StepLabel>
+            </Step>
+          </Stepper>
+          {!plan && (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+              Soạn xong thì bấm "Xem kế hoạch": hệ thống so tệp với mô hình đang chạy, cho biết sẽ đổi gì, mức rủi ro và
+              những dòng dữ liệu vi phạm quy tắc mới, mà chưa thay đổi gì.
+            </Typography>
+          )}
+          {plan && <PlanPanel plan={plan} busy={busy} onApply={apply} />}
+        </Card>
+        {processes.length > 0 && (
+          <Card sx={{ p: 2.5 }}>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                Sơ đồ quy trình
+              </Typography>
+              <Tooltip title="Mở to">
+                <IconButton size="small" onClick={() => setZoomed(true)} aria-label="Mở to sơ đồ">
+                  <OpenInFullIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
+            <TextField select fullWidth size="small" sx={{ mb: 1.5 }} value={selected?.name ?? ""} onChange={(event) => setEntity(event.target.value)}>
               {processes.map((item) => (
                 <MenuItem key={item.name} value={item.name}>
-                  {item.name} ({item.family})
+                  {item.name} ({FAMILY_LABEL[item.family] ?? item.family})
                 </MenuItem>
               ))}
             </TextField>
-          </Box>
-          {family && <ProcessDiagram family={family} />}
-        </Box>
-      )}
+            {family && <ProcessDiagram family={family} />}
+          </Card>
+        )}
+        {family && (
+          <Dialog open={zoomed} onClose={() => setZoomed(false)} maxWidth="xl" fullWidth>
+            <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Box sx={{ flexGrow: 1 }}>
+                Sơ đồ quy trình: {selected?.name} ({FAMILY_LABEL[family.name] ?? family.name})
+              </Box>
+              <IconButton onClick={() => setZoomed(false)} aria-label="Đóng">
+                <CloseIcon />
+              </IconButton>
+            </DialogTitle>
+            <DialogContent>
+              <ProcessDiagram family={family} height="68vh" spacing={360} />
+            </DialogContent>
+          </Dialog>
+        )}
+      </Box>
     </Box>
   );
 }

@@ -764,3 +764,12 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* Links inside tables read as links without being underlined all the time. */
+.MuiTableCell-root a {
+  text-decoration: none;
+  font-weight: 600;
+}
+.MuiTableCell-root a:hover {
+  text-decoration: underline;
+}

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { clearSession, getToken } from "./auth";
+import { translateData } from "./backendMessages";
 import { errorMessageFor, statusMessageFor } from "./errorMessages";
 import type { ApiResponse } from "./types";
 
@@ -34,7 +35,7 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   }
   if (!response.ok || !body?.success) {
     const message = errorMessageFor(body?.errorCode, body?.message ?? statusMessageFor(response.status));
-    throw new ApiError(message, response.status, body?.data);
+    throw new ApiError(message, response.status, translateData(body?.data));
   }
   return body.data;
 }

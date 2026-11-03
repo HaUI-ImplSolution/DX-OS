@@ -1,22 +1,53 @@
 // SPDX-License-Identifier: Apache-2.0
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Box, Typography } from "@mui/material";
 import { Background, Controls, MarkerType, ReactFlow, type Edge, type Node } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import type { Family } from "./api";
 
 const WITHDRAW = "withdraw";
+const NODE_WIDTH = 150;
+const NODE_HEIGHT = 40;
+const BOX_HEIGHT = 360;
 
 // The states and actions of a process family, laid out from the first state to the final ones.
-export default function ProcessDiagram({ family }: { family: Family }) {
-  const { nodes, edges } = useMemo(() => layout(family), [family]);
+export default function ProcessDiagram({
+  family,
+  height = BOX_HEIGHT,
+  spacing = 260,
+}: {
+  family: Family;
+  height?: number | string;
+  // Distance between the columns of states; a larger box gives the labels of the arrows room.
+  spacing?: number;
+}) {
+  const { nodes, edges } = useMemo(() => layout(family, spacing), [family, spacing]);
+  const box = useRef<HTMLDivElement | null>(null);
+  const [size, setSize] = useState({ width: 0, height: 0 });
+  // The diagram is fitted again whenever its box changes width, so it never keeps the size of a first, narrower layout.
+  useEffect(() => {
+    if (!box.current) return undefined;
+    const observer = new ResizeObserver(([entry]) =>
+      setSize({ width: Math.round(entry.contentRect.width), height: Math.round(entry.contentRect.height) }),
+    );
+    observer.observe(box.current);
+    return () => observer.disconnect();
+  }, []);
+  // Centred and as large as the box allows, up to its natural size.
+  const viewport = useMemo(() => {
+    const maxX = Math.max(...nodes.map((node) => node.position.x)) + NODE_WIDTH;
+    const maxY = Math.max(...nodes.map((node) => node.position.y)) + NODE_HEIGHT;
+    const zoom = Math.min(1.1, Math.max(0.3, (size.width - 48) / maxX), Math.max(0.3, (size.height - 48) / maxY));
+    return { zoom, x: (size.width - maxX * zoom) / 2, y: (size.height - maxY * zoom) / 2 };
+  }, [nodes, size]);
   return (
-    <Box sx={{ height: 380, border: 1, borderColor: "divider" }}>
+    <Box ref={box} sx={{ height, border: 1, borderColor: "divider", borderRadius: 1, overflow: "hidden" }}>
       <ReactFlow
+        key={`${family.name}-${size.width}-${size.height}`}
         nodes={nodes}
         edges={edges}
-        fitView
-        fitViewOptions={{ padding: 0.15, minZoom: 0.6, maxZoom: 1.1 }}
+        defaultViewport={viewport}
+        minZoom={0.3}
         nodesDraggable={false} nodesConnectable={false} proOptions={{ hideAttribution: true }}>
         <Background />
         <Controls showInteractive={false} />
@@ -28,7 +59,7 @@ export default function ProcessDiagram({ family }: { family: Family }) {
   );
 }
 
-function layout(family: Family): { nodes: Node[]; edges: Edge[] } {
+function layout(family: Family, spacing: number): { nodes: Node[]; edges: Edge[] } {
   const steps = family.actions.filter((action) => action.name !== WITHDRAW);
   const depth = new Map<string, number>([[family.initial, 0]]);
   const queue = [family.initial];
@@ -52,7 +83,7 @@ function layout(family: Family): { nodes: Node[]; edges: Edge[] } {
       rows.set(column, row + 1);
       return {
         id: state.name,
-        position: { x: column * 320, y: row * 90 },
+        position: { x: column * spacing, y: row * 90 },
         data: { label: state.label },
         style: {
           width: 150,

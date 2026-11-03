@@ -18,6 +18,7 @@ import {
   Typography,
 } from "@mui/material";
 import type { Plan } from "./api";
+import { CHANGE_KIND, RULE, label } from "./labels";
 
 const LEVELS: Record<string, { label: string; color: "success" | "warning" | "error"; text: string }> = {
   SAFE: { label: "An toàn", color: "success", text: "Áp dụng được ngay, không cần chuyển dữ liệu." },
@@ -46,11 +47,11 @@ export default function PlanPanel({ plan, busy, applyLabel = "Áp dụng", onApp
   const open = Object.entries(plan.openRecords);
 
   return (
-    <Box sx={{ mt: 2 }}>
-      <Box sx={{ display: "flex", gap: 1, alignItems: "center", mb: 1 }}>
+    <Box>
+      <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap", mb: 1.5 }}>
         <Typography variant="h6">Kế hoạch</Typography>
         <Chip size="small" color={level.color} label={level.label} />
-        <Typography variant="body2">
+        <Typography variant="body2" color="text.secondary">
           {plan.model}: phiên bản {plan.fromVersion} → {plan.version}
         </Typography>
       </Box>
@@ -72,7 +73,7 @@ export default function PlanPanel({ plan, busy, applyLabel = "Áp dụng", onApp
             {plan.violations.map((violation) => (
               <ListItem key={`${violation.entity}-${violation.field}-${violation.rule}`}>
                 <ListItemText
-                  primary={`${violation.entity}${violation.field ? `.${violation.field}` : ""}: ${violation.rule}, ${violation.rows} dòng`}
+                  primary={`${violation.entity}${violation.field ? `.${violation.field}` : ""}: ${label(RULE, violation.rule)}, ${violation.rows} dòng`}
                   secondary={violation.sample.length ? `Ví dụ mã dòng: ${violation.sample.join(", ")}` : undefined}
                 />
               </ListItem>
@@ -80,40 +81,50 @@ export default function PlanPanel({ plan, busy, applyLabel = "Áp dụng", onApp
           </List>
         </Alert>
       )}
-      {!unchanged && !blocked && <Alert severity={level.color === "success" ? "success" : level.color}>{level.text}</Alert>}
+      {!unchanged && !blocked && <Alert severity={level.color}>{level.text}</Alert>}
       {open.length > 0 && (
         <Alert severity="info" sx={{ mt: 1 }}>
           Hồ sơ đang xử lý bị ảnh hưởng: {open.map(([entity, count]) => `${entity} ${count}`).join(", ")}.
         </Alert>
       )}
       {plan.changes.length > 0 && (
-        <Table size="small" sx={{ mt: 1 }}>
+        <Table size="small" sx={{ mt: 1.5 }}>
           <TableHead>
             <TableRow>
               <TableCell>Thay đổi</TableCell>
               <TableCell>Thực thể</TableCell>
               <TableCell>Trường</TableCell>
-              <TableCell>Chi tiết</TableCell>
               <TableCell>Mức</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {plan.changes.map((change, index) => (
-              <TableRow key={`${change.kind}-${change.entity}-${change.field}-${index}`}>
-                <TableCell>{change.kind}</TableCell>
-                <TableCell>{change.entity}</TableCell>
-                <TableCell>{change.field ?? ""}</TableCell>
-                <TableCell>{change.detail ?? ""}</TableCell>
-                <TableCell>{(LEVELS[change.level] ?? LEVELS.SAFE).label}</TableCell>
-              </TableRow>
-            ))}
+            {plan.changes.map((change, index) => {
+              const changeLevel = LEVELS[change.level] ?? LEVELS.SAFE;
+              return (
+                <TableRow key={`${change.kind}-${change.entity}-${change.field}-${index}`}>
+                  <TableCell>
+                    {label(CHANGE_KIND, change.kind)}
+                    {change.detail && (
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        {change.detail}
+                      </Typography>
+                    )}
+                  </TableCell>
+                  <TableCell>{change.entity}</TableCell>
+                  <TableCell>{change.field ?? "—"}</TableCell>
+                  <TableCell>
+                    <Chip size="small" variant="outlined" color={changeLevel.color} label={changeLevel.label} />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       )}
       {plan.statements.length > 0 && (
-        <details style={{ marginTop: 8 }}>
-          <summary>Câu lệnh sẽ chạy ({plan.statements.length})</summary>
-          <pre style={{ overflow: "auto", maxHeight: 220 }}>{plan.statements.join(";\n")}</pre>
+        <details style={{ marginTop: 12 }}>
+          <summary style={{ cursor: "pointer" }}>Câu lệnh SQL sẽ chạy ({plan.statements.length})</summary>
+          <pre style={{ overflow: "auto", maxHeight: 220, fontSize: 12 }}>{plan.statements.join(";\n")}</pre>
         </details>
       )}
       {needsConfirm && (
@@ -124,7 +135,7 @@ export default function PlanPanel({ plan, busy, applyLabel = "Áp dụng", onApp
         />
       )}
       {!unchanged && !blocked && (
-        <Box sx={{ mt: 1 }}>
+        <Box sx={{ mt: 1.5 }}>
           <Button
             variant="contained"
             color={plan.level === "LOSS" ? "error" : "primary"}

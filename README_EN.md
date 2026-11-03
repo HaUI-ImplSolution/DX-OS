@@ -25,7 +25,7 @@ The narrow loop from model file to end user runs:
 - A single-level approval workflow on an embedded Flowable, with a return for more information; the status of a record changes only through the workflow, in the same transaction as the write of the record.
 - Units declared in the model and kept as Keycloak groups; assignment, an inbox and the history of every record.
 - Changing a model that holds data: a preview by level of risk, renames that keep the values, a list of the rows breaking a new rule, a separate confirmation for losing data, and a return to the previous version.
-- A react-admin UI built from metadata, with no code written for any entity.
+- A react-admin UI built from metadata, in Vietnamese with a light and a dark mode, with no code written for any entity.
 
 Not yet connected: chat notifications, AI answers, Superset reports.
 The search service with cited sources in [`ai/`](./ai/README.md) runs on its own and is not in the stack.

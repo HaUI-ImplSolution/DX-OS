@@ -25,7 +25,7 @@ Phiên bản trước của dự án (hai ứng dụng nghiệp vụ viết tay)
 - Quy trình phê duyệt một cấp trên Flowable nhúng, có trả lại để bổ sung; trạng thái hồ sơ chỉ đổi qua quy trình, cùng giao dịch với việc ghi hồ sơ.
 - Đơn vị khai báo trong mô hình và đồng bộ thành nhóm Keycloak; giao việc, hộp việc và dòng lịch sử của từng hồ sơ.
 - Đổi mô hình khi đã có dữ liệu: xem trước theo mức rủi ro, đổi tên giữ nguyên dữ liệu, báo dòng vi phạm, xác nhận riêng khi mất dữ liệu, quay về phiên bản trước.
-- Giao diện react-admin dựng từ metadata, không có mã riêng cho thực thể nào.
+- Giao diện react-admin dựng từ metadata, bằng tiếng Việt và có chế độ sáng tối, không có mã riêng cho thực thể nào.
 
 Chưa nối vào hệ thống: thông báo chat, hỏi đáp bằng AI, báo cáo Superset.
 Dịch vụ tìm kiếm tri thức có nguồn ở [`ai/`](./ai/README.md) chạy riêng, chưa nằm trong stack.

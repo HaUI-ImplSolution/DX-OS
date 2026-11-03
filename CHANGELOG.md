@@ -7,6 +7,13 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
+- Giao diện web toàn tiếng Việt: chữ có sẵn của react-admin, thông báo lỗi và lỗi từng trường của backend, lỗi tệp mô hình theo dòng và cột, nhãn của kế hoạch áp dụng và lịch sử áp dụng.
+  Backend vẫn trả thông báo tiếng Anh kèm `errorCode`; frontend dịch theo mẫu ở `shell/backendMessages.ts`, và ngôn ngữ hiện tại giữ ở `shell/locale.ts` để thêm tiếng Anh sau.
+- Theme sáng và tối, thanh trên có thương hiệu, menu nhóm theo mô hình, trạng thái hiện thành nhãn màu theo ý nghĩa.
+- Hộp việc có thống kê nhanh và trạng thái rỗng; trang chi tiết hồ sơ dạng thẻ với dòng thời gian lịch sử, thẻ người xử lý và tệp; lịch đặt chỗ có chú giải và màu theo trạng thái.
+- Bảng điều khiển: thẻ mô hình đang chạy kèm số thực thể, vai, đơn vị; thư viện mẫu theo họ quy trình; trình soạn hai cột có các bước soạn, xem kế hoạch, áp dụng; sơ đồ quy trình mở to trong hộp thoại.
+- Thêm `ra-i18n-polyglot` làm dependency trực tiếp của web.
+
 ## [2.0.0] - 2026-11-03
 
 - Lõi dynamic: tệp mô hình khai báo thực thể, trường, vai, quyền và quy trình; `dx-model` đọc và kiểm tra, báo lỗi theo dòng và cột.

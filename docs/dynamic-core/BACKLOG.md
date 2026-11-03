@@ -47,14 +47,14 @@ Mốc dưới đây là dự kiến.
 | Đổi thành viên đơn vị | Chỉ có hiệu lực sau khi người đó lấy token mới |
 | Ngôn ngữ giao diện | Chỉ có tiếng Việt; thông báo mới của backend chưa có mẫu ở `backendMessages.ts` hiện nguyên văn tiếng Anh, vài thông báo lỗi còn tên trạng thái hoặc hành động dạng mã, và ô chọn ngày giờ theo ngôn ngữ của trình duyệt |
 
-## 4. Rủi ro kỹ thuật cần xác minh
+## 4. Rủi ro kỹ thuật hiện tại
 
-| Rủi ro | Ghi chú |
+| Rủi ro | Tác động hiện tại |
 |---|---|
-| Áp dụng dở trên mô hình đang chạy | Các bước đổi schema, cập nhật Keycloak và lưu phiên bản commit riêng. Kịch bản phục hồi hiện chỉ kiểm lần áp dụng đầu; nếu đổi một mô hình đang chạy rồi lỗi sau bước schema, registry cũ có thể tiếp tục phục vụ trên schema đã đổi cho tới khi áp dụng lại |
-| Quyền đọc báo cáo bỏ qua phạm vi dòng | `report_ro` được đọc trực tiếp toàn bộ bảng nghiệp vụ, không đi qua các phạm vi `OWN`, `UNIT` và `ASSIGNED` của API. Trước khi nối BI cần xác định đây là biên tin cậy hay giới hạn dữ liệu bằng view hoặc RLS |
-| Outbox có thể giao lại tác dụng phụ | Khóa idempotency chỉ chống tạo trùng dòng outbox. Nếu hệ thống đích đã nhận nhưng backend dừng trước khi ghi `delivered_at`, handler sẽ chạy lại; mọi handler hiện tại và bổ sung sau này cần được chứng minh là idempotent |
-| Thay đổi ngoài engine gây drift | Schema, quyền cơ sở dữ liệu hoặc role và group Keycloak bị sửa trực tiếp chưa được phát hiện và hòa giải định kỳ. Sai lệch chỉ lộ ra khi áp dụng lại hoặc khi một yêu cầu thất bại |
+| Kích hoạt phiên bản không nguyên tử | Đổi schema, cập nhật Keycloak, lưu phiên bản và nạp registry không có cùng điểm commit. Lỗi sau khi schema đã đổi làm API tiếp tục dùng mô hình cũ; lỗi khi nạp registry xảy ra sau khi lượt áp dụng đã ghi `done`, nên áp dụng lại cùng tệp trả `unchanged` mà không nạp lại |
+| Hồ sơ đang chạy không gắn phiên bản mô hình | Bản ghi và biến quy trình chỉ lưu tên mô hình, không lưu phiên bản. `CHANGE_HANDLER`, `CHANGE_DEADLINE` và `CHANGE_COMPLETION` được coi là `SAFE`, trong khi task Flowable giữ `handlerRole` cũ còn API, hạn xử lý và hành động hoàn tất đọc mô hình mới; một hồ sơ có thể bị hai phiên bản quy tắc chi phối |
+| Xóa thực thể bỏ lại tài nguyên của hồ sơ | `DROP_ENTITY` ở mức `LOSS` xóa bảng nhưng không hủy process instance Flowable, xóa dòng tệp đính kèm hay xóa đối tượng trong SeaweedFS. Các task, siêu dữ liệu và tệp còn lại không còn đường truy cập hoặc dọn dẹp từ mô hình mới |
+| Vai và đơn vị không được cách ly theo mô hình | Vai realm và group Keycloak dùng tên toàn cục, còn API chỉ so tên trong token; nếu hai mô hình độc lập khai báo trùng tên, người có vai của mô hình thứ nhất được nhận quyền truy cập, xử lý và hành động của mô hình thứ hai, thành viên đơn vị của mô hình thứ nhất được đọc hoặc sửa các dòng cùng tên đơn vị của mô hình thứ hai, và danh sách người có thể giao việc cũng lấy nhầm người từ vai hoặc group dùng chung; lúc áp dụng, đối tượng Keycloak đã tồn tại được tái sử dụng mà không có namespace theo mô hình, kiểm tra xung đột giữa các mô hình hay khai báo chia sẻ tường minh |
 
 ## 5. Chưa kiểm thử
 

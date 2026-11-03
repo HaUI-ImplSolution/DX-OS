@@ -66,7 +66,7 @@ def main():
     check("T5-02 nothing changed", status == 200 and body["data"] == [], str(body))
 
     # T5-01: apply into an empty system.
-    equipment = read("models/equipment.yaml")
+    equipment = read("backend/dx-engine/src/main/resources/templates/equipment.yaml")
     status, body = kc.api(admin, "POST", "/models/plan", equipment, YAML)
     check("T5-01 plan lists steps", status == 200 and body["data"]["action"] == "create"
           and len(body["data"]["statements"]) > 8, f"{status} statements={len(body['data']['statements'])}")
@@ -199,7 +199,7 @@ def main():
     check("T5-15 big page", status == 200 and len(body["data"]["items"]) == 200)
 
     # T5-17 (API side): a second model is served without a restart.
-    status, body = kc.api(admin, "POST", "/models/apply", read("models/notes.yaml"), YAML)
+    status, body = kc.api(admin, "POST", "/models/apply", read("backend/dx-engine/src/main/resources/templates/notes.yaml"), YAML)
     check("T5-17 second model applied", status == 200, f"{status} {body}")
     kc.ensure_user("editor1", ["EDITOR"])
     editor = kc.token("editor1")

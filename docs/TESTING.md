@@ -48,7 +48,7 @@ python3 deploy/dev/check_booking.py         # sau check_process.py, trên cùng 
 python3 deploy/dev/check_demo.py            # sau các script trên hoặc trên stack rỗng
 ```
 
-Tiêu chí 3 của `check_demo.py` (chặn tệp nhiễm mã độc) chỉ chạy khi bật quét bằng `docker compose --profile av up -d`.
+Tiêu chí 3 của `check_demo.py` (chặn tệp nhiễm mã độc) chỉ chạy khi bật quét: đặt `COMPOSE_PROFILES=av` và `STORAGE_SCAN_HOST=clamav` trong `deploy/.env` rồi `docker compose up -d`.
 
 Script tạo client Keycloak `dxos-check` (cho phép đăng nhập bằng mật khẩu, chỉ dùng cho máy dev) và các người dùng thử `admin1`, `req1`, `req2`, `keeper1`, `multi1`, `none1`, `editor1`.
 Biến `DXOS_ENV_FILE`, `DXOS_BASE_URL`, `DXOS_PROJECT` đổi tệp env, địa chỉ gateway và tên project Compose.
@@ -156,6 +156,9 @@ Các dòng ghi "Phase 10" là kết quả của lần kiểm trước, cùng ng�
 | `check_process.py` | Đạt | 56/56: hai họ mẫu, lý do, rút lại, hạn và quá hạn, hành động hoàn tất qua outbox kèm thử lại, tệp đính kèm |
 | `check_booking.py` | Đạt | 44/44: họ `reservation`, danh mục của bảng điều khiển, mọi mẫu áp dụng được |
 | `check_demo.py` | Đạt | 26/26: tám tiêu chí của kịch bản trình diễn, không bật `av` |
+| `check_demo.py` với `av` | Đạt | Tiêu chí 3: tệp EICAR bị từ chối với 422 `ERR_FILE_INFECTED` và không được lưu |
+| Bảy script trên stack rỗng sau khi thêm `V5` và chỉ mục `handle_by` | Đạt | 324/324, trên bản cài bằng `dxos` với image build từ cây làm việc; có 11 chỉ mục `ix_*_handle_by` |
+| Bảng điều khiển và hồ sơ bằng Chrome | Đạt | Trình soạn báo vi phạm schema và gợi ý khóa của tệp mô hình, không lỗi trên trang; danh sách mô hình hiện tên người áp dụng; rút lại hỏi xác nhận, lý do hiện trong lịch sử |
 | Giao diện Phase 8 | Đạt | Phase 10: Chrome, tài khoản thử: tạo yêu cầu cấp quyền, hạn xử lý, tải tệp, rút lại, lịch sử đủ ba dòng |
 | Giao diện hồ sơ | Đạt | Phase 10: 20/20 bằng Chrome không giao diện: sinh viên nộp, cán bộ sai đơn vị không thấy, cán bộ đúng đơn vị nhận việc và trả lại, sinh viên sửa và nộp lại, cán bộ duyệt, kèm hộp việc và dòng lịch sử; 5/5 sau khi đổi tên và thêm trường, chỉ tải lại trang, không build lại |
 | Giao diện Phase 10 | Đạt | Phase 10: Chrome, stack dựng từ bản sao sạch: đăng nhập, bảng điều khiển liệt kê mô hình, thư viện mẫu hiện sáu mẫu |

@@ -8,6 +8,7 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  DialogContentText,
   DialogTitle,
   IconButton,
   MenuItem,
@@ -54,6 +55,9 @@ function actionStyle(action: ProcessAction): Pick<ButtonProps, "variant" | "colo
   return { variant: tone === "success" ? "contained" : "outlined", color };
 }
 
+// Withdrawing ends the record for good, so it asks for a confirmation and takes an optional reason.
+const WITHDRAW = "withdraw";
+
 // The actions of the process the signed-in user can take on this record now.
 export function ActionButtons({ model, entity }: Props) {
   const record = useRecordContext();
@@ -98,7 +102,7 @@ export function ActionButtons({ model, entity }: Props) {
           {...actionStyle(action)}
           sx={{ ml: 1 }}
           disabled={busy}
-          onClick={() => (action.needsNote ? setNoteFor(action) : send(action))}
+          onClick={() => (action.needsNote || action.name === WITHDRAW ? setNoteFor(action) : send(action))}
         >
           {action.label}
         </Button>
@@ -106,20 +110,26 @@ export function ActionButtons({ model, entity }: Props) {
       <Dialog open={noteFor !== null} onClose={() => setNoteFor(null)} fullWidth>
         <DialogTitle>{noteFor?.label}</DialogTitle>
         <DialogContent>
+          {noteFor?.name === WITHDRAW && (
+            <DialogContentText sx={{ mb: 2 }}>Hồ sơ đã rút lại sẽ dừng xử lý và không nộp lại được.</DialogContentText>
+          )}
           <MuiTextField
             autoFocus
             fullWidth
             multiline
             minRows={3}
-            label="Ghi chú"
+            label={noteFor?.needsNote ? "Ghi chú" : "Lý do (không bắt buộc)"}
             value={note}
             onChange={(event) => setNote(event.target.value)}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setNoteFor(null)}>Hủy</Button>
-          <Button disabled={busy || !note.trim()} onClick={() => noteFor && send(noteFor, note)}>
-            Gửi
+          <Button
+            disabled={busy || (noteFor?.needsNote === true && !note.trim())}
+            onClick={() => noteFor && send(noteFor, note.trim() || undefined)}
+          >
+            {noteFor?.name === WITHDRAW ? "Rút lại" : "Gửi"}
           </Button>
         </DialogActions>
       </Dialog>

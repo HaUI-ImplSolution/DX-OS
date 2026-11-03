@@ -48,7 +48,15 @@ export default function ProcessDiagram({
         edges={edges}
         defaultViewport={viewport}
         minZoom={0.3}
-        nodesDraggable={false} nodesConnectable={false} proOptions={{ hideAttribution: true }}>
+        nodesDraggable={false} nodesConnectable={false} proOptions={{ hideAttribution: true }}
+        // The diagram only shows; its key bindings listen on the whole page and would take Space and
+        // Backspace from the model editor beside it.
+        panActivationKeyCode={null}
+        deleteKeyCode={null}
+        selectionKeyCode={null}
+        multiSelectionKeyCode={null}
+        zoomActivationKeyCode={null}
+        disableKeyboardA11y>
         <Background />
         <Controls showInteractive={false} />
       </ReactFlow>

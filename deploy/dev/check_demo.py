@@ -79,7 +79,15 @@ def main():
     rt.check("C3 a file attaches", status == 200 and body["data"]["name"] == "giay-hen.pdf", f"{status} {body}")
     status, body = kc.api(dt, "GET", f"{BASE}/{record}/files")
     rt.check("C3 the officer sees the file", status == 200 and len(body["data"]) == 1, str(status))
-    print("NOTE C3 an infected file is refused by the virus scan when it is on (FileStoreServiceTest); not run here")
+    if kc.ENV.get("STORAGE_SCAN_HOST"):
+        # The EICAR test string, built at run time so scanners on this machine leave the script alone.
+        eicar = ("X5O!P%@AP[4\\PZX54(P^)7CC)7}$" + "EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*").encode()
+        status, body = upload(stu1, BASE, record, "evidence", "virus.pdf", eicar)
+        rt.check("C3 an infected file is refused", status == 422 and body.get("errorCode") == "ERR_FILE_INFECTED", f"{status} {body}")
+        status, body = kc.api(dt, "GET", f"{BASE}/{record}/files")
+        rt.check("C3 and is not stored", status == 200 and len(body["data"]) == 1, str(status))
+    else:
+        print("NOTE C3 the virus scan is off (STORAGE_SCAN_HOST blank); the infected file check is not run")
 
     # 4. A direct call that changes the state is refused.
     status, _ = kc.api(stu1, "PATCH", f"{BASE}/{record}", {"status": "approved"})

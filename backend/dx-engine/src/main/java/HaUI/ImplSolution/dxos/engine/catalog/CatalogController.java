@@ -45,7 +45,9 @@ public class CatalogController {
 
   @GetMapping("/{model}/versions")
   @Operation(summary = "The applied versions of a model, newest first",
-      description = "404 when no version of the model was applied.")
+      description = "applied_by is the user id of who applied the version, applied_by_name the name"
+          + " the token gave then (empty for versions saved without one). 404 when no version of the"
+          + " model was applied.")
   public ApiResponse<List<Map<String, Object>>> versions(@PathVariable String model) {
     return ApiResponse.success(catalog.versions(model));
   }

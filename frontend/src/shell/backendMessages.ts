@@ -15,6 +15,7 @@ const NAME = "\\[a-z\\]\\[a-z0-9_\\]\\*";
 // Most specific first: the general "... is required" comes last.
 const VI: Rule[] = [
   // A model file (the checker of the model format).
+  fixed("The model file has problems", "Tệp mô hình có lỗi"),
   pattern("invalid YAML: (.*)", "YAML không hợp lệ: $1"),
   fixed("the file must be a mapping with format, name, roles and entities", "Tệp phải là một mapping gồm format, name, roles và entities"),
   fixed("entities must be a mapping with at least one entity", "entities phải là một mapping có ít nhất một thực thể"),
@@ -138,6 +139,8 @@ const VI: Rule[] = [
   fixed("The file has no name", "Tệp chưa có tên"),
   fixed("Files of this type are not accepted", "Không nhận loại tệp này"),
   fixed("The file was rejected because the virus scan found malware in it", "Tệp bị từ chối vì quét virus phát hiện mã độc"),
+  fixed("The virus scanner cannot be reached", "Chưa quét virus được nên tệp chưa được lưu; thử lại sau ít phút"),
+  pattern("The virus scanner gave no verdict: (.*)", "Chưa quét virus được nên tệp chưa được lưu; thử lại sau ít phút ($1)"),
   fixed("The message was delivered already", "Thông điệp đã được gửi"),
 
   // The message of one field, shown under its input.

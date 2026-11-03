@@ -92,6 +92,7 @@ public final class DdlGenerator {
     if (entity.process() != null) {
       statements.add(index(entity, "status"));
       statements.add(index(entity, "assignee"));
+      statements.add(index(entity, "handle_by"));
     }
     entity.unitField().ifPresent(
         field -> statements.add(index(entity, names.getOrDefault(field.name(), field.name()))));

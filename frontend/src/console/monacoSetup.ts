@@ -5,10 +5,27 @@ import { configureMonacoYaml, type MonacoYaml } from "monaco-yaml";
 import yamlWorker from "monaco-yaml/yaml.worker?worker";
 
 self.MonacoEnvironment = {
-  getWorker(_workerId: string, label: string) {
-    return label === "yaml" ? new yamlWorker() : new editorWorker();
+  getWorker() {
+    return new editorWorker();
   },
 };
+
+type LegacyWorkerOptions = { createData?: unknown; host?: Record<string, Function>; keepIdleModels?: boolean };
+
+// monaco-yaml asks for its worker with the createWebWorker options of monaco-editor before 0.57
+// (label, moduleId, createData); since 0.57 the caller starts the worker and sends the creation data.
+const yamlMonaco = {
+  ...monaco,
+  editor: {
+    ...monaco.editor,
+    createWebWorker(options: LegacyWorkerOptions) {
+      const worker = new yamlWorker();
+      worker.postMessage("ignore");
+      worker.postMessage(options.createData);
+      return monaco.editor.createWebWorker({ worker, host: options.host, keepIdleModels: options.keepIdleModels });
+    },
+  },
+} as unknown as typeof monaco;
 
 let handle: MonacoYaml | null = null;
 
@@ -22,7 +39,7 @@ export function useModelSchema(schema: Record<string, unknown>) {
     schemas: [{ uri: "https://dxos.local/model-v0.schema.json", fileMatch: ["*"], schema }],
   };
   if (handle) void handle.update(config);
-  else handle = configureMonacoYaml(monaco, config);
+  else handle = configureMonacoYaml(yamlMonaco, config);
 }
 
 export { monaco };

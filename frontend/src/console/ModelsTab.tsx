@@ -30,6 +30,7 @@ import {
   planRollback,
   rollbackModel,
   type AppliedModel,
+  type AppliedVersion,
   type Plan,
   type Run,
 } from "./api";
@@ -46,6 +47,9 @@ interface Props {
 const message = (error: unknown) => (error instanceof Error ? error.message : "Không xử lý được");
 const modelTitle = (name: string) => name.replace(/_/g, " ").replace(/^./, (first) => first.toUpperCase());
 const shortId = (id: string) => (id.length > 12 ? `${id.slice(0, 8)}…` : id);
+// The name of who applied a version, or a short form of the user id for versions without one.
+const applier = (version: { applied_by: string; applied_by_name: string | null }) =>
+  version.applied_by_name || shortId(version.applied_by);
 
 // The models running now, with their history and the way back to the version before.
 export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Props) {
@@ -118,7 +122,7 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
               <Typography variant="body2" color="text.secondary">
                 Áp dụng {timeAgo(model.applied_at)}
                 <Tooltip title={`${formatDateTime(model.applied_at)} · người dùng ${model.applied_by}`}>
-                  <span> · bởi {shortId(model.applied_by)}</span>
+                  <span> · bởi {applier(model)}</span>
                 </Tooltip>
               </Typography>
               {summary ? (
@@ -155,7 +159,7 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
 }
 
 function HistoryDialog({ model, onClose, onChanged }: { model: string; onClose: () => void; onChanged: (message: string) => void }) {
-  const [versions, setVersions] = useState<{ version: number; applied_by: string; applied_at: string }[]>([]);
+  const [versions, setVersions] = useState<AppliedVersion[]>([]);
   const [runs, setRuns] = useState<Run[]>([]);
   const [plan, setPlan] = useState<Plan | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -210,7 +214,7 @@ function HistoryDialog({ model, onClose, onChanged }: { model: string; onClose: 
                 <TableCell>{formatDateTime(version.applied_at)}</TableCell>
                 <TableCell>
                   <Tooltip title={version.applied_by}>
-                    <span>{shortId(version.applied_by)}</span>
+                    <span>{applier(version)}</span>
                   </Tooltip>
                 </TableCell>
               </TableRow>

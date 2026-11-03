@@ -430,7 +430,7 @@ Những chỗ khó:
 
 Flowable thay phần workflow viết tay, người dùng không đụng tới BPMN.
 Đội viết sẵn và kiểm thử các họ mẫu quy trình, người dùng chỉ chọn họ mẫu và điền tham số như ai duyệt, hạn bao lâu, báo cho ai; xem [Quy trình chung](#quy-trình-chung).
-Flowable lo bộ đếm hạn, lịch sử và phiên bản quy trình.
+Hạn xử lý lưu trên bản ghi và quá hạn được tính khi đọc, một tác vụ định kỳ ghi dòng quá hạn vào lịch sử; Flowable lo phiên bản quy trình.
 
 Trạng thái hồ sơ không thể bị đi vòng:
 
@@ -720,6 +720,7 @@ Kết quả ở [`docs/TESTING.md`](../TESTING.md), mục 8:
 - react-admin dựng form và danh sách từ metadata cho kiểu văn bản, số, ngày giờ, lựa chọn và tham chiếu; mô hình thứ hai nạp lúc chạy không cần build lại giao diện.
 - pgschema đưa lược đồ về trạng thái đích khi đã có dữ liệu, với điều kiện lõi đổi tên cột, ràng buộc và chỉ mục trước; tự nó biến đổi tên thành xóa rồi thêm, nên lõi chặn mọi thao tác xóa mà mô hình không yêu cầu.
 - Kế hoạch xem trước khớp với áp dụng thật khi có đổi tên, và áp dụng lại sau lỗi giữa chừng về đúng trạng thái đích; kết quả thử ở [`docs/phase-7-model-change/04_TRADEOFFS_RISKS.md`](../phase-7-model-change/04_TRADEOFFS_RISKS.md).
+- Hành động hoàn tất đi qua bảng outbox và được thử lại tới khi Keycloak nhận; tệp đính kèm tải lên và tải xuống qua gateway; kết quả ở [`docs/TESTING.md`](../TESTING.md), mục 8.
 - `ProcessMigrationService` của Flowable chuyển được hồ sơ đang chạy sang mẫu mới và báo trước khi mẫu mới bỏ bước hiện tại; kết quả thử ở [`docs/phase-6-case-core/04_TRADEOFFS_RISKS.md`](../phase-6-case-core/04_TRADEOFFS_RISKS.md).
 
 ## Chưa xác minh

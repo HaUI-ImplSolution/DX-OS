@@ -26,7 +26,7 @@ The narrow loop from model file to end user runs:
 - Changing a model that holds data: a preview by level of risk, renames that keep the values, a list of the rows breaking a new rule, a separate confirmation for losing data, and a return to the previous version.
 - A react-admin UI built from metadata, with no code written for any entity.
 
-Not yet: file attachments, an event axis, chat notifications, AI, Superset reports.
+Not yet: chat notifications, AI, Superset reports.
 These are in the [design](./docs/dynamic-core/README.md).
 
 ## Run it
@@ -77,15 +77,19 @@ entities:
       reason: {type: text, required: true}
       from_at: {type: datetime, required: true}
     access: {BORROWER: own, KEEPER: all}
-    process: {template: approval, approver: KEEPER}
+    process: {family: approval, handler: KEEPER}
 ```
 
 - Field types: `text`, `number`, `datetime`, `choice`, `reference`, `user`, `unit`.
 - Units: declared in `units`, each one a Keycloak group; a `unit` field says which unit a record belongs to. A full example is [`models/onestop.yaml`](./models/onestop.yaml).
 - Access by role: `all` (every row, read and write), `own` (the rows of the user), `read` (every row, read only), `unit` (the rows of the units of the user), `assigned` (the rows assigned to the user); `owner_via` lets a child entity follow the owner of its parent.
-- Workflow: the `approval` template, one role approves, rejects or returns with a note for the owner to fix and submit again.
-  A record that has been decided can no longer be edited or deleted; an assigned record can only be handled by its assignee.
+- Workflow: `family` picks the process family (`approval` or `work_item`), `handler` is the role that handles records, `deadline` is an optional handling time (for example `72h`).
+  Rejecting and returning need a reason; the owner can withdraw a record that is not in a final state.
+  A record with a process cannot be deleted; a decided record can no longer be edited; an assigned record can only be handled by its assignee.
   The creator of a record cannot decide it unless `allow_self_decision: true` is declared.
+- Completion actions: `after` gives a list of operations for a final state, for example `after: {approved: [{do: add_to_group, user: created_by, group_from: group_field}]}`; they run after the transaction commits and are retried on failure.
+  See [`models/itaccess.yaml`](./models/itaccess.yaml).
+- Attachments: a `type: file` field, uploaded with `POST /api/v1/data/{model}/{entity}/{id}/files`; access follows the access to the record.
 - Changing a model: declare `renamed_from` when renaming a field; `default` fills a new required field on a table that has rows.
 - Schema for editors: [`model-v0.schema.json`](./backend/dx-model/src/main/resources/schema/model-v0.schema.json); sample bad files in [`models/invalid/`](./models/invalid).
 

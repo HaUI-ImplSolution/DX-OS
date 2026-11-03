@@ -75,7 +75,9 @@ public class DataController {
   }
 
   @DeleteMapping("/{id}")
-  @Operation(summary = "Delete a record")
+  @Operation(summary = "Delete a record",
+      description = "Refused with 409 for an entity with a process: the owner withdraws the record"
+          + " with the withdraw action instead, and it stays in a final state.")
   public ApiResponse<Void> delete(@PathVariable String model, @PathVariable String entity,
       @PathVariable long id) {
     Model m = registry.require(model);
@@ -89,7 +91,8 @@ public class DataController {
           + " and who may take it. The body may carry {\"note\": \"...\"}, required by the"
           + " actions that say so. 403 when the caller may not take it, or when the record is"
           + " assigned to someone else; 409 when the record is in another state. A terminal state"
-          + " stores decided_by and decided_at.")
+          + " stores decided_by and decided_at. The owner can take the action withdraw from any"
+          + " state that is not final.")
   public ApiResponse<Map<String, Object>> act(@PathVariable String model,
       @PathVariable String entity, @PathVariable long id, @PathVariable String action,
       @RequestBody(required = false) Map<String, String> body) {

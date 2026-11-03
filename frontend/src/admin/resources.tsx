@@ -23,7 +23,7 @@ import {
   required,
   useRecordContext,
 } from "react-admin";
-import { ActionButtons, AssignPanel, HistoryPanel } from "./caseParts";
+import { ActionButtons, AssignPanel, FilesPanel, HistoryPanel } from "./caseParts";
 import { resourceName, type EntityMeta, type FieldMeta, type ModelMeta } from "./types";
 
 interface Catalog {
@@ -45,7 +45,9 @@ function statusField(entity: EntityMeta) {
     <FunctionField
       key="status"
       label="Trạng thái"
-      render={(record: { status: string }) => labels[record.status] ?? record.status}
+      render={(record: { status: string; overdue?: boolean }) =>
+        `${labels[record.status] ?? record.status}${record.overdue ? " · Quá hạn" : ""}`
+      }
     />
   );
 }
@@ -114,6 +116,8 @@ function inputField(field: FieldMeta, catalog: Catalog) {
         </ReferenceInput>
       );
     }
+    case "file":
+      return null;
     default:
       return <TextInput key={field.name} source={field.name} label={field.label} validate={validate} />;
   }
@@ -178,8 +182,12 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
         {entity.fields.map((field) => outputField(field, catalog))}
         {entity.hasProcess && statusField(entity)}
         <DateField source="created_at" label="Tạo lúc" locales="vi-VN" showTime />
+        {entity.process?.deadlineSeconds != null && (
+          <DateField source="handle_by" label="Hạn xử lý" locales="vi-VN" showTime />
+        )}
         {entity.hasProcess && <DateField source="decided_at" label="Quyết định lúc" locales="vi-VN" showTime />}
         {entity.hasProcess && <AssignPanel model={model.name} entity={entity} />}
+        <FilesPanel model={model.name} entity={entity} />
         <HistoryPanel model={model.name} entity={entity} />
       </SimpleShowLayout>
     </Show>

@@ -51,7 +51,7 @@ Mô hình đi qua một đường duy nhất, từ hệ thống rỗng hay từ 
 
 `POST /api/v1/models/plan` không đổi bảng hay bản ghi nào, chỉ trả về:
 
-- Thay đổi theo ba mức, do `ModelDiff` so sánh hai phiên bản mô hình: `SAFE`, `MIGRATION`, `LOSS`; đổi kiểu trường và đổi mẫu quy trình bị từ chối.
+- Thay đổi theo ba mức, do `ModelDiff` so sánh hai phiên bản mô hình: `SAFE`, `MIGRATION`, `LOSS`; đổi kiểu trường và đổi họ mẫu quy trình bị từ chối.
 - Dòng đang vi phạm quy tắc mới, kèm một phần id.
 - Số hồ sơ đang xử lý của các quy trình bị ảnh hưởng.
 - Các câu lệnh sẽ chạy, do pgschema lập từ trạng thái đích mà `DdlGenerator` sinh ra.
@@ -82,7 +82,7 @@ sequenceDiagram
   D->>D: kiểm token, lấy vai, tra mô hình
   D->>D: kiểm quyền, kiểm kiểu và quy tắc của từng trường
   D->>P: INSERT (tham số hóa)
-  D->>F: khởi động quy trình approval
+  D->>F: khởi động quy trình của họ mẫu
   Note over D,F: cùng một giao dịch
   D-->>C: bản ghi, status = submitted
 ```
@@ -95,7 +95,13 @@ sequenceDiagram
 ## 5. Trạng thái chỉ đổi qua quy trình
 
 - Flowable chạy nhúng, dùng chung nguồn dữ liệu và giao dịch Spring; bảng của nó nằm ở schema `engine`.
-- Mẫu quy trình khai báo trạng thái và hành động ở `ProcessTemplate`; các bước nằm ở tệp BPMN cùng tên.
+- Họ mẫu quy trình (`approval`, `work_item`) khai báo trạng thái và hành động ở `ProcessFamily`; các bước nằm ở tệp BPMN cùng tên.
+- `ProcessRules` giữ các quy tắc mọi họ mẫu cùng chịu: vai và quyền của người làm, người tạo không tự quyết định, lý do khi từ chối hoặc trả lại, rút lại giữ bản ghi.
+- Hạn xử lý lưu ở cột `handle_by` khi hồ sơ chờ người xử lý; `overdue` được tính khi đọc.
+- Bảng `engine.outbox` nhận thông điệp trong giao dịch của thay đổi; `OutboxDispatcher` giao sau khi giao dịch xong, thử lại với thời gian chờ tăng dần, mỗi khóa một thông điệp.
+- Hành động hoàn tất của khối `after:` đi qua outbox đến `CompletionHandler`; hiện có thao tác `add_to_group` của Keycloak.
+- `OverdueSweep` ghi dòng quá hạn vào lịch sử, một lần cho mỗi hạn.
+- Trường kiểu `file` gắn tệp qua `AttachmentService`: byte ở SeaweedFS, siêu dữ liệu ở `engine.attachment`, quét ClamAV khi bật, quyền theo quyền của bản ghi.
 - API chung từ chối mọi yêu cầu có cột `status` (403); `POST .../{id}/actions/{action}` kiểm người được làm và trạng thái đầu, hoàn tất tác vụ, và bước kế của quy trình ghi trạng thái mới qua bean `recordStatus`.
 - Hồ sơ đã giao thì chỉ người được giao thực hiện được hành động của vai xử lý.
 - Hành động sai trạng thái bị từ chối (409); lỗi sau bước quy trình làm cả hồ sơ, quy trình lẫn dòng lịch sử quay về như cũ.
@@ -124,6 +130,6 @@ Chi tiết vận hành ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
 | Định danh và SSO | Keycloak, vai sinh từ mô hình |
 | Cổng API | APISIX kiểm token, giới hạn tốc độ, định tuyến |
 | Dữ liệu có cấu trúc | PostgreSQL, schema và ràng buộc sinh từ mô hình |
-| Dữ liệu phi cấu trúc | SeaweedFS và quét ClamAV ở `dx-core` (gắn vào trường tệp là bước sau) |
-| Động cơ luồng công việc | Flowable nhúng, mẫu `approval` |
+| Dữ liệu phi cấu trúc | SeaweedFS và quét ClamAV ở `dx-core`, gắn vào trường `file` của mô hình |
+| Động cơ luồng công việc | Flowable nhúng, họ mẫu `approval` và `work_item` |
 | Lõi không có giao diện | `dx-engine` chỉ phục vụ API; giao diện thuộc Tầng 2 |

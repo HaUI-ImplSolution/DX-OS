@@ -55,7 +55,7 @@
               "required": ["type"],
               "additionalProperties": false,
               "properties": {
-                "type": { "enum": ["text", "number", "datetime", "choice", "reference", "user", "unit"] },
+                "type": { "enum": ["text", "number", "datetime", "choice", "reference", "user", "unit", "file"] },
                 "label": { "type": "string" },
                 "required": { "type": "boolean" },
                 "unique": { "type": "boolean" },
@@ -73,12 +73,30 @@
           },
           "process": {
             "type": "object",
-            "required": ["template", "approver"],
+            "required": ["family", "handler"],
             "additionalProperties": false,
             "properties": {
-              "template": { "enum": ["approval"] },
-              "approver": { "type": "string" },
-              "allow_self_decision": { "type": "boolean" }
+              "family": { "enum": ["approval", "work_item"] },
+              "handler": { "type": "string" },
+              "allow_self_decision": { "type": "boolean" },
+              "deadline": { "type": "string", "pattern": "^[0-9]{1,6}[mhd]$" },
+              "after": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["do", "user"],
+                    "additionalProperties": false,
+                    "properties": {
+                      "do": { "enum": ["add_to_group"] },
+                      "user": { "type": "string" },
+                      "group": { "type": "string" },
+                      "group_from": { "type": "string" }
+                    }
+                  }
+                }
+              }
             }
           }
         }

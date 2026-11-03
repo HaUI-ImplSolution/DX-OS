@@ -9,7 +9,7 @@ import HaUI.ImplSolution.dxos.model.FieldType;
 import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
 import HaUI.ImplSolution.dxos.model.Model.Field;
-import HaUI.ImplSolution.dxos.model.ProcessTemplate;
+import HaUI.ImplSolution.dxos.model.ProcessFamily;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +49,7 @@ public final class DdlGenerator {
     columns.add("updated_at TIMESTAMPTZ NOT NULL DEFAULT now()");
     columns.add("version BIGINT NOT NULL DEFAULT 0");
     if (entity.process() != null) {
-      ProcessTemplate template = entity.process().definition();
+      ProcessFamily template = entity.process().definition();
       String values = template.states().stream().map(state -> literal(state.name()))
           .collect(Collectors.joining(", "));
       columns.add("status TEXT NOT NULL DEFAULT " + literal(template.initial())
@@ -57,6 +57,7 @@ public final class DdlGenerator {
       columns.add("assignee TEXT");
       columns.add("decided_by TEXT");
       columns.add("decided_at TIMESTAMPTZ");
+      columns.add("handle_by TIMESTAMPTZ");
     }
     for (Field field : entity.fields().values()) {
       String name = names.getOrDefault(field.name(), field.name());
@@ -155,7 +156,7 @@ public final class DdlGenerator {
 
   public static String sqlType(FieldType type) {
     return switch (type) {
-      case TEXT, CHOICE, USER, UNIT -> "TEXT";
+      case TEXT, CHOICE, USER, UNIT, FILE -> "TEXT";
       case NUMBER -> "NUMERIC";
       case DATETIME -> "TIMESTAMPTZ";
       case REFERENCE -> "BIGINT";

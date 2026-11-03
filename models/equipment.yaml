@@ -24,7 +24,7 @@ entities:
       due_at: {type: datetime, label: Hạn trả}
       quantity: {type: number, label: Số lượng}
     access: {BORROWER: own, KEEPER: all}
-    process: {template: approval, approver: KEEPER}
+    process: {family: approval, handler: KEEPER}
   loan_note:
     label: Ghi chú phiếu mượn
     fields:

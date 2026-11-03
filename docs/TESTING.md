@@ -42,6 +42,7 @@ python3 deploy/dev/check_api.py
 python3 deploy/dev/check_recovery.py        # sau check_api.py, trên cùng stack
 python3 deploy/dev/check_case.py            # sau check_recovery.py, trên cùng stack
 python3 deploy/dev/check_change.py          # sau check_case.py, trên cùng stack
+python3 deploy/dev/check_process.py         # sau check_change.py, trên cùng stack
 ```
 
 Script tạo client Keycloak `dxos-check` (cho phép đăng nhập bằng mật khẩu, chỉ dùng cho máy dev) và các người dùng thử `admin1`, `req1`, `req2`, `keeper1`, `multi1`, `none1`, `editor1`.
@@ -77,6 +78,12 @@ Biến `DXOS_ENV_FILE`, `DXOS_BASE_URL`, `DXOS_PROJECT` đổi tệp env, địa
 | T7-06, T7-07 | Đổi kiểu; xóa trường; quên `renamed_from` | Từ chối; mức `LOSS` và câu hỏi có phải đổi tên không; chỉ chạy với `accept=LOSS` |
 | T7-08 đến T7-10 | Hồ sơ đang xử lý; quay về phiên bản trước, cả khi có đổi tên | Có số hồ sơ; quay về là phiên bản mới, dữ liệu về tên cũ |
 | T7-11 | Áp dụng dừng sau khi đã đổi tên | Tệp khác bị 409; đúng tệp đó hoàn tất |
+| T8-01, T8-02 | Mô hình dùng cả hai họ mẫu; khối `process:` sai | Cả hai chạy không sửa mã lõi; 400 kèm dòng |
+| T8-03 đến T8-06 | Lý do, rút lại, xóa, người không được phép | 400 khi thiếu lý do; rút lại giữ bản ghi và ghi lịch sử; xóa 409; 403 |
+| T8-07 | Đổi hạn và người xử lý khi có hồ sơ; đổi họ mẫu | Mức `SAFE`, báo số hồ sơ đang chạy; đổi họ mẫu bị từ chối |
+| T8-08 | Hạn xử lý, quá hạn, hộp việc, bộ quét | Cờ quá hạn đúng, quá hạn lên đầu hộp việc, một dòng lịch sử cho mỗi hạn |
+| T8-09, T8-10 | Duyệt yêu cầu cấp quyền; nhóm Keycloak chưa có | Người dùng vào nhóm; thông điệp được thử lại tới khi nhóm có, mỗi khóa một thông điệp; từ chối không gửi gì |
+| T8-11 | Tệp đính kèm | Gắn, tải qua gateway, gỡ, quyền theo bản ghi; 409 khi hồ sơ đã quyết định |
 
 T5-11 và T6-14 cần dịch vụ chạy với `ENGINE_FAULT_AFTER_DECISION=true`; các script tự bật rồi tắt bằng cách tạo lại service `backend`.
 
@@ -124,8 +131,10 @@ Ngày 03/11/2026 trên clone sạch, stack dựng bằng `docker compose up -d -
 | Stack từ trạng thái sạch | Đạt | Tám service healthy |
 | `check_api.py` | Đạt | 51/51; danh sách 10.000 dòng có lọc và sắp xếp, phân vị 95 là 10 ms, trung vị 9 ms |
 | `check_recovery.py` | Đạt | 17/17 |
-| `check_case.py` | Đạt | 70/70 |
+| `check_case.py` | Đạt | 71/71 |
 | `check_change.py` | Đạt | 59/59 |
+| `check_process.py` | Đạt | 56/56: hai họ mẫu, lý do, rút lại, hạn và quá hạn, hành động hoàn tất qua outbox kèm thử lại, tệp đính kèm |
+| Giao diện Phase 8 | Đạt | Chrome, tài khoản thử: tạo yêu cầu cấp quyền, hạn xử lý, tải tệp, rút lại, lịch sử đủ ba dòng |
 | Giao diện | Đạt | 20/20 bằng Chrome không giao diện: sinh viên nộp, cán bộ sai đơn vị không thấy, cán bộ đúng đơn vị nhận việc và trả lại, sinh viên sửa và nộp lại, cán bộ duyệt, kèm hộp việc và dòng lịch sử; 5/5 sau khi đổi tên và thêm trường, chỉ tải lại trang, không build lại |
 | Từ khóa ứng dụng cũ | Đạt | Không còn ngoài `ai/`, `data/`, `bi/`, `chat/` và các tài liệu mô tả bản cũ |
 | CI trên GitHub | Đạt | CI Backend và Infra của nhánh `Khuong/phase-7-model-change`; các workflow khác không chạy vì không đổi phần liên quan |

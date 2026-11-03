@@ -24,7 +24,7 @@ entities:
     fields:
       title: {type: text, required: true}
     access: {ASKER: own, WORKER: assigned, COORD: all}
-    process: {template: approval, approver: WORKER}
+    process: {family: approval, handler: WORKER}
 """
 REQUEST = {"reason": "Cần giấy xác nhận", "kind": "Giấy xác nhận", "department": "DAO_TAO"}
 
@@ -70,7 +70,7 @@ def main():
     status, body = kc.api(officer, "GET", "/meta/models")
     meta = body["data"][0]["entities"][0]
     rt.check("T6-01 metadata has states and actions",
-             [s["name"] for s in meta["process"]["states"]] == ["submitted", "returned", "approved", "rejected"]
+             [s["name"] for s in meta["process"]["states"]] == ["submitted", "returned", "approved", "rejected", "withdrawn"]
              and meta["canHandle"] and meta["unitField"] == "department", str(meta["process"]))
 
     # T6-03, T6-04: rows by unit.
@@ -206,8 +206,10 @@ def main():
     rt.check("T6-13 only changed fields are recorded", details == ["reason"], str(details))
     status, doomed = kc.api(stu2, "POST", BASE, REQUEST)
     status, _ = kc.api(stu2, "DELETE", f"{BASE}/{doomed['data']['id']}")
-    code, kept = rt.psql(f"select count(*) from engine.record_event where record_id={doomed['data']['id']} and entity='request' and action='deleted'")
-    rt.check("T6-13 history outlives the record", status == 200 and kept == "1", f"{status} {kept}")
+    rt.check("T8-05 a record with a process cannot be deleted", status == 409, str(status))
+    status, body = act(stu2, doomed["data"]["id"], "withdraw", "Nộp nhầm")
+    code, kept = rt.psql(f"select count(*) from engine.record_event where record_id={doomed['data']['id']} and entity='request' and action='withdraw'")
+    rt.check("T8-04 withdrawing keeps the record and its history", status == 200 and body["data"]["status"] == "withdrawn" and kept == "1", f"{status} {kept}")
 
     # T6-16: a role that reaches only the records assigned to it.
     status, body = kc.api(admin, "POST", "/models/apply", ASSIGNED_MODEL, YAML)

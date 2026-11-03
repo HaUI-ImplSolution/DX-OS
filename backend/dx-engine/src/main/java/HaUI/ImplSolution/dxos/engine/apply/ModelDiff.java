@@ -210,13 +210,24 @@ public final class ModelDiff {
           entity.name(), null, "Only for an entity without rows"));
       return;
     }
-    if (!before.template().equals(after.template())) {
-      rejections.add("Entity " + entity.name() + " changes its process template, which is not"
+    if (!before.family().equals(after.family())) {
+      rejections.add("Entity " + entity.name() + " changes its process family, which is not"
           + " supported yet");
     }
-    if (!before.approver().equals(after.approver())
-        || before.allowSelfDecision() != after.allowSelfDecision()) {
-      changes.add(new Change(Level.SAFE, "CHANGE_PROCESS", entity.name(), null, after.approver()));
+    if (!before.handler().equals(after.handler())) {
+      changes.add(new Change(Level.SAFE, "CHANGE_HANDLER", entity.name(), null, after.handler()));
+    }
+    if (before.allowSelfDecision() != after.allowSelfDecision()) {
+      changes.add(new Change(Level.SAFE, "CHANGE_SELF_DECISION", entity.name(), null,
+          String.valueOf(after.allowSelfDecision())));
+    }
+    if (!Objects.equals(before.after(), after.after())) {
+      changes.add(new Change(Level.SAFE, "CHANGE_COMPLETION", entity.name(), null,
+          String.join(", ", after.after().keySet())));
+    }
+    if (!Objects.equals(before.deadline(), after.deadline())) {
+      changes.add(new Change(Level.SAFE, "CHANGE_DEADLINE", entity.name(), null,
+          after.deadline() == null ? "none" : after.deadline().toString()));
     }
   }
 }

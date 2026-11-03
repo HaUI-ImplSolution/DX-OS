@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.engine.process;
 
-import HaUI.ImplSolution.dxos.model.ProcessTemplate.Action;
-import HaUI.ImplSolution.dxos.model.ProcessTemplate.State;
+import HaUI.ImplSolution.dxos.model.ProcessFamily.Action;
+import HaUI.ImplSolution.dxos.model.ProcessFamily.State;
 import java.util.List;
 
-// The workflow an entity runs, as shown to clients.
-public record ProcessInfo(String template,String approver,boolean allowSelfDecision,List<State>states,List<Action>actions){}
+// The workflow an entity runs, as shown to clients; the deadline is in seconds, or null.
+public record ProcessInfo(String family,String handler,boolean allowSelfDecision,Long deadlineSeconds,List<State>states,List<Action>actions){}

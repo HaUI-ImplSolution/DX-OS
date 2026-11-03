@@ -8,12 +8,14 @@ import HaUI.ImplSolution.dxos.model.Model.Role;
 import HaUI.ImplSolution.dxos.model.Model.Unit;
 import HaUI.ImplSolution.dxos.model.ModelException.Problem;
 import java.io.StringReader;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -31,9 +33,11 @@ public final class ModelParser {
   public static final int FORMAT = 0;
 
   private static final Pattern NAME = Pattern.compile("[a-z][a-z0-9_]{0,39}");
+  private static final Pattern DEADLINE = Pattern.compile("([0-9]{1,6})([mhd])");
   private static final Pattern ROLE = Pattern.compile("[A-Z][A-Z0-9_]{0,39}");
-  private static final Set<String> RESERVED_FIELDS = Set.of("id", "created_by", "created_at",
-      "updated_at", "version", "status", "assignee", "decided_by", "decided_at");
+  private static final Set<String> RESERVED_FIELDS =
+      Set.of("id", "created_by", "created_at", "updated_at", "version", "status", "assignee",
+          "decided_by", "decided_at", "handle_by", "overdue");
 
   private final List<Problem> problems = new ArrayList<>();
 
@@ -249,7 +253,7 @@ public final class ModelParser {
     Map<String, Field> fields = readFields(map, keys.get("fields"), entityNames);
     Map<String, Scope> access = readAccess(map, keys.get("access"), roleNames);
     accessNodes.put(name, keys.get("access"));
-    Process process = readProcess(keys.get("process"), roleNames, access);
+    Process process = readProcess(keys.get("process"), roleNames, access, fields);
 
     String ownerVia = null;
     Node ownerNode = keys.get("owner_via");
@@ -315,7 +319,7 @@ public final class ModelParser {
     FieldType type = FieldType.of(scalar(typeNode)).orElse(null);
     if (type == null) {
       problem(typeNode, "unknown type " + scalar(typeNode)
-          + ", use text, number, datetime, choice, reference, user or unit");
+          + ", use text, number, datetime, choice, reference, user, unit or file");
       return null;
     }
     List<String> options = List.of();
@@ -342,6 +346,9 @@ public final class ModelParser {
     }
     boolean required = flag(keys.get("required"), "required");
     boolean unique = flag(keys.get("unique"), "unique");
+    if (type == FieldType.FILE && (required || unique)) {
+      problem(spec, "a file field is filled by uploading, so it cannot be required or unique");
+    }
     String renamedFrom = readRenamedFrom(name, keys.get("renamed_from"));
     String defaultValue = readDefault(type, options, unique, keys.get("default"));
     Node label = keys.get("label");
@@ -428,36 +435,129 @@ public final class ModelParser {
     return access;
   }
 
-  private Process readProcess(Node node, Set<String> roleNames, Map<String, Scope> access) {
+  private Process readProcess(Node node, Set<String> roleNames, Map<String, Scope> access,
+      Map<String, Field> fields) {
     if (node == null) {
       return null;
     }
     if (!(node instanceof MappingNode map)) {
-      problem(node, "process is a mapping with template and approver");
+      problem(node, "process is a mapping with family and handler");
       return null;
     }
-    Map<String, Node> keys = mapping(map, Set.of("template", "approver", "allow_self_decision"));
-    Node templateNode = keys.get("template");
-    String template = templateNode == null ? null : scalar(templateNode);
-    if (template == null || ProcessTemplate.find(template).isEmpty()) {
-      problem(templateNode == null ? map : templateNode,
-          "unknown process template, available: " + String.join(", ", ProcessTemplate.names()));
+    Map<String, Node> keys =
+        mapping(map, Set.of("family", "handler", "allow_self_decision", "deadline", "after"));
+    Node familyNode = keys.get("family");
+    String family = familyNode == null ? null : scalar(familyNode);
+    if (family == null || ProcessFamily.find(family).isEmpty()) {
+      problem(familyNode == null ? map : familyNode,
+          "unknown process family, available: " + String.join(", ", ProcessFamily.names()));
       return null;
     }
-    Node approverNode = keys.get("approver");
-    String approver = approverNode == null ? null : scalar(approverNode);
-    if (approver == null || !roleNames.contains(approver)) {
-      problem(approverNode == null ? map : approverNode,
-          "approver must be a role declared in roles");
+    Node handlerNode = keys.get("handler");
+    String handler = handlerNode == null ? null : scalar(handlerNode);
+    if (handler == null || !roleNames.contains(handler)) {
+      problem(handlerNode == null ? map : handlerNode, "handler must be a role declared in roles");
       return null;
     }
-    Scope approverScope = access.get(approver);
-    if (approverScope == null || approverScope == Scope.OWN) {
-      problem(approverNode,
-          "the approver role " + approver + " must have access all, read, unit or assigned");
+    Scope handlerScope = access.get(handler);
+    if (handlerScope == null || handlerScope == Scope.OWN) {
+      problem(handlerNode,
+          "the handler role " + handler + " must have access all, read, unit or assigned");
     }
-    return new Process(template, approver,
-        flag(keys.get("allow_self_decision"), "allow_self_decision"));
+    return new Process(family, handler,
+        flag(keys.get("allow_self_decision"), "allow_self_decision"),
+        deadline(keys.get("deadline")),
+        readAfter(keys.get("after"), ProcessFamily.find(family).orElseThrow(), fields));
+  }
+
+  private Map<String, List<Completion>> readAfter(Node node, ProcessFamily family,
+      Map<String, Field> fields) {
+    Map<String, List<Completion>> after = new LinkedHashMap<>();
+    if (node == null) {
+      return after;
+    }
+    if (!(node instanceof MappingNode states)) {
+      problem(node, "after maps a final state to a list of actions");
+      return after;
+    }
+    for (NodeTuple tuple : states.getValue()) {
+      String state = scalar(tuple.getKeyNode());
+      if (!family.isTerminal(state)) {
+        problem(tuple.getKeyNode(), state + " is not a final state of the family " + family.name());
+        continue;
+      }
+      if (!(tuple.getValueNode() instanceof SequenceNode list)) {
+        problem(tuple.getValueNode(), "a list of actions is required");
+        continue;
+      }
+      List<Completion> items = new ArrayList<>();
+      for (Node item : list.getValue()) {
+        Completion completion = readCompletion(item, fields);
+        if (completion != null) {
+          items.add(completion);
+        }
+      }
+      after.put(state, items);
+    }
+    return after;
+  }
+
+  private Completion readCompletion(Node node, Map<String, Field> fields) {
+    if (!(node instanceof MappingNode map)) {
+      problem(node, "an action is a mapping with do, user and group or group_from");
+      return null;
+    }
+    Map<String, Node> keys = mapping(map, Set.of("do", "user", "group", "group_from"));
+    Node doNode = keys.get("do");
+    String operation = doNode == null ? null : scalar(doNode);
+    if (operation == null || !Completion.OPERATIONS.contains(operation)) {
+      problem(doNode == null ? map : doNode, "unknown action, available: "
+          + String.join(", ", Completion.OPERATIONS.stream().sorted().toList()));
+      return null;
+    }
+    Node userNode = keys.get("user");
+    String user = userNode == null ? null : scalar(userNode);
+    Field userField = user == null ? null : fields.get(user);
+    if (user == null || (!Completion.CREATOR.equals(user)
+        && (userField == null || userField.type() != FieldType.USER))) {
+      problem(userNode == null ? map : userNode, "user must be created_by or a user field");
+      return null;
+    }
+    Node groupNode = keys.get("group");
+    Node groupFieldNode = keys.get("group_from");
+    if ((groupNode == null) == (groupFieldNode == null)) {
+      problem(map, "give either group or group_from");
+      return null;
+    }
+    String groupField = groupFieldNode == null ? null : scalar(groupFieldNode);
+    if (groupField != null) {
+      Field field = fields.get(groupField);
+      if (field == null || (field.type() != FieldType.CHOICE && field.type() != FieldType.TEXT)) {
+        problem(groupFieldNode, "group_from must be a choice or text field");
+        return null;
+      }
+    }
+    return new Completion(operation, user, groupNode == null ? null : scalar(groupNode),
+        groupField);
+  }
+
+  // A number followed by m (minutes), h (hours) or d (days), such as 90m, 72h or 3d.
+  private Duration deadline(Node node) {
+    if (node == null) {
+      return null;
+    }
+    String text = scalar(node);
+    Matcher matcher = DEADLINE.matcher(text == null ? "" : text);
+    if (!matcher.matches() || Long.parseLong(matcher.group(1)) == 0) {
+      problem(node, "deadline is a positive number followed by m, h or d, such as 72h");
+      return null;
+    }
+    long amount = Long.parseLong(matcher.group(1));
+    return switch (matcher.group(2)) {
+      case "m" -> Duration.ofMinutes(amount);
+      case "h" -> Duration.ofHours(amount);
+      default -> Duration.ofDays(amount);
+    };
   }
 
   private boolean flag(Node node, String what) {

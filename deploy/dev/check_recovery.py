@@ -50,7 +50,7 @@ def main():
     up("backend", {"ENGINE_FAULT_AFTER_DECISION": "false"})
     assert rt.wait_api()
     keeper = kc.token("keeper1")
-    status, body = kc.api(keeper, "POST", f"/data/equipment/loan/{loan}/actions/reject", {})
+    status, body = kc.api(keeper, "POST", f"/data/equipment/loan/{loan}/actions/reject", {"note": "Không đủ điều kiện"})
     rt.check("T5-11 decision works again", status == 200 and body["data"]["status"] == "rejected", f"{status}")
     code, tasks = rt.psql(f"select count(*) from engine.act_ru_task t join engine.act_ru_execution e on e.proc_inst_id_=t.proc_inst_id_ and e.parent_id_ is null where e.business_key_='equipment.loan.{loan}'")
     rt.check("T5-11 no task left for the record", tasks == "0", tasks)

@@ -29,7 +29,7 @@ entities:
       memo: {type: text}
       category: {type: reference, to: category}
     access: {BUYER: own, SELLER: all}
-    process: {template: approval, approver: SELLER}
+    process: {family: approval, handler: SELLER}
 """
 
 
@@ -145,7 +145,7 @@ def main():
     status, body = kc.api(buyer, "POST", BASE, {"item": "after"})
     rt.check("T7-05 the default fills a new row", status == 200 and body["data"]["source"] == "web", f"{status} {body}")
     extra = body["data"]["id"]
-    kc.api(buyer, "DELETE", f"{BASE}/{extra}")
+    kc.api(buyer, "POST", f"{BASE}/{extra}/actions/withdraw", {})
 
     # T7-06: refused changes.
     v6 = v5.replace("      priority: {type: number}", "      priority: {type: text}")
@@ -175,7 +175,7 @@ def main():
     rt.check("T7-07 column removed", cols == "0", cols)
 
     # T7-08: open records are reported; a rollback is a new version.
-    v9 = v8.replace("process: {template: approval, approver: SELLER}", "process: {template: approval, approver: SELLER, allow_self_decision: true}")
+    v9 = v8.replace("process: {family: approval, handler: SELLER}", "process: {family: approval, handler: SELLER, allow_self_decision: true}")
     the_plan = plan(admin, v9)
     rt.check("T7-08 open records reported", the_plan["openRecords"].get("order") == 4, str(the_plan["openRecords"]))
     untouched = v8.replace("  category:\n    fields:\n      title: {type: text, required: true}", "  category:\n    label: Danh mục\n    fields:\n      title: {type: text, required: true}")

@@ -24,7 +24,7 @@ entities:
       department: {type: unit, label: Đơn vị xử lý, required: true}
       needed_at: {type: datetime, label: Cần trước ngày}
     access: {STUDENT: own, OFFICER: unit, SUPERVISOR: read}
-    process: {template: approval, approver: OFFICER}
+    process: {family: approval, handler: OFFICER}
   request_note:
     label: Ghi chú hồ sơ
     fields:

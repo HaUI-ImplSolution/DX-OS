@@ -21,6 +21,12 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Giao diện react-admin dựng từ metadata, gồm hộp việc, nút hành động, giao việc và dòng lịch sử.
 - Stack chỉ gồm lõi và Tầng 2 (`postgres`, `keycloak`, `seaweedfs`, `backend`, `apisix`, `frontend`, `portal`, `monitor`, `clamav` qua profile); vai và cơ sở dữ liệu của Keycloak tạo bởi `deploy/postgres/init`; realm chỉ còn vai `ADMIN`.
 - Các script `deploy/dev/check_api.py`, `check_recovery.py`, `check_case.py` và `check_change.py` kiểm API, khả năng phục hồi, các tính năng của hồ sơ và việc đổi mô hình.
+- Họ mẫu quy trình `approval` và `work_item`; khối `process:` dùng `family`, `handler`, `allow_self_decision`, `deadline` và `after`.
+- Quy tắc bất biến của quy trình nằm trong engine: từ chối và trả lại cần lý do, người nộp rút lại hồ sơ và bản ghi được giữ lại, người tạo không tự quyết định.
+- Hạn xử lý theo bản ghi, hồ sơ quá hạn lên đầu hộp việc và có dòng quá hạn trong lịch sử.
+- Trục sự kiện bằng bảng outbox: hành động hoàn tất chạy sau khi giao dịch xong, thử lại được, một thông điệp cho mỗi khóa; mô hình `models/itaccess.yaml` thêm người dùng vào nhóm Keycloak sau khi duyệt.
+- Kiểu trường `file`: tệp đính kèm bản ghi, lưu ở SeaweedFS, quét ClamAV khi bật, quyền theo quyền của bản ghi.
+- Script `deploy/dev/check_process.py` kiểm quy trình chung.
 - Hai ứng dụng nghiệp vụ và ứng dụng di động của phiên bản trước nằm ở tag `v1.1.1`.
 
 ## [1.1.1] - 2026-10-30

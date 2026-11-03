@@ -19,6 +19,7 @@ export interface ProcessAction {
   name: string;
   label: string;
   from: string[];
+  to: string;
   by: "HANDLER" | "OWNER";
   needsNote: boolean;
 }
@@ -28,6 +29,7 @@ export interface ProcessInfo {
   handler: string;
   allowSelfDecision: boolean;
   deadlineSeconds: number | null;
+  booking: { resource: string; starts: string; ends: string; capacity: number } | null;
   states: ProcessState[];
   actions: ProcessAction[];
 }

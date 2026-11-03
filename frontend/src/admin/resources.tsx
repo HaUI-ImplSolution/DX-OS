@@ -1,12 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
 import {
   AutocompleteInput,
+  Button,
   Create,
+  CreateButton,
   Datagrid,
   DateField,
   DateTimeInput,
   Edit,
   EditButton,
+  FilterButton,
   FunctionField,
   List,
   NumberField,
@@ -23,6 +26,8 @@ import {
   required,
   useRecordContext,
 } from "react-admin";
+import EventIcon from "@mui/icons-material/Event";
+import { Link } from "react-router-dom";
 import { ActionButtons, AssignPanel, FilesPanel, HistoryPanel } from "./caseParts";
 import { resourceName, type EntityMeta, type FieldMeta, type ModelMeta } from "./types";
 
@@ -165,8 +170,24 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
       )),
   ];
 
+  const calendar = entity.process?.booking != null;
+  const ListActions = () => (
+    <TopToolbar>
+      <FilterButton />
+      {entity.canWrite && <CreateButton />}
+      <Button component={Link} to={`/calendar/${resourceName(model.name, entity.name)}`} label="Lịch">
+        <EventIcon />
+      </Button>
+    </TopToolbar>
+  );
+
   const EntityList = () => (
-    <List filters={filters} sort={{ field: "id", order: "DESC" }} exporter={false}>
+    <List
+      filters={filters}
+      actions={calendar ? <ListActions /> : undefined}
+      sort={{ field: "id", order: "DESC" }}
+      exporter={false}
+    >
       <Datagrid rowClick="show" bulkActionButtons={false}>
         <TextField source="id" />
         {entity.fields.map((field) => outputField(field, catalog))}

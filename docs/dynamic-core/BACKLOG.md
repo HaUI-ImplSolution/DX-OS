@@ -57,7 +57,6 @@ Mốc dưới đây là dự kiến.
 | Việc | Đã quyết |
 |---|---|
 | Tài khoản người dùng | Không khai báo trong tệp mô hình: tệp mô hình là cấu trúc và nằm trong git, người dùng là dữ liệu có email và mật khẩu; tài khoản nằm ở Keycloak |
-| Vai tách theo ứng dụng, đơn vị dùng chung | Hiện mọi mô hình tạo vai và nhóm cùng tên trong một realm, nên hai ứng dụng khai báo cùng tên vai sẽ dùng chung quyền. Đơn vị là cơ cấu tổ chức nên dùng chung giữa các ứng dụng; vai phải thuộc riêng từng ứng dụng và quản lý riêng. Làm trước: bộ kiểm từ chối vai trùng tên với vai của mô hình khác đang chạy. Cách tách hẳn đem vào buổi thảo luận; ứng viên là client role của Keycloak, mỗi mô hình một client |
 | Tab Người dùng trong bảng điều khiển | Danh sách người dùng với vai theo từng ứng dụng và đơn vị; tạo người dùng với mật khẩu tạm; gán, gỡ vai và đơn vị; khóa, mở; đặt lại mật khẩu; xem theo ứng dụng ai giữ vai nào. Viết ít mã nhất, dùng tối đa Keycloak: lõi chỉ mở API ADMIN mỏng trên Admin REST API, phần Keycloak đã làm tốt (chính sách mật khẩu, MFA, phiên, đăng nhập bằng nhà cung cấp ngoài) để lại cho Keycloak và mở bằng link |
 
 ## 6. Đề xuất từ rà soát đề thi và hướng thiết kế, chưa quyết
@@ -70,7 +69,6 @@ Mốc dưới đây là dự kiến.
 | 324 kiểm tra E2E chỉ chạy tay, CI không chạy | Nguyên tắc "kiểm thử từ góc người dùng" của README; 50 điểm kho mã | Job CI dựng stack bằng bộ cài từ gói của commit rồi chạy bảy script ở `deploy/dev` |
 | Trục sự kiện chỉ phát sự kiện hoàn tất ở trạng thái cuối, chưa có bên ngoài nào nghe được | README: mọi thay đổi hồ sơ và bước quy trình phát ra sự kiện; đề: kiến trúc hướng sự kiện, chống ốc đảo dữ liệu | Phát sự kiện cho mọi bước và mọi thay đổi hồ sơ, thêm webhook; đem vào buổi thảo luận phần mở rộng |
 | Ứng dụng Tầng 2 mới phủ P của H-P-D-I | Đề: ứng dụng minh họa nằm trong không gian H-P-D-I | D: trang thống kê dựng từ metadata (theo trạng thái, quá hạn, đơn vị), hoặc Superset với dataset sinh từ mô hình qua vai `report_ro` đang có. H: thông báo việc mới và nhắc hạn qua webhook hoặc email. I: để sau như đã định |
-| Áp dụng dở không tự thử lại hay quay lui | README "tự phục hồi"; nguyên lý Zero-Trust gắn GitOps, tự phục hồi | Tự chạy lại lần áp dụng dở khi dịch vụ khởi động, hoặc nút tiếp tục ở bảng điều khiển; không làm thì sửa README cho đúng |
 | Hồ sơ không lưu phiên bản mô hình lúc bắt đầu | README: quy trình đọc tham số theo phiên bản mô hình của hồ sơ | Làm cùng việc chuyển hồ sơ đang chạy bằng `ProcessMigrationService`, hoặc sửa README cho đúng hiện trạng |
 | Người dùng cuối không tự đổi mật khẩu, bật OTP hay xem phiên | Dùng tối đa Keycloak | Link "Tài khoản của tôi" tới Account Console của Keycloak trong menu người dùng; gần như không viết mã |
 | Chưa đo tài nguyên của toàn stack | Đối tượng SME, bộ cài càng nhẹ càng tốt; cũng là mục ở phần 4 | Đo bằng `docker stats` khi chạy bảy script, ghi số vào README và `doctor.sh` |

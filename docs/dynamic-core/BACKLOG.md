@@ -44,7 +44,16 @@ Mốc dưới đây là dự kiến.
 | Đổi thành viên đơn vị | Chỉ có hiệu lực sau khi người đó lấy token mới |
 | Ngôn ngữ giao diện | Chỉ có tiếng Việt; thông báo backend thêm sau mà chưa có mẫu ở `backendMessages.ts` hiện nguyên văn tiếng Anh, vài thông báo lỗi còn tên trạng thái hoặc hành động dạng mã, và ô chọn ngày giờ theo ngôn ngữ của trình duyệt |
 
-## 4. Chưa kiểm thử
+## 4. Rủi ro kỹ thuật hiện tại
+
+| Rủi ro | Tác động hiện tại |
+|---|---|
+| Kích hoạt phiên bản không nguyên tử | Đổi schema, cập nhật Keycloak, lưu phiên bản và nạp registry không có cùng điểm commit. Lỗi sau khi schema đã đổi làm API tiếp tục dùng mô hình cũ; lỗi khi nạp registry xảy ra sau khi lượt áp dụng đã ghi `done`, nên áp dụng lại cùng tệp trả `unchanged` mà không nạp lại |
+| Hồ sơ đang chạy không gắn phiên bản mô hình | Bản ghi và biến quy trình chỉ lưu tên mô hình, không lưu phiên bản. `CHANGE_HANDLER`, `CHANGE_DEADLINE` và `CHANGE_COMPLETION` được coi là `SAFE`, trong khi task Flowable giữ `handlerRole` cũ còn API, hạn xử lý và hành động hoàn tất đọc mô hình mới; một hồ sơ có thể bị hai phiên bản quy tắc chi phối |
+| Xóa thực thể bỏ lại tài nguyên của hồ sơ | `DROP_ENTITY` ở mức `LOSS` xóa bảng nhưng không hủy process instance Flowable, xóa dòng tệp đính kèm hay xóa đối tượng trong SeaweedFS. Các task, siêu dữ liệu và tệp còn lại không còn đường truy cập hoặc dọn dẹp từ mô hình mới |
+| Vai và đơn vị không được cách ly theo mô hình | Vai realm và group Keycloak dùng tên toàn cục, còn API chỉ so tên trong token; nếu hai mô hình độc lập khai báo trùng tên, người có vai của mô hình thứ nhất được nhận quyền truy cập, xử lý và hành động của mô hình thứ hai, thành viên đơn vị của mô hình thứ nhất được đọc hoặc sửa các dòng cùng tên đơn vị của mô hình thứ hai, và danh sách người có thể giao việc cũng lấy nhầm người từ vai hoặc group dùng chung; lúc áp dụng, đối tượng Keycloak đã tồn tại được tái sử dụng mà không có namespace theo mô hình, kiểm tra xung đột giữa các mô hình hay khai báo chia sẻ tường minh |
+
+## 5. Chưa kiểm thử
 
 | Việc | Ghi chú |
 |---|---|

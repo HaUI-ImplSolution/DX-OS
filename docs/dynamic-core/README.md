@@ -1,14 +1,14 @@
 # Lõi dynamic của DX-OS
 
-Định hướng và phạm vi đã chốt ngày 2026-11-02.
+Định hướng và phạm vi đã chốt ngày 2026-11-02, bổ sung ngày 2026-11-03.
 Vòng hẹp của lõi đã chạy và được kiểm chứng, kết quả ở mục [Đã xác minh](#đã-xác-minh); các điểm còn lại nằm ở mục [Chưa xác minh](#chưa-xác-minh).
 
 ## Tóm tắt
 
 - **Mục đích:** giữ phần nền ổn định và dùng chung, để nghiệp vụ bên trên đổi được nhanh, an toàn và không bị khóa vào nhà cung cấp nào.
 - **Cách dùng:** như Keycloak hay Superset, kéo về, đưa một tệp mô hình là có service hoàn chỉnh, sửa tệp là đổi được service.
-- **Miền phục vụ:** quản lý hồ sơ, đổi được mô hình và quy trình an toàn khi hệ thống đang chạy; xem [Miền phục vụ](#miền-phục-vụ).
-- **Người dùng chính:** người triển khai hệ thống cho một tổ chức.
+- **Miền phục vụ:** quy trình chung cho bản ghi có vòng đời và có người tham gia (hồ sơ, ticket, đặt chỗ, mượn trả...), đổi được mô hình và quy trình an toàn khi hệ thống đang chạy; xem [Miền phục vụ](#miền-phục-vụ).
+- **Người dùng chính:** người triển khai hệ thống cho một tổ chức, làm việc qua [bảng điều khiển](#bảng-điều-khiển).
 - **Cách xây:** lõi headless, ghép từ các dịch vụ nguồn mở; đội tự viết một dịch vụ Java gồm phần điều khiển và API chung đọc mô hình lúc chạy.
 - **Ba tính năng đào sâu:** GitOps cho nghiệp vụ, quy trình không lách được, tác tử AI có người duyệt; phần AI làm sau khi lõi hoàn toàn mở.
 - **Mở rộng:** người dùng có thể viết thêm API và giao diện, luôn nằm ngoài lõi.
@@ -122,7 +122,7 @@ Mattermost cũng vậy: kéo về là dùng được, khi mở rộng chỉ đ�
 | ---------------- | ----------------------- | ----------------------------------------------------------------------------------------------- |
 | Keycloak       | Danh tính            | Khai báo realm, đăng nhập, phân quyền, xuất và nhập                                  |
 | Superset       | Dữ liệu, biểu đồ | Kết nối, dataset, biểu đồ, dashboard                                                     |
-| **Lõi DX-OS** | **Quản lý hồ sơ** | **Khai báo mô hình, xem trước, áp dụng, vận hành, đổi phiên bản hoặc quay lui** |
+| **Lõi DX-OS** | **Quy trình chung cho bản ghi có vòng đời** | **Khai báo mô hình, xem trước, áp dụng, vận hành, đổi phiên bản hoặc quay lui** |
 
 Các ý tưởng học từ [Frappe](https://github.com/frappe/frappe) (MIT), cần đọc mã của họ trước khi áp dụng:
 
@@ -135,21 +135,19 @@ Các ý tưởng học từ [Frappe](https://github.com/frappe/frappe) (MIT), c�
 
 ## Miền phục vụ
 
-Lõi phục vụ một năng lực là quản lý hồ sơ (case management), với điểm khác biệt là đổi được mô hình và quy trình an toàn khi hệ thống đang chạy.
-Khai báo mô hình là có ứng dụng hoàn chỉnh, và ứng dụng đó chỉ phục vụ mục đích này, được làm thật sâu và chỉn chu.
+Lõi phục vụ một năng lực là quy trình có người tham gia trên bản ghi có vòng đời, với điểm khác biệt là đổi được mô hình và quy trình an toàn khi hệ thống đang chạy.
+Hồ sơ, ticket, lượt đặt chỗ và phiếu mượn là các cách dùng của cùng một quy trình chung, được làm thật sâu và chỉn chu.
 Miền là một năng lực dùng được ở nhiều ngành, không phải một ngành cụ thể.
 
+| Phần | Vai trò | Nội dung |
+|---|---|---|
+| **Quy trình chung** | Miền của lõi | Bản ghi đi qua các bước, có người tham gia, điều kiện chuyển, hạn và hành động hoàn tất |
+| **Vòng đời mô hình** | Điểm khác biệt của lõi | Xem trước, áp dụng, đổi phiên bản và quay lui trên hệ thống đang chạy |
+| **Mô hình nghiệp vụ** | Chạy trên lõi | Một cửa sinh viên, ticket hỗ trợ, đặt phòng, cấp phát dịch vụ IT |
 
-| Phần                         | Vai trò                     | Nội dung                                                                           |
-| ------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------- |
-| **Quản lý hồ sơ**         | Miền của lõi              | Tiếp nhận một hồ sơ, xử lý theo quy trình và ra kết quả                  |
-| **Vòng đời mô hình**     | Điểm khác biệt của lõi | Xem trước, áp dụng, đổi phiên bản và quay lui trên hệ thống đang chạy |
-| **Yêu cầu và phê duyệt** | Mô hình chạy trên lõi   | Ai xin, ai duyệt, duyệt xong làm gì                                             |
-| **Cấp phát dịch vụ IT**   | Mô hình chạy trên lõi   | Yêu cầu được duyệt thì quyền hoặc tài nguyên được cấp thật          |
+Bản ghi có vòng đời là khái niệm hạng nhất của lõi, gồm:
 
-Hồ sơ là khái niệm hạng nhất của lõi, gồm:
-
-- Người nộp và người xử lý.
+- Người tạo và người xử lý.
 - Hộp việc cần xử lý.
 - Hạn xử lý.
 - Minh chứng.
@@ -157,12 +155,84 @@ Hồ sơ là khái niệm hạng nhất của lõi, gồm:
 - Quyết định.
 - Dòng lịch sử.
 
-Thực thể không có quy trình, như danh mục thiết bị, là dữ liệu phụ trợ phục vụ hồ sơ.
+Thực thể không có quy trình, như danh mục thiết bị hay danh sách phòng, là dữ liệu phụ trợ phục vụ bản ghi.
 
 Cấp phát dịch vụ cần hành động hoàn tất sau khi duyệt.
 Hành động này chỉ gọi các thao tác đã đăng ký và chạy sau khi giao dịch hoàn tất, qua trục sự kiện.
 
-Lõi không phục vụ bán hàng, kho hàng, ứng dụng chỉ có CRUD và dữ liệu thời gian thực.
+Lõi chỉ nhận quy trình có người tham gia.
+Lõi không phục vụ bán hàng, kho hàng, ứng dụng chỉ có CRUD, đường ống dữ liệu tự động và dữ liệu thời gian thực.
+
+### Quy trình chung
+
+Quy trình chung là phần được đào sâu nhất của lõi.
+Người dùng không viết BPMN: họ chọn họ mẫu và nhập tham số trên bảng điều khiển, hệ thống tạo quy trình từ đó.
+
+**Họ mẫu** được đặt tên theo hình dạng chung của quy trình, không theo một ngành.
+Mỗi họ mẫu là một quy trình viết tay, nhận tham số qua biến và dùng chung các quy trình con.
+Một họ mẫu chỉ được giữ khi ít nhất ba miền khác nhau chạy được trên nó bằng tham số thuần, không sửa mã lõi.
+
+| Họ mẫu | Hình dạng chung | Miền chạy bằng tham số |
+|---|---|---|
+| **Chuỗi duyệt** | Nộp, một hoặc nhiều cấp duyệt tuần tự hoặc song song, quyết định, có thể trả lại | Yêu cầu sinh viên, nghỉ phép, mua sắm, xin quyền truy cập |
+| **Công việc cần xử lý** | Tiếp nhận, phân loại, giao người, xử lý, xác nhận, đóng; có ưu tiên và hạn | Ticket hỗ trợ, báo hỏng, sự cố, yêu cầu dịch vụ |
+| **Chiếm dụng tài nguyên theo thời gian** | Yêu cầu, kiểm tra xung đột khung giờ, xác nhận, sử dụng, hoàn tất hoặc vắng mặt | Phòng khách sạn, phòng thực hành, thiết bị, lịch hẹn, ca trực, mượn trả |
+
+Họ chiếm dụng tài nguyên theo thời gian sở hữu việc kiểm tra xung đột khung giờ, với sức chứa của tài nguyên là tham số.
+Mượn trả thiết bị chạy trên họ này, với tham số chọn khung giờ đặt trước hoặc khoảng từ lúc phát đến hạn trả.
+
+Hai họ sau là hướng mở rộng, chỉ làm khi ba họ trên đã hoàn chỉnh và đủ ba miền chứng minh:
+
+| Họ mẫu | Hình dạng chung | Miền chạy bằng tham số |
+|---|---|---|
+| **Kiểm tra định kỳ** | Lịch sinh bản ghi, kiểm tra, ghi kết quả, hành động khắc phục | Bảo trì thiết bị, kiểm định an toàn, gia hạn giấy phép |
+| **Đánh giá và chọn lọc** | Nhiều người chấm, tổng hợp điểm, chọn theo chỉ tiêu | Học bổng, tuyển dụng, chấm dự án |
+
+**Khối dùng chung** của mọi họ mẫu:
+
+- Bước người xử lý, gồm phân công, hạn, các hành động cho phép và lý do.
+- Vòng trả lại để bổ sung.
+- Hành động hoàn tất.
+- Rút lại.
+
+**Quy tắc bất biến** nằm trong engine bằng Java, không nằm trong tệp BPMN, nên mọi quy trình đều chịu cùng một bộ quy tắc:
+
+1. Cột trạng thái chỉ quy trình được ghi.
+2. Trạng thái cuối bị đóng băng, ghi ai quyết định và lúc nào.
+3. Mỗi lần chuyển trạng thái để lại một dòng lịch sử gồm người làm, lúc nào, hành động và trạng thái trước sau; từ chối và trả lại bắt buộc có lý do.
+4. Người làm hành động phải có vai và thấy được bản ghi.
+5. Người tạo không tự quyết định bản ghi của mình, trừ khi mô hình bật `allow_self_decision` một cách có chủ ý.
+6. Người nộp rút lại được khi chưa ở trạng thái cuối, và bản ghi được giữ lại.
+7. Hành động hoàn tất chạy sau khi giao dịch xong, thử lại được và có khóa chống chạy lặp.
+
+Khi áp dụng mô hình, hệ thống còn kiểm tra không có trạng thái cụt và mọi vai được nhắc tới có thật trong Keycloak.
+
+**Ba tầng quy tắc:**
+
+| Tầng | Ví dụ | Ai quyết định |
+|---|---|---|
+| Bất biến | Bảy quy tắc trên | Lõi, mô hình không tắt được |
+| Tham số của quy trình | Vai duyệt, số cấp duyệt, độ dài hạn, vòng trả lại, hai cấp duyệt không do cùng một người | Người triển khai, trên bảng điều khiển |
+| Ràng buộc nghiệp vụ | Giới hạn số lần đặt, điều kiện riêng của tổ chức | Người triển khai, trong mô hình |
+
+Hạn và leo thang không bắt buộc: mô hình có khai báo hạn thì quá hạn được ghi lại và nhắc.
+Chi tiết tham số của từng họ mẫu và các khối dùng chung được thiết kế ở các phase sau.
+
+**Quy trình nằm trong kế hoạch áp dụng:**
+
+- Một lần áp dụng sinh cả phần mềm lẫn quy trình từ cùng một tệp mô hình: lược đồ, vai Keycloak, quy trình và phiên bản mô hình nằm chung một kế hoạch.
+- Kế hoạch cho xem khác biệt của quy trình, kiểm tra không có trạng thái cụt và vai có thật, và báo số bản ghi đang chạy bị ảnh hưởng.
+- Mỗi bản ghi lưu phiên bản mô hình lúc bắt đầu, và quy trình đọc tham số theo phiên bản đó.
+- Khi cấu trúc quy trình đổi, hệ thống triển khai định nghĩa mới và chuyển bản ghi đang chạy bằng `ProcessMigrationService` của Flowable.
+- Đổi lược đồ và vai Keycloak nằm ngoài giao dịch của Flowable, nên "một lần" nghĩa là một kế hoạch có thứ tự, chạy lại được hoặc quay lui, không phải một giao dịch duy nhất.
+- Việc ghép này được làm cùng lúc với việc triển khai các họ mẫu.
+
+**Họ mẫu tùy biến:**
+
+- Người dùng nâng cao mở rộng từ một mẫu có sẵn hoặc từ BPMN mặc định đã mang các quy tắc, hoặc nạp tệp BPMN riêng.
+- Bảng điều khiển có giao diện dạng danh sách bước và tham số để mở rộng từ mẫu mà không viết mã; không có trình kéo thả.
+- Quy tắc bất biến nằm trong engine nên họ mẫu tùy biến cũng phải chịu.
+- Tệp tùy biến chỉ đổi trạng thái qua các khối do engine cung cấp, không chạy mã tùy ý trong tiến trình của lõi, và bị kiểm khi áp dụng.
 
 ## Trải nghiệm người dùng
 
@@ -196,12 +266,26 @@ Mô hình không khai báo AI thì không chạy dịch vụ AI, không khai bá
 Ai đã có Keycloak hay PostgreSQL riêng thì trỏ tới bằng `.env`.
 Phân phối bằng một tệp compose gồm nhiều image, vì mỗi dịch vụ có vòng đời và cách nâng cấp riêng.
 
+### Bảng điều khiển
+
+Người triển khai làm việc qua bảng điều khiển; CLI `dxos` là máy khách mỏng dùng cho CI.
+Bảng điều khiển thuộc tầng 2 và chỉ gọi API của lõi.
+
+- **Thư viện mẫu:** chọn họ mẫu và mô hình mẫu, kèm mô tả mỗi mẫu cần gì.
+- **Soạn mô hình có hướng dẫn:** form dựng từ JSON Schema của định dạng mô hình, trình soạn YAML có gợi ý và báo lỗi theo schema, và bản xem trước giao diện sẽ được sinh ra.
+- **Màn hình kế hoạch:** khác biệt, mức rủi ro, dòng vi phạm và xác nhận thay đổi mất dữ liệu.
+- **Lịch sử áp dụng.**
+- **Sơ đồ quy trình:** quy trình được sinh ra, chỉ để xem.
+
+Bảng điều khiển đọc và ghi đúng tệp mô hình, và tệp luôn là nguồn sự thật.
+Giao diện cho người dùng cuối do bộ dựng sinh từ metadata, đủ dùng, nhất quán và được chăm chút về hình thức.
+
 ## Kiến trúc
 
 ### Ranh giới các tầng
 
 - **Tầng 1, lõi:** chỉ có API, không có trang nào do đội viết.
-- **Tầng 2, ứng dụng minh họa:** bộ dựng giao diện đọc metadata, gồm danh sách, form, chi tiết, hộp việc cần xử lý, màn hình xem kế hoạch và lịch sử áp dụng.
+- **Tầng 2, ứng dụng minh họa:** bộ dựng giao diện đọc metadata, gồm danh sách, form, chi tiết, hộp việc cần xử lý, chế độ xem lịch cho thực thể có trường khoảng thời gian, màn hình xem kế hoạch và lịch sử áp dụng.
   Bộ dựng xây trên react-admin, đội chỉ viết lớp mỏng nối metadata với khung.
   Portal và màn hình giám sát cũng thuộc tầng này.
 - **Tầng 3, nghiệp vụ:** chỉ là tệp mô hình, không có mã.
@@ -214,7 +298,7 @@ Phân phối bằng một tệp compose gồm nhiều image, vì mỗi dịch v�
   Cách làm giống Terraform: khai báo trạng thái đích, xem kế hoạch, rồi mới áp dụng.
 - **API chung:** một API dùng cho mọi thực thể, đọc mô hình đang chạy để biết có những thực thể, trường, quyền và quy tắc nào.
   Request đến đâu, API đối chiếu với mô hình rồi mới dựng truy vấn SQL; thêm hay đổi thực thể chỉ cần đổi mô hình, không đổi mã.
-- **Flowable nhúng:** chạy quy trình và là nơi duy nhất đổi trạng thái hồ sơ, cùng giao dịch với việc ghi hồ sơ.
+- **Flowable nhúng:** chạy quy trình và là nơi duy nhất đổi trạng thái bản ghi, cùng giao dịch với việc ghi bản ghi.
 
 **Phần chạy** dùng nguồn mở, mỗi công cụ là một provider nhận phần cấu hình của mình.
 Thêm năng lực mới nghĩa là thêm provider, không phải sửa lõi.
@@ -227,7 +311,7 @@ Thêm năng lực mới nghĩa là thêm provider, không phải sửa lõi.
 | Dữ liệu có cấu trúc          | PostgreSQL, pgschema                     | Sinh schema và ràng buộc; mỗi mô hình một schema         |
 | API dữ liệu, quyền từng dòng | API chung trong dịch vụ lõi            | Đọc mô hình, kiểm token Keycloak, dựng truy vấn an toàn |
 | Dữ liệu phi cấu trúc          | SeaweedFS, ClamAV                         | Dùng lại `dx-core/storage`, gắn với trường tệp           |
-| Luồng công việc                | Flowable chạy nhúng                     | Các mẫu BPMN, API đổi trạng thái                          |
+| Luồng công việc                | Flowable chạy nhúng                     | Các họ mẫu quy trình, API đổi trạng thái                          |
 | Vòng đời mô hình             | Git, phần điều khiển                  | **Phần tự viết chính**                                      |
 | Trục sự kiện                   | Bảng outbox trong PostgreSQL             | Phát và nhận sự kiện                                       |
 | Thông báo                       | Mattermost                                | Nghe trục sự kiện                                            |
@@ -345,7 +429,7 @@ Những chỗ khó:
 ### 2. Quy trình không lách được
 
 Flowable thay phần workflow viết tay, người dùng không đụng tới BPMN.
-Đội viết sẵn và kiểm thử các mẫu BPMN, người dùng chỉ chọn mẫu và điền tham số như ai duyệt, hạn bao lâu, báo cho ai.
+Đội viết sẵn và kiểm thử các họ mẫu quy trình, người dùng chỉ chọn họ mẫu và điền tham số như ai duyệt, hạn bao lâu, báo cho ai; xem [Quy trình chung](#quy-trình-chung).
 Flowable lo bộ đếm hạn, lịch sử và phiên bản quy trình.
 
 Trạng thái hồ sơ không thể bị đi vòng:
@@ -358,8 +442,8 @@ Trạng thái hồ sơ không thể bị đi vòng:
 Quy tắc khai báo được API chung kiểm để báo lỗi rõ và biên dịch thành ràng buộc trong cơ sở dữ liệu.
 Mọi thay đổi hồ sơ và bước quy trình phát ra sự kiện vào trục sự kiện, để thông báo, báo cáo và AI cùng nghe.
 
-**Bản dự thi** có hai mẫu là phê duyệt một cấp và xử lý có hạn, cả hai đều trả lại được để yêu cầu bổ sung; có hộp việc, giao việc và quy tắc chặn; trục sự kiện ở mức nên có.
-Phê duyệt nhiều cấp, mượn và trả để sau.
+**Bản dự thi** có ba họ mẫu là chuỗi duyệt, công việc cần xử lý và chiếm dụng tài nguyên theo thời gian, cùng bộ quy tắc bất biến; có hộp việc, giao việc và quy tắc chặn; trục sự kiện ở mức nên có.
+Chi tiết tham số của từng họ mẫu được thiết kế ở các phase sau.
 
 ### 3. Tác tử AI có người duyệt
 
@@ -383,6 +467,7 @@ Mã mở rộng luôn nằm ngoài lõi, chỉ gọi lõi qua API và sự kiệ
 | Phản ứng theo nghiệp vụ           | Webhook nhận sự kiện từ trục sự kiện                                                               |
 | Giao diện riêng hoàn toàn         | Ứng dụng tự viết, dùng API và đăng nhập Keycloak của lõi                                       |
 | Trang riêng trong ứng dụng Tầng 2 | Khai báo mục menu trỏ tới trang riêng                                                                |
+| Họ mẫu quy trình riêng                | Tệp BPMN tự viết hoặc mở rộng từ mẫu qua bảng điều khiển; vẫn chịu quy tắc bất biến và bị kiểm khi áp dụng |
 | Thành phần riêng trong form        | Đăng ký thành phần React, để sau bản dự thi                                                      |
 
 Đổi tên trường có thể làm hỏng mã mở rộng đang dùng trường đó.
@@ -405,20 +490,22 @@ Phần AI đề xuất và hỏi đáp quy chế bổ sung sau, từ một kho v
 **Mô hình thứ hai** là cấp phát dịch vụ IT, rất ngắn, chứng minh tính trung lập: nhân viên xin vào một nhóm quyền, được duyệt thì Keycloak cấp thật.
 Nếu mô hình này tốn hơn một tệp, đó là tín hiệu lõi còn gắn với ứng dụng đầu.
 
+Ba họ mẫu quy trình được kiểm bằng ba mô hình: Một cửa sinh viên (chuỗi duyệt), ticket hỗ trợ (công việc cần xử lý) và đặt phòng (chiếm dụng tài nguyên theo thời gian).
+
 ## Phạm vi bản dự thi
 
 
 | Mức                     | Nội dung                                                                                                                                                                                                                                                                                                              |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Phải có để nộp**  | Định dạng mô hình, sinh bảng, API chung với quyền từng dòng, quyền theo đơn vị, vai Keycloak, xem trước và áp dụng, hai mẫu quy trình, hộp việc, giao việc, yêu cầu bổ sung, chặn lách API, tệp đính kèm, ứng dụng Tầng 2, ứng dụng nghiệp vụ, bản phát hành và tài liệu |
-| **Nên có**             | Trục sự kiện, thông báo chat, mô hình thứ hai và hành động hoàn tất, quay lui, điểm mở rộng                                                                                                                                                                                                          |
+| **Phải có để nộp**  | Định dạng mô hình, sinh bảng, API chung với quyền từng dòng, quyền theo đơn vị, vai Keycloak, xem trước và áp dụng, ba họ mẫu quy trình, bảng điều khiển của người triển khai, hộp việc, giao việc, yêu cầu bổ sung, chặn lách API, tệp đính kèm, ứng dụng Tầng 2, ứng dụng nghiệp vụ, bản phát hành và tài liệu |
+| **Nên có**             | Trục sự kiện, thông báo chat, mô hình thứ hai và hành động hoàn tất, quay lui, điểm mở rộng, họ mẫu tùy biến                                                                                                                                                                                                          |
 | **Làm sau lõi**        | Tác tử AI và hỏi đáp, sau khi lõi hoàn toàn mở                                                                                                                                                                                                                                                               |
-| **Nếu còn thời gian** | Form tạo mô hình, lịch sử biến động dữ liệu, AI soạn mô hình, sinh dataset Superset, đo và công bố tài nguyên, thông tin dữ liệu từ đâu ra                                                                                                                                                    |
+| **Nếu còn thời gian** | Lịch sử biến động dữ liệu, AI soạn mô hình, sinh dataset Superset, đo và công bố tài nguyên, thông tin dữ liệu từ đâu ra                                                                                                                                                    |
 
 Ngoài phạm vi:
 
 - Vault, WAF, Redpanda, Iceberg, Trino, ImmuDB, NGSI-LD, GIS.
-- Trình thiết kế mô hình và BPMN trực quan.
+- Trình thiết kế BPMN kéo thả.
 - Trang giao diện tự do, trò chuyện, cộng tác thời gian thực.
 - Kế toán, kho hàng phức tạp, ERP.
 - Mobile và chẩn đoán ảnh.
@@ -434,7 +521,7 @@ Trên máy sạch, không có mã nguồn:
 3. Đính kèm được tệp; tệp nhiễm mã độc bị chặn khi bật quét.
 4. Gọi thẳng API để đổi trạng thái thì bị chặn.
 5. Thêm và đổi tên một trường khi đã có dữ liệu: có kế hoạch xem trước, không build lại, dữ liệu còn nguyên.
-6. Đưa mô hình thứ hai vào, chạy được mà không sửa mã lõi.
+6. Đưa vào một mô hình thuộc họ mẫu khác (công việc cần xử lý hoặc chiếm dụng theo thời gian), chạy được mà không sửa mã lõi.
 7. Mô hình mới mà dữ liệu đang vi phạm quy tắc thì bị từ chối, kèm các dòng vi phạm.
 8. Cán bộ yêu cầu bổ sung, sinh viên sửa và nộp lại, hồ sơ đi tiếp theo quy trình.
 
@@ -591,7 +678,7 @@ Tạm gác, nhưng **bắt buộc xử lý xong trước khi phát hành** vì k
 
 ## Công cụ
 
-Số sao và giấy phép lấy từ GitHub API ngày 2026-11-02, trừ khi có ghi khác.
+Số sao và giấy phép lấy từ GitHub API ngày 2026-11-02, trừ khi có ghi khác; các dòng của bảng điều khiển lấy ngày 2026-11-03.
 
 
 | Vai trò                  | Dự án                                                                     | Giấy phép                    | Sao                | Ghi chú                                                                              |
@@ -599,12 +686,20 @@ Số sao và giấy phép lấy từ GitHub API ngày 2026-11-02, trừ khi có 
 | Luồng công việc        | [Flowable](https://github.com/flowable/flowable-engine)                     | Apache-2.0                     | 9.632              | Có BPMN, CMMN, DMN; bản 8.0.0 ngày 2026-02-27                                      |
 | Giao diện                | [react-admin](https://github.com/marmelab/react-admin)                      | MIT                            | 26.979             | Có sẵn field và input cho các kiểu trường của mô hình; chỉ dùng phần MIT |
 | Giao diện, dự phòng    | [Refine](https://github.com/refinedev/refine)                               | MIT                            | 35.977             | Dùng nếu react-admin không dựng được theo metadata đổi lúc chạy            |
-| Dựng form                | [react-jsonschema-form](https://github.com/rjsf-team/react-jsonschema-form) | Apache-2.0, theo trang dự án | Chưa lấy được | Dựng form từ JSON Schema                                                            |
+| Dựng form | [react-jsonschema-form](https://github.com/rjsf-team/react-jsonschema-form) | Apache-2.0 | 15.932 | Dựng form từ JSON Schema cho bảng điều khiển |
+| Soạn mô hình | [Monaco Editor](https://github.com/microsoft/monaco-editor) | MIT | 46.944 | Trình soạn mã, có chế độ so sánh dùng cho màn hình kế hoạch |
+| Soạn mô hình | [monaco-yaml](https://github.com/remcohaszing/monaco-yaml) | MIT | 333 | Gợi ý và báo lỗi YAML theo JSON Schema |
+| Kiểm tra schema | [Ajv](https://github.com/ajv-validator/ajv) | MIT | 14.868 | Kiểm tra mô hình ngay trên trình duyệt |
+| Sơ đồ quy trình | [React Flow](https://github.com/xyflow/xyflow) | MIT | 38.874 | Vẽ quy trình sinh ra, chỉ để xem |
 | Đổi lược đồ             | [pgschema](https://pkg.go.dev/github.com/pgplex/pgschema@v1.13.4)            | Apache-2.0                     | 1.077              | So sánh và đổi lược đồ kiểu Terraform; lõi lo đổi tên và chặn mất dữ liệu |
 
 ## Cần quyết khi thiết kế chi tiết
 
 - **Đặc tả định dạng mô hình:** cú pháp đầy đủ, cách khai báo tên cũ, nhiều thực thể trong một tệp, quan hệ giữa các thực thể.
+- **Tham số của từng họ mẫu:** danh sách tham số, giá trị mặc định và các khối dùng chung; làm ở các phase sau.
+- **Mượn trả:** xác nhận bằng một mô hình mượn thiết bị thật rằng họ chiếm dụng tài nguyên theo thời gian đủ dùng; nếu cần nhiều ngoại lệ thì tách thành họ riêng.
+- **Họ mẫu tùy biến:** các khối engine cung cấp cho tệp BPMN, cách kiểm tệp khi áp dụng, và phạm vi của giao diện mở rộng từ mẫu.
+- **Quy trình trong kế hoạch áp dụng:** cách lưu phiên bản mô hình trên bản ghi và khi nào cần định nghĩa quy trình mới.
 - **Quyền với phần điều khiển:** ai được xem kế hoạch, ai được áp dụng, ai được xác nhận thay đổi mất dữ liệu.
 - **Nhiều mô hình và Keycloak:** dùng chung một realm hay mỗi mô hình một realm, và đặt tên vai sao cho không trùng.
 - **Hợp đồng metadata:** Tầng 2 đọc metadata từ API nào và ở dạng gì.

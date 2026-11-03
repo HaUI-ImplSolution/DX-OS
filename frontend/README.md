@@ -1,7 +1,7 @@
 # Web (React, Vite)
 
 Giao diện web của DX-OS.
-Web đăng nhập OIDC qua Keycloak và dựng mọi màn hình từ metadata của lõi bằng react-admin: hộp việc, danh sách, biểu mẫu, chi tiết, hành động của quy trình, tệp đính kèm, giao việc và dòng lịch sử.
+Web đăng nhập OIDC qua Keycloak và dựng mọi màn hình từ metadata của lõi bằng react-admin: hộp việc, danh sách, biểu mẫu, chi tiết, hành động của quy trình, tệp đính kèm, chế độ xem lịch, bảng điều khiển của người triển khai (`/console`), giao việc và dòng lịch sử.
 
 ## Cấu trúc
 

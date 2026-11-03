@@ -24,9 +24,14 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Họ mẫu quy trình `approval` và `work_item`; khối `process:` dùng `family`, `handler`, `allow_self_decision`, `deadline` và `after`.
 - Quy tắc bất biến của quy trình nằm trong engine: từ chối và trả lại cần lý do, người nộp rút lại hồ sơ và bản ghi được giữ lại, người tạo không tự quyết định.
 - Hạn xử lý theo bản ghi, hồ sơ quá hạn lên đầu hộp việc và có dòng quá hạn trong lịch sử.
-- Trục sự kiện bằng bảng outbox: hành động hoàn tất chạy sau khi giao dịch xong, thử lại được, một thông điệp cho mỗi khóa; mô hình `models/itaccess.yaml` thêm người dùng vào nhóm Keycloak sau khi duyệt.
+- Trục sự kiện bằng bảng outbox: hành động hoàn tất chạy sau khi giao dịch xong, thử lại được, một thông điệp cho mỗi khóa; mô hình `backend/dx-engine/src/main/resources/templates/itaccess.yaml` thêm người dùng vào nhóm Keycloak sau khi duyệt.
 - Kiểu trường `file`: tệp đính kèm bản ghi, lưu ở SeaweedFS, quét ClamAV khi bật, quyền theo quyền của bản ghi.
 - Script `deploy/dev/check_process.py` kiểm quy trình chung.
+- Họ mẫu `reservation` cho đặt chỗ theo khung giờ: khối `booking:`, kiểm tra xung đột có khóa dòng tài nguyên và sức chứa, chế độ xem lịch trong ứng dụng.
+- Bảng điều khiển ở tuyến `/console` cho vai ADMIN: thư viện mẫu, trình soạn YAML Monaco theo JSON Schema, form dựng từ schema, màn hình kế hoạch, lịch sử áp dụng và quay về, sơ đồ quy trình.
+- API đọc cho bảng điều khiển: `/api/v1/models/schema`, `families`, `templates` và `{model}/versions`.
+- Mẫu mô hình nằm ở `backend/dx-engine/src/main/resources/templates/` kèm `index.json`: Một cửa sinh viên, hỗ trợ kỹ thuật, đặt phòng, cấp quyền, mượn thiết bị, ghi chú.
+- Scripts `check_booking.py` và `check_demo.py` kiểm họ `reservation`, API của bảng điều khiển và tám tiêu chí của kịch bản trình diễn.
 - Hai ứng dụng nghiệp vụ và ứng dụng di động của phiên bản trước nằm ở tag `v1.1.1`.
 
 ## [1.1.1] - 2026-10-30

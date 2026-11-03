@@ -444,8 +444,8 @@ public final class ModelParser {
       problem(node, "process is a mapping with family and handler");
       return null;
     }
-    Map<String, Node> keys =
-        mapping(map, Set.of("family", "handler", "allow_self_decision", "deadline", "after"));
+    Map<String, Node> keys = mapping(map,
+        Set.of("family", "handler", "allow_self_decision", "deadline", "after", "booking"));
     Node familyNode = keys.get("family");
     String family = familyNode == null ? null : scalar(familyNode);
     if (family == null || ProcessFamily.find(family).isEmpty()) {
@@ -467,7 +467,59 @@ public final class ModelParser {
     return new Process(family, handler,
         flag(keys.get("allow_self_decision"), "allow_self_decision"),
         deadline(keys.get("deadline")),
-        readAfter(keys.get("after"), ProcessFamily.find(family).orElseThrow(), fields));
+        readAfter(keys.get("after"), ProcessFamily.find(family).orElseThrow(), fields),
+        readBooking(map, keys.get("booking"), family, fields));
+  }
+
+  private Booking readBooking(MappingNode process, Node node, String family,
+      Map<String, Field> fields) {
+    boolean reservation = "reservation".equals(family);
+    if (node == null) {
+      if (reservation) {
+        problem(process, "the reservation family needs a booking block");
+      }
+      return null;
+    }
+    if (!reservation) {
+      problem(node, "booking only applies to the reservation family");
+      return null;
+    }
+    if (!(node instanceof MappingNode map)) {
+      problem(node, "booking is a mapping with resource, starts, ends and capacity");
+      return null;
+    }
+    Map<String, Node> keys = mapping(map, Set.of("resource", "starts", "ends", "capacity"));
+    String resource =
+        bookingField(map, keys.get("resource"), "resource", FieldType.REFERENCE, fields);
+    String starts = bookingField(map, keys.get("starts"), "starts", FieldType.DATETIME, fields);
+    String ends = bookingField(map, keys.get("ends"), "ends", FieldType.DATETIME, fields);
+    if (starts != null && starts.equals(ends)) {
+      problem(keys.get("ends"), "starts and ends must be different fields");
+    }
+    int capacity = 1;
+    Node capacityNode = keys.get("capacity");
+    if (capacityNode != null) {
+      String text = scalar(capacityNode);
+      if (!text.matches("[0-9]{1,6}") || Integer.parseInt(text) < 1) {
+        problem(capacityNode, "capacity is a positive whole number");
+      } else {
+        capacity = Integer.parseInt(text);
+      }
+    }
+    return resource == null || starts == null || ends == null ? null
+        : new Booking(resource, starts, ends, capacity);
+  }
+
+  private String bookingField(MappingNode booking, Node node, String key, FieldType type,
+      Map<String, Field> fields) {
+    String name = node == null ? null : scalar(node);
+    Field field = name == null ? null : fields.get(name);
+    if (field == null || field.type() != type) {
+      problem(node == null ? booking : node,
+          key + " must name a " + type.key() + " field of this entity");
+      return null;
+    }
+    return name;
   }
 
   private Map<String, List<Completion>> readAfter(Node node, ProcessFamily family,

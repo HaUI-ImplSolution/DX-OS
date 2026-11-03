@@ -48,7 +48,7 @@ python3 - <<'EOF'
 import sys; sys.path.insert(0, "deploy/dev")
 import kc
 kc.ensure_client(); kc.ensure_user("admin1", ["ADMIN"])
-print(kc.api(kc.token("admin1"), "POST", "/models/apply", open("models/equipment.yaml").read(), "application/yaml"))
+print(kc.api(kc.token("admin1"), "POST", "/models/apply", open("backend/dx-engine/src/main/resources/templates/equipment.yaml").read(), "application/yaml"))
 EOF
 ```
 
@@ -57,7 +57,7 @@ The full testing guide is [`docs/TESTING.md`](./docs/TESTING.md) (Vietnamese).
 
 ## The model file
 
-A shortened [`models/equipment.yaml`](./models/equipment.yaml):
+A shortened [`backend/dx-engine/src/main/resources/templates/equipment.yaml`](./backend/dx-engine/src/main/resources/templates/equipment.yaml):
 
 ```yaml
 format: 0
@@ -81,14 +81,16 @@ entities:
 ```
 
 - Field types: `text`, `number`, `datetime`, `choice`, `reference`, `user`, `unit`.
-- Units: declared in `units`, each one a Keycloak group; a `unit` field says which unit a record belongs to. A full example is [`models/onestop.yaml`](./models/onestop.yaml).
+- Units: declared in `units`, each one a Keycloak group; a `unit` field says which unit a record belongs to. A full example is [`backend/dx-engine/src/main/resources/templates/onestop.yaml`](./backend/dx-engine/src/main/resources/templates/onestop.yaml).
 - Access by role: `all` (every row, read and write), `own` (the rows of the user), `read` (every row, read only), `unit` (the rows of the units of the user), `assigned` (the rows assigned to the user); `owner_via` lets a child entity follow the owner of its parent.
 - Workflow: `family` picks the process family (`approval` or `work_item`), `handler` is the role that handles records, `deadline` is an optional handling time (for example `72h`).
   Rejecting and returning need a reason; the owner can withdraw a record that is not in a final state.
   A record with a process cannot be deleted; a decided record can no longer be edited; an assigned record can only be handled by its assignee.
   The creator of a record cannot decide it unless `allow_self_decision: true` is declared.
+- Reservations: `family: reservation` with `booking: {resource, starts, ends, capacity}`; a second booking that overlaps beyond the capacity is refused, and the app has a calendar view.
+  See [`room_booking.yaml`](./backend/dx-engine/src/main/resources/templates/room_booking.yaml).
 - Completion actions: `after` gives a list of operations for a final state, for example `after: {approved: [{do: add_to_group, user: created_by, group_from: group_field}]}`; they run after the transaction commits and are retried on failure.
-  See [`models/itaccess.yaml`](./models/itaccess.yaml).
+  See [`backend/dx-engine/src/main/resources/templates/itaccess.yaml`](./backend/dx-engine/src/main/resources/templates/itaccess.yaml).
 - Attachments: a `type: file` field, uploaded with `POST /api/v1/data/{model}/{entity}/{id}/files`; access follows the access to the record.
 - Changing a model: declare `renamed_from` when renaming a field; `default` fills a new required field on a table that has rows.
 - Schema for editors: [`model-v0.schema.json`](./backend/dx-model/src/main/resources/schema/model-v0.schema.json); sample bad files in [`models/invalid/`](./models/invalid).

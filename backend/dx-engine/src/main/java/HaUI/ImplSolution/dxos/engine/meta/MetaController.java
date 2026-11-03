@@ -67,11 +67,14 @@ public class MetaController {
             .map(f -> new FieldMeta(f.name(), f.label(), f.type().key(),
                 f.required() && f.defaultValue() == null, f.unique(), f.options(), f.to()))
             .toList();
-    ProcessInfo process = entity.process() == null ? null
-        : new ProcessInfo(entity.process().family(), entity.process().handler(),
-            entity.process().allowSelfDecision(),
-            entity.process().deadline() == null ? null : entity.process().deadline().toSeconds(),
-            entity.process().definition().states(), entity.process().definition().actions());
+    ProcessInfo process =
+        entity.process() == null ? null
+            : new ProcessInfo(entity.process().family(), entity.process().handler(),
+                entity.process().allowSelfDecision(),
+                entity.process().deadline() == null ? null
+                    : entity.process().deadline().toSeconds(),
+                entity.process().booking(), entity.process().definition().states(),
+                entity.process().definition().actions());
     String unitField = entity.unitField().map(Model.Field::name).orElse(null);
     return new EntityMeta(entity.name(), entity.label(), fields, process != null, process,
         unitField, access.read(), access.write(), data.canHandle(entity), data.canAssign(entity));

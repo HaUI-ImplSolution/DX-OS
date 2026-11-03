@@ -13,6 +13,7 @@ import HaUI.ImplSolution.dxos.core.identity.KeycloakAdminClient;
 import HaUI.ImplSolution.dxos.core.identity.KeycloakAdminClient.Person;
 import HaUI.ImplSolution.dxos.engine.apply.DdlGenerator;
 import HaUI.ImplSolution.dxos.engine.exception.ModelValidationException;
+import HaUI.ImplSolution.dxos.engine.process.BookingGuard;
 import HaUI.ImplSolution.dxos.engine.process.ProcessRules;
 import HaUI.ImplSolution.dxos.engine.process.ProcessService;
 import HaUI.ImplSolution.dxos.model.FieldType;
@@ -71,15 +72,17 @@ public class DataService {
   private final UserContext user;
   private final ProcessService process;
   private final ProcessRules rules;
+  private final BookingGuard bookings;
   private final EventLog events;
   private final KeycloakAdminClient keycloak;
 
   public DataService(NamedParameterJdbcTemplate jdbc, UserContext user, ProcessService process,
-      ProcessRules rules, EventLog events, KeycloakAdminClient keycloak) {
+      ProcessRules rules, BookingGuard bookings, EventLog events, KeycloakAdminClient keycloak) {
     this.jdbc = jdbc;
     this.user = user;
     this.process = process;
     this.rules = rules;
+    this.bookings = bookings;
     this.events = events;
     this.keycloak = keycloak;
   }
@@ -163,6 +166,7 @@ public class DataService {
     Map<String, Object> values = coerce(entity, body, true);
     requireReachableParent(model, entity, access, values);
     requireCreatableUnit(entity, access, values);
+    bookings.check(model, entity, values, null);
     MapSqlParameterSource params = new MapSqlParameterSource("created_by", user.currentUserId());
     List<String> names = new ArrayList<>(List.of("created_by"));
     List<String> markers = new ArrayList<>(List.of(":created_by"));
@@ -210,6 +214,7 @@ public class DataService {
       return get(model, entity, id);
     }
     requireMovableUnit(model, entity, access, id, changes);
+    bookings.check(model, entity, changes, id);
     MapSqlParameterSource params = new MapSqlParameterSource("id", id);
     List<String> sets = new ArrayList<>();
     changes.forEach((name, value) -> {

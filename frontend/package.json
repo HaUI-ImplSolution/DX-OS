@@ -11,13 +11,27 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@fullcalendar/core": "^6.1.22",
+    "@fullcalendar/daygrid": "^6.1.22",
+    "@fullcalendar/interaction": "^6.1.22",
+    "@fullcalendar/react": "^6.1.22",
+    "@fullcalendar/timegrid": "^6.1.22",
     "@mui/icons-material": "^6.5.0",
     "@mui/material": "^6.5.0",
+    "@rjsf/core": "^5.24.13",
+    "@rjsf/mui": "^5.24.13",
+    "@rjsf/utils": "^5.24.13",
+    "@rjsf/validator-ajv8": "^5.24.13",
+    "@xyflow/react": "^12.12.1",
+    "ajv": "^8.20.0",
+    "monaco-editor": "^0.57.0",
+    "monaco-yaml": "^5.5.1",
     "oidc-client-ts": "^3.5.0",
     "react": "^18.3.1",
     "react-admin": "^5.15.5",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.30.6"
+    "react-router-dom": "^6.30.6",
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
     "@types/react": "^18.3.12",
@@ -25,5 +39,8 @@
     "@vitejs/plugin-react": "^6.1.2",
     "typescript": "^7.0.2",
     "vite": "^8.3.5"
+  },
+  "overrides": {
+    "dompurify": "^3.4.17"
   }
 }

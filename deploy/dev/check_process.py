@@ -63,6 +63,7 @@ def create(token, base, body):
 
 def main():
     kc.ensure_client()
+    kc.ensure_user("admin1", ["ADMIN"])
     admin = kc.token("admin1")
 
     # T8-02: the process block is checked and errors point at its line.
@@ -168,7 +169,7 @@ def main():
              status == 200 and body["data"]["action"] == "rejected" and body["data"]["rejections"], str(body["data"]))
 
     # T8-09, T8-10: a final state starts the actions the model asks for, once the decision committed.
-    status, body = kc.api(admin, "POST", "/models/apply", rt.read("models/itaccess.yaml"), YAML)
+    status, body = kc.api(admin, "POST", "/models/apply", rt.read("backend/dx-engine/src/main/resources/templates/itaccess.yaml"), YAML)
     rt.check("T8-10 apply the access model", status == 200 and body["data"]["status"] == "applied", f"{status} {body}")
     status, found = kc.kc("GET", "/groups?search=GIT_USERS&exact=true")
     if not found:

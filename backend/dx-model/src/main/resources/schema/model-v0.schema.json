@@ -76,10 +76,21 @@
             "required": ["family", "handler"],
             "additionalProperties": false,
             "properties": {
-              "family": { "enum": ["approval", "work_item"] },
+              "family": { "enum": ["approval", "work_item", "reservation"] },
               "handler": { "type": "string" },
               "allow_self_decision": { "type": "boolean" },
               "deadline": { "type": "string", "pattern": "^[0-9]{1,6}[mhd]$" },
+              "booking": {
+                "type": "object",
+                "required": ["resource", "starts", "ends"],
+                "additionalProperties": false,
+                "properties": {
+                  "resource": { "type": "string" },
+                  "starts": { "type": "string" },
+                  "ends": { "type": "string" },
+                  "capacity": { "type": "integer", "minimum": 1 }
+                }
+              },
               "after": {
                 "type": "object",
                 "additionalProperties": {

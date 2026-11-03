@@ -225,6 +225,9 @@ public final class ModelDiff {
       changes.add(new Change(Level.SAFE, "CHANGE_COMPLETION", entity.name(), null,
           String.join(", ", after.after().keySet())));
     }
+    if (!Objects.equals(before.booking(), after.booking())) {
+      changes.add(new Change(Level.SAFE, "CHANGE_BOOKING", entity.name(), null, null));
+    }
     if (!Objects.equals(before.deadline(), after.deadline())) {
       changes.add(new Change(Level.SAFE, "CHANGE_DEADLINE", entity.name(), null,
           after.deadline() == null ? "none" : after.deadline().toString()));

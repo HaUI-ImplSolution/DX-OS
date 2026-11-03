@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: Apache-2.0
+format: 0
+name: support
+roles:
+  - name: REQUESTER
+    description: Người gửi yêu cầu hỗ trợ
+  - name: AGENT
+    description: Nhân viên hỗ trợ, nhận và xử lý yêu cầu
+    staff: true
+entities:
+  ticket:
+    label: Yêu cầu hỗ trợ
+    fields:
+      title: {type: text, label: Tiêu đề, required: true}
+      detail: {type: text, label: Mô tả}
+      priority: {type: choice, label: Mức ưu tiên, required: true, options: [Thấp, Trung bình, Cao]}
+      attachment: {type: file, label: Ảnh chụp hoặc tệp liên quan}
+    access: {REQUESTER: own, AGENT: all}
+    process: {family: work_item, handler: AGENT, deadline: 8h}

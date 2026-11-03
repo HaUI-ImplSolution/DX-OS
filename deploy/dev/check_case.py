@@ -50,7 +50,7 @@ def main():
         rt.check(f"T6-02 {name}", status == 400 and needle in body["data"][0], f"{status} {body.get('data')}")
 
     # T6-01: a model with units is applied without changing the code of the core.
-    status, body = kc.api(admin, "POST", "/models/apply", rt.read("models/onestop.yaml"), YAML)
+    status, body = kc.api(admin, "POST", "/models/apply", rt.read("backend/dx-engine/src/main/resources/templates/onestop.yaml"), YAML)
     rt.check("T6-01 apply", status == 200 and body["data"]["status"] == "applied", f"{status} {body}")
     status, groups = kc.kc("GET", "/groups?search=DAO_TAO&exact=true")
     rt.check("T6-01 unit is a Keycloak group", status == 200 and groups[0]["name"] == "DAO_TAO", str(groups))

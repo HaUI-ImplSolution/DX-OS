@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
-import { useEffect, useMemo, useState } from "react";
-import { Admin, Layout, Menu, Resource, type LayoutProps } from "react-admin";
+import { Suspense, lazy, useEffect, useMemo, useState } from "react";
+import { Route } from "react-router-dom";
+import TuneIcon from "@mui/icons-material/Tune";
+import { Admin, CustomRoutes, Layout, Menu, Resource, usePermissions, type LayoutProps } from "react-admin";
 import { listModels } from "./api";
 import authProvider from "./authProvider";
 import { createDataProvider } from "./dataProvider";
@@ -8,12 +10,22 @@ import InboxPage from "./InboxPage";
 import { screens } from "./resources";
 import { resourceName, type EntityMeta, type ModelMeta } from "./types";
 
-const AppMenu = () => (
-  <Menu>
-    <Menu.DashboardItem primaryText="Hộp việc" />
-    <Menu.ResourceItems />
-  </Menu>
-);
+// The control panel and its editor are loaded only when an administrator opens it.
+const ConsolePage = lazy(() => import("../console/ConsolePage"));
+const CalendarPage = lazy(() => import("./CalendarPage"));
+
+const AppMenu = () => {
+  const { permissions } = usePermissions();
+  return (
+    <Menu>
+      <Menu.DashboardItem primaryText="Hộp việc" />
+      <Menu.ResourceItems />
+      {Array.isArray(permissions) && permissions.includes("ADMIN") && (
+        <Menu.Item to="/console" primaryText="Bảng điều khiển" leftIcon={<TuneIcon />} />
+      )}
+    </Menu>
+  );
+};
 
 const AppLayout = ({ children }: LayoutProps) => <Layout menu={AppMenu}>{children}</Layout>;
 
@@ -45,6 +57,24 @@ export default function AdminApp() {
       requireAuth
       disableTelemetry
     >
+      <CustomRoutes>
+        <Route
+          path="/console/*"
+          element={
+            <Suspense fallback={<p className="section-subtitle">Đang tải...</p>}>
+              <ConsolePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/calendar/:resource"
+          element={
+            <Suspense fallback={<p className="section-subtitle">Đang tải...</p>}>
+              <CalendarPage byResource={byResource} />
+            </Suspense>
+          }
+        />
+      </CustomRoutes>
       {models.flatMap((model) =>
         model.entities.map((entity) => {
           const views = screens(model, entity);

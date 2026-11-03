@@ -179,6 +179,8 @@ Một họ mẫu chỉ được giữ khi ít nhất ba miền khác nhau chạy
 | **Chiếm dụng tài nguyên theo thời gian** | Yêu cầu, kiểm tra xung đột khung giờ, xác nhận, sử dụng, hoàn tất hoặc vắng mặt | Phòng khách sạn, phòng thực hành, thiết bị, lịch hẹn, ca trực, mượn trả |
 
 Họ chiếm dụng tài nguyên theo thời gian sở hữu việc kiểm tra xung đột khung giờ, với sức chứa của tài nguyên là tham số.
+Khối `booking:` trong `process:` nêu trường tham chiếu tới tài nguyên, trường bắt đầu, trường kết thúc và sức chứa.
+Khung giờ tính nửa mở: hai lượt liền nhau không xung đột, và lượt đã ở trạng thái cuối không còn chiếm tài nguyên.
 Mượn trả thiết bị chạy trên họ này, với tham số chọn khung giờ đặt trước hoặc khoảng từ lúc phát đến hạn trả.
 
 Hai họ sau là hướng mở rộng, chỉ làm khi ba họ trên đã hoàn chỉnh và đủ ba miền chứng minh:
@@ -269,13 +271,13 @@ Phân phối bằng một tệp compose gồm nhiều image, vì mỗi dịch v�
 ### Bảng điều khiển
 
 Người triển khai làm việc qua bảng điều khiển; CLI `dxos` là máy khách mỏng dùng cho CI.
-Bảng điều khiển thuộc tầng 2 và chỉ gọi API của lõi.
+Bảng điều khiển thuộc tầng 2, nằm ở tuyến `/console` của ứng dụng web, chỉ dành cho vai ADMIN và chỉ gọi API của lõi.
 
 - **Thư viện mẫu:** chọn họ mẫu và mô hình mẫu, kèm mô tả mỗi mẫu cần gì.
 - **Soạn mô hình có hướng dẫn:** form dựng từ JSON Schema của định dạng mô hình, trình soạn YAML có gợi ý và báo lỗi theo schema, và bản xem trước giao diện sẽ được sinh ra.
 - **Màn hình kế hoạch:** khác biệt, mức rủi ro, dòng vi phạm và xác nhận thay đổi mất dữ liệu.
-- **Lịch sử áp dụng.**
-- **Sơ đồ quy trình:** quy trình được sinh ra, chỉ để xem.
+- **Lịch sử áp dụng:** từng phiên bản và từng bước của mỗi lần áp dụng, kèm quay về phiên bản trước.
+- **Sơ đồ quy trình:** trạng thái và hành động của họ mẫu mà thực thể dùng, chỉ để xem.
 
 Bảng điều khiển đọc và ghi đúng tệp mô hình, và tệp luôn là nguồn sự thật.
 Giao diện cho người dùng cuối do bộ dựng sinh từ metadata, đủ dùng, nhất quán và được chăm chút về hình thức.

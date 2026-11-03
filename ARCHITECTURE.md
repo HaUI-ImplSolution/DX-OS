@@ -8,7 +8,7 @@ Hướng thiết kế và phạm vi đầy đủ ở [`docs/dynamic-core/README.
 ```mermaid
 flowchart TB
   subgraph T3["Tầng 3: nghiệp vụ"]
-    M["Tệp mô hình (models/*.yaml)"]
+    M["Tệp mô hình (templates/*.yaml)"]
   end
   subgraph T2["Tầng 2: ứng dụng"]
     UI["Giao diện react-admin dựng từ metadata"]
@@ -97,6 +97,9 @@ sequenceDiagram
 - Flowable chạy nhúng, dùng chung nguồn dữ liệu và giao dịch Spring; bảng của nó nằm ở schema `engine`.
 - Họ mẫu quy trình (`approval`, `work_item`) khai báo trạng thái và hành động ở `ProcessFamily`; các bước nằm ở tệp BPMN cùng tên.
 - `ProcessRules` giữ các quy tắc mọi họ mẫu cùng chịu: vai và quyền của người làm, người tạo không tự quyết định, lý do khi từ chối hoặc trả lại, rút lại giữ bản ghi.
+- `BookingGuard` kiểm họ `reservation` khi tạo và sửa bản ghi: khung giờ hợp lệ, số lượt đang chiếm không vượt sức chứa; dòng tài nguyên bị khóa đến hết giao dịch.
+- `CatalogService` cấp cho bảng điều khiển schema của tệp mô hình, các họ mẫu, mẫu mô hình và phiên bản đã áp dụng.
+- Bảng điều khiển (`frontend/src/console`) và trang lịch (`frontend/src/admin/CalendarPage.tsx`) là mã nạp chậm của ứng dụng web.
 - Hạn xử lý lưu ở cột `handle_by` khi hồ sơ chờ người xử lý; `overdue` được tính khi đọc.
 - Bảng `engine.outbox` nhận thông điệp trong giao dịch của thay đổi; `OutboxDispatcher` giao sau khi giao dịch xong, thử lại với thời gian chờ tăng dần, mỗi khóa một thông điệp.
 - Hành động hoàn tất của khối `after:` đi qua outbox đến `CompletionHandler`; hiện có thao tác `add_to_group` của Keycloak.

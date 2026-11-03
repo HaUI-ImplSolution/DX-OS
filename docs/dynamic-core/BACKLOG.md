@@ -11,7 +11,6 @@ Mốc dưới đây là dự kiến.
 
 | Phase | Nội dung | Dự kiến xong |
 |---|---|---|
-| 9 | Ứng dụng Một cửa sinh viên, bảng điều khiển của người triển khai (màn hình kế hoạch, lịch sử áp dụng), họ mẫu chiếm dụng tài nguyên theo thời gian và chế độ xem lịch, E2E theo tám tiêu chí đạt | 30/11 |
 | 10 | Bản phát hành, giấy phép, SBOM, tài liệu, triển khai công khai, gửi bài | 06/12 |
 
 ## 2. Phải xử lý trước khi phát hành
@@ -35,6 +34,8 @@ Mốc dưới đây là dự kiến.
 | Hạn xử lý | Bộ quét quá hạn chỉ ghi dòng lịch sử; chưa có người nghe để nhắc qua chat |
 | Đổi họ mẫu của một thực thể | Bị từ chối, kể cả khi mọi hồ sơ đã ở trạng thái cuối; muốn đổi hình dạng quy trình thì thêm thực thể mới; `docs/dynamic-core/README.md` còn mô tả việc chuyển hồ sơ đang chạy bằng `ProcessMigrationService`, chưa làm |
 | Họ `work_item` | Hồ sơ ở trạng thái đã xử lý xong chờ người nộp xác nhận, chưa tự đóng sau một thời gian |
+| Bảng điều khiển | Điền form viết lại tệp và bỏ chú thích giữa tệp; cột "Áp dụng bởi" hiện mã người dùng; trình soạn kéo theo khoảng 15 MB mã tĩnh, chỉ tải khi mở |
+| Lịch đặt chỗ | Chỉ xem và tạo theo khoảng chọn, chưa kéo thả để đổi giờ; tiêu đề lấy từ trường văn bản đầu tiên |
 | Rút lại trên giao diện | Nút rút lại không mở ô nhập lý do, dù API cho phép ghi lý do |
 | Áp dụng đã đổi tên chưa có đường hủy | Phải sửa nguyên nhân rồi chạy lại đúng tệp đó |
 | Xác nhận mất dữ liệu không tự sao lưu | Người vận hành chạy `deploy/backup.sh` trước |

@@ -82,7 +82,7 @@ entities:
 
 - Field types: `text`, `number`, `datetime`, `choice`, `reference`, `user`, `unit`.
 - Units: declared in `units`, each one a Keycloak group; a `unit` field says which unit a record belongs to. A full example is [`backend/dx-engine/src/main/resources/templates/onestop.yaml`](./backend/dx-engine/src/main/resources/templates/onestop.yaml).
-- Access by role: `all` (every row, read and write), `own` (the rows of the user), `read` (every row, read only), `unit` (the rows of the units of the user), `assigned` (the rows assigned to the user); `owner_via` lets a child entity follow the owner of its parent.
+- Access by role: `all` (every row, read and write), `own` (the rows of the user), `read` (every row, read only), `unit` (the rows of the units of the user), `assigned` (the rows assigned to the user); `owner_via` lets a child entity follow the owner of its parent, through any number of levels.
 - Workflow: `family` picks the process family (`approval` or `work_item`), `handler` is the role that handles records, `deadline` is an optional handling time (for example `72h`).
   Rejecting and returning need a reason; the owner can withdraw a record that is not in a final state.
   A record with a process cannot be deleted; a decided record can no longer be edited; an assigned record can only be handled by its assignee.
@@ -90,8 +90,11 @@ entities:
 - Reservations: `family: reservation` with `booking: {resource, starts, ends, capacity}`; a second booking that overlaps beyond the capacity is refused, and the app has a calendar view.
   See [`room_booking.yaml`](./backend/dx-engine/src/main/resources/templates/room_booking.yaml).
 - Completion actions: `after` gives a list of operations for a final state, for example `after: {approved: [{do: add_to_group, user: created_by, group_from: group_field}]}`; they run after the transaction commits and are retried on failure.
+  The available operations are `add_to_group` and `remove_from_group`.
   See [`backend/dx-engine/src/main/resources/templates/itaccess.yaml`](./backend/dx-engine/src/main/resources/templates/itaccess.yaml).
 - Attachments: a `type: file` field, uploaded with `POST /api/v1/data/{model}/{entity}/{id}/files`; access follows the access to the record.
+  The accepted file types are set by `engine.files.allowed-extensions`, and a file is always downloaded as an attachment.
+  A record holds at most 20 files, set by `engine.files.max-per-record`.
 - Changing a model: declare `renamed_from` when renaming a field; `default` fills a new required field on a table that has rows.
 - Schema for editors: [`model-v0.schema.json`](./backend/dx-model/src/main/resources/schema/model-v0.schema.json); sample bad files in [`models/invalid/`](./models/invalid).
 
@@ -107,7 +110,8 @@ entities:
 | `POST /api/v1/data/{model}/{entity}/{id}/actions/{action}` | An action of the workflow; the metadata lists the actions, their starting state and who may take them |
 | `POST .../{id}/assign`, `GET .../{id}/handlers` | Assign a record and list who can take it |
 | `GET .../{id}/events` | The history of a record |
-| `GET /api/v1/inbox` | The records waiting for the caller, on every model |
+| `GET /api/v1/inbox` | The records waiting for the caller, on every model; `page`, `size` |
+| `GET /api/v1/outbox`, `POST /api/v1/outbox/{id}/retry` | Outgoing messages by status (failed, pending, delivered) and a retry of an undelivered one (ADMIN) |
 
 Every reply is wrapped in `ApiResponse`; errors carry a stable `errorCode`.
 

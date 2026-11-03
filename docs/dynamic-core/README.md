@@ -718,16 +718,15 @@ Kết quả ở [`docs/TESTING.md`](../TESTING.md), mục 8:
 - Flowable 8.0.0 chạy nhúng trên Spring Boot 4.1 bằng `flowable-spring` cấu hình tay, dùng chung giao dịch với việc ghi hồ sơ.
 - Chỉ cho dịch vụ lõi ghi, cùng Flowable nhúng, đủ để trạng thái không lệch: lỗi cố ý sau bước quy trình làm hồ sơ và quy trình cùng quay về.
 - API chung dựng truy vấn lúc chạy: 10.000 dòng có bộ lọc và sắp xếp trả về ở phân vị 95 là 11 ms; giá trị, tên trường và toán tử có SQL không có tác dụng.
-- Quyền theo dòng cho vai `own` qua một bước tham chiếu về thực thể cha.
+- Quyền theo dòng cho vai `own` qua nhiều bước tham chiếu về thực thể đầu chuỗi `owner_via`; chuỗi quay vòng bị từ chối khi kiểm tệp mô hình.
 - react-admin dựng form và danh sách từ metadata cho kiểu văn bản, số, ngày giờ, lựa chọn và tham chiếu; mô hình thứ hai nạp lúc chạy không cần build lại giao diện.
 - pgschema đưa lược đồ về trạng thái đích khi đã có dữ liệu, với điều kiện lõi đổi tên cột, ràng buộc và chỉ mục trước; tự nó biến đổi tên thành xóa rồi thêm, nên lõi chặn mọi thao tác xóa mà mô hình không yêu cầu.
 - Kế hoạch xem trước khớp với áp dụng thật khi có đổi tên, và áp dụng lại sau lỗi giữa chừng về đúng trạng thái đích; kết quả thử ở [`docs/phase-7-model-change/04_TRADEOFFS_RISKS.md`](../phase-7-model-change/04_TRADEOFFS_RISKS.md).
-- Hành động hoàn tất đi qua bảng outbox và được thử lại tới khi Keycloak nhận; tệp đính kèm tải lên và tải xuống qua gateway; kết quả ở [`docs/TESTING.md`](../TESTING.md), mục 8.
+- Hành động hoàn tất (`add_to_group`, `remove_from_group`) đi qua bảng outbox và được thử lại tới khi Keycloak nhận, người triển khai xem lỗi và thử lại ở bảng điều khiển; tệp đính kèm tải lên và tải xuống qua gateway, tải về dạng đính kèm, và đối tượng trong kho bị xóa khi tệp hoặc hồ sơ bị gỡ; kết quả ở [`docs/TESTING.md`](../TESTING.md), mục 8.
 - `ProcessMigrationService` của Flowable chuyển được hồ sơ đang chạy sang mẫu mới và báo trước khi mẫu mới bỏ bước hiện tại; kết quả thử ở [`docs/phase-6-case-core/04_TRADEOFFS_RISKS.md`](../phase-6-case-core/04_TRADEOFFS_RISKS.md).
 
 ## Chưa xác minh
 
-- Quyền theo dòng qua quan hệ nhiều bước.
 - Chất lượng tiếng Việt và tốc độ trên CPU của Apertus 8B, OLMo 2.
 - Các phụ thuộc và khả năng nối OIDC, webhook của Zulip.
 - Phông chữ, biểu tượng và tài nguyên tĩnh của giao diện.

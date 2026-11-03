@@ -89,7 +89,7 @@ sequenceDiagram
 
 - **Tên và truy vấn:** tên bảng và cột chỉ lấy từ mô hình đã kiểm, giá trị luôn đi qua tham số; tên trường hay toán tử không có trong mô hình bị từ chối (400).
 - **Quyền:** vai và đơn vị lấy từ token Keycloak; các phạm vi của những vai người gọi có được hợp lại: `all`, `read` chạm mọi dòng, `own` chạm dòng do người gọi tạo, `unit` chạm dòng thuộc đơn vị của người gọi, `assigned` chạm dòng giao cho người gọi.
-  Thực thể con (`owner_via`) xét các phạm vi này trên bản ghi cha, và không gắn được vào bản ghi cha ngoài tầm với (403).
+  Thực thể con (`owner_via`) xét các phạm vi này trên bản ghi cha, qua nhiều cấp tới thực thể đầu chuỗi, và không gắn được vào bản ghi cha ngoài tầm với (403).
 - **Quy tắc:** bắt buộc, duy nhất và lựa chọn vừa được API kiểm để báo lỗi theo từng trường, vừa là ràng buộc trong cơ sở dữ liệu.
 
 ## 5. Trạng thái chỉ đổi qua quy trình
@@ -102,9 +102,11 @@ sequenceDiagram
 - Bảng điều khiển (`frontend/src/console`) và trang lịch (`frontend/src/admin/CalendarPage.tsx`) là mã nạp chậm của ứng dụng web.
 - Hạn xử lý lưu ở cột `handle_by` khi hồ sơ chờ người xử lý; `overdue` được tính khi đọc.
 - Bảng `engine.outbox` nhận thông điệp trong giao dịch của thay đổi; `OutboxDispatcher` giao sau khi giao dịch xong, thử lại với thời gian chờ tăng dần, mỗi khóa một thông điệp.
-- Hành động hoàn tất của khối `after:` đi qua outbox đến `CompletionHandler`; hiện có thao tác `add_to_group` của Keycloak.
+- `OutboxController` cho ADMIN xem thông điệp theo trạng thái cùng lỗi gần nhất và thử lại thông điệp chưa gửi.
+- Hành động hoàn tất của khối `after:` đi qua outbox đến `CompletionHandler`; hiện có các thao tác `add_to_group` và `remove_from_group` của Keycloak.
 - `OverdueSweep` ghi dòng quá hạn vào lịch sử, một lần cho mỗi hạn.
 - Trường kiểu `file` gắn tệp qua `AttachmentService`: byte ở SeaweedFS, siêu dữ liệu ở `engine.attachment`, quét ClamAV khi bật, quyền theo quyền của bản ghi.
+  `AttachmentProcessor` chỉ nhận các phần mở rộng đã cấu hình, `AttachmentService` giữ mỗi hồ sơ tối đa số tệp đã cấu hình, `AttachmentCleaner` xóa đối tượng khỏi kho khi tệp hoặc hồ sơ bị gỡ, và link tải luôn ở dạng đính kèm.
 - API chung từ chối mọi yêu cầu có cột `status` (403); `POST .../{id}/actions/{action}` kiểm người được làm và trạng thái đầu, hoàn tất tác vụ, và bước kế của quy trình ghi trạng thái mới qua bean `recordStatus`.
 - Hồ sơ đã giao thì chỉ người được giao thực hiện được hành động của vai xử lý.
 - Hành động sai trạng thái bị từ chối (409); lỗi sau bước quy trình làm cả hồ sơ, quy trình lẫn dòng lịch sử quay về như cũ.

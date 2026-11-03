@@ -28,9 +28,11 @@ Mốc dưới đây là dự kiến.
 |---|---|
 | Chưa có CLI `dxos` | Áp dụng mô hình qua REST |
 | Chưa cắt bớt service bằng compose profile | Mô hình không dùng thành phần nào vẫn phải chạy thành phần đó |
-| Quyền `own` chỉ tới một bước tham chiếu | Quan hệ nhiều bước chưa dùng được |
-| Hành động hoàn tất | Chỉ có thao tác `add_to_group`, chưa có `remove_from_group`; nhóm Keycloak phải có sẵn, thiếu thì thông điệp được thử lại; lỗi chỉ xem được ở cột `last_error` của `engine.outbox`, chưa có API hay màn hình |
-| Tệp đính kèm | Gỡ tệp chỉ xóa dòng liên kết, đối tượng trong kho lưu trữ còn lại; chưa giới hạn loại tệp ngoài mức 10 MB của yêu cầu; quét ClamAV chỉ kiểm bằng test đơn vị, chưa chạy E2E với profile `av` |
+| Hành động hoàn tất | Chỉ có `add_to_group` và `remove_from_group`; nhóm Keycloak phải có sẵn, thiếu thì thông điệp được thử lại mãi và xem được ở tab Hàng đợi sự kiện; trường người dùng hoặc nhóm để trống thì thao tác bị bỏ qua, không để lại dấu vết |
+| Tệp đính kèm | Xóa đối tượng trong kho lỗi thì chỉ ghi log, không thử lại nên có thể còn đối tượng mồ côi; quét ClamAV chỉ kiểm bằng test đơn vị, chưa chạy E2E với profile `av` |
+| Nhiều bản sao của backend | Danh sách mô hình đang chạy chỉ nạp lại ở bản sao vừa áp dụng; chạy hai bản sao thì bản kia giữ mô hình cũ đến khi khởi động lại |
+| Bộ quét quá hạn | Quét cả bảng của mỗi thực thể có hạn mỗi phút; cột `handle_by` chưa có chỉ mục |
+| Trường kiểu `user` | Giá trị chưa được đối chiếu với người dùng có thật trong Keycloak |
 | Hạn xử lý | Bộ quét quá hạn chỉ ghi dòng lịch sử; chưa có người nghe để nhắc qua chat |
 | Đổi họ mẫu của một thực thể | Bị từ chối, kể cả khi mọi hồ sơ đã ở trạng thái cuối; muốn đổi hình dạng quy trình thì thêm thực thể mới; `docs/dynamic-core/README.md` còn mô tả việc chuyển hồ sơ đang chạy bằng `ProcessMigrationService`, chưa làm |
 | Họ `work_item` | Hồ sơ ở trạng thái đã xử lý xong chờ người nộp xác nhận, chưa tự đóng sau một thời gian |
@@ -39,7 +41,6 @@ Mốc dưới đây là dự kiến.
 | Rút lại trên giao diện | Nút rút lại không mở ô nhập lý do, dù API cho phép ghi lý do |
 | Áp dụng đã đổi tên chưa có đường hủy | Phải sửa nguyên nhân rồi chạy lại đúng tệp đó |
 | Xác nhận mất dữ liệu không tự sao lưu | Người vận hành chạy `deploy/backup.sh` trước |
-| Hộp việc chưa phân trang | Tối đa 100 hồ sơ cho mỗi thực thể |
 | Đổi thành viên đơn vị | Chỉ có hiệu lực sau khi người đó lấy token mới |
 | Nhãn mặc định của react-admin | Các nút có sẵn của khung chưa dịch sang tiếng Việt |
 

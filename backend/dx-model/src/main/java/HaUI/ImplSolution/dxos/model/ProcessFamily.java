@@ -19,9 +19,10 @@ public enum Actor {
   // A record in a terminal state can no longer change.
   public record State(String name, String label, boolean terminal) {}
 
-  // An action moves a record out of one of the states in "from". A handler action needs a note
-  // when the owner must learn why.
-  public record Action(String name, String label, List<String> from, Actor by, boolean needsNote) {
+  // An action moves a record out of one of the states in "from" into the state "to". A handler
+  // action needs a note when the owner must learn why.
+  public record Action(String name, String label, List<String> from, String to, Actor by,
+      boolean needsNote) {
 
   public boolean allowedIn(String state) {
     return from.contains(state);
@@ -37,25 +38,54 @@ public enum Actor {
           List.of(new State("submitted", "Chờ xử lý", false),
               new State("returned", "Cần bổ sung", false), new State("approved", "Đã duyệt", true),
               new State("rejected", "Từ chối", true), WITHDRAWN),
-          List.of(new Action("approve", "Duyệt", List.of("submitted"), Actor.HANDLER, false),
-              new Action("reject", "Từ chối", List.of("submitted"), Actor.HANDLER, true),
-              new Action("return", "Yêu cầu bổ sung", List.of("submitted"), Actor.HANDLER, true),
-              new Action("resubmit", "Nộp lại", List.of("returned"), Actor.OWNER, false),
-              new Action(WITHDRAW, "Rút lại", List.of("submitted", "returned"), Actor.OWNER,
-                  false))),
+          List.of(
+              new Action("approve", "Duyệt", List.of("submitted"), "approved", Actor.HANDLER,
+                  false),
+              new Action("reject", "Từ chối", List.of("submitted"), "rejected", Actor.HANDLER,
+                  true),
+              new Action("return", "Yêu cầu bổ sung", List.of("submitted"), "returned",
+                  Actor.HANDLER, true),
+              new Action("resubmit", "Nộp lại", List.of("returned"), "submitted", Actor.OWNER,
+                  false),
+              new Action(WITHDRAW, "Rút lại", List.of("submitted", "returned"), WITHDRAWN_STATE,
+                  Actor.OWNER, false))),
       "work_item",
       new ProcessFamily("work_item", "submitted",
           List.of(new State("submitted", "Mới", false),
               new State("in_progress", "Đang xử lý", false),
               new State("resolved", "Đã xử lý xong", false), new State("closed", "Đã đóng", true),
               new State("rejected", "Từ chối", true), WITHDRAWN),
-          List.of(new Action("start", "Nhận xử lý", List.of("submitted"), Actor.HANDLER, false),
-              new Action("resolve", "Xử lý xong", List.of("in_progress"), Actor.HANDLER, false),
-              new Action("reject", "Từ chối", List.of("submitted", "in_progress"), Actor.HANDLER,
-                  true),
-              new Action("confirm", "Xác nhận xong", List.of("resolved"), Actor.OWNER, false),
-              new Action("reopen", "Mở lại", List.of("resolved"), Actor.OWNER, true),
+          List.of(
+              new Action("start", "Nhận xử lý", List.of("submitted"), "in_progress", Actor.HANDLER,
+                  false),
+              new Action("resolve", "Xử lý xong", List.of("in_progress"), "resolved", Actor.HANDLER,
+                  false),
+              new Action("reject", "Từ chối", List.of("submitted", "in_progress"), "rejected",
+                  Actor.HANDLER, true),
+              new Action("confirm", "Xác nhận xong", List.of("resolved"), "closed", Actor.OWNER,
+                  false),
+              new Action("reopen", "Mở lại", List.of("resolved"), "in_progress", Actor.OWNER, true),
               new Action(WITHDRAW, "Rút lại", List.of("submitted", "in_progress", "resolved"),
+                  WITHDRAWN_STATE, Actor.OWNER, false))),
+      "reservation",
+      new ProcessFamily("reservation", "requested",
+          List.of(new State("requested", "Chờ xác nhận", false),
+              new State("confirmed", "Đã xác nhận", false),
+              new State("in_use", "Đang sử dụng", false),
+              new State("completed", "Đã hoàn tất", true), new State("rejected", "Từ chối", true),
+              new State("no_show", "Vắng mặt", true), WITHDRAWN),
+          List.of(
+              new Action("confirm", "Xác nhận", List.of("requested"), "confirmed", Actor.HANDLER,
+                  false),
+              new Action("reject", "Từ chối", List.of("requested"), "rejected", Actor.HANDLER,
+                  true),
+              new Action("start", "Bắt đầu sử dụng", List.of("confirmed"), "in_use", Actor.HANDLER,
+                  false),
+              new Action("no_show", "Vắng mặt", List.of("confirmed"), "no_show", Actor.HANDLER,
+                  false),
+              new Action("complete", "Hoàn tất", List.of("in_use"), "completed", Actor.HANDLER,
+                  false),
+              new Action(WITHDRAW, "Rút lại", List.of("requested", "confirmed"), WITHDRAWN_STATE,
                   Actor.OWNER, false))));
 
   public static Optional<ProcessFamily> find(String name) {

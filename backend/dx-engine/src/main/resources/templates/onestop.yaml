@@ -23,8 +23,9 @@ entities:
       kind: {type: choice, label: Loại hồ sơ, required: true, options: [Giấy xác nhận, Phúc khảo, Hoãn thi]}
       department: {type: unit, label: Đơn vị xử lý, required: true}
       needed_at: {type: datetime, label: Cần trước ngày}
+      evidence: {type: file, label: Minh chứng}
     access: {STUDENT: own, OFFICER: unit, SUPERVISOR: read}
-    process: {family: approval, handler: OFFICER}
+    process: {family: approval, handler: OFFICER, deadline: 72h}
   request_note:
     label: Ghi chú hồ sơ
     fields:

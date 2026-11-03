@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: Apache-2.0
+format: 0
+name: rooms
+roles:
+  - name: GUEST
+    description: Người đặt phòng
+  - name: MANAGER
+    description: Người quản lý phòng, xác nhận lượt đặt
+    staff: true
+entities:
+  room:
+    label: Phòng
+    fields:
+      code: {type: text, label: Mã phòng, required: true, unique: true}
+      name: {type: text, label: Tên phòng, required: true}
+      seats: {type: number, label: Số chỗ}
+    access: {GUEST: read, MANAGER: all}
+  booking:
+    label: Lượt đặt phòng
+    fields:
+      room: {type: reference, label: Phòng, to: room, required: true}
+      purpose: {type: text, label: Mục đích, required: true}
+      starts_at: {type: datetime, label: Từ, required: true}
+      ends_at: {type: datetime, label: Đến, required: true}
+    access: {GUEST: own, MANAGER: all}
+    process:
+      family: reservation
+      handler: MANAGER
+      booking: {resource: room, starts: starts_at, ends: ends_at, capacity: 1}

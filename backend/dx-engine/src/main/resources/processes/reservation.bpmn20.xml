@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:flowable="http://flowable.org/bpmn"
+             targetNamespace="http://dxos/processes">
+
+  <!-- A handler role confirms or rejects a request, then marks the start of the use, or that nobody
+       came, and its end. The record status is written by the process only. -->
+  <process id="reservation" name="Reservation" isExecutable="true">
+    <startEvent id="start"/>
+    <sequenceFlow id="toDecide" sourceRef="start" targetRef="decide"/>
+
+    <userTask id="decide" name="Confirm or reject" flowable:candidateGroups="${handlerRole}"/>
+    <sequenceFlow id="decideToChoice" sourceRef="decide" targetRef="afterDecide"/>
+    <exclusiveGateway id="afterDecide"/>
+    <sequenceFlow id="toConfirmed" sourceRef="afterDecide" targetRef="confirmed">
+      <conditionExpression xsi:type="tFormalExpression">${action == 'confirm'}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="toRejected" sourceRef="afterDecide" targetRef="rejected">
+      <conditionExpression xsi:type="tFormalExpression">${action == 'reject'}</conditionExpression>
+    </sequenceFlow>
+
+    <serviceTask id="confirmed" flowable:expression="${recordStatus.set(execution, 'confirmed')}"/>
+    <sequenceFlow id="confirmedToArrive" sourceRef="confirmed" targetRef="arrive"/>
+
+    <userTask id="arrive" name="Start the use or mark absence" flowable:candidateGroups="${handlerRole}"/>
+    <sequenceFlow id="arriveToChoice" sourceRef="arrive" targetRef="afterArrive"/>
+    <exclusiveGateway id="afterArrive"/>
+    <sequenceFlow id="toInUse" sourceRef="afterArrive" targetRef="inUse">
+      <conditionExpression xsi:type="tFormalExpression">${action == 'start'}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="toNoShow" sourceRef="afterArrive" targetRef="noShow">
+      <conditionExpression xsi:type="tFormalExpression">${action == 'no_show'}</conditionExpression>
+    </sequenceFlow>
+
+    <serviceTask id="inUse" flowable:expression="${recordStatus.set(execution, 'in_use')}"/>
+    <sequenceFlow id="inUseToUse" sourceRef="inUse" targetRef="use"/>
+
+    <userTask id="use" name="Finish the use" flowable:candidateGroups="${handlerRole}"/>
+    <sequenceFlow id="useToCompleted" sourceRef="use" targetRef="completed"/>
+
+    <serviceTask id="completed" flowable:expression="${recordStatus.set(execution, 'completed')}"/>
+    <sequenceFlow id="completedToEnd" sourceRef="completed" targetRef="end"/>
+    <serviceTask id="rejected" flowable:expression="${recordStatus.set(execution, 'rejected')}"/>
+    <sequenceFlow id="rejectedToEnd" sourceRef="rejected" targetRef="end"/>
+    <serviceTask id="noShow" flowable:expression="${recordStatus.set(execution, 'no_show')}"/>
+    <sequenceFlow id="noShowToEnd" sourceRef="noShow" targetRef="end"/>
+
+    <endEvent id="end"/>
+  </process>
+</definitions>

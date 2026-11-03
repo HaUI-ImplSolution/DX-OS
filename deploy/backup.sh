@@ -23,7 +23,7 @@ ENV_FILE="${ENV_FILE:-.env}"
 RESTIC_IMAGE="restic/restic:0.17.3"
 POSTGRES_IMAGE="pgvector/pgvector:pg16@sha256:7b822b0aac60967beb1ea5e576b8602c94c300a157d187f385ae3e0da199b90a"
 
-[[ -f "$ENV_FILE" ]] || { echo "$ENV_FILE not found. Run: python3 make_env.py .env (random secrets), or cp .env.example .env and fill every blank variable." >&2; exit 1; }
+[[ -f "$ENV_FILE" ]] || { echo "$ENV_FILE not found. Run: ./make_env.sh (random secrets), or cp .env.example .env and fill every blank variable." >&2; exit 1; }
 env_value() { grep -E "^$1=" "$ENV_FILE" | tail -1 | cut -d= -f2- || true; }
 
 POSTGRES_USER="$(env_value POSTGRES_USER)"

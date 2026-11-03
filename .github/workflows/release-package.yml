@@ -43,6 +43,7 @@ jobs:
           VERSION="${TAG#v}"
           mkdir dist
           git archive --format=tar.gz --prefix="dx-os-${VERSION}/" -o "dist/dx-os-${VERSION}.tar.gz" HEAD
+          cp deploy/get.sh dist/dxos-install.sh
           # Tags made before the SBOMs were committed have none.
           for sbom in sbom/*.cdx.json; do
             [[ -e "$sbom" ]] || continue
@@ -62,7 +63,9 @@ jobs:
           [[ -s notes.md ]] || echo "Xem CHANGELOG.md." > notes.md
           {
             echo
-            echo "Tệp kèm theo: \`dx-os-${VERSION}.tar.gz\` là gói mã nguồn phát hành chính thức; \`dx-os-${VERSION}.sha256\` chứa SHA-256 của mọi tệp; các tệp \`.cdx.json\` là SBOM CycloneDX."
+            echo "Cài trên máy có Docker: \`curl -fsSL https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/dxos-install.sh | bash -s -- --version ${TAG}\` rồi \`dxos start\`."
+            echo
+            echo "Tệp kèm theo: \`dx-os-${VERSION}.tar.gz\` là gói mã nguồn phát hành chính thức; \`dxos-install.sh\` là bộ cài; \`dx-os-${VERSION}.sha256\` chứa SHA-256 của mọi tệp; các tệp \`.cdx.json\` là SBOM CycloneDX."
           } >> notes.md
 
       - name: Create the Release, or add the files to the one that exists

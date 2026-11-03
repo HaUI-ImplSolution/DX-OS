@@ -38,17 +38,31 @@ Các phần này nằm trong [hướng thiết kế](./docs/dynamic-core/README.
 
 ## Chạy thử
 
-Cần Docker với Compose v2 và Python 3.
+### Cài đặt
+
+Cần máy Linux có Docker với Compose v2, không cần mã nguồn.
 
 ```bash
-python3 deploy/make_env.py              # sinh deploy/.env với mật khẩu ngẫu nhiên
+curl -fsSL https://github.com/HaUI-ImplSolution/DX-OS/releases/latest/download/dxos-install.sh | bash
+dxos start
+```
+
+Bộ cài tải bản phát hành mới nhất, kiểm SHA-256 rồi cài vào `~/.dxos`; lệnh `dxos` nằm ở `~/.local/bin`.
+`dxos start` tải image ở lần đầu, chờ mọi dịch vụ sẵn sàng, tạo tài khoản `admin` với mật khẩu tạm in ra màn hình, rồi in các địa chỉ.
+Đăng nhập `http://localhost:9080/console` bằng `admin`, đổi mật khẩu, chọn một mẫu ở tab Thư viện mẫu, xem kế hoạch rồi áp dụng.
+Các lệnh khác (`stop`, `status`, `logs`, `admin`, `update`, `backup`, `uninstall`) có ở `dxos help` và [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md#cài-đặt-và-lệnh-dxos).
+
+### Từ mã nguồn
+
+```bash
+deploy/make_env.sh                       # sinh deploy/.env với mật khẩu ngẫu nhiên
 cd deploy && docker compose up -d --build
 ```
 
 Gateway ở `http://localhost:9080`: web, API, Swagger (`/swagger-ui.html`), Keycloak (`/admin`) và portal (`/portal/`).
 Tài khoản Keycloak admin lấy từ `KEYCLOAK_ADMIN_USERNAME` và `KEYCLOAK_ADMIN_PASSWORD` trong `deploy/.env`.
 
-Nạp mô hình mẫu bằng một người dùng có vai `ADMIN` (script dưới tạo người dùng thử `admin1`, chỉ dùng cho máy dev):
+Nạp mô hình mẫu bằng một người dùng có vai `ADMIN` (cần Python 3; script dưới tạo người dùng thử `admin1`, chỉ dùng cho máy dev):
 
 ```bash
 python3 - <<'EOF'
@@ -133,7 +147,7 @@ Mọi phản hồi bọc trong `ApiResponse`; lỗi có `errorCode` ổn định
 | `backend/dx-engine` | Dịch vụ lõi: áp dụng mô hình, API chung, Flowable |
 | `backend/dx-monitor` | Màn hình giám sát và truy vết |
 | `frontend` | Giao diện react-admin dựng từ metadata |
-| `deploy` | Compose, gateway APISIX, script vận hành, script kiểm tra ở `deploy/dev` |
+| `deploy` | Compose, gateway APISIX, bộ cài và lệnh `dxos`, script vận hành, script kiểm tra ở `deploy/dev` |
 | `sso`, `portal`, `seaweedfs` | Keycloak realm, trang portal, lưu trữ tệp |
 | `models` | Mô hình mẫu và tệp sai mẫu |
 | `ai` | Dịch vụ tìm kiếm tri thức có nguồn (AGPL-3.0), chạy riêng ngoài stack |

@@ -17,17 +17,16 @@ Mốc dưới đây là dự kiến.
 
 | Việc | Ghi chú |
 |---|---|
-| Tag `v2.0.0` và GitHub Release | Tạo sau khi nhánh phase 10 vào `main`; ngày của mục `[2.0.0]` trong `CHANGELOG.md` sửa theo ngày tag |
+| Tag `v2.0.0` và GitHub Release | Tạo sau khi nhánh phase 10 vào `main`; ngày của mục `[2.0.0]` trong `CHANGELOG.md` sửa theo ngày tag; chạy workflow Release từ tag để có image `v2.0.0` mà `dxos-install.sh` kéo về |
 | Trang docs `DX-OS-docs` | Vẫn mô tả bản `v1.1.1`; cập nhật cùng lúc triển khai |
 | Triển khai công khai | VPS giữ `v1.1.1`; `deploy/VPS.md` còn mô tả bản đó, và bản mới không có đường nâng cấp dữ liệu nên phải dựng lại; đặt `STAFF_OTP_FLOW=CONDITIONAL` trước lần khởi động đầu để bắt ADMIN nhập mã một lần |
 | Gửi bài | Thư tới BTC trước 17:00 ngày 06/12/2026 |
-| Cập nhật `deploy/.env` trên máy dev | Tệp này còn biến của bản cũ; dựng stack dev bằng `deploy/make_env.py` |
 
 ## 3. Giới hạn đã biết
 
 | Việc | Ghi chú |
 |---|---|
-| Chưa có CLI `dxos` | Áp dụng mô hình qua REST |
+| CLI `dxos` chưa có `plan` và `apply` | Áp dụng mô hình qua bảng điều khiển hoặc REST |
 | Dịch vụ `ai/` | Chưa nằm trong compose; chỉ tìm kiếm tri thức có nguồn, chưa có hỏi đáp sinh câu trả lời vì chưa có mô hình ngôn ngữ đạt tiêu chuẩn mở; dữ liệu huấn luyện của mô hình embedding chưa kiểm theo định nghĩa của OSI |
 | Chưa cắt bớt service bằng compose profile | Mô hình không dùng thành phần nào vẫn phải chạy thành phần đó |
 | Hành động hoàn tất | Chỉ có `add_to_group` và `remove_from_group`; nhóm Keycloak phải có sẵn, thiếu thì thông điệp được thử lại mãi và xem được ở tab Hàng đợi sự kiện; trường người dùng hoặc nhóm để trống thì thao tác bị bỏ qua, không để lại dấu vết |
@@ -38,7 +37,7 @@ Mốc dưới đây là dự kiến.
 | Hạn xử lý | Bộ quét quá hạn chỉ ghi dòng lịch sử; chưa có người nghe để nhắc qua chat |
 | Đổi họ mẫu của một thực thể | Bị từ chối, kể cả khi mọi hồ sơ đã ở trạng thái cuối; muốn đổi hình dạng quy trình thì thêm thực thể mới; `docs/dynamic-core/README.md` còn mô tả việc chuyển hồ sơ đang chạy bằng `ProcessMigrationService`, chưa làm |
 | Họ `work_item` | Hồ sơ ở trạng thái đã xử lý xong chờ người nộp xác nhận, chưa tự đóng sau một thời gian |
-| Bảng điều khiển | Điền form viết lại tệp và bỏ chú thích giữa tệp; cột "Áp dụng bởi" hiện mã người dùng; trình soạn kéo theo khoảng 15 MB mã tĩnh, chỉ tải khi mở |
+| Bảng điều khiển | Điền form viết lại tệp và bỏ chú thích giữa tệp; cột "Áp dụng bởi" hiện mã người dùng; trình soạn kéo theo khoảng 15 MB mã tĩnh, chỉ tải khi mở; trình duyệt báo lỗi `Missing requestHandler` từ worker của monaco-yaml khi mở trình soạn, cần kiểm việc báo lỗi và gợi ý theo schema |
 | Lịch đặt chỗ | Chỉ xem và tạo theo khoảng chọn, chưa kéo thả để đổi giờ; tiêu đề lấy từ trường văn bản đầu tiên |
 | Rút lại trên giao diện | Nút rút lại không mở ô nhập lý do, dù API cho phép ghi lý do |
 | Áp dụng đã đổi tên chưa có đường hủy | Phải sửa nguyên nhân rồi chạy lại đúng tệp đó |

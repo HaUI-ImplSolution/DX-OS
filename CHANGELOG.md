@@ -17,6 +17,10 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
   Portal chỉ còn ứng dụng chính, Keycloak Admin, màn hình giám sát và Swagger; biến `PORTAL_BI_URL` và `PORTAL_CHAT_URL` không còn dùng.
   Màn hình giám sát gửi cảnh báo qua `MATTERMOST_WEBHOOK_URL_ADMIN` hoặc `MATTERMOST_WEBHOOK_URL`, không còn đọc tệp webhook hay dò Superset và Mattermost.
 - Gỡ `seaweedfs/migrate-uploads.sh`.
+- Cài bằng một lệnh: `dxos-install.sh` phát hành kèm mỗi bản (nguồn ở `deploy/get.sh`) tải gói phát hành, kiểm SHA-256 và cài vào `~/.dxos`.
+  Lệnh `dxos` có `start`, `stop`, `status`, `logs`, `admin`, `update`, `doctor`, `backup`, `uninstall`; `dxos start` tạo tài khoản `admin` đầu tiên với mật khẩu tạm.
+- `deploy/install.sh` nâng cấp được bản đã cài (`--upgrade`): thay tệp chạy, giữ `.env` và dữ liệu, thêm biến mới; bản cài dùng project Compose `dxos`.
+- `deploy/make_env.sh` thay `deploy/make_env.py`; cài và chạy stack không còn cần Python.
 - Màn hình giám sát gọi tên chức năng và thao tác theo API của lõi, dò dịch vụ AI ở `/api/v1/health`, và không miễn đường dẫn chậm nào theo mặc định.
 
 ## [2.0.0] - 2026-11-03

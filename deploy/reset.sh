@@ -27,7 +27,7 @@ for arg in "$@"; do
 done
 
 if [[ ! -f .env ]]; then
-  echo "deploy/.env not found. Run: python3 make_env.py .env (random secrets), or cp .env.example .env and fill every blank variable." >&2
+  echo "deploy/.env not found. Run: ./make_env.sh (random secrets), or cp .env.example .env and fill every blank variable." >&2
   exit 1
 fi
 

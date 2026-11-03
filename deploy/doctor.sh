@@ -49,7 +49,7 @@ if (( disk_free_gib < 40 )); then warn "${disk_free_gib} GiB of disk is free her
 
 echo "deploy/.env"
 if [[ ! -f .env ]]; then
-  fail ".env not found: run python3 make_env.py .env (random secrets), or cp .env.example .env and fill every blank variable"
+  fail ".env not found: run ./make_env.sh (random secrets), or cp .env.example .env and fill every blank variable"
 else
   compose_files=(docker-compose.yml)
   for f in $(env_value COMPOSE_FILE | tr ':' ' '); do [[ " ${compose_files[*]} " == *" $f "* ]] || compose_files+=("$f"); done

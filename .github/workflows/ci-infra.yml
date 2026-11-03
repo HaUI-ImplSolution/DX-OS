@@ -42,8 +42,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
-      - name: Install the runtime files into a directory outside the source tree
-        run: deploy/install.sh "$RUNNER_TEMP/dx-os" v0.0.0
+      - name: Install a release archive of this commit with the installer of the releases
+        run: |
+          git archive --format=tar.gz --prefix=dx-os-0.0.0/ -o "$RUNNER_TEMP/dx-os-0.0.0.tar.gz" HEAD
+          (cd "$RUNNER_TEMP" && sha256sum dx-os-0.0.0.tar.gz > dx-os-0.0.0.sha256)
+          bash deploy/get.sh --file "$RUNNER_TEMP/dx-os-0.0.0.tar.gz" --prefix "$RUNNER_TEMP/dx-os"
+          grep -qx 'DXOS_IMAGE_TAG=v0.0.0' "$RUNNER_TEMP/dx-os/deploy/.env"
+          grep -qx 'COMPOSE_PROJECT_NAME=dxos' "$RUNNER_TEMP/dx-os/deploy/.env"
+          "$HOME/.local/bin/dxos" version
+          "$HOME/.local/bin/dxos" help > /dev/null
+
+      - name: A changed archive is refused
+        run: |
+          echo tampered >> "$RUNNER_TEMP/dx-os-0.0.0.tar.gz"
+          if bash deploy/get.sh --file "$RUNNER_TEMP/dx-os-0.0.0.tar.gz" --prefix "$RUNNER_TEMP/other"; then
+            echo "the installer accepted an archive that does not match its SHA-256"; exit 1
+          fi
 
       - name: Compose resolves there and every file it mounts was copied
         working-directory: ${{ runner.temp }}/dx-os/deploy
@@ -84,7 +98,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Create an env file with random secrets
-        run: python3 deploy/make_env.py deploy/.env
+        run: deploy/make_env.sh deploy/.env
 
       - name: Start Postgres and put some data in it
         working-directory: deploy

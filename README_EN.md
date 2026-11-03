@@ -38,17 +38,31 @@ These are in the [design](./docs/dynamic-core/README.md).
 
 ## Run it
 
-You need Docker with Compose v2 and Python 3.
+### Install
+
+You need a Linux machine with Docker and Compose v2, and no source code.
 
 ```bash
-python3 deploy/make_env.py              # writes deploy/.env with random passwords
+curl -fsSL https://github.com/HaUI-ImplSolution/DX-OS/releases/latest/download/dxos-install.sh | bash
+dxos start
+```
+
+The installer downloads the latest release, checks its SHA-256 and installs it into `~/.dxos`; the `dxos` command goes to `~/.local/bin`.
+`dxos start` downloads the images the first time, waits until every service is ready, creates the account `admin` with a temporary password printed on screen, and prints the addresses.
+Sign in at `http://localhost:9080/console` as `admin`, change the password, pick a template in the template library, look at the plan and apply it.
+The other commands (`stop`, `status`, `logs`, `admin`, `update`, `backup`, `uninstall`) are in `dxos help` and [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md#cài-đặt-và-lệnh-dxos) (Vietnamese).
+
+### From the source
+
+```bash
+deploy/make_env.sh                       # writes deploy/.env with random passwords
 cd deploy && docker compose up -d --build
 ```
 
 The gateway is at `http://localhost:9080`: web, API, Swagger (`/swagger-ui.html`), Keycloak (`/admin`) and the portal (`/portal/`).
 The Keycloak admin account is `KEYCLOAK_ADMIN_USERNAME` and `KEYCLOAK_ADMIN_PASSWORD` in `deploy/.env`.
 
-Apply the sample model as a user with the `ADMIN` role (the script creates a test user `admin1`, for development machines only):
+Apply the sample model as a user with the `ADMIN` role (needs Python 3; the script creates a test user `admin1`, for development machines only):
 
 ```bash
 python3 - <<'EOF'
@@ -133,7 +147,7 @@ Every reply is wrapped in `ApiResponse`; errors carry a stable `errorCode`.
 | `backend/dx-engine` | The core service: apply a model, the API, Flowable |
 | `backend/dx-monitor` | Monitoring and tracing screen |
 | `frontend` | react-admin UI built from metadata |
-| `deploy` | Compose, the APISIX gateway, operations scripts, check scripts in `deploy/dev` |
+| `deploy` | Compose, the APISIX gateway, the installer and the `dxos` command, operations scripts, check scripts in `deploy/dev` |
 | `sso`, `portal`, `seaweedfs` | Keycloak realm, portal page, file storage |
 | `models` | Sample models and sample bad files |
 | `ai` | A search service with cited sources (AGPL-3.0), run on its own outside the stack |

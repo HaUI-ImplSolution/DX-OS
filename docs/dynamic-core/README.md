@@ -238,8 +238,7 @@ Chi tiết tham số của từng họ mẫu và các khối dùng chung đượ
 
 ## Trải nghiệm người dùng
 
-Người dùng chỉ cần Docker, không cần mã nguồn, JDK hay Node.
-Các lệnh và tên tệp dưới đây để minh họa.
+Người dùng chỉ cần Docker, không cần mã nguồn, JDK, Node hay Python.
 
 
 | Tệp                 | Vai trò                                    |
@@ -249,10 +248,13 @@ Các lệnh và tên tệp dưới đây để minh họa.
 | `model.yaml`         | Service này là gì                        |
 
 ```bash
-docker compose up -d   # dựng service từ model.yaml
-dxos plan              # xem trước sau khi sửa model.yaml
-dxos apply             # áp dụng
+curl -fsSL https://github.com/HaUI-ImplSolution/DX-OS/releases/latest/download/dxos-install.sh | bash
+dxos start             # khởi động, tạo tài khoản admin đầu tiên, in các địa chỉ
+dxos plan model.yaml   # xem trước sau khi sửa model.yaml (chưa có)
+dxos apply model.yaml  # áp dụng (chưa có)
 ```
+
+Bộ cài và các lệnh vận hành của `dxos` mô tả ở [`deploy/OPERATIONS.md`](../../deploy/OPERATIONS.md#cài-đặt-và-lệnh-dxos); `plan` và `apply` làm ở bước sau, nay áp dụng qua bảng điều khiển.
 
 
 | Trường hợp                                          | Hành vi                                                   |

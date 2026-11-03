@@ -15,7 +15,7 @@ Hướng thiết kế ở [`docs/dynamic-core/README.md`](./docs/dynamic-core/RE
 Cần Docker với Compose v2, JDK 21, Node 20 và Python 3.
 
 ```bash
-python3 deploy/make_env.py                  # sinh deploy/.env
+deploy/make_env.sh                          # sinh deploy/.env
 cd deploy && docker compose up -d --build   # dựng cả stack
 cd ../backend && ./mvnw verify              # build và test backend
 cd ../frontend && npm install && npm run dev

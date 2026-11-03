@@ -1,0 +1,238 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: Apache-2.0
+# Command line of an installed DX-OS (see install.sh and get.sh); it drives the stack of the directory it lives in.
+#
+#   dxos start                 start the stack, wait until it is ready, create the first ADMIN account
+#   dxos stop                  stop the stack, keeping the data
+#   dxos status                state of every service and the addresses to open
+#   dxos logs [service]        follow the logs
+#   dxos admin                 give the account "admin" a new temporary password (creates it when missing)
+#   dxos update [vX.Y.Z | --file dx-os-X.Y.Z.tar.gz]
+#                              install a newer release (default: the latest) and update the images
+#   dxos doctor                check this machine and deploy/.env
+#   dxos backup [args]         encrypted backup, see backup.sh
+#   dxos uninstall [--purge]   remove the containers and the dxos command; --purge also deletes the data
+#   dxos version | help
+set -euo pipefail
+
+# The directory of this script, following the symlink in ~/.local/bin.
+self="${BASH_SOURCE[0]}"
+while [[ -L "$self" ]]; do
+  target="$(readlink "$self")"
+  [[ "$target" == /* ]] || target="$(dirname "$self")/$target"
+  self="$target"
+done
+DEPLOY_DIR="$(cd "$(dirname "$self")" && pwd)"
+PREFIX="$(dirname "$DEPLOY_DIR")"
+BIN_LINK="${DXOS_BIN_DIR:-$HOME/.local/bin}/dxos"
+TIMEOUT_SECONDS="${DXOS_START_TIMEOUT:-900}"
+ADMIN_USER="admin"
+ALPINE="alpine:3.20@sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc"
+
+die() { echo "dxos: $*" >&2; exit 1; }
+# Value of KEY in .env (last assignment), empty when absent or blank.
+env_value() { grep -E "^$1=" "$DEPLOY_DIR/.env" | tail -n1 | cut -d= -f2- || true; }
+compose() { docker compose "$@"; }
+
+# The address browsers use; GATEWAY_PUBLIC_URL unless it still refers to other variables.
+public_url() {
+  local url host port
+  url="$(env_value GATEWAY_PUBLIC_URL)"
+  # shellcheck disable=SC2016 # a literal "${" marks a value Compose interpolates
+  if [[ -z "$url" || "$url" == *'${'* ]]; then
+    host="$(env_value PUBLIC_HOST)"
+    port="$(env_value APISIX_HOST_PORT)"
+    url="http://${host:-localhost}:${port##*:}"
+  fi
+  echo "${url%/}"
+}
+
+print_addresses() {
+  local url
+  url="$(public_url)"
+  cat <<EOF
+
+DX-OS is running:
+  Application      $url/
+  Control panel    $url/console  (ADMIN)
+  Portal           $url/portal/
+  Monitoring       $url/monitor/  (ADMIN)
+  Keycloak admin   $url/admin/  (user $(env_value KEYCLOAK_ADMIN_USERNAME), password KEYCLOAK_ADMIN_PASSWORD in $DEPLOY_DIR/.env)
+EOF
+}
+
+# A container is ready when it is healthy, running without a healthcheck, or a one-shot job
+# that exited with code 0.
+pending_services() {
+  local pending=() id name status health exit_code
+  while read -r id; do
+    [[ -n "$id" ]] || continue
+    read -r name status health exit_code <<<"$(docker inspect -f \
+      '{{.Name}} {{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{else}}-{{end}} {{.State.ExitCode}}' "$id")"
+    case "$status:$health:$exit_code" in
+      running:healthy:*|running:-:*|exited:*:0) ;;
+      *) pending+=("${name#/}($status/$health)") ;;
+    esac
+  done < <(compose ps -a -q)
+  echo "${pending[*]:-}"
+}
+
+wait_ready() {
+  local deadline=$((SECONDS + TIMEOUT_SECONDS)) pending
+  echo "==> Waiting for the services (up to ${TIMEOUT_SECONDS}s; the first start takes a few minutes)"
+  while true; do
+    pending="$(pending_services)"
+    [[ -z "$pending" ]] && return 0
+    if ((SECONDS >= deadline)); then
+      compose ps >&2
+      die "timed out; not ready: $pending (see: dxos logs)"
+    fi
+    sleep 5
+  done
+}
+
+# Creates or resets the account "admin" of the dxos realm through kcadm.sh inside the Keycloak container.
+# mode "ensure" does nothing when some user already has the ADMIN role; mode "reset" always sets a new
+# temporary password. Prints the password when it set one.
+admin_account() {
+  local mode="$1" password
+  password="$(od -An -N8 -tx1 /dev/urandom | tr -d ' \n')"
+  compose exec -T -e MODE="$mode" -e ADMIN_USER="$ADMIN_USER" -e ADMIN_PASSWORD="$password" keycloak bash -s <<'EOF'
+set -euo pipefail
+kc() { /opt/keycloak/bin/kcadm.sh "$@" --config /tmp/dxos-kcadm.config; }
+trap 'rm -f /tmp/dxos-kcadm.config' EXIT
+kc config credentials --server http://localhost:8080 --realm master \
+  --user "$KC_BOOTSTRAP_ADMIN_USERNAME" --password "$KC_BOOTSTRAP_ADMIN_PASSWORD" >/dev/null 2>&1 \
+  || { echo "cannot sign in to Keycloak as $KC_BOOTSTRAP_ADMIN_USERNAME" >&2; exit 3; }
+if [[ "$MODE" == ensure ]] && kc get roles/ADMIN/users -r dxos --fields username | grep -q '"username"'; then
+  exit 10
+fi
+if ! kc get users -r dxos -q exact=true -q username="$ADMIN_USER" --fields id | grep -q '"id"'; then
+  kc create users -r dxos -s username="$ADMIN_USER" -s enabled=true \
+    -s firstName=DX-OS -s lastName=Admin >/dev/null 2>&1
+fi
+kc set-password -r dxos --username "$ADMIN_USER" --new-password "$ADMIN_PASSWORD" --temporary
+kc add-roles -r dxos --uusername "$ADMIN_USER" --rolename ADMIN
+EOF
+  local status=$?
+  case "$status" in
+    0) cat <<EOF
+
+ADMIN account of DX-OS (the password must be changed at the first sign-in):
+  user      $ADMIN_USER
+  password  $password
+EOF
+      ;;
+    10) ;;
+    *) die "could not set up the ADMIN account (Keycloak answered with code $status)" ;;
+  esac
+}
+
+cmd_start() {
+  echo "==> Checking this machine"
+  "$DEPLOY_DIR/doctor.sh" >/dev/null || { "$DEPLOY_DIR/doctor.sh" || true; die "fix the FAIL lines above, then run dxos start again"; }
+  echo "==> Starting DX-OS $(env_value DXOS_IMAGE_TAG) (images are downloaded on the first start)"
+  compose up -d --no-build --pull missing
+  wait_ready
+  set +e
+  admin_account ensure
+  set -e
+  print_addresses
+}
+
+cmd_admin() {
+  [[ -n "$(compose ps -q keycloak)" ]] || die "DX-OS is not running; run dxos start first"
+  set +e
+  admin_account reset
+  set -e
+}
+
+cmd_status() {
+  compose ps --format 'table {{.Service}}\t{{.State}}\t{{.Status}}'
+  local pending
+  pending="$(pending_services)"
+  if [[ -z "$(compose ps -q)" ]]; then
+    echo; echo "DX-OS is stopped; run dxos start."
+  elif [[ -n "$pending" ]]; then
+    echo; echo "Not ready yet: $pending"
+  else
+    print_addresses
+  fi
+}
+
+cmd_update() {
+  local source=() tag
+  case "${1:-}" in
+    "") ;;
+    --file) source=(--file "${2:?--file needs a value}") ;;
+    v*) source=(--version "$1") ;;
+    *) die "usage: dxos update [vX.Y.Z | --file dx-os-X.Y.Z.tar.gz]" ;;
+  esac
+  bash "$DEPLOY_DIR/get.sh" --upgrade --prefix "$PREFIX" ${source[@]+"${source[@]}"}
+  tag="$(env_value DXOS_IMAGE_TAG)"
+  "$DEPLOY_DIR/update.sh" "$tag"
+  wait_ready
+  print_addresses
+}
+
+cmd_uninstall() {
+  local purge=false yes=false arg answer
+  for arg in "$@"; do
+    case "$arg" in
+      --purge) purge=true ;;
+      --yes) yes=true ;;
+      *) die "unknown option: $arg" ;;
+    esac
+  done
+  if [[ "$purge" == true && "$yes" != true ]]; then
+    echo "This deletes every record, file and account of DX-OS in $PREFIX."
+    read -r -p "Type 'purge' to continue: " answer
+    [[ "$answer" == purge ]] || die "aborted"
+  fi
+  echo "==> Removing the containers"
+  if [[ "$purge" == true ]]; then
+    compose down --remove-orphans --volumes
+  else
+    compose down --remove-orphans
+  fi
+  if [[ "$purge" == true ]]; then
+    echo "==> Deleting the data and $PREFIX"
+    # deploy/data holds root-owned files, so it is emptied from a throwaway container.
+    if [[ -d "$DEPLOY_DIR/data" ]]; then
+      docker run --rm -v "$DEPLOY_DIR/data:/data" "$ALPINE" find /data -mindepth 1 -delete
+    fi
+    rm -rf "$PREFIX"
+  fi
+  if [[ -L "$BIN_LINK" && "$(readlink "$BIN_LINK")" == "$DEPLOY_DIR/dxos" ]]; then
+    rm -f "$BIN_LINK"
+  fi
+  if [[ "$purge" == true ]]; then
+    echo "DX-OS is removed."
+  else
+    echo "DX-OS is stopped and the dxos command removed; the data stays in $PREFIX (dxos uninstall --purge from $DEPLOY_DIR/dxos deletes it)."
+  fi
+}
+
+main() {
+  [[ -f "$DEPLOY_DIR/.env" ]] || die "$DEPLOY_DIR/.env is missing; install DX-OS with install.sh first"
+  cd "$DEPLOY_DIR"
+  local command="${1:-help}"
+  (( $# )) && shift
+  case "$command" in
+    start) cmd_start ;;
+    stop) compose stop ;;
+    status) cmd_status ;;
+    logs) compose logs -f --tail 100 "$@" ;;
+    admin) cmd_admin ;;
+    update) cmd_update "$@" ;;
+    doctor) "$DEPLOY_DIR/doctor.sh" ;;
+    backup) "$DEPLOY_DIR/backup.sh" "$@" ;;
+    uninstall) cmd_uninstall "$@" ;;
+    version) echo "DX-OS $(env_value DXOS_IMAGE_TAG) in $PREFIX" ;;
+    help|-h|--help) sed -n '3,17p' "$self" ;;
+    *) echo "dxos: unknown command: $command" >&2; sed -n '3,17p' "$self" >&2; exit 2 ;;
+  esac
+}
+
+# On one line, so an update that replaces this file cannot make bash read past the end of main.
+main "$@"; exit $?

@@ -162,6 +162,33 @@ docker compose exec postgres sh -c 'psql -U "$POSTGRES_USER" -d "${POSTGRES_DB:-
 Bản ghi được giữ không giới hạn thời gian và trigger chặn xóa.
 Chạy lâu thì theo dõi dung lượng bảng.
 
+## Cài đặt và lệnh `dxos`
+
+```bash
+curl -fsSL https://github.com/HaUI-ImplSolution/DX-OS/releases/latest/download/dxos-install.sh | bash
+dxos start
+```
+
+Bộ cài ([`get.sh`](./get.sh), phát hành kèm mỗi bản với tên `dxos-install.sh`) tải gói của bản phát hành, so với SHA-256 trong `dx-os-X.Y.Z.sha256`, rồi chạy [`install.sh`](./install.sh) của gói đó.
+Gói sai SHA-256 thì không cài gì.
+`install.sh` chép `deploy/` và `sso/realm-dxos.json` vào `~/.dxos` (đổi bằng `--prefix` hoặc biến `DXOS_HOME`), sinh `deploy/.env` bằng [`make_env.sh`](./make_env.sh), đặt `COMPOSE_PROJECT_NAME=dxos` cùng image GHCR của bản đó, và tạo liên kết `~/.local/bin/dxos`.
+Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằng `--file dx-os-X.Y.Z.tar.gz`.
+
+| Lệnh | Việc |
+|---|---|
+| `dxos start` | Chạy `doctor.sh`, tải image còn thiếu, khởi động, chờ mọi dịch vụ sẵn sàng; realm chưa có ai vai `ADMIN` thì tạo tài khoản `admin` với mật khẩu tạm in ra một lần, rồi in các địa chỉ |
+| `dxos stop` | Dừng các container, giữ dữ liệu |
+| `dxos status` | Trạng thái từng dịch vụ và các địa chỉ |
+| `dxos logs [dịch vụ]` | Theo dõi log |
+| `dxos admin` | Đặt mật khẩu tạm mới cho `admin`, tạo tài khoản nếu chưa có |
+| `dxos update [vX.Y.Z]` | Cài bản mới hơn (mặc định bản mới nhất): thay tệp chạy, giữ `.env` và `data/`, thêm biến mới, rồi chạy `update.sh` |
+| `dxos doctor`, `dxos backup` | Chạy `doctor.sh`, `backup.sh` |
+| `dxos uninstall [--purge]` | Xóa container và lệnh `dxos`; `--purge` xóa cả dữ liệu và thư mục cài, phải gõ xác nhận |
+
+Mật khẩu tạm của `admin` phải đổi ở lần đăng nhập đầu.
+Tài khoản quản trị Keycloak nằm ở `KEYCLOAK_ADMIN_USERNAME` và `KEYCLOAK_ADMIN_PASSWORD` trong `~/.dxos/deploy/.env`.
+Image chỉ có bản `linux/amd64`; bộ cài được kiểm trên Linux, chưa kiểm trên macOS và Windows (WSL2).
+
 ## Kiểm tra trước khi chạy
 
 `./doctor.sh` (trong `deploy/`) chỉ đọc, không đổi gì và không in giá trị nào của `.env`.

@@ -10,7 +10,7 @@ Mọi lệnh chạy từ gốc repo, trừ khi ghi khác; lệnh dựng stack �
 | Docker và Docker Compose v2 | Backend `verify` dùng Testcontainers nên cần Docker chạy |
 | JDK 21 | Dùng Maven wrapper trong repo |
 | Node 20 trở lên | Cho `frontend` |
-| Python 3 | Cho `deploy/make_env.py` và các script kiểm ở `deploy/dev` |
+| Python 3 | Cho các script kiểm ở `deploy/dev` |
 
 ## 2. Kiểm tĩnh
 
@@ -27,7 +27,7 @@ cd ai && python -m pytest tests -q   # cần pip install -r requirements-dev.txt
 ## 3. Dựng stack
 
 ```bash
-python3 deploy/make_env.py                  # sinh deploy/.env
+deploy/make_env.sh                          # sinh deploy/.env
 cd deploy && docker compose up -d --build
 docker compose ps                           # mọi service healthy
 ```
@@ -143,7 +143,10 @@ Các dòng ghi "Phase 10" là kết quả của lần kiểm trước, cùng ng�
 | `check_licenses.py`, `check_routes.py` | Đạt | 0 vấn đề, gồm header, giấy phép của SBOM và danh mục `.github/license-catalog.json` (image, mô hình, tệp trọng số, tài liệu, nén); 12 route, 11 công khai có chủ đích |
 | `pytest` của `ai/` | Đạt | Phase 10: 21 test, chạy trong image dựng từ `ai/Dockerfile` |
 | `ai/` chạy thật | Đạt | Phase 10: pgvector tạm: `init_db`, `ingest` 3 tài liệu kèm nguồn và giấy phép, tìm kiếm trả đúng tài liệu; câu ngoài kho và mã không có trong kho không có bằng chứng; thiếu khóa dịch vụ 401 |
-| `deploy/install.sh` | Đạt | Phase 10: cài sang thư mục khác, `docker compose config` đạt |
+| Bộ cài và `dxos` | Đạt | Gói dựng từ cây làm việc, image local: gói sai SHA-256 bị từ chối; cài vào `~/.dxos` và `~/.local/bin/dxos`; cài lần hai bị từ chối; `dxos start` từ trạng thái rỗng tới khi mọi dịch vụ sẵn sàng, tạo `admin` với mật khẩu tạm, lần hai không tạo lại; `status`, `logs`, `admin`, `doctor`, `version` đúng; nâng cấp bằng gói mới giữ `.env`, thêm biến mới, xóa tệp bản mới không còn; `uninstall --purge` không để lại container, volume, thư mục hay liên kết |
+| Lần chạy đầu bằng Chrome | Đạt | `admin` đăng nhập bằng mật khẩu tạm, bị buộc đổi mật khẩu, vào bảng điều khiển, áp dụng mẫu đầu tiên của thư viện mẫu |
+| `check_demo.py` trên bản cài | Đạt | 26/26 với `DXOS_ENV_FILE=~/.dxos/deploy/.env DXOS_PROJECT=dxos` |
+| Job `install` của CI | Đạt | Chạy lại ở máy: cài từ gói, gói bị sửa bị từ chối, mọi tệp Compose mount đều có |
 | `docker compose config` | Đạt | Tám service, cộng `clamav` ở profile `av` |
 | Stack từ trạng thái sạch | Đạt | Tám service healthy |
 | `check_api.py` | Đạt | 51/51; danh sách 10.000 dòng có lọc và sắp xếp, phân vị 95 là 10 ms, trung vị 8 ms |

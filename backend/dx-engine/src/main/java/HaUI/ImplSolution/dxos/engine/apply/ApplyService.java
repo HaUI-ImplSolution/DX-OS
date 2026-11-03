@@ -64,6 +64,9 @@ public class ApplyService {
   private static final int ERROR_LENGTH = 500;
   private static final int SAMPLE_SIZE = 20;
   private static final String RENAME_STEP = "RENAME_FIELD";
+  private static final Set<String> PROCESS_RULE_CHANGES =
+      Set.of("ADD_PROCESS", "DROP_PROCESS", "CHANGE_HANDLER", "CHANGE_SELF_DECISION",
+          "CHANGE_COMPLETION", "CHANGE_BOOKING", "CHANGE_DEADLINE");
 
   private final JdbcTemplate jdbc;
   private final KeycloakAdminClient keycloak;
@@ -115,10 +118,17 @@ public class ApplyService {
           List.of(), List.of(), Map.of(), List.of());
     }
     ModelDiff diff = ModelDiff.between(running == null ? null : running.model(), model, renames);
-    prepareSchema(model);
-    List<Violation> violations = violations(model, running, diff);
     List<String> rejections = new ArrayList<>(diff.rejections);
+    rejections.addAll(roleCollisions(model));
+    Map<String, Long> openRecords = openRecords(running, diff);
+    rejections.addAll(processRuleChangesWithOpenRecords(diff, openRecords));
+    rejections.addAll(dropDependencyRejections(model, diff));
+    List<Violation> violations = List.of();
     List<String> statements = List.of();
+    if (rejections.isEmpty()) {
+      prepareSchema(model);
+      violations = violations(model, running, diff);
+    }
     if (rejections.isEmpty()) {
       SchemaTool.Plan schemaPlan =
           schemaTool.plan(model, DdlGenerator.desiredState(model, pendingRenames(model, diff)));
@@ -137,8 +147,7 @@ public class ApplyService {
     String action = !rejections.isEmpty() || !violations.isEmpty() ? "rejected"
         : running == null ? "create" : "change";
     return new Plan(model.name(), from, nextVersion(hash, running), action, diff.level(),
-        diff.changes, rejections, diff.questions, violations, openRecords(running, diff),
-        statements);
+        diff.changes, rejections, diff.questions, violations, openRecords, statements);
   }
 
   private Applied run(Model model, String content, Actor actor, Integer base, Level accept,
@@ -158,6 +167,14 @@ public class ApplyService {
     if (!diff.rejections.isEmpty()) {
       throw new InvalidStateException(String.join("; ", diff.rejections));
     }
+    List<String> roleCollisions = roleCollisions(model);
+    if (!roleCollisions.isEmpty()) {
+      throw new InvalidStateException(String.join("; ", roleCollisions));
+    }
+    List<String> dropRejections = dropDependencyRejections(model, diff);
+    if (!dropRejections.isEmpty()) {
+      throw new InvalidStateException(String.join("; ", dropRejections));
+    }
     if (diff.level().compareTo(accept) > 0) {
       throw new InvalidStateException("This change is at level " + diff.level()
           + "; read the plan and pass accept=" + diff.level());
@@ -170,31 +187,88 @@ public class ApplyService {
           violations.size() + " rules are broken by existing rows, first " + first.entity() + "."
               + first.field() + " with " + first.rows() + " rows; see the plan");
     }
+    List<String> processRejections =
+        processRuleChangesWithOpenRecords(diff, openRecords(running, diff));
+    if (!processRejections.isEmpty()) {
+      throw new InvalidStateException(String.join("; ", processRejections));
+    }
     int version = nextVersion(hash, running);
     long runId = jdbc.queryForObject(
         "INSERT INTO engine.apply_run (model, hash, status, actor) VALUES (?, ?, 'running', ?) "
             + "RETURNING id",
         Long.class, model.name(), hash, actor.id());
     List<Step> steps = steps(model, diff, content, hash, actor, version);
-    int seq = 0;
-    for (Step step : steps) {
-      seq++;
-      try {
-        step.action().run();
-        recordStep(runId, seq, step.info(), "done", null);
-      } catch (RuntimeException e) {
-        recordStep(runId, seq, step.info(), "failed", e.getMessage());
-        jdbc.update(
-            "UPDATE engine.apply_run SET status = 'failed', finished_at = now() " + "WHERE id = ?",
-            runId);
-        throw e;
+    registry.beginApply(model.name());
+    try {
+      int seq = 0;
+      for (Step step : steps) {
+        seq++;
+        try {
+          step.action().run();
+          recordStep(runId, seq, step.info(), "done", null);
+        } catch (RuntimeException e) {
+          recordStep(runId, seq, step.info(), "failed", e.getMessage());
+          throw e;
+        }
       }
+      registry.reload();
+      jdbc.update("UPDATE engine.apply_run SET status = 'done', finished_at = now() WHERE id = ?",
+          runId);
+      registry.endApply(model.name());
+      return new Applied(model.name(), version, "applied", runId,
+          steps.stream().map(Step::info).toList());
+    } catch (RuntimeException e) {
+      jdbc.update(
+          "UPDATE engine.apply_run SET status = 'failed', finished_at = now() " + "WHERE id = ?",
+          runId);
+      throw e;
     }
-    jdbc.update("UPDATE engine.apply_run SET status = 'done', finished_at = now() WHERE id = ?",
-        runId);
-    registry.reload();
-    return new Applied(model.name(), version, "applied", runId,
-        steps.stream().map(Step::info).toList());
+  }
+
+  private List<String> roleCollisions(Model model) {
+    Set<String> roles = model.roles().stream().map(Role::name).collect(Collectors.toSet());
+    if (roles.isEmpty()) {
+      return List.of();
+    }
+    List<String> collisions = new ArrayList<>();
+    List<Map<String, Object>> rows = jdbc.queryForList(
+        "SELECT DISTINCT ON (model) model, content FROM engine.model_version WHERE model <> ? "
+            + "ORDER BY model, version DESC",
+        model.name());
+    for (Map<String, Object> row : rows) {
+      Model other = ModelParser.parse((String) row.get("content"));
+      other.roles().stream().map(Role::name).filter(roles::contains).distinct().forEach(
+          role -> collisions.add("Role " + role + " is already used by model " + row.get("model")));
+    }
+    return collisions;
+  }
+
+  private static List<String> processRuleChangesWithOpenRecords(ModelDiff diff,
+      Map<String, Long> openRecords) {
+    return diff.changes.stream().filter(change -> PROCESS_RULE_CHANGES.contains(change.kind()))
+        .filter(change -> openRecords.containsKey(change.entity()))
+        .map(change -> "Cannot change " + change.kind() + " for " + change.entity() + " while "
+            + openRecords.get(change.entity()) + " records are still open")
+        .distinct().toList();
+  }
+
+  private List<String> dropDependencyRejections(Model model, ModelDiff diff) {
+    List<String> rejections = new ArrayList<>();
+    diff.changes.stream().filter(change -> "DROP_ENTITY".equals(change.kind())).forEach(change -> {
+      Long attachments = jdbc.queryForObject(
+          "SELECT count(*) FROM engine.attachment WHERE model = ? AND entity = ?", Long.class,
+          model.name(), change.entity());
+      Long processes = jdbc.queryForObject(
+          "SELECT count(DISTINCT proc_inst_id_) FROM engine.act_ru_execution "
+              + "WHERE business_key_ LIKE ?",
+          Long.class, model.name() + "." + change.entity() + ".%");
+      if ((attachments != null && attachments > 0) || (processes != null && processes > 0)) {
+        rejections.add("Cannot drop " + change.entity() + " while it has "
+            + (processes == null ? 0 : processes) + " process instances and "
+            + (attachments == null ? 0 : attachments) + " attachments");
+      }
+    });
+    return rejections;
   }
 
   public List<Map<String, Object>> models() {

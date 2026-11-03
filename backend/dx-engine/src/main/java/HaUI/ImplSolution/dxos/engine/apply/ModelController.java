@@ -45,7 +45,9 @@ public class ModelController {
       description = "The body is the model file. 400 lists every problem with its line and"
           + " column. The answer compares it with the running version: the changes by level (SAFE,"
           + " MIGRATION, LOSS), what is refused, existing rows that break a new rule, open records"
-          + " of the touched processes and the statements to run. No record or table changes.")
+          + " of the touched processes and the statements to run. Changes that collide with"
+          + " another model, affect open process records, or have attachments or executions are"
+          + " refused. No record or table changes.")
   public ApiResponse<ApplyService.Plan> plan(@RequestBody String content) {
     return ApiResponse.success(service.plan(content));
   }
@@ -56,7 +58,8 @@ public class ModelController {
           + " version. To change a running model pass base, the fromVersion of the plan, and accept"
           + " with the level of the plan (SAFE by default). The same file again changes nothing or"
           + " finishes an apply that stopped midway. 409 when the plan is out of date, the level is"
-          + " above accept, rows break a new rule, the change is refused, or another apply runs.")
+          + " above accept, rows break a new rule, the change is refused, dependencies prevent a"
+          + " drop, or the model needs reconciliation.")
   public ApiResponse<ApplyService.Applied> apply(@RequestBody String content,
       @RequestParam(required = false) Integer base,
       @RequestParam(required = false) ModelDiff.Level accept) {

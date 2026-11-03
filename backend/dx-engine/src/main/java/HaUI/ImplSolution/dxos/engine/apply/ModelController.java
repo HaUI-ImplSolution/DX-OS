@@ -33,7 +33,9 @@ public class ModelController {
   }
 
   @GetMapping
-  @Operation(summary = "List the applied models with their current version")
+  @Operation(summary = "List the applied models with their current version",
+      description = "applied_by is the user id of who applied the version, applied_by_name the name"
+          + " the token gave then; it is empty for versions saved without one.")
   public ApiResponse<List<Map<String, Object>>> list() {
     return ApiResponse.success(service.models());
   }
@@ -58,7 +60,7 @@ public class ModelController {
   public ApiResponse<ApplyService.Applied> apply(@RequestBody String content,
       @RequestParam(required = false) Integer base,
       @RequestParam(required = false) ModelDiff.Level accept) {
-    return ApiResponse.success(service.apply(content, user.currentUserId(), base, accept));
+    return ApiResponse.success(service.apply(content, actor(), base, accept));
   }
 
   @PostMapping("/{model}/rollback/plan")
@@ -74,12 +76,16 @@ public class ModelController {
           + " come back without a backup.")
   public ApiResponse<ApplyService.Applied> rollback(@PathVariable String model,
       @RequestParam Integer base, @RequestParam(required = false) ModelDiff.Level accept) {
-    return ApiResponse.success(service.rollback(model, user.currentUserId(), base, accept));
+    return ApiResponse.success(service.rollback(model, actor(), base, accept));
   }
 
   @GetMapping("/{model}/runs")
   @Operation(summary = "History of the applies of a model, newest first, with every step")
   public ApiResponse<List<Map<String, Object>>> runs(@PathVariable String model) {
     return ApiResponse.success(service.runs(model));
+  }
+
+  private ApplyService.Actor actor() {
+    return new ApplyService.Actor(user.currentUserId(), user.currentFullName());
   }
 }

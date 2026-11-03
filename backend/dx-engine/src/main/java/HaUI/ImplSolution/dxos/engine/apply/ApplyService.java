@@ -91,13 +91,16 @@ public class ApplyService {
     return plan(previous.model(), hash(previous.content()), previous.renames());
   }
 
-  public Applied apply(String content, String actor, Integer base, Level accept) {
+  // Who applies a model: the token "sub" and the name shown in the version history.
+  public record Actor(String id, String name) {}
+
+  public Applied apply(String content, Actor actor, Integer base, Level accept) {
     Model model = ModelParser.parse(content);
     return exclusively(model,
         () -> run(model, content, actor, base, accept == null ? Level.SAFE : accept, Map.of()));
   }
 
-  public Applied rollback(String modelName, String actor, Integer base, Level accept) {
+  public Applied rollback(String modelName, Actor actor, Integer base, Level accept) {
     Previous previous = previous(modelName);
     return exclusively(previous.model(), () -> run(previous.model(), previous.content(), actor,
         base, accept == null ? Level.SAFE : accept, previous.renames()));
@@ -138,7 +141,7 @@ public class ApplyService {
         statements);
   }
 
-  private Applied run(Model model, String content, String actor, Integer base, Level accept,
+  private Applied run(Model model, String content, Actor actor, Integer base, Level accept,
       Map<String, Map<String, String>> renames) {
     String hash = hash(content);
     Running running = running(model.name());
@@ -171,7 +174,7 @@ public class ApplyService {
     long runId = jdbc.queryForObject(
         "INSERT INTO engine.apply_run (model, hash, status, actor) VALUES (?, ?, 'running', ?) "
             + "RETURNING id",
-        Long.class, model.name(), hash, actor);
+        Long.class, model.name(), hash, actor.id());
     List<Step> steps = steps(model, diff, content, hash, actor, version);
     int seq = 0;
     for (Step step : steps) {
@@ -196,7 +199,7 @@ public class ApplyService {
 
   public List<Map<String, Object>> models() {
     return jdbc.queryForList("SELECT DISTINCT ON (model) model, version, hash, applied_by, "
-        + "applied_at FROM engine.model_version ORDER BY model, version DESC");
+        + "applied_by_name, applied_at FROM engine.model_version ORDER BY model, version DESC");
   }
 
   public List<Map<String, Object>> runs(String model) {
@@ -403,7 +406,7 @@ public class ApplyService {
     return open;
   }
 
-  private List<Step> steps(Model model, ModelDiff diff, String content, String hash, String actor,
+  private List<Step> steps(Model model, ModelDiff diff, String content, String hash, Actor actor,
       int version) {
     List<Step> steps = new ArrayList<>();
     diff.renames.forEach((entityName, fields) -> {
@@ -427,11 +430,10 @@ public class ApplyService {
       steps.add(new Step(new PlannedStep("ENSURE_UNIT", unit.name()),
           () -> keycloak.ensureGroup(unit.name())));
     }
-    steps.add(new Step(new PlannedStep("SAVE_VERSION", model.name()),
-        () -> jdbc.update(
-            "INSERT INTO engine.model_version (model, version, hash, content, applied_by) "
-                + "VALUES (?, ?, ?, ?, ?) ON CONFLICT (model, version) DO NOTHING",
-            model.name(), version, hash, content, actor)));
+    steps.add(new Step(new PlannedStep("SAVE_VERSION", model.name()), () -> jdbc.update(
+        "INSERT INTO engine.model_version (model, version, hash, content, applied_by, "
+            + "applied_by_name) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (model, version) DO NOTHING",
+        model.name(), version, hash, content, actor.id(), actor.name())));
     return steps;
   }
 

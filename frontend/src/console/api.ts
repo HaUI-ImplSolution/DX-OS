@@ -44,6 +44,15 @@ export interface AppliedModel {
   version: number;
   hash: string;
   applied_by: string;
+  applied_by_name: string | null;
+  applied_at: string;
+}
+
+export interface AppliedVersion {
+  version: number;
+  hash: string;
+  applied_by: string;
+  applied_by_name: string | null;
   applied_at: string;
 }
 
@@ -125,7 +134,7 @@ export const getSchema = () => request<Record<string, unknown>>("/models/schema"
 export const listFamilies = () => request<Family[]>("/models/families");
 export const listTemplates = () => request<Template[]>("/models/templates");
 export const listVersions = (model: string) =>
-  request<{ version: number; hash: string; applied_by: string; applied_at: string }[]>(`/models/${model}/versions`);
+  request<AppliedVersion[]>(`/models/${model}/versions`);
 export const getVersion = (model: string, version: number) =>
   request<{ version: number; content: string }>(`/models/${model}/versions/${version}`);
 export const listRuns = (model: string) => request<Run[]>(`/models/${model}/runs`);

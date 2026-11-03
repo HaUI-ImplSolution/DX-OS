@@ -66,8 +66,8 @@ public class CatalogService {
 
   public List<Map<String, Object>> versions(String model) {
     List<Map<String, Object>> versions = jdbc.queryForList(
-        "SELECT version, hash, applied_by, applied_at FROM engine.model_version WHERE model = ? "
-            + "ORDER BY version DESC",
+        "SELECT version, hash, applied_by, applied_by_name, applied_at FROM engine.model_version "
+            + "WHERE model = ? " + "ORDER BY version DESC",
         model);
     if (versions.isEmpty()) {
       throw new ResourceNotFoundException("Model " + model + " not found");
@@ -76,10 +76,9 @@ public class CatalogService {
   }
 
   public Map<String, Object> version(String model, int version) {
-    List<Map<String, Object>> rows = jdbc.queryForList(
-        "SELECT version, hash, applied_by, applied_at, content FROM engine.model_version "
-            + "WHERE model = ? AND version = ?",
-        model, version);
+    List<Map<String, Object>> rows =
+        jdbc.queryForList("SELECT version, hash, applied_by, applied_by_name, applied_at, content "
+            + "FROM engine.model_version " + "WHERE model = ? AND version = ?", model, version);
     if (rows.isEmpty()) {
       throw new ResourceNotFoundException("Model " + model + " has no version " + version);
     }

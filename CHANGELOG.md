@@ -21,6 +21,12 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
   Lệnh `dxos` có `start`, `stop`, `status`, `logs`, `admin`, `update`, `doctor`, `backup`, `uninstall`; `dxos start` tạo tài khoản `admin` đầu tiên với mật khẩu tạm.
 - `deploy/install.sh` nâng cấp được bản đã cài (`--upgrade`): thay tệp chạy, giữ `.env` và dữ liệu, thêm biến mới; bản cài dùng project Compose `dxos`.
 - `deploy/make_env.sh` thay `deploy/make_env.py`; cài và chạy stack không còn cần Python.
+- Trình soạn mô hình ở bảng điều khiển báo lỗi và gợi ý theo JSON Schema của tệp mô hình: worker của monaco-yaml được tạo theo cách `monaco-editor` 0.57 yêu cầu.
+- Nút rút lại hỏi xác nhận và nhận lý do không bắt buộc, ghi vào lịch sử của hồ sơ.
+- Bảng điều khiển hiện tên người áp dụng mỗi phiên bản mô hình (cột `applied_by_name`, migration `V5` của engine).
+- Thực thể có quy trình có chỉ mục trên `handle_by` cho bộ quét quá hạn.
+- Thông báo khi trình quét virus không trả lời và lỗi chung của tệp mô hình có bản tiếng Việt.
+- `check_demo.py` kiểm tệp EICAR bị chặn khi bật quét virus.
 - Màn hình giám sát gọi tên chức năng và thao tác theo API của lõi, dò dịch vụ AI ở `/api/v1/health`, và không miễn đường dẫn chậm nào theo mặc định.
 
 ## [2.0.0] - 2026-11-03

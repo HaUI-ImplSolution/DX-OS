@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.model;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -24,11 +25,12 @@ public Optional<Field>unitField(){return fields.values().stream().filter(f->f.ty
 // and new rows.
 public record Field(String name,FieldType type,String label,boolean required,boolean unique,List<String>options,String to,String renamedFrom,String defaultValue){}
 
-// The workflow template an entity runs, the role that decides, and whether the creator of a
-// record may decide it.
-public record Process(String template,String approver,boolean allowSelfDecision){
+// The process family an entity runs, the role that handles its records, whether the creator of a
+// record may handle it, and how long a handler has before a record counts as overdue (null for no
+// deadline). After maps a final state to the actions taken when a record reaches it.
+public record Process(String family,String handler,boolean allowSelfDecision,Duration deadline,Map<String,List<Completion>>after){
 
-public ProcessTemplate definition(){return ProcessTemplate.find(template).orElseThrow();}}
+public ProcessFamily definition(){return ProcessFamily.find(family).orElseThrow();}}
 
 // Name of the PostgreSQL schema that holds the tables of this model.
 public String schema(){return"m_"+name;}

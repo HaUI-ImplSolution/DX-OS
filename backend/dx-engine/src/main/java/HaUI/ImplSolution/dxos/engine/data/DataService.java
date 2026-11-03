@@ -13,13 +13,15 @@ import HaUI.ImplSolution.dxos.core.identity.KeycloakAdminClient;
 import HaUI.ImplSolution.dxos.core.identity.KeycloakAdminClient.Person;
 import HaUI.ImplSolution.dxos.engine.apply.DdlGenerator;
 import HaUI.ImplSolution.dxos.engine.exception.ModelValidationException;
+import HaUI.ImplSolution.dxos.engine.process.ProcessRules;
 import HaUI.ImplSolution.dxos.engine.process.ProcessService;
 import HaUI.ImplSolution.dxos.model.FieldType;
 import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
 import HaUI.ImplSolution.dxos.model.Model.Field;
-import HaUI.ImplSolution.dxos.model.ProcessTemplate.Action;
-import HaUI.ImplSolution.dxos.model.ProcessTemplate.Actor;
+import HaUI.ImplSolution.dxos.model.ProcessFamily;
+import HaUI.ImplSolution.dxos.model.ProcessFamily.Action;
+import HaUI.ImplSolution.dxos.model.ProcessFamily.Actor;
 import HaUI.ImplSolution.dxos.model.Scope;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -61,21 +63,23 @@ public class DataService {
   private static final int INBOX_SIZE = 100;
   private static final int DEFAULT_PAGE_SIZE = 20;
   private static final Set<String> SYSTEM_COLUMNS = Set.of("id", "created_by", "created_at",
-      "updated_at", "version", "assignee", "decided_by", "decided_at");
+      "updated_at", "version", "assignee", "decided_by", "decided_at", "handle_by", "overdue");
   private static final Map<String, String> OPERATORS =
       Map.of("eq", "=", "ne", "<>", "lt", "<", "lte", "<=", "gt", ">", "gte", ">=");
 
   private final NamedParameterJdbcTemplate jdbc;
   private final UserContext user;
   private final ProcessService process;
+  private final ProcessRules rules;
   private final EventLog events;
   private final KeycloakAdminClient keycloak;
 
   public DataService(NamedParameterJdbcTemplate jdbc, UserContext user, ProcessService process,
-      EventLog events, KeycloakAdminClient keycloak) {
+      ProcessRules rules, EventLog events, KeycloakAdminClient keycloak) {
     this.jdbc = jdbc;
     this.user = user;
     this.process = process;
+    this.rules = rules;
     this.events = events;
     this.keycloak = keycloak;
   }
@@ -96,7 +100,7 @@ public class DataService {
   }
 
   public boolean canHandle(Entity entity) {
-    return entity.process() != null && user.roles().contains(entity.process().approver());
+    return entity.process() != null && user.roles().contains(entity.process().handler());
   }
 
   // The handler role assigns records, and so does a role that coordinates by writing to all rows
@@ -167,6 +171,11 @@ public class DataService {
       markers.add(":" + name);
       params.addValue(name, value);
     });
+    if (entity.process() != null && entity.process().deadline() != null) {
+      names.add("handle_by");
+      markers.add("now() + make_interval(secs => :handle_secs)");
+      params.addValue("handle_secs", entity.process().deadline().toSeconds());
+    }
     Map<String, Object> row;
     try {
       row = jdbc.queryForMap("INSERT INTO " + table(model, entity) + " (" + String.join(", ", names)
@@ -225,17 +234,38 @@ public class DataService {
     return present(rows.get(0));
   }
 
+  // Passes when the record is in a row the caller may write and, with a process, not final.
+  @Transactional(readOnly = true)
+  public void requireChangeable(Model model, Entity entity, long id) {
+    Access access = access(entity);
+    requireRead(access);
+    requireWrite(access);
+    MapSqlParameterSource values = new MapSqlParameterSource("id", id);
+    String scope = scope(model, entity, access.writes(), values);
+    String status = entity.process() == null ? "NULL" : "status";
+    List<Map<String, Object>> rows = jdbc.queryForList("SELECT " + status + " AS status FROM "
+        + table(model, entity) + " WHERE id = :id AND " + scope, values);
+    if (rows.isEmpty()) {
+      throw notFound(entity, id);
+    }
+    if (entity.process() != null
+        && entity.process().definition().isTerminal((String) rows.get(0).get("status"))) {
+      throw new InvalidStateException("The record is closed");
+    }
+  }
+
   @Transactional
   public void delete(Model model, Entity entity, long id) {
     Access access = access(entity);
     requireRead(access);
     requireWrite(access);
+    if (entity.process() != null) {
+      throw new InvalidStateException(
+          "A record with a process is kept; its owner withdraws it instead");
+    }
     String status = requireOpen(model, entity, access, id);
     MapSqlParameterSource params = new MapSqlParameterSource("id", id);
     String scope = scope(model, entity, access.writes(), params);
-    if (entity.process() != null) {
-      process.cancel(model, entity, id);
-    }
     int deleted;
     try {
       deleted = jdbc.update("DELETE FROM " + table(model, entity) + " WHERE id = :id AND " + scope,
@@ -258,28 +288,13 @@ public class DataService {
         .orElseThrow(() -> new ResourceNotFoundException("Action " + actionName + " not found"));
     Map<String, Object> record = lock(model, entity, access(entity), id);
     String me = user.currentUserId();
-    if (action.by() == Actor.OWNER && !me.equals(record.get("created_by"))) {
-      throw new ActionNotAllowedException("Only the owner of the record can " + actionName);
-    }
-    if (action.by() == Actor.HANDLER) {
-      requireHandler(entity);
-    }
+    rules.checkAction(entity, action, record, me, user.roles(), note);
     String status = (String) record.get("status");
-    if (!action.from().equals(status)) {
-      throw new InvalidStateException("The record cannot take this action in state " + status);
+    if (ProcessFamily.WITHDRAW.equals(actionName)) {
+      process.withdraw(model, entity, id, me);
+    } else {
+      process.act(model, entity, id, action, me);
     }
-    if (action.by() == Actor.HANDLER) {
-      if (!entity.process().allowSelfDecision() && me.equals(record.get("created_by"))) {
-        throw new ActionNotAllowedException("The creator of a record cannot handle it");
-      }
-      if (record.get("assignee") != null && !me.equals(record.get("assignee"))) {
-        throw new ActionNotAllowedException("The record is assigned to someone else");
-      }
-    }
-    if (action.needsNote() && (note == null || note.isBlank())) {
-      throw new ModelValidationException("note", "is required");
-    }
-    process.act(model, entity, id, action, me);
     Map<String, Object> changed = get(model, entity, id);
     events.record(model, entity, id, actionName, status, (String) changed.get("status"), note,
         null);
@@ -315,7 +330,7 @@ public class DataService {
         "UPDATE " + table(model, entity)
             + " SET assignee = :assignee, updated_at = now(), version = version + 1 WHERE id = :id",
         new MapSqlParameterSource("assignee", assignee).addValue("id", id));
-    process.assign(model, entity, id, assignee);
+    process.assign(model, entity, id, status, assignee);
     events.record(model, entity, id, "assigned", status, status, null, holder);
     // Read without the scope: giving a record away can take it out of the caller's reach.
     return present(jdbc.queryForMap(
@@ -334,8 +349,8 @@ public class DataService {
 
   private List<Person> handlers(Entity entity, Map<String, Object> record) {
     Model.Process definition = entity.process();
-    List<Person> people = keycloak.usersWithRole(definition.approver());
-    if (entity.access().get(definition.approver()) == Scope.UNIT) {
+    List<Person> people = keycloak.usersWithRole(definition.handler());
+    if (entity.access().get(definition.handler()) == Scope.UNIT) {
       Object unit = record.get(entity.unitField().orElseThrow().name());
       Set<String> members = unit == null ? Set.of()
           : keycloak.groupMembers(unit.toString()).stream().map(Person::id)
@@ -380,15 +395,17 @@ public class DataService {
     if (any.isEmpty()) {
       return List.of();
     }
-    return jdbc
-        .queryForList("SELECT " + columns(entity) + " FROM " + table(model, entity) + " WHERE "
-            + String.join(" OR ", any) + " ORDER BY created_at, id LIMIT :limit", values)
-        .stream().map(DataService::present).toList();
+    return jdbc.queryForList("SELECT " + columns(entity) + " FROM " + table(model, entity)
+        + " WHERE " + String.join(" OR ", any)
+        + " ORDER BY (handle_by IS NOT NULL AND handle_by < now()) DESC, created_at, id LIMIT :limit",
+        values).stream().map(DataService::present).toList();
   }
 
   private static Set<String> fromStates(Entity entity, Actor by) {
+    // Withdrawing is always open to the owner; it is not work waiting for them.
     return entity.process().definition().actions().stream().filter(action -> action.by() == by)
-        .map(Action::from).collect(Collectors.toSet());
+        .filter(action -> !ProcessFamily.WITHDRAW.equals(action.name()))
+        .flatMap(action -> action.from().stream()).collect(Collectors.toSet());
   }
 
   private static Model.Process processOf(Entity entity) {
@@ -396,12 +413,6 @@ public class DataService {
       throw new ResourceNotFoundException(entity.name() + " has no process");
     }
     return entity.process();
-  }
-
-  private void requireHandler(Entity entity) {
-    if (!canHandle(entity)) {
-      throw new ActionNotAllowedException("Only " + entity.process().approver() + " can do this");
-    }
   }
 
   private void requireAssigner(Entity entity) {
@@ -622,7 +633,7 @@ public class DataService {
       return FieldType.TEXT;
     }
     if ("created_at".equals(column) || "updated_at".equals(column)
-        || (decision && "decided_at".equals(column))) {
+        || (decision && ("decided_at".equals(column) || "handle_by".equals(column)))) {
       return FieldType.DATETIME;
     }
     Field field = entity.fields().get(column);
@@ -634,12 +645,15 @@ public class DataService {
 
   private String columns(Entity entity) {
     List<String> columns =
-        new ArrayList<>(List.of("id", "created_by", "created_at", "updated_at", "version"));
+        new ArrayList<>(List.of("id", "created_by", "created_at", "updated_at", "version").stream()
+            .map(name -> ident(name)).toList());
     if (entity.process() != null) {
-      columns.addAll(List.of("status", "assignee", "decided_by", "decided_at"));
+      columns.addAll(List.of("status", "assignee", "decided_by", "decided_at", "handle_by").stream()
+          .map(name -> ident(name)).toList());
+      columns.add("(handle_by IS NOT NULL AND handle_by < now()) AS " + ident("overdue"));
     }
-    columns.addAll(entity.fields().keySet());
-    return columns.stream().map(name -> ident(name)).collect(Collectors.joining(", "));
+    entity.fields().keySet().forEach(name -> columns.add(ident(name)));
+    return String.join(", ", columns);
   }
 
   // Checks and converts the values of a request body to the types of the columns.
@@ -713,6 +727,7 @@ public class DataService {
       }
       case DATETIME -> parseDate(String.valueOf(value));
       case REFERENCE -> parseId(String.valueOf(value));
+      case FILE -> throw new IllegalArgumentException("is set by uploading a file");
     };
   }
 

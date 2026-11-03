@@ -35,7 +35,8 @@ public class ProcessConfig {
     configuration.setTablePrefixIsSchema(true);
     configuration.setAsyncExecutorActivate(false);
     configuration.setDeploymentResources(
-        new Resource[] {new ClassPathResource("processes/approval.bpmn20.xml")});
+        new Resource[] {new ClassPathResource("processes/approval.bpmn20.xml"),
+            new ClassPathResource("processes/work_item.bpmn20.xml")});
     return configuration;
   }
 

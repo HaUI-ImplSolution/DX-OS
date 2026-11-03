@@ -110,6 +110,26 @@ public class KeycloakAdminClient {
     }
   }
 
+  // Puts the user in the group with exactly this name; being in it already changes nothing.
+  public void addUserToGroup(String userId, String group) {
+    String groupId = list("/admin/realms/{realm}/groups?search={name}&exact=true", group).stream()
+        .filter(found -> group.equals(found.get("name"))).findFirst()
+        .map(found -> found.get("id").toString())
+        .orElseThrow(() -> new KeycloakAdminException("Keycloak has no group " + group));
+    try {
+      restClient.put()
+          .uri("/admin/realms/{realm}/users/{user}/groups/{group}", realm, userId, groupId)
+          .headers(h -> h.setBearerAuth(accessToken())).retrieve().toBodilessEntity();
+    } catch (RestClientResponseException e) {
+      throw new KeycloakAdminException(
+          "Keycloak refused to add a user to a group: HTTP " + e.getStatusCode().value(), e);
+    } catch (KeycloakAdminException e) {
+      throw e;
+    } catch (RuntimeException e) {
+      throw new KeycloakAdminException("Keycloak is unreachable", e);
+    }
+  }
+
   public List<Person> usersWithRole(String role) {
     return people("/admin/realms/{realm}/roles/{name}/users?max=" + MAX_PEOPLE, role);
   }

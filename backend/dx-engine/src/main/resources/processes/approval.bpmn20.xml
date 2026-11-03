@@ -11,7 +11,7 @@
     <startEvent id="start"/>
     <sequenceFlow id="toDecide" sourceRef="start" targetRef="decide"/>
 
-    <userTask id="decide" name="Decision" flowable:candidateGroups="${approverRole}"/>
+    <userTask id="decide" name="Decision" flowable:candidateGroups="${handlerRole}"/>
     <sequenceFlow id="toOutcome" sourceRef="decide" targetRef="outcome"/>
 
     <exclusiveGateway id="outcome"/>

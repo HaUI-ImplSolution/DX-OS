@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:flowable="http://flowable.org/bpmn"
+             targetNamespace="http://dxos/processes">
+
+  <!-- A handler role takes a record, works on it and marks it resolved, or rejects it. The owner
+       confirms the result or opens the record again. The record status is written by the process
+       only. -->
+  <process id="work_item" name="Work item" isExecutable="true">
+    <startEvent id="start"/>
+    <sequenceFlow id="toTriage" sourceRef="start" targetRef="triage"/>
+
+    <userTask id="triage" name="Take or reject" flowable:candidateGroups="${handlerRole}"/>
+    <sequenceFlow id="triageToChoice" sourceRef="triage" targetRef="afterTriage"/>
+    <exclusiveGateway id="afterTriage"/>
+    <sequenceFlow id="triageToStarted" sourceRef="afterTriage" targetRef="started">
+      <conditionExpression xsi:type="tFormalExpression">${action == 'start'}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="triageToRejected" sourceRef="afterTriage" targetRef="rejected">
+      <conditionExpression xsi:type="tFormalExpression">${action == 'reject'}</conditionExpression>
+    </sequenceFlow>
+
+    <serviceTask id="started" flowable:expression="${recordStatus.set(execution, 'in_progress')}"/>
+    <sequenceFlow id="startedToWork" sourceRef="started" targetRef="work"/>
+
+    <userTask id="work" name="Work on the record" flowable:candidateGroups="${handlerRole}"/>
+    <sequenceFlow id="workToChoice" sourceRef="work" targetRef="afterWork"/>
+    <exclusiveGateway id="afterWork"/>
+    <sequenceFlow id="workToResolved" sourceRef="afterWork" targetRef="resolved">
+      <conditionExpression xsi:type="tFormalExpression">${action == 'resolve'}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="workToRejected" sourceRef="afterWork" targetRef="rejected">
+      <conditionExpression xsi:type="tFormalExpression">${action == 'reject'}</conditionExpression>
+    </sequenceFlow>
+
+    <serviceTask id="resolved" flowable:expression="${recordStatus.set(execution, 'resolved')}"/>
+    <sequenceFlow id="resolvedToConfirm" sourceRef="resolved" targetRef="confirm"/>
+
+    <userTask id="confirm" name="Confirm the result" flowable:assignee="${ownerId}"/>
+    <sequenceFlow id="confirmToChoice" sourceRef="confirm" targetRef="afterConfirm"/>
+    <exclusiveGateway id="afterConfirm"/>
+    <sequenceFlow id="confirmToClosed" sourceRef="afterConfirm" targetRef="closed">
+      <conditionExpression xsi:type="tFormalExpression">${action == 'confirm'}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="confirmToReopened" sourceRef="afterConfirm" targetRef="reopened">
+      <conditionExpression xsi:type="tFormalExpression">${action == 'reopen'}</conditionExpression>
+    </sequenceFlow>
+
+    <serviceTask id="reopened" flowable:expression="${recordStatus.set(execution, 'in_progress')}"/>
+    <sequenceFlow id="reopenedToWork" sourceRef="reopened" targetRef="work"/>
+
+    <serviceTask id="closed" flowable:expression="${recordStatus.set(execution, 'closed')}"/>
+    <sequenceFlow id="closedToEnd" sourceRef="closed" targetRef="end"/>
+    <serviceTask id="rejected" flowable:expression="${recordStatus.set(execution, 'rejected')}"/>
+    <sequenceFlow id="rejectedToEnd" sourceRef="rejected" targetRef="end"/>
+
+    <endEvent id="end"/>
+  </process>
+</definitions>

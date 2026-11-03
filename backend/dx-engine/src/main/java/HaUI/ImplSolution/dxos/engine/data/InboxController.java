@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class InboxController {
 
   public record Item(String model, String entity, String entityLabel, long id, String title,
-      String status, String assignee, Instant createdAt) {}
+      String status, String assignee, boolean overdue, Instant createdAt) {}
 
   private final ModelRegistry registry;
   private final DataService data;
@@ -34,7 +34,7 @@ public class InboxController {
   }
 
   @GetMapping
-  @Operation(summary = "The records the caller can act on now, oldest first",
+  @Operation(summary = "The records the caller can act on now, overdue first and then oldest first",
       description = "Records in a state the handler role of the caller can act on, within the"
           + " rows it reaches and held by nobody else, and the caller's own records waiting for"
           + " them. At most 100 for each entity.")
@@ -45,7 +45,7 @@ public class InboxController {
         data.waiting(model, entity).forEach(row -> items.add(item(model, entity, row)));
       }
     }
-    items.sort(Comparator.comparing(Item::createdAt));
+    items.sort(Comparator.comparing((Item item) -> !item.overdue()).thenComparing(Item::createdAt));
     return ApiResponse.success(items);
   }
 
@@ -54,6 +54,7 @@ public class InboxController {
         .findFirst().map(field -> row.get(field.name())).orElse(null);
     return new Item(model.name(), entity.name(), entity.label(),
         ((Number) row.get("id")).longValue(), title == null ? null : title.toString(),
-        (String) row.get("status"), (String) row.get("assignee"), (Instant) row.get("created_at"));
+        (String) row.get("status"), (String) row.get("assignee"),
+        Boolean.TRUE.equals(row.get("overdue")), (Instant) row.get("created_at"));
   }
 }

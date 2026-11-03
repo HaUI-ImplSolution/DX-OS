@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { useEffect, useState } from "react";
-import { Card, CardContent, Table, TableBody, TableCell, TableHead, TableRow, Typography } from "@mui/material";
+import { Card, CardContent, Chip, Table, TableBody, TableCell, TableHead, TableRow, Typography } from "@mui/material";
 import { Link, Title } from "react-admin";
 import { listInbox } from "./api";
 import { resourceName, type InboxItem, type ModelMeta } from "./types";
@@ -46,7 +46,10 @@ export default function InboxPage({ models }: { models: ModelMeta[] }) {
                       {item.title ?? `#${item.id}`}
                     </Link>
                   </TableCell>
-                  <TableCell>{stateLabel(item)}</TableCell>
+                  <TableCell>
+                    {stateLabel(item)}
+                    {item.overdue && <Chip size="small" color="error" label="Quá hạn" sx={{ ml: 1 }} />}
+                  </TableCell>
                   <TableCell>{new Date(item.createdAt).toLocaleString("vi-VN")}</TableCell>
                 </TableRow>
               ))}

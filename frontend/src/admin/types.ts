@@ -2,7 +2,7 @@
 export interface FieldMeta {
   name: string;
   label: string;
-  type: "text" | "number" | "datetime" | "choice" | "reference" | "user" | "unit";
+  type: "text" | "number" | "datetime" | "choice" | "reference" | "user" | "unit" | "file";
   required: boolean;
   unique: boolean;
   options: string[];
@@ -18,15 +18,16 @@ export interface ProcessState {
 export interface ProcessAction {
   name: string;
   label: string;
-  from: string;
+  from: string[];
   by: "HANDLER" | "OWNER";
   needsNote: boolean;
 }
 
 export interface ProcessInfo {
-  template: string;
-  approver: string;
+  family: string;
+  handler: string;
   allowSelfDecision: boolean;
+  deadlineSeconds: number | null;
   states: ProcessState[];
   actions: ProcessAction[];
 }
@@ -71,6 +72,16 @@ export interface RecordEvent {
   detail: string | null;
 }
 
+export interface AttachmentItem {
+  id: number;
+  field: string;
+  name: string;
+  size: number;
+  content_type: string;
+  uploaded_by: string;
+  uploaded_at: string;
+}
+
 export interface InboxItem {
   model: string;
   entity: string;
@@ -79,6 +90,7 @@ export interface InboxItem {
   title: string | null;
   status: string;
   assignee: string | null;
+  overdue: boolean;
   createdAt: string;
 }
 

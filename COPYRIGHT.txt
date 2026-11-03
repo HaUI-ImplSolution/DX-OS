@@ -146,18 +146,10 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/license-exceptions.json.
 | paraphrase-multilingual-MiniLM-L12-v2  | Apache-2.0                   | Embedding của dịch vụ ai/, tải về khi dùng |
 | [1]                                    |                              | lần đầu                                    |
 +----------------------------------------+------------------------------+--------------------------------------------+
-| Open-Meteo [2]                         | CC BY 4.0                    | Thời tiết cho dashboard Superset tùy chọn  |
-|                                        |                              | ở bi/, đọc lúc chạy                        |
-+----------------------------------------+------------------------------+--------------------------------------------+
-| OpenFreeMap [3] vector tile            | ODbL (dữ liệu                | Nền bản đồ của dashboard Superset tùy chọn |
-|                                        | OpenStreetMap), CC BY 4.0    | ở bi/, đọc lúc chạy                        |
-|                                        | (OpenMapTiles)               |                                            |
-+----------------------------------------+------------------------------+--------------------------------------------+
 
 Bản phát hành không kèm trọng số mô hình, kho văn bản hay bộ dữ liệu nào; mô hình embedding tải về từ Hugging Face khi dịch vụ ai/ dùng lần đầu.
 Trọng số của paraphrase-multilingual-MiniLM-L12-v2 mở theo Apache-2.0; dữ liệu huấn luyện của nó chưa được kiểm theo định nghĩa Open Source AI của OSI (khai báo ở .github/license-catalog.json).
 Dịch vụ ai/ không dùng mô hình ngôn ngữ và không xếp hạng lại bằng mô hình nào.
-Tệp bi/basemap_light.json và bi/farm_dashboard_export.zip do nhóm viết (Apache-2.0); chúng đọc Open-Meteo và OpenFreeMap lúc chạy, không chứa dữ liệu của hai nguồn này.
 
 6. HẠ TẦNG VÀ CÔNG CỤ
 =====================
@@ -186,21 +178,8 @@ Tệp bi/basemap_light.json và bi/farm_dashboard_export.zip do nhóm viết (Ap
 |                                      |                                      | Cloudflare mà nó nối tới là dịch vụ  |
 |                                      |                                      | đóng                                 |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| Apache Superset 3.1.3                | Apache-2.0                           | BI dashboard, tùy chọn, ngoài        |
-|                                      |                                      | docker-compose.yml                   |
-+--------------------------------------+--------------------------------------+--------------------------------------+
-| Authlib                              | BSD-3-Clause                         | SSO OAuth cho Superset, tùy chọn     |
-+--------------------------------------+--------------------------------------+--------------------------------------+
-| Mattermost Team Edition 10.5         | AGPL-3.0 (mã nguồn); bản build theo  | Kênh chat nhận thông báo, tùy chọn,  |
-|                                      | MIT                                  | ngoài docker-compose.yml; chạy       |
-|                                      |                                      | nguyên bản, không dùng               |
-|                                      |                                      | server/enterprise/                   |
-+--------------------------------------+--------------------------------------+--------------------------------------+
 | Alpine Linux 3.20 (alpine:3.20)      | MIT, GPL-2.0 (nhiều gói)             | Image phụ trợ chạy script khi dựng   |
 |                                      |                                      | stack                                |
-+--------------------------------------+--------------------------------------+--------------------------------------+
-| AWS CLI                              | Apache-2.0                           | Chỉ dùng trong seaweedfs/migrate-    |
-|                                      |                                      | uploads.sh                           |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | gitleaks                             | MIT                                  | Quét secret trong CI                 |
 +--------------------------------------+--------------------------------------+--------------------------------------+
@@ -220,5 +199,3 @@ Tệp bi/basemap_light.json và bi/farm_dashboard_export.zip do nhóm viết (Ap
 ======================
 
 [1] https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
-[2] https://open-meteo.com
-[3] https://openfreemap.org

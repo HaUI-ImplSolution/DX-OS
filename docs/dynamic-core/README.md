@@ -545,7 +545,7 @@ Bản công khai trên VPS giữ `v1.1.1` cho đến khi lõi mới đạt và �
 
 ### Những gì giữ lại
 
-- **Hạ tầng:** Keycloak, APISIX, SeaweedFS, PostgreSQL, ClamAV; Superset và Mattermost giữ lại về năng lực, tạm ra khỏi compose cho đến khi dựng lại theo mô hình.
+- **Hạ tầng:** Keycloak, APISIX, SeaweedFS, PostgreSQL, ClamAV; báo cáo và thông báo chat dựng lại theo mô hình khi đến phần đó, cấu hình Superset và Mattermost của bản cũ ở tag `v1.1.1`.
 - **Dịch vụ:** `ai/` (tìm kiếm tri thức có nguồn, chạy riêng ngoài compose) và `dx-monitor`.
 - **Dự án:** bộ triển khai, CI, kiểm tra giấy phép, SBOM, quy trình phát hành.
 - **`dx-core` rút gọn thành thư viện:** giữ bảo mật, audit, lưu trữ và quét tệp, trạng thái hệ thống, client Keycloak; phần gắn với ứng dụng cũ như workflow viết tay, workspace, thông báo cũ được gỡ và dựng lại theo thiết kế mới khi cần.
@@ -640,7 +640,7 @@ Rà soát ngày 2026-11-02 từ `COPYRIGHT.txt`, GitHub API và Hugging Face; c�
 | PostgreSQL, pgvector                                              | PostgreSQL License                                                                                                                                                                                                                                             | Đạt                                                             |
 | ClamAV                                                            | GPL-2.0                                                                                                                                                                                                                                                        | Đạt; điều khoản của kho chữ ký mã độc cần kiểm thêm |
 | Mã `ai/`                                                         | AGPL-3.0                                                                                                                                                                                                                                                       | Đạt, chạy tiến trình riêng                                  |
-| Mattermost Team Edition | [Tách MIT cho bản build và AGPL cho mã nguồn, đang bị tranh cãi](https://docs.mattermost.com/product-overview/faq-license.html); [bản 11 giới hạn 250 người dùng](https://forum.mattermost.com/t/mattermost-v11-changes-in-free-offerings/25126) | **Chưa đạt rõ ràng**; không nằm trong compose, chỉ còn là tùy chọn ở `chat/` |
+| Mattermost Team Edition | [Tách MIT cho bản build và AGPL cho mã nguồn, đang bị tranh cãi](https://docs.mattermost.com/product-overview/faq-license.html); [bản 11 giới hạn 250 người dùng](https://forum.mattermost.com/t/mattermost-v11-changes-in-free-offerings/25126) | **Chưa đạt rõ ràng**; đã gỡ khỏi cây mã |
 | Qwen2.5 1.5B | Trọng số Apache-2.0, dữ liệu huấn luyện không công khai theo hiểu biết hiện có | Đã gỡ khỏi bản phát hành; `ai/` không dùng mô hình ngôn ngữ |
 | Reranker mMARCO | Thẻ mô hình Apache-2.0, nhưng [MS MARCO chỉ cho nghiên cứu phi thương mại](https://microsoft.github.io/msmarco/Notice) và mMARCO dựa trên bộ này | Đã bỏ khỏi `ai/`; chỉ thêm lại khi có mô hình đạt tiêu chuẩn, sau khi đo chất lượng truy xuất |
 | Embedding paraphrase-multilingual-MiniLM | Apache-2.0 | Đạt về giấy phép; dữ liệu huấn luyện chưa kiểm theo định nghĩa của OSI, khai báo ở `.github/license-catalog.json` |
@@ -649,7 +649,7 @@ Rà soát ngày 2026-11-02 từ `COPYRIGHT.txt`, GitHub API và Hugging Face; c�
 | Langfuse trong môi trường đánh giá RAG | MIT phần lõi, có phần EE riêng | Đã gỡ cùng bộ đánh giá RAG |
 | cloudflared                                                       | Apache-2.0, nhưng Cloudflare Tunnel và Access là dịch vụ đóng                                                                                                                                                                                           | Được dùng vì tùy chọn, phải công bố                     |
 
-Chẩn đoán ảnh và dữ liệu Farm đã rời bản phát hành; Open-Meteo và OpenFreeMap chỉ còn được dashboard tùy chọn ở `bi/` đọc lúc chạy.
+Chẩn đoán ảnh, dữ liệu Farm và dashboard Superset đọc Open-Meteo và OpenFreeMap đã rời bản phát hành.
 
 ### Việc cần làm
 

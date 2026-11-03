@@ -42,7 +42,7 @@ Nội dung viết cho người quản lý không chuyên IT: biểu đồ là ch
   Cả hai biểu đồ theo thời gian cùng phóng và chia cột mịn hơn.
   Bấm "Xem lại toàn bộ" hoặc đổi khoảng xem để trở về.
   Cột mới mọc lên khi biểu đồ đổi; hiệu ứng tắt khi hệ điều hành bật giảm chuyển động.
-- Ô dịch vụ mang tên như trên portal, xếp theo đường đi của một yêu cầu (Gateway, ứng dụng chính, Backend API, Keycloak, cơ sở dữ liệu, lưu trữ ảnh) rồi tới dịch vụ AI, BI, chat và trang cổng vào.
+- Ô dịch vụ mang tên như trên portal, xếp theo đường đi của một yêu cầu (Gateway, ứng dụng chính, Backend API, Keycloak, cơ sở dữ liệu, lưu trữ tệp) rồi tới dịch vụ AI và trang cổng vào.
 - Mỗi ô dịch vụ có thanh theo thời gian: xanh là Tốt, đỏ là Ngừng, vàng là Trống dữ liệu; rê chuột vào một khối để xem khoảng thời gian chính xác.
 - Ô dịch vụ liệt kê các lần ngừng (đỏ) và khoảng trống dữ liệu từ 5 phút (vàng), ví dụ `Ngừng 14:49 - 14:50 (1 phút)`; lần đang ngừng ghi `14:49 - nay`.
   Dịch vụ không có hai loại này ghi "Hoạt động tốt".
@@ -58,7 +58,7 @@ Nội dung viết cho người quản lý không chuyên IT: biểu đồ là ch
 
 ## Dữ liệu
 
-- Gateway gửi mọi request cho `monitor` theo đợt; `monitor` chỉ giữ `429`, `401`, `404`, `5xx` và request chậm từ 10 giây (trừ chẩn đoán AI và hỏi đáp).
+- Gateway gửi mọi request cho `monitor` theo đợt; `monitor` chỉ giữ `429`, `401`, `404`, `5xx` và request chậm từ 10 giây (`monitor.gateway.slow-exempt-paths` miễn các đường dẫn chậm có chủ đích).
   Bỏ qua `401` của chính `/monitor/` khi phiên hết hạn.
 - Mỗi địa chỉ giữ tối đa 100 bản ghi mỗi phút; phần dư cộng vào cột `suppressed` của bản ghi gần nhất cùng địa chỉ và loại, nên số tổng vẫn đủ.
 - Bảng `gateway_event` và `service_health_event` nằm ở schema `monitor` của database chính, xóa sau `monitor.retention-days` (30 ngày) lúc 03:30 mỗi đêm.

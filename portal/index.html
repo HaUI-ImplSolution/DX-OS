@@ -211,14 +211,9 @@
   .app-icon svg { width: 22px; height: 22px; }
 
   .app-card.main .app-icon { background: var(--accent-soft); color: var(--accent-dark); }
-  .app-card.bi .app-icon { background: #e5eef8; color: #2a5f82; }
-  .app-card.chat .app-icon { background: var(--gold-soft); color: #8a6410; }
   .app-card.admin .app-icon { background: #efe9f8; color: #5a3d99; }
   .app-card.api .app-icon { background: #e3f3f0; color: #1f6b5e; }
-  .app-card.bi-admin .app-icon { background: #e5eef8; color: #2a5f82; }
   .app-card.monitor .app-icon { background: #f6e9e4; color: #8a3b22; }
-  .app-card.chat-admin .app-icon { background: var(--gold-soft); color: #8a6410; }
-  .app-card.storage-admin .app-icon { background: #fbe9e4; color: #a04a32; }
 
   .section-head.spaced { margin-top: 40px; }
 
@@ -316,7 +311,7 @@
       <h1>Cổng vào <span class="brand" id="app-name">DX-OS</span></h1>
       <p class="subtitle">
         Một điểm truy cập duy nhất cho toàn bộ hệ thống chuyển đổi số của đơn vị —
-        ứng dụng nghiệp vụ, thống kê dữ liệu và trao đổi nội bộ.
+        ứng dụng nghiệp vụ, quản trị và giám sát.
       </p>
 
       <div class="hpdi">
@@ -348,31 +343,6 @@
         </div>
       </a>
 
-      <a class="app-card bi" href="http://localhost:9081/login/keycloak" data-service="bi" target="_blank" rel="noopener">
-        <span class="pill sso">SSO</span>
-        <div class="app-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12.5" y="8" width="3" height="10"/><rect x="18" y="5" width="3" height="13"/></svg>
-        </div>
-        <div class="app-name">BI Dashboard</div>
-        <div class="app-desc">Dashboard thống kê (Superset).</div>
-        <div class="app-meta">
-          <span class="app-url">localhost:9081</span>
-          <span class="app-cta">Mở →</span>
-        </div>
-      </a>
-
-      <a class="app-card chat" href="http://localhost:8065" data-service="chat" target="_blank" rel="noopener">
-        <span class="pill standalone">Riêng</span>
-        <div class="app-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg>
-        </div>
-        <div class="app-name">Kênh chat nội bộ</div>
-        <div class="app-desc">Trao đổi nội bộ (Mattermost).</div>
-        <div class="app-meta">
-          <span class="app-url">localhost:8065</span>
-          <span class="app-cta">Mở →</span>
-        </div>
-      </a>
     </div>
 
     <div class="section-head spaced">
@@ -407,33 +377,6 @@
         </div>
       </a>
 
-      <a class="app-card bi-admin" href="http://localhost:9081/users/list/" data-service="bi" target="_blank" rel="noopener">
-        <span class="pill sso">SSO</span>
-        <div class="app-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
-        </div>
-        <div class="app-name">Superset Admin</div>
-        <div class="app-desc">Quản lý người dùng của BI.</div>
-        <div class="app-meta">
-          <span class="app-url">localhost:9081/users/list</span>
-          <span class="app-cta">Mở →</span>
-        </div>
-      </a>
-
-      <a class="app-card chat-admin" href="http://localhost:8065/admin_console" data-service="chat" target="_blank" rel="noopener">
-        <span class="pill standalone">Riêng</span>
-        <div class="app-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
-        </div>
-        <div class="app-name">Mattermost Admin</div>
-        <div class="app-desc">Quản lý người dùng và team chat.</div>
-        <div class="app-meta">
-          <span class="app-url">localhost:8065/admin_console</span>
-          <span class="app-cta">Mở →</span>
-        </div>
-      </a>
-
-
       <a class="app-card api" href="/swagger-ui/index.html#/" target="_blank" rel="noopener">
         <span class="pill standalone">API</span>
         <div class="app-icon">
@@ -461,29 +404,9 @@
     <span class="foot-brand">DX-OS</span> — Hệ điều hành chuyển đổi số nội bộ · OLP Phần mềm nguồn mở 2026 (VFOSSA)
   </footer>
 
-  <script src="config"></script>
   <script>
-    // Public address of an optional service beside the app; a service without one is not offered.
-    var serviceUrls = window.PORTAL_URLS || {};
-
-    function serviceBase(key) {
-      return (serviceUrls[key] || "").replace(/\/+$/, "");
-    }
-
-    document.querySelectorAll("a[data-service]").forEach(function (link) {
-      var base = serviceBase(link.dataset.service);
-      if (!base) {
-        link.hidden = true;
-        return;
-      }
-      var url = new URL(link.href);
-      link.href = base + url.pathname + url.search;
-      var caption = link.querySelector(".app-url");
-      if (caption) caption.textContent = new URL(link.href).host + caption.textContent.replace(/^[^/]*/, "");
-    });
-
-    // Service status: same-origin services answer with their content, services on other ports are
-    // probed without reading the response (reachable or not).
+    // Service status: the monitor may sit behind an access proxy, so it is probed without reading
+    // the response (reachable or not).
     (function () {
       var list = document.getElementById("status-list");
       var rows = {};
@@ -497,9 +420,6 @@
         list.appendChild(item);
         rows[key] = item;
       }
-
-      // Optional services beside the app; the ones without a public address are hidden.
-      var offered = { bi: !!serviceBase("bi"), chat: !!serviceBase("chat") };
 
       function set(key, up) {
         rows[key].dataset.state = up ? "up" : "down";
@@ -515,18 +435,14 @@
       }
 
       [["web", "Ứng dụng chính"], ["backend", "Backend API"], ["storage", "Lưu trữ tệp"],
-        ["sso", "Keycloak (đăng nhập)"], ["bi", "BI Dashboard"], ["chat", "Kênh chat"],
-        ["monitor", "Giám sát"]].forEach(function (s) {
+        ["sso", "Keycloak (đăng nhập)"], ["monitor", "Giám sát"]].forEach(function (s) {
         row(s[0], s[1]);
-        if ((s[0] === "bi" || s[0] === "chat") && !offered[s[0]]) rows[s[0]].hidden = true;
       });
 
       function refresh() {
         probe("web", "/", true);
         probe("sso", "/realms/dxos/.well-known/openid-configuration", true);
         probe("monitor", "/monitor/actuator/health", false);
-        if (offered.bi) probe("bi", serviceBase("bi") + "/health", false);
-        if (offered.chat) probe("chat", serviceBase("chat") + "/api/v4/system/ping", false);
         fetch("/api/v1/system/status", { cache: "no-store" })
           .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
           .then(function (body) {

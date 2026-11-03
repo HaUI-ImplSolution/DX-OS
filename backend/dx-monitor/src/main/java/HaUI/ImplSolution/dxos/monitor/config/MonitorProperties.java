@@ -26,6 +26,5 @@ public record Alert(int serverErrorCount,int serverErrorWindowMinutes,int rateLi
 
 public record KeycloakDb(String url,String username,String password){}
 
-// adminUrl: webhook of the administrators' channel, else the file admin.url in dir (written by
-// mattermost-bootstrap), else url; no webhook at all means no alerts
-public record Mattermost(String url,String adminUrl,String dir,int connectTimeoutMs,int readTimeoutMs){}}
+// adminUrl: webhook of the administrators' channel, else url; no webhook at all means no alerts
+public record Mattermost(String url,String adminUrl,int connectTimeoutMs,int readTimeoutMs){}}

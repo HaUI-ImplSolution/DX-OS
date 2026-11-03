@@ -22,12 +22,17 @@ The narrow loop from model file to end user runs:
 - Reading and checking a model file, with errors reported by line and column.
 - Applying a model to an empty system: schema, tables, constraints, Keycloak roles, a stored version and the history of each step; applying again does nothing, and an interrupted apply is finished by applying again.
 - One API for every entity, permissions by role and by row (`all`, `own`, `read`, `unit`, `assigned`), required, unique and choice rules.
-- A single-level approval workflow on an embedded Flowable, with a return for more information; the status of a record changes only through the workflow, in the same transaction as the write of the record.
+- Three workflow families on an embedded Flowable: approval, work items, and time-slot reservations with a capacity check; the status of a record changes only through the workflow, in the same transaction as the write of the record.
+- Rules shared by every workflow: rejecting and returning need a reason, the submitter fixes and resubmits or withdraws a record, nobody decides their own record, and overdue records go to the top of the inbox.
+- Follow-up work after an approval, such as adding a user to a group, runs through an event queue and is retried on failure.
+- File attachments on records, with a virus scan when enabled.
 - Units declared in the model and kept as Keycloak groups; assignment, an inbox and the history of every record.
 - Changing a model that holds data: a preview by level of risk, renames that keep the values, a list of the rows breaking a new rule, a separate confirmation for losing data, and a return to the previous version.
 - A react-admin UI built from metadata, in Vietnamese with a light and a dark mode, with no code written for any entity.
+- A control panel for the person deploying the system: a template library, a model editor, a preview of the plan, apply, history and rollback, and a diagram of the workflow.
+- Single sign-on through Keycloak; administrators can be required to enter a one-time code from an authenticator app as well.
 
-Not yet connected: chat notifications, AI answers, Superset reports.
+Not yet available: chat notifications, AI answers, statistical reports.
 The search service with cited sources in [`ai/`](./ai/README.md) runs on its own and is not in the stack.
 These are in the [design](./docs/dynamic-core/README.md).
 
@@ -107,11 +112,13 @@ entities:
 | `POST /api/v1/models/plan`, `/apply` | Preview and apply a model file (ADMIN) |
 | `POST /api/v1/models/{model}/rollback/plan`, `/rollback` | Preview and return to the previous version (ADMIN) |
 | `GET /api/v1/models`, `/models/{model}/runs` | Applied models and the history of each step (ADMIN) |
+| `GET /api/v1/models/schema`, `/families`, `/templates`, `/{model}/versions` | The model file schema, workflow families, the template library and the applied versions, for the control panel (ADMIN) |
 | `GET /api/v1/meta/models` | Metadata the caller may see |
 | `/api/v1/data/{model}/{entity}` | List, create, read, update, delete; filter with `filter.<field>[.<op>]`, `sort`, `order`, `page`, `size` |
 | `POST /api/v1/data/{model}/{entity}/{id}/actions/{action}` | An action of the workflow; the metadata lists the actions, their starting state and who may take them |
 | `POST .../{id}/assign`, `GET .../{id}/handlers` | Assign a record and list who can take it |
 | `GET .../{id}/events` | The history of a record |
+| `.../{id}/files` | Upload, list, get a time-limited download link (`/{fileId}/link`) and remove file attachments |
 | `GET /api/v1/inbox` | The records waiting for the caller, on every model; `page`, `size` |
 | `GET /api/v1/outbox`, `POST /api/v1/outbox/{id}/retry` | Outgoing messages by status (failed, pending, delivered) and a retry of an undelivered one (ADMIN) |
 
@@ -130,7 +137,6 @@ Every reply is wrapped in `ApiResponse`; errors carry a stable `errorCode`.
 | `sso`, `portal`, `seaweedfs` | Keycloak realm, portal page, file storage |
 | `models` | Sample models and sample bad files |
 | `ai` | A search service with cited sources (AGPL-3.0), run on its own outside the stack |
-| `bi`, `chat` | The Superset and Mattermost setup of the previous version, not connected to the core, to be rebuilt around the model in later steps |
 
 ## Tests
 

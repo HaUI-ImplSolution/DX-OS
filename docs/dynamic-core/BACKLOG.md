@@ -19,7 +19,7 @@ Mốc dưới đây là dự kiến.
 |---|---|
 | Tag `v2.0.0` và GitHub Release | Tạo sau khi nhánh phase 10 vào `main`; ngày của mục `[2.0.0]` trong `CHANGELOG.md` sửa theo ngày tag |
 | Trang docs `DX-OS-docs` | Vẫn mô tả bản `v1.1.1`; cập nhật cùng lúc triển khai |
-| Triển khai công khai | VPS giữ `v1.1.1`; `deploy/VPS.md` còn mô tả bản đó, và bản mới không có đường nâng cấp dữ liệu nên phải dựng lại |
+| Triển khai công khai | VPS giữ `v1.1.1`; `deploy/VPS.md` còn mô tả bản đó, và bản mới không có đường nâng cấp dữ liệu nên phải dựng lại; đặt `STAFF_OTP_FLOW=CONDITIONAL` trước lần khởi động đầu để bắt ADMIN nhập mã một lần |
 | Gửi bài | Thư tới BTC trước 17:00 ngày 06/12/2026 |
 | Cập nhật `deploy/.env` trên máy dev | Tệp này còn biến của bản cũ; dựng stack dev bằng `deploy/make_env.py` |
 
@@ -29,7 +29,6 @@ Mốc dưới đây là dự kiến.
 |---|---|
 | Chưa có CLI `dxos` | Áp dụng mô hình qua REST |
 | Dịch vụ `ai/` | Chưa nằm trong compose; chỉ tìm kiếm tri thức có nguồn, chưa có hỏi đáp sinh câu trả lời vì chưa có mô hình ngôn ngữ đạt tiêu chuẩn mở; dữ liệu huấn luyện của mô hình embedding chưa kiểm theo định nghĩa của OSI |
-| `bi/` và `chat/` | Còn dashboard, script và kênh của bản `v1.1.1`, chưa nối với lõi và không nằm trong compose; Mattermost chưa đạt rõ ràng về giấy phép |
 | Chưa cắt bớt service bằng compose profile | Mô hình không dùng thành phần nào vẫn phải chạy thành phần đó |
 | Hành động hoàn tất | Chỉ có `add_to_group` và `remove_from_group`; nhóm Keycloak phải có sẵn, thiếu thì thông điệp được thử lại mãi và xem được ở tab Hàng đợi sự kiện; trường người dùng hoặc nhóm để trống thì thao tác bị bỏ qua, không để lại dấu vết |
 | Tệp đính kèm | Xóa đối tượng trong kho lỗi thì chỉ ghi log, không thử lại nên có thể còn đối tượng mồ côi; quét ClamAV chỉ kiểm bằng test đơn vị, chưa chạy E2E với profile `av` |

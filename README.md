@@ -22,12 +22,17 @@ Phiên bản trước của dự án (hai ứng dụng nghiệp vụ viết tay)
 - Đọc và kiểm tra tệp mô hình, báo lỗi theo dòng và cột.
 - Áp dụng mô hình vào hệ thống rỗng: schema, bảng, ràng buộc, vai Keycloak, phiên bản và lịch sử từng bước; áp dụng lại thì không làm gì, bị gián đoạn thì áp dụng lại để làm tiếp.
 - API chung cho mọi thực thể, quyền theo vai và theo dòng (`all`, `own`, `read`, `unit`, `assigned`), quy tắc bắt buộc, duy nhất và lựa chọn.
-- Quy trình phê duyệt một cấp trên Flowable nhúng, có trả lại để bổ sung; trạng thái hồ sơ chỉ đổi qua quy trình, cùng giao dịch với việc ghi hồ sơ.
+- Ba họ mẫu quy trình trên Flowable nhúng: phê duyệt, công việc cần xử lý, đặt chỗ theo khung giờ có kiểm sức chứa; trạng thái hồ sơ chỉ đổi qua quy trình, cùng giao dịch với việc ghi hồ sơ.
+- Quy tắc chung của mọi quy trình: từ chối và trả lại cần lý do, người nộp sửa rồi nộp lại hoặc rút hồ sơ, người tạo không tự quyết hồ sơ của mình, hồ sơ quá hạn lên đầu hộp việc.
+- Việc làm sau khi duyệt, như thêm người dùng vào nhóm, chạy qua hàng đợi sự kiện và được thử lại khi lỗi.
+- Tệp đính kèm hồ sơ, quét mã độc khi bật.
 - Đơn vị khai báo trong mô hình và đồng bộ thành nhóm Keycloak; giao việc, hộp việc và dòng lịch sử của từng hồ sơ.
 - Đổi mô hình khi đã có dữ liệu: xem trước theo mức rủi ro, đổi tên giữ nguyên dữ liệu, báo dòng vi phạm, xác nhận riêng khi mất dữ liệu, quay về phiên bản trước.
 - Giao diện react-admin dựng từ metadata, bằng tiếng Việt và có chế độ sáng tối, không có mã riêng cho thực thể nào.
+- Bảng điều khiển cho người triển khai: thư viện mẫu, trình soạn mô hình, xem kế hoạch, áp dụng, lịch sử và quay về, sơ đồ quy trình.
+- Đăng nhập một lần qua Keycloak; có thể bắt quản trị viên nhập thêm mã một lần từ ứng dụng xác thực.
 
-Chưa nối vào hệ thống: thông báo chat, hỏi đáp bằng AI, báo cáo Superset.
+Chưa có: thông báo chat, hỏi đáp bằng AI, báo cáo thống kê.
 Dịch vụ tìm kiếm tri thức có nguồn ở [`ai/`](./ai/README.md) chạy riêng, chưa nằm trong stack.
 Các phần này nằm trong [hướng thiết kế](./docs/dynamic-core/README.md).
 
@@ -107,11 +112,13 @@ entities:
 | `POST /api/v1/models/plan`, `/apply` | Xem trước và áp dụng tệp mô hình (ADMIN) |
 | `POST /api/v1/models/{model}/rollback/plan`, `/rollback` | Xem trước và quay về phiên bản trước (ADMIN) |
 | `GET /api/v1/models`, `/models/{model}/runs` | Mô hình đã áp dụng và lịch sử từng bước (ADMIN) |
+| `GET /api/v1/models/schema`, `/families`, `/templates`, `/{model}/versions` | Đặc tả tệp mô hình, họ mẫu, thư viện mẫu và các phiên bản đã áp dụng, cho bảng điều khiển (ADMIN) |
 | `GET /api/v1/meta/models` | Metadata mà người gọi được xem |
 | `/api/v1/data/{model}/{entity}` | Danh sách, tạo, xem, sửa, xóa; lọc `filter.<trường>[.<phép>]`, `sort`, `order`, `page`, `size` |
 | `POST /api/v1/data/{model}/{entity}/{id}/actions/{action}` | Hành động của quy trình; metadata liệt kê hành động, trạng thái đầu và người được làm |
 | `POST .../{id}/assign`, `GET .../{id}/handlers` | Giao việc và danh sách người giao được |
 | `GET .../{id}/events` | Dòng lịch sử của bản ghi |
+| `.../{id}/files` | Tải lên, liệt kê, lấy link tải có hạn (`/{fileId}/link`) và gỡ tệp đính kèm |
 | `GET /api/v1/inbox` | Hồ sơ đang chờ người gọi, trên mọi mô hình; `page`, `size` |
 | `GET /api/v1/outbox`, `POST /api/v1/outbox/{id}/retry` | Thông điệp gửi đi theo trạng thái (lỗi, chờ gửi, đã gửi) và thử lại thông điệp chưa gửi (ADMIN) |
 
@@ -130,7 +137,6 @@ Mọi phản hồi bọc trong `ApiResponse`; lỗi có `errorCode` ổn định
 | `sso`, `portal`, `seaweedfs` | Keycloak realm, trang portal, lưu trữ tệp |
 | `models` | Mô hình mẫu và tệp sai mẫu |
 | `ai` | Dịch vụ tìm kiếm tri thức có nguồn (AGPL-3.0), chạy riêng ngoài stack |
-| `bi`, `chat` | Cấu hình Superset và Mattermost của bản cũ, chưa nối với lõi, sẽ dựng lại theo mô hình ở các bước sau |
 
 ## Kiểm thử
 

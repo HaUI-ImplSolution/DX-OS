@@ -7,8 +7,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -20,7 +18,6 @@ import org.springframework.stereotype.Component;
 public class MattermostSender {
 
   private static final Logger log = LoggerFactory.getLogger(MattermostSender.class);
-  private static final String ADMIN_FILE = "admin.url";
 
   private final MonitorProperties.Mattermost settings;
   private final HttpClient client;
@@ -59,19 +56,6 @@ public class MattermostSender {
   private Optional<String> webhook() {
     if (present(settings.adminUrl())) {
       return Optional.of(settings.adminUrl().strip());
-    }
-    if (present(settings.dir())) {
-      try {
-        Path file = Path.of(settings.dir(), ADMIN_FILE);
-        if (Files.isRegularFile(file)) {
-          String content = Files.readString(file).strip();
-          if (!content.isEmpty()) {
-            return Optional.of(content);
-          }
-        }
-      } catch (IOException e) {
-        log.warn("The chat webhook file could not be read: {}", e.getClass().getSimpleName());
-      }
     }
     return present(settings.url()) ? Optional.of(settings.url().strip()) : Optional.empty();
   }

@@ -44,7 +44,11 @@ python3 deploy/dev/check_recovery.py        # sau check_api.py, trên cùng stac
 python3 deploy/dev/check_case.py            # sau check_recovery.py, trên cùng stack
 python3 deploy/dev/check_change.py          # sau check_case.py, trên cùng stack
 python3 deploy/dev/check_process.py         # sau check_change.py, trên cùng stack
+python3 deploy/dev/check_booking.py         # sau check_process.py, trên cùng stack
+python3 deploy/dev/check_demo.py            # sau các script trên hoặc trên stack rỗng
 ```
+
+Tiêu chí 3 của `check_demo.py` (chặn tệp nhiễm mã độc) chỉ chạy khi bật quét bằng `docker compose --profile av up -d`.
 
 Script tạo client Keycloak `dxos-check` (cho phép đăng nhập bằng mật khẩu, chỉ dùng cho máy dev) và các người dùng thử `admin1`, `req1`, `req2`, `keeper1`, `multi1`, `none1`, `editor1`.
 Biến `DXOS_ENV_FILE`, `DXOS_BASE_URL`, `DXOS_PROJECT` đổi tệp env, địa chỉ gateway và tên project Compose.
@@ -109,12 +113,12 @@ T5-11 và T6-14 cần dịch vụ chạy với `ENGINE_FAULT_AFTER_DECISION=true
 - Đăng nhập SSO qua Keycloak ở web hoạt động (mục 5).
 - `docker compose up -d --build` từ clone sạch lên đủ tám service healthy: `postgres`, `keycloak`, `seaweedfs`, `backend`, `frontend`, `portal`, `monitor`, `apisix`.
 - Màn hình giám sát `/monitor/` mở được với tài khoản ADMIN.
-- Không còn từ khóa của ứng dụng cũ ngoài `ai/`, `bi/`, `chat/`:
+- Không còn từ khóa của ứng dụng cũ ngoài `ai/`:
 
 ```bash
 grep -rIlw -i -E 'farm|lab|farmer|DXOS_APP|dx-host|app-farm|app-lab|dx-core-api' \
   --exclude-dir=node_modules --exclude-dir=target --exclude-dir=.git --exclude-dir=docs \
-  --exclude-dir=ai --exclude-dir=bi --exclude-dir=chat --exclude-dir=dist .
+  --exclude-dir=ai --exclude-dir=dist .
 ```
 
 ## 7. Sự cố thường gặp
@@ -129,29 +133,31 @@ grep -rIlw -i -E 'farm|lab|farmer|DXOS_APP|dx-host|app-farm|app-lab|dx-core-api'
 
 ## 8. Kết quả kiểm gần nhất
 
-Ngày 03/11/2026 trên bản sao sạch của cây làm việc (nhánh `Khuong/phase-10-release`, gồm cả tệp chưa commit), stack dựng bằng `docker compose up -d --build`.
+Ngày 03/11/2026 trên cây làm việc của nhánh `Khuong/main` (gồm cả tệp chưa commit), stack rỗng dựng bằng `docker compose up -d --build`.
+Các dòng ghi "Phase 10" là kết quả của lần kiểm trước, cùng ngày, không chạy lại.
 
 | Mục | Kết quả | Ghi chú |
 |---|---|---|
 | `./mvnw clean verify` | Đạt | dx-core 20 test, dx-engine 8, dx-monitor 3; dx-model không có test |
 | `npx tsc --noEmit` | Đạt | Không lỗi |
 | `check_licenses.py`, `check_routes.py` | Đạt | 0 vấn đề, gồm header, giấy phép của SBOM và danh mục `.github/license-catalog.json` (image, mô hình, tệp trọng số, tài liệu, nén); 12 route, 11 công khai có chủ đích |
-| `pytest` của `ai/` | Đạt | 21 test, chạy trong image dựng từ `ai/Dockerfile` |
-| `ai/` chạy thật | Đạt | pgvector tạm: `init_db`, `ingest` 3 tài liệu kèm nguồn và giấy phép, tìm kiếm trả đúng tài liệu; câu ngoài kho và mã không có trong kho không có bằng chứng; thiếu khóa dịch vụ 401 |
-| `deploy/install.sh` | Đạt | Cài sang thư mục khác, `docker compose config` đạt |
+| `pytest` của `ai/` | Đạt | Phase 10: 21 test, chạy trong image dựng từ `ai/Dockerfile` |
+| `ai/` chạy thật | Đạt | Phase 10: pgvector tạm: `init_db`, `ingest` 3 tài liệu kèm nguồn và giấy phép, tìm kiếm trả đúng tài liệu; câu ngoài kho và mã không có trong kho không có bằng chứng; thiếu khóa dịch vụ 401 |
+| `deploy/install.sh` | Đạt | Phase 10: cài sang thư mục khác, `docker compose config` đạt |
 | `docker compose config` | Đạt | Tám service, cộng `clamav` ở profile `av` |
 | Stack từ trạng thái sạch | Đạt | Tám service healthy |
-| `check_api.py` | Đạt | 51/51; danh sách 10.000 dòng có lọc và sắp xếp, phân vị 95 là 10 ms, trung vị 9 ms |
+| `check_api.py` | Đạt | 51/51; danh sách 10.000 dòng có lọc và sắp xếp, phân vị 95 là 10 ms, trung vị 8 ms |
 | `check_recovery.py` | Đạt | 17/17 |
 | `check_case.py` | Đạt | 71/71 |
 | `check_change.py` | Đạt | 59/59 |
-| `check_booking.py` | Đạt | 44/44: họ `reservation`, danh mục của bảng điều khiển, mọi mẫu áp dụng được |
-| `check_demo.py` | Đạt | 26/26: tám tiêu chí của kịch bản trình diễn |
 | `check_process.py` | Đạt | 56/56: hai họ mẫu, lý do, rút lại, hạn và quá hạn, hành động hoàn tất qua outbox kèm thử lại, tệp đính kèm |
-| Giao diện Phase 8 | Đạt | Chrome, tài khoản thử: tạo yêu cầu cấp quyền, hạn xử lý, tải tệp, rút lại, lịch sử đủ ba dòng |
-| Giao diện | Đạt | 20/20 bằng Chrome không giao diện: sinh viên nộp, cán bộ sai đơn vị không thấy, cán bộ đúng đơn vị nhận việc và trả lại, sinh viên sửa và nộp lại, cán bộ duyệt, kèm hộp việc và dòng lịch sử; 5/5 sau khi đổi tên và thêm trường, chỉ tải lại trang, không build lại |
-| Giao diện Phase 10 | Đạt | Chrome, stack dựng từ bản sao sạch: đăng nhập, bảng điều khiển liệt kê mô hình, thư viện mẫu hiện sáu mẫu |
-| Từ khóa ứng dụng cũ | Đạt | Không còn ngoài `ai/`, `bi/`, `chat/` và các tài liệu mô tả bản cũ |
+| `check_booking.py` | Đạt | 44/44: họ `reservation`, danh mục của bảng điều khiển, mọi mẫu áp dụng được |
+| `check_demo.py` | Đạt | 26/26: tám tiêu chí của kịch bản trình diễn, không bật `av` |
+| Giao diện Phase 8 | Đạt | Phase 10: Chrome, tài khoản thử: tạo yêu cầu cấp quyền, hạn xử lý, tải tệp, rút lại, lịch sử đủ ba dòng |
+| Giao diện hồ sơ | Đạt | Phase 10: 20/20 bằng Chrome không giao diện: sinh viên nộp, cán bộ sai đơn vị không thấy, cán bộ đúng đơn vị nhận việc và trả lại, sinh viên sửa và nộp lại, cán bộ duyệt, kèm hộp việc và dòng lịch sử; 5/5 sau khi đổi tên và thêm trường, chỉ tải lại trang, không build lại |
+| Giao diện Phase 10 | Đạt | Phase 10: Chrome, stack dựng từ bản sao sạch: đăng nhập, bảng điều khiển liệt kê mô hình, thư viện mẫu hiện sáu mẫu |
+| Portal, giám sát, bảng điều khiển | Đạt | 8/8 bằng Chrome không giao diện: portal có bốn thẻ, không còn BI và chat, năm dịch vụ đều hoạt động, không lỗi console; màn hình giám sát không còn ô BI và chat; ADMIN mở được bảng điều khiển |
+| Từ khóa ứng dụng cũ | Đạt | Không còn ngoài `ai/` và các tài liệu mô tả bản cũ |
 | Tệp bản cũ và thành phần chưa mở | Đạt | Không còn `data/`, trọng số, PDF, `ai/evaluation`; Redis, Langfuse, Ollama, Qwen, mMARCO chỉ còn trong tài liệu mô tả việc đã gỡ |
-| CI trên GitHub | Chưa chạy | Nhánh phase 10 chưa push |
+| CI trên GitHub | Đạt | Commit `d0790226` trên `Khuong/main`: CI Infra, Frontend, Dependencies; commit `2b337e40` có thêm CI Backend và CI AI |
 | Chưa chạy | | Khởi động sau khi cập nhật từ bản `v1.1.1` (không có đường nâng cấp dữ liệu) |

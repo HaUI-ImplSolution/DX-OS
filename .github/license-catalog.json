@@ -22,8 +22,5 @@
       "note": "The weights are open; the training data is not documented in a way that meets the OSI Open Source AI definition."
     }
   },
-  "files": [
-    {"path": "bi/basemap_light.json", "license": "Apache-2.0", "note": "Style of the map for Superset; it reads OpenFreeMap tiles (ODbL data of OpenStreetMap, CC BY 4.0 for OpenMapTiles) at run time"},
-    {"path": "bi/farm_dashboard_export.zip", "license": "Apache-2.0", "note": "Superset dashboard written by the team; it reads Open-Meteo data (CC BY 4.0) at run time"}
-  ]
+  "files": []
 }

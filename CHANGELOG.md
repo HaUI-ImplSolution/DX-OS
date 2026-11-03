@@ -13,6 +13,11 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Hộp việc có thống kê nhanh và trạng thái rỗng; trang chi tiết hồ sơ dạng thẻ với dòng thời gian lịch sử, thẻ người xử lý và tệp; lịch đặt chỗ có chú giải và màu theo trạng thái.
 - Bảng điều khiển: thẻ mô hình đang chạy kèm số thực thể, vai, đơn vị; thư viện mẫu theo họ quy trình; trình soạn hai cột có các bước soạn, xem kế hoạch, áp dụng; sơ đồ quy trình mở to trong hộp thoại.
 - Thêm `ra-i18n-polyglot` làm dependency trực tiếp của web.
+- Gỡ `bi/` (Superset) và `chat/` (Mattermost) khỏi cây mã; bản cũ ở tag `v1.1.1`.
+  Portal chỉ còn ứng dụng chính, Keycloak Admin, màn hình giám sát và Swagger; biến `PORTAL_BI_URL` và `PORTAL_CHAT_URL` không còn dùng.
+  Màn hình giám sát gửi cảnh báo qua `MATTERMOST_WEBHOOK_URL_ADMIN` hoặc `MATTERMOST_WEBHOOK_URL`, không còn đọc tệp webhook hay dò Superset và Mattermost.
+- Gỡ `seaweedfs/migrate-uploads.sh`.
+- Màn hình giám sát gọi tên chức năng và thao tác theo API của lõi, dò dịch vụ AI ở `/api/v1/health`, và không miễn đường dẫn chậm nào theo mặc định.
 
 ## [2.0.0] - 2026-11-03
 

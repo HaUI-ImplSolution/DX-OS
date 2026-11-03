@@ -147,9 +147,6 @@ services:
     build:
       context: ../portal
       dockerfile: Dockerfile
-    environment:
-      PORTAL_BI_URL: ${PORTAL_BI_URL:-}
-      PORTAL_CHAT_URL: ${PORTAL_CHAT_URL:-}
     # No published port: the gateway serves the portal under /portal.
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/ || exit 1"]
@@ -270,13 +267,9 @@ services:
       MONITOR_INGEST_KEY: ${MONITOR_INGEST_KEY:?}
       MONITOR_OIDC_CLIENT_SECRET: ${MONITOR_OIDC_CLIENT_SECRET:?}
       GATEWAY_PUBLIC_URL: ${GATEWAY_PUBLIC_URL:?}
-      # Alerts go to the administrators' channel; a URL left empty is read from the file
-      # mattermost-bootstrap writes.
-      MATTERMOST_WEBHOOK_DIR: /run/mattermost-webhooks
+      # Alerts go to the administrators' channel when a webhook is set.
       MATTERMOST_WEBHOOK_URL: ${MATTERMOST_WEBHOOK_URL:-}
       MATTERMOST_WEBHOOK_URL_ADMIN: ${MATTERMOST_WEBHOOK_URL_ADMIN:-}
-    volumes:
-      - ./data/mattermost/webhooks:/run/mattermost-webhooks:ro
     # No published port: the gateway forwards /monitor, and delivers its own events straight to it.
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8090/monitor/actuator/health || exit 1"]

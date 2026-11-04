@@ -121,7 +121,9 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/license-exceptions.json.
 +---------------------------------------------------+-----------------+----------------------------------------------+
 | Uvicorn, python-dotenv                            | BSD-3-Clause    | Máy chủ, đọc cấu hình                        |
 +---------------------------------------------------+-----------------+----------------------------------------------+
-| rank-bm25 0.2.2                                   | Apache-2.0      | BM25 trong tìm kiếm lai                      |
+| rank-bm25 0.2.2, ir_measures (chỉ test)             | Apache-2.0      | BM25 và chấm truy xuất bằng nhãn              |
++---------------------------------------------------+-----------------+----------------------------------------------+
+| haystack-ai, ollama-haystack                       | Apache-2.0      | Pipeline trợ lý và tích hợp LLM nội bộ        |
 +---------------------------------------------------+-----------------+----------------------------------------------+
 | sentence-transformers                             | Apache-2.0      | Embedding                                    |
 +---------------------------------------------------+-----------------+----------------------------------------------+
@@ -147,9 +149,10 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/license-exceptions.json.
 | [1]                                    |                              | lần đầu                                    |
 +----------------------------------------+------------------------------+--------------------------------------------+
 
-Bản phát hành không kèm trọng số mô hình, kho văn bản hay bộ dữ liệu nào; mô hình embedding tải về từ Hugging Face khi dịch vụ ai/ dùng lần đầu.
+Bản phát hành không kèm trọng số hoặc kho văn bản nghiệp vụ; embedding được chuẩn bị trong cache trước khi bật dịch vụ trợ lý.
+Bộ pilot ai/tests/fixtures/assistant_pilot.json là dữ liệu tổng hợp do nhóm tạo, CC0-1.0, chỉ dùng kiểm thử.
 Trọng số của paraphrase-multilingual-MiniLM-L12-v2 mở theo Apache-2.0; dữ liệu huấn luyện của nó chưa được kiểm theo định nghĩa Open Source AI của OSI (khai báo ở .github/license-catalog.json).
-Dịch vụ ai/ không dùng mô hình ngôn ngữ và không xếp hạng lại bằng mô hình nào.
+Trợ lý có thể dùng model ngôn ngữ nội bộ do người vận hành chọn; mặc định tắt phần sinh và không chọn sẵn model phát hành.
 
 6. HẠ TẦNG VÀ CÔNG CỤ
 =====================
@@ -177,6 +180,9 @@ Dịch vụ ai/ không dùng mô hình ngôn ngữ và không xếp hạng lại
 |                                      |                                      | compose.cloudflared.yml; dịch vụ     |
 |                                      |                                      | Cloudflare mà nó nối tới là dịch vụ  |
 |                                      |                                      | đóng                                 |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Ollama (ollama/ollama), client Python | MIT                                  | LLM nội bộ tùy chọn; giấy phép model |
+|                                      |                                      | được kiểm riêng                     |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | Alpine Linux 3.20 (alpine:3.20)      | MIT, GPL-2.0 (nhiều gói)             | Image phụ trợ chạy script khi dựng   |
 |                                      |                                      | stack                                |

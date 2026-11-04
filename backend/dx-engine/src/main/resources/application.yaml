@@ -86,3 +86,9 @@ audit:
   denied:
     # Refused requests recorded per client address and action each minute; the rest are counted.
     max-per-minute: 20
+
+assistant:
+  enabled: ${ASSISTANT_ENABLED:false}
+  generation-enabled: ${ASSISTANT_GENERATION_ENABLED:false}
+  service-url: ${AI_SERVICE_URL:}
+  service-key: ${AI_SERVICE_API_KEY:}

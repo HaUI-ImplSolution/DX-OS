@@ -3,7 +3,7 @@
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import Field, ValidationInfo, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 AI_ROOT = Path(__file__).resolve().parents[2]
@@ -27,7 +27,21 @@ class Settings(BaseSettings):
     search_cosine_min_score: float = Field(default=0.40, ge=-1, le=1)
     ai_service_api_key: str | None = None
 
+    assistant_generation_enabled: bool = False
+    assistant_model: str = ""
+    assistant_model_url: str = "http://ollama:11434"
+    assistant_context_tokens: int = Field(default=8192, ge=2048, le=16384)
+    assistant_model_threads: int = Field(default=2, ge=1, le=32)
+    assistant_cosine_min_score: float = Field(default=0.40, ge=-1, le=1)
+
     log_level: str = "INFO"
+
+    @field_validator("assistant_model")
+    @classmethod
+    def require_generation_model(cls, value: str, info: ValidationInfo) -> str:
+        if info.data.get("assistant_generation_enabled") and not value.strip():
+            raise ValueError("ASSISTANT_MODEL is required when generation is enabled")
+        return value.strip()
 
 
 @lru_cache

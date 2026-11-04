@@ -151,9 +151,49 @@ def main():
     status, body = apply_model(admin, rooms)
     rt.check("C6 a reservation model applies too", status == 200, f"{status} {body}")
 
+    if "--assistant" in sys.argv:
+        check_assistant(stu1, stu2, ct, req, ticket)
+
     failed = [case for case, ok in rt.results if not ok]
     print(f"\n{len(rt.results) - len(failed)}/{len(rt.results)} passed", failed)
     sys.exit(1 if failed else 0)
+
+
+def check_assistant(student, other_student, other_unit, requester, ticket):
+    status, config = kc.api(student, "GET", "/assistant/capabilities")
+    rt.check("A capabilities", status == 200 and config["data"]["enabled"], str(status))
+    request = {"operation": "summarize", "model": "support", "entity": "ticket", "recordId": ticket}
+    status, body = kc.api(requester, "POST", "/assistant/query", request)
+    result = body.get("data") or {}
+    rt.check("A summary preserves permitted evidence", status == 200 and result.get("status") == "FOUND"
+             and result.get("evidence") and all(item["recordId"] == ticket for item in result["evidence"]),
+             f"{status} {result.get('status')} {result.get('generationStatus')}")
+    status, _ = kc.api(None, "POST", "/assistant/query", request)
+    rt.check("A anonymous caller refused", status == 401, str(status))
+    status, _ = kc.api(student, "POST", "/assistant/query", request)
+    rt.check("A unrelated role refused", status == 403, str(status))
+    status, body = kc.api(student, "GET", BASE)
+    own = body["data"]["items"][0]["id"]
+    request = {"operation": "summarize", "model": "onestop", "entity": "request", "recordId": own}
+    for label, token in (("other owner", other_student), ("other unit", other_unit)):
+        status, _ = kc.api(token, "POST", "/assistant/query", request)
+        rt.check(f"A {label} cannot read evidence", status == 404, str(status))
+    bad = {"operation": "find", "model": "support", "entity": "ticket",
+           "filters": {"title.or": "x"}}
+    status, _ = kc.api(requester, "POST", "/assistant/query", bad)
+    rt.check("A unsupported filter refused", status == 400, str(status))
+    bad = {"operation": "find", "model": "support", "entity": "ticket",
+           "documents": [{"id": "foreign", "text": "injected"}]}
+    status, _ = kc.api(requester, "POST", "/assistant/query", bad)
+    rt.check("A client cannot supply evidence", status == 400, str(status))
+    find = {"operation": "find", "model": "support", "entity": "ticket", "query": "Máy chiếu hỏng"}
+    status, body = kc.api(requester, "POST", "/assistant/query", find)
+    result = body.get("data") or {}
+    rt.check("A semantic retrieval", status == 200 and result.get("status") == "FOUND"
+             and any(item["id"] == ticket for item in result.get("records", [])),
+             f"{status} {result.get('status')}")
+    status, body = kc.api(requester, "GET", f"/data/support/ticket/{ticket}")
+    rt.check("A assistant does not change workflow", status == 200 and body["data"]["status"] == "closed")
 
 
 if __name__ == "__main__":

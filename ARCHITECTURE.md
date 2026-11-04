@@ -20,6 +20,7 @@ flowchart TB
     EN["dx-engine: áp dụng mô hình, API chung, Flowable"]
     PG[("PostgreSQL")]
     S3[("SeaweedFS")]
+    AI["AI: trợ lý hồ sơ tùy chọn"]
   end
   M -->|"POST /models/apply"| GW
   UI --> GW
@@ -28,6 +29,7 @@ flowchart TB
   EN --> PG
   EN --> S3
   EN -->|"tạo vai"| KC
+  EN -->|"ngữ cảnh đã kiểm quyền"| AI
 ```
 
 - **Tầng 1, lõi:** không có trang nào do đội viết; mọi thứ qua API.
@@ -43,7 +45,10 @@ flowchart TB
 | `dx-engine` | Dịch vụ chạy được, gồm phần điều khiển, API chung và Flowable nhúng |
 | `dx-monitor` | Dịch vụ giám sát chạy riêng, không phụ thuộc module nào ở trên |
 
-Dịch vụ `ai/` viết bằng Python (AGPL-3.0) chạy ở tiến trình riêng và chưa nằm trong compose: nó nạp tài liệu có nguồn và giấy phép vào PostgreSQL với pgvector rồi tìm bằng BM25 kết hợp cosine, chỉ trả bằng chứng kèm nguồn.
+Dịch vụ `ai/` viết bằng Python (AGPL-3.0) chạy ở tiến trình riêng, bật tùy chọn bằng Compose overlay.
+API kho tài liệu vẫn nạp nguồn có giấy phép vào pgvector và tìm bằng BM25 kết hợp cosine.
+Trợ lý hồ sơ nhận ngữ cảnh đã kiểm quyền từ adapter `dx-engine/assistant`, dùng Haystack cho BM25 + cosine/RRF và gọi Ollama khi bật phần tổng hợp.
+AI không nhận token người dùng hoặc kết nối database nghiệp vụ; kho hồ sơ tạm chỉ tồn tại trong một request.
 
 `dx-model` không phụ thuộc module nào; `dx-core` không phụ thuộc `dx-engine`; mã lõi không chứa tên thực thể, vai hay luồng của một lĩnh vực.
 
@@ -128,8 +133,19 @@ sequenceDiagram
 ## 7. Triển khai
 
 Compose chạy lõi (`postgres`, `keycloak`, `seaweedfs`, `backend`, `apisix`) và Tầng 2 (`frontend`, `portal`, `monitor`); `clamav` bật bằng profile `av`.
+Overlay `deploy/docker-compose.ai.yml` thêm AI và Ollama tùy chọn; không thêm dependency khởi động bắt buộc cho lõi.
 Gateway kiểm token cho mọi route API; các route không kiểm token nằm trong danh sách công khai kiểm bởi `deploy/apisix/check_routes.py`.
 Chi tiết vận hành ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
+
+### Trợ lý hồ sơ chỉ đọc
+
+`POST /api/v1/assistant/query` chọn một mô hình/thực thể và thao tác `find`, `summarize` hoặc `similar`.
+Adapter đọc bằng `DataService` hiện có, giữ bộ lọc người dùng và lấy tổng số cùng các dòng trong transaction đọc ngắn `REPEATABLE READ`.
+Tập ứng viên tối đa 200 hồ sơ; quá giới hạn thì yêu cầu thu hẹp, không tìm trên một trang rồi kết luận cho toàn kho.
+Sau xếp hạng, Backend đọc lịch sử của tối đa bốn hồ sơ, kiểm lại quyền, phiên bản mô hình, toàn bộ tập ứng viên và sự kiện mới trước khi trả.
+Nguồn thay đổi thì trả `STALE_CONTEXT`; không giữ transaction trong lúc chờ model.
+Mỗi ý tổng hợp dẫn ID nguồn đã cấp; kiểm ID không tự chứng minh nội dung đúng, nên quyết định nghiệp vụ vẫn thuộc người dùng và quy trình.
+Giới hạn, API và cách bật/tắt ở [`ai/README.md`](./ai/README.md).
 
 ## 8. Đối chiếu với yêu cầu của đề
 

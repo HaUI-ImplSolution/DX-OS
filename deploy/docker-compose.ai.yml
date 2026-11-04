@@ -1,0 +1,105 @@
+# SPDX-License-Identifier: Apache-2.0
+# Optional read-only assistant. The core compose file remains sufficient without this overlay.
+services:
+  apisix:
+    depends_on:
+      backend:
+        condition: service_healthy
+        restart: true
+      frontend:
+        condition: service_healthy
+        restart: true
+
+  backend:
+    environment:
+      ASSISTANT_ENABLED: ${ASSISTANT_ENABLED:?}
+      ASSISTANT_GENERATION_ENABLED: ${ASSISTANT_GENERATION_ENABLED:?}
+      AI_SERVICE_URL: ${AI_SERVICE_URL:?}
+      AI_SERVICE_API_KEY: ${AI_SERVICE_API_KEY:?}
+
+  ai:
+    profiles: [ai]
+    image: ${AI_IMAGE:?}
+    build:
+      context: ../ai
+    restart: unless-stopped
+    cpus: ${AI_CPUS:?}
+    mem_limit: ${AI_MEMORY_LIMIT:?}
+    environment:
+      AI_SERVICE_API_KEY: ${AI_SERVICE_API_KEY:?}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:?}
+      ASSISTANT_GENERATION_ENABLED: ${ASSISTANT_GENERATION_ENABLED:?}
+      ASSISTANT_MODEL: ${ASSISTANT_MODEL}
+      ASSISTANT_MODEL_URL: ${ASSISTANT_MODEL_URL:?}
+      ASSISTANT_CONTEXT_TOKENS: ${ASSISTANT_CONTEXT_TOKENS:?}
+      ASSISTANT_MODEL_THREADS: ${ASSISTANT_MODEL_THREADS:?}
+      ASSISTANT_COSINE_MIN_SCORE: ${ASSISTANT_COSINE_MIN_SCORE:?}
+      HF_HOME: /app/weights
+      HF_HUB_OFFLINE: "1"
+      TRANSFORMERS_OFFLINE: "1"
+      HAYSTACK_TELEMETRY_ENABLED: "false"
+      TOKENIZERS_PARALLELISM: "false"
+      OMP_NUM_THREADS: ${AI_TORCH_THREADS:?}
+      MKL_NUM_THREADS: ${AI_TORCH_THREADS:?}
+    volumes:
+      - assistant_models:/app/weights
+    depends_on:
+      ai-model-prepare:
+        condition: service_completed_successfully
+      ollama-model-prepare:
+        condition: service_completed_successfully
+        required: false
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    logging:
+      driver: json-file
+      options: {max-size: "10m", max-file: "2"}
+
+  ai-model-prepare:
+    profiles: [ai]
+    image: ${AI_IMAGE:?}
+    build:
+      context: ../ai
+    entrypoint: [python, -m, scripts.prepare_assistant_models]
+    environment:
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:?}
+      HF_HOME: /app/weights
+      HAYSTACK_TELEMETRY_ENABLED: "false"
+    volumes:
+      - assistant_models:/app/weights
+    healthcheck: {disable: true}
+
+  ollama:
+    profiles: [ai-llm]
+    image: ${OLLAMA_IMAGE:?}
+    restart: unless-stopped
+    cpus: ${OLLAMA_CPUS:?}
+    mem_limit: ${OLLAMA_MEMORY_LIMIT:?}
+    environment:
+      OLLAMA_KEEP_ALIVE: 2m
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+    volumes:
+      - assistant_ollama:/root/.ollama
+    healthcheck:
+      test: [CMD, ollama, list]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  ollama-model-prepare:
+    profiles: [ai-llm]
+    image: ${OLLAMA_IMAGE:?}
+    entrypoint: [/bin/sh, -c]
+    command:
+      - 'test -n "$$ASSISTANT_MODEL" && (ollama show "$$ASSISTANT_MODEL" >/dev/null 2>&1 || ollama pull "$$ASSISTANT_MODEL")'
+    environment:
+      OLLAMA_HOST: ${ASSISTANT_MODEL_URL:?}
+      ASSISTANT_MODEL: ${ASSISTANT_MODEL}
+    depends_on:
+      ollama:
+        condition: service_healthy
+
+volumes:
+  assistant_models:
+  assistant_ollama:

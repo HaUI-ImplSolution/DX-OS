@@ -11,10 +11,17 @@ from app.api.schemas import (
     KnowledgeSearchResponse,
 )
 from app.core.config import Settings, get_settings
-from app.db.session import get_db
 from app.rag.search import HybridSearch
 
 router = APIRouter(tags=["Knowledge"])
+
+
+def get_db():
+    if not get_settings().database_url:
+        raise HTTPException(503, "Knowledge database is not configured")
+    from app.db.session import get_db as database_session
+
+    yield from database_session()
 
 
 def authorize_service(

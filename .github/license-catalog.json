@@ -9,6 +9,7 @@
     "chrislusf/seaweedfs": {"license": "Apache-2.0", "use": "Object storage for attachments", "source": "https://github.com/seaweedfs/seaweedfs"},
     "apache/apisix": {"license": "Apache-2.0", "use": "API gateway", "source": "https://github.com/apache/apisix"},
     "clamav/clamav": {"license": "GPL-2.0-only", "use": "Optional virus scan of uploaded files, a separate service reached over the network", "source": "https://github.com/Cisco-Talos/clamav", "optional": true},
+    "ollama/ollama": {"license": "MIT", "use": "Optional local LLM runtime; model weights are selected separately", "source": "https://github.com/ollama/ollama", "optional": true, "note": "The upstream image includes GPU libraries; review a CPU-only distribution before an open-source release."},
     "cloudflare/cloudflared": {"license": "Apache-2.0", "use": "Optional tunnel for a public deployment; the Cloudflare service it connects to is closed", "source": "https://github.com/cloudflare/cloudflared", "optional": true},
     "aquasec/trivy": {"license": "Apache-2.0", "use": "Vulnerability scan in CI", "source": "https://github.com/aquasecurity/trivy", "optional": true},
     "restic/restic": {"license": "BSD-2-Clause", "use": "Encrypted backup of deploy/backup.sh", "source": "https://github.com/restic/restic", "optional": true}

@@ -60,6 +60,14 @@ Gỡ khóa sớm: **Users** → chọn người dùng → tắt công tắc **Te
 
 IP trong sự kiện là IP thật chỉ khi máy chủ chạy với overlay Cloudflare (`docker-compose.cloudflared.yml`), nơi Keycloak đọc `X-Forwarded-For` từ gateway.
 
+## Trợ lý hồ sơ tùy chọn
+
+Lệnh khởi động lõi giữ nguyên; AI dùng overlay `docker-compose.ai.yml`, không publish cổng AI hoặc Ollama ra host.
+Cách bật tìm kiếm, bật phần tổng hợp, dùng lại cache và dừng AI ở [`ai/README.md`](../ai/README.md#bật-bằng-docker).
+Giá trị cấu hình nằm trong `.env.example`; model ngôn ngữ và khóa dịch vụ được cấp khi bật.
+Tắt `ASSISTANT_ENABLED` rồi tạo lại `backend` để ngừng chức năng; CRUD, hộp việc và workflow không phụ thuộc AI.
+Không dùng `down -v` trên project chứa dữ liệu cần giữ.
+
 ## Giới hạn tốc độ
 
 Gateway đếm theo IP thật của client (xem phần log), vượt ngưỡng thì trả `429` kèm `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`.

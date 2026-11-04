@@ -32,6 +32,8 @@ import { Link } from "react-router-dom";
 import { timeAgo } from "../shell/format";
 import { ActionButtons, AssignPanel, FilesPanel, HistoryPanel } from "./caseParts";
 import { StatusChip } from "./StatusChip";
+import AssistantEntry from "../assistant/AssistantEntry";
+import { AssistantListSearch } from "../assistant/AssistantSearch";
 import { resourceName, type EntityMeta, type FieldMeta, type ModelMeta } from "./types";
 
 interface Catalog {
@@ -132,19 +134,20 @@ function inputField(field: FieldMeta, catalog: Catalog) {
   }
 }
 
-function ShowActions({ model, entity }: { model: string; entity: EntityMeta }) {
+function ShowActions({ model, entity }: { model: ModelMeta; entity: EntityMeta }) {
   const record = useRecordContext();
   const closed = entity.process?.states.find((state) => state.name === record?.status)?.terminal ?? false;
   return (
     <Box sx={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 0.5 }}>
       {entity.canWrite && !closed && <EditButton label="Sửa" />}
-      <ActionButtons model={model} entity={entity} />
+      <ActionButtons model={model.name} entity={entity} />
+      <AssistantEntry key={record?.id} model={model} entity={entity} />
     </Box>
   );
 }
 
 // The record as a page: who and what it is on top, its details and history beside the people and files.
-function ShowBody({ model, entity, catalog }: { model: string; entity: EntityMeta; catalog: Catalog }) {
+function ShowBody({ model, entity, catalog }: { model: ModelMeta; entity: EntityMeta; catalog: Catalog }) {
   const record = useRecordContext();
   if (!record) return null;
   const title = record[displayField(entity)] ?? `#${record.id}`;
@@ -197,11 +200,11 @@ function ShowBody({ model, entity, catalog }: { model: string; entity: EntityMet
               )}
             </Box>
           </Card>
-          <HistoryPanel model={model} entity={entity} />
+          <HistoryPanel model={model.name} entity={entity} />
         </Box>
         <Box sx={{ display: "grid", gap: 2 }}>
-          {entity.hasProcess && <AssignPanel model={model} entity={entity} />}
-          <FilesPanel model={model} entity={entity} />
+          {entity.hasProcess && <AssignPanel model={model.name} entity={entity} />}
+          <FilesPanel model={model.name} entity={entity} />
         </Box>
       </Box>
     </Box>
@@ -261,6 +264,7 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
       sort={{ field: "id", order: "DESC" }}
       exporter={false}
     >
+      <AssistantListSearch model={model} entity={entity} />
       <Datagrid rowClick="show" bulkActionButtons={false}>
         <TextField source="id" label="Mã" />
         {entity.fields.map((field) => outputField(field, catalog))}
@@ -271,7 +275,7 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
 
   const EntityShow = () => (
     <Show actions={false} component="div">
-      <ShowBody model={model.name} entity={entity} catalog={catalog} />
+      <ShowBody model={model} entity={entity} catalog={catalog} />
     </Show>
   );
 

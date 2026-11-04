@@ -16,11 +16,13 @@ import authProvider from "./authProvider";
 import { createDataProvider } from "./dataProvider";
 import InboxPage from "./InboxPage";
 import { screens } from "./resources";
+import { useAssistantEnabled } from "../assistant/AssistantEntry";
 import { resourceName, type EntityMeta, type ModelMeta } from "./types";
 
 // The control panel and its editor are loaded only when an administrator opens it.
 const ConsolePage = lazy(() => import("../console/ConsolePage"));
 const CalendarPage = lazy(() => import("./CalendarPage"));
+const AssistantPage = lazy(() => import("../assistant/AssistantPage"));
 
 // One icon per process family, so a menu reads at a glance.
 const FAMILY_ICONS = {
@@ -59,10 +61,12 @@ const AppTopBar = () => (
 const makeMenu = (models: ModelMeta[]) =>
   function AppMenu() {
     const { permissions } = usePermissions();
+    const assistantEnabled = useAssistantEnabled();
     const reachable = models.map((model) => ({ model, entities: model.entities.filter((entity) => entity.canRead) }));
     return (
       <Menu>
         <Menu.DashboardItem primaryText="Hộp việc" />
+        {assistantEnabled && <Menu.Item to="/assistant" primaryText="Trợ lý hồ sơ" />}
         {reachable
           .filter((group) => group.entities.length > 0)
           .map(({ model, entities }) => (
@@ -129,6 +133,11 @@ export default function AdminApp() {
       disableTelemetry
     >
       <CustomRoutes>
+        <Route path="/assistant" element={<Suspense fallback={<p>Đang tải...</p>}>
+          <AssistantPage models={models.map((model) => ({ ...model,
+            entities: model.entities.filter((entity) => entity.canRead),
+          })).filter((model) => model.entities.length > 0)} />
+        </Suspense>} />
         <Route
           path="/console/*"
           element={

@@ -1,0 +1,467 @@
+{
+  "license": "CC0-1.0",
+  "kind": "synthetic",
+  "labelStatus": "draft",
+  "scenarios": [
+    {
+      "model": "support",
+      "documents": [
+        {
+          "id": "record:1",
+          "text": "Máy in mất kết nối\nMáy in không nhận lệnh qua mạng, biểu tượng offline. Cần kiểm tra dây mạng và kết nối máy in."
+        },
+        {
+          "id": "record:2",
+          "text": "Máy in lỗi trình điều khiển\nMáy tính không nhận máy in sau khi cài lại hệ điều hành. Đã cài lại driver và in thử thành công."
+        },
+        {
+          "id": "record:3",
+          "text": "Không vào được Wi-Fi\nMáy tính không kết nối mạng không dây của văn phòng."
+        },
+        {
+          "id": "record:4",
+          "text": "Máy chiếu không sáng\nMáy chiếu có nguồn nhưng không hiện hình, cần kiểm tra cáp tín hiệu."
+        },
+        {
+          "id": "record:5",
+          "text": "Quên mật khẩu email\nNgười dùng cần đặt lại mật khẩu tài khoản thư điện tử."
+        },
+        {
+          "id": "record:6",
+          "text": "Máy in bị kẹt giấy\nGiấy mắc trong khay máy in khi in nhiều trang, cần gỡ giấy và vệ sinh con lăn."
+        },
+        {
+          "id": "record:7",
+          "text": "Ứng dụng không mở\nPhần mềm xử lý văn bản báo lỗi khi khởi động."
+        },
+        {
+          "id": "record:8",
+          "text": "Máy in nhạt màu\nBản in có vệt trắng và mực nhạt. Đã thay hộp mực và kiểm tra chất lượng bản in."
+        }
+      ],
+      "cases": [
+        {
+          "id": "support-find-1",
+          "operation": "find",
+          "query": "Máy in không nhận lệnh do mất kết nối mạng",
+          "relevant": [
+            "record:1"
+          ]
+        },
+        {
+          "id": "support-find-2",
+          "operation": "find",
+          "query": "Máy tính không tìm thấy máy in sau khi cài hệ điều hành",
+          "relevant": [
+            "record:2"
+          ]
+        },
+        {
+          "id": "support-find-3",
+          "operation": "find",
+          "query": "Giấy mắc trong máy lúc đang in",
+          "relevant": [
+            "record:6"
+          ]
+        },
+        {
+          "id": "support-find-4",
+          "operation": "find",
+          "query": "Bản in bị trắng và thiếu mực",
+          "relevant": [
+            "record:8"
+          ]
+        },
+        {
+          "id": "support-similar-1",
+          "operation": "similar",
+          "recordId": 1,
+          "query": "Máy in mất kết nối\nMáy in không nhận lệnh qua mạng, biểu tượng offline. Cần kiểm tra dây mạng và kết nối máy in.",
+          "relevant": [
+            "record:2",
+            "record:6",
+            "record:8"
+          ]
+        },
+        {
+          "id": "support-similar-2",
+          "operation": "similar",
+          "recordId": 2,
+          "query": "Máy in lỗi trình điều khiển\nMáy tính không nhận máy in sau khi cài lại hệ điều hành. Đã cài lại driver và in thử thành công.",
+          "relevant": [
+            "record:1",
+            "record:6",
+            "record:8"
+          ]
+        },
+        {
+          "id": "support-similar-3",
+          "operation": "similar",
+          "recordId": 6,
+          "query": "Máy in bị kẹt giấy\nGiấy mắc trong khay máy in khi in nhiều trang, cần gỡ giấy và vệ sinh con lăn.",
+          "relevant": [
+            "record:1",
+            "record:2",
+            "record:8"
+          ]
+        },
+        {
+          "id": "support-similar-4",
+          "operation": "similar",
+          "recordId": 8,
+          "query": "Máy in nhạt màu\nBản in có vệt trắng và mực nhạt. Đã thay hộp mực và kiểm tra chất lượng bản in.",
+          "relevant": [
+            "record:1",
+            "record:2",
+            "record:6"
+          ]
+        },
+        {
+          "id": "support-summary-1",
+          "operation": "summarize",
+          "recordId": 1,
+          "query": "Tóm tắt nội dung hồ sơ đã ghi nhận.",
+          "relevant": [
+            "record:1"
+          ]
+        },
+        {
+          "id": "support-summary-2",
+          "operation": "summarize",
+          "recordId": 2,
+          "query": "Tóm tắt nội dung hồ sơ đã ghi nhận.",
+          "relevant": [
+            "record:2"
+          ]
+        },
+        {
+          "id": "support-summary-3",
+          "operation": "summarize",
+          "recordId": 3,
+          "query": "Tóm tắt nội dung hồ sơ đã ghi nhận.",
+          "relevant": [
+            "record:3"
+          ]
+        },
+        {
+          "id": "support-summary-4",
+          "operation": "summarize",
+          "recordId": 4,
+          "query": "Tóm tắt nội dung hồ sơ đã ghi nhận.",
+          "relevant": [
+            "record:4"
+          ]
+        }
+      ]
+    },
+    {
+      "model": "approval",
+      "documents": [
+        {
+          "id": "record:1",
+          "text": "Xác nhận đang học\nĐề nghị cấp giấy xác nhận sinh viên để hoàn thiện hồ sơ thực tập."
+        },
+        {
+          "id": "record:2",
+          "text": "Xác nhận cho thực tập\nCần xác nhận tình trạng theo học để nộp cho doanh nghiệp tiếp nhận thực tập."
+        },
+        {
+          "id": "record:3",
+          "text": "Xin nghỉ học tạm thời\nNgười học xin bảo lưu vì lý do sức khỏe, cần nộp giấy tờ bổ sung."
+        },
+        {
+          "id": "record:4",
+          "text": "Đề nghị miễn giảm học phí\nGia đình thuộc diện được xét hỗ trợ học phí, đã nộp minh chứng."
+        },
+        {
+          "id": "record:5",
+          "text": "Thay đổi địa chỉ liên hệ\nNgười nộp cập nhật nơi ở và thông tin liên hệ."
+        },
+        {
+          "id": "record:6",
+          "text": "Giấy xác nhận vay vốn\nCần xác nhận để hoàn thiện thủ tục vay vốn học tập."
+        },
+        {
+          "id": "record:7",
+          "text": "Đề nghị học lại\nXin đăng ký học lại một học phần chưa đạt."
+        },
+        {
+          "id": "record:8",
+          "text": "Xác nhận để xin học bổng\nCần giấy xác nhận tình trạng sinh viên cho hồ sơ học bổng."
+        }
+      ],
+      "cases": [
+        {
+          "id": "approval-find-1",
+          "operation": "find",
+          "query": "Cần xác nhận sinh viên để nộp hồ sơ thực tập",
+          "relevant": [
+            "record:1",
+            "record:2"
+          ]
+        },
+        {
+          "id": "approval-find-2",
+          "operation": "find",
+          "query": "Xin bảo lưu do sức khỏe",
+          "relevant": [
+            "record:3"
+          ]
+        },
+        {
+          "id": "approval-find-3",
+          "operation": "find",
+          "query": "Hỗ trợ tiền học cho gia đình khó khăn",
+          "relevant": [
+            "record:4"
+          ]
+        },
+        {
+          "id": "approval-find-4",
+          "operation": "find",
+          "query": "Giấy tờ xác nhận để vay vốn học tập",
+          "relevant": [
+            "record:6"
+          ]
+        },
+        {
+          "id": "approval-similar-1",
+          "operation": "similar",
+          "recordId": 1,
+          "query": "Xác nhận đang học\nĐề nghị cấp giấy xác nhận sinh viên để hoàn thiện hồ sơ thực tập.",
+          "relevant": [
+            "record:2",
+            "record:6",
+            "record:8"
+          ]
+        },
+        {
+          "id": "approval-similar-2",
+          "operation": "similar",
+          "recordId": 2,
+          "query": "Xác nhận cho thực tập\nCần xác nhận tình trạng theo học để nộp cho doanh nghiệp tiếp nhận thực tập.",
+          "relevant": [
+            "record:1",
+            "record:6",
+            "record:8"
+          ]
+        },
+        {
+          "id": "approval-similar-3",
+          "operation": "similar",
+          "recordId": 6,
+          "query": "Giấy xác nhận vay vốn\nCần xác nhận để hoàn thiện thủ tục vay vốn học tập.",
+          "relevant": [
+            "record:1",
+            "record:2",
+            "record:8"
+          ]
+        },
+        {
+          "id": "approval-similar-4",
+          "operation": "similar",
+          "recordId": 8,
+          "query": "Xác nhận để xin học bổng\nCần giấy xác nhận tình trạng sinh viên cho hồ sơ học bổng.",
+          "relevant": [
+            "record:1",
+            "record:2",
+            "record:6"
+          ]
+        },
+        {
+          "id": "approval-summary-1",
+          "operation": "summarize",
+          "recordId": 1,
+          "query": "Tóm tắt nội dung hồ sơ đã ghi nhận.",
+          "relevant": [
+            "record:1"
+          ]
+        },
+        {
+          "id": "approval-summary-2",
+          "operation": "summarize",
+          "recordId": 2,
+          "query": "Tóm tắt nội dung hồ sơ đã ghi nhận.",
+          "relevant": [
+            "record:2"
+          ]
+        },
+        {
+          "id": "approval-summary-3",
+          "operation": "summarize",
+          "recordId": 3,
+          "query": "Tóm tắt nội dung hồ sơ đã ghi nhận.",
+          "relevant": [
+            "record:3"
+          ]
+        },
+        {
+          "id": "approval-summary-4",
+          "operation": "summarize",
+          "recordId": 4,
+          "query": "Tóm tắt nội dung hồ sơ đã ghi nhận.",
+          "relevant": [
+            "record:4"
+          ]
+        }
+      ]
+    },
+    {
+      "model": "reservation",
+      "documents": [
+        {
+          "id": "record:1",
+          "text": "Đặt phòng thu âm\nĐăng ký studio có micro để thu podcast cho nhóm truyền thông."
+        },
+        {
+          "id": "record:2",
+          "text": "Đặt studio phỏng vấn\nCần không gian yên tĩnh có thiết bị ghi âm để phỏng vấn khách mời."
+        },
+        {
+          "id": "record:3",
+          "text": "Đặt phòng chụp\nNhóm cần studio có đèn và phông nền để chụp ảnh sản phẩm."
+        },
+        {
+          "id": "record:4",
+          "text": "Đặt xưởng mộc\nĐăng ký bàn thao tác và dụng cụ cắt gỗ cho buổi chế tác."
+        },
+        {
+          "id": "record:5",
+          "text": "Đặt phòng họp\nCần phòng có màn hình cho cuộc họp nhóm mười người."
+        },
+        {
+          "id": "record:6",
+          "text": "Ghi âm bài thuyết trình\nXin sử dụng phòng thu để ghi giọng đọc và xử lý âm thanh."
+        },
+        {
+          "id": "record:7",
+          "text": "Mượn máy khoan\nĐăng ký sử dụng máy khoan để lắp ráp mô hình cơ khí."
+        },
+        {
+          "id": "record:8",
+          "text": "Thu chương trình phát thanh\nCần phòng cách âm và micro để thu nội dung phát thanh."
+        }
+      ],
+      "cases": [
+        {
+          "id": "reservation-find-1",
+          "operation": "find",
+          "query": "Cần studio thu podcast hoặc ghi giọng phỏng vấn",
+          "relevant": [
+            "record:1",
+            "record:2",
+            "record:6",
+            "record:8"
+          ]
+        },
+        {
+          "id": "reservation-find-2",
+          "operation": "find",
+          "query": "Cần đèn và phông nền để chụp sản phẩm",
+          "relevant": [
+            "record:3"
+          ]
+        },
+        {
+          "id": "reservation-find-3",
+          "operation": "find",
+          "query": "Cần không gian gia công đồ gỗ",
+          "relevant": [
+            "record:4"
+          ]
+        },
+        {
+          "id": "reservation-find-4",
+          "operation": "find",
+          "query": "Dùng phòng cách âm ghi chương trình radio",
+          "relevant": [
+            "record:1",
+            "record:2",
+            "record:6",
+            "record:8"
+          ]
+        },
+        {
+          "id": "reservation-similar-1",
+          "operation": "similar",
+          "recordId": 1,
+          "query": "Đặt phòng thu âm\nĐăng ký studio có micro để thu podcast cho nhóm truyền thông.",
+          "relevant": [
+            "record:2",
+            "record:6",
+            "record:8"
+          ]
+        },
+        {
+          "id": "reservation-similar-2",
+          "operation": "similar",
+          "recordId": 2,
+          "query": "Đặt studio phỏng vấn\nCần không gian yên tĩnh có thiết bị ghi âm để phỏng vấn khách mời.",
+          "relevant": [
+            "record:1",
+            "record:6",
+            "record:8"
+          ]
+        },
+        {
+          "id": "reservation-similar-3",
+          "operation": "similar",
+          "recordId": 6,
+          "query": "Ghi âm bài thuyết trình\nXin sử dụng phòng thu để ghi giọng đọc và xử lý âm thanh.",
+          "relevant": [
+            "record:1",
+            "record:2",
+            "record:8"
+          ]
+        },
+        {
+          "id": "reservation-similar-4",
+          "operation": "similar",
+          "recordId": 8,
+          "query": "Thu chương trình phát thanh\nCần phòng cách âm và micro để thu nội dung phát thanh.",
+          "relevant": [
+            "record:1",
+            "record:2",
+            "record:6"
+          ]
+        },
+        {
+          "id": "reservation-summary-1",
+          "operation": "summarize",
+          "recordId": 1,
+          "query": "Tóm tắt nội dung hồ sơ đã ghi nhận.",
+          "relevant": [
+            "record:1"
+          ]
+        },
+        {
+          "id": "reservation-summary-2",
+          "operation": "summarize",
+          "recordId": 2,
+          "query": "Tóm tắt nội dung hồ sơ đã ghi nhận.",
+          "relevant": [
+            "record:2"
+          ]
+        },
+        {
+          "id": "reservation-summary-3",
+          "operation": "summarize",
+          "recordId": 3,
+          "query": "Tóm tắt nội dung hồ sơ đã ghi nhận.",
+          "relevant": [
+            "record:3"
+          ]
+        },
+        {
+          "id": "reservation-summary-4",
+          "operation": "summarize",
+          "recordId": 4,
+          "query": "Tóm tắt nội dung hồ sơ đã ghi nhận.",
+          "relevant": [
+            "record:4"
+          ]
+        }
+      ]
+    }
+  ]
+}

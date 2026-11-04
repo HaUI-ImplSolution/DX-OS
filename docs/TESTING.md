@@ -133,15 +133,15 @@ grep -rIlw -i -E 'farm|lab|farmer|DXOS_APP|dx-host|app-farm|app-lab|dx-core-api'
 
 ## 8. Kết quả kiểm gần nhất
 
-Ngày 03/11/2026 trên cây làm việc của nhánh `Khuong/main` (gồm cả tệp chưa commit), stack rỗng dựng bằng `docker compose up -d --build`.
+Kiểm theo [kế hoạch Case Assistant](case-assistant/00_OVERVIEW.md), đã ghép `origin/Khuong/main`; kiểm trên bản sao mã và database thử rỗng, tái sử dụng image nền và cache model.
 Các dòng ghi "Phase 10" là kết quả của lần kiểm trước, cùng ngày, không chạy lại.
 
 | Mục | Kết quả | Ghi chú |
 |---|---|---|
-| `./mvnw clean verify` | Đạt | dx-core 20 test, dx-engine 8, dx-monitor 3; dx-model không có test |
+| `./mvnw verify` | Đạt | 50 test: dx-core 20, dx-engine 27, dx-monitor 3; gồm 19 test trợ lý với 8 test PostgreSQL |
 | `npx tsc --noEmit` | Đạt | Không lỗi |
 | `check_licenses.py`, `check_routes.py` | Đạt | 0 vấn đề, gồm header, giấy phép của SBOM và danh mục `.github/license-catalog.json` (image, mô hình, tệp trọng số, tài liệu, nén); 12 route, 11 công khai có chủ đích |
-| `pytest` của `ai/` | Đạt | Phase 10: 21 test, chạy trong image dựng từ `ai/Dockerfile` |
+| `pytest` của `ai/` | Đạt | 44 test trong image Python 3.11, tắt mạng; gồm pilot embedding thật và kiểm cache |
 | `ai/` chạy thật | Đạt | Phase 10: pgvector tạm: `init_db`, `ingest` 3 tài liệu kèm nguồn và giấy phép, tìm kiếm trả đúng tài liệu; câu ngoài kho và mã không có trong kho không có bằng chứng; thiếu khóa dịch vụ 401 |
 | Bộ cài và `dxos` | Đạt | Gói dựng từ cây làm việc, image local: gói sai SHA-256 bị từ chối; cài vào `~/.dxos` và `~/.local/bin/dxos`; cài lần hai bị từ chối; `dxos start` từ trạng thái rỗng tới khi mọi dịch vụ sẵn sàng, tạo `admin` với mật khẩu tạm, lần hai không tạo lại; `status`, `logs`, `admin`, `doctor`, `version` đúng; nâng cấp bằng gói mới giữ `.env`, thêm biến mới, xóa tệp bản mới không còn; `uninstall --purge` không để lại container, volume, thư mục hay liên kết |
 | Lần chạy đầu bằng Chrome | Đạt | `admin` đăng nhập bằng mật khẩu tạm, bị buộc đổi mật khẩu, vào bảng điều khiển, áp dụng mẫu đầu tiên của thư viện mẫu |
@@ -155,7 +155,7 @@ Các dòng ghi "Phase 10" là kết quả của lần kiểm trước, cùng ng�
 | `check_change.py` | Đạt | 59/59 |
 | `check_process.py` | Đạt | 56/56: hai họ mẫu, lý do, rút lại, hạn và quá hạn, hành động hoàn tất qua outbox kèm thử lại, tệp đính kèm |
 | `check_booking.py` | Đạt | 44/44: họ `reservation`, danh mục của bảng điều khiển, mọi mẫu áp dụng được |
-| `check_demo.py` | Đạt | 26/26: tám tiêu chí của kịch bản trình diễn, không bật `av` |
+| `check_demo.py --assistant` | Đạt | 36/36: 26 ca demo lõi và 10 ca trợ lý; không bật `av` |
 | `check_demo.py` với `av` | Đạt | Tiêu chí 3: tệp EICAR bị từ chối với 422 `ERR_FILE_INFECTED` và không được lưu |
 | Bảy script trên stack rỗng sau khi thêm `V5` và chỉ mục `handle_by` | Đạt | 324/324, trên bản cài bằng `dxos` với image build từ cây làm việc; có 11 chỉ mục `ix_*_handle_by` |
 | Bảng điều khiển và hồ sơ bằng Chrome | Đạt | Trình soạn báo vi phạm schema và gợi ý khóa của tệp mô hình, không lỗi trên trang; danh sách mô hình hiện tên người áp dụng; rút lại hỏi xác nhận, lý do hiện trong lịch sử |
@@ -164,6 +164,26 @@ Các dòng ghi "Phase 10" là kết quả của lần kiểm trước, cùng ng�
 | Giao diện Phase 10 | Đạt | Phase 10: Chrome, stack dựng từ bản sao sạch: đăng nhập, bảng điều khiển liệt kê mô hình, thư viện mẫu hiện sáu mẫu |
 | Portal, giám sát, bảng điều khiển | Đạt | 8/8 bằng Chrome không giao diện: portal có bốn thẻ, không còn BI và chat, năm dịch vụ đều hoạt động, không lỗi console; màn hình giám sát không còn ô BI và chat; ADMIN mở được bảng điều khiển |
 | Từ khóa ứng dụng cũ | Đạt | Không còn ngoài `ai/` và các tài liệu mô tả bản cũ |
-| Tệp bản cũ và thành phần chưa mở | Đạt | Không còn `data/`, trọng số, PDF, `ai/evaluation`; Redis, Langfuse, Ollama, Qwen, mMARCO chỉ còn trong tài liệu mô tả việc đã gỡ |
-| CI trên GitHub | Đạt | Commit `d0790226` trên `Khuong/main`: CI Infra, Frontend, Dependencies; commit `2b337e40` có thêm CI Backend và CI AI |
+| Phạm vi trợ lý | Đạt | Không thêm schema nghiệp vụ, trọng số, database AI, Langfuse hoặc thay đổi CI; Ollama là runtime tùy chọn cho thử local |
+| CI trên GitHub | Chưa chạy | Thay đổi trợ lý chưa commit/push |
 | Chưa chạy | | Khởi động sau khi cập nhật từ bản `v1.1.1` (không có đường nâng cấp dữ liệu) |
+
+### Trợ lý hồ sơ
+
+| Kiểm tra | Kết quả | Phạm vi |
+|---|---|---|
+| Quyền và ngữ cảnh | Đạt | `own`, `unit`, `assigned`, hợp vai, `owner_via` hai cấp; tổng số/snapshot; sửa, xóa, model đổi và sự kiện mới |
+| Giao diện theo hồ sơ | Đạt | Kiểm kiểu/build; browser: tìm từ danh sách giữ bộ lọc, chọn hồ sơ từ kết quả/chi tiết không nhập ID, trạng thái Backend trước phần AI, nguồn thu gọn và mở bản gốc |
+| Liên kết sâu của trợ lý | Đạt | 7 kiểm browser: đổi loại/ID/thao tác trong SPA, Back/Forward, mở lại sau đóng, URL không hợp lệ và bỏ phản hồi cũ giả lập; API đọc hồ sơ thật |
+| Đổi ngữ cảnh và lỗi trên web | Đạt | Browser: sửa câu hỏi/bộ lọc/loại hồ sơ, hủy và deadline với phản hồi trễ giả lập; AI tắt giữ danh sách; liên kết khác chủ sở hữu bị từ chối; 360px/chữ 200%, Enter và không lỗi JavaScript |
+| Model thật trong đợt chỉnh giao diện | Đạt API, chưa nghiệm thu nội dung | API có nguồn; browser render bằng replay phản hồi đã ghi và ca lỗi giả lập; một lượt gọi thật quá thời gian chờ được ghi BACKLOG |
+| Truy xuất pilot | Đạt về công cụ | 24 câu, qrels/run và đối chiếu BM25; số đo ở `ai/README.md`, nhãn còn `draft` |
+| Qwen local | Chưa nghiệm thu nội dung | Có schema/ID nguồn hợp lệ; còn suy diễn trạng thái và hiểu thiếu điều kiện, theo BACKLOG |
+| Hai yêu cầu đồng thời | Đạt cơ chế giới hạn | Một lượt sinh được xử lý, lượt còn lại giữ nguồn và báo phần sinh không sẵn sàng; workflow không đổi |
+| AI/Ollama dừng | Đạt | Giữ nguồn của tóm tắt; tìm gần nghĩa báo không sẵn sàng; đọc hồ sơ và dữ liệu gốc giữ nguyên |
+| Khởi động mặc định | Đạt | Tám service lõi healthy, không có AI/Ollama, đăng nhập và đọc dữ liệu hiện có; trợ lý mặc định tắt |
+| Bật AI local | Đạt | Tái sử dụng cache, lọc/đếm bằng Backend và tóm tắt có nguồn; không sửa hồ sơ gốc |
+| Web trợ lý | Đạt | Đăng nhập thật, tóm tắt và mở nguồn, hủy chờ, HTML giả lập, màn hình 360px và chữ 200%; không lỗi JavaScript |
+
+Phần sinh và diễn giải bộ lọc vẫn là thử nghiệm.
+Chưa có nghiệm thu người dùng, rà nhãn độc lập hoặc xác nhận model phát hành theo tiêu chuẩn mở.

@@ -38,3 +38,13 @@ Chạy cả stack ở [`deploy/`](../deploy/): `docker compose up -d`.
 Swagger UI ở `/swagger-ui.html`, JSON ở `/v3/api-docs`, sinh từ annotation springdoc trong mã.
 Mọi response bọc trong `ApiResponse`; lỗi có `errorCode` ổn định.
 Một người dùng gọi quá ngưỡng một lệnh trong một phút thì nhận `429` với `ERR_TOO_MANY_REQUESTS` và header `Retry-After`; `RATE_LIMIT_ENABLED=false` tắt giới hạn này (xem [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md)).
+
+## Trợ lý hồ sơ
+
+Package `dx-engine/assistant` điều phối thao tác chỉ đọc qua `DataService`; không thêm SQL nghiệp vụ hoặc thay quyền hiện có.
+`GET /api/v1/assistant/capabilities` đọc trạng thái và giới hạn; `POST /api/v1/assistant/query` tìm, tóm tắt hoặc tìm hồ sơ tương tự trong một thực thể.
+Request chỉ gửi định danh, câu hỏi và bộ lọc; Backend tự thu bằng chứng, lấy tổng số và kiểm lại nguồn trước khi trả.
+`interpretQuery=true` bật diễn giải bộ lọc bằng model; điều kiện đã chọn được giữ và kết hợp AND, xung đột thì hỏi lại.
+Kết quả chứa `coverage`, nguồn, phần tổng hợp tùy chọn và `timingsMs` cho đọc ngữ cảnh, xếp hạng, gọi model và tổng thời gian.
+Mặc định `ASSISTANT_ENABLED=false`; khi tắt, Backend không gọi AI hoặc cần model để chạy.
+Chi tiết cấu hình và trạng thái kết quả ở [`ai/README.md`](../ai/README.md).

@@ -32,8 +32,9 @@ The narrow loop from model file to end user runs:
 - A control panel for the person deploying the system: a template library, a model editor, a preview of the plan, apply, history and rollback, and a diagram of the workflow.
 - Single sign-on through Keycloak; administrators can be required to enter a one-time code from an authenticator app as well.
 
-Not yet available: chat notifications, AI answers, statistical reports.
-The search service with cited sources in [`ai/`](./ai/README.md) runs on its own and is not in the stack.
+An optional record assistant finds related content, explains recorded events and retrieves similar cases within the user's permissions; see [`ai/README.md`](./ai/README.md).
+Language-model summaries are enabled separately; no default release model has been selected.
+Not yet available: chat notifications, statistical reports.
 These are in the [design](./docs/dynamic-core/README.md).
 
 ## Run it
@@ -150,7 +151,7 @@ Every reply is wrapped in `ApiResponse`; errors carry a stable `errorCode`.
 | `deploy` | Compose, the APISIX gateway, the installer and the `dxos` command, operations scripts, check scripts in `deploy/dev` |
 | `sso`, `portal`, `seaweedfs` | Keycloak realm, portal page, file storage |
 | `models` | Sample models and sample bad files |
-| `ai` | A search service with cited sources (AGPL-3.0), run on its own outside the stack |
+| `ai` | Optional knowledge search and record assistant (AGPL-3.0) |
 
 ## Tests
 

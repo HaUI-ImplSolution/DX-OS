@@ -27,6 +27,7 @@ import HaUI.ImplSolution.dxos.model.ProcessFamily.Actor;
 import HaUI.ImplSolution.dxos.model.Scope;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -376,6 +377,15 @@ public class DataService {
   public List<Map<String, Object>> events(Model model, Entity entity, long id) {
     get(model, entity, id);
     return events.of(model, entity, id).stream().map(DataService::present).toList();
+  }
+
+  @Transactional(readOnly = true)
+  public EventLog.Window events(Model model, Entity entity, long id, Instant from, Instant to,
+      int limit) {
+    get(model, entity, id);
+    EventLog.Window window = events.window(model, entity, id, from, to, Math.clamp(limit, 1, 100));
+    return new EventLog.Window(window.items().stream().map(DataService::present).toList(),
+        window.latestId(), window.more());
   }
 
   // The records of an entity waiting for the caller: those its handler role can act on and nobody

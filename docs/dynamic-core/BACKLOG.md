@@ -28,7 +28,15 @@ Mốc dưới đây là dự kiến.
 |---|---|
 | CLI `dxos` chưa có `plan` và `apply` | Áp dụng mô hình qua bảng điều khiển hoặc REST |
 | **Lỗ hổng: tên vai dành riêng của nền tảng** | Bộ kiểm không cấm mô hình khai báo vai `ADMIN` (vai quản trị nền tảng: áp dụng, đổi và quay lui mọi mô hình) hay vai mặc định của Keycloak (`offline_access`, `uma_authorization`, `default-roles-dxos`); gán vai đó cho người dùng của một ứng dụng là trao cho họ quyền quản trị cả nền tảng. Sửa cùng bộ kiểm vai trùng tên ở phần 5 |
-| Dịch vụ `ai/` | Chưa nằm trong compose; chỉ tìm kiếm tri thức có nguồn, chưa có hỏi đáp sinh câu trả lời vì chưa có mô hình ngôn ngữ đạt tiêu chuẩn mở; dữ liệu huấn luyện của mô hình embedding chưa kiểm theo định nghĩa của OSI |
+| Model AI phát hành | Trợ lý hồ sơ bật tùy chọn, phần sinh mặc định tắt; chưa chọn LLM đáp ứng đầy đủ tiêu chuẩn mở và dữ liệu huấn luyện của embedding chưa được kiểm theo định nghĩa OSI |
+| Image runtime LLM | Image Ollama đang thử local kèm thư viện CUDA; cần chọn bản CPU và rà các thành phần đi kèm trước khi dùng cho bản phát hành mở |
+| Nghiệm thu trợ lý hồ sơ | Bộ pilot tổng hợp có nhãn nháp; cần người dùng rà nhãn, kiểm ba thao tác trên dữ liệu đại diện và rà từng nhận định sinh trước khi công bố chất lượng |
+| Giới hạn trợ lý hồ sơ | Một thực thể, tối đa 200 ứng viên, không OCR/tệp đính kèm hoặc tìm toàn bộ ghi chú; xếp hạng chỉ trên nội dung trường hồ sơ, lịch sử đọc sau khi chọn nguồn |
+| Nội dung tổng hợp | Model nhỏ có thể diễn giải sai trạng thái, người thực hiện, số định danh hoặc thứ tự dù ID nguồn hợp lệ; chỉ dùng tham khảo, đối chiếu hồ sơ gốc trước quyết định nghiệp vụ |
+| Độ trễ trợ lý local | Có lượt gọi model thật vượt 65 giây khi máy chịu áp lực RAM/swap; giao diện giới hạn chờ và giữ đường xem hồ sơ, cần đo lại độ trễ và deadline server trên cấu hình phát hành |
+| Diễn giải bộ lọc | Qwen local còn ca bỏ điều kiện hoặc yêu cầu làm rõ câu hỏi hợp lệ; đã chặn đề xuất rỗng, điều kiện xung đột và giá trị `like` không có trong câu hỏi; chưa nghiệm thu độ đúng diễn giải |
+| Hồ sơ có văn bản dài | Cosine dùng tối đa 128 token theo cấu hình MiniLM đang kiểm, BM25 đọc cả chuỗi; chưa chia đoạn hồ sơ và chưa nghiệm thu truy xuất trên trường dài |
+| Chữ lớn trên màn hình nhỏ | Bảng hộp việc còn tràn ngang ở 360px và chữ 200%; cần rà riêng giao diện chung |
 | Chưa cắt bớt service bằng compose profile | Mô hình không dùng thành phần nào vẫn phải chạy thành phần đó |
 | Hành động hoàn tất | Chỉ có `add_to_group` và `remove_from_group`; nhóm Keycloak phải có sẵn, thiếu thì thông điệp được thử lại mãi và xem được ở tab Hàng đợi sự kiện; trường người dùng hoặc nhóm để trống thì thao tác bị bỏ qua, không để lại dấu vết |
 | Tệp đính kèm | Xóa đối tượng trong kho lỗi thì chỉ ghi log, không thử lại nên có thể còn đối tượng mồ côi |

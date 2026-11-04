@@ -32,8 +32,9 @@ Phiên bản trước của dự án (hai ứng dụng nghiệp vụ viết tay)
 - Bảng điều khiển cho người triển khai: thư viện mẫu, trình soạn mô hình, xem kế hoạch, áp dụng, lịch sử và quay về, sơ đồ quy trình.
 - Đăng nhập một lần qua Keycloak; có thể bắt quản trị viên nhập thêm mã một lần từ ứng dụng xác thực.
 
-Chưa có: thông báo chat, hỏi đáp bằng AI, báo cáo thống kê.
-Dịch vụ tìm kiếm tri thức có nguồn ở [`ai/`](./ai/README.md) chạy riêng, chưa nằm trong stack.
+Trợ lý hồ sơ tùy chọn hỗ trợ tìm nội dung liên quan, đọc diễn biến và tìm trường hợp tương tự trong phạm vi quyền của người dùng; xem [`ai/README.md`](./ai/README.md).
+Phần tổng hợp bằng mô hình ngôn ngữ bật riêng, chưa chọn model mặc định cho bản phát hành.
+Chưa có: thông báo chat, báo cáo thống kê.
 Các phần này nằm trong [hướng thiết kế](./docs/dynamic-core/README.md).
 
 ## Chạy thử
@@ -150,7 +151,7 @@ Mọi phản hồi bọc trong `ApiResponse`; lỗi có `errorCode` ổn định
 | `deploy` | Compose, gateway APISIX, bộ cài và lệnh `dxos`, script vận hành, script kiểm tra ở `deploy/dev` |
 | `sso`, `portal`, `seaweedfs` | Keycloak realm, trang portal, lưu trữ tệp |
 | `models` | Mô hình mẫu và tệp sai mẫu |
-| `ai` | Dịch vụ tìm kiếm tri thức có nguồn (AGPL-3.0), chạy riêng ngoài stack |
+| `ai` | Dịch vụ tri thức và trợ lý hồ sơ tùy chọn (AGPL-3.0) |
 
 ## Kiểm thử
 

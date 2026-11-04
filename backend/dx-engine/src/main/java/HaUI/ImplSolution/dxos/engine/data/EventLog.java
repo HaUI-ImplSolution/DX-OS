@@ -4,6 +4,9 @@ package HaUI.ImplSolution.dxos.engine.data;
 import HaUI.ImplSolution.dxos.core.api.user.UserContext;
 import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -37,5 +40,28 @@ public class EventLog {
             + "FROM engine.record_event WHERE model = ? AND entity = ? AND record_id = ? "
             + "ORDER BY id",
         model.name(), entity.name(), id);
+  }
+
+  public record Window(List<Map<String, Object>> items, long latestId, boolean more) {}
+
+  public Window window(Model model, Entity entity, long id, Instant from, Instant to, int limit) {
+    String where = " WHERE model = ? AND entity = ? AND record_id = ?";
+    List<Object> args = new ArrayList<>(List.of(model.name(), entity.name(), id));
+    Long latest = jdbc.queryForObject(
+        "SELECT coalesce(max(id), 0) FROM engine.record_event" + where, Long.class, args.toArray());
+    if (from != null) {
+      where += " AND at >= ?";
+      args.add(Timestamp.from(from));
+    }
+    if (to != null) {
+      where += " AND at <= ?";
+      args.add(Timestamp.from(to));
+    }
+    args.add(limit + 1);
+    List<Map<String, Object>> items =
+        jdbc.queryForList("SELECT id, action, actor_name, at, from_status, to_status, note, detail "
+            + "FROM engine.record_event" + where + " ORDER BY id LIMIT ?", args.toArray());
+    return new Window(items.stream().limit(limit).toList(), latest == null ? 0 : latest,
+        items.size() > limit);
   }
 }

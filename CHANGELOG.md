@@ -7,6 +7,13 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
+- Trợ lý hồ sơ chỉ đọc: tìm nội dung liên quan, tóm tắt diễn biến và tìm trường hợp tương tự bằng metadata và quyền của lõi.
+- Pipeline Haystack dùng BM25 + cosine/RRF trên ngữ cảnh tạm theo request; kiểm giới hạn và nguồn thay đổi trước khi trả kết quả.
+- Giao diện trợ lý chung kèm nguồn; tổng hợp bằng Ollama bật riêng, chưa chọn model mặc định cho bản phát hành.
+- Tìm nội dung ngay trong danh sách, tóm tắt và tìm tương tự từ hồ sơ đã chọn; tự lấy ngữ cảnh, đặt trạng thái Backend trước phần AI và thu gọn nguồn đối chiếu.
+- Liên kết sâu của trợ lý đồng bộ loại hồ sơ và bản ghi khi đổi URL hoặc Back/Forward, hủy chờ kết quả thuộc ngữ cảnh cũ.
+- Compose overlay AI tùy chọn, cache model bền vững, bộ pilot tổng hợp và các kiểm thử quyền, nguồn, tích hợp.
+
 - Giao diện web toàn tiếng Việt: chữ có sẵn của react-admin, thông báo lỗi và lỗi từng trường của backend, lỗi tệp mô hình theo dòng và cột, nhãn của kế hoạch áp dụng và lịch sử áp dụng.
   Backend vẫn trả thông báo tiếng Anh kèm `errorCode`; frontend dịch theo mẫu ở `shell/backendMessages.ts`, và ngôn ngữ hiện tại giữ ở `shell/locale.ts` để thêm tiếng Anh sau.
 - Theme sáng và tối, thanh trên có thương hiệu, menu nhóm theo mô hình, trạng thái hiện thành nhãn màu theo ý nghĩa.

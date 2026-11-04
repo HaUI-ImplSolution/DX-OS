@@ -45,6 +45,7 @@ export const RULE: Record<string, string> = {
 export const STEP_KIND: Record<string, string> = {
   CHANGE_SCHEMA: "Đổi cấu trúc bảng",
   ENSURE_ROLE: "Tạo vai trong Keycloak",
+  DROP_FILES: "Xóa tệp đính kèm của thực thể",
   ENSURE_UNIT: "Tạo nhóm đơn vị trong Keycloak",
   SAVE_VERSION: "Lưu phiên bản mô hình",
   RENAME_FIELD: "Đổi tên cột giữ dữ liệu",

@@ -14,28 +14,28 @@ YAML = rt.YAML
 DESK = """format: 0
 name: desk8
 roles:
-  - name: ASKER
-  - name: AGENT
+  - name: ASKER8
+  - name: AGENT8
     staff: true
 entities:
   ticket:
     label: Yêu cầu hỗ trợ
     fields:
       title: {type: text, required: true}
-    access: {ASKER: own, AGENT: all}
-    process: {family: work_item, handler: AGENT, deadline: 1h}
+    access: {ASKER8: own, AGENT8: all}
+    process: {family: work_item, handler: AGENT8, deadline: 1h}
   leave:
     label: Đơn nghỉ
     fields:
       reason: {type: text, required: true}
-    access: {ASKER: own, AGENT: all}
-    process: {family: approval, handler: AGENT}
+    access: {ASKER8: own, AGENT8: all}
+    process: {family: approval, handler: AGENT8}
 """
 BAD = DESK.split("entities:")[0] + """entities:
   ticket:
     fields:
       title: {type: text, required: true}
-    access: {ASKER: own, AGENT: all}
+    access: {ASKER8: own, AGENT8: all}
     process: %s
 """
 TICKETS = "/data/desk8/ticket"
@@ -68,10 +68,10 @@ def main():
 
     # T8-02: the process block is checked and errors point at its line.
     for case, process, needle in [
-        ("unknown family", "{family: nope, handler: AGENT}", "line 12"),
-        ("unknown key", "{family: work_item, handler: AGENT, speed: fast}", "line 12"),
-        ("bad deadline", "{family: work_item, handler: AGENT, deadline: soon}", "line 12"),
-        ("zero deadline", "{family: work_item, handler: AGENT, deadline: 0h}", "line 12"),
+        ("unknown family", "{family: nope, handler: AGENT8}", "line 12"),
+        ("unknown key", "{family: work_item, handler: AGENT8, speed: fast}", "line 12"),
+        ("bad deadline", "{family: work_item, handler: AGENT8, deadline: soon}", "line 12"),
+        ("zero deadline", "{family: work_item, handler: AGENT8, deadline: 0h}", "line 12"),
         ("handler not a role", "{family: work_item, handler: NOBODY}", "line 12"),
     ]:
         status, body = kc.api(admin, "POST", "/models/plan", BAD % process, YAML)
@@ -80,9 +80,9 @@ def main():
     # T8-01: two families run in one model without changing the code of the core.
     status, body = kc.api(admin, "POST", "/models/apply", DESK, YAML)
     rt.check("T8-01 apply", status == 200 and body["data"]["status"] == "applied", f"{status} {body}")
-    asker_id = kc.ensure_user("asker8", ["ASKER"])
-    kc.ensure_user("agent8", ["AGENT"])
-    kc.ensure_user("agent9", ["AGENT"])
+    asker_id = kc.ensure_user("asker8", ["ASKER8"])
+    kc.ensure_user("agent8", ["AGENT8"])
+    kc.ensure_user("agent9", ["AGENT8"])
     asker, agent, agent2 = kc.token("asker8"), kc.token("agent8"), kc.token("agent9")
     status, body = kc.api(agent, "GET", "/meta/models")
     entities = {e["name"]: e for model in body["data"] if model["name"] == "desk8" for e in model["entities"]}

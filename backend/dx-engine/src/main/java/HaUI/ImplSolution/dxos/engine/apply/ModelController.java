@@ -35,7 +35,9 @@ public class ModelController {
   @GetMapping
   @Operation(summary = "List the applied models with their current version",
       description = "applied_by is the user id of who applied the version, applied_by_name the name"
-          + " the token gave then; it is empty for versions saved without one.")
+          + " the token gave then; it is empty for versions saved without one. held is true while"
+          + " an apply of the model runs or stopped before it finished; the model is then closed to"
+          + " its users. A model whose first apply stopped is listed with version 0.")
   public ApiResponse<List<Map<String, Object>>> list() {
     return ApiResponse.success(service.models());
   }
@@ -45,7 +47,9 @@ public class ModelController {
       description = "The body is the model file. 400 lists every problem with its line and"
           + " column. The answer compares it with the running version: the changes by level (SAFE,"
           + " MIGRATION, LOSS), what is refused, existing rows that break a new rule, open records"
-          + " of the touched processes and the statements to run. No record or table changes.")
+          + " of the touched processes and the statements to run. Changes that collide with"
+          + " another model, affect open process records, or have attachments or executions are"
+          + " refused. No record or table changes.")
   public ApiResponse<ApplyService.Plan> plan(@RequestBody String content) {
     return ApiResponse.success(service.plan(content));
   }
@@ -56,7 +60,8 @@ public class ModelController {
           + " version. To change a running model pass base, the fromVersion of the plan, and accept"
           + " with the level of the plan (SAFE by default). The same file again changes nothing or"
           + " finishes an apply that stopped midway. 409 when the plan is out of date, the level is"
-          + " above accept, rows break a new rule, the change is refused, or another apply runs.")
+          + " above accept, rows break a new rule, the change is refused, dependencies prevent a"
+          + " drop, or the model needs reconciliation.")
   public ApiResponse<ApplyService.Applied> apply(@RequestBody String content,
       @RequestParam(required = false) Integer base,
       @RequestParam(required = false) ModelDiff.Level accept) {
@@ -77,6 +82,25 @@ public class ModelController {
   public ApiResponse<ApplyService.Applied> rollback(@PathVariable String model,
       @RequestParam Integer base, @RequestParam(required = false) ModelDiff.Level accept) {
     return ApiResponse.success(service.rollback(model, actor(), base, accept));
+  }
+
+  @PostMapping("/{model}/resume")
+  @Operation(summary = "Finish the apply of a model that stopped before it finished",
+      description = "Runs the last apply again, with the file, the renames and the level it was"
+          + " started with, so the file is not needed. 409 when the model has no apply that"
+          + " stopped, the run kept no file, or another apply runs.")
+  public ApiResponse<ApplyService.Applied> resume(@PathVariable String model) {
+    return ApiResponse.success(service.resume(model, actor()));
+  }
+
+  @PostMapping("/{model}/abandon")
+  @Operation(summary = "Give up the apply of a model that stopped before it finished",
+      description = "Brings the tables back to the running version. What the stopped apply added"
+          + " is dropped with its rows, and what it dropped does not come back. A model whose"
+          + " first apply stopped has no version, so its schema and tables are dropped. 409 when"
+          + " the model has no apply that stopped or another apply runs.")
+  public ApiResponse<ApplyService.Applied> abandon(@PathVariable String model) {
+    return ApiResponse.success(service.abandon(model, actor()));
   }
 
   @GetMapping("/{model}/runs")

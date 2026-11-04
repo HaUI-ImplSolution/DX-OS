@@ -23,11 +23,13 @@ import HistoryIcon from "@mui/icons-material/History";
 import LayersOutlinedIcon from "@mui/icons-material/LayersOutlined";
 import { formatDateTime, timeAgo } from "../shell/format";
 import {
+  abandonModel,
   getVersion,
   listApplied,
   listRuns,
   listVersions,
   planRollback,
+  resumeModel,
   rollbackModel,
   type AppliedModel,
   type AppliedVersion,
@@ -57,12 +59,15 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
   const [summaries, setSummaries] = useState<Record<string, ModelSummary | null>>({});
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<string | null>(null);
+  const [working, setWorking] = useState<string | null>(null);
+  const [giveUp, setGiveUp] = useState<AppliedModel | null>(null);
+  const [problem, setProblem] = useState<string | null>(null);
 
   useEffect(() => {
     listApplied().then(
       (loaded) => {
         setModels(loaded);
-        loaded.forEach((model) =>
+        loaded.filter((model) => model.version > 0).forEach((model) =>
           getVersion(model.model, model.version).then(
             (version) => setSummaries((current) => ({ ...current, [model.model]: summarize(version.content) })),
             () => undefined,
@@ -79,6 +84,22 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
       onOpen(model.model, version.content, model.version);
     } catch (e) {
       setError(message(e));
+    }
+  };
+
+  // Finishes or gives up the apply of a model that stopped before it finished.
+  const settle = async (model: AppliedModel, action: typeof resumeModel, done: string) => {
+    setWorking(model.model);
+    setProblem(null);
+    try {
+      await action(model.model);
+      setGiveUp(null);
+      onChanged(done);
+    } catch (e) {
+      setGiveUp(null);
+      setProblem(message(e));
+    } finally {
+      setWorking(null);
     }
   };
 
@@ -108,6 +129,11 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
 
   return (
     <Box>
+      {problem && (
+        <Alert severity="error" onClose={() => setProblem(null)} sx={{ mb: 2 }}>
+          {problem}
+        </Alert>
+      )}
       <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))" }}>
         {models.map((model) => {
           const summary = summaries[model.model];
@@ -117,10 +143,20 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
                 <Typography variant="h6" noWrap>
                   {modelTitle(model.model)}
                 </Typography>
-                <Chip size="small" color="primary" label={`Phiên bản ${model.version}`} />
+                <Box sx={{ display: "flex", gap: 0.75 }}>
+                  {model.held && <Chip size="small" color="warning" label="Đang dừng dở" />}
+                  <Chip size="small" color="primary" label={model.version > 0 ? `Phiên bản ${model.version}` : "Chưa có phiên bản"} />
+                </Box>
               </Box>
+              {model.held && (
+                <Alert severity="warning" sx={{ py: 0 }}>
+                  {model.version > 0
+                    ? `Lần áp dụng gần nhất dừng giữa chừng nên người dùng chưa vào được mô hình này. Tiếp tục để hoàn tất, hoặc hủy bỏ để đưa các bảng về phiên bản ${model.version}.`
+                    : "Lần áp dụng đầu tiên dừng giữa chừng nên mô hình chưa dùng được. Tiếp tục để hoàn tất, hoặc hủy bỏ để xóa những gì lần đó đã tạo."}
+                </Alert>
+              )}
               <Typography variant="body2" color="text.secondary">
-                Áp dụng {timeAgo(model.applied_at)}
+                {model.version > 0 ? "Áp dụng" : "Bắt đầu áp dụng"} {timeAgo(model.applied_at)}
                 <Tooltip title={`${formatDateTime(model.applied_at)} · người dùng ${model.applied_by}`}>
                   <span> · bởi {applier(model)}</span>
                 </Tooltip>
@@ -138,13 +174,30 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
                     {summary.entities.length} thực thể · {summary.roles} vai · {summary.units} đơn vị
                   </Typography>
                 </>
-              ) : (
+              ) : model.version > 0 ? (
                 <Skeleton height={48} />
-              )}
-              <Box sx={{ display: "flex", gap: 1, mt: "auto", pt: 0.5 }}>
-                <Button variant="contained" onClick={() => open(model)}>
-                  Sửa mô hình
-                </Button>
+              ) : null}
+              <Box sx={{ display: "flex", gap: 1, mt: "auto", pt: 0.5, flexWrap: "wrap" }}>
+                {model.held && (
+                  <>
+                    <Button
+                      variant="contained"
+                      color="warning"
+                      disabled={working === model.model}
+                      onClick={() => settle(model, resumeModel, `Đã hoàn tất việc áp dụng ${model.model}`)}
+                    >
+                      Tiếp tục áp dụng
+                    </Button>
+                    <Button color="error" disabled={working === model.model} onClick={() => setGiveUp(model)}>
+                      Hủy bỏ
+                    </Button>
+                  </>
+                )}
+                {model.version > 0 && (
+                  <Button variant={model.held ? "outlined" : "contained"} onClick={() => open(model)}>
+                    Sửa mô hình
+                  </Button>
+                )}
                 <Button startIcon={<HistoryIcon />} onClick={() => setHistory(model.model)}>
                   Lịch sử
                 </Button>
@@ -153,12 +206,45 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
           );
         })}
       </Box>
-      {history && <HistoryDialog model={history} onClose={() => setHistory(null)} onChanged={onChanged} />}
+      {giveUp && (
+        <Dialog open onClose={() => setGiveUp(null)} maxWidth="sm" fullWidth>
+          <DialogTitle>Hủy bỏ lần áp dụng dở của {modelTitle(giveUp.model)}?</DialogTitle>
+          <DialogContent>
+            <Typography variant="body2">
+              {giveUp.version > 0
+                ? `Các bảng được đưa về phiên bản ${giveUp.version}. Cột và bảng mà lần áp dụng dở đã thêm sẽ bị xóa cùng dữ liệu trong đó, còn những gì nó đã xóa thì không quay lại. Hãy sao lưu bằng deploy/backup.sh trước nếu cần.`
+                : "Lược đồ và các bảng mà lần áp dụng đầu tiên đã tạo sẽ bị xóa cùng dữ liệu trong đó."}
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setGiveUp(null)}>Giữ nguyên</Button>
+            <Button
+              color="error"
+              variant="contained"
+              disabled={working === giveUp.model}
+              onClick={() => settle(giveUp, abandonModel, `Đã hủy bỏ lần áp dụng dở của ${giveUp.model}`)}
+            >
+              Hủy bỏ lần áp dụng
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
+      {history && <HistoryDialog model={history} hasVersion={(models.find((m) => m.model === history)?.version ?? 0) > 0} onClose={() => setHistory(null)} onChanged={onChanged} />}
     </Box>
   );
 }
 
-function HistoryDialog({ model, onClose, onChanged }: { model: string; onClose: () => void; onChanged: (message: string) => void }) {
+function HistoryDialog({
+  model,
+  hasVersion,
+  onClose,
+  onChanged,
+}: {
+  model: string;
+  hasVersion: boolean;
+  onClose: () => void;
+  onChanged: (message: string) => void;
+}) {
   const [versions, setVersions] = useState<AppliedVersion[]>([]);
   const [runs, setRuns] = useState<Run[]>([]);
   const [plan, setPlan] = useState<Plan | null>(null);
@@ -166,9 +252,9 @@ function HistoryDialog({ model, onClose, onChanged }: { model: string; onClose: 
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    listVersions(model).then(setVersions, (e: unknown) => setError(message(e)));
+    if (hasVersion) listVersions(model).then(setVersions, (e: unknown) => setError(message(e)));
     listRuns(model).then(setRuns, (e: unknown) => setError(message(e)));
-  }, [model]);
+  }, [model, hasVersion]);
 
   const back = async () => {
     setBusy(true);

@@ -75,7 +75,7 @@ public final class ModelDiff {
     for (Entity old : before.values()) {
       if (!target.entities().containsKey(old.name())) {
         diff.changes.add(new Change(Level.LOSS, "DROP_ENTITY", old.name(), null,
-            "An entity cannot be renamed; its table and rows are removed"));
+            "An entity cannot be renamed; its table, rows and attached files are removed"));
         diff.allowedDrops.add(target.schema() + "." + old.name());
         diff.touchedProcesses.add(old.name());
       }

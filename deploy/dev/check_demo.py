@@ -108,11 +108,16 @@ def main():
     rt.check("C8 the record goes on to the decision", status == 200 and body["data"]["status"] == "approved", f"{status} {body}")
 
     # 5 and 7. Adding and renaming a field with data; a rule the data breaks.
+    # A model owns its roles, so the copy brings roles of its own.
     demo = ONESTOP.replace("name: onestop\n", "name: onestop_demo\n")
+    for role in ("STUDENT", "OFFICER", "SUPERVISOR"):
+        demo = demo.replace(role, f"DEMO_{role}")
     apply_model(admin, demo)
+    kc.ensure_user("demo_stud", ["DEMO_STUDENT"])
+    demo_stu = kc.token("demo_stud")
     path = "/data/onestop_demo/request"
     for n in range(3):
-        kc.api(stu1, "POST", path, {**REQUEST, "reason": "Trùng lặp" if n < 2 else "Khác"})
+        kc.api(demo_stu, "POST", path, {**REQUEST, "reason": "Trùng lặp" if n < 2 else "Khác"})
     changed = demo.replace("      reason: {type: text, label: Lý do, required: true}",
                            "      content: {type: text, label: Lý do, required: true, renamed_from: reason}\n      phone: {type: text, label: Điện thoại}")
     status, body = kc.api(admin, "POST", "/models/plan", changed, YAML)
@@ -122,7 +127,7 @@ def main():
     status, body = kc.api(admin, "POST", f"/models/apply?base={the_plan['fromVersion']}&accept=MIGRATION", changed, YAML)
     rt.check("C5 apply without rebuilding", status == 200 and body["data"]["status"] == "applied", f"{status} {body}")
     running = body["data"]["version"] if status == 200 else the_plan["fromVersion"]
-    status, body = kc.api(stu1, "GET", f"{path}?size=50")
+    status, body = kc.api(demo_stu, "GET", f"{path}?size=50")
     rows = body["data"]["items"]
     rt.check("C5 the data is intact under the new name", len(rows) >= 3 and all("content" in r and "reason" not in r for r in rows) and
              sum(1 for r in rows if r["content"] == "Trùng lặp") == 2, str(rows)[:200])

@@ -46,6 +46,8 @@ export interface AppliedModel {
   applied_by: string;
   applied_by_name: string | null;
   applied_at: string;
+  // An apply of the model runs or stopped before it finished, so its users cannot use it.
+  held: boolean;
 }
 
 export interface AppliedVersion {
@@ -150,6 +152,9 @@ const readable = (plan: Plan): Plan => ({
 export const planModel = async (text: string) => readable(await request<Plan>("/models/plan", yaml("POST", text)));
 export const applyModel = (text: string, base?: number, accept?: string) =>
   request<Applied>(`/models/apply${query({ base, accept })}`, yaml("POST", text));
+
+export const resumeModel = (model: string) => request<Applied>(`/models/${model}/resume`, { method: "POST" });
+export const abandonModel = (model: string) => request<Applied>(`/models/${model}/abandon`, { method: "POST" });
 
 export const planRollback = async (model: string) =>
   readable(await request<Plan>(`/models/${model}/rollback/plan`, { method: "POST" }));

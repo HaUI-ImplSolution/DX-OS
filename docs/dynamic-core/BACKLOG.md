@@ -27,31 +27,34 @@ Mốc dưới đây là dự kiến.
 | Việc | Ghi chú |
 |---|---|
 | CLI `dxos` chưa có `plan` và `apply` | Áp dụng mô hình qua bảng điều khiển hoặc REST |
-| **Lỗ hổng: tên vai dành riêng của nền tảng** | Bộ kiểm không cấm mô hình khai báo vai `ADMIN` (vai quản trị nền tảng: áp dụng, đổi và quay lui mọi mô hình) hay vai mặc định của Keycloak (`offline_access`, `uma_authorization`, `default-roles-dxos`); gán vai đó cho người dùng của một ứng dụng là trao cho họ quyền quản trị cả nền tảng. Sửa cùng bộ kiểm vai trùng tên ở phần 5 |
 | Dịch vụ `ai/` | Chưa nằm trong compose; chỉ tìm kiếm tri thức có nguồn, chưa có hỏi đáp sinh câu trả lời vì chưa có mô hình ngôn ngữ đạt tiêu chuẩn mở; dữ liệu huấn luyện của mô hình embedding chưa kiểm theo định nghĩa của OSI |
 | Chưa cắt bớt service bằng compose profile | Mô hình không dùng thành phần nào vẫn phải chạy thành phần đó |
 | Hành động hoàn tất | Chỉ có `add_to_group` và `remove_from_group`; nhóm Keycloak phải có sẵn, thiếu thì thông điệp được thử lại mãi và xem được ở tab Hàng đợi sự kiện; trường người dùng hoặc nhóm để trống thì thao tác bị bỏ qua, không để lại dấu vết |
 | Tệp đính kèm | Xóa đối tượng trong kho lỗi thì chỉ ghi log, không thử lại nên có thể còn đối tượng mồ côi |
-| Nhiều bản sao của backend | Danh sách mô hình đang chạy chỉ nạp lại ở bản sao vừa áp dụng; chạy hai bản sao thì bản kia giữ mô hình cũ đến khi khởi động lại |
+| Nhiều bản sao của backend | Trạng thái giữ mô hình và danh sách mô hình đang chạy chỉ nằm trong bộ nhớ của từng bản sao; chạy hai bản sao thì bản kia giữ mô hình cũ đến khi khởi động lại; hướng làm: bản sao khác định kỳ đối chiếu `apply_run` và `model_version` rồi nạp lại |
 | Trường kiểu `user` | Giá trị chưa được đối chiếu với người dùng có thật trong Keycloak |
 | Hạn xử lý | Bộ quét quá hạn chỉ ghi dòng lịch sử; chưa có người nghe để nhắc qua chat |
-| Đổi họ mẫu của một thực thể | Bị từ chối, kể cả khi mọi hồ sơ đã ở trạng thái cuối; muốn đổi hình dạng quy trình thì thêm thực thể mới; `docs/dynamic-core/README.md` còn mô tả việc chuyển hồ sơ đang chạy bằng `ProcessMigrationService`, chưa làm |
+| Đổi họ mẫu của một thực thể | Bị từ chối, kể cả khi mọi hồ sơ đã ở trạng thái cuối; muốn đổi hình dạng quy trình thì thêm thực thể mới |
 | Họ `work_item` | Hồ sơ ở trạng thái đã xử lý xong chờ người nộp xác nhận, chưa tự đóng sau một thời gian |
-| Bảng điều khiển | Điền form viết lại tệp và bỏ chú thích giữa tệp; trình soạn kéo theo khoảng 15 MB mã tĩnh, chỉ tải khi mở; phiên bản áp dụng trước khi có cột `applied_by_name` hiện mã người dùng thay cho tên |
+| Bảng điều khiển | Điền form viết lại tệp và bỏ chú thích giữa tệp; trình soạn kéo theo khoảng 15 MB mã tĩnh, chỉ tải khi mở; phiên bản áp dụng trước khi có cột `applied_by_name`, và thẻ của mô hình chưa có phiên bản, hiện mã người dùng rút gọn thay cho tên |
 | Lịch đặt chỗ | Chỉ xem và tạo theo khoảng chọn, chưa kéo thả để đổi giờ; tiêu đề lấy từ trường văn bản đầu tiên |
-| Áp dụng đã đổi tên chưa có đường hủy | Phải sửa nguyên nhân rồi chạy lại đúng tệp đó |
 | Xác nhận mất dữ liệu không tự sao lưu | Người vận hành chạy `deploy/backup.sh` trước |
 | Đổi thành viên đơn vị | Chỉ có hiệu lực sau khi người đó lấy token mới |
 | Ngôn ngữ giao diện | Chỉ có tiếng Việt; thông báo backend thêm sau mà chưa có mẫu ở `backendMessages.ts` hiện nguyên văn tiếng Anh, vài thông báo lỗi còn tên trạng thái hoặc hành động dạng mã, và ô chọn ngày giờ theo ngôn ngữ của trình duyệt |
+| Mô hình có lần áp dụng dở | Bị đóng với người dùng ngay cả khi lỗi xảy ra trước mọi thay đổi; người dùng chỉ thấy mô hình biến khỏi menu, không có lời giải thích |
+| Hủy bỏ lần áp dụng dở | Đưa bảng về phiên bản đang chạy: cột và bảng đã thêm bị xóa cùng dữ liệu, thứ đã xóa không quay lại; mô hình chưa có phiên bản thì xóa cả schema và bảng của lần áp dụng đầu; vai và nhóm đã tạo ở Keycloak vẫn còn |
+| Đổi luật quy trình khi còn hồ sơ mở | Người xử lý, hạn xử lý, quyền tự quyết, hành động hoàn tất và đặt chỗ chỉ đổi được khi thực thể không còn hồ sơ đang xử lý, vì hồ sơ chưa lưu phiên bản mô hình; phải hoàn tất hoặc rút hết hồ sơ trước; chuyển hồ sơ đang chạy bằng `ProcessMigrationService` chưa làm |
+| Lần áp dụng dở ghi trước migration `V6` | Không có nội dung kèm theo nên không dùng được Tiếp tục hay Hủy bỏ; áp dụng lại tệp |
+| Vai còn lại ở Keycloak khi mô hình bỏ vai | Lõi chưa ghi vai thuộc mô hình nào, nên vai và người giữ nó vẫn còn trong Keycloak sau khi mô hình bỏ vai hoặc hủy một lần áp dụng dở; mô hình khác khai báo lại tên đó thì có sẵn những người giữ; dọn tay ở Keycloak; hướng làm: vai thuộc riêng từng mô hình (client role, phần 6) hoặc bảng ghi vai thuộc mô hình nào để từ chối vai đã bỏ |
+| Hai mô hình đã lưu dùng chung vai | Mô hình lưu từ trước chốt chặn vẫn chạy và chỉ có dòng log lỗi lúc khởi động, nên người giữ vai chung vẫn vào được dữ liệu của cả hai cho đến khi đổi tên vai; mô hình đó không áp dụng thêm được cho đến lúc ấy; bản 2.0.0 chưa triển khai nên chưa có dữ liệu như vậy |
+| Xóa thực thể | Bảng, hồ sơ, tệp đính kèm và đối tượng trong kho bị xóa cùng; lịch sử Flowable đã kết thúc, audit và outbox của thực thể còn lại; thực thể còn hồ sơ đang chạy quy trình phải hoàn tất hoặc rút hết hồ sơ trước |
+| Khe hở khi bắt đầu áp dụng | Yêu cầu vào trước khi mô hình bị giữ vẫn chạy song song với bước đổi bảng, và hồ sơ tạo giữa lúc kiểm và lúc áp dụng không được tính vào số hồ sơ đang mở; Postgres tự chặn truy vấn khi đổi bảng; hướng làm: mỗi yêu cầu lấy khóa chia sẻ theo mô hình, lần áp dụng lấy khóa độc quyền |
+| Xem trước không giữ khóa | Kế hoạch có thể cũ khi người khác áp dụng xen vào; bước áp dụng kiểm lại mọi điều kiện |
 
 ## 4. Rủi ro kỹ thuật hiện tại
 
-| Rủi ro | Tác động hiện tại |
-|---|---|
-| Kích hoạt phiên bản không nguyên tử | Đổi schema, cập nhật Keycloak, lưu phiên bản và nạp registry không có cùng điểm commit. Lỗi sau khi schema đã đổi làm API tiếp tục dùng mô hình cũ; lỗi khi nạp registry xảy ra sau khi lượt áp dụng đã ghi `done`, nên áp dụng lại cùng tệp trả `unchanged` mà không nạp lại |
-| Hồ sơ đang chạy không gắn phiên bản mô hình | Bản ghi và biến quy trình chỉ lưu tên mô hình, không lưu phiên bản. `CHANGE_HANDLER`, `CHANGE_DEADLINE` và `CHANGE_COMPLETION` được coi là `SAFE`, trong khi task Flowable giữ `handlerRole` cũ còn API, hạn xử lý và hành động hoàn tất đọc mô hình mới; một hồ sơ có thể bị hai phiên bản quy tắc chi phối |
-| Xóa thực thể bỏ lại tài nguyên của hồ sơ | `DROP_ENTITY` ở mức `LOSS` xóa bảng nhưng không hủy process instance Flowable, xóa dòng tệp đính kèm hay xóa đối tượng trong SeaweedFS. Các task, siêu dữ liệu và tệp còn lại không còn đường truy cập hoặc dọn dẹp từ mô hình mới |
-| Vai và đơn vị không được cách ly theo mô hình | Vai realm và group Keycloak dùng tên toàn cục, còn API chỉ so tên trong token; nếu hai mô hình độc lập khai báo trùng tên, người có vai của mô hình thứ nhất được nhận quyền truy cập, xử lý và hành động của mô hình thứ hai, thành viên đơn vị của mô hình thứ nhất được đọc hoặc sửa các dòng cùng tên đơn vị của mô hình thứ hai, và danh sách người có thể giao việc cũng lấy nhầm người từ vai hoặc group dùng chung; lúc áp dụng, đối tượng Keycloak đã tồn tại được tái sử dụng mà không có namespace theo mô hình, kiểm tra xung đột giữa các mô hình hay khai báo chia sẻ tường minh |
+Không còn rủi ro nào chưa được xử lý hoặc ghi ở phần khác.
+Lõi không có giao dịch chung giữa PostgreSQL, Keycloak, Flowable và SeaweedFS; mỗi bước chạy lại được, và lần áp dụng dở được tiếp tục hoặc hủy bỏ (xem phần 3).
 
 ## 5. Chưa kiểm thử
 
@@ -60,27 +63,29 @@ Mốc dưới đây là dự kiến.
 | Khởi động bản mới trên dữ liệu của `v1.1.1` | Không có đường nâng cấp dữ liệu |
 | Hệ thống đã áp dụng mô hình trước bản này | Cột `handle_by` và chỉ mục của nó chỉ vào bảng khi mô hình được áp dụng với nội dung khác; đặt lại stack hoặc đổi mô hình một lần |
 | Mức tài nguyên của toàn bộ stack | Cần đo trước khi chọn cấu hình VPS |
+| Hai bản sao backend chạy cùng lúc | Chưa thử |
+| Dòng log lỗi khi hai mô hình đã lưu dùng chung vai | Không dựng được tình huống qua API vì bộ kiểm chặn từ đầu |
+| Đổi luật quy trình khi còn hồ sơ mở trên giao diện | Chỉ có kiểm tự động của API |
 
-## 5. Đã quyết, chờ làm
+## 6. Đã quyết, chờ làm
 
 | Việc | Đã quyết |
 |---|---|
 | Tài khoản người dùng | Không khai báo trong tệp mô hình: tệp mô hình là cấu trúc và nằm trong git, người dùng là dữ liệu có email và mật khẩu; tài khoản nằm ở Keycloak |
-| Vai tách theo ứng dụng, đơn vị dùng chung | Hiện mọi mô hình tạo vai và nhóm cùng tên trong một realm, nên hai ứng dụng khai báo cùng tên vai sẽ dùng chung quyền. Đơn vị là cơ cấu tổ chức nên dùng chung giữa các ứng dụng; vai phải thuộc riêng từng ứng dụng và quản lý riêng. Làm trước: bộ kiểm từ chối vai trùng tên với vai của mô hình khác đang chạy. Cách tách hẳn đem vào buổi thảo luận; ứng viên là client role của Keycloak, mỗi mô hình một client |
+| Vai tách theo ứng dụng, đơn vị dùng chung | Mọi mô hình tạo vai và nhóm cùng tên trong một realm; bộ kiểm từ chối vai trùng với mô hình khác và vai nền tảng `ADMIN` đã có. Đơn vị là cơ cấu tổ chức nên dùng chung giữa các ứng dụng; vai phải thuộc riêng từng ứng dụng và quản lý riêng. Cách tách hẳn đem vào buổi thảo luận; ứng viên là client role của Keycloak, mỗi mô hình một client |
 | Tab Người dùng trong bảng điều khiển | Danh sách người dùng với vai theo từng ứng dụng và đơn vị; tạo người dùng với mật khẩu tạm; gán, gỡ vai và đơn vị; khóa, mở; đặt lại mật khẩu; xem theo ứng dụng ai giữ vai nào. Viết ít mã nhất, dùng tối đa Keycloak: lõi chỉ mở API ADMIN mỏng trên Admin REST API, phần Keycloak đã làm tốt (chính sách mật khẩu, MFA, phiên, đăng nhập bằng nhà cung cấp ngoài) để lại cho Keycloak và mở bằng link |
 
-## 6. Đề xuất từ rà soát đề thi và hướng thiết kế, chưa quyết
+## 7. Đề xuất từ rà soát đề thi và hướng thiết kế, chưa quyết
 
 Đối chiếu đề, thể lệ, các nguyên lý của đề và những gì [`README.md`](./README.md) đã hứa với mã hiện tại.
 
 | Thiếu sót | Căn cứ | Đề xuất |
 |---|---|---|
 | Tiêu chí 1 chưa đạt trọn: chưa có một lệnh nhận tệp mô hình | "Thế nào là đạt": chạy một lệnh với tệp mô hình trên máy sạch | `dxos apply` hoặc `dxos start <tệp>`, làm cùng `plan` và `apply` trong buổi thảo luận; nên xong trước khi phát hành |
-| 324 kiểm tra E2E chỉ chạy tay, CI không chạy | Nguyên tắc "kiểm thử từ góc người dùng" của README; 50 điểm kho mã | Job CI dựng stack bằng bộ cài từ gói của commit rồi chạy bảy script ở `deploy/dev` |
+| 387 kiểm tra E2E chỉ chạy tay, CI không chạy | Nguyên tắc "kiểm thử từ góc người dùng" của README; 50 điểm kho mã | Job CI dựng stack bằng bộ cài từ gói của commit rồi chạy tám script ở `deploy/dev` |
 | Trục sự kiện chỉ phát sự kiện hoàn tất ở trạng thái cuối, chưa có bên ngoài nào nghe được | README: mọi thay đổi hồ sơ và bước quy trình phát ra sự kiện; đề: kiến trúc hướng sự kiện, chống ốc đảo dữ liệu | Phát sự kiện cho mọi bước và mọi thay đổi hồ sơ, thêm webhook; đem vào buổi thảo luận phần mở rộng |
 | Ứng dụng Tầng 2 mới phủ P của H-P-D-I | Đề: ứng dụng minh họa nằm trong không gian H-P-D-I | D: trang thống kê dựng từ metadata (theo trạng thái, quá hạn, đơn vị), hoặc Superset với dataset sinh từ mô hình qua vai `report_ro` đang có. H: thông báo việc mới và nhắc hạn qua webhook hoặc email. I: để sau như đã định |
-| Áp dụng dở không tự thử lại hay quay lui | README "tự phục hồi"; nguyên lý Zero-Trust gắn GitOps, tự phục hồi | Tự chạy lại lần áp dụng dở khi dịch vụ khởi động, hoặc nút tiếp tục ở bảng điều khiển; không làm thì sửa README cho đúng |
-| Hồ sơ không lưu phiên bản mô hình lúc bắt đầu | README: quy trình đọc tham số theo phiên bản mô hình của hồ sơ | Làm cùng việc chuyển hồ sơ đang chạy bằng `ProcessMigrationService`, hoặc sửa README cho đúng hiện trạng |
+| Hồ sơ không lưu phiên bản mô hình lúc bắt đầu | Luật quy trình chỉ đổi được khi không còn hồ sơ mở, nên chưa cần | Làm cùng việc chuyển hồ sơ đang chạy bằng `ProcessMigrationService` khi cần đổi luật ngay cả lúc còn hồ sơ mở |
 | Người dùng cuối không tự đổi mật khẩu, bật OTP hay xem phiên | Dùng tối đa Keycloak | Link "Tài khoản của tôi" tới Account Console của Keycloak trong menu người dùng; gần như không viết mã |
-| Chưa đo tài nguyên của toàn stack | Đối tượng SME, bộ cài càng nhẹ càng tốt; cũng là mục ở phần 4 | Đo bằng `docker stats` khi chạy bảy script, ghi số vào README và `doctor.sh` |
+| Chưa đo tài nguyên của toàn stack | Đối tượng SME, bộ cài càng nhẹ càng tốt; cũng là mục ở phần 5 | Đo bằng `docker stats` khi chạy tám script, ghi số vào README và `doctor.sh` |
 | Mẫu nghiệp vụ nằm trong image của dịch vụ lõi | Nguyên tắc "lõi không biết về nghiệp vụ" | Chuyển thư viện mẫu ra thư mục riêng của bản cài; ưu tiên thấp |

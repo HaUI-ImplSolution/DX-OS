@@ -54,6 +54,18 @@ def main():
     status, body = apply(admin, V1)
     rt.check("T7-01 first apply goes through the same path", status == 200 and body["data"]["version"] == 1, f"{status} {body}")
     rt.check("T7-01 report role reads the new tables", rt.psql("select count(*) from m_shop.order", user="report_ro", password=kc.ENV["REPORT_DB_PASSWORD"])[0] == 0)
+    collision = """format: 0
+name: other
+roles:
+  - name: SELLER
+entities:
+  item:
+    fields:
+      title: {type: text, required: true}
+    access: {SELLER: all}
+"""
+    collision_plan = plan(admin, collision)
+    rt.check("T7-01 role reused by another model is refused", collision_plan["action"] == "rejected" and any("SELLER" in rejection for rejection in collision_plan["rejections"]), str(collision_plan))
     again = plan(admin, V1)
     rt.check("T7-01 plan of the same file is empty", again["action"] == "unchanged" and again["statements"] == [], str(again))
 
@@ -178,9 +190,13 @@ def main():
     v9 = v8.replace("process: {family: approval, handler: SELLER}", "process: {family: approval, handler: SELLER, allow_self_decision: true}")
     the_plan = plan(admin, v9)
     rt.check("T7-08 open records reported", the_plan["openRecords"].get("order") == 4, str(the_plan["openRecords"]))
+    rt.check("T7-08 process rule change with open records is refused", the_plan["action"] == "rejected" and any("CHANGE_SELF_DECISION" in rejection for rejection in the_plan["rejections"]), str(the_plan["rejections"]))
     untouched = v8.replace("  category:\n    fields:\n      title: {type: text, required: true}", "  category:\n    label: Danh mục\n    fields:\n      title: {type: text, required: true}")
     other_plan = plan(admin, untouched)
     rt.check("T7-08 a change elsewhere reports no open records", other_plan["openRecords"] == {}, str(other_plan["openRecords"]))
+    for record_id in ids[1:]:
+        status, _ = kc.api(buyer, "POST", f"{BASE}/{record_id}/actions/withdraw", {})
+        rt.check("T7-08 open record can be closed before process rule change", status == 200, str(status))
     status, body = apply(admin, v9, base=5)
     rt.check("T7-08 apply", status == 200 and body["data"]["version"] == 6, f"{status} {body}")
     status, body = kc.api(admin, "POST", "/models/shop/rollback/plan")

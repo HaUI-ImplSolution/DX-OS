@@ -100,6 +100,16 @@ def ensure_client():
     assert status in (201, 409), status
 
 
+def client_uuid(model):
+    status, found = kc("GET", f"/clients?clientId=dxos-m-{model}")
+    return found[0]["id"] if status == 200 and found else None
+
+
+def client_role_names(model):
+    status, roles = kc("GET", f"/clients/{client_uuid(model)}/roles")
+    return [r["name"] for r in roles] if status == 200 else []
+
+
 def ensure_user(name, roles, groups=()):
     status, found = kc("GET", f"/users?username={name}&exact=true")
     if not found:
@@ -113,9 +123,18 @@ def ensure_user(name, roles, groups=()):
                    {"type": "password", "value": "Test1234!", "temporary": False})
     assert status == 204, status
     for role in roles:
-        status, role_repr = kc("GET", f"/roles/{role}")
-        assert status == 200, (role, status, role_repr)
-        status, _ = kc("POST", f"/users/{user_id}/role-mappings/realm", [role_repr])
+        if "/" in role:
+            # "model/ROLE" is a role of that model, held in the client of the model.
+            model, name = role.split("/", 1)
+            uuid = client_uuid(model)
+            assert uuid, f"the model {model} is not applied"
+            status, role_repr = kc("GET", f"/clients/{uuid}/roles/{name}")
+            assert status == 200, (role, status, role_repr)
+            status, _ = kc("POST", f"/users/{user_id}/role-mappings/clients/{uuid}", [role_repr])
+        else:
+            status, role_repr = kc("GET", f"/roles/{role}")
+            assert status == 200, (role, status, role_repr)
+            status, _ = kc("POST", f"/users/{user_id}/role-mappings/realm", [role_repr])
         assert status == 204, status
     for group in groups:
         status, found = kc("GET", f"/groups?search={group}&exact=true")

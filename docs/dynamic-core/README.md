@@ -281,6 +281,9 @@ Bảng điều khiển thuộc tầng 2, nằm ở tuyến `/console` của ứn
 - **Màn hình kế hoạch:** khác biệt, mức rủi ro, dòng vi phạm và xác nhận thay đổi mất dữ liệu.
 - **Lịch sử áp dụng:** từng phiên bản và từng bước của mỗi lần áp dụng, kèm quay về phiên bản trước.
 - **Sơ đồ quy trình:** trạng thái và hành động của họ mẫu mà thực thể dùng, chỉ để xem.
+- **Người dùng:** tìm người dùng, xem vai theo từng ứng dụng, gán và gỡ vai và đơn vị, tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu; mỗi thay đổi được ghi vào nhật ký với người thực hiện.
+  Tài khoản không khai báo trong tệp mô hình: tệp là cấu trúc và nằm trong git, còn người dùng là dữ liệu có email và mật khẩu, nên tài khoản nằm ở Keycloak.
+  Tab chỉ mở API mỏng trên Keycloak: chính sách mật khẩu, MFA, phiên và đăng nhập bằng nhà cung cấp ngoài để Keycloak lo.
 
 Bảng điều khiển đọc và ghi đúng tệp mô hình, và tệp luôn là nguồn sự thật.
 Giao diện cho người dùng cuối do bộ dựng sinh từ metadata, đủ dùng, nhất quán và được chăm chút về hình thức.
@@ -311,7 +314,7 @@ Thêm năng lực mới nghĩa là thêm provider, không phải sửa lõi.
 
 | Năng lực                        | Thành phần                              | Đội tự viết                                                 |
 | ----------------------------------- | ------------------------------------------- | ----------------------------------------------------------------- |
-| Định danh, SSO                  | Keycloak                                  | Sinh vai từ mô hình                                          |
+| Định danh, SSO                  | Keycloak                                  | Sinh client và vai từ mô hình, quản trị người dùng           |
 | Cổng API                         | APISIX                                    | Sinh route khi cần                                             |
 | Dữ liệu có cấu trúc          | PostgreSQL, pgschema                     | Sinh schema và ràng buộc; mỗi mô hình một schema         |
 | API dữ liệu, quyền từng dòng | API chung trong dịch vụ lõi            | Đọc mô hình, kiểm token Keycloak, dựng truy vấn an toàn |
@@ -709,7 +712,6 @@ Số sao và giấy phép lấy từ GitHub API ngày 2026-11-02, trừ khi có 
 - **Họ mẫu tùy biến:** các khối engine cung cấp cho tệp BPMN, cách kiểm tệp khi áp dụng, và phạm vi của giao diện mở rộng từ mẫu.
 - **Quy trình trong kế hoạch áp dụng:** cách lưu phiên bản mô hình trên bản ghi và khi nào cần định nghĩa quy trình mới.
 - **Quyền với phần điều khiển:** ai được xem kế hoạch, ai được áp dụng, ai được xác nhận thay đổi mất dữ liệu.
-- **Nhiều mô hình và Keycloak:** dùng chung một realm hay mỗi mô hình một realm, và đặt tên vai sao cho không trùng.
 - **Hợp đồng metadata:** Tầng 2 đọc metadata từ API nào và ở dạng gì.
 - **Hợp đồng API chung:** đường dẫn, bộ lọc, phân trang, quan hệ giữa các thực thể và định dạng lỗi.
 - **Trục sự kiện:** cách phát sự kiện vào outbox, cách giao và thử lại.

@@ -34,11 +34,11 @@ def up(service, extra_env=None):
 
 def main():
     # T5-11
-    kc.ensure_user("keeper1", ["KEEPER"])
+    kc.ensure_user("keeper1", ["equipment/KEEPER"])
     up("backend", {"ENGINE_FAULT_AFTER_DECISION": "true"})
     assert rt.wait_api(), "backend did not come back"
     keeper = kc.token("keeper1")
-    kc.ensure_user("req1", ["BORROWER"])
+    kc.ensure_user("req1", ["equipment/BORROWER"])
     status, body = kc.api(kc.token("req1"), "POST", "/data/equipment/loan", {"device": 1, "reason": "fault", "from_at": "2026-11-12T08:00:00+07:00"})
     loan = body["data"]["id"]
     status, body = kc.api(keeper, "POST", f"/data/equipment/loan/{loan}/actions/approve", {})
@@ -66,7 +66,7 @@ def main():
     code, version = rt.psql("select count(*) from engine.model_version where model='recovery'")
     rt.check("T5-05 version not stored", version == "0", version)
     code, steps = rt.psql("select s.kind||':'||s.status from engine.apply_step s join engine.apply_run r on r.id=s.run_id where r.model='recovery' and s.status='failed'")
-    rt.check("T5-05 history names the failed step", steps == "ENSURE_ROLE:failed", steps)
+    rt.check("T5-05 history names the failed step", steps == "ENSURE_CLIENT:failed", steps)
     up("keycloak")
     end = time.time() + 180
     while time.time() < end:
@@ -87,8 +87,7 @@ def main():
     status, body = kc.api(admin, "GET", "/models/recovery/runs")
     statuses = [r["status"] for r in body["data"]]
     rt.check("T5-05 history shows the runs", statuses == ["done", "done", "failed"], str(statuses))
-    status, roles = kc.kc("GET", "/roles?search=RECOVERY_ROLE")
-    rt.check("T5-05 role created once", len([r for r in roles if r["name"] == "RECOVERY_ROLE"]) == 1)
+    rt.check("T5-05 role created once", kc.client_role_names("recovery").count("RECOVERY_ROLE") == 1)
 
     # T5-21
     race = TEMPORARY_MODEL.replace("name: recovery", "name: race").replace("RECOVERY_ROLE", "RACE_ROLE")

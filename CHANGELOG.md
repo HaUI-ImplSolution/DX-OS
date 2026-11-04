@@ -28,16 +28,21 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Thông báo khi trình quét virus không trả lời và lỗi chung của tệp mô hình có bản tiếng Việt.
 - `check_demo.py` kiểm tệp EICAR bị chặn khi bật quét virus.
 - Màn hình giám sát gọi tên chức năng và thao tác theo API của lõi, dò dịch vụ AI ở `/api/v1/health`, và không miễn đường dẫn chậm nào theo mặc định.
-- Vai của mô hình không được trùng vai của mô hình khác, và vai `ADMIN` của nền tảng không khai báo được; lỗi của tệp mô hình báo theo dòng và cột.
-- Mọi lần áp dụng chạy lần lượt, kể cả giữa các mô hình, nên hai mô hình không cùng qua kiểm tra vai.
+- Vai `ADMIN` của nền tảng không khai báo được; lỗi của tệp mô hình báo theo dòng và cột.
+- Mỗi mô hình có một Keycloak client riêng `dxos-m-<mô hình>` (bước `ENSURE_CLIENT`) chứa vai của mô hình; hai mô hình dùng được cùng tên vai, người giữ vai của mô hình này không vào được mô hình kia, và token mang vai ở `resource_access`.
+- Các lần áp dụng của hai mô hình khác nhau chạy song song; mỗi mô hình vẫn chỉ có một lần áp dụng chạy tại một thời điểm.
+- Tài khoản dịch vụ `dxos-backend-admin` có thêm `manage-clients`, `view-clients` và `query-clients` của `realm-management`; realm đã import từ trước cần cấp các quyền này ở Keycloak Admin Console.
+- Tab Người dùng ở bảng điều khiển (ADMIN): danh sách có tìm kiếm và phân trang, vai theo từng ứng dụng, gán và gỡ vai và đơn vị, tạo người dùng với mật khẩu tạm do hệ thống sinh, khóa và mở, đặt lại mật khẩu.
+  API ở `/api/v1/users`; chỉ gán được vai và đơn vị mà một mô hình đang chạy khai báo, vai `ADMIN` không có đường nào qua đây, và ADMIN không khóa được chính mình.
+- Mỗi thay đổi về tài khoản ghi một bản ghi `audit_log` với người thực hiện, tên đăng nhập của người bị đổi và vai hoặc đơn vị: `USER_CREATED`, `USER_LOCKED`, `USER_UNLOCKED`, `USER_PASSWORD_RESET`, `USER_ROLE_GRANTED`, `USER_ROLE_REVOKED`, `USER_UNIT_ADDED`, `USER_UNIT_REMOVED`; mật khẩu không bao giờ được ghi.
+- `audit_log` ghi và đọc được trên backend của lõi dynamic: entity ghi rõ schema `public`.
 - Mô hình bị giữ từ lúc bắt đầu áp dụng đến khi registry nạp xong; lỗi giữa chừng giữ mô hình lại kể cả sau khi khởi động lại, và `GET /api/v1/models` có trường `held`.
 - Mỗi lần áp dụng lưu tệp, các lần đổi tên và mức đã xác nhận (migration `V6` của engine); `POST /api/v1/models/{model}/resume` hoàn tất lần dừng dở mà không cần tệp, `POST /api/v1/models/{model}/abandon` đưa các bảng về phiên bản đang chạy.
 - Thẻ mô hình ở bảng điều khiển hiện nhãn "Đang dừng dở" kèm nút Tiếp tục áp dụng và Hủy bỏ.
 - Mô hình mà lần áp dụng đầu dừng dở hiện ở danh sách với phiên bản 0; Hủy bỏ xóa schema và bảng mà lần đó đã tạo.
 - Thay đổi người xử lý, hạn xử lý, quyền tự quyết, hành động hoàn tất hay đặt chỗ bị từ chối khi thực thể còn hồ sơ đang xử lý.
 - Xóa thực thể bị từ chối khi còn hồ sơ đang chạy quy trình; khi xóa, tệp đính kèm của thực thể được dọn cùng (bước `DROP_FILES`).
-- Registry ghi log lỗi khi hai mô hình đã lưu dùng chung vai.
-- `check_guards.py` kiểm các chốt chặn trên; `check_process.py`, `check_booking.py` và `check_demo.py` dùng vai riêng cho từng mô hình.
+- `check_guards.py` kiểm các chốt chặn trên và việc cách ly vai giữa các mô hình; `check_users.py` kiểm quản trị người dùng, bản ghi audit và sự kiện quản trị của Keycloak.
 
 ## [2.0.0] - 2026-11-03
 

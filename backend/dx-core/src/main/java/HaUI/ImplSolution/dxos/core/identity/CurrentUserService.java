@@ -4,6 +4,7 @@ package HaUI.ImplSolution.dxos.core.identity;
 import HaUI.ImplSolution.dxos.core.api.user.UserContext;
 import HaUI.ImplSolution.dxos.core.security.AppRoles;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.security.core.Authentication;
@@ -60,6 +61,16 @@ public class CurrentUserService implements UserContext {
   @Override
   public boolean hasRole(String role) {
     return roles().contains(role);
+  }
+
+  @Override
+  public Set<String> clientRoles(String clientId) {
+    Map<String, Object> access = getCurrentJwt().getClaim("resource_access");
+    if (access == null || !(access.get(clientId) instanceof Map<?, ?> client)
+        || !(client.get("roles") instanceof List<?> roles)) {
+      return Set.of();
+    }
+    return roles.stream().map(String::valueOf).collect(Collectors.toUnmodifiableSet());
   }
 
   @Override

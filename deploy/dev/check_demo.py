@@ -49,10 +49,10 @@ def main():
     rt.check("C1 one command applies the model file", status == 200 and body["data"]["status"] in ("applied", "unchanged"), f"{status} {body}")
     status, _ = kc.api(None, "GET", "/meta/models")
     rt.check("C1 the API wants a login", status == 401, str(status))
-    kc.ensure_user("demo_stu1", ["STUDENT"])
-    kc.ensure_user("demo_stu2", ["STUDENT"])
-    kc.ensure_user("demo_dt", ["OFFICER"], ["DAO_TAO"])
-    kc.ensure_user("demo_ct", ["OFFICER"], ["CTSV"])
+    kc.ensure_user("demo_stu1", ["onestop/STUDENT"])
+    kc.ensure_user("demo_stu2", ["onestop/STUDENT"])
+    kc.ensure_user("demo_dt", ["onestop/OFFICER"], ["DAO_TAO"])
+    kc.ensure_user("demo_ct", ["onestop/OFFICER"], ["CTSV"])
     stu1, stu2, dt, ct = (kc.token(u) for u in ("demo_stu1", "demo_stu2", "demo_dt", "demo_ct"))
     status, body = kc.api(stu1, "GET", "/meta/models")
     rt.check("C1 a student logs in and the metadata builds the screens",
@@ -108,12 +108,10 @@ def main():
     rt.check("C8 the record goes on to the decision", status == 200 and body["data"]["status"] == "approved", f"{status} {body}")
 
     # 5 and 7. Adding and renaming a field with data; a rule the data breaks.
-    # A model owns its roles, so the copy brings roles of its own.
+    # The copy uses the same role names; they are held per model.
     demo = ONESTOP.replace("name: onestop\n", "name: onestop_demo\n")
-    for role in ("STUDENT", "OFFICER", "SUPERVISOR"):
-        demo = demo.replace(role, f"DEMO_{role}")
     apply_model(admin, demo)
-    kc.ensure_user("demo_stud", ["DEMO_STUDENT"])
+    kc.ensure_user("demo_stud", ["onestop_demo/STUDENT"])
     demo_stu = kc.token("demo_stud")
     path = "/data/onestop_demo/request"
     for n in range(3):
@@ -144,8 +142,8 @@ def main():
     support = rt.read(f"{TEMPLATES}/support_desk.yaml")
     status, body = apply_model(admin, support)
     rt.check("C6 a work item model applies", status == 200, f"{status} {body}")
-    kc.ensure_user("demo_req", ["REQUESTER"])
-    kc.ensure_user("demo_agent", ["AGENT"])
+    kc.ensure_user("demo_req", ["support/REQUESTER"])
+    kc.ensure_user("demo_agent", ["support/AGENT"])
     req, agent = kc.token("demo_req"), kc.token("demo_agent")
     status, made = kc.api(req, "POST", "/data/support/ticket", {"title": "Máy chiếu hỏng", "priority": "Cao"})
     ticket = made["data"]["id"]

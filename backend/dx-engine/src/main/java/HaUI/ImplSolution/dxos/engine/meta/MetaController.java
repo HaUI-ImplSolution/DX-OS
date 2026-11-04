@@ -46,8 +46,8 @@ public class MetaController {
   public ApiResponse<List<ModelMeta>> models() {
     return ApiResponse.success(registry.all().stream()
         .map(model -> new ModelMeta(model.name(), model.units(),
-            model.entities().values().stream().filter(entity -> data.access(entity).read())
-                .map(entity -> describe(entity)).toList()))
+            model.entities().values().stream().filter(entity -> data.access(model, entity).read())
+                .map(entity -> describe(model, entity)).toList()))
         .filter(model -> !model.entities().isEmpty()).toList());
   }
 
@@ -57,11 +57,11 @@ public class MetaController {
     Model m = registry.require(model);
     Entity e = m.entity(entity)
         .orElseThrow(() -> new ResourceNotFoundException("Entity " + entity + " not found"));
-    return ApiResponse.success(describe(e));
+    return ApiResponse.success(describe(m, e));
   }
 
-  private EntityMeta describe(Entity entity) {
-    Access access = data.access(entity);
+  private EntityMeta describe(Model model, Entity entity) {
+    Access access = data.access(model, entity);
     List<FieldMeta> fields =
         entity.fields().values().stream()
             .map(f -> new FieldMeta(f.name(), f.label(), f.type().key(),
@@ -77,6 +77,7 @@ public class MetaController {
                 entity.process().definition().actions());
     String unitField = entity.unitField().map(Model.Field::name).orElse(null);
     return new EntityMeta(entity.name(), entity.label(), fields, process != null, process,
-        unitField, access.read(), access.write(), data.canHandle(entity), data.canAssign(entity));
+        unitField, access.read(), access.write(), data.canHandle(model, entity),
+        data.canAssign(model, entity));
   }
 }

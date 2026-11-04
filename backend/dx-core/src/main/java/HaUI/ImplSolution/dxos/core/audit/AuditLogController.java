@@ -30,7 +30,10 @@ public class AuditLogController {
   @Operation(summary = "Search the audit log, newest first",
       description = "ADMIN only (403 otherwise). actor is a user id or username; action is an"
           + " upper-case name such as ACCESS_DENIED, AUTH_FAILED, SERVER_ERROR (a 5xx),"
-          + " ADMIN_ACTION_FAILED (an administrator's change refused with 409 or 422);"
+          + " ADMIN_ACTION_FAILED (an administrator's change refused with 409 or 422), or one of the"
+          + " changes an administrator made to accounts (USER_CREATED, USER_LOCKED, USER_UNLOCKED,"
+          + " USER_PASSWORD_RESET, USER_ROLE_GRANTED, USER_ROLE_REVOKED, USER_UNIT_ADDED,"
+          + " USER_UNIT_REMOVED, with the username and the role or unit in metadata);"
           + " outcome is SUCCESS, DENIED or FAILED (400 for another value); from is inclusive and to"
           + " exclusive, both ISO-8601 instants. size is capped at 200.")
   public ApiResponse<PageResponse<AuditLogResponse>> search(

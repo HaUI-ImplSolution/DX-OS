@@ -68,7 +68,7 @@ def main():
     status, body = kc.api(admin, "GET", "/models/templates")
     templates = body["data"] if status == 200 else []
     rt.check("T9-06 templates", status == 200 and len(templates) >= 6 and all(t["content"].startswith("#") or "format" in t["content"] for t in templates), str(status))
-    kc.ensure_user("plain9", ["EMPLOYEE"])
+    kc.ensure_user("plain9", ["itaccess/EMPLOYEE"])
     status, _ = kc.api(kc.token("plain9"), "GET", "/models/templates")
     rt.check("T9-06 other roles are refused", status == 403, str(status))
 
@@ -84,9 +84,9 @@ def main():
     rt.check("T9-06 a version that does not exist", status == 404, str(status))
 
     # Rooms and bookings.
-    kc.ensure_user("mgr9", ["MANAGER"])
-    kc.ensure_user("guest9", ["GUEST"])
-    kc.ensure_user("guest9b", ["GUEST"])
+    kc.ensure_user("mgr9", ["rooms/MANAGER"])
+    kc.ensure_user("guest9", ["rooms/GUEST"])
+    kc.ensure_user("guest9b", ["rooms/GUEST"])
     manager, guest, guest2 = kc.token("mgr9"), kc.token("guest9"), kc.token("guest9b")
     status, made = kc.api(manager, "POST", ROOM, {"code": "P101", "name": "Phòng 101", "seats": 30})
     room = made["data"]["id"]
@@ -143,12 +143,12 @@ def main():
     rt.check("T9-04 a completed booking frees the slot", status == 200, f"{status}")
 
     # T9-04: a capacity above one allows overlaps up to the capacity.
-    # A model owns its roles, so the second model brings roles of its own.
-    hall = ROOMS.replace("name: rooms", "name: hall").replace("capacity: 1", "capacity: 2").replace("GUEST", "HALL_GUEST").replace("MANAGER", "HALL_MANAGER")
+    # The second model uses the same role names; they are held per model.
+    hall = ROOMS.replace("name: rooms", "name: hall").replace("capacity: 1", "capacity: 2")
     status, body = kc.api(admin, "POST", "/models/apply", hall, YAML)
     rt.check("T9-04 capacity two applies", status == 200, f"{status} {body}")
-    kc.ensure_user("mgrhall9", ["HALL_MANAGER"])
-    kc.ensure_user("guesthall9", ["HALL_GUEST"])
+    kc.ensure_user("mgrhall9", ["hall/MANAGER"])
+    kc.ensure_user("guesthall9", ["hall/GUEST"])
     hall_manager, hall_guest = kc.token("mgrhall9"), kc.token("guesthall9")
     status, made = kc.api(hall_manager, "POST", "/data/hall/room", {"code": "H1", "name": "Hội trường", "seats": 200})
     hall_room = made["data"]["id"]

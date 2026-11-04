@@ -14,28 +14,28 @@ YAML = rt.YAML
 DESK = """format: 0
 name: desk8
 roles:
-  - name: ASKER8
-  - name: AGENT8
+  - name: ASKER
+  - name: AGENT
     staff: true
 entities:
   ticket:
     label: Yêu cầu hỗ trợ
     fields:
       title: {type: text, required: true}
-    access: {ASKER8: own, AGENT8: all}
-    process: {family: work_item, handler: AGENT8, deadline: 1h}
+    access: {ASKER: own, AGENT: all}
+    process: {family: work_item, handler: AGENT, deadline: 1h}
   leave:
     label: Đơn nghỉ
     fields:
       reason: {type: text, required: true}
-    access: {ASKER8: own, AGENT8: all}
-    process: {family: approval, handler: AGENT8}
+    access: {ASKER: own, AGENT: all}
+    process: {family: approval, handler: AGENT}
 """
 BAD = DESK.split("entities:")[0] + """entities:
   ticket:
     fields:
       title: {type: text, required: true}
-    access: {ASKER8: own, AGENT8: all}
+    access: {ASKER: own, AGENT: all}
     process: %s
 """
 TICKETS = "/data/desk8/ticket"
@@ -68,10 +68,10 @@ def main():
 
     # T8-02: the process block is checked and errors point at its line.
     for case, process, needle in [
-        ("unknown family", "{family: nope, handler: AGENT8}", "line 12"),
-        ("unknown key", "{family: work_item, handler: AGENT8, speed: fast}", "line 12"),
-        ("bad deadline", "{family: work_item, handler: AGENT8, deadline: soon}", "line 12"),
-        ("zero deadline", "{family: work_item, handler: AGENT8, deadline: 0h}", "line 12"),
+        ("unknown family", "{family: nope, handler: AGENT}", "line 12"),
+        ("unknown key", "{family: work_item, handler: AGENT, speed: fast}", "line 12"),
+        ("bad deadline", "{family: work_item, handler: AGENT, deadline: soon}", "line 12"),
+        ("zero deadline", "{family: work_item, handler: AGENT, deadline: 0h}", "line 12"),
         ("handler not a role", "{family: work_item, handler: NOBODY}", "line 12"),
     ]:
         status, body = kc.api(admin, "POST", "/models/plan", BAD % process, YAML)
@@ -80,9 +80,9 @@ def main():
     # T8-01: two families run in one model without changing the code of the core.
     status, body = kc.api(admin, "POST", "/models/apply", DESK, YAML)
     rt.check("T8-01 apply", status == 200 and body["data"]["status"] == "applied", f"{status} {body}")
-    asker_id = kc.ensure_user("asker8", ["ASKER8"])
-    kc.ensure_user("agent8", ["AGENT8"])
-    kc.ensure_user("agent9", ["AGENT8"])
+    asker_id = kc.ensure_user("asker8", ["desk8/ASKER"])
+    kc.ensure_user("agent8", ["desk8/AGENT"])
+    kc.ensure_user("agent9", ["desk8/AGENT"])
     asker, agent, agent2 = kc.token("asker8"), kc.token("agent8"), kc.token("agent9")
     status, body = kc.api(agent, "GET", "/meta/models")
     entities = {e["name"]: e for model in body["data"] if model["name"] == "desk8" for e in model["entities"]}
@@ -176,8 +176,8 @@ def main():
         kc.kc("POST", "/groups", {"name": "GIT_USERS"})
         status, found = kc.kc("GET", "/groups?search=GIT_USERS&exact=true")
     git_group = found[0]["id"]
-    employee_id = kc.ensure_user("emp8", ["EMPLOYEE"])
-    kc.ensure_user("itadmin8", ["IT_ADMIN"])
+    employee_id = kc.ensure_user("emp8", ["itaccess/EMPLOYEE"])
+    kc.ensure_user("itadmin8", ["itaccess/IT_ADMIN"])
     employee, itadmin = kc.token("emp8"), kc.token("itadmin8")
     requests = "/data/itaccess/access_request"
     first = create(employee, requests, {"access_group": "GIT_USERS", "reason": "Làm dự án mới"})
@@ -211,7 +211,7 @@ def main():
     status, body = kc.api(itadmin, "GET", f"{requests}/{first}/files/{file_id}/link")
     fetched = kc.http("GET", body["data"]["url"], raw=True) if status == 200 else (0, "", None)
     rt.check("T8-11 the link downloads the file", status == 200 and fetched[0] == 200 and fetched[1].startswith("%PDF"), f"{status} {fetched[0]}")
-    other = kc.ensure_user("emp8b", ["EMPLOYEE"])
+    other = kc.ensure_user("emp8b", ["itaccess/EMPLOYEE"])
     status, _ = kc.api(kc.token("emp8b"), "GET", f"{requests}/{first}/files")
     rt.check("T8-11 another employee sees nothing", status == 404, str(status))
     status, _ = kc.api(itadmin, "DELETE", f"{requests}/{first}/files/{file_id}")

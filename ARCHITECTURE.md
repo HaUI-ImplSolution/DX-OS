@@ -63,9 +63,10 @@ Mô hình đi qua một đường duy nhất, từ hệ thống rỗng hay từ 
 1. `RENAME_FIELD`: đổi tên cột theo `renamed_from`, cùng ràng buộc và chỉ mục mang tên trường.
 2. `CHANGE_SCHEMA`: pgschema đưa schema `m_<tên mô hình>` về trạng thái đích, gồm bảng, cột hệ thống, ràng buộc, chỉ mục và quyền đọc của `report_ro`.
 3. `DROP_FILES`: xóa dòng và đối tượng tệp đính kèm của thực thể bị bỏ khỏi mô hình.
-4. `ENSURE_ROLE`: vai của mô hình trong Keycloak.
-5. `ENSURE_UNIT`: đơn vị của mô hình, là nhóm trong Keycloak.
-6. `SAVE_VERSION`: lưu nội dung và mã băm; từ đây phiên bản có hiệu lực.
+4. `ENSURE_CLIENT`: client `dxos-m-<mô hình>` trong Keycloak, chỉ để chứa vai và không cho ai đăng nhập.
+5. `ENSURE_ROLE`: vai của mô hình, tạo dưới client đó.
+6. `ENSURE_UNIT`: đơn vị của mô hình, là nhóm trong Keycloak.
+7. `SAVE_VERSION`: lưu nội dung và mã băm; từ đây phiên bản có hiệu lực.
 
 Bảo vệ dữ liệu nằm ở lõi: nếu kế hoạch của pgschema có thao tác xóa bảng hoặc cột mà so sánh mô hình không có, áp dụng dừng lại.
 Mỗi bước chạy lại được an toàn, nên áp dụng bị gián đoạn thì áp dụng lại để làm tiếp; đã đổi tên thì chỉ đúng tệp đó mới hoàn tất được.
@@ -73,11 +74,11 @@ Mỗi bước chạy lại được an toàn, nên áp dụng bị gián đoạn
 
 Trước khi chạy, lõi từ chối:
 
-- vai trùng với vai của mô hình khác, và vai `ADMIN` của nền tảng;
+- vai `ADMIN` của nền tảng;
 - thay đổi người xử lý, hạn xử lý, quyền tự quyết, hành động hoàn tất hay đặt chỗ khi thực thể còn hồ sơ đang xử lý;
 - xóa thực thể còn hồ sơ đang chạy quy trình.
 
-Mọi lần áp dụng chạy lần lượt, một khóa chung của Postgres giữ cho hai mô hình không cùng qua kiểm tra vai.
+Mỗi mô hình có một khóa Postgres riêng cho lần áp dụng, nên các mô hình khác nhau áp dụng song song; vai của mỗi mô hình nằm trong client riêng, nên hai mô hình dùng cùng tên vai không va nhau.
 Mô hình được giữ lại từ bước đầu đến khi registry nạp xong phiên bản mới: người dùng chưa vào được, còn `GET /api/v1/models` báo `held`.
 Một bước lỗi làm lần áp dụng dừng và mô hình vẫn bị giữ, kể cả sau khi backend khởi động lại, vì trạng thái suy ra từ `engine.apply_run`.
 Mỗi lần áp dụng lưu tệp, các lần đổi tên và mức đã xác nhận ở `engine.apply_run`, nên:
@@ -107,7 +108,7 @@ sequenceDiagram
 ```
 
 - **Tên và truy vấn:** tên bảng và cột chỉ lấy từ mô hình đã kiểm, giá trị luôn đi qua tham số; tên trường hay toán tử không có trong mô hình bị từ chối (400).
-- **Quyền:** vai và đơn vị lấy từ token Keycloak; các phạm vi của những vai người gọi có được hợp lại: `all`, `read` chạm mọi dòng, `own` chạm dòng do người gọi tạo, `unit` chạm dòng thuộc đơn vị của người gọi, `assigned` chạm dòng giao cho người gọi.
+- **Quyền:** vai của mô hình lấy từ `resource_access.dxos-m-<mô hình>.roles` của token, đơn vị từ claim `groups`; các phạm vi của những vai người gọi có được hợp lại: `all`, `read` chạm mọi dòng, `own` chạm dòng do người gọi tạo, `unit` chạm dòng thuộc đơn vị của người gọi, `assigned` chạm dòng giao cho người gọi.
   Thực thể con (`owner_via`) xét các phạm vi này trên bản ghi cha, qua nhiều cấp tới thực thể đầu chuỗi, và không gắn được vào bản ghi cha ngoài tầm với (403).
 - **Quy tắc:** bắt buộc, duy nhất và lựa chọn vừa được API kiểm để báo lỗi theo từng trường, vừa là ràng buộc trong cơ sở dữ liệu.
 
@@ -132,7 +133,16 @@ sequenceDiagram
 - Hành động sai trạng thái bị từ chối (409); lỗi sau bước quy trình làm cả hồ sơ, quy trình lẫn dòng lịch sử quay về như cũ.
 - Dịch vụ lõi là kết nối ghi duy nhất vào dữ liệu nghiệp vụ; vai `report_ro` chỉ đọc.
 
-## 6. Dữ liệu
+## 6. Quản trị người dùng và nhật ký
+
+- `UserAdminController` (ADMIN) quản lý tài khoản qua Admin API của Keycloak, bằng tài khoản dịch vụ `dxos-backend-admin`; Keycloak vẫn là nơi giữ tài khoản, mật khẩu và vai.
+- Chỉ gán được vai và đơn vị mà một mô hình đang chạy khai báo (404 với cái khác); vai `ADMIN` của nền tảng không có đường nào qua API này, và ADMIN không khóa được chính mình (409).
+- Mật khẩu tạm do hệ thống sinh, trả về một lần và phải đổi ở lần đăng nhập đầu; không ghi vào log hay audit.
+- Mỗi thay đổi thành công ghi một bản ghi `audit_log` qua `AuditRecorder`: người thực hiện lấy từ token, đối tượng là mã người dùng, chi tiết có tên đăng nhập và mô hình cùng vai hoặc đơn vị.
+  Việc ghi audit lỗi chỉ để lại dòng log, thay đổi vẫn thành công.
+- Thay đổi làm thẳng ở Keycloak Admin Console không đi qua đây; sự kiện quản trị của Keycloak (giữ 90 ngày, ghi tài khoản người thực hiện) là nơi tra cứu.
+
+## 7. Dữ liệu
 
 | Schema | Nội dung |
 |---|---|
@@ -142,17 +152,17 @@ sequenceDiagram
 | `monitor` | Dữ liệu của màn hình giám sát |
 | `keycloak` (cơ sở dữ liệu riêng) | Tài khoản, vai, phiên |
 
-## 7. Triển khai
+## 8. Triển khai
 
 Compose chạy lõi (`postgres`, `keycloak`, `seaweedfs`, `backend`, `apisix`) và Tầng 2 (`frontend`, `portal`, `monitor`); `clamav` bật bằng profile `av`.
 Gateway kiểm token cho mọi route API; các route không kiểm token nằm trong danh sách công khai kiểm bởi `deploy/apisix/check_routes.py`.
 Chi tiết vận hành ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
 
-## 8. Đối chiếu với yêu cầu của đề
+## 9. Đối chiếu với yêu cầu của đề
 
 | Đề yêu cầu | Đáp ứng |
 |---|---|
-| Định danh và SSO | Keycloak, vai sinh từ mô hình |
+| Định danh và SSO | Keycloak, vai sinh từ mô hình và quản trị người dùng ở bảng điều khiển |
 | Cổng API | APISIX kiểm token, giới hạn tốc độ, định tuyến |
 | Dữ liệu có cấu trúc | PostgreSQL, schema và ràng buộc sinh từ mô hình |
 | Dữ liệu phi cấu trúc | SeaweedFS và quét ClamAV ở `dx-core`, gắn vào trường `file` của mô hình |

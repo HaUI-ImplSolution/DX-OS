@@ -6,6 +6,7 @@ import HaUI.ImplSolution.dxos.core.identity.KeycloakAdminClient;
 import HaUI.ImplSolution.dxos.engine.apply.ModelDiff.Change;
 import HaUI.ImplSolution.dxos.engine.apply.ModelDiff.Level;
 import HaUI.ImplSolution.dxos.engine.files.AttachmentCleaner;
+import HaUI.ImplSolution.dxos.engine.registry.ModelClient;
 import HaUI.ImplSolution.dxos.engine.registry.ModelRegistry;
 import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
@@ -71,7 +72,6 @@ public class ApplyService {
   private static final int ERROR_LENGTH = 500;
   private static final int SAMPLE_SIZE = 20;
   private static final String RENAME_STEP = "RENAME_FIELD";
-  private static final String ALL_MODELS_LOCK = "dxos.apply";
   private static final Set<String> PROCESS_RULE_CHANGES =
       Set.of("ADD_PROCESS", "DROP_PROCESS", "CHANGE_HANDLER", "CHANGE_SELF_DECISION",
           "CHANGE_COMPLETION", "CHANGE_BOOKING", "CHANGE_DEADLINE");
@@ -132,7 +132,6 @@ public class ApplyService {
     }
     ModelDiff diff = ModelDiff.between(running == null ? null : running.model(), model, renames);
     List<String> rejections = new ArrayList<>(diff.rejections);
-    rejections.addAll(roleCollisions(model));
     Map<String, Long> openRecords = openRecords(running, diff);
     rejections.addAll(processRuleChangesWithOpenRecords(diff, openRecords));
     rejections.addAll(dropDependencyRejections(model, diff));
@@ -179,10 +178,6 @@ public class ApplyService {
     ModelDiff diff = ModelDiff.between(running == null ? null : running.model(), model, renames);
     if (!diff.rejections.isEmpty()) {
       throw new InvalidStateException(String.join("; ", diff.rejections));
-    }
-    List<String> roleCollisions = roleCollisions(model);
-    if (!roleCollisions.isEmpty()) {
-      throw new InvalidStateException(String.join("; ", roleCollisions));
     }
     List<String> dropRejections = dropDependencyRejections(model, diff);
     if (!dropRejections.isEmpty()) {
@@ -318,24 +313,6 @@ public class ApplyService {
         Level.valueOf((String) row.get("accept")));
   }
 
-  private List<String> roleCollisions(Model model) {
-    Set<String> roles = model.roles().stream().map(Role::name).collect(Collectors.toSet());
-    if (roles.isEmpty()) {
-      return List.of();
-    }
-    List<String> collisions = new ArrayList<>();
-    List<Map<String, Object>> rows = jdbc.queryForList(
-        "SELECT DISTINCT ON (model) model, content FROM engine.model_version WHERE model <> ? "
-            + "ORDER BY model, version DESC",
-        model.name());
-    for (Map<String, Object> row : rows) {
-      Model other = ModelParser.parse((String) row.get("content"));
-      other.roles().stream().map(Role::name).filter(roles::contains).distinct().forEach(
-          role -> collisions.add("Role " + role + " is already used by model " + row.get("model")));
-    }
-    return collisions;
-  }
-
   private static List<String> processRuleChangesWithOpenRecords(ModelDiff diff,
       Map<String, Long> openRecords) {
     return diff.changes.stream().filter(change -> PROCESS_RULE_CHANGES.contains(change.kind()))
@@ -386,9 +363,8 @@ public class ApplyService {
         + "WHERE r.model = ? ORDER BY r.id DESC LIMIT 20", model);
   }
 
-  // One apply at a time. The locks live on their own connection, so they end with the connection if
-  // the service dies, while every step commits on its own. The lock of the model tells which model
-  // is busy; the shared one keeps two models from passing the role check before either has saved.
+  // One apply of a model at a time. The lock lives on its own connection, so it ends with the
+  // connection if the service dies, while every step commits on its own.
   private <T> T exclusively(Model model, Supplier<T> work) {
     String key = "dxos.apply." + model.name();
     return jdbc.execute((ConnectionCallback<T>) connection -> {
@@ -396,14 +372,7 @@ public class ApplyService {
         throw new InvalidStateException("Model " + model.name() + " is being applied right now");
       }
       try {
-        if (!advisoryLock(connection, "pg_try_advisory_lock", ALL_MODELS_LOCK)) {
-          throw new InvalidStateException("Another model is being applied right now");
-        }
-        try {
-          return work.get();
-        } finally {
-          advisoryLock(connection, "pg_advisory_unlock", ALL_MODELS_LOCK);
-        }
+        return work.get();
       } finally {
         advisoryLock(connection, "pg_advisory_unlock", key);
       }
@@ -609,9 +578,12 @@ public class ApplyService {
     diff.changes.stream().filter(change -> "DROP_ENTITY".equals(change.kind()))
         .forEach(change -> steps.add(new Step(new PlannedStep("DROP_FILES", change.entity()),
             () -> attachments.purgeEntity(model.name(), change.entity()))));
+    String client = ModelClient.of(model.name());
+    steps.add(
+        new Step(new PlannedStep("ENSURE_CLIENT", client), () -> keycloak.ensureClient(client)));
     for (Role role : model.roles()) {
       steps.add(new Step(new PlannedStep("ENSURE_ROLE", role.name()),
-          () -> keycloak.ensureRealmRole(role.name(), role.description())));
+          () -> keycloak.ensureClientRole(client, role.name(), role.description())));
     }
     for (Model.Unit unit : model.units()) {
       steps.add(new Step(new PlannedStep("ENSURE_UNIT", unit.name()),

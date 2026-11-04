@@ -55,23 +55,6 @@ public class ModelRegistry {
       }
     }
     models = Map.copyOf(loaded);
-    logSharedRoles(loaded.values());
-  }
-
-  // The apply refuses a role another model uses, but models stored before that check can still
-  // share one, and the people holding it then reach the data of both.
-  private static void logSharedRoles(Collection<Model> all) {
-    Map<String, List<String>> owners = new LinkedHashMap<>();
-    for (Model model : all) {
-      model.roles().forEach(role -> owners
-          .computeIfAbsent(role.name(), name -> new java.util.ArrayList<>()).add(model.name()));
-    }
-    owners.forEach((role, names) -> {
-      if (names.size() > 1) {
-        log.error("Role {} is declared by the models {}; its holders reach the data of all of them",
-            role, names);
-      }
-    });
   }
 
   public synchronized void beginApply(String model) {

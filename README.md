@@ -26,10 +26,12 @@ Phiên bản trước của dự án (hai ứng dụng nghiệp vụ viết tay)
 - Quy tắc chung của mọi quy trình: từ chối và trả lại cần lý do, người nộp sửa rồi nộp lại hoặc rút hồ sơ, người tạo không tự quyết hồ sơ của mình, hồ sơ quá hạn lên đầu hộp việc.
 - Việc làm sau khi duyệt, như thêm người dùng vào nhóm, chạy qua hàng đợi sự kiện và được thử lại khi lỗi.
 - Tệp đính kèm hồ sơ, quét mã độc khi bật.
+- Mỗi mô hình có vai riêng: hai mô hình dùng được cùng một tên vai mà người giữ vai của mô hình này không vào được mô hình kia.
 - Đơn vị khai báo trong mô hình và đồng bộ thành nhóm Keycloak; giao việc, hộp việc và dòng lịch sử của từng hồ sơ.
 - Đổi mô hình khi đã có dữ liệu: xem trước theo mức rủi ro, đổi tên giữ nguyên dữ liệu, báo dòng vi phạm, xác nhận riêng khi mất dữ liệu, quay về phiên bản trước, tiếp tục hoặc hủy bỏ một lần áp dụng dừng giữa chừng.
 - Giao diện react-admin dựng từ metadata, bằng tiếng Việt và có chế độ sáng tối, không có mã riêng cho thực thể nào.
 - Bảng điều khiển cho người triển khai: thư viện mẫu, trình soạn mô hình, xem kế hoạch, áp dụng, lịch sử và quay về, sơ đồ quy trình.
+- Quản trị người dùng ngay trong bảng điều khiển: xem ai giữ vai nào ở từng ứng dụng, gán và gỡ vai và đơn vị, tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu; mỗi thay đổi được ghi lại kèm người thực hiện.
 - Đăng nhập một lần qua Keycloak; có thể bắt quản trị viên nhập thêm mã một lần từ ứng dụng xác thực.
 
 Chưa có: thông báo chat, hỏi đáp bằng AI, báo cáo thống kê.
@@ -73,7 +75,7 @@ print(kc.api(kc.token("admin1"), "POST", "/models/apply", open("backend/dx-engin
 EOF
 ```
 
-Sau đó tạo người dùng với vai `BORROWER` hoặc `KEEPER` trong Keycloak, đăng nhập ở `http://localhost:9080/` và dùng giao diện.
+Sau đó tạo người dùng ở tab Người dùng của `http://localhost:9080/console`, gán vai `BORROWER` hoặc `KEEPER` của mô hình `equipment`, đăng nhập ở `http://localhost:9080/` và dùng giao diện.
 Hướng dẫn kiểm thử đầy đủ ở [`docs/TESTING.md`](./docs/TESTING.md).
 
 ## Tệp mô hình
@@ -136,6 +138,10 @@ entities:
 | `.../{id}/files` | Tải lên, liệt kê, lấy link tải có hạn (`/{fileId}/link`) và gỡ tệp đính kèm |
 | `GET /api/v1/inbox` | Hồ sơ đang chờ người gọi, trên mọi mô hình; `page`, `size` |
 | `GET /api/v1/outbox`, `POST /api/v1/outbox/{id}/retry` | Thông điệp gửi đi theo trạng thái (lỗi, chờ gửi, đã gửi) và thử lại thông điệp chưa gửi (ADMIN) |
+| `GET /api/v1/users`, `/users/options`, `/users/{id}` | Tìm và xem người dùng, vai theo từng mô hình và đơn vị; vai và đơn vị có thể gán (ADMIN) |
+| `PUT`, `DELETE /api/v1/users/{id}/roles/{model}/{role}`, `/units/{unit}` | Gán và gỡ vai của một mô hình, và đơn vị (ADMIN) |
+| `POST /api/v1/users`, `PUT /{id}/enabled`, `POST /{id}/password` | Tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu (ADMIN) |
+| `GET /api/v1/audit-logs` | Nhật ký lần truy cập bị từ chối, lỗi và thay đổi về tài khoản; lọc theo `actor`, `action`, `outcome`, `from`, `to` (ADMIN) |
 
 Mọi phản hồi bọc trong `ApiResponse`; lỗi có `errorCode` ổn định.
 

@@ -134,20 +134,23 @@ def wait_keycloak(seconds=180):
 
 
 def roles_and_holder(admin):
-    # T12-01 to T12-04: a role belongs to one model.
+    # T12-01 to T12-04: the roles of a model are held in the client of that model.
     status, body = apply(admin, OWNER)
     rt.check("T12-01 first model applies", status == 200 and body["data"]["version"] == 1, f"{status} {body}")
+    rt.check("T12-01 its roles live in its own Keycloak client",
+             sorted(kc.client_role_names("ga")) == ["GA_OTHER", "GA_OWNER"], str(kc.client_role_names("ga")))
+    kc.ensure_user("ga_holder", ["ga/GA_OWNER"])
+    holder = kc.token("ga_holder")
 
     taker = OWNER.replace("name: ga\n", "name: gb\n")
-    the_plan = plan(admin, taker)
-    rt.check("T12-02 a role of another model is refused in the plan",
-             the_plan["action"] == "rejected" and any("GA_OWNER" in r and "ga" in r for r in the_plan["rejections"]),
-             str(the_plan["rejections"]))
     status, body = apply(admin, taker)
-    rt.check("T12-02 and in the apply", status == 409, f"{status} {body}")
-    code, schemas = rt.psql("select count(*) from information_schema.schemata where schema_name='m_gb'")
-    code, versions = rt.psql("select count(*) from engine.model_version where model='gb'")
-    rt.check("T12-02 nothing was created for it", schemas == "0" and versions == "0", f"{schemas} {versions}")
+    rt.check("T12-02 a second model may use the same role names", status == 200, f"{status} {body}")
+    status, made = kc.api(holder, "POST", "/data/ga/thing", {"title": "mine"})
+    rt.check("T12-02 the holder works in the model whose client holds the role", status == 200, f"{status} {made}")
+    status, _ = kc.api(holder, "POST", "/data/gb/thing", {"title": "not mine"})
+    rt.check("T12-02 and has no access to the other model with the same role name", status == 403, str(status))
+    status, body = kc.api(holder, "GET", "/meta/models")
+    rt.check("T12-02 nor is the other model offered to them", status == 200 and [m["name"] for m in body["data"]] == ["ga"], str(body)[:200])
 
     reserved = OWNER.replace("name: ga\n", "name: gadmin\n").replace("GA_OWNER", "ADMIN")
     status, body = kc.api(admin, "POST", "/models/plan", reserved, YAML)
@@ -159,22 +162,21 @@ def roles_and_holder(admin):
 
     race = OWNER.replace("GA_OWNER", "GA_RACE").replace("GA_OTHER", "GA_RACE2")
     outcomes = []
-    names = ["gc", "gd"]
     threads = [threading.Thread(target=lambda n=n: outcomes.append(
-        apply(admin, race.replace("name: ga\n", f"name: {n}\n")))) for n in names]
+        apply(admin, race.replace("name: ga\n", f"name: {n}\n")))) for n in ("gc", "gd")]
     for thread in threads:
         thread.start()
     for thread in threads:
         thread.join()
     results = sorted(status for status, _ in outcomes)
-    rt.check("T12-04 two models claiming one role at once: one wins", results == [200, 409], str(results))
+    rt.check("T12-04 two models with the same role names applied at once both go through", results == [200, 200], str(results))
 
 
 def drops(admin):
     # T12-05 to T12-11: dropping an entity.
     status, body = apply(admin, DROP)
     rt.check("T12-05 model with files and processes applies", status == 200, f"{status} {body}")
-    kc.ensure_user("gd_u", ["GD_USER"])
+    kc.ensure_user("gd_u", ["gdrop/GD_USER"])
     user = kc.token("gd_u")
 
     def make(path, title):
@@ -234,9 +236,9 @@ def stopped_apply(admin):
     rt.check("T12-12 model applies", status == 200, f"{status} {body}")
     status, body = apply(admin, ABAN)
     rt.check("T12-12 second model applies", status == 200, f"{status} {body}")
-    kc.ensure_user("gs_u", ["GS_ROLE"])
-    kc.ensure_user("gb_u", ["GB_ROLE"])
-    kc.ensure_user("gd_u", ["GD_USER"])
+    kc.ensure_user("gs_u", ["gstop/GS_ROLE"])
+    kc.ensure_user("gb_u", ["gaban/GB_ROLE"])
+    kc.ensure_user("gd_u", ["gdrop/GD_USER"])
     worker, keeper, other = kc.token("gs_u"), kc.token("gb_u"), kc.token("gd_u")
     status, made = kc.api(worker, "POST", "/data/gstop/item", {"title": "first"})
     rt.check("T12-12 data works", status == 200, str(status))

@@ -76,8 +76,7 @@ def main():
     check("T5-01 tables", tables.split() == ["device", "loan", "loan_note"], tables)
     code, constraints = psql("select count(*) from pg_constraint where conname like 'fk_%' or conname like 'uq_%' or conname like 'ck_%'")
     check("T5-01 constraints", int(constraints) >= 4, constraints)
-    status, role = kc.kc("GET", "/roles/BORROWER")
-    check("T5-01 keycloak role", status == 200)
+    check("T5-01 keycloak client of the model holds its roles", sorted(kc.client_role_names("equipment")) == ["BORROWER", "KEEPER"], str(kc.client_role_names("equipment")))
     status, body = kc.api(admin, "GET", "/models/equipment/runs")
     check("T5-01 history", status == 200 and len(body["data"]) == 1 and body["data"][0]["status"] == "done")
 
@@ -91,8 +90,9 @@ def main():
     check("T5-04 changed file refused", status == 409, f"{status}")
 
     # Users.
-    for user, roles in [("req1", ["BORROWER"]), ("req2", ["BORROWER"]), ("keeper1", ["KEEPER"]),
-                        ("multi1", ["BORROWER", "KEEPER"]), ("none1", [])]:
+    for user, roles in [("req1", ["equipment/BORROWER"]), ("req2", ["equipment/BORROWER"]),
+                        ("keeper1", ["equipment/KEEPER"]),
+                        ("multi1", ["equipment/BORROWER", "equipment/KEEPER"]), ("none1", [])]:
         kc.ensure_user(user, roles)
     req1, req2, keeper, multi, none = (kc.token(u) for u in ("req1", "req2", "keeper1", "multi1", "none1"))
 
@@ -201,7 +201,7 @@ def main():
     # T5-17 (API side): a second model is served without a restart.
     status, body = kc.api(admin, "POST", "/models/apply", read("backend/dx-engine/src/main/resources/templates/notes.yaml"), YAML)
     check("T5-17 second model applied", status == 200, f"{status} {body}")
-    kc.ensure_user("editor1", ["EDITOR"])
+    kc.ensure_user("editor1", ["notes/EDITOR"])
     editor = kc.token("editor1")
     status, body = kc.api(editor, "GET", "/meta/models")
     names = [m["name"] for m in body["data"]]

@@ -79,6 +79,15 @@ else
     fail "COMPOSE_FILE includes the cloudflared overlay but CLOUDFLARE_TUNNEL_TOKEN is blank"
   fi
 
+  scan_host="$(env_value STORAGE_SCAN_HOST)"
+  if [[ -z "$scan_host" ]]; then
+    ok "virus scan of uploads is off (dxos av on, or COMPOSE_PROFILES=av and STORAGE_SCAN_HOST=clamav)"
+  elif [[ "$scan_host" == clamav && ",$(env_value COMPOSE_PROFILES)," != *,av,* ]]; then
+    fail "STORAGE_SCAN_HOST=clamav but COMPOSE_PROFILES has no av: ClamAV would not start and every upload would be refused"
+  else
+    ok "virus scan of uploads is on (clamd at $scan_host)"
+  fi
+
   if docker compose config --quiet >/dev/null 2>&1; then ok "docker compose config is valid"; else fail "docker compose config fails: run it in deploy/ to see why"; fi
 
   echo "Ports"

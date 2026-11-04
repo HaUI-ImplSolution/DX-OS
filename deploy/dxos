@@ -12,6 +12,7 @@
 #                              install a newer release (default: the latest) and update the images
 #   dxos doctor                check this machine and deploy/.env
 #   dxos backup [args]         encrypted backup, see backup.sh
+#   dxos av [on|off]           turn the virus scan of uploads (ClamAV, about 1 GB of RAM) on or off, or show it
 #   dxos uninstall [--purge]   remove the containers and the dxos command; --purge also deletes the data
 #   dxos version | help
 set -euo pipefail
@@ -210,6 +211,51 @@ cmd_start() {
   return "$model_status"
 }
 
+# Whether the virus scan is on, and whether clamd answers when the stack runs.
+av_state() {
+  local id health
+  if [[ -z "$(env_value STORAGE_SCAN_HOST)" ]]; then
+    echo "Virus scan of uploads: off (dxos av on turns it on)"
+    return
+  fi
+  id="$(compose ps -q clamav 2>/dev/null || true)"
+  if [[ -z "$id" ]]; then
+    echo "Virus scan of uploads: on, ClamAV is not running (uploads are refused until it answers)"
+    return
+  fi
+  health="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$id")"
+  echo "Virus scan of uploads: on, ClamAV is $health"
+}
+
+# Sets the profile av and the scan host together, then starts or stops ClamAV and restarts the
+# backend when the stack runs, so that the backend reads the new setting.
+cmd_av() {
+  local profiles running=false
+  profiles="$(env_value COMPOSE_PROFILES)"
+  [[ -n "$(compose ps -q --status running backend)" ]] && running=true
+  case "${1:-}" in
+    on)
+      [[ ",$profiles," == *,av,* ]] || set_env COMPOSE_PROFILES "${profiles:+$profiles,}av"
+      set_env STORAGE_SCAN_HOST clamav
+      if $running; then
+        compose up -d --no-build --pull missing clamav
+        compose up -d --no-build --no-deps --force-recreate backend
+        wait_ready
+      fi ;;
+    off)
+      set_env COMPOSE_PROFILES "$(tr ',' '\n' <<<"$profiles" | grep -vx av | paste -sd, - || true)"
+      set_env STORAGE_SCAN_HOST ""
+      if $running; then
+        compose --profile av rm -sf clamav
+        compose up -d --no-build --no-deps --force-recreate backend
+        wait_ready
+      fi ;;
+    "") ;;
+    *) die "usage: dxos av [on|off]" ;;
+  esac
+  av_state
+}
+
 cmd_admin() {
   [[ -n "$(compose ps -q keycloak)" ]] || die "DX-OS is not running; run dxos start first"
   set +e
@@ -228,6 +274,7 @@ cmd_status() {
   else
     print_addresses
   fi
+  echo; av_state
 }
 
 cmd_update() {
@@ -297,10 +344,11 @@ main() {
     update) cmd_update "$@" ;;
     doctor) "$DEPLOY_DIR/doctor.sh" ;;
     backup) "$DEPLOY_DIR/backup.sh" "$@" ;;
+    av) cmd_av "$@" ;;
     uninstall) cmd_uninstall "$@" ;;
     version) echo "DX-OS $(env_value DXOS_IMAGE_TAG) in $PREFIX" ;;
-    help|-h|--help) sed -n '3,16p' "$self" ;;
-    *) echo "dxos: unknown command: $command" >&2; sed -n '3,16p' "$self" >&2; exit 2 ;;
+    help|-h|--help) sed -n '3,17p' "$self" ;;
+    *) echo "dxos: unknown command: $command" >&2; sed -n '3,17p' "$self" >&2; exit 2 ;;
   esac
 }
 

@@ -82,12 +82,28 @@ do_verify() {
   echo "==> Restoring the latest database dump into a scratch Postgres"
   restic -- dump latest /stage/postgres.sql.gz | gunzip \
     | docker exec -i "$name" psql -U postgres -q -v ON_ERROR_STOP=1 >/dev/null
-  local databases tables
+  local databases tables models missing records
+  sql() { docker exec "$name" psql -U postgres -d "$POSTGRES_DB" -tAc "$1"; }
   databases="$(docker exec "$name" psql -U postgres -tAc "SELECT string_agg(datname, ' ' ORDER BY datname) FROM pg_database WHERE NOT datistemplate")"
-  tables="$(docker exec "$name" psql -U postgres -d "$POSTGRES_DB" -tAc "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public'")"
+  tables="$(sql "SELECT count(*) FROM information_schema.tables
+    WHERE table_schema NOT IN ('pg_catalog', 'information_schema')")"
   echo "Databases restored: $databases"
   echo "Tables in $POSTGRES_DB: $tables"
   [[ "$tables" -gt 0 ]] || { echo "Verify FAILED: the business database is empty." >&2; exit 1; }
+  if [[ "$(sql "SELECT to_regclass('engine.model_version') IS NOT NULL")" != t ]]; then
+    echo "No model applied yet (engine.model_version is missing)."
+    echo "Verify OK."
+    return
+  fi
+  # Every model with an applied version keeps its records in schema m_<model>.
+  models="$(sql "SELECT count(DISTINCT model) FROM engine.model_version")"
+  missing="$(sql "SELECT coalesce(string_agg(DISTINCT v.model, ' '), '') FROM engine.model_version v
+    WHERE NOT EXISTS (SELECT 1 FROM information_schema.tables t WHERE t.table_schema = 'm_' || v.model)")"
+  records="$(sql "SELECT coalesce(sum((xpath('/row/c/text()', query_to_xml(format('SELECT count(*) AS c FROM %I.%I',
+    table_schema, table_name), false, true, '')))[1]::text::bigint), 0)
+    FROM information_schema.tables WHERE table_schema LIKE 'm\_%' AND table_type = 'BASE TABLE'")"
+  echo "Applied models: $models, records in their tables: $records"
+  [[ -z "$missing" ]] || { echo "Verify FAILED: no tables for the models: $missing" >&2; exit 1; }
   echo "Verify OK."
 }
 

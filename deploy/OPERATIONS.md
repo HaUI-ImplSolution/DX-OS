@@ -191,11 +191,12 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 |---|---|
 | `dxos start [tệp]` | Chạy `doctor.sh`, tải image còn thiếu, khởi động, chờ mọi dịch vụ sẵn sàng; realm chưa có ai vai `ADMIN` thì tạo tài khoản `admin` với mật khẩu tạm in ra một lần; có tệp mô hình thì đưa tệp vào và in kết quả (xem dưới); rồi in các địa chỉ |
 | `dxos stop` | Dừng các container, giữ dữ liệu |
-| `dxos status` | Trạng thái từng dịch vụ và các địa chỉ |
+| `dxos status` | Trạng thái từng dịch vụ, các địa chỉ và trạng thái quét mã độc |
 | `dxos logs [dịch vụ]` | Theo dõi log |
 | `dxos admin` | Đặt mật khẩu tạm mới cho `admin`, tạo tài khoản nếu chưa có |
 | `dxos update [vX.Y.Z]` | Cài bản mới hơn (mặc định bản mới nhất): thay tệp chạy, giữ `.env` và `data/`, thêm biến mới, rồi chạy `update.sh` |
 | `dxos doctor`, `dxos backup` | Chạy `doctor.sh`, `backup.sh` |
+| `dxos av [on\|off]` | Bật hoặc tắt quét mã độc tệp tải lên (xem dưới); không có đối số thì in trạng thái quét |
 | `dxos uninstall [--purge]` | Xóa container và lệnh `dxos`; `--purge` xóa cả dữ liệu và thư mục cài, phải gõ xác nhận |
 
 ### Tệp mô hình lúc khởi động
@@ -247,6 +248,7 @@ Nó kiểm Docker và Compose, RAM, ổ đĩa, `deploy/.env` và các cổng.
 `.env` được so với các biến `${NAME:?}` mà Compose bắt buộc phải có: biến thiếu hoặc để trống bị báo `FAIL`.
 Biến có trong `.env` mà `.env.example` không liệt kê bị báo `WARN`.
 Các cổng đã bị chiếm chỉ được kiểm khi stack chưa chạy.
+Quét mã độc được báo là bật hay tắt; `STORAGE_SCAN_HOST=clamav` mà `COMPOSE_PROFILES` không có `av` bị báo `FAIL`, vì ClamAV sẽ không chạy và mọi tệp tải lên bị từ chối.
 Thoát với mã 1 khi có `FAIL`, nên chạy trước `./update.sh` và `docker compose up -d` trên máy chủ.
 
 ## Tài nguyên và số bản sao
@@ -293,11 +295,14 @@ cd deploy
 ./backup.sh snapshots    # liệt kê các bản
 ```
 
+`verify` in số mô hình đã áp dụng và tổng số dòng trong các bảng `m_*` của bản dump.
+Mô hình có phiên bản trong `engine.model_version` mà không có bảng nào trong schema `m_<mô hình>` làm `verify` báo `FAILED` kèm tên mô hình.
+
 Kho nằm ở `deploy/backups` (đổi bằng `BACKUP_DIR`) hoặc ở một kho restic từ xa (`BACKUP_REPOSITORY`, ví dụ `s3:...`).
 Kho cùng máy với dữ liệu không cứu được khi mất máy, nên chép nó ra ngoài (rsync, rclone) hoặc dùng kho từ xa.
 Chạy theo lịch bằng cron, ví dụ mỗi đêm: `0 2 * * * cd /đường/dẫn/deploy && ./backup.sh >> backups/backup.log 2>&1`, và chạy `verify` mỗi tuần.
 Máy chủ dùng tệp env khác `.env` thì đặt `ENV_FILE=.env.dev ./backup.sh`.
-CI chạy một lượt backup và verify trên Postgres thật ở job `backup-drill`.
+CI chạy một lượt backup và verify trên Postgres thật có một mô hình hai dòng ở job `backup-drill`.
 
 **Khôi phục** (máy mới hoặc sau khi mất dữ liệu):
 
@@ -314,7 +319,8 @@ Khi bật, mọi tệp đính kèm được ClamAV quét trước khi xử lý v
 Tệp nhiễm bị từ chối với HTTP 422 `ERR_FILE_INFECTED` và lần chặn được ghi vào `audit_log` (`FILE_INFECTED`, kèm tên mẫu mã độc).
 ClamAV không trả lời thì tệp không được lưu và người dùng nhận HTTP 503 `ERR_SCAN_UNAVAILABLE`, vì tệp chưa quét không được coi là sạch.
 Tắt mặc định vì ClamAV cần khoảng 1 GB RAM.
-Bật: bỏ dấu `#` ở `COMPOSE_PROFILES=av` và `STORAGE_SCAN_HOST=clamav` trong `deploy/.env`, rồi `docker compose up -d`.
+Bật bằng `dxos av on`, tắt bằng `dxos av off`: lệnh sửa `COMPOSE_PROFILES` và `STORAGE_SCAN_HOST` trong `.env`, rồi khởi động hoặc gỡ ClamAV và tạo lại backend nếu stack đang chạy.
+Không dùng `dxos` thì bỏ dấu `#` ở `COMPOSE_PROFILES=av` và `STORAGE_SCAN_HOST=clamav` trong `deploy/.env`, rồi `docker compose up -d`.
 Chữ ký virus tải về lần đầu mất vài phút và được giữ trong volume `clamav_data`.
 Mỗi lần clamd nạp lại chữ ký (hằng ngày và sau khi khởi động) nó không quét được khoảng 10 giây, và người dùng gặp 503 trong lúc đó; chờ rồi tải lại.
 Thử bằng tệp EICAR (chuỗi kiểm thử chuẩn của ngành diệt virus): tệp chỉ gồm đúng chuỗi đó, đổi tên `.pdf` rồi đính vào một yêu cầu; `deploy/dev/check_demo.py` tự làm bước này khi `STORAGE_SCAN_HOST` có giá trị.

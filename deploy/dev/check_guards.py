@@ -5,6 +5,7 @@ a role, dropping an entity that has files or running work, and an apply that sto
 Run after check_change.py on the same stack:
     python3 deploy/dev/check_guards.py
 """
+import os
 import sys
 import threading
 import time
@@ -121,6 +122,11 @@ def upload(token, base, record, name, data):
             f"Content-Type: application/pdf\r\n\r\n").encode() + data + f"\r\n--{boundary}--\r\n".encode()
     return kc.api(token, "POST", f"{base}/{record}/files?field=evidence", body,
                   f"multipart/form-data; boundary={boundary}")
+
+
+def with_backend(env):
+    rt.sh(rt.COMPOSE + ["up", "-d", "backend"], env=dict(os.environ, **env))
+    assert rt.wait_api(), "backend did not come back"
 
 
 def wait_keycloak(seconds=180):
@@ -249,17 +255,24 @@ def stopped_apply(admin):
     moved = ABAN.replace("title: {type: text, required: true}",
                          "name: {type: text, required: true, renamed_from: title}\n      extra: {type: text}")
 
+    first_one = FIRST.format(name="gfirst", role="GF_ONE")
+    first_two = FIRST.format(name="gfirst2", role="GF_TWO")
+    with_backend({"ENGINE_FAULT_APPLY_STEP": "ENSURE_CLIENT"})
+    admin = kc.token("admin1")
+    status_one, _ = apply(admin, first_one)
+    status_two, _ = apply(admin, first_two)
+    rt.check("T12-13 two models whose first apply stops", status_one >= 500 and status_two >= 500, f"{status_one} {status_two}")
+    with_backend({"ENGINE_FAULT_APPLY_STEP": ""})
+    admin, worker, keeper, other = kc.token("admin1"), kc.token("gs_u"), kc.token("gb_u"), kc.token("gd_u")
+    # A new backend fetches the signing keys of Keycloak on its first call, before Keycloak stops.
+    kc.api(admin, "GET", "/models")
+
     rt.sh(rt.COMPOSE + ["stop", "keycloak"])
     status, body = apply(admin, changed, base=1)
     rt.check("T12-13 apply stops while Keycloak is down", status >= 500, f"{status} {body}")
     status, body = apply(admin, moved, base=1, accept="MIGRATION")
     rt.check("T12-13 the second one stops after renaming", status >= 500, f"{status} {body}")
     status, body = kc.api(worker, "GET", f"/data/gstop/item/{item}")
-    first_one = FIRST.format(name="gfirst", role="GF_ONE")
-    first_two = FIRST.format(name="gfirst2", role="GF_TWO")
-    status_one, _ = apply(admin, first_one)
-    status_two, _ = apply(admin, first_two)
-    rt.check("T12-13 two models whose first apply stops", status_one >= 500 and status_two >= 500, f"{status_one} {status_two}")
     rt.check("T12-13 the model is held while it is unfinished", status == 409 and "reconciliation" in str(body), f"{status} {body}")
     status, body = kc.api(worker, "GET", "/meta/models")
     rt.check("T12-14 it is not offered to the people", status == 200 and "gstop" not in [m["name"] for m in body["data"]], str(body)[:200])

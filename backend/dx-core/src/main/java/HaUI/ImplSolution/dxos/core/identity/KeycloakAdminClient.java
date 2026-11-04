@@ -144,14 +144,22 @@ public class KeycloakAdminClient {
     }
   }
 
-  // The users that hold the role of a client.
+  // The users that hold the role of a client; nobody when the client or the role does not exist.
   public List<Person> usersWithClientRole(String clientId, String role) {
     String uuid = findClientUuid(clientId).orElse(null);
     if (uuid == null) {
       return List.of();
     }
-    return people("/admin/realms/{realm}/clients/" + uuid + "/roles/{name}/users?max=" + MAX_PEOPLE,
-        role);
+    try {
+      return people(
+          "/admin/realms/{realm}/clients/" + uuid + "/roles/{name}/users?max=" + MAX_PEOPLE, role);
+    } catch (KeycloakAdminException e) {
+      if (e.getCause() instanceof RestClientResponseException cause
+          && cause.getStatusCode().value() == 404) {
+        return List.of();
+      }
+      throw e;
+    }
   }
 
   private java.util.Optional<String> findClientUuid(String clientId) {

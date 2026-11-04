@@ -118,6 +118,8 @@ services:
       ENGINE_REPORT_DB_PASSWORD: ${REPORT_DB_PASSWORD:?}
       # Test only: fails a decision after the process step, to show both changes roll back
       ENGINE_FAULT_AFTER_DECISION: ${ENGINE_FAULT_AFTER_DECISION:-false}
+      # Test only: fails the apply step of this kind, to show an apply that stops halfway
+      ENGINE_FAULT_APPLY_STEP: ${ENGINE_FAULT_APPLY_STEP:-}
     # No published port: clients reach the API through the gateway.
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8081/actuator/health || exit 1"]

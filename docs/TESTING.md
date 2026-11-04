@@ -52,7 +52,7 @@ python3 deploy/dev/check_events.py          # sau check_users.py, trên cùng st
 python3 deploy/dev/check_bootstrap.py       # sau check_events.py, trên cùng stack; khởi động lại backend vài lần
 ```
 
-Tiêu chí 3 của `check_demo.py` (chặn tệp nhiễm mã độc) chỉ chạy khi bật quét: đặt `COMPOSE_PROFILES=av` và `STORAGE_SCAN_HOST=clamav` trong `deploy/.env` rồi `docker compose up -d`.
+Tiêu chí 3 của `check_demo.py` (chặn tệp nhiễm mã độc) chỉ chạy khi bật quét: `dxos av on` trên bản cài, hoặc đặt `COMPOSE_PROFILES=av` và `STORAGE_SCAN_HOST=clamav` trong `deploy/.env` rồi `docker compose up -d`.
 
 Script tạo client Keycloak `dxos-check` (cho phép đăng nhập bằng mật khẩu, chỉ dùng cho máy dev) và các người dùng thử `admin1`, `req1`, `req2`, `keeper1`, `multi1`, `none1`, `editor1`.
 Vai của mô hình được gán ở client `dxos-m-<mô hình>`, vai `ADMIN` ở realm.
@@ -71,7 +71,7 @@ Biến `DXOS_ENV_FILE`, `DXOS_BASE_URL`, `DXOS_PROJECT` đổi tệp env, địa
 | T5-14 | Giá trị, tên trường, tên sắp xếp và toán tử có SQL | Giá trị vô hại; tên và toán tử lạ bị 400; dữ liệu nguyên vẹn |
 | T5-15 | 10.000 dòng, 50 lượt lọc và sắp xếp | Phân vị 95 dưới 500 ms |
 | T5-17 | Áp dụng mô hình `notes.yaml` khi dịch vụ đang chạy | Metadata và dữ liệu phục vụ ngay, mỗi vai chỉ thấy mô hình của mình |
-| T5-05 | Áp dụng khi Keycloak dừng, rồi áp dụng lại | 502 và lịch sử ghi bước lỗi `ENSURE_ROLE`; áp dụng lại hoàn tất, vai tạo một lần |
+| T5-05 | Áp dụng lần đầu khi Keycloak dừng; áp dụng dừng ở một bước, rồi áp dụng lại | 502 trước bước đầu, không có bảng hay lượt chạy nào; dừng ở bước nào thì lịch sử ghi bước lỗi đó (`ENSURE_CLIENT`), các bước trước còn; áp dụng lại hoàn tất, vai tạo một lần |
 | T5-11 | Lỗi cố ý sau bước quy trình của một quyết định | 500; hồ sơ vẫn `submitted` và tác vụ vẫn chờ; sau đó quyết định bình thường |
 | T5-19 | Quyết định một hồ sơ; gửi `decided_by` trong yêu cầu sửa | Hồ sơ lưu người và thời điểm quyết định; yêu cầu sửa bị 400 |
 | T5-20 | Áp dụng dở chưa đổi tên, rồi áp dụng tệp khác | Áp dụng được, bảng khớp với tệp đó |
@@ -100,9 +100,9 @@ Biến `DXOS_ENV_FILE`, `DXOS_BASE_URL`, `DXOS_PROJECT` đổi tệp env, địa
 | T12-01 đến T12-04 | Hai mô hình dùng cùng tên vai; vai `ADMIN`; người chỉ giữ vai của một mô hình gọi mô hình kia; hai mô hình áp dụng song song | Cả hai áp dụng được; `ADMIN` bị 400 kèm dòng; người giữ vai của mô hình này bị 403 ở mô hình kia; hai lần áp dụng đều 200 |
 | T13-06 đến T13-14 | Tab Người dùng ở mức API: danh sách có tìm kiếm và phân trang, gán và gỡ vai và đơn vị, vai hoặc đơn vị không có (404), người không phải ADMIN (403), tạo người dùng, khóa và mở, đặt lại mật khẩu, tự khóa mình (409), bản ghi audit và sự kiện quản trị của Keycloak | Token đổi theo vai; mật khẩu tạm phải đổi trước khi đăng nhập; mỗi thay đổi có bản ghi `USER_*` với người thực hiện, thao tác không xảy ra thì không có; không mật khẩu nào trong log, audit hay sự kiện Keycloak |
 | T12-05 đến T12-11 | Xóa thực thể còn hồ sơ đang chạy quy trình; tên thực thể gần giống nhau; hồ sơ đã rút kèm tệp đính kèm | Từ chối khi còn quy trình đang chạy; tên gần giống không chặn nhầm; sau khi rút thì xóa được với `accept=LOSS`, tệp và bảng bị dọn, thực thể khác và quy trình đang chạy nguyên vẹn |
-| T12-12 đến T12-22 | Áp dụng dở khi Keycloak dừng, kể cả lần áp dụng đầu của một mô hình; khởi động lại backend; rồi Tiếp tục và Hủy bỏ | Mô hình bị giữ (409), không hiện cho người dùng, `GET /models` báo `held`, vẫn giữ sau khi khởi động lại; `resume` hoàn tất không cần tệp; `abandon` đưa cột và bảng về phiên bản đang chạy và giữ dòng dữ liệu, hoặc xóa schema của mô hình chưa có phiên bản; chỉ lần chạy dở mới giữ mô hình |
+| T12-12 đến T12-22 | Áp dụng thay đổi dở khi Keycloak dừng, lần áp dụng đầu của một mô hình dừng ở `ENSURE_CLIENT`; khởi động lại backend; rồi Tiếp tục và Hủy bỏ | Mô hình bị giữ (409), không hiện cho người dùng, `GET /models` báo `held`, vẫn giữ sau khi khởi động lại; `resume` hoàn tất không cần tệp; `abandon` đưa cột và bảng về phiên bản đang chạy và giữ dòng dữ liệu, hoặc xóa schema của mô hình chưa có phiên bản; chỉ lần chạy dở mới giữ mô hình |
 
-T5-11 và T6-14 cần dịch vụ chạy với `ENGINE_FAULT_AFTER_DECISION=true`; các script tự bật rồi tắt bằng cách tạo lại service `backend`.
+T5-11 và T6-14 cần dịch vụ chạy với `ENGINE_FAULT_AFTER_DECISION=true`, T5-05 và T12-13 với `ENGINE_FAULT_APPLY_STEP=ENSURE_CLIENT` (bước áp dụng có tên đó lỗi); các script tự bật rồi tắt bằng cách tạo lại service `backend`.
 
 ## 5. Kiểm giao diện thủ công
 
@@ -116,7 +116,8 @@ T5-11 và T6-14 cần dịch vụ chạy với `ENGINE_FAULT_AFTER_DECISION=true
 8. Mọi chữ trên giao diện là tiếng Việt: nút Tạo mới, Thêm bộ lọc, số dòng mỗi trang, thông báo "Bắt buộc nhập", lỗi tệp mô hình theo dòng và cột ("dòng 2, cột 9: ..."), nhãn các loại thay đổi trong kế hoạch.
 9. Bấm biểu tượng đổi giao diện: chế độ tối hiện đủ hộp việc, danh sách, chi tiết hồ sơ và bảng điều khiển.
 10. Ở bảng điều khiển, tab Soạn và áp dụng: bấm biểu tượng mở to của sơ đồ quy trình thì hiện hộp thoại lớn, phần nền phía sau mờ đi.
-11. Dừng Keycloak (`docker compose stop keycloak`), áp dụng một thay đổi cho một mô hình, rồi bật lại Keycloak: thẻ mô hình hiện nhãn "Đang dừng dở" kèm nút Tiếp tục áp dụng và Hủy bỏ; Tiếp tục thì nhãn mất và phiên bản tăng; Hủy bỏ hỏi xác nhận rồi đưa mô hình về phiên bản đang chạy; mô hình mà lần áp dụng đầu dừng dở hiện nhãn "Chưa có phiên bản", không có nút Sửa mô hình, và Hủy bỏ làm thẻ biến mất.
+11. Dừng Keycloak (`docker compose stop keycloak`), áp dụng một thay đổi cho một mô hình, rồi bật lại Keycloak: thẻ mô hình hiện nhãn "Đang dừng dở" kèm nút Tiếp tục áp dụng và Hủy bỏ; Tiếp tục thì nhãn mất và phiên bản tăng; Hủy bỏ hỏi xác nhận rồi đưa mô hình về phiên bản đang chạy.
+    Mô hình mới áp dụng khi Keycloak dừng thì báo lỗi và không tạo gì; để lần áp dụng đầu dừng dở, chạy backend với `ENGINE_FAULT_APPLY_STEP=ENSURE_CLIENT`: thẻ hiện nhãn "Chưa có phiên bản", không có nút Sửa mô hình, và Hủy bỏ làm thẻ biến mất.
 12. Khai báo vai `ADMIN` ở tab Soạn và áp dụng: báo lỗi tiếng Việt kèm dòng và cột, không có nút Áp dụng; khai báo vai trùng tên với mô hình khác thì áp dụng được.
 13. Khi một thực thể còn hồ sơ đang xử lý, đổi hạn xử lý hoặc người xử lý của nó rồi bấm Xem kế hoạch: báo "Không đổi được ... khi còn N hồ sơ đang xử lý" và không có nút Áp dụng; rút hết hồ sơ rồi xem lại thì có nút Áp dụng.
 
@@ -266,3 +267,19 @@ Chuỗi script chạy trên một stack thử riêng (project Compose `dxscratch
 | Các lỗi của đợt rà soát, gọi API bằng kịch bản tạm ngoài repo | Đạt | 19/19: thiếu `enabled` bị 400 và tài khoản vẫn mở; người điều phối không có vai xử lý tự nhận hồ sơ bị 400, giao cho người xử lý thì được; sức chứa hai đã có lịch 09–10 và 10–11 nhận lịch 09–11 và từ chối lịch 09:30–10:30; `in` không có giá trị bị 400; trang 2147483647 của hộp việc, người dùng và hàng đợi sự kiện trả danh sách rỗng |
 | Bảng điều khiển ở màn rộng 360px bằng Chrome | Đạt | Năm tab vừa màn hình, bảng người dùng cuộn ngang trong khung; ở màn rộng 1280px vẫn hai cột |
 | Stack chính sau `reset.sh` | Đạt | 22 schema `m_*` khớp 22 client `dxos-m-*` của Keycloak |
+
+### Kiểm ngày 04/11/2026: sửa các mục 2, 3, 7 và 9 của báo cáo kỹ thuật
+
+Cây làm việc gồm cả tệp chưa commit.
+Chuỗi script chạy trên một stack thử riêng (project Compose `dxscratch`, cổng 9180, cơ sở dữ liệu rỗng) với image backend dựng từ cây làm việc, đã xóa sau khi kiểm.
+
+| Mục | Kết quả | Ghi chú |
+|---|---|---|
+| `./mvnw compile formatter:validate` | Đạt | Năm module build thành công, không tệp nào lỗi định dạng |
+| `npx tsc --noEmit` | Đạt | Không lỗi |
+| Mười một script ở `deploy/dev` theo thứ tự trên | Đạt | 452/452: 51, 19, 71, 65, 56, 44, 26, 59, 41, `check_events.py` 12 và `check_bootstrap.py` 8 |
+| Vai khai báo lại, gọi API bằng kịch bản tạm ngoài repo | Đạt | 14/14: bỏ vai thì người giữ bị 403; khai báo lại thì kế hoạch ở mức `MIGRATION` kèm câu hỏi đúng số người giữ; áp dụng không xác nhận bị từ chối và người giữ vẫn 403; `accept=MIGRATION` thì 200; quay về phiên bản trước cũng hỏi; vai mới chưa ai giữ vẫn `SAFE` |
+| Vai khai báo lại ở bảng điều khiển bằng Chrome | Đạt | Quay về phiên bản trước hiện nhãn "Cần xác nhận", câu hỏi tiếng Việt và ô xác nhận trả lại quyền; nút khóa tới khi tích, tích rồi thì quay về thành công |
+| `backup.sh` rồi `verify` trên stack chính | Đạt | 22 mô hình, 10.055 dòng trong các bảng `m_*`; câu truy vấn tìm mô hình thiếu bảng chỉ ra đúng mô hình thử đã bị xóa bảng |
+| `dxos av on`, `dxos av off` | Đạt | Bật thì ClamAV chạy tới khi healthy và tiêu chí 3 của `check_demo.py` chặn tệp EICAR với 422, tệp không được lưu; tắt thì gỡ ClamAV; `dxos status` và `doctor.sh` báo đúng trạng thái quét |
+| Hành động hoàn tất bị bỏ qua | Đạt | Duyệt hồ sơ mà người dùng hoặc nhóm không có: log backend có dòng `WARN` nêu lý do |

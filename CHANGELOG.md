@@ -18,7 +18,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
   Màn hình giám sát gửi cảnh báo qua `MATTERMOST_WEBHOOK_URL_ADMIN` hoặc `MATTERMOST_WEBHOOK_URL`, không còn đọc tệp webhook hay dò Superset và Mattermost.
 - Gỡ `seaweedfs/migrate-uploads.sh`.
 - Cài bằng một lệnh: `dxos-install.sh` phát hành kèm mỗi bản (nguồn ở `deploy/get.sh`) tải gói phát hành, kiểm SHA-256 và cài vào `~/.dxos`.
-  Lệnh `dxos` có `start`, `stop`, `status`, `logs`, `admin`, `update`, `doctor`, `backup`, `uninstall`; `dxos start` tạo tài khoản `admin` đầu tiên với mật khẩu tạm.
+  Lệnh `dxos` có `start`, `stop`, `status`, `logs`, `admin`, `update`, `doctor`, `backup`, `av`, `uninstall`; `dxos start` tạo tài khoản `admin` đầu tiên với mật khẩu tạm.
 - `dxos start <tệp>` đưa tệp mô hình vào hệ thống trên máy sạch: backend áp dụng tệp khi khởi động nếu là tệp mới, và lệnh in kết quả.
 - Webhook sự kiện: mỗi dòng lịch sử của hồ sơ được gửi tới `DXOS_WEBHOOK_URL` dạng JSON có chữ ký; để trống thì không gửi gì.
   Outbox xóa thông điệp đã gửi sau 30 ngày.
@@ -53,6 +53,12 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - `PUT /api/v1/users/{id}/enabled` trả 400 khi thiếu `enabled`; bộ lọc `in` không có giá trị nào trả 400.
 - Trang nằm ngoài cuối danh sách ở `/api/v1/inbox`, `/api/v1/users` và `/api/v1/outbox` trả danh sách rỗng, kể cả với số trang rất lớn.
 - Bảng điều khiển vừa màn hình rộng 360px; bảng người dùng cuộn ngang trong khung riêng.
+- `dxos av on` và `dxos av off` bật và tắt quét mã độc tệp tải lên; `dxos status` và `doctor.sh` báo trạng thái quét, và `doctor.sh` báo `FAIL` khi `STORAGE_SCAN_HOST=clamav` mà `COMPOSE_PROFILES` không có `av`.
+- `backup.sh verify` kiểm mỗi mô hình đã áp dụng có bảng trong schema `m_<mô hình>` của bản dump và in tổng số dòng của các bảng đó; mô hình thiếu bảng làm `verify` báo `FAILED`.
+- Hành động hoàn tất bị bỏ qua vì không có người dùng hoặc nhóm thì log backend có một dòng `WARN` nêu lý do.
+- Khai báo lại một vai mà vẫn còn người giữ trong client `dxos-m-<mô hình>` thì kế hoạch áp dụng đưa thay đổi đó lên mức `MIGRATION` và báo số người sẽ có lại quyền của vai; bảng điều khiển hiện câu hỏi này bằng tiếng Việt.
+  Lần áp dụng, tiếp tục áp dụng, quay lui và tệp mô hình lúc khởi động cũng qua bước kiểm này, nên tệp lúc khởi động không tự áp dụng trong trường hợp đó.
+  Lần áp dụng có vai mới hỏi Keycloak trước bước đầu tiên, nên khi Keycloak không trả lời thì lần áp dụng lỗi ngay mà không chạy bước nào.
 
 ## [2.0.0] - 2026-11-03
 

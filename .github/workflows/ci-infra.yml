@@ -107,6 +107,11 @@ jobs:
           mkdir -p data/seaweedfs
           docker compose up -d --wait postgres
           docker compose exec -T postgres psql -U dxos -d dxos -c "CREATE TABLE backup_drill (id int); INSERT INTO backup_drill VALUES (1)"
+          # One applied model with its records, as the engine keeps them.
+          docker compose exec -T postgres psql -U dxos -d dxos -v ON_ERROR_STOP=1 -c "
+            CREATE SCHEMA engine; CREATE TABLE engine.model_version (model text);
+            INSERT INTO engine.model_version VALUES ('drill');
+            CREATE SCHEMA m_drill; CREATE TABLE m_drill.item (id int); INSERT INTO m_drill.item VALUES (1), (2)"
 
       - name: Back up
         working-directory: deploy
@@ -114,7 +119,9 @@ jobs:
 
       - name: Restore the backup into a scratch Postgres and check it
         working-directory: deploy
-        run: ./backup.sh verify
+        run: |
+          ./backup.sh verify | tee verify.log
+          grep -q "Applied models: 1, records in their tables: 2" verify.log
 
   gateway:
     runs-on: ubuntu-latest

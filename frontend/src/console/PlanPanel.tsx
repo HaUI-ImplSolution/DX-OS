@@ -30,6 +30,19 @@ const LEVELS: Record<string, { label: string; color: "success" | "warning" | "er
   },
 };
 
+// A role declared again while people still hold it gives them its access back.
+const REGRANT = {
+  label: "Cần xác nhận",
+  color: "warning" as const,
+  text: "Người đang giữ vai được khai báo lại sẽ có lại quyền của vai đó.",
+};
+
+const confirmLabel = (level: string, moves: boolean, regrants: boolean) => {
+  if (level === "LOSS") return "Tôi hiểu dữ liệu sẽ mất và đã sao lưu";
+  if (moves && regrants) return "Tôi xác nhận chuyển dữ liệu và trả lại quyền cho người đang giữ vai";
+  return regrants ? "Tôi xác nhận trả lại quyền cho người đang giữ vai" : "Tôi xác nhận chuyển dữ liệu";
+};
+
 interface Props {
   plan: Plan;
   busy: boolean;
@@ -40,7 +53,10 @@ interface Props {
 // What applying a model would do, and the button that does it once the risk is accepted.
 export default function PlanPanel({ plan, busy, applyLabel = "Áp dụng", onApply }: Props) {
   const [accepted, setAccepted] = useState(false);
-  const level = LEVELS[plan.level] ?? LEVELS.SAFE;
+  const confirmed = plan.changes.filter((change) => change.level === "MIGRATION");
+  const regrants = confirmed.some((change) => change.kind === "ADD_ROLE");
+  const moves = confirmed.some((change) => change.kind !== "ADD_ROLE");
+  const level = plan.level === "MIGRATION" && !moves ? REGRANT : (LEVELS[plan.level] ?? LEVELS.SAFE);
   const unchanged = plan.action === "unchanged";
   const blocked = plan.action === "rejected";
   const needsConfirm = !unchanged && !blocked && plan.level !== "SAFE";
@@ -99,7 +115,8 @@ export default function PlanPanel({ plan, busy, applyLabel = "Áp dụng", onApp
           </TableHead>
           <TableBody>
             {plan.changes.map((change, index) => {
-              const changeLevel = LEVELS[change.level] ?? LEVELS.SAFE;
+              const changeLevel =
+                change.level === "MIGRATION" && change.kind === "ADD_ROLE" ? REGRANT : (LEVELS[change.level] ?? LEVELS.SAFE);
               return (
                 <TableRow key={`${change.kind}-${change.entity}-${change.field}-${index}`}>
                   <TableCell>
@@ -131,7 +148,7 @@ export default function PlanPanel({ plan, busy, applyLabel = "Áp dụng", onApp
         <FormControlLabel
           sx={{ mt: 1 }}
           control={<Checkbox checked={accepted} onChange={(event) => setAccepted(event.target.checked)} />}
-          label={plan.level === "LOSS" ? "Tôi hiểu dữ liệu sẽ mất và đã sao lưu" : "Tôi xác nhận chuyển dữ liệu"}
+          label={confirmLabel(plan.level, moves, regrants)}
         />
       )}
       {!unchanged && !blocked && (

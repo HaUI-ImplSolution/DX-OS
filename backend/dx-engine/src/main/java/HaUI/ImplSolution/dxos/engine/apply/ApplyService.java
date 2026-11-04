@@ -83,10 +83,13 @@ public class ApplyService {
   private final AttachmentCleaner attachments;
   private final ObjectMapper json;
   private final String reportPassword;
+  // Kind of step that fails on purpose, so that a stopped apply can be produced in tests.
+  private final String faultStep;
 
   public ApplyService(JdbcTemplate jdbc, KeycloakAdminClient keycloak, ModelRegistry registry,
       SchemaTool schemaTool, AttachmentCleaner attachments, ObjectMapper json,
-      @Value("${engine.report-db-password:}") String reportPassword) {
+      @Value("${engine.report-db-password:}") String reportPassword,
+      @Value("${engine.fault.apply-step:}") String faultStep) {
     this.jdbc = jdbc;
     this.keycloak = keycloak;
     this.registry = registry;
@@ -94,6 +97,7 @@ public class ApplyService {
     this.attachments = attachments;
     this.json = json;
     this.reportPassword = reportPassword;
+    this.faultStep = faultStep.strip();
   }
 
   public Plan plan(String content) {
@@ -130,7 +134,7 @@ public class ApplyService {
       return new Plan(model.name(), from, from, "unchanged", Level.SAFE, List.of(), List.of(),
           List.of(), List.of(), Map.of(), List.of());
     }
-    ModelDiff diff = ModelDiff.between(running == null ? null : running.model(), model, renames);
+    ModelDiff diff = compare(running, model, renames);
     List<String> rejections = new ArrayList<>(diff.rejections);
     Map<String, Long> openRecords = openRecords(running, diff);
     rejections.addAll(processRuleChangesWithOpenRecords(diff, openRecords));
@@ -162,6 +166,28 @@ public class ApplyService {
         diff.changes, rejections, diff.questions, violations, openRecords, statements);
   }
 
+  // A role that comes back to a model gives its access back to whoever still holds it in the
+  // client of the model, so that role needs the same confirmation as moving data.
+  private ModelDiff compare(Running running, Model model,
+      Map<String, Map<String, String>> renames) {
+    ModelDiff diff = ModelDiff.between(running == null ? null : running.model(), model, renames);
+    String client = ModelClient.of(model.name());
+    for (int i = 0; i < diff.changes.size(); i++) {
+      Change change = diff.changes.get(i);
+      if (!"ADD_ROLE".equals(change.kind())) {
+        continue;
+      }
+      int holders = keycloak.usersWithClientRole(client, change.detail()).size();
+      if (holders > 0) {
+        diff.changes.set(i,
+            new Change(Level.MIGRATION, change.kind(), null, null, change.detail()));
+        diff.questions.add("role " + change.detail() + " is declared again and " + holders
+            + " users still hold it; applying gives them its access back");
+      }
+    }
+    return diff;
+  }
+
   private Applied run(Model model, String content, Actor actor, Integer base, Level accept,
       Map<String, Map<String, String>> renames) {
     String hash = hash(content);
@@ -175,7 +201,7 @@ public class ApplyService {
           "The plan is out of date: model " + model.name() + " runs version " + running.version()
               + "; make a plan and pass its fromVersion as base");
     }
-    ModelDiff diff = ModelDiff.between(running == null ? null : running.model(), model, renames);
+    ModelDiff diff = compare(running, model, renames);
     if (!diff.rejections.isEmpty()) {
       throw new InvalidStateException(String.join("; ", diff.rejections));
     }
@@ -224,6 +250,9 @@ public class ApplyService {
       for (Step step : steps) {
         seq++;
         try {
+          if (step.info().kind().equals(faultStep)) {
+            throw new IllegalStateException("Fault injected at step " + faultStep);
+          }
           step.action().run();
           recordStep(runId, seq, step.info(), "done", null);
         } catch (RuntimeException e) {

@@ -89,7 +89,7 @@ Các hàm ý sau là suy luận từ cách đề viết, người ra đề khôn
 | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | Tự động tạo API từ cơ sở dữ liệu, phân quyền tới cấp dòng | API chung đọc mô hình lúc chạy, phân quyền theo vai và theo dòng                 |
 | Điều chỉnh quy trình không cần sửa mã nguồn, BPMN              | Mẫu quy trình trên Flowable                                                             |
-| GitOps, tự phục hồi                                                  | GitOps cho nghiệp vụ, tệp sai bị chặn, áp dụng dở được thử lại hoặc quay lui |
+| GitOps, tự phục hồi                                                  | GitOps cho nghiệp vụ, tệp sai bị chặn, áp dụng dở được hoàn tất hoặc hủy bỏ |
 | Kiến trúc hướng sự kiện                                           | Trục sự kiện bằng bảng outbox                                                         |
 | Tác tử AI, Human-in-the-loop, RAG                                     | Tác tử có người duyệt và hỏi đáp kèm nguồn                                     |
 | Chống nguyên khối, chủ quyền số                                   | Thành phần thay được, dữ liệu trong PostgreSQL thuần                               |
@@ -224,8 +224,9 @@ Chi tiết tham số của từng họ mẫu và các khối dùng chung đượ
 
 - Một lần áp dụng sinh cả phần mềm lẫn quy trình từ cùng một tệp mô hình: lược đồ, vai Keycloak, quy trình và phiên bản mô hình nằm chung một kế hoạch.
 - Kế hoạch cho xem khác biệt của quy trình, kiểm tra không có trạng thái cụt và vai có thật, và báo số bản ghi đang chạy bị ảnh hưởng.
-- Mỗi bản ghi lưu phiên bản mô hình lúc bắt đầu, và quy trình đọc tham số theo phiên bản đó.
-- Khi cấu trúc quy trình đổi, hệ thống triển khai định nghĩa mới và chuyển bản ghi đang chạy bằng `ProcessMigrationService` của Flowable.
+- Luật của quy trình (người xử lý, hạn xử lý, quyền tự quyết, hành động hoàn tất, đặt chỗ) chỉ đổi được khi thực thể không còn hồ sơ đang xử lý, nên mỗi hồ sơ chỉ chịu một bộ luật từ lúc nộp đến lúc đóng.
+- Đổi họ mẫu của một thực thể bị từ chối; muốn đổi hình dạng quy trình thì thêm thực thể mới.
+- Chuyển hồ sơ đang chạy sang quy trình mới bằng `ProcessMigrationService` của Flowable là hướng phát triển.
 - Đổi lược đồ và vai Keycloak nằm ngoài giao dịch của Flowable, nên "một lần" nghĩa là một kế hoạch có thứ tự, chạy lại được hoặc quay lui, không phải một giao dịch duy nhất.
 - Việc ghép này được làm cùng lúc với việc triển khai các họ mẫu.
 
@@ -390,10 +391,14 @@ Nghiệp vụ được khai báo trong git, lõi đưa toàn bộ hệ thống v
 Git là nơi lưu lịch sử của tệp mô hình; lõi nhận tệp qua `dxos apply` và không tự kéo từ git.
 Lõi tự kéo từ git để liên tục đối chiếu là hướng phát triển.
 
-Hệ thống tự phục hồi khi thay đổi mô hình sai:
+Thay đổi mô hình sai được xử lý như sau:
 
 - **Tệp sai:** bị chặn ở bước kiểm tra, hệ thống vẫn chạy phiên bản đang chạy.
-- **Áp dụng dở:** mỗi bước chạy lại được an toàn nên lõi tự thử lại; hết số lần thử thì quay về phiên bản trước nếu thay đổi quay lui được, không thì dừng và báo đã dừng ở bước nào.
+- **Áp dụng dở:** mỗi bước chạy lại được an toàn, và lõi giữ mô hình lại cho đến khi quản trị viên quyết định.
+  Người dùng chưa vào được mô hình đó, còn bảng điều khiển hiện nhãn "Đang dừng dở" và lịch sử ghi bước đã dừng.
+  **Tiếp tục** chạy lại từ nội dung, đổi tên và mức đã xác nhận mà lần áp dụng đó đã lưu, nên không cần tệp.
+  **Hủy bỏ** đưa các bảng về phiên bản đang chạy.
+  Lõi không tự thử lại và không tự quay lui.
 
 Ví dụ một lần xem trước:
 

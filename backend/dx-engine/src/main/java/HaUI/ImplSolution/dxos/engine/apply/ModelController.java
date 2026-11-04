@@ -35,7 +35,9 @@ public class ModelController {
   @GetMapping
   @Operation(summary = "List the applied models with their current version",
       description = "applied_by is the user id of who applied the version, applied_by_name the name"
-          + " the token gave then; it is empty for versions saved without one.")
+          + " the token gave then; it is empty for versions saved without one. held is true while"
+          + " an apply of the model runs or stopped before it finished; the model is then closed to"
+          + " its users.")
   public ApiResponse<List<Map<String, Object>>> list() {
     return ApiResponse.success(service.models());
   }
@@ -80,6 +82,24 @@ public class ModelController {
   public ApiResponse<ApplyService.Applied> rollback(@PathVariable String model,
       @RequestParam Integer base, @RequestParam(required = false) ModelDiff.Level accept) {
     return ApiResponse.success(service.rollback(model, actor(), base, accept));
+  }
+
+  @PostMapping("/{model}/resume")
+  @Operation(summary = "Finish the apply of a model that stopped before it finished",
+      description = "Runs the last apply again, with the file, the renames and the level it was"
+          + " started with, so the file is not needed. 409 when the model has no apply that"
+          + " stopped, the run kept no file, or another apply runs.")
+  public ApiResponse<ApplyService.Applied> resume(@PathVariable String model) {
+    return ApiResponse.success(service.resume(model, actor()));
+  }
+
+  @PostMapping("/{model}/abandon")
+  @Operation(summary = "Give up the apply of a model that stopped before it finished",
+      description = "Brings the tables back to the running version. What the stopped apply added"
+          + " is dropped with its rows, and what it dropped does not come back. 409 when the model"
+          + " has no apply that stopped, has no version yet, or another apply runs.")
+  public ApiResponse<ApplyService.Applied> abandon(@PathVariable String model) {
+    return ApiResponse.success(service.abandon(model, actor()));
   }
 
   @GetMapping("/{model}/runs")

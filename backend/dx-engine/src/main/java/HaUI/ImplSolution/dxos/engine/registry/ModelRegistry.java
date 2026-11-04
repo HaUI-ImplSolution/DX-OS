@@ -55,6 +55,23 @@ public class ModelRegistry {
       }
     }
     models = Map.copyOf(loaded);
+    logSharedRoles(loaded.values());
+  }
+
+  // The apply refuses a role another model uses, but models stored before that check can still
+  // share one, and the people holding it then reach the data of both.
+  private static void logSharedRoles(Collection<Model> all) {
+    Map<String, List<String>> owners = new LinkedHashMap<>();
+    for (Model model : all) {
+      model.roles().forEach(role -> owners
+          .computeIfAbsent(role.name(), name -> new java.util.ArrayList<>()).add(model.name()));
+    }
+    owners.forEach((role, names) -> {
+      if (names.size() > 1) {
+        log.error("Role {} is declared by the models {}; its holders reach the data of all of them",
+            role, names);
+      }
+    });
   }
 
   public synchronized void beginApply(String model) {
@@ -67,6 +84,11 @@ public class ModelRegistry {
     java.util.LinkedHashSet<String> next = new java.util.LinkedHashSet<>(maintenance);
     next.remove(model);
     maintenance = Set.copyOf(next);
+  }
+
+  // A model is held while an apply of it runs and after one stopped before it finished.
+  public boolean isHeld(String name) {
+    return maintenance.contains(name);
   }
 
   public Optional<Model> find(String name) {

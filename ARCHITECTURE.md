@@ -62,13 +62,28 @@ Mô hình đi qua một đường duy nhất, từ hệ thống rỗng hay từ 
 
 1. `RENAME_FIELD`: đổi tên cột theo `renamed_from`, cùng ràng buộc và chỉ mục mang tên trường.
 2. `CHANGE_SCHEMA`: pgschema đưa schema `m_<tên mô hình>` về trạng thái đích, gồm bảng, cột hệ thống, ràng buộc, chỉ mục và quyền đọc của `report_ro`.
-3. `ENSURE_ROLE`: vai của mô hình trong Keycloak.
-4. `ENSURE_UNIT`: đơn vị của mô hình, là nhóm trong Keycloak.
-5. `SAVE_VERSION`: lưu nội dung và mã băm; từ đây phiên bản có hiệu lực.
+3. `DROP_FILES`: xóa dòng và đối tượng tệp đính kèm của thực thể bị bỏ khỏi mô hình.
+4. `ENSURE_ROLE`: vai của mô hình trong Keycloak.
+5. `ENSURE_UNIT`: đơn vị của mô hình, là nhóm trong Keycloak.
+6. `SAVE_VERSION`: lưu nội dung và mã băm; từ đây phiên bản có hiệu lực.
 
 Bảo vệ dữ liệu nằm ở lõi: nếu kế hoạch của pgschema có thao tác xóa bảng hoặc cột mà so sánh mô hình không có, áp dụng dừng lại.
 Mỗi bước chạy lại được an toàn, nên áp dụng bị gián đoạn thì áp dụng lại để làm tiếp; đã đổi tên thì chỉ đúng tệp đó mới hoàn tất được.
 `POST /api/v1/models/{model}/rollback` đi qua đúng đường này với nội dung phiên bản trước, đảo các lần đổi tên và ghi thành phiên bản mới.
+
+Trước khi chạy, lõi từ chối:
+
+- vai trùng với vai của mô hình khác, và vai `ADMIN` của nền tảng;
+- thay đổi người xử lý, hạn xử lý, quyền tự quyết, hành động hoàn tất hay đặt chỗ khi thực thể còn hồ sơ đang xử lý;
+- xóa thực thể còn hồ sơ đang chạy quy trình.
+
+Mọi lần áp dụng chạy lần lượt, một khóa chung của Postgres giữ cho hai mô hình không cùng qua kiểm tra vai.
+Mô hình được giữ lại từ bước đầu đến khi registry nạp xong phiên bản mới: người dùng chưa vào được, còn `GET /api/v1/models` báo `held`.
+Một bước lỗi làm lần áp dụng dừng và mô hình vẫn bị giữ, kể cả sau khi backend khởi động lại, vì trạng thái suy ra từ `engine.apply_run`.
+Mỗi lần áp dụng lưu tệp, các lần đổi tên và mức đã xác nhận ở `engine.apply_run`, nên:
+
+- `POST /api/v1/models/{model}/resume` hoàn tất lần đó mà không cần tệp;
+- `POST /api/v1/models/{model}/abandon` đưa các bảng về phiên bản đang chạy; cột và bảng mà lần áp dụng dở đã thêm bị xóa cùng dữ liệu.
 
 ## 4. Một yêu cầu đi qua API chung
 

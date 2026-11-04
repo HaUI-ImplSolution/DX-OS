@@ -36,6 +36,8 @@ public final class ModelParser {
   private static final Pattern NAME = Pattern.compile("[a-z][a-z0-9_]{0,39}");
   private static final Pattern DEADLINE = Pattern.compile("([0-9]{1,6})([mhd])");
   private static final Pattern ROLE = Pattern.compile("[A-Z][A-Z0-9_]{0,39}");
+  // Roles the platform owns: a model that declared one would hand platform rights to its users.
+  private static final Set<String> RESERVED_ROLES = Set.of("ADMIN");
   private static final Set<String> RESERVED_FIELDS =
       Set.of("id", "created_by", "created_at", "updated_at", "version", "status", "assignee",
           "decided_by", "decided_at", "handle_by", "overdue");
@@ -249,6 +251,10 @@ public final class ModelParser {
       if (roleName == null || !ROLE.matcher(roleName).matches()) {
         problem(nameNode == null ? map : nameNode,
             "role name must match [A-Z][A-Z0-9_]* and be at most 40 characters");
+        continue;
+      }
+      if (RESERVED_ROLES.contains(roleName)) {
+        problem(nameNode, "role " + roleName + " is reserved for the platform");
         continue;
       }
       if (!seen.add(roleName)) {

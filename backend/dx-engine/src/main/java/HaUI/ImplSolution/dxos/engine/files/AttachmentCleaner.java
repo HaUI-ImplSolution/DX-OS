@@ -36,6 +36,16 @@ public class AttachmentCleaner {
     keys.forEach(this::deleteAfterCommit);
   }
 
+  // Drops every file of an entity whose table is going away: the rows, then the objects. The caller
+  // is not in a transaction, so the rows are gone for good when the objects are deleted.
+  public int purgeEntity(String model, String entity) {
+    List<String> keys = jdbc.queryForList(
+        "DELETE FROM engine.attachment WHERE model = ? AND entity = ? RETURNING object_key",
+        String.class, model, entity);
+    keys.forEach(this::delete);
+    return keys.size();
+  }
+
   public void deleteAfterCommit(String key) {
     whenDone(key, true);
   }

@@ -143,14 +143,18 @@ def main():
     rt.check("T9-04 a completed booking frees the slot", status == 200, f"{status}")
 
     # T9-04: a capacity above one allows overlaps up to the capacity.
-    hall = ROOMS.replace("name: rooms", "name: hall").replace("capacity: 1", "capacity: 2")
+    # A model owns its roles, so the second model brings roles of its own.
+    hall = ROOMS.replace("name: rooms", "name: hall").replace("capacity: 1", "capacity: 2").replace("GUEST", "HALL_GUEST").replace("MANAGER", "HALL_MANAGER")
     status, body = kc.api(admin, "POST", "/models/apply", hall, YAML)
     rt.check("T9-04 capacity two applies", status == 200, f"{status} {body}")
-    status, made = kc.api(manager, "POST", "/data/hall/room", {"code": "H1", "name": "Hội trường", "seats": 200})
+    kc.ensure_user("mgrhall9", ["HALL_MANAGER"])
+    kc.ensure_user("guesthall9", ["HALL_GUEST"])
+    hall_manager, hall_guest = kc.token("mgrhall9"), kc.token("guesthall9")
+    status, made = kc.api(hall_manager, "POST", "/data/hall/room", {"code": "H1", "name": "Hội trường", "seats": 200})
     hall_room = made["data"]["id"]
     results = []
     for n in range(3):
-        status, body = kc.api(guest, "POST", "/data/hall/booking", {"room": hall_room, "purpose": f"Lớp {n}", "starts_at": at(8, day=12), "ends_at": at(9, day=12)})
+        status, body = kc.api(hall_guest, "POST", "/data/hall/booking", {"room": hall_room, "purpose": f"Lớp {n}", "starts_at": at(8, day=12), "ends_at": at(9, day=12)})
         results.append(status)
     rt.check("T9-04 two fit, the third does not", results == [200, 200, 409], str(results))
 

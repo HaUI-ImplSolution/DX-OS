@@ -27,7 +27,7 @@ The narrow loop from model file to end user runs:
 - Follow-up work after an approval, such as adding a user to a group, runs through an event queue and is retried on failure.
 - File attachments on records, with a virus scan when enabled.
 - Units declared in the model and kept as Keycloak groups; assignment, an inbox and the history of every record.
-- Changing a model that holds data: a preview by level of risk, renames that keep the values, a list of the rows breaking a new rule, a separate confirmation for losing data, and a return to the previous version.
+- Changing a model that holds data: a preview by level of risk, renames that keep the values, a list of the rows breaking a new rule, a separate confirmation for losing data, a return to the previous version, and finishing or giving up an apply that stopped halfway.
 - A react-admin UI built from metadata, in Vietnamese with a light and a dark mode, with no code written for any entity.
 - A control panel for the person deploying the system: a template library, a model editor, a preview of the plan, apply, history and rollback, and a diagram of the workflow.
 - Single sign-on through Keycloak; administrators can be required to enter a one-time code from an authenticator app as well.
@@ -125,6 +125,7 @@ entities:
 |---|---|
 | `POST /api/v1/models/plan`, `/apply` | Preview and apply a model file (ADMIN) |
 | `POST /api/v1/models/{model}/rollback/plan`, `/rollback` | Preview and return to the previous version (ADMIN) |
+| `POST /api/v1/models/{model}/resume`, `/abandon` | Finish or give up an apply that stopped halfway (ADMIN) |
 | `GET /api/v1/models`, `/models/{model}/runs` | Applied models and the history of each step (ADMIN) |
 | `GET /api/v1/models/schema`, `/families`, `/templates`, `/{model}/versions` | The model file schema, workflow families, the template library and the applied versions, for the control panel (ADMIN) |
 | `GET /api/v1/meta/models` | Metadata the caller may see |
@@ -161,6 +162,10 @@ python3 deploy/dev/check_api.py        # on a fresh stack, empty database
 python3 deploy/dev/check_recovery.py
 python3 deploy/dev/check_case.py
 python3 deploy/dev/check_change.py
+python3 deploy/dev/check_process.py
+python3 deploy/dev/check_booking.py
+python3 deploy/dev/check_demo.py
+python3 deploy/dev/check_guards.py
 ```
 
 ## Contributing

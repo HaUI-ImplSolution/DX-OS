@@ -5,6 +5,7 @@ import HaUI.ImplSolution.dxos.core.api.exception.InvalidStateException;
 import HaUI.ImplSolution.dxos.core.identity.KeycloakAdminClient;
 import HaUI.ImplSolution.dxos.engine.apply.ModelDiff.Change;
 import HaUI.ImplSolution.dxos.engine.apply.ModelDiff.Level;
+import HaUI.ImplSolution.dxos.engine.files.AttachmentCleaner;
 import HaUI.ImplSolution.dxos.engine.registry.ModelRegistry;
 import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
@@ -26,12 +27,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 // Brings the system to what a model file declares, from nothing or from the running version, step
 // by step, and records each step. A step that ran can run again, so an interrupted apply is
@@ -61,9 +64,13 @@ public class ApplyService {
 
   private record Running(int version, String hash, Model model) {}
 
+  // The last apply of a model, which stopped before it finished, with what it was asked to do.
+  private record Stalled(String content, Map<String, Map<String, String>> renames, Level accept) {}
+
   private static final int ERROR_LENGTH = 500;
   private static final int SAMPLE_SIZE = 20;
   private static final String RENAME_STEP = "RENAME_FIELD";
+  private static final String ALL_MODELS_LOCK = "dxos.apply";
   private static final Set<String> PROCESS_RULE_CHANGES =
       Set.of("ADD_PROCESS", "DROP_PROCESS", "CHANGE_HANDLER", "CHANGE_SELF_DECISION",
           "CHANGE_COMPLETION", "CHANGE_BOOKING", "CHANGE_DEADLINE");
@@ -72,14 +79,19 @@ public class ApplyService {
   private final KeycloakAdminClient keycloak;
   private final ModelRegistry registry;
   private final SchemaTool schemaTool;
+  private final AttachmentCleaner attachments;
+  private final ObjectMapper json;
   private final String reportPassword;
 
   public ApplyService(JdbcTemplate jdbc, KeycloakAdminClient keycloak, ModelRegistry registry,
-      SchemaTool schemaTool, @Value("${engine.report-db-password:}") String reportPassword) {
+      SchemaTool schemaTool, AttachmentCleaner attachments, ObjectMapper json,
+      @Value("${engine.report-db-password:}") String reportPassword) {
     this.jdbc = jdbc;
     this.keycloak = keycloak;
     this.registry = registry;
     this.schemaTool = schemaTool;
+    this.attachments = attachments;
+    this.json = json;
     this.reportPassword = reportPassword;
   }
 
@@ -193,12 +205,24 @@ public class ApplyService {
               + first.field() + " with " + first.rows() + " rows; see the plan");
     }
     int version = nextVersion(hash, running);
-    long runId = jdbc.queryForObject(
-        "INSERT INTO engine.apply_run (model, hash, status, actor) VALUES (?, ?, 'running', ?) "
-            + "RETURNING id",
-        Long.class, model.name(), hash, actor.id());
-    List<Step> steps = steps(model, diff, content, hash, actor, version);
-    registry.beginApply(model.name());
+    long runId = startRun(model.name(), hash, actor, content, renames, accept);
+    return execute(model.name(), runId, version, steps(model, diff, content, hash, actor, version));
+  }
+
+  private long startRun(String model, String hash, Actor actor, String content,
+      Map<String, Map<String, String>> renames, Level accept) {
+    return jdbc.queryForObject(
+        "INSERT INTO engine.apply_run (model, hash, status, actor, content, renames, accept) "
+            + "VALUES (?, ?, 'running', ?, ?, ?, ?) RETURNING id",
+        Long.class, model, hash, actor.id(), content, json.writeValueAsString(renames),
+        accept.name());
+  }
+
+  // Runs the steps of an apply one after the other. The model is held from the first step on and
+  // is let go when the registry has the new version; a step that fails leaves it held, because the
+  // tables may be half changed, until the apply is finished or given up.
+  private Applied execute(String model, long runId, int version, List<Step> steps) {
+    registry.beginApply(model);
     try {
       int seq = 0;
       for (Step step : steps) {
@@ -214,15 +238,75 @@ public class ApplyService {
       registry.reload();
       jdbc.update("UPDATE engine.apply_run SET status = 'done', finished_at = now() WHERE id = ?",
           runId);
-      registry.endApply(model.name());
-      return new Applied(model.name(), version, "applied", runId,
-          steps.stream().map(Step::info).toList());
+      registry.endApply(model);
+      return new Applied(model, version, "applied", runId, steps.stream().map(Step::info).toList());
     } catch (RuntimeException e) {
       jdbc.update(
           "UPDATE engine.apply_run SET status = 'failed', finished_at = now() " + "WHERE id = ?",
           runId);
       throw e;
     }
+  }
+
+  // Finishes the apply that stopped, with the file, the renames and the level it was started with.
+  public Applied resume(String modelName, Actor actor) {
+    Stalled stalled = stalled(modelName);
+    Model model = ModelParser.parse(stalled.content());
+    return exclusively(model, () -> {
+      Running running = running(modelName);
+      return run(model, stalled.content(), actor, running == null ? null : running.version(),
+          stalled.accept(), stalled.renames());
+    });
+  }
+
+  // Gives up the apply that stopped: the tables go back to the running version. What the stopped
+  // apply added goes with its rows; what it dropped does not come back.
+  public Applied abandon(String modelName, Actor actor) {
+    Running running = running(modelName);
+    if (running == null) {
+      throw new InvalidStateException("The first apply of model " + modelName
+          + " never finished, so there is no version to go back to; finish it instead");
+    }
+    Stalled stalled = stalled(modelName);
+    Model stopped = ModelParser.parse(stalled.content());
+    return exclusively(running.model(), () -> restore(running, stopped, actor));
+  }
+
+  private Applied restore(Running running, Model stopped, Actor actor) {
+    Model model = running.model();
+    Map<String, Map<String, String>> back = new LinkedHashMap<>();
+    ModelDiff.between(model, stopped, Map.of()).renames.forEach((entity, fields) -> {
+      Map<String, String> turned = new LinkedHashMap<>();
+      fields.forEach((now, before) -> turned.put(before, now));
+      back.put(entity, turned);
+    });
+    ModelDiff diff = ModelDiff.between(stopped, model, back);
+    String content = jdbc.queryForObject(
+        "SELECT content FROM engine.model_version WHERE model = ? AND version = ?", String.class,
+        model.name(), running.version());
+    prepareSchema(model);
+    long runId = startRun(model.name(), running.hash(), actor, content, back, Level.LOSS);
+    return execute(model.name(), runId, running.version(),
+        steps(model, diff, content, running.hash(), actor, running.version()));
+  }
+
+  private Stalled stalled(String modelName) {
+    List<Map<String, Object>> rows = jdbc.queryForList(
+        "SELECT status, content, renames, accept FROM engine.apply_run WHERE model = ? "
+            + "ORDER BY id DESC LIMIT 1",
+        modelName);
+    if (rows.isEmpty() || "done".equals(rows.get(0).get("status"))) {
+      throw new InvalidStateException("Model " + modelName + " has no apply that stopped");
+    }
+    Map<String, Object> row = rows.get(0);
+    if (row.get("content") == null) {
+      throw new InvalidStateException(
+          "The apply of model " + modelName + " that stopped kept no file; apply the file again");
+    }
+    Map<String, Map<String, String>> renames = json.readValue((String) row.get("renames"),
+        new TypeReference<Map<String, Map<String, String>>>() {});
+    return new Stalled((String) row.get("content"), renames,
+        Level.valueOf((String) row.get("accept")));
   }
 
   private List<String> roleCollisions(Model model) {
@@ -254,26 +338,27 @@ public class ApplyService {
 
   private List<String> dropDependencyRejections(Model model, ModelDiff diff) {
     List<String> rejections = new ArrayList<>();
+    // Records still moving through their process are work someone waits for, so they are finished
+    // or withdrawn first. The files of the entity go with it when the change is applied.
     diff.changes.stream().filter(change -> "DROP_ENTITY".equals(change.kind())).forEach(change -> {
-      Long attachments = jdbc.queryForObject(
-          "SELECT count(*) FROM engine.attachment WHERE model = ? AND entity = ?", Long.class,
-          model.name(), change.entity());
       Long processes = jdbc.queryForObject(
           "SELECT count(DISTINCT proc_inst_id_) FROM engine.act_ru_execution "
-              + "WHERE business_key_ LIKE ?",
-          Long.class, model.name() + "." + change.entity() + ".%");
-      if ((attachments != null && attachments > 0) || (processes != null && processes > 0)) {
-        rejections.add("Cannot drop " + change.entity() + " while it has "
-            + (processes == null ? 0 : processes) + " process instances and "
-            + (attachments == null ? 0 : attachments) + " attachments");
+              + "WHERE business_key_ LIKE ? ESCAPE '\\'",
+          Long.class, likeLiteral(model.name() + "." + change.entity() + ".") + "%");
+      if (processes != null && processes > 0) {
+        rejections.add("Cannot drop " + change.entity() + " while it has " + processes
+            + " process instances running");
       }
     });
     return rejections;
   }
 
   public List<Map<String, Object>> models() {
-    return jdbc.queryForList("SELECT DISTINCT ON (model) model, version, hash, applied_by, "
-        + "applied_by_name, applied_at FROM engine.model_version ORDER BY model, version DESC");
+    List<Map<String, Object>> models = jdbc.queryForList(
+        "SELECT DISTINCT ON (model) model, version, hash, applied_by, applied_by_name, applied_at "
+            + "FROM engine.model_version ORDER BY model, version DESC");
+    models.forEach(model -> model.put("held", registry.isHeld((String) model.get("model"))));
+    return models;
   }
 
   public List<Map<String, Object>> runs(String model) {
@@ -284,8 +369,9 @@ public class ApplyService {
         + "WHERE r.model = ? ORDER BY r.id DESC LIMIT 20", model);
   }
 
-  // One apply of a model at a time. The lock lives on its own connection, so it ends with the
-  // connection if the service dies, while every step commits on its own.
+  // One apply at a time. The locks live on their own connection, so they end with the connection if
+  // the service dies, while every step commits on its own. The lock of the model tells which model
+  // is busy; the shared one keeps two models from passing the role check before either has saved.
   private <T> T exclusively(Model model, Supplier<T> work) {
     String key = "dxos.apply." + model.name();
     return jdbc.execute((ConnectionCallback<T>) connection -> {
@@ -293,7 +379,14 @@ public class ApplyService {
         throw new InvalidStateException("Model " + model.name() + " is being applied right now");
       }
       try {
-        return work.get();
+        if (!advisoryLock(connection, "pg_try_advisory_lock", ALL_MODELS_LOCK)) {
+          throw new InvalidStateException("Another model is being applied right now");
+        }
+        try {
+          return work.get();
+        } finally {
+          advisoryLock(connection, "pg_advisory_unlock", ALL_MODELS_LOCK);
+        }
       } finally {
         advisoryLock(connection, "pg_advisory_unlock", key);
       }
@@ -496,6 +589,9 @@ public class ApplyService {
       }
       schemaTool.apply(model, plan);
     }));
+    diff.changes.stream().filter(change -> "DROP_ENTITY".equals(change.kind()))
+        .forEach(change -> steps.add(new Step(new PlannedStep("DROP_FILES", change.entity()),
+            () -> attachments.purgeEntity(model.name(), change.entity()))));
     for (Role role : model.roles()) {
       steps.add(new Step(new PlannedStep("ENSURE_ROLE", role.name()),
           () -> keycloak.ensureRealmRole(role.name(), role.description())));
@@ -520,6 +616,12 @@ public class ApplyService {
         error == null ? null : error.substring(0, Math.min(error.length(), ERROR_LENGTH));
     jdbc.update("INSERT INTO engine.apply_step (run_id, seq, kind, target, status, error) "
         + "VALUES (?, ?, ?, ?, ?, ?)", runId, seq, step.kind(), step.target(), status, message);
+  }
+
+  // The text as a LIKE pattern that matches only itself: names may hold "_", which LIKE reads as
+  // any one character.
+  static String likeLiteral(String text) {
+    return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
   }
 
   static String hash(String content) {

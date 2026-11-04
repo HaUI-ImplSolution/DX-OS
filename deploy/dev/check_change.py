@@ -65,12 +65,12 @@ entities:
     access: {SELLER: all}
 """
     collision_plan = plan(admin, collision)
-    rt.check("T7-01 role reused by another model is refused", collision_plan["action"] == "rejected" and any("SELLER" in rejection for rejection in collision_plan["rejections"]), str(collision_plan))
+    rt.check("T7-01 a role name of another model may be used again", collision_plan["action"] == "create" and not collision_plan["rejections"], str(collision_plan["rejections"]))
     again = plan(admin, V1)
     rt.check("T7-01 plan of the same file is empty", again["action"] == "unchanged" and again["statements"] == [], str(again))
 
-    kc.ensure_user("buyer1", ["BUYER"])
-    kc.ensure_user("seller1", ["SELLER"])
+    kc.ensure_user("buyer1", ["shop/BUYER"])
+    kc.ensure_user("seller1", ["shop/SELLER"])
     buyer, seller = kc.token("buyer1"), kc.token("seller1")
     status, cat = kc.api(seller, "POST", "/data/shop/category", {"title": "Sách"})
     ids = []

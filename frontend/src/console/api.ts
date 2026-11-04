@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { translateBackend } from "../shell/backendMessages";
-import { request } from "../shell/api";
+import { json, queryString, request } from "../shell/api";
 
 export interface Change {
   level: string;
@@ -170,3 +170,49 @@ export const listOutbox = async (status: OutboxStatus, page: number, size: numbe
   return loaded;
 };
 export const retryOutbox = (id: number) => request<null>(`/outbox/${id}/retry`, { method: "POST" });
+
+export interface UserView {
+  id: string;
+  username: string;
+  name: string;
+  email: string;
+  enabled: boolean;
+}
+
+export interface UserPage {
+  items: UserView[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+export interface UserDetail {
+  user: UserView;
+  // The roles the user holds, by model.
+  roles: Record<string, string[]>;
+  units: string[];
+}
+
+export interface UserOptions {
+  models: { model: string; roles: { name: string; description: string }[] }[];
+  units: { name: string; label: string }[];
+}
+
+export const listUsers = (search: string, page: number, size: number) =>
+  request<UserPage>(`/users${queryString({ search, page, size })}`);
+export const getUser = (id: string) => request<UserDetail>(`/users/${id}`);
+export const getUserOptions = () => request<UserOptions>("/users/options");
+export const grantRole = (id: string, model: string, role: string) =>
+  request<null>(`/users/${id}/roles/${model}/${role}`, { method: "PUT" });
+export const revokeRole = (id: string, model: string, role: string) =>
+  request<null>(`/users/${id}/roles/${model}/${role}`, { method: "DELETE" });
+export const addUnit = (id: string, unit: string) => request<null>(`/users/${id}/units/${unit}`, { method: "PUT" });
+export const removeUnit = (id: string, unit: string) =>
+  request<null>(`/users/${id}/units/${unit}`, { method: "DELETE" });
+export const createUser = (username: string, fullName: string, email: string) =>
+  request<{ id: string; username: string; temporaryPassword: string }>("/users", json("POST", { username, fullName, email }));
+export const setUserEnabled = (id: string, enabled: boolean) =>
+  request<null>(`/users/${id}/enabled`, json("PUT", { enabled }));
+export const resetUserPassword = (id: string) =>
+  request<{ temporaryPassword: string }>(`/users/${id}/password`, { method: "POST" });

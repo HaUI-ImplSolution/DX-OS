@@ -239,7 +239,7 @@
       "enabled": true,
       "serviceAccountClientId": "dxos-backend-admin",
       "clientRoles": {
-        "realm-management": ["manage-users", "view-users", "view-realm", "manage-realm"]
+        "realm-management": ["manage-users", "view-users", "view-realm", "manage-realm", "manage-clients", "view-clients", "query-clients"]
       }
     }
   ]

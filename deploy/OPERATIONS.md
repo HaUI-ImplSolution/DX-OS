@@ -126,6 +126,14 @@ Giữ một phiên Admin Console đang mở khi tạo ứng dụng Access cho `a
 Nếu bị khóa ngoài thì gỡ ứng dụng đó trong Zero Trust.
 Sau khi bật, kiểm đăng nhập vào màn hình giám sát bằng SSO với tài khoản ADMIN.
 
+## Quản trị người dùng
+
+Tab Người dùng của bảng điều khiển (`/console`, ADMIN) cho tìm người dùng, xem vai theo từng ứng dụng, gán và gỡ vai và đơn vị của các mô hình đang chạy, tạo người dùng, khóa và mở, đặt lại mật khẩu.
+Mật khẩu tạm do hệ thống sinh, hiện một lần và người dùng phải đổi ở lần đăng nhập đầu.
+Vai `ADMIN` của nền tảng không cấp được ở tab này; cấp ở Keycloak Admin Console (Users, Role mapping).
+Người dùng đăng nhập bằng nhà cung cấp ngoài, chính sách mật khẩu và MFA do Keycloak quản lý.
+Backend cần tài khoản dịch vụ `dxos-backend-admin` có quyền client; Keycloak dựng từ trước phải cấp tay (xem [`sso/README.md`](../sso/README.md)).
+
 ## Audit trong backend
 
 Bảng `audit_log` (chỉ thêm, database từ chối sửa hoặc xóa) ghi lần truy cập bị từ chối và thao tác quản trị.
@@ -139,6 +147,9 @@ Mỗi bản ghi có người thực hiện (`sub`, tên, vai, client của token
 | `AUTH_FAILED` | Backend từ chối token đã tới nó (token không tới được backend nếu gateway đã từ chối) |
 | `SERVER_ERROR` | Backend trả `500`, `502` hoặc `503`; `outcome` là `FAILED`, `metadata` có mã trả về và tên lớp ngoại lệ (không có thông điệp lỗi) |
 | `ADMIN_ACTION_FAILED` | ADMIN thực hiện thao tác thay đổi (POST, PUT, PATCH, DELETE) bị từ chối vì lý do nghiệp vụ (`409`, `422`); `outcome` là `FAILED` |
+| `USER_CREATED`, `USER_LOCKED`, `USER_UNLOCKED`, `USER_PASSWORD_RESET`, `USER_ROLE_GRANTED`, `USER_ROLE_REVOKED`, `USER_UNIT_ADDED`, `USER_UNIT_REMOVED` | ADMIN đổi tài khoản ở tab Người dùng; `outcome` là `SUCCESS`, `target_id` là mã người dùng, `metadata` có tên đăng nhập và mô hình, vai hoặc đơn vị; không có mật khẩu |
+
+Thay đổi tài khoản làm thẳng ở Keycloak Admin Console không vào `audit_log`; tra ở sự kiện quản trị của Keycloak (Events, Admin events; giữ 90 ngày), có tài khoản người thực hiện.
 
 Thay đổi trên từng bản ghi nằm ở `engine.record_event`, lịch sử áp dụng mô hình ở `engine.apply_run` và `engine.apply_step`.
 Mô hình có lần áp dụng dừng giữa chừng bị đóng với người dùng và hiện nhãn "Đang dừng dở" ở bảng điều khiển.

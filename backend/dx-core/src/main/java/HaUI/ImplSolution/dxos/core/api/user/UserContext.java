@@ -16,6 +16,9 @@ public interface UserContext {
 
   boolean hasRole(String role);
 
+  // Roles the signed-in user holds in one Keycloak client, from the token claim "resource_access".
+  Set<String> clientRoles(String clientId);
+
   // Names of the groups the signed-in user belongs to, from the token claim "groups".
   Set<String> groups();
 

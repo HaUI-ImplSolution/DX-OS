@@ -18,6 +18,7 @@ import HaUI.ImplSolution.dxos.engine.process.BookingGuard;
 import HaUI.ImplSolution.dxos.engine.process.ProcessRules;
 import HaUI.ImplSolution.dxos.engine.process.ProcessService;
 import HaUI.ImplSolution.dxos.model.FieldType;
+import HaUI.ImplSolution.dxos.engine.registry.ModelClient;
 import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
 import HaUI.ImplSolution.dxos.model.Model.Field;
@@ -90,8 +91,8 @@ public class DataService {
     this.attachments = attachments;
   }
 
-  public Access access(Entity entity) {
-    Set<String> roles = user.roles();
+  public Access access(Model model, Entity entity) {
+    Set<String> roles = user.clientRoles(ModelClient.of(model.name()));
     Set<Scope> reads = EnumSet.noneOf(Scope.class);
     Set<Scope> writes = EnumSet.noneOf(Scope.class);
     for (Map.Entry<String, Scope> grant : entity.access().entrySet()) {
@@ -105,22 +106,23 @@ public class DataService {
     return new Access(reads, writes);
   }
 
-  public boolean canHandle(Entity entity) {
-    return entity.process() != null && user.roles().contains(entity.process().handler());
+  public boolean canHandle(Model model, Entity entity) {
+    return entity.process() != null
+        && user.clientRoles(ModelClient.of(model.name())).contains(entity.process().handler());
   }
 
   // The handler role assigns records, and so does a role that coordinates by writing to all rows
   // or to those of its units.
-  public boolean canAssign(Entity entity) {
-    Set<Scope> writes = access(entity).writes();
+  public boolean canAssign(Model model, Entity entity) {
+    Set<Scope> writes = access(model, entity).writes();
     return entity.process() != null
-        && (canHandle(entity) || writes.contains(Scope.ALL) || writes.contains(Scope.UNIT));
+        && (canHandle(model, entity) || writes.contains(Scope.ALL) || writes.contains(Scope.UNIT));
   }
 
   @Transactional(readOnly = true)
   public PageResponse<Map<String, Object>> list(Model model, Entity entity,
       Map<String, String> params) {
-    Access access = access(entity);
+    Access access = access(model, entity);
     requireRead(access);
     MapSqlParameterSource values = new MapSqlParameterSource();
     List<String> where = new ArrayList<>();
@@ -149,7 +151,7 @@ public class DataService {
 
   @Transactional(readOnly = true)
   public Map<String, Object> get(Model model, Entity entity, long id) {
-    Access access = access(entity);
+    Access access = access(model, entity);
     requireRead(access);
     MapSqlParameterSource values = new MapSqlParameterSource("id", id);
     String scope = scope(model, entity, access.reads(), values);
@@ -163,7 +165,7 @@ public class DataService {
 
   @Transactional
   public Map<String, Object> create(Model model, Entity entity, Map<String, Object> body) {
-    Access access = access(entity);
+    Access access = access(model, entity);
     requireRead(access);
     requireWrite(access);
     Map<String, Object> values = coerce(entity, body, true);
@@ -203,7 +205,7 @@ public class DataService {
 
   @Transactional
   public Map<String, Object> update(Model model, Entity entity, long id, Map<String, Object> body) {
-    Access access = access(entity);
+    Access access = access(model, entity);
     requireRead(access);
     requireWrite(access);
     Map<String, Object> values = coerce(entity, body, false);
@@ -245,7 +247,7 @@ public class DataService {
   // Passes when the record is in a row the caller may write and, with a process, not final.
   @Transactional(readOnly = true)
   public void requireChangeable(Model model, Entity entity, long id) {
-    Access access = access(entity);
+    Access access = access(model, entity);
     requireRead(access);
     requireWrite(access);
     MapSqlParameterSource values = new MapSqlParameterSource("id", id);
@@ -264,7 +266,7 @@ public class DataService {
 
   @Transactional
   public void delete(Model model, Entity entity, long id) {
-    Access access = access(entity);
+    Access access = access(model, entity);
     requireRead(access);
     requireWrite(access);
     if (entity.process() != null) {
@@ -295,9 +297,10 @@ public class DataService {
       String note) {
     Action action = processOf(entity).definition().action(actionName)
         .orElseThrow(() -> new ResourceNotFoundException("Action " + actionName + " not found"));
-    Map<String, Object> record = lock(model, entity, access(entity), id);
+    Map<String, Object> record = lock(model, entity, access(model, entity), id);
     String me = user.currentUserId();
-    rules.checkAction(entity, action, record, me, user.roles(), note);
+    rules.checkAction(entity, action, record, me, user.clientRoles(ModelClient.of(model.name())),
+        note);
     String status = (String) record.get("status");
     if (ProcessFamily.WITHDRAW.equals(actionName)) {
       process.withdraw(model, entity, id, me);
@@ -314,16 +317,16 @@ public class DataService {
   @Transactional
   public Map<String, Object> assign(Model model, Entity entity, long id, String assignee) {
     processOf(entity);
-    requireAssigner(entity);
-    Access access = access(entity);
+    requireAssigner(model, entity);
+    Access access = access(model, entity);
     Map<String, Object> current = get(model, entity, id);
     String me = user.currentUserId();
     String holder = null;
     if (me.equals(assignee)) {
       holder = user.currentFullName();
     } else if (assignee != null) {
-      holder = handlers(entity, current).stream().filter(p -> p.id().equals(assignee)).findFirst()
-          .map(Person::name)
+      holder = handlers(model, entity, current).stream().filter(p -> p.id().equals(assignee))
+          .findFirst().map(Person::name)
           .orElseThrow(() -> new ModelValidationException("assignee", "cannot handle this record"));
     }
     if (me.equals(assignee) && me.equals(current.get("created_by"))
@@ -352,13 +355,14 @@ public class DataService {
   @Transactional(readOnly = true)
   public List<Person> handlers(Model model, Entity entity, long id) {
     processOf(entity);
-    requireAssigner(entity);
-    return handlers(entity, get(model, entity, id));
+    requireAssigner(model, entity);
+    return handlers(model, entity, get(model, entity, id));
   }
 
-  private List<Person> handlers(Entity entity, Map<String, Object> record) {
+  private List<Person> handlers(Model model, Entity entity, Map<String, Object> record) {
     Model.Process definition = entity.process();
-    List<Person> people = keycloak.usersWithRole(definition.handler());
+    List<Person> people =
+        keycloak.usersWithClientRole(ModelClient.of(model.name()), definition.handler());
     if (entity.access().get(definition.handler()) == Scope.UNIT) {
       Object unit = record.get(entity.unitField().orElseThrow().name());
       Set<String> members = unit == null ? Set.of()
@@ -408,7 +412,7 @@ public class DataService {
 
   // The condition of the records waiting for the caller; null when nothing can wait.
   private String waitingCondition(Model model, Entity entity, MapSqlParameterSource values) {
-    Access access = access(entity);
+    Access access = access(model, entity);
     if (entity.process() == null || !access.read()) {
       return null;
     }
@@ -420,7 +424,7 @@ public class DataService {
       any.add("(status IN (:ownerStates) AND created_by = :me)");
     }
     Set<String> handler = fromStates(entity, Actor.HANDLER);
-    if (canHandle(entity) && !handler.isEmpty()) {
+    if (canHandle(model, entity) && !handler.isEmpty()) {
       values.addValue("handlerStates", handler);
       String notMine = entity.process().allowSelfDecision() ? "" : " AND created_by <> :me";
       any.add("(status IN (:handlerStates) AND (assignee IS NULL OR assignee = :me)" + notMine
@@ -443,8 +447,8 @@ public class DataService {
     return entity.process();
   }
 
-  private void requireAssigner(Entity entity) {
-    if (!canAssign(entity)) {
+  private void requireAssigner(Model model, Entity entity) {
+    if (!canAssign(model, entity)) {
       throw new ActionNotAllowedException("Your roles cannot assign this record");
     }
   }

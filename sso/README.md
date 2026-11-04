@@ -9,13 +9,15 @@ Cơ sở dữ liệu `keycloak` và vai `keycloak_app` do [`deploy/postgres/init
 
 | Thành phần | Cách dùng |
 |---|---|
-| Dịch vụ lõi | OAuth2 Resource Server, xác thực token bằng `jwk-set-uri`; tạo vai của mô hình qua Admin API bằng client `dxos-backend-admin` |
+| Dịch vụ lõi | OAuth2 Resource Server, xác thực token bằng `jwk-set-uri`; tạo client và vai của mô hình, và quản lý người dùng, qua Admin API bằng client `dxos-backend-admin` |
 | Web | Client `dxos-web`, Authorization Code + PKCE, tự chuyển sang Keycloak khi chưa có phiên |
 | Màn hình giám sát | Client `dxos-monitor`, chỉ cho vai `ADMIN` |
 
 ## Realm `dxos`
 
-- Realm import chỉ có vai `ADMIN` và các client trên; vai của một mô hình do dịch vụ lõi tạo khi áp dụng mô hình.
+- Realm import chỉ có vai `ADMIN` và các client trên; client `dxos-m-<mô hình>` và vai của một mô hình do dịch vụ lõi tạo khi áp dụng mô hình.
+- Tài khoản dịch vụ `dxos-backend-admin` có ở `realm-management` các quyền `manage-users`, `view-users`, `view-realm`, `manage-realm`, `manage-clients`, `view-clients` và `query-clients`.
+  Realm đã import từ trước chưa có ba quyền client: cấp tay ở Admin Console (Clients, `dxos-backend-admin`, Service accounts roles, Assign role, lọc theo client `realm-management`), nếu không áp dụng mô hình báo lỗi 403 ở bước `ENSURE_CLIENT`.
 - Realm chỉ import lần đầu; Keycloak đã có dữ liệu thì thêm client hoặc vai qua Admin Console (cấu hình như `realm-dxos.json`, secret của `dxos-monitor` là `MONITOR_OIDC_CLIENT_SECRET`) hoặc dựng lại bằng `deploy/reset.sh`.
 - Realm import lấy `GATEWAY_PUBLIC_URL` làm redirect URI của `dxos-web` (cùng `localhost` cho dev), nên đổi `PUBLIC_HOST` trước lần khởi động đầu tiên của Keycloak.
 
@@ -35,8 +37,10 @@ Cơ sở dữ liệu `keycloak` và vai `keycloak_app` do [`deploy/postgres/init
 - Mật khẩu chỉ nằm ở Keycloak, lưu dạng băm Argon2id (mặc định của Keycloak 26).
 - `dxos-web` có mapper `dxos-api-audience` thêm `dxos-api` vào `aud`; dịch vụ lõi (`security.jwt.audience`) trả `401` cho token thiếu audience.
 - `dxos-web` có mapper `groups` đưa tên nhóm vào token; quyền `unit` của mô hình dựa trên claim này, nên đổi nhóm chỉ có hiệu lực khi người dùng lấy token mới.
-- Áp dụng mô hình tạo vai và nhóm bằng tài khoản dịch vụ `dxos-backend-admin`, và không xóa chúng khi mô hình bỏ đi.
-- Dịch vụ lõi đọc vai từ `realm_access.roles` của token và tính quyền theo mô hình; chủ sở hữu bản ghi là claim `sub`, không phụ thuộc tên hiển thị.
+- Áp dụng mô hình tạo client, vai và nhóm bằng tài khoản dịch vụ `dxos-backend-admin`, và không xóa chúng khi mô hình bỏ đi.
+- Vai của mô hình nằm ở client riêng `dxos-m-<mô hình>` (không cho ai đăng nhập), nên hai mô hình dùng được cùng tên vai mà người giữ không chung.
+- `dxos-web` giữ `fullScopeAllowed` mặc định (bật) và scope mặc định `roles`, nên token mang vai client ở `resource_access`; tắt một trong hai thì người dùng mất quyền vào mọi mô hình.
+- Dịch vụ lõi đọc vai `ADMIN` từ `realm_access.roles` và vai của mô hình từ `resource_access.dxos-m-<mô hình>.roles` của token, rồi tính quyền theo mô hình; chủ sở hữu bản ghi là claim `sub`, không phụ thuộc tên hiển thị.
 
 ## Máy chủ công khai
 

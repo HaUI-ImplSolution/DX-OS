@@ -47,11 +47,13 @@ python3 deploy/dev/check_process.py         # sau check_change.py, trên cùng s
 python3 deploy/dev/check_booking.py         # sau check_process.py, trên cùng stack
 python3 deploy/dev/check_demo.py            # sau các script trên hoặc trên stack rỗng
 python3 deploy/dev/check_guards.py          # sau các script trên, trên cùng stack
+python3 deploy/dev/check_users.py           # sau check_guards.py, trên cùng stack
 ```
 
 Tiêu chí 3 của `check_demo.py` (chặn tệp nhiễm mã độc) chỉ chạy khi bật quét: đặt `COMPOSE_PROFILES=av` và `STORAGE_SCAN_HOST=clamav` trong `deploy/.env` rồi `docker compose up -d`.
 
 Script tạo client Keycloak `dxos-check` (cho phép đăng nhập bằng mật khẩu, chỉ dùng cho máy dev) và các người dùng thử `admin1`, `req1`, `req2`, `keeper1`, `multi1`, `none1`, `editor1`.
+Vai của mô hình được gán ở client `dxos-m-<mô hình>`, vai `ADMIN` ở realm.
 Biến `DXOS_ENV_FILE`, `DXOS_BASE_URL`, `DXOS_PROJECT` đổi tệp env, địa chỉ gateway và tên project Compose.
 
 | Mã | Nội dung | Kết quả mong đợi |
@@ -93,7 +95,8 @@ Biến `DXOS_ENV_FILE`, `DXOS_BASE_URL`, `DXOS_PROJECT` đổi tệp env, địa
 | T9-06, T9-07 | Schema, họ mẫu, mẫu, phiên bản cho ADMIN và vai khác; áp dụng từng mẫu | Đúng nội dung; vai khác 403; mọi mẫu áp dụng được |
 | T9-12 (C1 đến C8) | Tám tiêu chí của kịch bản trình diễn | Cả tám đạt |
 | T8-11 | Tệp đính kèm | Gắn, tải qua gateway, gỡ, quyền theo bản ghi; 409 khi hồ sơ đã quyết định |
-| T12-01 đến T12-04 | Mô hình thứ hai dùng vai của mô hình đầu; vai `ADMIN`; hai mô hình cùng giành một vai | Từ chối kèm tên vai và mô hình đang giữ, không tạo gì; `ADMIN` bị 400 kèm dòng; một bên thắng, bên kia 409 |
+| T12-01 đến T12-04 | Hai mô hình dùng cùng tên vai; vai `ADMIN`; người chỉ giữ vai của một mô hình gọi mô hình kia; hai mô hình áp dụng song song | Cả hai áp dụng được; `ADMIN` bị 400 kèm dòng; người giữ vai của mô hình này bị 403 ở mô hình kia; hai lần áp dụng đều 200 |
+| T13-06 đến T13-14 | Tab Người dùng ở mức API: danh sách có tìm kiếm và phân trang, gán và gỡ vai và đơn vị, vai hoặc đơn vị không có (404), người không phải ADMIN (403), tạo người dùng, khóa và mở, đặt lại mật khẩu, tự khóa mình (409), bản ghi audit và sự kiện quản trị của Keycloak | Token đổi theo vai; mật khẩu tạm phải đổi trước khi đăng nhập; mỗi thay đổi có bản ghi `USER_*` với người thực hiện, thao tác không xảy ra thì không có; không mật khẩu nào trong log, audit hay sự kiện Keycloak |
 | T12-05 đến T12-11 | Xóa thực thể còn hồ sơ đang chạy quy trình; tên thực thể gần giống nhau; hồ sơ đã rút kèm tệp đính kèm | Từ chối khi còn quy trình đang chạy; tên gần giống không chặn nhầm; sau khi rút thì xóa được với `accept=LOSS`, tệp và bảng bị dọn, thực thể khác và quy trình đang chạy nguyên vẹn |
 | T12-12 đến T12-22 | Áp dụng dở khi Keycloak dừng, kể cả lần áp dụng đầu của một mô hình; khởi động lại backend; rồi Tiếp tục và Hủy bỏ | Mô hình bị giữ (409), không hiện cho người dùng, `GET /models` báo `held`, vẫn giữ sau khi khởi động lại; `resume` hoàn tất không cần tệp; `abandon` đưa cột và bảng về phiên bản đang chạy và giữ dòng dữ liệu, hoặc xóa schema của mô hình chưa có phiên bản; chỉ lần chạy dở mới giữ mô hình |
 
@@ -112,7 +115,7 @@ T5-11 và T6-14 cần dịch vụ chạy với `ENGINE_FAULT_AFTER_DECISION=true
 9. Bấm biểu tượng đổi giao diện: chế độ tối hiện đủ hộp việc, danh sách, chi tiết hồ sơ và bảng điều khiển.
 10. Ở bảng điều khiển, tab Soạn và áp dụng: bấm biểu tượng mở to của sơ đồ quy trình thì hiện hộp thoại lớn, phần nền phía sau mờ đi.
 11. Dừng Keycloak (`docker compose stop keycloak`), áp dụng một thay đổi cho một mô hình, rồi bật lại Keycloak: thẻ mô hình hiện nhãn "Đang dừng dở" kèm nút Tiếp tục áp dụng và Hủy bỏ; Tiếp tục thì nhãn mất và phiên bản tăng; Hủy bỏ hỏi xác nhận rồi đưa mô hình về phiên bản đang chạy; mô hình mà lần áp dụng đầu dừng dở hiện nhãn "Chưa có phiên bản", không có nút Sửa mô hình, và Hủy bỏ làm thẻ biến mất.
-12. Khai báo vai `ADMIN`, hoặc vai đang thuộc một mô hình khác, ở tab Soạn và áp dụng: báo lỗi tiếng Việt kèm dòng và cột hoặc tên mô hình đang giữ vai, không có nút Áp dụng.
+12. Khai báo vai `ADMIN` ở tab Soạn và áp dụng: báo lỗi tiếng Việt kèm dòng và cột, không có nút Áp dụng; khai báo vai trùng tên với mô hình khác thì áp dụng được.
 13. Khi một thực thể còn hồ sơ đang xử lý, đổi hạn xử lý hoặc người xử lý của nó rồi bấm Xem kế hoạch: báo "Không đổi được ... khi còn N hồ sơ đang xử lý" và không có nút Áp dụng; rút hết hồ sơ rồi xem lại thì có nút Áp dụng.
 
 ## 6. Hồi quy
@@ -189,4 +192,18 @@ Cây làm việc gồm cả tệp chưa commit; stack dựng riêng (project Com
 | Hai bản sao `backend` sau gateway | Đạt | Cả hai nhận lưu lượng. Sau một lần áp dụng, 22 trong 40 yêu cầu dữ liệu nhận 404 và danh sách mô hình nhảy qua lại; mô hình bị giữ vẫn được bản sao kia phục vụ (26 trong 40 yêu cầu trả 200 thay vì 409); khởi động lại cả hai thì 40/40 đúng |
 | Đổi luật quy trình khi còn hồ sơ mở, bằng Chrome | Đạt | Còn hai hồ sơ: báo không đổi được hạn xử lý, không có nút Áp dụng; rút cả hai thì có nút Áp dụng |
 | Bảng từ bản cũ hơn (mô phỏng bằng cách xóa chỉ mục, rồi cột `handle_by`) | Đạt | Thiếu chỉ mục: mọi API chạy bình thường. Thiếu cột: danh sách, đọc, tạo và hộp việc trả 500, log có `BadSqlGrammarException`; áp dụng lại cùng tệp trả `unchanged` và không sửa; một tệp có nội dung khác thêm lại cột và chỉ mục, rồi mọi API trả 200 |
-| Chưa chạy | | Dòng log khi hai mô hình đã lưu dùng chung vai (không dựng được qua API) |
+| Chưa chạy | | Xem mục 5 của `docs/dynamic-core/BACKLOG.md` |
+
+### Kiểm ngày 04/11/2026 trên nhánh `Khuong/phase-13-role-isolation`
+
+Cây làm việc gồm cả tệp chưa commit; stack dựng riêng (project Compose `dxos-e2e`), cơ sở dữ liệu rỗng.
+
+| Mục | Kết quả | Ghi chú |
+|---|---|---|
+| `./mvnw clean verify` | Đạt | dx-core 20 test, dx-engine 8, dx-monitor 3; dx-model không có test |
+| `npx tsc --noEmit` | Đạt | Không lỗi |
+| Chín script ở `deploy/dev` theo thứ tự trên | Đạt | 428/428: 51, 17, 71, 65, 56, 44, 26, 59 và `check_users.py` 39 |
+| `audit_log` sau chuỗi trên | Đạt | 41 bản ghi (2 từ chối, 30 lỗi, 9 thành công), không lỗi ghi |
+| Tab Người dùng bằng Chrome | Đạt | Danh sách, tìm kiếm, gán vai, đặt lại mật khẩu, tạo người dùng |
+| Stack dev dựng lại từ trạng thái rỗng bằng `reset.sh` | Đạt | Tám service healthy, tài khoản dịch vụ có đủ quyền client |
+| Chưa chạy | | Xem mục 5 của `docs/dynamic-core/BACKLOG.md` |

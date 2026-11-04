@@ -4,6 +4,7 @@ import { Alert, Box, Skeleton, Snackbar, Tab, Tabs } from "@mui/material";
 import AutoAwesomeMosaicOutlinedIcon from "@mui/icons-material/AutoAwesomeMosaicOutlined";
 import EditNoteOutlinedIcon from "@mui/icons-material/EditNoteOutlined";
 import LayersOutlinedIcon from "@mui/icons-material/LayersOutlined";
+import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
 import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import { Title } from "react-admin";
 import PageHeader from "../shell/PageHeader";
@@ -13,6 +14,7 @@ import ModelsTab from "./ModelsTab";
 import { useModelSchema } from "./monacoSetup";
 import OutboxTab from "./OutboxTab";
 import TemplatesTab from "./TemplatesTab";
+import UsersTab from "./UsersTab";
 
 const BLANK = `# SPDX-License-Identifier: Apache-2.0
 format: 0
@@ -76,6 +78,7 @@ export default function ConsolePage() {
         <Tab icon={<AutoAwesomeMosaicOutlinedIcon fontSize="small" />} iconPosition="start" label="Thư viện mẫu" />
         <Tab icon={<EditNoteOutlinedIcon fontSize="small" />} iconPosition="start" label="Soạn và áp dụng" />
         <Tab icon={<SyncAltIcon fontSize="small" />} iconPosition="start" label="Hàng đợi sự kiện" />
+        <Tab icon={<PeopleOutlineIcon fontSize="small" />} iconPosition="start" label="Người dùng" />
       </Tabs>
       {!schema && (
         <Box>
@@ -113,6 +116,7 @@ export default function ConsolePage() {
         />
       )}
       {schema && tab === 3 && <OutboxTab />}
+      {schema && tab === 4 && <UsersTab />}
       <Snackbar open={note !== null} autoHideDuration={6000} onClose={() => setNote(null)} message={note ?? ""} />
     </Box>
   );

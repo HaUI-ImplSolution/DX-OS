@@ -2,6 +2,7 @@
 package HaUI.ImplSolution.dxos.core.identity;
 
 import HaUI.ImplSolution.dxos.core.api.exception.InvalidStateException;
+import HaUI.ImplSolution.dxos.core.api.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.dxos.core.exception.KeycloakAdminException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -24,6 +25,12 @@ public class KeycloakAdminClient {
 
   // A user as other users may see them.
   public record Person(String id, String name) {}
+
+  // A user as the account administration shows them.
+  public record Account(String id, String username, String name, String email, boolean enabled) {}
+
+  // One page of accounts and how many match in all.
+  public record Accounts(List<Account> items, long total) {}
 
   private static final int MAX_PEOPLE = 500;
 
@@ -48,19 +55,11 @@ public class KeycloakAdminClient {
     this.clientSecret = clientSecret;
   }
 
-  // Creates an enabled user with a temporary password (changed at first login) and the given
-  // realm role. Returns the new user id (the token "sub"). A half-created user is removed again.
-  public String createUser(String username, String fullName, String email, String temporaryPassword,
-      String realmRole) {
-    String token = accessToken();
-    String userId = createAccount(token, username, fullName, email, temporaryPassword);
-    try {
-      assignRealmRole(token, userId, realmRole);
-    } catch (RuntimeException e) {
-      deleteUserQuietly(token, userId);
-      throw e;
-    }
-    return userId;
+  // Creates an enabled user with a temporary password (changed at first login). Returns the new
+  // user id (the token "sub").
+  public String createUser(String username, String fullName, String email,
+      String temporaryPassword) {
+    return createAccount(accessToken(), username, fullName, email, temporaryPassword);
   }
 
   // Creates the realm role when it does not exist yet; an existing role is left as it is.
@@ -90,6 +89,75 @@ public class KeycloakAdminClient {
     } catch (RuntimeException e) {
       throw new KeycloakAdminException("Keycloak is unreachable", e);
     }
+  }
+
+  // Creates the client that holds the roles of a model; it never signs anyone in. An existing
+  // client is left as it is.
+  public void ensureClient(String clientId) {
+    try {
+      restClient.post().uri("/admin/realms/{realm}/clients", realm)
+          .headers(h -> h.setBearerAuth(accessToken())).contentType(MediaType.APPLICATION_JSON)
+          .body(Map.of("clientId", clientId, "protocol", "openid-connect", "bearerOnly", true,
+              "enabled", true))
+          .retrieve().toBodilessEntity();
+    } catch (RestClientResponseException e) {
+      if (e.getStatusCode().value() != 409) {
+        throw new KeycloakAdminException(
+            "Keycloak refused to create a client: HTTP " + e.getStatusCode().value(), e);
+      }
+    } catch (KeycloakAdminException e) {
+      throw e;
+    } catch (RuntimeException e) {
+      throw new KeycloakAdminException("Keycloak is unreachable", e);
+    }
+  }
+
+  // Creates the role under the client when it does not exist yet; an existing role is left as it
+  // is.
+  public void ensureClientRole(String clientId, String name, String description) {
+    String uuid = findClientUuid(clientId)
+        .orElseThrow(() -> new KeycloakAdminException("Keycloak has no client " + clientId));
+    String token = accessToken();
+    try {
+      restClient.get().uri("/admin/realms/{realm}/clients/{uuid}/roles/{name}", realm, uuid, name)
+          .headers(h -> h.setBearerAuth(token)).retrieve().toBodilessEntity();
+      return;
+    } catch (RestClientResponseException e) {
+      if (e.getStatusCode().value() != 404) {
+        throw new KeycloakAdminException(
+            "Keycloak refused a role lookup: HTTP " + e.getStatusCode().value(), e);
+      }
+    } catch (RuntimeException e) {
+      throw new KeycloakAdminException("Keycloak is unreachable", e);
+    }
+    try {
+      restClient.post().uri("/admin/realms/{realm}/clients/{uuid}/roles", realm, uuid)
+          .headers(h -> h.setBearerAuth(token)).contentType(MediaType.APPLICATION_JSON)
+          .body(Map.of("name", name, "description", description)).retrieve().toBodilessEntity();
+    } catch (RestClientResponseException e) {
+      if (e.getStatusCode().value() != 409) {
+        throw new KeycloakAdminException(
+            "Keycloak refused to create a role: HTTP " + e.getStatusCode().value(), e);
+      }
+    } catch (RuntimeException e) {
+      throw new KeycloakAdminException("Keycloak is unreachable", e);
+    }
+  }
+
+  // The users that hold the role of a client.
+  public List<Person> usersWithClientRole(String clientId, String role) {
+    String uuid = findClientUuid(clientId).orElse(null);
+    if (uuid == null) {
+      return List.of();
+    }
+    return people("/admin/realms/{realm}/clients/" + uuid + "/roles/{name}/users?max=" + MAX_PEOPLE,
+        role);
+  }
+
+  private java.util.Optional<String> findClientUuid(String clientId) {
+    return list("/admin/realms/{realm}/clients?clientId={name}", clientId).stream()
+        .filter(found -> clientId.equals(found.get("clientId"))).findFirst()
+        .map(found -> found.get("id").toString());
   }
 
   // Creates the group when it does not exist yet; an existing group is left as it is.
@@ -155,10 +223,6 @@ public class KeycloakAdminClient {
         .map(found -> found.get("id").toString());
   }
 
-  public List<Person> usersWithRole(String role) {
-    return people("/admin/realms/{realm}/roles/{name}/users?max=" + MAX_PEOPLE, role);
-  }
-
   // The members of the group with exactly this name; none when there is no such group.
   public List<Person> groupMembers(String group) {
     return list("/admin/realms/{realm}/groups?search={name}&exact=true", group).stream()
@@ -179,10 +243,17 @@ public class KeycloakAdminClient {
         name.isEmpty() ? String.valueOf(user.get("username")) : name);
   }
 
-  @SuppressWarnings("unchecked")
   private List<Map<String, Object>> list(String uri, String variable) {
+    return rows(uri, variable);
+  }
+
+  @SuppressWarnings("unchecked")
+  private List<Map<String, Object>> rows(String uri, Object... variables) {
+    Object[] all = new Object[variables.length + 1];
+    all[0] = realm;
+    System.arraycopy(variables, 0, all, 1, variables.length);
     try {
-      List<Map<String, Object>> rows = restClient.get().uri(uri, realm, variable)
+      List<Map<String, Object>> rows = restClient.get().uri(uri, all)
           .headers(h -> h.setBearerAuth(accessToken())).retrieve().body(List.class);
       return rows == null ? List.of() : rows;
     } catch (RestClientResponseException e) {
@@ -193,6 +264,167 @@ public class KeycloakAdminClient {
     } catch (RuntimeException e) {
       throw new KeycloakAdminException("Keycloak is unreachable", e);
     }
+  }
+
+  // A page of the users whose name, username or email contains the text (all users when blank).
+  public Accounts searchAccounts(String search, int first, int max) {
+    String text = search == null ? "" : search.trim();
+    List<Account> items =
+        rows("/admin/realms/{realm}/users?search={text}&first={first}&max={max}", text, first, max)
+            .stream().map(KeycloakAdminClient::account).toList();
+    return new Accounts(items, countAccounts(text));
+  }
+
+  private long countAccounts(String text) {
+    try {
+      Integer count =
+          restClient.get().uri("/admin/realms/{realm}/users/count?search={text}", realm, text)
+              .headers(h -> h.setBearerAuth(accessToken())).retrieve().body(Integer.class);
+      return count == null ? 0 : count;
+    } catch (RestClientResponseException e) {
+      throw new KeycloakAdminException(
+          "Keycloak refused a lookup: HTTP " + e.getStatusCode().value(), e);
+    } catch (KeycloakAdminException e) {
+      throw e;
+    } catch (RuntimeException e) {
+      throw new KeycloakAdminException("Keycloak is unreachable", e);
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  public java.util.Optional<Account> findAccount(String userId) {
+    try {
+      Map<String, Object> user =
+          restClient.get().uri("/admin/realms/{realm}/users/{id}", realm, userId)
+              .headers(h -> h.setBearerAuth(accessToken())).retrieve().body(Map.class);
+      return user == null ? java.util.Optional.empty() : java.util.Optional.of(account(user));
+    } catch (RestClientResponseException e) {
+      if (e.getStatusCode().value() == 404) {
+        return java.util.Optional.empty();
+      }
+      throw new KeycloakAdminException(
+          "Keycloak refused a user lookup: HTTP " + e.getStatusCode().value(), e);
+    } catch (KeycloakAdminException e) {
+      throw e;
+    } catch (RuntimeException e) {
+      throw new KeycloakAdminException("Keycloak is unreachable", e);
+    }
+  }
+
+  // The roles the user holds in each client, by client id.
+  @SuppressWarnings("unchecked")
+  public Map<String, List<String>> clientRolesOf(String userId) {
+    try {
+      Map<String, Object> mappings =
+          restClient.get().uri("/admin/realms/{realm}/users/{id}/role-mappings", realm, userId)
+              .headers(h -> h.setBearerAuth(accessToken())).retrieve().body(Map.class);
+      Map<String, Object> clients =
+          mappings == null ? null : (Map<String, Object>) mappings.get("clientMappings");
+      Map<String, List<String>> roles = new java.util.TreeMap<>();
+      if (clients != null) {
+        clients.forEach((client, entry) -> roles.put(client,
+            ((List<Map<String, Object>>) ((Map<String, Object>) entry).get("mappings")).stream()
+                .map(role -> role.get("name").toString()).sorted().toList()));
+      }
+      return roles;
+    } catch (RestClientResponseException e) {
+      throw new KeycloakAdminException(
+          "Keycloak refused a lookup: HTTP " + e.getStatusCode().value(), e);
+    } catch (RuntimeException e) {
+      throw new KeycloakAdminException("Keycloak is unreachable", e);
+    }
+  }
+
+  // The names of the groups the user is a member of.
+  public List<String> groupsOf(String userId) {
+    return list("/admin/realms/{realm}/users/{name}/groups", userId).stream()
+        .map(group -> group.get("name").toString()).sorted().toList();
+  }
+
+  // Gives the user a role of a client; holding it already changes nothing.
+  public void grantClientRole(String userId, String clientId, String role) {
+    changeClientRole(userId, clientId, role, true);
+  }
+
+  // Takes the role of a client from the user; not holding it changes nothing.
+  public void revokeClientRole(String userId, String clientId, String role) {
+    changeClientRole(userId, clientId, role, false);
+  }
+
+  @SuppressWarnings("unchecked")
+  private void changeClientRole(String userId, String clientId, String role, boolean grant) {
+    String uuid = findClientUuid(clientId)
+        .orElseThrow(() -> new ResourceNotFoundException("Keycloak has no client " + clientId));
+    String token = accessToken();
+    try {
+      Map<String, Object> representation = restClient.get()
+          .uri("/admin/realms/{realm}/clients/{uuid}/roles/{name}", realm, uuid, role)
+          .headers(h -> h.setBearerAuth(token)).retrieve().body(Map.class);
+      var request =
+          grant ? restClient.post() : restClient.method(org.springframework.http.HttpMethod.DELETE);
+      request
+          .uri("/admin/realms/{realm}/users/{id}/role-mappings/clients/{uuid}", realm, userId, uuid)
+          .headers(h -> h.setBearerAuth(token)).contentType(MediaType.APPLICATION_JSON)
+          .body(List.of(representation)).retrieve().toBodilessEntity();
+    } catch (RestClientResponseException e) {
+      if (e.getStatusCode().value() == 404) {
+        throw new ResourceNotFoundException("Role " + role + " of " + clientId + " not found");
+      }
+      throw new KeycloakAdminException(
+          "Keycloak refused to change a role: HTTP " + e.getStatusCode().value(), e);
+    } catch (RuntimeException e) {
+      throw new KeycloakAdminException("Keycloak is unreachable", e);
+    }
+  }
+
+  // Locks the account out, or lets it sign in again.
+  @SuppressWarnings("unchecked")
+  public void setEnabled(String userId, boolean enabled) {
+    String token = accessToken();
+    try {
+      Map<String, Object> user =
+          restClient.get().uri("/admin/realms/{realm}/users/{id}", realm, userId)
+              .headers(h -> h.setBearerAuth(token)).retrieve().body(Map.class);
+      user.put("enabled", enabled);
+      restClient.put().uri("/admin/realms/{realm}/users/{id}", realm, userId)
+          .headers(h -> h.setBearerAuth(token)).contentType(MediaType.APPLICATION_JSON).body(user)
+          .retrieve().toBodilessEntity();
+    } catch (RestClientResponseException e) {
+      if (e.getStatusCode().value() == 404) {
+        throw new ResourceNotFoundException("User " + userId + " not found");
+      }
+      throw new KeycloakAdminException(
+          "Keycloak refused to change a user: HTTP " + e.getStatusCode().value(), e);
+    } catch (RuntimeException e) {
+      throw new KeycloakAdminException("Keycloak is unreachable", e);
+    }
+  }
+
+  // Sets a password the user must change at the next sign-in.
+  public void resetPassword(String userId, String temporaryPassword) {
+    try {
+      restClient.put().uri("/admin/realms/{realm}/users/{id}/reset-password", realm, userId)
+          .headers(h -> h.setBearerAuth(accessToken())).contentType(MediaType.APPLICATION_JSON)
+          .body(Map.of("type", "password", "value", temporaryPassword, "temporary", true))
+          .retrieve().toBodilessEntity();
+    } catch (RestClientResponseException e) {
+      if (e.getStatusCode().value() == 404) {
+        throw new ResourceNotFoundException("User " + userId + " not found");
+      }
+      throw new KeycloakAdminException(
+          "Keycloak refused to reset a password: HTTP " + e.getStatusCode().value(), e);
+    } catch (KeycloakAdminException e) {
+      throw e;
+    } catch (RuntimeException e) {
+      throw new KeycloakAdminException("Keycloak is unreachable", e);
+    }
+  }
+
+  private static Account account(Map<String, Object> user) {
+    Person person = person(user);
+    return new Account(person.id(), String.valueOf(user.get("username")), person.name(),
+        user.get("email") == null ? "" : user.get("email").toString(),
+        !Boolean.FALSE.equals(user.get("enabled")));
   }
 
   public void deleteUser(String userId) {
@@ -302,33 +534,6 @@ public class KeycloakAdminClient {
       throw e;
     } catch (RuntimeException e) {
       throw new KeycloakAdminException("Keycloak is unreachable", e);
-    }
-  }
-
-  @SuppressWarnings("unchecked")
-  private void assignRealmRole(String token, String userId, String roleName) {
-    try {
-      Map<String, Object> role =
-          restClient.get().uri("/admin/realms/{realm}/roles/{name}", realm, roleName)
-              .headers(h -> h.setBearerAuth(token)).retrieve().body(Map.class);
-      restClient.post().uri("/admin/realms/{realm}/users/{id}/role-mappings/realm", realm, userId)
-          .headers(h -> h.setBearerAuth(token)).contentType(MediaType.APPLICATION_JSON)
-          .body(List.of(role)).retrieve().toBodilessEntity();
-    } catch (RestClientResponseException e) {
-      throw new KeycloakAdminException(
-          "Keycloak refused to assign the " + roleName + " role: HTTP " + e.getStatusCode().value(),
-          e);
-    } catch (RuntimeException e) {
-      throw new KeycloakAdminException("Keycloak is unreachable", e);
-    }
-  }
-
-  private void deleteUserQuietly(String token, String userId) {
-    try {
-      restClient.delete().uri("/admin/realms/{realm}/users/{id}", realm, userId)
-          .headers(h -> h.setBearerAuth(token)).retrieve().toBodilessEntity();
-    } catch (RuntimeException ignored) {
-      // Best effort; the caller is already failing with the original error.
     }
   }
 }

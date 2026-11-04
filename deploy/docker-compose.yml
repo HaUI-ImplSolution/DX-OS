@@ -99,7 +99,7 @@ services:
       S3_BUCKET: ${S3_BUCKET:?}
       STORAGE_PUBLIC_URL: ${GATEWAY_PUBLIC_URL:?}
       STORAGE_PRESIGN_TTL: ${STORAGE_PRESIGN_TTL:-15m}
-      # Keycloak admin client (creates the realm roles of a model)
+      # Keycloak admin client (creates the client and roles of a model, manages users)
       KEYCLOAK_ADMIN_CLIENT_ID: ${KEYCLOAK_ADMIN_CLIENT_ID:?}
       KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET:?}
       # Virus scan of uploads: the host of clamd (service clamav, profile av); empty turns it off

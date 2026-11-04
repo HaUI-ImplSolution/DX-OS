@@ -50,19 +50,12 @@ Mốc dưới đây là dự kiến.
 | Client, vai và nhóm còn lại ở Keycloak | Vai bỏ khỏi tệp, và client, vai, nhóm mà một lần áp dụng dở đã tạo, vẫn còn ở Keycloak cùng người giữ; khai báo lại tên vai trong cùng mô hình thì người giữ có lại quyền; tab Người dùng hiện vai còn lại để gỡ khỏi từng người, còn xóa hẳn client, vai hay nhóm thì làm tay ở Keycloak |
 | Xóa thực thể | Bảng, hồ sơ, tệp đính kèm và đối tượng trong kho bị xóa cùng; lịch sử Flowable đã kết thúc, audit và outbox của thực thể còn lại; thực thể còn hồ sơ đang chạy quy trình phải hoàn tất hoặc rút hết hồ sơ trước |
 | Khe hở khi bắt đầu áp dụng | Yêu cầu vào trước khi mô hình bị giữ vẫn chạy song song với bước đổi bảng, và hồ sơ tạo giữa lúc kiểm và lúc áp dụng không được tính vào số hồ sơ đang mở; Postgres tự chặn truy vấn khi đổi bảng; hướng làm: mỗi yêu cầu lấy khóa chia sẻ theo mô hình, lần áp dụng lấy khóa độc quyền |
-| Hệ thống đã áp dụng mô hình bằng bản cũ hơn | Bảng thiếu cột `handle_by` làm API dữ liệu của thực thể có quy trình trả 500 (danh sách, đọc, tạo, hộp việc) và bộ quét quá hạn lỗi mỗi phút; bảng thiếu chỉ mục `handle_by` vẫn chạy bình thường; hồ sơ đang xử lý trước đó không bị tính quá hạn cho đến lần chuyển trạng thái kế; vai của mô hình áp dụng từ trước khi có client riêng là vai realm nên người dùng không còn vào được; áp dụng lại cùng tệp trả `unchanged` và không sửa gì, chỉ một tệp có nội dung khác mới thêm cột, chỉ mục và client (hướng sửa ở phần 5); chưa có bản triển khai nào ở trạng thái này, nên dựng lại bằng `deploy/reset.sh` |
+| Hệ thống đã áp dụng mô hình bằng bản cũ hơn | Bảng thiếu cột `handle_by` làm API dữ liệu của thực thể có quy trình trả 500 (danh sách, đọc, tạo, hộp việc) và bộ quét quá hạn lỗi mỗi phút; bảng thiếu chỉ mục `handle_by` vẫn chạy bình thường; hồ sơ đang xử lý trước đó không bị tính quá hạn cho đến lần chuyển trạng thái kế; vai của mô hình áp dụng từ trước khi có client riêng là vai realm nên người dùng không còn vào được; áp dụng lại cùng tệp trả `unchanged` và không sửa gì, chỉ một tệp có nội dung khác mới thêm cột, chỉ mục và client (hướng sửa ở phần 4); chưa có bản triển khai nào ở trạng thái này, nên dựng lại bằng `deploy/reset.sh` |
 | Audit chỉ ghi thay đổi về tài khoản | Thay đổi vai, đơn vị và tài khoản của ADMIN vào `audit_log`; áp dụng, đổi và quay lui mô hình thành công chưa vào đó (lịch sử ở `apply_run` và `model_version`); nếu việc ghi audit lỗi thì chỉ có log và thay đổi vẫn thành công; thay đổi làm thẳng trong Admin Console chỉ có ở sự kiện quản trị của Keycloak, giữ 90 ngày, ghi tài khoản người thực hiện |
 | Xem trước không giữ khóa | Kế hoạch có thể cũ khi người khác áp dụng xen vào; bước áp dụng kiểm lại mọi điều kiện |
+| Không có giao dịch chung giữa các hệ thống | Giữa PostgreSQL, Keycloak, Flowable và SeaweedFS; mỗi bước chạy lại được, và lần áp dụng dở được tiếp tục hoặc hủy bỏ |
 
-## 4. Rủi ro kỹ thuật hiện tại
-
-| Rủi ro | Hướng xử lý |
-|---|---|
-| Kết nối trong pool của backend có thể đứng ở schema `engine`: Flowable (`setDatabaseSchema("engine")`) đặt `search_path` của kết nối nó dùng về `engine` và không trả lại, nên truy vấn vào bảng ngoài `engine` mà không ghi schema chỉ đúng khi trúng kết nối còn ở `public` | Mọi truy vấn vào bảng ngoài `engine` ghi rõ schema: entity `audit_log` ghi `schema = "public"`, `coreFlyway` khai báo `public`, `dx-monitor` đọc `public.audit_log`; truy vấn mới cũng phải ghi schema; Flowable cần `setDatabaseSchema` để tìm bảng của nó, bỏ đi thì nó tạo bảng ở `public`; muốn bỏ hẳn thì Flyway tạo bảng của Flowable ở `engine` và Flowable chạy với `DB_SCHEMA_UPDATE_FALSE` |
-
-Lõi không có giao dịch chung giữa PostgreSQL, Keycloak, Flowable và SeaweedFS; mỗi bước chạy lại được, và lần áp dụng dở được tiếp tục hoặc hủy bỏ (xem phần 3).
-
-## 5. Đề xuất từ rà soát đề thi và hướng thiết kế, chưa quyết
+## 4. Đề xuất từ rà soát đề thi và hướng thiết kế, chưa quyết
 
 Đối chiếu đề, thể lệ, các nguyên lý của đề và những gì [`README.md`](./README.md) đã hứa với mã hiện tại.
 

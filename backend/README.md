@@ -30,6 +30,7 @@ Chạy cả stack ở [`deploy/`](../deploy/): `docker compose up -d`.
 - `dx-engine/src/main/resources/application.yaml`: cấu hình của dịch vụ.
 - Biến môi trường đặt ở `deploy/.env` (mẫu `deploy/.env.example`).
 - Schema của `dx-core` do Flyway quản lý ở `db/migration/core`, bảng của `dx-engine` ở `db/migration/engine`, mỗi nơi có bảng lịch sử riêng.
+- Flowable đặt `search_path` của kết nối nó dùng về `engine` và không trả lại, nên truy vấn vào bảng ngoài `engine` (như `audit_log` ở `public`) luôn ghi rõ schema.
 - Bảng nghiệp vụ `m_<mô hình>` do pgschema đưa về trạng thái đích khi áp dụng mô hình; image backend kèm sẵn công cụ này, chạy `dx-engine` ngoài Docker thì cần `pgschema` trên `PATH` hoặc đặt `ENGINE_PGSCHEMA_COMMAND`.
 - `dx-monitor` chạy Flyway riêng với `db/migration/monitor` trong schema `monitor`.
 

@@ -34,9 +34,15 @@ Phiên bản trước của dự án (hai ứng dụng nghiệp vụ viết tay)
 - Bảng điều khiển cho người triển khai: thư viện mẫu, trình soạn mô hình, xem kế hoạch, áp dụng, lịch sử và quay về, sơ đồ quy trình.
 - Một lệnh nhận tệp mô hình trên máy sạch: hệ thống khởi động, tệp được áp dụng và có thể đăng nhập ngay.
 - Quản trị người dùng ngay trong bảng điều khiển: xem ai giữ vai nào ở từng ứng dụng, gán và gỡ vai và đơn vị, tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu; mỗi thay đổi được ghi lại kèm người thực hiện và xem lại được trong hộp thoại của người đó.
+- Áp dụng mô hình chờ các thao tác đang chạy của mô hình đó rồi mới đổi bảng, và kiểm lại hồ sơ đang mở sau khi đã giữ mô hình, nên không hồ sơ nào lọt qua giữa chừng; hủy bỏ lần áp dụng đầu dọn luôn phần phân quyền mà lần đó đã tạo.
+- Lịch sử hồ sơ được nối thành một chuỗi có dấu kiểm và có điểm neo định kỳ; một lệnh chỉ ra dòng nào đã bị sửa, xóa hoặc chèn.
+- Thống kê cho mỗi thực thể có quy trình: tổng số, theo trạng thái, quá hạn và theo đơn vị, cùng quyền xem với danh sách; mỗi số mở ra danh sách tương ứng.
+- Đổi mô hình được cả từ dòng lệnh để dùng trong tự động hóa, và có lệnh xuất hồ sơ đã xong ra tệp phân tích kèm bản kê để kiểm lại.
+- Sao lưu kiểm được cả tệp đính kèm; tệp đã gỡ chỉ rời kho sau một khoảng chờ để bản sao lưu luôn đủ; các dịch vụ tự chạy lại và có lệnh đưa hệ thống về đúng khai báo.
+- Ví dụ kết nối thiết bị: một chương trình giả lập tạo hồ sơ sự cố khi chỉ số vượt ngưỡng và không tạo trùng khi gửi lại.
 - Đăng nhập một lần qua Keycloak; có thể bắt quản trị viên nhập thêm mã một lần từ ứng dụng xác thực.
 
-Chưa có: thông báo chat, hỏi đáp bằng AI, báo cáo thống kê.
+Chưa có: thông báo chat, hỏi đáp bằng AI.
 Dịch vụ tìm kiếm tri thức có nguồn ở [`ai/`](./ai/README.md) chạy riêng, chưa nằm trong stack.
 Các phần này nằm trong [hướng thiết kế](./docs/dynamic-core/README.md).
 
@@ -55,7 +61,7 @@ Bộ cài tải bản phát hành mới nhất, kiểm SHA-256 rồi cài vào `
 `dxos start` tải image ở lần đầu, chờ mọi dịch vụ sẵn sàng, tạo tài khoản `admin` với mật khẩu tạm in ra màn hình, rồi in các địa chỉ.
 Đăng nhập `http://localhost:9080/console` bằng `admin`, đổi mật khẩu, chọn một mẫu ở tab Thư viện mẫu, xem kế hoạch rồi áp dụng.
 Đã có tệp mô hình thì `dxos start <tệp>` đưa tệp vào luôn: backend áp dụng tệp khi khởi động nếu tệp là mới, và lệnh in kết quả.
-Các lệnh khác (`stop`, `status`, `logs`, `admin`, `update`, `backup`, `uninstall`) có ở `dxos help` và [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md#cài-đặt-và-lệnh-dxos).
+Các lệnh khác (`stop`, `status`, `logs`, `admin`, `update`, `backup`, `plan`, `apply`, `history`, `reconcile`, `archive`, `uninstall`) có ở `dxos help` và [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md#cài-đặt-và-lệnh-dxos).
 
 ### Từ mã nguồn
 

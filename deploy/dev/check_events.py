@@ -20,7 +20,8 @@ import check_api as rt
 import kc
 
 SECRET = "check-events-secret"
-KEYS = {"eventId", "model", "entity", "recordId", "action", "fromStatus", "toStatus", "actor", "actorName", "at"}
+KEYS = {"schemaVersion", "eventId", "model", "entity", "recordId", "action", "fromStatus", "toStatus", "actor",
+        "actorName", "at", "hash"}
 BASE = "/data/onestop/request"
 received = []
 mode = {"answer": 200}
@@ -113,7 +114,11 @@ def main():
              [r["body"]["action"] for r in got] == ["created", "updated", "assigned", "return", "resubmit", "approve", "created", "deleted"],
              str([r["body"]["action"] for r in got]))
     rt.check("EV-02 each request is signed with the secret and carries its event id", bool(got) and all(r["signed"] and r["header"] == str(r["body"]["eventId"]) and r["type"] == "application/json" for r in got))
-    rt.check("EV-03 the message holds only ids, statuses, the actor and the time", bool(got) and all(set(r["body"]) == KEYS for r in got))
+    rt.check("EV-03 the message holds only ids, statuses, the actor, the time and the hash of the line", bool(got) and all(set(r["body"]) == KEYS and r["body"]["schemaVersion"] == 1 for r in got))
+    hashes = rt.psql("select string_agg(id || ':' || hash, ',' order by id) from engine.record_event where id in ("
+                     + ",".join(str(r["body"]["eventId"]) for r in got) + ")")[1]
+    rt.check("EV-03 and the hash is the one the history chain holds",
+             hashes == ",".join(f"{r['body']['eventId']}:{r['body']['hash']}" for r in got), hashes[:120])
     rt.check("EV-04 no content of the record or of a note is in the message", "secret" not in json.dumps([r["body"] for r in got]))
     rt.check("EV-05 the statuses of a step are before and after", got[5]["body"]["fromStatus"] == "submitted" and got[5]["body"]["toStatus"] == "approved" and got[5]["body"]["actor"] != "system")
     lines = count(f"select count(*) from engine.record_event where id >= {first_line}")
@@ -143,6 +148,61 @@ def main():
     rt.psql(f"update m_onestop.request set handle_by = now() - interval '1 hour' where id = {stale_id}")
     overdue = lambda: [r for r in delivered() if r["body"]["action"] == "overdue" and r["body"]["recordId"] == stale_id]
     rt.check("EV-09 a record past its deadline is reported once with the system as the actor", wait_for(overdue, 150) and len(overdue()) == 1 and overdue()[0]["body"]["actor"] == "system" and overdue()[0]["signed"])
+
+    # A message the receiver always refuses stops after the set number of tries; a retry gives one more.
+    start_backend({**webhook, "DXOS_OUTBOX_MAX_ATTEMPTS": "3"})
+    mode["answer"] = 500
+    status, doomed = kc.api(stu, "POST", BASE, {"reason": "receiver never answers", "kind": "Hoãn thi", "department": "DAO_TAO"})
+    doomed_event = count(f"select max(id) from engine.record_event where record_id = {doomed['data']['id']} and entity = 'request'")
+    doomed_where = f"topic = 'record.event' and payload->>'eventId' = '{doomed_event}'"
+    wait_for(lambda: count(f"select count(*) from engine.outbox where {doomed_where} and next_attempt_at = 'infinity'") == 1, 90)
+    wait_for(lambda: False, 8)
+    status, listing = kc.api(admin, "GET", "/outbox?status=stopped&size=100")
+    mine = [m for m in listing["data"]["page"]["items"] if json.loads(m["payload"]).get("eventId") == doomed_event]
+    rt.check("EV-13 a message stops after the set number of tries and the console lists it as stopped",
+             len(delivered(doomed_event, 500)) == 3 and len(mine) == 1 and mine[0]["stopped"] and mine[0]["next_attempt_at"] is None
+             and listing["data"]["counts"]["stopped"] >= 1,
+             f"{len(delivered(doomed_event, 500))} tries, listed {len(mine)}")
+    status, _ = kc.api(admin, "POST", f"/outbox/{mine[0]['id']}/retry")
+    wait_for(lambda: len(delivered(doomed_event, 500)) >= 4, 30)
+    wait_for(lambda: False, 8)
+    rt.check("EV-14 a retry gives a stopped message one more try and it stops again",
+             status == 200 and len(delivered(doomed_event, 500)) == 4
+             and count(f"select count(*) from engine.outbox where {doomed_where} and next_attempt_at = 'infinity' and delivered_at is null") == 1,
+             f"{len(delivered(doomed_event, 500))} tries")
+    mode["answer"] = 200
+    kc.api(admin, "POST", f"/outbox/{mine[0]['id']}/retry")
+    rt.check("EV-15 a stopped message is delivered by a retry once the receiver answers",
+             wait_for(lambda: len(delivered(doomed_event)) == 1, 30)
+             and count(f"select count(*) from engine.outbox where {doomed_where} and delivered_at is not null") == 1)
+
+    # The object of a removed file is deleted after the delay; while the store is down the delete is tried again.
+    bucket = next(line.split("=", 1)[1].strip() for line in open(kc.ENV_FILE) if line.startswith("S3_BUCKET="))
+    start_backend({**webhook, "DXOS_FILE_DELETE_DELAY": "40s"})
+    status, holder = kc.api(stu, "POST", BASE, {"reason": "with a file to remove", "kind": "Phúc khảo", "department": "DAO_TAO"})
+    held = holder["data"]["id"]
+    kc.api(stu, "POST", f"{BASE}/{held}/files?field=evidence", upload, f"multipart/form-data; boundary={boundary}")
+    key = rt.psql(f"select object_key from engine.attachment where model = 'onestop' and entity = 'request' and record_id = {held}")[1]
+    file_id = rt.psql(f"select id from engine.attachment where object_key = '{key}'")[1]
+    # The store answers on S3 only, signed with the key of the container.
+    in_store = lambda: rt.sh(rt.COMPOSE + ["exec", "-T", "seaweedfs", "sh", "-c",
+                                          'curl -s -o /dev/null -w "%{http_code}" -I --aws-sigv4 "aws:amz:us-east-1:s3" '
+                                          '--user "$AWS_ACCESS_KEY_ID:$AWS_SECRET_ACCESS_KEY" '
+                                          f'"http://127.0.0.1:8333/{bucket}/{key}"']).stdout.strip() == "200"
+    stored = in_store()
+    status, _ = kc.api(stu, "DELETE", f"{BASE}/{held}/files/{file_id}")
+    waiting = count(f"select count(*) from engine.outbox where topic = 'file.delete' and idempotency_key = 'file.delete:{key}' "
+                    "and delivered_at is null and next_attempt_at > now() + interval '10 seconds'")
+    rt.check("EV-16 a removed file leaves the store only after the delay", stored and status == 200 and waiting == 1 and in_store(),
+             f"stored {stored}, {waiting} waiting")
+    rt.sh(rt.COMPOSE + ["stop", "seaweedfs"])
+    delete_where = f"topic = 'file.delete' and idempotency_key = 'file.delete:{key}'"
+    wait_for(lambda: count(f"select attempts from engine.outbox where {delete_where}") >= 1, 90)
+    refused = count(f"select attempts from engine.outbox where {delete_where} and delivered_at is null")
+    rt.sh(rt.COMPOSE + ["up", "-d", "--wait", "seaweedfs"])
+    wait_for(lambda: count(f"select count(*) from engine.outbox where {delete_where} and delivered_at is not null") == 1, 90)
+    rt.check("EV-17 the delete is tried again while the store is down and the object is gone once it is back",
+             refused >= 1 and not in_store(), f"{refused} refused tries, in store: {in_store()}")
 
     start_backend({**webhook, "ENGINE_FAULT_AFTER_DECISION": "true"})
     status, fresh = kc.api(stu, "POST", BASE, {"reason": "rollback", "kind": "Hoãn thi", "department": "DAO_TAO"})

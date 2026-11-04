@@ -86,6 +86,13 @@ def main():
         rt.check("C3 an infected file is refused", status == 422 and body.get("errorCode") == "ERR_FILE_INFECTED", f"{status} {body}")
         status, body = kc.api(dt, "GET", f"{BASE}/{record}/files")
         rt.check("C3 and is not stored", status == 200 and len(body["data"]) == 1, str(status))
+        # A file that cannot be scanned is not taken as clean.
+        rt.sh(rt.COMPOSE + ["stop", "clamav"])
+        status, body = upload(stu1, BASE, record, "evidence", "chua-quet.pdf", b"%PDF-1.4 unscanned")
+        rt.check("C3 a file is refused while the scanner is down", status == 503 and body.get("errorCode") == "ERR_SCAN_UNAVAILABLE", f"{status} {body}")
+        status, body = kc.api(dt, "GET", f"{BASE}/{record}/files")
+        rt.check("C3 and is not stored either", status == 200 and len(body["data"]) == 1, str(status))
+        rt.sh(rt.COMPOSE + ["up", "-d", "--wait", "clamav"])
     else:
         print("NOTE C3 the virus scan is off (STORAGE_SCAN_HOST blank); the infected file check is not run")
 

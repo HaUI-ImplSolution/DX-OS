@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: Apache-2.0
+format: 0
+name: plant
+roles:
+  - name: SENSOR
+    description: Hệ thống giám sát thiết bị, gửi sự cố khi chỉ số vượt ngưỡng
+  - name: TECHNICIAN
+    description: Kỹ thuật viên nhận và xử lý sự cố thiết bị
+    staff: true
+entities:
+  incident:
+    label: Sự cố thiết bị
+    fields:
+      device: {type: text, label: Thiết bị, required: true}
+      metric: {type: text, label: Chỉ số, required: true}
+      reading: {type: number, label: Giá trị đo, required: true}
+      threshold: {type: number, label: Ngưỡng, required: true}
+      observation: {type: text, label: Mã quan sát, required: true, unique: true}
+      detail: {type: text, label: Mô tả}
+    access: {SENSOR: own, TECHNICIAN: all}
+    process: {family: work_item, handler: TECHNICIAN, deadline: 4h}

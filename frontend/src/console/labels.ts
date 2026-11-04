@@ -50,6 +50,8 @@ export const STEP_KIND: Record<string, string> = {
   ENSURE_UNIT: "Tạo nhóm đơn vị trong Keycloak",
   SAVE_VERSION: "Lưu phiên bản mô hình",
   RENAME_FIELD: "Đổi tên cột giữ dữ liệu",
+  DROP_SCHEMA: "Xóa schema của mô hình",
+  DROP_CLIENT: "Xóa client và vai của mô hình trong Keycloak",
 };
 
 export const RUN_STATUS: Record<string, string> = {

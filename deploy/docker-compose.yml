@@ -32,6 +32,7 @@ services:
   postgres:
     logging: *default-logging
     image: pgvector/pgvector:pg16@sha256:7b822b0aac60967beb1ea5e576b8602c94c300a157d187f385ae3e0da199b90a
+    restart: unless-stopped
     environment:
       <<: *postgres-env
       # Password of the Keycloak role, created by postgres/init when the data directory is new.
@@ -79,6 +80,7 @@ services:
     <<: *hardened
     logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-backend:${DXOS_IMAGE_TAG:-local}
+    restart: unless-stopped
     build:
       context: ../backend
       dockerfile: Dockerfile
@@ -101,6 +103,8 @@ services:
       # Webhook for the history lines of records; empty sends nothing
       ENGINE_WEBHOOK_URL: ${DXOS_WEBHOOK_URL:-}
       ENGINE_WEBHOOK_SECRET: ${DXOS_WEBHOOK_SECRET:-}
+      # Tries of an outbox message before it stops and waits for a retry in the console
+      ENGINE_OUTBOX_MAX_ATTEMPTS: ${DXOS_OUTBOX_MAX_ATTEMPTS:-20}
       # File storage
       S3_ENDPOINT: ${S3_ENDPOINT:?}
       S3_ACCESS_KEY: ${S3_ACCESS_KEY:?}
@@ -108,6 +112,8 @@ services:
       S3_BUCKET: ${S3_BUCKET:?}
       STORAGE_PUBLIC_URL: ${GATEWAY_PUBLIC_URL:?}
       STORAGE_PRESIGN_TTL: ${STORAGE_PRESIGN_TTL:-15m}
+      # Wait before the object of a removed file is deleted; a backup shorter than this has every file
+      ENGINE_FILES_DELETE_DELAY: ${DXOS_FILE_DELETE_DELAY:-24h}
       # Keycloak admin client (creates the client and roles of a model, manages users)
       KEYCLOAK_ADMIN_CLIENT_ID: ${KEYCLOAK_ADMIN_CLIENT_ID:?}
       KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET:?}
@@ -133,6 +139,7 @@ services:
       - no-new-privileges:true
     logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-frontend:${DXOS_IMAGE_TAG:-local}
+    restart: unless-stopped
     build:
       context: ../frontend
       dockerfile: Dockerfile
@@ -155,6 +162,7 @@ services:
       - no-new-privileges:true
     logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-portal:${DXOS_IMAGE_TAG:-local}
+    restart: unless-stopped
     build:
       context: ../portal
       dockerfile: Dockerfile
@@ -209,6 +217,7 @@ services:
       GATEWAY_PUBLIC_URL: ${GATEWAY_PUBLIC_URL:?}
       MONITOR_OIDC_CLIENT_SECRET: ${MONITOR_OIDC_CLIENT_SECRET:?}
       KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET:?}
+      DXOS_CLI_SECRET: ${DXOS_CLI_SECRET:?}
       STAFF_OTP_FLOW: ${STAFF_OTP_FLOW:-DISABLED}
     volumes:
       - ../sso/realm-dxos.json:/opt/keycloak/data/import/realm-dxos.json:ro

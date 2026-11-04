@@ -3,6 +3,7 @@ package HaUI.ImplSolution.dxos.core.api.storage;
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
 
 // Private object store shared by the applications.
 public interface ObjectStorage {
@@ -14,6 +15,9 @@ public interface ObjectStorage {
 
   // Like presignedUrl, but the browser saves the file under this name instead of showing it.
   String presignedDownloadUrl(String key, String filename);
+
+  // The content of the object, or empty when there is no such object.
+  Optional<byte[]> getObject(String key);
 
   // Removes the object; one that is not there is not an error.
   void deleteObject(String key);

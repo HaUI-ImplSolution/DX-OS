@@ -43,13 +43,14 @@ Mốc dưới đây là dự kiến.
 | Đơn vị dùng chung giữa các ứng dụng | Đơn vị là cơ cấu tổ chức nên mọi mô hình dùng cùng nhóm Keycloak theo tên; vai đã tách theo client của từng mô hình; cần đơn vị riêng từng ứng dụng thì bàn lại |
 | Ngôn ngữ giao diện | Chỉ có tiếng Việt; thông báo backend thêm sau mà chưa có mẫu ở `backendMessages.ts` hiện nguyên văn tiếng Anh, vài thông báo lỗi còn tên trạng thái hoặc hành động dạng mã, và ô chọn ngày giờ theo ngôn ngữ của trình duyệt |
 | Mô hình có lần áp dụng dở | Bị đóng với người dùng ngay cả khi lỗi xảy ra trước mọi thay đổi; người dùng chỉ thấy mô hình biến khỏi menu, không có lời giải thích |
+| Tài khoản dịch vụ thiếu quyền ở Keycloak | Áp dụng mô hình bị Keycloak từ chối (403) ở bước `ENSURE_CLIENT`; log backend ghi rõ lý do, nhưng người dùng thấy câu "Dịch vụ tài khoản chưa dùng được, vui lòng thử lại sau" như khi Keycloak tắt hẳn, nên dễ tưởng thử lại sẽ hết lỗi |
 | Hủy bỏ lần áp dụng dở | Đưa bảng về phiên bản đang chạy: cột và bảng đã thêm bị xóa cùng dữ liệu, thứ đã xóa không quay lại; mô hình chưa có phiên bản thì xóa cả schema và bảng của lần áp dụng đầu |
 | Đổi luật quy trình khi còn hồ sơ mở | Người xử lý, hạn xử lý, quyền tự quyết, hành động hoàn tất và đặt chỗ chỉ đổi được khi thực thể không còn hồ sơ đang xử lý, vì hồ sơ chưa lưu phiên bản mô hình; phải hoàn tất hoặc rút hết hồ sơ trước; chuyển hồ sơ đang chạy bằng `ProcessMigrationService` chưa làm |
 | Lần áp dụng dở ghi trước migration `V6` | Không có nội dung kèm theo nên không dùng được Tiếp tục hay Hủy bỏ; áp dụng lại tệp |
 | Client, vai và nhóm còn lại ở Keycloak | Vai bỏ khỏi tệp, và client, vai, nhóm mà một lần áp dụng dở đã tạo, vẫn còn ở Keycloak cùng người giữ; khai báo lại tên vai trong cùng mô hình thì người giữ có lại quyền; tab Người dùng hiện vai còn lại để gỡ khỏi từng người, còn xóa hẳn client, vai hay nhóm thì làm tay ở Keycloak |
 | Xóa thực thể | Bảng, hồ sơ, tệp đính kèm và đối tượng trong kho bị xóa cùng; lịch sử Flowable đã kết thúc, audit và outbox của thực thể còn lại; thực thể còn hồ sơ đang chạy quy trình phải hoàn tất hoặc rút hết hồ sơ trước |
 | Khe hở khi bắt đầu áp dụng | Yêu cầu vào trước khi mô hình bị giữ vẫn chạy song song với bước đổi bảng, và hồ sơ tạo giữa lúc kiểm và lúc áp dụng không được tính vào số hồ sơ đang mở; Postgres tự chặn truy vấn khi đổi bảng; hướng làm: mỗi yêu cầu lấy khóa chia sẻ theo mô hình, lần áp dụng lấy khóa độc quyền |
-| Hệ thống đã áp dụng mô hình bằng bản cũ hơn | Bảng thiếu cột `handle_by` làm API dữ liệu của thực thể có quy trình trả 500 (danh sách, đọc, tạo, hộp việc) và bộ quét quá hạn lỗi mỗi phút; bảng thiếu chỉ mục `handle_by` vẫn chạy bình thường; hồ sơ đang xử lý trước đó không bị tính quá hạn cho đến lần chuyển trạng thái kế; vai của mô hình áp dụng từ trước khi có client riêng là vai realm nên người dùng không còn vào được; áp dụng lại cùng tệp trả `unchanged` và không sửa gì, chỉ một tệp có nội dung khác mới thêm cột, chỉ mục và client (hướng sửa ở phần 7); chưa có bản triển khai nào ở trạng thái này, nên dựng lại bằng `deploy/reset.sh` |
+| Hệ thống đã áp dụng mô hình bằng bản cũ hơn | Bảng thiếu cột `handle_by` làm API dữ liệu của thực thể có quy trình trả 500 (danh sách, đọc, tạo, hộp việc) và bộ quét quá hạn lỗi mỗi phút; bảng thiếu chỉ mục `handle_by` vẫn chạy bình thường; hồ sơ đang xử lý trước đó không bị tính quá hạn cho đến lần chuyển trạng thái kế; vai của mô hình áp dụng từ trước khi có client riêng là vai realm nên người dùng không còn vào được; áp dụng lại cùng tệp trả `unchanged` và không sửa gì, chỉ một tệp có nội dung khác mới thêm cột, chỉ mục và client (hướng sửa ở phần 5); chưa có bản triển khai nào ở trạng thái này, nên dựng lại bằng `deploy/reset.sh` |
 | Audit chỉ ghi thay đổi về tài khoản | Thay đổi vai, đơn vị và tài khoản của ADMIN vào `audit_log`; áp dụng, đổi và quay lui mô hình thành công chưa vào đó (lịch sử ở `apply_run` và `model_version`); nếu việc ghi audit lỗi thì chỉ có log và thay đổi vẫn thành công; thay đổi làm thẳng trong Admin Console chỉ có ở sự kiện quản trị của Keycloak, giữ 90 ngày, ghi tài khoản người thực hiện |
 | Xem trước không giữ khóa | Kế hoạch có thể cũ khi người khác áp dụng xen vào; bước áp dụng kiểm lại mọi điều kiện |
 
@@ -57,27 +58,11 @@ Mốc dưới đây là dự kiến.
 
 | Rủi ro | Hướng xử lý |
 |---|---|
-| Kết nối của backend đứng ở schema khác `public`: `audit_log` từng báo `relation "audit_log" does not exist` ở mọi lần ghi và đọc, nên audit không chạy; hiện entity ghi rõ `schema = "public"` nên audit chạy | Chưa xác định nguyên nhân gốc; hai nghi phạm cùng đổi schema của kết nối: Flyway của engine (`defaultSchema("engine")`) và Flowable (`setDatabaseSchema("engine")`). Kiểm: log `current_schema()` của các kết nối trong pool ngay sau khi khởi động, rồi bỏ từng nghi phạm để xem lỗi mất không. Sửa gốc nếu đúng: Flowable dùng tiền tố bảng `engine.` thay cho schema, Flyway bỏ `defaultSchema`. Đến lúc đó, mọi truy vấn vào bảng ngoài schema `engine` phải ghi rõ schema |
+| Kết nối trong pool của backend có thể đứng ở schema `engine`: Flowable (`setDatabaseSchema("engine")`) đặt `search_path` của kết nối nó dùng về `engine` và không trả lại, nên truy vấn vào bảng ngoài `engine` mà không ghi schema chỉ đúng khi trúng kết nối còn ở `public` | Mọi truy vấn vào bảng ngoài `engine` ghi rõ schema: entity `audit_log` ghi `schema = "public"`, `coreFlyway` khai báo `public`, `dx-monitor` đọc `public.audit_log`; truy vấn mới cũng phải ghi schema; Flowable cần `setDatabaseSchema` để tìm bảng của nó, bỏ đi thì nó tạo bảng ở `public`; muốn bỏ hẳn thì Flyway tạo bảng của Flowable ở `engine` và Flowable chạy với `DB_SCHEMA_UPDATE_FALSE` |
 
 Lõi không có giao dịch chung giữa PostgreSQL, Keycloak, Flowable và SeaweedFS; mỗi bước chạy lại được, và lần áp dụng dở được tiếp tục hoặc hủy bỏ (xem phần 3).
 
-## 5. Chưa kiểm thử
-
-| Việc | Ghi chú |
-|---|---|
-| Tab Người dùng: khóa và mở tài khoản, gán và gỡ đơn vị trên giao diện | Chỉ kiểm bằng API |
-| Mật khẩu tạm bắt đổi ngay ở trang đăng nhập của Keycloak | Chỉ kiểm bằng cấp token trực tiếp, thấy Keycloak báo tài khoản chưa thiết lập xong |
-| OTP có điều kiện của vai `ADMIN` khi bật `STAFF_OTP_FLOW=CONDITIONAL` | Vai `ADMIN` vẫn là vai realm nhưng chưa thử lại sau khi vai của mô hình chuyển sang client role |
-| Áp dụng mô hình trên realm đã import thiếu quyền client của tài khoản dịch vụ | Keycloak sẽ từ chối (403) ở bước `ENSURE_CLIENT`; chưa thử |
-| Thẻ "Đang dừng dở" ở tab Mô hình sau khi vai chuyển sang client role | Chưa mở lại trên giao diện |
-
-## 6. Đã quyết, chờ làm
-
-| Việc | Đã quyết |
-|---|---|
-| Lịch sử thay đổi trong hộp thoại người dùng | Hộp thoại người dùng hiện các bản ghi audit `USER_*` về người đó: ai đổi gì, lúc nào; dữ liệu đã có ở `audit_log`, tra qua `GET /api/v1/audit-logs` |
-
-## 7. Đề xuất từ rà soát đề thi và hướng thiết kế, chưa quyết
+## 5. Đề xuất từ rà soát đề thi và hướng thiết kế, chưa quyết
 
 Đối chiếu đề, thể lệ, các nguyên lý của đề và những gì [`README.md`](./README.md) đã hứa với mã hiện tại.
 

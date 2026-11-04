@@ -25,20 +25,55 @@ import {
   getUser,
   getUserOptions,
   grantRole,
+  listUserHistory,
   listUsers,
   removeUnit,
   resetUserPassword,
   revokeRole,
   setUserEnabled,
   type UserDetail,
+  type UserHistoryItem,
+  type UserHistoryPage,
   type UserOptions,
   type UserPage,
 } from "./api";
+import { formatDateTime } from "../shell/format";
 
 const SIZE = 20;
+const HISTORY_SIZE = 20;
 
 const message = (error: unknown) => (error instanceof Error ? error.message : "Không xử lý được");
 const modelTitle = (name: string) => name.replace(/_/g, " ").replace(/^./, (first) => first.toUpperCase());
+
+// What an audit record says was done, in words; an action that is not known shows its code.
+function describe(item: UserHistoryItem, options: UserOptions): string {
+  const meta = item.metadata ?? {};
+  const text = (key: string) => String(meta[key] ?? "");
+  const unit = () => {
+    const name = text("unit");
+    return options.units.find((u) => u.name === name)?.label || name;
+  };
+  switch (item.action) {
+    case "USER_CREATED":
+      return "tạo tài khoản";
+    case "USER_ROLE_GRANTED":
+      return `gán vai ${text("role")} của ${modelTitle(text("model"))}`;
+    case "USER_ROLE_REVOKED":
+      return `gỡ vai ${text("role")} của ${modelTitle(text("model"))}`;
+    case "USER_UNIT_ADDED":
+      return `thêm vào đơn vị ${unit()}`;
+    case "USER_UNIT_REMOVED":
+      return `bỏ khỏi đơn vị ${unit()}`;
+    case "USER_LOCKED":
+      return "khóa tài khoản";
+    case "USER_UNLOCKED":
+      return "mở khóa tài khoản";
+    case "USER_PASSWORD_RESET":
+      return "đặt lại mật khẩu";
+    default:
+      return item.action;
+  }
+}
 
 // A password that is shown once, with a way to copy it.
 function Secret({ title, password, onClose }: { title: string; password: string; onClose: () => void }) {
@@ -119,11 +154,26 @@ function UserDialog({ id, options, onClose, onChanged }: { id: string; options: 
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [secret, setSecret] = useState<string | null>(null);
+  const [history, setHistory] = useState<UserHistoryPage | null>(null);
 
   const load = useCallback(() => {
     getUser(id).then(setDetail, (e: unknown) => setError(message(e)));
   }, [id]);
   useEffect(load, [load]);
+
+  // Page 0 replaces the list; a later page is added below it.
+  const loadHistory = useCallback(
+    (page: number) => {
+      listUserHistory(id, page, HISTORY_SIZE).then(
+        (loaded) => setHistory((current) => (page === 0 || !current ? loaded : { ...loaded, items: [...current.items, ...loaded.items] })),
+        (e: unknown) => setError(message(e)),
+      );
+    },
+    [id],
+  );
+  useEffect(() => {
+    loadHistory(0);
+  }, [loadHistory]);
 
   const run = async (action: () => Promise<unknown>) => {
     setBusy(true);
@@ -131,6 +181,7 @@ function UserDialog({ id, options, onClose, onChanged }: { id: string; options: 
     try {
       await action();
       load();
+      loadHistory(0);
       onChanged();
     } catch (e) {
       setError(message(e));
@@ -144,6 +195,7 @@ function UserDialog({ id, options, onClose, onChanged }: { id: string; options: 
     setError(null);
     try {
       setSecret((await resetUserPassword(id)).temporaryPassword);
+      loadHistory(0);
     } catch (e) {
       setError(message(e));
     } finally {
@@ -238,6 +290,33 @@ function UserDialog({ id, options, onClose, onChanged }: { id: string; options: 
                   );
                 })}
               </Box>
+            )}
+            <Typography variant="subtitle2" sx={{ mt: 3, mb: 0.5 }}>
+              Lịch sử thay đổi
+            </Typography>
+            {history && history.items.length === 0 && (
+              <Typography variant="body2" color="text.secondary">
+                Chưa có thay đổi nào được ghi lại.
+              </Typography>
+            )}
+            {history && history.items.length > 0 && (
+              <Box component="ul" sx={{ m: 0, p: 0, listStyle: "none", display: "grid", gap: 0.75 }}>
+                {history.items.map((item) => (
+                  <Box component="li" key={item.id} sx={{ display: "flex", gap: 1.5 }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ minWidth: 120, pt: "2px" }}>
+                      {formatDateTime(item.occurredAt)}
+                    </Typography>
+                    <Typography variant="body2">
+                      {item.actorName || "Không rõ"} {describe(item, options)}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+            )}
+            {history && history.page + 1 < history.totalPages && (
+              <Button size="small" sx={{ mt: 1 }} onClick={() => loadHistory(history.page + 1)}>
+                Xem thêm
+              </Button>
             )}
           </>
         )}

@@ -216,3 +216,23 @@ export const setUserEnabled = (id: string, enabled: boolean) =>
   request<null>(`/users/${id}/enabled`, json("PUT", { enabled }));
 export const resetUserPassword = (id: string) =>
   request<{ temporaryPassword: string }>(`/users/${id}/password`, { method: "POST" });
+
+// One audit record about an account: who changed what, and when.
+export interface UserHistoryItem {
+  id: number;
+  occurredAt: string;
+  actorName: string | null;
+  action: string;
+  metadata: Record<string, unknown> | null;
+}
+
+export interface UserHistoryPage {
+  items: UserHistoryItem[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+export const listUserHistory = (id: string, page: number, size: number) =>
+  request<UserHistoryPage>(`/audit-logs${queryString({ targetType: "USER", targetId: id, page, size })}`);

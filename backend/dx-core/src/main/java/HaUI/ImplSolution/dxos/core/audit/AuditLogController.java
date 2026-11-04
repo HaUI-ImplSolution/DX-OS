@@ -34,16 +34,20 @@ public class AuditLogController {
           + " changes an administrator made to accounts (USER_CREATED, USER_LOCKED, USER_UNLOCKED,"
           + " USER_PASSWORD_RESET, USER_ROLE_GRANTED, USER_ROLE_REVOKED, USER_UNIT_ADDED,"
           + " USER_UNIT_REMOVED, with the username and the role or unit in metadata);"
-          + " outcome is SUCCESS, DENIED or FAILED (400 for another value); from is inclusive and to"
+          + " targetType (such as USER) and targetId (the id of the account for USER) list the"
+          + " records about one object, whoever made the change; outcome is SUCCESS, DENIED or FAILED (400 for another value); from is inclusive and to"
           + " exclusive, both ISO-8601 instants. size is capped at 200.")
   public ApiResponse<PageResponse<AuditLogResponse>> search(
       @RequestParam(required = false) String actor, @RequestParam(required = false) String action,
+      @RequestParam(required = false) String targetType,
+      @RequestParam(required = false) String targetId,
       @RequestParam(required = false) AuditOutcome outcome,
       @RequestParam(required = false)
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
       @RequestParam(required = false)
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
       @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "50") int size) {
-    return ApiResponse.success(queryService.search(actor, action, outcome, from, to, page, size));
+    return ApiResponse.success(
+        queryService.search(actor, action, targetType, targetId, outcome, from, to, page, size));
   }
 }

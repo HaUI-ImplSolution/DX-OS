@@ -140,6 +140,7 @@ sequenceDiagram
 - Mật khẩu tạm do hệ thống sinh, trả về một lần và phải đổi ở lần đăng nhập đầu; không ghi vào log hay audit.
 - Mỗi thay đổi thành công ghi một bản ghi `audit_log` qua `AuditRecorder`: người thực hiện lấy từ token, đối tượng là mã người dùng, chi tiết có tên đăng nhập và mô hình cùng vai hoặc đơn vị.
   Việc ghi audit lỗi chỉ để lại dòng log, thay đổi vẫn thành công.
+- `GET /api/v1/audit-logs` lọc được theo đối tượng (`targetType`, `targetId`, có chỉ mục `idx_audit_log_target`); hộp thoại người dùng ở bảng điều khiển lấy từ đó các bản ghi `USER` của người được mở.
 - Thay đổi làm thẳng ở Keycloak Admin Console không đi qua đây; sự kiện quản trị của Keycloak (giữ 90 ngày, ghi tài khoản người thực hiện) là nơi tra cứu.
 
 ## 7. Dữ liệu
@@ -151,6 +152,9 @@ sequenceDiagram
 | `public` (bảng `audit_log`) | Nhật ký truy cập và thao tác quản trị |
 | `monitor` | Dữ liệu của màn hình giám sát |
 | `keycloak` (cơ sở dữ liệu riêng) | Tài khoản, vai, phiên |
+
+Flowable đặt `search_path` của kết nối nó dùng về `engine` và không trả lại.
+Truy vấn vào bảng ngoài `engine` vì vậy luôn ghi rõ schema.
 
 ## 8. Triển khai
 

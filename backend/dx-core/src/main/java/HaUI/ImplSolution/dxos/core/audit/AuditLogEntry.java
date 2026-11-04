@@ -21,8 +21,8 @@ import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-// One audited event. Rows are only inserted, never updated or deleted. The schema is named so the
-// table is found whichever schema the connection is on.
+// One audited event. Rows are only inserted, never updated or deleted. The schema is named because
+// a pooled connection may be on the schema "engine".
 @Entity
 @Immutable
 @Table(name = "audit_log", schema = "public")

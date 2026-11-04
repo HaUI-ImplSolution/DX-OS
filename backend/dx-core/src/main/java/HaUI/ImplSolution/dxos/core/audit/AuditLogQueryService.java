@@ -25,8 +25,8 @@ public class AuditLogQueryService {
   }
 
   @Transactional(readOnly = true)
-  public PageResponse<AuditLogResponse> search(String actor, String action, AuditOutcome outcome,
-      Instant from, Instant to, int page, int size) {
+  public PageResponse<AuditLogResponse> search(String actor, String action, String targetType,
+      String targetId, AuditOutcome outcome, Instant from, Instant to, int page, int size) {
     Specification<AuditLogEntry> filter = (root, query, builder) -> {
       List<Predicate> predicates = new ArrayList<>();
       if (actor != null && !actor.isBlank()) {
@@ -35,6 +35,12 @@ public class AuditLogQueryService {
       }
       if (action != null && !action.isBlank()) {
         predicates.add(builder.equal(root.get("action"), action.strip().toUpperCase()));
+      }
+      if (targetType != null && !targetType.isBlank()) {
+        predicates.add(builder.equal(root.get("targetType"), targetType.strip().toUpperCase()));
+      }
+      if (targetId != null && !targetId.isBlank()) {
+        predicates.add(builder.equal(root.get("targetId"), targetId.strip()));
       }
       if (outcome != null) {
         predicates.add(builder.equal(root.get("outcome"), outcome));

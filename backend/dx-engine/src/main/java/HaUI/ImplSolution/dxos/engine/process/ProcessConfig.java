@@ -18,6 +18,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 // The embedded workflow engine. It uses the Spring transaction, so a change of a record and the
 // step of its process commit or roll back together, and keeps its tables in the schema "engine".
+// It sets the search path of every connection it uses to "engine" and does not restore it, so any
+// statement on a table outside that schema names its schema.
 @Configuration
 public class ProcessConfig {
 

@@ -31,7 +31,7 @@ Phiên bản trước của dự án (hai ứng dụng nghiệp vụ viết tay)
 - Đổi mô hình khi đã có dữ liệu: xem trước theo mức rủi ro, đổi tên giữ nguyên dữ liệu, báo dòng vi phạm, xác nhận riêng khi mất dữ liệu, quay về phiên bản trước, tiếp tục hoặc hủy bỏ một lần áp dụng dừng giữa chừng.
 - Giao diện react-admin dựng từ metadata, bằng tiếng Việt và có chế độ sáng tối, không có mã riêng cho thực thể nào.
 - Bảng điều khiển cho người triển khai: thư viện mẫu, trình soạn mô hình, xem kế hoạch, áp dụng, lịch sử và quay về, sơ đồ quy trình.
-- Quản trị người dùng ngay trong bảng điều khiển: xem ai giữ vai nào ở từng ứng dụng, gán và gỡ vai và đơn vị, tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu; mỗi thay đổi được ghi lại kèm người thực hiện.
+- Quản trị người dùng ngay trong bảng điều khiển: xem ai giữ vai nào ở từng ứng dụng, gán và gỡ vai và đơn vị, tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu; mỗi thay đổi được ghi lại kèm người thực hiện và xem lại được trong hộp thoại của người đó.
 - Đăng nhập một lần qua Keycloak; có thể bắt quản trị viên nhập thêm mã một lần từ ứng dụng xác thực.
 
 Chưa có: thông báo chat, hỏi đáp bằng AI, báo cáo thống kê.
@@ -141,7 +141,7 @@ entities:
 | `GET /api/v1/users`, `/users/options`, `/users/{id}` | Tìm và xem người dùng, vai theo từng mô hình và đơn vị; vai và đơn vị có thể gán (ADMIN) |
 | `PUT`, `DELETE /api/v1/users/{id}/roles/{model}/{role}`, `/units/{unit}` | Gán và gỡ vai của một mô hình, và đơn vị (ADMIN) |
 | `POST /api/v1/users`, `PUT /{id}/enabled`, `POST /{id}/password` | Tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu (ADMIN) |
-| `GET /api/v1/audit-logs` | Nhật ký lần truy cập bị từ chối, lỗi và thay đổi về tài khoản; lọc theo `actor`, `action`, `outcome`, `from`, `to` (ADMIN) |
+| `GET /api/v1/audit-logs` | Nhật ký lần truy cập bị từ chối, lỗi và thay đổi về tài khoản; lọc theo `actor`, `action`, `targetType`, `targetId`, `outcome`, `from`, `to` (ADMIN) |
 
 Mọi phản hồi bọc trong `ApiResponse`; lỗi có `errorCode` ổn định.
 

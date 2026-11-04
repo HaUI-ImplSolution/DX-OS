@@ -281,7 +281,7 @@ Bảng điều khiển thuộc tầng 2, nằm ở tuyến `/console` của ứn
 - **Màn hình kế hoạch:** khác biệt, mức rủi ro, dòng vi phạm và xác nhận thay đổi mất dữ liệu.
 - **Lịch sử áp dụng:** từng phiên bản và từng bước của mỗi lần áp dụng, kèm quay về phiên bản trước.
 - **Sơ đồ quy trình:** trạng thái và hành động của họ mẫu mà thực thể dùng, chỉ để xem.
-- **Người dùng:** tìm người dùng, xem vai theo từng ứng dụng, gán và gỡ vai và đơn vị, tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu; mỗi thay đổi được ghi vào nhật ký với người thực hiện.
+- **Người dùng:** tìm người dùng, xem vai theo từng ứng dụng, gán và gỡ vai và đơn vị, tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu; mỗi thay đổi được ghi vào nhật ký với người thực hiện và hiện lại ở hộp thoại của người đó: ai đổi gì, lúc nào.
   Tài khoản không khai báo trong tệp mô hình: tệp là cấu trúc và nằm trong git, còn người dùng là dữ liệu có email và mật khẩu, nên tài khoản nằm ở Keycloak.
   Tab chỉ mở API mỏng trên Keycloak: chính sách mật khẩu, MFA, phiên và đăng nhập bằng nhà cung cấp ngoài để Keycloak lo.
 

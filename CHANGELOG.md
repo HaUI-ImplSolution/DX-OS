@@ -35,7 +35,9 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Tab Người dùng ở bảng điều khiển (ADMIN): danh sách có tìm kiếm và phân trang, vai theo từng ứng dụng, gán và gỡ vai và đơn vị, tạo người dùng với mật khẩu tạm do hệ thống sinh, khóa và mở, đặt lại mật khẩu.
   API ở `/api/v1/users`; chỉ gán được vai và đơn vị mà một mô hình đang chạy khai báo, vai `ADMIN` không có đường nào qua đây, và ADMIN không khóa được chính mình.
 - Mỗi thay đổi về tài khoản ghi một bản ghi `audit_log` với người thực hiện, tên đăng nhập của người bị đổi và vai hoặc đơn vị: `USER_CREATED`, `USER_LOCKED`, `USER_UNLOCKED`, `USER_PASSWORD_RESET`, `USER_ROLE_GRANTED`, `USER_ROLE_REVOKED`, `USER_UNIT_ADDED`, `USER_UNIT_REMOVED`; mật khẩu không bao giờ được ghi.
-- `audit_log` ghi và đọc được trên backend của lõi dynamic: entity ghi rõ schema `public`.
+- `GET /api/v1/audit-logs` lọc thêm theo `targetType` (không phân biệt hoa thường) và `targetId` (khớp chính xác) để lấy các bản ghi về một đối tượng; migration `V2` của lõi tạo chỉ mục `idx_audit_log_target`.
+- Hộp thoại người dùng hiện lịch sử thay đổi của người đó: ai đổi gì, lúc nào, mới nhất ở trên, 20 dòng mỗi lần kèm nút Xem thêm.
+- Truy vấn vào bảng ngoài schema `engine` ghi rõ schema, vì Flowable đặt `search_path` của kết nối về `engine`: `audit_log` ghi và đọc đúng, migration của lõi chạy ở `public`.
 - Mô hình bị giữ từ lúc bắt đầu áp dụng đến khi registry nạp xong; lỗi giữa chừng giữ mô hình lại kể cả sau khi khởi động lại, và `GET /api/v1/models` có trường `held`.
 - Mỗi lần áp dụng lưu tệp, các lần đổi tên và mức đã xác nhận (migration `V6` của engine); `POST /api/v1/models/{model}/resume` hoàn tất lần dừng dở mà không cần tệp, `POST /api/v1/models/{model}/abandon` đưa các bảng về phiên bản đang chạy.
 - Thẻ mô hình ở bảng điều khiển hiện nhãn "Đang dừng dở" kèm nút Tiếp tục áp dụng và Hủy bỏ.

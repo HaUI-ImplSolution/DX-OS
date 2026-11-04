@@ -192,7 +192,6 @@ Cây làm việc gồm cả tệp chưa commit; stack dựng riêng (project Com
 | Hai bản sao `backend` sau gateway | Đạt | Cả hai nhận lưu lượng. Sau một lần áp dụng, 22 trong 40 yêu cầu dữ liệu nhận 404 và danh sách mô hình nhảy qua lại; mô hình bị giữ vẫn được bản sao kia phục vụ (26 trong 40 yêu cầu trả 200 thay vì 409); khởi động lại cả hai thì 40/40 đúng |
 | Đổi luật quy trình khi còn hồ sơ mở, bằng Chrome | Đạt | Còn hai hồ sơ: báo không đổi được hạn xử lý, không có nút Áp dụng; rút cả hai thì có nút Áp dụng |
 | Bảng từ bản cũ hơn (mô phỏng bằng cách xóa chỉ mục, rồi cột `handle_by`) | Đạt | Thiếu chỉ mục: mọi API chạy bình thường. Thiếu cột: danh sách, đọc, tạo và hộp việc trả 500, log có `BadSqlGrammarException`; áp dụng lại cùng tệp trả `unchanged` và không sửa; một tệp có nội dung khác thêm lại cột và chỉ mục, rồi mọi API trả 200 |
-| Chưa chạy | | Xem mục 5 của `docs/dynamic-core/BACKLOG.md` |
 
 ### Kiểm ngày 04/11/2026 trên nhánh `Khuong/phase-13-role-isolation`
 
@@ -206,4 +205,32 @@ Cây làm việc gồm cả tệp chưa commit; stack dựng riêng (project Com
 | `audit_log` sau chuỗi trên | Đạt | 41 bản ghi (2 từ chối, 30 lỗi, 9 thành công), không lỗi ghi |
 | Tab Người dùng bằng Chrome | Đạt | Danh sách, tìm kiếm, gán vai, đặt lại mật khẩu, tạo người dùng |
 | Stack dev dựng lại từ trạng thái rỗng bằng `reset.sh` | Đạt | Tám service healthy, tài khoản dịch vụ có đủ quyền client |
-| Chưa chạy | | Xem mục 5 của `docs/dynamic-core/BACKLOG.md` |
+
+### Kiểm ngày 04/11/2026 bằng Chrome trên stack thử riêng
+
+Ba mục đầu chạy trên stack chính; ba mục sau chạy trên một stack thử riêng (project Compose `dxscratch`, cổng 9180, cơ sở dữ liệu rỗng), đã xóa sau khi kiểm.
+Cả hai dùng image `dxos-*:local` dựng sẵn trên máy.
+
+| Mục | Kết quả | Ghi chú |
+|---|---|---|
+| Tab Người dùng: khóa và mở tài khoản | Đạt | Danh sách đổi giữa "Đã khóa" và "Hoạt động", nút đổi theo |
+| Tab Người dùng: gán và gỡ vai, gán và gỡ đơn vị | Đạt | Đóng rồi mở lại hộp thoại vẫn còn, gỡ thì hết |
+| Mật khẩu tạm ở trang đăng nhập Keycloak | Đạt | Người mới tạo bị buộc đổi mật khẩu, đổi xong vào được Hộp việc, không có menu quản trị |
+| `STAFF_OTP_FLOW=CONDITIONAL` | Đạt | `ADMIN` bị buộc thiết lập Mobile Authenticator; người không có vai `ADMIN` đăng nhập bình thường |
+| Thẻ "Đang dừng dở" sau khi vai chuyển sang client role | Đạt | Tắt Keycloak rồi áp dụng thì báo lỗi; bật lại thì thẻ hiện nhãn, lời giải thích, Tiếp tục áp dụng, Hủy bỏ, Lịch sử; Tiếp tục áp dụng đưa mô hình lên phiên bản 1 |
+| Realm thiếu quyền client của tài khoản dịch vụ | Đạt | Keycloak từ chối tạo client (403), log backend ghi rõ; người dùng thấy thông báo "dịch vụ tài khoản chưa dùng được", đã ghi ở giới hạn đã biết |
+
+### Kiểm ngày 04/11/2026: lịch sử thay đổi trong hộp thoại người dùng
+
+Backend dựng từ cây làm việc gồm cả tệp chưa commit; giao diện là bản build chạy bằng `vite preview` trỏ vào stack chính.
+
+| Mục | Kết quả | Ghi chú |
+|---|---|---|
+| `./mvnw compile formatter:validate` | Đạt | Năm module build thành công, không tệp nào lỗi định dạng |
+| `npx tsc --noEmit` | Đạt | Không lỗi |
+| Chuỗi script ở `deploy/dev` trên cơ sở dữ liệu rỗng | Đạt | 285/285: `check_api.py` 51, `check_case.py` 71, `check_change.py` 65, `check_guards.py` 59, `check_users.py` 39; chưa có kiểm tra riêng cho tham số lọc theo đối tượng |
+| `GET /api/v1/audit-logs` lọc theo `targetType` và `targetId`, gọi tay | Đạt | Chỉ trả các bản ghi của đối tượng đó; migration `V2` chạy trên cơ sở dữ liệu có sẵn dữ liệu |
+| Hộp thoại người dùng bằng Chrome | Đạt | Tạo, gán và gỡ vai, thêm và bỏ đơn vị, khóa, mở, đặt lại mật khẩu: mỗi thao tác một dòng đúng người, đúng nội dung, mới nhất ở trên; đơn vị hiện nhãn; không có mật khẩu nào trong lịch sử |
+| Phân trang lịch sử bằng Chrome | Đạt | 21 bản ghi hiện 20 dòng và nút Xem thêm; bấm thì ra bản ghi cũ nhất và nút biến mất |
+| Mã hành động chưa có nhãn | Chưa chạy | Chưa có bản ghi như vậy; mã hiển thị nguyên văn theo mã nguồn |
+| Bản build trong image `frontend` của Compose | Chưa chạy | Đã thử bản build bằng `vite preview`, cùng mã nguồn |

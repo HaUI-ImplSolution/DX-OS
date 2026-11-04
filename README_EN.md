@@ -31,7 +31,7 @@ The narrow loop from model file to end user runs:
 - Changing a model that holds data: a preview by level of risk, renames that keep the values, a list of the rows breaking a new rule, a separate confirmation for losing data, a return to the previous version, and finishing or giving up an apply that stopped halfway.
 - A react-admin UI built from metadata, in Vietnamese with a light and a dark mode, with no code written for any entity.
 - A control panel for the person deploying the system: a template library, a model editor, a preview of the plan, apply, history and rollback, and a diagram of the workflow.
-- User administration in the control panel: see who holds which role in each application, give and take roles and units, create a user with a temporary password, lock and unlock, reset a password; every change is recorded with who made it.
+- User administration in the control panel: see who holds which role in each application, give and take roles and units, create a user with a temporary password, lock and unlock, reset a password; every change is recorded with who made it and can be read back in the person's dialog.
 - Single sign-on through Keycloak; administrators can be required to enter a one-time code from an authenticator app as well.
 
 Not yet available: chat notifications, AI answers, statistical reports.
@@ -141,7 +141,7 @@ entities:
 | `GET /api/v1/users`, `/users/options`, `/users/{id}` | Find and read users, their roles per model and their units; the roles and units that can be given (ADMIN) |
 | `PUT`, `DELETE /api/v1/users/{id}/roles/{model}/{role}`, `/units/{unit}` | Give and take a role of one model, and a unit (ADMIN) |
 | `POST /api/v1/users`, `PUT /{id}/enabled`, `POST /{id}/password` | Create a user with a temporary password, lock and unlock, reset a password (ADMIN) |
-| `GET /api/v1/audit-logs` | The log of refused requests, failures and changes to accounts; filter by `actor`, `action`, `outcome`, `from`, `to` (ADMIN) |
+| `GET /api/v1/audit-logs` | The log of refused requests, failures and changes to accounts; filter by `actor`, `action`, `targetType`, `targetId`, `outcome`, `from`, `to` (ADMIN) |
 
 Every reply is wrapped in `ApiResponse`; errors carry a stable `errorCode`.
 

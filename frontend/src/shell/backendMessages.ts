@@ -91,7 +91,6 @@ const VI: Rule[] = [
   pattern("Model (.+) has no earlier version", "Mô hình $1 chưa có phiên bản trước"),
   pattern("Model (.+) has no apply that stopped", "Mô hình $1 không có lần áp dụng nào đang dừng dở"),
   pattern("The apply of model (.+) that stopped kept no file; apply the file again", "Lần áp dụng dở của mô hình $1 không còn lưu tệp; hãy áp dụng lại tệp"),
-  pattern("The first apply of model (.+) never finished, so there is no version to go back to; finish it instead", "Lần áp dụng đầu của mô hình $1 chưa xong nên chưa có phiên bản để quay về; hãy tiếp tục thay vì hủy bỏ"),
   pattern("An earlier apply of model (.+) stopped after renaming fields; apply that file again to finish it", "Lần áp dụng trước của mô hình $1 dừng sau khi đổi tên trường; hãy áp dụng lại đúng tệp đó để hoàn tất"),
   pattern("The schema tool would remove (.+), which the model does not ask for", "Công cụ đổi lược đồ sẽ xóa $1, mà mô hình không yêu cầu"),
   pattern("Cannot use a temporary file: (.*)", "Không dùng được tệp tạm: $1"),

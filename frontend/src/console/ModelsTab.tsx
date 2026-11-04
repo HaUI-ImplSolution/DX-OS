@@ -67,7 +67,7 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
     listApplied().then(
       (loaded) => {
         setModels(loaded);
-        loaded.forEach((model) =>
+        loaded.filter((model) => model.version > 0).forEach((model) =>
           getVersion(model.model, model.version).then(
             (version) => setSummaries((current) => ({ ...current, [model.model]: summarize(version.content) })),
             () => undefined,
@@ -145,16 +145,18 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
                 </Typography>
                 <Box sx={{ display: "flex", gap: 0.75 }}>
                   {model.held && <Chip size="small" color="warning" label="Đang dừng dở" />}
-                  <Chip size="small" color="primary" label={`Phiên bản ${model.version}`} />
+                  <Chip size="small" color="primary" label={model.version > 0 ? `Phiên bản ${model.version}` : "Chưa có phiên bản"} />
                 </Box>
               </Box>
               {model.held && (
                 <Alert severity="warning" sx={{ py: 0 }}>
-                  Lần áp dụng gần nhất dừng giữa chừng nên người dùng chưa vào được mô hình này. Tiếp tục để hoàn tất, hoặc hủy bỏ để đưa các bảng về phiên bản {model.version}.
+                  {model.version > 0
+                    ? `Lần áp dụng gần nhất dừng giữa chừng nên người dùng chưa vào được mô hình này. Tiếp tục để hoàn tất, hoặc hủy bỏ để đưa các bảng về phiên bản ${model.version}.`
+                    : "Lần áp dụng đầu tiên dừng giữa chừng nên mô hình chưa dùng được. Tiếp tục để hoàn tất, hoặc hủy bỏ để xóa những gì lần đó đã tạo."}
                 </Alert>
               )}
               <Typography variant="body2" color="text.secondary">
-                Áp dụng {timeAgo(model.applied_at)}
+                {model.version > 0 ? "Áp dụng" : "Bắt đầu áp dụng"} {timeAgo(model.applied_at)}
                 <Tooltip title={`${formatDateTime(model.applied_at)} · người dùng ${model.applied_by}`}>
                   <span> · bởi {applier(model)}</span>
                 </Tooltip>
@@ -172,9 +174,9 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
                     {summary.entities.length} thực thể · {summary.roles} vai · {summary.units} đơn vị
                   </Typography>
                 </>
-              ) : (
+              ) : model.version > 0 ? (
                 <Skeleton height={48} />
-              )}
+              ) : null}
               <Box sx={{ display: "flex", gap: 1, mt: "auto", pt: 0.5, flexWrap: "wrap" }}>
                 {model.held && (
                   <>
@@ -191,9 +193,11 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
                     </Button>
                   </>
                 )}
-                <Button variant={model.held ? "outlined" : "contained"} onClick={() => open(model)}>
-                  Sửa mô hình
-                </Button>
+                {model.version > 0 && (
+                  <Button variant={model.held ? "outlined" : "contained"} onClick={() => open(model)}>
+                    Sửa mô hình
+                  </Button>
+                )}
                 <Button startIcon={<HistoryIcon />} onClick={() => setHistory(model.model)}>
                   Lịch sử
                 </Button>
@@ -207,7 +211,9 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
           <DialogTitle>Hủy bỏ lần áp dụng dở của {modelTitle(giveUp.model)}?</DialogTitle>
           <DialogContent>
             <Typography variant="body2">
-              Các bảng được đưa về phiên bản {giveUp.version}. Cột và bảng mà lần áp dụng dở đã thêm sẽ bị xóa cùng dữ liệu trong đó, còn những gì nó đã xóa thì không quay lại. Hãy sao lưu bằng deploy/backup.sh trước nếu cần.
+              {giveUp.version > 0
+                ? `Các bảng được đưa về phiên bản ${giveUp.version}. Cột và bảng mà lần áp dụng dở đã thêm sẽ bị xóa cùng dữ liệu trong đó, còn những gì nó đã xóa thì không quay lại. Hãy sao lưu bằng deploy/backup.sh trước nếu cần.`
+                : "Lược đồ và các bảng mà lần áp dụng đầu tiên đã tạo sẽ bị xóa cùng dữ liệu trong đó."}
             </Typography>
           </DialogContent>
           <DialogActions>
@@ -223,12 +229,22 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
           </DialogActions>
         </Dialog>
       )}
-      {history && <HistoryDialog model={history} onClose={() => setHistory(null)} onChanged={onChanged} />}
+      {history && <HistoryDialog model={history} hasVersion={(models.find((m) => m.model === history)?.version ?? 0) > 0} onClose={() => setHistory(null)} onChanged={onChanged} />}
     </Box>
   );
 }
 
-function HistoryDialog({ model, onClose, onChanged }: { model: string; onClose: () => void; onChanged: (message: string) => void }) {
+function HistoryDialog({
+  model,
+  hasVersion,
+  onClose,
+  onChanged,
+}: {
+  model: string;
+  hasVersion: boolean;
+  onClose: () => void;
+  onChanged: (message: string) => void;
+}) {
   const [versions, setVersions] = useState<AppliedVersion[]>([]);
   const [runs, setRuns] = useState<Run[]>([]);
   const [plan, setPlan] = useState<Plan | null>(null);
@@ -236,9 +252,9 @@ function HistoryDialog({ model, onClose, onChanged }: { model: string; onClose: 
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    listVersions(model).then(setVersions, (e: unknown) => setError(message(e)));
+    if (hasVersion) listVersions(model).then(setVersions, (e: unknown) => setError(message(e)));
     listRuns(model).then(setRuns, (e: unknown) => setError(message(e)));
-  }, [model]);
+  }, [model, hasVersion]);
 
   const back = async () => {
     setBusy(true);

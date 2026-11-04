@@ -37,7 +37,7 @@ public class ModelController {
       description = "applied_by is the user id of who applied the version, applied_by_name the name"
           + " the token gave then; it is empty for versions saved without one. held is true while"
           + " an apply of the model runs or stopped before it finished; the model is then closed to"
-          + " its users.")
+          + " its users. A model whose first apply stopped is listed with version 0.")
   public ApiResponse<List<Map<String, Object>>> list() {
     return ApiResponse.success(service.models());
   }
@@ -96,8 +96,9 @@ public class ModelController {
   @PostMapping("/{model}/abandon")
   @Operation(summary = "Give up the apply of a model that stopped before it finished",
       description = "Brings the tables back to the running version. What the stopped apply added"
-          + " is dropped with its rows, and what it dropped does not come back. 409 when the model"
-          + " has no apply that stopped, has no version yet, or another apply runs.")
+          + " is dropped with its rows, and what it dropped does not come back. A model whose"
+          + " first apply stopped has no version, so its schema and tables are dropped. 409 when"
+          + " the model has no apply that stopped or another apply runs.")
   public ApiResponse<ApplyService.Applied> abandon(@PathVariable String model) {
     return ApiResponse.success(service.abandon(model, actor()));
   }

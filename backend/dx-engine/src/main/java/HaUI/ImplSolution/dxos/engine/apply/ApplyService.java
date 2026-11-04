@@ -19,6 +19,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
@@ -263,13 +264,21 @@ public class ApplyService {
   // apply added goes with its rows; what it dropped does not come back.
   public Applied abandon(String modelName, Actor actor) {
     Running running = running(modelName);
-    if (running == null) {
-      throw new InvalidStateException("The first apply of model " + modelName
-          + " never finished, so there is no version to go back to; finish it instead");
-    }
     Stalled stalled = stalled(modelName);
     Model stopped = ModelParser.parse(stalled.content());
+    if (running == null) {
+      return exclusively(stopped, () -> removeUnfinished(stopped, stalled, actor));
+    }
     return exclusively(running.model(), () -> restore(running, stopped, actor));
+  }
+
+  // The first apply of a model stopped, so there is no version to go back to: what it created goes.
+  private Applied removeUnfinished(Model stopped, Stalled stalled, Actor actor) {
+    long runId = startRun(stopped.name(), hash(stalled.content()), actor, stalled.content(),
+        Map.of(), Level.LOSS);
+    return execute(stopped.name(), runId, 0, List.of(new Step(
+        new PlannedStep("DROP_SCHEMA", stopped.schema()),
+        () -> jdbc.execute("DROP SCHEMA IF EXISTS " + Sql.ident(stopped.schema()) + " CASCADE"))));
   }
 
   private Applied restore(Running running, Model stopped, Actor actor) {
@@ -358,6 +367,14 @@ public class ApplyService {
         "SELECT DISTINCT ON (model) model, version, hash, applied_by, applied_by_name, applied_at "
             + "FROM engine.model_version ORDER BY model, version DESC");
     models.forEach(model -> model.put("held", registry.isHeld((String) model.get("model"))));
+    // A model whose first apply stopped has no version yet, but its tables may exist.
+    models.addAll(
+        jdbc.queryForList("SELECT r.model, 0 AS version, NULL AS hash, r.actor AS applied_by, "
+            + "NULL AS applied_by_name, r.started_at AS applied_at, TRUE AS held "
+            + "FROM engine.apply_run r WHERE r.id = (SELECT max(id) FROM engine.apply_run "
+            + "WHERE model = r.model) AND r.status IN ('running', 'failed') AND NOT EXISTS "
+            + "(SELECT 1 FROM engine.model_version v WHERE v.model = r.model)"));
+    models.sort(Comparator.comparing(model -> (String) model.get("model")));
     return models;
   }
 

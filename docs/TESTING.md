@@ -95,7 +95,7 @@ Biến `DXOS_ENV_FILE`, `DXOS_BASE_URL`, `DXOS_PROJECT` đổi tệp env, địa
 | T8-11 | Tệp đính kèm | Gắn, tải qua gateway, gỡ, quyền theo bản ghi; 409 khi hồ sơ đã quyết định |
 | T12-01 đến T12-04 | Mô hình thứ hai dùng vai của mô hình đầu; vai `ADMIN`; hai mô hình cùng giành một vai | Từ chối kèm tên vai và mô hình đang giữ, không tạo gì; `ADMIN` bị 400 kèm dòng; một bên thắng, bên kia 409 |
 | T12-05 đến T12-11 | Xóa thực thể còn hồ sơ đang chạy quy trình; tên thực thể gần giống nhau; hồ sơ đã rút kèm tệp đính kèm | Từ chối khi còn quy trình đang chạy; tên gần giống không chặn nhầm; sau khi rút thì xóa được với `accept=LOSS`, tệp và bảng bị dọn, thực thể khác và quy trình đang chạy nguyên vẹn |
-| T12-12 đến T12-21 | Áp dụng dở khi Keycloak dừng, khởi động lại backend, rồi Tiếp tục và Hủy bỏ | Mô hình bị giữ (409), không hiện cho người dùng, `GET /models` báo `held`, vẫn giữ sau khi khởi động lại; `resume` hoàn tất không cần tệp; `abandon` đưa cột và bảng về phiên bản đang chạy, giữ dòng dữ liệu; chỉ lần chạy dở mới giữ mô hình |
+| T12-12 đến T12-22 | Áp dụng dở khi Keycloak dừng, kể cả lần áp dụng đầu của một mô hình; khởi động lại backend; rồi Tiếp tục và Hủy bỏ | Mô hình bị giữ (409), không hiện cho người dùng, `GET /models` báo `held`, vẫn giữ sau khi khởi động lại; `resume` hoàn tất không cần tệp; `abandon` đưa cột và bảng về phiên bản đang chạy và giữ dòng dữ liệu, hoặc xóa schema của mô hình chưa có phiên bản; chỉ lần chạy dở mới giữ mô hình |
 
 T5-11 và T6-14 cần dịch vụ chạy với `ENGINE_FAULT_AFTER_DECISION=true`; các script tự bật rồi tắt bằng cách tạo lại service `backend`.
 
@@ -111,7 +111,7 @@ T5-11 và T6-14 cần dịch vụ chạy với `ENGINE_FAULT_AFTER_DECISION=true
 8. Mọi chữ trên giao diện là tiếng Việt: nút Tạo mới, Thêm bộ lọc, số dòng mỗi trang, thông báo "Bắt buộc nhập", lỗi tệp mô hình theo dòng và cột ("dòng 2, cột 9: ..."), nhãn các loại thay đổi trong kế hoạch.
 9. Bấm biểu tượng đổi giao diện: chế độ tối hiện đủ hộp việc, danh sách, chi tiết hồ sơ và bảng điều khiển.
 10. Ở bảng điều khiển, tab Soạn và áp dụng: bấm biểu tượng mở to của sơ đồ quy trình thì hiện hộp thoại lớn, phần nền phía sau mờ đi.
-11. Dừng Keycloak (`docker compose stop keycloak`), áp dụng một thay đổi cho một mô hình, rồi bật lại Keycloak: thẻ mô hình hiện nhãn "Đang dừng dở" kèm nút Tiếp tục áp dụng và Hủy bỏ; Tiếp tục thì nhãn mất và phiên bản tăng; Hủy bỏ hỏi xác nhận rồi đưa mô hình về phiên bản đang chạy.
+11. Dừng Keycloak (`docker compose stop keycloak`), áp dụng một thay đổi cho một mô hình, rồi bật lại Keycloak: thẻ mô hình hiện nhãn "Đang dừng dở" kèm nút Tiếp tục áp dụng và Hủy bỏ; Tiếp tục thì nhãn mất và phiên bản tăng; Hủy bỏ hỏi xác nhận rồi đưa mô hình về phiên bản đang chạy; mô hình mà lần áp dụng đầu dừng dở hiện nhãn "Chưa có phiên bản", không có nút Sửa mô hình, và Hủy bỏ làm thẻ biến mất.
 12. Khai báo vai `ADMIN`, hoặc vai đang thuộc một mô hình khác, ở tab Soạn và áp dụng: báo lỗi tiếng Việt kèm dòng và cột hoặc tên mô hình đang giữ vai, không có nút Áp dụng.
 
 ## 6. Hồi quy
@@ -182,6 +182,6 @@ Cây làm việc gồm cả tệp chưa commit; stack dựng riêng (project Com
 |---|---|---|
 | `./mvnw clean verify` | Đạt | dx-core 20 test, dx-engine 8, dx-monitor 3; dx-model không có test |
 | `npx tsc --noEmit` | Đạt | Không lỗi |
-| Tám script ở `deploy/dev` theo thứ tự trên | Đạt | 380/380: 51, 17, 71, 65, 56, 44, 26 và `check_guards.py` 50 |
-| Bảng điều khiển bằng Chrome | Đạt | Lỗi vai `ADMIN` và vai trùng bằng tiếng Việt, mô hình dừng dở hiện nhãn và hai nút, Tiếp tục và Hủy bỏ đều chạy |
+| Tám script ở `deploy/dev` theo thứ tự trên | Đạt | 387/387: 51, 17, 71, 65, 56, 44, 26 và `check_guards.py` 57 |
+| Bảng điều khiển bằng Chrome | Đạt | Lỗi vai `ADMIN` và vai trùng bằng tiếng Việt, mô hình dừng dở hiện nhãn và hai nút, Tiếp tục và Hủy bỏ đều chạy, kể cả mô hình chưa có phiên bản |
 | Chưa chạy | | Hai bản sao backend chạy cùng lúc; dòng log khi hai mô hình đã lưu dùng chung vai |

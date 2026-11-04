@@ -85,6 +85,8 @@ Mỗi lần áp dụng lưu tệp, các lần đổi tên và mức đã xác nh
 - `POST /api/v1/models/{model}/resume` hoàn tất lần đó mà không cần tệp;
 - `POST /api/v1/models/{model}/abandon` đưa các bảng về phiên bản đang chạy; cột và bảng mà lần áp dụng dở đã thêm bị xóa cùng dữ liệu.
 
+Mô hình mà lần áp dụng đầu dừng dở chưa có phiên bản; danh sách mô hình vẫn liệt kê nó với phiên bản 0, và `abandon` xóa schema cùng bảng mà lần đó đã tạo.
+
 ## 4. Một yêu cầu đi qua API chung
 
 ```mermaid

@@ -78,6 +78,17 @@ entities:
     access: {GB_ROLE: all}
 """
 
+FIRST = """format: 0
+name: {name}
+roles:
+  - name: {role}
+entities:
+  item:
+    fields:
+      title: {{type: text, required: true}}
+    access: {{{role}: all}}
+"""
+
 G = "/data/gdrop"
 
 
@@ -217,7 +228,7 @@ def drops(admin):
 
 
 def stopped_apply(admin):
-    # T12-12 to T12-21: an apply that stops halfway holds its model, also across a restart, and is
+    # T12-12 to T12-22: an apply that stops halfway holds its model, also across a restart, and is
     # finished or given up from what the run kept.
     status, body = apply(admin, STOP)
     rt.check("T12-12 model applies", status == 200, f"{status} {body}")
@@ -242,6 +253,11 @@ def stopped_apply(admin):
     status, body = apply(admin, moved, base=1, accept="MIGRATION")
     rt.check("T12-13 the second one stops after renaming", status >= 500, f"{status} {body}")
     status, body = kc.api(worker, "GET", f"/data/gstop/item/{item}")
+    first_one = FIRST.format(name="gfirst", role="GF_ONE")
+    first_two = FIRST.format(name="gfirst2", role="GF_TWO")
+    status_one, _ = apply(admin, first_one)
+    status_two, _ = apply(admin, first_two)
+    rt.check("T12-13 two models whose first apply stops", status_one >= 500 and status_two >= 500, f"{status_one} {status_two}")
     rt.check("T12-13 the model is held while it is unfinished", status == 409 and "reconciliation" in str(body), f"{status} {body}")
     status, body = kc.api(worker, "GET", "/meta/models")
     rt.check("T12-14 it is not offered to the people", status == 200 and "gstop" not in [m["name"] for m in body["data"]], str(body)[:200])
@@ -288,20 +304,38 @@ def stopped_apply(admin):
     status, body = kc.api(admin, "POST", "/models/gaban/abandon")
     rt.check("T12-20 and it cannot be given up twice", status == 409, f"{status}")
 
-    # T12-21: a model is held only by a run that stopped; the rows say which.
+    status, body = kc.api(admin, "GET", "/models")
+    listed = {m["model"]: m for m in body["data"]} if status == 200 else {}
+    rt.check("T12-21 a model without a version is listed as held",
+             all(listed.get(n, {}).get("version") == 0 and listed[n]["held"] is True for n in ("gfirst", "gfirst2")), str(listed.get("gfirst")))
+    status, body = kc.api(admin, "POST", "/models/gfirst/resume")
+    rt.check("T12-21 resume finishes a first apply", status == 200 and body["data"]["version"] == 1, f"{status} {body}")
+    status, body = kc.api(admin, "POST", "/models/gfirst2/abandon")
+    rt.check("T12-21 abandon removes what a first apply created", status == 200, f"{status} {body}")
+    code, schemas = rt.psql("select string_agg(schema_name, ',' order by schema_name) from information_schema.schemata where schema_name in ('m_gfirst', 'm_gfirst2')")
+    status, body = kc.api(admin, "GET", "/models")
+    listed = {m["model"]: m for m in body["data"]} if status == 200 else {}
+    rt.check("T12-21 the first schema stays, the second is gone and no longer listed",
+             schemas == "m_gfirst" and listed.get("gfirst", {}).get("version") == 1 and "gfirst2" not in listed, f"{schemas} {sorted(listed)}")
+    status, body = apply(admin, first_two)
+    rt.check("T12-21 the abandoned file applies afresh", status == 200 and body["data"]["version"] == 1, f"{status} {body}")
+    status, body = kc.api(admin, "POST", "/models/gfirst2/abandon")
+    rt.check("T12-21 and a finished model has nothing to give up", status == 409, f"{status}")
+
+    # T12-22: a model is held only by a run that stopped; the rows say which.
     code, _ = rt.psql("insert into engine.apply_run (model, hash, status, actor, content, renames, accept) "
                       "values ('gaban', 'x', 'failed', 'test', 'format: 0', '{}', 'SAFE')")
     rt.sh(rt.COMPOSE + ["restart", "backend"])
-    rt.check("T12-21 backend is back again", rt.wait_api())
+    rt.check("T12-22 backend is back again", rt.wait_api())
     keeper = kc.token("gb_u")
     status, body = kc.api(keeper, "GET", f"/data/gaban/item/{kept}")
-    rt.check("T12-21 a failed run held it", status == 409, f"{status}")
+    rt.check("T12-22 a failed run held it", status == 409, f"{status}")
     rt.psql("update engine.apply_run set status = 'done' where id = (select max(id) from engine.apply_run where model = 'gaban')")
     rt.sh(rt.COMPOSE + ["restart", "backend"])
-    rt.check("T12-21 backend is back once more", rt.wait_api())
+    rt.check("T12-22 backend is back once more", rt.wait_api())
     keeper = kc.token("gb_u")
     status, body = kc.api(keeper, "GET", f"/data/gaban/item/{kept}")
-    rt.check("T12-21 and a finished run lets it go", status == 200, f"{status}")
+    rt.check("T12-22 and a finished run lets it go", status == 200, f"{status}")
 
 
 def main():

@@ -397,7 +397,7 @@ Thay đổi mô hình sai được xử lý như sau:
 - **Áp dụng dở:** mỗi bước chạy lại được an toàn, và lõi giữ mô hình lại cho đến khi quản trị viên quyết định.
   Người dùng chưa vào được mô hình đó, còn bảng điều khiển hiện nhãn "Đang dừng dở" và lịch sử ghi bước đã dừng.
   **Tiếp tục** chạy lại từ nội dung, đổi tên và mức đã xác nhận mà lần áp dụng đó đã lưu, nên không cần tệp.
-  **Hủy bỏ** đưa các bảng về phiên bản đang chạy.
+  **Hủy bỏ** đưa các bảng về phiên bản đang chạy, hoặc xóa những gì lần áp dụng đầu đã tạo nếu mô hình chưa có phiên bản.
   Lõi không tự thử lại và không tự quay lui.
 
 Ví dụ một lần xem trước:

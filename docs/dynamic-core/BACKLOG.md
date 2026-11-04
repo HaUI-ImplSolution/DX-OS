@@ -57,6 +57,19 @@ Mốc dưới đây là dự kiến.
 | Xem trước không giữ khóa | Kế hoạch có thể cũ khi người khác áp dụng xen vào; bước áp dụng kiểm lại mọi điều kiện |
 | Không có giao dịch chung giữa các hệ thống | Giữa PostgreSQL, Keycloak, Flowable và SeaweedFS; mỗi bước chạy lại được, và lần áp dụng dở được tiếp tục hoặc hủy bỏ |
 
+### Lỗi đã tái hiện, cần xử lý
+
+| Mức độ | Lỗi | Cách tái hiện và ảnh hưởng |
+|---|---|---|
+| Cao | Sửa hồ sơ trên web gửi cả trường hệ thống | Mở sửa một ticket đang mở, chỉ đổi tiêu đề rồi lưu: PATCH gửi kèm `handle_by`, `overdue` và bị 400; cập nhật riêng tiêu đề qua API trả 200; `frontend/src/admin/dataProvider.ts` chưa loại hai trường này khỏi dữ liệu gửi |
+| Vừa | Hộp việc không áp dụng đủ quyền theo đơn vị | Người chỉ có quyền `unit` tạo hồ sơ rồi được yêu cầu bổ sung; sau khi ADMIN gỡ khỏi đơn vị và người đó lấy token mới, chi tiết trả 404 nhưng `/api/v1/inbox` vẫn hiện tiêu đề, mã và trạng thái; nhánh người tạo trong `DataService.waitingCondition` thiếu phạm vi đọc |
+| Vừa | Tắt webhook làm mất thông điệp đang chờ | Bên nhận trả 500 để tạo thông điệp chưa gửi; đặt `DXOS_WEBHOOK_URL` trống rồi tạo lại backend: lần thử kế tiếp đánh dấu thông điệp đã gửi dù không gọi HTTP; bật lại không gửi tiếp; `WebhookHandler.deliver` trả bình thường khi URL trống |
+| Vừa | Timeout webhook chưa giới hạn thời gian đọc phản hồi | Bên nhận trả header 200 ngay nhưng giữ body 15 giây; sau 8 giây lần gửi vẫn đang chờ dù timeout là 5 giây; `WebhookHandler` gọi `client.send` với `BodyHandlers.discarding`, làm vòng giao outbox chờ phần body |
+| Vừa | Giao việc được cho tài khoản đã khóa | Khóa người có vai xử lý: đăng nhập mới bị từ chối, nhưng người đó vẫn có trong `/handlers` và `/assign` tới họ trả 200; `KeycloakAdminClient` chưa lọc trạng thái tài khoản khi lấy người giữ vai |
+| Vừa | Người xử lý ngoài 500 kết quả đầu bị từ chối giao việc | Với 503 người giữ cùng vai, `/handlers` chỉ trả 500; người đủ vai, vẫn đăng nhập được nhưng nằm ngoài danh sách nhận 400 khi được giao việc; `KeycloakAdminClient.MAX_PEOPLE` cắt danh sách dùng để kiểm người nhận trong `DataService.assign` |
+| Vừa | `dxos start` đọc đường dẫn tương đối từ sai thư mục | Có `demo.yaml` trong thư mục gọi lệnh nhưng `dxos start demo.yaml` thoát 1, báo không tìm thấy; `main` chuyển sang thư mục cài đặt trước khi `use_model_file` đọc tham số |
+| Thấp | Kết quả tìm người dùng có thể bị phản hồi cũ ghi đè | Tìm A rồi tìm B; làm phản hồi A về sau B thì bảng hiện A trong khi ô tìm vẫn là B; `UsersTab.load` chưa kiểm phản hồi thuộc truy vấn hiện tại |
+
 ## 4. Đề xuất từ rà soát đề thi và hướng thiết kế, chưa quyết
 
 Đối chiếu đề, thể lệ, các nguyên lý của đề và những gì [`README.md`](./README.md) đã hứa với mã hiện tại.

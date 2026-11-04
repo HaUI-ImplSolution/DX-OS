@@ -250,7 +250,7 @@ Người dùng chỉ cần Docker, không cần mã nguồn, JDK, Node hay Pytho
 
 ```bash
 curl -fsSL https://github.com/HaUI-ImplSolution/DX-OS/releases/latest/download/dxos-install.sh | bash
-dxos start             # khởi động, tạo tài khoản admin đầu tiên, in các địa chỉ
+dxos start model.yaml   # khởi động, tạo tài khoản admin đầu tiên, áp dụng model.yaml nếu là tệp mới, in các địa chỉ
 dxos plan model.yaml   # xem trước sau khi sửa model.yaml (chưa có)
 dxos apply model.yaml  # áp dụng (chưa có)
 ```

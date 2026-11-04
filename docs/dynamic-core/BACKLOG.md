@@ -18,6 +18,7 @@ Mốc dưới đây là dự kiến.
 | Việc | Ghi chú |
 |---|---|
 | Tag `v2.0.0` và GitHub Release | Tạo sau khi nhánh phase 10 vào `main`; ngày của mục `[2.0.0]` trong `CHANGELOG.md` sửa theo ngày tag; chạy workflow Release từ tag để có image `v2.0.0` mà `dxos-install.sh` kéo về |
+| Kiểm cài bằng image thật | `dxos-install.sh` và `dxos start <tệp>` mới kiểm bằng image local qua `install.sh`; sau khi workflow Release có image `v2.0.0`, chạy lại trên máy sạch |
 | Trang docs `DX-OS-docs` | Vẫn mô tả bản `v1.1.1`; cập nhật cùng lúc triển khai |
 | Triển khai công khai | VPS giữ `v1.1.1`; `deploy/VPS.md` còn mô tả bản đó, và bản mới không có đường nâng cấp dữ liệu nên phải dựng lại; đặt `STAFF_OTP_FLOW=CONDITIONAL` trước lần khởi động đầu để bắt ADMIN nhập mã một lần |
 | Gửi bài | Thư tới BTC trước 17:00 ngày 06/12/2026 |
@@ -27,6 +28,7 @@ Mốc dưới đây là dự kiến.
 | Việc | Ghi chú |
 |---|---|
 | CLI `dxos` chưa có `plan` và `apply` | Áp dụng mô hình qua bảng điều khiển hoặc REST |
+| Nạp mô hình lúc khởi động | Chỉ một tệp mỗi lần |
 | Dịch vụ `ai/` | Chưa nằm trong compose; chỉ tìm kiếm tri thức có nguồn, chưa có hỏi đáp sinh câu trả lời vì chưa có mô hình ngôn ngữ đạt tiêu chuẩn mở; dữ liệu huấn luyện của mô hình embedding chưa kiểm theo định nghĩa của OSI |
 | Chưa cắt bớt service bằng compose profile | Mô hình không dùng thành phần nào vẫn phải chạy thành phần đó |
 | Hành động hoàn tất | Chỉ có `add_to_group` và `remove_from_group`; nhóm Keycloak phải có sẵn, thiếu thì thông điệp được thử lại mãi và xem được ở tab Hàng đợi sự kiện; trường người dùng hoặc nhóm để trống thì thao tác bị bỏ qua, không để lại dấu vết |
@@ -61,12 +63,13 @@ Mốc dưới đây là dự kiến.
 
 | Thiếu sót | Căn cứ | Đề xuất |
 |---|---|---|
-| Tiêu chí 1 chưa đạt trọn: chưa có một lệnh nhận tệp mô hình | "Thế nào là đạt": chạy một lệnh với tệp mô hình trên máy sạch | `dxos apply` hoặc `dxos start <tệp>`, làm cùng `plan` và `apply` trong buổi thảo luận; nên xong trước khi phát hành |
-| 428 kiểm tra E2E chỉ chạy tay, CI không chạy | Nguyên tắc "kiểm thử từ góc người dùng" của README; 50 điểm kho mã | Job CI dựng stack bằng bộ cài từ gói của commit rồi chạy chín script ở `deploy/dev` |
-| Trục sự kiện chỉ phát sự kiện hoàn tất ở trạng thái cuối, chưa có bên ngoài nào nghe được | README: mọi thay đổi hồ sơ và bước quy trình phát ra sự kiện; đề: kiến trúc hướng sự kiện, chống ốc đảo dữ liệu | Phát sự kiện cho mọi bước và mọi thay đổi hồ sơ, thêm webhook; đem vào buổi thảo luận phần mở rộng |
+| Chưa có `dxos plan` và `dxos apply <tệp>` | Đổi mô hình khi hệ thống đang chạy phải làm qua bảng điều khiển hoặc REST | CLI cần token ADMIN mà realm chưa có client nào cho đăng nhập bằng mật khẩu; chọn cách lấy token rồi thêm hai lệnh |
+| 450 kiểm tra E2E chỉ chạy tay, CI không chạy | Nguyên tắc "kiểm thử từ góc người dùng" của README; 50 điểm kho mã | Job CI dựng stack bằng bộ cài từ gói của commit rồi chạy mười một script ở `deploy/dev` |
+| Trục sự kiện ra ngoài mới là một webhook chung cho lịch sử hồ sơ | README: mọi thay đổi hồ sơ và bước quy trình phát ra sự kiện; đề: kiến trúc hướng sự kiện, chống ốc đảo dữ liệu | Webhook theo từng mô hình trong tệp mô hình; sự kiện của việc áp dụng mô hình và của quản trị tài khoản; thứ tự theo từng hồ sơ; API kéo sự kiện theo `eventId`; bộ chuyển định dạng cho Mattermost và Slack, chưa thử với dịch vụ thật |
 | Ứng dụng Tầng 2 mới phủ P của H-P-D-I | Đề: ứng dụng minh họa nằm trong không gian H-P-D-I | D: trang thống kê dựng từ metadata (theo trạng thái, quá hạn, đơn vị), hoặc Superset với dataset sinh từ mô hình qua vai `report_ro` đang có. H: thông báo việc mới và nhắc hạn qua webhook hoặc email. I: để sau như đã định |
 | Hồ sơ không lưu phiên bản mô hình lúc bắt đầu | Luật quy trình chỉ đổi được khi không còn hồ sơ mở, nên chưa cần | Làm cùng việc chuyển hồ sơ đang chạy bằng `ProcessMigrationService` khi cần đổi luật ngay cả lúc còn hồ sơ mở |
 | Người dùng cuối không tự đổi mật khẩu, bật OTP hay xem phiên | Dùng tối đa Keycloak | Link "Tài khoản của tôi" tới Account Console của Keycloak trong menu người dùng; gần như không viết mã |
 | Áp dụng lại cùng tệp không sửa phần bị lệch | Lõi trả `unchanged` khi mã băm của tệp trùng, nên không thấy bảng thiếu cột hoặc chỉ mục, bảng bị sửa tay, hay client và vai Keycloak chưa có | So schema và Keycloak thật với mô hình cả khi tệp không đổi và sửa phần lệch; áp dụng lại cùng tệp sẽ chạy thêm pgschema nên cần bàn |
 | Ngưỡng của `doctor.sh` cao hơn số đo | `doctor.sh` cảnh báo dưới 8 GB RAM và dưới 40 GiB đĩa; stack tám service đo được dùng tối đa khoảng 1,7 GiB RAM, image gần 1 GiB và dữ liệu khoảng 100 MiB sau kiểm thử (`deploy/OPERATIONS.md`) | Hạ ngưỡng sau khi chốt cấu hình VPS; chưa đo với nhiều người dùng đồng thời hay ít nhân hơn |
 | Mẫu nghiệp vụ nằm trong image của dịch vụ lõi | Nguyên tắc "lõi không biết về nghiệp vụ" | Chuyển thư viện mẫu ra thư mục riêng của bản cài; ưu tiên thấp |
+| Flowable đổi `search_path` của kết nối pool về `engine` và không trả lại | Truy vấn vào bảng ngoài `engine` mà không ghi schema chỉ đúng khi trúng kết nối còn ở `public`; quy ước ghi rõ schema nằm ở `ARCHITECTURE.md` mục 7 | Flyway tạo bảng của Flowable ở `engine` và bỏ `setDatabaseSchema`; mỗi lần nâng Flowable phải viết thêm migration |

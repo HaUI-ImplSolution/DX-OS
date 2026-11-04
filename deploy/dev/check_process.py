@@ -229,25 +229,25 @@ def main():
     rt.check("T8-11 a decided record takes no new file", status == 409, str(status))
     delivered = wait_for(lambda: member(git_group))
     rt.check("T8-10 Keycloak puts the requester in the group", delivered)
-    code, rows = rt.psql(f"select count(*) from engine.outbox where record_id={first} and entity='access_request' and delivered_at is not null")
+    code, rows = rt.psql(f"select count(*) from engine.outbox where topic='completion' and record_id={first} and entity='access_request' and delivered_at is not null")
     rt.check("T8-09 one message, delivered", rows == "1", rows)
 
     # A group that does not exist yet fails, waits and succeeds once the group is created.
     second = create(employee, requests, {"access_group": "VPN_USERS", "reason": "Làm việc từ xa"})
     act(itadmin, requests, second, "approve")
-    failed_once = wait_for(lambda: rt.psql(f"select attempts from engine.outbox where record_id={second}")[1] not in ("", "0"))
-    code, error = rt.psql(f"select last_error from engine.outbox where record_id={second}")
+    failed_once = wait_for(lambda: rt.psql(f"select attempts from engine.outbox where topic='completion' and record_id={second}")[1] not in ("", "0"))
+    code, error = rt.psql(f"select last_error from engine.outbox where topic='completion' and record_id={second}")
     rt.check("T8-09 a failed message is kept with its error", failed_once and "VPN_USERS" in error, error)
     kc.kc("POST", "/groups", {"name": "VPN_USERS"})
     status, vpn = kc.kc("GET", "/groups?search=VPN_USERS&exact=true")
     rt.check("T8-09 the message is retried until it succeeds", wait_for(lambda: member(vpn[0]["id"]), 60))
-    code, rows = rt.psql(f"select count(*) from engine.outbox where record_id={second}")
+    code, rows = rt.psql(f"select count(*) from engine.outbox where topic='completion' and record_id={second}")
     rt.check("T8-09 still one message", rows == "1", rows)
 
     # A rejected request starts nothing.
     third = create(employee, requests, {"access_group": "WIKI_EDITORS", "reason": "Thử"})
     act(itadmin, requests, third, "reject", "Chưa cần")
-    code, rows = rt.psql(f"select count(*) from engine.outbox where record_id={third}")
+    code, rows = rt.psql(f"select count(*) from engine.outbox where topic='completion' and record_id={third}")
     rt.check("T8-09 a rejection sends nothing", rows == "0", rows)
 
     # T8-08: the sweep writes one overdue line to the history.

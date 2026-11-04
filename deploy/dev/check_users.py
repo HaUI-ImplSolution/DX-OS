@@ -148,6 +148,13 @@ def main():
     rt.check("T13-13 an account created is recorded", noted("USER_CREATED", uid_new, username="usr_new"))
     rt.check("T13-13 a lock, an unlock and a new password are recorded",
              noted("USER_LOCKED", uid_lock, username="usr_lock") and noted("USER_UNLOCKED", uid_lock) and noted("USER_PASSWORD_RESET", uid_lock))
+    status, body = kc.api(admin, "GET", f"/audit-logs?targetType=user&targetId={uid_lock}&size=200")
+    rows = body["data"]["items"] if status == 200 else []
+    rt.check("T13-13 the audit log lists the records about one account whoever made them",
+             status == 200 and {e["action"] for e in rows} >= {"USER_LOCKED", "USER_UNLOCKED", "USER_PASSWORD_RESET"}
+             and all(e["targetType"] == "USER" and e["targetId"] == uid_lock for e in rows), f"{status} {len(rows)}")
+    status, body = kc.api(admin, "GET", f"/audit-logs?targetType=USER&targetId={missing}&size=200")
+    rt.check("T13-13 an account with no record gives an empty list", status == 200 and body["data"]["items"] == [])
     status, body = kc.api(admin, "GET", "/audit-logs?actor=admin1&size=200")
     dump = str(body["data"]) if status == 200 else ""
     rt.check("T13-13 no password is in the audit log", status == 200 and password not in dump and fresh not in dump)

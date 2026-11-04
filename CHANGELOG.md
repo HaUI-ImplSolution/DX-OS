@@ -19,6 +19,9 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Gỡ `seaweedfs/migrate-uploads.sh`.
 - Cài bằng một lệnh: `dxos-install.sh` phát hành kèm mỗi bản (nguồn ở `deploy/get.sh`) tải gói phát hành, kiểm SHA-256 và cài vào `~/.dxos`.
   Lệnh `dxos` có `start`, `stop`, `status`, `logs`, `admin`, `update`, `doctor`, `backup`, `uninstall`; `dxos start` tạo tài khoản `admin` đầu tiên với mật khẩu tạm.
+- `dxos start <tệp>` đưa tệp mô hình vào hệ thống trên máy sạch: backend áp dụng tệp khi khởi động nếu là tệp mới, và lệnh in kết quả.
+- Webhook sự kiện: mỗi dòng lịch sử của hồ sơ được gửi tới `DXOS_WEBHOOK_URL` dạng JSON có chữ ký; để trống thì không gửi gì.
+  Outbox xóa thông điệp đã gửi sau 30 ngày.
 - `deploy/install.sh` nâng cấp được bản đã cài (`--upgrade`): thay tệp chạy, giữ `.env` và dữ liệu, thêm biến mới; bản cài dùng project Compose `dxos`.
 - `deploy/make_env.sh` thay `deploy/make_env.py`; cài và chạy stack không còn cần Python.
 - Trình soạn mô hình ở bảng điều khiển báo lỗi và gợi ý theo JSON Schema của tệp mô hình: worker của monaco-yaml được tạo theo cách `monaco-editor` 0.57 yêu cầu.
@@ -44,7 +47,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Mô hình mà lần áp dụng đầu dừng dở hiện ở danh sách với phiên bản 0; Hủy bỏ xóa schema và bảng mà lần đó đã tạo.
 - Thay đổi người xử lý, hạn xử lý, quyền tự quyết, hành động hoàn tất hay đặt chỗ bị từ chối khi thực thể còn hồ sơ đang xử lý.
 - Xóa thực thể bị từ chối khi còn hồ sơ đang chạy quy trình; khi xóa, tệp đính kèm của thực thể được dọn cùng (bước `DROP_FILES`).
-- `check_guards.py` kiểm các chốt chặn trên và việc cách ly vai giữa các mô hình; `check_users.py` kiểm quản trị người dùng, bản ghi audit và sự kiện quản trị của Keycloak.
+- `check_guards.py` kiểm các chốt chặn trên và việc cách ly vai giữa các mô hình; `check_users.py` kiểm quản trị người dùng, bản ghi audit và sự kiện quản trị của Keycloak; `check_events.py` kiểm webhook sự kiện; `check_bootstrap.py` kiểm tệp mô hình lúc khởi động.
 
 ## [2.0.0] - 2026-11-03
 

@@ -189,7 +189,7 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 
 | Lệnh | Việc |
 |---|---|
-| `dxos start` | Chạy `doctor.sh`, tải image còn thiếu, khởi động, chờ mọi dịch vụ sẵn sàng; realm chưa có ai vai `ADMIN` thì tạo tài khoản `admin` với mật khẩu tạm in ra một lần, rồi in các địa chỉ |
+| `dxos start [tệp]` | Chạy `doctor.sh`, tải image còn thiếu, khởi động, chờ mọi dịch vụ sẵn sàng; realm chưa có ai vai `ADMIN` thì tạo tài khoản `admin` với mật khẩu tạm in ra một lần; có tệp mô hình thì đưa tệp vào và in kết quả (xem dưới); rồi in các địa chỉ |
 | `dxos stop` | Dừng các container, giữ dữ liệu |
 | `dxos status` | Trạng thái từng dịch vụ và các địa chỉ |
 | `dxos logs [dịch vụ]` | Theo dõi log |
@@ -198,9 +198,47 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos doctor`, `dxos backup` | Chạy `doctor.sh`, `backup.sh` |
 | `dxos uninstall [--purge]` | Xóa container và lệnh `dxos`; `--purge` xóa cả dữ liệu và thư mục cài, phải gõ xác nhận |
 
-Mật khẩu tạm của `admin` phải đổi ở lần đăng nhập đầu.
-Tài khoản quản trị Keycloak nằm ở `KEYCLOAK_ADMIN_USERNAME` và `KEYCLOAK_ADMIN_PASSWORD` trong `~/.dxos/deploy/.env`.
-Image chỉ có bản `linux/amd64`; bộ cài được kiểm trên Linux, chưa kiểm trên macOS và Windows (WSL2).
+### Tệp mô hình lúc khởi động
+
+`dxos start <tệp>` chép tệp vào `deploy/model/` (chỉ giữ một tệp), ghi tên tệp vào `DXOS_MODEL_FILE` trong `.env` và khởi động lại backend nếu nó đang chạy.
+Tên tệp chỉ gồm chữ, số, dấu chấm, gạch ngang và gạch dưới.
+Backend chờ Keycloak trả lời (tối đa 300 giây) rồi áp dụng tệp với người thực hiện `bootstrap`, và chỉ khi tệp chưa từng được áp dụng, kế hoạch ở mức an toàn không có từ chối hay dòng vi phạm, và mô hình không có lần áp dụng dở.
+Mỗi lần khởi động ghi một dòng `Model bootstrap: <kết quả> <chi tiết>`, và `dxos start` in dòng đó:
+
+| Kết quả | Ý nghĩa |
+|---|---|
+| `applied` | Đã áp dụng, kèm tên mô hình và phiên bản |
+| `unchanged` | Mô hình đang chạy chính tệp này |
+| `skipped` | Không áp dụng, kèm lý do; xử lý ở bảng điều khiển |
+| `failed` | Tệp không đọc được hoặc không qua kiểm tra (kèm dòng và cột), Keycloak không trả lời kịp, hoặc việc áp dụng lỗi giữa chừng; `dxos start` thoát với mã 3 |
+
+Backend chạy ở mọi kết quả.
+`dxos start` chờ dòng kết quả tối đa 300 giây (đổi bằng `DXOS_MODEL_TIMEOUT`) rồi thoát với mã 4.
+Backend chỉ đọc tệp khi khởi động, nên `dxos start` không tham số trên hệ thống đang chạy không đọc lại tệp.
+Tệp hỏng vẫn nằm trong `.env` và được báo lại ở mỗi lần backend khởi động cho đến khi sửa hoặc thay.
+
+### Webhook sự kiện
+
+`DXOS_WEBHOOK_URL` trong `.env` là địa chỉ nhận các dòng lịch sử của hồ sơ; để trống thì không gửi gì.
+Chỉ dòng sinh ra sau khi đặt địa chỉ mới được gửi.
+Mỗi dòng (tạo, sửa, xóa, hành động của quy trình, giao việc, thêm hoặc bỏ tệp, quá hạn) được ghi vào outbox trong giao dịch của thay đổi, nên thay đổi bị hủy thì không có gì được gửi.
+Backend gửi `POST` JSON với các trường:
+
+| Trường | Ý nghĩa |
+|---|---|
+| `eventId` | Số của dòng lịch sử, tăng dần; cũng nằm ở header `X-Dxos-Event-Id` |
+| `model`, `entity`, `recordId` | Hồ sơ nào |
+| `action` | Hành động, ví dụ `created`, `updated`, `deleted`, `assigned`, `overdue`, `file_added`, hoặc tên hành động của quy trình |
+| `fromStatus`, `toStatus` | Trạng thái trước và sau |
+| `actor`, `actorName` | Mã người dùng và tên người làm, gửi ra ngoài hệ thống; `system` với dòng quá hạn |
+| `at` | Thời điểm, giờ UTC |
+
+Thông điệp không có nội dung hồ sơ, ghi chú hay tên tệp; bên nhận cần thì gọi API với quyền của mình.
+Có `DXOS_WEBHOOK_SECRET` thì mỗi yêu cầu kèm `X-Dxos-Signature: sha256=<hex>`, là HMAC-SHA256 của nguyên văn nội dung; bên nhận tính lại rồi so.
+Bên nhận trả 2xx trong 5 giây là xong; kết quả khác thì thông điệp được gửi lại với thời gian chờ gấp đôi mỗi lần, tối đa 5 phút.
+Thông điệp có thể đến sai thứ tự hoặc hai lần, nên bên nhận sắp và khử trùng theo `eventId`.
+Thông điệp chưa gửi, lỗi gần nhất và nút thử lại nằm ở tab Hàng đợi sự kiện; thông điệp đã gửi bị xóa sau 30 ngày.
+Đổi `DXOS_WEBHOOK_URL` hay `DXOS_WEBHOOK_SECRET` thì tạo lại backend bằng `docker compose up -d backend`.
 
 ## Kiểm tra trước khi chạy
 

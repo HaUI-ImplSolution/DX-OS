@@ -2,8 +2,11 @@
 package HaUI.ImplSolution.dxos.engine.event;
 
 import HaUI.ImplSolution.dxos.core.api.scheduling.JobLock;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -17,7 +20,11 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
 // Delivers the messages of the outbox after the change that wrote them has committed. A failed
-// message waits longer before each new try; the one that failed does not hold back the others.
+// message waits longer before each new try; the one that failed does not hold back the others. When
+// the target of a topic cannot be reached, the other messages of that topic wait for the next
+// round,
+// so a target that does not answer costs one wait per round and does not hold back the other
+// topics.
 @Component
 public class OutboxDispatcher {
 
@@ -47,17 +54,41 @@ public class OutboxDispatcher {
   }
 
   void deliverDue() {
-    List<Long> due = jdbc.queryForList("SELECT id FROM engine.outbox WHERE delivered_at IS NULL "
-        + "AND next_attempt_at <= now() ORDER BY id LIMIT " + BATCH, Long.class);
-    due.forEach(id -> transaction.executeWithoutResult(status -> deliver(id)));
+    Set<String> unreachable = new HashSet<>();
+    boolean again = true;
+    while (again) {
+      again = false;
+      for (Map<String, Object> message : due(unreachable)) {
+        long id = ((Number) message.get("id")).longValue();
+        boolean[] reachable = {true};
+        transaction.executeWithoutResult(status -> reachable[0] = deliver(id));
+        if (!reachable[0]) {
+          unreachable.add((String) message.get("topic"));
+          again = true;
+          break;
+        }
+      }
+    }
   }
 
-  private void deliver(long id) {
+  private List<Map<String, Object>> due(Set<String> failedTopics) {
+    String skip = failedTopics.isEmpty() ? ""
+        : " AND topic NOT IN (" + String.join(", ", failedTopics.stream().map(t -> "?").toList())
+            + ")";
+    return jdbc.queryForList(
+        "SELECT id, topic FROM engine.outbox WHERE delivered_at IS NULL "
+            + "AND next_attempt_at <= now()" + skip + " ORDER BY id LIMIT " + BATCH,
+        new ArrayList<>(failedTopics).toArray());
+  }
+
+  // False when the target of the message could not be reached; true otherwise, also when the try
+  // failed for another reason.
+  private boolean deliver(long id) {
     List<Map<String, Object>> rows =
         jdbc.queryForList("SELECT topic, payload::text AS payload FROM engine.outbox WHERE id = ? "
             + "AND delivered_at IS NULL FOR UPDATE SKIP LOCKED", id);
     if (rows.isEmpty()) {
-      return;
+      return true;
     }
     try {
       OutboxHandler handler = handlers.get((String) rows.get(0).get("topic"));
@@ -68,12 +99,15 @@ public class OutboxDispatcher {
           new TypeReference<Map<String, Object>>() {}));
       jdbc.update("UPDATE engine.outbox SET delivered_at = now(), attempts = attempts + 1, "
           + "last_error = NULL WHERE id = ?", id);
+      return true;
     } catch (RuntimeException e) {
       log.warn("Outbox message {} failed: {}", id, e.getMessage());
+      boolean reachable = !(e instanceof TargetUnreachableException);
       String error = String.valueOf(e.getMessage());
       jdbc.update("UPDATE engine.outbox SET attempts = attempts + 1, last_error = ?, "
           + "next_attempt_at = now() + make_interval(secs => LEAST(300, power(2, attempts))) "
           + "WHERE id = ?", error.substring(0, Math.min(ERROR_LENGTH, error.length())), id);
+      return reachable;
     }
   }
 }

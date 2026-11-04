@@ -320,18 +320,12 @@ public class DataService {
     requireAssigner(model, entity);
     Access access = access(model, entity);
     Map<String, Object> current = get(model, entity, id);
-    String me = user.currentUserId();
+    // The caller taking the record is checked like anyone else: handler role, unit, creator rule.
     String holder = null;
-    if (me.equals(assignee)) {
-      holder = user.currentFullName();
-    } else if (assignee != null) {
+    if (assignee != null) {
       holder = handlers(model, entity, current).stream().filter(p -> p.id().equals(assignee))
           .findFirst().map(Person::name)
           .orElseThrow(() -> new ModelValidationException("assignee", "cannot handle this record"));
-    }
-    if (me.equals(assignee) && me.equals(current.get("created_by"))
-        && !entity.process().allowSelfDecision()) {
-      throw new ModelValidationException("assignee", "cannot handle this record");
     }
     Map<String, Object> record = lock(model, entity, access, id);
     String status = (String) record.get("status");
@@ -640,6 +634,9 @@ public class DataService {
         List<Object> items = new ArrayList<>();
         for (String raw : param.getValue().split(",")) {
           items.add(parse(field, type, raw.trim()));
+        }
+        if (items.isEmpty()) {
+          throw new ModelValidationException(param.getKey(), "in needs at least one value");
         }
         values.addValue(name, items);
         where.add(column + " IN (:" + name + ")");

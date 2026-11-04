@@ -233,4 +233,18 @@ Backend dựng từ cây làm việc gồm cả tệp chưa commit; giao diện 
 | Hộp thoại người dùng bằng Chrome | Đạt | Tạo, gán và gỡ vai, thêm và bỏ đơn vị, khóa, mở, đặt lại mật khẩu: mỗi thao tác một dòng đúng người, đúng nội dung, mới nhất ở trên; đơn vị hiện nhãn; không có mật khẩu nào trong lịch sử |
 | Phân trang lịch sử bằng Chrome | Đạt | 21 bản ghi hiện 20 dòng và nút Xem thêm; bấm thì ra bản ghi cũ nhất và nút biến mất |
 | Mã hành động chưa có nhãn | Chưa chạy | Chưa có bản ghi như vậy; mã hiển thị nguyên văn theo mã nguồn |
+
+### Kiểm ngày 04/11/2026: sửa các lỗi của đợt rà soát
+
+Cây làm việc gồm cả tệp chưa commit.
+Chuỗi script chạy trên một stack thử riêng (project Compose `dxscratch`, cổng 9180, cơ sở dữ liệu rỗng), đã xóa sau khi kiểm, rồi chạy lại trên stack chính dựng lại bằng `reset.sh`.
+
+| Mục | Kết quả | Ghi chú |
+|---|---|---|
+| `./mvnw clean verify formatter:validate` | Đạt | Năm module build thành công, không tệp nào lỗi định dạng |
+| `npx tsc --noEmit` | Đạt | Không lỗi |
+| Chín script ở `deploy/dev` theo thứ tự trên | Đạt | 428/428 trên cả hai stack: 51, 17, 71, 65, 56, 44, 26, 59, 39 |
+| Các lỗi của đợt rà soát, gọi API bằng kịch bản tạm ngoài repo | Đạt | 19/19: thiếu `enabled` bị 400 và tài khoản vẫn mở; người điều phối không có vai xử lý tự nhận hồ sơ bị 400, giao cho người xử lý thì được; sức chứa hai đã có lịch 09–10 và 10–11 nhận lịch 09–11 và từ chối lịch 09:30–10:30; `in` không có giá trị bị 400; trang 2147483647 của hộp việc, người dùng và hàng đợi sự kiện trả danh sách rỗng |
+| Bảng điều khiển ở màn rộng 360px bằng Chrome | Đạt | Năm tab vừa màn hình, bảng người dùng cuộn ngang trong khung; ở màn rộng 1280px vẫn hai cột |
+| Stack chính sau `reset.sh` | Đạt | 22 schema `m_*` khớp 22 client `dxos-m-*` của Keycloak |
 | Bản build trong image `frontend` của Compose | Chưa chạy | Đã thử bản build bằng `vite preview`, cùng mã nguồn |

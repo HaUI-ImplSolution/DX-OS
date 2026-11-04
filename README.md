@@ -110,7 +110,7 @@ entities:
   Từ chối và trả lại bắt buộc có lý do; người nộp rút lại được hồ sơ chưa ở trạng thái cuối.
   Hồ sơ có quy trình không xóa được; hồ sơ đã được quyết định thì không sửa được; hồ sơ đã giao thì chỉ người được giao xử lý được.
   Người tạo hồ sơ không tự quyết định được, trừ khi khai báo `allow_self_decision: true`.
-- Đặt chỗ: `family: reservation` kèm `booking: {resource, starts, ends, capacity}`; hai lượt trùng khung giờ vượt sức chứa thì lượt sau bị từ chối, và ứng dụng có chế độ xem lịch.
+- Đặt chỗ: `family: reservation` kèm `booking: {resource, starts, ends, capacity}`; lượt làm số lượt chạy cùng lúc vượt sức chứa bị từ chối, và ứng dụng có chế độ xem lịch.
   Ví dụ ở [`room_booking.yaml`](./backend/dx-engine/src/main/resources/templates/room_booking.yaml).
 - Hành động hoàn tất: `after` gán danh sách thao tác cho một trạng thái cuối, ví dụ `after: {approved: [{do: add_to_group, user: created_by, group_from: nhom}]}`; thao tác chạy sau khi giao dịch xong và được thử lại nếu lỗi.
   Thao tác có sẵn là `add_to_group` và `remove_from_group`.

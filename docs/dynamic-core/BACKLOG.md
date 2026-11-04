@@ -55,19 +55,6 @@ Mốc dưới đây là dự kiến.
 | Xem trước không giữ khóa | Kế hoạch có thể cũ khi người khác áp dụng xen vào; bước áp dụng kiểm lại mọi điều kiện |
 | Không có giao dịch chung giữa các hệ thống | Giữa PostgreSQL, Keycloak, Flowable và SeaweedFS; mỗi bước chạy lại được, và lần áp dụng dở được tiếp tục hoặc hủy bỏ |
 
-### Lỗi đã tái hiện khi rà soát ngày 04/11/2026
-
-Các lỗi dưới đây được kiểm trên stack riêng với dữ liệu thử; chưa sửa mã.
-
-| Mức độ | Lỗi | Cách tái hiện và ảnh hưởng |
-|---|---|---|
-| Vừa | API khóa tài khoản không kiểm giá trị bắt buộc | ADMIN gửi `PUT /api/v1/users/{id}/enabled` với `{}` hoặc `{"enabled": null}`: trả 200 và khóa tài khoản đang hoạt động; `UserAdminController.setEnabled` coi giá trị thiếu là `false` |
-| Vừa | Người điều phối tự nhận hồ sơ dù không có vai xử lý | Người có quyền giao việc nhưng không có vai handler gửi `/assign` với `assignee` là chính mình: trả 200; người đó xử lý bị 403, người giữ phạm vi `assigned` không được giao thì đọc bị 404; phải giao lại hồ sơ; nhánh tự nhận trong `DataService.assign` bỏ qua kiểm người xử lý hợp lệ |
-| Vừa | Đặt chỗ tính sai khi sức chứa lớn hơn một | Sức chứa 2, đã có lịch 09–10 và 10–11 trên cùng tài nguyên; lịch 09–11 bị 409 dù không lúc nào vượt sức chứa; `BookingGuard` đếm mọi lịch giao với khoảng mới thay vì số lịch đồng thời lớn nhất |
-| Thấp | Bộ lọc `in` có danh sách rỗng gây 500 | `GET /api/v1/data/{model}/{entity}?filter.<field>.in=%2C` trên trường văn bản trả 500 `ERR_INTERNAL`; `DataService.filters` tạo SQL `IN ()` sau khi tách chuỗi chỉ có dấu phẩy |
-| Thấp | Tràn số khi tính vị trí phân trang | Với `page=2147483647&size=100`, `/api/v1/inbox` trả 500, còn `/api/v1/users` trả dữ liệu trang đầu nhưng báo số trang đã yêu cầu; `InboxController` và `UserAdminService.list` nhân hai số `int` |
-| Thấp | Tab Người dùng tràn ngang trên màn nhỏ | Trên màn rộng 360px, toàn trang rộng 522px khi bảng chứa tên đăng nhập và email; ô tìm kiếm và bảng trong `UsersTab` làm nội dung vượt mép phải |
-
 ## 4. Đề xuất từ rà soát đề thi và hướng thiết kế, chưa quyết
 
 Đối chiếu đề, thể lệ, các nguyên lý của đề và những gì [`README.md`](./README.md) đã hứa với mã hiện tại.

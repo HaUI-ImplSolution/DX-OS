@@ -45,6 +45,11 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Thay đổi người xử lý, hạn xử lý, quyền tự quyết, hành động hoàn tất hay đặt chỗ bị từ chối khi thực thể còn hồ sơ đang xử lý.
 - Xóa thực thể bị từ chối khi còn hồ sơ đang chạy quy trình; khi xóa, tệp đính kèm của thực thể được dọn cùng (bước `DROP_FILES`).
 - `check_guards.py` kiểm các chốt chặn trên và việc cách ly vai giữa các mô hình; `check_users.py` kiểm quản trị người dùng, bản ghi audit và sự kiện quản trị của Keycloak.
+- Đặt chỗ so sức chứa với số lượt chạy cùng lúc ở mọi thời điểm của khung giờ mới.
+- Người nhận một hồ sơ, kể cả người tự nhận, phải nằm trong danh sách người xử lý của hồ sơ đó (vai xử lý, đơn vị, luật người tạo).
+- `PUT /api/v1/users/{id}/enabled` trả 400 khi thiếu `enabled`; bộ lọc `in` không có giá trị nào trả 400.
+- Trang nằm ngoài cuối danh sách ở `/api/v1/inbox`, `/api/v1/users` và `/api/v1/outbox` trả danh sách rỗng, kể cả với số trang rất lớn.
+- Bảng điều khiển vừa màn hình rộng 360px; bảng người dùng cuộn ngang trong khung riêng.
 
 ## [2.0.0] - 2026-11-03
 

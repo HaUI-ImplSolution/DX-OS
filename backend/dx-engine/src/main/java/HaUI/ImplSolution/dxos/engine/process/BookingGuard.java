@@ -8,7 +8,10 @@ import HaUI.ImplSolution.dxos.model.Booking;
 import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
 import HaUI.ImplSolution.dxos.model.ProcessFamily.State;
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,16 +64,39 @@ public class BookingGuard {
     List<String> open =
         entity.process().definition().states().stream().filter(state -> !state.terminal())
             .map(State::name).map(Sql::literal).collect(Collectors.toList());
-    Long taken = jdbc.queryForObject(
-        "SELECT count(*) FROM " + Sql.table(model, entity) + " WHERE "
+    List<Map<String, Object>> overlapping = jdbc.queryForList(
+        "SELECT " + Sql.ident(booking.starts()) + " AS starts, " + Sql.ident(booking.ends())
+            + " AS ends FROM " + Sql.table(model, entity) + " WHERE "
             + Sql.ident(booking.resource()) + " = ? AND " + Sql.ident(booking.starts())
             + " < ? AND " + Sql.ident(booking.ends()) + " > ? AND status IN ("
             + String.join(", ", open) + ") AND id <> ?",
-        Long.class, resource, ends, starts, selfId == null ? -1L : selfId);
-    if (taken != null && taken >= booking.capacity()) {
+        resource, ends, starts, selfId == null ? -1L : selfId);
+    if (busiest(overlapping, starts.toInstant(), ends.toInstant()) >= booking.capacity()) {
       throw new InvalidStateException("The resource is already booked for this time");
     }
   }
+
+  // The most bookings running at one moment between starts and ends. A booking ending when another
+  // starts does not overlap it.
+  private static int busiest(List<Map<String, Object>> bookings, Instant starts, Instant ends) {
+    List<Edge> edges = new ArrayList<>();
+    for (Map<String, Object> row : bookings) {
+      Instant from = time(row.get("starts")).toInstant();
+      Instant to = time(row.get("ends")).toInstant();
+      edges.add(new Edge(from.isBefore(starts) ? starts : from, 1));
+      edges.add(new Edge(to.isAfter(ends) ? ends : to, -1));
+    }
+    edges.sort(Comparator.comparing(Edge::at).thenComparingInt(Edge::change));
+    int running = 0;
+    int most = 0;
+    for (Edge edge : edges) {
+      running += edge.change();
+      most = Math.max(most, running);
+    }
+    return most;
+  }
+
+  private record Edge(Instant at, int change) {}
 
   private static OffsetDateTime time(Object value) {
     if (value instanceof OffsetDateTime time) {

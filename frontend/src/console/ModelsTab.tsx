@@ -106,7 +106,7 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
   if (error) return <Alert severity="error">{error}</Alert>;
   if (!models) {
     return (
-      <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))" }}>
+      <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: "repeat(auto-fill, minmax(min(360px, 100%), 1fr))" }}>
         <Skeleton variant="rounded" height={170} />
         <Skeleton variant="rounded" height={170} />
       </Box>
@@ -134,7 +134,7 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
           {problem}
         </Alert>
       )}
-      <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))" }}>
+      <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: "repeat(auto-fill, minmax(min(360px, 100%), 1fr))" }}>
         {models.map((model) => {
           const summary = summaries[model.model];
           return (

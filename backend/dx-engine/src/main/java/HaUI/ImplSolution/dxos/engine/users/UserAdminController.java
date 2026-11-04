@@ -3,6 +3,7 @@ package HaUI.ImplSolution.dxos.engine.users;
 
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
 import HaUI.ImplSolution.dxos.core.api.dto.PageResponse;
+import HaUI.ImplSolution.dxos.engine.exception.ModelValidationException;
 import HaUI.ImplSolution.dxos.engine.users.UserAdminService.CreatedUser;
 import HaUI.ImplSolution.dxos.engine.users.UserAdminService.NewUser;
 import HaUI.ImplSolution.dxos.engine.users.UserAdminService.Options;
@@ -105,11 +106,15 @@ public class UserAdminController {
 
   @PutMapping("/{id}/enabled")
   @Operation(summary = "Lock or unlock an account",
-      description = "Body: {\"enabled\": true|false}. 409 when an administrator locks their own"
-          + " account.")
+      description = "Body: {\"enabled\": true|false}. 400 when enabled is missing, 409 when an"
+          + " administrator locks their own account.")
   public ApiResponse<Void> setEnabled(@PathVariable String id,
       @RequestBody Map<String, Boolean> body) {
-    service.setEnabled(id, Boolean.TRUE.equals(body.get("enabled")));
+    Boolean enabled = body.get("enabled");
+    if (enabled == null) {
+      throw new ModelValidationException("enabled", "is required");
+    }
+    service.setEnabled(id, enabled);
     return ApiResponse.success(null);
   }
 

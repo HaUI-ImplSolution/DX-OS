@@ -113,6 +113,7 @@ T5-11 và T6-14 cần dịch vụ chạy với `ENGINE_FAULT_AFTER_DECISION=true
 10. Ở bảng điều khiển, tab Soạn và áp dụng: bấm biểu tượng mở to của sơ đồ quy trình thì hiện hộp thoại lớn, phần nền phía sau mờ đi.
 11. Dừng Keycloak (`docker compose stop keycloak`), áp dụng một thay đổi cho một mô hình, rồi bật lại Keycloak: thẻ mô hình hiện nhãn "Đang dừng dở" kèm nút Tiếp tục áp dụng và Hủy bỏ; Tiếp tục thì nhãn mất và phiên bản tăng; Hủy bỏ hỏi xác nhận rồi đưa mô hình về phiên bản đang chạy; mô hình mà lần áp dụng đầu dừng dở hiện nhãn "Chưa có phiên bản", không có nút Sửa mô hình, và Hủy bỏ làm thẻ biến mất.
 12. Khai báo vai `ADMIN`, hoặc vai đang thuộc một mô hình khác, ở tab Soạn và áp dụng: báo lỗi tiếng Việt kèm dòng và cột hoặc tên mô hình đang giữ vai, không có nút Áp dụng.
+13. Khi một thực thể còn hồ sơ đang xử lý, đổi hạn xử lý hoặc người xử lý của nó rồi bấm Xem kế hoạch: báo "Không đổi được ... khi còn N hồ sơ đang xử lý" và không có nút Áp dụng; rút hết hồ sơ rồi xem lại thì có nút Áp dụng.
 
 ## 6. Hồi quy
 
@@ -184,4 +185,8 @@ Cây làm việc gồm cả tệp chưa commit; stack dựng riêng (project Com
 | `npx tsc --noEmit` | Đạt | Không lỗi |
 | Tám script ở `deploy/dev` theo thứ tự trên | Đạt | 387/387: 51, 17, 71, 65, 56, 44, 26 và `check_guards.py` 57 |
 | Bảng điều khiển bằng Chrome | Đạt | Lỗi vai `ADMIN` và vai trùng bằng tiếng Việt, mô hình dừng dở hiện nhãn và hai nút, Tiếp tục và Hủy bỏ đều chạy, kể cả mô hình chưa có phiên bản |
-| Chưa chạy | | Hai bản sao backend chạy cùng lúc; dòng log khi hai mô hình đã lưu dùng chung vai |
+| Tài nguyên toàn stack | Đạt | Đo ngày 04/11/2026 khi chạy tám script: tối đa khoảng 1,7 GiB RAM cho tám service, số từng service ở `deploy/OPERATIONS.md` |
+| Hai bản sao `backend` sau gateway | Đạt | Cả hai nhận lưu lượng. Sau một lần áp dụng, 22 trong 40 yêu cầu dữ liệu nhận 404 và danh sách mô hình nhảy qua lại; mô hình bị giữ vẫn được bản sao kia phục vụ (26 trong 40 yêu cầu trả 200 thay vì 409); khởi động lại cả hai thì 40/40 đúng |
+| Đổi luật quy trình khi còn hồ sơ mở, bằng Chrome | Đạt | Còn hai hồ sơ: báo không đổi được hạn xử lý, không có nút Áp dụng; rút cả hai thì có nút Áp dụng |
+| Bảng từ bản cũ hơn (mô phỏng bằng cách xóa chỉ mục, rồi cột `handle_by`) | Đạt | Thiếu chỉ mục: mọi API chạy bình thường. Thiếu cột: danh sách, đọc, tạo và hộp việc trả 500, log có `BadSqlGrammarException`; áp dụng lại cùng tệp trả `unchanged` và không sửa; một tệp có nội dung khác thêm lại cột và chỉ mục, rồi mọi API trả 200 |
+| Chưa chạy | | Dòng log khi hai mô hình đã lưu dùng chung vai (không dựng được qua API) |

@@ -31,7 +31,7 @@ Mốc dưới đây là dự kiến.
 | Chưa cắt bớt service bằng compose profile | Mô hình không dùng thành phần nào vẫn phải chạy thành phần đó |
 | Hành động hoàn tất | Chỉ có `add_to_group` và `remove_from_group`; nhóm Keycloak phải có sẵn, thiếu thì thông điệp được thử lại mãi và xem được ở tab Hàng đợi sự kiện; trường người dùng hoặc nhóm để trống thì thao tác bị bỏ qua, không để lại dấu vết |
 | Tệp đính kèm | Xóa đối tượng trong kho lỗi thì chỉ ghi log, không thử lại nên có thể còn đối tượng mồ côi |
-| Nhiều bản sao của backend | Trạng thái giữ mô hình và danh sách mô hình đang chạy chỉ nằm trong bộ nhớ của từng bản sao; chạy hai bản sao thì bản kia giữ mô hình cũ đến khi khởi động lại; hướng làm: bản sao khác định kỳ đối chiếu `apply_run` và `model_version` rồi nạp lại |
+| Nhiều bản sao của backend | Đã thử hai bản sau gateway: danh sách mô hình và trạng thái giữ chỉ nằm trong bộ nhớ từng bản sao, nên sau một lần áp dụng 22 trong 40 yêu cầu nhận 404 vì bản kia chưa nạp mô hình, và mô hình đang bị giữ vẫn được bản kia phục vụ; khởi động lại cả hai thì đúng; hiện chỉ chạy một bản; hướng làm: bản sao khác định kỳ đối chiếu `apply_run` và `model_version` rồi nạp lại |
 | Trường kiểu `user` | Giá trị chưa được đối chiếu với người dùng có thật trong Keycloak |
 | Hạn xử lý | Bộ quét quá hạn chỉ ghi dòng lịch sử; chưa có người nghe để nhắc qua chat |
 | Đổi họ mẫu của một thực thể | Bị từ chối, kể cả khi mọi hồ sơ đã ở trạng thái cuối; muốn đổi hình dạng quy trình thì thêm thực thể mới |
@@ -49,6 +49,7 @@ Mốc dưới đây là dự kiến.
 | Hai mô hình đã lưu dùng chung vai | Mô hình lưu từ trước chốt chặn vẫn chạy và chỉ có dòng log lỗi lúc khởi động, nên người giữ vai chung vẫn vào được dữ liệu của cả hai cho đến khi đổi tên vai; mô hình đó không áp dụng thêm được cho đến lúc ấy; bản 2.0.0 chưa triển khai nên chưa có dữ liệu như vậy |
 | Xóa thực thể | Bảng, hồ sơ, tệp đính kèm và đối tượng trong kho bị xóa cùng; lịch sử Flowable đã kết thúc, audit và outbox của thực thể còn lại; thực thể còn hồ sơ đang chạy quy trình phải hoàn tất hoặc rút hết hồ sơ trước |
 | Khe hở khi bắt đầu áp dụng | Yêu cầu vào trước khi mô hình bị giữ vẫn chạy song song với bước đổi bảng, và hồ sơ tạo giữa lúc kiểm và lúc áp dụng không được tính vào số hồ sơ đang mở; Postgres tự chặn truy vấn khi đổi bảng; hướng làm: mỗi yêu cầu lấy khóa chia sẻ theo mô hình, lần áp dụng lấy khóa độc quyền |
+| Hệ thống đã áp dụng mô hình bằng bản cũ hơn | Bảng thiếu cột `handle_by` làm API dữ liệu của thực thể có quy trình trả 500 (danh sách, đọc, tạo, hộp việc) và bộ quét quá hạn lỗi mỗi phút; bảng thiếu chỉ mục `handle_by` vẫn chạy bình thường; áp dụng lại cùng tệp trả `unchanged` và không sửa, chỉ một tệp có nội dung khác mới thêm cột và chỉ mục; hồ sơ đang xử lý trước đó không bị tính quá hạn cho đến lần chuyển trạng thái kế |
 | Xem trước không giữ khóa | Kế hoạch có thể cũ khi người khác áp dụng xen vào; bước áp dụng kiểm lại mọi điều kiện |
 
 ## 4. Rủi ro kỹ thuật hiện tại
@@ -58,14 +59,7 @@ Lõi không có giao dịch chung giữa PostgreSQL, Keycloak, Flowable và Seaw
 
 ## 5. Chưa kiểm thử
 
-| Việc | Ghi chú |
-|---|---|
-| Khởi động bản mới trên dữ liệu của `v1.1.1` | Không có đường nâng cấp dữ liệu |
-| Hệ thống đã áp dụng mô hình trước bản này | Cột `handle_by` và chỉ mục của nó chỉ vào bảng khi mô hình được áp dụng với nội dung khác; đặt lại stack hoặc đổi mô hình một lần |
-| Mức tài nguyên của toàn bộ stack | Cần đo trước khi chọn cấu hình VPS |
-| Hai bản sao backend chạy cùng lúc | Chưa thử |
-| Dòng log lỗi khi hai mô hình đã lưu dùng chung vai | Không dựng được tình huống qua API vì bộ kiểm chặn từ đầu |
-| Đổi luật quy trình khi còn hồ sơ mở trên giao diện | Chỉ có kiểm tự động của API |
+Không còn việc nào chưa kiểm thử mà kiểm được bằng chạy thử.
 
 ## 6. Đã quyết, chờ làm
 
@@ -87,5 +81,6 @@ Lõi không có giao dịch chung giữa PostgreSQL, Keycloak, Flowable và Seaw
 | Ứng dụng Tầng 2 mới phủ P của H-P-D-I | Đề: ứng dụng minh họa nằm trong không gian H-P-D-I | D: trang thống kê dựng từ metadata (theo trạng thái, quá hạn, đơn vị), hoặc Superset với dataset sinh từ mô hình qua vai `report_ro` đang có. H: thông báo việc mới và nhắc hạn qua webhook hoặc email. I: để sau như đã định |
 | Hồ sơ không lưu phiên bản mô hình lúc bắt đầu | Luật quy trình chỉ đổi được khi không còn hồ sơ mở, nên chưa cần | Làm cùng việc chuyển hồ sơ đang chạy bằng `ProcessMigrationService` khi cần đổi luật ngay cả lúc còn hồ sơ mở |
 | Người dùng cuối không tự đổi mật khẩu, bật OTP hay xem phiên | Dùng tối đa Keycloak | Link "Tài khoản của tôi" tới Account Console của Keycloak trong menu người dùng; gần như không viết mã |
-| Chưa đo tài nguyên của toàn stack | Đối tượng SME, bộ cài càng nhẹ càng tốt; cũng là mục ở phần 5 | Đo bằng `docker stats` khi chạy tám script, ghi số vào README và `doctor.sh` |
+| Áp dụng lại cùng tệp không sửa schema bị lệch | Lõi trả `unchanged` khi mã băm của tệp trùng, nên không thấy bảng thiếu cột hoặc chỉ mục, hay bảng bị sửa tay | So schema thật với mô hình cả khi tệp không đổi và sửa phần lệch; áp dụng lại cùng tệp sẽ chạy thêm pgschema nên cần bàn |
+| Ngưỡng của `doctor.sh` cao hơn số đo | `doctor.sh` cảnh báo dưới 8 GB RAM và dưới 40 GiB đĩa; stack tám service đo được dùng tối đa khoảng 1,7 GiB RAM, image gần 1 GiB và dữ liệu khoảng 100 MiB sau kiểm thử (`deploy/OPERATIONS.md`) | Hạ ngưỡng sau khi chốt cấu hình VPS; chưa đo với nhiều người dùng đồng thời hay ít nhân hơn |
 | Mẫu nghiệp vụ nằm trong image của dịch vụ lõi | Nguyên tắc "lõi không biết về nghiệp vụ" | Chuyển thư viện mẫu ra thư mục riêng của bản cài; ưu tiên thấp |

@@ -200,6 +200,28 @@ Biến có trong `.env` mà `.env.example` không liệt kê bị báo `WARN`.
 Các cổng đã bị chiếm chỉ được kiểm khi stack chưa chạy.
 Thoát với mã 1 khi có `FAIL`, nên chạy trước `./update.sh` và `docker compose up -d` trên máy chủ.
 
+## Tài nguyên và số bản sao
+
+Đo ngày 04/11/2026 trên máy 12 CPU, 31 GB RAM, bằng `docker stats` mỗi 5 giây khi chạy tám script ở `deploy/dev` trên stack mới dựng.
+Stack gồm tám service, không bật `clamav`.
+
+| Service | RAM lúc rảnh (MiB) | RAM đỉnh (MiB) | CPU đỉnh (% của một nhân) |
+|---|---|---|---|
+| `backend` | 493 | 529 | 417 |
+| `keycloak` | 424 | 517 | 365 |
+| `monitor` | 287 | 296 | 7 |
+| `apisix` | 210 | 222 | 6 |
+| `postgres` | 86 | 115 | 166 |
+| `seaweedfs` | 68 | 71 | 4 |
+| `frontend`, `portal` | 10 mỗi service | 11 mỗi service | 2 |
+
+Cả stack dùng khoảng 1,6 GiB RAM lúc rảnh và tối đa khoảng 1,7 GiB trong lúc chạy kiểm thử.
+Image chiếm gần 1 GiB đĩa; dữ liệu Postgres sau lần chạy kiểm thử là khoảng 100 MiB.
+CPU chỉ vọt lên ngắn hạn ở `backend` và `keycloak`; chưa đo với nhiều người dùng đồng thời hay với ít nhân hơn.
+
+`backend` chạy một bản.
+Chạy hai bản sau gateway thì mỗi bản giữ danh sách mô hình riêng trong bộ nhớ: sau một lần áp dụng, bản kia trả 404 cho mô hình mới và tiếp tục phục vụ mô hình đang bị giữ, cho đến khi khởi động lại cả hai.
+
 ## Giám sát từ ngoài
 
 `./online-check.sh` (trong `deploy/`) gọi web, portal, trang đăng nhập và `/api/v1/system/status` qua địa chỉ công khai, rồi thoát với mã 1 khi một đường không trả 200 hoặc khi `backend` hoặc `storage` không `UP`.

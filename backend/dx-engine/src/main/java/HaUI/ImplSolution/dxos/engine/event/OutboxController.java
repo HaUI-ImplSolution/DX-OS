@@ -53,7 +53,7 @@ public class OutboxController {
         throw new ModelValidationException("status", "must be failed, pending or delivered");
     };
     int limit = Math.max(1, Math.min(size, MAX_SIZE));
-    int offset = Math.max(0, page) * limit;
+    long offset = (long) Math.max(0, page) * limit;
     List<Map<String, Object>> items = jdbc.queryForList("SELECT id, topic, model, entity, "
         + "record_id, attempts, last_error, created_at, next_attempt_at, delivered_at, "
         + "payload::text AS payload FROM engine.outbox WHERE " + condition

@@ -162,6 +162,7 @@ const VI: Rule[] = [
   fixed("cannot handle this record", "Không xử lý được hồ sơ này"),
   fixed("no field to update", "Không có trường nào để cập nhật"),
   fixed("like applies to text fields", "like chỉ dùng cho trường văn bản"),
+  fixed("in needs at least one value", "in cần ít nhất một giá trị"),
   pattern("unknown operator (.+)", "Toán tử $1 không có"),
   fixed("unknown field", "Trường không có trong mô hình"),
   fixed("cannot be set", "Không được gán trực tiếp"),

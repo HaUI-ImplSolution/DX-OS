@@ -113,7 +113,7 @@ entities:
   Rejecting and returning need a reason; the owner can withdraw a record that is not in a final state.
   A record with a process cannot be deleted; a decided record can no longer be edited; an assigned record can only be handled by its assignee.
   The creator of a record cannot decide it unless `allow_self_decision: true` is declared.
-- Reservations: `family: reservation` with `booking: {resource, starts, ends, capacity}`; a second booking that overlaps beyond the capacity is refused, and the app has a calendar view.
+- Reservations: `family: reservation` with `booking: {resource, starts, ends, capacity}`; a booking that would put more bookings at the same moment than the capacity allows is refused, and the app has a calendar view.
   See [`room_booking.yaml`](./backend/dx-engine/src/main/resources/templates/room_booking.yaml).
 - Completion actions: `after` gives a list of operations for a final state, for example `after: {approved: [{do: add_to_group, user: created_by, group_from: group_field}]}`; they run after the transaction commits and are retried on failure.
   The available operations are `add_to_group` and `remove_from_group`.

@@ -39,9 +39,9 @@ public class DataController {
   @GetMapping
   @Operation(summary = "List records",
       description = "filter.<field>=<value> (also filter.<field>.<op> with op eq, ne, lt, lte,"
-          + " gt, gte, like or in), sort=<field>, order=asc|desc, page (from 0) and size (at most"
-          + " 200). A role sees only the rows its access reaches; 403 when no role of the"
-          + " caller reaches the entity.")
+          + " gt, gte, like or in; in takes at least one comma-separated value), sort=<field>,"
+          + " order=asc|desc, page (from 0) and size (at most 200). A role sees only the rows its"
+          + " access reaches; 403 when no role of the caller reaches the entity.")
   public ApiResponse<PageResponse<Map<String, Object>>> list(@PathVariable String model,
       @PathVariable String entity, @RequestParam Map<String, String> params) {
     Model m = registry.require(model);
@@ -104,7 +104,8 @@ public class DataController {
   @PostMapping("/{id}/assign")
   @Operation(summary = "Assign a record to a user who can handle it",
       description = "The body is {\"assignee\": \"<user id>\"}, with null to release it. The"
-          + " handler role and roles writing to all rows or to their units may assign. 400 when that user cannot handle the record.")
+          + " handler role and roles writing to all rows or to their units may assign. 400 when"
+          + " that user, the caller included, cannot handle the record.")
   public ApiResponse<Map<String, Object>> assign(@PathVariable String model,
       @PathVariable String entity, @PathVariable long id, @RequestBody Map<String, String> body) {
     Model m = registry.require(model);

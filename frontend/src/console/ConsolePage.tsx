@@ -60,8 +60,9 @@ export default function ConsolePage() {
 
   if (error) return <Alert severity="error">{error}</Alert>;
 
+  // The layout grows to the narrowest width of its content, so the page stays as wide as the screen.
   return (
-    <Box>
+    <Box sx={{ contain: "inline-size" }}>
       <Title title="Bảng điều khiển" />
       <PageHeader
         title="Bảng điều khiển"

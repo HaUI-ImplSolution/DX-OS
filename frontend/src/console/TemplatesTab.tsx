@@ -27,7 +27,7 @@ export default function TemplatesTab({ templates, onUse }: Props) {
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         Chọn một mẫu gần với nghiệp vụ của bạn, sửa trong trình soạn rồi áp dụng. Mỗi mẫu là một tệp mô hình hoàn chỉnh.
       </Typography>
-      <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))" }}>
+      <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: "repeat(auto-fill, minmax(min(320px, 100%), 1fr))" }}>
         {templates.map((template) => {
           const summary = summaries[template.id];
           return (

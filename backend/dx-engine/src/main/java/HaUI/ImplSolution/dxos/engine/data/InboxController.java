@@ -45,19 +45,27 @@ public class InboxController {
   public ApiResponse<PageResponse<Item>> inbox(@RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "50") int size) {
     int limit = Math.max(1, Math.min(size, MAX_SIZE));
-    int first = Math.max(0, page) * limit;
-    List<Item> items = new ArrayList<>();
+    long first = (long) Math.max(0, page) * limit;
     long total = 0;
     for (Model model : registry.all()) {
       for (Entity entity : model.entities().values()) {
         total += data.countWaiting(model, entity);
-        data.waiting(model, entity, first + limit)
-            .forEach(row -> items.add(item(model, entity, row)));
       }
     }
-    items.sort(Comparator.comparing((Item item) -> !item.overdue()).thenComparing(Item::createdAt));
-    List<Item> shown =
-        items.subList(Math.min(first, items.size()), Math.min(first + limit, items.size()));
+    List<Item> items = new ArrayList<>();
+    // A page past the end needs no rows.
+    if (first < total) {
+      int upto = (int) Math.min(first + limit, Integer.MAX_VALUE);
+      for (Model model : registry.all()) {
+        for (Entity entity : model.entities().values()) {
+          data.waiting(model, entity, upto).forEach(row -> items.add(item(model, entity, row)));
+        }
+      }
+      items.sort(
+          Comparator.comparing((Item item) -> !item.overdue()).thenComparing(Item::createdAt));
+    }
+    List<Item> shown = items.subList((int) Math.min(first, items.size()),
+        (int) Math.min(first + limit, items.size()));
     return ApiResponse.success(new PageResponse<>(shown, Math.max(0, page), limit, total,
         (int) ((total + limit - 1) / limit)));
   }

@@ -252,3 +252,17 @@ Image backend và frontend dựng từ cây làm việc, chạy trong stack th�
 | Mô hình có lần áp dụng dở | Đạt | Áp dụng khi Keycloak tắt: lần chạy `failed` ở `ENSURE_CLIENT`, mô hình bị giữ; khởi động lại với tệp mới ra `skipped` kèm lý do; Tiếp tục áp dụng xong phiên bản 2; khởi động lại ra `applied` phiên bản 3 |
 | Cài bằng `install.sh` với image local, rồi `dxos start <tệp>` | Đạt | Image gắn thẻ riêng, cổng riêng: `applied` phiên bản 1; chạy lại cùng tệp ra `unchanged`; tệp bỏ một trường ra `skipped` mức LOSS; `dxos uninstall --purge` không để lại container, volume hay thư mục |
 | Cài bằng image thật từ GHCR | Chưa chạy | Image `v2.0.0` chưa phát hành; xem phần 2 của `docs/dynamic-core/BACKLOG.md` |
+
+### Kiểm ngày 04/11/2026: sửa các lỗi của đợt rà soát
+
+Cây làm việc gồm cả tệp chưa commit.
+Chuỗi script chạy trên một stack thử riêng (project Compose `dxscratch`, cổng 9180, cơ sở dữ liệu rỗng), đã xóa sau khi kiểm, rồi chạy lại trên stack chính dựng lại bằng `reset.sh`.
+
+| Mục | Kết quả | Ghi chú |
+|---|---|---|
+| `./mvnw clean verify formatter:validate` | Đạt | Năm module build thành công, không tệp nào lỗi định dạng |
+| `npx tsc --noEmit` | Đạt | Không lỗi |
+| Chín script ở `deploy/dev` theo thứ tự trên | Đạt | 428/428 trên cả hai stack: 51, 17, 71, 65, 56, 44, 26, 59, 39 |
+| Các lỗi của đợt rà soát, gọi API bằng kịch bản tạm ngoài repo | Đạt | 19/19: thiếu `enabled` bị 400 và tài khoản vẫn mở; người điều phối không có vai xử lý tự nhận hồ sơ bị 400, giao cho người xử lý thì được; sức chứa hai đã có lịch 09–10 và 10–11 nhận lịch 09–11 và từ chối lịch 09:30–10:30; `in` không có giá trị bị 400; trang 2147483647 của hộp việc, người dùng và hàng đợi sự kiện trả danh sách rỗng |
+| Bảng điều khiển ở màn rộng 360px bằng Chrome | Đạt | Năm tab vừa màn hình, bảng người dùng cuộn ngang trong khung; ở màn rộng 1280px vẫn hai cột |
+| Stack chính sau `reset.sh` | Đạt | 22 schema `m_*` khớp 22 client `dxos-m-*` của Keycloak |

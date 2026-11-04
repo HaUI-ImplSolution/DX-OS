@@ -71,7 +71,8 @@ public class UserAdminService {
   public PageResponse<UserView> list(String search, Integer page, Integer size) {
     int pageNumber = page == null || page < 0 ? 0 : page;
     int pageSize = size == null || size < 1 ? DEFAULT_PAGE_SIZE : Math.min(size, MAX_PAGE_SIZE);
-    Accounts accounts = keycloak.searchAccounts(search, pageNumber * pageSize, pageSize);
+    int first = (int) Math.min((long) pageNumber * pageSize, Integer.MAX_VALUE);
+    Accounts accounts = keycloak.searchAccounts(search, first, pageSize);
     int pages = (int) ((accounts.total() + pageSize - 1) / pageSize);
     return new PageResponse<>(accounts.items().stream().map(UserAdminService::view).toList(),
         pageNumber, pageSize, accounts.total(), pages);

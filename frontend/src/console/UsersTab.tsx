@@ -382,8 +382,7 @@ export default function UsersTab() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && find()}
-          fullWidth={false}
-          sx={{ width: 380 }}
+          sx={{ width: { xs: "100%", sm: 380 } }}
         />
         <Button variant="outlined" onClick={find}>
           Tìm
@@ -393,7 +392,7 @@ export default function UsersTab() {
           Tạo người dùng
         </Button>
       </Box>
-      <Card>
+      <Card sx={{ overflowX: "auto" }}>
         <Table size="small">
           <TableHead>
             <TableRow>

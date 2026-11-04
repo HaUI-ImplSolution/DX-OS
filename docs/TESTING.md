@@ -48,6 +48,8 @@ python3 deploy/dev/check_booking.py         # sau check_process.py, trên cùng 
 python3 deploy/dev/check_demo.py            # sau các script trên hoặc trên stack rỗng
 python3 deploy/dev/check_guards.py          # sau các script trên, trên cùng stack
 python3 deploy/dev/check_users.py           # sau check_guards.py, trên cùng stack
+python3 deploy/dev/check_events.py          # sau check_users.py, trên cùng stack; khởi động lại backend vài lần
+python3 deploy/dev/check_bootstrap.py       # sau check_events.py, trên cùng stack; khởi động lại backend vài lần
 ```
 
 Tiêu chí 3 của `check_demo.py` (chặn tệp nhiễm mã độc) chỉ chạy khi bật quét: đặt `COMPOSE_PROFILES=av` và `STORAGE_SCAN_HOST=clamav` trong `deploy/.env` rồi `docker compose up -d`.
@@ -154,6 +156,8 @@ Các dòng ghi "Phase 10" là kết quả của lần kiểm trước, cùng ng�
 | `pytest` của `ai/` | Đạt | Phase 10: 21 test, chạy trong image dựng từ `ai/Dockerfile` |
 | `ai/` chạy thật | Đạt | Phase 10: pgvector tạm: `init_db`, `ingest` 3 tài liệu kèm nguồn và giấy phép, tìm kiếm trả đúng tài liệu; câu ngoài kho và mã không có trong kho không có bằng chứng; thiếu khóa dịch vụ 401 |
 | Bộ cài và `dxos` | Đạt | Gói dựng từ cây làm việc, image local: gói sai SHA-256 bị từ chối; cài vào `~/.dxos` và `~/.local/bin/dxos`; cài lần hai bị từ chối; `dxos start` từ trạng thái rỗng tới khi mọi dịch vụ sẵn sàng, tạo `admin` với mật khẩu tạm, lần hai không tạo lại; `status`, `logs`, `admin`, `doctor`, `version` đúng; nâng cấp bằng gói mới giữ `.env`, thêm biến mới, xóa tệp bản mới không còn; `uninstall --purge` không để lại container, volume, thư mục hay liên kết |
+| `check_events.py` | Đạt | 12/12 trên stack thử riêng: thứ tự, chữ ký, nội dung không lộ, khớp với outbox, tệp đính kèm, thử lại khi bên nhận lỗi, quá hạn, quyết định bị hủy, không đặt địa chỉ, dọn outbox; địa chỉ không trả lời tốn một lần chờ mỗi vòng giao và không có trong log |
+| `check_bootstrap.py` | Đạt | 8/8: `applied`, `unchanged`, `skipped` (đã áp dụng trước đó, mức LOSS), `failed` (tệp hỏng, không có tệp), không đặt tệp |
 | Lần chạy đầu bằng Chrome | Đạt | `admin` đăng nhập bằng mật khẩu tạm, bị buộc đổi mật khẩu, vào bảng điều khiển, áp dụng mẫu đầu tiên của thư viện mẫu |
 | `check_demo.py` trên bản cài | Đạt | 26/26 với `DXOS_ENV_FILE=~/.dxos/deploy/.env DXOS_PROJECT=dxos` |
 | Job `install` của CI | Đạt | Chạy lại ở máy: cài từ gói, gói bị sửa bị từ chối, mọi tệp Compose mount đều có |
@@ -232,7 +236,22 @@ Backend dựng từ cây làm việc gồm cả tệp chưa commit; giao diện 
 | `GET /api/v1/audit-logs` lọc theo `targetType` và `targetId`, gọi tay | Đạt | Chỉ trả các bản ghi của đối tượng đó; migration `V2` chạy trên cơ sở dữ liệu có sẵn dữ liệu |
 | Hộp thoại người dùng bằng Chrome | Đạt | Tạo, gán và gỡ vai, thêm và bỏ đơn vị, khóa, mở, đặt lại mật khẩu: mỗi thao tác một dòng đúng người, đúng nội dung, mới nhất ở trên; đơn vị hiện nhãn; không có mật khẩu nào trong lịch sử |
 | Phân trang lịch sử bằng Chrome | Đạt | 21 bản ghi hiện 20 dòng và nút Xem thêm; bấm thì ra bản ghi cũ nhất và nút biến mất |
-| Mã hành động chưa có nhãn | Chưa chạy | Chưa có bản ghi như vậy; mã hiển thị nguyên văn theo mã nguồn |
+| Mã hành động chưa có nhãn | Đạt | Bản ghi chèn tay với mã lạ hiện nguyên mã; bản ghi không có tên người thực hiện hiện "Không rõ" |
+| Hộp thoại người dùng trong image `frontend` của Compose | Đạt | Dựng image từ cây làm việc, chạy trong stack thử riêng: lịch sử, tên đơn vị và mã lạ hiện như bản build thử |
+
+### Kiểm ngày 04/11/2026: tệp mô hình lúc khởi động
+
+Image backend và frontend dựng từ cây làm việc, chạy trong stack thử riêng (cơ sở dữ liệu rỗng); đã xóa sau khi kiểm.
+
+| Mục | Kết quả | Ghi chú |
+|---|---|---|
+| Tệp lần đầu, khởi động lại cùng tệp | Đạt | `applied` phiên bản 1 với người áp dụng `bootstrap`; khởi động lại ra `unchanged` |
+| Tệp đổi an toàn, tệp đã áp dụng trước đó, tệp mất dữ liệu | Đạt | Thêm trường tùy chọn ra `applied` phiên bản 2; quay lại tệp đầu ra `skipped`, giữ phiên bản đang chạy; tệp bỏ một trường ra `skipped` mức LOSS |
+| Tệp YAML hỏng, tệp không có | Đạt | `failed` kèm dòng và cột, backend vẫn chạy |
+| Chờ Keycloak | Đạt | Keycloak tắt lúc backend khởi động: backend vẫn healthy, ghi "waiting" một lần, Keycloak bật lại thì `applied`; Keycloak tắt quá thời gian chờ (đặt 90 giây khi thử) ra `failed` |
+| Mô hình có lần áp dụng dở | Đạt | Áp dụng khi Keycloak tắt: lần chạy `failed` ở `ENSURE_CLIENT`, mô hình bị giữ; khởi động lại với tệp mới ra `skipped` kèm lý do; Tiếp tục áp dụng xong phiên bản 2; khởi động lại ra `applied` phiên bản 3 |
+| Cài bằng `install.sh` với image local, rồi `dxos start <tệp>` | Đạt | Image gắn thẻ riêng, cổng riêng: `applied` phiên bản 1; chạy lại cùng tệp ra `unchanged`; tệp bỏ một trường ra `skipped` mức LOSS; `dxos uninstall --purge` không để lại container, volume hay thư mục |
+| Cài bằng image thật từ GHCR | Chưa chạy | Image `v2.0.0` chưa phát hành; xem phần 2 của `docs/dynamic-core/BACKLOG.md` |
 
 ### Kiểm ngày 04/11/2026: sửa các lỗi của đợt rà soát
 
@@ -247,4 +266,3 @@ Chuỗi script chạy trên một stack thử riêng (project Compose `dxscratch
 | Các lỗi của đợt rà soát, gọi API bằng kịch bản tạm ngoài repo | Đạt | 19/19: thiếu `enabled` bị 400 và tài khoản vẫn mở; người điều phối không có vai xử lý tự nhận hồ sơ bị 400, giao cho người xử lý thì được; sức chứa hai đã có lịch 09–10 và 10–11 nhận lịch 09–11 và từ chối lịch 09:30–10:30; `in` không có giá trị bị 400; trang 2147483647 của hộp việc, người dùng và hàng đợi sự kiện trả danh sách rỗng |
 | Bảng điều khiển ở màn rộng 360px bằng Chrome | Đạt | Năm tab vừa màn hình, bảng người dùng cuộn ngang trong khung; ở màn rộng 1280px vẫn hai cột |
 | Stack chính sau `reset.sh` | Đạt | 22 schema `m_*` khớp 22 client `dxos-m-*` của Keycloak |
-| Bản build trong image `frontend` của Compose | Chưa chạy | Đã thử bản build bằng `vite preview`, cùng mã nguồn |

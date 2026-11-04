@@ -25,12 +25,14 @@ The narrow loop from model file to end user runs:
 - Three workflow families on an embedded Flowable: approval, work items, and time-slot reservations with a capacity check; the status of a record changes only through the workflow, in the same transaction as the write of the record.
 - Rules shared by every workflow: rejecting and returning need a reason, the submitter fixes and resubmits or withdraws a record, nobody decides their own record, and overdue records go to the top of the inbox.
 - Follow-up work after an approval, such as adding a user to a group, runs through an event queue and is retried on failure.
+- Every change to a record is reported to a web address the operator sets, signed so the receiver can check it and sent again when the receiver fails.
 - File attachments on records, with a virus scan when enabled.
 - Each model has its own roles: two models can use the same role name, and a holder of the role of one model cannot reach the other model.
 - Units declared in the model and kept as Keycloak groups; assignment, an inbox and the history of every record.
 - Changing a model that holds data: a preview by level of risk, renames that keep the values, a list of the rows breaking a new rule, a separate confirmation for losing data, a return to the previous version, and finishing or giving up an apply that stopped halfway.
 - A react-admin UI built from metadata, in Vietnamese with a light and a dark mode, with no code written for any entity.
 - A control panel for the person deploying the system: a template library, a model editor, a preview of the plan, apply, history and rollback, and a diagram of the workflow.
+- One command takes a model file on a clean machine: the system starts, the file is applied and you can sign in at once.
 - User administration in the control panel: see who holds which role in each application, give and take roles and units, create a user with a temporary password, lock and unlock, reset a password; every change is recorded with who made it and can be read back in the person's dialog.
 - Single sign-on through Keycloak; administrators can be required to enter a one-time code from an authenticator app as well.
 
@@ -52,6 +54,7 @@ dxos start
 The installer downloads the latest release, checks its SHA-256 and installs it into `~/.dxos`; the `dxos` command goes to `~/.local/bin`.
 `dxos start` downloads the images the first time, waits until every service is ready, creates the account `admin` with a temporary password printed on screen, and prints the addresses.
 Sign in at `http://localhost:9080/console` as `admin`, change the password, pick a template in the template library, look at the plan and apply it.
+With a model file already at hand, `dxos start <file>` takes it in at once: the backend applies the file on start when it is new, and the command prints the result.
 The other commands (`stop`, `status`, `logs`, `admin`, `update`, `backup`, `uninstall`) are in `dxos help` and [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md#cài-đặt-và-lệnh-dxos) (Vietnamese).
 
 ### From the source

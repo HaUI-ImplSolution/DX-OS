@@ -88,6 +88,9 @@ Mỗi lần áp dụng lưu tệp, các lần đổi tên và mức đã xác nh
 
 Mô hình mà lần áp dụng đầu dừng dở chưa có phiên bản; danh sách mô hình vẫn liệt kê nó với phiên bản 0, và `abandon` xóa schema cùng bảng mà lần đó đã tạo.
 
+`ModelBootstrap` áp dụng tệp ở `ENGINE_MODEL_FILE` khi backend khởi động, trên một luồng riêng chờ Keycloak, với người thực hiện `bootstrap`.
+Chỉ tệp chưa từng áp dụng, có kế hoạch an toàn và không có lần áp dụng dở mới được áp dụng; mỗi lần chạy ghi một dòng `Model bootstrap: <applied|unchanged|skipped|failed> ...`.
+
 ## 4. Một yêu cầu đi qua API chung
 
 ```mermaid
@@ -126,6 +129,8 @@ sequenceDiagram
 - `OutboxController` cho ADMIN xem thông điệp theo trạng thái cùng lỗi gần nhất và thử lại thông điệp chưa gửi.
 - Hành động hoàn tất của khối `after:` đi qua outbox đến `CompletionHandler`; hiện có các thao tác `add_to_group` và `remove_from_group` của Keycloak.
 - `OverdueSweep` ghi dòng quá hạn vào lịch sử, một lần cho mỗi hạn.
+- Khi `ENGINE_WEBHOOK_URL` được đặt, mỗi dòng lịch sử (`EventLog`, `OverdueSweep`) có thêm một thông điệp chủ đề `record.event` trong outbox cùng giao dịch, do `RecordEventPublisher` ghi và `WebhookHandler` gửi.
+- `OutboxCleanup` xóa thông điệp đã gửi sau 30 ngày.
 - Trường kiểu `file` gắn tệp qua `AttachmentService`: byte ở SeaweedFS, siêu dữ liệu ở `engine.attachment`, quét ClamAV khi bật, quyền theo quyền của bản ghi.
   `AttachmentProcessor` chỉ nhận các phần mở rộng đã cấu hình, `AttachmentService` giữ mỗi hồ sơ tối đa số tệp đã cấu hình, `AttachmentCleaner` xóa đối tượng khỏi kho khi tệp hoặc hồ sơ bị gỡ, và link tải luôn ở dạng đính kèm.
 - API chung từ chối mọi yêu cầu có cột `status` (403); `POST .../{id}/actions/{action}` kiểm người được làm và trạng thái đầu, hoàn tất tác vụ, và bước kế của quy trình ghi trạng thái mới qua bean `recordStatus`.
@@ -160,6 +165,7 @@ Truy vấn vào bảng ngoài `engine` vì vậy luôn ghi rõ schema.
 
 Compose chạy lõi (`postgres`, `keycloak`, `seaweedfs`, `backend`, `apisix`) và Tầng 2 (`frontend`, `portal`, `monitor`); `clamav` bật bằng profile `av`.
 Gateway kiểm token cho mọi route API; các route không kiểm token nằm trong danh sách công khai kiểm bởi `deploy/apisix/check_routes.py`.
+`dxos start <tệp>` đưa tệp mô hình vào qua `deploy/model/` và in kết quả của `ModelBootstrap`.
 Chi tiết vận hành ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
 
 ## 9. Đối chiếu với yêu cầu của đề

@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 # Command line of an installed DX-OS (see install.sh and get.sh); it drives the stack of the directory it lives in.
 #
-#   dxos start                 start the stack, wait until it is ready, create the first ADMIN account
+#   dxos start [model-file]    start the stack, wait until it is ready, create the first ADMIN account;
+#                              with a model file, the backend applies it on start when it is new
 #   dxos stop                  stop the stack, keeping the data
 #   dxos status                state of every service and the addresses to open
 #   dxos logs [service]        follow the logs
@@ -77,6 +78,57 @@ pending_services() {
   echo "${pending[*]:-}"
 }
 
+# Sets KEY=VALUE in .env, replacing the last assignment or appending one.
+set_env() {
+  local key="$1" value="$2" tmp
+  tmp="$(mktemp "$DEPLOY_DIR/.env.XXXXXX")"
+  { grep -v -E "^$key=" "$DEPLOY_DIR/.env" || true; printf '%s=%s\n' "$key" "$value"; } >"$tmp"
+  chmod --reference="$DEPLOY_DIR/.env" "$tmp"
+  mv "$tmp" "$DEPLOY_DIR/.env"
+}
+
+# Puts the model file in deploy/model/ (the only file there) and names it in .env.
+use_model_file() {
+  local src="$1" name dir="$DEPLOY_DIR/model"
+  [[ -f "$src" && -r "$src" ]] || die "model file not found or not readable: $src"
+  [[ -s "$src" ]] || die "model file is empty: $src"
+  name="$(basename "$src")"
+  [[ "$name" =~ ^[A-Za-z0-9._-]+$ ]] || die "the model file name may only hold letters, digits, dot, dash and underscore: $name"
+  mkdir -p "$dir"
+  if [[ "$(cd "$(dirname "$src")" && pwd)/$name" != "$dir/$name" ]]; then
+    cp "$src" "$dir/$name"
+  fi
+  chmod 644 "$dir/$name"
+  find "$dir" -maxdepth 1 -type f ! -name .gitignore ! -name "$name" -delete
+  set_env DXOS_MODEL_FILE "$name"
+}
+
+# Prints what the backend did with the model file since the given time. Returns 3 when it failed
+# and 4 when no result was logged in time.
+report_model() {
+  local since="$1" name deadline line outcome
+  name="$(env_value DXOS_MODEL_FILE)"
+  [[ -n "$name" ]] || return 0
+  echo "==> Model file $name"
+  deadline=$((SECONDS + ${DXOS_MODEL_TIMEOUT:-300}))
+  while true; do
+    line="$(compose logs --no-log-prefix --since "$since" backend 2>/dev/null \
+      | grep -E 'Model bootstrap: (applied|unchanged|skipped|failed)' | tail -n1 || true)"
+    if [[ -n "$line" ]]; then
+      line="${line#*Model bootstrap: }"
+      outcome="${line%% *}"
+      echo "    $line"
+      [[ "$outcome" == failed ]] && return 3
+      return 0
+    fi
+    if ((SECONDS >= deadline)); then
+      echo "    no result yet; follow it with: dxos logs backend" >&2
+      return 4
+    fi
+    sleep 3
+  done
+}
+
 wait_ready() {
   local deadline=$((SECONDS + TIMEOUT_SECONDS)) pending
   echo "==> Waiting for the services (up to ${TIMEOUT_SECONDS}s; the first start takes a few minutes)"
@@ -129,15 +181,33 @@ EOF
 }
 
 cmd_start() {
+  local since since_epoch was_running=false model_status=0 started
+  if (( $# > 1 )); then die "usage: dxos start [model-file]"; fi
+  if (( $# == 1 )); then use_model_file "$1"; fi
   echo "==> Checking this machine"
   "$DEPLOY_DIR/doctor.sh" >/dev/null || { "$DEPLOY_DIR/doctor.sh" || true; die "fix the FAIL lines above, then run dxos start again"; }
+  [[ -n "$(compose ps -q --status running backend)" ]] && was_running=true
+  since="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  since_epoch="$(date +%s)"
   echo "==> Starting DX-OS $(env_value DXOS_IMAGE_TAG) (images are downloaded on the first start)"
   compose up -d --no-build --pull missing
+  started="$(date -d "$(docker inspect -f '{{.State.StartedAt}}' "$(compose ps -q backend)")" +%s)"
+  # A backend that kept running is started again so it reads a model file whose content changed.
+  if $was_running && (( $# == 1 )) && ((started < since_epoch)); then
+    compose up -d --no-build --no-deps --force-recreate backend
+    started="$since_epoch"
+  fi
   wait_ready
   set +e
   admin_account ensure
+  # The backend reads the model file only when it starts, so a backend that kept running has no result.
+  if ((started >= since_epoch)); then
+    report_model "$since"
+    model_status=$?
+  fi
   set -e
   print_addresses
+  return "$model_status"
 }
 
 cmd_admin() {
@@ -219,7 +289,7 @@ main() {
   local command="${1:-help}"
   (( $# )) && shift
   case "$command" in
-    start) cmd_start ;;
+    start) cmd_start "$@" ;;
     stop) compose stop ;;
     status) cmd_status ;;
     logs) compose logs -f --tail 100 "$@" ;;
@@ -229,8 +299,8 @@ main() {
     backup) "$DEPLOY_DIR/backup.sh" "$@" ;;
     uninstall) cmd_uninstall "$@" ;;
     version) echo "DX-OS $(env_value DXOS_IMAGE_TAG) in $PREFIX" ;;
-    help|-h|--help) sed -n '3,17p' "$self" ;;
-    *) echo "dxos: unknown command: $command" >&2; sed -n '3,17p' "$self" >&2; exit 2 ;;
+    help|-h|--help) sed -n '3,16p' "$self" ;;
+    *) echo "dxos: unknown command: $command" >&2; sed -n '3,16p' "$self" >&2; exit 2 ;;
   esac
 }
 

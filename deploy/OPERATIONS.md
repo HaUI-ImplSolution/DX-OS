@@ -253,7 +253,7 @@ Backend gửi `POST` JSON với các trường:
 |---|---|
 | `eventId` | Số của dòng lịch sử, tăng dần; cũng nằm ở header `X-Dxos-Event-Id` |
 | `model`, `entity`, `recordId` | Hồ sơ nào |
-| `action` | Hành động, ví dụ `created`, `updated`, `deleted`, `assigned`, `due_soon`, `overdue`, `file_added`, hoặc tên hành động của quy trình |
+| `action` | Hành động, ví dụ `created`, `updated`, `deleted`, `assigned`, `due_soon`, `overdue`, `file_added`, `completion_skipped`, `auto_closed`, hoặc tên hành động của quy trình |
 | `fromStatus`, `toStatus` | Trạng thái trước và sau |
 | `actor`, `actorName` | Mã người dùng và tên người làm, gửi ra ngoài hệ thống; `system` với dòng quá hạn |
 | `at` | Thời điểm, giờ UTC |

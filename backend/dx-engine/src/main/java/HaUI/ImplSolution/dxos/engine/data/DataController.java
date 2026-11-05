@@ -54,7 +54,8 @@ public class DataController {
           + " for an entity with a process, byStatus counts them per status and overdue counts"
           + " those whose handle_by is before computedAt; byUnit counts them per unit when the"
           + " entity has a unit field. The same rows as the list with the same filters, so"
-          + " filter.handle_by.lt=<computedAt> lists the overdue ones.")
+          + " filter.handle_by.lt=<computedAt> lists the overdue ones. A query that runs longer"
+          + " than 10 seconds is cut.")
   public ApiResponse<Map<String, Object>> stats(@PathVariable String model,
       @PathVariable String entity, @RequestParam Map<String, String> params) {
     Model m = registry.require(model);

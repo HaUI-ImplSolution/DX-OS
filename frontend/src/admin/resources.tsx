@@ -27,6 +27,7 @@ import {
 } from "react-admin";
 import { Box, Card, Typography } from "@mui/material";
 import EventIcon from "@mui/icons-material/Event";
+import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
 import { Labeled } from "react-admin";
 import { Link } from "react-router-dom";
 import { timeAgo } from "../shell/format";
@@ -248,8 +249,13 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
     <TopToolbar>
       <FilterButton />
       {entity.canWrite && <CreateButton />}
-      <Button component={Link} to={`/calendar/${resourceName(model.name, entity.name)}`} label="Lịch">
-        <EventIcon />
+      {calendar && (
+        <Button component={Link} to={`/calendar/${resourceName(model.name, entity.name)}`} label="Lịch">
+          <EventIcon />
+        </Button>
+      )}
+      <Button component={Link} to={`/stats/${resourceName(model.name, entity.name)}`} label="Thống kê">
+        <InsightsOutlinedIcon />
       </Button>
     </TopToolbar>
   );
@@ -257,7 +263,7 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
   const EntityList = () => (
     <List
       filters={filters}
-      actions={calendar ? <ListActions /> : undefined}
+      actions={entity.hasProcess ? <ListActions /> : undefined}
       sort={{ field: "id", order: "DESC" }}
       exporter={false}
     >

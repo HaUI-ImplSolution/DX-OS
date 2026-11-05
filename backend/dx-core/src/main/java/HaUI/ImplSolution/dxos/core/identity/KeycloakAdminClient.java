@@ -112,6 +112,27 @@ public class KeycloakAdminClient {
     }
   }
 
+  // Deletes a client with its roles, so nobody keeps them; a client that does not exist is left.
+  public void deleteClient(String clientId) {
+    String uuid = findClientUuid(clientId).orElse(null);
+    if (uuid == null) {
+      return;
+    }
+    try {
+      restClient.delete().uri("/admin/realms/{realm}/clients/{uuid}", realm, uuid)
+          .headers(h -> h.setBearerAuth(accessToken())).retrieve().toBodilessEntity();
+    } catch (RestClientResponseException e) {
+      if (e.getStatusCode().value() != 404) {
+        throw new KeycloakAdminException(
+            "Keycloak refused to delete a client: HTTP " + e.getStatusCode().value(), e);
+      }
+    } catch (KeycloakAdminException e) {
+      throw e;
+    } catch (RuntimeException e) {
+      throw new KeycloakAdminException("Keycloak is unreachable", e);
+    }
+  }
+
   // Creates the role under the client when it does not exist yet; an existing role is left as it
   // is.
   public void ensureClientRole(String clientId, String name, String description) {

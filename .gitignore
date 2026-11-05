@@ -50,6 +50,9 @@ pnpm-debug.log*
 # Docker runtime data
 deploy/data/
 deploy/backups/
+deploy/.stopped
+deploy/.reconcile.*
+deploy/archive/
 
 # Logs and temporary files
 *.log

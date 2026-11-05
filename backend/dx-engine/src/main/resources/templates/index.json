@@ -14,6 +14,13 @@
     "description": "Người dùng gửi yêu cầu hỗ trợ, nhân viên nhận, xử lý trong hạn và người gửi xác nhận kết quả."
   },
   {
+    "id": "plant_incident",
+    "file": "plant_incident.yaml",
+    "name": "Sự cố thiết bị",
+    "family": "work_item",
+    "description": "Hệ thống giám sát gửi sự cố khi chỉ số thiết bị vượt ngưỡng, kỹ thuật viên xử lý trong hạn; mỗi lần đo chỉ tạo một sự cố."
+  },
+  {
     "id": "room_booking",
     "file": "room_booking.yaml",
     "name": "Đặt phòng",

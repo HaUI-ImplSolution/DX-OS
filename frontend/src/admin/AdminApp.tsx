@@ -21,6 +21,7 @@ import { resourceName, type EntityMeta, type ModelMeta } from "./types";
 // The control panel and its editor are loaded only when an administrator opens it.
 const ConsolePage = lazy(() => import("../console/ConsolePage"));
 const CalendarPage = lazy(() => import("./CalendarPage"));
+const StatsPage = lazy(() => import("./StatsPage"));
 
 // One icon per process family, so a menu reads at a glance.
 const FAMILY_ICONS = {
@@ -142,6 +143,14 @@ export default function AdminApp() {
           element={
             <Suspense fallback={<p className="section-subtitle">Đang tải...</p>}>
               <CalendarPage byResource={byResource} />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/stats/:resource"
+          element={
+            <Suspense fallback={<p className="section-subtitle">Đang tải...</p>}>
+              <StatsPage models={models} />
             </Suspense>
           }
         />

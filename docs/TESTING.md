@@ -101,6 +101,17 @@ Biến `DXOS_ENV_FILE`, `DXOS_BASE_URL`, `DXOS_PROJECT` đổi tệp env, địa
 | T13-06 đến T13-14 | Tab Người dùng ở mức API: danh sách có tìm kiếm và phân trang, gán và gỡ vai và đơn vị, vai hoặc đơn vị không có (404), người không phải ADMIN (403), tạo người dùng, khóa và mở, đặt lại mật khẩu, tự khóa mình (409), bản ghi audit và sự kiện quản trị của Keycloak | Token đổi theo vai; mật khẩu tạm phải đổi trước khi đăng nhập; mỗi thay đổi có bản ghi `USER_*` với người thực hiện, thao tác không xảy ra thì không có; không mật khẩu nào trong log, audit hay sự kiện Keycloak |
 | T12-05 đến T12-11 | Xóa thực thể còn hồ sơ đang chạy quy trình; tên thực thể gần giống nhau; hồ sơ đã rút kèm tệp đính kèm | Từ chối khi còn quy trình đang chạy; tên gần giống không chặn nhầm; sau khi rút thì xóa được với `accept=LOSS`, tệp và bảng bị dọn, thực thể khác và quy trình đang chạy nguyên vẹn |
 | T12-12 đến T12-22 | Áp dụng thay đổi dở khi Keycloak dừng, lần áp dụng đầu của một mô hình dừng ở `ENSURE_CLIENT`; khởi động lại backend; rồi Tiếp tục và Hủy bỏ | Mô hình bị giữ (409), không hiện cho người dùng, `GET /models` báo `held`, vẫn giữ sau khi khởi động lại; `resume` hoàn tất không cần tệp; `abandon` đưa cột và bảng về phiên bản đang chạy và giữ dòng dữ liệu, hoặc xóa schema của mô hình chưa có phiên bản; chỉ lần chạy dở mới giữ mô hình |
+| T14-01 | Tạo hồ sơ liên tục trong lúc áp dụng một thay đổi bảng; đổi luật quy trình khi còn hồ sơ mở và hồ sơ mới đến | Không có 500; thay đổi bảng áp dụng được, yêu cầu đến lúc mô hình bị giữ nhận 409; đổi luật bị từ chối 409 (kiểm tay) |
+| T14-02 | Lần áp dụng đầu dừng ở `ENSURE_ROLE`, rồi Hủy bỏ | Client `dxos-m-<mô hình>` và schema mất; áp dụng lại tệp đó tạo client mới (kiểm tay) |
+| T14-03 | `backup.sh`, rồi `verify` khi đủ tệp và khi kho thiếu một tệp; `DXOS_FILE_DELETE_DELAY` ngắn hơn lượt chạy | `Verify OK`; `Verify FAILED: files missing for attachments: <khóa>` và mã 1; dòng `WARNING` (kiểm tay, job `backup-drill`) |
+| T14-05 | `dxos plan`, `dxos apply` với tệp giống, đổi `SAFE`, đổi `LOSS` có và không có `--accept` | `unchanged`; áp dụng được; `LOSS` thiếu hoặc thấp hơn `--accept` bị từ chối với mã 1; lịch sử ghi `service-account-dxos-cli` (kiểm tay) |
+| T14-06, T14-09 | Bên nhận webhook luôn lỗi; gỡ tệp khi kho ngừng | Thông điệp dừng sau số lần đặt, Thử lại cho thêm một lần; tệp rời kho sau khoảng trễ, kho ngừng thì thử lại tới khi mất (`check_events.py`, EV-13 đến EV-17) |
+| T14-07 | Bật quét, dừng `clamav`, tải tệp | 503 `ERR_SCAN_UNAVAILABLE`, không tệp nào được lưu (`check_demo.py`) |
+| T14-08 | Xóa container `backend` rồi `dxos reconcile`; `dxos stop` rồi `dxos reconcile`; `docker inspect` chính sách restart | Container chạy lại và healthy; stack dừng có chủ ý không bị bật lại; mọi service `unless-stopped` (kiểm tay) |
+| T14-10 | Sửa, xóa, chèn một dòng `record_event` bằng SQL; cắt chuỗi sau một điểm neo | `verify` chỉ ra dòng đầu tiên bị đổi (`its content was changed`, `the line before it was changed or removed`, `not linked`); điểm neo mất dòng nằm ở `mismatchedAnchors`; trả lại dòng thì chuỗi nguyên vẹn (kiểm tay) |
+| T14-11 | Thống kê với vai `unit` và `own`, có và không có bộ lọc | `total` và tổng `byStatus` bằng `totalElements` của danh sách cùng bộ lọc (kiểm tay) |
+| T14-12 | `simulator.py setup`, `run`, `replay` | Hồ sơ sự cố xuất hiện; gửi lại cùng quan sát in `duplicate` và không tạo thêm hồ sơ (kiểm tay) |
+| T14-13 | `dxos archive <mô hình>` rồi `dxos archive check`; sửa một byte trong tệp Parquet | Số dòng và sha256 khớp manifest; tệp bị sửa thì `check` thoát với mã 1 (kiểm tay) |
 
 T5-11 và T6-14 cần dịch vụ chạy với `ENGINE_FAULT_AFTER_DECISION=true`, T5-05 và T12-13 với `ENGINE_FAULT_APPLY_STEP=ENSURE_CLIENT` (bước áp dụng có tên đó lỗi); các script tự bật rồi tắt bằng cách tạo lại service `backend`.
 
@@ -283,3 +294,31 @@ Chuỗi script chạy trên một stack thử riêng (project Compose `dxscratch
 | `backup.sh` rồi `verify` trên stack chính | Đạt | 22 mô hình, 10.055 dòng trong các bảng `m_*`; câu truy vấn tìm mô hình thiếu bảng chỉ ra đúng mô hình thử đã bị xóa bảng |
 | `dxos av on`, `dxos av off` | Đạt | Bật thì ClamAV chạy tới khi healthy và tiêu chí 3 của `check_demo.py` chặn tệp EICAR với 422, tệp không được lưu; tắt thì gỡ ClamAV; `dxos status` và `doctor.sh` báo đúng trạng thái quét |
 | Hành động hoàn tất bị bỏ qua | Đạt | Duyệt hồ sơ mà người dùng hoặc nhóm không có: log backend có dòng `WARN` nêu lý do |
+
+### Kiểm ngày 04/11 và 05/11/2026: sửa các lỗi của báo cáo kỹ thuật
+
+Cây làm việc gồm cả tệp chưa commit.
+Chuỗi script chạy trên một stack thử riêng (project Compose `dxscratch`, cổng 9180) dựng rỗng, với image backend dựng từ cây làm việc; stack đã gỡ cùng volume sau khi kiểm.
+
+| Mục | Kết quả | Ghi chú |
+|---|---|---|
+| `./mvnw clean verify formatter:validate` | Đạt | Mã thoát 0, 31 test chạy, không lỗi, không bỏ qua |
+| `npx tsc --noEmit` | Đạt | Không lỗi |
+| Mười một script ở `deploy/dev` theo thứ tự trên | Đạt | 459/459: 51, 19, 71, 65, 56, 45, 26, 59, 41, `check_events.py` 18 và `check_bootstrap.py` 8 |
+| `check_demo.py` với quét virus bật (`COMPOSE_PROFILES=av`) | Đạt | 30/30: tệp nhiễm bị từ chối 422, dừng `clamav` thì tải tệp nhận 503 `ERR_SCAN_UNAVAILABLE` và không tệp nào được lưu |
+| Thống kê, kịch bản tạm ngoài repo | Đạt | `total` bằng `totalElements` của danh sách và bằng tổng `byStatus` cho vai `unit` và hai người dùng `own`, cả khi lọc theo `status` |
+| Chuỗi hash của lịch sử, kịch bản tạm ngoài repo | Đạt | Dòng nguyên vẹn thì `intact`; sửa, xóa và chèn một dòng bằng SQL chỉ ra đúng dòng; trả lại dòng thì nguyên vẹn; cắt chuỗi sau điểm neo thì `mismatchedAnchors` có điểm neo; người không phải ADMIN nhận 403; `dxos history verify` thoát với mã 1 khi chuỗi hỏng |
+| `dxos plan` và `dxos apply` | Đạt | Tệp giống: `unchanged`; thêm trường: `SAFE`, áp dụng không cần `--accept`; xóa trường: `LOSS`, bị từ chối với mã 1 khi thiếu `--accept` hoặc có `--accept SAFE`, áp dụng với `--accept LOSS`; lịch sử ghi `service-account-dxos-cli`; đường dẫn tương đối tính theo thư mục gõ lệnh |
+| `dxos archive` và `dxos archive check` | Đạt | 3 hồ sơ đã quyết định và 8 dòng lịch sử, số dòng và sha256 khớp; sửa một byte thì `check` báo lệch và thoát với mã 1 |
+| `backup.sh` rồi `verify` với một tệp đính kèm thật | Đạt | Đủ tệp: `Verify OK`; xóa đối tượng khỏi kho rồi sao lưu lại: `Verify FAILED: files missing for attachments` kèm khóa tệp; `DXOS_FILE_DELETE_DELAY=1s` làm `backup.sh` in `WARNING` |
+| Lần áp dụng đầu dừng ở `ENSURE_ROLE` rồi Hủy bỏ | Đạt | Client `dxos-m-<mô hình>` và schema mất; áp dụng lại tệp đó tạo client mới |
+| Hai luồng tạo hồ sơ trong lúc áp dụng thêm một cột | Đạt | Áp dụng 200; 24 yêu cầu tạo trả 200 và 2 trả 409, không có 5xx; năm lần đổi luật quy trình khi còn hồ sơ mở đều bị 409 |
+| Simulator IT/OT | Đạt | `setup`, `run` tạo sự cố; `replay` in `duplicate` và thoát với mã 0 |
+| Xóa container `backend`, `dxos reconcile` | Đạt | Container chạy lại và healthy sau 18 giây; mọi container có `restart: unless-stopped` |
+| `dxos stop` rồi `dxos reconcile` | Đạt | Không container nào được bật lại; xóa `deploy/.stopped` rồi `dxos reconcile` đưa cả tám service về healthy |
+| `dxos reconcile install` và `uninstall` (systemd user timer) | Chưa kiểm | Phiên này bị chặn cài timer; session còn lại đã chạy install, uninstall và thấy timer xuất hiện, biến mất |
+| Khởi động lại Docker daemon | Đạt | `sudo systemctl restart docker` do người dùng chạy; mọi service tự lên lại |
+| Job `backup-drill` trên GitHub Actions | Đạt | Commit `d0aa2d14`: có tệp thì `verify` đạt, thêm dòng tệp không có trong kho thì `verify` thất bại |
+| Job `e2e` trên GitHub Actions | Đạt | Commit `d0aa2d14`: stack rỗng dựng từ image của commit, chuỗi script chạy hết; cả job 14 phút 35 giây, riêng chuỗi script 11 phút 55 giây |
+| Hai nhóm của job `e2e` chạy song song, mỗi nhóm một stack rỗng riêng | Đạt | Chạy cục bộ trên cây làm việc gồm tệp chưa commit: nhóm đầu chín script 51, 19, 71, 65, 56, 45, 26, 59, 41 trong 277 giây; nhóm sau `check_events.py` 18 và `check_bootstrap.py` 8 trong 297 giây; cả hai stack đã gỡ cùng volume |
+| Hai nhóm của job `e2e` trên GitHub Actions | Đạt | Commit `ad4a3da6`: `e2e (model and process)` 434 giây, riêng script 278 giây; `e2e (events and bootstrap)` 389 giây, riêng script 268 giây; chạy song song nên cả job khoảng 7 phút 15 giây |

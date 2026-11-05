@@ -9,10 +9,15 @@ import org.springframework.stereotype.Component;
 
 // Puts each line of a record's history in the outbox, in the transaction that wrote the line, so
 // the webhook gets it once the change has committed and never when it rolls back. Nothing is
-// written while no webhook address is set. The message holds ids, statuses and the time, never the
-// content of the record or the note of the line.
+// written while no webhook address is set. The message holds ids, statuses, the time and the hash
+// of
+// the line in the history chain, never the content of the record or the note of the line; a
+// receiver that keeps the hashes holds a copy of the chain outside the database.
 @Component
 public class RecordEventPublisher {
+
+  // Version of the message layout; it goes up when a field changes meaning or goes away.
+  static final int SCHEMA_VERSION = 1;
 
   private final Outbox outbox;
   private final boolean enabled;
@@ -23,11 +28,12 @@ public class RecordEventPublisher {
   }
 
   public void publish(long eventId, String model, String entity, long recordId, String action,
-      String fromStatus, String toStatus, String actor, String actorName, Instant at) {
+      String fromStatus, String toStatus, String actor, String actorName, Instant at, String hash) {
     if (!enabled) {
       return;
     }
     Map<String, Object> payload = new LinkedHashMap<>();
+    payload.put("schemaVersion", SCHEMA_VERSION);
     payload.put("eventId", eventId);
     payload.put("model", model);
     payload.put("entity", entity);
@@ -38,6 +44,7 @@ public class RecordEventPublisher {
     payload.put("actor", actor);
     payload.put("actorName", actorName);
     payload.put("at", at.toString());
+    payload.put("hash", hash);
     outbox.publish(WebhookHandler.TOPIC, "record_event:" + eventId, model, entity, recordId,
         payload);
   }

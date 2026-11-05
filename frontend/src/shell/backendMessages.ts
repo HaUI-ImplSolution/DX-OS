@@ -89,6 +89,7 @@ const VI: Rule[] = [
   pattern("(\\d+) rules are broken by existing rows, first (.+) with (\\d+) rows; see the plan", "$1 quy tắc bị dữ liệu hiện có vi phạm, đầu tiên là $2 với $3 dòng; hãy xem kế hoạch"),
   pattern("role (.+) is declared again and (\\d+) users still hold it; applying gives them its access back", "Vai $1 được khai báo lại và còn $2 người đang giữ; áp dụng sẽ trả lại quyền của vai cho họ"),
   pattern("Model (.+) is being applied right now","Mô hình $1 đang được áp dụng"),
+  pattern("Model (.+) is busy; try again", "Mô hình $1 đang có yêu cầu chưa xong; hãy thử lại sau ít giây"),
   pattern("Model (.+) has no earlier version", "Mô hình $1 chưa có phiên bản trước"),
   pattern("Model (.+) has no apply that stopped", "Mô hình $1 không có lần áp dụng nào đang dừng dở"),
   pattern("The apply of model (.+) that stopped kept no file; apply the file again", "Lần áp dụng dở của mô hình $1 không còn lưu tệp; hãy áp dụng lại tệp"),

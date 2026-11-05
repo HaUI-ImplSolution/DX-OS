@@ -205,6 +205,29 @@ public class ApplyService {
     if (!diff.rejections.isEmpty()) {
       throw new InvalidStateException(String.join("; ", diff.rejections));
     }
+    if (diff.level().compareTo(accept) > 0) {
+      throw new InvalidStateException("This change is at level " + diff.level()
+          + "; read the plan and pass accept=" + diff.level());
+    }
+    // The checks on the rows run with the model held, so no record is written between them and the
+    // first step. A rejected apply lets the model go unless it was held before.
+    boolean heldBefore = registry.isHeld(model.name());
+    registry.beginApply(model.name());
+    long runId;
+    try {
+      requireRows(model, running, diff);
+      runId = startRun(model.name(), hash, actor, content, renames, accept);
+    } catch (RuntimeException e) {
+      if (!heldBefore) {
+        registry.endApply(model.name());
+      }
+      throw e;
+    }
+    int version = nextVersion(hash, running);
+    return execute(model.name(), runId, version, steps(model, diff, content, hash, actor, version));
+  }
+
+  private void requireRows(Model model, Running running, ModelDiff diff) {
     List<String> dropRejections = dropDependencyRejections(model, diff);
     if (!dropRejections.isEmpty()) {
       throw new InvalidStateException(String.join("; ", dropRejections));
@@ -214,10 +237,6 @@ public class ApplyService {
     if (!processRejections.isEmpty()) {
       throw new InvalidStateException(String.join("; ", processRejections));
     }
-    if (diff.level().compareTo(accept) > 0) {
-      throw new InvalidStateException("This change is at level " + diff.level()
-          + "; read the plan and pass accept=" + diff.level());
-    }
     prepareSchema(model);
     List<Violation> violations = violations(model, running, diff);
     if (!violations.isEmpty()) {
@@ -226,9 +245,6 @@ public class ApplyService {
           violations.size() + " rules are broken by existing rows, first " + first.entity() + "."
               + first.field() + " with " + first.rows() + " rows; see the plan");
     }
-    int version = nextVersion(hash, running);
-    long runId = startRun(model.name(), hash, actor, content, renames, accept);
-    return execute(model.name(), runId, version, steps(model, diff, content, hash, actor, version));
   }
 
   private long startRun(String model, String hash, Actor actor, String content,
@@ -296,13 +312,19 @@ public class ApplyService {
     return exclusively(running.model(), () -> restore(running, stopped, actor));
   }
 
-  // The first apply of a model stopped, so there is no version to go back to: what it created goes.
+  // The first apply of a model stopped, so there is no version to go back to: what it created goes,
+  // the client with its roles too, so that nobody keeps a role of the model. Unit groups are shared
+  // by every model and stay.
   private Applied removeUnfinished(Model stopped, Stalled stalled, Actor actor) {
     long runId = startRun(stopped.name(), hash(stalled.content()), actor, stalled.content(),
         Map.of(), Level.LOSS);
-    return execute(stopped.name(), runId, 0, List.of(new Step(
-        new PlannedStep("DROP_SCHEMA", stopped.schema()),
-        () -> jdbc.execute("DROP SCHEMA IF EXISTS " + Sql.ident(stopped.schema()) + " CASCADE"))));
+    String client = ModelClient.of(stopped.name());
+    return execute(stopped.name(), runId, 0,
+        List.of(
+            new Step(new PlannedStep("DROP_SCHEMA", stopped.schema()),
+                () -> jdbc
+                    .execute("DROP SCHEMA IF EXISTS " + Sql.ident(stopped.schema()) + " CASCADE")),
+            new Step(new PlannedStep("DROP_CLIENT", client), () -> keycloak.deleteClient(client))));
   }
 
   private Applied restore(Running running, Model stopped, Actor actor) {

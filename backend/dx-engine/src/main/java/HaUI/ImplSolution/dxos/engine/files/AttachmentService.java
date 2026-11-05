@@ -110,7 +110,7 @@ public class AttachmentService {
       throw new ActionNotAllowedException("Only the user who added a file can remove it");
     }
     jdbc.update("DELETE FROM engine.attachment WHERE id = ?", fileId);
-    cleaner.deleteAfterCommit((String) row.get("object_key"));
+    cleaner.deleteLater(model.name(), entity.name(), id, (String) row.get("object_key"));
     String latest = jdbc.query(
         "SELECT filename FROM engine.attachment WHERE model = ? AND entity = ? AND record_id = ? "
             + "AND field = ? ORDER BY id DESC LIMIT 1",

@@ -34,9 +34,15 @@ The narrow loop from model file to end user runs:
 - A control panel for the person deploying the system: a template library, a model editor, a preview of the plan, apply, history and rollback, and a diagram of the workflow.
 - One command takes a model file on a clean machine: the system starts, the file is applied and you can sign in at once.
 - User administration in the control panel: see who holds which role in each application, give and take roles and units, create a user with a temporary password, lock and unlock, reset a password; every change is recorded with who made it and can be read back in the person's dialog.
+- Applying a model waits for the running operations of that model before the tables change, and checks the open records again once the model is held, so no record slips through in between; cancelling a first apply also removes the access settings it created.
+- The history of records is chained with checks and anchored at regular times; one command names the line that was changed, deleted or inserted.
+- Statistics for every entity with a process: total, by status, overdue and by unit, with the same viewing rights as the list; each number opens the matching list.
+- Models can also be changed from the command line for automation, and finished records can be exported to analysis files with a manifest to check them again.
+- Backups also check attachments; a removed file leaves the store only after a waiting time so the backup is always complete; services restart on their own and one command brings the system back to what is declared.
+- A device-connection example: a simulator opens an incident record when a reading passes its limit and does not create a duplicate when the reading is sent again.
 - Single sign-on through Keycloak; administrators can be required to enter a one-time code from an authenticator app as well.
 
-Not yet available: chat notifications, AI answers, statistical reports.
+Not yet available: chat notifications, AI answers.
 The search service with cited sources in [`ai/`](./ai/README.md) runs on its own and is not in the stack.
 These are in the [design](./docs/dynamic-core/README.md).
 
@@ -55,7 +61,7 @@ The installer downloads the latest release, checks its SHA-256 and installs it i
 `dxos start` downloads the images the first time, waits until every service is ready, creates the account `admin` with a temporary password printed on screen, and prints the addresses.
 Sign in at `http://localhost:9080/console` as `admin`, change the password, pick a template in the template library, look at the plan and apply it.
 With a model file already at hand, `dxos start <file>` takes it in at once: the backend applies the file on start when it is new, and the command prints the result.
-The other commands (`stop`, `status`, `logs`, `admin`, `update`, `backup`, `uninstall`) are in `dxos help` and [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md#cài-đặt-và-lệnh-dxos) (Vietnamese).
+The other commands (`stop`, `status`, `logs`, `admin`, `update`, `backup`, `plan`, `apply`, `history`, `reconcile`, `archive`, `uninstall`) are in `dxos help` and [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md#cài-đặt-và-lệnh-dxos) (Vietnamese).
 
 ### From the source
 

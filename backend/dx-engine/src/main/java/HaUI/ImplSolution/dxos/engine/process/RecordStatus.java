@@ -15,6 +15,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.flowable.engine.delegate.DelegateExecution;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +24,8 @@ import org.springframework.stereotype.Component;
 // its own steps, inside the transaction of the step.
 @Component("recordStatus")
 public class RecordStatus {
+
+  private static final Logger log = LoggerFactory.getLogger(RecordStatus.class);
 
   private final JdbcTemplate jdbc;
   private final ModelRegistry registry;
@@ -82,6 +86,11 @@ public class RecordStatus {
       Object group =
           completion.group() != null ? completion.group() : row.get(completion.groupField());
       if (user == null || group == null || group.toString().isBlank()) {
+        log.warn("Completion {} skipped for {}.{} record {} in {}: the record has no {}",
+            completion.operation(), model.name(), entity.name(), id, status,
+            user == null ? "user in field " + completion.user()
+                : completion.group() != null ? "group"
+                    : "group in field " + completion.groupField());
         continue;
       }
       Map<String, Object> payload = new LinkedHashMap<>();

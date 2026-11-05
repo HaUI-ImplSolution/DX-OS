@@ -18,9 +18,17 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
   Màn hình giám sát gửi cảnh báo qua `MATTERMOST_WEBHOOK_URL_ADMIN` hoặc `MATTERMOST_WEBHOOK_URL`, không còn đọc tệp webhook hay dò Superset và Mattermost.
 - Gỡ `seaweedfs/migrate-uploads.sh`.
 - Cài bằng một lệnh: `dxos-install.sh` phát hành kèm mỗi bản (nguồn ở `deploy/get.sh`) tải gói phát hành, kiểm SHA-256 và cài vào `~/.dxos`.
-  Lệnh `dxos` có `start`, `stop`, `status`, `logs`, `admin`, `update`, `doctor`, `backup`, `uninstall`; `dxos start` tạo tài khoản `admin` đầu tiên với mật khẩu tạm.
+  Lệnh `dxos` có `start`, `stop`, `status`, `logs`, `admin`, `update`, `doctor`, `backup`, `av`, `uninstall`; `dxos start` tạo tài khoản `admin` đầu tiên với mật khẩu tạm.
 - `dxos start <tệp>` đưa tệp mô hình vào hệ thống trên máy sạch: backend áp dụng tệp khi khởi động nếu là tệp mới, và lệnh in kết quả.
-- Webhook sự kiện: mỗi dòng lịch sử của hồ sơ được gửi tới `DXOS_WEBHOOK_URL` dạng JSON có chữ ký; để trống thì không gửi gì.
+- Webhook sự kiện: mỗi dòng lịch sử của hồ sơ được gửi dạng JSON có chữ ký tới đích của mô hình.
+  Tệp mô hình ghi `webhook: <tên đích>`; địa chỉ và bí mật của đích nằm trong `deploy/webhooks/targets.yml`, ngoài git, và được nạp lại khi tệp đổi.
+  Mô hình không ghi khóa này thì dùng `DXOS_WEBHOOK_URL`; không có đích nào thì không gửi gì.
+  Mỗi đích có `format`: `json` (thông điệp nguyên văn, mặc định) hoặc `chat` (một câu tiếng Việt dạng `{"text": ...}` cho Mattermost và Slack, đọc được là việc mới, sắp đến hạn hoặc quá hạn); đích mặc định đặt bằng `DXOS_WEBHOOK_FORMAT`.
+  Các dòng của một hồ sơ được giao theo thứ tự: dòng sau chờ dòng cũ hơn của cùng hồ sơ, kể cả khi dòng cũ đã dừng và chờ Thử lại.
+  Mô hình ghi tên đích chưa có trong tệp thì không áp dụng được; đích bị gỡ sau đó thì thông điệp nằm lại ở hàng đợi kèm lỗi cấu hình và được giao khi đích có lại và bấm Thử lại.
+- Thông điệp `admin.event` báo việc áp dụng mô hình (áp dụng, quay về, tiếp tục, hủy bỏ) và thay đổi tài khoản (vai, đơn vị, tạo, khóa, mở, đặt lại mật khẩu); mô hình có đích thì vào đích đó, còn lại vào đích mặc định.
+- Hồ sơ có hạn xử lý dài hơn `DXOS_DUE_SOON_BEFORE` (mặc định 24 giờ, 0 để tắt) nhận một dòng lịch sử `due_soon` khi còn chừng đó thời gian trước hạn.
+- `GET /api/v1/events?after=&size=&model=` (ADMIN) trả các dòng lịch sử theo đúng dạng của webhook, để bên nhận bắt kịp theo `eventId` dù webhook có đặt hay không.
   Outbox xóa thông điệp đã gửi sau 30 ngày.
 - `deploy/install.sh` nâng cấp được bản đã cài (`--upgrade`): thay tệp chạy, giữ `.env` và dữ liệu, thêm biến mới; bản cài dùng project Compose `dxos`.
 - `deploy/make_env.sh` thay `deploy/make_env.py`; cài và chạy stack không còn cần Python.
@@ -53,6 +61,46 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - `PUT /api/v1/users/{id}/enabled` trả 400 khi thiếu `enabled`; bộ lọc `in` không có giá trị nào trả 400.
 - Trang nằm ngoài cuối danh sách ở `/api/v1/inbox`, `/api/v1/users` và `/api/v1/outbox` trả danh sách rỗng, kể cả với số trang rất lớn.
 - Bảng điều khiển vừa màn hình rộng 360px; bảng người dùng cuộn ngang trong khung riêng.
+- `dxos av on` và `dxos av off` bật và tắt quét mã độc tệp tải lên; `dxos status` và `doctor.sh` báo trạng thái quét, và `doctor.sh` báo `FAIL` khi `STORAGE_SCAN_HOST=clamav` mà `COMPOSE_PROFILES` không có `av`.
+- `backup.sh verify` kiểm mỗi mô hình đã áp dụng có bảng trong schema `m_<mô hình>` của bản dump và in tổng số dòng của các bảng đó; mô hình thiếu bảng làm `verify` báo `FAILED`.
+- Hành động hoàn tất bị bỏ qua vì không có người dùng hoặc nhóm thì log backend có một dòng `WARN` nêu lý do.
+- Khai báo lại một vai mà vẫn còn người giữ trong client `dxos-m-<mô hình>` thì kế hoạch áp dụng đưa thay đổi đó lên mức `MIGRATION` và báo số người sẽ có lại quyền của vai; bảng điều khiển hiện câu hỏi này bằng tiếng Việt.
+  Lần áp dụng, tiếp tục áp dụng, quay lui và tệp mô hình lúc khởi động cũng qua bước kiểm này, nên tệp lúc khởi động không tự áp dụng trong trường hợp đó.
+  Lần áp dụng có vai mới hỏi Keycloak trước bước đầu tiên, nên khi Keycloak không trả lời thì lần áp dụng lỗi ngay mà không chạy bước nào.
+- Mỗi mô hình có một khóa đọc/ghi: yêu cầu dữ liệu, hành động quy trình và thao tác tệp giữ khóa đọc đến khi xong, và lần áp dụng lấy khóa ghi chỉ để đánh dấu mô hình bị giữ.
+  Lần áp dụng chờ tối đa 30 giây rồi trả 409 `Model <tên> is busy; try again`.
+  Hồ sơ đang mở, luật quy trình và dòng vi phạm được kiểm sau khi mô hình đã bị giữ, nên không hồ sơ nào lọt giữa kiểm và đổi bảng.
+- Hủy bỏ lần áp dụng đầu của một mô hình xóa luôn client `dxos-m-<mô hình>` (bước `DROP_CLIENT`); nhóm đơn vị dùng chung giữa các mô hình nên được giữ lại.
+- `backup.sh` cảnh báo khi dump và chụp kho lâu hơn `DXOS_FILE_DELETE_DELAY`.
+  `backup.sh verify` khởi động một SeaweedFS tạm trên bản chụp kho và báo `FAILED` kèm tên tệp khi một khóa trong `engine.attachment` không có tệp; job `backup-drill` kiểm cả hai trường hợp bằng tệp đính kèm thật.
+- Job `e2e` trong `ci-infra.yml` chạy hai nhóm song song, mỗi nhóm dựng image của commit và khởi động một stack rỗng riêng: nhóm đầu chạy chín script từ `check_api.py` đến `check_users.py` theo thứ tự của `docs/TESTING.md`, nhóm sau chạy `check_events.py` và `check_bootstrap.py`; log các service được tải khi lỗi và thời gian từng script ghi vào tóm tắt của job.
+- `DXOS_OUTBOX_POLL_MS` và `DXOS_OVERDUE_SWEEP_MS` đặt chu kỳ xem hàng đợi sự kiện và chu kỳ quét hồ sơ quá hạn (mặc định 2000 và 60000 mili giây); `check_events.py` đặt 500 và 5000.
+- Client OIDC `dxos-cli` có tài khoản dịch vụ giữ vai `ADMIN`; bí mật `DXOS_CLI_SECRET` do `make_env.sh` sinh, và `install.sh --upgrade` thêm vào `.env` có sẵn.
+  `dxos plan <tệp>` in kế hoạch.
+  `dxos apply <tệp> [--accept SAFE|MIGRATION|LOSS]` áp dụng với phiên bản của kế hoạch làm `base`, từ chối một kế hoạch vượt mức `--accept` với mã thoát 1, và lịch sử áp dụng ghi tài khoản dịch vụ.
+  Đường dẫn tương đối của `<tệp>`, của `--out` và của `dxos archive check` tính theo thư mục gõ lệnh.
+  Realm đã import từ trước cần thêm client `dxos-cli` ở Keycloak Admin Console hoặc dựng lại.
+- Thông điệp outbox lỗi quá `DXOS_OUTBOX_MAX_ATTEMPTS` lần (mặc định 20) thì dừng: `GET /api/v1/outbox` có trạng thái `stopped`, tab Hàng đợi sự kiện hiện nhãn "Đã dừng", và Thử lại cho thêm một lần.
+  Payload `record.event` có `schemaVersion: 1`.
+- Tệp gỡ khỏi hồ sơ chỉ rời kho sau `DXOS_FILE_DELETE_DELAY` (mặc định 24 giờ): thông điệp `file.delete` được ghi vào outbox cùng giao dịch, kho tạm ngừng thì được thử lại, đối tượng đã mất thì coi như xong.
+  Tệp của giao dịch bị rollback vẫn xóa ngay.
+- Mọi service chạy lâu có `restart: unless-stopped`.
+  `dxos reconcile` tạo lại container bị xóa hoặc lệch cấu hình theo image đã ghim trong `.env` và ghi `deploy/reconcile.log`; `dxos stop` để lại tệp `deploy/.stopped` nên stack dừng có chủ ý không bị bật lại, và `dxos start` xóa tệp đó.
+  `dxos reconcile install` cài một systemd user timer chạy mỗi phút, `dxos reconcile uninstall` gỡ.
+- Lịch sử hồ sơ có chuỗi hash: `engine.record_event` có cột `prev_hash` và `hash` (migration `V7`), mỗi dòng ghi dưới một khóa advisory, các dòng cũ được tính bù khi backend khởi động.
+  Payload `record.event` mang `hash`, và backend ghi mỗi giờ một điểm neo (id, hash, thời điểm) vào đối tượng `history/anchors.jsonl` của kho đối tượng.
+  `GET /api/v1/history/verify` (ADMIN) tính lại chuỗi, so với điểm neo, và chỉ ra dòng đầu tiên bị sửa, xóa hoặc chèn; `POST /api/v1/history/anchor` ghi điểm neo ngay.
+  `dxos history verify` và `dxos history anchor` gọi hai API này, và `verify` thoát với mã 1 khi chuỗi không còn nguyên.
+- `GET /api/v1/data/{model}/{entity}/stats` trả tổng số, số theo trạng thái, số quá hạn, số theo đơn vị và `computedAt`, với cùng bộ lọc và quyền như danh sách.
+  Giao diện có trang thống kê cho thực thể có quy trình; mỗi số mở danh sách đã lọc tương ứng.
+- Mẫu "Sự cố thiết bị" (`plant_incident`) có trường thiết bị và mã quan sát duy nhất; `examples/itot-simulator` đăng nhập bằng tài khoản dịch vụ, tạo hồ sơ khi chỉ số vượt ngưỡng, và gửi lại cùng một quan sát thì lõi từ chối với 400 (mã quan sát đã có) mà không tạo hồ sơ thứ hai; `simulator.py setup` tạo client `dxos-itot-<mô hình>` bằng tài khoản quản trị Keycloak của `deploy/.env`.
+- `dxos archive <mô hình> [--before YYYY-MM-DD] [--out THƯ_MỤC]` ghi các hồ sơ đã tới trạng thái cuối và lịch sử của chúng ra Parquet bằng DuckDB chạy trong container, kèm `manifest.json` (phiên bản mô hình, số dòng, sha256 từng tệp); dữ liệu trong cơ sở dữ liệu giữ nguyên.
+  `dxos archive check <thư mục>` đọc lại từng tệp và so với manifest.
+- `check_demo.py` dừng `clamav` khi bật quét và mong 503 `ERR_SCAN_UNAVAILABLE` mà không có tệp nào được lưu.
+  `check_events.py` kiểm outbox dừng sau số lần đặt, Thử lại, xóa tệp sau khoảng trễ và thử lại khi kho ngừng.
+- Áp dụng lại tệp không đổi kiểm xem bảng và Keycloak có còn khớp tệp không: cột, ràng buộc, client, vai hoặc nhóm đơn vị bị xóa tay thì kế hoạch ghi `repair` và áp dụng sẽ sửa lại, giữ nguyên phiên bản.
+  Bảng hoặc cột thừa bị từ chối; đổi kiểu cột hay bỏ ràng buộc thừa cần xác nhận mức `MIGRATION`; bảng điều khiển hiện nút "Sửa phần lệch".
+- Menu người dùng có "Tài khoản của tôi", mở Account Console của Keycloak để đổi mật khẩu, bật OTP và xem phiên.
 
 ## [2.0.0] - 2026-11-03
 

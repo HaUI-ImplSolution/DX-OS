@@ -8,6 +8,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +30,7 @@ import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
@@ -108,6 +110,24 @@ public class StorageService implements ObjectStorage {
   public String presignedDownloadUrl(String key, String filename) {
     String encoded = URLEncoder.encode(filename, StandardCharsets.UTF_8).replace("+", "%20");
     return presign(requestBaseUrl(), key, presignTtl, "attachment; filename*=UTF-8''" + encoded);
+  }
+
+  @Override
+  public Optional<byte[]> getObject(String key) {
+    try {
+      return Optional
+          .of(client.getObjectAsBytes(GetObjectRequest.builder().bucket(bucket).key(key).build())
+              .asByteArray());
+    } catch (NoSuchKeyException e) {
+      return Optional.empty();
+    } catch (S3Exception e) {
+      if (e.statusCode() == 404) {
+        return Optional.empty();
+      }
+      throw new IllegalStateException("Failed to read object " + key, e);
+    } catch (RuntimeException e) {
+      throw new IllegalStateException("Failed to read object " + key, e);
+    }
   }
 
   @Override

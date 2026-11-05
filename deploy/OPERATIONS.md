@@ -191,11 +191,16 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 |---|---|
 | `dxos start [tệp]` | Chạy `doctor.sh`, tải image còn thiếu, khởi động, chờ mọi dịch vụ sẵn sàng; realm chưa có ai vai `ADMIN` thì tạo tài khoản `admin` với mật khẩu tạm in ra một lần; có tệp mô hình thì đưa tệp vào và in kết quả (xem dưới); rồi in các địa chỉ |
 | `dxos stop` | Dừng các container, giữ dữ liệu |
-| `dxos status` | Trạng thái từng dịch vụ và các địa chỉ |
+| `dxos status` | Trạng thái từng dịch vụ, các địa chỉ và trạng thái quét mã độc |
 | `dxos logs [dịch vụ]` | Theo dõi log |
 | `dxos admin` | Đặt mật khẩu tạm mới cho `admin`, tạo tài khoản nếu chưa có |
 | `dxos update [vX.Y.Z]` | Cài bản mới hơn (mặc định bản mới nhất): thay tệp chạy, giữ `.env` và `data/`, thêm biến mới, rồi chạy `update.sh` |
 | `dxos doctor`, `dxos backup` | Chạy `doctor.sh`, `backup.sh` |
+| `dxos av [on\|off]` | Bật hoặc tắt quét mã độc tệp tải lên (xem dưới); không có đối số thì in trạng thái quét |
+| `dxos plan <tệp>`, `dxos apply <tệp> [--accept MỨC]` | In kế hoạch của một tệp mô hình, hoặc áp dụng nó (xem dưới) |
+| `dxos history verify`, `dxos history anchor` | Kiểm lịch sử hồ sơ chưa bị sửa, hoặc ghi điểm neo ngay (xem dưới) |
+| `dxos reconcile [install\|uninstall]` | Đưa stack về đúng khai báo; `install` chạy mỗi phút bằng systemd user timer (xem dưới) |
+| `dxos archive <mô hình>`, `dxos archive check <thư mục>` | Xuất hồ sơ đã xong ra Parquet, hoặc kiểm một bản xuất (xem dưới) |
 | `dxos uninstall [--purge]` | Xóa container và lệnh `dxos`; `--purge` xóa cả dữ liệu và thư mục cài, phải gõ xác nhận |
 
 ### Tệp mô hình lúc khởi động
@@ -219,8 +224,25 @@ Tệp hỏng vẫn nằm trong `.env` và được báo lại ở mỗi lần ba
 
 ### Webhook sự kiện
 
-`DXOS_WEBHOOK_URL` trong `.env` là địa chỉ nhận các dòng lịch sử của hồ sơ; để trống thì không gửi gì.
-Chỉ dòng sinh ra sau khi đặt địa chỉ mới được gửi.
+Mỗi mô hình gửi các dòng lịch sử của hồ sơ tới một đích.
+Tệp mô hình chọn đích bằng `webhook: <tên đích>` ở đầu tệp, tên theo dạng `[a-z][a-z0-9_]*`.
+Địa chỉ và bí mật của từng đích nằm trong `deploy/webhooks/targets.yml`, tệp này ngoài git vì địa chỉ có thể chứa khóa; mẫu ở `deploy/webhooks/targets.example.yml`:
+
+```yaml
+targets:
+  ops:
+    url: https://chat.example.org/hooks/abc
+    secret: change-me
+    format: chat
+```
+
+`format` là `json` (thông điệp nguyên văn, mặc định) hoặc `chat` (xem "Câu cho Mattermost và Slack" dưới đây); đích mặc định đặt dạng bằng `DXOS_WEBHOOK_FORMAT`.
+
+Mô hình không ghi `webhook` thì dùng `DXOS_WEBHOOK_URL` trong `.env`; để trống và không ghi đích thì mô hình không gửi gì.
+Chỉ dòng sinh ra sau khi mô hình có đích mới được gửi.
+Mô hình ghi tên đích chưa có trong tệp thì xem kế hoạch báo bị từ chối và áp dụng trả 409.
+Tệp `targets.yml` được nạp lại khi đổi, không cần tạo lại backend; một đích sai tên hoặc địa chỉ bị bỏ qua và ghi vào log.
+Đích bị gỡ khỏi tệp sau khi mô hình đã chạy thì thông điệp của mô hình đó vẫn vào hàng đợi, báo lỗi cấu hình ở tab Hàng đợi sự kiện, và được giao khi đích có lại và bấm Thử lại.
 Mỗi dòng (tạo, sửa, xóa, hành động của quy trình, giao việc, thêm hoặc bỏ tệp, quá hạn) được ghi vào outbox trong giao dịch của thay đổi, nên thay đổi bị hủy thì không có gì được gửi.
 Backend gửi `POST` JSON với các trường:
 
@@ -228,17 +250,93 @@ Backend gửi `POST` JSON với các trường:
 |---|---|
 | `eventId` | Số của dòng lịch sử, tăng dần; cũng nằm ở header `X-Dxos-Event-Id` |
 | `model`, `entity`, `recordId` | Hồ sơ nào |
-| `action` | Hành động, ví dụ `created`, `updated`, `deleted`, `assigned`, `overdue`, `file_added`, hoặc tên hành động của quy trình |
+| `action` | Hành động, ví dụ `created`, `updated`, `deleted`, `assigned`, `due_soon`, `overdue`, `file_added`, hoặc tên hành động của quy trình |
 | `fromStatus`, `toStatus` | Trạng thái trước và sau |
 | `actor`, `actorName` | Mã người dùng và tên người làm, gửi ra ngoài hệ thống; `system` với dòng quá hạn |
 | `at` | Thời điểm, giờ UTC |
+| `schemaVersion` | Phiên bản của dạng thông điệp, hiện là 1 |
+| `hash` | Hash của dòng trong chuỗi lịch sử (xem "Lịch sử chống sửa"); bên nhận giữ lại thì có điểm neo ngoài cơ sở dữ liệu |
 
 Thông điệp không có nội dung hồ sơ, ghi chú hay tên tệp; bên nhận cần thì gọi API với quyền của mình.
 Có `DXOS_WEBHOOK_SECRET` thì mỗi yêu cầu kèm `X-Dxos-Signature: sha256=<hex>`, là HMAC-SHA256 của nguyên văn nội dung; bên nhận tính lại rồi so.
 Bên nhận trả 2xx trong 5 giây là xong; kết quả khác thì thông điệp được gửi lại với thời gian chờ gấp đôi mỗi lần, tối đa 5 phút.
-Thông điệp có thể đến sai thứ tự hoặc hai lần, nên bên nhận sắp và khử trùng theo `eventId`.
-Thông điệp chưa gửi, lỗi gần nhất và nút thử lại nằm ở tab Hàng đợi sự kiện; thông điệp đã gửi bị xóa sau 30 ngày.
-Đổi `DXOS_WEBHOOK_URL` hay `DXOS_WEBHOOK_SECRET` thì tạo lại backend bằng `docker compose up -d backend`.
+Thông điệp lỗi quá `DXOS_OUTBOX_MAX_ATTEMPTS` lần (mặc định 20) thì dừng, không tự gửi nữa; nút Thử lại cho nó thêm một lần.
+Các dòng của một hồ sơ được giao theo thứ tự: dòng sau chờ khi dòng cũ hơn của cùng hồ sơ chưa giao, kể cả khi dòng cũ đã dừng và chờ Thử lại.
+Dòng của các hồ sơ khác nhau không chờ nhau, và một dòng có thể đến hai lần, nên bên nhận khử trùng theo `eventId`.
+Thông điệp chưa gửi, đã dừng, lỗi gần nhất và nút thử lại nằm ở tab Hàng đợi sự kiện; thông điệp đã gửi bị xóa sau 30 ngày.
+Đổi `DXOS_WEBHOOK_URL`, `DXOS_WEBHOOK_SECRET` hay `DXOS_WEBHOOK_FORMAT` thì tạo lại backend bằng `docker compose up -d backend`.
+
+Bên nhận lỡ thông điệp (ngừng chạy, hoặc thông điệp đã dừng) lấy lại bằng `GET /api/v1/events?after=<eventId đã giữ>&size=<tối đa 500>&model=<tùy chọn>` với token ADMIN.
+Các dòng đọc thẳng từ lịch sử, cùng dạng với thông điệp webhook, từ cũ tới mới; `next` là `eventId` để hỏi tiếp và `more` cho biết còn dòng.
+Lệnh này dùng được cả khi chưa đặt đích nào.
+
+Hồ sơ có hạn xử lý dài hơn `DXOS_DUE_SOON_BEFORE` (mặc định `24h`, `0` để tắt) nhận một dòng `due_soon` khi còn chừng đó thời gian trước hạn, đúng một lần cho mỗi hạn.
+Hạn không dài hơn khoảng này thì không có dòng `due_soon`.
+
+#### Câu cho Mattermost và Slack
+
+Đích có `format: chat` nhận `{"text": "<một câu>"}` thay cho thông điệp nguyên văn; Mattermost và Slack đều nhận dạng này ở địa chỉ webhook đến của họ.
+Câu có tên mô hình, thực thể, số hồ sơ và trạng thái, không có nội dung hồ sơ.
+Hồ sơ của thực thể có quy trình vừa được tạo hoặc nộp lại đọc là "Việc mới", dòng `due_soon` là "Sắp đến hạn xử lý", dòng `overdue` là "Quá hạn xử lý", dòng giao việc là "Được giao"; các dòng khác ghi hành động và trạng thái trước, sau.
+
+#### Việc áp dụng mô hình và thay đổi tài khoản
+
+Các thay đổi này gửi thông điệp chủ đề `admin.event` với `id`, `kind`, `model`, `actor`, `actorName`, `at`, `facts` và `schemaVersion`; `id` cũng nằm ở header `X-Dxos-Event-Id`.
+`kind` là `MODEL_APPLIED`, `MODEL_ROLLED_BACK`, `MODEL_RESUMED`, `MODEL_ABANDONED`, hoặc tên hành động của audit như `USER_ROLE_GRANTED`.
+Thông điệp của một mô hình vào đích của mô hình đó; thay đổi tài khoản và mô hình đã gỡ vào đích mặc định.
+Không có đích thì không ghi gì.
+Chúng không nằm trong API kéo sự kiện, vì không phải dòng lịch sử của hồ sơ.
+
+### Đổi mô hình bằng dòng lệnh
+
+`dxos plan <tệp>` in kế hoạch của tệp mô hình mà không đổi gì; mã thoát 1 khi kế hoạch bị từ chối.
+`dxos apply <tệp> [--accept SAFE|MIGRATION|LOSS]` lấy kế hoạch rồi áp dụng với phiên bản của kế hoạch làm `base`.
+Kế hoạch có mức cao hơn `--accept` (mặc định `SAFE`) thì bị từ chối với mã thoát 1 và không đổi gì; lệnh không bao giờ tự nâng mức.
+Tệp giống mô hình đang chạy và không có gì lệch thì in "Nothing to apply" và thoát với mã 0.
+Tệp giống nhưng bảng hoặc Keycloak đã lệch khỏi tệp thì kế hoạch ghi `repair`; `dxos apply` sửa phần lệch, và cần `--accept MIGRATION` khi kế hoạch ở mức đó.
+Đường dẫn tương đối tính theo thư mục gõ lệnh.
+
+Lệnh đăng nhập bằng client `dxos-cli` của realm, dùng `DXOS_CLI_SECRET` trong `.env`; tài khoản dịch vụ của client giữ vai `ADMIN`, và lịch sử áp dụng ghi tên nó (`service-account-dxos-cli`).
+Bí mật nằm trong `.env` của máy chủ, nên chạy được trong pipeline GitOps trên chính máy đó.
+Realm đã import từ trước chưa có client này: thêm client `dxos-cli` ở Keycloak Admin Console hoặc dựng lại realm.
+
+### Tệp bị gỡ khỏi hồ sơ
+
+Gỡ hoặc thay một tệp, xóa hồ sơ hay xóa thực thể thì đối tượng rời kho sau `DXOS_FILE_DELETE_DELAY` (mặc định 24 giờ).
+Backend ghi một thông điệp `file.delete` vào outbox trong cùng giao dịch, đến hạn thì xóa đối tượng.
+Đối tượng đã mất thì thông điệp coi như xong; kho đang ngừng thì thông điệp được thử lại.
+Một lượt sao lưu ngắn hơn khoảng trễ này luôn có đủ tệp cho mọi dòng tệp đính kèm trong bản dump.
+Tệp của giao dịch bị hủy (đã vào kho nhưng dòng không được ghi) bị xóa ngay.
+
+### Tự phục hồi
+
+Mọi service chạy lâu có `restart: unless-stopped`, nên Docker khởi động lại chúng khi tiến trình thoát hoặc máy khởi động lại.
+`dxos reconcile` chạy `docker compose up -d --no-build` theo các image đã ghim trong `.env`: container bị xóa được tạo lại, container lệch cấu hình được tạo lại theo khai báo, container đang đúng thì để nguyên.
+Mỗi lượt có thay đổi ghi một dòng vào `deploy/reconcile.log`; lượt đến khi lượt trước còn chạy thì bỏ qua.
+`dxos stop` để lại tệp `deploy/.stopped`, và `dxos reconcile` không bật lại stack có tệp này; `dxos start` xóa nó.
+
+`dxos reconcile install` cài `dxos-reconcile.timer` (systemd user timer) chạy lệnh trên mỗi phút, `dxos reconcile uninstall` gỡ.
+Máy không có systemd thì chạy `dxos reconcile` từ cron mỗi phút.
+Timer của user chỉ chạy khi user còn phiên đăng nhập, trừ khi bật `loginctl enable-linger <user>`.
+
+### Lịch sử chống sửa
+
+Mỗi dòng `engine.record_event` có `hash = sha256(prev_hash || nội dung chuẩn hóa của dòng)`; các dòng được nối thành một chuỗi duy nhất, ghi dưới một khóa advisory.
+Mỗi giờ backend ghi một điểm neo (id, hash, thời điểm) vào đối tượng `history/anchors.jsonl` của kho đối tượng, nằm ngoài Postgres và có trong bản sao lưu của kho; `dxos history anchor` ghi một điểm neo ngay.
+Webhook sự kiện mang `hash` của từng dòng, nên bên nhận có thêm một điểm neo ngoài máy chủ.
+
+`dxos history verify` (hay `GET /api/v1/history/verify`, ADMIN) tính lại cả chuỗi và so với các điểm neo.
+Kết quả có `intact`, `head`, `firstBreak` (dòng đầu tiên bị sửa, bị chèn hoặc đứng sau một dòng bị xóa) và `mismatchedAnchors` (điểm neo mà dòng hay hash tương ứng không còn); lệnh thoát với mã 1 khi `intact` là `false`.
+Chuỗi chống được việc sửa, xóa hay chèn một dòng bằng SQL, và việc cắt bớt đuôi lịch sử sau một điểm neo.
+Người sửa lại cả chuỗi và cả đối tượng điểm neo trên máy chủ thì không phát hiện được, trừ khi so với hash mà bên nhận webhook đã giữ.
+
+### Hồ dữ liệu
+
+`dxos archive <mô hình> [--before YYYY-MM-DD] [--out THƯ_MỤC]` ghi các hồ sơ đã tới trạng thái cuối (`decided_at` có giá trị, cũ hơn `--before` nếu có) và lịch sử của chúng ra Parquet ở `<THƯ_MỤC>/<mô hình>/<lần chạy>/` (mặc định `deploy/archive`).
+Lệnh chạy DuckDB trong một container, đọc Postgres bằng tài khoản `POSTGRES_USER` của `.env` ở chế độ chỉ đọc, và ghi `manifest.json` gồm phiên bản mô hình, số dòng và sha256 từng tệp.
+Dữ liệu trong cơ sở dữ liệu giữ nguyên.
+`dxos archive check <thư mục>` đọc lại từng tệp và so số dòng và sha256 với manifest; lệch thì thoát với mã 1.
+Lần chạy đầu DuckDB tải extension `postgres` từ mạng.
 
 ## Kiểm tra trước khi chạy
 
@@ -247,6 +345,7 @@ Nó kiểm Docker và Compose, RAM, ổ đĩa, `deploy/.env` và các cổng.
 `.env` được so với các biến `${NAME:?}` mà Compose bắt buộc phải có: biến thiếu hoặc để trống bị báo `FAIL`.
 Biến có trong `.env` mà `.env.example` không liệt kê bị báo `WARN`.
 Các cổng đã bị chiếm chỉ được kiểm khi stack chưa chạy.
+Quét mã độc được báo là bật hay tắt; `STORAGE_SCAN_HOST=clamav` mà `COMPOSE_PROFILES` không có `av` bị báo `FAIL`, vì ClamAV sẽ không chạy và mọi tệp tải lên bị từ chối.
 Thoát với mã 1 khi có `FAIL`, nên chạy trước `./update.sh` và `docker compose up -d` trên máy chủ.
 
 ## Tài nguyên và số bản sao
@@ -293,11 +392,18 @@ cd deploy
 ./backup.sh snapshots    # liệt kê các bản
 ```
 
+`verify` in số mô hình đã áp dụng và tổng số dòng trong các bảng `m_*` của bản dump.
+Mô hình có phiên bản trong `engine.model_version` mà không có bảng nào trong schema `m_<mô hình>` làm `verify` báo `FAILED` kèm tên mô hình.
+`verify` còn khôi phục bản chụp của kho vào một Docker volume tạm và khởi động một SeaweedFS tạm trên đó (filer HTTP chỉ mở trong container), rồi kiểm mọi khóa trong `engine.attachment` của bản dump đều có tệp.
+Thiếu tệp thì `verify` báo `FAILED` kèm tên các tệp thiếu và thoát với mã 1.
+`backup.sh` dump Postgres rồi mới chụp kho, và tệp bị gỡ chỉ rời kho sau `DXOS_FILE_DELETE_DELAY`, nên bản sao lưu luôn có tệp của mọi dòng trong bản dump, miễn là cả hai bước ngắn hơn khoảng đó.
+Lượt chạy lâu hơn khoảng đó thì `backup.sh` in `WARNING`; khi đó tăng `DXOS_FILE_DELETE_DELAY`.
+
 Kho nằm ở `deploy/backups` (đổi bằng `BACKUP_DIR`) hoặc ở một kho restic từ xa (`BACKUP_REPOSITORY`, ví dụ `s3:...`).
 Kho cùng máy với dữ liệu không cứu được khi mất máy, nên chép nó ra ngoài (rsync, rclone) hoặc dùng kho từ xa.
 Chạy theo lịch bằng cron, ví dụ mỗi đêm: `0 2 * * * cd /đường/dẫn/deploy && ./backup.sh >> backups/backup.log 2>&1`, và chạy `verify` mỗi tuần.
 Máy chủ dùng tệp env khác `.env` thì đặt `ENV_FILE=.env.dev ./backup.sh`.
-CI chạy một lượt backup và verify trên Postgres thật ở job `backup-drill`.
+CI chạy một lượt backup và verify trên Postgres thật có một mô hình hai dòng và một tệp đính kèm thật ở job `backup-drill`, rồi thêm một dòng tệp không có trong kho và mong `verify` thất bại.
 
 **Khôi phục** (máy mới hoặc sau khi mất dữ liệu):
 
@@ -314,7 +420,8 @@ Khi bật, mọi tệp đính kèm được ClamAV quét trước khi xử lý v
 Tệp nhiễm bị từ chối với HTTP 422 `ERR_FILE_INFECTED` và lần chặn được ghi vào `audit_log` (`FILE_INFECTED`, kèm tên mẫu mã độc).
 ClamAV không trả lời thì tệp không được lưu và người dùng nhận HTTP 503 `ERR_SCAN_UNAVAILABLE`, vì tệp chưa quét không được coi là sạch.
 Tắt mặc định vì ClamAV cần khoảng 1 GB RAM.
-Bật: bỏ dấu `#` ở `COMPOSE_PROFILES=av` và `STORAGE_SCAN_HOST=clamav` trong `deploy/.env`, rồi `docker compose up -d`.
+Bật bằng `dxos av on`, tắt bằng `dxos av off`: lệnh sửa `COMPOSE_PROFILES` và `STORAGE_SCAN_HOST` trong `.env`, rồi khởi động hoặc gỡ ClamAV và tạo lại backend nếu stack đang chạy.
+Không dùng `dxos` thì bỏ dấu `#` ở `COMPOSE_PROFILES=av` và `STORAGE_SCAN_HOST=clamav` trong `deploy/.env`, rồi `docker compose up -d`.
 Chữ ký virus tải về lần đầu mất vài phút và được giữ trong volume `clamav_data`.
 Mỗi lần clamd nạp lại chữ ký (hằng ngày và sau khi khởi động) nó không quét được khoảng 10 giây, và người dùng gặp 503 trong lúc đó; chờ rồi tải lại.
 Thử bằng tệp EICAR (chuỗi kiểm thử chuẩn của ngành diệt virus): tệp chỉ gồm đúng chuỗi đó, đổi tên `.pdf` rồi đính vào một yêu cầu; `deploy/dev/check_demo.py` tự làm bước này khi `STORAGE_SCAN_HOST` có giá trị.

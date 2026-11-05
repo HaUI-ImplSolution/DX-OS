@@ -149,6 +149,43 @@ public class DataService {
     return new PageResponse<>(rows, page, size, count, (int) ((count + size - 1) / size));
   }
 
+  // Counts over the rows the caller can see, with the same filters as list: in all, per status,
+  // past
+  // their deadline at computedAt (handle_by before it), and per unit when the entity has a unit
+  // field.
+  @Transactional(readOnly = true)
+  public Map<String, Object> stats(Model model, Entity entity, Map<String, String> params) {
+    Access access = access(model, entity);
+    requireRead(access);
+    MapSqlParameterSource values = new MapSqlParameterSource();
+    List<String> where = new ArrayList<>();
+    where.add(scope(model, entity, access.reads(), values));
+    filters(entity, params, where, values);
+    java.time.OffsetDateTime at = java.time.OffsetDateTime.now();
+    values.addValue("at", at);
+    String from = " FROM " + table(model, entity) + " WHERE " + String.join(" AND ", where);
+    boolean process = entity.process() != null;
+    Map<String, Object> body = new LinkedHashMap<>();
+    body.put("total", jdbc.queryForObject("SELECT count(*)" + from, values, Long.class));
+    if (process) {
+      body.put("byStatus", jdbc.queryForList(
+          "SELECT status, count(*) AS count" + from + " GROUP BY status ORDER BY status", values));
+      body.put("overdue",
+          jdbc.queryForObject(
+              "SELECT count(*)" + from + " AND handle_by IS NOT NULL AND handle_by < :at", values,
+              Long.class));
+    }
+    entity.unitField()
+        .ifPresent(
+            field -> body
+                .put("byUnit",
+                    jdbc.queryForList("SELECT " + ident(field.name())
+                        + " AS unit, count(*) AS count" + from + " GROUP BY 1 ORDER BY 1",
+                        values)));
+    body.put("computedAt", at.toString());
+    return body;
+  }
+
   @Transactional(readOnly = true)
   public Map<String, Object> get(Model model, Entity entity, long id) {
     Access access = access(model, entity);

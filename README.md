@@ -20,12 +20,13 @@ Phiên bản trước của dự án (hai ứng dụng nghiệp vụ viết tay)
 Đã chạy được vòng hẹp từ tệp mô hình đến người dùng cuối:
 
 - Đọc và kiểm tra tệp mô hình, báo lỗi theo dòng và cột.
-- Áp dụng mô hình vào hệ thống rỗng: schema, bảng, ràng buộc, vai Keycloak, phiên bản và lịch sử từng bước; áp dụng lại thì không làm gì, bị gián đoạn thì áp dụng lại để làm tiếp.
+- Áp dụng mô hình vào hệ thống rỗng: schema, bảng, ràng buộc, vai Keycloak, phiên bản và lịch sử từng bước; áp dụng lại cùng tệp thì không làm gì, trừ khi bảng hoặc tài khoản Keycloak đã lệch khỏi tệp thì sửa phần lệch; bị gián đoạn thì áp dụng lại để làm tiếp.
 - API chung cho mọi thực thể, quyền theo vai và theo dòng (`all`, `own`, `read`, `unit`, `assigned`), quy tắc bắt buộc, duy nhất và lựa chọn.
 - Ba họ mẫu quy trình trên Flowable nhúng: phê duyệt, công việc cần xử lý, đặt chỗ theo khung giờ có kiểm sức chứa; trạng thái hồ sơ chỉ đổi qua quy trình, cùng giao dịch với việc ghi hồ sơ.
 - Quy tắc chung của mọi quy trình: từ chối và trả lại cần lý do, người nộp sửa rồi nộp lại hoặc rút hồ sơ, người tạo không tự quyết hồ sơ của mình, hồ sơ quá hạn lên đầu hộp việc.
 - Việc làm sau khi duyệt, như thêm người dùng vào nhóm, chạy qua hàng đợi sự kiện và được thử lại khi lỗi.
-- Mọi thay đổi của hồ sơ được báo ra ngoài tới một địa chỉ web do người vận hành đặt, có chữ ký để bên nhận kiểm tra và được gửi lại khi bên nhận lỗi.
+- Mọi thay đổi của hồ sơ được báo ra ngoài tới địa chỉ web mà mô hình chọn, có chữ ký để bên nhận kiểm tra và được gửi lại khi bên nhận lỗi; các thay đổi của một hồ sơ tới đúng thứ tự, và bên nhận lỡ tin thì lấy lại phần đã lỡ theo số thứ tự.
+- Tin báo ra ngoài có thể là một câu đọc được cho Mattermost và Slack: việc mới, sắp đến hạn, quá hạn; việc áp dụng mô hình và thay đổi tài khoản cũng được báo.
 - Tệp đính kèm hồ sơ, quét mã độc khi bật.
 - Mỗi mô hình có vai riêng: hai mô hình dùng được cùng một tên vai mà người giữ vai của mô hình này không vào được mô hình kia.
 - Đơn vị khai báo trong mô hình và đồng bộ thành nhóm Keycloak; giao việc, hộp việc và dòng lịch sử của từng hồ sơ.
@@ -34,9 +35,15 @@ Phiên bản trước của dự án (hai ứng dụng nghiệp vụ viết tay)
 - Bảng điều khiển cho người triển khai: thư viện mẫu, trình soạn mô hình, xem kế hoạch, áp dụng, lịch sử và quay về, sơ đồ quy trình.
 - Một lệnh nhận tệp mô hình trên máy sạch: hệ thống khởi động, tệp được áp dụng và có thể đăng nhập ngay.
 - Quản trị người dùng ngay trong bảng điều khiển: xem ai giữ vai nào ở từng ứng dụng, gán và gỡ vai và đơn vị, tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu; mỗi thay đổi được ghi lại kèm người thực hiện và xem lại được trong hộp thoại của người đó.
+- Áp dụng mô hình chờ các thao tác đang chạy của mô hình đó rồi mới đổi bảng, và kiểm lại hồ sơ đang mở sau khi đã giữ mô hình, nên không hồ sơ nào lọt qua giữa chừng; hủy bỏ lần áp dụng đầu dọn luôn phần phân quyền mà lần đó đã tạo.
+- Lịch sử hồ sơ được nối thành một chuỗi có dấu kiểm và có điểm neo định kỳ; một lệnh chỉ ra dòng nào đã bị sửa, xóa hoặc chèn.
+- Thống kê cho mỗi thực thể có quy trình: tổng số, theo trạng thái, quá hạn và theo đơn vị, cùng quyền xem với danh sách; mỗi số mở ra danh sách tương ứng.
+- Đổi mô hình được cả từ dòng lệnh để dùng trong tự động hóa, và có lệnh xuất hồ sơ đã xong ra tệp phân tích kèm bản kê để kiểm lại.
+- Sao lưu kiểm được cả tệp đính kèm; tệp đã gỡ chỉ rời kho sau một khoảng chờ để bản sao lưu luôn đủ; các dịch vụ tự chạy lại và có lệnh đưa hệ thống về đúng khai báo.
+- Ví dụ kết nối thiết bị: một chương trình giả lập tạo hồ sơ sự cố khi chỉ số vượt ngưỡng và không tạo trùng khi gửi lại.
 - Đăng nhập một lần qua Keycloak; có thể bắt quản trị viên nhập thêm mã một lần từ ứng dụng xác thực.
 
-Chưa có: thông báo chat, hỏi đáp bằng AI, báo cáo thống kê.
+Chưa có: thông báo chat, hỏi đáp bằng AI.
 Dịch vụ tìm kiếm tri thức có nguồn ở [`ai/`](./ai/README.md) chạy riêng, chưa nằm trong stack.
 Các phần này nằm trong [hướng thiết kế](./docs/dynamic-core/README.md).
 
@@ -55,7 +62,7 @@ Bộ cài tải bản phát hành mới nhất, kiểm SHA-256 rồi cài vào `
 `dxos start` tải image ở lần đầu, chờ mọi dịch vụ sẵn sàng, tạo tài khoản `admin` với mật khẩu tạm in ra màn hình, rồi in các địa chỉ.
 Đăng nhập `http://localhost:9080/console` bằng `admin`, đổi mật khẩu, chọn một mẫu ở tab Thư viện mẫu, xem kế hoạch rồi áp dụng.
 Đã có tệp mô hình thì `dxos start <tệp>` đưa tệp vào luôn: backend áp dụng tệp khi khởi động nếu tệp là mới, và lệnh in kết quả.
-Các lệnh khác (`stop`, `status`, `logs`, `admin`, `update`, `backup`, `uninstall`) có ở `dxos help` và [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md#cài-đặt-và-lệnh-dxos).
+Các lệnh khác (`stop`, `status`, `logs`, `admin`, `update`, `backup`, `plan`, `apply`, `history`, `reconcile`, `archive`, `uninstall`) có ở `dxos help` và [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md#cài-đặt-và-lệnh-dxos).
 
 ### Từ mã nguồn
 
@@ -121,6 +128,9 @@ entities:
 - Tệp đính kèm: trường `type: file`, tải lên bằng `POST /api/v1/data/{model}/{entity}/{id}/files`; quyền theo quyền của bản ghi.
   Loại tệp nhận được đặt bằng `engine.files.allowed-extensions`, và tệp luôn tải về dạng đính kèm.
   Mỗi hồ sơ giữ tối đa 20 tệp, đặt bằng `engine.files.max-per-record`.
+- Webhook: `webhook: <tên đích>` ở đầu tệp chọn nơi nhận lịch sử hồ sơ của mô hình; địa chỉ và bí mật của đích nằm trong `deploy/webhooks/targets.yml`, ngoài git, mẫu ở `deploy/webhooks/targets.example.yml`.
+  Mô hình không khai báo thì dùng `DXOS_WEBHOOK_URL`; tên đích chưa có trong tệp thì mô hình không áp dụng được.
+  Mỗi đích có `format: json` (mặc định) hoặc `format: chat`.
 - Đổi mô hình: khai báo `renamed_from` khi đổi tên trường; `default` điền giá trị cho trường bắt buộc mới trên bảng đã có dòng.
 - Đặc tả cho trình soạn thảo: [`dx-model/.../model-v0.schema.json`](./backend/dx-model/src/main/resources/schema/model-v0.schema.json); tệp sai mẫu ở [`models/invalid/`](./models/invalid).
 
@@ -140,6 +150,7 @@ entities:
 | `GET .../{id}/events` | Dòng lịch sử của bản ghi |
 | `.../{id}/files` | Tải lên, liệt kê, lấy link tải có hạn (`/{fileId}/link`) và gỡ tệp đính kèm |
 | `GET /api/v1/inbox` | Hồ sơ đang chờ người gọi, trên mọi mô hình; `page`, `size` |
+| `GET /api/v1/events` | Dòng lịch sử theo đúng dạng của webhook, từ sau một `eventId` (`after`, `size`, `model`) (ADMIN) |
 | `GET /api/v1/outbox`, `POST /api/v1/outbox/{id}/retry` | Thông điệp gửi đi theo trạng thái (lỗi, chờ gửi, đã gửi) và thử lại thông điệp chưa gửi (ADMIN) |
 | `GET /api/v1/users`, `/users/options`, `/users/{id}` | Tìm và xem người dùng, vai theo từng mô hình và đơn vị; vai và đơn vị có thể gán (ADMIN) |
 | `PUT`, `DELETE /api/v1/users/{id}/roles/{model}/{role}`, `/units/{unit}` | Gán và gỡ vai của một mô hình, và đơn vị (ADMIN) |

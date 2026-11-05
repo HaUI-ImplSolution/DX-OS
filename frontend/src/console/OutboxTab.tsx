@@ -5,6 +5,7 @@ import {
   Box,
   Button,
   Card,
+  Chip,
   Pagination,
   Tab,
   Table,
@@ -18,10 +19,19 @@ import {
 import { listOutbox, retryOutbox, type OutboxPage, type OutboxStatus } from "./api";
 
 const SIZE = 20;
-const STATUS_LABEL: Record<OutboxStatus, string> = { failed: "Lỗi", pending: "Chờ gửi", delivered: "Đã gửi" };
-const STATUSES: OutboxStatus[] = ["failed", "pending", "delivered"];
+const STATUS_LABEL: Record<OutboxStatus, string> = {
+  failed: "Lỗi",
+  stopped: "Đã dừng",
+  pending: "Chờ gửi",
+  delivered: "Đã gửi",
+};
+const STATUSES: OutboxStatus[] = ["failed", "stopped", "pending", "delivered"];
 
-const TOPIC_LABEL: Record<string, string> = { completion: "Hành động hoàn tất" };
+const TOPIC_LABEL: Record<string, string> = {
+  completion: "Hành động hoàn tất",
+  "record.event": "Sự kiện hồ sơ gửi webhook",
+  "file.delete": "Xóa tệp trong kho",
+};
 
 const message = (error: unknown) => (error instanceof Error ? error.message : "Không xử lý được");
 const when = (value: string | null) => (value ? new Date(value).toLocaleString("vi-VN") : "");
@@ -75,7 +85,7 @@ export default function OutboxTab() {
       </Tabs>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
         Các thông điệp gửi đi sau khi một thay đổi đã lưu, như thêm người dùng vào nhóm. Thông điệp lỗi được thử lại dần;
-        bấm "Thử lại ngay" khi đã sửa nguyên nhân.
+        lỗi quá số lần cho phép thì dừng hẳn. Bấm "Thử lại ngay" khi đã sửa nguyên nhân.
       </Typography>
       {data && data.page.items.length === 0 && (
         <Card sx={{ py: 6, textAlign: "center", color: "text.secondary" }}>Không có thông điệp nào.</Card>
@@ -99,9 +109,19 @@ export default function OutboxTab() {
               <TableRow key={item.id}>
                 <TableCell>{item.id}</TableCell>
                 <TableCell>{TOPIC_LABEL[item.topic] ?? item.topic}</TableCell>
-                <TableCell>{`${item.model}.${item.entity} #${item.record_id}`}</TableCell>
+                <TableCell>
+                  {item.model
+                    ? `${item.model}.${item.entity}${item.record_id === null ? "" : ` #${item.record_id}`}`
+                    : ""}
+                </TableCell>
                 <TableCell>{item.attempts}</TableCell>
-                <TableCell>{when(item.delivered_at ?? item.next_attempt_at)}</TableCell>
+                <TableCell>
+                  {item.stopped ? (
+                    <Chip size="small" color="error" variant="outlined" label="Đã dừng" />
+                  ) : (
+                    when(item.delivered_at ?? item.next_attempt_at)
+                  )}
+                </TableCell>
                 <TableCell sx={{ maxWidth: 360, wordBreak: "break-word" }}>{item.last_error}</TableCell>
                 <TableCell align="right">
                   {item.delivered_at === null && (

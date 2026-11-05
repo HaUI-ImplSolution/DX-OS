@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copy to targets.yml. Each name can be given to a model with `webhook: <name>`; the url and the
+# secret stay here, outside git. Names match [a-z][a-z0-9_]*, urls are http or https.
+# format is json (the message as it is, the default) or chat (a sentence as {"text": ...}, which
+# Mattermost and Slack accept).
+targets:
+  ops:
+    url: https://chat.example.org/hooks/replace-me
+    secret: replace-me
+    format: chat

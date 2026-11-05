@@ -62,11 +62,8 @@ def main():
     status, body = kc.api(admin, "POST", "/models/apply", content, YAML)
     rt.check("T5-05 apply fails while Keycloak is down", status >= 500, str(status))
     code, tables = rt.psql("select count(*) from information_schema.tables where table_schema='m_recovery'")
-    rt.check("T5-05 earlier steps were kept", tables == "1", tables)
-    code, version = rt.psql("select count(*) from engine.model_version where model='recovery'")
-    rt.check("T5-05 version not stored", version == "0", version)
-    code, steps = rt.psql("select s.kind||':'||s.status from engine.apply_step s join engine.apply_run r on r.id=s.run_id where r.model='recovery' and s.status='failed'")
-    rt.check("T5-05 history names the failed step", steps == "ENSURE_CLIENT:failed", steps)
+    code, runs = rt.psql("select count(*) from engine.apply_run where model='recovery'")
+    rt.check("T5-05 it fails before the first step", tables == "0" and runs == "0", f"{tables} {runs}")
     up("keycloak")
     end = time.time() + 180
     while time.time() < end:
@@ -74,6 +71,19 @@ def main():
         if s == 200:
             break
         time.sleep(3)
+    up("backend", {"ENGINE_FAULT_APPLY_STEP": "ENSURE_CLIENT"})
+    assert rt.wait_api(), "backend did not come back"
+    admin = kc.token("admin1")
+    status, body = kc.api(admin, "POST", "/models/apply", content, YAML)
+    rt.check("T5-05 apply fails at a step", status >= 500, str(status))
+    code, tables = rt.psql("select count(*) from information_schema.tables where table_schema='m_recovery'")
+    rt.check("T5-05 earlier steps were kept", tables == "1", tables)
+    code, version = rt.psql("select count(*) from engine.model_version where model='recovery'")
+    rt.check("T5-05 version not stored", version == "0", version)
+    code, steps = rt.psql("select s.kind||':'||s.status from engine.apply_step s join engine.apply_run r on r.id=s.run_id where r.model='recovery' and s.status='failed'")
+    rt.check("T5-05 history names the failed step", steps == "ENSURE_CLIENT:failed", steps)
+    up("backend", {"ENGINE_FAULT_APPLY_STEP": ""})
+    assert rt.wait_api(), "backend did not come back"
     admin = kc.token("admin1")
     changed = content.replace("title: {type: text, required: true}", "title: {type: text, required: true}\n      extra: {type: text}")
     status, body = kc.api(admin, "POST", "/models/apply", changed, YAML)

@@ -48,6 +48,19 @@ public class DataController {
     return ApiResponse.success(service.list(m, entity(m, entity), params));
   }
 
+  @GetMapping("/stats")
+  @Operation(summary = "Count the records the caller can see",
+      description = "Takes the filter.<field> parameters of the list. total counts the rows;"
+          + " for an entity with a process, byStatus counts them per status and overdue counts"
+          + " those whose handle_by is before computedAt; byUnit counts them per unit when the"
+          + " entity has a unit field. The same rows as the list with the same filters, so"
+          + " filter.handle_by.lt=<computedAt> lists the overdue ones.")
+  public ApiResponse<Map<String, Object>> stats(@PathVariable String model,
+      @PathVariable String entity, @RequestParam Map<String, String> params) {
+    Model m = registry.require(model);
+    return ApiResponse.success(service.stats(m, entity(m, entity), params));
+  }
+
   @GetMapping("/{id}")
   @Operation(summary = "Get one record")
   public ApiResponse<Map<String, Object>> get(@PathVariable String model,

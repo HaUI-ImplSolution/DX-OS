@@ -9,6 +9,16 @@ export const getEntityMeta = (model: string, entity: string) =>
 
 export const listInbox = (page: number, size: number) => request<Page<InboxItem>>(`/inbox?page=${page}&size=${size}`);
 
+export interface EntityStats {
+  total: number;
+  byStatus: { status: string; count: number }[];
+  overdue: number;
+  byUnit?: { unit: string | null; count: number }[] | null;
+  computedAt: string;
+}
+
+export const getStats = (model: string, entity: string) => request<EntityStats>(`/data/${model}/${entity}/stats`);
+
 const recordPath = (model: string, entity: string, id: number | string) => `/data/${model}/${entity}/${id}`;
 
 export const takeAction = (model: string, entity: string, id: number | string, action: string, note?: string) =>

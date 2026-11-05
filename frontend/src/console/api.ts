@@ -104,16 +104,17 @@ export interface OutboxMessage {
   topic: string;
   model: string;
   entity: string;
-  record_id: number;
+  record_id: number | null;
   attempts: number;
   last_error: string | null;
   created_at: string;
-  next_attempt_at: string;
+  stopped: boolean;
+  next_attempt_at: string | null;
   delivered_at: string | null;
   payload: string;
 }
 
-export type OutboxStatus = "failed" | "pending" | "delivered";
+export type OutboxStatus = "failed" | "stopped" | "pending" | "delivered";
 
 export interface OutboxPage {
   counts: Record<OutboxStatus, number>;

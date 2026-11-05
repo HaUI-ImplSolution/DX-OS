@@ -7,7 +7,8 @@ import java.util.Map;
 import java.util.Optional;
 
 // A parsed and validated model file.
-public record Model(int format,String name,List<Role>roles,List<Unit>units,Map<String,Entity>entities){
+// webhook names the target the history of the records goes to, or is null for the default target.
+public record Model(int format,String name,String webhook,List<Role>roles,List<Unit>units,Map<String,Entity>entities){
 
 public record Role(String name,String description,boolean staff){}
 

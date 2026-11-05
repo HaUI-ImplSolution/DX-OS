@@ -49,7 +49,9 @@ public class ModelController {
           + " MIGRATION, LOSS), what is refused, existing rows that break a new rule, open records"
           + " of the touched processes and the statements to run. Changes that collide with"
           + " another model, affect open process records, or have attachments or executions are"
-          + " refused. No record or table changes.")
+          + " refused. A file that did not change but whose tables, client, roles or unit groups"
+          + " no longer match it has action repair, with the changes REPAIR_SCHEMA, REPAIR_CLIENT,"
+          + " REPAIR_ROLE and REPAIR_UNIT. No record or table changes.")
   public ApiResponse<ApplyService.Plan> plan(@RequestBody String content) {
     return ApiResponse.success(service.plan(content));
   }
@@ -58,8 +60,9 @@ public class ModelController {
   @Operation(summary = "Apply a model file",
       description = "Brings tables, constraints, roles and units to the file and stores a new"
           + " version. To change a running model pass base, the fromVersion of the plan, and accept"
-          + " with the level of the plan (SAFE by default). The same file again changes nothing or"
-          + " finishes an apply that stopped midway. 409 when the plan is out of date, the level is"
+          + " with the level of the plan (SAFE by default). The same file again changes nothing, puts"
+          + " right what no longer matches it (action repair, same version) or finishes an apply"
+          + " that stopped midway. 409 when the plan is out of date, the level is"
           + " above accept, rows break a new rule, the change is refused, dependencies prevent a"
           + " drop, or the model needs reconciliation.")
   public ApiResponse<ApplyService.Applied> apply(@RequestBody String content,

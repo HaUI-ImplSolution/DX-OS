@@ -251,11 +251,11 @@ Người dùng chỉ cần Docker, không cần mã nguồn, JDK, Node hay Pytho
 ```bash
 curl -fsSL https://github.com/HaUI-ImplSolution/DX-OS/releases/latest/download/dxos-install.sh | bash
 dxos start model.yaml   # khởi động, tạo tài khoản admin đầu tiên, áp dụng model.yaml nếu là tệp mới, in các địa chỉ
-dxos plan model.yaml   # xem trước sau khi sửa model.yaml (chưa có)
-dxos apply model.yaml  # áp dụng (chưa có)
+dxos plan model.yaml   # xem trước sau khi sửa model.yaml
+dxos apply model.yaml  # áp dụng
 ```
 
-Bộ cài và các lệnh vận hành của `dxos` mô tả ở [`deploy/OPERATIONS.md`](../../deploy/OPERATIONS.md#cài-đặt-và-lệnh-dxos); `plan` và `apply` làm ở bước sau, nay áp dụng qua bảng điều khiển.
+Bộ cài và các lệnh vận hành của `dxos` mô tả ở [`deploy/OPERATIONS.md`](../../deploy/OPERATIONS.md#cài-đặt-và-lệnh-dxos); `dxos plan` và `dxos apply` đưa tệp mô hình vào hệ thống đang chạy với cùng kế hoạch và mức xác nhận như bảng điều khiển.
 
 
 | Trường hợp                                          | Hành vi                                                   |
@@ -264,6 +264,7 @@ Bộ cài và các lệnh vận hành của `dxos` mô tả ở [`deploy/OPERATI
 | Thay đổi an toàn                                    | Áp dụng được ngay, không dựng lại                  |
 | Thay đổi cần chuyển dữ liệu hoặc mất dữ liệu | Service chạy phiên bản cũ, chờ xác nhận kế hoạch  |
 | Khởi động lại với tệp không đổi               | Không làm gì                                            |
+| Áp dụng lại tệp không đổi mà bảng hoặc Keycloak đã lệch | Kế hoạch ghi `repair`, áp dụng sửa phần lệch và giữ phiên bản |
 
 Tệp mô hình luôn là nguồn sự thật, và dựng lại được cấu trúc hệ thống trên máy khác; dữ liệu hồ sơ đi theo đường sao lưu riêng.
 
@@ -284,6 +285,7 @@ Bảng điều khiển thuộc tầng 2, nằm ở tuyến `/console` của ứn
 - **Người dùng:** tìm người dùng, xem vai theo từng ứng dụng, gán và gỡ vai và đơn vị, tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu; mỗi thay đổi được ghi vào nhật ký với người thực hiện và hiện lại ở hộp thoại của người đó: ai đổi gì, lúc nào.
   Tài khoản không khai báo trong tệp mô hình: tệp là cấu trúc và nằm trong git, còn người dùng là dữ liệu có email và mật khẩu, nên tài khoản nằm ở Keycloak.
   Tab chỉ mở API mỏng trên Keycloak: chính sách mật khẩu, MFA, phiên và đăng nhập bằng nhà cung cấp ngoài để Keycloak lo.
+  Người dùng cuối tự đổi mật khẩu, bật OTP và xem phiên ở Account Console của Keycloak, mở từ mục "Tài khoản của tôi" trong menu người dùng.
 
 Bảng điều khiển đọc và ghi đúng tệp mô hình, và tệp luôn là nguồn sự thật.
 Giao diện cho người dùng cuối do bộ dựng sinh từ metadata, đủ dùng, nhất quán và được chăm chút về hình thức.
@@ -402,6 +404,8 @@ Thay đổi mô hình sai được xử lý như sau:
   **Tiếp tục** chạy lại từ nội dung, đổi tên và mức đã xác nhận mà lần áp dụng đó đã lưu, nên không cần tệp.
   **Hủy bỏ** đưa các bảng về phiên bản đang chạy, hoặc xóa những gì lần áp dụng đầu đã tạo nếu mô hình chưa có phiên bản.
   Lõi không tự thử lại và không tự quay lui.
+- **Hệ thống lệch khỏi tệp:** cột, ràng buộc, client, vai hoặc nhóm đơn vị bị xóa tay thì áp dụng lại cùng tệp báo `repair` và sửa lại, không tăng phiên bản.
+  Bảng hoặc cột thừa bị từ chối, đổi kiểu cột hay bỏ ràng buộc thừa cần xác nhận mức `MIGRATION`, và lõi không tự sửa lúc khởi động.
 
 Ví dụ một lần xem trước:
 

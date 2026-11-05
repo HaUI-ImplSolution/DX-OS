@@ -70,6 +70,8 @@ Mô hình đi qua một đường duy nhất, từ hệ thống rỗng hay từ 
 
 Bảo vệ dữ liệu nằm ở lõi: nếu kế hoạch của pgschema có thao tác xóa bảng hoặc cột mà so sánh mô hình không có, áp dụng dừng lại.
 Mỗi bước chạy lại được an toàn, nên áp dụng bị gián đoạn thì áp dụng lại để làm tiếp; đã đổi tên thì chỉ đúng tệp đó mới hoàn tất được.
+Tệp không đổi vẫn được so với bảng và Keycloak thật: cột, ràng buộc, client, vai hoặc nhóm đơn vị bị mất thành các thay đổi `REPAIR_SCHEMA`, `REPAIR_CLIENT`, `REPAIR_ROLE`, `REPAIR_UNIT` với action `repair`, chạy bằng chính các bước trên và không tăng phiên bản.
+Bảng hoặc cột thừa bị từ chối; đổi kiểu cột hay bỏ ràng buộc thừa ở mức `MIGRATION`; việc kiểm chỉ chạy khi xem kế hoạch hoặc áp dụng, không chạy lúc backend khởi động.
 `POST /api/v1/models/{model}/rollback` đi qua đúng đường này với nội dung phiên bản trước, đảo các lần đổi tên và ghi thành phiên bản mới.
 
 Trước khi chạy, lõi từ chối:
@@ -129,7 +131,13 @@ sequenceDiagram
 - `OutboxController` cho ADMIN xem thông điệp theo trạng thái cùng lỗi gần nhất và thử lại thông điệp chưa gửi.
 - Hành động hoàn tất của khối `after:` đi qua outbox đến `CompletionHandler`; hiện có các thao tác `add_to_group` và `remove_from_group` của Keycloak.
 - `OverdueSweep` ghi dòng quá hạn vào lịch sử, một lần cho mỗi hạn.
-- Khi `ENGINE_WEBHOOK_URL` được đặt, mỗi dòng lịch sử (`EventLog`, `OverdueSweep`) có thêm một thông điệp chủ đề `record.event` trong outbox cùng giao dịch, do `RecordEventPublisher` ghi và `WebhookHandler` gửi.
+- Khi mô hình có đích webhook (khóa `webhook` hoặc `ENGINE_WEBHOOK_URL`), mỗi dòng lịch sử (`EventLog`, `OverdueSweep`) có thêm một thông điệp chủ đề `record.event` trong outbox cùng giao dịch, do `RecordEventPublisher` ghi và `WebhookHandler` gửi.
+  `WebhookTargets` đọc địa chỉ, bí mật và dạng (`json` hoặc `chat`) của đích từ `ENGINE_WEBHOOK_FILE`, nạp lại khi tệp đổi, và trả câu từ chối cho `ApplyService` khi mô hình ghi đích chưa có.
+  `WebhookSender` gửi một thông điệp tới đích, `ChatText` dựng câu cho đích dạng `chat`.
+  `OutboxDispatcher` giao các dòng `record.event` của một hồ sơ theo thứ tự: dòng chờ khi còn dòng cũ hơn của cùng hồ sơ chưa giao.
+  `AdminEventPublisher` và `AdminEventHandler` đưa việc áp dụng mô hình và thay đổi tài khoản vào chủ đề `admin.event`; `ApplyService` và `UserAdminService` gọi sau khi thay đổi thành công.
+  `OverdueSweep` ghi thêm dòng `due_soon` khi hồ sơ còn dưới `ENGINE_DUE_SOON_BEFORE` trước hạn.
+  `EventFeedController` đọc cùng các dòng từ `engine.record_event` cho `GET /api/v1/events`.
 - `OutboxCleanup` xóa thông điệp đã gửi sau 30 ngày.
 - Trường kiểu `file` gắn tệp qua `AttachmentService`: byte ở SeaweedFS, siêu dữ liệu ở `engine.attachment`, quét ClamAV khi bật, quyền theo quyền của bản ghi.
   `AttachmentProcessor` chỉ nhận các phần mở rộng đã cấu hình, `AttachmentService` giữ mỗi hồ sơ tối đa số tệp đã cấu hình, `AttachmentCleaner` xóa đối tượng khỏi kho khi tệp hoặc hồ sơ bị gỡ, và link tải luôn ở dạng đính kèm.

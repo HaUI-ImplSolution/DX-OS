@@ -15,6 +15,8 @@ const SYSTEM_FIELDS = [
   "assignee",
   "decided_by",
   "decided_at",
+  "handle_by",
+  "overdue",
 ];
 
 function path(resource: string) {

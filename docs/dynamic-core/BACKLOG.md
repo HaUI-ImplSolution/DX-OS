@@ -65,4 +65,6 @@ Mốc dưới đây là dự kiến.
 | Bài kiểm của đợt sửa báo cáo kỹ thuật | Khe hở khi áp dụng, xóa client khi Hủy bỏ, thống kê, chuỗi hash, `dxos plan`, `dxos apply`, `dxos archive`, `verify` thiếu tệp và simulator IT/OT chỉ kiểm tay, chưa có script ở `deploy/dev` nên job `e2e` không chạy chúng |
 | Webhook sự kiện | Giao ít nhất một lần, nên bên nhận bỏ lặp theo `X-Dxos-Event-Id`; payload chưa có `request_id`; dạng `chat` chưa thử với Mattermost và Slack thật; thông điệp của việc áp dụng mô hình và của tài khoản không có trong `GET /api/v1/events` |
 | Ứng dụng Tầng 2 | Chưa phủ I của H-P-D-I; để sau như đã định |
+| Hộp việc theo đơn vị | Người tạo hồ sơ rồi rời đơn vị vẫn thấy tiêu đề, mã và trạng thái hồ sơ của mình ở hộp việc, dù mở chi tiết bị 404 |
+| Danh sách người xử lý | Tối đa 500 người cho mỗi vai hoặc đơn vị; người ngoài danh sách không giao việc được |
 | Không có giao dịch chung giữa các hệ thống | Giữa PostgreSQL, Keycloak, Flowable và SeaweedFS; mỗi bước chạy lại được, và lần áp dụng dở được tiếp tục hoặc hủy bỏ |

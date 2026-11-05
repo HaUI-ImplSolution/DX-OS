@@ -393,11 +393,11 @@ public class DataService {
   private List<Person> handlers(Model model, Entity entity, Map<String, Object> record) {
     Model.Process definition = entity.process();
     List<Person> people =
-        keycloak.usersWithClientRole(ModelClient.of(model.name()), definition.handler());
+        keycloak.enabledUsersWithClientRole(ModelClient.of(model.name()), definition.handler());
     if (entity.access().get(definition.handler()) == Scope.UNIT) {
       Object unit = record.get(entity.unitField().orElseThrow().name());
       Set<String> members = unit == null ? Set.of()
-          : keycloak.groupMembers(unit.toString()).stream().map(Person::id)
+          : keycloak.enabledGroupMembers(unit.toString()).stream().map(Person::id)
               .collect(Collectors.toSet());
       people = people.stream().filter(person -> members.contains(person.id())).toList();
     }

@@ -168,13 +168,23 @@ public class KeycloakAdminClient {
 
   // The users that hold the role of a client; nobody when the client or the role does not exist.
   public List<Person> usersWithClientRole(String clientId, String role) {
+    return usersWithClientRole(clientId, role, false);
+  }
+
+  // Like usersWithClientRole, without the accounts that are locked.
+  public List<Person> enabledUsersWithClientRole(String clientId, String role) {
+    return usersWithClientRole(clientId, role, true);
+  }
+
+  private List<Person> usersWithClientRole(String clientId, String role, boolean enabledOnly) {
     String uuid = findClientUuid(clientId).orElse(null);
     if (uuid == null) {
       return List.of();
     }
     try {
       return people(
-          "/admin/realms/{realm}/clients/" + uuid + "/roles/{name}/users?max=" + MAX_PEOPLE, role);
+          "/admin/realms/{realm}/clients/" + uuid + "/roles/{name}/users?max=" + MAX_PEOPLE, role,
+          enabledOnly);
     } catch (KeycloakAdminException e) {
       if (e.getCause() instanceof RestClientResponseException cause
           && cause.getStatusCode().value() == 404) {
@@ -280,15 +290,26 @@ public class KeycloakAdminClient {
 
   // The members of the group with exactly this name; none when there is no such group.
   public List<Person> groupMembers(String group) {
+    return groupMembers(group, false);
+  }
+
+  // Like groupMembers, without the accounts that are locked.
+  public List<Person> enabledGroupMembers(String group) {
+    return groupMembers(group, true);
+  }
+
+  private List<Person> groupMembers(String group, boolean enabledOnly) {
     return list("/admin/realms/{realm}/groups?search={name}&exact=true", group).stream()
         .filter(found -> group.equals(found.get("name"))).findFirst()
         .map(found -> people("/admin/realms/{realm}/groups/{name}/members?max=" + MAX_PEOPLE,
-            found.get("id").toString()))
+            found.get("id").toString(), enabledOnly))
         .orElse(List.of());
   }
 
-  private List<Person> people(String uri, String variable) {
-    return list(uri, variable).stream().map(KeycloakAdminClient::person).toList();
+  private List<Person> people(String uri, String variable, boolean enabledOnly) {
+    return list(uri, variable).stream()
+        .filter(user -> !enabledOnly || !Boolean.FALSE.equals(user.get("enabled")))
+        .map(KeycloakAdminClient::person).toList();
   }
 
   private static Person person(Map<String, Object> user) {

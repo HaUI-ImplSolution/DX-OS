@@ -359,3 +359,15 @@ Bên nhận webhook là một máy chủ HTTP nhỏ trên máy này, không ph�
 
 Chín script còn lại của `deploy/dev` không chạy lại ở lượt này.
 Các mục từ "Đích theo mô hình" tới "`GET /api/v1/events`" chạy bằng kịch bản tạm ngoài repo.
+
+### Kiểm ngày 05/11/2026: sửa ba lỗi của đợt team rà soát
+
+Cây làm việc gồm cả tệp chưa commit.
+Chạy trên một stack thử riêng (project Compose `dxscratch`, cổng 9180) dựng rỗng; stack đã gỡ cùng volume sau khi kiểm.
+
+| Mục | Kết quả | Ghi chú |
+|---|---|---|
+| `./mvnw clean verify formatter:validate`, `npx tsc --noEmit` | Đạt | Cả backend và web |
+| Tài khoản đã khóa trong danh sách người xử lý | Đạt | Hai người giữ vai xử lý: danh sách có cả hai; khóa một người thì danh sách chỉ còn người kia, giao việc cho người đã khóa bị 400, giao cho người còn hoạt động được 200 (kịch bản tạm ngoài repo) |
+| Bên nhận giữ phần trả lời | Đạt | Bên nhận trả header ngay rồi giữ body 15 giây: lần gửi lỗi `TimeoutException` sau khoảng 5 giây; trước khi sửa lần gửi trả sau 15 giây (kịch bản tạm ngoài repo) |
+| Sửa hồ sơ trên web bằng Chrome | Đạt | Đăng nhập người xử lý, mở hồ sơ của thực thể có hạn, đổi tiêu đề và lưu: lưu được, lịch sử ghi "Sửa thông tin" |

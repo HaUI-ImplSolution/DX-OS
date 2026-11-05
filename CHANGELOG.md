@@ -20,6 +20,9 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Cài bằng một lệnh: `dxos-install.sh` phát hành kèm mỗi bản (nguồn ở `deploy/get.sh`) tải gói phát hành, kiểm SHA-256 và cài vào `~/.dxos`.
   Lệnh `dxos` có `start`, `stop`, `status`, `logs`, `admin`, `update`, `doctor`, `backup`, `av`, `uninstall`; `dxos start` tạo tài khoản `admin` đầu tiên với mật khẩu tạm.
 - `dxos start <tệp>` đưa tệp mô hình vào hệ thống trên máy sạch: backend áp dụng tệp khi khởi động nếu là tệp mới, và lệnh in kết quả.
+- Lần gửi webhook bị giới hạn 5 giây cho cả phần trả lời, không chỉ phần header; bên nhận giữ phần trả lời quá lâu thì lần gửi lỗi và được thử lại.
+- Danh sách người xử lý và việc giao việc bỏ tài khoản đã khóa.
+- Sửa hồ sơ trên web không gửi `handle_by` và `overdue`, nên lưu được hồ sơ của thực thể có quy trình và hạn.
 - Webhook sự kiện: mỗi dòng lịch sử của hồ sơ được gửi dạng JSON có chữ ký tới đích của mô hình.
   Tệp mô hình ghi `webhook: <tên đích>`; địa chỉ và bí mật của đích nằm trong `deploy/webhooks/targets.yml`, ngoài git, và được nạp lại khi tệp đổi.
   Mô hình không ghi khóa này thì dùng `DXOS_WEBHOOK_URL`; không có đích nào thì không gửi gì.

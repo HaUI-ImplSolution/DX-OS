@@ -12,6 +12,10 @@ import java.security.GeneralSecurityException;
 import java.time.Duration;
 import java.util.HexFormat;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import org.springframework.stereotype.Component;
@@ -42,16 +46,24 @@ public class WebhookSender {
     if (!target.secret().isEmpty()) {
       request.header("X-Dxos-Signature", "sha256=" + sign(body, target.secret()));
     }
+    CompletableFuture<HttpResponse<Void>> pending =
+        client.sendAsync(request.build(), HttpResponse.BodyHandlers.discarding());
     try {
-      int status =
-          client.send(request.build(), HttpResponse.BodyHandlers.discarding()).statusCode();
+      // The timeout of the request ends when the headers arrive, so the wait for the whole answer
+      // is limited here.
+      int status = pending.orTimeout(TIMEOUT.toSeconds(), TimeUnit.SECONDS).get().statusCode();
       if (status < 200 || status >= 300) {
         throw new IllegalStateException("The webhook answered " + status);
       }
-    } catch (IOException e) {
-      throw new TargetUnreachableException(
-          "The webhook could not be reached (" + e.getClass().getSimpleName() + ")");
+    } catch (ExecutionException e) {
+      pending.cancel(true);
+      if (e.getCause() instanceof IOException || e.getCause() instanceof TimeoutException) {
+        throw new TargetUnreachableException(
+            "The webhook could not be reached (" + e.getCause().getClass().getSimpleName() + ")");
+      }
+      throw new IllegalStateException("The webhook could not be posted", e.getCause());
     } catch (InterruptedException e) {
+      pending.cancel(true);
       Thread.currentThread().interrupt();
       throw new TargetUnreachableException("Interrupted while posting to the webhook");
     }

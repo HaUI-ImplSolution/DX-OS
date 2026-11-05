@@ -242,6 +242,7 @@ Mô hình không ghi `webhook` thì dùng `DXOS_WEBHOOK_URL` trong `.env`; để
 Chỉ dòng sinh ra sau khi mô hình có đích mới được gửi.
 Mô hình ghi tên đích chưa có trong tệp thì xem kế hoạch báo bị từ chối và áp dụng trả 409.
 Tệp `targets.yml` được nạp lại khi đổi, không cần tạo lại backend; một đích sai tên hoặc địa chỉ bị bỏ qua và ghi vào log.
+Mô hình không còn đích nào (không ghi `webhook` và `DXOS_WEBHOOK_URL` để trống) thì thông điệp đang chờ của nó bị bỏ và không được gửi khi bật lại; phần đã lỡ lấy bằng API kéo sự kiện ở dưới.
 Đích bị gỡ khỏi tệp sau khi mô hình đã chạy thì thông điệp của mô hình đó vẫn vào hàng đợi, báo lỗi cấu hình ở tab Hàng đợi sự kiện, và được giao khi đích có lại và bấm Thử lại.
 Mỗi dòng (tạo, sửa, xóa, hành động của quy trình, giao việc, thêm hoặc bỏ tệp, quá hạn) được ghi vào outbox trong giao dịch của thay đổi, nên thay đổi bị hủy thì không có gì được gửi.
 Backend gửi `POST` JSON với các trường:

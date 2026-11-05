@@ -75,10 +75,13 @@ public final class ModelParser {
       problem(root, "the file must be a mapping with format, name, roles and entities");
       return null;
     }
-    Map<String, Node> keys = mapping(top, Set.of("format", "name", "roles", "units", "entities"));
+    Map<String, Node> keys =
+        mapping(top, Set.of("format", "name", "webhook", "roles", "units", "entities"));
 
     int format = readFormat(top, keys.get("format"));
     String name = readName(top, keys.get("name"), "model name");
+    String webhook =
+        keys.get("webhook") == null ? null : readName(top, keys.get("webhook"), "webhook");
     List<Role> roles = readRoles(top, keys.get("roles"));
     Set<String> roleNames = new LinkedHashSet<>();
     roles.forEach(role -> roleNames.add(role.name()));
@@ -107,7 +110,7 @@ public final class ModelParser {
     if (!problems.isEmpty()) {
       return null;
     }
-    return new Model(format, name, List.copyOf(roles), List.copyOf(units), entities);
+    return new Model(format, name, webhook, List.copyOf(roles), List.copyOf(units), entities);
   }
 
   private List<Unit> readUnits(Node node) {

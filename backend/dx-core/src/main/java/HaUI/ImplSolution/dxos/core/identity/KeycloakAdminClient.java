@@ -33,6 +33,7 @@ public class KeycloakAdminClient {
   public record Accounts(List<Account> items, long total) {}
 
   private static final int MAX_PEOPLE = 500;
+  private static final int MAX_ROLES = 1000;
 
   private final RestClient restClient;
   private final String realm;
@@ -183,6 +184,26 @@ public class KeycloakAdminClient {
     }
   }
 
+  // The names of the roles of a client, or empty when the client does not exist; nothing is
+  // created.
+  public java.util.Optional<List<String>> clientRoleNames(String clientId) {
+    String uuid = findClientUuid(clientId).orElse(null);
+    if (uuid == null) {
+      return java.util.Optional.empty();
+    }
+    try {
+      return java.util.Optional
+          .of(rows("/admin/realms/{realm}/clients/{uuid}/roles?max=" + MAX_ROLES, uuid).stream()
+              .map(role -> role.get("name").toString()).toList());
+    } catch (KeycloakAdminException e) {
+      if (e.getCause() instanceof RestClientResponseException cause
+          && cause.getStatusCode().value() == 404) {
+        return java.util.Optional.empty();
+      }
+      throw e;
+    }
+  }
+
   private java.util.Optional<String> findClientUuid(String clientId) {
     return list("/admin/realms/{realm}/clients?clientId={name}", clientId).stream()
         .filter(found -> clientId.equals(found.get("clientId"))).findFirst()
@@ -244,6 +265,11 @@ public class KeycloakAdminClient {
     } catch (RuntimeException e) {
       throw new KeycloakAdminException("Keycloak is unreachable", e);
     }
+  }
+
+  // Whether a group with exactly this name exists; nothing is created.
+  public boolean groupExists(String name) {
+    return findGroupId(name).isPresent();
   }
 
   private java.util.Optional<String> findGroupId(String group) {

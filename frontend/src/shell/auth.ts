@@ -6,6 +6,9 @@ const KEYCLOAK_URL =
   import.meta.env.VITE_KEYCLOAK_URL || `${window.location.origin}/realms/dxos`;
 const CLIENT_ID = import.meta.env.VITE_KEYCLOAK_CLIENT_ID ?? "dxos-web";
 
+// Where a signed-in user changes their own password, sets up OTP and sees their sessions.
+export const ACCOUNT_URL = `${KEYCLOAK_URL}/account`;
+
 // The realm roles of the signed-in account; the shell picks the one that counts from the app manifest.
 export interface CurrentUser {
   // Subject of the account: the id the backend stores on records the user owns.

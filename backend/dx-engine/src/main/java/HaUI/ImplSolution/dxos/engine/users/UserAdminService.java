@@ -10,6 +10,7 @@ import HaUI.ImplSolution.dxos.core.api.user.UserContext;
 import HaUI.ImplSolution.dxos.core.identity.KeycloakAdminClient;
 import HaUI.ImplSolution.dxos.core.identity.KeycloakAdminClient.Account;
 import HaUI.ImplSolution.dxos.core.identity.KeycloakAdminClient.Accounts;
+import HaUI.ImplSolution.dxos.engine.event.AdminEventPublisher;
 import HaUI.ImplSolution.dxos.engine.exception.ModelValidationException;
 import HaUI.ImplSolution.dxos.engine.registry.ModelClient;
 import HaUI.ImplSolution.dxos.engine.registry.ModelRegistry;
@@ -22,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 // Lets an administrator see who holds which role of which model, change roles and units, and keep
@@ -49,6 +52,7 @@ public class UserAdminService {
 
   private static final int MAX_PAGE_SIZE = 100;
   private static final int DEFAULT_PAGE_SIZE = 20;
+  private static final Logger log = LoggerFactory.getLogger(UserAdminService.class);
   private static final String LOWER = "abcdefghijkmnopqrstuvwxyz";
   private static final String UPPER = "ABCDEFGHJKLMNPQRSTUVWXYZ";
   private static final String DIGITS = "23456789";
@@ -58,14 +62,16 @@ public class UserAdminService {
   private final ModelRegistry registry;
   private final UserContext user;
   private final AuditRecorder audit;
+  private final AdminEventPublisher events;
   private final SecureRandom random = new SecureRandom();
 
   public UserAdminService(KeycloakAdminClient keycloak, ModelRegistry registry, UserContext user,
-      AuditRecorder audit) {
+      AuditRecorder audit, AdminEventPublisher events) {
     this.keycloak = keycloak;
     this.registry = registry;
     this.user = user;
     this.audit = audit;
+    this.events = events;
   }
 
   public PageResponse<UserView> list(String search, Integer page, Integer size) {
@@ -147,7 +153,10 @@ public class UserAdminService {
         : request.temporaryPassword();
     String username = request.username().trim();
     String id = keycloak.createUser(username, request.fullName().trim(), request.email(), password);
-    audit.record(AuditEvent.success("USER_CREATED", "USER", id, Map.of("username", username)));
+    Map<String, Object> metadata = new LinkedHashMap<>();
+    metadata.put("username", username);
+    audit.record(AuditEvent.success("USER_CREATED", "USER", id, metadata));
+    announce("USER_CREATED", id, metadata);
     return new CreatedUser(id, username, password);
   }
 
@@ -175,6 +184,20 @@ public class UserAdminService {
     metadata.put("username", account.username());
     metadata.putAll(facts);
     audit.record(AuditEvent.success(action, "USER", account.id(), metadata));
+    announce(action, account.id(), metadata);
+  }
+
+  // Tells the default webhook target about the change; a failure to queue the message does not
+  // undo the change.
+  private void announce(String action, String userId, Map<String, Object> metadata) {
+    try {
+      Map<String, Object> facts = new LinkedHashMap<>();
+      facts.put("userId", userId);
+      facts.putAll(metadata);
+      events.publish(action, null, user.currentUserId(), user.currentFullName(), facts);
+    } catch (RuntimeException e) {
+      log.warn("The {} message could not be queued: {}", action, e.getMessage());
+    }
   }
 
   private Account require(String id) {

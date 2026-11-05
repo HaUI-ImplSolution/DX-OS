@@ -20,7 +20,15 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Cài bằng một lệnh: `dxos-install.sh` phát hành kèm mỗi bản (nguồn ở `deploy/get.sh`) tải gói phát hành, kiểm SHA-256 và cài vào `~/.dxos`.
   Lệnh `dxos` có `start`, `stop`, `status`, `logs`, `admin`, `update`, `doctor`, `backup`, `av`, `uninstall`; `dxos start` tạo tài khoản `admin` đầu tiên với mật khẩu tạm.
 - `dxos start <tệp>` đưa tệp mô hình vào hệ thống trên máy sạch: backend áp dụng tệp khi khởi động nếu là tệp mới, và lệnh in kết quả.
-- Webhook sự kiện: mỗi dòng lịch sử của hồ sơ được gửi tới `DXOS_WEBHOOK_URL` dạng JSON có chữ ký; để trống thì không gửi gì.
+- Webhook sự kiện: mỗi dòng lịch sử của hồ sơ được gửi dạng JSON có chữ ký tới đích của mô hình.
+  Tệp mô hình ghi `webhook: <tên đích>`; địa chỉ và bí mật của đích nằm trong `deploy/webhooks/targets.yml`, ngoài git, và được nạp lại khi tệp đổi.
+  Mô hình không ghi khóa này thì dùng `DXOS_WEBHOOK_URL`; không có đích nào thì không gửi gì.
+  Mỗi đích có `format`: `json` (thông điệp nguyên văn, mặc định) hoặc `chat` (một câu tiếng Việt dạng `{"text": ...}` cho Mattermost và Slack, đọc được là việc mới, sắp đến hạn hoặc quá hạn); đích mặc định đặt bằng `DXOS_WEBHOOK_FORMAT`.
+  Các dòng của một hồ sơ được giao theo thứ tự: dòng sau chờ dòng cũ hơn của cùng hồ sơ, kể cả khi dòng cũ đã dừng và chờ Thử lại.
+  Mô hình ghi tên đích chưa có trong tệp thì không áp dụng được; đích bị gỡ sau đó thì thông điệp nằm lại ở hàng đợi kèm lỗi cấu hình và được giao khi đích có lại và bấm Thử lại.
+- Thông điệp `admin.event` báo việc áp dụng mô hình (áp dụng, quay về, tiếp tục, hủy bỏ) và thay đổi tài khoản (vai, đơn vị, tạo, khóa, mở, đặt lại mật khẩu); mô hình có đích thì vào đích đó, còn lại vào đích mặc định.
+- Hồ sơ có hạn xử lý dài hơn `DXOS_DUE_SOON_BEFORE` (mặc định 24 giờ, 0 để tắt) nhận một dòng lịch sử `due_soon` khi còn chừng đó thời gian trước hạn.
+- `GET /api/v1/events?after=&size=&model=` (ADMIN) trả các dòng lịch sử theo đúng dạng của webhook, để bên nhận bắt kịp theo `eventId` dù webhook có đặt hay không.
   Outbox xóa thông điệp đã gửi sau 30 ngày.
 - `deploy/install.sh` nâng cấp được bản đã cài (`--upgrade`): thay tệp chạy, giữ `.env` và dữ liệu, thêm biến mới; bản cài dùng project Compose `dxos`.
 - `deploy/make_env.sh` thay `deploy/make_env.py`; cài và chạy stack không còn cần Python.
@@ -90,6 +98,9 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
   `dxos archive check <thư mục>` đọc lại từng tệp và so với manifest.
 - `check_demo.py` dừng `clamav` khi bật quét và mong 503 `ERR_SCAN_UNAVAILABLE` mà không có tệp nào được lưu.
   `check_events.py` kiểm outbox dừng sau số lần đặt, Thử lại, xóa tệp sau khoảng trễ và thử lại khi kho ngừng.
+- Áp dụng lại tệp không đổi kiểm xem bảng và Keycloak có còn khớp tệp không: cột, ràng buộc, client, vai hoặc nhóm đơn vị bị xóa tay thì kế hoạch ghi `repair` và áp dụng sẽ sửa lại, giữ nguyên phiên bản.
+  Bảng hoặc cột thừa bị từ chối; đổi kiểu cột hay bỏ ràng buộc thừa cần xác nhận mức `MIGRATION`; bảng điều khiển hiện nút "Sửa phần lệch".
+- Menu người dùng có "Tài khoản của tôi", mở Account Console của Keycloak để đổi mật khẩu, bật OTP và xem phiên.
 
 ## [2.0.0] - 2026-11-03
 

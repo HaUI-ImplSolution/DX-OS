@@ -33,6 +33,10 @@ export const CHANGE_KIND: Record<string, string> = {
   CHANGE_COMPLETION: "Đổi hành động hoàn tất",
   CHANGE_BOOKING: "Đổi khối đặt chỗ",
   CHANGE_DEADLINE: "Đổi hạn xử lý",
+  REPAIR_SCHEMA: "Sửa cấu trúc bảng",
+  REPAIR_CLIENT: "Tạo lại client của mô hình trong Keycloak",
+  REPAIR_ROLE: "Tạo lại vai trong Keycloak",
+  REPAIR_UNIT: "Tạo lại nhóm đơn vị trong Keycloak",
 };
 
 export const RULE: Record<string, string> = {

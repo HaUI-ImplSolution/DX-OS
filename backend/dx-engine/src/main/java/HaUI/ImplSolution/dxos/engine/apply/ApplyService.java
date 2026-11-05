@@ -5,6 +5,8 @@ import HaUI.ImplSolution.dxos.core.api.exception.InvalidStateException;
 import HaUI.ImplSolution.dxos.core.identity.KeycloakAdminClient;
 import HaUI.ImplSolution.dxos.engine.apply.ModelDiff.Change;
 import HaUI.ImplSolution.dxos.engine.apply.ModelDiff.Level;
+import HaUI.ImplSolution.dxos.engine.event.AdminEventPublisher;
+import HaUI.ImplSolution.dxos.engine.event.WebhookTargets;
 import HaUI.ImplSolution.dxos.engine.files.AttachmentCleaner;
 import HaUI.ImplSolution.dxos.engine.registry.ModelClient;
 import HaUI.ImplSolution.dxos.engine.registry.ModelRegistry;
@@ -31,6 +33,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -66,9 +70,14 @@ public class ApplyService {
 
   private record Running(int version, String hash, Model model) {}
 
+  // What differs from the file that the running version was made from, and what in it cannot be
+  // put right without losing data.
+  private record Drift(List<Change> changes, List<String> rejections) {}
+
   // The last apply of a model, which stopped before it finished, with what it was asked to do.
   private record Stalled(String content, Map<String, Map<String, String>> renames, Level accept) {}
 
+  private static final Logger log = LoggerFactory.getLogger(ApplyService.class);
   private static final int ERROR_LENGTH = 500;
   private static final int SAMPLE_SIZE = 20;
   private static final String RENAME_STEP = "RENAME_FIELD";
@@ -82,12 +91,15 @@ public class ApplyService {
   private final SchemaTool schemaTool;
   private final AttachmentCleaner attachments;
   private final ObjectMapper json;
+  private final WebhookTargets webhooks;
+  private final AdminEventPublisher events;
   private final String reportPassword;
   // Kind of step that fails on purpose, so that a stopped apply can be produced in tests.
   private final String faultStep;
 
   public ApplyService(JdbcTemplate jdbc, KeycloakAdminClient keycloak, ModelRegistry registry,
       SchemaTool schemaTool, AttachmentCleaner attachments, ObjectMapper json,
+      WebhookTargets webhooks, AdminEventPublisher events,
       @Value("${engine.report-db-password:}") String reportPassword,
       @Value("${engine.fault.apply-step:}") String faultStep) {
     this.jdbc = jdbc;
@@ -96,6 +108,8 @@ public class ApplyService {
     this.schemaTool = schemaTool;
     this.attachments = attachments;
     this.json = json;
+    this.webhooks = webhooks;
+    this.events = events;
     this.reportPassword = reportPassword;
     this.faultStep = faultStep.strip();
   }
@@ -116,26 +130,52 @@ public class ApplyService {
 
   public Applied apply(String content, Actor actor, Integer base, Level accept) {
     Model model = ModelParser.parse(content);
-    return exclusively(model,
-        () -> run(model, content, actor, base, accept == null ? Level.SAFE : accept, Map.of()));
+    return announced("MODEL_APPLIED", actor, exclusively(model,
+        () -> run(model, content, actor, base, accept == null ? Level.SAFE : accept, Map.of())));
   }
 
   public Applied rollback(String modelName, Actor actor, Integer base, Level accept) {
     Previous previous = previous(modelName);
-    return exclusively(previous.model(), () -> run(previous.model(), previous.content(), actor,
-        base, accept == null ? Level.SAFE : accept, previous.renames()));
+    return announced("MODEL_ROLLED_BACK", actor,
+        exclusively(previous.model(), () -> run(previous.model(), previous.content(), actor, base,
+            accept == null ? Level.SAFE : accept, previous.renames())));
+  }
+
+  // Tells the webhook target about an apply that changed something. A failure to queue the message
+  // does not undo the apply.
+  private Applied announced(String kind, Actor actor, Applied result) {
+    if ("unchanged".equals(result.status())) {
+      return result;
+    }
+    try {
+      Map<String, Object> facts = new LinkedHashMap<>();
+      facts.put("version", result.version());
+      facts.put("status", result.status());
+      facts.put("runId", result.runId());
+      events.publish(kind, result.model(), actor.id(), actor.name(), facts);
+    } catch (RuntimeException e) {
+      log.warn("The {} message of model {} could not be queued: {}", kind, result.model(),
+          e.getMessage());
+    }
+    return result;
   }
 
   private Plan plan(Model model, String hash, Map<String, Map<String, String>> renames) {
     Running running = running(model.name());
     requireResumable(model, hash);
     int from = running == null ? 0 : running.version();
+    List<Change> repairs = List.of();
     if (isUnchanged(model, hash, running)) {
-      return new Plan(model.name(), from, from, "unchanged", Level.SAFE, List.of(), List.of(),
-          List.of(), List.of(), Map.of(), List.of());
+      repairs = drift(model).changes();
+      if (repairs.isEmpty()) {
+        return new Plan(model.name(), from, from, "unchanged", Level.SAFE, List.of(), List.of(),
+            List.of(), List.of(), Map.of(), List.of());
+      }
     }
     ModelDiff diff = compare(running, model, renames);
+    diff.changes.addAll(repairs);
     List<String> rejections = new ArrayList<>(diff.rejections);
+    webhooks.missing(model).ifPresent(rejections::add);
     Map<String, Long> openRecords = openRecords(running, diff);
     rejections.addAll(processRuleChangesWithOpenRecords(diff, openRecords));
     rejections.addAll(dropDependencyRejections(model, diff));
@@ -148,7 +188,7 @@ public class ApplyService {
     if (rejections.isEmpty()) {
       SchemaTool.Plan schemaPlan =
           schemaTool.plan(model, DdlGenerator.desiredState(model, pendingRenames(model, diff)));
-      rejections.addAll(unexpectedDrops(diff, schemaPlan));
+      rejections.addAll(unexpectedDrops(diff.allowedDrops, schemaPlan));
       statements = new ArrayList<>();
       for (Map.Entry<String, Map<String, String>> entity : diff.renames.entrySet()) {
         for (Map.Entry<String, String> field : entity.getValue().entrySet()) {
@@ -161,7 +201,7 @@ public class ApplyService {
       }
     }
     String action = !rejections.isEmpty() || !violations.isEmpty() ? "rejected"
-        : running == null ? "create" : "change";
+        : running == null ? "create" : repairs.isEmpty() ? "change" : "repair";
     return new Plan(model.name(), from, nextVersion(hash, running), action, diff.level(),
         diff.changes, rejections, diff.questions, violations, openRecords, statements);
   }
@@ -193,15 +233,28 @@ public class ApplyService {
     String hash = hash(content);
     Running running = running(model.name());
     requireResumable(model, hash);
+    Drift drift = null;
     if (isUnchanged(model, hash, running)) {
-      return new Applied(model.name(), running.version(), "unchanged", 0, List.of());
+      drift = drift(model);
+      if (drift.changes().isEmpty()) {
+        return new Applied(model.name(), running.version(), "unchanged", 0, List.of());
+      }
+      if (!drift.rejections().isEmpty()) {
+        throw new InvalidStateException(String.join("; ", drift.rejections()));
+      }
     }
+    webhooks.missing(model).ifPresent(reason -> {
+      throw new InvalidStateException(reason);
+    });
     if (running != null && !Objects.equals(base, running.version())) {
       throw new InvalidStateException(
           "The plan is out of date: model " + model.name() + " runs version " + running.version()
               + "; make a plan and pass its fromVersion as base");
     }
     ModelDiff diff = compare(running, model, renames);
+    if (drift != null) {
+      diff.changes.addAll(drift.changes());
+    }
     if (!diff.rejections.isEmpty()) {
       throw new InvalidStateException(String.join("; ", diff.rejections));
     }
@@ -225,6 +278,38 @@ public class ApplyService {
     }
     int version = nextVersion(hash, running);
     return execute(model.name(), runId, version, steps(model, diff, content, hash, actor, version));
+  }
+
+  // What the running tables and the Keycloak client no longer match of a model whose file did not
+  // change: a column or index that is gone, a client, role or unit group that was removed by hand.
+  // Nothing is changed here; the same steps of an apply put it right.
+  private Drift drift(Model model) {
+    List<Change> found = new ArrayList<>();
+    prepareSchema(model);
+    SchemaTool.Plan plan = schemaTool.plan(model, DdlGenerator.desiredState(model, Map.of()));
+    for (SchemaTool.Statement statement : plan.statements()) {
+      String[] path = statement.path().split("\\.");
+      Level level = "create".equals(statement.operation()) ? Level.SAFE : Level.MIGRATION;
+      found.add(new Change(level, "REPAIR_SCHEMA", path.length > 1 ? path[1] : null, null,
+          statement.sql()));
+    }
+    String client = ModelClient.of(model.name());
+    Optional<List<String>> existing = keycloak.clientRoleNames(client);
+    if (existing.isEmpty()) {
+      found.add(new Change(Level.SAFE, "REPAIR_CLIENT", null, null, client));
+    }
+    Set<String> held = new HashSet<>(existing.orElse(List.of()));
+    for (Role role : model.roles()) {
+      if (!held.contains(role.name())) {
+        found.add(new Change(Level.SAFE, "REPAIR_ROLE", null, null, role.name()));
+      }
+    }
+    for (Model.Unit unit : model.units()) {
+      if (!keycloak.groupExists(unit.name())) {
+        found.add(new Change(Level.SAFE, "REPAIR_UNIT", null, null, unit.name()));
+      }
+    }
+    return new Drift(found, unexpectedDrops(Set.of(), plan));
   }
 
   private void requireRows(Model model, Running running, ModelDiff diff) {
@@ -293,11 +378,11 @@ public class ApplyService {
   public Applied resume(String modelName, Actor actor) {
     Stalled stalled = stalled(modelName);
     Model model = ModelParser.parse(stalled.content());
-    return exclusively(model, () -> {
+    return announced("MODEL_RESUMED", actor, exclusively(model, () -> {
       Running running = running(modelName);
       return run(model, stalled.content(), actor, running == null ? null : running.version(),
           stalled.accept(), stalled.renames());
-    });
+    }));
   }
 
   // Gives up the apply that stopped: the tables go back to the running version. What the stopped
@@ -307,9 +392,11 @@ public class ApplyService {
     Stalled stalled = stalled(modelName);
     Model stopped = ModelParser.parse(stalled.content());
     if (running == null) {
-      return exclusively(stopped, () -> removeUnfinished(stopped, stalled, actor));
+      return announced("MODEL_ABANDONED", actor,
+          exclusively(stopped, () -> removeUnfinished(stopped, stalled, actor)));
     }
-    return exclusively(running.model(), () -> restore(running, stopped, actor));
+    return announced("MODEL_ABANDONED", actor,
+        exclusively(running.model(), () -> restore(running, stopped, actor)));
   }
 
   // The first apply of a model stopped, so there is no version to go back to: what it created goes,
@@ -544,9 +631,9 @@ public class ApplyService {
   }
 
   // The plan of the tool and the comparison of the model must agree on what loses data.
-  private static List<String> unexpectedDrops(ModelDiff diff, SchemaTool.Plan plan) {
+  private static List<String> unexpectedDrops(Set<String> allowed, SchemaTool.Plan plan) {
     return plan.statements().stream()
-        .filter(statement -> statement.dropsData() && !diff.allowedDrops.contains(statement.path()))
+        .filter(statement -> statement.dropsData() && !allowed.contains(statement.path()))
         .map(statement -> "The schema tool would remove " + statement.path()
             + ", which the model does not ask for")
         .toList();
@@ -620,7 +707,7 @@ public class ApplyService {
     });
     steps.add(new Step(new PlannedStep("CHANGE_SCHEMA", model.schema()), () -> {
       SchemaTool.Plan plan = schemaTool.plan(model, DdlGenerator.desiredState(model, Map.of()));
-      List<String> unexpected = unexpectedDrops(diff, plan);
+      List<String> unexpected = unexpectedDrops(diff.allowedDrops, plan);
       if (!unexpected.isEmpty()) {
         throw new InvalidStateException(String.join("; ", unexpected));
       }

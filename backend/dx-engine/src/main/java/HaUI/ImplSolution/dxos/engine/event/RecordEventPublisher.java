@@ -1,17 +1,16 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.engine.event;
 
+import HaUI.ImplSolution.dxos.engine.registry.ModelRegistry;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 // Puts each line of a record's history in the outbox, in the transaction that wrote the line, so
 // the webhook gets it once the change has committed and never when it rolls back. Nothing is
-// written while no webhook address is set. The message holds ids, statuses, the time and the hash
-// of
-// the line in the history chain, never the content of the record or the note of the line; a
+// written while the model has no webhook target. The message holds ids, statuses, the time and the
+// hash of the line in the history chain, never the content of the record or the note of the line; a
 // receiver that keeps the hashes holds a copy of the chain outside the database.
 @Component
 public class RecordEventPublisher {
@@ -20,18 +19,30 @@ public class RecordEventPublisher {
   static final int SCHEMA_VERSION = 1;
 
   private final Outbox outbox;
-  private final boolean enabled;
+  private final ModelRegistry registry;
+  private final WebhookTargets targets;
 
-  public RecordEventPublisher(Outbox outbox, @Value("${engine.webhook.url:}") String url) {
+  public RecordEventPublisher(Outbox outbox, ModelRegistry registry, WebhookTargets targets) {
     this.outbox = outbox;
-    this.enabled = WebhookHandler.usable(url);
+    this.registry = registry;
+    this.targets = targets;
   }
 
   public void publish(long eventId, String model, String entity, long recordId, String action,
       String fromStatus, String toStatus, String actor, String actorName, Instant at, String hash) {
-    if (!enabled) {
+    if (registry.find(model).filter(targets::sends).isEmpty()) {
       return;
     }
+    Map<String, Object> payload = message(eventId, model, entity, recordId, action, fromStatus,
+        toStatus, actor, actorName, at, hash);
+    outbox.publish(WebhookHandler.TOPIC, "record_event:" + eventId, model, entity, recordId,
+        payload);
+  }
+
+  // The layout of one message, shared by the webhook and by the feed that is pulled by eventId.
+  static Map<String, Object> message(long eventId, String model, String entity, long recordId,
+      String action, String fromStatus, String toStatus, String actor, String actorName, Instant at,
+      String hash) {
     Map<String, Object> payload = new LinkedHashMap<>();
     payload.put("schemaVersion", SCHEMA_VERSION);
     payload.put("eventId", eventId);
@@ -45,7 +56,6 @@ public class RecordEventPublisher {
     payload.put("actorName", actorName);
     payload.put("at", at.toString());
     payload.put("hash", hash);
-    outbox.publish(WebhookHandler.TOPIC, "record_event:" + eventId, model, entity, recordId,
-        payload);
+    return payload;
   }
 }

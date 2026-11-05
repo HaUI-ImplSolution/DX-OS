@@ -94,20 +94,27 @@ services:
     volumes:
       # The model file of dxos start <file>; the backend applies it on start when it is new.
       - ./model:/models:ro
+      # Webhook targets that models name in their file; targets.yml stays out of git
+      - ./webhooks:/webhooks:ro
     environment:
       <<: *postgres-env
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       SERVER_PORT: 8081
       ENGINE_MODEL_FILE: ${DXOS_MODEL_FILE:+/models/}${DXOS_MODEL_FILE:-}
-      # Webhook for the history lines of records; empty sends nothing
+      # Webhook for the history lines of records; a model that names no target uses this one and
+      # empty sends nothing
+      ENGINE_WEBHOOK_FILE: /webhooks/targets.yml
       ENGINE_WEBHOOK_URL: ${DXOS_WEBHOOK_URL:-}
       ENGINE_WEBHOOK_SECRET: ${DXOS_WEBHOOK_SECRET:-}
+      ENGINE_WEBHOOK_FORMAT: ${DXOS_WEBHOOK_FORMAT:-json}
       # Tries of an outbox message before it stops and waits for a retry in the console
       ENGINE_OUTBOX_MAX_ATTEMPTS: ${DXOS_OUTBOX_MAX_ATTEMPTS:-20}
       # Milliseconds between two looks at the outbox and between two sweeps for overdue records
       ENGINE_OUTBOX_POLL_MS: ${DXOS_OUTBOX_POLL_MS:-2000}
       ENGINE_OVERDUE_SWEEP_MS: ${DXOS_OVERDUE_SWEEP_MS:-60000}
+      # How long before its deadline a record gets a due_soon line; a deadline not longer than this gets none
+      ENGINE_DUE_SOON_BEFORE: ${DXOS_DUE_SOON_BEFORE:-24h}
       # File storage
       S3_ENDPOINT: ${S3_ENDPOINT:?}
       S3_ACCESS_KEY: ${S3_ACCESS_KEY:?}

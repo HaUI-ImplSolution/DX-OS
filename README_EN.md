@@ -20,12 +20,13 @@ The previous version of the project (two hand-written business apps) is at tag `
 The narrow loop from model file to end user runs:
 
 - Reading and checking a model file, with errors reported by line and column.
-- Applying a model to an empty system: schema, tables, constraints, Keycloak roles, a stored version and the history of each step; applying again does nothing, and an interrupted apply is finished by applying again.
+- Applying a model to an empty system: schema, tables, constraints, Keycloak roles, a stored version and the history of each step; applying the same file again does nothing unless the tables or Keycloak accounts have drifted from it, in which case the drift is put right, and an interrupted apply is finished by applying again.
 - One API for every entity, permissions by role and by row (`all`, `own`, `read`, `unit`, `assigned`), required, unique and choice rules.
 - Three workflow families on an embedded Flowable: approval, work items, and time-slot reservations with a capacity check; the status of a record changes only through the workflow, in the same transaction as the write of the record.
 - Rules shared by every workflow: rejecting and returning need a reason, the submitter fixes and resubmits or withdraws a record, nobody decides their own record, and overdue records go to the top of the inbox.
 - Follow-up work after an approval, such as adding a user to a group, runs through an event queue and is retried on failure.
-- Every change to a record is reported to a web address the operator sets, signed so the receiver can check it and sent again when the receiver fails.
+- Every change to a record is reported to the web address the model chooses, signed so the receiver can check it and sent again when the receiver fails; the changes of one record arrive in order, and a receiver that missed messages gets them again by sequence number.
+- Outgoing messages can be a readable sentence for Mattermost and Slack: a new task, due soon, overdue; applying a model and changing an account are reported too.
 - File attachments on records, with a virus scan when enabled.
 - Each model has its own roles: two models can use the same role name, and a holder of the role of one model cannot reach the other model.
 - Units declared in the model and kept as Keycloak groups; assignment, an inbox and the history of every record.
@@ -127,6 +128,9 @@ entities:
 - Attachments: a `type: file` field, uploaded with `POST /api/v1/data/{model}/{entity}/{id}/files`; access follows the access to the record.
   The accepted file types are set by `engine.files.allowed-extensions`, and a file is always downloaded as an attachment.
   A record holds at most 20 files, set by `engine.files.max-per-record`.
+- Webhook: `webhook: <target name>` at the top of the file chooses where the history of the records of the model goes; the address and secret of a target live in `deploy/webhooks/targets.yml`, outside git, with a sample in `deploy/webhooks/targets.example.yml`.
+  A model that declares none uses `DXOS_WEBHOOK_URL`; a target name missing from the file means the model cannot be applied.
+  Each target has `format: json` (the default) or `format: chat`.
 - Changing a model: declare `renamed_from` when renaming a field; `default` fills a new required field on a table that has rows.
 - Schema for editors: [`model-v0.schema.json`](./backend/dx-model/src/main/resources/schema/model-v0.schema.json); sample bad files in [`models/invalid/`](./models/invalid).
 
@@ -146,6 +150,7 @@ entities:
 | `GET .../{id}/events` | The history of a record |
 | `.../{id}/files` | Upload, list, get a time-limited download link (`/{fileId}/link`) and remove file attachments |
 | `GET /api/v1/inbox` | The records waiting for the caller, on every model; `page`, `size` |
+| `GET /api/v1/events` | The history lines in the layout of the webhook, after an `eventId` (`after`, `size`, `model`) (ADMIN) |
 | `GET /api/v1/outbox`, `POST /api/v1/outbox/{id}/retry` | Outgoing messages by status (failed, pending, delivered) and a retry of an undelivered one (ADMIN) |
 | `GET /api/v1/users`, `/users/options`, `/users/{id}` | Find and read users, their roles per model and their units; the roles and units that can be given (ADMIN) |
 | `PUT`, `DELETE /api/v1/users/{id}/roles/{model}/{role}`, `/units/{unit}` | Give and take a role of one model, and a unit (ADMIN) |

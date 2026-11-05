@@ -224,8 +224,25 @@ Tệp hỏng vẫn nằm trong `.env` và được báo lại ở mỗi lần ba
 
 ### Webhook sự kiện
 
-`DXOS_WEBHOOK_URL` trong `.env` là địa chỉ nhận các dòng lịch sử của hồ sơ; để trống thì không gửi gì.
-Chỉ dòng sinh ra sau khi đặt địa chỉ mới được gửi.
+Mỗi mô hình gửi các dòng lịch sử của hồ sơ tới một đích.
+Tệp mô hình chọn đích bằng `webhook: <tên đích>` ở đầu tệp, tên theo dạng `[a-z][a-z0-9_]*`.
+Địa chỉ và bí mật của từng đích nằm trong `deploy/webhooks/targets.yml`, tệp này ngoài git vì địa chỉ có thể chứa khóa; mẫu ở `deploy/webhooks/targets.example.yml`:
+
+```yaml
+targets:
+  ops:
+    url: https://chat.example.org/hooks/abc
+    secret: change-me
+    format: chat
+```
+
+`format` là `json` (thông điệp nguyên văn, mặc định) hoặc `chat` (xem "Câu cho Mattermost và Slack" dưới đây); đích mặc định đặt dạng bằng `DXOS_WEBHOOK_FORMAT`.
+
+Mô hình không ghi `webhook` thì dùng `DXOS_WEBHOOK_URL` trong `.env`; để trống và không ghi đích thì mô hình không gửi gì.
+Chỉ dòng sinh ra sau khi mô hình có đích mới được gửi.
+Mô hình ghi tên đích chưa có trong tệp thì xem kế hoạch báo bị từ chối và áp dụng trả 409.
+Tệp `targets.yml` được nạp lại khi đổi, không cần tạo lại backend; một đích sai tên hoặc địa chỉ bị bỏ qua và ghi vào log.
+Đích bị gỡ khỏi tệp sau khi mô hình đã chạy thì thông điệp của mô hình đó vẫn vào hàng đợi, báo lỗi cấu hình ở tab Hàng đợi sự kiện, và được giao khi đích có lại và bấm Thử lại.
 Mỗi dòng (tạo, sửa, xóa, hành động của quy trình, giao việc, thêm hoặc bỏ tệp, quá hạn) được ghi vào outbox trong giao dịch của thay đổi, nên thay đổi bị hủy thì không có gì được gửi.
 Backend gửi `POST` JSON với các trường:
 
@@ -233,7 +250,7 @@ Backend gửi `POST` JSON với các trường:
 |---|---|
 | `eventId` | Số của dòng lịch sử, tăng dần; cũng nằm ở header `X-Dxos-Event-Id` |
 | `model`, `entity`, `recordId` | Hồ sơ nào |
-| `action` | Hành động, ví dụ `created`, `updated`, `deleted`, `assigned`, `overdue`, `file_added`, hoặc tên hành động của quy trình |
+| `action` | Hành động, ví dụ `created`, `updated`, `deleted`, `assigned`, `due_soon`, `overdue`, `file_added`, hoặc tên hành động của quy trình |
 | `fromStatus`, `toStatus` | Trạng thái trước và sau |
 | `actor`, `actorName` | Mã người dùng và tên người làm, gửi ra ngoài hệ thống; `system` với dòng quá hạn |
 | `at` | Thời điểm, giờ UTC |
@@ -244,16 +261,39 @@ Thông điệp không có nội dung hồ sơ, ghi chú hay tên tệp; bên nh�
 Có `DXOS_WEBHOOK_SECRET` thì mỗi yêu cầu kèm `X-Dxos-Signature: sha256=<hex>`, là HMAC-SHA256 của nguyên văn nội dung; bên nhận tính lại rồi so.
 Bên nhận trả 2xx trong 5 giây là xong; kết quả khác thì thông điệp được gửi lại với thời gian chờ gấp đôi mỗi lần, tối đa 5 phút.
 Thông điệp lỗi quá `DXOS_OUTBOX_MAX_ATTEMPTS` lần (mặc định 20) thì dừng, không tự gửi nữa; nút Thử lại cho nó thêm một lần.
-Thông điệp có thể đến sai thứ tự hoặc hai lần, nên bên nhận sắp và khử trùng theo `eventId`.
+Các dòng của một hồ sơ được giao theo thứ tự: dòng sau chờ khi dòng cũ hơn của cùng hồ sơ chưa giao, kể cả khi dòng cũ đã dừng và chờ Thử lại.
+Dòng của các hồ sơ khác nhau không chờ nhau, và một dòng có thể đến hai lần, nên bên nhận khử trùng theo `eventId`.
 Thông điệp chưa gửi, đã dừng, lỗi gần nhất và nút thử lại nằm ở tab Hàng đợi sự kiện; thông điệp đã gửi bị xóa sau 30 ngày.
-Đổi `DXOS_WEBHOOK_URL` hay `DXOS_WEBHOOK_SECRET` thì tạo lại backend bằng `docker compose up -d backend`.
+Đổi `DXOS_WEBHOOK_URL`, `DXOS_WEBHOOK_SECRET` hay `DXOS_WEBHOOK_FORMAT` thì tạo lại backend bằng `docker compose up -d backend`.
+
+Bên nhận lỡ thông điệp (ngừng chạy, hoặc thông điệp đã dừng) lấy lại bằng `GET /api/v1/events?after=<eventId đã giữ>&size=<tối đa 500>&model=<tùy chọn>` với token ADMIN.
+Các dòng đọc thẳng từ lịch sử, cùng dạng với thông điệp webhook, từ cũ tới mới; `next` là `eventId` để hỏi tiếp và `more` cho biết còn dòng.
+Lệnh này dùng được cả khi chưa đặt đích nào.
+
+Hồ sơ có hạn xử lý dài hơn `DXOS_DUE_SOON_BEFORE` (mặc định `24h`, `0` để tắt) nhận một dòng `due_soon` khi còn chừng đó thời gian trước hạn, đúng một lần cho mỗi hạn.
+Hạn không dài hơn khoảng này thì không có dòng `due_soon`.
+
+#### Câu cho Mattermost và Slack
+
+Đích có `format: chat` nhận `{"text": "<một câu>"}` thay cho thông điệp nguyên văn; Mattermost và Slack đều nhận dạng này ở địa chỉ webhook đến của họ.
+Câu có tên mô hình, thực thể, số hồ sơ và trạng thái, không có nội dung hồ sơ.
+Hồ sơ của thực thể có quy trình vừa được tạo hoặc nộp lại đọc là "Việc mới", dòng `due_soon` là "Sắp đến hạn xử lý", dòng `overdue` là "Quá hạn xử lý", dòng giao việc là "Được giao"; các dòng khác ghi hành động và trạng thái trước, sau.
+
+#### Việc áp dụng mô hình và thay đổi tài khoản
+
+Các thay đổi này gửi thông điệp chủ đề `admin.event` với `id`, `kind`, `model`, `actor`, `actorName`, `at`, `facts` và `schemaVersion`; `id` cũng nằm ở header `X-Dxos-Event-Id`.
+`kind` là `MODEL_APPLIED`, `MODEL_ROLLED_BACK`, `MODEL_RESUMED`, `MODEL_ABANDONED`, hoặc tên hành động của audit như `USER_ROLE_GRANTED`.
+Thông điệp của một mô hình vào đích của mô hình đó; thay đổi tài khoản và mô hình đã gỡ vào đích mặc định.
+Không có đích thì không ghi gì.
+Chúng không nằm trong API kéo sự kiện, vì không phải dòng lịch sử của hồ sơ.
 
 ### Đổi mô hình bằng dòng lệnh
 
 `dxos plan <tệp>` in kế hoạch của tệp mô hình mà không đổi gì; mã thoát 1 khi kế hoạch bị từ chối.
 `dxos apply <tệp> [--accept SAFE|MIGRATION|LOSS]` lấy kế hoạch rồi áp dụng với phiên bản của kế hoạch làm `base`.
 Kế hoạch có mức cao hơn `--accept` (mặc định `SAFE`) thì bị từ chối với mã thoát 1 và không đổi gì; lệnh không bao giờ tự nâng mức.
-Tệp giống mô hình đang chạy thì in "Nothing to apply" và thoát với mã 0.
+Tệp giống mô hình đang chạy và không có gì lệch thì in "Nothing to apply" và thoát với mã 0.
+Tệp giống nhưng bảng hoặc Keycloak đã lệch khỏi tệp thì kế hoạch ghi `repair`; `dxos apply` sửa phần lệch, và cần `--accept MIGRATION` khi kế hoạch ở mức đó.
 Đường dẫn tương đối tính theo thư mục gõ lệnh.
 
 Lệnh đăng nhập bằng client `dxos-cli` của realm, dùng `DXOS_CLI_SECRET` trong `.env`; tài khoản dịch vụ của client giữ vai `ADMIN`, và lịch sử áp dụng ghi tên nó (`service-account-dxos-cli`).

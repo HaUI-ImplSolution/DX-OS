@@ -1,14 +1,28 @@
 // SPDX-License-Identifier: Apache-2.0
 import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { Route } from "react-router-dom";
-import { Box, ListSubheader, Typography } from "@mui/material";
+import { Box, ListItemIcon, ListItemText, ListSubheader, MenuItem, Typography } from "@mui/material";
+import ManageAccountsOutlinedIcon from "@mui/icons-material/ManageAccountsOutlined";
 import EventSeatOutlinedIcon from "@mui/icons-material/EventSeatOutlined";
 import FactCheckOutlinedIcon from "@mui/icons-material/FactCheckOutlined";
 import HubIcon from "@mui/icons-material/Hub";
 import SupportAgentOutlinedIcon from "@mui/icons-material/SupportAgentOutlined";
 import TableChartOutlinedIcon from "@mui/icons-material/TableChartOutlined";
 import TuneIcon from "@mui/icons-material/Tune";
-import { Admin, AppBar, CustomRoutes, Layout, Menu, Resource, TitlePortal, usePermissions, type LayoutProps } from "react-admin";
+import {
+  Admin,
+  AppBar,
+  CustomRoutes,
+  Layout,
+  Logout,
+  Menu,
+  Resource,
+  TitlePortal,
+  UserMenu,
+  usePermissions,
+  type LayoutProps,
+} from "react-admin";
+import { ACCOUNT_URL } from "../shell/auth";
 import { i18nProvider } from "../shell/i18n";
 import { darkTheme, lightTheme } from "../shell/theme";
 import { listModels } from "./api";
@@ -45,8 +59,24 @@ function Brand() {
   );
 }
 
+// Password, OTP and sessions are Keycloak's own page, which opens in a new tab.
+const AccountItem = () => (
+  <MenuItem component="a" href={ACCOUNT_URL} target="_blank" rel="noopener noreferrer">
+    <ListItemIcon>
+      <ManageAccountsOutlinedIcon fontSize="small" />
+    </ListItemIcon>
+    <ListItemText>Tài khoản của tôi</ListItemText>
+  </MenuItem>
+);
+
 const AppTopBar = () => (
   <AppBar
+    userMenu={
+      <UserMenu>
+        <AccountItem />
+        <Logout />
+      </UserMenu>
+    }
     color="inherit"
     elevation={0}
     sx={{ backgroundColor: "background.paper", color: "text.primary", borderBottom: 1, borderColor: "divider" }}

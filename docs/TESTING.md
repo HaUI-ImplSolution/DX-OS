@@ -112,6 +112,8 @@ Biến `DXOS_ENV_FILE`, `DXOS_BASE_URL`, `DXOS_PROJECT` đổi tệp env, địa
 | T14-11 | Thống kê với vai `unit` và `own`, có và không có bộ lọc | `total` và tổng `byStatus` bằng `totalElements` của danh sách cùng bộ lọc (kiểm tay) |
 | T14-12 | `simulator.py setup`, `run`, `replay` | Hồ sơ sự cố xuất hiện; gửi lại cùng quan sát in `duplicate` và không tạo thêm hồ sơ (kiểm tay) |
 | T14-13 | `dxos archive <mô hình>` rồi `dxos archive check`; sửa một byte trong tệp Parquet | Số dòng và sha256 khớp manifest; tệp bị sửa thì `check` thoát với mã 1 (kiểm tay) |
+| B4-01 | Áp dụng lại tệp không đổi khi bảng thiếu cột và ràng buộc, thừa cột, đổi kiểu cột, và khi client, vai, nhóm đơn vị bị xóa | `repair` đúng loại thay đổi; áp dụng xong thì kế hoạch về `unchanged`; cột thừa bị từ chối; đổi kiểu cột cần `accept=MIGRATION` (kiểm tay) |
+| B4-02 | Menu người dùng, mục "Tài khoản của tôi" | Mở Account Console của Keycloak ở tab mới, đã đăng nhập (kiểm tay) |
 
 T5-11 và T6-14 cần dịch vụ chạy với `ENGINE_FAULT_AFTER_DECISION=true`, T5-05 và T12-13 với `ENGINE_FAULT_APPLY_STEP=ENSURE_CLIENT` (bước áp dụng có tên đó lỗi); các script tự bật rồi tắt bằng cách tạo lại service `backend`.
 
@@ -322,3 +324,38 @@ Chuỗi script chạy trên một stack thử riêng (project Compose `dxscratch
 | Job `e2e` trên GitHub Actions | Đạt | Commit `d0aa2d14`: stack rỗng dựng từ image của commit, chuỗi script chạy hết; cả job 14 phút 35 giây, riêng chuỗi script 11 phút 55 giây |
 | Hai nhóm của job `e2e` chạy song song, mỗi nhóm một stack rỗng riêng | Đạt | Chạy cục bộ trên cây làm việc gồm tệp chưa commit: nhóm đầu chín script 51, 19, 71, 65, 56, 45, 26, 59, 41 trong 277 giây; nhóm sau `check_events.py` 18 và `check_bootstrap.py` 8 trong 297 giây; cả hai stack đã gỡ cùng volume |
 | Hai nhóm của job `e2e` trên GitHub Actions | Đạt | Commit `ad4a3da6`: `e2e (model and process)` 434 giây, riêng script 278 giây; `e2e (events and bootstrap)` 389 giây, riêng script 268 giây; chạy song song nên cả job khoảng 7 phút 15 giây |
+
+### Kiểm ngày 05/11/2026: áp dụng lại tệp không đổi và link tài khoản
+
+Cây làm việc gồm cả tệp chưa commit.
+Chuỗi script chạy trên hai stack thử riêng (project Compose `dxscratch`, cổng 9180) dựng rỗng, chia hai nhóm như CI; stack đã gỡ cùng volume sau khi kiểm.
+
+| Mục | Kết quả | Ghi chú |
+|---|---|---|
+| `./mvnw clean verify formatter:validate` | Đạt | Cả backend: dx-core 20 test, dx-engine 8, dx-monitor 3 |
+| `npx tsc --noEmit` | Đạt | Không lỗi |
+| Mười một script ở `deploy/dev`, hai nhóm như CI | Đạt | 459/459: nhóm một 51, 19, 71, 65, 56, 45, 26, 59, 41; nhóm hai `check_events.py` 18 và `check_bootstrap.py` 8 |
+| Áp dụng lại tệp không đổi, kịch bản tạm ngoài repo | Đạt | 35/35: mô hình mới không báo lệch giả; thiếu cột và ràng buộc thì `repair` mức `SAFE`, áp dụng xong danh sách API trả 200 và kế hoạch về `unchanged`; cột thừa thì `rejected`, áp dụng bị từ chối, cột còn nguyên, mô hình không bị giữ; đổi kiểu cột thì `repair` mức `MIGRATION`, thiếu `accept` bị từ chối; xóa vai, client, nhóm đơn vị thì kế hoạch nêu đúng và áp dụng khôi phục; lịch sử có lượt chạy, vẫn phiên bản 1 |
+| Kế hoạch lệch ở bảng điều khiển bằng Chrome | Đạt | Tệp không đổi khi bảng thiếu cột: thông báo, dòng "Sửa cấu trúc bảng" kèm SQL, mức An toàn, nút "Sửa phần lệch"; bấm thì áp dụng xong |
+| "Tài khoản của tôi" bằng Chrome | Đạt | Mở Account Management của Keycloak ở tab mới, đã đăng nhập, có mục Account security |
+
+### Kiểm ngày 05/11/2026: webhook theo mô hình, thứ tự giao, câu cho chat, sự kiện quản trị và nhắc hạn
+
+Cây làm việc gồm cả tệp chưa commit.
+Mọi lượt chạy trên một stack thử riêng (project Compose `dxscratch`, cổng 9180) dựng rỗng; stack đã gỡ cùng volume sau khi kiểm.
+Bên nhận webhook là một máy chủ HTTP nhỏ trên máy này, không phải Mattermost hay Slack thật.
+
+| Mục | Kết quả | Ghi chú |
+|---|---|---|
+| `./mvnw clean verify formatter:validate` | Đạt | Cả backend, gồm `ArchitectureTest` |
+| `check_events.py` | Đạt | 18/18 với đích mặc định `DXOS_WEBHOOK_URL`; sau khi tạo lại backend, gateway có thể trả 502 một lúc, nên cần `docker compose restart apisix` rồi chạy lại |
+| `check_bootstrap.py` | Đạt | 8/8 |
+| Đích theo mô hình | Đạt | Mô hình `webhook: ops` nhận sự kiện ở đích `ops` kèm chữ ký; đích chưa cấu hình bị từ chối khi xem kế hoạch và áp dụng (409); tên đích sai dạng báo lỗi theo dòng và cột; đổi đích giữa hai phiên bản thì sự kiện sau đó đi đích mới; đích bị gỡ thì thông điệp nằm lại hàng đợi kèm lỗi cấu hình và được giao sau khi có lại đích và bấm Thử lại |
+| Thứ tự theo hồ sơ | Đạt | Dòng đầu của một hồ sơ dừng (`DXOS_OUTBOX_MAX_ATTEMPTS=1`); dòng sau của hồ sơ đó không được giao, dòng của hồ sơ khác được giao; sau Thử lại cả hai tới đúng thứ tự `eventId` |
+| Đích dạng `chat` | Đạt | Nội dung chỉ có khóa `text`; hồ sơ mới của thực thể có quy trình đọc là "Việc mới"; nội dung hồ sơ không có trong câu |
+| `due_soon` | Đạt | Hạn 3 phút, `DXOS_DUE_SOON_BEFORE=2m`: dòng tới sau khoảng 64 giây và chỉ một lần |
+| Sự kiện quản trị | Đạt | `MODEL_APPLIED` vào đích của mô hình, ký và có header `X-Dxos-Event-Id`; thay đổi vai qua API vào đích mặc định |
+| `GET /api/v1/events` | Đạt | Phân trang theo `eventId` và lọc theo mô hình; có dòng `due_soon` |
+
+Chín script còn lại của `deploy/dev` không chạy lại ở lượt này.
+Các mục từ "Đích theo mô hình" tới "`GET /api/v1/events`" chạy bằng kịch bản tạm ngoài repo.

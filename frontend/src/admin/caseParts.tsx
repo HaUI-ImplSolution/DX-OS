@@ -25,7 +25,7 @@ import { translateBackend } from "../shell/backendMessages";
 import { formatDateTime, timeAgo } from "../shell/format";
 import { StatusChip, TONES } from "./StatusChip";
 import { assignRecord, fileLink, listEvents, listFiles, listHandlers, removeFile, takeAction, uploadFile } from "./api";
-import type { AttachmentItem, EntityMeta, Person, ProcessAction, RecordEvent } from "./types";
+import type { AttachmentItem, EntityMeta, FieldMeta, Person, ProcessAction, RecordEvent } from "./types";
 
 interface Props {
   model: string;
@@ -237,6 +237,26 @@ function skippedReason(detail: string, fieldLabel: (name: string) => string): st
   return `${OPERATION_LABEL[operation] ?? operation} bị bỏ qua: hồ sơ ${what}`;
 }
 
+// What an "updated" event changed. A detail that is a JSON object maps each field to [old, new];
+// an older one is just the list of field names.
+function updatedDetail(detail: string | null, fields: FieldMeta[], fieldLabel: (name: string) => string): string | null {
+  if (!detail) return null;
+  if (!detail.startsWith("{")) return detail.split(", ").map(fieldLabel).join(", ");
+  let changes: Record<string, [string | null, string | null]>;
+  try {
+    changes = JSON.parse(detail);
+  } catch {
+    return detail;
+  }
+  const show = (name: string, value: string | null) => {
+    if (value === null || value === undefined || value === "") return "—";
+    return fields.find((field) => field.name === name)?.type === "datetime" && !Number.isNaN(Date.parse(value)) ? formatDateTime(value) : value;
+  };
+  return Object.entries(changes)
+    .map(([name, [before, after]]) => `${fieldLabel(name)}: ${show(name, before)} → ${show(name, after)}`)
+    .join("\n");
+}
+
 // What happened to this record, newest first, as a timeline.
 export function HistoryPanel({ model, entity }: Props) {
   const record = useRecordContext();
@@ -267,7 +287,7 @@ export function HistoryPanel({ model, entity }: Props) {
           const detail =
             event.note ??
             (event.action === "updated"
-              ? event.detail?.split(", ").map(fieldLabel).join(", ")
+              ? updatedDetail(event.detail, entity.fields, fieldLabel)
               : event.action === "completion_skipped" && event.detail
                 ? skippedReason(event.detail, fieldLabel)
                 : null);
@@ -291,7 +311,7 @@ export function HistoryPanel({ model, entity }: Props) {
                 </Tooltip>
               </Typography>
               {(detail || (event.action === "assigned" && !event.detail)) && (
-                <Typography variant="body2" sx={{ mt: 0.5, p: 1, bgcolor: "action.hover", borderRadius: 1 }}>
+                <Typography variant="body2" sx={{ mt: 0.5, p: 1, bgcolor: "action.hover", borderRadius: 1, whiteSpace: "pre-line", overflowWrap: "anywhere" }}>
                   {event.action === "assigned" ? (event.detail ?? "Bỏ giao") : detail}
                 </Typography>
               )}

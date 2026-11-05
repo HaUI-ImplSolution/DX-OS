@@ -23,3 +23,15 @@ export function timeAgo(value: string | null | undefined, now = Date.now()): str
   if (days < 30) return `${days} ngày trước`;
   return formatDateTime(value);
 }
+
+// A length of time as "3 ngày 4 giờ" or "25 phút": the two largest units, seconds only under a minute.
+export function formatDuration(totalSeconds: number): string {
+  const seconds = Math.max(0, Math.round(totalSeconds));
+  if (seconds < 60) return `${seconds} giây`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} phút`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return minutes % 60 ? `${hours} giờ ${minutes % 60} phút` : `${hours} giờ`;
+  const days = Math.floor(hours / 24);
+  return hours % 24 ? `${days} ngày ${hours % 24} giờ` : `${days} ngày`;
+}

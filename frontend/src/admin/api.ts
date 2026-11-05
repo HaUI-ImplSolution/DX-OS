@@ -14,6 +14,9 @@ export interface EntityStats {
   byStatus: { status: string; count: number }[];
   overdue: number;
   byUnit?: { unit: string | null; count: number }[] | null;
+  avgDecisionSeconds?: number | null;
+  avgOpenAgeSeconds?: number | null;
+  oldestOpenAgeSeconds?: number | null;
   computedAt: string;
 }
 

@@ -520,3 +520,28 @@ Image backend dựng từ cây làm việc gồm cả tệp chưa commit; hai nh
 | Bên nhận so hash lịch sử | Đạt | Giữ hash của cả 19 dòng, sửa một dòng đầu rồi tính lại cả chuỗi: bên nhận thấy dòng đầu và mọi dòng sau đổi; `history verify` báo hỏng vì các điểm neo lệch; trả dòng về thì cả 19 dòng khớp lại |
 | `check_conformance.py` trên mọi mô hình của stack | Đạt | 59/59; lần đầu hỏng 9 kiểm tra vì gateway trả 429 do quá nhiều yêu cầu một lúc, nên mỗi người dùng chỉ thử ba mô hình khác |
 | `witness.py save` và `compare` chạy như dòng lệnh | Đạt | Lấy token bằng client `dxos-cli`: `save` ghi 3 sự kiện, `compare` báo 3 khớp (mã thoát 0); sau khi sửa dòng đầu và tính lại chuỗi, `compare` báo 3 đổi, dòng đầu là 1 (mã thoát 1); `save` lần hai không thêm dòng nào |
+
+### Kiểm ngày 05/11/2026: chỉ số thời gian xử lý của thống kê
+
+Image backend dựng từ cây làm việc gồm cả tệp chưa commit; năm script chạy trên stack rỗng riêng của máy này, stack đã gỡ sau khi kiểm.
+
+| Mục | Kết quả | Ghi chú |
+|---|---|---|
+| `check_api.py`, `check_recovery.py`, `check_case.py`, `check_change.py`, `check_process.py` | Đạt | 51, 19, 75, 65 và 69 kiểm tra |
+| Trung bình thời gian đến trạng thái cuối | Đạt | T8-09 trong `check_process.py`: `avgDecisionSeconds` bằng giá trị tính trực tiếp trong cơ sở dữ liệu, sai lệch tối đa một giây |
+| Tuổi hồ sơ đang mở | Đạt | T8-09: sau khi lùi `created_at` hai giờ, `oldestOpenAgeSeconds` từ 7200 và `avgOpenAgeSeconds` không vượt giá trị lớn nhất |
+| Không có hồ sơ nào để tính | Đạt | T8-09: bộ lọc không khớp dòng nào thì `total` là 0 và cả ba chỉ số là `null` |
+| Trang thống kê trên Chrome | Đạt | Stack chính, đăng nhập vai xử lý: ba ô mới hiện cạnh `Quá hạn`, giá trị khớp `GET .../stats`; vai không có hồ sơ nào chỉ thấy `Tổng số hồ sơ` và `Quá hạn`; ở 360px các ô xếp dọc, không tràn ngang, chữ không bị cắt |
+
+### Kiểm ngày 05/11/2026: giá trị cũ và mới trong lịch sử hồ sơ
+
+Image backend dựng từ cây làm việc gồm cả tệp chưa commit; nhóm `model and process` chạy trên một stack rỗng và nhóm `events and bootstrap` trên một stack rỗng khác của máy này, cả hai đã gỡ sau khi kiểm.
+
+| Mục | Kết quả | Ghi chú |
+|---|---|---|
+| Nhóm `model and process` | Đạt | `check_api.py` 51, `check_recovery.py` 19, `check_case.py` 76, `check_change.py` 65, `check_process.py` 69, `check_booking.py` 46, `check_demo.py` 26, `check_guards.py` 61, `check_users.py` 41, `check_docs.py` 3, `check_conformance.py` 60 |
+| Nhóm `events and bootstrap` | Đạt | `check_events.py` 24, `check_bootstrap.py` 8, gồm cả chuỗi hash lịch sử và bên nhận so hash |
+| Giá trị cũ và mới | Đạt | T6-13 trong `check_case.py`: sửa `reason` thì `detail` là `{"reason": ["Cần giấy xác nhận", "Đã bổ sung"]}`; sửa lại đúng giá trị đang có thì không có dòng mới |
+| Giá trị dài | Đạt | T6-13: giá trị 300 ký tự được ghi 200 ký tự cộng `…` |
+| Lần chạy đầu của `check_docs.py` | Không tính | Hỏng vì bản sao tạm thiếu `README.md`, `README_EN.md`, `ARCHITECTURE.md` và `deploy/OPERATIONS.md`; chạy lại sau khi thêm các tệp thì đạt |
+| Lịch sử giá trị trên Chrome | Đạt | Stack chính, chi tiết hồ sơ: mục Lịch sử hiện `Nhãn: cũ → mới` từng trường, trường rỗng hiện `—`, thời điểm đổi sang giờ địa phương, giá trị dài cắt ở 200 ký tự kèm `…`; dòng `updated` cũ (chỉ tên trường) vẫn hiện bằng nhãn; ở 360px khung Lịch sử không tràn ngang |

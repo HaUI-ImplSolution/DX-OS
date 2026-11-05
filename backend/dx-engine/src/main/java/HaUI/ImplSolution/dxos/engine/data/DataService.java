@@ -178,6 +178,7 @@ public class DataService {
           jdbc.queryForObject(
               "SELECT count(*)" + from + " AND handle_by IS NOT NULL AND handle_by < :at", values,
               Long.class));
+      body.putAll(timings(from, values));
     }
     entity.unitField()
         .ifPresent(
@@ -188,6 +189,28 @@ public class DataService {
                         values)));
     body.put("computedAt", at.toString());
     return body;
+  }
+
+  // Whole seconds from creation to the final state over the records that reached one, and the
+  // mean and the largest age at computedAt over those that did not; null when there is no such
+  // record.
+  private Map<String, Object> timings(String from, MapSqlParameterSource values) {
+    Map<String, Object> row =
+        jdbc.queryForMap("SELECT avg(EXTRACT(EPOCH FROM decided_at - created_at))"
+            + " FILTER (WHERE decided_at IS NOT NULL) AS decision,"
+            + " avg(EXTRACT(EPOCH FROM CAST(:at AS timestamptz) - created_at))"
+            + " FILTER (WHERE decided_at IS NULL) AS open_avg,"
+            + " max(EXTRACT(EPOCH FROM CAST(:at AS timestamptz) - created_at))"
+            + " FILTER (WHERE decided_at IS NULL) AS open_max" + from, values);
+    Map<String, Object> out = new LinkedHashMap<>();
+    out.put("avgDecisionSeconds", seconds(row.get("decision")));
+    out.put("avgOpenAgeSeconds", seconds(row.get("open_avg")));
+    out.put("oldestOpenAgeSeconds", seconds(row.get("open_max")));
+    return out;
+  }
+
+  private static Long seconds(Object value) {
+    return value == null ? null : Math.round(((Number) value).doubleValue());
   }
 
   @Transactional(readOnly = true)
@@ -256,7 +279,8 @@ public class DataService {
     }
     requireReachableParent(model, entity, access, values);
     requireOpen(model, entity, access, id);
-    Map<String, Object> changes = changes(model, entity, access, id, values);
+    Changed changed = changes(model, entity, access, id, values);
+    Map<String, Object> changes = changed.values();
     if (changes.isEmpty()) {
       return get(model, entity, id);
     }
@@ -292,7 +316,7 @@ public class DataService {
     }
     String status = (String) rows.get(0).get("status");
     events.record(model, entity, id, "updated", status, status, null,
-        String.join(", ", changes.keySet()));
+        events.changesOf(changes, changed.before()));
     return present(rows.get(0));
   }
 
@@ -587,29 +611,39 @@ public class DataService {
     }
   }
 
-  // The given values that differ from what the row holds, compared by the database.
-  private Map<String, Object> changes(Model model, Entity entity, Access access, long id,
+  // The values that changed and what the row held for them.
+  private record Changed(Map<String, Object> values, Map<String, Object> before) {}
+
+  // The given values that differ from what the row holds, compared by the database, with the
+  // values the row held. The row stays locked until the transaction ends, so what is read here is
+  // what the update replaces.
+  private Changed changes(Model model, Entity entity, Access access, long id,
       Map<String, Object> values) {
     MapSqlParameterSource params = new MapSqlParameterSource("id", id);
     List<String> columns = new ArrayList<>();
-    values.forEach((name, value) -> {
-      params.addValue(name, value);
+    List<String> names = new ArrayList<>(values.keySet());
+    for (int i = 0; i < names.size(); i++) {
+      String name = names.get(i);
+      params.addValue(name, values.get(name));
       columns.add(ident(name) + " IS DISTINCT FROM CAST(:" + name + " AS "
-          + DdlGenerator.sqlType(entity.fields().get(name).type()) + ") AS " + ident(name));
-    });
+          + DdlGenerator.sqlType(entity.fields().get(name).type()) + ") AS d" + i);
+      columns.add(ident(name) + " AS o" + i);
+    }
     String scope = scope(model, entity, access.writes(), params);
     List<Map<String, Object>> rows = jdbc.queryForList("SELECT " + String.join(", ", columns)
-        + " FROM " + table(model, entity) + " WHERE id = :id AND " + scope, params);
+        + " FROM " + table(model, entity) + " WHERE id = :id AND " + scope + " FOR UPDATE", params);
     if (rows.isEmpty()) {
       throw notFound(entity, id);
     }
     Map<String, Object> changed = new LinkedHashMap<>();
-    values.forEach((name, value) -> {
-      if (Boolean.TRUE.equals(rows.get(0).get(name))) {
-        changed.put(name, value);
+    Map<String, Object> before = new LinkedHashMap<>();
+    for (int i = 0; i < names.size(); i++) {
+      if (Boolean.TRUE.equals(rows.get(0).get("d" + i))) {
+        changed.put(names.get(i), values.get(names.get(i)));
+        before.put(names.get(i), rows.get(0).get("o" + i));
       }
-    });
-    return changed;
+    }
+    return new Changed(changed, before);
   }
 
   // A record in a terminal state is frozen. The row stays locked until the transaction ends, so an

@@ -4,6 +4,7 @@
 Run after check_recovery.py on the same stack:
     python3 deploy/dev/check_case.py
 """
+import json
 import os
 import subprocess
 import sys
@@ -198,7 +199,7 @@ def main():
     rt.check("T6-13 action details", returned["note"] == "Thiếu minh chứng" and returned["from_status"] == "submitted"
              and returned["to_status"] == "returned" and returned["actor"] == colleague_id, str(returned))
     updated = next(e for e in body["data"] if e["action"] == "updated")
-    rt.check("T6-13 no field value kept", updated["detail"] == "reason", str(updated))
+    rt.check("T6-13 an update keeps the old and the new value of the field", json.loads(updated["detail"]) == {"reason": ["Cần giấy xác nhận", "Đã bổ sung"]}, str(updated))
     status, _ = kc.api(other, "GET", f"{BASE}/{record}/events")
     rt.check("T6-13 history follows read access", status == 404, str(status))
     status, same = kc.api(stu2, "POST", BASE, REQUEST)
@@ -206,8 +207,12 @@ def main():
     status, partly = kc.api(stu2, "PATCH", f"{BASE}/{same_id}", {**REQUEST, "reason": "Khác"})
     status, _ = kc.api(stu2, "PATCH", f"{BASE}/{same_id}", {**REQUEST, "reason": "Khác"})
     status, body = kc.api(stu2, "GET", f"{BASE}/{same_id}/events")
-    details = [e["detail"] for e in body["data"] if e["action"] == "updated"]
-    rt.check("T6-13 only changed fields are recorded", details == ["reason"], str(details))
+    details = [json.loads(e["detail"]) for e in body["data"] if e["action"] == "updated"]
+    rt.check("T6-13 only changed fields are recorded", details == [{"reason": ["Cần giấy xác nhận", "Khác"]}], str(details))
+    status, _ = kc.api(stu2, "PATCH", f"{BASE}/{same_id}", {"reason": "ă" * 300})
+    status, body = kc.api(stu2, "GET", f"{BASE}/{same_id}/events")
+    long_update = [json.loads(e["detail"]) for e in body["data"] if e["action"] == "updated"][-1]
+    rt.check("T6-13 a long value is cut and marked", long_update == {"reason": ["Khác", "ă" * 200 + "…"]}, str(long_update)[:200])
     status, doomed = kc.api(stu2, "POST", BASE, REQUEST)
     status, _ = kc.api(stu2, "DELETE", f"{BASE}/{doomed['data']['id']}")
     rt.check("T8-05 a record with a process cannot be deleted", status == 409, str(status))

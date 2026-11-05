@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Graph, layout as layoutGraph } from "@dagrejs/dagre";
 import { Box, Typography } from "@mui/material";
 import { Background, Controls, MarkerType, ReactFlow, type Edge, type Node } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -69,42 +70,49 @@ export default function ProcessDiagram({
 
 function layout(family: Family, spacing: number): { nodes: Node[]; edges: Edge[] } {
   const steps = family.actions.filter((action) => action.name !== WITHDRAW);
-  const depth = new Map<string, number>([[family.initial, 0]]);
+  const reachable = new Set<string>([family.initial]);
   const queue = [family.initial];
   while (queue.length) {
     const current = queue.shift() as string;
     steps
       .filter((action) => action.from.includes(current))
       .forEach((action) => {
-        if (!depth.has(action.to)) {
-          depth.set(action.to, (depth.get(current) ?? 0) + 1);
+        if (!reachable.has(action.to)) {
+          reachable.add(action.to);
           queue.push(action.to);
         }
       });
   }
-  const rows = new Map<number, number>();
-  const nodes: Node[] = family.states
-    .filter((state) => depth.has(state.name))
-    .map((state) => {
-      const column = depth.get(state.name) ?? 0;
-      const row = rows.get(column) ?? 0;
-      rows.set(column, row + 1);
-      return {
-        id: state.name,
-        position: { x: column * spacing, y: row * 90 },
-        data: { label: state.label },
-        style: {
-          width: 150,
-          background: "#ffffff",
-          color: "#111111",
-          fontSize: 13,
-          borderRadius: state.terminal ? 24 : 6,
-          border: state.terminal ? "2px solid #2e7d32" : "1px solid #1976d2",
-        },
-      };
-    });
+  const states = family.states.filter((state) => reachable.has(state.name));
+  const visible = new Set(states.map((state) => state.name));
+  const graph = new Graph();
+  graph.setGraph({ rankdir: "LR", ranksep: Math.max(0, spacing - NODE_WIDTH), nodesep: 50 });
+  graph.setDefaultEdgeLabel(() => ({}));
+  states.forEach((state) => graph.setNode(state.name, { width: NODE_WIDTH, height: NODE_HEIGHT }));
+  steps.forEach((action) =>
+    action.from
+      .filter((from) => visible.has(from) && visible.has(action.to))
+      .forEach((from) => graph.setEdge(from, action.to)),
+  );
+  layoutGraph(graph, { useDynamic: false });
+  const nodes: Node[] = states.map((state) => {
+    const point = graph.node(state.name);
+    return {
+      id: state.name,
+      position: { x: point.x - NODE_WIDTH / 2, y: point.y - NODE_HEIGHT / 2 },
+      data: { label: state.label },
+      style: {
+        width: 150,
+        background: "#ffffff",
+        color: "#111111",
+        fontSize: 13,
+        borderRadius: state.terminal ? 24 : 6,
+        border: state.terminal ? "2px solid #2e7d32" : "1px solid #1976d2",
+      },
+    };
+  });
   const edges: Edge[] = steps.flatMap((action) =>
-    action.from.map((from) => ({
+    action.from.filter((from) => visible.has(from) && visible.has(action.to)).map((from) => ({
       id: `${action.name}-${from}`,
       source: from,
       target: action.to,

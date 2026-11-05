@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 // Settings under "monitor" in application.yaml.
 //
 // retentionDays: age after which gateway events and service state changes are deleted
-@ConfigurationProperties(prefix="monitor")public record MonitorProperties(String publicUrl,Gateway gateway,Probe probe,Alert alert,int retentionDays,KeycloakDb keycloakDb,Mattermost mattermost){
+@ConfigurationProperties(prefix="monitor")public record MonitorProperties(String publicUrl,Gateway gateway,Probe probe,Alert alert,int retentionDays,KeycloakDb keycloakDb,ChatWebhook chatWebhook){
 
 // ingestKey: shared secret of the gateway; empty refuses every delivery
 // slowSeconds, slowExemptPaths: a request at least this slow is kept, except when its path contains
@@ -27,4 +27,4 @@ public record Alert(int serverErrorCount,int serverErrorWindowMinutes,int rateLi
 public record KeycloakDb(String url,String username,String password){}
 
 // adminUrl: webhook of the administrators' channel, else url; no webhook at all means no alerts
-public record Mattermost(String url,String adminUrl,int connectTimeoutMs,int readTimeoutMs){}}
+public record ChatWebhook(String url,String adminUrl,int connectTimeoutMs,int readTimeoutMs){}}

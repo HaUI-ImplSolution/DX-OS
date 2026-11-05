@@ -69,6 +69,12 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/license-exceptions.json.
 | Testcontainers, JUnit 5, Mockito,      | MIT, EPL-2.0, Apache-2.0         | Chỉ khi chạy test                      |
 | AssertJ                                |                                  |                                        |
 +----------------------------------------+----------------------------------+----------------------------------------+
+| WireMock (bản standalone)              | Apache-2.0; thư viện đóng gói:   | Chỉ khi chạy test, giả lập HTTP;       |
+|                                        | Apache-2.0, MIT, BSD-3-Clause,   | Jetty đóng gói kèm: chọn               |
+|                                        | EPL-2.0                          | Apache-2.0; Servlet API: chọn          |
+|                                        |                                  | EPL-2.0, không chọn GPL-2.0            |
+|                                        |                                  | with Classpath Exception               |
++----------------------------------------+----------------------------------+----------------------------------------+
 | formatter-maven-plugin                 | Apache-2.0                       | Chỉ khi build, kiểm định dạng mã       |
 +----------------------------------------+----------------------------------+----------------------------------------+
 | Eclipse Temurin (OpenJDK 21)           | GPL-2.0 with Classpath Exception | Base image build và runtime, chạy      |

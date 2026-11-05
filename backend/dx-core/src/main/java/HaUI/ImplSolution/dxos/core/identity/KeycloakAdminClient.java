@@ -406,6 +406,8 @@ public class KeycloakAdminClient {
     } catch (RestClientResponseException e) {
       throw new KeycloakAdminException(
           "Keycloak refused a lookup: HTTP " + e.getStatusCode().value(), e);
+    } catch (KeycloakAdminException e) {
+      throw e;
     } catch (RuntimeException e) {
       throw new KeycloakAdminException("Keycloak is unreachable", e);
     }
@@ -510,6 +512,8 @@ public class KeycloakAdminClient {
     } catch (RestClientResponseException e) {
       throw new KeycloakAdminException(
           "Keycloak refused to delete a user: HTTP " + e.getStatusCode().value(), e);
+    } catch (KeycloakAdminException e) {
+      throw e;
     } catch (RuntimeException e) {
       throw new KeycloakAdminException("Keycloak is unreachable", e);
     }
@@ -545,6 +549,8 @@ public class KeycloakAdminClient {
       }
       throw new KeycloakAdminException(
           "Keycloak refused a user lookup: HTTP " + e.getStatusCode().value(), e);
+    } catch (KeycloakAdminException e) {
+      throw e;
     } catch (RuntimeException e) {
       throw new KeycloakAdminException("Keycloak is unreachable", e);
     }

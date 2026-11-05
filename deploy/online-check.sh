@@ -10,7 +10,7 @@
 #
 # Settings:
 #   PUBLIC_URL                  address to check, default GATEWAY_PUBLIC_URL of deploy/.env
-#   MATTERMOST_WEBHOOK_URL_ADMIN, MATTERMOST_WEBHOOK_URL (deploy/.env, either one)
+#   ALERT_WEBHOOK_URL_ADMIN, ALERT_WEBHOOK_URL (deploy/.env, either one)
 #                               when set, a message is posted when the site goes down and when it is back
 #   STATE_FILE                  remembers the last result, default /tmp/dxos-online-check.state
 set -uo pipefail
@@ -22,8 +22,8 @@ env_value() { [[ -f .env ]] && grep -E "^$1=" .env | tail -n1 | cut -d= -f2- || 
 BASE_URL="${PUBLIC_URL:-$(env_value GATEWAY_PUBLIC_URL)}"
 BASE_URL="${BASE_URL%/}"
 STATE_FILE="${STATE_FILE:-/tmp/dxos-online-check.state}"
-WEBHOOK="$(env_value MATTERMOST_WEBHOOK_URL_ADMIN)"
-WEBHOOK="${WEBHOOK:-$(env_value MATTERMOST_WEBHOOK_URL)}"
+WEBHOOK="$(env_value ALERT_WEBHOOK_URL_ADMIN)"
+WEBHOOK="${WEBHOOK:-$(env_value ALERT_WEBHOOK_URL)}"
 
 [[ -n "$BASE_URL" ]] || { echo "Set PUBLIC_URL or GATEWAY_PUBLIC_URL in deploy/.env." >&2; exit 1; }
 
@@ -63,7 +63,7 @@ fi
 result=up
 (( ${#FAILED[@]} )) && result=down
 
-# Post to Mattermost only when the result changes, so a long outage is one message.
+# Post to the chat webhook only when the result changes, so a long outage is one message.
 previous="$(cat "$STATE_FILE" 2>/dev/null || echo up)"
 echo "$result" > "$STATE_FILE"
 if [[ -n "$WEBHOOK" && "$result" != "$previous" ]]; then

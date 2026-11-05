@@ -15,7 +15,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Thêm `ra-i18n-polyglot` làm dependency trực tiếp của web.
 - Gỡ `bi/` (Superset) và `chat/` (Mattermost) khỏi cây mã; bản cũ ở tag `v1.1.1`.
   Portal chỉ còn ứng dụng chính, Keycloak Admin, màn hình giám sát và Swagger; biến `PORTAL_BI_URL` và `PORTAL_CHAT_URL` không còn dùng.
-  Màn hình giám sát gửi cảnh báo qua `MATTERMOST_WEBHOOK_URL_ADMIN` hoặc `MATTERMOST_WEBHOOK_URL`, không còn đọc tệp webhook hay dò Superset và Mattermost.
+  Màn hình giám sát gửi cảnh báo qua `ALERT_WEBHOOK_URL_ADMIN` hoặc `ALERT_WEBHOOK_URL` (`.env` cũ dùng tên có chữ `MATTERMOST` cần đổi sang tên này), không còn đọc tệp webhook hay dò Superset và Mattermost.
 - Gỡ `seaweedfs/migrate-uploads.sh`.
 - Cài bằng một lệnh: `dxos-install.sh` phát hành kèm mỗi bản (nguồn ở `deploy/get.sh`) tải gói phát hành, kiểm SHA-256 và cài vào `~/.dxos`.
   Lệnh `dxos` có `start`, `stop`, `status`, `logs`, `admin`, `update`, `doctor`, `backup`, `av`, `uninstall`; `dxos start` tạo tài khoản `admin` đầu tiên với mật khẩu tạm.
@@ -117,6 +117,9 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
   Lịch sử có dòng `auto_closed` trong chuỗi băm và outbox, hành động hoàn tất chạy như lúc người nộp xác nhận; người nộp mở lại rồi xử lý xong lần nữa thì thời gian chờ tính lại.
   Họ khác khai báo `auto_close` thì bị từ chối; đổi giá trị là thay đổi mức `SAFE` ở kế hoạch (`CHANGE_AUTO_CLOSE`), áp dụng được khi còn hồ sơ đang mở.
   Bước quét chạy mỗi `engine.auto-close.sweep-ms` (mặc định 60000 ms).
+- Tài khoản dịch vụ bị Keycloak từ chối khi tra vai của người dùng, kiểm tra hoặc xóa người dùng thì báo "từ chối" (`ERR_ACCOUNT_SERVICE_DENIED`) thay vì "không dùng được".
+- Có test của các client HTTP bằng WireMock (`org.wiremock:wiremock-standalone`, Apache-2.0, chỉ ở test): `KeycloakAdminClientTest`, `WebhookSenderTest` và `ServiceProbeTest`, chỉ những ca làm sai lệch hành vi hoặc làm treo hệ thống.
+  Test chậm khoảng 5 giây của `WebhookSenderTest` có nhãn `slow`, bỏ qua được bằng `-DexcludedGroups=slow`.
 
 ## [2.0.0] - 2026-11-03
 

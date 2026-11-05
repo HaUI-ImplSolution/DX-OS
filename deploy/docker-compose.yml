@@ -298,8 +298,8 @@ services:
       MONITOR_OIDC_CLIENT_SECRET: ${MONITOR_OIDC_CLIENT_SECRET:?}
       GATEWAY_PUBLIC_URL: ${GATEWAY_PUBLIC_URL:?}
       # Alerts go to the administrators' channel when a webhook is set.
-      MATTERMOST_WEBHOOK_URL: ${MATTERMOST_WEBHOOK_URL:-}
-      MATTERMOST_WEBHOOK_URL_ADMIN: ${MATTERMOST_WEBHOOK_URL_ADMIN:-}
+      ALERT_WEBHOOK_URL: ${ALERT_WEBHOOK_URL:-}
+      ALERT_WEBHOOK_URL_ADMIN: ${ALERT_WEBHOOK_URL_ADMIN:-}
     # No published port: the gateway forwards /monitor, and delivers its own events straight to it.
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8090/monitor/actuator/health || exit 1"]

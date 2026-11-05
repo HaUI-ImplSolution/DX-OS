@@ -144,7 +144,7 @@ entities:
 | `GET /api/v1/models`, `/models/{model}/runs` | Mô hình đã áp dụng và lịch sử từng bước (ADMIN) |
 | `GET /api/v1/models/schema`, `/families`, `/templates`, `/{model}/versions` | Đặc tả tệp mô hình, họ mẫu, thư viện mẫu và các phiên bản đã áp dụng, cho bảng điều khiển (ADMIN) |
 | `GET /api/v1/meta/models` | Metadata mà người gọi được xem; mô hình đang bị giữ hiện với `held` và không có thực thể |
-| `/api/v1/data/{model}/{entity}` | Danh sách, tạo, xem, sửa, xóa; lọc `filter.<trường>[.<phép>]`, `sort`, `order`, `page`, `size` |
+| `/api/v1/data/{model}/{entity}` | Danh sách, tạo, xem, sửa, xóa; lọc `filter.<trường>[.<phép>]`, `sort`, `order`, `page`, `size`; sửa nhận `version` đã đọc, hồ sơ đã đổi thì 409 `ERR_CONCURRENT_MODIFICATION`; 403 `ERR_ACTION_NOT_ALLOWED` có `data.reason` |
 | `GET /api/v1/data/{model}/{entity}/stats` | Đếm trên các dòng người gọi được xem, nhận cùng bộ lọc `filter.*` như danh sách: `total`; với thực thể có quy trình thêm `byStatus` (số hồ sơ mỗi trạng thái) và `overdue` (hồ sơ có hạn xử lý trước `computedAt`); với thực thể có trường `unit` thêm `byUnit`; truy vấn bị cắt sau 10 giây |
 | `POST /api/v1/data/{model}/{entity}/{id}/actions/{action}` | Hành động của quy trình; metadata liệt kê hành động, trạng thái đầu và người được làm |
 | `POST .../{id}/assign`, `GET .../{id}/handlers` | Giao việc và danh sách người giao được |

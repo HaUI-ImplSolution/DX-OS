@@ -108,8 +108,9 @@ def main():
     rt.check("T6-06 move to another unit", status == 403, str(status))
 
     # T6-09: who may act.
-    status, _ = act(stu1, record, "approve")
+    status, body = act(stu1, record, "approve")
     rt.check("T6-09 student cannot approve", status == 403, str(status))
+    rt.check("T6-09 and the reason is a stable code", (body.get("data") or {}).get("reason") == "HANDLER_ONLY", str(body.get("data")))
     status, _ = act(sup, record, "approve")
     rt.check("T6-09 supervisor cannot approve", status == 403, str(status))
 
@@ -128,8 +129,9 @@ def main():
              officer_id in names and colleague_id in names and other_id not in names, str(people["data"]))
     status, body = kc.api(officer, "POST", f"{BASE}/{record}/assign", {"assignee": officer_id})
     rt.check("T6-10 claim", status == 200 and body["data"]["assignee"] == officer_id, f"{status} {body}")
-    status, _ = act(colleague, record, "approve")
+    status, body = act(colleague, record, "approve")
     rt.check("T6-11 colleague cannot act on an assigned record", status == 403, str(status))
+    rt.check("T6-11 and the reason names the assignee", (body.get("data") or {}).get("reason") == "ASSIGNED_TO_OTHER", str(body.get("data")))
     status, _ = kc.api(officer, "POST", f"{BASE}/{record}/assign", {"assignee": other_id})
     rt.check("T6-11 assign to another unit", status == 400, str(status))
     status, _ = kc.api(stu1, "POST", f"{BASE}/{record}/assign", {"assignee": officer_id})
@@ -146,8 +148,9 @@ def main():
     rt.check("T6-11 the creator is no handler of their record", both_id not in {p["id"] for p in people["data"]}, str(people["data"]))
     status, _ = kc.api(both, "POST", f"{BASE}/{own_unit['data']['id']}/assign", {"assignee": both_id})
     rt.check("T6-11 the creator cannot take their record", status == 400, str(status))
-    status, _ = act(both, own_unit["data"]["id"], "approve")
+    status, body = act(both, own_unit["data"]["id"], "approve")
     rt.check("T6-11 the creator cannot approve their record", status == 403, str(status))
+    rt.check("T6-11 and the reason is the self decision", (body.get("data") or {}).get("reason") == "SELF_DECISION", str(body.get("data")))
 
     # T6-12: the inbox.
     def inbox(token):

@@ -144,7 +144,7 @@ entities:
 | `GET /api/v1/models`, `/models/{model}/runs` | Applied models and the history of each step (ADMIN) |
 | `GET /api/v1/models/schema`, `/families`, `/templates`, `/{model}/versions` | The model file schema, workflow families, the template library and the applied versions, for the control panel (ADMIN) |
 | `GET /api/v1/meta/models` | Metadata the caller may see; a model that is held shows with `held` and no entities |
-| `/api/v1/data/{model}/{entity}` | List, create, read, update, delete; filter with `filter.<field>[.<op>]`, `sort`, `order`, `page`, `size` |
+| `/api/v1/data/{model}/{entity}` | List, create, read, update, delete; filter with `filter.<field>[.<op>]`, `sort`, `order`, `page`, `size`; an update takes the `version` it read, and a record that changed answers 409 `ERR_CONCURRENT_MODIFICATION`; a 403 `ERR_ACTION_NOT_ALLOWED` carries `data.reason` |
 | `GET /api/v1/data/{model}/{entity}/stats` | Counts over the rows the caller may see, with the same `filter.*` parameters as the list: `total`; for an entity with a process also `byStatus` (records per status) and `overdue` (records whose deadline is before `computedAt`); for an entity with a `unit` field also `byUnit`; the query is cut after 10 seconds |
 | `POST /api/v1/data/{model}/{entity}/{id}/actions/{action}` | An action of the workflow; the metadata lists the actions, their starting state and who may take them |
 | `POST .../{id}/assign`, `GET .../{id}/handlers` | Assign a record and list who can take it |

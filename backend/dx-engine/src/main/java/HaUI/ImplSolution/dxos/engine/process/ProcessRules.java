@@ -20,10 +20,12 @@ public class ProcessRules {
       Set<String> roles, String note) {
     boolean creator = me.equals(record.get("created_by"));
     if (action.by() == Actor.OWNER && !creator) {
-      throw new ActionNotAllowedException("Only the owner of the record can " + action.name());
+      throw new ActionNotAllowedException("Only the owner of the record can " + action.name(),
+          "OWNER_ONLY");
     }
     if (action.by() == Actor.HANDLER && !roles.contains(entity.process().handler())) {
-      throw new ActionNotAllowedException("Only " + entity.process().handler() + " can do this");
+      throw new ActionNotAllowedException("Only " + entity.process().handler() + " can do this",
+          "HANDLER_ONLY");
     }
     String status = (String) record.get("status");
     if (!action.allowedIn(status)) {
@@ -31,11 +33,13 @@ public class ProcessRules {
     }
     if (action.by() == Actor.HANDLER) {
       if (!entity.process().allowSelfDecision() && creator) {
-        throw new ActionNotAllowedException("The creator of a record cannot handle it");
+        throw new ActionNotAllowedException("The creator of a record cannot handle it",
+            "SELF_DECISION");
       }
       Object assignee = record.get("assignee");
       if (assignee != null && !me.equals(assignee)) {
-        throw new ActionNotAllowedException("The record is assigned to someone else");
+        throw new ActionNotAllowedException("The record is assigned to someone else",
+            "ASSIGNED_TO_OTHER");
       }
     }
     if (action.needsNote() && (note == null || note.isBlank())) {

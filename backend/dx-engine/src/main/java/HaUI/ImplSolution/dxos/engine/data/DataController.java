@@ -81,7 +81,10 @@ public class DataController {
   }
 
   @RequestMapping(value = "/{id}", method = {RequestMethod.PUT, RequestMethod.PATCH})
-  @Operation(summary = "Change the given fields of a record")
+  @Operation(summary = "Change the given fields of a record",
+      description = "The body may carry version, as read with the record: the change then applies"
+          + " only to that version, and 409 ERR_CONCURRENT_MODIFICATION answers when the record"
+          + " changed in between. Without version the change applies to the current record.")
   public ApiResponse<Map<String, Object>> update(@PathVariable String model,
       @PathVariable String entity, @PathVariable long id, @RequestBody Map<String, Object> body) {
     Model m = registry.require(model);
@@ -104,7 +107,9 @@ public class DataController {
       description = "The metadata lists the actions of an entity, the state each one starts from"
           + " and who may take it. The body may carry {\"note\": \"...\"}, required by the"
           + " actions that say so. 403 when the caller may not take it, or when the record is"
-          + " assigned to someone else; 409 when the record is in another state. A terminal state"
+          + " assigned to someone else, with data.reason naming why (for example SELF_DECISION,"
+          + " OWNER_ONLY, HANDLER_ONLY, ASSIGNED_TO_OTHER); 409 when the record is in another"
+          + " state. A terminal state"
           + " stores decided_by and decided_at. The owner can take the action withdraw from any"
           + " state that is not final.")
   public ApiResponse<Map<String, Object>> act(@PathVariable String model,

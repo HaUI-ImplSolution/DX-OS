@@ -48,6 +48,7 @@ python3 deploy/dev/check_booking.py         # sau check_process.py, trên cùng 
 python3 deploy/dev/check_demo.py            # sau các script trên hoặc trên stack rỗng
 python3 deploy/dev/check_guards.py          # sau các script trên, trên cùng stack
 python3 deploy/dev/check_users.py           # sau check_guards.py, trên cùng stack
+python3 deploy/dev/check_docs.py            # trên stack bất kỳ đang chạy
 python3 deploy/dev/check_events.py          # sau check_users.py, trên cùng stack; khởi động lại backend vài lần
 python3 deploy/dev/check_bootstrap.py       # sau check_events.py, trên cùng stack; khởi động lại backend vài lần
 ```
@@ -490,3 +491,18 @@ Không dựng stack, không build image; test dùng máy chủ HTTP giả của 
 | Lỗi tìm ra: `clientRolesOf`, `deleteUser`, `userExists` bọc lỗi token bị từ chối thành "Keycloak is unreachable" | Đạt | Test thất bại trước khi sửa, đạt sau khi thêm `catch (KeycloakAdminException e) { throw e; }`; `userExists`, `findUserId` và `deleteUser` không có nơi gọi trong mã chạy thật |
 | Toàn bộ test của `dx-model`, `dx-core`, `dx-engine`, `dx-monitor` | Đạt | 34 ở `dx-core`, 13 ở `dx-engine` (gồm `ArchitectureTest` và `AdvisoryJobLockIntegrationTest` chạy với Docker), 7 ở `dx-monitor`, `BUILD SUCCESS`; `formatter:validate` không báo lỗi |
 | Chạy trên CI | Chưa kiểm | Mới chạy trên máy dev; CI cần tải `wiremock-standalone` từ Maven Central |
+
+### Kiểm ngày 05/11/2026: chống ghi đè, lý do chặn và kiểm tài liệu với OpenAPI
+
+Image backend và frontend dựng từ cây làm việc gồm cả tệp chưa commit; stack thử riêng (cơ sở dữ liệu rỗng) đã gỡ sau khi kiểm.
+
+| Mục | Kết quả | Ghi chú |
+|---|---|---|
+| `mvn formatter:format compile`, `formatter:validate` cho `dx-engine` | Đạt | Cùng `dx-core` và `dx-model` |
+| `npx tsc --noEmit` | Đạt | Gồm `dataProvider.ts` và `CalendarPage.tsx` |
+| Nhóm `model and process` kèm `check_docs.py` | Đạt | `check_api.py` 51, `check_recovery.py` 19, `check_case.py` 74, `check_change.py` 65, `check_process.py` 64, `check_booking.py` 45, `check_demo.py` 26, `check_guards.py` 61, `check_users.py` 41, `check_docs.py` 3 |
+| Sửa theo `version` | Đạt | T8-10 trong `check_process.py`: đúng phiên bản thì sửa được và phiên bản tăng; phiên bản cũ thì 409 `ERR_CONCURRENT_MODIFICATION` và nội dung mới giữ nguyên; `version` không phải số thì 400; không có `version` thì sửa như trước; một bước của quy trình xen vào cũng làm phiên bản cũ |
+| Lý do chặn | Đạt | `HANDLER_ONLY`, `ASSIGNED_TO_OTHER` và `SELF_DECISION` trong `check_case.py` (T6-09, T6-11); các mã còn lại chưa có kiểm tra riêng |
+| `check_docs.py` bắt được endpoint không có thật | Đạt | Thêm tạm hai endpoint giả vào một bản sao của `ARCHITECTURE.md`: kiểm tra báo hỏng và nêu đúng hai endpoint đó |
+| Form sửa hồ sơ bằng Chrome | Đạt | Mở form hồ sơ, đổi hồ sơ bằng API, bấm Lưu ở form cũ: hiện "Bản ghi vừa được người khác thay đổi, hãy tải lại rồi thử lại", nội dung do API ghi vẫn còn nguyên |
+| Kéo thả lịch đặt chỗ gửi `version` bằng Chrome | Đạt | Kéo lượt 09:00 lên 08:00 rồi lên 07:00 không tải lại trang: cả hai lần lưu được, `GET` lại ra 07:00 với `version` tăng theo từng lần, lượt kia không đổi; lần thử đầu cho thấy lịch giữ `version` cũ sau lần kéo thứ nhất nên lần kéo thứ hai bị 409, đã sửa để lịch lấy `version` mới từ kết quả lưu |

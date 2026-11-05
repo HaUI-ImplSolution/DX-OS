@@ -124,9 +124,11 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(ActionNotAllowedException.class)
-  public ResponseEntity<ApiResponse<Void>> handleActionNotAllowed(ActionNotAllowedException ex) {
+  public ResponseEntity<ApiResponse<Map<String, String>>> handleActionNotAllowed(
+      ActionNotAllowedException ex) {
+    Map<String, String> data = ex.getReason() == null ? null : Map.of("reason", ex.getReason());
     return ResponseEntity.status(HttpStatus.FORBIDDEN)
-        .body(ApiResponse.error("ERR_ACTION_NOT_ALLOWED", ex.getMessage()));
+        .body(ApiResponse.error("ERR_ACTION_NOT_ALLOWED", ex.getMessage(), data));
   }
 
   @ExceptionHandler(KeycloakAdminException.class)

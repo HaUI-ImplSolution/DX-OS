@@ -48,6 +48,7 @@ export default function CalendarPage({ byResource }: { byResource: Record<string
       id: String(row.id),
       title: `${String(row[title] ?? `#${row.id}`)} · ${label(String(row.status))}`,
       editable: entity.canWrite && !states.find((state) => state.name === row.status)?.terminal,
+      extendedProps: { version: row.version },
       start: String(row[booking.starts]),
       end: String(row[booking.ends]),
       color: color(String(row.status)),
@@ -60,10 +61,15 @@ export default function CalendarPage({ byResource }: { byResource: Record<string
     const { start, end } = info.event;
     if (!start || !end) return info.revert();
     try {
-      await request(
+      const saved = await request<{ version: number }>(
         `/data/${model}/${name}/${info.event.id}`,
-        json("PATCH", { [booking.starts]: start.toISOString(), [booking.ends]: end.toISOString() }),
+        json("PATCH", {
+          [booking.starts]: start.toISOString(),
+          [booking.ends]: end.toISOString(),
+          version: info.event.extendedProps.version,
+        }),
       );
+      info.event.setExtendedProp("version", saved.version);
     } catch (error) {
       info.revert();
       notify(error instanceof Error ? error.message : "Không đổi được giờ", { type: "error" });

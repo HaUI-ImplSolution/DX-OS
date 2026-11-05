@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 import org.postgresql.util.PSQLException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -248,7 +249,8 @@ public class DataService {
     Access access = access(model, entity);
     requireRead(access);
     requireWrite(access);
-    Map<String, Object> values = coerce(entity, body, false);
+    Long baseVersion = baseVersion(body);
+    Map<String, Object> values = coerce(entity, withoutVersion(body), false);
     if (values.isEmpty()) {
       throw new ModelValidationException("body", "no field to update");
     }
@@ -267,21 +269,50 @@ public class DataService {
       params.addValue(name, value);
     });
     String scope = scope(model, entity, access.writes(), params);
+    String sameVersion = baseVersion == null ? "" : " AND version = :baseVersion";
+    params.addValue("baseVersion", baseVersion);
     List<Map<String, Object>> rows;
     try {
       rows = jdbc.queryForList("UPDATE " + table(model, entity) + " SET " + String.join(", ", sets)
           + ", updated_at = now(), version = version + 1 WHERE id = :id " + "AND " + scope
-          + " RETURNING " + columns(entity), params);
+          + sameVersion + " RETURNING " + columns(entity), params);
     } catch (DataIntegrityViolationException e) {
       throw translate(entity, e);
     }
     if (rows.isEmpty()) {
+      boolean there =
+          baseVersion != null && !jdbc
+              .queryForList(
+                  "SELECT 1 FROM " + table(model, entity) + " WHERE id = :id AND " + scope, params)
+              .isEmpty();
+      if (there) {
+        throw new ObjectOptimisticLockingFailureException(entity.name(), id);
+      }
       throw notFound(entity, id);
     }
     String status = (String) rows.get(0).get("status");
     events.record(model, entity, id, "updated", status, status, null,
         String.join(", ", changes.keySet()));
     return present(rows.get(0));
+  }
+
+  // The version the caller read the record at; an update with one only applies to that version.
+  private static Long baseVersion(Map<String, Object> body) {
+    Object value = body.get("version");
+    if (value == null) {
+      return null;
+    }
+    try {
+      return value instanceof Number number ? number.longValue() : Long.parseLong(value.toString());
+    } catch (NumberFormatException e) {
+      throw new ModelValidationException("version", "must be a whole number");
+    }
+  }
+
+  private static Map<String, Object> withoutVersion(Map<String, Object> body) {
+    Map<String, Object> fields = new LinkedHashMap<>(body);
+    fields.remove("version");
+    return fields;
   }
 
   // Passes when the record is in a row the caller may write and, with a process, not final.
@@ -484,7 +515,7 @@ public class DataService {
 
   private void requireAssigner(Model model, Entity entity) {
     if (!canAssign(model, entity)) {
-      throw new ActionNotAllowedException("Your roles cannot assign this record");
+      throw new ActionNotAllowedException("Your roles cannot assign this record", "NOT_ASSIGNER");
     }
   }
 
@@ -515,7 +546,8 @@ public class DataService {
         "SELECT count(*) FROM " + table(model, parent) + " WHERE id = :id AND " + condition, params,
         Integer.class);
     if (found == null || found == 0) {
-      throw new ActionNotAllowedException("The " + via + " is out of your reach");
+      throw new ActionNotAllowedException("The " + via + " is out of your reach",
+          "PARENT_OUT_OF_REACH");
     }
   }
 
@@ -527,7 +559,7 @@ public class DataService {
       return;
     }
     if (!writes.contains(Scope.UNIT)) {
-      throw new ActionNotAllowedException("Your roles cannot create this record");
+      throw new ActionNotAllowedException("Your roles cannot create this record", "CANNOT_CREATE");
     }
     requireOwnUnit(entity, values);
   }
@@ -550,7 +582,7 @@ public class DataService {
   private void requireOwnUnit(Entity entity, Map<String, Object> values) {
     Object unit = entity.unitField().map(field -> values.get(field.name())).orElse(null);
     if (unit == null || !user.groups().contains(unit)) {
-      throw new ActionNotAllowedException("The unit is out of your reach");
+      throw new ActionNotAllowedException("The unit is out of your reach", "UNIT_OUT_OF_REACH");
     }
   }
 
@@ -600,13 +632,14 @@ public class DataService {
 
   private void requireRead(Access access) {
     if (!access.read()) {
-      throw new ActionNotAllowedException("Your roles cannot reach this entity");
+      throw new ActionNotAllowedException("Your roles cannot reach this entity",
+          "NO_ROLE_FOR_ENTITY");
     }
   }
 
   private void requireWrite(Access access) {
     if (!access.write()) {
-      throw new ActionNotAllowedException("Your roles can only read this entity");
+      throw new ActionNotAllowedException("Your roles can only read this entity", "READ_ONLY");
     }
   }
 
@@ -739,7 +772,8 @@ public class DataService {
     for (Map.Entry<String, Object> item : body.entrySet()) {
       String name = item.getKey();
       if ("status".equals(name) && entity.process() != null) {
-        throw new ActionNotAllowedException("The status is changed by the process only");
+        throw new ActionNotAllowedException("The status is changed by the process only",
+            "STATUS_BY_PROCESS_ONLY");
       }
       if (SYSTEM_COLUMNS.contains(name) || "status".equals(name)) {
         errors.put(name, "cannot be set");

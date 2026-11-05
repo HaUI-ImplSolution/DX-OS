@@ -107,7 +107,8 @@ public class AttachmentService {
     data.requireChangeable(model, entity, id);
     Map<String, Object> row = find(model, entity, id, fileId);
     if (!user.currentUserId().equals(row.get("uploaded_by"))) {
-      throw new ActionNotAllowedException("Only the user who added a file can remove it");
+      throw new ActionNotAllowedException("Only the user who added a file can remove it",
+          "FILE_ADDER_ONLY");
     }
     jdbc.update("DELETE FROM engine.attachment WHERE id = ?", fileId);
     cleaner.deleteLater(model.name(), entity.name(), id, (String) row.get("object_key"));

@@ -169,6 +169,27 @@ def main():
     ok, data = counts_match(asker)
     rt.check("T8-09 the owner's stats count only their own tickets", ok and data["total"] >= 2, str(data))
 
+    # T8-10: an update that names the version it read does not overwrite a newer one.
+    mine = create(asker, TICKETS, {"title": "Version"})
+    status, body = kc.api(asker, "GET", f"{TICKETS}/{mine}")
+    read_at = body["data"]["version"]
+    status, body = kc.api(asker, "PATCH", f"{TICKETS}/{mine}", {"title": "First", "version": read_at})
+    rt.check("T8-10 an update at the current version applies and moves the version",
+             status == 200 and body["data"]["version"] == read_at + 1, f"{status} {body.get('data')}")
+    status, body = kc.api(asker, "PATCH", f"{TICKETS}/{mine}", {"title": "Second", "version": read_at})
+    rt.check("T8-10 an update at an older version is refused", status == 409 and body.get("errorCode") == "ERR_CONCURRENT_MODIFICATION", f"{status} {body}")
+    status, body = kc.api(asker, "GET", f"{TICKETS}/{mine}")
+    rt.check("T8-10 and the record keeps the newer content", body["data"]["title"] == "First", str(body["data"]["title"]))
+    status, body = kc.api(asker, "PATCH", f"{TICKETS}/{mine}", {"title": "Third", "version": "x"})
+    rt.check("T8-10 a version that is not a number is refused", status == 400, f"{status} {body}")
+    status, body = kc.api(asker, "PATCH", f"{TICKETS}/{mine}", {"title": "Fourth"})
+    rt.check("T8-10 an update without a version applies to the current record", status == 200 and body["data"]["title"] == "Fourth", f"{status} {body}")
+    status, body = kc.api(asker, "GET", f"{TICKETS}/{mine}")
+    read_at = body["data"]["version"]
+    status, _ = act(agent, TICKETS, mine, "start")
+    status, body = kc.api(asker, "PATCH", f"{TICKETS}/{mine}", {"title": "Late", "version": read_at})
+    rt.check("T8-10 a step of the process in between also makes the version stale", status == 409, f"{status} {body}")
+
     # T8-07: changing the handler and the deadline is safe and reports the records in flight.
     changed = DESK.replace("deadline: 1h", "deadline: 2d")
     status, body = kc.api(admin, "POST", "/models/plan", changed, YAML)

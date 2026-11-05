@@ -41,6 +41,12 @@ function body(meta: EntityMeta | undefined, data: Row) {
   return payload;
 }
 
+// The version of the record the form was opened on; the API refuses the save with 409 when someone else
+// changed the record since, so a stale form cannot overwrite it. A record without a version sends none.
+function versionOf(previous: Row | undefined) {
+  return typeof previous?.version === "number" ? { version: previous.version } : {};
+}
+
 // The API answers a rule that failed with the problem of each field; react-admin shows them on the form.
 async function call<T>(action: () => Promise<T>): Promise<T> {
   try {
@@ -96,9 +102,12 @@ export function createDataProvider(metaOf: (resource: string) => EntityMeta | un
         request<Row>(path(resource), json("POST", body(metaOf(resource), data))),
       )) as never,
     }),
-    update: async (resource, { id, data }) => ({
+    update: async (resource, { id, data, previousData }) => ({
       data: (await call(() =>
-        request<Row>(`${path(resource)}/${id}`, json("PATCH", body(metaOf(resource), data))),
+        request<Row>(
+          `${path(resource)}/${id}`,
+          json("PATCH", { ...body(metaOf(resource), data), ...versionOf(previousData) }),
+        ),
       )) as never,
     }),
     updateMany: async (resource, { ids, data }) => {

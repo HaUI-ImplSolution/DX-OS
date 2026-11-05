@@ -65,7 +65,8 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Hủy bỏ lần áp dụng đầu của một mô hình xóa luôn client `dxos-m-<mô hình>` (bước `DROP_CLIENT`); nhóm đơn vị dùng chung giữa các mô hình nên được giữ lại.
 - `backup.sh` cảnh báo khi dump và chụp kho lâu hơn `DXOS_FILE_DELETE_DELAY`.
   `backup.sh verify` khởi động một SeaweedFS tạm trên bản chụp kho và báo `FAILED` kèm tên tệp khi một khóa trong `engine.attachment` không có tệp; job `backup-drill` kiểm cả hai trường hợp bằng tệp đính kèm thật.
-- Job `e2e` trong `ci-infra.yml` dựng image của commit, khởi động stack rỗng, chạy mười một script ở `deploy/dev` theo thứ tự của `docs/TESTING.md` và tải log các service khi lỗi.
+- Job `e2e` trong `ci-infra.yml` chạy hai nhóm song song, mỗi nhóm dựng image của commit và khởi động một stack rỗng riêng: nhóm đầu chạy chín script từ `check_api.py` đến `check_users.py` theo thứ tự của `docs/TESTING.md`, nhóm sau chạy `check_events.py` và `check_bootstrap.py`; log các service được tải khi lỗi và thời gian từng script ghi vào tóm tắt của job.
+- `DXOS_OUTBOX_POLL_MS` và `DXOS_OVERDUE_SWEEP_MS` đặt chu kỳ xem hàng đợi sự kiện và chu kỳ quét hồ sơ quá hạn (mặc định 2000 và 60000 mili giây); `check_events.py` đặt 500 và 5000.
 - Client OIDC `dxos-cli` có tài khoản dịch vụ giữ vai `ADMIN`; bí mật `DXOS_CLI_SECRET` do `make_env.sh` sinh, và `install.sh --upgrade` thêm vào `.env` có sẵn.
   `dxos plan <tệp>` in kế hoạch.
   `dxos apply <tệp> [--accept SAFE|MIGRATION|LOSS]` áp dụng với phiên bản của kế hoạch làm `base`, từ chối một kế hoạch vượt mức `--accept` với mã thoát 1, và lịch sử áp dụng ghi tài khoản dịch vụ.

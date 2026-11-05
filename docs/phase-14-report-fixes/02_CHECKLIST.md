@@ -20,12 +20,12 @@ Mục kiểm bằng tay ghi kết quả ở `docs/TESTING.md`, mục "Kiểm ng�
 
 - [x] WP14-03-INFRA-01 `backup.sh` cảnh báo khi lượt chạy lâu hơn `DXOS_FILE_DELETE_DELAY`
 - [x] WP14-03-INFRA-02 `verify` khởi động SeaweedFS tạm và kiểm mọi khóa của `engine.attachment`
-- [ ] WP14-03-INFRA-03 Job `backup-drill` có tệp đính kèm thật (chạy trên GitHub Actions sau khi đẩy)
+- [x] WP14-03-INFRA-03 Job `backup-drill` có tệp đính kèm thật (xanh trên GitHub Actions, commit `d0aa2d14`)
 
 ## WP14-04: E2E trong CI (acc2)
 
-- [ ] WP14-04-INFRA-01 Job E2E trong `ci-infra.yml`
-- [ ] WP14-04-INFRA-02 Tải log khi lỗi
+- [x] WP14-04-INFRA-01 Job E2E trong `ci-infra.yml` (xanh trên GitHub Actions, commit `d0aa2d14`)
+- [x] WP14-04-INFRA-02 Tải log khi lỗi
 
 ## WP14-05: CLI `plan` và `apply` (acc1, acc2)
 
@@ -48,7 +48,7 @@ Mục kiểm bằng tay ghi kết quả ở `docs/TESTING.md`, mục "Kiểm ng�
 
 - [x] WP14-08-INFRA-01 `restart: unless-stopped` cho mọi service chạy lâu
 - [x] WP14-08-INFRA-02 `dxos reconcile`, `install`, `uninstall`
-- [ ] WP14-08-TEST-01 Xóa container (đã kiểm); khởi động lại Docker (cần `sudo systemctl restart docker`, chưa kiểm)
+- [x] WP14-08-TEST-01 Xóa container; khởi động lại Docker daemon
 
 ## WP14-09: Xóa tệp qua outbox (acc2)
 
@@ -82,7 +82,7 @@ Mục kiểm bằng tay ghi kết quả ở `docs/TESTING.md`, mục "Kiểm ng�
 
 ## Đóng phase
 
-- [ ] Chuỗi script đạt trên stack rỗng và trong CI
+- [x] Chuỗi script đạt trên stack rỗng và trong CI
 - [x] CHANGELOG, TESTING, OPERATIONS, `.env.example`
 - [x] Xóa phần đã sửa khỏi BACKLOG và `docs/Bao_cao_ky_thuat.md`
 - [ ] Gộp việc còn lại vào BACKLOG, xóa thư mục phase

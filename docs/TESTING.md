@@ -317,5 +317,7 @@ Chuỗi script chạy trên một stack thử riêng (project Compose `dxscratch
 | Xóa container `backend`, `dxos reconcile` | Đạt | Container chạy lại và healthy sau 18 giây; mọi container có `restart: unless-stopped` |
 | `dxos stop` rồi `dxos reconcile` | Đạt | Không container nào được bật lại; xóa `deploy/.stopped` rồi `dxos reconcile` đưa cả tám service về healthy |
 | `dxos reconcile install` và `uninstall` (systemd user timer) | Chưa kiểm | Phiên này bị chặn cài timer; session còn lại đã chạy install, uninstall và thấy timer xuất hiện, biến mất |
-| Khởi động lại Docker daemon | Chưa kiểm | Cần quyền root: chạy `sudo systemctl restart docker` trên stack thử rồi xem `docker ps` |
-| Job `e2e` và `backup-drill` trên GitHub Actions | Chưa kiểm | Cần đẩy commit lên; tệp workflow đọc được bằng PyYAML và có đủ bảy job |
+| Khởi động lại Docker daemon | Đạt | `sudo systemctl restart docker` do người dùng chạy; mọi service tự lên lại |
+| Job `backup-drill` trên GitHub Actions | Đạt | Commit `d0aa2d14`: có tệp thì `verify` đạt, thêm dòng tệp không có trong kho thì `verify` thất bại |
+| Job `e2e` trên GitHub Actions | Đạt | Commit `d0aa2d14`: stack rỗng dựng từ image của commit, chuỗi script chạy hết; cả job 14 phút 35 giây, riêng chuỗi script 11 phút 55 giây |
+| Hai nhóm của job `e2e` chạy song song, mỗi nhóm một stack rỗng riêng | Đạt | Chạy cục bộ trên cây làm việc gồm tệp chưa commit: nhóm đầu chín script 51, 19, 71, 65, 56, 45, 26, 59, 41 trong 277 giây; nhóm sau `check_events.py` 18 và `check_bootstrap.py` 8 trong 297 giây; cả hai stack đã gỡ cùng volume |

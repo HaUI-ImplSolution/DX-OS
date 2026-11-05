@@ -26,6 +26,9 @@ BASE = "/data/onestop/request"
 received = []
 mode = {"answer": 200}
 lock = threading.Lock()
+# The backend looks at the outbox and sweeps for overdue records often, so a check waits seconds, not minutes.
+FAST = {"DXOS_OUTBOX_POLL_MS": "500", "DXOS_OVERDUE_SWEEP_MS": "5000"}
+SETTLE = 3
 
 
 class Receiver(BaseHTTPRequestHandler):
@@ -45,7 +48,7 @@ class Receiver(BaseHTTPRequestHandler):
 
 
 def start_backend(extra_env=None):
-    env = dict(os.environ, **(extra_env or {}))
+    env = dict(os.environ, **FAST, **(extra_env or {}))
     subprocess.run(rt.COMPOSE + ["up", "-d", "backend"], capture_output=True, text=True, cwd=f"{rt.REPO}/deploy", env=env)
     assert rt.wait_api(), "backend did not come back"
 
@@ -66,7 +69,7 @@ def wait_for(condition, seconds):
     while time.time() < end:
         if condition():
             return True
-        time.sleep(2)
+        time.sleep(0.5)
     return condition()
 
 
@@ -140,14 +143,14 @@ def main():
     tried = len(delivered(event, 500))
     mode["answer"] = 200
     ok = wait_for(lambda: len(delivered(event)) >= 1, 120)
-    time.sleep(10)
+    time.sleep(SETTLE)
     rt.check("EV-08 a message the receiver refused is tried again and delivered once when it answers", tried >= 2 and ok and len(delivered(event)) == 1, f"{tried} refused, {len(delivered(event))} delivered")
 
     status, stale = kc.api(stu, "POST", BASE, {"reason": "late", "kind": "Hoãn thi", "department": "DAO_TAO"})
     stale_id = stale["data"]["id"]
     rt.psql(f"update m_onestop.request set handle_by = now() - interval '1 hour' where id = {stale_id}")
     overdue = lambda: [r for r in delivered() if r["body"]["action"] == "overdue" and r["body"]["recordId"] == stale_id]
-    rt.check("EV-09 a record past its deadline is reported once with the system as the actor", wait_for(overdue, 150) and len(overdue()) == 1 and overdue()[0]["body"]["actor"] == "system" and overdue()[0]["signed"])
+    rt.check("EV-09 a record past its deadline is reported once with the system as the actor", wait_for(overdue, 40) and len(overdue()) == 1 and overdue()[0]["body"]["actor"] == "system" and overdue()[0]["signed"])
 
     # A message the receiver always refuses stops after the set number of tries; a retry gives one more.
     start_backend({**webhook, "DXOS_OUTBOX_MAX_ATTEMPTS": "3"})
@@ -156,7 +159,7 @@ def main():
     doomed_event = count(f"select max(id) from engine.record_event where record_id = {doomed['data']['id']} and entity = 'request'")
     doomed_where = f"topic = 'record.event' and payload->>'eventId' = '{doomed_event}'"
     wait_for(lambda: count(f"select count(*) from engine.outbox where {doomed_where} and next_attempt_at = 'infinity'") == 1, 90)
-    wait_for(lambda: False, 8)
+    wait_for(lambda: False, SETTLE)
     status, listing = kc.api(admin, "GET", "/outbox?status=stopped&size=100")
     mine = [m for m in listing["data"]["page"]["items"] if json.loads(m["payload"]).get("eventId") == doomed_event]
     rt.check("EV-13 a message stops after the set number of tries and the console lists it as stopped",
@@ -165,7 +168,7 @@ def main():
              f"{len(delivered(doomed_event, 500))} tries, listed {len(mine)}")
     status, _ = kc.api(admin, "POST", f"/outbox/{mine[0]['id']}/retry")
     wait_for(lambda: len(delivered(doomed_event, 500)) >= 4, 30)
-    wait_for(lambda: False, 8)
+    wait_for(lambda: False, SETTLE)
     rt.check("EV-14 a retry gives a stopped message one more try and it stops again",
              status == 200 and len(delivered(doomed_event, 500)) == 4
              and count(f"select count(*) from engine.outbox where {doomed_where} and next_attempt_at = 'infinity' and delivered_at is null") == 1,
@@ -178,7 +181,7 @@ def main():
 
     # The object of a removed file is deleted after the delay; while the store is down the delete is tried again.
     bucket = next(line.split("=", 1)[1].strip() for line in open(kc.ENV_FILE) if line.startswith("S3_BUCKET="))
-    start_backend({**webhook, "DXOS_FILE_DELETE_DELAY": "40s"})
+    start_backend({**webhook, "DXOS_FILE_DELETE_DELAY": "25s"})
     status, holder = kc.api(stu, "POST", BASE, {"reason": "with a file to remove", "kind": "Phúc khảo", "department": "DAO_TAO"})
     held = holder["data"]["id"]
     kc.api(stu, "POST", f"{BASE}/{held}/files?field=evidence", upload, f"multipart/form-data; boundary={boundary}")
@@ -206,12 +209,12 @@ def main():
 
     start_backend({**webhook, "ENGINE_FAULT_AFTER_DECISION": "true"})
     status, fresh = kc.api(stu, "POST", BASE, {"reason": "rollback", "kind": "Hoãn thi", "department": "DAO_TAO"})
-    wait_for(lambda: False, 6)
+    wait_for(lambda: False, SETTLE)
     before_lines = count("select count(*) from engine.record_event")
     before_messages = count("select count(*) from engine.outbox where topic = 'record.event'")
     seen = len(received)
     status, _ = act(off, fresh["data"]["id"], "approve")
-    wait_for(lambda: False, 6)
+    wait_for(lambda: False, SETTLE)
     rt.check("EV-10 a decision that is rolled back leaves no line, no message and no request",
              status == 500 and count("select count(*) from engine.record_event") == before_lines
              and count("select count(*) from engine.outbox where topic = 'record.event'") == before_messages and len(received) == seen)
@@ -224,7 +227,7 @@ def main():
     lines_before = count("select count(*) from engine.record_event")
     messages_before = count("select count(*) from engine.outbox where topic = 'record.event'")
     kc.api(stu, "PATCH", f"{BASE}/{fresh['data']['id']}", {"reason": "no webhook"})
-    wait_for(lambda: False, 6)
+    wait_for(lambda: False, SETTLE)
     rt.check("EV-11 without an address the history is written and nothing is queued or sent",
              count("select count(*) from engine.record_event") == lines_before + 1
              and count("select count(*) from engine.outbox where topic = 'record.event'") == messages_before and len(received) == seen)

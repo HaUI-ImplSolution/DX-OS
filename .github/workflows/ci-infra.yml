@@ -143,8 +143,18 @@ jobs:
           grep -q "files missing for attachments: gone.pdf" verify-missing.log
 
   e2e:
+    name: e2e (${{ matrix.group }})
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Each group runs on its own empty stack; the scripts of a group depend only on the ones before them in it.
+          - group: model and process
+            checks: api recovery case change process booking demo guards users
+          - group: events and bootstrap
+            checks: events bootstrap
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -168,10 +178,13 @@ jobs:
 
       - name: Run the checks in the order of docs/TESTING.md
         run: |
-          for check in api recovery case change process booking demo guards users events bootstrap; do
+          for check in ${{ matrix.checks }}; do
             echo "::group::check_$check.py"
+            started=$SECONDS
             python3 "deploy/dev/check_$check.py"
+            echo "check_$check.py took $((SECONDS - started)) s"
             echo "::endgroup::"
+            echo "check_$check.py: $((SECONDS - started)) s" >> "$GITHUB_STEP_SUMMARY"
           done
 
       - name: Logs of the services
@@ -185,7 +198,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-logs
+          name: e2e-logs-${{ strategy.job-index }}
           path: ${{ runner.temp }}/compose.log
 
   gateway:

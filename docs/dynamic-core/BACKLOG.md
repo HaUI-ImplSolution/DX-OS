@@ -17,6 +17,9 @@ Mốc dưới đây là dự kiến.
 
 | Việc | Ghi chú |
 |---|---|
+| Thời gian job `e2e` | Chưa đo hai nhóm của job trên GitHub Actions; trên máy mỗi nhóm chạy khoảng 5 phút, nặng nhất là `check_events.py` (khoảng 160 giây), `check_bootstrap.py` (khoảng 135 giây), `check_guards.py` (khoảng 100 giây) và `check_recovery.py` (khoảng 70 giây), phần lớn là khởi động lại backend và dừng Keycloak; còn có thể cache layer Docker khi dựng image hoặc gom các ca của `check_events.py` dùng chung cấu hình vào một lần khởi động lại |
+| Ma trận bằng chứng | Chưa có bảng yêu cầu → chức năng → bài kiểm → CI hoặc demo → giới hạn; chưa tách bằng chứng từ dữ liệu giả lập, từ stack kiểm và từ triển khai công khai; kết quả kiểm tay ở `docs/TESTING.md` còn ghi trên cây làm việc gồm tệp chưa commit |
+| Bộ hỏi đáp kỹ thuật | Chưa có; gắn với mã và demo của bản nộp: ranh giới lõi, đóng góp riêng, đổi mô hình an toàn, giới hạn phục hồi |
 | Tag `v2.0.0` và GitHub Release | Tạo sau khi nhánh phase 10 vào `main`; ngày của mục `[2.0.0]` trong `CHANGELOG.md` sửa theo ngày tag; chạy workflow Release từ tag để có image `v2.0.0` mà `dxos-install.sh` kéo về |
 | Kiểm cài bằng image thật | `dxos-install.sh` và `dxos start <tệp>` mới kiểm bằng image local qua `install.sh`; sau khi workflow Release có image `v2.0.0`, chạy lại trên máy sạch |
 | Trang docs `DX-OS-docs` | Vẫn mô tả bản `v1.1.1`; cập nhật cùng lúc triển khai |
@@ -55,12 +58,12 @@ Mốc dưới đây là dự kiến.
 | Quét mã độc | Tắt mặc định ở bản cài vì ClamAV cần khoảng 1 GB RAM; tắt thì tệp tải lên không được quét; quét nằm ở dịch vụ lưu tệp, sau gateway |
 | Kiểm bản sao lưu | `verify` đếm bảng và dòng và kiểm mọi khóa của `engine.attachment` có tệp, nhưng không so nội dung từng tệp, quy trình đang chạy hay quyền sau khi khôi phục |
 | Sao lưu và khoảng trễ xóa tệp | Bản sao lưu có đủ tệp của mọi dòng trong bản dump chỉ khi dump và chụp kho ngắn hơn `DXOS_FILE_DELETE_DELAY`; lượt dài hơn chỉ được cảnh báo; tệp đã gỡ vẫn nằm trong kho đến hết khoảng trễ |
-| Tự phục hồi | `dxos reconcile` chỉ chạy một bản backend, không có khóa chung với `dxos update` và `backup.sh`, và timer cần phiên đăng nhập của user trừ khi bật `loginctl enable-linger`; khởi động lại Docker chưa được kiểm |
+| Tự phục hồi | `dxos reconcile` chỉ chạy một bản backend, không có khóa chung với `dxos update` và `backup.sh`, và timer cần phiên đăng nhập của user trừ khi bật `loginctl enable-linger` |
 | Chuỗi hash của lịch sử | Phát hiện chứ không ngăn sửa; điểm neo nằm trong kho đối tượng của cùng máy chủ nên người sửa được cả cơ sở dữ liệu lẫn kho thì chỉ bị lộ khi so với `hash` mà bên nhận webhook đã giữ |
 | Hồ dữ liệu | `dxos archive` chỉ xuất hồ sơ ở trạng thái cuối và lịch sử của chúng, dữ liệu trong cơ sở dữ liệu giữ nguyên; DuckDB tải extension `postgres` từ mạng ở lần chạy đầu |
-| Thống kê | Có tổng số, theo trạng thái, quá hạn và theo đơn vị; chưa có thời gian chờ |
-| Bài kiểm của đợt sửa báo cáo kỹ thuật | Khe hở khi áp dụng, xóa client khi Hủy bỏ, thống kê, chuỗi hash, `dxos plan`, `dxos apply`, `dxos archive`, `verify` thiếu tệp và simulator IT/OT chỉ kiểm tay, chưa có script ở `deploy/dev` nên job `e2e` không chạy chúng; job `e2e` và `backup-drill` chưa chạy trên GitHub Actions |
-| Webhook sự kiện | Một địa chỉ chung cho mọi mô hình; giao ít nhất một lần, nên bên nhận bỏ lặp theo `X-Dxos-Event-Id` |
+| Thống kê | Có tổng số, theo trạng thái, quá hạn và theo đơn vị; chưa có thời gian chờ và chưa có tài liệu công thức, bộ lọc cho từng chỉ số; tài khoản chỉ đọc `report_ro` được `SELECT` cả bảng nên không tự áp dụng quyền `own`, `unit`, `assigned` của người xem |
+| Bài kiểm của đợt sửa báo cáo kỹ thuật | Khe hở khi áp dụng, xóa client khi Hủy bỏ, thống kê, chuỗi hash, `dxos plan`, `dxos apply`, `dxos archive`, `verify` thiếu tệp và simulator IT/OT chỉ kiểm tay, chưa có script ở `deploy/dev` nên job `e2e` không chạy chúng |
+| Webhook sự kiện | Một địa chỉ chung cho mọi mô hình; giao ít nhất một lần, nên bên nhận bỏ lặp theo `X-Dxos-Event-Id`; payload chưa có `request_id` |
 | Không có giao dịch chung giữa các hệ thống | Giữa PostgreSQL, Keycloak, Flowable và SeaweedFS; mỗi bước chạy lại được, và lần áp dụng dở được tiếp tục hoặc hủy bỏ |
 
 ## 4. Đề xuất từ rà soát đề thi và hướng thiết kế, chưa quyết

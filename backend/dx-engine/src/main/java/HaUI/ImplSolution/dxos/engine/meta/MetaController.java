@@ -11,6 +11,7 @@ import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,7 +30,10 @@ public class MetaController {
       ProcessInfo process, String unitField, boolean canRead, boolean canWrite, boolean canHandle,
       boolean canAssign) {}
 
-  public record ModelMeta(String name, List<Model.Unit> units, List<EntityMeta> entities) {}
+  // held is true for a model that is being applied or needs reconciliation; it has no entities
+  // then.
+  public record ModelMeta(String name, List<Model.Unit> units, List<EntityMeta> entities,
+      boolean held) {}
 
   private final ModelRegistry registry;
   private final DataService data;
@@ -42,13 +46,20 @@ public class MetaController {
   @GetMapping
   @Operation(summary = "Applied models with the entities the caller can reach",
       description = "An entity no role of the caller reaches is left out, and so is a model with no"
-          + " entity left.")
+          + " entity left. A model that is held is listed with held = true and no entities, only"
+          + " when the caller reaches one of its entities.")
   public ApiResponse<List<ModelMeta>> models() {
-    return ApiResponse.success(registry.all().stream()
+    List<ModelMeta> models = new ArrayList<>(registry.all().stream()
         .map(model -> new ModelMeta(model.name(), model.units(),
             model.entities().values().stream().filter(entity -> data.access(model, entity).read())
-                .map(entity -> describe(model, entity)).toList()))
+                .map(entity -> describe(model, entity)).toList(),
+            false))
         .filter(model -> !model.entities().isEmpty()).toList());
+    registry.held().stream()
+        .filter(model -> model.entities().values().stream()
+            .anyMatch(entity -> data.access(model, entity).read()))
+        .forEach(model -> models.add(new ModelMeta(model.name(), model.units(), List.of(), true)));
+    return ApiResponse.success(models);
   }
 
   @GetMapping("/{model}/entities/{entity}")

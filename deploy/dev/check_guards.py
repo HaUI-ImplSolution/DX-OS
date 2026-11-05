@@ -275,7 +275,9 @@ def stopped_apply(admin):
     status, body = kc.api(worker, "GET", f"/data/gstop/item/{item}")
     rt.check("T12-13 the model is held while it is unfinished", status == 409 and "reconciliation" in str(body), f"{status} {body}")
     status, body = kc.api(worker, "GET", "/meta/models")
-    rt.check("T12-14 it is not offered to the people", status == 200 and "gstop" not in [m["name"] for m in body["data"]], str(body)[:200])
+    offered = [m for m in body["data"] if m["name"] == "gstop"] if status == 200 else []
+    rt.check("T12-14 it offers the people nothing to use", status == 200 and not [m for m in offered if m["entities"]], str(body)[:200])
+    rt.check("T12-14 it is listed as held so the inbox can explain it", len(offered) == 1 and offered[0].get("held") is True, str(offered)[:200])
     status, body = kc.api(admin, "GET", "/models")
     held = {m["model"]: m["held"] for m in body["data"]} if status == 200 else {}
     rt.check("T12-14 the administrator sees which models are held",

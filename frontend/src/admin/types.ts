@@ -56,6 +56,8 @@ export interface ModelMeta {
   name: string;
   units: UnitMeta[];
   entities: EntityMeta[];
+  // True while the model is being applied or needs reconciliation; it has no entities then.
+  held?: boolean;
 }
 
 export interface Person {

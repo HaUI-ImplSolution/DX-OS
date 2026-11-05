@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.engine.apply;
 
+import HaUI.ImplSolution.dxos.core.api.audit.AuditEvent;
+import HaUI.ImplSolution.dxos.core.api.audit.AuditRecorder;
 import HaUI.ImplSolution.dxos.core.api.exception.InvalidStateException;
 import HaUI.ImplSolution.dxos.core.identity.KeycloakAdminClient;
 import HaUI.ImplSolution.dxos.engine.apply.ModelDiff.Change;
@@ -93,13 +95,14 @@ public class ApplyService {
   private final ObjectMapper json;
   private final WebhookTargets webhooks;
   private final AdminEventPublisher events;
+  private final AuditRecorder audit;
   private final String reportPassword;
   // Kind of step that fails on purpose, so that a stopped apply can be produced in tests.
   private final String faultStep;
 
   public ApplyService(JdbcTemplate jdbc, KeycloakAdminClient keycloak, ModelRegistry registry,
       SchemaTool schemaTool, AttachmentCleaner attachments, ObjectMapper json,
-      WebhookTargets webhooks, AdminEventPublisher events,
+      WebhookTargets webhooks, AdminEventPublisher events, AuditRecorder audit,
       @Value("${engine.report-db-password:}") String reportPassword,
       @Value("${engine.fault.apply-step:}") String faultStep) {
     this.jdbc = jdbc;
@@ -110,6 +113,7 @@ public class ApplyService {
     this.json = json;
     this.webhooks = webhooks;
     this.events = events;
+    this.audit = audit;
     this.reportPassword = reportPassword;
     this.faultStep = faultStep.strip();
   }
@@ -141,17 +145,20 @@ public class ApplyService {
             accept == null ? Level.SAFE : accept, previous.renames())));
   }
 
-  // Tells the webhook target about an apply that changed something. A failure to queue the message
-  // does not undo the apply.
+  // Writes an apply that changed something to the audit log and tells the webhook target about it.
+  // A failure to queue the message does not undo the apply.
   private Applied announced(String kind, Actor actor, Applied result) {
     if ("unchanged".equals(result.status())) {
       return result;
     }
+    Map<String, Object> facts = new LinkedHashMap<>();
+    facts.put("version", result.version());
+    facts.put("status", result.status());
+    facts.put("runId", result.runId());
+    Map<String, Object> metadata = new LinkedHashMap<>(facts);
+    metadata.put("actorName", actor.name());
+    audit.record(AuditEvent.success(kind, "MODEL", result.model(), metadata));
     try {
-      Map<String, Object> facts = new LinkedHashMap<>();
-      facts.put("version", result.version());
-      facts.put("status", result.status());
-      facts.put("runId", result.runId());
       events.publish(kind, result.model(), actor.id(), actor.name(), facts);
     } catch (RuntimeException e) {
       log.warn("The {} message of model {} could not be queued: {}", kind, result.model(),

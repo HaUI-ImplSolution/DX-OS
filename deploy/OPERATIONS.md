@@ -147,6 +147,7 @@ Mỗi bản ghi có người thực hiện (`sub`, tên, vai, client của token
 | `AUTH_FAILED` | Backend từ chối token đã tới nó (token không tới được backend nếu gateway đã từ chối) |
 | `SERVER_ERROR` | Backend trả `500`, `502` hoặc `503`; `outcome` là `FAILED`, `metadata` có mã trả về và tên lớp ngoại lệ (không có thông điệp lỗi) |
 | `ADMIN_ACTION_FAILED` | ADMIN thực hiện thao tác thay đổi (POST, PUT, PATCH, DELETE) bị từ chối vì lý do nghiệp vụ (`409`, `422`); `outcome` là `FAILED` |
+| `MODEL_APPLIED`, `MODEL_ROLLED_BACK`, `MODEL_RESUMED`, `MODEL_ABANDONED` | Áp dụng, quay về, tiếp tục hoặc hủy bỏ mô hình thành công, kể cả lần bootstrap (người thực hiện tên `Bootstrap`); `outcome` là `SUCCESS`, `target_type` là `MODEL`, `target_id` là tên mô hình, `metadata` có `version`, `status`, `runId`, `actorName`; lần `unchanged` hay bị từ chối không ghi |
 | `USER_CREATED`, `USER_LOCKED`, `USER_UNLOCKED`, `USER_PASSWORD_RESET`, `USER_ROLE_GRANTED`, `USER_ROLE_REVOKED`, `USER_UNIT_ADDED`, `USER_UNIT_REMOVED` | ADMIN đổi tài khoản ở tab Người dùng; `outcome` là `SUCCESS`, `target_id` là mã người dùng, `metadata` có tên đăng nhập và mô hình, vai hoặc đơn vị; không có mật khẩu |
 
 Thay đổi tài khoản làm thẳng ở Keycloak Admin Console không vào `audit_log`; tra ở sự kiện quản trị của Keycloak (Events, Admin events; giữ 90 ngày), có tài khoản người thực hiện.

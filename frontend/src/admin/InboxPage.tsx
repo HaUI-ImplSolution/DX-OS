@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { useEffect, useState } from "react";
 import {
+  Alert,
   Box,
   Card,
   Chip,
@@ -73,6 +74,14 @@ export default function InboxPage({ models }: { models: ModelMeta[] }) {
     <Box>
       <Title title="Hộp việc" />
       <PageHeader title="Hộp việc" subtitle="Những hồ sơ đang chờ bạn xử lý, việc quá hạn lên đầu." />
+      {models.some((model) => model.held) && (
+        <Alert severity="warning" sx={{ mb: 2.5 }}>
+          {`Mô hình ${models
+            .filter((model) => model.held)
+            .map((model) => model.name)
+            .join(", ")} đang được áp dụng hoặc cần quản trị viên xử lý nên tạm thời chưa dùng được. Tải lại trang sau ít phút.`}
+        </Alert>
+      )}
       <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mb: 2.5 }}>
         <Stat icon={<AssignmentTurnedInOutlinedIcon />} label="Việc đang chờ" value={data?.totalElements ?? 0} tone="primary" />
         <Stat icon={<ReportProblemOutlinedIcon />} label="Quá hạn" value={overdue} tone="error" />

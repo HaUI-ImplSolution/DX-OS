@@ -210,6 +210,8 @@ const VI: Rule[] = [
   pattern("Keycloak refused to create a user: HTTP (\\d+)", "Keycloak từ chối tạo người dùng: HTTP $1"),
   pattern("Keycloak refused to assign the (.+) role: HTTP (\\d+)", "Keycloak từ chối gán vai $1: HTTP $2"),
   fixed("Account service is unavailable, please try again later", "Dịch vụ tài khoản chưa dùng được, vui lòng thử lại sau"),
+  fixed("Account service refused the request, check the roles of the service account", "Dịch vụ tài khoản từ chối yêu cầu; hãy kiểm tra quyền của tài khoản dịch vụ ở Keycloak, thử lại sẽ không hết lỗi"),
+  pattern("webhook target (.+) is not configured", "Đích webhook $1 chưa được cấu hình trong tệp đích của máy chủ"),
   fixed("Files cannot be checked right now, please try again later", "Chưa kiểm tra được tệp lúc này, vui lòng thử lại sau"),
   fixed("The record was modified by someone else, reload and try again", "Bản ghi vừa được người khác thay đổi, hãy tải lại rồi thử lại"),
   pattern("Invalid value for (.+)", "Giá trị không hợp lệ cho $1"),

@@ -268,7 +268,7 @@ Bộ cài và các lệnh vận hành của `dxos` mô tả ở [`deploy/OPERATI
 
 Tệp mô hình luôn là nguồn sự thật, và dựng lại được cấu trúc hệ thống trên máy khác; dữ liệu hồ sơ đi theo đường sao lưu riêng.
 
-Mô hình không khai báo AI thì không chạy dịch vụ AI, không khai báo thông báo chat thì không cần Mattermost.
+Mô hình không khai báo AI thì không chạy dịch vụ AI, không khai báo đích webhook thì không gửi gì ra ngoài và không cần dịch vụ chat.
 Ai đã có Keycloak hay PostgreSQL riêng thì trỏ tới bằng `.env`.
 Phân phối bằng một tệp compose gồm nhiều image, vì mỗi dịch vụ có vòng đời và cách nâng cấp riêng.
 
@@ -323,8 +323,8 @@ Thêm năng lực mới nghĩa là thêm provider, không phải sửa lõi.
 | Dữ liệu phi cấu trúc          | SeaweedFS, ClamAV                         | Dùng lại `dx-core/storage`, gắn với trường tệp           |
 | Luồng công việc                | Flowable chạy nhúng                     | Các họ mẫu quy trình, API đổi trạng thái                          |
 | Vòng đời mô hình             | Git, phần điều khiển                  | **Phần tự viết chính**                                      |
-| Trục sự kiện                   | Bảng outbox trong PostgreSQL             | Phát và nhận sự kiện                                       |
-| Thông báo                       | Mattermost                                | Nghe trục sự kiện                                            |
+| Trục sự kiện                   | Bảng outbox trong PostgreSQL             | Webhook theo mô hình, API kéo sự kiện theo `eventId`, thông điệp của việc áp dụng mô hình và của tài khoản |
+| Thông báo                       | Mattermost hoặc Slack do người triển khai cấp | Đích webhook dạng `chat`: việc mới, sắp đến hạn, quá hạn |
 | Báo cáo                         | Superset                                  | Sinh dataset từ mô hình                                      |
 | AI | `ai/`, pgvector | Khai báo nguồn tri thức và tác tử |
 | Vận hành                        | `dx-monitor`, `deploy/backup.sh`          | Giữ nguyên                                                    |
@@ -346,7 +346,7 @@ Trần dưới đây giữ cho tệp mô hình không biến thành ngôn ngữ 
 
 | Mức              | Nội dung                                               | Cách làm                                                      |
 | ------------------- | --------------------------------------------------------- | ----------------------------------------------------------------- |
-| **1. Khai báo**  | Thực thể, kiểu trường, quyền, luồng, thông báo | Chỉ tệp mô hình                                             |
+| **1. Khai báo**  | Thực thể, kiểu trường, quyền, luồng, đích webhook | Chỉ tệp mô hình                                             |
 | **2. Cấu hình** | Quy tắc, biểu thức, hạn xử lý, tác tử AI        | Chỉ tệp mô hình, không viết mã                           |
 | **3. Mở rộng**  | Logic đặc thù, giao diện riêng                     | Mã nằm ngoài lõi, xem [Điểm mở rộng](#điểm-mở-rộng) |
 
@@ -457,8 +457,10 @@ Trạng thái hồ sơ không thể bị đi vòng:
 
 Quy tắc khai báo được API chung kiểm để báo lỗi rõ và biên dịch thành ràng buộc trong cơ sở dữ liệu.
 Mọi thay đổi hồ sơ và bước quy trình phát ra sự kiện vào trục sự kiện, để thông báo, báo cáo và AI cùng nghe.
+Tệp mô hình chọn đích webhook bằng `webhook: <tên đích>`; địa chỉ và bí mật của đích nằm ngoài tệp mô hình, trong một tệp cấu hình của bản cài.
+Các dòng của một hồ sơ tới đích theo đúng thứ tự, và bên nhận lỡ tin kéo lại theo `eventId`.
 
-**Bản dự thi** có ba họ mẫu là chuỗi duyệt, công việc cần xử lý và chiếm dụng tài nguyên theo thời gian, cùng bộ quy tắc bất biến; có hộp việc, giao việc và quy tắc chặn; trục sự kiện ở mức nên có.
+**Bản dự thi** có ba họ mẫu là chuỗi duyệt, công việc cần xử lý và chiếm dụng tài nguyên theo thời gian, cùng bộ quy tắc bất biến; có hộp việc, giao việc và quy tắc chặn; trục sự kiện có webhook theo mô hình, thông báo chat và nhắc hạn.
 Chi tiết tham số của từng họ mẫu được thiết kế ở các phase sau.
 
 ### 3. Tác tử AI có người duyệt
@@ -559,7 +561,7 @@ Bản công khai trên VPS giữ `v1.1.1` cho đến khi lõi mới đạt và �
 
 ### Những gì giữ lại
 
-- **Hạ tầng:** Keycloak, APISIX, SeaweedFS, PostgreSQL, ClamAV; báo cáo và thông báo chat dựng lại theo mô hình khi đến phần đó, cấu hình Superset và Mattermost của bản cũ ở tag `v1.1.1`.
+- **Hạ tầng:** Keycloak, APISIX, SeaweedFS, PostgreSQL, ClamAV; thông báo chat đi qua webhook dạng `chat`, báo cáo dựng lại theo mô hình khi đến phần đó, cấu hình Superset và Mattermost của bản cũ ở tag `v1.1.1`.
 - **Dịch vụ:** `ai/` (tìm kiếm tri thức có nguồn, chạy riêng ngoài compose) và `dx-monitor`.
 - **Dự án:** bộ triển khai, CI, kiểm tra giấy phép, SBOM, quy trình phát hành.
 - **`dx-core` rút gọn thành thư viện:** giữ bảo mật, audit, lưu trữ và quét tệp, trạng thái hệ thống, client Keycloak; phần gắn với ứng dụng cũ như workflow viết tay, workspace, thông báo cũ được gỡ và dựng lại theo thiết kế mới khi cần.
@@ -676,7 +678,7 @@ Xử lý theo tiến độ của Tầng 1 và Tầng 2:
 | LLM                  | Khi bắt đầu phần AI, để kịp đo trước khi trình diễn                | Mặc định dùng mô hình đạt tiêu chuẩn; [Apertus 8B](https://huggingface.co/swiss-ai/Apertus-8B-Instruct-2509) (Apache-2.0) và OLMo 2 là ứng viên, cần thử tiếng Việt và tốc độ trên CPU |
 | Không có LLM đạt | Sau khi thử LLM | `ai/` không dùng mô hình ngôn ngữ cho đến khi có mô hình đạt; Qwen chỉ là tùy chọn người dùng tự gắn, ghi rõ là mở trọng số |
 | Reranker             | Khi bắt đầu phần AI                                                        | Thay hoặc bỏ, đo lại chất lượng truy xuất                                                                                                                                                             |
-| Chat                 | Khi làm thông báo; đổi sau vẫn rẻ vì thông báo đi qua webhook chung | [Zulip](https://github.com/zulip/zulip) (Apache-2.0) là ứng viên thay Mattermost, cần kiểm các phụ thuộc của nó                                                                                     |
+| Chat                 | Dịch vụ chat do người triển khai cấp; thông báo đi qua webhook dạng `chat` nên đổi dịch vụ chỉ đổi địa chỉ | [Zulip](https://github.com/zulip/zulip) (Apache-2.0) là ứng viên thay Mattermost, cần kiểm các phụ thuộc của nó                                                                                     |
 
 Mô hình AI mở hoàn toàn có thể trả lời tiếng Việt kém hơn và chậm hơn trên CPU; đây là cái giá của cam kết, cần đo trước khi trình diễn.
 
@@ -718,7 +720,6 @@ Số sao và giấy phép lấy từ GitHub API ngày 2026-11-02, trừ khi có 
 - **Quyền với phần điều khiển:** ai được xem kế hoạch, ai được áp dụng, ai được xác nhận thay đổi mất dữ liệu.
 - **Hợp đồng metadata:** Tầng 2 đọc metadata từ API nào và ở dạng gì.
 - **Hợp đồng API chung:** đường dẫn, bộ lọc, phân trang, quan hệ giữa các thực thể và định dạng lỗi.
-- **Trục sự kiện:** cách phát sự kiện vào outbox, cách giao và thử lại.
 - **Luồng tệp đính kèm:** tải lên, quét và gắn tệp vào hồ sơ qua API nào.
 - **Đơn vị và giao việc:** đơn vị lấy từ nhóm Keycloak hay khai báo trong mô hình, hồ sơ được giao tự động hay do người điều phối.
 - **Yêu cầu bổ sung:** trường nào mở lại để sửa và hạn xử lý tính thế nào khi hồ sơ bị trả lại.
@@ -735,6 +736,7 @@ Kết quả ở [`docs/TESTING.md`](../TESTING.md), mục 8:
 - pgschema đưa lược đồ về trạng thái đích khi đã có dữ liệu, với điều kiện lõi đổi tên cột, ràng buộc và chỉ mục trước; tự nó biến đổi tên thành xóa rồi thêm, nên lõi chặn mọi thao tác xóa mà mô hình không yêu cầu.
 - Kế hoạch xem trước khớp với áp dụng thật khi có đổi tên, và áp dụng lại sau lỗi giữa chừng về đúng trạng thái đích; kết quả thử ở [`docs/phase-7-model-change/04_TRADEOFFS_RISKS.md`](../phase-7-model-change/04_TRADEOFFS_RISKS.md).
 - Hành động hoàn tất (`add_to_group`, `remove_from_group`) đi qua bảng outbox và được thử lại tới khi Keycloak nhận, người triển khai xem lỗi và thử lại ở bảng điều khiển; tệp đính kèm tải lên và tải xuống qua gateway, tải về dạng đính kèm, và đối tượng trong kho bị xóa khi tệp hoặc hồ sơ bị gỡ; kết quả ở [`docs/TESTING.md`](../TESTING.md), mục 8.
+- Webhook theo mô hình gửi đúng đích kèm chữ ký; các dòng của một hồ sơ tới theo thứ tự, dòng sau chờ dòng cũ đã dừng; đích dạng `chat` chỉ gửi một câu không có nội dung hồ sơ; dòng nhắc hạn đến đúng một lần; kết quả ở [`docs/TESTING.md`](../TESTING.md), mục 8.
 - `ProcessMigrationService` của Flowable chuyển được hồ sơ đang chạy sang mẫu mới và báo trước khi mẫu mới bỏ bước hiện tại; kết quả thử ở [`docs/phase-6-case-core/04_TRADEOFFS_RISKS.md`](../phase-6-case-core/04_TRADEOFFS_RISKS.md).
 - Dịch vụ `ai/` nạp tài liệu có nguồn và giấy phép vào pgvector rồi tìm bằng BM25 kết hợp cosine; câu hỏi ngoài kho và mã không có trong kho không có bằng chứng.
 - Bản `2.0.0` dựng từ một bản sao sạch của cây mã: stack lên đủ, chuỗi `check_*.py` đạt, `clean verify`, `tsc`, `pytest` của `ai/`, `check_licenses.py` và `check_routes.py` đạt; kết quả ở [`docs/TESTING.md`](../TESTING.md), mục 8.
@@ -743,6 +745,7 @@ Kết quả ở [`docs/TESTING.md`](../TESTING.md), mục 8:
 
 - Chất lượng tiếng Việt và tốc độ trên CPU của Apertus 8B, OLMo 2.
 - Các phụ thuộc và khả năng nối OIDC, webhook của Zulip.
+- Đích dạng `chat` với Mattermost và Slack thật.
 - Phông chữ, biểu tượng và tài nguyên tĩnh của giao diện.
 - Chi tiết các ý tưởng lấy từ Frappe.
 - Mức tài nguyên của toàn bộ stack.

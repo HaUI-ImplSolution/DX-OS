@@ -143,7 +143,7 @@ entities:
 | `POST /api/v1/models/{model}/resume`, `/abandon` | Finish or give up an apply that stopped halfway (ADMIN) |
 | `GET /api/v1/models`, `/models/{model}/runs` | Applied models and the history of each step (ADMIN) |
 | `GET /api/v1/models/schema`, `/families`, `/templates`, `/{model}/versions` | The model file schema, workflow families, the template library and the applied versions, for the control panel (ADMIN) |
-| `GET /api/v1/meta/models` | Metadata the caller may see |
+| `GET /api/v1/meta/models` | Metadata the caller may see; a model that is held shows with `held` and no entities |
 | `/api/v1/data/{model}/{entity}` | List, create, read, update, delete; filter with `filter.<field>[.<op>]`, `sort`, `order`, `page`, `size` |
 | `POST /api/v1/data/{model}/{entity}/{id}/actions/{action}` | An action of the workflow; the metadata lists the actions, their starting state and who may take them |
 | `POST .../{id}/assign`, `GET .../{id}/handlers` | Assign a record and list who can take it |
@@ -155,7 +155,7 @@ entities:
 | `GET /api/v1/users`, `/users/options`, `/users/{id}` | Find and read users, their roles per model and their units; the roles and units that can be given (ADMIN) |
 | `PUT`, `DELETE /api/v1/users/{id}/roles/{model}/{role}`, `/units/{unit}` | Give and take a role of one model, and a unit (ADMIN) |
 | `POST /api/v1/users`, `PUT /{id}/enabled`, `POST /{id}/password` | Create a user with a temporary password, lock and unlock, reset a password (ADMIN) |
-| `GET /api/v1/audit-logs` | The log of refused requests, failures and changes to accounts; filter by `actor`, `action`, `targetType`, `targetId`, `outcome`, `from`, `to` (ADMIN) |
+| `GET /api/v1/audit-logs` | The log of refused requests, failures, changes to accounts and applies of models; filter by `actor`, `action`, `targetType`, `targetId`, `outcome`, `from`, `to` (ADMIN) |
 
 Every reply is wrapped in `ApiResponse`; errors carry a stable `errorCode`.
 

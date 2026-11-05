@@ -82,6 +82,8 @@ Trước khi chạy, lõi từ chối:
 
 Mỗi mô hình có một khóa Postgres riêng cho lần áp dụng, nên các mô hình khác nhau áp dụng song song; vai của mỗi mô hình nằm trong client riêng, nên hai mô hình dùng cùng tên vai không va nhau.
 Mô hình được giữ lại từ bước đầu đến khi registry nạp xong phiên bản mới: người dùng chưa vào được, còn `GET /api/v1/models` báo `held`.
+`GET /api/v1/meta/models` liệt kê mô hình đang bị giữ với `held` là true và không có thực thể, chỉ khi người gọi đọc được một thực thể của mô hình; trang Hộp việc dùng đó để báo mô hình đang được áp dụng.
+Mô hình có lần áp dụng đầu dở chưa vào registry nên không được liệt kê.
 Một bước lỗi làm lần áp dụng dừng và mô hình vẫn bị giữ, kể cả sau khi backend khởi động lại, vì trạng thái suy ra từ `engine.apply_run`.
 Mỗi lần áp dụng lưu tệp, các lần đổi tên và mức đã xác nhận ở `engine.apply_run`, nên:
 
@@ -153,6 +155,7 @@ sequenceDiagram
 - Mật khẩu tạm do hệ thống sinh, trả về một lần và phải đổi ở lần đăng nhập đầu; không ghi vào log hay audit.
 - Mỗi thay đổi thành công ghi một bản ghi `audit_log` qua `AuditRecorder`: người thực hiện lấy từ token, đối tượng là mã người dùng, chi tiết có tên đăng nhập và mô hình cùng vai hoặc đơn vị.
   Việc ghi audit lỗi chỉ để lại dòng log, thay đổi vẫn thành công.
+- Áp dụng, quay về, tiếp tục và hủy bỏ mô hình thành công cũng ghi một bản ghi (`MODEL_APPLIED`, `MODEL_ROLLED_BACK`, `MODEL_RESUMED`, `MODEL_ABANDONED`), đối tượng `MODEL` là tên mô hình, chi tiết có `version`, `status`, `runId` và `actorName`; lần chạy `unchanged` hay bị từ chối không ghi gì.
 - `GET /api/v1/audit-logs` lọc được theo đối tượng (`targetType`, `targetId`, có chỉ mục `idx_audit_log_target`); hộp thoại người dùng ở bảng điều khiển lấy từ đó các bản ghi `USER` của người được mở.
 - Thay đổi làm thẳng ở Keycloak Admin Console không đi qua đây; sự kiện quản trị của Keycloak (giữ 90 ngày, ghi tài khoản người thực hiện) là nơi tra cứu.
 

@@ -371,3 +371,17 @@ Chạy trên một stack thử riêng (project Compose `dxscratch`, cổng 9180)
 | Tài khoản đã khóa trong danh sách người xử lý | Đạt | Hai người giữ vai xử lý: danh sách có cả hai; khóa một người thì danh sách chỉ còn người kia, giao việc cho người đã khóa bị 400, giao cho người còn hoạt động được 200 (kịch bản tạm ngoài repo) |
 | Bên nhận giữ phần trả lời | Đạt | Bên nhận trả header ngay rồi giữ body 15 giây: lần gửi lỗi `TimeoutException` sau khoảng 5 giây; trước khi sửa lần gửi trả sau 15 giây (kịch bản tạm ngoài repo) |
 | Sửa hồ sơ trên web bằng Chrome | Đạt | Đăng nhập người xử lý, mở hồ sơ của thực thể có hạn, đổi tiêu đề và lưu: lưu được, lịch sử ghi "Sửa thông tin" |
+
+### Kiểm ngày 05/11/2026: dòng giữ, audit của việc áp dụng và lỗi tài khoản dịch vụ
+
+Cây làm việc gồm cả tệp chưa commit.
+Chuỗi script chạy trên stack rỗng của máy này; stack đã gỡ sau khi kiểm.
+
+| Mục | Kết quả | Ghi chú |
+|---|---|---|
+| `./mvnw clean verify formatter:validate`, `npx tsc --noEmit` | Đạt | Cả backend và web |
+| Chín script `deploy/dev` theo thứ tự ở mục 4 | Đạt | 434/434: `check_api.py` 51, `check_recovery.py` 19, `check_case.py` 71, `check_change.py` 65, `check_process.py` 56, `check_booking.py` 45, `check_demo.py` 26, `check_guards.py` 60, `check_users.py` 41 |
+| `check_events.py`, `check_bootstrap.py` | Đạt | 18/18 và 8/8 |
+| `GET /api/v1/meta/models` với mô hình bị giữ | Đạt | `check_guards.py` T12-14: mô hình bị giữ không có thực thể dùng được và hiện với `held` là true |
+| Keycloak từ chối tài khoản dịch vụ | Đạt | Gỡ `manage-clients` của `dxos-backend-admin`, áp dụng mô hình mới: 502 `ERR_ACCOUNT_SERVICE_DENIED`; trả lại quyền, hủy bỏ lần áp dụng dở (kiểm tay) |
+

@@ -127,6 +127,12 @@ public class ModelRegistry {
         .orElseThrow(() -> new ResourceNotFoundException("Model " + name + " is not applied"));
   }
 
+  // The models that are held, so that a screen can say why a model is not there.
+  public List<Model> held() {
+    return models.values().stream().filter(model -> isHeld(model.name()))
+        .sorted(Comparator.comparing(Model::name)).toList();
+  }
+
   public Collection<Model> all() {
     List<Model> usable = new ArrayList<>();
     for (Model model : models.values().stream().sorted(Comparator.comparing(Model::name))

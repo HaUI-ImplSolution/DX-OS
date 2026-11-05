@@ -49,6 +49,9 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Tab Người dùng ở bảng điều khiển (ADMIN): danh sách có tìm kiếm và phân trang, vai theo từng ứng dụng, gán và gỡ vai và đơn vị, tạo người dùng với mật khẩu tạm do hệ thống sinh, khóa và mở, đặt lại mật khẩu.
   API ở `/api/v1/users`; chỉ gán được vai và đơn vị mà một mô hình đang chạy khai báo, vai `ADMIN` không có đường nào qua đây, và ADMIN không khóa được chính mình.
 - Mỗi thay đổi về tài khoản ghi một bản ghi `audit_log` với người thực hiện, tên đăng nhập của người bị đổi và vai hoặc đơn vị: `USER_CREATED`, `USER_LOCKED`, `USER_UNLOCKED`, `USER_PASSWORD_RESET`, `USER_ROLE_GRANTED`, `USER_ROLE_REVOKED`, `USER_UNIT_ADDED`, `USER_UNIT_REMOVED`; mật khẩu không bao giờ được ghi.
+- Áp dụng, quay về, tiếp tục và hủy bỏ mô hình thành công ghi `audit_log` (`MODEL_APPLIED`, `MODEL_ROLLED_BACK`, `MODEL_RESUMED`, `MODEL_ABANDONED`) với tên mô hình, phiên bản, trạng thái và người thực hiện.
+- `GET /api/v1/meta/models` liệt kê mô hình đang bị giữ với `held` và không có thực thể, chỉ khi người gọi đọc được một thực thể của nó; trang Hộp việc hiện một dòng báo mô hình đang được áp dụng.
+- Keycloak từ chối tài khoản dịch vụ (401 hoặc 403) thì API trả 502 `ERR_ACCOUNT_SERVICE_DENIED` kèm lời nhắc kiểm vai của tài khoản dịch vụ, tách khỏi `ERR_ACCOUNT_SERVICE_UNAVAILABLE` khi Keycloak không trả lời; cả hai và lỗi đích webhook chưa cấu hình có bản tiếng Việt ở giao diện.
 - `GET /api/v1/audit-logs` lọc thêm theo `targetType` (không phân biệt hoa thường) và `targetId` (khớp chính xác) để lấy các bản ghi về một đối tượng; migration `V2` của lõi tạo chỉ mục `idx_audit_log_target`.
 - Hộp thoại người dùng hiện lịch sử thay đổi của người đó: ai đổi gì, lúc nào, mới nhất ở trên, 20 dòng mỗi lần kèm nút Xem thêm.
 - Truy vấn vào bảng ngoài schema `engine` ghi rõ schema, vì Flowable đặt `search_path` của kết nối về `engine`: `audit_log` ghi và đọc đúng, migration của lõi chạy ở `public`.

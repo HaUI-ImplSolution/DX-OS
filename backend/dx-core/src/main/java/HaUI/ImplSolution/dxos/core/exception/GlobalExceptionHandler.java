@@ -28,6 +28,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -132,6 +133,13 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ApiResponse<Void>> handleKeycloakAdmin(KeycloakAdminException ex) {
     log.warn("Keycloak admin call failed: {}", ex.getMessage());
     auditService.recordServerError(HttpStatus.BAD_GATEWAY.value(), ex);
+    // Keycloak answered but refused the service account: a setup problem, not an outage.
+    if (ex.getCause() instanceof RestClientResponseException cause
+        && (cause.getStatusCode().value() == 401 || cause.getStatusCode().value() == 403)) {
+      return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+          .body(ApiResponse.error("ERR_ACCOUNT_SERVICE_DENIED",
+              "Account service refused the request, check the roles of the service account"));
+    }
     return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
         .body(ApiResponse.error("ERR_ACCOUNT_SERVICE_UNAVAILABLE",
             "Account service is unavailable, please try again later"));

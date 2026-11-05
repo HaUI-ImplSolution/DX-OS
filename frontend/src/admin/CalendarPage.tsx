@@ -6,10 +6,12 @@ import interactionPlugin from "@fullcalendar/interaction";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import viLocale from "@fullcalendar/core/locales/vi";
-import type { EventInput } from "@fullcalendar/core";
-import { Title } from "react-admin";
+import type { EventDropArg, EventInput } from "@fullcalendar/core";
+import type { EventResizeDoneArg } from "@fullcalendar/interaction";
+import { Title, useNotify } from "react-admin";
 import PageHeader from "../shell/PageHeader";
-import { queryString, request } from "../shell/api";
+import { json, queryString, request } from "../shell/api";
+import { displayField } from "./resources";
 import { TONES } from "./StatusChip";
 import { splitResource, type EntityMeta, type Page } from "./types";
 
@@ -17,6 +19,7 @@ import { splitResource, type EntityMeta, type Page } from "./types";
 export default function CalendarPage({ byResource }: { byResource: Record<string, EntityMeta> }) {
   const { resource = "" } = useParams();
   const navigate = useNavigate();
+  const notify = useNotify();
   const theme = useTheme();
   const entity = byResource[resource];
   const booking = entity?.process?.booking;
@@ -24,7 +27,7 @@ export default function CalendarPage({ byResource }: { byResource: Record<string
   const { model, entity: name } = splitResource(resource);
   const states = entity.process?.states ?? [];
   const label = (status: string) => states.find((state) => state.name === status)?.label ?? status;
-  const title = entity.fields.find((field) => field.type === "text");
+  const title = displayField(entity);
   const what = entity.label.charAt(0).toLowerCase() + entity.label.slice(1);
 
   // The colour of a booking is the tone of its state, the same as the label in the lists.
@@ -43,11 +46,28 @@ export default function CalendarPage({ byResource }: { byResource: Record<string
     );
     return page.items.map((row) => ({
       id: String(row.id),
-      title: `${title ? String(row[title.name] ?? "") : `#${row.id}`} · ${label(String(row.status))}`,
+      title: `${String(row[title] ?? `#${row.id}`)} · ${label(String(row.status))}`,
+      editable: entity.canWrite && !states.find((state) => state.name === row.status)?.terminal,
       start: String(row[booking.starts]),
       end: String(row[booking.ends]),
       color: color(String(row.status)),
     }));
+  };
+
+  // A moved or resized booking is saved with its new times; a refusal, such as a clash with another
+  // booking, puts it back where it was.
+  const move = async (info: EventDropArg | EventResizeDoneArg) => {
+    const { start, end } = info.event;
+    if (!start || !end) return info.revert();
+    try {
+      await request(
+        `/data/${model}/${name}/${info.event.id}`,
+        json("PATCH", { [booking.starts]: start.toISOString(), [booking.ends]: end.toISOString() }),
+      );
+    } catch (error) {
+      info.revert();
+      notify(error instanceof Error ? error.message : "Không đổi được giờ", { type: "error" });
+    }
   };
 
   return (
@@ -55,7 +75,7 @@ export default function CalendarPage({ byResource }: { byResource: Record<string
       <Title title={`Lịch ${what}`} />
       <PageHeader
         title={`Lịch ${what}`}
-        subtitle={entity.canWrite ? "Kéo chọn một khoảng giờ để tạo lượt đặt mới, bấm vào một lượt để xem chi tiết." : "Bấm vào một lượt để xem chi tiết."}
+        subtitle={entity.canWrite ? "Kéo chọn một khoảng giờ để tạo lượt đặt mới, kéo một lượt để đổi giờ, bấm vào một lượt để xem chi tiết." : "Bấm vào một lượt để xem chi tiết."}
       />
       <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
         {states.map((state) => (
@@ -102,6 +122,8 @@ export default function CalendarPage({ byResource }: { byResource: Record<string
           height="auto"
           events={(info, success, failure) => load(info).then(success, failure)}
           eventClick={(info) => navigate(`/${resource}/${info.event.id}/show`)}
+          eventDrop={move}
+          eventResize={move}
           selectable={entity.canWrite}
           select={(info) =>
             navigate(`/${resource}/create`, { state: { record: { [booking.starts]: info.startStr, [booking.ends]: info.endStr } } })

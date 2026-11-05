@@ -223,7 +223,7 @@ function UserDialog({ id, options, onClose, onChanged }: { id: string; options: 
               Vai theo ứng dụng
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              Bấm vào một vai để gán hoặc gỡ. Quyền mới có hiệu lực khi người đó đăng nhập lại.
+              Bấm vào một vai để gán hoặc gỡ. Vai và đơn vị mới có hiệu lực khi phiên của người đó tự làm mới, tối đa khoảng 5 phút, hoặc khi người đó đăng nhập lại.
             </Typography>
             {options.models.map((m) => (
               <Box key={m.model} sx={{ mt: 1.5 }}>

@@ -21,6 +21,7 @@ import AttachFileIcon from "@mui/icons-material/AttachFile";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { useGetIdentity, useNotify, useRecordContext, useRefresh } from "react-admin";
+import { translateBackend } from "../shell/backendMessages";
 import { formatDateTime, timeAgo } from "../shell/format";
 import { StatusChip, TONES } from "./StatusChip";
 import { assignRecord, fileLink, listEvents, listFiles, listHandlers, removeFile, takeAction, uploadFile } from "./api";
@@ -214,7 +215,27 @@ const EVENT_LABELS: Record<string, string> = {
   file_added: "Thêm tệp",
   file_removed: "Gỡ tệp",
   overdue: "Quá hạn xử lý",
+  completion_skipped: "Bỏ qua hành động hoàn tất",
+  auto_closed: "Tự đóng do người nộp chưa xác nhận",
 };
+
+const OPERATION_LABEL: Record<string, string> = {
+  add_to_group: "Thêm vào nhóm",
+  remove_from_group: "Gỡ khỏi nhóm",
+};
+
+// Why a completion action was skipped, as the backend records it: "<operation> skipped: the record has no <what>".
+function skippedReason(detail: string, fieldLabel: (name: string) => string): string {
+  const match = /^(\S+) skipped: the record has no (?:user in field (\S+)|group in field (\S+)|group)$/.exec(detail);
+  if (!match) return translateBackend(detail);
+  const [, operation, userField, groupField] = match;
+  const what = userField
+    ? `chưa có người dùng ở trường "${fieldLabel(userField)}"`
+    : groupField
+      ? `chưa có nhóm ở trường "${fieldLabel(groupField)}"`
+      : "chưa có nhóm";
+  return `${OPERATION_LABEL[operation] ?? operation} bị bỏ qua: hồ sơ ${what}`;
+}
 
 // What happened to this record, newest first, as a timeline.
 export function HistoryPanel({ model, entity }: Props) {
@@ -244,7 +265,12 @@ export function HistoryPanel({ model, entity }: Props) {
         <Box sx={{ position: "absolute", left: 7, top: 6, bottom: 6, width: 2, bgcolor: "divider" }} />
         {ordered.map((event, index) => {
           const detail =
-            event.note ?? (event.action === "updated" ? event.detail?.split(", ").map(fieldLabel).join(", ") : null);
+            event.note ??
+            (event.action === "updated"
+              ? event.detail?.split(", ").map(fieldLabel).join(", ")
+              : event.action === "completion_skipped" && event.detail
+                ? skippedReason(event.detail, fieldLabel)
+                : null);
           const tone = event.to_status ? TONES[event.to_status] : undefined;
           const color = !tone || tone === "default" ? "text.disabled" : `${tone}.main`;
           return (

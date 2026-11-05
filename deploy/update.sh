@@ -32,6 +32,13 @@ if [[ $# -gt 0 ]]; then
   echo "==> DXOS_IMAGE_TAG=$1 written to deploy/.env"
 fi
 
+# The lock dxos reconcile takes, so that it does not recreate containers while this runs.
+exec 9>.reconcile.lock
+if command -v flock >/dev/null 2>&1 && ! flock -w 300 9; then
+  echo "Another update, backup or reconcile has held deploy/.reconcile.lock for 5 minutes; try again when it ends." >&2
+  exit 1
+fi
+
 BEHIND_GATEWAY=(backend monitor frontend portal keycloak)
 declare -A BEFORE
 for service in "${BEHIND_GATEWAY[@]}"; do

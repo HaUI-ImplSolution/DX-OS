@@ -232,5 +232,9 @@ public final class ModelDiff {
       changes.add(new Change(Level.SAFE, "CHANGE_DEADLINE", entity.name(), null,
           after.deadline() == null ? "none" : after.deadline().toString()));
     }
+    if (!Objects.equals(before.autoClose(), after.autoClose())) {
+      changes.add(new Change(Level.SAFE, "CHANGE_AUTO_CLOSE", entity.name(), null,
+          after.autoClose() == null ? "none" : after.autoClose().toString()));
+    }
   }
 }

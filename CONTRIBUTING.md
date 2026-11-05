@@ -42,6 +42,7 @@ cd ../frontend && npm install && npm run dev
 - **Mã:** Java 21, định dạng theo `backend/eclipse-java-google-style.xml` (chạy `./mvnw formatter:format`); comment ngắn, nêu hành vi hiện tại, tiếng Anh.
 - **API:** mô tả `@Operation` bằng tiếng Anh; mọi response bọc trong `ApiResponse`.
 - **Tài liệu:** tiếng Việt, mỗi câu một dòng, chỉ ghi trạng thái hiện tại.
+- **Thông báo của backend:** viết bằng tiếng Anh kèm `errorCode`; mỗi thông báo mới cần thêm một mẫu dịch ở `frontend/src/shell/backendMessages.ts`, nếu không giao diện hiện nguyên văn tiếng Anh.
 - **Mã lõi không chứa tên thực thể, vai hay luồng của một lĩnh vực**; nghiệp vụ nằm trong tệp mô hình.
 - **Header giấy phép:** `SPDX-License-Identifier: Apache-2.0` ở đầu mọi file mã nguồn, riêng trong `ai/` là `AGPL-3.0-only`.
 

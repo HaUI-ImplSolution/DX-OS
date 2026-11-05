@@ -81,6 +81,7 @@
               "handler": { "type": "string" },
               "allow_self_decision": { "type": "boolean" },
               "deadline": { "type": "string", "pattern": "^[0-9]{1,6}[mhd]$" },
+              "auto_close": { "type": "string", "pattern": "^[0-9]{1,6}[mhd]$" },
               "booking": {
                 "type": "object",
                 "required": ["resource", "starts", "ends"],

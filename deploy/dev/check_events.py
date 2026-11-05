@@ -235,6 +235,18 @@ def main():
              count("select count(*) from engine.outbox where idempotency_key = 'check-old'") == 0
              and count("select count(*) from engine.outbox where idempotency_key = 'check-recent'") == 1)
     rt.psql("delete from engine.outbox where idempotency_key = 'check-recent'")
+
+    status, body = kc.api(admin, "GET", "/history/verify")
+    rt.check("EV-16 the history chain is intact", status == 200 and body["data"]["intact"] is True and body["data"]["firstBreak"] is None, str(body.get("data")))
+    code, first = rt.psql("select min(id) from engine.record_event")
+    rt.psql(f"update engine.record_event set action = action || 'x' where id = {first}")
+    status, body = kc.api(admin, "GET", "/history/verify")
+    broken = (body.get("data") or {}).get("firstBreak") or {}
+    rt.check("EV-17 a changed line is named as the first break", status == 200 and body["data"]["intact"] is False
+             and str(broken.get("id")) == first and broken.get("reason") == "its content was changed", str(body.get("data")))
+    rt.psql(f"update engine.record_event set action = left(action, length(action) - 1) where id = {first}")
+    status, body = kc.api(admin, "GET", "/history/verify")
+    rt.check("EV-18 the chain is intact again once the line is put back", status == 200 and body["data"]["intact"] is True, str(body.get("data")))
     server.shutdown()
 
     failed = [case for case, ok in rt.results if not ok]

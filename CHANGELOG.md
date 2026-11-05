@@ -38,6 +38,12 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Trình soạn mô hình ở bảng điều khiển báo lỗi và gợi ý theo JSON Schema của tệp mô hình: worker của monaco-yaml được tạo theo cách `monaco-editor` 0.57 yêu cầu.
 - Nút rút lại hỏi xác nhận và nhận lý do không bắt buộc, ghi vào lịch sử của hồ sơ.
 - Bảng điều khiển hiện tên người áp dụng mỗi phiên bản mô hình (cột `applied_by_name`, migration `V5` của engine).
+- `update.sh` và `backup.sh` (chế độ sao lưu) giữ cùng khóa `deploy/.reconcile.lock` với `dxos reconcile`, nên `dxos reconcile` bỏ qua lượt khi một lần cập nhật hoặc sao lưu đang chạy; hai script đợi tối đa 5 phút để lấy khóa.
+- Lịch đặt chỗ cho kéo một lượt để đổi giờ và kéo cạnh dưới để đổi giờ kết thúc; lượt trùng giờ với lượt khác bị đưa về chỗ cũ kèm thông báo lỗi, và lượt ở trạng thái cuối hoặc của người không có quyền ghi không kéo được.
+  Tiêu đề trên lịch dùng cùng trường hiển thị với danh sách.
+- Hành động hoàn tất bị bỏ qua vì trường người dùng hoặc nhóm để trống thì hồ sơ có thêm một dòng lịch sử `completion_skipped` kèm lý do, hiện ở trang chi tiết và đi theo webhook.
+  Log backend cũng có một dòng `WARN` nêu lý do.
+- Hộp việc chỉ liệt kê hồ sơ của chính người nộp khi hồ sơ còn trong phạm vi đọc của vai họ, giống chi tiết hồ sơ.
 - Thực thể có quy trình có chỉ mục trên `handle_by` cho bộ quét quá hạn.
 - Thông báo khi trình quét virus không trả lời và lỗi chung của tệp mô hình có bản tiếng Việt.
 - `check_demo.py` kiểm tệp EICAR bị chặn khi bật quét virus.
@@ -69,7 +75,6 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Bảng điều khiển vừa màn hình rộng 360px; bảng người dùng cuộn ngang trong khung riêng.
 - `dxos av on` và `dxos av off` bật và tắt quét mã độc tệp tải lên; `dxos status` và `doctor.sh` báo trạng thái quét, và `doctor.sh` báo `FAIL` khi `STORAGE_SCAN_HOST=clamav` mà `COMPOSE_PROFILES` không có `av`.
 - `backup.sh verify` kiểm mỗi mô hình đã áp dụng có bảng trong schema `m_<mô hình>` của bản dump và in tổng số dòng của các bảng đó; mô hình thiếu bảng làm `verify` báo `FAILED`.
-- Hành động hoàn tất bị bỏ qua vì không có người dùng hoặc nhóm thì log backend có một dòng `WARN` nêu lý do.
 - Khai báo lại một vai mà vẫn còn người giữ trong client `dxos-m-<mô hình>` thì kế hoạch áp dụng đưa thay đổi đó lên mức `MIGRATION` và báo số người sẽ có lại quyền của vai; bảng điều khiển hiện câu hỏi này bằng tiếng Việt.
   Lần áp dụng, tiếp tục áp dụng, quay lui và tệp mô hình lúc khởi động cũng qua bước kiểm này, nên tệp lúc khởi động không tự áp dụng trong trường hợp đó.
   Lần áp dụng có vai mới hỏi Keycloak trước bước đầu tiên, nên khi Keycloak không trả lời thì lần áp dụng lỗi ngay mà không chạy bước nào.
@@ -99,6 +104,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
   `dxos history verify` và `dxos history anchor` gọi hai API này, và `verify` thoát với mã 1 khi chuỗi không còn nguyên.
 - `GET /api/v1/data/{model}/{entity}/stats` trả tổng số, số theo trạng thái, số quá hạn, số theo đơn vị và `computedAt`, với cùng bộ lọc và quyền như danh sách.
   Giao diện có trang thống kê cho thực thể có quy trình; mỗi số mở danh sách đã lọc tương ứng.
+  Truy vấn chạy quá 10 giây bị cắt.
 - Mẫu "Sự cố thiết bị" (`plant_incident`) có trường thiết bị và mã quan sát duy nhất; `examples/itot-simulator` đăng nhập bằng tài khoản dịch vụ, tạo hồ sơ khi chỉ số vượt ngưỡng, và gửi lại cùng một quan sát thì lõi từ chối với 400 (mã quan sát đã có) mà không tạo hồ sơ thứ hai; `simulator.py setup` tạo client `dxos-itot-<mô hình>` bằng tài khoản quản trị Keycloak của `deploy/.env`.
 - `dxos archive <mô hình> [--before YYYY-MM-DD] [--out THƯ_MỤC]` ghi các hồ sơ đã tới trạng thái cuối và lịch sử của chúng ra Parquet bằng DuckDB chạy trong container, kèm `manifest.json` (phiên bản mô hình, số dòng, sha256 từng tệp); dữ liệu trong cơ sở dữ liệu giữ nguyên.
   `dxos archive check <thư mục>` đọc lại từng tệp và so với manifest.
@@ -107,6 +113,10 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Áp dụng lại tệp không đổi kiểm xem bảng và Keycloak có còn khớp tệp không: cột, ràng buộc, client, vai hoặc nhóm đơn vị bị xóa tay thì kế hoạch ghi `repair` và áp dụng sẽ sửa lại, giữ nguyên phiên bản.
   Bảng hoặc cột thừa bị từ chối; đổi kiểu cột hay bỏ ràng buộc thừa cần xác nhận mức `MIGRATION`; bảng điều khiển hiện nút "Sửa phần lệch".
 - Menu người dùng có "Tài khoản của tôi", mở Account Console của Keycloak để đổi mật khẩu, bật OTP và xem phiên.
+- Họ `work_item` có khóa tùy chọn `auto_close` (ví dụ `7d`, mặc định tắt): hồ sơ ở trạng thái đã xử lý xong mà người nộp không xác nhận hay mở lại trong thời gian đó được hệ thống đóng, với `system` là người quyết định.
+  Lịch sử có dòng `auto_closed` trong chuỗi băm và outbox, hành động hoàn tất chạy như lúc người nộp xác nhận; người nộp mở lại rồi xử lý xong lần nữa thì thời gian chờ tính lại.
+  Họ khác khai báo `auto_close` thì bị từ chối; đổi giá trị là thay đổi mức `SAFE` ở kế hoạch (`CHANGE_AUTO_CLOSE`), áp dụng được khi còn hồ sơ đang mở.
+  Bước quét chạy mỗi `engine.auto-close.sweep-ms` (mặc định 60000 ms).
 
 ## [2.0.0] - 2026-11-03
 

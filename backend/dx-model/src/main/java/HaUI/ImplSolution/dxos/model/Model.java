@@ -28,10 +28,10 @@ public record Field(String name,FieldType type,String label,boolean required,boo
 
 // The process family an entity runs, the role that handles its records, whether the creator of a
 // record may handle it, and how long a handler has before a record counts as overdue (null for no
-// deadline). After maps a final state to the actions taken when a record reaches it. Booking is set
-// for the
-// reservation family only.
-public record Process(String family,String handler,boolean allowSelfDecision,Duration deadline,Map<String,List<Completion>>after,Booking booking){
+// deadline). AutoClose is how long a resolved record waits for its owner before the system closes
+// it (null for never; the work_item family only). After maps a final state to the actions taken
+// when a record reaches it. Booking is set for the reservation family only.
+public record Process(String family,String handler,boolean allowSelfDecision,Duration deadline,Duration autoClose,Map<String,List<Completion>>after,Booking booking){
 
 public ProcessFamily definition(){return ProcessFamily.find(family).orElseThrow();}}
 

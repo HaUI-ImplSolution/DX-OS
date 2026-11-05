@@ -6,7 +6,6 @@ import {
   CreateButton,
   Datagrid,
   DateField,
-  DateTimeInput,
   Edit,
   EditButton,
   FilterButton,
@@ -32,6 +31,7 @@ import { Labeled } from "react-admin";
 import { Link } from "react-router-dom";
 import { timeAgo } from "../shell/format";
 import { ActionButtons, AssignPanel, FilesPanel, HistoryPanel } from "./caseParts";
+import DateTimeViInput from "./DateTimeViInput";
 import { StatusChip } from "./StatusChip";
 import { resourceName, type EntityMeta, type FieldMeta, type ModelMeta } from "./types";
 
@@ -42,7 +42,7 @@ interface Catalog {
 }
 
 // The field that names a record when another record refers to it.
-function displayField(entity: EntityMeta | undefined): string {
+export function displayField(entity: EntityMeta | undefined): string {
   const texts = entity?.fields.filter((field) => field.type === "text") ?? [];
   const preferred = ["name", "title", "code"].map((n) => texts.find((f) => f.name === n)).find(Boolean);
   return (preferred ?? texts[0])?.name ?? "id";
@@ -101,7 +101,7 @@ function inputField(field: FieldMeta, catalog: Catalog) {
     case "number":
       return <NumberInput key={field.name} source={field.name} label={field.label} validate={validate} />;
     case "datetime":
-      return <DateTimeInput key={field.name} source={field.name} label={field.label} validate={validate} />;
+      return <DateTimeViInput key={field.name} source={field.name} label={field.label} isRequired={field.required} />;
     case "choice":
     case "unit":
       return (

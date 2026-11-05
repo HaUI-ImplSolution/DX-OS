@@ -74,6 +74,12 @@ seconds() {
 
 do_backup() {
   local started; started="$(date +%s)"
+  # The lock dxos reconcile takes, so that it does not recreate containers while the dump runs.
+  exec 9>.reconcile.lock
+  if command -v flock >/dev/null 2>&1 && ! flock -w 300 9; then
+    echo "Another update, backup or reconcile has held deploy/.reconcile.lock for 5 minutes; try again when it ends." >&2
+    exit 1
+  fi
   restic -- cat config >/dev/null 2>&1 || restic -- init
   rm -rf "$STAGE"; mkdir -p "$STAGE"; chmod 700 "$STAGE"
   trap 'rm -rf "$STAGE"' EXIT

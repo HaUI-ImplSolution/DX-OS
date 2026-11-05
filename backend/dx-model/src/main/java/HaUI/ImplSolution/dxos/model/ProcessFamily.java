@@ -28,6 +28,11 @@ public enum Actor {
     return from.contains(state);
   }}
 
+  // A work_item record that stays resolved is closed with the action its owner would take.
+  public static final String AUTO_CLOSE_STATE = "resolved";
+  public static final String AUTO_CLOSE_ACTION = "confirm";
+  public static final String AUTO_CLOSE_FROM_ACTION = "resolve";
+
   public static final String WITHDRAW = "withdraw";
   public static final String WITHDRAWN_STATE = "withdrawn";
 
@@ -102,6 +107,11 @@ public enum Actor {
 
   public boolean isTerminal(String stateName) {
     return states.stream().anyMatch(state -> state.name().equals(stateName) && state.terminal());
+  }
+
+  // Whether a record that waits for its owner can be closed by the system after a time.
+  public boolean supportsAutoClose() {
+    return "work_item".equals(name);
   }
 
   // Whether a handler can act on a record in this state, which is when its deadline runs.

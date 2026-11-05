@@ -487,8 +487,8 @@ public final class ModelParser {
       problem(node, "process is a mapping with family and handler");
       return null;
     }
-    Map<String, Node> keys = mapping(map,
-        Set.of("family", "handler", "allow_self_decision", "deadline", "after", "booking"));
+    Map<String, Node> keys = mapping(map, Set.of("family", "handler", "allow_self_decision",
+        "deadline", "auto_close", "after", "booking"));
     Node familyNode = keys.get("family");
     String family = familyNode == null ? null : scalar(familyNode);
     if (family == null || ProcessFamily.find(family).isEmpty()) {
@@ -510,6 +510,7 @@ public final class ModelParser {
     return new Process(family, handler,
         flag(keys.get("allow_self_decision"), "allow_self_decision"),
         deadline(keys.get("deadline")),
+        autoClose(keys.get("auto_close"), ProcessFamily.find(family).orElseThrow()),
         readAfter(keys.get("after"), ProcessFamily.find(family).orElseThrow(), fields),
         readBooking(map, keys.get("booking"), family, fields));
   }
@@ -638,13 +639,30 @@ public final class ModelParser {
 
   // A number followed by m (minutes), h (hours) or d (days), such as 90m, 72h or 3d.
   private Duration deadline(Node node) {
+    return duration(node, "deadline", "72h");
+  }
+
+  // How long a resolved record waits for its owner; only the families that have such a wait take
+  // it.
+  private Duration autoClose(Node node, ProcessFamily family) {
+    if (node == null) {
+      return null;
+    }
+    if (!family.supportsAutoClose()) {
+      problem(node, "auto_close only applies to the work_item family");
+      return null;
+    }
+    return duration(node, "auto_close", "7d");
+  }
+
+  private Duration duration(Node node, String key, String example) {
     if (node == null) {
       return null;
     }
     String text = scalar(node);
     Matcher matcher = DEADLINE.matcher(text == null ? "" : text);
     if (!matcher.matches() || Long.parseLong(matcher.group(1)) == 0) {
-      problem(node, "deadline is a positive number followed by m, h or d, such as 72h");
+      problem(node, key + " is a positive number followed by m, h or d, such as " + example);
       return null;
     }
     long amount = Long.parseLong(matcher.group(1));

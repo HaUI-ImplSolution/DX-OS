@@ -64,6 +64,7 @@ public class DataService {
 
   private static final int MAX_PAGE_SIZE = 200;
   private static final int DEFAULT_PAGE_SIZE = 20;
+  private static final int STATS_TIMEOUT_MS = 10_000;
   private static final Set<String> SYSTEM_COLUMNS = Set.of("id", "created_by", "created_at",
       "updated_at", "version", "assignee", "decided_by", "decided_at", "handle_by", "overdue");
   private static final Map<String, String> OPERATORS =
@@ -157,6 +158,8 @@ public class DataService {
   public Map<String, Object> stats(Model model, Entity entity, Map<String, String> params) {
     Access access = access(model, entity);
     requireRead(access);
+    // Applies to this transaction only: the counts below stop after the limit.
+    jdbc.getJdbcOperations().execute("SET LOCAL statement_timeout = " + STATS_TIMEOUT_MS);
     MapSqlParameterSource values = new MapSqlParameterSource();
     List<String> where = new ArrayList<>();
     where.add(scope(model, entity, access.reads(), values));
@@ -448,18 +451,19 @@ public class DataService {
       return null;
     }
     values.addValue("me", user.currentUserId());
+    String reach = scope(model, entity, access.reads(), values);
     List<String> any = new ArrayList<>();
     Set<String> owner = fromStates(entity, Actor.OWNER);
     if (!owner.isEmpty()) {
       values.addValue("ownerStates", owner);
-      any.add("(status IN (:ownerStates) AND created_by = :me)");
+      any.add("(status IN (:ownerStates) AND created_by = :me AND " + reach + ")");
     }
     Set<String> handler = fromStates(entity, Actor.HANDLER);
     if (canHandle(model, entity) && !handler.isEmpty()) {
       values.addValue("handlerStates", handler);
       String notMine = entity.process().allowSelfDecision() ? "" : " AND created_by <> :me";
       any.add("(status IN (:handlerStates) AND (assignee IS NULL OR assignee = :me)" + notMine
-          + " AND " + scope(model, entity, access.reads(), values) + ")");
+          + " AND " + reach + ")");
     }
     return any.isEmpty() ? null : "(" + String.join(" OR ", any) + ")";
   }

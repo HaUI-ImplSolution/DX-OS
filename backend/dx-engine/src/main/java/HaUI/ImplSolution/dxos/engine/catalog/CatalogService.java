@@ -91,6 +91,10 @@ public class CatalogService {
     params
         .add(param("allow_self_decision", false, "Whether the creator of a record may handle it"));
     params.add(param("deadline", false, "How long a handler has, such as 72h, 90m or 3d"));
+    if ("work_item".equals(family)) {
+      params.add(param("auto_close", false,
+          "How long a resolved record waits for its owner before the system closes it, such as 7d"));
+    }
     params.add(param("after", false, "Actions taken when a record reaches a final state"));
     if ("reservation".equals(family)) {
       params.add(param("booking", true,

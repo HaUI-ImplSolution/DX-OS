@@ -29,38 +29,24 @@ Mốc dưới đây là dự kiến.
 
 | Việc | Ghi chú |
 |---|---|
-| Nạp mô hình lúc khởi động | Chỉ một tệp mỗi lần |
-| Dịch vụ `ai/` | Chưa nằm trong compose; chỉ tìm kiếm tri thức có nguồn, chưa có hỏi đáp sinh câu trả lời vì chưa có mô hình ngôn ngữ đạt tiêu chuẩn mở; dữ liệu huấn luyện của mô hình embedding chưa kiểm theo định nghĩa của OSI |
-| Chưa cắt bớt service bằng compose profile | Mô hình không dùng thành phần nào vẫn phải chạy thành phần đó |
-| Hành động hoàn tất | Chỉ có `add_to_group` và `remove_from_group`; nhóm Keycloak phải có sẵn, thiếu thì thông điệp xem được ở tab Hàng đợi sự kiện; trường người dùng hoặc nhóm để trống thì thao tác bị bỏ qua, chỉ để lại một dòng `WARN` trong log backend |
-| Nhiều bản sao của backend | Đã thử hai bản sau gateway: danh sách mô hình và trạng thái giữ chỉ nằm trong bộ nhớ từng bản sao, nên sau một lần áp dụng 22 trong 40 yêu cầu nhận 404 vì bản kia chưa nạp mô hình, và mô hình đang bị giữ vẫn được bản kia phục vụ; khởi động lại cả hai thì đúng; hiện chỉ chạy một bản; hướng làm: bản sao khác định kỳ đối chiếu `apply_run` và `model_version` rồi nạp lại |
-| Trường kiểu `user` | Giá trị chưa được đối chiếu với người dùng có thật trong Keycloak |
-| Đổi họ mẫu của một thực thể | Bị từ chối, kể cả khi mọi hồ sơ đã ở trạng thái cuối; muốn đổi hình dạng quy trình thì thêm thực thể mới |
-| Họ `work_item` | Hồ sơ ở trạng thái đã xử lý xong chờ người nộp xác nhận, chưa tự đóng sau một thời gian |
-| Bảng điều khiển | Điền form viết lại tệp và bỏ chú thích giữa tệp; trình soạn kéo theo khoảng 15 MB mã tĩnh, chỉ tải khi mở |
-| Lịch đặt chỗ | Chỉ xem và tạo theo khoảng chọn, chưa kéo thả để đổi giờ; tiêu đề lấy từ trường văn bản đầu tiên |
-| Xác nhận mất dữ liệu không tự sao lưu | Người vận hành chạy `deploy/backup.sh` trước |
-| Đổi thành viên đơn vị | Chỉ có hiệu lực sau khi người đó lấy token mới |
-| Đơn vị dùng chung giữa các ứng dụng | Đơn vị là cơ cấu tổ chức nên mọi mô hình dùng cùng nhóm Keycloak theo tên; vai đã tách theo client của từng mô hình; khai báo lại một đơn vị đã bỏ thì người còn trong nhóm có lại quyền theo đơn vị mà kế hoạch không báo, vì thành viên đơn vị là dữ kiện của tổ chức; cần đơn vị riêng từng ứng dụng thì bàn lại |
-| Ngôn ngữ giao diện | Chỉ có tiếng Việt; thông báo backend thêm sau mà chưa có mẫu ở `backendMessages.ts` hiện nguyên văn tiếng Anh, vài thông báo lỗi còn tên trạng thái hoặc hành động dạng mã, và ô chọn ngày giờ theo ngôn ngữ của trình duyệt |
-| Lần áp dụng đầu dở | Mô hình chưa vào registry nên người dùng không thấy lời giải thích nào ở Hộp việc, chỉ thấy mô hình không có trong menu |
-| Hủy bỏ lần áp dụng dở | Đưa bảng về phiên bản đang chạy: cột và bảng đã thêm bị xóa cùng dữ liệu, thứ đã xóa không quay lại; mô hình chưa có phiên bản thì xóa cả schema, bảng và client `dxos-m-<mô hình>` của lần áp dụng đầu; nhóm đơn vị mà lần đó tạo vẫn phải dọn tay ở Keycloak vì các mô hình dùng chung nhóm |
-| Đổi luật quy trình khi còn hồ sơ mở | Người xử lý, hạn xử lý, quyền tự quyết, hành động hoàn tất và đặt chỗ chỉ đổi được khi thực thể không còn hồ sơ đang xử lý, vì hồ sơ chưa lưu phiên bản mô hình; phải hoàn tất hoặc rút hết hồ sơ trước; chuyển hồ sơ đang chạy bằng `ProcessMigrationService` chưa làm |
-| Vai bỏ khỏi tệp mô hình | Vẫn còn ở client của mô hình cùng người giữ nhưng không cho quyền gì, vì quyền chỉ theo vai mà mô hình đang khai báo; khai báo lại thì kế hoạch hỏi xác nhận; xóa hẳn vai hay client làm tay ở Keycloak |
-| Xóa thực thể | Bảng, hồ sơ, tệp đính kèm và đối tượng trong kho bị xóa cùng; lịch sử Flowable đã kết thúc, audit và outbox của thực thể còn lại; thực thể còn hồ sơ đang chạy quy trình phải hoàn tất hoặc rút hết hồ sơ trước |
-| Audit | Thay đổi làm thẳng trong Admin Console chỉ có ở sự kiện quản trị của Keycloak, giữ 90 ngày, ghi tài khoản người thực hiện; nếu việc ghi audit lỗi thì chỉ có log và thay đổi vẫn thành công |
-| Kiểm lệch của tệp không đổi | Chỉ chạy khi xem kế hoạch hoặc áp dụng, không chạy lúc backend khởi động; mỗi lần xem kế hoạch của tệp không đổi chạy thêm pgschema; bảng hoặc cột thừa do sửa tay bị từ chối chứ không bị xóa; vai thừa ở client của mô hình và nhóm đơn vị thừa không bị đụng; chỉ mục hay ràng buộc thừa bị xóa khi áp dụng với mức `MIGRATION` |
-| Xem trước không giữ khóa | Kế hoạch có thể cũ khi người khác áp dụng xen vào; bước áp dụng kiểm lại mọi điều kiện |
-| Quét mã độc | Tắt mặc định ở bản cài vì ClamAV cần khoảng 1 GB RAM; tắt thì tệp tải lên không được quét; quét nằm ở dịch vụ lưu tệp, sau gateway |
-| Kiểm bản sao lưu | `verify` đếm bảng và dòng và kiểm mọi khóa của `engine.attachment` có tệp, nhưng không so nội dung từng tệp, quy trình đang chạy hay quyền sau khi khôi phục |
-| Sao lưu và khoảng trễ xóa tệp | Bản sao lưu có đủ tệp của mọi dòng trong bản dump chỉ khi dump và chụp kho ngắn hơn `DXOS_FILE_DELETE_DELAY`; lượt dài hơn chỉ được cảnh báo; tệp đã gỡ vẫn nằm trong kho đến hết khoảng trễ |
-| Tự phục hồi | `dxos reconcile` chỉ chạy một bản backend, không có khóa chung với `dxos update` và `backup.sh`, và timer cần phiên đăng nhập của user trừ khi bật `loginctl enable-linger` |
-| Chuỗi hash của lịch sử | Phát hiện chứ không ngăn sửa; điểm neo nằm trong kho đối tượng của cùng máy chủ nên người sửa được cả cơ sở dữ liệu lẫn kho thì chỉ bị lộ khi so với `hash` mà bên nhận webhook đã giữ |
-| Hồ dữ liệu | `dxos archive` chỉ xuất hồ sơ ở trạng thái cuối và lịch sử của chúng, dữ liệu trong cơ sở dữ liệu giữ nguyên; DuckDB tải extension `postgres` từ mạng ở lần chạy đầu |
-| Thống kê | Chưa có thời gian chờ và chưa có tài liệu công thức, bộ lọc cho từng chỉ số; tài khoản chỉ đọc `report_ro` được `SELECT` cả bảng nên không tự áp dụng quyền `own`, `unit`, `assigned` của người xem |
-| Bài kiểm của đợt sửa báo cáo kỹ thuật | Khe hở khi áp dụng, xóa client khi Hủy bỏ, thống kê, chuỗi hash, `dxos plan`, `dxos apply`, `dxos archive`, `verify` thiếu tệp và simulator IT/OT chỉ kiểm tay, chưa có script ở `deploy/dev` nên job `e2e` không chạy chúng |
-| Webhook sự kiện | Giao ít nhất một lần, nên bên nhận bỏ lặp theo `X-Dxos-Event-Id`; payload chưa có `request_id`; dạng `chat` chưa thử với Mattermost và Slack thật; thông điệp của việc áp dụng mô hình và của tài khoản không có trong `GET /api/v1/events` |
+| Dịch vụ `ai/` | Hoãn đến phần AI: chưa nằm trong compose và chưa nối vào lõi, vì không có mô hình, backend hay gateway nào gọi tới; chỉ tìm kiếm tri thức có nguồn, chưa có hỏi đáp sinh câu trả lời và tác tử đề xuất có người duyệt vì chưa có mô hình ngôn ngữ đạt tiêu chuẩn mở; dữ liệu huấn luyện của mô hình embedding chưa kiểm theo định nghĩa của OSI |
+| Webhook sự kiện | Dạng `chat` chưa thử với Mattermost và Slack thật; thông điệp của việc áp dụng mô hình và của tài khoản không có trong `GET /api/v1/events` |
 | Ứng dụng Tầng 2 | Chưa phủ I của H-P-D-I; để sau như đã định |
-| Hộp việc theo đơn vị | Người tạo hồ sơ rồi rời đơn vị vẫn thấy tiêu đề, mã và trạng thái hồ sơ của mình ở hộp việc, dù mở chi tiết bị 404 |
+
+## 4. Giới hạn chấp nhận
+
+Đã cân nhắc và quyết định giữ nguyên; chỉ mở lại khi có yêu cầu thật.
+
+| Việc | Ghi chú |
+|---|---|
+| Trường kiểu `user` | Giá trị là id người dùng Keycloak, giao diện web cho nhập tay và backend không đối chiếu với người dùng có thật |
+| Đổi luật quy trình khi còn hồ sơ mở | Người xử lý, hạn xử lý, quyền tự quyết, hành động hoàn tất và đặt chỗ chỉ đổi được khi thực thể không còn hồ sơ đang xử lý; phải hoàn tất hoặc rút hết hồ sơ trước, vì hồ sơ chưa lưu phiên bản mô hình |
+| Ngôn ngữ giao diện | Chỉ có tiếng Việt |
+| Cắt bớt service bằng compose profile | Mô hình không dùng thành phần nào vẫn phải chạy thành phần đó |
+| Nhiều bản sao của backend | Chạy một bản; hai bản sau gateway thì danh sách mô hình và trạng thái giữ lệch nhau giữa các bản sau một lần áp dụng |
+| Đổi họ mẫu của một thực thể | Bị từ chối, kể cả khi mọi hồ sơ đã ở trạng thái cuối, vì trạng thái của hồ sơ cũ không ánh xạ sang họ mới; muốn đổi hình dạng quy trình thì thêm thực thể mới |
+| Đổi vai hoặc đơn vị của người đang đăng nhập | Vai và đơn vị đọc từ token đã ký nên thay đổi có hiệu lực sau tối đa khoảng 5 phút (token sống 300 giây), và người bị gỡ giữ quyền đến lúc đó |
+| Nạp mô hình lúc khởi động | Chỉ một tệp mỗi lần |
+| Chuỗi hash của lịch sử | Phát hiện chứ không ngăn sửa; điểm neo nằm trong kho đối tượng của cùng máy chủ nên người sửa được cả cơ sở dữ liệu lẫn kho thì chỉ bị lộ khi so với `hash` mà bên nhận webhook đã giữ |
 | Danh sách người xử lý | Tối đa 500 người cho mỗi vai hoặc đơn vị; người ngoài danh sách không giao việc được |
-| Không có giao dịch chung giữa các hệ thống | Giữa PostgreSQL, Keycloak, Flowable và SeaweedFS; mỗi bước chạy lại được, và lần áp dụng dở được tiếp tục hoặc hủy bỏ |
+| Kiểm thử tự động chưa phủ một số ý | Chưa phủ `dxos plan`, `dxos apply`, `dxos archive`, simulator IT/OT, khe hở khi áp dụng và `verify` thiếu tệp; các ý này kiểm tay theo mục "Kiểm thử chưa tự động hóa" ở `docs/TESTING.md` |

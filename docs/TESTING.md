@@ -385,3 +385,92 @@ Chuỗi script chạy trên stack rỗng của máy này; stack đã gỡ sau kh
 | `GET /api/v1/meta/models` với mô hình bị giữ | Đạt | `check_guards.py` T12-14: mô hình bị giữ không có thực thể dùng được và hiện với `held` là true |
 | Keycloak từ chối tài khoản dịch vụ | Đạt | Gỡ `manage-clients` của `dxos-backend-admin`, áp dụng mô hình mới: 502 `ERR_ACCOUNT_SERVICE_DENIED`; trả lại quyền, hủy bỏ lần áp dụng dở (kiểm tay) |
 
+
+### Kiểm ngày 05/11/2026: khóa chung của cập nhật và sao lưu, thời gian chờ của thống kê, hộp việc theo phạm vi
+
+Image backend dựng từ cây làm việc gồm cả tệp chưa commit; stack thử riêng (cơ sở dữ liệu rỗng) đã gỡ sau khi kiểm.
+
+| Mục | Kết quả | Ghi chú |
+|---|---|---|
+| `mvn compile formatter:validate` cho `dx-model`, `dx-core`, `dx-engine` | Đạt | Không tệp nào lỗi định dạng |
+| `check_api.py`, `check_recovery.py`, `check_case.py` | Đạt | 51/51, 19/19, 71/71; T6-12 là bước kiểm hộp việc |
+| Hộp việc khi người nộp rời đơn vị | Đạt | Officer nộp hồ sơ ở `DAO_TAO`, đồng nghiệp trả lại; hồ sơ có trong hộp việc của người nộp; sau khi chuyển người đó sang `CTSV` và lấy token mới thì hồ sơ biến khỏi hộp việc và mở chi tiết trả 404 (kịch bản tạm, không nằm trong repo) |
+| `GET /data/<mô hình>/<thực thể>/stats` | Đạt | Trả 200 và đúng số liệu khi đã đặt `statement_timeout`; chưa kiểm lúc truy vấn bị cắt thật |
+| `update.sh` khi khóa `deploy/.reconcile.lock` đang bị giữ | Đạt | Đứng đợi; khóa rảnh thì đi tiếp tới bước kéo image |
+| `backup.sh` khi khóa đang bị giữ | Đạt | Chế độ sao lưu đứng đợi; `backup.sh -h` không bị chặn |
+| Hành động hoàn tất khi trường người dùng hoặc nhóm trống | Đạt | Mô hình thử có `after` dùng trường `member` và `grp`: duyệt hồ sơ thiếu người dùng và hồ sơ thiếu nhóm đều thành `approved`, lịch sử có dòng `completion_skipped` kèm lý do; `check_process.py` vẫn 56/56 (kịch bản tạm, không nằm trong repo) |
+| Một lần `update.sh` và `backup.sh` chạy trọn | Chưa kiểm | Image `dxos-*:local` không có trên registry, chưa có kho restic |
+
+### Kiểm ngày 05/11/2026: kéo thả trên lịch đặt chỗ
+
+Image frontend và backend dựng từ cây làm việc gồm cả tệp chưa commit; stack thử riêng (cơ sở dữ liệu rỗng) đã gỡ sau khi kiểm.
+
+| Mục | Kết quả | Ghi chú |
+|---|---|---|
+| `npx tsc --noEmit` | Đạt | Không lỗi |
+| Lịch của mẫu `room_booking` bằng Chrome, người quản lý | Đạt | Hai lượt đặt cùng ngày, 09:00–10:00 và 11:00–12:00; tiêu đề hiện theo mục đích đặt |
+| Kéo lượt 09:00 sang 11:00, trùng lượt kia | Đạt | Hiện thông báo "Tài nguyên đã có người đặt trong khung giờ này", lượt trở về 09:00 |
+| Kéo lượt 09:00 lên 08:00 | Đạt | Lưu ngay; `GET` lại ra 08:00–09:00 |
+| Kéo cạnh dưới lượt 08:00 xuống 10:00 | Đạt | Lưu ngay; `GET` lại ra 08:00–10:00, lượt kia không đổi |
+| Lượt ở trạng thái cuối (`rejected`) kéo bằng người quản lý | Đạt | Lượt đứng yên, không có thông báo lỗi; `GET` lại ra giờ cũ |
+| Người chỉ có quyền đọc (mô hình thử đặt `GUEST: read` cho lượt đặt) | Đạt | Phụ đề chỉ còn "Bấm vào một lượt để xem chi tiết"; kéo một lượt đang chờ xác nhận thì đứng yên; `GET` lại ra giờ cũ |
+
+### Kiểm ngày 05/11/2026: tự đóng hồ sơ của họ work_item
+
+Image backend và frontend dựng từ cây làm việc gồm cả tệp chưa commit; hai lần thử trên stack thử riêng (cơ sở dữ liệu rỗng, kịch bản nằm ngoài repo) đã gỡ sau khi kiểm.
+Mô hình thử khai báo `auto_close: 1m` và bước quét chạy mỗi 60 giây.
+
+| Mục | Kết quả | Ghi chú |
+|---|---|---|
+| `mvn test-compile`, `formatter:validate` cho `dx-model` và `dx-engine` | Đạt | Không báo lỗi |
+| `mvn test -pl dx-model,dx-engine -am` | Đạt | 20 và 8 test sẵn có, gồm `ArchitectureTest` |
+| `auto_close` ở họ `approval`, giá trị `soon`, giá trị `0d` | Đạt | 400 kèm dòng và cột; thông báo `auto_close only applies to the work_item family` và `auto_close is a positive number followed by m, h or d, such as 7d` |
+| Áp dụng mô hình có `auto_close` | Đạt | Phiên bản 1 được áp dụng |
+| Kế hoạch khi đổi `auto_close` từ `1m` sang `2m` | Đạt | Một thay đổi `CHANGE_AUTO_CLOSE`, mức `SAFE` |
+| Hồ sơ đã xử lý xong, không ai xác nhận | Đạt | Đóng sau 87 giây; `decided_by` là `system`, `handle_by` rỗng; lịch sử kết thúc bằng dòng `auto_closed` từ `resolved` sang `closed` do `system` |
+| Người nộp xác nhận ngay | Đạt | Đóng với người nộp là người quyết định; không có dòng `auto_closed` |
+| Người nộp mở lại rồi xử lý xong lần nữa | Đạt | 51 giây sau lần xử lý xong thứ hai vẫn ở `resolved` dù lần đầu đã quá hạn; sau đó đóng theo lần thứ hai |
+| Hồ sơ đang xử lý | Đạt | Không bị đóng |
+| `GET /history/verify` sau các dòng `auto_closed` | Đạt | `intact: true`, không điểm đứt |
+| Dòng `auto_closed` tới webhook | Đạt | Mô hình thử khai báo `webhook: hook`, đích trỏ tới một máy nhận chạy trên máy dev; nhận đủ `created`, `start`, `resolve`, `auto_closed` theo thứ tự; dòng `auto_closed` có `actor` là `system`, `fromStatus` `resolved`, `toStatus` `closed`, kèm `X-Dxos-Event-Id` và chữ ký |
+| Hành động hoàn tất (`after`) khi tự đóng | Đạt | `after: {closed: [{do: add_to_group, user: created_by, group: AUTOCLOSE}]}`; sau khi hồ sơ tự đóng, người nộp là thành viên nhóm `AUTOCLOSE` ở Keycloak |
+| Nhãn `auto_closed` trên giao diện bằng Chrome | Đạt | Trang chi tiết hồ sơ, người nộp đăng nhập: dòng "Tự đóng do người nộp chưa xác nhận" với người thực hiện `System` và nhãn trạng thái "Đã đóng" |
+| Nhãn `CHANGE_AUTO_CLOSE` và khóa `auto_close` ở trình soạn bằng Chrome | Đạt | Quản trị đổi `1m` thành `2m`, "Xem kế hoạch" hiện "Đổi thời gian tự đóng hồ sơ" mức "An toàn"; trình soạn không báo lỗi khóa `auto_close` |
+
+### Kiểm ngày 05/11/2026: vai và đơn vị đổi giữa phiên
+
+Bốn mục đầu đo trên stack chính bằng đăng nhập bằng mật khẩu của client `dxos-check` và lệnh làm mới token, người dùng thử đã xóa sau khi đo; hai mục sau kiểm bằng Chrome trên stack thử riêng (cơ sở dữ liệu rỗng, image frontend dựng từ cây làm việc) đã gỡ sau khi kiểm.
+
+| Mục | Kết quả | Ghi chú |
+|---|---|---|
+| Token cũ sau khi người dùng vào đơn vị `CTSV` | Đạt | Claim `groups` không đổi |
+| Token làm mới bằng refresh token sau khi vào đơn vị | Đạt | Có `CTSV` ngay |
+| Token cũ sau khi người dùng ra khỏi `CTSV` | Đạt | Vẫn mang `CTSV` đến khi hết hạn |
+| Token làm mới sau khi ra khỏi đơn vị | Đạt | Không còn `CTSV` |
+| Thời hạn token | Đạt | 300 giây |
+| Web tự làm mới token trên trình duyệt | Đạt | Stack thử riêng, quản trị đăng nhập lúc 08:01:19 UTC (token 300 giây, chưa có đơn vị), được cho vào `CTSV` lúc 08:01:32; không tải lại trang, token trong `sessionStorage` đổi lúc 08:05:32 (khoảng 4 phút 13 giây sau khi đăng nhập, trước khi hết hạn) và mang `groups: ["CTSV"]` |
+| Câu gợi ý mới ở tab Người dùng bằng Chrome | Đạt | Mở một người dùng ở tab Người dùng: dòng "Bấm vào một vai để gán hoặc gỡ. Vai và đơn vị mới có hiệu lực khi phiên của người đó tự làm mới, tối đa khoảng 5 phút, hoặc khi người đó đăng nhập lại." |
+
+### Kiểm ngày 05/11/2026: kiểm tra tự động thêm vào script có sẵn
+
+Hai nhóm của job `e2e` chạy trên stack rỗng của máy này, theo đúng thứ tự trong CI; stack đã gỡ sau khi kiểm.
+
+| Mục | Kết quả | Ghi chú |
+|---|---|---|
+| Nhóm `model and process` | Đạt | `check_api.py` 51, `check_recovery.py` 19, `check_case.py` 71, `check_change.py` 65, `check_process.py` 58, `check_booking.py` 45, `check_demo.py` 26, `check_guards.py` 61, `check_users.py` 41 |
+| Nhóm `events and bootstrap` | Đạt | `check_events.py` 21, `check_bootstrap.py` 8 |
+| Hủy bỏ lần áp dụng đầu xóa client Keycloak của mô hình | Đạt | T12-21 trong `check_guards.py`; client được tạo tay trước khi hủy bỏ vì lỗi tiêm xảy ra trước bước tạo client |
+| Thống kê khớp với danh sách | Đạt | T8-09 trong `check_process.py`: `total`, tổng `byStatus` và `overdue` bằng số đếm của danh sách, với người xử lý và với người nộp chỉ thấy hồ sơ của mình |
+| Chuỗi hash của lịch sử | Đạt | EV-16 đến EV-18 trong `check_events.py`: nguyên vẹn, sửa một dòng thì `firstBreak` chỉ đúng dòng đó, trả lại thì nguyên vẹn |
+| Sau khi đổi số hiệu EV-13 đến EV-15 thành EV-16 đến EV-18 trong `check_events.py` | Chưa chạy lại | Chỉ đổi nhãn của ba kiểm tra mới, logic không đổi |
+
+### Kiểm thử chưa tự động hóa
+
+Các mục dưới đây kiểm tay; kết quả ở các mục kiểm trước của tài liệu này.
+
+| Mục | Cách kiểm tay |
+|---|---|
+| `dxos plan`, `dxos apply`, `dxos archive` | Chạy trên bản cài: `dxos plan <tệp>` và `dxos apply <tệp> --accept <mức>`; `dxos archive <mô hình>` rồi `dxos archive check <thư mục>` |
+| Simulator IT/OT | `examples/itot-simulator/simulator.py setup`, `run`, `replay`; gửi lại cùng quan sát in `duplicate` và không tạo thêm hồ sơ |
+| Khe hở khi áp dụng | Áp dụng một mô hình đổi bảng trong lúc có yêu cầu ghi hồ sơ của mô hình đó; không hồ sơ nào được ghi sai cấu trúc |
+| `backup.sh verify` thiếu tệp | Xóa một tệp khỏi kho `seaweedfs` của bản sao lưu rồi chạy `verify`; phải báo `FAILED` kèm tên khóa thiếu |

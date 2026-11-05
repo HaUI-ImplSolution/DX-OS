@@ -3,6 +3,7 @@ package HaUI.ImplSolution.dxos.engine.process;
 
 import HaUI.ImplSolution.dxos.engine.apply.Sql;
 import HaUI.ImplSolution.dxos.engine.event.CompletionHandler;
+import HaUI.ImplSolution.dxos.engine.data.EventLog;
 import HaUI.ImplSolution.dxos.engine.event.Outbox;
 import HaUI.ImplSolution.dxos.engine.registry.ModelRegistry;
 import HaUI.ImplSolution.dxos.model.Model;
@@ -30,11 +31,13 @@ public class RecordStatus {
   private final JdbcTemplate jdbc;
   private final ModelRegistry registry;
   private final Outbox outbox;
+  private final EventLog events;
 
-  public RecordStatus(JdbcTemplate jdbc, ModelRegistry registry, Outbox outbox) {
+  public RecordStatus(JdbcTemplate jdbc, ModelRegistry registry, Outbox outbox, EventLog events) {
     this.jdbc = jdbc;
     this.registry = registry;
     this.outbox = outbox;
+    this.events = events;
   }
 
   public void set(DelegateExecution execution, String status) {
@@ -86,11 +89,12 @@ public class RecordStatus {
       Object group =
           completion.group() != null ? completion.group() : row.get(completion.groupField());
       if (user == null || group == null || group.toString().isBlank()) {
+        String missing = user == null ? "user in field " + completion.user()
+            : completion.group() != null ? "group" : "group in field " + completion.groupField();
         log.warn("Completion {} skipped for {}.{} record {} in {}: the record has no {}",
-            completion.operation(), model.name(), entity.name(), id, status,
-            user == null ? "user in field " + completion.user()
-                : completion.group() != null ? "group"
-                    : "group in field " + completion.groupField());
+            completion.operation(), model.name(), entity.name(), id, status, missing);
+        events.record(model, entity, id, "completion_skipped", status, status, null,
+            completion.operation() + " skipped: the record has no " + missing);
         continue;
       }
       Map<String, Object> payload = new LinkedHashMap<>();

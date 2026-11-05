@@ -69,6 +69,7 @@ Mô hình đi qua một đường duy nhất, từ hệ thống rỗng hay từ 
 7. `SAVE_VERSION`: lưu nội dung và mã băm; từ đây phiên bản có hiệu lực.
 
 Bảo vệ dữ liệu nằm ở lõi: nếu kế hoạch của pgschema có thao tác xóa bảng hoặc cột mà so sánh mô hình không có, áp dụng dừng lại.
+Không có giao dịch chung giữa PostgreSQL, Keycloak, Flowable và SeaweedFS.
 Mỗi bước chạy lại được an toàn, nên áp dụng bị gián đoạn thì áp dụng lại để làm tiếp; đã đổi tên thì chỉ đúng tệp đó mới hoàn tất được.
 Tệp không đổi vẫn được so với bảng và Keycloak thật: cột, ràng buộc, client, vai hoặc nhóm đơn vị bị mất thành các thay đổi `REPAIR_SCHEMA`, `REPAIR_CLIENT`, `REPAIR_ROLE`, `REPAIR_UNIT` với action `repair`, chạy bằng chính các bước trên và không tăng phiên bản.
 Bảng hoặc cột thừa bị từ chối; đổi kiểu cột hay bỏ ràng buộc thừa ở mức `MIGRATION`; việc kiểm chỉ chạy khi xem kế hoạch hoặc áp dụng, không chạy lúc backend khởi động.
@@ -91,6 +92,8 @@ Mỗi lần áp dụng lưu tệp, các lần đổi tên và mức đã xác nh
 - `POST /api/v1/models/{model}/abandon` đưa các bảng về phiên bản đang chạy; cột và bảng mà lần áp dụng dở đã thêm bị xóa cùng dữ liệu.
 
 Mô hình mà lần áp dụng đầu dừng dở chưa có phiên bản; danh sách mô hình vẫn liệt kê nó với phiên bản 0, và `abandon` xóa schema cùng bảng mà lần đó đã tạo.
+Vai bỏ khỏi tệp mô hình vẫn còn ở client của mô hình cùng người giữ nhưng không cho quyền gì, vì quyền chỉ theo vai mà mô hình đang khai báo; khai báo lại thì kế hoạch hỏi xác nhận, và xóa hẳn vai hay client làm tay ở Keycloak.
+Đơn vị là cơ cấu tổ chức nên mọi mô hình dùng cùng nhóm Keycloak theo tên; đơn vị chỉ cho phạm vi dòng, còn quyền làm gì vẫn do vai của từng mô hình quyết định.
 
 `ModelBootstrap` áp dụng tệp ở `ENGINE_MODEL_FILE` khi backend khởi động, trên một luồng riêng chờ Keycloak, với người thực hiện `bootstrap`.
 Chỉ tệp chưa từng áp dụng, có kế hoạch an toàn và không có lần áp dụng dở mới được áp dụng; mỗi lần chạy ghi một dòng `Model bootstrap: <applied|unchanged|skipped|failed> ...`.
@@ -147,6 +150,8 @@ sequenceDiagram
 - Hồ sơ đã giao thì chỉ người được giao thực hiện được hành động của vai xử lý.
 - Hành động sai trạng thái bị từ chối (409); lỗi sau bước quy trình làm cả hồ sơ, quy trình lẫn dòng lịch sử quay về như cũ.
 - Dịch vụ lõi là kết nối ghi duy nhất vào dữ liệu nghiệp vụ; vai `report_ro` chỉ đọc.
+  `report_ro` đọc được mọi dòng của mọi bảng nghiệp vụ và không áp quyền `own`, `unit`, `assigned` của người xem, nên chỉ cấp cho công cụ báo cáo của người vận hành.
+  Người dùng cuối xem số liệu qua `GET /api/v1/data/{model}/{entity}/stats`, nơi quyền theo dòng được áp dụng.
 
 ## 6. Quản trị người dùng và nhật ký
 

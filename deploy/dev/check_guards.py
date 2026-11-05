@@ -327,8 +327,12 @@ def stopped_apply(admin):
              all(listed.get(n, {}).get("version") == 0 and listed[n]["held"] is True for n in ("gfirst", "gfirst2")), str(listed.get("gfirst")))
     status, body = kc.api(admin, "POST", "/models/gfirst/resume")
     rt.check("T12-21 resume finishes a first apply", status == 200 and body["data"]["version"] == 1, f"{status} {body}")
+    # The fault stops the apply before its client is made, so one is made here as if a later step had stopped it.
+    kc.kc("POST", "/clients", {"clientId": "dxos-m-gfirst2", "enabled": True})
+    kept_client = kc.client_uuid("gfirst2")
     status, body = kc.api(admin, "POST", "/models/gfirst2/abandon")
     rt.check("T12-21 abandon removes what a first apply created", status == 200, f"{status} {body}")
+    rt.check("T12-21 and the Keycloak client of that first apply", kept_client is not None and kc.client_uuid("gfirst2") is None, str(kept_client))
     code, schemas = rt.psql("select string_agg(schema_name, ',' order by schema_name) from information_schema.schemata where schema_name in ('m_gfirst', 'm_gfirst2')")
     status, body = kc.api(admin, "GET", "/models")
     listed = {m["model"]: m for m in body["data"]} if status == 200 else {}

@@ -22,7 +22,7 @@ The narrow loop from model file to end user runs:
 - Reading and checking a model file, with errors reported by line and column.
 - Applying a model to an empty system: schema, tables, constraints, Keycloak roles, a stored version and the history of each step; applying the same file again does nothing unless the tables or Keycloak accounts have drifted from it, in which case the drift is put right, and an interrupted apply is finished by applying again.
 - One API for every entity, permissions by role and by row (`all`, `own`, `read`, `unit`, `assigned`), required, unique and choice rules.
-- Three workflow families on an embedded Flowable: approval, work items, and time-slot reservations with a capacity check; the status of a record changes only through the workflow, in the same transaction as the write of the record.
+- Three workflow families on an embedded Flowable: approval, work items (which can close by themselves when the owner does not confirm), and time-slot reservations with a capacity check; the status of a record changes only through the workflow, in the same transaction as the write of the record.
 - Rules shared by every workflow: rejecting and returning need a reason, the submitter fixes and resubmits or withdraws a record, nobody decides their own record, and overdue records go to the top of the inbox.
 - Follow-up work after an approval, such as adding a user to a group, runs through an event queue and is retried on failure.
 - Every change to a record is reported to the web address the model chooses, signed so the receiver can check it and sent again when the receiver fails; the changes of one record arrive in order, and a receiver that missed messages gets them again by sequence number.
@@ -31,7 +31,7 @@ The narrow loop from model file to end user runs:
 - Each model has its own roles: two models can use the same role name, and a holder of the role of one model cannot reach the other model.
 - Units declared in the model and kept as Keycloak groups; assignment, an inbox and the history of every record.
 - Changing a model that holds data: a preview by level of risk, renames that keep the values, a list of the rows breaking a new rule, a separate confirmation for losing data, a return to the previous version, and finishing or giving up an apply that stopped halfway.
-- A react-admin UI built from metadata, in Vietnamese with a light and a dark mode, with no code written for any entity.
+- A react-admin UI built from metadata, in Vietnamese with a light and a dark mode, and a booking calendar where bookings can be dragged, with no code written for any entity.
 - A control panel for the person deploying the system: a template library, a model editor, a preview of the plan, apply, history and rollback, and a diagram of the workflow.
 - One command takes a model file on a clean machine: the system starts, the file is applied and you can sign in at once.
 - User administration in the control panel: see who holds which role in each application, give and take roles and units, create a user with a temporary password, lock and unlock, reset a password; every change is recorded with who made it and can be read back in the person's dialog.
@@ -116,14 +116,14 @@ entities:
 - Field types: `text`, `number`, `datetime`, `choice`, `reference`, `user`, `unit`.
 - Units: declared in `units`, each one a Keycloak group; a `unit` field says which unit a record belongs to. A full example is [`backend/dx-engine/src/main/resources/templates/onestop.yaml`](./backend/dx-engine/src/main/resources/templates/onestop.yaml).
 - Access by role: `all` (every row, read and write), `own` (the rows of the user), `read` (every row, read only), `unit` (the rows of the units of the user), `assigned` (the rows assigned to the user); `owner_via` lets a child entity follow the owner of its parent, through any number of levels.
-- Workflow: `family` picks the process family (`approval` or `work_item`), `handler` is the role that handles records, `deadline` is an optional handling time (for example `72h`).
+- Workflow: `family` picks the process family (`approval` or `work_item`), `handler` is the role that handles records, `deadline` is an optional handling time (for example `72h`); the `work_item` family also takes an optional `auto_close` (for example `7d`): a resolved record that its owner does not confirm within that time is closed by the system.
   Rejecting and returning need a reason; the owner can withdraw a record that is not in a final state.
   A record with a process cannot be deleted; a decided record can no longer be edited; an assigned record can only be handled by its assignee.
   The creator of a record cannot decide it unless `allow_self_decision: true` is declared.
 - Reservations: `family: reservation` with `booking: {resource, starts, ends, capacity}`; a booking that would put more bookings at the same moment than the capacity allows is refused, and the app has a calendar view.
   See [`room_booking.yaml`](./backend/dx-engine/src/main/resources/templates/room_booking.yaml).
 - Completion actions: `after` gives a list of operations for a final state, for example `after: {approved: [{do: add_to_group, user: created_by, group_from: group_field}]}`; they run after the transaction commits and are retried on failure.
-  The available operations are `add_to_group` and `remove_from_group`.
+  The available operations are `add_to_group` and `remove_from_group`; the Keycloak group must already exist, otherwise the message shows in the Event queue tab; when the user or group field is empty the operation is skipped and the record gets a `completion_skipped` history line with the reason.
   See [`backend/dx-engine/src/main/resources/templates/itaccess.yaml`](./backend/dx-engine/src/main/resources/templates/itaccess.yaml).
 - Attachments: a `type: file` field, uploaded with `POST /api/v1/data/{model}/{entity}/{id}/files`; access follows the access to the record.
   The accepted file types are set by `engine.files.allowed-extensions`, and a file is always downloaded as an attachment.
@@ -145,6 +145,7 @@ entities:
 | `GET /api/v1/models/schema`, `/families`, `/templates`, `/{model}/versions` | The model file schema, workflow families, the template library and the applied versions, for the control panel (ADMIN) |
 | `GET /api/v1/meta/models` | Metadata the caller may see; a model that is held shows with `held` and no entities |
 | `/api/v1/data/{model}/{entity}` | List, create, read, update, delete; filter with `filter.<field>[.<op>]`, `sort`, `order`, `page`, `size` |
+| `GET /api/v1/data/{model}/{entity}/stats` | Counts over the rows the caller may see, with the same `filter.*` parameters as the list: `total`; for an entity with a process also `byStatus` (records per status) and `overdue` (records whose deadline is before `computedAt`); for an entity with a `unit` field also `byUnit`; the query is cut after 10 seconds |
 | `POST /api/v1/data/{model}/{entity}/{id}/actions/{action}` | An action of the workflow; the metadata lists the actions, their starting state and who may take them |
 | `POST .../{id}/assign`, `GET .../{id}/handlers` | Assign a record and list who can take it |
 | `GET .../{id}/events` | The history of a record |

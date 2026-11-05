@@ -22,7 +22,7 @@ Phiên bản trước của dự án (hai ứng dụng nghiệp vụ viết tay)
 - Đọc và kiểm tra tệp mô hình, báo lỗi theo dòng và cột.
 - Áp dụng mô hình vào hệ thống rỗng: schema, bảng, ràng buộc, vai Keycloak, phiên bản và lịch sử từng bước; áp dụng lại cùng tệp thì không làm gì, trừ khi bảng hoặc tài khoản Keycloak đã lệch khỏi tệp thì sửa phần lệch; bị gián đoạn thì áp dụng lại để làm tiếp.
 - API chung cho mọi thực thể, quyền theo vai và theo dòng (`all`, `own`, `read`, `unit`, `assigned`), quy tắc bắt buộc, duy nhất và lựa chọn.
-- Ba họ mẫu quy trình trên Flowable nhúng: phê duyệt, công việc cần xử lý, đặt chỗ theo khung giờ có kiểm sức chứa; trạng thái hồ sơ chỉ đổi qua quy trình, cùng giao dịch với việc ghi hồ sơ.
+- Ba họ mẫu quy trình trên Flowable nhúng: phê duyệt, công việc cần xử lý (có thể tự đóng khi người nộp không xác nhận), đặt chỗ theo khung giờ có kiểm sức chứa; trạng thái hồ sơ chỉ đổi qua quy trình, cùng giao dịch với việc ghi hồ sơ.
 - Quy tắc chung của mọi quy trình: từ chối và trả lại cần lý do, người nộp sửa rồi nộp lại hoặc rút hồ sơ, người tạo không tự quyết hồ sơ của mình, hồ sơ quá hạn lên đầu hộp việc.
 - Việc làm sau khi duyệt, như thêm người dùng vào nhóm, chạy qua hàng đợi sự kiện và được thử lại khi lỗi.
 - Mọi thay đổi của hồ sơ được báo ra ngoài tới địa chỉ web mà mô hình chọn, có chữ ký để bên nhận kiểm tra và được gửi lại khi bên nhận lỗi; các thay đổi của một hồ sơ tới đúng thứ tự, và bên nhận lỡ tin thì lấy lại phần đã lỡ theo số thứ tự.
@@ -31,7 +31,7 @@ Phiên bản trước của dự án (hai ứng dụng nghiệp vụ viết tay)
 - Mỗi mô hình có vai riêng: hai mô hình dùng được cùng một tên vai mà người giữ vai của mô hình này không vào được mô hình kia.
 - Đơn vị khai báo trong mô hình và đồng bộ thành nhóm Keycloak; giao việc, hộp việc và dòng lịch sử của từng hồ sơ.
 - Đổi mô hình khi đã có dữ liệu: xem trước theo mức rủi ro, đổi tên giữ nguyên dữ liệu, báo dòng vi phạm, xác nhận riêng khi mất dữ liệu, quay về phiên bản trước, tiếp tục hoặc hủy bỏ một lần áp dụng dừng giữa chừng.
-- Giao diện react-admin dựng từ metadata, bằng tiếng Việt và có chế độ sáng tối, không có mã riêng cho thực thể nào.
+- Giao diện react-admin dựng từ metadata, bằng tiếng Việt và có chế độ sáng tối, lịch đặt chỗ kéo thả được, không có mã riêng cho thực thể nào.
 - Bảng điều khiển cho người triển khai: thư viện mẫu, trình soạn mô hình, xem kế hoạch, áp dụng, lịch sử và quay về, sơ đồ quy trình.
 - Một lệnh nhận tệp mô hình trên máy sạch: hệ thống khởi động, tệp được áp dụng và có thể đăng nhập ngay.
 - Quản trị người dùng ngay trong bảng điều khiển: xem ai giữ vai nào ở từng ứng dụng, gán và gỡ vai và đơn vị, tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu; mỗi thay đổi được ghi lại kèm người thực hiện và xem lại được trong hộp thoại của người đó.
@@ -116,14 +116,14 @@ entities:
 - Kiểu trường: `text`, `number`, `datetime`, `choice`, `reference`, `user`, `unit`.
 - Đơn vị: khai báo ở `units`, mỗi đơn vị là một nhóm Keycloak; trường kiểu `unit` cho biết hồ sơ thuộc đơn vị nào. Ví dụ đầy đủ ở [`backend/dx-engine/src/main/resources/templates/onestop.yaml`](./backend/dx-engine/src/main/resources/templates/onestop.yaml).
 - Quyền theo vai: `all` (mọi dòng, đọc và ghi), `own` (dòng của mình), `read` (mọi dòng, chỉ đọc), `unit` (dòng của đơn vị mình), `assigned` (dòng được giao cho mình); `owner_via` cho phép thực thể con theo chủ sở hữu của thực thể cha, qua nhiều cấp.
-- Quy trình: `family` chọn họ mẫu (`approval` hoặc `work_item`), `handler` là vai xử lý, `deadline` là hạn xử lý tùy chọn (ví dụ `72h`).
+- Quy trình: `family` chọn họ mẫu (`approval` hoặc `work_item`), `handler` là vai xử lý, `deadline` là hạn xử lý tùy chọn (ví dụ `72h`); họ `work_item` còn có `auto_close` tùy chọn (ví dụ `7d`): hồ sơ đã xử lý xong mà người nộp không xác nhận trong thời gian đó thì hệ thống đóng.
   Từ chối và trả lại bắt buộc có lý do; người nộp rút lại được hồ sơ chưa ở trạng thái cuối.
   Hồ sơ có quy trình không xóa được; hồ sơ đã được quyết định thì không sửa được; hồ sơ đã giao thì chỉ người được giao xử lý được.
   Người tạo hồ sơ không tự quyết định được, trừ khi khai báo `allow_self_decision: true`.
 - Đặt chỗ: `family: reservation` kèm `booking: {resource, starts, ends, capacity}`; lượt làm số lượt chạy cùng lúc vượt sức chứa bị từ chối, và ứng dụng có chế độ xem lịch.
   Ví dụ ở [`room_booking.yaml`](./backend/dx-engine/src/main/resources/templates/room_booking.yaml).
 - Hành động hoàn tất: `after` gán danh sách thao tác cho một trạng thái cuối, ví dụ `after: {approved: [{do: add_to_group, user: created_by, group_from: nhom}]}`; thao tác chạy sau khi giao dịch xong và được thử lại nếu lỗi.
-  Thao tác có sẵn là `add_to_group` và `remove_from_group`.
+  Thao tác có sẵn là `add_to_group` và `remove_from_group`; nhóm Keycloak phải có sẵn, thiếu thì thông điệp xem được ở tab Hàng đợi sự kiện; trường người dùng hoặc nhóm để trống thì thao tác bị bỏ qua và hồ sơ có thêm dòng lịch sử `completion_skipped` kèm lý do.
   Ví dụ ở [`backend/dx-engine/src/main/resources/templates/itaccess.yaml`](./backend/dx-engine/src/main/resources/templates/itaccess.yaml).
 - Tệp đính kèm: trường `type: file`, tải lên bằng `POST /api/v1/data/{model}/{entity}/{id}/files`; quyền theo quyền của bản ghi.
   Loại tệp nhận được đặt bằng `engine.files.allowed-extensions`, và tệp luôn tải về dạng đính kèm.
@@ -145,6 +145,7 @@ entities:
 | `GET /api/v1/models/schema`, `/families`, `/templates`, `/{model}/versions` | Đặc tả tệp mô hình, họ mẫu, thư viện mẫu và các phiên bản đã áp dụng, cho bảng điều khiển (ADMIN) |
 | `GET /api/v1/meta/models` | Metadata mà người gọi được xem; mô hình đang bị giữ hiện với `held` và không có thực thể |
 | `/api/v1/data/{model}/{entity}` | Danh sách, tạo, xem, sửa, xóa; lọc `filter.<trường>[.<phép>]`, `sort`, `order`, `page`, `size` |
+| `GET /api/v1/data/{model}/{entity}/stats` | Đếm trên các dòng người gọi được xem, nhận cùng bộ lọc `filter.*` như danh sách: `total`; với thực thể có quy trình thêm `byStatus` (số hồ sơ mỗi trạng thái) và `overdue` (hồ sơ có hạn xử lý trước `computedAt`); với thực thể có trường `unit` thêm `byUnit`; truy vấn bị cắt sau 10 giây |
 | `POST /api/v1/data/{model}/{entity}/{id}/actions/{action}` | Hành động của quy trình; metadata liệt kê hành động, trạng thái đầu và người được làm |
 | `POST .../{id}/assign`, `GET .../{id}/handlers` | Giao việc và danh sách người giao được |
 | `GET .../{id}/events` | Dòng lịch sử của bản ghi |

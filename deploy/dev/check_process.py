@@ -156,6 +156,19 @@ def main():
     order = [item["id"] for item in body["data"]["items"] if item["model"] == "desk8" and item["entity"] == "ticket"]
     rt.check("T8-08 inbox puts overdue first", order[:2] == [newer, older] and body["data"]["items"][0]["overdue"] is True, str(order))
 
+    # T8-09: the counts of an entity agree with its list and stay inside what the caller may read.
+    def counts_match(token):
+        status, stats = kc.api(token, "GET", f"{TICKETS}/stats")
+        status_list, listed = kc.api(token, "GET", f"{TICKETS}?size=200")
+        data, rows = stats["data"], listed["data"]["items"]
+        return (status == 200 and status_list == 200 and data["total"] == listed["data"]["totalElements"]
+                and sum(item["count"] for item in data["byStatus"]) == data["total"]
+                and data["overdue"] == sum(1 for row in rows if row["overdue"]), data)
+    ok, data = counts_match(agent)
+    rt.check("T8-09 stats agree with the list: total, per status and overdue", ok and data["overdue"] >= 1, str(data))
+    ok, data = counts_match(asker)
+    rt.check("T8-09 the owner's stats count only their own tickets", ok and data["total"] >= 2, str(data))
+
     # T8-07: changing the handler and the deadline is safe and reports the records in flight.
     changed = DESK.replace("deadline: 1h", "deadline: 2d")
     status, body = kc.api(admin, "POST", "/models/plan", changed, YAML)

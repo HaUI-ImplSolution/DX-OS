@@ -22,7 +22,7 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
-import YAML from "yaml";
+import YAML, { isSeq, type Document } from "yaml";
 import { ApiError } from "../shell/api";
 import { applyModel, planModel, type Family, type Plan } from "./api";
 import ModelForm from "./ModelForm";
@@ -57,6 +57,63 @@ function prune(value: unknown): unknown {
   return kept;
 }
 
+type Path = (string | number)[];
+const isMapping = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === "object" && !Array.isArray(value);
+
+// Writes only what differs into the document, so the comments around what did not change stay in the file.
+function patch(doc: Document, path: Path, before: unknown, after: unknown) {
+  if (JSON.stringify(before) === JSON.stringify(after)) return;
+  if (isMapping(before) && isMapping(after)) {
+    Object.keys(before).forEach((key) => {
+      if (!(key in after)) doc.deleteIn([...path, key]);
+    });
+    Object.entries(after).forEach(([key, value]) => patch(doc, [...path, key], before[key], value));
+    return;
+  }
+  if (Array.isArray(before) && Array.isArray(after)) {
+    const seq = doc.getIn(path, true);
+    if (isSeq(seq)) {
+      // Items that did not change keep their place and comments; only the stretch that differs is rewritten.
+      const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+      let head = 0;
+      while (head < before.length && head < after.length && same(before[head], after[head])) head++;
+      let tail = 0;
+      while (
+        tail < before.length - head &&
+        tail < after.length - head &&
+        same(before[before.length - 1 - tail], after[after.length - 1 - tail])
+      )
+        tail++;
+      const oldCount = before.length - head - tail;
+      const newCount = after.length - head - tail;
+      const common = Math.min(oldCount, newCount);
+      for (let offset = 0; offset < common; offset++) {
+        patch(doc, [...path, head + offset], before[head + offset], after[head + offset]);
+      }
+      // The comment above the first item hangs on the list, so it moves to whichever item is first afterwards.
+      const lead = (item: unknown) => item as { commentBefore?: string | null } | undefined;
+      if (newCount > common) {
+        const added = after.slice(head + common, head + newCount).map((value) => doc.createNode(value));
+        seq.items.splice(head + common, 0, ...added);
+        const moved = lead(seq.items[head + common + added.length]);
+        if (head + common === 0 && moved && seq.commentBefore) {
+          moved.commentBefore = seq.commentBefore;
+          seq.commentBefore = undefined;
+        }
+      } else if (oldCount > common) {
+        seq.items.splice(head + common, oldCount - common);
+        if (head + common === 0) {
+          const first = lead(seq.items[0]);
+          seq.commentBefore = first?.commentBefore ?? undefined;
+          if (first) first.commentBefore = undefined;
+        }
+      }
+      return;
+    }
+  }
+  doc.setIn(path, after);
+}
+
 const message = (error: unknown) => (error instanceof Error ? error.message : "Không xử lý được");
 
 // Writes a model with the form or in YAML, shows what applying it would do, and applies it.
@@ -89,12 +146,13 @@ export default function EditorTab({ text, source, schema, families, onText, onAp
   const selected = processes.find((item) => item.name === entity) ?? processes[0];
   const family = families.find((item) => item.name === selected?.family);
 
-  // The form writes the file again; the comment lines at the top are kept.
+  // The form changes only the values it edits; every comment of the file is kept.
   const fromForm = (value: Record<string, unknown>) => {
     const next = prune(value) as Record<string, unknown>;
     if (JSON.stringify(next) === JSON.stringify(parsed.value)) return;
-    const header = text.match(/^(?:#.*\n)+/)?.[0] ?? "";
-    onText(header + YAML.stringify(next, { lineWidth: 0 }));
+    const doc = YAML.parseDocument(text);
+    patch(doc, [], parsed.value, next);
+    onText(doc.toString({ lineWidth: 0 }));
   };
 
   const run = async (work: () => Promise<void>) => {
@@ -148,7 +206,7 @@ export default function EditorTab({ text, source, schema, families, onText, onAp
           ) : (
             <>
               <Alert severity="info" sx={{ mb: 1.5 }}>
-                Điền form viết lại tệp, dòng chú thích đầu tệp được giữ.
+                Điền form chỉ sửa những chỗ bạn đổi, các dòng chú thích trong tệp được giữ.
               </Alert>
               <ModelForm schema={schema} value={parsed.value} onChange={fromForm} />
             </>

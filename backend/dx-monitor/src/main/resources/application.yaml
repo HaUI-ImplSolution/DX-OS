@@ -110,8 +110,8 @@ monitor:
     login-failed-window-minutes: 10
     repeat-minutes: 60
 
-  mattermost:
-    url: ${MATTERMOST_WEBHOOK_URL:}
-    admin-url: ${MATTERMOST_WEBHOOK_URL_ADMIN:}
+  chat-webhook:
+    url: ${ALERT_WEBHOOK_URL:}
+    admin-url: ${ALERT_WEBHOOK_URL_ADMIN:}
     connect-timeout-ms: 2000
     read-timeout-ms: 3000

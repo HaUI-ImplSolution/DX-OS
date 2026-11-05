@@ -23,6 +23,7 @@
 	<properties>
 		<java.version>21</java.version>
 		<awssdk.version>2.57.6</awssdk.version>
+		<wiremock.version>3.13.2</wiremock.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>

@@ -93,6 +93,7 @@ Nội dung viết cho người quản lý không chuyên IT: biểu đồ là ch
 | `KEYCLOAK_READONLY_DB_PASSWORD` | Mật khẩu role `keycloak_ro` |
 | `MONITOR_OIDC_CLIENT_SECRET` | Secret của client `dxos-monitor` trong Keycloak |
 | `MONITOR_INGEST_KEY` | Khóa gateway dùng khi gửi sự kiện; chữ và số, không có `\|` hay `&` |
+| `ALERT_WEBHOOK_URL_ADMIN`, `ALERT_WEBHOOK_URL` | Địa chỉ webhook nhận cảnh báo, dạng `{"text": ...}` của Mattermost và Slack; dùng cái đầu nếu có, trống cả hai thì không gửi cảnh báo |
 
 - Gateway điền khóa vào cấu hình khi `apisix-config` chạy; đổi khóa thì chạy `docker compose up -d --force-recreate apisix-config && docker compose restart apisix`.
 - Keycloak đang chạy chưa có client `dxos-monitor`: thêm client theo `sso/realm-dxos.json` trong Admin Console, hoặc dựng lại Keycloak từ đầu.

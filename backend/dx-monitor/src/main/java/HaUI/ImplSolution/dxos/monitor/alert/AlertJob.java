@@ -28,11 +28,11 @@ public class AlertJob {
 
   private final MonitorProperties.Alert settings;
   private final JdbcTemplate jdbc;
-  private final MattermostSender sender;
+  private final ChatWebhookSender sender;
   private final AuthEventReader authEvents;
   private final Map<String, Instant> reported = new HashMap<>();
 
-  public AlertJob(MonitorProperties properties, JdbcTemplate jdbc, MattermostSender sender,
+  public AlertJob(MonitorProperties properties, JdbcTemplate jdbc, ChatWebhookSender sender,
       AuthEventReader authEvents) {
     this.settings = properties.alert();
     this.jdbc = jdbc;

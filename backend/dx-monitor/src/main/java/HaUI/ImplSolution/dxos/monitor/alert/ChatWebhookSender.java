@@ -15,15 +15,15 @@ import org.springframework.stereotype.Component;
 
 // Posts a message to the administrators' chat channel. A failed post is logged and never thrown.
 @Component
-public class MattermostSender {
+public class ChatWebhookSender {
 
-  private static final Logger log = LoggerFactory.getLogger(MattermostSender.class);
+  private static final Logger log = LoggerFactory.getLogger(ChatWebhookSender.class);
 
-  private final MonitorProperties.Mattermost settings;
+  private final MonitorProperties.ChatWebhook settings;
   private final HttpClient client;
 
-  public MattermostSender(MonitorProperties properties) {
-    this.settings = properties.mattermost();
+  public ChatWebhookSender(MonitorProperties properties) {
+    this.settings = properties.chatWebhook();
     this.client = HttpClient.newBuilder()
         .connectTimeout(Duration.ofMillis(settings.connectTimeoutMs())).build();
   }

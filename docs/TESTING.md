@@ -474,3 +474,19 @@ Các mục dưới đây kiểm tay; kết quả ở các mục kiểm trước 
 | Simulator IT/OT | `examples/itot-simulator/simulator.py setup`, `run`, `replay`; gửi lại cùng quan sát in `duplicate` và không tạo thêm hồ sơ |
 | Khe hở khi áp dụng | Áp dụng một mô hình đổi bảng trong lúc có yêu cầu ghi hồ sơ của mô hình đó; không hồ sơ nào được ghi sai cấu trúc |
 | `backup.sh verify` thiếu tệp | Xóa một tệp khỏi kho `seaweedfs` của bản sao lưu rồi chạy `verify`; phải báo `FAILED` kèm tên khóa thiếu |
+
+### Kiểm ngày 05/11/2026: test WireMock cho client Keycloak và webhook
+
+Không dựng stack, không build image; test dùng máy chủ HTTP giả của WireMock trên cổng động, nên không thay cho các kịch bản trên stack thật.
+
+| Mục | Kết quả | Ghi chú |
+|---|---|---|
+| Giấy phép của `wiremock-standalone` 3.13.2 | Đạt | POM và `LICENSE.txt` của repo ghi Apache-2.0; jar tải về khớp sha1 trên Maven Central; thư viện đóng gói bên trong đọc từ POM của từng thư viện trên Maven Central (bản mới nhất, không phải đúng bản đóng gói): Apache-2.0 cho Guava, Jackson, Apache HttpComponents, Commons Lang, Handlebars, json-schema-validator, SnakeYAML, JsonPath, JsonUnit, XMLUnit 2, json-smart, ITU, JSpecify, error-prone, j2objc và swagger-ui; MIT cho SLF4J và jopt-simple; BSD cho Hamcrest và XMLUnit 1; Jetty là EPL-2.0 hoặc Apache-2.0 (chọn Apache-2.0); Servlet API là EPL-2.0 hoặc GPL-2.0 with Classpath Exception (chọn EPL-2.0) |
+| `.github/scripts/check_licenses.py` sau khi thêm dòng WireMock vào `COPYRIGHT.txt` | Đạt | 0 vấn đề; SBOM không đổi vì chỉ gồm dependency chạy thật |
+| `mvn test-compile` và `formatter:validate` cho toàn bộ backend | Đạt | Không báo lỗi |
+| `KeycloakAdminClientTest` | Đạt | 14/14 ở lần chạy cuối, ba lần liên tiếp ở bản 9 test; gồm token bị từ chối 401 và 403, Keycloak tắt, Keycloak quá thời gian đọc, token trả về không có `access_token`, tạo người dùng lấy id từ `Location` và 409, không tạo vai khi tra cứu vai bị 500, và các bước chạy lại được của việc áp dụng mô hình: tạo client hoặc nhóm gặp 409 không phải lỗi còn gặp 500 là lỗi, xóa client đã mất không phải lỗi còn xóa bị 500 là lỗi |
+| `ServiceProbeTest` ở `dx-monitor` | Đạt | 4/4: dịch vụ chỉ UP khi câu trả lời có đúng dấu kỳ vọng, 5xx là DOWN, trả lời quá chậm là DOWN trong dưới 2 giây, header tới rồi mà thân đứng im vẫn trả về trong dưới 3 giây; đo riêng bằng một test tạm (đã xóa) thì header tới sau khoảng 1 giây, cả thân mất 8 giây, còn lệnh gọi kiểu của bộ thăm dò bị cắt đúng lúc 501 ms, nên timeout của `send` đồng bộ ở JDK 21 phủ cả phần thân và không có lỗi treo |
+| `WebhookSenderTest` | Đạt | 5/5, ba lần liên tiếp; gồm chữ ký HMAC-SHA256 của đúng nội dung và `X-Dxos-Event-Id`, trả lời 500 và 302, cổng đóng, quá thời gian chờ 5 giây (nhãn `slow`) |
+| Lỗi tìm ra: `clientRolesOf`, `deleteUser`, `userExists` bọc lỗi token bị từ chối thành "Keycloak is unreachable" | Đạt | Test thất bại trước khi sửa, đạt sau khi thêm `catch (KeycloakAdminException e) { throw e; }`; `userExists`, `findUserId` và `deleteUser` không có nơi gọi trong mã chạy thật |
+| Toàn bộ test của `dx-model`, `dx-core`, `dx-engine`, `dx-monitor` | Đạt | 34 ở `dx-core`, 13 ở `dx-engine` (gồm `ArchitectureTest` và `AdvisoryJobLockIntegrationTest` chạy với Docker), 7 ở `dx-monitor`, `BUILD SUCCESS`; `formatter:validate` không báo lỗi |
+| Chạy trên CI | Chưa kiểm | Mới chạy trên máy dev; CI cần tải `wiremock-standalone` từ Maven Central |

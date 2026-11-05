@@ -22,6 +22,7 @@ Hướng thiết kế ở [`docs/dynamic-core/README.md`](../docs/dynamic-core/R
 ```
 
 `ArchitectureTest` trong `dx-engine` kiểm các luật phân lớp và ranh giới gói của các module.
+Test của client Keycloak, bộ gửi webhook và bộ dò dịch vụ chạy với WireMock (chỉ ở scope test, không cần Docker); test nào mất vài giây gắn `@Tag("slow")`.
 
 Chạy cả stack ở [`deploy/`](../deploy/): `docker compose up -d`.
 

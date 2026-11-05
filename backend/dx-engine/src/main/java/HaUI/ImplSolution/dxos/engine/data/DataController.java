@@ -109,7 +109,7 @@ public class DataController {
           + " actions that say so. 403 when the caller may not take it, or when the record is"
           + " assigned to someone else, with data.reason naming why (for example SELF_DECISION,"
           + " OWNER_ONLY, HANDLER_ONLY, ASSIGNED_TO_OTHER); 409 when the record is in another"
-          + " state. A terminal state"
+          + " state, with data.reason WRONG_STATE or RECORD_CLOSED. A terminal state"
           + " stores decided_by and decided_at. The owner can take the action withdraw from any"
           + " state that is not final.")
   public ApiResponse<Map<String, Object>> act(@PathVariable String model,

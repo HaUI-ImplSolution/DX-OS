@@ -44,13 +44,13 @@ public class ProcessService {
     Task task = tasks.createTaskQuery().processInstanceBusinessKey(key(model, entity, id)).active()
         .singleResult();
     if (task == null) {
-      throw new InvalidStateException("The record cannot take this action now");
+      throw new InvalidStateException("The record cannot take this action now", "WRONG_STATE");
     }
     try {
       tasks.setAssignee(task.getId(), actor);
       tasks.complete(task.getId(), Map.of("action", action.name(), "actor", actor));
     } catch (FlowableException e) {
-      throw new InvalidStateException("The record cannot take this action now");
+      throw new InvalidStateException("The record cannot take this action now", "WRONG_STATE");
     }
     if (faultAfterDecision) {
       throw new IllegalStateException("Fault injected after the action");

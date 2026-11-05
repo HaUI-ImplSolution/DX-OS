@@ -119,8 +119,9 @@ def main():
     rt.check("T6-08 return without a note", status == 400 and "note" in body["data"], f"{status} {body}")
     status, _ = act(officer, record, "dance")
     rt.check("T6-08 unknown action", status == 404, str(status))
-    status, _ = act(stu1, record, "resubmit")
+    status, body = act(stu1, record, "resubmit")
     rt.check("T6-08 action from another state", status == 409, str(status))
+    rt.check("T6-08 and the reason is the state", (body.get("data") or {}).get("reason") == "WRONG_STATE", str(body.get("data")))
 
     # T6-10, T6-11: assignment.
     status, people = kc.api(officer, "GET", f"{BASE}/{record}/handlers")

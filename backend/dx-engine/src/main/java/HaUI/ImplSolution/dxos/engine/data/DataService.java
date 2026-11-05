@@ -331,7 +331,7 @@ public class DataService {
     }
     if (entity.process() != null
         && entity.process().definition().isTerminal((String) rows.get(0).get("status"))) {
-      throw new InvalidStateException("The record is closed");
+      throw new InvalidStateException("The record is closed", "RECORD_CLOSED");
     }
   }
 
@@ -342,7 +342,7 @@ public class DataService {
     requireWrite(access);
     if (entity.process() != null) {
       throw new InvalidStateException(
-          "A record with a process is kept; its owner withdraws it instead");
+          "A record with a process is kept; its owner withdraws it instead", "KEPT_BY_PROCESS");
     }
     String status = requireOpen(model, entity, access, id);
     MapSqlParameterSource params = new MapSqlParameterSource("id", id);
@@ -352,7 +352,8 @@ public class DataService {
       deleted = jdbc.update("DELETE FROM " + table(model, entity) + " WHERE id = :id AND " + scope,
           params);
     } catch (DataIntegrityViolationException e) {
-      throw new InvalidStateException("Other records still refer to this record");
+      throw new InvalidStateException("Other records still refer to this record",
+          "STILL_REFERENCED");
     }
     if (deleted == 0) {
       throw notFound(entity, id);
@@ -401,7 +402,7 @@ public class DataService {
     Map<String, Object> record = lock(model, entity, access, id);
     String status = (String) record.get("status");
     if (entity.process().definition().isTerminal(status)) {
-      throw new InvalidStateException("The record is closed");
+      throw new InvalidStateException("The record is closed", "RECORD_CLOSED");
     }
     jdbc.update(
         "UPDATE " + table(model, entity)
@@ -625,7 +626,7 @@ public class DataService {
       throw notFound(entity, id);
     }
     if (entity.process().definition().isTerminal(statuses.get(0))) {
-      throw new InvalidStateException("The record is closed");
+      throw new InvalidStateException("The record is closed", "RECORD_CLOSED");
     }
     return statuses.get(0);
   }

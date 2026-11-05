@@ -237,16 +237,51 @@ def main():
     rt.psql("delete from engine.outbox where idempotency_key = 'check-recent'")
 
     status, body = kc.api(admin, "GET", "/history/verify")
-    rt.check("EV-16 the history chain is intact", status == 200 and body["data"]["intact"] is True and body["data"]["firstBreak"] is None, str(body.get("data")))
+    rt.check("EV-18 the history chain is intact", status == 200 and body["data"]["intact"] is True and body["data"]["firstBreak"] is None, str(body.get("data")))
     code, first = rt.psql("select min(id) from engine.record_event")
     rt.psql(f"update engine.record_event set action = action || 'x' where id = {first}")
     status, body = kc.api(admin, "GET", "/history/verify")
     broken = (body.get("data") or {}).get("firstBreak") or {}
-    rt.check("EV-17 a changed line is named as the first break", status == 200 and body["data"]["intact"] is False
+    rt.check("EV-19 a changed line is named as the first break", status == 200 and body["data"]["intact"] is False
              and str(broken.get("id")) == first and broken.get("reason") == "its content was changed", str(body.get("data")))
     rt.psql(f"update engine.record_event set action = left(action, length(action) - 1) where id = {first}")
     status, body = kc.api(admin, "GET", "/history/verify")
-    rt.check("EV-18 the chain is intact again once the line is put back", status == 200 and body["data"]["intact"] is True, str(body.get("data")))
+    rt.check("EV-20 the chain is intact again once the line is put back", status == 200 and body["data"]["intact"] is True, str(body.get("data")))
+
+    # EV-21 to EV-23: a receiver that kept the hashes sees a rewrite that recomputes the whole chain.
+    sys.path.insert(0, os.path.join(kc.REPO, "examples", "history-witness"))
+    import witness
+
+    def read_feed():
+        found, after = {}, 0
+        while True:
+            status, page = kc.api(admin, "GET", f"/events?after={after}&size=500")
+            for item in page["data"]["items"]:
+                found[int(item["eventId"])] = item["hash"]
+            if not page["data"]["more"]:
+                return found
+            after = int(page["data"]["next"])
+
+    def rewrite_chain(line, suffix_change):
+        change = "action || 'x'" if suffix_change else "left(action, length(action) - 1)"
+        rt.psql("DO $$ DECLARE r record; before text; BEGIN "
+                f"SELECT hash INTO before FROM engine.record_event WHERE id < {line} ORDER BY id DESC LIMIT 1; "
+                f"FOR r IN SELECT id FROM engine.record_event WHERE id >= {line} ORDER BY id LOOP "
+                f"UPDATE engine.record_event SET prev_hash = before, action = CASE WHEN id = {line} THEN {change} ELSE action END WHERE id = r.id; "
+                "UPDATE engine.record_event e SET hash = engine.record_event_hash(before, e) WHERE e.id = r.id RETURNING e.hash INTO before; "
+                "END LOOP; END $$")
+
+    kept = read_feed()
+    matched, changed, gone = witness.compare(kept, read_feed())
+    rt.check("EV-21 the hashes a receiver kept match the system", matched == len(kept) and not changed and not gone, f"{matched}/{len(kept)} {changed[:3]} {gone[:3]}")
+    line = min(kept)
+    rewrite_chain(line, True)
+    status, body = kc.api(admin, "GET", "/history/verify")
+    matched, changed, gone = witness.compare(kept, read_feed())
+    rt.check("EV-22 a rewrite that recomputes the chain is seen by the receiver", changed[:1] == [line] and not gone and matched == 0, f"changed {changed[:3]} gone {gone[:3]} matched {matched}; verify says {(body.get('data') or {}).get('intact')}")
+    rewrite_chain(line, False)
+    matched, changed, gone = witness.compare(kept, read_feed())
+    rt.check("EV-23 and nothing differs once the line is put back", matched == len(kept) and not changed and not gone, f"{matched}/{len(kept)} {changed[:3]} {gone[:3]}")
     server.shutdown()
 
     failed = [case for case, ok in rt.results if not ok]

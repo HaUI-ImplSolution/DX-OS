@@ -143,6 +143,10 @@ def main():
     rt.check("T8-01 return", status == 200 and body["data"]["status"] == "returned", f"{status} {body}")
     status, body = act(asker, LEAVES, leave, "withdraw")
     rt.check("T8-04 withdraw from returned", status == 200 and body["data"]["status"] == "withdrawn", f"{status} {body}")
+    status, body = kc.api(asker, "PATCH", f"{LEAVES}/{leave}", {"reason": "Sửa sau khi rút"})
+    rt.check("T8-04 a withdrawn record cannot be changed, and says it is closed", status == 409 and (body.get("data") or {}).get("reason") == "RECORD_CLOSED", f"{status} {body}")
+    status, body = kc.api(asker, "DELETE", f"{LEAVES}/{leave}")
+    rt.check("T8-04 a record with a process is kept, and says so", status == 409 and (body.get("data") or {}).get("reason") == "KEPT_BY_PROCESS", f"{status} {body}")
 
     # T8-08: overdue records come first in the inbox, then those waiting longest.
     older = create(asker, TICKETS, {"title": "Cũ hơn"})

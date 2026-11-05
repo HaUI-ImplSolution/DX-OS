@@ -49,6 +49,7 @@ python3 deploy/dev/check_demo.py            # sau các script trên hoặc trên
 python3 deploy/dev/check_guards.py          # sau các script trên, trên cùng stack
 python3 deploy/dev/check_users.py           # sau check_guards.py, trên cùng stack
 python3 deploy/dev/check_docs.py            # trên stack bất kỳ đang chạy
+python3 deploy/dev/check_conformance.py     # sau các script trên, trên cùng stack; hoặc nêu tên mô hình cần kiểm
 python3 deploy/dev/check_events.py          # sau check_users.py, trên cùng stack; khởi động lại backend vài lần
 python3 deploy/dev/check_bootstrap.py       # sau check_events.py, trên cùng stack; khởi động lại backend vài lần
 ```
@@ -506,3 +507,16 @@ Image backend và frontend dựng từ cây làm việc gồm cả tệp chưa c
 | `check_docs.py` bắt được endpoint không có thật | Đạt | Thêm tạm hai endpoint giả vào một bản sao của `ARCHITECTURE.md`: kiểm tra báo hỏng và nêu đúng hai endpoint đó |
 | Form sửa hồ sơ bằng Chrome | Đạt | Mở form hồ sơ, đổi hồ sơ bằng API, bấm Lưu ở form cũ: hiện "Bản ghi vừa được người khác thay đổi, hãy tải lại rồi thử lại", nội dung do API ghi vẫn còn nguyên |
 | Kéo thả lịch đặt chỗ gửi `version` bằng Chrome | Đạt | Kéo lượt 09:00 lên 08:00 rồi lên 07:00 không tải lại trang: cả hai lần lưu được, `GET` lại ra 07:00 với `version` tăng theo từng lần, lượt kia không đổi; lần thử đầu cho thấy lịch giữ `version` cũ sau lần kéo thứ nhất nên lần kéo thứ hai bị 409, đã sửa để lịch lấy `version` mới từ kết quả lưu |
+
+### Kiểm ngày 05/11/2026: mã lý do cho lỗi 409, so hash lịch sử từ bên ngoài và bộ kiểm chung cho mô hình
+
+Image backend dựng từ cây làm việc gồm cả tệp chưa commit; hai nhóm của job `e2e` chạy trên stack rỗng của máy này, stack đã gỡ sau khi kiểm.
+
+| Mục | Kết quả | Ghi chú |
+|---|---|---|
+| Nhóm `model and process` | Đạt | `check_api.py` 51, `check_recovery.py` 19, `check_case.py` 75, `check_change.py` 65, `check_process.py` 66, `check_booking.py` 46, `check_demo.py` 26, `check_guards.py` 61, `check_users.py` 41, `check_docs.py` 3 |
+| Nhóm `events and bootstrap` | Đạt | `check_events.py` 24, `check_bootstrap.py` 8; số hiệu ba kiểm tra về chuỗi và ba kiểm tra về bên nhận trong `check_events.py` được đổi sau khi chạy vì trùng số hiệu có sẵn, logic không đổi |
+| Mã lý do của lỗi 409 | Đạt | `WRONG_STATE` (T6-08), `RECORD_CLOSED` và `KEPT_BY_PROCESS` (T8-04), `SLOT_TAKEN` (T9-03); `STILL_REFERENCED` chưa có kiểm tra riêng |
+| Bên nhận so hash lịch sử | Đạt | Giữ hash của cả 19 dòng, sửa một dòng đầu rồi tính lại cả chuỗi: bên nhận thấy dòng đầu và mọi dòng sau đổi; `history verify` báo hỏng vì các điểm neo lệch; trả dòng về thì cả 19 dòng khớp lại |
+| `check_conformance.py` trên mọi mô hình của stack | Đạt | 59/59; lần đầu hỏng 9 kiểm tra vì gateway trả 429 do quá nhiều yêu cầu một lúc, nên mỗi người dùng chỉ thử ba mô hình khác |
+| `witness.py save` và `compare` chạy như dòng lệnh | Đạt | Lấy token bằng client `dxos-cli`: `save` ghi 3 sự kiện, `compare` báo 3 khớp (mã thoát 0); sau khi sửa dòng đầu và tính lại chuỗi, `compare` báo 3 đổi, dòng đầu là 1 (mã thoát 1); `save` lần hai không thêm dòng nào |

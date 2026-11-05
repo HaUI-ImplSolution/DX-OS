@@ -152,7 +152,7 @@ jobs:
         include:
           # Each group runs on its own empty stack; the scripts of a group depend only on the ones before them in it.
           - group: model and process
-            checks: api recovery case change process booking demo guards users docs
+            checks: api recovery case change process booking demo guards users docs conformance
           - group: events and bootstrap
             checks: events bootstrap
     steps:

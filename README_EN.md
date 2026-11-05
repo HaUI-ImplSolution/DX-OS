@@ -36,7 +36,7 @@ The narrow loop from model file to end user runs:
 - One command takes a model file on a clean machine: the system starts, the file is applied and you can sign in at once.
 - User administration in the control panel: see who holds which role in each application, give and take roles and units, create a user with a temporary password, lock and unlock, reset a password; every change is recorded with who made it and can be read back in the person's dialog.
 - Applying a model waits for the running operations of that model before the tables change, and checks the open records again once the model is held, so no record slips through in between; cancelling a first apply also removes the access settings it created.
-- The history of records is chained with checks and anchored at regular times; one command names the line that was changed, deleted or inserted.
+- The history of records is chained with checks and anchored at regular times; one command names the line that was changed, deleted or inserted, and a receiver of the outgoing messages has a tool that compares the hashes it kept with the system.
 - Statistics for every entity with a process: total, by status, overdue and by unit, with the same viewing rights as the list; each number opens the matching list.
 - Models can also be changed from the command line for automation, and finished records can be exported to analysis files with a manifest to check them again.
 - Backups also check attachments; a removed file leaves the store only after a waiting time so the backup is always complete; services restart on their own and one command brings the system back to what is declared.
@@ -144,7 +144,7 @@ entities:
 | `GET /api/v1/models`, `/models/{model}/runs` | Applied models and the history of each step (ADMIN) |
 | `GET /api/v1/models/schema`, `/families`, `/templates`, `/{model}/versions` | The model file schema, workflow families, the template library and the applied versions, for the control panel (ADMIN) |
 | `GET /api/v1/meta/models` | Metadata the caller may see; a model that is held shows with `held` and no entities |
-| `/api/v1/data/{model}/{entity}` | List, create, read, update, delete; filter with `filter.<field>[.<op>]`, `sort`, `order`, `page`, `size`; an update takes the `version` it read, and a record that changed answers 409 `ERR_CONCURRENT_MODIFICATION`; a 403 `ERR_ACTION_NOT_ALLOWED` carries `data.reason` |
+| `/api/v1/data/{model}/{entity}` | List, create, read, update, delete; filter with `filter.<field>[.<op>]`, `sort`, `order`, `page`, `size`; an update takes the `version` it read, and a record that changed answers 409 `ERR_CONCURRENT_MODIFICATION`; a 403 `ERR_ACTION_NOT_ALLOWED` and a 409 `ERR_INVALID_STATE` carry `data.reason` |
 | `GET /api/v1/data/{model}/{entity}/stats` | Counts over the rows the caller may see, with the same `filter.*` parameters as the list: `total`; for an entity with a process also `byStatus` (records per status) and `overdue` (records whose deadline is before `computedAt`); for an entity with a `unit` field also `byUnit`; the query is cut after 10 seconds |
 | `POST /api/v1/data/{model}/{entity}/{id}/actions/{action}` | An action of the workflow; the metadata lists the actions, their starting state and who may take them |
 | `POST .../{id}/assign`, `GET .../{id}/handlers` | Assign a record and list who can take it |

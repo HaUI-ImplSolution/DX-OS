@@ -33,7 +33,7 @@ cd ../frontend && npm install && npm run dev
 | Backend | `./mvnw formatter:validate` rồi `./mvnw verify` trong `backend/` |
 | Web | `npx tsc --noEmit` trong `frontend/` |
 | AI | `pytest` trong `ai/` |
-| Toàn stack | `python3 deploy/dev/check_api.py`, `check_recovery.py`, `check_case.py`, `check_change.py`, `check_process.py`, `check_booking.py`, `check_demo.py`, `check_guards.py`, `check_users.py`, `check_docs.py`, `check_events.py` và `check_bootstrap.py`, theo thứ tự, trên stack mới dựng |
+| Toàn stack | `python3 deploy/dev/check_api.py`, `check_recovery.py`, `check_case.py`, `check_change.py`, `check_process.py`, `check_booking.py`, `check_demo.py`, `check_guards.py`, `check_users.py`, `check_docs.py`, `check_conformance.py`, `check_events.py` và `check_bootstrap.py`, theo thứ tự, trên stack mới dựng |
 | Giấy phép | `python3 .github/scripts/check_licenses.py` |
 
 ## Quy ước
@@ -61,4 +61,5 @@ Workflow `Release` build và đẩy image lên GHCR; workflow `Release Package` 
 ## Thêm một nghiệp vụ mới
 
 Viết một tệp mô hình theo mẫu ở [`models/`](./models) và áp dụng bằng `POST /api/v1/models/apply`; không cần sửa mã lõi.
+Sau khi áp dụng, `python3 deploy/dev/check_conformance.py <tên mô hình>` kiểm mô hình giữ các rào chắn của lõi.
 Nếu nghiệp vụ cần một năng lực mà tệp mô hình chưa khai báo được, mở một issue mô tả: một năng lực mới chỉ được thêm khi cần ở ít nhất ba lĩnh vực và khai báo được mà không cần cú pháp mới.

@@ -36,7 +36,7 @@ Phiên bản trước của dự án (hai ứng dụng nghiệp vụ viết tay)
 - Một lệnh nhận tệp mô hình trên máy sạch: hệ thống khởi động, tệp được áp dụng và có thể đăng nhập ngay.
 - Quản trị người dùng ngay trong bảng điều khiển: xem ai giữ vai nào ở từng ứng dụng, gán và gỡ vai và đơn vị, tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu; mỗi thay đổi được ghi lại kèm người thực hiện và xem lại được trong hộp thoại của người đó.
 - Áp dụng mô hình chờ các thao tác đang chạy của mô hình đó rồi mới đổi bảng, và kiểm lại hồ sơ đang mở sau khi đã giữ mô hình, nên không hồ sơ nào lọt qua giữa chừng; hủy bỏ lần áp dụng đầu dọn luôn phần phân quyền mà lần đó đã tạo.
-- Lịch sử hồ sơ được nối thành một chuỗi có dấu kiểm và có điểm neo định kỳ; một lệnh chỉ ra dòng nào đã bị sửa, xóa hoặc chèn.
+- Lịch sử hồ sơ được nối thành một chuỗi có dấu kiểm và có điểm neo định kỳ; một lệnh chỉ ra dòng nào đã bị sửa, xóa hoặc chèn, và bên nhận tin báo ra ngoài có công cụ so hash họ giữ với hệ thống.
 - Thống kê cho mỗi thực thể có quy trình: tổng số, theo trạng thái, quá hạn và theo đơn vị, cùng quyền xem với danh sách; mỗi số mở ra danh sách tương ứng.
 - Đổi mô hình được cả từ dòng lệnh để dùng trong tự động hóa, và có lệnh xuất hồ sơ đã xong ra tệp phân tích kèm bản kê để kiểm lại.
 - Sao lưu kiểm được cả tệp đính kèm; tệp đã gỡ chỉ rời kho sau một khoảng chờ để bản sao lưu luôn đủ; các dịch vụ tự chạy lại và có lệnh đưa hệ thống về đúng khai báo.
@@ -144,7 +144,7 @@ entities:
 | `GET /api/v1/models`, `/models/{model}/runs` | Mô hình đã áp dụng và lịch sử từng bước (ADMIN) |
 | `GET /api/v1/models/schema`, `/families`, `/templates`, `/{model}/versions` | Đặc tả tệp mô hình, họ mẫu, thư viện mẫu và các phiên bản đã áp dụng, cho bảng điều khiển (ADMIN) |
 | `GET /api/v1/meta/models` | Metadata mà người gọi được xem; mô hình đang bị giữ hiện với `held` và không có thực thể |
-| `/api/v1/data/{model}/{entity}` | Danh sách, tạo, xem, sửa, xóa; lọc `filter.<trường>[.<phép>]`, `sort`, `order`, `page`, `size`; sửa nhận `version` đã đọc, hồ sơ đã đổi thì 409 `ERR_CONCURRENT_MODIFICATION`; 403 `ERR_ACTION_NOT_ALLOWED` có `data.reason` |
+| `/api/v1/data/{model}/{entity}` | Danh sách, tạo, xem, sửa, xóa; lọc `filter.<trường>[.<phép>]`, `sort`, `order`, `page`, `size`; sửa nhận `version` đã đọc, hồ sơ đã đổi thì 409 `ERR_CONCURRENT_MODIFICATION`; 403 `ERR_ACTION_NOT_ALLOWED` và 409 `ERR_INVALID_STATE` có `data.reason` |
 | `GET /api/v1/data/{model}/{entity}/stats` | Đếm trên các dòng người gọi được xem, nhận cùng bộ lọc `filter.*` như danh sách: `total`; với thực thể có quy trình thêm `byStatus` (số hồ sơ mỗi trạng thái) và `overdue` (hồ sơ có hạn xử lý trước `computedAt`); với thực thể có trường `unit` thêm `byUnit`; truy vấn bị cắt sau 10 giây |
 | `POST /api/v1/data/{model}/{entity}/{id}/actions/{action}` | Hành động của quy trình; metadata liệt kê hành động, trạng thái đầu và người được làm |
 | `POST .../{id}/assign`, `GET .../{id}/handlers` | Giao việc và danh sách người giao được |

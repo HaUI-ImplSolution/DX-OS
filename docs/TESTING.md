@@ -321,3 +321,4 @@ Chuỗi script chạy trên một stack thử riêng (project Compose `dxscratch
 | Job `backup-drill` trên GitHub Actions | Đạt | Commit `d0aa2d14`: có tệp thì `verify` đạt, thêm dòng tệp không có trong kho thì `verify` thất bại |
 | Job `e2e` trên GitHub Actions | Đạt | Commit `d0aa2d14`: stack rỗng dựng từ image của commit, chuỗi script chạy hết; cả job 14 phút 35 giây, riêng chuỗi script 11 phút 55 giây |
 | Hai nhóm của job `e2e` chạy song song, mỗi nhóm một stack rỗng riêng | Đạt | Chạy cục bộ trên cây làm việc gồm tệp chưa commit: nhóm đầu chín script 51, 19, 71, 65, 56, 45, 26, 59, 41 trong 277 giây; nhóm sau `check_events.py` 18 và `check_bootstrap.py` 8 trong 297 giây; cả hai stack đã gỡ cùng volume |
+| Hai nhóm của job `e2e` trên GitHub Actions | Đạt | Commit `ad4a3da6`: `e2e (model and process)` 434 giây, riêng script 278 giây; `e2e (events and bootstrap)` 389 giây, riêng script 268 giây; chạy song song nên cả job khoảng 7 phút 15 giây |

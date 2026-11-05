@@ -17,7 +17,6 @@ Mốc dưới đây là dự kiến.
 
 | Việc | Ghi chú |
 |---|---|
-| Thời gian job `e2e` | Chưa đo hai nhóm của job trên GitHub Actions; trên máy mỗi nhóm chạy khoảng 5 phút, nặng nhất là `check_events.py` (khoảng 160 giây), `check_bootstrap.py` (khoảng 135 giây), `check_guards.py` (khoảng 100 giây) và `check_recovery.py` (khoảng 70 giây), phần lớn là khởi động lại backend và dừng Keycloak; còn có thể cache layer Docker khi dựng image hoặc gom các ca của `check_events.py` dùng chung cấu hình vào một lần khởi động lại |
 | Ma trận bằng chứng | Chưa có bảng yêu cầu → chức năng → bài kiểm → CI hoặc demo → giới hạn; chưa tách bằng chứng từ dữ liệu giả lập, từ stack kiểm và từ triển khai công khai; kết quả kiểm tay ở `docs/TESTING.md` còn ghi trên cây làm việc gồm tệp chưa commit |
 | Bộ hỏi đáp kỹ thuật | Chưa có; gắn với mã và demo của bản nộp: ranh giới lõi, đóng góp riêng, đổi mô hình an toàn, giới hạn phục hồi |
 | Tag `v2.0.0` và GitHub Release | Tạo sau khi nhánh phase 10 vào `main`; ngày của mục `[2.0.0]` trong `CHANGELOG.md` sửa theo ngày tag; chạy workflow Release từ tag để có image `v2.0.0` mà `dxos-install.sh` kéo về |

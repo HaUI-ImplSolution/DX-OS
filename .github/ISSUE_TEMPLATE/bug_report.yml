@@ -50,7 +50,7 @@ body:
     attributes:
       label: Thành phần
       multiple: true
-      options: [web, backend, tệp mô hình, AI, BI, chat, gateway, SSO, deploy, trang docs]
+      options: [web, backend, tệp mô hình, gateway, SSO, deploy, trang docs]
   - type: dropdown
     id: run
     attributes:

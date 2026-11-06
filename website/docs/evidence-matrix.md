@@ -69,17 +69,16 @@ Lần kiểm gần nhất ngày 05/11/2026 trên cây làm việc: 517 kiểm �
 | Màn hình giám sát và cảnh báo | `ServiceProbeTest` 4, `AlertJobTest` | `cd backend && ./mvnw verify` | Dùng được | Không có kiểm đầu-cuối của giao diện giám sát |
 | Bảng điều khiển và giao diện react-admin | `npx tsc --noEmit` trong workflow `Frontend`; `e2e/tests/console.spec.ts` (quản trị viên đăng nhập, áp dụng một mẫu, thấy mô hình chạy) trong job `Browser end-to-end` của workflow `Platform`; còn lại kiểm tay bằng Chrome | `cd e2e && npx playwright test` trên stack đang chạy | Dùng được | Tự động hóa mới có luồng bảng điều khiển; hộp việc, lịch đặt chỗ và trang hồ sơ kiểm tay |
 | Ví dụ kết nối thiết bị (`itot-simulator`) | Kiểm tay: gửi lại cùng quan sát in `duplicate`, không tạo thêm hồ sơ | `python3 examples/itot-simulator/simulator.py run` | Minh họa | Thiết bị và dữ liệu giả lập |
-| Tìm kiếm tri thức có nguồn (`ai/`) | `pytest` 21 test trong workflow `AI Service` | `cd ai && python -m pytest tests -q` | Minh họa | Chạy riêng, chưa nằm trong stack và chưa nối vào lõi; không có mô hình ngôn ngữ |
 
 ## 3. Giấy phép, chuỗi cung ứng, phát hành
 
 | Tính năng | Kiểm | Lệnh | Mức | Giới hạn |
 |---|---|---|---|---|
-| Header SPDX ở mọi tệp mã, giấy phép của mọi gói trong SBOM, danh mục image và mô hình | Job `Check licenses` của workflow `Compliance` | `python3 .github/scripts/check_licenses.py` | Hoàn thiện | Ngoại lệ có lý do ở `.github/license-exceptions.json` |
+| Header SPDX ở mọi tệp mã, giấy phép của mọi gói trong SBOM, danh mục image và mô hình | Job `Check licenses` của workflow `Compliance` | `python3 .github/scripts/check_licenses.py` | Hoàn thiện | Ngoại lệ có lý do ở `.github/dependency-exceptions.json` |
 | Quét bí mật trong cây mã và lịch sử | Job `Scan for secrets` của workflow `Compliance` (gitleaks) | | Hoàn thiện | |
 | Lỗ hổng của dependency và image | workflow `Dependencies` (Trivy, SBOM của Maven), chạy theo lịch | | Hoàn thiện | Image bên thứ ba chỉ báo cáo, không chặn |
 | Gói phát hành `.tar.gz`, `.sha256`, SBOM CycloneDX | Job `Install from the release archive` của workflow `Platform` dựng gói của commit và chạy `check_archive.sh` ở mọi pull request; workflow `Release Package` chạy lại kiểm đó rồi mới đăng khi đẩy tag `v*` | `.github/scripts/check_archive.sh <gói> <phiên bản>` | Dùng được | Tag `v2.0.0` chưa tạo; bản đã phát hành gần nhất là `v1.1.1` |
-| SBOM khớp với tệp khóa | Job `Check SBOMs against lockfiles` của workflow `Compliance` dựng lại SBOM của `frontend`, `website`, `ai/` và so với `sbom/` | `python3 .github/scripts/check_sbom_fresh.py` | Hoàn thiện | SBOM của backend so bằng `check_sbom_fresh.py` với kết quả của `cyclonedx-maven-plugin`, chạy tay ngày 06/11/2026: 221 gói, 0 khác biệt |
+| SBOM khớp với tệp khóa | Job `Check SBOMs against lockfiles` của workflow `Compliance` dựng lại SBOM của `frontend` và `website` rồi so với `sbom/` | `python3 .github/scripts/check_sbom_fresh.py` | Hoàn thiện | SBOM của backend so bằng `check_sbom_fresh.py` với kết quả của `cyclonedx-maven-plugin`, chạy tay ngày 06/11/2026: 221 gói, 0 khác biệt |
 | Tệp bắt buộc có đủ, shell script đúng cú pháp và chạy được | Job `Check required files and scripts` của workflow `Compliance` | | Hoàn thiện | |
 | Workflow đúng cú pháp | Job `Lint workflows` của workflow `Compliance` | | Hoàn thiện | |
 | Image theo phiên bản trên GHCR | Workflow `Release Images` | | Dùng được | Chưa có image `v2.0.0` |

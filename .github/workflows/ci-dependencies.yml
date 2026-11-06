@@ -9,8 +9,6 @@ on:
       - Khuong/main
     paths:
       - 'backend/**/pom.xml'
-      - 'ai/requirements*.txt'
-      - 'ai/requirements.lock'
       - 'frontend/package-lock.json'
       - 'website/package-lock.json'
       - 'e2e/package-lock.json'
@@ -27,8 +25,6 @@ on:
       - Khuong/main
     paths:
       - 'backend/**/pom.xml'
-      - 'ai/requirements*.txt'
-      - 'ai/requirements.lock'
       - 'frontend/package-lock.json'
       - 'website/package-lock.json'
       - 'e2e/package-lock.json'

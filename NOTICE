@@ -5,14 +5,12 @@ Sản phẩm dự thi OLP Phần mềm nguồn mở 2026 (khối thi DX-OS, VFOS
 phát triển tại Trường Công nghệ Thông tin và Truyền thông, Đại học Công nghiệp Hà Nội.
 
 Mã nguồn do nhóm tự viết được cấp phép theo Apache License 2.0 (xem LICENSE).
-Mã nguồn trong thư mục ai/ được phân phối theo GNU AGPL-3.0 (xem ai/LICENSE).
 
-Sản phẩm này sử dụng phần mềm và mô hình của bên thứ ba, giữ nguyên giấy phép gốc:
+Sản phẩm này sử dụng phần mềm của bên thứ ba, giữ nguyên giấy phép gốc:
 
-- Spring Boot, Flowable, Keycloak, Apache APISIX, SeaweedFS, Flyway, pgschema, rank-bm25, sentence-transformers và mô hình paraphrase-multilingual-MiniLM-L12-v2 (Apache-2.0).
+- Spring Boot, Flowable, Keycloak, Apache APISIX, SeaweedFS, Flyway, pgschema (Apache-2.0).
 - PostgreSQL và pgvector (PostgreSQL License).
-- React, react-admin, Material UI, FastAPI, Pydantic, SQLAlchemy (MIT).
-- PyTorch, NumPy (BSD-3-Clause).
-- ClamAV (GPL-2.0), chạy nguyên bản thành dịch vụ riêng khi bật quét mã độc.
+- React, react-admin, Material UI (MIT).
+- ClamAV (GPL-2.0), chạy nguyên bản thành dịch vụ riêng khi bật quét mã độc; image của nó kèm libclamunrar theo giấy phép UnRAR, nạp lúc chạy và không do dự án này phân phối.
 
-Danh sách thành phần đầy đủ ở COPYRIGHT.txt; SBOM CycloneDX ở thư mục sbom/.
+Danh sách thành phần đầy đủ ở DEPENDENCIES.txt; SBOM CycloneDX ở thư mục sbom/.

@@ -33,7 +33,6 @@ _Gợi ý: ghi thêm đề mục nào của đề thi và hạng mục rubric n�
 | `dx-engine` (API chung, quy trình, áp dụng mô hình) | Có / Không | |
 | `dx-monitor` (giám sát) | Có / Không | |
 | Frontend (web) | Có / Không | |
-| AI (`ai/`) | Có / Không | |
 | Data / Migration | Có / Không | |
 | Infra / Deploy / CI | Có / Không | |
 | Docs | Có / Không | |
@@ -80,5 +79,5 @@ _Gợi ý: ghi thêm đề mục nào của đề thi và hạng mục rubric n�
 - [ ] `README.md`, `CHANGELOG.md` (chỉ ghi trạng thái cuối).
 - [ ] Swagger (springdoc) nếu đổi API.
 - [ ] `ARCHITECTURE.md` (mục 2 về module, mục 3 về áp dụng mô hình) và mục "Thêm một nghiệp vụ mới" ở `CONTRIBUTING.md` nếu đổi tệp mô hình hay API chung.
-- [ ] `COPYRIGHT.txt` và `sbom/` nếu đổi dependency, `deploy/.env.example` nếu đổi cấu hình, sơ đồ ở `ARCHITECTURE.md` nếu đổi kiến trúc.
+- [ ] `DEPENDENCIES.txt` và `sbom/` nếu đổi dependency, `deploy/.env.example` nếu đổi cấu hình, sơ đồ ở `ARCHITECTURE.md` nếu đổi kiến trúc.
 - [ ] `docs/dynamic-core/BACKLOG.md`: xóa việc đã xong, thêm việc phát sinh.

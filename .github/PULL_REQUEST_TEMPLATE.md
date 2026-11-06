@@ -13,7 +13,6 @@ Closes #
 ## Đã kiểm tra
 
 - [ ] `./mvnw formatter:validate` và `./mvnw verify` (backend)
-- [ ] `pytest` (AI)
 - [ ] `npx tsc --noEmit` (web)
 - [ ] `npm run build` trong `website/` (trang docs)
 - [ ] `python3 .github/scripts/check_licenses.py`
@@ -24,7 +23,7 @@ Closes #
 - [ ] Tài liệu liên quan (`README.md`, `docs/`, `website/docs/`) cập nhật trong cùng pull request
 - [ ] `CHANGELOG.md` mục `[Unreleased]` có một dòng cho mỗi thay đổi người dùng thấy
 - [ ] Cấu hình mới có trong `deploy/.env.example` kèm chú thích
-- [ ] Dependency mới có giấy phép OSI, đã cập nhật `COPYRIGHT.txt` và `sbom/`
+- [ ] Dependency mới có giấy phép OSI, đã cập nhật `DEPENDENCIES.txt` và `sbom/`
 - [ ] Không fork, vá hay đóng gói mã nguồn của dự án khác
 - [ ] Mã lõi không chứa tên thực thể, vai hay luồng của một lĩnh vực
 - [ ] Không có secret, `.env`, dữ liệu thật hay trọng số mô hình trong diff

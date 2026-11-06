@@ -84,7 +84,7 @@ const config = {
             ],
           },
         ],
-        copyright: 'DX-OS, giấy phép Apache-2.0 (riêng ai/ theo AGPL-3.0). Trường CNTT và Truyền thông, Đại học Công nghiệp Hà Nội.',
+        copyright: 'DX-OS, giấy phép Apache-2.0. Trường CNTT và Truyền thông, Đại học Công nghiệp Hà Nội.',
       },
       prism: {
         theme: prismThemes.github,

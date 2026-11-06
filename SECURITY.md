@@ -11,7 +11,7 @@ Báo qua tính năng báo cáo riêng của GitHub: tab **Security**, rồi **Re
 
 Nội dung nên có:
 
-- Thành phần bị ảnh hưởng (web, mobile, backend, AI, gateway, SSO, BI, chat) và phiên bản hoặc commit.
+- Thành phần bị ảnh hưởng (web, backend, tệp mô hình, gateway, SSO, AI, deploy, trang docs) và phiên bản hoặc commit.
 - Các bước tái hiện hoặc đoạn mã chứng minh.
 - Ảnh hưởng theo đánh giá của người báo.
 

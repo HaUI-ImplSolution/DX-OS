@@ -12,7 +12,7 @@ Hướng thiết kế ở [`docs/dynamic-core/README.md`](./docs/dynamic-core/RE
 
 ## Dựng môi trường
 
-Cần Docker với Compose v2, JDK 21, Node 20 và Python 3.
+Cần Docker với Compose v2, JDK 21, Node 22 và Python 3.
 
 ```bash
 deploy/make_env.sh                          # sinh deploy/.env
@@ -32,9 +32,9 @@ cd ../frontend && npm install && npm run dev
 |---|---|
 | Backend | `./mvnw formatter:validate` rồi `./mvnw verify` trong `backend/` |
 | Web | `npx tsc --noEmit` trong `frontend/` |
-| AI | `pytest` trong `ai/` |
 | Toàn stack | `python3 deploy/dev/check_api.py`, `check_recovery.py`, `check_case.py`, `check_change.py`, `check_process.py`, `check_booking.py`, `check_demo.py`, `check_guards.py`, `check_users.py`, `check_docs.py`, `check_conformance.py`, `check_events.py` và `check_bootstrap.py`, theo thứ tự, trên stack mới dựng |
 | Giấy phép | `python3 .github/scripts/check_licenses.py` |
+| Giấy phép của dự án gốc | `GITHUB_TOKEN=... python3 .github/scripts/check_upstream_licenses.py` |
 | Trang docs | `npm run build` trong `website/` |
 | Giao diện trên trình duyệt | Trên stack rỗng: `python3 -c "import sys; sys.path.insert(0, 'deploy/dev'); import kc; kc.ensure_user('ui_admin', ['ADMIN'])"`, rồi `npm ci && npx playwright install chromium && npx playwright test` trong `e2e/` |
 | Workflow | `docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12` |
@@ -47,14 +47,15 @@ cd ../frontend && npm install && npm run dev
 - **Tài liệu:** tiếng Việt, mỗi câu một dòng, chỉ ghi trạng thái hiện tại.
 - **Thông báo của backend:** viết bằng tiếng Anh kèm `errorCode`; mỗi thông báo mới cần thêm một mẫu dịch ở `frontend/src/shell/backendMessages.ts`, nếu không giao diện hiện nguyên văn tiếng Anh.
 - **Mã lõi không chứa tên thực thể, vai hay luồng của một lĩnh vực**; nghiệp vụ nằm trong tệp mô hình.
-- **Header giấy phép:** `SPDX-License-Identifier: Apache-2.0` ở đầu mọi file mã nguồn, riêng trong `ai/` là `AGPL-3.0-only`.
+- **Header giấy phép:** `SPDX-License-Identifier: Apache-2.0` ở đầu mọi file mã nguồn.
 
 ## Dependency và dữ liệu
 
 - Chỉ dùng thành phần theo giấy phép được OSI công nhận; `check_licenses.py` chặn giấy phép ngoài danh sách.
 - Không fork, vá hay đóng gói mã nguồn của dự án khác vào repository; dùng bản gốc và cấu hình nó.
-- Đổi dependency thì sinh lại SBOM theo [`sbom/README.md`](./sbom/README.md) và cập nhật [`COPYRIGHT.txt`](./COPYRIGHT.txt).
-- Image, mô hình và tệp trọng số, tài liệu, nén phải khai báo ở [`.github/license-catalog.json`](./.github/license-catalog.json) với giấy phép được phép; `check_licenses.py` kiểm danh mục này.
+- Đổi dependency thì sinh lại SBOM theo [`sbom/README.md`](./sbom/README.md) và cập nhật [`DEPENDENCIES.txt`](./DEPENDENCIES.txt).
+- Image (kể cả image chép vào bằng `COPY --from`), bản phát hành tải bằng `ADD`, mô hình và tệp trọng số, tài liệu, nén phải khai báo ở [`.github/component-catalog.json`](./.github/component-catalog.json) với giấy phép được phép; `check_licenses.py` kiểm danh mục này.
+  `check_upstream_licenses.py` so giấy phép của dự án gốc với giấy phép đã khai, ở mỗi pull request và mỗi tuần: dự án đổi giấy phép thì job đỏ, và bản mới chỉ được dùng sau khi đọc giấy phép của nó.
 - Không đưa mật khẩu, khóa hay dữ liệu thật vào kho mã; `deploy/.env` nằm ngoài Git.
 
 ## Phát hành

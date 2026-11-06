@@ -5,7 +5,7 @@
 #   .github/scripts/check_archive.sh dx-os-1.2.3.tar.gz 1.2.3
 #
 # The archive must have the legal and documentation files at its root and no file that looks like a secret.
-# Tags before v1.1.0 have no NOTICE or COPYRIGHT.txt and are not packaged again.
+# Tags before v1.1.0 have no NOTICE or COPYRIGHT.txt and are not packaged again; from v2.0.0 the file is DEPENDENCIES.txt.
 set -euo pipefail
 
 archive="${1:?usage: check_archive.sh <archive.tar.gz> <version>}"
@@ -15,7 +15,10 @@ list="$(mktemp)"
 trap 'rm -f "$list"' EXIT
 tar -tzf "$archive" > "$list"
 
-for file in LICENSE NOTICE COPYRIGHT.txt README.md CHANGELOG.md; do
+dependencies=DEPENDENCIES.txt
+case "$version" in 1.*) dependencies=COPYRIGHT.txt ;; esac
+
+for file in LICENSE NOTICE "$dependencies" README.md CHANGELOG.md; do
   grep -qx "dx-os-${version}/${file}" "$list" \
     || { echo "::error::The archive has no ${file}"; exit 1; }
 done

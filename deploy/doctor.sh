@@ -75,10 +75,6 @@ else
     ok "no variable outside .env.example"
   fi
 
-  if [[ "$(env_value COMPOSE_FILE)" == *cloudflared* && -z "$(env_value CLOUDFLARE_TUNNEL_TOKEN)" ]]; then
-    fail "COMPOSE_FILE includes the cloudflared overlay but CLOUDFLARE_TUNNEL_TOKEN is blank"
-  fi
-
   scan_host="$(env_value STORAGE_SCAN_HOST)"
   if [[ -z "$scan_host" ]]; then
     ok "virus scan of uploads is off (dxos av on, or COMPOSE_PROFILES=av and STORAGE_SCAN_HOST=clamav)"

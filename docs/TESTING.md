@@ -9,7 +9,7 @@ Mọi lệnh chạy từ gốc repo, trừ khi ghi khác; lệnh dựng stack �
 |---|---|
 | Docker và Docker Compose v2 | Backend `verify` dùng Testcontainers nên cần Docker chạy |
 | JDK 21 | Dùng Maven wrapper trong repo |
-| Node 20 trở lên | Cho `frontend` |
+| Node 22 trở lên | Cho `frontend` |
 | Python 3 | Cho các script kiểm ở `deploy/dev` |
 
 ## 2. Kiểm tĩnh
@@ -19,7 +19,6 @@ cd backend && ./mvnw verify          # formatter, compile, test của dx-model, 
 cd frontend && npx tsc --noEmit
 python3 .github/scripts/check_licenses.py
 python3 deploy/apisix/check_routes.py
-cd ai && python -m pytest tests -q   # cần pip install -r requirements-dev.txt
 ```
 
 `./mvnw verify` sau khi đổi tài nguyên nên chạy `clean verify`: tài nguyên cũ còn trong `target/` làm Flyway thấy hai migration cùng phiên bản.
@@ -141,12 +140,12 @@ T5-11 và T6-14 cần dịch vụ chạy với `ENGINE_FAULT_AFTER_DECISION=true
 - Đăng nhập SSO qua Keycloak ở web hoạt động (mục 5).
 - `docker compose up -d --build` từ clone sạch lên đủ tám service healthy: `postgres`, `keycloak`, `seaweedfs`, `backend`, `frontend`, `portal`, `monitor`, `apisix`.
 - Màn hình giám sát `/monitor/` mở được với tài khoản ADMIN.
-- Không còn từ khóa của ứng dụng cũ ngoài `ai/`:
+- Không còn từ khóa của ứng dụng cũ:
 
 ```bash
 grep -rIlw -i -E 'farm|lab|farmer|DXOS_APP|dx-host|app-farm|app-lab|dx-core-api' \
   --exclude-dir=node_modules --exclude-dir=target --exclude-dir=.git --exclude-dir=docs \
-  --exclude-dir=ai --exclude-dir=dist .
+  --exclude-dir=dist .
 ```
 
 ## 7. Sự cố thường gặp
@@ -169,8 +168,6 @@ Các dòng ghi "Phase 10" là kết quả của lần kiểm trước, cùng ng�
 | `./mvnw clean verify` | Đạt | dx-core 20 test, dx-engine 8, dx-monitor 3; dx-model không có test |
 | `npx tsc --noEmit` | Đạt | Không lỗi |
 | `check_licenses.py`, `check_routes.py` | Đạt | 0 vấn đề, gồm header, giấy phép của SBOM và danh mục `.github/license-catalog.json` (image, mô hình, tệp trọng số, tài liệu, nén); 12 route, 11 công khai có chủ đích |
-| `pytest` của `ai/` | Đạt | Phase 10: 21 test, chạy trong image dựng từ `ai/Dockerfile` |
-| `ai/` chạy thật | Đạt | Phase 10: pgvector tạm: `init_db`, `ingest` 3 tài liệu kèm nguồn và giấy phép, tìm kiếm trả đúng tài liệu; câu ngoài kho và mã không có trong kho không có bằng chứng; thiếu khóa dịch vụ 401 |
 | Bộ cài và `dxos` | Đạt | Gói dựng từ cây làm việc, image local: gói sai SHA-256 bị từ chối; cài vào `~/.dxos` và `~/.local/bin/dxos`; cài lần hai bị từ chối; `dxos start` từ trạng thái rỗng tới khi mọi dịch vụ sẵn sàng, tạo `admin` với mật khẩu tạm, lần hai không tạo lại; `status`, `logs`, `admin`, `doctor`, `version` đúng; nâng cấp bằng gói mới giữ `.env`, thêm biến mới, xóa tệp bản mới không còn; `uninstall --purge` không để lại container, volume, thư mục hay liên kết |
 | `check_events.py` | Đạt | 12/12 trên stack thử riêng: thứ tự, chữ ký, nội dung không lộ, khớp với outbox, tệp đính kèm, thử lại khi bên nhận lỗi, quá hạn, quyết định bị hủy, không đặt địa chỉ, dọn outbox; địa chỉ không trả lời tốn một lần chờ mỗi vòng giao và không có trong log |
 | `check_bootstrap.py` | Đạt | 8/8: `applied`, `unchanged`, `skipped` (đã áp dụng trước đó, mức LOSS), `failed` (tệp hỏng, không có tệp), không đặt tệp |
@@ -193,8 +190,8 @@ Các dòng ghi "Phase 10" là kết quả của lần kiểm trước, cùng ng�
 | Giao diện hồ sơ | Đạt | Phase 10: 20/20 bằng Chrome không giao diện: sinh viên nộp, cán bộ sai đơn vị không thấy, cán bộ đúng đơn vị nhận việc và trả lại, sinh viên sửa và nộp lại, cán bộ duyệt, kèm hộp việc và dòng lịch sử; 5/5 sau khi đổi tên và thêm trường, chỉ tải lại trang, không build lại |
 | Giao diện Phase 10 | Đạt | Phase 10: Chrome, stack dựng từ bản sao sạch: đăng nhập, bảng điều khiển liệt kê mô hình, thư viện mẫu hiện sáu mẫu |
 | Portal, giám sát, bảng điều khiển | Đạt | 8/8 bằng Chrome không giao diện: portal có bốn thẻ, không còn BI và chat, năm dịch vụ đều hoạt động, không lỗi console; màn hình giám sát không còn ô BI và chat; ADMIN mở được bảng điều khiển |
-| Từ khóa ứng dụng cũ | Đạt | Không còn ngoài `ai/` và các tài liệu mô tả bản cũ |
-| Tệp bản cũ và thành phần chưa mở | Đạt | Không còn `data/`, trọng số, PDF, `ai/evaluation`; Redis, Langfuse, Ollama, Qwen, mMARCO chỉ còn trong tài liệu mô tả việc đã gỡ |
+| Từ khóa ứng dụng cũ | Đạt | Không còn ngoài các tài liệu mô tả bản cũ |
+| Tệp bản cũ và thành phần chưa mở | Đạt | Không còn `data/`, trọng số, PDF; Redis, Langfuse, Ollama, Qwen, mMARCO chỉ còn trong tài liệu mô tả việc đã gỡ |
 | CI trên GitHub | Đạt | Commit `d0790226` trên `Khuong/main`: CI Infra, Frontend, Dependencies; commit `2b337e40` có thêm CI Backend và CI AI |
 | Chưa chạy | | Khởi động sau khi cập nhật từ bản `v1.1.1` (không có đường nâng cấp dữ liệu) |
 
@@ -545,3 +542,25 @@ Image backend dựng từ cây làm việc gồm cả tệp chưa commit; nhóm 
 | Giá trị dài | Đạt | T6-13: giá trị 300 ký tự được ghi 200 ký tự cộng `…` |
 | Lần chạy đầu của `check_docs.py` | Không tính | Hỏng vì bản sao tạm thiếu `README.md`, `README_EN.md`, `ARCHITECTURE.md` và `deploy/OPERATIONS.md`; chạy lại sau khi thêm các tệp thì đạt |
 | Lịch sử giá trị trên Chrome | Đạt | Stack chính, chi tiết hồ sơ: mục Lịch sử hiện `Nhãn: cũ → mới` từng trường, trường rỗng hiện `—`, thời điểm đổi sang giờ địa phương, giá trị dài cắt ở 200 ký tự kèm `…`; dòng `updated` cũ (chỉ tên trường) vẫn hiện bằng nhãn; ở 360px khung Lịch sử không tràn ngang |
+
+### Kiểm ngày 06/11/2026: trang docs, kiểm tự động của CI và bài Playwright
+
+Chạy trên máy này.
+Bài Playwright chạy trên một stack rỗng riêng (project `dxscratch`, cổng 9180), đã gỡ cùng volume và thư mục sau khi kiểm.
+Các workflow mới chưa chạy trên GitHub Actions.
+
+| Mục | Kết quả | Ghi chú |
+|---|---|---|
+| `python3 .github/scripts/check_licenses.py` | Đạt | 0 vấn đề, gồm kiểm không có `vendor/`, `third_party/`, `node_modules/` trong cây git |
+| `actionlint` 1.7.12 | Đạt | Chín workflow, exit 0 |
+| Trivy 0.58.1 trên cả repository | Đạt | exit 0 với `.trivyignore`; bỏ tệp đó thì còn một HIGH: `decode-uri-component` 0.2.2 qua `query-string` của react-admin, bản sửa 0.5.1 nằm ngoài khoảng phiên bản `query-string` nhận |
+| Trivy trên `website/` và `e2e/` | Đạt | Sau khi ép `serialize-javascript` 7.1.4 và `tinypool` 2.2.0 bằng `overrides`, không còn HIGH hay CRITICAL |
+| gitleaks 8.30.1 trên toàn lịch sử | Đạt | 22 MB đã quét, không có bí mật |
+| SBOM khớp tệp khóa | Đạt | `frontend` 203 gói, `website` 1080, `ai` 59, đều 0 khác biệt; `backend` 221 gói, 0 khác biệt, chạy Maven ở session còn lại |
+| `check_archive.sh` | Đạt | Gói của `HEAD` và của `v1.1.1` qua; `v1.0.0` bị từ chối vì thiếu `NOTICE`, đúng thiết kế |
+| `npx tsc --noEmit` trong `frontend/` | Đạt | 0 lỗi |
+| `python3 deploy/apisix/check_routes.py` | Đạt | 12 route, 11 công khai có chủ đích |
+| `npm run build` trong `website/` | Đạt | Liên kết và anchor đều đúng |
+| Bài Playwright `e2e/tests/console.spec.ts` | Đạt | Đăng nhập bằng `ui_admin`, dùng mẫu `onestop`, xem kế hoạch, áp dụng, thấy `Phiên bản 1`, đi qua năm tab; 4,7 giây, năm ảnh chụp |
+| Lần chạy đầu của bài Playwright | Không tính | Hỏng vì hai selector khớp nhiều phần tử; sửa selector rồi chạy lại trên stack rỗng thì đạt |
+

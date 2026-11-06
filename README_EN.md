@@ -3,7 +3,6 @@
 [Tiếng Việt](./README.md) · **English**
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
-[![AI License](https://img.shields.io/badge/ai%2F-AGPL--3.0-orange.svg)](./ai/LICENSE)
 
 **Team:** HaUI-ImplSolution · **School:** School of Information and Communication Technology, Hanoi University of Industry
 
@@ -43,8 +42,7 @@ The narrow loop from model file to end user runs:
 - A device-connection example: a simulator opens an incident record when a reading passes its limit and does not create a duplicate when the reading is sent again.
 - Single sign-on through Keycloak; administrators can be required to enter a one-time code from an authenticator app as well.
 
-Not yet available: chat notifications, AI answers.
-The search service with cited sources in [`ai/`](./ai/README.md) runs on its own and is not in the stack.
+Not yet available: AI answers.
 These are in the [design](./docs/dynamic-core/README.md).
 
 ## Run it
@@ -114,9 +112,10 @@ entities:
 ```
 
 - Field types: `text`, `number`, `datetime`, `choice`, `reference`, `user`, `unit`.
-- Units: declared in `units`, each one a Keycloak group; a `unit` field says which unit a record belongs to. A full example is [`backend/dx-engine/src/main/resources/templates/onestop.yaml`](./backend/dx-engine/src/main/resources/templates/onestop.yaml).
+- Units: declared in `units`, each one a Keycloak group; a `unit` field says which unit a record belongs to.
+  A full example is [`backend/dx-engine/src/main/resources/templates/onestop.yaml`](./backend/dx-engine/src/main/resources/templates/onestop.yaml).
 - Access by role: `all` (every row, read and write), `own` (the rows of the user), `read` (every row, read only), `unit` (the rows of the units of the user), `assigned` (the rows assigned to the user); `owner_via` lets a child entity follow the owner of its parent, through any number of levels.
-- Workflow: `family` picks the process family (`approval` or `work_item`), `handler` is the role that handles records, `deadline` is an optional handling time (for example `72h`); the `work_item` family also takes an optional `auto_close` (for example `7d`): a resolved record that its owner does not confirm within that time is closed by the system.
+- Workflow: `family` picks the process family (`approval`, `work_item` or `reservation`, see Reservations below), `handler` is the role that handles records, `deadline` is an optional handling time (for example `72h`); the `work_item` family also takes an optional `auto_close` (for example `7d`): a resolved record that its owner does not confirm within that time is closed by the system.
   Rejecting and returning need a reason; the owner can withdraw a record that is not in a final state.
   A record with a process cannot be deleted; a decided record can no longer be edited; an assigned record can only be handled by its assignee.
   The creator of a record cannot decide it unless `allow_self_decision: true` is declared.
@@ -172,22 +171,24 @@ Every reply is wrapped in `ApiResponse`; errors carry a stable `errorCode`.
 | `deploy` | Compose, the APISIX gateway, the installer and the `dxos` command, operations scripts, check scripts in `deploy/dev` |
 | `sso`, `portal`, `seaweedfs` | Keycloak realm, portal page, file storage |
 | `models` | Sample models and sample bad files |
-| `ai` | A search service with cited sources (AGPL-3.0), run on its own outside the stack |
+| `examples` | Sample programs: a receiver that keeps the history hashes, an IT/OT simulator |
+| `e2e` | Browser test of the web console (Playwright) |
+| `website` | The documentation site (Docusaurus), published on GitHub Pages |
+| `docs` | Test results in `TESTING.md`, the design and the backlog in `dynamic-core/` |
+| `sbom` | CycloneDX lists of the components of the backend, the web app, and the docs site |
+| `.github` | CI workflows, issue and pull request templates, branch rules, check scripts |
 
 ## Tests
 
 ```bash
 cd backend && ./mvnw verify            # tests need Docker (Testcontainers)
 cd frontend && npx tsc --noEmit
+python3 .github/scripts/check_licenses.py
 python3 deploy/dev/check_api.py        # on a fresh stack, empty database
-python3 deploy/dev/check_recovery.py
-python3 deploy/dev/check_case.py
-python3 deploy/dev/check_change.py
-python3 deploy/dev/check_process.py
-python3 deploy/dev/check_booking.py
-python3 deploy/dev/check_demo.py
-python3 deploy/dev/check_guards.py
 ```
+
+The full list of the checks that run on a stack, and their order, is in [`CONTRIBUTING.md`](./CONTRIBUTING.md); the result of each run is in [`docs/TESTING.md`](./docs/TESTING.md).
+CI runs all of them on every pull request to `main` or `Khuong/main`.
 
 ## Contributing
 
@@ -205,6 +206,6 @@ python3 deploy/dev/check_guards.py
 
 ## License
 
-Apache License 2.0, see [`LICENSE`](./LICENSE); the `ai/` directory is AGPL-3.0, see [`ai/LICENSE`](./ai/LICENSE) and [`COPYRIGHT.txt`](./COPYRIGHT.txt).
+Apache License 2.0, see [`LICENSE`](./LICENSE) and [`DEPENDENCIES.txt`](./DEPENDENCIES.txt).
 
 References: [contest topic](https://vfossa.vn/tin-tuc/gioi-thieu-mo-hinh-dx-os-va-chu-de-cuoc-thi-phan-mem-nguon-mo-olp-2026-761.html) · [DX-OS curriculum](https://opendigitransform.gitbook.io/dx-os)

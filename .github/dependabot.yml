@@ -2,7 +2,6 @@
 version: 2
 
 # One pull request per ecosystem and run, grouped, aimed at Khuong/main.
-# The AI Python packages are left out: ai/requirements.lock pins the image, so it is refreshed by hand.
 updates:
   - package-ecosystem: github-actions
     directory: /
@@ -67,7 +66,6 @@ updates:
   # Base images of the Dockerfiles.
   - package-ecosystem: docker
     directories:
-      - /ai
       - /backend
       - /frontend
       - /portal

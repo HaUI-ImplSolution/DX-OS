@@ -52,10 +52,6 @@
             "integration_id": 15368
           },
           {
-            "context": "Test the AI service",
-            "integration_id": 15368
-          },
-          {
             "context": "Build the docs site",
             "integration_id": 15368
           },
@@ -105,6 +101,10 @@
           },
           {
             "context": "Browser end-to-end",
+            "integration_id": 15368
+          },
+          {
+            "context": "Check upstream licenses",
             "integration_id": 15368
           }
         ]

@@ -45,9 +45,9 @@ Cơ sở dữ liệu `keycloak` và vai `keycloak_app` do [`deploy/postgres/init
 
 ## Máy chủ công khai
 
-Trên máy chủ công khai, `/admin/*` (Admin Console) nằm sau Cloudflare Access.
+Trên máy chủ công khai, đặt `/admin/*` (Admin Console) sau một lớp xác thực của hạ tầng phía trước, không mở thẳng ra Internet.
 `/realms/*` mở cho người dùng web, và gateway giới hạn 120 lượt mỗi phút mỗi IP cho form mật khẩu và token endpoint.
-Overlay `docker-compose.cloudflared.yml` đặt `KC_HOSTNAME` bằng `GATEWAY_PUBLIC_URL`; mặc định Keycloak không đặt `KC_HOSTNAME` nên URL theo địa chỉ request.
+Mặc định Keycloak không đặt `KC_HOSTNAME` nên URL theo địa chỉ request; máy chủ đứng sau proxy đặt `KC_HOSTNAME` bằng `GATEWAY_PUBLIC_URL`.
 
 ## Sự kiện đăng nhập và khóa tạm
 
@@ -57,7 +57,7 @@ Overlay `docker-compose.cloudflared.yml` đặt `KC_HOSTNAME` bằng `GATEWAY_PU
   1. **Realm settings → Events → User events settings**: bật **Save events**, **Expiration** 90 ngày, chọn các loại `LOGIN`, `LOGIN_ERROR`, `LOGOUT`, `UPDATE_PASSWORD`, `RESET_PASSWORD` và loại bị khóa.
   2. **Realm settings → Events → Admin events settings**: bật **Save events** và **Include representation**.
   3. **Realm settings → Security defenses → Brute force detection**: bật, chế độ **Lockout temporarily**, **Max login failures** 5, **Wait increment** 1 phút, **Max wait** 15 phút.
-- IP trong sự kiện là IP thật khi chạy overlay Cloudflare, nơi Keycloak đọc `X-Forwarded-For` do gateway đặt.
+- IP trong sự kiện là IP thật khi Keycloak đọc `X-Forwarded-For` do gateway đặt.
 
 ## Hostname nội bộ và hostname trình duyệt
 

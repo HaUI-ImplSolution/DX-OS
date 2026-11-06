@@ -3,7 +3,6 @@
 **Tiếng Việt** · [English](./README_EN.md)
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
-[![AI License](https://img.shields.io/badge/ai%2F-AGPL--3.0-orange.svg)](./ai/LICENSE)
 
 **Đội:** HaUI-ImplSolution · **Trường:** Trường Công nghệ Thông tin và Truyền thông, Đại học Công nghiệp Hà Nội
 
@@ -43,8 +42,7 @@ Phiên bản trước của dự án (hai ứng dụng nghiệp vụ viết tay)
 - Ví dụ kết nối thiết bị: một chương trình giả lập tạo hồ sơ sự cố khi chỉ số vượt ngưỡng và không tạo trùng khi gửi lại.
 - Đăng nhập một lần qua Keycloak; có thể bắt quản trị viên nhập thêm mã một lần từ ứng dụng xác thực.
 
-Chưa có: thông báo chat, hỏi đáp bằng AI.
-Dịch vụ tìm kiếm tri thức có nguồn ở [`ai/`](./ai/README.md) chạy riêng, chưa nằm trong stack.
+Chưa có: hỏi đáp bằng AI.
 Các phần này nằm trong [hướng thiết kế](./docs/dynamic-core/README.md).
 
 ## Chạy thử
@@ -114,9 +112,10 @@ entities:
 ```
 
 - Kiểu trường: `text`, `number`, `datetime`, `choice`, `reference`, `user`, `unit`.
-- Đơn vị: khai báo ở `units`, mỗi đơn vị là một nhóm Keycloak; trường kiểu `unit` cho biết hồ sơ thuộc đơn vị nào. Ví dụ đầy đủ ở [`backend/dx-engine/src/main/resources/templates/onestop.yaml`](./backend/dx-engine/src/main/resources/templates/onestop.yaml).
+- Đơn vị: khai báo ở `units`, mỗi đơn vị là một nhóm Keycloak; trường kiểu `unit` cho biết hồ sơ thuộc đơn vị nào.
+  Ví dụ đầy đủ ở [`backend/dx-engine/src/main/resources/templates/onestop.yaml`](./backend/dx-engine/src/main/resources/templates/onestop.yaml).
 - Quyền theo vai: `all` (mọi dòng, đọc và ghi), `own` (dòng của mình), `read` (mọi dòng, chỉ đọc), `unit` (dòng của đơn vị mình), `assigned` (dòng được giao cho mình); `owner_via` cho phép thực thể con theo chủ sở hữu của thực thể cha, qua nhiều cấp.
-- Quy trình: `family` chọn họ mẫu (`approval` hoặc `work_item`), `handler` là vai xử lý, `deadline` là hạn xử lý tùy chọn (ví dụ `72h`); họ `work_item` còn có `auto_close` tùy chọn (ví dụ `7d`): hồ sơ đã xử lý xong mà người nộp không xác nhận trong thời gian đó thì hệ thống đóng.
+- Quy trình: `family` chọn họ mẫu (`approval`, `work_item` hoặc `reservation`, xem mục Đặt chỗ bên dưới), `handler` là vai xử lý, `deadline` là hạn xử lý tùy chọn (ví dụ `72h`); họ `work_item` còn có `auto_close` tùy chọn (ví dụ `7d`): hồ sơ đã xử lý xong mà người nộp không xác nhận trong thời gian đó thì hệ thống đóng.
   Từ chối và trả lại bắt buộc có lý do; người nộp rút lại được hồ sơ chưa ở trạng thái cuối.
   Hồ sơ có quy trình không xóa được; hồ sơ đã được quyết định thì không sửa được; hồ sơ đã giao thì chỉ người được giao xử lý được.
   Người tạo hồ sơ không tự quyết định được, trừ khi khai báo `allow_self_decision: true`.
@@ -172,22 +171,24 @@ Mọi phản hồi bọc trong `ApiResponse`; lỗi có `errorCode` ổn định
 | `deploy` | Compose, gateway APISIX, bộ cài và lệnh `dxos`, script vận hành, script kiểm tra ở `deploy/dev` |
 | `sso`, `portal`, `seaweedfs` | Keycloak realm, trang portal, lưu trữ tệp |
 | `models` | Mô hình mẫu và tệp sai mẫu |
-| `ai` | Dịch vụ tìm kiếm tri thức có nguồn (AGPL-3.0), chạy riêng ngoài stack |
+| `examples` | Chương trình mẫu: bên nhận sự kiện giữ hash lịch sử, giả lập hệ thống IT/OT |
+| `e2e` | Kiểm giao diện web trên trình duyệt (Playwright) |
+| `website` | Trang tài liệu (Docusaurus), đăng lên GitHub Pages |
+| `docs` | Kết quả kiểm thử ở `TESTING.md`, hướng thiết kế và việc tồn đọng ở `dynamic-core/` |
+| `sbom` | Danh mục thành phần CycloneDX của backend, web, và trang tài liệu |
+| `.github` | Workflow CI, mẫu issue và pull request, quy tắc nhánh, script kiểm tra |
 
 ## Kiểm thử
 
 ```bash
 cd backend && ./mvnw verify            # test cần Docker (Testcontainers)
 cd frontend && npx tsc --noEmit
+python3 .github/scripts/check_licenses.py
 python3 deploy/dev/check_api.py        # trên stack mới dựng, cơ sở dữ liệu rỗng
-python3 deploy/dev/check_recovery.py
-python3 deploy/dev/check_case.py
-python3 deploy/dev/check_change.py
-python3 deploy/dev/check_process.py
-python3 deploy/dev/check_booking.py
-python3 deploy/dev/check_demo.py
-python3 deploy/dev/check_guards.py
 ```
+
+Danh sách đầy đủ các script kiểm trên stack và thứ tự chạy ở [`CONTRIBUTING.md`](./CONTRIBUTING.md), kết quả từng lần kiểm ở [`docs/TESTING.md`](./docs/TESTING.md).
+CI chạy cả bộ này trên mỗi pull request vào `main` hoặc `Khuong/main`.
 
 ## Đóng góp
 
@@ -205,6 +206,6 @@ python3 deploy/dev/check_guards.py
 
 ## Giấy phép
 
-Apache License 2.0, xem [`LICENSE`](./LICENSE); thư mục `ai/` theo AGPL-3.0, xem [`ai/LICENSE`](./ai/LICENSE) và [`COPYRIGHT.txt`](./COPYRIGHT.txt).
+Apache License 2.0, xem [`LICENSE`](./LICENSE) và [`DEPENDENCIES.txt`](./DEPENDENCIES.txt).
 
 Tham khảo: [chủ đề cuộc thi](https://vfossa.vn/tin-tuc/gioi-thieu-mo-hinh-dx-os-va-chu-de-cuoc-thi-phan-mem-nguon-mo-olp-2026-761.html) · [giáo trình DX-OS](https://opendigitransform.gitbook.io/dx-os)

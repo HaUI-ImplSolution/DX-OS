@@ -16,8 +16,8 @@ apisix:
 
 nginx_config:
   http:
-    # Behind the Cloudflare Tunnel every request comes from the cloudflared container; the client
-    # address is taken from CF-Connecting-IP only when the request arrives from the Docker networks.
+    # Behind a reverse proxy or a tunnel every request comes from that proxy; the client address is
+    # taken from CF-Connecting-IP only when the request arrives from the Docker networks.
     real_ip_header: CF-Connecting-IP
     real_ip_from:
       - 127.0.0.1

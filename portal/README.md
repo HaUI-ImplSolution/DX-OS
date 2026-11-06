@@ -20,5 +20,5 @@ Portal không có phiên, chỉ là danh sách link.
 ## Địa chỉ dịch vụ
 
 Mọi link là đường dẫn tương đối của gateway.
-Trên máy chủ công khai, Keycloak Admin Console và màn hình giám sát nằm sau Cloudflare Access: link mở trang đăng nhập Access trước.
-Phép kiểm trạng thái màn hình giám sát vẫn nhận phản hồi sau khi chuyển hướng, nên chỉ cho biết Access có trả lời.
+Trên máy chủ công khai, nếu hạ tầng phía trước đặt lớp xác thực trước Keycloak Admin Console và màn hình giám sát thì link mở trang đăng nhập đó trước.
+Phép kiểm trạng thái màn hình giám sát vẫn nhận phản hồi sau khi chuyển hướng, nên chỉ cho biết lớp xác thực đó có trả lời.

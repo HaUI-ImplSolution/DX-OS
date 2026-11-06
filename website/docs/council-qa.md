@@ -42,9 +42,9 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Dùng phần mềm nguồn mở trưởng thành cho từng việc: Keycloak cho định danh, APISIX cho cổng, PostgreSQL cho dữ liệu, SeaweedFS cho tệp, Flowable cho quy trình, pgschema để đổi lược đồ.
   Đội tự viết phần nối chúng theo một tệp mô hình.
 - Java 21 và Spring Boot vì ranh giới giữa các module kiểm được lúc biên dịch.
-- Mã của đội theo Apache-2.0; riêng `ai/` theo AGPL-3.0 và chạy ở tiến trình riêng.
+- Mã của đội theo Apache-2.0, repository chỉ có một giấy phép.
   Mọi thành phần khác đều theo giấy phép OSI; không dùng BUSL, SSPL, RSAL, MSCL hay phần Enterprise.
-- **Bằng chứng:** [Thành phần được chọn và không chọn](./dependencies.md); `COPYRIGHT.txt`; `sbom/`; job `Check licenses` của workflow `Compliance`.
+- **Bằng chứng:** [Thành phần được chọn và không chọn](./dependencies.md); `DEPENDENCIES.txt`; `sbom/`; job `Check licenses` của workflow `Compliance`.
 
 ## 3. Đổi ứng dụng nghiệp vụ thì lõi có phải đổi không?
 
@@ -71,16 +71,17 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - **H, môi trường số chung:** một lần đăng nhập, vai và đơn vị khai trong mô hình; sinh viên chỉ thấy hồ sơ của mình, cán bộ chỉ thấy hồ sơ của đơn vị mình hoặc được giao, và xử lý từ hộp việc.
 - **P, rào chắn và luồng tự động:** trạng thái chỉ đổi qua quy trình (gọi thẳng API để đổi bị chặn); từ chối và trả lại bắt buộc có lý do; người tạo không tự quyết hồ sơ của mình; hạn xử lý, quá hạn lên đầu hộp việc; việc sau khi duyệt chạy qua hàng đợi và được thử lại.
 - **D, một nguồn sự thật:** dữ liệu nghiệp vụ, lịch sử và hàng đợi cùng nằm ở PostgreSQL; lịch sử hồ sơ nối thành chuỗi hash; mọi thay đổi báo ra ngoài bằng webhook có chữ ký.
-- **I, trí tuệ:** mới có dịch vụ tìm kiếm tri thức có nguồn ở `ai/`, chạy riêng; chưa có tác tử có người duyệt (xem câu 6 và 11).
+- **I, trí tuệ:** chưa làm (xem câu 6 và 11).
 - **Bằng chứng:** `python3 deploy/dev/check_demo.py` (tám tiêu chí của kịch bản trình diễn); `check_case.py`, `check_process.py`, `check_events.py`.
 
 ## 6. AI nằm ở đâu, dữ liệu và giới hạn là gì?
 
-- Dịch vụ `ai/` nạp tài liệu kèm nguồn và giấy phép vào PostgreSQL với pgvector, tìm bằng BM25 kết hợp cosine, và chỉ trả bằng chứng kèm nguồn.
-  Câu hỏi ngoài kho và mã không có trong kho thì không có bằng chứng, không bịa.
-- Embedding là `paraphrase-multilingual-MiniLM-L12-v2` theo Apache-2.0; chạy tại chỗ, dữ liệu không ra ngoài máy.
-- Giới hạn nói thẳng: `ai/` chạy riêng, chưa nằm trong stack và chưa nối vào lõi; chưa có mô hình ngôn ngữ vì chưa có mô hình nào đạt tiêu chuẩn mở hoàn toàn; dữ liệu huấn luyện của embedding chưa kiểm theo định nghĩa Open Source AI của OSI; chất lượng tìm tiếng Việt trên kho lớn chưa đo.
-- **Bằng chứng:** `ai/README.md`; `cd ai && python -m pytest tests -q` (21 test, job workflow `AI Service`); `.github/license-catalog.json`.
+- Bản dự thi chưa có phần AI.
+  Dịch vụ tìm kiếm tri thức từng có đã gỡ khỏi repository, vì chưa nối vào lõi và mô hình embedding của nó chưa kiểm được dữ liệu huấn luyện theo định nghĩa Open Source AI của OSI.
+- Hướng làm: hỏi đáp có trích nguồn và tác tử đề xuất giá trị cho một trường, luôn có người duyệt trước khi ghi, chạy tại chỗ để dữ liệu không ra ngoài máy.
+- Điều kiện: chỉ dùng mô hình có trọng số và dữ liệu huấn luyện đều mở; chưa chọn mô hình nào.
+- Lõi đã có sẵn chỗ để nối: hàng đợi sự kiện, webhook có chữ ký và `GET /api/v1/events` cho tác tử đọc việc mới, còn ghi lại vẫn đi qua API chung nên quyền, quy tắc và quy trình vẫn áp dụng.
+- **Bằng chứng:** [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md), dòng "Phần AI"; `docs/dynamic-core/README.md`, mục "Cam kết nguồn mở".
 
 ## 7. Một thành phần ngừng thì hệ thống ra sao?
 
@@ -120,7 +121,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 
 ## 11. Còn gì chưa làm?
 
-- Chưa có hỏi đáp sinh câu trả lời và tác tử AI có người duyệt; `ai/` chưa nối vào lõi.
+- Chưa có phần AI: tìm kiếm tri thức có nguồn, hỏi đáp sinh câu trả lời và tác tử có người duyệt.
 - Họ phê duyệt chỉ có một cấp xử lý; duyệt nhiều cấp tuần tự đụng định dạng mô hình, quy trình, API và giao diện nên chưa làm.
 - Hai nguyên lý đầu của đề (hồ dữ liệu theo vòng đời, bản sao số) nằm ngoài phạm vi bản dự thi.
 - Một bản backend; chưa chịu lỗi nhiều nút; chưa thử tải lớn.
@@ -187,9 +188,9 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 ## 18. Giấy phép tuân thủ thế nào?
 
 - Mã của đội theo Apache-2.0, có `LICENSE` toàn văn, `NOTICE` và dòng SPDX ở đầu mỗi tệp mã.
-- `ai/` theo AGPL-3.0, chạy ở tiến trình riêng và chỉ giao tiếp qua HTTP, nên phần còn lại giữ Apache-2.0.
+- Repository chỉ có một giấy phép, Apache-2.0; không có thành phần AGPL nào trong cây mã.
 - Mỗi bản phát hành có gói `.tar.gz` kèm `.sha256` và SBOM CycloneDX; không dùng định dạng đóng.
-- Job `Check licenses` của workflow `Compliance` chạy ở mọi pull request: kiểm header, giấy phép của từng gói trong SBOM, danh mục image và mô hình.
-- Cam kết của đội chặt hơn thể lệ: cả công cụ, mô hình AI và dữ liệu đều phải mở; thành phần không đạt đã gỡ khỏi bản phát hành.
-- Điểm chưa kiểm xong: dữ liệu huấn luyện của mô hình embedding.
-- **Bằng chứng:** `LICENSE`, `NOTICE`, `COPYRIGHT.txt`, `ai/LICENSE`; `python3 .github/scripts/check_licenses.py`; [Thành phần được chọn và không chọn](./dependencies.md); [Rà soát PoF](./pof-audit.md).
+- Job `Check licenses` của workflow `Compliance` chạy ở mọi pull request: kiểm header, giấy phép của từng gói trong SBOM, danh mục image.
+- Cam kết của đội chặt hơn thể lệ: cả công cụ, mô hình AI (khi có) và dữ liệu đều phải mở; thành phần không đạt đã gỡ khỏi bản phát hành.
+- Hai gói dữ liệu (CC-BY-4.0, CC0-1.0) chỉ dùng lúc dựng trang docs được nêu tên kèm lý do; ClamAV tùy chọn có image kèm `libclamunrar` theo giấy phép UnRAR, ghi rõ ở `DEPENDENCIES.txt`.
+- **Bằng chứng:** `LICENSE`, `NOTICE`, `DEPENDENCIES.txt`; `python3 .github/scripts/check_licenses.py`; [Thành phần được chọn và không chọn](./dependencies.md); [Rà soát PoF](./pof-audit.md).

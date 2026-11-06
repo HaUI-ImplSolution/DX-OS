@@ -9,7 +9,7 @@ Tệp ở đây chỉ là bản ghi: GitHub không tự đọc thư mục này.
 | `tags.json` | tag `v*` | cấm sửa và cấm xóa tag đã tạo |
 
 Nhập: Settings → Rules → Rulesets → New ruleset → Import a ruleset, chọn từng tệp.
-Các check bắt buộc là tên job của các workflow `Backend`, `Frontend`, `AI Service`, `Platform`, `Compliance` và `Docs`.
+Các check bắt buộc là tên job của các workflow `Backend`, `Frontend`, `Platform`, `Compliance` và `Docs`.
 Workflow của các job này chạy trên mọi pull request vào `main`, nên check nào cũng có kết quả để chờ.
 Workflow `Dependencies` không bắt buộc, vì kết quả của nó đổi theo cơ sở dữ liệu lỗ hổng chứ không theo mã.
 Đổi tên một job thì đổi cả tên ở đây, nếu không pull request sẽ chờ một check không bao giờ xuất hiện.

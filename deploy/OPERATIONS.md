@@ -17,12 +17,12 @@ Mỗi request là một dòng JSON trên stdout của container `apisix`.
 | `upstream_addr`, `upstream_time` | Dịch vụ phía sau xử lý request và thời gian của nó |
 | `bytes_sent` | Số byte trả về |
 | `request_id` | Mã của request, cũng nằm trong header `X-Request-Id` của response |
-| `cf_ray` | Mã request của Cloudflare |
+| `cf_ray` | Mã request do proxy phía trước gắn vào, trống khi vào trực tiếp |
 | `user_agent` | Trình duyệt hoặc ứng dụng gọi |
 
 Backend ghi `request_id` này vào log của nó (trong `[...]` sau mức log).
 
-`remote_addr` là IP thật của người dùng khi vào qua Cloudflare Tunnel (đọc từ `CF-Connecting-IP`), và là IP trong mạng LAN khi vào trực tiếp.
+`remote_addr` là địa chỉ trong header `CF-Connecting-IP` khi một proxy phía trước đặt nó, và là IP của client trong mạng khi vào trực tiếp.
 Header chỉ được tin khi request đến từ mạng Docker (`172.16.0.0/12`) hoặc loopback.
 Ở máy có dải Docker khác thì sửa `real_ip_from` trong `apisix/config.yaml`.
 
@@ -58,7 +58,7 @@ Một địa chỉ đăng nhập sai từ 10 lần trong 10 phút thì `monitor`
 Sự kiện đăng nhập sai của Keycloak không ghi tên tài khoản, nên chưa có cảnh báo theo tài khoản.
 Gỡ khóa sớm: **Users** → chọn người dùng → tắt công tắc **Temporarily locked**.
 
-IP trong sự kiện là IP thật chỉ khi máy chủ chạy với overlay Cloudflare (`docker-compose.cloudflared.yml`), nơi Keycloak đọc `X-Forwarded-For` từ gateway.
+IP trong sự kiện là IP của client khi Keycloak đọc `X-Forwarded-For` do gateway đặt từ `CF-Connecting-IP`, tức là khi có proxy phía trước.
 
 ## Giới hạn tốc độ
 
@@ -79,7 +79,6 @@ Bộ đếm nằm trong bộ nhớ nên về 0 khi backend khởi động lại.
 | Mọi `/api/**` | 300 |
 
 Request có token sai nhận `401` mà không bị đếm.
-Phần này do Cloudflare lọc.
 Đổi ngưỡng ở `count` của `limit-count` trong `deploy/apisix/common.yaml` rồi chạy `docker compose up -d --force-recreate apisix-config && docker compose restart apisix` để gateway nạp lại.
 Nhiều người dùng chung một IP (mạng di động) cùng dùng bộ đếm.
 Thấy `429` trong thao tác thường ngày thì tăng ngưỡng.
@@ -87,43 +86,6 @@ Mỗi lần đăng nhập tốn hai request (form và token), nên script đăng
 Chờ một phút hoặc chạy cách nhau.
 Giới hạn này chỉ chặn lượng request lớn từ một địa chỉ.
 Đoán mật khẩu từng tài khoản do khóa tạm của Keycloak xử lý.
-
-## Cloudflare
-
-Cấu hình nằm trên Cloudflare, không nằm trong repo.
-Sau khi bật mỗi mục, kiểm đăng nhập web và một lượt ghi bản ghi qua API.
-
-Domain `khuongdev.io.vn`:
-
-- **Security → Settings → Bot traffic**: bật Bot fight mode.
-- **Security → Settings**: Cloudflare managed ruleset luôn bật ở gói Free, không có công tắc.
-  Nó chặn các khai thác đã biết, không chặn SQLi hay XSS chung; bộ đầy đủ cần gói trả phí.
-  Backend dùng truy vấn tham số hóa, nên gói Free là đủ cho chuỗi tấn công mẫu.
-- **Security → Security rules → Rate limiting rules** (gói Free có 1 rule, 10 lượt trong 10 giây mỗi IP, hành động Block): một rule cho `login-actions` của Keycloak (đường dẫn bắt đầu bằng `/realms/` và chứa `/login-actions/`), tính theo IP, chọn chu kỳ và thời gian chặn nhỏ nhất mà gói cho phép.
-- **SSL/TLS → Edge Certificates**: bật Always Use HTTPS, đặt Minimum TLS Version 1.2.
-- **Rules → Transform Rules → Modify Request Header**: `X-Forwarded-Port` = `443` (đã có, bắt buộc).
-- **Security → Events**: xem request bị chặn hoặc thử thách.
-  Tệp tải lên bị chặn nhầm thì thêm rule bỏ qua cho đường dẫn đó.
-
-Không chặn theo quốc gia vì hội đồng chấm có thể truy cập từ nước ngoài.
-Swagger (`/swagger-ui/`) để công khai.
-
-### Cổng quản trị sau Cloudflare Access
-
-Zero Trust → Access controls → Applications → Create new application → Self-hosted, một policy Allow theo danh sách email của quản trị viên và kỹ sư dùng chung cho cả hai ứng dụng.
-Người dùng đăng nhập vào Access bằng phương thức đã bật (tài khoản Cloudflare hoặc mã gửi qua email).
-Form mặc định mở ở chế độ Private IP; thêm một public hostname và xóa dòng Private IP trống.
-Tạo hai ứng dụng:
-
-| Ứng dụng | Domain | Đường dẫn |
-|---|---|---|
-| Keycloak Admin Console | `khuongdev.io.vn` | `admin/*` |
-| Màn hình giám sát | `khuongdev.io.vn` | `monitor/*` |
-
-Không đặt Access cho API, web app, `/realms/*`, portal và link tệp, vì người dùng cuối dùng các đường này.
-Giữ một phiên Admin Console đang mở khi tạo ứng dụng Access cho `admin/*`.
-Nếu bị khóa ngoài thì gỡ ứng dụng đó trong Zero Trust.
-Sau khi bật, kiểm đăng nhập vào màn hình giám sát bằng SSO với tài khoản ADMIN.
 
 ## Quản trị người dùng
 

@@ -5,9 +5,9 @@ Sản phẩm dự thi OLP Phần mềm nguồn mở 2026 (khối thi DX-OS, VFOS
 phát triển tại Trường Công nghệ Thông tin và Truyền thông, Đại học Công nghiệp Hà Nội.
 
 Bản quyền và giấy phép của mã nguồn, thành phần bên thứ ba, mô hình và dữ liệu dùng trong sản phẩm.
-Văn bản giấy phép đầy đủ: LICENSE (Apache-2.0), ai/LICENSE (AGPL-3.0); thông báo ghi công: NOTICE.
-Danh mục đầy đủ theo phiên bản: thư mục sbom/ (CycloneDX); ai/requirements.lock khóa phiên bản gói Python.
-Image, mô hình và tệp dữ liệu khai báo ở .github/license-catalog.json; .github/scripts/check_licenses.py kiểm danh mục này ở mỗi pull request.
+Văn bản giấy phép đầy đủ: LICENSE (Apache-2.0); thông báo ghi công: NOTICE.
+Danh mục đầy đủ theo phiên bản: thư mục sbom/ (CycloneDX).
+Image khai báo ở .github/component-catalog.json; .github/scripts/check_licenses.py kiểm danh mục này ở mỗi pull request.
 
 1. GIẤY PHÉP CỦA MÃ NGUỒN
 =========================
@@ -16,16 +16,13 @@ Image, mô hình và tệp dữ liệu khai báo ở .github/license-catalog.jso
 | Phần                                        | Giấy phép             | Ghi chú                                      |
 +=============================================+=======================+==============================================+
 | backend, frontend, website, deploy, portal, | Apache-2.0 (LICENSE)  | SPDX header ở mọi file mã nguồn              |
-| sso, bi, chat...                            |                       |                                              |
-+---------------------------------------------+-----------------------+----------------------------------------------+
-| Mã nguồn ai/                                | AGPL-3.0 (ai/LICENSE) | Dịch vụ tìm kiếm tri thức, tiến trình riêng  |
+| sso, seaweedfs, e2e, examples               |                       |                                              |
 +---------------------------------------------+-----------------------+----------------------------------------------+
 
-Dịch vụ ai/ là tiến trình riêng, chỉ giao tiếp qua HTTP nên phần còn lại của DX-OS giữ Apache-2.0.
-Header của file mã nguồn là SPDX-License-Identifier: Apache-2.0, riêng trong ai/ là AGPL-3.0-only.
+Header của file mã nguồn là SPDX-License-Identifier: Apache-2.0.
 Dòng header nằm ở đầu file Java, TypeScript, JavaScript, Python, shell và YAML; các file còn lại (tài liệu, JSON, ảnh) theo giấy phép của thư mục chứa chúng.
 .github/scripts/check_licenses.py kiểm header, giấy phép của từng dependency trong sbom/ và danh mục image, mô hình, tệp dữ liệu ở mỗi pull request;
-ngoại lệ, nếu có, ghi kèm lý do ở .github/license-exceptions.json.
+ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 
 2. BACKEND (MAVEN)
 ==================
@@ -118,52 +115,15 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/license-exceptions.json.
 | caniuse-lite (qua browserslist, Docusaurus)                  | CC-BY-4.0    | Dữ liệu trình duyệt, chỉ lúc dựng    |
 |                                                              |              | trang tài liệu                       |
 +--------------------------------------------------------------+--------------+--------------------------------------+
-| nginx 1.27                                                   | BSD-2-Clause | Image phục vụ web và portal          |
+| mdn-data (qua css-tree, Docusaurus)                          | CC0-1.0      | Dữ liệu CSS, chỉ lúc dựng trang      |
+|                                                              |              | tài liệu                             |
 +--------------------------------------------------------------+--------------+--------------------------------------+
-| Node.js 20 (node:20-alpine)                                  | MIT          | Chỉ khi build web                    |
+| nginx 1.30                                                   | BSD-2-Clause | Image phục vụ web và portal          |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| Node.js 22 (node:22-alpine)                                  | MIT          | Chỉ khi build web                    |
 +--------------------------------------------------------------+--------------+--------------------------------------+
 
-4. DỊCH VỤ AI (PYTHON)
-======================
-
-+---------------------------------------------------+-----------------+----------------------------------------------+
-| Thành phần                                        | Giấy phép       | Vai trò                                      |
-+===================================================+=================+==============================================+
-| FastAPI, Pydantic, SQLAlchemy, pgvector           | MIT             | API, mô hình dữ liệu, truy vấn vector        |
-+---------------------------------------------------+-----------------+----------------------------------------------+
-| Uvicorn, python-dotenv                            | BSD-3-Clause    | Máy chủ, đọc cấu hình                        |
-+---------------------------------------------------+-----------------+----------------------------------------------+
-| rank-bm25 0.2.2                                   | Apache-2.0      | BM25 trong tìm kiếm lai                      |
-+---------------------------------------------------+-----------------+----------------------------------------------+
-| sentence-transformers                             | Apache-2.0      | Embedding                                    |
-+---------------------------------------------------+-----------------+----------------------------------------------+
-| psycopg                                           | LGPL-3.0-only   | Kết nối PostgreSQL                           |
-+---------------------------------------------------+-----------------+----------------------------------------------+
-| PyTorch                                           | BSD-3-Clause    | Chạy mô hình embedding trên CPU              |
-+---------------------------------------------------+-----------------+----------------------------------------------+
-| NumPy                                             | BSD-3-Clause    | Tính toán                                    |
-+---------------------------------------------------+-----------------+----------------------------------------------+
-| HTTPX, pytest, Ruff                               | BSD-3-Clause,   | Chỉ khi phát triển và test                   |
-|                                                   | MIT             |                                              |
-+---------------------------------------------------+-----------------+----------------------------------------------+
-| Python 3.11 (python:3.11-slim)                    | PSF-2.0         | Base image dịch vụ                           |
-+---------------------------------------------------+-----------------+----------------------------------------------+
-
-5. MÔ HÌNH VÀ DỮ LIỆU
-=====================
-
-+----------------------------------------+------------------------------+--------------------------------------------+
-| Thành phần                             | Giấy phép                    | Vai trò                                    |
-+========================================+==============================+============================================+
-| paraphrase-multilingual-MiniLM-L12-v2  | Apache-2.0                   | Embedding của dịch vụ ai/, tải về khi dùng |
-| [1]                                    |                              | lần đầu                                    |
-+----------------------------------------+------------------------------+--------------------------------------------+
-
-Bản phát hành không kèm trọng số mô hình, kho văn bản hay bộ dữ liệu nào; mô hình embedding tải về từ Hugging Face khi dịch vụ ai/ dùng lần đầu.
-Trọng số của paraphrase-multilingual-MiniLM-L12-v2 mở theo Apache-2.0; dữ liệu huấn luyện của nó chưa được kiểm theo định nghĩa Open Source AI của OSI (khai báo ở .github/license-catalog.json).
-Dịch vụ ai/ không dùng mô hình ngôn ngữ và không xếp hạng lại bằng mô hình nào.
-
-6. HẠ TẦNG VÀ CÔNG CỤ
+4. HẠ TẦNG VÀ CÔNG CỤ
 =====================
 
 +--------------------------------------+--------------------------------------+--------------------------------------+
@@ -172,7 +132,7 @@ Dịch vụ ai/ không dùng mô hình ngôn ngữ và không xếp hạng lại
 | PostgreSQL và pgvector               | PostgreSQL License                   | Dữ liệu nghiệp vụ và vector          |
 | (pgvector/pgvector:pg16)             |                                      |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| Keycloak 26.0.8                      | Apache-2.0                           | Định danh, SSO                       |
+| Keycloak 26.8.2                      | Apache-2.0                           | Định danh, SSO                       |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | Apache APISIX 3.11.0 (standalone)    | Apache-2.0                           | API Gateway: route, kiểm JWT, giới   |
 |                                      |                                      | hạn tốc độ                           |
@@ -182,13 +142,12 @@ Dịch vụ ai/ không dùng mô hình ngôn ngữ và không xếp hạng lại
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | ClamAV 1.5.4 (clamav/clamav)         | GPL-2.0                              | Quét mã độc tệp tải lên; dịch vụ     |
 |                                      |                                      | riêng ở profile av, backend nói      |
-|                                      |                                      | chuyện qua mạng, không liên kết mã   |
-+--------------------------------------+--------------------------------------+--------------------------------------+
-| cloudflared 2026.10.6                | Apache-2.0                           | Tunnel ra Cloudflare, chỉ khi dùng   |
-|                                      |                                      | overlay docker-                      |
-|                                      |                                      | compose.cloudflared.yml; dịch vụ     |
-|                                      |                                      | Cloudflare mà nó nối tới là dịch vụ  |
-|                                      |                                      | đóng                                 |
+|                                      |                                      | chuyện qua mạng, không liên kết mã.  |
+|                                      |                                      | Image của ClamAV kèm libclamunrar    |
+|                                      |                                      | (giải nén RAR) theo giấy phép UnRAR, |
+|                                      |                                      | không phải mã mở; nạp lúc chạy,      |
+|                                      |                                      | không liên kết với libclamav, và     |
+|                                      |                                      | đội không sửa hay phân phối lại      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | Alpine Linux 3.20 (alpine:3.20)      | MIT, GPL-2.0 (nhiều gói)             | Image phụ trợ chạy script khi dựng   |
 |                                      |                                      | stack                                |
@@ -208,12 +167,6 @@ Dịch vụ ai/ không dùng mô hình ngôn ngữ và không xếp hạng lại
 |                                      |                                      | chạy trong container, không đóng gói |
 |                                      |                                      | trong runtime                        |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| CycloneDX (cyclonedx-bom,            | Apache-2.0                           | Sinh SBOM                            |
-| @cyclonedx/cyclonedx-npm, cyclonedx- |                                      |                                      |
-| maven-plugin)                        |                                      |                                      |
+| CycloneDX (@cyclonedx/cyclonedx-npm, | Apache-2.0                           | Sinh SBOM                            |
+| cyclonedx-maven-plugin)              |                                      |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-
-7. LIÊN KẾT THAM CHIẾU
-======================
-
-[1] https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2

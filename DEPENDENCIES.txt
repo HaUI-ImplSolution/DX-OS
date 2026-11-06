@@ -151,7 +151,7 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 | ClamAV 1.5.4 (clamav/clamav) [1]     | GPL-2.0                              | Quét mã độc tệp tải lên; dịch vụ     |
 |                                      |                                      | riêng ở profile av, tắt mặc định     |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| Alpine Linux 3.20 (alpine:3.20)      | MIT, GPL-2.0 (nhiều gói)             | Image phụ trợ chạy script khi dựng   |
+| Alpine Linux 3.24 (alpine:3.24)      | MIT, GPL-2.0 (nhiều gói)             | Image phụ trợ chạy script khi dựng   |
 |                                      |                                      | stack                                |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | Debian, Ubuntu (image nền)           | Giấy phép tự do của từng gói         | Nền của image APISIX (Debian) và     |

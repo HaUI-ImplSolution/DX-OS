@@ -56,6 +56,7 @@ cd ../frontend && npm install && npm run dev
 - Chỉ dùng thành phần theo giấy phép được OSI công nhận; `check_licenses.py` chặn giấy phép ngoài danh sách, trừ vài gói có lý do ở `.github/dependency-exceptions.json`.
 - Không fork, vá hay đóng gói mã nguồn của dự án khác vào repository; dùng bản gốc và cấu hình nó.
 - Đổi dependency thì sinh lại SBOM theo [`sbom/README.md`](./sbom/README.md) và cập nhật [`DEPENDENCIES.txt`](./DEPENDENCIES.txt).
+- Dependabot chỉ mở pull request cho bản vá và bản phụ; bản chính, dòng hỗ trợ dài hạn khác và image gốc khác nâng bằng tay, sau khi kiểm giấy phép OSI, thời hạn hỗ trợ và tương thích (xem [`.github/dependabot.yml`](./.github/dependabot.yml)).
 - Image (kể cả image chép vào bằng `COPY --from`), bản phát hành tải bằng `ADD`, mô hình và tệp trọng số, tài liệu, nén phải khai báo ở [`.github/component-catalog.json`](./.github/component-catalog.json) với giấy phép được phép; `check_licenses.py` kiểm danh mục này.
   `check_upstream_licenses.py` so giấy phép của dự án gốc với giấy phép đã khai, ở mỗi pull request và mỗi tuần: dự án đổi giấy phép thì job đỏ, và bản mới chỉ được dùng sau khi đọc giấy phép của nó.
 - Không đưa mật khẩu, khóa hay dữ liệu thật vào kho mã; `deploy/.env` nằm ngoài Git.

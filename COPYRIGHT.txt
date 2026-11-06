@@ -104,6 +104,7 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/license-exceptions.json.
 | @xyflow/react                                                | MIT          | Sơ đồ quy trình, chỉ để xem          |
 +--------------------------------------------------------------+--------------+--------------------------------------+
 | @dagrejs/dagre, @dagrejs/graphlib                            | MIT          | Bố trí node của sơ đồ quy trình      |
+| @tisoap/react-flow-smart-edge                                | MIT          | Định tuyến cạnh tránh node           |
 +--------------------------------------------------------------+--------------+--------------------------------------+
 | @fullcalendar/core, daygrid, timegrid, interaction, react    | MIT          | Lịch của thực thể đặt chỗ            |
 +--------------------------------------------------------------+--------------+--------------------------------------+

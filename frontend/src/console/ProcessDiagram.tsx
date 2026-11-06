@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { Graph, layout as layoutGraph } from "@dagrejs/dagre";
 import { Box, Typography } from "@mui/material";
+import { SmartEdgeProvider, useSmartEdgePath } from "@tisoap/react-flow-smart-edge";
 import {
   Background,
   BaseEdge,
@@ -111,19 +112,50 @@ function ProcessStateNode({ data }: NodeProps<ProcessNode>) {
   );
 }
 
-function DirectEdge({ id, sourceX, sourceY, targetX, targetY, data, markerEnd, style }: EdgeProps<DirectEdge>) {
+function DirectEdge({
+  id,
+  source,
+  target,
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  sourcePosition,
+  targetPosition,
+  data,
+  markerEnd,
+  style,
+}: EdgeProps<DirectEdge>) {
+  const { route } = useSmartEdgePath({
+    id,
+    source,
+    target,
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    sourcePosition,
+    targetPosition,
+    preset: "straight",
+  });
   const dx = targetX - sourceX;
   const dy = targetY - sourceY;
   const length = Math.max(1, Math.hypot(dx, dy));
   const labelT = data?.labelT ?? 0.5;
   const offset = (data?.labelOffset ?? LABEL_OFFSET) * (data?.labelSide ?? 1);
-  const labelX = sourceX + dx * labelT + (-dy / length) * offset;
-  const labelY = sourceY + dy * labelT + (dx / length) * offset;
+  const labelCenterX = route?.kind === "routed" ? route.edgeCenterX : sourceX + dx * labelT;
+  const labelCenterY = route?.kind === "routed" ? route.edgeCenterY : sourceY + dy * labelT;
+  const labelX = labelCenterX + (-dy / length) * offset;
+  const labelY = labelCenterY + (dx / length) * offset;
   return (
     <>
       <BaseEdge
         id={id}
-        path={`M ${sourceX} ${sourceY} L ${targetX} ${targetY}`}
+        path={
+          route?.kind === "routed"
+            ? route.svgPathString
+            : `M ${sourceX} ${sourceY} L ${targetX} ${targetY}`
+        }
         markerEnd={markerEnd}
         style={style}
       />
@@ -185,28 +217,30 @@ export default function ProcessDiagram({
   }, [nodes, size]);
   return (
     <Box ref={box} sx={{ height, border: 1, borderColor: "divider", borderRadius: 1, overflow: "hidden" }}>
-      <ReactFlow
-        key={`${family.name}-${size.width}-${size.height}`}
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={NODE_TYPES}
-        edgeTypes={EDGE_TYPES}
-        defaultViewport={viewport}
-        minZoom={0.3}
-        nodesDraggable={false}
-        nodesConnectable={false}
-        proOptions={{ hideAttribution: true }}
-        // The diagram only shows; its key bindings listen on the whole page and would take Space and
-        // Backspace from the model editor beside it.
-        panActivationKeyCode={null}
-        deleteKeyCode={null}
-        selectionKeyCode={null}
-        multiSelectionKeyCode={null}
-        zoomActivationKeyCode={null}
-        disableKeyboardA11y>
-        <Background />
-        <Controls showInteractive={false} />
-      </ReactFlow>
+      <SmartEdgeProvider nodes={nodes}>
+        <ReactFlow
+          key={`${family.name}-${size.width}-${size.height}`}
+          nodes={nodes}
+          edges={edges}
+          nodeTypes={NODE_TYPES}
+          edgeTypes={EDGE_TYPES}
+          defaultViewport={viewport}
+          minZoom={0.3}
+          nodesDraggable={false}
+          nodesConnectable={false}
+          proOptions={{ hideAttribution: true }}
+          // The diagram only shows; its key bindings listen on the whole page and would take Space and
+          // Backspace from the model editor beside it.
+          panActivationKeyCode={null}
+          deleteKeyCode={null}
+          selectionKeyCode={null}
+          multiSelectionKeyCode={null}
+          zoomActivationKeyCode={null}
+          disableKeyboardA11y>
+          <Background />
+          <Controls showInteractive={false} />
+        </ReactFlow>
+      </SmartEdgeProvider>
       <Typography variant="caption" sx={{ display: "block", mt: 0.5 }}>
         Người nộp có thể rút lại ở mọi trạng thái chưa kết thúc.
       </Typography>
@@ -247,6 +281,7 @@ function layout(family: Family, spacing: number): { nodes: ProcessNode[]; edges:
       id: state.name,
       type: "process",
       position: { x: point.x - NODE_WIDTH / 2, y: point.y - NODE_HEIGHT / 2 },
+      measured: { width: NODE_WIDTH, height: NODE_HEIGHT },
       data: { label: state.label, terminal: state.terminal },
       style: { width: NODE_WIDTH, height: NODE_HEIGHT },
     };

@@ -44,7 +44,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Java 21 và Spring Boot vì ranh giới giữa các module kiểm được lúc biên dịch.
 - Mã của đội theo Apache-2.0; riêng `ai/` theo AGPL-3.0 và chạy ở tiến trình riêng.
   Mọi thành phần khác đều theo giấy phép OSI; không dùng BUSL, SSPL, RSAL, MSCL hay phần Enterprise.
-- **Bằng chứng:** [Thành phần được chọn và không chọn](./dependencies.md); `COPYRIGHT.txt`; `sbom/`; job `license` của `CI Infra`.
+- **Bằng chứng:** [Thành phần được chọn và không chọn](./dependencies.md); `COPYRIGHT.txt`; `sbom/`; job `Check licenses` của workflow `Compliance`.
 
 ## 3. Đổi ứng dụng nghiệp vụ thì lõi có phải đổi không?
 
@@ -80,7 +80,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
   Câu hỏi ngoài kho và mã không có trong kho thì không có bằng chứng, không bịa.
 - Embedding là `paraphrase-multilingual-MiniLM-L12-v2` theo Apache-2.0; chạy tại chỗ, dữ liệu không ra ngoài máy.
 - Giới hạn nói thẳng: `ai/` chạy riêng, chưa nằm trong stack và chưa nối vào lõi; chưa có mô hình ngôn ngữ vì chưa có mô hình nào đạt tiêu chuẩn mở hoàn toàn; dữ liệu huấn luyện của embedding chưa kiểm theo định nghĩa Open Source AI của OSI; chất lượng tìm tiếng Việt trên kho lớn chưa đo.
-- **Bằng chứng:** `ai/README.md`; `cd ai && python -m pytest tests -q` (21 test, job `CI AI`); `.github/license-catalog.json`.
+- **Bằng chứng:** `ai/README.md`; `cd ai && python -m pytest tests -q` (21 test, job workflow `AI Service`); `.github/license-catalog.json`.
 
 ## 7. Một thành phần ngừng thì hệ thống ra sao?
 
@@ -99,7 +99,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
   Không cần mã nguồn: `dxos-install.sh` của bản phát hành tải gói, kiểm SHA-256, cài vào `~/.dxos`; `dxos start <tệp mô hình>` lên đủ dịch vụ, áp dụng tệp và in tài khoản `admin`.
 - Mọi cấu hình nằm ở `deploy/.env`, không sửa tệp mã.
 - Giới hạn: lệnh một dòng kéo image `v2.0.0` từ GHCR, mà bản này chưa phát hành; đến lúc đó phải chạy lại trên máy sạch.
-- **Bằng chứng:** `README.md` mục Chạy thử; job `install` và `compose` của `CI Infra` (gói sai SHA-256 bị từ chối, mọi tệp Compose mount đều có); `docs/TESTING.md` mục 3.
+- **Bằng chứng:** `README.md` mục Chạy thử; các job `Install from the release archive` và `Validate the Compose file` của workflow `Platform` (gói sai SHA-256 bị từ chối, mọi tệp Compose mount đều có); `docs/TESTING.md` mục 3.
 
 ## 9. Từ 100 lên 100.000 người dùng thì sao?
 
@@ -182,14 +182,14 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Token kiểm ở gateway và ở backend; không có token thì 401; người giữ vai của mô hình này không đọc được dữ liệu của mô hình khác.
 - Thay đổi tài khoản và áp dụng mô hình đều ghi `audit_log` kèm người thực hiện; mật khẩu không bao giờ được ghi; mật khẩu tạm do hệ thống sinh và phải đổi ở lần đăng nhập đầu.
 - Quét mã độc tệp tải lên có sẵn nhưng tắt mặc định; bí mật sinh ngẫu nhiên và gitleaks quét ở mọi pull request.
-- **Bằng chứng:** `python3 deploy/dev/check_conformance.py`, `check_demo.py` (tiêu chí 4), `check_users.py`; job `secret-scan` của `CI Infra`.
+- **Bằng chứng:** `python3 deploy/dev/check_conformance.py`, `check_demo.py` (tiêu chí 4), `check_users.py`; job `Scan for secrets` của workflow `Compliance`.
 
 ## 18. Giấy phép tuân thủ thế nào?
 
 - Mã của đội theo Apache-2.0, có `LICENSE` toàn văn, `NOTICE` và dòng SPDX ở đầu mỗi tệp mã.
 - `ai/` theo AGPL-3.0, chạy ở tiến trình riêng và chỉ giao tiếp qua HTTP, nên phần còn lại giữ Apache-2.0.
 - Mỗi bản phát hành có gói `.tar.gz` kèm `.sha256` và SBOM CycloneDX; không dùng định dạng đóng.
-- Job `license` chạy ở mọi pull request: kiểm header, giấy phép của từng gói trong SBOM, danh mục image và mô hình.
+- Job `Check licenses` của workflow `Compliance` chạy ở mọi pull request: kiểm header, giấy phép của từng gói trong SBOM, danh mục image và mô hình.
 - Cam kết của đội chặt hơn thể lệ: cả công cụ, mô hình AI và dữ liệu đều phải mở; thành phần không đạt đã gỡ khỏi bản phát hành.
 - Điểm chưa kiểm xong: dữ liệu huấn luyện của mô hình embedding.
 - **Bằng chứng:** `LICENSE`, `NOTICE`, `COPYRIGHT.txt`, `ai/LICENSE`; `python3 .github/scripts/check_licenses.py`; [Thành phần được chọn và không chọn](./dependencies.md); [Rà soát PoF](./pof-audit.md).

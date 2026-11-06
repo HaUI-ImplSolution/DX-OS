@@ -19,13 +19,13 @@ Việc chưa làm và giới hạn chấp nhận ở [Việc tồn đọng](http
 
 | Loại | Chạy ở đâu | Có trong CI |
 |---|---|---|
-| Test đơn vị và tích hợp của backend | `cd backend && ./mvnw verify`; một số test dùng Testcontainers nên cần Docker | Có, job `build` của `CI Backend` khi đổi `backend/**` |
-| Script kiểm trên stack thật | `python3 deploy/dev/check_<tên>.py` trên stack rỗng dựng bằng `docker compose up -d --build` | Có, job `e2e` của `CI Infra` trên mọi pull request |
-| Kiểm tay bằng trình duyệt | Các bước ở `docs/TESTING.md`, mục 5 và các mục kiểm | Không |
+| Test đơn vị và tích hợp của backend | `cd backend && ./mvnw verify`; một số test dùng Testcontainers nên cần Docker | Có, job `Build and test the backend` của workflow `Backend` trên mọi pull request |
+| Script kiểm trên stack thật | `python3 deploy/dev/check_<tên>.py` trên stack rỗng dựng bằng `docker compose up -d --build` | Có, job `API end-to-end` của workflow `Platform` trên mọi pull request |
+| Kiểm bằng trình duyệt | Một kịch bản Playwright của bảng điều khiển ở `e2e/`; các màn hình còn lại kiểm tay theo `docs/TESTING.md`, mục 5 và các mục kiểm | Kịch bản Playwright có, job `Browser end-to-end` của workflow `Platform`; kiểm tay không |
 | Bản triển khai công khai | VPS của đội | Không; hiện giữ bản `v1.1.1` nên chưa có bằng chứng loại này cho lõi mới |
 
 Dữ liệu của hai loại đầu do chính các script tạo ra trên stack rỗng; chưa có tổ chức nào dùng lõi với dữ liệu thật.
-Job `e2e` chia hai nhóm, mỗi nhóm một stack rỗng: `model and process` (11 script) và `events and bootstrap` (2 script).
+Job `API end-to-end` của workflow `Platform` chia hai nhóm, mỗi nhóm một stack rỗng: `model and process` (11 script) và `events and bootstrap` (2 script).
 Lần kiểm gần nhất ngày 05/11/2026 trên cây làm việc: 517 kiểm ở nhóm đầu và 32 ở nhóm sau.
 
 ## 1. Bốn dịch vụ bắt buộc của đề
@@ -35,7 +35,7 @@ Lần kiểm gần nhất ngày 05/11/2026 trên cây làm việc: 517 kiểm �
 | Định danh và SSO | Keycloak; vai và đơn vị sinh từ mô hình; mỗi mô hình có client riêng nên hai mô hình dùng cùng tên vai không vào được nhau | `check_users.py` 41, `check_guards.py` 61, `check_conformance.py` 60 | `python3 deploy/dev/check_conformance.py` | Hoàn thiện | Đổi vai hoặc đơn vị có hiệu lực sau tối đa khoảng 5 phút vì đọc từ token đã ký |
 | Cổng API | APISIX kiểm token, giới hạn tốc độ, định tuyến; route không kiểm token nằm trong danh sách công khai | `deploy/apisix/check_routes.py`; mọi script đi qua cổng 9080; `check_conformance.py` kiểm 401 khi thiếu token | `python3 deploy/apisix/check_routes.py` | Hoàn thiện | Giới hạn tốc độ chưa có kiểm riêng; lúc chạy `check_conformance.py` gặp 429 cho thấy giới hạn đang hoạt động |
 | Dữ liệu có cấu trúc | Schema, ràng buộc và chỉ mục sinh từ mô hình trên PostgreSQL; bắt buộc, duy nhất, lựa chọn kiểm cả ở API lẫn cơ sở dữ liệu | `check_api.py` 51, `check_change.py` 65 | `python3 deploy/dev/check_api.py` | Hoàn thiện | Danh sách 10.000 dòng có lọc và sắp xếp đo ở phân vị 95 là 10 ms; chưa thử tải lớn hơn |
-| Dữ liệu phi cấu trúc | Tệp đính kèm lưu ở SeaweedFS, siêu dữ liệu ở PostgreSQL, quét ClamAV, quyền theo quyền của hồ sơ | `check_process.py` (tải lên, tải về, gỡ), `check_demo.py` tiêu chí 3 (tệp EICAR bị chặn), job `backup-drill` của `CI Infra` (sao lưu và khôi phục kèm tệp) | `python3 deploy/dev/check_demo.py` | Dùng được | Quét mã độc tắt mặc định; kiểm tệp EICAR chỉ chạy khi bật `dxos av on`, và job `e2e` không bật nên phần này chưa nằm trong CI |
+| Dữ liệu phi cấu trúc | Tệp đính kèm lưu ở SeaweedFS, siêu dữ liệu ở PostgreSQL, quét ClamAV, quyền theo quyền của hồ sơ | `check_process.py` (tải lên, tải về, gỡ), `check_demo.py` tiêu chí 3 (tệp EICAR bị chặn), job `Back up and restore` của workflow `Platform` (sao lưu và khôi phục kèm tệp) | `python3 deploy/dev/check_demo.py` | Dùng được | Quét mã độc tắt mặc định; kiểm tệp EICAR chỉ chạy khi bật `dxos av on`, và job `API end-to-end` của workflow `Platform` không bật nên phần này chưa nằm trong CI |
 | Động cơ luồng công việc | Flowable nhúng, ba họ mẫu `approval`, `work_item`, `reservation`; trạng thái chỉ đổi qua quy trình, cùng giao dịch với việc ghi hồ sơ | `check_process.py` 69, `check_case.py` 76, `check_booking.py` 46, `check_recovery.py` 19 | `python3 deploy/dev/check_process.py` | Hoàn thiện | Họ phê duyệt chỉ có một cấp xử lý; không có trình thiết kế BPMN |
 | Lõi không có giao diện | `dx-engine` chỉ phục vụ API; giao diện và portal là Tầng 2 | Mọi script chỉ gọi API; `ArchitectureTest` kiểm phụ thuộc giữa các lớp của `dx-engine`; `docs/TESTING.md` mục 6 | | Dùng được | Chưa có test khẳng định rằng dịch vụ lõi không trả trang nào |
 
@@ -63,24 +63,27 @@ Lần kiểm gần nhất ngày 05/11/2026 trên cây làm việc: 517 kiểm �
 | Quản trị người dùng: gán vai và đơn vị, tạo, khóa, đặt lại mật khẩu, nhật ký | `check_users.py` 41, `KeycloakAdminClientTest`; tab Người dùng kiểm bằng Chrome | `python3 deploy/dev/check_users.py` | Hoàn thiện | Thay đổi làm thẳng ở Keycloak Admin Console không qua đây |
 | Thống kê theo thực thể, kể cả thời gian xử lý | `check_process.py` | `python3 deploy/dev/check_process.py` | Hoàn thiện | Chưa có tỷ lệ hoàn tất trong hạn |
 | Tài liệu khớp với API thật | `check_docs.py` 3 | `python3 deploy/dev/check_docs.py` | Hoàn thiện | |
-| Nạp mô hình lúc khởi động (`dxos start <tệp>`) | `check_bootstrap.py` 8; job `install` của `CI Infra` | `python3 deploy/dev/check_bootstrap.py` | Dùng được | Chưa kiểm bằng image phát hành thật của bản `2.0.0` |
-| Cài một lệnh, nâng cấp, gói sai SHA-256 bị từ chối | Job `install` của `CI Infra` | `curl -fsSL .../dxos-install.sh \| bash` | Dùng được | Chưa chạy trên máy sạch với image phát hành thật |
-| Sao lưu và khôi phục kèm tệp đính kèm | Job `backup-drill` của `CI Infra` | `dxos backup` | Hoàn thiện | Một bản backend, một máy |
+| Nạp mô hình lúc khởi động (`dxos start <tệp>`) | `check_bootstrap.py` 8; job `Install from the release archive` của workflow `Platform` | `python3 deploy/dev/check_bootstrap.py` | Dùng được | Chưa kiểm bằng image phát hành thật của bản `2.0.0` |
+| Cài một lệnh, nâng cấp, gói sai SHA-256 bị từ chối | Job `Install from the release archive` của workflow `Platform` | `curl -fsSL .../dxos-install.sh \| bash` | Dùng được | Chưa chạy trên máy sạch với image phát hành thật |
+| Sao lưu và khôi phục kèm tệp đính kèm | Job `Back up and restore` của workflow `Platform` | `dxos backup` | Hoàn thiện | Một bản backend, một máy |
 | Màn hình giám sát và cảnh báo | `ServiceProbeTest` 4, `AlertJobTest` | `cd backend && ./mvnw verify` | Dùng được | Không có kiểm đầu-cuối của giao diện giám sát |
-| Bảng điều khiển và giao diện react-admin | `npx tsc --noEmit` trong `CI Frontend`; kiểm tay bằng Chrome | `cd frontend && npx tsc --noEmit` | Dùng được | Không có test tự động hành vi giao diện |
+| Bảng điều khiển và giao diện react-admin | `npx tsc --noEmit` trong workflow `Frontend`; `e2e/tests/console.spec.ts` (quản trị viên đăng nhập, áp dụng một mẫu, thấy mô hình chạy) trong job `Browser end-to-end` của workflow `Platform`; còn lại kiểm tay bằng Chrome | `cd e2e && npx playwright test` trên stack đang chạy | Dùng được | Tự động hóa mới có luồng bảng điều khiển; hộp việc, lịch đặt chỗ và trang hồ sơ kiểm tay |
 | Ví dụ kết nối thiết bị (`itot-simulator`) | Kiểm tay: gửi lại cùng quan sát in `duplicate`, không tạo thêm hồ sơ | `python3 examples/itot-simulator/simulator.py run` | Minh họa | Thiết bị và dữ liệu giả lập |
-| Tìm kiếm tri thức có nguồn (`ai/`) | `pytest` 21 test trong `CI AI` | `cd ai && python -m pytest tests -q` | Minh họa | Chạy riêng, chưa nằm trong stack và chưa nối vào lõi; không có mô hình ngôn ngữ |
+| Tìm kiếm tri thức có nguồn (`ai/`) | `pytest` 21 test trong workflow `AI Service` | `cd ai && python -m pytest tests -q` | Minh họa | Chạy riêng, chưa nằm trong stack và chưa nối vào lõi; không có mô hình ngôn ngữ |
 
 ## 3. Giấy phép, chuỗi cung ứng, phát hành
 
 | Tính năng | Kiểm | Lệnh | Mức | Giới hạn |
 |---|---|---|---|---|
-| Header SPDX ở mọi tệp mã, giấy phép của mọi gói trong SBOM, danh mục image và mô hình | Job `license` của `CI Infra` | `python3 .github/scripts/check_licenses.py` | Hoàn thiện | Ngoại lệ có lý do ở `.github/license-exceptions.json` |
-| Quét bí mật trong cây mã và lịch sử | Job `secret-scan` của `CI Infra` (gitleaks) | | Hoàn thiện | |
-| Lỗ hổng của dependency và image | `CI Dependencies` (Trivy, SBOM của Maven), chạy theo lịch | | Hoàn thiện | Image bên thứ ba chỉ báo cáo, không chặn |
-| Gói phát hành `.tar.gz`, `.sha256`, SBOM CycloneDX | Workflow `Release Package` khi đẩy tag `v*` | | Dùng được | Tag `v2.0.0` chưa tạo; bản đã phát hành gần nhất là `v1.1.1` |
-| Image theo phiên bản trên GHCR | Workflow `Release` | | Dùng được | Chưa có image `v2.0.0` |
-| Compose dừng khi thiếu bí mật, tệp mẫu hợp lệ | Job `compose` của `CI Infra` | `docker compose config` | Hoàn thiện | |
+| Header SPDX ở mọi tệp mã, giấy phép của mọi gói trong SBOM, danh mục image và mô hình | Job `Check licenses` của workflow `Compliance` | `python3 .github/scripts/check_licenses.py` | Hoàn thiện | Ngoại lệ có lý do ở `.github/license-exceptions.json` |
+| Quét bí mật trong cây mã và lịch sử | Job `Scan for secrets` của workflow `Compliance` (gitleaks) | | Hoàn thiện | |
+| Lỗ hổng của dependency và image | workflow `Dependencies` (Trivy, SBOM của Maven), chạy theo lịch | | Hoàn thiện | Image bên thứ ba chỉ báo cáo, không chặn |
+| Gói phát hành `.tar.gz`, `.sha256`, SBOM CycloneDX | Job `Install from the release archive` của workflow `Platform` dựng gói của commit và chạy `check_archive.sh` ở mọi pull request; workflow `Release Package` chạy lại kiểm đó rồi mới đăng khi đẩy tag `v*` | `.github/scripts/check_archive.sh <gói> <phiên bản>` | Dùng được | Tag `v2.0.0` chưa tạo; bản đã phát hành gần nhất là `v1.1.1` |
+| SBOM khớp với tệp khóa | Job `Check SBOMs against lockfiles` của workflow `Compliance` dựng lại SBOM của `frontend`, `website`, `ai/` và so với `sbom/` | `python3 .github/scripts/check_sbom_fresh.py` | Hoàn thiện | SBOM của backend so bằng `check_sbom_fresh.py` với kết quả của `cyclonedx-maven-plugin`, chạy tay ngày 06/11/2026: 221 gói, 0 khác biệt |
+| Tệp bắt buộc có đủ, shell script đúng cú pháp và chạy được | Job `Check required files and scripts` của workflow `Compliance` | | Hoàn thiện | |
+| Workflow đúng cú pháp | Job `Lint workflows` của workflow `Compliance` | | Hoàn thiện | |
+| Image theo phiên bản trên GHCR | Workflow `Release Images` | | Dùng được | Chưa có image `v2.0.0` |
+| Compose dừng khi thiếu bí mật, tệp mẫu hợp lệ | Job `Validate the Compose file` của workflow `Platform` | `docker compose config` | Hoàn thiện | |
 
 ## 4. Chưa làm hoặc ngoài phạm vi
 
@@ -105,7 +108,7 @@ python3 deploy/dev/check_events.py
 python3 deploy/dev/check_bootstrap.py
 ```
 
-`check_events.py` và `check_bootstrap.py` khởi động lại backend nhiều lần nên chạy ở stack riêng, như hai nhóm của job `e2e`.
+`check_events.py` và `check_bootstrap.py` khởi động lại backend nhiều lần nên chạy ở stack riêng, như hai nhóm của job `API end-to-end` của workflow `Platform`.
 Kiểm tĩnh:
 
 ```bash

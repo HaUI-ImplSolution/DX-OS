@@ -59,7 +59,7 @@ git shortlog -sn                                             # đóng góp có n
 |---|---|---|---|
 | ✅ | Giấy phép được OSI công nhận | `LICENSE` Apache-2.0 | điều kiện loại trừ |
 | ✅ | Ghi giấy phép trong từng tệp mã | Dòng `SPDX-License-Identifier` ở đầu mọi tệp Java, TypeScript, JavaScript, Python, shell, YAML: `Apache-2.0`, riêng `ai/` là `AGPL-3.0-only`; `check_licenses.py` báo 0 vấn đề ngày 06/11/2026 | −5 |
-| ✅ | Không xung đột giấy phép giữa các thành phần | `COPYRIGHT.txt`; `ai/` là tiến trình riêng gọi qua HTTP nên phần còn lại giữ Apache-2.0; job `license` kiểm giấy phép của từng gói trong `sbom/`, ngoại lệ có lý do ở `.github/license-exceptions.json` | −5 |
+| ✅ | Không xung đột giấy phép giữa các thành phần | `COPYRIGHT.txt`; `ai/` là tiến trình riêng gọi qua HTTP nên phần còn lại giữ Apache-2.0; job `Check licenses` của workflow `Compliance` kiểm giấy phép của từng gói trong `sbom/`, ngoại lệ có lý do ở `.github/license-exceptions.json` | −5 |
 | ✅ | Có thông báo về mục đích của giấy phép | `NOTICE` | −5 |
 | ✅ | Có bản sao toàn văn giấy phép | `LICENSE`, `ai/LICENSE` | −5 |
 | ⚠️ | Dữ liệu huấn luyện của mô hình AI | Embedding `paraphrase-multilingual-MiniLM-L12-v2` theo Apache-2.0, dữ liệu huấn luyện chưa kiểm theo định nghĩa Open Source AI của OSI; khai báo ở `.github/license-catalog.json` | |
@@ -77,7 +77,8 @@ head -3 LICENSE                                # toàn văn, không phải liên
 | ⚠️ | Release là sản phẩm dự thi | Sản phẩm dự thi là bản `2.0.0` (`CHANGELOG.md` mục `[2.0.0]`, `backend/pom.xml`, `frontend/package.json`); tag `v2.0.0` chưa tạo | −5 |
 | ✅ | Phát hành theo phiên bản | Thẻ SemVer; `CHANGELOG.md` theo Keep a Changelog có mục cho mọi bản và `[Unreleased]` | −3 |
 | ✅ | Định dạng mở cho gói phát hành | Workflow `Release Package` chạy khi đẩy tag `v*`, đính kèm `dx-os-X.Y.Z.tar.gz`, `.sha256` và SBOM `.cdx.json`; không có `.zip` | −3 |
-| ⚠️ | Image theo phiên bản | Workflow `Release` đẩy image `vX.Y.Z` lên GHCR; `dxos-install.sh` kéo image này nên bản `2.0.0` chưa cài được bằng một lệnh cho đến khi chạy | |
+| ✅ | Gói được kiểm trước khi đăng | `check_archive.sh` kiểm gói có `LICENSE`, `NOTICE`, `COPYRIGHT.txt`, `README.md`, `CHANGELOG.md` và không có tệp giống bí mật; chạy ở job `Install from the release archive` của workflow `Platform` của mọi pull request và trong `Release Package` trước khi đăng | |
+| ⚠️ | Image theo phiên bản | Workflow `Release Images` đẩy image `vX.Y.Z` lên GHCR; `dxos-install.sh` kéo image này nên bản `2.0.0` chưa cài được bằng một lệnh cho đến khi chạy | |
 
 GitHub tự đính kèm `Source code (zip)` vào mỗi release và không xóa được; phần mô tả release ghi rõ `dx-os-X.Y.Z.tar.gz` mới là gói phát hành chính thức.
 
@@ -86,17 +87,18 @@ Trình tự phát hành bản `2.0.0`:
 1. Đưa nhánh làm việc vào `main`.
 2. Sửa ngày của mục `[2.0.0]` trong `CHANGELOG.md` theo ngày đặt tag.
 3. Đẩy tag `v2.0.0`; `Release Package` tạo Release kèm gói.
-4. Chạy workflow `Release` trên tag để có image `v2.0.0`.
+4. Chạy workflow `Release Images` trên tag để có image `v2.0.0`.
 
 ## 6. Tiêu chí 4: build và cài đặt từ mã nguồn (10 điểm)
 
 | Trạng thái | Yêu cầu | Bằng chứng | Mức trừ nếu thiếu |
 |---|---|---|---|
 | ✅ | Có hướng dẫn dịch từ mã nguồn | `README.md` mục Chạy thử, phần Từ mã nguồn; `README_EN.md` | −5 |
-| ✅ | Không cấu hình bằng cách sửa tay tệp mã | Mọi tham số ở `deploy/.env`, mẫu `deploy/.env.example`; `deploy/make_env.sh` sinh mật khẩu ngẫu nhiên; job `compose` kiểm Compose dừng khi thiếu bí mật | −5 |
+| ✅ | Không cấu hình bằng cách sửa tay tệp mã | Mọi tham số ở `deploy/.env`, mẫu `deploy/.env.example`; `deploy/make_env.sh` sinh mật khẩu ngẫu nhiên; job `Validate the Compose file` của workflow `Platform` kiểm Compose dừng khi thiếu bí mật | −5 |
 | ✅ | Cấu hình được trước khi dịch | `deploy/make_env.sh` rồi mới `docker compose up -d --build` | −5 |
 | ✅ | Dịch bằng công cụ nguồn mở | Docker, Compose, Git, Maven wrapper, npm | −5 |
-| ✅ | Chạy được ngoài thư mục mã nguồn | `dxos-install.sh` cài vào `~/.dxos`, `install.sh` từ chối cài vào chính thư mục mã nguồn; job `install` của `CI Infra` cài từ gói, gói sai SHA-256 bị từ chối, mọi tệp Compose mount đều có | −5 |
+| ✅ | Chạy được ngoài thư mục mã nguồn | `dxos-install.sh` cài vào `~/.dxos`, `install.sh` từ chối cài vào chính thư mục mã nguồn; job `Install from the release archive` của workflow `Platform` cài từ gói, gói sai SHA-256 bị từ chối, mọi tệp Compose mount đều có | −5 |
+| ✅ | Hệ thống dựng từ trạng thái rỗng dùng được qua trình duyệt | Job `Browser end-to-end`: dựng image của commit, khởi động stack rỗng, Playwright đăng nhập bằng Keycloak, áp dụng một mẫu và thấy mô hình chạy (`e2e/tests/console.spec.ts`) | |
 | ⚠️ | Chạy lại chuỗi trên máy sạch | Đã kiểm trên máy dev với image dựng tại chỗ; chưa kiểm với image phát hành thật vì bản `2.0.0` chưa phát hành | |
 
 Bài kiểm tra bắt buộc làm trước ngày chấm, giả lập thao tác của giám khảo:
@@ -121,7 +123,8 @@ dxos start
 | ✅ | Ưu tiên thư viện sẵn có | Dùng image chính thức, ghim tag và digest trong `deploy/docker-compose.yml`; Keycloak dựng từ bản phát hành chính thức kiểm SHA-1; binary `pgschema` lấy từ image chính thức ghim digest | −5 |
 | ✅ | Không phát hành kèm gói của dự án phụ thuộc | `git ls-files` không có `vendor/`, `node_modules/`, `third_party/` | −5 |
 | ✅ | Không chỉnh sửa mã nguồn gói đính kèm | Không có tệp `.patch`; tùy biến bằng cấu hình (route APISIX, realm Keycloak, biến môi trường) | −5 |
-| ✅ | Phụ thuộc được cập nhật và quét | Dependabot; `CI Dependencies` chặn khi có lỗ hổng HIGH hoặc CRITICAL đã có bản vá | |
+| ✅ | Phụ thuộc được cập nhật và quét | Dependabot; workflow `Dependencies` chặn khi có lỗ hổng HIGH hoặc CRITICAL đã có bản vá | |
+| ✅ | SBOM khớp với tệp khóa | Job `Check SBOMs against lockfiles` dựng lại SBOM của web, trang docs và `ai/` rồi so với `sbom/` ở mọi pull request; SBOM của backend so với kết quả của `cyclonedx-maven-plugin` (221 gói, 0 khác biệt ngày 06/11/2026) | |
 
 ```bash
 git ls-files | grep -E '(^|/)(vendor|third_party|node_modules)/|\.patch$' && echo "VI PHẠM" || echo "Sạch"
@@ -133,16 +136,17 @@ git ls-files | grep -E '(^|/)(vendor|third_party|node_modules)/|\.patch$' && ech
 |---|---|---|---|
 | ✅ | Có bug tracker | GitHub Issues đã bật; mẫu `bug_report.yml`, `feature_request.yml`; 8 issue | −5 |
 | ✅ | Có changelog | `CHANGELOG.md` theo Keep a Changelog, mục `[Unreleased]` và mục cho mọi bản đến `[2.0.0]` | −5 |
-| ✅ | Có README và hướng dẫn | `README.md`, `README_EN.md`; `ARCHITECTURE.md`; `docs/TESTING.md`; `deploy/OPERATIONS.md`; API qua Swagger UI và `check_docs.py` kiểm tài liệu khớp OpenAPI | −5 |
+| ✅ | Có README và hướng dẫn | `README.md`, `README_EN.md`; `ARCHITECTURE.md`; `docs/TESTING.md`; `deploy/OPERATIONS.md`; API qua Swagger UI và `check_docs.py` kiểm tài liệu khớp OpenAPI; job `Check required files and scripts` báo lỗi nếu thiếu một tài liệu bắt buộc hoặc `CHANGELOG.md` mất mục `[Unreleased]`; job `Build the docs site` dựng trang docs và dừng khi có liên kết hỏng | −5 |
 | ✅ | Hướng dẫn đóng góp | `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, mẫu pull request | |
 | ✅ | Chính sách bảo mật | `SECURITY.md` | |
-| ⚠️ | Cài đặt GitHub cần quyền chủ repository | Private vulnerability reporting và bảo vệ nhánh chưa kiểm lại được từ bên ngoài | Kiểm ở Settings của repository |
+| ⚠️ | Bảo vệ nhánh và tag | `.github/rulesets/main.json` (cấm xóa, cấm ghi đè lịch sử, chỉ nhận pull request gộp bằng merge, 16 check phải xanh) và `tags.json` (cấm sửa và xóa tag `v*`) có sẵn để nhập; chỉ có hiệu lực khi chủ repository nhập vào Settings → Rules | Nhập hai ruleset vào GitHub |
+| ⚠️ | Private vulnerability reporting | Cần quyền chủ repository nên chưa kiểm được từ bên ngoài | Kiểm ở Settings của repository |
 
 ## 9. Lộ bí mật và dữ liệu cá nhân
 
 | Kiểm tra | Kết quả |
 |---|---|
-| Quét bí mật trong cây mã và toàn lịch sử | Job `secret-scan` của `CI Infra` chạy gitleaks ở mọi pull request; cấu hình ở `.gitleaks.toml` |
+| Quét bí mật trong cây mã và toàn lịch sử | Job `Scan for secrets` của workflow `Compliance` chạy gitleaks ở mọi pull request; cấu hình ở `.gitleaks.toml` |
 | Tệp `.env` thật bị theo dõi | Không; chỉ có `deploy/.env.example` |
 | Mật khẩu mặc định | Không; `deploy/make_env.sh` sinh ngẫu nhiên, Compose dừng khi thiếu bí mật |
 | Email trong repository | Mỗi thành viên một địa chỉ ở mục Liên hệ của README; `.mailmap` gom các danh tính trong lịch sử, lịch sử không bị viết lại |
@@ -170,10 +174,11 @@ Lần kiểm ở các bảng trên không thay cho mục này.
 - [ ] Clone repository vào máy sạch, chạy `deploy/make_env.sh` và `docker compose up -d --build` thành công.
 - [ ] Mở repository bằng trình duyệt ẩn danh, xác nhận truy cập được không cần đăng nhập.
 - [ ] `python3 .github/scripts/check_licenses.py` báo 0 vấn đề trên bản phát hành.
-- [ ] CI xanh trên commit được gắn tag: `CI Infra`, `CI Backend`, `CI Frontend`, `CI Dependencies`, `CI AI`.
+- [ ] CI xanh trên commit được gắn tag: `Platform`, `Compliance`, `Backend`, `Frontend`, `AI Service`, `Dependencies`.
+- [ ] Hai ruleset ở `.github/rulesets/` đã nhập vào GitHub.
 - [ ] Private vulnerability reporting đã bật; `SECURITY.md` có trên trang chủ repository.
 - [ ] `CHANGELOG.md` có mục cho mọi bản đã phát hành và ngày của `[2.0.0]` khớp ngày tag.
-- [ ] Không có bí mật trong lịch sử: job `secret-scan` xanh.
+- [ ] Không có bí mật trong lịch sử: job `Scan for secrets` của workflow `Compliance` xanh.
 - [ ] README, `ARCHITECTURE.md`, `docs/TESTING.md` mô tả đúng bản `2.0.0`; `check_docs.py` đạt.
 - [ ] Trang docs mô tả đúng bản `2.0.0`.
 - [ ] Thư gửi BTC kèm thành viên, người hướng dẫn, đường dẫn repository và cam kết bản quyền theo mẫu của đề.
@@ -184,6 +189,6 @@ Lần kiểm ở các bảng trên không thay cho mục này.
 
 Chưa kiểm được:
 
-- Cài đặt GitHub cần quyền chủ repository: Private vulnerability reporting, bảo vệ nhánh.
+- Cài đặt GitHub cần quyền chủ repository: Private vulnerability reporting, và việc hai ruleset đã được nhập.
 - Cài đặt từ image phát hành thật của bản `2.0.0`.
 - Số lượt chạy xanh của từng workflow trên commit gắn tag; xem tab Actions.

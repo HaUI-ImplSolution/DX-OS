@@ -62,11 +62,11 @@ Strapi chưa được đánh giá riêng.
 
 | Điều kiện | Cách kiểm | Nơi chạy |
 |---|---|---|
-| Mọi tệp mã có header SPDX | `.github/scripts/check_licenses.py` | Job `license` của `CI Infra` |
+| Mọi tệp mã có header SPDX | `.github/scripts/check_licenses.py` | Job `Check licenses` của workflow `Compliance` |
 | Mọi gói trong SBOM có giấy phép cho phép, ngoại lệ có lý do | `check_licenses.py`, `.github/license-exceptions.json` | Cùng job |
 | Image, mô hình và tệp dữ liệu khai báo giấy phép | `.github/license-catalog.json` | Cùng job |
-| Không bí mật trong cây mã và lịch sử | gitleaks | Job `secret-scan` |
-| Không dependency có lỗ hổng HIGH hoặc CRITICAL đã có bản vá | Trivy, SBOM của Maven | `CI Dependencies`, chạy cả theo lịch |
+| Không bí mật trong cây mã và lịch sử | gitleaks | Job `Scan for secrets` của workflow `Compliance` |
+| Không dependency có lỗ hổng HIGH hoặc CRITICAL đã có bản vá | Trivy, SBOM của Maven | workflow `Dependencies`, chạy cả theo lịch |
 | Không có `vendor/`, `node_modules/`, `third_party/` trong Git | `git ls-files \| grep -E '(^\|/)(vendor\|third_party\|node_modules)/'` | Chạy tay |
 
 Muốn thêm một thành phần: đọc giấy phép ở kho gốc, ghi vào `COPYRIGHT.txt`, và nếu là image hoặc mô hình thì khai báo ở `.github/license-catalog.json`; `check_licenses.py` sẽ chặn nếu thiếu.

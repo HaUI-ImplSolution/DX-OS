@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
-name: CI Dependencies
+name: Dependencies
+
+# Known vulnerabilities in the dependencies and in the third-party images, on a change of the lockfiles and every week.
 on:
   push:
     branches:
@@ -11,9 +13,11 @@ on:
       - 'ai/requirements.lock'
       - 'frontend/package-lock.json'
       - 'website/package-lock.json'
+      - 'e2e/package-lock.json'
+      - 'sbom/*.cdx.json'
       - 'deploy/docker-compose.yml'
       - '.trivyignore'
-      - '.github/workflows/ci-deps.yml'
+      - '.github/workflows/ci-dependencies.yml'
   pull_request:
     types:
       - opened
@@ -27,9 +31,11 @@ on:
       - 'ai/requirements.lock'
       - 'frontend/package-lock.json'
       - 'website/package-lock.json'
+      - 'e2e/package-lock.json'
+      - 'sbom/*.cdx.json'
       - 'deploy/docker-compose.yml'
       - '.trivyignore'
-      - '.github/workflows/ci-deps.yml'
+      - '.github/workflows/ci-dependencies.yml'
   # New advisories appear without any change of ours, so the scan also runs every week.
   schedule:
     - cron: '17 3 * * 1'
@@ -44,6 +50,7 @@ concurrency:
 
 jobs:
   vulnerabilities:
+    name: Scan dependencies
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -60,6 +67,7 @@ jobs:
   # Images of other projects in the compose file. Findings are reported as warnings: they come
   # from upstream and are fixed by moving to a newer tag.
   images:
+    name: Scan third-party images
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -84,6 +92,7 @@ jobs:
   # The vulnerabilities job reads pom.xml, where the versions managed by Spring Boot are not written.
   # The SBOM lists every resolved package, so Jackson, Tomcat and the like are checked too.
   backend-sbom:
+    name: Scan the backend SBOM
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -102,6 +111,9 @@ jobs:
         run: >
           ./mvnw -B -q org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom
           -DoutputFormat=json -DoutputName=backend.cdx -DincludeTestScope=false
+
+      - name: The committed SBOM lists the same packages
+        run: python3 .github/scripts/check_sbom_fresh.py sbom sbom/backend.cdx.json backend/target/backend.cdx.json
 
       - name: Fail on a fixable HIGH or CRITICAL vulnerability in the resolved dependencies
         run: >

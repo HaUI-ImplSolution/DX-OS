@@ -10,7 +10,13 @@
       "exclude": []
     }
   },
-  "bypass_actors": [],
+  "bypass_actors": [
+    {
+      "actor_id": 5,
+      "actor_type": "RepositoryRole",
+      "bypass_mode": "pull_request"
+    }
+  ],
   "rules": [
     {
       "type": "deletion"
@@ -28,6 +34,79 @@
         "required_review_thread_resolution": false,
         "allowed_merge_methods": [
           "merge"
+        ]
+      }
+    },
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "strict_required_status_checks_policy": false,
+        "do_not_enforce_on_create": true,
+        "required_status_checks": [
+          {
+            "context": "Build and test the backend",
+            "integration_id": 15368
+          },
+          {
+            "context": "Type-check the web app",
+            "integration_id": 15368
+          },
+          {
+            "context": "Test the AI service",
+            "integration_id": 15368
+          },
+          {
+            "context": "Build the docs site",
+            "integration_id": 15368
+          },
+          {
+            "context": "Scan for secrets",
+            "integration_id": 15368
+          },
+          {
+            "context": "Check licenses",
+            "integration_id": 15368
+          },
+          {
+            "context": "Check SBOMs against lockfiles",
+            "integration_id": 15368
+          },
+          {
+            "context": "Check required files and scripts",
+            "integration_id": 15368
+          },
+          {
+            "context": "Lint workflows",
+            "integration_id": 15368
+          },
+          {
+            "context": "Validate the Compose file",
+            "integration_id": 15368
+          },
+          {
+            "context": "Validate the gateway routes",
+            "integration_id": 15368
+          },
+          {
+            "context": "Install from the release archive",
+            "integration_id": 15368
+          },
+          {
+            "context": "Back up and restore",
+            "integration_id": 15368
+          },
+          {
+            "context": "API end-to-end (model and process)",
+            "integration_id": 15368
+          },
+          {
+            "context": "API end-to-end (events and bootstrap)",
+            "integration_id": 15368
+          },
+          {
+            "context": "Browser end-to-end",
+            "integration_id": 15368
+          }
         ]
       }
     }

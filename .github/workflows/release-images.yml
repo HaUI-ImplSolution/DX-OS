@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
-name: Release
-run-name: Release ${{ inputs.services }} from ${{ github.ref_name }}
+name: Release Images
+run-name: Release images (${{ inputs.services }}) from ${{ github.ref_name }}
 
 on:
   workflow_dispatch:
@@ -20,12 +20,13 @@ concurrency:
 
 jobs:
   plan:
+    name: Plan the images
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
       names: ${{ steps.pick.outputs.names }}
     steps:
-      - name: Pick the images to build
+      - name: Plan the images to build
         id: pick
         env:
           REQUESTED: ${{ inputs.services }}
@@ -44,6 +45,7 @@ jobs:
           echo "names=$(printf '%s\n' $PICKED | jq -R . | jq -sc .)" >> "$GITHUB_OUTPUT"
 
   build:
+    name: "Build image (${{ matrix.name }})"
     needs: plan
     runs-on: ubuntu-24.04
     timeout-minutes: 60
@@ -118,6 +120,7 @@ jobs:
           cache-to: type=registry,ref=${{ steps.image.outputs.repo }}:buildcache,mode=max,image-manifest=true,oci-mediatypes=true
 
   summary:
+    name: Show the update command
     needs: build
     runs-on: ubuntu-24.04
     timeout-minutes: 5

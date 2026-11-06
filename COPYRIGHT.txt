@@ -198,6 +198,9 @@ Dịch vụ ai/ không dùng mô hình ngôn ngữ và không xếp hạng lại
 | actionlint 1.7.12                    | MIT                                  | Kiểm cú pháp workflow trong CI, chạy |
 |                                      |                                      | trong container                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
+| Playwright (@playwright/test) 1.65   | Apache-2.0                           | Kiểm giao diện web trên trình duyệt  |
+|                                      |                                      | trong CI, chỉ là công cụ dev         |
++--------------------------------------+--------------------------------------+--------------------------------------+
 | Trivy 0.58.1                         | Apache-2.0                           | Quét lỗ hổng phụ thuộc trong CI,     |
 |                                      |                                      | chạy trong container                 |
 +--------------------------------------+--------------------------------------+--------------------------------------+

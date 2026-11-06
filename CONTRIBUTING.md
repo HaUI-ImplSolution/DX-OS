@@ -36,6 +36,7 @@ cd ../frontend && npm install && npm run dev
 | Toàn stack | `python3 deploy/dev/check_api.py`, `check_recovery.py`, `check_case.py`, `check_change.py`, `check_process.py`, `check_booking.py`, `check_demo.py`, `check_guards.py`, `check_users.py`, `check_docs.py`, `check_conformance.py`, `check_events.py` và `check_bootstrap.py`, theo thứ tự, trên stack mới dựng |
 | Giấy phép | `python3 .github/scripts/check_licenses.py` |
 | Trang docs | `npm run build` trong `website/` |
+| Giao diện trên trình duyệt | Trên stack rỗng: `python3 -c "import sys; sys.path.insert(0, 'deploy/dev'); import kc; kc.ensure_user('ui_admin', ['ADMIN'])"`, rồi `npm ci && npx playwright install chromium && npx playwright test` trong `e2e/` |
 | Workflow | `docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12` |
 
 ## Quy ước
@@ -59,7 +60,7 @@ cd ../frontend && npm install && npm run dev
 ## Phát hành
 
 Bản phát hành là tag `vX.Y.Z` nhẹ trên `main`, kèm mục tương ứng trong [`CHANGELOG.md`](./CHANGELOG.md).
-Workflow `Release` build và đẩy image lên GHCR; workflow `Release Package` đính kèm SBOM.
+Workflow `Release Images` build và đẩy image lên GHCR; workflow `Release Package` đính kèm SBOM.
 
 ## Thêm một nghiệp vụ mới
 

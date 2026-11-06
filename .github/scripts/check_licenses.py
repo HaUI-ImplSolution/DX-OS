@@ -7,7 +7,8 @@
    AGPL-3.0-only under ai/, Apache-2.0 everywhere else.
 2. Every package in sbom/*.cdx.json has a license that is allowed below or
    an entry in .github/license-exceptions.json that gives the reason.
-3. Every container image the repository builds from or runs, every model named in the
+3. No vendor/, third_party/ or node_modules/ directory is committed.
+4. Every container image the repository builds from or runs, every model named in the
    configuration of the AI service and every tracked weight, archive or document file is declared
    in .github/license-catalog.json with an allowed license, and COPYRIGHT.txt names each entry.
 
@@ -180,8 +181,14 @@ def check_catalog() -> list[str]:
     return problems
 
 
+def check_bundled() -> list[str]:
+    """Third-party code is declared as a dependency, never committed into the repository."""
+    return [f"{rel}: bundled third-party code is not allowed" for rel in tracked_files()
+            if re.search(r"(^|/)(vendor|third_party|node_modules)/", rel)]
+
+
 def main() -> int:
-    problems = check_headers() + check_sboms() + check_catalog()
+    problems = check_headers() + check_sboms() + check_catalog() + check_bundled()
     for problem in problems:
         print(problem)
     print(f"{len(problems)} problem(s)")

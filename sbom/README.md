@@ -30,10 +30,10 @@ cd website && npx @cyclonedx/cyclonedx-npm --omit dev --output-format JSON --out
 ```
 
 Sinh lại sau khi đổi dependency hoặc số phiên bản của dự án; giấy phép từng thành phần ở [`COPYRIGHT.txt`](../COPYRIGHT.txt).
-Mọi thành phần trong các file này đều có giấy phép; `.github/scripts/check_licenses.py` (job `license` của workflow `CI Infra`) chặn thành phần không có giấy phép hoặc giấy phép ngoài danh sách cho phép, trừ ngoại lệ có lý do ở `.github/license-exceptions.json`.
+Mọi thành phần trong các file này đều có giấy phép; `.github/scripts/check_licenses.py` (job `Check licenses` của workflow `Compliance`) chặn thành phần không có giấy phép hoặc giấy phép ngoài danh sách cho phép, trừ ngoại lệ có lý do ở `.github/license-exceptions.json`.
 Các file SBOM chỉ gồm thư viện của mã do nhóm viết; image của bên thứ ba và mô hình khai báo ở [`.github/license-catalog.json`](../.github/license-catalog.json), giấy phép của từng thành phần ở mục 6 của [`COPYRIGHT.txt`](../COPYRIGHT.txt); image ghim phiên bản và digest trong `deploy/docker-compose.yml`.
 Khi phát hành, workflow `Release Package` đính kèm các file này vào GitHub Release.
-Workflow `CI Dependencies` (`ci-deps.yml`) quét lỗ hổng của các dependency này bằng Trivy khi file khai báo đổi và mỗi tuần.
+Workflow `Dependencies` (`ci-dependencies.yml`) quét lỗ hổng của các dependency này bằng Trivy khi file khai báo đổi và mỗi tuần.
 Workflow này sinh lại SBOM của backend ngay trong CI và quét nó, vì `pom.xml` không ghi phiên bản của các gói do Spring Boot quản lý.
 Quét SBOM chặn CI khi có lỗi HIGH hoặc CRITICAL đã có bản vá.
 Cùng workflow quét các image của bên thứ ba trong `deploy/docker-compose.yml` và chỉ báo bằng cảnh báo.

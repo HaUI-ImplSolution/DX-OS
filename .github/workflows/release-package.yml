@@ -30,6 +30,7 @@ concurrency:
 
 jobs:
   package:
+    name: Package the release
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
@@ -67,18 +68,10 @@ jobs:
           (cd dist && sha256sum -- * > "dx-os-${VERSION}.sha256")
           cat "dist/dx-os-${VERSION}.sha256"
 
-      # Tags before v1.1.0 have no NOTICE or COPYRIGHT.txt and are not packaged again.
       - name: Check the archive before it is published
         run: |
           VERSION="${TAG#v}"
-          tar -tzf "dist/dx-os-${VERSION}.tar.gz" > "$RUNNER_TEMP/archive.list"
-          for file in LICENSE NOTICE COPYRIGHT.txt README.md CHANGELOG.md; do
-            grep -qx "dx-os-${VERSION}/${file}" "$RUNNER_TEMP/archive.list" \
-              || { echo "::error::The archive has no ${file}"; exit 1; }
-          done
-          if secret=$(grep -E '(^|/)\.env$|(^|/)id_rsa|\.pem$|\.key$' "$RUNNER_TEMP/archive.list"); then
-            echo "::error::The archive holds files that look like secrets:"; echo "$secret"; exit 1
-          fi
+          .github/scripts/check_archive.sh "dist/dx-os-${VERSION}.tar.gz" "$VERSION"
 
       - name: Take the release notes from the CHANGELOG
         run: |

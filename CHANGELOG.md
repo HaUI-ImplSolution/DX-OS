@@ -48,6 +48,15 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
   Form sửa và lịch đặt chỗ gửi `version` của hồ sơ đã đọc.
 - Lỗi 403 `ERR_ACTION_NOT_ALLOWED` có thêm `data.reason`, mã ổn định cho client: `SELF_DECISION`, `OWNER_ONLY`, `HANDLER_ONLY`, `ASSIGNED_TO_OTHER`, `NOT_ASSIGNER`, `CANNOT_CREATE`, `READ_ONLY`, `NO_ROLE_FOR_ENTITY`, `UNIT_OUT_OF_REACH`, `PARENT_OUT_OF_REACH`, `STATUS_BY_PROCESS_ONLY` và `FILE_ADDER_ONLY`.
 - `check_docs.py` kiểm mọi endpoint mà `README.md`, `README_EN.md`, `ARCHITECTURE.md` và `deploy/OPERATIONS.md` nêu có trong `/v3/api-docs`, đúng phương thức.
+- Lỗi 409 `ERR_INVALID_STATE` của hồ sơ có thêm `data.reason`: `WRONG_STATE`, `RECORD_CLOSED`, `KEPT_BY_PROCESS`, `STILL_REFERENCED` và `SLOT_TAKEN`.
+- `examples/history-witness/witness.py` cho bên nhận giữ cặp `eventId` và `hash` của các tin đã nhận (`save`) rồi so với hệ thống (`compare`): hash đổi hoặc dòng mất thì báo và thoát mã 1, kể cả khi chuỗi và các điểm neo bị tính lại cho khớp nhau.
+- `check_conformance.py` kiểm trên mọi mô hình đã áp dụng, hoặc các mô hình nêu tên, rằng mô hình giữ các rào chắn của lõi: không ghi được `status` qua API dữ liệu, không có token thì 401, và người giữ vai của mô hình này không đọc được dữ liệu của mô hình khác.
+- `GET /api/v1/data/{model}/{entity}/stats` của thực thể có quy trình có thêm `avgDecisionSeconds` (thời gian trung bình từ lúc tạo đến trạng thái cuối, hồ sơ rút cũng tính), `avgOpenAgeSeconds` và `oldestOpenAgeSeconds` (tuổi trung bình và tuổi lớn nhất của hồ sơ chưa vào trạng thái cuối); giá trị tính bằng giây và là `null` khi không có hồ sơ nào để tính.
+  Trang thống kê hiện ba số này thành ba ô, ẩn ô có giá trị `null`.
+- Dòng lịch sử `updated` của hồ sơ ghi giá trị cũ và mới của từng trường đã đổi: `detail` là JSON `{"trường": ["cũ", "mới"]}`, giá trị là chuỗi hoặc `null`, dài quá 200 ký tự thì cắt và thêm `…`.
+  Dòng viết trước đó vẫn là danh sách tên trường cách nhau bằng dấu phẩy.
+  Lệnh sửa khóa dòng của hồ sơ khi so với giá trị cũ.
+  Chi tiết hồ sơ hiện "nhãn: cũ → mới" cho mỗi trường.
 - Thực thể có quy trình có chỉ mục trên `handle_by` cho bộ quét quá hạn.
 - Thông báo khi trình quét virus không trả lời và lỗi chung của tệp mô hình có bản tiếng Việt.
 - `check_demo.py` kiểm tệp EICAR bị chặn khi bật quét virus.
@@ -88,7 +97,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Hủy bỏ lần áp dụng đầu của một mô hình xóa luôn client `dxos-m-<mô hình>` (bước `DROP_CLIENT`); nhóm đơn vị dùng chung giữa các mô hình nên được giữ lại.
 - `backup.sh` cảnh báo khi dump và chụp kho lâu hơn `DXOS_FILE_DELETE_DELAY`.
   `backup.sh verify` khởi động một SeaweedFS tạm trên bản chụp kho và báo `FAILED` kèm tên tệp khi một khóa trong `engine.attachment` không có tệp; job `backup-drill` kiểm cả hai trường hợp bằng tệp đính kèm thật.
-- Job `e2e` trong `ci-infra.yml` chạy hai nhóm song song, mỗi nhóm dựng image của commit và khởi động một stack rỗng riêng: nhóm đầu chạy mười script từ `check_api.py` đến `check_docs.py` theo thứ tự của `docs/TESTING.md`, nhóm sau chạy `check_events.py` và `check_bootstrap.py`; log các service được tải khi lỗi và thời gian từng script ghi vào tóm tắt của job.
+- Job `e2e` trong `ci-infra.yml` chạy hai nhóm song song, mỗi nhóm dựng image của commit và khởi động một stack rỗng riêng: nhóm đầu chạy mười một script từ `check_api.py` đến `check_conformance.py` theo thứ tự của `docs/TESTING.md`, nhóm sau chạy `check_events.py` và `check_bootstrap.py`; log các service được tải khi lỗi và thời gian từng script ghi vào tóm tắt của job.
 - `DXOS_OUTBOX_POLL_MS` và `DXOS_OVERDUE_SWEEP_MS` đặt chu kỳ xem hàng đợi sự kiện và chu kỳ quét hồ sơ quá hạn (mặc định 2000 và 60000 mili giây); `check_events.py` đặt 500 và 5000.
 - Client OIDC `dxos-cli` có tài khoản dịch vụ giữ vai `ADMIN`; bí mật `DXOS_CLI_SECRET` do `make_env.sh` sinh, và `install.sh --upgrade` thêm vào `.env` có sẵn.
   `dxos plan <tệp>` in kế hoạch.

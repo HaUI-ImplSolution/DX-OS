@@ -3,20 +3,22 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Alert, Box, ButtonBase, Card, Skeleton, Typography } from "@mui/material";
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
+import HourglassBottomOutlinedIcon from "@mui/icons-material/HourglassBottomOutlined";
 import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined";
+import TimerOutlinedIcon from "@mui/icons-material/TimerOutlined";
 import { Title } from "react-admin";
 import PageHeader from "../shell/PageHeader";
-import { formatDateTime } from "../shell/format";
+import { formatDateTime, formatDuration } from "../shell/format";
 import { getStats, type EntityStats } from "./api";
 import { TONES } from "./StatusChip";
 import { splitResource, type ModelMeta } from "./types";
 
 type Filter = Record<string, string>;
 
-function Tile({ icon, label, value, tone, onClick }: { icon: JSX.Element; label: string; value: number; tone: string; onClick: () => void }) {
+function Tile({ icon, label, value, tone, onClick }: { icon: JSX.Element; label: string; value: number | string; tone: string; onClick?: () => void }) {
   return (
     <Card sx={{ flex: "1 1 200px" }}>
-      <ButtonBase onClick={onClick} sx={{ width: "100%", p: 2, display: "flex", justifyContent: "flex-start", gap: 2, textAlign: "left" }}>
+      <ButtonBase onClick={onClick} disabled={!onClick} sx={{ width: "100%", p: 2, display: "flex", justifyContent: "flex-start", gap: 2, textAlign: "left" }}>
         <Box
           sx={{
             width: 44,
@@ -138,6 +140,15 @@ export default function StatsPage({ models }: { models: ModelMeta[] }) {
                 tone="error"
                 onClick={() => navigate(listPath(resource, { "handle_by.lt": stats.computedAt }))}
               />
+            )}
+            {stats.avgDecisionSeconds != null && (
+              <Tile icon={<TimerOutlinedIcon />} label="Thời gian xử lý trung bình" value={formatDuration(stats.avgDecisionSeconds)} tone="success" />
+            )}
+            {stats.avgOpenAgeSeconds != null && (
+              <Tile icon={<HourglassBottomOutlinedIcon />} label="Tuổi trung bình hồ sơ đang mở" value={formatDuration(stats.avgOpenAgeSeconds)} tone="info" />
+            )}
+            {stats.oldestOpenAgeSeconds != null && (
+              <Tile icon={<HourglassBottomOutlinedIcon />} label="Hồ sơ đang mở lâu nhất" value={formatDuration(stats.oldestOpenAgeSeconds)} tone="warning" />
             )}
           </Box>
           <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>

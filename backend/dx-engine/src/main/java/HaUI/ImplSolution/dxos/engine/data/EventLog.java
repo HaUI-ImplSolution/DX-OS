@@ -5,11 +5,16 @@ import HaUI.ImplSolution.dxos.core.api.user.UserContext;
 import HaUI.ImplSolution.dxos.engine.event.RecordEventPublisher;
 import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.OffsetDateTime;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.ObjectMapper;
 
 // The history of a record. An event is written in the transaction of the change it describes, so
 // the two commit or roll back together; the same transaction links it into the history chain and
@@ -21,13 +26,39 @@ public class EventLog {
   private final UserContext user;
   private final RecordEventPublisher publisher;
   private final HistoryChain chain;
+  private final ObjectMapper json;
+
+  // A value longer than this is cut, so one long text does not swell the history.
+  private static final int VALUE_LIMIT = 200;
 
   public EventLog(JdbcTemplate jdbc, UserContext user, RecordEventPublisher publisher,
-      HistoryChain chain) {
+      HistoryChain chain, ObjectMapper json) {
     this.jdbc = jdbc;
     this.user = user;
     this.publisher = publisher;
     this.chain = chain;
+    this.json = json;
+  }
+
+  // The detail of an update: a JSON object with, for each changed field, the value it held and the
+  // value it holds now, both as text or null.
+  public String changesOf(Map<String, Object> after, Map<String, Object> before) {
+    Map<String, List<String>> changed = new LinkedHashMap<>();
+    after.forEach(
+        (name, value) -> changed.put(name, Arrays.asList(shown(before.get(name)), shown(value))));
+    return json.writeValueAsString(changed);
+  }
+
+  private static String shown(Object value) {
+    if (value == null) {
+      return null;
+    }
+    String text = value instanceof BigDecimal number ? number.stripTrailingZeros().toPlainString()
+        : value instanceof Timestamp timestamp ? timestamp.toInstant().toString()
+            : value instanceof OffsetDateTime time ? time.toInstant().toString() : value.toString();
+    return text.codePointCount(0, text.length()) > VALUE_LIMIT
+        ? text.substring(0, text.offsetByCodePoints(0, VALUE_LIMIT)) + "…"
+        : text;
   }
 
   public void record(Model model, Entity entity, long id, String action, String fromStatus,

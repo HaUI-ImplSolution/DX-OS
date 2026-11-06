@@ -143,6 +143,10 @@ def main():
     rt.check("T8-01 return", status == 200 and body["data"]["status"] == "returned", f"{status} {body}")
     status, body = act(asker, LEAVES, leave, "withdraw")
     rt.check("T8-04 withdraw from returned", status == 200 and body["data"]["status"] == "withdrawn", f"{status} {body}")
+    status, body = kc.api(asker, "PATCH", f"{LEAVES}/{leave}", {"reason": "Sửa sau khi rút"})
+    rt.check("T8-04 a withdrawn record cannot be changed, and says it is closed", status == 409 and (body.get("data") or {}).get("reason") == "RECORD_CLOSED", f"{status} {body}")
+    status, body = kc.api(asker, "DELETE", f"{LEAVES}/{leave}")
+    rt.check("T8-04 a record with a process is kept, and says so", status == 409 and (body.get("data") or {}).get("reason") == "KEPT_BY_PROCESS", f"{status} {body}")
 
     # T8-08: overdue records come first in the inbox, then those waiting longest.
     older = create(asker, TICKETS, {"title": "Cũ hơn"})
@@ -168,6 +172,18 @@ def main():
     rt.check("T8-09 stats agree with the list: total, per status and overdue", ok and data["overdue"] >= 1, str(data))
     ok, data = counts_match(asker)
     rt.check("T8-09 the owner's stats count only their own tickets", ok and data["total"] >= 2, str(data))
+    rt.psql(f"update m_desk8.ticket set created_at = now() - interval '2 hours' where id = {older}")
+    rt.psql(f"update m_desk8.ticket set decided_at = created_at + interval '600 seconds' where id = {newer}")
+    status, stats = kc.api(agent, "GET", f"{TICKETS}/stats")
+    data = stats["data"]
+    code, expected = rt.psql("select round(avg(extract(epoch from decided_at - created_at))) from m_desk8.ticket where decided_at is not null")
+    rt.check("T8-09 stats give the mean time to the final state", abs(data["avgDecisionSeconds"] - int(expected)) <= 1 and data["avgDecisionSeconds"] >= 1, f"{data} {expected}")
+    rt.check("T8-09 and the age of the open records", data["oldestOpenAgeSeconds"] >= 7200 and 0 < data["avgOpenAgeSeconds"] <= data["oldestOpenAgeSeconds"], str(data))
+    rt.psql(f"update m_desk8.ticket set decided_at = NULL where id = {newer}")
+    status, stats = kc.api(agent, "GET", f"{TICKETS}/stats?filter.title=no-such-title")
+    data = stats.get("data") or {}
+    rt.check("T8-09 a figure with no record behind it is null",
+             status == 200 and data.get("total") == 0 and all(data.get(k) is None for k in ("avgDecisionSeconds", "avgOpenAgeSeconds", "oldestOpenAgeSeconds")), str(data))
 
     # T8-10: an update that names the version it read does not overwrite a newer one.
     mine = create(asker, TICKETS, {"title": "Version"})

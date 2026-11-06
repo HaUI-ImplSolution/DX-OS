@@ -32,6 +32,7 @@ Mốc dưới đây là dự kiến.
 | Dịch vụ `ai/` | Hoãn đến phần AI: chưa nằm trong compose và chưa nối vào lõi, vì không có mô hình, backend hay gateway nào gọi tới; chỉ tìm kiếm tri thức có nguồn, chưa có hỏi đáp sinh câu trả lời và tác tử đề xuất có người duyệt vì chưa có mô hình ngôn ngữ đạt tiêu chuẩn mở; dữ liệu huấn luyện của mô hình embedding chưa kiểm theo định nghĩa của OSI |
 | Webhook sự kiện | Dạng `chat` chưa thử với Mattermost và Slack thật; thông điệp của việc áp dụng mô hình và của tài khoản không có trong `GET /api/v1/events` |
 | Ứng dụng Tầng 2 | Chưa phủ I của H-P-D-I; để sau như đã định |
+| Duyệt nhiều cấp tuần tự | Họ phê duyệt chỉ có một cấp xử lý; nhiều cấp cần trạng thái và hành động sinh theo số cấp khai báo trong mô hình, nên đổi `dx-model`, kernel quy trình, `data` và giao diện, và đụng các mô hình đang chạy; chưa làm vì rủi ro cao |
 
 ## 4. Giới hạn chấp nhận
 
@@ -48,5 +49,17 @@ Mốc dưới đây là dự kiến.
 | Đổi vai hoặc đơn vị của người đang đăng nhập | Vai và đơn vị đọc từ token đã ký nên thay đổi có hiệu lực sau tối đa khoảng 5 phút (token sống 300 giây), và người bị gỡ giữ quyền đến lúc đó |
 | Nạp mô hình lúc khởi động | Chỉ một tệp mỗi lần |
 | Chuỗi hash của lịch sử | Phát hiện chứ không ngăn sửa; điểm neo nằm trong kho đối tượng của cùng máy chủ nên người sửa được cả cơ sở dữ liệu lẫn kho thì chỉ bị lộ khi so với `hash` mà bên nhận webhook đã giữ |
+| Giá trị trong lịch sử | Dòng lịch sử `updated` giữ giá trị cũ và mới của từng trường; hồ sơ không có quy trình bị xóa thì các dòng này vẫn còn, vì chuỗi hash không cho sửa dòng đã ghi, và chỉ người đọc được hồ sơ xem được chúng khi hồ sơ còn |
+| Nhập dữ liệu hàng loạt | Không có nhập CSV và gói mô hình kèm dữ liệu danh mục; dữ liệu vào qua API chung để đi qua quyền, ràng buộc và quy trình |
+| Tìm kiếm | Không tìm hồ sơ và nội dung tệp; chỉ mục và đoạn trích có thể lộ dữ liệu ngoài quyền, và tìm tiếng Việt cần đo riêng |
+| Đăng ký thông báo | Không đăng ký theo loại sự kiện và người nhận; thông báo chat qua webhook cùng các dòng `due_soon` và `overdue` là mức cung cấp |
+| Kiểm tương thích khi đổi mô hình | Chưa có nơi đăng ký mã mở rộng nên chưa có hợp đồng để đối chiếu |
+| Người thứ hai duyệt thay đổi mô hình | Không bắt buộc; là chính sách tùy bản triển khai |
+| Ủy quyền có phạm vi và thời hạn | Không có; chạm nhiều đường kiểm quyền |
+| Quyền theo từng trường | Không có; phải phủ mọi đường dữ liệu đi ra: danh sách, bộ lọc, số đếm, lịch sử và webhook |
+| Chỉ số thống kê nâng cao | Không có tỷ lệ hoàn tất trong hạn vì `handle_by` bị xóa khi hồ sơ vào trạng thái cuối; không có dataset Superset cho chỉ số vì vai `report_ro` không nhận quyền `own`, `unit`, `assigned` |
+| Góc nhìn công việc đã lưu | Không lưu bộ lọc, cột và sắp xếp |
+| Mã lý do ở giao diện | Giao diện dịch lỗi theo bảng thông điệp, không theo `data.reason`; mã này dành cho client ngoài |
+| Kiểm tài liệu và OpenAPI chiều ngược | `check_docs.py` kiểm endpoint tài liệu nêu có trong OpenAPI; không kiểm chiều ngược vì README viết tắt đường dẫn và sẽ báo nhầm |
 | Danh sách người xử lý | Tối đa 500 người cho mỗi vai hoặc đơn vị; người ngoài danh sách không giao việc được |
 | Kiểm thử tự động chưa phủ một số ý | Chưa phủ `dxos plan`, `dxos apply`, `dxos archive`, simulator IT/OT, khe hở khi áp dụng và `verify` thiếu tệp; các ý này kiểm tay theo mục "Kiểm thử chưa tự động hóa" ở `docs/TESTING.md` |

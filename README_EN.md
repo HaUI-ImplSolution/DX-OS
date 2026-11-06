@@ -29,15 +29,15 @@ The narrow loop from model file to end user runs:
 - Outgoing messages can be a readable sentence for Mattermost and Slack: a new task, due soon, overdue; applying a model and changing an account are reported too.
 - File attachments on records, with a virus scan when enabled.
 - Each model has its own roles: two models can use the same role name, and a holder of the role of one model cannot reach the other model.
-- Units declared in the model and kept as Keycloak groups; assignment, an inbox and the history of every record.
+- Units declared in the model and kept as Keycloak groups; assignment, an inbox and the history of every record, with the old and the new value of each field that was edited.
 - Changing a model that holds data: a preview by level of risk, renames that keep the values, a list of the rows breaking a new rule, a separate confirmation for losing data, a return to the previous version, and finishing or giving up an apply that stopped halfway.
 - A react-admin UI built from metadata, in Vietnamese with a light and a dark mode, and a booking calendar where bookings can be dragged, with no code written for any entity.
 - A control panel for the person deploying the system: a template library, a model editor, a preview of the plan, apply, history and rollback, and a diagram of the workflow.
 - One command takes a model file on a clean machine: the system starts, the file is applied and you can sign in at once.
 - User administration in the control panel: see who holds which role in each application, give and take roles and units, create a user with a temporary password, lock and unlock, reset a password; every change is recorded with who made it and can be read back in the person's dialog.
 - Applying a model waits for the running operations of that model before the tables change, and checks the open records again once the model is held, so no record slips through in between; cancelling a first apply also removes the access settings it created.
-- The history of records is chained with checks and anchored at regular times; one command names the line that was changed, deleted or inserted.
-- Statistics for every entity with a process: total, by status, overdue and by unit, with the same viewing rights as the list; each number opens the matching list.
+- The history of records is chained with checks and anchored at regular times; one command names the line that was changed, deleted or inserted, and a receiver of the outgoing messages has a tool that compares the hashes it kept with the system.
+- Statistics for every entity with a process: total, by status, overdue and by unit, the average handling time and the age of open records, with the same viewing rights as the list; the counts open the matching list.
 - Models can also be changed from the command line for automation, and finished records can be exported to analysis files with a manifest to check them again.
 - Backups also check attachments; a removed file leaves the store only after a waiting time so the backup is always complete; services restart on their own and one command brings the system back to what is declared.
 - A device-connection example: a simulator opens an incident record when a reading passes its limit and does not create a duplicate when the reading is sent again.
@@ -144,11 +144,11 @@ entities:
 | `GET /api/v1/models`, `/models/{model}/runs` | Applied models and the history of each step (ADMIN) |
 | `GET /api/v1/models/schema`, `/families`, `/templates`, `/{model}/versions` | The model file schema, workflow families, the template library and the applied versions, for the control panel (ADMIN) |
 | `GET /api/v1/meta/models` | Metadata the caller may see; a model that is held shows with `held` and no entities |
-| `/api/v1/data/{model}/{entity}` | List, create, read, update, delete; filter with `filter.<field>[.<op>]`, `sort`, `order`, `page`, `size`; an update takes the `version` it read, and a record that changed answers 409 `ERR_CONCURRENT_MODIFICATION`; a 403 `ERR_ACTION_NOT_ALLOWED` carries `data.reason` |
-| `GET /api/v1/data/{model}/{entity}/stats` | Counts over the rows the caller may see, with the same `filter.*` parameters as the list: `total`; for an entity with a process also `byStatus` (records per status) and `overdue` (records whose deadline is before `computedAt`); for an entity with a `unit` field also `byUnit`; the query is cut after 10 seconds |
+| `/api/v1/data/{model}/{entity}` | List, create, read, update, delete; filter with `filter.<field>[.<op>]`, `sort`, `order`, `page`, `size`; an update takes the `version` it read, and a record that changed answers 409 `ERR_CONCURRENT_MODIFICATION`; a 403 `ERR_ACTION_NOT_ALLOWED` and a 409 `ERR_INVALID_STATE` carry `data.reason` |
+| `GET /api/v1/data/{model}/{entity}/stats` | Counts over the rows the caller may see, with the same `filter.*` parameters as the list: `total`; for an entity with a process also `byStatus` (records per status) and `overdue` (records whose deadline is before `computedAt`), `avgDecisionSeconds` (mean seconds from creation to the final state), `avgOpenAgeSeconds` and `oldestOpenAgeSeconds` (mean and largest age at `computedAt` of the records not yet in a final state), the last three being `null` when no record counts; for an entity with a `unit` field also `byUnit`; the query is cut after 10 seconds |
 | `POST /api/v1/data/{model}/{entity}/{id}/actions/{action}` | An action of the workflow; the metadata lists the actions, their starting state and who may take them |
 | `POST .../{id}/assign`, `GET .../{id}/handlers` | Assign a record and list who can take it |
-| `GET .../{id}/events` | The history of a record |
+| `GET .../{id}/events` | The history of a record; the `detail` of an `updated` line is JSON `{"field": ["old", "new"]}` with values as text or `null`, cut at 200 characters |
 | `.../{id}/files` | Upload, list, get a time-limited download link (`/{fileId}/link`) and remove file attachments |
 | `GET /api/v1/inbox` | The records waiting for the caller, on every model; `page`, `size` |
 | `GET /api/v1/events` | The history lines in the layout of the webhook, after an `eventId` (`after`, `size`, `model`) (ADMIN) |

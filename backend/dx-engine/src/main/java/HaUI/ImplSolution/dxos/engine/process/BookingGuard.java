@@ -72,7 +72,7 @@ public class BookingGuard {
             + String.join(", ", open) + ") AND id <> ?",
         resource, ends, starts, selfId == null ? -1L : selfId);
     if (busiest(overlapping, starts.toInstant(), ends.toInstant()) >= booking.capacity()) {
-      throw new InvalidStateException("The resource is already booked for this time");
+      throw new InvalidStateException("The resource is already booked for this time", "SLOT_TAKEN");
     }
   }
 

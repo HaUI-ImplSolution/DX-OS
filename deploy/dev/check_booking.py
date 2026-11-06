@@ -98,6 +98,7 @@ def main():
     first_id = first["data"]["id"]
     status, body = book(guest2, room, at(10, 30), at(11, 30))
     rt.check("T9-03 an overlapping slot is refused", status == 409, f"{status} {body}")
+    rt.check("T9-03 and the reason is the slot", (body.get("data") or {}).get("reason") == "SLOT_TAKEN", str(body.get("data")))
     status, body = book(guest2, room, at(9), at(10, 1))
     rt.check("T9-03 an overlap of a minute is refused", status == 409, f"{status}")
     status, body = book(guest2, room, at(11), at(12))

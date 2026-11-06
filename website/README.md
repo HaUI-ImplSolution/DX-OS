@@ -21,6 +21,7 @@ npm run build      # ra build/, báo lỗi khi có link hỏng
 | `src/pages/index.js` | Trang chủ |
 
 Thêm một tài liệu: tạo tệp `.md` trong `docs/`, rồi thêm id của nó vào `sidebars.js`.
+Workflow `Docs` dựng trang trên mọi pull request đổi `website/` (liên kết hoặc anchor hỏng thì đỏ) và đăng lên GitHub Pages khi đẩy vào `main`.
 
 ## Giấy phép
 

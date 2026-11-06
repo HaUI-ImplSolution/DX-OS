@@ -1,12 +1,11 @@
 # Rulesets
 
-Quy tắc bảo vệ nhánh và tag của repository, lưu thành JSON để nhập vào GitHub.
+Quy tắc bảo vệ nhánh `main` và tag của repository, lưu thành JSON để nhập vào GitHub.
 Tệp ở đây chỉ là bản ghi: GitHub không tự đọc thư mục này.
 
 | Tệp | Áp dụng cho | Quy tắc |
 |---|---|---|
-| `khuong-main.json` | nhánh `Khuong/main` | cấm xóa, cấm ghi đè lịch sử, chỉ nhận thay đổi qua pull request (gộp bằng merge hoặc squash) |
-| `main.json` | nhánh `main` | như trên, chỉ gộp bằng merge |
+| `main.json` | nhánh `main` | cấm xóa, cấm ghi đè lịch sử, chỉ nhận thay đổi qua pull request gộp bằng merge |
 | `tags.json` | tag `v*` | cấm sửa và cấm xóa tag đã tạo |
 
 Nhập: Settings → Rules → Rulesets → New ruleset → Import a ruleset, chọn từng tệp.

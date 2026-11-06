@@ -13,12 +13,20 @@ on:
       - main
       - Khuong/main
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   secret-scan:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
@@ -28,19 +36,21 @@ jobs:
           detect --source /repo --config /repo/.gitleaks.toml --redact
 
   license:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Every source file has its license header and every dependency in the SBOMs has an allowed license
         run: python3 .github/scripts/check_licenses.py
 
   install:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install a release archive of this commit with the installer of the releases
         run: |
@@ -72,10 +82,11 @@ jobs:
               done
 
   compose:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Fill every blank variable of .env.example with a placeholder
         run: sed -E 's/^([A-Z0-9_]+)=$/\1=ci-placeholder/' deploy/.env.example > deploy/.env
@@ -92,10 +103,11 @@ jobs:
           grep -q KEYCLOAK_DB_PASSWORD compose-error.log
 
   backup-drill:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Create an env file with random secrets
         run: deploy/make_env.sh deploy/.env
@@ -144,7 +156,7 @@ jobs:
 
   e2e:
     name: e2e (${{ matrix.group }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     strategy:
       fail-fast: false
@@ -157,7 +169,7 @@ jobs:
             checks: events bootstrap
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Create an env file with random secrets
         run: deploy/make_env.sh deploy/.env
@@ -170,7 +182,7 @@ jobs:
         working-directory: deploy
         run: |
           docker compose up -d
-          for i in $(seq 1 90); do
+          for _ in $(seq 1 90); do
             curl -sf http://localhost:9080/api/v1/system/status > /dev/null && exit 0
             sleep 5
           done
@@ -196,16 +208,17 @@ jobs:
 
       - name: Keep the logs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: e2e-logs-${{ strategy.job-index }}
           path: ${{ runner.temp }}/compose.log
 
   gateway:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: The gateway file is valid and has routes
         run: |
@@ -222,3 +235,15 @@ jobs:
 
       - name: Every route without a token check is on the public list
         run: python3 deploy/apisix/check_routes.py
+
+  actionlint:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Lint the workflows
+        run: >
+          docker run --rm -v "$PWD:/repo" -w /repo
+          rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667

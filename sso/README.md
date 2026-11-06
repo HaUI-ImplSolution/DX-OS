@@ -58,6 +58,8 @@ Mặc định Keycloak không đặt `KC_HOSTNAME` nên URL theo địa chỉ re
   2. **Realm settings → Events → Admin events settings**: bật **Save events** và **Include representation**.
   3. **Realm settings → Security defenses → Brute force detection**: bật, chế độ **Lockout temporarily**, **Max login failures** 5, **Wait increment** 1 phút, **Max wait** 15 phút.
 - IP trong sự kiện là IP thật khi Keycloak đọc `X-Forwarded-For` do gateway đặt.
+- Từ Keycloak 26.8 Admin REST API chỉ nhận token có audience của chính nó, nên client `dxos-backend-admin` mang scope `kc-admin-api` ngay trong `realm-dxos.json`; không có scope này thì mọi lần áp dụng mô hình trả 502 `ERR_ACCOUNT_SERVICE_DENIED`.
+  Realm đã import từ trước phải thêm scope đó bằng tay: **Clients → dxos-backend-admin → Client scopes → Add client scope → kc-admin-api → Default**.
 
 ## Hostname nội bộ và hostname trình duyệt
 

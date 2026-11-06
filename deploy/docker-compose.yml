@@ -223,6 +223,8 @@ services:
       KC_DB_USERNAME: keycloak_app
       KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?}
       KC_HEALTH_ENABLED: "true"
+      # Keycloak 26.8 listens on localhost only unless told otherwise; the gateway reaches it over the compose network.
+      KC_HTTP_HOST: 0.0.0.0
       # Substituted into the placeholders of realm-dxos.json at import time.
       GATEWAY_PUBLIC_URL: ${GATEWAY_PUBLIC_URL:?}
       MONITOR_OIDC_CLIENT_SECRET: ${MONITOR_OIDC_CLIENT_SECRET:?}

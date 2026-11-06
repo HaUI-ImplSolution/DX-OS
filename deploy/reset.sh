@@ -51,7 +51,7 @@ docker compose down --remove-orphans
 
 echo "==> Emptying $DATA_DIR"
 mkdir -p "$DATA_DIR"
-docker run --rm -v "$DATA_DIR:/data" alpine:3.20@sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc find /data -mindepth 1 -delete
+docker run --rm -v "$DATA_DIR:/data" alpine:3.24@sha256:3f4d6b32e26703c6082839234f43769d5046b3ac7c910033911d1e71d8cd630a find /data -mindepth 1 -delete
 
 echo "==> Starting the stack"
 docker compose up -d ${BUILD_FLAG[@]+"${BUILD_FLAG[@]}"} ${SERVICES[@]+"${SERVICES[@]}"}

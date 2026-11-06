@@ -81,12 +81,45 @@ export interface FamilyAction {
   needsNote: boolean;
 }
 
-export interface Family {
-  name: string;
+export interface Completion {
+  operation: string;
+  user: string | null;
+  group: string | null;
+  groupField: string | null;
+}
+
+export interface DiagramState extends FamilyState {
+  completions: Completion[];
+}
+
+// The process of one entity as its model file declares it: the states and actions of its family and
+// what the file adds to them.
+export interface ProcessView {
+  entity: string;
+  label: string;
+  family: string;
   initial: string;
-  states: FamilyState[];
+  handler: string;
+  allowSelfDecision: boolean;
+  deadlineSeconds: number | null;
+  autoCloseSeconds: number | null;
+  booking: { resource: string; starts: string; ends: string; capacity: number } | null;
+  states: DiagramState[];
   actions: FamilyAction[];
-  params: { name: string; required: boolean; description: string }[];
+  // The states where the deadline runs.
+  awaiting: string[];
+}
+
+export interface DiagramProblem {
+  line: number;
+  column: number;
+  message: string;
+}
+
+export interface DiagramResult {
+  valid: boolean;
+  errors: DiagramProblem[];
+  processes: ProcessView[];
 }
 
 export interface Run {
@@ -134,7 +167,6 @@ const query = (params: Record<string, string | number | undefined>) => {
 
 export const listApplied = () => request<AppliedModel[]>("/models");
 export const getSchema = () => request<Record<string, unknown>>("/models/schema");
-export const listFamilies = () => request<Family[]>("/models/families");
 export const listTemplates = () => request<Template[]>("/models/templates");
 export const listVersions = (model: string) =>
   request<AppliedVersion[]>(`/models/${model}/versions`);
@@ -149,6 +181,9 @@ const readable = (plan: Plan): Plan => ({
   questions: plan.questions.map((text) => translateBackend(text)),
   changes: plan.changes.map((change) => ({ ...change, detail: change.detail ? translateBackend(change.detail) : change.detail })),
 });
+
+// What the process diagrams of a model file show; a file with problems answers valid false.
+export const previewDiagram = (text: string) => request<DiagramResult>("/models/diagram", yaml("POST", text));
 
 export const planModel = async (text: string) => readable(await request<Plan>("/models/plan", yaml("POST", text)));
 export const applyModel = (text: string, base?: number, accept?: string) =>

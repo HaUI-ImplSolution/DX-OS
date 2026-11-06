@@ -8,7 +8,7 @@ import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
 import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import { Title } from "react-admin";
 import PageHeader from "../shell/PageHeader";
-import { getSchema, listFamilies, listTemplates, type Family, type Template } from "./api";
+import { getSchema, listTemplates, type Template } from "./api";
 import EditorTab from "./EditorTab";
 import ModelsTab from "./ModelsTab";
 import { useModelSchema } from "./monacoSetup";
@@ -32,7 +32,6 @@ entities:
 export default function ConsolePage() {
   const [tab, setTab] = useState(0);
   const [schema, setSchema] = useState<Record<string, unknown> | null>(null);
-  const [families, setFamilies] = useState<Family[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [text, setText] = useState(BLANK);
   const [source, setSource] = useState("Tệp mới");
@@ -41,11 +40,10 @@ export default function ConsolePage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([getSchema(), listFamilies(), listTemplates()]).then(
-      ([loadedSchema, loadedFamilies, loadedTemplates]) => {
+    Promise.all([getSchema(), listTemplates()]).then(
+      ([loadedSchema, loadedTemplates]) => {
         useModelSchema(loadedSchema);
         setSchema(loadedSchema);
-        setFamilies(loadedFamilies);
         setTemplates(loadedTemplates);
       },
       (e: unknown) => setError(e instanceof Error ? e.message : "Không đọc được dữ liệu của bảng điều khiển"),
@@ -107,7 +105,6 @@ export default function ConsolePage() {
           text={text}
           source={source}
           schema={schema}
-          families={families}
           onText={setText}
           onApplied={(message) => {
             setNote(message);

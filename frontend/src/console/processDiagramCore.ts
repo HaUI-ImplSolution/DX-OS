@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 import { Graph, layout as layoutGraph } from "@dagrejs/dagre";
-import type { Family } from "./api";
+import { formatDuration } from "../shell/format";
+import type { Completion, ProcessView } from "./api";
 
 const WITHDRAW = "withdraw";
+const AUTO_CLOSE_FROM = "resolved";
+const AUTO_CLOSE_TO = "closed";
 export const PROCESS_NODE_WIDTH = 150;
 export const PROCESS_NODE_HEIGHT = 40;
 const LABEL_GAP = 8;
@@ -23,6 +26,8 @@ export type ProcessDiagramNode = {
   position: Point;
   label: string;
   terminal: boolean;
+  // A second line under the label: the deadline of a waiting state or the completions of a final one.
+  caption: string;
 };
 
 export type ProcessDiagramEdge = {
@@ -35,9 +40,10 @@ export type ProcessDiagramEdge = {
   labelOffset: number;
   labelSide: 1 | -1;
   labelT: number;
+  dashed: boolean;
 };
 
-type EdgeSpec = { id: string; source: string; target: string; label: string };
+type EdgeSpec = { id: string; source: string; target: string; label: string; dashed?: boolean };
 type RoutedEdge = EdgeSpec & {
   sourceAnchor: ProcessAnchor;
   targetAnchor: ProcessAnchor;
@@ -60,8 +66,14 @@ export const PROCESS_ANCHORS: ProcessAnchor[] = [
   { id: "left-top", side: "left", xRatio: 0, yRatio: 1 / 3, normal: { x: -1, y: 0 } },
 ];
 
+// The wording of what a final state does for a record that reaches it.
+function completionText(completion: Completion): string {
+  const group = completion.group ?? `{${completion.groupField}}`;
+  return `${completion.operation === "remove_from_group" ? "gỡ khỏi" : "thêm vào"} nhóm ${group}`;
+}
+
 export function buildProcessDiagram(
-  family: Family,
+  family: ProcessView,
   spacing: number,
 ): { nodes: ProcessDiagramNode[]; edges: ProcessDiagramEdge[] } {
   const steps = family.actions.filter((action) => action.name !== WITHDRAW);
@@ -107,6 +119,7 @@ export function buildProcessDiagram(
       },
       label: state.label,
       terminal: state.terminal,
+      caption: captionOf(family, state),
     };
   });
   const specs: EdgeSpec[] = steps.flatMap((action) =>
@@ -114,9 +127,19 @@ export function buildProcessDiagram(
       id: `${action.name}-${from}`,
       source: from,
       target: action.to,
-      label: `${action.label} (${action.by === "OWNER" ? "người nộp" : "người xử lý"})`,
+      label: `${action.label} (${action.by === "OWNER" ? "người nộp" : family.handler})`,
     })),
   );
+  // The system closes a resolved record the same way its owner would, after the time the file gives.
+  if (family.autoCloseSeconds !== null && visible.has(AUTO_CLOSE_FROM) && visible.has(AUTO_CLOSE_TO)) {
+    specs.push({
+      id: "auto_close",
+      source: AUTO_CLOSE_FROM,
+      target: AUTO_CLOSE_TO,
+      label: `tự đóng sau ${formatDuration(family.autoCloseSeconds)}`,
+      dashed: true,
+    });
+  }
   const rects = new Map(
     nodes.map((node) => [
       node.id,
@@ -139,8 +162,17 @@ export function buildProcessDiagram(
     labelOffset: route.labelOffset,
     labelSide: route.labelSide,
     labelT: route.labelT,
+    dashed: route.dashed ?? false,
   }));
   return { nodes, edges };
+}
+
+function captionOf(family: ProcessView, state: ProcessView["states"][number]): string {
+  if (state.completions.length) return state.completions.map(completionText).join("; ");
+  if (family.deadlineSeconds !== null && family.awaiting.includes(state.name)) {
+    return `hạn ${formatDuration(family.deadlineSeconds)}`;
+  }
+  return "";
 }
 
 function routeEdges(specs: EdgeSpec[], rects: Map<string, Rect>): RoutedEdge[] {

@@ -17,7 +17,7 @@ import {
   type NodeProps,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import type { Family } from "./api";
+import type { ProcessView } from "./api";
 import {
   buildProcessDiagram,
   PROCESS_ANCHORS,
@@ -28,14 +28,22 @@ import {
 
 const BOX_HEIGHT = 360;
 const LABEL_OFFSET = 18;
+// The arrow the system takes by itself and its label share a colour, so the label is not read as the arrow beside it.
+const AUTO_COLOR = "#c25e00";
 
 type Anchor = ProcessAnchor & {
   position: Position;
   style: CSSProperties;
 };
-type ProcessNodeData = { label: string; terminal: boolean };
+type ProcessNodeData = { label: string; terminal: boolean; caption: string };
 type ProcessNode = Node<ProcessNodeData, "process">;
-type DirectEdgeData = { label: string; labelOffset: number; labelSide: 1 | -1; labelT: number };
+type DirectEdgeData = {
+  label: string;
+  labelOffset: number;
+  labelSide: 1 | -1;
+  labelT: number;
+  dashed: boolean;
+};
 type DirectEdge = Edge<DirectEdgeData, "direct">;
 
 const POSITION_BY_SIDE: Record<ProcessAnchor["side"], Position> = {
@@ -80,7 +88,17 @@ function ProcessStateNode({ data }: NodeProps<ProcessNode>) {
         borderRadius: data.terminal ? 6 : 1,
         border: data.terminal ? "2px solid #2e7d32" : "1px solid #1976d2",
       }}>
-      {data.label}
+      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: 0, lineHeight: 1.25 }}>
+        {data.label}
+        {data.caption && (
+          <Box
+            component="span"
+            title={data.caption}
+            sx={{ maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 10, color: "#555555" }}>
+            {data.caption}
+          </Box>
+        )}
+      </Box>
       {ANCHORS.flatMap((anchor) => [
         <Handle
           key={`target-${anchor.id}`}
@@ -146,7 +164,7 @@ function DirectEdge({
             : `M ${sourceX} ${sourceY} L ${targetX} ${targetY}`
         }
         markerEnd={markerEnd}
-        style={style}
+        style={data?.dashed ? { ...style, strokeDasharray: "6 4", stroke: AUTO_COLOR } : style}
       />
       <EdgeLabelRenderer>
         <Box
@@ -158,7 +176,8 @@ function DirectEdge({
             px: 0.6,
             py: 0.15,
             backgroundColor: "transparent",
-            color: "#111111",
+            color: data?.dashed ? AUTO_COLOR : "#111111",
+            fontStyle: data?.dashed ? "italic" : "normal",
             fontSize: 12,
             lineHeight: 1.35,
             whiteSpace: "nowrap",
@@ -174,13 +193,13 @@ function DirectEdge({
 const NODE_TYPES = { process: ProcessStateNode };
 const EDGE_TYPES = { direct: DirectEdge };
 
-// The states and actions of a process family, laid out from the first state to the final ones.
+// The states and actions of the process an entity declares, laid out from the first state to the final ones.
 export default function ProcessDiagram({
   family,
   height = BOX_HEIGHT,
   spacing = 260,
 }: {
-  family: Family;
+  family: ProcessView;
   height?: number | string;
   // Distance between the columns of states; a larger box gives the labels of the arrows room.
   spacing?: number;
@@ -208,7 +227,7 @@ export default function ProcessDiagram({
     <Box ref={box} sx={{ height, border: 1, borderColor: "divider", borderRadius: 1, overflow: "hidden" }}>
       <SmartEdgeProvider nodes={nodes}>
         <ReactFlow
-          key={`${family.name}-${size.width}-${size.height}`}
+          key={`${family.entity}-${family.family}-${size.width}-${size.height}`}
           nodes={nodes}
           edges={edges}
           nodeTypes={NODE_TYPES}
@@ -231,20 +250,31 @@ export default function ProcessDiagram({
         </ReactFlow>
       </SmartEdgeProvider>
       <Typography variant="caption" sx={{ display: "block", mt: 0.5 }}>
-        Người nộp có thể rút lại ở mọi trạng thái chưa kết thúc.
+        {notes(family)}
       </Typography>
     </Box>
   );
 }
 
-function adaptProcessDiagram(family: Family, spacing: number): { nodes: ProcessNode[]; edges: DirectEdge[] } {
+// What the file says about the process that the boxes and arrows do not show.
+function notes(process: ProcessView): string {
+  const lines = [`Người xử lý: ${process.handler}${process.allowSelfDecision ? ", người nộp cũng được xử lý hồ sơ của mình" : ""}.`];
+  if (process.booking) {
+    const { resource, starts, ends, capacity } = process.booking;
+    lines.push(`Đặt chỗ: tài nguyên ${resource}, từ ${starts} đến ${ends}, sức chứa ${capacity}.`);
+  }
+  lines.push("Người nộp có thể rút lại ở mọi trạng thái chưa kết thúc.");
+  return lines.join(" ");
+}
+
+function adaptProcessDiagram(family: ProcessView, spacing: number): { nodes: ProcessNode[]; edges: DirectEdge[] } {
   const diagram = buildProcessDiagram(family, spacing);
   const nodes: ProcessNode[] = diagram.nodes.map((node) => ({
     id: node.id,
     type: "process",
     position: node.position,
     measured: { width: PROCESS_NODE_WIDTH, height: PROCESS_NODE_HEIGHT },
-    data: { label: node.label, terminal: node.terminal },
+    data: { label: node.label, terminal: node.terminal, caption: node.caption },
     style: { width: PROCESS_NODE_WIDTH, height: PROCESS_NODE_HEIGHT },
   }));
   const edges: DirectEdge[] = diagram.edges.map((edge) => ({
@@ -259,8 +289,9 @@ function adaptProcessDiagram(family: Family, spacing: number): { nodes: ProcessN
       labelOffset: edge.labelOffset,
       labelSide: edge.labelSide,
       labelT: edge.labelT,
+      dashed: edge.dashed,
     },
-    markerEnd: { type: MarkerType.ArrowClosed },
+    markerEnd: edge.dashed ? { type: MarkerType.ArrowClosed, color: AUTO_COLOR } : { type: MarkerType.ArrowClosed },
     style: { strokeWidth: 1.5 },
   }));
   return { nodes, edges };

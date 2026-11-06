@@ -35,7 +35,7 @@ Phiên bản hiện tại là `2.0.0`, thay đổi theo từng phiên bản ở 
 - **Đổi nghiệp vụ khi đã có dữ liệu.** Hệ thống cho xem trước tác động, cảnh báo rủi ro, giữ nguyên dữ liệu khi đổi tên và cho quay về phiên bản trước.
 - **Dấu vết không sửa được.** Lịch sử hồ sơ nối thành một chuỗi có dấu kiểm; nếu ai sửa, xóa hoặc chèn một dòng thì một lệnh chỉ ra đúng dòng đó.
 - **Kết nối ra ngoài.** Mọi thay đổi của hồ sơ được báo tới địa chỉ web hoặc kênh chat (Mattermost, Slack) với chữ ký để bên nhận kiểm tra, và được gửi lại khi bên nhận lỗi.
-- **Bảng điều khiển cho người triển khai.** Thư viện mẫu, trình soạn mô hình, xem kế hoạch, áp dụng, lịch sử, quản lý người dùng và thống kê hồ sơ.
+- **Bảng điều khiển cho người triển khai.** Thư viện mẫu, trình soạn mô hình kèm sơ đồ quy trình vẽ theo tệp đang soạn, xem kế hoạch, áp dụng, lịch sử, quản lý người dùng và thống kê hồ sơ.
 - **Cài và vận hành đơn giản.** Một lệnh cài, một lệnh chạy; có sao lưu kiểm được, tự khởi động lại dịch vụ và quét mã độc cho tệp đính kèm khi bật.
 - **Đăng nhập một lần.** Qua Keycloak, và có thể bắt quản trị viên nhập thêm mã một lần.
 

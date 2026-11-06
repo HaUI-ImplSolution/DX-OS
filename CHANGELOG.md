@@ -81,6 +81,9 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
   Backend trả thông báo tiếng Anh kèm `errorCode`, frontend dịch theo `shell/backendMessages.ts`.
 - Bảng điều khiển `/console` cho ADMIN: thư viện mẫu, trình soạn YAML (Monaco) theo JSON Schema, xem kế hoạch, áp dụng, lịch sử áp dụng kèm tên người, quay về, sơ đồ quy trình, mô hình dừng giữa chừng (Tiếp tục, Hủy bỏ) và nút "Sửa phần lệch".
   API đọc cho bảng điều khiển: `/api/v1/models/schema`, `families`, `templates` và `{model}/versions`.
+- Sơ đồ quy trình vẽ từ chính tệp đang soạn: người xử lý, hạn xử lý, `auto_close`, hành động `after` và đặt chỗ hiện trên khung của họ quy trình.
+  Tệp được kiểm và vẽ lại sau 5 giây không gõ; tệp sai thì báo lỗi theo dòng và cột và giữ sơ đồ đúng gần nhất.
+  `POST /api/v1/models/diagram` (ADMIN) chỉ đọc tệp, không so với mô hình đang chạy.
 - Menu người dùng có "Tài khoản của tôi", mở Account Console của Keycloak.
 - Giao diện vừa màn hình rộng 360 px.
 

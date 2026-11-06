@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Box,
   Button,
   Card,
   Chip,
+  CircularProgress,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -24,7 +25,15 @@ import CloseIcon from "@mui/icons-material/Close";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import YAML, { isSeq, type Document } from "yaml";
 import { ApiError } from "../shell/api";
-import { applyModel, planModel, type Family, type Plan } from "./api";
+import { translateBackend } from "../shell/backendMessages";
+import {
+  applyModel,
+  planModel,
+  previewDiagram,
+  type DiagramProblem,
+  type Plan,
+  type ProcessView,
+} from "./api";
 import ModelForm from "./ModelForm";
 import PlanPanel from "./PlanPanel";
 import { FAMILY_LABEL } from "./labels";
@@ -35,7 +44,6 @@ interface Props {
   text: string;
   source: string;
   schema: Record<string, unknown>;
-  families: Family[];
   onText: (text: string) => void;
   onApplied: (message: string) => void;
 }
@@ -116,8 +124,92 @@ function patch(doc: Document, path: Path, before: unknown, after: unknown) {
 
 const message = (error: unknown) => (error instanceof Error ? error.message : "Không xử lý được");
 
+// How long the file must stay untouched before it is checked and drawn again.
+const DIAGRAM_DELAY_MS = 5000;
+
+type DiagramState = "waiting" | "checking" | "ready" | "unavailable";
+
+// The process diagrams of the file being written. The file is checked by the backend once it has
+// stayed unchanged for DIAGRAM_DELAY_MS; a file with problems keeps the last diagrams that were fine.
+function useDiagrams(text: string): { processes: ProcessView[]; problems: DiagramProblem[]; state: DiagramState } {
+  const [processes, setProcesses] = useState<ProcessView[]>([]);
+  const [problems, setProblems] = useState<DiagramProblem[]>([]);
+  const [state, setState] = useState<DiagramState>("checking");
+  const first = useRef(true);
+  useEffect(() => {
+    let current = true;
+    setState(first.current ? "checking" : "waiting");
+    const timer = window.setTimeout(
+      () => {
+        // An empty editor is a file still to be pasted, not a file with problems.
+        if (!text.trim()) {
+          setProblems([]);
+          setState("ready");
+          return;
+        }
+        setState("checking");
+        previewDiagram(text)
+          .then((result) => {
+            if (!current) return;
+            setProblems(result.errors);
+            if (result.valid) setProcesses(result.processes);
+            setState("ready");
+          })
+          .catch(() => current && setState("unavailable"));
+      },
+      first.current ? 0 : DIAGRAM_DELAY_MS,
+    );
+    first.current = false;
+    return () => {
+      current = false;
+      window.clearTimeout(timer);
+    };
+  }, [text]);
+  return { processes, problems, state };
+}
+
+function DiagramStatus({
+  state,
+  problems,
+  drawn,
+}: {
+  state: DiagramState;
+  problems: DiagramProblem[];
+  drawn: boolean;
+}) {
+  if (problems.length > 0) {
+    return (
+      <Alert severity="warning" sx={{ mb: 1.5 }}>
+        {drawn ? "Tệp có lỗi nên sơ đồ giữ bản gần nhất đúng:" : "Tệp có lỗi nên chưa vẽ được sơ đồ:"}
+        {problems.map((problem) => (
+          <div key={`${problem.line}:${problem.column}:${problem.message}`}>
+            {problem.line > 0 ? `Dòng ${problem.line}, cột ${problem.column}: ` : ""}
+            {translateBackend(problem.message)}
+          </div>
+        ))}
+      </Alert>
+    );
+  }
+  if (state === "unavailable") {
+    return (
+      <Alert severity="info" sx={{ mb: 1.5 }}>
+        Chưa kiểm được tệp lúc này, sơ đồ giữ bản gần nhất.
+      </Alert>
+    );
+  }
+  if (state === "waiting" || state === "checking") {
+    return (
+      <Typography variant="caption" color="text.secondary" sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+        {state === "checking" && <CircularProgress size={12} />}
+        {state === "waiting" ? "Sơ đồ cập nhật khi bạn ngừng gõ vài giây." : "Đang kiểm tệp…"}
+      </Typography>
+    );
+  }
+  return null;
+}
+
 // Writes a model with the form or in YAML, shows what applying it would do, and applies it.
-export default function EditorTab({ text, source, schema, families, onText, onApplied }: Props) {
+export default function EditorTab({ text, source, schema, onText, onApplied }: Props) {
   const [mode, setMode] = useState<"form" | "yaml">("yaml");
   const [plan, setPlan] = useState<Plan | null>(null);
   const [problems, setProblems] = useState<string[]>([]);
@@ -139,12 +231,8 @@ export default function EditorTab({ text, source, schema, families, onText, onAp
     }
   }, [text]);
 
-  const processes = useMemo(() => {
-    const entities = (parsed.value.entities ?? {}) as Record<string, { process?: { family?: string } }>;
-    return Object.entries(entities).filter(([, item]) => item?.process?.family).map(([name, item]) => ({ name, family: item.process?.family as string }));
-  }, [parsed]);
-  const selected = processes.find((item) => item.name === entity) ?? processes[0];
-  const family = families.find((item) => item.name === selected?.family);
+  const { processes, problems: diagramProblems, state: diagramState } = useDiagrams(text);
+  const selected = processes.find((item) => item.entity === entity) ?? processes[0];
 
   // The form changes only the values it edits; every comment of the file is kept.
   const fromForm = (value: Record<string, unknown>) => {
@@ -233,7 +321,7 @@ export default function EditorTab({ text, source, schema, families, onText, onAp
           )}
           {plan && <PlanPanel plan={plan} busy={busy} onApply={apply} />}
         </Card>
-        {processes.length > 0 && (
+        {(processes.length > 0 || diagramProblems.length > 0) && (
           <Card sx={{ p: 2.5 }}>
             <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
               <Typography variant="h6" sx={{ flexGrow: 1 }}>
@@ -245,28 +333,31 @@ export default function EditorTab({ text, source, schema, families, onText, onAp
                 </IconButton>
               </Tooltip>
             </Box>
-            <TextField select fullWidth size="small" sx={{ mb: 1.5 }} value={selected?.name ?? ""} onChange={(event) => setEntity(event.target.value)}>
-              {processes.map((item) => (
-                <MenuItem key={item.name} value={item.name}>
-                  {item.name} ({FAMILY_LABEL[item.family] ?? item.family})
-                </MenuItem>
-              ))}
-            </TextField>
-            {family && <ProcessDiagram family={family} />}
+            <DiagramStatus state={diagramState} problems={diagramProblems} drawn={processes.length > 0} />
+            {processes.length > 0 && (
+              <TextField select fullWidth size="small" sx={{ mb: 1.5 }} value={selected?.entity ?? ""} onChange={(event) => setEntity(event.target.value)}>
+                {processes.map((item) => (
+                  <MenuItem key={item.entity} value={item.entity}>
+                    {item.entity} ({FAMILY_LABEL[item.family] ?? item.family})
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+            {selected && <ProcessDiagram family={selected} />}
           </Card>
         )}
-        {family && (
+        {selected && (
           <Dialog open={zoomed} onClose={() => setZoomed(false)} maxWidth="xl" fullWidth>
             <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <Box sx={{ flexGrow: 1 }}>
-                Sơ đồ quy trình: {selected?.name} ({FAMILY_LABEL[family.name] ?? family.name})
+                Sơ đồ quy trình: {selected?.entity} ({FAMILY_LABEL[selected.family] ?? selected.family})
               </Box>
               <IconButton onClick={() => setZoomed(false)} aria-label="Đóng">
                 <CloseIcon />
               </IconButton>
             </DialogTitle>
             <DialogContent>
-              <ProcessDiagram family={family} height="68vh" spacing={360} />
+              <ProcessDiagram family={selected} height="68vh" spacing={360} />
             </DialogContent>
           </Dialog>
         )}

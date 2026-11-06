@@ -30,7 +30,7 @@ Hai nơi đó được máy kiểm ở mỗi pull request, tài liệu này ch�
 | react-admin, MUI | MIT | Giao diện dựng từ metadata | Có sẵn danh sách, form và trường cho các kiểu trường của mô hình; một mô hình nạp lúc chạy không cần build lại giao diện | Chỉ dùng phần MIT, không dùng gói Enterprise |
 | Monaco Editor, monaco-yaml | MIT | Trình soạn mô hình | Gợi ý và báo lỗi YAML theo JSON Schema của tệp mô hình | Chạy trong trình duyệt |
 | react-jsonschema-form, Ajv | Apache-2.0, MIT | Form theo tham số của họ mẫu, kiểm schema | Bảng điều khiển dựng form từ schema nên thêm tham số không phải viết giao diện | |
-| React Flow | MIT | Sơ đồ quy trình sinh ra | Chỉ để xem quy trình, không để thiết kế | |
+| React Flow, Dagre, Smart Edge | MIT | Sơ đồ quy trình vẽ từ tệp đang soạn | Chỉ để xem quy trình, không để thiết kế | `frontend/src/console/` |
 | FullCalendar | MIT | Lịch đặt chỗ | Kéo thả để đổi giờ | |
 | restic | BSD-2-Clause | Sao lưu có mã hóa | Chạy trong container nên chỉ cần Docker | `deploy/backup.sh` |
 | Trivy, gitleaks, CycloneDX | Apache-2.0, MIT | Quét lỗ hổng, bí mật và lập SBOM trong CI | Công cụ nguồn mở, chạy ở mọi pull request | `.github/workflows/` |

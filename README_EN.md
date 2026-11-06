@@ -35,7 +35,7 @@ The current version is `2.0.0`, and the changes of each version are in [`CHANGEL
 - **Changing the business once data exists.** The system previews the impact, warns about risk, keeps the values when something is renamed, and can return to the previous version.
 - **A trace that cannot be edited.** The history of records is one chain with checks; if anyone edits, deletes or inserts a line, one command names that line.
 - **Connections to the outside.** Every change to a record is reported to a web address or a chat channel (Mattermost, Slack), signed so the receiver can check it and sent again when the receiver fails.
-- **A control panel for the person deploying.** Template library, model editor, plan preview, apply, history, user management and record statistics.
+- **A control panel for the person deploying.** Template library, model editor with a process diagram drawn from the file being written, plan preview, apply, history, user management and record statistics.
 - **Simple to install and run.** One command installs and one starts; backups can be checked, services restart on their own, and attachments are virus-scanned when enabled.
 - **Single sign-on.** Through Keycloak, and administrators can be required to enter a one-time code as well.
 

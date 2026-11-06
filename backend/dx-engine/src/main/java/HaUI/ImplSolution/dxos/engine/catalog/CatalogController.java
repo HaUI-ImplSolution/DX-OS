@@ -9,6 +9,8 @@ import java.util.Map;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,9 +22,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class CatalogController {
 
   private final CatalogService catalog;
+  private final ProcessDiagramService diagrams;
 
-  public CatalogController(CatalogService catalog) {
+  public CatalogController(CatalogService catalog, ProcessDiagramService diagrams) {
     this.catalog = catalog;
+    this.diagrams = diagrams;
   }
 
   @GetMapping("/schema")
@@ -35,6 +39,18 @@ public class CatalogController {
   @Operation(summary = "The process families with their states, actions and parameters")
   public ApiResponse<List<Map<String, Object>>> families() {
     return ApiResponse.success(catalog.families());
+  }
+
+  @PostMapping(value = "/diagram", consumes = {"application/yaml", "text/plain"})
+  @Operation(summary = "The process diagrams of a model file",
+      description = "The body is the model file; it is only read, never compared with the running"
+          + " model. Answers 200 with valid false and every problem with its line and column (line"
+          + " 0 for a problem without one) when the file is not a model. Otherwise one entry per"
+          + " entity that has a process: the states and actions of its family, the completions of"
+          + " each final state, the handler, the deadline and auto_close in seconds (null when"
+          + " not set), the booking, and the states where the deadline runs.")
+  public ApiResponse<ProcessDiagramService.Diagram> diagram(@RequestBody String content) {
+    return ApiResponse.success(diagrams.diagram(content));
   }
 
   @GetMapping("/templates")

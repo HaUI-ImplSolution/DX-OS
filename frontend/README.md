@@ -44,6 +44,6 @@ Trong Compose, ba biến này để rỗng hoặc `dxos-web`: gateway phục v�
 
 ## Đóng gói
 
-`Dockerfile` build hai giai đoạn: `node:20-alpine` chạy `npm run build`, rồi `nginx:1.27-alpine` phục vụ `dist/`.
+`Dockerfile` build hai giai đoạn: `node:22-alpine` chạy `npm run build`, rồi `nginx:1.30-alpine` phục vụ `dist/`.
 `nginx.conf` trả `index.html` cho mọi đường dẫn (SPA).
 Service không publish cổng, gateway APISIX phục vụ web.

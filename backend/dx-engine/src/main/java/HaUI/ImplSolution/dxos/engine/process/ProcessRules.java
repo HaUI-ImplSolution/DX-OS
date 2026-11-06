@@ -29,7 +29,8 @@ public class ProcessRules {
     }
     String status = (String) record.get("status");
     if (!action.allowedIn(status)) {
-      throw new InvalidStateException("The record cannot take this action in state " + status);
+      throw new InvalidStateException("The record cannot take this action in state " + status,
+          "WRONG_STATE");
     }
     if (action.by() == Actor.HANDLER) {
       if (!entity.process().allowSelfDecision() && creator) {

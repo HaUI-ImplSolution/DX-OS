@@ -1,0 +1,7 @@
+{
+  "css-mediaquery": "BSD 3-clause text in its LICENSE file (Yahoo), OSI approved; the package metadata only says BSD. Needed by react-admin.",
+  "require-like@0.1.2": "MIT text in its License file (Felix Geisendörfer); the package metadata has no license field. Needed by Docusaurus (through eval).",
+  "config-chain@1.1.13": "MIT text in its LICENCE file (Dominic Tarr); the package metadata only gives a license object without an SPDX id. Needed by Docusaurus (through update-notifier).",
+  "caniuse-lite": "CC-BY-4.0 browser support data, not code. Read only while the docs site is built (browserslist) and absent from the published pages.",
+  "mdn-data": "CC0-1.0 CSS reference data, not code. Read only while the docs site is built (css-tree) and absent from the published pages."
+}

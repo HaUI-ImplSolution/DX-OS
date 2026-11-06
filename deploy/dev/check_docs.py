@@ -11,7 +11,7 @@ import sys
 import check_api as rt
 import kc
 
-DOCS = ["README.md", "README_EN.md", "ARCHITECTURE.md", "deploy/OPERATIONS.md"]
+DOCS = ["ARCHITECTURE.md", "docs/API.md", "docs/MODEL.md", "deploy/OPERATIONS.md", "deploy/MONITORING.md", "deploy/INTEGRATIONS.md"]
 METHODS = ("GET", "POST", "PUT", "PATCH", "DELETE")
 # A method (optional) and an absolute API path inside backticks; a path that starts without /api/v1 is a shorthand.
 MENTION = re.compile(r"`(?:(GET|POST|PUT|PATCH|DELETE) )?(/api/v1/[A-Za-z0-9_{}\-./]*)(?:\?[^`]*)?`")

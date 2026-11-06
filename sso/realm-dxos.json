@@ -230,6 +230,7 @@
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": true,
+      "defaultClientScopes": ["web-origins", "acr", "profile", "roles", "email", "kc-admin-api"],
       "consentRequired": false
     },
     {

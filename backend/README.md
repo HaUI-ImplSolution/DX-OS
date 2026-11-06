@@ -10,13 +10,16 @@ Hướng thiết kế ở [`docs/dynamic-core/README.md`](../docs/dynamic-core/R
 | `dx-model` | Định dạng tệp mô hình: đọc và kiểm tra, không phụ thuộc Spring |
 | `dx-core` | Thư viện dùng chung: bảo mật, audit, lưu trữ và quét tệp, trạng thái hệ thống, client Keycloak, lỗi và kiểu phản hồi chung |
 | `dx-engine` | Dịch vụ chạy được, gồm phần điều khiển, API chung, Flowable nhúng, trục sự kiện (outbox), tệp đính kèm, danh mục và quản trị người dùng cho bảng điều khiển, đóng gói fat jar |
-| `dx-monitor` | Dịch vụ giám sát chạy riêng ([`dx-monitor/README.md`](./dx-monitor/README.md), cùng `Dockerfile`, đích `monitor`), không phụ thuộc module nào ở trên: nhận sự kiện bất thường của gateway, dò trạng thái dịch vụ, đọc `audit_log` và sự kiện đăng nhập của Keycloak, phục vụ màn hình `/monitor/` cho ADMIN và gửi cảnh báo Mattermost |
+| `dx-monitor` | Dịch vụ giám sát chạy riêng ([`dx-monitor/README.md`](./dx-monitor/README.md), cùng `Dockerfile`, đích `monitor`), không phụ thuộc module nào ở trên: nhận sự kiện bất thường của gateway, dò trạng thái dịch vụ, đọc `audit_log` và sự kiện đăng nhập của Keycloak, phục vụ màn hình `/monitor/` cho ADMIN và gửi cảnh báo qua webhook |
 
 `dx-monitor` không phụ thuộc `dx-core`, nên vẫn chạy khi backend dừng.
 
 ## Build và kiểm tra
 
+Cần JDK 21 (`JAVA_HOME` trỏ tới JDK 21 nếu máy mặc định là bản khác).
+
 ```bash
+./mvnw formatter:format      # sửa định dạng mã khi formatter:validate báo lỗi
 ./mvnw formatter:validate    # kiểm định dạng mã
 ./mvnw verify                # compile, test, đóng gói (test tích hợp cần Docker cho Testcontainers)
 ```
@@ -39,4 +42,4 @@ Chạy cả stack ở [`deploy/`](../deploy/): `docker compose up -d`.
 
 Swagger UI ở `/swagger-ui.html`, JSON ở `/v3/api-docs`, sinh từ annotation springdoc trong mã.
 Mọi response bọc trong `ApiResponse`; lỗi có `errorCode` ổn định.
-Một người dùng gọi quá ngưỡng một lệnh trong một phút thì nhận `429` với `ERR_TOO_MANY_REQUESTS` và header `Retry-After`; `RATE_LIMIT_ENABLED=false` tắt giới hạn này (xem [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md)).
+Một người dùng gọi quá ngưỡng một lệnh trong một phút thì nhận `429` với `ERR_TOO_MANY_REQUESTS` và header `Retry-After`; `RATE_LIMIT_ENABLED=false` tắt giới hạn này (xem [`deploy/MONITORING.md`](../deploy/MONITORING.md)).

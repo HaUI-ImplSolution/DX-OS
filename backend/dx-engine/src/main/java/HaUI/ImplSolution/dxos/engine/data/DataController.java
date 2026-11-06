@@ -52,7 +52,11 @@ public class DataController {
   @Operation(summary = "Count the records the caller can see",
       description = "Takes the filter.<field> parameters of the list. total counts the rows;"
           + " for an entity with a process, byStatus counts them per status and overdue counts"
-          + " those whose handle_by is before computedAt; byUnit counts them per unit when the"
+          + " those whose handle_by is before computedAt; avgDecisionSeconds is the mean time from"
+          + " creation to the final state over the records that reached one (a withdrawn record"
+          + " counts), avgOpenAgeSeconds and oldestOpenAgeSeconds are the mean and largest age at"
+          + " computedAt of the records that did not, each null when there is no such record;"
+          + " byUnit counts them per unit when the"
           + " entity has a unit field. The same rows as the list with the same filters, so"
           + " filter.handle_by.lt=<computedAt> lists the overdue ones. A query that runs longer"
           + " than 10 seconds is cut.")
@@ -109,7 +113,7 @@ public class DataController {
           + " actions that say so. 403 when the caller may not take it, or when the record is"
           + " assigned to someone else, with data.reason naming why (for example SELF_DECISION,"
           + " OWNER_ONLY, HANDLER_ONLY, ASSIGNED_TO_OTHER); 409 when the record is in another"
-          + " state. A terminal state"
+          + " state, with data.reason WRONG_STATE or RECORD_CLOSED. A terminal state"
           + " stores decided_by and decided_at. The owner can take the action withdraw from any"
           + " state that is not final.")
   public ApiResponse<Map<String, Object>> act(@PathVariable String model,
@@ -141,8 +145,10 @@ public class DataController {
 
   @GetMapping("/{id}/events")
   @Operation(summary = "The history of a record, oldest first",
-      description = "Who did what and when, with the states and the note of each action. Field"
-          + " values are not kept, only the names of the changed fields.")
+      description = "Who did what and when, with the states and the note of each action. The"
+          + " detail of an update is a JSON object with, for each changed field, the value it held"
+          + " and the value it holds now, as text cut at 200 characters, or null; an update"
+          + " written earlier has the names of the changed fields separated by commas.")
   public ApiResponse<List<Map<String, Object>>> events(@PathVariable String model,
       @PathVariable String entity, @PathVariable long id) {
     Model m = registry.require(model);

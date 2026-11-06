@@ -88,10 +88,12 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(InvalidStateException.class)
-  public ResponseEntity<ApiResponse<Void>> handleInvalidState(InvalidStateException ex) {
+  public ResponseEntity<ApiResponse<Map<String, String>>> handleInvalidState(
+      InvalidStateException ex) {
     auditService.recordAdminFailure(HttpStatus.CONFLICT.value(), ex);
+    Map<String, String> data = ex.getReason() == null ? null : Map.of("reason", ex.getReason());
     return ResponseEntity.status(HttpStatus.CONFLICT)
-        .body(ApiResponse.error("ERR_INVALID_STATE", ex.getMessage()));
+        .body(ApiResponse.error("ERR_INVALID_STATE", ex.getMessage(), data));
   }
 
   @ExceptionHandler(ScannerUnavailableException.class)

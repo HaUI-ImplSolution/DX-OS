@@ -1,0 +1,118 @@
+# SPDX-License-Identifier: Apache-2.0
+name: Dependencies
+
+# Known vulnerabilities in the dependencies and in the third-party images, on a change of the lockfiles and every week.
+on:
+  push:
+    branches:
+      - main
+      - Khuong/main
+    paths:
+      - 'backend/**/pom.xml'
+      - 'frontend/package-lock.json'
+      - 'website/package-lock.json'
+      - 'e2e/package-lock.json'
+      - 'sbom/*.cdx.json'
+      - 'deploy/docker-compose.yml'
+      - '.trivyignore'
+      - '.github/workflows/ci-dependencies.yml'
+  pull_request:
+    types:
+      - opened
+      - synchronize
+    branches:
+      - main
+      - Khuong/main
+    paths:
+      - 'backend/**/pom.xml'
+      - 'frontend/package-lock.json'
+      - 'website/package-lock.json'
+      - 'e2e/package-lock.json'
+      - 'sbom/*.cdx.json'
+      - 'deploy/docker-compose.yml'
+      - '.trivyignore'
+      - '.github/workflows/ci-dependencies.yml'
+  # New advisories appear without any change of ours, so the scan also runs every week.
+  schedule:
+    - cron: '17 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  vulnerabilities:
+    name: Scan dependencies
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Fail on a fixable HIGH or CRITICAL vulnerability in the dependencies
+        run: >
+          docker run --rm -v "$PWD:/repo:ro" aquasec/trivy:0.58.1
+          fs --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1
+          --skip-dirs node_modules,deploy/data,target,dist
+          --ignorefile /repo/.trivyignore /repo
+
+  # Images of other projects in the compose file. Findings are reported as warnings: they come
+  # from upstream and are fixed by moving to a newer tag.
+  images:
+    name: Scan third-party images
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Report fixable HIGH or CRITICAL vulnerabilities in the third-party images
+        run: |
+          # The ${ in the pattern is literal.
+          # shellcheck disable=SC2016
+          images=$(grep -E '^\s+image:' deploy/docker-compose.yml | awk '{print $2}' | grep -v '\${' | sort -u)
+          for image in $images; do
+            echo "::group::$image"
+            if ! docker run --rm -v "$PWD:/repo:ro" aquasec/trivy:0.58.1 \
+              image --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 \
+              --ignorefile /repo/.trivyignore "$image"; then
+              echo "::warning title=Image vulnerabilities::$image has fixable HIGH or CRITICAL vulnerabilities"
+            fi
+            echo "::endgroup::"
+          done
+
+  # The vulnerabilities job reads pom.xml, where the versions managed by Spring Boot are not written.
+  # The SBOM lists every resolved package, so Jackson, Tomcat and the like are checked too.
+  backend-sbom:
+    name: Scan the backend SBOM
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Generate the SBOM of the resolved backend dependencies
+        working-directory: backend
+        run: >
+          ./mvnw -B -q org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom
+          -DoutputFormat=json -DoutputName=backend.cdx -DincludeTestScope=false
+
+      - name: The committed SBOM lists the same packages
+        run: python3 .github/scripts/check_sbom_fresh.py sbom sbom/backend.cdx.json backend/target/backend.cdx.json
+
+      - name: Fail on a fixable HIGH or CRITICAL vulnerability in the resolved dependencies
+        run: >
+          docker run --rm -v "$PWD:/repo:ro" aquasec/trivy:0.58.1
+          sbom --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1
+          --ignorefile /repo/.trivyignore /repo/backend/target/backend.cdx.json

@@ -62,5 +62,9 @@ if [[ "$REPLACED" == true ]]; then
   docker compose restart apisix
 fi
 
+# Keycloak 26.8 refuses Admin API calls from a client that lacks this scope; a realm imported earlier does not have it.
+echo "==> Checking the Keycloak admin client"
+./keycloak-admin-scope.sh || echo "WARNING: model apply stays refused until this works; run ./keycloak-admin-scope.sh once Keycloak is up." >&2
+
 docker image prune -f >/dev/null
 echo "==> Up to date. Check: docker compose ps"

@@ -1,0 +1,125 @@
+# SPDX-License-Identifier: Apache-2.0
+name: Compliance
+
+# Policy checks of the repository, cheap enough to run on every pull request: secrets, licenses, SBOMs, required files
+# and the workflows themselves.
+# It also runs every week, so a project that changes its license is noticed between two pull requests.
+on:
+  push:
+    branches:
+      - main
+      - Khuong/main
+  pull_request:
+    types:
+      - opened
+      - synchronize
+    branches:
+      - main
+      - Khuong/main
+  schedule:
+    - cron: '23 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  secrets:
+    name: Scan for secrets
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Scan working tree and history with gitleaks
+        run: >
+          docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.30.1
+          detect --source /repo --config /repo/.gitleaks.toml --redact
+
+  licenses:
+    name: Check licenses
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Every source file has its license header and every dependency in the SBOMs has an allowed license
+        run: python3 .github/scripts/check_licenses.py
+
+  sbom:
+    name: Check SBOMs against lockfiles
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+
+      - name: Generate the SBOMs of the web app and the docs site again and compare
+        run: |
+          for app in frontend website; do
+            (cd "$app" && npm ci --no-audit --no-fund --ignore-scripts \
+              && npx --yes @cyclonedx/cyclonedx-npm@6.0.1 --omit dev --output-format JSON --output-file "$RUNNER_TEMP/$app.cdx.json")
+            python3 .github/scripts/check_sbom_fresh.py sbom "sbom/$app.cdx.json" "$RUNNER_TEMP/$app.cdx.json"
+          done
+
+  files:
+    name: Check required files and scripts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: The documents a repository must have
+        run: |
+          for file in README.md README_EN.md CHANGELOG.md CONTRIBUTING.md CODE_OF_CONDUCT.md SECURITY.md ARCHITECTURE.md LICENSE NOTICE DEPENDENCIES.txt; do
+            test -s "$file" || { echo "::error::$file is missing or empty"; exit 1; }
+          done
+          grep -q '^## \[Unreleased\]' CHANGELOG.md || { echo "::error::CHANGELOG.md has no [Unreleased] section"; exit 1; }
+
+      - name: Shell scripts parse and are executable
+        run: |
+          git ls-files '*.sh' | while read -r script; do
+            bash -n "$script" || { echo "::error::Syntax error in $script"; exit 1; }
+            [[ "$(git ls-files -s "$script" | cut -c1-6)" == 100755 ]] || { echo "::error::$script is not executable"; exit 1; }
+          done
+
+  workflows:
+    name: Lint workflows
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Lint the workflows
+        run: >
+          docker run --rm -v "$PWD:/repo" -w /repo
+          rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667
+
+  upstream-licenses:
+    name: Check upstream licenses
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: The projects of the component catalog still have the license it declares
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/check_upstream_licenses.py
+

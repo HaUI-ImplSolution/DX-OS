@@ -1,3 +1,5 @@
 {
-  "css-mediaquery": "BSD 3-clause text in its LICENSE file (Yahoo), OSI approved; the package metadata only says BSD. Needed by react-admin."
+  "css-mediaquery": "BSD 3-clause text in its LICENSE file (Yahoo), OSI approved; the package metadata only says BSD. Needed by react-admin.",
+  "require-like@0.1.2": "MIT text in its License file (Felix Geisendörfer); the package metadata has no license field. Needed by Docusaurus (through eval).",
+  "config-chain@1.1.13": "MIT text in its LICENCE file (Dominic Tarr); the package metadata only gives a license object without an SPDX id. Needed by Docusaurus (through update-notifier)."
 }

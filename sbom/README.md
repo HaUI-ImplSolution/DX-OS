@@ -7,6 +7,7 @@ Danh mục thành phần phần mềm định dạng CycloneDX (JSON; đặc t�
 | `backend.cdx.json` | Maven, `backend` (gốc `dx-os-parent`, cả ba module `dx-core`, `dx-engine`, `dx-monitor`) |
 | `ai.cdx.json` | `ai/requirements.lock` |
 | `frontend.cdx.json` | npm, `frontend` |
+| `website.cdx.json` | npm, `website` (trang tài liệu) |
 
 ## Sinh lại
 
@@ -23,6 +24,9 @@ python3 .github/scripts/enrich_sbom_licenses.py sbom/ai.cdx.json
 
 # Frontend
 cd frontend && npx @cyclonedx/cyclonedx-npm --omit dev --output-format JSON --output-file ../sbom/frontend.cdx.json
+
+# Website
+cd website && npx @cyclonedx/cyclonedx-npm --omit dev --output-format JSON --output-file ../sbom/website.cdx.json
 ```
 
 Sinh lại sau khi đổi dependency hoặc số phiên bản của dự án; giấy phép từng thành phần ở [`COPYRIGHT.txt`](../COPYRIGHT.txt).

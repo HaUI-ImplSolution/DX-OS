@@ -7,7 +7,7 @@
 
 **Đội:** HaUI-ImplSolution · **Trường:** Trường Công nghệ Thông tin và Truyền thông, Đại học Công nghiệp Hà Nội
 
-**Tài liệu:** theo dõi tại [trang docs](https://haui-implsolution.github.io/DX-OS-docs/); hướng thiết kế ở [`docs/dynamic-core/README.md`](./docs/dynamic-core/README.md).
+**Tài liệu:** theo dõi tại [trang docs](https://haui-implsolution.github.io/DX-OS/); hướng thiết kế ở [`docs/dynamic-core/README.md`](./docs/dynamic-core/README.md).
 
 Dự thi **OLP Phần mềm nguồn mở 2026** (khối thi DX-OS, VFOSSA).
 Lõi nhận một tệp mô hình khai báo thực thể, trường, vai, quyền và quy trình, rồi dựng bảng dữ liệu, vai đăng nhập, API có phân quyền từng dòng, quy trình phê duyệt và giao diện.

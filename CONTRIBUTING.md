@@ -49,6 +49,7 @@ cd ../frontend && npm install && npm run dev
 ## Dependency và dữ liệu
 
 - Chỉ dùng thành phần theo giấy phép được OSI công nhận; `check_licenses.py` chặn giấy phép ngoài danh sách.
+- Không fork, vá hay đóng gói mã nguồn của dự án khác vào repository; dùng bản gốc và cấu hình nó.
 - Đổi dependency thì sinh lại SBOM theo [`sbom/README.md`](./sbom/README.md) và cập nhật [`COPYRIGHT.txt`](./COPYRIGHT.txt).
 - Image, mô hình và tệp trọng số, tài liệu, nén phải khai báo ở [`.github/license-catalog.json`](./.github/license-catalog.json) với giấy phép được phép; `check_licenses.py` kiểm danh mục này.
 - Không đưa mật khẩu, khóa hay dữ liệu thật vào kho mã; `deploy/.env` nằm ngoài Git.

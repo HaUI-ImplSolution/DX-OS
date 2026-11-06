@@ -15,8 +15,8 @@ Image, mô hình và tệp dữ liệu khai báo ở .github/license-catalog.jso
 +---------------------------------------------+-----------------------+----------------------------------------------+
 | Phần                                        | Giấy phép             | Ghi chú                                      |
 +=============================================+=======================+==============================================+
-| backend, frontend, deploy, portal, sso, bi, | Apache-2.0 (LICENSE)  | SPDX header ở mọi file mã nguồn              |
-| chat...                                     |                       |                                              |
+| backend, frontend, website, deploy, portal, | Apache-2.0 (LICENSE)  | SPDX header ở mọi file mã nguồn              |
+| sso, bi, chat...                            |                       |                                              |
 +---------------------------------------------+-----------------------+----------------------------------------------+
 | Mã nguồn ai/                                | AGPL-3.0 (ai/LICENSE) | Dịch vụ tìm kiếm tri thức, tiến trình riêng  |
 +---------------------------------------------+-----------------------+----------------------------------------------+
@@ -111,6 +111,12 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/license-exceptions.json.
 | TypeScript                                                   | Apache-2.0   | Web                                  |
 +--------------------------------------------------------------+--------------+--------------------------------------+
 | css-mediaquery (qua react-admin)                             | BSD-3-Clause | Truy vấn media của MUI               |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| Docusaurus (core, preset-classic, faster), @mdx-js/react,    | MIT          | Trang tài liệu website/, chỉ dựng ra |
+| clsx, prism-react-renderer                                   |              | file tĩnh                            |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| caniuse-lite (qua browserslist, Docusaurus)                  | CC-BY-4.0    | Dữ liệu trình duyệt, chỉ lúc dựng    |
+|                                                              |              | trang tài liệu                       |
 +--------------------------------------------------------------+--------------+--------------------------------------+
 | nginx 1.27                                                   | BSD-2-Clause | Image phục vụ web và portal          |
 +--------------------------------------------------------------+--------------+--------------------------------------+

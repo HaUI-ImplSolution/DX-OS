@@ -41,8 +41,8 @@ body:
     id: version
     attributes:
       label: Phiên bản
-      description: Tag hoặc commit.
-      placeholder: v1.1.0
+      description: "Kết quả của lệnh: git describe --tags --always"
+      placeholder: v2.0.0
     validations:
       required: true
   - type: dropdown
@@ -50,9 +50,23 @@ body:
     attributes:
       label: Thành phần
       multiple: true
-      options: [web, backend, AI, BI, chat, gateway, SSO, deploy]
+      options: [web, backend, tệp mô hình, AI, BI, chat, gateway, SSO, deploy, trang docs]
   - type: dropdown
     id: run
     attributes:
       label: Cách chạy
       options: [Docker Compose, Chạy tay từng thành phần]
+  - type: textarea
+    id: environment
+    attributes:
+      label: Môi trường
+      placeholder: |
+        - Hệ điều hành: Ubuntu 24.04
+        - Docker: 27.0.3
+        - RAM: 16 GB
+  - type: textarea
+    id: logs
+    attributes:
+      label: Nhật ký liên quan
+      description: "Kết quả của lệnh: docker compose logs <dịch vụ>"
+      render: shell

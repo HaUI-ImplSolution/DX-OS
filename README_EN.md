@@ -7,7 +7,7 @@
 
 **Team:** HaUI-ImplSolution · **School:** School of Information and Communication Technology, Hanoi University of Industry
 
-**Documentation:** tracked on the [docs site](https://haui-implsolution.github.io/DX-OS-docs/); the design is in [`docs/dynamic-core/README.md`](./docs/dynamic-core/README.md) (Vietnamese).
+**Documentation:** tracked on the [docs site](https://haui-implsolution.github.io/DX-OS/); the design is in [`docs/dynamic-core/README.md`](./docs/dynamic-core/README.md) (Vietnamese).
 
 Entry of the **OLP Open Source Software 2026** contest (DX-OS track, VFOSSA).
 The core takes a model file that declares entities, fields, roles, permissions and workflows, and builds the tables, the login roles, an API with row-level permissions, an approval workflow and the screens.

@@ -4,12 +4,15 @@
     "node": {"license": "MIT", "use": "Builds the web, not in the runtime image", "source": "https://github.com/nodejs/node"},
     "nginx": {"license": "BSD-2-Clause", "use": "Serves the web and the portal", "source": "https://nginx.org", "upstream": "nginx/nginx"},
     "alpine": {"license": "MIT", "use": "Runs setup scripts when the stack is built", "source": "https://alpinelinux.org"},
-    "pgvector/pgvector": {"license": "PostgreSQL", "use": "Business data and vectors", "source": "https://github.com/pgvector/pgvector"},
+    "postgres": {"license": "PostgreSQL", "use": "Business data", "source": "https://www.postgresql.org", "upstream": "postgres/postgres"},
     "chrislusf/seaweedfs": {"license": "Apache-2.0", "use": "Object storage for attachments", "source": "https://github.com/seaweedfs/seaweedfs"},
     "apache/apisix": {"license": "Apache-2.0", "use": "API gateway", "source": "https://github.com/apache/apisix"},
     "clamav/clamav": {"license": "GPL-2.0-only", "use": "Optional virus scan of uploaded files, a separate service reached over the network", "source": "https://github.com/Cisco-Talos/clamav", "optional": true},
     "aquasec/trivy": {"license": "Apache-2.0", "use": "Vulnerability scan in CI", "source": "https://github.com/aquasecurity/trivy", "optional": true},
     "restic/restic": {"license": "BSD-2-Clause", "use": "Encrypted backup of deploy/backup.sh", "source": "https://github.com/restic/restic", "optional": true},
+    "duckdb/duckdb": {"license": "MIT", "use": "dxos archive: exports tables to Parquet and reads archives", "source": "https://github.com/duckdb/duckdb", "optional": true},
+    "gitleaks/gitleaks": {"license": "MIT", "use": "Secret scan in CI", "source": "https://github.com/gitleaks/gitleaks", "optional": true},
+    "rhysd/actionlint": {"license": "MIT", "use": "Workflow lint in CI", "source": "https://github.com/rhysd/actionlint", "optional": true},
     "pgplex/pgschema": {"license": "Apache-2.0", "use": "Compares the tables with a model and changes them; its binary is copied into the backend image", "source": "https://github.com/pgplex/pgschema"}
   },
   "downloads": {

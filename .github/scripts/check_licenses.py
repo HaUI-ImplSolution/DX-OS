@@ -7,7 +7,8 @@
 2. Every package in sbom/*.cdx.json has a license that is allowed below or
    an entry in .github/dependency-exceptions.json that gives the reason.
 3. No vendor/, third_party/ or node_modules/ directory is committed.
-4. Every container image the repository builds from, copies from or runs, every release downloaded with ADD
+4. Every container image the repository builds from, copies from or runs (in a Dockerfile, a compose file, a
+   `docker run` command of a workflow or a script, or a script variable such as DUCKDB="duckdb/duckdb:1.4.1"), every release downloaded with ADD
    and every tracked weight, archive or document file is declared
    in .github/component-catalog.json with an allowed license, and DEPENDENCIES.txt names each entry.
 
@@ -44,6 +45,30 @@ IMAGE_LINE = re.compile(r"^\s*image:\s*[\"']?([^\s\"'#]+)", re.MULTILINE)
 COPY_FROM_LINE = re.compile(r"^COPY\s+--from=(\S+)", re.MULTILINE)
 DOWNLOAD_LINE = re.compile(r"^ADD\s+https://github\.com/([\w.\-]+/[\w.\-]+)/", re.MULTILINE)
 SCRIPT_IMAGE = re.compile(r"\b((?:aquasec/trivy|restic/restic)):[\w.\-]+")
+# An image reference with a tag, as in nginx/nginx:1.30 or ghcr.io/org/name:v1@sha256:<digest>.
+IMAGE_REFERENCE = r"(?:[\w.\-]+(?::\d+)?/)*[\w.\-]+/[\w.\-]+:[\w.\-]+(?:@sha256:[0-9a-f]{64})?"
+IMAGE_TOKEN = re.compile(rf"^{IMAGE_REFERENCE}$")
+# A script variable that holds an image, as in DUCKDB="duckdb/duckdb:1.4.1@sha256:...".
+VARIABLE_IMAGE = re.compile(rf'^\s*[A-Z][A-Z0-9_]*="({IMAGE_REFERENCE})"', re.MULTILINE)
+
+
+def docker_run_images(text: str) -> list[str]:
+    """Images named in a `docker run` command: its line, the next line (a YAML folded block continues there) and every line after a trailing backslash."""
+    found: list[str] = []
+    lines = text.split("\n")
+    for index, line in enumerate(lines):
+        if "docker run" not in line:
+            continue
+        command = line.split("docker run", 1)[1]
+        last = index
+        while last + 1 < len(lines) and (last == index or lines[last].rstrip().endswith("\\")):
+            last += 1
+            command += " " + lines[last]
+        for token in command.replace("\\", " ").split():
+            token = token.strip("\"'")
+            if IMAGE_TOKEN.match(token):
+                found.append(token)
+    return found
 
 
 def tracked_files() -> list[str]:
@@ -141,9 +166,12 @@ def referenced_images() -> dict[str, str]:
             text = path.read_text(encoding="utf-8")
             references = [r for r in FROM_LINE.findall(text) + COPY_FROM_LINE.findall(text) if r not in stages]
         elif rel.startswith(("deploy/docker-compose", ".github/workflows/")) and name.endswith((".yml", ".yaml")):
-            references = [r for r in IMAGE_LINE.findall(path.read_text(encoding="utf-8")) if "${" not in r]
-        elif rel.startswith("deploy/") and name.endswith(".sh"):
-            references = [m.group(0) for m in SCRIPT_IMAGE.finditer(path.read_text(encoding="utf-8"))]
+            text = path.read_text(encoding="utf-8")
+            references = [r for r in IMAGE_LINE.findall(text) if "${" not in r] + docker_run_images(text)
+        elif rel.startswith("deploy/") and (name.endswith(".sh") or name == "dxos"):
+            text = path.read_text(encoding="utf-8")
+            references = ([m.group(0) for m in SCRIPT_IMAGE.finditer(text)] + VARIABLE_IMAGE.findall(text)
+                          + docker_run_images(text))
         else:
             continue
         for reference in references:

@@ -31,7 +31,8 @@ services:
   # ---------------------------------------------------------------------------
   postgres:
     logging: *default-logging
-    image: pgvector/pgvector:pg16@sha256:7b822b0aac60967beb1ea5e576b8602c94c300a157d187f385ae3e0da199b90a
+    # The bookworm variant keeps the C library of existing data directories; the default tag uses a newer one and reports a collation mismatch on them.
+    image: postgres:16-bookworm@sha256:5264710be20f409750ac6dc4e5706dcef929c87e241605463f0f9aefa932a8d9
     restart: unless-stopped
     environment:
       <<: *postgres-env
@@ -211,11 +212,19 @@ services:
       context: ../sso
       dockerfile: Dockerfile
     command: ["start-dev", "--import-realm"]
+    # With KEYCLOAK_HOSTNAME set, Keycloak gives browsers that address and keeps the internal address
+    # for the gateway and the backend; both options are set together because either one alone breaks it.
+    entrypoint:
+      - /bin/sh
+      - -c
+      - '[ -z "$$KEYCLOAK_HOSTNAME" ] || export KC_HOSTNAME="$$KEYCLOAK_HOSTNAME" KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true; exec /opt/keycloak/bin/kc.sh "$$@"'
+      - kc
     depends_on:
       postgres:
         condition: service_healthy
     restart: unless-stopped
     environment:
+      KEYCLOAK_HOSTNAME: ${KEYCLOAK_HOSTNAME:-}
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:?}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?}
       KC_DB: postgres
@@ -257,7 +266,7 @@ services:
   # and Keycloak (event_entity) because each creates its own tables.
   monitor-init:
     logging: *default-logging
-    image: pgvector/pgvector:pg16@sha256:7b822b0aac60967beb1ea5e576b8602c94c300a157d187f385ae3e0da199b90a
+    image: postgres:16-bookworm@sha256:5264710be20f409750ac6dc4e5706dcef929c87e241605463f0f9aefa932a8d9
     depends_on:
       postgres:
         condition: service_healthy

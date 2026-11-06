@@ -17,19 +17,16 @@ Mốc dưới đây là dự kiến.
 
 | Việc | Ghi chú |
 |---|---|
-| Ma trận bằng chứng | Chưa có bảng yêu cầu → chức năng → bài kiểm → CI hoặc demo → giới hạn; chưa tách bằng chứng từ dữ liệu giả lập, từ stack kiểm và từ triển khai công khai; kết quả kiểm tay ở `docs/TESTING.md` còn ghi trên cây làm việc gồm tệp chưa commit |
-| Bộ hỏi đáp kỹ thuật | Chưa có; gắn với mã và demo của bản nộp: ranh giới lõi, đóng góp riêng, đổi mô hình an toàn, giới hạn phục hồi |
 | Tag `v2.0.0` và GitHub Release | Tạo sau khi nhánh phase 10 vào `main`; ngày của mục `[2.0.0]` trong `CHANGELOG.md` sửa theo ngày tag; chạy workflow Release từ tag để có image `v2.0.0` mà `dxos-install.sh` kéo về |
 | Kiểm cài bằng image thật | `dxos-install.sh` và `dxos start <tệp>` mới kiểm bằng image local qua `install.sh`; sau khi workflow Release có image `v2.0.0`, chạy lại trên máy sạch |
-| Trang docs `DX-OS-docs` | Vẫn mô tả bản `v1.1.1`; cập nhật cùng lúc triển khai |
-| Triển khai công khai | VPS giữ `v1.1.1`; `deploy/VPS.md` còn mô tả bản đó, và bản mới không có đường nâng cấp dữ liệu nên phải dựng lại; đặt `STAFF_OTP_FLOW=CONDITIONAL` trước lần khởi động đầu để bắt ADMIN nhập mã một lần, và bật quét mã độc (`dxos av on`) |
+| Triển khai công khai | VPS giữ `v1.1.1`; bản mới không có đường nâng cấp dữ liệu nên phải dựng lại; đặt `STAFF_OTP_FLOW=CONDITIONAL` trước lần khởi động đầu để bắt ADMIN nhập mã một lần, và bật quét mã độc (`dxos av on`) |
 | Gửi bài | Thư tới BTC trước 17:00 ngày 06/12/2026 |
 
 ## 3. Giới hạn đã biết
 
 | Việc | Ghi chú |
 |---|---|
-| Dịch vụ `ai/` | Hoãn đến phần AI: chưa nằm trong compose và chưa nối vào lõi, vì không có mô hình, backend hay gateway nào gọi tới; chỉ tìm kiếm tri thức có nguồn, chưa có hỏi đáp sinh câu trả lời và tác tử đề xuất có người duyệt vì chưa có mô hình ngôn ngữ đạt tiêu chuẩn mở; dữ liệu huấn luyện của mô hình embedding chưa kiểm theo định nghĩa của OSI |
+| Phần AI | Chưa có mã: hỏi đáp sinh câu trả lời và tác tử đề xuất có người duyệt cần mô hình ngôn ngữ và embedding đạt định nghĩa Open Source AI của OSI (trọng số và dữ liệu huấn luyện đều mở), chưa chọn; khi làm sẽ là dịch vụ mới nối vào lõi |
 | Webhook sự kiện | Dạng `chat` chưa thử với Mattermost và Slack thật; thông điệp của việc áp dụng mô hình và của tài khoản không có trong `GET /api/v1/events` |
 | Ứng dụng Tầng 2 | Chưa phủ I của H-P-D-I; để sau như đã định |
 | Duyệt nhiều cấp tuần tự | Họ phê duyệt chỉ có một cấp xử lý; nhiều cấp cần trạng thái và hành động sinh theo số cấp khai báo trong mô hình, nên đổi `dx-model`, kernel quy trình, `data` và giao diện, và đụng các mô hình đang chạy; chưa làm vì rủi ro cao |

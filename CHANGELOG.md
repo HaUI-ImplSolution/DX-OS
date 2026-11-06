@@ -7,173 +7,113 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
-- Giao diện web toàn tiếng Việt: chữ có sẵn của react-admin, thông báo lỗi và lỗi từng trường của backend, lỗi tệp mô hình theo dòng và cột, nhãn của kế hoạch áp dụng và lịch sử áp dụng.
-  Backend vẫn trả thông báo tiếng Anh kèm `errorCode`; frontend dịch theo mẫu ở `shell/backendMessages.ts`, và ngôn ngữ hiện tại giữ ở `shell/locale.ts` để thêm tiếng Anh sau.
-- Theme sáng và tối, thanh trên có thương hiệu, menu nhóm theo mô hình, trạng thái hiện thành nhãn màu theo ý nghĩa.
-- Hộp việc có thống kê nhanh và trạng thái rỗng; trang chi tiết hồ sơ dạng thẻ với dòng thời gian lịch sử, thẻ người xử lý và tệp; lịch đặt chỗ có chú giải và màu theo trạng thái.
-- Bảng điều khiển: thẻ mô hình đang chạy kèm số thực thể, vai, đơn vị; thư viện mẫu theo họ quy trình; trình soạn hai cột có các bước soạn, xem kế hoạch, áp dụng; sơ đồ quy trình mở to trong hộp thoại.
-- Thêm `ra-i18n-polyglot` làm dependency trực tiếp của web.
-- Gỡ `bi/` (Superset) và `chat/` (Mattermost) khỏi cây mã; bản cũ ở tag `v1.1.1`.
-  Portal chỉ còn ứng dụng chính, Keycloak Admin, màn hình giám sát và Swagger; biến `PORTAL_BI_URL` và `PORTAL_CHAT_URL` không còn dùng.
-  Màn hình giám sát gửi cảnh báo qua `ALERT_WEBHOOK_URL_ADMIN` hoặc `ALERT_WEBHOOK_URL` (`.env` cũ dùng tên có chữ `MATTERMOST` cần đổi sang tên này), không còn đọc tệp webhook hay dò Superset và Mattermost.
-- Gỡ `seaweedfs/migrate-uploads.sh`.
-- Cài bằng một lệnh: `dxos-install.sh` phát hành kèm mỗi bản (nguồn ở `deploy/get.sh`) tải gói phát hành, kiểm SHA-256 và cài vào `~/.dxos`.
-  Lệnh `dxos` có `start`, `stop`, `status`, `logs`, `admin`, `update`, `doctor`, `backup`, `av`, `uninstall`; `dxos start` tạo tài khoản `admin` đầu tiên với mật khẩu tạm.
-- `dxos start <tệp>` đưa tệp mô hình vào hệ thống trên máy sạch: backend áp dụng tệp khi khởi động nếu là tệp mới, và lệnh in kết quả.
-- Lần gửi webhook bị giới hạn 5 giây cho cả phần trả lời, không chỉ phần header; bên nhận giữ phần trả lời quá lâu thì lần gửi lỗi và được thử lại.
-- Danh sách người xử lý và việc giao việc bỏ tài khoản đã khóa.
-- Sửa hồ sơ trên web không gửi `handle_by` và `overdue`, nên lưu được hồ sơ của thực thể có quy trình và hạn.
-- Webhook sự kiện: mỗi dòng lịch sử của hồ sơ được gửi dạng JSON có chữ ký tới đích của mô hình.
-  Tệp mô hình ghi `webhook: <tên đích>`; địa chỉ và bí mật của đích nằm trong `deploy/webhooks/targets.yml`, ngoài git, và được nạp lại khi tệp đổi.
-  Mô hình không ghi khóa này thì dùng `DXOS_WEBHOOK_URL`; không có đích nào thì không gửi gì.
-  Mỗi đích có `format`: `json` (thông điệp nguyên văn, mặc định) hoặc `chat` (một câu tiếng Việt dạng `{"text": ...}` cho Mattermost và Slack, đọc được là việc mới, sắp đến hạn hoặc quá hạn); đích mặc định đặt bằng `DXOS_WEBHOOK_FORMAT`.
-  Các dòng của một hồ sơ được giao theo thứ tự: dòng sau chờ dòng cũ hơn của cùng hồ sơ, kể cả khi dòng cũ đã dừng và chờ Thử lại.
-  Mô hình ghi tên đích chưa có trong tệp thì không áp dụng được; đích bị gỡ sau đó thì thông điệp nằm lại ở hàng đợi kèm lỗi cấu hình và được giao khi đích có lại và bấm Thử lại.
-- Thông điệp `admin.event` báo việc áp dụng mô hình (áp dụng, quay về, tiếp tục, hủy bỏ) và thay đổi tài khoản (vai, đơn vị, tạo, khóa, mở, đặt lại mật khẩu); mô hình có đích thì vào đích đó, còn lại vào đích mặc định.
-- Hồ sơ có hạn xử lý dài hơn `DXOS_DUE_SOON_BEFORE` (mặc định 24 giờ, 0 để tắt) nhận một dòng lịch sử `due_soon` khi còn chừng đó thời gian trước hạn.
-- `GET /api/v1/events?after=&size=&model=` (ADMIN) trả các dòng lịch sử theo đúng dạng của webhook, để bên nhận bắt kịp theo `eventId` dù webhook có đặt hay không.
-  Outbox xóa thông điệp đã gửi sau 30 ngày.
-- `deploy/install.sh` nâng cấp được bản đã cài (`--upgrade`): thay tệp chạy, giữ `.env` và dữ liệu, thêm biến mới; bản cài dùng project Compose `dxos`.
-- `deploy/make_env.sh` thay `deploy/make_env.py`; cài và chạy stack không còn cần Python.
-- Trình soạn mô hình ở bảng điều khiển báo lỗi và gợi ý theo JSON Schema của tệp mô hình: worker của monaco-yaml được tạo theo cách `monaco-editor` 0.57 yêu cầu.
-- Nút rút lại hỏi xác nhận và nhận lý do không bắt buộc, ghi vào lịch sử của hồ sơ.
-- Bảng điều khiển hiện tên người áp dụng mỗi phiên bản mô hình (cột `applied_by_name`, migration `V5` của engine).
-- `update.sh` và `backup.sh` (chế độ sao lưu) giữ cùng khóa `deploy/.reconcile.lock` với `dxos reconcile`, nên `dxos reconcile` bỏ qua lượt khi một lần cập nhật hoặc sao lưu đang chạy; hai script đợi tối đa 5 phút để lấy khóa.
-- Lịch đặt chỗ cho kéo một lượt để đổi giờ và kéo cạnh dưới để đổi giờ kết thúc; lượt trùng giờ với lượt khác bị đưa về chỗ cũ kèm thông báo lỗi, và lượt ở trạng thái cuối hoặc của người không có quyền ghi không kéo được.
-  Tiêu đề trên lịch dùng cùng trường hiển thị với danh sách.
-- Hành động hoàn tất bị bỏ qua vì trường người dùng hoặc nhóm để trống thì hồ sơ có thêm một dòng lịch sử `completion_skipped` kèm lý do, hiện ở trang chi tiết và đi theo webhook.
-  Log backend cũng có một dòng `WARN` nêu lý do.
-- Hộp việc chỉ liệt kê hồ sơ của chính người nộp khi hồ sơ còn trong phạm vi đọc của vai họ, giống chi tiết hồ sơ.
-- Sửa hồ sơ nhận `version` tùy chọn trong thân yêu cầu: có `version` thì chỉ sửa khi hồ sơ còn ở đúng phiên bản đó, nếu hồ sơ đã đổi (kể cả do một bước của quy trình) thì trả 409 `ERR_CONCURRENT_MODIFICATION` và không ghi đè; không có `version` thì sửa trên bản hiện tại.
-  Form sửa và lịch đặt chỗ gửi `version` của hồ sơ đã đọc.
-- Lỗi 403 `ERR_ACTION_NOT_ALLOWED` có thêm `data.reason`, mã ổn định cho client: `SELF_DECISION`, `OWNER_ONLY`, `HANDLER_ONLY`, `ASSIGNED_TO_OTHER`, `NOT_ASSIGNER`, `CANNOT_CREATE`, `READ_ONLY`, `NO_ROLE_FOR_ENTITY`, `UNIT_OUT_OF_REACH`, `PARENT_OUT_OF_REACH`, `STATUS_BY_PROCESS_ONLY` và `FILE_ADDER_ONLY`.
-- `check_docs.py` kiểm mọi endpoint mà `README.md`, `README_EN.md`, `ARCHITECTURE.md` và `deploy/OPERATIONS.md` nêu có trong `/v3/api-docs`, đúng phương thức.
-- Lỗi 409 `ERR_INVALID_STATE` của hồ sơ có thêm `data.reason`: `WRONG_STATE`, `RECORD_CLOSED`, `KEPT_BY_PROCESS`, `STILL_REFERENCED` và `SLOT_TAKEN`.
-- `examples/history-witness/witness.py` cho bên nhận giữ cặp `eventId` và `hash` của các tin đã nhận (`save`) rồi so với hệ thống (`compare`): hash đổi hoặc dòng mất thì báo và thoát mã 1, kể cả khi chuỗi và các điểm neo bị tính lại cho khớp nhau.
-- `check_conformance.py` kiểm trên mọi mô hình đã áp dụng, hoặc các mô hình nêu tên, rằng mô hình giữ các rào chắn của lõi: không ghi được `status` qua API dữ liệu, không có token thì 401, và người giữ vai của mô hình này không đọc được dữ liệu của mô hình khác.
-- `GET /api/v1/data/{model}/{entity}/stats` của thực thể có quy trình có thêm `avgDecisionSeconds` (thời gian trung bình từ lúc tạo đến trạng thái cuối, hồ sơ rút cũng tính), `avgOpenAgeSeconds` và `oldestOpenAgeSeconds` (tuổi trung bình và tuổi lớn nhất của hồ sơ chưa vào trạng thái cuối); giá trị tính bằng giây và là `null` khi không có hồ sơ nào để tính.
-  Trang thống kê hiện ba số này thành ba ô, ẩn ô có giá trị `null`.
-- Dòng lịch sử `updated` của hồ sơ ghi giá trị cũ và mới của từng trường đã đổi: `detail` là JSON `{"trường": ["cũ", "mới"]}`, giá trị là chuỗi hoặc `null`, dài quá 200 ký tự thì cắt và thêm `…`.
-  Dòng viết trước đó vẫn là danh sách tên trường cách nhau bằng dấu phẩy.
-  Lệnh sửa khóa dòng của hồ sơ khi so với giá trị cũ.
-  Chi tiết hồ sơ hiện "nhãn: cũ → mới" cho mỗi trường.
-- Thực thể có quy trình có chỉ mục trên `handle_by` cho bộ quét quá hạn.
-- Thông báo khi trình quét virus không trả lời và lỗi chung của tệp mô hình có bản tiếng Việt.
-- `check_demo.py` kiểm tệp EICAR bị chặn khi bật quét virus.
-- Màn hình giám sát gọi tên chức năng và thao tác theo API của lõi, dò dịch vụ AI ở `/api/v1/health`, và không miễn đường dẫn chậm nào theo mặc định.
-- Vai `ADMIN` của nền tảng không khai báo được; lỗi của tệp mô hình báo theo dòng và cột.
-- Mỗi mô hình có một Keycloak client riêng `dxos-m-<mô hình>` (bước `ENSURE_CLIENT`) chứa vai của mô hình; hai mô hình dùng được cùng tên vai, người giữ vai của mô hình này không vào được mô hình kia, và token mang vai ở `resource_access`.
-- Các lần áp dụng của hai mô hình khác nhau chạy song song; mỗi mô hình vẫn chỉ có một lần áp dụng chạy tại một thời điểm.
-- Tài khoản dịch vụ `dxos-backend-admin` có thêm `manage-clients`, `view-clients` và `query-clients` của `realm-management`; realm đã import từ trước cần cấp các quyền này ở Keycloak Admin Console.
-- Tab Người dùng ở bảng điều khiển (ADMIN): danh sách có tìm kiếm và phân trang, vai theo từng ứng dụng, gán và gỡ vai và đơn vị, tạo người dùng với mật khẩu tạm do hệ thống sinh, khóa và mở, đặt lại mật khẩu.
-  API ở `/api/v1/users`; chỉ gán được vai và đơn vị mà một mô hình đang chạy khai báo, vai `ADMIN` không có đường nào qua đây, và ADMIN không khóa được chính mình.
-- Mỗi thay đổi về tài khoản ghi một bản ghi `audit_log` với người thực hiện, tên đăng nhập của người bị đổi và vai hoặc đơn vị: `USER_CREATED`, `USER_LOCKED`, `USER_UNLOCKED`, `USER_PASSWORD_RESET`, `USER_ROLE_GRANTED`, `USER_ROLE_REVOKED`, `USER_UNIT_ADDED`, `USER_UNIT_REMOVED`; mật khẩu không bao giờ được ghi.
-- Áp dụng, quay về, tiếp tục và hủy bỏ mô hình thành công ghi `audit_log` (`MODEL_APPLIED`, `MODEL_ROLLED_BACK`, `MODEL_RESUMED`, `MODEL_ABANDONED`) với tên mô hình, phiên bản, trạng thái và người thực hiện.
-- `GET /api/v1/meta/models` liệt kê mô hình đang bị giữ với `held` và không có thực thể, chỉ khi người gọi đọc được một thực thể của nó; trang Hộp việc hiện một dòng báo mô hình đang được áp dụng.
-- Keycloak từ chối tài khoản dịch vụ (401 hoặc 403) thì API trả 502 `ERR_ACCOUNT_SERVICE_DENIED` kèm lời nhắc kiểm vai của tài khoản dịch vụ, tách khỏi `ERR_ACCOUNT_SERVICE_UNAVAILABLE` khi Keycloak không trả lời; cả hai và lỗi đích webhook chưa cấu hình có bản tiếng Việt ở giao diện.
-- `GET /api/v1/audit-logs` lọc thêm theo `targetType` (không phân biệt hoa thường) và `targetId` (khớp chính xác) để lấy các bản ghi về một đối tượng; migration `V2` của lõi tạo chỉ mục `idx_audit_log_target`.
-- Hộp thoại người dùng hiện lịch sử thay đổi của người đó: ai đổi gì, lúc nào, mới nhất ở trên, 20 dòng mỗi lần kèm nút Xem thêm.
-- Truy vấn vào bảng ngoài schema `engine` ghi rõ schema, vì Flowable đặt `search_path` của kết nối về `engine`: `audit_log` ghi và đọc đúng, migration của lõi chạy ở `public`.
-- Mô hình bị giữ từ lúc bắt đầu áp dụng đến khi registry nạp xong; lỗi giữa chừng giữ mô hình lại kể cả sau khi khởi động lại, và `GET /api/v1/models` có trường `held`.
-- Mỗi lần áp dụng lưu tệp, các lần đổi tên và mức đã xác nhận (migration `V6` của engine); `POST /api/v1/models/{model}/resume` hoàn tất lần dừng dở mà không cần tệp, `POST /api/v1/models/{model}/abandon` đưa các bảng về phiên bản đang chạy.
-- Thẻ mô hình ở bảng điều khiển hiện nhãn "Đang dừng dở" kèm nút Tiếp tục áp dụng và Hủy bỏ.
-- Mô hình mà lần áp dụng đầu dừng dở hiện ở danh sách với phiên bản 0; Hủy bỏ xóa schema và bảng mà lần đó đã tạo.
-- Thay đổi người xử lý, hạn xử lý, quyền tự quyết, hành động hoàn tất hay đặt chỗ bị từ chối khi thực thể còn hồ sơ đang xử lý.
-- Xóa thực thể bị từ chối khi còn hồ sơ đang chạy quy trình; khi xóa, tệp đính kèm của thực thể được dọn cùng (bước `DROP_FILES`).
-- `check_guards.py` kiểm các chốt chặn trên và việc cách ly vai giữa các mô hình; `check_users.py` kiểm quản trị người dùng, bản ghi audit và sự kiện quản trị của Keycloak; `check_events.py` kiểm webhook sự kiện; `check_bootstrap.py` kiểm tệp mô hình lúc khởi động.
-- Đặt chỗ so sức chứa với số lượt chạy cùng lúc ở mọi thời điểm của khung giờ mới.
-- Người nhận một hồ sơ, kể cả người tự nhận, phải nằm trong danh sách người xử lý của hồ sơ đó (vai xử lý, đơn vị, luật người tạo).
-- `PUT /api/v1/users/{id}/enabled` trả 400 khi thiếu `enabled`; bộ lọc `in` không có giá trị nào trả 400.
-- Trang nằm ngoài cuối danh sách ở `/api/v1/inbox`, `/api/v1/users` và `/api/v1/outbox` trả danh sách rỗng, kể cả với số trang rất lớn.
-- Bảng điều khiển vừa màn hình rộng 360px; bảng người dùng cuộn ngang trong khung riêng.
-- `dxos av on` và `dxos av off` bật và tắt quét mã độc tệp tải lên; `dxos status` và `doctor.sh` báo trạng thái quét, và `doctor.sh` báo `FAIL` khi `STORAGE_SCAN_HOST=clamav` mà `COMPOSE_PROFILES` không có `av`.
-- `backup.sh verify` kiểm mỗi mô hình đã áp dụng có bảng trong schema `m_<mô hình>` của bản dump và in tổng số dòng của các bảng đó; mô hình thiếu bảng làm `verify` báo `FAILED`.
-- Khai báo lại một vai mà vẫn còn người giữ trong client `dxos-m-<mô hình>` thì kế hoạch áp dụng đưa thay đổi đó lên mức `MIGRATION` và báo số người sẽ có lại quyền của vai; bảng điều khiển hiện câu hỏi này bằng tiếng Việt.
-  Lần áp dụng, tiếp tục áp dụng, quay lui và tệp mô hình lúc khởi động cũng qua bước kiểm này, nên tệp lúc khởi động không tự áp dụng trong trường hợp đó.
-  Lần áp dụng có vai mới hỏi Keycloak trước bước đầu tiên, nên khi Keycloak không trả lời thì lần áp dụng lỗi ngay mà không chạy bước nào.
-- Mỗi mô hình có một khóa đọc/ghi: yêu cầu dữ liệu, hành động quy trình và thao tác tệp giữ khóa đọc đến khi xong, và lần áp dụng lấy khóa ghi chỉ để đánh dấu mô hình bị giữ.
-  Lần áp dụng chờ tối đa 30 giây rồi trả 409 `Model <tên> is busy; try again`.
-  Hồ sơ đang mở, luật quy trình và dòng vi phạm được kiểm sau khi mô hình đã bị giữ, nên không hồ sơ nào lọt giữa kiểm và đổi bảng.
-- Hủy bỏ lần áp dụng đầu của một mô hình xóa luôn client `dxos-m-<mô hình>` (bước `DROP_CLIENT`); nhóm đơn vị dùng chung giữa các mô hình nên được giữ lại.
-- `backup.sh` cảnh báo khi dump và chụp kho lâu hơn `DXOS_FILE_DELETE_DELAY`.
-  `backup.sh verify` khởi động một SeaweedFS tạm trên bản chụp kho và báo `FAILED` kèm tên tệp khi một khóa trong `engine.attachment` không có tệp; job `backup-drill` kiểm cả hai trường hợp bằng tệp đính kèm thật.
-- Job `e2e` trong `ci-infra.yml` chạy hai nhóm song song, mỗi nhóm dựng image của commit và khởi động một stack rỗng riêng: nhóm đầu chạy mười một script từ `check_api.py` đến `check_conformance.py` theo thứ tự của `docs/TESTING.md`, nhóm sau chạy `check_events.py` và `check_bootstrap.py`; log các service được tải khi lỗi và thời gian từng script ghi vào tóm tắt của job.
-- `DXOS_OUTBOX_POLL_MS` và `DXOS_OVERDUE_SWEEP_MS` đặt chu kỳ xem hàng đợi sự kiện và chu kỳ quét hồ sơ quá hạn (mặc định 2000 và 60000 mili giây); `check_events.py` đặt 500 và 5000.
-- Client OIDC `dxos-cli` có tài khoản dịch vụ giữ vai `ADMIN`; bí mật `DXOS_CLI_SECRET` do `make_env.sh` sinh, và `install.sh --upgrade` thêm vào `.env` có sẵn.
-  `dxos plan <tệp>` in kế hoạch.
-  `dxos apply <tệp> [--accept SAFE|MIGRATION|LOSS]` áp dụng với phiên bản của kế hoạch làm `base`, từ chối một kế hoạch vượt mức `--accept` với mã thoát 1, và lịch sử áp dụng ghi tài khoản dịch vụ.
-  Đường dẫn tương đối của `<tệp>`, của `--out` và của `dxos archive check` tính theo thư mục gõ lệnh.
-  Realm đã import từ trước cần thêm client `dxos-cli` ở Keycloak Admin Console hoặc dựng lại.
-- Thông điệp outbox lỗi quá `DXOS_OUTBOX_MAX_ATTEMPTS` lần (mặc định 20) thì dừng: `GET /api/v1/outbox` có trạng thái `stopped`, tab Hàng đợi sự kiện hiện nhãn "Đã dừng", và Thử lại cho thêm một lần.
-  Payload `record.event` có `schemaVersion: 1`.
-- Tệp gỡ khỏi hồ sơ chỉ rời kho sau `DXOS_FILE_DELETE_DELAY` (mặc định 24 giờ): thông điệp `file.delete` được ghi vào outbox cùng giao dịch, kho tạm ngừng thì được thử lại, đối tượng đã mất thì coi như xong.
-  Tệp của giao dịch bị rollback vẫn xóa ngay.
-- Mọi service chạy lâu có `restart: unless-stopped`.
-  `dxos reconcile` tạo lại container bị xóa hoặc lệch cấu hình theo image đã ghim trong `.env` và ghi `deploy/reconcile.log`; `dxos stop` để lại tệp `deploy/.stopped` nên stack dừng có chủ ý không bị bật lại, và `dxos start` xóa tệp đó.
-  `dxos reconcile install` cài một systemd user timer chạy mỗi phút, `dxos reconcile uninstall` gỡ.
-- Lịch sử hồ sơ có chuỗi hash: `engine.record_event` có cột `prev_hash` và `hash` (migration `V7`), mỗi dòng ghi dưới một khóa advisory, các dòng cũ được tính bù khi backend khởi động.
-  Payload `record.event` mang `hash`, và backend ghi mỗi giờ một điểm neo (id, hash, thời điểm) vào đối tượng `history/anchors.jsonl` của kho đối tượng.
-  `GET /api/v1/history/verify` (ADMIN) tính lại chuỗi, so với điểm neo, và chỉ ra dòng đầu tiên bị sửa, xóa hoặc chèn; `POST /api/v1/history/anchor` ghi điểm neo ngay.
-  `dxos history verify` và `dxos history anchor` gọi hai API này, và `verify` thoát với mã 1 khi chuỗi không còn nguyên.
-- `GET /api/v1/data/{model}/{entity}/stats` trả tổng số, số theo trạng thái, số quá hạn, số theo đơn vị và `computedAt`, với cùng bộ lọc và quyền như danh sách.
-  Giao diện có trang thống kê cho thực thể có quy trình; mỗi số mở danh sách đã lọc tương ứng.
-  Truy vấn chạy quá 10 giây bị cắt.
-- Mẫu "Sự cố thiết bị" (`plant_incident`) có trường thiết bị và mã quan sát duy nhất; `examples/itot-simulator` đăng nhập bằng tài khoản dịch vụ, tạo hồ sơ khi chỉ số vượt ngưỡng, và gửi lại cùng một quan sát thì lõi từ chối với 400 (mã quan sát đã có) mà không tạo hồ sơ thứ hai; `simulator.py setup` tạo client `dxos-itot-<mô hình>` bằng tài khoản quản trị Keycloak của `deploy/.env`.
-- `dxos archive <mô hình> [--before YYYY-MM-DD] [--out THƯ_MỤC]` ghi các hồ sơ đã tới trạng thái cuối và lịch sử của chúng ra Parquet bằng DuckDB chạy trong container, kèm `manifest.json` (phiên bản mô hình, số dòng, sha256 từng tệp); dữ liệu trong cơ sở dữ liệu giữ nguyên.
-  `dxos archive check <thư mục>` đọc lại từng tệp và so với manifest.
-- `check_demo.py` dừng `clamav` khi bật quét và mong 503 `ERR_SCAN_UNAVAILABLE` mà không có tệp nào được lưu.
-  `check_events.py` kiểm outbox dừng sau số lần đặt, Thử lại, xóa tệp sau khoảng trễ và thử lại khi kho ngừng.
-- Áp dụng lại tệp không đổi kiểm xem bảng và Keycloak có còn khớp tệp không: cột, ràng buộc, client, vai hoặc nhóm đơn vị bị xóa tay thì kế hoạch ghi `repair` và áp dụng sẽ sửa lại, giữ nguyên phiên bản.
-  Bảng hoặc cột thừa bị từ chối; đổi kiểu cột hay bỏ ràng buộc thừa cần xác nhận mức `MIGRATION`; bảng điều khiển hiện nút "Sửa phần lệch".
-- Menu người dùng có "Tài khoản của tôi", mở Account Console của Keycloak để đổi mật khẩu, bật OTP và xem phiên.
-- Họ `work_item` có khóa tùy chọn `auto_close` (ví dụ `7d`, mặc định tắt): hồ sơ ở trạng thái đã xử lý xong mà người nộp không xác nhận hay mở lại trong thời gian đó được hệ thống đóng, với `system` là người quyết định.
-  Lịch sử có dòng `auto_closed` trong chuỗi băm và outbox, hành động hoàn tất chạy như lúc người nộp xác nhận; người nộp mở lại rồi xử lý xong lần nữa thì thời gian chờ tính lại.
-  Họ khác khai báo `auto_close` thì bị từ chối; đổi giá trị là thay đổi mức `SAFE` ở kế hoạch (`CHANGE_AUTO_CLOSE`), áp dụng được khi còn hồ sơ đang mở.
-  Bước quét chạy mỗi `engine.auto-close.sweep-ms` (mặc định 60000 ms).
-- Tài khoản dịch vụ bị Keycloak từ chối khi tra vai của người dùng, kiểm tra hoặc xóa người dùng thì báo "từ chối" (`ERR_ACCOUNT_SERVICE_DENIED`) thay vì "không dùng được".
-- Có test của các client HTTP bằng WireMock (`org.wiremock:wiremock-standalone`, Apache-2.0, chỉ ở test): `KeycloakAdminClientTest`, `WebhookSenderTest` và `ServiceProbeTest`, chỉ những ca làm sai lệch hành vi hoặc làm treo hệ thống.
-  Test chậm khoảng 5 giây của `WebhookSenderTest` có nhãn `slow`, bỏ qua được bằng `-DexcludedGroups=slow`.
+## [2.0.0] - chưa phát hành
 
-## [2.0.0] - 2026-11-03
+Lõi dynamic thay cho hai ứng dụng nghiệp vụ viết tay của bản `1.1.1`.
+Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở tag `v1.1.1`.
 
-- Lõi dynamic: tệp mô hình khai báo thực thể, trường, vai, quyền và quy trình; `dx-model` đọc và kiểm tra, báo lỗi theo dòng và cột.
-- `dx-engine` áp dụng mô hình vào hệ thống rỗng (schema, bảng, ràng buộc, vai Keycloak, phiên bản, lịch sử từng bước, vai `report_ro` chỉ đọc).
-- API chung `/api/v1/data/{model}/{entity}` với quyền theo vai và theo dòng, lọc, sắp xếp, phân trang, quy tắc bắt buộc, duy nhất và lựa chọn; API metadata `/api/v1/meta/models`.
-- Quy trình phê duyệt một cấp trên Flowable nhúng, cùng giao dịch với việc ghi hồ sơ; trạng thái chỉ đổi qua quy trình.
-- Hồ sơ lưu người quyết định và thời điểm quyết định.
-- Lần áp dụng dở chỉ hoàn tất được bằng đúng tệp đã bắt đầu, và mỗi mô hình chỉ có một lần áp dụng chạy tại một thời điểm.
-- Hồ sơ là khái niệm của lõi: mẫu quy trình khai báo trạng thái và hành động, cán bộ trả lại kèm ghi chú để người nộp sửa và nộp lại.
-- Đơn vị khai báo trong mô hình và đồng bộ thành nhóm Keycloak; phạm vi quyền `unit` và `assigned`.
-- Giao việc, hộp việc `/api/v1/inbox`, dòng lịch sử của từng bản ghi ghi trong cùng giao dịch.
+### Lõi và tệp mô hình
+
+- Một tệp mô hình khai báo thực thể, trường, vai, quyền, đơn vị và quy trình; `dx-model` đọc và kiểm tra, báo lỗi theo dòng và cột.
+- API chung `/api/v1/data/{model}/{entity}` với lọc, sắp xếp, phân trang, quy tắc bắt buộc, duy nhất và lựa chọn; metadata ở `/api/v1/meta/models`.
+- Sửa hồ sơ nhận `version`: hồ sơ đã đổi thì trả 409 `ERR_CONCURRENT_MODIFICATION` và không ghi đè.
+- Lỗi 403 `ERR_ACTION_NOT_ALLOWED` và 409 `ERR_INVALID_STATE` có `data.reason`, mã ổn định cho client.
+- Thống kê `GET /api/v1/data/{model}/{entity}/stats` cho thực thể có quy trình: tổng số, theo trạng thái, quá hạn, theo đơn vị, thời gian xử lý trung bình và tuổi hồ sơ đang mở, cùng bộ lọc và quyền như danh sách.
+- Dòng lịch sử `updated` ghi giá trị cũ và mới của từng trường đã đổi.
+- Bảy mẫu mô hình ở `backend/dx-engine/src/main/resources/templates/`: một cửa sinh viên, hỗ trợ kỹ thuật, sự cố thiết bị, đặt phòng, cấp quyền, mượn thiết bị, ghi chú.
+- Vai `report_ro` chỉ đọc cho công cụ báo cáo của người vận hành.
+
+### Áp dụng và đổi mô hình
+
+- Áp dụng vào hệ thống rỗng dựng schema `m_<mô hình>` (pgschema), bảng, ràng buộc, vai và nhóm Keycloak, phiên bản và lịch sử từng bước; áp dụng lại cùng tệp thì không làm gì, bảng hoặc Keycloak lệch thì kế hoạch ghi `repair` và sửa phần lệch.
 - Đổi mô hình khi đã có dữ liệu: xem trước theo ba mức rủi ro, đổi tên bằng `renamed_from`, `default` cho trường bắt buộc mới, báo dòng vi phạm, xác nhận riêng khi mất dữ liệu, kế hoạch hết hiệu lực khi phiên bản đã đổi, quay về phiên bản trước.
-- Lược đồ do pgschema so sánh và thay đổi; image backend kèm tệp thực thi này.
-- Giao diện react-admin dựng từ metadata, gồm hộp việc, nút hành động, giao việc và dòng lịch sử.
-- Stack chỉ gồm lõi và Tầng 2 (`postgres`, `keycloak`, `seaweedfs`, `backend`, `apisix`, `frontend`, `portal`, `monitor`, `clamav` qua profile); vai và cơ sở dữ liệu của Keycloak tạo bởi `deploy/postgres/init`; realm chỉ còn vai `ADMIN`.
-- Các script `deploy/dev/check_api.py`, `check_recovery.py`, `check_case.py` và `check_change.py` kiểm API, khả năng phục hồi, các tính năng của hồ sơ và việc đổi mô hình.
-- Họ mẫu quy trình `approval` và `work_item`; khối `process:` dùng `family`, `handler`, `allow_self_decision`, `deadline` và `after`.
-- Quy tắc bất biến của quy trình nằm trong engine: từ chối và trả lại cần lý do, người nộp rút lại hồ sơ và bản ghi được giữ lại, người tạo không tự quyết định.
-- Hạn xử lý theo bản ghi, hồ sơ quá hạn lên đầu hộp việc và có dòng quá hạn trong lịch sử.
-- Trục sự kiện bằng bảng outbox: hành động hoàn tất chạy sau khi giao dịch xong, thử lại được, một thông điệp cho mỗi khóa; mô hình `backend/dx-engine/src/main/resources/templates/itaccess.yaml` thêm người dùng vào nhóm Keycloak sau khi duyệt.
-- Kiểu trường `file`: tệp đính kèm bản ghi, lưu ở SeaweedFS, quét ClamAV khi bật, quyền theo quyền của bản ghi.
-- Script `deploy/dev/check_process.py` kiểm quy trình chung.
-- Họ mẫu `reservation` cho đặt chỗ theo khung giờ: khối `booking:`, kiểm tra xung đột có khóa dòng tài nguyên và sức chứa, chế độ xem lịch trong ứng dụng.
-- Bảng điều khiển ở tuyến `/console` cho vai ADMIN: thư viện mẫu, trình soạn YAML Monaco theo JSON Schema, form dựng từ schema, màn hình kế hoạch, lịch sử áp dụng và quay về, sơ đồ quy trình.
-- API đọc cho bảng điều khiển: `/api/v1/models/schema`, `families`, `templates` và `{model}/versions`.
-- Mẫu mô hình nằm ở `backend/dx-engine/src/main/resources/templates/` kèm `index.json`: Một cửa sinh viên, hỗ trợ kỹ thuật, đặt phòng, cấp quyền, mượn thiết bị, ghi chú.
-- Scripts `check_booking.py` và `check_demo.py` kiểm họ `reservation`, API của bảng điều khiển và tám tiêu chí của kịch bản trình diễn.
-- Hàng đợi sự kiện: `GET /api/v1/outbox` và `POST /api/v1/outbox/{id}/retry` cho ADMIN xem thông điệp theo trạng thái cùng lỗi gần nhất và thử lại thông điệp chưa gửi, kèm tab Hàng đợi sự kiện ở bảng điều khiển.
-- Thao tác hoàn tất `remove_from_group`.
-- Quyền `own`, `unit` và `assigned` của thực thể con đi theo chuỗi `owner_via` nhiều cấp; tệp mô hình có chuỗi `owner_via` quay vòng bị từ chối.
-- Tệp đính kèm: loại tệp nhận được đặt bằng `engine.files.allowed-extensions`, link tải luôn ở dạng đính kèm, và đối tượng trong kho bị xóa khi tệp hoặc hồ sơ bị gỡ hoặc khi giao dịch tải lên hỏng; mỗi hồ sơ giữ tối đa 20 tệp.
-- Hộp việc `/api/v1/inbox` phân trang bằng `page` và `size`, trả tổng số; giao diện hộp việc có chuyển trang.
-- Trường `required` kiểu text từ chối chuỗi rỗng và chuỗi chỉ có dấu cách.
-- Mô hình đã lưu không còn qua được bộ kiểm bị bỏ khỏi danh sách đang chạy và ghi lỗi vào log; các mô hình khác vẫn chạy và dịch vụ vẫn khởi động.
-- Hai ứng dụng nghiệp vụ và ứng dụng di động của phiên bản trước nằm ở tag `v1.1.1`.
-- Dịch vụ `ai/` là bộ tìm kiếm tri thức có nguồn: nạp tài liệu và registry nguồn kèm giấy phép từ tệp JSON, tìm bằng BM25 kết hợp cosine trên pgvector và chỉ trả bằng chứng; mô hình embedding paraphrase-multilingual-MiniLM-L12-v2, không dùng mô hình ngôn ngữ.
-- Gỡ khỏi cây mã `data/`, trọng số và mã nhận diện bệnh lúa, luồng chẩn đoán, bộ đánh giá RAG dùng Redis và Langfuse, kho văn bản của HaUI, reranker mMARCO và Qwen; bản cũ ở tag `v1.1.1`.
-- Danh mục `.github/license-catalog.json` khai báo image, mô hình và tệp trọng số, tài liệu, nén; `check_licenses.py` chặn mục thiếu hoặc có giấy phép ngoài danh sách.
-- `COPYRIGHT.txt`, `NOTICE` và ba tệp SBOM ghi đúng thành phần của bản phát hành; số phiên bản của backend, web và SBOM là `2.0.0`.
-- Không có đường nâng cấp dữ liệu từ `1.1.x`.
+- Mô hình bị giữ trong lúc áp dụng; áp dụng dừng giữa chừng thì tiếp tục (`resume`) hoặc hủy bỏ (`abandon`), kể cả sau khi backend khởi động lại.
+- Mỗi mô hình có một lần áp dụng tại một thời điểm, các mô hình khác nhau áp dụng song song; yêu cầu dữ liệu, hành động quy trình và thao tác tệp giữ khóa đọc nên không hồ sơ nào lọt giữa kiểm và đổi bảng.
+- Chốt chặn: không đổi người xử lý, hạn, quyền tự quyết, hành động hoàn tất hay đặt chỗ khi còn hồ sơ đang xử lý; không xóa thực thể còn hồ sơ đang chạy quy trình; vai `ADMIN` của nền tảng không khai báo được.
+- Khai báo lại một vai còn người giữ thì kế hoạch lên mức `MIGRATION` và báo số người có lại quyền.
+- Tệp mô hình lúc khởi động: `dxos start <tệp>` đưa tệp vào, backend áp dụng nếu là tệp mới và có kế hoạch an toàn.
+- `dxos plan` và `dxos apply [--accept MỨC]` đổi mô hình từ dòng lệnh, đăng nhập bằng client `dxos-cli`.
+
+### Quyền và định danh
+
+- Quyền theo vai và theo dòng (`all`, `read`, `own`, `unit`, `assigned`); thực thể con đi theo chuỗi `owner_via` nhiều cấp, chuỗi quay vòng bị từ chối.
+- Đơn vị khai trong mô hình và đồng bộ thành nhóm Keycloak.
+- Mỗi mô hình có một client `dxos-m-<mô hình>` chứa vai của nó, nên hai mô hình dùng cùng tên vai không vào được dữ liệu của nhau.
+- Tài khoản dịch vụ `dxos-backend-admin` có quyền `manage-clients`, `view-clients`, `query-clients` và scope `kc-admin-api`, vì Admin API của Keycloak 26.8 chỉ nhận token có audience của nó.
+  Realm đã import từ trước chạy `deploy/keycloak-admin-scope.sh` (`update.sh` gọi nó) và cấp các quyền client ở Keycloak Admin Console.
+- Tab Người dùng và API `/api/v1/users` (ADMIN): tìm kiếm, vai theo từng ứng dụng, gán và gỡ vai và đơn vị, tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu.
+- Thay đổi tài khoản và việc áp dụng, quay về, tiếp tục, hủy bỏ mô hình ghi `audit_log` (`USER_*`, `MODEL_*`); `GET /api/v1/audit-logs` lọc theo đối tượng.
+- Keycloak từ chối tài khoản dịch vụ thì API trả 502 `ERR_ACCOUNT_SERVICE_DENIED`, tách khỏi `ERR_ACCOUNT_SERVICE_UNAVAILABLE` khi Keycloak không trả lời.
+
+### Quy trình và hồ sơ
+
+- Ba họ mẫu trên Flowable nhúng, cùng giao dịch với việc ghi hồ sơ: `approval`, `work_item` và `reservation`; trạng thái chỉ đổi qua quy trình.
+- Khối `process:` dùng `family`, `handler`, `allow_self_decision`, `deadline` và `after`; khối `booking:` khai báo tài nguyên, khung giờ và sức chứa.
+- Quy tắc chung của mọi quy trình: từ chối và trả lại cần lý do, người nộp sửa rồi nộp lại hoặc rút lại, người tạo không tự quyết định, hồ sơ đã giao thì chỉ người được giao xử lý.
+- Hồ sơ lưu người quyết định và thời điểm quyết định.
+- Giao việc, hộp việc `/api/v1/inbox` có phân trang, và dòng lịch sử của từng bản ghi ghi trong cùng giao dịch; người nhận phải nằm trong danh sách người xử lý.
+- Hạn xử lý theo bản ghi: hồ sơ quá hạn lên đầu hộp việc và có dòng quá hạn; hồ sơ có hạn dài hơn `DXOS_DUE_SOON_BEFORE` nhận thêm dòng `due_soon`.
+- Hành động hoàn tất `add_to_group` và `remove_from_group` chạy qua outbox và được thử lại; trường trống thì bỏ qua và ghi dòng `completion_skipped`.
+- Đặt chỗ so sức chứa với số lượt chạy cùng lúc ở mọi thời điểm của khung giờ, có khóa dòng tài nguyên.
+- Họ `work_item` có `auto_close` tùy chọn: hồ sơ đã xử lý xong mà người nộp không xác nhận trong thời gian đó được hệ thống đóng, ghi dòng `auto_closed`.
+
+### Sự kiện, webhook và toàn vẹn
+
+- Hàng đợi sự kiện bằng bảng outbox: thông điệp ghi trong giao dịch của thay đổi, giao sau đó, thử lại với thời gian chờ tăng dần và dừng sau `DXOS_OUTBOX_MAX_ATTEMPTS` lần.
+  ADMIN xem và thử lại ở `GET /api/v1/outbox`, `POST /api/v1/outbox/{id}/retry` và tab Hàng đợi sự kiện.
+- Webhook theo mô hình: mỗi dòng lịch sử gửi dạng JSON có chữ ký tới đích mà tệp mô hình chọn (`webhook: <tên đích>`), định dạng `json` hoặc `chat` cho Mattermost và Slack; các dòng của một hồ sơ tới đúng thứ tự.
+- Thông điệp `admin.event` báo việc áp dụng mô hình và thay đổi tài khoản.
+- `GET /api/v1/events` cho bên nhận lỡ tin kéo lại theo `eventId`.
+- Lịch sử hồ sơ nối thành chuỗi hash, mỗi giờ ghi một điểm neo ra kho đối tượng; `dxos history verify` và `GET /api/v1/history/verify` chỉ ra dòng bị sửa, xóa hoặc chèn.
+- `examples/history-witness` cho bên nhận giữ `eventId` và `hash` rồi so với hệ thống.
+- `dxos archive` xuất hồ sơ đã xong ra Parquet kèm `manifest.json`; `dxos archive check` kiểm lại.
+- `examples/itot-simulator` giả lập thiết bị tạo hồ sơ sự cố qua API; gửi lại cùng một quan sát thì lõi từ chối.
+
+### Tệp đính kèm
+
+- Trường kiểu `file` lưu tệp ở SeaweedFS, quyền theo quyền của bản ghi; loại tệp nhận được đặt bằng `engine.files.allowed-extensions`, mỗi hồ sơ tối đa 20 tệp, link tải luôn ở dạng đính kèm.
+- ClamAV quét tệp khi bật bằng `dxos av on`; tệp nhiễm bị từ chối với 422 `ERR_FILE_INFECTED`, ClamAV không trả lời thì 503 `ERR_SCAN_UNAVAILABLE` và tệp không được lưu.
+- Tệp gỡ khỏi hồ sơ rời kho sau `DXOS_FILE_DELETE_DELAY` (mặc định 24 giờ) để bản sao lưu luôn đủ tệp; tệp của giao dịch bị hủy xóa ngay.
+
+### Giao diện
+
+- Giao diện react-admin dựng từ metadata, toàn tiếng Việt, có chế độ sáng và tối: hộp việc, chi tiết hồ sơ dạng thẻ với dòng thời gian, lịch đặt chỗ kéo thả được, trang thống kê.
+  Backend trả thông báo tiếng Anh kèm `errorCode`, frontend dịch theo `shell/backendMessages.ts`.
+- Bảng điều khiển `/console` cho ADMIN: thư viện mẫu, trình soạn YAML (Monaco) theo JSON Schema, xem kế hoạch, áp dụng, lịch sử áp dụng kèm tên người, quay về, sơ đồ quy trình, mô hình dừng giữa chừng (Tiếp tục, Hủy bỏ) và nút "Sửa phần lệch".
+  API đọc cho bảng điều khiển: `/api/v1/models/schema`, `families`, `templates` và `{model}/versions`.
+- Menu người dùng có "Tài khoản của tôi", mở Account Console của Keycloak.
+- Giao diện vừa màn hình rộng 360 px.
+
+### Cài đặt và vận hành
+
+- Cài bằng một lệnh: `dxos-install.sh` phát hành kèm mỗi bản tải gói, kiểm SHA-256 và cài vào `~/.dxos`; `install.sh --upgrade` nâng cấp bản đã cài, giữ `.env` và dữ liệu.
+- Lệnh `dxos`: `start`, `stop`, `status`, `logs`, `admin`, `update`, `doctor`, `backup`, `av`, `plan`, `apply`, `history`, `reconcile`, `archive`, `uninstall`; `dxos start` tạo tài khoản `admin` đầu tiên với mật khẩu tạm.
+- `deploy/make_env.sh` sinh `.env` với mật khẩu ngẫu nhiên; cài và chạy stack không cần Python.
+- Tự phục hồi: mọi service chạy lâu có `restart: unless-stopped`, `dxos reconcile` đưa stack về đúng khai báo và chạy mỗi phút bằng systemd user timer.
+- `deploy/backup.sh` sao lưu mã hóa Postgres và kho tệp; `verify` nạp bản dump vào Postgres tạm và kiểm mọi tệp đính kèm có trong kho.
+- Màn hình giám sát `/monitor/` gửi cảnh báo qua `ALERT_WEBHOOK_URL_ADMIN` hoặc `ALERT_WEBHOOK_URL`.
+- Stack gồm `postgres` (image chính thức `postgres:16-bookworm`), `keycloak`, `seaweedfs`, `backend`, `apisix`, `frontend`, `portal`, `monitor` và `clamav` qua profile `av`.
+- Biến tùy chọn `KEYCLOAK_HOSTNAME` trong `deploy/.env.example` (đặt bằng `GATEWAY_PUBLIC_URL` khi đứng sau proxy HTTPS) bật `KC_HOSTNAME` và `KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true` cho Keycloak; không đặt thì Keycloak chạy như mặc định.
+
+### Kiểm thử, CI và tài liệu
+
+- Mười ba script `deploy/dev/check_*.py` kiểm API, phục hồi, hồ sơ, đổi mô hình, quy trình, đặt chỗ, kịch bản trình diễn, chốt chặn, người dùng, tài liệu khớp OpenAPI, rào chắn của mọi mô hình, webhook và tệp mô hình lúc khởi động.
+- Test WireMock cho client Keycloak, bộ gửi webhook và bộ dò dịch vụ; test chậm gắn `@Tag("slow")`.
+- CI gồm tám workflow: `Backend`, `Frontend`, `Platform`, `Compliance`, `Dependencies`, `Docs`, `Release Images`, `Release Package`; action ghim theo SHA, mọi job có giới hạn thời gian.
+  Mỗi pull request chạy hai nhóm kiểm API trên stack rỗng, một bài Playwright cho bảng điều khiển (`e2e/`), kiểm gói phát hành, SBOM khớp tệp khóa, giấy phép, tệp bắt buộc, cú pháp workflow và bí mật.
+- `Release Package` chỉ phát hành tag `vX.Y.Z` nằm trên `main`, kiểm gói trước khi đăng và không ghi đè tệp đã có.
+- `.github/rulesets/` lưu quy tắc của nhánh `main` và của tag `v*` để nhập vào GitHub.
+- Trang tài liệu ở `website/` (Docusaurus) đăng lên GitHub Pages khi đẩy vào `main`.
+- Tài liệu vận hành chia ba tệp ở `deploy/`: `OPERATIONS.md`, `MONITORING.md` và `INTEGRATIONS.md`; `docs/TESTING.md` là hướng dẫn kiểm.
+
+### Gỡ bỏ và giấy phép
+
+- Gỡ `bi/` (Superset), `chat/` (Mattermost), `ai/`, `data/`, trọng số và mã nhận diện bệnh lúa, luồng chẩn đoán, bộ đánh giá RAG, kho văn bản của HaUI, reranker mMARCO và Qwen; bản cũ ở tag `v1.1.1`.
+  Portal chỉ còn ứng dụng chính, Keycloak Admin, màn hình giám sát và Swagger; biến `PORTAL_BI_URL` và `PORTAL_CHAT_URL` không còn dùng.
+- Mã của dự án chỉ có một giấy phép, Apache-2.0.
+- Mỗi bản build của ứng dụng web và của trang tài liệu kèm `third-party-licenses.txt` ở gốc, chép thông báo bản quyền của từng thư viện npm đóng gói trong đó (`frontend/scripts/third-party-licenses.mjs`).
+- `.github/component-catalog.json` khai báo image và tệp tải về; `check_licenses.py` chỉ cho giấy phép OSI và chặn mục thiếu.
+  `DEPENDENCIES.txt`, `NOTICE` và các tệp SBOM ghi đúng thành phần của bản phát hành; số phiên bản của backend, web và SBOM là `2.0.0`.
 
 ## [1.1.1] - 2026-10-30
 

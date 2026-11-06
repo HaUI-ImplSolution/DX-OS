@@ -1,0 +1,163 @@
+# SPDX-License-Identifier: Apache-2.0
+name: Release Images
+run-name: Release images (${{ inputs.services }}) from ${{ github.ref_name }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      services:
+        description: "Images to build: all, or a comma list of backend,monitor,frontend,portal,sso"
+        required: true
+        default: all
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    name: Plan the images
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      names: ${{ steps.pick.outputs.names }}
+    steps:
+      - name: Plan the images to build
+        id: pick
+        env:
+          REQUESTED: ${{ inputs.services }}
+        run: |
+          ALL="backend monitor frontend portal sso"
+          if [[ "$REQUESTED" == "all" ]]; then
+            PICKED="$ALL"
+          else
+            PICKED="$(echo "$REQUESTED" | tr ',' ' ')"
+            for name in $PICKED; do
+              [[ " $ALL " == *" $name "* ]] || { echo "Unknown image: $name"; exit 1; }
+            done
+          fi
+          # The names are split on purpose.
+          # shellcheck disable=SC2086
+          echo "names=$(printf '%s\n' $PICKED | jq -R . | jq -sc .)" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: "Build image (${{ matrix.name }})"
+    needs: plan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        name: ${{ fromJSON(needs.plan.outputs.names) }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Resolve image name and build arguments
+        id: image
+        run: |
+          OWNER="${GITHUB_REPOSITORY_OWNER,,}"
+          echo "repo=ghcr.io/${OWNER}/dxos-${{ matrix.name }}" >> "$GITHUB_OUTPUT"
+          echo "sha=sha-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          # Run from a vX.Y.Z tag, the images also get that tag, which deploy/install.sh and update.sh accept.
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            echo "version=$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=sha-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          fi
+          # The monitor is built from the backend sources, with its own target of the same Dockerfile.
+          if [[ "${{ matrix.name }}" == "monitor" ]]; then
+            echo "context=backend" >> "$GITHUB_OUTPUT"
+            echo "target=monitor" >> "$GITHUB_OUTPUT"
+          else
+            echo "context=${{ matrix.name }}" >> "$GITHUB_OUTPUT"
+            echo "target=" >> "$GITHUB_OUTPUT"
+          fi
+          {
+            echo "args<<EOF"
+            # Same values as the frontend build in deploy/docker-compose.yml: the web app calls the
+            # API and Keycloak on its own origin, so one image serves every address.
+            if [[ "${{ matrix.name }}" == "frontend" ]]; then
+              echo "VITE_API_BASE_URL="
+              echo "VITE_KEYCLOAK_URL="
+              echo "VITE_KEYCLOAK_CLIENT_ID=dxos-web"
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      # The image is built once for the scan and again, from the same cache, to push it.
+      # A finding is reported as a warning: the base images and the bundled tools are fixed by moving to a newer tag.
+      # The pgschema binary is left out: its newest release is built with an older Go toolchain and libraries,
+      # and the tool only runs on the host when an administrator applies a model, with no open port.
+      - name: Build the image for the scan
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: ${{ steps.image.outputs.context }}
+          file: ${{ steps.image.outputs.context }}/Dockerfile
+          target: ${{ steps.image.outputs.target }}
+          load: true
+          push: false
+          provenance: false
+          platforms: linux/amd64
+          build-args: ${{ steps.image.outputs.args }}
+          tags: dxos-scan:${{ matrix.name }}
+          cache-from: type=registry,ref=${{ steps.image.outputs.repo }}:buildcache
+
+      - name: Scan the image for fixable HIGH and CRITICAL vulnerabilities
+        env:
+          NAME: ${{ matrix.name }}
+        run: |
+          if ! docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$PWD:/repo:ro" \
+              aquasec/trivy:0.58.1 image --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 \
+              --skip-files /usr/local/bin/pgschema --ignorefile /repo/.trivyignore "dxos-scan:${NAME}"; then
+            echo "::warning title=Image vulnerabilities::${NAME} has fixable HIGH or CRITICAL vulnerabilities"
+          fi
+
+      - name: Build and push
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: ${{ steps.image.outputs.context }}
+          file: ${{ steps.image.outputs.context }}/Dockerfile
+          target: ${{ steps.image.outputs.target }}
+          push: true
+          provenance: false
+          platforms: linux/amd64
+          build-args: ${{ steps.image.outputs.args }}
+          tags: |
+            ${{ steps.image.outputs.repo }}:latest
+            ${{ steps.image.outputs.repo }}:${{ steps.image.outputs.sha }}
+            ${{ steps.image.outputs.repo }}:${{ steps.image.outputs.version }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=registry,ref=${{ steps.image.outputs.repo }}:buildcache
+          cache-to: type=registry,ref=${{ steps.image.outputs.repo }}:buildcache,mode=max,image-manifest=true,oci-mediatypes=true
+
+  summary:
+    name: Show the update command
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Print the update command for the server
+        run: |
+          {
+            echo "Published \`latest\` and \`sha-${GITHUB_SHA::7}\`. On the server:"
+            echo '```'
+            echo "cd DX-OS/deploy && git pull && ./update.sh"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

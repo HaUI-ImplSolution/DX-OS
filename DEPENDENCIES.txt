@@ -1,0 +1,202 @@
+DX-OS
+Copyright 2026 HaUI-ImplSolution
+
+Sản phẩm dự thi OLP Phần mềm nguồn mở 2026 (khối thi DX-OS, VFOSSA),
+phát triển tại Trường Công nghệ Thông tin và Truyền thông, Đại học Công nghiệp Hà Nội.
+
+Bản quyền và giấy phép của mã nguồn, thành phần bên thứ ba, mô hình và dữ liệu dùng trong sản phẩm.
+Văn bản giấy phép đầy đủ: LICENSE (Apache-2.0); thông báo ghi công: NOTICE.
+Danh mục đầy đủ theo phiên bản: thư mục sbom/ (CycloneDX).
+Bản build của ứng dụng web và của trang tài liệu kèm third-party-licenses.txt, chép thông báo bản quyền của từng thư viện npm đóng gói trong đó.
+Image khai báo ở .github/component-catalog.json; .github/scripts/check_licenses.py kiểm danh mục này ở mỗi pull request.
+
+1. GIẤY PHÉP CỦA MÃ NGUỒN
+=========================
+
++---------------------------------------------+-----------------------+----------------------------------------------+
+| Phần                                        | Giấy phép             | Ghi chú                                      |
++=============================================+=======================+==============================================+
+| backend, frontend, website, deploy, portal, | Apache-2.0 (LICENSE)  | SPDX header ở mọi file mã nguồn              |
+| sso, seaweedfs, e2e, examples               |                       |                                              |
++---------------------------------------------+-----------------------+----------------------------------------------+
+
+Header của file mã nguồn là SPDX-License-Identifier: Apache-2.0.
+Dòng header nằm ở đầu file Java, TypeScript, JavaScript, Python, shell và YAML; các file còn lại (tài liệu, JSON, ảnh) theo giấy phép của thư mục chứa chúng.
+.github/scripts/check_licenses.py kiểm header, giấy phép của từng dependency trong sbom/ và danh mục image, mô hình, tệp dữ liệu ở mỗi pull request;
+ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
+
+2. BACKEND (MAVEN)
+==================
+
++----------------------------------------+----------------------------------+----------------------------------------+
+| Thành phần                             | Giấy phép                        | Vai trò                                |
++========================================+==================================+========================================+
+| Spring Boot, Spring Framework, Spring  | Apache-2.0                       | Khung ứng dụng, xác thực token         |
+| Security                               |                                  | Keycloak                               |
++----------------------------------------+----------------------------------+----------------------------------------+
+| springdoc-openapi                      | Apache-2.0                       | Swagger UI và OpenAPI                  |
++----------------------------------------+----------------------------------+----------------------------------------+
+| Thymeleaf (cùng attoparser, unbescape) | Apache-2.0                       | Khung trang của màn hình giám sát      |
++----------------------------------------+----------------------------------+----------------------------------------+
+| Spring Security OAuth2 Client, Nimbus  | Apache-2.0                       | Đăng nhập Keycloak của màn hình giám   |
+| OAuth 2.0 SDK (cùng json-smart,        |                                  | sát                                    |
+| accessors-smart, content-type, lang-   |                                  |                                        |
+| tag, jcip-annotations)                 |                                  |                                        |
++----------------------------------------+----------------------------------+----------------------------------------+
+| ASM                                    | BSD-3-Clause                     | Phụ thuộc của json-smart               |
++----------------------------------------+----------------------------------+----------------------------------------+
+| Flyway                                 | Apache-2.0                       | Migration schema                       |
++----------------------------------------+----------------------------------+----------------------------------------+
+| AWS SDK for Java v2 (s3, url-          | Apache-2.0                       | Lưu tệp đính kèm và ký link có hạn     |
+| connection-client)                     |                                  | trên kho S3                            |
++----------------------------------------+----------------------------------+----------------------------------------+
+| Hibernate Validator                    | Apache-2.0                       | Kiểm dữ liệu request                   |
++----------------------------------------+----------------------------------+----------------------------------------+
+| Flowable (flowable-spring)             | Apache-2.0                       | Động cơ luồng công việc nhúng          |
++----------------------------------------+----------------------------------+----------------------------------------+
+| pgschema 1.13.4 (trong image backend)  | Apache-2.0                       | So sánh và đổi lược đồ                 |
++----------------------------------------+----------------------------------+----------------------------------------+
+| SnakeYAML                              | Apache-2.0                       | Đọc tệp mô hình                        |
++----------------------------------------+----------------------------------+----------------------------------------+
+| AspectJ                                | EPL-2.0                          | Method security                        |
++----------------------------------------+----------------------------------+----------------------------------------+
+| PostgreSQL JDBC Driver                 | BSD-2-Clause                     | Kết nối cơ sở dữ liệu                  |
++----------------------------------------+----------------------------------+----------------------------------------+
+| Lombok                                 | MIT                              | Sinh mã lúc build, không vào runtime   |
++----------------------------------------+----------------------------------+----------------------------------------+
+| Testcontainers, JUnit 5, Mockito,      | MIT, EPL-2.0, Apache-2.0         | Chỉ khi chạy test                      |
+| AssertJ                                |                                  |                                        |
++----------------------------------------+----------------------------------+----------------------------------------+
+| ArchUnit                               | Apache-2.0                       | Chỉ khi chạy test, kiểm ranh giới gói  |
++----------------------------------------+----------------------------------+----------------------------------------+
+| WireMock (bản standalone) [2]          | Apache-2.0; thư viện đóng gói:   | Chỉ khi chạy test, giả lập HTTP        |
+|                                        | Apache-2.0, MIT, BSD-3-Clause,   |                                        |
+|                                        | EPL-2.0                          |                                        |
++----------------------------------------+----------------------------------+----------------------------------------+
+| formatter-maven-plugin                 | Apache-2.0                       | Chỉ khi build, kiểm định dạng mã       |
++----------------------------------------+----------------------------------+----------------------------------------+
+| Eclipse Temurin (OpenJDK 21)           | GPL-2.0 with Classpath Exception | Base image build và runtime, chạy      |
+|                                        |                                  | nguyên bản                             |
++----------------------------------------+----------------------------------+----------------------------------------+
+
+3. WEB (NPM)
+============
+
++--------------------------------------------------------------+--------------+--------------------------------------+
+| Thành phần                                                   | Giấy phép    | Vai trò                              |
++==============================================================+==============+======================================+
+| React, React DOM, react-router-dom, Vite, @vitejs/plugin-    | MIT          | Web                                  |
+| react                                                        |              |                                      |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| oidc-client-ts                                               | MIT          | Đăng nhập OIDC cho web               |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| react-admin, @mui/material, @mui/icons-material,             | MIT          | Giao diện dựng từ metadata của lõi   |
+| @emotion/react, @emotion/styled                              |              |                                      |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| monaco-editor, monaco-yaml                                   | MIT          | Trình soạn mô hình (bảng điều khiển) |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| @rjsf/core, @rjsf/mui, @rjsf/utils, @rjsf/validator-ajv8     | Apache-2.0   | Form dựng từ JSON Schema             |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| ajv, yaml                                                    | MIT, ISC     | Kiểm schema, đọc và ghi YAML         |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| @xyflow/react                                                | MIT          | Sơ đồ quy trình, chỉ để xem          |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| @fullcalendar/core, daygrid, timegrid, interaction, react    | MIT          | Lịch của thực thể đặt chỗ            |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| dompurify (qua monaco-editor)                                | MPL-2.0 OR   | Làm sạch nội dung hiển thị           |
+|                                                              | Apache-2.0   | [3]                                  |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| TypeScript                                                   | Apache-2.0   | Web                                  |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| css-mediaquery (qua react-admin)                             | BSD-3-Clause | Truy vấn media của MUI               |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| ra-i18n-polyglot                                             | MIT          | Dịch chữ của react-admin             |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| node-polyglot (qua ra-i18n-polyglot)                         | BSD-2-Clause | Dịch chữ của react-admin             |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| Docusaurus (core, preset-classic, faster), @mdx-js/react,    | MIT          | Trang tài liệu website/, chỉ dựng ra |
+| clsx, prism-react-renderer                                   |              | file tĩnh                            |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| caniuse-lite (qua browserslist, Docusaurus)                  | CC-BY-4.0    | Dữ liệu trình duyệt, chỉ lúc dựng    |
+|                                                              |              | trang tài liệu [4]                   |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| mdn-data (qua css-tree, Docusaurus)                          | CC0-1.0      | Dữ liệu CSS, chỉ lúc dựng trang      |
+|                                                              |              | tài liệu [4]                         |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| nginx 1.30                                                   | BSD-2-Clause | Image phục vụ web và portal          |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| Node.js 22 (node:22-alpine)                                  | MIT          | Chỉ khi build web                    |
++--------------------------------------------------------------+--------------+--------------------------------------+
+
+4. HẠ TẦNG VÀ CÔNG CỤ
+=====================
+
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Thành phần                           | Giấy phép                            | Vai trò                              |
++======================================+======================================+======================================+
+| PostgreSQL 16                        | PostgreSQL License                   | Dữ liệu nghiệp vụ                    |
+| (postgres:16-bookworm)               |                                      |                                      |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Keycloak 26.8.2                      | Apache-2.0                           | Định danh, SSO                       |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Apache APISIX 3.11.0 (standalone)    | Apache-2.0                           | API Gateway: route, kiểm JWT, giới   |
+|                                      |                                      | hạn tốc độ                           |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| SeaweedFS (image                     | Apache-2.0                           | Lưu tệp đính kèm; chạy nguyên bản,   |
+| chrislusf/seaweedfs:4.51)            |                                      | không sửa mã                         |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| ClamAV 1.5.4 (clamav/clamav) [1]     | GPL-2.0                              | Quét mã độc tệp tải lên; dịch vụ     |
+|                                      |                                      | riêng ở profile av, tắt mặc định     |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Alpine Linux 3.20 (alpine:3.20)      | MIT, GPL-2.0 (nhiều gói)             | Image phụ trợ chạy script khi dựng   |
+|                                      |                                      | stack                                |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Debian, Ubuntu (image nền)           | Giấy phép tự do của từng gói         | Nền của image APISIX (Debian) và     |
+|                                      |                                      | sso (Ubuntu), chạy nguyên bản        |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| gitleaks v8.30.1                     | MIT                                  | Quét secret trong CI, chạy trong     |
+|                                      |                                      | container                            |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| actionlint 1.7.12                    | MIT                                  | Kiểm cú pháp workflow trong CI, chạy |
+|                                      |                                      | trong container                      |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Playwright (@playwright/test) 1.65   | Apache-2.0                           | Kiểm giao diện web trên trình duyệt  |
+|                                      |                                      | trong CI, chỉ là công cụ dev;        |
+|                                      |                                      | tải Chromium lúc chạy                |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Trivy 0.58.1                         | Apache-2.0                           | Quét lỗ hổng phụ thuộc trong CI,     |
+|                                      |                                      | chạy trong container                 |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| restic 0.17.3                        | BSD-2-Clause                         | Sao lưu mã hóa của deploy/backup.sh, |
+|                                      |                                      | chạy trong container, không đóng gói |
+|                                      |                                      | trong runtime                        |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| DuckDB 1.4.1 (duckdb/duckdb)         | MIT                                  | dxos archive: xuất Parquet, chạy     |
+|                                      |                                      | trong container; tải extension       |
+|                                      |                                      | postgres từ mạng lần đầu             |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| CycloneDX (@cyclonedx/cyclonedx-npm, | Apache-2.0                           | Sinh SBOM                            |
+| cyclonedx-maven-plugin)              |                                      |                                      |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| GitHub Actions (actions/*,           | MIT, Apache-2.0                      | Chỉ trong CI, ghim theo SHA          |
+| docker/*)                            |                                      |                                      |
++--------------------------------------+--------------------------------------+--------------------------------------+
+
+5. GHI CHÚ
+==========
+
+[1] ClamAV được giữ vì đề thi yêu cầu kiểm dịch mã độc ngay tại cửa ngõ (nguyên lý Zero-Trust), và ClamAV là bộ quét mã độc nguồn mở được dùng rộng rãi.
+    Quét mã độc tắt mặc định, chỉ bật bằng `dxos av on`.
+    Dự án kéo image chính thức nguyên bản khi chạy, không đóng gói, không sửa và không phân phối lại nó.
+    Image kèm libclamunrar (giải nén RAR) theo giấy phép UnRAR, không phải mã mở; thư viện này nạp lúc chạy và không liên kết với libclamav, và thiếu nó thì ClamAV vẫn chạy, chỉ không giải nén RAR.
+    Điều khoản của kho chữ ký virus chưa có văn bản chính thức để xác nhận.
+
+[2] WireMock đóng gói Jetty và Servlet API theo nhiều giấy phép.
+    Dự án chọn Apache-2.0 cho Jetty và EPL-2.0 cho Servlet API, không chọn GPL-2.0 with Classpath Exception.
+    WireMock chỉ dùng khi chạy test.
+
+[3] dompurify theo giấy phép kép MPL-2.0 OR Apache-2.0; dự án chọn Apache-2.0.
+
+[4] caniuse-lite (CC-BY-4.0) và mdn-data (CC0-1.0) là dữ liệu, không phải mã.
+    Chúng chỉ được đọc lúc dựng trang tài liệu và không có trong trang đã dựng.
+    Hai gói được nêu tên kèm lý do ở .github/dependency-exceptions.json.

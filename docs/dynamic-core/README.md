@@ -326,7 +326,7 @@ Thêm năng lực mới nghĩa là thêm provider, không phải sửa lõi.
 | Trục sự kiện                   | Bảng outbox trong PostgreSQL             | Webhook theo mô hình, API kéo sự kiện theo `eventId`, thông điệp của việc áp dụng mô hình và của tài khoản |
 | Thông báo                       | Mattermost hoặc Slack do người triển khai cấp | Đích webhook dạng `chat`: việc mới, sắp đến hạn, quá hạn |
 | Báo cáo                         | Superset                                  | Sinh dataset từ mô hình                                      |
-| AI | `ai/`, pgvector | Khai báo nguồn tri thức và tác tử |
+| AI | Làm sau | Khai báo nguồn tri thức và tác tử |
 | Vận hành                        | `dx-monitor`, `deploy/backup.sh`          | Giữ nguyên                                                    |
 
 ### Nguyên tắc mã nguồn
@@ -470,7 +470,7 @@ Khai báo trên một mô hình bất kỳ để có hỏi đáp kèm nguồn v�
 Có hồ sơ mới thì AI đề xuất và dẫn nguồn, người xác nhận.
 Đây là chuỗi từ P tới I đúng với Human-in-the-loop của đề, và cũng chứng minh cơ chế provider hoạt động.
 
-**Bản dự thi** có tìm kiếm tri thức có nguồn qua `ai/`; hỏi đáp sinh câu trả lời và tác tử đề xuất giá trị một trường làm sau, khi có mô hình ngôn ngữ mở, đều ở mức nên có.
+**Bản dự thi** chưa có phần AI: tìm kiếm tri thức có nguồn, hỏi đáp sinh câu trả lời và tác tử đề xuất giá trị một trường làm sau, khi có mô hình mở hoàn toàn, đều ở mức nên có.
 Tác tử tự hành động không cần xác nhận để sau.
 
 ## Điểm mở rộng
@@ -562,7 +562,7 @@ Bản công khai trên VPS giữ `v1.1.1` cho đến khi lõi mới đạt và �
 ### Những gì giữ lại
 
 - **Hạ tầng:** Keycloak, APISIX, SeaweedFS, PostgreSQL, ClamAV; thông báo chat đi qua webhook dạng `chat`, báo cáo dựng lại theo mô hình khi đến phần đó, cấu hình Superset và Mattermost của bản cũ ở tag `v1.1.1`.
-- **Dịch vụ:** `ai/` (tìm kiếm tri thức có nguồn, chạy riêng ngoài compose) và `dx-monitor`.
+- **Dịch vụ:** `dx-monitor`.
 - **Dự án:** bộ triển khai, CI, kiểm tra giấy phép, SBOM, quy trình phát hành.
 - **`dx-core` rút gọn thành thư viện:** giữ bảo mật, audit, lưu trữ và quét tệp, trạng thái hệ thống, client Keycloak; phần gắn với ứng dụng cũ như workflow viết tay, workspace, thông báo cũ được gỡ và dựng lại theo thiết kế mới khi cần.
 - **Module backend sau khi dọn:** `dx-model`, `dx-core`, `dx-engine` (dịch vụ chạy được) và `dx-monitor`; `dx-core-api` và `dx-host` bỏ vì không còn ứng dụng nào cắm vào lõi.
@@ -577,7 +577,7 @@ Bản công khai trên VPS giữ `v1.1.1` cho đến khi lõi mới đạt và �
 | `backend/app-farm`, `backend/app-lab`             | 173 và 94 tệp                          |
 | `frontend/src/apps/farm`, `frontend/src/apps/lab` | 17 và 16 tệp                           |
 | `mobile/`                                         | 69 tệp                                  |
-| Mã nhận diện bệnh lúa, luồng chẩn đoán, trọng số, bộ đánh giá RAG và các script của chúng | Khoảng 230 MB, trong `ai/` |
+| Mã nhận diện bệnh lúa, luồng chẩn đoán, trọng số, bộ đánh giá RAG và các script của chúng | Khoảng 230 MB |
 | `data/`: dữ liệu Farm, kho văn bản của HaUI, bộ câu hỏi đánh giá | 41 tệp, gỡ toàn bộ |
 | `AppModule`, `DXOS_APP`, `dx-core/workflow`       | Thay bằng tệp mô hình và Flowable   |
 
@@ -646,24 +646,23 @@ Nơi lưu mã và máy chủ demo như GitHub, VPS, Cloudflare không thuộc s�
 
 ### Kết quả rà soát
 
-Rà soát ngày 2026-11-02 từ `COPYRIGHT.txt`, GitHub API và Hugging Face; cột kết luận cập nhật ngày 2026-11-03 sau khi xử lý ở Phase 10.
+Rà soát ngày 2026-11-02 từ `DEPENDENCIES.txt`, GitHub API và Hugging Face; cột kết luận cập nhật ngày 2026-11-03 sau khi xử lý ở Phase 10.
 
 
 | Thành phần                                                      | Giấy phép                                                                                                                                                                                                                                                    | Kết luận                                                        |
 | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
 | Keycloak, APISIX, Superset, SeaweedFS, Flowable, pgschema         | Apache-2.0                                                                                                                                                                                                                                                     | Đạt                                                             |
 | react-admin | MIT | Đạt; chỉ dùng phần MIT, không dùng gói Enterprise |
-| PostgreSQL, pgvector                                              | PostgreSQL License                                                                                                                                                                                                                                             | Đạt                                                             |
+| PostgreSQL                                                        | PostgreSQL License                                                                                                                                                                                                                                             | Đạt                                                             |
 | ClamAV                                                            | GPL-2.0                                                                                                                                                                                                                                                        | Đạt; điều khoản của kho chữ ký mã độc cần kiểm thêm |
-| Mã `ai/`                                                         | AGPL-3.0                                                                                                                                                                                                                                                       | Đạt, chạy tiến trình riêng                                  |
 | Mattermost Team Edition | [Tách MIT cho bản build và AGPL cho mã nguồn, đang bị tranh cãi](https://docs.mattermost.com/product-overview/faq-license.html); [bản 11 giới hạn 250 người dùng](https://forum.mattermost.com/t/mattermost-v11-changes-in-free-offerings/25126) | **Chưa đạt rõ ràng**; đã gỡ khỏi cây mã |
-| Qwen2.5 1.5B | Trọng số Apache-2.0, dữ liệu huấn luyện không công khai theo hiểu biết hiện có | Đã gỡ khỏi bản phát hành; `ai/` không dùng mô hình ngôn ngữ |
-| Reranker mMARCO | Thẻ mô hình Apache-2.0, nhưng [MS MARCO chỉ cho nghiên cứu phi thương mại](https://microsoft.github.io/msmarco/Notice) và mMARCO dựa trên bộ này | Đã bỏ khỏi `ai/`; chỉ thêm lại khi có mô hình đạt tiêu chuẩn, sau khi đo chất lượng truy xuất |
-| Embedding paraphrase-multilingual-MiniLM | Apache-2.0 | Đạt về giấy phép; dữ liệu huấn luyện chưa kiểm theo định nghĩa của OSI, khai báo ở `.github/license-catalog.json` |
-| Kho văn bản HaUI ở `data/rag/lab` | © Đại học Công nghiệp Hà Nội, theo `COPYRIGHT.txt` | Đã gỡ khỏi cây mã |
+| Qwen2.5 1.5B | Trọng số Apache-2.0, dữ liệu huấn luyện không công khai theo hiểu biết hiện có | Đã gỡ khỏi bản phát hành |
+| Reranker mMARCO | Thẻ mô hình Apache-2.0, nhưng [MS MARCO chỉ cho nghiên cứu phi thương mại](https://microsoft.github.io/msmarco/Notice) và mMARCO dựa trên bộ này | Đã gỡ; chỉ thêm lại khi có mô hình đạt tiêu chuẩn, sau khi đo chất lượng truy xuất |
+| Embedding paraphrase-multilingual-MiniLM | Apache-2.0 | Đã gỡ cùng `ai/`: dữ liệu huấn luyện chưa kiểm theo định nghĩa của OSI |
+| Kho văn bản HaUI ở `data/rag/lab` | © Đại học Công nghiệp Hà Nội, theo `DEPENDENCIES.txt` | Đã gỡ khỏi cây mã |
 | Redis trong môi trường đánh giá RAG | RSALv2 hoặc SSPLv1 | Đã gỡ cùng bộ đánh giá RAG |
 | Langfuse trong môi trường đánh giá RAG | MIT phần lõi, có phần EE riêng | Đã gỡ cùng bộ đánh giá RAG |
-| cloudflared                                                       | Apache-2.0, nhưng Cloudflare Tunnel và Access là dịch vụ đóng                                                                                                                                                                                           | Được dùng vì tùy chọn, phải công bố                     |
+| cloudflared | Apache-2.0, nhưng Cloudflare Tunnel và Access là dịch vụ đóng | Ngoài repository: chỉ máy chủ công khai của đội dùng, tệp cấu hình giữ ngoài repository; hệ thống chạy được không cần |
 
 Chẩn đoán ảnh, dữ liệu Farm và dashboard Superset đọc Open-Meteo và OpenFreeMap đã rời bản phát hành.
 
@@ -676,7 +675,7 @@ Xử lý theo tiến độ của Tầng 1 và Tầng 2:
 | Việc                | Khi nào                                                                       | Hướng xử lý                                                                                                                                                                                               |
 | ---------------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | LLM                  | Khi bắt đầu phần AI, để kịp đo trước khi trình diễn                | Mặc định dùng mô hình đạt tiêu chuẩn; [Apertus 8B](https://huggingface.co/swiss-ai/Apertus-8B-Instruct-2509) (Apache-2.0) và OLMo 2 là ứng viên, cần thử tiếng Việt và tốc độ trên CPU |
-| Không có LLM đạt | Sau khi thử LLM | `ai/` không dùng mô hình ngôn ngữ cho đến khi có mô hình đạt; Qwen chỉ là tùy chọn người dùng tự gắn, ghi rõ là mở trọng số |
+| Không có LLM đạt | Sau khi thử LLM | Phần AI chưa làm cho đến khi có mô hình đạt; Qwen chỉ là tùy chọn người dùng tự gắn, ghi rõ là mở trọng số |
 | Reranker             | Khi bắt đầu phần AI                                                        | Thay hoặc bỏ, đo lại chất lượng truy xuất                                                                                                                                                             |
 | Chat                 | Dịch vụ chat do người triển khai cấp; thông báo đi qua webhook dạng `chat` nên đổi dịch vụ chỉ đổi địa chỉ | [Zulip](https://github.com/zulip/zulip) (Apache-2.0) là ứng viên thay Mattermost, cần kiểm các phụ thuộc của nó                                                                                     |
 
@@ -688,10 +687,10 @@ Mô hình AI mở hoàn toàn có thể trả lời tiếng Việt kém hơn và
 |---|---|
 | Kho quy chế HaUI | Gỡ khỏi cây mã cùng `data/`; bản cũ ở tag `v1.1.1` |
 | Dữ liệu tự tạo | Không còn dữ liệu tự tạo trong cây mã |
-| Redis và Langfuse trong đánh giá RAG | Gỡ cùng `ai/evaluation` |
-| cloudflared và dịch vụ Cloudflare | Giữ tùy chọn, công bố ở `COPYRIGHT.txt` và `.github/license-catalog.json` |
-| Kiểm tự động | `.github/scripts/check_licenses.py` kiểm image, mô hình và tệp trọng số, tài liệu, nén theo `.github/license-catalog.json` |
-| `COPYRIGHT.txt` và SBOM | Cập nhật theo thành phần của bản `2.0.0` |
+| Redis và Langfuse trong đánh giá RAG | Gỡ cùng bộ đánh giá RAG |
+| cloudflared và dịch vụ Cloudflare | Overlay đã gỡ khỏi repository; máy chủ công khai giữ tệp riêng ngoài repository |
+| Kiểm tự động | `.github/scripts/check_licenses.py` kiểm image, mô hình và tệp trọng số, tài liệu, nén theo `.github/component-catalog.json` |
+| `DEPENDENCIES.txt` và SBOM | Cập nhật theo thành phần của bản `2.0.0` |
 
 ## Công cụ
 
@@ -726,7 +725,7 @@ Số sao và giấy phép lấy từ GitHub API ngày 2026-11-02, trừ khi có 
 
 ## Đã xác minh
 
-Kết quả ở [`docs/TESTING.md`](../TESTING.md), mục 8:
+Cách kiểm ở [`docs/TESTING.md`](../TESTING.md); kết quả mỗi lần chạy ở tab Actions:
 
 - Flowable 8.0.0 chạy nhúng trên Spring Boot 4.1 bằng `flowable-spring` cấu hình tay, dùng chung giao dịch với việc ghi hồ sơ.
 - Chỉ cho dịch vụ lõi ghi, cùng Flowable nhúng, đủ để trạng thái không lệch: lỗi cố ý sau bước quy trình làm hồ sơ và quy trình cùng quay về.
@@ -735,11 +734,10 @@ Kết quả ở [`docs/TESTING.md`](../TESTING.md), mục 8:
 - react-admin dựng form và danh sách từ metadata cho kiểu văn bản, số, ngày giờ, lựa chọn và tham chiếu; mô hình thứ hai nạp lúc chạy không cần build lại giao diện.
 - pgschema đưa lược đồ về trạng thái đích khi đã có dữ liệu, với điều kiện lõi đổi tên cột, ràng buộc và chỉ mục trước; tự nó biến đổi tên thành xóa rồi thêm, nên lõi chặn mọi thao tác xóa mà mô hình không yêu cầu.
 - Kế hoạch xem trước khớp với áp dụng thật khi có đổi tên, và áp dụng lại sau lỗi giữa chừng về đúng trạng thái đích; kết quả thử ở [`docs/phase-7-model-change/04_TRADEOFFS_RISKS.md`](../phase-7-model-change/04_TRADEOFFS_RISKS.md).
-- Hành động hoàn tất (`add_to_group`, `remove_from_group`) đi qua bảng outbox và được thử lại tới khi Keycloak nhận, người triển khai xem lỗi và thử lại ở bảng điều khiển; tệp đính kèm tải lên và tải xuống qua gateway, tải về dạng đính kèm, và đối tượng trong kho bị xóa khi tệp hoặc hồ sơ bị gỡ; kết quả ở [`docs/TESTING.md`](../TESTING.md), mục 8.
-- Webhook theo mô hình gửi đúng đích kèm chữ ký; các dòng của một hồ sơ tới theo thứ tự, dòng sau chờ dòng cũ đã dừng; đích dạng `chat` chỉ gửi một câu không có nội dung hồ sơ; dòng nhắc hạn đến đúng một lần; kết quả ở [`docs/TESTING.md`](../TESTING.md), mục 8.
+- Hành động hoàn tất (`add_to_group`, `remove_from_group`) đi qua bảng outbox và được thử lại tới khi Keycloak nhận, người triển khai xem lỗi và thử lại ở bảng điều khiển; tệp đính kèm tải lên và tải xuống qua gateway, tải về dạng đính kèm, và đối tượng trong kho bị xóa khi tệp hoặc hồ sơ bị gỡ; các script kiểm ở [`docs/TESTING.md`](../TESTING.md), mục 4.
+- Webhook theo mô hình gửi đúng đích kèm chữ ký; các dòng của một hồ sơ tới theo thứ tự, dòng sau chờ dòng cũ đã dừng; đích dạng `chat` chỉ gửi một câu không có nội dung hồ sơ; dòng nhắc hạn đến đúng một lần; các script kiểm ở [`docs/TESTING.md`](../TESTING.md), mục 4.
 - `ProcessMigrationService` của Flowable chuyển được hồ sơ đang chạy sang mẫu mới và báo trước khi mẫu mới bỏ bước hiện tại; kết quả thử ở [`docs/phase-6-case-core/04_TRADEOFFS_RISKS.md`](../phase-6-case-core/04_TRADEOFFS_RISKS.md).
-- Dịch vụ `ai/` nạp tài liệu có nguồn và giấy phép vào pgvector rồi tìm bằng BM25 kết hợp cosine; câu hỏi ngoài kho và mã không có trong kho không có bằng chứng.
-- Bản `2.0.0` dựng từ một bản sao sạch của cây mã: stack lên đủ, chuỗi `check_*.py` đạt, `clean verify`, `tsc`, `pytest` của `ai/`, `check_licenses.py` và `check_routes.py` đạt; kết quả ở [`docs/TESTING.md`](../TESTING.md), mục 8.
+- Bản `2.0.0` dựng từ một bản sao sạch của cây mã: stack lên đủ, chuỗi `check_*.py` đạt, `clean verify`, `tsc`, `check_licenses.py` và `check_routes.py` đạt; các script kiểm ở [`docs/TESTING.md`](../TESTING.md), mục 4.
 
 ## Chưa xác minh
 
@@ -749,8 +747,6 @@ Kết quả ở [`docs/TESTING.md`](../TESTING.md), mục 8:
 - Phông chữ, biểu tượng và tài nguyên tĩnh của giao diện.
 - Chi tiết các ý tưởng lấy từ Frappe.
 - Mức tài nguyên của toàn bộ stack.
-- Dữ liệu huấn luyện của mô hình embedding theo định nghĩa Open Source AI của OSI.
-- Chất lượng tìm kiếm tiếng Việt của `ai/` trên một kho tài liệu lớn.
 
 ## Câu hỏi cho BTC
 

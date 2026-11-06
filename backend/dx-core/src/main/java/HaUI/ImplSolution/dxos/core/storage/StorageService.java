@@ -145,7 +145,7 @@ public class StorageService implements ObjectStorage {
     return presign(trimTrailingSlash(baseUrl), key, ttl, null);
   }
 
-  // Link for services inside the compose network (the AI service).
+  // Link for services inside the compose network.
   @Override
   public String internalPresignedUrl(String key, Duration ttl) {
     return presign(endpoint, key, ttl, null);

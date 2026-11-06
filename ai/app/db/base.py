@@ -1,6 +1,0 @@
-# SPDX-License-Identifier: AGPL-3.0-only
-from sqlalchemy.orm import DeclarativeBase
-
-
-class Base(DeclarativeBase):
-    pass

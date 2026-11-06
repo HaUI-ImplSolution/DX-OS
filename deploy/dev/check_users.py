@@ -126,7 +126,8 @@ def main():
     signin, text = grant_status("usr_lock", fresh)
     rt.check("T13-11 a new temporary password must be changed before it signs in",
              status == 200 and len(fresh) >= 12 and signin == 400 and "not fully set up" in text, f"{status} {signin} {text[:100]}")
-    rt.check("T13-11 and the old password no longer works", grant_status("usr_lock")[0] == 401)
+    old_status, old_text = grant_status("usr_lock")
+    rt.check("T13-11 and the old password no longer works", old_status in (400, 401) and "Invalid user credentials" in old_text, f"{old_status} {old_text[:100]}")
 
     # T13-12: an administrator keeps their own account, and the passwords stay out of the logs.
     status, _ = kc.api(admin, "PUT", f"/users/{user_id(admin, 'admin1')}/enabled", {"enabled": False})

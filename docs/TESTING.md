@@ -1,28 +1,40 @@
 # Hướng dẫn kiểm thử
 
-Tài liệu này nói cách kiểm các phần đã chạy của lõi và ghi kết quả gần nhất.
+Tài liệu này nói cách kiểm lõi, từng loại kiểm chạy ở đâu và những gì còn phải kiểm tay.
+Kết quả của từng lần chạy nằm ở tab Actions của repository, tài liệu này không chép lại.
 Mọi lệnh chạy từ gốc repo, trừ khi ghi khác; lệnh dựng stack ở [`README.md`](../README.md).
+Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`website/docs/evidence-matrix.md`](../website/docs/evidence-matrix.md).
 
 ## 1. Chuẩn bị
 
 | Cần có | Ghi chú |
 |---|---|
 | Docker và Docker Compose v2 | Backend `verify` dùng Testcontainers nên cần Docker chạy |
-| JDK 21 | Dùng Maven wrapper trong repo |
-| Node 20 trở lên | Cho `frontend` |
+| JDK 21 | Dùng Maven wrapper trong repo; đặt `JAVA_HOME` về JDK 21 nếu máy mặc định bản khác |
+| Node 22 trở lên | Cho `frontend`, `website` và `e2e` |
 | Python 3 | Cho các script kiểm ở `deploy/dev` |
 
-## 2. Kiểm tĩnh
+## 2. Các loại kiểm
 
-```bash
-cd backend && ./mvnw verify          # formatter, compile, test của dx-model, dx-core, dx-engine, dx-monitor
-cd frontend && npx tsc --noEmit
-python3 .github/scripts/check_licenses.py
-python3 deploy/apisix/check_routes.py
-cd ai && python -m pytest tests -q   # cần pip install -r requirements-dev.txt
-```
+| Loại | Lệnh | Chạy ở CI |
+|---|---|---|
+| Định dạng, biên dịch, test của backend | `cd backend && ./mvnw verify` | Workflow `Backend` |
+| Kiểu của web | `cd frontend && npx tsc --noEmit` | Workflow `Frontend` |
+| Giấy phép và header | `python3 .github/scripts/check_licenses.py` | `Check licenses` của `Compliance` |
+| Giấy phép của dự án gốc | `GITHUB_TOKEN=... python3 .github/scripts/check_upstream_licenses.py` | `Check upstream licenses` của `Compliance` |
+| SBOM khớp tệp khóa | `python3 .github/scripts/check_sbom_fresh.py` | `Check SBOMs against lockfiles` của `Compliance` |
+| Route của gateway | `python3 deploy/apisix/check_routes.py` | `Validate the gateway routes` của `Platform` |
+| Compose hợp lệ, dừng khi thiếu bí mật | `docker compose config` trong `deploy/` | `Validate the Compose file` của `Platform` |
+| Gói phát hành và bộ cài | `.github/scripts/check_archive.sh <gói> <phiên bản>` | `Install from the release archive` của `Platform` |
+| Sao lưu và khôi phục | `deploy/backup.sh` rồi `verify` | `Back up and restore` của `Platform` |
+| API trên stack thật | Các script `deploy/dev/check_*.py`, mục 4 | `API end-to-end` của `Platform`, hai nhóm |
+| Trình duyệt | Xem [`e2e/README.md`](../e2e/README.md) | `Browser end-to-end` của `Platform` |
+| Trang tài liệu | `cd website && npm ci && npm run build` | `Build the docs site` của `Docs` |
+| Kiểm tay | Mục 6 | Không |
 
 `./mvnw verify` sau khi đổi tài nguyên nên chạy `clean verify`: tài nguyên cũ còn trong `target/` làm Flyway thấy hai migration cùng phiên bản.
+`./mvnw formatter:format` sửa định dạng khi `formatter:validate` báo lỗi.
+Test của client Keycloak, bộ gửi webhook và bộ dò dịch vụ dùng WireMock, không cần Docker; test chậm gắn `@Tag("slow")`, bỏ qua bằng `-DexcludedGroups=slow`.
 
 ## 3. Dựng stack
 
@@ -32,124 +44,114 @@ cd deploy && docker compose up -d --build
 docker compose ps                           # mọi service healthy
 ```
 
-Muốn dựng lại từ đầu: `./reset.sh` trong `deploy/` (xóa `deploy/data`).
+Dựng lại từ đầu: `./reset.sh` trong `deploy/` (xóa `deploy/data`).
+Image `dxos-*:local` trên máy chỉ mới theo lần `docker compose build` gần nhất, nên build lại sau khi đổi mã.
 
-## 4. Kiểm API tự động
+Kiểm trên một stack riêng thì không đụng stack chính:
 
-Chạy trên stack mới dựng, cơ sở dữ liệu rỗng, vì script áp dụng mô hình mẫu từ trạng thái rỗng:
+- Dùng tệp env riêng và project Compose riêng, đổi cổng gateway và Postgres trong tệp env đó (`APISIX_HOST_PORT`, `POSTGRES_HOST_PORT`).
+- Các script đọc `DXOS_ENV_FILE`, `DXOS_BASE_URL` và `DXOS_PROJECT` (tên project Compose); đặt đủ ba biến thì lệnh `docker compose` của script chỉ chạm project đó.
+- Xóa project, volume và thư mục dữ liệu của nó sau khi kiểm.
+
+Cổng 9080 hoặc 5432 bị chiếm thì đổi `APISIX_HOST_PORT`, `POSTGRES_HOST_PORT` trong `deploy/.env`.
+
+## 4. Kiểm API trên stack
+
+Chạy trên stack mới dựng, cơ sở dữ liệu rỗng, vì script áp dụng mô hình mẫu từ trạng thái rỗng.
+Mỗi script phụ thuộc các script đứng trước trong cùng nhóm, nên chạy đúng thứ tự:
 
 ```bash
-python3 deploy/dev/check_api.py
-python3 deploy/dev/check_recovery.py        # sau check_api.py, trên cùng stack
-python3 deploy/dev/check_case.py            # sau check_recovery.py, trên cùng stack
-python3 deploy/dev/check_change.py          # sau check_case.py, trên cùng stack
-python3 deploy/dev/check_process.py         # sau check_change.py, trên cùng stack
-python3 deploy/dev/check_booking.py         # sau check_process.py, trên cùng stack
-python3 deploy/dev/check_demo.py            # sau các script trên hoặc trên stack rỗng
-python3 deploy/dev/check_guards.py          # sau các script trên, trên cùng stack
-python3 deploy/dev/check_users.py           # sau check_guards.py, trên cùng stack
-python3 deploy/dev/check_docs.py            # trên stack bất kỳ đang chạy
-python3 deploy/dev/check_conformance.py     # sau các script trên, trên cùng stack; hoặc nêu tên mô hình cần kiểm
-python3 deploy/dev/check_events.py          # sau check_users.py, trên cùng stack; khởi động lại backend vài lần
-python3 deploy/dev/check_bootstrap.py       # sau check_events.py, trên cùng stack; khởi động lại backend vài lần
+for c in api recovery case change process booking demo guards users docs conformance; do
+  python3 deploy/dev/check_$c.py
+done
 ```
 
-Tiêu chí 3 của `check_demo.py` (chặn tệp nhiễm mã độc) chỉ chạy khi bật quét: `dxos av on` trên bản cài, hoặc đặt `COMPOSE_PROFILES=av` và `STORAGE_SCAN_HOST=clamav` trong `deploy/.env` rồi `docker compose up -d`.
+`check_events.py` và `check_bootstrap.py` khởi động lại backend nhiều lần, nên chạy ở một stack rỗng khác, theo thứ tự này:
 
-Script tạo client Keycloak `dxos-check` (cho phép đăng nhập bằng mật khẩu, chỉ dùng cho máy dev) và các người dùng thử `admin1`, `req1`, `req2`, `keeper1`, `multi1`, `none1`, `editor1`.
+```bash
+python3 deploy/dev/check_events.py
+python3 deploy/dev/check_bootstrap.py
+```
+
+| Script | Kiểm gì |
+|---|---|
+| `check_api.py` | Áp dụng mô hình mẫu vào hệ thống rỗng; tệp sai báo dòng và cột; quyền theo vai và theo dòng; chặn ghi `status`; vai `report_ro`; tên trường và toán tử có SQL; 10.000 dòng có lọc và sắp xếp |
+| `check_recovery.py` | Quyết định lỗi sau bước quy trình thì hồ sơ và quy trình cùng quay về; áp dụng bị Keycloak làm gián đoạn rồi áp dụng lại |
+| `check_case.py` | Trạng thái và hành động, đơn vị, giao việc, hộp việc, dòng lịch sử kèm giá trị cũ và mới, mã lý do của lỗi 403 và 409 |
+| `check_change.py` | Đổi mô hình khi đã có dữ liệu: mức rủi ro, đổi tên giữ dữ liệu, dòng vi phạm, quay về |
+| `check_process.py` | Các họ mẫu, quy tắc chung của quy trình, hạn và quá hạn, hành động hoàn tất qua outbox, tệp đính kèm, thống kê, chống ghi đè |
+| `check_booking.py` | Họ `reservation`, danh mục của bảng điều khiển, mọi mẫu áp dụng được |
+| `check_demo.py` | Tám tiêu chí của kịch bản trình diễn |
+| `check_guards.py` | Người giữ vai, vai của nền tảng, bỏ vai, xóa thực thể còn hồ sơ đang chạy, lần áp dụng dừng giữa chừng (tiếp tục và hủy bỏ) |
+| `check_users.py` | Quản trị người dùng: gán và gỡ vai và đơn vị, tạo, khóa, đặt lại mật khẩu, audit |
+| `check_docs.py` | Mọi endpoint các tài liệu nêu có trong OpenAPI của backend đang chạy, đúng phương thức |
+| `check_conformance.py` | Rào chắn của lõi giữ với mọi mô hình đã áp dụng, hoặc các mô hình nêu tên: không ghi được `status`, không token thì 401, không đọc được dữ liệu mô hình khác |
+| `check_events.py` | Webhook: thứ tự, chữ ký, thử lại, nội dung không lộ, nhắc hạn; chuỗi hash của lịch sử và bên nhận so hash |
+| `check_bootstrap.py` | Tệp mô hình lúc khởi động: `applied`, `unchanged`, `skipped`, `failed` |
+
+Các script tạo client Keycloak `dxos-check` (cho phép đăng nhập bằng mật khẩu, chỉ dùng cho máy dev) và các người dùng thử như `admin1`, `req1`, `keeper1`.
 Vai của mô hình được gán ở client `dxos-m-<mô hình>`, vai `ADMIN` ở realm.
-Biến `DXOS_ENV_FILE`, `DXOS_BASE_URL`, `DXOS_PROJECT` đổi tệp env, địa chỉ gateway và tên project Compose.
+Mỗi kiểm in một dòng `PASS` hoặc `FAIL` kèm nhãn, cuối script in `N/M passed`, và script thoát với mã 1 khi có kiểm hỏng.
 
-| Mã | Nội dung | Kết quả mong đợi |
-|---|---|---|
-| T5-01 | Áp dụng `backend/dx-engine/src/main/resources/templates/equipment.yaml` vào hệ thống rỗng | Có schema, ba bảng, ràng buộc, vai Keycloak, một phiên bản, lịch sử các bước |
-| T5-02, T5-03 | Bốn tệp sai ở `models/invalid/`; quy tắc duy nhất và lựa chọn ở dữ liệu | 400 kèm dòng và cột, hoặc lỗi theo trường; hệ thống không đổi |
-| T5-04 | Áp dụng lại cùng tệp; áp dụng tệp khác cho mô hình đã có | Không làm gì; 409 |
-| T5-06, T5-07 | Quyền theo vai và theo dòng, người không có vai, chưa đăng nhập, hai vai | `own` chỉ thấy dòng của mình; 403; 401; hợp quyền |
-| T5-08 | Thực thể con theo chủ sở hữu của cha | Chỉ thấy bản ghi con của cha mình; gắn vào cha người khác bị 403 |
-| T5-09 | Sửa hoặc gửi cột `status` bằng từng vai | 403 |
-| T5-10 | Vai `report_ro` đọc và ghi trực tiếp vào cơ sở dữ liệu | Đọc được, ghi bị từ chối |
-| T5-12, T5-13 | Quyết định hai lần; vai không phải vai duyệt quyết định | 409; 403 |
-| T5-14 | Giá trị, tên trường, tên sắp xếp và toán tử có SQL | Giá trị vô hại; tên và toán tử lạ bị 400; dữ liệu nguyên vẹn |
-| T5-15 | 10.000 dòng, 50 lượt lọc và sắp xếp | Phân vị 95 dưới 500 ms |
-| T5-17 | Áp dụng mô hình `notes.yaml` khi dịch vụ đang chạy | Metadata và dữ liệu phục vụ ngay, mỗi vai chỉ thấy mô hình của mình |
-| T5-05 | Áp dụng lần đầu khi Keycloak dừng; áp dụng dừng ở một bước, rồi áp dụng lại | 502 trước bước đầu, không có bảng hay lượt chạy nào; dừng ở bước nào thì lịch sử ghi bước lỗi đó (`ENSURE_CLIENT`), các bước trước còn; áp dụng lại hoàn tất, vai tạo một lần |
-| T5-11 | Lỗi cố ý sau bước quy trình của một quyết định | 500; hồ sơ vẫn `submitted` và tác vụ vẫn chờ; sau đó quyết định bình thường |
-| T5-19 | Quyết định một hồ sơ; gửi `decided_by` trong yêu cầu sửa | Hồ sơ lưu người và thời điểm quyết định; yêu cầu sửa bị 400 |
-| T5-20 | Áp dụng dở chưa đổi tên, rồi áp dụng tệp khác | Áp dụng được, bảng khớp với tệp đó |
-| T5-21 | Bốn lần áp dụng song song cùng một mô hình mới | Một lần áp dụng, lịch sử có một lượt chạy |
-| T6-01, T6-02 | Áp dụng `backend/dx-engine/src/main/resources/templates/onestop.yaml`; ba tệp sai về đơn vị và phạm vi | Có nhóm Keycloak và metadata; 400 kèm dòng |
-| T6-03 đến T6-06 | Quyền theo đơn vị, hợp phạm vi, thực thể con, chuyển đơn vị | Đúng đơn vị thấy, sai đơn vị 404; chuyển đơn vị 403 |
-| T6-07 đến T6-09 | Trả lại, sửa, nộp lại, duyệt; hành động sai | Đúng đường trạng thái; 400, 403, 404, 409 đúng chỗ |
-| T6-10 đến T6-12 | Giao việc, người không được giao, hộp việc | Chỉ người được giao xử lý được; hộp việc đúng từng người |
-| T6-13, T6-14 | Dòng lịch sử; lỗi cố ý sau bước quy trình | Đủ người, trạng thái, ghi chú, chỉ trường thực sự đổi; không có sự kiện của hành động lỗi |
-| T6-16 | Vai `assigned` và vai điều phối | Hồ sơ chưa giao ngoài tầm với; điều phối giao được, không quyết định được |
-| T7-01, T7-02 | Áp dụng lần đầu; thêm trường tùy chọn khi có 1.000 dòng | Cùng một đường; kế hoạch không đổi gì; thiếu hoặc sai `base` bị 409; API thấy ngay |
-| T7-03 | Đổi tên trường có `UNIQUE` và khóa ngoại | Kế hoạch chỉ gồm đổi tên; thiếu `accept` bị 409; dữ liệu và ràng buộc còn nguyên |
-| T7-04, T7-05 | Quy tắc mới mà dữ liệu vi phạm; trường bắt buộc có `default` | Từ chối kèm dòng vi phạm, không sót ràng buộc; `default` điền dòng cũ và mới |
-| T7-06, T7-07 | Đổi kiểu; xóa trường; quên `renamed_from` | Từ chối; mức `LOSS` và câu hỏi có phải đổi tên không; chỉ chạy với `accept=LOSS` |
-| T7-08 đến T7-10 | Hồ sơ đang xử lý; quay về phiên bản trước, cả khi có đổi tên | Có số hồ sơ; quay về là phiên bản mới, dữ liệu về tên cũ |
-| T7-11 | Áp dụng dừng sau khi đã đổi tên | Tệp khác bị 409; đúng tệp đó hoàn tất |
-| T8-01, T8-02 | Mô hình dùng cả hai họ mẫu; khối `process:` sai | Cả hai chạy không sửa mã lõi; 400 kèm dòng |
-| T8-03 đến T8-06 | Lý do, rút lại, xóa, người không được phép | 400 khi thiếu lý do; rút lại giữ bản ghi và ghi lịch sử; xóa 409; 403 |
-| T8-07 | Đổi hạn và người xử lý khi có hồ sơ; đổi họ mẫu | Mức `SAFE`, báo số hồ sơ đang chạy; đổi họ mẫu bị từ chối |
-| T8-08 | Hạn xử lý, quá hạn, hộp việc, bộ quét | Cờ quá hạn đúng, quá hạn lên đầu hộp việc, một dòng lịch sử cho mỗi hạn |
-| T8-09, T8-10 | Duyệt yêu cầu cấp quyền; nhóm Keycloak chưa có | Người dùng vào nhóm; thông điệp được thử lại tới khi nhóm có, mỗi khóa một thông điệp; từ chối không gửi gì |
-| T9-01 đến T9-05 | Khối `booking:` sai; đặt trùng giờ, giờ liền nhau, đổi giờ; sức chứa hai; tám yêu cầu đồng thời | Từ chối kèm lý do; 409 khi đủ sức chứa; đúng một yêu cầu lọt qua |
-| T9-06, T9-07 | Schema, họ mẫu, mẫu, phiên bản cho ADMIN và vai khác; áp dụng từng mẫu | Đúng nội dung; vai khác 403; mọi mẫu áp dụng được |
-| T9-12 (C1 đến C8) | Tám tiêu chí của kịch bản trình diễn | Cả tám đạt |
-| T8-11 | Tệp đính kèm | Gắn, tải qua gateway, gỡ, quyền theo bản ghi; 409 khi hồ sơ đã quyết định |
-| T12-01 đến T12-04 | Hai mô hình dùng cùng tên vai; vai `ADMIN`; người chỉ giữ vai của một mô hình gọi mô hình kia; hai mô hình áp dụng song song | Cả hai áp dụng được; `ADMIN` bị 400 kèm dòng; người giữ vai của mô hình này bị 403 ở mô hình kia; hai lần áp dụng đều 200 |
-| T13-06 đến T13-14 | Tab Người dùng ở mức API: danh sách có tìm kiếm và phân trang, gán và gỡ vai và đơn vị, vai hoặc đơn vị không có (404), người không phải ADMIN (403), tạo người dùng, khóa và mở, đặt lại mật khẩu, tự khóa mình (409), bản ghi audit và sự kiện quản trị của Keycloak | Token đổi theo vai; mật khẩu tạm phải đổi trước khi đăng nhập; mỗi thay đổi có bản ghi `USER_*` với người thực hiện, thao tác không xảy ra thì không có; không mật khẩu nào trong log, audit hay sự kiện Keycloak |
-| T12-05 đến T12-11 | Xóa thực thể còn hồ sơ đang chạy quy trình; tên thực thể gần giống nhau; hồ sơ đã rút kèm tệp đính kèm | Từ chối khi còn quy trình đang chạy; tên gần giống không chặn nhầm; sau khi rút thì xóa được với `accept=LOSS`, tệp và bảng bị dọn, thực thể khác và quy trình đang chạy nguyên vẹn |
-| T12-12 đến T12-22 | Áp dụng thay đổi dở khi Keycloak dừng, lần áp dụng đầu của một mô hình dừng ở `ENSURE_CLIENT`; khởi động lại backend; rồi Tiếp tục và Hủy bỏ | Mô hình bị giữ (409), không hiện cho người dùng, `GET /models` báo `held`, vẫn giữ sau khi khởi động lại; `resume` hoàn tất không cần tệp; `abandon` đưa cột và bảng về phiên bản đang chạy và giữ dòng dữ liệu, hoặc xóa schema của mô hình chưa có phiên bản; chỉ lần chạy dở mới giữ mô hình |
-| T14-01 | Tạo hồ sơ liên tục trong lúc áp dụng một thay đổi bảng; đổi luật quy trình khi còn hồ sơ mở và hồ sơ mới đến | Không có 500; thay đổi bảng áp dụng được, yêu cầu đến lúc mô hình bị giữ nhận 409; đổi luật bị từ chối 409 (kiểm tay) |
-| T14-02 | Lần áp dụng đầu dừng ở `ENSURE_ROLE`, rồi Hủy bỏ | Client `dxos-m-<mô hình>` và schema mất; áp dụng lại tệp đó tạo client mới (kiểm tay) |
-| T14-03 | `backup.sh`, rồi `verify` khi đủ tệp và khi kho thiếu một tệp; `DXOS_FILE_DELETE_DELAY` ngắn hơn lượt chạy | `Verify OK`; `Verify FAILED: files missing for attachments: <khóa>` và mã 1; dòng `WARNING` (kiểm tay, job `backup-drill`) |
-| T14-05 | `dxos plan`, `dxos apply` với tệp giống, đổi `SAFE`, đổi `LOSS` có và không có `--accept` | `unchanged`; áp dụng được; `LOSS` thiếu hoặc thấp hơn `--accept` bị từ chối với mã 1; lịch sử ghi `service-account-dxos-cli` (kiểm tay) |
-| T14-06, T14-09 | Bên nhận webhook luôn lỗi; gỡ tệp khi kho ngừng | Thông điệp dừng sau số lần đặt, Thử lại cho thêm một lần; tệp rời kho sau khoảng trễ, kho ngừng thì thử lại tới khi mất (`check_events.py`, EV-13 đến EV-17) |
-| T14-07 | Bật quét, dừng `clamav`, tải tệp | 503 `ERR_SCAN_UNAVAILABLE`, không tệp nào được lưu (`check_demo.py`) |
-| T14-08 | Xóa container `backend` rồi `dxos reconcile`; `dxos stop` rồi `dxos reconcile`; `docker inspect` chính sách restart | Container chạy lại và healthy; stack dừng có chủ ý không bị bật lại; mọi service `unless-stopped` (kiểm tay) |
-| T14-10 | Sửa, xóa, chèn một dòng `record_event` bằng SQL; cắt chuỗi sau một điểm neo | `verify` chỉ ra dòng đầu tiên bị đổi (`its content was changed`, `the line before it was changed or removed`, `not linked`); điểm neo mất dòng nằm ở `mismatchedAnchors`; trả lại dòng thì chuỗi nguyên vẹn (kiểm tay) |
-| T14-11 | Thống kê với vai `unit` và `own`, có và không có bộ lọc | `total` và tổng `byStatus` bằng `totalElements` của danh sách cùng bộ lọc (kiểm tay) |
-| T14-12 | `simulator.py setup`, `run`, `replay` | Hồ sơ sự cố xuất hiện; gửi lại cùng quan sát in `duplicate` và không tạo thêm hồ sơ (kiểm tay) |
-| T14-13 | `dxos archive <mô hình>` rồi `dxos archive check`; sửa một byte trong tệp Parquet | Số dòng và sha256 khớp manifest; tệp bị sửa thì `check` thoát với mã 1 (kiểm tay) |
-| B4-01 | Áp dụng lại tệp không đổi khi bảng thiếu cột và ràng buộc, thừa cột, đổi kiểu cột, và khi client, vai, nhóm đơn vị bị xóa | `repair` đúng loại thay đổi; áp dụng xong thì kế hoạch về `unchanged`; cột thừa bị từ chối; đổi kiểu cột cần `accept=MIGRATION` (kiểm tay) |
-| B4-02 | Menu người dùng, mục "Tài khoản của tôi" | Mở Account Console của Keycloak ở tab mới, đã đăng nhập (kiểm tay) |
+Điều kiện đặc biệt:
 
-T5-11 và T6-14 cần dịch vụ chạy với `ENGINE_FAULT_AFTER_DECISION=true`, T5-05 và T12-13 với `ENGINE_FAULT_APPLY_STEP=ENSURE_CLIENT` (bước áp dụng có tên đó lỗi); các script tự bật rồi tắt bằng cách tạo lại service `backend`.
+- Tiêu chí 3 của `check_demo.py` (chặn tệp nhiễm mã độc, bằng tệp EICAR) chỉ chạy khi bật quét: `dxos av on` trên bản cài, hoặc đặt `COMPOSE_PROFILES=av` và `STORAGE_SCAN_HOST=clamav` trong `deploy/.env` rồi `docker compose up -d`.
+- Một số kiểm cần backend chạy với biến gây lỗi có chủ ý (`ENGINE_FAULT_AFTER_DECISION=true` làm quyết định lỗi sau bước quy trình, `ENGINE_FAULT_APPLY_STEP=ENSURE_CLIENT` làm bước áp dụng có tên đó lỗi); các script tự bật rồi tắt bằng cách tạo lại service `backend`.
+- Keycloak 26.8 trả 400 thay vì 401 cho mật khẩu sai; các kiểm về mật khẩu nhận cả hai.
 
-## 5. Kiểm giao diện thủ công
+## 5. Trình duyệt
 
-1. Mở `http://localhost:9080/`, đăng nhập bằng người dùng vai `BORROWER` (ví dụ `req1` của script trên).
-2. Menu có Thiết bị, Phiếu mượn, Ghi chú phiếu mượn; danh sách Thiết bị chỉ đọc (không có nút tạo).
-3. Danh sách Phiếu mượn chỉ có phiếu của mình; biểu mẫu tạo có đủ năm trường theo kiểu của mô hình (danh sách chọn thiết bị, hai ô ngày giờ, số lượng).
-4. Đăng xuất, đăng nhập bằng người dùng vai `KEEPER`: thấy mọi phiếu; mở một phiếu `Chờ duyệt` thì có nút Duyệt và Từ chối; bấm Duyệt thì trạng thái thành `Đã duyệt`.
-5. Bundle web không chứa tên thực thể hay vai nào của mô hình.
-6. Đăng nhập bằng người dùng vai `ADMIN`, mở `/console`, tab Hàng đợi sự kiện: có ba danh sách Lỗi, Chờ gửi, Đã gửi kèm số lượng; thông điệp lỗi hiện lỗi gần nhất và nút Thử lại ngay, bấm xong thì sau vài giây nó sang Đã gửi.
-7. Tải một tệp `.html` lên trường tệp của một hồ sơ: bị từ chối (400); tải một tệp `.pdf` rồi mở link tải: trình duyệt lưu thành tệp; gỡ tệp rồi mở lại link cũ: 404.
-8. Mọi chữ trên giao diện là tiếng Việt: nút Tạo mới, Thêm bộ lọc, số dòng mỗi trang, thông báo "Bắt buộc nhập", lỗi tệp mô hình theo dòng và cột ("dòng 2, cột 9: ..."), nhãn các loại thay đổi trong kế hoạch.
-9. Bấm biểu tượng đổi giao diện: chế độ tối hiện đủ hộp việc, danh sách, chi tiết hồ sơ và bảng điều khiển.
-10. Ở bảng điều khiển, tab Soạn và áp dụng: bấm biểu tượng mở to của sơ đồ quy trình thì hiện hộp thoại lớn, phần nền phía sau mờ đi.
-11. Dừng Keycloak (`docker compose stop keycloak`), áp dụng một thay đổi cho một mô hình, rồi bật lại Keycloak: thẻ mô hình hiện nhãn "Đang dừng dở" kèm nút Tiếp tục áp dụng và Hủy bỏ; Tiếp tục thì nhãn mất và phiên bản tăng; Hủy bỏ hỏi xác nhận rồi đưa mô hình về phiên bản đang chạy.
-    Mô hình mới áp dụng khi Keycloak dừng thì báo lỗi và không tạo gì; để lần áp dụng đầu dừng dở, chạy backend với `ENGINE_FAULT_APPLY_STEP=ENSURE_CLIENT`: thẻ hiện nhãn "Chưa có phiên bản", không có nút Sửa mô hình, và Hủy bỏ làm thẻ biến mất.
-12. Khai báo vai `ADMIN` ở tab Soạn và áp dụng: báo lỗi tiếng Việt kèm dòng và cột, không có nút Áp dụng; khai báo vai trùng tên với mô hình khác thì áp dụng được.
-13. Khi một thực thể còn hồ sơ đang xử lý, đổi hạn xử lý hoặc người xử lý của nó rồi bấm Xem kế hoạch: báo "Không đổi được ... khi còn N hồ sơ đang xử lý" và không có nút Áp dụng; rút hết hồ sơ rồi xem lại thì có nút Áp dụng.
+Bài Playwright của bảng điều khiển nằm ở `e2e/`; cách chạy, biến cấu hình và nơi có ảnh chụp ở [`e2e/README.md`](../e2e/README.md).
+CI chạy bài này ở job `Browser end-to-end` của workflow `Platform`.
 
-## 6. Hồi quy
+## 6. Kiểm tay trước khi phát hành
 
-- Đăng nhập SSO qua Keycloak ở web hoạt động (mục 5).
+Những mục dưới chưa có kiểm tự động.
+
+Giao diện, đăng nhập bằng `req1` (vai `BORROWER`), `keeper1` (vai `KEEPER`) và `admin1` (vai `ADMIN`) của script ở mục 4:
+
+1. Mở `http://localhost:9080/`, đăng nhập bằng `BORROWER`: menu có Thiết bị, Phiếu mượn, Ghi chú phiếu mượn; danh sách Thiết bị chỉ đọc, danh sách Phiếu mượn chỉ có phiếu của mình, biểu mẫu tạo có đủ trường theo kiểu của mô hình.
+2. Đăng nhập bằng `KEEPER`: thấy mọi phiếu; phiếu `Chờ duyệt` có nút Duyệt và Từ chối, bấm Duyệt thì trạng thái thành `Đã duyệt`.
+3. Bundle web không chứa tên thực thể hay vai nào của mô hình.
+4. Mọi chữ trên giao diện là tiếng Việt: nút, bộ lọc, thông báo bắt buộc nhập, lỗi tệp mô hình theo dòng và cột, nhãn các loại thay đổi trong kế hoạch.
+5. Chế độ tối hiện đủ hộp việc, danh sách, chi tiết hồ sơ và bảng điều khiển; ở màn hình 360 px các ô xếp dọc, không tràn ngang.
+6. Tab Hàng đợi sự kiện có ba danh sách Lỗi, Chờ gửi, Đã gửi; thông điệp lỗi hiện lỗi gần nhất và nút Thử lại ngay.
+7. Tải một tệp `.html` lên trường tệp: bị từ chối (400); tải một tệp `.pdf` rồi mở link tải: trình duyệt lưu thành tệp; gỡ tệp rồi mở lại link cũ: 404.
+8. Tab Soạn và áp dụng: sơ đồ quy trình mở to thành hộp thoại; vai `ADMIN` khai báo trong tệp báo lỗi tiếng Việt kèm dòng và cột, không có nút Áp dụng; vai trùng tên với mô hình khác thì áp dụng được.
+9. Thực thể còn hồ sơ đang xử lý: đổi hạn xử lý hoặc người xử lý rồi bấm Xem kế hoạch báo không đổi được và không có nút Áp dụng; rút hết hồ sơ rồi xem lại thì có nút Áp dụng.
+10. Dừng Keycloak (`docker compose stop keycloak`), áp dụng một thay đổi, rồi bật lại: thẻ mô hình hiện nhãn "Đang dừng dở" kèm nút Tiếp tục áp dụng và Hủy bỏ; Tiếp tục thì phiên bản tăng, Hủy bỏ hỏi xác nhận rồi đưa mô hình về phiên bản đang chạy. Với lần áp dụng đầu dừng dở (backend chạy với `ENGINE_FAULT_APPLY_STEP=ENSURE_CLIENT`) thẻ hiện "Chưa có phiên bản" và Hủy bỏ làm thẻ biến mất.
+11. Tab Người dùng: tìm, gán và gỡ vai và đơn vị, tạo người dùng (mật khẩu tạm phải đổi ở lần đăng nhập đầu), khóa, mở, đặt lại mật khẩu; hộp thoại người dùng hiện lịch sử thay đổi, không có mật khẩu nào.
+12. Lịch đặt chỗ: kéo một lượt để đổi giờ, kéo cạnh dưới để đổi giờ kết thúc; lượt trùng giờ bị đưa về chỗ cũ kèm lỗi.
+13. Trang chi tiết hồ sơ hiện lịch sử với `Nhãn: cũ → mới` của từng trường; sửa hồ sơ đã bị người khác đổi thì báo "Bản ghi vừa được người khác thay đổi".
+14. Menu người dùng, mục "Tài khoản của tôi", mở Account Console của Keycloak ở tab mới, đã đăng nhập.
+15. Lần chạy đầu trên máy sạch: `admin` đăng nhập bằng mật khẩu tạm, bị buộc đổi mật khẩu, vào bảng điều khiển, áp dụng mẫu đầu tiên.
+
+Lệnh `dxos` và các tính năng chạy ngoài stack kiểm:
+
+1. `dxos plan <tệp>` và `dxos apply <tệp> --accept <mức>` với tệp giống, đổi `SAFE`, đổi `LOSS`: kế hoạch vượt `--accept` bị từ chối với mã 1; lịch sử ghi `service-account-dxos-cli`.
+2. `dxos archive <mô hình>` rồi `dxos archive check <thư mục>`; sửa một byte trong tệp Parquet thì `check` thoát với mã 1.
+3. `dxos history verify` sau khi sửa, xóa hoặc chèn một dòng `record_event` bằng SQL: chỉ ra dòng đầu tiên bị đổi; trả lại dòng thì chuỗi nguyên vẹn.
+4. `dxos reconcile`: xóa container `backend` thì chạy lại; sau `dxos stop` thì không bật lại; mọi service có chính sách restart `unless-stopped`.
+5. `backup.sh verify` khi kho thiếu một tệp: báo `FAILED` kèm tên khóa thiếu và mã 1; khi `DXOS_FILE_DELETE_DELAY` ngắn hơn lượt chạy thì in `WARNING`.
+6. `examples/itot-simulator/simulator.py setup`, `run`, `replay`: gửi lại cùng quan sát in `duplicate` và không tạo thêm hồ sơ.
+7. Áp dụng lại tệp không đổi khi bảng thiếu hoặc thừa cột, đổi kiểu cột, hoặc client, vai, nhóm đơn vị bị xóa: kế hoạch ghi `repair` đúng loại, áp dụng xong thì về `unchanged`.
+8. Áp dụng một mô hình đổi bảng trong lúc có yêu cầu ghi hồ sơ của mô hình đó: không có 500, không hồ sơ nào ghi sai cấu trúc.
+9. Thống kê với vai `unit` và `own`, có và không có bộ lọc: `total` và tổng `byStatus` bằng số dòng của danh sách cùng bộ lọc.
+
+## 7. Hồi quy
+
+- Đăng nhập SSO qua Keycloak ở web hoạt động.
 - `docker compose up -d --build` từ clone sạch lên đủ tám service healthy: `postgres`, `keycloak`, `seaweedfs`, `backend`, `frontend`, `portal`, `monitor`, `apisix`.
 - Màn hình giám sát `/monitor/` mở được với tài khoản ADMIN.
-- Không còn từ khóa của ứng dụng cũ ngoài `ai/`:
+- Không còn từ khóa của ứng dụng cũ:
 
 ```bash
 grep -rIlw -i -E 'farm|lab|farmer|DXOS_APP|dx-host|app-farm|app-lab|dx-core-api' \
   --exclude-dir=node_modules --exclude-dir=target --exclude-dir=.git --exclude-dir=docs \
-  --exclude-dir=ai --exclude-dir=dist .
+  --exclude-dir=dist .
 ```
 
-## 7. Sự cố thường gặp
+## 8. Sự cố thường gặp
 
 | Hiện tượng | Cách xử lý |
 |---|---|
@@ -157,391 +159,7 @@ grep -rIlw -i -E 'farm|lab|farmer|DXOS_APP|dx-host|app-farm|app-lab|dx-core-api'
 | Flyway báo "more than one migration with version 1" khi test | Chạy `./mvnw clean verify` |
 | Keycloak không có vai `keycloak_app` | Thư mục dữ liệu Postgres đã có từ trước; dựng lại bằng `./reset.sh` để `deploy/postgres/init` chạy |
 | `check_api.py` lỗi ở bước đầu | Cơ sở dữ liệu đã có mô hình; dựng lại stack rỗng |
+| Gateway trả 429 giữa chừng khi chạy nhiều script | Giới hạn tốc độ của gateway; chờ một phút hoặc chạy cách nhau |
+| Áp dụng mô hình trả 502 `ERR_ACCOUNT_SERVICE_DENIED` | Tài khoản dịch vụ `dxos-backend-admin` thiếu quyền hoặc scope `kc-admin-api`; xem [`sso/README.md`](../sso/README.md) |
+| Kết quả không khớp mã vừa sửa | Image `dxos-backend:local` cũ hơn mã; chạy `docker compose build` rồi tạo lại service |
 | Cổng 9080 hoặc 5432 bị chiếm | Đổi `APISIX_HOST_PORT`, `POSTGRES_HOST_PORT` trong `deploy/.env` |
-
-## 8. Kết quả kiểm gần nhất
-
-Ngày 03/11/2026 trên cây làm việc của nhánh `Khuong/main` (gồm cả tệp chưa commit), stack rỗng dựng bằng `docker compose up -d --build`.
-Các dòng ghi "Phase 10" là kết quả của lần kiểm trước, cùng ngày, không chạy lại.
-
-| Mục | Kết quả | Ghi chú |
-|---|---|---|
-| `./mvnw clean verify` | Đạt | dx-core 20 test, dx-engine 8, dx-monitor 3; dx-model không có test |
-| `npx tsc --noEmit` | Đạt | Không lỗi |
-| `check_licenses.py`, `check_routes.py` | Đạt | 0 vấn đề, gồm header, giấy phép của SBOM và danh mục `.github/license-catalog.json` (image, mô hình, tệp trọng số, tài liệu, nén); 12 route, 11 công khai có chủ đích |
-| `pytest` của `ai/` | Đạt | Phase 10: 21 test, chạy trong image dựng từ `ai/Dockerfile` |
-| `ai/` chạy thật | Đạt | Phase 10: pgvector tạm: `init_db`, `ingest` 3 tài liệu kèm nguồn và giấy phép, tìm kiếm trả đúng tài liệu; câu ngoài kho và mã không có trong kho không có bằng chứng; thiếu khóa dịch vụ 401 |
-| Bộ cài và `dxos` | Đạt | Gói dựng từ cây làm việc, image local: gói sai SHA-256 bị từ chối; cài vào `~/.dxos` và `~/.local/bin/dxos`; cài lần hai bị từ chối; `dxos start` từ trạng thái rỗng tới khi mọi dịch vụ sẵn sàng, tạo `admin` với mật khẩu tạm, lần hai không tạo lại; `status`, `logs`, `admin`, `doctor`, `version` đúng; nâng cấp bằng gói mới giữ `.env`, thêm biến mới, xóa tệp bản mới không còn; `uninstall --purge` không để lại container, volume, thư mục hay liên kết |
-| `check_events.py` | Đạt | 12/12 trên stack thử riêng: thứ tự, chữ ký, nội dung không lộ, khớp với outbox, tệp đính kèm, thử lại khi bên nhận lỗi, quá hạn, quyết định bị hủy, không đặt địa chỉ, dọn outbox; địa chỉ không trả lời tốn một lần chờ mỗi vòng giao và không có trong log |
-| `check_bootstrap.py` | Đạt | 8/8: `applied`, `unchanged`, `skipped` (đã áp dụng trước đó, mức LOSS), `failed` (tệp hỏng, không có tệp), không đặt tệp |
-| Lần chạy đầu bằng Chrome | Đạt | `admin` đăng nhập bằng mật khẩu tạm, bị buộc đổi mật khẩu, vào bảng điều khiển, áp dụng mẫu đầu tiên của thư viện mẫu |
-| `check_demo.py` trên bản cài | Đạt | 26/26 với `DXOS_ENV_FILE=~/.dxos/deploy/.env DXOS_PROJECT=dxos` |
-| Job `install` của CI | Đạt | Chạy lại ở máy: cài từ gói, gói bị sửa bị từ chối, mọi tệp Compose mount đều có |
-| `docker compose config` | Đạt | Tám service, cộng `clamav` ở profile `av` |
-| Stack từ trạng thái sạch | Đạt | Tám service healthy |
-| `check_api.py` | Đạt | 51/51; danh sách 10.000 dòng có lọc và sắp xếp, phân vị 95 là 10 ms, trung vị 8 ms |
-| `check_recovery.py` | Đạt | 17/17 |
-| `check_case.py` | Đạt | 71/71 |
-| `check_change.py` | Đạt | 59/59 |
-| `check_process.py` | Đạt | 56/56: hai họ mẫu, lý do, rút lại, hạn và quá hạn, hành động hoàn tất qua outbox kèm thử lại, tệp đính kèm |
-| `check_booking.py` | Đạt | 44/44: họ `reservation`, danh mục của bảng điều khiển, mọi mẫu áp dụng được |
-| `check_demo.py` | Đạt | 26/26: tám tiêu chí của kịch bản trình diễn, không bật `av` |
-| `check_demo.py` với `av` | Đạt | Tiêu chí 3: tệp EICAR bị từ chối với 422 `ERR_FILE_INFECTED` và không được lưu |
-| Bảy script trên stack rỗng sau khi thêm `V5` và chỉ mục `handle_by` | Đạt | 324/324, trên bản cài bằng `dxos` với image build từ cây làm việc; có 11 chỉ mục `ix_*_handle_by` |
-| Bảng điều khiển và hồ sơ bằng Chrome | Đạt | Trình soạn báo vi phạm schema và gợi ý khóa của tệp mô hình, không lỗi trên trang; danh sách mô hình hiện tên người áp dụng; rút lại hỏi xác nhận, lý do hiện trong lịch sử |
-| Giao diện Phase 8 | Đạt | Phase 10: Chrome, tài khoản thử: tạo yêu cầu cấp quyền, hạn xử lý, tải tệp, rút lại, lịch sử đủ ba dòng |
-| Giao diện hồ sơ | Đạt | Phase 10: 20/20 bằng Chrome không giao diện: sinh viên nộp, cán bộ sai đơn vị không thấy, cán bộ đúng đơn vị nhận việc và trả lại, sinh viên sửa và nộp lại, cán bộ duyệt, kèm hộp việc và dòng lịch sử; 5/5 sau khi đổi tên và thêm trường, chỉ tải lại trang, không build lại |
-| Giao diện Phase 10 | Đạt | Phase 10: Chrome, stack dựng từ bản sao sạch: đăng nhập, bảng điều khiển liệt kê mô hình, thư viện mẫu hiện sáu mẫu |
-| Portal, giám sát, bảng điều khiển | Đạt | 8/8 bằng Chrome không giao diện: portal có bốn thẻ, không còn BI và chat, năm dịch vụ đều hoạt động, không lỗi console; màn hình giám sát không còn ô BI và chat; ADMIN mở được bảng điều khiển |
-| Từ khóa ứng dụng cũ | Đạt | Không còn ngoài `ai/` và các tài liệu mô tả bản cũ |
-| Tệp bản cũ và thành phần chưa mở | Đạt | Không còn `data/`, trọng số, PDF, `ai/evaluation`; Redis, Langfuse, Ollama, Qwen, mMARCO chỉ còn trong tài liệu mô tả việc đã gỡ |
-| CI trên GitHub | Đạt | Commit `d0790226` trên `Khuong/main`: CI Infra, Frontend, Dependencies; commit `2b337e40` có thêm CI Backend và CI AI |
-| Chưa chạy | | Khởi động sau khi cập nhật từ bản `v1.1.1` (không có đường nâng cấp dữ liệu) |
-
-### Kiểm ngày 04/11/2026 trên nhánh `fix/live-model-guards`
-
-Cây làm việc gồm cả tệp chưa commit; stack dựng riêng (project Compose `dxos-e2e`), cơ sở dữ liệu rỗng.
-
-| Mục | Kết quả | Ghi chú |
-|---|---|---|
-| `./mvnw clean verify` | Đạt | dx-core 20 test, dx-engine 8, dx-monitor 3; dx-model không có test |
-| `npx tsc --noEmit` | Đạt | Không lỗi |
-| Tám script ở `deploy/dev` theo thứ tự trên | Đạt | 387/387: 51, 17, 71, 65, 56, 44, 26 và `check_guards.py` 57 |
-| Bảng điều khiển bằng Chrome | Đạt | Lỗi vai `ADMIN` và vai trùng bằng tiếng Việt, mô hình dừng dở hiện nhãn và hai nút, Tiếp tục và Hủy bỏ đều chạy, kể cả mô hình chưa có phiên bản |
-| Tài nguyên toàn stack | Đạt | Đo ngày 04/11/2026 khi chạy tám script: tối đa khoảng 1,7 GiB RAM cho tám service, số từng service ở `deploy/OPERATIONS.md` |
-| Hai bản sao `backend` sau gateway | Đạt | Cả hai nhận lưu lượng. Sau một lần áp dụng, 22 trong 40 yêu cầu dữ liệu nhận 404 và danh sách mô hình nhảy qua lại; mô hình bị giữ vẫn được bản sao kia phục vụ (26 trong 40 yêu cầu trả 200 thay vì 409); khởi động lại cả hai thì 40/40 đúng |
-| Đổi luật quy trình khi còn hồ sơ mở, bằng Chrome | Đạt | Còn hai hồ sơ: báo không đổi được hạn xử lý, không có nút Áp dụng; rút cả hai thì có nút Áp dụng |
-| Bảng từ bản cũ hơn (mô phỏng bằng cách xóa chỉ mục, rồi cột `handle_by`) | Đạt | Thiếu chỉ mục: mọi API chạy bình thường. Thiếu cột: danh sách, đọc, tạo và hộp việc trả 500, log có `BadSqlGrammarException`; áp dụng lại cùng tệp trả `unchanged` và không sửa; một tệp có nội dung khác thêm lại cột và chỉ mục, rồi mọi API trả 200 |
-
-### Kiểm ngày 04/11/2026 trên nhánh `Khuong/phase-13-role-isolation`
-
-Cây làm việc gồm cả tệp chưa commit; stack dựng riêng (project Compose `dxos-e2e`), cơ sở dữ liệu rỗng.
-
-| Mục | Kết quả | Ghi chú |
-|---|---|---|
-| `./mvnw clean verify` | Đạt | dx-core 20 test, dx-engine 8, dx-monitor 3; dx-model không có test |
-| `npx tsc --noEmit` | Đạt | Không lỗi |
-| Chín script ở `deploy/dev` theo thứ tự trên | Đạt | 428/428: 51, 17, 71, 65, 56, 44, 26, 59 và `check_users.py` 39 |
-| `audit_log` sau chuỗi trên | Đạt | 41 bản ghi (2 từ chối, 30 lỗi, 9 thành công), không lỗi ghi |
-| Tab Người dùng bằng Chrome | Đạt | Danh sách, tìm kiếm, gán vai, đặt lại mật khẩu, tạo người dùng |
-| Stack dev dựng lại từ trạng thái rỗng bằng `reset.sh` | Đạt | Tám service healthy, tài khoản dịch vụ có đủ quyền client |
-
-### Kiểm ngày 04/11/2026 bằng Chrome trên stack thử riêng
-
-Ba mục đầu chạy trên stack chính; ba mục sau chạy trên một stack thử riêng (project Compose `dxscratch`, cổng 9180, cơ sở dữ liệu rỗng), đã xóa sau khi kiểm.
-Cả hai dùng image `dxos-*:local` dựng sẵn trên máy.
-
-| Mục | Kết quả | Ghi chú |
-|---|---|---|
-| Tab Người dùng: khóa và mở tài khoản | Đạt | Danh sách đổi giữa "Đã khóa" và "Hoạt động", nút đổi theo |
-| Tab Người dùng: gán và gỡ vai, gán và gỡ đơn vị | Đạt | Đóng rồi mở lại hộp thoại vẫn còn, gỡ thì hết |
-| Mật khẩu tạm ở trang đăng nhập Keycloak | Đạt | Người mới tạo bị buộc đổi mật khẩu, đổi xong vào được Hộp việc, không có menu quản trị |
-| `STAFF_OTP_FLOW=CONDITIONAL` | Đạt | `ADMIN` bị buộc thiết lập Mobile Authenticator; người không có vai `ADMIN` đăng nhập bình thường |
-| Thẻ "Đang dừng dở" sau khi vai chuyển sang client role | Đạt | Tắt Keycloak rồi áp dụng thì báo lỗi; bật lại thì thẻ hiện nhãn, lời giải thích, Tiếp tục áp dụng, Hủy bỏ, Lịch sử; Tiếp tục áp dụng đưa mô hình lên phiên bản 1 |
-| Realm thiếu quyền client của tài khoản dịch vụ | Đạt | Keycloak từ chối tạo client (403), log backend ghi rõ; người dùng thấy thông báo "dịch vụ tài khoản chưa dùng được", đã ghi ở giới hạn đã biết |
-
-### Kiểm ngày 04/11/2026: lịch sử thay đổi trong hộp thoại người dùng
-
-Backend dựng từ cây làm việc gồm cả tệp chưa commit; giao diện là bản build chạy bằng `vite preview` trỏ vào stack chính.
-
-| Mục | Kết quả | Ghi chú |
-|---|---|---|
-| `./mvnw compile formatter:validate` | Đạt | Năm module build thành công, không tệp nào lỗi định dạng |
-| `npx tsc --noEmit` | Đạt | Không lỗi |
-| Chuỗi script ở `deploy/dev` trên cơ sở dữ liệu rỗng | Đạt | 285/285: `check_api.py` 51, `check_case.py` 71, `check_change.py` 65, `check_guards.py` 59, `check_users.py` 39; chưa có kiểm tra riêng cho tham số lọc theo đối tượng |
-| `GET /api/v1/audit-logs` lọc theo `targetType` và `targetId`, gọi tay | Đạt | Chỉ trả các bản ghi của đối tượng đó; migration `V2` chạy trên cơ sở dữ liệu có sẵn dữ liệu |
-| Hộp thoại người dùng bằng Chrome | Đạt | Tạo, gán và gỡ vai, thêm và bỏ đơn vị, khóa, mở, đặt lại mật khẩu: mỗi thao tác một dòng đúng người, đúng nội dung, mới nhất ở trên; đơn vị hiện nhãn; không có mật khẩu nào trong lịch sử |
-| Phân trang lịch sử bằng Chrome | Đạt | 21 bản ghi hiện 20 dòng và nút Xem thêm; bấm thì ra bản ghi cũ nhất và nút biến mất |
-| Mã hành động chưa có nhãn | Đạt | Bản ghi chèn tay với mã lạ hiện nguyên mã; bản ghi không có tên người thực hiện hiện "Không rõ" |
-| Hộp thoại người dùng trong image `frontend` của Compose | Đạt | Dựng image từ cây làm việc, chạy trong stack thử riêng: lịch sử, tên đơn vị và mã lạ hiện như bản build thử |
-
-### Kiểm ngày 04/11/2026: tệp mô hình lúc khởi động
-
-Image backend và frontend dựng từ cây làm việc, chạy trong stack thử riêng (cơ sở dữ liệu rỗng); đã xóa sau khi kiểm.
-
-| Mục | Kết quả | Ghi chú |
-|---|---|---|
-| Tệp lần đầu, khởi động lại cùng tệp | Đạt | `applied` phiên bản 1 với người áp dụng `bootstrap`; khởi động lại ra `unchanged` |
-| Tệp đổi an toàn, tệp đã áp dụng trước đó, tệp mất dữ liệu | Đạt | Thêm trường tùy chọn ra `applied` phiên bản 2; quay lại tệp đầu ra `skipped`, giữ phiên bản đang chạy; tệp bỏ một trường ra `skipped` mức LOSS |
-| Tệp YAML hỏng, tệp không có | Đạt | `failed` kèm dòng và cột, backend vẫn chạy |
-| Chờ Keycloak | Đạt | Keycloak tắt lúc backend khởi động: backend vẫn healthy, ghi "waiting" một lần, Keycloak bật lại thì `applied`; Keycloak tắt quá thời gian chờ (đặt 90 giây khi thử) ra `failed` |
-| Mô hình có lần áp dụng dở | Đạt | Áp dụng khi Keycloak tắt: lần chạy `failed` ở `ENSURE_CLIENT`, mô hình bị giữ; khởi động lại với tệp mới ra `skipped` kèm lý do; Tiếp tục áp dụng xong phiên bản 2; khởi động lại ra `applied` phiên bản 3 |
-| Cài bằng `install.sh` với image local, rồi `dxos start <tệp>` | Đạt | Image gắn thẻ riêng, cổng riêng: `applied` phiên bản 1; chạy lại cùng tệp ra `unchanged`; tệp bỏ một trường ra `skipped` mức LOSS; `dxos uninstall --purge` không để lại container, volume hay thư mục |
-| Cài bằng image thật từ GHCR | Chưa chạy | Image `v2.0.0` chưa phát hành; xem phần 2 của `docs/dynamic-core/BACKLOG.md` |
-
-### Kiểm ngày 04/11/2026: sửa các lỗi của đợt rà soát
-
-Cây làm việc gồm cả tệp chưa commit.
-Chuỗi script chạy trên một stack thử riêng (project Compose `dxscratch`, cổng 9180, cơ sở dữ liệu rỗng), đã xóa sau khi kiểm, rồi chạy lại trên stack chính dựng lại bằng `reset.sh`.
-
-| Mục | Kết quả | Ghi chú |
-|---|---|---|
-| `./mvnw clean verify formatter:validate` | Đạt | Năm module build thành công, không tệp nào lỗi định dạng |
-| `npx tsc --noEmit` | Đạt | Không lỗi |
-| Chín script ở `deploy/dev` theo thứ tự trên | Đạt | 428/428 trên cả hai stack: 51, 17, 71, 65, 56, 44, 26, 59, 39 |
-| Các lỗi của đợt rà soát, gọi API bằng kịch bản tạm ngoài repo | Đạt | 19/19: thiếu `enabled` bị 400 và tài khoản vẫn mở; người điều phối không có vai xử lý tự nhận hồ sơ bị 400, giao cho người xử lý thì được; sức chứa hai đã có lịch 09–10 và 10–11 nhận lịch 09–11 và từ chối lịch 09:30–10:30; `in` không có giá trị bị 400; trang 2147483647 của hộp việc, người dùng và hàng đợi sự kiện trả danh sách rỗng |
-| Bảng điều khiển ở màn rộng 360px bằng Chrome | Đạt | Năm tab vừa màn hình, bảng người dùng cuộn ngang trong khung; ở màn rộng 1280px vẫn hai cột |
-| Stack chính sau `reset.sh` | Đạt | 22 schema `m_*` khớp 22 client `dxos-m-*` của Keycloak |
-
-### Kiểm ngày 04/11/2026: sửa các mục 2, 3, 7 và 9 của báo cáo kỹ thuật
-
-Cây làm việc gồm cả tệp chưa commit.
-Chuỗi script chạy trên một stack thử riêng (project Compose `dxscratch`, cổng 9180, cơ sở dữ liệu rỗng) với image backend dựng từ cây làm việc, đã xóa sau khi kiểm.
-
-| Mục | Kết quả | Ghi chú |
-|---|---|---|
-| `./mvnw compile formatter:validate` | Đạt | Năm module build thành công, không tệp nào lỗi định dạng |
-| `npx tsc --noEmit` | Đạt | Không lỗi |
-| Mười một script ở `deploy/dev` theo thứ tự trên | Đạt | 452/452: 51, 19, 71, 65, 56, 44, 26, 59, 41, `check_events.py` 12 và `check_bootstrap.py` 8 |
-| Vai khai báo lại, gọi API bằng kịch bản tạm ngoài repo | Đạt | 14/14: bỏ vai thì người giữ bị 403; khai báo lại thì kế hoạch ở mức `MIGRATION` kèm câu hỏi đúng số người giữ; áp dụng không xác nhận bị từ chối và người giữ vẫn 403; `accept=MIGRATION` thì 200; quay về phiên bản trước cũng hỏi; vai mới chưa ai giữ vẫn `SAFE` |
-| Vai khai báo lại ở bảng điều khiển bằng Chrome | Đạt | Quay về phiên bản trước hiện nhãn "Cần xác nhận", câu hỏi tiếng Việt và ô xác nhận trả lại quyền; nút khóa tới khi tích, tích rồi thì quay về thành công |
-| `backup.sh` rồi `verify` trên stack chính | Đạt | 22 mô hình, 10.055 dòng trong các bảng `m_*`; câu truy vấn tìm mô hình thiếu bảng chỉ ra đúng mô hình thử đã bị xóa bảng |
-| `dxos av on`, `dxos av off` | Đạt | Bật thì ClamAV chạy tới khi healthy và tiêu chí 3 của `check_demo.py` chặn tệp EICAR với 422, tệp không được lưu; tắt thì gỡ ClamAV; `dxos status` và `doctor.sh` báo đúng trạng thái quét |
-| Hành động hoàn tất bị bỏ qua | Đạt | Duyệt hồ sơ mà người dùng hoặc nhóm không có: log backend có dòng `WARN` nêu lý do |
-
-### Kiểm ngày 04/11 và 05/11/2026: sửa các lỗi của báo cáo kỹ thuật
-
-Cây làm việc gồm cả tệp chưa commit.
-Chuỗi script chạy trên một stack thử riêng (project Compose `dxscratch`, cổng 9180) dựng rỗng, với image backend dựng từ cây làm việc; stack đã gỡ cùng volume sau khi kiểm.
-
-| Mục | Kết quả | Ghi chú |
-|---|---|---|
-| `./mvnw clean verify formatter:validate` | Đạt | Mã thoát 0, 31 test chạy, không lỗi, không bỏ qua |
-| `npx tsc --noEmit` | Đạt | Không lỗi |
-| Mười một script ở `deploy/dev` theo thứ tự trên | Đạt | 459/459: 51, 19, 71, 65, 56, 45, 26, 59, 41, `check_events.py` 18 và `check_bootstrap.py` 8 |
-| `check_demo.py` với quét virus bật (`COMPOSE_PROFILES=av`) | Đạt | 30/30: tệp nhiễm bị từ chối 422, dừng `clamav` thì tải tệp nhận 503 `ERR_SCAN_UNAVAILABLE` và không tệp nào được lưu |
-| Thống kê, kịch bản tạm ngoài repo | Đạt | `total` bằng `totalElements` của danh sách và bằng tổng `byStatus` cho vai `unit` và hai người dùng `own`, cả khi lọc theo `status` |
-| Chuỗi hash của lịch sử, kịch bản tạm ngoài repo | Đạt | Dòng nguyên vẹn thì `intact`; sửa, xóa và chèn một dòng bằng SQL chỉ ra đúng dòng; trả lại dòng thì nguyên vẹn; cắt chuỗi sau điểm neo thì `mismatchedAnchors` có điểm neo; người không phải ADMIN nhận 403; `dxos history verify` thoát với mã 1 khi chuỗi hỏng |
-| `dxos plan` và `dxos apply` | Đạt | Tệp giống: `unchanged`; thêm trường: `SAFE`, áp dụng không cần `--accept`; xóa trường: `LOSS`, bị từ chối với mã 1 khi thiếu `--accept` hoặc có `--accept SAFE`, áp dụng với `--accept LOSS`; lịch sử ghi `service-account-dxos-cli`; đường dẫn tương đối tính theo thư mục gõ lệnh |
-| `dxos archive` và `dxos archive check` | Đạt | 3 hồ sơ đã quyết định và 8 dòng lịch sử, số dòng và sha256 khớp; sửa một byte thì `check` báo lệch và thoát với mã 1 |
-| `backup.sh` rồi `verify` với một tệp đính kèm thật | Đạt | Đủ tệp: `Verify OK`; xóa đối tượng khỏi kho rồi sao lưu lại: `Verify FAILED: files missing for attachments` kèm khóa tệp; `DXOS_FILE_DELETE_DELAY=1s` làm `backup.sh` in `WARNING` |
-| Lần áp dụng đầu dừng ở `ENSURE_ROLE` rồi Hủy bỏ | Đạt | Client `dxos-m-<mô hình>` và schema mất; áp dụng lại tệp đó tạo client mới |
-| Hai luồng tạo hồ sơ trong lúc áp dụng thêm một cột | Đạt | Áp dụng 200; 24 yêu cầu tạo trả 200 và 2 trả 409, không có 5xx; năm lần đổi luật quy trình khi còn hồ sơ mở đều bị 409 |
-| Simulator IT/OT | Đạt | `setup`, `run` tạo sự cố; `replay` in `duplicate` và thoát với mã 0 |
-| Xóa container `backend`, `dxos reconcile` | Đạt | Container chạy lại và healthy sau 18 giây; mọi container có `restart: unless-stopped` |
-| `dxos stop` rồi `dxos reconcile` | Đạt | Không container nào được bật lại; xóa `deploy/.stopped` rồi `dxos reconcile` đưa cả tám service về healthy |
-| `dxos reconcile install` và `uninstall` (systemd user timer) | Chưa kiểm | Phiên này bị chặn cài timer; session còn lại đã chạy install, uninstall và thấy timer xuất hiện, biến mất |
-| Khởi động lại Docker daemon | Đạt | `sudo systemctl restart docker` do người dùng chạy; mọi service tự lên lại |
-| Job `backup-drill` trên GitHub Actions | Đạt | Commit `d0aa2d14`: có tệp thì `verify` đạt, thêm dòng tệp không có trong kho thì `verify` thất bại |
-| Job `e2e` trên GitHub Actions | Đạt | Commit `d0aa2d14`: stack rỗng dựng từ image của commit, chuỗi script chạy hết; cả job 14 phút 35 giây, riêng chuỗi script 11 phút 55 giây |
-| Hai nhóm của job `e2e` chạy song song, mỗi nhóm một stack rỗng riêng | Đạt | Chạy cục bộ trên cây làm việc gồm tệp chưa commit: nhóm đầu chín script 51, 19, 71, 65, 56, 45, 26, 59, 41 trong 277 giây; nhóm sau `check_events.py` 18 và `check_bootstrap.py` 8 trong 297 giây; cả hai stack đã gỡ cùng volume |
-| Hai nhóm của job `e2e` trên GitHub Actions | Đạt | Commit `ad4a3da6`: `e2e (model and process)` 434 giây, riêng script 278 giây; `e2e (events and bootstrap)` 389 giây, riêng script 268 giây; chạy song song nên cả job khoảng 7 phút 15 giây |
-
-### Kiểm ngày 05/11/2026: áp dụng lại tệp không đổi và link tài khoản
-
-Cây làm việc gồm cả tệp chưa commit.
-Chuỗi script chạy trên hai stack thử riêng (project Compose `dxscratch`, cổng 9180) dựng rỗng, chia hai nhóm như CI; stack đã gỡ cùng volume sau khi kiểm.
-
-| Mục | Kết quả | Ghi chú |
-|---|---|---|
-| `./mvnw clean verify formatter:validate` | Đạt | Cả backend: dx-core 20 test, dx-engine 8, dx-monitor 3 |
-| `npx tsc --noEmit` | Đạt | Không lỗi |
-| Mười một script ở `deploy/dev`, hai nhóm như CI | Đạt | 459/459: nhóm một 51, 19, 71, 65, 56, 45, 26, 59, 41; nhóm hai `check_events.py` 18 và `check_bootstrap.py` 8 |
-| Áp dụng lại tệp không đổi, kịch bản tạm ngoài repo | Đạt | 35/35: mô hình mới không báo lệch giả; thiếu cột và ràng buộc thì `repair` mức `SAFE`, áp dụng xong danh sách API trả 200 và kế hoạch về `unchanged`; cột thừa thì `rejected`, áp dụng bị từ chối, cột còn nguyên, mô hình không bị giữ; đổi kiểu cột thì `repair` mức `MIGRATION`, thiếu `accept` bị từ chối; xóa vai, client, nhóm đơn vị thì kế hoạch nêu đúng và áp dụng khôi phục; lịch sử có lượt chạy, vẫn phiên bản 1 |
-| Kế hoạch lệch ở bảng điều khiển bằng Chrome | Đạt | Tệp không đổi khi bảng thiếu cột: thông báo, dòng "Sửa cấu trúc bảng" kèm SQL, mức An toàn, nút "Sửa phần lệch"; bấm thì áp dụng xong |
-| "Tài khoản của tôi" bằng Chrome | Đạt | Mở Account Management của Keycloak ở tab mới, đã đăng nhập, có mục Account security |
-
-### Kiểm ngày 05/11/2026: webhook theo mô hình, thứ tự giao, câu cho chat, sự kiện quản trị và nhắc hạn
-
-Cây làm việc gồm cả tệp chưa commit.
-Mọi lượt chạy trên một stack thử riêng (project Compose `dxscratch`, cổng 9180) dựng rỗng; stack đã gỡ cùng volume sau khi kiểm.
-Bên nhận webhook là một máy chủ HTTP nhỏ trên máy này, không phải Mattermost hay Slack thật.
-
-| Mục | Kết quả | Ghi chú |
-|---|---|---|
-| `./mvnw clean verify formatter:validate` | Đạt | Cả backend, gồm `ArchitectureTest` |
-| `check_events.py` | Đạt | 18/18 với đích mặc định `DXOS_WEBHOOK_URL`; sau khi tạo lại backend, gateway có thể trả 502 một lúc, nên cần `docker compose restart apisix` rồi chạy lại |
-| `check_bootstrap.py` | Đạt | 8/8 |
-| Đích theo mô hình | Đạt | Mô hình `webhook: ops` nhận sự kiện ở đích `ops` kèm chữ ký; đích chưa cấu hình bị từ chối khi xem kế hoạch và áp dụng (409); tên đích sai dạng báo lỗi theo dòng và cột; đổi đích giữa hai phiên bản thì sự kiện sau đó đi đích mới; đích bị gỡ thì thông điệp nằm lại hàng đợi kèm lỗi cấu hình và được giao sau khi có lại đích và bấm Thử lại |
-| Thứ tự theo hồ sơ | Đạt | Dòng đầu của một hồ sơ dừng (`DXOS_OUTBOX_MAX_ATTEMPTS=1`); dòng sau của hồ sơ đó không được giao, dòng của hồ sơ khác được giao; sau Thử lại cả hai tới đúng thứ tự `eventId` |
-| Đích dạng `chat` | Đạt | Nội dung chỉ có khóa `text`; hồ sơ mới của thực thể có quy trình đọc là "Việc mới"; nội dung hồ sơ không có trong câu |
-| `due_soon` | Đạt | Hạn 3 phút, `DXOS_DUE_SOON_BEFORE=2m`: dòng tới sau khoảng 64 giây và chỉ một lần |
-| Sự kiện quản trị | Đạt | `MODEL_APPLIED` vào đích của mô hình, ký và có header `X-Dxos-Event-Id`; thay đổi vai qua API vào đích mặc định |
-| `GET /api/v1/events` | Đạt | Phân trang theo `eventId` và lọc theo mô hình; có dòng `due_soon` |
-
-Chín script còn lại của `deploy/dev` không chạy lại ở lượt này.
-Các mục từ "Đích theo mô hình" tới "`GET /api/v1/events`" chạy bằng kịch bản tạm ngoài repo.
-
-### Kiểm ngày 05/11/2026: sửa ba lỗi của đợt team rà soát
-
-Cây làm việc gồm cả tệp chưa commit.
-Chạy trên một stack thử riêng (project Compose `dxscratch`, cổng 9180) dựng rỗng; stack đã gỡ cùng volume sau khi kiểm.
-
-| Mục | Kết quả | Ghi chú |
-|---|---|---|
-| `./mvnw clean verify formatter:validate`, `npx tsc --noEmit` | Đạt | Cả backend và web |
-| Tài khoản đã khóa trong danh sách người xử lý | Đạt | Hai người giữ vai xử lý: danh sách có cả hai; khóa một người thì danh sách chỉ còn người kia, giao việc cho người đã khóa bị 400, giao cho người còn hoạt động được 200 (kịch bản tạm ngoài repo) |
-| Bên nhận giữ phần trả lời | Đạt | Bên nhận trả header ngay rồi giữ body 15 giây: lần gửi lỗi `TimeoutException` sau khoảng 5 giây; trước khi sửa lần gửi trả sau 15 giây (kịch bản tạm ngoài repo) |
-| Sửa hồ sơ trên web bằng Chrome | Đạt | Đăng nhập người xử lý, mở hồ sơ của thực thể có hạn, đổi tiêu đề và lưu: lưu được, lịch sử ghi "Sửa thông tin" |
-
-### Kiểm ngày 05/11/2026: dòng giữ, audit của việc áp dụng và lỗi tài khoản dịch vụ
-
-Cây làm việc gồm cả tệp chưa commit.
-Chuỗi script chạy trên stack rỗng của máy này; stack đã gỡ sau khi kiểm.
-
-| Mục | Kết quả | Ghi chú |
-|---|---|---|
-| `./mvnw clean verify formatter:validate`, `npx tsc --noEmit` | Đạt | Cả backend và web |
-| Chín script `deploy/dev` theo thứ tự ở mục 4 | Đạt | 434/434: `check_api.py` 51, `check_recovery.py` 19, `check_case.py` 71, `check_change.py` 65, `check_process.py` 56, `check_booking.py` 45, `check_demo.py` 26, `check_guards.py` 60, `check_users.py` 41 |
-| `check_events.py`, `check_bootstrap.py` | Đạt | 18/18 và 8/8 |
-| `GET /api/v1/meta/models` với mô hình bị giữ | Đạt | `check_guards.py` T12-14: mô hình bị giữ không có thực thể dùng được và hiện với `held` là true |
-| Keycloak từ chối tài khoản dịch vụ | Đạt | Gỡ `manage-clients` của `dxos-backend-admin`, áp dụng mô hình mới: 502 `ERR_ACCOUNT_SERVICE_DENIED`; trả lại quyền, hủy bỏ lần áp dụng dở (kiểm tay) |
-
-
-### Kiểm ngày 05/11/2026: khóa chung của cập nhật và sao lưu, thời gian chờ của thống kê, hộp việc theo phạm vi
-
-Image backend dựng từ cây làm việc gồm cả tệp chưa commit; stack thử riêng (cơ sở dữ liệu rỗng) đã gỡ sau khi kiểm.
-
-| Mục | Kết quả | Ghi chú |
-|---|---|---|
-| `mvn compile formatter:validate` cho `dx-model`, `dx-core`, `dx-engine` | Đạt | Không tệp nào lỗi định dạng |
-| `check_api.py`, `check_recovery.py`, `check_case.py` | Đạt | 51/51, 19/19, 71/71; T6-12 là bước kiểm hộp việc |
-| Hộp việc khi người nộp rời đơn vị | Đạt | Officer nộp hồ sơ ở `DAO_TAO`, đồng nghiệp trả lại; hồ sơ có trong hộp việc của người nộp; sau khi chuyển người đó sang `CTSV` và lấy token mới thì hồ sơ biến khỏi hộp việc và mở chi tiết trả 404 (kịch bản tạm, không nằm trong repo) |
-| `GET /data/<mô hình>/<thực thể>/stats` | Đạt | Trả 200 và đúng số liệu khi đã đặt `statement_timeout`; chưa kiểm lúc truy vấn bị cắt thật |
-| `update.sh` khi khóa `deploy/.reconcile.lock` đang bị giữ | Đạt | Đứng đợi; khóa rảnh thì đi tiếp tới bước kéo image |
-| `backup.sh` khi khóa đang bị giữ | Đạt | Chế độ sao lưu đứng đợi; `backup.sh -h` không bị chặn |
-| Hành động hoàn tất khi trường người dùng hoặc nhóm trống | Đạt | Mô hình thử có `after` dùng trường `member` và `grp`: duyệt hồ sơ thiếu người dùng và hồ sơ thiếu nhóm đều thành `approved`, lịch sử có dòng `completion_skipped` kèm lý do; `check_process.py` vẫn 56/56 (kịch bản tạm, không nằm trong repo) |
-| Một lần `update.sh` và `backup.sh` chạy trọn | Chưa kiểm | Image `dxos-*:local` không có trên registry, chưa có kho restic |
-
-### Kiểm ngày 05/11/2026: kéo thả trên lịch đặt chỗ
-
-Image frontend và backend dựng từ cây làm việc gồm cả tệp chưa commit; stack thử riêng (cơ sở dữ liệu rỗng) đã gỡ sau khi kiểm.
-
-| Mục | Kết quả | Ghi chú |
-|---|---|---|
-| `npx tsc --noEmit` | Đạt | Không lỗi |
-| Lịch của mẫu `room_booking` bằng Chrome, người quản lý | Đạt | Hai lượt đặt cùng ngày, 09:00–10:00 và 11:00–12:00; tiêu đề hiện theo mục đích đặt |
-| Kéo lượt 09:00 sang 11:00, trùng lượt kia | Đạt | Hiện thông báo "Tài nguyên đã có người đặt trong khung giờ này", lượt trở về 09:00 |
-| Kéo lượt 09:00 lên 08:00 | Đạt | Lưu ngay; `GET` lại ra 08:00–09:00 |
-| Kéo cạnh dưới lượt 08:00 xuống 10:00 | Đạt | Lưu ngay; `GET` lại ra 08:00–10:00, lượt kia không đổi |
-| Lượt ở trạng thái cuối (`rejected`) kéo bằng người quản lý | Đạt | Lượt đứng yên, không có thông báo lỗi; `GET` lại ra giờ cũ |
-| Người chỉ có quyền đọc (mô hình thử đặt `GUEST: read` cho lượt đặt) | Đạt | Phụ đề chỉ còn "Bấm vào một lượt để xem chi tiết"; kéo một lượt đang chờ xác nhận thì đứng yên; `GET` lại ra giờ cũ |
-
-### Kiểm ngày 05/11/2026: tự đóng hồ sơ của họ work_item
-
-Image backend và frontend dựng từ cây làm việc gồm cả tệp chưa commit; hai lần thử trên stack thử riêng (cơ sở dữ liệu rỗng, kịch bản nằm ngoài repo) đã gỡ sau khi kiểm.
-Mô hình thử khai báo `auto_close: 1m` và bước quét chạy mỗi 60 giây.
-
-| Mục | Kết quả | Ghi chú |
-|---|---|---|
-| `mvn test-compile`, `formatter:validate` cho `dx-model` và `dx-engine` | Đạt | Không báo lỗi |
-| `mvn test -pl dx-model,dx-engine -am` | Đạt | 20 và 8 test sẵn có, gồm `ArchitectureTest` |
-| `auto_close` ở họ `approval`, giá trị `soon`, giá trị `0d` | Đạt | 400 kèm dòng và cột; thông báo `auto_close only applies to the work_item family` và `auto_close is a positive number followed by m, h or d, such as 7d` |
-| Áp dụng mô hình có `auto_close` | Đạt | Phiên bản 1 được áp dụng |
-| Kế hoạch khi đổi `auto_close` từ `1m` sang `2m` | Đạt | Một thay đổi `CHANGE_AUTO_CLOSE`, mức `SAFE` |
-| Hồ sơ đã xử lý xong, không ai xác nhận | Đạt | Đóng sau 87 giây; `decided_by` là `system`, `handle_by` rỗng; lịch sử kết thúc bằng dòng `auto_closed` từ `resolved` sang `closed` do `system` |
-| Người nộp xác nhận ngay | Đạt | Đóng với người nộp là người quyết định; không có dòng `auto_closed` |
-| Người nộp mở lại rồi xử lý xong lần nữa | Đạt | 51 giây sau lần xử lý xong thứ hai vẫn ở `resolved` dù lần đầu đã quá hạn; sau đó đóng theo lần thứ hai |
-| Hồ sơ đang xử lý | Đạt | Không bị đóng |
-| `GET /history/verify` sau các dòng `auto_closed` | Đạt | `intact: true`, không điểm đứt |
-| Dòng `auto_closed` tới webhook | Đạt | Mô hình thử khai báo `webhook: hook`, đích trỏ tới một máy nhận chạy trên máy dev; nhận đủ `created`, `start`, `resolve`, `auto_closed` theo thứ tự; dòng `auto_closed` có `actor` là `system`, `fromStatus` `resolved`, `toStatus` `closed`, kèm `X-Dxos-Event-Id` và chữ ký |
-| Hành động hoàn tất (`after`) khi tự đóng | Đạt | `after: {closed: [{do: add_to_group, user: created_by, group: AUTOCLOSE}]}`; sau khi hồ sơ tự đóng, người nộp là thành viên nhóm `AUTOCLOSE` ở Keycloak |
-| Nhãn `auto_closed` trên giao diện bằng Chrome | Đạt | Trang chi tiết hồ sơ, người nộp đăng nhập: dòng "Tự đóng do người nộp chưa xác nhận" với người thực hiện `System` và nhãn trạng thái "Đã đóng" |
-| Nhãn `CHANGE_AUTO_CLOSE` và khóa `auto_close` ở trình soạn bằng Chrome | Đạt | Quản trị đổi `1m` thành `2m`, "Xem kế hoạch" hiện "Đổi thời gian tự đóng hồ sơ" mức "An toàn"; trình soạn không báo lỗi khóa `auto_close` |
-
-### Kiểm ngày 05/11/2026: vai và đơn vị đổi giữa phiên
-
-Bốn mục đầu đo trên stack chính bằng đăng nhập bằng mật khẩu của client `dxos-check` và lệnh làm mới token, người dùng thử đã xóa sau khi đo; hai mục sau kiểm bằng Chrome trên stack thử riêng (cơ sở dữ liệu rỗng, image frontend dựng từ cây làm việc) đã gỡ sau khi kiểm.
-
-| Mục | Kết quả | Ghi chú |
-|---|---|---|
-| Token cũ sau khi người dùng vào đơn vị `CTSV` | Đạt | Claim `groups` không đổi |
-| Token làm mới bằng refresh token sau khi vào đơn vị | Đạt | Có `CTSV` ngay |
-| Token cũ sau khi người dùng ra khỏi `CTSV` | Đạt | Vẫn mang `CTSV` đến khi hết hạn |
-| Token làm mới sau khi ra khỏi đơn vị | Đạt | Không còn `CTSV` |
-| Thời hạn token | Đạt | 300 giây |
-| Web tự làm mới token trên trình duyệt | Đạt | Stack thử riêng, quản trị đăng nhập lúc 08:01:19 UTC (token 300 giây, chưa có đơn vị), được cho vào `CTSV` lúc 08:01:32; không tải lại trang, token trong `sessionStorage` đổi lúc 08:05:32 (khoảng 4 phút 13 giây sau khi đăng nhập, trước khi hết hạn) và mang `groups: ["CTSV"]` |
-| Câu gợi ý mới ở tab Người dùng bằng Chrome | Đạt | Mở một người dùng ở tab Người dùng: dòng "Bấm vào một vai để gán hoặc gỡ. Vai và đơn vị mới có hiệu lực khi phiên của người đó tự làm mới, tối đa khoảng 5 phút, hoặc khi người đó đăng nhập lại." |
-
-### Kiểm ngày 05/11/2026: kiểm tra tự động thêm vào script có sẵn
-
-Hai nhóm của job `e2e` chạy trên stack rỗng của máy này, theo đúng thứ tự trong CI; stack đã gỡ sau khi kiểm.
-
-| Mục | Kết quả | Ghi chú |
-|---|---|---|
-| Nhóm `model and process` | Đạt | `check_api.py` 51, `check_recovery.py` 19, `check_case.py` 71, `check_change.py` 65, `check_process.py` 58, `check_booking.py` 45, `check_demo.py` 26, `check_guards.py` 61, `check_users.py` 41 |
-| Nhóm `events and bootstrap` | Đạt | `check_events.py` 21, `check_bootstrap.py` 8 |
-| Hủy bỏ lần áp dụng đầu xóa client Keycloak của mô hình | Đạt | T12-21 trong `check_guards.py`; client được tạo tay trước khi hủy bỏ vì lỗi tiêm xảy ra trước bước tạo client |
-| Thống kê khớp với danh sách | Đạt | T8-09 trong `check_process.py`: `total`, tổng `byStatus` và `overdue` bằng số đếm của danh sách, với người xử lý và với người nộp chỉ thấy hồ sơ của mình |
-| Chuỗi hash của lịch sử | Đạt | EV-16 đến EV-18 trong `check_events.py`: nguyên vẹn, sửa một dòng thì `firstBreak` chỉ đúng dòng đó, trả lại thì nguyên vẹn |
-| Sau khi đổi số hiệu EV-13 đến EV-15 thành EV-16 đến EV-18 trong `check_events.py` | Chưa chạy lại | Chỉ đổi nhãn của ba kiểm tra mới, logic không đổi |
-
-### Kiểm thử chưa tự động hóa
-
-Các mục dưới đây kiểm tay; kết quả ở các mục kiểm trước của tài liệu này.
-
-| Mục | Cách kiểm tay |
-|---|---|
-| `dxos plan`, `dxos apply`, `dxos archive` | Chạy trên bản cài: `dxos plan <tệp>` và `dxos apply <tệp> --accept <mức>`; `dxos archive <mô hình>` rồi `dxos archive check <thư mục>` |
-| Simulator IT/OT | `examples/itot-simulator/simulator.py setup`, `run`, `replay`; gửi lại cùng quan sát in `duplicate` và không tạo thêm hồ sơ |
-| Khe hở khi áp dụng | Áp dụng một mô hình đổi bảng trong lúc có yêu cầu ghi hồ sơ của mô hình đó; không hồ sơ nào được ghi sai cấu trúc |
-| `backup.sh verify` thiếu tệp | Xóa một tệp khỏi kho `seaweedfs` của bản sao lưu rồi chạy `verify`; phải báo `FAILED` kèm tên khóa thiếu |
-
-### Kiểm ngày 05/11/2026: test WireMock cho client Keycloak và webhook
-
-Không dựng stack, không build image; test dùng máy chủ HTTP giả của WireMock trên cổng động, nên không thay cho các kịch bản trên stack thật.
-
-| Mục | Kết quả | Ghi chú |
-|---|---|---|
-| Giấy phép của `wiremock-standalone` 3.13.2 | Đạt | POM và `LICENSE.txt` của repo ghi Apache-2.0; jar tải về khớp sha1 trên Maven Central; thư viện đóng gói bên trong đọc từ POM của từng thư viện trên Maven Central (bản mới nhất, không phải đúng bản đóng gói): Apache-2.0 cho Guava, Jackson, Apache HttpComponents, Commons Lang, Handlebars, json-schema-validator, SnakeYAML, JsonPath, JsonUnit, XMLUnit 2, json-smart, ITU, JSpecify, error-prone, j2objc và swagger-ui; MIT cho SLF4J và jopt-simple; BSD cho Hamcrest và XMLUnit 1; Jetty là EPL-2.0 hoặc Apache-2.0 (chọn Apache-2.0); Servlet API là EPL-2.0 hoặc GPL-2.0 with Classpath Exception (chọn EPL-2.0) |
-| `.github/scripts/check_licenses.py` sau khi thêm dòng WireMock vào `COPYRIGHT.txt` | Đạt | 0 vấn đề; SBOM không đổi vì chỉ gồm dependency chạy thật |
-| `mvn test-compile` và `formatter:validate` cho toàn bộ backend | Đạt | Không báo lỗi |
-| `KeycloakAdminClientTest` | Đạt | 14/14 ở lần chạy cuối, ba lần liên tiếp ở bản 9 test; gồm token bị từ chối 401 và 403, Keycloak tắt, Keycloak quá thời gian đọc, token trả về không có `access_token`, tạo người dùng lấy id từ `Location` và 409, không tạo vai khi tra cứu vai bị 500, và các bước chạy lại được của việc áp dụng mô hình: tạo client hoặc nhóm gặp 409 không phải lỗi còn gặp 500 là lỗi, xóa client đã mất không phải lỗi còn xóa bị 500 là lỗi |
-| `ServiceProbeTest` ở `dx-monitor` | Đạt | 4/4: dịch vụ chỉ UP khi câu trả lời có đúng dấu kỳ vọng, 5xx là DOWN, trả lời quá chậm là DOWN trong dưới 2 giây, header tới rồi mà thân đứng im vẫn trả về trong dưới 3 giây; đo riêng bằng một test tạm (đã xóa) thì header tới sau khoảng 1 giây, cả thân mất 8 giây, còn lệnh gọi kiểu của bộ thăm dò bị cắt đúng lúc 501 ms, nên timeout của `send` đồng bộ ở JDK 21 phủ cả phần thân và không có lỗi treo |
-| `WebhookSenderTest` | Đạt | 5/5, ba lần liên tiếp; gồm chữ ký HMAC-SHA256 của đúng nội dung và `X-Dxos-Event-Id`, trả lời 500 và 302, cổng đóng, quá thời gian chờ 5 giây (nhãn `slow`) |
-| Lỗi tìm ra: `clientRolesOf`, `deleteUser`, `userExists` bọc lỗi token bị từ chối thành "Keycloak is unreachable" | Đạt | Test thất bại trước khi sửa, đạt sau khi thêm `catch (KeycloakAdminException e) { throw e; }`; `userExists`, `findUserId` và `deleteUser` không có nơi gọi trong mã chạy thật |
-| Toàn bộ test của `dx-model`, `dx-core`, `dx-engine`, `dx-monitor` | Đạt | 34 ở `dx-core`, 13 ở `dx-engine` (gồm `ArchitectureTest` và `AdvisoryJobLockIntegrationTest` chạy với Docker), 7 ở `dx-monitor`, `BUILD SUCCESS`; `formatter:validate` không báo lỗi |
-| Chạy trên CI | Chưa kiểm | Mới chạy trên máy dev; CI cần tải `wiremock-standalone` từ Maven Central |
-
-### Kiểm ngày 05/11/2026: chống ghi đè, lý do chặn và kiểm tài liệu với OpenAPI
-
-Image backend và frontend dựng từ cây làm việc gồm cả tệp chưa commit; stack thử riêng (cơ sở dữ liệu rỗng) đã gỡ sau khi kiểm.
-
-| Mục | Kết quả | Ghi chú |
-|---|---|---|
-| `mvn formatter:format compile`, `formatter:validate` cho `dx-engine` | Đạt | Cùng `dx-core` và `dx-model` |
-| `npx tsc --noEmit` | Đạt | Gồm `dataProvider.ts` và `CalendarPage.tsx` |
-| Nhóm `model and process` kèm `check_docs.py` | Đạt | `check_api.py` 51, `check_recovery.py` 19, `check_case.py` 74, `check_change.py` 65, `check_process.py` 64, `check_booking.py` 45, `check_demo.py` 26, `check_guards.py` 61, `check_users.py` 41, `check_docs.py` 3 |
-| Sửa theo `version` | Đạt | T8-10 trong `check_process.py`: đúng phiên bản thì sửa được và phiên bản tăng; phiên bản cũ thì 409 `ERR_CONCURRENT_MODIFICATION` và nội dung mới giữ nguyên; `version` không phải số thì 400; không có `version` thì sửa như trước; một bước của quy trình xen vào cũng làm phiên bản cũ |
-| Lý do chặn | Đạt | `HANDLER_ONLY`, `ASSIGNED_TO_OTHER` và `SELF_DECISION` trong `check_case.py` (T6-09, T6-11); các mã còn lại chưa có kiểm tra riêng |
-| `check_docs.py` bắt được endpoint không có thật | Đạt | Thêm tạm hai endpoint giả vào một bản sao của `ARCHITECTURE.md`: kiểm tra báo hỏng và nêu đúng hai endpoint đó |
-| Form sửa hồ sơ bằng Chrome | Đạt | Mở form hồ sơ, đổi hồ sơ bằng API, bấm Lưu ở form cũ: hiện "Bản ghi vừa được người khác thay đổi, hãy tải lại rồi thử lại", nội dung do API ghi vẫn còn nguyên |
-| Kéo thả lịch đặt chỗ gửi `version` bằng Chrome | Đạt | Kéo lượt 09:00 lên 08:00 rồi lên 07:00 không tải lại trang: cả hai lần lưu được, `GET` lại ra 07:00 với `version` tăng theo từng lần, lượt kia không đổi; lần thử đầu cho thấy lịch giữ `version` cũ sau lần kéo thứ nhất nên lần kéo thứ hai bị 409, đã sửa để lịch lấy `version` mới từ kết quả lưu |
-
-### Kiểm ngày 05/11/2026: mã lý do cho lỗi 409, so hash lịch sử từ bên ngoài và bộ kiểm chung cho mô hình
-
-Image backend dựng từ cây làm việc gồm cả tệp chưa commit; hai nhóm của job `e2e` chạy trên stack rỗng của máy này, stack đã gỡ sau khi kiểm.
-
-| Mục | Kết quả | Ghi chú |
-|---|---|---|
-| Nhóm `model and process` | Đạt | `check_api.py` 51, `check_recovery.py` 19, `check_case.py` 75, `check_change.py` 65, `check_process.py` 66, `check_booking.py` 46, `check_demo.py` 26, `check_guards.py` 61, `check_users.py` 41, `check_docs.py` 3 |
-| Nhóm `events and bootstrap` | Đạt | `check_events.py` 24, `check_bootstrap.py` 8; số hiệu ba kiểm tra về chuỗi và ba kiểm tra về bên nhận trong `check_events.py` được đổi sau khi chạy vì trùng số hiệu có sẵn, logic không đổi |
-| Mã lý do của lỗi 409 | Đạt | `WRONG_STATE` (T6-08), `RECORD_CLOSED` và `KEPT_BY_PROCESS` (T8-04), `SLOT_TAKEN` (T9-03); `STILL_REFERENCED` chưa có kiểm tra riêng |
-| Bên nhận so hash lịch sử | Đạt | Giữ hash của cả 19 dòng, sửa một dòng đầu rồi tính lại cả chuỗi: bên nhận thấy dòng đầu và mọi dòng sau đổi; `history verify` báo hỏng vì các điểm neo lệch; trả dòng về thì cả 19 dòng khớp lại |
-| `check_conformance.py` trên mọi mô hình của stack | Đạt | 59/59; lần đầu hỏng 9 kiểm tra vì gateway trả 429 do quá nhiều yêu cầu một lúc, nên mỗi người dùng chỉ thử ba mô hình khác |
-| `witness.py save` và `compare` chạy như dòng lệnh | Đạt | Lấy token bằng client `dxos-cli`: `save` ghi 3 sự kiện, `compare` báo 3 khớp (mã thoát 0); sau khi sửa dòng đầu và tính lại chuỗi, `compare` báo 3 đổi, dòng đầu là 1 (mã thoát 1); `save` lần hai không thêm dòng nào |
-
-### Kiểm ngày 05/11/2026: chỉ số thời gian xử lý của thống kê
-
-Image backend dựng từ cây làm việc gồm cả tệp chưa commit; năm script chạy trên stack rỗng riêng của máy này, stack đã gỡ sau khi kiểm.
-
-| Mục | Kết quả | Ghi chú |
-|---|---|---|
-| `check_api.py`, `check_recovery.py`, `check_case.py`, `check_change.py`, `check_process.py` | Đạt | 51, 19, 75, 65 và 69 kiểm tra |
-| Trung bình thời gian đến trạng thái cuối | Đạt | T8-09 trong `check_process.py`: `avgDecisionSeconds` bằng giá trị tính trực tiếp trong cơ sở dữ liệu, sai lệch tối đa một giây |
-| Tuổi hồ sơ đang mở | Đạt | T8-09: sau khi lùi `created_at` hai giờ, `oldestOpenAgeSeconds` từ 7200 và `avgOpenAgeSeconds` không vượt giá trị lớn nhất |
-| Không có hồ sơ nào để tính | Đạt | T8-09: bộ lọc không khớp dòng nào thì `total` là 0 và cả ba chỉ số là `null` |
-| Trang thống kê trên Chrome | Đạt | Stack chính, đăng nhập vai xử lý: ba ô mới hiện cạnh `Quá hạn`, giá trị khớp `GET .../stats`; vai không có hồ sơ nào chỉ thấy `Tổng số hồ sơ` và `Quá hạn`; ở 360px các ô xếp dọc, không tràn ngang, chữ không bị cắt |
-
-### Kiểm ngày 05/11/2026: giá trị cũ và mới trong lịch sử hồ sơ
-
-Image backend dựng từ cây làm việc gồm cả tệp chưa commit; nhóm `model and process` chạy trên một stack rỗng và nhóm `events and bootstrap` trên một stack rỗng khác của máy này, cả hai đã gỡ sau khi kiểm.
-
-| Mục | Kết quả | Ghi chú |
-|---|---|---|
-| Nhóm `model and process` | Đạt | `check_api.py` 51, `check_recovery.py` 19, `check_case.py` 76, `check_change.py` 65, `check_process.py` 69, `check_booking.py` 46, `check_demo.py` 26, `check_guards.py` 61, `check_users.py` 41, `check_docs.py` 3, `check_conformance.py` 60 |
-| Nhóm `events and bootstrap` | Đạt | `check_events.py` 24, `check_bootstrap.py` 8, gồm cả chuỗi hash lịch sử và bên nhận so hash |
-| Giá trị cũ và mới | Đạt | T6-13 trong `check_case.py`: sửa `reason` thì `detail` là `{"reason": ["Cần giấy xác nhận", "Đã bổ sung"]}`; sửa lại đúng giá trị đang có thì không có dòng mới |
-| Giá trị dài | Đạt | T6-13: giá trị 300 ký tự được ghi 200 ký tự cộng `…` |
-| Lần chạy đầu của `check_docs.py` | Không tính | Hỏng vì bản sao tạm thiếu `README.md`, `README_EN.md`, `ARCHITECTURE.md` và `deploy/OPERATIONS.md`; chạy lại sau khi thêm các tệp thì đạt |
-| Lịch sử giá trị trên Chrome | Đạt | Stack chính, chi tiết hồ sơ: mục Lịch sử hiện `Nhãn: cũ → mới` từng trường, trường rỗng hiện `—`, thời điểm đổi sang giờ địa phương, giá trị dài cắt ở 200 ký tự kèm `…`; dòng `updated` cũ (chỉ tên trường) vẫn hiện bằng nhãn; ở 360px khung Lịch sử không tràn ngang |

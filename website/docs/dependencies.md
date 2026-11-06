@@ -21,7 +21,7 @@ Hai nơi đó được máy kiểm ở mỗi pull request, tài liệu này ch�
 |---|---|---|---|---|
 | Keycloak 26 | Apache-2.0 | Định danh, SSO | Phần mềm định danh nguồn mở trưởng thành, khai báo bằng realm và có Admin API để tạo vai, client, nhóm từ mô hình | Bản phát hành chính thức, tải về kiểm SHA-1, không sửa; realm nhập từ `sso/realm-dxos.json` |
 | Apache APISIX | Apache-2.0 | Cổng API | Kiểm JWT, giới hạn tốc độ và định tuyến bằng tệp cấu hình, không cần mã | Image chính thức ghim digest; route nằm ở `deploy/apisix/` và được `check_routes.py` kiểm |
-| PostgreSQL, pgvector | PostgreSQL License | Dữ liệu có cấu trúc, hàng đợi outbox | Một cơ sở dữ liệu cho dữ liệu nghiệp vụ, lịch sử, outbox và quy trình, nên giao dịch bao trùm được việc ghi hồ sơ và đổi trạng thái | Image `pgvector/pgvector` ghim digest; mỗi mô hình một schema |
+| PostgreSQL | PostgreSQL License | Dữ liệu có cấu trúc, hàng đợi outbox | Một cơ sở dữ liệu cho dữ liệu nghiệp vụ, lịch sử, outbox và quy trình, nên giao dịch bao trùm được việc ghi hồ sơ và đổi trạng thái | Image chính thức `postgres:16-bookworm` ghim digest; mỗi mô hình một schema |
 | SeaweedFS | Apache-2.0 | Dữ liệu phi cấu trúc | API tương thích S3, nên đổi sang kho S3 khác chỉ đổi địa chỉ | Image chính thức ghim digest; truy cập qua AWS SDK |
 | Flowable 8 | Apache-2.0 | Động cơ luồng công việc | Động cơ BPMN trưởng thành, chạy nhúng trong tiến trình và dùng chung giao dịch với việc ghi hồ sơ | Nhúng bằng `flowable-spring`; người dùng không viết BPMN, đội cung cấp ba họ mẫu có tham số |
 | pgschema 1.13 | Apache-2.0 | So sánh và đổi lược đồ | Khai báo trạng thái đích rồi tính câu lệnh cần chạy, giống Terraform | Binary lấy từ image chính thức ghim digest; lõi đổi tên cột trước và chặn mọi thao tác xóa mà mô hình không yêu cầu |
@@ -35,6 +35,10 @@ Hai nơi đó được máy kiểm ở mỗi pull request, tài liệu này ch�
 | restic | BSD-2-Clause | Sao lưu có mã hóa | Chạy trong container nên chỉ cần Docker | `deploy/backup.sh` |
 | Trivy, gitleaks, CycloneDX | Apache-2.0, MIT | Quét lỗ hổng, bí mật và lập SBOM trong CI | Công cụ nguồn mở, chạy ở mọi pull request | `.github/workflows/` |
 
+
+ClamAV được giữ vì đề thi yêu cầu kiểm dịch mã độc ngay tại cửa ngõ, và nó tắt mặc định.
+Dự án kéo image chính thức nguyên bản khi chạy, không đóng gói và không phân phối lại nó.
+`libclamunrar` nạp lúc chạy, không liên kết với `libclamav`; thiếu nó thì ClamAV vẫn chạy, chỉ không giải nén RAR.
 
 ## 3. Đã cân nhắc nhưng không dùng
 

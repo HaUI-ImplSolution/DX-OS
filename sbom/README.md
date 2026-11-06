@@ -1,14 +1,23 @@
 # SBOM
 
-Danh mục thành phần phần mềm định dạng CycloneDX (JSON; đặc tả 1.6), chỉ gồm dependency chạy thật (không gồm scope test và dev).
+Danh mục thành phần phần mềm theo định dạng CycloneDX (JSON, đặc tả 1.6).
+Chỉ gồm dependency chạy thật, không gồm scope test và dev.
+Giấy phép của từng thành phần ở [`DEPENDENCIES.txt`](../DEPENDENCIES.txt).
 
-| File | Nguồn |
+## Các tệp
+
+| Tệp | Nguồn |
 |---|---|
 | `backend.cdx.json` | Maven, `backend` (gốc `dx-os-parent`, cả ba module `dx-core`, `dx-engine`, `dx-monitor`) |
 | `frontend.cdx.json` | npm, `frontend` |
 | `website.cdx.json` | npm, `website` (trang tài liệu) |
 
+Các tệp chỉ gồm thư viện của mã do nhóm viết.
+Image bên thứ ba khai báo ở [`.github/component-catalog.json`](../.github/component-catalog.json), giấy phép của chúng ở mục 4 của [`DEPENDENCIES.txt`](../DEPENDENCIES.txt), và `deploy/docker-compose.yml` ghim phiên bản và digest.
+
 ## Sinh lại
+
+Sinh lại sau khi đổi dependency hoặc số phiên bản của dự án.
 
 ```bash
 # Backend
@@ -23,12 +32,19 @@ cd frontend && npx @cyclonedx/cyclonedx-npm --omit dev --output-format JSON --ou
 cd website && npx @cyclonedx/cyclonedx-npm --omit dev --output-format JSON --output-file ../sbom/website.cdx.json
 ```
 
-Sinh lại sau khi đổi dependency hoặc số phiên bản của dự án; giấy phép từng thành phần ở [`DEPENDENCIES.txt`](../DEPENDENCIES.txt).
-Mọi thành phần trong các file này đều có giấy phép; `.github/scripts/check_licenses.py` (job `Check licenses` của workflow `Compliance`) chặn thành phần không có giấy phép hoặc giấy phép ngoài danh sách cho phép, trừ ngoại lệ có lý do ở `.github/dependency-exceptions.json`.
-Các file SBOM chỉ gồm thư viện của mã do nhóm viết; image của bên thứ ba khai báo ở [`.github/component-catalog.json`](../.github/component-catalog.json), giấy phép của từng thành phần ở mục 6 của [`DEPENDENCIES.txt`](../DEPENDENCIES.txt); image ghim phiên bản và digest trong `deploy/docker-compose.yml`.
-Khi phát hành, workflow `Release Package` đính kèm các file này vào GitHub Release.
-Workflow `Dependencies` (`ci-dependencies.yml`) quét lỗ hổng của các dependency này bằng Trivy khi file khai báo đổi và mỗi tuần.
-Workflow này sinh lại SBOM của backend ngay trong CI và quét nó, vì `pom.xml` không ghi phiên bản của các gói do Spring Boot quản lý.
-Quét SBOM chặn CI khi có lỗi HIGH hoặc CRITICAL đã có bản vá.
-Cùng workflow quét các image của bên thứ ba trong `deploy/docker-compose.yml` và chỉ báo bằng cảnh báo.
-Dependabot (`.github/dependabot.yml`) mở pull request cập nhật vào `Khuong/main`.
+Backend sinh lại bằng Maven vì `pom.xml` không ghi phiên bản của các gói do Spring Boot quản lý.
+
+## Kiểm tra tự động
+
+| Kiểm gì | Ở đâu | Khi nào |
+|---|---|---|
+| Mọi thành phần có giấy phép nằm trong danh sách OSI; ngoại lệ có lý do ở `.github/dependency-exceptions.json` | `.github/scripts/check_licenses.py`, job `Check licenses` của workflow `Compliance` | Mỗi pull request |
+| SBOM của `frontend` và `website` khớp tệp khóa | `.github/scripts/check_sbom_fresh.py`, job `Check SBOMs against lockfiles` của `Compliance` | Mỗi pull request |
+| SBOM của `backend` khớp các gói Maven đã giải | `check_sbom_fresh.py`, job `Scan the backend SBOM` của workflow `Dependencies`, sinh lại SBOM rồi so | Khi file khai báo đổi và mỗi tuần |
+| Lỗ hổng HIGH hoặc CRITICAL đã có bản vá chặn CI | Trivy, job `Scan dependencies` và `Scan the backend SBOM` của `Dependencies` | Khi file khai báo đổi và mỗi tuần |
+| Lỗ hổng của image bên thứ ba trong `deploy/docker-compose.yml`, chỉ báo bằng cảnh báo | Job `Scan third-party images` của `Dependencies` | Khi file khai báo đổi và mỗi tuần |
+| Cập nhật phiên bản | Dependabot (`.github/dependabot.yml`) mở pull request vào `Khuong/main` | Theo lịch |
+
+## Phát hành
+
+Workflow `Release Package` đính kèm các tệp này vào GitHub Release.

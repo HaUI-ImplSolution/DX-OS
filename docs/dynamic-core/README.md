@@ -653,7 +653,7 @@ Rà soát ngày 2026-11-02 từ `DEPENDENCIES.txt`, GitHub API và Hugging Face;
 | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
 | Keycloak, APISIX, Superset, SeaweedFS, Flowable, pgschema         | Apache-2.0                                                                                                                                                                                                                                                     | Đạt                                                             |
 | react-admin | MIT | Đạt; chỉ dùng phần MIT, không dùng gói Enterprise |
-| PostgreSQL, pgvector                                              | PostgreSQL License                                                                                                                                                                                                                                             | Đạt                                                             |
+| PostgreSQL                                                        | PostgreSQL License                                                                                                                                                                                                                                             | Đạt                                                             |
 | ClamAV                                                            | GPL-2.0                                                                                                                                                                                                                                                        | Đạt; điều khoản của kho chữ ký mã độc cần kiểm thêm |
 | Mattermost Team Edition | [Tách MIT cho bản build và AGPL cho mã nguồn, đang bị tranh cãi](https://docs.mattermost.com/product-overview/faq-license.html); [bản 11 giới hạn 250 người dùng](https://forum.mattermost.com/t/mattermost-v11-changes-in-free-offerings/25126) | **Chưa đạt rõ ràng**; đã gỡ khỏi cây mã |
 | Qwen2.5 1.5B | Trọng số Apache-2.0, dữ liệu huấn luyện không công khai theo hiểu biết hiện có | Đã gỡ khỏi bản phát hành |
@@ -725,7 +725,7 @@ Số sao và giấy phép lấy từ GitHub API ngày 2026-11-02, trừ khi có 
 
 ## Đã xác minh
 
-Kết quả ở [`docs/TESTING.md`](../TESTING.md), mục 8:
+Cách kiểm ở [`docs/TESTING.md`](../TESTING.md); kết quả mỗi lần chạy ở tab Actions:
 
 - Flowable 8.0.0 chạy nhúng trên Spring Boot 4.1 bằng `flowable-spring` cấu hình tay, dùng chung giao dịch với việc ghi hồ sơ.
 - Chỉ cho dịch vụ lõi ghi, cùng Flowable nhúng, đủ để trạng thái không lệch: lỗi cố ý sau bước quy trình làm hồ sơ và quy trình cùng quay về.
@@ -734,10 +734,10 @@ Kết quả ở [`docs/TESTING.md`](../TESTING.md), mục 8:
 - react-admin dựng form và danh sách từ metadata cho kiểu văn bản, số, ngày giờ, lựa chọn và tham chiếu; mô hình thứ hai nạp lúc chạy không cần build lại giao diện.
 - pgschema đưa lược đồ về trạng thái đích khi đã có dữ liệu, với điều kiện lõi đổi tên cột, ràng buộc và chỉ mục trước; tự nó biến đổi tên thành xóa rồi thêm, nên lõi chặn mọi thao tác xóa mà mô hình không yêu cầu.
 - Kế hoạch xem trước khớp với áp dụng thật khi có đổi tên, và áp dụng lại sau lỗi giữa chừng về đúng trạng thái đích; kết quả thử ở [`docs/phase-7-model-change/04_TRADEOFFS_RISKS.md`](../phase-7-model-change/04_TRADEOFFS_RISKS.md).
-- Hành động hoàn tất (`add_to_group`, `remove_from_group`) đi qua bảng outbox và được thử lại tới khi Keycloak nhận, người triển khai xem lỗi và thử lại ở bảng điều khiển; tệp đính kèm tải lên và tải xuống qua gateway, tải về dạng đính kèm, và đối tượng trong kho bị xóa khi tệp hoặc hồ sơ bị gỡ; kết quả ở [`docs/TESTING.md`](../TESTING.md), mục 8.
-- Webhook theo mô hình gửi đúng đích kèm chữ ký; các dòng của một hồ sơ tới theo thứ tự, dòng sau chờ dòng cũ đã dừng; đích dạng `chat` chỉ gửi một câu không có nội dung hồ sơ; dòng nhắc hạn đến đúng một lần; kết quả ở [`docs/TESTING.md`](../TESTING.md), mục 8.
+- Hành động hoàn tất (`add_to_group`, `remove_from_group`) đi qua bảng outbox và được thử lại tới khi Keycloak nhận, người triển khai xem lỗi và thử lại ở bảng điều khiển; tệp đính kèm tải lên và tải xuống qua gateway, tải về dạng đính kèm, và đối tượng trong kho bị xóa khi tệp hoặc hồ sơ bị gỡ; các script kiểm ở [`docs/TESTING.md`](../TESTING.md), mục 4.
+- Webhook theo mô hình gửi đúng đích kèm chữ ký; các dòng của một hồ sơ tới theo thứ tự, dòng sau chờ dòng cũ đã dừng; đích dạng `chat` chỉ gửi một câu không có nội dung hồ sơ; dòng nhắc hạn đến đúng một lần; các script kiểm ở [`docs/TESTING.md`](../TESTING.md), mục 4.
 - `ProcessMigrationService` của Flowable chuyển được hồ sơ đang chạy sang mẫu mới và báo trước khi mẫu mới bỏ bước hiện tại; kết quả thử ở [`docs/phase-6-case-core/04_TRADEOFFS_RISKS.md`](../phase-6-case-core/04_TRADEOFFS_RISKS.md).
-- Bản `2.0.0` dựng từ một bản sao sạch của cây mã: stack lên đủ, chuỗi `check_*.py` đạt, `clean verify`, `tsc`, `check_licenses.py` và `check_routes.py` đạt; kết quả ở [`docs/TESTING.md`](../TESTING.md), mục 8.
+- Bản `2.0.0` dựng từ một bản sao sạch của cây mã: stack lên đủ, chuỗi `check_*.py` đạt, `clean verify`, `tsc`, `check_licenses.py` và `check_routes.py` đạt; các script kiểm ở [`docs/TESTING.md`](../TESTING.md), mục 4.
 
 ## Chưa xác minh
 

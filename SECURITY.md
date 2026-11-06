@@ -33,4 +33,4 @@ Ngoài phạm vi: lỗ hổng của phần mềm thượng nguồn (Keycloak, Ap
 - Quét secret trong mã và lịch sử bằng gitleaks ở mỗi pull request.
 - Quét lỗ hổng của dependency và image bên thứ ba bằng Trivy khi file khai báo đổi và mỗi tuần.
 - Dependabot đề xuất cập nhật dependency.
-- Chi tiết mô hình phân quyền, giới hạn tốc độ, ghi vết và sao lưu ở [`ARCHITECTURE.md`](./ARCHITECTURE.md) và [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
+- Chi tiết mô hình phân quyền, giới hạn tốc độ, ghi vết và sao lưu ở [`ARCHITECTURE.md`](./ARCHITECTURE.md), [`deploy/MONITORING.md`](./deploy/MONITORING.md) (giới hạn tốc độ và ghi vết) và [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md) (sao lưu).

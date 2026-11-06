@@ -64,7 +64,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 | Dữ liệu phi cấu trúc | SeaweedFS qua API S3, trường `file` của mô hình, quét ClamAV khi bật, link tải có hạn |
 | Luồng công việc | Flowable nhúng; ba họ mẫu `approval`, `work_item`, `reservation`; trạng thái hồ sơ chỉ đổi qua quy trình |
 
-- **Bằng chứng:** `ARCHITECTURE.md` mục 3 đến 5 và 9; `python3 deploy/apisix/check_routes.py`; `python3 deploy/dev/check_api.py`.
+- **Bằng chứng:** `ARCHITECTURE.md` mục 3 đến 6 và 13; `python3 deploy/apisix/check_routes.py`; `python3 deploy/dev/check_api.py`.
 
 ## 5. Điểm nào thể hiện H-P-D-I thay vì một dashboard CRUD?
 
@@ -109,7 +109,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Backend chạy một bản.
   Thử hai bản sau gateway cho thấy cả hai nhận lưu lượng, nhưng sau một lần áp dụng mô hình, danh sách mô hình và trạng thái giữ lệch nhau giữa hai bản; vì vậy đây là giới hạn đã ghi, không phải khả năng đã có.
 - Mỗi mô hình có khóa riêng khi áp dụng nên các mô hình áp dụng song song; dữ liệu của mỗi mô hình nằm ở schema riêng.
-- **Bằng chứng:** `docs/TESTING.md` mục 8 (kiểm ngày 04/11/2026); `deploy/OPERATIONS.md` (tài nguyên từng dịch vụ); [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md) mục giới hạn chấp nhận.
+- **Bằng chứng:** `docs/TESTING.md` (cách kiểm); `deploy/OPERATIONS.md` (tài nguyên từng dịch vụ, đo trước khi nâng nginx 1.30 và Keycloak 26.8.2); [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md) mục giới hạn chấp nhận.
 
 ## 10. Cộng đồng muốn đóng góp thì làm thế nào?
 
@@ -139,7 +139,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Ba họ mẫu quy trình có tham số và các quy tắc chung mà quy trình nào cũng phải theo; trạng thái chỉ đổi qua quy trình, cùng giao dịch với việc ghi hồ sơ.
 - Hàng đợi sự kiện, webhook có chữ ký và thứ tự, chuỗi hash của lịch sử cùng công cụ kiểm từ bên ngoài.
 - Bảng điều khiển cho người triển khai và lệnh `dxos`.
-- **Bằng chứng:** `ARCHITECTURE.md` mục 3 đến 6; `backend/dx-model`, `backend/dx-engine`; [Ma trận bằng chứng](./evidence-matrix.md) mục 2.
+- **Bằng chứng:** `ARCHITECTURE.md` mục 4 đến 10; `backend/dx-model`, `backend/dx-engine`; [Ma trận bằng chứng](./evidence-matrix.md) mục 2.
 
 ## 13. Sao không dùng nền low-code có sẵn?
 
@@ -155,7 +155,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
   Bảng điều khiển của người triển khai, giao diện hồ sơ, portal và màn hình giám sát thuộc Tầng 2: chúng gọi lõi bằng API sau APISIX như mọi ứng dụng khác.
 - Trang quản trị Keycloak và Swagger đi kèm phần mềm nguồn mở dùng nguyên bản, là bàn làm việc của người vận hành; không ứng dụng nào gọi tới.
 - `dx-engine` chỉ phục vụ API.
-- **Bằng chứng:** `ARCHITECTURE.md` mục 1 và 9; `frontend/src/console`; `deploy/apisix/`.
+- **Bằng chứng:** `ARCHITECTURE.md` mục 1 và 13; `frontend/src/console`; `deploy/apisix/`.
 
 ## 15. Đổi mô hình khi hệ thống đang chạy có an toàn không?
 
@@ -165,7 +165,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Trong lúc áp dụng, mô hình bị giữ; lỗi giữa chừng thì áp dụng lại để làm tiếp hoặc hủy bỏ; có quay về phiên bản trước.
 - Đổi luật quy trình chỉ được khi thực thể không còn hồ sơ đang xử lý; vai `ADMIN` của nền tảng không khai báo được.
 - Giới hạn: không có người thứ hai duyệt thay đổi mô hình, đây là chính sách tùy bản triển khai.
-- **Bằng chứng:** `python3 deploy/dev/check_change.py` (65 kiểm), `check_guards.py` (61), `check_recovery.py` (19); `ARCHITECTURE.md` mục 3.
+- **Bằng chứng:** `python3 deploy/dev/check_change.py` (65 kiểm), `check_guards.py` (61), `check_recovery.py` (19); `ARCHITECTURE.md` mục 4.
 
 ## 16. Lịch sử hồ sơ có chống sửa lén không?
 
@@ -173,7 +173,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Chuỗi chỉ phát hiện, không ngăn sửa: người sửa được cả cơ sở dữ liệu lẫn kho đối tượng của cùng máy chủ có thể tính lại cả chuỗi và các điểm neo cho khớp nhau.
 - Vì vậy bên nhận webhook giữ cặp `eventId` và `hash` của các tin đã nhận, rồi so với hệ thống bằng `examples/history-witness/witness.py`; sửa lại cả chuỗi vẫn bị lộ vì hash bên nhận đã giữ không đổi.
 - Dòng `updated` ghi cả giá trị cũ và mới của từng trường.
-- **Bằng chứng:** `python3 deploy/dev/check_events.py` (kiểm sửa một dòng thì `firstBreak` chỉ đúng dòng đó); `examples/history-witness/README.md`; `docs/TESTING.md` mục 8 (kiểm ngày 05/11/2026).
+- **Bằng chứng:** `python3 deploy/dev/check_events.py` (kiểm sửa một dòng thì `firstBreak` chỉ đúng dòng đó); `examples/history-witness/README.md`; `docs/TESTING.md` mục 4.
 
 ## 17. Bảo mật: gọi thẳng API để lách quy trình thì sao?
 

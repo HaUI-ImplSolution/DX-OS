@@ -13,6 +13,7 @@ flowchart TB
   subgraph T2["Tầng 2: ứng dụng"]
     UI["Giao diện react-admin dựng từ metadata"]
     P["Portal, màn hình giám sát"]
+    CLI["dxos: start, plan, apply"]
   end
   subgraph T1["Tầng 1: lõi, chỉ có API"]
     GW["APISIX: cổng API"]
@@ -20,18 +21,25 @@ flowchart TB
     EN["dx-engine: áp dụng mô hình, API chung, Flowable"]
     PG[("PostgreSQL")]
     S3[("SeaweedFS")]
+    AV["ClamAV (tùy chọn)"]
   end
-  M -->|"POST /models/apply"| GW
+  EXT["Bên nhận webhook"]
+  M -->|"POST /models/apply, dxos start"| GW
   UI --> GW
+  CLI --> GW
   GW --> EN
   GW --> KC
   EN --> PG
   EN --> S3
-  EN -->|"tạo vai"| KC
+  EN -->|"tạo client, vai, nhóm"| KC
+  EN -->|"quét tệp"| AV
+  EN -->|"webhook có chữ ký"| EXT
 ```
 
 - **Tầng 1, lõi:** không có trang nào do đội viết; mọi thứ qua API.
-- **Tầng 2:** giao diện đọc metadata của lõi; portal và màn hình giám sát.
+- **Tầng 2:** giao diện đọc metadata của lõi; portal, màn hình giám sát và lệnh `dxos`.
+  Bảng điều khiển (`frontend/src/console`) và trang lịch (`frontend/src/admin/CalendarPage.tsx`) là mã nạp chậm của ứng dụng web.
+  Chữ người dùng đọc do frontend quyết định: backend trả thông báo tiếng Anh kèm `errorCode`, frontend dịch theo `frontend/src/shell/backendMessages.ts`.
 - **Tầng 3:** chỉ là tệp mô hình, không có mã.
 
 ## 2. Module backend
@@ -45,9 +53,28 @@ flowchart TB
 
 `dx-model` không phụ thuộc module nào; `dx-core` không phụ thuộc `dx-engine`; mã lõi không chứa tên thực thể, vai hay luồng của một lĩnh vực.
 
-## 3. Áp dụng một mô hình
+## 3. Định danh và token
+
+Keycloak giữ tài khoản, mật khẩu và vai; realm `dxos` được nhập một lần từ [`sso/realm-dxos.json`](./sso/realm-dxos.json).
+
+| Client | Dùng cho |
+|---|---|
+| `dxos-web` | Người dùng đăng nhập vào ứng dụng web |
+| `dxos-monitor` | Đăng nhập vào màn hình giám sát |
+| `dxos-cli` | Lệnh `dxos plan` và `dxos apply`; tài khoản dịch vụ giữ vai `ADMIN` |
+| `dxos-backend-admin` | Tài khoản dịch vụ của backend gọi Admin API: tạo client, vai, nhóm và quản trị người dùng |
+| `dxos-m-<mô hình>` | Chỉ để chứa vai của mô hình, không cho ai đăng nhập |
+
+- Vai `ADMIN` của nền tảng nằm ở `realm_access`, vai của mô hình ở `resource_access.dxos-m-<mô hình>.roles`, đơn vị ở claim `groups`.
+- APISIX kiểm token ở biên; backend kiểm lại chữ ký, thời hạn và audience `dxos-api` (do scope `dxos-api` thêm vào).
+- Vai và đơn vị đọc từ token đã ký, nên đổi vai hay đơn vị có hiệu lực sau tối đa khoảng 5 phút (token sống 300 giây).
+- Admin API của Keycloak 26.8 chỉ nhận token có audience của chính nó, nên `dxos-backend-admin` mang scope `kc-admin-api`; xem [`sso/README.md`](./sso/README.md).
+
+## 4. Áp dụng một mô hình
 
 Mô hình đi qua một đường duy nhất, từ hệ thống rỗng hay từ phiên bản đang chạy.
+
+### Xem trước và áp dụng
 
 `POST /api/v1/models/plan` không đổi bảng hay bản ghi nào, chỉ trả về:
 
@@ -79,7 +106,9 @@ Trước khi chạy, lõi từ chối:
 - thay đổi người xử lý, hạn xử lý, quyền tự quyết, hành động hoàn tất hay đặt chỗ khi thực thể còn hồ sơ đang xử lý;
 - xóa thực thể còn hồ sơ đang chạy quy trình.
 
-Mỗi mô hình có một khóa Postgres riêng cho lần áp dụng, nên các mô hình khác nhau áp dụng song song; vai của mỗi mô hình nằm trong client riêng, nên hai mô hình dùng cùng tên vai không va nhau.
+### Giữ mô hình và áp dụng dở
+
+Mỗi mô hình có một khóa Postgres riêng cho lần áp dụng, nên các mô hình khác nhau áp dụng song song.
 Mô hình được giữ lại từ bước đầu đến khi registry nạp xong phiên bản mới: người dùng chưa vào được, còn `GET /api/v1/models` báo `held`.
 `GET /api/v1/meta/models` liệt kê mô hình đang bị giữ với `held` là true và không có thực thể, chỉ khi người gọi đọc được một thực thể của mô hình; trang Hộp việc dùng đó để báo mô hình đang được áp dụng.
 Mô hình có lần áp dụng đầu dở chưa vào registry nên không được liệt kê.
@@ -90,13 +119,19 @@ Mỗi lần áp dụng lưu tệp, các lần đổi tên và mức đã xác nh
 - `POST /api/v1/models/{model}/abandon` đưa các bảng về phiên bản đang chạy; cột và bảng mà lần áp dụng dở đã thêm bị xóa cùng dữ liệu.
 
 Mô hình mà lần áp dụng đầu dừng dở chưa có phiên bản; danh sách mô hình vẫn liệt kê nó với phiên bản 0, và `abandon` xóa schema cùng bảng mà lần đó đã tạo.
+
+### Vai và đơn vị
+
+Vai của mỗi mô hình nằm trong client riêng, nên hai mô hình dùng cùng tên vai không va nhau.
 Vai bỏ khỏi tệp mô hình vẫn còn ở client của mô hình cùng người giữ nhưng không cho quyền gì, vì quyền chỉ theo vai mà mô hình đang khai báo; khai báo lại thì kế hoạch hỏi xác nhận, và xóa hẳn vai hay client làm tay ở Keycloak.
 Đơn vị là cơ cấu tổ chức nên mọi mô hình dùng cùng nhóm Keycloak theo tên; đơn vị chỉ cho phạm vi dòng, còn quyền làm gì vẫn do vai của từng mô hình quyết định.
+
+### Tệp mô hình lúc khởi động
 
 `ModelBootstrap` áp dụng tệp ở `ENGINE_MODEL_FILE` khi backend khởi động, trên một luồng riêng chờ Keycloak, với người thực hiện `bootstrap`.
 Chỉ tệp chưa từng áp dụng, có kế hoạch an toàn và không có lần áp dụng dở mới được áp dụng; mỗi lần chạy ghi một dòng `Model bootstrap: <applied|unchanged|skipped|failed> ...`.
 
-## 4. Một yêu cầu đi qua API chung
+## 5. Một yêu cầu đi qua API chung
 
 ```mermaid
 sequenceDiagram
@@ -116,53 +151,64 @@ sequenceDiagram
 ```
 
 - **Tên và truy vấn:** tên bảng và cột chỉ lấy từ mô hình đã kiểm, giá trị luôn đi qua tham số; tên trường hay toán tử không có trong mô hình bị từ chối (400).
-- **Quyền:** vai của mô hình lấy từ `resource_access.dxos-m-<mô hình>.roles` của token, đơn vị từ claim `groups`; các phạm vi của những vai người gọi có được hợp lại: `all`, `read` chạm mọi dòng, `own` chạm dòng do người gọi tạo, `unit` chạm dòng thuộc đơn vị của người gọi, `assigned` chạm dòng giao cho người gọi.
+- **Quyền:** các phạm vi của những vai người gọi có được hợp lại: `all`, `read` chạm mọi dòng, `own` chạm dòng do người gọi tạo, `unit` chạm dòng thuộc đơn vị của người gọi, `assigned` chạm dòng giao cho người gọi.
   Thực thể con (`owner_via`) xét các phạm vi này trên bản ghi cha, qua nhiều cấp tới thực thể đầu chuỗi, và không gắn được vào bản ghi cha ngoài tầm với (403).
 - **Quy tắc:** bắt buộc, duy nhất và lựa chọn vừa được API kiểm để báo lỗi theo từng trường, vừa là ràng buộc trong cơ sở dữ liệu.
 
-## 5. Trạng thái chỉ đổi qua quy trình
+## 6. Quy trình và trạng thái
+
+Trạng thái của hồ sơ chỉ đổi qua quy trình.
 
 - Flowable chạy nhúng, dùng chung nguồn dữ liệu và giao dịch Spring; bảng của nó nằm ở schema `engine`.
-- Họ mẫu quy trình (`approval`, `work_item`) khai báo trạng thái và hành động ở `ProcessFamily`; các bước nằm ở tệp BPMN cùng tên.
+- Họ mẫu quy trình (`approval`, `work_item`, `reservation`) khai báo trạng thái và hành động ở `ProcessFamily`; các bước nằm ở tệp BPMN cùng tên.
 - `ProcessRules` giữ các quy tắc mọi họ mẫu cùng chịu: vai và quyền của người làm, người tạo không tự quyết định, lý do khi từ chối hoặc trả lại, rút lại giữ bản ghi.
 - `BookingGuard` kiểm họ `reservation` khi tạo và sửa bản ghi: khung giờ hợp lệ, số lượt chạy cùng lúc ở mọi thời điểm của khung giờ không vượt sức chứa; dòng tài nguyên bị khóa đến hết giao dịch.
-- `CatalogService` cấp cho bảng điều khiển schema của tệp mô hình, các họ mẫu, mẫu mô hình và phiên bản đã áp dụng.
-- Bảng điều khiển (`frontend/src/console`) và trang lịch (`frontend/src/admin/CalendarPage.tsx`) là mã nạp chậm của ứng dụng web.
-- Chữ người dùng đọc do frontend quyết định: backend trả thông báo tiếng Anh kèm `errorCode`, frontend dịch theo `frontend/src/shell/backendMessages.ts`.
-- Hạn xử lý lưu ở cột `handle_by` khi hồ sơ chờ người xử lý; `overdue` được tính khi đọc.
-- Bảng `engine.outbox` nhận thông điệp trong giao dịch của thay đổi; `OutboxDispatcher` giao sau khi giao dịch xong, thử lại với thời gian chờ tăng dần, mỗi khóa một thông điệp.
-- `OutboxController` cho ADMIN xem thông điệp theo trạng thái cùng lỗi gần nhất và thử lại thông điệp chưa gửi.
-- Hành động hoàn tất của khối `after:` đi qua outbox đến `CompletionHandler`; hiện có các thao tác `add_to_group` và `remove_from_group` của Keycloak.
-- `OverdueSweep` ghi dòng quá hạn vào lịch sử, một lần cho mỗi hạn.
-- Khi mô hình có đích webhook (khóa `webhook` hoặc `ENGINE_WEBHOOK_URL`), mỗi dòng lịch sử (`EventLog`, `OverdueSweep`) có thêm một thông điệp chủ đề `record.event` trong outbox cùng giao dịch, do `RecordEventPublisher` ghi và `WebhookHandler` gửi.
-  `WebhookTargets` đọc địa chỉ, bí mật và dạng (`json` hoặc `chat`) của đích từ `ENGINE_WEBHOOK_FILE`, nạp lại khi tệp đổi, và trả câu từ chối cho `ApplyService` khi mô hình ghi đích chưa có.
-  `WebhookSender` gửi một thông điệp tới đích, `ChatText` dựng câu cho đích dạng `chat`.
-  `OutboxDispatcher` giao các dòng `record.event` của một hồ sơ theo thứ tự: dòng chờ khi còn dòng cũ hơn của cùng hồ sơ chưa giao.
-  `AdminEventPublisher` và `AdminEventHandler` đưa việc áp dụng mô hình và thay đổi tài khoản vào chủ đề `admin.event`; `ApplyService` và `UserAdminService` gọi sau khi thay đổi thành công.
-  `OverdueSweep` ghi thêm dòng `due_soon` khi hồ sơ còn dưới `ENGINE_DUE_SOON_BEFORE` trước hạn.
-  `EventFeedController` đọc cùng các dòng từ `engine.record_event` cho `GET /api/v1/events`.
-- `OutboxCleanup` xóa thông điệp đã gửi sau 30 ngày.
-- Trường kiểu `file` gắn tệp qua `AttachmentService`: byte ở SeaweedFS, siêu dữ liệu ở `engine.attachment`, quét ClamAV khi bật, quyền theo quyền của bản ghi.
-  `AttachmentProcessor` chỉ nhận các phần mở rộng đã cấu hình, `AttachmentService` giữ mỗi hồ sơ tối đa số tệp đã cấu hình, `AttachmentCleaner` xóa đối tượng khỏi kho khi tệp hoặc hồ sơ bị gỡ, và link tải luôn ở dạng đính kèm.
 - API chung từ chối mọi yêu cầu có cột `status` (403); `POST .../{id}/actions/{action}` kiểm người được làm và trạng thái đầu, hoàn tất tác vụ, và bước kế của quy trình ghi trạng thái mới qua bean `recordStatus`.
 - Hồ sơ đã giao thì chỉ người được giao thực hiện được hành động của vai xử lý.
 - Hành động sai trạng thái bị từ chối (409); lỗi sau bước quy trình làm cả hồ sơ, quy trình lẫn dòng lịch sử quay về như cũ.
-- Dịch vụ lõi là kết nối ghi duy nhất vào dữ liệu nghiệp vụ; vai `report_ro` chỉ đọc.
-  `report_ro` đọc được mọi dòng của mọi bảng nghiệp vụ và không áp quyền `own`, `unit`, `assigned` của người xem, nên chỉ cấp cho công cụ báo cáo của người vận hành.
-  Người dùng cuối xem số liệu qua `GET /api/v1/data/{model}/{entity}/stats`, nơi quyền theo dòng được áp dụng.
+- Hạn xử lý lưu ở cột `handle_by` khi hồ sơ chờ người xử lý; `overdue` được tính khi đọc.
+- `CatalogService` cấp cho bảng điều khiển schema của tệp mô hình, các họ mẫu, mẫu mô hình và phiên bản đã áp dụng.
 
-## 6. Quản trị người dùng và nhật ký
+## 7. Sự kiện và hành động sau quyết định
+
+- Bảng `engine.outbox` nhận thông điệp trong giao dịch của thay đổi; `OutboxDispatcher` giao sau khi giao dịch xong, thử lại với thời gian chờ tăng dần, mỗi khóa một thông điệp.
+- `OutboxController` cho ADMIN xem thông điệp theo trạng thái cùng lỗi gần nhất và thử lại thông điệp chưa gửi; `OutboxCleanup` xóa thông điệp đã gửi sau 30 ngày.
+- Hành động hoàn tất của khối `after:` đi qua outbox đến `CompletionHandler`; hiện có các thao tác `add_to_group` và `remove_from_group` của Keycloak.
+- `OverdueSweep` ghi dòng quá hạn vào lịch sử, một lần cho mỗi hạn, và dòng `due_soon` khi hồ sơ còn dưới `ENGINE_DUE_SOON_BEFORE` trước hạn.
+- Khi mô hình có đích webhook (khóa `webhook` hoặc `DXOS_WEBHOOK_URL`), mỗi dòng lịch sử có thêm một thông điệp chủ đề `record.event` trong outbox cùng giao dịch, và `WebhookHandler` gửi nó kèm chữ ký.
+  Các dòng của một hồ sơ được giao theo thứ tự.
+  Việc áp dụng mô hình và thay đổi tài khoản đi qua chủ đề `admin.event`.
+  Bên nhận lỡ tin kéo lại bằng `GET /api/v1/events`.
+  Cấu trúc thông điệp, chữ ký, thử lại và đích dạng `chat` ở [`deploy/INTEGRATIONS.md`](./deploy/INTEGRATIONS.md).
+
+## 8. Tệp đính kèm
+
+- Trường kiểu `file` gắn tệp qua `AttachmentService`: byte ở SeaweedFS, siêu dữ liệu ở `engine.attachment`, quét ClamAV khi bật, quyền theo quyền của bản ghi.
+- `AttachmentProcessor` chỉ nhận các phần mở rộng đã cấu hình, `AttachmentService` giữ mỗi hồ sơ tối đa số tệp đã cấu hình, và link tải luôn ở dạng đính kèm.
+- `AttachmentCleaner` xóa đối tượng khỏi kho khi tệp hoặc hồ sơ bị gỡ, qua thông điệp `file.delete` trong outbox sau một khoảng trễ, để bản sao lưu luôn có đủ tệp của mọi dòng trong bản dump.
+
+## 9. Quản trị người dùng và nhật ký
 
 - `UserAdminController` (ADMIN) quản lý tài khoản qua Admin API của Keycloak, bằng tài khoản dịch vụ `dxos-backend-admin`; Keycloak vẫn là nơi giữ tài khoản, mật khẩu và vai.
 - Chỉ gán được vai và đơn vị mà một mô hình đang chạy khai báo (404 với cái khác); vai `ADMIN` của nền tảng không có đường nào qua API này, và ADMIN không khóa được chính mình (409).
 - Mật khẩu tạm do hệ thống sinh, trả về một lần và phải đổi ở lần đăng nhập đầu; không ghi vào log hay audit.
-- Mỗi thay đổi thành công ghi một bản ghi `audit_log` qua `AuditRecorder`: người thực hiện lấy từ token, đối tượng là mã người dùng, chi tiết có tên đăng nhập và mô hình cùng vai hoặc đơn vị.
+- Mỗi thay đổi tài khoản thành công và mỗi lần áp dụng, quay về, tiếp tục hoặc hủy bỏ mô hình ghi một bản ghi `audit_log` qua `AuditRecorder`, kèm người thực hiện lấy từ token.
   Việc ghi audit lỗi chỉ để lại dòng log, thay đổi vẫn thành công.
-- Áp dụng, quay về, tiếp tục và hủy bỏ mô hình thành công cũng ghi một bản ghi (`MODEL_APPLIED`, `MODEL_ROLLED_BACK`, `MODEL_RESUMED`, `MODEL_ABANDONED`), đối tượng `MODEL` là tên mô hình, chi tiết có `version`, `status`, `runId` và `actorName`; lần chạy `unchanged` hay bị từ chối không ghi gì.
 - `GET /api/v1/audit-logs` lọc được theo đối tượng (`targetType`, `targetId`, có chỉ mục `idx_audit_log_target`); hộp thoại người dùng ở bảng điều khiển lấy từ đó các bản ghi `USER` của người được mở.
 - Thay đổi làm thẳng ở Keycloak Admin Console không đi qua đây; sự kiện quản trị của Keycloak (giữ 90 ngày, ghi tài khoản người thực hiện) là nơi tra cứu.
+- Các hành động ghi và cách tra cứu ở [`deploy/MONITORING.md`](./deploy/MONITORING.md).
 
-## 7. Dữ liệu
+## 10. Toàn vẹn và phục hồi
+
+- **Lịch sử chống sửa:** các dòng `engine.record_event` nối thành một chuỗi hash (`HistoryChain`); mỗi giờ backend ghi một điểm neo (`HistoryAnchor`) vào kho đối tượng, ngoài Postgres.
+  `dxos history verify` hay `GET /api/v1/history/verify` (ADMIN) tính lại chuỗi và so với các điểm neo.
+  Chuỗi phát hiện chứ không ngăn việc sửa; bên nhận webhook giữ `hash` của tin đã nhận thì có thêm một điểm neo ngoài máy chủ (`examples/history-witness`).
+- **Hồ dữ liệu:** `dxos archive` xuất hồ sơ đã tới trạng thái cuối ra Parquet kèm `manifest.json` ghi số dòng và sha256, và `dxos archive check` kiểm lại.
+- **Tự phục hồi:** mọi service chạy lâu có `restart: unless-stopped`; `dxos reconcile` đưa stack về đúng khai báo và chạy mỗi phút bằng systemd user timer.
+- **Sao lưu:** `deploy/backup.sh` chụp bản sao lưu mã hóa của Postgres và kho tệp; `verify` nạp bản dump vào Postgres tạm và kiểm mọi tệp đính kèm đều có.
+- Cách dùng từng việc ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md) và [`deploy/INTEGRATIONS.md`](./deploy/INTEGRATIONS.md).
+
+## 11. Dữ liệu
 
 | Schema | Nội dung |
 |---|---|
@@ -175,14 +221,18 @@ sequenceDiagram
 Flowable đặt `search_path` của kết nối nó dùng về `engine` và không trả lại.
 Truy vấn vào bảng ngoài `engine` vì vậy luôn ghi rõ schema.
 
-## 8. Triển khai
+Dịch vụ lõi là kết nối ghi duy nhất vào dữ liệu nghiệp vụ; vai `report_ro` chỉ đọc.
+`report_ro` đọc được mọi dòng của mọi bảng nghiệp vụ và không áp quyền `own`, `unit`, `assigned` của người xem, nên chỉ cấp cho công cụ báo cáo của người vận hành.
+Người dùng cuối xem số liệu qua `GET /api/v1/data/{model}/{entity}/stats`, nơi quyền theo dòng được áp dụng.
+
+## 12. Triển khai
 
 Compose chạy lõi (`postgres`, `keycloak`, `seaweedfs`, `backend`, `apisix`) và Tầng 2 (`frontend`, `portal`, `monitor`); `clamav` bật bằng profile `av`.
 Gateway kiểm token cho mọi route API; các route không kiểm token nằm trong danh sách công khai kiểm bởi `deploy/apisix/check_routes.py`.
 `dxos start <tệp>` đưa tệp mô hình vào qua `deploy/model/` và in kết quả của `ModelBootstrap`.
-Chi tiết vận hành ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
+Chi tiết vận hành ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md), log và audit ở [`deploy/MONITORING.md`](./deploy/MONITORING.md), webhook và lịch sử chống sửa ở [`deploy/INTEGRATIONS.md`](./deploy/INTEGRATIONS.md).
 
-## 9. Đối chiếu với yêu cầu của đề
+## 13. Đối chiếu với yêu cầu của đề
 
 | Đề yêu cầu | Đáp ứng |
 |---|---|
@@ -192,3 +242,14 @@ Chi tiết vận hành ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
 | Dữ liệu phi cấu trúc | SeaweedFS và quét ClamAV ở `dx-core`, gắn vào trường `file` của mô hình |
 | Động cơ luồng công việc | Flowable nhúng, họ mẫu `approval`, `work_item` và `reservation` |
 | Lõi không có giao diện | `dx-engine` chỉ phục vụ API; giao diện thuộc Tầng 2 |
+
+Bốn nguyên lý kỹ thuật của đề:
+
+| Nguyên lý | Đáp ứng | Chưa có |
+|---|---|---|
+| Phân tách theo vòng đời dữ liệu, đẩy dữ liệu lịch sử xuống hồ dữ liệu | `dxos archive` xuất hồ sơ đã xong ra Parquet kèm manifest | Hồ dữ liệu chạy liên tục |
+| Hội tụ dữ liệu hành chính (IT) và vận hành (OT) | Chương trình giả lập thiết bị tạo hồ sơ sự cố qua API (`examples/itot-simulator`) | Bản sao số theo thời gian thực |
+| Quản trị dữ liệu, phả hệ và nguồn gốc | Tệp mô hình là danh mục dữ liệu; lịch sử hồ sơ chống sửa | Phả hệ dữ liệu của báo cáo |
+| Zero-Trust, GitOps, kiểm dịch mã độc, tự phục hồi | Token kiểm ở gateway và backend; ClamAV quét tệp khi bật; tệp mô hình là khai báo, xem trước rồi áp dụng; `dxos reconcile` và `restart: unless-stopped` | |
+
+Phần trí tuệ nhân tạo (chữ I của H-P-D-I) chưa làm.

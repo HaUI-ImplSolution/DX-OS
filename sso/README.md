@@ -47,19 +47,22 @@ Cơ sở dữ liệu `keycloak` và vai `keycloak_app` do [`deploy/postgres/init
 
 Trên máy chủ công khai, đặt `/admin/*` (Admin Console) sau một lớp xác thực của hạ tầng phía trước, không mở thẳng ra Internet.
 `/realms/*` mở cho người dùng web, và gateway giới hạn 120 lượt mỗi phút mỗi IP cho form mật khẩu và token endpoint.
-Mặc định Keycloak không đặt `KC_HOSTNAME` nên URL theo địa chỉ request; máy chủ đứng sau proxy đặt `KC_HOSTNAME` bằng `GATEWAY_PUBLIC_URL`.
+Keycloak tạo URL theo địa chỉ của request.
+Máy chủ đứng sau proxy đặt `KEYCLOAK_HOSTNAME=${GATEWAY_PUBLIC_URL}` trong `deploy/.env`.
+Compose khi đó tự bật `KC_HOSTNAME` và `KC_HOSTNAME_BACKCHANNEL_DYNAMIC`; chỉ đặt `KC_HOSTNAME` một mình thì gateway từ chối mọi token.
 
 ## Sự kiện đăng nhập và khóa tạm
 
 - Realm import bật sự kiện người dùng (giữ 90 ngày), sự kiện quản trị kèm chi tiết, và khóa tạm sau 5 lần đăng nhập sai (chờ 1 phút, tăng dần, tối đa 15 phút, không khóa vĩnh viễn).
-- Cách xem sự kiện: [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md).
+- Cách xem sự kiện: [`deploy/MONITORING.md`](../deploy/MONITORING.md).
 - Realm chỉ import lần đầu, nên Keycloak đã có dữ liệu áp tay trong Admin Console (realm `dxos`):
   1. **Realm settings → Events → User events settings**: bật **Save events**, **Expiration** 90 ngày, chọn các loại `LOGIN`, `LOGIN_ERROR`, `LOGOUT`, `UPDATE_PASSWORD`, `RESET_PASSWORD` và loại bị khóa.
   2. **Realm settings → Events → Admin events settings**: bật **Save events** và **Include representation**.
   3. **Realm settings → Security defenses → Brute force detection**: bật, chế độ **Lockout temporarily**, **Max login failures** 5, **Wait increment** 1 phút, **Max wait** 15 phút.
 - IP trong sự kiện là IP thật khi Keycloak đọc `X-Forwarded-For` do gateway đặt.
 - Từ Keycloak 26.8 Admin REST API chỉ nhận token có audience của chính nó, nên client `dxos-backend-admin` mang scope `kc-admin-api` ngay trong `realm-dxos.json`; không có scope này thì mọi lần áp dụng mô hình trả 502 `ERR_ACCOUNT_SERVICE_DENIED`.
-  Realm đã import từ trước phải thêm scope đó bằng tay: **Clients → dxos-backend-admin → Client scopes → Add client scope → kc-admin-api → Default**.
+  Realm đã import từ trước chạy `deploy/keycloak-admin-scope.sh` để gán scope đó (`deploy/update.sh` gọi nó; chạy lại không đổi gì).
+  Làm tay thì vào **Clients → dxos-backend-admin → Client scopes → Add client scope → kc-admin-api → Default**.
 
 ## Hostname nội bộ và hostname trình duyệt
 

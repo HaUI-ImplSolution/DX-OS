@@ -2,7 +2,7 @@
 
 Tài liệu này trả lời một câu hỏi: tính năng nào của lõi đã xong thật, căn cứ vào đâu.
 Mỗi yêu cầu của đề và mỗi tính năng của lõi được xếp một mức, kèm cách kiểm, bước CI, lệnh chạy lại và giới hạn đã biết.
-Số kiểm lấy từ [`docs/TESTING.md`](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/TESTING.md), mục 8; tài liệu này không chép lại kết quả của từng lượt CI, xem tab Actions của repository.
+Cách chạy từng bài kiểm ở [`docs/TESTING.md`](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/TESTING.md); tài liệu này không chép lại kết quả của từng lượt CI, xem tab Actions của repository.
 Việc chưa làm và giới hạn chấp nhận ở [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md).
 
 ## Các mức
@@ -21,12 +21,12 @@ Việc chưa làm và giới hạn chấp nhận ở [Việc tồn đọng](http
 |---|---|---|
 | Test đơn vị và tích hợp của backend | `cd backend && ./mvnw verify`; một số test dùng Testcontainers nên cần Docker | Có, job `Build and test the backend` của workflow `Backend` trên mọi pull request |
 | Script kiểm trên stack thật | `python3 deploy/dev/check_<tên>.py` trên stack rỗng dựng bằng `docker compose up -d --build` | Có, job `API end-to-end` của workflow `Platform` trên mọi pull request |
-| Kiểm bằng trình duyệt | Một kịch bản Playwright của bảng điều khiển ở `e2e/`; các màn hình còn lại kiểm tay theo `docs/TESTING.md`, mục 5 và các mục kiểm | Kịch bản Playwright có, job `Browser end-to-end` của workflow `Platform`; kiểm tay không |
+| Kiểm bằng trình duyệt | Một kịch bản Playwright của bảng điều khiển ở `e2e/`; các màn hình còn lại kiểm tay theo `docs/TESTING.md`, mục 6 | Kịch bản Playwright có, job `Browser end-to-end` của workflow `Platform`; kiểm tay không |
 | Bản triển khai công khai | VPS của đội | Không; hiện giữ bản `v1.1.1` nên chưa có bằng chứng loại này cho lõi mới |
 
 Dữ liệu của hai loại đầu do chính các script tạo ra trên stack rỗng; chưa có tổ chức nào dùng lõi với dữ liệu thật.
 Job `API end-to-end` của workflow `Platform` chia hai nhóm, mỗi nhóm một stack rỗng: `model and process` (11 script) và `events and bootstrap` (2 script).
-Lần kiểm gần nhất ngày 05/11/2026 trên cây làm việc: 517 kiểm ở nhóm đầu và 32 ở nhóm sau.
+Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số kiểm của từng script xem ở kết quả của lượt CI.
 
 ## 1. Bốn dịch vụ bắt buộc của đề
 
@@ -37,7 +37,7 @@ Lần kiểm gần nhất ngày 05/11/2026 trên cây làm việc: 517 kiểm �
 | Dữ liệu có cấu trúc | Schema, ràng buộc và chỉ mục sinh từ mô hình trên PostgreSQL; bắt buộc, duy nhất, lựa chọn kiểm cả ở API lẫn cơ sở dữ liệu | `check_api.py` 51, `check_change.py` 65 | `python3 deploy/dev/check_api.py` | Hoàn thiện | Danh sách 10.000 dòng có lọc và sắp xếp đo ở phân vị 95 là 10 ms; chưa thử tải lớn hơn |
 | Dữ liệu phi cấu trúc | Tệp đính kèm lưu ở SeaweedFS, siêu dữ liệu ở PostgreSQL, quét ClamAV, quyền theo quyền của hồ sơ | `check_process.py` (tải lên, tải về, gỡ), `check_demo.py` tiêu chí 3 (tệp EICAR bị chặn), job `Back up and restore` của workflow `Platform` (sao lưu và khôi phục kèm tệp) | `python3 deploy/dev/check_demo.py` | Dùng được | Quét mã độc tắt mặc định; kiểm tệp EICAR chỉ chạy khi bật `dxos av on`, và job `API end-to-end` của workflow `Platform` không bật nên phần này chưa nằm trong CI |
 | Động cơ luồng công việc | Flowable nhúng, ba họ mẫu `approval`, `work_item`, `reservation`; trạng thái chỉ đổi qua quy trình, cùng giao dịch với việc ghi hồ sơ | `check_process.py` 69, `check_case.py` 76, `check_booking.py` 46, `check_recovery.py` 19 | `python3 deploy/dev/check_process.py` | Hoàn thiện | Họ phê duyệt chỉ có một cấp xử lý; không có trình thiết kế BPMN |
-| Lõi không có giao diện | `dx-engine` chỉ phục vụ API; giao diện và portal là Tầng 2 | Mọi script chỉ gọi API; `ArchitectureTest` kiểm phụ thuộc giữa các lớp của `dx-engine`; `docs/TESTING.md` mục 6 | | Dùng được | Chưa có test khẳng định rằng dịch vụ lõi không trả trang nào |
+| Lõi không có giao diện | `dx-engine` chỉ phục vụ API; giao diện và portal là Tầng 2 | Mọi script chỉ gọi API; `ArchitectureTest` kiểm phụ thuộc giữa các lớp của `dx-engine`; `docs/TESTING.md` mục 7 | | Dùng được | Chưa có test khẳng định rằng dịch vụ lõi không trả trang nào |
 
 ## 2. Năng lực của lõi
 

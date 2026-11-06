@@ -1,55 +1,69 @@
-# DX-OS: lõi dynamic cho hệ thống hồ sơ có quy trình (Bài dự thi Phần Mềm Nguồn Mở 2026)
+# DX-OS
 
 **Tiếng Việt** · [English](./README_EN.md)
 
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
+> **Lõi dynamic nguồn mở cho hệ thống hồ sơ có quy trình.**
+> Khai báo nghiệp vụ trong một tệp mô hình; DX-OS dựng cơ sở dữ liệu, tài khoản và vai, API có phân quyền, quy trình duyệt và giao diện.
+> Đổi nghiệp vụ là đổi tệp, không đổi mã.
 
-**Đội:** HaUI-ImplSolution · **Trường:** Trường Công nghệ Thông tin và Truyền thông, Đại học Công nghiệp Hà Nội
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
+[![Platform](https://github.com/HaUI-ImplSolution/DX-OS/actions/workflows/ci-platform.yml/badge.svg)](https://github.com/HaUI-ImplSolution/DX-OS/actions/workflows/ci-platform.yml)
+[![Compliance](https://github.com/HaUI-ImplSolution/DX-OS/actions/workflows/ci-compliance.yml/badge.svg)](https://github.com/HaUI-ImplSolution/DX-OS/actions/workflows/ci-compliance.yml)
+[![Docs](https://github.com/HaUI-ImplSolution/DX-OS/actions/workflows/docs.yml/badge.svg)](https://haui-implsolution.github.io/DX-OS/)
 
-**Tài liệu:** theo dõi tại [trang docs](https://haui-implsolution.github.io/DX-OS/); hướng thiết kế ở [`docs/dynamic-core/README.md`](./docs/dynamic-core/README.md).
+Bài dự thi **OLP Phần mềm nguồn mở 2026**, khối thi DX-OS (VFOSSA), của đội **HaUI-ImplSolution**, Trường Công nghệ Thông tin và Truyền thông, Đại học Công nghiệp Hà Nội.
 
-Dự thi **OLP Phần mềm nguồn mở 2026** (khối thi DX-OS, VFOSSA).
-Lõi nhận một tệp mô hình khai báo thực thể, trường, vai, quyền và quy trình, rồi dựng bảng dữ liệu, vai đăng nhập, API có phân quyền từng dòng, quy trình phê duyệt và giao diện.
-Đổi nghiệp vụ là đổi tệp mô hình, không đổi mã.
-Bản phát hành hiện tại là `2.0.0`.
-Phiên bản trước của dự án (hai ứng dụng nghiệp vụ viết tay) nằm ở tag `v1.1.1`, và không có đường nâng cấp dữ liệu từ `1.1.x` lên `2.0.0`.
+**Đọc nhanh:** [Giới thiệu](#giới-thiệu) · [Tính năng](#tính-năng) · [Cách hoạt động](#cách-hoạt-động) · [Chạy thử](#chạy-thử) · [Tài liệu](#tài-liệu) · [Cấu trúc](#cấu-trúc-repository) · [Đóng góp](#đóng-góp) · [Giấy phép](#giấy-phép)
 
-## Trạng thái
+## Giới thiệu
 
-Đã chạy được vòng hẹp từ tệp mô hình đến người dùng cuối:
+Trường học, khoa, doanh nghiệp nhỏ nào cũng có những quy trình giống nhau: một người gửi yêu cầu, một người khác xem xét, duyệt hoặc trả lại, và mọi bước đều phải để lại dấu vết.
+Mỗi lần có nghiệp vụ mới, người ta lại dựng từ đầu phần đăng nhập, phân quyền, lưu tệp và luồng duyệt.
 
-- Đọc và kiểm tra tệp mô hình, báo lỗi theo dòng và cột.
-- Áp dụng mô hình vào hệ thống rỗng: schema, bảng, ràng buộc, vai Keycloak, phiên bản và lịch sử từng bước; áp dụng lại cùng tệp thì không làm gì, trừ khi bảng hoặc tài khoản Keycloak đã lệch khỏi tệp thì sửa phần lệch; bị gián đoạn thì áp dụng lại để làm tiếp.
-- API chung cho mọi thực thể, quyền theo vai và theo dòng (`all`, `own`, `read`, `unit`, `assigned`), quy tắc bắt buộc, duy nhất và lựa chọn.
-- Ba họ mẫu quy trình trên Flowable nhúng: phê duyệt, công việc cần xử lý (có thể tự đóng khi người nộp không xác nhận), đặt chỗ theo khung giờ có kiểm sức chứa; trạng thái hồ sơ chỉ đổi qua quy trình, cùng giao dịch với việc ghi hồ sơ.
-- Quy tắc chung của mọi quy trình: từ chối và trả lại cần lý do, người nộp sửa rồi nộp lại hoặc rút hồ sơ, người tạo không tự quyết hồ sơ của mình, hồ sơ quá hạn lên đầu hộp việc.
-- Việc làm sau khi duyệt, như thêm người dùng vào nhóm, chạy qua hàng đợi sự kiện và được thử lại khi lỗi.
-- Mọi thay đổi của hồ sơ được báo ra ngoài tới địa chỉ web mà mô hình chọn, có chữ ký để bên nhận kiểm tra và được gửi lại khi bên nhận lỗi; các thay đổi của một hồ sơ tới đúng thứ tự, và bên nhận lỡ tin thì lấy lại phần đã lỡ theo số thứ tự.
-- Tin báo ra ngoài có thể là một câu đọc được cho Mattermost và Slack: việc mới, sắp đến hạn, quá hạn; việc áp dụng mô hình và thay đổi tài khoản cũng được báo.
-- Tệp đính kèm hồ sơ, quét mã độc khi bật.
-- Mỗi mô hình có vai riêng: hai mô hình dùng được cùng một tên vai mà người giữ vai của mô hình này không vào được mô hình kia.
-- Đơn vị khai báo trong mô hình và đồng bộ thành nhóm Keycloak; giao việc, hộp việc và dòng lịch sử của từng hồ sơ, kèm giá trị cũ và mới của mỗi trường đã sửa.
-- Đổi mô hình khi đã có dữ liệu: xem trước theo mức rủi ro, đổi tên giữ nguyên dữ liệu, báo dòng vi phạm, xác nhận riêng khi mất dữ liệu, quay về phiên bản trước, tiếp tục hoặc hủy bỏ một lần áp dụng dừng giữa chừng.
-- Giao diện react-admin dựng từ metadata, bằng tiếng Việt và có chế độ sáng tối, lịch đặt chỗ kéo thả được, không có mã riêng cho thực thể nào.
-- Bảng điều khiển cho người triển khai: thư viện mẫu, trình soạn mô hình, xem kế hoạch, áp dụng, lịch sử và quay về, sơ đồ quy trình.
-- Một lệnh nhận tệp mô hình trên máy sạch: hệ thống khởi động, tệp được áp dụng và có thể đăng nhập ngay.
-- Quản trị người dùng ngay trong bảng điều khiển: xem ai giữ vai nào ở từng ứng dụng, gán và gỡ vai và đơn vị, tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu; mỗi thay đổi được ghi lại kèm người thực hiện và xem lại được trong hộp thoại của người đó.
-- Áp dụng mô hình chờ các thao tác đang chạy của mô hình đó rồi mới đổi bảng, và kiểm lại hồ sơ đang mở sau khi đã giữ mô hình, nên không hồ sơ nào lọt qua giữa chừng; hủy bỏ lần áp dụng đầu dọn luôn phần phân quyền mà lần đó đã tạo.
-- Lịch sử hồ sơ được nối thành một chuỗi có dấu kiểm và có điểm neo định kỳ; một lệnh chỉ ra dòng nào đã bị sửa, xóa hoặc chèn, và bên nhận tin báo ra ngoài có công cụ so hash họ giữ với hệ thống.
-- Thống kê cho mỗi thực thể có quy trình: tổng số, theo trạng thái, quá hạn và theo đơn vị, thời gian xử lý trung bình và tuổi của hồ sơ đang mở, cùng quyền xem với danh sách; các số đếm mở ra danh sách tương ứng.
-- Đổi mô hình được cả từ dòng lệnh để dùng trong tự động hóa, và có lệnh xuất hồ sơ đã xong ra tệp phân tích kèm bản kê để kiểm lại.
-- Sao lưu kiểm được cả tệp đính kèm; tệp đã gỡ chỉ rời kho sau một khoảng chờ để bản sao lưu luôn đủ; các dịch vụ tự chạy lại và có lệnh đưa hệ thống về đúng khai báo.
-- Ví dụ kết nối thiết bị: một chương trình giả lập tạo hồ sơ sự cố khi chỉ số vượt ngưỡng và không tạo trùng khi gửi lại.
-- Đăng nhập một lần qua Keycloak; có thể bắt quản trị viên nhập thêm mã một lần từ ứng dụng xác thực.
+DX-OS làm phần dùng chung đó một lần, thành một lõi chạy ngầm không gắn với nghiệp vụ nào.
+Người triển khai chỉ mô tả nghiệp vụ của mình trong một tệp mô hình, như hồ sơ cần những thông tin gì, ai được xem và sửa, ai duyệt, hạn xử lý là bao lâu.
+Lõi đọc tệp đó rồi dựng hệ thống chạy được.
 
-Chưa có: hỏi đáp bằng AI.
-Các phần này nằm trong [hướng thiết kế](./docs/dynamic-core/README.md).
+Toàn bộ hệ thống lắp từ phần mềm nguồn mở có giấy phép được OSI công nhận, tự cài trên máy của mình và dữ liệu nằm hoàn toàn ở đó.
+Phiên bản hiện tại là `2.0.0`, thay đổi theo từng phiên bản ở [`CHANGELOG.md`](./CHANGELOG.md).
+
+## Tính năng
+
+- **Từ một tệp đến hệ thống chạy được.** Hồ sơ, bảng dữ liệu, tài khoản, vai, màn hình danh sách và biểu mẫu đều được dựng từ tệp mô hình.
+- **Phân quyền đến từng dòng.** Mỗi vai chỉ thấy và sửa phần việc của mình, của đơn vị mình hoặc được giao cho mình.
+- **Ba kiểu quy trình có sẵn.** Phê duyệt, công việc cần xử lý, và đặt chỗ theo khung giờ có kiểm sức chứa; từ chối và trả lại đều cần lý do, và không ai tự duyệt hồ sơ của mình.
+- **Đổi nghiệp vụ khi đã có dữ liệu.** Hệ thống cho xem trước tác động, cảnh báo rủi ro, giữ nguyên dữ liệu khi đổi tên và cho quay về phiên bản trước.
+- **Dấu vết không sửa được.** Lịch sử hồ sơ nối thành một chuỗi có dấu kiểm; nếu ai sửa, xóa hoặc chèn một dòng thì một lệnh chỉ ra đúng dòng đó.
+- **Kết nối ra ngoài.** Mọi thay đổi của hồ sơ được báo tới địa chỉ web hoặc kênh chat (Mattermost, Slack) với chữ ký để bên nhận kiểm tra, và được gửi lại khi bên nhận lỗi.
+- **Bảng điều khiển cho người triển khai.** Thư viện mẫu, trình soạn mô hình, xem kế hoạch, áp dụng, lịch sử, quản lý người dùng và thống kê hồ sơ.
+- **Cài và vận hành đơn giản.** Một lệnh cài, một lệnh chạy; có sao lưu kiểm được, tự khởi động lại dịch vụ và quét mã độc cho tệp đính kèm khi bật.
+- **Đăng nhập một lần.** Qua Keycloak, và có thể bắt quản trị viên nhập thêm mã một lần.
+
+Bảng đối chiếu từng tính năng với bài kiểm của nó ở [ma trận bằng chứng](https://haui-implsolution.github.io/DX-OS/docs/evidence-matrix).
+
+## Cách hoạt động
+
+1. **Khai báo.** Viết hoặc chọn một tệp mô hình: thực thể, trường, vai, quyền và quy trình của nghiệp vụ.
+2. **Áp dụng.** Xem kế hoạch rồi áp dụng; lõi dựng cơ sở dữ liệu, vai trong Keycloak, API và quy trình, và ghi lại từng bước.
+3. **Dùng.** Người dùng đăng nhập và làm việc trên giao diện web dựng từ chính tệp đó; mọi thay đổi để lại lịch sử và được báo ra ngoài.
+
+Hệ thống có ba tầng:
+
+| Tầng | Vai trò |
+|---|---|
+| Lõi | Dịch vụ không giao diện: đọc mô hình, áp dụng, API chung, quy trình, lịch sử, sự kiện |
+| Ứng dụng | Giao diện web và bảng điều khiển dựng từ dữ liệu của lõi, cùng trang liên kết (portal) và màn hình giám sát |
+| Mô hình | Các tệp mô tả nghiệp vụ; thêm nghiệp vụ mới chỉ là thêm một tệp |
+
+Sơ đồ và luồng một yêu cầu đi qua hệ thống ở [`ARCHITECTURE.md`](./ARCHITECTURE.md); cách viết tệp mô hình ở [`docs/MODEL.md`](./docs/MODEL.md).
+
+Bảy mẫu có sẵn, chọn được ngay ở bảng điều khiển: một cửa sinh viên, hỗ trợ kỹ thuật, sự cố thiết bị, đặt phòng, cấp quyền dịch vụ CNTT, mượn thiết bị và ghi chú.
 
 ## Chạy thử
 
 ### Cài đặt
 
-Cần máy Linux có Docker với Compose v2, không cần mã nguồn.
+Cần máy Linux có Docker với Compose v2; không cần mã nguồn.
 
 ```bash
 curl -fsSL https://github.com/HaUI-ImplSolution/DX-OS/releases/latest/download/dxos-install.sh | bash
@@ -59,105 +73,48 @@ dxos start
 Bộ cài tải bản phát hành mới nhất, kiểm SHA-256 rồi cài vào `~/.dxos`; lệnh `dxos` nằm ở `~/.local/bin`.
 `dxos start` tải image ở lần đầu, chờ mọi dịch vụ sẵn sàng, tạo tài khoản `admin` với mật khẩu tạm in ra màn hình, rồi in các địa chỉ.
 Đăng nhập `http://localhost:9080/console` bằng `admin`, đổi mật khẩu, chọn một mẫu ở tab Thư viện mẫu, xem kế hoạch rồi áp dụng.
-Đã có tệp mô hình thì `dxos start <tệp>` đưa tệp vào luôn: backend áp dụng tệp khi khởi động nếu tệp là mới, và lệnh in kết quả.
-Các lệnh khác (`stop`, `status`, `logs`, `admin`, `update`, `backup`, `plan`, `apply`, `history`, `reconcile`, `archive`, `uninstall`) có ở `dxos help` và [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md#cài-đặt-và-lệnh-dxos).
+Đã có tệp mô hình thì `dxos start <tệp>` đưa tệp vào luôn.
+Các lệnh khác và cách vận hành ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
 
 ### Từ mã nguồn
+
+Cần thêm JDK 21 và Node 22 nếu muốn build và kiểm thử ngoài Docker.
 
 ```bash
 deploy/make_env.sh                       # sinh deploy/.env với mật khẩu ngẫu nhiên
 cd deploy && docker compose up -d --build
+./dxos admin                             # tạo tài khoản admin với mật khẩu tạm
 ```
 
-Gateway ở `http://localhost:9080`: web, API, Swagger (`/swagger-ui.html`), Keycloak (`/admin`) và portal (`/portal/`).
-Tài khoản Keycloak admin lấy từ `KEYCLOAK_ADMIN_USERNAME` và `KEYCLOAK_ADMIN_PASSWORD` trong `deploy/.env`.
+Người dùng vào qua gateway `http://localhost:9080`:
 
-Nạp mô hình mẫu bằng một người dùng có vai `ADMIN` (cần Python 3; script dưới tạo người dùng thử `admin1`, chỉ dùng cho máy dev):
+| Địa chỉ | Nội dung |
+|---|---|
+| `/` | Giao diện web |
+| `/console` | Bảng điều khiển cho người triển khai |
+| `/portal/` | Trang liệt kê các địa chỉ và trạng thái dịch vụ |
+| `/monitor/` | Giám sát và truy vết (ADMIN) |
+| `/swagger-ui.html` | Tài liệu API |
+| `/admin` | Quản trị Keycloak (tài khoản trong `deploy/.env`) |
 
-```bash
-python3 - <<'EOF'
-import sys; sys.path.insert(0, "deploy/dev")
-import kc
-kc.ensure_client(); kc.ensure_user("admin1", ["ADMIN"])
-print(kc.api(kc.token("admin1"), "POST", "/models/apply", open("backend/dx-engine/src/main/resources/templates/equipment.yaml").read(), "application/yaml"))
-EOF
-```
-
-Sau đó tạo người dùng ở tab Người dùng của `http://localhost:9080/console`, gán vai `BORROWER` hoặc `KEEPER` của mô hình `equipment`, đăng nhập ở `http://localhost:9080/` và dùng giao diện.
 Hướng dẫn kiểm thử đầy đủ ở [`docs/TESTING.md`](./docs/TESTING.md).
 
-## Tệp mô hình
+## Tài liệu
 
-Ví dụ rút gọn của [`backend/dx-engine/src/main/resources/templates/equipment.yaml`](./backend/dx-engine/src/main/resources/templates/equipment.yaml):
+Trang tài liệu: <https://haui-implsolution.github.io/DX-OS/>.
 
-```yaml
-format: 0
-name: equipment
-roles:
-  - {name: BORROWER}
-  - {name: KEEPER, staff: true}
-entities:
-  device:
-    fields:
-      code: {type: text, required: true, unique: true}
-      name: {type: text, required: true}
-    access: {BORROWER: read, KEEPER: all}
-  loan:
-    fields:
-      device: {type: reference, to: device, required: true}
-      reason: {type: text, required: true}
-      from_at: {type: datetime, required: true}
-    access: {BORROWER: own, KEEPER: all}
-    process: {family: approval, handler: KEEPER}
-```
-
-- Kiểu trường: `text`, `number`, `datetime`, `choice`, `reference`, `user`, `unit`.
-- Đơn vị: khai báo ở `units`, mỗi đơn vị là một nhóm Keycloak; trường kiểu `unit` cho biết hồ sơ thuộc đơn vị nào.
-  Ví dụ đầy đủ ở [`backend/dx-engine/src/main/resources/templates/onestop.yaml`](./backend/dx-engine/src/main/resources/templates/onestop.yaml).
-- Quyền theo vai: `all` (mọi dòng, đọc và ghi), `own` (dòng của mình), `read` (mọi dòng, chỉ đọc), `unit` (dòng của đơn vị mình), `assigned` (dòng được giao cho mình); `owner_via` cho phép thực thể con theo chủ sở hữu của thực thể cha, qua nhiều cấp.
-- Quy trình: `family` chọn họ mẫu (`approval`, `work_item` hoặc `reservation`, xem mục Đặt chỗ bên dưới), `handler` là vai xử lý, `deadline` là hạn xử lý tùy chọn (ví dụ `72h`); họ `work_item` còn có `auto_close` tùy chọn (ví dụ `7d`): hồ sơ đã xử lý xong mà người nộp không xác nhận trong thời gian đó thì hệ thống đóng.
-  Từ chối và trả lại bắt buộc có lý do; người nộp rút lại được hồ sơ chưa ở trạng thái cuối.
-  Hồ sơ có quy trình không xóa được; hồ sơ đã được quyết định thì không sửa được; hồ sơ đã giao thì chỉ người được giao xử lý được.
-  Người tạo hồ sơ không tự quyết định được, trừ khi khai báo `allow_self_decision: true`.
-- Đặt chỗ: `family: reservation` kèm `booking: {resource, starts, ends, capacity}`; lượt làm số lượt chạy cùng lúc vượt sức chứa bị từ chối, và ứng dụng có chế độ xem lịch.
-  Ví dụ ở [`room_booking.yaml`](./backend/dx-engine/src/main/resources/templates/room_booking.yaml).
-- Hành động hoàn tất: `after` gán danh sách thao tác cho một trạng thái cuối, ví dụ `after: {approved: [{do: add_to_group, user: created_by, group_from: nhom}]}`; thao tác chạy sau khi giao dịch xong và được thử lại nếu lỗi.
-  Thao tác có sẵn là `add_to_group` và `remove_from_group`; nhóm Keycloak phải có sẵn, thiếu thì thông điệp xem được ở tab Hàng đợi sự kiện; trường người dùng hoặc nhóm để trống thì thao tác bị bỏ qua và hồ sơ có thêm dòng lịch sử `completion_skipped` kèm lý do.
-  Ví dụ ở [`backend/dx-engine/src/main/resources/templates/itaccess.yaml`](./backend/dx-engine/src/main/resources/templates/itaccess.yaml).
-- Tệp đính kèm: trường `type: file`, tải lên bằng `POST /api/v1/data/{model}/{entity}/{id}/files`; quyền theo quyền của bản ghi.
-  Loại tệp nhận được đặt bằng `engine.files.allowed-extensions`, và tệp luôn tải về dạng đính kèm.
-  Mỗi hồ sơ giữ tối đa 20 tệp, đặt bằng `engine.files.max-per-record`.
-- Webhook: `webhook: <tên đích>` ở đầu tệp chọn nơi nhận lịch sử hồ sơ của mô hình; địa chỉ và bí mật của đích nằm trong `deploy/webhooks/targets.yml`, ngoài git, mẫu ở `deploy/webhooks/targets.example.yml`.
-  Mô hình không khai báo thì dùng `DXOS_WEBHOOK_URL`; tên đích chưa có trong tệp thì mô hình không áp dụng được.
-  Mỗi đích có `format: json` (mặc định) hoặc `format: chat`.
-- Đổi mô hình: khai báo `renamed_from` khi đổi tên trường; `default` điền giá trị cho trường bắt buộc mới trên bảng đã có dòng.
-- Đặc tả cho trình soạn thảo: [`dx-model/.../model-v0.schema.json`](./backend/dx-model/src/main/resources/schema/model-v0.schema.json); tệp sai mẫu ở [`models/invalid/`](./models/invalid).
-
-## API
-
-| Đường dẫn | Việc |
+| Cần gì | Xem |
 |---|---|
-| `POST /api/v1/models/plan`, `/apply` | Xem trước và áp dụng tệp mô hình (ADMIN) |
-| `POST /api/v1/models/{model}/rollback/plan`, `/rollback` | Xem trước và quay về phiên bản trước (ADMIN) |
-| `POST /api/v1/models/{model}/resume`, `/abandon` | Hoàn tất hoặc hủy bỏ lần áp dụng đã dừng giữa chừng (ADMIN) |
-| `GET /api/v1/models`, `/models/{model}/runs` | Mô hình đã áp dụng và lịch sử từng bước (ADMIN) |
-| `GET /api/v1/models/schema`, `/families`, `/templates`, `/{model}/versions` | Đặc tả tệp mô hình, họ mẫu, thư viện mẫu và các phiên bản đã áp dụng, cho bảng điều khiển (ADMIN) |
-| `GET /api/v1/meta/models` | Metadata mà người gọi được xem; mô hình đang bị giữ hiện với `held` và không có thực thể |
-| `/api/v1/data/{model}/{entity}` | Danh sách, tạo, xem, sửa, xóa; lọc `filter.<trường>[.<phép>]`, `sort`, `order`, `page`, `size`; sửa nhận `version` đã đọc, hồ sơ đã đổi thì 409 `ERR_CONCURRENT_MODIFICATION`; 403 `ERR_ACTION_NOT_ALLOWED` và 409 `ERR_INVALID_STATE` có `data.reason` |
-| `GET /api/v1/data/{model}/{entity}/stats` | Đếm trên các dòng người gọi được xem, nhận cùng bộ lọc `filter.*` như danh sách: `total`; với thực thể có quy trình thêm `byStatus` (số hồ sơ mỗi trạng thái) và `overdue` (hồ sơ có hạn xử lý trước `computedAt`), `avgDecisionSeconds` (giây trung bình từ lúc tạo đến trạng thái cuối), `avgOpenAgeSeconds` và `oldestOpenAgeSeconds` (tuổi trung bình và lớn nhất của hồ sơ chưa vào trạng thái cuối, tính đến `computedAt`), ba số sau là `null` khi không có hồ sơ nào để tính; với thực thể có trường `unit` thêm `byUnit`; truy vấn bị cắt sau 10 giây |
-| `POST /api/v1/data/{model}/{entity}/{id}/actions/{action}` | Hành động của quy trình; metadata liệt kê hành động, trạng thái đầu và người được làm |
-| `POST .../{id}/assign`, `GET .../{id}/handlers` | Giao việc và danh sách người giao được |
-| `GET .../{id}/events` | Dòng lịch sử của bản ghi; `detail` của dòng `updated` là JSON `{"trường": ["cũ", "mới"]}` với giá trị dạng chuỗi hoặc `null`, cắt ở 200 ký tự |
-| `.../{id}/files` | Tải lên, liệt kê, lấy link tải có hạn (`/{fileId}/link`) và gỡ tệp đính kèm |
-| `GET /api/v1/inbox` | Hồ sơ đang chờ người gọi, trên mọi mô hình; `page`, `size` |
-| `GET /api/v1/events` | Dòng lịch sử theo đúng dạng của webhook, từ sau một `eventId` (`after`, `size`, `model`) (ADMIN) |
-| `GET /api/v1/outbox`, `POST /api/v1/outbox/{id}/retry` | Thông điệp gửi đi theo trạng thái (lỗi, chờ gửi, đã gửi) và thử lại thông điệp chưa gửi (ADMIN) |
-| `GET /api/v1/users`, `/users/options`, `/users/{id}` | Tìm và xem người dùng, vai theo từng mô hình và đơn vị; vai và đơn vị có thể gán (ADMIN) |
-| `PUT`, `DELETE /api/v1/users/{id}/roles/{model}/{role}`, `/units/{unit}` | Gán và gỡ vai của một mô hình, và đơn vị (ADMIN) |
-| `POST /api/v1/users`, `PUT /{id}/enabled`, `POST /{id}/password` | Tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu (ADMIN) |
-| `GET /api/v1/audit-logs` | Nhật ký lần truy cập bị từ chối, lỗi, thay đổi về tài khoản và việc áp dụng mô hình; lọc theo `actor`, `action`, `targetType`, `targetId`, `outcome`, `from`, `to` (ADMIN) |
-
-Mọi phản hồi bọc trong `ApiResponse`; lỗi có `errorCode` ổn định.
+| Viết tệp mô hình | [`docs/MODEL.md`](./docs/MODEL.md) |
+| Gọi API | [`docs/API.md`](./docs/API.md) và Swagger UI của backend đang chạy |
+| Kiến trúc | [`ARCHITECTURE.md`](./ARCHITECTURE.md) |
+| Cài đặt, lệnh `dxos`, sao lưu | [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md) |
+| Giám sát, log, nhật ký truy cập | [`deploy/MONITORING.md`](./deploy/MONITORING.md) |
+| Webhook, lịch sử chống sửa, lưu trữ dài hạn | [`deploy/INTEGRATIONS.md`](./deploy/INTEGRATIONS.md) |
+| Kiểm thử | [`docs/TESTING.md`](./docs/TESTING.md), [`e2e/README.md`](./e2e/README.md) |
+| Hướng thiết kế và việc còn lại | [`docs/dynamic-core/README.md`](./docs/dynamic-core/README.md), [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md) |
+| Thay đổi theo phiên bản | [`CHANGELOG.md`](./CHANGELOG.md) |
+| Thành phần bên thứ ba và giấy phép | [`DEPENDENCIES.txt`](./DEPENDENCIES.txt), [`NOTICE`](./NOTICE), [`sbom/`](./sbom/README.md) |
 
 ## Cấu trúc repository
 
@@ -170,42 +127,32 @@ Mọi phản hồi bọc trong `ApiResponse`; lỗi có `errorCode` ổn định
 | `frontend` | Giao diện react-admin dựng từ metadata |
 | `deploy` | Compose, gateway APISIX, bộ cài và lệnh `dxos`, script vận hành, script kiểm tra ở `deploy/dev` |
 | `sso`, `portal`, `seaweedfs` | Keycloak realm, trang portal, lưu trữ tệp |
-| `models` | Mô hình mẫu và tệp sai mẫu |
-| `examples` | Chương trình mẫu: bên nhận sự kiện giữ hash lịch sử, giả lập hệ thống IT/OT |
+| `models` | Tệp mô hình sai mẫu cho kiểm tự động; mô hình mẫu dùng được ở `backend/dx-engine/src/main/resources/templates/` |
+| `examples` | Chương trình mẫu: bên nhận sự kiện giữ hash lịch sử ([`history-witness`](./examples/history-witness/README.md)), giả lập hệ thống IT/OT ([`itot-simulator`](./examples/itot-simulator/README.md)) |
 | `e2e` | Kiểm giao diện web trên trình duyệt (Playwright) |
 | `website` | Trang tài liệu (Docusaurus), đăng lên GitHub Pages |
-| `docs` | Kết quả kiểm thử ở `TESTING.md`, hướng thiết kế và việc tồn đọng ở `dynamic-core/` |
+| `docs` | Hướng dẫn kiểm thử, tệp mô hình, API; hướng thiết kế ở `dynamic-core/` |
 | `sbom` | Danh mục thành phần CycloneDX của backend, web, và trang tài liệu |
 | `.github` | Workflow CI, mẫu issue và pull request, quy tắc nhánh, script kiểm tra |
-
-## Kiểm thử
-
-```bash
-cd backend && ./mvnw verify            # test cần Docker (Testcontainers)
-cd frontend && npx tsc --noEmit
-python3 .github/scripts/check_licenses.py
-python3 deploy/dev/check_api.py        # trên stack mới dựng, cơ sở dữ liệu rỗng
-```
-
-Danh sách đầy đủ các script kiểm trên stack và thứ tự chạy ở [`CONTRIBUTING.md`](./CONTRIBUTING.md), kết quả từng lần kiểm ở [`docs/TESTING.md`](./docs/TESTING.md).
-CI chạy cả bộ này trên mỗi pull request vào `main` hoặc `Khuong/main`.
 
 ## Đóng góp
 
 - **Báo lỗi:** [tạo bug report](https://github.com/HaUI-ImplSolution/DX-OS/issues/new?template=bug_report.yml).
 - **Đề xuất tính năng:** [tạo feature request](https://github.com/HaUI-ImplSolution/DX-OS/issues/new?template=feature_request.yml).
 - **Gửi mã:** đọc [`CONTRIBUTING.md`](./CONTRIBUTING.md) và tuân theo [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
+- **Lỗ hổng bảo mật:** không đăng công khai, làm theo [`SECURITY.md`](./SECURITY.md).
 
-## Liên hệ
+## Nhóm phát triển
 
-| Vai trò | Tên | Liên hệ |
-|---|---|---|
-| Người phát triển | Phạm Minh Khương | pkhuong535@gmail.com |
-| Người phát triển | Nguyễn Đình Duy Khánh | dinhkhanh19042006@gmail.com |
-| Người phát triển | Trần Quang Tùng | tung51652@gmail.com |
+| Tên | Liên hệ |
+|---|---|
+| Phạm Minh Khương | pkhuong535@gmail.com |
+| Nguyễn Đình Duy Khánh | dinhkhanh19042006@gmail.com |
+| Trần Quang Tùng | tung51652@gmail.com |
 
 ## Giấy phép
 
-Apache License 2.0, xem [`LICENSE`](./LICENSE) và [`DEPENDENCIES.txt`](./DEPENDENCIES.txt).
+Apache License 2.0, xem [`LICENSE`](./LICENSE).
+Giấy phép của từng thành phần bên thứ ba ở [`DEPENDENCIES.txt`](./DEPENDENCIES.txt).
 
 Tham khảo: [chủ đề cuộc thi](https://vfossa.vn/tin-tuc/gioi-thieu-mo-hinh-dx-os-va-chu-de-cuoc-thi-phan-mem-nguon-mo-olp-2026-761.html) · [giáo trình DX-OS](https://opendigitransform.gitbook.io/dx-os)

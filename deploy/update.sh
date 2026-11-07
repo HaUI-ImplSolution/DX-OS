@@ -66,5 +66,17 @@ fi
 echo "==> Checking the Keycloak admin client"
 ./keycloak-admin-scope.sh || echo "WARNING: model apply stays refused until this works; run ./keycloak-admin-scope.sh once Keycloak is up." >&2
 
+if [[ -f data/assistant/enabled ]]; then
+  prefix="$(grep '^DXOS_IMAGE_PREFIX=' .env | tail -1 | cut -d= -f2-)"
+  tag="$(grep '^DXOS_IMAGE_TAG=' .env | tail -1 | cut -d= -f2-)"
+  assistant_image="$(grep '^ASSISTANT_IMAGE=' .env | tail -1 | cut -d= -f2- || true)"
+  if [[ "$assistant_image" == "$prefix-assistant:"* ]]; then
+    sed -i "s|^ASSISTANT_IMAGE=.*|ASSISTANT_IMAGE=$prefix-assistant:$tag|" .env
+  fi
+  docker compose -f docker-compose.yml -f docker-compose.assistant.yml pull assistant-control && \
+    ./assistant.sh prepare && ./assistant-sso.sh && ./assistant.sh resume || \
+    echo "WARNING: assistant update failed; Core remains independent. Check dxos assistant status." >&2
+fi
+
 docker image prune -f >/dev/null
 echo "==> Up to date. Check: docker compose ps"

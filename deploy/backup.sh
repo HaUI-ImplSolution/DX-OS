@@ -43,6 +43,13 @@ FILE_DELETE_DELAY="$(env_value DXOS_FILE_DELETE_DELAY)"
 export RESTIC_PASSWORD="$BACKUP_PASSWORD"
 BACKUP_DIR="$(realpath -m "${BACKUP_DIR:-./backups}")"
 STAGE="$BACKUP_DIR/stage"
+ASSISTANT_BACKUP_PAUSED=false
+backup_cleanup() {
+  if [[ "$ASSISTANT_BACKUP_PAUSED" == true ]]; then
+    ./assistant.sh resume || echo "WARNING: restart the assistant with dxos assistant on." >&2
+  fi
+  rm -rf "$STAGE"
+}
 compose() { docker compose --env-file "$ENV_FILE" "$@"; }
 
 # restic <extra docker args> -- <restic args>
@@ -82,10 +89,19 @@ do_backup() {
   fi
   restic -- cat config >/dev/null 2>&1 || restic -- init
   rm -rf "$STAGE"; mkdir -p "$STAGE"; chmod 700 "$STAGE"
-  trap 'rm -rf "$STAGE"' EXIT
+  trap backup_cleanup EXIT
+  if [[ -d data/assistant ]]; then
+    if ./assistant.sh is-running; then ASSISTANT_BACKUP_PAUSED=true; fi
+    ./assistant.sh stop
+  fi
   echo "==> Dumping Postgres"
   compose exec -T postgres pg_dumpall -U "$POSTGRES_USER" | gzip > "$STAGE/postgres.sql.gz"
   [[ -s "$STAGE/postgres.sql.gz" ]] || { echo "The database dump is empty." >&2; exit 1; }
+  if [[ -d data/assistant ]]; then ./assistant.sh snapshot "$STAGE/assistant"; fi
+  if [[ "$ASSISTANT_BACKUP_PAUSED" == true ]]; then
+    ./assistant.sh resume
+    ASSISTANT_BACKUP_PAUSED=false
+  fi
   local paths=(/stage)
   for dir in seaweedfs; do [[ -d "data/$dir" ]] && paths+=("/data/$dir"); done
   echo "==> Writing the snapshot (${paths[*]})"

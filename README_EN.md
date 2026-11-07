@@ -99,6 +99,15 @@ Users come in through the gateway at `http://localhost:9080`:
 
 The full testing guide is in [`docs/TESTING.md`](./docs/TESTING.md) (Vietnamese).
 
+### Personal assistant (optional)
+
+With Core running, use `dxos assistant on` for an installed release or `./deploy/dxos assistant on --build` from source.
+Open `/assistant`, link your DX-OS account and configure your own API model/key and Telegram bot, following the pairing instructions.
+The assistant reads and monitors records and proposes assignment or workflow actions; writes require your confirmation and Core authorization.
+`dxos assistant off` stops it and keeps configuration.
+Core runs independently without an API key or assistant.
+See [`assistant/README.md`](./assistant/README.md) and [operations](./deploy/OPERATIONS.md#trợ-lý-cá-nhân).
+
 ## Documentation
 
 Docs site: <https://haui-implsolution.github.io/DX-OS/>.

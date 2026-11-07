@@ -19,6 +19,7 @@ Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`web
 | Loại | Lệnh | Chạy ở CI |
 |---|---|---|
 | Định dạng, biên dịch, test của backend | `cd backend && ./mvnw verify` | Workflow `Backend` |
+| Trợ lý tùy chọn, không cần key | `cd assistant && npm ci && npm test` (Node 24.16) | `Check the optional assistant` của `Platform` |
 | Kiểu của web | `cd frontend && npx tsc --noEmit` | Workflow `Frontend` |
 | Giấy phép và header | `python3 .github/scripts/check_licenses.py` | `Check licenses` của `Compliance` |
 | Giấy phép của dự án gốc | `GITHUB_TOKEN=... python3 .github/scripts/check_upstream_licenses.py` | `Check upstream licenses` của `Compliance` |
@@ -163,3 +164,12 @@ grep -rIlw -i -E 'farm|lab|farmer|DXOS_APP|dx-host|app-farm|app-lab|dx-core-api'
 | Áp dụng mô hình trả 502 `ERR_ACCOUNT_SERVICE_DENIED` | Tài khoản dịch vụ `dxos-backend-admin` thiếu quyền hoặc scope `kc-admin-api`; xem [`sso/README.md`](../sso/README.md) |
 | Kết quả không khớp mã vừa sửa | Image `dxos-backend:local` cũ hơn mã; chạy `docker compose build` rồi tạo lại service |
 | Cổng 9080 hoặc 5432 bị chiếm | Đổi `APISIX_HOST_PORT`, `POSTGRES_HOST_PORT` trong `deploy/.env` |
+
+## Trợ lý tùy chọn
+
+`cd assistant && npm test` kiểm JWT/chủ tài khoản, mã hóa, replay proposal, điều kiện ghi, mất kết quả và thông báo; không gọi provider hoặc Telegram.
+`deploy/dev/check_process.py` kiểm action/assign có điều kiện trên Core thật cùng các luồng cũ.
+Kiểm tích hợp riêng: bật trợ lý, liên kết SSO, probe API, pairing bot, đọc hồ sơ, xác nhận giao việc/chuyển trạng thái và đối chiếu lịch sử Core.
+Dùng hai rồi ba tài khoản/bot riêng; kiểm truy cập chéo, thu hồi quyền, tranh chấp phiên bản, restart và backup/restore trước nghiệm thu.
+Đo CPU/RAM/thời gian với cùng cấu hình Core khi trợ lý tắt và bật; không suy kết quả provider thật từ test mô phỏng.
+Ma trận và trạng thái nghiệm thu ở [`assistant-platform/03_TEST_PLAN.md`](./assistant-platform/03_TEST_PLAN.md).

@@ -99,6 +99,15 @@ Người dùng vào qua gateway `http://localhost:9080`:
 
 Hướng dẫn kiểm thử đầy đủ ở [`docs/TESTING.md`](./docs/TESTING.md).
 
+### Trợ lý cá nhân (tùy chọn)
+
+Sau khi Core đã chạy, bật bằng `dxos assistant on` (bản cài) hoặc `./deploy/dxos assistant on --build` (mã nguồn).
+Mở `/assistant`, liên kết tài khoản DX-OS, nhập API key/model và bot Telegram riêng rồi làm theo hướng dẫn pairing.
+Trợ lý đọc và theo dõi hồ sơ, đề xuất giao việc hoặc chuyển trạng thái; chỉ ghi sau khi bạn xác nhận và Core kiểm quyền.
+Tắt bằng `dxos assistant off`; dữ liệu cấu hình được giữ lại.
+Core không cần API key hoặc trợ lý để hoạt động.
+Chi tiết ở [`assistant/README.md`](./assistant/README.md) và [vận hành](./deploy/OPERATIONS.md#trợ-lý-cá-nhân).
+
 ## Tài liệu
 
 Trang tài liệu: <https://haui-implsolution.github.io/DX-OS/>.

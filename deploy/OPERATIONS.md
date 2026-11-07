@@ -190,3 +190,25 @@ Không dùng `dxos` thì bỏ dấu `#` ở `COMPOSE_PROFILES=av` và `STORAGE_S
 Chữ ký virus tải về lần đầu mất vài phút và được giữ trong volume `clamav_data`.
 Mỗi lần clamd nạp lại chữ ký (hằng ngày và sau khi khởi động) nó không quét được khoảng 10 giây, và người dùng gặp 503 trong lúc đó; chờ rồi tải lại.
 Thử bằng tệp EICAR (chuỗi kiểm thử chuẩn của ngành diệt virus): tệp chỉ gồm đúng chuỗi đó, đổi tên `.pdf` rồi đính vào một yêu cầu; `deploy/dev/check_demo.py` tự làm bước này khi `STORAGE_SCAN_HOST` có giá trị.
+
+## Trợ lý cá nhân
+
+Core cần chạy trước; bản cài dùng `dxos assistant on`, bản mã nguồn dùng `./deploy/dxos assistant on --build` từ gốc repo.
+Lần đầu chuẩn bị pool runtime theo `ASSISTANT_RUNTIME_COUNT` trong `.env` (tối đa ba), tạo client SSO PKCE riêng rồi mở route trợ lý.
+Các giá trị mặc định và giới hạn CPU/RAM nằm trong `.env.example`; endpoint OpenAI-compatible chỉ được dùng khi operator khai báo HTTPS origin chính xác trong `ASSISTANT_COMPATIBLE_URLS`.
+Người dùng mở `/assistant`, liên kết DX-OS và tự nhập API key/model cùng bot token riêng; không gửi bí mật cho người vận hành qua chat.
+Mỗi bot chỉ liên kết một chủ, không có webhook đang hoạt động; mã pairing lấy từ bot và nhập lại trên web.
+Nút kiểm kết nối gọi model thật bằng dữ liệu giả và có thể tiêu quota; lưu profile không gọi model.
+
+`dxos assistant status` xem các container tùy chọn; `dxos assistant off` dừng chúng, giữ dữ liệu và không dừng Core.
+Khi đã bật, `dxos start` khởi động lại phần trợ lý; nếu trợ lý lỗi, Core vẫn hoạt động.
+Runtime tắt không nhận tin Telegram hoặc gửi nhắc việc; bật lại từ trang cấu hình.
+Không dùng chung bot với một triển khai khác hoặc chạy thêm instance control trên cùng SQLite.
+
+State nằm tại `deploy/data/assistant`: SQLite mã hóa, master key riêng, cấu hình private và thư mục OpenClaw riêng từng runtime.
+Đây là dữ liệu bí mật của máy, không đưa vào repository; mất master key thì không giải mã được cấu hình cũ.
+`backup.sh` dừng trợ lý, chụp cả state/key/runtime rồi bật lại trước khi đưa vào kho restic mã hóa.
+`backup.sh verify` kiểm Postgres và tệp Core; việc giải mã/khởi động lại trợ lý phải kiểm riêng sau khôi phục.
+Để khôi phục phần trợ lý: dừng trợ lý, chép `/stage/assistant/` của bản restic đã giải ra vào `deploy/data/assistant/`, giữ đúng chủ sở hữu và quyền thư mục 0700/tệp 0600, rồi chạy `dxos assistant on`.
+Khôi phục cùng state SSO/Core và địa chỉ công khai; nếu đổi địa chỉ hoặc thu hồi phiên, liên kết DX-OS lại trên giao diện.
+Không tự tạo master key mới để thay khóa bị mất và không giảm số runtime khi còn binding/state.

@@ -67,13 +67,15 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Generate the SBOMs of the web app and the docs site again and compare
+      - name: Generate the npm SBOMs again and compare
         run: |
-          for app in frontend website; do
+          for app in frontend website assistant; do
             (cd "$app" && npm ci --no-audit --no-fund --ignore-scripts \
               && npx --yes @cyclonedx/cyclonedx-npm@6.0.1 --omit dev --output-format JSON --output-file "$RUNNER_TEMP/$app.cdx.json")
             python3 .github/scripts/check_sbom_fresh.py sbom "sbom/$app.cdx.json" "$RUNNER_TEMP/$app.cdx.json"
           done
+          (cd assistant/runtime && npx --yes @cyclonedx/cyclonedx-npm@6.0.1 --package-lock-only --omit dev --output-format JSON --output-file "$RUNNER_TEMP/assistant-runtime.cdx.json")
+          python3 .github/scripts/check_sbom_fresh.py sbom sbom/assistant-runtime.cdx.json "$RUNNER_TEMP/assistant-runtime.cdx.json"
 
   files:
     name: Check required files and scripts

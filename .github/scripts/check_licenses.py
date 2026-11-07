@@ -31,7 +31,7 @@ SPDX_LINE = re.compile(r"SPDX-License-Identifier: *([\w.\-+]+)")
 # so the few packages that carry it are named, with the reason, in .github/dependency-exceptions.json.
 ALLOWED = {
     "Apache-2.0", "MIT", "MIT-0", "BSD-2-Clause", "BSD-3-Clause", "ISC", "0BSD", "Unlicense",
-    "BlueOak-1.0.0", "Python-2.0", "CNRI-Python", "Zlib",
+    "BlueOak-1.0.0", "Python-2.0", "CNRI-Python", "Zlib", "Artistic-2.0",
     # Weak copyleft, used as unmodified libraries.
     "MPL-2.0", "EPL-2.0", "LGPL-2.1-only", "LGPL-2.1-or-later",
     # GPL-2.0-only with the Classpath exception, the SPDX id that the Java SBOMs use for it.

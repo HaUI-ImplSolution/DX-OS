@@ -1,0 +1,16 @@
+{
+  "name": "dxos-assistant",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "engines": { "node": ">=24.16.0 <25" },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "start": "node dist/server.js"
+  },
+  "dependencies": { "fastify": "5.12.8", "jose": "6.2.15", "@fastify/swagger": "9.9.3" },
+  "devDependencies": { "typescript": "7.0.2", "@types/node": "24.10.0" }
+}

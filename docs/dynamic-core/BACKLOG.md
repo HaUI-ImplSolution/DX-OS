@@ -27,7 +27,7 @@ Mốc dưới đây là dự kiến.
 
 | Việc | Ghi chú |
 |---|---|
-| Phần AI | Chưa có mã: hỏi đáp sinh câu trả lời và tác tử đề xuất có người duyệt cần mô hình ngôn ngữ và embedding đạt định nghĩa Open Source AI của OSI (trọng số và dữ liệu huấn luyện đều mở), chưa chọn; khi làm sẽ là dịch vụ mới nối vào lõi |
+| Phần AI | Trợ lý API tùy chọn đã tích hợp, nhưng chưa nghiệm thu 2–3 tài khoản đồng thời hoặc provider thứ hai. Hai ca hội thoại domain mới chưa chấm được vì provider quá tải/timeout; câu sinh đôi lúc còn mã kỹ thuật hoặc thời gian chưa đúng múi giờ. Chưa chọn model tự triển khai và embedding đáp ứng định nghĩa Open Source AI của OSI |
 | Webhook sự kiện | Dạng `chat` chưa thử với Mattermost và Slack thật; thông điệp của việc áp dụng mô hình và của tài khoản không có trong `GET /api/v1/events` |
 | Ứng dụng Tầng 2 | Chưa phủ I của H-P-D-I; để sau như đã định |
 | Duyệt nhiều cấp tuần tự | Họ phê duyệt chỉ có một cấp xử lý; nhiều cấp cần trạng thái và hành động sinh theo số cấp khai báo trong mô hình, nên đổi `dx-model`, kernel quy trình, `data` và giao diện, và đụng các mô hình đang chạy; chưa làm vì rủi ro cao |

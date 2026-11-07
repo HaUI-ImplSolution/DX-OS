@@ -26,7 +26,7 @@ export interface ProcessAction {
 
 export interface ProcessInfo {
   family: string;
-  handler: string;
+  handlers: string[];
   allowSelfDecision: boolean;
   deadlineSeconds: number | null;
   booking: { resource: string; starts: string; ends: string; capacity: number } | null;
@@ -45,6 +45,8 @@ export interface EntityMeta {
   canWrite: boolean;
   canHandle: boolean;
   canAssign: boolean;
+  // Names of the process actions the roles of the user may take.
+  handlerActions?: string[];
 }
 
 export interface UnitMeta {

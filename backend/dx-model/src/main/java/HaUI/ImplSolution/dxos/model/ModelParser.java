@@ -5,11 +5,15 @@ import HaUI.ImplSolution.dxos.model.Model.Entity;
 import HaUI.ImplSolution.dxos.model.Model.Field;
 import HaUI.ImplSolution.dxos.model.Model.Process;
 import HaUI.ImplSolution.dxos.model.Model.Role;
+import HaUI.ImplSolution.dxos.model.ProcessFamily.Action;
+import HaUI.ImplSolution.dxos.model.ProcessFamily.Actor;
+import HaUI.ImplSolution.dxos.model.ProcessFamily.State;
 import HaUI.ImplSolution.dxos.model.Model.Unit;
 import HaUI.ImplSolution.dxos.model.ModelException.Problem;
 import java.io.StringReader;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -26,6 +30,7 @@ import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.NodeTuple;
 import org.yaml.snakeyaml.nodes.ScalarNode;
 import org.yaml.snakeyaml.nodes.SequenceNode;
+import org.yaml.snakeyaml.nodes.Tag;
 
 // Reads a model file and checks it. Every problem carries its line and column; nothing outside the
 // file is touched.
@@ -478,41 +483,413 @@ public final class ModelParser {
     return access;
   }
 
+  // An action while the declarations of a model are applied to a family, with the nodes it was
+  // declared at so that a problem can point to them.
+  private static final class ActionDraft {
+
+    String label;
+    List<String> from = new ArrayList<>();
+    String to;
+    Actor by = Actor.HANDLER;
+    boolean needsNote;
+    List<String> roles = List.of();
+    List<String> require = List.of();
+    Node node;
+    Node fromNode;
+    Node toNode;
+
+    static ActionDraft of(Action action) {
+      ActionDraft draft = new ActionDraft();
+      draft.label = action.label();
+      draft.from = new ArrayList<>(action.from());
+      draft.to = action.to();
+      draft.by = action.by();
+      draft.needsNote = action.needsNote();
+      draft.roles = action.roles();
+      draft.require = action.require();
+      return draft;
+    }
+  }
+
   private Process readProcess(Node node, Set<String> roleNames, Map<String, Scope> access,
       Map<String, Field> fields) {
     if (node == null) {
       return null;
     }
     if (!(node instanceof MappingNode map)) {
-      problem(node, "process is a mapping with family and handler");
+      problem(node, "process is a mapping with handler and a family or states and actions");
       return null;
     }
-    Map<String, Node> keys = mapping(map, Set.of("family", "handler", "allow_self_decision",
-        "deadline", "auto_close", "after", "booking"));
+    Map<String, Node> keys = mapping(map, ProcessSyntax.PROCESS);
     Node familyNode = keys.get("family");
     String family = familyNode == null ? null : scalar(familyNode);
-    if (family == null || ProcessFamily.find(family).isEmpty()) {
-      problem(familyNode == null ? map : familyNode,
+    ProcessFamily template = family == null ? null : ProcessFamily.find(family).orElse(null);
+    if (family != null && template == null) {
+      problem(familyNode,
           "unknown process family, available: " + String.join(", ", ProcessFamily.names()));
       return null;
     }
-    Node handlerNode = keys.get("handler");
-    String handler = handlerNode == null ? null : scalar(handlerNode);
-    if (handler == null || !roleNames.contains(handler)) {
-      problem(handlerNode == null ? map : handlerNode, "handler must be a role declared in roles");
+    List<String> handlers =
+        readRoles(map, keys.get("handler"), "handler", "handler role", roleNames, access);
+    if (handlers == null) {
       return null;
     }
-    Scope handlerScope = access.get(handler);
-    if (handlerScope == null || handlerScope == Scope.OWN) {
-      problem(handlerNode,
-          "the handler role " + handler + " must have access all, read, unit or assigned");
+    ProcessFamily definition = readDefinition(map, keys, template, roleNames, access, fields);
+    if (definition == null) {
+      return null;
     }
-    return new Process(family, handler,
+    AutoClose autoClose = readAutoClose(keys.get("auto_close"), family, definition);
+    return new Process(family, handlers,
         flag(keys.get("allow_self_decision"), "allow_self_decision"),
-        deadline(keys.get("deadline")),
-        autoClose(keys.get("auto_close"), ProcessFamily.find(family).orElseThrow()),
-        readAfter(keys.get("after"), ProcessFamily.find(family).orElseThrow(), fields),
-        readBooking(map, keys.get("booking"), family, fields));
+        deadline(keys.get("deadline")), autoClose.after(), autoClose.action(),
+        readAfter(keys.get("after"), definition, fields),
+        readBooking(map, keys.get("booking"), family, fields), definition);
+  }
+
+  // One role or a list of roles, each declared in roles and able to read the records of the entity.
+  private List<String> readRoles(Node parent, Node node, String key, String what,
+      Set<String> roleNames, Map<String, Scope> access) {
+    if (node == null) {
+      problem(parent, key + " must be a role declared in roles");
+      return null;
+    }
+    List<Node> items;
+    if (node instanceof SequenceNode sequence) {
+      items = sequence.getValue();
+      if (items.isEmpty()) {
+        problem(node, key + " needs at least one role");
+        return null;
+      }
+    } else if (node instanceof ScalarNode text) {
+      String value = text.getValue();
+      if (value.contains(",") || value.trim().contains(" ")) {
+        problem(node, key + " is one role or a list like [MANAGER, SELLER], got '" + value + "'");
+        return null;
+      }
+      items = List.of(node);
+    } else {
+      problem(node, key + " is one role or a list of roles");
+      return null;
+    }
+    List<String> roles = new ArrayList<>();
+    for (Node item : items) {
+      String role = scalar(item);
+      if (!roleNames.contains(role)) {
+        problem(item,
+            node instanceof SequenceNode
+                ? "role " + role + " in " + key + " is not declared in roles, declared: "
+                    + String.join(", ", roleNames)
+                : key + " must be a role declared in roles");
+      } else if (roles.contains(role)) {
+        problem(item, "role " + role + " is listed twice");
+      } else if (access.get(role) == null || access.get(role) == Scope.OWN) {
+        problem(item, "the " + what + " " + role + " must have access all, read, unit or assigned");
+      } else {
+        roles.add(role);
+      }
+    }
+    return roles.size() == items.size() ? roles : null;
+  }
+
+  // The states and actions of the family with the declarations of the model applied, checked as a
+  // whole. Null when something is wrong.
+  private ProcessFamily readDefinition(MappingNode process, Map<String, Node> keys,
+      ProcessFamily template, Set<String> roleNames, Map<String, Scope> access,
+      Map<String, Field> fields) {
+    int before = problems.size();
+    Map<String, State> states = new LinkedHashMap<>();
+    Map<String, ActionDraft> actions = new LinkedHashMap<>();
+    Map<String, Node> nodes = new HashMap<>();
+    String initial = null;
+    if (template != null) {
+      template.states().stream()
+          .filter(state -> !ProcessFamily.WITHDRAWN_STATE.equals(state.name()))
+          .forEach(state -> states.put(state.name(), state));
+      template.actions().forEach(action -> actions.put(action.name(), ActionDraft.of(action)));
+      initial = template.initial();
+    }
+    readStates(process, keys.get("states"), template != null, states, nodes);
+    readActions(process, keys.get("actions"), template != null, actions, nodes, roleNames, access,
+        fields);
+    Node initialNode = keys.get("initial");
+    if (initialNode != null) {
+      initial = scalar(initialNode);
+    } else if (template == null && !states.isEmpty()) {
+      initial = states.keySet().iterator().next();
+    }
+    if (problems.size() > before) {
+      return null;
+    }
+    checkDefinition(process, initialNode, initial, states, actions, nodes);
+    if (problems.size() > before) {
+      return null;
+    }
+    List<Action> built = new ArrayList<>();
+    actions.forEach(
+        (name, draft) -> built.add(new Action(name, draft.label, List.copyOf(draft.from), draft.to,
+            draft.by, draft.needsNote, List.copyOf(draft.roles), List.copyOf(draft.require))));
+    List<State> builtStates = new ArrayList<>(states.values());
+    if (actions.containsKey(ProcessFamily.WITHDRAW)) {
+      builtStates.add(ProcessFamily.WITHDRAWN);
+    }
+    return new ProcessFamily(template == null ? "custom" : template.name(), initial,
+        List.copyOf(builtStates), List.copyOf(built));
+  }
+
+  private void readStates(MappingNode process, Node node, boolean fromFamily,
+      Map<String, State> states, Map<String, Node> nodes) {
+    if (node == null) {
+      if (!fromFamily) {
+        problem(process, "a process without a family needs states");
+      }
+      return;
+    }
+    if (!(node instanceof MappingNode map) || map.getValue().isEmpty()) {
+      problem(node, "states is a mapping from a state name to its label and whether it is final");
+      return;
+    }
+    for (NodeTuple tuple : map.getValue()) {
+      Node keyNode = tuple.getKeyNode();
+      String name = scalar(keyNode);
+      if (!NAME.matcher(name).matches()) {
+        problem(keyNode, "state name must match [a-z][a-z0-9_]* and be at most 40 characters");
+        continue;
+      }
+      if (ProcessFamily.WITHDRAWN_STATE.equals(name)) {
+        problem(keyNode, "state " + name + " is added by the platform for the action withdraw");
+        continue;
+      }
+      if (isNull(tuple.getValueNode())) {
+        if (states.remove(name) == null) {
+          problem(keyNode, "there is no state " + name + " to remove");
+        }
+        continue;
+      }
+      if (!(tuple.getValueNode() instanceof MappingNode spec)) {
+        problem(tuple.getValueNode(),
+            "a state is a mapping with label and terminal, or null to remove it");
+        continue;
+      }
+      Map<String, Node> parts = mapping(spec, ProcessSyntax.STATE);
+      State existing = states.get(name);
+      String label = parts.get("label") != null ? scalar(parts.get("label"))
+          : existing != null ? existing.label() : name;
+      boolean terminal = parts.get("terminal") != null ? flag(parts.get("terminal"), "terminal")
+          : existing != null && existing.terminal();
+      states.put(name, new State(name, label, terminal));
+      nodes.put("state:" + name, keyNode);
+    }
+  }
+
+  private void readActions(MappingNode process, Node node, boolean fromFamily,
+      Map<String, ActionDraft> actions, Map<String, Node> nodes, Set<String> roleNames,
+      Map<String, Scope> access, Map<String, Field> fields) {
+    if (node == null) {
+      if (!fromFamily) {
+        problem(process, "a process without a family needs actions");
+      }
+      return;
+    }
+    if (!(node instanceof MappingNode map) || map.getValue().isEmpty()) {
+      problem(node, "actions is a mapping from an action name to what it does");
+      return;
+    }
+    for (NodeTuple tuple : map.getValue()) {
+      Node keyNode = tuple.getKeyNode();
+      String name = scalar(keyNode);
+      if (!NAME.matcher(name).matches()) {
+        problem(keyNode, "action name must match [a-z][a-z0-9_]* and be at most 40 characters");
+        continue;
+      }
+      if (isNull(tuple.getValueNode())) {
+        if (actions.remove(name) == null) {
+          problem(keyNode, "there is no action " + name + " to remove");
+        }
+        continue;
+      }
+      if (!(tuple.getValueNode() instanceof MappingNode spec)) {
+        problem(tuple.getValueNode(),
+            "an action is a mapping with from and to, or null to remove it");
+        continue;
+      }
+      ActionDraft draft = actions.get(name);
+      boolean added = draft == null;
+      if (added) {
+        draft = new ActionDraft();
+        draft.label = ProcessFamily.WITHDRAW.equals(name) ? ProcessFamily.WITHDRAW_LABEL : name;
+      }
+      draft.node = keyNode;
+      if (readAction(name, spec, draft, added, roleNames, access, fields)) {
+        actions.put(name, draft);
+      }
+    }
+  }
+
+  private boolean readAction(String name, MappingNode spec, ActionDraft draft, boolean added,
+      Set<String> roleNames, Map<String, Scope> access, Map<String, Field> fields) {
+    int before = problems.size();
+    boolean withdraw = ProcessFamily.WITHDRAW.equals(name);
+    Map<String, Node> parts = mapping(spec, ProcessSyntax.ACTION);
+    if (parts.get("label") != null) {
+      draft.label = scalar(parts.get("label"));
+    }
+    if (parts.get("from") != null) {
+      draft.fromNode = parts.get("from");
+      draft.from = readNames(draft.fromNode, "from");
+    }
+    if (withdraw) {
+      if (parts.get("to") != null || parts.get("by") != null || parts.get("role") != null) {
+        problem(spec,
+            "withdraw is always taken by the owner and ends in " + ProcessFamily.WITHDRAWN_STATE);
+      }
+      draft.by = Actor.OWNER;
+      draft.to = ProcessFamily.WITHDRAWN_STATE;
+    } else {
+      if (parts.get("to") != null) {
+        draft.toNode = parts.get("to");
+        draft.to = scalar(draft.toNode);
+      }
+      if (parts.get("by") != null) {
+        String by = scalar(parts.get("by"));
+        if ("handler".equals(by)) {
+          draft.by = Actor.HANDLER;
+        } else if ("owner".equals(by)) {
+          draft.by = Actor.OWNER;
+        } else {
+          problem(parts.get("by"), "by is handler or owner");
+        }
+      }
+      if (parts.get("role") != null) {
+        if (draft.by != Actor.HANDLER) {
+          problem(parts.get("role"), "role only applies to an action of the handler");
+        } else {
+          List<String> roles = readRoles(spec, parts.get("role"), "role", "role of action " + name,
+              roleNames, access);
+          draft.roles = roles == null ? List.of() : roles;
+        }
+      }
+    }
+    if (parts.get("needs_note") != null) {
+      draft.needsNote = flag(parts.get("needs_note"), "needs_note");
+    }
+    if (parts.get("require") != null) {
+      draft.require = readRequire(parts.get("require"), fields);
+    }
+    if (added && (draft.from.isEmpty() || (!withdraw && draft.to == null))) {
+      problem(spec, "action " + name + " needs " + (withdraw ? "from" : "from and to"));
+    }
+    return problems.size() == before;
+  }
+
+  private List<String> readNames(Node node, String key) {
+    List<Node> items = node instanceof SequenceNode sequence ? sequence.getValue() : List.of(node);
+    List<String> names = new ArrayList<>();
+    for (Node item : items) {
+      String value = scalar(item);
+      if (value.isBlank() || value.contains(",")) {
+        problem(item, key + " is a state name or a list of state names");
+      } else if (!names.contains(value)) {
+        names.add(value);
+      }
+    }
+    if (names.isEmpty()) {
+      problem(node, key + " needs at least one state");
+    }
+    return names;
+  }
+
+  private List<String> readRequire(Node node, Map<String, Field> fields) {
+    List<Node> items = node instanceof SequenceNode sequence ? sequence.getValue() : List.of(node);
+    List<String> names = new ArrayList<>();
+    for (Node item : items) {
+      String value = scalar(item);
+      Field field = fields.get(value);
+      if (field == null || field.type() == FieldType.FILE) {
+        problem(item,
+            "require must name fields of this entity that are not files, fields: "
+                + fields.values().stream().filter(f -> f.type() != FieldType.FILE).map(Field::name)
+                    .collect(java.util.stream.Collectors.joining(", ")));
+      } else if (!names.contains(value)) {
+        names.add(value);
+      }
+    }
+    return names;
+  }
+
+  // The rules that make a set of states and actions a process a record can run through.
+  private void checkDefinition(MappingNode process, Node initialNode, String initial,
+      Map<String, State> states, Map<String, ActionDraft> actions, Map<String, Node> nodes) {
+    int before = problems.size();
+    if (states.isEmpty()) {
+      problem(process, "a process needs at least one state");
+      return;
+    }
+    State start = states.get(initial);
+    if (start == null) {
+      problem(initialNode == null ? process : initialNode,
+          "initial must be one of the states: " + String.join(", ", states.keySet()));
+    } else if (start.terminal()) {
+      problem(initialNode == null ? process : initialNode, "the initial state cannot be final");
+    }
+    if (states.values().stream().noneMatch(State::terminal)) {
+      problem(process, "a process needs at least one final state, with terminal: true");
+    }
+    Set<String> leaving = new HashSet<>();
+    for (Map.Entry<String, ActionDraft> entry : actions.entrySet()) {
+      ActionDraft draft = entry.getValue();
+      Node at = draft.node == null ? process : draft.node;
+      for (String from : draft.from) {
+        State state = states.get(from);
+        if (state == null) {
+          problem(draft.fromNode == null ? at : draft.fromNode,
+              "action " + entry.getKey() + " leaves " + from + ", which is not a state, states: "
+                  + String.join(", ", states.keySet()));
+        } else if (state.terminal()) {
+          problem(draft.fromNode == null ? at : draft.fromNode,
+              "action " + entry.getKey() + " leaves the final state " + from);
+        } else if (!ProcessFamily.WITHDRAW.equals(entry.getKey())) {
+          leaving.add(from);
+        }
+      }
+      if (!ProcessFamily.WITHDRAW.equals(entry.getKey()) && !states.containsKey(draft.to)) {
+        problem(draft.toNode == null ? at : draft.toNode, "action " + entry.getKey() + " ends in "
+            + draft.to + ", which is not a state, states: " + String.join(", ", states.keySet()));
+      }
+      if (draft.by == Actor.OWNER && !draft.roles.isEmpty()) {
+        problem(at, "action " + entry.getKey() + " is taken by the owner, so it takes no role");
+      }
+    }
+    if (start == null || problems.size() > before) {
+      return;
+    }
+    for (State state : states.values()) {
+      if (!state.terminal() && !leaving.contains(state.name())) {
+        problem(nodes.getOrDefault("state:" + state.name(), process),
+            "state " + state.name() + " has no action leaving it, so a record would stay there");
+      }
+    }
+    Set<String> reached = new HashSet<>(Set.of(initial));
+    boolean grown = true;
+    while (grown) {
+      grown = false;
+      for (Map.Entry<String, ActionDraft> entry : actions.entrySet()) {
+        ActionDraft draft = entry.getValue();
+        if (!ProcessFamily.WITHDRAW.equals(entry.getKey())
+            && draft.from.stream().anyMatch(reached::contains) && reached.add(draft.to)) {
+          grown = true;
+        }
+      }
+    }
+    for (State state : states.values()) {
+      if (!reached.contains(state.name())) {
+        problem(nodes.getOrDefault("state:" + state.name(), process),
+            "state " + state.name() + " can never be reached from " + initial);
+      }
+    }
+  }
+
+  private static boolean isNull(Node node) {
+    return node instanceof ScalarNode scalar && Tag.NULL.equals(scalar.getTag());
   }
 
   private Booking readBooking(MappingNode process, Node node, String family,
@@ -579,7 +956,7 @@ public final class ModelParser {
     for (NodeTuple tuple : states.getValue()) {
       String state = scalar(tuple.getKeyNode());
       if (!family.isTerminal(state)) {
-        problem(tuple.getKeyNode(), state + " is not a final state of the family " + family.name());
+        problem(tuple.getKeyNode(), state + " is not a final state of the process");
         continue;
       }
       if (!(tuple.getValueNode() instanceof SequenceNode list)) {
@@ -642,18 +1019,48 @@ public final class ModelParser {
     return duration(node, "deadline", "72h");
   }
 
-  // How long a resolved record waits for its owner; only the families that have such a wait take
-  // it.
-  private Duration autoClose(Node node, ProcessFamily family) {
+  // How long a record waits for its owner before the system takes an action for them: a time
+  // alone, for a family that has such an action, or a mapping with the time and the action.
+  private AutoClose readAutoClose(Node node, String family, ProcessFamily definition) {
     if (node == null) {
-      return null;
+      return new AutoClose(null, null);
     }
-    if (!family.supportsAutoClose()) {
-      problem(node, "auto_close only applies to the work_item family");
-      return null;
+    if (node instanceof MappingNode map) {
+      Map<String, Node> keys = mapping(map, ProcessSyntax.AUTO_CLOSE);
+      Duration after =
+          keys.get("after") == null ? null : duration(keys.get("after"), "after", "7d");
+      if (keys.get("after") == null) {
+        problem(map, "auto_close needs after, the time to wait");
+      }
+      String action = keys.get("action") == null ? null : scalar(keys.get("action"));
+      if (action == null) {
+        problem(map, "auto_close needs action, an action of the owner");
+        return new AutoClose(null, null);
+      }
+      return checkedAutoClose(after, action, keys.get("action"), definition);
     }
-    return duration(node, "auto_close", "7d");
+    Duration after = duration(node, "auto_close", "7d");
+    String action =
+        family == null ? null : ProcessFamily.defaultAutoCloseAction(family).orElse(null);
+    if (action == null) {
+      problem(node,
+          "auto_close needs an action here, as auto_close: {after: 7d, action: <action>}");
+      return new AutoClose(null, null);
+    }
+    return checkedAutoClose(after, action, node, definition);
   }
+
+  private AutoClose checkedAutoClose(Duration after, String action, Node node,
+      ProcessFamily definition) {
+    Action found = definition.action(action).orElse(null);
+    if (found == null || found.by() != Actor.OWNER || ProcessFamily.WITHDRAW.equals(action)) {
+      problem(node, "the action of auto_close must be an action of the owner other than withdraw");
+      return new AutoClose(null, null);
+    }
+    return new AutoClose(after, action);
+  }
+
+  private record AutoClose(Duration after, String action) {}
 
   private Duration duration(Node node, String key, String example) {
     if (node == null) {

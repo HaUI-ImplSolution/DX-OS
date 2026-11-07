@@ -75,7 +75,7 @@ export function ActionButtons({ model, entity }: Props) {
   const allowed = process.actions.filter((action) => {
     if (!action.from.includes(record.status)) return false;
     if (action.by === "OWNER") return record.created_by === me;
-    if (!entity.canHandle) return false;
+    if (!entity.canHandle || entity.handlerActions?.includes(action.name) === false) return false;
     if (!process.allowSelfDecision && record.created_by === me) return false;
     return !record.assignee || record.assignee === me;
   });

@@ -11,8 +11,10 @@ import HaUI.ImplSolution.dxos.model.Model.Entity;
 import HaUI.ImplSolution.dxos.model.ProcessFamily;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -21,9 +23,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
-// Closes a work_item record that has been resolved for longer than the auto_close time of its
-// entity without the owner confirming or opening it again. The record takes the action its owner
-// would take, so the process, the final status and the completion actions run as for a
+// Closes a record that has waited for its owner for longer than the auto_close time of its entity
+// without the owner acting on it. The record takes the auto_close action its owner would take, so
+// the process, the final status and the completion actions run as for a
 // confirmation, with "system" as the one who decided. An "auto_closed" line goes to the history
 // chain and the outbox in the same transaction.
 @Component
@@ -69,16 +71,18 @@ public class AutoCloseSweep {
   }
 
   private void close(Model model, Entity entity) {
+    ProcessFamily.Action action =
+        entity.process().definition().action(entity.process().autoCloseAction()).orElseThrow();
     String table = Sql.table(model, entity);
     double seconds = entity.process().autoClose().toSeconds();
-    List<Long> due = jdbc.queryForList(
-        "SELECT t.id FROM " + table + " t WHERE " + dueCondition() + " ORDER BY t.id LIMIT "
-            + BATCH,
-        Long.class, ProcessFamily.AUTO_CLOSE_STATE, model.name(), entity.name(),
-        ProcessFamily.AUTO_CLOSE_FROM_ACTION, seconds);
+    List<Long> due =
+        jdbc.queryForList(
+            "SELECT t.id FROM " + table + " t WHERE " + dueCondition(action)
+                + " ORDER BY t.id LIMIT " + BATCH,
+            Long.class, params(model, entity, action, seconds));
     for (long id : due) {
       try {
-        transaction.executeWithoutResult(status -> closeOne(model, entity, id, seconds));
+        transaction.executeWithoutResult(status -> closeOne(model, entity, action, id, seconds));
       } catch (RuntimeException e) {
         log.warn("Auto close of {}.{} record {} failed: {}", model.name(), entity.name(), id,
             e.getMessage());
@@ -86,28 +90,40 @@ public class AutoCloseSweep {
     }
   }
 
-  // The record is resolved, and its last "resolve" line is older than the auto_close time. The
-  // parameters are the resolved state, the model, the entity, the resolve action and the seconds.
-  private static String dueCondition() {
-    return "t.status = ? AND (SELECT max(e.at) FROM engine.record_event e WHERE e.model = ? "
-        + "AND e.entity = ? AND e.record_id = t.id AND e.action = ?) "
-        + "< now() - make_interval(secs => ?)";
+  // The record waits in a state the action leaves, and it entered that state longer ago than the
+  // auto_close time. Entering is the last history line that changed the status to the current one.
+  private static String dueCondition(ProcessFamily.Action action) {
+    String states = action.from().stream().map(state -> "?").collect(Collectors.joining(", "));
+    return "t.status IN (" + states + ") AND (SELECT max(e.at) FROM engine.record_event e "
+        + "WHERE e.model = ? AND e.entity = ? AND e.record_id = t.id AND e.to_status = t.status "
+        + "AND e.from_status IS DISTINCT FROM e.to_status) < now() - make_interval(secs => ?)";
   }
 
-  // Locks the row and checks it again, so a record the owner has just confirmed or opened again
-  // is left alone.
-  private void closeOne(Model model, Entity entity, long id, double seconds) {
-    List<Long> locked = jdbc.queryForList(
-        "SELECT t.id FROM " + Sql.table(model, entity) + " t WHERE t.id = ? AND " + dueCondition()
-            + " FOR UPDATE OF t",
-        Long.class, id, ProcessFamily.AUTO_CLOSE_STATE, model.name(), entity.name(),
-        ProcessFamily.AUTO_CLOSE_FROM_ACTION, seconds);
+  private static Object[] params(Model model, Entity entity, ProcessFamily.Action action,
+      double seconds) {
+    List<Object> params = new ArrayList<>(action.from());
+    params.add(model.name());
+    params.add(entity.name());
+    params.add(seconds);
+    return params.toArray();
+  }
+
+  // Locks the row and checks it again, so a record the owner has just taken the action on or sent
+  // back is left alone.
+  private void closeOne(Model model, Entity entity, ProcessFamily.Action action, long id,
+      double seconds) {
+    List<Object> args = new ArrayList<>();
+    args.add(id);
+    args.addAll(List.of(params(model, entity, action, seconds)));
+    List<Long> locked =
+        jdbc.queryForList("SELECT t.id FROM " + Sql.table(model, entity) + " t WHERE t.id = ? AND "
+            + dueCondition(action) + " FOR UPDATE OF t", Long.class, args.toArray());
     if (locked.isEmpty()) {
       return;
     }
-    ProcessFamily family = entity.process().definition();
-    process.act(model, entity, id, family.action(ProcessFamily.AUTO_CLOSE_ACTION).orElseThrow(),
-        SYSTEM);
+    String from = jdbc.queryForObject(
+        "SELECT status FROM " + Sql.table(model, entity) + " WHERE id = ?", String.class, id);
+    process.act(model, entity, id, action, SYSTEM);
     String to = jdbc.queryForObject(
         "SELECT status FROM " + Sql.table(model, entity) + " WHERE id = ?", String.class, id);
     chain.lock();
@@ -115,11 +131,11 @@ public class AutoCloseSweep {
         "INSERT INTO engine.record_event (model, entity, record_id, action, actor, actor_name, "
             + "from_status, to_status) VALUES (?, ?, ?, 'auto_closed', 'system', 'System', ?, ?) "
             + "RETURNING id, at",
-        model.name(), entity.name(), id, ProcessFamily.AUTO_CLOSE_STATE, to);
+        model.name(), entity.name(), id, from, to);
     long eventId = ((Number) row.get("id")).longValue();
     String hash = chain.link(eventId);
-    publisher.publish(eventId, model.name(), entity.name(), id, "auto_closed",
-        ProcessFamily.AUTO_CLOSE_STATE, to, SYSTEM, "System", instant(row.get("at")), hash);
+    publisher.publish(eventId, model.name(), entity.name(), id, "auto_closed", from, to, SYSTEM,
+        "System", instant(row.get("at")), hash);
   }
 
   private static Instant instant(Object at) {

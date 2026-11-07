@@ -20,6 +20,8 @@ import {
   SimpleForm,
   TextField,
   TextInput,
+  SaveButton,
+  Toolbar,
   TopToolbar,
   required,
   useRecordContext,
@@ -211,6 +213,13 @@ function ShowBody({ model, entity, catalog }: { model: string; entity: EntityMet
 
 // Inputs fill the card, so a long text or a list of choices is as wide as the form.
 const FORM_SX = { "& .MuiFormControl-root, & .RaInput-input": { width: "100%" } };
+// A record with a process is withdrawn by its owner, never deleted.
+const SAVE_ONLY = (
+  <Toolbar>
+    <SaveButton />
+  </Toolbar>
+);
+
 const CARD_SX = { "& .RaCreate-card, & .RaEdit-card": { maxWidth: 760 } };
 
 // The screens of one entity, built from its metadata.
@@ -289,7 +298,9 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
 
   const EntityEdit = () => (
     <Edit mutationMode="pessimistic" redirect="show" sx={CARD_SX}>
-      <SimpleForm sx={FORM_SX}>{entity.fields.map((field) => inputField(field, catalog))}</SimpleForm>
+      <SimpleForm sx={FORM_SX} toolbar={entity.hasProcess ? SAVE_ONLY : undefined}>
+        {entity.fields.map((field) => inputField(field, catalog))}
+      </SimpleForm>
     </Edit>
   );
 

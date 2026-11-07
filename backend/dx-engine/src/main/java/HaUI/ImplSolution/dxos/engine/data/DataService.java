@@ -31,6 +31,7 @@ import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -109,8 +110,8 @@ public class DataService {
   }
 
   public boolean canHandle(Model model, Entity entity) {
-    return entity.process() != null
-        && user.clientRoles(ModelClient.of(model.name())).contains(entity.process().handler());
+    return entity.process() != null && !Collections
+        .disjoint(user.clientRoles(ModelClient.of(model.name())), entity.process().allRoles());
   }
 
   // The handler role assigns records, and so does a role that coordinates by writing to all rows
@@ -393,7 +394,7 @@ public class DataService {
       String note) {
     Action action = processOf(entity).definition().action(actionName)
         .orElseThrow(() -> new ResourceNotFoundException("Action " + actionName + " not found"));
-    Map<String, Object> record = lock(model, entity, access(model, entity), id);
+    Map<String, Object> record = lock(model, entity, access(model, entity), id, action.require());
     String me = user.currentUserId();
     rules.checkAction(entity, action, record, me, user.clientRoles(ModelClient.of(model.name())),
         note);
@@ -451,16 +452,24 @@ public class DataService {
 
   private List<Person> handlers(Model model, Entity entity, Map<String, Object> record) {
     Model.Process definition = entity.process();
-    List<Person> people =
-        keycloak.enabledUsersWithClientRole(ModelClient.of(model.name()), definition.handler());
-    if (entity.access().get(definition.handler()) == Scope.UNIT) {
-      Object unit = record.get(entity.unitField().orElseThrow().name());
-      Set<String> members = unit == null ? Set.of()
-          : keycloak.enabledGroupMembers(unit.toString()).stream().map(Person::id)
-              .collect(Collectors.toSet());
-      people = people.stream().filter(person -> members.contains(person.id())).toList();
+    Set<String> roles = definition.rolesIn((String) record.get("status"));
+    if (roles.isEmpty()) {
+      roles = Set.copyOf(definition.handlers());
     }
-    return people.stream().filter(
+    Map<String, Person> people = new LinkedHashMap<>();
+    for (String role : roles) {
+      List<Person> holders =
+          keycloak.enabledUsersWithClientRole(ModelClient.of(model.name()), role);
+      if (entity.access().get(role) == Scope.UNIT) {
+        Object unit = record.get(entity.unitField().orElseThrow().name());
+        Set<String> members = unit == null ? Set.of()
+            : keycloak.enabledGroupMembers(unit.toString()).stream().map(Person::id)
+                .collect(Collectors.toSet());
+        holders = holders.stream().filter(person -> members.contains(person.id())).toList();
+      }
+      holders.forEach(person -> people.putIfAbsent(person.id(), person));
+    }
+    return people.values().stream().filter(
         person -> definition.allowSelfDecision() || !person.id().equals(record.get("created_by")))
         .toList();
   }
@@ -514,14 +523,23 @@ public class DataService {
       values.addValue("ownerStates", owner);
       any.add("(status IN (:ownerStates) AND created_by = :me AND " + reach + ")");
     }
-    Set<String> handler = fromStates(entity, Actor.HANDLER);
-    if (canHandle(model, entity) && !handler.isEmpty()) {
+    Set<String> handler = handlerStates(model, entity);
+    if (!handler.isEmpty()) {
       values.addValue("handlerStates", handler);
       String notMine = entity.process().allowSelfDecision() ? "" : " AND created_by <> :me";
       any.add("(status IN (:handlerStates) AND (assignee IS NULL OR assignee = :me)" + notMine
           + " AND " + reach + ")");
     }
     return any.isEmpty() ? null : "(" + String.join(" OR ", any) + ")";
+  }
+
+  // The states in which a record waits for one of the roles the caller holds.
+  private Set<String> handlerStates(Model model, Entity entity) {
+    Set<String> mine = user.clientRoles(ModelClient.of(model.name()));
+    return entity.process().definition().actions().stream()
+        .filter(action -> action.by() == Actor.HANDLER
+            && !Collections.disjoint(mine, entity.process().rolesFor(action)))
+        .flatMap(action -> action.from().stream()).collect(Collectors.toSet());
   }
 
   private static Set<String> fromStates(Entity entity, Actor by) {
@@ -546,11 +564,18 @@ public class DataService {
 
   // Locks a row the caller can read until the transaction ends.
   private Map<String, Object> lock(Model model, Entity entity, Access access, long id) {
+    return lock(model, entity, access, id, List.of());
+  }
+
+  // Locks the row and reads what the rules judge from, with the fields an action requires.
+  private Map<String, Object> lock(Model model, Entity entity, Access access, long id,
+      List<String> required) {
     requireRead(access);
     MapSqlParameterSource values = new MapSqlParameterSource("id", id);
     String scope = scope(model, entity, access.reads(), values);
-    List<Map<String, Object>> rows = jdbc.queryForList("SELECT status, created_by, assignee FROM "
-        + table(model, entity) + " WHERE id = :id AND " + scope + " FOR UPDATE", values);
+    String extra = required.stream().map(name -> ", " + ident(name)).collect(Collectors.joining());
+    List<Map<String, Object>> rows = jdbc.queryForList("SELECT status, created_by, assignee" + extra
+        + " FROM " + table(model, entity) + " WHERE id = :id AND " + scope + " FOR UPDATE", values);
     if (rows.isEmpty()) {
       throw notFound(entity, id);
     }

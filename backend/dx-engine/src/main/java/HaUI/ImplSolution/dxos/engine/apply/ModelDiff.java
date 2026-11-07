@@ -6,6 +6,7 @@ import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
 import HaUI.ImplSolution.dxos.model.Model.Field;
 import HaUI.ImplSolution.dxos.model.Model.Process;
+import HaUI.ImplSolution.dxos.model.ProcessFamily;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 // What changes between the running version of a model and a new one, and how risky it is. The
 // names of fields only say what happened through renamed_from: a dropped field and a new one look
@@ -210,13 +212,16 @@ public final class ModelDiff {
           entity.name(), null, "Only for an entity without rows"));
       return;
     }
-    if (!before.family().equals(after.family())) {
+    if (before.family() != null && after.family() != null
+        && !before.family().equals(after.family())) {
       rejections.add("Entity " + entity.name() + " changes its process family, which is not"
           + " supported yet");
     }
-    if (!before.handler().equals(after.handler())) {
-      changes.add(new Change(Level.SAFE, "CHANGE_HANDLER", entity.name(), null, after.handler()));
+    if (!before.handlers().equals(after.handlers())) {
+      changes.add(new Change(Level.SAFE, "CHANGE_HANDLER", entity.name(), null,
+          String.join(", ", after.handlers())));
     }
+    compareFlow(entity, before, after);
     if (before.allowSelfDecision() != after.allowSelfDecision()) {
       changes.add(new Change(Level.SAFE, "CHANGE_SELF_DECISION", entity.name(), null,
           String.valueOf(after.allowSelfDecision())));
@@ -232,9 +237,59 @@ public final class ModelDiff {
       changes.add(new Change(Level.SAFE, "CHANGE_DEADLINE", entity.name(), null,
           after.deadline() == null ? "none" : after.deadline().toString()));
     }
-    if (!Objects.equals(before.autoClose(), after.autoClose())) {
+    if (!Objects.equals(before.autoClose(), after.autoClose())
+        || !Objects.equals(before.autoCloseAction(), after.autoCloseAction())) {
       changes.add(new Change(Level.SAFE, "CHANGE_AUTO_CLOSE", entity.name(), null,
           after.autoClose() == null ? "none" : after.autoClose().toString()));
+    }
+  }
+
+  // The states and actions of a process. A change of the steps cannot reach records that are
+  // still moving through it, so it is refused while there are any; labels, the roles of an action
+  // and the fields it requires apply at once. A record that is finished stays finished, so a final
+  // state that stops being final cannot hold rows: their process has ended and no action could
+  // move them again.
+  private void compareFlow(Entity entity, Process before, Process after) {
+    ProcessFamily was = before.definition();
+    ProcessFamily now = after.definition();
+    if (!was.sameFlowAs(now)) {
+      changes
+          .add(new Change(Level.SAFE, "CHANGE_FLOW", entity.name(), null, flowSummary(was, now)));
+      Set<String> reopened = was.states().stream().filter(ProcessFamily.State::terminal)
+          .map(ProcessFamily.State::name).collect(Collectors.toCollection(LinkedHashSet::new));
+      now.states().stream().filter(ProcessFamily.State::terminal)
+          .forEach(state -> reopened.remove(state.name()));
+      checks.add(new RowCheck(entity.name(), "status", "status", Rule.OPTIONS, now.states().stream()
+          .map(ProcessFamily.State::name).filter(name -> !reopened.contains(name)).toList()));
+    } else if (!was.equals(now)) {
+      changes.add(new Change(Level.SAFE, "CHANGE_ACTIONS", entity.name(), null, null));
+    }
+  }
+
+  private static String flowSummary(ProcessFamily was, ProcessFamily now) {
+    List<String> parts = new ArrayList<>();
+    Set<String> oldStates = was.states().stream().map(ProcessFamily.State::name)
+        .collect(Collectors.toCollection(LinkedHashSet::new));
+    Set<String> newStates = now.states().stream().map(ProcessFamily.State::name)
+        .collect(Collectors.toCollection(LinkedHashSet::new));
+    Set<String> oldActions = was.actions().stream().map(ProcessFamily.Action::name)
+        .collect(Collectors.toCollection(LinkedHashSet::new));
+    Set<String> newActions = now.actions().stream().map(ProcessFamily.Action::name)
+        .collect(Collectors.toCollection(LinkedHashSet::new));
+    addDelta(parts, "states", oldStates, newStates);
+    addDelta(parts, "actions", oldActions, newActions);
+    return parts.isEmpty() ? "steps of existing actions" : String.join("; ", parts);
+  }
+
+  private static void addDelta(List<String> parts, String what, Set<String> before,
+      Set<String> after) {
+    List<String> added = after.stream().filter(name -> !before.contains(name)).toList();
+    List<String> removed = before.stream().filter(name -> !after.contains(name)).toList();
+    if (!added.isEmpty()) {
+      parts.add(what + " added: " + String.join(", ", added));
+    }
+    if (!removed.isEmpty()) {
+      parts.add(what + " removed: " + String.join(", ", removed));
     }
   }
 }

@@ -9,6 +9,7 @@ import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import { Title } from "react-admin";
 import PageHeader from "../shell/PageHeader";
 import { getSchema, listTemplates, type Template } from "./api";
+import { describeSchema } from "./formGuide";
 import EditorTab from "./EditorTab";
 import ModelsTab from "./ModelsTab";
 import { useModelSchema } from "./monacoSetup";
@@ -42,8 +43,9 @@ export default function ConsolePage() {
   useEffect(() => {
     Promise.all([getSchema(), listTemplates()]).then(
       ([loadedSchema, loadedTemplates]) => {
-        useModelSchema(loadedSchema);
-        setSchema(loadedSchema);
+        const described = describeSchema(loadedSchema);
+        useModelSchema(described);
+        setSchema(described);
         setTemplates(loadedTemplates);
       },
       (e: unknown) => setError(e instanceof Error ? e.message : "Không đọc được dữ liệu của bảng điều khiển"),

@@ -28,9 +28,9 @@ public class ProcessDiagramService {
   // Seconds are null when the file sets no deadline or auto_close; awaiting lists the states where
   // the deadline runs.
   public record ProcessView(String entity, String label, String family, String initial,
-      String handler, boolean allowSelfDecision, Long deadlineSeconds, Long autoCloseSeconds,
-      Booking booking, List<StateView> states, List<ProcessFamily.Action> actions,
-      List<String> awaiting) {}
+      List<String> handlers, boolean allowSelfDecision, Long deadlineSeconds, Long autoCloseSeconds,
+      String autoCloseAction, Booking booking, List<StateView> states,
+      List<ProcessFamily.Action> actions, List<String> awaiting) {}
 
   // valid is false when the file has problems; processes is then empty.
   public record Diagram(boolean valid, List<Problem> errors, List<ProcessView> processes) {}
@@ -62,8 +62,9 @@ public class ProcessDiagramService {
     List<String> awaiting = family.states().stream().map(ProcessFamily.State::name)
         .filter(family::awaitsHandler).toList();
     return new ProcessView(entity.name(), entity.label(), family.name(), family.initial(),
-        process.handler(), process.allowSelfDecision(), seconds(process.deadline()),
-        seconds(process.autoClose()), process.booking(), states, family.actions(), awaiting);
+        process.handlers(), process.allowSelfDecision(), seconds(process.deadline()),
+        seconds(process.autoClose()), process.autoCloseAction(), process.booking(), states,
+        family.actions(), awaiting);
   }
 
   private static Long seconds(Duration duration) {

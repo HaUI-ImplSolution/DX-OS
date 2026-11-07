@@ -79,6 +79,23 @@ export interface FamilyAction {
   to: string;
   by: "HANDLER" | "OWNER";
   needsNote: boolean;
+  // The roles this action is limited to (empty: the handlers of the process) and the fields it requires.
+  roles: string[];
+  require: string[];
+}
+
+export interface FamilyParam {
+  name: string;
+  required: boolean;
+  description: string;
+}
+
+export interface Family {
+  name: string;
+  initial: string;
+  states: FamilyState[];
+  actions: FamilyAction[];
+  params: FamilyParam[];
 }
 
 export interface Completion {
@@ -99,10 +116,11 @@ export interface ProcessView {
   label: string;
   family: string;
   initial: string;
-  handler: string;
+  handlers: string[];
   allowSelfDecision: boolean;
   deadlineSeconds: number | null;
   autoCloseSeconds: number | null;
+  autoCloseAction: string | null;
   booking: { resource: string; starts: string; ends: string; capacity: number } | null;
   states: DiagramState[];
   actions: FamilyAction[];
@@ -167,6 +185,7 @@ const query = (params: Record<string, string | number | undefined>) => {
 
 export const listApplied = () => request<AppliedModel[]>("/models");
 export const getSchema = () => request<Record<string, unknown>>("/models/schema");
+export const listFamilies = () => request<Family[]>("/models/families");
 export const listTemplates = () => request<Template[]>("/models/templates");
 export const listVersions = (model: string) =>
   request<AppliedVersion[]>(`/models/${model}/versions`);

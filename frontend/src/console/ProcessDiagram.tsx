@@ -258,12 +258,18 @@ export default function ProcessDiagram({
 
 // What the file says about the process that the boxes and arrows do not show.
 function notes(process: ProcessView): string {
-  const lines = [`Người xử lý: ${process.handler}${process.allowSelfDecision ? ", người nộp cũng được xử lý hồ sơ của mình" : ""}.`];
+  const lines = [`Người xử lý: ${process.handlers.join(", ")}${process.allowSelfDecision ? ", người nộp cũng được xử lý hồ sơ của mình" : ""}.`];
   if (process.booking) {
     const { resource, starts, ends, capacity } = process.booking;
     lines.push(`Đặt chỗ: tài nguyên ${resource}, từ ${starts} đến ${ends}, sức chứa ${capacity}.`);
   }
-  lines.push("Người nộp có thể rút lại ở mọi trạng thái chưa kết thúc.");
+  const withdraw = process.actions.find((action) => action.name === "withdraw");
+  if (withdraw) {
+    const labels = withdraw.from.map((name) => process.states.find((state) => state.name === name)?.label ?? name);
+    lines.push(`Người nộp có thể rút lại hồ sơ ở: ${labels.join(", ")}.`);
+  } else {
+    lines.push("Người nộp không rút lại được hồ sơ.");
+  }
   return lines.join(" ");
 }
 

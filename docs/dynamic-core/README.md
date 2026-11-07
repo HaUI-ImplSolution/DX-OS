@@ -702,10 +702,8 @@ Số sao và giấy phép lấy từ GitHub API ngày 2026-11-02, trừ khi có 
 | Luồng công việc        | [Flowable](https://github.com/flowable/flowable-engine)                     | Apache-2.0                     | 9.632              | Có BPMN, CMMN, DMN; bản 8.0.0 ngày 2026-02-27                                      |
 | Giao diện                | [react-admin](https://github.com/marmelab/react-admin)                      | MIT                            | 26.979             | Có sẵn field và input cho các kiểu trường của mô hình; chỉ dùng phần MIT |
 | Giao diện, dự phòng    | [Refine](https://github.com/refinedev/refine)                               | MIT                            | 35.977             | Dùng nếu react-admin không dựng được theo metadata đổi lúc chạy            |
-| Dựng form | [react-jsonschema-form](https://github.com/rjsf-team/react-jsonschema-form) | Apache-2.0 | 15.932 | Dựng form từ JSON Schema cho bảng điều khiển |
 | Soạn mô hình | [Monaco Editor](https://github.com/microsoft/monaco-editor) | MIT | 46.944 | Trình soạn mã, có chế độ so sánh dùng cho màn hình kế hoạch |
 | Soạn mô hình | [monaco-yaml](https://github.com/remcohaszing/monaco-yaml) | MIT | 333 | Gợi ý và báo lỗi YAML theo JSON Schema |
-| Kiểm tra schema | [Ajv](https://github.com/ajv-validator/ajv) | MIT | 14.868 | Kiểm tra mô hình ngay trên trình duyệt |
 | Sơ đồ quy trình | [React Flow](https://github.com/xyflow/xyflow) | MIT | 38.874 | Vẽ quy trình sinh ra, chỉ để xem |
 | Đổi lược đồ             | [pgschema](https://pkg.go.dev/github.com/pgplex/pgschema@v1.13.4)            | Apache-2.0                     | 1.077              | So sánh và đổi lược đồ kiểu Terraform; lõi lo đổi tên và chặn mất dữ liệu |
 

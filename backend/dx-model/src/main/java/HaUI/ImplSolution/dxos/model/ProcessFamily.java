@@ -6,8 +6,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-// A shape of process a model can choose: the states of a record, the actions between them and
-// who may take them. The steps themselves are a BPMN file named after the family.
+// The states of a record, the actions between them and who may take them. A family is a ready made
+// shape a model can start from; a model can also declare its own, and the process of an entity
+// carries the one it ends up with. The steps of a family are a BPMN file named after it.
 public record ProcessFamily(String name,String initial,List<State>states,List<Action>actions){
 
 // Who may take an action: the role that handles the record, or the user who submitted it.
@@ -20,23 +21,26 @@ public enum Actor {
   public record State(String name, String label, boolean terminal) {}
 
   // An action moves a record out of one of the states in "from" into the state "to". A handler
-  // action needs a note when the owner must learn why.
+  // action needs a note when the owner must learn why. Roles, when not empty, are the roles that
+  // may take a handler action instead of the handler roles of the process. Require names the
+  // fields that must hold a value before the action can be taken.
   public record Action(String name, String label, List<String> from, String to, Actor by,
-      boolean needsNote) {
+      boolean needsNote, List<String> roles, List<String> require) {
+
+  public Action(String name, String label, List<String> from, String to, Actor by,
+        boolean needsNote) {
+      this(name, label, from, to, by, needsNote, List.of(), List.of());
+    }
 
   public boolean allowedIn(String state) {
     return from.contains(state);
   }}
 
-  // A work_item record that stays resolved is closed with the action its owner would take.
-  public static final String AUTO_CLOSE_STATE = "resolved";
-  public static final String AUTO_CLOSE_ACTION = "confirm";
-  public static final String AUTO_CLOSE_FROM_ACTION = "resolve";
-
   public static final String WITHDRAW = "withdraw";
   public static final String WITHDRAWN_STATE = "withdrawn";
 
-  private static final State WITHDRAWN = new State(WITHDRAWN_STATE, "Đã rút lại", true);
+  public static final State WITHDRAWN = new State(WITHDRAWN_STATE, "Đã rút lại", true);
+  public static final String WITHDRAW_LABEL = "Rút lại";
 
   private static final Map<String, ProcessFamily> ALL = Map.of("approval",
       new ProcessFamily("approval", "submitted",
@@ -52,8 +56,8 @@ public enum Actor {
                   Actor.HANDLER, true),
               new Action("resubmit", "Nộp lại", List.of("returned"), "submitted", Actor.OWNER,
                   false),
-              new Action(WITHDRAW, "Rút lại", List.of("submitted", "returned"), WITHDRAWN_STATE,
-                  Actor.OWNER, false))),
+              new Action(WITHDRAW, WITHDRAW_LABEL, List.of("submitted", "returned"),
+                  WITHDRAWN_STATE, Actor.OWNER, false))),
       "work_item",
       new ProcessFamily("work_item", "submitted",
           List.of(new State("submitted", "Mới", false),
@@ -70,7 +74,7 @@ public enum Actor {
               new Action("confirm", "Xác nhận xong", List.of("resolved"), "closed", Actor.OWNER,
                   false),
               new Action("reopen", "Mở lại", List.of("resolved"), "in_progress", Actor.OWNER, true),
-              new Action(WITHDRAW, "Rút lại", List.of("submitted", "in_progress", "resolved"),
+              new Action(WITHDRAW, WITHDRAW_LABEL, List.of("submitted", "in_progress", "resolved"),
                   WITHDRAWN_STATE, Actor.OWNER, false))),
       "reservation",
       new ProcessFamily("reservation", "requested",
@@ -90,8 +94,16 @@ public enum Actor {
                   false),
               new Action("complete", "Hoàn tất", List.of("in_use"), "completed", Actor.HANDLER,
                   false),
-              new Action(WITHDRAW, "Rút lại", List.of("requested", "confirmed"), WITHDRAWN_STATE,
-                  Actor.OWNER, false))));
+              new Action(WITHDRAW, WITHDRAW_LABEL, List.of("requested", "confirmed"),
+                  WITHDRAWN_STATE, Actor.OWNER, false))));
+
+  // The action a work_item record that waits for its owner is closed with when auto_close is given
+  // as a time only. A family not listed has no such default.
+  private static final Map<String, String> AUTO_CLOSE_ACTION = Map.of("work_item", "confirm");
+
+  public static Optional<String> defaultAutoCloseAction(String familyName) {
+    return Optional.ofNullable(AUTO_CLOSE_ACTION.get(familyName));
+  }
 
   public static Optional<ProcessFamily> find(String name) {
     return Optional.ofNullable(ALL.get(name));
@@ -109,9 +121,24 @@ public enum Actor {
     return states.stream().anyMatch(state -> state.name().equals(stateName) && state.terminal());
   }
 
-  // Whether a record that waits for its owner can be closed by the system after a time.
-  public boolean supportsAutoClose() {
-    return "work_item".equals(name);
+  // Whether two definitions run the same steps. Labels, who may take an action and the fields it
+  // requires are checked outside the steps, and withdrawing ends the process from outside, so none
+  // of them change the steps.
+  public boolean sameFlowAs(ProcessFamily other) {
+    return initial.equals(other.initial) && flowStates().equals(other.flowStates())
+        && flowActions().equals(other.flowActions());
+  }
+
+  private List<String> flowStates() {
+    return states.stream().filter(state -> !WITHDRAWN_STATE.equals(state.name()))
+        .map(state -> state.name() + (state.terminal() ? "!" : "")).toList();
+  }
+
+  private List<String> flowActions() {
+    return actions
+        .stream().filter(action -> !WITHDRAW.equals(action.name())).map(action -> action.name()
+            + ":" + String.join(",", action.from()) + ">" + action.to() + ":" + action.by())
+        .toList();
   }
 
   // Whether a handler can act on a record in this state, which is when its deadline runs.

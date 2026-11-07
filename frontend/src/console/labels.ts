@@ -6,6 +6,7 @@ export const FAMILY_LABEL: Record<string, string> = {
   approval: "Chuỗi duyệt",
   work_item: "Công việc cần xử lý",
   reservation: "Chiếm dụng theo thời gian",
+  custom: "Tự khai báo",
   none: "Không có quy trình",
 };
 
@@ -29,6 +30,8 @@ export const CHANGE_KIND: Record<string, string> = {
   ADD_PROCESS: "Thêm quy trình",
   DROP_PROCESS: "Bỏ quy trình",
   CHANGE_HANDLER: "Đổi vai xử lý",
+  CHANGE_FLOW: "Đổi trạng thái hoặc hành động của quy trình",
+  CHANGE_ACTIONS: "Đổi nhãn, vai hoặc trường bắt buộc của hành động",
   CHANGE_SELF_DECISION: "Đổi quyền tự quyết định",
   CHANGE_COMPLETION: "Đổi hành động hoàn tất",
   CHANGE_BOOKING: "Đổi khối đặt chỗ",
@@ -53,6 +56,8 @@ export const STEP_KIND: Record<string, string> = {
   ENSURE_ROLE: "Tạo vai của mô hình trong Keycloak",
   DROP_FILES: "Xóa tệp đính kèm của thực thể",
   ENSURE_UNIT: "Tạo nhóm đơn vị trong Keycloak",
+  DEPLOY_PROCESS: "Nạp quy trình riêng của mô hình",
+  UNDEPLOY_PROCESS: "Gỡ quy trình riêng của mô hình",
   SAVE_VERSION: "Lưu phiên bản mô hình",
   RENAME_FIELD: "Đổi tên cột giữ dữ liệu",
   DROP_SCHEMA: "Xóa schema của mô hình",

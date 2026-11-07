@@ -4,7 +4,7 @@ import { translateData } from "./backendMessages";
 import { errorMessageFor, statusMessageFor } from "./errorMessages";
 import type { ApiResponse } from "./types";
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? "http://localhost:9080").replace(/\/$/, "");
+export const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? "http://localhost:9080").replace(/\/$/, "");
 const API_V1 = `${API_BASE}/api/v1`;
 
 export class ApiError extends Error {

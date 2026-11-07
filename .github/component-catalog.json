@@ -1,7 +1,7 @@
 {
   "images": {
     "eclipse-temurin": {"license": "GPL-2.0-with-classpath-exception", "use": "Base image of backend, monitor and sso", "source": "https://adoptium.net"},
-    "node": {"license": "MIT", "use": "Builds the web, not in the runtime image", "source": "https://github.com/nodejs/node"},
+    "node": {"license": "MIT", "use": "Builds the web and runs the optional personal assistant", "source": "https://github.com/nodejs/node"},
     "nginx": {"license": "BSD-2-Clause", "use": "Serves the web and the portal", "source": "https://nginx.org", "upstream": "nginx/nginx"},
     "alpine": {"license": "MIT", "use": "Runs setup scripts when the stack is built", "source": "https://alpinelinux.org"},
     "postgres": {"license": "PostgreSQL", "use": "Business data", "source": "https://www.postgresql.org", "upstream": "postgres/postgres"},

@@ -115,24 +115,33 @@ public class DataController {
           + " OWNER_ONLY, HANDLER_ONLY, ASSIGNED_TO_OTHER); 409 when the record is in another"
           + " state, with data.reason WRONG_STATE or RECORD_CLOSED. A terminal state"
           + " stores decided_by and decided_at. The owner can take the action withdraw from any"
-          + " state that is not final.")
+          + " state that is not final. Optional version and modelVersion reject a changed record"
+          + " or model with 409; a changed model has data.reason MODEL_VERSION_CHANGED.")
   public ApiResponse<Map<String, Object>> act(@PathVariable String model,
       @PathVariable String entity, @PathVariable long id, @PathVariable String action,
       @RequestBody(required = false) Map<String, String> body) {
     Model m = registry.require(model);
     String note = body == null ? null : body.get("note");
-    return ApiResponse.success(service.act(m, entity(m, entity), id, action, note));
+    RecordPreconditions conditions = RecordPreconditions.from(body);
+    registry.checkVersion(model, conditions.modelVersion());
+    return ApiResponse
+        .success(service.act(m, entity(m, entity), id, action, note, conditions.version()));
   }
 
   @PostMapping("/{id}/assign")
   @Operation(summary = "Assign a record to a user who can handle it",
       description = "The body is {\"assignee\": \"<user id>\"}, with null to release it. The"
           + " handler role and roles writing to all rows or to their units may assign. 400 when"
-          + " that user, the caller included, cannot handle the record.")
+          + " that user, the caller included, cannot handle the record. Optional version and"
+          + " modelVersion reject changed snapshots with 409; a changed model has data.reason"
+          + " MODEL_VERSION_CHANGED.")
   public ApiResponse<Map<String, Object>> assign(@PathVariable String model,
       @PathVariable String entity, @PathVariable long id, @RequestBody Map<String, String> body) {
     Model m = registry.require(model);
-    return ApiResponse.success(service.assign(m, entity(m, entity), id, body.get("assignee")));
+    RecordPreconditions conditions = RecordPreconditions.from(body);
+    registry.checkVersion(model, conditions.modelVersion());
+    return ApiResponse.success(
+        service.assign(m, entity(m, entity), id, body.get("assignee"), conditions.version()));
   }
 
   @GetMapping("/{id}/handlers")

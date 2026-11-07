@@ -103,6 +103,10 @@ else
   set_env DXOS_IMAGE_PREFIX "$IMAGE_PREFIX"
 fi
 set_env DXOS_IMAGE_TAG "$TAG"
+assistant_image="$(grep -E '^ASSISTANT_IMAGE=' "$ENV_FILE" | tail -1 | cut -d= -f2- || true)"
+if [[ -z "$assistant_image" || "$assistant_image" == dxos-assistant:local || "$assistant_image" == "$IMAGE_PREFIX-assistant:"* ]]; then
+  set_env ASSISTANT_IMAGE "$IMAGE_PREFIX-assistant:$TAG"
+fi
 
 mkdir -p "$BIN_DIR"
 ln -sfn "$PREFIX/deploy/dxos" "$BIN_DIR/dxos"

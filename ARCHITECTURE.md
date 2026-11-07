@@ -233,6 +233,16 @@ Gateway kiểm token cho mọi route API; các route không kiểm token nằm t
 `dxos start <tệp>` đưa tệp mô hình vào qua `deploy/model/` và in kết quả của `ModelBootstrap`.
 Chi tiết vận hành ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md), log và audit ở [`deploy/MONITORING.md`](./deploy/MONITORING.md), webhook và lịch sử chống sửa ở [`deploy/INTEGRATIONS.md`](./deploy/INTEGRATIONS.md).
 
+### Trợ lý tùy chọn
+
+Dịch vụ `assistant/` nằm ngoài bốn module backend, gọi API Core bằng phiên SSO riêng của từng người dùng.
+Fastify xác thực JWT, giữ cấu hình mã hóa trong SQLite và phân bổ tối đa ba runtime OpenClaw với volume, mạng và capability riêng.
+OpenClaw gọi nhà cung cấp API do chủ tài khoản chọn và nhận tin qua bot Telegram riêng.
+Công cụ chỉ đọc hoặc tạo proposal; đường xác nhận của người dùng tách khỏi token công cụ của model.
+Khi thực thi, Core kiểm `modelVersion` dưới khóa mô hình và `version` dưới khóa bản ghi trong transaction; client không gửi điều kiện giữ hành vi cũ.
+Thông báo lấy inbox/API hiện có, không tạo scheduler hoặc subscription mới trong Core.
+Compose trợ lý bật riêng, không thay cách khởi động Core mặc định.
+
 ## 13. Đối chiếu với yêu cầu của đề
 
 | Đề yêu cầu | Đáp ứng |

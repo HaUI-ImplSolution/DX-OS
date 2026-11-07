@@ -13,6 +13,8 @@
 #   dxos doctor                check this machine and deploy/.env
 #   dxos backup [args]         encrypted backup, see backup.sh
 #   dxos av [on|off]           turn the virus scan of uploads (ClamAV, about 1 GB of RAM) on or off, or show it
+#   dxos assistant on|off|status|prepare [--build]
+#                              configure the optional personal assistants, keeping Core independent
 #   dxos plan <model-file>     show what applying the file would change, without changing anything
 #   dxos apply <model-file> [--accept SAFE|MIGRATION|LOSS]
 #                              apply the file; a plan above SAFE needs --accept with its level
@@ -224,6 +226,9 @@ cmd_start() {
     model_status=$?
   fi
   set -e
+  if [[ -f "$DEPLOY_DIR/data/assistant/enabled" ]]; then
+    "$DEPLOY_DIR/assistant.sh" resume || echo "Assistant could not start; Core is running. See dxos assistant status." >&2
+  fi
   print_addresses
   return "$model_status"
 }
@@ -613,14 +618,20 @@ main() {
   (( $# )) && shift
   case "$command" in
     start) cmd_start "$@" ;;
-    stop) touch "$STOPPED_MARK"; compose stop ;;
-    status) cmd_status ;;
+    stop)
+      touch "$STOPPED_MARK"
+      if [[ -f "$DEPLOY_DIR/data/assistant/runtime-compose.json" ]]; then
+        "$DEPLOY_DIR/assistant.sh" stop || echo "Assistant stop failed; stopping Core." >&2
+      fi
+      compose stop ;;
+    status) cmd_status; "$DEPLOY_DIR/assistant.sh" status || true ;;
     logs) compose logs -f --tail 100 "$@" ;;
     admin) cmd_admin ;;
     update) cmd_update "$@" ;;
     doctor) "$DEPLOY_DIR/doctor.sh" ;;
     backup) "$DEPLOY_DIR/backup.sh" "$@" ;;
     av) cmd_av "$@" ;;
+    assistant) DXOS_ASSISTANT_PUBLIC_URL="$(public_url)" "$DEPLOY_DIR/assistant.sh" "$@" ;;
     plan) cmd_plan "$@" ;;
     apply) cmd_apply "$@" ;;
     history) cmd_history "$@" ;;
@@ -628,8 +639,8 @@ main() {
     archive) cmd_archive "$@" ;;
     uninstall) cmd_uninstall "$@" ;;
     version) echo "DX-OS $(env_value DXOS_IMAGE_TAG) in $PREFIX" ;;
-    help|-h|--help) sed -n '3,27p' "$self" ;;
-    *) echo "dxos: unknown command: $command" >&2; sed -n '3,27p' "$self" >&2; exit 2 ;;
+    help|-h|--help) sed -n '3,29p' "$self" ;;
+    *) echo "dxos: unknown command: $command" >&2; sed -n '3,29p' "$self" >&2; exit 2 ;;
   esac
 }
 

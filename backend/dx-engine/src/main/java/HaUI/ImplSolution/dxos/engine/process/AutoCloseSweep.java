@@ -90,11 +90,18 @@ public class AutoCloseSweep {
     }
   }
 
-  // The record waits in a state the action leaves, and it entered that state longer ago than the
-  // auto_close time. Entering is the last history line that changed the status to the current one.
+  // The record waits in a state the action leaves, it has every field the action requires, and it
+  // entered that state longer ago than the auto_close time. Entering is the last history line that
+  // changed the status to the current one.
   private static String dueCondition(ProcessFamily.Action action) {
     String states = action.from().stream().map(state -> "?").collect(Collectors.joining(", "));
-    return "t.status IN (" + states + ") AND (SELECT max(e.at) FROM engine.record_event e "
+    String required =
+        action
+            .require().stream().map(field -> " AND t." + Sql.ident(field)
+                + " IS NOT NULL AND btrim(t." + Sql.ident(field) + "::text) <> ''")
+            .collect(Collectors.joining());
+    return "t.status IN (" + states + ")" + required
+        + " AND (SELECT max(e.at) FROM engine.record_event e "
         + "WHERE e.model = ? AND e.entity = ? AND e.record_id = t.id AND e.to_status = t.status "
         + "AND e.from_status IS DISTINCT FROM e.to_status) < now() - make_interval(secs => ?)";
   }

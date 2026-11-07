@@ -1057,6 +1057,10 @@ public final class ModelParser {
       problem(node, "the action of auto_close must be an action of the owner other than withdraw");
       return new AutoClose(null, null);
     }
+    if (found.needsNote()) {
+      problem(node, "the action of auto_close cannot need a note, as the system writes none");
+      return new AutoClose(null, null);
+    }
     return new AutoClose(after, action);
   }
 

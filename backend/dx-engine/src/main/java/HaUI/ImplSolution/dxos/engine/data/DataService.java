@@ -414,9 +414,9 @@ public class DataService {
   @Transactional
   public Map<String, Object> assign(Model model, Entity entity, long id, String assignee) {
     processOf(entity);
-    requireAssigner(model, entity);
     Access access = access(model, entity);
     Map<String, Object> current = get(model, entity, id);
+    requireAssigner(model, entity, (String) current.get("status"));
     // The caller taking the record is checked like anyone else: handler role, unit, creator rule.
     String holder = null;
     if (assignee != null) {
@@ -446,16 +446,20 @@ public class DataService {
   @Transactional(readOnly = true)
   public List<Person> handlers(Model model, Entity entity, long id) {
     processOf(entity);
-    requireAssigner(model, entity);
-    return handlers(model, entity, get(model, entity, id));
+    Map<String, Object> record = get(model, entity, id);
+    requireAssigner(model, entity, (String) record.get("status"));
+    return handlers(model, entity, record);
+  }
+
+  // The roles that handle a record in its state, or every handler role when no action leaves it.
+  private static Set<String> rolesHandling(Entity entity, String status) {
+    Set<String> roles = entity.process().rolesIn(status);
+    return roles.isEmpty() ? Set.copyOf(entity.process().handlers()) : roles;
   }
 
   private List<Person> handlers(Model model, Entity entity, Map<String, Object> record) {
     Model.Process definition = entity.process();
-    Set<String> roles = definition.rolesIn((String) record.get("status"));
-    if (roles.isEmpty()) {
-      roles = Set.copyOf(definition.handlers());
-    }
+    Set<String> roles = rolesHandling(entity, (String) record.get("status"));
     Map<String, Person> people = new LinkedHashMap<>();
     for (String role : roles) {
       List<Person> holders =
@@ -556,8 +560,14 @@ public class DataService {
     return entity.process();
   }
 
-  private void requireAssigner(Model model, Entity entity) {
-    if (!canAssign(model, entity)) {
+  // Whoever writes to all rows or to those of its units may assign, and so may a role that handles
+  // the record in its current state.
+  private void requireAssigner(Model model, Entity entity, String status) {
+    Set<Scope> writes = access(model, entity).writes();
+    boolean coordinator = writes.contains(Scope.ALL) || writes.contains(Scope.UNIT);
+    boolean handler = !Collections.disjoint(user.clientRoles(ModelClient.of(model.name())),
+        rolesHandling(entity, status));
+    if (!coordinator && !handler) {
       throw new ActionNotAllowedException("Your roles cannot assign this record", "NOT_ASSIGNER");
     }
   }

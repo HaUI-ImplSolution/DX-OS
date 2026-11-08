@@ -33,7 +33,9 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - Đổi mô hình khi đã có dữ liệu: xem trước theo ba mức rủi ro, đổi tên bằng `renamed_from`, `default` cho trường bắt buộc mới, báo dòng vi phạm, xác nhận riêng khi mất dữ liệu, kế hoạch hết hiệu lực khi phiên bản đã đổi, quay về phiên bản trước.
 - Mô hình bị giữ trong lúc áp dụng; áp dụng dừng giữa chừng thì tiếp tục (`resume`) hoặc hủy bỏ (`abandon`), kể cả sau khi backend khởi động lại.
 - Mỗi mô hình có một lần áp dụng tại một thời điểm, các mô hình khác nhau áp dụng song song; yêu cầu dữ liệu, hành động quy trình và thao tác tệp giữ khóa đọc nên không hồ sơ nào lọt giữa kiểm và đổi bảng.
-- Chốt chặn: không đổi người xử lý, hạn, quyền tự quyết, hành động hoàn tất hay đặt chỗ khi còn hồ sơ đang xử lý; không xóa thực thể còn hồ sơ đang chạy quy trình; vai `ADMIN` của nền tảng không khai báo được.
+- Chốt chặn: không đổi hạn, quyền tự quyết, hành động hoàn tất, đặt chỗ hay trạng thái và hành động của quy trình khi còn hồ sơ đang xử lý; không xóa thực thể còn hồ sơ đang chạy quy trình; vai `ADMIN` của nền tảng không khai báo được.
+- Trạng thái còn hồ sơ nằm ở đó không bỏ được, và trạng thái cuối còn hồ sơ đã đóng không đổi thành trạng thái thường; kế hoạch báo số dòng vi phạm.
+- Đổi nhãn, vai của hành động, trường bắt buộc, các trạng thái rút lại hay danh sách vai xử lý có hiệu lực ngay với hồ sơ đang mở.
 - Khai báo lại một vai còn người giữ thì kế hoạch lên mức `MIGRATION` và báo số người có lại quyền.
 - Tệp mô hình lúc khởi động: `dxos start <tệp>` đưa tệp vào, backend áp dụng nếu là tệp mới và có kế hoạch an toàn.
 - `dxos plan` và `dxos apply [--accept MỨC]` đổi mô hình từ dòng lệnh, đăng nhập bằng client `dxos-cli`.
@@ -52,14 +54,21 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 ### Quy trình và hồ sơ
 
 - Ba họ mẫu trên Flowable nhúng, cùng giao dịch với việc ghi hồ sơ: `approval`, `work_item` và `reservation`; trạng thái chỉ đổi qua quy trình.
-- Khối `process:` dùng `family`, `handler`, `allow_self_decision`, `deadline` và `after`; khối `booking:` khai báo tài nguyên, khung giờ và sức chứa.
+- Khối `process:` dùng `family`, `handler`, `states`, `actions`, `initial`, `allow_self_decision`, `deadline`, `auto_close` và `after`; khối `booking:` khai báo tài nguyên, khung giờ và sức chứa.
 - Quy tắc chung của mọi quy trình: từ chối và trả lại cần lý do, người nộp sửa rồi nộp lại hoặc rút lại, người tạo không tự quyết định, hồ sơ đã giao thì chỉ người được giao xử lý.
 - Hồ sơ lưu người quyết định và thời điểm quyết định.
 - Giao việc, hộp việc `/api/v1/inbox` có phân trang, và dòng lịch sử của từng bản ghi ghi trong cùng giao dịch; người nhận phải nằm trong danh sách người xử lý.
 - Hạn xử lý theo bản ghi: hồ sơ quá hạn lên đầu hộp việc và có dòng quá hạn; hồ sơ có hạn dài hơn `DXOS_DUE_SOON_BEFORE` nhận thêm dòng `due_soon`.
 - Hành động hoàn tất `add_to_group` và `remove_from_group` chạy qua outbox và được thử lại; trường trống thì bỏ qua và ghi dòng `completion_skipped`.
 - Đặt chỗ so sức chứa với số lượt chạy cùng lúc ở mọi thời điểm của khung giờ, có khóa dòng tài nguyên.
-- Họ `work_item` có `auto_close` tùy chọn: hồ sơ đã xử lý xong mà người nộp không xác nhận trong thời gian đó được hệ thống đóng, ghi dòng `auto_closed`.
+- `auto_close` tùy chọn: hồ sơ chờ người nộp quá thời gian đó thì hệ thống làm thay họ một hành động và ghi dòng `auto_closed`; họ `work_item` viết `auto_close: 7d`, quy trình khác viết `auto_close: {after: 7d, action: <hành động>}`.
+- Quy trình tự định nghĩa: `states` và `actions` thêm, ghi đè hoặc bỏ (`null`) từng phần của khung, hoặc khai báo toàn bộ khi không có `family`; `initial` chọn trạng thái đầu, `withdraw` là hành động dành riêng của người nộp.
+- `handler` nhận một vai hoặc danh sách vai; mỗi hành động có thể giới hạn cho vai riêng bằng `role`, và `require` bắt buộc trường có giá trị trước khi hành động được thực hiện.
+- Parser kiểm cả quy trình: hành động trỏ tới trạng thái có thật, mỗi trạng thái không phải cuối có lối ra và tới được từ trạng thái đầu, có trạng thái cuối; lỗi báo dòng và cột, kèm lựa chọn hợp lệ.
+- Quy trình khác khung gốc chạy trên BPMN riêng sinh từ các trạng thái và hành động, được deploy khi áp dụng mô hình; quy trình giống khung dùng BPMN của khung.
+- Hộp việc và danh sách người nhận việc tính theo vai của từng hành động.
+- Metadata của thực thể có `handlerActions`, các hành động mà vai của người gọi được thực hiện.
+- Người nộp chỉ rút lại được hồ sơ ở các trạng thái khai trong `withdraw`.
 
 ### Sự kiện, webhook và toàn vẹn
 
@@ -85,9 +94,15 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
   Backend trả thông báo tiếng Anh kèm `errorCode`, frontend dịch theo `shell/backendMessages.ts`.
 - Bảng điều khiển `/console` cho ADMIN: thư viện mẫu, trình soạn YAML (Monaco) theo JSON Schema, xem kế hoạch, áp dụng, lịch sử áp dụng kèm tên người, quay về, sơ đồ quy trình, mô hình dừng giữa chừng (Tiếp tục, Hủy bỏ) và nút "Sửa phần lệch".
   API đọc cho bảng điều khiển: `/api/v1/models/schema`, `families`, `templates` và `{model}/versions`.
-- Sơ đồ quy trình vẽ từ chính tệp đang soạn: người xử lý, hạn xử lý, `auto_close`, hành động `after` và đặt chỗ hiện trên khung của họ quy trình.
+- Sơ đồ quy trình vẽ từ chính tệp đang soạn: vai xử lý của từng hành động, hạn xử lý, hành động của `auto_close`, hành động `after` và đặt chỗ, cho cả quy trình tự khai báo.
   Tệp được kiểm và vẽ lại sau 5 giây không gõ; tệp sai thì báo lỗi theo dòng và cột và giữ sơ đồ đúng gần nhất.
+- Điền form gồm các tab Chung, Vai, Đơn vị và Thực thể (Chung, Trường, Quyền, Quy trình), nhãn tiếng Việt; vai, trường và thực thể đã khai báo chọn từ danh sách, đổi tên một vai thì quyền và vai xử lý đổi theo.
+  Tab Quy trình sửa nhãn, thêm hoặc bỏ trạng thái và hành động của khung, giao một hành động cho vai riêng, bắt buộc điền trường, đặt hành động tự đóng, hoặc chọn không dùng khung để tự khai báo.
+- Mỗi phần của form có mục "Phạm vi có thể làm": hệ thống chấp nhận gì, mở rộng được gì, tự tạo được gì.
+  Cạnh trình soạn YAML có bảng "Viết được gì trong tệp" với tên trạng thái và hành động của từng khung, ví dụ mở rộng quy trình và ý nghĩa từng khóa; rê chuột lên một khóa hiện giải thích.
   `POST /api/v1/models/diagram` (ADMIN) chỉ đọc tệp, không so với mô hình đang chạy.
+- Chi tiết hồ sơ chỉ hiện nút hành động mà vai của người dùng được làm; hồ sơ có quy trình không có nút xóa.
+- Bảng kế hoạch nêu rõ trạng thái hay hành động nào được thêm hoặc bỏ, và lý do một thay đổi bị từ chối bằng tiếng Việt.
 - Menu người dùng có "Tài khoản của tôi", mở Account Console của Keycloak.
 - Giao diện vừa màn hình rộng 360 px.
 

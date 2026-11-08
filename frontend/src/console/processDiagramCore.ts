@@ -4,8 +4,6 @@ import { formatDuration } from "../shell/format";
 import type { Completion, ProcessView } from "./api";
 
 const WITHDRAW = "withdraw";
-const AUTO_CLOSE_FROM = "resolved";
-const AUTO_CLOSE_TO = "closed";
 export const PROCESS_NODE_WIDTH = 150;
 export const PROCESS_NODE_HEIGHT = 40;
 const LABEL_GAP = 8;
@@ -127,16 +125,18 @@ export function buildProcessDiagram(
       id: `${action.name}-${from}`,
       source: from,
       target: action.to,
-      label: `${action.label} (${action.by === "OWNER" ? "người nộp" : family.handler})`,
+      label: `${action.label} (${action.by === "OWNER" ? "người nộp" : (action.roles.length ? action.roles : family.handlers).join(", ")})`,
     })),
   );
-  // The system closes a resolved record the same way its owner would, after the time the file gives.
-  if (family.autoCloseSeconds !== null && visible.has(AUTO_CLOSE_FROM) && visible.has(AUTO_CLOSE_TO)) {
+  // The system takes the action of auto_close for the owner of a record that waits that long.
+  const closing = family.autoCloseSeconds === null ? undefined : family.actions.find((action) => action.name === (family.autoCloseAction ?? "confirm"));
+  const closeFrom = closing?.from.find((from) => visible.has(from));
+  if (closing && closeFrom && visible.has(closing.to)) {
     specs.push({
       id: "auto_close",
-      source: AUTO_CLOSE_FROM,
-      target: AUTO_CLOSE_TO,
-      label: `tự đóng sau ${formatDuration(family.autoCloseSeconds)}`,
+      source: closeFrom,
+      target: closing.to,
+      label: `tự đóng sau ${formatDuration(family.autoCloseSeconds ?? 0)}`,
       dashed: true,
     });
   }

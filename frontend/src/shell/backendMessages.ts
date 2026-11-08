@@ -67,6 +67,47 @@ const VI: Rule[] = [
   pattern("unknown process family, available: (.+)", "Họ quy trình không có, hiện có: $1"),
   fixed("handler must be a role declared in roles", "handler phải là một vai đã khai báo trong roles"),
   pattern("the handler role (.+) must have access all, read, unit or assigned", "Vai xử lý $1 phải có quyền all, read, unit hoặc assigned"),
+  pattern("the (.+) must have access all, read, unit or assigned", "$1 phải có quyền all, read, unit hoặc assigned"),
+  fixed("process is a mapping with handler and a family or states and actions", "process là một mapping gồm handler, cùng với family hoặc với states và actions"),
+  pattern("(.+) must be a role declared in roles", "$1 phải là một vai đã khai báo trong roles"),
+  pattern("(.+) needs at least one role", "$1 cần ít nhất một vai"),
+  pattern("(.+) is one role or a list like \\[MANAGER, SELLER\\], got '(.*)'", "$1 là một vai hoặc một danh sách như [MANAGER, SELLER], không phải '$2'"),
+  pattern("(.+) is one role or a list of roles", "$1 là một vai hoặc một danh sách vai"),
+  pattern("role (.+) in (.+) is not declared in roles, declared: (.+)", "Vai $1 trong $2 chưa khai báo ở roles, hiện có: $3"),
+  pattern("role (.+) is listed twice", "Vai $1 bị liệt kê hai lần"),
+  fixed("a process without a family needs states", "Quy trình không có family phải tự khai báo states"),
+  fixed("a process without a family needs actions", "Quy trình không có family phải tự khai báo actions"),
+  fixed("states is a mapping from a state name to its label and whether it is final", "states là một mapping từ tên trạng thái tới label và terminal"),
+  fixed("actions is a mapping from an action name to what it does", "actions là một mapping từ tên hành động tới nội dung hành động"),
+  pattern("state name must match " + NAME + " and be at most 40 characters", "Tên trạng thái phải khớp [a-z][a-z0-9_]* và dài tối đa 40 ký tự"),
+  pattern("action name must match " + NAME + " and be at most 40 characters", "Tên hành động phải khớp [a-z][a-z0-9_]* và dài tối đa 40 ký tự"),
+  pattern("state (.+) is added by the platform for the action withdraw", "Trạng thái $1 do nền tảng tự thêm cho hành động withdraw, không cần khai báo"),
+  pattern("there is no state (.+) to remove", "Khung không có trạng thái $1 để bỏ"),
+  pattern("there is no action (.+) to remove", "Khung không có hành động $1 để bỏ"),
+  fixed("a state is a mapping with label and terminal, or null to remove it", "Trạng thái là một mapping gồm label và terminal, hoặc null để bỏ trạng thái của khung"),
+  fixed("an action is a mapping with from and to, or null to remove it", "Hành động là một mapping gồm from và to, hoặc null để bỏ hành động của khung"),
+  pattern("withdraw is always taken by the owner and ends in (.+)", "withdraw luôn do người nộp thực hiện và kết thúc ở $1, chỉ khai from"),
+  fixed("by is handler or owner", "by là handler hoặc owner"),
+  fixed("role only applies to an action of the handler", "role chỉ dùng cho hành động của vai xử lý"),
+  pattern("action (.+) needs (from and to|from)", "Hành động $1 cần khai $2"),
+  pattern("(.+) is a state name or a list of state names", "$1 là tên một trạng thái hoặc danh sách tên trạng thái"),
+  pattern("(.+) needs at least one state", "$1 cần ít nhất một trạng thái"),
+  pattern("require must name fields of this entity that are not files, fields: (.+)", "require phải là trường của thực thể này và không phải trường tệp, hiện có: $1"),
+  fixed("a process needs at least one state", "Quy trình cần ít nhất một trạng thái"),
+  pattern("initial must be one of the states: (.+)", "initial phải là một trong các trạng thái: $1"),
+  fixed("the initial state cannot be final", "Trạng thái ban đầu không được là trạng thái cuối"),
+  fixed("a process needs at least one final state, with terminal: true", "Quy trình cần ít nhất một trạng thái cuối, khai terminal: true"),
+  pattern("action (.+) leaves (.+), which is not a state, states: (.+)", "Hành động $1 đi ra từ $2, không phải trạng thái; các trạng thái: $3"),
+  pattern("action (.+) leaves the final state (.+)", "Hành động $1 đi ra từ trạng thái cuối $2; trạng thái cuối không có hành động đi ra"),
+  pattern("action (.+) ends in (.+), which is not a state, states: (.+)", "Hành động $1 kết thúc ở $2, không phải trạng thái; các trạng thái: $3"),
+  pattern("action (.+) is taken by the owner, so it takes no role", "Hành động $1 do người nộp thực hiện nên không có role"),
+  pattern("state (.+) has no action leaving it, so a record would stay there", "Trạng thái $1 không có hành động nào đi ra, hồ sơ sẽ kẹt ở đó"),
+  pattern("state (.+) can never be reached from (.+)", "Không có đường đi từ trạng thái ban đầu $2 tới trạng thái $1"),
+  pattern("(.+) is not a final state of the process", "$1 không phải trạng thái cuối của quy trình"),
+  fixed("auto_close needs after, the time to wait", "auto_close cần after, thời gian chờ"),
+  fixed("auto_close needs action, an action of the owner", "auto_close cần action, một hành động của người nộp"),
+  fixed("auto_close needs an action here, as auto_close: {after: 7d, action: <action>}", "Quy trình này cần chỉ rõ hành động: auto_close: {after: 7d, action: <hành động>}"),
+  fixed("the action of auto_close must be an action of the owner other than withdraw", "action của auto_close phải là hành động của người nộp, không phải withdraw"),
   fixed("the reservation family needs a booking block", "Họ reservation cần khối booking"),
   fixed("booking only applies to the reservation family", "booking chỉ dùng cho họ reservation"),
   fixed("booking is a mapping with resource, starts, ends and capacity", "booking là một mapping gồm resource, starts, ends và capacity"),
@@ -110,7 +151,8 @@ const VI: Rule[] = [
   pattern("Field (.+) refers to another entity, which is not supported; add a new field instead", "Trường $1 tham chiếu sang thực thể khác, điều này chưa được hỗ trợ; hãy thêm một trường mới"),
   fixed("Only for an entity without rows", "Chỉ làm được với thực thể chưa có dòng nào"),
   pattern("Entity (.+) changes its process family, which is not supported yet", "Thực thể $1 đổi họ quy trình, điều này chưa được hỗ trợ"),
-  pattern("Cannot change CHANGE_HANDLER for ([^;]+) while (\\d+) records are still open", "Không đổi được vai xử lý của $1 khi còn $2 hồ sơ đang xử lý"),
+  pattern("Entity ([a-z][a-z0-9_]*): (.+)", "Quy trình của thực thể $1 không dựng được: $2"),
+  pattern("Cannot change CHANGE_FLOW for ([^;]+) while (\\d+) records are still open", "Không đổi được trạng thái hoặc hành động của $1 khi còn $2 hồ sơ đang xử lý"),
   pattern("Cannot change CHANGE_SELF_DECISION for ([^;]+) while (\\d+) records are still open", "Không đổi được quyền tự quyết định của $1 khi còn $2 hồ sơ đang xử lý"),
   pattern("Cannot change CHANGE_COMPLETION for ([^;]+) while (\\d+) records are still open", "Không đổi được hành động hoàn tất của $1 khi còn $2 hồ sơ đang xử lý"),
   pattern("Cannot change CHANGE_BOOKING for ([^;]+) while (\\d+) records are still open", "Không đổi được khối đặt chỗ của $1 khi còn $2 hồ sơ đang xử lý"),
@@ -187,6 +229,7 @@ const VI: Rule[] = [
   fixed("cannot be read", "Không đọc được tệp"),
   fixed("must be failed, stopped, pending or delivered", "Phải là failed, stopped, pending hoặc delivered"),
   fixed("must not be negative", "Không được là số âm"),
+  pattern("is required before (.+)", "Bắt buộc nhập trước khi thực hiện $1"),
   fixed("is required", "Bắt buộc nhập"),
 
   // Outgoing messages and the accounts service.
@@ -232,6 +275,7 @@ const VI: Rule[] = [
   fixed("Files cannot be checked right now, please try again later", "Chưa kiểm tra được tệp lúc này, vui lòng thử lại sau"),
   fixed("The record was modified by someone else, reload and try again", "Bản ghi vừa được người khác thay đổi, hãy tải lại rồi thử lại"),
   pattern("Invalid value for (.+)", "Giá trị không hợp lệ cho $1"),
+  pattern("Missing parameter (.+)", "Thiếu tham số $1"),
   fixed("Invalid value", "Giá trị không hợp lệ"),
   fixed("Internal server error", "Hệ thống gặp lỗi, vui lòng thử lại sau"),
 
@@ -259,6 +303,12 @@ export function translateBackend(text: string, locale = getLocale()): string {
   if (position) return `dòng ${position[1]}, cột ${position[2]}: ${translateBackend(position[3], locale)}`;
   const whole = translateOne(text, table);
   if (whole !== null) return whole;
+  // A problem of one field arrives as "field: reason".
+  const field = /^([A-Za-z0-9_.]+): (.+)$/.exec(text);
+  if (field) {
+    const reason = translateBackend(field[2], locale);
+    if (reason !== field[2]) return `${field[1]}: ${reason}`;
+  }
   const parts = text.split("; ");
   if (parts.length === 1) return text;
   // Some messages hold a "; " themselves, so the longest run of parts that is one known message wins.

@@ -56,11 +56,13 @@
               "required": ["type"],
               "additionalProperties": false,
               "properties": {
-                "type": { "enum": ["text", "number", "datetime", "choice", "reference", "user", "unit", "file"] },
+                "type": {
+                  "enum": ["text", "number", "datetime", "choice", "reference", "user", "unit", "file"]
+                },
                 "label": { "type": "string" },
                 "required": { "type": "boolean" },
                 "unique": { "type": "boolean" },
-                "options": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+                "options": { "type": "array", "minItems": 1, "items": {"type": "string"} },
                 "to": { "type": "string" },
                 "renamed_from": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$" },
                 "default": { "type": ["string", "number"] }
@@ -74,14 +76,77 @@
           },
           "process": {
             "type": "object",
-            "required": ["family", "handler"],
+            "required": ["handler"],
             "additionalProperties": false,
             "properties": {
               "family": { "enum": ["approval", "work_item", "reservation"] },
-              "handler": { "type": "string" },
+              "handler": {
+                "anyOf": [{"type": "string"}, {"type": "array", "minItems": 1, "items": {"type": "string"}}]
+              },
+              "initial": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$" },
+              "states": {
+                "type": "object",
+                "minProperties": 1,
+                "propertyNames": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$" },
+                "additionalProperties": {
+                  "type": ["object", "null"],
+                  "additionalProperties": false,
+                  "properties": { "label": {"type": "string"}, "terminal": {"type": "boolean"} }
+                }
+              },
+              "actions": {
+                "type": "object",
+                "minProperties": 1,
+                "propertyNames": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$" },
+                "additionalProperties": {
+                  "type": ["object", "null"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "label": { "type": "string" },
+                    "from": {
+                      "anyOf": [
+                        { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$" },
+                        {
+                          "type": "array",
+                          "minItems": 1,
+                          "items": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$" }
+                        }
+                      ]
+                    },
+                    "to": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$" },
+                    "by": { "enum": ["handler", "owner"] },
+                    "role": {
+                      "anyOf": [
+                        { "type": "string" },
+                        { "type": "array", "minItems": 1, "items": {"type": "string"} }
+                      ]
+                    },
+                    "needs_note": { "type": "boolean" },
+                    "require": {
+                      "anyOf": [
+                        { "type": "string" },
+                        { "type": "array", "minItems": 1, "items": {"type": "string"} }
+                      ]
+                    }
+                  }
+                }
+              },
               "allow_self_decision": { "type": "boolean" },
               "deadline": { "type": "string", "pattern": "^[0-9]{1,6}[mhd]$" },
-              "auto_close": { "type": "string", "pattern": "^[0-9]{1,6}[mhd]$" },
+              "auto_close": {
+                "anyOf": [
+                  { "type": "string", "pattern": "^[0-9]{1,6}[mhd]$" },
+                  {
+                    "type": "object",
+                    "required": ["after", "action"],
+                    "additionalProperties": false,
+                    "properties": {
+                      "after": { "type": "string", "pattern": "^[0-9]{1,6}[mhd]$" },
+                      "action": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$" }
+                    }
+                  }
+                ]
+              },
               "booking": {
                 "type": "object",
                 "required": ["resource", "starts", "ends"],

@@ -53,16 +53,50 @@ Các mẫu dùng được nằm ở [`templates/`](../backend/dx-engine/src/main
 
 ## Quy trình
 
-- `family` chọn họ mẫu: `approval`, `work_item` hoặc `reservation`.
-- `handler` là vai xử lý, `deadline` là hạn xử lý tùy chọn (ví dụ `72h`).
-- Họ `work_item` có thêm `auto_close` tùy chọn (ví dụ `7d`): hồ sơ đã xử lý xong mà người nộp không xác nhận trong thời gian đó thì hệ thống đóng.
-- Từ chối và trả lại bắt buộc có lý do, và người nộp rút lại được hồ sơ chưa ở trạng thái cuối.
+- `handler` là vai xử lý, hoặc một danh sách vai như `[MANAGER, SELLER]`; ai giữ một trong các vai đó thì xử lý được.
+- `family` chọn một họ mẫu để bắt đầu: `approval`, `work_item` hoặc `reservation`; bỏ trống thì tự khai báo đủ `states` và `actions`.
+- `deadline` là hạn xử lý tùy chọn (ví dụ `72h`).
+- Họ mẫu bắt buộc có lý do khi từ chối và trả lại; quy trình tự khai báo đặt `needs_note: true` cho từng hành động cần lý do.
+- Người nộp chỉ rút lại được hồ sơ ở các trạng thái khai trong `withdraw`; quy trình không khai `withdraw` thì không cho rút lại.
 - Hồ sơ có quy trình không xóa được, hồ sơ đã được quyết định thì không sửa được, và hồ sơ đã giao thì chỉ người được giao xử lý được.
 - Người tạo hồ sơ không tự quyết định được, trừ khi khai báo `allow_self_decision: true`.
 
+### Tự khai báo hoặc mở rộng quy trình
+
+- `states` là bản đồ từ tên trạng thái sang `{label, terminal}`; `initial` là trạng thái hồ sơ mới vào, mặc định là trạng thái khai báo đầu tiên.
+- `actions` là bản đồ từ tên hành động sang `{label, from, to, by, role, needs_note, require}`.
+  `from` là một trạng thái hoặc một danh sách, `by` là `handler` (mặc định) hoặc `owner`.
+  `role` giới hạn một hành động của người xử lý cho vai riêng thay vì cả `handler`.
+  Vai ghi ở `role` không cần có trong `handler`; người giữ vai đó vẫn thực hiện được hành động.
+  Nút `label` để trống thì giao diện hiện mã hành động.
+  `needs_note: true` bắt buộc có lý do.
+  `require` liệt kê trường phải có giá trị trước khi hành động được thực hiện.
+- Khi có `family`, mục khai báo ghi đè từng khóa của khung; viết `null` để bỏ một trạng thái hoặc hành động của khung.
+- `withdraw` và trạng thái `withdrawn` là tên dành riêng: khai `withdraw: {from: [...]}` thì nền tảng tự thêm trạng thái `withdrawn`, và hành động này luôn do người nộp thực hiện.
+- Mỗi trạng thái không phải cuối phải có hành động đi ra, mọi trạng thái phải tới được từ `initial`, trạng thái cuối không có hành động đi ra, và phải có ít nhất một trạng thái cuối.
+- `auto_close` là thời gian chờ người nộp trước khi hệ thống thay họ làm một hành động.
+  Họ `work_item` nhận dạng ngắn `auto_close: 7d` (hành động `confirm`); các trường hợp khác viết `auto_close: {after: 7d, action: <hành động của người nộp>}`.
+- Quy trình khác khung gốc chạy trên BPMN riêng, sinh từ các trạng thái và hành động khai báo khi áp dụng mô hình.
+- Đổi trạng thái đầu, thêm hoặc bỏ trạng thái, hay đổi `from`, `to`, `by` của một hành động khi còn hồ sơ chưa ở trạng thái cuối thì kế hoạch bị từ chối.
+- Đổi nhãn, `role`, `require`, các trạng thái của `withdraw` hay danh sách `handler` thì an toàn và có hiệu lực ngay, kể cả với hồ sơ đang mở.
+- Bỏ một trạng thái còn hồ sơ nằm ở đó, hoặc bỏ `terminal` của trạng thái còn hồ sơ đã đóng, cũng bị từ chối, vì hồ sơ đã đóng không chạy tiếp được.
+
+```yaml
+process:
+  handler: [MANAGER, SELLER]
+  states:
+    todo: {label: Mới}
+    review: {label: Đang xem}
+    done: {label: Xong, terminal: true}
+  actions:
+    take: {from: todo, to: review, role: SELLER}
+    finish: {from: review, to: done, role: MANAGER, require: [amount]}
+    withdraw: {from: todo}
+```
+
 ### Đặt chỗ
 
-`family: reservation` kèm `booking: {resource, starts, ends, capacity}`.
+`family: reservation` (có thể mở rộng như trên) kèm `booking: {resource, starts, ends, capacity}`.
 Lượt đặt làm số lượt chạy cùng lúc vượt sức chứa thì bị từ chối, và ứng dụng có chế độ xem lịch.
 Ví dụ ở [`room_booking.yaml`](../backend/dx-engine/src/main/resources/templates/room_booking.yaml).
 

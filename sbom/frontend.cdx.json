@@ -3,15 +3,15 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
   "version": 1,
-  "serialNumber": "urn:uuid:c6c31c28-e387-4ed5-b805-75fb0b23812a",
+  "serialNumber": "urn:uuid:87958797-f428-43b8-96ab-df3bad3a9ad3",
   "metadata": {
-    "timestamp": "2026-11-06T05:56:50.065Z",
+    "timestamp": "2026-11-06T16:01:49.508Z",
     "tools": {
       "components": [
         {
           "type": "application",
           "name": "npm",
-          "version": "10.8.2"
+          "version": "9.2.0"
         },
         {
           "type": "application",
@@ -641,282 +641,6 @@
     },
     {
       "type": "library",
-      "name": "core",
-      "group": "@rjsf",
-      "version": "5.24.13",
-      "bom-ref": "dx-os-frontend@2.0.0|@rjsf/core@5.24.13",
-      "author": "Nicolas Perriault",
-      "description": "A simple React component capable of building HTML forms out of a JSON schema.",
-      "licenses": [
-        {
-          "license": {
-            "id": "Apache-2.0",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/%40rjsf/core@5.24.13",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/rjsf-team/react-jsonschema-form.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/rjsf-team/react-jsonschema-form",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/rjsf-team/react-jsonschema-form/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/@rjsf/core/-/core-5.24.13.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "38d4ebd78b3b2c5223c7655114bb8ea5a80befab0cfc73f2ebf3a17417eae94ba420d99322cebe6853741a0711d1a5d01c50d743b7ff7de974a3f48ed391ed76"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:constraint:engine:node",
-          "value": ">=14"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/@rjsf/core"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "mui",
-      "group": "@rjsf",
-      "version": "5.24.13",
-      "bom-ref": "dx-os-frontend@2.0.0|@rjsf/mui@5.24.13",
-      "author": "Agustin N. R. Ramirez",
-      "description": "Material UI 5 theme, fields and widgets for react-jsonschema-form",
-      "licenses": [
-        {
-          "license": {
-            "id": "Apache-2.0",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/%40rjsf/mui@5.24.13",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/rjsf-team/react-jsonschema-form.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/rjsf-team/react-jsonschema-form#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/rjsf-team/react-jsonschema-form/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/@rjsf/mui/-/mui-5.24.13.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "28687dd07446914d4e22f9e407d20e39762aa7383191db906303eade88fd5a5e0a70d745b1f1a31a87ea49fbeb3baf2635fac3138a2e003e0c3de3d3544b4aca"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:constraint:engine:node",
-          "value": ">=14"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/@rjsf/mui"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "utils",
-      "group": "@rjsf",
-      "version": "5.24.13",
-      "bom-ref": "dx-os-frontend@2.0.0|@rjsf/utils@5.24.13",
-      "author": "Heath Chiavettone",
-      "description": "Utility functions for @rjsf/core",
-      "licenses": [
-        {
-          "license": {
-            "id": "Apache-2.0",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/%40rjsf/utils@5.24.13",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/rjsf-team/react-jsonschema-form.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/rjsf-team/react-jsonschema-form#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/rjsf-team/react-jsonschema-form/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/@rjsf/utils/-/utils-5.24.13.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "acd17cb43c48c13b57cf3e4efd4db7414ef79e586040d609f92bf9040c10388ca1204d99dd2e6d522495330647b748ee964bff4727f08beaac0f8162139acebb"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:constraint:engine:node",
-          "value": ">=14"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/@rjsf/utils"
-        }
-      ],
-      "components": [
-        {
-          "type": "library",
-          "name": "react-is",
-          "version": "18.3.1",
-          "bom-ref": "dx-os-frontend@2.0.0|@rjsf/utils@5.24.13|react-is@18.3.1",
-          "description": "Brand checking of React Elements.",
-          "licenses": [
-            {
-              "license": {
-                "id": "MIT",
-                "acknowledgement": "declared"
-              }
-            }
-          ],
-          "purl": "pkg:npm/react-is@18.3.1",
-          "externalReferences": [
-            {
-              "url": "git+https://github.com/facebook/react.git#packages/react-is",
-              "type": "vcs",
-              "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
-            },
-            {
-              "url": "https://reactjs.org/",
-              "type": "website",
-              "comment": "as detected from PackageJson property \"homepage\""
-            },
-            {
-              "url": "https://github.com/facebook/react/issues",
-              "type": "issue-tracker",
-              "comment": "as detected from PackageJson property \"bugs.url\""
-            },
-            {
-              "url": "https://registry.npmjs.org/react-is/-/react-is-18.3.1.tgz",
-              "type": "distribution",
-              "hashes": [
-                {
-                  "alg": "SHA-512",
-                  "content": "fcb2cc5726acd258e302da1888fa9888bf15597cd451d4e1ae6539fa7db40d9bfe6be0a54687af533c3927153e21e879fdcf3bcada13055f46d4588a7cd25d9a"
-                }
-              ],
-              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-            }
-          ],
-          "properties": [
-            {
-              "name": "cdx:npm:package:path",
-              "value": "node_modules/@rjsf/utils/node_modules/react-is"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "validator-ajv8",
-      "group": "@rjsf",
-      "version": "5.24.13",
-      "bom-ref": "dx-os-frontend@2.0.0|@rjsf/validator-ajv8@5.24.13",
-      "author": "Heath Chiavettone",
-      "description": "The ajv-8 based validator for @rjsf/core",
-      "licenses": [
-        {
-          "license": {
-            "id": "Apache-2.0",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/%40rjsf/validator-ajv8@5.24.13",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/rjsf-team/react-jsonschema-form.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/rjsf-team/react-jsonschema-form#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/rjsf-team/react-jsonschema-form/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/@rjsf/validator-ajv8/-/validator-ajv8-5.24.13.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "a161cfed82b9f3533c239705d6df945c56af9eff9b85caa3b4bd5aecc1bf29a7df8b41308607188ce0eb0fc4ac9eb86772c11832a4840abe19384a22ae71145b"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:constraint:engine:node",
-          "value": ">=14"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/@rjsf/validator-ajv8"
-        }
-      ]
-    },
-    {
-      "type": "library",
       "name": "react-flow-smart-edge",
       "group": "@tisoap",
       "version": "5.0.0",
@@ -1015,57 +739,6 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/@xyflow/react"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "ajv",
-      "version": "8.20.0",
-      "bom-ref": "dx-os-frontend@2.0.0|ajv@8.20.0",
-      "author": "Evgeny Poberezkin",
-      "description": "Another JSON Schema Validator",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/ajv@8.20.0",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/ajv-validator/ajv.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://ajv.js.org",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/ajv-validator/ajv/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/ajv/-/ajv-8.20.0.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "4e16e58be3a53a3fa230f60505505f2773a60809da4b2367e0cd6fcfd4fa1a46b926df5b6bf1c8479ea3a32eb9b58ea4c7f142179557341f35f58eff194ac118"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/ajv"
         }
       ]
     },
@@ -2838,324 +2511,6 @@
     },
     {
       "type": "library",
-      "name": "lodash-es",
-      "version": "4.18.1",
-      "bom-ref": "dx-os-frontend@2.0.0|lodash-es@4.18.1",
-      "author": "John-David Dalton",
-      "description": "Lodash exported as ES modules.",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/lodash-es@4.18.1",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/lodash/lodash.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://lodash.com/custom-builds",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/lodash/lodash-cli/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/lodash-es/-/lodash-es-4.18.1.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "27cc5ec0a0ff1a4db63996e1a4e552c1cb3ad3385df791120f07b3385b80dffd3df7ddb93dd1c9ece1473531ad6a32f7025664ca40f7d87ca488ca3e048048f0"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/lodash-es"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "lodash",
-      "version": "4.18.1",
-      "bom-ref": "dx-os-frontend@2.0.0|lodash@4.18.1",
-      "author": "John-David Dalton",
-      "description": "Lodash modular utilities.",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/lodash@4.18.1",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/lodash/lodash.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://lodash.com/",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/lodash/lodash/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/lodash/-/lodash-4.18.1.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "74c22789c4cf544f1dd5ee68b5fc269a3971919a14a6254bc32793754b22fc26a3fe07f3cdb941702139b111d5fc0b23b829b15abb5ed93346498b82782abed1"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/lodash"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "markdown-to-jsx",
-      "version": "7.7.17",
-      "bom-ref": "dx-os-frontend@2.0.0|markdown-to-jsx@7.7.17",
-      "author": "Evan Jacobs",
-      "description": "Convert markdown to JSX with ease for React and React-like projects. Super lightweight and highly configurable.",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/markdown-to-jsx@7.7.17",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/quantizor/markdown-to-jsx.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://markdown-to-jsx.quantizor.dev",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/quantizor/markdown-to-jsx/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/markdown-to-jsx/-/markdown-to-jsx-7.7.17.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "ee61bfd5f790d135f923b6323195438020bfcb62370a2121211408872a2ff671813f97a856b3975c7b8be593fc1917f15592918975898305e46fd22dfa74197d"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:constraint:engine:node",
-          "value": ">= 10"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/markdown-to-jsx"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "json-schema-merge-allof",
-      "version": "0.8.1",
-      "bom-ref": "dx-os-frontend@2.0.0|json-schema-merge-allof@0.8.1",
-      "author": "Martin Hansen",
-      "description": "Simplify your schema by combining allOf into the root schema, safely.",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/json-schema-merge-allof@0.8.1",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/mokkabonna/json-schema-merge-allof.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/mokkabonna/json-schema-merge-allof#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/mokkabonna/json-schema-merge-allof/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/json-schema-merge-allof/-/json-schema-merge-allof-0.8.1.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "09350a98894f25bb167f34519ce5f3fb432322abe795e217c054f3cfeb7d4fce879d85ff468ceb89ae995462e4b4053d7be37280d963bde3fecb1aad429fd0e3"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:constraint:engine:node",
-          "value": ">=12.0.0"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/json-schema-merge-allof"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "jsonpointer",
-      "version": "5.0.1",
-      "bom-ref": "dx-os-frontend@2.0.0|jsonpointer@5.0.1",
-      "author": "Jan Lehnardt",
-      "description": "Simple JSON Addressing.",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/jsonpointer@5.0.1",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/janl/node-jsonpointer.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/janl/node-jsonpointer#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "http://github.com/janl/node-jsonpointer/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/jsonpointer/-/jsonpointer-5.0.1.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "a7f9d76e148472ede96517645b539f261a6c56d5b581de166b57e741cf582e24df0239f4df5d9e30a8a66dd210cee665f5a6bdc5419a4653fd4ff08913f762b5"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:constraint:engine:node",
-          "value": ">=0.10.0"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/jsonpointer"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "ajv-formats",
-      "version": "2.1.1",
-      "bom-ref": "dx-os-frontend@2.0.0|ajv-formats@2.1.1",
-      "author": "Evgeny Poberezkin",
-      "description": "Format validation for Ajv v7+",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/ajv-formats@2.1.1",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/ajv-validator/ajv-formats.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/ajv-validator/ajv-formats#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/ajv-validator/ajv-formats/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/ajv-formats/-/ajv-formats-2.1.1.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "5b1d0ac79da1c44ec2d7c8643048206251227ea599b58691828b89a2bf9631d3e743210ad77be0116c9536ea7b4a879ea0b32caf891fe61e9d396d75235e4c50"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/ajv-formats"
-        }
-      ]
-    },
-    {
-      "type": "library",
       "name": "react-dom",
       "group": "@types",
       "version": "18.3.7",
@@ -3363,214 +2718,6 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/zustand"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "fast-deep-equal",
-      "version": "3.1.3",
-      "bom-ref": "dx-os-frontend@2.0.0|fast-deep-equal@3.1.3",
-      "author": "Evgeny Poberezkin",
-      "description": "Fast deep equal",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/fast-deep-equal@3.1.3",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/epoberezkin/fast-deep-equal.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/epoberezkin/fast-deep-equal#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/epoberezkin/fast-deep-equal/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "7f7a90f68432f63d808417bf1fd542f75c0b98a042094fe00ce9ca340606e61b303bb04b2a3d3d1dce4760dcfd70623efb19690c22200da8ad56cd3701347ce1"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/fast-deep-equal"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "fast-uri",
-      "version": "3.1.9",
-      "bom-ref": "dx-os-frontend@2.0.0|fast-uri@3.1.9",
-      "author": "Vincent Le Goff",
-      "description": "Dependency-free RFC 3986 URI toolbox",
-      "licenses": [
-        {
-          "license": {
-            "id": "BSD-3-Clause",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/fast-uri@3.1.9",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/fastify/fast-uri.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/fastify/fast-uri",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/fastify/fast-uri/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/fast-uri/-/fast-uri-3.1.9.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "852ff45addd86b4e37a0a5ecd2c231acca4a4084d784c2c8ad500a2978b8828cc60bdbfb6115959d7219ce334f4ced3633d05dc4b096a8ad7245780dce257225"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/fast-uri"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "json-schema-traverse",
-      "version": "1.0.0",
-      "bom-ref": "dx-os-frontend@2.0.0|json-schema-traverse@1.0.0",
-      "author": "Evgeny Poberezkin",
-      "description": "Traverse JSON Schema passing each schema object to callback",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/json-schema-traverse@1.0.0",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/epoberezkin/json-schema-traverse.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/epoberezkin/json-schema-traverse#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/epoberezkin/json-schema-traverse/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/json-schema-traverse/-/json-schema-traverse-1.0.0.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "34cf3f3fd9f75e35e12199f594b86415a0024ce5114178d6855e0103f4673aff31be0aadaa9017f483b89914314b1d51968e2dab37aa6f4b0e96bb9a3b2dddba"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/json-schema-traverse"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "require-from-string",
-      "version": "2.0.2",
-      "bom-ref": "dx-os-frontend@2.0.0|require-from-string@2.0.2",
-      "author": "Vsevolod Strukchinsky",
-      "description": "Require module from string",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/require-from-string@2.0.2",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/floatdrop/require-from-string.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/floatdrop/require-from-string#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/floatdrop/require-from-string/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/require-from-string/-/require-from-string-2.0.2.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "5dfd2759ee91b1ece214cbbe029f5b8a251b9a996ae92f7fa7eef0ed85cffc904786b5030d48706bebc0372b9bbaa7d9593bde53ffc36151ac0c6ed128bfef13"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:constraint:engine:node",
-          "value": ">=0.10.0"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/require-from-string"
         }
       ]
     },
@@ -5728,109 +4875,6 @@
     },
     {
       "type": "library",
-      "name": "compute-lcm",
-      "version": "1.1.2",
-      "bom-ref": "dx-os-frontend@2.0.0|compute-lcm@1.1.2",
-      "author": "Athan Reines",
-      "description": "Computes the least common multiple (lcm).",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared",
-            "url": "http://www.opensource.org/licenses/MIT"
-          }
-        }
-      ],
-      "purl": "pkg:npm/compute-lcm@1.1.2",
-      "externalReferences": [
-        {
-          "url": "git://github.com/compute-io/lcm.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/compute-io/lcm#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/compute-io/lcm/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/compute-lcm/-/compute-lcm-1.1.2.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "38534f7500179d084348a8a85fcfd7613eac754957c2978c8df77a029c4c25fc99e06c662d1d71bcc11172d9588651f0222cfa092a41736faa60a8c7199c384d"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/compute-lcm"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "json-schema-compare",
-      "version": "0.2.2",
-      "bom-ref": "dx-os-frontend@2.0.0|json-schema-compare@0.2.2",
-      "author": "Martin Hansen",
-      "description": "Compare json schemas smarter.",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/json-schema-compare@0.2.2",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/mokkabonna/json-schema-compare.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/mokkabonna/json-schema-compare#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/mokkabonna/json-schema-compare/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/json-schema-compare/-/json-schema-compare-0.2.2.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "7385989832b225786ced65af0169b7b886277f2585a08a7e244a17df8adcb55bc490c6023c6857b6f98515789f7c16f17d9b2f43444d9d5e47ec6bc31791c2a9"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/json-schema-compare"
-        }
-      ]
-    },
-    {
-      "type": "library",
       "name": "d3-drag",
       "group": "@types",
       "version": "3.0.7",
@@ -6827,6 +5871,57 @@
     },
     {
       "type": "library",
+      "name": "lodash",
+      "version": "4.18.1",
+      "bom-ref": "dx-os-frontend@2.0.0|lodash@4.18.1",
+      "author": "John-David Dalton",
+      "description": "Lodash modular utilities.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/lodash@4.18.1",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/lodash/lodash.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://lodash.com/",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/lodash/lodash/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/lodash/-/lodash-4.18.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "74c22789c4cf544f1dd5ee68b5fc269a3971919a14a6254bc32793754b22fc26a3fe07f3cdb941702139b111d5fc0b23b829b15abb5ed93346498b82782abed1"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/lodash"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "query-string",
       "version": "7.1.3",
       "bom-ref": "dx-os-frontend@2.0.0|query-string@7.1.3",
@@ -7569,213 +6664,6 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/resolve"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "compute-gcd",
-      "version": "1.2.1",
-      "bom-ref": "dx-os-frontend@2.0.0|compute-gcd@1.2.1",
-      "author": "Athan Reines",
-      "description": "Computes the greatest common divisor (gcd).",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared",
-            "url": "http://www.opensource.org/licenses/MIT"
-          }
-        }
-      ],
-      "purl": "pkg:npm/compute-gcd@1.2.1",
-      "externalReferences": [
-        {
-          "url": "git://github.com/compute-io/gcd.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/compute-io/gcd#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/compute-io/gcd/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/compute-gcd/-/compute-gcd-1.2.1.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "4f031bc41373d25ef5fbc49ce1ccefd77878904aa772157d8a0419062e9051acf4f5d9f3d778ee1a79da59625346c3f76ebc4ea31781e120365842cbc35842b6"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/compute-gcd"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "validate.io-array",
-      "version": "1.0.6",
-      "bom-ref": "dx-os-frontend@2.0.0|validate.io-array@1.0.6",
-      "author": "Athan Reines",
-      "description": "Validates if a value is an array.",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/validate.io-array@1.0.6",
-      "externalReferences": [
-        {
-          "url": "git://github.com/validate-io/array.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/validate-io/array#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/validate-io/array/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/validate.io-array/-/validate.io-array-1.0.6.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "0de3b2ec29cf1338a082b38ee4266154a270e92dd88bb7bd7bae51d4d97f453375bd340a9f38dfbe4b34ffc910e3414ffddb2344039de21c6627bb8b6babf192"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/validate.io-array"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "validate.io-function",
-      "version": "1.0.2",
-      "bom-ref": "dx-os-frontend@2.0.0|validate.io-function@1.0.2",
-      "author": "Athan Reines",
-      "description": "Validates if a value is a function.",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared",
-            "url": "http://www.opensource.org/licenses/MIT"
-          }
-        }
-      ],
-      "purl": "pkg:npm/validate.io-function@1.0.2",
-      "externalReferences": [
-        {
-          "url": "git://github.com/validate-io/function.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/validate-io/function#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/validate-io/function/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/validate.io-function/-/validate.io-function-1.0.2.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "2e51726d1244ae24ae0675214321b96f0825861e741294cbdae976dcc3c8b91d687633bb5da30b155f2f1c6c29ec065c885c6d60e7a24824f9b2df9748f38d89"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/validate.io-function"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "validate.io-integer-array",
-      "version": "1.0.0",
-      "bom-ref": "dx-os-frontend@2.0.0|validate.io-integer-array@1.0.0",
-      "author": "Athan Reines",
-      "description": "Validates if a value is an integer array.",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared",
-            "url": "http://www.opensource.org/licenses/MIT"
-          }
-        }
-      ],
-      "purl": "pkg:npm/validate.io-integer-array@1.0.0",
-      "externalReferences": [
-        {
-          "url": "git://github.com/validate-io/integer-array.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/validate-io/integer-array#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/validate-io/integer-array/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/validate.io-integer-array/-/validate.io-integer-array-1.0.0.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "993acc93fd72b501ed098d2834edddced69f1d8c8653cf0a2fe8d1c56bb37ce9906fee2aaa75a623e83292f1a9f2eb0a64e3341fb91e24711b45a162600d15ac"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/validate.io-integer-array"
         }
       ]
     },
@@ -9583,58 +8471,6 @@
     },
     {
       "type": "library",
-      "name": "validate.io-integer",
-      "version": "1.0.5",
-      "bom-ref": "dx-os-frontend@2.0.0|validate.io-integer@1.0.5",
-      "author": "Athan Reines",
-      "description": "Validates if a value is an integer.",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared",
-            "url": "http://www.opensource.org/licenses/MIT"
-          }
-        }
-      ],
-      "purl": "pkg:npm/validate.io-integer@1.0.5",
-      "externalReferences": [
-        {
-          "url": "git://github.com/validate-io/integer.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/validate-io/integer#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/validate-io/integer/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/validate.io-integer/-/validate.io-integer-1.0.5.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "db68b3b1848ba2337f3fa6e9a41aa18140e30a4af9458da377e3766b70c20147b2f3276fad9fce906bc53d1eea7cea704762c2e69e0d833c73dfa839560aff85"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/validate.io-integer"
-        }
-      ]
-    },
-    {
-      "type": "library",
       "name": "d3-ease",
       "version": "3.0.1",
       "bom-ref": "dx-os-frontend@2.0.0|d3-ease@3.0.1",
@@ -10699,58 +9535,6 @@
     },
     {
       "type": "library",
-      "name": "validate.io-number",
-      "version": "1.0.3",
-      "bom-ref": "dx-os-frontend@2.0.0|validate.io-number@1.0.3",
-      "author": "Athan Reines",
-      "description": "Validates if a value is a number.",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared",
-            "url": "http://www.opensource.org/licenses/MIT"
-          }
-        }
-      ],
-      "purl": "pkg:npm/validate.io-number@1.0.3",
-      "externalReferences": [
-        {
-          "url": "git://github.com/validate-io/number.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/validate-io/number#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/validate-io/number/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/validate.io-number/-/validate.io-number-1.0.3.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "911032a2d71b35a498a039d7bdbe0c1e0ff46b57a025d2f04baa09dfc4c963b6b0f67f77165ff76e521777262f3cea79e42371cb0a281bfdc172bc0dac1a5c4a"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/validate.io-number"
-        }
-      ]
-    },
-    {
-      "type": "library",
       "name": "get-proto",
       "version": "1.0.1",
       "bom-ref": "dx-os-frontend@2.0.0|get-proto@1.0.1",
@@ -11253,13 +10037,8 @@
         "dx-os-frontend@2.0.0|@fullcalendar/timegrid@6.1.22",
         "dx-os-frontend@2.0.0|@mui/icons-material@6.5.0",
         "dx-os-frontend@2.0.0|@mui/material@6.5.0",
-        "dx-os-frontend@2.0.0|@rjsf/core@5.24.13",
-        "dx-os-frontend@2.0.0|@rjsf/mui@5.24.13",
-        "dx-os-frontend@2.0.0|@rjsf/utils@5.24.13",
-        "dx-os-frontend@2.0.0|@rjsf/validator-ajv8@5.24.13",
         "dx-os-frontend@2.0.0|@tisoap/react-flow-smart-edge@5.0.0",
         "dx-os-frontend@2.0.0|@xyflow/react@12.12.1",
-        "dx-os-frontend@2.0.0|ajv@8.20.0",
         "dx-os-frontend@2.0.0|monaco-editor@0.57.0",
         "dx-os-frontend@2.0.0|monaco-yaml@5.5.1",
         "dx-os-frontend@2.0.0|oidc-client-ts@3.5.0",
@@ -11369,53 +10148,6 @@
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@rjsf/core@5.24.13",
-      "dependsOn": [
-        "dx-os-frontend@2.0.0|@rjsf/utils@5.24.13",
-        "dx-os-frontend@2.0.0|lodash-es@4.18.1",
-        "dx-os-frontend@2.0.0|lodash@4.18.1",
-        "dx-os-frontend@2.0.0|markdown-to-jsx@7.7.17",
-        "dx-os-frontend@2.0.0|prop-types@15.8.1",
-        "dx-os-frontend@2.0.0|react@18.3.1"
-      ]
-    },
-    {
-      "ref": "dx-os-frontend@2.0.0|@rjsf/mui@5.24.13",
-      "dependsOn": [
-        "dx-os-frontend@2.0.0|@emotion/react@11.14.0",
-        "dx-os-frontend@2.0.0|@emotion/styled@11.14.1",
-        "dx-os-frontend@2.0.0|@mui/icons-material@6.5.0",
-        "dx-os-frontend@2.0.0|@mui/material@6.5.0",
-        "dx-os-frontend@2.0.0|@rjsf/core@5.24.13",
-        "dx-os-frontend@2.0.0|@rjsf/utils@5.24.13",
-        "dx-os-frontend@2.0.0|react@18.3.1"
-      ]
-    },
-    {
-      "ref": "dx-os-frontend@2.0.0|@rjsf/utils@5.24.13",
-      "dependsOn": [
-        "dx-os-frontend@2.0.0|json-schema-merge-allof@0.8.1",
-        "dx-os-frontend@2.0.0|jsonpointer@5.0.1",
-        "dx-os-frontend@2.0.0|lodash-es@4.18.1",
-        "dx-os-frontend@2.0.0|lodash@4.18.1",
-        "dx-os-frontend@2.0.0|@rjsf/utils@5.24.13|react-is@18.3.1",
-        "dx-os-frontend@2.0.0|react@18.3.1"
-      ]
-    },
-    {
-      "ref": "dx-os-frontend@2.0.0|@rjsf/utils@5.24.13|react-is@18.3.1"
-    },
-    {
-      "ref": "dx-os-frontend@2.0.0|@rjsf/validator-ajv8@5.24.13",
-      "dependsOn": [
-        "dx-os-frontend@2.0.0|@rjsf/utils@5.24.13",
-        "dx-os-frontend@2.0.0|ajv-formats@2.1.1",
-        "dx-os-frontend@2.0.0|ajv@8.20.0",
-        "dx-os-frontend@2.0.0|lodash-es@4.18.1",
-        "dx-os-frontend@2.0.0|lodash@4.18.1"
-      ]
-    },
-    {
       "ref": "dx-os-frontend@2.0.0|@tisoap/react-flow-smart-edge@5.0.0",
       "dependsOn": [
         "dx-os-frontend@2.0.0|@xyflow/react@12.12.1",
@@ -11433,15 +10165,6 @@
         "dx-os-frontend@2.0.0|react-dom@18.3.1",
         "dx-os-frontend@2.0.0|react@18.3.1",
         "dx-os-frontend@2.0.0|zustand@4.5.7"
-      ]
-    },
-    {
-      "ref": "dx-os-frontend@2.0.0|ajv@8.20.0",
-      "dependsOn": [
-        "dx-os-frontend@2.0.0|fast-deep-equal@3.1.3",
-        "dx-os-frontend@2.0.0|fast-uri@3.1.9",
-        "dx-os-frontend@2.0.0|json-schema-traverse@1.0.0",
-        "dx-os-frontend@2.0.0|require-from-string@2.0.2"
       ]
     },
     {
@@ -11687,35 +10410,6 @@
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|lodash-es@4.18.1"
-    },
-    {
-      "ref": "dx-os-frontend@2.0.0|lodash@4.18.1"
-    },
-    {
-      "ref": "dx-os-frontend@2.0.0|markdown-to-jsx@7.7.17",
-      "dependsOn": [
-        "dx-os-frontend@2.0.0|react@18.3.1"
-      ]
-    },
-    {
-      "ref": "dx-os-frontend@2.0.0|json-schema-merge-allof@0.8.1",
-      "dependsOn": [
-        "dx-os-frontend@2.0.0|compute-lcm@1.1.2",
-        "dx-os-frontend@2.0.0|json-schema-compare@0.2.2",
-        "dx-os-frontend@2.0.0|lodash@4.18.1"
-      ]
-    },
-    {
-      "ref": "dx-os-frontend@2.0.0|jsonpointer@5.0.1"
-    },
-    {
-      "ref": "dx-os-frontend@2.0.0|ajv-formats@2.1.1",
-      "dependsOn": [
-        "dx-os-frontend@2.0.0|ajv@8.20.0"
-      ]
-    },
-    {
       "ref": "dx-os-frontend@2.0.0|@types/react-dom@18.3.7",
       "dependsOn": [
         "dx-os-frontend@2.0.0|@types/react@18.3.31"
@@ -11745,18 +10439,6 @@
         "dx-os-frontend@2.0.0|react@18.3.1",
         "dx-os-frontend@2.0.0|use-sync-external-store@1.7.0"
       ]
-    },
-    {
-      "ref": "dx-os-frontend@2.0.0|fast-deep-equal@3.1.3"
-    },
-    {
-      "ref": "dx-os-frontend@2.0.0|fast-uri@3.1.9"
-    },
-    {
-      "ref": "dx-os-frontend@2.0.0|json-schema-traverse@1.0.0"
-    },
-    {
-      "ref": "dx-os-frontend@2.0.0|require-from-string@2.0.2"
     },
     {
       "ref": "dx-os-frontend@2.0.0|dompurify@3.4.17",
@@ -11998,21 +10680,6 @@
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|compute-lcm@1.1.2",
-      "dependsOn": [
-        "dx-os-frontend@2.0.0|compute-gcd@1.2.1",
-        "dx-os-frontend@2.0.0|validate.io-array@1.0.6",
-        "dx-os-frontend@2.0.0|validate.io-function@1.0.2",
-        "dx-os-frontend@2.0.0|validate.io-integer-array@1.0.0"
-      ]
-    },
-    {
-      "ref": "dx-os-frontend@2.0.0|json-schema-compare@0.2.2",
-      "dependsOn": [
-        "dx-os-frontend@2.0.0|lodash@4.18.1"
-      ]
-    },
-    {
       "ref": "dx-os-frontend@2.0.0|@types/d3-drag@3.0.7",
       "dependsOn": [
         "dx-os-frontend@2.0.0|@types/d3-selection@3.0.12"
@@ -12116,6 +10783,9 @@
       "ref": "dx-os-frontend@2.0.0|jsonexport@3.2.0"
     },
     {
+      "ref": "dx-os-frontend@2.0.0|lodash@4.18.1"
+    },
+    {
       "ref": "dx-os-frontend@2.0.0|query-string@7.1.3",
       "dependsOn": [
         "dx-os-frontend@2.0.0|decode-uri-component@0.2.2",
@@ -12204,27 +10874,6 @@
         "dx-os-frontend@2.0.0|is-core-module@2.17.0",
         "dx-os-frontend@2.0.0|path-parse@1.0.7",
         "dx-os-frontend@2.0.0|supports-preserve-symlinks-flag@1.0.0"
-      ]
-    },
-    {
-      "ref": "dx-os-frontend@2.0.0|compute-gcd@1.2.1",
-      "dependsOn": [
-        "dx-os-frontend@2.0.0|validate.io-array@1.0.6",
-        "dx-os-frontend@2.0.0|validate.io-function@1.0.2",
-        "dx-os-frontend@2.0.0|validate.io-integer-array@1.0.0"
-      ]
-    },
-    {
-      "ref": "dx-os-frontend@2.0.0|validate.io-array@1.0.6"
-    },
-    {
-      "ref": "dx-os-frontend@2.0.0|validate.io-function@1.0.2"
-    },
-    {
-      "ref": "dx-os-frontend@2.0.0|validate.io-integer-array@1.0.0",
-      "dependsOn": [
-        "dx-os-frontend@2.0.0|validate.io-array@1.0.6",
-        "dx-os-frontend@2.0.0|validate.io-integer@1.0.5"
       ]
     },
     {
@@ -12392,12 +11041,6 @@
       "ref": "dx-os-frontend@2.0.0|supports-preserve-symlinks-flag@1.0.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|validate.io-integer@1.0.5",
-      "dependsOn": [
-        "dx-os-frontend@2.0.0|validate.io-number@1.0.3"
-      ]
-    },
-    {
       "ref": "dx-os-frontend@2.0.0|d3-ease@3.0.1"
     },
     {
@@ -12502,9 +11145,6 @@
     },
     {
       "ref": "dx-os-frontend@2.0.0|lines-and-columns@1.2.4"
-    },
-    {
-      "ref": "dx-os-frontend@2.0.0|validate.io-number@1.0.3"
     },
     {
       "ref": "dx-os-frontend@2.0.0|get-proto@1.0.1",

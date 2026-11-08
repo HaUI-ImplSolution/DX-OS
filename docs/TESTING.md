@@ -119,13 +119,23 @@ Giao diện, đăng nhập bằng `req1` (vai `BORROWER`), `keeper1` (vai `KEEPE
 6. Tab Hàng đợi sự kiện có ba danh sách Lỗi, Chờ gửi, Đã gửi; thông điệp lỗi hiện lỗi gần nhất và nút Thử lại ngay.
 7. Tải một tệp `.html` lên trường tệp: bị từ chối (400); tải một tệp `.pdf` rồi mở link tải: trình duyệt lưu thành tệp; gỡ tệp rồi mở lại link cũ: 404.
 8. Tab Soạn và áp dụng: sơ đồ quy trình vẽ lại sau 5 giây không gõ và đổi theo `deadline`, `auto_close` và `after` của tệp; tệp sai thì báo lỗi kèm dòng và cột và giữ sơ đồ đúng gần nhất; sơ đồ mở to thành hộp thoại; vai `ADMIN` khai báo trong tệp báo lỗi tiếng Việt kèm dòng và cột, không có nút Áp dụng; vai trùng tên với mô hình khác thì áp dụng được.
-9. Thực thể còn hồ sơ đang xử lý: đổi hạn xử lý hoặc người xử lý rồi bấm Xem kế hoạch báo không đổi được và không có nút Áp dụng; rút hết hồ sơ rồi xem lại thì có nút Áp dụng.
+9. Thực thể còn hồ sơ đang xử lý: thêm một hành động vào quy trình hoặc đổi hạn xử lý rồi bấm Xem kế hoạch báo không đổi được và không có nút Áp dụng; rút hết hồ sơ rồi xem lại thì có nút Áp dụng.
 10. Dừng Keycloak (`docker compose stop keycloak`), áp dụng một thay đổi, rồi bật lại: thẻ mô hình hiện nhãn "Đang dừng dở" kèm nút Tiếp tục áp dụng và Hủy bỏ; Tiếp tục thì phiên bản tăng, Hủy bỏ hỏi xác nhận rồi đưa mô hình về phiên bản đang chạy. Với lần áp dụng đầu dừng dở (backend chạy với `ENGINE_FAULT_APPLY_STEP=ENSURE_CLIENT`) thẻ hiện "Chưa có phiên bản" và Hủy bỏ làm thẻ biến mất.
 11. Tab Người dùng: tìm, gán và gỡ vai và đơn vị, tạo người dùng (mật khẩu tạm phải đổi ở lần đăng nhập đầu), khóa, mở, đặt lại mật khẩu; hộp thoại người dùng hiện lịch sử thay đổi, không có mật khẩu nào.
 12. Lịch đặt chỗ: kéo một lượt để đổi giờ, kéo cạnh dưới để đổi giờ kết thúc; lượt trùng giờ bị đưa về chỗ cũ kèm lỗi.
 13. Trang chi tiết hồ sơ hiện lịch sử với `Nhãn: cũ → mới` của từng trường; sửa hồ sơ đã bị người khác đổi thì báo "Bản ghi vừa được người khác thay đổi".
 14. Menu người dùng, mục "Tài khoản của tôi", mở Account Console của Keycloak ở tab mới, đã đăng nhập.
 15. Lần chạy đầu trên máy sạch: `admin` đăng nhập bằng mật khẩu tạm, bị buộc đổi mật khẩu, vào bảng điều khiển, áp dụng mẫu đầu tiên.
+16. Tab Soạn và áp dụng, chế độ Điền form: các tab Chung, Vai, Đơn vị, Thực thể gọn trên một màn hình; Thực thể có tab con Chung, Trường, Quyền, Quy trình; vai, trường và thực thể chọn từ danh sách đã khai báo.
+    Ở Quy trình, thêm vai xử lý thứ hai chưa có quyền xem hồ sơ: form cảnh báo và sơ đồ báo lỗi kèm dòng và cột; cho vai đó quyền thì hết lỗi.
+    Thêm một hành động, đổi mã trạng thái, bỏ một hành động của khung (hiện "Đã bỏ khỏi quy trình này" kèm nút Khôi phục), chọn "Tự khai báo, không dùng khung": sơ đồ vẽ lại theo tệp và tệp YAML giữ nguyên các dòng chú thích.
+17. Nút "Phạm vi có thể làm" ở mỗi phần của form và bảng "Viết được gì trong tệp" bên phải trình soạn: có mục hệ thống chấp nhận gì, mở rộng được gì, tự tạo được gì, tên trạng thái và hành động của từng khung; rê chuột lên một khóa trong YAML hiện giải thích tiếng Việt.
+18. Quy trình tự khai báo khi còn hồ sơ đang mở: đổi nhãn một hành động rồi áp dụng được; thêm hoặc bỏ trạng thái, đổi `from`, `to` hay `by` của một hành động, hoặc đổi `initial` thì kế hoạch bị từ chối với câu tiếng Việt nêu số hồ sơ.
+    Đổi `role` của một hành động hoặc danh sách `handler` rồi áp dụng: vai cũ không thực hiện được nữa, vai mới thực hiện được hồ sơ đang mở.
+19. Bỏ `terminal` của một trạng thái cuối còn hồ sơ đã đóng: kế hoạch bị từ chối kèm số dòng vi phạm ở `status`; rút hết hồ sơ ở trạng thái đó thì áp dụng được.
+20. Chi tiết hồ sơ theo vai: người chỉ giữ vai `AGENT` không thấy nút của hành động dành cho `LEAD`; hồ sơ đã giao thì chỉ người được giao thấy nút, người điều phối bấm "Bỏ giao" thì vai khác thấy lại.
+    Bấm hành động có `require` khi trường còn trống: báo "Bắt buộc nhập trước khi thực hiện" kèm tên trường, hồ sơ giữ nguyên trạng thái; điền trường rồi bấm lại thì qua.
+    Hồ sơ có quy trình không có nút Xóa ở form sửa; nút hành động không đặt nhãn hiện mã hành động và form nhắc điều đó.
 
 Lệnh `dxos` và các tính năng chạy ngoài stack kiểm:
 

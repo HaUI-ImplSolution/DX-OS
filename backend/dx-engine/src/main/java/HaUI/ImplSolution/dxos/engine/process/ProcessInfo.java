@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 // The workflow an entity runs, as shown to clients; the deadline is in seconds, or null.
-public record ProcessInfo(String family,String handler,boolean allowSelfDecision,Long deadlineSeconds,Booking booking,List<State>states,List<Action>actions,Map<String,List<Effect>>effects){
+public record ProcessInfo(String family,List<String>handlers,boolean allowSelfDecision,Long deadlineSeconds,Booking booking,List<State>states,List<Action>actions,Map<String,List<Effect>>effects){
 
 // These effects are queued after the decision, not completed by the action response.
 public record Effect(String operation,String user,String group,String groupField,boolean asynchronous){}}

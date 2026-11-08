@@ -3,15 +3,19 @@ package HaUI.ImplSolution.dxos.engine.meta;
 
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
 import HaUI.ImplSolution.dxos.core.api.exception.ResourceNotFoundException;
+import HaUI.ImplSolution.dxos.core.api.user.UserContext;
 import HaUI.ImplSolution.dxos.engine.data.DataService;
 import HaUI.ImplSolution.dxos.engine.data.DataService.Access;
 import HaUI.ImplSolution.dxos.engine.process.ProcessInfo;
+import HaUI.ImplSolution.dxos.engine.registry.ModelClient;
 import HaUI.ImplSolution.dxos.engine.registry.ModelRegistry;
 import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
+import HaUI.ImplSolution.dxos.model.ProcessFamily.Actor;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -30,7 +34,7 @@ public class MetaController {
 
   public record EntityMeta(String name, String label, List<FieldMeta> fields, boolean hasProcess,
       ProcessInfo process, String unitField, boolean canRead, boolean canWrite, boolean canHandle,
-      boolean canAssign, Long modelVersion) {}
+      boolean canAssign, Long modelVersion, List<String> handlerActions) {}
 
   // held is true for a model that is being applied or needs reconciliation; it has no entities
   // then.
@@ -39,10 +43,12 @@ public class MetaController {
 
   private final ModelRegistry registry;
   private final DataService data;
+  private final UserContext user;
 
-  public MetaController(ModelRegistry registry, DataService data) {
+  public MetaController(ModelRegistry registry, DataService data, UserContext user) {
     this.registry = registry;
     this.data = data;
+    this.user = user;
   }
 
   @GetMapping
@@ -69,7 +75,9 @@ public class MetaController {
   @GetMapping("/{model}/entities/{entity}")
   @Operation(summary = "Fields, process and permissions of one entity for the caller",
       description = "modelVersion identifies the applied model. process.effects maps destination"
-          + " states to queued effects; asynchronous effects may still be pending after an action.")
+          + " states to queued effects; asynchronous effects may still be pending after an action."
+          + " handlerActions lists the process actions the roles of the caller may take, so a"
+          + " client shows only the buttons that can work.")
   public ApiResponse<EntityMeta> entity(@PathVariable String model, @PathVariable String entity) {
     Model m = registry.require(model);
     Entity e = m.entity(entity)
@@ -85,7 +93,7 @@ public class MetaController {
                 f.required() && f.defaultValue() == null, f.unique(), f.options(), f.to()))
             .toList();
     ProcessInfo process = entity.process() == null ? null
-        : new ProcessInfo(entity.process().family(), entity.process().handler(),
+        : new ProcessInfo(entity.process().family(), entity.process().handlers(),
             entity.process().allowSelfDecision(),
             entity.process().deadline() == null ? null : entity.process().deadline().toSeconds(),
             entity.process().booking(), entity.process().definition().states(),
@@ -93,7 +101,8 @@ public class MetaController {
     String unitField = entity.unitField().map(Model.Field::name).orElse(null);
     return new EntityMeta(entity.name(), entity.label(), fields, process != null, process,
         unitField, access.read(), access.write(), data.canHandle(model, entity),
-        data.canAssign(model, entity), registry.version(model.name()));
+        data.canAssign(model, entity), registry.version(model.name()),
+        handlerActions(model, entity));
   }
 
   private Map<String, List<ProcessInfo.Effect>> effects(Entity entity) {
@@ -102,5 +111,17 @@ public class MetaController {
     return entity.process().after().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
         entry -> entry.getValue().stream().map(effect -> new ProcessInfo.Effect(effect.operation(),
             effect.user(), effect.group(), effect.groupField(), true)).toList()));
+  }
+
+  // The actions the roles of the caller may take on a record, as the process rules decide them.
+  private List<String> handlerActions(Model model, Entity entity) {
+    if (entity.process() == null) {
+      return List.of();
+    }
+    var roles = user.clientRoles(ModelClient.of(model.name()));
+    return entity.process().definition().actions().stream()
+        .filter(action -> action.by() == Actor.HANDLER
+            && !Collections.disjoint(roles, entity.process().rolesFor(action)))
+        .map(action -> action.name()).toList();
   }
 }

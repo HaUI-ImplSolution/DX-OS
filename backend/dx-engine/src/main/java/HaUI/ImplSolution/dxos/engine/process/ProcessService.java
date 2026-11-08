@@ -8,6 +8,7 @@ import HaUI.ImplSolution.dxos.model.ProcessFamily;
 import HaUI.ImplSolution.dxos.model.ProcessFamily.Action;
 import java.util.Map;
 import org.flowable.common.engine.api.FlowableException;
+import org.flowable.common.engine.api.FlowableObjectNotFoundException;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.runtime.ProcessInstance;
@@ -34,9 +35,14 @@ public class ProcessService {
   }
 
   public void start(Model model, Entity entity, long id, String ownerId) {
-    runtime.startProcessInstanceByKey(entity.process().family(), key(model, entity, id),
-        Map.of("handlerRole", entity.process().handler(), "ownerId", ownerId, "model", model.name(),
-            "entity", entity.name(), "recordId", id));
+    String processKey = entity.process().processKey(model.name(), entity.name());
+    try {
+      runtime.startProcessInstanceByKey(processKey, key(model, entity, id),
+          Map.of("handlerRole", String.join(",", entity.process().handlers()), "ownerId", ownerId,
+              "model", model.name(), "entity", entity.name(), "recordId", id));
+    } catch (FlowableObjectNotFoundException e) {
+      throw new IllegalStateException("The process " + processKey + " is not deployed", e);
+    }
   }
 
   // Completes the open task of the record with an action; the process then writes the new status.

@@ -82,6 +82,7 @@ export interface FamilyAction {
   // The roles this action is limited to (empty: the handlers of the process) and the fields it requires.
   roles: string[];
   require: string[];
+  when?: { field: string; op: string; value: number | string } | null;
 }
 
 export interface FamilyParam {

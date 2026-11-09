@@ -14,6 +14,7 @@ const NAME = "\\[a-z\\]\\[a-z0-9_\\]\\*";
 
 // Most specific first: the general "... is required" comes last.
 const VI: Rule[] = [
+  pattern("The record does not meet the condition of this action: (.+)", "Hồ sơ chưa đạt điều kiện của hành động này: $1"),
   // A model file (the checker of the model format).
   fixed("The model file has problems", "Tệp mô hình có lỗi"),
   pattern("invalid YAML: (.*)", "YAML không hợp lệ: $1"),

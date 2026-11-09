@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import {
   Avatar,
   Box,
@@ -24,6 +24,7 @@ import { useGetIdentity, useNotify, useRecordContext, useRefresh } from "react-a
 import { translateBackend } from "../shell/backendMessages";
 import { formatDateTime, timeAgo } from "../shell/format";
 import { StatusChip, TONES } from "./StatusChip";
+import { conditionMet, conditionText } from "./condition";
 import { assignRecord, fileLink, listEvents, listFiles, listHandlers, removeFile, takeAction, uploadFile } from "./api";
 import type { AttachmentItem, EntityMeta, FieldMeta, Person, ProcessAction, RecordEvent } from "./types";
 
@@ -97,17 +98,26 @@ export function ActionButtons({ model, entity }: Props) {
 
   return (
     <>
-      {allowed.map((action) => (
-        <Button
-          key={action.name}
-          {...actionStyle(action)}
-          sx={{ ml: 1 }}
-          disabled={busy}
-          onClick={() => (action.needsNote || action.name === WITHDRAW ? setNoteFor(action) : send(action))}
-        >
-          {action.label}
-        </Button>
-      ))}
+      {allowed.map((action) => {
+        const waiting = !conditionMet(action.when, record);
+        const button = (
+          <Button
+            {...actionStyle(action)}
+            sx={{ ml: 1 }}
+            disabled={busy || waiting}
+            onClick={() => (action.needsNote || action.name === WITHDRAW ? setNoteFor(action) : send(action))}
+          >
+            {action.label}
+          </Button>
+        );
+        return waiting && action.when ? (
+          <Tooltip key={action.name} title={`Chỉ thực hiện khi ${conditionText(action.when, entity.fields)}`}>
+            <span>{button}</span>
+          </Tooltip>
+        ) : (
+          <Fragment key={action.name}>{button}</Fragment>
+        );
+      })}
       <Dialog open={noteFor !== null} onClose={() => setNoteFor(null)} fullWidth>
         <DialogTitle>{noteFor?.label}</DialogTitle>
         <DialogContent>

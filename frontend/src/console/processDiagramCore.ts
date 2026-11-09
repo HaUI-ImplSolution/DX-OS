@@ -125,7 +125,7 @@ export function buildProcessDiagram(
       id: `${action.name}-${from}`,
       source: from,
       target: action.to,
-      label: `${action.label} (${action.by === "OWNER" ? "người nộp" : (action.roles.length ? action.roles : family.handlers).join(", ")})`,
+      label: `${action.label} (${action.by === "OWNER" ? "người nộp" : (action.roles.length ? action.roles : family.handlers).join(", ")})${action.when ? `, khi ${action.when.field} ${action.when.op} ${action.when.value}` : ""}`,
     })),
   );
   // The system takes the action of auto_close for the owner of a record that waits that long.

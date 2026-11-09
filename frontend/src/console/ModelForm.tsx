@@ -43,6 +43,8 @@ const rec = (value: unknown): Rec =>
 const list = (value: unknown): unknown[] => (Array.isArray(value) ? value : []);
 const text = (value: unknown): string => (value === undefined || value === null ? "" : String(value));
 const texts = (value: unknown): string[] => list(value).map(text);
+// The condition of an action as it is written in the file: the field, the operator and the value.
+const conditionOf = (when?: { field: string; op: string; value: number | string } | null): string => (when ? `${when.field} ${when.op} ${when.value}` : "");
 
 // A copy without the keys that hold nothing, so the file does not fill with empty entries.
 function compact(source: Rec): Rec {
@@ -682,6 +684,7 @@ export default function ModelForm({ schema, value, onChange }: Props) {
     role: string[];
     needsNote: boolean;
     require: string[];
+    when: string;
     base: boolean;
     removed: boolean;
   }
@@ -718,6 +721,7 @@ export default function ModelForm({ schema, value, onChange }: Props) {
         role: changed.role === undefined ? action.roles : asList(changed.role),
         needsNote: changed.needs_note === undefined ? action.needsNote : changed.needs_note === true,
         require: changed.require === undefined ? action.require : asList(changed.require),
+        when: changed.when === undefined ? conditionOf(action.when) : text(changed.when),
         base: true,
         removed: spec === null,
       };
@@ -735,6 +739,7 @@ export default function ModelForm({ schema, value, onChange }: Props) {
           role: asList(changed.role),
           needsNote: changed.needs_note === true,
           require: asList(changed.require),
+          when: text(changed.when),
           base: false,
           removed: false,
         };
@@ -768,14 +773,14 @@ export default function ModelForm({ schema, value, onChange }: Props) {
   };
   const actionBase = (name: string): Rec | undefined => {
     const base = baseActions.find((action) => action.name === name);
-    return base ? { label: base.label, from: base.from, to: base.to, by: base.by.toLowerCase(), role: base.roles, needs_note: base.needsNote, require: base.require } : undefined;
+    return base ? { label: base.label, from: base.from, to: base.to, by: base.by.toLowerCase(), role: base.roles, needs_note: base.needsNote, require: base.require, when: conditionOf(base.when) } : undefined;
   };
   const changeState = (row: StateRow, changes: Partial<Rec>) => {
     const spec = { label: row.label, terminal: row.terminal, ...changes };
     writeSpec("states", row.name, spec, stateBase(row.name));
   };
   const changeAction = (row: ActionRow, changes: Partial<Rec>) => {
-    const spec = { label: row.label, from: row.from, to: row.to, by: row.by, role: row.by === "owner" ? [] : row.role, needs_note: row.needsNote, require: row.require, ...changes };
+    const spec = { label: row.label, from: row.from, to: row.to, by: row.by, role: row.by === "owner" ? [] : row.role, needs_note: row.needsNote, require: row.require, when: row.when, ...changes };
     writeSpec("actions", row.name, spec, actionBase(row.name));
   };
   const addState = () => {
@@ -986,6 +991,17 @@ export default function ModelForm({ schema, value, onChange }: Props) {
                   renderInput={(inputParams) => <TextField variant="outlined" {...inputParams} label="Bắt buộc điền trường" sx={DENSE} />}
                   onChange={(_, names) => changeAction(live, { require: names })}
                 />
+                {live.by === "handler" && (
+                  <TextField
+                    variant="outlined"
+                    size="small"
+                    label="Chỉ khi"
+                    placeholder="amount > 5000000"
+                    value={live.when}
+                    sx={{ width: 200, ...DENSE }}
+                    onChange={(event) => changeAction(live, { when: event.target.value })}
+                  />
+                )}
                 <FormControlLabel
                   sx={{ mr: 0 }}
                   control={<Checkbox size="small" checked={live.needsNote} onChange={(event) => changeAction(live, { needs_note: event.target.checked })} />}
@@ -1157,6 +1173,7 @@ export default function ModelForm({ schema, value, onChange }: Props) {
                     <b>{action.label}</b> <code>{action.name}</code>: {action.from.map((from) => family.states.find((state) => state.name === from)?.label ?? from).join(" hoặc ")} →{" "}
                     {family.states.find((state) => state.name === action.to)?.label ?? action.to}, do {action.by === "OWNER" ? "người tạo hồ sơ" : "vai xử lý"}
                     {action.needsNote ? ", bắt buộc ghi lý do" : ""}
+                    {action.when ? `, chỉ khi ${action.when.field} ${action.when.op} ${action.when.value}` : ""}
                   </li>
                 ))}
               </Box>

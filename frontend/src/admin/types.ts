@@ -15,6 +15,13 @@ export interface ProcessState {
   terminal: boolean;
 }
 
+// The comparison an action waits for: the record field, the operator and the value to compare with.
+export interface ProcessCondition {
+  field: string;
+  op: "==" | "!=" | "<" | "<=" | ">" | ">=";
+  value: number | string;
+}
+
 export interface ProcessAction {
   name: string;
   label: string;
@@ -22,6 +29,7 @@ export interface ProcessAction {
   to: string;
   by: "HANDLER" | "OWNER";
   needsNote: boolean;
+  when?: ProcessCondition | null;
 }
 
 export interface ProcessInfo {

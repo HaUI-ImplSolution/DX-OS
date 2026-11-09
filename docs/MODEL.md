@@ -64,20 +64,29 @@ Các mẫu dùng được nằm ở [`templates/`](../backend/dx-engine/src/main
 ### Tự khai báo hoặc mở rộng quy trình
 
 - `states` là bản đồ từ tên trạng thái sang `{label, terminal}`; `initial` là trạng thái hồ sơ mới vào, mặc định là trạng thái khai báo đầu tiên.
-- `actions` là bản đồ từ tên hành động sang `{label, from, to, by, role, needs_note, require}`.
+- `actions` là bản đồ từ tên hành động sang `{label, from, to, by, role, needs_note, require, when}`.
   `from` là một trạng thái hoặc một danh sách, `by` là `handler` (mặc định) hoặc `owner`.
   `role` giới hạn một hành động của người xử lý cho vai riêng thay vì cả `handler`.
   Vai ghi ở `role` không cần có trong `handler`; người giữ vai đó vẫn thực hiện được hành động.
   Nút `label` để trống thì giao diện hiện mã hành động.
   `needs_note: true` bắt buộc có lý do.
   `require` liệt kê trường phải có giá trị trước khi hành động được thực hiện.
+  `when` là một phép so sánh một trường của hồ sơ với một giá trị, viết thành chuỗi `trường toán_tử giá trị`, ví dụ `when: "amount > 5000000"`.
+  Hành động chỉ thực hiện được khi phép so sánh đúng với hồ sơ ở lúc thực hiện.
+  Toán tử là `==`, `!=`, `<`, `<=`, `>` hoặc `>=`.
+  Trường là trường `number`, `choice` hoặc `text` của thực thể; `<`, `<=`, `>` và `>=` chỉ dùng cho trường `number`.
+  Giá trị của trường `number` là số, giá trị của trường `choice` là một trong `options` của nó.
+  Trường chưa có giá trị thì không đạt điều kiện nào.
+  `when` chỉ dùng cho hành động của người xử lý, nên không dùng được với `withdraw` và hành động của `auto_close`.
+  Viết `when: null` để bỏ điều kiện của một hành động trong họ mẫu.
+  Hành động không đạt điều kiện trả 409 `ERR_INVALID_STATE` với `data.reason` là `CONDITION_NOT_MET`.
 - Khi có `family`, mục khai báo ghi đè từng khóa của khung; viết `null` để bỏ một trạng thái hoặc hành động của khung.
 - `withdraw` và trạng thái `withdrawn` là tên dành riêng: khai `withdraw: {from: [...]}` thì nền tảng tự thêm trạng thái `withdrawn`, và hành động này luôn do người nộp thực hiện.
-- Mỗi trạng thái không phải cuối phải có hành động đi ra, mọi trạng thái phải tới được từ `initial`, trạng thái cuối không có hành động đi ra, và phải có ít nhất một trạng thái cuối.
+- Mỗi trạng thái không phải cuối phải có hành động đi ra, và ít nhất một hành động đi ra không có `when`, để hồ sơ luôn có lối đi; mọi trạng thái phải tới được từ `initial`, trạng thái cuối không có hành động đi ra, và phải có ít nhất một trạng thái cuối.
 - `auto_close` là thời gian chờ người nộp trước khi hệ thống thay họ làm một hành động.
   Họ `work_item` nhận dạng ngắn `auto_close: 7d` (hành động `confirm`); các trường hợp khác viết `auto_close: {after: 7d, action: <hành động của người nộp>}`.
 - Quy trình khác khung gốc chạy trên BPMN riêng, sinh từ các trạng thái và hành động khai báo khi áp dụng mô hình.
-- Đổi trạng thái đầu, thêm hoặc bỏ trạng thái, hay đổi `from`, `to`, `by` của một hành động khi còn hồ sơ chưa ở trạng thái cuối thì kế hoạch bị từ chối.
+- Đổi trạng thái đầu, thêm hoặc bỏ trạng thái, hay đổi `from`, `to`, `by`, `when` của một hành động khi còn hồ sơ chưa ở trạng thái cuối thì kế hoạch bị từ chối.
 - Đổi nhãn, `role`, `require`, các trạng thái của `withdraw` hay danh sách `handler` thì an toàn và có hiệu lực ngay, kể cả với hồ sơ đang mở.
 - Bỏ một trạng thái còn hồ sơ nằm ở đó, hoặc bỏ `terminal` của trạng thái còn hồ sơ đã đóng, cũng bị từ chối, vì hồ sơ đã đóng không chạy tiếp được.
 
@@ -92,6 +101,16 @@ process:
     take: {from: todo, to: review, role: SELLER}
     finish: {from: review, to: done, role: MANAGER, require: [amount]}
     withdraw: {from: todo}
+```
+
+Hai hành động có `when` loại trừ nhau chia hồ sơ theo giá trị một trường; hành động không có `when` luôn là lối thoát:
+
+```yaml
+actions:
+  lead_approve: {from: submitted, to: approved, role: LEAD, when: "amount <= 5000000"}
+  lead_forward: {from: submitted, to: lead_approved, role: LEAD, when: "amount > 5000000"}
+  lead_reject: {from: submitted, to: rejected, role: LEAD, needs_note: true}
+  approve: {from: lead_approved, to: approved, role: DIRECTOR}
 ```
 
 ### Đặt chỗ

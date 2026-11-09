@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.model;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,16 +21,62 @@ public enum Actor {
   // A record in a terminal state can no longer change.
   public record State(String name, String label, boolean terminal) {}
 
+  // The comparison of one field with a value that decides whether an action can be taken. The
+  // operator is one of ==, !=, <, <=, > and >=, kept as written so that a client compares by the
+  // same words. The value is a number for a number field and text otherwise. Equality works on any
+  // field the parser allows, ordering only on numbers; a field without a value never meets a
+  // condition.
+  public record Condition(String field, String op, Object value) {
+
+  public static final List<String> OPERATORS = List.of("==", "!=", "<=", ">=", "<", ">");
+
+  public static boolean ordering(String op) {
+    return !"==".equals(op) && !"!=".equals(op);
+  }
+
+  // Whether the value a record holds in the field meets the condition.
+  public boolean test(Object actual) {
+    if (actual == null) {
+      return false;
+    }
+    if (value instanceof BigDecimal expected) {
+      try {
+        return compare(new BigDecimal(actual.toString()).compareTo(expected));
+      } catch (NumberFormatException notNumber) {
+        return false;
+      }
+    }
+    return compare(actual.toString().equals(value) ? 0 : 1);
+  }
+
+  private boolean compare(int order) {
+    return switch (op) {
+      case "==" -> order == 0;
+      case "!=" -> order != 0;
+      case "<" -> order < 0;
+      case "<=" -> order <= 0;
+      case ">" -> order > 0;
+      case ">=" -> order >= 0;
+      default -> false;
+    };
+  }
+
+  public String text() {
+    return field + " " + op + " "
+        + (value instanceof BigDecimal number ? number.toPlainString() : value);
+  }}
+
   // An action moves a record out of one of the states in "from" into the state "to". A handler
   // action needs a note when the owner must learn why. Roles, when not empty, are the roles that
   // may take a handler action instead of the handler roles of the process. Require names the
-  // fields that must hold a value before the action can be taken.
+  // fields that must hold a value before the action can be taken. When, if given, is a comparison
+  // of one field of the record that must hold before the action can be taken.
   public record Action(String name, String label, List<String> from, String to, Actor by,
-      boolean needsNote, List<String> roles, List<String> require) {
+      boolean needsNote, List<String> roles, List<String> require, Condition when) {
 
   public Action(String name, String label, List<String> from, String to, Actor by,
         boolean needsNote) {
-      this(name, label, from, to, by, needsNote, List.of(), List.of());
+      this(name, label, from, to, by, needsNote, List.of(), List.of(), null);
     }
 
   public boolean allowedIn(String state) {
@@ -123,7 +170,7 @@ public enum Actor {
 
   // Whether two definitions run the same steps. Labels, who may take an action and the fields it
   // requires are checked outside the steps, and withdrawing ends the process from outside, so none
-  // of them change the steps.
+  // of them change the steps. The condition of an action decides where a record may go, so it does.
   public boolean sameFlowAs(ProcessFamily other) {
     return initial.equals(other.initial) && flowStates().equals(other.flowStates())
         && flowActions().equals(other.flowActions());
@@ -135,9 +182,9 @@ public enum Actor {
   }
 
   private List<String> flowActions() {
-    return actions
-        .stream().filter(action -> !WITHDRAW.equals(action.name())).map(action -> action.name()
-            + ":" + String.join(",", action.from()) + ">" + action.to() + ":" + action.by())
+    return actions.stream().filter(action -> !WITHDRAW.equals(action.name()))
+        .map(action -> action.name() + ":" + String.join(",", action.from()) + ">" + action.to()
+            + ":" + action.by() + (action.when() == null ? "" : "?" + action.when().text()))
         .toList();
   }
 

@@ -130,12 +130,16 @@ Giao diện, đăng nhập bằng `req1` (vai `BORROWER`), `keeper1` (vai `KEEPE
     Ở Quy trình, thêm vai xử lý thứ hai chưa có quyền xem hồ sơ: form cảnh báo và sơ đồ báo lỗi kèm dòng và cột; cho vai đó quyền thì hết lỗi.
     Thêm một hành động, đổi mã trạng thái, bỏ một hành động của khung (hiện "Đã bỏ khỏi quy trình này" kèm nút Khôi phục), chọn "Tự khai báo, không dùng khung": sơ đồ vẽ lại theo tệp và tệp YAML giữ nguyên các dòng chú thích.
 17. Nút "Phạm vi có thể làm" ở mỗi phần của form và bảng "Viết được gì trong tệp" bên phải trình soạn: có mục hệ thống chấp nhận gì, mở rộng được gì, tự tạo được gì, tên trạng thái và hành động của từng khung; rê chuột lên một khóa trong YAML hiện giải thích tiếng Việt.
-18. Quy trình tự khai báo khi còn hồ sơ đang mở: đổi nhãn một hành động rồi áp dụng được; thêm hoặc bỏ trạng thái, đổi `from`, `to` hay `by` của một hành động, hoặc đổi `initial` thì kế hoạch bị từ chối với câu tiếng Việt nêu số hồ sơ.
+18. Quy trình tự khai báo khi còn hồ sơ đang mở: đổi nhãn một hành động rồi áp dụng được; thêm hoặc bỏ trạng thái, đổi `from`, `to`, `by` hay `when` của một hành động, hoặc đổi `initial` thì kế hoạch bị từ chối với câu tiếng Việt nêu số hồ sơ.
     Đổi `role` của một hành động hoặc danh sách `handler` rồi áp dụng: vai cũ không thực hiện được nữa, vai mới thực hiện được hồ sơ đang mở.
 19. Bỏ `terminal` của một trạng thái cuối còn hồ sơ đã đóng: kế hoạch bị từ chối kèm số dòng vi phạm ở `status`; rút hết hồ sơ ở trạng thái đó thì áp dụng được.
 20. Chi tiết hồ sơ theo vai: người chỉ giữ vai `AGENT` không thấy nút của hành động dành cho `LEAD`; hồ sơ đã giao thì chỉ người được giao thấy nút, người điều phối bấm "Bỏ giao" thì vai khác thấy lại.
     Bấm hành động có `require` khi trường còn trống: báo "Bắt buộc nhập trước khi thực hiện" kèm tên trường, hồ sơ giữ nguyên trạng thái; điền trường rồi bấm lại thì qua.
     Hồ sơ có quy trình không có nút Xóa ở form sửa; nút hành động không đặt nhãn hiện mã hành động và form nhắc điều đó.
+21. Hành động có `when`: một trạng thái có `lead_approve` (`when: "amount <= 5000000"`), `lead_forward` (`when: "amount > 5000000"`) và `lead_reject` không có `when`.
+    Hồ sơ 1.000.000: nút duyệt sáng, nút chuyển mờ kèm chú thích "Chỉ thực hiện khi Số tiền > 5.000.000"; hồ sơ 9.000.000 thì ngược lại; hồ sơ không có số tiền thì cả hai nút có `when` mờ, nút từ chối vẫn sáng.
+    Gọi API của hành động đang mờ trả 409 `ERR_INVALID_STATE` với `data.reason` là `CONDITION_NOT_MET`; đúng 5.000.000 thì `<=` đạt.
+    Trình soạn YAML không gạch chân `when`, ô "Chỉ khi" ở chế độ Điền form hiện đúng điều kiện, nhãn cạnh của sơ đồ ghi điều kiện.
 
 Lệnh `dxos` và các tính năng chạy ngoài stack kiểm:
 

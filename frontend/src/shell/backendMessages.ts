@@ -16,6 +16,7 @@ const NAME = "\\[a-z\\]\\[a-z0-9_\\]\\*";
 const VI: Rule[] = [
   fixed("The model changed; read it again", "Mô hình đã thay đổi; hãy tải lại trước khi thực hiện"),
   pattern("must be a whole number at least (.+)", "Phải là số nguyên không nhỏ hơn $1"),
+  pattern("The record does not meet the condition of this action: (.+)", "Hồ sơ chưa đạt điều kiện của hành động này: $1"),
   // A model file (the checker of the model format).
   fixed("The model file has problems", "Tệp mô hình có lỗi"),
   pattern("invalid YAML: (.*)", "YAML không hợp lệ: $1"),

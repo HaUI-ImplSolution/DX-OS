@@ -168,6 +168,7 @@ export const SCHEMA_HELP: Record<string, string> = {
   "entities.process.actions.by": "handler: vai xử lý thực hiện. owner: người nộp hồ sơ thực hiện.",
   "entities.process.actions.role": "Giới hạn hành động cho một vai hoặc danh sách vai (chỉ với by: handler); không khai thì dùng các vai ở handler.",
   "entities.process.actions.needs_note": "true nếu người thực hiện phải ghi lý do.",
+  "entities.process.actions.when": "Điều kiện để thực hiện hành động: một phép so sánh dạng trường toán_tử giá_trị, ví dụ amount > 5000000. Toán tử: ==, !=, <, <=, >, >=; thứ tự chỉ cho trường number. Chỉ dùng cho hành động của người xử lý; mỗi trạng thái không cuối cần ít nhất một hành động ra không có điều kiện.",
   "entities.process.actions.require": "Trường bắt buộc điền trước khi thực hiện hành động: một trường hoặc danh sách trường (không phải trường file).",
   "entities.process.allow_self_decision": "true nếu người tạo hồ sơ được tự xử lý hồ sơ của mình.",
   "entities.process.deadline": "Thời gian vai xử lý có để xử lý, quá hạn thì bị đánh dấu. Số kèm m (phút), h (giờ) hoặc d (ngày), ví dụ 90m, 72h, 3d.",

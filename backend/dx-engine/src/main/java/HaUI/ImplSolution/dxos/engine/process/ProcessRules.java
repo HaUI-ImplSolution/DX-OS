@@ -46,6 +46,11 @@ public class ProcessRules {
         throw new ActionNotAllowedException("The record is assigned to someone else",
             "ASSIGNED_TO_OTHER");
       }
+      if (action.when() != null && !action.when().test(record.get(action.when().field()))) {
+        throw new InvalidStateException(
+            "The record does not meet the condition of this action: " + action.when().text(),
+            "CONDITION_NOT_MET");
+      }
     }
     if (action.needsNote() && (note == null || note.isBlank())) {
       throw new ModelValidationException("note", "is required");

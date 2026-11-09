@@ -7,6 +7,7 @@ import HaUI.ImplSolution.dxos.model.Model.Process;
 import HaUI.ImplSolution.dxos.model.Model.Role;
 import HaUI.ImplSolution.dxos.model.ProcessFamily.Action;
 import HaUI.ImplSolution.dxos.model.ProcessFamily.Actor;
+import HaUI.ImplSolution.dxos.model.ProcessFamily.Condition;
 import HaUI.ImplSolution.dxos.model.ProcessFamily.State;
 import HaUI.ImplSolution.dxos.model.Model.Unit;
 import HaUI.ImplSolution.dxos.model.ModelException.Problem;
@@ -494,6 +495,7 @@ public final class ModelParser {
     boolean needsNote;
     List<String> roles = List.of();
     List<String> require = List.of();
+    Condition when;
     Node node;
     Node fromNode;
     Node toNode;
@@ -507,6 +509,7 @@ public final class ModelParser {
       draft.needsNote = action.needsNote();
       draft.roles = action.roles();
       draft.require = action.require();
+      draft.when = action.when();
       return draft;
     }
   }
@@ -625,9 +628,10 @@ public final class ModelParser {
       return null;
     }
     List<Action> built = new ArrayList<>();
-    actions.forEach(
-        (name, draft) -> built.add(new Action(name, draft.label, List.copyOf(draft.from), draft.to,
-            draft.by, draft.needsNote, List.copyOf(draft.roles), List.copyOf(draft.require))));
+    actions.forEach((name,
+        draft) -> built.add(new Action(name, draft.label, List.copyOf(draft.from), draft.to,
+            draft.by, draft.needsNote, List.copyOf(draft.roles), List.copyOf(draft.require),
+            draft.when)));
     List<State> builtStates = new ArrayList<>(states.values());
     if (actions.containsKey(ProcessFamily.WITHDRAW)) {
       builtStates.add(ProcessFamily.WITHDRAWN);
@@ -775,6 +779,15 @@ public final class ModelParser {
     if (parts.get("require") != null) {
       draft.require = readRequire(parts.get("require"), fields);
     }
+    if (parts.get("when") != null) {
+      if (isNull(parts.get("when"))) {
+        draft.when = null;
+      } else if (withdraw || draft.by != Actor.HANDLER) {
+        problem(parts.get("when"), "when only applies to an action of the handler");
+      } else {
+        draft.when = readCondition(parts.get("when"), fields);
+      }
+    }
     if (added && (draft.from.isEmpty() || (!withdraw && draft.to == null))) {
       problem(spec, "action " + name + " needs " + (withdraw ? "from" : "from and to"));
     }
@@ -816,6 +829,60 @@ public final class ModelParser {
     return names;
   }
 
+  private static final Pattern CONDITION =
+      Pattern.compile("^\\s*([a-z][a-z0-9_]*)\\s*(==|!=|<=|>=|<|>)\\s*(.+?)\\s*$");
+
+  // One comparison of a field with a value, written as in "amount > 5000000".
+  private Condition readCondition(Node node, Map<String, Field> fields) {
+    String example = "when is one comparison like amount > 5000000, with ==, !=, <, <=, > or >=";
+    if (!(node instanceof ScalarNode text)) {
+      problem(node, example);
+      return null;
+    }
+    Matcher match = CONDITION.matcher(text.getValue());
+    if (!match.matches()) {
+      problem(node, example);
+      return null;
+    }
+    Field field = fields.get(match.group(1));
+    String op = match.group(2);
+    String value = match.group(3);
+    if (value.length() > 1 && (value.startsWith("\"") && value.endsWith("\"")
+        || value.startsWith("'") && value.endsWith("'"))) {
+      value = value.substring(1, value.length() - 1);
+    }
+    if (field == null || field.type() != FieldType.NUMBER && field.type() != FieldType.CHOICE
+        && field.type() != FieldType.TEXT) {
+      problem(node,
+          "when must name a number, choice or text field of this entity, fields: "
+              + fields.values().stream()
+                  .filter(f -> f.type() == FieldType.NUMBER || f.type() == FieldType.CHOICE
+                      || f.type() == FieldType.TEXT)
+                  .map(Field::name).collect(java.util.stream.Collectors.joining(", ")));
+      return null;
+    }
+    if (Condition.ordering(op) && field.type() != FieldType.NUMBER) {
+      problem(node,
+          "when compares " + field.name() + " with " + op + ", which only works on a number field");
+      return null;
+    }
+    if (field.type() == FieldType.NUMBER) {
+      try {
+        return new Condition(field.name(), op, new java.math.BigDecimal(value));
+      } catch (NumberFormatException notNumber) {
+        problem(node, "when compares the number field " + field.name() + " with '" + value
+            + "', which is not a number");
+        return null;
+      }
+    }
+    if (field.type() == FieldType.CHOICE && !field.options().contains(value)) {
+      problem(node, "when compares " + field.name() + " with '" + value
+          + "', which is not one of its options: " + String.join(", ", field.options()));
+      return null;
+    }
+    return new Condition(field.name(), op, value);
+  }
+
   // The rules that make a set of states and actions a process a record can run through.
   private void checkDefinition(MappingNode process, Node initialNode, String initial,
       Map<String, State> states, Map<String, ActionDraft> actions, Map<String, Node> nodes) {
@@ -835,6 +902,7 @@ public final class ModelParser {
       problem(process, "a process needs at least one final state, with terminal: true");
     }
     Set<String> leaving = new HashSet<>();
+    Set<String> leavingFreely = new HashSet<>();
     for (Map.Entry<String, ActionDraft> entry : actions.entrySet()) {
       ActionDraft draft = entry.getValue();
       Node at = draft.node == null ? process : draft.node;
@@ -849,6 +917,9 @@ public final class ModelParser {
               "action " + entry.getKey() + " leaves the final state " + from);
         } else if (!ProcessFamily.WITHDRAW.equals(entry.getKey())) {
           leaving.add(from);
+          if (draft.when == null) {
+            leavingFreely.add(from);
+          }
         }
       }
       if (!ProcessFamily.WITHDRAW.equals(entry.getKey()) && !states.containsKey(draft.to)) {
@@ -866,6 +937,9 @@ public final class ModelParser {
       if (!state.terminal() && !leaving.contains(state.name())) {
         problem(nodes.getOrDefault("state:" + state.name(), process),
             "state " + state.name() + " has no action leaving it, so a record would stay there");
+      } else if (!state.terminal() && !leavingFreely.contains(state.name())) {
+        problem(nodes.getOrDefault("state:" + state.name(), process), "state " + state.name()
+            + " needs an action leaving it without when, or a record could stay there");
       }
     }
     Set<String> reached = new HashSet<>(Set.of(initial));

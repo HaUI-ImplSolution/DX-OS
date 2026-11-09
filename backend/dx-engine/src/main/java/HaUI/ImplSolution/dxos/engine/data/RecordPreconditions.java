@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 // The versions of a model and record that a caller based a decision on.
+// The shared formatter uses pre-record syntax; preserve this record body layout.
 // @formatter:off
 public record RecordPreconditions(Long version, Long modelVersion) {
 

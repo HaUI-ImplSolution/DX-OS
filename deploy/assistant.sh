@@ -112,12 +112,12 @@ stop() {
   compose stop -t 30 assistant-control "${runtime_services[@]}"
 }
 disable_route() {
-  docker compose -f "$BASE" up --no-build --no-deps --force-recreate apisix-config
+  docker compose -f "$BASE" up --no-build --no-deps --force-recreate apisix-config || return 1
   local gateway project network
-  gateway="$(docker compose -f "$BASE" ps -q --status running apisix)"
+  gateway="$(docker compose -f "$BASE" ps -q --status running apisix)" || return 1
   [[ -n "$gateway" && -f "$GENERATED" ]] || return 0
-  project="$(docker inspect -f '{{index .Config.Labels "com.docker.compose.project"}}' "$gateway")"
-  network="$(docker network ls -q --filter "label=com.docker.compose.project=$project" --filter label=com.docker.compose.network=default)"
+  project="$(docker inspect -f '{{index .Config.Labels "com.docker.compose.project"}}' "$gateway")" || return 1
+  network="$(docker network ls -q --filter "label=com.docker.compose.project=$project" --filter label=com.docker.compose.network=default)" || return 1
   docker run --rm --network "$network" --read-only --cap-drop ALL --security-opt no-new-privileges:true "$(image)" --input-type=module -e '
     for (let i = 0; i < 20; i++) {
       try {
@@ -142,7 +142,8 @@ case "${1:-status}" in
     ./assistant-sso.sh
     touch "$ENABLED"; resume
     echo "Open the DX-OS application and choose Personal assistant to link your own API and bot." ;;
-  off) disable_route; stop; rm -f "$ENABLED"; echo "Assistant stopped; state and keys kept." ;;
+  off) disable_route || die "The gateway did not confirm the route change. The assistant remains enabled; check gateway logs and retry dxos assistant off."
+    stop; rm -f "$ENABLED"; echo "Assistant stopped; state and keys kept." ;;
   resume) resume ;;
   stop) stop ;;
   is-running) running ;;

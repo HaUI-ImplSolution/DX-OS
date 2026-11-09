@@ -56,7 +56,9 @@ public class MetaController {
       description = "An entity no role of the caller reaches is left out, and so is a model with no"
           + " entity left. A model that is held is listed with held = true and no entities, only"
           + " when the caller reaches one of its entities. modelVersion is the applied version"
-          + " for conditional actions and assignment; null while the model is held. Completion effects have asynchronous=true because they are queued in the outbox; this is not a delivery receipt.")
+          + " for conditional actions and assignment; null while the model is held. Completion effects"
+          + " have asynchronous=true because they are queued in the outbox; this is not a delivery"
+          + " receipt.")
   public ApiResponse<List<ModelMeta>> models() {
     List<ModelMeta> models = new ArrayList<>(registry.all().stream()
         .map(model -> new ModelMeta(model.name(), model.units(),
@@ -106,8 +108,9 @@ public class MetaController {
   }
 
   private Map<String, List<ProcessInfo.Effect>> effects(Entity entity) {
-    if (entity.process().after() == null)
+    if (entity.process().after() == null) {
       return Map.of();
+    }
     return entity.process().after().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
         entry -> entry.getValue().stream().map(effect -> new ProcessInfo.Effect(effect.operation(),
             effect.user(), effect.group(), effect.groupField(), true)).toList()));

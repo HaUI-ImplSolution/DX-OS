@@ -56,7 +56,6 @@ Mốc dưới đây là dự kiến.
 | Người thứ hai duyệt thay đổi mô hình | Không bắt buộc; là chính sách tùy bản triển khai |
 | Ủy quyền có phạm vi và thời hạn | Không có; chạm nhiều đường kiểm quyền |
 | Quyền theo từng trường | Không có; phải phủ mọi đường dữ liệu đi ra: danh sách, bộ lọc, số đếm, lịch sử và webhook |
-| Chỉ số thống kê nâng cao | Không có tỷ lệ hoàn tất trong hạn vì `handle_by` bị xóa khi hồ sơ vào trạng thái cuối; công cụ báo cáo dùng vai `report_ro` không nhận quyền `own`, `unit`, `assigned`, nên không có chỉ số theo người xem |
 | Góc nhìn công việc đã lưu | Không lưu bộ lọc, cột và sắp xếp |
 | Mã lý do ở giao diện | Giao diện dịch lỗi theo bảng thông điệp, không theo `data.reason`; mã này dành cho client ngoài |
 | Kiểm tài liệu và OpenAPI chiều ngược | `check_docs.py` kiểm endpoint tài liệu nêu có trong OpenAPI; không kiểm chiều ngược vì `docs/API.md` chỉ liệt kê các đường dẫn chính và viết tắt đường dẫn, nên sẽ báo nhầm |

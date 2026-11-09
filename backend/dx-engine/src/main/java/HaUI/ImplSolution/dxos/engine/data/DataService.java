@@ -257,6 +257,7 @@ public class DataService {
     requireRead(access);
     requireWrite(access);
     Map<String, Object> values = coerce(entity, body, true);
+    requireExistingUsers(entity, values);
     requireReachableParent(model, entity, access, values);
     requireCreatableUnit(entity, access, values);
     bookings.check(model, entity, values, null);
@@ -309,6 +310,7 @@ public class DataService {
       return get(model, entity, id);
     }
     requireMovableUnit(model, entity, access, id, changes);
+    requireExistingUsers(entity, changes);
     bookings.check(model, entity, changes, id);
     MapSqlParameterSource params = new MapSqlParameterSource("id", id);
     List<String> sets = new ArrayList<>();
@@ -725,6 +727,23 @@ public class DataService {
       throw new InvalidStateException("The record is closed", "RECORD_CLOSED");
     }
     return statuses.get(0);
+  }
+
+  // A user field holds the id of a Keycloak user. Only the values being written are looked up, each
+  // id once, so a value the record already holds is never checked again.
+  private void requireExistingUsers(Entity entity, Map<String, Object> values) {
+    Map<String, Boolean> known = new LinkedHashMap<>();
+    Map<String, String> errors = new LinkedHashMap<>();
+    values.forEach((name, value) -> {
+      Field field = entity.fields().get(name);
+      if (field != null && field.type() == FieldType.USER && value != null
+          && !known.computeIfAbsent((String) value, keycloak::userExists)) {
+        errors.put(name, "must be the id of an existing user");
+      }
+    });
+    if (!errors.isEmpty()) {
+      throw new ModelValidationException(errors);
+    }
   }
 
   private void requireRead(Access access) {

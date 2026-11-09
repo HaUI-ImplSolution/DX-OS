@@ -56,3 +56,7 @@ export const removeFile = (model: string, entity: string, id: number | string, f
 
 export const listEvents = (model: string, entity: string, id: number | string) =>
   request<RecordEvent[]>(`${recordPath(model, entity, id)}/events`);
+
+export const searchPeople = (text: string) => request<Person[]>(`/people?q=${encodeURIComponent(text)}`);
+
+export const peopleByIds = (ids: string[]) => request<Person[]>(`/people?ids=${ids.map(encodeURIComponent).join(",")}`);

@@ -25,6 +25,7 @@ import { translateBackend } from "../shell/backendMessages";
 import { formatDateTime, timeAgo } from "../shell/format";
 import { StatusChip, TONES } from "./StatusChip";
 import { conditionMet, conditionText } from "./condition";
+import { useNames } from "./people";
 import { assignRecord, fileLink, listEvents, listFiles, listHandlers, removeFile, takeAction, uploadFile } from "./api";
 import type { AttachmentItem, EntityMeta, FieldMeta, Person, ProcessAction, RecordEvent } from "./types";
 
@@ -249,7 +250,12 @@ function skippedReason(detail: string, fieldLabel: (name: string) => string): st
 
 // What an "updated" event changed. A detail that is a JSON object maps each field to [old, new];
 // an older one is just the list of field names.
-function updatedDetail(detail: string | null, fields: FieldMeta[], fieldLabel: (name: string) => string): string | null {
+function updatedDetail(
+  detail: string | null,
+  fields: FieldMeta[],
+  fieldLabel: (name: string) => string,
+  personNames: Record<string, string>,
+): string | null {
   if (!detail) return null;
   if (!detail.startsWith("{")) return detail.split(", ").map(fieldLabel).join(", ");
   let changes: Record<string, [string | null, string | null]>;
@@ -260,11 +266,26 @@ function updatedDetail(detail: string | null, fields: FieldMeta[], fieldLabel: (
   }
   const show = (name: string, value: string | null) => {
     if (value === null || value === undefined || value === "") return "—";
-    return fields.find((field) => field.name === name)?.type === "datetime" && !Number.isNaN(Date.parse(value)) ? formatDateTime(value) : value;
+    const type = fields.find((field) => field.name === name)?.type;
+    if (type === "user") return personNames[value] ?? value;
+    return type === "datetime" && !Number.isNaN(Date.parse(value)) ? formatDateTime(value) : value;
   };
   return Object.entries(changes)
     .map(([name, [before, after]]) => `${fieldLabel(name)}: ${show(name, before)} → ${show(name, after)}`)
     .join("\n");
+}
+
+// The account ids an "updated" event moved between in user fields.
+function userIdsOf(event: RecordEvent, userFields: Set<string>): string[] {
+  if (event.action !== "updated" || !event.detail?.startsWith("{") || userFields.size === 0) return [];
+  try {
+    const changes: Record<string, [string | null, string | null]> = JSON.parse(event.detail);
+    return Object.entries(changes)
+      .filter(([name]) => userFields.has(name))
+      .flatMap(([, pair]) => pair.filter((value): value is string => typeof value === "string" && value !== ""));
+  } catch {
+    return [];
+  }
 }
 
 // What happened to this record, newest first, as a timeline.
@@ -283,6 +304,8 @@ export function HistoryPanel({ model, entity }: Props) {
     EVENT_LABELS[name] ?? process?.actions.find((action) => action.name === name)?.label ?? name;
   const fieldLabel = (name: string) => entity.fields.find((field) => field.name === name)?.label ?? name;
   const ordered = [...events].reverse();
+  const userFields = new Set(entity.fields.filter((field) => field.type === "user").map((field) => field.name));
+  const personNames = useNames(events.flatMap((event) => userIdsOf(event, userFields)));
 
   return (
     <Section title="Lịch sử xử lý">
@@ -297,7 +320,7 @@ export function HistoryPanel({ model, entity }: Props) {
           const detail =
             event.note ??
             (event.action === "updated"
-              ? updatedDetail(event.detail, entity.fields, fieldLabel)
+              ? updatedDetail(event.detail, entity.fields, fieldLabel, personNames)
               : event.action === "completion_skipped" && event.detail
                 ? skippedReason(event.detail, fieldLabel)
                 : null);

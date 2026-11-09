@@ -36,7 +36,7 @@ Mốc dưới đây là dự kiến.
 
 | Việc | Ghi chú |
 |---|---|
-| Trường kiểu `user` | Giá trị là id người dùng Keycloak, giao diện web cho nhập tay và backend không đối chiếu với người dùng có thật |
+| Tìm người cho trường `user` | `GET /api/v1/people` cho mọi người đã đăng nhập tìm cả người ngoài phạm vi mô hình, khớp theo tên, tên đăng nhập hoặc email, và chỉ trả id với tên hiển thị; thu hẹp theo vai của mô hình thì phải đối chiếu vai của từng người |
 | Đổi luật quy trình khi còn hồ sơ mở | Hạn xử lý, quyền tự quyết, hành động hoàn tất, đặt chỗ, trạng thái, hành động và điều kiện `when` chỉ đổi được khi thực thể không còn hồ sơ đang xử lý; phải hoàn tất hoặc rút hết hồ sơ trước, vì hồ sơ chưa lưu phiên bản mô hình và hồ sơ đang chạy giữ bản BPMN cũ (Flowable không chuyển chúng sang bản mới) |
 | Đổi vai xử lý khi còn hồ sơ mở | Có hiệu lực ngay vì quyền xét theo mô hình; hồ sơ đã giao cho người không còn giữ vai mới thì chỉ người điều phối giao lại được, và nhóm ứng viên ghi trong task Flowable đang chạy vẫn là vai cũ (không nơi nào đọc nó) |
 | Ngôn ngữ giao diện | Chỉ có tiếng Việt |

@@ -22,6 +22,7 @@ Script `deploy/dev/check_docs.py` kiểm mọi đường dẫn nêu ở đây c�
 | `GET /api/v1/inbox` | Hồ sơ đang chờ người gọi, trên mọi mô hình; `page`, `size` |
 | `GET /api/v1/events` | Dòng lịch sử theo đúng dạng của webhook, từ sau một `eventId` (`after`, `size`, `model`) (ADMIN) |
 | `GET /api/v1/outbox`, `POST /api/v1/outbox/{id}/retry` | Thông điệp gửi đi theo trạng thái (lỗi, chờ gửi, đã gửi) và thử lại thông điệp chưa gửi (ADMIN) |
+| `GET /api/v1/people` | Tìm người cho trường `user`, chỉ trả id và tên hiển thị: `q` tìm tối đa 20 tài khoản theo tên, tên đăng nhập hoặc email (ít hơn 2 ký tự thì trả danh sách rỗng), `ids` là tối đa 50 id cách nhau bởi dấu phẩy và trả những tài khoản có thật; người đã đăng nhập nào cũng gọi được |
 | `GET /api/v1/users`, `/users/options`, `/users/{id}` | Tìm và xem người dùng, vai theo từng mô hình và đơn vị; vai và đơn vị có thể gán (ADMIN) |
 | `PUT`, `DELETE /api/v1/users/{id}/roles/{model}/{role}`, `/units/{unit}` | Gán và gỡ vai của một mô hình, và đơn vị (ADMIN) |
 | `POST /api/v1/users`, `PUT /{id}/enabled`, `POST /{id}/password` | Tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu (ADMIN) |

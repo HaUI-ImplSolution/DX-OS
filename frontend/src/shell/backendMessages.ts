@@ -216,6 +216,7 @@ const VI: Rule[] = [
   fixed("must be text", "Phải là văn bản"),
   pattern("must be one of (.+)", "Phải là một trong $1"),
   fixed("must be a number", "Phải là một số"),
+  fixed("must be the id of an existing user", "Phải là một người dùng có thật"),
   fixed("is set by uploading a file", "Được điền bằng cách tải tệp lên"),
   fixed("must be an ISO-8601 date and time with an offset", "Phải là ngày giờ ISO-8601 kèm múi giờ"),
   fixed("must be the id of a record", "Phải là mã của một hồ sơ"),

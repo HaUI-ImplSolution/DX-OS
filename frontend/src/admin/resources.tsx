@@ -34,6 +34,7 @@ import { Link } from "react-router-dom";
 import { timeAgo } from "../shell/format";
 import { ActionButtons, AssignPanel, FilesPanel, HistoryPanel } from "./caseParts";
 import DateTimeViInput from "./DateTimeViInput";
+import { PersonField, PersonInput } from "./people";
 import { StatusChip } from "./StatusChip";
 import { resourceName, type EntityMeta, type FieldMeta, type ModelMeta } from "./types";
 
@@ -78,6 +79,8 @@ function outputField(field: FieldMeta, catalog: Catalog) {
           render={(record: Record<string, string>) => catalog.units[record[field.name]] ?? record[field.name]}
         />
       );
+    case "user":
+      return <PersonField key={field.name} source={field.name} label={field.label} />;
     case "reference": {
       const target = catalog.entities[field.reference ?? ""];
       return (
@@ -128,6 +131,8 @@ function inputField(field: FieldMeta, catalog: Catalog) {
         </ReferenceInput>
       );
     }
+    case "user":
+      return <PersonInput key={field.name} source={field.name} label={field.label} required={field.required} />;
     case "file":
       return null;
     default:

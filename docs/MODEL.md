@@ -34,6 +34,7 @@ Các mẫu dùng được nằm ở [`templates/`](../backend/dx-engine/src/main
 ## Trường và đơn vị
 
 - Kiểu trường: `text`, `number`, `datetime`, `choice`, `reference`, `user`, `unit`.
+- Trường `user` giữ id của một tài khoản; giao diện cho chọn theo tên, và API từ chối id không có thật.
 - Đơn vị khai báo ở `units`, mỗi đơn vị là một nhóm Keycloak; trường kiểu `unit` cho biết hồ sơ thuộc đơn vị nào.
   Ví dụ đầy đủ ở [`onestop.yaml`](../backend/dx-engine/src/main/resources/templates/onestop.yaml).
 

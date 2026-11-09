@@ -47,6 +47,7 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - Mỗi mô hình có một client `dxos-m-<mô hình>` chứa vai của nó, nên hai mô hình dùng cùng tên vai không vào được dữ liệu của nhau.
 - Tài khoản dịch vụ `dxos-backend-admin` có quyền `manage-clients`, `view-clients`, `query-clients` và scope `kc-admin-api`, vì Admin API của Keycloak 26.8 chỉ nhận token có audience của nó.
   Realm đã import từ trước chạy `deploy/keycloak-admin-scope.sh` (`update.sh` gọi nó) và cấp các quyền client ở Keycloak Admin Console.
+- Trường kiểu `user` giữ id tài khoản Keycloak: backend từ chối id không có thật khi tạo hồ sơ hoặc khi giá trị đổi, giao diện cho chọn người theo tên qua `GET /api/v1/people` và hiện tên ở danh sách, trang chi tiết và lịch sử.
 - Tab Người dùng và API `/api/v1/users` (ADMIN): tìm kiếm, vai theo từng ứng dụng, gán và gỡ vai và đơn vị, tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu.
 - Thay đổi tài khoản và việc áp dụng, quay về, tiếp tục, hủy bỏ mô hình ghi `audit_log` (`USER_*`, `MODEL_*`); `GET /api/v1/audit-logs` lọc theo đối tượng.
 - Keycloak từ chối tài khoản dịch vụ thì API trả 502 `ERR_ACCOUNT_SERVICE_DENIED`, tách khỏi `ERR_ACCOUNT_SERVICE_UNAVAILABLE` khi Keycloak không trả lời.

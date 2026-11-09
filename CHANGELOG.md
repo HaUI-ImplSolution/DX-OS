@@ -5,6 +5,8 @@ Nhật ký thay đổi của DX-OS.
 
 Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Chưa phát hành gom những gì sau phiên bản mới nhất.
 
+## [Unreleased]
+
 ## [2.0.0] - chưa phát hành
 
 Lõi dynamic thay cho hai ứng dụng nghiệp vụ viết tay của bản `1.1.1`.

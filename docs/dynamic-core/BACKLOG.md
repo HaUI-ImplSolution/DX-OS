@@ -27,9 +27,9 @@ Mốc dưới đây là dự kiến.
 
 | Việc | Ghi chú |
 |---|---|
-| Truy vấn phiên bản metadata | Giữ cách đọc hiện tại; khoảng 9 ms cho 54 truy vấn trên 23 mô hình/31 thực thể trong lần đo của reviewer. Cache chỉ làm khi có nhu cầu và đã kiểm apply/rollback/đồng thời |
+| Truy vấn phiên bản metadata | Giữ cách đọc hiện tại; khoảng 9 ms cho 54 truy vấn trên 23 mô hình/31 thực thể. Cache chỉ làm khi có nhu cầu và đã kiểm apply/rollback/đồng thời |
 | Phần AI | Chưa nghiệm thu 2–3 tài khoản đồng thời và provider thật thứ hai; hội thoại chưa tách theo mô hình. Còn hai ca model thật lỗi quota/timeout, câu sinh đôi lúc có mã kỹ thuật hoặc thời gian chưa đúng múi giờ. Chưa chọn model tự triển khai/embedding đáp ứng định nghĩa Open Source AI của OSI |
-| Egress trợ lý | Runtime chưa có allowlist toàn mạng; compatible giữ khóa. Giới hạn kết nối cần nghiệm thu trước dùng thật |
+| Egress trợ lý | Runtime chưa có allowlist toàn mạng; endpoint compatible đang tắt. Giới hạn kết nối cần nghiệm thu trước dùng thật |
 | Khóa/token backup trợ lý | Key và capability nằm cùng kho restic; người giải mã backup có thể đọc secret/giả danh runtime. Custody và rotation riêng cần xử lý trước dùng thật |
 | Webhook sự kiện | Dạng `chat` chưa thử với Mattermost và Slack thật; thông điệp của việc áp dụng mô hình và của tài khoản không có trong `GET /api/v1/events` |
 | Ứng dụng Tầng 2 | Chưa phủ I của H-P-D-I; để sau như đã định |

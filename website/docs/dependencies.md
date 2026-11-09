@@ -72,7 +72,18 @@ Strapi chưa được đánh giá riêng.
 | Không dependency có lỗ hổng HIGH hoặc CRITICAL đã có bản vá | Trivy, SBOM của Maven | workflow `Dependencies`, chạy cả theo lịch |
 | Không có `vendor/`, `node_modules/`, `third_party/` trong Git | `git ls-files \| grep -E '(^\|/)(vendor\|third_party\|node_modules)/'` | Chạy tay |
 
-Ngoại lệ dữ liệu và gói bundled được ghi đầy đủ theo tên/phiên bản, lý do và attribution trong `.github/dependency-exceptions.json` và NOTICE; không mở rộng danh sách giấy phép chung.
+Các ngoại lệ trong `.github/dependency-exceptions.json`:
+
+| Gói | Lý do |
+|---|---|
+| css-mediaquery | LICENSE là BSD-3-Clause; metadata chỉ ghi BSD |
+| require-like@0.1.2 | LICENSE là MIT; metadata thiếu mã giấy phép |
+| config-chain@1.1.13 | LICENSE là MIT; metadata dùng đối tượng thay cho mã SPDX |
+| caniuse-lite | Dữ liệu hỗ trợ trình duyệt CC-BY-4.0, chỉ đọc lúc dựng docs |
+| mdn-data | Dữ liệu CSS CC0-1.0, chỉ đọc lúc dựng docs |
+| spdx-exceptions | Dữ liệu mã ngoại lệ SPDX CC-BY-3.0 trong runtime trợ lý; giữ attribution trong NOTICE |
+| spdx-license-ids | Dữ liệu mã giấy phép SPDX CC0-1.0 trong runtime trợ lý |
+| npm@12.2.2 | Ứng dụng npm Artistic-2.0 đi kèm runtime nguyên bản; ngoại lệ giới hạn theo phiên bản |
 
 Mọi gói khác phải thuộc danh sách OSI trong `check_licenses.py`, hoặc có một lựa chọn thay thế thuộc danh sách đó như `MIT OR CC0-1.0`.
 

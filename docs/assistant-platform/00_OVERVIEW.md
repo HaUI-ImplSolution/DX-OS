@@ -155,7 +155,7 @@ Cập nhật `DEPENDENCIES.txt`, `NOTICE`, SBOM và danh mục thành phần; kh
 Không đánh dấu đã hoàn thành mục Open Source AI trong backlog chỉ vì tích hợp được API.
 Không sửa `docs/dynamic-core/README.md` định hướng nếu chưa có quyết định riêng của chủ dự án.
 
-## 10. Xử lý review PR #199
+## 11. Xử lý review PR #199
 
 Căn cứ: [review của KhuongSpring](https://github.com/HaUI-ImplSolution/DX-OS/pull/199#issuecomment-6730959635) và bản nhánh đã nhận quy trình tự khai báo của `Khuong/main`.
 Phạm vi đợt này là khắc phục nhận xét của PR, không bổ sung tính năng trợ lý hoặc thay hướng Dynamic Core.
@@ -175,10 +175,10 @@ Hai quyết định này không thay yêu cầu Open Source AI của mục tiêu
 Đợt lập kế hoạch không đồng nghĩa các ca bảo mật đã chạy hoặc các mục review đã được giải quyết.
 Chỉ đề nghị merge sau khi các rào chắn bảo mật và hồi quy đạt; giới hạn còn lại phải có quyết định chấp nhận rõ ràng.
 
-## 11. Quyết định xử lý review bổ sung
+## 12. Quyết định xử lý review bổ sung
 
 Căn cứ: [kết quả kiểm thử của reviewer](https://github.com/HaUI-ImplSolution/DX-OS/pull/199#pullrequestreview-5821221565).
-Đang thực hiện theo phạm vi đã được người dùng chốt; chưa commit/push hoặc resolve nhận xét.
+Phạm vi đã được người dùng chốt cho bản thử có kiểm soát; kết quả kiểm chứng nằm trong [test plan](./03_TEST_PLAN.md).
 Người dùng đã chốt tách mạng control, hoãn cache và chấp nhận giới hạn egress/backup cho bản thử có kiểm soát.
 Giữ ba provider native Gemini, OpenAI và Anthropic; adapter có cấu hình không đồng nghĩa đã nghiệm thu model thật của cả ba.
 

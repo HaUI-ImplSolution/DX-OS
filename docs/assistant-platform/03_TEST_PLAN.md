@@ -116,7 +116,7 @@ Kết quả TRV không thay thế các ca WPAS gốc còn thiếu hoặc quyền
 
 ## 6. Ca kiểm theo review bổ sung
 
-Kết quả dưới đây thuộc diff local sau quyết định thu gọn; chưa commit/push.
+Các ca dưới đây kiểm phạm vi đã chốt sau review bổ sung.
 
 | ID | Liên quan | Cách kiểm và điều kiện đạt | Trạng thái |
 |---|---|---|---|
@@ -145,9 +145,24 @@ Các lượt fixture bị ngắt hoặc dùng lại dữ liệu cũ không đư�
 | Quy trình tự khai báo | Require/role, handlers/handlerActions, stale/current action, apply và rollback đúng phiên bản |
 | Mạng | Control gọi API/SSO được, không TCP/DNS tới DB/store; runtime không tới peer; không Docker socket |
 | Lifecycle và HTTP | On lặp không khởi động lại Core; off không còn route/502/504, monitor không thêm lỗi trợ lý; JSON sai 400, body lớn 413 |
+| Lỗi khi tắt trợ lý | Sáu ca mô phỏng Docker đạt: render, tìm gateway, đọc project/network, probe thất bại và tắt thành công; lỗi trả mã khác 0 kèm hướng dẫn thử lại, giữ marker và không dừng dịch vụ |
 | Browser | SSO/Core thật, 1 feature probe/trang, focus không gọi thêm; reload và menu/provider được kiểm với response trợ lý mô phỏng |
 | Backup | Script success/failure với dependency mô phỏng resume đúng; restic thật restore key/capability/SQLite synthetic và giải mã đúng |
 | Tuân thủ | License, docs build, liên kết, cú pháp script, diff và Gitleaks đạt |
 
 Artifact và fixture nằm ngoài repository, không có key thật hoặc Telegram thật trong lượt review này.
 Không tuyên bố full build/seed toàn bộ image từ clone sạch, nghiệm thu model thật cả ba provider hoặc tải hai–ba trợ lý đồng thời.
+
+## 8. Đối chiếu checklist và review
+
+| Bằng chứng | Phạm vi xác nhận |
+|---|---|
+| DOC-01 | Đối chiếu `00_OVERVIEW.md`, `01_PLAN.md`, `assistant/README.md`, quy ước CONTRIBUTING và quyết định API/SPDX/egress/backup/cache đã chốt với chủ dự án; kiểm liên kết và ranh giới file thay đổi |
+
+Các mục WPAS về provider, toàn chuỗi công việc, thông báo và giao diện còn mở khi ca TAS liên quan mới đạt một phần hoặc chưa chạy.
+Các mục WPRV chỉ xác nhận phạm vi xử lý review với bằng chứng TRV được dẫn ngay ở từng dòng; không đóng các ca TAS còn thiếu.
+Đối với TAS-09, chỉ xác nhận giới hạn ba slot trong cấu hình/mã/tài liệu; chưa xác nhận ba gateway có model hoạt động đồng thời.
+
+Bộ YAML kiểm đa ngành bao phủ ba họ quy trình, không cần thêm mã riêng cho lĩnh vực.
+Hai ca hội thoại trên mô hình mới còn chưa đạt vì provider unavailable/timeout; kiểm Core 403 không thay kết quả hội thoại.
+Giữ các ca này trong nghiệm thu model, không dùng các kết quả HTTP/CI thay thế.

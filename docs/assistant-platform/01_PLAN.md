@@ -323,7 +323,7 @@ Rollback bằng quay lại thay đổi tương ứng và tắt trợ lý; giữ 
 ## Điều chỉnh theo review bổ sung
 
 Phần này ưu tiên hơn thứ tự WPRV-01–06 ở trên.
-Thực hiện theo bảng quyết định đã chốt tại mục 11 overview; giới hạn chỉ áp dụng cho bản thử có kiểm soát.
+Thực hiện theo bảng quyết định đã chốt tại mục 12 overview; giới hạn chỉ áp dụng cho bản thử có kiểm soát.
 
 ### WPRV-07: Lỗi HTTP, ranh giới mạng và hợp đồng bản thử
 

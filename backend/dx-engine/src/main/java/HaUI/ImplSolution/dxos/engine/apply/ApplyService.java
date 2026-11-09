@@ -186,6 +186,7 @@ public class ApplyService {
     diff.changes.addAll(repairs);
     List<String> rejections = new ArrayList<>(diff.rejections);
     webhooks.missing(model).ifPresent(rejections::add);
+    rejections.addAll(processes.problems(model));
     Map<String, Long> openRecords = openRecords(running, diff);
     rejections.addAll(processRuleChangesWithOpenRecords(diff, openRecords));
     rejections.addAll(dropDependencyRejections(model, diff));
@@ -256,6 +257,10 @@ public class ApplyService {
     webhooks.missing(model).ifPresent(reason -> {
       throw new InvalidStateException(reason);
     });
+    List<String> unrunnable = processes.problems(model);
+    if (!unrunnable.isEmpty()) {
+      throw new InvalidStateException(String.join("; ", unrunnable));
+    }
     if (running != null && !Objects.equals(base, running.version())) {
       throw new InvalidStateException(
           "The plan is out of date: model " + model.name() + " runs version " + running.version()

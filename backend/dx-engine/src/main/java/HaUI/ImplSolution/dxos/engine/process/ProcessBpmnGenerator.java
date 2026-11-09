@@ -12,7 +12,8 @@ import java.util.Set;
 // Writes the BPMN of a declared state machine. Each state a record can wait in is a user task, the
 // action taken leaves it through a gateway, and the status of the record is written by a service
 // task on the way into the next state. Withdrawing is not a step: it ends the process from
-// outside.
+// outside. Names hold only letters, digits and underscores, so the dot in a flow id keeps the
+// parts apart and the prefix keeps the kinds of flow apart: no two ids can be equal.
 public final class ProcessBpmnGenerator {
 
   private ProcessBpmnGenerator() {}
@@ -26,7 +27,7 @@ public final class ProcessBpmnGenerator {
         .append("             targetNamespace=\"http://dxos/processes\">\n")
         .append("  <process id=\"").append(escape(key)).append("\" name=\"").append(escape(name))
         .append("\" isExecutable=\"true\">\n").append("    <startEvent id=\"start\"/>\n")
-        .append("    <sequenceFlow id=\"f_start\" sourceRef=\"start\" targetRef=\"t_")
+        .append("    <sequenceFlow id=\"f.start\" sourceRef=\"start\" targetRef=\"t_")
         .append(definition.initial()).append("\"/>\n");
 
     Set<String> targets = new LinkedHashSet<>();
@@ -44,17 +45,17 @@ public final class ProcessBpmnGenerator {
       if (leaving.size() == 1) {
         // One way out needs no gateway; the rules already check that the action fits the state.
         targets.add(leaving.get(0).to());
-        xml.append("    <sequenceFlow id=\"f_t_").append(state.name()).append("\" sourceRef=\"t_")
+        xml.append("    <sequenceFlow id=\"ft.").append(state.name()).append("\" sourceRef=\"t_")
             .append(state.name()).append("\" targetRef=\"s_").append(leaving.get(0).to())
             .append("\"/>\n");
         continue;
       }
-      xml.append("    <sequenceFlow id=\"f_t_").append(state.name()).append("\" sourceRef=\"t_")
+      xml.append("    <sequenceFlow id=\"ft.").append(state.name()).append("\" sourceRef=\"t_")
           .append(state.name()).append("\" targetRef=\"g_").append(state.name()).append("\"/>\n")
           .append("    <exclusiveGateway id=\"g_").append(state.name()).append("\"/>\n");
       for (Action action : leaving) {
         targets.add(action.to());
-        xml.append("    <sequenceFlow id=\"f_").append(state.name()).append("_")
+        xml.append("    <sequenceFlow id=\"fg.").append(state.name()).append(".")
             .append(action.name()).append("\" sourceRef=\"g_").append(state.name())
             .append("\" targetRef=\"s_").append(action.to()).append("\">\n")
             .append("      <conditionExpression xsi:type=\"tFormalExpression\">${action == '")
@@ -65,7 +66,7 @@ public final class ProcessBpmnGenerator {
     for (String target : targets) {
       xml.append("    <serviceTask id=\"s_").append(target)
           .append("\" flowable:expression=\"${recordStatus.set(execution, '").append(target)
-          .append("')}\"/>\n").append("    <sequenceFlow id=\"f_s_").append(target)
+          .append("')}\"/>\n").append("    <sequenceFlow id=\"fs.").append(target)
           .append("\" sourceRef=\"s_").append(target).append("\" targetRef=\"")
           .append(definition.isTerminal(target) ? "end" : "t_" + target).append("\"/>\n");
     }

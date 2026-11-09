@@ -149,6 +149,7 @@ const VI: Rule[] = [
   pattern("Field (.+) refers to another entity, which is not supported; add a new field instead", "Trường $1 tham chiếu sang thực thể khác, điều này chưa được hỗ trợ; hãy thêm một trường mới"),
   fixed("Only for an entity without rows", "Chỉ làm được với thực thể chưa có dòng nào"),
   pattern("Entity (.+) changes its process family, which is not supported yet", "Thực thể $1 đổi họ quy trình, điều này chưa được hỗ trợ"),
+  pattern("Entity ([a-z][a-z0-9_]*): (.+)", "Quy trình của thực thể $1 không dựng được: $2"),
   pattern("Cannot change CHANGE_FLOW for ([^;]+) while (\\d+) records are still open", "Không đổi được trạng thái hoặc hành động của $1 khi còn $2 hồ sơ đang xử lý"),
   pattern("Cannot change CHANGE_SELF_DECISION for ([^;]+) while (\\d+) records are still open", "Không đổi được quyền tự quyết định của $1 khi còn $2 hồ sơ đang xử lý"),
   pattern("Cannot change CHANGE_COMPLETION for ([^;]+) while (\\d+) records are still open", "Không đổi được hành động hoàn tất của $1 khi còn $2 hồ sơ đang xử lý"),
@@ -272,6 +273,7 @@ const VI: Rule[] = [
   fixed("Files cannot be checked right now, please try again later", "Chưa kiểm tra được tệp lúc này, vui lòng thử lại sau"),
   fixed("The record was modified by someone else, reload and try again", "Bản ghi vừa được người khác thay đổi, hãy tải lại rồi thử lại"),
   pattern("Invalid value for (.+)", "Giá trị không hợp lệ cho $1"),
+  pattern("Missing parameter (.+)", "Thiếu tham số $1"),
   fixed("Invalid value", "Giá trị không hợp lệ"),
   fixed("Internal server error", "Hệ thống gặp lỗi, vui lòng thử lại sau"),
 

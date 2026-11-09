@@ -3,11 +3,13 @@ package HaUI.ImplSolution.dxos.engine.process;
 
 import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
+import java.util.ArrayList;
+import java.util.List;
+import org.flowable.bpmn.converter.BpmnXMLConverter;
+import org.flowable.bpmn.model.BpmnModel;
+import org.flowable.common.engine.impl.util.io.StringStreamSource;
 import org.flowable.engine.RepositoryService;
-import org.flowable.engine.RuntimeService;
 import org.flowable.engine.repository.Deployment;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 // Puts the BPMN of the entities whose steps differ from their family into the workflow engine. An
@@ -16,19 +18,43 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProcessDeployer {
 
-  private static final Logger log = LoggerFactory.getLogger(ProcessDeployer.class);
-
   private final RepositoryService repository;
-  private final RuntimeService runtime;
 
-  public ProcessDeployer(RepositoryService repository, RuntimeService runtime) {
+  public ProcessDeployer(RepositoryService repository) {
     this.repository = repository;
-    this.runtime = runtime;
   }
 
   // The key of the BPMN process the records of the entity run.
   public String keyOf(Model model, Entity entity) {
     return entity.process().processKey(model.name(), entity.name());
+  }
+
+  // What the workflow engine would refuse in the BPMN of the model, one line per problem, without
+  // deploying anything. The list is empty when every entity runs the BPMN of its family.
+  public List<String> problems(Model model) {
+    List<String> problems = new ArrayList<>();
+    for (Entity entity : model.entities().values()) {
+      if (entity.process() == null || !entity.process().ownFlow()) {
+        continue;
+      }
+      String key = keyOf(model, entity);
+      String xml =
+          ProcessBpmnGenerator.generate(key, entity.label(), entity.process().definition());
+      try {
+        BpmnModel bpmn =
+            new BpmnXMLConverter().convertToBpmnModel(new StringStreamSource(xml), true, true);
+        repository.validateProcess(bpmn).stream().filter(error -> !error.isWarning())
+            .forEach(error -> problems
+                .add("Entity " + entity.name() + ": " + error.getDefaultDescription()));
+      } catch (RuntimeException e) {
+        Throwable cause = e;
+        while (cause.getCause() != null) {
+          cause = cause.getCause();
+        }
+        problems.add("Entity " + entity.name() + ": " + cause.getMessage());
+      }
+    }
+    return problems;
   }
 
   // Deploys the BPMN of every entity of the model that needs its own. Calling it again with the
@@ -45,18 +71,14 @@ public class ProcessDeployer {
     }
   }
 
-  // Removes the BPMN of the model. A deployment that still has running records is left in place.
+  // Removes the BPMN of the model together with the process instances that run it.
   public void undeploy(String modelName) {
     for (Deployment deployment : repository.createDeploymentQuery()
         .deploymentNameLike(modelName + ".%").list()) {
       if (!deployment.getName().startsWith(modelName + ".")) {
         continue;
       }
-      if (runtime.createProcessInstanceQuery().deploymentId(deployment.getId()).count() > 0) {
-        log.warn("Process {} stays deployed: records still run it", deployment.getName());
-        continue;
-      }
-      repository.deleteDeployment(deployment.getId(), false);
+      repository.deleteDeployment(deployment.getId(), true);
     }
   }
 }

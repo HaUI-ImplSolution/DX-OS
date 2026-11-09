@@ -35,6 +35,7 @@ import {
   type Section,
 } from "./formGuide";
 import { FAMILY_LABEL } from "./labels";
+import { t, ta } from "../shell/t";
 
 type Rec = Record<string, unknown>;
 
@@ -106,10 +107,10 @@ function NameInput({
   const duplicate = draft !== value && taken.includes(draft);
   const problem = !pattern.test(draft)
     ? upper
-      ? "Chữ in hoa, số, gạch dưới; bắt đầu bằng chữ; tối đa 40 ký tự"
-      : "Chữ thường, số, gạch dưới; bắt đầu bằng chữ; tối đa 40 ký tự"
+      ? t("Chữ in hoa, số, gạch dưới; bắt đầu bằng chữ; tối đa 40 ký tự")
+      : t("Chữ thường, số, gạch dưới; bắt đầu bằng chữ; tối đa 40 ký tự")
     : duplicate
-      ? "Tên này đã có"
+      ? t("Tên này đã có")
       : "";
   return (
     <TextField variant="outlined"
@@ -168,9 +169,9 @@ function DurationInput({
           if (number) onChange(`${number}${event.target.value}`);
         }}
       >
-        <MenuItem value="m">phút</MenuItem>
-        <MenuItem value="h">giờ</MenuItem>
-        <MenuItem value="d">ngày</MenuItem>
+        <MenuItem value="m">{t("phút")}</MenuItem>
+        <MenuItem value="h">{t("giờ")}</MenuItem>
+        <MenuItem value="d">{t("ngày")}</MenuItem>
       </TextField>
     </Box>
   );
@@ -188,7 +189,7 @@ function GuideBox({ section }: { section: Section }) {
           {guide.summary}
         </Typography>
         <Button size="small" onClick={() => setOpen(!open)} sx={{ whiteSpace: "nowrap" }}>
-          {open ? "Thu gọn" : "Phạm vi có thể làm"}
+          {open ? t("Thu gọn") : t("Phạm vi có thể làm")}
         </Button>
       </Box>
       <Collapse in={open}>
@@ -267,20 +268,20 @@ export default function ModelForm({ schema, value, onChange }: Props) {
   const rolesPart = (
     <>
       <GuideBox section="roles" />
-      {roles.length === 0 && <Empty>Chưa có vai nào. Mỗi mô hình cần ít nhất một vai.</Empty>}
+      {roles.length === 0 && <Empty>{t("Chưa có vai nào. Mỗi mô hình cần ít nhất một vai.")}</Empty>}
       {roles.map((role, index) => (
         <Row key={index}>
           <Box sx={{ width: 190 }}>
-            <NameInput label="Tên vai" value={roleNames[index]} pattern={ROLE} upper taken={roleNames} onCommit={(name) => renameRole(index, name)} />
+            <NameInput label={t("Tên vai")} value={roleNames[index]} pattern={ROLE} upper taken={roleNames} onCommit={(name) => renameRole(index, name)} />
           </Box>
           <TextField variant="outlined"
             size="small"
-            label="Mô tả"
+            label={t("Mô tả")}
             value={text(role.description)}
             sx={{ ...DENSE, flex: 1, minWidth: 160 }}
             onChange={(event) => set({ roles: roles.map((item, i) => (i === index ? compact({ ...item, description: event.target.value }) : item)) })}
           />
-          <Tooltip title="Người giữ vai này đăng nhập thêm bằng mã xác thực một lần">
+          <Tooltip title={t("Người giữ vai này đăng nhập thêm bằng mã xác thực một lần")}>
             <FormControlLabel
               sx={{ mr: 0 }}
               control={
@@ -290,18 +291,18 @@ export default function ModelForm({ schema, value, onChange }: Props) {
                   onChange={(event) => set({ roles: roles.map((item, i) => (i === index ? compact({ ...item, staff: event.target.checked }) : item)) })}
                 />
               }
-              label={<Typography variant="body2">Nhân viên</Typography>}
+              label={<Typography variant="body2">{t("Nhân viên")}</Typography>}
             />
           </Tooltip>
-          <Tooltip title="Xóa vai">
-            <IconButton size="small" aria-label="Xóa vai" onClick={() => set({ roles: roles.filter((_, i) => i !== index) })}>
+          <Tooltip title={t("Xóa vai")}>
+            <IconButton size="small" aria-label={t("Xóa vai")} onClick={() => set({ roles: roles.filter((_, i) => i !== index) })}>
               <DeleteOutlineIcon fontSize="small" />
             </IconButton>
           </Tooltip>
         </Row>
       ))}
       <Button size="small" startIcon={<AddIcon />} onClick={() => set({ roles: [...roles, { name: uniqueName("VAI_MOI", roleNames) }] })}>
-        Thêm vai
+        {t("Thêm vai")}
       </Button>
     </>
   );
@@ -312,12 +313,12 @@ export default function ModelForm({ schema, value, onChange }: Props) {
   const unitsPart = (
     <>
       <GuideBox section="units" />
-      {units.length === 0 && <Empty>Chưa có đơn vị. Mô hình không cần đơn vị thì để trống.</Empty>}
+      {units.length === 0 && <Empty>{t("Chưa có đơn vị. Mô hình không cần đơn vị thì để trống.")}</Empty>}
       {units.map((unit, index) => (
         <Row key={index}>
           <Box sx={{ width: 190 }}>
             <NameInput
-              label="Tên đơn vị"
+              label={t("Tên đơn vị")}
               value={unitNames[index]}
               pattern={ROLE}
               upper
@@ -327,20 +328,20 @@ export default function ModelForm({ schema, value, onChange }: Props) {
           </Box>
           <TextField variant="outlined"
             size="small"
-            label="Nhãn hiển thị"
+            label={t("Nhãn hiển thị")}
             value={text(unit.label)}
             sx={{ ...DENSE, flex: 1, minWidth: 160 }}
             onChange={(event) => set({ units: units.map((item, i) => (i === index ? compact({ ...item, label: event.target.value }) : item)) })}
           />
-          <Tooltip title="Xóa đơn vị">
-            <IconButton size="small" aria-label="Xóa đơn vị" onClick={() => set({ units: units.filter((_, i) => i !== index) })}>
+          <Tooltip title={t("Xóa đơn vị")}>
+            <IconButton size="small" aria-label={t("Xóa đơn vị")} onClick={() => set({ units: units.filter((_, i) => i !== index) })}>
               <DeleteOutlineIcon fontSize="small" />
             </IconButton>
           </Tooltip>
         </Row>
       ))}
       <Button size="small" startIcon={<AddIcon />} onClick={() => set({ units: [...units, { name: uniqueName("DON_VI_MOI", unitNames) }] })}>
-        Thêm đơn vị
+        {t("Thêm đơn vị")}
       </Button>
     </>
   );
@@ -368,7 +369,7 @@ export default function ModelForm({ schema, value, onChange }: Props) {
     set({
       entities: {
         ...entities,
-        [key]: { fields: { ten: { type: "text", label: "Tên", required: true } }, access: first ? { [first]: "all" } : {} },
+        [key]: { fields: { ten: { type: "text", label: t("Tên"), required: true } }, access: first ? { [first]: "all" } : {} },
       },
     });
     setSelected(key);
@@ -398,11 +399,11 @@ export default function ModelForm({ schema, value, onChange }: Props) {
     return (
       <Row>
         <Box sx={{ width: 220 }}>
-          <NameInput label="Mã thực thể" value={entityKey} pattern={NAME} taken={entityKeys} onCommit={renameEntity} help="Dùng trong API và tên bảng" />
+          <NameInput label={t("Mã thực thể")} value={entityKey} pattern={NAME} taken={entityKeys} onCommit={renameEntity} help={t("Dùng trong API và tên bảng")} />
         </Box>
         <TextField variant="outlined"
           size="small"
-          label="Tên hiển thị"
+          label={t("Tên hiển thị")}
           value={text(entity.label)}
           sx={{ ...DENSE, flex: 1, minWidth: 180 }}
           onChange={(event) => setEntity(entityKey, { label: event.target.value })}
@@ -410,13 +411,13 @@ export default function ModelForm({ schema, value, onChange }: Props) {
         <TextField variant="outlined"
           select
           size="small"
-          label="Thừa quyền sở hữu từ"
+          label={t("Thừa quyền sở hữu từ")}
           value={text(entity.owner_via)}
           sx={{ ...DENSE, width: 230 }}
-          helperText="Dành cho thực thể con: chọn trường tham chiếu tới thực thể cha"
+          helperText={t("Dành cho thực thể con: chọn trường tham chiếu tới thực thể cha")}
           onChange={(event) => setEntity(entityKey, { owner_via: event.target.value })}
         >
-          <MenuItem value="">(không)</MenuItem>
+          <MenuItem value="">{t("(không)")}</MenuItem>
           {references.map((key) => (
             <MenuItem key={key} value={key}>
               {text(rec(fields[key]).label) || key}
@@ -474,9 +475,9 @@ export default function ModelForm({ schema, value, onChange }: Props) {
           <Box key={key}>
             <Row>
               <Box sx={{ width: 150 }}>
-                <NameInput label="Mã trường" value={key} pattern={NAME} taken={fieldKeys} onCommit={(name) => renameField(key, name)} />
+                <NameInput label={t("Mã trường")} value={key} pattern={NAME} taken={fieldKeys} onCommit={(name) => renameField(key, name)} />
               </Box>
-              <TextField variant="outlined" select size="small" label="Kiểu" value={type} sx={{ ...DENSE, width: 150 }} onChange={(event) => setField(key, { type: event.target.value })}>
+              <TextField variant="outlined" select size="small" label={t("Kiểu")} value={type} sx={{ ...DENSE, width: 150 }} onChange={(event) => setField(key, { type: event.target.value })}>
                 {fieldTypes.map((item) => (
                   <MenuItem key={item} value={item}>
                     {FIELD_TYPE_LABEL[item] ?? item}
@@ -485,7 +486,7 @@ export default function ModelForm({ schema, value, onChange }: Props) {
               </TextField>
               <TextField variant="outlined"
                 size="small"
-                label="Tên hiển thị"
+                label={t("Tên hiển thị")}
                 value={text(field.label)}
                 sx={{ ...DENSE, flex: 1, minWidth: 140 }}
                 onChange={(event) => setField(key, { label: event.target.value })}
@@ -493,27 +494,27 @@ export default function ModelForm({ schema, value, onChange }: Props) {
               <FormControlLabel
                 sx={{ mr: 0 }}
                 control={<Checkbox size="small" checked={field.required === true} onChange={(event) => setField(key, { required: event.target.checked })} />}
-                label={<Typography variant="body2">Bắt buộc</Typography>}
+                label={<Typography variant="body2">{t("Bắt buộc")}</Typography>}
               />
               <FormControlLabel
                 sx={{ mr: 0 }}
                 control={<Checkbox size="small" checked={field.unique === true} onChange={(event) => setField(key, { unique: event.target.checked })} />}
-                label={<Typography variant="body2">Không trùng</Typography>}
+                label={<Typography variant="body2">{t("Không trùng")}</Typography>}
               />
-              <Tooltip title="Nâng cao: giá trị mặc định, tên cũ">
+              <Tooltip title={t("Nâng cao: giá trị mặc định, tên cũ")}>
                 <IconButton
                   size="small"
                   color={open ? "primary" : "default"}
-                  aria-label="Nâng cao"
+                  aria-label={t("Nâng cao")}
                   onClick={() => setAdvanced(open ? advanced.filter((item) => item !== key) : [...advanced, key])}
                 >
                   <TuneIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Xóa trường">
+              <Tooltip title={t("Xóa trường")}>
                 <IconButton
                   size="small"
-                  aria-label="Xóa trường"
+                  aria-label={t("Xóa trường")}
                   onClick={() => {
                     const rest = { ...fields };
                     delete rest[key];
@@ -538,7 +539,7 @@ export default function ModelForm({ schema, value, onChange }: Props) {
                     return <Chip key={itemKey} size="small" label={item} {...itemProps} />;
                   })
                 }
-                renderInput={(params) => <TextField variant="outlined" {...params} label="Các lựa chọn" placeholder="Gõ một lựa chọn rồi nhấn Enter" sx={DENSE} />}
+                renderInput={(params) => <TextField variant="outlined" {...params} label={t("Các lựa chọn")} placeholder={t("Gõ một lựa chọn rồi nhấn Enter")} sx={DENSE} />}
                 onChange={(_, items) => setField(key, { options: items.length > 0 ? items.map((item) => item.trim()).filter(Boolean) : undefined })}
               />
             )}
@@ -546,7 +547,7 @@ export default function ModelForm({ schema, value, onChange }: Props) {
               <TextField variant="outlined"
                 select
                 size="small"
-                label="Tham chiếu tới thực thể"
+                label={t("Tham chiếu tới thực thể")}
                 value={text(field.to)}
                 sx={{ ...DENSE, mb: 1, minWidth: 260 }}
                 onChange={(event) => setField(key, { to: event.target.value })}
@@ -562,17 +563,17 @@ export default function ModelForm({ schema, value, onChange }: Props) {
               <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", pb: 1 }}>
                 <TextField variant="outlined"
                   size="small"
-                  label="Giá trị mặc định"
+                  label={t("Giá trị mặc định")}
                   value={text(field.default)}
-                  helperText="Điền cho hồ sơ cũ khi thêm trường bắt buộc"
+                  helperText={t("Điền cho hồ sơ cũ khi thêm trường bắt buộc")}
                   sx={{ ...DENSE, width: 240 }}
                   onChange={(event) => setField(key, { default: type === "number" && event.target.value !== "" && !Number.isNaN(Number(event.target.value)) ? Number(event.target.value) : event.target.value })}
                 />
                 <TextField variant="outlined"
                   size="small"
-                  label="Tên cũ của trường"
+                  label={t("Tên cũ của trường")}
                   value={text(field.renamed_from)}
-                  helperText="Khi đổi mã trường mà muốn giữ dữ liệu"
+                  helperText={t("Khi đổi mã trường mà muốn giữ dữ liệu")}
                   error={text(field.renamed_from) !== "" && !NAME.test(text(field.renamed_from))}
                   sx={{ ...DENSE, width: 240 }}
                   onChange={(event) => setField(key, { renamed_from: event.target.value })}
@@ -587,9 +588,9 @@ export default function ModelForm({ schema, value, onChange }: Props) {
         size="small"
         startIcon={<AddIcon />}
         sx={{ mt: 1 }}
-        onClick={() => setEntity(entityKey, { fields: { ...fields, [uniqueName("truong_moi", fieldKeys)]: { type: "text", label: "Trường mới" } } })}
+        onClick={() => setEntity(entityKey, { fields: { ...fields, [uniqueName("truong_moi", fieldKeys)]: { type: "text", label: t("Trường mới") } } })}
       >
-        Thêm trường
+        {t("Thêm trường")}
       </Button>
     </>
   );
@@ -602,7 +603,7 @@ export default function ModelForm({ schema, value, onChange }: Props) {
     return (
       <>
         <GuideBox section="access" />
-        {roleNames.length === 0 && <Empty>Khai báo vai ở mục Vai trước, rồi quay lại đây để cho vai quyền.</Empty>}
+        {roleNames.length === 0 && <Empty>{t("Khai báo vai ở mục Vai trước, rồi quay lại đây để cho vai quyền.")}</Empty>}
         {[...roleNames, ...unknown].map((name) => (
           <Row key={name}>
             <Box sx={{ width: 190, pt: 0.75 }}>
@@ -611,7 +612,7 @@ export default function ModelForm({ schema, value, onChange }: Props) {
               </Typography>
               {unknown.includes(name) && (
                 <Typography variant="caption" color="error">
-                  Vai chưa khai báo
+                  {t("Vai chưa khai báo")}
                 </Typography>
               )}
             </Box>
@@ -628,7 +629,7 @@ export default function ModelForm({ schema, value, onChange }: Props) {
                 setEntity(entityKey, { access: next });
               }}
             >
-              <MenuItem value="">Không có quyền</MenuItem>
+              <MenuItem value="">{t("Không có quyền")}</MenuItem>
               {scopes.map((scope) => (
                 <MenuItem key={scope} value={scope}>
                   {SCOPE_LABEL[scope] ?? scope}
@@ -785,12 +786,12 @@ export default function ModelForm({ schema, value, onChange }: Props) {
   };
   const addState = () => {
     const name = uniqueName("trang_thai_moi", stateRows.map((state) => state.name));
-    writeSpec("states", name, { label: "Trạng thái mới" });
+    writeSpec("states", name, { label: t("Trạng thái mới") });
   };
   const addAction = () => {
     const name = uniqueName("hanh_dong_moi", actionRows.map((action) => action.name));
     const first = liveStates[0]?.name ?? "";
-    writeSpec("actions", name, { label: "Hành động mới", from: first ? [first] : [], to: liveStates[liveStates.length - 1]?.name ?? "", by: "handler" });
+    writeSpec("actions", name, { label: t("Hành động mới"), from: first ? [first] : [], to: liveStates[liveStates.length - 1]?.name ?? "", by: "handler" });
   };
   const renameStep = (key: "states" | "actions", from: string, to: string) => {
     const renamed = renameKey(rec(process[key]), from, to);
@@ -826,10 +827,10 @@ export default function ModelForm({ schema, value, onChange }: Props) {
   const flowEditor = () => (
     <>
       <Typography variant="subtitle2" sx={{ mt: 1.5 }}>
-        Trạng thái
+        {t("Trạng thái")}
       </Typography>
       <Typography variant="caption" color="text.secondary">
-        Mỗi hồ sơ ở một trạng thái. Sửa nhãn, thêm trạng thái mới hoặc bỏ trạng thái của khung. Đổi các mục này khi còn hồ sơ đang xử lý sẽ bị từ chối.
+        {t("Mỗi hồ sơ ở một trạng thái. Sửa nhãn, thêm trạng thái mới hoặc bỏ trạng thái của khung. Đổi các mục này khi còn hồ sơ đang xử lý sẽ bị từ chối.")}
       </Typography>
       {stateRows.map((row) => (
         <Row key={row.name}>
@@ -839,28 +840,28 @@ export default function ModelForm({ schema, value, onChange }: Props) {
             </Typography>
           ) : (
             <Box sx={{ width: 150 }}>
-              <NameInput label="Mã" value={row.name} pattern={NAME} taken={stateRows.map((state) => state.name)} onCommit={(name) => renameStep("states", row.name, name)} />
+              <NameInput label={t("Mã")} value={row.name} pattern={NAME} taken={stateRows.map((state) => state.name)} onCommit={(name) => renameStep("states", row.name, name)} />
             </Box>
           )}
           {row.removed ? (
             <>
               <Typography variant="body2" color="text.secondary" sx={{ flex: 1, pt: 0.75 }}>
-                Đã bỏ khỏi quy trình này
+                {t("Đã bỏ khỏi quy trình này")}
               </Typography>
               <Button size="small" onClick={() => writeSpec("states", row.name, undefined)}>
-                Khôi phục
+                {t("Khôi phục")}
               </Button>
             </>
           ) : (
             <>
-              <TextField variant="outlined" size="small" label="Nhãn" value={row.label} sx={{ ...DENSE, flex: 1, minWidth: 140 }} onChange={(event) => changeState(row, { label: event.target.value })} />
+              <TextField variant="outlined" size="small" label={t("Nhãn")} value={row.label} sx={{ ...DENSE, flex: 1, minWidth: 140 }} onChange={(event) => changeState(row, { label: event.target.value })} />
               <FormControlLabel
                 sx={{ mr: 0 }}
                 control={<Checkbox size="small" checked={row.terminal} onChange={(event) => changeState(row, { terminal: event.target.checked })} />}
-                label={<Typography variant="body2">Trạng thái cuối</Typography>}
+                label={<Typography variant="body2">{t("Trạng thái cuối")}</Typography>}
               />
-              <Tooltip title={row.base ? "Bỏ trạng thái của khung" : "Xóa trạng thái"}>
-                <IconButton size="small" aria-label="Xóa trạng thái" onClick={() => writeSpec("states", row.name, row.base ? null : undefined)}>
+              <Tooltip title={row.base ? t("Bỏ trạng thái của khung") : t("Xóa trạng thái")}>
+                <IconButton size="small" aria-label={t("Xóa trạng thái")} onClick={() => writeSpec("states", row.name, row.base ? null : undefined)}>
                   <DeleteOutlineIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
@@ -870,31 +871,31 @@ export default function ModelForm({ schema, value, onChange }: Props) {
       ))}
       <Row>
         <Button size="small" startIcon={<AddIcon />} onClick={addState}>
-          Thêm trạng thái
+          {t("Thêm trạng thái")}
         </Button>
         <TextField
           variant="outlined"
           select
           size="small"
-          label="Trạng thái ban đầu"
+          label={t("Trạng thái ban đầu")}
           value={text(process.initial)}
           sx={{ ...DENSE, width: 240 }}
           slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
           onChange={(event) => setProcess({ initial: event.target.value })}
         >
-          <MenuItem value="">{family ? "(theo khung)" : "(trạng thái đầu tiên)"}</MenuItem>
+          <MenuItem value="">{family ? t("(theo khung)") : t("(trạng thái đầu tiên)")}</MenuItem>
           {liveStates.filter((state) => !state.terminal).map((state) => (
             <MenuItem key={state.name} value={state.name}>
-              {state.label || state.name}
+              {t(state.label || state.name)}
             </MenuItem>
           ))}
         </TextField>
       </Row>
       <Typography variant="subtitle2" sx={{ mt: 1.5 }}>
-        Hành động
+        {t("Hành động")}
       </Typography>
       <Typography variant="caption" color="text.secondary">
-        Hành động chuyển hồ sơ từ trạng thái này sang trạng thái khác. Người nộp chỉ rút lại được hồ sơ ở các trạng thái khai trong hành động withdraw; không khai withdraw thì không rút lại được.
+        {t("Hành động chuyển hồ sơ từ trạng thái này sang trạng thái khác. Người nộp chỉ rút lại được hồ sơ ở các trạng thái khai trong hành động withdraw; không khai withdraw thì không rút lại được.")}
       </Typography>
       {actionRows.map((row) => {
         const live = row.removed ? null : row;
@@ -907,18 +908,18 @@ export default function ModelForm({ schema, value, onChange }: Props) {
                 </Typography>
               ) : (
                 <Box sx={{ width: 150 }}>
-                  <NameInput label="Mã" value={row.name} pattern={NAME} taken={actionRows.map((action) => action.name)} onCommit={(name) => renameStep("actions", row.name, name)} />
+                  <NameInput label={t("Mã")} value={row.name} pattern={NAME} taken={actionRows.map((action) => action.name)} onCommit={(name) => renameStep("actions", row.name, name)} />
                 </Box>
               )}
               {live ? (
                 <>
-                  <TextField variant="outlined" size="small" label="Nhãn nút" value={live.label} helperText={live.label ? undefined : "Để trống thì nút hiện mã hành động"} sx={{ ...DENSE, flex: 1, minWidth: 140 }} onChange={(event) => changeAction(live, { label: event.target.value })} />
-                  <TextField variant="outlined" select size="small" label="Do" value={live.by} sx={{ ...DENSE, width: 150 }} onChange={(event) => changeAction(live, { by: event.target.value })}>
-                    <MenuItem value="handler">Vai xử lý</MenuItem>
-                    <MenuItem value="owner">Người nộp</MenuItem>
+                  <TextField variant="outlined" size="small" label={t("Nhãn nút")} value={live.label} helperText={live.label ? undefined : t("Để trống thì nút hiện mã hành động")} sx={{ ...DENSE, flex: 1, minWidth: 140 }} onChange={(event) => changeAction(live, { label: event.target.value })} />
+                  <TextField variant="outlined" select size="small" label={t("Do")} value={live.by} sx={{ ...DENSE, width: 150 }} onChange={(event) => changeAction(live, { by: event.target.value })}>
+                    <MenuItem value="handler">{t("Vai xử lý")}</MenuItem>
+                    <MenuItem value="owner">{t("Người nộp")}</MenuItem>
                   </TextField>
-                  <Tooltip title={row.base ? "Bỏ hành động của khung" : "Xóa hành động"}>
-                    <IconButton size="small" aria-label="Xóa hành động" onClick={() => writeSpec("actions", row.name, row.base ? null : undefined)}>
+                  <Tooltip title={row.base ? t("Bỏ hành động của khung") : t("Xóa hành động")}>
+                    <IconButton size="small" aria-label={t("Xóa hành động")} onClick={() => writeSpec("actions", row.name, row.base ? null : undefined)}>
                       <DeleteOutlineIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
@@ -926,10 +927,10 @@ export default function ModelForm({ schema, value, onChange }: Props) {
               ) : (
                 <>
                   <Typography variant="body2" color="text.secondary" sx={{ flex: 1, pt: 0.75 }}>
-                    Đã bỏ khỏi quy trình này
+                    {t("Đã bỏ khỏi quy trình này")}
                   </Typography>
                   <Button size="small" onClick={() => writeSpec("actions", row.name, undefined)}>
-                    Khôi phục
+                    {t("Khôi phục")}
                   </Button>
                 </>
               )}
@@ -949,13 +950,13 @@ export default function ModelForm({ schema, value, onChange }: Props) {
                       return <Chip key={itemKey} size="small" label={stateName(item)} {...itemProps} />;
                     })
                   }
-                  renderInput={(inputParams) => <TextField variant="outlined" {...inputParams} label="Từ trạng thái" sx={DENSE} />}
+                  renderInput={(inputParams) => <TextField variant="outlined" {...inputParams} label={t("Từ trạng thái")} sx={DENSE} />}
                   onChange={(_, names) => changeAction(live, { from: names })}
                 />
-                <TextField variant="outlined" select size="small" label="Sang trạng thái" value={live.to} sx={{ ...DENSE, width: 200 }} onChange={(event) => changeAction(live, { to: event.target.value })}>
+                <TextField variant="outlined" select size="small" label={t("Sang trạng thái")} value={live.to} sx={{ ...DENSE, width: 200 }} onChange={(event) => changeAction(live, { to: event.target.value })}>
                   {liveStates.map((state) => (
                     <MenuItem key={state.name} value={state.name}>
-                      {state.label || state.name}
+                      {t(state.label || state.name)}
                     </MenuItem>
                   ))}
                 </TextField>
@@ -972,7 +973,7 @@ export default function ModelForm({ schema, value, onChange }: Props) {
                         return <Chip key={itemKey} size="small" label={item} {...itemProps} />;
                       })
                     }
-                    renderInput={(inputParams) => <TextField variant="outlined" {...inputParams} label="Chỉ vai" placeholder={live.role.length ? "" : "mọi vai xử lý"} sx={DENSE} />}
+                    renderInput={(inputParams) => <TextField variant="outlined" {...inputParams} label={t("Chỉ vai")} placeholder={live.role.length ? "" : t("mọi vai xử lý")} sx={DENSE} />}
                     onChange={(_, names) => changeAction(live, { role: names })}
                   />
                 )}
@@ -988,14 +989,14 @@ export default function ModelForm({ schema, value, onChange }: Props) {
                       return <Chip key={itemKey} size="small" label={item} {...itemProps} />;
                     })
                   }
-                  renderInput={(inputParams) => <TextField variant="outlined" {...inputParams} label="Bắt buộc điền trường" sx={DENSE} />}
+                  renderInput={(inputParams) => <TextField variant="outlined" {...inputParams} label={t("Bắt buộc điền trường")} sx={DENSE} />}
                   onChange={(_, names) => changeAction(live, { require: names })}
                 />
                 {live.by === "handler" && (
                   <TextField
                     variant="outlined"
                     size="small"
-                    label="Chỉ khi"
+                    label={t("Chỉ khi")}
                     placeholder="amount > 5000000"
                     value={live.when}
                     sx={{ width: 200, ...DENSE }}
@@ -1005,7 +1006,7 @@ export default function ModelForm({ schema, value, onChange }: Props) {
                 <FormControlLabel
                   sx={{ mr: 0 }}
                   control={<Checkbox size="small" checked={live.needsNote} onChange={(event) => changeAction(live, { needs_note: event.target.checked })} />}
-                  label={<Typography variant="body2">Cần ghi lý do</Typography>}
+                  label={<Typography variant="body2">{t("Cần ghi lý do")}</Typography>}
                 />
               </Row>
             )}
@@ -1013,7 +1014,7 @@ export default function ModelForm({ schema, value, onChange }: Props) {
         );
       })}
       <Button size="small" startIcon={<AddIcon />} onClick={addAction}>
-        Thêm hành động
+        {t("Thêm hành động")}
       </Button>
     </>
   );
@@ -1041,12 +1042,12 @@ export default function ModelForm({ schema, value, onChange }: Props) {
             }}
           />
         }
-        label="Hồ sơ của thực thể này đi qua một quy trình"
+        label={t("Hồ sơ của thực thể này đi qua một quy trình")}
       />
       {hasProcess && (
         <>
           <Row>
-            <TextField variant="outlined" select size="small" label="Khung quy trình" value={text(process.family)} sx={{ ...DENSE, width: 260 }} onChange={(event) =>
+            <TextField variant="outlined" select size="small" label={t("Khung quy trình")} value={text(process.family)} sx={{ ...DENSE, width: 260 }} onChange={(event) =>
               event.target.value === ""
                 ? setProcess({
                     family: undefined,
@@ -1054,12 +1055,12 @@ export default function ModelForm({ schema, value, onChange }: Props) {
                     booking: undefined,
                     after: undefined,
                     initial: "moi",
-                    states: { moi: { label: "Mới" }, xong: { label: "Đã xong", terminal: true } },
-                    actions: { hoan_tat: { label: "Hoàn tất", from: ["moi"], to: "xong", by: "handler" } },
+                    states: { moi: { label: t("Mới") }, xong: { label: t("Đã xong"), terminal: true } },
+                    actions: { hoan_tat: { label: t("Hoàn tất"), from: ["moi"], to: "xong", by: "handler" } },
                   })
                 : setProcess({ family: event.target.value, auto_close: undefined, booking: undefined, after: undefined, initial: undefined, states: undefined, actions: undefined })
             }>
-              <MenuItem value="">Tự khai báo, không dùng khung</MenuItem>
+              <MenuItem value="">{t("Tự khai báo, không dùng khung")}</MenuItem>
               {familyOptions.map((item) => (
                 <MenuItem key={item} value={item}>
                   {FAMILY_LABEL[item] ?? item}
@@ -1079,38 +1080,38 @@ export default function ModelForm({ schema, value, onChange }: Props) {
                 })
               }
               renderInput={(inputParams) => (
-                <TextField variant="outlined" {...inputParams} label="Vai xử lý" helperText="Vai được duyệt hoặc xử lý hồ sơ, phải có quyền xem hồ sơ ở mục Quyền" sx={DENSE} />
+                <TextField variant="outlined" {...inputParams} label={t("Vai xử lý")} helperText={t("Vai được duyệt hoặc xử lý hồ sơ, phải có quyền xem hồ sơ ở mục Quyền")} sx={DENSE} />
               )}
               onChange={(_, names) => setHandlers(names)}
             />
           </Row>
           {handlers.some((name) => !roleNames.includes(name)) && (
             <Typography variant="caption" color="error">
-              Có vai xử lý chưa khai báo ở mục Vai: {handlers.filter((name) => !roleNames.includes(name)).join(", ")}
+              {t("Có vai xử lý chưa khai báo ở mục Vai: {roles}", { roles: handlers.filter((name) => !roleNames.includes(name)).join(", ") })}
             </Typography>
           )}
           {handlers.filter((name) => roleNames.includes(name)).some((name) => !["all", "read", "unit", "assigned"].includes(text(access[name]))) && (
             <Typography variant="caption" color="warning.main" sx={{ display: "block" }}>
-              Vai xử lý cần quyền Tất cả, Chỉ đọc, Của đơn vị hoặc Được giao ở mục Quyền của thực thể này.
+              {t("Vai xử lý cần quyền Tất cả, Chỉ đọc, Của đơn vị hoặc Được giao ở mục Quyền của thực thể này.")}
             </Typography>
           )}
           <Row>
-            <DurationInput label="Hạn xử lý" value={text(process.deadline)} onChange={(deadline) => setProcess({ deadline })} />
-            <DurationInput label="Tự đóng sau" value={autoAfter} onChange={(after) => setAuto(after, autoAction)} />
+            <DurationInput label={t("Hạn xử lý")} value={text(process.deadline)} onChange={(deadline) => setProcess({ deadline })} />
+            <DurationInput label={t("Tự đóng sau")} value={autoAfter} onChange={(after) => setAuto(after, autoAction)} />
             {autoAfter !== "" && (
               <TextField
                 variant="outlined"
                 select
                 size="small"
-                label="Hành động tự đóng"
+                label={t("Hành động tự đóng")}
                 value={autoAction}
                 sx={{ ...DENSE, width: 220 }}
-                helperText="Hệ thống làm thay người nộp"
+                helperText={t("Hệ thống làm thay người nộp")}
                 onChange={(event) => setAuto(autoAfter, event.target.value)}
               >
                 {actionRows.filter((action) => !action.removed && action.by === "owner").map((action) => (
                   <MenuItem key={action.name} value={action.name}>
-                    {action.label || action.name}
+                    {ta(action.label || action.name)}
                   </MenuItem>
                 ))}
               </TextField>
@@ -1118,7 +1119,7 @@ export default function ModelForm({ schema, value, onChange }: Props) {
             <Tooltip title={PARAM_HELP.allow_self_decision}>
               <FormControlLabel
                 control={<Switch size="small" checked={process.allow_self_decision === true} onChange={(event) => setProcess({ allow_self_decision: event.target.checked })} />}
-                label={<Typography variant="body2">Người tạo được tự quyết định</Typography>}
+                label={<Typography variant="body2">{t("Người tạo được tự quyết định")}</Typography>}
               />
             </Tooltip>
           </Row>
@@ -1130,24 +1131,24 @@ export default function ModelForm({ schema, value, onChange }: Props) {
           {params.includes("booking") && (
             <>
               <Typography variant="subtitle2" sx={{ mt: 1.5 }}>
-                Đặt chỗ
+                {t("Đặt chỗ")}
               </Typography>
               <Row>
-                <TextField variant="outlined" select size="small" label="Trường chỉ tài nguyên" value={text(booking.resource)} sx={{ ...DENSE, width: 220 }} onChange={(event) => setProcess({ booking: { ...booking, resource: event.target.value } })}>
+                <TextField variant="outlined" select size="small" label={t("Trường chỉ tài nguyên")} value={text(booking.resource)} sx={{ ...DENSE, width: 220 }} onChange={(event) => setProcess({ booking: { ...booking, resource: event.target.value } })}>
                   {references.map(fieldOption)}
                 </TextField>
-                <TextField variant="outlined" select size="small" label="Trường bắt đầu" value={text(booking.starts)} sx={{ ...DENSE, width: 200 }} onChange={(event) => setProcess({ booking: { ...booking, starts: event.target.value } })}>
+                <TextField variant="outlined" select size="small" label={t("Trường bắt đầu")} value={text(booking.starts)} sx={{ ...DENSE, width: 200 }} onChange={(event) => setProcess({ booking: { ...booking, starts: event.target.value } })}>
                   {datetimes.map(fieldOption)}
                 </TextField>
-                <TextField variant="outlined" select size="small" label="Trường kết thúc" value={text(booking.ends)} sx={{ ...DENSE, width: 200 }} onChange={(event) => setProcess({ booking: { ...booking, ends: event.target.value } })}>
+                <TextField variant="outlined" select size="small" label={t("Trường kết thúc")} value={text(booking.ends)} sx={{ ...DENSE, width: 200 }} onChange={(event) => setProcess({ booking: { ...booking, ends: event.target.value } })}>
                   {datetimes.map(fieldOption)}
                 </TextField>
                 <TextField variant="outlined"
                   size="small"
-                  label="Sức chứa"
+                  label={t("Sức chứa")}
                   value={text(booking.capacity)}
                   sx={{ ...DENSE, width: 100 }}
-                  helperText="Số lượt cùng lúc"
+                  helperText={t("Số lượt cùng lúc")}
                   slotProps={{ htmlInput: { inputMode: "numeric" } }}
                   onChange={(event) => {
                     const digits = event.target.value.replace(/\D/g, "").slice(0, 6);
@@ -1160,20 +1161,19 @@ export default function ModelForm({ schema, value, onChange }: Props) {
           {family && (
             <Box sx={{ border: 1, borderColor: "divider", borderRadius: 1, p: 1.5, mt: 1 }}>
               <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
-                Khung "{FAMILY_LABEL[family.name] ?? family.name}" có sẵn
+                {t('Khung "{name}" có sẵn', { name: FAMILY_LABEL[family.name] ?? family.name })}
               </Typography>
               <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mb: 1 }}>
                 {family.states.map((state) => (
-                  <Chip key={state.name} size="small" variant={state.terminal ? "filled" : "outlined"} label={`${state.label} · ${state.name}${state.terminal ? " (cuối)" : ""}`} />
+                  <Chip key={state.name} size="small" variant={state.terminal ? "filled" : "outlined"} label={`${t(state.label)} · ${state.name}${state.terminal ? t(" (cuối)") : ""}`} />
                 ))}
               </Box>
               <Box component="ul" sx={{ m: 0, pl: 2.5, fontSize: 13 }}>
                 {family.actions.map((action) => (
                   <li key={action.name}>
-                    <b>{action.label}</b> <code>{action.name}</code>: {action.from.map((from) => family.states.find((state) => state.name === from)?.label ?? from).join(" hoặc ")} →{" "}
-                    {family.states.find((state) => state.name === action.to)?.label ?? action.to}, do {action.by === "OWNER" ? "người tạo hồ sơ" : "vai xử lý"}
-                    {action.needsNote ? ", bắt buộc ghi lý do" : ""}
-                    {action.when ? `, chỉ khi ${action.when.field} ${action.when.op} ${action.when.value}` : ""}
+                    <b>{ta(action.label)}</b> <code>{action.name}</code>: {t("{from} → {to}, do {who}", { from: action.from.map((from) => t(family.states.find((state) => state.name === from)?.label ?? from)).join(t(" hoặc ")), to: t(family.states.find((state) => state.name === action.to)?.label ?? action.to), who: action.by === "OWNER" ? t("người tạo hồ sơ") : t("vai xử lý") })}
+                    {action.needsNote ? t(", bắt buộc ghi lý do") : ""}
+                    {action.when ? t(", chỉ khi {field} {op} {value}", { field: action.when.field, op: action.when.op, value: action.when.value }) : ""}
                   </li>
                 ))}
               </Box>
@@ -1183,10 +1183,10 @@ export default function ModelForm({ schema, value, onChange }: Props) {
           {terminal.length > 0 && (
             <>
               <Typography variant="subtitle2" sx={{ mt: 1.5 }}>
-                Hành động hoàn tất
+                {t("Hành động hoàn tất")}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Chạy khi hồ sơ đến một trạng thái cuối: thêm hoặc bỏ một người khỏi nhóm.
+                {t("Chạy khi hồ sơ đến một trạng thái cuối: thêm hoặc bỏ một người khỏi nhóm.")}
               </Typography>
               {terminal.map((state) => {
                 const items = list(after[state.name]).map(rec);
@@ -1194,7 +1194,7 @@ export default function ModelForm({ schema, value, onChange }: Props) {
                 return (
                   <Box key={state.name} sx={{ mt: 1 }}>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      Khi hồ sơ {state.label.toLowerCase()}
+                      {t("Khi hồ sơ {state}", { state: t(state.label).toLowerCase() })}
                     </Typography>
                     {items.map((item, index) => {
                       const byField = item.group_from !== undefined;
@@ -1207,8 +1207,8 @@ export default function ModelForm({ schema, value, onChange }: Props) {
                               </MenuItem>
                             ))}
                           </TextField>
-                          <TextField variant="outlined" select size="small" label="Người" value={text(item.user)} sx={{ ...DENSE, width: 200 }} onChange={(event) => update(index, { user: event.target.value })}>
-                            <MenuItem value="created_by">Người tạo hồ sơ</MenuItem>
+                          <TextField variant="outlined" select size="small" label={t("Người")} value={text(item.user)} sx={{ ...DENSE, width: 200 }} onChange={(event) => update(index, { user: event.target.value })}>
+                            <MenuItem value="created_by">{t("Người tạo hồ sơ")}</MenuItem>
                             {userFields.map(fieldOption)}
                           </TextField>
                           <ToggleButtonGroup
@@ -1217,24 +1217,24 @@ export default function ModelForm({ schema, value, onChange }: Props) {
                             value={byField ? "field" : "fixed"}
                             onChange={(_, next) => next && update(index, next === "field" ? { group: undefined, group_from: groupFields[0] ?? "" } : { group_from: undefined, group: "" })}
                           >
-                            <ToggleButton value="fixed">Nhóm cố định</ToggleButton>
-                            <ToggleButton value="field">Nhóm theo trường</ToggleButton>
+                            <ToggleButton value="fixed">{t("Nhóm cố định")}</ToggleButton>
+                            <ToggleButton value="field">{t("Nhóm theo trường")}</ToggleButton>
                           </ToggleButtonGroup>
                           {byField ? (
-                            <TextField variant="outlined" select size="small" label="Trường chứa tên nhóm" value={text(item.group_from)} sx={{ ...DENSE, width: 220 }} onChange={(event) => update(index, { group_from: event.target.value })}>
+                            <TextField variant="outlined" select size="small" label={t("Trường chứa tên nhóm")} value={text(item.group_from)} sx={{ ...DENSE, width: 220 }} onChange={(event) => update(index, { group_from: event.target.value })}>
                               {groupFields.map(fieldOption)}
                             </TextField>
                           ) : (
-                            <TextField variant="outlined" size="small" label="Tên nhóm Keycloak" value={text(item.group)} sx={{ ...DENSE, width: 220 }} onChange={(event) => update(index, { group: event.target.value })} />
+                            <TextField variant="outlined" size="small" label={t("Tên nhóm Keycloak")} value={text(item.group)} sx={{ ...DENSE, width: 220 }} onChange={(event) => update(index, { group: event.target.value })} />
                           )}
-                          <IconButton size="small" aria-label="Xóa hành động" onClick={() => setCompletions(state.name, items.filter((_, i) => i !== index))}>
+                          <IconButton size="small" aria-label={t("Xóa hành động")} onClick={() => setCompletions(state.name, items.filter((_, i) => i !== index))}>
                             <DeleteOutlineIcon fontSize="small" />
                           </IconButton>
                         </Row>
                       );
                     })}
                     <Button size="small" startIcon={<AddIcon />} onClick={() => setCompletions(state.name, [...items, { do: "add_to_group", user: "created_by", group: "" }])}>
-                      Thêm hành động
+                      {t("Thêm hành động")}
                     </Button>
                   </Box>
                 );
@@ -1260,23 +1260,23 @@ export default function ModelForm({ schema, value, onChange }: Props) {
           />
         ))}
         <Button size="small" startIcon={<AddIcon />} onClick={addEntity}>
-          Thêm thực thể
+          {t("Thêm thực thể")}
         </Button>
         <Box sx={{ flexGrow: 1 }} />
         {entityKey && (
           <Button size="small" color="error" startIcon={<DeleteOutlineIcon />} onClick={removeEntity}>
-            Xóa thực thể này
+            {t("Xóa thực thể này")}
           </Button>
         )}
       </Box>
-      {entityKeys.length === 0 && <Empty>Chưa có thực thể. Thêm một thực thể để bắt đầu.</Empty>}
+      {entityKeys.length === 0 && <Empty>{t("Chưa có thực thể. Thêm một thực thể để bắt đầu.")}</Empty>}
       {entityKey && (
         <>
           <Tabs value={entityPart} onChange={(_, next) => setEntityPart(next)} sx={{ minHeight: 36, mb: 1, "& .MuiTab-root": { minHeight: 36, py: 0 } }}>
-            <Tab value="general" label="Chung" />
-            <Tab value="fields" label={`Trường (${fieldKeys.length})`} />
-            <Tab value="access" label={`Quyền (${Object.keys(access).length})`} />
-            <Tab value="process" label={hasProcess ? "Quy trình" : "Quy trình (không có)"} />
+            <Tab value="general" label={t("Chung")} />
+            <Tab value="fields" label={t("Trường ({n})", { n: fieldKeys.length })} />
+            <Tab value="access" label={t("Quyền ({n})", { n: Object.keys(access).length })} />
+            <Tab value="process" label={hasProcess ? t("Quy trình") : t("Quy trình (không có)")} />
           </Tabs>
           {entityPartView()}
         </>
@@ -1289,14 +1289,14 @@ export default function ModelForm({ schema, value, onChange }: Props) {
       <GuideBox section="general" />
       <Row>
         <Box sx={{ width: 260 }}>
-          <NameInput label="Tên mô hình" value={text(value.name)} pattern={NAME} onCommit={(name) => set({ name })} help="Đặt tên bảng dữ liệu và API" />
+          <NameInput label={t("Tên mô hình")} value={text(value.name)} pattern={NAME} onCommit={(name) => set({ name })} help={t("Đặt tên bảng dữ liệu và API")} />
         </Box>
         <TextField variant="outlined"
           size="small"
-          label="Đích gửi lịch sử hồ sơ"
+          label={t("Đích gửi lịch sử hồ sơ")}
           value={text(value.webhook)}
           error={text(value.webhook) !== "" && !NAME.test(text(value.webhook))}
-          helperText="Tên đích đã cấu hình ở máy chủ; để trống thì dùng đích mặc định"
+          helperText={t("Tên đích đã cấu hình ở máy chủ; để trống thì dùng đích mặc định")}
           sx={{ ...DENSE, flex: 1, minWidth: 240 }}
           onChange={(event) => set({ webhook: event.target.value })}
         />
@@ -1309,10 +1309,10 @@ export default function ModelForm({ schema, value, onChange }: Props) {
   return (
     <Box>
       <Tabs value={part} onChange={(_, next) => setPart(next)} variant="scrollable" scrollButtons="auto" sx={{ mb: 1.5, borderBottom: 1, borderColor: "divider" }}>
-        <Tab value="general" label="Chung" />
-        <Tab value="roles" label={`Vai (${counts.roles})`} />
-        <Tab value="units" label={`Đơn vị (${counts.units})`} />
-        <Tab value="entities" label={`Thực thể (${counts.entities})`} />
+        <Tab value="general" label={t("Chung")} />
+        <Tab value="roles" label={t("Vai ({n})", { n: counts.roles })} />
+        <Tab value="units" label={t("Đơn vị ({n})", { n: counts.units })} />
+        <Tab value="entities" label={t("Thực thể ({n})", { n: counts.entities })} />
       </Tabs>
       {part === "general" && generalPart}
       {part === "roles" && rolesPart}

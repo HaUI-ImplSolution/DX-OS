@@ -40,6 +40,7 @@ import { FAMILY_LABEL } from "./labels";
 import ProcessDiagram from "./ProcessDiagram";
 import SyntaxGuide from "./SyntaxGuide";
 import YamlEditor from "./YamlEditor";
+import { t } from "../shell/t";
 
 interface Props {
   text: string;
@@ -130,7 +131,7 @@ function patch(doc: Document, path: Path, before: unknown, after: unknown) {
   doc.setIn(path, after);
 }
 
-const message = (error: unknown) => (error instanceof Error ? error.message : "Không xử lý được");
+const message = (error: unknown) => (error instanceof Error ? error.message : t("Không xử lý được"));
 
 // How long the file must stay untouched before it is checked and drawn again.
 const DIAGRAM_DELAY_MS = 5000;
@@ -188,10 +189,10 @@ function DiagramStatus({
   if (problems.length > 0) {
     return (
       <Alert severity="warning" sx={{ mb: 1.5 }}>
-        {drawn ? "Tệp có lỗi nên sơ đồ giữ bản gần nhất đúng:" : "Tệp có lỗi nên chưa vẽ được sơ đồ:"}
+        {drawn ? t("Tệp có lỗi nên sơ đồ giữ bản gần nhất đúng:") : t("Tệp có lỗi nên chưa vẽ được sơ đồ:")}
         {problems.map((problem) => (
           <div key={`${problem.line}:${problem.column}:${problem.message}`}>
-            {problem.line > 0 ? `Dòng ${problem.line}, cột ${problem.column}: ` : ""}
+            {problem.line > 0 ? t("Dòng {line}, cột {column}: ", { line: problem.line, column: problem.column }) : ""}
             {translateBackend(problem.message)}
           </div>
         ))}
@@ -201,7 +202,7 @@ function DiagramStatus({
   if (state === "unavailable") {
     return (
       <Alert severity="info" sx={{ mb: 1.5 }}>
-        Chưa kiểm được tệp lúc này, sơ đồ giữ bản gần nhất.
+        {t("Chưa kiểm được tệp lúc này, sơ đồ giữ bản gần nhất.")}
       </Alert>
     );
   }
@@ -209,7 +210,7 @@ function DiagramStatus({
     return (
       <Typography variant="caption" color="text.secondary" sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
         {state === "checking" && <CircularProgress size={12} />}
-        {state === "waiting" ? "Sơ đồ cập nhật khi bạn ngừng gõ vài giây." : "Đang kiểm tệp…"}
+        {state === "waiting" ? t("Sơ đồ cập nhật khi bạn ngừng gõ vài giây.") : t("Đang kiểm tệp…")}
       </Typography>
     );
   }
@@ -270,7 +271,7 @@ export default function EditorTab({ text, source, schema, onText, onApplied }: P
       if (!plan) return;
       const done = await applyModel(text, plan.fromVersion > 0 ? plan.fromVersion : undefined, accept);
       setPlan(null);
-      onApplied(`Đã áp dụng ${done.model} phiên bản ${done.version}`);
+      onApplied(t("Đã áp dụng {model} phiên bản {version}", { model: done.model, version: done.version }));
     });
 
   const step = plan ? 2 : 1;
@@ -279,13 +280,13 @@ export default function EditorTab({ text, source, schema, onText, onApplied }: P
       <Card sx={{ p: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1.5, flexWrap: "wrap" }}>
           <ToggleButtonGroup size="small" exclusive value={mode} onChange={(_, next) => next && setMode(next)}>
-            <ToggleButton value="yaml">Soạn YAML</ToggleButton>
-            <ToggleButton value="form">Điền form</ToggleButton>
+            <ToggleButton value="yaml">{t("Soạn YAML")}</ToggleButton>
+            <ToggleButton value="form">{t("Điền form")}</ToggleButton>
           </ToggleButtonGroup>
           <Chip size="small" variant="outlined" label={source} />
           <Box sx={{ flexGrow: 1 }} />
           <Button variant="contained" disabled={busy || parsed.error !== null} onClick={showPlan}>
-            Xem kế hoạch
+            {t("Xem kế hoạch")}
           </Button>
         </Box>
         {problems.length > 0 && (
@@ -298,11 +299,11 @@ export default function EditorTab({ text, source, schema, onText, onApplied }: P
         {mode === "yaml" && <YamlEditor value={text} onChange={onText} height="min(62vh, 640px)" />}
         {mode === "form" &&
           (parsed.error ? (
-            <Alert severity="warning">Sửa lỗi cú pháp ở chế độ YAML trước: {parsed.error}</Alert>
+            <Alert severity="warning">{t("Sửa lỗi cú pháp ở chế độ YAML trước: {error}", { error: parsed.error })}</Alert>
           ) : (
             <>
               <Alert severity="info" sx={{ mb: 1.5 }}>
-                Điền form chỉ sửa những chỗ bạn đổi, các dòng chú thích trong tệp được giữ.
+                {t("Điền form chỉ sửa những chỗ bạn đổi, các dòng chú thích trong tệp được giữ.")}
               </Alert>
               <ModelForm schema={schema} value={parsed.value} onChange={fromForm} />
             </>
@@ -312,19 +313,18 @@ export default function EditorTab({ text, source, schema, onText, onApplied }: P
         <Card sx={{ p: 2.5 }}>
           <Stepper activeStep={step} alternativeLabel sx={{ mb: plan ? 2.5 : 0 }}>
             <Step>
-              <StepLabel>Soạn mô hình</StepLabel>
+              <StepLabel>{t("Soạn mô hình")}</StepLabel>
             </Step>
             <Step>
-              <StepLabel>Xem kế hoạch</StepLabel>
+              <StepLabel>{t("Xem kế hoạch")}</StepLabel>
             </Step>
             <Step>
-              <StepLabel>Áp dụng</StepLabel>
+              <StepLabel>{t("Áp dụng")}</StepLabel>
             </Step>
           </Stepper>
           {!plan && (
             <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-              Soạn xong thì bấm "Xem kế hoạch": hệ thống so tệp với mô hình đang chạy, cho biết sẽ đổi gì, mức rủi ro và
-              những dòng dữ liệu vi phạm quy tắc mới, mà chưa thay đổi gì.
+              {t("Soạn xong thì bấm 'Xem kế hoạch': hệ thống so tệp với mô hình đang chạy, cho biết sẽ đổi gì, mức rủi ro và những dòng dữ liệu vi phạm quy tắc mới, mà chưa thay đổi gì.")}
             </Typography>
           )}
           {plan && <PlanPanel plan={plan} busy={busy} onApply={apply} />}
@@ -333,10 +333,10 @@ export default function EditorTab({ text, source, schema, onText, onApplied }: P
           <Card sx={{ p: 2.5 }}>
             <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
               <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                Sơ đồ quy trình
+                {t("Sơ đồ quy trình")}
               </Typography>
-              <Tooltip title="Mở to">
-                <IconButton size="small" onClick={() => setZoomed(true)} aria-label="Mở to sơ đồ">
+              <Tooltip title={t("Mở to")}>
+                <IconButton size="small" onClick={() => setZoomed(true)} aria-label={t("Mở to sơ đồ")}>
                   <OpenInFullIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
@@ -359,9 +359,9 @@ export default function EditorTab({ text, source, schema, onText, onApplied }: P
           <Dialog open={zoomed} onClose={() => setZoomed(false)} maxWidth="xl" fullWidth>
             <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <Box sx={{ flexGrow: 1 }}>
-                Sơ đồ quy trình: {selected?.entity} ({FAMILY_LABEL[selected.family] ?? selected.family})
+                {t("Sơ đồ quy trình: {entity} ({family})", { entity: selected.entity, family: FAMILY_LABEL[selected.family] ?? selected.family })}
               </Box>
-              <IconButton onClick={() => setZoomed(false)} aria-label="Đóng">
+              <IconButton onClick={() => setZoomed(false)} aria-label={t("Đóng")}>
                 <CloseIcon />
               </IconButton>
             </DialogTitle>

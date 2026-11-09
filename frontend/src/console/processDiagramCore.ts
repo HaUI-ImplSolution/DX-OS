@@ -2,6 +2,7 @@
 import { Graph, layout as layoutGraph } from "@dagrejs/dagre";
 import { formatDuration } from "../shell/format";
 import type { Completion, ProcessView } from "./api";
+import { t, ta } from "../shell/t";
 
 const WITHDRAW = "withdraw";
 export const PROCESS_NODE_WIDTH = 150;
@@ -67,7 +68,7 @@ export const PROCESS_ANCHORS: ProcessAnchor[] = [
 // The wording of what a final state does for a record that reaches it.
 function completionText(completion: Completion): string {
   const group = completion.group ?? `{${completion.groupField}}`;
-  return `${completion.operation === "remove_from_group" ? "gỡ khỏi" : "thêm vào"} nhóm ${group}`;
+  return completion.operation === "remove_from_group" ? t("gỡ khỏi nhóm {group}", { group }) : t("thêm vào nhóm {group}", { group });
 }
 
 export function buildProcessDiagram(
@@ -115,7 +116,7 @@ export function buildProcessDiagram(
         x: point.x - PROCESS_NODE_WIDTH / 2,
         y: point.y - PROCESS_NODE_HEIGHT / 2,
       },
-      label: state.label,
+      label: t(state.label),
       terminal: state.terminal,
       caption: captionOf(family, state),
     };
@@ -125,7 +126,7 @@ export function buildProcessDiagram(
       id: `${action.name}-${from}`,
       source: from,
       target: action.to,
-      label: `${action.label} (${action.by === "OWNER" ? "người nộp" : (action.roles.length ? action.roles : family.handlers).join(", ")})${action.when ? `, khi ${action.when.field} ${action.when.op} ${action.when.value}` : ""}`,
+      label: `${ta(action.label)} (${action.by === "OWNER" ? t("người nộp") : (action.roles.length ? action.roles : family.handlers).join(", ")})${action.when ? t(", khi {field} {op} {value}", { field: action.when.field, op: action.when.op, value: action.when.value }) : ""}`,
     })),
   );
   // The system takes the action of auto_close for the owner of a record that waits that long.
@@ -136,7 +137,7 @@ export function buildProcessDiagram(
       id: "auto_close",
       source: closeFrom,
       target: closing.to,
-      label: `tự đóng sau ${formatDuration(family.autoCloseSeconds ?? 0)}`,
+      label: t("tự đóng sau {time}", { time: formatDuration(family.autoCloseSeconds ?? 0) }),
       dashed: true,
     });
   }
@@ -170,7 +171,7 @@ export function buildProcessDiagram(
 function captionOf(family: ProcessView, state: ProcessView["states"][number]): string {
   if (state.completions.length) return state.completions.map(completionText).join("; ");
   if (family.deadlineSeconds !== null && family.awaiting.includes(state.name)) {
-    return `hạn ${formatDuration(family.deadlineSeconds)}`;
+    return t("hạn {time}", { time: formatDuration(family.deadlineSeconds) });
   }
   return "";
 }

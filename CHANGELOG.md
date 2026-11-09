@@ -91,8 +91,8 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 
 ### Giao diện
 
-- Giao diện react-admin dựng từ metadata, toàn tiếng Việt, có chế độ sáng và tối: hộp việc, chi tiết hồ sơ dạng thẻ với dòng thời gian, lịch đặt chỗ kéo thả được, trang thống kê.
-  Backend trả thông báo tiếng Anh kèm `errorCode`, frontend dịch theo `shell/backendMessages.ts`.
+- Giao diện react-admin dựng từ metadata, có tiếng Việt và tiếng Anh chọn bằng nút VI và EN, có chế độ sáng và tối: hộp việc, chi tiết hồ sơ dạng thẻ với dòng thời gian, lịch đặt chỗ kéo thả được, trang thống kê.
+  Backend trả thông báo tiếng Anh kèm `errorCode`; bản tiếng Việt dịch theo `shell/backendMessages.ts` và `data.reason`, bản tiếng Anh hiện thông báo của backend.
 - Bảng điều khiển `/console` cho ADMIN: thư viện mẫu, trình soạn YAML (Monaco) theo JSON Schema, xem kế hoạch, áp dụng, lịch sử áp dụng kèm tên người, quay về, sơ đồ quy trình, mô hình dừng giữa chừng (Tiếp tục, Hủy bỏ) và nút "Sửa phần lệch".
   API đọc cho bảng điều khiển: `/api/v1/models/schema`, `families`, `templates` và `{model}/versions`.
 - Sơ đồ quy trình vẽ từ chính tệp đang soạn: vai xử lý của từng hành động, hạn xử lý, hành động của `auto_close`, hành động `after` và đặt chỗ, cho cả quy trình tự khai báo.

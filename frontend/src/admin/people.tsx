@@ -4,6 +4,7 @@ import { useInput, useRecordContext } from "react-admin";
 import { Autocomplete, CircularProgress, TextField as MuiTextField } from "@mui/material";
 import { peopleByIds, searchPeople } from "./api";
 import type { Person } from "./types";
+import { t } from "../shell/t";
 
 const MIN_SEARCH = 2;
 const MAX_IDS = 50;
@@ -138,9 +139,9 @@ export function PersonInput({ source, label, required }: { source: string; label
       isOptionEqualToValue={(a, b) => a.id === b.id}
       onInputChange={(_, value, reason) => reason === "input" && setText(value)}
       onChange={(_, person) => field.onChange(person?.id ?? null)}
-      noOptionsText={text.trim().length < MIN_SEARCH ? "Gõ ít nhất 2 ký tự của tên" : "Không tìm thấy ai"}
-      loadingText="Đang tìm…"
-      clearText="Bỏ chọn"
+      noOptionsText={text.trim().length < MIN_SEARCH ? t("Gõ ít nhất 2 ký tự của tên") : t("Không tìm thấy ai")}
+      loadingText={t("Đang tìm…")}
+      clearText={t("Bỏ chọn")}
       renderInput={(params) => (
         <MuiTextField
           {...params}

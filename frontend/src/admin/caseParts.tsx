@@ -29,13 +29,14 @@ import { conditionMet, conditionText } from "./condition";
 import { useNames } from "./people";
 import { assignRecord, fileLink, listEvents, listFiles, listHandlers, removeFile, takeAction, uploadFile } from "./api";
 import type { AttachmentItem, EntityMeta, FieldMeta, Person, ProcessAction, RecordEvent } from "./types";
+import { t, ta } from "../shell/t";
 
 interface Props {
   model: string;
   entity: EntityMeta;
 }
 
-const message = (error: unknown) => (error instanceof Error ? error.message : "Không xử lý được");
+const message = (error: unknown) => (error instanceof Error ? error.message : t("Không xử lý được"));
 
 // A titled card; a panel that has nothing to show returns null before it gets here.
 export function Section({ title, action, children }: { title: string; action?: JSX.Element; children: React.ReactNode }) {
@@ -87,7 +88,7 @@ export function ActionButtons({ model, entity }: Props) {
     setBusy(true);
     try {
       await takeAction(model, entity.name, record.id, action.name, text);
-      notify(`${action.label}: xong`, { type: "success" });
+      notify(t("{action}: xong", { action: ta(action.label) }), { type: "success" });
       setNoteFor(null);
       setNote("");
       refresh();
@@ -109,11 +110,11 @@ export function ActionButtons({ model, entity }: Props) {
             disabled={busy || waiting}
             onClick={() => (action.needsNote || action.name === WITHDRAW ? setNoteFor(action) : send(action))}
           >
-            {action.label}
+            {ta(action.label)}
           </Button>
         );
         return waiting && action.when ? (
-          <Tooltip key={action.name} title={`Chỉ thực hiện khi ${conditionText(action.when, entity.fields)}`}>
+          <Tooltip key={action.name} title={t("Chỉ thực hiện khi {condition}", { condition: conditionText(action.when, entity.fields) })}>
             <span>{button}</span>
           </Tooltip>
         ) : (
@@ -121,28 +122,28 @@ export function ActionButtons({ model, entity }: Props) {
         );
       })}
       <Dialog open={noteFor !== null} onClose={() => setNoteFor(null)} fullWidth>
-        <DialogTitle>{noteFor?.label}</DialogTitle>
+        <DialogTitle>{noteFor ? ta(noteFor.label) : null}</DialogTitle>
         <DialogContent>
           {noteFor?.name === WITHDRAW && (
-            <DialogContentText sx={{ mb: 2 }}>Hồ sơ đã rút lại sẽ dừng xử lý và không nộp lại được.</DialogContentText>
+            <DialogContentText sx={{ mb: 2 }}>{t("Hồ sơ đã rút lại sẽ dừng xử lý và không nộp lại được.")}</DialogContentText>
           )}
           <MuiTextField
             autoFocus
             fullWidth
             multiline
             minRows={3}
-            label={noteFor?.needsNote ? "Ghi chú" : "Lý do (không bắt buộc)"}
+            label={noteFor?.needsNote ? t("Ghi chú") : t("Lý do (không bắt buộc)")}
             value={note}
             onChange={(event) => setNote(event.target.value)}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setNoteFor(null)}>Hủy</Button>
+          <Button onClick={() => setNoteFor(null)}>{t("Hủy")}</Button>
           <Button
             disabled={busy || (noteFor?.needsNote === true && !note.trim())}
             onClick={() => noteFor && send(noteFor, note.trim() || undefined)}
           >
-            {noteFor?.name === WITHDRAW ? "Rút lại" : "Gửi"}
+            {noteFor?.name === WITHDRAW ? t("Rút lại") : t("Gửi")}
           </Button>
         </DialogActions>
       </Dialog>
@@ -184,22 +185,22 @@ export function AssignPanel({ model, entity }: Props) {
   const holder = people.find((person) => person.id === record.assignee)?.name;
   const canClaim = people.some((person) => person.id === me) && record.assignee !== me;
   return (
-    <Section title="Người xử lý">
+    <Section title={t("Người xử lý")}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
         <Avatar sx={{ width: 36, height: 36, bgcolor: record.assignee ? "primary.main" : "action.disabledBackground" }}>
           {record.assignee ? (holder ?? "?").charAt(0).toUpperCase() : "–"}
         </Avatar>
         <Box>
-          <Typography sx={{ fontWeight: 600 }}>{record.assignee ? (holder ?? "Đã giao") : "Chưa giao ai"}</Typography>
+          <Typography sx={{ fontWeight: 600 }}>{record.assignee ? (holder ?? t("Đã giao")) : t("Chưa giao ai")}</Typography>
           <Typography variant="caption" color="text.secondary">
-            {record.assignee ? "Đang giữ hồ sơ này" : "Cả vai xử lý đều nhận được"}
+            {record.assignee ? t("Đang giữ hồ sơ này") : t("Cả vai xử lý đều nhận được")}
           </Typography>
         </Box>
       </Box>
       <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap" }}>
         {canClaim && (
           <Button variant="contained" onClick={() => assign(String(me))}>
-            Nhận việc
+            {t("Nhận việc")}
           </Button>
         )}
         <Autocomplete<Person>
@@ -211,30 +212,30 @@ export function AssignPanel({ model, entity }: Props) {
           getOptionLabel={(person) => person.name}
           isOptionEqualToValue={(a, b) => a.id === b.id}
           onChange={(_, person) => person && assign(person.id)}
-          noOptionsText="Không có ai khớp"
-          renderInput={(params) => <MuiTextField {...params} label="Giao cho" placeholder="Gõ tên để tìm" />}
+          noOptionsText={t("Không có ai khớp")}
+          renderInput={(params) => <MuiTextField {...params} label={t("Giao cho")} placeholder={t("Gõ tên để tìm")} />}
         />
-        {record.assignee && <Button onClick={() => assign(null)}>Bỏ giao</Button>}
+        {record.assignee && <Button onClick={() => assign(null)}>{t("Bỏ giao")}</Button>}
       </Box>
     </Section>
   );
 }
 
 const EVENT_LABELS: Record<string, string> = {
-  created: "Tạo hồ sơ",
-  updated: "Sửa thông tin",
-  deleted: "Xóa",
-  assigned: "Giao việc",
-  file_added: "Thêm tệp",
-  file_removed: "Gỡ tệp",
-  overdue: "Quá hạn xử lý",
-  completion_skipped: "Bỏ qua hành động hoàn tất",
-  auto_closed: "Tự đóng do người nộp chưa xác nhận",
+  created: t("Tạo hồ sơ"),
+  updated: t("Sửa thông tin"),
+  deleted: t("Xóa"),
+  assigned: t("Giao việc"),
+  file_added: t("Thêm tệp"),
+  file_removed: t("Gỡ tệp"),
+  overdue: t("Quá hạn xử lý"),
+  completion_skipped: t("Bỏ qua hành động hoàn tất"),
+  auto_closed: t("Tự đóng do người nộp chưa xác nhận"),
 };
 
 const OPERATION_LABEL: Record<string, string> = {
-  add_to_group: "Thêm vào nhóm",
-  remove_from_group: "Gỡ khỏi nhóm",
+  add_to_group: t("Thêm vào nhóm"),
+  remove_from_group: t("Gỡ khỏi nhóm"),
 };
 
 // Why a completion action was skipped, as the backend records it: "<operation> skipped: the record has no <what>".
@@ -243,11 +244,11 @@ function skippedReason(detail: string, fieldLabel: (name: string) => string): st
   if (!match) return translateBackend(detail);
   const [, operation, userField, groupField] = match;
   const what = userField
-    ? `chưa có người dùng ở trường "${fieldLabel(userField)}"`
+    ? t('chưa có người dùng ở trường "{field}"', { field: fieldLabel(userField) })
     : groupField
-      ? `chưa có nhóm ở trường "${fieldLabel(groupField)}"`
-      : "chưa có nhóm";
-  return `${OPERATION_LABEL[operation] ?? operation} bị bỏ qua: hồ sơ ${what}`;
+      ? t('chưa có nhóm ở trường "{field}"', { field: fieldLabel(groupField) })
+      : t("chưa có nhóm");
+  return t("{operation} bị bỏ qua: hồ sơ {what}", { operation: OPERATION_LABEL[operation] ?? operation, what });
 }
 
 // What an "updated" event changed. A detail that is a JSON object maps each field to [old, new];
@@ -303,17 +304,17 @@ export function HistoryPanel({ model, entity }: Props) {
 
   const process = entity.process;
   const actionLabel = (name: string) =>
-    EVENT_LABELS[name] ?? process?.actions.find((action) => action.name === name)?.label ?? name;
+    EVENT_LABELS[name] ?? ta(process?.actions.find((action) => action.name === name)?.label ?? name);
   const fieldLabel = (name: string) => entity.fields.find((field) => field.name === name)?.label ?? name;
   const ordered = [...events].reverse();
   const userFields = new Set(entity.fields.filter((field) => field.type === "user").map((field) => field.name));
   const personNames = useNames(events.flatMap((event) => userIdsOf(event, userFields)));
 
   return (
-    <Section title="Lịch sử xử lý">
+    <Section title={t("Lịch sử xử lý")}>
       {ordered.length === 0 && (
         <Typography variant="body2" color="text.secondary">
-          Chưa có hoạt động nào.
+          {t("Chưa có hoạt động nào.")}
         </Typography>
       )}
       <Box sx={{ position: "relative", pl: 3 }}>
@@ -347,7 +348,7 @@ export function HistoryPanel({ model, entity }: Props) {
               </Typography>
               {(detail || (event.action === "assigned" && !event.detail)) && (
                 <Typography variant="body2" sx={{ mt: 0.5, p: 1, bgcolor: "action.hover", borderRadius: 1, whiteSpace: "pre-line", overflowWrap: "anywhere" }}>
-                  {event.action === "assigned" ? (event.detail ?? "Bỏ giao") : detail}
+                  {event.action === "assigned" ? (event.detail ?? t("Bỏ giao")) : detail}
                 </Typography>
               )}
             </Box>
@@ -409,7 +410,7 @@ export function FilesPanel({ model, entity }: Props) {
             action={
               canAdd ? (
                 <Button component="label" size="small" variant="outlined" startIcon={<UploadFileIcon />} disabled={busy}>
-                  Tải lên
+                  {t("Tải lên")}
                   <input
                     hidden
                     type="file"
@@ -425,7 +426,7 @@ export function FilesPanel({ model, entity }: Props) {
           >
             {own.length === 0 && (
               <Typography variant="body2" color="text.secondary">
-                Chưa có tệp nào.
+                {t("Chưa có tệp nào.")}
               </Typography>
             )}
             {own.map((item) => (
@@ -442,7 +443,7 @@ export function FilesPanel({ model, entity }: Props) {
                   </Typography>
                 </Box>
                 {canAdd && item.uploaded_by === identity?.id && (
-                  <Tooltip title="Gỡ tệp">
+                  <Tooltip title={t("Gỡ tệp")}>
                     <IconButton size="small" color="error" disabled={busy} onClick={() => run(() => removeFile(model, entity.name, id, item.id))}>
                       <DeleteOutlineIcon fontSize="small" />
                     </IconButton>

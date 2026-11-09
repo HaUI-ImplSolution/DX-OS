@@ -24,6 +24,7 @@ import { formatDateTime, timeAgo } from "../shell/format";
 import { listInbox } from "./api";
 import { StatusChip } from "./StatusChip";
 import { resourceName, type InboxItem, type ModelMeta, type Page } from "./types";
+import { t } from "../shell/t";
 
 const PAGE_SIZE = 50;
 
@@ -63,7 +64,7 @@ export default function InboxPage({ models }: { models: ModelMeta[] }) {
   const items = data?.items ?? null;
 
   useEffect(() => {
-    listInbox(page, PAGE_SIZE).then(setData, (e: unknown) => setError(e instanceof Error ? e.message : "Không đọc được hộp việc"));
+    listInbox(page, PAGE_SIZE).then(setData, (e: unknown) => setError(e instanceof Error ? e.message : t("Không đọc được hộp việc")));
   }, [page]);
 
   const entityOf = (item: InboxItem) =>
@@ -72,20 +73,22 @@ export default function InboxPage({ models }: { models: ModelMeta[] }) {
 
   return (
     <Box>
-      <Title title="Hộp việc" />
-      <PageHeader title="Hộp việc" subtitle="Những hồ sơ đang chờ bạn xử lý, việc quá hạn lên đầu." />
+      <Title title={t("Hộp việc")} />
+      <PageHeader title={t("Hộp việc")} subtitle={t("Những hồ sơ đang chờ bạn xử lý, việc quá hạn lên đầu.")} />
       {models.some((model) => model.held) && (
         <Alert severity="warning" sx={{ mb: 2.5 }}>
-          {`Mô hình ${models
-            .filter((model) => model.held)
-            .map((model) => model.name)
-            .join(", ")} đang được áp dụng hoặc cần quản trị viên xử lý nên tạm thời chưa dùng được. Tải lại trang sau ít phút.`}
+          {t("Mô hình {names} đang được áp dụng hoặc cần quản trị viên xử lý nên tạm thời chưa dùng được. Tải lại trang sau ít phút.", {
+            names: models
+              .filter((model) => model.held)
+              .map((model) => model.name)
+              .join(", "),
+          })}
         </Alert>
       )}
       <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mb: 2.5 }}>
-        <Stat icon={<AssignmentTurnedInOutlinedIcon />} label="Việc đang chờ" value={data?.totalElements ?? 0} tone="primary" />
-        <Stat icon={<ReportProblemOutlinedIcon />} label="Quá hạn" value={overdue} tone="error" />
-        <Stat icon={<HourglassTopIcon />} label="Trong hạn" value={(items?.length ?? 0) - overdue} tone="success" />
+        <Stat icon={<AssignmentTurnedInOutlinedIcon />} label={t("Việc đang chờ")} value={data?.totalElements ?? 0} tone="primary" />
+        <Stat icon={<ReportProblemOutlinedIcon />} label={t("Quá hạn")} value={overdue} tone="error" />
+        <Stat icon={<HourglassTopIcon />} label={t("Trong hạn")} value={(items?.length ?? 0) - overdue} tone="success" />
       </Box>
       <Card>
         {error && (
@@ -104,19 +107,19 @@ export default function InboxPage({ models }: { models: ModelMeta[] }) {
           <Box sx={{ py: 8, textAlign: "center", color: "text.secondary" }}>
             <TaskAltIcon sx={{ fontSize: 48, color: "success.main", mb: 1 }} />
             <Typography variant="h6" color="text.primary">
-              Không có việc nào đang chờ bạn
+              {t("Không có việc nào đang chờ bạn")}
             </Typography>
-            <Typography variant="body2">Hồ sơ mới giao cho bạn sẽ hiện ở đây.</Typography>
+            <Typography variant="body2">{t("Hồ sơ mới giao cho bạn sẽ hiện ở đây.")}</Typography>
           </Box>
         )}
         {items && items.length > 0 && (
           <Table size="medium">
             <TableHead>
               <TableRow>
-                <TableCell>Loại</TableCell>
-                <TableCell>Hồ sơ</TableCell>
-                <TableCell>Trạng thái</TableCell>
-                <TableCell>Nộp lúc</TableCell>
+                <TableCell>{t("Loại")}</TableCell>
+                <TableCell>{t("Hồ sơ")}</TableCell>
+                <TableCell>{t("Trạng thái")}</TableCell>
+                <TableCell>{t("Nộp lúc")}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>

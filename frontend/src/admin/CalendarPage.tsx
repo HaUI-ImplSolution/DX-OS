@@ -14,6 +14,8 @@ import { json, queryString, request } from "../shell/api";
 import { displayField } from "./resources";
 import { TONES } from "./StatusChip";
 import { splitResource, type EntityMeta, type Page } from "./types";
+import { getLocale } from "../shell/locale";
+import { t } from "../shell/t";
 
 // The bookings of an entity of the reservation family on a calendar.
 export default function CalendarPage({ byResource }: { byResource: Record<string, EntityMeta> }) {
@@ -23,10 +25,10 @@ export default function CalendarPage({ byResource }: { byResource: Record<string
   const theme = useTheme();
   const entity = byResource[resource];
   const booking = entity?.process?.booking;
-  if (!entity || !booking) return <Typography sx={{ p: 2 }}>Thực thể này không có lịch.</Typography>;
+  if (!entity || !booking) return <Typography sx={{ p: 2 }}>{t("Thực thể này không có lịch.")}</Typography>;
   const { model, entity: name } = splitResource(resource);
   const states = entity.process?.states ?? [];
-  const label = (status: string) => states.find((state) => state.name === status)?.label ?? status;
+  const label = (status: string) => t(states.find((state) => state.name === status)?.label ?? status);
   const title = displayField(entity);
   const what = entity.label.charAt(0).toLowerCase() + entity.label.slice(1);
 
@@ -72,16 +74,16 @@ export default function CalendarPage({ byResource }: { byResource: Record<string
       info.event.setExtendedProp("version", saved.version);
     } catch (error) {
       info.revert();
-      notify(error instanceof Error ? error.message : "Không đổi được giờ", { type: "error" });
+      notify(error instanceof Error ? error.message : t("Không đổi được giờ"), { type: "error" });
     }
   };
 
   return (
     <Box>
-      <Title title={`Lịch ${what}`} />
+      <Title title={t("Lịch {what}", { what })} />
       <PageHeader
-        title={`Lịch ${what}`}
-        subtitle={entity.canWrite ? "Kéo chọn một khoảng giờ để tạo lượt đặt mới, kéo một lượt để đổi giờ, bấm vào một lượt để xem chi tiết." : "Bấm vào một lượt để xem chi tiết."}
+        title={t("Lịch {what}", { what })}
+        subtitle={entity.canWrite ? t("Kéo chọn một khoảng giờ để tạo lượt đặt mới, kéo một lượt để đổi giờ, bấm vào một lượt để xem chi tiết.") : t("Bấm vào một lượt để xem chi tiết.")}
       />
       <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
         {states.map((state) => (
@@ -89,7 +91,7 @@ export default function CalendarPage({ byResource }: { byResource: Record<string
             key={state.name}
             size="small"
             variant="outlined"
-            label={state.label}
+            label={t(state.label)}
             sx={{ borderColor: color(state.name), color: color(state.name) }}
           />
         ))}
@@ -118,10 +120,10 @@ export default function CalendarPage({ byResource }: { byResource: Record<string
         <FullCalendar
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           initialView="timeGridWeek"
-          locale={viLocale}
+          locale={getLocale() === "vi" ? viLocale : "en"}
           firstDay={1}
           headerToolbar={{ left: "prev,next today", center: "title", right: "dayGridMonth,timeGridWeek,timeGridDay" }}
-          buttonText={{ today: "Hôm nay", month: "Tháng", week: "Tuần", day: "Ngày" }}
+          buttonText={{ today: t("Hôm nay"), month: t("Tháng"), week: t("Tuần"), day: t("Ngày") }}
           allDaySlot={false}
           scrollTime="07:00:00"
           nowIndicator

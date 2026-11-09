@@ -38,11 +38,12 @@ import {
   type UserPage,
 } from "./api";
 import { formatDateTime } from "../shell/format";
+import { t } from "../shell/t";
 
 const SIZE = 20;
 const HISTORY_SIZE = 20;
 
-const message = (error: unknown) => (error instanceof Error ? error.message : "Không xử lý được");
+const message = (error: unknown) => (error instanceof Error ? error.message : t("Không xử lý được"));
 const modelTitle = (name: string) => name.replace(/_/g, " ").replace(/^./, (first) => first.toUpperCase());
 
 // What an audit record says was done, in words; an action that is not known shows its code.
@@ -55,21 +56,21 @@ function describe(item: UserHistoryItem, options: UserOptions): string {
   };
   switch (item.action) {
     case "USER_CREATED":
-      return "tạo tài khoản";
+      return t("tạo tài khoản");
     case "USER_ROLE_GRANTED":
-      return `gán vai ${text("role")} của ${modelTitle(text("model"))}`;
+      return t("gán vai {role} của {model}", { role: text("role"), model: modelTitle(text("model")) });
     case "USER_ROLE_REVOKED":
-      return `gỡ vai ${text("role")} của ${modelTitle(text("model"))}`;
+      return t("gỡ vai {role} của {model}", { role: text("role"), model: modelTitle(text("model")) });
     case "USER_UNIT_ADDED":
-      return `thêm vào đơn vị ${unit()}`;
+      return t("thêm vào đơn vị {unit}", { unit: unit() });
     case "USER_UNIT_REMOVED":
-      return `bỏ khỏi đơn vị ${unit()}`;
+      return t("bỏ khỏi đơn vị {unit}", { unit: unit() });
     case "USER_LOCKED":
-      return "khóa tài khoản";
+      return t("khóa tài khoản");
     case "USER_UNLOCKED":
-      return "mở khóa tài khoản";
+      return t("mở khóa tài khoản");
     case "USER_PASSWORD_RESET":
-      return "đặt lại mật khẩu";
+      return t("đặt lại mật khẩu");
     default:
       return item.action;
   }
@@ -91,16 +92,16 @@ function Secret({ title, password, onClose }: { title: string; password: string;
       <DialogTitle>{title}</DialogTitle>
       <DialogContent>
         <Typography variant="body2" sx={{ mb: 1.5 }}>
-          Mật khẩu tạm này chỉ hiện một lần. Người dùng phải đổi mật khẩu ở lần đăng nhập đầu tiên.
+          {t("Mật khẩu tạm này chỉ hiện một lần. Người dùng phải đổi mật khẩu ở lần đăng nhập đầu tiên.")}
         </Typography>
         <Typography component="code" sx={{ fontSize: 20, letterSpacing: 1, userSelect: "all" }}>
           {password}
         </Typography>
       </DialogContent>
       <DialogActions>
-        <Button onClick={copy}>{copied ? "Đã sao chép" : "Sao chép"}</Button>
+        <Button onClick={copy}>{copied ? t("Đã sao chép") : t("Sao chép")}</Button>
         <Button variant="contained" onClick={onClose}>
-          Đóng
+          {t("Đóng")}
         </Button>
       </DialogActions>
     </Dialog>
@@ -128,20 +129,20 @@ function CreateDialog({ onClose, onCreated }: { onClose: () => void; onCreated: 
 
   return (
     <Dialog open onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle>Tạo người dùng</DialogTitle>
+      <DialogTitle>{t("Tạo người dùng")}</DialogTitle>
       <DialogContent sx={{ display: "grid", gap: 2, pt: "8px !important" }}>
         {error && <Alert severity="error">{error}</Alert>}
-        <TextField label="Tên đăng nhập" value={username} onChange={(e) => setUsername(e.target.value)} required />
-        <TextField label="Họ và tên" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+        <TextField label={t("Tên đăng nhập")} value={username} onChange={(e) => setUsername(e.target.value)} required />
+        <TextField label={t("Họ và tên")} value={fullName} onChange={(e) => setFullName(e.target.value)} required />
         <TextField label="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
         <Typography variant="caption" color="text.secondary">
-          Hệ thống tạo một mật khẩu tạm và hiện một lần sau khi tạo.
+          {t("Hệ thống tạo một mật khẩu tạm và hiện một lần sau khi tạo.")}
         </Typography>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Hủy</Button>
+        <Button onClick={onClose}>{t("Hủy")}</Button>
         <Button variant="contained" disabled={busy || !username.trim() || !fullName.trim()} onClick={submit}>
-          Tạo
+          {t("Tạo")}
         </Button>
       </DialogActions>
     </Dialog>
@@ -211,19 +212,19 @@ function UserDialog({ id, options, onClose, onChanged }: { id: string; options: 
 
   return (
     <Dialog open onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>{detail ? `${detail.user.name} (${detail.user.username})` : "Người dùng"}</DialogTitle>
+      <DialogTitle>{detail ? `${detail.user.name} (${detail.user.username})` : t("Người dùng")}</DialogTitle>
       <DialogContent>
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
         {detail && (
           <>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              {detail.user.email || "Chưa có email"} · {detail.user.enabled ? "Đang hoạt động" : "Đã khóa"}
+              {detail.user.email || t("Chưa có email")} · {detail.user.enabled ? t("Đang hoạt động") : t("Đã khóa")}
             </Typography>
             <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
-              Vai theo ứng dụng
+              {t("Vai theo ứng dụng")}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              Bấm vào một vai để gán hoặc gỡ. Vai và đơn vị mới có hiệu lực khi phiên của người đó tự làm mới, tối đa khoảng 5 phút, hoặc khi người đó đăng nhập lại.
+              {t("Bấm vào một vai để gán hoặc gỡ. Vai và đơn vị mới có hiệu lực khi phiên của người đó tự làm mới, tối đa khoảng 5 phút, hoặc khi người đó đăng nhập lại.")}
             </Typography>
             {options.models.map((m) => (
               <Box key={m.model} sx={{ mt: 1.5 }}>
@@ -251,7 +252,7 @@ function UserDialog({ id, options, onClose, onChanged }: { id: string; options: 
             {leftover.length > 0 && (
               <Box sx={{ mt: 2 }}>
                 <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
-                  Vai mô hình không còn khai báo
+                  {t("Vai mô hình không còn khai báo")}
                 </Typography>
                 <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
                   {leftover.map((r) => (
@@ -267,11 +268,11 @@ function UserDialog({ id, options, onClose, onChanged }: { id: string; options: 
               </Box>
             )}
             <Typography variant="subtitle2" sx={{ mt: 3, mb: 0.5 }}>
-              Đơn vị
+              {t("Đơn vị")}
             </Typography>
             {options.units.length === 0 ? (
               <Typography variant="body2" color="text.secondary">
-                Chưa có mô hình nào khai báo đơn vị.
+                {t("Chưa có mô hình nào khai báo đơn vị.")}
               </Typography>
             ) : (
               <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
@@ -292,11 +293,11 @@ function UserDialog({ id, options, onClose, onChanged }: { id: string; options: 
               </Box>
             )}
             <Typography variant="subtitle2" sx={{ mt: 3, mb: 0.5 }}>
-              Lịch sử thay đổi
+              {t("Lịch sử thay đổi")}
             </Typography>
             {history && history.items.length === 0 && (
               <Typography variant="body2" color="text.secondary">
-                Chưa có thay đổi nào được ghi lại.
+                {t("Chưa có thay đổi nào được ghi lại.")}
               </Typography>
             )}
             {history && history.items.length > 0 && (
@@ -307,7 +308,7 @@ function UserDialog({ id, options, onClose, onChanged }: { id: string; options: 
                       {formatDateTime(item.occurredAt)}
                     </Typography>
                     <Typography variant="body2">
-                      {item.actorName || "Không rõ"} {describe(item, options)}
+                      {item.actorName || t("Không rõ")} {describe(item, options)}
                     </Typography>
                   </Box>
                 ))}
@@ -315,7 +316,7 @@ function UserDialog({ id, options, onClose, onChanged }: { id: string; options: 
             )}
             {history && history.page + 1 < history.totalPages && (
               <Button size="small" sx={{ mt: 1 }} onClick={() => loadHistory(history.page + 1)}>
-                Xem thêm
+                {t("Xem thêm")}
               </Button>
             )}
           </>
@@ -325,18 +326,18 @@ function UserDialog({ id, options, onClose, onChanged }: { id: string; options: 
         {detail && (
           <>
             <Button disabled={busy} onClick={reset}>
-              Đặt lại mật khẩu
+              {t("Đặt lại mật khẩu")}
             </Button>
             <Button color={detail.user.enabled ? "error" : "primary"} disabled={busy} onClick={() => run(() => setUserEnabled(id, !detail.user.enabled))}>
-              {detail.user.enabled ? "Khóa tài khoản" : "Mở khóa"}
+              {detail.user.enabled ? t("Khóa tài khoản") : t("Mở khóa")}
             </Button>
           </>
         )}
         <Button variant="contained" onClick={onClose}>
-          Đóng
+          {t("Đóng")}
         </Button>
       </DialogActions>
-      {secret && <Secret title="Mật khẩu tạm mới" password={secret} onClose={() => setSecret(null)} />}
+      {secret && <Secret title={t("Mật khẩu tạm mới")} password={secret} onClose={() => setSecret(null)} />}
     </Dialog>
   );
 }
@@ -378,28 +379,28 @@ export default function UsersTab() {
       <Box sx={{ display: "flex", gap: 1.5, mb: 2, flexWrap: "wrap" }}>
         <TextField
           size="small"
-          label="Tìm theo tên, tên đăng nhập hoặc email"
+          label={t("Tìm theo tên, tên đăng nhập hoặc email")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && find()}
           sx={{ width: { xs: "100%", sm: 380 } }}
         />
         <Button variant="outlined" onClick={find}>
-          Tìm
+          {t("Tìm")}
         </Button>
         <Box sx={{ flex: 1 }} />
         <Button variant="contained" onClick={() => setCreating(true)}>
-          Tạo người dùng
+          {t("Tạo người dùng")}
         </Button>
       </Box>
       <Card sx={{ overflowX: "auto" }}>
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Tên đăng nhập</TableCell>
-              <TableCell>Họ và tên</TableCell>
+              <TableCell>{t("Tên đăng nhập")}</TableCell>
+              <TableCell>{t("Họ và tên")}</TableCell>
               <TableCell>Email</TableCell>
-              <TableCell>Trạng thái</TableCell>
+              <TableCell>{t("Trạng thái")}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -409,7 +410,7 @@ export default function UsersTab() {
                 <TableCell>{u.name}</TableCell>
                 <TableCell>{u.email}</TableCell>
                 <TableCell>
-                  <Chip size="small" variant="outlined" color={u.enabled ? "success" : "default"} label={u.enabled ? "Hoạt động" : "Đã khóa"} />
+                  <Chip size="small" variant="outlined" color={u.enabled ? "success" : "default"} label={u.enabled ? t("Hoạt động") : t("Đã khóa")} />
                 </TableCell>
               </TableRow>
             ))}
@@ -417,7 +418,7 @@ export default function UsersTab() {
               <TableRow>
                 <TableCell colSpan={4}>
                   <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: "center" }}>
-                    Không có người dùng nào khớp.
+                    {t("Không có người dùng nào khớp.")}
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -441,7 +442,7 @@ export default function UsersTab() {
           }}
         />
       )}
-      {created && <Secret title={`Đã tạo ${created.username}`} password={created.password} onClose={() => setCreated(null)} />}
+      {created && <Secret title={t("Đã tạo {username}", { username: created.username })} password={created.password} onClose={() => setCreated(null)} />}
     </Box>
   );
 }

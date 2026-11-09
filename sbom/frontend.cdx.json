@@ -3,9 +3,9 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
   "version": 1,
-  "serialNumber": "urn:uuid:87958797-f428-43b8-96ab-df3bad3a9ad3",
+  "serialNumber": "urn:uuid:18bad160-bbe6-4347-a860-7e3c8cb3b2d7",
   "metadata": {
-    "timestamp": "2026-11-06T16:01:49.508Z",
+    "timestamp": "2026-11-09T15:23:26.700Z",
     "tools": {
       "components": [
         {
@@ -945,6 +945,57 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/ra-i18n-polyglot"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ra-language-english",
+      "version": "5.15.5",
+      "bom-ref": "dx-os-frontend@2.0.0|ra-language-english@5.15.5",
+      "author": "François Zaninotto",
+      "description": "English messages for react-admin, the frontend framework for building admin applications on top of REST/GraphQL services",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/ra-language-english@5.15.5",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/marmelab/react-admin.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/marmelab/react-admin#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/marmelab/react-admin/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/ra-language-english/-/ra-language-english-5.15.5.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "0acbc87b0a7ada650288893b721480bd11c6eeb84fb5e4a96888ee4aede02cbfd3fa453c25106a2e5bf7bcb714f96f119adb7d0a98ba8a905bc7a00a5bf06dd6"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/ra-language-english"
         }
       ]
     },
@@ -3651,57 +3702,6 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/@tanstack/react-query"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "ra-language-english",
-      "version": "5.15.5",
-      "bom-ref": "dx-os-frontend@2.0.0|ra-language-english@5.15.5",
-      "author": "François Zaninotto",
-      "description": "English messages for react-admin, the frontend framework for building admin applications on top of REST/GraphQL services",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/ra-language-english@5.15.5",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/marmelab/react-admin.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/marmelab/react-admin#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/marmelab/react-admin/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/ra-language-english/-/ra-language-english-5.15.5.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "0acbc87b0a7ada650288893b721480bd11c6eeb84fb5e4a96888ee4aede02cbfd3fa453c25106a2e5bf7bcb714f96f119adb7d0a98ba8a905bc7a00a5bf06dd6"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/ra-language-english"
         }
       ]
     },
@@ -10043,6 +10043,7 @@
         "dx-os-frontend@2.0.0|monaco-yaml@5.5.1",
         "dx-os-frontend@2.0.0|oidc-client-ts@3.5.0",
         "dx-os-frontend@2.0.0|ra-i18n-polyglot@5.15.5",
+        "dx-os-frontend@2.0.0|ra-language-english@5.15.5",
         "dx-os-frontend@2.0.0|react-admin@5.15.5",
         "dx-os-frontend@2.0.0|react-dom@18.3.1",
         "dx-os-frontend@2.0.0|react-router-dom@6.30.6",
@@ -10203,6 +10204,12 @@
       "ref": "dx-os-frontend@2.0.0|ra-i18n-polyglot@5.15.5",
       "dependsOn": [
         "dx-os-frontend@2.0.0|node-polyglot@2.6.0",
+        "dx-os-frontend@2.0.0|ra-core@5.15.5"
+      ]
+    },
+    {
+      "ref": "dx-os-frontend@2.0.0|ra-language-english@5.15.5",
+      "dependsOn": [
         "dx-os-frontend@2.0.0|ra-core@5.15.5"
       ]
     },
@@ -10532,12 +10539,6 @@
         "dx-os-frontend@2.0.0|@tanstack/query-core@5.105.1",
         "dx-os-frontend@2.0.0|@types/react@18.3.31",
         "dx-os-frontend@2.0.0|react@18.3.1"
-      ]
-    },
-    {
-      "ref": "dx-os-frontend@2.0.0|ra-language-english@5.15.5",
-      "dependsOn": [
-        "dx-os-frontend@2.0.0|ra-core@5.15.5"
       ]
     },
     {

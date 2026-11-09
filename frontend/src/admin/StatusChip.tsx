@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { Chip, type ChipProps } from "@mui/material";
 import type { EntityMeta } from "./types";
+import { t } from "../shell/t";
 
 // How a state of any process family reads at a glance: the tone follows the meaning of the state.
 export const TONES: Record<string, ChipProps["color"]> = {
@@ -23,8 +24,8 @@ export function StatusChip({ entity, status, overdue }: { entity: EntityMeta; st
   const state = entity.process?.states.find((candidate) => candidate.name === status);
   return (
     <>
-      <Chip size="small" variant="outlined" color={TONES[status] ?? "default"} label={state?.label ?? status} />
-      {overdue && <Chip size="small" color="error" label="Quá hạn" sx={{ ml: 0.75 }} />}
+      <Chip size="small" variant="outlined" color={TONES[status] ?? "default"} label={state ? t(state.label) : status} />
+      {overdue && <Chip size="small" color="error" label={t("Quá hạn")} sx={{ ml: 0.75 }} />}
     </>
   );
 }

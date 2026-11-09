@@ -24,6 +24,7 @@ import {
 } from "react-admin";
 import { ACCOUNT_URL } from "../shell/auth";
 import { i18nProvider } from "../shell/i18n";
+import LanguageSwitch from "../shell/LanguageSwitch";
 import { darkTheme, lightTheme } from "../shell/theme";
 import { listModels } from "./api";
 import authProvider from "./authProvider";
@@ -31,6 +32,7 @@ import { createDataProvider } from "./dataProvider";
 import InboxPage from "./InboxPage";
 import { screens } from "./resources";
 import { resourceName, type EntityMeta, type ModelMeta } from "./types";
+import { t } from "../shell/t";
 
 // The control panel and its editor are loaded only when an administrator opens it.
 const ConsolePage = lazy(() => import("../console/ConsolePage"));
@@ -65,7 +67,7 @@ const AccountItem = () => (
     <ListItemIcon>
       <ManageAccountsOutlinedIcon fontSize="small" />
     </ListItemIcon>
-    <ListItemText>Tài khoản của tôi</ListItemText>
+    <ListItemText>{t("Tài khoản của tôi")}</ListItemText>
   </MenuItem>
 );
 
@@ -83,6 +85,7 @@ const AppTopBar = () => (
   >
     <Brand />
     <TitlePortal />
+    <LanguageSwitch />
   </AppBar>
 );
 
@@ -93,7 +96,7 @@ const makeMenu = (models: ModelMeta[]) =>
     const reachable = models.map((model) => ({ model, entities: model.entities.filter((entity) => entity.canRead) }));
     return (
       <Menu>
-        <Menu.DashboardItem primaryText="Hộp việc" />
+        <Menu.DashboardItem primaryText={t("Hộp việc")} />
         {reachable
           .filter((group) => group.entities.length > 0)
           .map(({ model, entities }) => (
@@ -111,9 +114,9 @@ const makeMenu = (models: ModelMeta[]) =>
         {Array.isArray(permissions) && permissions.includes("ADMIN") && (
           <Box>
             <ListSubheader disableSticky sx={{ background: "transparent", lineHeight: "32px", mt: 1, fontSize: 11, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase" }}>
-              Quản trị
+              {t("Quản trị")}
             </ListSubheader>
-            <Menu.Item to="/console" primaryText="Bảng điều khiển" leftIcon={<TuneIcon />} />
+            <Menu.Item to="/console" primaryText={t("Bảng điều khiển")} leftIcon={<TuneIcon />} />
           </Box>
         )}
       </Menu>
@@ -126,7 +129,7 @@ export default function AdminApp() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    listModels().then(setModels, (e: unknown) => setError(e instanceof Error ? e.message : "Không đọc được metadata"));
+    listModels().then(setModels, (e: unknown) => setError(e instanceof Error ? e.message : t("Không đọc được metadata")));
   }, []);
 
   const byResource = useMemo(() => {
@@ -163,7 +166,7 @@ export default function AdminApp() {
         <Route
           path="/console/*"
           element={
-            <Suspense fallback={<p className="section-subtitle">Đang tải...</p>}>
+            <Suspense fallback={<p className="section-subtitle">{t("Đang tải...")}</p>}>
               <ConsolePage />
             </Suspense>
           }
@@ -171,7 +174,7 @@ export default function AdminApp() {
         <Route
           path="/calendar/:resource"
           element={
-            <Suspense fallback={<p className="section-subtitle">Đang tải...</p>}>
+            <Suspense fallback={<p className="section-subtitle">{t("Đang tải...")}</p>}>
               <CalendarPage byResource={byResource} />
             </Suspense>
           }
@@ -179,7 +182,7 @@ export default function AdminApp() {
         <Route
           path="/stats/:resource"
           element={
-            <Suspense fallback={<p className="section-subtitle">Đang tải...</p>}>
+            <Suspense fallback={<p className="section-subtitle">{t("Đang tải...")}</p>}>
               <StatsPage models={models} />
             </Suspense>
           }

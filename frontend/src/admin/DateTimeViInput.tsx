@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { TextInput, required, type Validator } from "react-admin";
+import { t } from "../shell/t";
 
 // The native date-time field follows the language of the browser, so this one is typed as 31/12/2026 14:30.
 // The form keeps an ISO value (2026-12-31T14:30 in the local time zone) and the data provider turns it into an instant.
@@ -7,7 +8,7 @@ const TYPED = /^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})$/;
 const ISO = /^\d{4}-\d{2}-\d{2}T/;
 const pad = (value: number) => String(value).padStart(2, "0");
 
-export const DATE_TIME_HINT = "Nhập theo dạng 31/12/2026 14:30";
+export const DATE_TIME_HINT = t("Nhập theo dạng 31/12/2026 14:30");
 
 // An ISO date-time or instant as the user reads it, in the local time zone; anything else as typed.
 export function toTyped(value: unknown): string {

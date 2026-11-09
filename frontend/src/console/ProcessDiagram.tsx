@@ -25,6 +25,7 @@ import {
   PROCESS_NODE_WIDTH,
   type ProcessAnchor,
 } from "./processDiagramCore";
+import { t } from "../shell/t";
 
 const BOX_HEIGHT = 360;
 const LABEL_OFFSET = 18;
@@ -258,17 +259,22 @@ export default function ProcessDiagram({
 
 // What the file says about the process that the boxes and arrows do not show.
 function notes(process: ProcessView): string {
-  const lines = [`Người xử lý: ${process.handlers.join(", ")}${process.allowSelfDecision ? ", người nộp cũng được xử lý hồ sơ của mình" : ""}.`];
+  const handlers = process.handlers.join(", ");
+  const lines = [
+    process.allowSelfDecision
+      ? t("Người xử lý: {handlers}, người nộp cũng được xử lý hồ sơ của mình.", { handlers })
+      : t("Người xử lý: {handlers}.", { handlers }),
+  ];
   if (process.booking) {
     const { resource, starts, ends, capacity } = process.booking;
-    lines.push(`Đặt chỗ: tài nguyên ${resource}, từ ${starts} đến ${ends}, sức chứa ${capacity}.`);
+    lines.push(t("Đặt chỗ: tài nguyên {resource}, từ {starts} đến {ends}, sức chứa {capacity}.", { resource, starts, ends, capacity }));
   }
   const withdraw = process.actions.find((action) => action.name === "withdraw");
   if (withdraw) {
     const labels = withdraw.from.map((name) => process.states.find((state) => state.name === name)?.label ?? name);
-    lines.push(`Người nộp có thể rút lại hồ sơ ở: ${labels.join(", ")}.`);
+    lines.push(t("Người nộp có thể rút lại hồ sơ ở: {labels}.", { labels: labels.join(", ") }));
   } else {
-    lines.push("Người nộp không rút lại được hồ sơ.");
+    lines.push(t("Người nộp không rút lại được hồ sơ."));
   }
   return lines.join(" ");
 }

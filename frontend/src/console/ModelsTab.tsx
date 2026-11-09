@@ -38,6 +38,7 @@ import {
 } from "./api";
 import { FAMILY_LABEL, RUN_STATUS, STEP_KIND, label, summarize, type ModelSummary } from "./labels";
 import PlanPanel from "./PlanPanel";
+import { t } from "../shell/t";
 
 interface Props {
   refresh: number;
@@ -46,7 +47,7 @@ interface Props {
   onChanged: (message: string) => void;
 }
 
-const message = (error: unknown) => (error instanceof Error ? error.message : "Không xử lý được");
+const message = (error: unknown) => (error instanceof Error ? error.message : t("Không xử lý được"));
 const modelTitle = (name: string) => name.replace(/_/g, " ").replace(/^./, (first) => first.toUpperCase());
 const shortId = (id: string) => (id.length > 12 ? `${id.slice(0, 8)}…` : id);
 // The name of who applied a version, or a short form of the user id for versions without one.
@@ -116,12 +117,12 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
     return (
       <Card sx={{ py: 8, textAlign: "center" }}>
         <LayersOutlinedIcon sx={{ fontSize: 48, color: "text.disabled", mb: 1 }} />
-        <Typography variant="h6">Chưa có mô hình nào được áp dụng</Typography>
+        <Typography variant="h6">{t("Chưa có mô hình nào được áp dụng")}</Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Chọn một mẫu ở thư viện mẫu để có ngay một hệ thống chạy được.
+          {t("Chọn một mẫu ở thư viện mẫu để có ngay một hệ thống chạy được.")}
         </Typography>
         <Button variant="contained" onClick={onBrowse}>
-          Xem thư viện mẫu
+          {t("Xem thư viện mẫu")}
         </Button>
       </Card>
     );
@@ -144,21 +145,21 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
                   {modelTitle(model.model)}
                 </Typography>
                 <Box sx={{ display: "flex", gap: 0.75 }}>
-                  {model.held && <Chip size="small" color="warning" label="Đang dừng dở" />}
-                  <Chip size="small" color="primary" label={model.version > 0 ? `Phiên bản ${model.version}` : "Chưa có phiên bản"} />
+                  {model.held && <Chip size="small" color="warning" label={t("Đang dừng dở")} />}
+                  <Chip size="small" color="primary" label={model.version > 0 ? t("Phiên bản {version}", { version: model.version }) : t("Chưa có phiên bản")} />
                 </Box>
               </Box>
               {model.held && (
                 <Alert severity="warning" sx={{ py: 0 }}>
                   {model.version > 0
-                    ? `Lần áp dụng gần nhất dừng giữa chừng nên người dùng chưa vào được mô hình này. Tiếp tục để hoàn tất, hoặc hủy bỏ để đưa các bảng về phiên bản ${model.version}.`
-                    : "Lần áp dụng đầu tiên dừng giữa chừng nên mô hình chưa dùng được. Tiếp tục để hoàn tất, hoặc hủy bỏ để xóa những gì lần đó đã tạo."}
+                    ? t("Lần áp dụng gần nhất dừng giữa chừng nên người dùng chưa vào được mô hình này. Tiếp tục để hoàn tất, hoặc hủy bỏ để đưa các bảng về phiên bản {version}.", { version: model.version })
+                    : t("Lần áp dụng đầu tiên dừng giữa chừng nên mô hình chưa dùng được. Tiếp tục để hoàn tất, hoặc hủy bỏ để xóa những gì lần đó đã tạo.")}
                 </Alert>
               )}
               <Typography variant="body2" color="text.secondary">
-                {model.version > 0 ? "Áp dụng" : "Bắt đầu áp dụng"} {timeAgo(model.applied_at)}
-                <Tooltip title={`${formatDateTime(model.applied_at)} · người dùng ${model.applied_by}`}>
-                  <span> · bởi {applier(model)}</span>
+                {model.version > 0 ? t("Áp dụng {time}", { time: timeAgo(model.applied_at) }) : t("Bắt đầu áp dụng {time}", { time: timeAgo(model.applied_at) })}
+                <Tooltip title={t("{time} · người dùng {user}", { time: formatDateTime(model.applied_at), user: model.applied_by })}>
+                  <span>{t(" · bởi {name}", { name: applier(model) })}</span>
                 </Tooltip>
               </Typography>
               {summary ? (
@@ -171,7 +172,7 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
                     ))}
                   </Box>
                   <Typography variant="caption" color="text.secondary">
-                    {summary.entities.length} thực thể · {summary.roles} vai · {summary.units} đơn vị
+                    {t("{entities} thực thể · {roles} vai · {units} đơn vị", { entities: summary.entities.length, roles: summary.roles, units: summary.units })}
                   </Typography>
                 </>
               ) : model.version > 0 ? (
@@ -184,22 +185,22 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
                       variant="contained"
                       color="warning"
                       disabled={working === model.model}
-                      onClick={() => settle(model, resumeModel, `Đã hoàn tất việc áp dụng ${model.model}`)}
+                      onClick={() => settle(model, resumeModel, t("Đã hoàn tất việc áp dụng {model}", { model: model.model }))}
                     >
-                      Tiếp tục áp dụng
+                      {t("Tiếp tục áp dụng")}
                     </Button>
                     <Button color="error" disabled={working === model.model} onClick={() => setGiveUp(model)}>
-                      Hủy bỏ
+                      {t("Hủy bỏ")}
                     </Button>
                   </>
                 )}
                 {model.version > 0 && (
                   <Button variant={model.held ? "outlined" : "contained"} onClick={() => open(model)}>
-                    Sửa mô hình
+                    {t("Sửa mô hình")}
                   </Button>
                 )}
                 <Button startIcon={<HistoryIcon />} onClick={() => setHistory(model.model)}>
-                  Lịch sử
+                  {t("Lịch sử")}
                 </Button>
               </Box>
             </Card>
@@ -208,23 +209,23 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
       </Box>
       {giveUp && (
         <Dialog open onClose={() => setGiveUp(null)} maxWidth="sm" fullWidth>
-          <DialogTitle>Hủy bỏ lần áp dụng dở của {modelTitle(giveUp.model)}?</DialogTitle>
+          <DialogTitle>{t("Hủy bỏ lần áp dụng dở của {model}?", { model: modelTitle(giveUp.model) })}</DialogTitle>
           <DialogContent>
             <Typography variant="body2">
               {giveUp.version > 0
-                ? `Các bảng được đưa về phiên bản ${giveUp.version}. Cột và bảng mà lần áp dụng dở đã thêm sẽ bị xóa cùng dữ liệu trong đó, còn những gì nó đã xóa thì không quay lại. Hãy sao lưu bằng deploy/backup.sh trước nếu cần.`
-                : "Lược đồ và các bảng mà lần áp dụng đầu tiên đã tạo sẽ bị xóa cùng dữ liệu trong đó."}
+                ? t("Các bảng được đưa về phiên bản {version}. Cột và bảng mà lần áp dụng dở đã thêm sẽ bị xóa cùng dữ liệu trong đó, còn những gì nó đã xóa thì không quay lại. Hãy sao lưu bằng deploy/backup.sh trước nếu cần.", { version: giveUp.version })
+                : t("Lược đồ và các bảng mà lần áp dụng đầu tiên đã tạo sẽ bị xóa cùng dữ liệu trong đó.")}
             </Typography>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setGiveUp(null)}>Giữ nguyên</Button>
+            <Button onClick={() => setGiveUp(null)}>{t("Giữ nguyên")}</Button>
             <Button
               color="error"
               variant="contained"
               disabled={working === giveUp.model}
-              onClick={() => settle(giveUp, abandonModel, `Đã hủy bỏ lần áp dụng dở của ${giveUp.model}`)}
+              onClick={() => settle(giveUp, abandonModel, t("Đã hủy bỏ lần áp dụng dở của {model}", { model: giveUp.model }))}
             >
-              Hủy bỏ lần áp dụng
+              {t("Hủy bỏ lần áp dụng")}
             </Button>
           </DialogActions>
         </Dialog>
@@ -272,7 +273,7 @@ function HistoryDialog({
     setBusy(true);
     try {
       const done = await rollbackModel(model, plan.fromVersion, accept);
-      onChanged(`Đã quay về nội dung phiên bản trước, thành phiên bản ${done.version} của ${model}`);
+      onChanged(t("Đã quay về nội dung phiên bản trước, thành phiên bản {version} của {model}", { version: done.version, model }));
       onClose();
     } catch (e) {
       setError(message(e));
@@ -283,19 +284,19 @@ function HistoryDialog({
 
   return (
     <Dialog open onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>Lịch sử của {modelTitle(model)}</DialogTitle>
+      <DialogTitle>{t("Lịch sử của {model}", { model: modelTitle(model) })}</DialogTitle>
       <DialogContent>
         {error && <Alert severity="error">{error}</Alert>}
         <Typography variant="subtitle2" sx={{ mt: 1, mb: 0.5 }}>
-          Các phiên bản
+          {t("Các phiên bản")}
         </Typography>
         <Table size="small">
           <TableBody>
             {versions.map((version, index) => (
               <TableRow key={version.version}>
                 <TableCell>
-                  Phiên bản {version.version}
-                  {index === 0 && <Chip size="small" color="primary" label="Đang chạy" sx={{ ml: 1 }} />}
+                  {t("Phiên bản {version}", { version: version.version })}
+                  {index === 0 && <Chip size="small" color="primary" label={t("Đang chạy")} sx={{ ml: 1 }} />}
                 </TableCell>
                 <TableCell>{formatDateTime(version.applied_at)}</TableCell>
                 <TableCell>
@@ -308,15 +309,15 @@ function HistoryDialog({
           </TableBody>
         </Table>
         <Typography variant="subtitle2" sx={{ mt: 2.5, mb: 0.5 }}>
-          Các lần áp dụng
+          {t("Các lần áp dụng")}
         </Typography>
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Lần</TableCell>
-              <TableCell>Kết quả</TableCell>
-              <TableCell>Bắt đầu</TableCell>
-              <TableCell>Các bước</TableCell>
+              <TableCell>{t("Lần")}</TableCell>
+              <TableCell>{t("Kết quả")}</TableCell>
+              <TableCell>{t("Bắt đầu")}</TableCell>
+              <TableCell>{t("Các bước")}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -337,15 +338,15 @@ function HistoryDialog({
             ))}
           </TableBody>
         </Table>
-        {plan && <PlanPanel plan={plan} busy={busy} applyLabel="Quay về" onApply={confirm} />}
+        {plan && <PlanPanel plan={plan} busy={busy} applyLabel={t("Quay về")} onApply={confirm} />}
       </DialogContent>
       <DialogActions>
         {versions.length > 1 && !plan && (
           <Button disabled={busy} onClick={back}>
-            Quay về phiên bản trước
+            {t("Quay về phiên bản trước")}
           </Button>
         )}
-        <Button onClick={onClose}>Đóng</Button>
+        <Button onClick={onClose}>{t("Đóng")}</Button>
       </DialogActions>
     </Dialog>
   );
@@ -356,7 +357,7 @@ function steps(raw: string): string {
     const list = JSON.parse(raw) as { kind: string; target: string; status: string }[];
     const failed = list.filter((step) => step.status !== "done");
     return failed.length === 0
-      ? `${list.length} bước đều xong`
+      ? t("{n} bước đều xong", { n: list.length })
       : failed.map((step) => `${label(STEP_KIND, step.kind)} (${label(RUN_STATUS, step.status)})`).join(", ");
   } catch {
     return "";

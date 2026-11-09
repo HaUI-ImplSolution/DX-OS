@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { Box, Typography } from "@mui/material";
 import type { Guide } from "./formGuide";
+import { t } from "../shell/t";
 
 function Block({ title, items }: { title: string; items: string[] }) {
   if (items.length === 0) return null;
@@ -22,9 +23,9 @@ function Block({ title, items }: { title: string; items: string[] }) {
 export default function GuideBlocks({ guide }: { guide: Guide }) {
   return (
     <>
-      <Block title="Hệ thống chấp nhận" items={guide.accepts} />
-      <Block title="Mở rộng được" items={guide.extends} />
-      <Block title="Tự tạo được" items={guide.creates} />
+      <Block title={t("Hệ thống chấp nhận")} items={guide.accepts} />
+      <Block title={t("Mở rộng được")} items={guide.extends} />
+      <Block title={t("Tự tạo được")} items={guide.creates} />
     </>
   );
 }

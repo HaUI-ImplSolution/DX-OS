@@ -124,7 +124,7 @@ Trang tài liệu: <https://haui-implsolution.github.io/DX-OS/>.
 | `backend/dx-core` | Thư viện dùng chung: bảo mật, audit, lưu trữ, trạng thái, client Keycloak |
 | `backend/dx-engine` | Dịch vụ lõi: áp dụng mô hình, API chung, Flowable |
 | `backend/dx-monitor` | Màn hình giám sát và truy vết |
-| `frontend` | Giao diện react-admin dựng từ metadata |
+| `frontend` | Giao diện react-admin dựng từ metadata, có tiếng Việt và tiếng Anh |
 | `deploy` | Compose, gateway APISIX, bộ cài và lệnh `dxos`, script vận hành, script kiểm tra ở `deploy/dev` |
 | `sso`, `portal`, `seaweedfs` | Keycloak realm, trang portal, lưu trữ tệp |
 | `models` | Tệp mô hình sai mẫu cho kiểm tự động; mô hình mẫu dùng được ở `backend/dx-engine/src/main/resources/templates/` |

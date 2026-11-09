@@ -125,7 +125,7 @@ The documents are written in Vietnamese; the API reference is the Swagger UI of 
 | `backend/dx-core` | Shared library: security, audit, storage, state, Keycloak client |
 | `backend/dx-engine` | The core service: applying models, the common API, Flowable |
 | `backend/dx-monitor` | The monitoring and tracing screen |
-| `frontend` | A react-admin interface built from metadata |
+| `frontend` | A react-admin interface built from metadata, in Vietnamese and English |
 | `deploy` | Compose, the APISIX gateway, the installer and the `dxos` command, operation scripts, check scripts in `deploy/dev` |
 | `sso`, `portal`, `seaweedfs` | The Keycloak realm, the portal page, file storage |
 | `models` | Invalid model files for automatic checks; usable sample models are in `backend/dx-engine/src/main/resources/templates/` |

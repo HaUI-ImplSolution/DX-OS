@@ -1,17 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
 import { Fragment, useEffect, useState } from "react";
 import {
+  Autocomplete,
   Avatar,
   Box,
   Button,
   Card,
+  createFilterOptions,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
   IconButton,
-  MenuItem,
   TextField as MuiTextField,
   Tooltip,
   Typography,
@@ -149,6 +150,9 @@ export function ActionButtons({ model, entity }: Props) {
   );
 }
 
+// Only this many matches are drawn, so a list of thousands of people stays quick; typing narrows it.
+const FIRST_PEOPLE = createFilterOptions<Person>({ limit: 50 });
+
 // Who holds this record, for the users who can assign it.
 export function AssignPanel({ model, entity }: Props) {
   const record = useRecordContext();
@@ -198,20 +202,18 @@ export function AssignPanel({ model, entity }: Props) {
             Nhận việc
           </Button>
         )}
-        <MuiTextField
-          select
+        <Autocomplete<Person>
           size="small"
           sx={{ minWidth: 200, flex: 1 }}
-          label="Giao cho"
-          value={people.some((person) => person.id === record.assignee) ? record.assignee : ""}
-          onChange={(event) => assign(event.target.value)}
-        >
-          {people.map((person) => (
-            <MenuItem key={person.id} value={person.id}>
-              {person.name}
-            </MenuItem>
-          ))}
-        </MuiTextField>
+          options={people}
+          value={people.find((person) => person.id === record.assignee) ?? null}
+          filterOptions={FIRST_PEOPLE}
+          getOptionLabel={(person) => person.name}
+          isOptionEqualToValue={(a, b) => a.id === b.id}
+          onChange={(_, person) => person && assign(person.id)}
+          noOptionsText="Không có ai khớp"
+          renderInput={(params) => <MuiTextField {...params} label="Giao cho" placeholder="Gõ tên để tìm" />}
+        />
         {record.assignee && <Button onClick={() => assign(null)}>Bỏ giao</Button>}
       </Box>
     </Section>

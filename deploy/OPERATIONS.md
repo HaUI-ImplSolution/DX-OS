@@ -26,7 +26,7 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 
 | Lệnh | Việc |
 |---|---|
-| `dxos start [tệp]` | Chạy `doctor.sh`, tải image còn thiếu, khởi động, chờ mọi dịch vụ sẵn sàng; realm chưa có ai vai `ADMIN` thì tạo tài khoản `admin` với mật khẩu tạm in ra một lần; có tệp mô hình thì đưa tệp vào và in kết quả (xem dưới); rồi in các địa chỉ |
+| `dxos start [tệp...]` | Chạy `doctor.sh`, tải image còn thiếu, khởi động, chờ mọi dịch vụ sẵn sàng; realm chưa có ai vai `ADMIN` thì tạo tài khoản `admin` với mật khẩu tạm in ra một lần; có tệp mô hình thì đưa các tệp vào và in kết quả của từng tệp (xem dưới); rồi in các địa chỉ |
 | `dxos stop` | Dừng các container, giữ dữ liệu |
 | `dxos status` | Trạng thái từng dịch vụ, các địa chỉ và trạng thái quét mã độc |
 | `dxos logs [dịch vụ]` | Theo dõi log |
@@ -42,22 +42,24 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 
 ### Tệp mô hình lúc khởi động
 
-`dxos start <tệp>` chép tệp vào `deploy/model/` (chỉ giữ một tệp), ghi tên tệp vào `DXOS_MODEL_FILE` trong `.env` và khởi động lại backend nếu nó đang chạy.
-Tên tệp chỉ gồm chữ, số, dấu chấm, gạch ngang và gạch dưới.
-Backend chờ Keycloak trả lời (tối đa 300 giây) rồi áp dụng tệp với người thực hiện `bootstrap`, và chỉ khi tệp chưa từng được áp dụng, kế hoạch ở mức an toàn không có từ chối hay dòng vi phạm, và mô hình không có lần áp dụng dở.
-Mỗi lần khởi động ghi một dòng `Model bootstrap: <kết quả> <chi tiết>`, và `dxos start` in dòng đó:
+`dxos start <tệp>...` chép các tệp vào `deploy/model/` (chỉ giữ các tệp vừa đưa vào), ghi tên chúng theo thứ tự, cách nhau bằng dấu phẩy, vào `DXOS_MODEL_FILE` trong `.env` và khởi động lại backend nếu nó đang chạy.
+Tên tệp chỉ gồm chữ, số, dấu chấm, gạch ngang và gạch dưới, và hai tệp không được trùng tên.
+Backend chờ Keycloak trả lời (tối đa 300 giây) rồi áp dụng lần lượt từng tệp với người thực hiện `bootstrap`, và chỉ khi tệp chưa từng được áp dụng, kế hoạch ở mức an toàn không có từ chối hay dòng vi phạm, và mô hình không có lần áp dụng dở.
+Mỗi tệp ghi đúng một dòng `Model bootstrap: <kết quả> <chi tiết>` ở mỗi lần khởi động, và `dxos start` in từng dòng:
 
 | Kết quả | Ý nghĩa |
 |---|---|
 | `applied` | Đã áp dụng, kèm tên mô hình và phiên bản |
 | `unchanged` | Mô hình đang chạy chính tệp này |
 | `skipped` | Không áp dụng, kèm lý do; xử lý ở bảng điều khiển |
-| `failed` | Tệp không đọc được hoặc không qua kiểm tra (kèm dòng và cột), Keycloak không trả lời kịp, hoặc việc áp dụng lỗi giữa chừng; `dxos start` thoát với mã 3 |
+| `failed` | Tệp không đọc được hoặc không qua kiểm tra (kèm dòng và cột), Keycloak không trả lời kịp, hoặc việc áp dụng lỗi giữa chừng |
 
-Backend chạy ở mọi kết quả.
-`dxos start` chờ dòng kết quả tối đa 300 giây (đổi bằng `DXOS_MODEL_TIMEOUT`) rồi thoát với mã 4.
+Backend chạy ở mọi kết quả, và một tệp lỗi không chặn các tệp sau nó.
+Hai tệp cùng tên mô hình thì tệp đứng sau là `skipped`.
+`dxos start` chờ đủ dòng kết quả của mọi tệp, tối đa 300 giây (đổi bằng `DXOS_MODEL_TIMEOUT`), rồi thoát với mã 4; có tệp `failed` thì thoát với mã 3.
 Backend chỉ đọc tệp khi khởi động, nên `dxos start` không tham số trên hệ thống đang chạy không đọc lại tệp.
 Tệp hỏng vẫn nằm trong `.env` và được báo lại ở mỗi lần backend khởi động cho đến khi sửa hoặc thay.
+Cấu hình đặt tên các tệp ở `DXOS_MODEL_FILE`, cách nhau bằng dấu phẩy, và thư mục chứa chúng ở `ENGINE_MODEL_DIR` (`/models` trong container).
 
 ### Đổi mô hình bằng dòng lệnh
 

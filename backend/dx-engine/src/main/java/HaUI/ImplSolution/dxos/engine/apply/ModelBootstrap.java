@@ -13,7 +13,13 @@ import HaUI.ImplSolution.dxos.model.ModelParser;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,15 +28,17 @@ import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-// Applies the model file named by engine.model-file once the service is up, so that a system can
-// start from one file. It waits for Keycloak first, since an apply that meets no Keycloak stops
+// Applies the model files named by engine.model-file (names separated by commas, each resolved
+// against engine.model-dir when that is set) once the service is up, so that a system can start
+// from its files. It waits for Keycloak once first, since an apply that meets no Keycloak stops
 // half way. A file is applied only if it was never applied before, the plan is safe, and no apply
 // of that model is stopped; every other case is logged and left to the control panel, and the
-// service keeps running.
+// service keeps running. The files are taken in order and one that fails does not stop the next.
+// A model named by an earlier file of the same run is not applied again by a later one.
 //
-// Each run ends with exactly one log line "Model bootstrap: <result> <detail>", where the result is
-// applied, unchanged, skipped or failed; tools that start the system read that line. Any other
-// line of the run does not put one of those words right after "Model bootstrap: ".
+// Each file ends with exactly one log line "Model bootstrap: <result> <detail>", where the result
+// is applied, unchanged, skipped or failed; tools that start the system read those lines. Any
+// other line of the run does not put one of those words right after "Model bootstrap: ".
 @Component
 public class ModelBootstrap {
 
@@ -42,24 +50,28 @@ public class ModelBootstrap {
   private final KeycloakAdminClient keycloak;
   private final ModelRegistry registry;
   private final JdbcTemplate jdbc;
-  private final String file;
+  private final List<String> files;
+  private final String dir;
   private final long waitSeconds;
 
   public ModelBootstrap(ApplyService apply, KeycloakAdminClient keycloak, ModelRegistry registry,
-      JdbcTemplate jdbc, @Value("${engine.model-file:}") String file,
+      JdbcTemplate jdbc, @Value("${engine.model-file:}") String files,
+      @Value("${engine.model-dir:}") String dir,
       @Value("${engine.model-file-wait-seconds:300}") long waitSeconds) {
     this.apply = apply;
     this.keycloak = keycloak;
     this.registry = registry;
     this.jdbc = jdbc;
-    this.file = file;
+    this.files = Arrays.stream((files == null ? "" : files).split(",")).map(String::trim)
+        .filter(name -> !name.isEmpty()).toList();
+    this.dir = dir == null ? "" : dir.trim();
     this.waitSeconds = waitSeconds;
   }
 
   // A thread of its own, so that the health check does not wait for Keycloak.
   @EventListener(ApplicationReadyEvent.class)
   public void onReady() {
-    if (file == null || file.isBlank()) {
+    if (files.isEmpty()) {
       return;
     }
     Thread thread = new Thread(this::run, "model-bootstrap");
@@ -68,26 +80,38 @@ public class ModelBootstrap {
   }
 
   void run() {
-    try {
-      String content = read();
-      if (content != null && waitForKeycloak()) {
-        consider(content);
+    Map<String, String> contents = new LinkedHashMap<>();
+    for (String name : files) {
+      String content = read(name);
+      if (content != null) {
+        contents.put(name, content);
       }
-    } catch (RuntimeException e) {
-      log.error("Model bootstrap: failed {} {}", file, e.getMessage(), e);
     }
+    if (contents.isEmpty() || !waitForKeycloak(contents.keySet())) {
+      return;
+    }
+    Set<String> seen = new HashSet<>();
+    contents.forEach((name, content) -> {
+      try {
+        consider(name, content, seen);
+      } catch (RuntimeException e) {
+        log.error("Model bootstrap: failed {} {}", name, e.getMessage(), e);
+      }
+    });
   }
 
-  private String read() {
+  private String read(String name) {
+    Path path = dir.isEmpty() ? Path.of(name) : Path.of(dir).resolve(name);
     try {
-      return Files.readString(Path.of(file));
+      return Files.readString(path);
     } catch (IOException e) {
-      log.error("Model bootstrap: failed {} cannot be read: {}", file, e.getMessage());
+      log.error("Model bootstrap: failed {} cannot be read: {}", name, e.getMessage());
       return null;
     }
   }
 
-  private boolean waitForKeycloak() {
+  // False after a failed line for each file that was waiting.
+  private boolean waitForKeycloak(Collection<String> waiting) {
     long deadline = System.nanoTime() + waitSeconds * 1_000_000_000L;
     boolean told = false;
     while (true) {
@@ -96,8 +120,9 @@ public class ModelBootstrap {
         return true;
       } catch (RuntimeException e) {
         if (System.nanoTime() > deadline) {
-          log.error("Model bootstrap: failed {} Keycloak did not answer in {} seconds: {}", file,
-              waitSeconds, e.getMessage());
+          waiting.forEach(name -> log.error(
+              "Model bootstrap: failed {} Keycloak did not answer in {} seconds: {}", name,
+              waitSeconds, e.getMessage()));
           return false;
         }
         if (!told) {
@@ -109,13 +134,14 @@ public class ModelBootstrap {
         Thread.sleep(RETRY_MILLIS);
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
-        log.error("Model bootstrap: failed {} was interrupted while waiting for Keycloak", file);
+        waiting.forEach(name -> log
+            .error("Model bootstrap: failed {} was interrupted while waiting for Keycloak", name));
         return false;
       }
     }
   }
 
-  void consider(String content) {
+  void consider(String file, String content, Set<String> seen) {
     Model model;
     try {
       model = ModelParser.parse(content);
@@ -124,6 +150,11 @@ public class ModelBootstrap {
       return;
     }
     String name = model.name();
+    if (!seen.add(name)) {
+      log.warn("Model bootstrap: skipped {} an earlier file of this start already names this "
+          + "model; {} is not applied", name, file);
+      return;
+    }
     if (registry.isHeld(name)) {
       log.warn("Model bootstrap: skipped {} has an apply that stopped; continue or give it up in "
           + "the control panel", name);

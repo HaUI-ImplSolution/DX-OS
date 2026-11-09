@@ -128,8 +128,8 @@ Vai bỏ khỏi tệp mô hình vẫn còn ở client của mô hình cùng ngư
 
 ### Tệp mô hình lúc khởi động
 
-`ModelBootstrap` áp dụng tệp ở `ENGINE_MODEL_FILE` khi backend khởi động, trên một luồng riêng chờ Keycloak, với người thực hiện `bootstrap`.
-Chỉ tệp chưa từng áp dụng, có kế hoạch an toàn và không có lần áp dụng dở mới được áp dụng; mỗi lần chạy ghi một dòng `Model bootstrap: <applied|unchanged|skipped|failed> ...`.
+`ModelBootstrap` áp dụng các tệp ở `ENGINE_MODEL_FILE` (tên cách nhau bởi dấu phẩy, tìm trong `ENGINE_MODEL_DIR`) khi backend khởi động, trên một luồng riêng chờ Keycloak một lần, lần lượt từng tệp, với người thực hiện `bootstrap`; tệp lỗi không chặn tệp sau.
+Chỉ tệp chưa từng áp dụng, có kế hoạch an toàn và không có lần áp dụng dở mới được áp dụng; mỗi tệp ghi một dòng `Model bootstrap: <applied|unchanged|skipped|failed> ...`.
 
 ## 5. Một yêu cầu đi qua API chung
 
@@ -232,7 +232,7 @@ Người dùng cuối xem số liệu qua `GET /api/v1/data/{model}/{entity}/sta
 
 Compose chạy lõi (`postgres`, `keycloak`, `seaweedfs`, `backend`, `apisix`) và Tầng 2 (`frontend`, `portal`, `monitor`); `clamav` bật bằng profile `av`.
 Gateway kiểm token cho mọi route API; các route không kiểm token nằm trong danh sách công khai kiểm bởi `deploy/apisix/check_routes.py`.
-`dxos start <tệp>` đưa tệp mô hình vào qua `deploy/model/` và in kết quả của `ModelBootstrap`.
+`dxos start <tệp>...` đưa các tệp mô hình vào qua `deploy/model/` và in kết quả của `ModelBootstrap` cho từng tệp.
 Chi tiết vận hành ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md), log và audit ở [`deploy/MONITORING.md`](./deploy/MONITORING.md), webhook và lịch sử chống sửa ở [`deploy/INTEGRATIONS.md`](./deploy/INTEGRATIONS.md).
 
 ## 13. Đối chiếu với yêu cầu của đề

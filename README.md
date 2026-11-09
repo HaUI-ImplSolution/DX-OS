@@ -73,7 +73,7 @@ dxos start
 Bộ cài tải bản phát hành mới nhất, kiểm SHA-256 rồi cài vào `~/.dxos`; lệnh `dxos` nằm ở `~/.local/bin`.
 `dxos start` tải image ở lần đầu, chờ mọi dịch vụ sẵn sàng, tạo tài khoản `admin` với mật khẩu tạm in ra màn hình, rồi in các địa chỉ.
 Đăng nhập `http://localhost:9080/console` bằng `admin`, đổi mật khẩu, chọn một mẫu ở tab Thư viện mẫu, xem kế hoạch rồi áp dụng.
-Đã có tệp mô hình thì `dxos start <tệp>` đưa tệp vào luôn.
+Đã có tệp mô hình thì `dxos start <tệp>` đưa tệp vào luôn; có nhiều tệp thì liệt kê hết sau `dxos start`.
 Các lệnh khác và cách vận hành ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
 
 ### Từ mã nguồn

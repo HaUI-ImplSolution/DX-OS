@@ -73,7 +73,7 @@ dxos start
 The installer downloads the latest release, checks its SHA-256 and installs it into `~/.dxos`; the `dxos` command goes to `~/.local/bin`.
 `dxos start` downloads the images the first time, waits until every service is ready, creates the account `admin` with a temporary password printed on screen, and prints the addresses.
 Sign in at `http://localhost:9080/console` as `admin`, change the password, pick a template on the Template library tab, preview the plan and apply it.
-If you already have a model file, `dxos start <file>` takes it in at once.
+If you already have a model file, `dxos start <file>` takes it in at once; list every file after `dxos start` when there are several.
 The other commands and the operation guide are in [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md) (Vietnamese).
 
 ### From source

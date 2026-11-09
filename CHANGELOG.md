@@ -37,7 +37,7 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - Trạng thái còn hồ sơ nằm ở đó không bỏ được, và trạng thái cuối còn hồ sơ đã đóng không đổi thành trạng thái thường; kế hoạch báo số dòng vi phạm.
 - Đổi nhãn, vai của hành động, trường bắt buộc, các trạng thái rút lại hay danh sách vai xử lý có hiệu lực ngay với hồ sơ đang mở.
 - Khai báo lại một vai còn người giữ thì kế hoạch lên mức `MIGRATION` và báo số người có lại quyền.
-- Tệp mô hình lúc khởi động: `dxos start <tệp>` đưa tệp vào, backend áp dụng nếu là tệp mới và có kế hoạch an toàn.
+- Tệp mô hình lúc khởi động: `dxos start <tệp> [<tệp>...]` đưa một hay nhiều tệp vào, backend áp dụng lần lượt từng tệp nếu là tệp mới và có kế hoạch an toàn; tệp lỗi không chặn tệp sau, và mỗi tệp có một dòng kết quả.
 - `dxos plan` và `dxos apply [--accept MỨC]` đổi mô hình từ dòng lệnh, đăng nhập bằng client `dxos-cli`.
 
 ### Quyền và định danh
@@ -58,7 +58,7 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - Khối `process:` dùng `family`, `handler`, `states`, `actions`, `initial`, `allow_self_decision`, `deadline`, `auto_close` và `after`; khối `booking:` khai báo tài nguyên, khung giờ và sức chứa.
 - Quy tắc chung của mọi quy trình: từ chối và trả lại cần lý do, người nộp sửa rồi nộp lại hoặc rút lại, người tạo không tự quyết định, hồ sơ đã giao thì chỉ người được giao xử lý.
 - Hồ sơ lưu người quyết định và thời điểm quyết định.
-- Giao việc, hộp việc `/api/v1/inbox` có phân trang, và dòng lịch sử của từng bản ghi ghi trong cùng giao dịch; người nhận phải nằm trong danh sách người xử lý.
+- Giao việc, hộp việc `/api/v1/inbox` có phân trang, và dòng lịch sử của từng bản ghi ghi trong cùng giao dịch; người nhận phải nằm trong danh sách người xử lý, đọc hết các trang của Keycloak nên không giới hạn số người, và ô Giao cho tìm theo tên.
 - Hạn xử lý theo bản ghi: hồ sơ quá hạn lên đầu hộp việc và có dòng quá hạn; hồ sơ có hạn dài hơn `DXOS_DUE_SOON_BEFORE` nhận thêm dòng `due_soon`.
 - Hành động hoàn tất `add_to_group` và `remove_from_group` chạy qua outbox và được thử lại; trường trống thì bỏ qua và ghi dòng `completion_skipped`.
 - Đặt chỗ so sức chứa với số lượt chạy cùng lúc ở mọi thời điểm của khung giờ, có khóa dòng tài nguyên.

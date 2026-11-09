@@ -10,5 +10,4 @@ entities:
     fields:
       title: {type: text, label: Tiêu đề, required: true}
       body: {type: text, label: Nội dung}
-      author: {type: user, label: Tác giả}
     access: {EDITOR: all}

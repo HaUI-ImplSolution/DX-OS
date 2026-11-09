@@ -100,10 +100,10 @@ Các hàm ý sau là suy luận từ cách đề viết, người ra đề khôn
 
 | Nguyên lý                                                                                               | Lõi đáp ứng                                                                                |
 | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Phân tách theo vòng đời và tốc độ của dữ liệu, đẩy dữ liệu lịch sử xuống hồ dữ liệu | Ngoài phạm vi bản dự thi; Superset đọc dữ liệu để báo cáo                          |
+| Phân tách theo vòng đời và tốc độ của dữ liệu, đẩy dữ liệu lịch sử xuống hồ dữ liệu | Ngoài phạm vi bản dự thi; công cụ báo cáo đọc dữ liệu qua vai `report_ro`                          |
 | Hội tụ dữ liệu hành chính và dữ liệu vận hành, bản sao số                                    | Ngoài phạm vi bản dự thi                                                                   |
 | Quản trị dữ liệu, phả hệ và nguồn gốc                                                            | Mô hình là danh mục dữ liệu; thông tin dữ liệu từ đâu ra làm nếu còn thời gian |
-| Zero-Trust gắn với GitOps, kiểm dịch mã độc, tự phục hồi                                        | APISIX và API chung đều kiểm token, ClamAV quét tệp tải lên, GitOps cho nghiệp vụ    |
+| Zero-Trust gắn với GitOps, kiểm dịch mã độc, tự phục hồi                                        | APISIX và API chung đều kiểm token, ClamAV quét tệp tải lên khi bật (`dxos av on`), GitOps cho nghiệp vụ    |
 
 Hai nguyên lý đầu không được đáp ứng trong bản dự thi, nên phần trình bày cần nói rõ và đưa vào định hướng phát triển.
 
@@ -166,7 +166,7 @@ Lõi không phục vụ bán hàng, kho hàng, ứng dụng chỉ có CRUD, đư
 ### Quy trình chung
 
 Quy trình chung là phần được đào sâu nhất của lõi.
-Người dùng không viết BPMN: họ chọn họ mẫu và nhập tham số trên bảng điều khiển, hệ thống tạo quy trình từ đó.
+Người dùng không viết BPMN: họ chọn họ mẫu hoặc khai báo `states` và `actions` trong tệp mô hình, hệ thống tạo quy trình từ đó.
 
 **Họ mẫu** được đặt tên theo hình dạng chung của quy trình, không theo một ngành.
 Mỗi họ mẫu là một quy trình viết tay, nhận tham số qua biến và dùng chung các quy trình con.
@@ -214,11 +214,11 @@ Khi áp dụng mô hình, hệ thống còn kiểm tra không có trạng thái 
 | Tầng | Ví dụ | Ai quyết định |
 |---|---|---|
 | Bất biến | Bảy quy tắc trên | Lõi, mô hình không tắt được |
-| Tham số của quy trình | Vai duyệt, số cấp duyệt, độ dài hạn, vòng trả lại, hai cấp duyệt không do cùng một người | Người triển khai, trên bảng điều khiển |
+| Tham số của quy trình | Vai xử lý, số cấp duyệt (các trạng thái và hành động khai báo), độ dài hạn, vòng trả lại, quyền tự quyết của người tạo | Người triển khai, trong tệp mô hình hoặc trên bảng điều khiển |
 | Ràng buộc nghiệp vụ | Giới hạn số lần đặt, điều kiện riêng của tổ chức | Người triển khai, trong mô hình |
 
 Hạn và leo thang không bắt buộc: mô hình có khai báo hạn thì quá hạn được ghi lại và nhắc.
-Chi tiết tham số của từng họ mẫu và các khối dùng chung được thiết kế ở các phase sau.
+Tham số của từng họ mẫu và cách tự khai báo quy trình ở [`docs/MODEL.md`](../MODEL.md#tự-khai-báo-hoặc-mở-rộng-quy-trình).
 
 **Quy trình nằm trong kế hoạch áp dụng:**
 
@@ -226,16 +226,17 @@ Chi tiết tham số của từng họ mẫu và các khối dùng chung đượ
 - Kế hoạch cho xem khác biệt của quy trình, kiểm tra không có trạng thái cụt và vai có thật, và báo số bản ghi đang chạy bị ảnh hưởng.
 - Luật của quy trình (người xử lý, hạn xử lý, quyền tự quyết, hành động hoàn tất, đặt chỗ) chỉ đổi được khi thực thể không còn hồ sơ đang xử lý, nên mỗi hồ sơ chỉ chịu một bộ luật từ lúc nộp đến lúc đóng.
 - Đổi họ mẫu của một thực thể bị từ chối; muốn đổi hình dạng quy trình thì thêm thực thể mới.
-- Chuyển hồ sơ đang chạy sang quy trình mới bằng `ProcessMigrationService` của Flowable là hướng phát triển.
+- Hồ sơ đang chạy không được chuyển sang quy trình mới: phải hoàn tất hoặc rút hết hồ sơ trước, như [Việc tồn đọng](./BACKLOG.md) đã ghi.
 - Đổi lược đồ và vai Keycloak nằm ngoài giao dịch của Flowable, nên "một lần" nghĩa là một kế hoạch có thứ tự, chạy lại được hoặc quay lui, không phải một giao dịch duy nhất.
 - Việc ghép này được làm cùng lúc với việc triển khai các họ mẫu.
 
 **Họ mẫu tùy biến:**
 
-- Người dùng nâng cao mở rộng từ một mẫu có sẵn hoặc từ BPMN mặc định đã mang các quy tắc, hoặc nạp tệp BPMN riêng.
-- Bảng điều khiển có giao diện dạng danh sách bước và tham số để mở rộng từ mẫu mà không viết mã; không có trình kéo thả.
-- Quy tắc bất biến nằm trong engine nên họ mẫu tùy biến cũng phải chịu.
-- Tệp tùy biến chỉ đổi trạng thái qua các khối do engine cung cấp, không chạy mã tùy ý trong tiến trình của lõi, và bị kiểm khi áp dụng.
+- Người dùng nâng cao ghi đè từng trạng thái và hành động của một họ mẫu, hoặc khai báo toàn bộ `states` và `actions` mà không cần họ mẫu.
+- Hệ thống sinh BPMN riêng từ khai báo đó khi áp dụng; không nạp tệp BPMN tự viết và không có trình kéo thả.
+- Một hành động của người xử lý có thể kèm `when`, một phép so sánh trường với giá trị như `amount > 5000000`; hai hành động `when` loại trừ nhau từ cùng một trạng thái cho ra quy trình rẽ nhánh theo ngưỡng, và hồ sơ chưa đạt điều kiện bị từ chối.
+- Quy tắc bất biến nằm trong engine nên quy trình tự khai báo cũng phải chịu.
+- Khai báo bị kiểm khi áp dụng: mọi trạng thái tới được từ trạng thái đầu, không có trạng thái cụt, có ít nhất một trạng thái cuối, và không chạy mã tùy ý trong tiến trình của lõi.
 
 ## Trải nghiệm người dùng
 
@@ -268,7 +269,7 @@ Bộ cài và các lệnh vận hành của `dxos` mô tả ở [`deploy/OPERATI
 
 Tệp mô hình luôn là nguồn sự thật, và dựng lại được cấu trúc hệ thống trên máy khác; dữ liệu hồ sơ đi theo đường sao lưu riêng.
 
-Mô hình không khai báo AI thì không chạy dịch vụ AI, không khai báo đích webhook thì không gửi gì ra ngoài và không cần dịch vụ chat.
+Mô hình không khai báo đích webhook thì không gửi gì ra ngoài và không cần dịch vụ chat; bản phát hành chưa có dịch vụ AI.
 Ai đã có Keycloak hay PostgreSQL riêng thì trỏ tới bằng `.env`.
 Phân phối bằng một tệp compose gồm nhiều image, vì mỗi dịch vụ có vòng đời và cách nâng cấp riêng.
 
@@ -278,10 +279,10 @@ Người triển khai làm việc qua bảng điều khiển; CLI `dxos` là má
 Bảng điều khiển thuộc tầng 2, nằm ở tuyến `/console` của ứng dụng web, chỉ dành cho vai ADMIN và chỉ gọi API của lõi.
 
 - **Thư viện mẫu:** chọn họ mẫu và mô hình mẫu, kèm mô tả mỗi mẫu cần gì.
-- **Soạn mô hình có hướng dẫn:** form dựng từ JSON Schema của định dạng mô hình, trình soạn YAML có gợi ý và báo lỗi theo schema, và bản xem trước giao diện sẽ được sinh ra.
+- **Soạn mô hình có hướng dẫn:** form dựng từ JSON Schema của định dạng mô hình, trình soạn YAML có gợi ý và báo lỗi theo schema, và sơ đồ quy trình vẽ từ tệp đang soạn.
 - **Màn hình kế hoạch:** khác biệt, mức rủi ro, dòng vi phạm và xác nhận thay đổi mất dữ liệu.
 - **Lịch sử áp dụng:** từng phiên bản và từng bước của mỗi lần áp dụng, kèm quay về phiên bản trước.
-- **Sơ đồ quy trình:** trạng thái và hành động của họ mẫu mà thực thể dùng, chỉ để xem.
+- **Sơ đồ quy trình:** trạng thái và hành động của quy trình mà thực thể dùng, vẽ cả từ tệp đang soạn, chỉ để xem.
 - **Người dùng:** tìm người dùng, xem vai theo từng ứng dụng, gán và gỡ vai và đơn vị, tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu; mỗi thay đổi được ghi vào nhật ký với người thực hiện và hiện lại ở hộp thoại của người đó: ai đổi gì, lúc nào.
   Tài khoản không khai báo trong tệp mô hình: tệp là cấu trúc và nằm trong git, còn người dùng là dữ liệu có email và mật khẩu, nên tài khoản nằm ở Keycloak.
   Tab chỉ mở API mỏng trên Keycloak: chính sách mật khẩu, MFA, phiên và đăng nhập bằng nhà cung cấp ngoài để Keycloak lo.
@@ -323,9 +324,9 @@ Thêm năng lực mới nghĩa là thêm provider, không phải sửa lõi.
 | Dữ liệu phi cấu trúc          | SeaweedFS, ClamAV                         | Dùng lại `dx-core/storage`, gắn với trường tệp           |
 | Luồng công việc                | Flowable chạy nhúng                     | Các họ mẫu quy trình, API đổi trạng thái                          |
 | Vòng đời mô hình             | Git, phần điều khiển                  | **Phần tự viết chính**                                      |
-| Trục sự kiện                   | Bảng outbox trong PostgreSQL             | Webhook theo mô hình, API kéo sự kiện theo `eventId`, thông điệp của việc áp dụng mô hình và của tài khoản |
+| Trục sự kiện                   | Bảng outbox trong PostgreSQL             | Webhook theo mô hình, API kéo sự kiện theo `eventId`, thông điệp của việc áp dụng mô hình và của tài khoản (chỉ qua webhook) |
 | Thông báo                       | Mattermost hoặc Slack do người triển khai cấp | Đích webhook dạng `chat`: việc mới, sắp đến hạn, quá hạn |
-| Báo cáo                         | Superset                                  | Sinh dataset từ mô hình                                      |
+| Báo cáo | Công cụ báo cáo do người triển khai cấp | Vai `report_ro` chỉ đọc các bảng nghiệp vụ |
 | AI | Làm sau | Khai báo nguồn tri thức và tác tử |
 | Vận hành                        | `dx-monitor`, `deploy/backup.sh`          | Giữ nguyên                                                    |
 
@@ -357,7 +358,7 @@ Trần dưới đây giữ cho tệp mô hình không biến thành ngôn ngữ 
 | Quyền         | Theo vai và theo dòng: tất cả, của tôi, của đơn vị hoặc được giao cho tôi   |
 | Quy tắc       | Bắt buộc, duy nhất, chống trùng khoảng thời gian, chặn khi chưa đủ điều kiện |
 | Biểu thức    | Một dòng, không có vòng lặp, không có tác dụng phụ                              |
-| Quy trình     | Chọn từ mẫu có sẵn và điền tham số                                                |
+| Quy trình     | Chọn từ mẫu có sẵn, hoặc tự khai báo trạng thái và hành động                                                |
 | Tác tử AI    | Khi có sự kiện, đề xuất giá trị một trường, người xác nhận                  |
 
 Một năng lực mới chỉ được thêm khi cần ở ít nhất 3 lĩnh vực, khai báo được mà không cần cú pháp mới, và không làm hỏng các mô hình đã có.
@@ -440,19 +441,19 @@ Những chỗ khó:
 
 **Bản dự thi** làm thêm, đổi tên, xóa trường; thêm quy tắc và báo dữ liệu vi phạm; quay lui cho thay đổi an toàn ở mức nên có.
 Đổi kiểu trường bị từ chối kèm giải thích.
-Đổi mẫu quy trình khi còn hồ sơ đang chờ dùng `ProcessMigrationService` của Flowable, làm khi có mẫu thứ hai.
+Đổi quy trình khi còn hồ sơ đang chờ bị từ chối; phải hoàn tất hoặc rút hết hồ sơ trước.
 
 ### 2. Quy trình không lách được
 
 Flowable thay phần workflow viết tay, người dùng không đụng tới BPMN.
-Đội viết sẵn và kiểm thử các họ mẫu quy trình, người dùng chỉ chọn họ mẫu và điền tham số như ai duyệt, hạn bao lâu, báo cho ai; xem [Quy trình chung](#quy-trình-chung).
+Đội viết sẵn và kiểm thử các họ mẫu quy trình, người dùng chọn họ mẫu rồi điền tham số như ai duyệt, hạn bao lâu, báo cho ai, hoặc tự khai báo trạng thái và hành động; xem [Quy trình chung](#quy-trình-chung).
 Hạn xử lý lưu trên bản ghi và quá hạn được tính khi đọc, một tác vụ định kỳ ghi dòng quá hạn vào lịch sử; Flowable lo phiên bản quy trình.
 
 Trạng thái hồ sơ không thể bị đi vòng:
 
 - Flowable là nơi duy nhất được đổi trạng thái hồ sơ.
 - API chung từ chối mọi yêu cầu ghi cột trạng thái.
-- Dịch vụ lõi là kết nối ghi duy nhất vào dữ liệu nghiệp vụ; các dịch vụ khác như Superset chỉ có quyền đọc.
+- Dịch vụ lõi là kết nối ghi duy nhất vào dữ liệu nghiệp vụ; công cụ báo cáo dùng vai `report_ro` chỉ có quyền đọc.
 - Flowable chạy nhúng trong dịch vụ lõi dùng chung cơ sở dữ liệu, để đổi trạng thái và ghi hồ sơ nằm trong một giao dịch.
 
 Quy tắc khai báo được API chung kiểm để báo lỗi rõ và biên dịch thành ràng buộc trong cơ sở dữ liệu.
@@ -461,7 +462,7 @@ Tệp mô hình chọn đích webhook bằng `webhook: <tên đích>`; địa ch
 Các dòng của một hồ sơ tới đích theo đúng thứ tự, và bên nhận lỡ tin kéo lại theo `eventId`.
 
 **Bản dự thi** có ba họ mẫu là chuỗi duyệt, công việc cần xử lý và chiếm dụng tài nguyên theo thời gian, cùng bộ quy tắc bất biến; có hộp việc, giao việc và quy tắc chặn; trục sự kiện có webhook theo mô hình, thông báo chat và nhắc hạn.
-Chi tiết tham số của từng họ mẫu được thiết kế ở các phase sau.
+Tham số của từng họ mẫu ở [`docs/MODEL.md`](../MODEL.md#tự-khai-báo-hoặc-mở-rộng-quy-trình).
 
 ### 3. Tác tử AI có người duyệt
 
@@ -481,17 +482,17 @@ Mã mở rộng luôn nằm ngoài lõi, chỉ gọi lõi qua API và sự kiệ
 
 | Nhu cầu                              | Cách làm                                                                                                |
 | --------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| API riêng                            | Dịch vụ viết bằng ngôn ngữ tùy ý, khai báo trong mô hình; APISIX định tuyến và kiểm token |
+| API riêng                            | Dịch vụ viết bằng ngôn ngữ tùy ý, gọi API của lõi bằng token Keycloak; route thêm vào cấu hình APISIX của bản cài |
 | Phản ứng theo nghiệp vụ           | Webhook nhận sự kiện từ trục sự kiện                                                               |
 | Giao diện riêng hoàn toàn         | Ứng dụng tự viết, dùng API và đăng nhập Keycloak của lõi                                       |
-| Trang riêng trong ứng dụng Tầng 2 | Khai báo mục menu trỏ tới trang riêng                                                                |
-| Họ mẫu quy trình riêng                | Tệp BPMN tự viết hoặc mở rộng từ mẫu qua bảng điều khiển; vẫn chịu quy tắc bất biến và bị kiểm khi áp dụng |
+| Trang riêng trong ứng dụng Tầng 2 | Thêm trang vào ứng dụng web bằng mã; tệp mô hình chưa khai báo được menu                                                                |
+| Họ mẫu quy trình riêng                | Khai báo `states` và `actions` trong tệp mô hình; vẫn chịu quy tắc bất biến và bị kiểm khi áp dụng |
 | Thành phần riêng trong form        | Đăng ký thành phần React, để sau bản dự thi                                                      |
 
 Đổi tên trường có thể làm hỏng mã mở rộng đang dùng trường đó.
-Bản dự thi chỉ nhắc rằng có mã mở rộng đang đăng ký; cảnh báo theo từng trường để sau.
+Chưa có nơi đăng ký mã mở rộng nên kế hoạch không cảnh báo theo từng trường; xem [Việc tồn đọng](./BACKLOG.md).
 
-**Bản dự thi** có route API, webhook, mục menu và tài liệu, kèm ví dụ dịch vụ sinh giấy xác nhận.
+**Bản dự thi** có webhook theo mô hình và API kéo sự kiện, kèm hai ví dụ ở `examples/`: giả lập thiết bị IT/OT và bên giữ điểm neo của lịch sử.
 
 ## Ứng dụng nghiệp vụ
 
@@ -510,27 +511,7 @@ Nếu mô hình này tốn hơn một tệp, đó là tín hiệu lõi còn gắ
 
 Ba họ mẫu quy trình được kiểm bằng ba mô hình: Một cửa sinh viên (chuỗi duyệt), ticket hỗ trợ (công việc cần xử lý) và đặt phòng (chiếm dụng tài nguyên theo thời gian).
 
-## Phạm vi bản dự thi
-
-
-| Mức                     | Nội dung                                                                                                                                                                                                                                                                                                              |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Phải có để nộp**  | Định dạng mô hình, sinh bảng, API chung với quyền từng dòng, quyền theo đơn vị, vai Keycloak, xem trước và áp dụng, ba họ mẫu quy trình, bảng điều khiển của người triển khai, hộp việc, giao việc, yêu cầu bổ sung, chặn lách API, tệp đính kèm, ứng dụng Tầng 2, ứng dụng nghiệp vụ, bản phát hành và tài liệu |
-| **Nên có**             | Trục sự kiện, thông báo chat, mô hình thứ hai và hành động hoàn tất, quay lui, điểm mở rộng, họ mẫu tùy biến                                                                                                                                                                                                          |
-| **Làm sau lõi**        | Tác tử AI và hỏi đáp, sau khi lõi hoàn toàn mở                                                                                                                                                                                                                                                               |
-| **Nếu còn thời gian** | Lịch sử biến động dữ liệu, AI soạn mô hình, sinh dataset Superset, đo và công bố tài nguyên, thông tin dữ liệu từ đâu ra                                                                                                                                                    |
-
-Ngoài phạm vi:
-
-- Vault, WAF, Redpanda, Iceberg, Trino, ImmuDB, NGSI-LD, GIS.
-- Trình thiết kế BPMN kéo thả.
-- Trang giao diện tự do, trò chuyện, cộng tác thời gian thực.
-- Kế toán, kho hàng phức tạp, ERP.
-- Mobile và chẩn đoán ảnh.
-- Nhiều môi trường, đổi mô hình hoàn toàn không gián đoạn.
-- Logic tùy ý trong tệp mô hình, plugin chạy trong tiến trình của lõi.
-
-### Thế nào là đạt
+## Thế nào là đạt
 
 Trên máy sạch, không có mã nguồn:
 
@@ -545,43 +526,13 @@ Trên máy sạch, không có mã nguồn:
 
 Tám mục này cũng là khung kịch bản trình diễn 15 phút, cộng thêm phần vấn đề, kiến trúc và định hướng phát triển.
 
-### Thứ tự công việc
+## Những gì giữ lại
 
-1. Dọn nền: gỡ Farm, Lab, mobile, `DXOS_APP` và rút gọn `dx-core`, để lõi được xây trên nền sạch.
-2. Vòng hẹp: một tệp mô hình qua API chung, PostgreSQL, Keycloak, Flowable.
-3. Đổi mô hình khi có dữ liệu và chặn lời gọi vượt quy trình, vì đây là hai rủi ro lớn nhất.
-4. Xem trước và áp dụng, mẫu quy trình, hộp việc, giao việc, yêu cầu bổ sung, quyền theo đơn vị, tệp đính kèm, ứng dụng Tầng 2.
-5. Ứng dụng nghiệp vụ qua E2E.
-6. Các phần ở mức "nên có".
-7. Bản phát hành, giấy phép, SBOM, tài liệu, triển khai công khai, rồi gửi bài; vài ngày cuối chỉ dành cho bước này.
-
-Các giả định ở mục [Chưa xác minh](#chưa-xác-minh) được kiểm ngay trong bước 2 và 3, mỗi giả định có tiêu chí đạt rõ ràng.
-Việc react-admin dựng form và danh sách từ metadata được kiểm song song với bước 2.
-Bản công khai trên VPS giữ `v1.1.1` cho đến khi lõi mới đạt và được triển khai lại.
-
-### Những gì giữ lại
-
-- **Hạ tầng:** Keycloak, APISIX, SeaweedFS, PostgreSQL, ClamAV; thông báo chat đi qua webhook dạng `chat`, báo cáo dựng lại theo mô hình khi đến phần đó, cấu hình Superset và Mattermost của bản cũ ở tag `v1.1.1`.
+- **Hạ tầng:** Keycloak, APISIX, SeaweedFS, PostgreSQL, ClamAV; thông báo chat đi qua webhook dạng `chat`; Superset và Mattermost không còn trong bản phát hành, cấu hình của bản cũ ở tag `v1.1.1`.
 - **Dịch vụ:** `dx-monitor`.
 - **Dự án:** bộ triển khai, CI, kiểm tra giấy phép, SBOM, quy trình phát hành.
 - **`dx-core` rút gọn thành thư viện:** giữ bảo mật, audit, lưu trữ và quét tệp, trạng thái hệ thống, client Keycloak; phần gắn với ứng dụng cũ như workflow viết tay, workspace, thông báo cũ được gỡ và dựng lại theo thiết kế mới khi cần.
 - **Module backend sau khi dọn:** `dx-model`, `dx-core`, `dx-engine` (dịch vụ chạy được) và `dx-monitor`; `dx-core-api` và `dx-host` bỏ vì không còn ứng dụng nào cắm vào lõi.
-
-### Những gì sẽ gỡ
-
-Đã gỡ khỏi nhánh làm việc; mã cũ nằm ở tag `v1.1.1`.
-
-
-| Phần                                             | Quy mô                                  |
-| --------------------------------------------------- | ------------------------------------------ |
-| `backend/app-farm`, `backend/app-lab`             | 173 và 94 tệp                          |
-| `frontend/src/apps/farm`, `frontend/src/apps/lab` | 17 và 16 tệp                           |
-| `mobile/`                                         | 69 tệp                                  |
-| Mã nhận diện bệnh lúa, luồng chẩn đoán, trọng số, bộ đánh giá RAG và các script của chúng | Khoảng 230 MB |
-| `data/`: dữ liệu Farm, kho văn bản của HaUI, bộ câu hỏi đánh giá | 41 tệp, gỡ toàn bộ |
-| `AppModule`, `DXOS_APP`, `dx-core/workflow`       | Thay bằng tệp mô hình và Flowable   |
-
-Các nơi phải sửa theo: `pom.xml` của backend, `backend/Dockerfile`, `AiVectorDatabaseSeeder`, `deploy/demo`, năm workflow CI, SBOM, các README, `ARCHITECTURE.md`, `docs/TESTING.md`.
 
 ## Rủi ro
 
@@ -651,7 +602,7 @@ Rà soát ngày 2026-11-02 từ `DEPENDENCIES.txt`, GitHub API và Hugging Face;
 
 | Thành phần                                                      | Giấy phép                                                                                                                                                                                                                                                    | Kết luận                                                        |
 | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| Keycloak, APISIX, Superset, SeaweedFS, Flowable, pgschema         | Apache-2.0                                                                                                                                                                                                                                                     | Đạt                                                             |
+| Keycloak, APISIX, Superset, SeaweedFS, Flowable, pgschema         | Apache-2.0                                                                                                                                                                                                                                                     | Đạt; Superset không còn trong bản phát hành |
 | react-admin | MIT | Đạt; chỉ dùng phần MIT, không dùng gói Enterprise |
 | PostgreSQL                                                        | PostgreSQL License                                                                                                                                                                                                                                             | Đạt                                                             |
 | ClamAV                                                            | GPL-2.0                                                                                                                                                                                                                                                        | Đạt; điều khoản của kho chữ ký mã độc cần kiểm thêm |
@@ -707,19 +658,13 @@ Số sao và giấy phép lấy từ GitHub API ngày 2026-11-02, trừ khi có 
 | Sơ đồ quy trình | [React Flow](https://github.com/xyflow/xyflow) | MIT | 38.874 | Vẽ quy trình sinh ra, chỉ để xem |
 | Đổi lược đồ             | [pgschema](https://pkg.go.dev/github.com/pgplex/pgschema@v1.13.4)            | Apache-2.0                     | 1.077              | So sánh và đổi lược đồ kiểu Terraform; lõi lo đổi tên và chặn mất dữ liệu |
 
-## Cần quyết khi thiết kế chi tiết
+## Đặc tả chi tiết
 
-- **Đặc tả định dạng mô hình:** cú pháp đầy đủ, cách khai báo tên cũ, nhiều thực thể trong một tệp, quan hệ giữa các thực thể.
-- **Tham số của từng họ mẫu:** danh sách tham số, giá trị mặc định và các khối dùng chung; làm ở các phase sau.
-- **Mượn trả:** xác nhận bằng một mô hình mượn thiết bị thật rằng họ chiếm dụng tài nguyên theo thời gian đủ dùng; nếu cần nhiều ngoại lệ thì tách thành họ riêng.
-- **Họ mẫu tùy biến:** các khối engine cung cấp cho tệp BPMN, cách kiểm tệp khi áp dụng, và phạm vi của giao diện mở rộng từ mẫu.
-- **Quy trình trong kế hoạch áp dụng:** cách lưu phiên bản mô hình trên bản ghi và khi nào cần định nghĩa quy trình mới.
-- **Quyền với phần điều khiển:** ai được xem kế hoạch, ai được áp dụng, ai được xác nhận thay đổi mất dữ liệu.
-- **Hợp đồng metadata:** Tầng 2 đọc metadata từ API nào và ở dạng gì.
-- **Hợp đồng API chung:** đường dẫn, bộ lọc, phân trang, quan hệ giữa các thực thể và định dạng lỗi.
-- **Luồng tệp đính kèm:** tải lên, quét và gắn tệp vào hồ sơ qua API nào.
-- **Đơn vị và giao việc:** đơn vị lấy từ nhóm Keycloak hay khai báo trong mô hình, hồ sơ được giao tự động hay do người điều phối.
-- **Yêu cầu bổ sung:** trường nào mở lại để sửa và hạn xử lý tính thế nào khi hồ sơ bị trả lại.
+Các điểm thiết kế chi tiết đã chốt và nằm ở tài liệu riêng:
+
+- Định dạng tệp mô hình, họ mẫu và tham số: [`docs/MODEL.md`](../MODEL.md).
+- Đường dẫn, bộ lọc, phân trang, metadata và định dạng lỗi: [`docs/API.md`](../API.md).
+- Kiến trúc và luồng áp dụng mô hình: [`ARCHITECTURE.md`](../../ARCHITECTURE.md).
 
 ## Đã xác minh
 

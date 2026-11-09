@@ -17,7 +17,7 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - Một tệp mô hình khai báo thực thể, trường, vai, quyền, đơn vị và quy trình; `dx-model` đọc và kiểm tra, báo lỗi theo dòng và cột.
 - API chung `/api/v1/data/{model}/{entity}` với lọc, sắp xếp, phân trang, quy tắc bắt buộc, duy nhất và lựa chọn; metadata ở `/api/v1/meta/models`.
 - Sửa hồ sơ nhận `version`: hồ sơ đã đổi thì trả 409 `ERR_CONCURRENT_MODIFICATION` và không ghi đè.
-- Lỗi 403 `ERR_ACTION_NOT_ALLOWED` và 409 `ERR_INVALID_STATE` có `data.reason`, mã ổn định cho client.
+- Lỗi 403 `ERR_ACTION_NOT_ALLOWED` và 409 `ERR_INVALID_STATE` có `data.reason`, mã ổn định cho client; giao diện dịch lỗi theo mã này.
 - Hành động của người xử lý nhận điều kiện `when`, một phép so sánh một trường với một giá trị như `amount > 5000000`; hồ sơ chưa đạt thì trả 409 `ERR_INVALID_STATE` với `data.reason` là `CONDITION_NOT_MET`, giá trị trống không đạt, nên một trạng thái rẽ nhánh theo ngưỡng được bằng hai hành động `when` loại trừ nhau; nút của hành động mờ trên giao diện và sơ đồ quy trình ghi điều kiện trên cạnh.
 - Thống kê `GET /api/v1/data/{model}/{entity}/stats` cho thực thể có quy trình: tổng số, theo trạng thái, quá hạn, theo đơn vị, thời gian xử lý trung bình và tuổi hồ sơ đang mở, cùng bộ lọc và quyền như danh sách.
 - Thực thể khai hạn xử lý có thêm `closedOnTime` và `closedLate` trong thống kê, đếm từ các dòng lịch sử `overdue`; trang thống kê hiện tỷ lệ hồ sơ đã đóng đúng hạn.
@@ -76,7 +76,7 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - Hàng đợi sự kiện bằng bảng outbox: thông điệp ghi trong giao dịch của thay đổi, giao sau đó, thử lại với thời gian chờ tăng dần và dừng sau `DXOS_OUTBOX_MAX_ATTEMPTS` lần.
   ADMIN xem và thử lại ở `GET /api/v1/outbox`, `POST /api/v1/outbox/{id}/retry` và tab Hàng đợi sự kiện.
 - Webhook theo mô hình: mỗi dòng lịch sử gửi dạng JSON có chữ ký tới đích mà tệp mô hình chọn (`webhook: <tên đích>`), định dạng `json` hoặc `chat` cho Mattermost và Slack; các dòng của một hồ sơ tới đúng thứ tự.
-- Thông điệp `admin.event` báo việc áp dụng mô hình và thay đổi tài khoản.
+- Thông điệp `admin.event` báo việc áp dụng mô hình và thay đổi tài khoản; mỗi thay đổi được ghi thành một dòng có `eventId`, và `GET /api/v1/events/admin` trả lại các dòng đó cho bên nhận bị lỡ, dù có đích webhook hay không.
 - `GET /api/v1/events` cho bên nhận lỡ tin kéo lại theo `eventId`.
 - Lịch sử hồ sơ nối thành chuỗi hash, mỗi giờ ghi một điểm neo ra kho đối tượng; `dxos history verify` và `GET /api/v1/history/verify` chỉ ra dòng bị sửa, xóa hoặc chèn.
 - `examples/history-witness` cho bên nhận giữ `eventId` và `hash` rồi so với hệ thống.

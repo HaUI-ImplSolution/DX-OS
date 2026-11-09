@@ -34,7 +34,12 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
     clearSession();
   }
   if (!response.ok || !body?.success) {
-    const message = errorMessageFor(body?.errorCode, body?.message ?? statusMessageFor(response.status));
+    const reason = (body?.data as { reason?: unknown } | null | undefined)?.reason;
+    const message = errorMessageFor(
+      body?.errorCode,
+      body?.message ?? statusMessageFor(response.status),
+      typeof reason === "string" ? reason : undefined,
+    );
     throw new ApiError(message, response.status, translateData(body?.data));
   }
   return body.data;

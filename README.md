@@ -31,11 +31,11 @@ Phiên bản hiện tại là `2.0.0`, thay đổi theo từng phiên bản ở 
 
 - **Từ một tệp đến hệ thống chạy được.** Hồ sơ, bảng dữ liệu, tài khoản, vai, màn hình danh sách và biểu mẫu đều được dựng từ tệp mô hình.
 - **Phân quyền đến từng dòng.** Mỗi vai chỉ thấy và sửa phần việc của mình, của đơn vị mình hoặc được giao cho mình.
-- **Ba kiểu quy trình có sẵn.** Phê duyệt, công việc cần xử lý, và đặt chỗ theo khung giờ có kiểm sức chứa; từ chối và trả lại đều cần lý do, và không ai tự duyệt hồ sơ của mình.
+- **Quy trình tùy biến.** Chọn một trong ba mẫu có sẵn (phê duyệt, công việc cần xử lý, đặt chỗ theo khung giờ có kiểm sức chứa) rồi thêm bớt bước, giao từng bước cho vai riêng, hoặc tự khai báo quy trình từ đầu; từ chối và trả lại đều cần lý do, và không ai tự duyệt hồ sơ của mình.
 - **Đổi nghiệp vụ khi đã có dữ liệu.** Hệ thống cho xem trước tác động, cảnh báo rủi ro, giữ nguyên dữ liệu khi đổi tên và cho quay về phiên bản trước.
 - **Dấu vết không sửa được.** Lịch sử hồ sơ nối thành một chuỗi có dấu kiểm; nếu ai sửa, xóa hoặc chèn một dòng thì một lệnh chỉ ra đúng dòng đó.
 - **Kết nối ra ngoài.** Mọi thay đổi của hồ sơ được báo tới địa chỉ web hoặc kênh chat (Mattermost, Slack) với chữ ký để bên nhận kiểm tra, và được gửi lại khi bên nhận lỗi.
-- **Bảng điều khiển cho người triển khai.** Thư viện mẫu, trình soạn mô hình kèm sơ đồ quy trình vẽ theo tệp đang soạn, xem kế hoạch, áp dụng, lịch sử, quản lý người dùng và thống kê hồ sơ.
+- **Bảng điều khiển cho người triển khai.** Thư viện mẫu, trình soạn mô hình (viết tệp hoặc điền form, có hướng dẫn nói rõ viết được và mở rộng được gì) kèm sơ đồ quy trình vẽ theo tệp đang soạn, xem kế hoạch, áp dụng, lịch sử, quản lý người dùng và thống kê hồ sơ.
 - **Cài và vận hành đơn giản.** Một lệnh cài, một lệnh chạy; có sao lưu kiểm được, tự khởi động lại dịch vụ và quét mã độc cho tệp đính kèm khi bật.
 - **Đăng nhập một lần.** Qua Keycloak, và có thể bắt quản trị viên nhập thêm mã một lần.
 

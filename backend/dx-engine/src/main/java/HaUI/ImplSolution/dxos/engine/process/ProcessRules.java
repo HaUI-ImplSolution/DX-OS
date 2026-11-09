@@ -7,11 +7,14 @@ import HaUI.ImplSolution.dxos.engine.exception.ModelValidationException;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
 import HaUI.ImplSolution.dxos.model.ProcessFamily.Action;
 import HaUI.ImplSolution.dxos.model.ProcessFamily.Actor;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.stereotype.Component;
 
-// The rules every process obeys, whichever family it runs. A model cannot switch them off.
+// The rules every process obeys, whichever states and actions it declares. A model cannot switch
+// them off.
 @Component
 public class ProcessRules {
 
@@ -23,8 +26,9 @@ public class ProcessRules {
       throw new ActionNotAllowedException("Only the owner of the record can " + action.name(),
           "OWNER_ONLY");
     }
-    if (action.by() == Actor.HANDLER && !roles.contains(entity.process().handler())) {
-      throw new ActionNotAllowedException("Only " + entity.process().handler() + " can do this",
+    List<String> allowed = entity.process().rolesFor(action);
+    if (action.by() == Actor.HANDLER && Collections.disjoint(roles, allowed)) {
+      throw new ActionNotAllowedException("Only " + String.join(" or ", allowed) + " can do this",
           "HANDLER_ONLY");
     }
     String status = (String) record.get("status");
@@ -45,6 +49,12 @@ public class ProcessRules {
     }
     if (action.needsNote() && (note == null || note.isBlank())) {
       throw new ModelValidationException("note", "is required");
+    }
+    for (String field : action.require()) {
+      Object value = record.get(field);
+      if (value == null || value.toString().isBlank()) {
+        throw new ModelValidationException(field, "is required before " + action.name());
+      }
     }
   }
 }

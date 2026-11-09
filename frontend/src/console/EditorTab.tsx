@@ -23,7 +23,7 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
-import YAML, { isSeq, type Document } from "yaml";
+import YAML, { isMap, isSeq, type Document } from "yaml";
 import { ApiError } from "../shell/api";
 import { translateBackend } from "../shell/backendMessages";
 import {
@@ -38,6 +38,7 @@ import ModelForm from "./ModelForm";
 import PlanPanel from "./PlanPanel";
 import { FAMILY_LABEL } from "./labels";
 import ProcessDiagram from "./ProcessDiagram";
+import SyntaxGuide from "./SyntaxGuide";
 import YamlEditor from "./YamlEditor";
 
 interface Props {
@@ -76,6 +77,13 @@ function patch(doc: Document, path: Path, before: unknown, after: unknown) {
       if (!(key in after)) doc.deleteIn([...path, key]);
     });
     Object.entries(after).forEach(([key, value]) => patch(doc, [...path, key], before[key], value));
+    // A key renamed in the middle keeps its place instead of moving to the end.
+    const node = path.length === 0 ? doc.contents : doc.getIn(path, true);
+    if (isMap(node)) {
+      const order = Object.keys(after);
+      const rank = (item: { key: unknown }) => order.indexOf(String((item.key as { value?: unknown })?.value ?? item.key));
+      node.items.sort((a, b) => rank(a) - rank(b));
+    }
     return;
   }
   if (Array.isArray(before) && Array.isArray(after)) {
@@ -346,6 +354,7 @@ export default function EditorTab({ text, source, schema, onText, onApplied }: P
             {selected && <ProcessDiagram family={selected} />}
           </Card>
         )}
+        <SyntaxGuide />
         {selected && (
           <Dialog open={zoomed} onClose={() => setZoomed(false)} maxWidth="xl" fullWidth>
             <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>

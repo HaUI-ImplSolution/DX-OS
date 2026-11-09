@@ -62,6 +62,25 @@ interface Props {
 }
 
 // What applying a model would do, and the button that does it once the risk is accepted.
+const FLOW_PARTS: [string, string][] = [
+  ["states added: ", "Thêm trạng thái: "],
+  ["states removed: ", "Bỏ trạng thái: "],
+  ["actions added: ", "Thêm hành động: "],
+  ["actions removed: ", "Bỏ hành động: "],
+];
+
+// What the plan says changed in the steps of a process, in the language of the interface.
+function flowDetail(text: string): string {
+  return text
+    .split("; ")
+    .map((part) => {
+      if (part === "steps of existing actions") return "Đổi nơi đi, nơi đến hoặc người làm của hành động có sẵn";
+      const known = FLOW_PARTS.find(([english]) => part.startsWith(english));
+      return known ? known[1] + part.slice(known[0].length) : part;
+    })
+    .join("; ");
+}
+
 export default function PlanPanel({ plan, busy, applyLabel = "Áp dụng", onApply }: Props) {
   const [accepted, setAccepted] = useState(false);
   const confirmed = plan.changes.filter((change) => change.level === "MIGRATION");
@@ -145,7 +164,7 @@ export default function PlanPanel({ plan, busy, applyLabel = "Áp dụng", onApp
                     {label(CHANGE_KIND, change.kind)}
                     {change.detail && (
                       <Typography variant="caption" color="text.secondary" display="block">
-                        {change.detail}
+                        {change.kind === "CHANGE_FLOW" ? flowDetail(change.detail) : change.detail}
                       </Typography>
                     )}
                   </TableCell>

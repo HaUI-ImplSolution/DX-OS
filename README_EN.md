@@ -31,11 +31,11 @@ The current version is `2.0.0`, and the changes of each version are in [`CHANGEL
 
 - **From one file to a running system.** Records, tables, accounts, roles, list screens and forms are all built from the model file.
 - **Permissions down to the row.** Each role sees and edits only its own work, the work of its unit, or the work assigned to it.
-- **Three workflow families built in.** Approval, work items, and time-slot reservations with a capacity check; rejecting and returning need a reason, and nobody approves their own record.
+- **Customizable workflows.** Start from one of three ready made shapes (approval, work items, time-slot reservations with a capacity check) and add or remove steps, give each step to its own role, or declare a workflow from scratch; rejecting and returning need a reason, and nobody approves their own record.
 - **Changing the business once data exists.** The system previews the impact, warns about risk, keeps the values when something is renamed, and can return to the previous version.
 - **A trace that cannot be edited.** The history of records is one chain with checks; if anyone edits, deletes or inserts a line, one command names that line.
 - **Connections to the outside.** Every change to a record is reported to a web address or a chat channel (Mattermost, Slack), signed so the receiver can check it and sent again when the receiver fails.
-- **A control panel for the person deploying.** Template library, model editor with a process diagram drawn from the file being written, plan preview, apply, history, user management and record statistics.
+- **A control panel for the person deploying.** Template library, model editor (write the file or fill a form, with guidance on what can be written and extended) with a process diagram drawn from the file being written, plan preview, apply, history, user management and record statistics.
 - **Simple to install and run.** One command installs and one starts; backups can be checked, services restart on their own, and attachments are virus-scanned when enabled.
 - **Single sign-on.** Through Keycloak, and administrators can be required to enter a one-time code as well.
 

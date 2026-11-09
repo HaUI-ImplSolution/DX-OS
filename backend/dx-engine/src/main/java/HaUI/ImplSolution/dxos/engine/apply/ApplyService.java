@@ -10,6 +10,7 @@ import HaUI.ImplSolution.dxos.engine.apply.ModelDiff.Level;
 import HaUI.ImplSolution.dxos.engine.event.AdminEventPublisher;
 import HaUI.ImplSolution.dxos.engine.event.WebhookTargets;
 import HaUI.ImplSolution.dxos.engine.files.AttachmentCleaner;
+import HaUI.ImplSolution.dxos.engine.process.ProcessDeployer;
 import HaUI.ImplSolution.dxos.engine.registry.ModelClient;
 import HaUI.ImplSolution.dxos.engine.registry.ModelRegistry;
 import HaUI.ImplSolution.dxos.model.Model;
@@ -84,8 +85,8 @@ public class ApplyService {
   private static final int SAMPLE_SIZE = 20;
   private static final String RENAME_STEP = "RENAME_FIELD";
   private static final Set<String> PROCESS_RULE_CHANGES =
-      Set.of("ADD_PROCESS", "DROP_PROCESS", "CHANGE_HANDLER", "CHANGE_SELF_DECISION",
-          "CHANGE_COMPLETION", "CHANGE_BOOKING", "CHANGE_DEADLINE");
+      Set.of("ADD_PROCESS", "DROP_PROCESS", "CHANGE_SELF_DECISION", "CHANGE_COMPLETION",
+          "CHANGE_BOOKING", "CHANGE_DEADLINE", "CHANGE_FLOW");
 
   private final JdbcTemplate jdbc;
   private final KeycloakAdminClient keycloak;
@@ -96,6 +97,7 @@ public class ApplyService {
   private final WebhookTargets webhooks;
   private final AdminEventPublisher events;
   private final AuditRecorder audit;
+  private final ProcessDeployer processes;
   private final String reportPassword;
   // Kind of step that fails on purpose, so that a stopped apply can be produced in tests.
   private final String faultStep;
@@ -103,7 +105,7 @@ public class ApplyService {
   public ApplyService(JdbcTemplate jdbc, KeycloakAdminClient keycloak, ModelRegistry registry,
       SchemaTool schemaTool, AttachmentCleaner attachments, ObjectMapper json,
       WebhookTargets webhooks, AdminEventPublisher events, AuditRecorder audit,
-      @Value("${engine.report-db-password:}") String reportPassword,
+      ProcessDeployer processes, @Value("${engine.report-db-password:}") String reportPassword,
       @Value("${engine.fault.apply-step:}") String faultStep) {
     this.jdbc = jdbc;
     this.keycloak = keycloak;
@@ -114,6 +116,7 @@ public class ApplyService {
     this.webhooks = webhooks;
     this.events = events;
     this.audit = audit;
+    this.processes = processes;
     this.reportPassword = reportPassword;
     this.faultStep = faultStep.strip();
   }
@@ -183,6 +186,7 @@ public class ApplyService {
     diff.changes.addAll(repairs);
     List<String> rejections = new ArrayList<>(diff.rejections);
     webhooks.missing(model).ifPresent(rejections::add);
+    rejections.addAll(processes.problems(model));
     Map<String, Long> openRecords = openRecords(running, diff);
     rejections.addAll(processRuleChangesWithOpenRecords(diff, openRecords));
     rejections.addAll(dropDependencyRejections(model, diff));
@@ -253,6 +257,10 @@ public class ApplyService {
     webhooks.missing(model).ifPresent(reason -> {
       throw new InvalidStateException(reason);
     });
+    List<String> unrunnable = processes.problems(model);
+    if (!unrunnable.isEmpty()) {
+      throw new InvalidStateException(String.join("; ", unrunnable));
+    }
     if (running != null && !Objects.equals(base, running.version())) {
       throw new InvalidStateException(
           "The plan is out of date: model " + model.name() + " runs version " + running.version()
@@ -415,6 +423,8 @@ public class ApplyService {
     String client = ModelClient.of(stopped.name());
     return execute(stopped.name(), runId, 0,
         List.of(
+            new Step(new PlannedStep("UNDEPLOY_PROCESS", stopped.name()),
+                () -> processes.undeploy(stopped.name())),
             new Step(new PlannedStep("DROP_SCHEMA", stopped.schema()),
                 () -> jdbc
                     .execute("DROP SCHEMA IF EXISTS " + Sql.ident(stopped.schema()) + " CASCADE")),
@@ -733,6 +743,11 @@ public class ApplyService {
     for (Model.Unit unit : model.units()) {
       steps.add(new Step(new PlannedStep("ENSURE_UNIT", unit.name()),
           () -> keycloak.ensureGroup(unit.name())));
+    }
+    if (model.entities().values().stream()
+        .anyMatch(entity -> entity.process() != null && entity.process().ownFlow())) {
+      steps.add(
+          new Step(new PlannedStep("DEPLOY_PROCESS", model.name()), () -> processes.deploy(model)));
     }
     steps.add(new Step(new PlannedStep("SAVE_VERSION", model.name()), () -> jdbc.update(
         "INSERT INTO engine.model_version (model, version, hash, content, applied_by, "

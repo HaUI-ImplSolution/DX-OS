@@ -30,7 +30,8 @@ Mốc dưới đây là dự kiến.
 | Phần AI | Chưa có mã: hỏi đáp sinh câu trả lời và tác tử đề xuất có người duyệt cần mô hình ngôn ngữ và embedding đạt định nghĩa Open Source AI của OSI (trọng số và dữ liệu huấn luyện đều mở), chưa chọn; khi làm sẽ là dịch vụ mới nối vào lõi |
 | Webhook sự kiện | Dạng `chat` chưa thử với Mattermost và Slack thật; thông điệp của việc áp dụng mô hình và của tài khoản không có trong `GET /api/v1/events` |
 | Ứng dụng Tầng 2 | Chưa phủ I của H-P-D-I; để sau như đã định |
-| Duyệt nhiều cấp tuần tự | Họ phê duyệt chỉ có một cấp xử lý; nhiều cấp cần trạng thái và hành động sinh theo số cấp khai báo trong mô hình, nên đổi `dx-model`, kernel quy trình, `data` và giao diện, và đụng các mô hình đang chạy; chưa làm vì rủi ro cao |
+| Điều kiện theo giá trị trường | Hành động của quy trình chưa có điều kiện (ví dụ số tiền vượt ngưỡng thì lên cấp khác); cần biểu thức so sánh trường trong `actions`, nên đổi parser, kernel quy trình và giao diện |
+| Realm mới thiếu scope Admin API | Dựng stack từ `sso/realm-dxos.json` thì áp dụng mô hình trả 502 `ERR_ACCOUNT_SERVICE_DENIED` cho tới khi chạy `deploy/keycloak-admin-scope.sh`; scope `kc-admin-api` chưa có lúc import nên client không nhận được |
 
 ## 4. Giới hạn chấp nhận
 
@@ -39,11 +40,12 @@ Mốc dưới đây là dự kiến.
 | Việc | Ghi chú |
 |---|---|
 | Trường kiểu `user` | Giá trị là id người dùng Keycloak, giao diện web cho nhập tay và backend không đối chiếu với người dùng có thật |
-| Đổi luật quy trình khi còn hồ sơ mở | Người xử lý, hạn xử lý, quyền tự quyết, hành động hoàn tất và đặt chỗ chỉ đổi được khi thực thể không còn hồ sơ đang xử lý; phải hoàn tất hoặc rút hết hồ sơ trước, vì hồ sơ chưa lưu phiên bản mô hình |
+| Đổi luật quy trình khi còn hồ sơ mở | Hạn xử lý, quyền tự quyết, hành động hoàn tất, đặt chỗ, trạng thái và hành động chỉ đổi được khi thực thể không còn hồ sơ đang xử lý; phải hoàn tất hoặc rút hết hồ sơ trước, vì hồ sơ chưa lưu phiên bản mô hình và hồ sơ đang chạy giữ bản BPMN cũ (Flowable không chuyển chúng sang bản mới) |
+| Đổi vai xử lý khi còn hồ sơ mở | Có hiệu lực ngay vì quyền xét theo mô hình; hồ sơ đã giao cho người không còn giữ vai mới thì chỉ người điều phối giao lại được, và nhóm ứng viên ghi trong task Flowable đang chạy vẫn là vai cũ (không nơi nào đọc nó) |
 | Ngôn ngữ giao diện | Chỉ có tiếng Việt |
 | Cắt bớt service bằng compose profile | Mô hình không dùng thành phần nào vẫn phải chạy thành phần đó |
 | Nhiều bản sao của backend | Chạy một bản; hai bản sau gateway thì danh sách mô hình và trạng thái giữ lệch nhau giữa các bản sau một lần áp dụng |
-| Đổi họ mẫu của một thực thể | Bị từ chối, kể cả khi mọi hồ sơ đã ở trạng thái cuối, vì trạng thái của hồ sơ cũ không ánh xạ sang họ mới; muốn đổi hình dạng quy trình thì thêm thực thể mới |
+| Đổi họ mẫu của một thực thể | Đổi khóa `family` sang họ khác bị từ chối, vì trạng thái của hồ sơ cũ không ánh xạ sang họ mới; muốn đổi hình dạng quy trình thì sửa `states` và `actions` của quy trình hiện có, hoặc thêm thực thể mới |
 | Đổi vai hoặc đơn vị của người đang đăng nhập | Vai và đơn vị đọc từ token đã ký nên thay đổi có hiệu lực sau tối đa khoảng 5 phút (token sống 300 giây), và người bị gỡ giữ quyền đến lúc đó |
 | Nạp mô hình lúc khởi động | Chỉ một tệp mỗi lần |
 | Chuỗi hash của lịch sử | Phát hiện chứ không ngăn sửa; điểm neo nằm trong kho đối tượng của cùng máy chủ nên người sửa được cả cơ sở dữ liệu lẫn kho thì chỉ bị lộ khi so với `hash` mà bên nhận webhook đã giữ |

@@ -26,14 +26,29 @@ public Optional<Field>unitField(){return fields.values().stream().filter(f->f.ty
 // and new rows.
 public record Field(String name,FieldType type,String label,boolean required,boolean unique,List<String>options,String to,String renamedFrom,String defaultValue){}
 
-// The process family an entity runs, the role that handles its records, whether the creator of a
-// record may handle it, and how long a handler has before a record counts as overdue (null for no
-// deadline). AutoClose is how long a resolved record waits for its owner before the system closes
-// it (null for never; the work_item family only). After maps a final state to the actions taken
-// when a record reaches it. Booking is set for the reservation family only.
-public record Process(String family,String handler,boolean allowSelfDecision,Duration deadline,Duration autoClose,Map<String,List<Completion>>after,Booking booking){
+// The process an entity runs: the family it started from (null when it declares every state and
+// action itself), the roles that handle its records, whether the creator of a record may handle it,
+// and how long a handler has before a record counts as overdue (null for no deadline). AutoClose is
+// how long a record waits for its owner before the system takes autoCloseAction for them (both
+// null for never). After maps a final state to the actions taken when a record reaches it. Booking
+// is set for the reservation family only. Definition is the states and actions the entity ends up
+// with after the declarations of the model are applied to the family.
+public record Process(String family,List<String>handlers,boolean allowSelfDecision,Duration deadline,Duration autoClose,String autoCloseAction,Map<String,List<Completion>>after,Booking booking,ProcessFamily definition){
 
-public ProcessFamily definition(){return ProcessFamily.find(family).orElseThrow();}}
+// Whether the steps differ from those of the family, so the entity needs a BPMN file of its own.
+public boolean ownFlow(){return family==null||!ProcessFamily.find(family).map(template->template.sameFlowAs(definition)).orElse(false);}
+
+// The key of the BPMN process the records of the entity run.
+public String processKey(String modelName,String entityName){return ownFlow()?modelName+"."+entityName:family;}
+
+// The roles that may take an action of the handler.
+public List<String>rolesFor(ProcessFamily.Action action){return action.roles().isEmpty()?handlers:action.roles();}
+
+// The roles that may take a handler action on a record in the state.
+public java.util.Set<String>rolesIn(String state){java.util.Set<String>roles=new java.util.LinkedHashSet<>();definition.actions().stream().filter(action->action.by()==ProcessFamily.Actor.HANDLER&&action.allowedIn(state)).forEach(action->roles.addAll(rolesFor(action)));return roles;}
+
+// Every role that takes part in handling.
+public java.util.Set<String>allRoles(){java.util.Set<String>roles=new java.util.LinkedHashSet<>(handlers);definition.actions().forEach(action->roles.addAll(action.roles()));return roles;}}
 
 // Name of the PostgreSQL schema that holds the tables of this model.
 public String schema(){return"m_"+name;}

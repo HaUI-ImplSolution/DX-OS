@@ -161,10 +161,12 @@ Trạng thái của hồ sơ chỉ đổi qua quy trình.
 
 - Flowable chạy nhúng, dùng chung nguồn dữ liệu và giao dịch Spring; bảng của nó nằm ở schema `engine`.
 - Họ mẫu quy trình (`approval`, `work_item`, `reservation`) khai báo trạng thái và hành động ở `ProcessFamily`; các bước nằm ở tệp BPMN cùng tên.
+- Một thực thể có thể ghi đè từng trạng thái và hành động của họ mẫu, hoặc tự khai báo `states` và `actions` mà không cần họ mẫu; quy trình khác khung gốc chạy trên BPMN do `ProcessBpmnGenerator` sinh từ khai báo lúc áp dụng, và không nạp tệp BPMN tự viết.
 - `ProcessRules` giữ các quy tắc mọi họ mẫu cùng chịu: vai và quyền của người làm, người tạo không tự quyết định, lý do khi từ chối hoặc trả lại, rút lại giữ bản ghi.
 - `BookingGuard` kiểm họ `reservation` khi tạo và sửa bản ghi: khung giờ hợp lệ, số lượt chạy cùng lúc ở mọi thời điểm của khung giờ không vượt sức chứa; dòng tài nguyên bị khóa đến hết giao dịch.
 - API chung từ chối mọi yêu cầu có cột `status` (403); `POST .../{id}/actions/{action}` kiểm người được làm và trạng thái đầu, hoàn tất tác vụ, và bước kế của quy trình ghi trạng thái mới qua bean `recordStatus`.
 - Hồ sơ đã giao thì chỉ người được giao thực hiện được hành động của vai xử lý.
+- Hành động của người xử lý có thể kèm `when`, một phép so sánh một trường với một giá trị; `ProcessRules` kiểm nó trên bản ghi đã khóa, hồ sơ chưa đạt bị từ chối 409 với `data.reason` là `CONDITION_NOT_MET`, và giá trị trống không đạt.
 - Hành động sai trạng thái bị từ chối (409); lỗi sau bước quy trình làm cả hồ sơ, quy trình lẫn dòng lịch sử quay về như cũ.
 - Hạn xử lý lưu ở cột `handle_by` khi hồ sơ chờ người xử lý; `overdue` được tính khi đọc.
 - `CatalogService` cấp cho bảng điều khiển schema của tệp mô hình, các họ mẫu, mẫu mô hình và phiên bản đã áp dụng.

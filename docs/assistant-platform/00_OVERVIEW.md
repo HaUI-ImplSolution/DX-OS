@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Đang triển khai và kiểm thử tích hợp; chưa nghiệm thu |
+| Trạng thái | Đã xử lý review PR #199 trong phạm vi chốt; hồi quy local đạt, chưa nghiệm thu toàn bộ trợ lý |
 | Mức độ | Quan trọng |
 | Nhóm ưu tiên | Tích hợp tùy chọn sau khi nền Core ổn định |
 | Nhánh | `Khuong/assistant-platform-plan`, tách từ `origin/Khuong/main` đã cập nhật |
@@ -116,7 +116,7 @@ Hành động có tác động thêm/bớt thành viên nhóm phải hiển th�
 ## 6. Kết quả đầu ra mong đợi
 
 - Ba tài khoản có cấu hình, hội thoại, thông báo và proposal riêng; gọi chéo hoặc bấm thẻ của người khác bị từ chối.
-- Hỗ trợ Gemini, OpenAI và Anthropic bằng adapter có sẵn của OpenClaw; có chế độ OpenAI-compatible cho endpoint được quản trị viên cho phép.
+- Cấu hình adapter Gemini, OpenAI và Anthropic có sẵn của OpenClaw; endpoint OpenAI-compatible tạm khóa đến khi kiểm transport đầy đủ.
 - Không quảng cáo một provider/model đã sẵn sàng chỉ vì lấy được danh sách model; phải kiểm tool calling và luồng xác nhận thật.
 - Giao việc rồi người được giao nhận/xử lý, người tạo xác nhận hoặc yêu cầu mở lại; trạng thái và người thực hiện khớp lịch sử Core.
 - Thử trên ba họ mẫu và ít nhất ba mô hình thuộc các lĩnh vực khác nhau mà không sửa mã lõi theo mô hình.
@@ -154,3 +154,48 @@ Cập nhật README Việt/Anh và trang tài liệu bằng kết quả cuối, 
 Cập nhật `DEPENDENCIES.txt`, `NOTICE`, SBOM và danh mục thành phần; không đưa `COPYRIGHT.txt` cũ từ PoC trở lại.
 Không đánh dấu đã hoàn thành mục Open Source AI trong backlog chỉ vì tích hợp được API.
 Không sửa `docs/dynamic-core/README.md` định hướng nếu chưa có quyết định riêng của chủ dự án.
+
+## 10. Xử lý review PR #199
+
+Căn cứ: [review của KhuongSpring](https://github.com/HaUI-ImplSolution/DX-OS/pull/199#issuecomment-6730959635) và bản nhánh đã nhận quy trình tự khai báo của `Khuong/main`.
+Phạm vi đợt này là khắc phục nhận xét của PR, không bổ sung tính năng trợ lý hoặc thay hướng Dynamic Core.
+Kế hoạch xử lý nằm ở WPRV-01–WPRV-06 trong [kế hoạch](./01_PLAN.md#xử-lý-review-pr-199).
+
+| Ranh giới | Quyết định |
+|---|---|
+| Core | Hoãn tối ưu đọc phiên bản; làm rõ metadata tác động và định dạng helper do PR thêm; giữ khóa, transaction, trường `require`, `handlers` và `handlerActions` của cha |
+| Trợ lý | Kiểm cách ly chủ/runtime và bảo vệ endpoint provider; không thêm provider hoặc kênh mới |
+| Deploy | Bỏ sao chép lệnh gateway; mô tả đúng backup và kiểm phục hồi; Core off/on giữ lệnh khởi động hiện có |
+| License/CI | Ngoại lệ theo đúng gói; không mở rộng danh sách giấy phép chung hoặc làm yếu check của cha |
+| Tài liệu | Đồng bộ các tài liệu liên quan trực tiếp; không sửa định hướng `docs/dynamic-core/README.md`, không đụng Farm/Lab |
+| Dữ liệu | Không migration Core, không sửa YAML nghiệp vụ, không đưa dữ liệu/khóa demo vào Git |
+
+Người dùng đã chốt dùng API ngoài cho bản thử nghiệm và duyệt ngoại lệ hai gói dữ liệu SPDX.
+Hai quyết định này không thay yêu cầu Open Source AI của mục tiêu dài hạn; phần chưa đáp ứng phải còn trong BACKLOG.
+Đợt lập kế hoạch không đồng nghĩa các ca bảo mật đã chạy hoặc các mục review đã được giải quyết.
+Chỉ đề nghị merge sau khi các rào chắn bảo mật và hồi quy đạt; giới hạn còn lại phải có quyết định chấp nhận rõ ràng.
+
+## 11. Quyết định xử lý review bổ sung
+
+Căn cứ: [kết quả kiểm thử của reviewer](https://github.com/HaUI-ImplSolution/DX-OS/pull/199#pullrequestreview-5821221565).
+Đang thực hiện theo phạm vi đã được người dùng chốt; chưa commit/push hoặc resolve nhận xét.
+Người dùng đã chốt tách mạng control, hoãn cache và chấp nhận giới hạn egress/backup cho bản thử có kiểm soát.
+Giữ ba provider native Gemini, OpenAI và Anthropic; adapter có cấu hình không đồng nghĩa đã nghiệm thu model thật của cả ba.
+
+| Nội dung | Đề xuất | Trạng thái |
+|---|---|---|
+| Route còn sau off, request lặp theo focus | Sửa ngay, kiểm response và monitor thật | Đạt gateway/monitor và browser local |
+| JSON sai/body lớn trả 500 | Sửa ánh xạ lỗi HTTP trong dịch vụ trợ lý, không lộ payload | Đạt 400/413 qua gateway; 500 được che nội dung trong test |
+| Control kết nối được mạng DB Core | Tách mạng API và ingress tùy chọn; giữ quyền/API hiện có | Đã tách, kiểm TCP/DNS thực tế đạt |
+| Runtime Internet tự do | Giữ công cụ giới hạn và khóa compatible; egress proxy/allowlist toàn mạng thành việc riêng trước dùng thật | Chấp nhận cho bản thử; BACKLOG trước dùng thật |
+| Origin đúng một địa chỉ công khai | Giữ chính sách chống CSRF, ghi rõ địa chỉ bắt buộc và lỗi dễ hiểu | Đã ghi tài liệu và thông báo; không mở multi-origin |
+| Backup có cả key và capability | Ghi rõ khả năng giải mã và giả danh runtime của người giữ backup; custody/rotation riêng để sau | Chấp nhận cho bản thử; BACKLOG custody/rotation |
+| Schema bỏ trường lạ; PATCH cần đủ key | Giữ hành vi an toàn hiện có, mô tả đúng và giữ tương thích API | Đã kiểm và ghi hợp đồng full-profile |
+| ERR_CORE_LINK dùng 401 | Chưa liên kết dùng 409; token thiếu/hết hạn vẫn 401 | Đã sửa và kiểm 409/401 |
+| Phiên bản model: 54 query nhưng khoảng 9 ms | Hoãn tối ưu cache để giảm thay đổi Core; hoàn lại riêng diff cache do đợt này thêm | Đã hoàn lại riêng diff cache local, giữ precondition gốc |
+
+Kết quả reviewer thuộc bản PR trước diff local, không thay bằng chứng trên bản sửa.
+Bằng chứng của bản sửa được ghi trong test plan; lượt dùng lại dữ liệu cũ hoặc bị dừng không tính đạt.
+
+Các mục Origin/schema/PATCH giữ hành vi hiện có và sửa mô tả; không mở nhiều origin hoặc PATCH từng trường trong đợt này.
+Không còn quyết định sản phẩm chặn việc tiếp tục; key/provider thật hoặc lỗi vượt phạm vi phát sinh sẽ báo riêng.

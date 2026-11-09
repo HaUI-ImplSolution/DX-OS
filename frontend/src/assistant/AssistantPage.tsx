@@ -33,7 +33,7 @@ export default function AssistantPage() {
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [provider, setProvider] = useState("gemini"), [model, setModel] = useState("");
-  const [apiKey, setApiKey] = useState(""), [baseUrl, setBaseUrl] = useState("");
+  const [apiKey, setApiKey] = useState("");
   const [token, setToken] = useState(""), [code, setCode] = useState("");
   const [confirm, setConfirm] = useState<Proposal | null>(null);
   const [page, setPage] = useState(0);
@@ -124,23 +124,21 @@ export default function AssistantPage() {
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
             <TextField select label="Nhà cung cấp" value={provider} onChange={e => setProvider(e.target.value)} sx={{ minWidth: 180 }}>
               <MenuItem value="gemini">Gemini</MenuItem><MenuItem value="openai">OpenAI</MenuItem>
-              <MenuItem value="anthropic">Anthropic</MenuItem><MenuItem value="compatible">OpenAI-compatible</MenuItem>
+              <MenuItem value="anthropic">Anthropic</MenuItem><MenuItem value="compatible" disabled>OpenAI-compatible (chưa mở)</MenuItem>
             </TextField>
             <TextField fullWidth label="Tên model" value={model} onChange={e => setModel(e.target.value)} helperText="Nhập đúng tên model đang khả dụng với API key của bạn." />
           </Stack>
           <TextField label="API key" type="password" autoComplete="off" value={apiKey} onChange={e => setApiKey(e.target.value)} />
-          {provider === "compatible" && <TextField label="Endpoint HTTPS được quản trị viên cho phép" value={baseUrl} onChange={e => setBaseUrl(e.target.value)} />}
           <Button sx={{ alignSelf: "flex-start" }} variant="outlined" disabled={busy || loading || !model.trim() || !apiKey.trim()}
             onClick={() => void run(async () => {
-              await assistantRequest("/me/providers", "POST", { provider, model: model.trim(), apiKey,
-                ...(provider === "compatible" ? { baseUrl } : {}) }); setApiKey(""); setAddProfile(false);
+              await assistantRequest("/me/providers", "POST", { provider, model: model.trim(), apiKey }); setApiKey(""); setAddProfile(false);
             }, "Đã lưu kết nối. Bạn có thể kiểm tra model trước khi sử dụng.")}>Lưu kết nối</Button>
           </>}
           {profiles.profiles.map(profile => <Stack key={profile.id} direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{ sm: "center" }}>
             <Typography sx={{ flex: 1 }}>{profile.provider} · {profile.model}</Typography>
             {profiles.selected === profile.id && <Chip size="small" label="Đang chọn" color="primary" />}
-            <Button disabled={busy || loading || profiles.selected === profile.id} onClick={() => void run(() => assistantRequest(`/me/providers/${profile.id}/select`, "POST", {}))}>Chọn</Button>
-            <Button disabled={busy || loading || !runtime?.provisioned} onClick={() => {
+            <Button disabled={busy || loading || profile.provider === "compatible" || profiles.selected === profile.id} onClick={() => void run(() => assistantRequest(`/me/providers/${profile.id}/select`, "POST", {}))}>Chọn</Button>
+            <Button disabled={busy || loading || profile.provider === "compatible" || !runtime?.provisioned} onClick={() => {
               if (window.confirm("Kiểm tra này gọi API thật và có thể tiêu quota. Tiếp tục?")) void run(async () => {
                 await assistantRequest(`/me/providers/${profile.id}/probe`, "POST", { acknowledgeCost: true });
               }, "Model đã kết nối và gọi được công cụ kiểm tra.");

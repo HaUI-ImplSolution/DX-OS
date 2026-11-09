@@ -4,6 +4,10 @@ import { getToken } from "../shell/auth";
 import { errorMessageFor, registerErrorMessages, statusMessageFor } from "../shell/errorMessages";
 
 registerErrorMessages({
+  ERR_ORIGIN: "Hãy mở trợ lý bằng đúng địa chỉ công khai của DX-OS. Liên hệ quản trị viên nếu đang dùng IP hoặc tên miền khác.",
+  ERR_REQUEST_TOO_LARGE: "Nội dung gửi quá lớn. Hãy rút gọn rồi thử lại.",
+  ERR_INVALID_REQUEST: "Dữ liệu gửi chưa hợp lệ. Hãy kiểm tra rồi thử lại.",
+  ERR_PROVIDER_DISABLED: "Endpoint tùy chỉnh chưa được mở vì chưa nghiệm thu bảo vệ kết nối. Hãy chọn Gemini, OpenAI hoặc Anthropic.",
   ERR_UNAUTHORIZED: "Phiên đăng nhập chưa hợp lệ hoặc đã hết hạn. Hãy đăng nhập lại DX-OS.",
   ERR_CORE_LINK: "Hãy liên kết lại tài khoản DX-OS cho trợ lý.",
   ERR_LINK_IDENTITY: "Hãy liên kết bằng cùng tài khoản đang đăng nhập DX-OS.",
@@ -31,7 +35,13 @@ registerErrorMessages({
   ERR_CONDITIONAL_API_REQUIRED: "Backend cần hỗ trợ điều kiện phiên bản trước khi trợ lý được ghi dữ liệu.",
 });
 
-export async function assistantAvailable(): Promise<boolean> {
+let availability: Promise<boolean> | undefined;
+
+export function assistantAvailable(): Promise<boolean> {
+  return availability ??= loadAvailability();
+}
+
+async function loadAvailability(): Promise<boolean> {
   try {
     const response = await fetch(`${API_BASE}/assistant-api/v1/features`, { signal: AbortSignal.timeout(3000) });
     return response.ok && response.headers.get("content-type")?.includes("application/json") === true && (await response.json()).enabled === true;

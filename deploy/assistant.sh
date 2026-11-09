@@ -67,6 +67,26 @@ prepare() {
   docker run --rm --network none --user "$(id -u):$(id -g)" -e DXOS_ASSISTANT_PUBLIC_URL -v "$STATE:/bootstrap" \
     "$(image)" dist/setup.js prepare /bootstrap "$(env_value ASSISTANT_RUNTIME_COUNT)"
 }
+connect_core() {
+  local control project network service container network_id
+  control="$(compose ps -aq assistant-control)"
+  project="$(docker inspect -f '{{index .Config.Labels "com.docker.compose.project"}}' "$control")"
+  for network in assistant-core assistant-ingress; do
+    network_id="$(docker network ls -q --filter "label=com.docker.compose.project=$project" --filter "label=com.docker.compose.network=$network")"
+    [[ -n "$network_id" ]] || die "the optional $network network is missing"
+    network_id="$(docker network inspect -f '{{.Id}}' "$network_id")"
+    local services=(backend keycloak)
+    [[ "$network" != assistant-ingress ]] || services=(apisix)
+    for service in "${services[@]}"; do
+      container="$(compose ps -q "$service")"
+      [[ -n "$container" ]] || die "start Core before enabling the assistant"
+      container="$(docker inspect -f '{{.Id}}' "$container")"
+      if ! docker inspect -f '{{range .NetworkSettings.Networks}}{{println .NetworkID}}{{end}}' "$container" | grep -Fxq "$network_id"; then
+        docker network connect --alias "$service" "$network_id" "$container"
+      fi
+    done
+  done
+}
 resume() {
   [[ -f "$ENABLED" ]] || return 0
   [[ -f "$GENERATED" ]] || die "run dxos assistant prepare first"
@@ -81,6 +101,8 @@ resume() {
     done
     $ready || die "$service did not become ready; Core remains independent"
   done
+  compose up --no-start --no-build --no-deps assistant-control
+  connect_core
   compose up -d --no-build --no-deps assistant-control
   compose up -d --no-build --no-deps --force-recreate apisix-config
 }
@@ -88,6 +110,24 @@ stop() {
   [[ -f "$GENERATED" ]] || return 0
   local runtime_services=(); mapfile -t runtime_services < <(services)
   compose stop -t 30 assistant-control "${runtime_services[@]}"
+}
+disable_route() {
+  docker compose -f "$BASE" up --no-build --no-deps --force-recreate apisix-config
+  local gateway project network
+  gateway="$(docker compose -f "$BASE" ps -q --status running apisix)"
+  [[ -n "$gateway" && -f "$GENERATED" ]] || return 0
+  project="$(docker inspect -f '{{index .Config.Labels "com.docker.compose.project"}}' "$gateway")"
+  network="$(docker network ls -q --filter "label=com.docker.compose.project=$project" --filter label=com.docker.compose.network=default)"
+  docker run --rm --network "$network" --read-only --cap-drop ALL --security-opt no-new-privileges:true "$(image)" --input-type=module -e '
+    for (let i = 0; i < 20; i++) {
+      try {
+        const r = await fetch("http://apisix:9080/assistant-api/v1/features", {signal: AbortSignal.timeout(1500)});
+        if (r.status < 500 && (!r.headers.get("content-type")?.includes("application/json") || (await r.json()).enabled === false)) process.exit(0);
+      } catch {}
+      await new Promise(resolve => setTimeout(resolve, 250));
+    }
+    process.exit(1);
+  '
 }
 running() {
   [[ -f "$GENERATED" ]] || return 1
@@ -102,7 +142,7 @@ case "${1:-status}" in
     ./assistant-sso.sh
     touch "$ENABLED"; resume
     echo "Open the DX-OS application and choose Personal assistant to link your own API and bot." ;;
-  off) stop; rm -f "$ENABLED"; echo "Assistant stopped; state and keys kept." ;;
+  off) disable_route; stop; rm -f "$ENABLED"; echo "Assistant stopped; state and keys kept." ;;
   resume) resume ;;
   stop) stop ;;
   is-running) running ;;

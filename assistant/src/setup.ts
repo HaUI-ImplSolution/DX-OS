@@ -63,7 +63,7 @@ if (operation === 'prepare') {
       networks: [network], logging: { driver: 'json-file', options: { 'max-size': '5m', 'max-file': '2' } } };
     networks[network] = {};
   }
-  services['assistant-control'] = { user: `${process.getuid!()}:${process.getgid!()}`, networks: ['default', ...Object.keys(networks)] };
+  services['assistant-control'] = { user: `${process.getuid!()}:${process.getgid!()}`, networks: ['assistant-core', 'assistant-ingress', ...Object.keys(networks)] };
   writeFileSync(slotFile, JSON.stringify(slots), { mode: 0o600 });
   writeFileSync(join(root, 'runtime-compose.json'), JSON.stringify({ services, networks }, null, 2) + '\n', { mode: 0o600 });
   console.log(`Prepared ${count} private runtime slots; credentials were not printed.`);

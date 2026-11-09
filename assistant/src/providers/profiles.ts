@@ -13,9 +13,13 @@ const providers = {
   compatible: { id: 'dxos_compatible', api: 'openai-completions', baseUrl: '' },
 } as const;
 
+export function requireSupportedProvider(profile: Pick<Profile, 'provider'>) {
+  if (profile.provider === 'compatible')
+    throw new ApiError(409, 'ERR_PROVIDER_DISABLED', 'Custom endpoints are disabled until transport isolation is verified');
+}
+
 export class Profiles {
-  constructor(private readonly store: Store, private readonly compatibleUrls: readonly string[],
-    private readonly runtimes: Pick<Runtimes, 'update'>) {}
+  constructor(private readonly store: Store, private readonly runtimes: Pick<Runtimes, 'update'>) {}
 
   list(owner: Owner) {
     const saved = this.store.getSecret<{ profiles: Profile[]; selected?: string }>(owner, 'providers');
@@ -29,6 +33,7 @@ export class Profiles {
     const saved = this.store.getSecret<{ profiles: Profile[]; selected?: string }>(owner, 'providers');
     const profile = saved?.profiles.find(item => item.id === saved.selected);
     if (!profile) throw new ApiError(409, 'ERR_PROVIDER_REQUIRED', 'Select a provider profile first');
+    requireSupportedProvider(profile);
     return profile;
   }
 
@@ -36,19 +41,14 @@ export class Profiles {
     const saved = this.store.getSecret<{ profiles: Profile[] }>(owner, 'providers');
     const profile = saved?.profiles.find(profile => profile.id === id);
     if (!profile) throw new ApiError(404, 'ERR_NOT_FOUND', 'Provider profile not found');
+    requireSupportedProvider(profile);
     return profile;
   }
 
   async save(owner: Owner, input: Omit<Profile, 'id'> & { id?: string }): Promise<string> {
-    if (input.provider === 'compatible') {
-      if (!input.baseUrl || !this.compatibleUrls.includes(input.baseUrl))
-        throw new ApiError(400, 'ERR_PROVIDER_ORIGIN', 'This endpoint has not been allowed by an administrator');
-      const url = new URL(input.baseUrl);
-      if (url.protocol !== 'https:' || url.username || url.password || url.hash || url.search)
-        throw new ApiError(400, 'ERR_PROVIDER_ORIGIN', 'Use an approved HTTPS endpoint');
-    } else if (input.baseUrl) {
+    requireSupportedProvider(input);
+    if (input.baseUrl)
       throw new ApiError(400, 'ERR_PROVIDER_ORIGIN', 'The provider uses its published endpoint');
-    }
     return this.runtimes.update(owner, () => {
       const saved = this.store.getSecret<{ profiles: Profile[]; selected?: string }>(owner, 'providers') ?? { profiles: [] };
       const id = input.id ?? randomUUID();
@@ -69,6 +69,7 @@ export class Profiles {
       const saved = this.store.getSecret<{ profiles: Profile[]; selected?: string }>(owner, 'providers');
       if (!saved?.profiles.some(profile => profile.id === id))
         throw new ApiError(404, 'ERR_NOT_FOUND', 'Provider profile not found');
+      requireSupportedProvider(saved.profiles.find(profile => profile.id === id)!);
       saved.selected = id;
       this.store.setSecret(owner, 'providers', saved);
     });
@@ -87,10 +88,11 @@ export class Profiles {
 }
 
 export function modelConfiguration(profile: Profile) {
+  requireSupportedProvider(profile);
   const provider = providers[profile.provider];
   const model = profile.model.replace(new RegExp(`^${provider.id}/`), '');
   return { primary: `${provider.id}/${model}`, providers: {
-    [provider.id]: { baseUrl: profile.baseUrl ?? provider.baseUrl, api: provider.api, timeoutSeconds: 60,
+    [provider.id]: { baseUrl: provider.baseUrl, api: provider.api, timeoutSeconds: 60,
       apiKey: '${DXOS_PROVIDER_API_KEY}', request: { allowPrivateNetwork: false },
       models: [{ id: model, name: model, api: provider.api, maxTokens: 4096 }] },
   } };

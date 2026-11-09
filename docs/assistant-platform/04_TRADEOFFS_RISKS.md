@@ -70,3 +70,31 @@ Giữ SQLite/key/runtime để khôi phục có kiểm soát; purge là thao tá
 Phần Core chỉ có điều kiện ghi và metadata trung tính; quy trình, YAML và bốn module không đổi hướng kiến trúc.
 Deploy/CI có mở rộng vì đây là gói tùy chọn mới, không thể tuyên bố tích hợp production mà không đụng hạ tầng.
 Mở rộng nhiều người hơn, bot chung, provider tự host, kênh mới và event subscription cần kế hoạch riêng dựa trên số đo đợt này.
+
+## 6. Rủi ro cần chặn khi xử lý review PR #199
+
+| Rủi ro | Biện pháp và điều kiện |
+|---|---|
+| Tối ưu cache mở rộng thay đổi Core | Đã hoãn và hoàn lại diff cache; giữ kiểm phiên bản hiện có, tối ưu riêng sau khi có nhu cầu |
+| Làm mất require/handlers/handlerActions vừa được cha bổ sung | Đối chiếu ba vùng merge và kiểm quy trình tự khai báo trong TRV-06/09 |
+| Allowlist endpoint nhưng redirect/DNS vẫn gửi key sai đích | Kiểm transport probe/inference thật; chưa bảo đảm thì chặn compatible, không chỉ sửa thông báo |
+| Token/runtime chéo chủ | Kiểm credential isolation và capability thật; lỗi rò dữ liệu hoặc ghi sai chủ chặn merge |
+| Người có quyền giải mã backup cũng có master key | Ghi rõ trust boundary; hạn chế quyền backup, giữ mật khẩu restic ngoài bản sao; không tuyên bố bảo vệ khỏi quản trị backup |
+| Dừng trợ lý để backup làm gián đoạn Telegram/nhắc hạn | Ghi thời gian gián đoạn và kiểm resume khi lỗi; không hứa xử lý realtime trong thời gian dừng |
+| Thay cách dựng gateway làm ảnh hưởng Core khi AI tắt | Một generator có route tùy chọn, kiểm off/on và route SSO/monitor; rollback thay đổi cấu hình nếu lỗi |
+| Đánh dấu toàn phase hoàn tất chỉ vì sửa xong review | Checklist gốc và TAS còn thiếu giữ mở; bảng phản hồi review không thay nghiệm thu |
+
+Phương án hiện chọn cho backup là mô tả đúng quyền của người giữ credential restic và giữ khả năng phục hồi hiện tại.
+Tách custody master key khỏi backup chưa nằm trong đợt này; nếu cần phải chốt quy trình mất khóa/khôi phục trước khi triển khai.
+
+## 7. Giới hạn và quyết định sau review bổ sung
+
+- Egress tự do: giới hạn tool không thay firewall; hoãn proxy/allowlist đến trước dùng thật và giữ compatible khóa theo phạm vi bản thử đã chốt.
+- Control cùng mạng DB: đã duyệt sửa hẹp trong overlay thay vì chỉ đổi câu README; cần thêm mạng ingress cho APISIX khi bỏ default.
+- Backup có capability: người giải mã backup còn có thể giả danh runtime; bản thử giữ trust boundary hiện tại; custody/rotation ghi BACKLOG trước dùng thật.
+- Origin/PATCH/schema: giữ hợp đồng hiện tại và mô tả đúng, không tự mở nhiều origin hoặc cập nhật profile từng trường.
+- Cache phiên bản: lợi ích đo được thấp, đã duyệt hoãn và hoàn lại riêng diff tối ưu; diff cache local đã hoàn lại; kiểm phiên bản của PR gốc giữ nguyên.
+
+Các giới hạn egress/backup được chấp nhận riêng cho bản thử có kiểm soát.
+Giữ Gemini, OpenAI và Anthropic qua endpoint cố định; chưa tuyên bố đã nghiệm thu cả ba bằng key thật.
+Hai bug HTTP và route off vẫn là việc cần giải quyết trước merge.

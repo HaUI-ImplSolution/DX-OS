@@ -327,12 +327,7 @@ services:
     image: alpine:3.24@sha256:3f4d6b32e26703c6082839234f43769d5046b3ac7c910033911d1e71d8cd630a
     environment:
       MONITOR_INGEST_KEY: ${MONITOR_INGEST_KEY:?}
-    command:
-      - sh
-      - -c
-      - >-
-        sed "s|__MONITOR_INGEST_KEY__|$$MONITOR_INGEST_KEY|g" /src/common.yaml > /out/apisix.yaml &&
-        echo '#END' >> /out/apisix.yaml
+    command: [sh, /src/render.sh]
     volumes:
       - ./apisix:/src:ro
       - ./data/apisix:/out

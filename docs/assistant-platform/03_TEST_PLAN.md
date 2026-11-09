@@ -34,13 +34,13 @@ Các ca dưới đây đều bắt buộc, trừ provider thật chưa được 
 | TAS-03 | WPAS-02 | SSO | PKCE sai, state lặp, refresh bị revoke, khóa tài khoản | Không liên kết nhầm; dừng tool của chủ bị khóa | Codex, 07/11/2026 | Một phần: đăng nhập và PKCE browser đạt; state/cookie một lần đạt; chờ revoke/khóa thực |
 | TAS-04 | WPAS-02 | Cách ly | A gọi API/profile/proposal của B bằng ID đoán được | Không đọc/đổi bí mật, transcript hoặc hành động của B | Codex, 07/11/2026 | Một phần: API profile/proposal chéo bị chặn; chờ runtime/hội thoại thật |
 | TAS-05 | WPAS-02 | Telegram | Hai chủ liên kết cùng bot; chat khác hoặc pairing hết hạn | Binding duy nhất; không chuyển dữ liệu sang người lạ | Codex, 07/11/2026 | Một phần: unique bot/rollback đạt unit; chờ pairing native thật |
-| TAS-06 | WPAS-02 | Runtime | Runtime A dùng token B, truy cập volume/network B, thử shell/browser/HTTP tool ngoài allowlist | Bridge từ chối chủ sai; không lấy credential B hoặc gọi đường điều khiển ngoài phạm vi | — | Chưa chạy |
+| TAS-06 | WPAS-02 | Runtime | Runtime A dùng token B, truy cập volume/network B, thử shell/browser/HTTP tool ngoài allowlist | Bridge từ chối chủ sai; không lấy credential B hoặc gọi đường điều khiển ngoài phạm vi | Codex, 09/11/2026 | Một phần: bridge/callback, hai supervisor và mạng/volume thật đạt; chưa chạy lại hội thoại model |
 | TAS-07 | WPAS-02 | Dữ liệu | Kiểm DB/log không có secret rõ; sửa ciphertext hoặc đổi owner/profile | Không giải mã chéo; lỗi an toàn, không echo key | Codex, 07/11/2026 | Một phần: AEAD owner-bound, không plaintext trong SQLite và restore đạt; chờ rà state runtime thật |
 | TAS-08 | WPAS-02 | Vòng đời | B tắt/xóa cấu hình, A vẫn đang xử lý | Chỉ B ngừng; lịch sử nghiệp vụ Core không mất | — | Chưa chạy |
 | TAS-09 | WPAS-02 | Capacity | Hai rồi ba runtime; xin slot vượt cấu hình | Có giới hạn và lỗi rõ, không dùng chung gateway ngầm | Codex, 07/11/2026 | Một phần: pool ba slot được chuẩn bị; owner/capacity qua restart đạt unit; chưa ba gateway hoạt động |
 | TAS-10 | WPAS-03 | Provider | Cùng yêu cầu đọc và action qua Gemini/OpenAI/Anthropic contract | Cùng schema tool, dữ kiện và cổng xác nhận | — | Chưa chạy |
 | TAS-11 | WPAS-03 | Model thật | Hai provider có key thật: đọc, đề xuất, xác nhận và đọc lại | Kết quả khớp Core; ghi model/provider đã kiểm | — | Chưa chạy |
-| TAS-12 | WPAS-03 | Endpoint | URL private/link-local, redirect, DNS đổi về private, origin không cho phép | Không gửi key hoặc kết nối nội bộ; catalog/egress kiểm được | — | Chưa chạy |
+| TAS-12 | WPAS-03 | Endpoint | URL private/link-local, redirect, DNS đổi về private, origin không cho phép | Không gửi key hoặc kết nối nội bộ; catalog/egress kiểm được | Codex, 09/11/2026 | Compatible bị khóa cả profile cũ; chưa nghiệm thu transport để mở lại |
 | TAS-13 | WPAS-03 | Lỗi/quota | Key sai, 429, timeout, model thiếu tool calling, JSON lỗi | Không tự đổi vendor, không ghi khi tool sai; lý do đúng, retry hữu hạn | — | Chưa chạy |
 | TAS-14 | WPAS-03 | Chi phí | Probe và đổi model; kiểm payload và UI | Probe báo có thể tiêu quota, không gửi hồ sơ thật; key không bị lộ | — | Chưa chạy |
 | TAS-15 | WPAS-04 | Tương thích | Client cũ action/assign không gửi version mới | Hành vi, envelope và kiểm quyền như cha | Codex, 07/11/2026 | Một phần: các action cũ hoạt động trong lượt process; suite dùng lại dữ liệu chưa đạt toàn bộ |
@@ -90,3 +90,64 @@ Các ca dưới đây đều bắt buộc, trừ provider thật chưa được 
 Lưu log đã che bí mật, ảnh thẻ, bản đo và báo cáo ngoài repository theo từng run; không mặc định dùng `report/` làm thư mục phát hành.
 Tài liệu chính chỉ cập nhật kết quả tổng hợp cuối và giới hạn còn tồn tại.
 Không công bố key/token, payload thật, runtime mapping, fingerprint hoặc mã từ môi trường để chứng minh kết quả.
+
+## 5. Kiểm chứng xử lý review PR #199
+
+Đây là các ca kiểm bổ sung cho review; kết quả và giới hạn được ghi riêng từng dòng.
+Mở rộng test/script hiện có, không thêm framework hoặc file test không cần thiết.
+Dùng key/token giả cho failure injection; transport thực cần runtime đã pin và môi trường tách biệt, không cần tiêu quota model cho ca SSRF.
+Không bật toàn bộ stack trong lúc chỉ sửa tài liệu; khi triển khai, dùng image/cache hiện có và chỉ dựng phần cần cho từng ca.
+
+| ID | WP | Cách kiểm | Điều kiện đạt | Trạng thái |
+|---|---|---|---|---|
+| TRV-01 | WPRV-02 | TAS-06: hai runtime, capability/token đúng-sai, callback chéo, volume/network và tool ngoài allowlist | Không lấy credential B từ A, không dùng danh tính A đọc/ghi B; ghi rõ giới hạn bearer token | Đạt bridge/capability và 2 supervisor thật; chưa gọi lại model |
+| TRV-02 | WPRV-02 | TAS-12: lưu/probe/inference với HTTPS private IPv4/IPv6, link-local, redirect và DNS thay đổi; endpoint ghi nhận bằng key giả | Không đích bị cấm nhận request/key; compatible bị chặn nếu transport không bảo đảm | Đạt chế độ khóa compatible ở lưu/probe/start; chưa mở transport |
+| TRV-03 | WPRV-03 | Backup/restore ở nơi tạm, cố tình làm snapshot lỗi sau khi dừng runtime | State phục hồi bằng đúng key; cleanup resume đúng trạng thái ban đầu; Core hoạt động | Đạt script success/failure với dependency mô phỏng; restic thật restore/decrypt synthetic đạt |
+| TRV-04 | WPRV-03 | Checker toàn repo; kiểm gói Artistic/SPDX và thử dependency khác cùng license không có ngoại lệ trong dữ liệu tạm | Chỉ đúng ngoại lệ được chấp nhận; không mở ALLOWED; attribution đủ | Đạt checker toàn repo, Artistic không còn trong ALLOWED; ngoại lệ npm đúng phiên bản |
+| TRV-05 | WPRV-04 | Giữ cách đọc phiên bản của PR; apply/resume/abandon/rollback/restart, held và version cũ | Hoàn lại diff cache; phiên bản và stale request vẫn đúng, tối ưu SQL đã hoãn | Đạt hoàn lại cache; custom require/role/stale và apply/rollback đúng phiên bản |
+| TRV-06 | WPRV-04 | Effects thật/không biết, xác nhận membership; request cũ, require thiếu/đủ và action tự khai báo | Metadata đúng nghĩa; không hạ cổng web; giữ handlers/handlerActions, quyền và transaction cha | Đạt 74/74 process và custom require/role/handlers/handlerActions trên Core thật |
+| TRV-07 | WPRV-05 | Browser off/on, nhiều lần focus và reload; đếm request feature | Không gọi lặp theo focus; reload phản ánh cấu hình mới; menu/SSO không hỏng | Đạt browser với Chromium có sẵn: 1 request/trang, focus không gọi thêm; reload nhận feature |
+| TRV-08 | WPRV-05 | Render config Compose/APISIX off/on, route/SSO/monitor; thiếu biến bắt buộc; capacity ba slot | Không route trợ lý khi off, không mất route gốc, không fallback biến trong Compose hoặc lộ control port | Đạt Compose/render và on/off thật; không tái tạo Core khi on lặp |
+| TRV-09 | WPRV-06 | Formatter/verify, Node test, TypeScript/build và script process/conformance nhánh cha; smoke đọc → đề xuất → xác nhận → đọc lại | Core cũ và quy trình tự khai báo đều đúng; trợ lý tắt/lỗi không chặn Core; không bỏ qua lỗi mới | Đạt 11 script Core trên DB sạch/JAR cố định, verify, Node 24 28/28, frontend/docs build |
+| TRV-10 | WPRV-06 | Đọc diff docs/API/dependency/CHANGELOG/checklist, docs build/license/workflow liên quan và secret scan | Review được ánh xạ đủ, tick có bằng chứng; không secret/report/.gitignore/artifact, không xóa log cũ | Đạt license/diff/link/SPDX và Gitleaks trên file đổi; không report/.gitignore |
+
+Ca provider thứ hai và hai–ba người đồng thời chưa có bằng chứng vẫn giữ mở tại TAS-11/TAS-39 và BACKLOG.
+Kết quả TRV không thay thế các ca WPAS gốc còn thiếu hoặc quyền nghiệm thu cuối của người dùng.
+
+## 6. Ca kiểm theo review bổ sung
+
+Kết quả dưới đây thuộc diff local sau quyết định thu gọn; chưa commit/push.
+
+| ID | Liên quan | Cách kiểm và điều kiện đạt | Trạng thái |
+|---|---|---|---|
+| TRV-11 | Bug off/focus | Bật rồi off, gọi features/API lặp và focus browser: không chờ upstream đã tắt, không sinh UPSTREAM_DOWN sai; reload nhận trạng thái mới | Đạt gateway/monitor thật, 5 lượt sau off không 5xx hoặc lỗi monitor mới; browser focus đạt |
+| TRV-12 | Bug HTTP | Token/Origin hợp lệ, JSON lỗi và body 40 KB: 400/413; lỗi server thật vẫn 500, không trả nội dung key; monitor không coi lỗi client là SERVER_ERROR | Đạt 400/413 qua gateway; lỗi 500 giữ nội dung chung trong Node test |
+| TRV-13 | Control network | Core/JWKS/gateway hoạt động; control không TCP/DNS tới DB/store, runtime không tới mạng Core hoặc runtime khác; Core off overlay giữ hành vi | Đạt TCP/DNS thực: control tới API/SSO, không tới DB/store; runtime peer bị chặn |
+| TRV-14 | Origin/schema/PATCH | Origin chính cho ghi, alias bị chặn rõ; trường owner lạ không thay chủ; PATCH full-profile có hành vi được docs mô tả; chưa liên kết 409 và auth sai 401 | Đạt Node test Origin/owner/PATCH và 409 chưa link; JWT sai vẫn 401 |
+| TRV-15 | Backup capability | Bản restore synthetic có key/SQLite/slot/env được nhận diện là dữ liệu bí mật; không in token, giữ quyền file; kết luận custody đúng với phương án người dùng chốt | Đã ghi trust boundary key/capability vào docs/BACKLOG; restic restore synthetic đạt |
+| TRV-16 | Phạm vi và bằng chứng | Kiểm lại theo quyết định hoãn cache/egress allowlist; mọi recreate vẫn mount JAR mới; script bị dừng giữ chưa đạt; không lấy test reviewer/bản cũ thay test diff mới | Đạt bản sao JAR/frontend cố định; các lượt sai fixture hoặc bị ngắt không tính đạt |
+
+Lượt local mới nhất đã kiểm 28/28 test Node, backend verify, TypeScript/build và docs build.
+Hai supervisor thật đã kiểm capability điều khiển chéo, tách mạng/volume và chặn start/probe compatible, chưa thay kiểm ba gateway có model hoạt động đồng thời.
+Các kết quả này không đồng nghĩa đã xử lý hết các nhận xét mới.
+
+## 7. Bằng chứng kết thúc xử lý review
+
+Chạy trên một stack riêng, DB rỗng, dùng image/cache hiện có cùng bản sao cố định của JAR và frontend vừa build.
+Không chạy Maven đóng gói lên JAR đang được container sử dụng.
+Các lượt fixture bị ngắt hoặc dùng lại dữ liệu cũ không được tính vào kết quả cuối.
+
+| Kiểm tra | Kết quả |
+|---|---|
+| Backend | `./mvnw verify` đạt, gồm formatter, kiến trúc và integration test database |
+| Trợ lý | 28/28 test đạt trong Node 24 của image runtime đã pin |
+| Hồi quy Core | api, recovery, case, change, process, booking, demo, guards, users, docs, conformance đều đạt; process 74/74 |
+| Quy trình tự khai báo | Require/role, handlers/handlerActions, stale/current action, apply và rollback đúng phiên bản |
+| Mạng | Control gọi API/SSO được, không TCP/DNS tới DB/store; runtime không tới peer; không Docker socket |
+| Lifecycle và HTTP | On lặp không khởi động lại Core; off không còn route/502/504, monitor không thêm lỗi trợ lý; JSON sai 400, body lớn 413 |
+| Browser | SSO/Core thật, 1 feature probe/trang, focus không gọi thêm; reload và menu/provider được kiểm với response trợ lý mô phỏng |
+| Backup | Script success/failure với dependency mô phỏng resume đúng; restic thật restore key/capability/SQLite synthetic và giải mã đúng |
+| Tuân thủ | License, docs build, liên kết, cú pháp script, diff và Gitleaks đạt |
+
+Artifact và fixture nằm ngoài repository, không có key thật hoặc Telegram thật trong lượt review này.
+Không tuyên bố full build/seed toàn bộ image từ clone sạch, nghiệm thu model thật cả ba provider hoặc tải hai–ba trợ lý đồng thời.

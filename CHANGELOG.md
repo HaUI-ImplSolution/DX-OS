@@ -5,16 +5,16 @@ Nhật ký thay đổi của DX-OS.
 
 Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Chưa phát hành gom những gì sau phiên bản mới nhất.
 
-## [Unreleased]
-
-- Thêm trợ lý cá nhân tùy chọn qua OpenClaw và Telegram, cấu hình API riêng theo tài khoản; đọc hồ sơ, thông báo và đề xuất giao việc/chuyển trạng thái có xác nhận.
-- Action/assign nhận điều kiện phiên bản bản ghi và mô hình; Core kiểm trong khóa/giao dịch, giữ tương thích request cũ.
-- Thêm trang kích hoạt trợ lý, bộ cài/vận hành tùy chọn và danh mục dependency/SBOM riêng.
-
 ## [2.0.0] - chưa phát hành
 
 Lõi dynamic thay cho hai ứng dụng nghiệp vụ viết tay của bản `1.1.1`.
 Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở tag `v1.1.1`.
+
+### Trợ lý tùy chọn
+
+- Thêm trợ lý cá nhân tùy chọn qua OpenClaw và Telegram, cấu hình API riêng theo tài khoản; đọc hồ sơ, thông báo và đề xuất giao việc/chuyển trạng thái có xác nhận.
+- Action/assign nhận điều kiện phiên bản bản ghi và mô hình; Core kiểm trong khóa/giao dịch, giữ tương thích request cũ.
+- Thêm trang kích hoạt trợ lý, bộ cài/vận hành tùy chọn và danh mục dependency/SBOM riêng.
 
 ### Lõi và tệp mô hình
 

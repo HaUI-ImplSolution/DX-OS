@@ -27,3 +27,7 @@ Script `deploy/dev/check_docs.py` kiểm mọi đường dẫn nêu ở đây c�
 | `PUT`, `DELETE /api/v1/users/{id}/roles/{model}/{role}`, `/units/{unit}` | Gán và gỡ vai của một mô hình, và đơn vị (ADMIN) |
 | `POST /api/v1/users`, `PUT /{id}/enabled`, `POST /{id}/password` | Tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu (ADMIN) |
 | `GET /api/v1/audit-logs` | Nhật ký lần truy cập bị từ chối, lỗi, thay đổi về tài khoản và việc áp dụng mô hình; lọc theo `actor`, `action`, `targetType`, `targetId`, `outcome`, `from`, `to` (ADMIN) |
+
+Điều kiện `version`/`modelVersion` ở action và assign dành cho client ngoài cần xác nhận đúng snapshot; client cũ bỏ hai trường này giữ hành vi hiện có.
+`process.effects.asynchronous=true` nghĩa completion được đưa vào outbox, chưa chứng minh tác động ngoài đã hoàn tất.
+API dịch vụ trợ lý dưới `/assistant-api/v1` có hợp đồng riêng tại [assistant/README.md](../assistant/README.md); không nằm trong OpenAPI Spring hoặc phạm vi `check_docs.py` của Core.

@@ -2,6 +2,7 @@
 services:
   assistant-control:
     image: ${ASSISTANT_IMAGE:?}
+    networks: [assistant-core, assistant-ingress]
     build:
       context: ../assistant
     restart: unless-stopped
@@ -26,7 +27,6 @@ services:
       ASSISTANT_OIDC_JWKS_URL: http://keycloak:8080/realms/dxos/protocol/openid-connect/certs
       ASSISTANT_OIDC_TOKEN_URL: http://keycloak:8080/realms/dxos/protocol/openid-connect/token
       ASSISTANT_OIDC_CLIENT_ID: dxos-assistant
-      ASSISTANT_COMPATIBLE_URLS: ${ASSISTANT_COMPATIBLE_URLS:?}
     volumes:
       - ./data/assistant/control:/state
       - ./data/assistant/private/master.key:/run/secrets/master.key:ro
@@ -40,10 +40,14 @@ services:
       driver: json-file
       options: {max-size: 5m, max-file: "2"}
   apisix-config:
-    command:
-      - sh
-      - -c
-      - >-
-        awk '/^routes:$$/ {print; while ((getline line < "/src/assistant-route.yaml") > 0) print line; next} {print}' /src/common.yaml |
-        sed "s|__MONITOR_INGEST_KEY__|$$MONITOR_INGEST_KEY|g" > /out/apisix.yaml &&
-        echo '#END' >> /out/apisix.yaml
+    volumes:
+      - ./apisix/assistant-route.yaml:/optional/assistant-route.yaml:ro
+  backend:
+    networks: [default, assistant-core]
+  keycloak:
+    networks: [default, assistant-core]
+  apisix:
+    networks: [default, assistant-ingress]
+networks:
+  assistant-core: {}
+  assistant-ingress: {}

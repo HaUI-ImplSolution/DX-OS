@@ -85,7 +85,7 @@ export class CoreSession {
 
   async accessToken(owner: Owner): Promise<string> {
     const saved = this.store.getSecret<Tokens>(owner, 'core');
-    if (!saved) throw new ApiError(401, 'ERR_CORE_LINK', 'Link your DX-OS account first');
+    if (!saved) throw new ApiError(409, 'ERR_CORE_LINK', 'Link your DX-OS account first');
     if (saved.expires > Date.now() + 30000) {
       await this.checkOwner(owner, saved.accessToken);
       return saved.accessToken;

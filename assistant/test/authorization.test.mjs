@@ -33,7 +33,7 @@ test('real JWT verification and owner-scoped API reject wrong audience and cross
   const dir = mkdtempSync(join(tmpdir(), 'dxos-auth-test-'));
   const store = new Store(join(dir, 'private/state.sqlite'), randomBytes(32));
   const runtimes = new Runtimes([], () => { throw new Error('No runtime in this test'); }, store);
-  const profiles = new Profiles(store, [], runtimes);
+  const profiles = new Profiles(store, runtimes);
   const a = { issuer, subject: 'A' };
   const id = await profiles.save(a, { provider: 'gemini', model: 'synthetic', apiKey: 'synthetic-secret' });
   const publicUrl = new URL('http://dxos.invalid');
@@ -97,4 +97,97 @@ test('the bridge preserves explicit null when returning a record to its handler 
     assert.equal(response.statusCode, 200);
     assert.equal(response.json().data.assignee, assignee);
   }
+});
+
+test('runtime capabilities bind bridge reads and confirmations to their owner', async t => {
+  const { default: Fastify } = await import('fastify');
+  const { bridgeRoutes } = await import('../dist/tools/bridge.js');
+  const dir = mkdtempSync(join(tmpdir(), 'dxos-runtime-boundary-'));
+  const store = new Store(join(dir, 'private/state.sqlite'), randomBytes(32));
+  const a = { issuer: 'https://identity.invalid', subject: 'A' }, b = { ...a, subject: 'B' };
+  const slots = ['one', 'two'].map(name => ({ name, url: `http://${name}.invalid`,
+    controlToken: randomBytes(32).toString('hex'), toolToken: randomBytes(32).toString('hex'),
+    confirmationToken: randomBytes(32).toString('hex') }));
+  const runtimes = new Runtimes(slots, () => ({}), store);
+  store.allocateRuntime(a, ['one', 'two']); store.allocateRuntime(b, ['one', 'two']);
+  store.setSecret(a, 'telegram', { userId: '100' }); store.setSecret(b, 'telegram', { userId: '200' });
+  const proposal = store.createProposal(b, { operation: 'action', summary: 'synthetic' });
+  const app = Fastify();
+  app.setErrorHandler((error, _request, reply) => reply.code(error.status ?? error.statusCode ?? 500).send({ errorCode: error.errorCode }));
+  bridgeRoutes(app, runtimes, { models: async owner => ({ subject: owner.subject }),
+    execute: async (owner, id) => store.claim(owner, id, 'telegram') }, {}, store);
+  t.after(async () => { await app.close(); store.close(); rmSync(dir, { recursive: true, force: true }); });
+  const call = (path, token, payload) => app.inject({ method: 'POST', url: `/internal/v1/${path}`,
+    headers: { authorization: `Bearer ${token}` }, payload });
+  for (const [index, subject] of ['A', 'B'].entries()) {
+    const read = await call('tools', slots[index].toolToken, { tool: 'models' });
+    assert.equal(read.json().data.subject, subject);
+  }
+  const callback = { proposalId: proposal, userId: '100', chatId: '100' };
+  assert.equal((await call('confirm', slots[0].toolToken, callback)).statusCode, 401);
+  assert.equal((await call('confirm', slots[0].confirmationToken, callback)).statusCode, 404);
+  assert.equal((await call('confirm', slots[0].confirmationToken, { ...callback, userId: '200', chatId: '200' })).statusCode, 403);
+  const forgedOwner = await call('tools', slots[0].toolToken, { tool: 'models', ownerId: 'B' });
+  assert.equal(forgedOwner.json().data.subject, 'A');
+  assert.equal((await call('tools', slots[0].controlToken, { tool: 'models' })).statusCode, 401);
+  assert.equal((await call('tools', slots[0].toolToken, { tool: 'shell' })).statusCode, 400);
+  assert.equal(store.proposal(b, proposal).state, 'pending');
+});
+
+test('custom endpoints cannot reach probe or runtime, including persisted profiles', async t => {
+  const { modelConfiguration } = await import('../dist/providers/profiles.js');
+  const { runtimeConfiguration } = await import('../dist/runtime/configuration.js');
+  const dir = mkdtempSync(join(tmpdir(), 'dxos-provider-boundary-'));
+  const store = new Store(join(dir, 'private/state.sqlite'), randomBytes(32));
+  t.after(() => { store.close(); rmSync(dir, { recursive: true, force: true }); });
+  const owner = { issuer: 'https://identity.invalid', subject: 'A' };
+  const profiles = new Profiles(store, { update: () => { throw new Error('Must reject before runtime access'); } });
+  const native = modelConfiguration({ provider: 'gemini', model: 'synthetic', apiKey: 'synthetic', baseUrl: 'http://127.0.0.1' });
+  assert.equal(native.providers.google.baseUrl, 'https://generativelanguage.googleapis.com/v1beta');
+  for (const baseUrl of ['https://127.0.0.1/v1', 'https://[::1]/v1', 'https://169.254.169.254/v1',
+    'https://10.0.0.1/v1', 'https://redirect.invalid/v1', 'https://dns-rebinding.invalid/v1']) {
+    const profile = { id: 'legacy', provider: 'compatible', baseUrl, apiKey: 'synthetic', model: 'test' };
+    await assert.rejects(profiles.save(owner, profile), { errorCode: 'ERR_PROVIDER_DISABLED' });
+    store.setSecret(owner, 'providers', { profiles: [profile], selected: profile.id });
+    assert.throws(() => profiles.active(owner), { errorCode: 'ERR_PROVIDER_DISABLED' });
+    assert.throws(() => profiles.get(owner, profile.id), { errorCode: 'ERR_PROVIDER_DISABLED' });
+    assert.throws(() => modelConfiguration(profile), { errorCode: 'ERR_PROVIDER_DISABLED' });
+    assert.throws(() => runtimeConfiguration(profile, '100', 18791, '/state', '/plugin'), { errorCode: 'ERR_PROVIDER_DISABLED' });
+  }
+});
+
+test('framework client errors keep HTTP status and server errors remain redacted', async t => {
+  const { CoreSession } = await import('../dist/auth/core-session.js');
+  const dir = mkdtempSync(join(tmpdir(), 'dxos-http-errors-'));
+  const store = new Store(join(dir, 'private/state.sqlite'), randomBytes(32));
+  const owner = { issuer: 'https://identity.invalid', subject: 'A' };
+  const verify = async value => { if (value === 'Bearer server-failure') throw new Error('synthetic-sensitive-error'); return owner; };
+  const runtimes = new Runtimes([], () => ({}), store);
+  const publicUrl = new URL('http://dxos.invalid');
+  const app = await createServer(store, verify, { session: {}, publicUrl, accounts: {
+    store, runtimes, profiles: new Profiles(store, runtimes), telegram: new TelegramAccounts(store, runtimes), publicUrl, verify,
+  } });
+  t.after(async () => { await app.close(); rmSync(dir, { recursive: true, force: true }); });
+  for (const [payload, expected] of [['{not json', 400], [JSON.stringify({ apiKey: 'x'.repeat(40000) }), 413]]) {
+    const response = await app.inject({ method: 'POST', url: '/assistant-api/v1/me/providers',
+      headers: { origin: publicUrl.origin, authorization: 'Bearer synthetic', 'content-type': 'application/json' }, payload });
+    assert.equal(response.statusCode, expected);
+    assert.equal(response.json().success, false);
+    assert.equal(response.body.includes(payload), false);
+  }
+  const headers = { origin: publicUrl.origin, authorization: 'Bearer synthetic' };
+  const created = await app.inject({ method: 'POST', url: '/assistant-api/v1/me/providers', headers,
+    payload: { provider: 'gemini', model: 'old', apiKey: 'synthetic-private-key', ownerId: 'B' } });
+  const id = created.json().data.id;
+  const partial = await app.inject({ method: 'PATCH', url: `/assistant-api/v1/me/providers/${id}`, headers, payload: { model: 'new' } });
+  assert.equal(partial.statusCode, 400);
+  const full = await app.inject({ method: 'PATCH', url: `/assistant-api/v1/me/providers/${id}`, headers,
+    payload: { provider: 'gemini', model: 'new', apiKey: 'synthetic-private-key' } });
+  assert.equal(full.statusCode, 200); assert.equal(full.body.includes('synthetic-private-key'), false);
+  assert.equal(store.getSecret(owner, 'providers').profiles[0].model, 'new');
+  const failure = await app.inject({ method: 'GET', url: '/assistant-api/v1/me', headers: { authorization: 'Bearer server-failure' } });
+  assert.equal(failure.statusCode, 500); assert.equal(failure.json().errorCode, 'ERR_INTERNAL');
+  assert.equal(failure.body.includes('synthetic-sensitive-error'), false);
+  const session = new CoreSession(store, {}, verify);
+  await assert.rejects(session.accessToken(owner), { status: 409, errorCode: 'ERR_CORE_LINK' });
 });

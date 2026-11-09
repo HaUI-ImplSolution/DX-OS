@@ -31,6 +31,8 @@ Hai nơi đó được máy kiểm ở mỗi pull request, tài liệu này ch�
 | Monaco Editor, monaco-yaml | MIT | Trình soạn mô hình | Gợi ý và báo lỗi YAML theo JSON Schema của tệp mô hình | Chạy trong trình duyệt |
 | React Flow, Dagre, Smart Edge | MIT | Sơ đồ quy trình vẽ từ tệp đang soạn | Chỉ để xem quy trình, không để thiết kế | `frontend/src/console/` |
 | FullCalendar | MIT | Lịch đặt chỗ | Kéo thả để đổi giờ | |
+| OpenClaw | MIT | Runtime trợ lý tùy chọn, Telegram và adapter provider | Dùng nguyên bản; Core không cần nó khi trợ lý tắt | `assistant/runtime/`, dependency bundled và ngoại lệ theo SBOM/policy |
+| Fastify, @fastify/swagger, jose | MIT | Control API, OpenAPI và kiểm JWT của trợ lý | Dùng thư viện sẵn có | `assistant/`, không đưa vào module Java Core |
 | restic | BSD-2-Clause | Sao lưu có mã hóa | Chạy trong container nên chỉ cần Docker | `deploy/backup.sh` |
 | Trivy, gitleaks, CycloneDX | Apache-2.0, MIT | Quét lỗ hổng, bí mật và lập SBOM trong CI | Công cụ nguồn mở, chạy ở mọi pull request | `.github/workflows/` |
 
@@ -70,7 +72,8 @@ Strapi chưa được đánh giá riêng.
 | Không dependency có lỗ hổng HIGH hoặc CRITICAL đã có bản vá | Trivy, SBOM của Maven | workflow `Dependencies`, chạy cả theo lịch |
 | Không có `vendor/`, `node_modules/`, `third_party/` trong Git | `git ls-files \| grep -E '(^\|/)(vendor\|third_party\|node_modules)/'` | Chạy tay |
 
-Hai gói mang giấy phép chưa nằm trong danh sách của OSI được nêu tên kèm lý do ở `.github/dependency-exceptions.json`: `caniuse-lite` (CC-BY-4.0) và `mdn-data` (CC0-1.0) là dữ liệu chứ không phải mã, chỉ đọc lúc dựng trang docs và không có trong trang đã dựng.
+Ngoại lệ dữ liệu và gói bundled được ghi đầy đủ theo tên/phiên bản, lý do và attribution trong `.github/dependency-exceptions.json` và NOTICE; không mở rộng danh sách giấy phép chung.
+
 Mọi gói khác phải thuộc danh sách OSI trong `check_licenses.py`, hoặc có một lựa chọn thay thế thuộc danh sách đó như `MIT OR CC0-1.0`.
 
 Muốn thêm một thành phần: đọc giấy phép ở kho gốc, ghi vào `DEPENDENCIES.txt`, và nếu là image hoặc mô hình thì khai báo ở `.github/component-catalog.json`; `check_licenses.py` sẽ chặn nếu thiếu.

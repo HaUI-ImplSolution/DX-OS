@@ -29,10 +29,15 @@ export async function createServer(store: Store, verify: ReturnType<typeof ident
   app.setErrorHandler((error, _request, reply) => {
     const known = error instanceof ApiError;
     const validation = !known && typeof error === 'object' && error !== null && 'validation' in error;
-    const status = known ? error.status : validation ? 400 : 500;
+    const frameworkStatus = typeof error === 'object' && error !== null && 'statusCode' in error
+      && typeof error.statusCode === 'number' ? error.statusCode : 0;
+    const clientError = validation || (frameworkStatus >= 400 && frameworkStatus < 500);
+    const status = known ? error.status : validation ? 400 : clientError ? frameworkStatus : 500;
     return reply.code(status).send({ success: false,
-      errorCode: known ? error.errorCode : validation ? 'ERR_INVALID_REQUEST' : 'ERR_INTERNAL',
-      message: known ? error.message : validation ? 'Invalid request' : 'The request could not be completed',
+      errorCode: known ? error.errorCode : status === 413 ? 'ERR_REQUEST_TOO_LARGE'
+        : clientError ? 'ERR_INVALID_REQUEST' : 'ERR_INTERNAL',
+      message: known ? error.message : status === 413 ? 'Request body is too large'
+        : clientError ? 'Invalid request' : 'The request could not be completed',
       data: known && error.reason ? { reason: error.reason } : null });
   });
   app.get('/health', async () => ({ status: 'UP' }));
@@ -121,7 +126,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     if (!telegram) throw new ApiError(409, 'ERR_TELEGRAM_REQUIRED', 'Configure Telegram first');
     return { profile: profiles.active(owner), telegram };
   }, store);
-  profiles = new Profiles(store, JSON.parse(required('ASSISTANT_COMPATIBLE_URLS')), runtimes);
+  profiles = new Profiles(store, runtimes);
   const telegram = new TelegramAccounts(store, runtimes);
   const notifications = new Notifications(store, core, records, publicUrl);
   const accounts = { profiles, runtimes, telegram, records, store, notifications, publicUrl, verify };

@@ -212,3 +212,5 @@ Các SDK provider và thư viện đi kèm OpenClaw được liệt kê theo phi
 Runtime khóa các bản vá zod 4.6.6 (MIT), npm 12.2.2 (Artistic-2.0), undici 6.29.1 (MIT) và brace-expansion 5.0.12 (MIT).
 spdx-exceptions (CC-BY-3.0) và spdx-license-ids (CC0-1.0) là dữ liệu định danh giấy phép, được chủ dự án duyệt ngoại lệ riêng; xem NOTICE và .github/dependency-exceptions.json.
 Các model API là dịch vụ do người dùng chọn và tự cấu hình; không đóng gói trọng số hoặc tuyên bố model đó là mã nguồn mở.
+
+- npm 12.2.2, Artistic-2.0, bundled unmodified in the optional OpenClaw runtime; version-scoped exception in .github/dependency-exceptions.json. Upstream LICENSE: https://github.com/npm/cli/blob/v12.2.2/LICENSE.

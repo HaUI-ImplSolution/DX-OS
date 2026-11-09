@@ -39,7 +39,7 @@ Kết quả: danh tính và dữ liệu A/B/C tách biệt.
 Kết quả: công cụ và xác nhận nhất quán giữa các provider được xác minh.
 
 - [x] WPAS-03-AI-01 Cấu hình adapter native Gemini, OpenAI và Anthropic bằng API OpenClaw.
-- [x] WPAS-03-AI-02 Profile compatible có origin allowlist, capability và model đã kiểm.
+- [ ] WPAS-03-AI-02 Profile compatible tạm khóa; còn thiếu nghiệm thu transport và model trước khi mở lại.
 - [ ] WPAS-03-BE-01 [assistant] Probe, timeout, quota, giới hạn retry và lỗi được che bí mật.
 - [x] WPAS-03-AI-03 Không tự đổi provider; giữ công cụ hoạt động độc lập với nội dung sinh.
 - [ ] WPAS-03-TEST-01 Chạy TAS-10–TAS-14; ít nhất hai provider thật, ghi rõ profile còn chưa xác minh.
@@ -113,7 +113,7 @@ Kết quả: đủ bằng chứng trên bản tích hợp trước đề nghị 
 
 ## Bàn giao tiến độ ngày 07/11/2026
 
-- Nhánh nền vẫn khớp `origin/Khuong/main` tại lần fetch cuối; chưa commit hoặc push bản tích hợp.
+- Nhánh PR đã nhận bản merge mới nhất của `origin/Khuong/main`; bản tích hợp gốc đã push, phần xử lý review còn giữ diff local.
 - Backend `./mvnw verify`, frontend build/TypeScript, kiểm kiến trúc, giấy phép, workflow, SBOM và bộ cài đạt ở các lượt kiểm đã ghi trong test plan.
 - Backup/restic restore giữ được state, master key và phiên SSO; bật/tắt trợ lý không chặn Core.
 - Ba supervisor tách volume, mạng và capability; chưa dùng kết quả này thay phép thử ba trợ lý hoạt động thật.
@@ -157,3 +157,51 @@ Giữ hai ca này để chạy lại khi Gemini ổn định; không đóng chec
 
 Kết thúc bộ kiểm đã dừng worker thử, khởi động lại runtime Admin từ cấu hình lưu và trả giới hạn RAM cục bộ về 1.536 MiB.
 Core metadata vẫn trả thành công; không chạy lại toàn stack, không commit/push và giữ kế hoạch.
+
+## Xử lý review PR #199
+
+Các dấu tick trước phần này chỉ là trạng thái từng việc của kế hoạch gốc, không phải chấp thuận merge.
+Kết quả triển khai được đánh dấu theo bằng chứng của lượt review; các mục còn mở không tính nghiệm thu.
+
+- [x] WPRV-01-DOC-01 Nhận bản merge mới nhất của nhánh PR, đối chiếu `origin/Khuong/main`; không phát sinh conflict mới.
+- [x] WPRV-01-DOC-02 Đọc review, convention, template hiện hành và rule tech lead; ánh xạ nhận xét vào WPRV-01–06.
+- [x] WPRV-01-DOC-03 Rà bằng chứng từng dấu tick và ghi quyết định API/SPDX, không xác nhận lại phần đã duyệt.
+- [x] WPRV-02-TEST-01 Kiểm bridge/callback và hai supervisor thật, volume/network/capability; phần hội thoại LLM của TAS-06 còn mở.
+- [x] WPRV-02-TEST-02 Chặn compatible ở lưu/chọn/probe/start, kể cả profile cũ; test transport để mở lại vẫn chưa đạt.
+- [x] WPRV-03-INFRA-01 Kiểm backup/restore và resume khi lỗi; ghi trust boundary và khoảng gián đoạn.
+- [x] WPRV-03-INFRA-02 Thu hẹp ngoại lệ Artistic đúng gói; kiểm cả repository và attribution SPDX.
+- [x] WPRV-04-BE-01 [dx-engine] Hoàn lại riêng diff cache local; giữ kiểm phiên bản của PR và ghi tối ưu vào BACKLOG.
+- [x] WPRV-04-BE-02 [dx-engine] Chốt nghĩa effects theo completion thật, giữ xác nhận web và handler metadata của cha.
+- [x] WPRV-04-BE-03 [dx-engine] Định dạng RecordPreconditions và kiểm precondition không đổi.
+- [x] WPRV-05-FE-01 Cache feature detection, bỏ request theo focus; reload nhận cấu hình mới.
+- [x] WPRV-05-INFRA-01 Một đường dựng gateway, route trợ lý tùy chọn và biến theo convention cha.
+- [x] WPRV-05-DOC-01 Giới hạn ba runtime nhất quán giữa cấu hình, mã, UI và tài liệu.
+- [x] WPRV-06-DOC-01 Đồng bộ CHANGELOG/API/website dependency/README; giữ log cũ và bỏ số audit cố định.
+- [x] WPRV-06-TEST-01 Chạy TRV-01–TRV-10, ghi bản kiểm/ngày/người chạy và kết quả thật ngoài repository.
+- [x] WPRV-06-DOC-02 Rà checklist gốc, cập nhật BACKLOG và bảng phản hồi đầy đủ các nhận xét.
+- [x] WPRV-06-TEST-02 Kiểm formatter/verify, Node test, TypeScript/build, docs/license/workflow liên quan và diff/secret.
+- [x] WPRV-06-DOC-03 Giữ plan; gửi diff cho người dùng trước khi commit/push/resolve, không đưa report hoặc .gitignore vào.
+
+## Review bổ sung — triển khai theo phạm vi đã chốt
+
+- [x] WPRV-07-DOC-01 Đọc review sau test thật, đối chiếu code và ghi bảng sửa ngay/chờ quyết định/đề xuất BACKLOG.
+- [x] WPRV-07-DOC-02 Dừng regression runner; api/recovery/case của lượt giữ đúng JAR đạt, change đang chạy bị dừng, chưa tính các lượt sau.
+- [x] WPRV-07-DOC-03 Chốt tách mạng control, giữ Gemini/OpenAI/Anthropic, giới hạn egress/backup bản thử và hoãn cache; Origin/PATCH giữ hành vi hiện có.
+- [x] WPRV-07-BE-01 [assistant] Trả 400/413 đúng lỗi framework; giữ 500 cho server error và che bí mật.
+- [x] WPRV-07-INFRA-01 Tách control khỏi default, bổ sung đúng mạng API/ingress và kiểm TCP/DNS bằng stack riêng.
+- [x] WPRV-07-DOC-04 Ghi đúng schema/Origin/PATCH và backup capability; chưa tự mở tính năng hoặc thay chính sách.
+- [x] WPRV-07-BE-02 [assistant] Phân biệt chưa liên kết Core (409) với phiên sai/hết hạn (401), kiểm client.
+- [x] WPRV-07-TEST-01 Chạy TRV-11–16 và hoàn tất kiểm còn dở theo phạm vi đã chốt; không dùng kết quả trên JAR cũ.
+- [x] WPRV-07-DOC-05 Ghi các giới hạn egress/backup và việc tối ưu đã được chấp nhận vào BACKLOG, ghi điều kiện trước dùng thật.
+
+## Kết quả xử lý review ngày 09/11/2026
+
+- Hai bug bắt buộc đã sửa: off rút route trước khi dừng dịch vụ; framework giữ HTTP 400/413 và lỗi server vẫn được che nội dung.
+- Control tách mạng DB, kết nối API/SSO/gateway giữ đúng; on lặp không thay container hoặc thời điểm khởi động Core.
+- Cache phiên bản local đã hoàn lại; precondition, require, handlers và handlerActions của cha được giữ và kiểm thật.
+- 11 script Core đạt trên DB sạch với bản sao JAR cố định; backend verify, Node 24 28/28, frontend build và docs build đạt.
+- Browser dùng Chromium có sẵn; UI bật trợ lý được mô phỏng riêng để kiểm cache/menu/provider, không tính là model thật.
+- Không thêm dependency; giấy phép npm được thu hẹp theo phiên bản; không sửa lockfile/SBOM hoặc workflow trong lượt review.
+- Gitleaks và kiểm diff đạt; bằng chứng/script kiểm riêng nằm ngoài Git, không stage/commit/push hoặc resolve review.
+
+Các mục WPAS gốc còn mở, nhất là provider thật thứ hai, hội thoại model và hai–ba người hoạt động đồng thời, không được đóng bằng kết quả review này.

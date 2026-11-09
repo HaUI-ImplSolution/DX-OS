@@ -21,7 +21,9 @@ Thông tin runtime của người khác không được lấy làm căn cứ đ�
 
 Các endpoint nằm dưới `/assistant-api/v1`, dùng envelope success/message/data/errorCode phù hợp Core và HTTP status thực tế.
 Schema route sinh OpenAPI; bảng này không thay bản OpenAPI sinh từ code.
-Các thao tác PUT/PATCH có schema chặt, không nhận trường thực thi hoặc quyền tự khai.
+Các thao tác ghi chỉ dùng trường có trong schema; trường ngoài danh sách bị bỏ qua.
+Danh tính luôn lấy từ JWT đã xác minh, không lấy từ trường ownerId do client gửi.
+PATCH profile cần đủ provider/model/apiKey, chưa hỗ trợ sửa từng trường; giao diện hiện dùng tạo/chọn/xóa profile.
 
 | Endpoint | Hành vi |
 |---|---|
@@ -84,6 +86,13 @@ Lưu/khôi phục không gian hội thoại theo mô hình nằm trong backlog; 
 
 OpenClaw 2026.11.1 được dùng nguyên bản, khóa trong `runtime/package-lock.json`; bước lifecycle chính thức của package chạy khi build image để runtime không cần ghi vào thư mục cài đặt.
 Các bản vá dependency trong lockfile xử lý cảnh báo HIGH đã phát hiện, không hạ phiên bản OpenClaw để né cảnh báo.
-Lần kiểm `npm audit` ngày 07/11/2026: control không có cảnh báo; runtime còn 33 cảnh báo Moderate, không có High/Critical.
-Đây là kết quả của npm tại thời điểm kiểm, không thay việc quét định kỳ hoặc quét image trong CI.
+Kết quả quét lỗ hổng được theo dõi tại workflow `Dependencies` của PR và các lượt chạy định kỳ.
 Hai gói dữ liệu SPDX được duyệt ngoại lệ riêng; xem `DEPENDENCIES.txt`, `NOTICE` và SBOM.
+
+Endpoint OpenAI-compatible tạm khóa cả lưu, chọn, probe và khởi động runtime, kể cả profile cũ.
+Gemini, OpenAI và Anthropic dùng endpoint cố định; chỉ Gemini đã có bằng chứng hội thoại thật trong đợt thử hiện tại.
+Mở lại endpoint tùy chỉnh cần kiểm transport cho redirect, DNS đổi và mạng private, không chỉ kiểm allowlist.
+
+Thao tác ghi cần Origin đúng bằng GATEWAY_PUBLIC_URL; khi dùng IP/tunnel/tên miền khác phải cấu hình lại địa chỉ công khai và SSO trước.
+Chưa liên kết Core trả 409 ERR_CORE_LINK; phiên xác thực không hợp lệ vẫn trả 401.
+JSON sai trả 400, body quá giới hạn 32 KiB trả 413, lỗi nội bộ không dự kiến trả 500 và không echo payload.

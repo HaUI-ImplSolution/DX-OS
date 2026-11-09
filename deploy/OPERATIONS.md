@@ -195,12 +195,14 @@ Thử bằng tệp EICAR (chuỗi kiểm thử chuẩn của ngành diệt virus
 
 Core cần chạy trước; bản cài dùng `dxos assistant on`, bản mã nguồn dùng `./deploy/dxos assistant on --build` từ gốc repo.
 Lần đầu chuẩn bị pool runtime theo `ASSISTANT_RUNTIME_COUNT` trong `.env` (tối đa ba), tạo client SSO PKCE riêng rồi mở route trợ lý.
-Các giá trị mặc định và giới hạn CPU/RAM nằm trong `.env.example`; endpoint OpenAI-compatible chỉ được dùng khi operator khai báo HTTPS origin chính xác trong `ASSISTANT_COMPATIBLE_URLS`.
+Các giá trị mặc định và giới hạn CPU/RAM nằm trong `.env.example`.
+Endpoint OpenAI-compatible tạm khóa ở API và runtime đến khi kiểm chứng redirect, DNS và mạng private; không có biến cấu hình để bỏ khóa.
 Người dùng mở `/assistant`, liên kết DX-OS và tự nhập API key/model cùng bot token riêng; không gửi bí mật cho người vận hành qua chat.
 Mỗi bot chỉ liên kết một chủ, không có webhook đang hoạt động; mã pairing lấy từ bot và nhập lại trên web.
 Nút kiểm kết nối gọi model thật bằng dữ liệu giả và có thể tiêu quota; lưu profile không gọi model.
 
 `dxos assistant status` xem các container tùy chọn; `dxos assistant off` dừng chúng, giữ dữ liệu và không dừng Core.
+Sau khi bật/tắt, tải lại trang để cập nhật menu trợ lý.
 Khi đã bật, `dxos start` khởi động lại phần trợ lý; nếu trợ lý lỗi, Core vẫn hoạt động.
 Runtime tắt không nhận tin Telegram hoặc gửi nhắc việc; bật lại từ trang cấu hình.
 Không dùng chung bot với một triển khai khác hoặc chạy thêm instance control trên cùng SQLite.
@@ -212,3 +214,18 @@ State nằm tại `deploy/data/assistant`: SQLite mã hóa, master key riêng, c
 Để khôi phục phần trợ lý: dừng trợ lý, chép `/stage/assistant/` của bản restic đã giải ra vào `deploy/data/assistant/`, giữ đúng chủ sở hữu và quyền thư mục 0700/tệp 0600, rồi chạy `dxos assistant on`.
 Khôi phục cùng state SSO/Core và địa chỉ công khai; nếu đổi địa chỉ hoặc thu hồi phiên, liên kết DX-OS lại trên giao diện.
 Không tự tạo master key mới để thay khóa bị mất và không giảm số runtime khi còn binding/state.
+
+Backup trợ lý chứa cả SQLite mã hóa và `private/master.key` trong cùng kho restic.
+Người có credential giải mã restic có thể đọc secret trợ lý; AEAD không cách ly dữ liệu với người đó.
+Hạn chế quyền kho backup và giữ mật khẩu restic ngoài backup, Git và log.
+Mất master key mà không có bản sao thì không khôi phục được secret; không sinh khóa thay thế cho database cũ.
+Trong lúc snapshot, trợ lý dừng nhận Telegram và nhắc hạn; Core vẫn chạy, trợ lý được resume sau khi chép state hoặc khi cleanup lỗi.
+Không bảo đảm nhận hoặc gửi tin trong khoảng gián đoạn này.
+
+Thao tác ghi của trợ lý chỉ chấp nhận Origin đúng bằng GATEWAY_PUBLIC_URL.
+Dùng tên miền phụ, IP hoặc tunnel khác cần đổi cấu hình địa chỉ công khai và SSO; không tắt kiểm Origin để bỏ qua lỗi 403.
+Backup còn chứa token control/tool/confirmation trong slots.json và runtime env; người giải mã được backup có thể giả danh runtime nếu token còn hiệu lực và truy cập được dịch vụ.
+Control chỉ dùng mạng API/SSO và ingress trợ lý, không tham gia mạng DB; runtime giữ mạng riêng từng chủ.
+Container runtime hiện vẫn có Internet ngoài Telegram/provider; giới hạn công cụ và endpoint cố định không thay firewall egress.
+Bản thử giữ Gemini, OpenAI và Anthropic; endpoint tùy chỉnh bị khóa.
+Tách custody khóa/token backup và giới hạn egress toàn container nằm trong BACKLOG trước dùng thật.

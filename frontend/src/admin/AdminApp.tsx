@@ -131,9 +131,8 @@ export default function AdminApp() {
 
   useEffect(() => {
     let active = true;
-    const refresh = () => { void assistantAvailable().then(enabled => { if (active) setAssistantEnabled(enabled); }); };
-    refresh(); window.addEventListener("focus", refresh);
-    return () => { active = false; window.removeEventListener("focus", refresh); };
+    void assistantAvailable().then(enabled => { if (active) setAssistantEnabled(enabled); });
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {

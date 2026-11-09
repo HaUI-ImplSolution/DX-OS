@@ -105,7 +105,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 ## 9. Từ 100 lên 100.000 người dùng thì sao?
 
 - Chưa đo tải ở quy mô đó.
-  Số đã đo: danh sách 10.000 dòng có lọc và sắp xếp trả về ở phân vị 95 là 10 ms; cả tám dịch vụ dùng tối đa khoảng 1,7 GiB RAM khi chạy các script kiểm.
+  Số đã đo: danh sách 10.000 dòng có lọc và sắp xếp trả về ở phân vị 95 là 11 ms; cả tám dịch vụ dùng tối đa khoảng 1,7 GiB RAM khi chạy các script kiểm.
 - Backend chạy một bản.
   Thử hai bản sau gateway cho thấy cả hai nhận lưu lượng, nhưng sau một lần áp dụng mô hình, danh sách mô hình và trạng thái giữ lệch nhau giữa hai bản; vì vậy đây là giới hạn đã ghi, không phải khả năng đã có.
 - Mỗi mô hình có khóa riêng khi áp dụng nên các mô hình áp dụng song song; dữ liệu của mỗi mô hình nằm ở schema riêng.
@@ -116,13 +116,14 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Thêm một nghiệp vụ là thêm một tệp mô hình: đặt vào `backend/dx-engine/src/main/resources/templates/` và khai trong `index.json` để hiện ở thư viện mẫu; kiểm bằng `POST /api/v1/models/plan` hoặc `dxos plan`.
   Đặc tả cho trình soạn thảo là `model-v0.schema.json`; tệp sai mẫu ở `models/invalid/`.
 - Thêm họ mẫu quy trình mới là thêm một `ProcessFamily` và tệp BPMN cùng tên trong `dx-engine`.
-- `CONTRIBUTING.md` nêu quy trình nhánh, pull request, kiểm trước khi gửi; có mẫu issue và pull request ở `.github/`; CI chạy riêng cho backend, web, AI, hạ tầng, phụ thuộc.
+- `CONTRIBUTING.md` nêu quy trình nhánh, pull request, kiểm trước khi gửi; có mẫu issue và pull request ở `.github/`; CI chạy riêng cho backend, web, nền tảng (kiểm đầu-cuối), phụ thuộc và tuân thủ.
 - **Bằng chứng:** `CONTRIBUTING.md`; `.github/ISSUE_TEMPLATE/`; `.github/workflows/`.
 
 ## 11. Còn gì chưa làm?
 
 - Chưa có phần AI: tìm kiếm tri thức có nguồn, hỏi đáp sinh câu trả lời và tác tử có người duyệt.
-- Họ phê duyệt chỉ có một cấp xử lý; duyệt nhiều cấp tuần tự đụng định dạng mô hình, quy trình, API và giao diện nên chưa làm.
+- Điều kiện `when` của hành động chỉ là một phép so sánh trên một trường, chưa có và/hoặc.
+  Duyệt nhiều cấp tuần tự và rẽ nhánh theo ngưỡng khai báo được bằng quy trình tự khai báo, mới kiểm tay trên stack tạm chứ chưa có kiểm tự động.
 - Hai nguyên lý đầu của đề (hồ dữ liệu theo vòng đời, bản sao số) nằm ngoài phạm vi bản dự thi.
 - Một bản backend; chưa chịu lỗi nhiều nút; chưa thử tải lớn.
 - Đích webhook dạng `chat` chưa thử với Mattermost và Slack thật.

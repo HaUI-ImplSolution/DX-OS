@@ -394,7 +394,11 @@ public class DataService {
       String note) {
     Action action = processOf(entity).definition().action(actionName)
         .orElseThrow(() -> new ResourceNotFoundException("Action " + actionName + " not found"));
-    Map<String, Object> record = lock(model, entity, access(model, entity), id, action.require());
+    List<String> judged = new ArrayList<>(action.require());
+    if (action.when() != null && !judged.contains(action.when().field())) {
+      judged.add(action.when().field());
+    }
+    Map<String, Object> record = lock(model, entity, access(model, entity), id, judged);
     String me = user.currentUserId();
     rules.checkAction(entity, action, record, me, user.clientRoles(ModelClient.of(model.name())),
         note);

@@ -11,7 +11,7 @@ public final class ProcessSyntax {
       "actions", "allow_self_decision", "deadline", "auto_close", "after", "booking");
   public static final Set<String> STATE = Set.of("label", "terminal");
   public static final Set<String> ACTION =
-      Set.of("label", "from", "to", "by", "role", "needs_note", "require");
+      Set.of("label", "from", "to", "by", "role", "needs_note", "require", "when");
   public static final Set<String> AUTO_CLOSE = Set.of("after", "action");
 
   private ProcessSyntax() {}

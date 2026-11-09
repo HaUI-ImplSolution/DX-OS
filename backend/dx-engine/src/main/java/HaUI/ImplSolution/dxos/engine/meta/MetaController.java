@@ -71,7 +71,10 @@ public class MetaController {
   @GetMapping("/{model}/entities/{entity}")
   @Operation(summary = "Fields, process and permissions of one entity for the caller",
       description = "handlerActions lists the process actions the roles of the caller may take,"
-          + " so a client shows only the buttons that can work.")
+          + " so a client shows only the buttons that can work. process.actions[].when, when not"
+          + " null, is {field, op, value}: the action is taken only on a record whose field meets"
+          + " the comparison (op is one of ==, !=, <, <=, >, >=; a field without a value never"
+          + " does), otherwise it is refused with 409 and data.reason CONDITION_NOT_MET.")
   public ApiResponse<EntityMeta> entity(@PathVariable String model, @PathVariable String entity) {
     Model m = registry.require(model);
     Entity e = m.entity(entity)

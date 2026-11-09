@@ -18,6 +18,7 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - API chung `/api/v1/data/{model}/{entity}` với lọc, sắp xếp, phân trang, quy tắc bắt buộc, duy nhất và lựa chọn; metadata ở `/api/v1/meta/models`.
 - Sửa hồ sơ nhận `version`: hồ sơ đã đổi thì trả 409 `ERR_CONCURRENT_MODIFICATION` và không ghi đè.
 - Lỗi 403 `ERR_ACTION_NOT_ALLOWED` và 409 `ERR_INVALID_STATE` có `data.reason`, mã ổn định cho client.
+- Hành động của người xử lý nhận điều kiện `when`, một phép so sánh một trường với một giá trị như `amount > 5000000`; hồ sơ chưa đạt thì trả 409 `ERR_INVALID_STATE` với `data.reason` là `CONDITION_NOT_MET`, giá trị trống không đạt, nên một trạng thái rẽ nhánh theo ngưỡng được bằng hai hành động `when` loại trừ nhau; nút của hành động mờ trên giao diện và sơ đồ quy trình ghi điều kiện trên cạnh.
 - Thống kê `GET /api/v1/data/{model}/{entity}/stats` cho thực thể có quy trình: tổng số, theo trạng thái, quá hạn, theo đơn vị, thời gian xử lý trung bình và tuổi hồ sơ đang mở, cùng bộ lọc và quyền như danh sách.
 - Dòng lịch sử `updated` ghi giá trị cũ và mới của từng trường đã đổi.
 - Bảy mẫu mô hình ở `backend/dx-engine/src/main/resources/templates/`: một cửa sinh viên, hỗ trợ kỹ thuật, sự cố thiết bị, đặt phòng, cấp quyền, mượn thiết bị, ghi chú.
@@ -29,7 +30,7 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - Đổi mô hình khi đã có dữ liệu: xem trước theo ba mức rủi ro, đổi tên bằng `renamed_from`, `default` cho trường bắt buộc mới, báo dòng vi phạm, xác nhận riêng khi mất dữ liệu, kế hoạch hết hiệu lực khi phiên bản đã đổi, quay về phiên bản trước.
 - Mô hình bị giữ trong lúc áp dụng; áp dụng dừng giữa chừng thì tiếp tục (`resume`) hoặc hủy bỏ (`abandon`), kể cả sau khi backend khởi động lại.
 - Mỗi mô hình có một lần áp dụng tại một thời điểm, các mô hình khác nhau áp dụng song song; yêu cầu dữ liệu, hành động quy trình và thao tác tệp giữ khóa đọc nên không hồ sơ nào lọt giữa kiểm và đổi bảng.
-- Chốt chặn: không đổi hạn, quyền tự quyết, hành động hoàn tất, đặt chỗ hay trạng thái và hành động của quy trình khi còn hồ sơ đang xử lý; không xóa thực thể còn hồ sơ đang chạy quy trình; vai `ADMIN` của nền tảng không khai báo được.
+- Chốt chặn: không đổi hạn, quyền tự quyết, hành động hoàn tất, đặt chỗ hay trạng thái và hành động của quy trình (kể cả điều kiện `when`) khi còn hồ sơ đang xử lý; không xóa thực thể còn hồ sơ đang chạy quy trình; vai `ADMIN` của nền tảng không khai báo được.
 - Trạng thái còn hồ sơ nằm ở đó không bỏ được, và trạng thái cuối còn hồ sơ đã đóng không đổi thành trạng thái thường; kế hoạch báo số dòng vi phạm.
 - Đổi nhãn, vai của hành động, trường bắt buộc, các trạng thái rút lại hay danh sách vai xử lý có hiệu lực ngay với hồ sơ đang mở.
 - Khai báo lại một vai còn người giữ thì kế hoạch lên mức `MIGRATION` và báo số người có lại quyền.

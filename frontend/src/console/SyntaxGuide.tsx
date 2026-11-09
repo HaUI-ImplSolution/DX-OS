@@ -72,6 +72,7 @@ export default function SyntaxGuide() {
                     <span style={mono}>{action.name}</span> ({action.label}): {action.from.join(", ")} → {action.to}, do{" "}
                     {action.by === "OWNER" ? "người nộp" : "vai xử lý"}
                     {action.needsNote ? ", cần lý do" : ""}
+                    {action.when ? `, khi ${action.when.field} ${action.when.op} ${action.when.value}` : ""}
                   </li>
                 ))}
               </Box>

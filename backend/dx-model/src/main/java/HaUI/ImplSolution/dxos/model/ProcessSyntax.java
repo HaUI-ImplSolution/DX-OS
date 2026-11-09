@@ -14,5 +14,11 @@ public final class ProcessSyntax {
       Set.of("label", "from", "to", "by", "role", "needs_note", "require", "when");
   public static final Set<String> AUTO_CLOSE = Set.of("after", "action");
 
+  // Names the history of a record uses for the lines the platform writes, so an action cannot
+  // take them: its own line would be taken for the one of the platform.
+  public static final Set<String> HISTORY_NAMES =
+      Set.of("created", "updated", "deleted", "assigned", "file_added", "file_removed",
+          "completion_skipped", "auto_closed", "overdue", "due_soon");
+
   private ProcessSyntax() {}
 }

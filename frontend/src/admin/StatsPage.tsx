@@ -5,6 +5,7 @@ import { Alert, Box, ButtonBase, Card, Skeleton, Typography } from "@mui/materia
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
 import HourglassBottomOutlinedIcon from "@mui/icons-material/HourglassBottomOutlined";
 import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined";
+import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined";
 import TimerOutlinedIcon from "@mui/icons-material/TimerOutlined";
 import { Title } from "react-admin";
 import PageHeader from "../shell/PageHeader";
@@ -139,6 +140,14 @@ export default function StatsPage({ models }: { models: ModelMeta[] }) {
                 value={stats.overdue}
                 tone="error"
                 onClick={() => navigate(listPath(resource, { "handle_by.lt": stats.computedAt }))}
+              />
+            )}
+            {stats.closedOnTime != null && stats.closedLate != null && stats.closedOnTime + stats.closedLate > 0 && (
+              <Tile
+                icon={<TaskAltOutlinedIcon />}
+                label={`Đúng hạn, ${stats.closedOnTime}/${stats.closedOnTime + stats.closedLate} hồ sơ đã đóng`}
+                value={`${Math.round((100 * stats.closedOnTime) / (stats.closedOnTime + stats.closedLate))}%`}
+                tone="success"
               />
             )}
             {stats.avgDecisionSeconds != null && (

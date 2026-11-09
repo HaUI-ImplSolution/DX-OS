@@ -13,6 +13,9 @@ export interface EntityStats {
   total: number;
   byStatus: { status: string; count: number }[];
   overdue: number;
+  // Records that reached a final state without ever going overdue, and those that did; only for an entity with a deadline.
+  closedOnTime?: number | null;
+  closedLate?: number | null;
   byUnit?: { unit: string | null; count: number }[] | null;
   avgDecisionSeconds?: number | null;
   avgOpenAgeSeconds?: number | null;

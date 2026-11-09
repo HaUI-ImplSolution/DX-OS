@@ -153,9 +153,9 @@ public class DataService {
   }
 
   // Counts over the rows the caller can see, with the same filters as list: in all, per status,
-  // past
-  // their deadline at computedAt (handle_by before it), and per unit when the entity has a unit
-  // field.
+  // past their deadline at computedAt (handle_by before it), and per unit when the entity has a
+  // unit field. An entity with a deadline also counts the decided records that closed on time and
+  // late.
   @Transactional(readOnly = true)
   public Map<String, Object> stats(Model model, Entity entity, Map<String, String> params) {
     Access access = access(model, entity);
@@ -180,6 +180,9 @@ public class DataService {
               "SELECT count(*)" + from + " AND handle_by IS NOT NULL AND handle_by < :at", values,
               Long.class));
       body.putAll(timings(from, values));
+      if (entity.process().deadline() != null) {
+        body.putAll(closings(model, entity, from, values));
+      }
     }
     entity.unitField()
         .ifPresent(
@@ -207,6 +210,26 @@ public class DataService {
     out.put("avgDecisionSeconds", seconds(row.get("decision")));
     out.put("avgOpenAgeSeconds", seconds(row.get("open_avg")));
     out.put("oldestOpenAgeSeconds", seconds(row.get("open_max")));
+    return out;
+  }
+
+  // The records that were decided, a withdrawn one excluded, split by whether the history holds an
+  // "overdue" line for them. A record that was overdue and later decided in time counts as late.
+  private Map<String, Object> closings(Model model, Entity entity, String from,
+      MapSqlParameterSource values) {
+    values.addValue("event_model", model.name());
+    values.addValue("event_entity", entity.name());
+    values.addValue("withdrawn", ProcessFamily.WITHDRAWN_STATE);
+    String decided = "decided_at IS NOT NULL AND status <> :withdrawn";
+    String reported = "EXISTS (SELECT 1 FROM engine.record_event e WHERE e.model = :event_model"
+        + " AND e.entity = :event_entity AND e.record_id = " + table(model, entity)
+        + ".id AND e.action = 'overdue')";
+    Map<String, Object> row = jdbc.queryForMap("SELECT count(*) FILTER (WHERE " + decided
+        + " AND NOT " + reported + ") AS on_time, count(*) FILTER (WHERE " + decided + " AND "
+        + reported + ") AS late" + from, values);
+    Map<String, Object> out = new LinkedHashMap<>();
+    out.put("closedOnTime", ((Number) row.get("on_time")).longValue());
+    out.put("closedLate", ((Number) row.get("late")).longValue());
     return out;
   }
 

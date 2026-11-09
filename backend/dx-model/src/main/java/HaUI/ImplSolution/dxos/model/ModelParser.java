@@ -705,6 +705,11 @@ public final class ModelParser {
         problem(keyNode, "action name must match [a-z][a-z0-9_]* and be at most 40 characters");
         continue;
       }
+      if (ProcessSyntax.HISTORY_NAMES.contains(name)) {
+        problem(keyNode, "action name " + name + " is used by the history of a record, choose "
+            + "another name");
+        continue;
+      }
       if (isNull(tuple.getValueNode())) {
         if (actions.remove(name) == null) {
           problem(keyNode, "there is no action " + name + " to remove");

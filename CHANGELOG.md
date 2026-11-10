@@ -90,6 +90,7 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - Hộp việc và danh sách người nhận việc tính theo vai của từng hành động.
 - Metadata của thực thể có `handlerActions`, các hành động mà vai của người gọi được thực hiện.
 - Người nộp chỉ rút lại được hồ sơ ở các trạng thái khai trong `withdraw`.
+- Tạo hồ sơ và hành động nhận header `Idempotency-Key`: gửi lại cùng khóa và cùng nội dung thì trả lại câu trả lời lần đầu mà không làm lại, cùng khóa với yêu cầu khác là 409, yêu cầu lỗi không giữ khóa, và khóa giữ 24 giờ.
 
 ### Sự kiện, webhook và toàn vẹn
 
@@ -130,6 +131,8 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - Menu người dùng có "Tài khoản của tôi", mở Account Console của Keycloak.
 - Giao diện vừa màn hình rộng 360 px.
 - Danh sách của thực thể có quy trình cho chọn nhiều hồ sơ và thực hiện cùng một hành động, tối đa 50 hồ sơ mỗi lần; mỗi hồ sơ vẫn qua đủ luật của quy trình và hồ sơ bị từ chối báo lý do.
+- Danh sách của thực thể có quy trình xem được như bảng theo trạng thái: mỗi cột một trạng thái với tối đa 10 thẻ và tổng số, bấm thẻ mở chi tiết, "Xem cả N hồ sơ" mở danh sách đã lọc theo trạng thái; lựa chọn danh sách hoặc bảng nhớ trong trình duyệt.
+- Nút Xuất CSV ghi các dòng của danh sách theo bộ lọc và sắp xếp hiện tại, đúng phần người xem được quyền thấy, tối đa 10.000 dòng và báo khi bị cắt; tệp UTF-8 có BOM, giá trị đúng/sai và nhiều lựa chọn ở dạng đọc được, trường người dùng ghi tên, ô bắt đầu bằng `=`, `+`, `-`, `@`, tab hoặc xuống dòng được thêm dấu nháy để không chạy thành công thức.
 - Ô nhập, cột, chi tiết và bộ lọc cho kiểu `boolean`, `date` và chọn nhiều giá trị; biểu mẫu báo giới hạn, mẫu chuỗi và điều kiện bắt buộc trước khi gửi.
 - Menu, biểu tượng, cột và sắp xếp mặc định, nhóm trường và lời gợi ý theo khối `ui:`; cột người dùng đã chọn đè lên cột mặc định.
 - Form soạn mô hình có ô cho nhiều giá trị, nhỏ nhất, lớn nhất, mẫu chuỗi và điều kiện bắt buộc.

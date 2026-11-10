@@ -97,7 +97,9 @@ function build(mode: "light" | "dark"): Theme {
       RaList: {
         styleOverrides: {
           root: {
-            "& .RaList-content": { border: `1px solid ${line}`, borderRadius: 12, boxShadow: "none", overflow: "hidden" },
+            "& .RaList-content": { border: `1px solid ${line}`, borderRadius: 12, boxShadow: "none", overflow: "auto" },
+            // The list keeps the width of the page and the table scrolls inside its frame, so a narrow screen is not widened.
+            "& .RaList-main": { contain: "inline-size" },
           },
         },
       },

@@ -75,6 +75,8 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 | Tài liệu OpenAPI theo mô hình | Kiểm tay theo `docs/TESTING.md` mục 6, mục 28; `check_docs.py` kiểm đường dẫn của tài liệu có trong OpenAPI chung | `GET /api/v1/meta/models/{model}/openapi` | Dùng được | Chưa thử trong một trình sinh thư viện cụ thể; đã nhập qua bộ kiểm cú pháp OpenAPI |
 | Ứng dụng ngoài (`dxos client`, tab Ứng dụng ngoài) | Kiểm tay theo `docs/TESTING.md` mục 6, mục 27 và phần lệnh `dxos` mục 7 | `dxos client add` | Dùng được | Không có kiểm tự động; mỗi ứng dụng giữ đúng một vai của một mô hình |
 | Khối `ui:` và hành động hàng loạt | Kiểm tay theo `docs/TESTING.md` mục 6, mục 25 và 26; `npx tsc --noEmit` | Mở danh sách và biểu mẫu của Sổ tài sản; chọn nhiều hồ sơ rồi Duyệt | Dùng được | Không có kiểm tự động của giao diện cho hai phần này |
+| Bảng theo trạng thái và xuất CSV | Kiểm tay theo `docs/TESTING.md` mục 6, mục 29 và 30; `npx tsc --noEmit` | Mở danh sách của một thực thể có quy trình, bấm Bảng theo trạng thái và Xuất CSV | Dùng được | Không có kiểm tự động của giao diện; bảng chỉ đọc, tối đa 10 thẻ mỗi cột; xuất tối đa 10.000 dòng |
+| Khóa chống chạy lặp (`Idempotency-Key`) | Kiểm tay theo `docs/TESTING.md` mục 6, mục 31 | Gửi hai lần cùng khóa | Dùng được | Không có kiểm tự động; chỉ cho tạo hồ sơ và hành động, khóa giữ 24 giờ |
 
 ## 3. Giấy phép, chuỗi cung ứng, phát hành
 
@@ -99,7 +101,7 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 | Hồ dữ liệu, bản sao số (hai nguyên lý đầu của đề) | Chưa làm | Ngoài phạm vi bản dự thi, nói rõ khi trình bày |
 | Nhiều bản backend sau gateway | Chưa làm | Chạy một bản; hai bản thì danh sách mô hình giữ lệch nhau sau một lần áp dụng |
 | Triển khai công khai cho lõi mới | Chưa làm | VPS giữ `v1.1.1`; bản mới không có đường nâng cấp dữ liệu nên phải dựng lại |
-| Khóa chống chạy lặp do bên gọi đặt, thao tác hoàn tất gọi ra hệ thống ngoài, bảng Kanban, xuất danh sách ra CSV | Chưa làm | Ghi ở Việc tồn đọng, làm sau |
+| Thao tác hoàn tất gọi ra hệ thống ngoài | Chưa làm | Ghi ở giới hạn chấp nhận của Việc tồn đọng: webhook của mô hình đã gửi trạng thái cũ, mới và hành động |
 
 ## 5. Kiểm lại
 

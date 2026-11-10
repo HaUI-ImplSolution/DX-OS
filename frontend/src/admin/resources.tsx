@@ -31,13 +31,17 @@ import {
   Toolbar,
   TopToolbar,
   maxValue,
+  useListContext,
+  useStore,
   minValue,
   regex,
   required,
   type Validator,
   useRecordContext,
 } from "react-admin";
-import { Box, Card, Typography } from "@mui/material";
+import { Box, Card, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from "@mui/material";
+import ViewKanbanOutlinedIcon from "@mui/icons-material/ViewKanbanOutlined";
+import ViewListOutlinedIcon from "@mui/icons-material/ViewListOutlined";
 import EventIcon from "@mui/icons-material/Event";
 import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
 import { Labeled } from "react-admin";
@@ -45,6 +49,8 @@ import { Link } from "react-router-dom";
 import { BulkBar } from "./BulkActions";
 import { ActionButtons, AssignPanel, FilesPanel, HistoryPanel } from "./caseParts";
 import DateTimeViInput from "./DateTimeViInput";
+import ExportCsvButton from "./ExportCsvButton";
+import KanbanBoard from "./KanbanBoard";
 import { conditionMet, conditionText } from "./condition";
 import { PersonField, PersonInput } from "./people";
 import { StatusChip } from "./StatusChip";
@@ -413,10 +419,28 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
   const bulk = entity.hasProcess && entity.canHandle && (entity.handlerActions?.length ?? 0) > 0;
   const calendar = entity.process?.booking != null;
   // The filters, the sort and the columns a person picks are kept in the browser, one set per entity.
-  const ListActions = () => (
+  const viewKey = `dxos.view.${resourceName(model.name, entity.name)}`;
+  const ListActions = () => {
+    const [view, setView] = useStore<"list" | "board">(viewKey, "list");
+    return (
     <TopToolbar>
+      {entity.hasProcess && (
+        <ToggleButtonGroup exclusive size="small" value={view} onChange={(_, next: "list" | "board" | null) => next && setView(next)} sx={{ mr: 0.5 }}>
+          <ToggleButton value="list" aria-label={t("Danh sách")}>
+            <Tooltip title={t("Danh sách")}>
+              <ViewListOutlinedIcon fontSize="small" />
+            </Tooltip>
+          </ToggleButton>
+          <ToggleButton value="board" aria-label={t("Bảng theo trạng thái")}>
+            <Tooltip title={t("Bảng theo trạng thái")}>
+              <ViewKanbanOutlinedIcon fontSize="small" />
+            </Tooltip>
+          </ToggleButton>
+        </ToggleButtonGroup>
+      )}
       <FilterButton />
-      <SelectColumnsButton />
+      {view === "list" && <SelectColumnsButton />}
+      <ExportCsvButton entity={entity} units={catalog.units} />
       {entity.canWrite && <CreateButton />}
       {calendar && (
         <Button component={Link} to={`/calendar/${resourceName(model.name, entity.name)}`} label={t("Lịch")}>
@@ -429,7 +453,8 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
         </Button>
       )}
     </TopToolbar>
-  );
+    );
+  };
 
   // The model file may choose the columns and the sort a list opens with; what a person picks later with
   // the Columns button is kept in the browser and wins over it.
@@ -444,8 +469,23 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
     ? { field: listUi.sort.replace(/^-/, ""), order: listUi.sort.startsWith("-") ? ("DESC" as const) : ("ASC" as const) }
     : { field: "id", order: "DESC" as const };
 
-  const EntityList = () => (
-    <List filters={filters} actions={<ListActions />} sort={defaultSort} exporter={false}>
+  // The records as a table, or, for an entity with a process, by state; the choice is kept in the browser.
+  const ListBody = () => {
+    const [view, setView] = useStore<"list" | "board">(viewKey, "list");
+    const { filterValues, setFilters } = useListContext();
+    if (view === "board" && entity.hasProcess) {
+      return (
+        <KanbanBoard
+          entity={entity}
+          titleField={displayField(entity)}
+          onAll={(status) => {
+            setFilters({ ...filterValues, status }, {});
+            setView("list");
+          }}
+        />
+      );
+    }
+    return (
       <DatagridConfigurable
         rowClick="show"
         omit={omit}
@@ -459,8 +499,23 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
         <DateField source="created_at" label={t("Tạo lúc")} locales={intlLocale()} showTime options={DATE_OPTIONS} />
         <DateField source="updated_at" label={t("Cập nhật lúc")} locales={intlLocale()} showTime options={DATE_OPTIONS} />
       </DatagridConfigurable>
-    </List>
-  );
+    );
+  };
+
+  const EntityList = () => {
+    const [view] = useStore<"list" | "board">(viewKey, "list");
+    return (
+      <List
+        filters={filters}
+        actions={<ListActions />}
+        sort={defaultSort}
+        exporter={false}
+        pagination={view === "board" && entity.hasProcess ? false : undefined}
+      >
+        <ListBody />
+      </List>
+    );
+  };
 
   const EntityShow = () => (
     <Show actions={false} component="div">

@@ -39,6 +39,7 @@ The current version is `2.0.0`, and the changes of each version are in [`CHANGEL
 - **Open to outside applications.** Each model has its own API document that follows the model, and an outside application is registered with exactly one role of one model and calls with its own secret.
 - **A control panel for the person deploying.** Template library, model editor (write the file or fill a form, with guidance on what can be written and extended) with a process diagram drawn from the file being written, plan preview, apply, history, user management and record statistics.
 - **An interface set by declaration.** The model file can choose icons, menu groups, the default columns and sort, how forms are grouped and the hints; an officer selects several records and handles them at once, each still going through every rule.
+- **Board by state and list export.** The list of records with a process can be seen as a board with one column per state, and exported to a CSV file a spreadsheet can read, with exactly the rows the viewer may see.
 - **An inbox that updates itself.** When a record changes, the inbox, the lists and the detail page that are open refresh without reloading the page.
 - **Try it at once.** One command creates a trial account for each role and sample records in several states, so a visitor who signs in finds a system with work in it.
 - **Simple to install and run.** One command installs and one starts; backups can be checked, services restart on their own, and attachments are virus-scanned when enabled.

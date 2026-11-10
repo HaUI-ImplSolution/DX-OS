@@ -161,6 +161,8 @@ sequenceDiagram
   `required_when` chỉ kiểm ở API, trên hồ sơ sau khi gộp giá trị mới vào bản ghi hiện có.
 - **Kiểu giá trị:** `date` là `YYYY-MM-DD`, `boolean` là `true` hay `false`, và trường nhiều lựa chọn là mảng chuỗi lưu theo thứ tự của `options`, không trùng; lọc trường đó bằng `contains`.
 - **Tài liệu API:** `GET /api/v1/meta/models/{model}/openapi` sinh tài liệu OpenAPI của mô hình đang chạy ngay lúc gọi, nên luôn khớp tệp mô hình; người có vai của mô hình đọc được.
+- **Gửi lại:** tạo hồ sơ và hành động nhận header `Idempotency-Key`; khóa được ghi vào `engine.idempotency` cùng giao dịch với việc làm, nên yêu cầu lỗi không giữ khóa và hai yêu cầu cùng khóa chạy cùng lúc chỉ làm một lần, yêu cầu sau chờ rồi nhận câu trả lời của yêu cầu trước.
+  Khóa thuộc về người gửi và gắn với một yêu cầu (loại, đích và băm của nội dung), giữ 24 giờ rồi bị dọn.
 
 ## 6. Quy trình và trạng thái
 

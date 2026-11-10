@@ -9,6 +9,7 @@ import HaUI.ImplSolution.dxos.engine.registry.ModelRegistry;
 import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -28,12 +30,17 @@ import org.springframework.web.bind.annotation.RestController;
     + " the fields, the roles and the rows each role reaches")
 public class DataController {
 
+  private static final String REPLAYED = "Idempotent-Replayed";
+
   private final ModelRegistry registry;
   private final DataService service;
+  private final IdempotencyService idempotency;
 
-  public DataController(ModelRegistry registry, DataService service) {
+  public DataController(ModelRegistry registry, DataService service,
+      IdempotencyService idempotency) {
     this.registry = registry;
     this.service = service;
+    this.idempotency = idempotency;
   }
 
   @GetMapping
@@ -80,11 +87,18 @@ public class DataController {
   @PostMapping
   @Operation(summary = "Create a record",
       description = "400 lists the problem of each field. The status of an entity with a process"
-          + " cannot be sent (403); the process sets it.")
+          + " cannot be sent (403); the process sets it. With an Idempotency-Key header a repeat of"
+          + " the request gets the first answer, marked by the header Idempotent-Replayed: true,"
+          + " and creates nothing; the same key with another body is 409 with data.reason"
+          + " IDEMPOTENCY_KEY_REUSED. A request that fails keeps no key, so it may be sent again."
+          + " A key is kept for a day.")
   public ApiResponse<Map<String, Object>> create(@PathVariable String model,
-      @PathVariable String entity, @RequestBody Map<String, Object> body) {
+      @PathVariable String entity, @RequestBody Map<String, Object> body,
+      @RequestHeader(value = IdempotencyService.HEADER, required = false) String key,
+      HttpServletResponse response) {
     Model m = registry.require(model);
-    return ApiResponse.success(service.create(m, entity(m, entity), body));
+    return answer(idempotency.once(key, "create", model + "/" + entity, body,
+        () -> service.create(m, entity(m, entity), body)), response);
   }
 
   @RequestMapping(value = "/{id}", method = {RequestMethod.PUT, RequestMethod.PATCH})
@@ -119,16 +133,30 @@ public class DataController {
           + " state, with data.reason WRONG_STATE or RECORD_CLOSED. A terminal state"
           + " stores decided_by and decided_at. The owner can take the action withdraw from any"
           + " state that is not final. Optional version and modelVersion reject a changed record"
-          + " or model with 409; a changed model has data.reason MODEL_VERSION_CHANGED.")
+          + " or model with 409; a changed model has data.reason MODEL_VERSION_CHANGED."
+          + " An Idempotency-Key repeat returns the first answer without executing the action again.")
   public ApiResponse<Map<String, Object>> act(@PathVariable String model,
       @PathVariable String entity, @PathVariable long id, @PathVariable String action,
-      @RequestBody(required = false) Map<String, String> body) {
+      @RequestBody(required = false) Map<String, String> body,
+      @RequestHeader(value = IdempotencyService.HEADER, required = false) String key,
+      HttpServletResponse response) {
     Model m = registry.require(model);
     String note = body == null ? null : body.get("note");
     RecordPreconditions conditions = RecordPreconditions.from(body);
-    registry.checkVersion(model, conditions.modelVersion());
-    return ApiResponse
-        .success(service.act(m, entity(m, entity), id, action, note, conditions.version()));
+    return answer(
+        idempotency.once(key, "act", model + "/" + entity + "/" + id + "/" + action, body, () -> {
+          registry.checkVersion(model, conditions.modelVersion());
+          return service.act(m, entity(m, entity), id, action, note, conditions.version());
+        }), response);
+  }
+
+  // The answer of a request, marked when it is the one kept for its Idempotency-Key.
+  private static ApiResponse<Map<String, Object>> answer(IdempotencyService.Outcome outcome,
+      HttpServletResponse response) {
+    if (outcome.replayed()) {
+      response.setHeader(REPLAYED, "true");
+    }
+    return ApiResponse.success(outcome.answer());
   }
 
   @PostMapping("/{id}/assign")

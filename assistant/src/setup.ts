@@ -59,6 +59,9 @@ if (operation === 'prepare') {
       security_opt: ['no-new-privileges:true'], cap_drop: ['ALL'],
       mem_limit: '${ASSISTANT_RUNTIME_MEMORY:?}', cpus: '${ASSISTANT_RUNTIME_CPUS:?}',
       pids_limit: 128, env_file: [`./data/assistant/private/${name}.env`],
+      healthcheck: { test: ['CMD', 'node', '-e',
+        'fetch("http://127.0.0.1:18792/status",{headers:{Authorization:"Bearer "+process.env.ASSISTANT_RUNTIME_CONTROL_TOKEN}}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))'],
+        interval: '15s', timeout: '5s', retries: 4 },
       volumes: [`./data/assistant/${name}:/state`], tmpfs: ['/tmp:rw,nosuid,nodev,noexec,size=128m'],
       networks: [network], logging: { driver: 'json-file', options: { 'max-size': '5m', 'max-file': '2' } } };
     networks[network] = {};

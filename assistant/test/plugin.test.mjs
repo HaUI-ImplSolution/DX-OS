@@ -100,3 +100,57 @@ test('denying native approval cancels its server proposal without executing', as
   await assert.rejects(tool.execute('call', pending.params));
   assert.equal(executions(), 0);
 });
+
+test('Telegram delivery errors reach the ledger without forwarding adapter details', async t => {
+  const previous = globalThis.fetch, previousUrl = process.env.DXOS_BRIDGE_URL;
+  const acknowledgements = []; let service, attempts = 0;
+  process.env.DXOS_BRIDGE_URL = 'https://bridge.invalid';
+  globalThis.fetch = async (_url, request) => {
+    const body = JSON.parse(request.body);
+    if (body.operation === 'ack') acknowledgements.push(body);
+    const data = body.operation === 'tick' ? { deliveries: [{ ref: 'synthetic' }] } :
+      body.operation === 'claim' ? { to: '100', text: 'Notice' } : {};
+    return new Response(JSON.stringify({ success: true, data }));
+  };
+  t.after(() => {
+    globalThis.fetch = previous;
+    if (previousUrl === undefined) delete process.env.DXOS_BRIDGE_URL; else process.env.DXOS_BRIDGE_URL = previousUrl;
+  });
+  register({ config: {}, registerTool() {}, on() {}, registerInteractiveHandler() {},
+    registerService(value) { service = value; }, runtime: { channel: { outbound: {
+      loadAdapter: async () => ({ sendPayload: async () => {
+        attempts++;
+        if (attempts === 1) throw Object.assign(new Error('synthetic-sensitive-detail'), { error_code: 429, parameters: { retry_after: 2 } });
+        throw new Error('synthetic-sensitive-detail');
+      } }),
+    } } } });
+  let cycle;
+  service.start({ scheduler: { signal: new AbortController().signal, schedule(job) { cycle = job.run; return { cancel() {} }; } } });
+  await cycle(); await cycle(); service.stop();
+  assert.deepEqual(acknowledgements, [
+    { operation: 'ack', ref: 'synthetic', status: 429, retryAfter: 2 },
+    { operation: 'ack', ref: 'synthetic' },
+  ]);
+});
+
+test('permission refusal immediately before delivery prevents the Telegram send', async t => {
+  const previous = globalThis.fetch, previousUrl = process.env.DXOS_BRIDGE_URL;
+  let service, sends = 0;
+  process.env.DXOS_BRIDGE_URL = 'https://bridge.invalid';
+  globalThis.fetch = async (_url, request) => {
+    const body = JSON.parse(request.body);
+    if (body.operation === 'authorize') return new Response(JSON.stringify({ success: false, errorCode: 'ERR_FORBIDDEN', message: 'Permission removed' }), { status: 403 });
+    return new Response(JSON.stringify({ success: true, data: body.operation === 'tick' ? { deliveries: [{ ref: 'synthetic' }] } : { to: '100', text: 'Notice' } }));
+  };
+  t.after(() => {
+    globalThis.fetch = previous;
+    if (previousUrl === undefined) delete process.env.DXOS_BRIDGE_URL; else process.env.DXOS_BRIDGE_URL = previousUrl;
+  });
+  register({ config: {}, registerTool() {}, on() {}, registerInteractiveHandler() {},
+    registerService(value) { service = value; }, runtime: { channel: { outbound: {
+      loadAdapter: async () => ({ sendPayload: async () => { sends++; } }),
+    } } } });
+  let cycle;
+  service.start({ scheduler: { signal: new AbortController().signal, schedule(job) { cycle = job.run; return { cancel() {} }; } } });
+  await cycle(); service.stop(); assert.equal(sends, 0);
+});

@@ -4,7 +4,7 @@ import {
   Button,
   Create,
   CreateButton,
-  Datagrid,
+  DatagridConfigurable,
   DateField,
   Edit,
   EditButton,
@@ -15,6 +15,7 @@ import {
   NumberInput,
   ReferenceField,
   ReferenceInput,
+  SelectColumnsButton,
   SelectInput,
   Show,
   SimpleForm,
@@ -31,11 +32,13 @@ import EventIcon from "@mui/icons-material/Event";
 import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
 import { Labeled } from "react-admin";
 import { Link } from "react-router-dom";
-import { timeAgo } from "../shell/format";
 import { ActionButtons, AssignPanel, FilesPanel, HistoryPanel } from "./caseParts";
 import DateTimeViInput from "./DateTimeViInput";
+import { PersonField, PersonInput } from "./people";
 import { StatusChip } from "./StatusChip";
 import { resourceName, type EntityMeta, type FieldMeta, type ModelMeta } from "./types";
+import { t } from "../shell/t";
+import { intlLocale, timeAgo } from "../shell/format";
 
 interface Catalog {
   model: string;
@@ -56,7 +59,7 @@ function statusField(entity: EntityMeta) {
   return (
     <FunctionField
       key="status"
-      label="Trạng thái"
+      label={t("Trạng thái")}
       render={(record: { status: string; overdue?: boolean }) => (
         <StatusChip entity={entity} status={record.status} overdue={record.overdue} />
       )}
@@ -69,7 +72,7 @@ function outputField(field: FieldMeta, catalog: Catalog) {
     case "number":
       return <NumberField key={field.name} source={field.name} label={field.label} emptyText="—" />;
     case "datetime":
-      return <DateField key={field.name} source={field.name} label={field.label} locales="vi-VN" showTime options={DATE_OPTIONS} emptyText="—" />;
+      return <DateField key={field.name} source={field.name} label={field.label} locales={intlLocale()} showTime options={DATE_OPTIONS} emptyText="—" />;
     case "unit":
       return (
         <FunctionField
@@ -78,6 +81,8 @@ function outputField(field: FieldMeta, catalog: Catalog) {
           render={(record: Record<string, string>) => catalog.units[record[field.name]] ?? record[field.name]}
         />
       );
+    case "user":
+      return <PersonField key={field.name} source={field.name} label={field.label} />;
     case "reference": {
       const target = catalog.entities[field.reference ?? ""];
       return (
@@ -128,6 +133,8 @@ function inputField(field: FieldMeta, catalog: Catalog) {
         </ReferenceInput>
       );
     }
+    case "user":
+      return <PersonInput key={field.name} source={field.name} label={field.label} required={field.required} />;
     case "file":
       return null;
     default:
@@ -140,7 +147,7 @@ function ShowActions({ model, entity }: { model: string; entity: EntityMeta }) {
   const closed = entity.process?.states.find((state) => state.name === record?.status)?.terminal ?? false;
   return (
     <Box sx={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 0.5 }}>
-      {entity.canWrite && !closed && <EditButton label="Sửa" />}
+      {entity.canWrite && !closed && <EditButton label={t("Sửa")} />}
       <ActionButtons model={model} entity={entity} />
     </Box>
   );
@@ -157,7 +164,7 @@ function ShowBody({ model, entity, catalog }: { model: string; entity: EntityMet
       <Card sx={{ p: 2.5, mb: 2, display: "flex", gap: 2, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
         <Box sx={{ minWidth: 0 }}>
           <Typography variant="caption" color="text.secondary">
-            {entity.label} · Mã {record.id}
+            {entity.label} · {t("Mã")} {record.id}
           </Typography>
           <Typography variant="h5" sx={{ my: 0.5 }}>
             {title}
@@ -165,7 +172,7 @@ function ShowBody({ model, entity, catalog }: { model: string; entity: EntityMet
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
             {entity.hasProcess && <StatusChip entity={entity} status={record.status} overdue={record.overdue} />}
             <Typography variant="body2" color="text.secondary">
-              Tạo {timeAgo(record.created_at)}
+              {t("Tạo {when}", { when: timeAgo(record.created_at) })}
             </Typography>
           </Box>
         </Box>
@@ -175,7 +182,7 @@ function ShowBody({ model, entity, catalog }: { model: string; entity: EntityMet
         <Box sx={{ display: "grid", gap: 2 }}>
           <Card sx={{ p: 2.5 }}>
             <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>
-              Thông tin
+              {t("Thông tin")}
             </Typography>
             <Box sx={{ display: "grid", gap: 2.5, gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))" }}>
               {entity.fields
@@ -185,17 +192,17 @@ function ShowBody({ model, entity, catalog }: { model: string; entity: EntityMet
                     {outputField(field, catalog)}
                   </Labeled>
                 ))}
-              <Labeled label="Tạo lúc">
-                <DateField source="created_at" locales="vi-VN" showTime options={DATE_OPTIONS} />
+              <Labeled label={t("Tạo lúc")}>
+                <DateField source="created_at" locales={intlLocale()} showTime options={DATE_OPTIONS} />
               </Labeled>
               {hasDeadline && (
-                <Labeled label="Hạn xử lý">
-                  <DateField source="handle_by" locales="vi-VN" showTime options={DATE_OPTIONS} emptyText="—" />
+                <Labeled label={t("Hạn xử lý")}>
+                  <DateField source="handle_by" locales={intlLocale()} showTime options={DATE_OPTIONS} emptyText="—" />
                 </Labeled>
               )}
               {entity.hasProcess && record.decided_at && (
-                <Labeled label="Quyết định lúc">
-                  <DateField source="decided_at" locales="vi-VN" showTime options={DATE_OPTIONS} />
+                <Labeled label={t("Quyết định lúc")}>
+                  <DateField source="decided_at" locales={intlLocale()} showTime options={DATE_OPTIONS} />
                 </Labeled>
               )}
             </Box>
@@ -236,8 +243,8 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
             key="status"
             source="status"
             alwaysOn
-            label="Trạng thái"
-            choices={(entity.process?.states ?? []).map((state) => ({ id: state.name, name: state.label }))}
+            label={t("Trạng thái")}
+            choices={(entity.process?.states ?? []).map((state) => ({ id: state.name, name: t(state.label) }))}
           />,
         ]
       : []),
@@ -254,33 +261,37 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
   ];
 
   const calendar = entity.process?.booking != null;
+  // The filters, the sort and the columns a person picks are kept in the browser, one set per entity.
   const ListActions = () => (
     <TopToolbar>
       <FilterButton />
+      <SelectColumnsButton />
       {entity.canWrite && <CreateButton />}
       {calendar && (
-        <Button component={Link} to={`/calendar/${resourceName(model.name, entity.name)}`} label="Lịch">
+        <Button component={Link} to={`/calendar/${resourceName(model.name, entity.name)}`} label={t("Lịch")}>
           <EventIcon />
         </Button>
       )}
-      <Button component={Link} to={`/stats/${resourceName(model.name, entity.name)}`} label="Thống kê">
-        <InsightsOutlinedIcon />
-      </Button>
+      {entity.hasProcess && (
+        <Button component={Link} to={`/stats/${resourceName(model.name, entity.name)}`} label={t("Thống kê")}>
+          <InsightsOutlinedIcon />
+        </Button>
+      )}
     </TopToolbar>
   );
 
   const EntityList = () => (
     <List
       filters={filters}
-      actions={entity.hasProcess ? <ListActions /> : undefined}
+      actions={<ListActions />}
       sort={{ field: "id", order: "DESC" }}
       exporter={false}
     >
-      <Datagrid rowClick="show" bulkActionButtons={false}>
-        <TextField source="id" label="Mã" />
+      <DatagridConfigurable rowClick="show" bulkActionButtons={false}>
+        <TextField source="id" label={t("Mã")} />
         {entity.fields.map((field) => outputField(field, catalog))}
         {entity.hasProcess && statusField(entity)}
-      </Datagrid>
+      </DatagridConfigurable>
     </List>
   );
 

@@ -38,6 +38,8 @@ Phiên bản hiện tại là `2.0.0`, thay đổi theo từng phiên bản ở 
 - **Bảng điều khiển cho người triển khai.** Thư viện mẫu, trình soạn mô hình (viết tệp hoặc điền form, có hướng dẫn nói rõ viết được và mở rộng được gì) kèm sơ đồ quy trình vẽ theo tệp đang soạn, xem kế hoạch, áp dụng, lịch sử, quản lý người dùng và thống kê hồ sơ.
 - **Cài và vận hành đơn giản.** Một lệnh cài, một lệnh chạy; có sao lưu kiểm được, tự khởi động lại dịch vụ và quét mã độc cho tệp đính kèm khi bật.
 - **Đăng nhập một lần.** Qua Keycloak, và có thể bắt quản trị viên nhập thêm mã một lần.
+- **[Trợ lý cá nhân (tùy chọn)](./assistant/README.md).** Đọc và theo dõi hồ sơ qua Telegram, đề xuất giao việc hoặc chuyển trạng thái để người dùng xác nhận.
+  Khi bật trợ lý, nội dung phục vụ yêu cầu được gửi tới nhà cung cấp API mô hình và tin nhắn được trao đổi qua Telegram.
 
 Bảng đối chiếu từng tính năng với bài kiểm của nó ở [ma trận bằng chứng](https://haui-implsolution.github.io/DX-OS/docs/evidence-matrix).
 
@@ -73,7 +75,7 @@ dxos start
 Bộ cài tải bản phát hành mới nhất, kiểm SHA-256 rồi cài vào `~/.dxos`; lệnh `dxos` nằm ở `~/.local/bin`.
 `dxos start` tải image ở lần đầu, chờ mọi dịch vụ sẵn sàng, tạo tài khoản `admin` với mật khẩu tạm in ra màn hình, rồi in các địa chỉ.
 Đăng nhập `http://localhost:9080/console` bằng `admin`, đổi mật khẩu, chọn một mẫu ở tab Thư viện mẫu, xem kế hoạch rồi áp dụng.
-Đã có tệp mô hình thì `dxos start <tệp>` đưa tệp vào luôn.
+Đã có tệp mô hình thì `dxos start <tệp>` đưa tệp vào luôn; có nhiều tệp thì liệt kê hết sau `dxos start`.
 Các lệnh khác và cách vận hành ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
 
 ### Từ mã nguồn
@@ -98,15 +100,6 @@ Người dùng vào qua gateway `http://localhost:9080`:
 | `/admin` | Quản trị Keycloak (tài khoản trong `deploy/.env`) |
 
 Hướng dẫn kiểm thử đầy đủ ở [`docs/TESTING.md`](./docs/TESTING.md).
-
-### Trợ lý cá nhân (tùy chọn)
-
-Sau khi Core đã chạy, bật bằng `dxos assistant on` (bản cài) hoặc `./deploy/dxos assistant on --build` (mã nguồn).
-Mở `/assistant`, liên kết tài khoản DX-OS, nhập API key/model và bot Telegram riêng rồi làm theo hướng dẫn pairing.
-Trợ lý đọc và theo dõi hồ sơ, đề xuất giao việc hoặc chuyển trạng thái; chỉ ghi sau khi bạn xác nhận và Core kiểm quyền.
-Tắt bằng `dxos assistant off`; dữ liệu cấu hình được giữ lại.
-Core không cần API key hoặc trợ lý để hoạt động.
-Chi tiết ở [`assistant/README.md`](./assistant/README.md) và [vận hành](./deploy/OPERATIONS.md#trợ-lý-cá-nhân).
 
 ## Tài liệu
 
@@ -133,7 +126,7 @@ Trang tài liệu: <https://haui-implsolution.github.io/DX-OS/>.
 | `backend/dx-core` | Thư viện dùng chung: bảo mật, audit, lưu trữ, trạng thái, client Keycloak |
 | `backend/dx-engine` | Dịch vụ lõi: áp dụng mô hình, API chung, Flowable |
 | `backend/dx-monitor` | Màn hình giám sát và truy vết |
-| `frontend` | Giao diện react-admin dựng từ metadata |
+| `frontend` | Giao diện react-admin dựng từ metadata, có tiếng Việt và tiếng Anh |
 | `deploy` | Compose, gateway APISIX, bộ cài và lệnh `dxos`, script vận hành, script kiểm tra ở `deploy/dev` |
 | `sso`, `portal`, `seaweedfs` | Keycloak realm, trang portal, lưu trữ tệp |
 | `models` | Tệp mô hình sai mẫu cho kiểm tự động; mô hình mẫu dùng được ở `backend/dx-engine/src/main/resources/templates/` |

@@ -14,6 +14,7 @@ const NAME = "\\[a-z\\]\\[a-z0-9_\\]\\*";
 
 // Most specific first: the general "... is required" comes last.
 const VI: Rule[] = [
+  fixed("This action is not available to your roles", "Vai trò của bạn không được thực hiện hành động này"),
   fixed("The model changed; read it again", "Mô hình đã thay đổi; hãy tải lại trước khi thực hiện"),
   pattern("must be a whole number at least (.+)", "Phải là số nguyên không nhỏ hơn $1"),
   pattern("The record does not meet the condition of this action: (.+)", "Hồ sơ chưa đạt điều kiện của hành động này: $1"),
@@ -218,6 +219,7 @@ const VI: Rule[] = [
   fixed("must be text", "Phải là văn bản"),
   pattern("must be one of (.+)", "Phải là một trong $1"),
   fixed("must be a number", "Phải là một số"),
+  fixed("must be the id of an existing user", "Phải là một người dùng có thật"),
   fixed("is set by uploading a file", "Được điền bằng cách tải tệp lên"),
   fixed("must be an ISO-8601 date and time with an offset", "Phải là ngày giờ ISO-8601 kèm múi giờ"),
   fixed("must be the id of a record", "Phải là mã của một hồ sơ"),

@@ -33,6 +33,7 @@ registerErrorMessages({
   ERR_PROPOSAL_CLOSED: "Đề xuất đã hết hạn hoặc đã được xử lý. Hãy tải lại.",
   ERR_EXECUTION_UNCERTAIN: "Chưa rõ kết quả. Kiểm tra lịch sử hồ sơ trước khi thử lại.",
   ERR_CONDITIONAL_API_REQUIRED: "Backend cần hỗ trợ điều kiện phiên bản trước khi trợ lý được ghi dữ liệu.",
+  ERR_PROPOSAL_VERSION_REQUIRED: "Đề xuất cũ thiếu phiên bản. Hãy yêu cầu bot tạo lại đề xuất trước khi xác nhận.",
 });
 
 let availability: Promise<boolean> | undefined;

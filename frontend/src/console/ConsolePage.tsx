@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Alert, Box, Skeleton, Snackbar, Tab, Tabs } from "@mui/material";
 import AutoAwesomeMosaicOutlinedIcon from "@mui/icons-material/AutoAwesomeMosaicOutlined";
 import EditNoteOutlinedIcon from "@mui/icons-material/EditNoteOutlined";
@@ -16,6 +16,8 @@ import { useModelSchema } from "./monacoSetup";
 import OutboxTab from "./OutboxTab";
 import TemplatesTab from "./TemplatesTab";
 import UsersTab from "./UsersTab";
+import { guardUnsavedWork } from "../shell/locale";
+import { t } from "../shell/t";
 
 const BLANK = `# SPDX-License-Identifier: Apache-2.0
 format: 0
@@ -25,7 +27,7 @@ roles:
 entities:
   item:
     fields:
-      title: {type: text, label: Tiêu đề, required: true}
+      title: {type: text, label: ${t("Tiêu đề")}, required: true}
     access: {USER: all}
 `;
 
@@ -35,10 +37,16 @@ export default function ConsolePage() {
   const [schema, setSchema] = useState<Record<string, unknown> | null>(null);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [text, setText] = useState(BLANK);
-  const [source, setSource] = useState("Tệp mới");
+  const [source, setSource] = useState(t("Tệp mới"));
   const [refresh, setRefresh] = useState(0);
   const [note, setNote] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // The text as it was loaded or last applied; a different text in the editor is work not yet applied.
+  const textRef = useRef(text);
+  const baselineRef = useRef(text);
+  textRef.current = text;
+
+  useEffect(() => guardUnsavedWork(() => textRef.current !== baselineRef.current), []);
 
   useEffect(() => {
     Promise.all([getSchema(), listTemplates()]).then(
@@ -48,11 +56,12 @@ export default function ConsolePage() {
         setSchema(described);
         setTemplates(loadedTemplates);
       },
-      (e: unknown) => setError(e instanceof Error ? e.message : "Không đọc được dữ liệu của bảng điều khiển"),
+      (e: unknown) => setError(e instanceof Error ? e.message : t("Không đọc được dữ liệu của bảng điều khiển")),
     );
   }, []);
 
   const edit = (content: string, label: string) => {
+    baselineRef.current = content;
     setText(content);
     setSource(label);
     setTab(2);
@@ -63,10 +72,10 @@ export default function ConsolePage() {
   // The layout grows to the narrowest width of its content, so the page stays as wide as the screen.
   return (
     <Box sx={{ contain: "inline-size" }}>
-      <Title title="Bảng điều khiển" />
+      <Title title={t("Bảng điều khiển")} />
       <PageHeader
-        title="Bảng điều khiển"
-        subtitle="Dựng, thay đổi và theo dõi các mô hình nghiệp vụ. Sửa tệp mô hình là đổi nghiệp vụ, không đổi mã."
+        title={t("Bảng điều khiển")}
+        subtitle={t("Dựng, thay đổi và theo dõi các mô hình nghiệp vụ. Sửa tệp mô hình là đổi nghiệp vụ, không đổi mã.")}
       />
       <Tabs
         value={tab}
@@ -75,11 +84,11 @@ export default function ConsolePage() {
         scrollButtons="auto"
         sx={{ mb: 2.5, borderBottom: 1, borderColor: "divider" }}
       >
-        <Tab icon={<LayersOutlinedIcon fontSize="small" />} iconPosition="start" label="Mô hình đang chạy" />
-        <Tab icon={<AutoAwesomeMosaicOutlinedIcon fontSize="small" />} iconPosition="start" label="Thư viện mẫu" />
-        <Tab icon={<EditNoteOutlinedIcon fontSize="small" />} iconPosition="start" label="Soạn và áp dụng" />
-        <Tab icon={<SyncAltIcon fontSize="small" />} iconPosition="start" label="Hàng đợi sự kiện" />
-        <Tab icon={<PeopleOutlineIcon fontSize="small" />} iconPosition="start" label="Người dùng" />
+        <Tab icon={<LayersOutlinedIcon fontSize="small" />} iconPosition="start" label={t("Mô hình đang chạy")} />
+        <Tab icon={<AutoAwesomeMosaicOutlinedIcon fontSize="small" />} iconPosition="start" label={t("Thư viện mẫu")} />
+        <Tab icon={<EditNoteOutlinedIcon fontSize="small" />} iconPosition="start" label={t("Soạn và áp dụng")} />
+        <Tab icon={<SyncAltIcon fontSize="small" />} iconPosition="start" label={t("Hàng đợi sự kiện")} />
+        <Tab icon={<PeopleOutlineIcon fontSize="small" />} iconPosition="start" label={t("Người dùng")} />
       </Tabs>
       {!schema && (
         <Box>
@@ -92,7 +101,7 @@ export default function ConsolePage() {
         <ModelsTab
           refresh={refresh}
           onBrowse={() => setTab(1)}
-          onOpen={(model, content, version) => edit(content, `${model}, phiên bản ${version}`)}
+          onOpen={(model, content, version) => edit(content, t("{model}, phiên bản {version}", { model, version }))}
           onChanged={(message) => {
             setNote(message);
             setRefresh((value) => value + 1);
@@ -100,7 +109,7 @@ export default function ConsolePage() {
         />
       )}
       {schema && tab === 1 && (
-        <TemplatesTab templates={templates} onUse={(template) => edit(template.content, `Mẫu ${template.name}`)} />
+        <TemplatesTab templates={templates} onUse={(template) => edit(template.content, t("Mẫu {name}", { name: template.name }))} />
       )}
       {schema && tab === 2 && (
         <EditorTab
@@ -109,6 +118,7 @@ export default function ConsolePage() {
           schema={schema}
           onText={setText}
           onApplied={(message) => {
+            baselineRef.current = textRef.current;
             setNote(message);
             setRefresh((value) => value + 1);
             setTab(0);

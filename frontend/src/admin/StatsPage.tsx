@@ -5,6 +5,7 @@ import { Alert, Box, ButtonBase, Card, Skeleton, Typography } from "@mui/materia
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
 import HourglassBottomOutlinedIcon from "@mui/icons-material/HourglassBottomOutlined";
 import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined";
+import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined";
 import TimerOutlinedIcon from "@mui/icons-material/TimerOutlined";
 import { Title } from "react-admin";
 import PageHeader from "../shell/PageHeader";
@@ -12,6 +13,7 @@ import { formatDateTime, formatDuration } from "../shell/format";
 import { getStats, type EntityStats } from "./api";
 import { TONES } from "./StatusChip";
 import { splitResource, type ModelMeta } from "./types";
+import { t } from "../shell/t";
 
 type Filter = Record<string, string>;
 
@@ -56,7 +58,7 @@ function Breakdown({ title, rows, total }: { title: string; rows: { key: string;
       </Typography>
       {rows.length === 0 && (
         <Typography variant="body2" color="text.secondary">
-          Chưa có hồ sơ nào.
+          {t("Chưa có hồ sơ nào.")}
         </Typography>
       )}
       {rows.map((row) => (
@@ -101,14 +103,14 @@ export default function StatsPage({ models }: { models: ModelMeta[] }) {
         setStats(loaded);
         setError(null);
       },
-      (e: unknown) => setError(e instanceof Error ? e.message : "Không đọc được số liệu"),
+      (e: unknown) => setError(e instanceof Error ? e.message : t("Không đọc được số liệu")),
     );
   }, [modelName, entityName, entity?.hasProcess]);
 
-  if (!model || !entity?.hasProcess) return <Typography sx={{ p: 2 }}>Thực thể này không có thống kê.</Typography>;
+  if (!model || !entity?.hasProcess) return <Typography sx={{ p: 2 }}>{t("Thực thể này không có thống kê.")}</Typography>;
 
   const what = entity.label.charAt(0).toLowerCase() + entity.label.slice(1);
-  const stateLabel = (status: string) => entity.process?.states.find((state) => state.name === status)?.label ?? status;
+  const stateLabel = (status: string) => t(entity.process?.states.find((state) => state.name === status)?.label ?? status);
   const unitLabel = (unit: string) => model.units.find((candidate) => candidate.name === unit)?.label ?? unit;
   const tone = (status: string) => {
     const value = TONES[status];
@@ -117,13 +119,13 @@ export default function StatsPage({ models }: { models: ModelMeta[] }) {
 
   return (
     <Box>
-      <Title title={`Thống kê ${what}`} />
+      <Title title={t("Thống kê {what}", { what })} />
       <PageHeader
-        title={`Thống kê ${what}`}
+        title={t("Thống kê {what}", { what })}
         subtitle={
           stats
-            ? `Tính trên các hồ sơ bạn được xem, lúc ${formatDateTime(stats.computedAt)}. Bấm vào một số để mở danh sách tương ứng.`
-            : "Tính trên các hồ sơ bạn được xem."
+            ? t("Tính trên các hồ sơ bạn được xem, lúc {time}. Bấm vào một số để mở danh sách tương ứng.", { time: formatDateTime(stats.computedAt) })
+            : t("Tính trên các hồ sơ bạn được xem.")
         }
       />
       {error && <Alert severity="error">{error}</Alert>}
@@ -131,29 +133,37 @@ export default function StatsPage({ models }: { models: ModelMeta[] }) {
       {stats && (
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-            <Tile icon={<AssignmentOutlinedIcon />} label="Tổng số hồ sơ" value={stats.total} tone="primary" onClick={() => navigate(listPath(resource, {}))} />
+            <Tile icon={<AssignmentOutlinedIcon />} label={t("Tổng số hồ sơ")} value={stats.total} tone="primary" onClick={() => navigate(listPath(resource, {}))} />
             {entity.process?.deadlineSeconds != null && (
               <Tile
                 icon={<ReportProblemOutlinedIcon />}
-                label="Quá hạn"
+                label={t("Quá hạn")}
                 value={stats.overdue}
                 tone="error"
                 onClick={() => navigate(listPath(resource, { "handle_by.lt": stats.computedAt }))}
               />
             )}
+            {stats.closedOnTime != null && stats.closedLate != null && stats.closedOnTime + stats.closedLate > 0 && (
+              <Tile
+                icon={<TaskAltOutlinedIcon />}
+                label={t("Đúng hạn, {on}/{all} hồ sơ đã đóng", { on: stats.closedOnTime, all: stats.closedOnTime + stats.closedLate })}
+                value={`${Math.round((100 * stats.closedOnTime) / (stats.closedOnTime + stats.closedLate))}%`}
+                tone="success"
+              />
+            )}
             {stats.avgDecisionSeconds != null && (
-              <Tile icon={<TimerOutlinedIcon />} label="Thời gian xử lý trung bình" value={formatDuration(stats.avgDecisionSeconds)} tone="success" />
+              <Tile icon={<TimerOutlinedIcon />} label={t("Thời gian xử lý trung bình")} value={formatDuration(stats.avgDecisionSeconds)} tone="success" />
             )}
             {stats.avgOpenAgeSeconds != null && (
-              <Tile icon={<HourglassBottomOutlinedIcon />} label="Tuổi trung bình hồ sơ đang mở" value={formatDuration(stats.avgOpenAgeSeconds)} tone="info" />
+              <Tile icon={<HourglassBottomOutlinedIcon />} label={t("Tuổi trung bình hồ sơ đang mở")} value={formatDuration(stats.avgOpenAgeSeconds)} tone="info" />
             )}
             {stats.oldestOpenAgeSeconds != null && (
-              <Tile icon={<HourglassBottomOutlinedIcon />} label="Hồ sơ đang mở lâu nhất" value={formatDuration(stats.oldestOpenAgeSeconds)} tone="warning" />
+              <Tile icon={<HourglassBottomOutlinedIcon />} label={t("Hồ sơ đang mở lâu nhất")} value={formatDuration(stats.oldestOpenAgeSeconds)} tone="warning" />
             )}
           </Box>
           <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
             <Breakdown
-              title="Theo trạng thái"
+              title={t("Theo trạng thái")}
               total={stats.total}
               rows={stats.byStatus.map((row) => ({
                 key: row.status,
@@ -165,11 +175,11 @@ export default function StatsPage({ models }: { models: ModelMeta[] }) {
             />
             {entity.unitField && stats.byUnit && (
               <Breakdown
-                title="Theo đơn vị"
+                title={t("Theo đơn vị")}
                 total={stats.total}
                 rows={stats.byUnit.map((row) => ({
                   key: row.unit ?? "",
-                  label: row.unit ? unitLabel(row.unit) : "Chưa có đơn vị",
+                  label: row.unit ? unitLabel(row.unit) : t("Chưa có đơn vị"),
                   count: row.count,
                   tone: "info",
                   filter: row.unit ? { [entity.unitField as string]: row.unit } : {},

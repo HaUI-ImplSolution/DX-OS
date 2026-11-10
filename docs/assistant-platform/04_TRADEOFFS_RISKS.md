@@ -13,10 +13,10 @@
 | TO7 | Provider tự host hay API ngoài | Nhiều API do từng người cấu hình | Không tải LLM/GPU, đổi nhà cung cấp | Dữ liệu ra ngoài, quota, Internet và chi phí; không phải Open Source AI | Thấp |
 | TO8 | Bot chung hay bot riêng | Bot riêng mỗi chủ ở đợt này | Dễ cách ly và sở hữu token | Người dùng phải tạo bot/pairing, onboarding dài hơn | Vừa |
 
-Các lựa chọn kỹ thuật là đề xuất để người dùng review; số người và nguyên tắc ghi có xác nhận đã được chốt.
+Trợ lý được tích hợp với tối đa ba runtime trên một máy; thao tác ghi cần người dùng xác nhận.
 Không dùng tên session hoặc tuyên bố của provider làm bằng chứng cách ly/an toàn.
-Chính sách dependency mở áp dụng cả runtime/build/test; API LLM bên ngoài là lựa chọn tùy chọn đã được người dùng yêu cầu, không phải thành phần mô hình mở của bản phát hành Core.
-Chỉ dẫn `COPYRIGHT.txt` trong delta được ánh xạ sang `DEPENDENCIES.txt`, `NOTICE` và SBOM theo nhánh cha hiện tại; không tạo lại file đã bỏ.
+Chính sách dependency mở áp dụng cả runtime/build/test; API LLM bên ngoài do người dùng cấu hình, không phải mô hình nguồn mở được phân phối trong sản phẩm.
+Giấy phép được ghi trong `DEPENDENCIES.txt`, `NOTICE` và SBOM theo cấu trúc tài liệu hiện tại.
 
 ## 2. Rủi ro
 
@@ -37,7 +37,7 @@ Chỉ dẫn `COPYRIGHT.txt` trong delta được ánh xạ sang `DEPENDENCIES.tx
 | R13 | Phạm vi phình hoặc mở lại ý tưởng đã loại | Vừa | Vừa | Allowlist file/API, đối chiếu quyết định đã loại, chốt WP, review diff | Xuất hiện RAG/MCP, module cũ, CSV/fulltext/Core subscription | Dừng phần ngoài domain, không ghép vào trợ lý |
 | R14 | Runtime tắt làm mất nghe Telegram | Vừa | Vừa | Runtime bật khi dùng bot/thông báo; không hứa đánh thức tự động | Người dùng nhắn lúc slot đã off | UI báo off, người dùng bật lại; không thêm bot poller thứ hai |
 
-## 3. Giới hạn chấp nhận ở bản đầu
+## 3. Giới hạn thiết kế
 
 - Một host, một control process, SQLite riêng và tối đa ba runtime; không tuyên bố HA hoặc scale đa máy.
 - Một bot riêng mỗi người, Telegram private chat; không bot chung, group chat hoặc kênh khác.
@@ -45,19 +45,16 @@ Chỉ dẫn `COPYRIGHT.txt` trong delta được ánh xạ sang `DEPENDENCIES.tx
 - Không fulltext/RAG, đọc tệp, sinh YAML, ghi hàng loạt hoặc tự thực hiện quyết định theo lịch.
 - Không exactly-once xuyên Core/Telegram; kết quả không rõ được giữ và đối chiếu thay vì gửi lại mù.
 - Quyền theo trường chưa có ở Core; chỉ gửi dữ liệu cần cho tác vụ và có thông báo/đồng ý, không quảng cáo bộ lọc AI là field-level ACL.
-- Không nhập tự động secret/state PoC; cấu hình lại và nghiệm thu trên bản tích hợp.
+- Bí mật và dữ liệu trợ lý được cấu hình theo từng tài khoản trên môi trường triển khai.
 
 ### Backlog: Không gian hội thoại theo mô hình
 
-Hoãn giao diện chuyển không gian, lưu/khôi phục hội thoại riêng từng mô hình và thống kê chi phí theo mô hình đến sau khi hoàn thiện trợ lý.
-Đợt hiện tại vẫn bắt buộc xác định mô hình đích của mỗi công cụ/proposal, kiểm quyền bằng API và không dùng dữ liệu mô hình khác làm căn cứ trả lời.
-Hội thoại hiện thuộc tài khoản, chưa tách lịch sử theo mô hình; người dùng cần chỉ rõ mô hình khi đổi ngữ cảnh.
-Tool và proposal luôn mang mô hình đích, lấy lại dữ liệu/quyền từ Core; không coi lịch sử hội thoại là bằng chứng quyền hoặc trạng thái.
-Không tạo database hoặc runtime mới cho từng mô hình trong đợt này.
+Hội thoại hiện thuộc tài khoản; việc tách lịch sử và chi phí theo mô hình nằm trong [BACKLOG](../dynamic-core/BACKLOG.md).
+Công cụ và đề xuất luôn xác định mô hình đích, kiểm quyền và trạng thái qua Core.
 
 ## 4. Điều kiện dừng và rollback
 
-Dừng triển khai nếu G0 không đạt, không chứng minh được cách ly ba chủ, không giữ được xác nhận ngoài model, hoặc precondition không được kiểm nguyên tử ở Core.
+Dừng triển khai nếu G0 không đạt, không chứng minh được cách ly tài khoản/runtime, không giữ được xác nhận ngoài model, hoặc precondition không được kiểm nguyên tử ở Core.
 Dừng công cụ ghi khi API Core chưa hỗ trợ phiên bản hoặc metadata tác động chưa đủ.
 Lỗi rò dữ liệu, ghi sai người và mất Core không được hạ mức để đóng checklist.
 
@@ -68,15 +65,15 @@ Giữ SQLite/key/runtime để khôi phục có kiểm soát; purge là thao tá
 ## 5. Tác động ngoài đợt này
 
 Phần Core chỉ có điều kiện ghi và metadata trung tính; quy trình, YAML và bốn module không đổi hướng kiến trúc.
-Deploy/CI có mở rộng vì đây là gói tùy chọn mới, không thể tuyên bố tích hợp production mà không đụng hạ tầng.
+Deploy/CI có phần mở rộng để đóng gói, vận hành và kiểm tra dịch vụ trợ lý tùy chọn.
 Mở rộng nhiều người hơn, bot chung, provider tự host, kênh mới và event subscription cần kế hoạch riêng dựa trên số đo đợt này.
 
 ## 6. Rủi ro cần chặn khi xử lý review PR #199
 
 | Rủi ro | Biện pháp và điều kiện |
 |---|---|
-| Tối ưu cache mở rộng thay đổi Core | Đã hoãn và hoàn lại diff cache; giữ kiểm phiên bản hiện có, tối ưu riêng sau khi có nhu cầu |
-| Làm mất require/handlers/handlerActions vừa được cha bổ sung | Đối chiếu ba vùng merge và kiểm quy trình tự khai báo trong TRV-06/09 |
+| Tối ưu cache mở rộng thay đổi Core | Giữ truy vấn phiên bản hiện tại; tối ưu riêng khi có nhu cầu |
+| Làm mất require/handlers/handlerActions của mô hình | Đối chiếu metadata và kiểm quy trình tự khai báo trong TRV-06/09 |
 | Allowlist endpoint nhưng redirect/DNS vẫn gửi key sai đích | Kiểm transport probe/inference thật; chưa bảo đảm thì chặn compatible, không chỉ sửa thông báo |
 | Token/runtime chéo chủ | Kiểm credential isolation và capability thật; lỗi rò dữ liệu hoặc ghi sai chủ chặn merge |
 | Người có quyền giải mã backup cũng có master key | Ghi rõ trust boundary; hạn chế quyền backup, giữ mật khẩu restic ngoài bản sao; không tuyên bố bảo vệ khỏi quản trị backup |
@@ -84,17 +81,15 @@ Mở rộng nhiều người hơn, bot chung, provider tự host, kênh mới v�
 | Thay cách dựng gateway làm ảnh hưởng Core khi AI tắt | Một generator có route tùy chọn, kiểm off/on và route SSO/monitor; rollback thay đổi cấu hình nếu lỗi |
 | Đánh dấu toàn phase hoàn tất chỉ vì sửa xong review | Checklist gốc và TAS còn thiếu giữ mở; bảng phản hồi review không thay nghiệm thu |
 
-Phương án hiện chọn cho backup là mô tả đúng quyền của người giữ credential restic và giữ khả năng phục hồi hiện tại.
-Tách custody master key khỏi backup chưa nằm trong đợt này; nếu cần phải chốt quy trình mất khóa/khôi phục trước khi triển khai.
+Backup hiện chứa dữ liệu, master key và token trong cùng kho restic.
+Việc tách quyền giữ khóa/token, thu hồi credential và khôi phục khi mất khóa còn cần hoàn thiện trong BACKLOG.
 
 ## 7. Giới hạn và quyết định sau review bổ sung
 
-- Egress tự do: giới hạn tool không thay firewall; hoãn proxy/allowlist đến trước dùng thật và giữ compatible khóa theo phạm vi bản thử đã chốt.
-- Control cùng mạng DB: đã duyệt sửa hẹp trong overlay thay vì chỉ đổi câu README; cần thêm mạng ingress cho APISIX khi bỏ default.
-- Backup có capability: người giải mã backup còn có thể giả danh runtime; bản thử giữ trust boundary hiện tại; custody/rotation ghi BACKLOG trước dùng thật.
+- Egress: runtime chưa có allowlist kết nối toàn container; giới hạn công cụ không thay firewall, endpoint compatible vẫn tắt.
+- Mạng control: dùng mạng API/SSO và ingress riêng cho APISIX, không tham gia mạng DB.
+- Backup có capability: người giải mã backup có thể đọc bí mật hoặc giả danh runtime; cần hoàn thiện quản lý, thu hồi và thay mới khóa/token.
 - Origin/PATCH/schema: giữ hợp đồng hiện tại và mô tả đúng, không tự mở nhiều origin hoặc cập nhật profile từng trường.
-- Cache phiên bản: lợi ích đo được thấp, đã duyệt hoãn và hoàn lại riêng diff tối ưu; diff cache local đã hoàn lại; kiểm phiên bản của PR gốc giữ nguyên.
+- Phiên bản: giữ cách đọc trực tiếp và kiểm trước khi ghi; tối ưu truy vấn nằm trong BACKLOG.
 
-Các giới hạn egress/backup được chấp nhận riêng cho bản thử có kiểm soát.
-Giữ Gemini, OpenAI và Anthropic qua endpoint cố định; chưa tuyên bố đã nghiệm thu cả ba bằng key thật.
-Hai bug HTTP và route off vẫn là việc cần giải quyết trước merge.
+Các việc còn thiếu được theo dõi trong [BACKLOG](../dynamic-core/BACKLOG.md); kết quả kiểm tại [test plan](./03_TEST_PLAN.md).

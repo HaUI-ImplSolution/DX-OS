@@ -6,6 +6,7 @@ Run on a stack that is up, after the other checks:
 The script puts files in deploy/model/, restarts the backend with each of them, and reads the line
 "Model bootstrap: <result> <detail>" that every start writes. The model bootcheck stays applied; the
 files and the setting are removed at the end.
+Several files are given as names separated by commas, the way DXOS_MODEL_FILE holds them.
 """
 import os
 import re
@@ -96,6 +97,14 @@ def main():
 
     result = restart(None)
     rt.check("BS-08 without a file the backend logs no bootstrap line", result == [], str(result))
+
+    write(NAME, WITH_NOTE)
+    write("broken.yaml", "model: [broken\n  entities: x:\n")
+    write("bootcheck_copy.yaml", FIRST)
+    result = restart("broken.yaml," + NAME + ",bootcheck_copy.yaml")
+    rt.check("BS-09 several files give one line each in order, a failed file does not stop the next, and a second file of the same model is skipped", [r[0] for r in result] == ["failed", "unchanged", "skipped"], str(result))
+    os.remove(f"{MODEL_DIR}/broken.yaml")
+    os.remove(f"{MODEL_DIR}/bootcheck_copy.yaml")
 
     os.remove(f"{MODEL_DIR}/{NAME}")
     failed = [case for case, ok in rt.results if not ok]

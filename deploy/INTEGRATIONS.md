@@ -51,6 +51,7 @@ Thông điệp chưa gửi, đã dừng, lỗi gần nhất và nút thử lại
 Bên nhận lỡ thông điệp (ngừng chạy, hoặc thông điệp đã dừng) lấy lại bằng `GET /api/v1/events?after=<eventId đã giữ>&size=<tối đa 500>&model=<tùy chọn>` với token ADMIN.
 Các dòng đọc thẳng từ lịch sử, cùng dạng với thông điệp webhook, từ cũ tới mới; `next` là `eventId` để hỏi tiếp và `more` cho biết còn dòng.
 Lệnh này dùng được cả khi chưa đặt đích nào.
+Thay đổi của quản trị lấy lại bằng `GET /api/v1/events/admin?after=<eventId đã giữ>&size=<tối đa 500>&model=<tùy chọn>`, cùng quy ước `next` và `more`; mỗi phần tử có đúng dạng thông điệp `admin.event`.
 
 Hồ sơ có hạn xử lý dài hơn `DXOS_DUE_SOON_BEFORE` (mặc định `24h`, `0` để tắt) nhận một dòng `due_soon` khi còn chừng đó thời gian trước hạn, đúng một lần cho mỗi hạn.
 Hạn không dài hơn khoảng này thì không có dòng `due_soon`.
@@ -63,11 +64,11 @@ Hồ sơ của thực thể có quy trình vừa được tạo hoặc nộp l�
 
 ### Việc áp dụng mô hình và thay đổi tài khoản
 
-Các thay đổi này gửi thông điệp chủ đề `admin.event` với `id`, `kind`, `model`, `actor`, `actorName`, `at`, `facts` và `schemaVersion`; `id` cũng nằm ở header `X-Dxos-Event-Id`.
+Các thay đổi này gửi thông điệp chủ đề `admin.event` với `eventId`, `kind`, `model`, `actor`, `actorName`, `at`, `facts` và `schemaVersion`; `eventId` là số của dòng trong nhật ký thay đổi của quản trị, tăng dần, và cũng nằm ở header `X-Dxos-Event-Id`.
+Số này đếm riêng, không cùng dãy với `eventId` của dòng lịch sử hồ sơ, nên bên nhận khử trùng theo cặp loại thông điệp và `eventId`.
 `kind` là `MODEL_APPLIED`, `MODEL_ROLLED_BACK`, `MODEL_RESUMED`, `MODEL_ABANDONED`, hoặc tên hành động của audit như `USER_ROLE_GRANTED`.
 Thông điệp của một mô hình vào đích của mô hình đó; thay đổi tài khoản và mô hình đã gỡ vào đích mặc định.
-Không có đích thì không ghi gì.
-Chúng không nằm trong API kéo sự kiện, vì không phải dòng lịch sử của hồ sơ.
+Mỗi thay đổi được ghi thành một dòng dù có đích hay không; có đích thì dòng đó mới vào hàng đợi gửi.
 
 ## Lịch sử chống sửa
 

@@ -1,6 +1,7 @@
 # Portal
 
 Trang tĩnh liệt kê link tới ứng dụng chính, Keycloak Admin Console, màn hình giám sát (`/monitor/`) và Swagger.
+Trang có tiếng Việt và tiếng Anh, chọn bằng nút VI và EN ở góc trên; lựa chọn nằm ở khóa `dxos.locale` của `localStorage`, cùng khóa với ứng dụng chính vì cả hai phục vụ từ một địa chỉ.
 Cuối trang có mục **Trạng thái dịch vụ**, tự làm mới mỗi 30 giây:
 
 - Tên ứng dụng đang chạy (hiện ở tiêu đề), Backend và lưu trữ tệp lấy từ `GET /api/v1/system/status` (công khai, qua gateway).

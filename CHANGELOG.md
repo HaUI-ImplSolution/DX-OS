@@ -17,9 +17,12 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - Một tệp mô hình khai báo thực thể, trường, vai, quyền, đơn vị và quy trình; `dx-model` đọc và kiểm tra, báo lỗi theo dòng và cột.
 - API chung `/api/v1/data/{model}/{entity}` với lọc, sắp xếp, phân trang, quy tắc bắt buộc, duy nhất và lựa chọn; metadata ở `/api/v1/meta/models`.
 - Sửa hồ sơ nhận `version`: hồ sơ đã đổi thì trả 409 `ERR_CONCURRENT_MODIFICATION` và không ghi đè.
-- Lỗi 403 `ERR_ACTION_NOT_ALLOWED` và 409 `ERR_INVALID_STATE` có `data.reason`, mã ổn định cho client.
+- Lỗi 403 `ERR_ACTION_NOT_ALLOWED` và 409 `ERR_INVALID_STATE` có `data.reason`, mã ổn định cho client; giao diện dịch lỗi theo mã này.
 - Hành động của người xử lý nhận điều kiện `when`, một phép so sánh một trường với một giá trị như `amount > 5000000`; hồ sơ chưa đạt thì trả 409 `ERR_INVALID_STATE` với `data.reason` là `CONDITION_NOT_MET`, giá trị trống không đạt, nên một trạng thái rẽ nhánh theo ngưỡng được bằng hai hành động `when` loại trừ nhau; nút của hành động mờ trên giao diện và sơ đồ quy trình ghi điều kiện trên cạnh.
 - Thống kê `GET /api/v1/data/{model}/{entity}/stats` cho thực thể có quy trình: tổng số, theo trạng thái, quá hạn, theo đơn vị, thời gian xử lý trung bình và tuổi hồ sơ đang mở, cùng bộ lọc và quyền như danh sách.
+- Thực thể khai hạn xử lý có thêm `closedOnTime` và `closedLate` trong thống kê, đếm từ các dòng lịch sử `overdue`; trang thống kê hiện tỷ lệ hồ sơ đã đóng đúng hạn.
+- Dòng `overdue` được ghi khi hồ sơ rời một hạn đã quá.
+- Tên hành động của quy trình không được trùng tên một dòng lịch sử của hệ thống như `created`, `overdue` hay `due_soon`; tệp đặt tên đó bị từ chối ở bước kiểm.
 - Dòng lịch sử `updated` ghi giá trị cũ và mới của từng trường đã đổi.
 - Bảy mẫu mô hình ở `backend/dx-engine/src/main/resources/templates/`: một cửa sinh viên, hỗ trợ kỹ thuật, sự cố thiết bị, đặt phòng, cấp quyền, mượn thiết bị, ghi chú.
 - Vai `report_ro` chỉ đọc cho công cụ báo cáo của người vận hành.
@@ -29,6 +32,10 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - Thêm trợ lý cá nhân tùy chọn qua OpenClaw và Telegram, cấu hình API riêng theo tài khoản; đọc hồ sơ, thông báo và đề xuất giao việc/chuyển trạng thái có xác nhận.
 - Chuyển trạng thái và giao việc nhận điều kiện phiên bản bản ghi và mô hình; Core kiểm trong khóa/giao dịch, giữ tương thích request cũ.
 - Thêm trang kích hoạt trợ lý, bộ cài/vận hành tùy chọn và danh mục dependency/SBOM riêng.
+- Mỗi lần cấu hình Telegram tạo vùng ghép nối riêng; không dùng lại quyền ghép nối của bot trước.
+- Chặn ghi từ đề xuất thiếu phiên bản và khi Core không hỗ trợ điều kiện, kể cả đề xuất đã tạo trước rollback.
+- Lọc hành động theo quyền Core, gửi tổng kết ngày đầu đúng lịch và kiểm sức khỏe từng runtime.
+- Runtime mặc định 2 GiB RAM; lệnh bật trợ lý nhận các giá trị tùy chọn từ `env.example`.
 
 ### Áp dụng và đổi mô hình
 
@@ -40,7 +47,7 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - Trạng thái còn hồ sơ nằm ở đó không bỏ được, và trạng thái cuối còn hồ sơ đã đóng không đổi thành trạng thái thường; kế hoạch báo số dòng vi phạm.
 - Đổi nhãn, vai của hành động, trường bắt buộc, các trạng thái rút lại hay danh sách vai xử lý có hiệu lực ngay với hồ sơ đang mở.
 - Khai báo lại một vai còn người giữ thì kế hoạch lên mức `MIGRATION` và báo số người có lại quyền.
-- Tệp mô hình lúc khởi động: `dxos start <tệp>` đưa tệp vào, backend áp dụng nếu là tệp mới và có kế hoạch an toàn.
+- Tệp mô hình lúc khởi động: `dxos start <tệp> [<tệp>...]` đưa một hay nhiều tệp vào, backend áp dụng lần lượt từng tệp nếu là tệp mới và có kế hoạch an toàn; tệp lỗi không chặn tệp sau, và mỗi tệp có một dòng kết quả.
 - `dxos plan` và `dxos apply [--accept MỨC]` đổi mô hình từ dòng lệnh, đăng nhập bằng client `dxos-cli`.
 
 ### Quyền và định danh
@@ -50,6 +57,7 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - Mỗi mô hình có một client `dxos-m-<mô hình>` chứa vai của nó, nên hai mô hình dùng cùng tên vai không vào được dữ liệu của nhau.
 - Tài khoản dịch vụ `dxos-backend-admin` có quyền `manage-clients`, `view-clients`, `query-clients` và scope `kc-admin-api`, vì Admin API của Keycloak 26.8 chỉ nhận token có audience của nó.
   Realm đã import từ trước chạy `deploy/keycloak-admin-scope.sh` (`update.sh` gọi nó) và cấp các quyền client ở Keycloak Admin Console.
+- Trường kiểu `user` giữ id tài khoản Keycloak: backend từ chối id không có thật khi tạo hồ sơ hoặc khi giá trị đổi, giao diện cho chọn người theo tên qua `GET /api/v1/people` và hiện tên ở danh sách, trang chi tiết và lịch sử.
 - Tab Người dùng và API `/api/v1/users` (ADMIN): tìm kiếm, vai theo từng ứng dụng, gán và gỡ vai và đơn vị, tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu.
 - Thay đổi tài khoản và việc áp dụng, quay về, tiếp tục, hủy bỏ mô hình ghi `audit_log` (`USER_*`, `MODEL_*`); `GET /api/v1/audit-logs` lọc theo đối tượng.
 - Keycloak từ chối tài khoản dịch vụ thì API trả 502 `ERR_ACCOUNT_SERVICE_DENIED`, tách khỏi `ERR_ACCOUNT_SERVICE_UNAVAILABLE` khi Keycloak không trả lời.
@@ -60,7 +68,7 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - Khối `process:` dùng `family`, `handler`, `states`, `actions`, `initial`, `allow_self_decision`, `deadline`, `auto_close` và `after`; khối `booking:` khai báo tài nguyên, khung giờ và sức chứa.
 - Quy tắc chung của mọi quy trình: từ chối và trả lại cần lý do, người nộp sửa rồi nộp lại hoặc rút lại, người tạo không tự quyết định, hồ sơ đã giao thì chỉ người được giao xử lý.
 - Hồ sơ lưu người quyết định và thời điểm quyết định.
-- Giao việc, hộp việc `/api/v1/inbox` có phân trang, và dòng lịch sử của từng bản ghi ghi trong cùng giao dịch; người nhận phải nằm trong danh sách người xử lý.
+- Giao việc, hộp việc `/api/v1/inbox` có phân trang, và dòng lịch sử của từng bản ghi ghi trong cùng giao dịch; người nhận phải nằm trong danh sách người xử lý, đọc hết các trang của Keycloak nên không giới hạn số người, và ô Giao cho tìm theo tên.
 - Hạn xử lý theo bản ghi: hồ sơ quá hạn lên đầu hộp việc và có dòng quá hạn; hồ sơ có hạn dài hơn `DXOS_DUE_SOON_BEFORE` nhận thêm dòng `due_soon`.
 - Hành động hoàn tất `add_to_group` và `remove_from_group` chạy qua outbox và được thử lại; trường trống thì bỏ qua và ghi dòng `completion_skipped`.
 - Đặt chỗ so sức chứa với số lượt chạy cùng lúc ở mọi thời điểm của khung giờ, có khóa dòng tài nguyên.
@@ -78,7 +86,7 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - Hàng đợi sự kiện bằng bảng outbox: thông điệp ghi trong giao dịch của thay đổi, giao sau đó, thử lại với thời gian chờ tăng dần và dừng sau `DXOS_OUTBOX_MAX_ATTEMPTS` lần.
   ADMIN xem và thử lại ở `GET /api/v1/outbox`, `POST /api/v1/outbox/{id}/retry` và tab Hàng đợi sự kiện.
 - Webhook theo mô hình: mỗi dòng lịch sử gửi dạng JSON có chữ ký tới đích mà tệp mô hình chọn (`webhook: <tên đích>`), định dạng `json` hoặc `chat` cho Mattermost và Slack; các dòng của một hồ sơ tới đúng thứ tự.
-- Thông điệp `admin.event` báo việc áp dụng mô hình và thay đổi tài khoản.
+- Thông điệp `admin.event` báo việc áp dụng mô hình và thay đổi tài khoản; mỗi thay đổi được ghi thành một dòng có `eventId`, và `GET /api/v1/events/admin` trả lại các dòng đó cho bên nhận bị lỡ, dù có đích webhook hay không.
 - `GET /api/v1/events` cho bên nhận lỡ tin kéo lại theo `eventId`.
 - Lịch sử hồ sơ nối thành chuỗi hash, mỗi giờ ghi một điểm neo ra kho đối tượng; `dxos history verify` và `GET /api/v1/history/verify` chỉ ra dòng bị sửa, xóa hoặc chèn.
 - `examples/history-witness` cho bên nhận giữ `eventId` và `hash` rồi so với hệ thống.
@@ -93,8 +101,10 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 
 ### Giao diện
 
-- Giao diện react-admin dựng từ metadata, toàn tiếng Việt, có chế độ sáng và tối: hộp việc, chi tiết hồ sơ dạng thẻ với dòng thời gian, lịch đặt chỗ kéo thả được, trang thống kê.
-  Backend trả thông báo tiếng Anh kèm `errorCode`, frontend dịch theo `shell/backendMessages.ts`.
+- Giao diện react-admin dựng từ metadata, có tiếng Việt và tiếng Anh chọn bằng nút VI và EN, có chế độ sáng và tối: hộp việc, chi tiết hồ sơ dạng thẻ với dòng thời gian, lịch đặt chỗ kéo thả được, trang thống kê.
+  Danh sách mỗi thực thể cho chọn và sắp xếp cột bằng nút Cột, nhớ bộ lọc và sắp xếp đã chọn, và lưu bộ lọc thành truy vấn đặt tên ở nút Thêm bộ lọc; tất cả lưu trong trình duyệt.
+  Lựa chọn ngôn ngữ dùng chung với portal; đổi ngôn ngữ khi trình soạn của bảng điều khiển còn bản chưa áp dụng thì hỏi xác nhận trước khi tải lại trang.
+  Backend trả thông báo tiếng Anh kèm `errorCode`; bản tiếng Việt dịch theo `shell/backendMessages.ts` và `data.reason`, bản tiếng Anh hiện thông báo của backend.
 - Bảng điều khiển `/console` cho ADMIN: thư viện mẫu, trình soạn YAML (Monaco) theo JSON Schema, xem kế hoạch, áp dụng, lịch sử áp dụng kèm tên người, quay về, sơ đồ quy trình, mô hình dừng giữa chừng (Tiếp tục, Hủy bỏ) và nút "Sửa phần lệch".
   API đọc cho bảng điều khiển: `/api/v1/models/schema`, `families`, `templates` và `{model}/versions`.
 - Sơ đồ quy trình vẽ từ chính tệp đang soạn: vai xử lý của từng hành động, hạn xử lý, hành động của `auto_close`, hành động `after` và đặt chỗ, cho cả quy trình tự khai báo.
@@ -122,7 +132,7 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 
 ### Kiểm thử, CI và tài liệu
 
-- Mười ba script `deploy/dev/check_*.py` kiểm API, phục hồi, hồ sơ, đổi mô hình, quy trình, đặt chỗ, kịch bản trình diễn, chốt chặn, người dùng, tài liệu khớp OpenAPI, rào chắn của mọi mô hình, webhook và tệp mô hình lúc khởi động.
+- Mười bốn script `deploy/dev/check_*.py` kiểm API, phục hồi, hồ sơ, đổi mô hình, quy trình, đặt chỗ, kịch bản trình diễn, chốt chặn, người dùng, tài liệu khớp OpenAPI, rào chắn của mọi mô hình, webhook, tệp mô hình lúc khởi động và các lệnh `dxos plan`, `apply`, `archive` cùng bộ mô phỏng IT/OT.
 - Test WireMock cho client Keycloak, bộ gửi webhook và bộ dò dịch vụ; test chậm gắn `@Tag("slow")`.
 - CI gồm tám workflow: `Backend`, `Frontend`, `Platform`, `Compliance`, `Dependencies`, `Docs`, `Release Images`, `Release Package`; action ghim theo SHA, mọi job có giới hạn thời gian.
   Mỗi pull request chạy hai nhóm kiểm API trên stack rỗng, một bài Playwright cho bảng điều khiển (`e2e/`), kiểm gói phát hành, SBOM khớp tệp khóa, giấy phép, tệp bắt buộc, cú pháp workflow và bí mật.

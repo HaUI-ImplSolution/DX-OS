@@ -8,7 +8,7 @@
 | Nhánh | `Khuong/assistant-platform-plan`, tách từ `origin/Khuong/main` đã cập nhật |
 | Module chính | Dịch vụ mở rộng `assistant/`, frontend, hạ tầng tùy chọn; điều kiện ghi và metadata trong `dx-engine` |
 | Phụ trách | Nhóm phát triển; chủ dự án duyệt phạm vi trước triển khai |
-| Quy mô đầu tiên | 2–3 tài khoản hoạt động đồng thời, mỗi tài khoản có trợ lý riêng |
+| Quy mô đầu tiên | 2 tài khoản hoạt động đồng thời, mỗi tài khoản có trợ lý riêng; thử tải 3 tài khoản theo BACKLOG |
 
 ## 1. Tham chiếu
 
@@ -34,9 +34,8 @@ Core đã có API hồ sơ, giao việc, quy trình, thống kê và quản tr�
 Trợ lý cần biến yêu cầu ngôn ngữ tự nhiên thành đề xuất rõ ràng và thao tác qua các API đó, giúp người dùng làm việc ngay trên Telegram.
 Giá trị nằm ở rút ngắn quy trình tìm hồ sơ, chọn người xử lý, xác nhận và kiểm kết quả, không nằm ở thay thế luật nghiệp vụ bằng LLM.
 
-PoC đã chứng minh kết nối Gemini, Telegram, đọc hộp việc, nhận xử lý và thông báo chủ động.
-PoC vẫn là một chủ, một bot, state tệp và bộ công cụ hẹp; không đưa nguyên cấu trúc đó thành dịch vụ nhiều người dùng.
-Toàn bộ diff PoC hiện có được giữ riêng để review, không trộn vào kế hoạch hoặc nhánh cha.
+Bản tích hợp đã kiểm Gemini/Telegram, đọc hồ sơ và thao tác có xác nhận.
+Hai trợ lý Gemini/Telegram đã được kiểm đồng thời; provider thứ hai và thử tải ba trợ lý hoãn tại BACKLOG.
 
 ## 3. Tổng quan sửa đổi
 
@@ -93,9 +92,11 @@ Runtime chạy trong container không đặc quyền, không có Docker socket, 
 Người vận hành cấp 2–3 runtime qua lệnh triển khai; giao diện chỉ kích hoạt/dừng runtime đã cấp, không nhận lệnh Docker hay đường dẫn host.
 Một bot không được gắn cho hai chủ; kiểm bằng bot ID đã xác minh từ Telegram.
 
-Mục tiêu là 2–3 runtime đồng thời, không phải một nền tảng đa tenant quy mô lớn.
-PoC đo xấp xỉ 0,9 GB bộ nhớ/runtime, lúc khởi động đã quan sát RSS khoảng 1,4 GB; đây là đầu vào dự trù, không phải số đo của thiết kế mới.
-Phải đo lại trước khi chốt giới hạn RAM/CPU; thiếu bộ nhớ thì chặn cấp thêm runtime và báo rõ, không âm thầm ghép chung người dùng.
+Nghiệm thu đợt này với 2 runtime đồng thời; thử tải 3 runtime được hoãn theo quyết định của chủ dự án; không phải một nền tảng đa tenant quy mô lớn.
+Giới hạn CPU/RAM của dịch vụ và từng runtime nằm trong `deploy/.env.example`.
+Số đo hai tài khoản nằm trong kế hoạch kiểm thử; chưa nghiệm thu ba gateway hoạt động đồng thời.
+Người vận hành chọn số runtime theo tài nguyên máy; hệ thống không tự kiểm RAM khả dụng trước khi cấp slot.
+Không dùng chung runtime để thay cho slot còn thiếu.
 
 ## 5. Danh mục tính năng
 
@@ -115,13 +116,13 @@ Hành động có tác động thêm/bớt thành viên nhóm phải hiển th�
 
 ## 6. Kết quả đầu ra mong đợi
 
-- Ba tài khoản có cấu hình, hội thoại, thông báo và proposal riêng; gọi chéo hoặc bấm thẻ của người khác bị từ chối.
+- Hai tài khoản có cấu hình, hội thoại, thông báo và proposal riêng; gọi chéo hoặc bấm thẻ của người khác bị từ chối.
 - Cấu hình adapter Gemini, OpenAI và Anthropic có sẵn của OpenClaw; endpoint OpenAI-compatible tạm khóa đến khi kiểm transport đầy đủ.
 - Không quảng cáo một provider/model đã sẵn sàng chỉ vì lấy được danh sách model; phải kiểm tool calling và luồng xác nhận thật.
 - Giao việc rồi người được giao nhận/xử lý, người tạo xác nhận hoặc yêu cầu mở lại; trạng thái và người thực hiện khớp lịch sử Core.
 - Thử trên ba họ mẫu và ít nhất ba mô hình thuộc các lĩnh vực khác nhau mà không sửa mã lõi theo mô hình.
 - Core chạy từ clone sạch theo lệnh hiện tại khi không bật trợ lý; bật/tắt hoặc provider lỗi không làm hỏng nghiệp vụ.
-- Các giới hạn, số đo 2–3 người và provider chưa được thử thật được ghi rõ, không dùng kết quả PoC làm bằng chứng cho bản tích hợp.
+- Các giới hạn, số đo 2 người và provider chưa được thử thật được ghi rõ, chỉ kết luận theo bằng chứng của bản tích hợp.
 
 ## 7. Thứ tự
 
@@ -140,24 +141,23 @@ Yêu cầu mới dùng API không làm thay đổi cam kết hoặc bộ cài Co
 
 | Mục | Trạng thái |
 |---|---|
-| Nhiều tài khoản, trợ lý riêng; đầu tiên 2–3 đồng thời | Người dùng đã chốt |
+| Nhiều tài khoản, trợ lý riêng; nghiệm thu 2 đồng thời, hoãn thử tải 3 vào BACKLOG | Người dùng đã chốt |
 | Đọc tự động, mọi thao tác ghi phải xác nhận | Người dùng đã chốt |
 | Tập trung Dynamic Core hiện tại, không hồi sinh Farm/Lab | Người dùng đã chốt |
-| API key và bot riêng mỗi người | Đề xuất để giữ ranh giới rõ; không dùng key của ADMIN thay cho người khác |
-| Tách runtime và provision từ công cụ triển khai | Đề xuất; đo tài nguyên và xác minh giới hạn SDK trước code chức năng |
-| Dịch vụ Node/TypeScript, Fastify, SQLite riêng | Đề xuất để tận dụng runtime OpenClaw; không thêm module Maven hoặc DB server |
-| Tác động nhạy cảm xác nhận trên web, quản trị hệ thống chỉ đọc/handoff | Đề xuất an toàn cho đợt tích hợp đầu |
+| API key và bot riêng mỗi người | Đã chốt; không dùng key của ADMIN thay cho người khác |
+| Tách runtime và provision từ công cụ triển khai | Đã triển khai; kiểm hai runtime tại TAS-06/TAS-39 |
+| Dịch vụ Node/TypeScript, Fastify, SQLite riêng | Đã triển khai; không thêm module Maven hoặc DB server |
+| Tác động nhạy cảm xác nhận trên web, quản trị hệ thống chỉ đọc/handoff | Đã triển khai; kiểm tại TAS-27/TAS-41 |
 
 ## 10. Tài liệu khi triển khai
 
 Cập nhật README Việt/Anh và trang tài liệu bằng kết quả cuối, `docs/API.md`, `ARCHITECTURE.md`, hướng dẫn vận hành/tích hợp, tài liệu riêng của trợ lý và Swagger tương ứng.
-Cập nhật `DEPENDENCIES.txt`, `NOTICE`, SBOM và danh mục thành phần; không đưa `COPYRIGHT.txt` cũ từ PoC trở lại.
+Cập nhật giấy phép thành phần trong `DEPENDENCIES.txt`, ghi công trong `NOTICE`, danh mục đầy đủ trong SBOM và danh mục thành phần của CI.
 Không đánh dấu đã hoàn thành mục Open Source AI trong backlog chỉ vì tích hợp được API.
 Không sửa `docs/dynamic-core/README.md` định hướng nếu chưa có quyết định riêng của chủ dự án.
 
 ## 11. Xử lý review PR #199
 
-Căn cứ: [review của KhuongSpring](https://github.com/HaUI-ImplSolution/DX-OS/pull/199#issuecomment-6730959635) và bản nhánh đã nhận quy trình tự khai báo của `Khuong/main`.
 Phạm vi đợt này là khắc phục nhận xét của PR, không bổ sung tính năng trợ lý hoặc thay hướng Dynamic Core.
 Kế hoạch xử lý nằm ở WPRV-01–WPRV-06 trong [kế hoạch](./01_PLAN.md#xử-lý-review-pr-199).
 
@@ -168,34 +168,29 @@ Kế hoạch xử lý nằm ở WPRV-01–WPRV-06 trong [kế hoạch](./01_PLAN
 | Deploy | Bỏ sao chép lệnh gateway; mô tả đúng backup và kiểm phục hồi; Core off/on giữ lệnh khởi động hiện có |
 | License/CI | Ngoại lệ theo đúng gói; không mở rộng danh sách giấy phép chung hoặc làm yếu check của cha |
 | Tài liệu | Đồng bộ các tài liệu liên quan trực tiếp; không sửa định hướng `docs/dynamic-core/README.md`, không đụng Farm/Lab |
-| Dữ liệu | Không migration Core, không sửa YAML nghiệp vụ, không đưa dữ liệu/khóa demo vào Git |
+| Dữ liệu | Không migration Core, không sửa YAML nghiệp vụ, không đưa dữ liệu thật hoặc khóa vào Git |
 
-Người dùng đã chốt dùng API ngoài cho bản thử nghiệm và duyệt ngoại lệ hai gói dữ liệu SPDX.
-Hai quyết định này không thay yêu cầu Open Source AI của mục tiêu dài hạn; phần chưa đáp ứng phải còn trong BACKLOG.
-Đợt lập kế hoạch không đồng nghĩa các ca bảo mật đã chạy hoặc các mục review đã được giải quyết.
+Trợ lý dùng API mô hình do từng người dùng cấu hình; đây là dịch vụ bên ngoài, không phải mô hình nguồn mở do dự án phân phối.
+Hai gói dữ liệu định danh SPDX được khai theo giấy phép gốc trong hồ sơ dependency.
+Trạng thái từng ca bảo mật và hồi quy nằm trong [kế hoạch kiểm thử](./03_TEST_PLAN.md).
 Chỉ đề nghị merge sau khi các rào chắn bảo mật và hồi quy đạt; giới hạn còn lại phải có quyết định chấp nhận rõ ràng.
 
 ## 12. Quyết định xử lý review bổ sung
 
-Căn cứ: [kết quả kiểm thử của reviewer](https://github.com/HaUI-ImplSolution/DX-OS/pull/199#pullrequestreview-5821221565).
-Phạm vi đã được người dùng chốt cho bản thử có kiểm soát; kết quả kiểm chứng nằm trong [test plan](./03_TEST_PLAN.md).
-Người dùng đã chốt tách mạng control, hoãn cache và chấp nhận giới hạn egress/backup cho bản thử có kiểm soát.
-Giữ ba provider native Gemini, OpenAI và Anthropic; adapter có cấu hình không đồng nghĩa đã nghiệm thu model thật của cả ba.
+Đây là tính năng tích hợp của DX-OS, được bật riêng theo nhu cầu triển khai.
+Trạng thái kiểm chứng và các tiêu chí chưa đạt nằm trong [kế hoạch kiểm thử](./03_TEST_PLAN.md).
+Gemini, OpenAI và Anthropic dùng endpoint cố định; chỉ Gemini có bằng chứng hội thoại thật, chưa nghiệm thu cả ba provider.
 
-| Nội dung | Đề xuất | Trạng thái |
+| Nội dung | Quyết định | Trạng thái |
 |---|---|---|
-| Route còn sau off, request lặp theo focus | Sửa ngay, kiểm response và monitor thật | Đạt gateway/monitor và browser local |
-| JSON sai/body lớn trả 500 | Sửa ánh xạ lỗi HTTP trong dịch vụ trợ lý, không lộ payload | Đạt 400/413 qua gateway; 500 được che nội dung trong test |
-| Control kết nối được mạng DB Core | Tách mạng API và ingress tùy chọn; giữ quyền/API hiện có | Đã tách, kiểm TCP/DNS thực tế đạt |
-| Runtime Internet tự do | Giữ công cụ giới hạn và khóa compatible; egress proxy/allowlist toàn mạng thành việc riêng trước dùng thật | Chấp nhận cho bản thử; BACKLOG trước dùng thật |
-| Origin đúng một địa chỉ công khai | Giữ chính sách chống CSRF, ghi rõ địa chỉ bắt buộc và lỗi dễ hiểu | Đã ghi tài liệu và thông báo; không mở multi-origin |
-| Backup có cả key và capability | Ghi rõ khả năng giải mã và giả danh runtime của người giữ backup; custody/rotation riêng để sau | Chấp nhận cho bản thử; BACKLOG custody/rotation |
-| Schema bỏ trường lạ; PATCH cần đủ key | Giữ hành vi an toàn hiện có, mô tả đúng và giữ tương thích API | Đã kiểm và ghi hợp đồng full-profile |
-| ERR_CORE_LINK dùng 401 | Chưa liên kết dùng 409; token thiếu/hết hạn vẫn 401 | Đã sửa và kiểm 409/401 |
-| Phiên bản model: 54 query nhưng khoảng 9 ms | Hoãn tối ưu cache để giảm thay đổi Core; hoàn lại riêng diff cache do đợt này thêm | Đã hoàn lại riêng diff cache local, giữ precondition gốc |
+| Tắt trợ lý và menu | Rút route trước khi dừng; kiểm feature một lần mỗi lần tải trang | Đạt kiểm gateway, monitor và browser local |
+| Lỗi HTTP | JSON sai trả 400, nội dung quá giới hạn trả 413; lỗi nội bộ trả 500 với thông báo chung | Đạt qua gateway và test hiện có |
+| Mạng control | Dùng mạng API và ingress riêng; không nối control vào mạng DB | Đạt kiểm TCP/DNS |
+| Kết nối Internet của runtime | Giữ Gemini/OpenAI/Anthropic, tắt endpoint tùy chỉnh; chưa có allowlist toàn container | Chưa hoàn tất; theo dõi trong BACKLOG |
+| Origin | Chỉ nhận đúng địa chỉ công khai đã cấu hình | Giữ kiểm chống CSRF; không mở nhiều origin |
+| Backup | Key và token nằm cùng kho restic; người giải mã có thể đọc bí mật hoặc giả danh runtime | Quản lý khóa/token riêng và thu hồi credential còn trong BACKLOG |
+| Schema và PATCH | Bỏ trường ngoài schema, lấy danh tính từ JWT; PATCH cấu hình API cần đủ trường | Hợp đồng hiện có, đã kiểm |
+| Liên kết Core | Chưa liên kết trả 409; phiên xác thực sai hoặc hết hạn trả 401 | Đã kiểm 409/401 |
+| Phiên bản metadata | Đọc trực tiếp từ database, giữ kiểm phiên bản trong giao dịch | Tối ưu truy vấn còn trong BACKLOG |
 
-Kết quả reviewer thuộc bản PR trước diff local, không thay bằng chứng trên bản sửa.
-Bằng chứng của bản sửa được ghi trong test plan; lượt dùng lại dữ liệu cũ hoặc bị dừng không tính đạt.
-
-Các mục Origin/schema/PATCH giữ hành vi hiện có và sửa mô tả; không mở nhiều origin hoặc PATCH từng trường trong đợt này.
-Không còn quyết định sản phẩm chặn việc tiếp tục; key/provider thật hoặc lỗi vượt phạm vi phát sinh sẽ báo riêng.
+Các mục chưa đạt vẫn là công việc cần hoàn thiện; trạng thái tích hợp không thay thế nghiệm thu bảo mật và vận hành.

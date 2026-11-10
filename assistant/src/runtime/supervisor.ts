@@ -78,7 +78,7 @@ app.post('/stop', async () => {
   try { await stop(); return { active: false }; } finally { busy = false; }
 });
 app.post<{ Body: { owner: { issuer: string; subject: string }; profile: Profile;
-  telegram: { token: string; userId?: string } } }>('/start', async request => {
+  telegram: { token: string; accountId?: string; userId?: string } } }>('/start', async request => {
   if (busy) throw new ApiError(409, 'ERR_RUNTIME_BUSY', 'The runtime is busy');
   busy = true;
   try {
@@ -90,7 +90,11 @@ app.post<{ Body: { owner: { issuer: string; subject: string }; profile: Profile;
       throw new ApiError(400, 'ERR_RUNTIME_CONFIG', 'The runtime configuration is incomplete');
     await stop();
     const id = supplied.telegram.userId;
-    const config = runtimeConfiguration(supplied.profile, id, gatewayPort, workspace, required('ASSISTANT_OPENCLAW_PLUGIN'));
+    const botId = supplied.telegram.token.split(':')[0] ?? '';
+    if (!/^[0-9]{5,20}$/.test(botId)) throw new ApiError(400, 'ERR_RUNTIME_CONFIG', 'Invalid Telegram bot identity');
+    const account = supplied.telegram.accountId ?? `bot-${botId}`;
+    if (!/^[a-z0-9-]{1,128}$/.test(account)) throw new ApiError(400, 'ERR_RUNTIME_CONFIG', 'Invalid Telegram account scope');
+    const config = runtimeConfiguration(supplied.profile, id, gatewayPort, workspace, required('ASSISTANT_OPENCLAW_PLUGIN'), account);
     writeFileSync(configPath, JSON.stringify(config), { mode: 0o600 });
     writeFileSync(join(workspace, 'AGENTS.md'), readFileSync(required('ASSISTANT_PROMPT_FILE')), { mode: 0o600 });
     // Preserve stock onboarding templates outside the model context; keep user-edited files.
@@ -122,12 +126,13 @@ app.post<{ Body: { code: string } }>('/pairing', async request => {
   if (!/^[A-Z0-9]{6,12}$/.test(request.body.code)) throw new ApiError(400, 'ERR_PAIRING_CODE', 'Invalid pairing code');
   busy = true;
   try {
+    const account = JSON.parse(readFileSync(configPath, 'utf8')).channels.telegram.defaultAccount;
     const options = { env: environment, timeout: 15000, maxBuffer: 65536 };
-    const list = await execute(process.execPath, [module, 'pairing', 'list', 'telegram', '--json'], options);
+    const list = await execute(process.execPath, [module, 'pairing', 'list', 'telegram', '--account', account, '--json'], options);
     const pending = JSON.parse(list.stdout) as { requests: { id: string; code: string }[] };
     const entry = pending.requests.find(entry => entry.code === request.body.code);
     if (!entry || !/^[0-9]+$/.test(String(entry.id))) throw new ApiError(400, 'ERR_PAIRING_CODE', 'Pairing code is expired or invalid');
-    await execute(process.execPath, [module, 'pairing', 'approve', 'telegram', request.body.code], options);
+    await execute(process.execPath, [module, 'pairing', 'approve', 'telegram', request.body.code, '--account', account], options);
     await stop();
     return { userId: String(entry.id) };
   } finally { busy = false; }

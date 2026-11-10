@@ -3,7 +3,7 @@ import { randomBytes } from 'node:crypto';
 import { modelConfiguration, type Profile } from '../providers/profiles.js';
 
 export function runtimeConfiguration(profile: Profile, userId: string | undefined,
-  gatewayPort: number, workspace: string, pluginPath: string) {
+  gatewayPort: number, workspace: string, pluginPath: string, telegramAccount = 'default') {
   const model = modelConfiguration(profile);
   const id = userId;
   return {
@@ -12,7 +12,7 @@ export function runtimeConfiguration(profile: Profile, userId: string | undefine
     models: { providers: model.providers },
     agents: { defaults: { workspace, heartbeat: { every: '0m' }, timeoutSeconds: 180,
       skipBootstrap: true, maxConcurrent: 1, model: { primary: model.primary, fallbacks: [] } } },
-    channels: { telegram: { enabled: true, botToken: '${TELEGRAM_BOT_TOKEN}',
+    channels: { telegram: { enabled: true, defaultAccount: telegramAccount, accounts: { [telegramAccount]: {} }, botToken: '${TELEGRAM_BOT_TOKEN}',
       dmPolicy: id ? 'allowlist' : 'pairing', ...(id ? { allowFrom: [id] } : {}),
       groupPolicy: 'disabled', capabilities: { inlineButtons: 'dm' },
       execApprovals: { enabled: !!id, approvers: id ? [id] : [], target: 'dm' } } },

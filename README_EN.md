@@ -38,6 +38,8 @@ The current version is `2.0.0`, and the changes of each version are in [`CHANGEL
 - **A control panel for the person deploying.** Template library, model editor (write the file or fill a form, with guidance on what can be written and extended) with a process diagram drawn from the file being written, plan preview, apply, history, user management and record statistics.
 - **Simple to install and run.** One command installs and one starts; backups can be checked, services restart on their own, and attachments are virus-scanned when enabled.
 - **Single sign-on.** Through Keycloak, and administrators can be required to enter a one-time code as well.
+- **[Optional personal assistant](./assistant/README.md).** Read and monitor records through Telegram, and propose assignment or workflow actions for the user to confirm.
+  When enabled, content needed for the request is sent to the model API provider, and messages are exchanged through Telegram.
 
 Each feature and the test that proves it are matched in the [evidence matrix](https://haui-implsolution.github.io/DX-OS/docs/evidence-matrix) (Vietnamese).
 
@@ -73,7 +75,7 @@ dxos start
 The installer downloads the latest release, checks its SHA-256 and installs it into `~/.dxos`; the `dxos` command goes to `~/.local/bin`.
 `dxos start` downloads the images the first time, waits until every service is ready, creates the account `admin` with a temporary password printed on screen, and prints the addresses.
 Sign in at `http://localhost:9080/console` as `admin`, change the password, pick a template on the Template library tab, preview the plan and apply it.
-If you already have a model file, `dxos start <file>` takes it in at once.
+If you already have a model file, `dxos start <file>` takes it in at once; list every file after `dxos start` when there are several.
 The other commands and the operation guide are in [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md) (Vietnamese).
 
 ### From source
@@ -98,15 +100,6 @@ Users come in through the gateway at `http://localhost:9080`:
 | `/admin` | Keycloak administration (account in `deploy/.env`) |
 
 The full testing guide is in [`docs/TESTING.md`](./docs/TESTING.md) (Vietnamese).
-
-### Personal assistant (optional)
-
-With Core running, use `dxos assistant on` for an installed release or `./deploy/dxos assistant on --build` from source.
-Open `/assistant`, link your DX-OS account and configure your own API model/key and Telegram bot, following the pairing instructions.
-The assistant reads and monitors records and proposes assignment or workflow actions; writes require your confirmation and Core authorization.
-`dxos assistant off` stops it and keeps configuration.
-Core runs independently without an API key or assistant.
-See [`assistant/README.md`](./assistant/README.md) and [operations](./deploy/OPERATIONS.md#trợ-lý-cá-nhân).
 
 ## Documentation
 
@@ -134,7 +127,7 @@ The documents are written in Vietnamese; the API reference is the Swagger UI of 
 | `backend/dx-core` | Shared library: security, audit, storage, state, Keycloak client |
 | `backend/dx-engine` | The core service: applying models, the common API, Flowable |
 | `backend/dx-monitor` | The monitoring and tracing screen |
-| `frontend` | A react-admin interface built from metadata |
+| `frontend` | A react-admin interface built from metadata, in Vietnamese and English |
 | `deploy` | Compose, the APISIX gateway, the installer and the `dxos` command, operation scripts, check scripts in `deploy/dev` |
 | `sso`, `portal`, `seaweedfs` | The Keycloak realm, the portal page, file storage |
 | `models` | Invalid model files for automatic checks; usable sample models are in `backend/dx-engine/src/main/resources/templates/` |

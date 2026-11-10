@@ -93,7 +93,7 @@ services:
       keycloak:
         condition: service_healthy
     volumes:
-      # The model file of dxos start <file>; the backend applies it on start when it is new.
+      # The model files of dxos start <file>...; the backend applies each on start when it is new.
       - ./model:/models:ro
       # Webhook targets that models name in their file; targets.yml stays out of git
       - ./webhooks:/webhooks:ro
@@ -102,7 +102,8 @@ services:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       SERVER_PORT: 8081
-      ENGINE_MODEL_FILE: ${DXOS_MODEL_FILE:+/models/}${DXOS_MODEL_FILE:-}
+      ENGINE_MODEL_DIR: /models
+      ENGINE_MODEL_FILE: ${DXOS_MODEL_FILE:-}
       # Webhook for the history lines of records; a model that names no target uses this one and
       # empty sends nothing
       ENGINE_WEBHOOK_FILE: /webhooks/targets.yml

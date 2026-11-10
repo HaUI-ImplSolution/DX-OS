@@ -142,8 +142,21 @@ test('custom endpoints cannot reach probe or runtime, including persisted profil
   t.after(() => { store.close(); rmSync(dir, { recursive: true, force: true }); });
   const owner = { issuer: 'https://identity.invalid', subject: 'A' };
   const profiles = new Profiles(store, { update: () => { throw new Error('Must reject before runtime access'); } });
-  const native = modelConfiguration({ provider: 'gemini', model: 'synthetic', apiKey: 'synthetic', baseUrl: 'http://127.0.0.1' });
-  assert.equal(native.providers.google.baseUrl, 'https://generativelanguage.googleapis.com/v1beta');
+  for (const [provider, id, api, baseUrl] of [
+    ['gemini', 'google', 'google-generative-ai', 'https://generativelanguage.googleapis.com/v1beta'],
+    ['openai', 'openai', 'openai-responses', 'https://api.openai.com/v1'],
+    ['anthropic', 'anthropic', 'anthropic-messages', 'https://api.anthropic.com'],
+  ]) {
+    const profile = { provider, model: `${id}/synthetic`, apiKey: 'synthetic-sensitive-key' };
+    const configured = modelConfiguration(profile);
+    assert.equal(configured.primary, `${id}/synthetic`);
+    assert.equal(configured.providers[id].baseUrl, baseUrl);
+    assert.equal(configured.providers[id].api, api);
+    assert.equal(JSON.stringify(configured).includes(profile.apiKey), false);
+    const runtime = runtimeConfiguration(profile, '100', 18791, '/state', '/plugin');
+    assert.deepEqual(runtime.agents.defaults.model.fallbacks, []);
+    assert.equal(runtime.tools.allow.includes('dxos_propose'), true);
+  }
   for (const baseUrl of ['https://127.0.0.1/v1', 'https://[::1]/v1', 'https://169.254.169.254/v1',
     'https://10.0.0.1/v1', 'https://redirect.invalid/v1', 'https://dns-rebinding.invalid/v1']) {
     const profile = { id: 'legacy', provider: 'compatible', baseUrl, apiKey: 'synthetic', model: 'test' };
@@ -190,4 +203,137 @@ test('framework client errors keep HTTP status and server errors remain redacted
   assert.equal(failure.body.includes('synthetic-sensitive-error'), false);
   const session = new CoreSession(store, {}, verify);
   await assert.rejects(session.accessToken(owner), { status: 409, errorCode: 'ERR_CORE_LINK' });
+});
+
+function coreSessionFixture(t) {
+  const dir = mkdtempSync(join(tmpdir(), 'dxos-core-session-'));
+  const store = new Store(join(dir, 'private/state.sqlite'), randomBytes(32));
+  const requests = [];
+  let status = 200, subject = 'A';
+  const server = httpServer(async (request, response) => {
+    let body = ''; for await (const part of request) body += part;
+    requests.push(new URLSearchParams(body));
+    response.statusCode = status;
+    response.setHeader('Content-Type', 'application/json');
+    response.end(JSON.stringify(status === 200
+      ? { access_token: subject, refresh_token: 'synthetic-refresh', expires_in: 120 }
+      : { error: 'synthetic-sensitive-provider-error' }));
+  });
+  t.after(async () => { store.close(); server.closeAllConnections();
+    await new Promise(resolve => server.close(resolve)); rmSync(dir, { recursive: true, force: true }); });
+  return { store, requests, server, status: value => { status = value; }, subject: value => { subject = value; } };
+}
+
+test('Core linking uses PKCE, rejects a different identity and consumes the browser flow once', async t => {
+  const { createHash } = await import('node:crypto');
+  const { CoreSession } = await import('../dist/auth/core-session.js');
+  const f = coreSessionFixture(t);
+  await new Promise(resolve => f.server.listen(0, '127.0.0.1', resolve));
+  const owner = { issuer: 'https://identity.invalid', subject: 'A' };
+  const session = new CoreSession(f.store, { authorizationUrl: owner.issuer + '/auth',
+    tokenUrl: `http://127.0.0.1:${f.server.address().port}/token`, clientId: 'assistant-core', callbackUrl: 'https://dxos.invalid/callback' },
+    async token => ({ issuer: owner.issuer, subject: token.slice(7) }));
+  let flow = session.start(owner), url = new URL(flow.url);
+  f.subject('B');
+  await assert.rejects(session.callback(url.searchParams.get('state'), flow.cookie, 'synthetic-code'), { errorCode: 'ERR_LINK_IDENTITY' });
+  assert.equal(f.store.getSecret(owner, 'core'), undefined);
+  await assert.rejects(session.callback(url.searchParams.get('state'), flow.cookie, 'synthetic-code'), { errorCode: 'ERR_LINK_EXPIRED' });
+  f.subject('A'); flow = session.start(owner); url = new URL(flow.url);
+  await session.callback(url.searchParams.get('state'), flow.cookie, 'synthetic-code');
+  const exchange = f.requests.at(-1);
+  assert.equal(exchange.get('grant_type'), 'authorization_code');
+  assert.equal(exchange.get('client_id'), 'assistant-core');
+  assert.equal(createHash('sha256').update(exchange.get('code_verifier')).digest('base64url'), url.searchParams.get('code_challenge'));
+  assert.equal(await session.accessToken(owner), 'A');
+});
+
+test('concurrent refresh uses one exchange and revocation clears only the affected account', async t => {
+  const { CoreSession } = await import('../dist/auth/core-session.js');
+  const f = coreSessionFixture(t);
+  await new Promise(resolve => f.server.listen(0, '127.0.0.1', resolve));
+  const owner = { issuer: 'https://identity.invalid', subject: 'A' }, other = { ...owner, subject: 'B' };
+  const session = new CoreSession(f.store, { authorizationUrl: owner.issuer + '/auth',
+    tokenUrl: `http://127.0.0.1:${f.server.address().port}/token`, clientId: 'assistant-core' },
+    async token => ({ issuer: owner.issuer, subject: token.slice(7) }));
+  const expired = { accessToken: 'A', refreshToken: 'synthetic-refresh', expires: 0 };
+  f.store.setSecret(owner, 'core', expired);
+  f.store.setSecret(other, 'core', { ...expired, accessToken: 'B', expires: Date.now() + 120000 });
+  assert.deepEqual(await Promise.all(Array.from({ length: 8 }, () => session.accessToken(owner))), Array(8).fill('A'));
+  assert.equal(f.requests.length, 1);
+  f.store.setSecret(owner, 'core', expired); f.status(401);
+  await assert.rejects(session.accessToken(owner), error => error.status === 401 && !error.message.includes('synthetic-sensitive'));
+  assert.equal(f.store.getSecret(owner, 'core'), undefined);
+  assert.equal(await session.accessToken(other), 'B');
+  f.store.setSecret(owner, 'core', expired); f.status(503);
+  await assert.rejects(session.accessToken(owner), { status: 503 });
+  assert.deepEqual(f.store.getSecret(owner, 'core'), expired);
+});
+
+test('changing account B does not block or stop account A with a request in flight', async t => {
+  const dir = mkdtempSync(join(tmpdir(), 'dxos-runtime-lifecycle-'));
+  const store = new Store(join(dir, 'private/state.sqlite'), randomBytes(32));
+  let release, received;
+  const arrived = new Promise(resolve => { received = resolve; });
+  const waiting = new Promise(resolve => { release = resolve; });
+  let stoppedA = 0, stoppedB = 0;
+  const aServer = httpServer(async (request, response) => {
+    if (request.url === '/start') { received(); await waiting; }
+    if (request.url === '/stop') stoppedA++;
+    response.setHeader('Content-Type', 'application/json'); response.end('{"active":true}');
+  });
+  const bServer = httpServer((request, response) => {
+    if (request.url === '/stop') stoppedB++;
+    response.setHeader('Content-Type', 'application/json'); response.end('{"active":false}');
+  });
+  for (const server of [aServer, bServer]) await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  t.after(async () => { release(); for (const server of [aServer, bServer]) {
+    server.closeAllConnections(); await new Promise(resolve => server.close(resolve));
+  } store.close(); rmSync(dir, { recursive: true, force: true }); });
+  const slots = [aServer, bServer].map((server, index) => ({ name: `slot-${index}`,
+    url: `http://127.0.0.1:${server.address().port}`, controlToken: randomBytes(32).toString('hex'), toolToken: randomBytes(32).toString('hex'),
+    confirmationToken: randomBytes(32).toString('hex') }));
+  const runtime = new Runtimes(slots, () => ({}), store), profiles = new Profiles(store, runtime);
+  const a = { issuer: 'https://identity.invalid', subject: 'A' }, b = { ...a, subject: 'B' };
+  const started = runtime.start(a); await arrived;
+  await runtime.start(b);
+  await profiles.save(b, { provider: 'gemini', model: 'synthetic', apiKey: 'synthetic-private' });
+  assert.equal(stoppedA, 0); assert.equal(stoppedB, 1);
+  assert.equal(store.getSecret(a, 'runtimeEnabled'), true);
+  assert.equal(store.runtimeSlot(a), 'slot-0'); assert.equal(store.runtimeSlot(b), 'slot-1');
+  release(); await started;
+});
+
+test('Telegram pairing is scoped to the configured bot account', async () => {
+  const { runtimeConfiguration } = await import('../dist/runtime/configuration.js');
+  const profile = { provider: 'gemini', model: 'synthetic', apiKey: 'synthetic' };
+  const first = runtimeConfiguration(profile, '100', 18791, '/state', '/plugin', 'bot-11111');
+  const second = runtimeConfiguration(profile, undefined, 18791, '/state', '/plugin', 'bot-22222');
+  assert.notEqual(first.channels.telegram.defaultAccount, second.channels.telegram.defaultAccount);
+  assert.deepEqual(Object.keys(second.channels.telegram.accounts), ['bot-22222']);
+  assert.equal(second.channels.telegram.dmPolicy, 'pairing');
+  assert.equal(second.channels.telegram.allowFrom, undefined);
+  assert.equal(second.plugins.entries['dxos-assistant'].enabled, false);
+});
+
+test('reconfiguring the same Telegram bot invalidates its previous pairing scope', async t => {
+  const dir = mkdtempSync(join(tmpdir(), 'dxos-bot-relink-'));
+  const store = new Store(join(dir, 'private/state.sqlite'), randomBytes(32));
+  const previous = globalThis.fetch;
+  t.after(() => { globalThis.fetch = previous; store.close(); rmSync(dir, { recursive: true, force: true }); });
+  globalThis.fetch = async url => new Response(JSON.stringify({ ok: true,
+    result: String(url).endsWith('/getMe') ? { id: 12345, username: 'synthetic_bot' } : { url: '' } }));
+  const accounts = new TelegramAccounts(store, { update: async (_owner, change) => change() });
+  const owner = { issuer: 'https://identity.invalid', subject: 'A' };
+  const token = '12345:' + 's'.repeat(30);
+  await accounts.configure(owner, token);
+  const first = store.getSecret(owner, 'telegram');
+  store.setSecret(owner, 'telegram', { ...first, userId: '100' });
+  await accounts.configure(owner, token);
+  const second = store.getSecret(owner, 'telegram');
+  assert.notEqual(second.accountId ?? `bot-${second.botId}`, first.accountId ?? `bot-${first.botId}`);
+  assert.equal(accounts.status(owner).paired, false);
+  const { runtimeConfiguration } = await import('../dist/runtime/configuration.js');
+  const runtime = runtimeConfiguration({ provider: 'gemini', model: 'synthetic', apiKey: 'synthetic' }, undefined,
+    18791, '/state', '/plugin', second.accountId);
+  assert.equal(runtime.channels.telegram.defaultAccount, second.accountId);
 });

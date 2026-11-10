@@ -26,7 +26,7 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 
 | Lệnh | Việc |
 |---|---|
-| `dxos start [tệp]` | Chạy `doctor.sh`, tải image còn thiếu, khởi động, chờ mọi dịch vụ sẵn sàng; realm chưa có ai vai `ADMIN` thì tạo tài khoản `admin` với mật khẩu tạm in ra một lần; có tệp mô hình thì đưa tệp vào và in kết quả (xem dưới); rồi in các địa chỉ |
+| `dxos start [tệp...]` | Chạy `doctor.sh`, tải image còn thiếu, khởi động, chờ mọi dịch vụ sẵn sàng; realm chưa có ai vai `ADMIN` thì tạo tài khoản `admin` với mật khẩu tạm in ra một lần; có tệp mô hình thì đưa các tệp vào và in kết quả của từng tệp (xem dưới); rồi in các địa chỉ |
 | `dxos stop` | Dừng các container, giữ dữ liệu |
 | `dxos status` | Trạng thái từng dịch vụ, các địa chỉ và trạng thái quét mã độc |
 | `dxos logs [dịch vụ]` | Theo dõi log |
@@ -42,22 +42,24 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 
 ### Tệp mô hình lúc khởi động
 
-`dxos start <tệp>` chép tệp vào `deploy/model/` (chỉ giữ một tệp), ghi tên tệp vào `DXOS_MODEL_FILE` trong `.env` và khởi động lại backend nếu nó đang chạy.
-Tên tệp chỉ gồm chữ, số, dấu chấm, gạch ngang và gạch dưới.
-Backend chờ Keycloak trả lời (tối đa 300 giây) rồi áp dụng tệp với người thực hiện `bootstrap`, và chỉ khi tệp chưa từng được áp dụng, kế hoạch ở mức an toàn không có từ chối hay dòng vi phạm, và mô hình không có lần áp dụng dở.
-Mỗi lần khởi động ghi một dòng `Model bootstrap: <kết quả> <chi tiết>`, và `dxos start` in dòng đó:
+`dxos start <tệp>...` chép các tệp vào `deploy/model/` (chỉ giữ các tệp vừa đưa vào), ghi tên chúng theo thứ tự, cách nhau bằng dấu phẩy, vào `DXOS_MODEL_FILE` trong `.env` và khởi động lại backend nếu nó đang chạy.
+Tên tệp chỉ gồm chữ, số, dấu chấm, gạch ngang và gạch dưới, và hai tệp không được trùng tên.
+Backend chờ Keycloak trả lời (tối đa 300 giây) rồi áp dụng lần lượt từng tệp với người thực hiện `bootstrap`, và chỉ khi tệp chưa từng được áp dụng, kế hoạch ở mức an toàn không có từ chối hay dòng vi phạm, và mô hình không có lần áp dụng dở.
+Mỗi tệp ghi đúng một dòng `Model bootstrap: <kết quả> <chi tiết>` ở mỗi lần khởi động, và `dxos start` in từng dòng:
 
 | Kết quả | Ý nghĩa |
 |---|---|
 | `applied` | Đã áp dụng, kèm tên mô hình và phiên bản |
 | `unchanged` | Mô hình đang chạy chính tệp này |
 | `skipped` | Không áp dụng, kèm lý do; xử lý ở bảng điều khiển |
-| `failed` | Tệp không đọc được hoặc không qua kiểm tra (kèm dòng và cột), Keycloak không trả lời kịp, hoặc việc áp dụng lỗi giữa chừng; `dxos start` thoát với mã 3 |
+| `failed` | Tệp không đọc được hoặc không qua kiểm tra (kèm dòng và cột), Keycloak không trả lời kịp, hoặc việc áp dụng lỗi giữa chừng |
 
-Backend chạy ở mọi kết quả.
-`dxos start` chờ dòng kết quả tối đa 300 giây (đổi bằng `DXOS_MODEL_TIMEOUT`) rồi thoát với mã 4.
+Backend chạy ở mọi kết quả, và một tệp lỗi không chặn các tệp sau nó.
+Hai tệp cùng tên mô hình thì tệp đứng sau là `skipped`.
+`dxos start` chờ đủ dòng kết quả của mọi tệp, tối đa 300 giây (đổi bằng `DXOS_MODEL_TIMEOUT`), rồi thoát với mã 4; có tệp `failed` thì thoát với mã 3.
 Backend chỉ đọc tệp khi khởi động, nên `dxos start` không tham số trên hệ thống đang chạy không đọc lại tệp.
 Tệp hỏng vẫn nằm trong `.env` và được báo lại ở mỗi lần backend khởi động cho đến khi sửa hoặc thay.
+Cấu hình đặt tên các tệp ở `DXOS_MODEL_FILE`, cách nhau bằng dấu phẩy, và thư mục chứa chúng ở `ENGINE_MODEL_DIR` (`/models` trong container).
 
 ### Đổi mô hình bằng dòng lệnh
 
@@ -193,39 +195,24 @@ Thử bằng tệp EICAR (chuỗi kiểm thử chuẩn của ngành diệt virus
 
 ## Trợ lý cá nhân
 
-Core cần chạy trước; bản cài dùng `dxos assistant on`, bản mã nguồn dùng `./deploy/dxos assistant on --build` từ gốc repo.
-Lần đầu chuẩn bị pool runtime theo `ASSISTANT_RUNTIME_COUNT` trong `.env` (tối đa ba), tạo client SSO PKCE riêng rồi mở route trợ lý.
-Các giá trị mặc định và giới hạn CPU/RAM nằm trong `.env.example`.
-Endpoint OpenAI-compatible tạm khóa ở API và runtime đến khi kiểm chứng redirect, DNS và mạng private; không có biến cấu hình để bỏ khóa.
-Người dùng mở `/assistant`, liên kết DX-OS và tự nhập API key/model cùng bot token riêng; không gửi bí mật cho người vận hành qua chat.
-Mỗi bot chỉ liên kết một chủ, không có webhook đang hoạt động; mã pairing lấy từ bot và nhập lại trên web.
-Nút kiểm kết nối gọi model thật bằng dữ liệu giả và có thể tiêu quota; lưu profile không gọi model.
+Trợ lý là dịch vụ tùy chọn, bật sau khi Core đã chạy; hướng dẫn kích hoạt và cấu hình ở [`assistant/README.md`](../assistant/README.md#bật-và-sử-dụng).
+`dxos assistant status` xem trạng thái, `dxos assistant off` dừng trợ lý và giữ dữ liệu.
+Sau khi bật hoặc tắt, tải lại trang để cập nhật menu.
+Trợ lý đã bật sẽ được khởi động lại cùng `dxos start`; lỗi trợ lý không chặn Core.
 
-`dxos assistant status` xem các container tùy chọn; `dxos assistant off` dừng chúng, giữ dữ liệu và không dừng Core.
-Sau khi bật/tắt, tải lại trang để cập nhật menu trợ lý.
-Khi đã bật, `dxos start` khởi động lại phần trợ lý; nếu trợ lý lỗi, Core vẫn hoạt động.
-Runtime tắt không nhận tin Telegram hoặc gửi nhắc việc; bật lại từ trang cấu hình.
-Không dùng chung bot với một triển khai khác hoặc chạy thêm instance control trên cùng SQLite.
+### Sao lưu và khôi phục
 
-State nằm tại `deploy/data/assistant`: SQLite mã hóa, master key riêng, cấu hình private và thư mục OpenClaw riêng từng runtime.
-Đây là dữ liệu bí mật của máy, không đưa vào repository; mất master key thì không giải mã được cấu hình cũ.
-`backup.sh` dừng trợ lý, chụp cả state/key/runtime rồi bật lại trước khi đưa vào kho restic mã hóa.
-`backup.sh verify` kiểm Postgres và tệp Core; việc giải mã/khởi động lại trợ lý phải kiểm riêng sau khôi phục.
-Để khôi phục phần trợ lý: dừng trợ lý, chép `/stage/assistant/` của bản restic đã giải ra vào `deploy/data/assistant/`, giữ đúng chủ sở hữu và quyền thư mục 0700/tệp 0600, rồi chạy `dxos assistant on`.
-Khôi phục cùng state SSO/Core và địa chỉ công khai; nếu đổi địa chỉ hoặc thu hồi phiên, liên kết DX-OS lại trên giao diện.
-Không tự tạo master key mới để thay khóa bị mất và không giảm số runtime khi còn binding/state.
+Dữ liệu nằm tại `deploy/data/assistant`, gồm SQLite, master key, token và thư mục riêng của từng runtime.
+Nếu trợ lý đang chạy, `backup.sh` dừng nó, chép dữ liệu rồi bật lại trước khi đưa bản sao vào kho restic mã hóa.
+Khi sao chép lỗi, bước dọn dẹp khôi phục trạng thái chạy trước đó.
+Trong khoảng dừng này, trợ lý không nhận Telegram hoặc gửi nhắc hạn; Core vẫn hoạt động.
+Người giải mã được kho backup có cả key và token, nên có thể đọc bí mật hoặc giả danh runtime nếu token còn hiệu lực và truy cập được dịch vụ.
+Giới hạn quyền vào kho và giữ mật khẩu restic ngoài backup, Git và log.
 
-Backup trợ lý chứa cả SQLite mã hóa và `private/master.key` trong cùng kho restic.
-Người có credential giải mã restic có thể đọc secret trợ lý; AEAD không cách ly dữ liệu với người đó.
-Hạn chế quyền kho backup và giữ mật khẩu restic ngoài backup, Git và log.
-Mất master key mà không có bản sao thì không khôi phục được secret; không sinh khóa thay thế cho database cũ.
-Trong lúc snapshot, trợ lý dừng nhận Telegram và nhắc hạn; Core vẫn chạy, trợ lý được resume sau khi chép state hoặc khi cleanup lỗi.
-Không bảo đảm nhận hoặc gửi tin trong khoảng gián đoạn này.
+Để khôi phục, dừng trợ lý, chép `/stage/assistant/` từ bản restic đã giải ra vào `deploy/data/assistant/`, giữ đúng chủ sở hữu và quyền thư mục `0700`, tệp `0600`, rồi chạy `dxos assistant on`.
+Khôi phục cùng dữ liệu SSO/Core và địa chỉ công khai; nếu đổi địa chỉ hoặc thu hồi phiên, liên kết DX-OS lại trên giao diện.
+Mất master key mà không có bản sao thì không giải mã được bí mật cũ; không tạo key thay thế cho database cũ.
+Không giảm số runtime khi còn tài khoản liên kết hoặc dữ liệu trong runtime bị bỏ.
+`backup.sh verify` kiểm Postgres và tệp Core; cần kiểm giải mã, liên kết và khởi động trợ lý riêng sau khôi phục.
 
-Thao tác ghi của trợ lý chỉ chấp nhận Origin đúng bằng GATEWAY_PUBLIC_URL.
-Dùng tên miền phụ, IP hoặc tunnel khác cần đổi cấu hình địa chỉ công khai và SSO; không tắt kiểm Origin để bỏ qua lỗi 403.
-Backup còn chứa token control/tool/confirmation trong slots.json và runtime env; người giải mã được backup có thể giả danh runtime nếu token còn hiệu lực và truy cập được dịch vụ.
-Control chỉ dùng mạng API/SSO và ingress trợ lý, không tham gia mạng DB; runtime giữ mạng riêng từng chủ.
-Container runtime hiện vẫn có Internet ngoài Telegram/provider; giới hạn công cụ và endpoint cố định không thay firewall egress.
-Bản thử giữ Gemini, OpenAI và Anthropic; endpoint tùy chỉnh bị khóa.
-Tách custody khóa/token backup và giới hạn egress toàn container nằm trong BACKLOG trước dùng thật.
+Các giới hạn về kết nối Internet của runtime và quản lý khóa/token backup nằm trong [`BACKLOG`](../docs/dynamic-core/BACKLOG.md).

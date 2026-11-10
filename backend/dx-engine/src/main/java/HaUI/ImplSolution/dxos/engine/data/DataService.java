@@ -153,9 +153,9 @@ public class DataService {
   }
 
   // Counts over the rows the caller can see, with the same filters as list: in all, per status,
-  // past
-  // their deadline at computedAt (handle_by before it), and per unit when the entity has a unit
-  // field.
+  // past their deadline at computedAt (handle_by before it), and per unit when the entity has a
+  // unit field. An entity with a deadline also counts the decided records that closed on time and
+  // late.
   @Transactional(readOnly = true)
   public Map<String, Object> stats(Model model, Entity entity, Map<String, String> params) {
     Access access = access(model, entity);
@@ -180,6 +180,9 @@ public class DataService {
               "SELECT count(*)" + from + " AND handle_by IS NOT NULL AND handle_by < :at", values,
               Long.class));
       body.putAll(timings(from, values));
+      if (entity.process().deadline() != null) {
+        body.putAll(closings(model, entity, from, values));
+      }
     }
     entity.unitField()
         .ifPresent(
@@ -210,6 +213,26 @@ public class DataService {
     return out;
   }
 
+  // The records that were decided, a withdrawn one excluded, split by whether the history holds an
+  // "overdue" line for them. A record that was overdue and later decided in time counts as late.
+  private Map<String, Object> closings(Model model, Entity entity, String from,
+      MapSqlParameterSource values) {
+    values.addValue("event_model", model.name());
+    values.addValue("event_entity", entity.name());
+    values.addValue("withdrawn", ProcessFamily.WITHDRAWN_STATE);
+    String decided = "decided_at IS NOT NULL AND status <> :withdrawn";
+    String reported = "EXISTS (SELECT 1 FROM engine.record_event e WHERE e.model = :event_model"
+        + " AND e.entity = :event_entity AND e.record_id = " + table(model, entity)
+        + ".id AND e.action = 'overdue')";
+    Map<String, Object> row = jdbc.queryForMap("SELECT count(*) FILTER (WHERE " + decided
+        + " AND NOT " + reported + ") AS on_time, count(*) FILTER (WHERE " + decided + " AND "
+        + reported + ") AS late" + from, values);
+    Map<String, Object> out = new LinkedHashMap<>();
+    out.put("closedOnTime", ((Number) row.get("on_time")).longValue());
+    out.put("closedLate", ((Number) row.get("late")).longValue());
+    return out;
+  }
+
   private static Long seconds(Object value) {
     return value == null ? null : Math.round(((Number) value).doubleValue());
   }
@@ -234,6 +257,7 @@ public class DataService {
     requireRead(access);
     requireWrite(access);
     Map<String, Object> values = coerce(entity, body, true);
+    requireExistingUsers(entity, values);
     requireReachableParent(model, entity, access, values);
     requireCreatableUnit(entity, access, values);
     bookings.check(model, entity, values, null);
@@ -286,6 +310,7 @@ public class DataService {
       return get(model, entity, id);
     }
     requireMovableUnit(model, entity, access, id, changes);
+    requireExistingUsers(entity, changes);
     bookings.check(model, entity, changes, id);
     MapSqlParameterSource params = new MapSqlParameterSource("id", id);
     List<String> sets = new ArrayList<>();
@@ -717,6 +742,23 @@ public class DataService {
       throw new InvalidStateException("The record is closed", "RECORD_CLOSED");
     }
     return statuses.get(0);
+  }
+
+  // A user field holds the id of a Keycloak user. Only the values being written are looked up, each
+  // id once, so a value the record already holds is never checked again.
+  private void requireExistingUsers(Entity entity, Map<String, Object> values) {
+    Map<String, Boolean> known = new LinkedHashMap<>();
+    Map<String, String> errors = new LinkedHashMap<>();
+    values.forEach((name, value) -> {
+      Field field = entity.fields().get(name);
+      if (field != null && field.type() == FieldType.USER && value != null
+          && !known.computeIfAbsent((String) value, keycloak::userExists)) {
+        errors.put(name, "must be the id of an existing user");
+      }
+    });
+    if (!errors.isEmpty()) {
+      throw new ModelValidationException(errors);
+    }
   }
 
   private void requireRead(Access access) {

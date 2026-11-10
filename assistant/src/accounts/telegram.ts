@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
+import { randomUUID } from 'node:crypto';
 import { ApiError } from '../errors.js';
 import { Store, type Owner } from '../storage/store.js';
 import { Runtimes } from '../runtime/slots.js';
 
-export type Telegram = { token: string; botId: string; username: string; userId?: string };
+export type Telegram = { token: string; botId: string; username: string; accountId?: string; userId?: string };
 
 export class TelegramAccounts {
   constructor(private readonly store: Store, private readonly runtimes: Runtimes) {}
@@ -21,7 +22,7 @@ export class TelegramAccounts {
     const webhook = await this.call<{ url?: string }>(token, 'getWebhookInfo');
     if (webhook.url) throw new ApiError(409, 'ERR_TELEGRAM_WEBHOOK', 'Use a private bot without an existing webhook');
     await this.runtimes.update(owner, () => {
-      this.store.bindTelegram(owner, String(bot.id), { token, botId: String(bot.id), username: bot.username });
+      this.store.bindTelegram(owner, String(bot.id), { token, botId: String(bot.id), username: bot.username, accountId: `bot-${bot.id}-${randomUUID()}` });
     });
   }
 

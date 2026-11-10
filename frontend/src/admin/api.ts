@@ -13,6 +13,9 @@ export interface EntityStats {
   total: number;
   byStatus: { status: string; count: number }[];
   overdue: number;
+  // Records that reached a final state without ever going overdue, and those that did; only for an entity with a deadline.
+  closedOnTime?: number | null;
+  closedLate?: number | null;
   byUnit?: { unit: string | null; count: number }[] | null;
   avgDecisionSeconds?: number | null;
   avgOpenAgeSeconds?: number | null;
@@ -53,3 +56,7 @@ export const removeFile = (model: string, entity: string, id: number | string, f
 
 export const listEvents = (model: string, entity: string, id: number | string) =>
   request<RecordEvent[]>(`${recordPath(model, entity, id)}/events`);
+
+export const searchPeople = (text: string) => request<Person[]>(`/people?q=${encodeURIComponent(text)}`);
+
+export const peopleByIds = (ids: string[]) => request<Person[]>(`/people?ids=${ids.map(encodeURIComponent).join(",")}`);

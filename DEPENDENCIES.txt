@@ -17,7 +17,7 @@ Image khai báo ở .github/component-catalog.json; .github/scripts/check_licens
 | Phần                                        | Giấy phép             | Ghi chú                                      |
 +=============================================+=======================+==============================================+
 | backend, frontend, website, deploy, portal, | Apache-2.0 (LICENSE)  | SPDX header ở mọi file mã nguồn              |
-| sso, seaweedfs, e2e, examples               |                       |                                              |
+| sso, seaweedfs, e2e, examples, assistant    |                       |                                              |
 +---------------------------------------------+-----------------------+----------------------------------------------+
 
 Header của file mã nguồn là SPDX-License-Identifier: Apache-2.0.
@@ -107,11 +107,13 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 | dompurify (qua monaco-editor)                                | MPL-2.0 OR   | Làm sạch nội dung hiển thị           |
 |                                                              | Apache-2.0   | [3]                                  |
 +--------------------------------------------------------------+--------------+--------------------------------------+
-| TypeScript                                                   | Apache-2.0   | Web                                  |
+| TypeScript                                                   | Apache-2.0   | Chỉ khi build web và trợ lý           |
 +--------------------------------------------------------------+--------------+--------------------------------------+
 | css-mediaquery (qua react-admin)                             | BSD-3-Clause | Truy vấn media của MUI               |
 +--------------------------------------------------------------+--------------+--------------------------------------+
 | ra-i18n-polyglot                                             | MIT          | Dịch chữ của react-admin             |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| ra-language-english                                          | MIT          | Chữ tiếng Anh của react-admin        |
 +--------------------------------------------------------------+--------------+--------------------------------------+
 | node-polyglot (qua ra-i18n-polyglot)                         | BSD-2-Clause | Dịch chữ của react-admin             |
 +--------------------------------------------------------------+--------------+--------------------------------------+
@@ -127,6 +129,25 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 | nginx 1.30                                                   | BSD-2-Clause | Image phục vụ web và portal          |
 +--------------------------------------------------------------+--------------+--------------------------------------+
 | Node.js 22 (node:22-alpine)                                  | MIT          | Chỉ khi build web                    |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| OpenClaw 2026.11.1                                           | MIT          | Chạy trợ lý tùy chọn, gọi API mô     |
+|                                                              |              | hình và nhận tin Telegram            |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| Fastify, @fastify/swagger, jose                              | MIT          | API, OpenAPI và xác thực JWT của     |
+|                                                              |              | dịch vụ trợ lý                       |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| Node.js 24.16.0                                              | MIT          | Chạy trợ lý và SQLite tích hợp       |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| @types/node                                                  | MIT          | Chỉ khi build và test trợ lý         |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| npm 12.2.2 [6]                                               | Artistic-2.0 | Ứng dụng đi kèm runtime trợ lý, dùng |
+|                                                              |              | nguyên bản                           |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| spdx-exceptions [5]                                          | CC-BY-3.0    | Dữ liệu mã ngoại lệ giấy phép trong  |
+|                                                              |              | runtime trợ lý                       |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| spdx-license-ids [5]                                         | CC0-1.0      | Dữ liệu mã giấy phép trong runtime   |
+|                                                              |              | trợ lý                               |
 +--------------------------------------------------------------+--------------+--------------------------------------+
 
 4. HẠ TẦNG VÀ CÔNG CỤ
@@ -202,13 +223,9 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
     Chúng chỉ được đọc lúc dựng trang tài liệu và không có trong trang đã dựng.
     Hai gói được nêu tên kèm lý do ở .github/dependency-exceptions.json.
 
-6. TRỢ LÝ TÙY CHỌN
-===================
+[5] spdx-exceptions (CC-BY-3.0) và spdx-license-ids (CC0-1.0) là dữ liệu định danh giấy phép, không phải mã.
+    Chúng đi kèm npm trong runtime trợ lý; nguồn và ghi công ở NOTICE.
+    Ngoại lệ kiểm giấy phép cho hai gói dữ liệu này nằm tại .github/dependency-exceptions.json.
 
-OpenClaw 2026.11.1 (MIT) điều phối model API, công cụ và kênh Telegram.
-Fastify 5.12.8, @fastify/swagger 9.9.3 và jose 6.2.15 (MIT) cung cấp HTTP/OpenAPI và xác thực JWT cho dịch vụ trợ lý.
-Node.js 24.16.0 (MIT cùng thông báo bản quyền của các thư viện đi kèm) chạy dịch vụ và SQLite tích hợp; TypeScript 7.0.2 (Apache-2.0), @types/node 24.10.0 (MIT) chỉ dùng khi build/test.
-Các SDK provider và thư viện đi kèm OpenClaw được liệt kê theo phiên bản, giấy phép trong sbom/assistant-runtime.cdx.json.
-Runtime khóa các bản vá zod 4.6.6 (MIT), npm 12.2.2 (Artistic-2.0), undici 6.29.1 (MIT) và brace-expansion 5.0.12 (MIT).
-spdx-exceptions (CC-BY-3.0) và spdx-license-ids (CC0-1.0) là dữ liệu định danh giấy phép, được chủ dự án duyệt ngoại lệ riêng; xem NOTICE và .github/dependency-exceptions.json.
-Các model API là dịch vụ do người dùng chọn và tự cấu hình; không đóng gói trọng số hoặc tuyên bố model đó là mã nguồn mở.
+[6] npm 12.2.2 (Artistic-2.0) đi kèm OpenClaw nguyên bản; thư viện đóng gói cùng nó giữ giấy phép riêng.
+    Ngoại lệ tại .github/dependency-exceptions.json chỉ áp dụng đúng phiên bản này.

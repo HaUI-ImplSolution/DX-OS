@@ -5,6 +5,7 @@ import HaUI.ImplSolution.dxos.engine.apply.Sql;
 import HaUI.ImplSolution.dxos.engine.event.CompletionHandler;
 import HaUI.ImplSolution.dxos.engine.data.EventLog;
 import HaUI.ImplSolution.dxos.engine.event.Outbox;
+import HaUI.ImplSolution.dxos.engine.event.OverdueSweep;
 import HaUI.ImplSolution.dxos.engine.registry.ModelRegistry;
 import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.Completion;
@@ -32,12 +33,15 @@ public class RecordStatus {
   private final ModelRegistry registry;
   private final Outbox outbox;
   private final EventLog events;
+  private final OverdueSweep overdue;
 
-  public RecordStatus(JdbcTemplate jdbc, ModelRegistry registry, Outbox outbox, EventLog events) {
+  public RecordStatus(JdbcTemplate jdbc, ModelRegistry registry, Outbox outbox, EventLog events,
+      OverdueSweep overdue) {
     this.jdbc = jdbc;
     this.registry = registry;
     this.outbox = outbox;
     this.events = events;
+    this.overdue = overdue;
   }
 
   public void set(DelegateExecution execution, String status) {
@@ -48,11 +52,13 @@ public class RecordStatus {
   }
 
   // Writes the status, who decided it and when once it is final, and the deadline of the handler
-  // while the record waits for one.
+  // while the record waits for one. A deadline that has passed without a line in the history gets
+  // its "overdue" line first, because the write replaces or clears it.
   public void write(Model model, Entity entity, long id, String status, String actor) {
     ProcessFamily family = entity.process().definition();
     Duration deadline = entity.process().deadline();
     boolean terminal = family.isTerminal(status);
+    overdue.reportBeforeLeaving(model, entity, id);
     List<Object> args = new ArrayList<>();
     args.add(status);
     StringBuilder sql = new StringBuilder("UPDATE " + Sql.table(model, entity) + " SET status = ?");

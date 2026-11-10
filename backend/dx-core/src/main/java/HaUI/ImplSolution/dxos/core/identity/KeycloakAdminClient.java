@@ -32,7 +32,8 @@ public class KeycloakAdminClient {
   // One page of accounts and how many match in all.
   public record Accounts(List<Account> items, long total) {}
 
-  private static final int MAX_PEOPLE = 500;
+  private static final int PEOPLE_PAGE = 500;
+  private static final int MAX_PEOPLE_PAGES = 100;
   private static final int MAX_ROLES = 1000;
 
   private final RestClient restClient;
@@ -182,8 +183,7 @@ public class KeycloakAdminClient {
       return List.of();
     }
     try {
-      return people(
-          "/admin/realms/{realm}/clients/" + uuid + "/roles/{name}/users?max=" + MAX_PEOPLE, role,
+      return people("/admin/realms/{realm}/clients/" + uuid + "/roles/{name}/users", role,
           enabledOnly);
     } catch (KeycloakAdminException e) {
       if (e.getCause() instanceof RestClientResponseException cause
@@ -301,15 +301,29 @@ public class KeycloakAdminClient {
   private List<Person> groupMembers(String group, boolean enabledOnly) {
     return list("/admin/realms/{realm}/groups?search={name}&exact=true", group).stream()
         .filter(found -> group.equals(found.get("name"))).findFirst()
-        .map(found -> people("/admin/realms/{realm}/groups/{name}/members?max=" + MAX_PEOPLE,
+        .map(found -> people("/admin/realms/{realm}/groups/{name}/members",
             found.get("id").toString(), enabledOnly))
         .orElse(List.of());
   }
 
+  // Every person the endpoint lists, read page by page. A list longer than the page limit is an
+  // error: cutting it short would leave people out of who may handle a record.
   private List<Person> people(String uri, String variable, boolean enabledOnly) {
-    return list(uri, variable).stream()
-        .filter(user -> !enabledOnly || !Boolean.FALSE.equals(user.get("enabled")))
-        .map(KeycloakAdminClient::person).toList();
+    List<Person> people = new java.util.ArrayList<>();
+    for (int page = 0; page <= MAX_PEOPLE_PAGES; page++) {
+      List<Map<String, Object>> found =
+          list(uri + "?first=" + page * PEOPLE_PAGE + "&max=" + PEOPLE_PAGE, variable);
+      if (page == MAX_PEOPLE_PAGES && !found.isEmpty()) {
+        throw new KeycloakAdminException("More than " + MAX_PEOPLE_PAGES * PEOPLE_PAGE
+            + " people hold this role or belong to this group");
+      }
+      found.stream().filter(user -> !enabledOnly || !Boolean.FALSE.equals(user.get("enabled")))
+          .map(KeycloakAdminClient::person).forEach(people::add);
+      if (found.size() < PEOPLE_PAGE) {
+        break;
+      }
+    }
+    return people;
   }
 
   private static Person person(Map<String, Object> user) {

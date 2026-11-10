@@ -128,8 +128,8 @@ Vai bỏ khỏi tệp mô hình vẫn còn ở client của mô hình cùng ngư
 
 ### Tệp mô hình lúc khởi động
 
-`ModelBootstrap` áp dụng tệp ở `ENGINE_MODEL_FILE` khi backend khởi động, trên một luồng riêng chờ Keycloak, với người thực hiện `bootstrap`.
-Chỉ tệp chưa từng áp dụng, có kế hoạch an toàn và không có lần áp dụng dở mới được áp dụng; mỗi lần chạy ghi một dòng `Model bootstrap: <applied|unchanged|skipped|failed> ...`.
+`ModelBootstrap` áp dụng các tệp ở `ENGINE_MODEL_FILE` (tên cách nhau bởi dấu phẩy, tìm trong `ENGINE_MODEL_DIR`) khi backend khởi động, trên một luồng riêng chờ Keycloak một lần, lần lượt từng tệp, với người thực hiện `bootstrap`; tệp lỗi không chặn tệp sau.
+Chỉ tệp chưa từng áp dụng, có kế hoạch an toàn và không có lần áp dụng dở mới được áp dụng; mỗi tệp ghi một dòng `Model bootstrap: <applied|unchanged|skipped|failed> ...`.
 
 ## 5. Một yêu cầu đi qua API chung
 
@@ -232,18 +232,18 @@ Người dùng cuối xem số liệu qua `GET /api/v1/data/{model}/{entity}/sta
 
 Compose chạy lõi (`postgres`, `keycloak`, `seaweedfs`, `backend`, `apisix`) và Tầng 2 (`frontend`, `portal`, `monitor`); `clamav` bật bằng profile `av`.
 Gateway kiểm token cho mọi route API; các route không kiểm token nằm trong danh sách công khai kiểm bởi `deploy/apisix/check_routes.py`.
-`dxos start <tệp>` đưa tệp mô hình vào qua `deploy/model/` và in kết quả của `ModelBootstrap`.
+`dxos start <tệp>...` đưa các tệp mô hình vào qua `deploy/model/` và in kết quả của `ModelBootstrap` cho từng tệp.
 Chi tiết vận hành ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md), log và audit ở [`deploy/MONITORING.md`](./deploy/MONITORING.md), webhook và lịch sử chống sửa ở [`deploy/INTEGRATIONS.md`](./deploy/INTEGRATIONS.md).
 
 ### Trợ lý tùy chọn
 
-Dịch vụ `assistant/` nằm ngoài bốn module backend, gọi API Core bằng phiên SSO riêng của từng người dùng.
-Fastify xác thực JWT, giữ cấu hình mã hóa trong SQLite và phân bổ tối đa ba runtime OpenClaw với volume, mạng và capability riêng.
-OpenClaw gọi nhà cung cấp API do chủ tài khoản chọn và nhận tin qua bot Telegram riêng.
-Công cụ chỉ đọc hoặc tạo proposal; đường xác nhận của người dùng tách khỏi token công cụ của model.
-Khi thực thi, Core kiểm `modelVersion` dưới khóa mô hình và `version` dưới khóa bản ghi trong transaction; client không gửi điều kiện giữ hành vi cũ.
-Thông báo lấy inbox/API hiện có, không tạo scheduler hoặc subscription mới trong Core.
-Compose trợ lý bật riêng, không thay cách khởi động Core mặc định.
+Dịch vụ [`assistant/`](./assistant/README.md) chạy riêng với backend, gọi API lõi bằng phiên SSO của từng người dùng; không truy cập trực tiếp cơ sở dữ liệu nghiệp vụ.
+Fastify xác thực JWT và lưu cấu hình trong SQLite; các trường bí mật được mã hóa.
+Mỗi tài khoản dùng một runtime OpenClaw với vùng dữ liệu, mạng và token riêng, tối đa ba runtime trên một máy.
+Model chỉ được đọc hoặc tạo đề xuất; xác nhận của người dùng đi qua đường riêng trước khi Core thực thi.
+Core kiểm `modelVersion` dưới khóa mô hình và `version` dưới khóa bản ghi trong cùng giao dịch; client không gửi điều kiện phiên bản giữ hành vi cũ.
+Thông báo đọc hộp việc qua API hiện có; bộ lập lịch, webhook và outbox của Core giữ nguyên.
+Trợ lý bật riêng, không tham gia luồng khởi động mặc định.
 
 ## 13. Đối chiếu với yêu cầu của đề
 

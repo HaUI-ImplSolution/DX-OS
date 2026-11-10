@@ -11,7 +11,7 @@ Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`web
 |---|---|
 | Docker và Docker Compose v2 | Backend `verify` dùng Testcontainers nên cần Docker chạy |
 | JDK 21 | Dùng Maven wrapper trong repo; đặt `JAVA_HOME` về JDK 21 nếu máy mặc định bản khác |
-| Node 22 trở lên | Cho `frontend`, `website` và `e2e` |
+| Node 22 trở lên | Cho `frontend`, `website` và `e2e`; riêng trợ lý cần Node 24.16 |
 | Python 3 | Cho các script kiểm ở `deploy/dev` |
 
 ## 2. Các loại kiểm
@@ -62,7 +62,7 @@ Chạy trên stack mới dựng, cơ sở dữ liệu rỗng, vì script áp d�
 Mỗi script phụ thuộc các script đứng trước trong cùng nhóm, nên chạy đúng thứ tự:
 
 ```bash
-for c in api recovery case change process booking demo guards users docs conformance; do
+for c in api recovery case change process booking demo guards users docs conformance cli; do
   python3 deploy/dev/check_$c.py
 done
 ```
@@ -87,6 +87,7 @@ python3 deploy/dev/check_bootstrap.py
 | `check_users.py` | Quản trị người dùng: gán và gỡ vai và đơn vị, tạo, khóa, đặt lại mật khẩu, audit |
 | `check_docs.py` | Mọi endpoint các tài liệu nêu có trong OpenAPI của backend đang chạy, đúng phương thức |
 | `check_conformance.py` | Rào chắn của lõi giữ với mọi mô hình đã áp dụng, hoặc các mô hình nêu tên: không ghi được `status`, không token thì 401, không đọc được dữ liệu mô hình khác |
+| `check_cli.py` | Lệnh `dxos plan` và `apply --accept` (tệp giống, đổi an toàn, đổi mất dữ liệu bị từ chối khi `--accept` thấp hơn mức của kế hoạch), lịch sử ghi tài khoản của lệnh, `dxos archive` và `archive check` (sửa một byte Parquet thì mã 1), bộ mô phỏng IT/OT gửi lại cùng quan sát thì in `duplicate` và không thêm hồ sơ; cần Docker; tự áp dụng một mô hình riêng |
 | `check_events.py` | Webhook: thứ tự, chữ ký, thử lại, nội dung không lộ, nhắc hạn; chuỗi hash của lịch sử và bên nhận so hash |
 | `check_bootstrap.py` | Tệp mô hình lúc khởi động: `applied`, `unchanged`, `skipped`, `failed` |
 
@@ -140,18 +141,19 @@ Giao diện, đăng nhập bằng `req1` (vai `BORROWER`), `keeper1` (vai `KEEPE
     Hồ sơ 1.000.000: nút duyệt sáng, nút chuyển mờ kèm chú thích "Chỉ thực hiện khi Số tiền > 5.000.000"; hồ sơ 9.000.000 thì ngược lại; hồ sơ không có số tiền thì cả hai nút có `when` mờ, nút từ chối vẫn sáng.
     Gọi API của hành động đang mờ trả 409 `ERR_INVALID_STATE` với `data.reason` là `CONDITION_NOT_MET`; đúng 5.000.000 thì `<=` đạt.
     Trình soạn YAML không gạch chân `when`, ô "Chỉ khi" ở chế độ Điền form hiện đúng điều kiện, nhãn cạnh của sơ đồ ghi điều kiện.
+22. Tỷ lệ đúng hạn: thực thể khai hạn ngắn, trang Thống kê hiện ô "Đúng hạn" với phần trăm và `n/N` hồ sơ đã đóng; thực thể không khai hạn không có ô này.
+    Hồ sơ đóng sau hạn dù trước lần quét có dòng `overdue` đứng trước dòng quyết định và tính là muộn; hồ sơ đóng trước hạn không có dòng này; lần quét sau không ghi dòng thứ hai và outbox chỉ có một thông điệp.
+    Hồ sơ quá hạn rồi được trả lại, nộp lại và duyệt vẫn tính là muộn; hồ sơ rút lại sau hạn không tính; hai quyết định đồng thời trên hai hồ sơ quá hạn không kẹt khóa; `GET /api/v1/history/verify` vẫn báo chuỗi nguyên vẹn.
+    Số `closedOnTime` cộng `closedLate` bằng số hồ sơ đã quyết định và không rút lại khi đối chiếu bằng SQL, ở nhiều người xem và nhiều bộ lọc.
+    Tệp mô hình có hành động tên `overdue`, `due_soon`, `created`, `updated`, `deleted`, `assigned`, `file_added`, `file_removed`, `completion_skipped` hay `auto_closed` bị từ chối ở bước kiểm, kèm dòng và cột; tên thường như `review` được nhận.
 
 Lệnh `dxos` và các tính năng chạy ngoài stack kiểm:
 
-1. `dxos plan <tệp>` và `dxos apply <tệp> --accept <mức>` với tệp giống, đổi `SAFE`, đổi `LOSS`: kế hoạch vượt `--accept` bị từ chối với mã 1; lịch sử ghi `service-account-dxos-cli`.
-2. `dxos archive <mô hình>` rồi `dxos archive check <thư mục>`; sửa một byte trong tệp Parquet thì `check` thoát với mã 1.
-3. `dxos history verify` sau khi sửa, xóa hoặc chèn một dòng `record_event` bằng SQL: chỉ ra dòng đầu tiên bị đổi; trả lại dòng thì chuỗi nguyên vẹn.
-4. `dxos reconcile`: xóa container `backend` thì chạy lại; sau `dxos stop` thì không bật lại; mọi service có chính sách restart `unless-stopped`.
-5. `backup.sh verify` khi kho thiếu một tệp: báo `FAILED` kèm tên khóa thiếu và mã 1; khi `DXOS_FILE_DELETE_DELAY` ngắn hơn lượt chạy thì in `WARNING`.
-6. `examples/itot-simulator/simulator.py setup`, `run`, `replay`: gửi lại cùng quan sát in `duplicate` và không tạo thêm hồ sơ.
-7. Áp dụng lại tệp không đổi khi bảng thiếu hoặc thừa cột, đổi kiểu cột, hoặc client, vai, nhóm đơn vị bị xóa: kế hoạch ghi `repair` đúng loại, áp dụng xong thì về `unchanged`.
-8. Áp dụng một mô hình đổi bảng trong lúc có yêu cầu ghi hồ sơ của mô hình đó: không có 500, không hồ sơ nào ghi sai cấu trúc.
-9. Thống kê với vai `unit` và `own`, có và không có bộ lọc: `total` và tổng `byStatus` bằng số dòng của danh sách cùng bộ lọc.
+1. `dxos history verify` sau khi sửa, xóa hoặc chèn một dòng `record_event` bằng SQL: chỉ ra dòng đầu tiên bị đổi; trả lại dòng thì chuỗi nguyên vẹn.
+2. `dxos reconcile`: xóa container `backend` thì chạy lại; sau `dxos stop` thì không bật lại; mọi service có chính sách restart `unless-stopped`.
+3. Áp dụng lại tệp không đổi khi bảng thiếu hoặc thừa cột, đổi kiểu cột, hoặc client, vai, nhóm đơn vị bị xóa: kế hoạch ghi `repair` đúng loại, áp dụng xong thì về `unchanged`.
+4. Áp dụng một mô hình đổi bảng trong lúc có yêu cầu ghi hồ sơ của mô hình đó: không có 500, không hồ sơ nào ghi sai cấu trúc.
+5. Thống kê với vai `unit` và `own`, có và không có bộ lọc: `total` và tổng `byStatus` bằng số dòng của danh sách cùng bộ lọc.
 
 ## 7. Hồi quy
 
@@ -179,11 +181,13 @@ grep -rIlw -i -E 'farm|lab|farmer|DXOS_APP|dx-host|app-farm|app-lab|dx-core-api'
 | Kết quả không khớp mã vừa sửa | Image `dxos-backend:local` cũ hơn mã; chạy `docker compose build` rồi tạo lại service |
 | Cổng 9080 hoặc 5432 bị chiếm | Đổi `APISIX_HOST_PORT`, `POSTGRES_HOST_PORT` trong `deploy/.env` |
 
-## Trợ lý tùy chọn
+## 9. Trợ lý tùy chọn
 
-`cd assistant && npm test` kiểm JWT/chủ tài khoản, mã hóa, replay proposal, điều kiện ghi, mất kết quả và thông báo; không gọi provider hoặc Telegram.
-`deploy/dev/check_process.py` kiểm action/assign có điều kiện trên Core thật cùng các luồng cũ.
-Kiểm tích hợp riêng: bật trợ lý, liên kết SSO, probe API, pairing bot, đọc hồ sơ, xác nhận giao việc/chuyển trạng thái và đối chiếu lịch sử Core.
-Dùng hai rồi ba tài khoản/bot riêng; kiểm truy cập chéo, thu hồi quyền, tranh chấp phiên bản, restart và backup/restore trước nghiệm thu.
-Đo CPU/RAM/thời gian với cùng cấu hình Core khi trợ lý tắt và bật; không suy kết quả provider thật từ test mô phỏng.
-Ma trận và trạng thái nghiệm thu ở [`assistant-platform/03_TEST_PLAN.md`](./assistant-platform/03_TEST_PLAN.md).
+Kết quả local ngày 10/11/2026: 52/52 test trợ lý, TypeScript trợ lý/frontend, license và kiểm secret đạt.
+Kiểm tích hợp ngày 09/11: hai bot hoàn tất luồng giao việc và xác nhận; Core ghi đúng một sự kiện mỗi bước, khôi phục backup và rollback đạt.
+Cài mới còn vướng lỗi tạo ADMIN trong [BACKLOG](./dynamic-core/BACKLOG.md); provider thứ hai và tải ba trợ lý hoãn.
+
+`cd assistant && npm test` kiểm xác thực, mã hóa, xác nhận đề xuất và thông báo; không gọi API mô hình hoặc Telegram.
+`deploy/dev/check_process.py` kiểm điều kiện phiên bản của action/assign cùng các luồng Core hiện có.
+Khi kiểm tích hợp, bật trợ lý theo [`assistant/README.md`](../assistant/README.md#bật-và-sử-dụng), liên kết SSO và bot, đọc hồ sơ, xác nhận thao tác rồi đối chiếu lịch sử Core.
+Các ca cách ly tài khoản, nhiều trợ lý đồng thời, lỗi provider và khôi phục nằm trong [kế hoạch kiểm thử](./assistant-platform/03_TEST_PLAN.md); kết quả mô phỏng không thay kết quả với model và Telegram thật.

@@ -13,6 +13,7 @@ import {
   type CurrentUser,
 } from "./shell/auth";
 import AdminApp from "./admin/AdminApp";
+import { t } from "./shell/t";
 
 function Notice({
   title,
@@ -83,7 +84,7 @@ export default function App() {
   if (authError) {
     return (
       <Notice
-        title="Đăng nhập thất bại"
+        title={t("Đăng nhập thất bại")}
         message={authError}
         actions={
           <button
@@ -93,7 +94,7 @@ export default function App() {
               void signIn();
             }}
           >
-            Thử lại
+            {t("Thử lại")}
           </button>
         }
       />

@@ -4,7 +4,7 @@ import { Store, type Owner, type Proposal } from '../storage/store.js';
 import { CoreClient, targetPath, type Target } from './core-client.js';
 
 type Effect = { operation: string; user: string; group?: string; groupField?: string; asynchronous: boolean };
-export type Entity = { name: string; label: string; canRead: boolean; canAssign: boolean; canHandle?: boolean; modelVersion?: number;
+export type Entity = { name: string; label: string; canRead: boolean; canAssign: boolean; canHandle?: boolean; handlerActions?: string[]; modelVersion?: number;
   fields: { name: string; label: string; type: string }[];
   process?: { family: string; allowSelfDecision: boolean;
     states: { name: string; label: string; terminal: boolean }[];
@@ -79,6 +79,8 @@ export class Records {
       const action = entity.process?.actions.find(action => action.name === input.action);
       if (!action || !action.from.includes(record.status))
         throw new ApiError(409, 'ERR_INVALID_STATE', 'This action is not available in the current state', 'WRONG_STATE');
+      if (action.by === 'HANDLER' && entity.handlerActions && !entity.handlerActions.includes(action.name))
+        throw new ApiError(403, 'ERR_ACTION_NOT_ALLOWED', 'This action is not available to your roles');
       if (action.needsNote && !input.note?.trim())
         throw new ApiError(400, 'ERR_NOTE_REQUIRED', 'Provide the note required for this action');
       const effects = entity.process?.effects;
@@ -104,7 +106,12 @@ export class Records {
   async execute(owner: Owner, id: string, channel: 'web' | 'telegram') {
     const proposal = this.store.proposal(owner, id);
     const target = { model: proposal.snapshot.model, entity: proposal.snapshot.entity, id: proposal.snapshot.recordId };
-    await this.entity(owner, target);
+    const entity = await this.entity(owner, target);
+    if (!Number.isSafeInteger(entity.modelVersion) || entity.modelVersion! < 1)
+      throw new ApiError(409, 'ERR_CONDITIONAL_API_REQUIRED', 'Core must support conditional actions before the assistant can write');
+    if (!Number.isSafeInteger(proposal.snapshot.version) || proposal.snapshot.version < 0 ||
+        !Number.isSafeInteger(proposal.snapshot.modelVersion) || proposal.snapshot.modelVersion < 1)
+      throw new ApiError(409, 'ERR_PROPOSAL_VERSION_REQUIRED', 'Create a new proposal with current record and model versions');
     if (proposal.snapshot.operation === 'assign' && proposal.snapshot.assignee !== null) {
       const candidates = await this.handlers(owner, target);
       if (!candidates.some(person => person.id === proposal.snapshot.assignee))

@@ -128,11 +128,11 @@ export class Notifications {
       if (Object.keys(state.seen).length > 5000) throw new ApiError(503, 'ERR_NOTIFICATION_BUDGET', 'The notification ledger needs review');
       const parts = Object.fromEntries(new Intl.DateTimeFormat('en', { timeZone: state.timeZone,
         year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23' })
-        .formatToParts().map(part => [part.type, part.value]));
+        .formatToParts(new Date()).map(part => [part.type, part.value]));
       const today = `${parts.year}-${parts.month}-${parts.day}`;
       if (state.initialized && Number(parts.hour) >= state.digestHour && state.lastDigest !== today) {
         this.queue(state, 'digest'); state.lastDigest = today;
-      } else if (!state.initialized) state.lastDigest = today;
+      } else if (!state.initialized && Number(parts.hour) >= state.digestHour) state.lastDigest = today;
       state.initialized = true; state.lastScan = new Date().toISOString(); delete state.error;
       this.save(owner, state);
       return { deliveries: Object.entries(state.entries).filter(([, entry]) => entry.state === 'pending' && entry.after <= Date.now())
@@ -193,7 +193,8 @@ export class Notifications {
     if (action === 'view') {
       const available = entity.process?.actions.filter(action => action.from.includes(record.status) &&
         (action.by === 'OWNER' ? record.created_by === owner.subject :
-          entity.canHandle && (entity.process?.allowSelfDecision || record.created_by !== owner.subject) &&
+          entity.canHandle && (!entity.handlerActions || entity.handlerActions.includes(action.name)) &&
+          (entity.process?.allowSelfDecision || record.created_by !== owner.subject) &&
           (!record.assignee || record.assignee === owner.subject))) ?? [];
       return { text: recordDetails(entity, record, state.timeZone), presentation: { blocks: [{ type: 'buttons',
         buttons: available.map(action => ({ label: action.label,

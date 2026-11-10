@@ -9,12 +9,14 @@ Web đăng nhập OIDC qua Keycloak và dựng mọi màn hình từ metadata c�
 |---|---|
 | `src/App.tsx` | Đăng nhập OIDC, xử lý callback, đăng xuất một lần |
 | `src/shell/` | `auth` (OIDC), `api` (gọi backend, bóc `ApiResponse`), `errorMessages` và `backendMessages` (thông báo của backend bằng tiếng Việt), `locale`, `i18n` và `viMessages` (chữ của react-admin), `theme` (sáng và tối), `format`, `PageHeader` |
-| `src/admin/` | Ứng dụng react-admin: đọc metadata, `dataProvider`, `authProvider`, màn hình dựng theo thực thể (danh sách, chi tiết, biểu mẫu), hộp việc, lịch |
+| `src/admin/` | Ứng dụng react-admin: đọc metadata, `dataProvider`, `authProvider`, màn hình dựng theo thực thể (danh sách có chọn cột và truy vấn đã lưu, chi tiết, biểu mẫu), hộp việc, lịch |
 | `src/console/` | Bảng điều khiển của người triển khai: mô hình đang chạy (kèm tiếp tục hoặc hủy bỏ lần áp dụng dừng giữa chừng), thư viện mẫu, trình soạn và kế hoạch, hàng đợi sự kiện, sơ đồ quy trình, người dùng (vai, đơn vị, tạo, khóa, mật khẩu, lịch sử thay đổi), nhãn tiếng Việt của kế hoạch (`labels`) |
 
 ## Ngôn ngữ
 
-Giao diện bằng tiếng Việt.
+Giao diện có tiếng Việt và tiếng Anh, chọn bằng nút VI và EN.
+Lựa chọn nằm ở `localStorage` với khóa `dxos.locale` và được portal đọc chung; đổi ngôn ngữ thì tải lại trang.
+Khi trình soạn của bảng điều khiển còn bản chưa áp dụng, nút hỏi xác nhận trước khi tải lại (`guardUnsavedWork` ở `shell/locale.ts`).
 Backend trả thông báo tiếng Anh kèm `errorCode` ổn định; `shell/backendMessages.ts` dịch chúng theo từng mẫu câu, nên thông báo mới của backend cần thêm một mẫu ở đó, nếu không sẽ hiện nguyên văn.
 Chữ có sẵn của react-admin nằm ở `shell/viMessages.ts`.
 Ngôn ngữ hiện tại giữ ở `shell/locale.ts`, nên thêm một ngôn ngữ là thêm bảng thông báo, bảng mẫu câu của backend và một nút gọi `setLocale`.

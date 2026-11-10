@@ -19,6 +19,7 @@ defaults() {
   [[ -f .env ]] || die "run make_env.sh first"
   local line key
   while IFS= read -r line; do
+    if [[ "$line" == \#* ]]; then line="${line#\#}"; line="${line# }"; fi
     [[ "$line" == ASSISTANT_*=* ]] || continue
     key="${line%%=*}"
     if ! grep -q "^${key}=" .env; then

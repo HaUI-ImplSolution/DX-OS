@@ -16,37 +16,38 @@ Bản tích hợp đã có trên nhánh PR; các mục chưa nghiệm thu đư�
 - SBOM phát hành chỉ chứa runtime theo `sbom/README.md`; dependency build/test vẫn phải kiểm và ghi giấy phép theo policy, không bỏ qua vì không xuất hiện trong SBOM runtime.
 - Mỗi mục backlog được chọn phải có quyết định cho toàn bộ phần còn mở; làm xong mới bỏ mục, phần chấp nhận hoặc hoãn giữ đúng trạng thái, không xóa để đánh dấu hoàn thành giả.
 - Không tự thêm file test ngoài phạm vi được duyệt; các ca ở test plan là tiêu chí kiểm, không phải yêu cầu tạo từng file hoặc một framework test mới.
-- Kiểm local, ưu tiên script hiện có; không build lại image cho mỗi sửa Java hoặc test client HTTP, không dùng stack/dữ liệu đang demo cho failure injection.
-- Không tự stage/commit/push, không đổi danh tính Git hoặc chỉnh `.gitignore`; giữ `report/`, tài liệu cá nhân và diff PoC ngoài phần công việc này.
+- Kiểm local, ưu tiên script hiện có; không build lại image cho mỗi sửa Java hoặc test client HTTP, dùng môi trường kiểm thử riêng cho failure injection.
+- Không tự stage/commit/push, không đổi danh tính Git hoặc chỉnh `.gitignore`; giữ `report/`, tài liệu cá nhân và dữ liệu cục bộ ngoài phần công việc này.
 
 ## WPAS-01: Chốt hợp đồng và kiểm nền
 
-**Mục tiêu:** có đường tích hợp phù hợp bản Core mới và không mang hạn chế của PoC sang sản phẩm.
+**Mục tiêu:** chốt kiến trúc, hợp đồng và điều kiện nghiệm thu của trợ lý trên Core hiện tại.
 
 - Đối chiếu bốn module, `ArchitectureTest`, `DataService`, `ProcessRules`, `ModelUseFilter`, registry, SSO và bộ cài.
-- Khóa bản OpenClaw/Node/provider API tương thích; dùng bản PoC làm đối chiếu SDK, không mặc định bản đó đã phù hợp mọi provider hoặc chính sách release.
+- Khóa bản OpenClaw/Node tương thích, đối chiếu API provider và kiểm khả năng đóng gói, phát hành.
 - Kiểm dependency trực tiếp, bắc cầu, license notices, image và khả năng build từ source theo policy nhánh cha; không chỉ kiểm giấy phép MIT của gói OpenClaw ngoài cùng.
-- Báo kết quả giấy phép trước khi thêm OpenClaw/Fastify/jose hoặc công cụ build/test vào manifest; các tên trong kế hoạch là lựa chọn đề xuất, chưa phải dependency đã được duyệt.
+- Báo kết quả giấy phép trước khi thêm OpenClaw/Fastify/jose hoặc công cụ build/test vào manifest; danh mục cuối cùng phải khớp manifest, lockfile, SBOM và hồ sơ giấy phép.
 - Xác định phần nào kiểm bằng script/test có sẵn và phần nào cần file mới; ngoại lệ WireMock của tech lead chỉ áp dụng client HTTP KeycloakAdminClient/WebhookSender, không cấp quyền tự mở thêm cả bộ test.
 - Chốt danh mục thao tác, profile trả lời, schema proposal, ranh giới tài khoản, API mới và ngân sách tài nguyên.
-- Lập bảng tái sử dụng PoC: giữ logic đã chứng minh, thay cấu hình một chủ, state tệp toàn cục, server HTTP tự viết và đường dẫn local bằng thành phần nhiều người dùng.
+- Lập bảng thành phần tích hợp, chỉ rõ cách lưu dữ liệu, xác thực, điều phối runtime và giao tiếp với Core.
 
 **Phạm vi:** spec, hợp đồng và test thiết kế; chưa sửa kernel hoặc triển khai provider.
 **Kết quả:** qua G0, đủ điều kiện mới bắt đầu các WP sau; nếu SDK/giấy phép không đạt thì báo lại lựa chọn thay thế trước khi đổi nền tảng.
 
 Hợp đồng API/danh tính/proposal ở [`assistant/README.md`](../../assistant/README.md).
 
-| Thành phần PoC | Quyết định tích hợp |
+| Thành phần | Cách tích hợp |
 |---|---|
-| Core client và `data.reason` | Giữ cách gọi API theo chủ; mở thêm handlers/stats/assign, không sao chép token một tài khoản |
-| Approval hook và callback native | Giữ cơ chế con người xác nhận; tách capability thực thi khỏi model tool token |
-| Renderer thẻ có label | Tái sử dụng hành vi; trường lấy từ metadata, không escape Markdown cho đường plain text |
-| Notification baseline/ledger | Giữ nguyên tắc chống bão tin; chuyển state sang SQLite có owner, không dùng state toàn cục |
-| Runtime generator | Thay bằng runtime riêng được provision, không dùng port/path cố định một người |
-| HTTP server/state file PoC | Thay bằng Fastify/schema và SQLite/migration; không copy server tự viết hoặc secret demo |
+| Core client | Gọi API bằng phiên của chủ tài khoản, giữ `data.reason` và kiểm quyền của Core |
+| Xác nhận và callback | Người dùng xác nhận qua đường riêng, token công cụ không có quyền thực thi |
+| Thẻ thông báo | Dùng nhãn và trường từ metadata, hiển thị văn bản thuần |
+| Thông báo và ledger | Đọc API theo chủ, lưu mốc và kết quả gửi trong SQLite |
+| Runtime | Mỗi tài khoản có runtime, vùng dữ liệu, mạng và token riêng |
+| HTTP và lưu trữ | Fastify/schema và SQLite/migration; bí mật được cấu hình trên máy triển khai |
 
 Đã kiểm giấy phép upstream và artifact của OpenClaw, Fastify, jose cùng các gói bundled trong lockfile.
-Ngày 07/11/2026, chủ dự án duyệt ngoại lệ dữ liệu cho `spdx-exceptions` (CC-BY-3.0) và `spdx-license-ids` (CC0-1.0); ghi riêng trong dependency exceptions và giữ attribution trong NOTICE.
+`spdx-exceptions` (CC-BY-3.0) và `spdx-license-ids` (CC0-1.0) là dữ liệu định danh giấy phép đi kèm runtime.
+Ghi giấy phép gốc trong `DEPENDENCIES.txt`, nguồn và ghi công trong `NOTICE`, ngoại lệ kiểm dữ liệu trong `.github/dependency-exceptions.json`.
 Ngoại lệ không áp dụng cho mã phần mềm hoặc gói khác.
 Các kiểm chứng runtime, provider và xác nhận vẫn phải đạt trước nghiệm thu.
 
@@ -54,7 +55,7 @@ Các kiểm chứng runtime, provider và xác nhận vẫn phải đạt trư�
 
 **Mục tiêu:** mỗi người có trợ lý đúng danh tính và dữ liệu riêng.
 
-- Tạo `assistant/` là dịch vụ mở rộng TypeScript, build thành JavaScript cho production.
+- Tạo `assistant/` là dịch vụ mở rộng TypeScript, đóng gói JavaScript trong image phát hành.
 - Dùng Fastify cho route/schema/giới hạn body và OpenAPI, `jose` cho JWT; không tự viết lại HTTP framework, JWT hoặc provider SDK.
 - Cấu trúc theo chức năng `accounts`, `providers`, `runtime`, `proposals`, `notifications`, `tools`; route → service → store/client, tách tác vụ có side effect khỏi render.
 - SQLite riêng qua API chuẩn của Node, một control process và giao dịch ngắn; không thêm ORM, Redis hoặc DB server cho quy mô này.
@@ -196,15 +197,16 @@ Các kiểm chứng runtime, provider và xác nhận vẫn phải đạt trư�
 
 **Kết quả:** clone sạch chạy Core bằng lệnh cũ; bật thêm trợ lý theo hướng dẫn, không cần môi trường npm/Python trên máy người dùng cuối.
 
-## WPAS-08: Nghiệm thu 2–3 người và bàn giao
+## WPAS-08: Nghiệm thu 2 người và bàn giao
 
 - Chạy ma trận trong `03_TEST_PLAN.md`, cả AI off/on, lỗi API và tài khoản khác quyền.
 - Dùng `deploy/dev/check_api.py`, `check_process.py`, `check_case.py`, `check_booking.py`, `check_events.py`, `check_conformance.py` và E2E hiện có theo phần bị ảnh hưởng; chỉ thêm case ngăn sai quyền, sai giao dịch, gọi lặp hoặc mất thông báo cần thiết.
 - Compile/formatter/TypeScript và đọc diff là vòng kiểm thường xuyên; test được duyệt chạy theo phạm vi, image/clone sạch chỉ ở mốc nghiệm thu đã thống nhất.
 - Dùng mẫu có sẵn của Core, tạo dữ liệu giả qua API trong test; không thêm dataset nghiệp vụ, trọng số hoặc dump DB vào repository.
-- Đo tách cold/warm, p50/p95, CPU/RAM/swap/disk, số request Core, token/lượt provider và chi phí nếu provider trả; không dùng số PoC thay số bản mới.
+- Đo tách cold/warm, p50/p95, CPU/RAM/swap/disk, số request Core, token/lượt provider và chi phí nếu provider trả; chỉ dùng số đo của bản tích hợp.
 - Chốt trần RAM/CPU, poll/page budget, số tool call/lượt và timeout trong G0 theo máy đích; đo nền Core cùng cấu hình trước khi so sánh AI off/on, không đặt một SLA giả định cho mọi provider.
-- Kiểm với hai rồi ba runtime; thiếu tài nguyên hoặc mất cách ly thì dừng, không gộp chung gateway cho qua test.
+- Kiểm với hai runtime; thiếu tài nguyên hoặc mất cách ly thì dừng, không gộp chung gateway cho qua test.
+- Thử tải ba runtime chuyển sang BACKLOG theo quyết định của chủ dự án.
 - Chạy provider contract và luồng thật với key được cấp qua UI; không dùng mock để đánh dấu vendor thật đạt.
 - Người dùng nghiệm thu Telegram/web, gồm giao việc giữa hai người và ADMIN không có role nghiệp vụ.
 - Dọn file sinh thừa, đọc diff toàn bộ, kiểm secret/notice/SBOM và các file bị tác động ngoài domain; giữ kế hoạch để review, không tự commit/push.
@@ -218,7 +220,7 @@ Các kiểm chứng runtime, provider và xác nhận vẫn phải đạt trư�
 | `/assistant-api/v1/me/...` | Profile, liên kết, lifecycle, notification, proposal/receipt của chính chủ | API mới của dịch vụ mở rộng, không đặt trong Spring Core |
 | `/assistant-api/v1/admin/...` | Khả dụng/capacity của trợ lý | JWT ADMIN; không đọc secret/transcript người khác |
 | API nội bộ runtime | Token riêng bound owner; start/stop và tool bridge cố định | Không publish cho browser, không nhận URL/header/method HTTP tùy ý |
-| SQLite trợ lý | Schema có version, mã hóa secret/snapshot, unique owner/bot/proposal và ledger | Migrate transaction riêng; không nhập state PoC tự động |
+| SQLite trợ lý | Schema có version, mã hóa secret/snapshot, unique owner/bot/proposal và ledger | Migrate transaction riêng; cấu hình bí mật theo từng tài khoản |
 | YAML nghiệp vụ | Không đổi | Các mô hình đang có không phải thêm cấu hình AI |
 
 OpenAPI Spring vẫn sinh từ annotation; control API sinh từ schema route, không duy trì bản YAML thủ công thứ hai.
@@ -227,11 +229,11 @@ Client Node phải đọc đúng `data.reason`, không sửa response 200/403/40
 ## Migration và rollback
 
 Không có migration Core, không thay dữ liệu `m_*` hoặc các process instance.
-State PoC chỉ tham khảo, không tự nhập token/bot/khóa từ máy lập trình vào bản tích hợp.
+Token, bot và khóa được cấu hình trên môi trường triển khai; không đưa bí mật từ máy lập trình vào gói phát hành.
 Người dùng tự liên kết lại trên môi trường mới; migration SQLite, backup và khôi phục master key phải được kiểm trước release.
 Tắt trợ lý/cờ giao diện/route tùy chọn thì Core vẫn hoạt động; không rollback các hành động nghiệp vụ đã hoàn tất.
 Nếu quay về backend chưa kiểm phiên bản, tắt công cụ ghi của trợ lý đồng thời.
-Không xóa lịch sử, volume Core, `report/`, kế hoạch PoC hoặc tài liệu ý tưởng cá nhân trong thao tác rollback.
+Không xóa lịch sử, volume Core, `report/`, kế hoạch hoặc tài liệu ý tưởng cá nhân trong thao tác rollback.
 
 ## Xử lý review PR #199
 
@@ -243,7 +245,7 @@ Không commit, push hoặc resolve comment trong đợt lập kế hoạch.
 
 - Đối chiếu remote PR với `origin/Khuong/main`, kiểm không thiếu commit cha và đọc lại ba vùng merge.
 - Giữ `require` và khóa dòng trong `DataService.act`, danh sách `handlers` của `ProcessInfo`, `handlerActions` của metadata.
-- Ghi quyết định dùng API bên ngoài cho bản thử nghiệm; không mô tả provider đó là Open Source AI.
+- Ghi đúng mô hình tích hợp API bên ngoài do người dùng cấu hình; không mô tả provider đó là Open Source AI.
 - Giữ xác nhận ngoại lệ `spdx-exceptions` và `spdx-license-ids` đã được người dùng duyệt, không yêu cầu duyệt lại.
 - Rà từng dấu tick theo bằng chứng và kết quả từng ca; triển khai adapter không đồng nghĩa nghiệm thu provider hoặc nhiều người đồng thời.
 
@@ -278,12 +280,12 @@ Không commit, push hoặc resolve comment trong đợt lập kế hoạch.
 
 ### WPRV-04: Metadata và định dạng Core
 
-- Hoãn tối ưu phiên bản model sang BACKLOG theo quyết định người dùng; hoàn lại riêng diff cache local trong `ModelRegistry`, giữ precondition của PR và mọi cập nhật nhánh cha.
+- Giữ truy vấn phiên bản trực tiếp trong `ModelRegistry` và kiểm phiên bản trước khi ghi; tối ưu truy vấn nằm trong BACKLOG.
 - Giữ trường `asynchronous=true`: `RecordStatus` đưa completion vào outbox, frontend dùng trường này để cảnh báo tác vụ ngoài chưa hoàn tất.
 - Ghi nghĩa trong spec/Swagger và kiểm với completion thật; giữ cổng xác nhận web cho membership hoặc tác động không biết.
 - Định dạng `RecordPreconditions` theo formatter của cha, giữ hành vi parse/check.
 
-**File chính:** `meta/MetaController.java`, `data/RecordPreconditions.java`; hoàn lại phần tối ưu trong `registry/ModelRegistry.java` do đợt này thêm.
+**File chính:** `meta/MetaController.java`, `data/RecordPreconditions.java`, `registry/ModelRegistry.java`; giữ cách đọc phiên bản trực tiếp của Core.
 **Đầu ra:** metadata đúng nghĩa; hai precondition vẫn đúng trên request cũ/mới; quy trình tự khai báo không hồi quy.
 
 ### WPRV-05: UI và gateway tùy chọn
@@ -307,7 +309,7 @@ Không commit, push hoặc resolve comment trong đợt lập kế hoạch.
 - Bổ sung trong `docs/API.md` ý nghĩa version/modelVersion tùy chọn cho client ngoài và liên kết API trợ lý tại `assistant/README.md`.
 - Rà checklist từng dòng: đủ bằng chứng mới tick, ca một phần giữ mở; cập nhật ghi chú bàn giao cho đúng nhánh đã push và trạng thái sau merge.
 - Chạy ma trận hồi quy ở test plan trên nền mới, gồm action tự khai báo; không dùng kết quả trước merge để đóng.
-- Ghi giới hạn còn lại vào BACKLOG; không hoãn ca bảo mật hoặc hồi quy Core dưới danh nghĩa bản thử.
+- Ghi giới hạn còn lại vào BACKLOG; không đóng nghiệm thu khi ca bảo mật hoặc hồi quy Core chưa đạt.
 - Kiểm diff, secret và file sinh; giữ `report/`, `.gitignore`, khóa, DB, dữ liệu thật và artifact thử ngoài commit.
 - Lập bảng phản hồi từng mục review cùng bằng chứng để người dùng đọc trước khi cho phép push/resolve.
 
@@ -323,9 +325,9 @@ Rollback bằng quay lại thay đổi tương ứng và tắt trợ lý; giữ 
 ## Điều chỉnh theo review bổ sung
 
 Phần này ưu tiên hơn thứ tự WPRV-01–06 ở trên.
-Thực hiện theo bảng quyết định đã chốt tại mục 12 overview; giới hạn chỉ áp dụng cho bản thử có kiểm soát.
+Thực hiện theo bảng quyết định tại mục 12 overview; các giới hạn chưa xử lý phải được theo dõi đến khi đáp ứng điều kiện nghiệm thu.
 
-### WPRV-07: Lỗi HTTP, ranh giới mạng và hợp đồng bản thử
+### WPRV-07: Lỗi HTTP, ranh giới mạng và hợp đồng tích hợp
 
 **Ưu tiên bắt buộc:** hoàn thiện bug off/focus của WPRV-05 và phân loại lỗi HTTP trong `assistant/src/server.ts`.
 Lỗi parse JSON phải là 400, vượt body limit là 413; lỗi server không dự kiến vẫn 500 và không trả raw error/payload.
@@ -339,8 +341,9 @@ Không chỉ gắn control/backend/Keycloak mà bỏ gateway, vì APISIX còn c�
 Kiểm TCP cả hostname lẫn IP: control gọi được API/JWKS cần thiết và gateway tới được control, nhưng control/runtime không tới Postgres/SeaweedFS hoặc runtime khác.
 Core khi không dùng overlay không có mạng trợ lý hoặc dependency mới.
 
-**Egress, giới hạn đã chấp nhận cho bản thử:** không coi `allowPrivateNetwork=false` là firewall cho cả container.
-Giữ ba provider native Gemini/OpenAI/Anthropic và endpoint compatible khóa, chỉ dùng bản thử có kiểm soát; proxy/allowlist Internet toàn runtime cần kế hoạch riêng trước dùng thật, gồm DNS, TLS/redirect, Telegram, provider và failure behavior.
+**Egress:** `allowPrivateNetwork=false` không thay thế firewall cho cả container.
+Giữ ba provider native Gemini/OpenAI/Anthropic và endpoint compatible đang tắt.
+Bảo vệ kết nối Internet toàn runtime còn cần hoàn thiện, gồm DNS, TLS/redirect, Telegram, provider và hành vi khi lỗi.
 Không thêm proxy hoặc dependency mạng trong đợt này nếu chưa duyệt.
 
 **Hợp đồng và docs:** ghi yêu cầu truy cập đúng origin GATEWAY_PUBLIC_URL, không nới CSRF hoặc nhận origin tùy ý.
@@ -348,11 +351,11 @@ Mô tả schema bỏ trường ngoài danh sách và danh tính luôn lấy từ
 Bổ sung trust boundary backup gồm master key, provider/SSO secret và token control/tool/confirmation, cùng yêu cầu bảo vệ/thu hồi credential khi có sự cố.
 Trường hợp chưa liên kết Core trả 409 thay vì 401; phân biệt với phiên đăng nhập không hợp lệ, kiểm client và thông báo.
 
-**Giảm phạm vi Core, đã duyệt:** số đo 9 ms của reviewer cho thấy tối ưu cache có ưu tiên thấp.
-Đưa tối ưu phiên bản vào BACKLOG và hoàn lại riêng thay đổi cache local trong ModelRegistry, giữ precondition của PR gốc.
-Không hoàn lại các sửa của nhánh cha hoặc phần merge của đồng đội.
-Không thêm cache trong đợt này; TRV-05 tập trung kiểm phiên bản sau apply/rollback/restart và stale snapshot.
+**Phiên bản Core:** giữ cách đọc phiên bản trực tiếp trong `ModelRegistry` và kiểm phiên bản trước khi ghi.
+Tối ưu truy vấn nằm trong BACKLOG.
+TRV-05 kiểm phiên bản sau apply, rollback, restart và yêu cầu dùng snapshot cũ.
 
-**Nghiệm thu:** TRV-11–16, các hồi quy bị dừng cần chạy lại đúng bản có JAR mới.
-Phân biệt ca reviewer đã chạy, ca local đã chạy và ca chưa có key/runtime hoạt động; không đánh dấu chung là xong.
-BACKLOG ghi egress allowlist toàn mạng, custody/rotation secret backup và tối ưu truy vấn phiên bản; không dùng các giới hạn này để mô tả bản thử là đã sẵn sàng dùng thật.
+**Nghiệm thu:** TRV-11–16 và các hồi quy trên đúng bản tích hợp.
+Ghi riêng bằng chứng local, CI và các ca cần key hoặc runtime thật; ca chưa kiểm đủ vẫn để mở.
+BACKLOG theo dõi giới hạn kết nối Internet của runtime, quản lý khóa/token backup và tối ưu truy vấn phiên bản.
+Chỉ đóng từng mục khi có triển khai và bằng chứng đáp ứng tiêu chí tương ứng.

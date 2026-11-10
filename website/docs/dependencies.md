@@ -31,8 +31,8 @@ Hai nơi đó được máy kiểm ở mỗi pull request, tài liệu này ch�
 | Monaco Editor, monaco-yaml | MIT | Trình soạn mô hình | Gợi ý và báo lỗi YAML theo JSON Schema của tệp mô hình | Chạy trong trình duyệt |
 | React Flow, Dagre, Smart Edge | MIT | Sơ đồ quy trình vẽ từ tệp đang soạn | Chỉ để xem quy trình, không để thiết kế | `frontend/src/console/` |
 | FullCalendar | MIT | Lịch đặt chỗ | Kéo thả để đổi giờ | |
-| OpenClaw | MIT | Runtime trợ lý tùy chọn, Telegram và adapter provider | Dùng nguyên bản; Core không cần nó khi trợ lý tắt | `assistant/runtime/`, dependency bundled và ngoại lệ theo SBOM/policy |
-| Fastify, @fastify/swagger, jose | MIT | Control API, OpenAPI và kiểm JWT của trợ lý | Dùng thư viện sẵn có | `assistant/`, không đưa vào module Java Core |
+| OpenClaw | MIT | Chạy trợ lý, gọi API mô hình và nhận tin Telegram | Dùng nguyên bản; Core không cần nó khi trợ lý tắt | `assistant/runtime/`; thư viện đi kèm có trong SBOM |
+| Fastify, @fastify/swagger, jose | MIT | API cấu hình, OpenAPI và xác thực JWT của trợ lý | Tách khỏi API lõi | `assistant/`, không đưa vào module Java Core |
 | restic | BSD-2-Clause | Sao lưu có mã hóa | Chạy trong container nên chỉ cần Docker | `deploy/backup.sh` |
 | Trivy, gitleaks, CycloneDX | Apache-2.0, MIT | Quét lỗ hổng, bí mật và lập SBOM trong CI | Công cụ nguồn mở, chạy ở mọi pull request | `.github/workflows/` |
 
@@ -72,18 +72,10 @@ Strapi chưa được đánh giá riêng.
 | Không dependency có lỗ hổng HIGH hoặc CRITICAL đã có bản vá | Trivy, SBOM của Maven | workflow `Dependencies`, chạy cả theo lịch |
 | Không có `vendor/`, `node_modules/`, `third_party/` trong Git | `git ls-files \| grep -E '(^\|/)(vendor\|third_party\|node_modules)/'` | Chạy tay |
 
-Các ngoại lệ trong `.github/dependency-exceptions.json`:
+Hai gói mang giấy phép chưa nằm trong danh sách của OSI được nêu tên kèm lý do ở `.github/dependency-exceptions.json`: `caniuse-lite` (CC-BY-4.0) và `mdn-data` (CC0-1.0) là dữ liệu chứ không phải mã, chỉ đọc lúc dựng trang docs và không có trong trang đã dựng.
 
-| Gói | Lý do |
-|---|---|
-| css-mediaquery | LICENSE là BSD-3-Clause; metadata chỉ ghi BSD |
-| require-like@0.1.2 | LICENSE là MIT; metadata thiếu mã giấy phép |
-| config-chain@1.1.13 | LICENSE là MIT; metadata dùng đối tượng thay cho mã SPDX |
-| caniuse-lite | Dữ liệu hỗ trợ trình duyệt CC-BY-4.0, chỉ đọc lúc dựng docs |
-| mdn-data | Dữ liệu CSS CC0-1.0, chỉ đọc lúc dựng docs |
-| spdx-exceptions | Dữ liệu mã ngoại lệ SPDX CC-BY-3.0 trong runtime trợ lý; giữ attribution trong NOTICE |
-| spdx-license-ids | Dữ liệu mã giấy phép SPDX CC0-1.0 trong runtime trợ lý |
-| npm@12.2.2 | Ứng dụng npm Artistic-2.0 đi kèm runtime nguyên bản; ngoại lệ giới hạn theo phiên bản |
+Runtime trợ lý có thêm ngoại lệ dữ liệu `spdx-exceptions` (CC-BY-3.0) và `spdx-license-ids` (CC0-1.0), ghi công trong `NOTICE`.
+`npm@12.2.2` (Artistic-2.0) là ứng dụng đi kèm runtime nguyên bản; ngoại lệ chỉ áp dụng đúng gói và phiên bản này.
 
 Mọi gói khác phải thuộc danh sách OSI trong `check_licenses.py`, hoặc có một lựa chọn thay thế thuộc danh sách đó như `MIT OR CC0-1.0`.
 

@@ -184,6 +184,13 @@ jobs:
           fi
           grep -q "files missing for attachments: gone.pdf" verify-missing.log
 
+      - name: A backup slower than the delay of file deletion warns
+        working-directory: deploy
+        run: |
+          echo "DXOS_FILE_DELETE_DELAY=0s" >> .env
+          ./backup.sh 2>&1 | tee warn.log
+          grep -q "WARNING: the dump and the copy of the store took" warn.log
+
   api-e2e:
     name: "API end-to-end (${{ matrix.group }})"
     runs-on: ubuntu-24.04
@@ -194,7 +201,7 @@ jobs:
         include:
           # Each group runs on its own empty stack; the scripts of a group depend only on the ones before them in it.
           - group: model and process
-            checks: api recovery case change process booking demo guards users docs conformance
+            checks: api recovery case change process booking demo guards users docs conformance cli
           - group: events and bootstrap
             checks: events bootstrap
     steps:

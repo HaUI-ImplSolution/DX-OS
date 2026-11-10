@@ -12,9 +12,9 @@ Giấy phép của từng thành phần ở [`DEPENDENCIES.txt`](../DEPENDENCIES
 | `frontend.cdx.json` | npm, `frontend` |
 | `website.cdx.json` | npm, `website` (trang tài liệu) |
 | `assistant.cdx.json` | npm, `assistant` (dịch vụ tùy chọn) |
-| `assistant-runtime.cdx.json` | npm lockfile, `assistant/runtime` (OpenClaw và dependency bundled, gồm các nền tảng hỗ trợ) |
+| `assistant-runtime.cdx.json` | npm, `assistant/runtime` (OpenClaw và thư viện đi kèm, từ tệp khóa) |
 
-Các tệp chỉ gồm thư viện của mã do nhóm viết.
+Các tệp chỉ gồm thư viện của mã do nhóm viết; riêng `assistant-runtime.cdx.json` liệt kê OpenClaw và thư viện đi kèm.
 Image bên thứ ba khai báo ở [`.github/component-catalog.json`](../.github/component-catalog.json), giấy phép của chúng ở mục 4 của [`DEPENDENCIES.txt`](../DEPENDENCIES.txt), và `deploy/docker-compose.yml` ghim phiên bản và digest.
 
 ## Sinh lại
@@ -30,12 +30,15 @@ cp target/backend.cdx.json ../sbom/
 # Frontend
 cd frontend && npx @cyclonedx/cyclonedx-npm --omit dev --output-format JSON --output-file ../sbom/frontend.cdx.json
 
-# Assistant
-cd assistant && npx @cyclonedx/cyclonedx-npm@6.0.1 --omit dev --output-format JSON --output-file ../sbom/assistant.cdx.json
-cd runtime && npx @cyclonedx/cyclonedx-npm@6.0.1 --package-lock-only --omit dev --output-format JSON --output-file ../../sbom/assistant-runtime.cdx.json
-
 # Website
 cd website && npx @cyclonedx/cyclonedx-npm --omit dev --output-format JSON --output-file ../sbom/website.cdx.json
+```
+
+Với trợ lý tùy chọn, chạy riêng từ gốc repository:
+
+```bash
+(cd assistant && npx @cyclonedx/cyclonedx-npm@6.0.1 --omit dev --output-format JSON --output-file ../sbom/assistant.cdx.json)
+(cd assistant/runtime && npx @cyclonedx/cyclonedx-npm@6.0.1 --package-lock-only --omit dev --output-format JSON --output-file ../../sbom/assistant-runtime.cdx.json)
 ```
 
 Backend sinh lại bằng Maven vì `pom.xml` không ghi phiên bản của các gói do Spring Boot quản lý.

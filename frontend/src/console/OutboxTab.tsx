@@ -17,24 +17,26 @@ import {
   Typography,
 } from "@mui/material";
 import { listOutbox, retryOutbox, type OutboxPage, type OutboxStatus } from "./api";
+import { t } from "../shell/t";
+import { intlLocale } from "../shell/format";
 
 const SIZE = 20;
 const STATUS_LABEL: Record<OutboxStatus, string> = {
-  failed: "Lỗi",
-  stopped: "Đã dừng",
-  pending: "Chờ gửi",
-  delivered: "Đã gửi",
+  failed: t("Lỗi"),
+  stopped: t("Đã dừng"),
+  pending: t("Chờ gửi"),
+  delivered: t("Đã gửi"),
 };
 const STATUSES: OutboxStatus[] = ["failed", "stopped", "pending", "delivered"];
 
 const TOPIC_LABEL: Record<string, string> = {
-  completion: "Hành động hoàn tất",
-  "record.event": "Sự kiện hồ sơ gửi webhook",
-  "file.delete": "Xóa tệp trong kho",
+  completion: t("Hành động hoàn tất"),
+  "record.event": t("Sự kiện hồ sơ gửi webhook"),
+  "file.delete": t("Xóa tệp trong kho"),
 };
 
-const message = (error: unknown) => (error instanceof Error ? error.message : "Không xử lý được");
-const when = (value: string | null) => (value ? new Date(value).toLocaleString("vi-VN") : "");
+const message = (error: unknown) => (error instanceof Error ? error.message : t("Không xử lý được"));
+const when = (value: string | null) => (value ? new Date(value).toLocaleString(intlLocale()) : "");
 
 // The messages that leave the system after a change, with the error of those that failed.
 export default function OutboxTab() {
@@ -59,7 +61,7 @@ export default function OutboxTab() {
   const retry = async (id: number) => {
     try {
       await retryOutbox(id);
-      setNote(`Đã xếp thông điệp ${id} để thử lại; mở lại tab này sau vài giây để xem kết quả.`);
+      setNote(t("Đã xếp thông điệp {id} để thử lại; mở lại tab này sau vài giây để xem kết quả.", { id }));
       load();
     } catch (e) {
       setError(message(e));
@@ -84,23 +86,22 @@ export default function OutboxTab() {
         ))}
       </Tabs>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-        Các thông điệp gửi đi sau khi một thay đổi đã lưu, như thêm người dùng vào nhóm. Thông điệp lỗi được thử lại dần;
-        lỗi quá số lần cho phép thì dừng hẳn. Bấm "Thử lại ngay" khi đã sửa nguyên nhân.
+        {t("Các thông điệp gửi đi sau khi một thay đổi đã lưu, như thêm người dùng vào nhóm. Thông điệp lỗi được thử lại dần; lỗi quá số lần cho phép thì dừng hẳn. Bấm 'Thử lại ngay' khi đã sửa nguyên nhân.")}
       </Typography>
       {data && data.page.items.length === 0 && (
-        <Card sx={{ py: 6, textAlign: "center", color: "text.secondary" }}>Không có thông điệp nào.</Card>
+        <Card sx={{ py: 6, textAlign: "center", color: "text.secondary" }}>{t("Không có thông điệp nào.")}</Card>
       )}
       {data && data.page.items.length > 0 && (
         <Card>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Mã</TableCell>
-              <TableCell>Loại</TableCell>
-              <TableCell>Hồ sơ</TableCell>
-              <TableCell>Số lần thử</TableCell>
-              <TableCell>{status === "delivered" ? "Đã gửi lúc" : "Thử lại lúc"}</TableCell>
-              <TableCell>Lỗi gần nhất</TableCell>
+              <TableCell>{t("Mã")}</TableCell>
+              <TableCell>{t("Loại")}</TableCell>
+              <TableCell>{t("Hồ sơ")}</TableCell>
+              <TableCell>{t("Số lần thử")}</TableCell>
+              <TableCell>{status === "delivered" ? t("Đã gửi lúc") : t("Thử lại lúc")}</TableCell>
+              <TableCell>{t("Lỗi gần nhất")}</TableCell>
               <TableCell />
             </TableRow>
           </TableHead>
@@ -117,7 +118,7 @@ export default function OutboxTab() {
                 <TableCell>{item.attempts}</TableCell>
                 <TableCell>
                   {item.stopped ? (
-                    <Chip size="small" color="error" variant="outlined" label="Đã dừng" />
+                    <Chip size="small" color="error" variant="outlined" label={t("Đã dừng")} />
                   ) : (
                     when(item.delivered_at ?? item.next_attempt_at)
                   )}
@@ -126,7 +127,7 @@ export default function OutboxTab() {
                 <TableCell align="right">
                   {item.delivered_at === null && (
                     <Button size="small" onClick={() => retry(item.id)}>
-                      Thử lại ngay
+                      {t("Thử lại ngay")}
                     </Button>
                   )}
                 </TableCell>

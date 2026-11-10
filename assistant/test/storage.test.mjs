@@ -33,6 +33,14 @@ test('only one confirmation can claim a proposal', t => {
   store.claim(a, id, 'web');
   assert.throws(() => store.claim(a, id, 'telegram'), { status: 409 });
 });
+test('an expired proposal cannot be claimed from either channel', t => {
+  const { store } = setup(t), now = Date.UTC(2026, 10, 9);
+  for (const channel of ['web', 'telegram']) {
+    const id = store.createProposal(a, snapshot, now);
+    assert.throws(() => store.claim(a, id, channel, now + 120000), { errorCode: 'ERR_PROPOSAL_CLOSED' });
+    assert.equal(store.proposal(a, id).state, 'pending');
+  }
+});
 test('sensitive effects cannot be confirmed from Telegram', t => {
   const { store } = setup(t), id = store.createProposal(a, { ...snapshot, webOnly: true });
   assert.throws(() => store.claim(a, id, 'telegram'), { errorCode: 'ERR_WEB_CONFIRMATION_REQUIRED' });
@@ -98,4 +106,46 @@ test('unlink releases only the owner bot after removing its Telegram state', t =
   const c = { ...a, subject: 'C' };
   store.bindTelegram(c, '200', { token: 'synthetic-two' });
   assert.throws(() => store.bindTelegram(c, '100', {}), { errorCode: 'ERR_BOT_IN_USE' });
+});
+
+test('encrypted values cannot be moved between accounts or secret names', async t => {
+  const { DatabaseSync } = await import('node:sqlite');
+  const { store, path, key } = setup(t);
+  store.setSecret(a, 'providers', 'synthetic-secret'); store.close();
+  const db = new DatabaseSync(path);
+  const ciphertext = db.prepare("SELECT value FROM secrets WHERE name='providers'").get().value;
+  db.prepare('INSERT INTO secrets(owner,name,value) VALUES(?,?,?)').run(JSON.stringify([b.issuer, b.subject]), 'providers', ciphertext);
+  db.prepare('INSERT INTO secrets(owner,name,value) VALUES(?,?,?)').run(JSON.stringify([a.issuer, a.subject]), 'telegram', ciphertext);
+  db.close();
+  const reopened = new Store(path, key);
+  try {
+    assert.equal(reopened.getSecret(a, 'providers'), 'synthetic-secret');
+    assert.throws(() => reopened.getSecret(b, 'providers'));
+    assert.throws(() => reopened.getSecret(a, 'telegram'));
+  } finally { reopened.close(); }
+});
+
+test('expired OAuth state cannot consume or create a Core session', t => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 10, 9) });
+  const { store } = setup(t);
+  store.createFlow(a, 'synthetic-state', 'synthetic-cookie', 'synthetic-verifier');
+  t.mock.timers.tick(600001);
+  assert.throws(() => store.takeFlow('synthetic-state', 'synthetic-cookie'), { errorCode: 'ERR_LINK_EXPIRED' });
+  assert.equal(store.getSecret(a, 'core'), undefined);
+});
+
+test('schema upgrade preserves encrypted data and rejects a newer database without changing it', async t => {
+  const { DatabaseSync } = await import('node:sqlite');
+  const { store, path, key } = setup(t);
+  store.setSecret(a, 'providers', 'synthetic-secret'); store.close();
+  let db = new DatabaseSync(path);
+  db.exec('DROP TABLE oauth_flows; DROP TABLE telegram_bots; DROP TABLE runtime_owners; PRAGMA user_version=1;'); db.close();
+  const upgraded = new Store(path, key);
+  assert.equal(upgraded.getSecret(a, 'providers'), 'synthetic-secret');
+  assert.equal(upgraded.allocateRuntime(a, ['one']), 'one'); upgraded.close();
+  db = new DatabaseSync(path); db.exec('PRAGMA user_version=99;'); db.close();
+  assert.throws(() => new Store(path, key), /newer application/);
+  db = new DatabaseSync(path);
+  try { assert.equal(db.prepare('PRAGMA user_version').get().user_version, 99); }
+  finally { db.close(); }
 });

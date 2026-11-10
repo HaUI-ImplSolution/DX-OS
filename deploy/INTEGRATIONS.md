@@ -115,4 +115,4 @@ Timer của user chỉ chạy khi user còn phiên đăng nhập, trừ khi bậ
 
 ### Mạng
 
-Lần chạy đầu DuckDB tải extension `postgres` và `httpfs` từ mạng và lưu ở `deploy/data/duckdb`; các lần sau chạy không cần mạng.
+Lần chạy đầu DuckDB tải extension `postgres` và `httpfs` từ mạng và lưu ở `deploy/duckdb`; các lần sau chạy không cần mạng.

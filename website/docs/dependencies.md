@@ -43,8 +43,8 @@ Dự án kéo image chính thức nguyên bản khi chạy, không đóng gói v
 
 | Thành phần | Kết luận | Lý do |
 |---|---|---|
-| NocoBase | Không làm nền | Điều khoản 5.4 và 7.3 trong LICENSE cấm cung cấp hoặc phân phối sản phẩm no-code, low-code hay PaaS xây trên nó, dù nhãn là Apache-2.0 (kiểm ngày 02/11/2026) |
-| Directus | Không dùng | Giấy phép có điều kiện, không thuộc OSI (kiểm ngày 02/11/2026) |
+| NocoBase | Không làm nền | Điều khoản 5.4 và 7.3 trong LICENSE cấm cung cấp hoặc phân phối sản phẩm no-code, low-code hay PaaS xây trên nó, dù nhãn là Apache-2.0 |
+| Directus | Không dùng | Giấy phép có điều kiện, không thuộc OSI |
 | Supabase | Chỉ đọc để học | Đề gợi ý tham khảo; kiến trúc của nó (PostgreSQL, API sinh từ bảng, xác thực, lưu trữ) là mẫu để đọc, nhưng lõi cần đọc mô hình lúc chạy, đổi tên trường giữ dữ liệu và chặn đổi trạng thái ngoài quy trình, nên dịch vụ lõi tự viết phần API chung |
 | Frappe | Chỉ lấy ý tưởng | Một mô hình là nguồn sự thật cho bảng, form và quyền; không dùng làm nền vì đề yêu cầu lõi không có giao diện |
 | Trình thiết kế BPMN kéo thả | Không làm | Người triển khai nhập tham số, hệ thống sinh quy trình từ họ mẫu |

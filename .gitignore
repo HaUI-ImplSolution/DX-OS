@@ -53,6 +53,7 @@ deploy/backups/
 deploy/.stopped
 deploy/.reconcile.*
 deploy/archive/
+deploy/duckdb/
 
 # Logs and temporary files
 *.log

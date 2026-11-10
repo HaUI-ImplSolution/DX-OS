@@ -105,11 +105,11 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 ## 9. Từ 100 lên 100.000 người dùng thì sao?
 
 - Chưa đo tải ở quy mô đó.
-  Số đã đo: danh sách 10.000 dòng có lọc và sắp xếp trả về ở phân vị 95 là 11 ms; cả tám dịch vụ dùng tối đa khoảng 1,7 GiB RAM khi chạy các script kiểm.
+  Số đã đo: danh sách 10.000 dòng có lọc và sắp xếp trả về ở phân vị 95 là 11 ms; cả tám dịch vụ dùng khoảng 1,8 GiB RAM lúc rảnh.
 - Backend chạy một bản.
   Thử hai bản sau gateway cho thấy cả hai nhận lưu lượng, nhưng sau một lần áp dụng mô hình, danh sách mô hình và trạng thái giữ lệch nhau giữa hai bản; vì vậy đây là giới hạn đã ghi, không phải khả năng đã có.
 - Mỗi mô hình có khóa riêng khi áp dụng nên các mô hình áp dụng song song; dữ liệu của mỗi mô hình nằm ở schema riêng.
-- **Bằng chứng:** `docs/TESTING.md` (cách kiểm); `deploy/OPERATIONS.md` (tài nguyên từng dịch vụ, đo trước khi nâng nginx 1.30 và Keycloak 26.8.2); [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md) mục giới hạn chấp nhận.
+- **Bằng chứng:** `docs/TESTING.md` (cách kiểm); `deploy/OPERATIONS.md` (tài nguyên từng dịch vụ); [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md) mục giới hạn chấp nhận.
 
 ## 10. Cộng đồng muốn đóng góp thì làm thế nào?
 

@@ -86,13 +86,13 @@ Các hàm ý sau là suy luận từ cách đề viết, người ra đề khôn
 
 | Đề nêu                                                               | Lõi đáp ứng                                                                            |
 | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Tự động tạo API từ cơ sở dữ liệu, phân quyền tới cấp dòng | API chung đọc mô hình lúc chạy, phân quyền theo vai và theo dòng                 |
-| Điều chỉnh quy trình không cần sửa mã nguồn, BPMN              | Mẫu quy trình trên Flowable                                                             |
+| Tự động tạo API từ cơ sở dữ liệu, phân quyền tới cấp dòng | API chung đọc mô hình lúc chạy, phân quyền theo vai và theo dòng; tài liệu OpenAPI riêng cho từng mô hình; ứng dụng ngoài gọi bằng token máy của một vai |
+| Điều chỉnh quy trình không cần sửa mã nguồn, BPMN | Họ mẫu quy trình trên Flowable, hoặc tự khai báo trạng thái và hành động; BPMN sinh từ tệp mô hình |
 | GitOps, tự phục hồi                                                  | GitOps cho nghiệp vụ, tệp sai bị chặn, áp dụng dở được hoàn tất hoặc hủy bỏ |
-| Kiến trúc hướng sự kiện                                           | Trục sự kiện bằng bảng outbox                                                         |
+| Kiến trúc hướng sự kiện | Trục sự kiện bằng bảng outbox: webhook có chữ ký, API kéo theo `eventId`, kênh báo cho hộp việc đang mở |
 | Tác tử AI, Human-in-the-loop, RAG                                     | Tác tử có người duyệt và hỏi đáp kèm nguồn                                     |
 | Chống nguyên khối, chủ quyền số                                   | Thành phần thay được, dữ liệu trong PostgreSQL thuần                               |
-| Chống ốc đảo dữ liệu                                              | Một định danh, một cơ sở dữ liệu, mô hình là danh mục dữ liệu                |
+| Chống ốc đảo dữ liệu | Một định danh, một cơ sở dữ liệu, mô hình là danh mục dữ liệu và trang Danh mục dữ liệu đọc từ đó; hồ sơ đã đóng ghi ra kho Parquet |
 
 ### Bốn nguyên lý kỹ thuật của đề
 
@@ -610,7 +610,7 @@ Nơi lưu mã và máy chủ demo như GitHub, VPS, Cloudflare không thuộc s�
 
 ## Công cụ
 
-Số sao và giấy phép lấy từ GitHub API ngày 2026-11-02, trừ khi có ghi khác; các dòng của bảng điều khiển lấy ngày 2026-11-03.
+Số sao và giấy phép lấy từ GitHub API.
 
 
 | Vai trò                  | Dự án                                                                     | Giấy phép                    | Sao                | Ghi chú                                                                              |

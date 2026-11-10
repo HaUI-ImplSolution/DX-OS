@@ -533,16 +533,16 @@ cmd_reconcile() {
 DUCKDB="duckdb/duckdb:1.4.1@sha256:b9e06a757942c2fa195a0df86155db1b0887ce45f33d3bef9ff50890c913531e"
 
 # Runs DuckDB in a container as the calling user: duckdb_run <dir> [docker options] -- [duckdb arguments].
-# A non-empty <dir> is mounted at /archive; the extensions it downloads stay in data/duckdb, so only the
+# A non-empty <dir> is mounted at /archive; the extensions it downloads stay in duckdb/ next to this script, so only the
 # first run needs the network.
 duckdb_run() {
   local dir="$1" options=()
   shift
   while [[ "$1" != "--" ]]; do options+=("$1"); shift; done
   shift
-  mkdir -p "$DEPLOY_DIR/data/duckdb"
+  mkdir -p "$DEPLOY_DIR/duckdb"
   [[ -z "$dir" ]] || options+=(-v "$dir:/archive")
-  docker run --rm -i --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$DEPLOY_DIR/data/duckdb:/ext" \
+  docker run --rm -i --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$DEPLOY_DIR/duckdb:/ext" \
     ${options[@]+"${options[@]}"} "$DUCKDB" /duckdb "$@"
 }
 

@@ -103,6 +103,7 @@ updates:
       - /frontend
       - /portal
       - /sso
+      - /assistant
     target-branch: Khuong/main
     schedule:
       interval: monthly
@@ -137,3 +138,22 @@ updates:
     groups:
       compose-images:
         patterns: ["*"]
+
+  - package-ecosystem: npm
+    directories:
+      - /assistant
+      - /assistant/runtime
+    target-branch: Khuong/main
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 2
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "chore(deps)"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      assistant:
+        update-types: [minor, patch]

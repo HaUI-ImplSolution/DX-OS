@@ -34,12 +34,14 @@ import LiveRefresh from "./LiveRefresh";
 import { uiIcon } from "./uiIcons";
 import { screens } from "./resources";
 import { resourceName, type EntityMeta, type ModelMeta } from "./types";
+import { assistantAvailable } from "../assistant/api";
 import { t } from "../shell/t";
 
 // The control panel and its editor are loaded only when an administrator opens it.
 const ConsolePage = lazy(() => import("../console/ConsolePage"));
 const CalendarPage = lazy(() => import("./CalendarPage"));
 const StatsPage = lazy(() => import("./StatsPage"));
+const AssistantPage = lazy(() => import("../assistant/AssistantPage"));
 
 // One icon per process family, so a menu reads at a glance.
 const FAMILY_ICONS = {
@@ -108,7 +110,7 @@ function menuGroups(entities: EntityMeta[]) {
 }
 
 // The entities are grouped under their model, so two models that both have a "Hồ sơ" stay apart.
-const makeMenu = (models: ModelMeta[]) =>
+const makeMenu = (models: ModelMeta[], assistantEnabled: boolean) =>
   function AppMenu() {
     const { permissions } = usePermissions();
     const reachable = models.map((model) => ({
@@ -123,6 +125,7 @@ const makeMenu = (models: ModelMeta[]) =>
     return (
       <Menu>
         <Menu.DashboardItem primaryText={t("Hộp việc")} />
+        {assistantEnabled && <Menu.Item to="/assistant" primaryText={t("Trợ lý cá nhân")} leftIcon={<SupportAgentOutlinedIcon />} />}
         {reachable
           .filter((group) => group.entities.length > 0)
           .map(({ model, entities }) => (
@@ -162,6 +165,13 @@ const makeMenu = (models: ModelMeta[]) =>
 export default function AdminApp() {
   const [models, setModels] = useState<ModelMeta[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [assistantEnabled, setAssistantEnabled] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    void assistantAvailable().then(enabled => { if (active) setAssistantEnabled(enabled); });
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     listModels().then(setModels, (e: unknown) => setError(e instanceof Error ? e.message : t("Không đọc được metadata")));
@@ -174,14 +184,14 @@ export default function AdminApp() {
   }, [models]);
   const dataProvider = useMemo(() => createDataProvider((resource) => byResource[resource]), [byResource]);
   const layout = useMemo(() => {
-    const menu = makeMenu(models ?? []);
+    const menu = makeMenu(models ?? [], assistantEnabled);
     return ({ children }: LayoutProps) => (
       <Layout menu={menu} appBar={AppTopBar}>
         <LiveRefresh />
         {children}
       </Layout>
     );
-  }, [models]);
+  }, [models, assistantEnabled]);
 
   if (error) return <p className="section-subtitle">{error}</p>;
   if (!models) return <div className="login-screen" />;
@@ -199,6 +209,7 @@ export default function AdminApp() {
       disableTelemetry
     >
       <CustomRoutes>
+        <Route path="/assistant" element={<Suspense fallback={<p className="section-subtitle">{t("Đang tải...")}</p>}><AssistantPage /></Suspense>} />
         <Route
           path="/console/*"
           element={

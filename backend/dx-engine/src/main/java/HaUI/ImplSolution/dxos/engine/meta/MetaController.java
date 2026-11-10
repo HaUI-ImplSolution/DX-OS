@@ -18,6 +18,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,12 +38,12 @@ public class MetaController {
 
   public record EntityMeta(String name, String label, List<FieldMeta> fields, boolean hasProcess,
       ProcessInfo process, String unitField, boolean canRead, boolean canWrite, boolean canHandle,
-      boolean canAssign, List<String> handlerActions, Model.Ui ui) {}
+      boolean canAssign, Long modelVersion, List<String> handlerActions, Model.Ui ui) {}
 
   // held is true for a model that is being applied or needs reconciliation; it has no entities
   // then.
   public record ModelMeta(String name, List<Model.Unit> units, List<EntityMeta> entities,
-      boolean held) {}
+      boolean held, Long modelVersion) {}
 
   private final ModelRegistry registry;
   private final DataService data;
@@ -57,25 +59,31 @@ public class MetaController {
   @Operation(summary = "Applied models with the entities the caller can reach",
       description = "An entity no role of the caller reaches is left out, and so is a model with no"
           + " entity left. A model that is held is listed with held = true and no entities, only"
-          + " when the caller reaches one of its entities.")
+          + " when the caller reaches one of its entities. modelVersion is the applied version"
+          + " for conditional actions and assignment; null while the model is held. Completion effects"
+          + " have asynchronous=true because they are queued in the outbox; this is not a delivery"
+          + " receipt.")
   public ApiResponse<List<ModelMeta>> models() {
     List<ModelMeta> models = new ArrayList<>(registry.all().stream()
         .map(model -> new ModelMeta(model.name(), model.units(),
             model.entities().values().stream().filter(entity -> data.access(model, entity).read())
                 .map(entity -> describe(model, entity)).toList(),
-            false))
+            false, registry.version(model.name())))
         .filter(model -> !model.entities().isEmpty()).toList());
     registry.held().stream()
         .filter(model -> model.entities().values().stream()
             .anyMatch(entity -> data.access(model, entity).read()))
-        .forEach(model -> models.add(new ModelMeta(model.name(), model.units(), List.of(), true)));
+        .forEach(
+            model -> models.add(new ModelMeta(model.name(), model.units(), List.of(), true, null)));
     return ApiResponse.success(models);
   }
 
   @GetMapping("/{model}/entities/{entity}")
   @Operation(summary = "Fields, process and permissions of one entity for the caller",
-      description = "handlerActions lists the process actions the roles of the caller may take,"
-          + " so a client shows only the buttons that can work. process.actions[].when, when not"
+      description = "modelVersion identifies the applied model. process.effects maps destination"
+          + " states to queued effects; asynchronous effects may still be pending after an action."
+          + " handlerActions lists the process actions the roles of the caller may take, so a"
+          + " client shows only the buttons that can work. process.actions[].when, when not"
           + " null, is {field, op, value}: the action is taken only on a record whose field meets"
           + " the comparison (op is one of ==, !=, <, <=, >, >=; a field without a value never"
           + " does), otherwise it is refused with 409 and data.reason CONDITION_NOT_MET.")
@@ -93,18 +101,26 @@ public class MetaController {
             f.required() && f.defaultValue() == null, f.unique(), f.options(), f.to(), f.multiple(),
             f.min(), f.max(), f.pattern(), f.requiredWhen()))
         .toList();
-    ProcessInfo process =
-        entity.process() == null ? null
-            : new ProcessInfo(entity.process().family(), entity.process().handlers(),
-                entity.process().allowSelfDecision(),
-                entity.process().deadline() == null ? null
-                    : entity.process().deadline().toSeconds(),
-                entity.process().booking(), entity.process().definition().states(),
-                entity.process().definition().actions());
+    ProcessInfo process = entity.process() == null ? null
+        : new ProcessInfo(entity.process().family(), entity.process().handlers(),
+            entity.process().allowSelfDecision(),
+            entity.process().deadline() == null ? null : entity.process().deadline().toSeconds(),
+            entity.process().booking(), entity.process().definition().states(),
+            entity.process().definition().actions(), effects(entity));
     String unitField = entity.unitField().map(Model.Field::name).orElse(null);
     return new EntityMeta(entity.name(), entity.label(), fields, process != null, process,
         unitField, access.read(), access.write(), data.canHandle(model, entity),
-        data.canAssign(model, entity), handlerActions(model, entity), entity.ui());
+        data.canAssign(model, entity), registry.version(model.name()),
+        handlerActions(model, entity), entity.ui());
+  }
+
+  private Map<String, List<ProcessInfo.Effect>> effects(Entity entity) {
+    if (entity.process().after() == null) {
+      return Map.of();
+    }
+    return entity.process().after().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
+        entry -> entry.getValue().stream().map(effect -> new ProcessInfo.Effect(effect.operation(),
+            effect.user(), effect.group(), effect.groupField(), true)).toList()));
   }
 
   // The actions the roles of the caller may take on a record, as the process rules decide them.

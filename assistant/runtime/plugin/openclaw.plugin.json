@@ -1,0 +1,33 @@
+{
+  "id": "dxos-assistant",
+  "name": "DX-OS Assistant",
+  "description": "Core API tools with explicit human confirmation",
+  "entry": "index.mjs",
+  "toolMetadata": {
+    "dxos_propose": {
+      "optional": true
+    }
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  },
+  "contracts": {
+    "tools": [
+      "dxos_models",
+      "dxos_inbox",
+      "dxos_record",
+      "dxos_list",
+      "dxos_events",
+      "dxos_stats",
+      "dxos_handlers",
+      "dxos_propose",
+      "dxos_admin",
+      "dxos_probe"
+    ]
+  },
+  "activation": {
+    "onStartup": true
+  }
+}

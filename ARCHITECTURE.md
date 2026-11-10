@@ -245,6 +245,16 @@ Gateway kiểm token cho mọi route API; các route không kiểm token nằm t
 `dxos start <tệp>...` đưa các tệp mô hình vào qua `deploy/model/` và in kết quả của `ModelBootstrap` cho từng tệp.
 Chi tiết vận hành ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md), log và audit ở [`deploy/MONITORING.md`](./deploy/MONITORING.md), webhook và lịch sử chống sửa ở [`deploy/INTEGRATIONS.md`](./deploy/INTEGRATIONS.md).
 
+### Trợ lý tùy chọn
+
+Dịch vụ [`assistant/`](./assistant/README.md) khởi động cùng stack, gọi API lõi bằng phiên SSO của từng người dùng; không truy cập trực tiếp cơ sở dữ liệu nghiệp vụ.
+Fastify xác thực JWT và lưu cấu hình trong SQLite; các trường bí mật được mã hóa.
+Mỗi tài khoản dùng một runtime OpenClaw với vùng dữ liệu, mạng và token riêng, tối đa ba runtime trên một máy.
+Model chỉ được đọc hoặc tạo đề xuất; xác nhận của người dùng đi qua đường riêng trước khi Core thực thi.
+Core kiểm `modelVersion` dưới khóa mô hình và `version` dưới khóa bản ghi trong cùng giao dịch; client không gửi điều kiện phiên bản giữ hành vi cũ.
+Thông báo đọc hộp việc qua API hiện có; bộ lập lịch, webhook và outbox của Core giữ nguyên.
+Gateway cá nhân chỉ chạy khi người dùng cấu hình và bật trợ lý.
+
 ## 13. Đối chiếu với yêu cầu của đề
 
 | Đề yêu cầu | Đáp ứng |

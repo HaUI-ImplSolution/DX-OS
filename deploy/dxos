@@ -221,6 +221,7 @@ EOF
 }
 
 cmd_start() {
+  "$DEPLOY_DIR/make_env.sh" "$DEPLOY_DIR/.env" --update-assistant
   local since since_epoch was_running=false model_status=0 started
   if (( $# > 0 )); then
     local given=() file

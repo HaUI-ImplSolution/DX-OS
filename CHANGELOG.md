@@ -31,6 +31,13 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - Thực thể có khối `ui:` chọn biểu tượng, nhóm và thứ tự menu, cột và sắp xếp mặc định của danh sách, nhóm trường của biểu mẫu và lời gợi ý; tệp cũ không cần sửa.
 - Mẫu `asset_register` (sổ tài sản) dùng đủ các kiểu và khối `ui:` mới.
 
+### Trợ lý tùy chọn
+
+- Thêm trợ lý cá nhân qua Telegram: cấu hình API riêng, đọc hồ sơ, nhận thông báo và đề xuất giao việc hoặc chuyển trạng thái có xác nhận.
+- Core kiểm quyền, trạng thái và phiên bản trước khi ghi; chặn đề xuất thiếu phiên bản hoặc Core không hỗ trợ điều kiện.
+- Trợ lý khởi động cùng stack và tự chuẩn bị state/SSO; người dùng nhập API và bật trợ lý trên giao diện.
+- Sao lưu tạm dừng rồi phục hồi đúng các dịch vụ trợ lý đang chạy.
+
 ### Áp dụng và đổi mô hình
 
 - Áp dụng vào hệ thống rỗng dựng schema `m_<mô hình>` (pgschema), bảng, ràng buộc, vai và nhóm Keycloak, phiên bản và lịch sử từng bước; áp dụng lại cùng tệp thì không làm gì, bảng hoặc Keycloak lệch thì kế hoạch ghi `repair` và sửa phần lệch.

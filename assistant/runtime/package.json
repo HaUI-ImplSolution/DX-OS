@@ -1,0 +1,13 @@
+{
+  "name": "dxos-assistant-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "dependencies": {
+    "openclaw": "2026.11.1"
+  },
+  "overrides": {
+    "zod@4.6.5": "4.6.6",
+    "npm@12.2.0": "12.2.2"
+  }
+}

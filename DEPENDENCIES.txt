@@ -17,7 +17,7 @@ Image khai báo ở .github/component-catalog.json; .github/scripts/check_licens
 | Phần                                        | Giấy phép             | Ghi chú                                      |
 +=============================================+=======================+==============================================+
 | backend, frontend, website, deploy, portal, | Apache-2.0 (LICENSE)  | SPDX header ở mọi file mã nguồn              |
-| sso, seaweedfs, e2e, examples               |                       |                                              |
+| sso, seaweedfs, e2e, examples, assistant    |                       |                                              |
 +---------------------------------------------+-----------------------+----------------------------------------------+
 
 Header của file mã nguồn là SPDX-License-Identifier: Apache-2.0.
@@ -107,7 +107,7 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 | dompurify (qua monaco-editor)                                | MPL-2.0 OR   | Làm sạch nội dung hiển thị           |
 |                                                              | Apache-2.0   | [3]                                  |
 +--------------------------------------------------------------+--------------+--------------------------------------+
-| TypeScript                                                   | Apache-2.0   | Web                                  |
+| TypeScript                                                   | Apache-2.0   | Chỉ khi build web và trợ lý           |
 +--------------------------------------------------------------+--------------+--------------------------------------+
 | css-mediaquery (qua react-admin)                             | BSD-3-Clause | Truy vấn media của MUI               |
 +--------------------------------------------------------------+--------------+--------------------------------------+
@@ -129,6 +129,25 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 | nginx 1.30                                                   | BSD-2-Clause | Image phục vụ web và portal          |
 +--------------------------------------------------------------+--------------+--------------------------------------+
 | Node.js 22 (node:22-alpine)                                  | MIT          | Chỉ khi build web                    |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| OpenClaw 2026.11.1                                           | MIT          | Chạy trợ lý tùy chọn, gọi API mô     |
+|                                                              |              | hình và nhận tin Telegram            |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| Fastify, @fastify/swagger, jose                              | MIT          | API, OpenAPI và xác thực JWT của     |
+|                                                              |              | dịch vụ trợ lý                       |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| Node.js 24.16.0                                              | MIT          | Chạy trợ lý và SQLite tích hợp       |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| @types/node                                                  | MIT          | Chỉ khi build và test trợ lý         |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| npm 12.2.2 [6]                                               | Artistic-2.0 | Ứng dụng đi kèm runtime trợ lý, dùng |
+|                                                              |              | nguyên bản                           |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| spdx-exceptions [5]                                          | CC-BY-3.0    | Dữ liệu mã ngoại lệ giấy phép trong  |
+|                                                              |              | runtime trợ lý                       |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| spdx-license-ids [5]                                         | CC0-1.0      | Dữ liệu mã giấy phép trong runtime   |
+|                                                              |              | trợ lý                               |
 +--------------------------------------------------------------+--------------+--------------------------------------+
 
 4. HẠ TẦNG VÀ CÔNG CỤ
@@ -203,3 +222,12 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 [4] caniuse-lite (CC-BY-4.0) và mdn-data (CC0-1.0) là dữ liệu, không phải mã.
     Chúng chỉ được đọc lúc dựng trang tài liệu và không có trong trang đã dựng.
     Hai gói được nêu tên kèm lý do ở .github/dependency-exceptions.json.
+
+[5] spdx-exceptions (CC-BY-3.0) và spdx-license-ids (CC0-1.0) là dữ liệu định danh giấy phép, không phải mã.
+    Chúng đi kèm npm trong runtime trợ lý; ghi công trong NOTICE.
+    Nguồn spdx-exceptions: https://github.com/kemitchell/spdx-exceptions.json; giấy phép https://creativecommons.org/licenses/by/3.0/.
+    Nguồn spdx-license-ids: https://github.com/jslicense/spdx-license-ids.
+    Ngoại lệ kiểm giấy phép cho hai gói dữ liệu này nằm tại .github/dependency-exceptions.json.
+
+[6] npm 12.2.2 (Artistic-2.0) đi kèm OpenClaw nguyên bản; thư viện đóng gói cùng nó giữ giấy phép riêng.
+    Ngoại lệ tại .github/dependency-exceptions.json chỉ áp dụng đúng phiên bản này.

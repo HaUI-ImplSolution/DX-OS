@@ -3,5 +3,8 @@
   "require-like@0.1.2": "MIT text in its License file (Felix Geisendörfer); the package metadata has no license field. Needed by Docusaurus (through eval).",
   "config-chain@1.1.13": "MIT text in its LICENCE file (Dominic Tarr); the package metadata only gives a license object without an SPDX id. Needed by Docusaurus (through update-notifier).",
   "caniuse-lite": "CC-BY-4.0 browser support data, not code. Read only while the docs site is built (browserslist) and absent from the published pages.",
-  "mdn-data": "CC0-1.0 CSS reference data, not code. Read only while the docs site is built (css-tree) and absent from the published pages."
+  "mdn-data": "CC0-1.0 CSS reference data, not code. Read only while the docs site is built (css-tree) and absent from the published pages.",
+  "spdx-exceptions": "CC-BY-3.0 SPDX exception identifier data from The Linux Foundation, not software. Bundled through npm by the optional OpenClaw runtime; source https://github.com/kemitchell/spdx-exceptions.json. Attribution retained in NOTICE. Data exception approved by the project owner.",
+  "spdx-license-ids": "CC0-1.0 SPDX licence identifier data, not software. Bundled through npm by the optional OpenClaw runtime; source https://github.com/jslicense/spdx-license-ids. Data exception approved by the project owner.",
+  "npm@12.2.2": "Artistic-2.0 application, bundled unmodified by the optional OpenClaw runtime. LICENSE verified in npm/cli v12.2.2 and the installed artifact; its bundled dependencies retain their own licences. Scoped exception; not an extension of the repository-wide allowlist."
 }

@@ -14,6 +14,7 @@ APISIX = os.path.dirname(os.path.abspath(__file__))
 
 # Route id -> why it may be reached without a token.
 PUBLIC = {
+    "assistant-api": "feature probe and SSO callback; assistant verifies JWT on account routes",
     "api-system-status": "service status shown by the web client before sign-in",
     "api-preflight": "CORS preflight carries no token",
     "api-docs": "Swagger UI and OpenAPI document",

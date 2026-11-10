@@ -24,6 +24,27 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
+  assistant:
+    name: Check the optional assistant
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24.16.0'
+          cache: 'npm'
+          cache-dependency-path: assistant/package-lock.json
+
+      - name: Build and test without provider or Telegram credentials
+        working-directory: assistant
+        run: |
+          npm ci --no-audit --no-fund --ignore-scripts
+          npm test
+
   compose:
     name: Validate the Compose file
     runs-on: ubuntu-24.04
@@ -32,8 +53,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Fill every blank variable of .env.example with a placeholder
-        run: sed -E 's/^([A-Z0-9_]+)=$/\1=ci-placeholder/' deploy/.env.example > deploy/.env
+      - name: Create an env file with random secrets
+        run: deploy/make_env.sh
 
       - name: Validate compose file
         run: docker compose -f deploy/docker-compose.yml config --quiet

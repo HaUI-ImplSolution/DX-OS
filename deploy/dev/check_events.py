@@ -54,9 +54,18 @@ def start_backend(extra_env=None):
 
 
 def gateway():
-    # The address of this machine as the backend container sees it.
-    container = rt.sh(rt.COMPOSE + ["ps", "-q", "backend"]).stdout.strip()
-    return rt.sh(["docker", "inspect", "-f", "{{range .NetworkSettings.Networks}}{{.Gateway}}{{end}}", container]).stdout.strip()
+    # Reach the host through the data network shared by backend and Postgres.
+    networks = {}
+    for service in ("backend", "postgres"):
+        container = rt.sh(rt.COMPOSE + ["ps", "-q", service]).stdout.strip()
+        networks[service] = json.loads(rt.sh([
+            "docker", "inspect", "-f", "{{json .NetworkSettings.Networks}}", container
+        ]).stdout)
+    shared = networks["backend"].keys() & networks["postgres"].keys()
+    assert len(shared) == 1, "backend and Postgres must share one data network"
+    address = networks["backend"][shared.pop()]["Gateway"]
+    assert address, "the data network must have a host gateway"
+    return address
 
 
 def delivered(event_id=None, code=200):

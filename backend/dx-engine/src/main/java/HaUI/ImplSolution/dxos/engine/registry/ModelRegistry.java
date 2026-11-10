@@ -127,6 +127,23 @@ public class ModelRegistry {
         .orElseThrow(() -> new ResourceNotFoundException("Model " + name + " is not applied"));
   }
 
+  // The request holds the model read lock until its transaction has ended.
+  public long version(String name) {
+    require(name);
+    Long version = jdbc.queryForObject(
+        "SELECT max(version) FROM engine.model_version WHERE model = ?", Long.class, name);
+    if (version == null) {
+      throw new ResourceNotFoundException("Model " + name + " is not applied");
+    }
+    return version;
+  }
+
+  public void checkVersion(String name, Long expected) {
+    if (expected != null && version(name) != expected.longValue()) {
+      throw new InvalidStateException("The model changed; read it again", "MODEL_VERSION_CHANGED");
+    }
+  }
+
   // The models that are held, so that a screen can say why a model is not there.
   public List<Model> held() {
     return models.values().stream().filter(model -> isHeld(model.name()))

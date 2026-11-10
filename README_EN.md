@@ -46,6 +46,8 @@ The current version is `2.0.0`, and the changes of each version are in [`CHANGEL
 - **Try it at once.** One command creates a trial account for each role and sample records in several states, so a visitor who signs in finds a system with work in it.
 - **Simple to install and run.** One command installs and one starts; backups can be checked, services restart on their own, and attachments are virus-scanned when enabled.
 - **Single sign-on.** Through Keycloak, and administrators can be required to enter a one-time code as well.
+- **[Optional personal assistant](./assistant/README.md).** Read and monitor records through Telegram, and propose assignment or workflow actions for the user to confirm.
+  When enabled, content needed for the request is sent to the model API provider, and messages are exchanged through Telegram.
 
 Each feature and the test that proves it are matched in the [evidence matrix](https://haui-implsolution.github.io/DX-OS/docs/evidence-matrix) (Vietnamese).
 

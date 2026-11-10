@@ -89,6 +89,25 @@ global_rules:
           user_agent: "$http_user_agent"
 
 routes:
+  - id: assistant-api
+    vars: [[server_port, "==", "9080"]]
+    priority: 20
+    uri: /assistant-api/*
+    upstream:
+      type: roundrobin
+      nodes:
+        "assistant-control:18790": 1
+      timeout:
+        connect: 5
+        send: 120
+        read: 120
+    plugins:
+      limit-count:
+        count: 120
+        time_window: 60
+        key_type: var
+        key: remote_addr
+        rejected_code: 429
   # Service status for the portal: public, limited per client address.
   - id: api-system-status
     vars: [["server_port", "==", "9080"]]

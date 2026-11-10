@@ -501,7 +501,7 @@ export default function ModelForm({ schema, value, onChange }: Props) {
                 control={<Checkbox size="small" checked={field.unique === true} onChange={(event) => setField(key, { unique: event.target.checked })} />}
                 label={<Typography variant="body2">{t("Không trùng")}</Typography>}
               />
-              <Tooltip title={t("Nâng cao: giá trị mặc định, tên cũ")}>
+              <Tooltip title={t("Nâng cao: giá trị mặc định, tên cũ, giới hạn và điều kiện")}>
                 <IconButton
                   size="small"
                   color={open ? "primary" : "default"}
@@ -578,6 +578,51 @@ export default function ModelForm({ schema, value, onChange }: Props) {
                   sx={{ ...DENSE, width: 240 }}
                   onChange={(event) => setField(key, { renamed_from: event.target.value })}
                 />
+                {(type === "choice" || type === "unit") && (
+                  <FormControlLabel
+                    control={<Checkbox size="small" checked={field.multiple === true} onChange={(event) => setField(key, { multiple: event.target.checked ? true : undefined })} />}
+                    label={<Typography variant="body2">{t("Chọn nhiều giá trị")}</Typography>}
+                  />
+                )}
+                {(type === "number" || type === "date") &&
+                  (["min", "max"] as const).map((bound) => (
+                    <TextField
+                      key={bound}
+                      variant="outlined"
+                      size="small"
+                      type={type === "date" ? "date" : "text"}
+                      label={bound === "min" ? t("Nhỏ nhất") : t("Lớn nhất")}
+                      value={text(field[bound])}
+                      slotProps={{ inputLabel: { shrink: true } }}
+                      sx={{ ...DENSE, width: 170 }}
+                      onChange={(event) => {
+                        const value = event.target.value;
+                        setField(key, { [bound]: value === "" ? undefined : type === "number" && !Number.isNaN(Number(value)) ? Number(value) : value });
+                      }}
+                    />
+                  ))}
+                {type === "text" && (
+                  <TextField
+                    variant="outlined"
+                    size="small"
+                    label={t("Mẫu chuỗi (pattern)")}
+                    value={text(field.pattern)}
+                    helperText={t("Cả chuỗi phải khớp, ví dụ [A-Z]{3}-[0-9]{4}")}
+                    sx={{ ...DENSE, width: 280 }}
+                    onChange={(event) => setField(key, { pattern: event.target.value === "" ? undefined : event.target.value })}
+                  />
+                )}
+                {type !== "boolean" && type !== "file" && (
+                  <TextField
+                    variant="outlined"
+                    size="small"
+                    label={t("Bắt buộc khi")}
+                    value={text(field.required_when)}
+                    helperText={t("Một phép so sánh, ví dụ loai == Hoãn thi")}
+                    sx={{ ...DENSE, width: 280 }}
+                    onChange={(event) => setField(key, { required_when: event.target.value === "" ? undefined : event.target.value })}
+                  />
+                )}
               </Box>
             </Collapse>
             <Divider />

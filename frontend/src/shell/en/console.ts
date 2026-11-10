@@ -1,6 +1,31 @@
 // SPDX-License-Identifier: Apache-2.0
 // The control panel: models, editor, plan, users, outbox and the guides.
 export const console: Record<string, string> = {
+  "Ứng dụng ngoài": "Outside applications",
+  "Mã bí mật này chỉ hiện một lần và hệ thống không giữ lại. Ứng dụng dùng nó cùng mã ứng dụng để lấy token.":
+    "This secret is shown only once and is not kept. The application uses it with its application id to get a token.",
+  "Một ứng dụng ngoài lấy token bằng mã ứng dụng và mã bí mật, và chỉ có đúng một vai của một mô hình. Nó không gọi được bảng điều khiển hay quản trị người dùng.":
+    "An outside application gets a token with its application id and secret, and holds exactly one role of one model. It cannot reach the control panel or the user administration.",
+  "Đăng ký ứng dụng": "Register an application",
+  "Mã ứng dụng": "Application id",
+  "Mô hình": "Model",
+  "Đổi mã bí mật": "New secret",
+  "Vai được cấp": "Role held",
+  "Chưa có ứng dụng ngoài nào.": "No outside application yet.",
+  "Tên ứng dụng": "Application name",
+  "Chữ thường, số, gạch ngang và gạch dưới; mã ứng dụng sẽ là dxos-app-<tên>": "Lowercase letters, digits, hyphens and underscores; the application id will be dxos-app-<name>",
+  "Đăng ký": "Register",
+  "Ứng dụng này không lấy được token nữa; các hồ sơ nó đã tạo vẫn còn.": "This application can no longer get a token; the records it made stay.",
+  "Nâng cao: giá trị mặc định, tên cũ, giới hạn và điều kiện": "Advanced: default value, old name, limits and condition",
+  "Đúng hoặc sai": "True or false",
+  "Chỉ ngày": "Date only",
+  "Chọn nhiều giá trị": "Several values",
+  "Nhỏ nhất": "Smallest",
+  "Lớn nhất": "Largest",
+  "Mẫu chuỗi (pattern)": "Text pattern",
+  "Cả chuỗi phải khớp, ví dụ [A-Z]{3}-[0-9]{4}": "The whole text must match, for example [A-Z]{3}-[0-9]{4}",
+  "Bắt buộc khi": "Required when",
+  "Một phép so sánh, ví dụ loai == Hoãn thi": "One comparison, for example kind == Hoãn thi",
   "Tiêu đề": "Title",
   "Tệp mới": "New file",
   "Không đọc được dữ liệu của bảng điều khiển": "Could not load the control panel",

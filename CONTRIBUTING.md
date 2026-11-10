@@ -72,4 +72,5 @@ Sau đó chạy tay workflow `Release Images` trên tag để build và đẩy i
 Viết một tệp mô hình theo các mẫu ở [`backend/dx-engine/src/main/resources/templates/`](./backend/dx-engine/src/main/resources/templates); muốn nó hiện ở thư viện mẫu thì đặt tệp vào đó và khai trong `index.json`.
 Áp dụng bằng `POST /api/v1/models/apply`, `dxos apply <tệp>` hoặc `dxos start <tệp>...`; không cần sửa mã lõi.
 Sau khi áp dụng, `python3 deploy/dev/check_conformance.py <tên mô hình>` kiểm mô hình giữ các rào chắn của lõi.
+Kiểu trường, ràng buộc, `required_when` và khối `ui:` mô tả ở [`docs/MODEL.md`](./docs/MODEL.md); tài liệu OpenAPI của mô hình ở `GET /api/v1/meta/models/{model}/openapi` dùng để sinh client, và một dịch vụ ngoài đăng ký bằng `dxos client add`.
 Nếu nghiệp vụ cần một năng lực mà tệp mô hình chưa khai báo được, mở một issue mô tả: một năng lực mới chỉ được thêm khi cần ở ít nhất ba lĩnh vực và khai báo được mà không cần cú pháp mới.

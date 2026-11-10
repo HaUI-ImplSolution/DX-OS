@@ -64,6 +64,7 @@ Keycloak giữ tài khoản, mật khẩu và vai; realm `dxos` được nhập 
 | `dxos-cli` | Lệnh `dxos plan` và `dxos apply`; tài khoản dịch vụ giữ vai `ADMIN` |
 | `dxos-backend-admin` | Tài khoản dịch vụ của backend gọi Admin API: tạo client, vai, nhóm và quản trị người dùng |
 | `dxos-m-<mô hình>` | Chỉ để chứa vai của mô hình, không cho ai đăng nhập |
+| `dxos-app-<tên>` | Một ứng dụng ngoài gọi API bằng token máy; tài khoản dịch vụ giữ đúng một vai của một mô hình |
 
 - Vai `ADMIN` của nền tảng nằm ở `realm_access`, vai của mô hình ở `resource_access.dxos-m-<mô hình>.roles`, đơn vị ở claim `groups`.
 - APISIX kiểm token ở biên; backend kiểm lại chữ ký, thời hạn và audience `dxos-api` (do scope `dxos-api` thêm vào).
@@ -80,6 +81,8 @@ Mô hình đi qua một đường duy nhất, từ hệ thống rỗng hay từ 
 
 - Thay đổi theo ba mức, do `ModelDiff` so sánh hai phiên bản mô hình: `SAFE`, `MIGRATION`, `LOSS`; đổi kiểu trường và đổi họ mẫu quy trình bị từ chối.
 - Dòng đang vi phạm quy tắc mới, kèm một phần id.
+  Siết hoặc thêm `min`, `max`, `pattern` hay danh sách lựa chọn của trường `multiple` trên bảng có dòng vi phạm là `MIGRATION` kèm số dòng (quy tắc `MIN`, `MAX`, `PATTERN`, `ELEMENTS`) và bị từ chối cho đến khi dữ liệu được sửa; nới hoặc bỏ là `SAFE`.
+- Đổi `required_when` hay khối `ui:` là thay đổi `SAFE`, không đụng dữ liệu; `ui:` không thuộc luật quy trình nên không bị chặn khi còn hồ sơ đang xử lý.
 - Số hồ sơ đang xử lý của các quy trình bị ảnh hưởng.
 - Các câu lệnh sẽ chạy, do pgschema lập từ trạng thái đích mà `DdlGenerator` sinh ra.
 
@@ -87,6 +90,7 @@ Mô hình đi qua một đường duy nhất, từ hệ thống rỗng hay từ 
 
 1. `RENAME_FIELD`: đổi tên cột theo `renamed_from`, cùng ràng buộc và chỉ mục mang tên trường.
 2. `CHANGE_SCHEMA`: pgschema đưa schema `m_<tên mô hình>` về trạng thái đích, gồm bảng, cột hệ thống, ràng buộc, chỉ mục và quyền đọc của `report_ro`.
+   Kiểu `boolean`, `date` và `choice` nhiều lựa chọn thành cột `BOOLEAN`, `DATE` và `TEXT[]`; `min`, `max`, `pattern` và các phần tử của `TEXT[]` thành ràng buộc `CHECK` mang tên `ck_<thực thể>_<trường>` kèm `$min`, `$max`, `$re`.
 3. `DROP_FILES`: xóa dòng và đối tượng tệp đính kèm của thực thể bị bỏ khỏi mô hình.
 4. `ENSURE_CLIENT`: client `dxos-m-<mô hình>` trong Keycloak, chỉ để chứa vai và không cho ai đăng nhập.
 5. `ENSURE_ROLE`: vai của mô hình, tạo dưới client đó.
@@ -153,7 +157,10 @@ sequenceDiagram
 - **Tên và truy vấn:** tên bảng và cột chỉ lấy từ mô hình đã kiểm, giá trị luôn đi qua tham số; tên trường hay toán tử không có trong mô hình bị từ chối (400).
 - **Quyền:** các phạm vi của những vai người gọi có được hợp lại: `all`, `read` chạm mọi dòng, `own` chạm dòng do người gọi tạo, `unit` chạm dòng thuộc đơn vị của người gọi, `assigned` chạm dòng giao cho người gọi.
   Thực thể con (`owner_via`) xét các phạm vi này trên bản ghi cha, qua nhiều cấp tới thực thể đầu chuỗi, và không gắn được vào bản ghi cha ngoài tầm với (403).
-- **Quy tắc:** bắt buộc, duy nhất và lựa chọn vừa được API kiểm để báo lỗi theo từng trường, vừa là ràng buộc trong cơ sở dữ liệu.
+- **Quy tắc:** bắt buộc, duy nhất, lựa chọn, `min`, `max` và `pattern` vừa được API kiểm để báo lỗi theo từng trường, vừa là ràng buộc trong cơ sở dữ liệu.
+  `required_when` chỉ kiểm ở API, trên hồ sơ sau khi gộp giá trị mới vào bản ghi hiện có.
+- **Kiểu giá trị:** `date` là `YYYY-MM-DD`, `boolean` là `true` hay `false`, và trường nhiều lựa chọn là mảng chuỗi lưu theo thứ tự của `options`, không trùng; lọc trường đó bằng `contains`.
+- **Tài liệu API:** `GET /api/v1/meta/models/{model}/openapi` sinh tài liệu OpenAPI của mô hình đang chạy ngay lúc gọi, nên luôn khớp tệp mô hình; người có vai của mô hình đọc được.
 
 ## 6. Quy trình và trạng thái
 

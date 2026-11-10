@@ -33,10 +33,67 @@ Các mẫu dùng được nằm ở [`templates/`](../backend/dx-engine/src/main
 
 ## Trường và đơn vị
 
-- Kiểu trường: `text`, `number`, `datetime`, `choice`, `reference`, `user`, `unit`.
+- Kiểu trường: `text`, `number`, `datetime`, `date`, `boolean`, `choice`, `reference`, `user`, `unit`.
+- Trường `date` giữ một ngày dạng `YYYY-MM-DD`, còn `datetime` giữ một thời điểm kèm múi giờ.
+- Trường `boolean` là đúng hoặc sai (`true`, `false`); không đặt `required` hay `unique`, muốn có giá trị ban đầu thì đặt `default`.
+- Trường `choice` kèm `multiple: true` giữ nhiều lựa chọn trong `options`.
+  API nhận và trả một mảng, mỗi lựa chọn một lần và theo thứ tự của `options`, và lọc bằng `filter.<tên>.contains=<lựa chọn>`.
+  Trường này không đi cùng `unique` hay `default`.
 - Trường `user` giữ id của một tài khoản; giao diện cho chọn theo tên, và API từ chối id không có thật.
 - Đơn vị khai báo ở `units`, mỗi đơn vị là một nhóm Keycloak; trường kiểu `unit` cho biết hồ sơ thuộc đơn vị nào.
   Ví dụ đầy đủ ở [`onestop.yaml`](../backend/dx-engine/src/main/resources/templates/onestop.yaml).
+
+## Ràng buộc giá trị
+
+- `min` và `max` giới hạn một trường `number` hoặc `date`, cả hai đầu đều nhận giá trị: `qty: {type: number, min: 1, max: 100}`.
+- `pattern` là biểu thức chính quy của một trường `text`, và phải khớp toàn bộ giá trị: `code: {type: text, pattern: "[A-Z]{3}-[0-9]+"}`.
+  Biểu thức chỉ gồm ký tự, dấu chấm, lớp ký tự `[...]`, nhóm `(...)`, `|` và các lượng từ `*`, `+`, `?`, `{n}`, `{n,m}` với số lặp tối đa 255; không có `^`, `$`, `\d`, `(?` hay lượng từ lười.
+  Một nhóm có lượng từ bên trong không được lặp bằng `*`, `+` hay `{n,m}`, như `([a-z]+)*`, vì kiểu viết đó có thể làm phép khớp chạy rất lâu.
+  Giá trị được kiểm bằng `pattern` dài tối đa 1000 ký tự, và phép khớp chỉ được đọc một số ký tự nhất định; quá số đó thì giá trị bị từ chối với `is too complex to check against the pattern`.
+- Giá trị vi phạm bị API từ chối kèm tên trường, và bảng có ràng buộc `CHECK` nên ghi thẳng vào cơ sở dữ liệu cũng bị chặn.
+- Siết hoặc thêm ràng buộc trên bảng đã có dòng vi phạm thì kế hoạch bị từ chối và nêu số dòng vi phạm; nới hoặc bỏ ràng buộc thì kế hoạch ở mức `SAFE`.
+
+## Bắt buộc có điều kiện
+
+`required_when` làm một trường chỉ bắt buộc khi một trường khác của thực thể có giá trị nhất định:
+
+```yaml
+note: {type: text, required_when: "kind == Phần mềm"}
+```
+
+- Điều kiện là một phép so sánh, viết như `when` của hành động: `==` và `!=` cho mọi kiểu, `<`, `<=`, `>`, `>=` chỉ cho số.
+- Trường được so sánh là `number`, `text`, `choice` một lựa chọn hoặc `boolean` (`foreign == true`) của cùng thực thể.
+- API kiểm khi tạo và khi sửa, trên hồ sơ sau khi gộp giá trị mới; trường còn trống thì báo `is required when kind == Phần mềm`.
+- Không đi cùng `required`, không đặt trên trường `boolean` hay `file`, và không so sánh trường với chính nó.
+- Chỉ kiểm ở API, cơ sở dữ liệu không có ràng buộc này.
+
+## Giao diện `ui`
+
+Khối `ui` của một thực thể chọn cách nó hiện trên màn hình; không có thì giao diện dựng theo thứ tự các trường:
+
+```yaml
+ui:
+  icon: inventory
+  menu: {group: Kho, order: 1}
+  list: {columns: [code, kind, price], sort: -created_at}
+  form:
+    groups:
+      - {label: Nhận dạng, fields: [code, kind]}
+      - {label: Chi tiết, fields: [price, bought_on]}
+  hints: {code: "Ba chữ in hoa, dấu gạch ngang, bốn chữ số"}
+```
+
+- `icon` là một trong `description`, `folder`, `inbox`, `person`, `group`, `school`, `assignment`, `event`, `room`, `computer`, `build`, `inventory`, `payments`, `support`, `shield`, `settings`, `list`, `calendar`, `chat`, `local_shipping`.
+- `menu.group` gom các thực thể thành một nhóm trong menu và `menu.order` là thứ tự.
+- `list.columns` là các cột của danh sách: trường của thực thể, hoặc `created_at`, `updated_at`, và `status`, `assignee` khi thực thể có quy trình.
+  `list.sort` là tên cột, thêm dấu `-` ở đầu để sắp giảm dần.
+- `form.groups` chia form thành nhóm có nhãn; trường không nằm trong nhóm nào xếp vào nhóm cuối.
+- `hints` đặt dòng gợi ý dưới ô nhập của một trường.
+- `ui` chỉ chọn trong những gì giao diện đã có và không đổi quyền; sai tên trường, cột hay biểu tượng thì tệp bị từ chối kèm dòng và cột.
+- Cột mà người dùng chọn bằng nút Cột được giữ trong trình duyệt và đè lên cột mặc định của `ui`.
+- Đổi `ui` là thay đổi `SAFE`, không đụng dữ liệu, và áp dụng được cả khi thực thể còn hồ sơ đang xử lý.
+
+Ví dụ đầy đủ ở [`asset_register.yaml`](../backend/dx-engine/src/main/resources/templates/asset_register.yaml).
 
 ## Quyền theo vai
 
@@ -147,4 +204,6 @@ Mỗi đích có `format: json` (mặc định) hoặc `format: chat`.
 
 - `renamed_from` khai báo tên cũ khi đổi tên trường, để giữ nguyên dữ liệu.
 - `default` điền giá trị cho trường bắt buộc mới trên bảng đã có dòng.
+- Đổi kiểu của một trường đang có (kể cả từ một lựa chọn sang nhiều lựa chọn) bị từ chối; thêm một trường mới thay vì đổi kiểu.
+- Đổi tên một trường có `min`, `max` hay `pattern` giữ nguyên dữ liệu và đổi tên cả các ràng buộc của nó.
 - Xem trước, áp dụng, quay về và các lệnh liên quan ở [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md#cài-đặt-và-lệnh-dxos) và [`API.md`](./API.md).

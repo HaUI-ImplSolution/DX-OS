@@ -31,11 +31,14 @@ The current version is `2.0.0`, and the changes of each version are in [`CHANGEL
 
 - **From one file to a running system.** Records, tables, accounts, roles, list screens and forms are all built from the model file.
 - **Permissions down to the row.** Each role sees and edits only its own work, the work of its unit, or the work assigned to it.
+- **Data rules in the file.** True or false, dates, several values at once, limits on values, text patterns and conditional requirements are all declared in the file, and the database refuses a wrong value as well.
 - **Customizable workflows.** Start from one of three ready made shapes (approval, work items, time-slot reservations with a capacity check) and add or remove steps, give each step to its own role, or declare a workflow from scratch; a step can open only when the record meets a condition, for example an amount above a limit goes to a higher approval level; rejecting and returning need a reason, and nobody approves their own record.
 - **Changing the business once data exists.** The system previews the impact, warns about risk, keeps the values when something is renamed, and can return to the previous version.
 - **A trace that cannot be edited.** The history of records is one chain with checks; if anyone edits, deletes or inserts a line, one command names that line.
 - **Connections to the outside.** Every change to a record is reported to a web address or a chat channel (Mattermost, Slack), signed so the receiver can check it and sent again when the receiver fails.
+- **Open to outside applications.** Each model has its own API document that follows the model, and an outside application is registered with exactly one role of one model and calls with its own secret.
 - **A control panel for the person deploying.** Template library, model editor (write the file or fill a form, with guidance on what can be written and extended) with a process diagram drawn from the file being written, plan preview, apply, history, user management and record statistics.
+- **An interface set by declaration.** The model file can choose icons, menu groups, the default columns and sort, how forms are grouped and the hints; an officer selects several records and handles them at once, each still going through every rule.
 - **An inbox that updates itself.** When a record changes, the inbox, the lists and the detail page that are open refresh without reloading the page.
 - **Try it at once.** One command creates a trial account for each role and sample records in several states, so a visitor who signs in finds a system with work in it.
 - **Simple to install and run.** One command installs and one starts; backups can be checked, services restart on their own, and attachments are virus-scanned when enabled.
@@ -59,7 +62,7 @@ The system has three tiers:
 
 The diagrams and the path of one request through the system are in [`ARCHITECTURE.md`](./ARCHITECTURE.md) (Vietnamese); how to write a model file is in [`docs/MODEL.md`](./docs/MODEL.md) (Vietnamese).
 
-Seven templates are ready to pick in the control panel: student one-stop service, technical support, equipment incident, room booking, IT service access, equipment loan and notes.
+Eight templates are ready to pick in the control panel: student one-stop service, technical support, equipment incident, room booking, IT service access, equipment loan, notes and an asset register.
 
 ## Try it
 

@@ -31,6 +31,7 @@ import authProvider from "./authProvider";
 import { createDataProvider } from "./dataProvider";
 import InboxPage from "./InboxPage";
 import LiveRefresh from "./LiveRefresh";
+import { uiIcon } from "./uiIcons";
 import { screens } from "./resources";
 import { resourceName, type EntityMeta, type ModelMeta } from "./types";
 import { t } from "../shell/t";
@@ -47,7 +48,8 @@ const FAMILY_ICONS = {
   reservation: <EventSeatOutlinedIcon />,
 } as Record<string, JSX.Element>;
 
-const entityIcon = (entity: EntityMeta) => FAMILY_ICONS[entity.process?.family ?? ""] ?? <TableChartOutlinedIcon />;
+const entityIcon = (entity: EntityMeta) =>
+  uiIcon(entity.ui?.icon) ?? FAMILY_ICONS[entity.process?.family ?? ""] ?? <TableChartOutlinedIcon />;
 
 const modelTitle = (name: string) => name.replace(/_/g, " ").replace(/^./, (first) => first.toUpperCase());
 
@@ -90,11 +92,34 @@ const AppTopBar = () => (
   </AppBar>
 );
 
+// The entities that name no group come first, then each named group in the order it first appears.
+function menuGroups(entities: EntityMeta[]) {
+  const groups: { group: string | null; items: EntityMeta[] }[] = [{ group: null, items: [] }];
+  for (const entity of entities) {
+    const name = entity.ui?.menu?.group ?? null;
+    let found = groups.find((candidate) => candidate.group === name);
+    if (!found) {
+      found = { group: name, items: [] };
+      groups.push(found);
+    }
+    found.items.push(entity);
+  }
+  return groups.filter((group) => group.items.length > 0);
+}
+
 // The entities are grouped under their model, so two models that both have a "Hồ sơ" stay apart.
 const makeMenu = (models: ModelMeta[]) =>
   function AppMenu() {
     const { permissions } = usePermissions();
-    const reachable = models.map((model) => ({ model, entities: model.entities.filter((entity) => entity.canRead) }));
+    const reachable = models.map((model) => ({
+      model,
+      // The model file may order the entities and put some of them under a heading of their own.
+      entities: model.entities
+        .filter((entity) => entity.canRead)
+        .map((entity, position) => ({ entity, position }))
+        .sort((a, b) => (a.entity.ui?.menu?.order ?? 0) - (b.entity.ui?.menu?.order ?? 0) || a.position - b.position)
+        .map(({ entity }) => entity),
+    }));
     return (
       <Menu>
         <Menu.DashboardItem primaryText={t("Hộp việc")} />
@@ -107,8 +132,17 @@ const makeMenu = (models: ModelMeta[]) =>
                   {modelTitle(model.name)}
                 </ListSubheader>
               )}
-              {entities.map((entity) => (
-                <Menu.ResourceItem key={entity.name} name={resourceName(model.name, entity.name)} />
+              {menuGroups(entities).map(({ group, items }) => (
+                <Box key={group ?? ""}>
+                  {group && (
+                    <ListSubheader disableSticky sx={{ background: "transparent", lineHeight: "28px", pl: 3, fontSize: 11, fontWeight: 600 }}>
+                      {group}
+                    </ListSubheader>
+                  )}
+                  {items.map((entity) => (
+                    <Menu.ResourceItem key={entity.name} name={resourceName(model.name, entity.name)} />
+                  ))}
+                </Box>
               ))}
             </Box>
           ))}

@@ -671,13 +671,28 @@ public class ApplyService {
       String column = check.column() == null ? null
           : columns.contains(check.column()) ? check.column() : check.field();
       String condition = switch (check.rule()) {
+        case REQUIRED_WHEN -> requiredWhen(model, diff, columns, check, column);
         case NEW_REQUIRED -> "TRUE";
         case REQUIRED -> column == null ? "TRUE" : Sql.ident(column) + " IS NULL";
         case UNIQUE -> Sql.ident(column) + " IN (SELECT " + Sql.ident(column) + " FROM " + table
             + " GROUP BY 1 HAVING count(*) > 1)";
         case OPTIONS -> Sql.ident(column) + " NOT IN ("
             + check.options().stream().map(Sql::literal).collect(Collectors.joining(", ")) + ")";
+        case ELEMENTS -> "NOT (" + Sql.ident(column) + " <@ ARRAY["
+            + check.options().stream().map(Sql::literal).collect(Collectors.joining(", "))
+            + "]::text[])";
+        case MIN -> Sql.ident(column) + " < "
+            + DdlGenerator.bound(model.entities().get(check.entity()).fields().get(check.field()),
+                check.options().get(0));
+        case MAX -> Sql.ident(column) + " > "
+            + DdlGenerator.bound(model.entities().get(check.entity()).fields().get(check.field()),
+                check.options().get(0));
+        case PATTERN ->
+          Sql.ident(column) + " !~ " + Sql.literal(DdlGenerator.anchored(check.options().get(0)));
       };
+      if (condition == null) {
+        continue;
+      }
       Long rows =
           jdbc.queryForObject("SELECT count(*) FROM " + table + " WHERE " + condition, Long.class);
       if (rows != null && rows > 0) {
@@ -689,6 +704,38 @@ public class ApplyService {
       }
     }
     return violations;
+  }
+
+  // The rows where the condition of a new required_when holds and the field is still empty; null
+  // when the condition reads a field that has no column yet, since it cannot hold.
+  private static String requiredWhen(Model model, ModelDiff diff, Set<String> columns,
+      ModelDiff.RowCheck check, String column) {
+    Model.Field field = model.entities().get(check.entity()).fields().get(check.field());
+    var when = field.requiredWhen();
+    if (when == null) {
+      return null;
+    }
+    String source = diff.renames.getOrDefault(check.entity(), Map.of()).getOrDefault(when.field(),
+        when.field());
+    if (!columns.contains(source)) {
+      return null;
+    }
+    boolean text = switch (field.type()) {
+      case TEXT, CHOICE, USER, UNIT -> true;
+      default -> false;
+    };
+    String empty = column == null ? "TRUE"
+        : text ? "(" + Sql.ident(column) + " IS NULL OR btrim(" + Sql.ident(column) + ") = '')"
+            : Sql.ident(column) + " IS NULL";
+    String operator = switch (when.op()) {
+      case "==" -> "=";
+      case "!=" -> "<>";
+      default -> when.op();
+    };
+    String value = when.value() instanceof Number number
+        ? new java.math.BigDecimal(number.toString()).toPlainString()
+        : Sql.literal(String.valueOf(when.value()));
+    return "(" + empty + ") AND " + Sql.ident(source) + " " + operator + " " + value;
   }
 
   // Records of the touched entities still moving through their process.

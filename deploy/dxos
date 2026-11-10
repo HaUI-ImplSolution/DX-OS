@@ -26,6 +26,9 @@
 #   dxos demo [--password PASSWORD] | dxos demo remove
 #                              create the accounts judge_student, judge_officer, judge_officer2 and
 #                              judge_supervisor and file sample requests; remove deletes the accounts
+#   dxos client add <name> --model M --role R | list | rotate <name> | remove <name>
+#                              register an outside application that calls the API with its own secret and
+#                              one role of one model; the secret is shown once, rotate gives a new one
 #   dxos uninstall [--purge]   remove the containers and the dxos command; --purge also deletes the data
 #   dxos version | help
 set -euo pipefail
@@ -316,10 +319,11 @@ cmd_status() {
 
 # --- Model changes and history, through the API as the service account dxos-cli ---
 
-# Calls the API with the token of dxos-cli: api METHOD PATH [file]. The body goes to $API_BODY and
-# the HTTP status to $API_STATUS. The secret and the token go through files, never the command line.
+# Calls the API with the token of dxos-cli: api METHOD PATH [file [content-type]]. The body goes to
+# $API_BODY and the HTTP status to $API_STATUS. The secret and the token go through files, never the
+# command line.
 api() {
-  local method="$1" path="$2" file="${3:-}" secret url work token args=()
+  local method="$1" path="$2" file="${3:-}" type="${4:-application/yaml}" secret url work token args=()
   command -v curl >/dev/null 2>&1 || die "curl is required"
   secret="$(env_value DXOS_CLI_SECRET)"
   [[ -n "$secret" ]] || die "DXOS_CLI_SECRET is empty in $DEPLOY_DIR/.env"
@@ -335,7 +339,7 @@ api() {
   token="$(sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p' "$work/token")"
   [[ -n "$token" ]] || die "Keycloak refused the client dxos-cli: $(cat "$work/token") (a realm imported by an older release has no such client, see deploy/OPERATIONS.md)"
   printf 'Authorization: Bearer %s\n' "$token" >"$work/header"
-  [[ -n "$file" ]] && args=(-H "Content-Type: application/yaml" --data-binary "@$file")
+  [[ -n "$file" ]] && args=(-H "Content-Type: $type" --data-binary "@$file")
   API_STATUS="$(curl -sS -o "$work/body" -w '%{http_code}' -X "$method" -H "@$work/header" \
     ${args[@]+"${args[@]}"} "$url/api/v1$path")" || die "the API did not answer at $url"
   API_BODY="$(cat "$work/body")"
@@ -395,6 +399,71 @@ cmd_apply() {
   api POST "/models/apply?$query" "$file"
   pretty "$API_BODY"
   [[ "$API_STATUS" == 200 ]] || return 1
+}
+
+# Registers, lists, renews and removes the outside applications of the API; the work is the
+# API's, this only calls it.
+cmd_client() {
+  local action="${1:-}" name model="" role="" body work
+  case "$action" in
+    list)
+      (( $# == 1 )) || die "usage: dxos client list"
+      api GET /clients
+      pretty "$API_BODY"
+      [[ "$API_STATUS" == 200 ]] || return 1 ;;
+    add)
+      shift
+      name="${1:-}"
+      [[ "$name" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] || die "usage: dxos client add <name> --model M --role R (name: lower case letters, digits, - and _)"
+      shift
+      while (( $# )); do
+        case "$1" in
+          --model) model="${2:?--model needs a model name}"; shift 2 ;;
+          --model=*) model="${1#--model=}"; shift ;;
+          --role) role="${2:?--role needs a role name}"; shift 2 ;;
+          --role=*) role="${1#--role=}"; shift ;;
+          *) die "unknown option: $1" ;;
+        esac
+      done
+      [[ "$model" =~ ^[a-z][a-z0-9_]*$ ]] || die "--model needs the name of an applied model"
+      [[ "$role" =~ ^[A-Z][A-Z0-9_]*$ ]] || die "--role needs a role of that model"
+      work="$(mktemp)"
+      printf '{"name":"%s","model":"%s","role":"%s"}' "$name" "$model" "$role" >"$work"
+      api POST /clients "$work" application/json
+      rm -f "$work"
+      if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
+      print_client_secret "$(json_field clientId "$API_BODY")" "$(json_field secret "$API_BODY")" \
+        "role $role of the model $model" ;;
+    rotate)
+      (( $# == 2 )) || die "usage: dxos client rotate <name>"
+      [[ "$2" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] || die "not an application name: $2"
+      api POST "/clients/$2/secret"
+      if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
+      print_client_secret "$(json_field clientId "$API_BODY")" "$(json_field secret "$API_BODY")" \
+        "the old secret no longer works" ;;
+    remove)
+      (( $# == 2 )) || die "usage: dxos client remove <name>"
+      [[ "$2" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] || die "not an application name: $2"
+      api DELETE "/clients/$2"
+      if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
+      echo "Removed dxos-app-$2." ;;
+    *) die "usage: dxos client add <name> --model M --role R | list | rotate <name> | remove <name>" ;;
+  esac
+}
+
+# The secret of an application, shown once and never kept.
+print_client_secret() {
+  [[ -n "$2" ]] || die "the API answered without a secret"
+  cat <<EOF
+
+Outside application $1 ($3):
+  client id  $1
+  secret     $2
+
+The secret is shown only now. Get a token with the client credentials grant:
+  POST $(public_url)/realms/dxos/protocol/openid-connect/token
+  grant_type=client_credentials, client_id=$1, client_secret=<the secret>
+EOF
 }
 
 cmd_history() {
@@ -647,10 +716,11 @@ main() {
     reconcile) cmd_reconcile "$@" ;;
     archive) cmd_archive "$@" ;;
     demo) "$DEPLOY_DIR/demo.sh" "$@" ;;
+    client) cmd_client "$@" ;;
     uninstall) cmd_uninstall "$@" ;;
     version) echo "DX-OS $(env_value DXOS_IMAGE_TAG) in $PREFIX" ;;
-    help|-h|--help) sed -n '3,30p' "$self" ;;
-    *) echo "dxos: unknown command: $command" >&2; sed -n '3,30p' "$self" >&2; exit 2 ;;
+    help|-h|--help) sed -n '3,33p' "$self" ;;
+    *) echo "dxos: unknown command: $command" >&2; sed -n '3,33p' "$self" >&2; exit 2 ;;
   esac
 }
 

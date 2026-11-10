@@ -4,6 +4,7 @@ import { Alert, Box, Skeleton, Snackbar, Tab, Tabs } from "@mui/material";
 import AutoAwesomeMosaicOutlinedIcon from "@mui/icons-material/AutoAwesomeMosaicOutlined";
 import EditNoteOutlinedIcon from "@mui/icons-material/EditNoteOutlined";
 import LayersOutlinedIcon from "@mui/icons-material/LayersOutlined";
+import ApiOutlinedIcon from "@mui/icons-material/ApiOutlined";
 import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
 import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import { Title } from "react-admin";
@@ -15,6 +16,7 @@ import ModelsTab from "./ModelsTab";
 import { useModelSchema } from "./monacoSetup";
 import OutboxTab from "./OutboxTab";
 import TemplatesTab from "./TemplatesTab";
+import AppsTab from "./AppsTab";
 import UsersTab from "./UsersTab";
 import { guardUnsavedWork } from "../shell/locale";
 import { t } from "../shell/t";
@@ -89,6 +91,7 @@ export default function ConsolePage() {
         <Tab icon={<EditNoteOutlinedIcon fontSize="small" />} iconPosition="start" label={t("Soạn và áp dụng")} />
         <Tab icon={<SyncAltIcon fontSize="small" />} iconPosition="start" label={t("Hàng đợi sự kiện")} />
         <Tab icon={<PeopleOutlineIcon fontSize="small" />} iconPosition="start" label={t("Người dùng")} />
+        <Tab icon={<ApiOutlinedIcon fontSize="small" />} iconPosition="start" label={t("Ứng dụng ngoài")} />
       </Tabs>
       {!schema && (
         <Box>
@@ -127,6 +130,7 @@ export default function ConsolePage() {
       )}
       {schema && tab === 3 && <OutboxTab />}
       {schema && tab === 4 && <UsersTab />}
+      {schema && tab === 5 && <AppsTab />}
       <Snackbar open={note !== null} autoHideDuration={6000} onClose={() => setNote(null)} message={note ?? ""} />
     </Box>
   );

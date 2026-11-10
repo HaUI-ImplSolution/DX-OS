@@ -3,8 +3,10 @@ package HaUI.ImplSolution.dxos.engine.event;
 
 import jakarta.annotation.PreDestroy;
 import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -20,15 +22,20 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 // "changed" frame and the page reads its own inbox again, so a frame carries no content and is the
 // same for everyone. A comment frame goes out every 20 seconds so that a gateway or a browser does
 // not drop a quiet stream, and a stream is closed after 10 minutes, when the page connects again
-// with a fresh token. The streams live in this process, so it serves one running backend.
+// with a fresh token. A person holds a few streams at once; opening another closes the oldest, so
+// one account cannot take every place. The streams live in this process, so it serves one running
+// backend.
 @Component
 public class InboxSignal {
 
   static final long LIFETIME_MS = TimeUnit.MINUTES.toMillis(10);
   static final int MAX_STREAMS = 2000;
+  static final int MAX_PER_PERSON = 8;
   private static final long PING_SECONDS = 20;
 
-  private final Set<SseEmitter> streams = ConcurrentHashMap.newKeySet();
+  // Each open stream with the person it belongs to, and each person's streams oldest first.
+  private final Map<SseEmitter, String> streams = new ConcurrentHashMap<>();
+  private final Map<String, ArrayDeque<SseEmitter>> byPerson = new HashMap<>();
   private final AtomicBoolean queued = new AtomicBoolean();
   // One thread writes to every stream, so a slow page never holds up the transaction that changed
   // a record.
@@ -44,20 +51,40 @@ public class InboxSignal {
         PING_SECONDS, TimeUnit.SECONDS);
   }
 
-  // A new stream, or empty when this process already holds the most it serves.
-  public Optional<SseEmitter> open() {
+  // A new stream for the person, or empty when this process already holds the most it serves.
+  public synchronized Optional<SseEmitter> open(String person) {
+    ArrayDeque<SseEmitter> mine = byPerson.computeIfAbsent(person, key -> new ArrayDeque<>());
+    while (mine.size() >= MAX_PER_PERSON) {
+      mine.peekFirst().complete();
+      forget(mine.peekFirst());
+    }
     if (streams.size() >= MAX_STREAMS) {
+      if (mine.isEmpty()) {
+        byPerson.remove(person);
+      }
       return Optional.empty();
     }
     SseEmitter stream = new SseEmitter(LIFETIME_MS);
-    Runnable closed = () -> streams.remove(stream);
+    Runnable closed = () -> forget(stream);
     stream.onCompletion(closed);
     stream.onTimeout(closed);
     stream.onError(error -> closed.run());
-    streams.add(stream);
+    streams.put(stream, person);
+    mine.addLast(stream);
     // The first frame sends the headers, so the page knows at once that the stream is open.
     send(stream, SseEmitter.event().comment("open"));
     return Optional.of(stream);
+  }
+
+  private synchronized void forget(SseEmitter stream) {
+    String person = streams.remove(stream);
+    if (person != null) {
+      ArrayDeque<SseEmitter> mine = byPerson.get(person);
+      mine.remove(stream);
+      if (mine.isEmpty()) {
+        byPerson.remove(person);
+      }
+    }
   }
 
   // Called where a line of a record history is written; the frames go out once that transaction
@@ -87,20 +114,20 @@ public class InboxSignal {
   }
 
   private void sendToAll(SseEmitter.SseEventBuilder frame) {
-    streams.forEach(stream -> send(stream, frame));
+    streams.keySet().forEach(stream -> send(stream, frame));
   }
 
   private void send(SseEmitter stream, SseEmitter.SseEventBuilder frame) {
     try {
       stream.send(frame);
     } catch (IOException | IllegalStateException gone) {
-      streams.remove(stream);
+      forget(stream);
     }
   }
 
   @PreDestroy
   void stop() {
     writer.shutdownNow();
-    streams.forEach(SseEmitter::complete);
+    streams.keySet().forEach(SseEmitter::complete);
   }
 }

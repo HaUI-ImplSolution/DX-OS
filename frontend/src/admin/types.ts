@@ -2,11 +2,28 @@
 export interface FieldMeta {
   name: string;
   label: string;
-  type: "text" | "number" | "datetime" | "choice" | "reference" | "user" | "unit" | "file";
+  type: "text" | "number" | "boolean" | "date" | "datetime" | "choice" | "reference" | "user" | "unit" | "file";
   required: boolean;
   unique: boolean;
   options: string[];
   reference: string | null;
+  // Several of the options at once (a choice or a unit).
+  multiple?: boolean;
+  // Bounds of a number or a date, as text; a pattern the whole text must match.
+  min?: string | null;
+  max?: string | null;
+  pattern?: string | null;
+  // The field is required while the comparison holds.
+  requiredWhen?: ProcessCondition | null;
+}
+
+// How an entity looks on screen, as the model file declares it; every part is optional.
+export interface EntityUi {
+  icon?: string | null;
+  menu?: { group: string | null; order: number } | null;
+  list?: { columns: string[] | null; sort: string | null } | null;
+  form?: { groups: { label: string; fields: string[] }[] } | null;
+  hints?: Record<string, string> | null;
 }
 
 export interface ProcessState {
@@ -55,6 +72,7 @@ export interface EntityMeta {
   canAssign: boolean;
   // Names of the process actions the roles of the user may take.
   handlerActions?: string[];
+  ui?: EntityUi | null;
 }
 
 export interface UnitMeta {

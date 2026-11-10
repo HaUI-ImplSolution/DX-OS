@@ -29,9 +29,6 @@ Mốc dưới đây là dự kiến.
 |---|---|
 | Phần AI | Chưa có mã: hỏi đáp sinh câu trả lời và tác tử đề xuất có người duyệt cần mô hình ngôn ngữ và embedding đạt định nghĩa Open Source AI của OSI (trọng số và dữ liệu huấn luyện đều mở), chưa chọn; khi làm sẽ là dịch vụ mới nối vào lõi |
 | Ứng dụng Tầng 2 | Chưa phủ I của H-P-D-I; để sau như đã định |
-| Khóa chống chạy lặp | Tạo hồ sơ và gọi hành động chưa nhận `Idempotency-Key`: bên ngoài gọi lại khi lỗi mạng có thể tạo trùng |
-| Hành động hoàn tất gọi ra ngoài | Chỉ có `add_to_group` và `remove_from_group`; chưa có thao tác gọi tới một đích của webhook |
-| Bảng Kanban và xuất danh sách | Chưa có bảng Kanban theo trạng thái; danh sách chưa xuất ra CSV (chỉ xuất, không nhập) |
 | Giới hạn của kiểu và thao tác mới | Đổi vai của một ứng dụng ngoài bằng cách gỡ rồi đăng ký lại; hành động hàng loạt không có hoàn tác và tối đa 50 hồ sơ mỗi lần; trường nhiều lựa chọn không có giá trị mặc định; trường ngày chưa làm nguồn của điều kiện `when` và `required_when` |
 
 ## 4. Giới hạn chấp nhận
@@ -53,10 +50,11 @@ Mốc dưới đây là dự kiến.
 | Nhập dữ liệu hàng loạt | Không có nhập CSV và gói mô hình kèm dữ liệu danh mục; dữ liệu vào qua API chung để đi qua quyền, ràng buộc và quy trình |
 | Tìm kiếm | Không tìm hồ sơ và nội dung tệp; chỉ mục và đoạn trích có thể lộ dữ liệu ngoài quyền, và tìm tiếng Việt cần đo riêng |
 | Đăng ký thông báo | Không đăng ký theo loại sự kiện và người nhận; thông báo chat qua webhook cùng các dòng `due_soon` và `overdue` là mức cung cấp |
+| Hành động hoàn tất gọi ra ngoài | Chỉ có `add_to_group` và `remove_from_group`; không có thao tác gọi tới một đích của webhook, vì webhook của mô hình đã gửi mọi dòng lịch sử kèm trạng thái cũ, trạng thái mới và hành động, nên bên nhận lọc theo trạng thái được |
 | Webhook sự kiện | Dạng `chat` chưa thử với Mattermost và Slack thật |
 | Kiểm tương thích khi đổi mô hình | Chưa có nơi đăng ký mã mở rộng nên chưa có hợp đồng để đối chiếu |
 | Người thứ hai duyệt thay đổi mô hình | Không bắt buộc; là chính sách tùy bản triển khai |
 | Ủy quyền có phạm vi và thời hạn | Không có; chạm nhiều đường kiểm quyền |
 | Quyền theo từng trường | Không có; phải phủ mọi đường dữ liệu đi ra: danh sách, bộ lọc, số đếm, lịch sử và webhook |
 | Kiểm tài liệu và OpenAPI chiều ngược | `check_docs.py` kiểm endpoint tài liệu nêu có trong OpenAPI; không kiểm chiều ngược vì `docs/API.md` chỉ liệt kê các đường dẫn chính và viết tắt đường dẫn, nên sẽ báo nhầm |
-| Kiểm thử tự động chưa phủ một số ý | Chưa phủ khe hở khi áp dụng (áp dụng một mô hình đổi bảng trong lúc có yêu cầu ghi hồ sơ), vì kiểm chạy đua dễ lúc đỏ lúc xanh; ý này kiểm tay theo mục 6 của `docs/TESTING.md`; ứng dụng ngoài, kiểu và ràng buộc mới, `required_when`, `ui:`, tài liệu OpenAPI theo mô hình và giới hạn luồng thông báo cũng chỉ kiểm tay theo mục đó, chưa có script trong CI |
+| Kiểm thử tự động chưa phủ một số ý | Chưa phủ khe hở khi áp dụng (áp dụng một mô hình đổi bảng trong lúc có yêu cầu ghi hồ sơ), vì kiểm chạy đua dễ lúc đỏ lúc xanh; ý này kiểm tay theo mục 6 của `docs/TESTING.md`; ứng dụng ngoài, kiểu và ràng buộc mới, `required_when`, `ui:`, tài liệu OpenAPI theo mô hình, giới hạn luồng thông báo, khóa chống chạy lặp, bảng theo trạng thái và xuất CSV cũng chỉ kiểm tay theo mục đó, chưa có script trong CI |

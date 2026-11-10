@@ -23,6 +23,9 @@
 #   dxos archive <model> [--before YYYY-MM-DD] [--out DIR] | dxos archive check <dir>
 #                              write the finished records of a model and their history to Parquet files
 #                              (default DIR: deploy/archive)
+#   dxos demo [--password PASSWORD] | dxos demo remove
+#                              create the accounts judge_student, judge_officer, judge_officer2 and
+#                              judge_supervisor and file sample requests; remove deletes the accounts
 #   dxos uninstall [--purge]   remove the containers and the dxos command; --purge also deletes the data
 #   dxos version | help
 set -euo pipefail
@@ -643,10 +646,11 @@ main() {
     history) cmd_history "$@" ;;
     reconcile) cmd_reconcile "$@" ;;
     archive) cmd_archive "$@" ;;
+    demo) "$DEPLOY_DIR/demo.sh" "$@" ;;
     uninstall) cmd_uninstall "$@" ;;
     version) echo "DX-OS $(env_value DXOS_IMAGE_TAG) in $PREFIX" ;;
-    help|-h|--help) sed -n '3,27p' "$self" ;;
-    *) echo "dxos: unknown command: $command" >&2; sed -n '3,27p' "$self" >&2; exit 2 ;;
+    help|-h|--help) sed -n '3,30p' "$self" ;;
+    *) echo "dxos: unknown command: $command" >&2; sed -n '3,30p' "$self" >&2; exit 2 ;;
   esac
 }
 

@@ -159,7 +159,7 @@ Giao diện, đăng nhập bằng `req1` (vai `BORROWER`), `keeper1` (vai `KEEPE
 30. Xuất CSV: bấm Xuất CSV ở một danh sách có lọc; tệp `<thực thể>-<ngày>.csv` có BOM, một dòng tiêu đề và đúng số dòng của danh sách đã lọc; tạo hồ sơ có lý do `=1+1` hoặc `@SUM(A1)` thì ô trong tệp bắt đầu bằng dấu nháy; giá trị có dấu phẩy hoặc ngoặc kép được bao trong ngoặc kép; vai chỉ thấy hồ sơ của mình chỉ nhận được các dòng đó.
 31. Khóa chống chạy lặp: gọi `POST /api/v1/data/{model}/{entity}` hai lần với cùng `Idempotency-Key` và cùng nội dung thì cả hai trả cùng `id`, lần hai có header `Idempotent-Replayed: true` và không có thêm hồ sơ; cùng khóa với nội dung khác hoặc với hành động khác thì 409 `IDEMPOTENCY_KEY_REUSED`; khóa sai khuôn thì 400; một yêu cầu lỗi không giữ khóa nên gửi lại được.
 
-24. Trợ lý: khi chưa có API key, trang cấu hình vẫn mở được và không có gateway cá nhân hoặc lượt gọi model.
+32. Trợ lý: khi chưa có API key, trang cấu hình vẫn mở được và không có gateway cá nhân hoặc lượt gọi model.
     Liên kết SSO, chọn API/model, kiểm kết nối và ghép bot theo [`assistant/README.md`](../assistant/README.md), rồi bật trợ lý.
     Tìm hồ sơ bằng tiêu đề, yêu cầu giao việc hoặc chuyển trạng thái, hủy một đề xuất rồi xác nhận đề xuất mới và đối chiếu lịch sử Core.
     Hai tài khoản dùng bot riêng; dừng một trợ lý không dừng trợ lý còn lại hoặc Core.

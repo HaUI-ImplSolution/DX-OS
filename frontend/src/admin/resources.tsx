@@ -4,7 +4,7 @@ import {
   Button,
   Create,
   CreateButton,
-  Datagrid,
+  DatagridConfigurable,
   DateField,
   Edit,
   EditButton,
@@ -15,6 +15,7 @@ import {
   NumberInput,
   ReferenceField,
   ReferenceInput,
+  SelectColumnsButton,
   SelectInput,
   Show,
   SimpleForm,
@@ -260,33 +261,37 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
   ];
 
   const calendar = entity.process?.booking != null;
+  // The filters, the sort and the columns a person picks are kept in the browser, one set per entity.
   const ListActions = () => (
     <TopToolbar>
       <FilterButton />
+      <SelectColumnsButton />
       {entity.canWrite && <CreateButton />}
       {calendar && (
         <Button component={Link} to={`/calendar/${resourceName(model.name, entity.name)}`} label={t("Lịch")}>
           <EventIcon />
         </Button>
       )}
-      <Button component={Link} to={`/stats/${resourceName(model.name, entity.name)}`} label={t("Thống kê")}>
-        <InsightsOutlinedIcon />
-      </Button>
+      {entity.hasProcess && (
+        <Button component={Link} to={`/stats/${resourceName(model.name, entity.name)}`} label={t("Thống kê")}>
+          <InsightsOutlinedIcon />
+        </Button>
+      )}
     </TopToolbar>
   );
 
   const EntityList = () => (
     <List
       filters={filters}
-      actions={entity.hasProcess ? <ListActions /> : undefined}
+      actions={<ListActions />}
       sort={{ field: "id", order: "DESC" }}
       exporter={false}
     >
-      <Datagrid rowClick="show" bulkActionButtons={false}>
+      <DatagridConfigurable rowClick="show" bulkActionButtons={false}>
         <TextField source="id" label={t("Mã")} />
         {entity.fields.map((field) => outputField(field, catalog))}
         {entity.hasProcess && statusField(entity)}
-      </Datagrid>
+      </DatagridConfigurable>
     </List>
   );
 

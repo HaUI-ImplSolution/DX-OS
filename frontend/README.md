@@ -9,7 +9,7 @@ Web đăng nhập OIDC qua Keycloak và dựng mọi màn hình từ metadata c�
 |---|---|
 | `src/App.tsx` | Đăng nhập OIDC, xử lý callback, đăng xuất một lần |
 | `src/shell/` | `auth` (OIDC), `api` (gọi backend, bóc `ApiResponse`), `errorMessages` và `backendMessages` (thông báo của backend bằng tiếng Việt), `locale`, `i18n` và `viMessages` (chữ của react-admin), `theme` (sáng và tối), `format`, `PageHeader` |
-| `src/admin/` | Ứng dụng react-admin: đọc metadata, `dataProvider`, `authProvider`, màn hình dựng theo thực thể (danh sách, chi tiết, biểu mẫu), hộp việc, lịch |
+| `src/admin/` | Ứng dụng react-admin: đọc metadata, `dataProvider`, `authProvider`, màn hình dựng theo thực thể (danh sách có chọn cột và truy vấn đã lưu, chi tiết, biểu mẫu), hộp việc, lịch |
 | `src/console/` | Bảng điều khiển của người triển khai: mô hình đang chạy (kèm tiếp tục hoặc hủy bỏ lần áp dụng dừng giữa chừng), thư viện mẫu, trình soạn và kế hoạch, hàng đợi sự kiện, sơ đồ quy trình, người dùng (vai, đơn vị, tạo, khóa, mật khẩu, lịch sử thay đổi), nhãn tiếng Việt của kế hoạch (`labels`) |
 
 ## Ngôn ngữ

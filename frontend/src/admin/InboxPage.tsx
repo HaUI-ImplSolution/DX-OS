@@ -21,6 +21,7 @@ import TaskAltIcon from "@mui/icons-material/TaskAlt";
 import { Link, Title } from "react-admin";
 import PageHeader from "../shell/PageHeader";
 import { formatDateTime, timeAgo } from "../shell/format";
+import { onLiveChange } from "../shell/liveChanges";
 import { listInbox } from "./api";
 import { StatusChip } from "./StatusChip";
 import { resourceName, type InboxItem, type ModelMeta, type Page } from "./types";
@@ -61,11 +62,15 @@ export default function InboxPage({ models }: { models: ModelMeta[] }) {
   const [data, setData] = useState<Page<InboxItem> | null>(null);
   const [page, setPage] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [reload, setReload] = useState(0);
   const items = data?.items ?? null;
+
+  // Another person's action can add or remove a record here, so the list is read again when one changes.
+  useEffect(() => onLiveChange(() => setReload((value) => value + 1)), []);
 
   useEffect(() => {
     listInbox(page, PAGE_SIZE).then(setData, (e: unknown) => setError(e instanceof Error ? e.message : t("Không đọc được hộp việc")));
-  }, [page]);
+  }, [page, reload]);
 
   const entityOf = (item: InboxItem) =>
     models.find((model) => model.name === item.model)?.entities.find((entity) => entity.name === item.entity);

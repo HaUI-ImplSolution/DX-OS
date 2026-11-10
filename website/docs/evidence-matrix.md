@@ -69,6 +69,8 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 | Màn hình giám sát và cảnh báo | `ServiceProbeTest` 4, `AlertJobTest` | `cd backend && ./mvnw verify` | Dùng được | Không có kiểm đầu-cuối của giao diện giám sát |
 | Bảng điều khiển và giao diện react-admin | `npx tsc --noEmit` trong workflow `Frontend`; `e2e/tests/console.spec.ts` (quản trị viên đăng nhập, áp dụng một mẫu, thấy mô hình chạy) trong job `Browser end-to-end` của workflow `Platform`; còn lại kiểm tay bằng Chrome | `cd e2e && npx playwright test` trên stack đang chạy | Dùng được | Tự động hóa mới có luồng bảng điều khiển; hộp việc, lịch đặt chỗ và trang hồ sơ kiểm tay |
 | Ví dụ kết nối thiết bị (`itot-simulator`) | Kiểm tay: gửi lại cùng quan sát in `duplicate`, không tạo thêm hồ sơ | `python3 examples/itot-simulator/simulator.py run` | Minh họa | Thiết bị và dữ liệu giả lập |
+| Hộp việc thời gian thực (`GET /api/v1/inbox/stream`) | Kiểm tay theo `docs/TESTING.md` mục 6, mục 23; `mvnw verify` kiểm biên dịch và test của dịch vụ | Mở hộp việc ở hai cửa sổ rồi nộp một hồ sơ | Dùng được | Không có kiểm tự động của kênh; chạy một bản backend nên kênh chỉ báo thay đổi do chính bản đó ghi |
+| Tài khoản và hồ sơ mẫu để dùng thử (`dxos demo`) | Kiểm tay theo `docs/TESTING.md` mục 6, phần lệnh `dxos` mục 6 | `dxos demo` | Dùng được | Không có kiểm tự động; hồ sơ quá hạn chỉ có sau ba ngày kể từ lần nộp |
 
 ## 3. Giấy phép, chuỗi cung ứng, phát hành
 

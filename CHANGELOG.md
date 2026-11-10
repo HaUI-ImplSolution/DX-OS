@@ -91,6 +91,7 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - Lịch sử hồ sơ nối thành chuỗi hash, mỗi giờ ghi một điểm neo ra kho đối tượng; `dxos history verify` và `GET /api/v1/history/verify` chỉ ra dòng bị sửa, xóa hoặc chèn.
 - `examples/history-witness` cho bên nhận giữ `eventId` và `hash` rồi so với hệ thống.
 - `dxos archive` xuất hồ sơ đã xong ra Parquet kèm `manifest.json`; `dxos archive check` kiểm lại.
+- `GET /api/v1/inbox/stream` báo cho giao diện khi một dòng lịch sử hồ sơ ghi xong, để hộp việc, danh sách và trang chi tiết đang mở tự đọc lại; khung không kèm nội dung hồ sơ, nhịp ping 20 giây, server đóng kênh sau 10 phút, tối đa 2000 kênh cùng lúc; route gateway giữ kiểm token và cho đọc 15 phút.
 - `examples/itot-simulator` giả lập thiết bị tạo hồ sơ sự cố qua API; gửi lại cùng một quan sát thì lõi từ chối.
 
 ### Tệp đính kèm
@@ -122,7 +123,8 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 ### Cài đặt và vận hành
 
 - Cài bằng một lệnh: `dxos-install.sh` phát hành kèm mỗi bản tải gói, kiểm SHA-256 và cài vào `~/.dxos`; `install.sh --upgrade` nâng cấp bản đã cài, giữ `.env` và dữ liệu.
-- Lệnh `dxos`: `start`, `stop`, `status`, `logs`, `admin`, `update`, `doctor`, `backup`, `av`, `plan`, `apply`, `history`, `reconcile`, `archive`, `uninstall`; `dxos start` tạo tài khoản `admin` đầu tiên với mật khẩu tạm.
+- Lệnh `dxos`: `start`, `stop`, `status`, `logs`, `admin`, `update`, `doctor`, `backup`, `av`, `plan`, `apply`, `history`, `reconcile`, `archive`, `demo`, `uninstall`; `dxos start` tạo tài khoản `admin` đầu tiên với mật khẩu tạm.
+- `dxos demo` tạo bốn tài khoản thử theo vai của mô hình Một cửa sinh viên và nộp khoảng 40 hồ sơ mẫu qua API chung; mật khẩu sinh ngẫu nhiên và in một lần; chạy lại không nộp trùng; `dxos demo remove` gỡ các tài khoản thử.
 - `deploy/make_env.sh` sinh `.env` với mật khẩu ngẫu nhiên; cài và chạy stack không cần Python.
 - Tự phục hồi: mọi service chạy lâu có `restart: unless-stopped`, `dxos reconcile` đưa stack về đúng khai báo và chạy mỗi phút bằng systemd user timer.
 - `deploy/backup.sh` sao lưu mã hóa Postgres và kho tệp; `verify` nạp bản dump vào Postgres tạm và kiểm mọi tệp đính kèm có trong kho.
@@ -140,6 +142,7 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - `.github/rulesets/` lưu quy tắc của nhánh `main` và của tag `v*` để nhập vào GitHub.
 - Trang tài liệu ở `website/` (Docusaurus) đăng lên GitHub Pages khi đẩy vào `main`.
 - Tài liệu vận hành chia ba tệp ở `deploy/`: `OPERATIONS.md`, `MONITORING.md` và `INTEGRATIONS.md`; `docs/TESTING.md` là hướng dẫn kiểm.
+- `docs/DEMO.md` ghi kịch bản trình diễn 15 phút: chuẩn bị, tài khoản thử, từng bước kèm kết quả mong đợi và cách xử lý sự cố.
 
 ### Gỡ bỏ và giấy phép
 

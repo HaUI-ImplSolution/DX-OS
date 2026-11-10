@@ -36,6 +36,8 @@ The current version is `2.0.0`, and the changes of each version are in [`CHANGEL
 - **A trace that cannot be edited.** The history of records is one chain with checks; if anyone edits, deletes or inserts a line, one command names that line.
 - **Connections to the outside.** Every change to a record is reported to a web address or a chat channel (Mattermost, Slack), signed so the receiver can check it and sent again when the receiver fails.
 - **A control panel for the person deploying.** Template library, model editor (write the file or fill a form, with guidance on what can be written and extended) with a process diagram drawn from the file being written, plan preview, apply, history, user management and record statistics.
+- **An inbox that updates itself.** When a record changes, the inbox, the lists and the detail page that are open refresh without reloading the page.
+- **Try it at once.** One command creates a trial account for each role and sample records in several states, so a visitor who signs in finds a system with work in it.
 - **Simple to install and run.** One command installs and one starts; backups can be checked, services restart on their own, and attachments are virus-scanned when enabled.
 - **Single sign-on.** Through Keycloak, and administrators can be required to enter a one-time code as well.
 - **[Optional personal assistant](./assistant/README.md).** Read and monitor records through Telegram, and propose assignment or workflow actions for the user to confirm.
@@ -115,6 +117,7 @@ The documents are written in Vietnamese; the API reference is the Swagger UI of 
 | Monitoring, logs, access audit | [`deploy/MONITORING.md`](./deploy/MONITORING.md) |
 | Webhooks, tamper-evident history, long-term archive | [`deploy/INTEGRATIONS.md`](./deploy/INTEGRATIONS.md) |
 | Testing | [`docs/TESTING.md`](./docs/TESTING.md), [`e2e/README.md`](./e2e/README.md) |
+| The 15-minute demonstration script | [`docs/DEMO.md`](./docs/DEMO.md) |
 | Design and remaining work | [`docs/dynamic-core/README.md`](./docs/dynamic-core/README.md), [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md) |
 | Changes by version | [`CHANGELOG.md`](./CHANGELOG.md) |
 | Third-party components and licenses | [`DEPENDENCIES.txt`](./DEPENDENCIES.txt), [`NOTICE`](./NOTICE), [`sbom/`](./sbom/README.md) |

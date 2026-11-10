@@ -130,6 +130,29 @@ routes:
         rejected_msg: "Too many requests, try again in a minute"
         show_limit_quota_header: true
 
+  # Stream that says when the inboxes changed: one response per open page, kept open up to 10 minutes
+  # and quiet for stretches, so the read and send timeouts are longer than that. The limit is per
+  # client address and wide, because pages reconnect every 10 minutes and many may share an address.
+  - id: api-inbox-stream
+    vars: [["server_port", "==", "9080"]]
+    priority: 8
+    uri: /api/v1/inbox/stream
+    methods: ["GET"]
+    upstream_id: backend
+    plugin_config_id: bearer-token
+    timeout:
+      connect: 6
+      send: 900
+      read: 900
+    plugins:
+      limit-count:
+        count: 300
+        time_window: 60
+        key_type: var
+        key: remote_addr
+        rejected_code: 429
+        rejected_msg: "Too many requests, try again in a minute"
+
   - id: api-docs
     vars: [["server_port", "==", "9080"]]
     priority: 5

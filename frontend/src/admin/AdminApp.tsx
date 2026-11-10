@@ -30,6 +30,7 @@ import { listModels } from "./api";
 import authProvider from "./authProvider";
 import { createDataProvider } from "./dataProvider";
 import InboxPage from "./InboxPage";
+import LiveRefresh from "./LiveRefresh";
 import { screens } from "./resources";
 import { resourceName, type EntityMeta, type ModelMeta } from "./types";
 import { assistantAvailable } from "../assistant/api";
@@ -152,6 +153,7 @@ export default function AdminApp() {
     const menu = makeMenu(models ?? [], assistantEnabled);
     return ({ children }: LayoutProps) => (
       <Layout menu={menu} appBar={AppTopBar}>
+        <LiveRefresh />
         {children}
       </Layout>
     );

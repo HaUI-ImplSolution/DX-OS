@@ -23,6 +23,8 @@ import io.swagger.v3.oas.models.media.NumberSchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
+import io.swagger.v3.oas.models.headers.Header;
+import io.swagger.v3.oas.models.parameters.HeaderParameter;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.PathParameter;
 import io.swagger.v3.oas.models.parameters.QueryParameter;
@@ -89,7 +91,7 @@ public class ModelOpenApi {
                     + " NO_ROLE_FOR_ENTITY, NOT_ASSIGNER, PARENT_OUT_OF_REACH, READ_ONLY,"
                     + " SLOT_TAKEN, STATUS_BY_PROCESS_ONLY, STILL_REFERENCED, UNIT_OUT_OF_REACH,"
                     + " WRONG_STATE, RECORD_CLOSED, OWNER_ONLY, HANDLER_ONLY, SELF_DECISION,"
-                    + " ASSIGNED_TO_OTHER or CONDITION_NOT_MET"))
+                    + " ASSIGNED_TO_OTHER, CONDITION_NOT_MET or IDEMPOTENCY_KEY_REUSED"))
             .addProperty("timestamp", new DateTimeSchema());
     components.addSchemas("ApiError", error);
     components.addSchemas("ActionNote", new ObjectSchema().addProperty("note", new StringSchema()
@@ -126,8 +128,9 @@ public class ModelOpenApi {
                 responses("ResponsePage" + type, "200", "A page of records", "400", "401", "403")))
         .post(operation("create" + type, "Create a " + label(entity) + " record",
             process ? "The status cannot be sent; the process sets it." : null)
-            .requestBody(body(type + "Input")).responses(responses("Response" + type, "200",
-                "The record as stored", "400", "401", "403", "409")));
+            .addParametersItem(idempotencyKey()).requestBody(body(type + "Input"))
+            .responses(replayable(responses("Response" + type, "200", "The record as stored", "400",
+                "401", "403", "409"))));
     paths.addPathItem(base, collection);
 
     PathItem record = new PathItem()
@@ -184,9 +187,10 @@ public class ModelOpenApi {
           operation("action" + type + pascal(action.name()),
               (action.label() == null ? action.name() : action.label()) + " (" + action.name()
                   + ")",
-              text.toString()).addParametersItem(idParameter())
-              .requestBody(body("ActionNote", false)).responses(responses("Response" + type, "200",
-                  "The record after the action", "400", "401", "403", "404", "409"));
+              text.toString()).addParametersItem(idParameter()).addParametersItem(idempotencyKey())
+              .requestBody(body("ActionNote", false))
+              .responses(replayable(responses("Response" + type, "200",
+                  "The record after the action", "400", "401", "403", "404", "409")));
       paths.addPathItem(one + "/actions/" + action.name(), new PathItem().post(operation));
     }
     paths.addPathItem(one + "/assign",
@@ -414,6 +418,31 @@ public class ModelOpenApi {
       case "datetime" -> new DateTimeSchema();
       default -> new StringSchema();
     };
+  }
+
+  // Sending the same key with the same request again returns the first answer and does nothing
+  // more.
+  private Parameter idempotencyKey() {
+    return new HeaderParameter().name("Idempotency-Key").required(false)
+        .description("A key of 1 to 128 characters from A-Z a-z 0-9 . _ : - chosen by the caller."
+            + " The same key with the same request returns the first answer with the header"
+            + " Idempotent-Replayed: true and does nothing again; the same key with another request"
+            + " gives 409 with data.reason IDEMPOTENCY_KEY_REUSED. A failed request keeps no key,"
+            + " and a key is kept for 24 hours.")
+        .schema(new StringSchema().minLength(1).maxLength(128).pattern("^[A-Za-z0-9._:-]+$"));
+  }
+
+  // The answer to a repeated request says so in a header.
+  private ApiResponses replayable(ApiResponses responses) {
+    responses
+        .get(
+            "200")
+        .addHeaderObject("Idempotent-Replayed",
+            new Header()
+                .description("true when this is the answer kept for an earlier request with the"
+                    + " same Idempotency-Key")
+                .schema(new StringSchema()._enum(List.of("true"))));
+    return responses;
   }
 
   private Parameter idParameter() {

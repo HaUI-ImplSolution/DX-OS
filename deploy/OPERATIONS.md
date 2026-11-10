@@ -3,6 +3,7 @@
 Tài liệu cho người cài và chạy stack hằng ngày: cài đặt và lệnh `dxos`, quản trị người dùng, kiểm tra trước khi chạy, tài nguyên, giám sát từ ngoài, sao lưu và khôi phục, quét mã độc.
 Log, giới hạn tốc độ, sự kiện đăng nhập, audit và màn hình giám sát ở [`MONITORING.md`](./MONITORING.md).
 Webhook sự kiện, API kéo sự kiện, lịch sử chống sửa và hồ dữ liệu ở [`INTEGRATIONS.md`](./INTEGRATIONS.md).
+Kết nối công cụ báo cáo bằng vai PostgreSQL chỉ đọc ở [`REPORTING.md`](./REPORTING.md).
 
 ## Quản trị người dùng
 

@@ -7,6 +7,10 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
+### Tài liệu
+
+- Hướng dẫn kết nối công cụ báo cáo bằng `report_ro`, giữ PostgreSQL trong mạng riêng, xoay mật khẩu và truy vấn dữ liệu xuyên hai mô hình với Apache Superset.
+
 ## [2.0.0] - chưa phát hành
 
 Lõi dynamic thay cho hai ứng dụng nghiệp vụ viết tay của bản `1.1.1`.

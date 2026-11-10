@@ -120,6 +120,7 @@ The documents are written in Vietnamese; the API reference is the Swagger UI of 
 | Install, the `dxos` commands, backup | [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md) |
 | Monitoring, logs, access audit | [`deploy/MONITORING.md`](./deploy/MONITORING.md) |
 | Webhooks, tamper-evident history, long-term archive | [`deploy/INTEGRATIONS.md`](./deploy/INTEGRATIONS.md) |
+| Connecting a reporting tool | [`deploy/REPORTING.md`](./deploy/REPORTING.md) (Vietnamese) |
 | Testing | [`docs/TESTING.md`](./docs/TESTING.md), [`e2e/README.md`](./e2e/README.md) |
 | The 15-minute demonstration script | [`docs/DEMO.md`](./docs/DEMO.md) |
 | Design and remaining work | [`docs/dynamic-core/README.md`](./docs/dynamic-core/README.md), [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md) |

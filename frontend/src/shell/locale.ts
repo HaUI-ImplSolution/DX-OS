@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // The language of the interface, Vietnamese or English. The choice is kept in the browser and read
 // before anything is drawn; changing it reloads the page so that every screen starts in the new language.
+// A screen that holds work not yet saved registers a check, so the switch can ask before reloading.
 export type Locale = "vi" | "en";
 
 const STORAGE_KEY = "dxos.locale";
@@ -29,3 +30,15 @@ export function setLocale(locale: Locale) {
   }
   window.location.reload();
 }
+
+let unsavedCheck: (() => boolean) | null = null;
+
+// Registers the check of the screen that holds unsaved work; the returned function removes it.
+export function guardUnsavedWork(check: () => boolean): () => void {
+  unsavedCheck = check;
+  return () => {
+    if (unsavedCheck === check) unsavedCheck = null;
+  };
+}
+
+export const hasUnsavedWork = (): boolean => unsavedCheck?.() ?? false;

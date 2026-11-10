@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Alert, Box, Skeleton, Snackbar, Tab, Tabs } from "@mui/material";
 import AutoAwesomeMosaicOutlinedIcon from "@mui/icons-material/AutoAwesomeMosaicOutlined";
 import EditNoteOutlinedIcon from "@mui/icons-material/EditNoteOutlined";
@@ -16,6 +16,7 @@ import { useModelSchema } from "./monacoSetup";
 import OutboxTab from "./OutboxTab";
 import TemplatesTab from "./TemplatesTab";
 import UsersTab from "./UsersTab";
+import { guardUnsavedWork } from "../shell/locale";
 import { t } from "../shell/t";
 
 const BLANK = `# SPDX-License-Identifier: Apache-2.0
@@ -40,6 +41,12 @@ export default function ConsolePage() {
   const [refresh, setRefresh] = useState(0);
   const [note, setNote] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // The text as it was loaded or last applied; a different text in the editor is work not yet applied.
+  const textRef = useRef(text);
+  const baselineRef = useRef(text);
+  textRef.current = text;
+
+  useEffect(() => guardUnsavedWork(() => textRef.current !== baselineRef.current), []);
 
   useEffect(() => {
     Promise.all([getSchema(), listTemplates()]).then(
@@ -54,6 +61,7 @@ export default function ConsolePage() {
   }, []);
 
   const edit = (content: string, label: string) => {
+    baselineRef.current = content;
     setText(content);
     setSource(label);
     setTab(2);
@@ -110,6 +118,7 @@ export default function ConsolePage() {
           schema={schema}
           onText={setText}
           onApplied={(message) => {
+            baselineRef.current = textRef.current;
             setNote(message);
             setRefresh((value) => value + 1);
             setTab(0);

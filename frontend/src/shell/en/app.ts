@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 // The sign-in flow, the record screens, the inbox, the calendar and the statistics.
 export const app: Record<string, string> = {
+  // Language switch
+  "Đổi ngôn ngữ?": "Change the language?",
+  "Trang sẽ tải lại và bản đang soạn chưa áp dụng sẽ mất.": "The page will reload and the draft that is not applied yet will be lost.",
+  "Ở lại": "Stay",
+  "Đổi và tải lại": "Change and reload",
   // Times and durations
   "vừa xong": "just now",
   "{n} phút trước": "{n} min ago",

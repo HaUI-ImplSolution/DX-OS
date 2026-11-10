@@ -61,7 +61,7 @@ Chạy trên stack mới dựng, cơ sở dữ liệu rỗng, vì script áp d�
 Mỗi script phụ thuộc các script đứng trước trong cùng nhóm, nên chạy đúng thứ tự:
 
 ```bash
-for c in api recovery case change process booking demo guards users docs conformance; do
+for c in api recovery case change process booking demo guards users docs conformance cli; do
   python3 deploy/dev/check_$c.py
 done
 ```
@@ -86,6 +86,7 @@ python3 deploy/dev/check_bootstrap.py
 | `check_users.py` | Quản trị người dùng: gán và gỡ vai và đơn vị, tạo, khóa, đặt lại mật khẩu, audit |
 | `check_docs.py` | Mọi endpoint các tài liệu nêu có trong OpenAPI của backend đang chạy, đúng phương thức |
 | `check_conformance.py` | Rào chắn của lõi giữ với mọi mô hình đã áp dụng, hoặc các mô hình nêu tên: không ghi được `status`, không token thì 401, không đọc được dữ liệu mô hình khác |
+| `check_cli.py` | Lệnh `dxos plan` và `apply --accept` (tệp giống, đổi an toàn, đổi mất dữ liệu bị từ chối khi `--accept` thấp hơn mức của kế hoạch), lịch sử ghi tài khoản của lệnh, `dxos archive` và `archive check` (sửa một byte Parquet thì mã 1), bộ mô phỏng IT/OT gửi lại cùng quan sát thì in `duplicate` và không thêm hồ sơ; cần Docker; tự áp dụng một mô hình riêng |
 | `check_events.py` | Webhook: thứ tự, chữ ký, thử lại, nội dung không lộ, nhắc hạn; chuỗi hash của lịch sử và bên nhận so hash |
 | `check_bootstrap.py` | Tệp mô hình lúc khởi động: `applied`, `unchanged`, `skipped`, `failed` |
 
@@ -147,15 +148,11 @@ Giao diện, đăng nhập bằng `req1` (vai `BORROWER`), `keeper1` (vai `KEEPE
 
 Lệnh `dxos` và các tính năng chạy ngoài stack kiểm:
 
-1. `dxos plan <tệp>` và `dxos apply <tệp> --accept <mức>` với tệp giống, đổi `SAFE`, đổi `LOSS`: kế hoạch vượt `--accept` bị từ chối với mã 1; lịch sử ghi `service-account-dxos-cli`.
-2. `dxos archive <mô hình>` rồi `dxos archive check <thư mục>`; sửa một byte trong tệp Parquet thì `check` thoát với mã 1.
-3. `dxos history verify` sau khi sửa, xóa hoặc chèn một dòng `record_event` bằng SQL: chỉ ra dòng đầu tiên bị đổi; trả lại dòng thì chuỗi nguyên vẹn.
-4. `dxos reconcile`: xóa container `backend` thì chạy lại; sau `dxos stop` thì không bật lại; mọi service có chính sách restart `unless-stopped`.
-5. `backup.sh verify` khi kho thiếu một tệp: báo `FAILED` kèm tên khóa thiếu và mã 1; khi `DXOS_FILE_DELETE_DELAY` ngắn hơn lượt chạy thì in `WARNING`.
-6. `examples/itot-simulator/simulator.py setup`, `run`, `replay`: gửi lại cùng quan sát in `duplicate` và không tạo thêm hồ sơ.
-7. Áp dụng lại tệp không đổi khi bảng thiếu hoặc thừa cột, đổi kiểu cột, hoặc client, vai, nhóm đơn vị bị xóa: kế hoạch ghi `repair` đúng loại, áp dụng xong thì về `unchanged`.
-8. Áp dụng một mô hình đổi bảng trong lúc có yêu cầu ghi hồ sơ của mô hình đó: không có 500, không hồ sơ nào ghi sai cấu trúc.
-9. Thống kê với vai `unit` và `own`, có và không có bộ lọc: `total` và tổng `byStatus` bằng số dòng của danh sách cùng bộ lọc.
+1. `dxos history verify` sau khi sửa, xóa hoặc chèn một dòng `record_event` bằng SQL: chỉ ra dòng đầu tiên bị đổi; trả lại dòng thì chuỗi nguyên vẹn.
+2. `dxos reconcile`: xóa container `backend` thì chạy lại; sau `dxos stop` thì không bật lại; mọi service có chính sách restart `unless-stopped`.
+3. Áp dụng lại tệp không đổi khi bảng thiếu hoặc thừa cột, đổi kiểu cột, hoặc client, vai, nhóm đơn vị bị xóa: kế hoạch ghi `repair` đúng loại, áp dụng xong thì về `unchanged`.
+4. Áp dụng một mô hình đổi bảng trong lúc có yêu cầu ghi hồ sơ của mô hình đó: không có 500, không hồ sơ nào ghi sai cấu trúc.
+5. Thống kê với vai `unit` và `own`, có và không có bộ lọc: `total` và tổng `byStatus` bằng số dòng của danh sách cùng bộ lọc.
 
 ## 7. Hồi quy
 

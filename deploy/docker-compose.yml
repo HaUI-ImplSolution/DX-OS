@@ -25,6 +25,28 @@ x-postgres-env: &postgres-env
   POSTGRES_USER: ${POSTGRES_USER:?}
   POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
 
+# Supervisors wait for account activation; each has its own state and network.
+x-assistant-runtime: &assistant-runtime
+  <<: *hardened
+  logging: *default-logging
+  image: ${ASSISTANT_IMAGE:?}
+  user: "1000:1000"
+  restart: unless-stopped
+  read_only: true
+  mem_limit: ${ASSISTANT_RUNTIME_MEMORY:?}
+  cpus: ${ASSISTANT_RUNTIME_CPUS:?}
+  pids_limit: 128
+  depends_on:
+    assistant-init:
+      condition: service_completed_successfully
+  command: ["--env-file=/state/runtime.env", "dist/runtime/supervisor.js"]
+  tmpfs: ["/tmp:rw,nosuid,nodev,noexec,size=128m"]
+  healthcheck:
+    test: [CMD, node, "--env-file=/state/runtime.env", -e, "fetch('http://127.0.0.1:18792/status',{headers:{Authorization:'Bearer '+process.env.ASSISTANT_RUNTIME_CONTROL_TOKEN}}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+    interval: 15s
+    timeout: 5s
+    retries: 4
+
 services:
   # ---------------------------------------------------------------------------
   # Data and storage
@@ -78,6 +100,7 @@ services:
   # Backend, web and portal
   # ---------------------------------------------------------------------------
   backend:
+    networks: [default, assistant-core]
     <<: *hardened
     logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-backend:${DXOS_IMAGE_TAG:-local}
@@ -207,6 +230,7 @@ services:
   # Identity
   # ---------------------------------------------------------------------------
   keycloak:
+    networks: [default, assistant-core]
     logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-sso:${DXOS_IMAGE_TAG:-local}
     build:
@@ -258,6 +282,110 @@ services:
       timeout: 5s
       retries: 18
       start_period: 30s
+
+  # ---------------------------------------------------------------------------
+  # Personal assistants
+  # ---------------------------------------------------------------------------
+  assistant-init:
+    <<: *hardened
+    logging: *default-logging
+    image: ${ASSISTANT_IMAGE:?}
+    build:
+      context: ../assistant
+    user: "0:0"
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER]
+    network_mode: none
+    read_only: true
+    command: [dist/setup.js, prepare, /bootstrap]
+    environment:
+      ASSISTANT_PUBLIC_URL: ${GATEWAY_PUBLIC_URL:?}
+    volumes:
+      - ./data/assistant:/bootstrap
+    tmpfs: ["/tmp:rw,nosuid,nodev,noexec,size=64m"]
+
+  assistant-sso:
+    <<: *hardened
+    logging: *default-logging
+    image: ${DXOS_IMAGE_PREFIX:-dxos}-sso:${DXOS_IMAGE_TAG:-local}
+    read_only: true
+    networks: [assistant-core]
+    depends_on:
+      assistant-init:
+        condition: service_completed_successfully
+      keycloak:
+        condition: service_healthy
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:?}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?}
+    volumes:
+      - ./assistant-sso.sh:/assistant-sso.sh:ro
+      - ./data/assistant/sso:/bootstrap:ro
+    entrypoint: [bash, /assistant-sso.sh]
+    tmpfs: ["/tmp:rw,nosuid,nodev,noexec,size=64m,mode=1777"]
+
+  assistant-control:
+    <<: *hardened
+    logging: *default-logging
+    image: ${ASSISTANT_IMAGE:?}
+    user: "1000:1000"
+    restart: unless-stopped
+    read_only: true
+    mem_limit: ${ASSISTANT_CONTROL_MEMORY:?}
+    cpus: ${ASSISTANT_CONTROL_CPUS:?}
+    pids_limit: 128
+    networks: [assistant-core, assistant-ingress, assistant-runtime-1, assistant-runtime-2, assistant-runtime-3]
+    depends_on:
+      backend:
+        condition: service_healthy
+      assistant-init:
+        condition: service_completed_successfully
+      assistant-sso:
+        condition: service_completed_successfully
+      assistant-runtime-1:
+        condition: service_healthy
+      assistant-runtime-2:
+        condition: service_healthy
+      assistant-runtime-3:
+        condition: service_healthy
+    environment:
+      ASSISTANT_HOST: 0.0.0.0
+      ASSISTANT_PORT: 18790
+      ASSISTANT_STATE_DIR: /state
+      ASSISTANT_MASTER_KEY_FILE: /run/secrets/master.key
+      ASSISTANT_RUNTIME_SLOTS_FILE: /run/secrets/slots.json
+      ASSISTANT_RUNTIME_COUNT: ${ASSISTANT_RUNTIME_COUNT:?}
+      ASSISTANT_PUBLIC_URL: ${GATEWAY_PUBLIC_URL:?}
+      ASSISTANT_CORE_URL: http://backend:8081
+      ASSISTANT_OIDC_ISSUER: ${GATEWAY_PUBLIC_URL:?}/realms/dxos
+      ASSISTANT_OIDC_AUDIENCE: dxos-api
+      ASSISTANT_CORE_AUDIENCE: dxos-api
+      ASSISTANT_OIDC_JWKS_URL: http://keycloak:8080/realms/dxos/protocol/openid-connect/certs
+      ASSISTANT_OIDC_TOKEN_URL: http://keycloak:8080/realms/dxos/protocol/openid-connect/token
+      ASSISTANT_OIDC_CLIENT_ID: dxos-assistant
+    volumes:
+      - ./data/assistant/control:/state
+      - ./data/assistant/private:/run/secrets:ro
+    tmpfs: ["/tmp:rw,nosuid,nodev,noexec,size=64m"]
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:18790/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+
+  assistant-runtime-1:
+    <<: *assistant-runtime
+    volumes: ["./data/assistant/runtime-1:/state"]
+    networks: [assistant-runtime-1]
+
+  assistant-runtime-2:
+    <<: *assistant-runtime
+    volumes: ["./data/assistant/runtime-2:/state"]
+    networks: [assistant-runtime-2]
+
+  assistant-runtime-3:
+    <<: *assistant-runtime
+    volumes: ["./data/assistant/runtime-3:/state"]
+    networks: [assistant-runtime-3]
 
   # ---------------------------------------------------------------------------
   # Monitoring
@@ -334,6 +462,7 @@ services:
       - ./data/apisix:/out
 
   apisix:
+    networks: [default, assistant-ingress]
     # The access log is the traffic record, so it keeps more history than the other services.
     logging:
       driver: json-file
@@ -376,3 +505,10 @@ services:
 
 volumes:
   clamav_data:
+
+networks:
+  assistant-core: {}
+  assistant-ingress: {}
+  assistant-runtime-1: {}
+  assistant-runtime-2: {}
+  assistant-runtime-3: {}

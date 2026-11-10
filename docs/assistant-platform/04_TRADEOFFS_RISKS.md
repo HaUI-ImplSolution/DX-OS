@@ -93,3 +93,19 @@ Việc tách quyền giữ khóa/token, thu hồi credential và khôi phục kh
 - Phiên bản: giữ cách đọc trực tiếp và kiểm trước khi ghi; tối ưu truy vấn nằm trong BACKLOG.
 
 Các việc còn thiếu được theo dõi trong [BACKLOG](../dynamic-core/BACKLOG.md); kết quả kiểm tại [test plan](./03_TEST_PLAN.md).
+
+## 8. Rủi ro điều chỉnh khởi động chung
+
+| Rủi ro | Biện pháp và điều kiện kiểm |
+|---|---|
+| Image lớn dù chưa dùng API | Control/supervisor khởi động chung, gateway không chạy khi chưa kích hoạt; image/cache vẫn chiếm đĩa lần đầu, đo tại TDI-17 |
+| Bootstrap tạo lại key hoặc lộ peer config | Giữ state cũ và key hiện có, cấu hình riêng từng runtime; lỗi quyền/thiếu key của DB cũ phải dừng phần trợ lý, không thay key |
+| Compose đọc env_file trước init | Không tham chiếu file chưa tồn tại ở bước render; nạp config từ thư mục riêng sau bootstrap và kiểm source/bản cài sạch |
+| SSO chỉ hoạt động trên realm mới | Bootstrap managed client cho realm cũ, credential operator chỉ ở bước SSO riêng; không chuyển sang control/runtime |
+| Bỏ overlay làm yếu cách ly | Giữ network/volume/capability riêng và cổng nội bộ không public, kiểm lại TDI-12 trước nghiệm thu |
+| Env tùy chọn làm stack mặc định lỗi | Nạp defaults tại make_env/installer/update, không bắt người dùng nhập key hoặc thêm fallback Compose; kiểm TDI-02/03/14 |
+| Backup/upgrade tự bật mọi tài khoản | Giữ runtimeEnabled theo chủ, không suy từ marker enabled toàn cục; kiểm lỗi snapshot và nâng cấp state thật |
+| Gộp docs làm mất attribution hoặc cảnh báo backup | Chuyển đúng thông tin cần giữ vào nhóm sẵn có; kiểm NOTICE/DEPENDENCIES/archive và hướng dẫn restore trước bỏ đoạn trùng |
+
+Các rủi ro egress và tách quyền key backup vẫn thuộc BACKLOG, không bị coi là đã xử lý bởi Compose chung.
+Không thay đổi SDK, thuật toán nghiệp vụ hoặc bốn module Core để giải quyết các vấn đề deploy/docs này.

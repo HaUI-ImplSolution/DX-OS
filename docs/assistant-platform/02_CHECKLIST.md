@@ -4,6 +4,7 @@ Chỉ tick việc có bằng chứng được ghi trong [test plan](./03_TEST_PL
 Mã TAS/TRV chỉ ra ca kiểm, DOC-01 chỉ ra hồ sơ thiết kế đã đối chiếu.
 Ca mới đạt một phần không đóng mục nghiệm thu tương ứng.
 Việc triển khai có mã không thay xác nhận nghiệm thu toàn bộ trợ lý của người phụ trách.
+WPI-01–04 ở cuối file ghi kết quả điều chỉnh khởi động chung; các dấu tích của bản cũ không thay bằng chứng TDI.
 
 ## Chuẩn bị kế hoạch
 
@@ -144,3 +145,26 @@ Kết quả triển khai được đánh dấu theo bằng chứng của lượt
 - [x] WPRV-07-BE-02 [assistant] Phân biệt chưa liên kết Core (409) với phiên sai/hết hạn (401), kiểm client. — TRV-14
 - [x] WPRV-07-TEST-01 Chạy TRV-11–16 và hoàn tất kiểm còn dở theo phạm vi đã chốt; không dùng kết quả trên JAR cũ. — TRV-11–16
 - [x] WPRV-07-DOC-05 Ghi công việc còn thiếu về egress/backup và tối ưu vào BACKLOG, kèm tiêu chí hoàn thành từng mục. — DOC-01, TRV-15
+
+## WPI: Khởi động chung và docs
+
+Đã triển khai và kiểm trên stack mới cùng bản sao dữ liệu cũ.
+Nghiệm thu còn mở ở TDI-03, TDI-05 và TDI-07; người dùng đã review và cho phép push.
+
+- [x] WPI-01-DOC-01 Rà bốn review NOTICE/TESTING/API/OPERATIONS; chốt vị trí bổ sung theo bố cục cha. — TDI-01
+- [x] WPI-01-DOC-02 Giữ attribution khi thu gọn NOTICE, không mất thông tin trong gói phát hành. — TDI-01, TDI-16
+- [x] WPI-02-INFRA-01 Khai báo control, bootstrap và supervisor cách ly trong Compose chính, không cần overlay/profile trợ lý. — TDI-02–04
+- [x] WPI-02-INFRA-02 Tự chuẩn bị env/defaults theo env.example cho cả source và bản cài; không yêu cầu API key hoặc gõ lệnh phụ. — TDI-14, TDI-16
+- [x] WPI-02-BE-01 [assistant] Bootstrap idempotent, giữ khóa/capability/mapping và chỉ mount config riêng từng runtime. — TDI-09–10, TDI-12
+- [x] WPI-02-INFRA-03 Đồng bộ client SSO tự động cho realm mới/cũ; không cấp operator credential cho control/runtime. — TDI-11–12
+- [x] WPI-02-INFRA-04 Route/mạng trong stack chung, Core không phụ thuộc trạng thái API hoặc gateway cá nhân. — TDI-07, TDI-12, TDI-15
+- [x] WPI-03-FE-01 Trang cấu hình sẵn có, trạng thái thiếu key/bot rõ; gateway chỉ chạy khi chủ kích hoạt. — TDI-02, TDI-04–06
+- [x] WPI-03-BE-01 [assistant] Giữ tách hai chủ, cổng xác nhận và trạng thái runtimeEnabled qua restart/nâng cấp. — TDI-06, TDI-08; 54 test Node
+- [x] WPI-03-DATA-01 [assistant] Kiểm nhận state cũ, giải mã profile, giữ pairing và hội thoại; không tạo khóa thay thế. — TDI-09, TDI-13
+- [x] WPI-03-INFRA-01 Installer/update/stop/status/reconcile dùng stack chung; legacy không còn là bước bắt buộc. — TDI-03, TDI-08, TDI-16
+- [x] WPI-03-INFRA-02 Backup/restore và cleanup khi lỗi giữ đúng khóa, state, quyền file và gateway cần phục hồi. — TDI-13
+- [ ] WPI-04-TEST-01 TDI-01–18 có bằng chứng trên bản mới, không lấy kết quả trước đổi startup thay thế.
+- [x] WPI-04-TEST-02 Formatter/compile, TypeScript, test được duyệt và check CI liên quan đạt; không sửa lỗi ngoài domain. — TDI-15–16, TDI-18
+- [x] WPI-04-DOC-01 Hướng dẫn sau triển khai khớp lệnh source/bản cài đã kiểm; không thêm kết quả từng lượt vào TESTING. — TDI-01–03
+- [x] WPI-04-INFRA-01 Không còn tham chiếu overlay/generator/lệnh prepare cũ; chỉ xóa file hết dùng thuộc nhánh trợ lý. — TDI-16, TDI-18
+- [x] WPI-04-TEST-03 Diff không có secret/report/.gitignore, không thay phần cha ngoài phạm vi; người dùng review trước commit/push.

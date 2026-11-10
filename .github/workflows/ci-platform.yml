@@ -53,8 +53,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Fill every blank variable of .env.example with a placeholder
-        run: sed -E 's/^([A-Z0-9_]+)=$/\1=ci-placeholder/' deploy/.env.example > deploy/.env
+      - name: Create an env file with random secrets
+        run: deploy/make_env.sh
 
       - name: Validate compose file
         run: docker compose -f deploy/docker-compose.yml config --quiet

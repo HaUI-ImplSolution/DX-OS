@@ -119,7 +119,12 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const core = new CoreClient(new URL(required('ASSISTANT_CORE_URL')), session);
   const records = new Records(core, store);
   let profiles: Profiles;
-  const slots = JSON.parse(privateFile(required('ASSISTANT_RUNTIME_SLOTS_FILE')).toString('utf8')) as Slot[];
+  const prepared = JSON.parse(privateFile(required('ASSISTANT_RUNTIME_SLOTS_FILE')).toString('utf8')) as Slot[];
+  const count = Number(required('ASSISTANT_RUNTIME_COUNT'));
+  if (![1, 2, 3].includes(count)) throw new Error('Choose one, two or three runtime slots');
+  const slots = prepared.slice(0, count);
+  if (slots.length !== count || prepared.slice(count).some(slot => store.runtimeOwner(slot.name)))
+    throw new Error('Keep enough configured runtime slots for the existing accounts');
   const runtimes = new Runtimes(slots, async owner => {
     await session.accessToken(owner);
     const telegram = store.getSecret<Telegram>(owner, 'telegram');

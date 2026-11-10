@@ -36,6 +36,8 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - Chặn ghi từ đề xuất thiếu phiên bản và khi Core không hỗ trợ điều kiện, kể cả đề xuất đã tạo trước rollback.
 - Lọc hành động theo quyền Core, gửi tổng kết ngày đầu đúng lịch và kiểm sức khỏe từng runtime.
 - Runtime mặc định 2 GiB RAM; lệnh bật trợ lý nhận các giá trị tùy chọn từ `env.example`.
+- Trợ lý khởi động cùng stack và tự chuẩn bị state/SSO; người dùng nhập API và bật trợ lý trên giao diện.
+- Sao lưu tạm dừng rồi phục hồi đúng các dịch vụ trợ lý đang chạy.
 
 ### Áp dụng và đổi mô hình
 

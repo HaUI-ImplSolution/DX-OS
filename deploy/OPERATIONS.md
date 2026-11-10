@@ -41,6 +41,8 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos demo [--password MẬT_KHẨU]`, `dxos demo remove` | Áp dụng mô hình Một cửa sinh viên nếu chưa chạy, tạo bốn tài khoản thử `judge_student`, `judge_officer`, `judge_officer2` và `judge_supervisor` với một mật khẩu (ngẫu nhiên nếu không nêu, in một lần; chạy lại thì đặt và in mật khẩu mới) và nộp khoảng 40 hồ sơ mẫu qua API chung, mỗi bước do đúng người làm; chạy lại không nộp thêm hồ sơ; `remove` chỉ gỡ bốn tài khoản, hồ sơ có quy trình không xóa được nên còn lại; cần client `dxos-cli` như `dxos plan`. Hạn xử lý 72 giờ của mô hình nên hồ sơ quá hạn chỉ có sau ba ngày kể từ lần nộp |
 | `dxos uninstall [--purge]` | Xóa container và lệnh `dxos`; `--purge` xóa cả dữ liệu và thư mục cài, phải gõ xác nhận |
 
+Trợ lý được chuẩn bị cùng stack; mỗi người tự liên kết và kích hoạt trên giao diện theo [`assistant/README.md`](../assistant/README.md).
+
 ### Tệp mô hình lúc khởi động
 
 `dxos start <tệp>...` chép các tệp vào `deploy/model/` (chỉ giữ các tệp vừa đưa vào), ghi tên chúng theo thứ tự, cách nhau bằng dấu phẩy, vào `DXOS_MODEL_FILE` trong `.env` và khởi động lại backend nếu nó đang chạy.
@@ -116,7 +118,7 @@ Thoát với mã 1 khi có `FAIL`, nên chạy trước `./update.sh` và `docke
 ## Tài nguyên và số bản sao
 
 Đo ngày 04/11/2026 trên máy 12 CPU, 31 GB RAM, bằng `docker stats` mỗi 5 giây khi chạy tám script ở `deploy/dev` trên stack mới dựng.
-Stack gồm tám service, không bật `clamav`.
+Stack được đo gồm tám service, chưa có trợ lý và không bật `clamav`.
 Số đo trước khi nâng nginx lên 1.30 và Keycloak lên 26.8.2, chưa đo lại.
 
 | Service | RAM lúc rảnh (MiB) | RAM đỉnh (MiB) | CPU đỉnh (% của một nhân) |
@@ -133,6 +135,9 @@ Cả stack dùng khoảng 1,6 GiB RAM lúc rảnh và tối đa khoảng 1,7 GiB
 Image chiếm gần 1 GiB đĩa; dữ liệu Postgres sau lần chạy kiểm thử là khoảng 100 MiB.
 CPU chỉ vọt lên ngắn hạn ở `backend` và `keycloak`; chưa đo với nhiều người dùng đồng thời hay với ít nhân hơn.
 
+Hệ thống chuẩn bị sẵn dịch vụ trợ lý; bot cá nhân chỉ chạy khi người dùng cấu hình và kích hoạt.
+Giới hạn CPU, RAM và số trợ lý được cấu hình trong `deploy/.env`, theo mẫu `.env.example`.
+
 `backend` chạy một bản.
 Chạy hai bản sau gateway thì mỗi bản giữ danh sách mô hình riêng trong bộ nhớ: sau một lần áp dụng, bản kia trả 404 cho mô hình mới và tiếp tục phục vụ mô hình đang bị giữ, cho đến khi khởi động lại cả hai.
 
@@ -147,10 +152,14 @@ Script chạy trên chính máy chủ nên không phát hiện được việc m
 ## Sao lưu và khôi phục
 
 `./backup.sh` (trong `deploy/`) chụp một bản sao lưu mã hóa của những gì không dựng lại được từ repo.
-Gồm toàn bộ Postgres (dữ liệu nghiệp vụ, tài khoản Keycloak) và tệp trong SeaweedFS.
+Gồm toàn bộ Postgres (dữ liệu nghiệp vụ, tài khoản Keycloak), tệp trong SeaweedFS và `data/assistant` (cấu hình, khóa, liên kết, hội thoại).
 Script dùng restic chạy trong container nên chỉ cần Docker.
 Bản sao lưu khử trùng lặp và mã hóa bằng `BACKUP_PASSWORD`.
 Cất mật khẩu này ở nơi khác máy chủ, vì mất nó là không đọc lại được.
+
+Khi chụp dữ liệu trợ lý, script dừng các container trợ lý rồi khôi phục những container đang chạy trước đó, kể cả khi sao chép lỗi; Core vẫn hoạt động.
+Trong khoảng dừng, Telegram và nhắc hạn bị gián đoạn.
+Kho backup chứa cả master key và capability: người giải mã kho có thể đọc bí mật hoặc giả danh runtime còn hiệu lực; giữ mật khẩu restic ngoài backup, Git và log.
 
 ```bash
 cd deploy
@@ -162,7 +171,7 @@ cd deploy
 `verify` in số mô hình đã áp dụng và tổng số dòng trong các bảng `m_*` của bản dump.
 Mô hình có phiên bản trong `engine.model_version` mà không có bảng nào trong schema `m_<mô hình>` làm `verify` báo `FAILED` kèm tên mô hình.
 `verify` còn khôi phục bản chụp của kho vào một Docker volume tạm và khởi động một SeaweedFS tạm trên đó (filer HTTP chỉ mở trong container), rồi kiểm mọi khóa trong `engine.attachment` của bản dump đều có tệp.
-`verify` không so nội dung từng tệp, không kiểm quy trình đang chạy và không kiểm quyền sau khi khôi phục.
+`verify` không so nội dung từng tệp, không kiểm quy trình đang chạy, quyền sau khôi phục hoặc khả năng giải mã và khởi động trợ lý.
 Thiếu tệp thì `verify` báo `FAILED` kèm tên các tệp thiếu và thoát với mã 1.
 `backup.sh` dump Postgres rồi mới chụp kho, và tệp bị gỡ chỉ rời kho sau `DXOS_FILE_DELETE_DELAY`, nên bản sao lưu luôn có tệp của mọi dòng trong bản dump, miễn là cả hai bước ngắn hơn khoảng đó.
 Lượt chạy lâu hơn khoảng đó thì `backup.sh` in `WARNING`; khi đó tăng `DXOS_FILE_DELETE_DELAY`.
@@ -180,7 +189,10 @@ CI chạy một lượt backup và verify trên Postgres thật có một mô h�
 3. Nạp Postgres: `gunzip -c /tmp/dxos-restore/stage/postgres.sql.gz | docker compose exec -T postgres psql -U "$POSTGRES_USER" postgres`.
    Hai dòng lỗi `role "..." already exists` và `database "..." already exists` là bình thường vì tài khoản quản trị và database chính đã có sẵn.
    Phần còn lại phải nạp không lỗi.
-4. Chép `data/seaweedfs` từ `/tmp/dxos-restore/data/` vào `deploy/data/` (các tệp thuộc root nên dùng `sudo`), rồi `docker compose up -d`.
+4. Chép `data/seaweedfs` từ `/tmp/dxos-restore/data/` vào `deploy/data/` (các tệp thuộc root nên dùng `sudo`).
+5. Nếu bản sao có `stage/assistant`, chép nguyên thư mục đó thành `deploy/data/assistant`, giữ khóa và dữ liệu cùng bản sao; thư mục riêng `0700`, tệp bí mật `0600`.
+   Database trợ lý cũ thiếu master key phải khôi phục đúng key, không tạo khóa thay thế.
+6. Chạy `docker compose up -d`, rồi kiểm tra đăng nhập và trợ lý.
 
 ## Quét mã độc tệp tải lên
 
@@ -193,27 +205,3 @@ Không dùng `dxos` thì bỏ dấu `#` ở `COMPOSE_PROFILES=av` và `STORAGE_S
 Chữ ký virus tải về lần đầu mất vài phút và được giữ trong volume `clamav_data`.
 Mỗi lần clamd nạp lại chữ ký (hằng ngày và sau khi khởi động) nó không quét được khoảng 10 giây, và người dùng gặp 503 trong lúc đó; chờ rồi tải lại.
 Thử bằng tệp EICAR (chuỗi kiểm thử chuẩn của ngành diệt virus): tệp chỉ gồm đúng chuỗi đó, đổi tên `.pdf` rồi đính vào một yêu cầu; `deploy/dev/check_demo.py` tự làm bước này khi `STORAGE_SCAN_HOST` có giá trị.
-
-## Trợ lý cá nhân
-
-Trợ lý là dịch vụ tùy chọn, bật sau khi Core đã chạy; hướng dẫn kích hoạt và cấu hình ở [`assistant/README.md`](../assistant/README.md#bật-và-sử-dụng).
-`dxos assistant status` xem trạng thái, `dxos assistant off` dừng trợ lý và giữ dữ liệu.
-Sau khi bật hoặc tắt, tải lại trang để cập nhật menu.
-Trợ lý đã bật sẽ được khởi động lại cùng `dxos start`; lỗi trợ lý không chặn Core.
-
-### Sao lưu và khôi phục
-
-Dữ liệu nằm tại `deploy/data/assistant`, gồm SQLite, master key, token và thư mục riêng của từng runtime.
-Nếu trợ lý đang chạy, `backup.sh` dừng nó, chép dữ liệu rồi bật lại trước khi đưa bản sao vào kho restic mã hóa.
-Khi sao chép lỗi, bước dọn dẹp khôi phục trạng thái chạy trước đó.
-Trong khoảng dừng này, trợ lý không nhận Telegram hoặc gửi nhắc hạn; Core vẫn hoạt động.
-Người giải mã được kho backup có cả key và token, nên có thể đọc bí mật hoặc giả danh runtime nếu token còn hiệu lực và truy cập được dịch vụ.
-Giới hạn quyền vào kho và giữ mật khẩu restic ngoài backup, Git và log.
-
-Để khôi phục, dừng trợ lý, chép `/stage/assistant/` từ bản restic đã giải ra vào `deploy/data/assistant/`, giữ đúng chủ sở hữu và quyền thư mục `0700`, tệp `0600`, rồi chạy `dxos assistant on`.
-Khôi phục cùng dữ liệu SSO/Core và địa chỉ công khai; nếu đổi địa chỉ hoặc thu hồi phiên, liên kết DX-OS lại trên giao diện.
-Mất master key mà không có bản sao thì không giải mã được bí mật cũ; không tạo key thay thế cho database cũ.
-Không giảm số runtime khi còn tài khoản liên kết hoặc dữ liệu trong runtime bị bỏ.
-`backup.sh verify` kiểm Postgres và tệp Core; cần kiểm giải mã, liên kết và khởi động trợ lý riêng sau khôi phục.
-
-Các giới hạn về kết nối Internet của runtime và quản lý khóa/token backup nằm trong [`BACKLOG`](../docs/dynamic-core/BACKLOG.md).

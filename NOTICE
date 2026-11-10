@@ -11,11 +11,11 @@ Sản phẩm này sử dụng phần mềm của bên thứ ba, giữ nguyên gi
 - Spring Boot, Flowable, Keycloak, Apache APISIX, SeaweedFS, Flyway, pgschema (Apache-2.0).
 - PostgreSQL (PostgreSQL License).
 - React, react-admin, Material UI (MIT).
-- OpenClaw, Fastify, jose và Node.js (MIT), dùng cho trợ lý tùy chọn; giữ giấy phép và thông báo bản quyền trong package/image gốc.
+- OpenClaw, Fastify, jose và Node.js (MIT).
 - caniuse-lite, dữ liệu của Can I Use (CC-BY-4.0), chỉ dùng lúc dựng trang tài liệu.
-- npm 12.2.2 (Artistic-2.0), ứng dụng npm được OpenClaw đóng gói nguyên bản; thư viện đi kèm giữ giấy phép riêng.
-- spdx-exceptions, danh mục ngoại lệ giấy phép SPDX của The Linux Foundation (CC-BY-3.0), qua npm trong runtime trợ lý tùy chọn; nguồn https://github.com/kemitchell/spdx-exceptions.json, giấy phép https://creativecommons.org/licenses/by/3.0/; giữ nguyên dữ liệu.
-- spdx-license-ids, danh mục mã giấy phép SPDX (CC0-1.0), qua npm trong runtime trợ lý tùy chọn; nguồn https://github.com/jslicense/spdx-license-ids.
+- npm (Artistic-2.0).
+- spdx-exceptions, dữ liệu ngoại lệ giấy phép SPDX của The Linux Foundation (CC-BY-3.0).
+- spdx-license-ids, dữ liệu mã giấy phép SPDX (CC0-1.0).
 - ClamAV (GPL-2.0), chạy nguyên bản thành dịch vụ riêng khi bật quét mã độc; image của nó kèm libclamunrar theo giấy phép UnRAR, nạp lúc chạy và không do dự án này phân phối.
 
 Danh sách thành phần đầy đủ ở DEPENDENCIES.txt; SBOM CycloneDX ở thư mục sbom/.

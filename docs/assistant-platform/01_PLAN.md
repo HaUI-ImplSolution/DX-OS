@@ -183,9 +183,9 @@ Các kiểm chứng runtime, provider và xác nhận vẫn phải đạt trư�
 - Có hướng dẫn tạo profile API/bot, đồng ý gửi dữ liệu ra provider, SSO/pairing, kiểm kết nối, chọn model, bật/tắt, quota, proposal và xử lý lỗi.
 - Trang quản trị trợ lý chỉ quản lý khả dụng/runtime/capacity; không đọc key hoặc hội thoại của chủ khác.
 - Dùng cấu hình runtime để bật giao diện, không yêu cầu rebuild frontend mỗi khi đổi provider hoặc kích hoạt trợ lý; nếu thêm cơ chế runtime config thì chỉ ở frontend/deploy, không nhét cờ AI vào metadata nghiệp vụ.
-- Thêm profile/compose trợ lý riêng và lệnh `dxos assistant on|off|status|prepare` theo pattern hiện có; provision từ file private do người vận hành quản lý.
-- Không đổi lệnh khởi động mặc định: không bật AI thì `dxos start`/compose hiện tại vẫn chạy như cha, không cần key hoặc runtime AI.
-- Sau opt-in một lần, `dxos start/stop/status` nhận biết thành phần trợ lý; lỗi AI báo riêng, không làm mất khả dụng Core.
+- Tích hợp control, bootstrap và supervisor vào Compose chính theo WPI-02; không yêu cầu profile/Compose hoặc lệnh chuẩn bị trợ lý riêng.
+- Giữ lệnh cài/chạy của cha; bộ cài và make_env tự chuẩn bị cấu hình hạ tầng trợ lý, không yêu cầu API key.
+- `dxos start/stop/status` quản lý cùng stack; chỉ tài khoản đã kích hoạt mới được phục hồi gateway cá nhân, lỗi provider không chặn Core.
 - Runtime image được build/publish một lần và dùng cache, không npm install hoặc tải model mỗi lần khởi động.
 - Secret/mapping người dùng ở volume private; không mount Docker socket vào service, không để app web điều khiển container.
 - Giá trị cấu hình có mặc định đặt tại `.env.example`; Compose không thêm fallback ngầm, giá trị bắt buộc thiếu phải có lỗi rõ.
@@ -195,7 +195,7 @@ Các kiểm chứng runtime, provider và xác nhận vẫn phải đạt trư�
 **File dự kiến:** `assistant/{package.json,Dockerfile,README.md}`, `frontend/src/admin/AdminApp.tsx`, cấu hình frontend/Vite cần thiết; `deploy/{dxos,.env.example,assistant.sh,docker-compose.assistant.yml}`, cấu hình APISIX và setup SSO bổ sung; `sso/realm-dxos.json` nếu cần client mẫu; `deploy/{install,update,backup}.sh` chỉ chỗ phải nhận gói tùy chọn; CI/compliance/release, `DEPENDENCIES.txt`, `NOTICE`, `sbom/`, catalog.
 Đường dẫn mới là đề xuất; khi triển khai chỉ giữ file thật sự cần, không tạo placeholder cả danh sách.
 
-**Kết quả:** clone sạch chạy Core bằng lệnh cũ; bật thêm trợ lý theo hướng dẫn, không cần môi trường npm/Python trên máy người dùng cuối.
+**Kết quả:** clone sạch khởi động toàn dự án bằng lệnh của cha; trang trợ lý sẵn có để tự cấu hình, không cần môi trường npm/Python trên máy người dùng cuối.
 
 ## WPAS-08: Nghiệm thu 2 người và bàn giao
 
@@ -359,3 +359,80 @@ TRV-05 kiểm phiên bản sau apply, rollback, restart và yêu cầu dùng sna
 Ghi riêng bằng chứng local, CI và các ca cần key hoặc runtime thật; ca chưa kiểm đủ vẫn để mở.
 BACKLOG theo dõi giới hạn kết nối Internet của runtime, quản lý khóa/token backup và tối ưu truy vấn phiên bản.
 Chỉ đóng từng mục khi có triển khai và bằng chứng đáp ứng tiêu chí tương ứng.
+
+## Điều chỉnh WPI: khởi động chung và tài liệu
+
+Thứ tự: WPI-01 → WPI-02 → WPI-03 → WPI-04.
+Đặc tả và kế hoạch được duyệt trước khi đổi code; hướng dẫn chạy chỉ cập nhật sau khi hành vi mới được kiểm.
+Các work package xử lý review trước vẫn là bằng chứng của bản đã kiểm, không định nghĩa cách triển khai đích của WPI.
+
+### WPI-01: Sửa docs theo cấu trúc nhánh cha
+
+**Mục tiêu:** xử lý bốn review tài liệu, không viết lại phần ngoài trợ lý.
+
+| File | Chỗ được sửa |
+|---|---|
+| NOTICE | Ghi công ngắn theo các bullet sẵn có; giữ đủ attribution bắt buộc, chuyển chi tiết dependency/ngoại lệ sang DEPENDENCIES.txt |
+| DEPENDENCIES.txt | Chỉ phần gói trợ lý và chú thích tương ứng; bảo đảm thông tin nguồn/giấy phép vẫn đi cùng bản phân phối |
+| docs/TESTING.md | Giữ bảng lệnh kiểm hiện có, ghép ca kiểm tay vào phần tương ứng; bỏ nhật ký ngày chạy, số test và mục trợ lý riêng ở cuối |
+| docs/API.md | Gộp version/modelVersion và nghĩa effects vào đúng dòng metadata/action/assign; bỏ ghi chú riêng về công cụ check và phần sinh hợp đồng khác service |
+| deploy/OPERATIONS.md | Ghép cấu hình vào phần lệnh/tài nguyên, ghép state và restore vào Sao lưu và khôi phục; không lặp một mục backup riêng cho trợ lý |
+| assistant/README.md | Hướng dẫn tự cấu hình API/SSO/Telegram và kích hoạt sau khi WPI-02–03 đạt; không yêu cầu lệnh on/prepare riêng |
+| README Việt/Anh, ARCHITECTURE, CHANGELOG | Chỉ sửa câu liên quan trực tiếp đến cách khởi động trợ lý; giữ phần còn lại và toàn bộ log cũ |
+
+**Đầu ra:** diff docs đúng mục đích từng file, mỗi câu một dòng; không thêm nhật ký hay tách mục dependency riêng.
+Thông tin backup có key/capability, thời gian gián đoạn và giới hạn verify phải được giữ khi chuyển vị trí.
+Các kết quả kiểm chi tiết nằm ở test plan/Actions và artifact ngoài repository, không chuyển tất cả sang tài liệu tổng.
+
+### WPI-02: Đưa hạ tầng vào Compose chính
+
+**Mục tiêu:** lệnh của cha dựng được cả hạ tầng trợ lý khi chưa có key người dùng.
+
+- Khai báo control và ba supervisor riêng trong `deploy/docker-compose.yml`, dùng anchor cho phần trùng; bỏ overlay và generator Compose sau khi đã chuyển hết tham chiếu.
+- Pool mặc định cấp hai slot; supervisor dự phòng không khởi chạy gateway, không gộp nhiều chủ vào một gateway và không hạ số slot đang có binding.
+- Có bootstrap một lần cho thư mục, master key và capability; bước lặp lại giữ nguyên key, owner mapping và state, không đặt lại cấu hình người dùng.
+- Bootstrap sử dụng image hiện có và dependency startup của Compose; không Docker socket, không kết nối provider và không đòi key người dùng.
+- Không dùng env_file hoặc bind từng tệp chưa tồn tại do bootstrap sẽ tạo; mount thư mục riêng và chỉ nạp cấu hình sau khi bootstrap hoàn tất.
+- Mỗi supervisor chỉ thấy config/state của nó; không mount toàn bộ slots.json, master key control hoặc config của peer vào runtime.
+- Giữ mạng API/SSO và ingress riêng; control không vào mạng DB, runtime không kết nối được peer/DB/Core ngoài bridge.
+- Giá trị mặc định ASSISTANT_* vẫn khai báo tại env.example; khai báo trực tiếp để cách chép env.example vẫn dùng được, make_env/installer/update tự nạp giá trị thiếu, không ghi đè giá trị đang dùng và không thêm `${VAR:-...}` vào Compose.
+- Client PKCE được tạo trong luồng bootstrap chung bằng cấu hình/logic SSO hiện có; realm cũ được đồng bộ đúng client managed, không chỉ dựa vào import realm lần đầu.
+- Quyền bootstrap SSO tách khỏi control/runtime; không chuyển operator credential hoặc quyền quản trị người dùng cho trợ lý.
+- Route công khai trợ lý có trong cấu hình gateway chung; không cần marker enabled hoặc thao tác rút/chèn route khi người dùng ngừng sử dụng.
+- Core không depends_on control/runtime; health của supervisor không phụ thuộc quota, key hoặc pairing của người dùng.
+
+**File chính:** Compose chính, `.env.example`, `make_env.sh`, `assistant/src/setup.ts`, startup control/supervisor, cấu hình gateway và bootstrap SSO hiện có.
+**Cần loại bỏ hoặc thu gọn:** `docker-compose.assistant.yml`, phần sinh `runtime-compose.json`, connect_core và on/off/prepare triển khai; chỉ xóa sau khi không còn tham chiếu trong installer/update/backup/CI.
+**Đầu ra:** source chạy bằng lệnh README hiện có, không có chỉ dẫn `-f docker-compose.assistant.yml`, không tự gọi model khi chưa cấu hình.
+
+### WPI-03: Đồng bộ lifecycle và dữ liệu hiện có
+
+**Mục tiêu:** sử dụng trợ lý theo tài khoản, đồng thời giữ state và cách vận hành chung.
+
+- Trang cấu hình luôn truy cập được khi stack chung đã chạy; phân biệt thiếu API, thiếu bot, chưa ghép nối, đang khởi động và lỗi provider.
+- Giữ probe có cảnh báo tiêu quota; không tự probe khi lưu key hoặc khởi động sản phẩm.
+- Chỉ khởi chạy gateway khi đủ cấu hình SSO/API/bot và người dùng yêu cầu; dừng một tài khoản không dừng nền tảng hoặc tài khoản khác.
+- Giữ API quản lý tài khoản, proposal/receipt, quyền và cổng xác nhận hiện có; không thêm công cụ nghiệp vụ hoặc provider trong đợt này.
+- Installer, updater, status, stop và reconcile sử dụng stack chung; không còn nhánh enabled/overlay để quản lý trợ lý như sản phẩm riêng.
+- Tiếp nhận thư mục `data/assistant` hiện có: master key, capability, profile mã hóa, Telegram binding và hội thoại phải được giữ hoặc chuyển có kiểm chứng.
+- Chỉ chuyển marker enabled sang cấu hình triển khai chung; trạng thái gateway cá nhân vẫn theo runtimeEnabled của chủ, không kích hoạt tất cả tài khoản khi nâng cấp.
+- Cập nhật backup stop/snapshot/resume theo Compose chung; restore giữ quyền file, dừng gateway khi snapshot và khôi phục đúng trạng thái tài khoản sau lỗi.
+- Lệnh legacy nếu cần giữ chỉ là lớp tương thích, không phải điều kiện sử dụng; không được rút route chung hoặc xóa state khi người dùng ngừng dùng trợ lý.
+
+**File chính:** `deploy/{dxos,install,update,backup,assistant,assistant-sso}.sh`, `assistant/src/{setup,server,runtime,accounts}/`, `frontend/src/assistant/` và chỗ mount menu nếu thật sự cần.
+**Ngoài phạm vi:** bốn module Core, YAML nghiệp vụ, schema Postgres, thuật toán proposal, đổi SDK/LLM/dependency hoặc tối ưu egress/backup key theo BACKLOG.
+**Đầu ra:** cấu hình cũ còn giải mã được; không có gateway phát sinh ngoài ý muốn và không cần lệnh riêng khi cài mới.
+
+### WPI-04: Hồi quy, tuân thủ và bàn giao
+
+- Kiểm TDI-01–18, ưu tiên các script và năm test file hiện có; không thêm framework hoặc bộ test mới.
+- Kiểm source path của README và bản cài Release bằng image/cache riêng; không thay kết quả bằng một lệnh compose có thêm file hoặc env thủ công.
+- Kiểm điều kiện snapshot, quyền, xác nhận, hai tài khoản và tính năng mới của cha như demo/live refresh vẫn giữ hành vi.
+- CI chỉ sửa những bước vốn giả định overlay/prepare hoặc cách nạp defaults; dùng cùng bộ sinh env của sản phẩm, giữ kiểm thiếu secret bắt buộc và giữ nguyên job/check/ruleset cùng phần kiểm Core khác.
+- Kiểm license, SBOM/catalog nếu payload runtime thay đổi; không nâng dependency trong đợt này.
+- Dọn đúng file overlay/helper hết dùng của nhánh; việc dọn checkout cũ theo BACKLOG, không làm kèm.
+- Chụp diff docs và code cho người dùng; giữ kế hoạch, không stage/commit/push hoặc resolve review khi chưa được yêu cầu.
+
+**Hợp đồng và rollback:** không đổi API nghiệp vụ, cơ sở dữ liệu Core hoặc YAML.
+Nếu buộc đổi schema state nội bộ thì cần migration có version và test giữ dữ liệu trước khi chạy; không tạo master key mới cho DB cũ.
+Rollback về bản đã kiểm giữ nguyên state, không tự hủy phê duyệt hoặc đảo ngược tác động Core đã ghi.

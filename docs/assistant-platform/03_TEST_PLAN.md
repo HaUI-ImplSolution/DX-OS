@@ -181,3 +181,42 @@ Thời gian request tính từ RPC agent đến phản hồi và gửi Telegram,
 Đây là mẫu nhỏ trên máy dùng chung, không phải SLA hoặc phép đo giới hạn throughput.
 Token do SDK báo không thay hạn mức hay hóa đơn của nhà cung cấp.
 Artifact, cấu hình máy, mẫu Docker/Core và kết quả từng lượt lưu ngoài repository; không công bố khóa hoặc định danh kênh.
+
+## 10. Kiểm điều chỉnh khởi động chung
+
+TAS/TRV phía trên mô tả bản đã kiểm trước thay đổi; TDI là nghiệm thu riêng của WPI-01–04.
+Đã kiểm mã mới bằng stack source, bộ cài từ archive và bản sao dữ liệu hai trợ lý; bằng chứng lưu ngoài repository.
+
+| ID | Phạm vi | Cách kiểm và điều kiện đạt | Trạng thái |
+|---|---|---|---|
+| TDI-01 | Docs | NOTICE gọn, TESTING không chép kết quả chạy, API không ghi chú riêng, OPERATIONS ghép đúng phần; không đổi đoạn ngoài trợ lý | Đạt: docs build, đối chiếu diff và attribution; chờ người dùng review cách viết |
+| TDI-02 | Source mới | Chỉ make_env và compose chính theo README, không key/bot; Core và trang cấu hình trợ lý truy cập được | Đạt: make_env, compose up --build và dxos admin theo README; browser SSO/liên kết Core |
+| TDI-03 | Bản cài | Cài archive rồi dxos start, không on/prepare/profile/-f riêng; không cần Node/npm trên host | Một phần: archive và dxos start lên đủ dịch vụ; lỗi ADMIN có sẵn của cha vẫn cần dxos admin, theo BACKLOG |
+| TDI-04 | Chưa cấu hình | Hai tài khoản chưa có key/bot: không gateway OpenClaw, không request provider hoặc Telegram thay người dùng | Đạt: hai tài khoản rỗng, chưa có gateway; start trả 409 khi thiếu cấu hình |
+| TDI-05 | Tự kích hoạt | Nhập API, liên kết SSO, bot/pairing trên UI rồi bật; công cụ dùng đúng chủ và ghi cần xác nhận | Một phần: UI liên kết SSO, bật hai cấu hình/pairing cũ và trả lời Telegram thật; chưa ghép lại bot từ đầu |
+| TDI-06 | Hai chủ | A bật, B chưa cấu hình/tắt: chỉ gateway A chạy; không chéo dữ liệu; giữ mặc định hai slot và từ chối vượt pool | Đạt: hai bot trả lời theo quyền riêng; tài khoản thứ ba bị từ chối trước probe khi pool hai slot đầy |
+| TDI-07 | Provider lỗi | Key sai, quota/timeout và thiếu pairing không làm control/Core mất health; không tự đổi provider hoặc gửi lại lệnh ghi | Một phần: key sai trả 422, Core/control vẫn hoạt động; chưa ép quota/timeout riêng trên bản này |
+| TDI-08 | Restart | dxos stop/start và restart container phục hồi đúng tài khoản đã bật, giữ khóa/binding; chủ đã tắt không tự bật | Đạt: source stop/start, control restart và trạng thái bật/tắt từng chủ được giữ |
+| TDI-09 | State cũ | Nâng cấp từ bản PR hiện tại, so profile/capability/mapping và hội thoại; không giảm slot hoặc tự sinh lại master key | Đạt: nhận bản sao dữ liệu cũ, giải mã hai profile, giữ capability/pairing/hội thoại; từ chối giảm slot đang có chủ |
+| TDI-10 | Bootstrap | Lần đầu thiếu thư mục, lần sau đủ dữ liệu: không có mount/env_file lỗi, quyền file đúng, chạy lặp không thay key | Đạt: thư mục mới, chạy lặp không đổi khóa/capability; Node test giữ cấu hình hai slot cũ và từ chối mất master key |
+| TDI-11 | SSO | Realm mới/cũ tự có client PKCE đúng origin; không ghi đè client unmanaged hoặc tài khoản/vai nghiệp vụ | Đạt: realm mới/cũ tự có client managed; client unmanaged bị từ chối, Core vẫn hoạt động |
+| TDI-12 | Mạng/secret | Control không vào DB, runtime không vào peer/DB; từng runtime chỉ đọc config riêng, không Docker socket hoặc admin credential | Đạt: TCP thật, mount/capability/port; operator credential chỉ ở job SSO, không ở control/runtime |
+| TDI-13 | Backup | Dừng/snapshot/resume và restore thành công/lỗi: giữ khóa/state, không tự bật tài khoản đã tắt; Core không mất dữ liệu | Đạt: restic backup/verify/restore, giải mã hai chủ và lịch sử; lỗi snapshot phục hồi đúng service đã chạy |
+| TDI-14 | Cấu hình | Compose không fallback giá trị; defaults từ env.example được nạp, nâng cấp không ghi đè giá trị cũ, không có key trong env | Đạt: template có defaults, cập nhật lặp không đổi giá trị cũ; Compose vẫn từ chối thiếu secret Core |
+| TDI-15 | Hồi quy Core | Giữ quyền, version/modelVersion, when/handlerActions, demo/live refresh và API cũ qua các script đã có | Đạt API 51/51, process 74/74, demo 26/26, docs 3/3; SSE qua gateway trả 401/200 và heartbeat đúng |
+| TDI-16 | Đóng gói | Archive, image, catalog/SBOM và job CI khớp Compose chung; không còn đường chạy overlay bắt buộc | Đạt archive/install/upgrade và mount trên máy không dùng source; license, route checker và actionlint đạt; chưa chạy CI remote |
+| TDI-17 | Tài nguyên | Đo control/supervisor khi không key và hai gateway khi bật; không OOM, không tải LLM local; ghi chi phí image lần đầu | Đạt mẫu hai gateway thật và trạng thái chưa kích hoạt, không OOM; image trợ lý khoảng 1,2 GB, không có trọng số LLM local |
+| TDI-18 | Dọn/rollback | Không file thuộc checkout cũ, secret/report/ignore; rollback giữ state; người dùng kiểm diff trước commit/push | Đạt kiểm kỹ thuật và rollback đọc state restore; người dùng đã review diff và cho phép push |
+
+TDI-02/TDI-03 bao gồm bước ADMIN của cách chạy chính xác đã công bố; lỗi có sẵn của Core được ghi riêng, không tự sửa hoặc tính ca đạt.
+Image/cache hiện có được dùng cho kiểm không liên quan đóng gói; kiểm clone sạch/bản cài chỉ chạy ở mốc tích hợp, không lặp sau mỗi chỉnh docs.
+Thử tải ba gateway và provider thật thứ hai vẫn hoãn theo quyết định trước.
+
+Kiểm ngày 10/11/2026: 54/54 test Node và TypeScript trợ lý đạt dưới user thường; cú pháp shell, Compose, license, actionlint, docs build và Gitleaks đạt.
+Mã Java, frontend, dependency và schema Core không đổi trong WPI.
+Mẫu khi hai bot trả lời: control khoảng 42 MiB; hai runtime khoảng 1,43/1,45 GiB; supervisor chưa kích hoạt khoảng 14 MiB.
+Đây là mẫu quan sát, không phải RAM đỉnh hoặc SLA.
+
+TDI-03 còn lỗi tạo ADMIN đã nằm trong BACKLOG của cha; không sửa ngoài phạm vi.
+TDI-05 và TDI-07 còn bước nghiệm thu riêng nêu trong bảng; không dùng kết quả cũ để tích toàn bộ WPI-04-TEST-01.
+Giữ kế hoạch; các ca nghiệm thu còn mở không tính đạt.

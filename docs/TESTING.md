@@ -151,6 +151,12 @@ Giao diện, đăng nhập bằng `req1` (vai `BORROWER`), `keeper1` (vai `KEEPE
     Khởi động lại `backend`: sau vài giây tab đang mở nhận lại thay đổi mới.
     `GET /api/v1/inbox/stream` không có token thì 401, có token thì 200 `text/event-stream` kèm `: ping` mỗi 20 giây, và server đóng sau 600 giây.
 
+24. Trợ lý: khi chưa có API key, trang cấu hình vẫn mở được và không có gateway cá nhân hoặc lượt gọi model.
+    Liên kết SSO, chọn API/model, kiểm kết nối và ghép bot theo [`assistant/README.md`](../assistant/README.md), rồi bật trợ lý.
+    Tìm hồ sơ bằng tiêu đề, yêu cầu giao việc hoặc chuyển trạng thái, hủy một đề xuất rồi xác nhận đề xuất mới và đối chiếu lịch sử Core.
+    Hai tài khoản dùng bot riêng; dừng một trợ lý không dừng trợ lý còn lại hoặc Core.
+    Restart stack và khôi phục backup phải giữ cấu hình, liên kết và trạng thái kích hoạt của từng người.
+
 Lệnh `dxos` và các tính năng chạy ngoài stack kiểm:
 
 1. `dxos history verify` sau khi sửa, xóa hoặc chèn một dòng `record_event` bằng SQL: chỉ ra dòng đầu tiên bị đổi; trả lại dòng thì chuỗi nguyên vẹn.
@@ -185,14 +191,3 @@ grep -rIlw -i -E 'farm|lab|farmer|DXOS_APP|dx-host|app-farm|app-lab|dx-core-api'
 | Áp dụng mô hình trả 502 `ERR_ACCOUNT_SERVICE_DENIED` | Tài khoản dịch vụ `dxos-backend-admin` thiếu quyền hoặc scope `kc-admin-api`; xem [`sso/README.md`](../sso/README.md) |
 | Kết quả không khớp mã vừa sửa | Image `dxos-backend:local` cũ hơn mã; chạy `docker compose build` rồi tạo lại service |
 | Cổng 9080 hoặc 5432 bị chiếm | Đổi `APISIX_HOST_PORT`, `POSTGRES_HOST_PORT` trong `deploy/.env` |
-
-## 9. Trợ lý tùy chọn
-
-Kết quả local ngày 10/11/2026: 52/52 test trợ lý, TypeScript trợ lý/frontend, license và kiểm secret đạt.
-Kiểm tích hợp ngày 09/11: hai bot hoàn tất luồng giao việc và xác nhận; Core ghi đúng một sự kiện mỗi bước, khôi phục backup và rollback đạt.
-Cài mới còn vướng lỗi tạo ADMIN trong [BACKLOG](./dynamic-core/BACKLOG.md); provider thứ hai và tải ba trợ lý hoãn.
-
-`cd assistant && npm test` kiểm xác thực, mã hóa, xác nhận đề xuất và thông báo; không gọi API mô hình hoặc Telegram.
-`deploy/dev/check_process.py` kiểm điều kiện phiên bản của action/assign cùng các luồng Core hiện có.
-Khi kiểm tích hợp, bật trợ lý theo [`assistant/README.md`](../assistant/README.md#bật-và-sử-dụng), liên kết SSO và bot, đọc hồ sơ, xác nhận thao tác rồi đối chiếu lịch sử Core.
-Các ca cách ly tài khoản, nhiều trợ lý đồng thời, lỗi provider và khôi phục nằm trong [kế hoạch kiểm thử](./assistant-platform/03_TEST_PLAN.md); kết quả mô phỏng không thay kết quả với model và Telegram thật.

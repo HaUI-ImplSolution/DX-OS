@@ -1,22 +1,12 @@
 # Trợ lý hồ sơ
 
-Trợ lý cá nhân của DX-OS, bật theo nhu cầu để đọc hồ sơ, nhận thông báo và đề xuất giao việc hoặc chuyển trạng thái qua Telegram.
+Trợ lý cá nhân của DX-OS để đọc hồ sơ, nhận thông báo và đề xuất giao việc hoặc chuyển trạng thái qua Telegram.
 Mỗi người dùng có cấu hình API và bot riêng; thao tác ghi cần người dùng xác nhận và được Core kiểm quyền.
 
 ## Bật và sử dụng
 
-Core cần chạy trước.
-Cấu hình tùy chọn và giới hạn tài nguyên nằm trong [`deploy/.env.example`](../deploy/.env.example); đặt giá trị cần thay đổi vào `deploy/.env`.
-Lệnh bật bổ sung giá trị mặc định cho các biến trợ lý chưa có trong `deploy/.env`.
-Từ gốc mã nguồn, bật dịch vụ bằng:
-
-```bash
-./deploy/dxos assistant on --build
-```
-
-Với bản đã cài bằng bộ cài, dùng `dxos assistant on`.
-Lần đầu chuẩn bị số runtime theo `ASSISTANT_RUNTIME_COUNT` trong `deploy/.env`, tối đa ba; cấu hình mẫu và giới hạn CPU/RAM ở [`deploy/.env.example`](../deploy/.env.example).
-Core chạy độc lập, không cần trợ lý, API key hoặc Node cài trên máy chủ.
+Khởi động DX-OS theo [`README.md`](../README.md#chạy-thử); trang **Trợ lý cá nhân** có sẵn khi stack đã chạy.
+Mỗi người tự cấu hình API và bot; khi chưa kích hoạt, gateway OpenClaw không chạy và không gọi model.
 
 1. Mở mục **Trợ lý cá nhân** trong ứng dụng, hoặc đường dẫn `/assistant`, rồi chọn **Liên kết DX-OS**.
 2. Chọn Gemini, OpenAI hoặc Anthropic, nhập đúng tên model có hỗ trợ gọi công cụ và API key của bạn, rồi chọn **Lưu kết nối**.
@@ -29,15 +19,16 @@ Core chạy độc lập, không cần trợ lý, API key hoặc Node cài trên
 Không dùng bot đang có webhook hoặc được một triển khai khác sử dụng; mỗi bot chỉ liên kết với một tài khoản.
 Cấu hình lại bot yêu cầu mã ghép nối mới, kể cả khi dùng lại cùng bot.
 Cấu hình thông báo, nhắc hạn và giờ tổng kết ở tab **Thông báo**; xem đề xuất và kết quả ở tab **Hoạt động**.
-Tắt toàn dịch vụ bằng `dxos assistant off` (mã nguồn: `./deploy/dxos assistant off`); cấu hình và dữ liệu được giữ lại.
-Sau khi bật hoặc tắt dịch vụ, tải lại trang để cập nhật menu.
+Chọn **Dừng trợ lý** để ngừng gateway của mình và giữ cấu hình, liên kết cùng dữ liệu.
+`dxos stop` dừng toàn bộ stack, `dxos start` khởi động lại và phục hồi những tài khoản đã bật trợ lý.
+Sau khôi phục, nếu phiên SSO không còn hiệu lực, chọn **Liên kết lại DX-OS** trên giao diện.
 
 ## Danh tính và dữ liệu
 
 Mỗi tài khoản được xác định bằng issuer và subject do JWT đã kiểm chứng cung cấp.
 API lấy chủ tài khoản từ JWT, không từ `ownerId` do client gửi; vai ADMIN không cấp quyền đọc bí mật hoặc hội thoại của người khác.
 Liên kết Core dùng client riêng với authorization code, PKCE và state một lần; refresh token không lấy từ phiên frontend.
-Mỗi tài khoản có bot Telegram, cuộc trò chuyện riêng, gateway, thông tin xác thực và vùng dữ liệu riêng trong pool do người vận hành chuẩn bị.
+Mỗi tài khoản có bot Telegram, cuộc trò chuyện riêng, gateway, thông tin xác thực và vùng dữ liệu riêng trong pool được chuẩn bị tự động cùng stack.
 Model chỉ được dùng danh sách công cụ DX-OS đã cho phép, không có shell, trình duyệt, truy cập tệp hoặc HTTP tùy ý.
 
 SQLite riêng lưu cấu hình API, liên kết tài khoản, đề xuất, kết quả thực thi và các lượt gửi thông báo.
@@ -70,7 +61,7 @@ Danh tính luôn lấy từ JWT đã xác minh, không lấy từ trường owne
 | `DELETE /me/telegram` | Dừng runtime, gỡ bot và cuộc trò chuyện đã liên kết cùng tùy chọn thông báo của chủ |
 | `POST /me/telegram/pairing` | Xác minh mã ghép nối do bot gửi rồi liên kết cuộc trò chuyện riêng; không trả token bot |
 | `GET /me/runtime` | Trạng thái runtime và khả năng cấp slot cho chủ |
-| `POST /me/runtime/start`, `/me/runtime/stop` | Bật hoặc dừng runtime riêng do người vận hành chuẩn bị, không tạo container từ API |
+| `POST /me/runtime/start`, `/me/runtime/stop` | Bật hoặc dừng gateway riêng của chủ trong runtime đã cấp, không tạo container từ API |
 | `GET, PUT /me/notifications` | Trạng thái và tùy chọn thông báo, nhắc hạn, tổng kết của chủ |
 | `GET /me/proposals`, `/me/proposals/{id}` | Danh sách hoặc chi tiết đề xuất của chủ, có phân trang |
 | `POST /me/proposals/{id}/confirm`, `/cancel` | Xác nhận/hủy qua phiên web đã xác thực, kiểm origin và replay |
@@ -106,6 +97,9 @@ Callback hủy xác nhận dùng token riêng và kiểm đúng cuộc trò chuy
 Core kiểm quyền, điều kiện `when` và phiên bản trong cùng giao dịch dưới khóa mô hình và bản ghi.
 
 ## Vận hành và giới hạn
+
+Control và ba supervisor được triển khai trong Compose chung; mặc định cấp hai slot cho người dùng, tối đa ba.
+Các giá trị triển khai và giới hạn CPU/RAM nằm ở [`deploy/.env.example`](../deploy/.env.example); bộ cài và make_env tự nạp giá trị mặc định, API key và bot token được nhập riêng trên giao diện.
 
 Giới hạn hiện tại: timeout đọc Core 10 giây, proposal 120 giây, quét 60 giây/lần với trang 100 dòng và tối đa 20 trang/20 giây.
 Quét chưa đủ không được đánh dấu đã đồng bộ hoặc suy ra hồ sơ đã biến mất.

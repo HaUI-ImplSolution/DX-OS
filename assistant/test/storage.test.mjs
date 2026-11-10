@@ -2,10 +2,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
-import { mkdtempSync, rmSync, readFileSync, cpSync, chmodSync } from 'node:fs';
+import { mkdtempSync, rmSync, readFileSync, cpSync, chmodSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Store } from '../dist/storage/store.js';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 const a = { issuer: 'https://identity.invalid', subject: 'A' };
 const b = { ...a, subject: 'B' };
@@ -148,4 +150,51 @@ test('schema upgrade preserves encrypted data and rejects a newer database witho
   db = new DatabaseSync(path);
   try { assert.equal(db.prepare('PRAGMA user_version').get().user_version, 99); }
   finally { db.close(); }
+});
+
+test('startup preserves existing account secrets, bindings and each private runtime configuration', t => {
+  const dir = mkdtempSync(join(tmpdir(), 'dxos-bootstrap-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const prepare = () => spawnSync(process.execPath, [fileURLToPath(new URL('../dist/setup.js', import.meta.url)), 'prepare', dir],
+    { env: { ...process.env, ASSISTANT_PUBLIC_URL: 'http://localhost:9080' }, encoding: 'utf8' });
+  assert.equal(prepare().status, 0);
+  const key = readFileSync(join(dir, 'private/master.key')), slots = JSON.parse(readFileSync(join(dir, 'private/slots.json'))).slice(0, 2);
+  writeFileSync(join(dir, 'private/slots.json'), JSON.stringify(slots));
+  let store = new Store(join(dir, 'control/assistant.sqlite'), key);
+  store.setSecret(a, 'providers', { profiles: [{ apiKey: 'synthetic-bootstrap-secret' }] });
+  store.setSecret(a, 'runtimeEnabled', true);
+  store.allocateRuntime(a, slots.map(slot => slot.name)); store.close();
+  mkdirSync(join(dir, 'runtime-1/state'), { recursive: true });
+  writeFileSync(join(dir, 'runtime-1/state/conversation'), 'synthetic conversation');
+  assert.equal(prepare().status, 0);
+  assert.deepEqual(readFileSync(join(dir, 'private/master.key')), key);
+  const prepared = JSON.parse(readFileSync(join(dir, 'private/slots.json')));
+  assert.equal(prepared.length, 3);
+  assert.deepEqual(prepared.slice(0, 2), slots);
+  store = new Store(join(dir, 'control/assistant.sqlite'), key);
+  assert.equal(store.getSecret(a, 'providers').profiles[0].apiKey, 'synthetic-bootstrap-secret');
+  assert.equal(store.getSecret(a, 'runtimeEnabled'), true);
+  assert.equal(store.runtimeSlot(a), 'runtime-1'); store.close();
+  assert.equal(readFileSync(join(dir, 'runtime-1/state/conversation'), 'utf8'), 'synthetic conversation');
+  for (const slot of prepared) {
+    const config = readFileSync(join(dir, slot.name, 'runtime.env'), 'utf8');
+    assert.ok(config.includes(slot.controlToken));
+    for (const peer of prepared.filter(peer => peer.name !== slot.name)) assert.ok(!config.includes(peer.controlToken));
+  }
+});
+
+test('startup refuses to replace the lost master key of an existing database', t => {
+  const dir = mkdtempSync(join(tmpdir(), 'dxos-bootstrap-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const prepare = () => spawnSync(process.execPath, [fileURLToPath(new URL('../dist/setup.js', import.meta.url)), 'prepare', dir],
+    { env: { ...process.env, ASSISTANT_PUBLIC_URL: 'http://localhost:9080' }, encoding: 'utf8' });
+  assert.equal(prepare().status, 0);
+  const database = join(dir, 'control/assistant.sqlite');
+  const store = new Store(database, readFileSync(join(dir, 'private/master.key')));
+  store.setSecret(a, 'providers', 'synthetic secret'); store.close();
+  const original = readFileSync(database);
+  rmSync(join(dir, 'private/master.key'));
+  assert.notEqual(prepare().status, 0);
+  assert.equal(existsSync(join(dir, 'private/master.key')), false);
+  assert.deepEqual(readFileSync(database), original);
 });

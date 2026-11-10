@@ -2,9 +2,9 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | Đã xử lý review PR #199 trong phạm vi chốt; hồi quy local đạt, chưa nghiệm thu toàn bộ trợ lý |
+| Trạng thái | Đã triển khai và kiểm khởi động chung; nghiệm thu còn mở theo checklist |
 | Mức độ | Quan trọng |
-| Nhóm ưu tiên | Tích hợp tùy chọn sau khi nền Core ổn định |
+| Nhóm ưu tiên | Hoàn thiện tích hợp vào cách chạy hiện có của Core |
 | Nhánh | `Khuong/assistant-platform-plan`, tách từ `origin/Khuong/main` đã cập nhật |
 | Module chính | Dịch vụ mở rộng `assistant/`, frontend, hạ tầng tùy chọn; điều kiện ghi và metadata trong `dx-engine` |
 | Phụ trách | Nhóm phát triển; chủ dự án duyệt phạm vi trước triển khai |
@@ -43,7 +43,9 @@ Một dịch vụ trợ lý độc lập quản lý tài khoản, cấu hình pr
 Mỗi tài khoản liên kết Keycloak, API key và Telegram bot riêng; runtime OpenClaw được cách ly theo tài khoản.
 Công cụ được sinh từ metadata và danh mục thao tác được phép, còn Core kiểm quyền, trạng thái và giao dịch.
 Giao diện dùng lại react-admin/MUI và auth hiện có.
-AI là tùy chọn: Core vẫn khởi động và hoạt động khi không cài hoặc tắt trợ lý.
+Trợ lý được triển khai cùng DX-OS; người dùng tùy chọn sử dụng bằng cấu hình API và kích hoạt tài khoản.
+Không yêu cầu chạy Compose riêng hoặc lệnh bật hạ tầng trợ lý trước khi sử dụng.
+Chưa cấu hình API thì Core vẫn hoạt động, không khởi chạy gateway OpenClaw hoặc gọi nhà cung cấp thay người dùng.
 
 | Khu vực | Có đổi | Phạm vi |
 |---|---|---|
@@ -55,7 +57,7 @@ AI là tùy chọn: Core vẫn khởi động và hoạt động khi không cài
 | Frontend | Có | Cấu hình trợ lý cá nhân, hướng dẫn, đề xuất, lịch sử thao tác và trạng thái |
 | Migration nghiệp vụ | Không | Không đổi schema `m_*`, Flyway Core hoặc Flowable |
 | State trợ lý | Có | SQLite riêng và dữ liệu runtime riêng, không truy vấn trực tiếp DB nghiệp vụ |
-| Deploy/CI/docs | Có, theo WPAS-07 | Đóng gói tùy chọn theo bộ cài, giấy phép và check hiện hành |
+| Deploy/CI/docs | Có, theo WPI-01–04 | Khởi động chung, giữ cách cài và kiểm của cha; sửa docs đúng nhóm hiện có |
 
 ## 4. Phạm vi và kiến trúc
 
@@ -121,7 +123,9 @@ Hành động có tác động thêm/bớt thành viên nhóm phải hiển th�
 - Không quảng cáo một provider/model đã sẵn sàng chỉ vì lấy được danh sách model; phải kiểm tool calling và luồng xác nhận thật.
 - Giao việc rồi người được giao nhận/xử lý, người tạo xác nhận hoặc yêu cầu mở lại; trạng thái và người thực hiện khớp lịch sử Core.
 - Thử trên ba họ mẫu và ít nhất ba mô hình thuộc các lĩnh vực khác nhau mà không sửa mã lõi theo mô hình.
-- Core chạy từ clone sạch theo lệnh hiện tại khi không bật trợ lý; bật/tắt hoặc provider lỗi không làm hỏng nghiệp vụ.
+- Bản cài dùng `dxos start`; mã nguồn dùng `deploy/make_env.sh` rồi `docker compose up -d --build` trong `deploy/`, không cần Compose hoặc lệnh chuẩn bị trợ lý riêng.
+- Chưa có API/bot vẫn mở Core và trang cấu hình; chỉ gateway của tài khoản đủ cấu hình và được kích hoạt mới chạy.
+- Dừng hoặc lỗi trợ lý không làm thay đổi dữ liệu và quyền nghiệp vụ Core.
 - Các giới hạn, số đo 2 người và provider chưa được thử thật được ghi rõ, chỉ kết luận theo bằng chứng của bản tích hợp.
 
 ## 7. Thứ tự
@@ -177,13 +181,13 @@ Chỉ đề nghị merge sau khi các rào chắn bảo mật và hồi quy đ�
 
 ## 12. Quyết định xử lý review bổ sung
 
-Đây là tính năng tích hợp của DX-OS, được bật riêng theo nhu cầu triển khai.
+Hạ tầng trợ lý đi cùng cách khởi động DX-OS; cấu hình và kích hoạt sử dụng thuộc từng tài khoản.
 Trạng thái kiểm chứng và các tiêu chí chưa đạt nằm trong [kế hoạch kiểm thử](./03_TEST_PLAN.md).
 Gemini, OpenAI và Anthropic dùng endpoint cố định; chỉ Gemini có bằng chứng hội thoại thật, chưa nghiệm thu cả ba provider.
 
 | Nội dung | Quyết định | Trạng thái |
 |---|---|---|
-| Tắt trợ lý và menu | Rút route trước khi dừng; kiểm feature một lần mỗi lần tải trang | Đạt kiểm gateway, monitor và browser local |
+| Trợ lý chưa cấu hình | Menu cấu hình có sẵn; chưa có API thì không khởi chạy gateway cá nhân hoặc gọi model | Cần kiểm lại theo TDI-02–05 |
 | Lỗi HTTP | JSON sai trả 400, nội dung quá giới hạn trả 413; lỗi nội bộ trả 500 với thông báo chung | Đạt qua gateway và test hiện có |
 | Mạng control | Dùng mạng API và ingress riêng; không nối control vào mạng DB | Đạt kiểm TCP/DNS |
 | Kết nối Internet của runtime | Giữ Gemini/OpenAI/Anthropic, tắt endpoint tùy chỉnh; chưa có allowlist toàn container | Chưa hoàn tất; theo dõi trong BACKLOG |
@@ -194,3 +198,24 @@ Gemini, OpenAI và Anthropic dùng endpoint cố định; chỉ Gemini có bằn
 | Phiên bản metadata | Đọc trực tiếp từ database, giữ kiểm phiên bản trong giao dịch | Tối ưu truy vấn còn trong BACKLOG |
 
 Các mục chưa đạt vẫn là công việc cần hoàn thiện; trạng thái tích hợp không thay thế nghiệm thu bảo mật và vận hành.
+
+## 13. Điều chỉnh khởi động chung và docs
+
+Yêu cầu hiện hành: tùy chọn sử dụng trợ lý theo tài khoản, không tùy chọn một stack triển khai riêng.
+Phạm vi WPI-01–04 là các review mới về NOTICE, TESTING, API, OPERATIONS và Compose.
+Không đổi nghiệp vụ, provider, công cụ, cơ chế xác nhận hoặc quyền trong bốn module Core.
+
+| Phần | Quyết định |
+|---|---|
+| Khởi động | Control, bootstrap và pool supervisor nằm trong Compose chính; không cần file `-f` hoặc profile riêng để có trợ lý |
+| Chưa cấu hình | Chỉ control/supervisor chờ cấu hình; không chạy gateway OpenClaw, probe hoặc heartbeat LLM |
+| Theo tài khoản | Giữ SSO, API key và bot riêng, probe có đồng ý, pairing và thao tác kích hoạt trên giao diện |
+| Pool | Khai báo ba supervisor cách ly trong Compose chính, giới hạn cấp phát mặc định hai slot; slot dự phòng không tự chạy gateway; không giảm binding cũ |
+| Bí mật | Bootstrap idempotent trước control/runtime; cấu hình mỗi runtime chỉ nằm trong thư mục của runtime đó |
+| SSO | Tạo hoặc đồng bộ client PKCE bằng bootstrap tự động có quyền riêng; control/runtime không nhận Keycloak admin credential |
+| Giá trị env | Mặc định ở env.example, được bộ cài/make_env nạp tự động; không đưa key người dùng vào env và không thêm fallback Compose |
+| Docs | Ghép vào phần hiện có của cha; hướng dẫn kích hoạt trong README trợ lý, không viết lại tài liệu tổng |
+
+Chỉ sửa các file trong bảng phạm vi WPI; không dọn checkout cũ hoặc thay đổi toàn bộ quy trình deploy.
+Giới hạn egress, bảo vệ khóa backup, provider thứ hai và tải ba gateway vẫn theo BACKLOG; không tính các mục đó đã xong nhờ đổi Compose.
+Nghiệm thu mới dùng TDI-01–18; kết quả TAS/TRV trước đây không thay kiểm cách khởi động mới.

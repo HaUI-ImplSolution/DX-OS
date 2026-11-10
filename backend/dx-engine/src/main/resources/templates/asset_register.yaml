@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: Apache-2.0
+format: 0
+name: assets
+roles:
+  - name: CUSTODIAN
+    description: Người giữ sổ tài sản
+entities:
+  asset:
+    label: Tài sản
+    fields:
+      code: {type: text, label: Mã tài sản, required: true, unique: true, pattern: "[A-Z]{3}-[0-9]{4}"}
+      kind: {type: choice, label: Loại, required: true, options: [Thiết bị, Đồ nội thất, Phần mềm]}
+      price: {type: number, label: Giá mua, min: 0}
+      bought_on: {type: date, label: Ngày mua, max: "2100-12-31"}
+      in_use: {type: boolean, label: Đang sử dụng}
+      tags: {type: choice, label: Nhãn, options: [Mới, Đã sửa, Chờ thanh lý], multiple: true}
+      note: {type: text, label: Ghi chú, required_when: "kind == Phần mềm"}
+    access: {CUSTODIAN: all}
+    ui:
+      icon: inventory
+      menu: {group: Kho, order: 1}
+      list: {columns: [code, kind, price, in_use], sort: -created_at}
+      form:
+        groups:
+          - {label: Nhận dạng, fields: [code, kind]}
+          - {label: Chi tiết, fields: [price, bought_on, in_use, tags]}
+      hints: {code: "Ba chữ in hoa, dấu gạch ngang, bốn chữ số, ví dụ ABC-1234", note: "Bắt buộc khi loại là phần mềm"}

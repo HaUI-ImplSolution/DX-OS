@@ -47,5 +47,12 @@
     "name": "Ghi chú",
     "family": "none",
     "description": "Ví dụ nhỏ nhất: một thực thể không có quy trình."
+  },
+  {
+    "id": "asset_register",
+    "file": "asset_register.yaml",
+    "name": "Sổ tài sản",
+    "family": "none",
+    "description": "Danh mục tài sản không có quy trình, dùng kiểu đúng/sai, ngày, nhiều lựa chọn, giới hạn giá trị, bắt buộc có điều kiện và khối ui để sắp xếp giao diện."
   }
 ]

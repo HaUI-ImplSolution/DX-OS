@@ -11,6 +11,7 @@ import HaUI.ImplSolution.dxos.engine.registry.ModelClient;
 import HaUI.ImplSolution.dxos.engine.registry.ModelRegistry;
 import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
+import HaUI.ImplSolution.dxos.model.ProcessFamily;
 import HaUI.ImplSolution.dxos.model.ProcessFamily.Actor;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,12 +28,15 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Metadata", description = "What the applied models contain, as seen by the caller")
 public class MetaController {
 
+  // multiple, min, max, pattern and requiredWhen are null (multiple false) when the field does not
+  // declare them; min and max are text, a number as written or a date as YYYY-MM-DD.
   public record FieldMeta(String name, String label, String type, boolean required, boolean unique,
-      List<String> options, String reference) {}
+      List<String> options, String reference, boolean multiple, String min, String max,
+      String pattern, ProcessFamily.Condition requiredWhen) {}
 
   public record EntityMeta(String name, String label, List<FieldMeta> fields, boolean hasProcess,
       ProcessInfo process, String unitField, boolean canRead, boolean canWrite, boolean canHandle,
-      boolean canAssign, List<String> handlerActions) {}
+      boolean canAssign, List<String> handlerActions, Model.Ui ui) {}
 
   // held is true for a model that is being applied or needs reconciliation; it has no entities
   // then.
@@ -84,11 +88,11 @@ public class MetaController {
 
   private EntityMeta describe(Model model, Entity entity) {
     Access access = data.access(model, entity);
-    List<FieldMeta> fields =
-        entity.fields().values().stream()
-            .map(f -> new FieldMeta(f.name(), f.label(), f.type().key(),
-                f.required() && f.defaultValue() == null, f.unique(), f.options(), f.to()))
-            .toList();
+    List<FieldMeta> fields = entity.fields().values().stream()
+        .map(f -> new FieldMeta(f.name(), f.label(), f.type().key(),
+            f.required() && f.defaultValue() == null, f.unique(), f.options(), f.to(), f.multiple(),
+            f.min(), f.max(), f.pattern(), f.requiredWhen()))
+        .toList();
     ProcessInfo process =
         entity.process() == null ? null
             : new ProcessInfo(entity.process().family(), entity.process().handlers(),
@@ -100,7 +104,7 @@ public class MetaController {
     String unitField = entity.unitField().map(Model.Field::name).orElse(null);
     return new EntityMeta(entity.name(), entity.label(), fields, process != null, process,
         unitField, access.read(), access.write(), data.canHandle(model, entity),
-        data.canAssign(model, entity), handlerActions(model, entity));
+        data.canAssign(model, entity), handlerActions(model, entity), entity.ui());
   }
 
   // The actions the roles of the caller may take on a record, as the process rules decide them.

@@ -53,6 +53,14 @@ public class EventLog {
     if (value == null) {
       return null;
     }
+    if (value instanceof java.sql.Array array) {
+      try {
+        value = String.join(", ",
+            Arrays.stream((Object[]) array.getArray()).map(String::valueOf).toList());
+      } catch (java.sql.SQLException e) {
+        throw new IllegalStateException("cannot read an array column", e);
+      }
+    }
     String text = value instanceof BigDecimal number ? number.stripTrailingZeros().toPlainString()
         : value instanceof Timestamp timestamp ? timestamp.toInstant().toString()
             : value instanceof OffsetDateTime time ? time.toInstant().toString() : value.toString();

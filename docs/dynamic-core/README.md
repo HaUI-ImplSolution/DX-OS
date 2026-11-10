@@ -1,7 +1,7 @@
 # Lõi dynamic của DX-OS
 
-Định hướng và phạm vi đã chốt ngày 2026-11-02, bổ sung ngày 2026-11-03; phần mô tả đã đối chiếu lại với mã ngày 2026-11-10.
-Vòng hẹp của lõi đã chạy và được kiểm chứng, kết quả ở mục [Đã xác minh](#đã-xác-minh); các điểm còn lại nằm ở mục [Chưa xác minh](#chưa-xác-minh).
+Định hướng và phạm vi của lõi dynamic.
+Việc chưa làm, chưa kiểm và giới hạn đã biết nằm ở [`BACKLOG.md`](./BACKLOG.md); cách kiểm ở [`docs/TESTING.md`](../TESTING.md).
 
 ## Tóm tắt
 
@@ -10,7 +10,7 @@ Vòng hẹp của lõi đã chạy và được kiểm chứng, kết quả ở 
 - **Miền phục vụ:** quy trình chung cho bản ghi có vòng đời và có người tham gia (hồ sơ, ticket, đặt chỗ, mượn trả...), đổi được mô hình và quy trình an toàn khi hệ thống đang chạy; xem [Miền phục vụ](#miền-phục-vụ).
 - **Người dùng chính:** người triển khai hệ thống cho một tổ chức, làm việc qua [bảng điều khiển](#bảng-điều-khiển).
 - **Cách xây:** lõi headless, ghép từ các dịch vụ nguồn mở; đội tự viết một dịch vụ Java gồm phần điều khiển và API chung đọc mô hình lúc chạy.
-- **Ba tính năng đào sâu:** GitOps cho nghiệp vụ, quy trình không lách được, tác tử AI có người duyệt; phần AI làm sau khi lõi hoàn toàn mở.
+- **Ba tính năng đào sâu:** GitOps cho nghiệp vụ, quy trình không lách được, tác tử AI có người duyệt.
 - **Mở rộng:** người dùng có thể viết thêm API và giao diện, luôn nằm ngoài lõi.
 - **Nguồn mở:** mọi thành phần của bản phát hành đều mở, kể cả công cụ, mô hình AI và dữ liệu.
 - **Hạn gửi bài:** 17:00 ngày 2026-12-06.
@@ -18,7 +18,6 @@ Vòng hẹp của lõi đã chạy và được kiểm chứng, kết quả ở 
 ## Đề thi
 
 Nguồn: [đề thi](https://vfossa.vn/tin-tuc/de-thi-phan-mem-nguon-mo-olp-2026-798.html), [thể lệ](https://vfossa.vn/tin-tuc/the-le-olp-phan-mem-nguon-mo-nam-2026-760.html), [bài giới thiệu chủ đề](https://vfossa.vn/tin-tuc/gioi-thieu-mo-hinh-dx-os-va-chu-de-cuoc-thi-phan-mem-nguon-mo-olp-2026-761.html) và [giáo trình DX-OS](https://opendigitransform.gitbook.io/dx-os).
-Với giáo trình, mới đọc được phần tổng quan, mục lục chương và trang Hộp cát.
 
 ### Yêu cầu bắt buộc
 
@@ -100,12 +99,10 @@ Các hàm ý sau là suy luận từ cách đề viết, người ra đề khôn
 
 | Nguyên lý                                                                                               | Lõi đáp ứng                                                                                |
 | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Phân tách theo vòng đời và tốc độ của dữ liệu, đẩy dữ liệu lịch sử xuống hồ dữ liệu | Một phần: `dxos archive` ghi hồ sơ đã đóng và lịch sử của chúng ra tệp Parquet, giữ nguyên dữ liệu trong cơ sở dữ liệu; không có hồ dữ liệu riêng; công cụ báo cáo đọc dữ liệu qua vai `report_ro` |
-| Hội tụ dữ liệu hành chính và dữ liệu vận hành, bản sao số                                    | Ngoài phạm vi bản dự thi                                                                   |
-| Quản trị dữ liệu, phả hệ và nguồn gốc                                                            | Mô hình là danh mục dữ liệu; thông tin dữ liệu từ đâu ra làm nếu còn thời gian |
+| Phân tách theo vòng đời và tốc độ của dữ liệu, đẩy dữ liệu lịch sử xuống hồ dữ liệu | `dxos archive --store` ghi hồ sơ đã đóng và lịch sử của chúng ra tệp Parquet vào một bucket riêng của SeaweedFS, kèm manifest và hash để kiểm lại; `dxos archive schedule install` đặt lịch chạy hằng ngày cho hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS`; dữ liệu trong cơ sở dữ liệu giữ nguyên; công cụ báo cáo đọc dữ liệu qua vai `report_ro` |
+| Hội tụ dữ liệu hành chính và dữ liệu vận hành, bản sao số | `examples/itot-simulator` và mẫu `plant_incident` đưa số đo của thiết bị vào thành hồ sơ sự cố đi qua cùng quy trình, quyền và lịch sử với hồ sơ hành chính |
+| Quản trị dữ liệu, phả hệ và nguồn gốc | Mô hình là danh mục dữ liệu; tab Danh mục dữ liệu đọc từ đó nơi dữ liệu đi vào, nơi đi ra, liên kết giữa các thực thể, quyền theo vai và số bản ghi; lịch sử mỗi hồ sơ nối thành chuỗi hash |
 | Zero-Trust gắn với GitOps, kiểm dịch mã độc, tự phục hồi                                        | APISIX và API chung đều kiểm token, ClamAV quét tệp tải lên khi bật (`dxos av on`), GitOps cho nghiệp vụ    |
-
-Nguyên lý đầu chỉ được đáp ứng một phần và nguyên lý thứ hai không được đáp ứng trong bản dự thi, nên phần trình bày cần nói rõ và đưa vào định hướng phát triển.
 
 ## Tư tưởng thiết kế
 
@@ -124,7 +121,7 @@ Mattermost cũng vậy: kéo về là dùng được, khi mở rộng chỉ đ�
 | Superset       | Dữ liệu, biểu đồ | Kết nối, dataset, biểu đồ, dashboard                                                     |
 | **Lõi DX-OS** | **Quy trình chung cho bản ghi có vòng đời** | **Khai báo mô hình, xem trước, áp dụng, vận hành, đổi phiên bản hoặc quay lui** |
 
-Các ý tưởng học từ [Frappe](https://github.com/frappe/frappe) (MIT), cần đọc mã của họ trước khi áp dụng:
+Các ý tưởng học từ [Frappe](https://github.com/frappe/frappe) (MIT):
 
 - Một mô hình là nguồn sự thật cho bảng, form và quyền.
 - Bộ kiểu trường theo nghiệp vụ, như tham chiếu và tệp đính kèm.
@@ -227,9 +224,8 @@ Tham số của từng họ mẫu và cách tự khai báo quy trình ở [`docs
 - Kế hoạch cho xem khác biệt của quy trình, kiểm tra không có trạng thái cụt và vai có thật, và báo số bản ghi đang chạy bị ảnh hưởng.
 - Luật của quy trình (người xử lý, hạn xử lý, quyền tự quyết, hành động hoàn tất, đặt chỗ) chỉ đổi được khi thực thể không còn hồ sơ đang xử lý, nên mỗi hồ sơ chỉ chịu một bộ luật từ lúc nộp đến lúc đóng.
 - Đổi họ mẫu của một thực thể bị từ chối; muốn đổi hình dạng quy trình thì thêm thực thể mới.
-- Hồ sơ đang chạy không được chuyển sang quy trình mới: phải hoàn tất hoặc rút hết hồ sơ trước, như [Việc tồn đọng](./BACKLOG.md) đã ghi.
+- Hồ sơ đang chạy không được chuyển sang quy trình mới: phải hoàn tất hoặc rút hết hồ sơ trước.
 - Đổi lược đồ và vai Keycloak nằm ngoài giao dịch của Flowable, nên "một lần" nghĩa là một kế hoạch có thứ tự, chạy lại được hoặc quay lui, không phải một giao dịch duy nhất.
-- Việc ghép này được làm cùng lúc với việc triển khai các họ mẫu.
 
 **Họ mẫu tùy biến:**
 
@@ -271,7 +267,7 @@ Bộ cài và các lệnh vận hành của `dxos` mô tả ở [`deploy/OPERATI
 
 Tệp mô hình luôn là nguồn sự thật, và dựng lại được cấu trúc hệ thống trên máy khác; dữ liệu hồ sơ đi theo đường sao lưu riêng.
 
-Mô hình không khai báo đích webhook thì không gửi gì ra ngoài và không cần dịch vụ chat; bản phát hành chưa có dịch vụ AI.
+Mô hình không khai báo đích webhook thì không gửi gì ra ngoài và không cần dịch vụ chat.
 Ai đã có Keycloak hay PostgreSQL riêng thì trỏ tới bằng `.env`.
 Phân phối bằng một tệp compose gồm nhiều image, vì mỗi dịch vụ có vòng đời và cách nâng cấp riêng.
 
@@ -331,7 +327,7 @@ Thêm năng lực mới nghĩa là thêm provider, không phải sửa lõi.
 | Trục sự kiện                   | Bảng outbox trong PostgreSQL             | Webhook theo mô hình, API kéo sự kiện theo `eventId`, thông điệp của việc áp dụng mô hình và của tài khoản (chỉ qua webhook); kênh sự kiện `GET /api/v1/inbox/stream` báo cho giao diện khi hồ sơ đổi |
 | Thông báo                       | Mattermost hoặc Slack do người triển khai cấp | Đích webhook dạng `chat`: việc mới, sắp đến hạn, quá hạn |
 | Báo cáo | Công cụ báo cáo do người triển khai cấp | Vai `report_ro` chỉ đọc các bảng nghiệp vụ |
-| AI | Làm sau | Khai báo nguồn tri thức và tác tử |
+| AI | Mô hình ngôn ngữ và embedding mở hoàn toàn | Khai báo nguồn tri thức và tác tử |
 | Vận hành                        | `dx-monitor`, `deploy/backup.sh`          | Giữ nguyên                                                    |
 
 ### Nguyên tắc mã nguồn
@@ -369,16 +365,28 @@ Một năng lực mới chỉ được thêm khi cần ở ít nhất 3 lĩnh v�
 Không đạt thì đi qua điểm mở rộng.
 Các kiểu `boolean` và `date`, `multiple`, `min`, `max`, `pattern`, `required_when` và khối `ui:` là ngoại lệ có chủ đích của điều kiện không cần cú pháp mới: mỗi thứ cần ở nhiều lĩnh vực, là khóa tùy chọn nên mô hình cũ giữ nguyên, và `format` vẫn là `0`.
 
-Ví dụ để minh họa, chưa phải cú pháp cuối cùng:
+Ví dụ một tệp mô hình:
 
 ```yaml
-entity: StudentRequest
-fields: {kind: choice(confirmation, regrade, postpone), reason: text!, proof: file, student: user}
-access: {OFFICE: all, STUDENT: own}
-process: {deadline_task: {by: OFFICE, deadline: 72h, notify: chat}}
-ai:
-  ask: {sources: [regulations]}
-  agent: {on: created, suggest: kind, confirm_by: OFFICE}
+format: 0
+name: onestop
+roles:
+  - name: STUDENT
+  - name: OFFICER
+    staff: true
+units:
+  - name: DAO_TAO
+    label: Phòng Đào tạo
+entities:
+  request:
+    label: Hồ sơ
+    fields:
+      kind: {type: choice, label: Loại hồ sơ, required: true, options: [Giấy xác nhận, Phúc khảo, Hoãn thi]}
+      reason: {type: text, label: Lý do, required: true}
+      department: {type: unit, label: Đơn vị xử lý, required: true}
+      evidence: {type: file, label: Minh chứng}
+    access: {STUDENT: own, OFFICER: unit}
+    process: {family: approval, handler: OFFICER, deadline: 72h}
 ```
 
 ## Ba tính năng đào sâu
@@ -444,7 +452,7 @@ Những chỗ khó:
 - **Hai người sửa cùng lúc:** kế hoạch gắn với phiên bản gốc, phiên bản đang chạy đã đổi thì kế hoạch hết hiệu lực.
 - **Định dạng mô hình đổi theo thời gian:** tệp ghi phiên bản định dạng, lõi tự nâng được tệp cũ.
 
-**Bản dự thi** làm thêm, đổi tên, xóa trường; thêm quy tắc và báo dữ liệu vi phạm; quay lui cho thay đổi an toàn ở mức nên có.
+**Phạm vi thay đổi:** lõi làm thêm, đổi tên, xóa trường; thêm quy tắc và báo dữ liệu vi phạm; quay lui cho thay đổi an toàn.
 Đổi kiểu trường bị từ chối kèm giải thích.
 Đổi quy trình khi còn hồ sơ đang chờ bị từ chối; phải hoàn tất hoặc rút hết hồ sơ trước.
 
@@ -466,18 +474,17 @@ Mọi thay đổi hồ sơ và bước quy trình phát ra sự kiện vào tr�
 Tệp mô hình chọn đích webhook bằng `webhook: <tên đích>`; địa chỉ và bí mật của đích nằm ngoài tệp mô hình, trong một tệp cấu hình của bản cài.
 Các dòng của một hồ sơ tới đích theo đúng thứ tự, và bên nhận lỡ tin kéo lại theo `eventId`.
 
-**Bản dự thi** có ba họ mẫu là chuỗi duyệt, công việc cần xử lý và chiếm dụng tài nguyên theo thời gian, cùng bộ quy tắc bất biến; có hộp việc, giao việc và quy tắc chặn; trục sự kiện có webhook theo mô hình, thông báo chat và nhắc hạn.
+Lõi có ba họ mẫu là chuỗi duyệt, công việc cần xử lý và chiếm dụng tài nguyên theo thời gian, cùng bộ quy tắc bất biến; có hộp việc, giao việc và quy tắc chặn; trục sự kiện có webhook theo mô hình, thông báo chat và nhắc hạn.
 Tham số của từng họ mẫu ở [`docs/MODEL.md`](../MODEL.md#tự-khai-báo-hoặc-mở-rộng-quy-trình).
 
 ### 3. Tác tử AI có người duyệt
 
-Phần này làm sau, khi lõi đã hoàn toàn mở.
 Khai báo trên một mô hình bất kỳ để có hỏi đáp kèm nguồn và tác tử nghe sự kiện.
 Có hồ sơ mới thì AI đề xuất và dẫn nguồn, người xác nhận.
 Đây là chuỗi từ P tới I đúng với Human-in-the-loop của đề, và cũng chứng minh cơ chế provider hoạt động.
 
-**Bản dự thi** chưa có phần AI: tìm kiếm tri thức có nguồn, hỏi đáp sinh câu trả lời và tác tử đề xuất giá trị một trường làm sau, khi có mô hình mở hoàn toàn, đều ở mức nên có.
-Tác tử tự hành động không cần xác nhận để sau.
+AI là một provider nối vào lõi qua trục sự kiện và API, chạy bằng mô hình ngôn ngữ và embedding đạt định nghĩa Open Source AI của OSI.
+Tìm kiếm tri thức có nguồn, hỏi đáp sinh câu trả lời và tác tử đề xuất giá trị một trường đều cần người xác nhận; tác tử không tự hành động khi chưa có xác nhận.
 
 ## Điểm mở rộng
 
@@ -492,12 +499,11 @@ Mã mở rộng luôn nằm ngoài lõi, chỉ gọi lõi qua API và sự kiệ
 | Giao diện riêng hoàn toàn         | Ứng dụng tự viết, dùng API và đăng nhập Keycloak của lõi                                       |
 | Trang riêng trong ứng dụng Tầng 2 | Thêm trang vào ứng dụng web bằng mã; menu, nhóm menu và biểu tượng của thực thể khai báo trong khối `ui:`                                                                |
 | Họ mẫu quy trình riêng                | Khai báo `states` và `actions` trong tệp mô hình; vẫn chịu quy tắc bất biến và bị kiểm khi áp dụng |
-| Thành phần riêng trong form        | Đăng ký thành phần React, để sau bản dự thi                                                      |
+| Thành phần riêng trong form        | Đăng ký thành phần React vào bộ dựng giao diện                                                   |
 
-Đổi tên trường có thể làm hỏng mã mở rộng đang dùng trường đó.
-Chưa có nơi đăng ký mã mở rộng nên kế hoạch không cảnh báo theo từng trường; xem [Việc tồn đọng](./BACKLOG.md).
+Đổi tên trường có thể làm hỏng mã mở rộng đang dùng trường đó, nên kế hoạch nêu rõ các tên bị đổi.
 
-**Bản dự thi** có webhook theo mô hình và API kéo sự kiện, kèm hai ví dụ ở `examples/`: giả lập thiết bị IT/OT và bên giữ điểm neo của lịch sử.
+Lõi có webhook theo mô hình và API kéo sự kiện, kèm hai ví dụ ở `examples/`: giả lập thiết bị IT/OT và bên giữ điểm neo của lịch sử.
 
 ## Ứng dụng nghiệp vụ
 
@@ -509,7 +515,7 @@ Chưa có nơi đăng ký mã mở rộng nên kế hoạch không cảnh báo t
 
 Kịch bản demo chính là **Một cửa sinh viên**: gửi yêu cầu xin giấy xác nhận, phúc khảo, hoãn thi kèm minh chứng.
 Đây là mô hình yêu cầu và phê duyệt chạy trên lõi.
-Phần AI đề xuất và hỏi đáp quy chế bổ sung sau, từ một kho văn bản đạt [cam kết nguồn mở](#cam-kết-nguồn-mở).
+Phần AI đề xuất và hỏi đáp quy chế dựa trên một kho văn bản đạt [cam kết nguồn mở](#cam-kết-nguồn-mở).
 
 **Mô hình thứ hai** là cấp phát dịch vụ IT, rất ngắn, chứng minh tính trung lập: nhân viên xin vào một nhóm quyền, được duyệt thì Keycloak cấp thật.
 Nếu mô hình này tốn hơn một tệp, đó là tín hiệu lõi còn gắn với ứng dụng đầu.
@@ -531,27 +537,18 @@ Trên máy sạch, không có mã nguồn:
 
 Tám mục này cũng là khung kịch bản trình diễn 15 phút, cộng thêm phần vấn đề, kiến trúc và định hướng phát triển.
 
-## Những gì giữ lại
-
-- **Hạ tầng:** Keycloak, APISIX, SeaweedFS, PostgreSQL, ClamAV; thông báo chat đi qua webhook dạng `chat`; Superset và Mattermost không còn trong bản phát hành, cấu hình của bản cũ ở tag `v1.1.1`.
-- **Dịch vụ:** `dx-monitor`.
-- **Dự án:** bộ triển khai, CI, kiểm tra giấy phép, SBOM, quy trình phát hành.
-- **`dx-core` rút gọn thành thư viện:** giữ bảo mật, audit, lưu trữ và quét tệp, trạng thái hệ thống, client Keycloak; phần gắn với ứng dụng cũ như workflow viết tay, workspace, thông báo cũ được gỡ và dựng lại theo thiết kế mới khi cần.
-- **Module backend sau khi dọn:** `dx-model`, `dx-core`, `dx-engine` (dịch vụ chạy được) và `dx-monitor`; `dx-core-api` và `dx-host` bỏ vì không còn ứng dụng nào cắm vào lõi.
-
 ## Rủi ro
 
-- **Khối lượng:** phạm vi rất chặt với đội 3 người; phần lớn nhất là bộ dựng giao diện và phần điều khiển.
 - **Hai nguồn trạng thái:** trạng thái trong Flowable và trong bảng dữ liệu có thể lệch nhau.
 - **Bề mặt của API chung:** truy vấn dựng lúc chạy từ mô hình nên chèn SQL, quyền theo dòng sai và hiệu năng đều nằm trong mã tự viết.
-- **Điểm hoàn thiện và thân thiện:** giao diện dựng từ metadata dễ trông chung chung, và bản mới ít tính năng đã kiểm thử hơn `v1.1.1`.
+- **Điểm hoàn thiện và thân thiện:** giao diện dựng từ metadata dễ trông chung chung.
 - **Đặt cược vòng đời mô hình:** đề không yêu cầu trực tiếp, nên phải giải thích được giá trị trong vài phút.
 - **Giới hạn của khai báo:** "không code" chỉ đúng ở mức 1 và 2.
 
 ## Khách hàng và giá trị
 
-Chưa nói chuyện với khách hàng nào, nên phần này là giả thuyết.
-Đến chung kết, giám khảo là khách hàng số một; phần này phục vụ tầm nhìn sau cuộc thi.
+Phần này là giả thuyết về khách hàng.
+Đến chung kết, giám khảo là khách hàng số một; phần này phục vụ tầm nhìn dài hạn.
 
 > Dựng hệ thống hồ sơ có quy trình cho một tổ chức trong vài giờ, chạy trên máy chủ của mình, và đổi được khi nghiệp vụ đổi mà không sợ hỏng dữ liệu.
 
@@ -559,10 +556,10 @@ Chưa nói chuyện với khách hàng nào, nên phần này là giả thuyết
 - **Chưa phục vụ:** tổ chức không có ai vận hành máy chủ, lập trình viên muốn toàn quyền kiểm soát mã, doanh nghiệp cần ERP đầy đủ.
 - **Đối thủ thật:** bảng tính và thuê làm riêng; với người muốn trọn gói tự cài thì là Frappe.
 - **Lý do chọn:** thay đổi an toàn trên toàn hệ thống, dữ liệu ở máy chủ của mình, không tính phí theo đầu người.
-- **Pháp lý:** [Luật Bảo vệ dữ liệu cá nhân](https://digitalpolicyalert.org/event/36569-implementing-regulations-of-law-on-personal-data-protection-including-cross-border-data-transfer-regulation-entered-into-force) có hiệu lực từ 2026-01-01 và [theo nguồn thứ cấp](https://www.uniconsent.com/vietnam-pdpl) yêu cầu đánh giá khi chuyển dữ liệu ra nước ngoài; cần đọc văn bản gốc.
+- **Pháp lý:** [Luật Bảo vệ dữ liệu cá nhân](https://digitalpolicyalert.org/event/36569-implementing-regulations-of-law-on-personal-data-protection-including-cross-border-data-transfer-regulation-entered-into-force) có hiệu lực từ 2026-01-01 và [theo nguồn thứ cấp](https://www.uniconsent.com/vietnam-pdpl) yêu cầu đánh giá khi chuyển dữ liệu ra nước ngoài.
 - **Đo công sức:** so số dòng và thời gian dựng ứng dụng mới với phần Lab viết tay, gồm 5.792 dòng Java, 4.524 dòng giao diện và 8 migration.
 
-Mục tiêu đề xuất, chưa đo được:
+Mục tiêu:
 
 
 | Chỉ số                                                       | Mục tiêu                        |
@@ -580,7 +577,7 @@ Giá tham khảo cho 100 người dùng trong một năm, từ các trang tổng
 | [AppSheet Core](https://www.capterra.com/p/149367/AppSheet/pricing/)                                                    | 10 USD một người một tháng                       | 12.000 USD                      |
 | [Power Apps Premium](https://www.licensingschool.co.uk/licensing-blog/2026/09/17/new-pricing-for-power-apps-premium/)   | 20 USD, tăng thêm 2 USD từ 2027-01-01              | 24.000 USD, 26.400 USD từ 2027 |
 | [Retool Business](https://www.jetadmin.io/blog/retool-pricing-explained-2026-guide-to-plans-user-types-and-total-cost/) | 3 người dựng ở 50 USD, 97 người dùng ở 15 USD | 19.260 USD                      |
-| Lõi tự cài                                                                                                           | Tiền máy chủ cộng công người vận hành        | Chưa có số                   |
+| Lõi tự cài                                                                                                           | Tiền máy chủ cộng công người vận hành        | Theo giá máy chủ và công vận hành |
 
 ## Cam kết nguồn mở
 
@@ -600,53 +597,16 @@ Thể lệ chỉ bắt buộc giấy phép OSI cho sản phẩm; cam kết của
 
 Nơi lưu mã và máy chủ demo như GitHub, VPS, Cloudflare không thuộc sản phẩm; được dùng nhưng phải tùy chọn và công bố rõ.
 
-### Kết quả rà soát
-
-Rà soát ngày 2026-11-02 từ `DEPENDENCIES.txt`, GitHub API và Hugging Face; cột kết luận cập nhật ngày 2026-11-03 sau khi xử lý ở Phase 10.
+### Giấy phép của các thành phần
 
 
 | Thành phần                                                      | Giấy phép                                                                                                                                                                                                                                                    | Kết luận                                                        |
 | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| Keycloak, APISIX, Superset, SeaweedFS, Flowable, pgschema         | Apache-2.0                                                                                                                                                                                                                                                     | Đạt; Superset không còn trong bản phát hành |
+| Keycloak, APISIX, SeaweedFS, Flowable, pgschema | Apache-2.0 | Đạt |
 | react-admin | MIT | Đạt; chỉ dùng phần MIT, không dùng gói Enterprise |
 | PostgreSQL                                                        | PostgreSQL License                                                                                                                                                                                                                                             | Đạt                                                             |
-| ClamAV                                                            | GPL-2.0                                                                                                                                                                                                                                                        | Đạt; điều khoản của kho chữ ký mã độc cần kiểm thêm |
-| Mattermost Team Edition | [Tách MIT cho bản build và AGPL cho mã nguồn, đang bị tranh cãi](https://docs.mattermost.com/product-overview/faq-license.html); [bản 11 giới hạn 250 người dùng](https://forum.mattermost.com/t/mattermost-v11-changes-in-free-offerings/25126) | **Chưa đạt rõ ràng**; đã gỡ khỏi cây mã |
-| Qwen2.5 1.5B | Trọng số Apache-2.0, dữ liệu huấn luyện không công khai theo hiểu biết hiện có | Đã gỡ khỏi bản phát hành |
-| Reranker mMARCO | Thẻ mô hình Apache-2.0, nhưng [MS MARCO chỉ cho nghiên cứu phi thương mại](https://microsoft.github.io/msmarco/Notice) và mMARCO dựa trên bộ này | Đã gỡ; chỉ thêm lại khi có mô hình đạt tiêu chuẩn, sau khi đo chất lượng truy xuất |
-| Embedding paraphrase-multilingual-MiniLM | Apache-2.0 | Đã gỡ cùng `ai/`: dữ liệu huấn luyện chưa kiểm theo định nghĩa của OSI |
-| Kho văn bản HaUI ở `data/rag/lab` | © Đại học Công nghiệp Hà Nội, theo `DEPENDENCIES.txt` | Đã gỡ khỏi cây mã |
-| Redis trong môi trường đánh giá RAG | RSALv2 hoặc SSPLv1 | Đã gỡ cùng bộ đánh giá RAG |
-| Langfuse trong môi trường đánh giá RAG | MIT phần lõi, có phần EE riêng | Đã gỡ cùng bộ đánh giá RAG |
+| ClamAV | GPL-2.0 | Đạt |
 | cloudflared | Apache-2.0, nhưng Cloudflare Tunnel và Access là dịch vụ đóng | Ngoài repository: chỉ máy chủ công khai của đội dùng, tệp cấu hình giữ ngoài repository; hệ thống chạy được không cần |
-
-Chẩn đoán ảnh, dữ liệu Farm và dashboard Superset đọc Open-Meteo và OpenFreeMap đã rời bản phát hành.
-
-### Việc cần làm
-
-Bản phát hành lõi hoàn toàn mở làm trước; các việc về AI dưới đây xử lý khi đến phần AI.
-Xử lý theo tiến độ của Tầng 1 và Tầng 2:
-
-
-| Việc                | Khi nào                                                                       | Hướng xử lý                                                                                                                                                                                               |
-| ---------------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LLM                  | Khi bắt đầu phần AI, để kịp đo trước khi trình diễn                | Mặc định dùng mô hình đạt tiêu chuẩn; [Apertus 8B](https://huggingface.co/swiss-ai/Apertus-8B-Instruct-2509) (Apache-2.0) và OLMo 2 là ứng viên, cần thử tiếng Việt và tốc độ trên CPU |
-| Không có LLM đạt | Sau khi thử LLM | Phần AI chưa làm cho đến khi có mô hình đạt; Qwen chỉ là tùy chọn người dùng tự gắn, ghi rõ là mở trọng số |
-| Reranker             | Khi bắt đầu phần AI                                                        | Thay hoặc bỏ, đo lại chất lượng truy xuất                                                                                                                                                             |
-| Chat                 | Dịch vụ chat do người triển khai cấp; thông báo đi qua webhook dạng `chat` nên đổi dịch vụ chỉ đổi địa chỉ | [Zulip](https://github.com/zulip/zulip) (Apache-2.0) là ứng viên thay Mattermost, cần kiểm các phụ thuộc của nó                                                                                     |
-
-Mô hình AI mở hoàn toàn có thể trả lời tiếng Việt kém hơn và chậm hơn trên CPU; đây là cái giá của cam kết, cần đo trước khi trình diễn.
-
-Đã xử lý xong ở Phase 10, trước khi phát hành:
-
-| Việc | Kết quả |
-|---|---|
-| Kho quy chế HaUI | Gỡ khỏi cây mã cùng `data/`; bản cũ ở tag `v1.1.1` |
-| Dữ liệu tự tạo | Không còn dữ liệu tự tạo trong cây mã |
-| Redis và Langfuse trong đánh giá RAG | Gỡ cùng bộ đánh giá RAG |
-| cloudflared và dịch vụ Cloudflare | Overlay đã gỡ khỏi repository; máy chủ công khai giữ tệp riêng ngoài repository |
-| Kiểm tự động | `.github/scripts/check_licenses.py` kiểm image, mô hình và tệp trọng số, tài liệu, nén theo `.github/component-catalog.json` |
-| `DEPENDENCIES.txt` và SBOM | Cập nhật theo thành phần của bản `2.0.0` |
 
 ## Công cụ
 
@@ -670,42 +630,3 @@ Các điểm thiết kế chi tiết đã chốt và nằm ở tài liệu riên
 - Định dạng tệp mô hình, họ mẫu và tham số: [`docs/MODEL.md`](../MODEL.md).
 - Đường dẫn, bộ lọc, phân trang, metadata và định dạng lỗi: [`docs/API.md`](../API.md).
 - Kiến trúc và luồng áp dụng mô hình: [`ARCHITECTURE.md`](../../ARCHITECTURE.md).
-
-## Đã xác minh
-
-Cách kiểm ở [`docs/TESTING.md`](../TESTING.md); kết quả mỗi lần chạy ở tab Actions:
-
-- Flowable 8.0.0 chạy nhúng trên Spring Boot 4.1 bằng `flowable-spring` cấu hình tay, dùng chung giao dịch với việc ghi hồ sơ.
-- Chỉ cho dịch vụ lõi ghi, cùng Flowable nhúng, đủ để trạng thái không lệch: lỗi cố ý sau bước quy trình làm hồ sơ và quy trình cùng quay về.
-- API chung dựng truy vấn lúc chạy: 10.000 dòng có bộ lọc và sắp xếp trả về ở phân vị 95 là 11 ms; giá trị, tên trường và toán tử có SQL không có tác dụng.
-- Quyền theo dòng cho vai `own` qua nhiều bước tham chiếu về thực thể đầu chuỗi `owner_via`; chuỗi quay vòng bị từ chối khi kiểm tệp mô hình.
-- react-admin dựng form và danh sách từ metadata cho kiểu văn bản, số, ngày giờ, lựa chọn và tham chiếu; mô hình thứ hai nạp lúc chạy không cần build lại giao diện.
-- pgschema đưa lược đồ về trạng thái đích khi đã có dữ liệu, với điều kiện lõi đổi tên cột, ràng buộc và chỉ mục trước; tự nó biến đổi tên thành xóa rồi thêm, nên lõi chặn mọi thao tác xóa mà mô hình không yêu cầu.
-- Kế hoạch xem trước khớp với áp dụng thật khi có đổi tên, và áp dụng lại sau lỗi giữa chừng về đúng trạng thái đích.
-- Hành động hoàn tất (`add_to_group`, `remove_from_group`) đi qua bảng outbox và được thử lại tới khi Keycloak nhận, người triển khai xem lỗi và thử lại ở bảng điều khiển; tệp đính kèm tải lên và tải xuống qua gateway, tải về dạng đính kèm, và đối tượng trong kho bị xóa khi tệp hoặc hồ sơ bị gỡ; các script kiểm ở [`docs/TESTING.md`](../TESTING.md), mục 4.
-- Webhook theo mô hình gửi đúng đích kèm chữ ký; các dòng của một hồ sơ tới theo thứ tự, dòng sau chờ dòng cũ đã dừng; đích dạng `chat` chỉ gửi một câu không có nội dung hồ sơ; dòng nhắc hạn đến đúng một lần; các script kiểm ở [`docs/TESTING.md`](../TESTING.md), mục 4.
-- `ProcessMigrationService` của Flowable chuyển được hồ sơ đang chạy sang mẫu mới và báo trước khi mẫu mới bỏ bước hiện tại.
-- `dxos plan` và `dxos apply --accept` (mức xác nhận, mã thoát, lịch sử ghi tài khoản của lệnh), `dxos archive` kèm `archive check` và bộ mô phỏng IT/OT gửi lại cùng quan sát được kiểm bằng `check_cli.py`.
-- Kênh `GET /api/v1/inbox/stream` báo thay đổi tới hộp việc đang mở trong khoảng hai giây qua gateway; server đóng đúng sau 10 phút, client nối lại; 2000 kênh đầu được nhận và các kênh sau trả 503; kiểm tay ở [`docs/TESTING.md`](../TESTING.md), mục 6.
-- `dxos demo` nộp 40 hồ sơ mẫu qua API chung và tạo bốn tài khoản thử đăng nhập được, mỗi tài khoản thấy đúng phạm vi của vai; chạy lại không nộp trùng.
-- Kiểu `boolean`, `date`, nhiều lựa chọn, `min`, `max`, `pattern` và `required_when`: API trả lỗi theo trường, cơ sở dữ liệu từ chối hàng sai, áp dụng lại cùng tệp không đổi gì, đổi tên trường kéo theo các ràng buộc, siết ràng buộc trên dòng vi phạm bị từ chối kèm số dòng; kiểm tay ở [`docs/TESTING.md`](../TESTING.md), mục 6.
-- Tài liệu OpenAPI của một mô hình qua bộ kiểm cú pháp OpenAPI và khớp hành vi của API dữ liệu; mã lỗi và mã trạng thái của từng thao tác đã đối chiếu với API đang chạy.
-- Ứng dụng ngoài lấy token đúng một vai, bị từ chối ở mô hình khác, quản trị và người dùng; secret không có trong log hay sự kiện.
-- Khối `ui:` đổi menu, cột, sắp xếp và nhóm biểu mẫu; hành động hàng loạt xử lý từng hồ sơ qua đủ luật và báo hồ sơ bị từ chối.
-- Bản `2.0.0` dựng từ một bản sao sạch của cây mã: stack lên đủ, chuỗi `check_*.py` đạt, `clean verify`, `tsc`, `check_licenses.py` và `check_routes.py` đạt; các script kiểm ở [`docs/TESTING.md`](../TESTING.md), mục 4.
-
-## Chưa xác minh
-
-- Chất lượng tiếng Việt và tốc độ trên CPU của Apertus 8B, OLMo 2.
-- Các phụ thuộc và khả năng nối OIDC, webhook của Zulip.
-- Đích dạng `chat` với Mattermost và Slack thật.
-- Phông chữ, biểu tượng và tài nguyên tĩnh của giao diện.
-- Chi tiết các ý tưởng lấy từ Frappe.
-- Mức tài nguyên của toàn bộ stack.
-
-## Câu hỏi cho BTC
-
-Có thể hỏi trên [nhóm Telegram của BTC](https://t.me/+YUkj6aM3bnYyOWQ1):
-
-1. Màn hình quản trị đi kèm dịch vụ nguồn mở, như Keycloak Admin, có bị coi là lõi có giao diện không?
-2. Ứng dụng minh họa ở Tầng 2 có cần phủ cả bốn không gian H, P, D, I không?

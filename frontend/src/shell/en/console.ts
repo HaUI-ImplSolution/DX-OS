@@ -1,6 +1,26 @@
 // SPDX-License-Identifier: Apache-2.0
 // The control panel: models, editor, plan, users, outbox and the guides.
 export const console: Record<string, string> = {
+  "Người dùng với vai": "Users with the role",
+  "Gửi tới hệ thống ngoài": "Sent to an outside system",
+  "Hành động khi hoàn tất": "Action on completion",
+  "Dòng sự kiện": "Event feed",
+  "Lưu trữ dài hạn": "Long-term archive",
+  "tham chiếu": "refers to",
+  "chủ sở hữu theo": "owner through",
+  "Chưa có": "None yet",
+  "Danh mục dữ liệu": "Data catalog",
+  "Danh mục này đọc thẳng từ mô hình đang chạy: dữ liệu nằm ở đâu, ai được xem, tham chiếu lẫn nhau ra sao, đi vào từ đâu và đi ra đâu.": "This catalog is read straight from the running model: where the data lives, who may see it, how entities refer to each other, where it comes from and where it goes.",
+  "Dữ liệu đi vào từ": "Data comes in from",
+  "Dữ liệu đi ra tới": "Data goes out to",
+  "Liên kết giữa các thực thể": "Links between entities",
+  "Chưa đọc được số bản ghi": "Row count unavailable",
+  "{n} bản ghi": "{n} records",
+  "Có quy trình: {family}": "Process: {family}",
+  "{role} xử lý": "{role} handles",
+  "Ràng buộc": "Constraints",
+  "bắt buộc": "required",
+  "không trùng": "unique",
   "Ứng dụng ngoài": "Outside applications",
   "Mã bí mật này chỉ hiện một lần và hệ thống không giữ lại. Ứng dụng dùng nó cùng mã ứng dụng để lấy token.":
     "This secret is shown only once and is not kept. The application uses it with its application id to get a token.",

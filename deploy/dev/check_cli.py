@@ -5,7 +5,7 @@ They run the real scripts against the stack that deploy/.env describes and apply
 own, so they need nothing from the scripts before them:
     python3 deploy/dev/check_cli.py
 Needs docker (the archive reads the database through a DuckDB container, which downloads its
-postgres extension on the first run). Settings: DXOS_ENV_FILE, DXOS_BASE_URL, DXOS_PROJECT.
+postgres and httpfs extensions on the first run). Settings: DXOS_ENV_FILE, DXOS_BASE_URL, DXOS_PROJECT.
 """
 import json
 import os
@@ -145,6 +145,17 @@ def main():
             handle.write(original)
         code, out, err = dxos(work, "archive", "check", directory)
         check("CLI-18 and passes again once the byte is back", code == 0, f"{code} {out[-200:]} {err[-200:]}")
+
+        # archive to the object store: written once, read back from the store, and not written twice.
+        code, out, err = dxos(work, "archive", name, "--store")
+        run_id = next((line.split("--store ", 1)[1].strip() for line in out.splitlines() if "--store " in line), "")
+        check("CLI-19 archive --store writes the finished records to the object store", code == 0 and "incident.parquet: 1 rows" in out and run_id.startswith(name + "/"), f"{code} {out[-300:]} {err[-300:]}")
+        code, out, err = dxos(work, "archive", "check", "--store", run_id)
+        check("CLI-20 archive check --store passes on the run in the store", code == 0 and "Archive matches its manifest" in out and "SHA-256 matches" in out, f"{code} {out[-200:]} {err[-200:]}")
+        code, out, err = dxos(work, "archive", "auto")
+        code_list, listing, _ = dxos(work, "archive", "list")
+        runs_of_model = [line for line in listing.splitlines() if line.startswith(name + " ")]
+        check("CLI-21 archive auto writes nothing for records newer than ARCHIVE_AFTER_DAYS and list shows the one run", code == 0 and f"{name}: nothing" in out and len(runs_of_model) == 1, f"{code} {out[-200:]} {err[-200:]} {runs_of_model}")
     finally:
         shutil.rmtree(work, ignore_errors=True)
         uid = kc.kc("GET", "/users?username=cli_tech&exact=true")[1]

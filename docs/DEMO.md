@@ -107,9 +107,9 @@ Sự cố: lần chạy `dxos archive` đầu cần tải extension DuckDB từ 
 
 Nói thẳng phần chưa có, theo [Việc tồn đọng](./dynamic-core/BACKLOG.md):
 
-- Chưa có phần AI; làm sau khi có mô hình ngôn ngữ đạt định nghĩa Open Source AI của OSI.
+- Chưa có phần AI, vì cần mô hình ngôn ngữ đạt định nghĩa Open Source AI của OSI.
 - Ứng dụng Tầng 2 chưa phủ chữ I của H-P-D-I.
-- Hồ dữ liệu mới ở mức xuất tệp Parquet, chưa có hồ dữ liệu riêng.
+- Hồ dữ liệu là kho Parquet trong SeaweedFS, chưa có lớp truy vấn riêng.
 
 Kết bằng một câu: đổi nghiệp vụ là đổi tệp, không đổi mã.
 

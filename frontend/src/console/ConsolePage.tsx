@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { useEffect, useRef, useState } from "react";
 import { Alert, Box, Skeleton, Snackbar, Tab, Tabs } from "@mui/material";
+import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
 import AutoAwesomeMosaicOutlinedIcon from "@mui/icons-material/AutoAwesomeMosaicOutlined";
 import EditNoteOutlinedIcon from "@mui/icons-material/EditNoteOutlined";
 import LayersOutlinedIcon from "@mui/icons-material/LayersOutlined";
@@ -17,6 +18,7 @@ import { useModelSchema } from "./monacoSetup";
 import OutboxTab from "./OutboxTab";
 import TemplatesTab from "./TemplatesTab";
 import AppsTab from "./AppsTab";
+import DataCatalogTab from "./DataCatalogTab";
 import UsersTab from "./UsersTab";
 import { guardUnsavedWork } from "../shell/locale";
 import { t } from "../shell/t";
@@ -92,6 +94,7 @@ export default function ConsolePage() {
         <Tab icon={<SyncAltIcon fontSize="small" />} iconPosition="start" label={t("Hàng đợi sự kiện")} />
         <Tab icon={<PeopleOutlineIcon fontSize="small" />} iconPosition="start" label={t("Người dùng")} />
         <Tab icon={<ApiOutlinedIcon fontSize="small" />} iconPosition="start" label={t("Ứng dụng ngoài")} />
+        <Tab icon={<AccountTreeOutlinedIcon fontSize="small" />} iconPosition="start" label={t("Danh mục dữ liệu")} />
       </Tabs>
       {!schema && (
         <Box>
@@ -131,6 +134,7 @@ export default function ConsolePage() {
       {schema && tab === 3 && <OutboxTab />}
       {schema && tab === 4 && <UsersTab />}
       {schema && tab === 5 && <AppsTab />}
+      {schema && tab === 6 && <DataCatalogTab />}
       <Snackbar open={note !== null} autoHideDuration={6000} onClose={() => setNote(null)} message={note ?? ""} />
     </Box>
   );

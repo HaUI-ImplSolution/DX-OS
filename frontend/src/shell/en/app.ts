@@ -16,6 +16,14 @@ export const app: Record<string, string> = {
   "Khác": "Other",
   "Cập nhật lúc": "Updated",
   "Không": "No",
+  // List views and export
+  "Danh sách": "List",
+  "Bảng theo trạng thái": "Board by state",
+  "Không có hồ sơ": "No records",
+  "Xem cả {n} hồ sơ": "See all {n} records",
+  "Xuất CSV": "Export CSV",
+  "Đã xuất {n} hồ sơ": "Exported {n} records",
+  "Đã xuất {n} hồ sơ đầu tiên trong {total}": "Exported the first {n} of {total} records",
   // Several records at once
   "{action}: {n} hồ sơ": "{action}: {n} records",
   "Mỗi hồ sơ vẫn qua đủ luật của quy trình; hồ sơ không thực hiện được sẽ báo lý do, các hồ sơ khác vẫn được xử lý.":

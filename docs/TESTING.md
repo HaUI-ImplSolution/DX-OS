@@ -150,6 +150,11 @@ Giao diện, đăng nhập bằng `req1` (vai `BORROWER`), `keeper1` (vai `KEEPE
     Trang chi tiết đang mở của một hồ sơ đổi trạng thái khi người khác duyệt; form tạo hoặc sửa đang gõ dở không bị làm mới.
     Khởi động lại `backend`: sau vài giây tab đang mở nhận lại thay đổi mới.
     `GET /api/v1/inbox/stream` không có token thì 401, có token thì 200 `text/event-stream` kèm `: ping` mỗi 20 giây, và server đóng sau 600 giây.
+24. Kiểu và quy tắc mới trên biểu mẫu: áp dụng mẫu Sổ tài sản; trường `boolean`, `date` và nhiều lựa chọn có ô nhập riêng; mã sai mẫu báo "Không đúng định dạng", giá trị ngoài khoảng bị từ chối, ghi chú bắt buộc khi loại là phần mềm và báo "Bắt buộc nhập khi"; hồ sơ lưu rồi hiện đủ ở chi tiết và lọc được theo từng trường.
+25. Khối `ui:`: menu hiện nhóm và biểu tượng khai báo; danh sách mở với đúng cột và thứ tự khai báo, nút Cột vẫn hiện đủ cột và lựa chọn của người dùng đè lên; biểu mẫu chia nhóm theo `ui.form` với nhóm Khác ở cuối và hiện lời gợi ý; đổi `ui:` khi còn hồ sơ mở vẫn áp dụng được.
+26. Hành động hàng loạt: chọn nhiều hồ sơ chờ xử lý, thanh phía trên bảng hiện các hành động hợp lệ, bấm Duyệt thì hộp xác nhận hiện số hồ sơ và bảng kết quả báo từng hồ sơ; một hồ sơ đã bị người khác xử lý trước thì báo lý do và các hồ sơ còn lại vẫn xong; hành động cần ghi chú bắt buộc nhập ghi chú; chọn hơn 50 hồ sơ thì nút mờ; vai không có quyền xử lý không có ô chọn.
+27. Tab Ứng dụng ngoài: đăng ký một ứng dụng với một vai của một mô hình, mã bí mật hiện một lần kèm nút sao chép; token lấy bằng mã đó đọc được mô hình đã gán, gọi bảng điều khiển hay quản trị người dùng thì 403; đổi mã thì mã cũ bị từ chối; xóa thì không lấy được token và hồ sơ đã tạo vẫn còn.
+28. Tài liệu OpenAPI của mô hình: nhập vào một công cụ API hoặc trình sinh thư viện không lỗi; đổi một trường rồi áp dụng và quay về thì tài liệu đổi theo; người không có vai của mô hình nhận 404.
 
 24. Trợ lý: khi chưa có API key, trang cấu hình vẫn mở được và không có gateway cá nhân hoặc lượt gọi model.
     Liên kết SSO, chọn API/model, kiểm kết nối và ghép bot theo [`assistant/README.md`](../assistant/README.md), rồi bật trợ lý.
@@ -165,6 +170,7 @@ Lệnh `dxos` và các tính năng chạy ngoài stack kiểm:
 4. Áp dụng một mô hình đổi bảng trong lúc có yêu cầu ghi hồ sơ của mô hình đó: không có 500, không hồ sơ nào ghi sai cấu trúc.
 5. Thống kê với vai `unit` và `own`, có và không có bộ lọc: `total` và tổng `byStatus` bằng số dòng của danh sách cùng bộ lọc.
 6. `dxos demo` trên stack có `dxos-cli`: tạo bốn tài khoản `judge_*` và 40 hồ sơ; `judge_student` thấy hồ sơ của mình, mỗi cán bộ chỉ thấy đơn vị mình, `judge_supervisor` thấy mọi hồ sơ và không có nút Tạo mới; chạy lại không nộp thêm hồ sơ và in mật khẩu mới; `dxos demo remove` gỡ bốn tài khoản.
+7. `dxos client add`, `list`, `rotate`, `remove` trên stack có `dxos-cli`: secret chỉ in ở `add` và `rotate`, `list` không có secret, `rotate` làm secret cũ bị từ chối, `remove` làm client không lấy được token.
 
 ## 7. Hồi quy
 

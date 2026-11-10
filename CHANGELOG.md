@@ -24,8 +24,12 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - Dòng `overdue` được ghi khi hồ sơ rời một hạn đã quá.
 - Tên hành động của quy trình không được trùng tên một dòng lịch sử của hệ thống như `created`, `overdue` hay `due_soon`; tệp đặt tên đó bị từ chối ở bước kiểm.
 - Dòng lịch sử `updated` ghi giá trị cũ và mới của từng trường đã đổi.
-- Bảy mẫu mô hình ở `backend/dx-engine/src/main/resources/templates/`: một cửa sinh viên, hỗ trợ kỹ thuật, sự cố thiết bị, đặt phòng, cấp quyền, mượn thiết bị, ghi chú.
+- Tám mẫu mô hình ở `backend/dx-engine/src/main/resources/templates/`: một cửa sinh viên, hỗ trợ kỹ thuật, sự cố thiết bị, đặt phòng, cấp quyền, mượn thiết bị, ghi chú, sổ tài sản.
 - Vai `report_ro` chỉ đọc cho công cụ báo cáo của người vận hành.
+- Kiểu trường `boolean` và `date`, trường `choice` hoặc `unit` có `multiple: true` để chọn nhiều giá trị (lưu thành mảng, lọc bằng `contains`).
+- Trường có `min` và `max` (số hoặc ngày), `pattern` (khớp cả chuỗi) và `required_when`, một phép so sánh trường khác như `kind == Hoãn thi`; API kiểm các quy tắc này và cơ sở dữ liệu giữ `min`, `max`, `pattern` bằng ràng buộc `CHECK`.
+- Thực thể có khối `ui:` chọn biểu tượng, nhóm và thứ tự menu, cột và sắp xếp mặc định của danh sách, nhóm trường của biểu mẫu và lời gợi ý; tệp cũ không cần sửa.
+- Mẫu `asset_register` (sổ tài sản) dùng đủ các kiểu và khối `ui:` mới.
 
 ### Trợ lý tùy chọn
 
@@ -51,6 +55,9 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - Khai báo lại một vai còn người giữ thì kế hoạch lên mức `MIGRATION` và báo số người có lại quyền.
 - Tệp mô hình lúc khởi động: `dxos start <tệp> [<tệp>...]` đưa một hay nhiều tệp vào, backend áp dụng lần lượt từng tệp nếu là tệp mới và có kế hoạch an toàn; tệp lỗi không chặn tệp sau, và mỗi tệp có một dòng kết quả.
 - `dxos plan` và `dxos apply [--accept MỨC]` đổi mô hình từ dòng lệnh, đăng nhập bằng client `dxos-cli`.
+- Siết `min`, `max`, `pattern`, bớt lựa chọn hoặc thêm `required_when` khi còn dòng vi phạm thì kế hoạch bị từ chối kèm số dòng; nới giới hạn hoặc đổi `ui:` áp dụng ngay, và đổi `ui:` không bị chặn khi còn hồ sơ mở.
+- Đổi trường giữa một giá trị và nhiều giá trị bị từ chối; đổi tên trường kéo theo đổi tên các ràng buộc `CHECK` của nó.
+- `GET /api/v1/meta/models/{model}/openapi` trả tài liệu OpenAPI của một mô hình đang chạy, sinh từ mô hình nên đổi theo mỗi lần áp dụng và quay về.
 
 ### Quyền và định danh
 
@@ -63,6 +70,7 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - Tab Người dùng và API `/api/v1/users` (ADMIN): tìm kiếm, vai theo từng ứng dụng, gán và gỡ vai và đơn vị, tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu.
 - Thay đổi tài khoản và việc áp dụng, quay về, tiếp tục, hủy bỏ mô hình ghi `audit_log` (`USER_*`, `MODEL_*`); `GET /api/v1/audit-logs` lọc theo đối tượng.
 - Keycloak từ chối tài khoản dịch vụ thì API trả 502 `ERR_ACCOUNT_SERVICE_DENIED`, tách khỏi `ERR_ACCOUNT_SERVICE_UNAVAILABLE` khi Keycloak không trả lời.
+- Ứng dụng ngoài: `GET`, `POST /api/v1/clients`, `POST /api/v1/clients/{name}/secret` và `DELETE /api/v1/clients/{name}` (ADMIN), cùng `dxos client add|list|rotate|remove` và tab Ứng dụng ngoài ở bảng điều khiển; mỗi ứng dụng là một client `dxos-app-{tên}` giữ đúng một vai của một mô hình, mã bí mật chỉ hiện một lần và không vào log hay sự kiện.
 
 ### Quy trình và hồ sơ
 
@@ -93,7 +101,7 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - Lịch sử hồ sơ nối thành chuỗi hash, mỗi giờ ghi một điểm neo ra kho đối tượng; `dxos history verify` và `GET /api/v1/history/verify` chỉ ra dòng bị sửa, xóa hoặc chèn.
 - `examples/history-witness` cho bên nhận giữ `eventId` và `hash` rồi so với hệ thống.
 - `dxos archive` xuất hồ sơ đã xong ra Parquet kèm `manifest.json`; `dxos archive check` kiểm lại.
-- `GET /api/v1/inbox/stream` báo cho giao diện khi một dòng lịch sử hồ sơ ghi xong, để hộp việc, danh sách và trang chi tiết đang mở tự đọc lại; khung không kèm nội dung hồ sơ, nhịp ping 20 giây, server đóng kênh sau 10 phút, tối đa 2000 kênh cùng lúc; route gateway giữ kiểm token và cho đọc 15 phút.
+- `GET /api/v1/inbox/stream` báo cho giao diện khi một dòng lịch sử hồ sơ ghi xong, để hộp việc, danh sách và trang chi tiết đang mở tự đọc lại; khung không kèm nội dung hồ sơ, nhịp ping 20 giây, server đóng kênh sau 10 phút, tối đa 8 kênh cho mỗi người và 2000 kênh cùng lúc; route gateway giữ kiểm token và cho đọc 15 phút.
 - `examples/itot-simulator` giả lập thiết bị tạo hồ sơ sự cố qua API; gửi lại cùng một quan sát thì lõi từ chối.
 
 ### Tệp đính kèm
@@ -121,11 +129,15 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - Bảng kế hoạch nêu rõ trạng thái hay hành động nào được thêm hoặc bỏ, và lý do một thay đổi bị từ chối bằng tiếng Việt.
 - Menu người dùng có "Tài khoản của tôi", mở Account Console của Keycloak.
 - Giao diện vừa màn hình rộng 360 px.
+- Danh sách của thực thể có quy trình cho chọn nhiều hồ sơ và thực hiện cùng một hành động, tối đa 50 hồ sơ mỗi lần; mỗi hồ sơ vẫn qua đủ luật của quy trình và hồ sơ bị từ chối báo lý do.
+- Ô nhập, cột, chi tiết và bộ lọc cho kiểu `boolean`, `date` và chọn nhiều giá trị; biểu mẫu báo giới hạn, mẫu chuỗi và điều kiện bắt buộc trước khi gửi.
+- Menu, biểu tượng, cột và sắp xếp mặc định, nhóm trường và lời gợi ý theo khối `ui:`; cột người dùng đã chọn đè lên cột mặc định.
+- Form soạn mô hình có ô cho nhiều giá trị, nhỏ nhất, lớn nhất, mẫu chuỗi và điều kiện bắt buộc.
 
 ### Cài đặt và vận hành
 
 - Cài bằng một lệnh: `dxos-install.sh` phát hành kèm mỗi bản tải gói, kiểm SHA-256 và cài vào `~/.dxos`; `install.sh --upgrade` nâng cấp bản đã cài, giữ `.env` và dữ liệu.
-- Lệnh `dxos`: `start`, `stop`, `status`, `logs`, `admin`, `update`, `doctor`, `backup`, `av`, `plan`, `apply`, `history`, `reconcile`, `archive`, `demo`, `uninstall`; `dxos start` tạo tài khoản `admin` đầu tiên với mật khẩu tạm.
+- Lệnh `dxos`: `start`, `stop`, `status`, `logs`, `admin`, `update`, `doctor`, `backup`, `av`, `plan`, `apply`, `history`, `reconcile`, `archive`, `demo`, `client`, `uninstall`; `dxos start` tạo tài khoản `admin` đầu tiên với mật khẩu tạm.
 - `dxos demo` tạo bốn tài khoản thử theo vai của mô hình Một cửa sinh viên và nộp khoảng 40 hồ sơ mẫu qua API chung; mật khẩu sinh ngẫu nhiên và in một lần; chạy lại không nộp trùng; `dxos demo remove` gỡ các tài khoản thử.
 - `deploy/make_env.sh` sinh `.env` với mật khẩu ngẫu nhiên; cài và chạy stack không cần Python.
 - Tự phục hồi: mọi service chạy lâu có `restart: unless-stopped`, `dxos reconcile` đưa stack về đúng khai báo và chạy mỗi phút bằng systemd user timer.

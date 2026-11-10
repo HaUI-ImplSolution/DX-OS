@@ -103,6 +103,8 @@ export const GUIDE: Record<Section, Guide> = {
 export const FIELD_TYPE_LABEL: Record<string, string> = {
   text: t("Văn bản"),
   number: t("Số"),
+  boolean: t("Đúng hoặc sai"),
+  date: t("Chỉ ngày"),
   datetime: t("Ngày giờ"),
   choice: t("Lựa chọn"),
   reference: t("Tham chiếu"),

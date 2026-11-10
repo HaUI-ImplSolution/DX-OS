@@ -1,6 +1,32 @@
 // SPDX-License-Identifier: Apache-2.0
 // The sign-in flow, the record screens, the inbox, the calendar and the statistics.
 export const app: Record<string, string> = {
+  // Field rules and filters
+  "Bắt buộc nhập khi {condition}": "Required when {condition}",
+  "Bắt buộc khi {condition}": "Required when {condition}",
+  "Từ {min} đến {max}": "From {min} to {max}",
+  "Từ {min} trở lên": "{min} or more",
+  "Tối đa {max}": "At most {max}",
+  "Từ ngày {date} trở đi": "On or after {date}",
+  "Đến hết ngày {date}": "On or before {date}",
+  "Không đúng định dạng": "Not in the expected format",
+  "{label} từ": "{label} from",
+  "{label} đến": "{label} to",
+  "Có": "Yes",
+  "Khác": "Other",
+  "Cập nhật lúc": "Updated",
+  "Không": "No",
+  // Several records at once
+  "{action}: {n} hồ sơ": "{action}: {n} records",
+  "Mỗi hồ sơ vẫn qua đủ luật của quy trình; hồ sơ không thực hiện được sẽ báo lý do, các hồ sơ khác vẫn được xử lý.":
+    "Each record still goes through every rule of the process; one that cannot be done reports why, and the others go on.",
+  "Đã chọn {n} mục": "{n} selected",
+  "Ghi chú chung": "Note for all",
+  "Lý do chung (không bắt buộc)": "Reason for all (optional)",
+  "Tối đa {n} hồ sơ mỗi lần": "At most {n} records at a time",
+  "Đang xử lý {done}/{total}": "Working {done}/{total}",
+  "Thực hiện": "Do it",
+  "{ok} hồ sơ xong, {failed} hồ sơ không thực hiện được": "{ok} done, {failed} could not be done",
   // Language switch
   "Đổi ngôn ngữ?": "Change the language?",
   "Trang sẽ tải lại và bản đang soạn chưa áp dụng sẽ mất.": "The page will reload and the draft that is not applied yet will be lost.",

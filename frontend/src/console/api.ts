@@ -292,3 +292,25 @@ export interface UserHistoryPage {
 
 export const listUserHistory = (id: string, page: number, size: number) =>
   request<UserHistoryPage>(`/audit-logs${queryString({ targetType: "USER", targetId: id, page, size })}`);
+
+export interface AppClient {
+  name: string;
+  clientId: string;
+  model: string;
+  role: string;
+  enabled: boolean;
+}
+
+// The answer to registering an application or giving it a new secret; the secret is shown only now.
+export interface AppSecret {
+  name: string;
+  clientId: string;
+  model?: string;
+  role?: string;
+  secret: string;
+}
+
+export const listApps = () => request<AppClient[]>("/clients");
+export const registerApp = (name: string, model: string, role: string) => request<AppSecret>("/clients", json("POST", { name, model, role }));
+export const renewAppSecret = (name: string) => request<AppSecret>(`/clients/${name}/secret`, { method: "POST" });
+export const removeApp = (name: string) => request<null>(`/clients/${name}`, { method: "DELETE" });

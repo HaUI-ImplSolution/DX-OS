@@ -5,6 +5,11 @@ import HaUI.ImplSolution.dxos.model.Model.Entity;
 import HaUI.ImplSolution.dxos.model.Model.Field;
 import HaUI.ImplSolution.dxos.model.Model.Process;
 import HaUI.ImplSolution.dxos.model.Model.Role;
+import HaUI.ImplSolution.dxos.model.Model.Ui;
+import HaUI.ImplSolution.dxos.model.Model.Ui.FormGroup;
+import HaUI.ImplSolution.dxos.model.Model.Ui.FormView;
+import HaUI.ImplSolution.dxos.model.Model.Ui.ListView;
+import HaUI.ImplSolution.dxos.model.Model.Ui.Menu;
 import HaUI.ImplSolution.dxos.model.ProcessFamily.Action;
 import HaUI.ImplSolution.dxos.model.ProcessFamily.Actor;
 import HaUI.ImplSolution.dxos.model.ProcessFamily.Condition;
@@ -13,6 +18,8 @@ import HaUI.ImplSolution.dxos.model.Model.Unit;
 import HaUI.ImplSolution.dxos.model.ModelException.Problem;
 import java.io.StringReader;
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.MarkedYAMLException;
@@ -297,7 +305,7 @@ public final class ModelParser {
       return null;
     }
     Map<String, Node> keys =
-        mapping(map, Set.of("label", "fields", "access", "process", "owner_via"));
+        mapping(map, Set.of("label", "fields", "access", "process", "owner_via", "ui"));
 
     Map<String, Field> fields = readFields(map, keys.get("fields"), entityNames);
     Map<String, Scope> access = readAccess(map, keys.get("access"), roleNames);
@@ -319,9 +327,10 @@ public final class ModelParser {
             + field.renamedFrom() + ", which still exists");
       }
     }
+    Ui ui = readUi(keys.get("ui"), fields, process != null);
     Node label = keys.get("label");
-    return new Entity(name, label == null ? name : scalar(label), fields, access, process,
-        ownerVia);
+    return new Entity(name, label == null ? name : scalar(label), fields, access, process, ownerVia,
+        ui);
   }
 
   private Map<String, Field> readFields(Node parent, Node node, Set<String> entityNames) {
@@ -334,6 +343,7 @@ public final class ModelParser {
       problem(node, "fields must be a mapping with at least one field");
       return fields;
     }
+    Map<String, Node> requiredWhen = new LinkedHashMap<>();
     for (NodeTuple tuple : map.getValue()) {
       Node keyNode = tuple.getKeyNode();
       String name = scalar(keyNode);
@@ -352,14 +362,30 @@ public final class ModelParser {
       Field field = readField(name, spec, entityNames);
       if (field != null) {
         fields.put(name, field);
+        for (NodeTuple part : spec.getValue()) {
+          if ("required_when".equals(scalar(part.getKeyNode()))) {
+            requiredWhen.put(name, part.getValueNode());
+          }
+        }
       }
     }
+    // The condition names other fields of the entity, so it is read once every field is known.
+    requiredWhen.forEach((name, whenNode) -> {
+      Field field = fields.get(name);
+      Condition condition = readRequiredWhen(whenNode, field, fields);
+      if (condition != null) {
+        fields.put(name,
+            new Field(field.name(), field.type(), field.label(), field.required(), field.unique(),
+                field.options(), field.to(), field.renamedFrom(), field.defaultValue(),
+                field.multiple(), field.min(), field.max(), field.pattern(), condition));
+      }
+    });
     return fields;
   }
 
   private Field readField(String name, MappingNode spec, Set<String> entityNames) {
-    Map<String, Node> keys = mapping(spec,
-        Set.of("type", "label", "required", "unique", "options", "to", "renamed_from", "default"));
+    Map<String, Node> keys = mapping(spec, Set.of("type", "label", "required", "unique", "options",
+        "to", "renamed_from", "default", "multiple", "min", "max", "pattern", "required_when"));
     Node typeNode = keys.get("type");
     if (typeNode == null) {
       problem(spec, "field " + name + " has no type");
@@ -368,7 +394,7 @@ public final class ModelParser {
     FieldType type = FieldType.of(scalar(typeNode)).orElse(null);
     if (type == null) {
       problem(typeNode, "unknown type " + scalar(typeNode)
-          + ", use text, number, datetime, choice, reference, user, unit or file");
+          + ", use text, number, datetime, date, boolean, choice, reference, user, unit or file");
       return null;
     }
     List<String> options = List.of();
@@ -395,14 +421,254 @@ public final class ModelParser {
     }
     boolean required = flag(keys.get("required"), "required");
     boolean unique = flag(keys.get("unique"), "unique");
+    boolean multiple = flag(keys.get("multiple"), "multiple");
+    if (multiple && type != FieldType.CHOICE) {
+      problem(keys.get("multiple"), "multiple only applies to a choice field");
+      multiple = false;
+    }
+    if (multiple && unique) {
+      problem(keys.get("unique"), "a field with several choices cannot be unique");
+    }
     if (type == FieldType.FILE && (required || unique)) {
       problem(spec, "a file field is filled by uploading, so it cannot be required or unique");
     }
+    if (type == FieldType.BOOLEAN && (required || unique)) {
+      problem(spec, "a boolean field is always true or false, so it cannot be required or unique;"
+          + " give it a default instead");
+    }
     String renamedFrom = readRenamedFrom(name, keys.get("renamed_from"));
-    String defaultValue = readDefault(type, options, unique, keys.get("default"));
+    String defaultValue = readDefault(type, options, unique, multiple, keys.get("default"));
+    String min = readBound(type, keys.get("min"), "min");
+    String max = readBound(type, keys.get("max"), "max");
+    if (min != null && max != null && compareBounds(type, min, max) > 0) {
+      problem(keys.get("min"), "min is above max");
+    }
+    String pattern = readPattern(type, keys.get("pattern"));
+    checkDefault(keys.get("default"), type, defaultValue, min, max, pattern);
     Node label = keys.get("label");
     return new Field(name, type, label == null ? name : scalar(label), required, unique, options,
-        to, renamedFrom, defaultValue);
+        to, renamedFrom, defaultValue, multiple, min, max, pattern, null);
+  }
+
+  // The bound of a number or date field, in the canonical text of the value.
+  private String readBound(FieldType type, Node node, String key) {
+    if (node == null) {
+      return null;
+    }
+    String value = scalar(node);
+    if (type == FieldType.NUMBER) {
+      try {
+        return new java.math.BigDecimal(value).stripTrailingZeros().toPlainString();
+      } catch (NumberFormatException e) {
+        problem(node, key + " of a number field must be a number");
+        return null;
+      }
+    }
+    if (type == FieldType.DATE) {
+      try {
+        return LocalDate.parse(value).toString();
+      } catch (DateTimeParseException e) {
+        problem(node, key + " of a date field must be a date like 2026-01-31");
+        return null;
+      }
+    }
+    problem(node, key + " only applies to a number or date field");
+    return null;
+  }
+
+  private static int compareBounds(FieldType type, String left, String right) {
+    return type == FieldType.NUMBER
+        ? new java.math.BigDecimal(left).compareTo(new java.math.BigDecimal(right))
+        : LocalDate.parse(left).compareTo(LocalDate.parse(right));
+  }
+
+  // A default has to meet the bounds and the pattern of its own field.
+  private void checkDefault(Node node, FieldType type, String value, String min, String max,
+      String pattern) {
+    if (node == null || value == null) {
+      return;
+    }
+    if (type == FieldType.NUMBER || type == FieldType.DATE) {
+      String canonical = type == FieldType.NUMBER ? canonicalNumber(value) : value;
+      if (canonical == null) {
+        return;
+      }
+      if (min != null && compareBounds(type, canonical, min) < 0) {
+        problem(node, "the default is below min");
+      }
+      if (max != null && compareBounds(type, canonical, max) > 0) {
+        problem(node, "the default is above max");
+      }
+    } else if (type == FieldType.TEXT && pattern != null && !Pattern.matches(pattern, value)) {
+      problem(node, "the default does not match the pattern");
+    }
+  }
+
+  private static String canonicalNumber(String value) {
+    try {
+      return new java.math.BigDecimal(value).stripTrailingZeros().toPlainString();
+    } catch (NumberFormatException e) {
+      return null;
+    }
+  }
+
+  private static final int PATTERN_LIMIT = 200;
+  // PostgreSQL refuses a repeat count above this.
+  private static final int PATTERN_REPEAT = 255;
+
+  private String readPattern(FieldType type, Node node) {
+    if (node == null) {
+      return null;
+    }
+    if (type != FieldType.TEXT) {
+      problem(node, "pattern only applies to a text field");
+      return null;
+    }
+    String pattern = scalar(node);
+    String reason = patternProblem(pattern);
+    if (reason != null) {
+      problem(node, reason);
+      return null;
+    }
+    return pattern;
+  }
+
+  // The patterns Java and PostgreSQL read the same way: literal characters, a dot, bracket classes
+  // of characters and ranges, groups, alternation and the quantifiers * + ? {n} {n,m} with counts
+  // up
+  // to 255. The pattern has to match the whole value, so it carries no ^ or $. A group that holds a
+  // quantifier is not itself repeated by * + or {n,m}, which keeps a match from backtracking
+  // without
+  // end.
+  static String patternProblem(String pattern) {
+    if (pattern.isEmpty() || pattern.length() > PATTERN_LIMIT) {
+      return "pattern is 1 to " + PATTERN_LIMIT + " characters";
+    }
+    boolean inClass = false;
+    // One entry per open group: whether a quantifier sits inside it.
+    java.util.ArrayDeque<Boolean> groups = new java.util.ArrayDeque<>();
+    boolean afterQuantifiedGroup = false;
+    for (int i = 0; i < pattern.length(); i++) {
+      char c = pattern.charAt(i);
+      char next = i + 1 < pattern.length() ? pattern.charAt(i + 1) : 0;
+      if (c == '\\') {
+        if (next == 0 || Character.isLetterOrDigit(next)) {
+          return "pattern may escape only punctuation; write [0-9] instead of \\d";
+        }
+        i++;
+        afterQuantifiedGroup = false;
+        continue;
+      }
+      if (inClass) {
+        if (c == '[') {
+          return "pattern has a bracket class inside a bracket class";
+        }
+        if (c == '&' && next == '&') {
+          return "pattern has && inside a bracket class";
+        }
+        inClass = c != ']';
+        continue;
+      }
+      boolean repeats = false;
+      boolean quantifier = true;
+      switch (c) {
+        case '*', '+' -> repeats = true;
+        case '?' -> repeats = false;
+        case '{' -> {
+          int close = pattern.indexOf('}', i);
+          java.util.regex.Matcher count = close < 0 ? null
+              : Pattern.compile("([0-9]{1,4})(?:(,)([0-9]{0,4}))?")
+                  .matcher(pattern.substring(i + 1, close));
+          if (count == null || !count.matches()) {
+            return "pattern has a { that is not a repeat like {3} or {2,5}";
+          }
+          int low = Integer.parseInt(count.group(1));
+          Integer high = count.group(2) == null ? Integer.valueOf(low)
+              : count.group(3).isEmpty() ? null : Integer.valueOf(count.group(3));
+          if (low > PATTERN_REPEAT || high != null && high > PATTERN_REPEAT) {
+            return "a repeat in pattern counts up to " + PATTERN_REPEAT;
+          }
+          if (high != null && high < low) {
+            return "a repeat in pattern has its upper count below the lower";
+          }
+          repeats = high == null || high > 1;
+          i = close;
+          next = i + 1 < pattern.length() ? pattern.charAt(i + 1) : 0;
+        }
+        default -> quantifier = false;
+      }
+      if (quantifier) {
+        if (next == '?' || next == '+') {
+          return "pattern has no lazy or possessive quantifiers";
+        }
+        if (repeats && afterQuantifiedGroup) {
+          return "pattern repeats a group that holds a repeat; write the group without the inner"
+              + " repeat or leave the outer repeat out";
+        }
+        if (!groups.isEmpty()) {
+          groups.pop();
+          groups.push(true);
+        }
+        afterQuantifiedGroup = false;
+        continue;
+      }
+      afterQuantifiedGroup = false;
+      switch (c) {
+        case '[' -> inClass = true;
+        case '(' -> {
+          if (next == '?') {
+            return "pattern has no (? groups, lookarounds or flags";
+          }
+          groups.push(false);
+        }
+        case ')' -> {
+          if (groups.isEmpty()) {
+            return "pattern has a ) without a (";
+          }
+          boolean held = groups.pop();
+          if (held && !groups.isEmpty()) {
+            groups.pop();
+            groups.push(true);
+          }
+          afterQuantifiedGroup = held;
+        }
+        case '^', '$' -> {
+          return "pattern matches the whole value, so leave out ^ and $";
+        }
+        default -> {
+        }
+      }
+    }
+    if (inClass) {
+      return "pattern has a [ without a ]";
+    }
+    if (!groups.isEmpty()) {
+      return "pattern has a ( without a )";
+    }
+    try {
+      Pattern.compile(pattern);
+    } catch (PatternSyntaxException e) {
+      return "pattern is not a valid expression: " + e.getDescription();
+    }
+    return null;
+  }
+
+  // required_when makes a field required for the records that meet one comparison on another field.
+  private Condition readRequiredWhen(Node node, Field field, Map<String, Field> fields) {
+    if (field.required()) {
+      problem(node, "required_when and required cannot both be set");
+      return null;
+    }
+    if (field.type() == FieldType.FILE || field.type() == FieldType.BOOLEAN) {
+      problem(node, "required_when does not apply to a " + field.type().key() + " field");
+      return null;
+    }
+    Condition condition = readCondition(node, fields, "required_when");
+    if (condition != null && condition.field().equals(field.name())) {
+      problem(node, "required_when cannot compare the field with itself");
+      return null;
+    }
+    return condition;
   }
 
   private String readRenamedFrom(String name, Node node) {
@@ -417,12 +683,15 @@ public final class ModelParser {
     return value;
   }
 
-  private String readDefault(FieldType type, List<String> options, boolean unique, Node node) {
+  private String readDefault(FieldType type, List<String> options, boolean unique, boolean multiple,
+      Node node) {
     if (node == null) {
       return null;
     }
     String value = scalar(node);
-    if (unique) {
+    if (multiple) {
+      problem(node, "a field with several choices cannot have a default");
+    } else if (unique) {
       problem(node, "a unique field cannot have a default");
     } else if (type == FieldType.NUMBER) {
       try {
@@ -434,10 +703,192 @@ public final class ModelParser {
       if (!options.contains(value)) {
         problem(node, "the default must be one of the options");
       }
+    } else if (type == FieldType.BOOLEAN) {
+      if (!"true".equals(value) && !"false".equals(value)) {
+        problem(node, "the default of a boolean field is true or false");
+      }
+    } else if (type == FieldType.DATE) {
+      try {
+        LocalDate.parse(value);
+      } catch (DateTimeParseException e) {
+        problem(node, "the default of a date field must be a date like 2026-01-31");
+      }
     } else if (type != FieldType.TEXT) {
-      problem(node, "only text, number, choice and unit fields can have a default");
+      problem(node, "only text, number, choice, unit, boolean and date fields can have a default");
     }
     return value;
+  }
+
+  // The ui block of an entity: the icon, the menu entry, the columns of the list, the groups of the
+  // form and the hints. It only chooses among the fields the entity has and changes no access.
+  private Ui readUi(Node node, Map<String, Field> fields, boolean hasProcess) {
+    if (node == null) {
+      return null;
+    }
+    if (!(node instanceof MappingNode map)) {
+      problem(node, "ui is a mapping with icon, menu, list, form or hints");
+      return null;
+    }
+    Map<String, Node> keys = mapping(map, Set.of("icon", "menu", "list", "form", "hints"));
+    String icon = null;
+    Node iconNode = keys.get("icon");
+    if (iconNode != null) {
+      icon = scalar(iconNode);
+      if (!Ui.ICONS.contains(icon)) {
+        problem(iconNode, "unknown icon " + icon + ", use " + String.join(", ", Ui.ICONS));
+        icon = null;
+      }
+    }
+    Set<String> columns = new LinkedHashSet<>(fields.keySet());
+    Ui.LIST_COLUMNS.stream().filter(column -> hasProcess || column.endsWith("_at"))
+        .forEach(columns::add);
+    return new Ui(icon, readMenu(keys.get("menu")), readListView(keys.get("list"), columns),
+        readFormView(keys.get("form"), fields), readHints(keys.get("hints"), fields));
+  }
+
+  private Menu readMenu(Node node) {
+    if (node == null) {
+      return null;
+    }
+    if (!(node instanceof MappingNode map)) {
+      problem(node, "menu is a mapping with group and order");
+      return null;
+    }
+    Map<String, Node> keys = mapping(map, Set.of("group", "order"));
+    String group = null;
+    if (keys.get("group") != null) {
+      group = scalar(keys.get("group"));
+      if (group.isBlank() || group.length() > 40) {
+        problem(keys.get("group"), "the menu group is text of 1 to 40 characters");
+        group = null;
+      }
+    }
+    int order = 0;
+    if (keys.get("order") != null) {
+      String text = scalar(keys.get("order"));
+      if (text.matches("[0-9]{1,4}")) {
+        order = Integer.parseInt(text);
+      } else {
+        problem(keys.get("order"), "the menu order is a whole number from 0 to 9999");
+      }
+    }
+    return new Menu(group, order);
+  }
+
+  private ListView readListView(Node node, Set<String> columns) {
+    if (node == null) {
+      return null;
+    }
+    if (!(node instanceof MappingNode map)) {
+      problem(node, "list is a mapping with columns and sort");
+      return null;
+    }
+    Map<String, Node> keys = mapping(map, Set.of("columns", "sort"));
+    List<String> shown = new ArrayList<>();
+    Node columnsNode = keys.get("columns");
+    if (columnsNode != null) {
+      if (!(columnsNode instanceof SequenceNode sequence) || sequence.getValue().isEmpty()) {
+        problem(columnsNode, "columns is a non-empty list of field names");
+      } else {
+        for (Node item : sequence.getValue()) {
+          String column = scalar(item);
+          if (!columns.contains(column)) {
+            problem(item, "column " + column + " is not a field of this entity, use: "
+                + String.join(", ", columns));
+          } else if (shown.contains(column)) {
+            problem(item, "column " + column + " is listed twice");
+          } else {
+            shown.add(column);
+          }
+        }
+      }
+    }
+    String sort = null;
+    Node sortNode = keys.get("sort");
+    if (sortNode != null) {
+      String text = scalar(sortNode);
+      String column = text.startsWith("-") ? text.substring(1) : text;
+      if (columns.contains(column)) {
+        sort = text;
+      } else {
+        problem(sortNode, "sort is a column name, with a leading minus for descending, use: "
+            + String.join(", ", columns));
+      }
+    }
+    return new ListView(List.copyOf(shown), sort);
+  }
+
+  private FormView readFormView(Node node, Map<String, Field> fields) {
+    if (node == null) {
+      return null;
+    }
+    if (!(node instanceof MappingNode map)) {
+      problem(node, "form is a mapping with groups");
+      return null;
+    }
+    Map<String, Node> keys = mapping(map, Set.of("groups"));
+    Node groupsNode = keys.get("groups");
+    if (!(groupsNode instanceof SequenceNode sequence) || sequence.getValue().isEmpty()) {
+      problem(groupsNode == null ? node : groupsNode,
+          "groups is a non-empty list of groups with a label and fields");
+      return null;
+    }
+    List<FormGroup> groups = new ArrayList<>();
+    Set<String> placed = new HashSet<>();
+    for (Node item : sequence.getValue()) {
+      if (!(item instanceof MappingNode group)) {
+        problem(item, "a group is a mapping with label and fields");
+        continue;
+      }
+      Map<String, Node> parts = mapping(group, Set.of("label", "fields"));
+      String label = parts.get("label") == null ? "" : scalar(parts.get("label"));
+      if (label.isBlank() || label.length() > 60) {
+        problem(parts.get("label") == null ? item : parts.get("label"),
+            "a group has a label of 1 to 60 characters");
+      }
+      List<String> names = new ArrayList<>();
+      Node fieldsNode = parts.get("fields");
+      if (!(fieldsNode instanceof SequenceNode list) || list.getValue().isEmpty()) {
+        problem(fieldsNode == null ? item : fieldsNode,
+            "a group has a non-empty list of field names");
+        continue;
+      }
+      for (Node field : list.getValue()) {
+        String name = scalar(field);
+        if (!fields.containsKey(name)) {
+          problem(field, "field " + name + " is not a field of this entity");
+        } else if (!placed.add(name)) {
+          problem(field, "field " + name + " is in two groups");
+        } else {
+          names.add(name);
+        }
+      }
+      groups.add(new FormGroup(label, List.copyOf(names)));
+    }
+    return new FormView(List.copyOf(groups));
+  }
+
+  private Map<String, String> readHints(Node node, Map<String, Field> fields) {
+    Map<String, String> hints = new LinkedHashMap<>();
+    if (node == null) {
+      return hints;
+    }
+    if (!(node instanceof MappingNode map)) {
+      problem(node, "hints maps a field name to a line of help");
+      return hints;
+    }
+    for (NodeTuple tuple : map.getValue()) {
+      String name = scalar(tuple.getKeyNode());
+      String text = scalar(tuple.getValueNode());
+      if (!fields.containsKey(name)) {
+        problem(tuple.getKeyNode(), "field " + name + " is not a field of this entity");
+      } else if (text.isBlank() || text.length() > 200) {
+        problem(tuple.getValueNode(), "a hint is text of 1 to 200 characters");
+      } else {
+        hints.put(name, text);
+      }
+    }
+    return hints;
   }
 
   private List<String> readOptions(Node parent, Node node) {
@@ -790,7 +1241,7 @@ public final class ModelParser {
       } else if (withdraw || draft.by != Actor.HANDLER) {
         problem(parts.get("when"), "when only applies to an action of the handler");
       } else {
-        draft.when = readCondition(parts.get("when"), fields);
+        draft.when = readCondition(parts.get("when"), fields, "when");
       }
     }
     if (added && (draft.from.isEmpty() || (!withdraw && draft.to == null))) {
@@ -838,8 +1289,8 @@ public final class ModelParser {
       Pattern.compile("^\\s*([a-z][a-z0-9_]*)\\s*(==|!=|<=|>=|<|>)\\s*(.+?)\\s*$");
 
   // One comparison of a field with a value, written as in "amount > 5000000".
-  private Condition readCondition(Node node, Map<String, Field> fields) {
-    String example = "when is one comparison like amount > 5000000, with ==, !=, <, <=, > or >=";
+  private Condition readCondition(Node node, Map<String, Field> fields, String key) {
+    String example = key + " is one comparison like amount > 5000000, with ==, !=, <, <=, > or >=";
     if (!(node instanceof ScalarNode text)) {
       problem(node, example);
       return null;
@@ -856,36 +1307,45 @@ public final class ModelParser {
         || value.startsWith("'") && value.endsWith("'"))) {
       value = value.substring(1, value.length() - 1);
     }
-    if (field == null || field.type() != FieldType.NUMBER && field.type() != FieldType.CHOICE
-        && field.type() != FieldType.TEXT) {
+    if (field == null || !comparable(field)) {
       problem(node,
-          "when must name a number, choice or text field of this entity, fields: "
-              + fields.values().stream()
-                  .filter(f -> f.type() == FieldType.NUMBER || f.type() == FieldType.CHOICE
-                      || f.type() == FieldType.TEXT)
-                  .map(Field::name).collect(java.util.stream.Collectors.joining(", ")));
+          key + " must name a number, choice, text or boolean field of this entity, fields: "
+              + fields.values().stream().filter(ModelParser::comparable).map(Field::name)
+                  .collect(java.util.stream.Collectors.joining(", ")));
       return null;
     }
     if (Condition.ordering(op) && field.type() != FieldType.NUMBER) {
-      problem(node,
-          "when compares " + field.name() + " with " + op + ", which only works on a number field");
+      problem(node, key + " compares " + field.name() + " with " + op
+          + ", which only works on a number field");
+      return null;
+    }
+    if (field.type() == FieldType.BOOLEAN && !"true".equals(value) && !"false".equals(value)) {
+      problem(node, key + " compares the boolean field " + field.name() + " with '" + value
+          + "', which is not true or false");
       return null;
     }
     if (field.type() == FieldType.NUMBER) {
       try {
         return new Condition(field.name(), op, new java.math.BigDecimal(value));
       } catch (NumberFormatException notNumber) {
-        problem(node, "when compares the number field " + field.name() + " with '" + value
+        problem(node, key + " compares the number field " + field.name() + " with '" + value
             + "', which is not a number");
         return null;
       }
     }
     if (field.type() == FieldType.CHOICE && !field.options().contains(value)) {
-      problem(node, "when compares " + field.name() + " with '" + value
+      problem(node, key + " compares " + field.name() + " with '" + value
           + "', which is not one of its options: " + String.join(", ", field.options()));
       return null;
     }
     return new Condition(field.name(), op, value);
+  }
+
+  // The fields a condition can compare: a number, a text, a choice of one value or a boolean.
+  private static boolean comparable(Field field) {
+    return !field.multiple()
+        && (field.type() == FieldType.NUMBER || field.type() == FieldType.CHOICE
+            || field.type() == FieldType.TEXT || field.type() == FieldType.BOOLEAN);
   }
 
   // The rules that make a set of states and actions a process a record can run through.

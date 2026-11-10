@@ -32,6 +32,16 @@ public class KeycloakAdminClient {
   // One page of accounts and how many match in all.
   public record Accounts(List<Account> items, long total) {}
 
+  // An outside application: a client that signs in with its own secret and holds one role of one
+  // model.
+  public record AppClient(String clientId, String model, String role, boolean enabled) {}
+
+  public static final String APP_CLIENT_PREFIX = "dxos-app-";
+  private static final String APP_ATTRIBUTE = "dxos.app";
+  private static final String APP_MODEL_ATTRIBUTE = "dxos.app.model";
+  private static final String APP_ROLE_ATTRIBUTE = "dxos.app.role";
+  private static final int MAX_APP_CLIENTS = 500;
+
   private static final int PEOPLE_PAGE = 500;
   private static final int MAX_PEOPLE_PAGES = 100;
   private static final int MAX_ROLES = 1000;
@@ -107,6 +117,126 @@ public class KeycloakAdminClient {
         throw new KeycloakAdminException(
             "Keycloak refused to create a client: HTTP " + e.getStatusCode().value(), e);
       }
+    } catch (KeycloakAdminException e) {
+      throw e;
+    } catch (RuntimeException e) {
+      throw new KeycloakAdminException("Keycloak is unreachable", e);
+    }
+  }
+
+  // Creates the client of an outside application with a service account that holds one role of a
+  // model, and returns its secret. The client carries the API audience and never signs a person in;
+  // a step that fails removes it again.
+  public String createAppClient(String clientId, String model, String modelClientId, String role) {
+    String token = accessToken();
+    try {
+      restClient.post().uri("/admin/realms/{realm}/clients", realm)
+          .headers(h -> h.setBearerAuth(token)).contentType(MediaType.APPLICATION_JSON)
+          .body(Map.of("clientId", clientId, "protocol", "openid-connect", "enabled", true,
+              "publicClient", false, "serviceAccountsEnabled", true, "standardFlowEnabled", false,
+              "directAccessGrantsEnabled", false, "attributes",
+              Map.of(APP_ATTRIBUTE, "true", APP_MODEL_ATTRIBUTE, model, APP_ROLE_ATTRIBUTE, role),
+              "protocolMappers",
+              List.of(Map.of(
+                  "name", "dxos-api-audience", "protocol", "openid-connect", "protocolMapper",
+                  "oidc-audience-mapper", "config", Map.of("included.custom.audience", "dxos-api",
+                      "access.token.claim", "true", "id.token.claim", "false")))))
+          .retrieve().toBodilessEntity();
+    } catch (RestClientResponseException e) {
+      if (e.getStatusCode().value() == 409) {
+        throw new InvalidStateException("The application " + clientId + " exists already");
+      }
+      throw new KeycloakAdminException(
+          "Keycloak refused to create a client: HTTP " + e.getStatusCode().value(), e);
+    } catch (RuntimeException e) {
+      throw new KeycloakAdminException("Keycloak is unreachable", e);
+    }
+    try {
+      String uuid = findClientUuid(clientId)
+          .orElseThrow(() -> new KeycloakAdminException("Keycloak has no client " + clientId));
+      grantClientRole(serviceAccountId(uuid), modelClientId, role);
+      return clientSecret(uuid, false);
+    } catch (RuntimeException e) {
+      deleteClient(clientId);
+      throw e;
+    }
+  }
+
+  // Every application of the realm, by client id.
+  public List<AppClient> appClients() {
+    return list("/admin/realms/{realm}/clients?clientId={name}&search=true&max=" + MAX_APP_CLIENTS,
+        APP_CLIENT_PREFIX).stream().filter(KeycloakAdminClient::isApp)
+        .map(KeycloakAdminClient::appClient)
+        .sorted(java.util.Comparator.comparing(AppClient::clientId)).toList();
+  }
+
+  // The application with this client id; nothing for a client that is not an application.
+  public java.util.Optional<AppClient> findAppClient(String clientId) {
+    return list("/admin/realms/{realm}/clients?clientId={name}", clientId).stream()
+        .filter(found -> clientId.equals(found.get("clientId"))).filter(KeycloakAdminClient::isApp)
+        .map(KeycloakAdminClient::appClient).findFirst();
+  }
+
+  // Gives the application a new secret and returns it; the old one stops working.
+  public String rotateAppSecret(String clientId) {
+    findAppClient(clientId)
+        .orElseThrow(() -> new ResourceNotFoundException("Application " + clientId + " not found"));
+    String uuid = findClientUuid(clientId)
+        .orElseThrow(() -> new ResourceNotFoundException("Application " + clientId + " not found"));
+    return clientSecret(uuid, true);
+  }
+
+  // Deletes the application and its service account.
+  public void deleteAppClient(String clientId) {
+    findAppClient(clientId)
+        .orElseThrow(() -> new ResourceNotFoundException("Application " + clientId + " not found"));
+    deleteClient(clientId);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static boolean isApp(Map<String, Object> client) {
+    return client.get("attributes") instanceof Map<?, ?> attributes
+        && "true".equals(attributes.get(APP_ATTRIBUTE))
+        && String.valueOf(client.get("clientId")).startsWith(APP_CLIENT_PREFIX);
+  }
+
+  private static AppClient appClient(Map<String, Object> client) {
+    Map<?, ?> attributes = (Map<?, ?>) client.get("attributes");
+    return new AppClient(client.get("clientId").toString(),
+        String.valueOf(attributes.get(APP_MODEL_ATTRIBUTE)),
+        String.valueOf(attributes.get(APP_ROLE_ATTRIBUTE)),
+        !Boolean.FALSE.equals(client.get("enabled")));
+  }
+
+  @SuppressWarnings("unchecked")
+  private String serviceAccountId(String clientUuid) {
+    try {
+      Map<String, Object> account = restClient.get()
+          .uri("/admin/realms/{realm}/clients/{uuid}/service-account-user", realm, clientUuid)
+          .headers(h -> h.setBearerAuth(accessToken())).retrieve().body(Map.class);
+      return account.get("id").toString();
+    } catch (RestClientResponseException e) {
+      throw new KeycloakAdminException(
+          "Keycloak refused a service account lookup: HTTP " + e.getStatusCode().value(), e);
+    } catch (KeycloakAdminException e) {
+      throw e;
+    } catch (RuntimeException e) {
+      throw new KeycloakAdminException("Keycloak is unreachable", e);
+    }
+  }
+
+  // The secret of a client, or a new one when renew is set.
+  @SuppressWarnings("unchecked")
+  private String clientSecret(String clientUuid, boolean renew) {
+    try {
+      var request = renew ? restClient.post() : restClient.get();
+      Map<String, Object> secret =
+          request.uri("/admin/realms/{realm}/clients/{uuid}/client-secret", realm, clientUuid)
+              .headers(h -> h.setBearerAuth(accessToken())).retrieve().body(Map.class);
+      return secret.get("value").toString();
+    } catch (RestClientResponseException e) {
+      throw new KeycloakAdminException(
+          "Keycloak refused a client secret request: HTTP " + e.getStatusCode().value(), e);
     } catch (KeycloakAdminException e) {
       throw e;
     } catch (RuntimeException e) {

@@ -36,6 +36,10 @@ Mốc dưới đây là dự kiến.
 | Egress trợ lý | Runtime chưa có allowlist toàn mạng; endpoint compatible đang tắt; cần triển khai và kiểm chứng giới hạn kết nối toàn container |
 | Khóa/token backup trợ lý | Key và capability nằm cùng kho restic; người giải mã backup có thể đọc secret/giả danh runtime; cần tách quyền giữ khóa/token và có cách thu hồi, thay mới |
 | Ứng dụng Tầng 2 | Chưa phủ I của H-P-D-I; để sau như đã định |
+| Khóa chống chạy lặp | Tạo hồ sơ và gọi hành động chưa nhận `Idempotency-Key`: bên ngoài gọi lại khi lỗi mạng có thể tạo trùng |
+| Hành động hoàn tất gọi ra ngoài | Chỉ có `add_to_group` và `remove_from_group`; chưa có thao tác gọi tới một đích của webhook |
+| Bảng Kanban và xuất danh sách | Chưa có bảng Kanban theo trạng thái; danh sách chưa xuất ra CSV (chỉ xuất, không nhập) |
+| Giới hạn của kiểu và thao tác mới | Đổi vai của một ứng dụng ngoài bằng cách gỡ rồi đăng ký lại; hành động hàng loạt không có hoàn tác và tối đa 50 hồ sơ mỗi lần; trường nhiều lựa chọn không có giá trị mặc định; trường ngày chưa làm nguồn của điều kiện `when` và `required_when` |
 
 ## 4. Giới hạn chấp nhận
 
@@ -62,4 +66,4 @@ Mốc dưới đây là dự kiến.
 | Ủy quyền có phạm vi và thời hạn | Không có; chạm nhiều đường kiểm quyền |
 | Quyền theo từng trường | Không có; phải phủ mọi đường dữ liệu đi ra: danh sách, bộ lọc, số đếm, lịch sử và webhook |
 | Kiểm tài liệu và OpenAPI chiều ngược | `check_docs.py` kiểm endpoint tài liệu nêu có trong OpenAPI; không kiểm chiều ngược vì `docs/API.md` chỉ liệt kê các đường dẫn chính và viết tắt đường dẫn, nên sẽ báo nhầm |
-| Kiểm thử tự động chưa phủ một số ý | Chưa phủ khe hở khi áp dụng (áp dụng một mô hình đổi bảng trong lúc có yêu cầu ghi hồ sơ), vì kiểm chạy đua dễ lúc đỏ lúc xanh; ý này kiểm tay theo mục 6 của `docs/TESTING.md` |
+| Kiểm thử tự động chưa phủ một số ý | Chưa phủ khe hở khi áp dụng (áp dụng một mô hình đổi bảng trong lúc có yêu cầu ghi hồ sơ), vì kiểm chạy đua dễ lúc đỏ lúc xanh; ý này kiểm tay theo mục 6 của `docs/TESTING.md`; ứng dụng ngoài, kiểu và ràng buộc mới, `required_when`, `ui:`, tài liệu OpenAPI theo mô hình và giới hạn luồng thông báo cũng chỉ kiểm tay theo mục đó, chưa có script trong CI |

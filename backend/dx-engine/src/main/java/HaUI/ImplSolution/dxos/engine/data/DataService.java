@@ -25,9 +25,11 @@ import HaUI.ImplSolution.dxos.model.Model.Field;
 import HaUI.ImplSolution.dxos.model.ProcessFamily;
 import HaUI.ImplSolution.dxos.model.ProcessFamily.Action;
 import HaUI.ImplSolution.dxos.model.ProcessFamily.Actor;
+import HaUI.ImplSolution.dxos.model.ProcessFamily.Condition;
 import HaUI.ImplSolution.dxos.model.Scope;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -37,6 +39,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.postgresql.util.PSQLException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -266,7 +269,7 @@ public class DataService {
     List<String> markers = new ArrayList<>(List.of(":created_by"));
     values.forEach((name, value) -> {
       names.add(ident(name));
-      markers.add(":" + name);
+      markers.add(marker(entity, name));
       params.addValue(name, value);
     });
     if (entity.process() != null && entity.process().deadline() != null) {
@@ -305,6 +308,7 @@ public class DataService {
     requireReachableParent(model, entity, access, values);
     requireOpen(model, entity, access, id);
     Changed changed = changes(model, entity, access, id, values);
+    requireConditionalFields(model, entity, id, values);
     Map<String, Object> changes = changed.values();
     if (changes.isEmpty()) {
       return get(model, entity, id);
@@ -315,7 +319,7 @@ public class DataService {
     MapSqlParameterSource params = new MapSqlParameterSource("id", id);
     List<String> sets = new ArrayList<>();
     changes.forEach((name, value) -> {
-      sets.add(ident(name) + " = :" + name);
+      sets.add(ident(name) + " = " + marker(entity, name));
       params.addValue(name, value);
     });
     String scope = scope(model, entity, access.writes(), params);
@@ -342,7 +346,7 @@ public class DataService {
     }
     String status = (String) rows.get(0).get("status");
     events.record(model, entity, id, "updated", status, status, null,
-        events.changesOf(changes, changed.before()));
+        events.changesOf(historyValues(entity, changes), changed.before()));
     return present(rows.get(0));
   }
 
@@ -705,7 +709,7 @@ public class DataService {
       String name = names.get(i);
       params.addValue(name, values.get(name));
       columns.add(ident(name) + " IS DISTINCT FROM CAST(:" + name + " AS "
-          + DdlGenerator.sqlType(entity.fields().get(name).type()) + ") AS d" + i);
+          + sqlType(entity.fields().get(name)) + ") AS d" + i);
       columns.add(ident(name) + " AS o" + i);
     }
     String scope = scope(model, entity, access.writes(), params);
@@ -835,7 +839,16 @@ public class DataService {
       FieldType type = columnType(entity, field);
       String name = "f" + index++;
       String column = ident(field);
-      if ("in".equals(operator)) {
+      boolean several = entity.fields().get(field) != null && entity.fields().get(field).multiple();
+      if (several != "contains".equals(operator)) {
+        throw new ModelValidationException(param.getKey(),
+            several ? "a field with several choices is filtered with contains"
+                : "contains applies to a field with several choices");
+      }
+      if (several) {
+        values.addValue(name, param.getValue());
+        where.add(":" + name + " = ANY(" + column + ")");
+      } else if ("in".equals(operator)) {
         List<Object> items = new ArrayList<>();
         for (String raw : param.getValue().split(",")) {
           items.add(parse(field, type, raw.trim()));
@@ -937,6 +950,12 @@ public class DataService {
           errors.put(field.name(), "is required");
         }
       }
+      Map<String, Object> record = new LinkedHashMap<>();
+      for (Field field : entity.fields().values()) {
+        record.put(field.name(),
+            values.containsKey(field.name()) ? values.get(field.name()) : field.defaultValue());
+      }
+      conditionalErrors(entity, record).forEach(errors::putIfAbsent);
     }
     if (!errors.isEmpty()) {
       throw new ModelValidationException(errors);
@@ -946,13 +965,60 @@ public class DataService {
 
   // No value: an empty string, which for a required text field includes one of only spaces.
   private static boolean isEmpty(Field field, Object value) {
+    if (value instanceof List<?> list) {
+      return list.isEmpty();
+    }
     if (!(value instanceof String text)) {
       return false;
     }
-    return field.type() == FieldType.TEXT ? field.required() && text.isBlank() : text.isEmpty();
+    return field.type() == FieldType.TEXT
+        ? (field.required() || field.requiredWhen() != null) && text.isBlank()
+        : text.isEmpty();
   }
 
+  // The value in the type of its column, within the bounds and the pattern of the field.
   private static Object convert(Field field, Object value) {
+    Object converted = convertType(field, value);
+    if (converted instanceof BigDecimal number) {
+      if (field.min() != null && number.compareTo(new BigDecimal(field.min())) < 0) {
+        throw new IllegalArgumentException("must be at least " + field.min());
+      }
+      if (field.max() != null && number.compareTo(new BigDecimal(field.max())) > 0) {
+        throw new IllegalArgumentException("must be at most " + field.max());
+      }
+    } else if (converted instanceof LocalDate date) {
+      if (field.min() != null && date.isBefore(LocalDate.parse(field.min()))) {
+        throw new IllegalArgumentException("must be on or after " + field.min());
+      }
+      if (field.max() != null && date.isAfter(LocalDate.parse(field.max()))) {
+        throw new IllegalArgumentException("must be on or before " + field.max());
+      }
+    } else if (converted instanceof String text && field.pattern() != null) {
+      requireMatch(field, text);
+    }
+    return converted;
+  }
+
+  private static void requireMatch(Field field, String text) {
+    if (text.length() > PatternCheck.MAX_LENGTH) {
+      throw new IllegalArgumentException(
+          "must be at most " + PatternCheck.MAX_LENGTH + " characters");
+    }
+    boolean matches;
+    try {
+      matches = PatternCheck.matches(field.pattern(), text);
+    } catch (PatternCheck.TooComplex e) {
+      throw new IllegalArgumentException("is too complex to check against the pattern");
+    }
+    if (!matches) {
+      throw new IllegalArgumentException("must match the pattern " + field.pattern());
+    }
+  }
+
+  private static Object convertType(Field field, Object value) {
+    if (field.multiple()) {
+      return arrayLiteral(field, value);
+    }
     return switch (field.type()) {
       case TEXT, USER -> {
         if (!(value instanceof String text)) {
@@ -975,8 +1041,95 @@ public class DataService {
       }
       case DATETIME -> parseDate(String.valueOf(value));
       case REFERENCE -> parseId(String.valueOf(value));
+      case BOOLEAN -> parseBoolean(String.valueOf(value));
+      case DATE -> parseLocalDate(String.valueOf(value));
       case FILE -> throw new IllegalArgumentException("is set by uploading a file");
     };
+  }
+
+  // Several choices go to the column as a PostgreSQL array literal, in the order of the options and
+  // without repeats, so the same choices are always stored the same way.
+  private static String arrayLiteral(Field field, Object value) {
+    if (!(value instanceof List<?> chosen)) {
+      throw new IllegalArgumentException("must be a list of choices from " + field.options());
+    }
+    for (Object item : chosen) {
+      if (!(item instanceof String text) || !field.options().contains(text)) {
+        throw new IllegalArgumentException("must be a list of choices from " + field.options());
+      }
+    }
+    return field.options().stream().filter(chosen::contains)
+        .map(option -> "\"" + option.replace("\\", "\\\\").replace("\"", "\\\"") + "\"")
+        .collect(Collectors.joining(",", "{", "}"));
+  }
+
+  // The values as the history shows them: several choices as the list of what was chosen.
+  private static Map<String, Object> historyValues(Entity entity, Map<String, Object> values) {
+    Map<String, Object> shown = new LinkedHashMap<>();
+    values.forEach((name, value) -> {
+      Field field = entity.fields().get(name);
+      shown.put(name,
+          field != null && field.multiple() && value instanceof String literal ? choicesOf(literal)
+              : value);
+    });
+    return shown;
+  }
+
+  // The choices of an array literal written by arrayLiteral, separated by commas.
+  private static String choicesOf(String literal) {
+    java.util.regex.Matcher item = Pattern.compile("\"((?:[^\"\\\\]|\\\\.)*)\"").matcher(literal);
+    List<String> choices = new ArrayList<>();
+    while (item.find()) {
+      choices.add(item.group(1).replaceAll("\\\\(.)", "$1"));
+    }
+    return String.join(", ", choices);
+  }
+
+  // The SQL type a value is cast to when it is compared with a column.
+  private static String sqlType(Field field) {
+    String type = DdlGenerator.sqlType(field.type());
+    return field.multiple() ? type + "[]" : type;
+  }
+
+  // The marker of a value in an INSERT or UPDATE; several choices need a cast to an array.
+  private static String marker(Entity entity, String name) {
+    Field field = entity.fields().get(name);
+    return field != null && field.multiple() ? "CAST(:" + name + " AS TEXT[])" : ":" + name;
+  }
+
+  // The fields that are required when another field of the record meets a condition, and hold no
+  // value; the record maps each field to its value, null for none.
+  private static Map<String, String> conditionalErrors(Entity entity, Map<String, Object> record) {
+    Map<String, String> errors = new LinkedHashMap<>();
+    for (Field field : entity.fields().values()) {
+      Condition condition = field.requiredWhen();
+      if (condition == null) {
+        continue;
+      }
+      Object value = record.get(field.name());
+      boolean missing = value == null || value instanceof String text && text.isBlank();
+      if (missing && condition.test(record.get(condition.field()))) {
+        errors.put(field.name(), "is required when " + condition.text());
+      }
+    }
+    return errors;
+  }
+
+  // The record as it will be once the values are written: what it holds now, with the values over
+  // it.
+  private void requireConditionalFields(Model model, Entity entity, long id,
+      Map<String, Object> values) {
+    if (entity.fields().values().stream().noneMatch(field -> field.requiredWhen() != null)) {
+      return;
+    }
+    Map<String, Object> record = new LinkedHashMap<>(jdbc.queryForMap(
+        "SELECT " + columns(entity) + " FROM " + table(model, entity) + " WHERE id = :id",
+        new MapSqlParameterSource("id", id)));
+    record.putAll(values);
+    Map<String, String> errors = conditionalErrors(entity, record);
+    if (!errors.isEmpty()) {
+      throw new ModelValidationException(errors);
+    }
   }
 
   private static Object parse(String field, FieldType type, String raw) {
@@ -985,10 +1138,27 @@ public class DataService {
         case NUMBER -> new BigDecimal(raw);
         case DATETIME -> parseDate(raw);
         case REFERENCE -> parseId(raw);
+        case BOOLEAN -> parseBoolean(raw);
+        case DATE -> parseLocalDate(raw);
         default -> raw;
       };
     } catch (IllegalArgumentException e) {
       throw new ModelValidationException("filter." + field, e.getMessage());
+    }
+  }
+
+  private static Boolean parseBoolean(String raw) {
+    if ("true".equals(raw) || "false".equals(raw)) {
+      return Boolean.valueOf(raw);
+    }
+    throw new IllegalArgumentException("must be true or false");
+  }
+
+  private static LocalDate parseLocalDate(String raw) {
+    try {
+      return LocalDate.parse(raw);
+    } catch (DateTimeParseException e) {
+      throw new IllegalArgumentException("must be a date like 2026-01-31");
     }
   }
 
@@ -1011,10 +1181,28 @@ public class DataService {
   // A row as the API shows it: timestamps as instants.
   private static Map<String, Object> present(Map<String, Object> row) {
     Map<String, Object> shown = new LinkedHashMap<>();
-    row.forEach(
-        (key, value) -> shown.put(key, value instanceof Timestamp timestamp ? timestamp.toInstant()
-            : value instanceof OffsetDateTime time ? time.toInstant() : value));
+    row.forEach((key, value) -> shown.put(key, shownValue(value)));
     return shown;
+  }
+
+  private static Object shownValue(Object value) {
+    if (value instanceof Timestamp timestamp) {
+      return timestamp.toInstant();
+    }
+    if (value instanceof OffsetDateTime time) {
+      return time.toInstant();
+    }
+    if (value instanceof java.sql.Date date) {
+      return date.toLocalDate().toString();
+    }
+    if (value instanceof java.sql.Array array) {
+      try {
+        return List.of((Object[]) array.getArray());
+      } catch (java.sql.SQLException e) {
+        throw new IllegalStateException("cannot read an array column", e);
+      }
+    }
+    return value;
   }
 
   private RuntimeException translate(Entity entity, DataIntegrityViolationException e) {
@@ -1031,6 +1219,11 @@ public class DataService {
         };
         if (prefix != null && constraint.startsWith(prefix + entity.name() + "_")) {
           String field = constraint.substring((prefix + entity.name() + "_").length());
+          // A bound or pattern constraint adds a "$min", "$max" or "$re" to the name of its field.
+          int mark = field.indexOf('$');
+          if (mark >= 0) {
+            field = field.substring(0, mark);
+          }
           String message = switch (prefix) {
             case "uq_" -> "already exists";
             case "fk_" -> "refers to a record that does not exist";

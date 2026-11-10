@@ -33,7 +33,7 @@ public final class ModelDiff {
       List<String> options) {}
 
   public enum Rule {
-    REQUIRED, UNIQUE, OPTIONS, NEW_REQUIRED
+    REQUIRED, REQUIRED_WHEN, UNIQUE, OPTIONS, ELEMENTS, MIN, MAX, PATTERN, NEW_REQUIRED
   }
 
   public final List<Change> changes = new ArrayList<>();
@@ -148,6 +148,9 @@ public final class ModelDiff {
     if (field.required() && field.defaultValue() == null) {
       checks.add(new RowCheck(entity.name(), field.name(), null, Rule.NEW_REQUIRED, List.of()));
     }
+    if (field.requiredWhen() != null) {
+      checks.add(new RowCheck(entity.name(), field.name(), null, Rule.REQUIRED_WHEN, List.of()));
+    }
   }
 
   private void changeField(Entity entity, Field before, Field field) {
@@ -156,6 +159,11 @@ public final class ModelDiff {
       rejections.add(
           "Field " + entity.name() + "." + name + " changes its type from " + before.type().key()
               + " to " + field.type().key() + ", which is not supported; add a new field instead");
+      return;
+    }
+    if (before.multiple() != field.multiple()) {
+      rejections.add("Field " + entity.name() + "." + name + " changes between one value and"
+          + " several, which is not supported; add a new field instead");
       return;
     }
     if (field.type() == FieldType.REFERENCE && !Objects.equals(before.to(), field.to())) {
@@ -180,7 +188,27 @@ public final class ModelDiff {
       changes.add(new Change(narrower ? Level.MIGRATION : Level.SAFE, "CHANGE_OPTIONS",
           entity.name(), name, String.join(", ", field.options())));
       if (narrower) {
-        checks.add(new RowCheck(entity.name(), name, column, Rule.OPTIONS, field.options()));
+        checks.add(new RowCheck(entity.name(), name, column,
+            field.multiple() ? Rule.ELEMENTS : Rule.OPTIONS, field.options()));
+      }
+    }
+    compareBound(entity, before, field, column, true);
+    compareBound(entity, before, field, column, false);
+    if (!Objects.equals(before.pattern(), field.pattern())) {
+      boolean added = field.pattern() != null;
+      changes.add(new Change(added ? Level.MIGRATION : Level.SAFE,
+          added ? "CHANGE_PATTERN" : "DROP_PATTERN", entity.name(), name, field.pattern()));
+      if (added) {
+        checks
+            .add(new RowCheck(entity.name(), name, column, Rule.PATTERN, List.of(field.pattern())));
+      }
+    }
+    if (!Objects.equals(before.requiredWhen(), field.requiredWhen())) {
+      boolean added = field.requiredWhen() != null;
+      changes.add(new Change(added ? Level.MIGRATION : Level.SAFE,
+          added ? "CHANGE_REQUIRED_WHEN" : "DROP_REQUIRED_WHEN", entity.name(), name, null));
+      if (added) {
+        checks.add(new RowCheck(entity.name(), name, column, Rule.REQUIRED_WHEN, List.of()));
       }
     }
     if (!Objects.equals(before.label(), field.label())) {
@@ -189,6 +217,32 @@ public final class ModelDiff {
     if (!Objects.equals(before.defaultValue(), field.defaultValue())) {
       changes.add(new Change(Level.SAFE, "CHANGE_DEFAULT", entity.name(), name, null));
     }
+  }
+
+  // A lower or upper bound: lifting it applies at once, adding or tightening it needs the rows to
+  // fit.
+  private void compareBound(Entity entity, Field before, Field field, String column,
+      boolean lower) {
+    String was = lower ? before.min() : before.max();
+    String now = lower ? field.min() : field.max();
+    if (Objects.equals(was, now)) {
+      return;
+    }
+    String kind = (now == null ? "DROP_" : "CHANGE_") + (lower ? "MIN" : "MAX");
+    boolean tighter = now != null && (was == null || stricter(field, was, now, lower));
+    changes.add(
+        new Change(tighter ? Level.MIGRATION : Level.SAFE, kind, entity.name(), field.name(), now));
+    if (tighter) {
+      checks.add(new RowCheck(entity.name(), field.name(), column, lower ? Rule.MIN : Rule.MAX,
+          List.of(now)));
+    }
+  }
+
+  private static boolean stricter(Field field, String was, String now, boolean lower) {
+    int order = field.type() == FieldType.DATE
+        ? java.time.LocalDate.parse(now).compareTo(java.time.LocalDate.parse(was))
+        : new java.math.BigDecimal(now).compareTo(new java.math.BigDecimal(was));
+    return lower ? order > 0 : order < 0;
   }
 
   private void compareRest(Entity old, Entity entity) {
@@ -200,6 +254,9 @@ public final class ModelDiff {
     }
     if (!Objects.equals(old.label(), entity.label())) {
       changes.add(new Change(Level.SAFE, "CHANGE_LABEL", entity.name(), null, entity.label()));
+    }
+    if (!Objects.equals(old.ui(), entity.ui())) {
+      changes.add(new Change(Level.SAFE, "CHANGE_UI", entity.name(), null, null));
     }
     Process before = old.process();
     Process after = entity.process();

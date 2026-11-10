@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.engine.apply;
 
+import static HaUI.ImplSolution.dxos.engine.apply.Sql.constraint;
 import static HaUI.ImplSolution.dxos.engine.apply.Sql.ident;
 import static HaUI.ImplSolution.dxos.engine.apply.Sql.literal;
 import static HaUI.ImplSolution.dxos.engine.apply.Sql.table;
@@ -61,8 +62,7 @@ public final class DdlGenerator {
     }
     for (Field field : entity.fields().values()) {
       String name = names.getOrDefault(field.name(), field.name());
-      StringBuilder column =
-          new StringBuilder(ident(name)).append(' ').append(sqlType(field.type()));
+      StringBuilder column = new StringBuilder(ident(name)).append(' ').append(sqlType(field));
       if (field.defaultValue() != null) {
         column.append(" DEFAULT ").append(field.type() == FieldType.NUMBER ? field.defaultValue()
             : literal(field.defaultValue()));
@@ -77,8 +77,25 @@ public final class DdlGenerator {
       if (field.type() == FieldType.CHOICE || field.type() == FieldType.UNIT) {
         String values =
             field.options().stream().map(Sql::literal).collect(Collectors.joining(", "));
+        String test = field.multiple() ? ident(name) + " <@ ARRAY[" + values + "]::text[]"
+            : ident(name) + " IN (" + values + ")";
         column.append(" CONSTRAINT ").append(ident("ck_" + entity.name() + "_" + name))
-            .append(" CHECK (").append(ident(name)).append(" IN (").append(values).append("))");
+            .append(" CHECK (").append(test).append(")");
+      }
+      if (field.min() != null) {
+        column.append(" CONSTRAINT ")
+            .append(constraint("ck_" + entity.name() + "_" + name + "$min")).append(" CHECK (")
+            .append(ident(name)).append(" >= ").append(bound(field, field.min())).append(")");
+      }
+      if (field.max() != null) {
+        column.append(" CONSTRAINT ")
+            .append(constraint("ck_" + entity.name() + "_" + name + "$max")).append(" CHECK (")
+            .append(ident(name)).append(" <= ").append(bound(field, field.max())).append(")");
+      }
+      if (field.pattern() != null) {
+        column.append(" CONSTRAINT ").append(constraint("ck_" + entity.name() + "_" + name + "$re"))
+            .append(" CHECK (").append(ident(name)).append(" ~ ")
+            .append(literal(anchored(field.pattern()))).append(")");
       }
       columns.add(column.toString());
     }
@@ -128,12 +145,14 @@ public final class DdlGenerator {
         .append(" RENAME COLUMN ").append(ident(from)).append(" TO ").append(ident(to))
         .append("; END IF; ");
     for (String kind : List.of("uq_", "ck_", "fk_")) {
-      String oldName = kind + prefix + from;
-      body.append("IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = ")
-          .append(literal(oldName)).append(" AND conrelid = ").append(literal(table(model, entity)))
-          .append("::regclass) THEN ALTER TABLE ").append(table(model, entity))
-          .append(" RENAME CONSTRAINT ").append(ident(oldName)).append(" TO ")
-          .append(ident(kind + prefix + to)).append("; END IF; ");
+      for (String suffix : kind.equals("ck_") ? List.of("", "$min", "$max", "$re") : List.of("")) {
+        String oldName = kind + prefix + from + suffix;
+        body.append("IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = ")
+            .append(literal(oldName)).append(" AND conrelid = ")
+            .append(literal(table(model, entity))).append("::regclass) THEN ALTER TABLE ")
+            .append(table(model, entity)).append(" RENAME CONSTRAINT ").append(constraint(oldName))
+            .append(" TO ").append(constraint(kind + prefix + to + suffix)).append("; END IF; ");
+      }
     }
     body.append("ALTER INDEX IF EXISTS ").append(ident(model.schema())).append('.')
         .append(ident("ix_" + prefix + from)).append(" RENAME TO ")
@@ -155,12 +174,31 @@ public final class DdlGenerator {
         + "; END IF; END $$";
   }
 
+  // The column type of a field; a field with several values is an array of text.
+  public static String sqlType(Field field) {
+    return field.multiple() ? "TEXT[]" : sqlType(field.type());
+  }
+
+  // A bound as SQL: a number as written, a date as a typed literal. The model reader has already
+  // checked the form of both.
+  public static String bound(Field field, String value) {
+    return field.type() == FieldType.DATE ? "DATE " + literal(value)
+        : new java.math.BigDecimal(value).toPlainString();
+  }
+
+  // A pattern matches the whole value, which the SQL operator does not do by itself.
+  public static String anchored(String pattern) {
+    return "^(?:" + pattern + ")$";
+  }
+
   public static String sqlType(FieldType type) {
     return switch (type) {
       case TEXT, CHOICE, USER, UNIT, FILE -> "TEXT";
       case NUMBER -> "NUMERIC";
       case DATETIME -> "TIMESTAMPTZ";
       case REFERENCE -> "BIGINT";
+      case BOOLEAN -> "BOOLEAN";
+      case DATE -> "DATE";
     };
   }
 }

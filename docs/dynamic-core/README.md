@@ -290,6 +290,8 @@ Bảng điều khiển thuộc tầng 2, nằm ở tuyến `/console` của ứn
   Tab chỉ mở API mỏng trên Keycloak: chính sách mật khẩu, MFA, phiên và đăng nhập bằng nhà cung cấp ngoài để Keycloak lo.
   Người dùng cuối tự đổi mật khẩu, bật OTP và xem phiên ở Account Console của Keycloak, mở từ mục "Tài khoản của tôi" trong menu người dùng.
 
+- **Ứng dụng ngoài:** đăng ký một ứng dụng với đúng một vai của một mô hình, hiện mã bí mật một lần, đổi mã và xóa; ứng dụng không gọi được bảng điều khiển hay quản trị người dùng.
+
 Bảng điều khiển đọc và ghi đúng tệp mô hình, và tệp luôn là nguồn sự thật.
 Giao diện cho người dùng cuối do bộ dựng sinh từ metadata, đủ dùng, nhất quán và được chăm chút về hình thức.
 
@@ -319,7 +321,7 @@ Thêm năng lực mới nghĩa là thêm provider, không phải sửa lõi.
 
 | Năng lực                        | Thành phần                              | Đội tự viết                                                 |
 | ----------------------------------- | ------------------------------------------- | ----------------------------------------------------------------- |
-| Định danh, SSO                  | Keycloak                                  | Sinh client và vai từ mô hình, quản trị người dùng           |
+| Định danh, SSO                  | Keycloak                                  | Sinh client và vai từ mô hình, quản trị người dùng, đăng ký ứng dụng ngoài |
 | Cổng API                         | APISIX                                    | Sinh route khi cần                                             |
 | Dữ liệu có cấu trúc          | PostgreSQL, pgschema                     | Sinh schema và ràng buộc; mỗi mô hình một schema         |
 | API dữ liệu, quyền từng dòng | API chung trong dịch vụ lõi            | Đọc mô hình, kiểm token Keycloak, dựng truy vấn an toàn |
@@ -356,15 +358,16 @@ Trần dưới đây giữ cho tệp mô hình không biến thành ngôn ngữ 
 
 | Phần          | Giới hạn                                                                                 |
 | ---------------- | -------------------------------------------------------------------------------------------- |
-| Kiểu trường | Văn bản, số, ngày giờ, lựa chọn, tham chiếu, tệp, người dùng                   |
+| Kiểu trường | Văn bản, số, đúng hoặc sai, ngày, ngày giờ, lựa chọn (một hoặc nhiều), tham chiếu, tệp, người dùng |
 | Quyền         | Theo vai và theo dòng: tất cả, của tôi, của đơn vị hoặc được giao cho tôi   |
-| Quy tắc       | Bắt buộc, duy nhất, chống trùng khoảng thời gian, chặn khi chưa đủ điều kiện |
+| Quy tắc       | Bắt buộc, bắt buộc có điều kiện, duy nhất, giới hạn giá trị, mẫu chuỗi, chống trùng khoảng thời gian, chặn khi chưa đủ điều kiện |
 | Biểu thức    | Một dòng, không có vòng lặp, không có tác dụng phụ                              |
 | Quy trình     | Chọn từ mẫu có sẵn, hoặc tự khai báo trạng thái và hành động                                                |
 | Tác tử AI    | Khi có sự kiện, đề xuất giá trị một trường, người xác nhận                  |
 
 Một năng lực mới chỉ được thêm khi cần ở ít nhất 3 lĩnh vực, khai báo được mà không cần cú pháp mới, và không làm hỏng các mô hình đã có.
 Không đạt thì đi qua điểm mở rộng.
+Các kiểu `boolean` và `date`, `multiple`, `min`, `max`, `pattern`, `required_when` và khối `ui:` là ngoại lệ có chủ đích của điều kiện không cần cú pháp mới: mỗi thứ cần ở nhiều lĩnh vực, là khóa tùy chọn nên mô hình cũ giữ nguyên, và `format` vẫn là `0`.
 
 Ví dụ để minh họa, chưa phải cú pháp cuối cùng:
 
@@ -484,10 +487,10 @@ Mã mở rộng luôn nằm ngoài lõi, chỉ gọi lõi qua API và sự kiệ
 
 | Nhu cầu                              | Cách làm                                                                                                |
 | --------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| API riêng                            | Dịch vụ viết bằng ngôn ngữ tùy ý, gọi API của lõi bằng token Keycloak; route thêm vào cấu hình APISIX của bản cài |
+| API riêng                            | Dịch vụ viết bằng ngôn ngữ tùy ý, gọi API của lõi bằng token Keycloak lấy qua `dxos client add` (đúng một vai của một mô hình) và đọc tài liệu OpenAPI riêng của mô hình; route thêm vào cấu hình APISIX của bản cài |
 | Phản ứng theo nghiệp vụ           | Webhook nhận sự kiện từ trục sự kiện                                                               |
 | Giao diện riêng hoàn toàn         | Ứng dụng tự viết, dùng API và đăng nhập Keycloak của lõi                                       |
-| Trang riêng trong ứng dụng Tầng 2 | Thêm trang vào ứng dụng web bằng mã; tệp mô hình chưa khai báo được menu                                                                |
+| Trang riêng trong ứng dụng Tầng 2 | Thêm trang vào ứng dụng web bằng mã; menu, nhóm menu và biểu tượng của thực thể khai báo trong khối `ui:`                                                                |
 | Họ mẫu quy trình riêng                | Khai báo `states` và `actions` trong tệp mô hình; vẫn chịu quy tắc bất biến và bị kiểm khi áp dụng |
 | Thành phần riêng trong form        | Đăng ký thành phần React, để sau bản dự thi                                                      |
 
@@ -685,6 +688,10 @@ Cách kiểm ở [`docs/TESTING.md`](../TESTING.md); kết quả mỗi lần ch�
 - `dxos plan` và `dxos apply --accept` (mức xác nhận, mã thoát, lịch sử ghi tài khoản của lệnh), `dxos archive` kèm `archive check` và bộ mô phỏng IT/OT gửi lại cùng quan sát được kiểm bằng `check_cli.py`.
 - Kênh `GET /api/v1/inbox/stream` báo thay đổi tới hộp việc đang mở trong khoảng hai giây qua gateway; server đóng đúng sau 10 phút, client nối lại; 2000 kênh đầu được nhận và các kênh sau trả 503; kiểm tay ở [`docs/TESTING.md`](../TESTING.md), mục 6.
 - `dxos demo` nộp 40 hồ sơ mẫu qua API chung và tạo bốn tài khoản thử đăng nhập được, mỗi tài khoản thấy đúng phạm vi của vai; chạy lại không nộp trùng.
+- Kiểu `boolean`, `date`, nhiều lựa chọn, `min`, `max`, `pattern` và `required_when`: API trả lỗi theo trường, cơ sở dữ liệu từ chối hàng sai, áp dụng lại cùng tệp không đổi gì, đổi tên trường kéo theo các ràng buộc, siết ràng buộc trên dòng vi phạm bị từ chối kèm số dòng; kiểm tay ở [`docs/TESTING.md`](../TESTING.md), mục 6.
+- Tài liệu OpenAPI của một mô hình qua bộ kiểm cú pháp OpenAPI và khớp hành vi của API dữ liệu; mã lỗi và mã trạng thái của từng thao tác đã đối chiếu với API đang chạy.
+- Ứng dụng ngoài lấy token đúng một vai, bị từ chối ở mô hình khác, quản trị và người dùng; secret không có trong log hay sự kiện.
+- Khối `ui:` đổi menu, cột, sắp xếp và nhóm biểu mẫu; hành động hàng loạt xử lý từng hồ sơ qua đủ luật và báo hồ sơ bị từ chối.
 - Bản `2.0.0` dựng từ một bản sao sạch của cây mã: stack lên đủ, chuỗi `check_*.py` đạt, `clean verify`, `tsc`, `check_licenses.py` và `check_routes.py` đạt; các script kiểm ở [`docs/TESTING.md`](../TESTING.md), mục 4.
 
 ## Chưa xác minh

@@ -71,6 +71,10 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 | Ví dụ kết nối thiết bị (`itot-simulator`) | Kiểm tay: gửi lại cùng quan sát in `duplicate`, không tạo thêm hồ sơ | `python3 examples/itot-simulator/simulator.py run` | Minh họa | Thiết bị và dữ liệu giả lập |
 | Hộp việc thời gian thực (`GET /api/v1/inbox/stream`) | Kiểm tay theo `docs/TESTING.md` mục 6, mục 23; `mvnw verify` kiểm biên dịch và test của dịch vụ | Mở hộp việc ở hai cửa sổ rồi nộp một hồ sơ | Dùng được | Không có kiểm tự động của kênh; chạy một bản backend nên kênh chỉ báo thay đổi do chính bản đó ghi |
 | Tài khoản và hồ sơ mẫu để dùng thử (`dxos demo`) | Kiểm tay theo `docs/TESTING.md` mục 6, phần lệnh `dxos` mục 6 | `dxos demo` | Dùng được | Không có kiểm tự động; hồ sơ quá hạn chỉ có sau ba ngày kể từ lần nộp |
+| Kiểu `boolean`, `date`, nhiều lựa chọn, giới hạn `min` `max` `pattern`, bắt buộc có điều kiện | Kiểm tay theo `docs/TESTING.md` mục 6, mục 24; `check_conformance.py` và `check_booking.py` áp mọi mẫu, kể cả Sổ tài sản | Áp dụng mẫu Sổ tài sản rồi ghi giá trị đúng và sai qua API | Dùng được | Không có kiểm tự động riêng cho các kiểu mới; `CHECK` của cơ sở dữ liệu kiểm tay bằng chèn thẳng vào bảng |
+| Tài liệu OpenAPI theo mô hình | Kiểm tay theo `docs/TESTING.md` mục 6, mục 28; `check_docs.py` kiểm đường dẫn của tài liệu có trong OpenAPI chung | `GET /api/v1/meta/models/{model}/openapi` | Dùng được | Chưa thử trong một trình sinh thư viện cụ thể; đã nhập qua bộ kiểm cú pháp OpenAPI |
+| Ứng dụng ngoài (`dxos client`, tab Ứng dụng ngoài) | Kiểm tay theo `docs/TESTING.md` mục 6, mục 27 và phần lệnh `dxos` mục 7 | `dxos client add` | Dùng được | Không có kiểm tự động; mỗi ứng dụng giữ đúng một vai của một mô hình |
+| Khối `ui:` và hành động hàng loạt | Kiểm tay theo `docs/TESTING.md` mục 6, mục 25 và 26; `npx tsc --noEmit` | Mở danh sách và biểu mẫu của Sổ tài sản; chọn nhiều hồ sơ rồi Duyệt | Dùng được | Không có kiểm tự động của giao diện cho hai phần này |
 
 ## 3. Giấy phép, chuỗi cung ứng, phát hành
 
@@ -95,6 +99,7 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 | Hồ dữ liệu, bản sao số (hai nguyên lý đầu của đề) | Chưa làm | Ngoài phạm vi bản dự thi, nói rõ khi trình bày |
 | Nhiều bản backend sau gateway | Chưa làm | Chạy một bản; hai bản thì danh sách mô hình giữ lệch nhau sau một lần áp dụng |
 | Triển khai công khai cho lõi mới | Chưa làm | VPS giữ `v1.1.1`; bản mới không có đường nâng cấp dữ liệu nên phải dựng lại |
+| Khóa chống chạy lặp do bên gọi đặt, thao tác hoàn tất gọi ra hệ thống ngoài, bảng Kanban, xuất danh sách ra CSV | Chưa làm | Ghi ở Việc tồn đọng, làm sau |
 
 ## 5. Kiểm lại
 

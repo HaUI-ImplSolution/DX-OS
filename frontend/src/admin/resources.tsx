@@ -1,11 +1,16 @@
 // SPDX-License-Identifier: Apache-2.0
+import { Fragment } from "react";
 import {
   AutocompleteInput,
+  BooleanField,
+  BooleanInput,
   Button,
   Create,
   CreateButton,
   DatagridConfigurable,
   DateField,
+  DateInput,
+  FormDataConsumer,
   Edit,
   EditButton,
   FilterButton,
@@ -22,9 +27,14 @@ import {
   TextField,
   TextInput,
   SaveButton,
+  SelectArrayInput,
   Toolbar,
   TopToolbar,
+  maxValue,
+  minValue,
+  regex,
   required,
+  type Validator,
   useRecordContext,
 } from "react-admin";
 import { Box, Card, Typography } from "@mui/material";
@@ -32,8 +42,10 @@ import EventIcon from "@mui/icons-material/Event";
 import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
 import { Labeled } from "react-admin";
 import { Link } from "react-router-dom";
+import { BulkBar } from "./BulkActions";
 import { ActionButtons, AssignPanel, FilesPanel, HistoryPanel } from "./caseParts";
 import DateTimeViInput from "./DateTimeViInput";
+import { conditionMet, conditionText } from "./condition";
 import { PersonField, PersonInput } from "./people";
 import { StatusChip } from "./StatusChip";
 import { resourceName, type EntityMeta, type FieldMeta, type ModelMeta } from "./types";
@@ -59,6 +71,7 @@ function statusField(entity: EntityMeta) {
   return (
     <FunctionField
       key="status"
+      source="status"
       label={t("Trạng thái")}
       render={(record: { status: string; overdue?: boolean }) => (
         <StatusChip entity={entity} status={record.status} overdue={record.overdue} />
@@ -68,7 +81,34 @@ function statusField(entity: EntityMeta) {
 }
 
 function outputField(field: FieldMeta, catalog: Catalog) {
+  if (field.multiple) {
+    return (
+      <FunctionField
+        key={field.name}
+        source={field.name}
+        sortable={false}
+        label={field.label}
+        render={(record: Record<string, unknown>) => {
+          const values = record[field.name];
+          return Array.isArray(values) && values.length > 0 ? (values as string[]).map((value) => catalog.units[value] ?? value).join(", ") : "—";
+        }}
+      />
+    );
+  }
   switch (field.type) {
+    case "boolean":
+      return <BooleanField key={field.name} source={field.name} label={field.label} />;
+    case "date":
+      return (
+        <DateField
+          key={field.name}
+          source={field.name}
+          label={field.label}
+          locales={intlLocale()}
+          options={{ day: "2-digit", month: "2-digit", year: "numeric" }}
+          emptyText="—"
+        />
+      );
     case "number":
       return <NumberField key={field.name} source={field.name} label={field.label} emptyText="—" />;
     case "datetime":
@@ -77,6 +117,7 @@ function outputField(field: FieldMeta, catalog: Catalog) {
       return (
         <FunctionField
           key={field.name}
+          source={field.name}
           label={field.label}
           render={(record: Record<string, string>) => catalog.units[record[field.name]] ?? record[field.name]}
         />
@@ -102,43 +143,132 @@ function outputField(field: FieldMeta, catalog: Catalog) {
   }
 }
 
-function inputField(field: FieldMeta, catalog: Catalog) {
-  const validate = field.required ? required() : undefined;
+// Columns a list has but hides until the model file or the person asks for them.
+const EXTRA_COLUMNS = ["assignee", "created_at", "updated_at"];
+
+// The inputs of a form: in the groups the model file declares, with the fields it did not list last.
+function formInputs(entity: EntityMeta, catalog: Catalog) {
+  const input = (field: FieldMeta) =>
+    field.requiredWhen ? (
+      <RequiredWhenInput
+        key={field.name}
+        field={field}
+        build={(required) => inputField(field, catalog, entity.fields, entity.ui?.hints?.[field.name], required)}
+      />
+    ) : (
+      inputField(field, catalog, entity.fields, entity.ui?.hints?.[field.name])
+    );
+  const groups = entity.ui?.form?.groups;
+  if (!groups || groups.length === 0) return entity.fields.map(input);
+  const listed = new Set(groups.flatMap((group) => group.fields));
+  const rest = entity.fields.filter((field) => !listed.has(field.name));
+  const heading = (label: string) => (
+    <Typography variant="subtitle2" sx={{ fontWeight: 700, mt: 1, mb: 1.5, width: "100%" }}>
+      {label}
+    </Typography>
+  );
+  const sections = groups.map((group) => (
+    <Fragment key={group.label}>
+      {heading(group.label)}
+      {group.fields.map((name) => entity.fields.find((field) => field.name === name)).filter((field): field is FieldMeta => field !== undefined).map(input)}
+    </Fragment>
+  ));
+  if (rest.length > 0) {
+    sections.push(
+      <Fragment key="__rest">
+        {heading(t("Khác"))}
+        {rest.map(input)}
+      </Fragment>,
+    );
+  }
+  return sections;
+}
+
+// The rules the API checks, so a form reports a problem before it sends the record.
+function rules(field: FieldMeta, fields: FieldMeta[]) {
+  const checks: Validator[] = [];
+  if (field.required) checks.push(required());
+  const when = field.requiredWhen;
+  if (when) {
+    checks.push((value: unknown, all: Record<string, unknown>) =>
+      conditionMet(when, all) && (value === undefined || value === null || value === "" || (Array.isArray(value) && value.length === 0))
+        ? t("Bắt buộc nhập khi {condition}", { condition: conditionText(when, fields) })
+        : undefined,
+    );
+  }
+  if (field.type === "number") {
+    if (field.min != null) checks.push(minValue(Number(field.min)));
+    if (field.max != null) checks.push(maxValue(Number(field.max)));
+  }
+  if (field.type === "date") {
+    const { min, max } = field;
+    if (min != null) checks.push((value) => (typeof value === "string" && value !== "" && value < min ? t("Từ ngày {date} trở đi", { date: min }) : undefined));
+    if (max != null) checks.push((value) => (typeof value === "string" && value !== "" && value > max ? t("Đến hết ngày {date}", { date: max }) : undefined));
+  }
+  if (field.type === "text" && field.pattern) {
+    checks.push(regex(new RegExp(`^(?:${field.pattern})$`), t("Không đúng định dạng")));
+  }
+  return checks.length > 0 ? checks : undefined;
+}
+
+// The limits of a number or a date, and the condition that makes a field required, as a line under the input.
+function limitHint(field: FieldMeta, fields: FieldMeta[]): string | undefined {
+  const parts: string[] = [];
+  if (field.type === "number" || field.type === "date") {
+    if (field.min != null && field.max != null) parts.push(t("Từ {min} đến {max}", { min: field.min, max: field.max }));
+    else if (field.min != null) parts.push(t("Từ {min} trở lên", { min: field.min }));
+    else if (field.max != null) parts.push(t("Tối đa {max}", { max: field.max }));
+  }
+  if (field.requiredWhen) parts.push(t("Bắt buộc khi {condition}", { condition: conditionText(field.requiredWhen, fields) }));
+  return parts.length > 0 ? parts.join(" · ") : undefined;
+}
+
+// A field whose requirement depends on another one is marked required while its condition holds.
+function RequiredWhenInput({ field, build }: { field: FieldMeta; build: (required: boolean) => JSX.Element | null }) {
+  return <FormDataConsumer>{({ formData }) => build(field.requiredWhen != null && conditionMet(field.requiredWhen, formData))}</FormDataConsumer>;
+}
+
+function inputField(field: FieldMeta, catalog: Catalog, fields: FieldMeta[], hint?: string, required = field.required) {
+  const validate = rules(field, fields);
+  const helperText = [hint, limitHint(field, fields)].filter(Boolean).join(" · ") || undefined;
+  const mark = (label: string) => (required && !field.required ? `${label} *` : label);
   switch (field.type) {
     case "number":
-      return <NumberInput key={field.name} source={field.name} label={field.label} validate={validate} />;
+      return <NumberInput key={field.name} source={field.name} label={mark(field.label)} validate={validate} helperText={helperText} />;
+    case "boolean":
+      return <BooleanInput key={field.name} source={field.name} label={mark(field.label)} helperText={helperText} />;
+    case "date":
+      return <DateInput key={field.name} source={field.name} label={mark(field.label)} validate={validate} helperText={helperText} />;
     case "datetime":
-      return <DateTimeViInput key={field.name} source={field.name} label={field.label} isRequired={field.required} />;
+      return <DateTimeViInput key={field.name} source={field.name} label={mark(field.label)} isRequired={field.required} />;
     case "choice":
-    case "unit":
-      return (
-        <SelectInput
-          key={field.name}
-          source={field.name}
-          label={field.label}
-          choices={field.options.map((option) => ({ id: option, name: catalog.units[option] ?? option }))}
-          validate={validate}
-        />
+    case "unit": {
+      const choices = field.options.map((option) => ({ id: option, name: catalog.units[option] ?? option }));
+      return field.multiple ? (
+        <SelectArrayInput key={field.name} source={field.name} label={mark(field.label)} choices={choices} validate={validate} helperText={helperText} />
+      ) : (
+        <SelectInput key={field.name} source={field.name} label={mark(field.label)} choices={choices} validate={validate} helperText={helperText} />
       );
+    }
     case "reference": {
       const target = catalog.entities[field.reference ?? ""];
       return (
         <ReferenceInput
           key={field.name}
           source={field.name}
-          label={field.label}
+          label={mark(field.label)}
           reference={resourceName(catalog.model, field.reference ?? "")}
         >
-          <AutocompleteInput label={field.label} optionText={displayField(target)} validate={validate} />
+          <AutocompleteInput label={mark(field.label)} optionText={displayField(target)} validate={validate} />
         </ReferenceInput>
       );
     }
     case "user":
-      return <PersonInput key={field.name} source={field.name} label={field.label} required={field.required} />;
+      return <PersonInput key={field.name} source={field.name} label={mark(field.label)} required={field.required} />;
     case "file":
       return null;
     default:
-      return <TextInput key={field.name} source={field.name} label={field.label} validate={validate} />;
+      return <TextInput key={field.name} source={field.name} label={mark(field.label)} validate={validate} helperText={helperText} />;
   }
 }
 
@@ -248,18 +378,39 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
           />,
         ]
       : []),
-    ...entity.fields
-      .filter((field) => field.type === "choice" || field.type === "unit")
-      .map((field) => (
-        <SelectInput
-          key={field.name}
-          source={field.name}
-          label={field.label}
-          choices={field.options.map((option) => ({ id: option, name: catalog.units[option] ?? option }))}
-        />
-      )),
+    ...entity.fields.flatMap((field) => {
+      const choices = field.options.map((option) => ({ id: option, name: catalog.units[option] ?? option }));
+      if (field.type === "boolean") {
+        return [
+          <SelectInput
+            key={field.name}
+            source={field.name}
+            label={field.label}
+            choices={[
+              { id: "true", name: t("Có") },
+              { id: "false", name: t("Không") },
+            ]}
+          />,
+        ];
+      }
+      if (field.type === "date") {
+        return [
+          <DateInput key={`${field.name}.gte`} source={`${field.name}.gte`} label={t("{label} từ", { label: field.label })} />,
+          <DateInput key={`${field.name}.lte`} source={`${field.name}.lte`} label={t("{label} đến", { label: field.label })} />,
+        ];
+      }
+      // A field with several values is filtered by one option it holds.
+      if ((field.type === "choice" || field.type === "unit") && field.multiple) {
+        return [<SelectInput key={field.name} source={`${field.name}.contains`} label={field.label} choices={choices} />];
+      }
+      return field.type === "choice" || field.type === "unit"
+        ? [<SelectInput key={field.name} source={field.name} label={field.label} choices={choices} />]
+        : [];
+    }),
   ];
 
+  // A person who handles records can take one action on several of them at once.
+  const bulk = entity.hasProcess && entity.canHandle && (entity.handlerActions?.length ?? 0) > 0;
   const calendar = entity.process?.booking != null;
   // The filters, the sort and the columns a person picks are kept in the browser, one set per entity.
   const ListActions = () => (
@@ -280,17 +431,33 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
     </TopToolbar>
   );
 
+  // The model file may choose the columns and the sort a list opens with; what a person picks later with
+  // the Columns button is kept in the browser and wins over it.
+  const listUi = entity.ui?.list;
+  const shown = listUi?.columns ?? null;
+  const known = [...entity.fields.filter((field) => field.type !== "file").map((field) => field.name), ...(entity.hasProcess ? ["status"] : [])];
+  const omit = [
+    ...known.filter((name) => shown !== null && !shown.includes(name)),
+    ...EXTRA_COLUMNS.filter((name) => !(shown ?? []).includes(name)),
+  ];
+  const defaultSort = listUi?.sort
+    ? { field: listUi.sort.replace(/^-/, ""), order: listUi.sort.startsWith("-") ? ("DESC" as const) : ("ASC" as const) }
+    : { field: "id", order: "DESC" as const };
+
   const EntityList = () => (
-    <List
-      filters={filters}
-      actions={<ListActions />}
-      sort={{ field: "id", order: "DESC" }}
-      exporter={false}
-    >
-      <DatagridConfigurable rowClick="show" bulkActionButtons={false}>
+    <List filters={filters} actions={<ListActions />} sort={defaultSort} exporter={false}>
+      <DatagridConfigurable
+        rowClick="show"
+        omit={omit}
+        bulkActionButtons={bulk ? <span /> : false}
+        bulkActionsToolbar={bulk ? <BulkBar model={model.name} entity={entity} /> : undefined}
+      >
         <TextField source="id" label={t("Mã")} />
         {entity.fields.map((field) => outputField(field, catalog))}
         {entity.hasProcess && statusField(entity)}
+        {entity.hasProcess && <PersonField source="assignee" label={t("Người xử lý")} />}
+        <DateField source="created_at" label={t("Tạo lúc")} locales={intlLocale()} showTime options={DATE_OPTIONS} />
+        <DateField source="updated_at" label={t("Cập nhật lúc")} locales={intlLocale()} showTime options={DATE_OPTIONS} />
       </DatagridConfigurable>
     </List>
   );
@@ -303,14 +470,14 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
 
   const EntityCreate = () => (
     <Create redirect="show" sx={CARD_SX}>
-      <SimpleForm sx={FORM_SX}>{entity.fields.map((field) => inputField(field, catalog))}</SimpleForm>
+      <SimpleForm sx={FORM_SX}>{formInputs(entity, catalog)}</SimpleForm>
     </Create>
   );
 
   const EntityEdit = () => (
     <Edit mutationMode="pessimistic" redirect="show" sx={CARD_SX}>
       <SimpleForm sx={FORM_SX} toolbar={entity.hasProcess ? SAVE_ONLY : undefined}>
-        {entity.fields.map((field) => inputField(field, catalog))}
+        {formInputs(entity, catalog)}
       </SimpleForm>
     </Edit>
   );

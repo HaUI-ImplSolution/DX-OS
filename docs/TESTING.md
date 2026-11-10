@@ -87,7 +87,7 @@ python3 deploy/dev/check_bootstrap.py
 | `check_users.py` | Quản trị người dùng: gán và gỡ vai và đơn vị, tạo, khóa, đặt lại mật khẩu, audit |
 | `check_docs.py` | Mọi endpoint các tài liệu nêu có trong OpenAPI của backend đang chạy, đúng phương thức |
 | `check_conformance.py` | Rào chắn của lõi giữ với mọi mô hình đã áp dụng, hoặc các mô hình nêu tên: không ghi được `status`, không token thì 401, không đọc được dữ liệu mô hình khác |
-| `check_cli.py` | Lệnh `dxos plan` và `apply --accept` (tệp giống, đổi an toàn, đổi mất dữ liệu bị từ chối khi `--accept` thấp hơn mức của kế hoạch), lịch sử ghi tài khoản của lệnh, `dxos archive` và `archive check` (sửa một byte Parquet thì mã 1), bộ mô phỏng IT/OT gửi lại cùng quan sát thì in `duplicate` và không thêm hồ sơ; cần Docker; tự áp dụng một mô hình riêng |
+| `check_cli.py` | Lệnh `dxos plan` và `apply --accept` (tệp giống, đổi an toàn, đổi mất dữ liệu bị từ chối khi `--accept` thấp hơn mức của kế hoạch), lịch sử ghi tài khoản của lệnh, `dxos archive` và `archive check` (sửa một byte Parquet thì mã 1), `archive --store` vào SeaweedFS, `archive check --store`, `archive list` và `archive auto` không ghi trùng, bộ mô phỏng IT/OT gửi lại cùng quan sát thì in `duplicate` và không thêm hồ sơ; cần Docker; tự áp dụng một mô hình riêng |
 | `check_events.py` | Webhook: thứ tự, chữ ký, thử lại, nội dung không lộ, nhắc hạn; chuỗi hash của lịch sử và bên nhận so hash |
 | `check_bootstrap.py` | Tệp mô hình lúc khởi động: `applied`, `unchanged`, `skipped`, `failed` |
 
@@ -158,8 +158,9 @@ Giao diện, đăng nhập bằng `req1` (vai `BORROWER`), `keeper1` (vai `KEEPE
 29. Bảng theo trạng thái: ở danh sách một thực thể có quy trình bấm nút Bảng theo trạng thái; mỗi trạng thái là một cột có tổng số, tối đa 10 thẻ, thẻ mở đúng chi tiết hồ sơ, "Xem cả N hồ sơ" mở danh sách lọc theo trạng thái đó; tải lại trang vẫn ở chế độ bảng; bộ lọc đang đặt áp cho mọi cột; ở màn hình 360 px trang không tràn ngang và các cột cuộn bên trong.
 30. Xuất CSV: bấm Xuất CSV ở một danh sách có lọc; tệp `<thực thể>-<ngày>.csv` có BOM, một dòng tiêu đề và đúng số dòng của danh sách đã lọc; tạo hồ sơ có lý do `=1+1` hoặc `@SUM(A1)` thì ô trong tệp bắt đầu bằng dấu nháy; giá trị có dấu phẩy hoặc ngoặc kép được bao trong ngoặc kép; vai chỉ thấy hồ sơ của mình chỉ nhận được các dòng đó.
 31. Khóa chống chạy lặp: gọi `POST /api/v1/data/{model}/{entity}` hai lần với cùng `Idempotency-Key` và cùng nội dung thì cả hai trả cùng `id`, lần hai có header `Idempotent-Replayed: true` và không có thêm hồ sơ; cùng khóa với nội dung khác hoặc với hành động khác thì 409 `IDEMPOTENCY_KEY_REUSED`; khóa sai khuôn thì 400; một yêu cầu lỗi không giữ khóa nên gửi lại được.
+32. Danh mục dữ liệu: vào bảng điều khiển bằng ADMIN, mở tab Danh mục dữ liệu và chọn một mô hình có quy trình và tham chiếu; trang liệt kê vai và ứng dụng ngoài đi vào, nơi dữ liệu đi ra, các liên kết giữa thực thể, và mỗi thực thể có số bản ghi, quyền theo vai và danh sách trường. Đăng ký thêm một ứng dụng ngoài ở tab Ứng dụng ngoài rồi tải lại thì nó hiện ở "Dữ liệu đi vào từ". Gọi `GET /api/v1/models/{model}/data-catalog` bằng vai không phải ADMIN thì 403.
 
-32. Trợ lý: khi chưa có API key, trang cấu hình vẫn mở được và không có gateway cá nhân hoặc lượt gọi model.
+33. Trợ lý: khi chưa có API key, trang cấu hình vẫn mở được và không có gateway cá nhân hoặc lượt gọi model.
     Liên kết SSO, chọn API/model, kiểm kết nối và ghép bot theo [`assistant/README.md`](../assistant/README.md), rồi bật trợ lý.
     Tìm hồ sơ bằng tiêu đề, yêu cầu giao việc hoặc chuyển trạng thái, hủy một đề xuất rồi xác nhận đề xuất mới và đối chiếu lịch sử Core.
     Hai tài khoản dùng bot riêng; dừng một trợ lý không dừng trợ lý còn lại hoặc Core.
@@ -174,6 +175,7 @@ Lệnh `dxos` và các tính năng chạy ngoài stack kiểm:
 5. Thống kê với vai `unit` và `own`, có và không có bộ lọc: `total` và tổng `byStatus` bằng số dòng của danh sách cùng bộ lọc.
 6. `dxos demo` trên stack có `dxos-cli`: tạo bốn tài khoản `judge_*` và 40 hồ sơ; `judge_student` thấy hồ sơ của mình, mỗi cán bộ chỉ thấy đơn vị mình, `judge_supervisor` thấy mọi hồ sơ và không có nút Tạo mới; chạy lại không nộp thêm hồ sơ và in mật khẩu mới; `dxos demo remove` gỡ bốn tài khoản.
 7. `dxos client add`, `list`, `rotate`, `remove` trên stack có `dxos-cli`: secret chỉ in ở `add` và `rotate`, `list` không có secret, `rotate` làm secret cũ bị từ chối, `remove` làm client không lấy được token.
+8. `dxos archive schedule install` rồi `systemctl --user start dxos-archive.service`: `deploy/archive.log` ghi lượt chạy, `dxos archive list` thấy lần chạy mới khi có hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS`, chạy lần nữa không ghi lại các hồ sơ đó; `dxos archive check --store` khớp manifest; khóa S3 sai thì `list` và `auto` thoát mã 1 và không in khóa; `schedule uninstall` gỡ hai tệp đơn vị.
 
 ## 7. Hồi quy
 

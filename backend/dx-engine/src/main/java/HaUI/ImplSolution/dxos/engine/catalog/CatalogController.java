@@ -2,6 +2,7 @@
 package HaUI.ImplSolution.dxos.engine.catalog;
 
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
+import HaUI.ImplSolution.dxos.engine.registry.ModelRegistry;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
@@ -23,10 +24,15 @@ public class CatalogController {
 
   private final CatalogService catalog;
   private final ProcessDiagramService diagrams;
+  private final DataCatalogService dataCatalog;
+  private final ModelRegistry registry;
 
-  public CatalogController(CatalogService catalog, ProcessDiagramService diagrams) {
+  public CatalogController(CatalogService catalog, ProcessDiagramService diagrams,
+      DataCatalogService dataCatalog, ModelRegistry registry) {
     this.catalog = catalog;
     this.diagrams = diagrams;
+    this.dataCatalog = dataCatalog;
+    this.registry = registry;
   }
 
   @GetMapping("/schema")
@@ -51,6 +57,17 @@ public class CatalogController {
           + " not set), the booking, and the states where the deadline runs.")
   public ApiResponse<ProcessDiagramService.Diagram> diagram(@RequestBody String content) {
     return ApiResponse.success(diagrams.diagram(content));
+  }
+
+  @GetMapping("/{model}/data-catalog")
+  @Operation(summary = "The data of an applied model, read from the model",
+      description = "For each entity: its fields, the roles that reach it and the rows it holds"
+          + " (-1 when the table cannot be read). links are the references between entities."
+          + " origins are the roles that reach the model and the outside applications registered"
+          + " for it; destinations are the webhook target, the completion actions of the"
+          + " processes, the event feed and the archive. 404 when the model is not applied.")
+  public ApiResponse<DataCatalogService.Catalog> dataCatalog(@PathVariable String model) {
+    return ApiResponse.success(dataCatalog.of(registry.require(model)));
   }
 
   @GetMapping("/templates")

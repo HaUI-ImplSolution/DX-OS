@@ -84,8 +84,35 @@ Người sửa lại cả chuỗi và cả đối tượng điểm neo trên má
 
 ## Hồ dữ liệu
 
-`dxos archive <mô hình> [--before YYYY-MM-DD] [--out THƯ_MỤC]` ghi các hồ sơ đã tới trạng thái cuối (`decided_at` có giá trị, cũ hơn `--before` nếu có) và lịch sử của chúng ra Parquet ở `<THƯ_MỤC>/<mô hình>/<lần chạy>/` (mặc định `deploy/archive`).
-Lệnh chạy DuckDB trong một container, đọc Postgres bằng tài khoản `POSTGRES_USER` của `.env` ở chế độ chỉ đọc, và ghi `manifest.json` gồm phiên bản mô hình, số dòng và sha256 từng tệp.
-Dữ liệu trong cơ sở dữ liệu giữ nguyên.
+`dxos archive <mô hình> [--before YYYY-MM-DD] [--out THƯ_MỤC | --store]` ghi các hồ sơ đã tới trạng thái cuối (`decided_at` có giá trị, cũ hơn `--before` nếu có) và lịch sử của chúng ra Parquet, mỗi lần chạy vào một thư mục `<mô hình>/<lần chạy>/` kèm `manifest.json`.
+Lệnh chạy DuckDB trong một container và đọc Postgres bằng tài khoản `POSTGRES_USER` của `.env` ở chế độ chỉ đọc, nên dữ liệu trong cơ sở dữ liệu giữ nguyên.
+
+### Ghi ra thư mục
+
+Mặc định ghi vào `deploy/archive`, hoặc vào `--out THƯ_MỤC`.
+`manifest.json` gồm phiên bản mô hình, số dòng và sha256 từng tệp.
 `dxos archive check <thư mục>` đọc lại từng tệp và so số dòng và sha256 với manifest; lệch thì thoát với mã 1.
-Lần chạy đầu DuckDB tải extension `postgres` từ mạng.
+
+### Ghi vào kho đối tượng
+
+`--store` ghi vào bucket `S3_ARCHIVE_BUCKET` (mặc định `dxos-archive`) của SeaweedFS đang chạy trong stack, ở đường `<mô hình>/<lần chạy>/`.
+Bucket riêng, không đi qua gateway và tự tạo ở lần ghi đầu.
+DuckDB ghi thẳng tới `s3://` bằng khóa `S3_ACCESS_KEY` và `S3_SECRET_KEY` của `.env`; khóa đi vào container qua biến môi trường nên không nằm trên dòng lệnh, trong log hay trong thông báo lỗi.
+Kho là một phần dữ liệu của SeaweedFS nên `dxos backup` sao lưu cùng các tệp tải lên.
+
+`manifest.json` trong kho gồm thêm `since` và `upTo`, hai đầu của khoảng `decided_at` mà lần chạy lấy.
+Số dòng và sha256 trong đó tính từ chính các byte đã nằm trong kho.
+`dxos archive list` liệt kê các lần chạy trong kho, `dxos archive check --store <mô hình>/<lần chạy>` đọc lại từng tệp từ kho và so với manifest; một tệp lệch hoặc không đọc được thì lệnh thoát với mã 1.
+Không đọc được kho (khóa sai, SeaweedFS không chạy) thì lệnh báo lỗi và thoát với mã 1, không coi là kho trống.
+
+### Theo lịch
+
+`dxos archive auto` ghi, với mỗi mô hình có quy trình, các hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS` ngày (mặc định 365) mà kho chưa giữ.
+Lần chạy lấy khoảng từ `upTo` của lần chạy trước tới hạn của hôm nay, nên một hồ sơ nằm trong đúng một lần chạy; không có hồ sơ mới thì không ghi gì.
+`dxos archive schedule install` cài `dxos-archive.timer` (systemd user timer) chạy lệnh đó lúc 03:30 mỗi ngày và bù lượt bị lỡ khi máy tắt, mỗi lần ghi vào `deploy/archive.log`; `dxos archive schedule uninstall` gỡ.
+Máy không có systemd thì chạy `dxos archive auto` từ cron mỗi ngày.
+Timer của user chỉ chạy khi user còn phiên đăng nhập, trừ khi bật `loginctl enable-linger <user>`.
+
+### Mạng
+
+Lần chạy đầu DuckDB tải extension `postgres` và `httpfs` từ mạng và lưu ở `deploy/duckdb`; các lần sau chạy không cần mạng.

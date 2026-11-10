@@ -49,7 +49,8 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos plan <tệp>`, `dxos apply <tệp> [--accept MỨC]` | In kế hoạch của một tệp mô hình, hoặc áp dụng nó (xem dưới) |
 | `dxos history verify`, `dxos history anchor` | Kiểm lịch sử hồ sơ chưa bị sửa, hoặc ghi điểm neo ngay (xem [`INTEGRATIONS.md`](./INTEGRATIONS.md#lịch-sử-chống-sửa)) |
 | `dxos reconcile [install\|uninstall]` | Đưa stack về đúng khai báo; `install` chạy mỗi phút bằng systemd user timer (xem dưới) |
-| `dxos archive <mô hình>`, `dxos archive check <thư mục>` | Xuất hồ sơ đã xong ra Parquet, hoặc kiểm một bản xuất (xem [`INTEGRATIONS.md`](./INTEGRATIONS.md#hồ-dữ-liệu)) |
+| `dxos archive <mô hình> [--before YYYY-MM-DD] [--out THƯ_MỤC \| --store]`, `dxos archive check <thư mục> \| --store <mô hình>/<lần chạy>`, `dxos archive list` | Xuất hồ sơ đã xong ra Parquet ở một thư mục hoặc ở kho đối tượng, kiểm một bản xuất, liệt kê các lần chạy trong kho (xem [`INTEGRATIONS.md`](./INTEGRATIONS.md#hồ-dữ-liệu)) |
+| `dxos archive auto`, `dxos archive schedule [install\|uninstall]` | Ghi vào kho hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS` ngày; `schedule install` chạy mỗi ngày bằng systemd user timer (xem dưới) |
 | `dxos demo [--password MẬT_KHẨU]`, `dxos demo remove` | Áp dụng mô hình Một cửa sinh viên nếu chưa chạy, tạo bốn tài khoản thử `judge_student`, `judge_officer`, `judge_officer2` và `judge_supervisor` với một mật khẩu (ngẫu nhiên nếu không nêu, in một lần; chạy lại thì đặt và in mật khẩu mới) và nộp khoảng 40 hồ sơ mẫu qua API chung, mỗi bước do đúng người làm; chạy lại không nộp thêm hồ sơ; `remove` chỉ gỡ bốn tài khoản, hồ sơ có quy trình không xóa được nên còn lại; cần client `dxos-cli` như `dxos plan`. Hạn xử lý 72 giờ của mô hình nên hồ sơ quá hạn chỉ có sau ba ngày kể từ lần nộp |
 | `dxos client add <tên> --model M --role R`, `dxos client list`, `dxos client rotate <tên>`, `dxos client remove <tên>` | Đăng ký và quản lý ứng dụng ngoài gọi API bằng token máy (xem phần Ứng dụng ngoài ở trên) |
 | `dxos uninstall [--purge]` | Xóa container và lệnh `dxos`; `--purge` xóa cả dữ liệu và thư mục cài, phải gõ xác nhận |
@@ -118,6 +119,13 @@ Mỗi lượt có thay đổi ghi một dòng vào `deploy/reconcile.log`; lư�
 Máy không có systemd thì chạy `dxos reconcile` từ cron mỗi phút.
 Timer của user chỉ chạy khi user còn phiên đăng nhập, trừ khi bật `loginctl enable-linger <user>`.
 
+### Lưu trữ hồ sơ đã đóng
+
+`dxos archive schedule install` cài `dxos-archive.timer` (systemd user timer) chạy `dxos archive auto` lúc 03:30 mỗi ngày, `dxos archive schedule uninstall` gỡ.
+Mỗi lượt ghi vào bucket `S3_ARCHIVE_BUCKET` của SeaweedFS các hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS` ngày (mặc định 365) mà kho chưa giữ, và ghi kết quả vào `deploy/archive.log`.
+Dữ liệu trong cơ sở dữ liệu giữ nguyên; `dxos archive list` xem các lần chạy, `dxos archive check --store <mô hình>/<lần chạy>` kiểm một lần.
+Lần chạy đầu cần mạng để DuckDB tải extension.
+
 ## Kiểm tra trước khi chạy
 
 `./doctor.sh` (trong `deploy/`) chỉ đọc, không đổi gì và không in giá trị nào của `.env`.
@@ -130,23 +138,24 @@ Thoát với mã 1 khi có `FAIL`, nên chạy trước `./update.sh` và `docke
 
 ## Tài nguyên và số bản sao
 
-Đo ngày 04/11/2026 trên máy 12 CPU, 31 GB RAM, bằng `docker stats` mỗi 5 giây khi chạy tám script ở `deploy/dev` trên stack mới dựng.
-Stack được đo gồm tám service, chưa có trợ lý và không bật `clamav`.
-Số đo trước khi nâng nginx lên 1.30 và Keycloak lên 26.8.2, chưa đo lại.
+Số đo trên máy 12 CPU, 31 GB RAM, với stack tám service (chưa gồm trợ lý và không bật `clamav`) đang rảnh sau khi nạp 40 hồ sơ mẫu bằng `dxos demo`.
 
-| Service | RAM lúc rảnh (MiB) | RAM đỉnh (MiB) | CPU đỉnh (% của một nhân) |
-|---|---|---|---|
-| `backend` | 493 | 529 | 417 |
-| `keycloak` | 424 | 517 | 365 |
-| `monitor` | 287 | 296 | 7 |
-| `apisix` | 210 | 222 | 6 |
-| `postgres` | 86 | 115 | 166 |
-| `seaweedfs` | 68 | 71 | 4 |
-| `frontend`, `portal` | 10 mỗi service | 11 mỗi service | 2 |
+| Service | RAM (MiB) |
+|---|---|
+| `keycloak` | 624 |
+| `backend` | 494 |
+| `monitor` | 287 |
+| `apisix` | 221 |
+| `postgres` | 117 |
+| `seaweedfs` | 75 |
+| `frontend`, `portal` | 11 mỗi service |
 
-Cả stack dùng khoảng 1,6 GiB RAM lúc rảnh và tối đa khoảng 1,7 GiB trong lúc chạy kiểm thử.
-Image chiếm gần 1 GiB đĩa; dữ liệu Postgres sau lần chạy kiểm thử là khoảng 100 MiB.
-CPU chỉ vọt lên ngắn hạn ở `backend` và `keycloak`; chưa đo với nhiều người dùng đồng thời hay với ít nhân hơn.
+Cả stack dùng khoảng 1,8 GiB RAM, CPU gần 0 lúc rảnh.
+Image chiếm khoảng 3,5 GiB đĩa (kích thước `docker images` của tám service); cơ sở dữ liệu 12 MB.
+
+Dựng stack rỗng khi image đã có trên máy, với một tệp mô hình: stack lên và mô hình áp dụng xong sau khoảng 1 phút, và tài khoản ADMIN đầu tiên (`dxos admin`) thêm vài giây.
+Trên mô hình đã có 40 hồ sơ, `dxos plan` và `dxos apply` một trường mới mất dưới 1 giây và các hồ sơ còn nguyên.
+Giao diện, cổng vào, trang đăng nhập Keycloak và bảng điều khiển không tải tài nguyên từ ngoài cổng vào của hệ thống.
 
 Hệ thống chuẩn bị sẵn dịch vụ trợ lý; bot cá nhân chỉ chạy khi người dùng cấu hình và kích hoạt.
 Giới hạn CPU, RAM và số trợ lý được cấu hình trong `deploy/.env`, theo mẫu `.env.example`.

@@ -4,7 +4,7 @@ Bảng tự chấm 50 điểm PoF: đối chiếu repository với [đề thi](h
 Phần PoF được chấm trên repository trước buổi trình diễn, không có đội thi giải thích, nên mọi bằng chứng phải thấy được từ trang chủ GitHub.
 Mỗi dòng ghi yêu cầu, bằng chứng, lệnh tự kiểm và mức trừ nếu thiếu; chỉ đánh dấu ✅ khi đã chạy lệnh và thấy kết quả sạch.
 
-Kiểm ngày 06/11/2026 trên `Khuong/main` (`0fcef13`, sau khi gộp PR #191).
+Số liệu tính trên nhánh `Khuong/main`.
 Số GitHub lấy từ API công khai, không đăng nhập, nên cũng là những gì giám khảo nhìn thấy.
 Hồ sơ nộp (báo cáo kỹ thuật, slide, video) không nằm trong bảng này; mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./evidence-matrix.md).
 
@@ -12,14 +12,14 @@ Ký hiệu: ✅ đạt, ⚠️ còn thiếu hoặc chưa kiểm được, ❌ ch
 
 ## 1. Tóm tắt
 
-| Tiêu chí PoF | Điểm | Tình trạng | Việc còn lại |
-|---|---|---|---|
-| 1. Kho mã nguồn và lịch sử phát triển | 5 | ✅ | Mở issue cho các việc còn lại để bug tracker có lịch sử |
-| 2. Giấy phép và tính tương thích | 10 | ✅ | Không còn việc |
-| 3. Release và quản lý phiên bản | 5 | ⚠️ | Tạo tag `v2.0.0` và Release trước hạn nộp |
-| 4. Build và cài đặt từ mã nguồn | 10 | ⚠️ | Chạy lại chuỗi cài đặt trên máy sạch với image phát hành thật |
-| 5. Thư viện, phụ thuộc, nguồn gốc | 10 | ✅ | Không còn việc |
-| 6. Tài liệu, quản lý lỗi, giao tiếp | 10 | ✅ | Kiểm cài đặt GitHub cần quyền chủ repository |
+| Tiêu chí PoF | Điểm | Tình trạng |
+| --- | --- | --- |
+| 1. Kho mã nguồn và lịch sử phát triển | 5 | ✅ |
+| 2. Giấy phép và tính tương thích | 10 | ✅ |
+| 3. Release và quản lý phiên bản | 5 | ⚠️ |
+| 4. Build và cài đặt từ mã nguồn | 10 | ⚠️ |
+| 5. Thư viện, phụ thuộc, nguồn gốc | 10 | ✅ |
+| 6. Tài liệu, quản lý lỗi, giao tiếp | 10 | ✅ |
 
 Không có lỗi loại trừ: repository công khai, có `LICENSE`, đã có release (hiện đến `v1.1.1`), không phát hiện bí mật.
 
@@ -42,11 +42,11 @@ Không có lỗi loại trừ: repository công khai, có `LICENSE`, đã có re
 |---|---|---|---|
 | ✅ | Kho công khai trên Internet, có web viewer | GitHub: duyệt mã, lịch sử, blame trên trình duyệt | −3 |
 | ✅ | Truy cập mở, không cần đăng nhập | API không đăng nhập trả 200 cho repository, release, tag, `LICENSE` | −3 |
-| ✅ | Repository được dùng thật | 808 commit trên nhánh làm việc; 153 pull request đã gộp (GitHub, 06/11/2026); CI chạy trên mọi pull request | −5 |
-| ✅ | Lịch sử trải đều | Mười tuần ISO liên tiếp từ W36 đến W45 đều có commit: 3, 80, 82, 53, 93, 97, 85, 84, 136, 95 | |
-| ✅ | Nhiều người đóng góp | 3 sinh viên: `KhuongSpring` 565, `nddKhanh` 119, `tung51652-alt` 119 commit, cộng `dependabot` 5 | |
+| ✅ | Repository được dùng thật | 863 commit trên nhánh làm việc; 161 pull request đã gộp (GitHub); CI chạy trên mọi pull request | −5 |
+| ✅ | Lịch sử trải đều | Mười một tuần ISO liên tiếp từ W36 đến W46 đều có commit: 3, 80, 82, 53, 93, 97, 85, 84, 136, 118, 32 | |
+| ✅ | Nhiều người đóng góp | 3 sinh viên: `KhuongSpring` 614, `nddKhanh` 125, `tung51652-alt` 119 commit, cộng `dependabot` 5 | |
 | ✅ | Nhận diện tác giả | `.mailmap` gom các danh tính về một tên mỗi người | |
-| ⚠️ | Bug tracker có lịch sử | 8 issue so với 153 pull request; phần lớn việc đã ghi ở `BACKLOG.md` và `CHANGELOG.md` thay vì issue | Mở issue cho mỗi dòng của Việc tồn đọng và đóng bằng pull request có `Closes #n` |
+| ⚠️ | Bug tracker có lịch sử | 14 issue so với 161 pull request; phần lớn việc đã ghi ở `BACKLOG.md` và `CHANGELOG.md` thay vì issue | |
 
 ```bash
 git log --pretty='%h %ad %an %s' --date=short | tail -20     # lịch sử có trải đều không
@@ -58,7 +58,7 @@ git shortlog -sn                                             # đóng góp có n
 | Trạng thái | Yêu cầu | Bằng chứng | Mức trừ nếu thiếu |
 |---|---|---|---|
 | ✅ | Giấy phép được OSI công nhận | `LICENSE` Apache-2.0 | điều kiện loại trừ |
-| ✅ | Ghi giấy phép trong từng tệp mã | Dòng `SPDX-License-Identifier` ở đầu mọi tệp Java, TypeScript, JavaScript, Python, shell, YAML: `Apache-2.0`; `check_licenses.py` báo 0 vấn đề ngày 06/11/2026 | −5 |
+| ✅ | Ghi giấy phép trong từng tệp mã | Dòng `SPDX-License-Identifier` ở đầu mọi tệp Java, TypeScript, JavaScript, Python, shell, YAML: `Apache-2.0`; `check_licenses.py` báo 0 vấn đề | −5 |
 | ✅ | Không xung đột giấy phép giữa các thành phần | `DEPENDENCIES.txt`; repository chỉ có một giấy phép, Apache-2.0; job `Check licenses` của workflow `Compliance` kiểm giấy phép của từng gói trong `sbom/`, ngoại lệ có lý do ở `.github/dependency-exceptions.json` | −5 |
 | ✅ | Có thông báo về mục đích của giấy phép | `NOTICE` | −5 |
 | ✅ | Có bản sao toàn văn giấy phép | `LICENSE` | −5 |
@@ -82,13 +82,6 @@ head -3 LICENSE                                # toàn văn, không phải liên
 | ⚠️ | Image theo phiên bản | Workflow `Release Images` đẩy image `vX.Y.Z` lên GHCR; `dxos-install.sh` kéo image này nên bản `2.0.0` chưa cài được bằng một lệnh cho đến khi chạy | |
 
 GitHub tự đính kèm `Source code (zip)` vào mỗi release và không xóa được; phần mô tả release ghi rõ `dx-os-X.Y.Z.tar.gz` mới là gói phát hành chính thức.
-
-Trình tự phát hành bản `2.0.0`:
-
-1. Đưa nhánh làm việc vào `main`.
-2. Sửa ngày của mục `[2.0.0]` trong `CHANGELOG.md` theo ngày đặt tag.
-3. Đẩy tag `v2.0.0`; `Release Package` tạo Release kèm gói.
-4. Chạy workflow `Release Images` trên tag để có image `v2.0.0`.
 
 ## 6. Tiêu chí 4: build và cài đặt từ mã nguồn (10 điểm)
 
@@ -125,7 +118,7 @@ dxos start
 | ✅ | Không phát hành kèm gói của dự án phụ thuộc | `git ls-files` không có `vendor/`, `node_modules/`, `third_party/` | −5 |
 | ✅ | Không chỉnh sửa mã nguồn gói đính kèm | Không có tệp `.patch`; tùy biến bằng cấu hình (route APISIX, realm Keycloak, biến môi trường) | −5 |
 | ✅ | Phụ thuộc được cập nhật và quét | Dependabot; workflow `Dependencies` chặn khi có lỗ hổng HIGH hoặc CRITICAL đã có bản vá | |
-| ✅ | SBOM khớp với tệp khóa | Job `Check SBOMs against lockfiles` dựng lại SBOM của web và trang docs rồi so với `sbom/` ở mọi pull request; SBOM của backend so với kết quả của `cyclonedx-maven-plugin` (221 gói, 0 khác biệt ngày 06/11/2026) | |
+| ✅ | SBOM khớp với tệp khóa | Job `Check SBOMs against lockfiles` dựng lại SBOM của web và trang docs rồi so với `sbom/` ở mọi pull request; SBOM của backend so với kết quả của `cyclonedx-maven-plugin` (221 gói, 0 khác biệt) | |
 
 ```bash
 git ls-files | grep -E '(^|/)(vendor|third_party|node_modules)/|\.patch$' && echo "VI PHẠM" || echo "Sạch"
@@ -135,7 +128,7 @@ git ls-files | grep -E '(^|/)(vendor|third_party|node_modules)/|\.patch$' && ech
 
 | Trạng thái | Yêu cầu | Bằng chứng | Mức trừ nếu thiếu |
 |---|---|---|---|
-| ✅ | Có bug tracker | GitHub Issues đã bật; mẫu `bug_report.yml`, `feature_request.yml`; 8 issue | −5 |
+| ✅ | Có bug tracker | GitHub Issues đã bật; mẫu `bug_report.yml`, `feature_request.yml`; 14 issue | −5 |
 | ✅ | Có changelog | `CHANGELOG.md` theo Keep a Changelog, mục `[Unreleased]` và mục cho mọi bản đến `[2.0.0]` | −5 |
 | ✅ | Có README và hướng dẫn | `README.md`, `README_EN.md`; `ARCHITECTURE.md`; `docs/TESTING.md`; `deploy/OPERATIONS.md`; API qua Swagger UI và `check_docs.py` kiểm tài liệu khớp OpenAPI; job `Check required files and scripts` báo lỗi nếu thiếu một tài liệu bắt buộc hoặc `CHANGELOG.md` mất mục `[Unreleased]`; job `Build the docs site` dựng trang docs và dừng khi có liên kết hỏng | −5 |
 | ✅ | Hướng dẫn đóng góp | `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, mẫu pull request | |
@@ -167,22 +160,8 @@ git ls-files | grep -E '(^|/)(vendor|third_party|node_modules)/|\.patch$' && ech
 
 ## 11. Rà soát cuối cùng
 
-Làm trên bản phát hành cuối, trước 17:00 ngày 06/12/2026.
-Lần kiểm ở các bảng trên không thay cho mục này.
-
-- [ ] Tag `v2.0.0` và Release đã có, kèm `dx-os-2.0.0.tar.gz`, `.sha256` và các SBOM `.cdx.json`.
-- [ ] Image `v2.0.0` có trên GHCR; `curl ... dxos-install.sh | bash` rồi `dxos start` chạy được trên máy sạch.
-- [ ] Clone repository vào máy sạch, chạy `deploy/make_env.sh` và `docker compose up -d --build` thành công.
-- [ ] Mở repository bằng trình duyệt ẩn danh, xác nhận truy cập được không cần đăng nhập.
-- [ ] `python3 .github/scripts/check_licenses.py` báo 0 vấn đề trên bản phát hành.
-- [ ] CI xanh trên commit được gắn tag: `Platform`, `Compliance`, `Backend`, `Frontend`, `Dependencies`.
-- [ ] Hai ruleset ở `.github/rulesets/` đã nhập vào GitHub.
-- [ ] Private vulnerability reporting đã bật; `SECURITY.md` có trên trang chủ repository.
-- [ ] `CHANGELOG.md` có mục cho mọi bản đã phát hành và ngày của `[2.0.0]` khớp ngày tag.
-- [ ] Không có bí mật trong lịch sử: job `Scan for secrets` của workflow `Compliance` xanh.
-- [ ] README, `ARCHITECTURE.md`, `docs/TESTING.md` mô tả đúng bản `2.0.0`; `check_docs.py` đạt.
-- [ ] Trang docs mô tả đúng bản `2.0.0`.
-- [ ] Thư gửi BTC kèm thành viên, người hướng dẫn, đường dẫn repository và cam kết bản quyền theo mẫu của đề.
+Danh sách việc làm trên bản phát hành cuối nằm ở [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md), mục 2.
+Lần kiểm ở các bảng trên không thay cho lần rà soát đó.
 
 ## 12. Phạm vi kiểm tra
 

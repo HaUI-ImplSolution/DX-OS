@@ -25,18 +25,18 @@ Việc chưa làm và giới hạn chấp nhận ở [Việc tồn đọng](http
 | Bản triển khai công khai | VPS của đội | Không; hiện giữ bản `v1.1.1` nên chưa có bằng chứng loại này cho lõi mới |
 
 Dữ liệu của hai loại đầu do chính các script tạo ra trên stack rỗng; chưa có tổ chức nào dùng lõi với dữ liệu thật.
-Job `API end-to-end` của workflow `Platform` chia hai nhóm, mỗi nhóm một stack rỗng: `model and process` (11 script) và `events and bootstrap` (2 script).
+Job `API end-to-end` của workflow `Platform` chia hai nhóm, mỗi nhóm một stack rỗng: `model and process` và `events and bootstrap`; script của từng nhóm khai ở `.github/workflows/ci-platform.yml`.
 Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số kiểm của từng script xem ở kết quả của lượt CI.
 
 ## 1. Bốn dịch vụ bắt buộc của đề
 
 | Yêu cầu | Tính năng của lõi | Kiểm | Lệnh | Mức | Giới hạn |
 |---|---|---|---|---|---|
-| Định danh và SSO | Keycloak; vai và đơn vị sinh từ mô hình; mỗi mô hình có client riêng nên hai mô hình dùng cùng tên vai không vào được nhau | `check_users.py` 41, `check_guards.py` 61, `check_conformance.py` 60 | `python3 deploy/dev/check_conformance.py` | Hoàn thiện | Đổi vai hoặc đơn vị có hiệu lực sau tối đa khoảng 5 phút vì đọc từ token đã ký |
+| Định danh và SSO | Keycloak; vai và đơn vị sinh từ mô hình; mỗi mô hình có client riêng nên hai mô hình dùng cùng tên vai không vào được nhau | `check_users.py` 41, `check_guards.py` 61, `check_conformance.py` 62 | `python3 deploy/dev/check_conformance.py` | Hoàn thiện | Đổi vai hoặc đơn vị có hiệu lực sau tối đa khoảng 5 phút vì đọc từ token đã ký |
 | Cổng API | APISIX kiểm token, giới hạn tốc độ, định tuyến; route không kiểm token nằm trong danh sách công khai | `deploy/apisix/check_routes.py`; mọi script đi qua cổng 9080; `check_conformance.py` kiểm 401 khi thiếu token | `python3 deploy/apisix/check_routes.py` | Hoàn thiện | Giới hạn tốc độ chưa có kiểm riêng; lúc chạy `check_conformance.py` gặp 429 cho thấy giới hạn đang hoạt động |
 | Dữ liệu có cấu trúc | Schema, ràng buộc và chỉ mục sinh từ mô hình trên PostgreSQL; bắt buộc, duy nhất, lựa chọn kiểm cả ở API lẫn cơ sở dữ liệu | `check_api.py` 51, `check_change.py` 65 | `python3 deploy/dev/check_api.py` | Hoàn thiện | Danh sách 10.000 dòng có lọc và sắp xếp đo ở phân vị 95 là 11 ms; chưa thử tải lớn hơn |
 | Dữ liệu phi cấu trúc | Tệp đính kèm lưu ở SeaweedFS, siêu dữ liệu ở PostgreSQL, quét ClamAV, quyền theo quyền của hồ sơ | `check_process.py` (tải lên, tải về, gỡ), `check_demo.py` tiêu chí 3 (tệp EICAR bị chặn), job `Back up and restore` của workflow `Platform` (sao lưu và khôi phục kèm tệp) | `python3 deploy/dev/check_demo.py` | Dùng được | Quét mã độc tắt mặc định; kiểm tệp EICAR chỉ chạy khi bật `dxos av on`, và job `API end-to-end` của workflow `Platform` không bật nên phần này chưa nằm trong CI |
-| Động cơ luồng công việc | Flowable nhúng, ba họ mẫu `approval`, `work_item`, `reservation`; trạng thái chỉ đổi qua quy trình, cùng giao dịch với việc ghi hồ sơ | `check_process.py` 69, `check_case.py` 76, `check_booking.py` 46, `check_recovery.py` 19 | `python3 deploy/dev/check_process.py` | Hoàn thiện | Họ phê duyệt có sẵn chỉ có một cấp; nhiều cấp tuần tự và điều kiện `when` khai báo được bằng `states` và `actions` của quy trình tự khai báo (kiểm tay trên stack tạm, chưa có kiểm tự động); không có trình thiết kế BPMN |
+| Động cơ luồng công việc | Flowable nhúng, ba họ mẫu `approval`, `work_item`, `reservation`; trạng thái chỉ đổi qua quy trình, cùng giao dịch với việc ghi hồ sơ | `check_process.py` 69, `check_case.py` 76, `check_booking.py` 47, `check_recovery.py` 19 | `python3 deploy/dev/check_process.py` | Hoàn thiện | Họ phê duyệt có sẵn chỉ có một cấp; nhiều cấp tuần tự và điều kiện `when` khai báo được bằng `states` và `actions` của quy trình tự khai báo (kiểm tay trên stack tạm, chưa có kiểm tự động); không có trình thiết kế BPMN |
 | Lõi không có giao diện | `dx-engine` chỉ phục vụ API; giao diện và portal là Tầng 2 | Mọi script chỉ gọi API; `ArchitectureTest` kiểm phụ thuộc giữa các lớp của `dx-engine`; `docs/TESTING.md` mục 7 | | Dùng được | Chưa có test khẳng định rằng dịch vụ lõi không trả trang nào |
 
 ## 2. Năng lực của lõi
@@ -50,7 +50,7 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 | API chung với quyền theo vai và theo dòng (`all`, `read`, `own`, `unit`, `assigned`, `owner_via`) | `check_api.py`, `check_case.py` | `python3 deploy/dev/check_case.py` | Hoàn thiện | Không có quyền theo từng trường |
 | Chặn lách quy trình: không ghi được `status` qua API dữ liệu | `check_demo.py` tiêu chí 4, `check_conformance.py` | `python3 deploy/dev/check_conformance.py` | Hoàn thiện | |
 | Quy tắc chung của quy trình: lý do khi từ chối hoặc trả lại, rút lại, người tạo không tự quyết, hạn và quá hạn | `check_process.py`, `check_case.py` | `python3 deploy/dev/check_process.py` | Hoàn thiện | |
-| Đặt chỗ theo khung giờ có sức chứa | `check_booking.py` 46 | `python3 deploy/dev/check_booking.py` | Hoàn thiện | Kéo thả trên lịch kiểm tay bằng Chrome |
+| Đặt chỗ theo khung giờ có sức chứa | `check_booking.py` 47 | `python3 deploy/dev/check_booking.py` | Hoàn thiện | Kéo thả trên lịch kiểm tay bằng Chrome |
 | Tự đóng hồ sơ đã xử lý của họ `work_item` | `check_process.py` | `python3 deploy/dev/check_process.py` | Hoàn thiện | |
 | Hành động hoàn tất qua outbox, thử lại khi lỗi | `check_process.py`; `AdvisoryJobLockIntegrationTest` | `python3 deploy/dev/check_process.py` | Hoàn thiện | Chỉ có `add_to_group` và `remove_from_group` |
 | Chống ghi đè khi sửa đồng thời (`version`, 409) | `check_process.py` | `python3 deploy/dev/check_process.py` | Hoàn thiện | |
@@ -59,11 +59,11 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 | Chuỗi hash của lịch sử, điểm neo, lệnh kiểm | `check_events.py` 24 | `python3 deploy/dev/check_events.py` | Hoàn thiện | Phát hiện sửa chứ không ngăn sửa; người sửa được cả cơ sở dữ liệu lẫn kho thì chỉ bị lộ khi so với hash bên nhận giữ |
 | Webhook theo mô hình: chữ ký, thứ tự theo hồ sơ, thử lại, lấy lại phần đã lỡ | `check_events.py`, `WebhookSenderTest` | `python3 deploy/dev/check_events.py` | Hoàn thiện | Dạng `chat` chưa thử với Mattermost và Slack thật |
 | Bên nhận so hash lịch sử (`witness.py`) | `check_events.py`; chạy dòng lệnh kiểm tay | `python3 examples/history-witness/witness.py compare` | Hoàn thiện | |
-| Bộ kiểm chung cho mô hình mới | `check_conformance.py` 60 | `python3 deploy/dev/check_conformance.py` | Hoàn thiện | |
+| Bộ kiểm chung cho mô hình mới | `check_conformance.py` 62 | `python3 deploy/dev/check_conformance.py` | Hoàn thiện | |
 | Quản trị người dùng: gán vai và đơn vị, tạo, khóa, đặt lại mật khẩu, nhật ký | `check_users.py` 41, `KeycloakAdminClientTest`; tab Người dùng kiểm bằng Chrome | `python3 deploy/dev/check_users.py` | Hoàn thiện | Thay đổi làm thẳng ở Keycloak Admin Console không qua đây |
 | Thống kê theo thực thể, kể cả thời gian xử lý | `check_process.py` | `python3 deploy/dev/check_process.py` | Hoàn thiện | Chưa có tỷ lệ hoàn tất trong hạn |
 | Tài liệu khớp với API thật | `check_docs.py` 3 | `python3 deploy/dev/check_docs.py` | Hoàn thiện | |
-| Nạp mô hình lúc khởi động (`dxos start <tệp>`) | `check_bootstrap.py` 8; job `Install from the release archive` của workflow `Platform` | `python3 deploy/dev/check_bootstrap.py` | Dùng được | Chưa kiểm bằng image phát hành thật của bản `2.0.0` |
+| Nạp mô hình lúc khởi động (`dxos start <tệp>`) | `check_bootstrap.py` 9; job `Install from the release archive` của workflow `Platform` | `python3 deploy/dev/check_bootstrap.py` | Dùng được | Chưa kiểm bằng image phát hành thật của bản `2.0.0` |
 | Cài một lệnh, nâng cấp, gói sai SHA-256 bị từ chối | Job `Install from the release archive` của workflow `Platform` | `curl -fsSL .../dxos-install.sh \| bash` | Dùng được | Chưa chạy trên máy sạch với image phát hành thật |
 | Sao lưu và khôi phục kèm tệp đính kèm | Job `Back up and restore` của workflow `Platform` | `dxos backup` | Hoàn thiện | Một bản backend, một máy |
 | Màn hình giám sát và cảnh báo | `ServiceProbeTest` 4, `AlertJobTest` | `cd backend && ./mvnw verify` | Dùng được | Không có kiểm đầu-cuối của giao diện giám sát |
@@ -74,6 +74,8 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 | Kiểu `boolean`, `date`, nhiều lựa chọn, giới hạn `min` `max` `pattern`, bắt buộc có điều kiện | Kiểm tay theo `docs/TESTING.md` mục 6, mục 24; `check_conformance.py` và `check_booking.py` áp mọi mẫu, kể cả Sổ tài sản | Áp dụng mẫu Sổ tài sản rồi ghi giá trị đúng và sai qua API | Dùng được | Không có kiểm tự động riêng cho các kiểu mới; `CHECK` của cơ sở dữ liệu kiểm tay bằng chèn thẳng vào bảng |
 | Tài liệu OpenAPI theo mô hình | Kiểm tay theo `docs/TESTING.md` mục 6, mục 28; `check_docs.py` kiểm đường dẫn của tài liệu có trong OpenAPI chung | `GET /api/v1/meta/models/{model}/openapi` | Dùng được | Chưa thử trong một trình sinh thư viện cụ thể; đã nhập qua bộ kiểm cú pháp OpenAPI |
 | Ứng dụng ngoài (`dxos client`, tab Ứng dụng ngoài) | Kiểm tay theo `docs/TESTING.md` mục 6, mục 27 và phần lệnh `dxos` mục 7 | `dxos client add` | Dùng được | Không có kiểm tự động; mỗi ứng dụng giữ đúng một vai của một mô hình |
+| Danh mục dữ liệu (`GET /api/v1/models/{model}/data-catalog`, tab Danh mục dữ liệu) | Kiểm tay theo `docs/TESTING.md` mục 6, mục 32; `check_docs.py` kiểm đường dẫn có trong OpenAPI | Mở tab Danh mục dữ liệu bằng ADMIN, chọn một mô hình có quy trình | Dùng được | Không có kiểm tự động; chỉ ADMIN xem được; mới tới mức thực thể, chưa có phả hệ từng trường |
+| Lưu trữ hồ sơ đã đóng vào kho đối tượng, chạy theo lịch | `check_cli.py` CLI-19 đến CLI-21; kiểm tay theo `docs/TESTING.md` phần lệnh `dxos` mục 8 | `dxos archive <mô hình> --store`, `dxos archive schedule install` | Dùng được | Lần chạy đầu cần mạng để DuckDB tải extension; timer là systemd user timer, máy không có systemd thì dùng cron; chưa có lớp truy vấn trên kho |
 | Khối `ui:` và hành động hàng loạt | Kiểm tay theo `docs/TESTING.md` mục 6, mục 25 và 26; `npx tsc --noEmit` | Mở danh sách và biểu mẫu của Sổ tài sản; chọn nhiều hồ sơ rồi Duyệt | Dùng được | Không có kiểm tự động của giao diện cho hai phần này |
 | Bảng theo trạng thái và xuất CSV | Kiểm tay theo `docs/TESTING.md` mục 6, mục 29 và 30; `npx tsc --noEmit` | Mở danh sách của một thực thể có quy trình, bấm Bảng theo trạng thái và Xuất CSV | Dùng được | Không có kiểm tự động của giao diện; bảng chỉ đọc, tối đa 10 thẻ mỗi cột; xuất tối đa 10.000 dòng |
 | Khóa chống chạy lặp (`Idempotency-Key`) | Kiểm tay theo `docs/TESTING.md` mục 6, mục 31 | Gửi hai lần cùng khóa | Dùng được | Không có kiểm tự động; chỉ cho tạo hồ sơ và hành động, khóa giữ 24 giờ |
@@ -92,13 +94,14 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 | Image theo phiên bản trên GHCR | Workflow `Release Images` | | Dùng được | Chưa có image `v2.0.0` |
 | Compose dừng khi thiếu bí mật, tệp mẫu hợp lệ | Job `Validate the Compose file` của workflow `Platform` | `docker compose config` | Hoàn thiện | |
 
-## 4. Chưa làm hoặc ngoài phạm vi
+## 4. Chưa làm
 
 | Nội dung | Mức | Ghi chú |
 |---|---|---|
 | Hỏi đáp sinh câu trả lời và tác tử AI có người duyệt | Chưa làm | Cần mô hình ngôn ngữ đạt tiêu chuẩn mở hoàn toàn, chưa chọn |
 | Ứng dụng Tầng 2 phủ chữ I của H-P-D-I | Chưa làm | |
-| Hồ dữ liệu, bản sao số (hai nguyên lý đầu của đề) | Chưa làm | Ngoài phạm vi bản dự thi, nói rõ khi trình bày |
+| Lớp truy vấn riêng trên kho Parquet, phả hệ đến từng trường | Chưa làm | Xem [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md), mục 3 |
+| Bản sao số | Chưa làm | Giới hạn chấp nhận, xem [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md), mục 4 |
 | Nhiều bản backend sau gateway | Chưa làm | Chạy một bản; hai bản thì danh sách mô hình giữ lệch nhau sau một lần áp dụng |
 | Triển khai công khai cho lõi mới | Chưa làm | VPS giữ `v1.1.1`; bản mới không có đường nâng cấp dữ liệu nên phải dựng lại |
 | Thao tác hoàn tất gọi ra hệ thống ngoài | Chưa làm | Ghi ở giới hạn chấp nhận của Việc tồn đọng: webhook của mô hình đã gửi trạng thái cũ, mới và hành động |

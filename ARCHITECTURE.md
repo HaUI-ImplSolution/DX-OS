@@ -179,6 +179,7 @@ Trạng thái của hồ sơ chỉ đổi qua quy trình.
 - Hành động sai trạng thái bị từ chối (409); lỗi sau bước quy trình làm cả hồ sơ, quy trình lẫn dòng lịch sử quay về như cũ.
 - Hạn xử lý lưu ở cột `handle_by` khi hồ sơ chờ người xử lý; `overdue` được tính khi đọc.
 - `CatalogService` cấp cho bảng điều khiển schema của tệp mô hình, các họ mẫu, mẫu mô hình và phiên bản đã áp dụng.
+- `DataCatalogService` mô tả dữ liệu của một mô hình đang chạy ở `GET /api/v1/models/{model}/data-catalog` (ADMIN): trường, vai được truy cập, số dòng, liên kết giữa các thực thể, và nơi dữ liệu đi vào (vai, ứng dụng ngoài) và đi ra (webhook, hành động hoàn tất, dòng sự kiện, lưu trữ).
 - `ProcessDiagramService` đọc một tệp mô hình bằng `ModelParser` và trả trạng thái, hành động, hạn, `auto_close` và hành động `after` của từng quy trình, hoặc danh sách lỗi kèm dòng và cột; không so với mô hình đang chạy.
 
 ## 7. Sự kiện và hành động sau quyết định
@@ -215,7 +216,7 @@ Trạng thái của hồ sơ chỉ đổi qua quy trình.
 - **Lịch sử chống sửa:** các dòng `engine.record_event` nối thành một chuỗi hash (`HistoryChain`); mỗi giờ backend ghi một điểm neo (`HistoryAnchor`) vào kho đối tượng, ngoài Postgres.
   `dxos history verify` hay `GET /api/v1/history/verify` (ADMIN) tính lại chuỗi và so với các điểm neo.
   Chuỗi phát hiện chứ không ngăn việc sửa; bên nhận webhook giữ `hash` của tin đã nhận thì có thêm một điểm neo ngoài máy chủ (`examples/history-witness`).
-- **Hồ dữ liệu:** `dxos archive` xuất hồ sơ đã tới trạng thái cuối ra Parquet kèm `manifest.json` ghi số dòng và sha256, và `dxos archive check` kiểm lại.
+- **Hồ dữ liệu:** `dxos archive` xuất hồ sơ đã tới trạng thái cuối và lịch sử của chúng ra Parquet kèm `manifest.json` ghi số dòng và sha256, vào một thư mục hoặc (`--store`) vào bucket riêng của SeaweedFS; `dxos archive check` kiểm lại, `dxos archive auto` ghi mỗi hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS` một lần và `dxos archive schedule install` chạy nó mỗi ngày bằng systemd user timer.
 - **Tự phục hồi:** mọi service chạy lâu có `restart: unless-stopped`; `dxos reconcile` đưa stack về đúng khai báo và chạy mỗi phút bằng systemd user timer.
 - **Sao lưu:** `deploy/backup.sh` chụp bản sao lưu mã hóa của Postgres và kho tệp; `verify` nạp bản dump vào Postgres tạm và kiểm mọi tệp đính kèm đều có.
 - Cách dùng từng việc ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md) và [`deploy/INTEGRATIONS.md`](./deploy/INTEGRATIONS.md).
@@ -267,11 +268,9 @@ Gateway cá nhân chỉ chạy khi người dùng cấu hình và bật trợ l�
 
 Bốn nguyên lý kỹ thuật của đề:
 
-| Nguyên lý | Đáp ứng | Chưa có |
-|---|---|---|
-| Phân tách theo vòng đời dữ liệu, đẩy dữ liệu lịch sử xuống hồ dữ liệu | `dxos archive` xuất hồ sơ đã xong ra Parquet kèm manifest | Hồ dữ liệu chạy liên tục |
-| Hội tụ dữ liệu hành chính (IT) và vận hành (OT) | Chương trình giả lập thiết bị tạo hồ sơ sự cố qua API (`examples/itot-simulator`) | Bản sao số theo thời gian thực |
-| Quản trị dữ liệu, phả hệ và nguồn gốc | Tệp mô hình là danh mục dữ liệu; lịch sử hồ sơ chống sửa | Phả hệ dữ liệu của báo cáo |
-| Zero-Trust, GitOps, kiểm dịch mã độc, tự phục hồi | Token kiểm ở gateway và backend; ClamAV quét tệp khi bật; tệp mô hình là khai báo, xem trước rồi áp dụng; `dxos reconcile` và `restart: unless-stopped` | |
-
-Phần trí tuệ nhân tạo (chữ I của H-P-D-I) chưa làm.
+| Nguyên lý | Đáp ứng |
+|---|---|
+| Phân tách theo vòng đời dữ liệu, đẩy dữ liệu lịch sử xuống hồ dữ liệu | `dxos archive --store` ghi hồ sơ đã đóng và lịch sử của chúng ra Parquet vào một bucket riêng của SeaweedFS kèm manifest và hash; `dxos archive schedule install` đặt lịch hằng ngày theo `ARCHIVE_AFTER_DAYS` |
+| Hội tụ dữ liệu hành chính (IT) và vận hành (OT) | Chương trình giả lập thiết bị tạo hồ sơ sự cố qua API (`examples/itot-simulator`), đi qua cùng quy trình, quyền và lịch sử với hồ sơ hành chính |
+| Quản trị dữ liệu, phả hệ và nguồn gốc | Tệp mô hình là danh mục dữ liệu, trang Danh mục dữ liệu đọc từ đó nơi dữ liệu đi vào, đi ra và liên kết giữa các thực thể; lịch sử hồ sơ chống sửa |
+| Zero-Trust, GitOps, kiểm dịch mã độc, tự phục hồi | Token kiểm ở gateway và backend; ClamAV quét tệp khi bật; tệp mô hình là khai báo, xem trước rồi áp dụng; `dxos reconcile` và `restart: unless-stopped` |

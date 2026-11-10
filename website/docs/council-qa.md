@@ -76,7 +76,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 
 ## 6. AI nằm ở đâu, dữ liệu và giới hạn là gì?
 
-- Bản dự thi chưa có phần AI.
+- Phần AI chưa có.
   Dịch vụ tìm kiếm tri thức từng có đã gỡ khỏi repository, vì chưa nối vào lõi và mô hình embedding của nó chưa kiểm được dữ liệu huấn luyện theo định nghĩa Open Source AI của OSI.
 - Hướng làm: hỏi đáp có trích nguồn và tác tử đề xuất giá trị cho một trường, luôn có người duyệt trước khi ghi, chạy tại chỗ để dữ liệu không ra ngoài máy.
 - Điều kiện: chỉ dùng mô hình có trọng số và dữ liệu huấn luyện đều mở; chưa chọn mô hình nào.
@@ -105,11 +105,11 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 ## 9. Từ 100 lên 100.000 người dùng thì sao?
 
 - Chưa đo tải ở quy mô đó.
-  Số đã đo: danh sách 10.000 dòng có lọc và sắp xếp trả về ở phân vị 95 là 11 ms; cả tám dịch vụ dùng tối đa khoảng 1,7 GiB RAM khi chạy các script kiểm.
+  Số đã đo: danh sách 10.000 dòng có lọc và sắp xếp trả về ở phân vị 95 là 11 ms; cả tám dịch vụ dùng khoảng 1,8 GiB RAM lúc rảnh.
 - Backend chạy một bản.
   Thử hai bản sau gateway cho thấy cả hai nhận lưu lượng, nhưng sau một lần áp dụng mô hình, danh sách mô hình và trạng thái giữ lệch nhau giữa hai bản; vì vậy đây là giới hạn đã ghi, không phải khả năng đã có.
 - Mỗi mô hình có khóa riêng khi áp dụng nên các mô hình áp dụng song song; dữ liệu của mỗi mô hình nằm ở schema riêng.
-- **Bằng chứng:** `docs/TESTING.md` (cách kiểm); `deploy/OPERATIONS.md` (tài nguyên từng dịch vụ, đo trước khi nâng nginx 1.30 và Keycloak 26.8.2); [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md) mục giới hạn chấp nhận.
+- **Bằng chứng:** `docs/TESTING.md` (cách kiểm); `deploy/OPERATIONS.md` (tài nguyên từng dịch vụ); [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md) mục giới hạn chấp nhận.
 
 ## 10. Cộng đồng muốn đóng góp thì làm thế nào?
 
@@ -124,7 +124,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Chưa có phần AI: tìm kiếm tri thức có nguồn, hỏi đáp sinh câu trả lời và tác tử có người duyệt.
 - Điều kiện `when` của hành động chỉ là một phép so sánh trên một trường, chưa có và/hoặc.
   Duyệt nhiều cấp tuần tự và rẽ nhánh theo ngưỡng khai báo được bằng quy trình tự khai báo, mới kiểm tay trên stack tạm chứ chưa có kiểm tự động.
-- Hai nguyên lý đầu của đề (hồ dữ liệu theo vòng đời, bản sao số) nằm ngoài phạm vi bản dự thi.
+- Ba nguyên lý đầu của đề mới được đáp ứng một phần: hồ dữ liệu có phần lưu trữ hồ sơ đã đóng theo lịch nhưng chưa có lớp truy vấn riêng; dữ liệu vận hành mới vào qua bộ mô phỏng IT/OT và chưa có bản sao số; phả hệ mới dừng ở danh mục dữ liệu của mô hình, chưa đến từng trường.
 - Một bản backend; chưa chịu lỗi nhiều nút; chưa thử tải lớn.
 - Đích webhook dạng `chat` chưa thử với Mattermost và Slack thật.
 - Đổi vai hoặc đơn vị của người đang đăng nhập có hiệu lực sau tối đa khoảng 5 phút; không có quyền theo từng trường.

@@ -173,6 +173,29 @@ export interface OutboxPage {
   page: { items: OutboxMessage[]; page: number; size: number; totalElements: number; totalPages: number };
 }
 
+export interface DataPoint {
+  kind: string;
+  name: string;
+  detail: string | null;
+}
+
+export interface DataCatalog {
+  model: string;
+  origins: DataPoint[];
+  destinations: DataPoint[];
+  links: { from: string; via: string; to: string; kind: string }[];
+  entities: {
+    name: string;
+    label: string;
+    rows: number;
+    hasProcess: boolean;
+    family: string | null;
+    handlers: string[];
+    access: Record<string, string>;
+    fields: { name: string; label: string; type: string; required: boolean; unique: boolean; multiple: boolean; reference: string | null }[];
+  }[];
+}
+
 const yaml = (method: string, text: string): RequestInit => ({
   method,
   headers: { "Content-Type": "application/yaml" },
@@ -186,6 +209,7 @@ const query = (params: Record<string, string | number | undefined>) => {
 
 export const listApplied = () => request<AppliedModel[]>("/models");
 export const getSchema = () => request<Record<string, unknown>>("/models/schema");
+export const getDataCatalog = (model: string) => request<DataCatalog>(`/models/${model}/data-catalog`);
 export const listFamilies = () => request<Family[]>("/models/families");
 export const listTemplates = () => request<Template[]>("/models/templates");
 export const listVersions = (model: string) =>

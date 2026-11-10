@@ -102,6 +102,9 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - Lịch sử hồ sơ nối thành chuỗi hash, mỗi giờ ghi một điểm neo ra kho đối tượng; `dxos history verify` và `GET /api/v1/history/verify` chỉ ra dòng bị sửa, xóa hoặc chèn.
 - `examples/history-witness` cho bên nhận giữ `eventId` và `hash` rồi so với hệ thống.
 - `dxos archive` xuất hồ sơ đã xong ra Parquet kèm `manifest.json`; `dxos archive check` kiểm lại.
+- `dxos archive --store` ghi vào bucket riêng của SeaweedFS (`S3_ARCHIVE_BUCKET`); `archive list` liệt kê các lần chạy, `archive check --store` đọc lại từ kho và so với manifest.
+- `dxos archive auto` ghi hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS` ngày, mỗi hồ sơ một lần; `dxos archive schedule install` chạy lệnh đó mỗi ngày bằng systemd user timer, `uninstall` gỡ; dữ liệu trong cơ sở dữ liệu giữ nguyên.
+- `GET /api/v1/models/{model}/data-catalog` (ADMIN) và tab Danh mục dữ liệu ở bảng điều khiển: nơi dữ liệu của một mô hình đi vào (vai, ứng dụng ngoài) và đi ra (webhook, hành động hoàn tất, dòng sự kiện, lưu trữ), liên kết giữa các thực thể, số bản ghi, quyền theo vai và danh sách trường.
 - `GET /api/v1/inbox/stream` báo cho giao diện khi một dòng lịch sử hồ sơ ghi xong, để hộp việc, danh sách và trang chi tiết đang mở tự đọc lại; khung không kèm nội dung hồ sơ, nhịp ping 20 giây, server đóng kênh sau 10 phút, tối đa 8 kênh cho mỗi người và 2000 kênh cùng lúc; route gateway giữ kiểm token và cho đọc 15 phút.
 - `examples/itot-simulator` giả lập thiết bị tạo hồ sơ sự cố qua API; gửi lại cùng một quan sát thì lõi từ chối.
 

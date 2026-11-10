@@ -145,6 +145,10 @@ Giao diện, đăng nhập bằng `req1` (vai `BORROWER`), `keeper1` (vai `KEEPE
     Hồ sơ quá hạn rồi được trả lại, nộp lại và duyệt vẫn tính là muộn; hồ sơ rút lại sau hạn không tính; hai quyết định đồng thời trên hai hồ sơ quá hạn không kẹt khóa; `GET /api/v1/history/verify` vẫn báo chuỗi nguyên vẹn.
     Số `closedOnTime` cộng `closedLate` bằng số hồ sơ đã quyết định và không rút lại khi đối chiếu bằng SQL, ở nhiều người xem và nhiều bộ lọc.
     Tệp mô hình có hành động tên `overdue`, `due_soon`, `created`, `updated`, `deleted`, `assigned`, `file_added`, `file_removed`, `completion_skipped` hay `auto_closed` bị từ chối ở bước kiểm, kèm dòng và cột; tên thường như `review` được nhận.
+23. Hộp việc thời gian thực: mở hộp việc của một cán bộ ở một cửa sổ, ở cửa sổ khác cho sinh viên nộp một hồ sơ gửi đơn vị của cán bộ đó: số "Việc đang chờ" tăng trong khoảng hai giây mà không tải lại trang, ở mọi tab của cán bộ.
+    Trang chi tiết đang mở của một hồ sơ đổi trạng thái khi người khác duyệt; form tạo hoặc sửa đang gõ dở không bị làm mới.
+    Khởi động lại `backend`: sau vài giây tab đang mở nhận lại thay đổi mới.
+    `GET /api/v1/inbox/stream` không có token thì 401, có token thì 200 `text/event-stream` kèm `: ping` mỗi 20 giây, và server đóng sau 600 giây.
 
 Lệnh `dxos` và các tính năng chạy ngoài stack kiểm:
 
@@ -153,6 +157,7 @@ Lệnh `dxos` và các tính năng chạy ngoài stack kiểm:
 3. Áp dụng lại tệp không đổi khi bảng thiếu hoặc thừa cột, đổi kiểu cột, hoặc client, vai, nhóm đơn vị bị xóa: kế hoạch ghi `repair` đúng loại, áp dụng xong thì về `unchanged`.
 4. Áp dụng một mô hình đổi bảng trong lúc có yêu cầu ghi hồ sơ của mô hình đó: không có 500, không hồ sơ nào ghi sai cấu trúc.
 5. Thống kê với vai `unit` và `own`, có và không có bộ lọc: `total` và tổng `byStatus` bằng số dòng của danh sách cùng bộ lọc.
+6. `dxos demo` trên stack có `dxos-cli`: tạo bốn tài khoản `judge_*` và 40 hồ sơ; `judge_student` thấy hồ sơ của mình, mỗi cán bộ chỉ thấy đơn vị mình, `judge_supervisor` thấy mọi hồ sơ và không có nút Tạo mới; chạy lại không nộp thêm hồ sơ và in mật khẩu mới; `dxos demo remove` gỡ bốn tài khoản.
 
 ## 7. Hồi quy
 

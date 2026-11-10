@@ -20,6 +20,7 @@ Script `deploy/dev/check_docs.py` kiểm mọi đường dẫn nêu ở đây c�
 | `GET .../{id}/events` | Dòng lịch sử của bản ghi; `detail` của dòng `updated` là JSON `{"trường": ["cũ", "mới"]}` với giá trị dạng chuỗi hoặc `null`, cắt ở 200 ký tự |
 | `.../{id}/files` | Tải lên, liệt kê, lấy link tải có hạn (`/{fileId}/link`) và gỡ tệp đính kèm |
 | `GET /api/v1/inbox` | Hồ sơ đang chờ người gọi, trên mọi mô hình; `page`, `size` |
+| `GET /api/v1/inbox/stream` | Kênh sự kiện `text/event-stream` cho người đã đăng nhập: sau khi một dòng lịch sử hồ sơ ghi xong ở bất kỳ mô hình nào, kênh gửi khung `event: changed` với dữ liệu `{}`, không kèm nội dung và giống nhau với mọi người, để client đọc lại hộp việc; dòng chú thích `: ping` mỗi 20 giây; server đóng kênh sau 10 phút nên client nối lại với token mới; 503 khi server đã giữ hết số kênh phục vụ được; kênh nằm trong bộ giới hạn 300 lượt mở mỗi phút mỗi người |
 | `GET /api/v1/events` | Dòng lịch sử theo đúng dạng của webhook, từ sau một `eventId` (`after`, `size`, `model`) (ADMIN) |
 | `GET /api/v1/events/admin` | Việc áp dụng, quay về, tiếp tục, hủy bỏ mô hình và thay đổi tài khoản theo đúng dạng thông điệp `admin.event`, từ sau một `eventId` (`after`, `size`, `model`); `eventId` đếm riêng, không cùng dãy với `/events`; dòng được ghi dù có đích webhook hay không (ADMIN) |
 | `GET /api/v1/outbox`, `POST /api/v1/outbox/{id}/retry` | Thông điệp gửi đi theo trạng thái (lỗi, chờ gửi, đã gửi) và thử lại thông điệp chưa gửi (ADMIN) |

@@ -1,6 +1,6 @@
 # Lõi dynamic của DX-OS
 
-Định hướng và phạm vi đã chốt ngày 2026-11-02, bổ sung ngày 2026-11-03.
+Định hướng và phạm vi đã chốt ngày 2026-11-02, bổ sung ngày 2026-11-03; phần mô tả đã đối chiếu lại với mã ngày 2026-11-10.
 Vòng hẹp của lõi đã chạy và được kiểm chứng, kết quả ở mục [Đã xác minh](#đã-xác-minh); các điểm còn lại nằm ở mục [Chưa xác minh](#chưa-xác-minh).
 
 ## Tóm tắt
@@ -100,12 +100,12 @@ Các hàm ý sau là suy luận từ cách đề viết, người ra đề khôn
 
 | Nguyên lý                                                                                               | Lõi đáp ứng                                                                                |
 | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Phân tách theo vòng đời và tốc độ của dữ liệu, đẩy dữ liệu lịch sử xuống hồ dữ liệu | Ngoài phạm vi bản dự thi; công cụ báo cáo đọc dữ liệu qua vai `report_ro`                          |
+| Phân tách theo vòng đời và tốc độ của dữ liệu, đẩy dữ liệu lịch sử xuống hồ dữ liệu | Một phần: `dxos archive` ghi hồ sơ đã đóng và lịch sử của chúng ra tệp Parquet, giữ nguyên dữ liệu trong cơ sở dữ liệu; không có hồ dữ liệu riêng; công cụ báo cáo đọc dữ liệu qua vai `report_ro` |
 | Hội tụ dữ liệu hành chính và dữ liệu vận hành, bản sao số                                    | Ngoài phạm vi bản dự thi                                                                   |
 | Quản trị dữ liệu, phả hệ và nguồn gốc                                                            | Mô hình là danh mục dữ liệu; thông tin dữ liệu từ đâu ra làm nếu còn thời gian |
 | Zero-Trust gắn với GitOps, kiểm dịch mã độc, tự phục hồi                                        | APISIX và API chung đều kiểm token, ClamAV quét tệp tải lên khi bật (`dxos av on`), GitOps cho nghiệp vụ    |
 
-Hai nguyên lý đầu không được đáp ứng trong bản dự thi, nên phần trình bày cần nói rõ và đưa vào định hướng phát triển.
+Nguyên lý đầu chỉ được đáp ứng một phần và nguyên lý thứ hai không được đáp ứng trong bản dự thi, nên phần trình bày cần nói rõ và đưa vào định hướng phát triển.
 
 ## Tư tưởng thiết kế
 
@@ -202,6 +202,7 @@ Hai họ sau là hướng mở rộng, chỉ làm khi ba họ trên đã hoàn c
 1. Cột trạng thái chỉ quy trình được ghi.
 2. Trạng thái cuối bị đóng băng, ghi ai quyết định và lúc nào.
 3. Mỗi lần chuyển trạng thái để lại một dòng lịch sử gồm người làm, lúc nào, hành động và trạng thái trước sau; từ chối và trả lại bắt buộc có lý do.
+   Các dòng lịch sử nối thành một chuỗi hash; `dxos history verify` chỉ ra dòng đầu tiên bị sửa, xóa hoặc chèn, và điểm neo của chuỗi nằm trong kho đối tượng.
 4. Người làm hành động phải có vai và thấy được bản ghi.
 5. Người tạo không tự quyết định bản ghi của mình, trừ khi mô hình bật `allow_self_decision` một cách có chủ ý.
 6. Người nộp rút lại được khi chưa ở trạng thái cuối, và bản ghi được giữ lại.
@@ -257,6 +258,7 @@ dxos apply model.yaml  # áp dụng
 ```
 
 Bộ cài và các lệnh vận hành của `dxos` mô tả ở [`deploy/OPERATIONS.md`](../../deploy/OPERATIONS.md#cài-đặt-và-lệnh-dxos); `dxos plan` và `dxos apply` đưa tệp mô hình vào hệ thống đang chạy với cùng kế hoạch và mức xác nhận như bảng điều khiển.
+`dxos demo` tạo bốn tài khoản thử theo vai của mô hình Một cửa sinh viên và nộp khoảng 40 hồ sơ mẫu qua API chung, để người xem đăng nhập là thấy hệ thống có việc đang chạy; kịch bản trình diễn 15 phút ở [`docs/DEMO.md`](../DEMO.md).
 
 
 | Trường hợp                                          | Hành vi                                                   |
@@ -296,7 +298,7 @@ Giao diện cho người dùng cuối do bộ dựng sinh từ metadata, đủ d
 ### Ranh giới các tầng
 
 - **Tầng 1, lõi:** chỉ có API, không có trang nào do đội viết.
-- **Tầng 2, ứng dụng minh họa:** bộ dựng giao diện đọc metadata, gồm danh sách, form, chi tiết, hộp việc cần xử lý, chế độ xem lịch cho thực thể có trường khoảng thời gian, màn hình xem kế hoạch và lịch sử áp dụng.
+- **Tầng 2, ứng dụng minh họa:** bộ dựng giao diện đọc metadata, gồm danh sách, form, chi tiết, hộp việc cần xử lý, chế độ xem lịch cho thực thể có trường khoảng thời gian, trang thống kê của thực thể có quy trình (số hồ sơ theo trạng thái và đơn vị, thời gian xử lý, tỷ lệ đóng đúng hạn), chọn người cho trường `user` theo tên, chọn cột và lưu bộ lọc của danh sách, hộp việc và danh sách tự làm mới khi hồ sơ đổi, giao diện tiếng Việt và tiếng Anh, màn hình xem kế hoạch và lịch sử áp dụng.
   Bộ dựng xây trên react-admin, đội chỉ viết lớp mỏng nối metadata với khung.
   Portal và màn hình giám sát cũng thuộc tầng này.
 - **Tầng 3, nghiệp vụ:** chỉ là tệp mô hình, không có mã.
@@ -324,7 +326,7 @@ Thêm năng lực mới nghĩa là thêm provider, không phải sửa lõi.
 | Dữ liệu phi cấu trúc          | SeaweedFS, ClamAV                         | Dùng lại `dx-core/storage`, gắn với trường tệp           |
 | Luồng công việc                | Flowable chạy nhúng                     | Các họ mẫu quy trình, API đổi trạng thái                          |
 | Vòng đời mô hình             | Git, phần điều khiển                  | **Phần tự viết chính**                                      |
-| Trục sự kiện                   | Bảng outbox trong PostgreSQL             | Webhook theo mô hình, API kéo sự kiện theo `eventId`, thông điệp của việc áp dụng mô hình và của tài khoản (chỉ qua webhook) |
+| Trục sự kiện                   | Bảng outbox trong PostgreSQL             | Webhook theo mô hình, API kéo sự kiện theo `eventId`, thông điệp của việc áp dụng mô hình và của tài khoản (chỉ qua webhook); kênh sự kiện `GET /api/v1/inbox/stream` báo cho giao diện khi hồ sơ đổi |
 | Thông báo                       | Mattermost hoặc Slack do người triển khai cấp | Đích webhook dạng `chat`: việc mới, sắp đến hạn, quá hạn |
 | Báo cáo | Công cụ báo cáo do người triển khai cấp | Vai `report_ro` chỉ đọc các bảng nghiệp vụ |
 | AI | Làm sau | Khai báo nguồn tri thức và tác tử |
@@ -680,6 +682,9 @@ Cách kiểm ở [`docs/TESTING.md`](../TESTING.md); kết quả mỗi lần ch�
 - Hành động hoàn tất (`add_to_group`, `remove_from_group`) đi qua bảng outbox và được thử lại tới khi Keycloak nhận, người triển khai xem lỗi và thử lại ở bảng điều khiển; tệp đính kèm tải lên và tải xuống qua gateway, tải về dạng đính kèm, và đối tượng trong kho bị xóa khi tệp hoặc hồ sơ bị gỡ; các script kiểm ở [`docs/TESTING.md`](../TESTING.md), mục 4.
 - Webhook theo mô hình gửi đúng đích kèm chữ ký; các dòng của một hồ sơ tới theo thứ tự, dòng sau chờ dòng cũ đã dừng; đích dạng `chat` chỉ gửi một câu không có nội dung hồ sơ; dòng nhắc hạn đến đúng một lần; các script kiểm ở [`docs/TESTING.md`](../TESTING.md), mục 4.
 - `ProcessMigrationService` của Flowable chuyển được hồ sơ đang chạy sang mẫu mới và báo trước khi mẫu mới bỏ bước hiện tại.
+- `dxos plan` và `dxos apply --accept` (mức xác nhận, mã thoát, lịch sử ghi tài khoản của lệnh), `dxos archive` kèm `archive check` và bộ mô phỏng IT/OT gửi lại cùng quan sát được kiểm bằng `check_cli.py`.
+- Kênh `GET /api/v1/inbox/stream` báo thay đổi tới hộp việc đang mở trong khoảng hai giây qua gateway; server đóng đúng sau 10 phút, client nối lại; 2000 kênh đầu được nhận và các kênh sau trả 503; kiểm tay ở [`docs/TESTING.md`](../TESTING.md), mục 6.
+- `dxos demo` nộp 40 hồ sơ mẫu qua API chung và tạo bốn tài khoản thử đăng nhập được, mỗi tài khoản thấy đúng phạm vi của vai; chạy lại không nộp trùng.
 - Bản `2.0.0` dựng từ một bản sao sạch của cây mã: stack lên đủ, chuỗi `check_*.py` đạt, `clean verify`, `tsc`, `check_licenses.py` và `check_routes.py` đạt; các script kiểm ở [`docs/TESTING.md`](../TESTING.md), mục 4.
 
 ## Chưa xác minh

@@ -43,7 +43,6 @@ Server gắn chủ tài khoản vào token runtime; client không được chọ
 API quản lý tài khoản và đề xuất nằm dưới `/assistant-api/v1`; phản hồi dùng `success`, `message`, `data`, `errorCode` và mã HTTP tương ứng.
 Schema route sinh OpenAPI; bảng này không thay bản OpenAPI sinh từ code.
 Các thao tác ghi chỉ dùng trường có trong schema; trường ngoài danh sách bị bỏ qua.
-Danh tính luôn lấy từ JWT đã xác minh, không lấy từ trường ownerId do client gửi.
 `PATCH` cấu hình API cần đủ `provider`, `model`, `apiKey`, chưa hỗ trợ sửa từng trường; giao diện hiện dùng tạo, chọn và xóa cấu hình.
 
 | Endpoint | Hành vi |
@@ -132,5 +131,5 @@ Chưa liên kết Core trả 409 ERR_CORE_LINK; phiên xác thực không hợp 
 Đề xuất cũ thiếu phiên bản trả 409 ERR_PROPOSAL_VERSION_REQUIRED; cần tạo lại đề xuất trước khi xác nhận.
 JSON sai trả 400, nội dung gửi quá 32 KiB trả 413; lỗi nội bộ trả 500 và không đưa nội dung yêu cầu vào thông báo.
 
-Sao lưu và khôi phục ở [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md#trợ-lý-cá-nhân).
+Sao lưu và khôi phục ở [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md#sao-lưu-và-khôi-phục).
 Ma trận kiểm thử và các ca chưa đạt ở [kế hoạch kiểm thử](../docs/assistant-platform/03_TEST_PLAN.md); các giới hạn cần làm tiếp ở [`BACKLOG`](../docs/dynamic-core/BACKLOG.md).

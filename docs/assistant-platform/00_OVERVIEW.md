@@ -91,7 +91,7 @@ Lưu và khôi phục không gian hội thoại theo mô hình được hoãn sa
 Không dùng một gateway OpenClaw chung rồi coi khác session ID là đã cách ly dữ liệu.
 Mỗi chủ có gateway, workspace, kênh, credential và volume riêng; runtime token bị buộc với chủ ở dịch vụ trợ lý.
 Runtime chạy trong container không đặc quyền, không có Docker socket, không có mount repository hoặc volume của người khác.
-Người vận hành cấp 2–3 runtime qua lệnh triển khai; giao diện chỉ kích hoạt/dừng runtime đã cấp, không nhận lệnh Docker hay đường dẫn host.
+Pool supervisor nằm trong Compose chính; giao diện chỉ bật/dừng gateway cá nhân, không nhận lệnh Docker hay đường dẫn host.
 Một bot không được gắn cho hai chủ; kiểm bằng bot ID đã xác minh từ Telegram.
 
 Nghiệm thu đợt này với 2 runtime đồng thời; thử tải 3 runtime được hoãn theo quyết định của chủ dự án; không phải một nền tảng đa tenant quy mô lớn.

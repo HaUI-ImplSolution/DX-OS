@@ -58,7 +58,7 @@ Dừng triển khai nếu G0 không đạt, không chứng minh được cách l
 Dừng công cụ ghi khi API Core chưa hỗ trợ phiên bản hoặc metadata tác động chưa đủ.
 Lỗi rò dữ liệu, ghi sai người và mất Core không được hạ mức để đóng checklist.
 
-Rollback bằng tắt trợ lý, thu route/client tùy chọn và giữ dữ liệu theo chính sách backup.
+Rollback về bản đã kiểm và giữ dữ liệu theo chính sách backup; dừng gateway cá nhân không rút route chung.
 Không xóa hồ sơ, process/event hoặc đảo ngược quyết định người dùng đã xác nhận.
 Giữ SQLite/key/runtime để khôi phục có kiểm soát; purge là thao tác riêng có xác nhận, không gộp vào off/down.
 

@@ -33,13 +33,8 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 
 ### Trợ lý tùy chọn
 
-- Thêm trợ lý cá nhân tùy chọn qua OpenClaw và Telegram, cấu hình API riêng theo tài khoản; đọc hồ sơ, thông báo và đề xuất giao việc/chuyển trạng thái có xác nhận.
-- Chuyển trạng thái và giao việc nhận điều kiện phiên bản bản ghi và mô hình; Core kiểm trong khóa/giao dịch, giữ tương thích request cũ.
-- Thêm trang kích hoạt trợ lý, bộ cài/vận hành tùy chọn và danh mục dependency/SBOM riêng.
-- Mỗi lần cấu hình Telegram tạo vùng ghép nối riêng; không dùng lại quyền ghép nối của bot trước.
-- Chặn ghi từ đề xuất thiếu phiên bản và khi Core không hỗ trợ điều kiện, kể cả đề xuất đã tạo trước rollback.
-- Lọc hành động theo quyền Core, gửi tổng kết ngày đầu đúng lịch và kiểm sức khỏe từng runtime.
-- Runtime mặc định 2 GiB RAM; lệnh bật trợ lý nhận các giá trị tùy chọn từ `env.example`.
+- Thêm trợ lý cá nhân qua Telegram: cấu hình API riêng, đọc hồ sơ, nhận thông báo và đề xuất giao việc hoặc chuyển trạng thái có xác nhận.
+- Core kiểm quyền, trạng thái và phiên bản trước khi ghi; chặn đề xuất thiếu phiên bản hoặc Core không hỗ trợ điều kiện.
 - Trợ lý khởi động cùng stack và tự chuẩn bị state/SSO; người dùng nhập API và bật trợ lý trên giao diện.
 - Sao lưu tạm dừng rồi phục hồi đúng các dịch vụ trợ lý đang chạy.
 

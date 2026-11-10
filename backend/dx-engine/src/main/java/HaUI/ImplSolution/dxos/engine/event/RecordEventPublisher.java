@@ -7,11 +7,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 
-// Puts each line of a record's history in the outbox, in the transaction that wrote the line, so
-// the webhook gets it once the change has committed and never when it rolls back. Nothing is
-// written while the model has no webhook target. The message holds ids, statuses, the time and the
-// hash of the line in the history chain, never the content of the record or the note of the line; a
-// receiver that keeps the hashes holds a copy of the chain outside the database.
+// Each line of a record's history tells the open pages that the inboxes changed and goes in the
+// outbox, in the transaction that wrote the line, so the webhook gets it once the change has
+// committed and never when it rolls back. Nothing is written to the outbox while the model has no
+// webhook target. The message holds ids, statuses, the time and the hash of the line in the history
+// chain, never the content of the record or the note of the line; a receiver that keeps the hashes
+// holds a copy of the chain outside the database.
 @Component
 public class RecordEventPublisher {
 
@@ -21,15 +22,19 @@ public class RecordEventPublisher {
   private final Outbox outbox;
   private final ModelRegistry registry;
   private final WebhookTargets targets;
+  private final InboxSignal inbox;
 
-  public RecordEventPublisher(Outbox outbox, ModelRegistry registry, WebhookTargets targets) {
+  public RecordEventPublisher(Outbox outbox, ModelRegistry registry, WebhookTargets targets,
+      InboxSignal inbox) {
     this.outbox = outbox;
     this.registry = registry;
     this.targets = targets;
+    this.inbox = inbox;
   }
 
   public void publish(long eventId, String model, String entity, long recordId, String action,
       String fromStatus, String toStatus, String actor, String actorName, Instant at, String hash) {
+    inbox.changed();
     if (registry.find(model).filter(targets::sends).isEmpty()) {
       return;
     }

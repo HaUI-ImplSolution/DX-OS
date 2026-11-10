@@ -7,6 +7,10 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
+### Tài liệu
+
+- Hướng dẫn phát triển dịch vụ, bên nhận webhook, giao diện và trang mở rộng, gồm quyền, gateway, chạy local, kiểm thử, đóng gói, nâng cấp và ranh giới hỗ trợ hiện tại.
+
 ## [2.0.0] - chưa phát hành
 
 Lõi dynamic thay cho hai ứng dụng nghiệp vụ viết tay của bản `1.1.1`.
@@ -274,4 +278,3 @@ Bản phát hành đầu tiên của DX-OS.
 [1.0.2]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/HaUI-ImplSolution/DX-OS/releases/tag/v1.0.0
-

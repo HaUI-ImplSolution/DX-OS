@@ -34,7 +34,6 @@ Hai nơi đó được máy kiểm ở mỗi pull request, tài liệu này ch�
 | restic | BSD-2-Clause | Sao lưu có mã hóa | Chạy trong container nên chỉ cần Docker | `deploy/backup.sh` |
 | Trivy, gitleaks, CycloneDX | Apache-2.0, MIT | Quét lỗ hổng, bí mật và lập SBOM trong CI | Công cụ nguồn mở, chạy ở mọi pull request | `.github/workflows/` |
 | reuse | Apache-2.0, GPL-3.0-or-later (mã); CC0-1.0, CC-BY-SA-4.0 (tài liệu) | Kiểm giấy phép và bản quyền của từng tệp theo chuẩn REUSE trong CI | Công cụ nguồn mở, chạy bằng `pipx run`, không đóng gói vào sản phẩm | `.github/workflows/ci-compliance.yml` |
-| `eclipse-java-google-style.xml` | CC-BY-3.0 | Hồ sơ định dạng Java của Google, dùng lúc dựng | Chép từ google/styleguide, ghi nguồn ở `NOTICE`; dữ liệu cấu hình, không vào image | `backend/` |
 
 
 ClamAV được giữ vì đề thi yêu cầu kiểm dịch mã độc ngay tại cửa ngõ, và nó tắt mặc định.

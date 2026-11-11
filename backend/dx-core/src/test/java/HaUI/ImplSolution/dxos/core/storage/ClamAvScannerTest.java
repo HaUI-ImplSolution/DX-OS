@@ -21,18 +21,20 @@ class ClamAvScannerTest {
 
   private ClamAvScanner scannerAnswering(String reply) throws Exception {
     server = new ServerSocket(0, 1, java.net.InetAddress.getLoopbackAddress());
-    Thread thread = new Thread(() -> {
-      try (var socket = server.accept()) {
-        DataInputStream in = new DataInputStream(socket.getInputStream());
-        command.set(new String(in.readNBytes(10), StandardCharsets.US_ASCII));
-        for (int length = in.readInt(); length > 0; length = in.readInt()) {
-          received.write(in.readNBytes(length));
-        }
-        socket.getOutputStream().write((reply + "\0").getBytes(StandardCharsets.US_ASCII));
-      } catch (Exception ignored) {
-        // The client side of the test reports any problem.
-      }
-    });
+    Thread thread =
+        new Thread(
+            () -> {
+              try (var socket = server.accept()) {
+                DataInputStream in = new DataInputStream(socket.getInputStream());
+                command.set(new String(in.readNBytes(10), StandardCharsets.US_ASCII));
+                for (int length = in.readInt(); length > 0; length = in.readInt()) {
+                  received.write(in.readNBytes(length));
+                }
+                socket.getOutputStream().write((reply + "\0").getBytes(StandardCharsets.US_ASCII));
+              } catch (Exception ignored) {
+                // The client side of the test reports any problem.
+              }
+            });
     thread.setDaemon(true);
     thread.start();
     return new ClamAvScanner("127.0.0.1", server.getLocalPort(), 3000);

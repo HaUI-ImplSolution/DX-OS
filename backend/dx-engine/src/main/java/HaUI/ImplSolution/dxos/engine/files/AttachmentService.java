@@ -38,8 +38,14 @@ public class AttachmentService {
   private final AttachmentCleaner cleaner;
   private final int maxPerRecord;
 
-  public AttachmentService(JdbcTemplate jdbc, DataService data, FileStore files,
-      ObjectStorage storage, EventLog events, UserContext user, AttachmentCleaner cleaner,
+  public AttachmentService(
+      JdbcTemplate jdbc,
+      DataService data,
+      FileStore files,
+      ObjectStorage storage,
+      EventLog events,
+      UserContext user,
+      AttachmentCleaner cleaner,
       @Value("${engine.files.max-per-record:20}") int maxPerRecord) {
     this.jdbc = jdbc;
     this.data = data;
@@ -52,15 +58,21 @@ public class AttachmentService {
   }
 
   @Transactional
-  public Map<String, Object> add(Model model, Entity entity, long id, String field,
-      MultipartFile upload) {
+  public Map<String, Object> add(
+      Model model, Entity entity, long id, String field, MultipartFile upload) {
     requireFileField(entity, field);
     data.requireChangeable(model, entity, id);
-    Integer held = jdbc.queryForObject("SELECT count(*) FROM engine.attachment WHERE model = ? "
-        + "AND entity = ? AND record_id = ?", Integer.class, model.name(), entity.name(), id);
+    Integer held =
+        jdbc.queryForObject(
+            "SELECT count(*) FROM engine.attachment WHERE model = ? "
+                + "AND entity = ? AND record_id = ?",
+            Integer.class,
+            model.name(),
+            entity.name(),
+            id);
     if (held != null && held >= maxPerRecord) {
-      throw new ModelValidationException("file",
-          "a record holds at most " + maxPerRecord + " files");
+      throw new ModelValidationException(
+          "file", "a record holds at most " + maxPerRecord + " files");
     }
     String name = cleanName(upload.getOriginalFilename());
     String key;
@@ -74,13 +86,28 @@ public class AttachmentService {
     cleaner.deleteIfRolledBack(key);
     String type =
         upload.getContentType() == null ? "application/octet-stream" : upload.getContentType();
-    Long attachment = jdbc.queryForObject(
-        "INSERT INTO engine.attachment (model, entity, record_id, field, object_key, filename, "
-            + "content_type, size, uploaded_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id",
-        Long.class, model.name(), entity.name(), id, field, key, name, type, upload.getSize(),
-        user.currentUserId());
-    jdbc.update("UPDATE " + Sql.table(model, entity) + " SET " + Sql.ident(field)
-        + " = ?, updated_at = now(), version = version + 1 WHERE id = ?", name, id);
+    Long attachment =
+        jdbc.queryForObject(
+            "INSERT INTO engine.attachment (model, entity, record_id, field, object_key, filename, "
+                + "content_type, size, uploaded_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id",
+            Long.class,
+            model.name(),
+            entity.name(),
+            id,
+            field,
+            key,
+            name,
+            type,
+            upload.getSize(),
+            user.currentUserId());
+    jdbc.update(
+        "UPDATE "
+            + Sql.table(model, entity)
+            + " SET "
+            + Sql.ident(field)
+            + " = ?, updated_at = now(), version = version + 1 WHERE id = ?",
+        name,
+        id);
     record(model, entity, id, "file_added", name);
     return describe(attachment, field, name, upload.getSize(), type, user.currentUserId(), null);
   }
@@ -88,9 +115,13 @@ public class AttachmentService {
   @Transactional(readOnly = true)
   public List<Map<String, Object>> list(Model model, Entity entity, long id) {
     data.get(model, entity, id);
-    return jdbc.queryForList("SELECT id, field, filename AS name, size, content_type, uploaded_by,"
-        + " uploaded_at FROM engine.attachment WHERE model = ? AND entity = ? AND record_id = ? "
-        + "ORDER BY id", model.name(), entity.name(), id);
+    return jdbc.queryForList(
+        "SELECT id, field, filename AS name, size, content_type, uploaded_by,"
+            + " uploaded_at FROM engine.attachment WHERE model = ? AND entity = ? AND record_id = ? "
+            + "ORDER BY id",
+        model.name(),
+        entity.name(),
+        id);
   }
 
   // A link that works for a few minutes.
@@ -98,7 +129,10 @@ public class AttachmentService {
   public Map<String, Object> link(Model model, Entity entity, long id, long fileId) {
     data.get(model, entity, id);
     Map<String, Object> row = find(model, entity, id, fileId);
-    return Map.of("name", row.get("filename"), "url",
+    return Map.of(
+        "name",
+        row.get("filename"),
+        "url",
         storage.presignedDownloadUrl((String) row.get("object_key"), (String) row.get("filename")));
   }
 
@@ -107,28 +141,44 @@ public class AttachmentService {
     data.requireChangeable(model, entity, id);
     Map<String, Object> row = find(model, entity, id, fileId);
     if (!user.currentUserId().equals(row.get("uploaded_by"))) {
-      throw new ActionNotAllowedException("Only the user who added a file can remove it",
-          "FILE_ADDER_ONLY");
+      throw new ActionNotAllowedException(
+          "Only the user who added a file can remove it", "FILE_ADDER_ONLY");
     }
     jdbc.update("DELETE FROM engine.attachment WHERE id = ?", fileId);
     cleaner.deleteLater(model.name(), entity.name(), id, (String) row.get("object_key"));
-    String latest = jdbc.query(
-        "SELECT filename FROM engine.attachment WHERE model = ? AND entity = ? AND record_id = ? "
-            + "AND field = ? ORDER BY id DESC LIMIT 1",
-        (rs, i) -> rs.getString(1), model.name(), entity.name(), id, row.get("field")).stream()
-        .findFirst().orElse(null);
+    String latest =
+        jdbc
+            .query(
+                "SELECT filename FROM engine.attachment WHERE model = ? AND entity = ? AND record_id = ? "
+                    + "AND field = ? ORDER BY id DESC LIMIT 1",
+                (rs, i) -> rs.getString(1),
+                model.name(),
+                entity.name(),
+                id,
+                row.get("field"))
+            .stream()
+            .findFirst()
+            .orElse(null);
     jdbc.update(
-        "UPDATE " + Sql.table(model, entity) + " SET " + Sql.ident((String) row.get("field"))
+        "UPDATE "
+            + Sql.table(model, entity)
+            + " SET "
+            + Sql.ident((String) row.get("field"))
             + " = ?, updated_at = now(), version = version + 1 WHERE id = ?",
-        latest, id);
+        latest,
+        id);
     record(model, entity, id, "file_removed", (String) row.get("filename"));
   }
 
   private Map<String, Object> find(Model model, Entity entity, long id, long fileId) {
-    List<Map<String, Object>> rows = jdbc.queryForList(
-        "SELECT field, object_key, filename, uploaded_by FROM engine.attachment WHERE id = ? "
-            + "AND model = ? AND entity = ? AND record_id = ?",
-        fileId, model.name(), entity.name(), id);
+    List<Map<String, Object>> rows =
+        jdbc.queryForList(
+            "SELECT field, object_key, filename, uploaded_by FROM engine.attachment WHERE id = ? "
+                + "AND model = ? AND entity = ? AND record_id = ?",
+            fileId,
+            model.name(),
+            entity.name(),
+            id);
     if (rows.isEmpty()) {
       throw new ResourceNotFoundException("File " + fileId + " not found");
     }
@@ -142,8 +192,8 @@ public class AttachmentService {
 
   private static void requireFileField(Entity entity, String field) {
     if (entity.field(field).map(f -> f.type() != FieldType.FILE).orElse(true)) {
-      throw new ModelValidationException("field",
-          field + " is not a file field of " + entity.name());
+      throw new ModelValidationException(
+          "field", field + " is not a file field of " + entity.name());
     }
   }
 
@@ -153,8 +203,8 @@ public class AttachmentService {
     return name.length() > NAME_LENGTH ? name.substring(0, NAME_LENGTH) : name;
   }
 
-  private static Map<String, Object> describe(Long id, String field, String name, long size,
-      String type, String by, Object at) {
+  private static Map<String, Object> describe(
+      Long id, String field, String name, long size, String type, String by, Object at) {
     java.util.LinkedHashMap<String, Object> map = new java.util.LinkedHashMap<>();
     map.put("id", id);
     map.put("field", field);

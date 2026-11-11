@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.core.exception;
 
+import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
 import HaUI.ImplSolution.dxos.core.api.exception.ActionNotAllowedException;
 import HaUI.ImplSolution.dxos.core.api.exception.InvalidStateException;
 import HaUI.ImplSolution.dxos.core.api.exception.PokaYokeViolationException;
 import HaUI.ImplSolution.dxos.core.api.exception.ResourceNotFoundException;
-import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
 import HaUI.ImplSolution.dxos.core.audit.AuditService;
 import HaUI.ImplSolution.dxos.core.storage.ScannerUnavailableException;
 import jakarta.persistence.LockTimeoutException;
@@ -47,9 +47,10 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ApiResponse<Void>> handleValidation(MethodArgumentNotValidException ex) {
-    String message = ex.getBindingResult().getFieldErrors().stream()
-        .map(error -> error.getField() + ": " + defaultMessage(error))
-        .collect(Collectors.joining(", "));
+    String message =
+        ex.getBindingResult().getFieldErrors().stream()
+            .map(error -> error.getField() + ": " + defaultMessage(error))
+            .collect(Collectors.joining(", "));
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
         .body(ApiResponse.error("ERR_VALIDATION", message));
   }
@@ -70,8 +71,10 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
   public ResponseEntity<ApiResponse<Void>> handleUnsupportedMediaType(
       HttpMediaTypeNotSupportedException ex) {
-    return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(ApiResponse
-        .error("ERR_UNSUPPORTED_MEDIA_TYPE", "Định dạng nội dung yêu cầu không được hỗ trợ"));
+    return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+        .body(
+            ApiResponse.error(
+                "ERR_UNSUPPORTED_MEDIA_TYPE", "Định dạng nội dung yêu cầu không được hỗ trợ"));
   }
 
   @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
@@ -81,8 +84,10 @@ public class GlobalExceptionHandler {
         .body(ApiResponse.error("ERR_METHOD_NOT_ALLOWED", "Phương thức không được hỗ trợ"));
   }
 
-  @ExceptionHandler({MissingServletRequestPartException.class,
-      HttpMessageNotReadableException.class})
+  @ExceptionHandler({
+    MissingServletRequestPartException.class,
+    HttpMessageNotReadableException.class
+  })
   public ResponseEntity<ApiResponse<Void>> handleUnreadableRequest(Exception ex) {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
         .body(ApiResponse.error("ERR_BAD_REQUEST", "Nội dung yêu cầu thiếu hoặc không hợp lệ"));
@@ -102,8 +107,11 @@ public class GlobalExceptionHandler {
       ScannerUnavailableException ex) {
     log.warn("Virus scanner unavailable: {}", ex.getMessage());
     auditService.recordServerError(HttpStatus.SERVICE_UNAVAILABLE.value(), ex);
-    return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(ApiResponse.error(
-        "ERR_SCAN_UNAVAILABLE", "Files cannot be checked right now, please try again later"));
+    return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+        .body(
+            ApiResponse.error(
+                "ERR_SCAN_UNAVAILABLE",
+                "Files cannot be checked right now, please try again later"));
   }
 
   @ExceptionHandler(PokaYokeViolationException.class)
@@ -117,13 +125,19 @@ public class GlobalExceptionHandler {
         .body(ApiResponse.error(ex.getErrorCode(), ex.getMessage(), data));
   }
 
-  @ExceptionHandler({ObjectOptimisticLockingFailureException.class, OptimisticLockException.class,
-      PessimisticLockException.class, LockTimeoutException.class})
+  @ExceptionHandler({
+    ObjectOptimisticLockingFailureException.class,
+    OptimisticLockException.class,
+    PessimisticLockException.class,
+    LockTimeoutException.class
+  })
   public ResponseEntity<ApiResponse<Void>> handleOptimisticLock(Exception ex) {
     auditService.recordAdminFailure(HttpStatus.CONFLICT.value(), ex);
     return ResponseEntity.status(HttpStatus.CONFLICT)
-        .body(ApiResponse.error("ERR_CONCURRENT_MODIFICATION",
-            "The record was modified by someone else, reload and try again"));
+        .body(
+            ApiResponse.error(
+                "ERR_CONCURRENT_MODIFICATION",
+                "The record was modified by someone else, reload and try again"));
   }
 
   @ExceptionHandler(ActionNotAllowedException.class)
@@ -142,12 +156,16 @@ public class GlobalExceptionHandler {
     if (ex.getCause() instanceof RestClientResponseException cause
         && (cause.getStatusCode().value() == 401 || cause.getStatusCode().value() == 403)) {
       return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-          .body(ApiResponse.error("ERR_ACCOUNT_SERVICE_DENIED",
-              "Account service refused the request, check the roles of the service account"));
+          .body(
+              ApiResponse.error(
+                  "ERR_ACCOUNT_SERVICE_DENIED",
+                  "Account service refused the request, check the roles of the service account"));
     }
     return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-        .body(ApiResponse.error("ERR_ACCOUNT_SERVICE_UNAVAILABLE",
-            "Account service is unavailable, please try again later"));
+        .body(
+            ApiResponse.error(
+                "ERR_ACCOUNT_SERVICE_UNAVAILABLE",
+                "Account service is unavailable, please try again later"));
   }
 
   @ExceptionHandler(AuthenticationException.class)

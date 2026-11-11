@@ -24,8 +24,11 @@ public class ServiceProbe {
   public ServiceProbe(JdbcTemplate jdbc, MonitorProperties properties) {
     this.jdbc = jdbc;
     this.timeout = Duration.ofMillis(properties.probe().timeoutMs());
-    this.client = HttpClient.newBuilder().connectTimeout(timeout)
-        .followRedirects(HttpClient.Redirect.NEVER).build();
+    this.client =
+        HttpClient.newBuilder()
+            .connectTimeout(timeout)
+            .followRedirects(HttpClient.Redirect.NEVER)
+            .build();
   }
 
   // up: the service answered as expected; detail: why not, otherwise null.

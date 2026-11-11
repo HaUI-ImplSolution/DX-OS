@@ -13,18 +13,26 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 // Registers the shared services, entities and repositories, and migrates the core tables in the
 // schema "public".
 @AutoConfiguration(
-    beforeName = {"org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration",
-        "org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration",
-        "org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration"})
-@ComponentScan(excludeFilters = @ComponentScan.Filter(type = FilterType.ANNOTATION,
-    classes = AutoConfiguration.class))
+    beforeName = {
+      "org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration",
+      "org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration",
+      "org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration"
+    })
+@ComponentScan(
+    excludeFilters =
+        @ComponentScan.Filter(type = FilterType.ANNOTATION, classes = AutoConfiguration.class))
 @EntityScan
 @EnableJpaRepositories
 public class CoreAutoConfiguration {
 
   @Bean(initMethod = "migrate")
   public Flyway coreFlyway(DataSource dataSource) {
-    return Flyway.configure().dataSource(dataSource).schemas("public").defaultSchema("public")
-        .locations("classpath:db/migration/core").table("flyway_schema_history_core").load();
+    return Flyway.configure()
+        .dataSource(dataSource)
+        .schemas("public")
+        .defaultSchema("public")
+        .locations("classpath:db/migration/core")
+        .table("flyway_schema_history_core")
+        .load();
   }
 }

@@ -27,7 +27,9 @@ public class ClientRestrictionFilter extends OncePerRequestFilter {
   private final Set<String> staffAuthorities;
   private final AccessDeniedHandler accessDeniedHandler;
 
-  public ClientRestrictionFilter(List<ClientRestrictionPolicy> policies, Set<String> staffRoles,
+  public ClientRestrictionFilter(
+      List<ClientRestrictionPolicy> policies,
+      Set<String> staffRoles,
       AccessDeniedHandler accessDeniedHandler) {
     this.policies = policies;
     this.staffAuthorities =
@@ -36,25 +38,31 @@ public class ClientRestrictionFilter extends OncePerRequestFilter {
   }
 
   @Override
-  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-      FilterChain filterChain) throws ServletException, IOException {
+  protected void doFilterInternal(
+      HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+      throws ServletException, IOException {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication instanceof JwtAuthenticationToken token && isRejected(token)) {
-      accessDeniedHandler.handle(request, response,
-          new AccessDeniedException("This account may not use this client"));
+      accessDeniedHandler.handle(
+          request, response, new AccessDeniedException("This account may not use this client"));
       return;
     }
     filterChain.doFilter(request, response);
   }
 
   private boolean isRejected(JwtAuthenticationToken token) {
-    Set<String> authorities = token.getAuthorities().stream().map(GrantedAuthority::getAuthority)
-        .collect(Collectors.toSet());
+    Set<String> authorities =
+        token.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .collect(Collectors.toSet());
     if (authorities.stream().anyMatch(staffAuthorities::contains)) {
       return false;
     }
     String client = token.getToken().getClaimAsString("azp");
-    return policies.stream().anyMatch(policy -> authorities.contains("ROLE_" + policy.role())
-        && !policy.allowedClientIds().contains(client == null ? "" : client));
+    return policies.stream()
+        .anyMatch(
+            policy ->
+                authorities.contains("ROLE_" + policy.role())
+                    && !policy.allowedClientIds().contains(client == null ? "" : client));
   }
 }

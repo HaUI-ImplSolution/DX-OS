@@ -51,7 +51,7 @@ _(copy khối WP ở trên)_
 
 ## Đóng phase
 
-- [ ] `./mvnw formatter:validate` và `./mvnw compile` đạt cho toàn bộ module (backend), `npx tsc --noEmit` đạt (web) và đã đọc lại diff.
+- [ ] `./mvnw spotless:check` và `./mvnw compile` đạt cho toàn bộ module (backend), `npx tsc --noEmit` đạt (web) và đã đọc lại diff.
 - [ ] Comment mới trong diff ngắn, chỉ nêu hành vi hiện tại, bằng tiếng Anh.
 - [ ] Swagger khớp code, `@Operation` bằng tiếng Anh, không nhắc nhãn milestone.
 - [ ] `deploy/.env.example` và migration chạy được trên clone sạch; từng tệp mô hình mà phase đụng tới áp dụng được vào hệ thống rỗng.

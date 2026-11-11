@@ -36,7 +36,9 @@ public class AuditService implements AuditRecorder {
   private final AuditDenialLimiter denialLimiter;
   private final TransactionTemplate ownTransaction;
 
-  public AuditService(AuditLogRepository repository, AuditDenialLimiter denialLimiter,
+  public AuditService(
+      AuditLogRepository repository,
+      AuditDenialLimiter denialLimiter,
       PlatformTransactionManager transactionManager) {
     this.repository = repository;
     this.denialLimiter = denialLimiter;
@@ -50,7 +52,9 @@ public class AuditService implements AuditRecorder {
       AuditLogEntry entry = toEntry(event);
       ownTransaction.executeWithoutResult(status -> repository.save(entry));
     } catch (RuntimeException e) {
-      log.warn("Could not write the audit record of {}: {}", event.action(),
+      log.warn(
+          "Could not write the audit record of {}: {}",
+          event.action(),
           e.getClass().getSimpleName());
     }
   }
@@ -68,8 +72,10 @@ public class AuditService implements AuditRecorder {
   // A change an administrator made that was refused for a business reason (409, 422...).
   public void recordAdminFailure(int status, Throwable cause) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    boolean admin = authentication != null && authentication.getAuthorities().stream()
-        .anyMatch(authority -> ADMIN_AUTHORITY.equals(authority.getAuthority()));
+    boolean admin =
+        authentication != null
+            && authentication.getAuthorities().stream()
+                .anyMatch(authority -> ADMIN_AUTHORITY.equals(authority.getAuthority()));
     if (admin && CHANGING_METHODS.contains(MDC.get(RequestContext.METHOD))) {
       recordLimited("ADMIN_ACTION_FAILED", AuditOutcome.FAILED, failureFacts(status, cause));
     }
@@ -87,8 +93,13 @@ public class AuditService implements AuditRecorder {
     if (carried > 0) {
       metadata.put("suppressed", carried);
     }
-    record(new AuditEvent(action, "HTTP", MDC.get(RequestContext.PATH), outcome,
-        metadata.isEmpty() ? null : metadata));
+    record(
+        new AuditEvent(
+            action,
+            "HTTP",
+            MDC.get(RequestContext.PATH),
+            outcome,
+            metadata.isEmpty() ? null : metadata));
   }
 
   // The exception message is left out because it can hold request data.
@@ -97,16 +108,24 @@ public class AuditService implements AuditRecorder {
   }
 
   private static AuditLogEntry toEntry(AuditEvent event) {
-    AuditLogEntry.AuditLogEntryBuilder entry = AuditLogEntry.builder().occurredAt(Instant.now())
-        .action(cut(event.action(), 64)).targetType(cut(event.targetType(), 64))
-        .targetId(cut(event.targetId(), 255)).outcome(event.outcome())
-        .ip(MDC.get(RequestContext.CLIENT_IP)).requestId(MDC.get(RequestContext.REQUEST_ID))
-        .httpMethod(MDC.get(RequestContext.METHOD)).path(MDC.get(RequestContext.PATH))
-        .metadata(event.metadata() == null || event.metadata().isEmpty() ? null : event.metadata());
+    AuditLogEntry.AuditLogEntryBuilder entry =
+        AuditLogEntry.builder()
+            .occurredAt(Instant.now())
+            .action(cut(event.action(), 64))
+            .targetType(cut(event.targetType(), 64))
+            .targetId(cut(event.targetId(), 255))
+            .outcome(event.outcome())
+            .ip(MDC.get(RequestContext.CLIENT_IP))
+            .requestId(MDC.get(RequestContext.REQUEST_ID))
+            .httpMethod(MDC.get(RequestContext.METHOD))
+            .path(MDC.get(RequestContext.PATH))
+            .metadata(
+                event.metadata() == null || event.metadata().isEmpty() ? null : event.metadata());
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {
       String name = jwt.getClaimAsString("preferred_username");
-      entry.actorUserId(jwt.getSubject())
+      entry
+          .actorUserId(jwt.getSubject())
           .actorName(cut(name != null ? name : jwt.getClaimAsString("name"), 255))
           .clientId(cut(jwt.getClaimAsString("azp"), 255))
           .actorRoles(cut(roles(authentication), 255));
@@ -116,11 +135,13 @@ public class AuditService implements AuditRecorder {
 
   // The application roles of the actor; Keycloak's built-in roles say nothing about the actor.
   private static String roles(Authentication authentication) {
-    return authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority)
+    return authentication.getAuthorities().stream()
+        .map(GrantedAuthority::getAuthority)
         .filter(authority -> authority.startsWith(ROLE_PREFIX))
         .map(authority -> authority.substring(ROLE_PREFIX.length()))
         .filter(role -> !role.startsWith("default-roles-") && !KEYCLOAK_ROLES.contains(role))
-        .sorted().collect(Collectors.joining(","));
+        .sorted()
+        .collect(Collectors.joining(","));
   }
 
   private static String cut(String value, int max) {

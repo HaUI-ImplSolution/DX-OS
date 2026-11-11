@@ -41,8 +41,12 @@ public class OutboxDispatcher {
   private final Map<String, OutboxHandler> handlers;
   private final int maxAttempts;
 
-  public OutboxDispatcher(JdbcTemplate jdbc, PlatformTransactionManager transactions, JobLock lock,
-      ObjectMapper json, List<OutboxHandler> handlers,
+  public OutboxDispatcher(
+      JdbcTemplate jdbc,
+      PlatformTransactionManager transactions,
+      JobLock lock,
+      ObjectMapper json,
+      List<OutboxHandler> handlers,
       @Value("${engine.outbox.max-attempts:20}") int maxAttempts) {
     this.jdbc = jdbc;
     this.maxAttempts = Math.max(1, maxAttempts);
@@ -77,15 +81,21 @@ public class OutboxDispatcher {
   }
 
   private List<Map<String, Object>> due(Set<String> failedTopics) {
-    String skip = failedTopics.isEmpty() ? ""
-        : " AND o.topic NOT IN (" + String.join(", ", failedTopics.stream().map(t -> "?").toList())
-            + ")";
+    String skip =
+        failedTopics.isEmpty()
+            ? ""
+            : " AND o.topic NOT IN ("
+                + String.join(", ", failedTopics.stream().map(t -> "?").toList())
+                + ")";
     return jdbc.queryForList(
         "SELECT o.id, o.topic FROM engine.outbox o WHERE o.delivered_at IS NULL "
-            + "AND o.next_attempt_at <= now()" + skip + " AND NOT EXISTS (SELECT 1 FROM "
+            + "AND o.next_attempt_at <= now()"
+            + skip
+            + " AND NOT EXISTS (SELECT 1 FROM "
             + "engine.outbox p WHERE o.topic = 'record.event' AND p.topic = o.topic "
             + "AND p.delivered_at IS NULL AND p.id < o.id AND p.model = o.model "
-            + "AND p.entity = o.entity AND p.record_id = o.record_id) ORDER BY o.id LIMIT " + BATCH,
+            + "AND p.entity = o.entity AND p.record_id = o.record_id) ORDER BY o.id LIMIT "
+            + BATCH,
         new ArrayList<>(failedTopics).toArray());
   }
 
@@ -93,8 +103,10 @@ public class OutboxDispatcher {
   // failed for another reason.
   private boolean deliver(long id) {
     List<Map<String, Object>> rows =
-        jdbc.queryForList("SELECT topic, payload::text AS payload FROM engine.outbox WHERE id = ? "
-            + "AND delivered_at IS NULL FOR UPDATE SKIP LOCKED", id);
+        jdbc.queryForList(
+            "SELECT topic, payload::text AS payload FROM engine.outbox WHERE id = ? "
+                + "AND delivered_at IS NULL FOR UPDATE SKIP LOCKED",
+            id);
     if (rows.isEmpty()) {
       return true;
     }
@@ -103,19 +115,25 @@ public class OutboxDispatcher {
       if (handler == null) {
         throw new IllegalStateException("No handler for " + rows.get(0).get("topic"));
       }
-      handler.deliver(json.readValue((String) rows.get(0).get("payload"),
-          new TypeReference<Map<String, Object>>() {}));
-      jdbc.update("UPDATE engine.outbox SET delivered_at = now(), attempts = attempts + 1, "
-          + "last_error = NULL WHERE id = ?", id);
+      handler.deliver(
+          json.readValue(
+              (String) rows.get(0).get("payload"), new TypeReference<Map<String, Object>>() {}));
+      jdbc.update(
+          "UPDATE engine.outbox SET delivered_at = now(), attempts = attempts + 1, "
+              + "last_error = NULL WHERE id = ?",
+          id);
       return true;
     } catch (RuntimeException e) {
       log.warn("Outbox message {} failed: {}", id, e.getMessage());
       boolean reachable = !(e instanceof TargetUnreachableException);
       String error = String.valueOf(e.getMessage());
-      jdbc.update("UPDATE engine.outbox SET attempts = attempts + 1, last_error = ?, "
-          + "next_attempt_at = CASE WHEN attempts + 1 >= ? THEN 'infinity'::timestamptz "
-          + "ELSE now() + make_interval(secs => LEAST(300, power(2, attempts))) END WHERE id = ?",
-          error.substring(0, Math.min(ERROR_LENGTH, error.length())), maxAttempts, id);
+      jdbc.update(
+          "UPDATE engine.outbox SET attempts = attempts + 1, last_error = ?, "
+              + "next_attempt_at = CASE WHEN attempts + 1 >= ? THEN 'infinity'::timestamptz "
+              + "ELSE now() + make_interval(secs => LEAST(300, power(2, attempts))) END WHERE id = ?",
+          error.substring(0, Math.min(ERROR_LENGTH, error.length())),
+          maxAttempts,
+          id);
       return reachable;
     }
   }

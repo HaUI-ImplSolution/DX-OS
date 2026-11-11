@@ -34,7 +34,7 @@ Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`web
 | Kiểm tay | Mục 6 | Không |
 
 `./mvnw verify` sau khi đổi tài nguyên nên chạy `clean verify`: tài nguyên cũ còn trong `target/` làm Flyway thấy hai migration cùng phiên bản.
-`./mvnw formatter:format` sửa định dạng khi `formatter:validate` báo lỗi.
+`./mvnw spotless:apply` sửa định dạng khi `spotless:check` báo lỗi.
 Test của client Keycloak, bộ gửi webhook và bộ dò dịch vụ dùng WireMock, không cần Docker; test chậm gắn `@Tag("slow")`, bỏ qua bằng `-DexcludedGroups=slow`.
 
 ## 3. Dựng stack

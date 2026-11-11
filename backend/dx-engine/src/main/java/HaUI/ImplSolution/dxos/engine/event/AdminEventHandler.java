@@ -40,7 +40,7 @@ public class AdminEventHandler implements OutboxHandler {
       throw new IllegalStateException(
           "The webhook target " + model.map(Model::webhook).orElse(null) + " is not configured");
     }
-    sender.send(target.get(), String.valueOf(payload.get("eventId")), payload,
-        ChatText.admin(payload));
+    sender.send(
+        target.get(), String.valueOf(payload.get("eventId")), payload, ChatText.admin(payload));
   }
 }

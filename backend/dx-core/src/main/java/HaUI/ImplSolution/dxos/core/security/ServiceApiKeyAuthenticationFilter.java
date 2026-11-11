@@ -32,13 +32,16 @@ public class ServiceApiKeyAuthenticationFilter extends OncePerRequestFilter {
   }
 
   @Override
-  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-      FilterChain filterChain) throws ServletException, IOException {
+  protected void doFilterInternal(
+      HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+      throws ServletException, IOException {
     if (request.getRequestURI().startsWith(INTERNAL_PATH_PREFIX)
         && StringUtils.hasText(expectedApiKey)
         && expectedApiKey.equals(request.getHeader(HEADER_NAME))) {
-      SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
-          "ai-service", null, List.of(new SimpleGrantedAuthority("ROLE_AI_SERVICE"))));
+      SecurityContextHolder.getContext()
+          .setAuthentication(
+              new UsernamePasswordAuthenticationToken(
+                  "ai-service", null, List.of(new SimpleGrantedAuthority("ROLE_AI_SERVICE"))));
     }
     filterChain.doFilter(request, response);
   }

@@ -43,9 +43,11 @@ public class ProcessDeployer {
       try {
         BpmnModel bpmn =
             new BpmnXMLConverter().convertToBpmnModel(new StringStreamSource(xml), true, true);
-        repository.validateProcess(bpmn).stream().filter(error -> !error.isWarning())
-            .forEach(error -> problems
-                .add("Entity " + entity.name() + ": " + error.getDefaultDescription()));
+        repository.validateProcess(bpmn).stream()
+            .filter(error -> !error.isWarning())
+            .forEach(
+                error ->
+                    problems.add("Entity " + entity.name() + ": " + error.getDefaultDescription()));
       } catch (RuntimeException e) {
         Throwable cause = e;
         while (cause.getCause() != null) {
@@ -65,16 +67,20 @@ public class ProcessDeployer {
         String key = keyOf(model, entity);
         String xml =
             ProcessBpmnGenerator.generate(key, entity.label(), entity.process().definition());
-        repository.createDeployment().name(key).addString(key + ".bpmn20.xml", xml)
-            .enableDuplicateFiltering().deploy();
+        repository
+            .createDeployment()
+            .name(key)
+            .addString(key + ".bpmn20.xml", xml)
+            .enableDuplicateFiltering()
+            .deploy();
       }
     }
   }
 
   // Removes the BPMN of the model together with the process instances that run it.
   public void undeploy(String modelName) {
-    for (Deployment deployment : repository.createDeploymentQuery()
-        .deploymentNameLike(modelName + ".%").list()) {
+    for (Deployment deployment :
+        repository.createDeploymentQuery().deploymentNameLike(modelName + ".%").list()) {
       if (!deployment.getName().startsWith(modelName + ".")) {
         continue;
       }

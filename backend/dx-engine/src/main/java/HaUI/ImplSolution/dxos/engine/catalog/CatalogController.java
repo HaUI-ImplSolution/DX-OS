@@ -18,7 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/models")
 @PreAuthorize("hasRole('ADMIN')")
-@Tag(name = "Model catalog",
+@Tag(
+    name = "Model catalog",
     description = "What the control panel reads to help write a model; ADMIN only")
 public class CatalogController {
 
@@ -27,8 +28,11 @@ public class CatalogController {
   private final DataCatalogService dataCatalog;
   private final ModelRegistry registry;
 
-  public CatalogController(CatalogService catalog, ProcessDiagramService diagrams,
-      DataCatalogService dataCatalog, ModelRegistry registry) {
+  public CatalogController(
+      CatalogService catalog,
+      ProcessDiagramService diagrams,
+      DataCatalogService dataCatalog,
+      ModelRegistry registry) {
     this.catalog = catalog;
     this.diagrams = diagrams;
     this.dataCatalog = dataCatalog;
@@ -47,25 +51,31 @@ public class CatalogController {
     return ApiResponse.success(catalog.families());
   }
 
-  @PostMapping(value = "/diagram", consumes = {"application/yaml", "text/plain"})
-  @Operation(summary = "The process diagrams of a model file",
-      description = "The body is the model file; it is only read, never compared with the running"
-          + " model. Answers 200 with valid false and every problem with its line and column (line"
-          + " 0 for a problem without one) when the file is not a model. Otherwise one entry per"
-          + " entity that has a process: the states and actions of its family, the completions of"
-          + " each final state, the handler, the deadline and auto_close in seconds (null when"
-          + " not set), the booking, and the states where the deadline runs.")
+  @PostMapping(
+      value = "/diagram",
+      consumes = {"application/yaml", "text/plain"})
+  @Operation(
+      summary = "The process diagrams of a model file",
+      description =
+          "The body is the model file; it is only read, never compared with the running"
+              + " model. Answers 200 with valid false and every problem with its line and column (line"
+              + " 0 for a problem without one) when the file is not a model. Otherwise one entry per"
+              + " entity that has a process: the states and actions of its family, the completions of"
+              + " each final state, the handler, the deadline and auto_close in seconds (null when"
+              + " not set), the booking, and the states where the deadline runs.")
   public ApiResponse<ProcessDiagramService.Diagram> diagram(@RequestBody String content) {
     return ApiResponse.success(diagrams.diagram(content));
   }
 
   @GetMapping("/{model}/data-catalog")
-  @Operation(summary = "The data of an applied model, read from the model",
-      description = "For each entity: its fields, the roles that reach it and the rows it holds"
-          + " (-1 when the table cannot be read). links are the references between entities."
-          + " origins are the roles that reach the model and the outside applications registered"
-          + " for it; destinations are the webhook target, the completion actions of the"
-          + " processes, the event feed and the archive. 404 when the model is not applied.")
+  @Operation(
+      summary = "The data of an applied model, read from the model",
+      description =
+          "For each entity: its fields, the roles that reach it and the rows it holds"
+              + " (-1 when the table cannot be read). links are the references between entities."
+              + " origins are the roles that reach the model and the outside applications registered"
+              + " for it; destinations are the webhook target, the completion actions of the"
+              + " processes, the event feed and the archive. 404 when the model is not applied.")
   public ApiResponse<DataCatalogService.Catalog> dataCatalog(@PathVariable String model) {
     return ApiResponse.success(dataCatalog.of(registry.require(model)));
   }
@@ -77,18 +87,20 @@ public class CatalogController {
   }
 
   @GetMapping("/{model}/versions")
-  @Operation(summary = "The applied versions of a model, newest first",
-      description = "applied_by is the user id of who applied the version, applied_by_name the name"
-          + " the token gave then (empty for versions saved without one). 404 when no version of the"
-          + " model was applied.")
+  @Operation(
+      summary = "The applied versions of a model, newest first",
+      description =
+          "applied_by is the user id of who applied the version, applied_by_name the name"
+              + " the token gave then (empty for versions saved without one). 404 when no version of the"
+              + " model was applied.")
   public ApiResponse<List<Map<String, Object>>> versions(@PathVariable String model) {
     return ApiResponse.success(catalog.versions(model));
   }
 
   @GetMapping("/{model}/versions/{version}")
   @Operation(summary = "One applied version of a model with its file content")
-  public ApiResponse<Map<String, Object>> version(@PathVariable String model,
-      @PathVariable int version) {
+  public ApiResponse<Map<String, Object>> version(
+      @PathVariable String model, @PathVariable int version) {
     return ApiResponse.success(catalog.version(model, version));
   }
 }

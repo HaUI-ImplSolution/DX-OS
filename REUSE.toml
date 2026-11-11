@@ -17,13 +17,6 @@ precedence = "override"
 SPDX-FileCopyrightText = "The Apache Software Foundation"
 SPDX-License-Identifier = "Apache-2.0"
 
-# The Eclipse formatter profile of the Google Java style, taken from google/styleguide (CC-BY-3.0).
-[[annotations]]
-path = "backend/eclipse-java-google-style.xml"
-precedence = "override"
-SPDX-FileCopyrightText = "Google LLC"
-SPDX-License-Identifier = "CC-BY-3.0"
-
 # Applied by the 2.0.0 release: Flyway checks the checksum of every applied migration, so these files are not edited.
 [[annotations]]
 path = [

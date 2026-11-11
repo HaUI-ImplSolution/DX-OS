@@ -39,8 +39,7 @@ class AdvisoryJobLockIntegrationTest {
     registry.add("spring.datasource.password", POSTGRES::getPassword);
   }
 
-  @Autowired
-  AdvisoryJobLock lock;
+  @Autowired AdvisoryJobLock lock;
 
   @Test
   void jobRunsWhenNobodyHoldsTheLock() {
@@ -55,12 +54,13 @@ class AdvisoryJobLockIntegrationTest {
     AtomicBoolean inner = new AtomicBoolean(true);
     AtomicBoolean other = new AtomicBoolean();
 
-    boolean ran = lock.runIfFree("test-busy", () -> {
-      inner.set(lock.runIfFree("test-busy", () -> {
-      }));
-      other.set(lock.runIfFree("test-other", () -> {
-      }));
-    });
+    boolean ran =
+        lock.runIfFree(
+            "test-busy",
+            () -> {
+              inner.set(lock.runIfFree("test-busy", () -> {}));
+              other.set(lock.runIfFree("test-other", () -> {}));
+            });
 
     assertThat(ran).isTrue();
     assertThat(inner).isFalse();
@@ -69,11 +69,15 @@ class AdvisoryJobLockIntegrationTest {
 
   @Test
   void lockIsReleasedAfterTheJobEvenWhenItFails() {
-    assertThatThrownBy(() -> lock.runIfFree("test-fail", () -> {
-      throw new IllegalStateException("boom");
-    })).isInstanceOf(IllegalStateException.class);
+    assertThatThrownBy(
+            () ->
+                lock.runIfFree(
+                    "test-fail",
+                    () -> {
+                      throw new IllegalStateException("boom");
+                    }))
+        .isInstanceOf(IllegalStateException.class);
 
-    assertThat(lock.runIfFree("test-fail", () -> {
-    })).isTrue();
+    assertThat(lock.runIfFree("test-fail", () -> {})).isTrue();
   }
 }

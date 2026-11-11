@@ -12,7 +12,7 @@ Closes #
 
 ## Đã kiểm tra
 
-- [ ] `./mvnw formatter:validate` và `./mvnw verify` (backend)
+- [ ] `./mvnw spotless:check` và `./mvnw verify` (backend)
 - [ ] `npx tsc --noEmit` (web)
 - [ ] `npm run build` trong `website/` (trang docs)
 - [ ] `python3 .github/scripts/check_licenses.py`

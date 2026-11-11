@@ -10,7 +10,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 ### Giấy phép
 
 - Mọi tệp mã và cấu hình (CSS, HTML, `Dockerfile`, `pom.xml`, `nginx.conf`, `.env.example`, `.gitleaks.toml`) có dòng `SPDX-License-Identifier`; `REUSE.toml` và `LICENSES/` khai giấy phép và bản quyền cho tệp không chèn được chú thích, và job `Check licenses` chạy `reuse lint`.
-- `backend/eclipse-java-google-style.xml` ghi nguồn Google LLC, CC-BY-3.0 ở `NOTICE` và `DEPENDENCIES.txt`.
+- Mã Java của backend định dạng bằng google-java-format (Apache-2.0) qua Spotless, chạy `./mvnw spotless:apply`; giấy phép duy nhất của kho là Apache-2.0.
 
 ### Lõi chạy ngầm
 

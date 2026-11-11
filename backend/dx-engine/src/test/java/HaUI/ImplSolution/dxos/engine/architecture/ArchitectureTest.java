@@ -18,32 +18,54 @@ class ArchitectureTest {
 
   @BeforeAll
   static void importClasses() {
-    classes = new ClassFileImporter().withImportOption(new ImportOption.DoNotIncludeTests())
-        .importPackages("HaUI.ImplSolution.dxos");
+    classes =
+        new ClassFileImporter()
+            .withImportOption(new ImportOption.DoNotIncludeTests())
+            .importPackages("HaUI.ImplSolution.dxos");
   }
 
   @Test
   void controllersGoThroughServicesNotRepositories() {
-    noClasses().that().haveSimpleNameEndingWith("Controller").should().dependOnClassesThat()
-        .haveSimpleNameEndingWith("Repository").check(classes);
+    noClasses()
+        .that()
+        .haveSimpleNameEndingWith("Controller")
+        .should()
+        .dependOnClassesThat()
+        .haveSimpleNameEndingWith("Repository")
+        .check(classes);
   }
 
   @Test
   void servicesDoNotDependOnControllers() {
-    noClasses().that().haveSimpleNameEndingWith("Service").should().dependOnClassesThat()
-        .haveSimpleNameEndingWith("Controller").check(classes);
+    noClasses()
+        .that()
+        .haveSimpleNameEndingWith("Service")
+        .should()
+        .dependOnClassesThat()
+        .haveSimpleNameEndingWith("Controller")
+        .check(classes);
   }
 
   @Test
   void entitiesDoNotDependOnTheLayersAboveThem() {
-    noClasses().that().resideInAPackage("..model..").should().dependOnClassesThat()
-        .resideInAnyPackage("..service..", "..controller..", "..repository..").check(classes);
+    noClasses()
+        .that()
+        .resideInAPackage("..model..")
+        .should()
+        .dependOnClassesThat()
+        .resideInAnyPackage("..service..", "..controller..", "..repository..")
+        .check(classes);
   }
 
   @Test
   void dtosDoNotDependOnTheLayersAboveThem() {
-    noClasses().that().resideInAPackage("..dto..").should().dependOnClassesThat()
-        .resideInAnyPackage("..service..", "..controller..", "..repository..").check(classes);
+    noClasses()
+        .that()
+        .resideInAPackage("..dto..")
+        .should()
+        .dependOnClassesThat()
+        .resideInAnyPackage("..service..", "..controller..", "..repository..")
+        .check(classes);
   }
 
   @Test

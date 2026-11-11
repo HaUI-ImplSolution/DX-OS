@@ -24,6 +24,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 - Hướng dẫn kết nối công cụ báo cáo bằng `report_ro` ở `deploy/REPORTING.md`: giữ PostgreSQL trong mạng riêng, kết nối Apache Superset, xoay mật khẩu và truy vấn dữ liệu xuyên hai mô hình.
 - Mục Dữ liệu cá nhân ra nước ngoài ở `deploy/OPERATIONS.md` nêu khi nào cấu hình làm phát sinh nghĩa vụ đánh giá tác động theo Luật 91/2025/QH15 và Nghị định 356/2025/NĐ-CP, đối chiếu với bản đăng trên Công báo.
+- Hướng dẫn phát triển dịch vụ, bên nhận webhook, giao diện và trang mở rộng ở `docs/EXTENSIONS.md`: quyền, gateway, chạy local, kiểm thử, đóng gói, nâng cấp và ranh giới hỗ trợ hiện tại.
 - Điều kiện tải chữ ký virus của ClamAV và hạn hỗ trợ của image đang ghim ở `DEPENDENCIES.txt` và `deploy/OPERATIONS.md`.
 
 ## [2.0.0] - 2026-11-11
@@ -293,4 +294,3 @@ Bản phát hành đầu tiên của DX-OS.
 [1.0.2]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/HaUI-ImplSolution/DX-OS/releases/tag/v1.0.0
-

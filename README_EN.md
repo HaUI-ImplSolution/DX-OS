@@ -131,6 +131,7 @@ The documents are written in Vietnamese; the API reference is the Swagger UI of 
 |---|---|
 | Writing a model file | [`docs/MODEL.md`](./docs/MODEL.md) |
 | Calling the API | [`docs/API.md`](./docs/API.md) and the Swagger UI of the running backend |
+| Building extension services, webhooks, and custom UIs | [`docs/EXTENSIONS.md`](./docs/EXTENSIONS.md) (Vietnamese) |
 | Architecture | [`ARCHITECTURE.md`](./ARCHITECTURE.md) |
 | Install, the `dxos` commands, backup | [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md) |
 | Monitoring, logs, access audit | [`deploy/MONITORING.md`](./deploy/MONITORING.md) |

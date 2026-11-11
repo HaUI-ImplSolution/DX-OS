@@ -17,7 +17,7 @@ Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết t�
 | 2 | Dòng giấy phép ở mọi tệp theo chuẩn REUSE, tệp của bên thứ ba (mục 2) | Giấy phép 10, thư viện 10 |
 | 3 | Lõi đúng đầu bài: bỏ Swagger UI và `/admin` mặc định, chế độ chỉ lõi, `README.md` đối chiếu đề và H-P-D-I (mục 5) | Giấy phép 10 qua ghi chú "giải quyết đúng đầu bài" của thể lệ |
 | 4 | Tài liệu và giao tiếp: issue cho từng dòng, lộ trình, thông tin repository, tài liệu sản phẩm trên trang docs, ruleset (mục 2 và 3) | Tài liệu và giao tiếp 10, phát triển bền vững 10 |
-| 5 | Bằng chứng lõi là PaaS: giao diện riêng ở tên miền khác, route của dịch vụ riêng, ứng dụng mẫu, đường ống mẫu cho kho mô hình, hướng dẫn mở rộng (mục 3) | Nguyên gốc 10, phát triển bền vững 10 |
+| 5 | Bằng chứng lõi là PaaS: giao diện riêng ở tên miền khác, route của dịch vụ riêng, ứng dụng mẫu, đường ống mẫu cho kho mô hình (mục 3) | Nguyên gốc 10, phát triển bền vững 10 |
 | 6 | Bài trình bày, video (mục 2) | Hoàn thiện 10, trình diễn 10 |
 | 7 | Phần AI và chữ I của ứng dụng Tầng 2 (mục 3) | Hoàn thiện 10, nguyên gốc 10 |
 | 8 | Phủ thêm bốn nguyên lý: truy vấn trên hồ dữ liệu, số đo chất lượng dữ liệu, kiểm EICAR trong CI, tự kéo từ git (mục 3 và 5) | Hoàn thiện 10 |
@@ -56,7 +56,6 @@ Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết t�
 | Giao diện riêng ở tên miền khác | CORS của API chỉ nhận `localhost` và `127.0.0.1`, và Keycloak chỉ có client công khai `dxos-web` cho địa chỉ của cổng vào và `localhost`; một giao diện tự viết ở tên miền khác không đăng nhập và gọi API được nếu không sửa tay Keycloak và mã; hướng làm: lệnh đăng ký client công khai (PKCE) kèm redirect URI, và danh sách origin CORS đọc từ `.env` |
 | Route của dịch vụ riêng | Route nằm trong `deploy/apisix/common.yaml` do lõi quản, nên thêm route cho dịch vụ riêng là sửa tệp đó và mất khi `dxos update` thay tệp triển khai; hướng làm: một tệp route riêng của bản cài được nạp thêm |
 | Kiểm tra đồng bộ do dịch vụ riêng quyết định | Webhook chỉ báo sau khi hồ sơ đã chuyển; chưa có cách để dịch vụ riêng chặn một hành động trước khi chuyển trạng thái, nên logic đặc thù ở mức 3 chỉ phản ứng sau, không chặn được; nếu làm thì phải giữ quy tắc bất biến và hồ sơ không kẹt khi dịch vụ riêng không trả lời |
-| Hướng dẫn viết mã mở rộng | Chưa có tài liệu nói cách làm cho từng điểm mở rộng của `README.md` (API riêng, webhook, giao diện riêng, trang riêng); ví dụ hiện có là `itot-simulator` và `history-witness` |
 | Ứng dụng mẫu gọi lõi từ bên ngoài | Chưa có ứng dụng có giao diện nào ngoài ứng dụng của đội gọi lõi qua API, nên câu "PaaS phục vụ các ứng dụng tầng trên" của đề chưa có bằng chứng chạy được; đã chốt làm một ứng dụng mẫu ở `examples/`, viết bằng khung khác react-admin, chỉ dùng OpenAPI theo mô hình và đăng nhập Keycloak |
 | Đường ống mẫu cho kho mô hình | Chưa có ví dụ cho thấy tệp mô hình sống trong git; `dxos plan` chưa có đầu ra máy đọc được và mã thoát phân biệt không đổi, có đổi, bị từ chối; đã chốt làm một ví dụ ở `examples/` chạy kế hoạch trên pull request, dán kế hoạch vào bình luận và áp dụng khi gộp |
 | Lịch sử issue | PoF chấm bug tracker có lịch sử: hiện 42 issue (11 đã đóng) so với 165 pull request đã gộp, vì việc còn lại ghi ở file này; mở issue cho mỗi dòng khi làm và đóng bằng pull request có `Closes #n`; issue chỉ mang nhãn `enhancement` hoặc `documentation`, chưa gắn milestone |

@@ -130,6 +130,7 @@ Trang tài liệu: <https://haui-implsolution.github.io/DX-OS/>.
 |---|---|
 | Viết tệp mô hình | [`docs/MODEL.md`](./docs/MODEL.md) |
 | Gọi API | [`docs/API.md`](./docs/API.md) và Swagger UI của backend đang chạy |
+| Phát triển dịch vụ, webhook và giao diện mở rộng | [`docs/EXTENSIONS.md`](./docs/EXTENSIONS.md) |
 | Kiến trúc | [`ARCHITECTURE.md`](./ARCHITECTURE.md) |
 | Cài đặt, lệnh `dxos`, sao lưu | [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md) |
 | Giám sát, log, nhật ký truy cập | [`deploy/MONITORING.md`](./deploy/MONITORING.md) |

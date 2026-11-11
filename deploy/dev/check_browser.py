@@ -4,6 +4,8 @@
 import base64
 import hashlib
 import html.parser
+import http.cookiejar
+import ipaddress
 import os
 import secrets
 import subprocess
@@ -60,6 +62,18 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
+class LoopbackCookiePolicy(http.cookiejar.DefaultCookiePolicy):
+    def return_ok_secure(self, cookie, request):
+        host = urllib.parse.urlsplit(request.get_full_url()).hostname
+        try:
+            loopback = host == "localhost" or ipaddress.ip_address(host).is_loopback
+        except ValueError:
+            loopback = False
+        if cookie.secure and request.type == "http" and loopback:
+            return True
+        return super().return_ok_secure(cookie, request)
+
+
 def authorization_code():
     verifier = secrets.token_urlsafe(64)
     challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).rstrip(b"=").decode()
@@ -71,8 +85,9 @@ def authorization_code():
         "code_challenge": challenge,
         "code_challenge_method": "S256",
     })
+    cookies = http.cookiejar.CookieJar(LoopbackCookiePolicy())
     opener = urllib.request.build_opener(
-        urllib.request.HTTPCookieProcessor(), NoRedirect())
+        urllib.request.HTTPCookieProcessor(cookies), NoRedirect())
     auth_url = f"{kc.BASE}/realms/dxos/protocol/openid-connect/auth?{query}"
     response = opener.open(auth_url)
     form = LoginForm()
@@ -103,6 +118,7 @@ def authorization_code():
 
 
 def main():
+    kc.ensure_user(USER, ["ADMIN"])
     dxos("client", "browser", "remove", NAME)
     try:
         added = dxos("client", "browser", "add", NAME, "--redirect-uri", REDIRECT)
@@ -150,10 +166,10 @@ def main():
                  unsafe_http.stderr[-150:] + unsafe_wildcard.stderr[-150:])
 
         token = authorization_code()
-        status, body = kc.http("GET", f"{kc.BASE}/api/v1/system/status", headers={
+        status, body = kc.http("GET", f"{kc.BASE}/api/v1/models", headers={
             "Authorization": f"Bearer {token}", "Origin": ORIGIN})
         rt.check("BROWSER-06 PKCE login exchanges a code and calls the API",
-                 status == 200 and body.get("status") == "ok", str(body)[:300])
+                 status == 200 and body.get("success") is True, str(body)[:300])
     finally:
         removed = dxos("client", "browser", "remove", NAME)
         rt.check("BROWSER-07 remove deletes the public client", removed.returncode == 0,

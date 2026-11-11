@@ -186,6 +186,61 @@ public class KeycloakAdminClient {
     return clientSecret(uuid, true);
   }
 
+  // Moves the application to another role of its model; the client id and the secret stay. The new
+  // role is granted first and the old one taken away last, and a step that fails puts the earlier
+  // ones back, so the application never ends up without a role or with a stale attribute.
+  public AppClient changeAppRole(String clientId, String modelClientId, String role) {
+    Map<String, Object> client = list("/admin/realms/{realm}/clients?clientId={name}", clientId)
+        .stream().filter(found -> clientId.equals(found.get("clientId")))
+        .filter(KeycloakAdminClient::isApp).findFirst()
+        .orElseThrow(() -> new ResourceNotFoundException("Application " + clientId + " not found"));
+    String before = appClient(client).role();
+    if (before.equals(role)) {
+      return appClient(client);
+    }
+    String uuid = client.get("id").toString();
+    String account = serviceAccountId(uuid);
+    grantClientRole(account, modelClientId, role);
+    try {
+      setAppRoleAttribute(client, uuid, role);
+    } catch (RuntimeException e) {
+      revokeClientRole(account, modelClientId, role);
+      throw e;
+    }
+    try {
+      revokeClientRole(account, modelClientId, before);
+    } catch (ResourceNotFoundException goneRole) {
+      // The old role no longer exists in the model, so nothing is left to take away.
+    } catch (RuntimeException e) {
+      setAppRoleAttribute(client, uuid, before);
+      revokeClientRole(account, modelClientId, role);
+      throw e;
+    }
+    return new AppClient(clientId, appClient(client).model(), role, appClient(client).enabled());
+  }
+
+  // Writes the role attribute of the client, keeping every other field of it as it is.
+  @SuppressWarnings("unchecked")
+  private void setAppRoleAttribute(Map<String, Object> client, String uuid, String role) {
+    Map<String, Object> changed = new java.util.LinkedHashMap<>(client);
+    Map<String, Object> attributes =
+        new java.util.LinkedHashMap<>((Map<String, Object>) client.get("attributes"));
+    attributes.put(APP_ROLE_ATTRIBUTE, role);
+    changed.put("attributes", attributes);
+    try {
+      restClient.put().uri("/admin/realms/{realm}/clients/{uuid}", realm, uuid)
+          .headers(h -> h.setBearerAuth(accessToken())).contentType(MediaType.APPLICATION_JSON)
+          .body(changed).retrieve().toBodilessEntity();
+    } catch (RestClientResponseException e) {
+      throw new KeycloakAdminException(
+          "Keycloak refused to change a client: HTTP " + e.getStatusCode().value(), e);
+    } catch (KeycloakAdminException e) {
+      throw e;
+    } catch (RuntimeException e) {
+      throw new KeycloakAdminException("Keycloak is unreachable", e);
+    }
+  }
+
   // Deletes the application and its service account.
   public void deleteAppClient(String clientId) {
     findAppClient(clientId)

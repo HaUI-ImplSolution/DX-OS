@@ -20,6 +20,7 @@ import {
   Typography,
 } from "@mui/material";
 import {
+  changeAppRole,
   getUserOptions,
   listApps,
   registerApp,
@@ -76,6 +77,8 @@ export default function AppsTab() {
   const [busy, setBusy] = useState(false);
   const [secret, setSecret] = useState<AppSecret | null>(null);
   const [removing, setRemoving] = useState<AppClient | null>(null);
+  const [changing, setChanging] = useState<AppClient | null>(null);
+  const [newRole, setNewRole] = useState("");
 
   const load = useCallback(() => {
     listApps().then(setApps, (e: unknown) => setError(message(e)));
@@ -134,6 +137,16 @@ export default function AppsTab() {
                 <TableCell>{app.model}</TableCell>
                 <TableCell>{app.role}</TableCell>
                 <TableCell align="right">
+                  <Button
+                    size="small"
+                    disabled={busy}
+                    onClick={() => {
+                      setChanging(app);
+                      setNewRole(app.role);
+                    }}
+                  >
+                    {t("Đổi vai")}
+                  </Button>
                   <Button size="small" disabled={busy} onClick={() => act(async () => setSecret(await renewAppSecret(app.name)))}>
                     {t("Đổi mã bí mật")}
                   </Button>
@@ -208,6 +221,35 @@ export default function AppsTab() {
             }
           >
             {t("Đăng ký")}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={changing !== null} onClose={() => !busy && setChanging(null)} maxWidth="xs" fullWidth>
+        <DialogTitle>{changing?.clientId}</DialogTitle>
+        <DialogContent sx={{ display: "grid", gap: 2, pt: "8px !important" }}>
+          <DialogContentText>{t("Mã ứng dụng và mã bí mật giữ nguyên; token đã cấp giữ vai cũ đến khi hết hạn.")}</DialogContentText>
+          <TextField select label={t("Vai được cấp")} size="small" value={newRole} onChange={(event) => setNewRole(event.target.value)}>
+            {(options?.models.find((item) => item.model === changing?.model)?.roles ?? []).map((item) => (
+              <MenuItem key={item.name} value={item.name}>
+                {item.name}
+              </MenuItem>
+            ))}
+          </TextField>
+        </DialogContent>
+        <DialogActions>
+          <Button disabled={busy} onClick={() => setChanging(null)}>
+            {t("Hủy")}
+          </Button>
+          <Button
+            disabled={busy || newRole === "" || newRole === changing?.role}
+            onClick={() =>
+              act(async () => {
+                if (changing) await changeAppRole(changing.name, newRole);
+                setChanging(null);
+              })
+            }
+          >
+            {t("Lưu")}
           </Button>
         </DialogActions>
       </Dialog>

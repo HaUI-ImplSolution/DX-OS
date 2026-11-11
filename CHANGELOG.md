@@ -7,6 +7,10 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
+### Ứng dụng ngoài
+
+- Ứng dụng ngoài đổi sang vai khác của cùng mô hình bằng `dxos client role` hoặc `PUT /api/v1/clients/{name}`, giữ nguyên tên và mã bí mật.
+
 ### Tệp mô hình
 
 - Trường nhiều lựa chọn nhận `default` là một danh sách các lựa chọn.

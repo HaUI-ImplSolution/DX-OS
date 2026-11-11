@@ -18,9 +18,9 @@ Một dịch vụ ngoài gọi API bằng token máy; đăng ký nó ở tab Ứ
 Mỗi ứng dụng là một client Keycloak `dxos-app-<tên>` dạng client credentials, giữ đúng một vai của một mô hình; vai `ADMIN` và các vai của nền tảng không cấp được.
 Mã bí mật hiện một lần khi đăng ký hoặc đổi, hệ thống không giữ lại và không ghi vào nhật ký hay lịch sử.
 Ứng dụng lấy token bằng `grant_type=client_credentials` ở `<địa chỉ>/realms/dxos/protocol/openid-connect/token`, rồi gọi API dữ liệu của mô hình đó; mô hình khác, API quản trị và API người dùng trả 403.
-`dxos client list` liệt kê ứng dụng kèm mô hình và vai, `dxos client rotate <tên>` cấp mã mới và mã cũ hết hiệu lực ngay, `dxos client remove <tên>` xóa client; hồ sơ ứng dụng đã tạo vẫn còn.
-Token đã cấp trước khi đổi mã hoặc xóa ứng dụng vẫn dùng được đến khi hết hạn, tối đa khoảng 5 phút.
-Muốn đổi vai thì gỡ ứng dụng rồi đăng ký lại.
+`dxos client list` liệt kê ứng dụng kèm mô hình và vai, `dxos client role <tên> --role <vai>` (hoặc nút đổi vai ở tab Ứng dụng ngoài) chuyển ứng dụng sang vai khác của cùng mô hình mà giữ nguyên tên và mã bí mật, `dxos client rotate <tên>` cấp mã mới và mã cũ hết hiệu lực ngay, `dxos client remove <tên>` xóa client; hồ sơ ứng dụng đã tạo vẫn còn.
+Token đã cấp trước khi đổi mã, đổi vai hoặc xóa ứng dụng vẫn dùng được đến khi hết hạn, tối đa khoảng 5 phút; token đổi vai vẫn mang vai cũ cho đến lúc đó.
+Đổi sang mô hình khác thì gỡ ứng dụng rồi đăng ký lại.
 Tài khoản dịch vụ của ứng dụng không hiện trong danh sách người dùng, và nhật ký quản trị ghi `CLIENT_CREATED`, `CLIENT_SECRET_ROTATED` và `CLIENT_DELETED` kèm tên ứng dụng, và mô hình và vai của nó khi tạo hoặc xóa.
 Lệnh dùng client `dxos-cli` như `dxos plan`, nên cần `DXOS_CLI_SECRET` trong `.env`.
 
@@ -52,7 +52,7 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos archive <mô hình> [--before YYYY-MM-DD] [--out THƯ_MỤC \| --store]`, `dxos archive check <thư mục> \| --store <mô hình>/<lần chạy>`, `dxos archive list` | Xuất hồ sơ đã xong ra Parquet ở một thư mục hoặc ở kho đối tượng, kiểm một bản xuất, liệt kê các lần chạy trong kho (xem [`INTEGRATIONS.md`](./INTEGRATIONS.md#hồ-dữ-liệu)) |
 | `dxos archive auto`, `dxos archive schedule [install\|uninstall]` | Ghi vào kho hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS` ngày; `schedule install` chạy mỗi ngày bằng systemd user timer (xem dưới) |
 | `dxos demo [--password MẬT_KHẨU]`, `dxos demo remove` | Áp dụng mô hình Một cửa sinh viên nếu chưa chạy, tạo bốn tài khoản thử `judge_student`, `judge_officer`, `judge_officer2` và `judge_supervisor` với một mật khẩu (ngẫu nhiên nếu không nêu, in một lần; chạy lại thì đặt và in mật khẩu mới) và nộp khoảng 40 hồ sơ mẫu qua API chung, mỗi bước do đúng người làm; chạy lại không nộp thêm hồ sơ; `remove` chỉ gỡ bốn tài khoản, hồ sơ có quy trình không xóa được nên còn lại; cần client `dxos-cli` như `dxos plan`. Hạn xử lý 72 giờ của mô hình nên hồ sơ quá hạn chỉ có sau ba ngày kể từ lần nộp |
-| `dxos client add <tên> --model M --role R`, `dxos client list`, `dxos client rotate <tên>`, `dxos client remove <tên>` | Đăng ký và quản lý ứng dụng ngoài gọi API bằng token máy (xem phần Ứng dụng ngoài ở trên) |
+| `dxos client add <tên> --model M --role R`, `dxos client list`, `dxos client role <tên> --role R`, `dxos client rotate <tên>`, `dxos client remove <tên>` | Đăng ký và quản lý ứng dụng ngoài gọi API bằng token máy (xem phần Ứng dụng ngoài ở trên) |
 | `dxos uninstall [--purge]` | Xóa container và lệnh `dxos`; `--purge` xóa cả dữ liệu và thư mục cài, phải gõ xác nhận |
 
 ### Tệp mô hình lúc khởi động

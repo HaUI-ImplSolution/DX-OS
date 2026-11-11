@@ -35,6 +35,8 @@ public class AppClientService {
 
   public record RenewedApp(String name, String clientId, String secret) {}
 
+  public record ChangedRole(String role) {}
+
   private static final Pattern NAME = Pattern.compile("[a-z][a-z0-9_-]{0,39}");
   private static final Logger log = LoggerFactory.getLogger(AppClientService.class);
 
@@ -89,6 +91,28 @@ public class AppClientService {
     String secret = keycloak.rotateAppSecret(clientId);
     audited("CLIENT_SECRET_ROTATED", clientId, Map.of());
     return new RenewedApp(name, clientId, secret);
+  }
+
+  public AppView changeRole(String name, ChangedRole request) {
+    if (request == null || request.role() == null || request.role().isBlank()) {
+      throw new ModelValidationException(Map.of("role", "is required"));
+    }
+    String clientId = clientId(name);
+    AppClient app = keycloak.findAppClient(clientId)
+        .orElseThrow(() -> new ResourceNotFoundException("Application " + name + " not found"));
+    Model running = registry.find(app.model()).orElseThrow(
+        () -> new ResourceNotFoundException("Model " + app.model() + " is not applied"));
+    if (running.roles().stream().noneMatch(declared -> declared.name().equals(request.role()))) {
+      throw new ResourceNotFoundException(
+          "Model " + app.model() + " has no role " + request.role());
+    }
+    AppClient changed =
+        keycloak.changeAppRole(clientId, ModelClient.of(app.model()), request.role());
+    if (!app.role().equals(changed.role())) {
+      audited("CLIENT_ROLE_CHANGED", clientId,
+          Map.of("model", app.model(), "from", app.role(), "to", changed.role()));
+    }
+    return view(changed);
   }
 
   public void remove(String name) {

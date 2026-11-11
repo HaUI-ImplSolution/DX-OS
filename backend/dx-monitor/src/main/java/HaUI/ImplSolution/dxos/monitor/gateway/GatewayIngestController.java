@@ -32,8 +32,8 @@ public class GatewayIngestController {
   private final GatewayEventFilter filter;
   private final GatewayEventStore store;
 
-  public GatewayIngestController(MonitorProperties properties, GatewayEventFilter filter,
-      GatewayEventStore store) {
+  public GatewayIngestController(
+      MonitorProperties properties, GatewayEventFilter filter, GatewayEventStore store) {
     String key = properties.gateway().ingestKey();
     this.expectedHeader =
         key == null || key.isBlank() ? null : (SCHEME + key).getBytes(StandardCharsets.UTF_8);
@@ -42,10 +42,14 @@ public class GatewayIngestController {
   }
 
   @PostMapping("/gateway")
-  @Operation(summary = "Receive a batch of gateway log entries",
-      description = "Gateway only: 401 without the shared key (and for every request while no key"
-          + " is configured), 400 for a batch above " + MAX_BATCH + " entries. Ordinary traffic is"
-          + " dropped, the rest is kept; 202 with the number kept.")
+  @Operation(
+      summary = "Receive a batch of gateway log entries",
+      description =
+          "Gateway only: 401 without the shared key (and for every request while no key"
+              + " is configured), 400 for a batch above "
+              + MAX_BATCH
+              + " entries. Ordinary traffic is"
+              + " dropped, the rest is kept; 202 with the number kept.")
   public ResponseEntity<ApiResponse<Map<String, Integer>>> receive(
       @RequestHeader(value = "Authorization", required = false) String authorization,
       @RequestBody List<Map<String, Object>> entries) {
@@ -62,7 +66,8 @@ public class GatewayIngestController {
   }
 
   private boolean authorized(String authorization) {
-    return expectedHeader != null && authorization != null
+    return expectedHeader != null
+        && authorization != null
         && MessageDigest.isEqual(expectedHeader, authorization.getBytes(StandardCharsets.UTF_8));
   }
 }

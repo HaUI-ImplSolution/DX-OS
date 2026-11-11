@@ -3,5 +3,7 @@ package HaUI.ImplSolution.dxos.core.api.audit;
 
 // How the audited action ended.
 public enum AuditOutcome {
-  SUCCESS, DENIED, FAILED
+  SUCCESS,
+  DENIED,
+  FAILED
 }

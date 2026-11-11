@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.engine.registry;
 
-import HaUI.ImplSolution.dxos.core.api.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.dxos.core.api.exception.InvalidStateException;
+import HaUI.ImplSolution.dxos.core.api.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.ModelException;
 import HaUI.ImplSolution.dxos.model.ModelParser;
@@ -55,12 +55,16 @@ public class ModelRegistry {
   @PostConstruct
   public synchronized void reload() {
     maintenance =
-        Set.copyOf(jdbc.queryForList("SELECT model FROM (SELECT DISTINCT ON (model) model, status "
-            + "FROM engine.apply_run ORDER BY model, id DESC) latest "
-            + "WHERE status IN ('running', 'failed')", String.class));
-    List<String> contents = jdbc.queryForList(
-        "SELECT DISTINCT ON (model) content FROM engine.model_version ORDER BY model, version DESC",
-        String.class);
+        Set.copyOf(
+            jdbc.queryForList(
+                "SELECT model FROM (SELECT DISTINCT ON (model) model, status "
+                    + "FROM engine.apply_run ORDER BY model, id DESC) latest "
+                    + "WHERE status IN ('running', 'failed')",
+                String.class));
+    List<String> contents =
+        jdbc.queryForList(
+            "SELECT DISTINCT ON (model) content FROM engine.model_version ORDER BY model, version DESC",
+            String.class);
     Map<String, Model> loaded = new LinkedHashMap<>();
     for (String content : contents) {
       try {
@@ -129,14 +133,16 @@ public class ModelRegistry {
 
   // The models that are held, so that a screen can say why a model is not there.
   public List<Model> held() {
-    return models.values().stream().filter(model -> isHeld(model.name()))
-        .sorted(Comparator.comparing(Model::name)).toList();
+    return models.values().stream()
+        .filter(model -> isHeld(model.name()))
+        .sorted(Comparator.comparing(Model::name))
+        .toList();
   }
 
   public Collection<Model> all() {
     List<Model> usable = new ArrayList<>();
-    for (Model model : models.values().stream().sorted(Comparator.comparing(Model::name))
-        .toList()) {
+    for (Model model :
+        models.values().stream().sorted(Comparator.comparing(Model::name)).toList()) {
       if (use(model.name())) {
         usable.add(model);
       }

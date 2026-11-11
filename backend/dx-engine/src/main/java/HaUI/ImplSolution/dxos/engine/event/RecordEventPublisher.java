@@ -24,29 +24,59 @@ public class RecordEventPublisher {
   private final WebhookTargets targets;
   private final InboxSignal inbox;
 
-  public RecordEventPublisher(Outbox outbox, ModelRegistry registry, WebhookTargets targets,
-      InboxSignal inbox) {
+  public RecordEventPublisher(
+      Outbox outbox, ModelRegistry registry, WebhookTargets targets, InboxSignal inbox) {
     this.outbox = outbox;
     this.registry = registry;
     this.targets = targets;
     this.inbox = inbox;
   }
 
-  public void publish(long eventId, String model, String entity, long recordId, String action,
-      String fromStatus, String toStatus, String actor, String actorName, Instant at, String hash) {
+  public void publish(
+      long eventId,
+      String model,
+      String entity,
+      long recordId,
+      String action,
+      String fromStatus,
+      String toStatus,
+      String actor,
+      String actorName,
+      Instant at,
+      String hash) {
     inbox.changed();
     if (registry.find(model).filter(targets::sends).isEmpty()) {
       return;
     }
-    Map<String, Object> payload = message(eventId, model, entity, recordId, action, fromStatus,
-        toStatus, actor, actorName, at, hash);
-    outbox.publish(WebhookHandler.TOPIC, "record_event:" + eventId, model, entity, recordId,
-        payload);
+    Map<String, Object> payload =
+        message(
+            eventId,
+            model,
+            entity,
+            recordId,
+            action,
+            fromStatus,
+            toStatus,
+            actor,
+            actorName,
+            at,
+            hash);
+    outbox.publish(
+        WebhookHandler.TOPIC, "record_event:" + eventId, model, entity, recordId, payload);
   }
 
   // The layout of one message, shared by the webhook and by the feed that is pulled by eventId.
-  static Map<String, Object> message(long eventId, String model, String entity, long recordId,
-      String action, String fromStatus, String toStatus, String actor, String actorName, Instant at,
+  static Map<String, Object> message(
+      long eventId,
+      String model,
+      String entity,
+      long recordId,
+      String action,
+      String fromStatus,
+      String toStatus,
+      String actor,
+      String actorName,
+      Instant at,
       String hash) {
     Map<String, Object> payload = new LinkedHashMap<>();
     payload.put("schemaVersion", SCHEMA_VERSION);

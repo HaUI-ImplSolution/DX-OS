@@ -20,7 +20,9 @@ public class RetentionJob {
   private final ServiceHealthStore healthEvents;
   private final Duration retention;
 
-  public RetentionJob(GatewayEventStore gatewayEvents, ServiceHealthStore healthEvents,
+  public RetentionJob(
+      GatewayEventStore gatewayEvents,
+      ServiceHealthStore healthEvents,
       MonitorProperties properties) {
     this.gatewayEvents = gatewayEvents;
     this.healthEvents = healthEvents;

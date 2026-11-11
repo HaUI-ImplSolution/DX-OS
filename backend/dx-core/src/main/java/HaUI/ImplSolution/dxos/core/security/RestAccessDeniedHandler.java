@@ -25,13 +25,19 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler {
   }
 
   @Override
-  public void handle(HttpServletRequest request, HttpServletResponse response,
-      AccessDeniedException accessDeniedException) throws IOException {
+  public void handle(
+      HttpServletRequest request,
+      HttpServletResponse response,
+      AccessDeniedException accessDeniedException)
+      throws IOException {
     auditService.recordDenial("ACCESS_DENIED");
     response.setStatus(HttpStatus.FORBIDDEN.value());
     response.setCharacterEncoding("UTF-8");
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-    response.getWriter().write(objectMapper.writeValueAsString(
-        ApiResponse.error("ERR_FORBIDDEN", "Không đủ quyền thực hiện thao tác này")));
+    response
+        .getWriter()
+        .write(
+            objectMapper.writeValueAsString(
+                ApiResponse.error("ERR_FORBIDDEN", "Không đủ quyền thực hiện thao tác này")));
   }
 }

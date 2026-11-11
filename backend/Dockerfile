@@ -6,7 +6,7 @@ FROM eclipse-temurin:21-jdk-alpine AS base
 
 WORKDIR /app
 COPY .mvn/ .mvn/
-COPY mvnw pom.xml eclipse-java-google-style.xml ./
+COPY mvnw pom.xml ./
 COPY dx-model/pom.xml dx-model/pom.xml
 COPY dx-core/pom.xml dx-core/pom.xml
 COPY dx-engine/pom.xml dx-engine/pom.xml

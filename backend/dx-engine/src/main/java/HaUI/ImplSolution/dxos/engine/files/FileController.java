@@ -34,12 +34,17 @@ public class FileController {
   }
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @Operation(summary = "Attach a file to a record",
-      description = "The form carries `field`, a file field of the entity, and `file`. Allowed"
-          + " while the caller may change the record and it is not in a final state (403, 409)."
-          + " A file the virus scan flags is refused when the scan is on.")
-  public ApiResponse<Map<String, Object>> add(@PathVariable String model,
-      @PathVariable String entity, @PathVariable long id, @RequestParam String field,
+  @Operation(
+      summary = "Attach a file to a record",
+      description =
+          "The form carries `field`, a file field of the entity, and `file`. Allowed"
+              + " while the caller may change the record and it is not in a final state (403, 409)."
+              + " A file the virus scan flags is refused when the scan is on.")
+  public ApiResponse<Map<String, Object>> add(
+      @PathVariable String model,
+      @PathVariable String entity,
+      @PathVariable long id,
+      @RequestParam String field,
       @RequestParam("file") MultipartFile file) {
     Model m = registry.require(model);
     return ApiResponse.success(attachments.add(m, entity(m, entity), id, field, file));
@@ -47,33 +52,42 @@ public class FileController {
 
   @GetMapping
   @Operation(summary = "The files of a record, oldest first")
-  public ApiResponse<List<Map<String, Object>>> list(@PathVariable String model,
-      @PathVariable String entity, @PathVariable long id) {
+  public ApiResponse<List<Map<String, Object>>> list(
+      @PathVariable String model, @PathVariable String entity, @PathVariable long id) {
     Model m = registry.require(model);
     return ApiResponse.success(attachments.list(m, entity(m, entity), id));
   }
 
   @GetMapping("/{fileId}/link")
-  @Operation(summary = "A time-limited link to download a file",
+  @Operation(
+      summary = "A time-limited link to download a file",
       description = "Allowed to whoever can read the record.")
-  public ApiResponse<Map<String, Object>> link(@PathVariable String model,
-      @PathVariable String entity, @PathVariable long id, @PathVariable long fileId) {
+  public ApiResponse<Map<String, Object>> link(
+      @PathVariable String model,
+      @PathVariable String entity,
+      @PathVariable long id,
+      @PathVariable long fileId) {
     Model m = registry.require(model);
     return ApiResponse.success(attachments.link(m, entity(m, entity), id, fileId));
   }
 
   @DeleteMapping("/{fileId}")
-  @Operation(summary = "Remove a file from a record",
+  @Operation(
+      summary = "Remove a file from a record",
       description = "Only the user who added the file, while the record is not in a final state.")
-  public ApiResponse<Void> remove(@PathVariable String model, @PathVariable String entity,
-      @PathVariable long id, @PathVariable long fileId) {
+  public ApiResponse<Void> remove(
+      @PathVariable String model,
+      @PathVariable String entity,
+      @PathVariable long id,
+      @PathVariable long fileId) {
     Model m = registry.require(model);
     attachments.remove(m, entity(m, entity), id, fileId);
     return ApiResponse.success(null);
   }
 
   private static Entity entity(Model model, String name) {
-    return model.entity(name)
+    return model
+        .entity(name)
         .orElseThrow(() -> new ResourceNotFoundException("Entity " + name + " not found"));
   }
 }

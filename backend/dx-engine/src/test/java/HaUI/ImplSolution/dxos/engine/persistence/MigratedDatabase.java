@@ -17,7 +17,11 @@ final class MigratedDatabase {
   private static void migrate(PostgreSQLContainer postgres, String location, String table) {
     Flyway.configure()
         .dataSource(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword())
-        .locations(location).table(table).baselineOnMigrate(true).baselineVersion("0").load()
+        .locations(location)
+        .table(table)
+        .baselineOnMigrate(true)
+        .baselineVersion("0")
+        .load()
         .migrate();
   }
 }

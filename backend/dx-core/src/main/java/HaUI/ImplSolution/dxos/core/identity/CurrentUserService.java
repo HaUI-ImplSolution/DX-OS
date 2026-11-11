@@ -52,7 +52,8 @@ public class CurrentUserService implements UserContext {
     if (authentication == null) {
       return Set.of();
     }
-    return authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority)
+    return authentication.getAuthorities().stream()
+        .map(GrantedAuthority::getAuthority)
         .filter(authority -> authority.startsWith(ROLE_PREFIX))
         .map(authority -> authority.substring(ROLE_PREFIX.length()))
         .collect(Collectors.toUnmodifiableSet());
@@ -66,7 +67,8 @@ public class CurrentUserService implements UserContext {
   @Override
   public Set<String> clientRoles(String clientId) {
     Map<String, Object> access = getCurrentJwt().getClaim("resource_access");
-    if (access == null || !(access.get(clientId) instanceof Map<?, ?> client)
+    if (access == null
+        || !(access.get(clientId) instanceof Map<?, ?> client)
         || !(client.get("roles") instanceof List<?> roles)) {
       return Set.of();
     }
@@ -79,7 +81,8 @@ public class CurrentUserService implements UserContext {
     if (groups == null) {
       return Set.of();
     }
-    return groups.stream().map(group -> group.startsWith("/") ? group.substring(1) : group)
+    return groups.stream()
+        .map(group -> group.startsWith("/") ? group.substring(1) : group)
         .collect(Collectors.toUnmodifiableSet());
   }
 

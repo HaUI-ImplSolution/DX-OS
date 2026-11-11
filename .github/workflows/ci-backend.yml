@@ -43,7 +43,7 @@ jobs:
           cache: 'maven'
 
       - name: Validate Code Formatting
-        run: mvn -T 2C --batch-mode formatter:validate
+        run: mvn -T 2C --batch-mode spotless:check
 
       # Persistence tests start PostgreSQL through Testcontainers (Docker is available on the runner).
       - name: Build and Test

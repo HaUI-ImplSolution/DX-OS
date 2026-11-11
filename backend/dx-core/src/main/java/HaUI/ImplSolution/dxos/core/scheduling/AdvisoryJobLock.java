@@ -20,17 +20,19 @@ public class AdvisoryJobLock implements JobLock {
 
   @Override
   public boolean runIfFree(String name, Runnable job) {
-    return Boolean.TRUE.equals(jdbcTemplate.execute((java.sql.Connection connection) -> {
-      if (!call(connection, "SELECT pg_try_advisory_lock(hashtext(?))", name)) {
-        return false;
-      }
-      try {
-        job.run();
-        return true;
-      } finally {
-        call(connection, "SELECT pg_advisory_unlock(hashtext(?))", name);
-      }
-    }));
+    return Boolean.TRUE.equals(
+        jdbcTemplate.execute(
+            (java.sql.Connection connection) -> {
+              if (!call(connection, "SELECT pg_try_advisory_lock(hashtext(?))", name)) {
+                return false;
+              }
+              try {
+                job.run();
+                return true;
+              } finally {
+                call(connection, "SELECT pg_advisory_unlock(hashtext(?))", name);
+              }
+            }));
   }
 
   private static boolean call(java.sql.Connection connection, String sql, String name)

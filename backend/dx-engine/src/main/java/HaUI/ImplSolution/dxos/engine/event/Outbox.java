@@ -20,19 +20,35 @@ public class Outbox {
     this.json = json;
   }
 
-  public void publish(String topic, String key, String model, String entity, long recordId,
+  public void publish(
+      String topic,
+      String key,
+      String model,
+      String entity,
+      long recordId,
       Map<String, Object> payload) {
     publishLater(topic, key, model, entity, recordId, payload, Duration.ZERO);
   }
 
   // Like publish, but the first try waits for the delay.
-  public void publishLater(String topic, String key, String model, String entity, long recordId,
-      Map<String, Object> payload, Duration delay) {
+  public void publishLater(
+      String topic,
+      String key,
+      String model,
+      String entity,
+      long recordId,
+      Map<String, Object> payload,
+      Duration delay) {
     jdbc.update(
         "INSERT INTO engine.outbox (topic, idempotency_key, model, entity, record_id, payload, "
             + "next_attempt_at) VALUES (?, ?, ?, ?, ?, ?::jsonb, now() + make_interval(secs => ?)) "
             + "ON CONFLICT (idempotency_key) DO NOTHING",
-        topic, key, model, entity, recordId, json.writeValueAsString(payload),
+        topic,
+        key,
+        model,
+        entity,
+        recordId,
+        json.writeValueAsString(payload),
         (double) delay.toSeconds());
   }
 }

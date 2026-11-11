@@ -30,28 +30,40 @@ public class PeopleController {
   }
 
   @GetMapping
-  @Operation(summary = "People by search text or by id, as id and display name only",
-      description = "q finds up to 20 accounts whose name, username or email contains the text;"
-          + " it is empty for text shorter than 2 characters. ids is a comma-separated list of at"
-          + " most 50 account ids and returns the accounts that exist. Any signed-in user may"
-          + " call it; nothing but id and display name is returned.")
-  public ApiResponse<List<Person>> people(@RequestParam(required = false) String q,
-      @RequestParam(required = false) String ids) {
+  @Operation(
+      summary = "People by search text or by id, as id and display name only",
+      description =
+          "q finds up to 20 accounts whose name, username or email contains the text;"
+              + " it is empty for text shorter than 2 characters. ids is a comma-separated list of at"
+              + " most 50 account ids and returns the accounts that exist. Any signed-in user may"
+              + " call it; nothing but id and display name is returned.")
+  public ApiResponse<List<Person>> people(
+      @RequestParam(required = false) String q, @RequestParam(required = false) String ids) {
     if (ids != null && !ids.isBlank()) {
-      List<String> wanted = List.of(ids.split(",")).stream().map(String::trim)
-          .filter(id -> !id.isEmpty()).distinct().toList();
+      List<String> wanted =
+          List.of(ids.split(",")).stream()
+              .map(String::trim)
+              .filter(id -> !id.isEmpty())
+              .distinct()
+              .toList();
       if (wanted.size() > MAX_IDS) {
         throw new ModelValidationException("ids", "at most " + MAX_IDS + " ids");
       }
-      return ApiResponse.success(wanted.stream().map(keycloak::findAccount)
-          .flatMap(java.util.Optional::stream).map(PeopleController::person).toList());
+      return ApiResponse.success(
+          wanted.stream()
+              .map(keycloak::findAccount)
+              .flatMap(java.util.Optional::stream)
+              .map(PeopleController::person)
+              .toList());
     }
     String text = q == null ? "" : q.trim();
     if (text.length() < MIN_SEARCH) {
       return ApiResponse.success(List.of());
     }
-    return ApiResponse.success(keycloak.searchAccounts(text, 0, MAX_FOUND).items().stream()
-        .map(PeopleController::person).toList());
+    return ApiResponse.success(
+        keycloak.searchAccounts(text, 0, MAX_FOUND).items().stream()
+            .map(PeopleController::person)
+            .toList());
   }
 
   private static Person person(Account account) {

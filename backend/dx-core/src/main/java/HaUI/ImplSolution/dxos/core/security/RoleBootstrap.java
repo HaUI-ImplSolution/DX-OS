@@ -32,7 +32,9 @@ public class RoleBootstrap {
   private final int maxAttempts;
   private final long retryDelaySeconds;
 
-  public RoleBootstrap(AppRoles appRoles, KeycloakAdminClient keycloakAdminClient,
+  public RoleBootstrap(
+      AppRoles appRoles,
+      KeycloakAdminClient keycloakAdminClient,
       @Value("${keycloak.admin.role-bootstrap-attempts:40}") int maxAttempts,
       @Value("${keycloak.admin.role-bootstrap-delay-seconds:15}") long retryDelaySeconds) {
     this.appRoles = appRoles;
@@ -47,11 +49,13 @@ public class RoleBootstrap {
     if (roles.isEmpty()) {
       return;
     }
-    ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(task -> {
-      Thread thread = new Thread(task, "role-bootstrap");
-      thread.setDaemon(true);
-      return thread;
-    });
+    ScheduledExecutorService executor =
+        Executors.newSingleThreadScheduledExecutor(
+            task -> {
+              Thread thread = new Thread(task, "role-bootstrap");
+              thread.setDaemon(true);
+              return thread;
+            });
     attempt(executor, roles, 1);
   }
 
@@ -73,12 +77,14 @@ public class RoleBootstrap {
       return;
     }
     if (attempt >= maxAttempts) {
-      log.warn("Could not make sure the realm roles {} exist after {} attempts",
-          missing.stream().map(RoleDefinition::name).toList(), attempt);
+      log.warn(
+          "Could not make sure the realm roles {} exist after {} attempts",
+          missing.stream().map(RoleDefinition::name).toList(),
+          attempt);
       executor.shutdown();
       return;
     }
-    executor.schedule(() -> attempt(executor, missing, attempt + 1), retryDelaySeconds,
-        TimeUnit.SECONDS);
+    executor.schedule(
+        () -> attempt(executor, missing, attempt + 1), retryDelaySeconds, TimeUnit.SECONDS);
   }
 }

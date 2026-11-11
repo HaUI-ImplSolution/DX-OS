@@ -20,7 +20,8 @@ public class SystemStatusController {
   }
 
   @GetMapping("/status")
-  @Operation(summary = "Status of the backend and the services it depends on",
+  @Operation(
+      summary = "Status of the backend and the services it depends on",
       description = "Public, no sign-in needed. Each service is UP or DOWN.")
   public ApiResponse<ServiceStatusResponse> status() {
     return ApiResponse.success(systemStatusService.status());

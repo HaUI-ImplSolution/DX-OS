@@ -38,11 +38,15 @@ public class WebhookSender {
   }
 
   public void send(Target target, String id, Map<String, Object> message, String sentence) {
-    String body = json
-        .writeValueAsString("chat".equals(target.format()) ? Map.of("text", sentence) : message);
-    HttpRequest.Builder request = HttpRequest.newBuilder(URI.create(target.url())).timeout(TIMEOUT)
-        .header("Content-Type", "application/json").header("X-Dxos-Event-Id", id)
-        .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8));
+    String body =
+        json.writeValueAsString(
+            "chat".equals(target.format()) ? Map.of("text", sentence) : message);
+    HttpRequest.Builder request =
+        HttpRequest.newBuilder(URI.create(target.url()))
+            .timeout(TIMEOUT)
+            .header("Content-Type", "application/json")
+            .header("X-Dxos-Event-Id", id)
+            .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8));
     if (!target.secret().isEmpty()) {
       request.header("X-Dxos-Signature", "sha256=" + sign(body, target.secret()));
     }

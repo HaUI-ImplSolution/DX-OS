@@ -26,7 +26,10 @@ public class ProcessService {
   private final RecordStatus recordStatus;
   private final boolean faultAfterDecision;
 
-  public ProcessService(RuntimeService runtime, TaskService tasks, RecordStatus recordStatus,
+  public ProcessService(
+      RuntimeService runtime,
+      TaskService tasks,
+      RecordStatus recordStatus,
       @Value("${engine.fault.after-decision:false}") boolean faultAfterDecision) {
     this.runtime = runtime;
     this.tasks = tasks;
@@ -37,9 +40,20 @@ public class ProcessService {
   public void start(Model model, Entity entity, long id, String ownerId) {
     String processKey = entity.process().processKey(model.name(), entity.name());
     try {
-      runtime.startProcessInstanceByKey(processKey, key(model, entity, id),
-          Map.of("handlerRole", String.join(",", entity.process().handlers()), "ownerId", ownerId,
-              "model", model.name(), "entity", entity.name(), "recordId", id));
+      runtime.startProcessInstanceByKey(
+          processKey,
+          key(model, entity, id),
+          Map.of(
+              "handlerRole",
+              String.join(",", entity.process().handlers()),
+              "ownerId",
+              ownerId,
+              "model",
+              model.name(),
+              "entity",
+              entity.name(),
+              "recordId",
+              id));
     } catch (FlowableObjectNotFoundException e) {
       throw new IllegalStateException("The process " + processKey + " is not deployed", e);
     }
@@ -47,8 +61,12 @@ public class ProcessService {
 
   // Completes the open task of the record with an action; the process then writes the new status.
   public void act(Model model, Entity entity, long id, Action action, String actor) {
-    Task task = tasks.createTaskQuery().processInstanceBusinessKey(key(model, entity, id)).active()
-        .singleResult();
+    Task task =
+        tasks
+            .createTaskQuery()
+            .processInstanceBusinessKey(key(model, entity, id))
+            .active()
+            .singleResult();
     if (task == null) {
       throw new InvalidStateException("The record cannot take this action now", "WRONG_STATE");
     }
@@ -74,16 +92,23 @@ public class ProcessService {
     if (!entity.process().definition().awaitsHandler(status)) {
       return;
     }
-    Task task = tasks.createTaskQuery().processInstanceBusinessKey(key(model, entity, id)).active()
-        .singleResult();
+    Task task =
+        tasks
+            .createTaskQuery()
+            .processInstanceBusinessKey(key(model, entity, id))
+            .active()
+            .singleResult();
     if (task != null) {
       tasks.setAssignee(task.getId(), assignee);
     }
   }
 
   public void cancel(Model model, Entity entity, long id, String reason) {
-    ProcessInstance instance = runtime.createProcessInstanceQuery()
-        .processInstanceBusinessKey(key(model, entity, id)).singleResult();
+    ProcessInstance instance =
+        runtime
+            .createProcessInstanceQuery()
+            .processInstanceBusinessKey(key(model, entity, id))
+            .singleResult();
     if (instance != null) {
       runtime.deleteProcessInstance(instance.getId(), reason);
     }

@@ -38,8 +38,13 @@ public class OverdueSweep {
   private final HistoryChain chain;
   private final Duration dueSoonBefore;
 
-  public OverdueSweep(JdbcTemplate jdbc, ModelRegistry registry, JobLock lock,
-      RecordEventPublisher publisher, PlatformTransactionManager transactions, HistoryChain chain,
+  public OverdueSweep(
+      JdbcTemplate jdbc,
+      ModelRegistry registry,
+      JobLock lock,
+      RecordEventPublisher publisher,
+      PlatformTransactionManager transactions,
+      HistoryChain chain,
       @Value("${engine.due-soon.before:24h}") Duration dueSoonBefore) {
     this.jdbc = jdbc;
     this.dueSoonBefore = dueSoonBefore;
@@ -66,18 +71,33 @@ public class OverdueSweep {
   }
 
   private void report(Model model, Entity entity) {
-    transaction.executeWithoutResult(status -> {
-      chain.lock();
-      List<Map<String, Object>> rows = new ArrayList<>(insert(model, entity, "overdue",
-          "t.handle_by < now()", "e.at >= t.handle_by", List.of(), null));
-      if (!dueSoonBefore.isZero() && entity.process().deadline().compareTo(dueSoonBefore) > 0) {
-        double seconds = dueSoonBefore.toSeconds();
-        rows.addAll(insert(model, entity, "due_soon",
-            "t.handle_by >= now() AND t.handle_by <= now() + make_interval(secs => ?)",
-            "e.at >= t.handle_by - make_interval(secs => ?)", List.of(seconds, seconds), null));
-      }
-      publish(model, entity, rows);
-    });
+    transaction.executeWithoutResult(
+        status -> {
+          chain.lock();
+          List<Map<String, Object>> rows =
+              new ArrayList<>(
+                  insert(
+                      model,
+                      entity,
+                      "overdue",
+                      "t.handle_by < now()",
+                      "e.at >= t.handle_by",
+                      List.of(),
+                      null));
+          if (!dueSoonBefore.isZero() && entity.process().deadline().compareTo(dueSoonBefore) > 0) {
+            double seconds = dueSoonBefore.toSeconds();
+            rows.addAll(
+                insert(
+                    model,
+                    entity,
+                    "due_soon",
+                    "t.handle_by >= now() AND t.handle_by <= now() + make_interval(secs => ?)",
+                    "e.at >= t.handle_by - make_interval(secs => ?)",
+                    List.of(seconds, seconds),
+                    null));
+          }
+          publish(model, entity, rows);
+        });
   }
 
   // Writes the "overdue" line of a record whose deadline has passed and that has none for this
@@ -88,8 +108,17 @@ public class OverdueSweep {
       return;
     }
     chain.lock();
-    publish(model, entity, insert(model, entity, "overdue", "t.handle_by < now()",
-        "e.at >= t.handle_by", List.of(), recordId));
+    publish(
+        model,
+        entity,
+        insert(
+            model,
+            entity,
+            "overdue",
+            "t.handle_by < now()",
+            "e.at >= t.handle_by",
+            List.of(),
+            recordId));
   }
 
   private void publish(Model model, Entity entity, List<Map<String, Object>> rows) {
@@ -98,18 +127,32 @@ public class OverdueSweep {
     for (Map<String, Object> row : ordered) {
       long id = ((Number) row.get("id")).longValue();
       String hash = chain.link(id);
-      publisher.publish(id, model.name(), entity.name(),
-          ((Number) row.get("record_id")).longValue(), (String) row.get("action"),
-          (String) row.get("from_status"), (String) row.get("to_status"), "system", "System",
-          instant(row.get("at")), hash);
+      publisher.publish(
+          id,
+          model.name(),
+          entity.name(),
+          ((Number) row.get("record_id")).longValue(),
+          (String) row.get("action"),
+          (String) row.get("from_status"),
+          (String) row.get("to_status"),
+          "system",
+          "System",
+          instant(row.get("at")),
+          hash);
     }
   }
 
   // Writes the line of the records that meet the time condition and have no such line since the
   // given moment, of one record when recordId is given. The seconds are the parameters of the two
   // conditions, in the order they appear.
-  private List<Map<String, Object>> insert(Model model, Entity entity, String action, String due,
-      String reported, List<Double> seconds, Long recordId) {
+  private List<Map<String, Object>> insert(
+      Model model,
+      Entity entity,
+      String action,
+      String due,
+      String reported,
+      List<Double> seconds,
+      Long recordId) {
     List<Object> args = new ArrayList<>(List.of(model.name(), entity.name()));
     if (seconds.size() == 2) {
       args.add(seconds.get(0));
@@ -124,18 +167,29 @@ public class OverdueSweep {
     }
     return jdbc.queryForList(
         "INSERT INTO engine.record_event (model, entity, record_id, action, actor, actor_name, "
-            + "from_status, to_status) SELECT ?, ?, t.id, '" + action + "', 'system', 'System', "
-            + "t.status, t.status FROM " + Sql.table(model, entity) + " t "
-            + "WHERE t.handle_by IS NOT NULL AND " + due + " AND NOT EXISTS (SELECT 1 "
+            + "from_status, to_status) SELECT ?, ?, t.id, '"
+            + action
+            + "', 'system', 'System', "
+            + "t.status, t.status FROM "
+            + Sql.table(model, entity)
+            + " t "
+            + "WHERE t.handle_by IS NOT NULL AND "
+            + due
+            + " AND NOT EXISTS (SELECT 1 "
             + "FROM engine.record_event e WHERE e.model = ? AND e.entity = ? "
-            + "AND e.record_id = t.id AND e.action = '" + action + "' AND " + reported + ")"
+            + "AND e.record_id = t.id AND e.action = '"
+            + action
+            + "' AND "
+            + reported
+            + ")"
             + (recordId == null ? " " : " AND t.id = ? ")
             + "RETURNING id, record_id, action, from_status, to_status, at",
         args.toArray());
   }
 
   private static Instant instant(Object at) {
-    return at instanceof OffsetDateTime time ? time.toInstant()
+    return at instanceof OffsetDateTime time
+        ? time.toInstant()
         : ((java.sql.Timestamp) at).toInstant();
   }
 }

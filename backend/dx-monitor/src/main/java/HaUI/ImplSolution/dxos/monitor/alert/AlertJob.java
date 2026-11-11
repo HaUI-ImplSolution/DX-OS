@@ -32,7 +32,10 @@ public class AlertJob {
   private final AuthEventReader authEvents;
   private final Map<String, Instant> reported = new HashMap<>();
 
-  public AlertJob(MonitorProperties properties, JdbcTemplate jdbc, ChatWebhookSender sender,
+  public AlertJob(
+      MonitorProperties properties,
+      JdbcTemplate jdbc,
+      ChatWebhookSender sender,
       AuthEventReader authEvents) {
     this.settings = properties.alert();
     this.jdbc = jdbc;
@@ -43,11 +46,13 @@ public class AlertJob {
   @EventListener
   public void onServiceChange(ServiceStateChanged change) {
     if (ServiceStateChanged.DOWN.equals(change.state())) {
-      sender.send(":rotating_light: Dịch vụ %s ngừng hoạt động%s.".formatted(change.service(),
-          change.detail() == null ? "" : " (" + change.detail() + ")"));
+      sender.send(
+          ":rotating_light: Dịch vụ %s ngừng hoạt động%s."
+              .formatted(
+                  change.service(), change.detail() == null ? "" : " (" + change.detail() + ")"));
     } else if (ServiceStateChanged.DOWN.equals(change.previous())) {
-      sender
-          .send(":white_check_mark: Dịch vụ %s đã hoạt động trở lại.".formatted(change.service()));
+      sender.send(
+          ":white_check_mark: Dịch vụ %s đã hoạt động trở lại.".formatted(change.service()));
     }
   }
 
@@ -68,24 +73,31 @@ public class AlertJob {
     Duration repeat = Duration.ofMinutes(settings.repeatMinutes());
     reported.values().removeIf(sentAt -> sentAt.plus(repeat).isBefore(now));
 
-    long errors = count("kind IN ('SERVER_ERROR', 'UPSTREAM_DOWN')",
-        now.minus(Duration.ofMinutes(settings.serverErrorWindowMinutes())));
+    long errors =
+        count(
+            "kind IN ('SERVER_ERROR', 'UPSTREAM_DOWN')",
+            now.minus(Duration.ofMinutes(settings.serverErrorWindowMinutes())));
     if (errors >= settings.serverErrorCount() && reported.putIfAbsent("5xx", now) == null) {
-      sender.send(":warning: %d lỗi 5xx tại cổng trong %d phút qua. Xem màn hình giám sát."
-          .formatted(errors, settings.serverErrorWindowMinutes()));
+      sender.send(
+          ":warning: %d lỗi 5xx tại cổng trong %d phút qua. Xem màn hình giám sát."
+              .formatted(errors, settings.serverErrorWindowMinutes()));
     }
 
-    List<Object[]> limited = jdbc.query("""
+    List<Object[]> limited =
+        jdbc.query(
+            """
         SELECT ip, count(*) + sum(suppressed) AS total FROM gateway_event
         WHERE kind = 'RATE_LIMITED' AND occurred_at >= ?
         GROUP BY ip HAVING count(*) + sum(suppressed) >= ?
-        """, (rs, i) -> new Object[] {rs.getString("ip"), rs.getLong("total")},
-        Timestamp.from(now.minus(Duration.ofMinutes(settings.rateLimitedWindowMinutes()))),
-        settings.rateLimitedCount());
+        """,
+            (rs, i) -> new Object[] {rs.getString("ip"), rs.getLong("total")},
+            Timestamp.from(now.minus(Duration.ofMinutes(settings.rateLimitedWindowMinutes()))),
+            settings.rateLimitedCount());
     for (Object[] row : limited) {
       if (reported.putIfAbsent("429|" + row[0], now) == null) {
-        sender.send(":warning: Địa chỉ %s bị giới hạn tốc độ %d lần trong %d phút qua."
-            .formatted(row[0], row[1], settings.rateLimitedWindowMinutes()));
+        sender.send(
+            ":warning: Địa chỉ %s bị giới hạn tốc độ %d lần trong %d phút qua."
+                .formatted(row[0], row[1], settings.rateLimitedWindowMinutes()));
       }
     }
     checkFailedLogins(now);
@@ -93,21 +105,30 @@ public class AlertJob {
 
   void checkFailedLogins(Instant now) {
     Instant from = now.minus(Duration.ofMinutes(settings.loginFailedWindowMinutes()));
-    authEvents.failedPerIp(from, FAILED_LOGIN_ROWS)
-        .ifPresent(counts -> counts.forEach((ip, total) -> {
-          if (total >= settings.loginFailedCount()
-              && reported.putIfAbsent("login|" + ip, now) == null) {
-            sender.send(
-                ":warning: %d lần đăng nhập sai từ địa chỉ %s trong %d phút qua. Xem màn hình giám sát."
-                    .formatted(total, ip, settings.loginFailedWindowMinutes()));
-          }
-        }));
+    authEvents
+        .failedPerIp(from, FAILED_LOGIN_ROWS)
+        .ifPresent(
+            counts ->
+                counts.forEach(
+                    (ip, total) -> {
+                      if (total >= settings.loginFailedCount()
+                          && reported.putIfAbsent("login|" + ip, now) == null) {
+                        sender.send(
+                            ":warning: %d lần đăng nhập sai từ địa chỉ %s trong %d phút qua. Xem màn hình giám sát."
+                                .formatted(total, ip, settings.loginFailedWindowMinutes()));
+                      }
+                    }));
   }
 
   private long count(String condition, Instant from) {
-    Long total = jdbc.queryForObject("SELECT count(*) + coalesce(sum(suppressed), 0) "
-        + "FROM gateway_event WHERE " + condition + " AND occurred_at >= ?", Long.class,
-        Timestamp.from(from));
+    Long total =
+        jdbc.queryForObject(
+            "SELECT count(*) + coalesce(sum(suppressed), 0) "
+                + "FROM gateway_event WHERE "
+                + condition
+                + " AND occurred_at >= ?",
+            Long.class,
+            Timestamp.from(from));
     return total == null ? 0 : total;
   }
 }

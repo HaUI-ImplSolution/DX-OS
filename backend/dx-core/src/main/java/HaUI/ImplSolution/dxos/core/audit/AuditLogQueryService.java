@@ -25,36 +25,50 @@ public class AuditLogQueryService {
   }
 
   @Transactional(readOnly = true)
-  public PageResponse<AuditLogResponse> search(String actor, String action, String targetType,
-      String targetId, AuditOutcome outcome, Instant from, Instant to, int page, int size) {
-    Specification<AuditLogEntry> filter = (root, query, builder) -> {
-      List<Predicate> predicates = new ArrayList<>();
-      if (actor != null && !actor.isBlank()) {
-        predicates.add(builder.or(builder.equal(root.get("actorUserId"), actor.strip()),
-            builder.equal(builder.lower(root.get("actorName")), actor.strip().toLowerCase())));
-      }
-      if (action != null && !action.isBlank()) {
-        predicates.add(builder.equal(root.get("action"), action.strip().toUpperCase()));
-      }
-      if (targetType != null && !targetType.isBlank()) {
-        predicates.add(builder.equal(root.get("targetType"), targetType.strip().toUpperCase()));
-      }
-      if (targetId != null && !targetId.isBlank()) {
-        predicates.add(builder.equal(root.get("targetId"), targetId.strip()));
-      }
-      if (outcome != null) {
-        predicates.add(builder.equal(root.get("outcome"), outcome));
-      }
-      if (from != null) {
-        predicates.add(builder.greaterThanOrEqualTo(root.get("occurredAt"), from));
-      }
-      if (to != null) {
-        predicates.add(builder.lessThan(root.get("occurredAt"), to));
-      }
-      return builder.and(predicates.toArray(Predicate[]::new));
-    };
+  public PageResponse<AuditLogResponse> search(
+      String actor,
+      String action,
+      String targetType,
+      String targetId,
+      AuditOutcome outcome,
+      Instant from,
+      Instant to,
+      int page,
+      int size) {
+    Specification<AuditLogEntry> filter =
+        (root, query, builder) -> {
+          List<Predicate> predicates = new ArrayList<>();
+          if (actor != null && !actor.isBlank()) {
+            predicates.add(
+                builder.or(
+                    builder.equal(root.get("actorUserId"), actor.strip()),
+                    builder.equal(
+                        builder.lower(root.get("actorName")), actor.strip().toLowerCase())));
+          }
+          if (action != null && !action.isBlank()) {
+            predicates.add(builder.equal(root.get("action"), action.strip().toUpperCase()));
+          }
+          if (targetType != null && !targetType.isBlank()) {
+            predicates.add(builder.equal(root.get("targetType"), targetType.strip().toUpperCase()));
+          }
+          if (targetId != null && !targetId.isBlank()) {
+            predicates.add(builder.equal(root.get("targetId"), targetId.strip()));
+          }
+          if (outcome != null) {
+            predicates.add(builder.equal(root.get("outcome"), outcome));
+          }
+          if (from != null) {
+            predicates.add(builder.greaterThanOrEqualTo(root.get("occurredAt"), from));
+          }
+          if (to != null) {
+            predicates.add(builder.lessThan(root.get("occurredAt"), to));
+          }
+          return builder.and(predicates.toArray(Predicate[]::new));
+        };
     PageRequest pageRequest =
-        PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), MAX_PAGE_SIZE),
+        PageRequest.of(
+            Math.max(page, 0),
+            Math.min(Math.max(size, 1), MAX_PAGE_SIZE),
             Sort.by(Sort.Direction.DESC, "occurredAt", "id"));
     return PageResponse.of(repository.findAll(filter, pageRequest), AuditLogResponse::of);
   }

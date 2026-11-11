@@ -53,8 +53,8 @@ class WebhookSenderTest {
 
     sender.send(target(receiver.url("/hook"), "s3cret"), "42", Map.of("action", "created"), "");
 
-    receiver
-        .verify(postRequestedFor(urlEqualTo("/hook")).withHeader("X-Dxos-Event-Id", equalTo("42")));
+    receiver.verify(
+        postRequestedFor(urlEqualTo("/hook")).withHeader("X-Dxos-Event-Id", equalTo("42")));
     LoggedRequest sent = receiver.findAll(postRequestedFor(urlEqualTo("/hook"))).get(0);
     assertThat(sent.getHeader("X-Dxos-Signature"))
         .isEqualTo("sha256=" + hmac(sent.getBodyAsString(), "s3cret"));
@@ -66,7 +66,8 @@ class WebhookSenderTest {
     receiver.stubFor(post(urlEqualTo("/hook")).willReturn(aResponse().withStatus(status)));
 
     assertThatThrownBy(() -> sender.send(target(receiver.url("/hook"), ""), "1", Map.of(), ""))
-        .isInstanceOf(IllegalStateException.class).hasMessageContaining("answered " + status);
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("answered " + status);
   }
 
   @Test
@@ -76,8 +77,11 @@ class WebhookSenderTest {
       closedPort = socket.getLocalPort();
     }
 
-    assertThatThrownBy(() -> sender.send(target("http://127.0.0.1:" + closedPort + "/hook", ""),
-        "1", Map.of(), "")).isInstanceOf(TargetUnreachableException.class);
+    assertThatThrownBy(
+            () ->
+                sender.send(
+                    target("http://127.0.0.1:" + closedPort + "/hook", ""), "1", Map.of(), ""))
+        .isInstanceOf(TargetUnreachableException.class);
   }
 
   // Takes about five seconds, the time the sender waits; leave it out with -DexcludedGroups=slow.

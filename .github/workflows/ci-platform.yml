@@ -345,7 +345,14 @@ jobs:
         working-directory: e2e
         run: |
           npm ci --no-audit --no-fund --ignore-scripts
-          npx playwright install --with-deps chromium
+          # The apt mirror of the runner is sometimes unreachable. Try the full install three times, then
+          # install the browser alone: the runner image already holds the libraries it needs.
+          for attempt in 1 2 3; do
+            npx playwright install --with-deps chromium && exit 0
+            echo "::warning::playwright install --with-deps failed (attempt $attempt of 3)"
+            sleep $((attempt * 20))
+          done
+          npx playwright install chromium
 
       - name: Sign in, apply a template and walk through the console
         working-directory: e2e

@@ -225,5 +225,42 @@ Tắt mặc định vì ClamAV cần khoảng 1 GB RAM.
 Bật bằng `dxos av on`, tắt bằng `dxos av off`: lệnh sửa `COMPOSE_PROFILES` và `STORAGE_SCAN_HOST` trong `.env`, rồi khởi động hoặc gỡ ClamAV và tạo lại backend nếu stack đang chạy.
 Không dùng `dxos` thì bỏ dấu `#` ở `COMPOSE_PROFILES=av` và `STORAGE_SCAN_HOST=clamav` trong `deploy/.env`, rồi `docker compose up -d`.
 Chữ ký virus tải về lần đầu mất vài phút và được giữ trong volume `clamav_data`.
+Image chính thức tự cập nhật chữ ký một lần mỗi ngày từ mạng phân phối của ClamAV; không dùng `curl` hay script riêng để tải chúng, vì ClamAV có thể giới hạn hoặc chặn cách tải đó.
+Mã 429 trong log của `clamav` là bị giới hạn tốc độ (hay gặp ở IP máy chủ đám mây dùng chung), và chữ ký cũ vẫn dùng được cho đến lần cập nhật sau.
+ClamAV chặn tải chữ ký với phiên bản đã hết hỗ trợ, nên nâng image `clamav/clamav` trong `deploy/docker-compose.yml` khi bản đang ghim tới hạn (chính sách ở https://docs.clamav.net/faq/faq-eol.html).
 Mỗi lần clamd nạp lại chữ ký (hằng ngày và sau khi khởi động) nó không quét được khoảng 10 giây, và người dùng gặp 503 trong lúc đó; chờ rồi tải lại.
 Thử bằng tệp EICAR (chuỗi kiểm thử chuẩn của ngành diệt virus): tệp chỉ gồm đúng chuỗi đó, đổi tên `.pdf` rồi đính vào một yêu cầu; `deploy/dev/check_demo.py` tự làm bước này khi `STORAGE_SCAN_HOST` có giá trị.
+
+## Dữ liệu cá nhân ra nước ngoài
+
+Cài đặt chạy trên máy chủ của người triển khai nên dữ liệu ở lại nơi máy chủ đặt.
+Dữ liệu chỉ ra nước ngoài khi người triển khai tự chọn một đích ngoài lãnh thổ Việt Nam.
+Các chỗ cấu hình có thể làm việc đó:
+
+- `BACKUP_REPOSITORY` trỏ tới kho restic ở máy chủ hoặc dịch vụ lưu trữ nước ngoài (xem [Sao lưu và khôi phục](#sao-lưu-và-khôi-phục)).
+- Webhook sự kiện, `ALERT_WEBHOOK_URL` và `ALERT_WEBHOOK_URL_ADMIN` trỏ tới dịch vụ nước ngoài, và nội dung gửi đi có dữ liệu cá nhân.
+- Đặt cả stack trên máy chủ ảo hoặc dịch vụ đám mây của nhà cung cấp nước ngoài.
+
+Văn bản áp dụng (đọc ngày 2026-11-11):
+
+- [Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15](https://congbao.chinhphu.vn/van-ban/luat-so-91-2025-qh15-45578.htm), có hiệu lực từ 2026-01-01.
+- [Nghị định 356/2025/NĐ-CP](https://congbao.chinhphu.vn/van-ban/nghi-dinh-so-356-2025-nd-cp-468371.htm) hướng dẫn luật, ban hành 2025-12-31, có hiệu lực từ 2026-01-01.
+
+Điều 20 của luật coi là chuyển xuyên biên giới ba trường hợp: chuyển dữ liệu đang lưu ở Việt Nam sang hệ thống lưu trữ ngoài lãnh thổ, chuyển cho tổ chức hoặc cá nhân ở nước ngoài, và dùng nền tảng ngoài lãnh thổ để xử lý dữ liệu thu thập ở Việt Nam.
+Bên chuyển phải lập hồ sơ đánh giá tác động chuyển dữ liệu cá nhân xuyên biên giới và gửi một bản chính cho cơ quan chuyên trách về bảo vệ dữ liệu cá nhân trong 60 ngày kể từ ngày đầu tiên chuyển.
+Hồ sơ lập một lần cho suốt thời gian hoạt động và được cập nhật khi có thay đổi.
+Điều 18 của nghị định quy định hồ sơ gồm báo cáo theo Mẫu số 09, bản sao hợp đồng hoặc văn bản chuyển giao dữ liệu, và các chính sách, quy trình bảo vệ dữ liệu cá nhân liên quan.
+
+Luật không đòi hồ sơ này trong các trường hợp sau:
+
+- Cơ quan nhà nước có thẩm quyền chuyển dữ liệu.
+- Cơ quan, tổ chức lưu dữ liệu cá nhân của chính người lao động của mình trên dịch vụ điện toán đám mây.
+- Chủ thể dữ liệu tự chuyển dữ liệu của mình.
+- Các trường hợp Điều 17 của nghị định liệt kê thêm: báo chí và truyền thông, dữ liệu đã công khai theo pháp luật, tình huống khẩn cấp để bảo vệ tính mạng, sức khỏe và tài sản, quản lý nhân sự xuyên biên giới theo quy chế lao động, và dữ liệu cung cấp để ký hợp đồng hoặc làm thủ tục vận chuyển, chuyển tiền, thanh toán, khách sạn, thị thực, học bổng.
+
+Cơ quan chuyên trách được kiểm tra định kỳ không quá một lần mỗi năm, kiểm tra đột xuất khi có vi phạm hoặc sự cố lộ, mất dữ liệu, và có quyền yêu cầu ngừng chuyển khi dữ liệu bị dùng vào hoạt động có thể gây tổn hại quốc phòng, an ninh quốc gia.
+Giữ máy chủ, kho sao lưu và đích webhook trong lãnh thổ Việt Nam là cách tránh phát sinh nghĩa vụ này.
+
+Hai liên kết trỏ tới bản đăng trên Công báo điện tử, và nội dung các điều được nêu ở trên đã đối chiếu với bản PDF ở đó.
+Điều kiện áp dụng cho từng bản cài, như vai trò bên kiểm soát hay bên xử lý và loại dữ liệu nhạy cảm, cần luật sư hoặc cơ quan chuyên trách xác nhận.
+Mục này tóm tắt văn bản, không phải tư vấn pháp lý.

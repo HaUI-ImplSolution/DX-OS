@@ -20,8 +20,8 @@ Image khai báo ở .github/component-catalog.json; .github/scripts/check_licens
 | sso, seaweedfs, e2e, examples               |                       |                                              |
 +---------------------------------------------+-----------------------+----------------------------------------------+
 
-Header của file mã nguồn là SPDX-License-Identifier: Apache-2.0.
-Dòng header nằm ở đầu file Java, TypeScript, JavaScript, Python, shell và YAML; các file còn lại (tài liệu, JSON, ảnh) theo giấy phép của thư mục chứa chúng.
+Header của file mã nguồn là một dòng SPDX-License-Identifier với giá trị Apache-2.0; `reuse lint` kiểm toàn bộ cây theo chuẩn REUSE.
+Dòng header nằm ở đầu file Java, TypeScript, JavaScript, Python, shell, YAML, CSS, HTML, SQL, XML, nginx.conf, Dockerfile, .env.example và .toml; file không chèn được chú thích (tài liệu, JSON, ảnh, tệp cấu hình của git) và hai nhóm file đặc biệt khai trong REUSE.toml: file của bên thứ ba và migration SQL đã phát hành.
 .github/scripts/check_licenses.py kiểm header, giấy phép của từng dependency trong sbom/ và danh mục image, mô hình, tệp dữ liệu ở mỗi pull request;
 ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 
@@ -181,6 +181,12 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 | CycloneDX (@cyclonedx/cyclonedx-npm, | Apache-2.0                           | Sinh SBOM                            |
 | cyclonedx-maven-plugin)              |                                      |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
+| reuse 6.3.0 (pipx run)               | Apache-2.0, GPL-3.0-or-later (mã);   | Kiểm chuẩn REUSE (reuse lint) trong  |
+|                                      | CC0-1.0, CC-BY-SA-4.0 (tài liệu)     | CI; không đóng gói vào sản phẩm      |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| eclipse-java-google-style.xml        | CC-BY-3.0                            | Hồ sơ định dạng Java của formatter-  |
+|                                      |                                      | maven-plugin, chỉ lúc dựng [5]       |
++--------------------------------------+--------------------------------------+--------------------------------------+
 | GitHub Actions (actions/*,           | MIT, Apache-2.0                      | Chỉ trong CI, ghim theo SHA          |
 | docker/*)                            |                                      |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
@@ -212,3 +218,8 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 [4] caniuse-lite (CC-BY-4.0) và mdn-data (CC0-1.0) là dữ liệu, không phải mã.
     Chúng chỉ được đọc lúc dựng trang tài liệu và không có trong trang đã dựng.
     Hai gói được nêu tên kèm lý do ở .github/dependency-exceptions.json.
+
+[5] backend/eclipse-java-google-style.xml là bản chép hồ sơ định dạng Eclipse của Google Java style, lấy từ google/styleguide (Copyright Google LLC, CC-BY-3.0, https://creativecommons.org/licenses/by/3.0/).
+    Từng dòng trùng bản cuối của tệp đó ở google/styleguide (337 dòng, 332 cài đặt); chỉ khác cách thụt lề.
+    Tệp này chỉ dùng lúc dựng để định dạng mã Java, không nằm trong image chạy.
+    Giấy phép của nó khai trong REUSE.toml, toàn văn ở LICENSES/CC-BY-3.0.txt.

@@ -36,7 +36,7 @@ Phiên bản hiện tại là `2.0.0`, thay đổi theo từng phiên bản ở 
 - **Đổi nghiệp vụ khi đã có dữ liệu.** Hệ thống cho xem trước tác động, cảnh báo rủi ro, giữ nguyên dữ liệu khi đổi tên và cho quay về phiên bản trước.
 - **Dấu vết không sửa được.** Lịch sử hồ sơ nối thành một chuỗi có dấu kiểm; nếu ai sửa, xóa hoặc chèn một dòng thì một lệnh chỉ ra đúng dòng đó.
 - **Kết nối ra ngoài.** Mọi thay đổi của hồ sơ được báo tới địa chỉ web hoặc kênh chat (Mattermost, Slack) với chữ ký để bên nhận kiểm tra, và được gửi lại khi bên nhận lỗi.
-- **Mở cho ứng dụng bên ngoài.** Mỗi mô hình có tài liệu API riêng, tự đổi theo mô hình; một ứng dụng ngoài được đăng ký với đúng một vai của một mô hình và gọi bằng mã bí mật của nó.
+- **Mở cho ứng dụng bên ngoài.** Mỗi mô hình có tài liệu API riêng, tự đổi theo mô hình; dịch vụ ngoài được đăng ký với đúng một vai và mã bí mật riêng, còn giao diện ở tên miền khác đăng nhập người dùng bằng OIDC Authorization Code với PKCE.
 - **Bảng điều khiển cho người triển khai.** Thư viện mẫu, trình soạn mô hình (viết tệp hoặc điền form, có hướng dẫn nói rõ viết được và mở rộng được gì) kèm sơ đồ quy trình vẽ theo tệp đang soạn, xem kế hoạch, áp dụng, lịch sử, quản lý người dùng và thống kê hồ sơ.
 - **Giao diện theo khai báo.** Tệp mô hình chọn được biểu tượng, nhóm menu, cột và sắp xếp mặc định, cách chia nhóm biểu mẫu và lời gợi ý; cán bộ chọn nhiều hồ sơ rồi xử lý cùng lúc, mỗi hồ sơ vẫn qua đủ luật.
 - **Xem theo trạng thái và xuất danh sách.** Danh sách của hồ sơ có quy trình xem được như một bảng theo từng trạng thái, và xuất ra tệp CSV mà bảng tính đọc được, đúng phần người xem được quyền thấy.

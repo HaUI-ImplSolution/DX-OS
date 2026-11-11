@@ -8,6 +8,7 @@
 set -uo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
+source lib/web-url.sh
 
 FAILS=0
 WARNS=0
@@ -73,6 +74,20 @@ else
     warn "in .env but not in .env.example (renamed or unused?): ${unknown[*]}"
   else
     ok "no variable outside .env.example"
+  fi
+
+  cors_origins="$(env_value CORS_ALLOWED_ORIGINS)"
+  cors_invalid=""
+  if [[ -n "$cors_origins" ]]; then
+    IFS=',' read -ra configured_origins <<<"$cors_origins"
+    for origin in "${configured_origins[@]}"; do
+      if ! dxos_validate_web_url "$origin" origin; then cors_invalid="$DXOS_WEB_URL_ERROR"; break; fi
+    done
+  fi
+  if [[ -n "$cors_invalid" ]]; then
+    fail "CORS_ALLOWED_ORIGINS is invalid: $cors_invalid"
+  else
+    ok "CORS_ALLOWED_ORIGINS contains only exact safe origins"
   fi
 
   scan_host="$(env_value STORAGE_SCAN_HOST)"

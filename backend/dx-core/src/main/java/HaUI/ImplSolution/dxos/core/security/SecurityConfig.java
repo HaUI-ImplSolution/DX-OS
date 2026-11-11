@@ -132,9 +132,10 @@ public class SecurityConfig {
   }
 
   @Bean
-  public CorsConfigurationSource corsConfigurationSource() {
+  public CorsConfigurationSource corsConfigurationSource(
+      @Value("${security.cors.allowed-origins}") List<String> configuredOrigins) {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*"));
+    configuration.setAllowedOrigins(CorsOrigins.validate(configuredOrigins));
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(List.of("*"));
 

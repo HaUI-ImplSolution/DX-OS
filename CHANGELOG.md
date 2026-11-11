@@ -23,6 +23,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 ### Ứng dụng ngoài
 
 - Ứng dụng ngoài đổi sang vai khác của cùng mô hình bằng `dxos client role`, nút Đổi vai ở tab Ứng dụng ngoài hoặc `PUT /api/v1/clients/{name}`, giữ nguyên tên và mã bí mật; token đã cấp giữ vai cũ đến khi hết hạn.
+- `dxos client browser add` đăng ký public OIDC client dùng Authorization Code với PKCE S256 cho giao diện ở tên miền khác, đồng thời thêm origin chính xác vào allowlist CORS; backend và `dxos doctor` từ chối wildcard, HTTP ngoài loopback, path hoặc URI không hợp lệ.
 
 ### Tệp mô hình
 

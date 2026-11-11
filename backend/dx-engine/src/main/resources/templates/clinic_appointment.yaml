@@ -1,0 +1,33 @@
+# SPDX-License-Identifier: Apache-2.0
+format: 0
+name: clinic
+roles:
+  - name: PATIENT
+    description: Người đặt lịch khám, theo dõi lịch hẹn của mình
+  - name: RECEPTIONIST
+    description: Nhân viên tiếp nhận, xác nhận và theo dõi lịch hẹn
+    staff: true
+entities:
+  room:
+    label: Phòng khám
+    fields:
+      code: {type: text, label: Mã phòng, required: true, unique: true}
+      name: {type: text, label: Tên phòng, required: true}
+    access: {PATIENT: read, RECEPTIONIST: all}
+  appointment:
+    label: Lịch hẹn khám
+    fields:
+      room: {type: reference, label: Phòng khám, to: room, required: true}
+      service: {type: choice, label: Dịch vụ, required: true, options: [Khám tổng quát, Tư vấn, Tái khám]}
+      starts_at: {type: datetime, label: Bắt đầu, required: true}
+      ends_at: {type: datetime, label: Kết thúc, required: true}
+      note: {type: text, label: Ghi chú}
+    access: {PATIENT: own, RECEPTIONIST: all}
+    process:
+      family: reservation
+      handler: RECEPTIONIST
+      booking: {resource: room, starts: starts_at, ends: ends_at, capacity: 1}
+      states:
+        in_use: {label: Đang khám}
+      actions:
+        start: {label: Tiếp nhận khám}

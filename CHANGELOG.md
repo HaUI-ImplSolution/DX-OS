@@ -13,6 +13,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Tệp mô hình
 
+- Thêm mẫu đặt lịch khám và phiếu đổi trả hàng trong thư viện mẫu của bảng điều khiển.
 - Trường nhiều lựa chọn nhận `default` là một danh sách các lựa chọn.
 - Trường `date` làm nguồn của điều kiện `when` và `required_when`, so sánh bằng `==`, `!=`, `<`, `<=`, `>` và `>=`.
 

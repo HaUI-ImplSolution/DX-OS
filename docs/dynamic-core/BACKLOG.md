@@ -19,7 +19,7 @@ Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết t�
 | 4 | Bằng chứng lõi là PaaS: giao diện riêng ở tên miền khác, route của dịch vụ riêng, ứng dụng mẫu, đường ống mẫu cho kho mô hình (mục 3) | Nguyên gốc 10, phát triển bền vững 10 |
 | 5 | Bài trình bày, video (mục 2) | Hoàn thiện 10, trình diễn 10 |
 | 6 | Phần AI và chữ I của ứng dụng Tầng 2 (mục 3) | Hoàn thiện 10, nguyên gốc 10 |
-| 7 | Phủ thêm bốn nguyên lý: truy vấn trên hồ dữ liệu, số đo chất lượng dữ liệu, kiểm EICAR trong CI, tự kéo từ git (mục 3 và 5) | Hoàn thiện 10 |
+| 7 | Phủ thêm ba nguyên lý: truy vấn trên hồ dữ liệu, kiểm EICAR trong CI, tự kéo từ git (mục 3 và 5) | Hoàn thiện 10 |
 
 ## 2. Phải xử lý trước khi phát hành
 
@@ -38,7 +38,7 @@ Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết t�
 | Phần AI | Chưa có mã: hỏi đáp sinh câu trả lời và tác tử đề xuất có người duyệt cần mô hình ngôn ngữ và embedding đạt định nghĩa Open Source AI của OSI (trọng số và dữ liệu huấn luyện đều mở), chưa chọn; khi làm sẽ là dịch vụ mới nối vào lõi; ứng viên LLM là Apertus 8B (Apache-2.0) và OLMo 2, cần thử tiếng Việt và tốc độ trên CPU; reranker và embedding phải thay bằng mô hình đạt chuẩn rồi đo lại chất lượng truy xuất; mô hình mở hoàn toàn có thể trả lời tiếng Việt kém và chậm hơn trên CPU nên cần đo trước khi trình diễn; không có LLM đạt thì Qwen chỉ là tùy chọn người dùng tự gắn, ghi rõ là mở trọng số; hỏi đáp quy chế cần một kho văn bản đạt cam kết nguồn mở (CC0, CC BY, ODbL hoặc không thuộc diện bảo hộ), vì kho văn bản của trường đã gỡ do thuộc bản quyền của trường |
 | Ứng dụng Tầng 2 | Chưa phủ I của H-P-D-I; hỏi BTC trên nhóm Telegram của họ xem ứng dụng minh họa có cần phủ cả bốn không gian H, P, D, I không |
 | Hồ dữ liệu | Chưa có lớp truy vấn riêng trên các tệp Parquet trong kho; công cụ báo cáo đọc dữ liệu đang chạy qua vai `report_ro`; hướng làm: `dxos archive query` chạy DuckDB đọc thẳng các tệp trong kho |
-| Phả hệ và chất lượng dữ liệu | Danh mục dữ liệu dừng ở mức thực thể; chưa có phả hệ đến từng trường, và chưa có số đo chất lượng dữ liệu mà nguyên lý (iii) của đề nêu |
+| Phả hệ dữ liệu | Danh mục dữ liệu dừng ở mức thực thể; chưa có phả hệ đến từng trường |
 | Tài liệu sản phẩm trên trang docs | Trang docs chỉ có hồ sơ dự thi; cách viết tệp mô hình, API, vận hành và mở rộng đều là liên kết sang tệp trên GitHub |
 | Hướng dẫn theo vai | Chưa có hướng dẫn sử dụng cho người nộp, người xử lý và người triển khai; tài liệu hiện có viết cho người phát triển và người kiểm thử |
 | Chính sách tương thích | Chưa có văn bản nói `/api/v1`, `format` của tệp mô hình và dạng thông điệp webhook giữ tương thích thế nào giữa các bản, và báo trước ra sao khi bỏ một phần |

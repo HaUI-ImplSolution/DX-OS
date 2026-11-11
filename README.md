@@ -40,7 +40,7 @@ Phiên bản hiện tại là `2.0.0`, thay đổi theo từng phiên bản ở 
 - **Bảng điều khiển cho người triển khai.** Thư viện mẫu, trình soạn mô hình (viết tệp hoặc điền form, có hướng dẫn nói rõ viết được và mở rộng được gì) kèm sơ đồ quy trình vẽ theo tệp đang soạn, xem kế hoạch, áp dụng, lịch sử, quản lý người dùng và thống kê hồ sơ.
 - **Giao diện theo khai báo.** Tệp mô hình chọn được biểu tượng, nhóm menu, cột và sắp xếp mặc định, cách chia nhóm biểu mẫu và lời gợi ý; cán bộ chọn nhiều hồ sơ rồi xử lý cùng lúc, mỗi hồ sơ vẫn qua đủ luật.
 - **Xem theo trạng thái và xuất danh sách.** Danh sách của hồ sơ có quy trình xem được như một bảng theo từng trạng thái, và xuất ra tệp CSV mà bảng tính đọc được, đúng phần người xem được quyền thấy.
-- **Danh mục dữ liệu.** Một trang cho biết dữ liệu của mỗi mô hình nằm ở đâu, ai được xem, các loại hồ sơ liên quan nhau thế nào, dữ liệu đi vào từ đâu và đi ra đâu.
+- **Danh mục dữ liệu.** Một trang cho biết dữ liệu của mỗi mô hình nằm ở đâu, ai được xem, các loại hồ sơ liên quan nhau thế nào, dữ liệu đi vào từ đâu và đi ra đâu, và dữ liệu hiện có đầy đủ và còn mới đến đâu.
 - **Lưu trữ hồ sơ cũ.** Hồ sơ đã đóng lâu được ghi sang kho lưu trữ theo lịch mỗi ngày, dữ liệu đang dùng vẫn giữ nguyên và bản lưu kiểm lại được.
 - **Hộp việc tự cập nhật.** Khi hồ sơ đổi, hộp việc, danh sách và trang chi tiết đang mở tự làm mới, không cần tải lại trang.
 - **Dùng thử ngay.** Một lệnh tạo tài khoản thử cho từng vai cùng hồ sơ mẫu ở nhiều trạng thái, để người xem đăng nhập là thấy hệ thống có việc đang chạy.

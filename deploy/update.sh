@@ -51,6 +51,9 @@ for service in "${BEHIND_GATEWAY[@]}"; do
   BEFORE[$service]="$(docker compose ps -q "$service")"
 done
 
+echo "==> Checking the gateway routes"
+docker compose run --rm --no-deps apisix-config --check
+
 echo "==> Pulling images"
 for service in "${SERVICES[@]}"; do
   docker compose pull "$service"

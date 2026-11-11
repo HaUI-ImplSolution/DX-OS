@@ -22,6 +22,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Ứng dụng ngoài
 
+- Route riêng của bản cài nằm trong `apisix/local.yaml`, được kiểm trước khi ghép với cấu hình lõi và giữ nguyên qua cập nhật.
 - Ứng dụng ngoài đổi sang vai khác của cùng mô hình bằng `dxos client role`, nút Đổi vai ở tab Ứng dụng ngoài hoặc `PUT /api/v1/clients/{name}`, giữ nguyên tên và mã bí mật; token đã cấp giữ vai cũ đến khi hết hạn.
 
 ### Tệp mô hình

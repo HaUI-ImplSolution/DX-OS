@@ -7,7 +7,7 @@
 # [prefix] defaults to $DXOS_HOME or ~/.dxos; [image-tag] is latest (default) or a release tag such as v2.0.0.
 # Copies deploy/ and what its compose file mounts (sso/) into <prefix>, keeping their relative layout,
 # writes <prefix>/deploy/.env with random secrets and links the dxos command into ~/.local/bin.
-# --upgrade replaces the runtime files of an existing install, keeps .env and data/, adds the variables
+# --upgrade replaces runtime files, keeps .env, data/ and apisix/local.yaml, adds the variables
 # a newer .env.example brings and sets the image tag.
 # Images are pulled from DXOS_IMAGE_PREFIX (default ghcr.io/haui-implsolution/dxos), nothing is built there;
 # DXOS_IMAGE_PREFIX and DXOS_IMAGE_TAG in the environment override the defaults (tests with local images).
@@ -55,7 +55,8 @@ fi
 runtime_files() {
   (cd "$SOURCE" && find deploy sso/realm-dxos.json \
     \( -path deploy/data -o -path deploy/backups -o -name __pycache__ \) -prune -o \
-    -type f ! \( -name '.env*' ! -name '.env.example' \) ! -name 'VPS.md' -print) | LC_ALL=C sort
+    -type f ! \( -name '.env*' ! -name '.env.example' \) ! -name 'VPS.md' \
+    ! -path deploy/apisix/local.yaml -print) | LC_ALL=C sort
 }
 
 # Sets KEY=VALUE in the env file, replacing the last assignment or appending one.
@@ -76,6 +77,7 @@ NEW_FILES="$(runtime_files)"
 if [[ "$UPGRADE" == true && -f "$MANIFEST" ]]; then
   echo "==> Removing the runtime files the new version no longer has"
   comm -23 <(LC_ALL=C sort "$MANIFEST") <(printf '%s\n' "$NEW_FILES") | while IFS= read -r stale; do
+    [[ "$stale" == deploy/apisix/local.yaml ]] && continue
     [[ -n "$stale" ]] && rm -f "$PREFIX/$stale"
   done
 fi

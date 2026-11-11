@@ -332,23 +332,19 @@ services:
   # ---------------------------------------------------------------------------
   # Gateway
   # ---------------------------------------------------------------------------
-  # Builds the gateway routes: apisix/common.yaml with the delivery key of the monitor filled in.
+  # Validates and merges the core routes and optional installation routes.
   apisix-config:
-    image: alpine:3.24@sha256:3f4d6b32e26703c6082839234f43769d5046b3ac7c910033911d1e71d8cd630a
+    image: apache/apisix:3.11.0-debian@sha256:178d1f79c2c39834f50213bf6ace90284f6b985dc8189cc50f3666d9fb1037ad
+    user: root
+    network_mode: none
     environment:
       MONITOR_INGEST_KEY: ${MONITOR_INGEST_KEY:?}
       DXOS_MODE: ${DXOS_MODE:-full}
       KEYCLOAK_ADMIN_CONSOLE: ${KEYCLOAK_ADMIN_CONSOLE:-false}
-    # Fills in the key of the monitor, drops the routes of tier 2 in core mode and keeps one of the two
-    # blocks of the Keycloak Admin Console: the route that opens it or the one that answers 404.
+    entrypoint: ["/usr/local/openresty/bin/resty", "--errlog-level", "error", "-I", "/usr/local/apisix", "-I", "/usr/local/apisix/deps/share/lua/5.1", "-I", "/usr/local/apisix/deps/lib/lua/5.1", "/src/render.lua"]
     command:
-      - sh
-      - -c
-      - >-
-        sed "s|__MONITOR_INGEST_KEY__|$$MONITOR_INGEST_KEY|g" /src/common.yaml |
-        { if [ "$$DXOS_MODE" = core ]; then sed '/# app-tier:begin/,/# app-tier:end/d'; else cat; fi; } |
-        { if [ "$$KEYCLOAK_ADMIN_CONSOLE" = true ]; then sed '/# admin-console-off:begin/,/# admin-console-off:end/d'; else sed '/# admin-console-on:begin/,/# admin-console-on:end/d'; fi; } > /out/apisix.yaml &&
-        echo '#END' >> /out/apisix.yaml
+      - --output
+      - /out/apisix.yaml
     volumes:
       - ./apisix:/src:ro
       - ./data/apisix:/out
@@ -361,6 +357,8 @@ services:
         max-size: "100m"
         max-file: "10"
     image: apache/apisix:3.11.0-debian@sha256:178d1f79c2c39834f50213bf6ace90284f6b985dc8189cc50f3666d9fb1037ad
+    entrypoint: ["/bin/sh", "/dxos-apisix-entrypoint.sh"]
+    command: ["docker-start"]
     restart: unless-stopped
     depends_on:
       apisix-config:
@@ -379,7 +377,8 @@ services:
         required: false
     volumes:
       - ./apisix/config.yaml:/usr/local/apisix/conf/config.yaml:ro
-      - ./data/apisix/apisix.yaml:/usr/local/apisix/conf/apisix.yaml:ro
+      - ./apisix/entrypoint.sh:/dxos-apisix-entrypoint.sh:ro
+      - ./data/apisix:/usr/local/apisix/generated:ro
     ports:
       - "${APISIX_HOST_PORT:?}:9080"
     healthcheck:

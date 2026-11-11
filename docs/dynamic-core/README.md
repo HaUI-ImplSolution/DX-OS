@@ -494,7 +494,7 @@ Mã mở rộng luôn nằm ngoài lõi, chỉ gọi lõi qua API và sự kiệ
 
 | Nhu cầu                              | Cách làm                                                                                                |
 | --------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| API riêng                            | Dịch vụ viết bằng ngôn ngữ tùy ý, gọi API của lõi bằng token Keycloak lấy qua `dxos client add` (đúng một vai của một mô hình) và đọc tài liệu OpenAPI riêng của mô hình; route thêm vào cấu hình APISIX của bản cài |
+| API riêng                            | Dịch vụ viết bằng ngôn ngữ tùy ý, gọi API của lõi bằng token Keycloak lấy qua `dxos client add` (đúng một vai của một mô hình, đổi sang vai khác của mô hình đó bằng `dxos client role` mà giữ nguyên mã bí mật) và đọc tài liệu OpenAPI riêng của mô hình; route thêm vào cấu hình APISIX của bản cài |
 | Phản ứng theo nghiệp vụ           | Webhook nhận sự kiện từ trục sự kiện                                                               |
 | Giao diện riêng hoàn toàn         | Ứng dụng tự viết, dùng API và đăng nhập Keycloak của lõi                                       |
 | Trang riêng trong ứng dụng Tầng 2 | Thêm trang vào ứng dụng web bằng mã; menu, nhóm menu và biểu tượng của thực thể khai báo trong khối `ui:`                                                                |

@@ -16,7 +16,7 @@ dxos_validate_web_url() {
     DXOS_WEB_URL_ERROR="the value is empty or contains whitespace"
     return 1
   fi
-  if [[ "$value" == *'*'* || "$value" == *'#'* || "$value" == *'\\'* \
+  if [[ "$value" == *'*'* || "$value" == *'#'* || "$value" == *'\'* \
       || "$value" == *'"'* || "$value" == *"'"* || "$value" == *'<'* \
       || "$value" == *'>'* || "$value" == *'{'* || "$value" == *'}'* \
       || "$value" == *'|'* || "$value" == *'^'* || "$value" == *'`'* ]]; then
@@ -69,6 +69,9 @@ dxos_validate_web_url() {
   if [[ -n "$port" ]] && (( 10#$port < 1 || 10#$port > 65535 )); then
     DXOS_WEB_URL_ERROR="the port must be between 1 and 65535"
     return 1
+  fi
+  if [[ "$scheme" == https && "$port" == 443 || "$scheme" == http && "$port" == 80 ]]; then
+    port=""
   fi
   if [[ "$kind" == origin && -n "$suffix" ]]; then
     DXOS_WEB_URL_ERROR="an origin must not contain a path or query"

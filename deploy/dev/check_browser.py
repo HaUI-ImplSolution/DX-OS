@@ -1,10 +1,15 @@
 # SPDX-License-Identifier: Apache-2.0
 """Checks the supported registration path for an external browser application."""
 
+import base64
+import hashlib
+import html.parser
 import os
+import secrets
 import subprocess
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 
 import check_api as rt
@@ -15,6 +20,8 @@ NAME = "browser-check"
 CLIENT_ID = f"dxos-browser-{NAME}"
 REDIRECT = "https://browser.example.test/auth/callback"
 ORIGIN = "https://browser.example.test"
+USER = os.environ.get("E2E_USER", "ui_admin")
+PASSWORD = os.environ.get("E2E_PASSWORD", "Test1234!")
 
 
 def dxos(*args):
@@ -32,6 +39,67 @@ def preflight(origin):
             return response.status, response.headers.get("Access-Control-Allow-Origin")
     except urllib.error.HTTPError as error:
         return error.code, error.headers.get("Access-Control-Allow-Origin")
+
+
+class LoginForm(html.parser.HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.action = ""
+        self.hidden = {}
+
+    def handle_starttag(self, tag, attrs):
+        attributes = dict(attrs)
+        if tag == "form" and attributes.get("id") == "kc-form-login":
+            self.action = attributes.get("action", "")
+        if tag == "input" and attributes.get("type") == "hidden" and attributes.get("name"):
+            self.hidden[attributes["name"]] = attributes.get("value", "")
+
+
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, request, response, code, msg, headers, newurl):
+        return None
+
+
+def authorization_code():
+    verifier = secrets.token_urlsafe(64)
+    challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).rstrip(b"=").decode()
+    query = urllib.parse.urlencode({
+        "client_id": CLIENT_ID,
+        "redirect_uri": REDIRECT,
+        "response_type": "code",
+        "scope": "openid profile",
+        "code_challenge": challenge,
+        "code_challenge_method": "S256",
+    })
+    opener = urllib.request.build_opener(
+        urllib.request.HTTPCookieProcessor(), NoRedirect())
+    auth_url = f"{kc.BASE}/realms/dxos/protocol/openid-connect/auth?{query}"
+    response = opener.open(auth_url)
+    form = LoginForm()
+    form.feed(response.read().decode())
+    fields = dict(form.hidden, username=USER, password=PASSWORD)
+    request = urllib.request.Request(
+        urllib.parse.urljoin(auth_url, form.action),
+        data=urllib.parse.urlencode(fields).encode(),
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        method="POST")
+    try:
+        opener.open(request)
+    except urllib.error.HTTPError as error:
+        if error.code not in (301, 302, 303, 307, 308):
+            raise
+        location = error.headers.get("Location", "")
+    else:
+        raise AssertionError("Keycloak login did not redirect to the browser callback")
+    callback = urllib.parse.urlparse(location)
+    values = urllib.parse.parse_qs(callback.query)
+    assert "code" in values and "error" not in values, values
+    status, token = kc.form(f"{kc.BASE}/realms/dxos/protocol/openid-connect/token", {
+        "grant_type": "authorization_code", "client_id": CLIENT_ID,
+        "redirect_uri": REDIRECT, "code": values["code"][0],
+        "code_verifier": verifier})
+    assert status == 200 and token.get("access_token"), (status, token)
+    return token["access_token"]
 
 
 def main():
@@ -80,9 +148,15 @@ def main():
         rt.check("BROWSER-05 unsafe redirects are refused before Keycloak is changed",
                  unsafe_http.returncode != 0 and unsafe_wildcard.returncode != 0,
                  unsafe_http.stderr[-150:] + unsafe_wildcard.stderr[-150:])
+
+        token = authorization_code()
+        status, body = kc.http("GET", f"{kc.BASE}/api/v1/system/status", headers={
+            "Authorization": f"Bearer {token}", "Origin": ORIGIN})
+        rt.check("BROWSER-06 PKCE login exchanges a code and calls the API",
+                 status == 200 and body.get("status") == "ok", str(body)[:300])
     finally:
         removed = dxos("client", "browser", "remove", NAME)
-        rt.check("BROWSER-06 remove deletes the public client", removed.returncode == 0,
+        rt.check("BROWSER-07 remove deletes the public client", removed.returncode == 0,
                  (removed.stdout + removed.stderr)[-300:])
 
     failed = [case for case, ok in rt.results if not ok]

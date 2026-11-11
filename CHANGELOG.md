@@ -7,11 +7,26 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
+### Ứng dụng ngoài
+
+- Ứng dụng ngoài đổi sang vai khác của cùng mô hình bằng `dxos client role`, nút Đổi vai ở tab Ứng dụng ngoài hoặc `PUT /api/v1/clients/{name}`, giữ nguyên tên và mã bí mật; token đã cấp giữ vai cũ đến khi hết hạn.
+
+### Tệp mô hình
+
+- Trường nhiều lựa chọn nhận `default` là một danh sách các lựa chọn.
+- Trường `date` làm nguồn của điều kiện `when` và `required_when`, so sánh bằng `==`, `!=`, `<`, `<=`, `>` và `>=`.
+
+### Giao diện
+
+- Trình sửa mô hình chọn `default` của trường nhiều lựa chọn từ danh sách `options`, và trình soạn YAML không còn cảnh báo khi `default` là danh sách.
+
 ### Tài liệu
 
-- Hướng dẫn kết nối công cụ báo cáo bằng `report_ro`, giữ PostgreSQL trong mạng riêng, xoay mật khẩu và truy vấn dữ liệu xuyên hai mô hình với Apache Superset.
+- Hướng dẫn kết nối công cụ báo cáo bằng `report_ro` ở `deploy/REPORTING.md`: giữ PostgreSQL trong mạng riêng, kết nối Apache Superset, xoay mật khẩu và truy vấn dữ liệu xuyên hai mô hình.
+- Mục Dữ liệu cá nhân ra nước ngoài ở `deploy/OPERATIONS.md` nêu khi nào cấu hình làm phát sinh nghĩa vụ đánh giá tác động theo Luật 91/2025/QH15 và Nghị định 356/2025/NĐ-CP, đối chiếu với bản đăng trên Công báo.
+- Điều kiện tải chữ ký virus của ClamAV và hạn hỗ trợ của image đang ghim ở `DEPENDENCIES.txt` và `deploy/OPERATIONS.md`.
 
-## [2.0.0] - chưa phát hành
+## [2.0.0] - 2026-11-11
 
 Lõi dynamic thay cho hai ứng dụng nghiệp vụ viết tay của bản `1.1.1`.
 Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở tag `v1.1.1`.

@@ -3,6 +3,7 @@ package HaUI.ImplSolution.dxos.engine.clients;
 
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
 import HaUI.ImplSolution.dxos.engine.clients.AppClientService.AppView;
+import HaUI.ImplSolution.dxos.engine.clients.AppClientService.ChangedRole;
 import HaUI.ImplSolution.dxos.engine.clients.AppClientService.CreatedApp;
 import HaUI.ImplSolution.dxos.engine.clients.AppClientService.NewApp;
 import HaUI.ImplSolution.dxos.engine.clients.AppClientService.RenewedApp;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -58,6 +60,16 @@ public class AppClientController {
           + " this is the only time it is shown. 404 when the application does not exist.")
   public ResponseEntity<ApiResponse<RenewedApp>> renewSecret(@PathVariable String name) {
     return noStore(service.renewSecret(name));
+  }
+
+  @PutMapping("/{name}")
+  @Operation(summary = "Move an outside application to another role of its model",
+      description = "Keeps the client id and the secret; the application holds the new role from"
+          + " now on, and a token it got before lasts until it expires with the old role. 404 when"
+          + " the application does not exist or its model has no such role.")
+  public ApiResponse<AppView> changeRole(@PathVariable String name,
+      @RequestBody ChangedRole request) {
+    return ApiResponse.success(service.changeRole(name, request));
   }
 
   @DeleteMapping("/{name}")

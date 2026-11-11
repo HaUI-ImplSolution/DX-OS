@@ -156,7 +156,7 @@ export const SCHEMA_HELP: Record<string, string> = {
   "entities.fields.options": t("Danh sách lựa chọn của trường kiểu choice."),
   "entities.fields.to": t("Mã thực thể mà trường kiểu reference trỏ tới."),
   "entities.fields.renamed_from": t("Tên cũ của trường, khai khi đổi tên trường mà muốn giữ dữ liệu."),
-  "entities.fields.default": t("Giá trị điền cho hồ sơ cũ khi thêm trường bắt buộc."),
+  "entities.fields.default": t("Giá trị điền cho hồ sơ cũ khi thêm trường bắt buộc; trường nhiều lựa chọn chọn từ danh sách các lựa chọn."),
   "entities.access": t("Quyền của từng vai: all (đọc và ghi tất cả), own (của mình), read (tất cả, chỉ đọc), unit (của đơn vị mình), assigned (được giao cho mình). Vai không có dòng thì không thấy thực thể."),
   "entities.process": t("Quy trình của hồ sơ. Chọn family có sẵn rồi mở rộng, hoặc bỏ family và tự khai states và actions. Bỏ cả khối nếu thực thể chỉ là danh mục."),
   "entities.process.family": t("Khung có sẵn để bắt đầu: approval (duyệt), work_item (công việc xử lý), reservation (đặt chỗ). Bỏ trống thì phải tự khai states và actions."),

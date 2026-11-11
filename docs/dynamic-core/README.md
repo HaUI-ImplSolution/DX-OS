@@ -100,7 +100,7 @@ Các hàm ý sau là suy luận từ cách đề viết, người ra đề khôn
 | Nguyên lý                                                                                               | Lõi đáp ứng                                                                                |
 | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | Phân tách theo vòng đời và tốc độ của dữ liệu, đẩy dữ liệu lịch sử xuống hồ dữ liệu | `dxos archive --store` ghi hồ sơ đã đóng và lịch sử của chúng ra tệp Parquet vào một bucket riêng của SeaweedFS, kèm manifest và hash để kiểm lại; `dxos archive schedule install` đặt lịch chạy hằng ngày cho hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS`; dữ liệu trong cơ sở dữ liệu giữ nguyên; công cụ báo cáo đọc dữ liệu qua vai `report_ro` |
-| Hội tụ dữ liệu hành chính và dữ liệu vận hành, bản sao số | `examples/itot-simulator` và mẫu `plant_incident` đưa số đo của thiết bị vào thành hồ sơ sự cố đi qua cùng quy trình, quyền và lịch sử với hồ sơ hành chính |
+| Hội tụ dữ liệu hành chính và dữ liệu vận hành, bản sao số | `examples/itot-simulator` và mẫu `plant_incident` đưa số đo của thiết bị vào thành hồ sơ sự cố đi qua cùng quy trình, quyền và lịch sử với hồ sơ hành chính; lõi không giữ trạng thái thời gian thực của thiết bị, nên bản sao số chỉ được phủ một phần |
 | Quản trị dữ liệu, phả hệ và nguồn gốc | Mô hình là danh mục dữ liệu; tab Danh mục dữ liệu đọc từ đó nơi dữ liệu đi vào, nơi đi ra, liên kết giữa các thực thể, quyền theo vai và số bản ghi; lịch sử mỗi hồ sơ nối thành chuỗi hash |
 | Zero-Trust gắn với GitOps, kiểm dịch mã độc, tự phục hồi                                        | APISIX và API chung đều kiểm token, ClamAV quét tệp tải lên khi bật (`dxos av on`), GitOps cho nghiệp vụ    |
 
@@ -326,7 +326,7 @@ Thêm năng lực mới nghĩa là thêm provider, không phải sửa lõi.
 | Vòng đời mô hình             | Git, phần điều khiển                  | **Phần tự viết chính**                                      |
 | Trục sự kiện                   | Bảng outbox trong PostgreSQL             | Webhook theo mô hình, API kéo sự kiện theo `eventId`, thông điệp của việc áp dụng mô hình và của tài khoản (chỉ qua webhook); kênh sự kiện `GET /api/v1/inbox/stream` báo cho giao diện khi hồ sơ đổi |
 | Thông báo                       | Mattermost hoặc Slack do người triển khai cấp | Đích webhook dạng `chat`: việc mới, sắp đến hạn, quá hạn |
-| Báo cáo | Công cụ báo cáo do người triển khai cấp | Vai `report_ro` chỉ đọc các bảng nghiệp vụ |
+| Báo cáo | Công cụ báo cáo do người triển khai cấp | Vai `report_ro` chỉ đọc các bảng nghiệp vụ, cách kết nối ở [`deploy/REPORTING.md`](../../deploy/REPORTING.md) |
 | AI | Mô hình ngôn ngữ và embedding mở hoàn toàn | Khai báo nguồn tri thức và tác tử |
 | Vận hành                        | `dx-monitor`, `deploy/backup.sh`          | Giữ nguyên                                                    |
 
@@ -466,7 +466,7 @@ Trạng thái hồ sơ không thể bị đi vòng:
 
 - Flowable là nơi duy nhất được đổi trạng thái hồ sơ.
 - API chung từ chối mọi yêu cầu ghi cột trạng thái.
-- Dịch vụ lõi là kết nối ghi duy nhất vào dữ liệu nghiệp vụ; công cụ báo cáo dùng vai `report_ro` chỉ có quyền đọc.
+- Dịch vụ lõi là kết nối ghi duy nhất vào dữ liệu nghiệp vụ; công cụ báo cáo dùng vai `report_ro` chỉ có quyền đọc, cách kết nối ở [`deploy/REPORTING.md`](../../deploy/REPORTING.md).
 - Flowable chạy nhúng trong dịch vụ lõi dùng chung cơ sở dữ liệu, để đổi trạng thái và ghi hồ sơ nằm trong một giao dịch.
 
 Quy tắc khai báo được API chung kiểm để báo lỗi rõ và biên dịch thành ràng buộc trong cơ sở dữ liệu.
@@ -494,7 +494,7 @@ Mã mở rộng luôn nằm ngoài lõi, chỉ gọi lõi qua API và sự kiệ
 
 | Nhu cầu                              | Cách làm                                                                                                |
 | --------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| API riêng                            | Dịch vụ viết bằng ngôn ngữ tùy ý, gọi API của lõi bằng token Keycloak lấy qua `dxos client add` (đúng một vai của một mô hình) và đọc tài liệu OpenAPI riêng của mô hình; route thêm vào cấu hình APISIX của bản cài |
+| API riêng                            | Dịch vụ viết bằng ngôn ngữ tùy ý, gọi API của lõi bằng token Keycloak lấy qua `dxos client add` (đúng một vai của một mô hình, đổi sang vai khác của mô hình đó bằng `dxos client role` mà giữ nguyên mã bí mật) và đọc tài liệu OpenAPI riêng của mô hình; route thêm vào cấu hình APISIX của bản cài |
 | Phản ứng theo nghiệp vụ           | Webhook nhận sự kiện từ trục sự kiện                                                               |
 | Giao diện riêng hoàn toàn         | Ứng dụng tự viết, dùng API và đăng nhập Keycloak của lõi                                       |
 | Trang riêng trong ứng dụng Tầng 2 | Thêm trang vào ứng dụng web bằng mã; menu, nhóm menu và biểu tượng của thực thể khai báo trong khối `ui:`                                                                |
@@ -556,7 +556,7 @@ Phần này là giả thuyết về khách hàng.
 - **Chưa phục vụ:** tổ chức không có ai vận hành máy chủ, lập trình viên muốn toàn quyền kiểm soát mã, doanh nghiệp cần ERP đầy đủ.
 - **Đối thủ thật:** bảng tính và thuê làm riêng; với người muốn trọn gói tự cài thì là Frappe.
 - **Lý do chọn:** thay đổi an toàn trên toàn hệ thống, dữ liệu ở máy chủ của mình, không tính phí theo đầu người.
-- **Pháp lý:** [Luật Bảo vệ dữ liệu cá nhân](https://digitalpolicyalert.org/event/36569-implementing-regulations-of-law-on-personal-data-protection-including-cross-border-data-transfer-regulation-entered-into-force) có hiệu lực từ 2026-01-01 và [theo nguồn thứ cấp](https://www.uniconsent.com/vietnam-pdpl) yêu cầu đánh giá khi chuyển dữ liệu ra nước ngoài.
+- **Pháp lý:** [Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15](https://congbao.chinhphu.vn/van-ban/luat-so-91-2025-qh15-45578.htm) và [Nghị định 356/2025/NĐ-CP](https://congbao.chinhphu.vn/van-ban/nghi-dinh-so-356-2025-nd-cp-468371.htm) có hiệu lực từ 2026-01-01; chuyển dữ liệu ra nước ngoài phải lập hồ sơ đánh giá tác động và gửi cơ quan chuyên trách trong 60 ngày (Điều 20 luật), chi tiết ở [`deploy/OPERATIONS.md`](../../deploy/OPERATIONS.md#dữ-liệu-cá-nhân-ra-nước-ngoài).
 - **Đo công sức:** so số dòng và thời gian dựng ứng dụng mới với phần Lab viết tay, gồm 5.792 dòng Java, 4.524 dòng giao diện và 8 migration.
 
 Mục tiêu:

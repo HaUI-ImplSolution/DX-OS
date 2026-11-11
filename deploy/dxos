@@ -26,6 +26,8 @@
 #   dxos archive <model> [--before YYYY-MM-DD] [--out DIR | --store] | dxos archive check <dir | --store model/run>
 #                              write the finished records of a model and their history to Parquet files,
 #                              to a directory (default deploy/archive) or to the object store (--store)
+#   dxos archive query <model/run> [--file FILE] [--param name=value ...] "SELECT ... FROM archive"
+#                              query the Parquet files of one object-store run with DuckDB (read only)
 #   dxos archive list | auto | schedule install|uninstall
 #                              list the runs in the store; archive what is older than ARCHIVE_AFTER_DAYS
 #                              (once per record); auto runs every day with a systemd user timer
@@ -821,6 +823,56 @@ SELECT 'ROWS|$name|' || count(*) FROM read_parquet('$target/$name');"
   echo "Archive matches its manifest."
 }
 
+# Runs one read-only, parameterized query over Parquet files of one object-store run.
+# The archive is materialized before external access is disabled, so the user's query cannot open another path.
+archive_query() {
+  local ref="${1:-}" file="*.parquet" sql="" model run name value target query_input
+  local param_value_pattern="^(NULL|TRUE|FALSE|-?[0-9]+([.][0-9]+)?|'([^']|'')*')$"
+  local params=()
+  shift || true
+  model="${ref%%/*}"; run="${ref#*/}"
+  [[ "$model" =~ ^[a-z][a-z0-9_]*$ && "$run" =~ ^[0-9]{8}T[0-9]{6}Z$ ]] \
+    || die "not an archive run: $ref (expected model/YYYYMMDDTHHMMSSZ)"
+  while (( $# )); do
+    case "$1" in
+      --file) file="${2:?--file needs a Parquet file}"; shift 2 ;;
+      --file=*) file="${1#--file=}"; shift ;;
+      --param) params+=("${2:?--param needs name=value}"); shift 2 ;;
+      --param=*) params+=("${1#--param=}"); shift ;;
+      --) shift; sql="${1:-}"; shift; (( $# == 0 )) || die "query must be one SQL statement" ;;
+      -*) die "unknown option: $1" ;;
+      *) [[ -z "$sql" ]] || die "query must be one SQL statement"; sql="$1"; shift ;;
+    esac
+  done
+  [[ "$file" =~ ^[A-Za-z0-9_*.]+\.parquet$ && "$file" != *..* ]] \
+    || die "--file must name a Parquet file in the selected archive run"
+  [[ -n "$sql" ]] || die "usage: dxos archive query model/run [--file FILE] [--param name=value ...] \"SELECT ... FROM archive\""
+  sql="${sql%;}"
+  [[ "$sql" =~ ^[[:space:]]*(SELECT|WITH|EXPLAIN)([[:space:]]|$) ]] \
+    || die "archive query accepts SELECT, WITH, or EXPLAIN only"
+  [[ "$sql" != *';'* ]] || die "archive query accepts one SQL statement only"
+  for value in "${params[@]}"; do
+    name="${value%%=*}"
+    [[ "$value" == *=* && "$name" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] \
+      || die "--param must use name=value with a valid parameter name"
+    [[ "$value" != *$'\r'* && "$value" != *$'\n'* && "$value" != *';'* ]] \
+      || die "--param values cannot contain newlines or semicolons"
+    value="${value#*=}"
+    [[ "$value" =~ $param_value_pattern ]] \
+      || die "--param values must be NULL, TRUE, FALSE, a number, or a single-quoted string"
+  done
+  target="s3://$(archive_bucket)/$model/$run/$file"
+  query_input="$(store_prelude)"
+  query_input+=$'\n'"CREATE OR REPLACE TEMP TABLE archive AS SELECT * FROM read_parquet('$target', union_by_name = true);"$'\n'
+  query_input+="SET enable_external_access=false;"$'\n'
+  for value in "${params[@]}"; do
+    name="${value%%=*}"; value="${value#*=}"
+    query_input+=".parameter set $name $value"$'\n'
+  done
+  query_input+="$sql"$'\n'
+  duckdb_store <<<"$query_input"
+}
+
 # The runs in the object store, oldest first.
 archive_list() {
   local out rows model run since upto files
@@ -884,10 +936,11 @@ cmd_archive_schedule() {
 cmd_archive() {
   case "${1:-}" in
     check) shift; archive_check "$@" ;;
+    query) shift; archive_query "$@" ;;
     list) archive_list ;;
     auto) archive_auto ;;
     schedule) shift; cmd_archive_schedule "$@" ;;
-    ""|-*) die "usage: dxos archive <model> [--before YYYY-MM-DD] [--out DIR | --store] | check | list | auto | schedule" ;;
+    ""|-*) die "usage: dxos archive <model> [--before YYYY-MM-DD] [--out DIR | --store] | query | check | list | auto | schedule" ;;
     *)
       local model="$1" before="" out="" store=0
       shift

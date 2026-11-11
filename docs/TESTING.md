@@ -20,7 +20,7 @@ Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`web
 |---|---|---|
 | Định dạng, biên dịch, test của backend | `cd backend && ./mvnw verify` | Workflow `Backend` |
 | Kiểu của web | `cd frontend && npx tsc --noEmit` | Workflow `Frontend` |
-| Giấy phép và header | `python3 .github/scripts/check_licenses.py` | `Check licenses` của `Compliance` |
+| Giấy phép và header | `python3 .github/scripts/check_licenses.py`; `pipx run --spec reuse==6.3.0 reuse lint` | `Check licenses` của `Compliance` |
 | Giấy phép của dự án gốc | `GITHUB_TOKEN=... python3 .github/scripts/check_upstream_licenses.py` | `Check upstream licenses` của `Compliance` |
 | SBOM khớp tệp khóa | `python3 .github/scripts/check_sbom_fresh.py` | `Check SBOMs against lockfiles` của `Compliance` |
 | Route của gateway | `python3 deploy/apisix/check_routes.py` | `Validate the gateway routes` của `Platform` |

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 # Two images are built from this file, one per runnable module:
 #   docker build --target backend .   (default) the backend, dx-engine.jar
 #   docker build --target monitor .             the monitoring service, dx-monitor.jar

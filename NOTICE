@@ -12,6 +12,7 @@ Sản phẩm này sử dụng phần mềm của bên thứ ba, giữ nguyên gi
 - PostgreSQL (PostgreSQL License).
 - React, react-admin, Material UI (MIT).
 - caniuse-lite, dữ liệu của Can I Use (CC-BY-4.0), chỉ dùng lúc dựng trang tài liệu.
+- backend/eclipse-java-google-style.xml, hồ sơ định dạng Eclipse của Google Java style (Copyright Google LLC, CC-BY-3.0), chép từ google/styleguide, chỉ khác cách thụt lề; chỉ dùng lúc dựng mã Java. Giấy phép khai trong REUSE.toml, toàn văn ở LICENSES/CC-BY-3.0.txt.
 - ClamAV (GPL-2.0), chạy nguyên bản thành dịch vụ riêng khi bật quét mã độc; image của nó kèm libclamunrar theo giấy phép UnRAR, nạp lúc chạy và không do dự án này phân phối.
 
 Danh sách thành phần đầy đủ ở DEPENDENCIES.txt; SBOM CycloneDX ở thư mục sbom/.

@@ -162,6 +162,7 @@ The documents are written in Vietnamese; the API reference is the OpenAPI specif
 | `website` | The docs site (Docusaurus), published on GitHub Pages |
 | `docs` | The testing guide, the model file and the API; the design is in `dynamic-core/` |
 | `sbom` | CycloneDX component lists of the backend, the web interface and the docs site |
+| `LICENSES` | The full text of the licenses of the repository, as the REUSE specification asks |
 | `.github` | CI workflows, issue and pull request templates, branch rules, check scripts |
 
 ## Contributing

@@ -55,58 +55,85 @@ public class SecurityConfig {
       @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}") String jwkSetUri,
       @Value("${security.jwt.audience}") String audience) {
     NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
-    decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(JwtValidators.createDefault(),
-        audienceValidator(audience)));
+    decoder.setJwtValidator(
+        new DelegatingOAuth2TokenValidator<>(
+            JwtValidators.createDefault(), audienceValidator(audience)));
     return decoder;
   }
 
   static OAuth2TokenValidator<Jwt> audienceValidator(String audience) {
-    return new JwtClaimValidator<Collection<String>>(JwtClaimNames.AUD,
-        audiences -> audiences != null && audiences.contains(audience));
+    return new JwtClaimValidator<Collection<String>>(
+        JwtClaimNames.AUD, audiences -> audiences != null && audiences.contains(audience));
   }
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http,
+  public SecurityFilterChain securityFilterChain(
+      HttpSecurity http,
       RestAuthenticationEntryPoint authenticationEntryPoint,
       RestAccessDeniedHandler accessDeniedHandler,
       ServiceApiKeyAuthenticationFilter serviceApiKeyAuthenticationFilter,
       ObjectProvider<EndpointPolicyContributor> endpointPolicies,
       ObjectProvider<ClientRestrictionPolicy> clientPolicies,
-      ObjectProvider<RateLimitContributor> rateLimitContributors, UserRateLimiter userRateLimiter,
-      ObjectMapper objectMapper, AppRoles appRoles,
-      @Value("${security.rate-limit.enabled:true}") boolean rateLimitEnabled) throws Exception {
-    List<String> publicGetPaths = endpointPolicies.orderedStream()
-        .flatMap(policy -> policy.publicGetPaths().stream()).toList();
+      ObjectProvider<RateLimitContributor> rateLimitContributors,
+      UserRateLimiter userRateLimiter,
+      ObjectMapper objectMapper,
+      AppRoles appRoles,
+      @Value("${security.rate-limit.enabled:true}") boolean rateLimitEnabled)
+      throws Exception {
+    List<String> publicGetPaths =
+        endpointPolicies
+            .orderedStream()
+            .flatMap(policy -> policy.publicGetPaths().stream())
+            .toList();
     List<ClientRestrictionPolicy> restrictions = clientPolicies.orderedStream().toList();
-    http.csrf(csrf -> csrf.disable()).cors(Customizer.withDefaults())
+    http.csrf(csrf -> csrf.disable())
+        .cors(Customizer.withDefaults())
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint)
-            .accessDeniedHandler(accessDeniedHandler))
-        .authorizeHttpRequests(auth -> {
-          auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-              .requestMatchers(OPENAPI_ENDPOINTS).permitAll()
-              .requestMatchers(HttpMethod.GET, ACTUATOR_HEALTH_ENDPOINT, SYSTEM_STATUS_ENDPOINT)
-              .permitAll();
-          if (!publicGetPaths.isEmpty()) {
-            auth.requestMatchers(HttpMethod.GET, publicGetPaths.toArray(String[]::new)).permitAll();
-          }
-          // AI chỉ được gọi GET qua service API key - mọi method khác ở /internal/v1/**
-          // bị chặn hẳn, kể cả nếu lỡ có endpoint ghi được thêm sau này.
-          auth.requestMatchers(HttpMethod.GET, "/internal/v1/**").hasAuthority("ROLE_AI_SERVICE")
-              .requestMatchers("/internal/v1/**").denyAll().anyRequest().authenticated();
-        }).addFilterBefore(serviceApiKeyAuthenticationFilter, BearerTokenAuthenticationFilter.class)
-        .oauth2ResourceServer(oauth2 -> oauth2.authenticationEntryPoint(authenticationEntryPoint)
-            .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
+        .exceptionHandling(
+            ex ->
+                ex.authenticationEntryPoint(authenticationEntryPoint)
+                    .accessDeniedHandler(accessDeniedHandler))
+        .authorizeHttpRequests(
+            auth -> {
+              auth.requestMatchers(HttpMethod.OPTIONS, "/**")
+                  .permitAll()
+                  .requestMatchers(OPENAPI_ENDPOINTS)
+                  .permitAll()
+                  .requestMatchers(HttpMethod.GET, ACTUATOR_HEALTH_ENDPOINT, SYSTEM_STATUS_ENDPOINT)
+                  .permitAll();
+              if (!publicGetPaths.isEmpty()) {
+                auth.requestMatchers(HttpMethod.GET, publicGetPaths.toArray(String[]::new))
+                    .permitAll();
+              }
+              // AI chỉ được gọi GET qua service API key - mọi method khác ở /internal/v1/**
+              // bị chặn hẳn, kể cả nếu lỡ có endpoint ghi được thêm sau này.
+              auth.requestMatchers(HttpMethod.GET, "/internal/v1/**")
+                  .hasAuthority("ROLE_AI_SERVICE")
+                  .requestMatchers("/internal/v1/**")
+                  .denyAll()
+                  .anyRequest()
+                  .authenticated();
+            })
+        .addFilterBefore(serviceApiKeyAuthenticationFilter, BearerTokenAuthenticationFilter.class)
+        .oauth2ResourceServer(
+            oauth2 ->
+                oauth2
+                    .authenticationEntryPoint(authenticationEntryPoint)
+                    .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
     if (!restrictions.isEmpty()) {
       http.addFilterAfter(
           new ClientRestrictionFilter(restrictions, appRoles.staffRoles(), accessDeniedHandler),
           BearerTokenAuthenticationFilter.class);
     }
-    List<RateLimitRule> rateLimits = rateLimitContributors.orderedStream()
-        .flatMap(contributor -> contributor.rateLimits().stream()).toList();
+    List<RateLimitRule> rateLimits =
+        rateLimitContributors
+            .orderedStream()
+            .flatMap(contributor -> contributor.rateLimits().stream())
+            .toList();
     if (rateLimitEnabled && !rateLimits.isEmpty()) {
-      http.addFilterAfter(new UserRateLimitFilter(rateLimits, userRateLimiter, objectMapper),
+      http.addFilterAfter(
+          new UserRateLimitFilter(rateLimits, userRateLimiter, objectMapper),
           BearerTokenAuthenticationFilter.class);
     }
     return http.build();
@@ -121,8 +148,10 @@ public class SecurityConfig {
   // retrieval and answer models.
   @Bean
   public RateLimitContributor coreRateLimits() {
-    return () -> List.of(new RateLimitRule(null, "/api/**", 300),
-        RateLimitRule.post("/api/v1/knowledge/ask", 20));
+    return () ->
+        List.of(
+            new RateLimitRule(null, "/api/**", 300),
+            RateLimitRule.post("/api/v1/knowledge/ask", 20));
   }
 
   private JwtAuthenticationConverter jwtAuthenticationConverter() {

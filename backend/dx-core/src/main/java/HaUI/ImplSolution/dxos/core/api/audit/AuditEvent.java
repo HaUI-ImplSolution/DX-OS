@@ -8,10 +8,24 @@ import java.util.Map;
 // action: upper-case name such as ADMIN_ACTION
 // targetType, targetId: what the action was done to; either may be null
 // metadata: extra facts to keep with the record; null or empty when there are none
-public record AuditEvent(String action,String targetType,String targetId,AuditOutcome outcome,Map<String,Object>metadata){
+public record AuditEvent(
+    String action,
+    String targetType,
+    String targetId,
+    AuditOutcome outcome,
+    Map<String, Object> metadata) {
 
-public static AuditEvent success(String action,String targetType,String targetId){return new AuditEvent(action,targetType,targetId,AuditOutcome.SUCCESS,null);}
+  public static AuditEvent success(String action, String targetType, String targetId) {
+    return new AuditEvent(action, targetType, targetId, AuditOutcome.SUCCESS, null);
+  }
 
-public static AuditEvent success(String action,String targetType,String targetId,Map<String,Object>metadata){return new AuditEvent(action,targetType,targetId,AuditOutcome.SUCCESS,metadata);}
+  public static AuditEvent success(
+      String action, String targetType, String targetId, Map<String, Object> metadata) {
+    return new AuditEvent(action, targetType, targetId, AuditOutcome.SUCCESS, metadata);
+  }
 
-public static AuditEvent failed(String action,String targetType,String targetId,Map<String,Object>metadata){return new AuditEvent(action,targetType,targetId,AuditOutcome.FAILED,metadata);}}
+  public static AuditEvent failed(
+      String action, String targetType, String targetId, Map<String, Object> metadata) {
+    return new AuditEvent(action, targetType, targetId, AuditOutcome.FAILED, metadata);
+  }
+}

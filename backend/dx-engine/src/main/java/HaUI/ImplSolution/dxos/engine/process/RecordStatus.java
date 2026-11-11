@@ -2,13 +2,13 @@
 package HaUI.ImplSolution.dxos.engine.process;
 
 import HaUI.ImplSolution.dxos.engine.apply.Sql;
-import HaUI.ImplSolution.dxos.engine.event.CompletionHandler;
 import HaUI.ImplSolution.dxos.engine.data.EventLog;
+import HaUI.ImplSolution.dxos.engine.event.CompletionHandler;
 import HaUI.ImplSolution.dxos.engine.event.Outbox;
 import HaUI.ImplSolution.dxos.engine.event.OverdueSweep;
 import HaUI.ImplSolution.dxos.engine.registry.ModelRegistry;
-import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.Completion;
+import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
 import HaUI.ImplSolution.dxos.model.ProcessFamily;
 import java.time.Duration;
@@ -35,7 +35,11 @@ public class RecordStatus {
   private final EventLog events;
   private final OverdueSweep overdue;
 
-  public RecordStatus(JdbcTemplate jdbc, ModelRegistry registry, Outbox outbox, EventLog events,
+  public RecordStatus(
+      JdbcTemplate jdbc,
+      ModelRegistry registry,
+      Outbox outbox,
+      EventLog events,
       OverdueSweep overdue) {
     this.jdbc = jdbc;
     this.registry = registry;
@@ -95,11 +99,28 @@ public class RecordStatus {
       Object group =
           completion.group() != null ? completion.group() : row.get(completion.groupField());
       if (user == null || group == null || group.toString().isBlank()) {
-        String missing = user == null ? "user in field " + completion.user()
-            : completion.group() != null ? "group" : "group in field " + completion.groupField();
-        log.warn("Completion {} skipped for {}.{} record {} in {}: the record has no {}",
-            completion.operation(), model.name(), entity.name(), id, status, missing);
-        events.record(model, entity, id, "completion_skipped", status, status, null,
+        String missing =
+            user == null
+                ? "user in field " + completion.user()
+                : completion.group() != null
+                    ? "group"
+                    : "group in field " + completion.groupField();
+        log.warn(
+            "Completion {} skipped for {}.{} record {} in {}: the record has no {}",
+            completion.operation(),
+            model.name(),
+            entity.name(),
+            id,
+            status,
+            missing);
+        events.record(
+            model,
+            entity,
+            id,
+            "completion_skipped",
+            status,
+            status,
+            null,
             completion.operation() + " skipped: the record has no " + missing);
         continue;
       }
@@ -107,9 +128,13 @@ public class RecordStatus {
       payload.put("operation", completion.operation());
       payload.put("user", user.toString());
       payload.put("group", group.toString());
-      outbox.publish(CompletionHandler.TOPIC,
+      outbox.publish(
+          CompletionHandler.TOPIC,
           "completion:" + model.name() + "." + entity.name() + "." + id + ":" + status + ":" + i,
-          model.name(), entity.name(), id, payload);
+          model.name(),
+          entity.name(),
+          id,
+          payload);
     }
   }
 }

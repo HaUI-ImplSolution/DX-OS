@@ -46,7 +46,8 @@ public class WebhookTargets {
   private Map<String, Target> named = Map.of();
   private FileTime readAt;
 
-  public WebhookTargets(@Value("${engine.webhook.file:}") String file,
+  public WebhookTargets(
+      @Value("${engine.webhook.file:}") String file,
       @Value("${engine.webhook.url:}") String url,
       @Value("${engine.webhook.secret:}") String secret,
       @Value("${engine.webhook.format:json}") String format) {
@@ -54,8 +55,9 @@ public class WebhookTargets {
     this.fallback =
         usable(url) && formatOk(format) ? new Target(url.strip(), secret, format.strip()) : null;
     if (this.fallback == null && !url.isBlank()) {
-      log.error("ENGINE_WEBHOOK_URL or ENGINE_WEBHOOK_FORMAT is not valid, so the default target is"
-          + " not used");
+      log.error(
+          "ENGINE_WEBHOOK_URL or ENGINE_WEBHOOK_FORMAT is not valid, so the default target is"
+              + " not used");
     }
   }
 
@@ -64,8 +66,9 @@ public class WebhookTargets {
   static boolean usable(String address) {
     try {
       URI uri = URI.create(address.strip());
-      return uri.getHost() != null && ("http".equalsIgnoreCase(uri.getScheme())
-          || "https".equalsIgnoreCase(uri.getScheme()));
+      return uri.getHost() != null
+          && ("http".equalsIgnoreCase(uri.getScheme())
+              || "https".equalsIgnoreCase(uri.getScheme()));
     } catch (IllegalArgumentException e) {
       return false;
     }
@@ -145,17 +148,24 @@ public class WebhookTargets {
 
   private void add(Map<String, Target> targets, String name, Object value) {
     String url =
-        value instanceof Map<?, ?> map && map.get("url") != null ? String.valueOf(map.get("url"))
+        value instanceof Map<?, ?> map && map.get("url") != null
+            ? String.valueOf(map.get("url"))
             : "";
     Object format =
         value instanceof Map<?, ?> map && map.get("format") != null ? map.get("format") : "json";
     if (!NAME.matcher(name).matches() || !usable(url) || !formatOk(String.valueOf(format))) {
-      log.error("The webhook target {} is skipped: it needs a name matching [a-z][a-z0-9_]*, an "
-          + "http or https url and a format of json or chat", name);
+      log.error(
+          "The webhook target {} is skipped: it needs a name matching [a-z][a-z0-9_]*, an "
+              + "http or https url and a format of json or chat",
+          name);
       return;
     }
     Object secret = ((Map<?, ?>) value).get("secret");
-    targets.put(name, new Target(url.strip(), secret == null ? "" : String.valueOf(secret),
-        String.valueOf(format).strip()));
+    targets.put(
+        name,
+        new Target(
+            url.strip(),
+            secret == null ? "" : String.valueOf(secret),
+            String.valueOf(format).strip()));
   }
 }

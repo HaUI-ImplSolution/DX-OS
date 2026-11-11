@@ -7,8 +7,8 @@ import java.net.URLConnection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -23,10 +23,16 @@ public class AttachmentProcessor implements FileProcessor {
 
   private final Set<String> allowed;
 
-  public AttachmentProcessor(@Value("${engine.files.allowed-extensions:pdf,png,jpg,jpeg,gif,webp,"
-      + "txt,csv,md,doc,docx,xls,xlsx,ppt,pptx,odt,ods,odp,zip}") List<String> allowed) {
-    this.allowed = allowed.stream().map(item -> item.strip().toLowerCase(Locale.ROOT))
-        .filter(item -> !item.isEmpty()).collect(Collectors.toSet());
+  public AttachmentProcessor(
+      @Value(
+              "${engine.files.allowed-extensions:pdf,png,jpg,jpeg,gif,webp,"
+                  + "txt,csv,md,doc,docx,xls,xlsx,ppt,pptx,odt,ods,odp,zip}")
+          List<String> allowed) {
+    this.allowed =
+        allowed.stream()
+            .map(item -> item.strip().toLowerCase(Locale.ROOT))
+            .filter(item -> !item.isEmpty())
+            .collect(Collectors.toSet());
   }
 
   @Override
@@ -48,7 +54,8 @@ public class AttachmentProcessor implements FileProcessor {
       throw new IllegalArgumentException("Files of this type are not accepted");
     }
     String contentType = URLConnection.guessContentTypeFromName(filename);
-    return new ProcessedFile(original,
+    return new ProcessedFile(
+        original,
         contentType == null ? "application/octet-stream" : contentType,
         EXTENSION.matcher(extension).matches() ? extension : "bin");
   }

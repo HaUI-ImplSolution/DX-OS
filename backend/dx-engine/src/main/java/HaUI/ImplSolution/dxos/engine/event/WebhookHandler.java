@@ -42,9 +42,16 @@ public class WebhookHandler implements OutboxHandler {
       throw new IllegalStateException(
           "The webhook target " + model.get().webhook() + " is not configured");
     }
-    boolean hasProcess = model.get().entity(String.valueOf(payload.get("entity")))
-        .map(entity -> entity.process() != null).orElse(false);
-    sender.send(target.get(), String.valueOf(payload.get("eventId")), payload,
+    boolean hasProcess =
+        model
+            .get()
+            .entity(String.valueOf(payload.get("entity")))
+            .map(entity -> entity.process() != null)
+            .orElse(false);
+    sender.send(
+        target.get(),
+        String.valueOf(payload.get("eventId")),
+        payload,
         ChatText.record(payload, hasProcess));
   }
 }

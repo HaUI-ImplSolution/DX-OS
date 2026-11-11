@@ -26,15 +26,19 @@ public class ServiceHealthSampler {
   private final Map<String, Integer> failures = new HashMap<>();
   private boolean loaded;
 
-  public ServiceHealthSampler(MonitorProperties properties, ServiceProbe probe,
-      ServiceHealthStore store, ApplicationEventPublisher events) {
+  public ServiceHealthSampler(
+      MonitorProperties properties,
+      ServiceProbe probe,
+      ServiceHealthStore store,
+      ApplicationEventPublisher events) {
     this.settings = properties.probe();
     this.probe = probe;
     this.store = store;
     this.events = events;
   }
 
-  @Scheduled(fixedDelayString = "${monitor.probe.interval-ms:30000}",
+  @Scheduled(
+      fixedDelayString = "${monitor.probe.interval-ms:30000}",
       initialDelayString = "${monitor.probe.initial-delay-ms:5000}")
   public void run() {
     try {

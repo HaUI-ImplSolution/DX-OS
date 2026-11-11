@@ -21,16 +21,26 @@ import org.springframework.stereotype.Service;
 public class ProcessDiagramService {
 
   // A final state with the actions taken when a record reaches it.
-  public record StateView(String name, String label, boolean terminal,
-      List<Completion> completions) {}
+  public record StateView(
+      String name, String label, boolean terminal, List<Completion> completions) {}
 
   // The process of one entity: its family's states and actions, and what the file adds to them.
   // Seconds are null when the file sets no deadline or auto_close; awaiting lists the states where
   // the deadline runs.
-  public record ProcessView(String entity, String label, String family, String initial,
-      List<String> handlers, boolean allowSelfDecision, Long deadlineSeconds, Long autoCloseSeconds,
-      String autoCloseAction, Booking booking, List<StateView> states,
-      List<ProcessFamily.Action> actions, List<String> awaiting) {}
+  public record ProcessView(
+      String entity,
+      String label,
+      String family,
+      String initial,
+      List<String> handlers,
+      boolean allowSelfDecision,
+      Long deadlineSeconds,
+      Long autoCloseSeconds,
+      String autoCloseAction,
+      Booking booking,
+      List<StateView> states,
+      List<ProcessFamily.Action> actions,
+      List<String> awaiting) {}
 
   // valid is false when the file has problems; processes is then empty.
   public record Diagram(boolean valid, List<Problem> errors, List<ProcessView> processes) {}
@@ -54,17 +64,37 @@ public class ProcessDiagramService {
   private static ProcessView view(Entity entity) {
     Process process = entity.process();
     ProcessFamily family = process.definition();
-    List<StateView> states = family.states().stream()
-        .map(state -> new StateView(state.name(), state.label(), state.terminal(),
-            process.after() == null ? List.<Completion>of()
-                : process.after().getOrDefault(state.name(), List.of())))
-        .toList();
-    List<String> awaiting = family.states().stream().map(ProcessFamily.State::name)
-        .filter(family::awaitsHandler).toList();
-    return new ProcessView(entity.name(), entity.label(), family.name(), family.initial(),
-        process.handlers(), process.allowSelfDecision(), seconds(process.deadline()),
-        seconds(process.autoClose()), process.autoCloseAction(), process.booking(), states,
-        family.actions(), awaiting);
+    List<StateView> states =
+        family.states().stream()
+            .map(
+                state ->
+                    new StateView(
+                        state.name(),
+                        state.label(),
+                        state.terminal(),
+                        process.after() == null
+                            ? List.<Completion>of()
+                            : process.after().getOrDefault(state.name(), List.of())))
+            .toList();
+    List<String> awaiting =
+        family.states().stream()
+            .map(ProcessFamily.State::name)
+            .filter(family::awaitsHandler)
+            .toList();
+    return new ProcessView(
+        entity.name(),
+        entity.label(),
+        family.name(),
+        family.initial(),
+        process.handlers(),
+        process.allowSelfDecision(),
+        seconds(process.deadline()),
+        seconds(process.autoClose()),
+        process.autoCloseAction(),
+        process.booking(),
+        states,
+        family.actions(),
+        awaiting);
   }
 
   private static Long seconds(Duration duration) {

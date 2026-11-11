@@ -42,11 +42,11 @@ Không có lỗi loại trừ: repository công khai, có `LICENSE`, đã có re
 |---|---|---|---|
 | ✅ | Kho công khai trên Internet, có web viewer | GitHub: duyệt mã, lịch sử, blame trên trình duyệt | −3 |
 | ✅ | Truy cập mở, không cần đăng nhập | API không đăng nhập trả 200 cho repository, release, tag, `LICENSE` | −3 |
-| ✅ | Repository được dùng thật | 877 commit trên nhánh làm việc; 165 pull request đã gộp (GitHub); CI chạy trên mọi pull request | −5 |
-| ✅ | Lịch sử trải đều | Mười một tuần ISO liên tiếp từ W36 đến W46 đều có commit: 3, 80, 82, 53, 93, 97, 85, 84, 136, 118, 32 | |
-| ✅ | Nhiều người đóng góp | 3 sinh viên: `KhuongSpring` 614, `nddKhanh` 125, `tung51652-alt` 119 commit, cộng `dependabot` 5 | |
+| ✅ | Repository được dùng thật | 895 commit trên nhánh làm việc; 171 pull request đã gộp (GitHub); CI chạy trên mọi pull request | −5 |
+| ✅ | Lịch sử trải đều | Mười một tuần ISO liên tiếp từ W36 đến W46 đều có commit: 3, 80, 82, 53, 93, 97, 85, 84, 136, 119, 63 | |
+| ✅ | Nhiều người đóng góp | 3 sinh viên: `KhuongSpring` 643, `nddKhanh` 127, `tung51652-alt` 120 commit, cộng `dependabot` 5 | |
 | ✅ | Nhận diện tác giả | `.mailmap` gom các danh tính về một tên mỗi người | |
-| ⚠️ | Bug tracker có lịch sử | 42 issue (11 đã đóng) so với 165 pull request đã gộp; việc còn lại ghi ở `BACKLOG.md`, phần lớn đã có issue tương ứng | |
+| ⚠️ | Bug tracker có lịch sử | 43 issue (11 đã đóng) so với 171 pull request đã gộp; việc còn lại ghi ở `BACKLOG.md`, phần lớn đã có issue tương ứng | |
 
 ```bash
 git log --pretty='%h %ad %an %s' --date=short | tail -20     # lịch sử có trải đều không
@@ -128,7 +128,7 @@ git ls-files | grep -E '(^|/)(vendor|third_party|node_modules)/|\.patch$' && ech
 
 | Trạng thái | Yêu cầu | Bằng chứng | Mức trừ nếu thiếu |
 |---|---|---|---|
-| ✅ | Có bug tracker | GitHub Issues đã bật; mẫu `bug_report.yml`, `feature_request.yml`; 14 issue | −5 |
+| ✅ | Có bug tracker | GitHub Issues đã bật; mẫu `bug_report.yml`, `feature_request.yml`; 43 issue | −5 |
 | ✅ | Có changelog | `CHANGELOG.md` theo Keep a Changelog, mục `[Unreleased]` và mục cho mọi bản đến `[2.0.0]` | −5 |
 | ✅ | Có README và hướng dẫn | `README.md`, `README_EN.md`; `ARCHITECTURE.md`; `docs/TESTING.md`; `deploy/OPERATIONS.md`; API qua đặc tả OpenAPI và `check_docs.py` kiểm tài liệu khớp OpenAPI; job `Check required files and scripts` báo lỗi nếu thiếu một tài liệu bắt buộc hoặc `CHANGELOG.md` mất mục `[Unreleased]`; job `Build the docs site` dựng trang docs và dừng khi có liên kết hỏng | −5 |
 | ✅ | Hướng dẫn đóng góp | `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, mẫu pull request | |

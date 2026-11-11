@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.core.exception;
 
-import HaUI.ImplSolution.dxos.core.api.exception.InvalidStateException;
-import HaUI.ImplSolution.dxos.core.api.exception.PokaYokeViolationException;
-import HaUI.ImplSolution.dxos.core.api.exception.ResourceNotFoundException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
+import HaUI.ImplSolution.dxos.core.api.exception.InvalidStateException;
+import HaUI.ImplSolution.dxos.core.api.exception.PokaYokeViolationException;
+import HaUI.ImplSolution.dxos.core.api.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.dxos.core.audit.AuditService;
 import java.time.LocalDate;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.mock.http.MockHttpInputMessage;
 import org.springframework.security.access.AccessDeniedException;
@@ -32,12 +32,14 @@ class GlobalExceptionHandlerTest {
   void pokaYokeKeepsItsOwnCodeAtTopLevelAndInData() {
     LocalDate until = LocalDate.of(2026, 11, 1);
     ResponseEntity<ApiResponse<Map<String, Object>>> response =
-        handler.handlePokaYoke(new PokaYokeViolationException("POKA_YOKE_VIETGAP_VIOLATION",
-            "isolated", Map.of("harvestLockedUntil", until)));
+        handler.handlePokaYoke(
+            new PokaYokeViolationException(
+                "POKA_YOKE_VIETGAP_VIOLATION", "isolated", Map.of("harvestLockedUntil", until)));
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
     assertThat(response.getBody().errorCode()).isEqualTo("POKA_YOKE_VIETGAP_VIOLATION");
-    assertThat(response.getBody().data()).containsEntry("errorCode", "POKA_YOKE_VIETGAP_VIOLATION")
+    assertThat(response.getBody().data())
+        .containsEntry("errorCode", "POKA_YOKE_VIETGAP_VIOLATION")
         .containsEntry("harvestLockedUntil", until);
   }
 
@@ -55,13 +57,15 @@ class GlobalExceptionHandlerTest {
 
   @Test
   void clientRequestErrorsKeepTheirStatusInsteadOfBecomingServerErrors() {
-    var unsupported = handler.handleUnsupportedMediaType(
-        new HttpMediaTypeNotSupportedException(MediaType.TEXT_PLAIN, java.util.List.of()));
+    var unsupported =
+        handler.handleUnsupportedMediaType(
+            new HttpMediaTypeNotSupportedException(MediaType.TEXT_PLAIN, java.util.List.of()));
     assertThat(unsupported.getStatusCode()).isEqualTo(HttpStatus.UNSUPPORTED_MEDIA_TYPE);
     assertThat(unsupported.getBody().errorCode()).isEqualTo("ERR_UNSUPPORTED_MEDIA_TYPE");
 
-    var method = handler.handleMethodNotAllowed(
-        new HttpRequestMethodNotSupportedException(HttpMethod.DELETE.name()));
+    var method =
+        handler.handleMethodNotAllowed(
+            new HttpRequestMethodNotSupportedException(HttpMethod.DELETE.name()));
     assertThat(method.getStatusCode()).isEqualTo(HttpStatus.METHOD_NOT_ALLOWED);
     assertThat(method.getBody().errorCode()).isEqualTo("ERR_METHOD_NOT_ALLOWED");
 
@@ -70,8 +74,9 @@ class GlobalExceptionHandlerTest {
     assertThat(missingPart.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     assertThat(missingPart.getBody().errorCode()).isEqualTo("ERR_BAD_REQUEST");
 
-    var brokenJson = handler.handleUnreadableRequest(
-        new HttpMessageNotReadableException("bad json", new MockHttpInputMessage(new byte[0])));
+    var brokenJson =
+        handler.handleUnreadableRequest(
+            new HttpMessageNotReadableException("bad json", new MockHttpInputMessage(new byte[0])));
     assertThat(brokenJson.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
   }
 

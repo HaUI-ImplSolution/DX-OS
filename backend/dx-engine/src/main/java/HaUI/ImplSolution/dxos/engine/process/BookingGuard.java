@@ -37,16 +37,26 @@ public class BookingGuard {
     if (booking == null) {
       return;
     }
-    if (selfId != null && !values.containsKey(booking.resource())
-        && !values.containsKey(booking.starts()) && !values.containsKey(booking.ends())) {
+    if (selfId != null
+        && !values.containsKey(booking.resource())
+        && !values.containsKey(booking.starts())
+        && !values.containsKey(booking.ends())) {
       return;
     }
     Map<String, Object> effective = new LinkedHashMap<>();
     if (selfId != null) {
-      effective.putAll(jdbc.queryForMap(
-          "SELECT " + Sql.ident(booking.resource()) + ", " + Sql.ident(booking.starts()) + ", "
-              + Sql.ident(booking.ends()) + " FROM " + Sql.table(model, entity) + " WHERE id = ?",
-          selfId));
+      effective.putAll(
+          jdbc.queryForMap(
+              "SELECT "
+                  + Sql.ident(booking.resource())
+                  + ", "
+                  + Sql.ident(booking.starts())
+                  + ", "
+                  + Sql.ident(booking.ends())
+                  + " FROM "
+                  + Sql.table(model, entity)
+                  + " WHERE id = ?",
+              selfId));
     }
     effective.putAll(values);
     Object resource = effective.get(booking.resource());
@@ -59,18 +69,35 @@ public class BookingGuard {
       throw new ModelValidationException(booking.ends(), "must be after " + booking.starts());
     }
     Entity target = model.entity(entity.field(booking.resource()).orElseThrow().to()).orElseThrow();
-    jdbc.queryForList("SELECT id FROM " + Sql.table(model, target) + " WHERE id = ? FOR UPDATE",
-        resource);
+    jdbc.queryForList(
+        "SELECT id FROM " + Sql.table(model, target) + " WHERE id = ? FOR UPDATE", resource);
     List<String> open =
-        entity.process().definition().states().stream().filter(state -> !state.terminal())
-            .map(State::name).map(Sql::literal).collect(Collectors.toList());
-    List<Map<String, Object>> overlapping = jdbc.queryForList(
-        "SELECT " + Sql.ident(booking.starts()) + " AS starts, " + Sql.ident(booking.ends())
-            + " AS ends FROM " + Sql.table(model, entity) + " WHERE "
-            + Sql.ident(booking.resource()) + " = ? AND " + Sql.ident(booking.starts())
-            + " < ? AND " + Sql.ident(booking.ends()) + " > ? AND status IN ("
-            + String.join(", ", open) + ") AND id <> ?",
-        resource, ends, starts, selfId == null ? -1L : selfId);
+        entity.process().definition().states().stream()
+            .filter(state -> !state.terminal())
+            .map(State::name)
+            .map(Sql::literal)
+            .collect(Collectors.toList());
+    List<Map<String, Object>> overlapping =
+        jdbc.queryForList(
+            "SELECT "
+                + Sql.ident(booking.starts())
+                + " AS starts, "
+                + Sql.ident(booking.ends())
+                + " AS ends FROM "
+                + Sql.table(model, entity)
+                + " WHERE "
+                + Sql.ident(booking.resource())
+                + " = ? AND "
+                + Sql.ident(booking.starts())
+                + " < ? AND "
+                + Sql.ident(booking.ends())
+                + " > ? AND status IN ("
+                + String.join(", ", open)
+                + ") AND id <> ?",
+            resource,
+            ends,
+            starts,
+            selfId == null ? -1L : selfId);
     if (busiest(overlapping, starts.toInstant(), ends.toInstant()) >= booking.capacity()) {
       throw new InvalidStateException("The resource is already booked for this time", "SLOT_TAKEN");
     }

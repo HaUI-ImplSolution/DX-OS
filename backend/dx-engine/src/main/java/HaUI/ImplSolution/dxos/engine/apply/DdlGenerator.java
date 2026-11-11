@@ -6,14 +6,14 @@ import static HaUI.ImplSolution.dxos.engine.apply.Sql.ident;
 import static HaUI.ImplSolution.dxos.engine.apply.Sql.literal;
 import static HaUI.ImplSolution.dxos.engine.apply.Sql.table;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import HaUI.ImplSolution.dxos.model.FieldType;
 import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
 import HaUI.ImplSolution.dxos.model.Model.Field;
 import HaUI.ImplSolution.dxos.model.ProcessFamily;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -54,10 +54,16 @@ public final class DdlGenerator {
     columns.add("version BIGINT NOT NULL DEFAULT 0");
     if (entity.process() != null) {
       ProcessFamily template = entity.process().definition();
-      String values = template.states().stream().map(state -> literal(state.name()))
-          .collect(Collectors.joining(", "));
-      columns.add("status TEXT NOT NULL DEFAULT " + literal(template.initial())
-          + " CHECK (status IN (" + values + "))");
+      String values =
+          template.states().stream()
+              .map(state -> literal(state.name()))
+              .collect(Collectors.joining(", "));
+      columns.add(
+          "status TEXT NOT NULL DEFAULT "
+              + literal(template.initial())
+              + " CHECK (status IN ("
+              + values
+              + "))");
       columns.add("assignee TEXT");
       columns.add("decided_by TEXT");
       columns.add("decided_at TIMESTAMPTZ");
@@ -73,31 +79,54 @@ public final class DdlGenerator {
         column.append(" NOT NULL");
       }
       if (field.unique()) {
-        column.append(" CONSTRAINT ").append(ident("uq_" + entity.name() + "_" + name))
+        column
+            .append(" CONSTRAINT ")
+            .append(ident("uq_" + entity.name() + "_" + name))
             .append(" UNIQUE");
       }
       if (field.type() == FieldType.CHOICE || field.type() == FieldType.UNIT) {
         String values =
             field.options().stream().map(Sql::literal).collect(Collectors.joining(", "));
-        String test = field.multiple() ? ident(name) + " <@ ARRAY[" + values + "]::text[]"
-            : ident(name) + " IN (" + values + ")";
-        column.append(" CONSTRAINT ").append(ident("ck_" + entity.name() + "_" + name))
-            .append(" CHECK (").append(test).append(")");
+        String test =
+            field.multiple()
+                ? ident(name) + " <@ ARRAY[" + values + "]::text[]"
+                : ident(name) + " IN (" + values + ")";
+        column
+            .append(" CONSTRAINT ")
+            .append(ident("ck_" + entity.name() + "_" + name))
+            .append(" CHECK (")
+            .append(test)
+            .append(")");
       }
       if (field.min() != null) {
-        column.append(" CONSTRAINT ")
-            .append(constraint("ck_" + entity.name() + "_" + name + "$min")).append(" CHECK (")
-            .append(ident(name)).append(" >= ").append(bound(field, field.min())).append(")");
+        column
+            .append(" CONSTRAINT ")
+            .append(constraint("ck_" + entity.name() + "_" + name + "$min"))
+            .append(" CHECK (")
+            .append(ident(name))
+            .append(" >= ")
+            .append(bound(field, field.min()))
+            .append(")");
       }
       if (field.max() != null) {
-        column.append(" CONSTRAINT ")
-            .append(constraint("ck_" + entity.name() + "_" + name + "$max")).append(" CHECK (")
-            .append(ident(name)).append(" <= ").append(bound(field, field.max())).append(")");
+        column
+            .append(" CONSTRAINT ")
+            .append(constraint("ck_" + entity.name() + "_" + name + "$max"))
+            .append(" CHECK (")
+            .append(ident(name))
+            .append(" <= ")
+            .append(bound(field, field.max()))
+            .append(")");
       }
       if (field.pattern() != null) {
-        column.append(" CONSTRAINT ").append(constraint("ck_" + entity.name() + "_" + name + "$re"))
-            .append(" CHECK (").append(ident(name)).append(" ~ ")
-            .append(literal(anchored(field.pattern()))).append(")");
+        column
+            .append(" CONSTRAINT ")
+            .append(constraint("ck_" + entity.name() + "_" + name + "$re"))
+            .append(" CHECK (")
+            .append(ident(name))
+            .append(" ~ ")
+            .append(literal(anchored(field.pattern())))
+            .append(")");
       }
       columns.add(column.toString());
     }
@@ -113,24 +142,38 @@ public final class DdlGenerator {
       statements.add(index(entity, "assignee"));
       statements.add(index(entity, "handle_by"));
     }
-    entity.unitField().ifPresent(
-        field -> statements.add(index(entity, names.getOrDefault(field.name(), field.name()))));
+    entity
+        .unitField()
+        .ifPresent(
+            field -> statements.add(index(entity, names.getOrDefault(field.name(), field.name()))));
     for (Field field : entity.fields().values()) {
       if (field.type() != FieldType.REFERENCE) {
         continue;
       }
       String name = names.getOrDefault(field.name(), field.name());
-      statements.add("ALTER TABLE " + ident(entity.name()) + " ADD CONSTRAINT "
-          + ident("fk_" + entity.name() + "_" + name) + " FOREIGN KEY (" + ident(name)
-          + ") REFERENCES " + ident(field.to()) + " (id)");
+      statements.add(
+          "ALTER TABLE "
+              + ident(entity.name())
+              + " ADD CONSTRAINT "
+              + ident("fk_" + entity.name() + "_" + name)
+              + " FOREIGN KEY ("
+              + ident(name)
+              + ") REFERENCES "
+              + ident(field.to())
+              + " (id)");
       statements.add(index(entity, name));
     }
     return statements;
   }
 
   private static String index(Entity entity, String column) {
-    return "CREATE INDEX " + ident("ix_" + entity.name() + "_" + column) + " ON "
-        + ident(entity.name()) + " (" + ident(column) + ")";
+    return "CREATE INDEX "
+        + ident("ix_" + entity.name() + "_" + column)
+        + " ON "
+        + ident(entity.name())
+        + " ("
+        + ident(column)
+        + ")";
   }
 
   // Renames a column with the constraints and the index named after it, in one statement. It does
@@ -141,24 +184,42 @@ public final class DdlGenerator {
     String prefix = entity.name() + "_";
     StringBuilder body = new StringBuilder();
     body.append(
-        "DO $$ BEGIN IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = ")
-        .append(schema).append(" AND table_name = ").append(table).append(" AND column_name = ")
-        .append(literal(from)).append(") THEN ALTER TABLE ").append(table(model, entity))
-        .append(" RENAME COLUMN ").append(ident(from)).append(" TO ").append(ident(to))
+            "DO $$ BEGIN IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = ")
+        .append(schema)
+        .append(" AND table_name = ")
+        .append(table)
+        .append(" AND column_name = ")
+        .append(literal(from))
+        .append(") THEN ALTER TABLE ")
+        .append(table(model, entity))
+        .append(" RENAME COLUMN ")
+        .append(ident(from))
+        .append(" TO ")
+        .append(ident(to))
         .append("; END IF; ");
     for (String kind : List.of("uq_", "ck_", "fk_")) {
       for (String suffix : kind.equals("ck_") ? List.of("", "$min", "$max", "$re") : List.of("")) {
         String oldName = kind + prefix + from + suffix;
         body.append("IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = ")
-            .append(literal(oldName)).append(" AND conrelid = ")
-            .append(literal(table(model, entity))).append("::regclass) THEN ALTER TABLE ")
-            .append(table(model, entity)).append(" RENAME CONSTRAINT ").append(constraint(oldName))
-            .append(" TO ").append(constraint(kind + prefix + to + suffix)).append("; END IF; ");
+            .append(literal(oldName))
+            .append(" AND conrelid = ")
+            .append(literal(table(model, entity)))
+            .append("::regclass) THEN ALTER TABLE ")
+            .append(table(model, entity))
+            .append(" RENAME CONSTRAINT ")
+            .append(constraint(oldName))
+            .append(" TO ")
+            .append(constraint(kind + prefix + to + suffix))
+            .append("; END IF; ");
       }
     }
-    body.append("ALTER INDEX IF EXISTS ").append(ident(model.schema())).append('.')
-        .append(ident("ix_" + prefix + from)).append(" RENAME TO ")
-        .append(ident("ix_" + prefix + to)).append("; END $$");
+    body.append("ALTER INDEX IF EXISTS ")
+        .append(ident(model.schema()))
+        .append('.')
+        .append(ident("ix_" + prefix + from))
+        .append(" RENAME TO ")
+        .append(ident("ix_" + prefix + to))
+        .append("; END $$");
     return body.toString();
   }
 
@@ -172,7 +233,11 @@ public final class DdlGenerator {
     String create =
         password == null || password.isBlank() ? "NOLOGIN" : "LOGIN PASSWORD " + literal(password);
     return "DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = "
-        + literal(REPORT_ROLE) + ") THEN CREATE ROLE " + ident(REPORT_ROLE) + " " + create
+        + literal(REPORT_ROLE)
+        + ") THEN CREATE ROLE "
+        + ident(REPORT_ROLE)
+        + " "
+        + create
         + "; END IF; END $$";
   }
 
@@ -181,9 +246,11 @@ public final class DdlGenerator {
   private static String defaultSql(Field field) {
     if (field.multiple()) {
       try {
-        List<String> values = new ObjectMapper().readValue(field.defaultValue(),
-            new TypeReference<List<String>>() {});
-        return "ARRAY[" + values.stream().map(Sql::literal).collect(Collectors.joining(", "))
+        List<String> values =
+            new ObjectMapper()
+                .readValue(field.defaultValue(), new TypeReference<List<String>>() {});
+        return "ARRAY["
+            + values.stream().map(Sql::literal).collect(Collectors.joining(", "))
             + "]::text[]";
       } catch (JsonProcessingException e) {
         throw new IllegalStateException("The default of " + field.name() + " is not a list", e);
@@ -200,7 +267,8 @@ public final class DdlGenerator {
   // A bound as SQL: a number as written, a date as a typed literal. The model reader has already
   // checked the form of both.
   public static String bound(Field field, String value) {
-    return field.type() == FieldType.DATE ? "DATE " + literal(value)
+    return field.type() == FieldType.DATE
+        ? "DATE " + literal(value)
         : new java.math.BigDecimal(value).toPlainString();
   }
 

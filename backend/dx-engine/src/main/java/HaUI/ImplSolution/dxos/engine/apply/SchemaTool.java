@@ -41,9 +41,13 @@ public class SchemaTool {
   private final String user;
   private final String password;
 
-  public SchemaTool(ObjectMapper json, @Value("${engine.pgschema-command:pgschema}") String command,
-      @Value("${POSTGRES_HOST}") String host, @Value("${POSTGRES_PORT}") String port,
-      @Value("${POSTGRES_DB}") String database, @Value("${POSTGRES_USER}") String user,
+  public SchemaTool(
+      ObjectMapper json,
+      @Value("${engine.pgschema-command:pgschema}") String command,
+      @Value("${POSTGRES_HOST}") String host,
+      @Value("${POSTGRES_PORT}") String port,
+      @Value("${POSTGRES_DB}") String database,
+      @Value("${POSTGRES_USER}") String user,
       @Value("${POSTGRES_PASSWORD}") String password) {
     this.json = json;
     this.command = command;
@@ -92,16 +96,34 @@ public class SchemaTool {
     List<Statement> statements = new ArrayList<>();
     for (JsonNode group : json.readTree(text).path("groups")) {
       for (JsonNode step : group.path("steps")) {
-        statements.add(new Statement(step.path("sql").asString(), step.path("type").asString(),
-            step.path("operation").asString(), step.path("path").asString()));
+        statements.add(
+            new Statement(
+                step.path("sql").asString(),
+                step.path("type").asString(),
+                step.path("operation").asString(),
+                step.path("path").asString()));
       }
     }
     return statements;
   }
 
   private void run(Model model, String action, String... options) throws IOException {
-    List<String> arguments = new ArrayList<>(List.of(command, action, "--host", host, "--port",
-        port, "--db", database, "--user", user, "--schema", model.schema(), "--no-color"));
+    List<String> arguments =
+        new ArrayList<>(
+            List.of(
+                command,
+                action,
+                "--host",
+                host,
+                "--port",
+                port,
+                "--db",
+                database,
+                "--user",
+                user,
+                "--schema",
+                model.schema(),
+                "--no-color"));
     arguments.addAll(List.of(options));
     ProcessBuilder builder = new ProcessBuilder(arguments).redirectErrorStream(true);
     Map<String, String> environment = builder.environment();

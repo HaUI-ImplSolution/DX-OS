@@ -23,11 +23,16 @@ class ServiceProbeTest {
   private static final int TIMEOUT_MS = 500;
 
   @RegisterExtension
-  static WireMockExtension service = WireMockExtension.newInstance()
-      .options(wireMockConfig().dynamicPort().http2PlainDisabled(true)).build();
+  static WireMockExtension service =
+      WireMockExtension.newInstance()
+          .options(wireMockConfig().dynamicPort().http2PlainDisabled(true))
+          .build();
 
-  private final ServiceProbe probe = new ServiceProbe(null,
-      new MonitorProperties(null, null, new Probe(3, TIMEOUT_MS, List.of()), null, 0, null, null));
+  private final ServiceProbe probe =
+      new ServiceProbe(
+          null,
+          new MonitorProperties(
+              null, null, new Probe(3, TIMEOUT_MS, List.of()), null, 0, null, null));
 
   private ServiceProbe.Result probe(String path, String bodyContains) {
     return probe.probe(new Target("svc", service.url(path), bodyContains, true));
@@ -35,10 +40,12 @@ class ServiceProbeTest {
 
   @Test
   void aServiceIsUpOnlyWhenItsAnswerHasTheExpectedMarker() {
-    service.stubFor(get(urlEqualTo("/good"))
-        .willReturn(aResponse().withStatus(200).withBody("{\"status\":\"UP\"}")));
-    service.stubFor(get(urlEqualTo("/bad"))
-        .willReturn(aResponse().withStatus(200).withBody("{\"status\":\"DOWN\"}")));
+    service.stubFor(
+        get(urlEqualTo("/good"))
+            .willReturn(aResponse().withStatus(200).withBody("{\"status\":\"UP\"}")));
+    service.stubFor(
+        get(urlEqualTo("/bad"))
+            .willReturn(aResponse().withStatus(200).withBody("{\"status\":\"DOWN\"}")));
 
     assertThat(probe("/good", "UP").up()).isTrue();
     assertThat(probe("/bad", "UP").up()).isFalse();
@@ -64,8 +71,13 @@ class ServiceProbeTest {
 
   @Test
   void aServiceThatSendsTheHeadersAndThenStallsDoesNotHoldTheProbe() {
-    service.stubFor(get(urlEqualTo("/stall")).willReturn(
-        aResponse().withStatus(200).withBody("x".repeat(1000)).withChunkedDribbleDelay(10, 8000)));
+    service.stubFor(
+        get(urlEqualTo("/stall"))
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withBody("x".repeat(1000))
+                    .withChunkedDribbleDelay(10, 8000)));
     long start = System.nanoTime();
 
     assertThat(probe("/stall", "x").up()).isFalse();

@@ -19,8 +19,8 @@ Hướng thiết kế ở [`docs/dynamic-core/README.md`](../docs/dynamic-core/R
 Cần JDK 21 (`JAVA_HOME` trỏ tới JDK 21 nếu máy mặc định là bản khác).
 
 ```bash
-./mvnw formatter:format      # sửa định dạng mã khi formatter:validate báo lỗi
-./mvnw formatter:validate    # kiểm định dạng mã
+./mvnw spotless:apply       # sửa định dạng mã khi spotless:check báo lỗi
+./mvnw spotless:check       # kiểm định dạng mã
 ./mvnw verify                # compile, test, đóng gói (test tích hợp cần Docker cho Testcontainers)
 ```
 

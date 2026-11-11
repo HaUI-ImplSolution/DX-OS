@@ -54,16 +54,23 @@ public class ModelBootstrap {
   private final String dir;
   private final long waitSeconds;
 
-  public ModelBootstrap(ApplyService apply, KeycloakAdminClient keycloak, ModelRegistry registry,
-      JdbcTemplate jdbc, @Value("${engine.model-file:}") String files,
+  public ModelBootstrap(
+      ApplyService apply,
+      KeycloakAdminClient keycloak,
+      ModelRegistry registry,
+      JdbcTemplate jdbc,
+      @Value("${engine.model-file:}") String files,
       @Value("${engine.model-dir:}") String dir,
       @Value("${engine.model-file-wait-seconds:300}") long waitSeconds) {
     this.apply = apply;
     this.keycloak = keycloak;
     this.registry = registry;
     this.jdbc = jdbc;
-    this.files = Arrays.stream((files == null ? "" : files).split(",")).map(String::trim)
-        .filter(name -> !name.isEmpty()).toList();
+    this.files =
+        Arrays.stream((files == null ? "" : files).split(","))
+            .map(String::trim)
+            .filter(name -> !name.isEmpty())
+            .toList();
     this.dir = dir == null ? "" : dir.trim();
     this.waitSeconds = waitSeconds;
   }
@@ -91,13 +98,14 @@ public class ModelBootstrap {
       return;
     }
     Set<String> seen = new HashSet<>();
-    contents.forEach((name, content) -> {
-      try {
-        consider(name, content, seen);
-      } catch (RuntimeException e) {
-        log.error("Model bootstrap: failed {} {}", name, e.getMessage(), e);
-      }
-    });
+    contents.forEach(
+        (name, content) -> {
+          try {
+            consider(name, content, seen);
+          } catch (RuntimeException e) {
+            log.error("Model bootstrap: failed {} {}", name, e.getMessage(), e);
+          }
+        });
   }
 
   private String read(String name) {
@@ -120,9 +128,13 @@ public class ModelBootstrap {
         return true;
       } catch (RuntimeException e) {
         if (System.nanoTime() > deadline) {
-          waiting.forEach(name -> log.error(
-              "Model bootstrap: failed {} Keycloak did not answer in {} seconds: {}", name,
-              waitSeconds, e.getMessage()));
+          waiting.forEach(
+              name ->
+                  log.error(
+                      "Model bootstrap: failed {} Keycloak did not answer in {} seconds: {}",
+                      name,
+                      waitSeconds,
+                      e.getMessage()));
           return false;
         }
         if (!told) {
@@ -134,8 +146,10 @@ public class ModelBootstrap {
         Thread.sleep(RETRY_MILLIS);
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
-        waiting.forEach(name -> log
-            .error("Model bootstrap: failed {} was interrupted while waiting for Keycloak", name));
+        waiting.forEach(
+            name ->
+                log.error(
+                    "Model bootstrap: failed {} was interrupted while waiting for Keycloak", name));
         return false;
       }
     }
@@ -151,29 +165,41 @@ public class ModelBootstrap {
     }
     String name = model.name();
     if (!seen.add(name)) {
-      log.warn("Model bootstrap: skipped {} an earlier file of this start already names this "
-          + "model; {} is not applied", name, file);
+      log.warn(
+          "Model bootstrap: skipped {} an earlier file of this start already names this "
+              + "model; {} is not applied",
+          name,
+          file);
       return;
     }
     if (registry.isHeld(name)) {
-      log.warn("Model bootstrap: skipped {} has an apply that stopped; continue or give it up in "
-          + "the control panel", name);
+      log.warn(
+          "Model bootstrap: skipped {} has an apply that stopped; continue or give it up in "
+              + "the control panel",
+          name);
       return;
     }
     String hash = ApplyService.hash(content);
-    List<String> running = jdbc.queryForList(
-        "SELECT hash FROM engine.model_version WHERE model = ? ORDER BY version DESC LIMIT 1",
-        String.class, name);
+    List<String> running =
+        jdbc.queryForList(
+            "SELECT hash FROM engine.model_version WHERE model = ? ORDER BY version DESC LIMIT 1",
+            String.class,
+            name);
     if (!running.isEmpty() && hash.equals(running.get(0))) {
       log.info("Model bootstrap: unchanged {} already runs the file", name);
       return;
     }
-    Integer before = jdbc.queryForObject(
-        "SELECT count(*) FROM engine.model_version WHERE model = ? AND hash = ?", Integer.class,
-        name, hash);
+    Integer before =
+        jdbc.queryForObject(
+            "SELECT count(*) FROM engine.model_version WHERE model = ? AND hash = ?",
+            Integer.class,
+            name,
+            hash);
     if (before != null && before > 0) {
-      log.warn("Model bootstrap: skipped {} the file was applied before and is not the running "
-          + "version, so the running version stays", name);
+      log.warn(
+          "Model bootstrap: skipped {} the file was applied before and is not the running "
+              + "version, so the running version stays",
+          name);
       return;
     }
     Plan plan = apply.plan(content);
@@ -185,15 +211,23 @@ public class ModelBootstrap {
       log.warn(
           "Model bootstrap: skipped {} the plan is at level {} with rejections {}, questions "
               + "{} and {} rules broken by existing rows; review and apply it in the control panel",
-          name, plan.level(), plan.rejections(), plan.questions(), plan.violations().size());
+          name,
+          plan.level(),
+          plan.rejections(),
+          plan.questions(),
+          plan.violations().size());
       return;
     }
     try {
       Applied result = apply.apply(content, ACTOR, plan.fromVersion(), Level.SAFE);
       log.info("Model bootstrap: applied {} version {}", name, result.version());
     } catch (RuntimeException e) {
-      log.error("Model bootstrap: failed {} {}; if it stopped half way, continue or give it up in "
-          + "the control panel", name, e.getMessage(), e);
+      log.error(
+          "Model bootstrap: failed {} {}; if it stopped half way, continue or give it up in "
+              + "the control panel",
+          name,
+          e.getMessage(),
+          e);
     }
   }
 }

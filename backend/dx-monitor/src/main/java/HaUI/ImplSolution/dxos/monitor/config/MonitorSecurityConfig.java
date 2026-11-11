@@ -41,33 +41,56 @@ public class MonitorSecurityConfig {
       "default-src 'self'; img-src 'self' data:; " + "frame-ancestors 'none'; base-uri 'self'";
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http,
+  public SecurityFilterChain securityFilterChain(
+      HttpSecurity http,
       OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService,
-      LogoutSuccessHandler keycloakLogout, MonitorProperties properties) throws Exception {
+      LogoutSuccessHandler keycloakLogout,
+      MonitorProperties properties)
+      throws Exception {
     HttpStatusEntryPoint unauthorized = new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED);
-    http.authorizeHttpRequests(requests -> requests.requestMatchers("/actuator/health",
-        "/actuator/health/**", "/ingest/**", "/forbidden", "/assets/**", "/error").permitAll()
-        .anyRequest().hasRole("ADMIN"))
-        .oauth2Login(login -> login.userInfoEndpoint(info -> info.oidcUserService(oidcUserService))
-            .defaultSuccessUrl(properties.publicUrl() + "/monitor/", true))
+    http.authorizeHttpRequests(
+            requests ->
+                requests
+                    .requestMatchers(
+                        "/actuator/health",
+                        "/actuator/health/**",
+                        "/ingest/**",
+                        "/forbidden",
+                        "/assets/**",
+                        "/error")
+                    .permitAll()
+                    .anyRequest()
+                    .hasRole("ADMIN"))
+        .oauth2Login(
+            login ->
+                login
+                    .userInfoEndpoint(info -> info.oidcUserService(oidcUserService))
+                    .defaultSuccessUrl(properties.publicUrl() + "/monitor/", true))
         .logout(logout -> logout.logoutSuccessHandler(keycloakLogout))
         .csrf(csrf -> csrf.ignoringRequestMatchers("/ingest/**"))
-        .exceptionHandling(handling -> handling
-            .defaultAuthenticationEntryPointFor(unauthorized,
-                PathPatternRequestMatcher.withDefaults().matcher("/api/**"))
-            .accessDeniedHandler((request, response, denied) -> {
-              if (request.getRequestURI().startsWith(request.getContextPath() + "/api/")) {
-                response.sendError(HttpStatus.FORBIDDEN.value());
-                return;
-              }
-              if (request.getSession(false) != null) {
-                request.getSession(false).invalidate();
-              }
-              response.sendRedirect(request.getContextPath() + "/forbidden");
-            }))
-        .headers(headers -> headers
-            .contentSecurityPolicy(csp -> csp.policyDirectives(CONTENT_SECURITY_POLICY))
-            .frameOptions(frame -> frame.deny()))
+        .exceptionHandling(
+            handling ->
+                handling
+                    .defaultAuthenticationEntryPointFor(
+                        unauthorized, PathPatternRequestMatcher.withDefaults().matcher("/api/**"))
+                    .accessDeniedHandler(
+                        (request, response, denied) -> {
+                          if (request
+                              .getRequestURI()
+                              .startsWith(request.getContextPath() + "/api/")) {
+                            response.sendError(HttpStatus.FORBIDDEN.value());
+                            return;
+                          }
+                          if (request.getSession(false) != null) {
+                            request.getSession(false).invalidate();
+                          }
+                          response.sendRedirect(request.getContextPath() + "/forbidden");
+                        }))
+        .headers(
+            headers ->
+                headers
+                    .contentSecurityPolicy(csp -> csp.policyDirectives(CONTENT_SECURITY_POLICY))
+                    .frameOptions(frame -> frame.deny()))
         .httpBasic(basic -> basic.disable());
     return http.build();
   }
@@ -91,13 +114,17 @@ public class MonitorSecurityConfig {
 
   // Ends the Keycloak session too, so the other applications sign out with the screen.
   @Bean
-  public LogoutSuccessHandler keycloakLogout(MonitorProperties properties,
+  public LogoutSuccessHandler keycloakLogout(
+      MonitorProperties properties,
       @Value("${spring.security.oauth2.client.registration.keycloak.client-id}") String clientId,
       @Value("${monitor.keycloak-logout-url}") String logoutUrl) {
     return (request, response, authentication) -> {
-      StringBuilder url = new StringBuilder(logoutUrl).append("?client_id=")
-          .append(encode(clientId)).append("&post_logout_redirect_uri=")
-          .append(encode(properties.publicUrl() + request.getContextPath() + "/"));
+      StringBuilder url =
+          new StringBuilder(logoutUrl)
+              .append("?client_id=")
+              .append(encode(clientId))
+              .append("&post_logout_redirect_uri=")
+              .append(encode(properties.publicUrl() + request.getContextPath() + "/"));
       if (authentication != null && authentication.getPrincipal() instanceof OidcUser user) {
         url.append("&id_token_hint=").append(encode(user.getIdToken().getTokenValue()));
       }

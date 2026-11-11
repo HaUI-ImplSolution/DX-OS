@@ -31,8 +31,12 @@ public class EventLog {
   // A value longer than this is cut, so one long text does not swell the history.
   private static final int VALUE_LIMIT = 200;
 
-  public EventLog(JdbcTemplate jdbc, UserContext user, RecordEventPublisher publisher,
-      HistoryChain chain, ObjectMapper json) {
+  public EventLog(
+      JdbcTemplate jdbc,
+      UserContext user,
+      RecordEventPublisher publisher,
+      HistoryChain chain,
+      ObjectMapper json) {
     this.jdbc = jdbc;
     this.user = user;
     this.publisher = publisher;
@@ -55,39 +59,72 @@ public class EventLog {
     }
     if (value instanceof java.sql.Array array) {
       try {
-        value = String.join(", ",
-            Arrays.stream((Object[]) array.getArray()).map(String::valueOf).toList());
+        value =
+            String.join(
+                ", ", Arrays.stream((Object[]) array.getArray()).map(String::valueOf).toList());
       } catch (java.sql.SQLException e) {
         throw new IllegalStateException("cannot read an array column", e);
       }
     }
-    String text = value instanceof BigDecimal number ? number.stripTrailingZeros().toPlainString()
-        : value instanceof Timestamp timestamp ? timestamp.toInstant().toString()
-            : value instanceof OffsetDateTime time ? time.toInstant().toString() : value.toString();
+    String text =
+        value instanceof BigDecimal number
+            ? number.stripTrailingZeros().toPlainString()
+            : value instanceof Timestamp timestamp
+                ? timestamp.toInstant().toString()
+                : value instanceof OffsetDateTime time
+                    ? time.toInstant().toString()
+                    : value.toString();
     return text.codePointCount(0, text.length()) > VALUE_LIMIT
         ? text.substring(0, text.offsetByCodePoints(0, VALUE_LIMIT)) + "…"
         : text;
   }
 
-  public void record(Model model, Entity entity, long id, String action, String fromStatus,
-      String toStatus, String note, String detail) {
+  public void record(
+      Model model,
+      Entity entity,
+      long id,
+      String action,
+      String fromStatus,
+      String toStatus,
+      String note,
+      String detail) {
     String actor = user.currentUserId();
     String actorName = user.currentFullName();
     chain.lock();
-    Map<String, Object> row = jdbc.queryForMap(
-        "INSERT INTO engine.record_event (model, entity, record_id, action, actor, actor_name, "
-            + "from_status, to_status, note, detail) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
-            + "RETURNING id, at",
-        model.name(), entity.name(), id, action, actor, actorName, fromStatus, toStatus, note,
-        detail);
+    Map<String, Object> row =
+        jdbc.queryForMap(
+            "INSERT INTO engine.record_event (model, entity, record_id, action, actor, actor_name, "
+                + "from_status, to_status, note, detail) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+                + "RETURNING id, at",
+            model.name(),
+            entity.name(),
+            id,
+            action,
+            actor,
+            actorName,
+            fromStatus,
+            toStatus,
+            note,
+            detail);
     long eventId = ((Number) row.get("id")).longValue();
     String hash = chain.link(eventId);
-    publisher.publish(eventId, model.name(), entity.name(), id, action, fromStatus, toStatus, actor,
-        actorName, instant(row.get("at")), hash);
+    publisher.publish(
+        eventId,
+        model.name(),
+        entity.name(),
+        id,
+        action,
+        fromStatus,
+        toStatus,
+        actor,
+        actorName,
+        instant(row.get("at")),
+        hash);
   }
 
   private static java.time.Instant instant(Object at) {
-    return at instanceof OffsetDateTime time ? time.toInstant()
+    return at instanceof OffsetDateTime time
+        ? time.toInstant()
         : ((java.sql.Timestamp) at).toInstant();
   }
 
@@ -96,6 +133,8 @@ public class EventLog {
         "SELECT id, action, actor, actor_name, at, from_status, to_status, note, detail "
             + "FROM engine.record_event WHERE model = ? AND entity = ? AND record_id = ? "
             + "ORDER BY id",
-        model.name(), entity.name(), id);
+        model.name(),
+        entity.name(),
+        id);
   }
 }

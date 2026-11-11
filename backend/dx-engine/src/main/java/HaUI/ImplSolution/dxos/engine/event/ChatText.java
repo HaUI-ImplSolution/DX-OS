@@ -36,7 +36,11 @@ final class ChatText {
       map.forEach((key, value) -> facts.add(key + "=" + value));
     }
     String model = message.get("model") == null ? "" : " [" + message.get("model") + "]";
-    return "Quản trị: " + message.get("kind") + model + " bởi " + message.get("actorName")
+    return "Quản trị: "
+        + message.get("kind")
+        + model
+        + " bởi "
+        + message.get("actorName")
         + (facts.length() == 0 ? "" : " (" + facts + ")");
   }
 }

@@ -38,10 +38,14 @@ public class HistoryChain {
 
   // Links the line with this id to the one before it and returns its hash.
   public String link(long id) {
-    return jdbc.queryForObject("UPDATE engine.record_event e SET prev_hash = p.hash, "
-        + "hash = engine.record_event_hash(p.hash, e) FROM (SELECT (SELECT hash FROM "
-        + "engine.record_event WHERE id < ? ORDER BY id DESC LIMIT 1) AS hash) p "
-        + "WHERE e.id = ? RETURNING e.hash", String.class, id, id);
+    return jdbc.queryForObject(
+        "UPDATE engine.record_event e SET prev_hash = p.hash, "
+            + "hash = engine.record_event_hash(p.hash, e) FROM (SELECT (SELECT hash FROM "
+            + "engine.record_event WHERE id < ? ORDER BY id DESC LIMIT 1) AS hash) p "
+            + "WHERE e.id = ? RETURNING e.hash",
+        String.class,
+        id,
+        id);
   }
 
   // Links the lines written before the chain existed.
@@ -49,14 +53,18 @@ public class HistoryChain {
   public void linkUnlinked() {
     int linked = 0;
     while (true) {
-      Integer done = transaction.execute(status -> {
-        lock();
-        List<Long> ids = jdbc.queryForList(
-            "SELECT id FROM engine.record_event WHERE hash IS NULL ORDER BY id LIMIT " + BATCH,
-            Long.class);
-        ids.forEach(this::link);
-        return ids.size();
-      });
+      Integer done =
+          transaction.execute(
+              status -> {
+                lock();
+                List<Long> ids =
+                    jdbc.queryForList(
+                        "SELECT id FROM engine.record_event WHERE hash IS NULL ORDER BY id LIMIT "
+                            + BATCH,
+                        Long.class);
+                ids.forEach(this::link);
+                return ids.size();
+              });
       linked += done == null ? 0 : done;
       if (done == null || done < BATCH) {
         break;
@@ -70,13 +78,14 @@ public class HistoryChain {
   // The first line where the chain breaks, or null when every line is intact.
   public Map<String, Object> firstBreak() {
     List<Map<String, Object>> rows =
-        jdbc.queryForList("SELECT id, CASE WHEN hash IS NULL THEN 'not linked' "
-            + "WHEN prev_hash IS DISTINCT FROM before THEN 'the line before it was changed or removed' "
-            + "ELSE 'its content was changed' END AS reason FROM (SELECT e.id, e.hash, e.prev_hash, "
-            + "lag(e.hash) OVER (ORDER BY e.id) AS before, "
-            + "engine.record_event_hash(e.prev_hash, e) AS expected FROM engine.record_event e) c "
-            + "WHERE hash IS NULL OR prev_hash IS DISTINCT FROM before OR hash <> expected "
-            + "ORDER BY id LIMIT 1");
+        jdbc.queryForList(
+            "SELECT id, CASE WHEN hash IS NULL THEN 'not linked' "
+                + "WHEN prev_hash IS DISTINCT FROM before THEN 'the line before it was changed or removed' "
+                + "ELSE 'its content was changed' END AS reason FROM (SELECT e.id, e.hash, e.prev_hash, "
+                + "lag(e.hash) OVER (ORDER BY e.id) AS before, "
+                + "engine.record_event_hash(e.prev_hash, e) AS expected FROM engine.record_event e) c "
+                + "WHERE hash IS NULL OR prev_hash IS DISTINCT FROM before OR hash <> expected "
+                + "ORDER BY id LIMIT 1");
     return rows.isEmpty() ? null : rows.get(0);
   }
 

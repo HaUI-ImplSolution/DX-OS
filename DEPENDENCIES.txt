@@ -73,7 +73,11 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 |                                        | Apache-2.0, MIT, BSD-3-Clause,   |                                        |
 |                                        | EPL-2.0                          |                                        |
 +----------------------------------------+----------------------------------+----------------------------------------+
-| formatter-maven-plugin                 | Apache-2.0                       | Chỉ khi build, kiểm định dạng mã       |
+| spotless-maven-plugin [5]              | Apache-2.0; thư viện kèm theo:   | Chỉ khi build, kiểm định dạng mã Java  |
+|                                        | Apache-2.0, EPL-2.0,             |                                        |
+|                                        | BSD-3-Clause                     |                                        |
++----------------------------------------+----------------------------------+----------------------------------------+
+| google-java-format                     | Apache-2.0                       | Chỉ khi build, bộ định dạng mã Java    |
 +----------------------------------------+----------------------------------+----------------------------------------+
 | Eclipse Temurin (OpenJDK 21)           | GPL-2.0 with Classpath Exception | Base image build và runtime, chạy      |
 |                                        |                                  | nguyên bản                             |
@@ -184,9 +188,6 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 | reuse 6.3.0 (pipx run)               | Apache-2.0, GPL-3.0-or-later (mã);   | Kiểm chuẩn REUSE (reuse lint) trong  |
 |                                      | CC0-1.0, CC-BY-SA-4.0 (tài liệu)     | CI; không đóng gói vào sản phẩm      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| eclipse-java-google-style.xml        | CC-BY-3.0                            | Hồ sơ định dạng Java của formatter-  |
-|                                      |                                      | maven-plugin, chỉ lúc dựng [5]       |
-+--------------------------------------+--------------------------------------+--------------------------------------+
 | GitHub Actions (actions/*,           | MIT, Apache-2.0                      | Chỉ trong CI, ghim theo SHA          |
 | docker/*)                            |                                      |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
@@ -219,7 +220,5 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
     Chúng chỉ được đọc lúc dựng trang tài liệu và không có trong trang đã dựng.
     Hai gói được nêu tên kèm lý do ở .github/dependency-exceptions.json.
 
-[5] backend/eclipse-java-google-style.xml là bản chép hồ sơ định dạng Eclipse của Google Java style, lấy từ google/styleguide (Copyright Google LLC, CC-BY-3.0, https://creativecommons.org/licenses/by/3.0/).
-    Từng dòng trùng bản cuối của tệp đó ở google/styleguide (337 dòng, 332 cài đặt); chỉ khác cách thụt lề.
-    Tệp này chỉ dùng lúc dựng để định dạng mã Java, không nằm trong image chạy.
-    Giấy phép của nó khai trong REUSE.toml, toàn văn ở LICENSES/CC-BY-3.0.txt.
+[5] Spotless chạy google-java-format; cả hai chỉ dùng lúc dựng và không nằm trong image chạy.
+    Thư viện kèm theo: JGit (BSD-3-Clause), Eclipse OSGi và Solstice (EPL-2.0), concurrent-trees, durian, plexus (Apache-2.0).

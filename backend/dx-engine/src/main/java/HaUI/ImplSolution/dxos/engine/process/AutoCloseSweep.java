@@ -43,8 +43,13 @@ public class AutoCloseSweep {
   private final HistoryChain chain;
   private final TransactionTemplate transaction;
 
-  public AutoCloseSweep(JdbcTemplate jdbc, ModelRegistry registry, JobLock lock,
-      ProcessService process, RecordEventPublisher publisher, HistoryChain chain,
+  public AutoCloseSweep(
+      JdbcTemplate jdbc,
+      ModelRegistry registry,
+      JobLock lock,
+      ProcessService process,
+      RecordEventPublisher publisher,
+      HistoryChain chain,
       PlatformTransactionManager transactions) {
     this.jdbc = jdbc;
     this.registry = registry;
@@ -77,14 +82,23 @@ public class AutoCloseSweep {
     double seconds = entity.process().autoClose().toSeconds();
     List<Long> due =
         jdbc.queryForList(
-            "SELECT t.id FROM " + table + " t WHERE " + dueCondition(action)
-                + " ORDER BY t.id LIMIT " + BATCH,
-            Long.class, params(model, entity, action, seconds));
+            "SELECT t.id FROM "
+                + table
+                + " t WHERE "
+                + dueCondition(action)
+                + " ORDER BY t.id LIMIT "
+                + BATCH,
+            Long.class,
+            params(model, entity, action, seconds));
     for (long id : due) {
       try {
         transaction.executeWithoutResult(status -> closeOne(model, entity, action, id, seconds));
       } catch (RuntimeException e) {
-        log.warn("Auto close of {}.{} record {} failed: {}", model.name(), entity.name(), id,
+        log.warn(
+            "Auto close of {}.{} record {} failed: {}",
+            model.name(),
+            entity.name(),
+            id,
             e.getMessage());
       }
     }
@@ -96,18 +110,26 @@ public class AutoCloseSweep {
   private static String dueCondition(ProcessFamily.Action action) {
     String states = action.from().stream().map(state -> "?").collect(Collectors.joining(", "));
     String required =
-        action
-            .require().stream().map(field -> " AND t." + Sql.ident(field)
-                + " IS NOT NULL AND btrim(t." + Sql.ident(field) + "::text) <> ''")
+        action.require().stream()
+            .map(
+                field ->
+                    " AND t."
+                        + Sql.ident(field)
+                        + " IS NOT NULL AND btrim(t."
+                        + Sql.ident(field)
+                        + "::text) <> ''")
             .collect(Collectors.joining());
-    return "t.status IN (" + states + ")" + required
+    return "t.status IN ("
+        + states
+        + ")"
+        + required
         + " AND (SELECT max(e.at) FROM engine.record_event e "
         + "WHERE e.model = ? AND e.entity = ? AND e.record_id = t.id AND e.to_status = t.status "
         + "AND e.from_status IS DISTINCT FROM e.to_status) < now() - make_interval(secs => ?)";
   }
 
-  private static Object[] params(Model model, Entity entity, ProcessFamily.Action action,
-      double seconds) {
+  private static Object[] params(
+      Model model, Entity entity, ProcessFamily.Action action, double seconds) {
     List<Object> params = new ArrayList<>(action.from());
     params.add(model.name());
     params.add(entity.name());
@@ -117,36 +139,60 @@ public class AutoCloseSweep {
 
   // Locks the row and checks it again, so a record the owner has just taken the action on or sent
   // back is left alone.
-  private void closeOne(Model model, Entity entity, ProcessFamily.Action action, long id,
-      double seconds) {
+  private void closeOne(
+      Model model, Entity entity, ProcessFamily.Action action, long id, double seconds) {
     List<Object> args = new ArrayList<>();
     args.add(id);
     args.addAll(List.of(params(model, entity, action, seconds)));
     List<Long> locked =
-        jdbc.queryForList("SELECT t.id FROM " + Sql.table(model, entity) + " t WHERE t.id = ? AND "
-            + dueCondition(action) + " FOR UPDATE OF t", Long.class, args.toArray());
+        jdbc.queryForList(
+            "SELECT t.id FROM "
+                + Sql.table(model, entity)
+                + " t WHERE t.id = ? AND "
+                + dueCondition(action)
+                + " FOR UPDATE OF t",
+            Long.class,
+            args.toArray());
     if (locked.isEmpty()) {
       return;
     }
-    String from = jdbc.queryForObject(
-        "SELECT status FROM " + Sql.table(model, entity) + " WHERE id = ?", String.class, id);
+    String from =
+        jdbc.queryForObject(
+            "SELECT status FROM " + Sql.table(model, entity) + " WHERE id = ?", String.class, id);
     process.act(model, entity, id, action, SYSTEM);
-    String to = jdbc.queryForObject(
-        "SELECT status FROM " + Sql.table(model, entity) + " WHERE id = ?", String.class, id);
+    String to =
+        jdbc.queryForObject(
+            "SELECT status FROM " + Sql.table(model, entity) + " WHERE id = ?", String.class, id);
     chain.lock();
-    Map<String, Object> row = jdbc.queryForMap(
-        "INSERT INTO engine.record_event (model, entity, record_id, action, actor, actor_name, "
-            + "from_status, to_status) VALUES (?, ?, ?, 'auto_closed', 'system', 'System', ?, ?) "
-            + "RETURNING id, at",
-        model.name(), entity.name(), id, from, to);
+    Map<String, Object> row =
+        jdbc.queryForMap(
+            "INSERT INTO engine.record_event (model, entity, record_id, action, actor, actor_name, "
+                + "from_status, to_status) VALUES (?, ?, ?, 'auto_closed', 'system', 'System', ?, ?) "
+                + "RETURNING id, at",
+            model.name(),
+            entity.name(),
+            id,
+            from,
+            to);
     long eventId = ((Number) row.get("id")).longValue();
     String hash = chain.link(eventId);
-    publisher.publish(eventId, model.name(), entity.name(), id, "auto_closed", from, to, SYSTEM,
-        "System", instant(row.get("at")), hash);
+    publisher.publish(
+        eventId,
+        model.name(),
+        entity.name(),
+        id,
+        "auto_closed",
+        from,
+        to,
+        SYSTEM,
+        "System",
+        instant(row.get("at")),
+        hash);
   }
 
   private static Instant instant(Object at) {
-    return at instanceof OffsetDateTime time ? time.toInstant()
+    return at instanceof OffsetDateTime time
+        ? time.toInstant()
         : ((java.sql.Timestamp) at).toInstant();
   }
 }

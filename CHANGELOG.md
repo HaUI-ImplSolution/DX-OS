@@ -7,6 +7,14 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
+### Lõi chạy ngầm
+
+- `dxos start --core` chỉ chạy Tầng 1 (cổng vào, Keycloak, dịch vụ lõi, PostgreSQL, kho tệp); `dxos start --full` chạy đủ, và các lệnh `stop`, `status`, `update`, `reconcile` giữ chế độ đã lưu ở `DXOS_MODE`.
+- Dịch vụ lõi không kèm Swagger UI; đặc tả OpenAPI ở `/v3/api-docs` và `/api/v1/meta/models/{model}/openapi`.
+- Keycloak Admin Console mặc định không mở ra gateway; đặt `KEYCLOAK_ADMIN_CONSOLE=true` trong `deploy/.env` để mở.
+- Job `Gateway surface` của workflow `Platform` kiểm bằng `deploy/dev/check_surface.py` rằng cả hai chế độ không trả Swagger UI hay Admin Console, và nhóm kiểm API chạy thêm trên chế độ lõi.
+- Portal bỏ thẻ Keycloak Admin và Swagger, thêm thẻ Bảng điều khiển.
+
 ### Ứng dụng ngoài
 
 - Ứng dụng ngoài đổi sang vai khác của cùng mô hình bằng `dxos client role`, nút Đổi vai ở tab Ứng dụng ngoài hoặc `PUT /api/v1/clients/{name}`, giữ nguyên tên và mã bí mật; token đã cấp giữ vai cũ đến khi hết hạn.

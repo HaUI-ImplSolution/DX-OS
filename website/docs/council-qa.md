@@ -154,7 +154,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 
 - "Không giao diện" nghĩa là lõi không có màn hình nghiệp vụ.
   Bảng điều khiển của người triển khai, giao diện hồ sơ, portal và màn hình giám sát thuộc Tầng 2: chúng gọi lõi bằng API sau APISIX như mọi ứng dụng khác.
-- Trang quản trị Keycloak và Swagger đi kèm phần mềm nguồn mở dùng nguyên bản, là bàn làm việc của người vận hành; không ứng dụng nào gọi tới.
+- Trang quản trị Keycloak đi kèm phần mềm nguồn mở dùng nguyên bản, là bàn làm việc của người vận hành; mặc định không mở ra gateway và không ứng dụng nào gọi tới.
 - `dx-engine` chỉ phục vụ API.
 - **Bằng chứng:** `ARCHITECTURE.md` mục 1 và 13; `frontend/src/console`; `deploy/apisix/`.
 

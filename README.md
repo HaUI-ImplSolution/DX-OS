@@ -97,6 +97,7 @@ Bộ cài tải bản phát hành mới nhất, kiểm SHA-256 rồi cài vào `
 `dxos start` tải image ở lần đầu, chờ mọi dịch vụ sẵn sàng, tạo tài khoản `admin` với mật khẩu tạm in ra màn hình, rồi in các địa chỉ.
 Đăng nhập `http://localhost:9080/console` bằng `admin`, đổi mật khẩu, chọn một mẫu ở tab Thư viện mẫu, xem kế hoạch rồi áp dụng.
 Đã có tệp mô hình thì `dxos start <tệp>` đưa tệp vào luôn; có nhiều tệp thì liệt kê hết sau `dxos start`.
+Chỉ cần nền tảng API cho ứng dụng bên ngoài thì chạy `dxos start --core`: không có ứng dụng web, portal và giám sát, xem [Chế độ chỉ lõi](./deploy/OPERATIONS.md#chế-độ-chỉ-lõi).
 Các lệnh khác và cách vận hành ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
 
 ### Từ mã nguồn
@@ -117,8 +118,9 @@ Người dùng vào qua gateway `http://localhost:9080`:
 | `/console` | Bảng điều khiển cho người triển khai |
 | `/portal/` | Trang liệt kê các địa chỉ và trạng thái dịch vụ |
 | `/monitor/` | Giám sát và truy vết (ADMIN) |
-| `/swagger-ui.html` | Tài liệu API |
-| `/admin` | Quản trị Keycloak (tài khoản trong `deploy/.env`) |
+| `/v3/api-docs` | Đặc tả OpenAPI của backend |
+
+Trang quản trị Keycloak (`/admin`) mặc định không mở ra ngoài; đặt `KEYCLOAK_ADMIN_CONSOLE=true` trong `deploy/.env` rồi tạo lại gateway để mở (tài khoản trong `deploy/.env`).
 
 Hướng dẫn kiểm thử đầy đủ ở [`docs/TESTING.md`](./docs/TESTING.md).
 
@@ -129,7 +131,7 @@ Trang tài liệu: <https://haui-implsolution.github.io/DX-OS/>.
 | Cần gì | Xem |
 |---|---|
 | Viết tệp mô hình | [`docs/MODEL.md`](./docs/MODEL.md) |
-| Gọi API | [`docs/API.md`](./docs/API.md) và Swagger UI của backend đang chạy |
+| Gọi API | [`docs/API.md`](./docs/API.md) và đặc tả OpenAPI (`/v3/api-docs`) của backend đang chạy |
 | Phát triển dịch vụ, webhook và giao diện mở rộng | [`docs/EXTENSIONS.md`](./docs/EXTENSIONS.md) |
 | Kiến trúc | [`ARCHITECTURE.md`](./ARCHITECTURE.md) |
 | Cài đặt, lệnh `dxos`, sao lưu | [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md) |

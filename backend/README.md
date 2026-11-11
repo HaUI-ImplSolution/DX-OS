@@ -40,6 +40,6 @@ Chạy cả stack ở [`deploy/`](../deploy/): `docker compose up -d`.
 
 ## API
 
-Swagger UI ở `/swagger-ui.html`, JSON ở `/v3/api-docs`, sinh từ annotation springdoc trong mã.
+Đặc tả OpenAPI dạng JSON ở `/v3/api-docs`, sinh từ annotation springdoc trong mã; lõi không có giao diện Swagger.
 Mọi response bọc trong `ApiResponse`; lỗi có `errorCode` ổn định.
 Một người dùng gọi quá ngưỡng một lệnh trong một phút thì nhận `429` với `ERR_TOO_MANY_REQUESTS` và header `Retry-After`; `RATE_LIMIT_ENABLED=false` tắt giới hạn này (xem [`deploy/MONITORING.md`](../deploy/MONITORING.md)).

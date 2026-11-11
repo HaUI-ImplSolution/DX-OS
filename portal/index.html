@@ -235,8 +235,8 @@
   .app-icon svg { width: 22px; height: 22px; }
 
   .app-card.main .app-icon { background: var(--accent-soft); color: var(--accent-dark); }
-  .app-card.admin .app-icon { background: #efe9f8; color: #5a3d99; }
   .app-card.api .app-icon { background: #e3f3f0; color: #1f6b5e; }
+  .app-card.console .app-icon { background: #e8edf8; color: #2f4a8a; }
   .app-card.monitor .app-icon { background: #f6e9e4; color: #8a3b22; }
 
   .section-head.spaced { margin-top: 40px; }
@@ -379,15 +379,15 @@
     </div>
 
     <div class="apps">
-      <a class="app-card admin" href="/admin/" target="_blank" rel="noopener">
+      <a class="app-card console" href="/console" target="_blank" rel="noopener">
         <span class="pill sso">SSO</span>
         <div class="app-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9"/><path d="m16 7 3 3"/><path d="m14 9 2 2"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10"/><path d="M18 6h2"/><circle cx="16" cy="6" r="2"/><path d="M4 12h2"/><path d="M10 12h10"/><circle cx="8" cy="12" r="2"/><path d="M4 18h10"/><path d="M18 18h2"/><circle cx="16" cy="18" r="2"/></svg>
         </div>
-        <div class="app-name">Keycloak Admin</div>
-        <div class="app-desc" data-en="Manage users and roles.">Quản lý người dùng và vai trò.</div>
+        <div class="app-name" data-en="Control panel">Bảng điều khiển</div>
+        <div class="app-desc" data-en="Apply models, manage users and outside applications (administrators).">Áp dụng mô hình, quản lý người dùng và ứng dụng ngoài (quản trị viên).</div>
         <div class="app-meta">
-          <span class="app-url">/admin/</span>
+          <span class="app-url">/console</span>
           <span class="app-cta" data-en="Open →">Mở →</span>
         </div>
       </a>
@@ -405,15 +405,15 @@
         </div>
       </a>
 
-      <a class="app-card api" href="/swagger-ui/index.html#/" target="_blank" rel="noopener">
+      <a class="app-card api" href="/v3/api-docs" target="_blank" rel="noopener">
         <span class="pill standalone">API</span>
         <div class="app-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m8 7-5 5 5 5"/><path d="m16 7 5 5-5 5"/><path d="m14 4-4 16"/></svg>
         </div>
-        <div class="app-name" data-en="API documentation">Tài liệu API</div>
-        <div class="app-desc" data-en="Endpoints of the backend (Swagger UI).">Endpoint của Backend (Swagger UI).</div>
+        <div class="app-name" data-en="API specification">Đặc tả API</div>
+        <div class="app-desc" data-en="OpenAPI specification of the backend.">Đặc tả OpenAPI của Backend.</div>
         <div class="app-meta">
-          <span class="app-url">/swagger-ui/</span>
+          <span class="app-url">/v3/api-docs</span>
           <span class="app-cta" data-en="Open →">Mở →</span>
         </div>
       </a>

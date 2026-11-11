@@ -2,7 +2,9 @@
 
 Đăng nhập một lần dùng chung cho dịch vụ lõi, web và màn hình giám sát.
 Keycloak (Apache-2.0) build từ gói phát hành trên nền Ubuntu ([`Dockerfile`](./Dockerfile)), chạy được cả trên CPU ảo không có x86-64-v2; Keycloak tự import realm `dxos` từ [`realm-dxos.json`](./realm-dxos.json) lúc khởi động; service khai báo trong [`deploy/docker-compose.yml`](../deploy/docker-compose.yml).
-Keycloak không publish cổng ra host: gateway APISIX chuyển tiếp `/realms`, `/resources`, `/admin`, `/js` tới Keycloak.
+Keycloak không publish cổng ra host: gateway APISIX chuyển tiếp `/realms`, `/resources`, `/js` tới Keycloak.
+Admin Console (`/admin`) mặc định không được mở ra gateway; đặt `KEYCLOAK_ADMIN_CONSOLE=true` trong `deploy/.env` rồi tạo lại gateway để mở.
+Dịch vụ lõi vẫn gọi Admin API của Keycloak qua mạng nội bộ, không phụ thuộc công tắc này.
 Cơ sở dữ liệu `keycloak` và vai `keycloak_app` do [`deploy/postgres/init`](../deploy/postgres/init) tạo khi thư mục dữ liệu Postgres được khởi tạo lần đầu.
 
 ## Phạm vi
@@ -45,7 +47,7 @@ Cơ sở dữ liệu `keycloak` và vai `keycloak_app` do [`deploy/postgres/init
 
 ## Máy chủ công khai
 
-Trên máy chủ công khai, đặt `/admin/*` (Admin Console) sau một lớp xác thực của hạ tầng phía trước, không mở thẳng ra Internet.
+Trên máy chủ công khai, giữ `KEYCLOAK_ADMIN_CONSOLE=false`; khi cần mở `/admin/*` (Admin Console) thì đặt nó sau một lớp xác thực của hạ tầng phía trước, không mở thẳng ra Internet.
 `/realms/*` mở cho người dùng web, và gateway giới hạn 120 lượt mỗi phút mỗi IP cho form mật khẩu và token endpoint.
 Keycloak tạo URL theo địa chỉ của request.
 Máy chủ đứng sau proxy đặt `KEYCLOAK_HOSTNAME=${GATEWAY_PUBLIC_URL}` trong `deploy/.env`.

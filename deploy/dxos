@@ -2,8 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 # Command line of an installed DX-OS (see install.sh and get.sh); it drives the stack of the directory it lives in.
 #
-#   dxos start [model-file...] start the stack, wait until it is ready, create the first ADMIN account;
-#                              with a model file, the backend applies it on start when it is new
+#   dxos start [--core|--full] [model-file...]
+#                              start the stack, wait until it is ready, create the first ADMIN account;
+#                              with a model file, the backend applies it on start when it is new;
+#                              --core runs only tier 1 (API, Keycloak, core service, PostgreSQL, file store),
+#                              --full also runs the web app, the portal and the monitor; the mode is kept
 #   dxos stop                  stop the stack, keeping the data
 #   dxos status                state of every service and the addresses to open
 #   dxos logs [service]        follow the logs
@@ -61,6 +64,32 @@ from_caller() { if [[ "$1" == /* ]]; then printf '%s\n' "$1"; else printf '%s\n'
 env_value() { grep -E "^$1=" "$DEPLOY_DIR/.env" | tail -n1 | cut -d= -f2- || true; }
 compose() { docker compose "$@"; }
 
+# The mode of the stack: core runs tier 1 only, full (the default) also runs the web app, the portal and the monitor.
+stack_mode() { local mode; mode="$(env_value DXOS_MODE)"; echo "${mode:-full}"; }
+
+# Keeps DXOS_MODE and COMPOSE_PROFILES in line: tier 2 is the profile app.
+set_mode() {
+  local mode="$1" profiles
+  profiles="$(tr ',' '\n' <<<"$(env_value COMPOSE_PROFILES)" | grep -vx -e app -e '' | paste -sd, - || true)"
+  [[ "$mode" == core ]] || profiles="app${profiles:+,$profiles}"
+  set_env DXOS_MODE "$mode"
+  set_env COMPOSE_PROFILES "$profiles"
+}
+
+# Moves a running stack to the mode: the containers of tier 2 are removed for core, and the gateway reads the routes again.
+switch_mode() {
+  local mode="$1" running=false
+  [[ -n "$(compose ps -q --status running apisix)" ]] && running=true
+  if [[ "$mode" == core ]]; then
+    compose --profile app rm -sf frontend portal monitor monitor-init >/dev/null 2>&1 || true
+  fi
+  set_mode "$mode"
+  if $running; then
+    compose up -d --no-build --pull missing apisix-config >/dev/null
+    compose restart apisix >/dev/null
+  fi
+}
+
 # The address browsers use; GATEWAY_PUBLIC_URL unless it still refers to other variables.
 public_url() {
   local url host port
@@ -77,15 +106,27 @@ public_url() {
 print_addresses() {
   local url
   url="$(public_url)"
-  cat <<EOF
+  if [[ "$(stack_mode)" == core ]]; then
+    cat <<EOF
+
+DX-OS is running in core mode (tier 1 only):
+  API              $url/api/v1/
+  OpenAPI          $url/v3/api-docs
+  Sign-in          $url/realms/dxos
+EOF
+  else
+    cat <<EOF
 
 DX-OS is running:
   Application      $url/
   Control panel    $url/console  (ADMIN)
   Portal           $url/portal/
   Monitoring       $url/monitor/  (ADMIN)
-  Keycloak admin   $url/admin/  (user $(env_value KEYCLOAK_ADMIN_USERNAME), password KEYCLOAK_ADMIN_PASSWORD in $DEPLOY_DIR/.env)
 EOF
+  fi
+  if [[ "$(env_value KEYCLOAK_ADMIN_CONSOLE)" == true ]]; then
+    echo "  Keycloak admin   $url/admin/  (user $(env_value KEYCLOAK_ADMIN_USERNAME), password KEYCLOAK_ADMIN_PASSWORD in $DEPLOY_DIR/.env)"
+  fi
 }
 
 # A container is ready when it is healthy, running without a healthcheck, or a one-shot job
@@ -221,7 +262,17 @@ EOF
 }
 
 cmd_start() {
-  local since since_epoch was_running=false model_status=0 started
+  local since since_epoch was_running=false model_status=0 started mode=""
+  while (( $# )); do
+    case "$1" in
+      --core) mode=core; shift ;;
+      --full) mode=full; shift ;;
+      --) shift; break ;;
+      -*) die "unknown option: $1 (usage: dxos start [--core|--full] [model-file...])" ;;
+      *) break ;;
+    esac
+  done
+  [[ -z "$mode" ]] || switch_mode "$mode"
   if (( $# > 0 )); then
     local given=() file
     for file in "$@"; do given+=("$(from_caller "$file")"); done
@@ -233,7 +284,7 @@ cmd_start() {
   [[ -n "$(compose ps -q --status running backend)" ]] && was_running=true
   since="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
   since_epoch="$(date +%s)"
-  echo "==> Starting DX-OS $(env_value DXOS_IMAGE_TAG) (images are downloaded on the first start)"
+  echo "==> Starting DX-OS $(env_value DXOS_IMAGE_TAG), $(stack_mode) mode (images are downloaded on the first start)"
   compose up -d --no-build --pull missing
   started="$(date -d "$(docker inspect -f '{{.State.StartedAt}}' "$(compose ps -q backend)")" +%s)"
   # A backend that kept running is started again so it reads a model file whose content changed.
@@ -912,6 +963,8 @@ cmd_uninstall() {
 main() {
   [[ -f "$DEPLOY_DIR/.env" ]] || die "$DEPLOY_DIR/.env is missing; install DX-OS with install.sh first"
   cd "$DEPLOY_DIR"
+  # An .env from before the modes has no DXOS_MODE: it runs the full stack, which needs the profile app.
+  [[ -n "$(env_value DXOS_MODE)" ]] || set_mode full
   local command="${1:-help}"
   (( $# )) && shift
   case "$command" in
@@ -933,8 +986,8 @@ main() {
     client) cmd_client "$@" ;;
     uninstall) cmd_uninstall "$@" ;;
     version) echo "DX-OS $(env_value DXOS_IMAGE_TAG) in $PREFIX" ;;
-    help|-h|--help) sed -n '3,33p' "$self" ;;
-    *) echo "dxos: unknown command: $command" >&2; sed -n '3,33p' "$self" >&2; exit 2 ;;
+    help|-h|--help) sed -n '3,39p' "$self" ;;
+    *) echo "dxos: unknown command: $command" >&2; sed -n '3,39p' "$self" >&2; exit 2 ;;
   esac
 }
 

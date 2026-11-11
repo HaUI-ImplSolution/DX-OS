@@ -15,7 +15,7 @@ Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết t�
 |---|---|---|
 | 1 | Rà soát cuối của mục 2 trên bản `2.0.0` đã phát hành | Điều kiện để kho mã được chấm trên bản dự thi; bản phát hành 5, dịch từ mã nguồn 10 |
 | 2 | Dòng giấy phép ở mọi tệp theo chuẩn REUSE, tệp của bên thứ ba (mục 2) | Giấy phép 10, thư viện 10 |
-| 3 | Lõi đúng đầu bài: bỏ Swagger UI và `/admin` mặc định, chế độ chỉ lõi, `README.md` đối chiếu đề và H-P-D-I (mục 5) | Giấy phép 10 qua ghi chú "giải quyết đúng đầu bài" của thể lệ |
+| 3 | Lõi đúng đầu bài: `README.md` đối chiếu đề và H-P-D-I (mục 5) | Giấy phép 10 qua ghi chú "giải quyết đúng đầu bài" của thể lệ |
 | 4 | Tài liệu và giao tiếp: issue cho từng dòng, lộ trình, tài liệu sản phẩm trên trang docs (mục 2 và 3) | Tài liệu và giao tiếp 10, phát triển bền vững 10 |
 | 5 | Bằng chứng lõi là PaaS: giao diện riêng ở tên miền khác, route của dịch vụ riêng, ứng dụng mẫu, đường ống mẫu cho kho mô hình (mục 3) | Nguyên gốc 10, phát triển bền vững 10 |
 | 6 | Bài trình bày, video (mục 2) | Hoàn thiện 10, trình diễn 10 |
@@ -102,8 +102,6 @@ Chỗ bài làm hoặc cách trình bày chưa khớp câu chữ của đề.
 
 | Chỗ lệch | Ghi chú |
 |---|---|
-| Giao diện đi ra từ Tầng 1 | Đề viết lõi "hoàn toàn không cung cấp giao diện UI"; dịch vụ lõi tự trả Swagger UI (`springdoc-openapi-starter-webmvc-ui` trong `dx-core`), và cổng mặc định mở `/admin` của Keycloak; đã chốt: bỏ Swagger UI khỏi dịch vụ lõi, chỉ giữ `/v3/api-docs` và OpenAPI theo mô hình, route `/admin` chỉ mở khi người triển khai bật, và thêm kiểm trong CI rằng dịch vụ Tầng 1 không trả trang HTML nào; sửa cùng lượt các chỗ đang trỏ tới `/swagger-ui.html`: `README.md`, `README_EN.md`, `docs/API.md`, `backend/README.md`, trang portal, `website/docs/intro.md` và `council-qa.md` |
 | Ranh giới tầng trong cây thư mục | `dx-monitor` có trang HTML và nằm trong `backend/` cạnh lõi, còn tài liệu xếp nó ở Tầng 2; người chấm kho mã đọc cây thư mục mà không có đội giải thích; thêm cột Tầng vào bảng Cấu trúc repository của `README.md`, hoặc chuyển thư mục |
 | Ứng dụng minh họa chưa định vị trong H-P-D-I | Đề đòi ứng dụng "nằm trong không gian H-P-D-I ở Tầng 2", và thể lệ gắn 10 điểm giấy phép với "giải quyết đúng đầu bài"; `README.md` không nhắc H-P-D-I và không có bảng đối chiếu với đề, còn kịch bản chính Một cửa sinh viên đọc như một ứng dụng ngành của Tầng 3; nói rõ ứng dụng Tầng 2 là bộ dựng giao diện và bảng điều khiển (P: soạn biểu mẫu và quy trình, cổng yêu cầu và phê duyệt; H: hộp việc, bảng theo trạng thái, lịch; D: thống kê, danh mục dữ liệu), còn Một cửa sinh viên là một tệp mô hình của Tầng 3 |
-| Không khởi động riêng được Tầng 1 | Đề viết lõi chạy ngầm và không có giao diện, nhưng chưa có cách khởi động Tầng 1 mà không kèm ứng dụng web, portal và giám sát; đã chốt làm chế độ chỉ lõi (`dxos start --core` chạy đủ thành phần của Tầng 1) kèm một job CI chạy bộ kiểm API trên chế độ đó |
 | Kiểm dịch mã độc | Nguyên lý (iv) của đề viết "kiểm dịch mã độc nghiêm ngặt"; quét tắt mặc định, và kiểm tệp EICAR không nằm trong CI vì job `API end-to-end` không bật quét |

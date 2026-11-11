@@ -97,6 +97,7 @@ The installer downloads the latest release, checks its SHA-256 and installs it i
 `dxos start` downloads the images the first time, waits until every service is ready, creates the account `admin` with a temporary password printed on screen, and prints the addresses.
 Sign in at `http://localhost:9080/console` as `admin`, change the password, pick a template on the Template library tab, preview the plan and apply it.
 If you already have a model file, `dxos start <file>` takes it in at once; list every file after `dxos start` when there are several.
+If you only need the API platform for outside applications, run `dxos start --core`: no web application, portal or monitoring, see [Core-only mode](./deploy/OPERATIONS.md#chế-độ-chỉ-lõi) (Vietnamese).
 The other commands and the operation guide are in [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md) (Vietnamese).
 
 ### From source
@@ -117,20 +118,21 @@ Users come in through the gateway at `http://localhost:9080`:
 | `/console` | Control panel for the person deploying |
 | `/portal/` | A page listing the addresses and the state of the services |
 | `/monitor/` | Monitoring and tracing (ADMIN) |
-| `/swagger-ui.html` | API documentation |
-| `/admin` | Keycloak administration (account in `deploy/.env`) |
+| `/v3/api-docs` | OpenAPI specification of the backend |
+
+The Keycloak administration console (`/admin`) is not exposed by default; set `KEYCLOAK_ADMIN_CONSOLE=true` in `deploy/.env` and recreate the gateway to open it (account in `deploy/.env`).
 
 The full testing guide is in [`docs/TESTING.md`](./docs/TESTING.md) (Vietnamese).
 
 ## Documentation
 
 Docs site: <https://haui-implsolution.github.io/DX-OS/>.
-The documents are written in Vietnamese; the API reference is the Swagger UI of the running backend.
+The documents are written in Vietnamese; the API reference is the OpenAPI specification of the running backend.
 
 | You need | See |
 |---|---|
 | Writing a model file | [`docs/MODEL.md`](./docs/MODEL.md) |
-| Calling the API | [`docs/API.md`](./docs/API.md) and the Swagger UI of the running backend |
+| Calling the API | [`docs/API.md`](./docs/API.md) and the OpenAPI specification (`/v3/api-docs`) of the running backend |
 | Building extension services, webhooks, and custom UIs | [`docs/EXTENSIONS.md`](./docs/EXTENSIONS.md) (Vietnamese) |
 | Architecture | [`ARCHITECTURE.md`](./ARCHITECTURE.md) |
 | Install, the `dxos` commands, backup | [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md) |

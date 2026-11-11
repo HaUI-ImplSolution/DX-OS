@@ -34,7 +34,7 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 | Spring Boot, Spring Framework, Spring  | Apache-2.0                       | Khung ứng dụng, xác thực token         |
 | Security                               |                                  | Keycloak                               |
 +----------------------------------------+----------------------------------+----------------------------------------+
-| springdoc-openapi                      | Apache-2.0                       | Swagger UI và OpenAPI                  |
+| springdoc-openapi                      | Apache-2.0                       | Đặc tả OpenAPI, không kèm Swagger UI   |
 +----------------------------------------+----------------------------------+----------------------------------------+
 | Thymeleaf (cùng attoparser, unbescape) | Apache-2.0                       | Khung trang của màn hình giám sát      |
 +----------------------------------------+----------------------------------+----------------------------------------+

@@ -19,7 +19,7 @@ Lõi nhận một tệp mô hình khai báo thực thể, trường, vai, quyề
 | Webhook sự kiện, lịch sử chống sửa, hồ dữ liệu | [deploy/INTEGRATIONS.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/deploy/INTEGRATIONS.md) |
 | Kết nối công cụ báo cáo bằng `report_ro` | [deploy/REPORTING.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/deploy/REPORTING.md) |
 | Phát triển dịch vụ, webhook và giao diện mở rộng | [docs/EXTENSIONS.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/EXTENSIONS.md) |
-| Tham chiếu API | Swagger UI `/swagger-ui.html` và OpenAPI `/v3/api-docs` của backend đang chạy; bảng đường dẫn trong [docs/API.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/API.md) |
+| Tham chiếu API | OpenAPI `/v3/api-docs` của backend đang chạy; bảng đường dẫn trong [docs/API.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/API.md) |
 | Thay đổi theo phiên bản | [CHANGELOG.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/CHANGELOG.md) và [Releases](https://github.com/HaUI-ImplSolution/DX-OS/releases) |
 | Viết tệp mô hình | [docs/MODEL.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/MODEL.md) |
 | Hướng dẫn kiểm thử | [docs/TESTING.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/TESTING.md) |

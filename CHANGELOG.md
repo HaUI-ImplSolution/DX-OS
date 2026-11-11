@@ -23,6 +23,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Tài liệu
 
+- Đối chiếu cơ chế tùy biến Frappe với mô hình DX-OS trong [tài liệu tùy biến](docs/dynamic-core/FRAPPE_CUSTOMIZATION.md).
 - Hướng dẫn kết nối công cụ báo cáo bằng `report_ro` ở `deploy/REPORTING.md`: giữ PostgreSQL trong mạng riêng, kết nối Apache Superset, xoay mật khẩu và truy vấn dữ liệu xuyên hai mô hình.
 - Mục Dữ liệu cá nhân ra nước ngoài ở `deploy/OPERATIONS.md` nêu khi nào cấu hình làm phát sinh nghĩa vụ đánh giá tác động theo Luật 91/2025/QH15 và Nghị định 356/2025/NĐ-CP, đối chiếu với bản đăng trên Công báo.
 - Hướng dẫn phát triển dịch vụ, bên nhận webhook, giao diện và trang mở rộng ở `docs/EXTENSIONS.md`: quyền, gateway, chạy local, kiểm thử, đóng gói, nâng cấp và ranh giới hỗ trợ hiện tại.

@@ -50,7 +50,6 @@ Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết t�
 | So với ba nền đề gợi ý | Đề nêu Supabase, Strapi và Directus; `website/docs/dependencies.md` ghi Strapi chưa được đánh giá, và `README.md` chưa nói lõi khác ba nền này ở đâu |
 | Giao diện trên điện thoại | Chưa kiểm ứng dụng web trên màn hình điện thoại, trong khi không gian H của đề có ứng dụng di động tác nghiệp |
 | Trang và thành phần riêng trong ứng dụng Tầng 2 | Ứng dụng web chưa có chỗ đăng ký trang hay thành phần form; thêm chúng là sửa mã nguồn và dựng lại image |
-| Ý từ Frappe | Tách phần tùy biến khỏi mô hình gốc: chưa đọc mã của Frappe để đối chiếu |
 | Giáo trình DX-OS | Mới đọc tổng quan, mục lục chương và trang Hộp cát; đọc hết rồi đối chiếu thuật ngữ và kiến trúc với lõi, nhất là dự án DX-Ticket |
 | Giao diện riêng ở tên miền khác | CORS của API chỉ nhận `localhost` và `127.0.0.1`, và Keycloak chỉ có client công khai `dxos-web` cho địa chỉ của cổng vào và `localhost`; một giao diện tự viết ở tên miền khác không đăng nhập và gọi API được nếu không sửa tay Keycloak và mã; hướng làm: lệnh đăng ký client công khai (PKCE) kèm redirect URI, và danh sách origin CORS đọc từ `.env` |
 | Route của dịch vụ riêng | Route nằm trong `deploy/apisix/common.yaml` do lõi quản, nên thêm route cho dịch vụ riêng là sửa tệp đó và mất khi `dxos update` thay tệp triển khai; hướng làm: một tệp route riêng của bản cài được nạp thêm |

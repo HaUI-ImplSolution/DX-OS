@@ -14,12 +14,11 @@ Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết t�
 | Thứ tự | Việc | Điểm liên quan |
 |---|---|---|
 | 1 | Rà soát cuối của mục 2 trên bản `2.0.0` đã phát hành | Điều kiện để kho mã được chấm trên bản dự thi; bản phát hành 5, dịch từ mã nguồn 10 |
-| 2 | Lõi đúng đầu bài: `README.md` đối chiếu đề và H-P-D-I (mục 5) | Giấy phép 10 qua ghi chú "giải quyết đúng đầu bài" của thể lệ |
-| 3 | Tài liệu và giao tiếp: lịch sử issue, tài liệu sản phẩm trên trang docs (mục 2 và 3) | Tài liệu và giao tiếp 10, phát triển bền vững 10 |
-| 4 | Bằng chứng lõi là PaaS: giao diện riêng ở tên miền khác, route của dịch vụ riêng, ứng dụng mẫu, đường ống mẫu cho kho mô hình (mục 3) | Nguyên gốc 10, phát triển bền vững 10 |
-| 5 | Bài trình bày, video (mục 2) | Hoàn thiện 10, trình diễn 10 |
-| 6 | Phần AI và chữ I của ứng dụng Tầng 2 (mục 3) | Hoàn thiện 10, nguyên gốc 10 |
-| 7 | Phủ thêm bốn nguyên lý: truy vấn trên hồ dữ liệu, số đo chất lượng dữ liệu, kiểm EICAR trong CI, tự kéo từ git (mục 3 và 5) | Hoàn thiện 10 |
+| 2 | Tài liệu và giao tiếp: lịch sử issue, tài liệu sản phẩm trên trang docs (mục 2 và 3) | Tài liệu và giao tiếp 10, phát triển bền vững 10 |
+| 3 | Bằng chứng lõi là PaaS: giao diện riêng ở tên miền khác, route của dịch vụ riêng, ứng dụng mẫu, đường ống mẫu cho kho mô hình (mục 3) | Nguyên gốc 10, phát triển bền vững 10 |
+| 4 | Bài trình bày, video (mục 2) | Hoàn thiện 10, trình diễn 10 |
+| 5 | Phần AI và chữ I của ứng dụng Tầng 2 (mục 3) | Hoàn thiện 10, nguyên gốc 10 |
+| 6 | Phủ thêm bốn nguyên lý: truy vấn trên hồ dữ liệu, số đo chất lượng dữ liệu, kiểm EICAR trong CI, tự kéo từ git (mục 3 và 5) | Hoàn thiện 10 |
 
 ## 2. Phải xử lý trước khi phát hành
 
@@ -95,5 +94,4 @@ Chỗ bài làm hoặc cách trình bày chưa khớp câu chữ của đề.
 
 | Chỗ lệch | Ghi chú |
 |---|---|
-| Ứng dụng minh họa chưa định vị trong H-P-D-I | Đề đòi ứng dụng "nằm trong không gian H-P-D-I ở Tầng 2", và thể lệ gắn 10 điểm giấy phép với "giải quyết đúng đầu bài"; `README.md` không nhắc H-P-D-I và không có bảng đối chiếu với đề, còn kịch bản chính Một cửa sinh viên đọc như một ứng dụng ngành của Tầng 3; nói rõ ứng dụng Tầng 2 là bộ dựng giao diện và bảng điều khiển (P: soạn biểu mẫu và quy trình, cổng yêu cầu và phê duyệt; H: hộp việc, bảng theo trạng thái, lịch; D: thống kê, danh mục dữ liệu), còn Một cửa sinh viên là một tệp mô hình của Tầng 3 |
 | Kiểm dịch mã độc | Nguyên lý (iv) của đề viết "kiểm dịch mã độc nghiêm ngặt"; quét tắt mặc định, và kiểm tệp EICAR không nằm trong CI vì job `API end-to-end` không bật quét |

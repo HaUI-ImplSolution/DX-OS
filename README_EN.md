@@ -13,7 +13,7 @@
 
 Entry of the **OLP Open Source Software 2026** contest, DX-OS track (VFOSSA), by team **HaUI-ImplSolution**, School of Information and Communication Technology, Hanoi University of Industry.
 
-**Quick links:** [Overview](#overview) · [Features](#features) · [How it works](#how-it-works) · [Try it](#try-it) · [Documentation](#documentation) · [Structure](#repository-structure) · [Contributing](#contributing) · [License](#license)
+**Quick links:** [Overview](#overview) · [Features](#features) · [How it works](#how-it-works) · [Against the brief](#against-the-brief) · [Try it](#try-it) · [Documentation](#documentation) · [Structure](#repository-structure) · [Contributing](#contributing) · [License](#license)
 
 ## Overview
 
@@ -66,6 +66,25 @@ The system has three tiers:
 The diagrams and the path of one request through the system are in [`ARCHITECTURE.md`](./ARCHITECTURE.md) (Vietnamese); how to write a model file is in [`docs/MODEL.md`](./docs/MODEL.md) (Vietnamese).
 
 Ten templates are ready to pick in the control panel: student one-stop service, technical support, equipment incident, room booking, IT service access, equipment loan, notes, an asset register, clinic appointments and retail returns.
+
+## Against the brief
+
+The OLP 2026 brief splits a system into tiers and names four spaces to reach: H (a shared digital environment), P (guard rails and automatic flows), D (one source of truth) and I (artificial intelligence).
+DX-OS is, in Tier 1, a headless core, in Tier 2 a web interface and a control panel built on the core, and the student one-stop service and the other businesses are model files, which are the applications of Tier 3.
+
+| Space | What DX-OS does | State |
+|---|---|---|
+| H, shared digital environment | One sign-in; roles and units declared in the model; each person sees only their own work in the inbox, the board by state and the calendar | Done |
+| P, guard rails and automatic flows | A state changes only through the workflow; rejecting and returning need a reason; the creator cannot approve their own record; due and overdue dates; work after an approval runs through a queue and is retried | Done |
+| D, one source of truth | Data, history and queue live in one database; the history is chained so tampering shows; every change is reported outside by a signed webhook; statistics and a data catalog | Done |
+| I, artificial intelligence | None yet; only fully open models by the OSI definition will be used, and none that qualifies has been chosen | Not done |
+
+The interfaces that come with the system are counted as follows.
+The interfaces of DX-OS are the web interface, the control panel, the links page (portal) and the monitoring screen, all in Tier 2; the core run alone has no interface.
+The Keycloak Admin Console is the interface of an open source service that ships with it, not of DX-OS, and it is not opened to the gateway by default.
+This is the reading of the team and has not been confirmed by the organizers.
+
+The detailed check of each point of the brief is in [`DANH_GIA.md`](./docs/dynamic-core/DANH_GIA.md) and the remaining work in [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md), both in Vietnamese.
 
 Supabase, Strapi and Directus are foundations that build a backend from tables or content.
 DX-OS focuses on records with a workflow: one model file declares the roles, the row-level permissions, the approval workflow, the due dates and the tamper-evident history together.

@@ -13,7 +13,7 @@
 
 Bài dự thi **OLP Phần mềm nguồn mở 2026**, khối thi DX-OS (VFOSSA), của đội **HaUI-ImplSolution**, Trường Công nghệ Thông tin và Truyền thông, Đại học Công nghiệp Hà Nội.
 
-**Đọc nhanh:** [Giới thiệu](#giới-thiệu) · [Tính năng](#tính-năng) · [Cách hoạt động](#cách-hoạt-động) · [Chạy thử](#chạy-thử) · [Tài liệu](#tài-liệu) · [Cấu trúc](#cấu-trúc-repository) · [Đóng góp](#đóng-góp) · [Giấy phép](#giấy-phép)
+**Đọc nhanh:** [Giới thiệu](#giới-thiệu) · [Tính năng](#tính-năng) · [Cách hoạt động](#cách-hoạt-động) · [Đối chiếu với đề thi](#đối-chiếu-với-đề-thi) · [Chạy thử](#chạy-thử) · [Tài liệu](#tài-liệu) · [Cấu trúc](#cấu-trúc-repository) · [Đóng góp](#đóng-góp) · [Giấy phép](#giấy-phép)
 
 ## Giới thiệu
 
@@ -66,6 +66,25 @@ Hệ thống có ba tầng:
 Sơ đồ và luồng một yêu cầu đi qua hệ thống ở [`ARCHITECTURE.md`](./ARCHITECTURE.md); cách viết tệp mô hình ở [`docs/MODEL.md`](./docs/MODEL.md).
 
 Mười mẫu có sẵn, chọn được ngay ở bảng điều khiển: một cửa sinh viên, hỗ trợ kỹ thuật, sự cố thiết bị, đặt phòng, cấp quyền dịch vụ CNTT, mượn thiết bị, ghi chú, sổ tài sản, đặt lịch khám và đổi trả hàng.
+
+## Đối chiếu với đề thi
+
+Đề OLP 2026 chia hệ thống thành các tầng và nêu bốn không gian cần chạm tới: H (môi trường số chung), P (rào chắn và luồng tự động), D (một nguồn sự thật) và I (trí tuệ nhân tạo).
+DX-OS ở Tầng 1 là lõi không giao diện, ở Tầng 2 là giao diện web và bảng điều khiển dựng trên lõi, còn Một cửa sinh viên và các nghiệp vụ khác là tệp mô hình, tức ứng dụng của Tầng 3.
+
+| Không gian | DX-OS làm gì | Trạng thái |
+|---|---|---|
+| H, môi trường số chung | Một lần đăng nhập; vai và đơn vị khai trong mô hình; mỗi người chỉ thấy phần việc của mình trong hộp việc, bảng theo trạng thái và lịch | Có |
+| P, rào chắn và luồng tự động | Trạng thái chỉ đổi qua quy trình; từ chối và trả lại bắt buộc có lý do; người tạo không tự duyệt hồ sơ của mình; hạn xử lý và quá hạn; việc sau khi duyệt chạy qua hàng đợi và được thử lại | Có |
+| D, một nguồn sự thật | Dữ liệu, lịch sử và hàng đợi cùng nằm ở một cơ sở dữ liệu; lịch sử nối thành chuỗi chống sửa; mọi thay đổi báo ra ngoài bằng webhook có chữ ký; thống kê và danh mục dữ liệu | Có |
+| I, trí tuệ nhân tạo | Chưa có; chỉ dùng mô hình mở hoàn toàn theo định nghĩa của OSI, chưa chọn được mô hình đạt | Chưa làm |
+
+Các giao diện đi kèm được tính như sau.
+Giao diện của DX-OS là giao diện web, bảng điều khiển, trang liên kết (portal) và màn hình giám sát, đều ở Tầng 2; lõi chạy riêng không kèm giao diện nào.
+Keycloak Admin Console là giao diện của dịch vụ nguồn mở đi kèm chứ không phải của DX-OS, và mặc định không mở ra cổng vào.
+Đây là cách đọc của đội, chưa có xác nhận của Ban tổ chức.
+
+Đối chiếu chi tiết từng ý của đề ở [`DANH_GIA.md`](./docs/dynamic-core/DANH_GIA.md), việc còn lại ở [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md).
 
 Supabase, Strapi và Directus là các nền dựng backend từ bảng dữ liệu hoặc nội dung.
 DX-OS tập trung vào hồ sơ có quy trình: một tệp mô hình khai luôn vai, quyền theo dòng, quy trình duyệt, hạn xử lý và lịch sử chống sửa.

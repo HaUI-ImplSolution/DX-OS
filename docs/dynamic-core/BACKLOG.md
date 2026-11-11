@@ -70,8 +70,6 @@ Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết t�
 | Chỉ số mục tiêu | "Người mới tự dựng xong trong một buổi" cần một người chưa biết hệ thống thử; "mã tự viết bằng 0 ở mức 1 và 2" cần đếm trên một hệ thống thật; chưa có giá của lõi tự cài |
 | Tải | Chưa đo với nhiều người dùng đồng thời hay ít nhân hơn 12 |
 | Khách hàng | Chưa nói chuyện với khách hàng nào; mục Khách hàng và giá trị của `README.md` là giả thuyết |
-| Pháp lý | Chưa đọc văn bản gốc của Luật Bảo vệ dữ liệu cá nhân về chuyển dữ liệu ra nước ngoài; `README.md` dẫn nguồn thứ cấp |
-| Điều khoản kho chữ ký của ClamAV | Chưa kiểm |
 
 ## 4. Giới hạn chấp nhận
 

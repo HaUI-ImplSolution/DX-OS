@@ -556,7 +556,7 @@ Phần này là giả thuyết về khách hàng.
 - **Chưa phục vụ:** tổ chức không có ai vận hành máy chủ, lập trình viên muốn toàn quyền kiểm soát mã, doanh nghiệp cần ERP đầy đủ.
 - **Đối thủ thật:** bảng tính và thuê làm riêng; với người muốn trọn gói tự cài thì là Frappe.
 - **Lý do chọn:** thay đổi an toàn trên toàn hệ thống, dữ liệu ở máy chủ của mình, không tính phí theo đầu người.
-- **Pháp lý:** [Luật Bảo vệ dữ liệu cá nhân](https://digitalpolicyalert.org/event/36569-implementing-regulations-of-law-on-personal-data-protection-including-cross-border-data-transfer-regulation-entered-into-force) có hiệu lực từ 2026-01-01 và [theo nguồn thứ cấp](https://www.uniconsent.com/vietnam-pdpl) yêu cầu đánh giá khi chuyển dữ liệu ra nước ngoài.
+- **Pháp lý:** [Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15](https://congbao.chinhphu.vn/van-ban/luat-so-91-2025-qh15-45578.htm) và [Nghị định 356/2025/NĐ-CP](https://congbao.chinhphu.vn/van-ban/nghi-dinh-so-356-2025-nd-cp-468371.htm) có hiệu lực từ 2026-01-01; chuyển dữ liệu ra nước ngoài phải lập hồ sơ đánh giá tác động và gửi cơ quan chuyên trách trong 60 ngày (Điều 20 luật), chi tiết ở [`deploy/OPERATIONS.md`](../../deploy/OPERATIONS.md#dữ-liệu-cá-nhân-ra-nước-ngoài).
 - **Đo công sức:** so số dòng và thời gian dựng ứng dụng mới với phần Lab viết tay, gồm 5.792 dòng Java, 4.524 dòng giao diện và 8 migration.
 
 Mục tiêu:

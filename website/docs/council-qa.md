@@ -99,7 +99,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
   Từ mã nguồn: `deploy/make_env.sh`, rồi `cd deploy && docker compose up -d --build`; mật khẩu sinh ngẫu nhiên, thiếu bí mật thì Compose không chạy.
   Không cần mã nguồn: `dxos-install.sh` của bản phát hành tải gói, kiểm SHA-256, cài vào `~/.dxos`; `dxos start <tệp mô hình>` lên đủ dịch vụ, áp dụng tệp và in tài khoản `admin`.
 - Mọi cấu hình nằm ở `deploy/.env`, không sửa tệp mã.
-- Giới hạn: lệnh một dòng kéo image `v2.0.0` từ GHCR, mà bản này chưa phát hành; đến lúc đó phải chạy lại trên máy sạch.
+- Đã kiểm: `dxos-install.sh` của release `v2.0.0` cài và `dxos start` kéo image `v2.0.0` từ GHCR trên máy chủ đã xóa stack cũ, rồi áp dụng một tệp mô hình.
 - **Bằng chứng:** `README.md` mục Chạy thử; các job `Install from the release archive` và `Validate the Compose file` của workflow `Platform` (gói sai SHA-256 bị từ chối, mọi tệp Compose mount đều có); `docs/TESTING.md` mục 3.
 
 ## 9. Từ 100 lên 100.000 người dùng thì sao?

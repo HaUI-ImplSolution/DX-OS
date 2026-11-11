@@ -16,7 +16,7 @@ Ký hiệu: ✅ đạt, ⚠️ còn thiếu hoặc chưa kiểm được, ❌ ch
 | --- | --- | --- |
 | 1. Kho mã nguồn và lịch sử phát triển | 5 | ✅ |
 | 2. Giấy phép và tính tương thích | 10 | ✅ |
-| 3. Release và quản lý phiên bản | 5 | ⚠️ |
+| 3. Release và quản lý phiên bản | 5 | ✅ |
 | 4. Build và cài đặt từ mã nguồn | 10 | ⚠️ |
 | 5. Thư viện, phụ thuộc, nguồn gốc | 10 | ✅ |
 | 6. Tài liệu, quản lý lỗi, giao tiếp | 10 | ✅ |
@@ -29,8 +29,8 @@ Không có lỗi loại trừ: repository công khai, có `LICENSE`, đã có re
 |---|---|---|---|
 | 1 | Repository công khai, có web viewer | ✅ | `HaUI-ImplSolution/DX-OS`, `visibility: public`, API trả 200 không đăng nhập |
 | 2 | Giấy phép OSI, có `LICENSE` toàn văn, có thông báo | ✅ | `LICENSE` Apache-2.0, GitHub nhận đúng `Apache-2.0`; `NOTICE`; `DEPENDENCIES.txt` |
-| 3 | Có release hoặc tag trước hạn nộp, không dùng định dạng độc quyền | ⚠️ | 6 release `v1.0.0` đến `v1.1.1`, mỗi release có `.tar.gz`; bản `2.0.0` chưa gắn tag |
-| 4 | Có hướng dẫn build và cài, chạy lại được | ⚠️ | `README.md` mục Chạy thử; chạy lại trên máy sạch với image `v2.0.0` chờ có release |
+| 3 | Có release hoặc tag trước hạn nộp, không dùng định dạng độc quyền | ✅ | 7 release `v1.0.0` đến `v2.0.0`, mỗi release có `.tar.gz` |
+| 4 | Có hướng dẫn build và cài, chạy lại được | ⚠️ | `README.md` mục Chạy thử; `dxos-install.sh` của `v2.0.0` đã chạy được trên máy sạch, còn bài dựng từ bản clone (`docker compose up -d --build`) chưa chạy lại trên máy sạch |
 | 5 | Khai báo thư viện, phiên bản, nguồn, giấy phép | ✅ | `DEPENDENCIES.txt`, `sbom/`, `.github/component-catalog.json` |
 | 6 | README, CHANGELOG, bug tracker, tài liệu đúng trạng thái | ✅ | Xem tiêu chí 6 |
 | 7 | Không lộ bí mật hay dữ liệu cá nhân | ✅ | Xem mục 9 |
@@ -79,7 +79,7 @@ head -3 LICENSE                                # toàn văn, không phải liên
 | ✅ | Phát hành theo phiên bản | Thẻ SemVer; `CHANGELOG.md` theo Keep a Changelog có mục cho mọi bản và `[Unreleased]` | −3 |
 | ✅ | Định dạng mở cho gói phát hành | Workflow `Release Package` chạy khi đẩy tag `v*`, đính kèm `dx-os-X.Y.Z.tar.gz`, `.sha256` và SBOM `.cdx.json`; không có `.zip` | −3 |
 | ✅ | Gói được kiểm trước khi đăng | `check_archive.sh` kiểm gói có `LICENSE`, `NOTICE`, `DEPENDENCIES.txt`, `README.md`, `CHANGELOG.md` và không có tệp giống bí mật; chạy ở job `Install from the release archive` của workflow `Platform` của mọi pull request và trong `Release Package` trước khi đăng | |
-| ⚠️ | Image theo phiên bản | Workflow `Release Images` đẩy image `vX.Y.Z` lên GHCR; `dxos-install.sh` kéo image này nên bản `2.0.0` chưa cài được bằng một lệnh cho đến khi chạy | |
+| ✅ | Image theo phiên bản | Workflow `Release Images` đẩy image `vX.Y.Z` lên GHCR; `dxos-install.sh` kéo image này, bản `2.0.0` cài được bằng một lệnh | |
 
 GitHub tự đính kèm `Source code (zip)` vào mỗi release và không xóa được; phần mô tả release ghi rõ `dx-os-X.Y.Z.tar.gz` mới là gói phát hành chính thức.
 
@@ -93,7 +93,7 @@ GitHub tự đính kèm `Source code (zip)` vào mỗi release và không xóa �
 | ✅ | Dịch bằng công cụ nguồn mở | Docker, Compose, Git, Maven wrapper, npm | −5 |
 | ✅ | Chạy được ngoài thư mục mã nguồn | `dxos-install.sh` cài vào `~/.dxos`, `install.sh` từ chối cài vào chính thư mục mã nguồn; job `Install from the release archive` của workflow `Platform` cài từ gói, gói sai SHA-256 bị từ chối, mọi tệp Compose mount đều có | −5 |
 | ✅ | Hệ thống dựng từ trạng thái rỗng dùng được qua trình duyệt | Job `Browser end-to-end`: dựng image của commit, khởi động stack rỗng, Playwright đăng nhập bằng Keycloak, áp dụng một mẫu và thấy mô hình chạy (`e2e/tests/console.spec.ts`) | |
-| ⚠️ | Chạy lại chuỗi trên máy sạch | Đã kiểm trên máy dev với image dựng tại chỗ; chưa kiểm với image phát hành thật vì bản `2.0.0` chưa phát hành | |
+| ✅ | Chạy lại chuỗi trên máy sạch | `dxos-install.sh` của release `v2.0.0` cài vào `~/.dxos` trên máy chủ không còn stack cũ, `dxos start` kéo image từ GHCR, áp dụng `onestop.yaml` và `dxos demo` chạy được | |
 
 Bài kiểm tra bắt buộc làm trước ngày chấm, giả lập thao tác của giám khảo:
 

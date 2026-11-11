@@ -17,7 +17,7 @@ Nguồn: [đề thi](https://vfossa.vn/tin-tuc/de-thi-phan-mem-nguon-mo-olp-2026
 | Dữ liệu phi cấu trúc | SeaweedFS, tệp đính kèm theo quyền của hồ sơ, ClamAV khi bật | Đạt; quét mã độc tắt mặc định |
 | Động cơ luồng công việc | Flowable nhúng, BPMN sinh từ mô hình, ba họ mẫu | Đạt |
 | Ít nhất một ứng dụng Tầng 2 trong H-P-D-I | Ứng dụng web dựng từ metadata và bảng điều khiển, chạm H, P và D | Đạt; chưa có I, và `README.md` chưa nói ứng dụng nằm ở không gian nào |
-| Giấy phép OSI, mã công khai, có bản phát hành trước khi nộp | Apache-2.0; sáu bản `v1.0.0` đến `v1.1.1` | Đạt; bản dự thi `2.0.0` chưa gắn tag |
+| Giấy phép OSI, mã công khai, có bản phát hành trước khi nộp | Apache-2.0; bảy bản `v1.0.0` đến `v2.0.0` | Đạt |
 
 ## 2. Bốn nguyên lý kỹ thuật
 
@@ -47,9 +47,9 @@ Phần còn lại của bảy cụm là tầm nhìn của đề, phủ thêm là
 
 | Tiêu chí | Điểm | Đã có | Còn thiếu để chắc điểm |
 |---|---|---|---|
-| Quản lý mã nguồn trên Internet | 5 | GitHub công khai, hơn 860 commit của ba thành viên, CI trên mọi pull request | Nhánh `main` chưa có bản `2.0.0` |
+| Quản lý mã nguồn trên Internet | 5 | GitHub công khai, hơn 860 commit của ba thành viên, CI trên mọi pull request | Đạt |
 | Giấy phép OSI | 10 | Apache-2.0, `LICENSE` toàn văn, `NOTICE`, dòng SPDX ở tệp Java, TypeScript, JavaScript, Python, shell và YAML, CI kiểm giấy phép của mọi gói | 25 tệp mã loại khác chưa có dòng giấy phép; `README.md` chưa đối chiếu với đề |
-| Bản phát hành | 5 | Sáu bản theo SemVer, mỗi bản có `.tar.gz`, `.sha256` và SBOM | Tag `v2.0.0` |
+| Bản phát hành | 5 | Bảy bản theo SemVer, mỗi bản có `.tar.gz`, `.sha256` và SBOM | Đạt |
 | Dịch từ mã nguồn | 10 | Cấu hình ở `.env` trước khi dựng, dựng bằng Docker, Maven và npm, cài ra ngoài thư mục mã nguồn, CI cài từ gói phát hành | Chạy lại trên máy sạch với image phát hành thật |
 | Thư viện và gói đính kèm | 10 | `DEPENDENCIES.txt`, SBOM khớp tệp khóa, image ghim digest, không chép và không vá mã của dự án khác | Một tệp của bên thứ ba chưa ghi nguồn |
 | Tài liệu và giao tiếp | 10 | README hai thứ tiếng, CHANGELOG, mẫu issue, CONTRIBUTING, SECURITY, trang docs | 39 issue so với 196 pull request; chưa có lộ trình và kênh trao đổi |
@@ -64,7 +64,7 @@ Các việc ở cột cuối nằm ở `BACKLOG.md`, mục 2 và 3.
 | Mức hoàn thiện | Tám mẫu mô hình trên ba họ quy trình; kiểm tự động trên stack thật trong CI | Chưa có phần AI; bản chạy công khai còn là `1.1.1` |
 | Thân thiện | Cài một lệnh, bảng điều khiển, thư viện mẫu, tài khoản và hồ sơ thử | Giao diện sinh từ metadata dễ trông chung chung; hồ sơ chỉ có id là số |
 | Phát triển bền vững | Tài liệu kiến trúc, tệp mô hình, API và vận hành; lệnh `dxos`; bộ kiểm chung cho mô hình; SBOM | Chưa có hướng dẫn mở rộng, ứng dụng mẫu của bên ngoài và lộ trình |
-| Trình diễn, thu hút cộng đồng | Kịch bản 15 phút, README tiếng Anh | Chưa có video, phần trình chiếu và bản `2.0.0` chạy trên Internet |
+| Trình diễn, thu hút cộng đồng | Kịch bản 15 phút, README tiếng Anh | Chưa có video và phần trình chiếu |
 
 ## 6. Nhận xét từ tài liệu của đội Signet
 
@@ -121,7 +121,6 @@ Cột Trạng thái ghi quyết định của đội: đề xuất đã chốt l
 | Đề xuất | Lý do | Làm gì | Lợi ích | Rủi ro | Trạng thái |
 |---|---|---|---|---|---|
 | **Chuẩn REUSE** | Thể lệ chấm giấy phép trong từng tệp; kiểm hiện tại bỏ sót loại tệp và không nói gì về tệp không chèn được chú thích | Thêm `REUSE.toml` và thư mục `LICENSES/`, khai giấy phép và bản quyền cho JSON, ảnh và tệp của bên thứ ba; chạy `reuse lint` trong job `Check licenses` | Một chuẩn có công cụ kiểm thay cho script tự viết; mọi tệp đều có giấy phép máy đọc được | REUSE đòi cả dòng bản quyền, tệp hiện chỉ có dòng giấy phép; phải kiểm GitHub vẫn nhận một giấy phép sau khi có `LICENSES/` | Chốt làm |
-| **Bản ứng viên trước bản chính** | Gói phát hành, image và cài một lệnh của `2.0.0` chỉ kiểm được sau khi có tag; gắn tag ở ngày nộp thì không còn chỗ sửa | Gắn `v2.0.0-rc.1` dạng pre-release khi `main` đã có mã mới, chạy đủ hai workflow phát hành và bài cài trên máy sạch, dựng bản công khai từ đó | Các việc ở `BACKLOG.md`, mục 2 kiểm được trước bản chính; lịch sử có thêm một bản phát hành theo phiên bản | `releases/latest` không trỏ tới pre-release nên lệnh cài phải nhận tên bản; `CHANGELOG.md` cần cách ghi bản ứng viên | Chốt phát hành sớm; có dùng bản ứng viên hay không chờ chốt |
 | **Trang docs là tài liệu sản phẩm** | Trang docs là hồ sơ dự thi; người mới không có đường đọc từ cài đặt tới mở rộng | Đưa bắt đầu nhanh, tệp mô hình, API, vận hành và hướng dẫn mở rộng lên trang; thêm `ROADMAP.md`, bật Discussions, gắn nhãn `good first issue` cho vài việc nhỏ | Điểm tài liệu, phát triển bền vững và thu hút cộng đồng cùng dựa vào đây | Hai nơi chứa một nội dung dễ lệch nhau, nên trang docs phải dựng từ chính các tệp trong `docs/` | Chờ chốt; nên làm |
 
 ## 8. Đã cân nhắc, không đề xuất

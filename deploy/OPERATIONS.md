@@ -134,6 +134,18 @@ Các cổng đã bị chiếm chỉ được kiểm khi stack chưa chạy.
 Quét mã độc được báo là bật hay tắt; `STORAGE_SCAN_HOST=clamav` mà `COMPOSE_PROFILES` không có `av` bị báo `FAIL`, vì ClamAV sẽ không chạy và mọi tệp tải lên bị từ chối.
 Thoát với mã 1 khi có `FAIL`, nên chạy trước `./update.sh` và `docker compose up -d` trên máy chủ.
 
+## Thời gian dựng từ tệp mô hình
+
+Số đo trên máy chủ 8 CPU, 7 GB RAM, đã xóa stack cũ và năm image `dxos-*`, bản `2.0.0` cài bằng `dxos-install.sh`.
+
+| Bước | Thời gian |
+|---|---|
+| `dxos start <tệp mô hình>`: kéo năm image `dxos-*` từ GHCR, khởi động tám service, áp dụng `onestop.yaml` | 174 giây |
+| `dxos av on`: tải ClamAV, khởi động lại backend | 32 giây |
+| `dxos demo`: bốn tài khoản thử và 40 hồ sơ mẫu | 98 giây |
+
+Từ tệp mô hình đến hệ thống chạy mất khoảng ba phút; image của bên thứ ba (`postgres`, `apisix`, `seaweedfs`) đã có sẵn trên máy nên không nằm trong số này.
+
 ## Tài nguyên và số bản sao
 
 Số đo trên máy 12 CPU, 31 GB RAM, với stack tám service (không bật `clamav`) đang rảnh sau khi nạp 40 hồ sơ mẫu bằng `dxos demo`.

@@ -91,7 +91,7 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 | SBOM khớp với tệp khóa | Job `Check SBOMs against lockfiles` của workflow `Compliance` dựng lại SBOM của `frontend` và `website` rồi so với `sbom/` | `python3 .github/scripts/check_sbom_fresh.py` | Hoàn thiện | SBOM của backend so bằng `check_sbom_fresh.py` với kết quả của `cyclonedx-maven-plugin`, chạy tay ngày 06/11/2026: 221 gói, 0 khác biệt |
 | Tệp bắt buộc có đủ, shell script đúng cú pháp và chạy được | Job `Check required files and scripts` của workflow `Compliance` | | Hoàn thiện | |
 | Workflow đúng cú pháp | Job `Lint workflows` của workflow `Compliance` | | Hoàn thiện | |
-| Image theo phiên bản trên GHCR | Workflow `Release Images` | | Dùng được | Chưa có image `v2.0.0` |
+| Image theo phiên bản trên GHCR | Workflow `Release Images` | | Dùng được | Image `v2.0.0` đã đăng, `dxos start` kéo về chạy được |
 | Compose dừng khi thiếu bí mật, tệp mẫu hợp lệ | Job `Validate the Compose file` của workflow `Platform` | `docker compose config` | Hoàn thiện | |
 
 ## 4. Chưa làm
@@ -103,7 +103,6 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 | Lớp truy vấn riêng trên kho Parquet, phả hệ đến từng trường | Chưa làm | Xem [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md), mục 3 |
 | Bản sao số | Chưa làm | Giới hạn chấp nhận, xem [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md), mục 4 |
 | Nhiều bản backend sau gateway | Chưa làm | Chạy một bản; hai bản thì danh sách mô hình giữ lệch nhau sau một lần áp dụng |
-| Triển khai công khai cho lõi mới | Chưa làm | VPS giữ `v1.1.1`; bản mới không có đường nâng cấp dữ liệu nên phải dựng lại |
 | Thao tác hoàn tất gọi ra hệ thống ngoài | Chưa làm | Ghi ở giới hạn chấp nhận của Việc tồn đọng: webhook của mô hình đã gửi trạng thái cũ, mới và hành động |
 
 ## 5. Kiểm lại

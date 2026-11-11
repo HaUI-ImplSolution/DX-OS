@@ -69,6 +69,21 @@ Eight templates are ready to pick in the control panel: student one-stop service
 
 ## Try it
 
+### Try it online
+
+Version `2.0.0` runs publicly at https://khuongdev.io.vn/ with the One-stop student model and 40 sample requests.
+Sign in with one of the four trial accounts below, all with the password `15c9777835f0dfcf4e8d`.
+
+| Account | Role |
+|---|---|
+| `judge_student` | Student, files requests |
+| `judge_officer` | Officer of the unit DAO_TAO |
+| `judge_officer2` | Officer of the unit CTSV |
+| `judge_supervisor` | Supervisor, reads every request |
+
+The control panel `/console` and the monitoring page are for administrators, so these accounts cannot open them.
+Send feedback or report a problem by [opening an issue](https://github.com/HaUI-ImplSolution/DX-OS/issues/new/choose).
+
 ### Install
 
 You need a Linux machine with Docker and Compose v2; no source code.

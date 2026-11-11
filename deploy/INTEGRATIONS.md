@@ -2,6 +2,7 @@
 
 Tài liệu cho người nối hệ thống ngoài với DX-OS: webhook sự kiện, API kéo sự kiện, lịch sử chống sửa và hồ dữ liệu.
 Cài đặt và các lệnh `dxos` ở [`OPERATIONS.md`](./OPERATIONS.md); log và audit ở [`MONITORING.md`](./MONITORING.md).
+Kết nối công cụ báo cáo trực tiếp tới dữ liệu nghiệp vụ bằng vai chỉ đọc ở [`REPORTING.md`](./REPORTING.md).
 
 ## Webhook sự kiện
 

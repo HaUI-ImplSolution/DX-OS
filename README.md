@@ -161,6 +161,7 @@ Trang tài liệu: <https://haui-implsolution.github.io/DX-OS/>.
 | `website` | Trang tài liệu (Docusaurus), đăng lên GitHub Pages |
 | `docs` | Hướng dẫn kiểm thử, tệp mô hình, API; hướng thiết kế ở `dynamic-core/` |
 | `sbom` | Danh mục thành phần CycloneDX của backend, web, và trang tài liệu |
+| `LICENSES` | Toàn văn giấy phép của kho theo chuẩn REUSE |
 | `.github` | Workflow CI, mẫu issue và pull request, quy tắc nhánh, script kiểm tra |
 
 ## Đóng góp

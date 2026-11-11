@@ -210,14 +210,19 @@ def main():
     start_backend({**webhook, "ENGINE_FAULT_AFTER_DECISION": "true"})
     status, fresh = kc.api(stu, "POST", BASE, {"reason": "rollback", "kind": "Hoãn thi", "department": "DAO_TAO"})
     wait_for(lambda: False, SETTLE)
-    before_lines = count("select count(*) from engine.record_event")
-    before_messages = count("select count(*) from engine.outbox where topic = 'record.event'")
-    seen = len(received)
-    status, _ = act(off, fresh["data"]["id"], "approve")
+    # Only this record is counted: the sweep for overdue records may write lines of other records meanwhile.
+    rid = fresh["data"]["id"]
+    lines = f"select count(*) from engine.record_event where entity = 'request' and record_id = {rid}"
+    messages = f"select count(*) from engine.outbox where topic = 'record.event' and entity = 'request' and record_id = {rid}"
+    sent = lambda: len([r for r in received if r["body"]["recordId"] == rid])
+    before_lines = count(lines)
+    before_messages = count(messages)
+    seen = sent()
+    status, _ = act(off, rid, "approve")
     wait_for(lambda: False, SETTLE)
     rt.check("EV-10 a decision that is rolled back leaves no line, no message and no request",
-             status == 500 and count("select count(*) from engine.record_event") == before_lines
-             and count("select count(*) from engine.outbox where topic = 'record.event'") == before_messages and len(received) == seen)
+             status == 500 and count(lines) == before_lines and count(messages) == before_messages and sent() == seen,
+             f"status {status}, lines {count(lines)}/{before_lines}, messages {count(messages)}/{before_messages}, sent {sent()}/{seen}")
 
     rt.psql("insert into engine.outbox (topic, idempotency_key, model, entity, record_id, payload, delivered_at) values "
             "('record.event', 'check-old', 'onestop', 'request', 1, '{}', now() - interval '40 days'), "

@@ -49,7 +49,7 @@ Dự án kéo image chính thức nguyên bản khi chạy, không đóng gói v
 | Frappe | Chỉ lấy ý tưởng | Một mô hình là nguồn sự thật cho bảng, form và quyền; không dùng làm nền vì đề yêu cầu lõi không có giao diện |
 | Trình thiết kế BPMN kéo thả | Không làm | Người triển khai nhập tham số, hệ thống sinh quy trình từ họ mẫu |
 | Mattermost | Đã gỡ khỏi cây mã | Giấy phép bản Team Edition bị tranh cãi (MIT cho bản build, AGPL cho mã nguồn) và bản 11 giới hạn 250 người dùng; thông báo chat đi qua webhook dạng `chat` nên đổi sang Zulip, Slack hay dịch vụ khác chỉ đổi địa chỉ |
-| Superset | Đã gỡ khỏi cây mã | Gỡ cùng các ứng dụng cũ; vai `report_ro` chỉ đọc dành cho công cụ báo cáo do người vận hành cấp |
+| Superset | Đã gỡ khỏi cây mã | Gỡ cùng các ứng dụng cũ; vai `report_ro` chỉ đọc dành cho công cụ báo cáo do người vận hành cấp; Superset (Apache-2.0) chỉ là ví dụ trong `deploy/REPORTING.md`, cài riêng và không thuộc stack |
 | Qwen2.5 | Đã gỡ | Trọng số Apache-2.0 nhưng dữ liệu huấn luyện không công khai, không đạt định nghĩa Open Source AI |
 | Reranker mMARCO | Đã gỡ | Thẻ mô hình ghi Apache-2.0 nhưng MS MARCO, bộ dữ liệu nó dựa trên, chỉ cho nghiên cứu phi thương mại |
 | Redis, Langfuse | Đã gỡ | Redis theo RSALv2 hoặc SSPLv1; Langfuse có phần EE riêng; cả hai chỉ phục vụ bộ đánh giá RAG đã bỏ |

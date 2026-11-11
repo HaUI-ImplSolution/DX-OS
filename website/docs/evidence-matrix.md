@@ -73,7 +73,7 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 | Tài khoản và hồ sơ mẫu để dùng thử (`dxos demo`) | Kiểm tay theo `docs/TESTING.md` mục 6, phần lệnh `dxos` mục 6 | `dxos demo` | Dùng được | Không có kiểm tự động; hồ sơ quá hạn chỉ có sau ba ngày kể từ lần nộp |
 | Kiểu `boolean`, `date`, nhiều lựa chọn, giới hạn `min` `max` `pattern`, bắt buộc có điều kiện | Kiểm tay theo `docs/TESTING.md` mục 6, mục 24; `check_conformance.py` và `check_booking.py` áp mọi mẫu, kể cả Sổ tài sản | Áp dụng mẫu Sổ tài sản rồi ghi giá trị đúng và sai qua API | Dùng được | Không có kiểm tự động riêng cho các kiểu mới; `CHECK` của cơ sở dữ liệu kiểm tay bằng chèn thẳng vào bảng |
 | Tài liệu OpenAPI theo mô hình | Kiểm tay theo `docs/TESTING.md` mục 6, mục 28; `check_docs.py` kiểm đường dẫn của tài liệu có trong OpenAPI chung | `GET /api/v1/meta/models/{model}/openapi` | Dùng được | Chưa thử trong một trình sinh thư viện cụ thể; đã nhập qua bộ kiểm cú pháp OpenAPI |
-| Ứng dụng ngoài (`dxos client`, tab Ứng dụng ngoài) | Kiểm tay theo `docs/TESTING.md` mục 6, mục 27 và phần lệnh `dxos` mục 7 | `dxos client add` | Dùng được | Không có kiểm tự động; mỗi ứng dụng giữ đúng một vai của một mô hình |
+| Ứng dụng ngoài (`dxos client`, tab Ứng dụng ngoài) | Kiểm tay theo `docs/TESTING.md` mục 6, mục 27 và phần lệnh `dxos` mục 7 | `dxos client add` | Dùng được | Không có kiểm tự động; mỗi ứng dụng giữ đúng một vai của một mô hình, đổi vai bằng `dxos client role` hoặc nút Đổi vai mà giữ nguyên mã bí mật |
 | Danh mục dữ liệu (`GET /api/v1/models/{model}/data-catalog`, tab Danh mục dữ liệu) | Kiểm tay theo `docs/TESTING.md` mục 6, mục 32; `check_docs.py` kiểm đường dẫn có trong OpenAPI | Mở tab Danh mục dữ liệu bằng ADMIN, chọn một mô hình có quy trình | Dùng được | Không có kiểm tự động; chỉ ADMIN xem được; mới tới mức thực thể, chưa có phả hệ từng trường |
 | Lưu trữ hồ sơ đã đóng vào kho đối tượng, chạy theo lịch | `check_cli.py` CLI-19 đến CLI-21; kiểm tay theo `docs/TESTING.md` phần lệnh `dxos` mục 8 | `dxos archive <mô hình> --store`, `dxos archive schedule install` | Dùng được | Lần chạy đầu cần mạng để DuckDB tải extension; timer là systemd user timer, máy không có systemd thì dùng cron; chưa có lớp truy vấn trên kho |
 | Khối `ui:` và hành động hàng loạt | Kiểm tay theo `docs/TESTING.md` mục 6, mục 25 và 26; `npx tsc --noEmit` | Mở danh sách và biểu mẫu của Sổ tài sản; chọn nhiều hồ sơ rồi Duyệt | Dùng được | Không có kiểm tự động của giao diện cho hai phần này |
@@ -91,7 +91,7 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 | SBOM khớp với tệp khóa | Job `Check SBOMs against lockfiles` của workflow `Compliance` dựng lại SBOM của `frontend` và `website` rồi so với `sbom/` | `python3 .github/scripts/check_sbom_fresh.py` | Hoàn thiện | SBOM của backend so bằng `check_sbom_fresh.py` với kết quả của `cyclonedx-maven-plugin`, chạy tay ngày 06/11/2026: 221 gói, 0 khác biệt |
 | Tệp bắt buộc có đủ, shell script đúng cú pháp và chạy được | Job `Check required files and scripts` của workflow `Compliance` | | Hoàn thiện | |
 | Workflow đúng cú pháp | Job `Lint workflows` của workflow `Compliance` | | Hoàn thiện | |
-| Image theo phiên bản trên GHCR | Workflow `Release Images` | | Dùng được | Chưa có image `v2.0.0` |
+| Image theo phiên bản trên GHCR | Workflow `Release Images` | | Dùng được | Image `v2.0.0` đã đăng, `dxos start` kéo về chạy được |
 | Compose dừng khi thiếu bí mật, tệp mẫu hợp lệ | Job `Validate the Compose file` của workflow `Platform` | `docker compose config` | Hoàn thiện | |
 
 ## 4. Chưa làm
@@ -103,7 +103,6 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 | Lớp truy vấn riêng trên kho Parquet, phả hệ đến từng trường | Chưa làm | Xem [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md), mục 3 |
 | Bản sao số | Chưa làm | Giới hạn chấp nhận, xem [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md), mục 4 |
 | Nhiều bản backend sau gateway | Chưa làm | Chạy một bản; hai bản thì danh sách mô hình giữ lệch nhau sau một lần áp dụng |
-| Triển khai công khai cho lõi mới | Chưa làm | VPS giữ `v1.1.1`; bản mới không có đường nâng cấp dữ liệu nên phải dựng lại |
 | Thao tác hoàn tất gọi ra hệ thống ngoài | Chưa làm | Ghi ở giới hạn chấp nhận của Việc tồn đọng: webhook của mô hình đã gửi trạng thái cũ, mới và hành động |
 
 ## 5. Kiểm lại

@@ -2,6 +2,8 @@
 package HaUI.ImplSolution.dxos.model;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -23,9 +25,9 @@ public enum Actor {
 
   // The comparison of one field with a value that decides whether an action can be taken. The
   // operator is one of ==, !=, <, <=, > and >=, kept as written so that a client compares by the
-  // same words. The value is a number for a number field and text otherwise. Equality works on any
-  // field the parser allows, ordering only on numbers; a field without a value never meets a
-  // condition.
+  // same words. The value is a number for a number field and text otherwise, a date as 2026-01-31.
+  // Equality works on any field the parser allows, ordering only on numbers and dates; a field
+  // without a value never meets a condition.
   public record Condition(String field, String op, Object value) {
 
   public static final List<String> OPERATORS = List.of("==", "!=", "<=", ">=", "<", ">");
@@ -43,6 +45,13 @@ public enum Actor {
       try {
         return compare(new BigDecimal(actual.toString()).compareTo(expected));
       } catch (NumberFormatException notNumber) {
+        return false;
+      }
+    }
+    if (ordering(op) && value instanceof String expected) {
+      try {
+        return compare(LocalDate.parse(actual.toString()).compareTo(LocalDate.parse(expected)));
+      } catch (DateTimeParseException notDate) {
         return false;
       }
     }

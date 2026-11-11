@@ -337,4 +337,5 @@ export interface AppSecret {
 export const listApps = () => request<AppClient[]>("/clients");
 export const registerApp = (name: string, model: string, role: string) => request<AppSecret>("/clients", json("POST", { name, model, role }));
 export const renewAppSecret = (name: string) => request<AppSecret>(`/clients/${name}/secret`, { method: "POST" });
-export const removeApp = (name: string) => request<null>(`/clients/${name}`, { method: "DELETE" });
+export const changeAppRole = (name: string, role: string) => request<AppClient>(`/clients/${name}`, json("PUT", { role }));
+export const removeApp =(name: string) => request<null>(`/clients/${name}`, { method: "DELETE" });

@@ -69,6 +69,21 @@ Tám mẫu có sẵn, chọn được ngay ở bảng điều khiển: một c�
 
 ## Chạy thử
 
+### Dùng thử trực tuyến
+
+Bản `2.0.0` chạy công khai tại https://khuongdev.io.vn/ với mô hình Một cửa sinh viên và 40 hồ sơ mẫu.
+Đăng nhập bằng một trong bốn tài khoản thử dưới đây, cùng mật khẩu `15c9777835f0dfcf4e8d`.
+
+| Tài khoản | Vai |
+|---|---|
+| `judge_student` | Sinh viên, nộp hồ sơ |
+| `judge_officer` | Cán bộ đơn vị DAO_TAO |
+| `judge_officer2` | Cán bộ đơn vị CTSV |
+| `judge_supervisor` | Giám sát, đọc mọi hồ sơ |
+
+Bảng điều khiển `/console` và màn hình giám sát chỉ dành cho quản trị viên nên các tài khoản này không vào được.
+Góp ý hoặc báo lỗi bằng cách [mở một issue](https://github.com/HaUI-ImplSolution/DX-OS/issues/new/choose).
+
 ### Cài đặt
 
 Cần máy Linux có Docker với Compose v2; không cần mã nguồn.
@@ -120,6 +135,7 @@ Trang tài liệu: <https://haui-implsolution.github.io/DX-OS/>.
 | Cài đặt, lệnh `dxos`, sao lưu | [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md) |
 | Giám sát, log, nhật ký truy cập | [`deploy/MONITORING.md`](./deploy/MONITORING.md) |
 | Webhook, lịch sử chống sửa, lưu trữ dài hạn | [`deploy/INTEGRATIONS.md`](./deploy/INTEGRATIONS.md) |
+| Kết nối công cụ báo cáo | [`deploy/REPORTING.md`](./deploy/REPORTING.md) |
 | Kiểm thử | [`docs/TESTING.md`](./docs/TESTING.md), [`e2e/README.md`](./e2e/README.md) |
 | Kịch bản trình diễn 15 phút | [`docs/DEMO.md`](./docs/DEMO.md) |
 | Hướng thiết kế và việc còn lại | [`docs/dynamic-core/README.md`](./docs/dynamic-core/README.md), [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md) |

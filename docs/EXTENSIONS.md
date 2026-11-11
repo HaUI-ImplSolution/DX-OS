@@ -13,7 +13,7 @@ Nó không có nghĩa một mô hình có thể đổi trường mà mã tích h
 |---|---|---|
 | Dịch vụ riêng gọi API của lõi | Ổn định | Dùng client riêng cho đúng một vai của một mô hình và đọc OpenAPI sinh từ mô hình đang chạy |
 | Bên nhận phản ứng sau thay đổi | Ổn định | Webhook có chữ ký, `schemaVersion` và API đọc bù; webhook không chặn được hành động trước khi trạng thái đổi |
-| Giao diện ngoài chạy ở `localhost` | Thử nghiệm cục bộ | Client `dxos-web` và CORS hiện chỉ chuẩn bị sẵn cho gateway cùng origin, `localhost` và `127.0.0.1` |
+| Giao diện ngoài chạy ở `localhost` | Thử nghiệm cục bộ | Client `dxos-web` chỉ có redirect cho gateway, `localhost:9080` và `localhost:5173`; CORS nhận `localhost` và `127.0.0.1` |
 | Giao diện ngoài ở tên miền khác | Chưa có hợp đồng cài đặt | Chưa có lệnh đăng ký OIDC public client hoặc allowlist CORS cho tên miền tùy chọn |
 | Trang hoặc thành phần form trong web Tầng 2 | Tùy biến source | Phải sửa và dựng lại image frontend; chưa có registry plugin hay kiểm tra tương thích |
 | Route riêng dưới gateway DX-OS | Thử nghiệm | Phải sửa tệp APISIX do bộ cài quản lý; `dxos update` có thể thay tệp đó |
@@ -50,7 +50,8 @@ Lưu secret vào trình quản lý secret hoặc một tệp chỉ tiến trình
 
 Mỗi client giữ đúng một vai của một mô hình.
 API của mô hình khác, API quản trị và API người dùng trả `403`.
-Muốn đổi vai, xóa client rồi đăng ký lại; hồ sơ client đã tạo vẫn còn.
+Đổi sang vai khác của cùng mô hình bằng `dxos client role <tên> --role <vai>` hoặc nút **Đổi vai** ở tab **Ứng dụng ngoài**; client id và secret giữ nguyên, còn token đã cấp giữ vai cũ đến khi hết hạn.
+Đổi sang mô hình khác thì xóa client rồi đăng ký lại; hồ sơ client đã tạo vẫn còn.
 
 ### 2. Lấy token và OpenAPI của mô hình
 
@@ -173,6 +174,7 @@ Trên Docker Desktop có thể dùng `host.docker.internal`; trên Linux, chạy
 
 Bên nhận lỡ tin đọc bù từng trang bằng `GET /api/v1/events?after=<eventId>&size=500` và tiếp tục khi `more` là `true`.
 Feed này yêu cầu `ADMIN`; client tạo bằng `dxos client add` không được cấp vai nền tảng này.
+Thay đổi của quản trị đọc bù bằng `GET /api/v1/events/admin` với cùng quy ước `after`, `size`, `next` và `more`.
 Giữ cursor chỉ sau khi toàn bộ trang đã được lưu thành công.
 
 [`examples/history-witness`](../examples/history-witness/README.md) minh họa đọc hết các trang, giữ `eventId` cùng `hash` ở ngoài máy chủ và so lại về sau.
@@ -208,11 +210,9 @@ Kiểm luồng đăng nhập, callback, refresh hoặc đăng nhập lại khi t
 
 ### Giới hạn triển khai thật
 
-Tên miền khác chưa có đường cấu hình được hỗ trợ: CORS không đọc allowlist từ `.env`, và chưa có lệnh đăng ký public client với redirect URI tùy chọn.
-Sửa tay Keycloak và source backend có thể làm một bản cài chạy được nhưng không phải hợp đồng được bộ cài kiểm hoặc bảo toàn.
-
-Phục vụ giao diện dưới cùng gateway cũng cần route riêng; route đó chịu giới hạn nâng cấp ở phần dưới.
-Không mô tả một nguyên mẫu local là giao diện ngoài đã sẵn sàng production cho tới khi có cấu hình CORS, public client và redirect URI được kiểm chặt.
+Tên miền khác chưa có đường cấu hình được hỗ trợ: CORS không đọc danh sách từ `.env`, và chưa có lệnh đăng ký public client với redirect URI tùy chọn.
+Sửa tay Keycloak và source backend không được bộ cài kiểm hay bảo toàn khi nâng cấp.
+Phục vụ giao diện dưới cùng gateway cần thêm route riêng, chịu giới hạn của phần [Route riêng trong APISIX](#route-riêng-trong-apisix).
 
 ## Trang riêng trong web Tầng 2
 
@@ -257,6 +257,7 @@ Ví dụ sau giả định container `extension-worker` cùng mạng Docker vớ
 ```
 
 Route id và đường dẫn phải không trùng, và priority phải cao hơn route web bắt mọi đường dẫn.
+APISIX chuyển nguyên đường dẫn `/extensions/worker/...` tới dịch vụ, nên dịch vụ phục vụ đúng tiền tố đó.
 `bearer-token` chỉ xác thực token; dịch vụ mở rộng vẫn phải kiểm quyền cần thiết hoặc gọi API lõi bằng token của người dùng.
 Một route public phải được xem xét riêng và liệt kê lý do trong `deploy/apisix/check_routes.py`; không bỏ xác thực chỉ để phép kiểm đi qua.
 

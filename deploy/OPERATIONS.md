@@ -3,6 +3,7 @@
 Tài liệu cho người cài và chạy stack hằng ngày: cài đặt và lệnh `dxos`, quản trị người dùng, kiểm tra trước khi chạy, tài nguyên, giám sát từ ngoài, sao lưu và khôi phục, quét mã độc.
 Log, giới hạn tốc độ, sự kiện đăng nhập, audit và màn hình giám sát ở [`MONITORING.md`](./MONITORING.md).
 Webhook sự kiện, API kéo sự kiện, lịch sử chống sửa và hồ dữ liệu ở [`INTEGRATIONS.md`](./INTEGRATIONS.md).
+Kết nối công cụ báo cáo bằng vai PostgreSQL chỉ đọc ở [`REPORTING.md`](./REPORTING.md).
 
 ## Quản trị người dùng
 
@@ -18,9 +19,9 @@ Một dịch vụ ngoài gọi API bằng token máy; đăng ký nó ở tab Ứ
 Mỗi ứng dụng là một client Keycloak `dxos-app-<tên>` dạng client credentials, giữ đúng một vai của một mô hình; vai `ADMIN` và các vai của nền tảng không cấp được.
 Mã bí mật hiện một lần khi đăng ký hoặc đổi, hệ thống không giữ lại và không ghi vào nhật ký hay lịch sử.
 Ứng dụng lấy token bằng `grant_type=client_credentials` ở `<địa chỉ>/realms/dxos/protocol/openid-connect/token`, rồi gọi API dữ liệu của mô hình đó; mô hình khác, API quản trị và API người dùng trả 403.
-`dxos client list` liệt kê ứng dụng kèm mô hình và vai, `dxos client rotate <tên>` cấp mã mới và mã cũ hết hiệu lực ngay, `dxos client remove <tên>` xóa client; hồ sơ ứng dụng đã tạo vẫn còn.
-Token đã cấp trước khi đổi mã hoặc xóa ứng dụng vẫn dùng được đến khi hết hạn, tối đa khoảng 5 phút.
-Muốn đổi vai thì gỡ ứng dụng rồi đăng ký lại.
+`dxos client list` liệt kê ứng dụng kèm mô hình và vai, `dxos client role <tên> --role <vai>` (hoặc nút đổi vai ở tab Ứng dụng ngoài) chuyển ứng dụng sang vai khác của cùng mô hình mà giữ nguyên tên và mã bí mật, `dxos client rotate <tên>` cấp mã mới và mã cũ hết hiệu lực ngay, `dxos client remove <tên>` xóa client; hồ sơ ứng dụng đã tạo vẫn còn.
+Token đã cấp trước khi đổi mã, đổi vai hoặc xóa ứng dụng vẫn dùng được đến khi hết hạn, tối đa khoảng 5 phút; token đổi vai vẫn mang vai cũ cho đến lúc đó.
+Đổi sang mô hình khác thì gỡ ứng dụng rồi đăng ký lại.
 Tài khoản dịch vụ của ứng dụng không hiện trong danh sách người dùng, và nhật ký quản trị ghi `CLIENT_CREATED`, `CLIENT_SECRET_ROTATED` và `CLIENT_DELETED` kèm tên ứng dụng, và mô hình và vai của nó khi tạo hoặc xóa.
 Lệnh dùng client `dxos-cli` như `dxos plan`, nên cần `DXOS_CLI_SECRET` trong `.env`.
 
@@ -52,7 +53,7 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos archive <mô hình> [--before YYYY-MM-DD] [--out THƯ_MỤC \| --store]`, `dxos archive check <thư mục> \| --store <mô hình>/<lần chạy>`, `dxos archive list` | Xuất hồ sơ đã xong ra Parquet ở một thư mục hoặc ở kho đối tượng, kiểm một bản xuất, liệt kê các lần chạy trong kho (xem [`INTEGRATIONS.md`](./INTEGRATIONS.md#hồ-dữ-liệu)) |
 | `dxos archive auto`, `dxos archive schedule [install\|uninstall]` | Ghi vào kho hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS` ngày; `schedule install` chạy mỗi ngày bằng systemd user timer (xem dưới) |
 | `dxos demo [--password MẬT_KHẨU]`, `dxos demo remove` | Áp dụng mô hình Một cửa sinh viên nếu chưa chạy, tạo bốn tài khoản thử `judge_student`, `judge_officer`, `judge_officer2` và `judge_supervisor` với một mật khẩu (ngẫu nhiên nếu không nêu, in một lần; chạy lại thì đặt và in mật khẩu mới) và nộp khoảng 40 hồ sơ mẫu qua API chung, mỗi bước do đúng người làm; chạy lại không nộp thêm hồ sơ; `remove` chỉ gỡ bốn tài khoản, hồ sơ có quy trình không xóa được nên còn lại; cần client `dxos-cli` như `dxos plan`. Hạn xử lý 72 giờ của mô hình nên hồ sơ quá hạn chỉ có sau ba ngày kể từ lần nộp |
-| `dxos client add <tên> --model M --role R`, `dxos client list`, `dxos client rotate <tên>`, `dxos client remove <tên>` | Đăng ký và quản lý ứng dụng ngoài gọi API bằng token máy (xem phần Ứng dụng ngoài ở trên) |
+| `dxos client add <tên> --model M --role R`, `dxos client list`, `dxos client role <tên> --role R`, `dxos client rotate <tên>`, `dxos client remove <tên>` | Đăng ký và quản lý ứng dụng ngoài gọi API bằng token máy (xem phần Ứng dụng ngoài ở trên) |
 | `dxos uninstall [--purge]` | Xóa container và lệnh `dxos`; `--purge` xóa cả dữ liệu và thư mục cài, phải gõ xác nhận |
 
 ### Tệp mô hình lúc khởi động
@@ -134,6 +135,18 @@ Các cổng đã bị chiếm chỉ được kiểm khi stack chưa chạy.
 Quét mã độc được báo là bật hay tắt; `STORAGE_SCAN_HOST=clamav` mà `COMPOSE_PROFILES` không có `av` bị báo `FAIL`, vì ClamAV sẽ không chạy và mọi tệp tải lên bị từ chối.
 Thoát với mã 1 khi có `FAIL`, nên chạy trước `./update.sh` và `docker compose up -d` trên máy chủ.
 
+## Thời gian dựng từ tệp mô hình
+
+Số đo trên máy chủ 8 CPU, 7 GB RAM, đã xóa stack cũ và năm image `dxos-*`, bản `2.0.0` cài bằng `dxos-install.sh`.
+
+| Bước | Thời gian |
+|---|---|
+| `dxos start <tệp mô hình>`: kéo năm image `dxos-*` từ GHCR, khởi động tám service, áp dụng `onestop.yaml` | 174 giây |
+| `dxos av on`: tải ClamAV, khởi động lại backend | 32 giây |
+| `dxos demo`: bốn tài khoản thử và 40 hồ sơ mẫu | 98 giây |
+
+Từ tệp mô hình đến hệ thống chạy mất khoảng ba phút; image của bên thứ ba (`postgres`, `apisix`, `seaweedfs`) đã có sẵn trên máy nên không nằm trong số này.
+
 ## Tài nguyên và số bản sao
 
 Số đo trên máy 12 CPU, 31 GB RAM, với stack tám service (không bật `clamav`) đang rảnh sau khi nạp 40 hồ sơ mẫu bằng `dxos demo`.
@@ -213,5 +226,42 @@ Tắt mặc định vì ClamAV cần khoảng 1 GB RAM.
 Bật bằng `dxos av on`, tắt bằng `dxos av off`: lệnh sửa `COMPOSE_PROFILES` và `STORAGE_SCAN_HOST` trong `.env`, rồi khởi động hoặc gỡ ClamAV và tạo lại backend nếu stack đang chạy.
 Không dùng `dxos` thì bỏ dấu `#` ở `COMPOSE_PROFILES=av` và `STORAGE_SCAN_HOST=clamav` trong `deploy/.env`, rồi `docker compose up -d`.
 Chữ ký virus tải về lần đầu mất vài phút và được giữ trong volume `clamav_data`.
+Image chính thức tự cập nhật chữ ký một lần mỗi ngày từ mạng phân phối của ClamAV; không dùng `curl` hay script riêng để tải chúng, vì ClamAV có thể giới hạn hoặc chặn cách tải đó.
+Mã 429 trong log của `clamav` là bị giới hạn tốc độ (hay gặp ở IP máy chủ đám mây dùng chung), và chữ ký cũ vẫn dùng được cho đến lần cập nhật sau.
+ClamAV chặn tải chữ ký với phiên bản đã hết hỗ trợ, nên nâng image `clamav/clamav` trong `deploy/docker-compose.yml` khi bản đang ghim tới hạn (chính sách ở https://docs.clamav.net/faq/faq-eol.html).
 Mỗi lần clamd nạp lại chữ ký (hằng ngày và sau khi khởi động) nó không quét được khoảng 10 giây, và người dùng gặp 503 trong lúc đó; chờ rồi tải lại.
 Thử bằng tệp EICAR (chuỗi kiểm thử chuẩn của ngành diệt virus): tệp chỉ gồm đúng chuỗi đó, đổi tên `.pdf` rồi đính vào một yêu cầu; `deploy/dev/check_demo.py` tự làm bước này khi `STORAGE_SCAN_HOST` có giá trị.
+
+## Dữ liệu cá nhân ra nước ngoài
+
+Cài đặt chạy trên máy chủ của người triển khai nên dữ liệu ở lại nơi máy chủ đặt.
+Dữ liệu chỉ ra nước ngoài khi người triển khai tự chọn một đích ngoài lãnh thổ Việt Nam.
+Các chỗ cấu hình có thể làm việc đó:
+
+- `BACKUP_REPOSITORY` trỏ tới kho restic ở máy chủ hoặc dịch vụ lưu trữ nước ngoài (xem [Sao lưu và khôi phục](#sao-lưu-và-khôi-phục)).
+- Webhook sự kiện, `ALERT_WEBHOOK_URL` và `ALERT_WEBHOOK_URL_ADMIN` trỏ tới dịch vụ nước ngoài, và nội dung gửi đi có dữ liệu cá nhân.
+- Đặt cả stack trên máy chủ ảo hoặc dịch vụ đám mây của nhà cung cấp nước ngoài.
+
+Văn bản áp dụng (đọc ngày 2026-11-11):
+
+- [Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15](https://congbao.chinhphu.vn/van-ban/luat-so-91-2025-qh15-45578.htm), có hiệu lực từ 2026-01-01.
+- [Nghị định 356/2025/NĐ-CP](https://congbao.chinhphu.vn/van-ban/nghi-dinh-so-356-2025-nd-cp-468371.htm) hướng dẫn luật, ban hành 2025-12-31, có hiệu lực từ 2026-01-01.
+
+Điều 20 của luật coi là chuyển xuyên biên giới ba trường hợp: chuyển dữ liệu đang lưu ở Việt Nam sang hệ thống lưu trữ ngoài lãnh thổ, chuyển cho tổ chức hoặc cá nhân ở nước ngoài, và dùng nền tảng ngoài lãnh thổ để xử lý dữ liệu thu thập ở Việt Nam.
+Bên chuyển phải lập hồ sơ đánh giá tác động chuyển dữ liệu cá nhân xuyên biên giới và gửi một bản chính cho cơ quan chuyên trách về bảo vệ dữ liệu cá nhân trong 60 ngày kể từ ngày đầu tiên chuyển.
+Hồ sơ lập một lần cho suốt thời gian hoạt động và được cập nhật khi có thay đổi.
+Điều 18 của nghị định quy định hồ sơ gồm báo cáo theo Mẫu số 09, bản sao hợp đồng hoặc văn bản chuyển giao dữ liệu, và các chính sách, quy trình bảo vệ dữ liệu cá nhân liên quan.
+
+Luật không đòi hồ sơ này trong các trường hợp sau:
+
+- Cơ quan nhà nước có thẩm quyền chuyển dữ liệu.
+- Cơ quan, tổ chức lưu dữ liệu cá nhân của chính người lao động của mình trên dịch vụ điện toán đám mây.
+- Chủ thể dữ liệu tự chuyển dữ liệu của mình.
+- Các trường hợp Điều 17 của nghị định liệt kê thêm: báo chí và truyền thông, dữ liệu đã công khai theo pháp luật, tình huống khẩn cấp để bảo vệ tính mạng, sức khỏe và tài sản, quản lý nhân sự xuyên biên giới theo quy chế lao động, và dữ liệu cung cấp để ký hợp đồng hoặc làm thủ tục vận chuyển, chuyển tiền, thanh toán, khách sạn, thị thực, học bổng.
+
+Cơ quan chuyên trách được kiểm tra định kỳ không quá một lần mỗi năm, kiểm tra đột xuất khi có vi phạm hoặc sự cố lộ, mất dữ liệu, và có quyền yêu cầu ngừng chuyển khi dữ liệu bị dùng vào hoạt động có thể gây tổn hại quốc phòng, an ninh quốc gia.
+Giữ máy chủ, kho sao lưu và đích webhook trong lãnh thổ Việt Nam là cách tránh phát sinh nghĩa vụ này.
+
+Hai liên kết trỏ tới bản đăng trên Công báo điện tử, và nội dung các điều được nêu ở trên đã đối chiếu với bản PDF ở đó.
+Điều kiện áp dụng cho từng bản cài, như vai trò bên kiểm soát hay bên xử lý và loại dữ liệu nhạy cảm, cần luật sư hoặc cơ quan chuyên trách xác nhận.
+Mục này tóm tắt văn bản, không phải tư vấn pháp lý.

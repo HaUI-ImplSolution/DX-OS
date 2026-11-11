@@ -90,7 +90,7 @@ Mô hình đi qua một đường duy nhất, từ hệ thống rỗng hay từ 
 
 1. `RENAME_FIELD`: đổi tên cột theo `renamed_from`, cùng ràng buộc và chỉ mục mang tên trường.
 2. `CHANGE_SCHEMA`: pgschema đưa schema `m_<tên mô hình>` về trạng thái đích, gồm bảng, cột hệ thống, ràng buộc, chỉ mục và quyền đọc của `report_ro`.
-   Kiểu `boolean`, `date` và `choice` nhiều lựa chọn thành cột `BOOLEAN`, `DATE` và `TEXT[]`; `min`, `max`, `pattern` và các phần tử của `TEXT[]` thành ràng buộc `CHECK` mang tên `ck_<thực thể>_<trường>` kèm `$min`, `$max`, `$re`.
+   Kiểu `boolean`, `date` và `choice` nhiều lựa chọn thành cột `BOOLEAN`, `DATE` và `TEXT[]` (`default` của trường nhiều lựa chọn thành `DEFAULT ARRAY[...]`); `min`, `max`, `pattern` và các phần tử của `TEXT[]` thành ràng buộc `CHECK` mang tên `ck_<thực thể>_<trường>` kèm `$min`, `$max`, `$re`.
 3. `DROP_FILES`: xóa dòng và đối tượng tệp đính kèm của thực thể bị bỏ khỏi mô hình.
 4. `ENSURE_CLIENT`: client `dxos-m-<mô hình>` trong Keycloak, chỉ để chứa vai và không cho ai đăng nhập.
 5. `ENSURE_ROLE`: vai của mô hình, tạo dưới client đó.
@@ -159,6 +159,7 @@ sequenceDiagram
   Thực thể con (`owner_via`) xét các phạm vi này trên bản ghi cha, qua nhiều cấp tới thực thể đầu chuỗi, và không gắn được vào bản ghi cha ngoài tầm với (403).
 - **Quy tắc:** bắt buộc, duy nhất, lựa chọn, `min`, `max` và `pattern` vừa được API kiểm để báo lỗi theo từng trường, vừa là ràng buộc trong cơ sở dữ liệu.
   `required_when` chỉ kiểm ở API, trên hồ sơ sau khi gộp giá trị mới vào bản ghi hiện có.
+  Điều kiện của `required_when` và `when` so sánh trường `number`, `date`, `text`, `choice` một lựa chọn và `boolean`; `<`, `<=`, `>`, `>=` chỉ dùng cho `number` và `date`.
 - **Kiểu giá trị:** `date` là `YYYY-MM-DD`, `boolean` là `true` hay `false`, và trường nhiều lựa chọn là mảng chuỗi lưu theo thứ tự của `options`, không trùng; lọc trường đó bằng `contains`.
 - **Tài liệu API:** `GET /api/v1/meta/models/{model}/openapi` sinh tài liệu OpenAPI của mô hình đang chạy ngay lúc gọi, nên luôn khớp tệp mô hình; người có vai của mô hình đọc được.
 - **Gửi lại:** tạo hồ sơ và hành động nhận header `Idempotency-Key`; khóa được ghi vào `engine.idempotency` cùng giao dịch với việc làm, nên yêu cầu lỗi không giữ khóa và hai yêu cầu cùng khóa chạy cùng lúc chỉ làm một lần, yêu cầu sau chờ rồi nhận câu trả lời của yêu cầu trước.
@@ -236,6 +237,7 @@ Truy vấn vào bảng ngoài `engine` vì vậy luôn ghi rõ schema.
 
 Dịch vụ lõi là kết nối ghi duy nhất vào dữ liệu nghiệp vụ; vai `report_ro` chỉ đọc.
 `report_ro` đọc được mọi dòng của mọi bảng nghiệp vụ và không áp quyền `own`, `unit`, `assigned` của người xem, nên chỉ cấp cho công cụ báo cáo của người vận hành.
+Cách kết nối, giới hạn mạng và xoay mật khẩu ở [`deploy/REPORTING.md`](./deploy/REPORTING.md).
 Người dùng cuối xem số liệu qua `GET /api/v1/data/{model}/{entity}/stats`, nơi quyền theo dòng được áp dụng.
 
 ## 12. Triển khai

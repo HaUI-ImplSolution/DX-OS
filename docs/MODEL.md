@@ -38,7 +38,8 @@ Các mẫu dùng được nằm ở [`templates/`](../backend/dx-engine/src/main
 - Trường `boolean` là đúng hoặc sai (`true`, `false`); không đặt `required` hay `unique`, muốn có giá trị ban đầu thì đặt `default`.
 - Trường `choice` kèm `multiple: true` giữ nhiều lựa chọn trong `options`.
   API nhận và trả một mảng, mỗi lựa chọn một lần và theo thứ tự của `options`, và lọc bằng `filter.<tên>.contains=<lựa chọn>`.
-  Trường này không đi cùng `unique` hay `default`.
+  `default` là một danh sách các lựa chọn của `options`, không trùng nhau và không rỗng, ví dụ `default: [Mới, Đã sửa]`; bản ghi tạo mà không gửi trường này nhận danh sách đó.
+  Trường này không đi cùng `unique`.
 - Trường `user` giữ id của một tài khoản; giao diện cho chọn theo tên, và API từ chối id không có thật.
 - Đơn vị khai báo ở `units`, mỗi đơn vị là một nhóm Keycloak; trường kiểu `unit` cho biết hồ sơ thuộc đơn vị nào.
   Ví dụ đầy đủ ở [`onestop.yaml`](../backend/dx-engine/src/main/resources/templates/onestop.yaml).
@@ -61,8 +62,9 @@ Các mẫu dùng được nằm ở [`templates/`](../backend/dx-engine/src/main
 note: {type: text, required_when: "kind == Phần mềm"}
 ```
 
-- Điều kiện là một phép so sánh, viết như `when` của hành động: `==` và `!=` cho mọi kiểu, `<`, `<=`, `>`, `>=` chỉ cho số.
-- Trường được so sánh là `number`, `text`, `choice` một lựa chọn hoặc `boolean` (`foreign == true`) của cùng thực thể.
+- Điều kiện là một phép so sánh, viết như `when` của hành động: `==` và `!=` cho mọi kiểu, `<`, `<=`, `>`, `>=` chỉ cho số và ngày.
+- Trường được so sánh là `number`, `date`, `text`, `choice` một lựa chọn hoặc `boolean` (`foreign == true`) của cùng thực thể.
+- Giá trị của trường `date` viết như `YYYY-MM-DD`, ví dụ `due >= 2026-01-31`; ngày không có thật bị từ chối khi đọc mô hình.
 - API kiểm khi tạo và khi sửa, trên hồ sơ sau khi gộp giá trị mới; trường còn trống thì báo `is required when kind == Phần mềm`.
 - Không đi cùng `required`, không đặt trên trường `boolean` hay `file`, và không so sánh trường với chính nó.
 - Chỉ kiểm ở API, cơ sở dữ liệu không có ràng buộc này.
@@ -132,8 +134,8 @@ Ví dụ đầy đủ ở [`asset_register.yaml`](../backend/dx-engine/src/main/
   `when` là một phép so sánh một trường của hồ sơ với một giá trị, viết thành chuỗi `trường toán_tử giá trị`, ví dụ `when: "amount > 5000000"`.
   Hành động chỉ thực hiện được khi phép so sánh đúng với hồ sơ ở lúc thực hiện.
   Toán tử là `==`, `!=`, `<`, `<=`, `>` hoặc `>=`.
-  Trường là trường `number`, `choice` hoặc `text` của thực thể; `<`, `<=`, `>` và `>=` chỉ dùng cho trường `number`.
-  Giá trị của trường `number` là số, giá trị của trường `choice` là một trong `options` của nó.
+  Trường là trường `number`, `date`, `choice`, `text` hoặc `boolean` của thực thể; `<`, `<=`, `>` và `>=` chỉ dùng cho trường `number` và `date`.
+  Giá trị của trường `number` là số, của trường `date` là ngày `YYYY-MM-DD`, của trường `choice` là một trong `options` của nó.
   Trường chưa có giá trị thì không đạt điều kiện nào.
   `when` chỉ dùng cho hành động của người xử lý, nên không dùng được với `withdraw` và hành động của `auto_close`.
   Viết `when: null` để bỏ điều kiện của một hành động trong họ mẫu.
@@ -203,7 +205,7 @@ Mỗi đích có `format: json` (mặc định) hoặc `format: chat`.
 ## Đổi mô hình khi đã có dữ liệu
 
 - `renamed_from` khai báo tên cũ khi đổi tên trường, để giữ nguyên dữ liệu.
-- `default` điền giá trị cho trường bắt buộc mới trên bảng đã có dòng.
+- `default` điền giá trị cho trường bắt buộc mới trên bảng đã có dòng; trường nhiều lựa chọn nhận một danh sách.
 - Đổi kiểu của một trường đang có (kể cả từ một lựa chọn sang nhiều lựa chọn) bị từ chối; thêm một trường mới thay vì đổi kiểu.
 - Đổi tên một trường có `min`, `max` hay `pattern` giữ nguyên dữ liệu và đổi tên cả các ràng buộc của nó.
 - Xem trước, áp dụng, quay về và các lệnh liên quan ở [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md#cài-đặt-và-lệnh-dxos) và [`API.md`](./API.md).

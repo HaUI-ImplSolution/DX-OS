@@ -61,9 +61,9 @@ Các việc ở cột cuối nằm ở `BACKLOG.md`, mục 2 và 3.
 | Tiêu chí | Điểm tựa | Điểm yếu |
 |---|---|---|
 | Tính nguyên gốc | Đổi mô hình an toàn trên hệ thống đang chạy: kế hoạch, mức rủi ro, dòng vi phạm, quay lui; quy tắc bất biến nằm trong engine; lịch sử nối chuỗi hash | Đề không hỏi trực tiếp, nên phải giải thích được giá trị trong vài phút |
-| Mức hoàn thiện | Tám mẫu mô hình trên ba họ quy trình; kiểm tự động trên stack thật trong CI | Chưa có phần AI; bản chạy công khai còn là `1.1.1` |
+| Mức hoàn thiện | Mười mẫu mô hình trên ba họ quy trình; kiểm tự động trên stack thật trong CI | Chưa có phần AI; bản chạy công khai còn là `1.1.1` |
 | Thân thiện | Cài một lệnh, bảng điều khiển, thư viện mẫu, tài khoản và hồ sơ thử | Giao diện sinh từ metadata dễ trông chung chung; hồ sơ chỉ có id là số |
-| Phát triển bền vững | Tài liệu kiến trúc, tệp mô hình, API và vận hành; lệnh `dxos`; bộ kiểm chung cho mô hình; SBOM | Chưa có hướng dẫn mở rộng, ứng dụng mẫu của bên ngoài và lộ trình |
+| Phát triển bền vững | Tài liệu kiến trúc, tệp mô hình, API và vận hành; lệnh `dxos`; bộ kiểm chung cho mô hình; SBOM | Chưa có ứng dụng mẫu của bên ngoài và lộ trình |
 | Trình diễn, thu hút cộng đồng | Kịch bản 15 phút, README tiếng Anh | Chưa có video và phần trình chiếu |
 
 ## 6. Nhận xét từ tài liệu của đội Signet

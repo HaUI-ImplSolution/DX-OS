@@ -326,7 +326,7 @@ Thêm năng lực mới nghĩa là thêm provider, không phải sửa lõi.
 | Vòng đời mô hình             | Git, phần điều khiển                  | **Phần tự viết chính**                                      |
 | Trục sự kiện                   | Bảng outbox trong PostgreSQL             | Webhook theo mô hình, API kéo sự kiện theo `eventId`, thông điệp của việc áp dụng mô hình và của tài khoản (chỉ qua webhook); kênh sự kiện `GET /api/v1/inbox/stream` báo cho giao diện khi hồ sơ đổi |
 | Thông báo                       | Mattermost hoặc Slack do người triển khai cấp | Đích webhook dạng `chat`: việc mới, sắp đến hạn, quá hạn |
-| Báo cáo | Công cụ báo cáo do người triển khai cấp | Vai `report_ro` chỉ đọc các bảng nghiệp vụ |
+| Báo cáo | Công cụ báo cáo do người triển khai cấp | Vai `report_ro` chỉ đọc các bảng nghiệp vụ, cách kết nối ở [`deploy/REPORTING.md`](../../deploy/REPORTING.md) |
 | AI | Mô hình ngôn ngữ và embedding mở hoàn toàn | Khai báo nguồn tri thức và tác tử |
 | Vận hành                        | `dx-monitor`, `deploy/backup.sh`          | Giữ nguyên                                                    |
 
@@ -466,7 +466,7 @@ Trạng thái hồ sơ không thể bị đi vòng:
 
 - Flowable là nơi duy nhất được đổi trạng thái hồ sơ.
 - API chung từ chối mọi yêu cầu ghi cột trạng thái.
-- Dịch vụ lõi là kết nối ghi duy nhất vào dữ liệu nghiệp vụ; công cụ báo cáo dùng vai `report_ro` chỉ có quyền đọc.
+- Dịch vụ lõi là kết nối ghi duy nhất vào dữ liệu nghiệp vụ; công cụ báo cáo dùng vai `report_ro` chỉ có quyền đọc, cách kết nối ở [`deploy/REPORTING.md`](../../deploy/REPORTING.md).
 - Flowable chạy nhúng trong dịch vụ lõi dùng chung cơ sở dữ liệu, để đổi trạng thái và ghi hồ sơ nằm trong một giao dịch.
 
 Quy tắc khai báo được API chung kiểm để báo lỗi rõ và biên dịch thành ràng buộc trong cơ sở dữ liệu.
@@ -488,18 +488,19 @@ Tìm kiếm tri thức có nguồn, hỏi đáp sinh câu trả lời và tác t
 
 ## Điểm mở rộng
 
-Người dùng có thể viết thêm API và giao diện khi cần, không bắt buộc.
-Mã mở rộng luôn nằm ngoài lõi, chỉ gọi lõi qua API và sự kiện, nên nâng cấp lõi không làm hỏng nó và lỗi của nó không kéo sập lõi.
+Hướng dẫn từ đăng ký quyền, chạy local, kiểm thử, đóng gói đến nâng cấp nằm ở [`docs/EXTENSIONS.md`](../EXTENSIONS.md).
+Mã dịch vụ và bên nhận webhook nằm ngoài lõi; trang hay thành phần form riêng hiện vẫn phải sửa source frontend và dựng lại image.
 
 
-| Nhu cầu                              | Cách làm                                                                                                |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| API riêng                            | Dịch vụ viết bằng ngôn ngữ tùy ý, gọi API của lõi bằng token Keycloak lấy qua `dxos client add` (đúng một vai của một mô hình, đổi sang vai khác của mô hình đó bằng `dxos client role` mà giữ nguyên mã bí mật) và đọc tài liệu OpenAPI riêng của mô hình; route thêm vào cấu hình APISIX của bản cài |
-| Phản ứng theo nghiệp vụ           | Webhook nhận sự kiện từ trục sự kiện                                                               |
-| Giao diện riêng hoàn toàn         | Ứng dụng tự viết, dùng API và đăng nhập Keycloak của lõi                                       |
-| Trang riêng trong ứng dụng Tầng 2 | Thêm trang vào ứng dụng web bằng mã; menu, nhóm menu và biểu tượng của thực thể khai báo trong khối `ui:`                                                                |
-| Họ mẫu quy trình riêng                | Khai báo `states` và `actions` trong tệp mô hình; vẫn chịu quy tắc bất biến và bị kiểm khi áp dụng |
-| Thành phần riêng trong form        | Đăng ký thành phần React vào bộ dựng giao diện                                                   |
+| Nhu cầu | Cách làm hiện tại |
+|---|---|
+| API riêng | Dịch vụ ngoài gọi API bằng client đúng một vai của một mô hình, đổi vai bằng `dxos client role`; OpenAPI sinh từ mô hình đang chạy |
+| Phản ứng theo nghiệp vụ | Webhook nhận sự kiện sau khi thay đổi đã ghi; không chặn đồng bộ một hành động |
+| Giao diện riêng hoàn toàn | Nguyên mẫu local dùng OIDC PKCE; tên miền khác chưa có cấu hình CORS và public client được hỗ trợ |
+| Trang riêng trong ứng dụng Tầng 2 | Sửa và dựng lại frontend; chưa có registry plugin |
+| Họ mẫu quy trình riêng | Khai báo `states` và `actions` trong tệp mô hình; vẫn chịu quy tắc bất biến và bị kiểm khi áp dụng |
+| Thành phần riêng trong form | Chưa có điểm đăng ký; ưu tiên khối `ui:` của tệp mô hình |
+| Route riêng trong APISIX | Sửa tệp runtime do lõi quản lý; chưa được bảo toàn qua `dxos update` |
 
 Đổi tên trường có thể làm hỏng mã mở rộng đang dùng trường đó, nên kế hoạch nêu rõ các tên bị đổi.
 

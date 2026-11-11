@@ -237,6 +237,7 @@ Truy vấn vào bảng ngoài `engine` vì vậy luôn ghi rõ schema.
 
 Dịch vụ lõi là kết nối ghi duy nhất vào dữ liệu nghiệp vụ; vai `report_ro` chỉ đọc.
 `report_ro` đọc được mọi dòng của mọi bảng nghiệp vụ và không áp quyền `own`, `unit`, `assigned` của người xem, nên chỉ cấp cho công cụ báo cáo của người vận hành.
+Cách kết nối, giới hạn mạng và xoay mật khẩu ở [`deploy/REPORTING.md`](./deploy/REPORTING.md).
 Người dùng cuối xem số liệu qua `GET /api/v1/data/{model}/{entity}/stats`, nơi quyền theo dòng được áp dụng.
 
 ## 12. Triển khai

@@ -159,6 +159,25 @@ Giao diện, đăng nhập bằng `req1` (vai `BORROWER`), `keeper1` (vai `KEEPE
 31. Khóa chống chạy lặp: gọi `POST /api/v1/data/{model}/{entity}` hai lần với cùng `Idempotency-Key` và cùng nội dung thì cả hai trả cùng `id`, lần hai có header `Idempotent-Replayed: true` và không có thêm hồ sơ; cùng khóa với nội dung khác hoặc với hành động khác thì 409 `IDEMPOTENCY_KEY_REUSED`; khóa sai khuôn thì 400; một yêu cầu lỗi không giữ khóa nên gửi lại được.
 32. Danh mục dữ liệu: vào bảng điều khiển bằng ADMIN, mở tab Danh mục dữ liệu và chọn một mô hình có quy trình và tham chiếu; trang liệt kê vai và ứng dụng ngoài đi vào, nơi dữ liệu đi ra, các liên kết giữa thực thể, và mỗi thực thể có số bản ghi, quyền theo vai và danh sách trường. Đăng ký thêm một ứng dụng ngoài ở tab Ứng dụng ngoài rồi tải lại thì nó hiện ở "Dữ liệu đi vào từ". Gọi `GET /api/v1/models/{model}/data-catalog` bằng vai không phải ADMIN thì 403.
 
+Hướng dẫn và mẫu mô hình, kiểm bằng đúng các lệnh và thao tác trong tài liệu:
+
+1. `deploy/REPORTING.md`, trên stack đã áp dụng `onestop` và `equipment`:
+   - Kết nối bằng `report_ro`; câu liệt kê quyền chỉ ra các bảng của `m_onestop` và `m_equipment`.
+   - Truy vấn nối hai mô hình trả một dòng cho mỗi người.
+   - `UPDATE` bị từ chối với `permission denied for table request`, và đọc `engine.outbox` bị từ chối.
+   - Đổi mật khẩu bằng `ALTER ROLE` làm mật khẩu cũ bị từ chối; áp dụng lại mô hình không đặt lại mật khẩu.
+2. `docs/EXTENSIONS.md`:
+   - Đăng ký một ứng dụng bằng `dxos client add`, lấy token từ tệp secret và tải OpenAPI của mô hình đúng như lệnh trong tài liệu.
+   - Mô hình khác và API quản trị trả 403.
+   - Hai lần tạo cùng `Idempotency-Key` và cùng nội dung trả cùng `id`, khác nội dung trả 409.
+   - Thêm upstream và route mẫu vào `deploy/apisix/common.yaml`: `check_routes.py` đạt, bỏ `plugin_config_id` thì báo thiếu kiểm token.
+   - Sau khi nạp lại cấu hình, không token và token sai trả 401, token đúng tới được dịch vụ với nguyên đường dẫn.
+3. Mẫu Đặt lịch khám và Đổi trả hàng, cấp vai theo mô hình cho tài khoản thử và chỉ dùng dữ liệu giả:
+   - Ở Thư viện mẫu bấm Dùng mẫu này rồi áp dụng từng mẫu.
+   - `clinic`: người đặt chỉ thấy lịch của mình; lịch trùng giờ trong cùng phòng bị từ chối lúc đặt, phòng khác thì nhận; người tiếp nhận đi qua xác nhận, tiếp nhận khám và hoàn tất.
+   - `retail`: số lượng dưới 1 và thiếu lý do bị từ chối; nhân viên trả phiếu về kèm ghi chú, khách nộp lại rồi nhân viên duyệt; khách không tự duyệt và không đọc được phiếu của người khác.
+   - `python3 deploy/dev/check_conformance.py clinic retail` đạt.
+
 Lệnh `dxos` và các tính năng chạy ngoài stack kiểm:
 
 1. `dxos history verify` sau khi sửa, xóa hoặc chèn một dòng `record_event` bằng SQL: chỉ ra dòng đầu tiên bị đổi; trả lại dòng thì chuỗi nguyên vẹn.

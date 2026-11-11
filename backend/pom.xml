@@ -10,42 +10,31 @@
 	</parent>
 	<groupId>HaUI.ImplSolution</groupId>
 	<artifactId>dx-os-parent</artifactId>
-	<version>1.1.1</version>
+	<version>2.0.0</version>
 	<packaging>pom</packaging>
 	<name>dx-os-parent</name>
-	<description>DX-OS Open-Core: shared core and pluggable business apps</description>
+	<description>DX-OS: a model-driven core for record-and-workflow systems</description>
 	<modules>
-		<module>dx-core-api</module>
+		<module>dx-model</module>
 		<module>dx-core</module>
-		<module>app-farm</module>
-		<module>app-lab</module>
-		<module>dx-host</module>
+		<module>dx-engine</module>
 		<module>dx-monitor</module>
 	</modules>
 	<properties>
 		<java.version>21</java.version>
 		<awssdk.version>2.57.6</awssdk.version>
+		<wiremock.version>3.13.2</wiremock.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
 				<groupId>HaUI.ImplSolution</groupId>
-				<artifactId>dx-core-api</artifactId>
+				<artifactId>dx-model</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>HaUI.ImplSolution</groupId>
 				<artifactId>dx-core</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>HaUI.ImplSolution</groupId>
-				<artifactId>app-farm</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>HaUI.ImplSolution</groupId>
-				<artifactId>app-lab</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 		</dependencies>

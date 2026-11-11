@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
-# APISIX in standalone mode: routes live in apisix.yaml (common.yaml plus apps/<DXOS_APP>.yaml,
-# joined by the apisix-config service), there is no etcd and no admin API.
+# APISIX in standalone mode: routes live in apisix.yaml (common.yaml with the delivery key of the
+# monitor filled in by the apisix-config service), there is no etcd and no admin API.
 deployment:
   role: data_plane
   role_data_plane:
@@ -9,19 +9,15 @@ deployment:
 apisix:
   node_listen:
     - 9080
-    # Superset only runs at the root of its own origin, so it gets its own listener.
-    - 9081
-    # Object store admin page, same reason as Superset.
-    - 9082
   enable_ipv6: false
   router:
-    # Routes such as /crop-seasons/:id/disease-reports need path parameters.
+    # Routes with path parameters such as /records/:id.
     http: radixtree_uri_with_parameter
 
 nginx_config:
   http:
-    # Behind the Cloudflare Tunnel every request comes from the cloudflared container; the client
-    # address is taken from CF-Connecting-IP only when the request arrives from the Docker networks.
+    # Behind a reverse proxy or a tunnel every request comes from that proxy; the client address is
+    # taken from CF-Connecting-IP only when the request arrives from the Docker networks.
     real_ip_header: CF-Connecting-IP
     real_ip_from:
       - 127.0.0.1

@@ -6,8 +6,7 @@
 #
 # Images are built here unless DXOS_IMAGE_PREFIX is set in deploy/.env; then the published images
 # are used as pulled (update.sh pulls newer ones). --build or --keep-images decides either way.
-# DESTRUCTIVE: deletes every database, upload and chat/BI state under deploy/data.
-# The Ollama model volume is kept so the multi-GB model is not downloaded again.
+# DESTRUCTIVE: deletes every database and upload under deploy/data.
 # deploy/data holds root-owned files, so it is emptied from a throwaway container.
 set -euo pipefail
 
@@ -28,7 +27,7 @@ for arg in "$@"; do
 done
 
 if [[ ! -f .env ]]; then
-  echo "deploy/.env not found. Run: python3 demo/make_ci_env.py .env (random secrets), or cp .env.example .env and fill every blank variable." >&2
+  echo "deploy/.env not found. Run: ./make_env.sh (random secrets), or cp .env.example .env and fill every blank variable." >&2
   exit 1
 fi
 
@@ -52,7 +51,7 @@ docker compose down --remove-orphans
 
 echo "==> Emptying $DATA_DIR"
 mkdir -p "$DATA_DIR"
-docker run --rm -v "$DATA_DIR:/data" alpine:3.20@sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc find /data -mindepth 1 -delete
+docker run --rm -v "$DATA_DIR:/data" alpine:3.24@sha256:3f4d6b32e26703c6082839234f43769d5046b3ac7c910033911d1e71d8cd630a find /data -mindepth 1 -delete
 
 echo "==> Starting the stack"
 docker compose up -d ${BUILD_FLAG[@]+"${BUILD_FLAG[@]}"} ${SERVICES[@]+"${SERVICES[@]}"}

@@ -80,12 +80,9 @@ monitor:
   gateway:
     # Shared secret of the gateway; empty refuses every delivery.
     ingest-key: ${MONITOR_INGEST_KEY:}
-    # A request at least this slow is kept, except when its path contains an exempt text (an AI
-    # diagnosis takes about 50 seconds).
+    # A request at least this slow is kept, except when its path contains an exempt text.
     slow-seconds: 10
-    slow-exempt-paths:
-      - /diagnosis/ai
-      - /knowledge/ask
+    slow-exempt-paths: []
     max-per-ip-minute: 100
 
   probe:
@@ -101,9 +98,7 @@ monitor:
       - { name: gateway, url: "http://apisix:9080/", required: true }
       - { name: web, url: "http://frontend/", required: true }
       - { name: portal, url: "http://portal/", required: true }
-      - { name: ai, url: "http://ai:8000/api/v1/disease/health", required: false }
-      - { name: bi, url: "http://superset:8088/health", required: false }
-      - { name: chat, url: "http://mattermost:8065/api/v4/system/ping", required: false }
+      - { name: ai, url: "http://ai:8000/api/v1/health", required: false }
 
   alert:
     cron: "0 * * * * *"
@@ -115,9 +110,8 @@ monitor:
     login-failed-window-minutes: 10
     repeat-minutes: 60
 
-  mattermost:
-    url: ${MATTERMOST_WEBHOOK_URL:}
-    admin-url: ${MATTERMOST_WEBHOOK_URL_ADMIN:}
-    dir: ${MATTERMOST_WEBHOOK_DIR:}
+  chat-webhook:
+    url: ${ALERT_WEBHOOK_URL:}
+    admin-url: ${ALERT_WEBHOOK_URL_ADMIN:}
     connect-timeout-ms: 2000
     read-timeout-ms: 3000

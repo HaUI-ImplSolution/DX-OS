@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.core.exception;
 
-import HaUI.ImplSolution.dxos.core.api.exception.AccountNotLinkedException;
 import HaUI.ImplSolution.dxos.core.api.exception.ActionNotAllowedException;
-import HaUI.ImplSolution.dxos.core.api.exception.AiServiceException;
 import HaUI.ImplSolution.dxos.core.api.exception.InvalidStateException;
 import HaUI.ImplSolution.dxos.core.api.exception.PokaYokeViolationException;
 import HaUI.ImplSolution.dxos.core.api.exception.ResourceNotFoundException;
@@ -28,8 +26,10 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -89,19 +89,12 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(InvalidStateException.class)
-  public ResponseEntity<ApiResponse<Void>> handleInvalidState(InvalidStateException ex) {
+  public ResponseEntity<ApiResponse<Map<String, String>>> handleInvalidState(
+      InvalidStateException ex) {
     auditService.recordAdminFailure(HttpStatus.CONFLICT.value(), ex);
+    Map<String, String> data = ex.getReason() == null ? null : Map.of("reason", ex.getReason());
     return ResponseEntity.status(HttpStatus.CONFLICT)
-        .body(ApiResponse.error("ERR_INVALID_STATE", ex.getMessage()));
-  }
-
-  @ExceptionHandler(AiServiceException.class)
-  public ResponseEntity<ApiResponse<Void>> handleAiService(AiServiceException ex) {
-    log.warn("AI service unavailable: {}", ex.getMessage());
-    auditService.recordServerError(HttpStatus.SERVICE_UNAVAILABLE.value(), ex);
-    return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-        .body(ApiResponse.error("ERR_AI_UNAVAILABLE",
-            "AI diagnosis service is temporarily unavailable, please try again later"));
+        .body(ApiResponse.error("ERR_INVALID_STATE", ex.getMessage(), data));
   }
 
   @ExceptionHandler(ScannerUnavailableException.class)
@@ -134,24 +127,27 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(ActionNotAllowedException.class)
-  public ResponseEntity<ApiResponse<Void>> handleActionNotAllowed(ActionNotAllowedException ex) {
+  public ResponseEntity<ApiResponse<Map<String, String>>> handleActionNotAllowed(
+      ActionNotAllowedException ex) {
+    Map<String, String> data = ex.getReason() == null ? null : Map.of("reason", ex.getReason());
     return ResponseEntity.status(HttpStatus.FORBIDDEN)
-        .body(ApiResponse.error("ERR_ACTION_NOT_ALLOWED", ex.getMessage()));
-  }
-
-  @ExceptionHandler(AccountNotLinkedException.class)
-  public ResponseEntity<ApiResponse<Void>> handleAccountNotLinked(AccountNotLinkedException ex) {
-    return ResponseEntity.status(HttpStatus.FORBIDDEN)
-        .body(ApiResponse.error("ERR_ACCOUNT_NOT_LINKED", ex.getMessage()));
+        .body(ApiResponse.error("ERR_ACTION_NOT_ALLOWED", ex.getMessage(), data));
   }
 
   @ExceptionHandler(KeycloakAdminException.class)
   public ResponseEntity<ApiResponse<Void>> handleKeycloakAdmin(KeycloakAdminException ex) {
     log.warn("Keycloak admin call failed: {}", ex.getMessage());
     auditService.recordServerError(HttpStatus.BAD_GATEWAY.value(), ex);
+    // Keycloak answered but refused the service account: a setup problem, not an outage.
+    if (ex.getCause() instanceof RestClientResponseException cause
+        && (cause.getStatusCode().value() == 401 || cause.getStatusCode().value() == 403)) {
+      return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+          .body(ApiResponse.error("ERR_ACCOUNT_SERVICE_DENIED",
+              "Account service refused the request, check the roles of the service account"));
+    }
     return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
         .body(ApiResponse.error("ERR_ACCOUNT_SERVICE_UNAVAILABLE",
-            "Account service is unavailable, the workspace was not created"));
+            "Account service is unavailable, please try again later"));
   }
 
   @ExceptionHandler(AuthenticationException.class)
@@ -174,6 +170,13 @@ public class GlobalExceptionHandler {
       MethodArgumentTypeMismatchException ex) {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
         .body(ApiResponse.error("ERR_BAD_REQUEST", "Invalid value for " + ex.getName()));
+  }
+
+  @ExceptionHandler(MissingServletRequestParameterException.class)
+  public ResponseEntity<ApiResponse<Void>> handleMissingParameter(
+      MissingServletRequestParameterException ex) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(ApiResponse.error("ERR_BAD_REQUEST", "Missing parameter " + ex.getParameterName()));
   }
 
   @ExceptionHandler(IllegalArgumentException.class)

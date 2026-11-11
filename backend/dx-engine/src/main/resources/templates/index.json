@@ -1,0 +1,58 @@
+[
+  {
+    "id": "onestop",
+    "file": "onestop.yaml",
+    "name": "Một cửa sinh viên",
+    "family": "approval",
+    "description": "Sinh viên gửi yêu cầu xin giấy xác nhận, phúc khảo, hoãn thi; cán bộ của đơn vị xử lý, trả lại để bổ sung hoặc duyệt."
+  },
+  {
+    "id": "support_desk",
+    "file": "support_desk.yaml",
+    "name": "Hỗ trợ kỹ thuật",
+    "family": "work_item",
+    "description": "Người dùng gửi yêu cầu hỗ trợ, nhân viên nhận, xử lý trong hạn và người gửi xác nhận kết quả."
+  },
+  {
+    "id": "plant_incident",
+    "file": "plant_incident.yaml",
+    "name": "Sự cố thiết bị",
+    "family": "work_item",
+    "description": "Hệ thống giám sát gửi sự cố khi chỉ số thiết bị vượt ngưỡng, kỹ thuật viên xử lý trong hạn; mỗi lần đo chỉ tạo một sự cố."
+  },
+  {
+    "id": "room_booking",
+    "file": "room_booking.yaml",
+    "name": "Đặt phòng",
+    "family": "reservation",
+    "description": "Đặt phòng theo khung giờ, không cho đặt trùng khi phòng đã đủ chỗ, quản lý xác nhận và theo dõi việc sử dụng."
+  },
+  {
+    "id": "itaccess",
+    "file": "itaccess.yaml",
+    "name": "Cấp quyền dịch vụ CNTT",
+    "family": "approval",
+    "description": "Nhân viên xin vào một nhóm quyền; được duyệt thì Keycloak cấp quyền thật."
+  },
+  {
+    "id": "equipment",
+    "file": "equipment.yaml",
+    "name": "Mượn thiết bị",
+    "family": "approval",
+    "description": "Người mượn gửi phiếu, người quản lý thiết bị duyệt hoặc từ chối."
+  },
+  {
+    "id": "notes",
+    "file": "notes.yaml",
+    "name": "Ghi chú",
+    "family": "none",
+    "description": "Ví dụ nhỏ nhất: một thực thể không có quy trình."
+  },
+  {
+    "id": "asset_register",
+    "file": "asset_register.yaml",
+    "name": "Sổ tài sản",
+    "family": "none",
+    "description": "Danh mục tài sản không có quy trình, dùng kiểu đúng/sai, ngày, nhiều lựa chọn, giới hạn giá trị, bắt buộc có điều kiện và khối ui để sắp xếp giao diện."
+  }
+]

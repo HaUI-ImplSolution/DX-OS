@@ -1,8 +1,15 @@
 # SPDX-License-Identifier: Apache-2.0
 version: 2
 
-# One pull request per ecosystem and run, grouped, aimed at Khuong/main.
-# The AI Python packages are left out: ai/requirements.lock pins the image, so it is refreshed by hand.
+# Dependabot knows version numbers and nothing else: not the license of a new version, not whether a line is
+# still supported, not whether the project still works with it. So it opens pull requests for minor and patch
+# updates only, and a new major version, a new runtime line or a change of base image is decided by hand
+# (license in .github/component-catalog.json, support line, compatibility, then the checks in docs/TESTING.md).
+# A new release must also be a week old before it is proposed (except for the Compose images), so that a yanked or
+# hijacked release is gone before it arrives.
+# Every pull request still has to pass Check licenses, Check SBOMs against lockfiles and Check upstream licenses.
+#
+# GitHub reads this file from the default branch (main); updates are aimed at Khuong/main.
 updates:
   - package-ecosystem: github-actions
     directory: /
@@ -10,6 +17,8 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 3
+    cooldown:
+      default-days: 7
     commit-message:
       prefix: "chore(deps)"
     groups:
@@ -22,8 +31,14 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 3
+    cooldown:
+      default-days: 7
     commit-message:
       prefix: "chore(deps)"
+    # Spring Boot, Flowable and the other libraries change their API between majors.
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       backend:
         update-types: [minor, patch]
@@ -34,29 +49,56 @@ updates:
     schedule:
       interval: monthly
     open-pull-requests-limit: 2
+    cooldown:
+      default-days: 7
     commit-message:
       prefix: "chore(deps)"
+    # React, React Router, Vite and TypeScript majors are migrations of the interface, not updates.
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       frontend:
         update-types: [minor, patch]
 
   - package-ecosystem: npm
-    directory: /mobile
+    directory: /website
     target-branch: Khuong/main
     schedule:
       interval: monthly
     open-pull-requests-limit: 2
+    cooldown:
+      default-days: 7
     commit-message:
       prefix: "chore(deps)"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
-      mobile:
+      website:
         update-types: [minor, patch]
 
-  # Base images of the Dockerfiles.
+  - package-ecosystem: npm
+    directory: /e2e
+    target-branch: Khuong/main
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 1
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "chore(deps)"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      e2e:
+        update-types: [minor, patch]
+
+  # Base images of the Dockerfiles: Java 21 and Node 22 are the long-term-support lines the project builds on,
+  # and nginx follows its stable line (even minor numbers), so only their patch updates and new digests come.
   - package-ecosystem: docker
     directories:
-      - /ai
-      - /ai/evaluation
       - /backend
       - /frontend
       - /portal
@@ -65,8 +107,33 @@ updates:
     schedule:
       interval: monthly
     open-pull-requests-limit: 3
+    cooldown:
+      default-days: 7
     commit-message:
       prefix: "chore(deps)"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "nginx"
+        update-types: ["version-update:semver-minor"]
     groups:
       base-images:
+        patterns: ["*"]
+
+  # Images of the third-party services in the Compose file.
+  # A new PostgreSQL major version cannot open the data directory of the old one, and the other services change
+  # their configuration between majors; those upgrades are done by hand.
+  - package-ecosystem: docker-compose
+    directory: /deploy
+    target-branch: Khuong/main
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 2
+    commit-message:
+      prefix: "chore(deps)"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      compose-images:
         patterns: ["*"]

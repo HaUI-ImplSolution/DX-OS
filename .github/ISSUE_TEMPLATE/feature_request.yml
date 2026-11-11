@@ -20,3 +20,13 @@ body:
     attributes:
       label: Phạm vi ảnh hưởng
       description: Vai, thành phần, dữ liệu liên quan.
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Đối chiếu ràng buộc
+      description: Đề xuất phải tôn trọng các nguyên tắc trong CONTRIBUTING.md.
+      options:
+        - label: Không yêu cầu fork hay vá mã nguồn của dự án khác
+        - label: Không đóng gói mã nguồn dự án khác vào repository
+        - label: Mọi dependency mới có giấy phép nguồn mở được OSI công nhận, không phụ thuộc thành phần đóng hay dịch vụ trả phí bắt buộc
+        - label: Mã lõi không chứa tên thực thể, vai hay luồng của một lĩnh vực; nghiệp vụ khai báo trong tệp mô hình

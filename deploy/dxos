@@ -1,0 +1,923 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: Apache-2.0
+# Command line of an installed DX-OS (see install.sh and get.sh); it drives the stack of the directory it lives in.
+#
+#   dxos start [model-file...] start the stack, wait until it is ready, create the first ADMIN account;
+#                              with a model file, the backend applies it on start when it is new
+#   dxos stop                  stop the stack, keeping the data
+#   dxos status                state of every service and the addresses to open
+#   dxos logs [service]        follow the logs
+#   dxos admin                 give the account "admin" a new temporary password (creates it when missing)
+#   dxos update [vX.Y.Z | --file dx-os-X.Y.Z.tar.gz]
+#                              install a newer release (default: the latest) and update the images
+#   dxos doctor                check this machine and deploy/.env
+#   dxos backup [args]         encrypted backup, see backup.sh
+#   dxos av [on|off]           turn the virus scan of uploads (ClamAV, about 1 GB of RAM) on or off, or show it
+#   dxos plan <model-file>     show what applying the file would change, without changing anything
+#   dxos apply <model-file> [--accept SAFE|MIGRATION|LOSS]
+#                              apply the file; a plan above SAFE needs --accept with its level
+#   dxos history verify|anchor check that the history of records was not changed, or anchor it now
+#   dxos reconcile [install|uninstall]
+#                              bring the stack back to what is declared (missing or changed containers);
+#                              install runs it every minute with a systemd user timer
+#   dxos archive <model> [--before YYYY-MM-DD] [--out DIR | --store] | dxos archive check <dir | --store model/run>
+#                              write the finished records of a model and their history to Parquet files,
+#                              to a directory (default deploy/archive) or to the object store (--store)
+#   dxos archive list | auto | schedule install|uninstall
+#                              list the runs in the store; archive what is older than ARCHIVE_AFTER_DAYS
+#                              (once per record); auto runs every day with a systemd user timer
+#   dxos demo [--password PASSWORD] | dxos demo remove
+#                              create the accounts judge_student, judge_officer, judge_officer2 and
+#                              judge_supervisor and file sample requests; remove deletes the accounts
+#   dxos client add <name> --model M --role R | list | rotate <name> | remove <name>
+#                              register an outside application that calls the API with its own secret and
+#                              one role of one model; the secret is shown once, rotate gives a new one
+#   dxos uninstall [--purge]   remove the containers and the dxos command; --purge also deletes the data
+#   dxos version | help
+set -euo pipefail
+
+# The directory of this script, following the symlink in ~/.local/bin.
+self="${BASH_SOURCE[0]}"
+while [[ -L "$self" ]]; do
+  target="$(readlink "$self")"
+  [[ "$target" == /* ]] || target="$(dirname "$self")/$target"
+  self="$target"
+done
+DEPLOY_DIR="$(cd "$(dirname "$self")" && pwd)"
+self="$DEPLOY_DIR/$(basename "$self")"
+PREFIX="$(dirname "$DEPLOY_DIR")"
+BIN_LINK="${DXOS_BIN_DIR:-$HOME/.local/bin}/dxos"
+TIMEOUT_SECONDS="${DXOS_START_TIMEOUT:-900}"
+ADMIN_USER="admin"
+# Left by dxos stop so that dxos reconcile does not start a stack that was stopped on purpose.
+STOPPED_MARK="$DEPLOY_DIR/.stopped"
+# Where the command was typed; main moves to deploy/, so a relative path in an argument is resolved against this.
+CALLER_DIR="$PWD"
+ALPINE="alpine:3.24@sha256:3f4d6b32e26703c6082839234f43769d5046b3ac7c910033911d1e71d8cd630a"
+
+die() { echo "dxos: $*" >&2; exit 1; }
+from_caller() { if [[ "$1" == /* ]]; then printf '%s\n' "$1"; else printf '%s\n' "$CALLER_DIR/$1"; fi; }
+# Value of KEY in .env (last assignment), empty when absent or blank.
+env_value() { grep -E "^$1=" "$DEPLOY_DIR/.env" | tail -n1 | cut -d= -f2- || true; }
+compose() { docker compose "$@"; }
+
+# The address browsers use; GATEWAY_PUBLIC_URL unless it still refers to other variables.
+public_url() {
+  local url host port
+  url="$(env_value GATEWAY_PUBLIC_URL)"
+  # shellcheck disable=SC2016 # a literal "${" marks a value Compose interpolates
+  if [[ -z "$url" || "$url" == *'${'* ]]; then
+    host="$(env_value PUBLIC_HOST)"
+    port="$(env_value APISIX_HOST_PORT)"
+    url="http://${host:-localhost}:${port##*:}"
+  fi
+  echo "${url%/}"
+}
+
+print_addresses() {
+  local url
+  url="$(public_url)"
+  cat <<EOF
+
+DX-OS is running:
+  Application      $url/
+  Control panel    $url/console  (ADMIN)
+  Portal           $url/portal/
+  Monitoring       $url/monitor/  (ADMIN)
+  Keycloak admin   $url/admin/  (user $(env_value KEYCLOAK_ADMIN_USERNAME), password KEYCLOAK_ADMIN_PASSWORD in $DEPLOY_DIR/.env)
+EOF
+}
+
+# A container is ready when it is healthy, running without a healthcheck, or a one-shot job
+# that exited with code 0.
+pending_services() {
+  local pending=() id name status health exit_code
+  while read -r id; do
+    [[ -n "$id" ]] || continue
+    read -r name status health exit_code <<<"$(docker inspect -f \
+      '{{.Name}} {{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{else}}-{{end}} {{.State.ExitCode}}' "$id")"
+    case "$status:$health:$exit_code" in
+      running:healthy:*|running:-:*|exited:*:0) ;;
+      *) pending+=("${name#/}($status/$health)") ;;
+    esac
+  done < <(compose ps -a -q)
+  echo "${pending[*]:-}"
+}
+
+# Sets KEY=VALUE in .env, replacing the last assignment or appending one.
+set_env() {
+  local key="$1" value="$2" tmp
+  tmp="$(mktemp "$DEPLOY_DIR/.env.XXXXXX")"
+  { grep -v -E "^$key=" "$DEPLOY_DIR/.env" || true; printf '%s=%s\n' "$key" "$value"; } >"$tmp"
+  chmod --reference="$DEPLOY_DIR/.env" "$tmp"
+  mv "$tmp" "$DEPLOY_DIR/.env"
+}
+
+# Puts the model files in deploy/model/ (the only files there) and lists their names, in the order
+# given, in .env.
+use_model_files() {
+  local src name keep_name dir="$DEPLOY_DIR/model" names=() keep=()
+  for src in "$@"; do
+    [[ -f "$src" && -r "$src" ]] || die "model file not found or not readable: $src"
+    [[ -s "$src" ]] || die "model file is empty: $src"
+    name="$(basename "$src")"
+    [[ "$name" =~ ^[A-Za-z0-9._-]+$ ]] || die "the model file name may only hold letters, digits, dot, dash and underscore: $name"
+    for keep_name in "${names[@]:-}"; do
+      [[ "$keep_name" != "$name" ]] || die "two model files are called $name; rename one"
+    done
+    names+=("$name")
+  done
+  mkdir -p "$dir"
+  for src in "$@"; do
+    name="$(basename "$src")"
+    if [[ "$(cd "$(dirname "$src")" && pwd)/$name" != "$dir/$name" ]]; then
+      cp "$src" "$dir/$name"
+    fi
+    chmod 644 "$dir/$name"
+    keep+=(! -name "$name")
+  done
+  find "$dir" -maxdepth 1 -type f ! -name .gitignore "${keep[@]}" -delete
+  set_env DXOS_MODEL_FILE "$(IFS=,; echo "${names[*]}")"
+}
+
+# Prints what the backend did with each model file since the given time, one line per file. Returns
+# 3 when any failed and 4 when not every result was logged in time.
+report_model() {
+  local since="$1" names count deadline lines line outcome status=0
+  names="$(env_value DXOS_MODEL_FILE)"
+  [[ -n "$names" ]] || return 0
+  count="$(awk -F, '{print NF}' <<<"$names")"
+  echo "==> Model files $names"
+  deadline=$((SECONDS + ${DXOS_MODEL_TIMEOUT:-300}))
+  while true; do
+    lines="$(compose logs --no-log-prefix --since "$since" backend 2>/dev/null \
+      | grep -E 'Model bootstrap: (applied|unchanged|skipped|failed)' | tail -n "$count" || true)"
+    if (( $(grep -c . <<<"$lines") >= count )); then
+      while IFS= read -r line; do
+        line="${line#*Model bootstrap: }"
+        outcome="${line%% *}"
+        echo "    $line"
+        [[ "$outcome" == failed ]] && status=3
+      done <<<"$lines"
+      return "$status"
+    fi
+    if ((SECONDS >= deadline)); then
+      echo "    $(grep -c . <<<"$lines") of $count results so far; follow them with: dxos logs backend" >&2
+      return 4
+    fi
+    sleep 3
+  done
+}
+
+wait_ready() {
+  local deadline=$((SECONDS + TIMEOUT_SECONDS)) pending
+  echo "==> Waiting for the services (up to ${TIMEOUT_SECONDS}s; the first start takes a few minutes)"
+  while true; do
+    pending="$(pending_services)"
+    [[ -z "$pending" ]] && return 0
+    if ((SECONDS >= deadline)); then
+      compose ps >&2
+      die "timed out; not ready: $pending (see: dxos logs)"
+    fi
+    sleep 5
+  done
+}
+
+# Creates or resets the account "admin" of the dxos realm through kcadm.sh inside the Keycloak container.
+# mode "ensure" does nothing when some user already has the ADMIN role; mode "reset" always sets a new
+# temporary password. Prints the password when it set one.
+admin_account() {
+  local mode="$1" password
+  password="$(od -An -N8 -tx1 /dev/urandom | tr -d ' \n')"
+  compose exec -T -e MODE="$mode" -e ADMIN_USER="$ADMIN_USER" -e ADMIN_PASSWORD="$password" keycloak bash -s <<'EOF'
+set -euo pipefail
+kc() { /opt/keycloak/bin/kcadm.sh "$@" --config /tmp/dxos-kcadm.config; }
+trap 'rm -f /tmp/dxos-kcadm.config' EXIT
+kc config credentials --server http://localhost:8080 --realm master \
+  --user "$KC_BOOTSTRAP_ADMIN_USERNAME" --password "$KC_BOOTSTRAP_ADMIN_PASSWORD" >/dev/null 2>&1 \
+  || { echo "cannot sign in to Keycloak as $KC_BOOTSTRAP_ADMIN_USERNAME" >&2; exit 3; }
+if [[ "$MODE" == ensure ]] && kc get roles/ADMIN/users -r dxos --fields username | grep -q '"username"'; then
+  exit 10
+fi
+if ! kc get users -r dxos -q exact=true -q username="$ADMIN_USER" --fields id | grep -q '"id"'; then
+  kc create users -r dxos -s username="$ADMIN_USER" -s enabled=true \
+    -s firstName=DX-OS -s lastName=Admin >/dev/null 2>&1
+fi
+kc set-password -r dxos --username "$ADMIN_USER" --new-password "$ADMIN_PASSWORD" --temporary
+kc add-roles -r dxos --uusername "$ADMIN_USER" --rolename ADMIN
+EOF
+  local status=$?
+  case "$status" in
+    0) cat <<EOF
+
+ADMIN account of DX-OS (the password must be changed at the first sign-in):
+  user      $ADMIN_USER
+  password  $password
+EOF
+      ;;
+    10) ;;
+    *) die "could not set up the ADMIN account (Keycloak answered with code $status)" ;;
+  esac
+}
+
+cmd_start() {
+  local since since_epoch was_running=false model_status=0 started
+  if (( $# > 0 )); then
+    local given=() file
+    for file in "$@"; do given+=("$(from_caller "$file")"); done
+    use_model_files "${given[@]}"
+  fi
+  rm -f "$STOPPED_MARK"
+  echo "==> Checking this machine"
+  "$DEPLOY_DIR/doctor.sh" >/dev/null || { "$DEPLOY_DIR/doctor.sh" || true; die "fix the FAIL lines above, then run dxos start again"; }
+  [[ -n "$(compose ps -q --status running backend)" ]] && was_running=true
+  since="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  since_epoch="$(date +%s)"
+  echo "==> Starting DX-OS $(env_value DXOS_IMAGE_TAG) (images are downloaded on the first start)"
+  compose up -d --no-build --pull missing
+  started="$(date -d "$(docker inspect -f '{{.State.StartedAt}}' "$(compose ps -q backend)")" +%s)"
+  # A backend that kept running is started again so it reads a model file whose content changed.
+  if $was_running && (( $# > 0 )) && ((started < since_epoch)); then
+    compose up -d --no-build --no-deps --force-recreate backend
+    started="$since_epoch"
+  fi
+  wait_ready
+  set +e
+  admin_account ensure
+  # The backend reads the model file only when it starts, so a backend that kept running has no result.
+  if ((started >= since_epoch)); then
+    report_model "$since"
+    model_status=$?
+  fi
+  set -e
+  print_addresses
+  return "$model_status"
+}
+
+# Whether the virus scan is on, and whether clamd answers when the stack runs.
+av_state() {
+  local id health
+  if [[ -z "$(env_value STORAGE_SCAN_HOST)" ]]; then
+    echo "Virus scan of uploads: off (dxos av on turns it on)"
+    return
+  fi
+  id="$(compose ps -q clamav 2>/dev/null || true)"
+  if [[ -z "$id" ]]; then
+    echo "Virus scan of uploads: on, ClamAV is not running (uploads are refused until it answers)"
+    return
+  fi
+  health="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$id")"
+  echo "Virus scan of uploads: on, ClamAV is $health"
+}
+
+# Sets the profile av and the scan host together, then starts or stops ClamAV and restarts the
+# backend when the stack runs, so that the backend reads the new setting.
+cmd_av() {
+  local profiles running=false
+  profiles="$(env_value COMPOSE_PROFILES)"
+  [[ -n "$(compose ps -q --status running backend)" ]] && running=true
+  case "${1:-}" in
+    on)
+      [[ ",$profiles," == *,av,* ]] || set_env COMPOSE_PROFILES "${profiles:+$profiles,}av"
+      set_env STORAGE_SCAN_HOST clamav
+      if $running; then
+        compose up -d --no-build --pull missing clamav
+        compose up -d --no-build --no-deps --force-recreate backend
+        wait_ready
+      fi ;;
+    off)
+      set_env COMPOSE_PROFILES "$(tr ',' '\n' <<<"$profiles" | grep -vx av | paste -sd, - || true)"
+      set_env STORAGE_SCAN_HOST ""
+      if $running; then
+        compose --profile av rm -sf clamav
+        compose up -d --no-build --no-deps --force-recreate backend
+        wait_ready
+      fi ;;
+    "") ;;
+    *) die "usage: dxos av [on|off]" ;;
+  esac
+  av_state
+}
+
+cmd_admin() {
+  [[ -n "$(compose ps -q keycloak)" ]] || die "DX-OS is not running; run dxos start first"
+  set +e
+  admin_account reset
+  set -e
+}
+
+cmd_status() {
+  compose ps --format 'table {{.Service}}\t{{.State}}\t{{.Status}}'
+  local pending
+  pending="$(pending_services)"
+  if [[ -z "$(compose ps -q)" ]]; then
+    echo; echo "DX-OS is stopped; run dxos start."
+  elif [[ -n "$pending" ]]; then
+    echo; echo "Not ready yet: $pending"
+  else
+    print_addresses
+  fi
+  echo; av_state
+}
+
+# --- Model changes and history, through the API as the service account dxos-cli ---
+
+# Calls the API with the token of dxos-cli: api METHOD PATH [file [content-type]]. The body goes to
+# $API_BODY and the HTTP status to $API_STATUS. The secret and the token go through files, never the
+# command line.
+api() {
+  local method="$1" path="$2" file="${3:-}" type="${4:-application/yaml}" secret url work token args=()
+  command -v curl >/dev/null 2>&1 || die "curl is required"
+  secret="$(env_value DXOS_CLI_SECRET)"
+  [[ -n "$secret" ]] || die "DXOS_CLI_SECRET is empty in $DEPLOY_DIR/.env"
+  url="$(public_url)"
+  work="$(mktemp -d)"
+  chmod 700 "$work"
+  # shellcheck disable=SC2064 # expand now: the directory is local
+  trap "rm -rf '$work'" RETURN
+  printf '%s' "$secret" >"$work/secret"
+  curl -sS -o "$work/token" --data-urlencode grant_type=client_credentials --data-urlencode client_id=dxos-cli \
+    --data-urlencode "client_secret@$work/secret" "$url/realms/dxos/protocol/openid-connect/token" \
+    || die "Keycloak did not answer at $url"
+  token="$(sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p' "$work/token")"
+  [[ -n "$token" ]] || die "Keycloak refused the client dxos-cli: $(cat "$work/token") (a realm imported by an older release has no such client, see deploy/OPERATIONS.md)"
+  printf 'Authorization: Bearer %s\n' "$token" >"$work/header"
+  [[ -n "$file" ]] && args=(-H "Content-Type: $type" --data-binary "@$file")
+  API_STATUS="$(curl -sS -o "$work/body" -w '%{http_code}' -X "$method" -H "@$work/header" \
+    ${args[@]+"${args[@]}"} "$url/api/v1$path")" || die "the API did not answer at $url"
+  API_BODY="$(cat "$work/body")"
+}
+
+pretty() {
+  if command -v jq >/dev/null 2>&1; then
+    jq . <<<"$1" 2>/dev/null || echo "$1"
+  elif command -v python3 >/dev/null 2>&1; then
+    python3 -m json.tool <<<"$1" 2>/dev/null || echo "$1"
+  else
+    echo "$1"
+  fi
+}
+
+# First value of a key in a JSON text, for the few plain values the commands need.
+json_field() { sed -n "s/.*\"$1\":\"\{0,1\}\([^\",}]*\).*/\1/p" <<<"$2" | head -n1; }
+
+model_file_arg() {
+  [[ -n "${1:-}" ]] || die "usage: dxos $2 <model-file>"
+  [[ -f "$1" && -r "$1" ]] || die "model file not found or not readable: $1"
+}
+
+# Prints the plan; exit code 1 when the plan is refused or the API says no.
+cmd_plan() {
+  (( $# == 1 )) || die "usage: dxos plan <model-file>"
+  local file; file="$(from_caller "$1")"
+  model_file_arg "$file" plan
+  api POST /models/plan "$file"
+  pretty "$API_BODY"
+  [[ "$API_STATUS" == 200 && "$(json_field action "$API_BODY")" != rejected ]] || return 1
+}
+
+# Plans, then applies with the version of that plan as base. The level is never raised on its own:
+# a plan above SAFE is refused unless --accept names its level.
+cmd_apply() {
+  local file="" accept="" query
+  while (( $# )); do
+    case "$1" in
+      --accept) accept="${2:?--accept needs SAFE, MIGRATION or LOSS}"; shift 2 ;;
+      --accept=*) accept="${1#--accept=}"; shift ;;
+      -*) die "unknown option: $1" ;;
+      *) [[ -z "$file" ]] || die "usage: dxos apply <model-file> [--accept SAFE|MIGRATION|LOSS]"; file="$1"; shift ;;
+    esac
+  done
+  [[ -z "$file" ]] || file="$(from_caller "$file")"
+  model_file_arg "$file" apply
+  [[ -z "$accept" || "$accept" =~ ^(SAFE|MIGRATION|LOSS)$ ]] || die "--accept takes SAFE, MIGRATION or LOSS"
+  api POST /models/plan "$file"
+  if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
+  case "$(json_field action "$API_BODY")" in
+    unchanged) echo "Nothing to apply: the model runs this file already."; return 0 ;;
+    rejected) pretty "$API_BODY"; echo "dxos: the plan is refused; nothing was applied" >&2; return 1 ;;
+  esac
+  query="base=$(json_field fromVersion "$API_BODY")"
+  [[ -n "$accept" ]] && query="$query&accept=$accept"
+  api POST "/models/apply?$query" "$file"
+  pretty "$API_BODY"
+  [[ "$API_STATUS" == 200 ]] || return 1
+}
+
+# Registers, lists, renews and removes the outside applications of the API; the work is the
+# API's, this only calls it.
+cmd_client() {
+  local action="${1:-}" name model="" role="" body work
+  case "$action" in
+    list)
+      (( $# == 1 )) || die "usage: dxos client list"
+      api GET /clients
+      pretty "$API_BODY"
+      [[ "$API_STATUS" == 200 ]] || return 1 ;;
+    add)
+      shift
+      name="${1:-}"
+      [[ "$name" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] || die "usage: dxos client add <name> --model M --role R (name: lower case letters, digits, - and _)"
+      shift
+      while (( $# )); do
+        case "$1" in
+          --model) model="${2:?--model needs a model name}"; shift 2 ;;
+          --model=*) model="${1#--model=}"; shift ;;
+          --role) role="${2:?--role needs a role name}"; shift 2 ;;
+          --role=*) role="${1#--role=}"; shift ;;
+          *) die "unknown option: $1" ;;
+        esac
+      done
+      [[ "$model" =~ ^[a-z][a-z0-9_]*$ ]] || die "--model needs the name of an applied model"
+      [[ "$role" =~ ^[A-Z][A-Z0-9_]*$ ]] || die "--role needs a role of that model"
+      work="$(mktemp)"
+      printf '{"name":"%s","model":"%s","role":"%s"}' "$name" "$model" "$role" >"$work"
+      api POST /clients "$work" application/json
+      rm -f "$work"
+      if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
+      print_client_secret "$(json_field clientId "$API_BODY")" "$(json_field secret "$API_BODY")" \
+        "role $role of the model $model" ;;
+    rotate)
+      (( $# == 2 )) || die "usage: dxos client rotate <name>"
+      [[ "$2" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] || die "not an application name: $2"
+      api POST "/clients/$2/secret"
+      if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
+      print_client_secret "$(json_field clientId "$API_BODY")" "$(json_field secret "$API_BODY")" \
+        "the old secret no longer works" ;;
+    remove)
+      (( $# == 2 )) || die "usage: dxos client remove <name>"
+      [[ "$2" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] || die "not an application name: $2"
+      api DELETE "/clients/$2"
+      if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
+      echo "Removed dxos-app-$2." ;;
+    *) die "usage: dxos client add <name> --model M --role R | list | rotate <name> | remove <name>" ;;
+  esac
+}
+
+# The secret of an application, shown once and never kept.
+print_client_secret() {
+  [[ -n "$2" ]] || die "the API answered without a secret"
+  cat <<EOF
+
+Outside application $1 ($3):
+  client id  $1
+  secret     $2
+
+The secret is shown only now. Get a token with the client credentials grant:
+  POST $(public_url)/realms/dxos/protocol/openid-connect/token
+  grant_type=client_credentials, client_id=$1, client_secret=<the secret>
+EOF
+}
+
+cmd_history() {
+  case "${1:-}" in
+    verify)
+      api GET /history/verify
+      pretty "$API_BODY"
+      [[ "$API_STATUS" == 200 && "$(json_field intact "$API_BODY")" == true ]] || return 1 ;;
+    anchor)
+      api POST /history/anchor
+      pretty "$API_BODY"
+      [[ "$API_STATUS" == 200 ]] || return 1 ;;
+    *) die "usage: dxos history verify|anchor" ;;
+  esac
+}
+
+# --- Bringing the stack back to what is declared ---
+
+# Creates the containers that are missing and recreates those whose configuration no longer matches
+# docker-compose.yml and .env, with the images pinned in .env. A stack stopped with dxos stop is
+# left alone, and a run is skipped while another one holds the lock.
+reconcile_once() {
+  local log="$DEPLOY_DIR/reconcile.log" out="$DEPLOY_DIR/.reconcile.out" changed
+  [[ -e "$STOPPED_MARK" ]] && return 0
+  exec 9>"$DEPLOY_DIR/.reconcile.lock"
+  if command -v flock >/dev/null 2>&1 && ! flock -n 9; then
+    return 0
+  fi
+  if ! compose up -d --no-build --pull missing >"$out" 2>&1; then
+    echo "$(date -Iseconds) failed: $(tail -n1 "$out")" >>"$log"
+    return 1
+  fi
+  # The one-shot jobs (apisix-config, monitor-init) run on every up and are not a change.
+  changed="$(grep -E ' (Created|Recreated|Started)$' "$out" | grep -vE 'apisix-config|monitor-init' | sed 's/^ *//' | paste -sd';' - || true)"
+  [[ -z "$changed" ]] || echo "$(date -Iseconds) $changed" >>"$log"
+}
+
+cmd_reconcile() {
+  local units="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
+  case "${1:-}" in
+    "") reconcile_once ;;
+    install)
+      command -v systemctl >/dev/null 2>&1 || die "systemd is required; or run dxos reconcile from cron every minute"
+      mkdir -p "$units"
+      printf '%s\n' "[Unit]" "Description=Bring DX-OS back to what is declared" "" "[Service]" "Type=oneshot" \
+        "ExecStart=$DEPLOY_DIR/dxos reconcile" >"$units/dxos-reconcile.service"
+      printf '%s\n' "[Unit]" "Description=Bring DX-OS back to what is declared, every minute" "" "[Timer]" \
+        "OnBootSec=1min" "OnUnitActiveSec=1min" "" "[Install]" "WantedBy=timers.target" >"$units/dxos-reconcile.timer"
+      systemctl --user daemon-reload
+      systemctl --user enable --now dxos-reconcile.timer
+      echo "dxos reconcile runs every minute; what it changes is logged to $DEPLOY_DIR/reconcile.log."
+      echo "To keep it running after you log out: loginctl enable-linger $(id -un)" ;;
+    uninstall)
+      systemctl --user disable --now dxos-reconcile.timer 2>/dev/null || true
+      rm -f "$units/dxos-reconcile.service" "$units/dxos-reconcile.timer"
+      systemctl --user daemon-reload 2>/dev/null || true
+      echo "dxos reconcile no longer runs on its own." ;;
+    *) die "usage: dxos reconcile [install|uninstall]" ;;
+  esac
+}
+
+# --- History of finished records, out to open files ---
+
+DUCKDB="duckdb/duckdb:1.4.1@sha256:b9e06a757942c2fa195a0df86155db1b0887ce45f33d3bef9ff50890c913531e"
+
+# Runs DuckDB in a container as the calling user: duckdb_run <dir> [docker options] -- [duckdb arguments].
+# A non-empty <dir> is mounted at /archive; the extensions it downloads stay in duckdb/ next to this script, so only the
+# first run needs the network.
+duckdb_run() {
+  local dir="$1" options=()
+  shift
+  while [[ "$1" != "--" ]]; do options+=("$1"); shift; done
+  shift
+  mkdir -p "$DEPLOY_DIR/duckdb"
+  [[ -z "$dir" ]] || options+=(-v "$dir:/archive")
+  docker run --rm -i --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$DEPLOY_DIR/duckdb:/ext" \
+    ${options[@]+"${options[@]}"} "$DUCKDB" /duckdb "$@"
+}
+
+# Row count of a Parquet file of the archive.
+parquet_rows() { duckdb_run "$1" -- -csv -noheader -c "SELECT count(*) FROM '/archive/$2'" </dev/null; }
+
+# The entities of a model that have a process (the ones with decided_at), one per line.
+archive_entities() {
+  compose exec -T postgres psql -U "$(env_value POSTGRES_USER)" -d "$(env_value POSTGRES_DB)" -tAc \
+    "SELECT table_name FROM information_schema.columns WHERE table_schema = 'm_$1'
+     AND column_name = 'decided_at' ORDER BY table_name"
+}
+
+# The manifest fields the listing reads, typed so that DuckDB keeps the timestamps as the text it was given.
+MANIFEST_COLUMNS="{model: 'VARCHAR', run: 'VARCHAR', since: 'VARCHAR', upTo: 'VARCHAR', files: 'JSON[]'}"
+
+# Where the object store archive lives: the bucket, and the DuckDB statements that open it.
+archive_bucket() { local bucket; bucket="$(env_value S3_ARCHIVE_BUCKET)"; printf '%s\n' "${bucket:-dxos-archive}"; }
+store_prelude() {
+  local endpoint ssl=false
+  endpoint="$(env_value S3_ENDPOINT)"; endpoint="${endpoint:-http://seaweedfs:8333}"
+  [[ "$endpoint" != https://* ]] || ssl=true
+  endpoint="${endpoint#*://}"; endpoint="${endpoint%%/*}"
+  # The keys reach the container through the environment; the statement only names the variables.
+  printf "SET extension_directory='/ext';\nINSTALL httpfs; LOAD httpfs;\n"
+  printf "CREATE SECRET lake (TYPE s3, KEY_ID getenv('AWS_ACCESS_KEY_ID'), SECRET getenv('AWS_SECRET_ACCESS_KEY'), "
+  printf "ENDPOINT '%s', URL_STYLE 'path', USE_SSL %s, REGION 'us-east-1');\n" "$endpoint" "$ssl"
+}
+# Runs DuckDB with the object store open, reading statements from stdin: duckdb_store [docker options].
+duckdb_store() {
+  local network
+  network="$(docker inspect -f '{{range $name, $_ := .NetworkSettings.Networks}}{{$name}} {{end}}' \
+    "$(compose ps -q seaweedfs)" | awk '{print $1}')"
+  [[ -n "$network" ]] || die "SeaweedFS is not running; run dxos start"
+  AWS_ACCESS_KEY_ID="$(env_value S3_ACCESS_KEY)" AWS_SECRET_ACCESS_KEY="$(env_value S3_SECRET_KEY)" \
+    duckdb_run "" --network "$network" -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY "$@" -- -csv -noheader
+}
+
+# Runs one SELECT over the object store and prints its rows. A store with no archive yet prints nothing;
+# any other failure (keys, address) stops the command, so a failed read is never taken for an empty store.
+store_query() {
+  local out
+  out="$( { store_prelude; echo "$1"; } | duckdb_store 2>&1)" || {
+    grep -q "No files found\|404 Not Found" <<<"$out" && return 0
+    die "cannot read the object store: $(grep -m1 -i 'error' <<<"$out" | cut -c1-200)"
+  }
+  printf '%s\n' "$out"
+}
+
+# Writes the records of a model that reached an end state (decided_at is set), and their history
+# lines, to Parquet files with a manifest of row counts and SHA-256. The database is read only.
+# With store=1 the files go to the object store and the window is [since, before), so a record is
+# written once by the runs that follow each other; otherwise they go to a directory.
+archive_model() {
+  local model="$1" before="${2:-}" out="${3:-$DEPLOY_DIR/archive}" store="${4:-0}" since="${5:-}" skip_empty="${6:-0}"
+  local schema run dir network entities entity cond tcond sql version upto="" target="" waiting=0
+  [[ "$model" =~ ^[a-z][a-z0-9_]*$ ]] || die "not a model name: $model"
+  [[ -z "$before" || "$before" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || die "--before takes a date YYYY-MM-DD"
+  [[ -n "$(compose ps -q --status running postgres)" ]] || die "Postgres is not running; run dxos start"
+  schema="m_$model"
+  psql_value() { compose exec -T postgres psql -U "$(env_value POSTGRES_USER)" -d "$(env_value POSTGRES_DB)" -tAc "$1"; }
+  version="$(psql_value "SELECT coalesce(max(version), 0) FROM engine.model_version WHERE model = '$model'")"
+  [[ "$version" != 0 ]] || die "model $model has no applied version"
+  entities="$(archive_entities "$model")"
+  [[ -n "$entities" ]] || die "model $model has no entity with a process"
+  run="$(date -u +%Y%m%dT%H%M%SZ)"
+  if (( store )); then
+    upto="${before:+${before}T00:00:00Z}"; upto="${upto:-$(date -u +%Y-%m-%dT%H:%M:%SZ)}"
+    cond="decided_at IS NOT NULL AND decided_at < TIMESTAMPTZ '$upto'"
+    [[ -z "$since" ]] || cond="$cond AND decided_at >= TIMESTAMPTZ '$since'"
+    dir=""
+    target="s3://$(archive_bucket)/$model/$run"
+  else
+    cond="decided_at IS NOT NULL"
+    [[ -z "$before" ]] || cond="$cond AND decided_at < TIMESTAMPTZ '$before'"
+    dir="$(realpath -m "$out")/$model/$run"
+    mkdir -p "$dir"
+    target="/archive"
+  fi
+  tcond="t.${cond//AND decided_at/AND t.decided_at}"
+  if (( skip_empty )); then
+    for entity in $entities; do
+      (( waiting += $(psql_value "SELECT count(*) FROM $schema.$entity WHERE $cond") )) || true
+    done
+    (( waiting > 0 )) || { echo "==> $model: nothing to archive"; return 0; }
+  fi
+  network="$(docker inspect -f '{{range $name, $_ := .NetworkSettings.Networks}}{{$name}} {{end}}' \
+    "$(compose ps -q postgres)" | awk '{print $1}')"
+  sql="SET extension_directory='/ext'; INSTALL postgres; LOAD postgres;
+ATTACH 'host=postgres dbname=$(env_value POSTGRES_DB) user=$(env_value POSTGRES_USER)' AS pg (TYPE postgres, READ_ONLY);"
+  (( ! store )) || sql+=$'\n'"$(store_prelude)"
+  local listed=""
+  for entity in $entities; do
+    sql+="
+COPY (SELECT * FROM pg.$schema.$entity WHERE $cond ORDER BY id) TO '$target/$entity.parquet' (FORMAT parquet);
+COPY (SELECT e.* FROM pg.engine.record_event e JOIN pg.$schema.$entity t ON t.id = e.record_id
+  WHERE e.model = '$model' AND e.entity = '$entity' AND $tcond ORDER BY e.id)
+  TO '$target/${entity}_history.parquet' (FORMAT parquet);"
+    for name in "$entity" "${entity}_history"; do
+      listed+="${listed:+, }{'name': '$name.parquet', 'rows': (SELECT count(*) FROM read_parquet('$target/$name.parquet')),
+        'sha256': (SELECT sha256(content) FROM read_blob('$target/$name.parquet'))}"
+    done
+  done
+  if (( store )); then
+    sql+="
+COPY (SELECT '$model' AS model, $version AS modelVersion, '$run' AS run, '$since' AS since, '$before' AS before,
+  '$upto' AS upTo, 'records with decided_at set, and their history lines' AS condition, [$listed] AS files)
+  TO '$target/manifest.json' (FORMAT json, ARRAY false);
+SELECT 'FILE|' || f.name || '|' || f.rows FROM (SELECT unnest(files) AS f FROM read_json('$target/manifest.json'));"
+    echo "==> Writing the finished records of $model (version $version, decided before $upto${since:+, since $since}) to $target"
+    local listing
+    listing="$(PGPASSWORD="$(env_value POSTGRES_PASSWORD)" AWS_ACCESS_KEY_ID="$(env_value S3_ACCESS_KEY)" \
+      AWS_SECRET_ACCESS_KEY="$(env_value S3_SECRET_KEY)" duckdb_run "" --network "$network" \
+      -e PGPASSWORD -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -- -csv -noheader <<<"$sql")" \
+      || die "DuckDB could not write the archive to the object store (it downloads its extensions on the first run)"
+    sed -n 's/^FILE|\(.*\)|\(.*\)$/    \1: \2 rows/p' <<<"$listing"
+    echo "Archive written; check it with: dxos archive check --store $model/$run"
+    return 0
+  fi
+  echo "==> Writing the finished records of $model (version $version) to $dir"
+  # The password reaches the container through the environment, never the command line.
+  PGPASSWORD="$(env_value POSTGRES_PASSWORD)" duckdb_run "$dir" --network "$network" -e PGPASSWORD -- \
+    <<<"$sql" >/dev/null \
+    || die "DuckDB could not write the archive (it downloads its postgres extension on the first run)"
+  local files="" name rows sum
+  for name in $(cd "$dir" && ls ./*.parquet | sed 's|^\./||'); do
+    rows="$(parquet_rows "$dir" "$name")"
+    sum="$(sha256sum "$dir/$name" | cut -d' ' -f1)"
+    files+="${files:+,}
+    {\"name\": \"$name\", \"rows\": $rows, \"sha256\": \"$sum\"}"
+    echo "    $name: $rows rows"
+  done
+  local before_json=null
+  [[ -z "$before" ]] || before_json="\"$before\""
+  cat >"$dir/manifest.json" <<EOF
+{
+  "model": "$model",
+  "modelVersion": $version,
+  "run": "$run",
+  "before": $before_json,
+  "condition": "records with decided_at set, and their history lines",
+  "files": [$files
+  ]
+}
+EOF
+  echo "Archive written; check it with: dxos archive check $dir"
+}
+
+# Reads every file of an archive back and compares its row count and SHA-256 with the manifest.
+archive_check() {
+  local dir="${1:?usage: dxos archive check <dir | --store model/run>}" bad=0 name rows sum want_rows want_sum
+  if [[ "$dir" == --store ]]; then archive_check_store "${2:?usage: dxos archive check --store model/run}"; return; fi
+  dir="$(cd "$(from_caller "$dir")" && pwd)" || die "no such directory: $1"
+  [[ -f "$dir/manifest.json" ]] || die "no manifest.json in $dir"
+  while read -r name want_rows want_sum; do
+    rows="$(parquet_rows "$dir" "$name")"
+    sum="$(sha256sum "$dir/$name" | cut -d' ' -f1)"
+    if [[ "$rows" == "$want_rows" && "$sum" == "$want_sum" ]]; then
+      echo "    $name: $rows rows, SHA-256 matches"
+    else
+      echo "    $name: $rows rows (manifest $want_rows), SHA-256 ${sum:0:12}... (manifest ${want_sum:0:12}...)" >&2
+      bad=1
+    fi
+  done < <(sed -n 's/.*"name": "\([^"]*\)", "rows": \([0-9]*\), "sha256": "\([0-9a-f]*\)".*/\1 \2 \3/p' "$dir/manifest.json")
+  (( bad == 0 )) || die "the archive does not match its manifest"
+  echo "Archive matches its manifest."
+}
+
+# The same check for a run in the object store: model/run as printed by dxos archive list.
+archive_check_store() {
+  local ref="$1" model run target bad=0 name want_rows want_sum rows sum manifest got count=0 sql
+  model="${ref%%/*}"; run="${ref#*/}"
+  [[ "$model" =~ ^[a-z][a-z0-9_]*$ && "$run" =~ ^[0-9]{8}T[0-9]{6}Z$ ]] || die "not a run: $ref (expected model/run)"
+  target="s3://$(archive_bucket)/$model/$run"
+  manifest="$( { store_prelude
+    echo "SELECT 'FILE|' || f.name || '|' || f.rows || '|' || f.sha256 FROM (SELECT unnest(files) AS f FROM read_json('$target/manifest.json'));"
+    } | duckdb_store)" || die "cannot read $target/manifest.json from the object store"
+  manifest="$(grep '^FILE|' <<<"$manifest" || true)"
+  [[ -n "$manifest" ]] || die "the manifest of $ref lists no files"
+  # First the SHA-256 of every file, then the rows of the files whose bytes are the ones written.
+  sql="$(store_prelude)"
+  while IFS='|' read -r _ name want_rows want_sum; do
+    [[ "$name" =~ ^[A-Za-z0-9_]+\.parquet$ ]] || die "the manifest names a file that is not a Parquet file: $name"
+    sql+="
+SELECT 'SUM|$name|' || sha256(content) FROM read_blob('$target/$name');"
+  done <<<"$manifest"
+  got="$(duckdb_store <<<"$sql" 2>/dev/null)" || die "cannot read the files of $ref from the object store"
+  sql="$(store_prelude)"
+  while IFS='|' read -r _ name want_rows want_sum; do
+    sum="$(sed -n "s/^SUM|$name|//p" <<<"$got")"
+    [[ "$sum" == "$want_sum" ]] && sql+="
+SELECT 'ROWS|$name|' || count(*) FROM read_parquet('$target/$name');"
+  done <<<"$manifest"
+  got+=$'\n'"$(duckdb_store <<<"$sql" 2>/dev/null || true)"
+  while IFS='|' read -r _ name want_rows want_sum; do
+    sum="$(sed -n "s/^SUM|$name|//p" <<<"$got")"
+    rows="$(sed -n "s/^ROWS|$name|//p" <<<"$got")"
+    if [[ "$sum" == "$want_sum" && "$rows" == "$want_rows" ]]; then
+      echo "    $name: $rows rows, SHA-256 matches"
+    else
+      echo "    $name: ${rows:-unreadable} rows (manifest $want_rows), SHA-256 ${sum:0:12}... (manifest ${want_sum:0:12}...)" >&2
+      bad=1
+    fi
+  done <<<"$manifest"
+  (( bad == 0 )) || die "the archive does not match its manifest"
+  echo "Archive matches its manifest."
+}
+
+# The runs in the object store, oldest first.
+archive_list() {
+  local out rows model run since upto files
+  out="$(store_query "SELECT 'RUN|' || model || '|' || run || '|' || coalesce(nullif(since, ''), '-') || '|' || coalesce(upTo, '-') || '|' || len(files)
+      FROM read_json('s3://$(archive_bucket)/*/*/manifest.json', columns = $MANIFEST_COLUMNS) ORDER BY model, run;")"
+  rows="$(grep '^RUN|' <<<"$out" || true)"
+  [[ -n "$rows" ]] || { echo "No archive in the object store yet."; return 0; }
+  printf '%-16s %-17s %-21s %-21s %s\n' MODEL RUN FROM BEFORE FILES
+  while IFS='|' read -r _ model run since upto files; do
+    printf '%-16s %-17s %-21s %-21s %s\n' "$model" "$run" "$since" "$upto" "$files"
+  done <<<"$rows"
+}
+
+# Archives, for every model with a process, the records decided before today minus ARCHIVE_AFTER_DAYS
+# that no earlier run of the store holds. Records stay in the database.
+archive_auto() {
+  local days model upto last failed=0 models
+  days="$(env_value ARCHIVE_AFTER_DAYS)"; days="${days:-365}"
+  [[ "$days" =~ ^[0-9]+$ ]] || die "ARCHIVE_AFTER_DAYS in .env must be a number of days"
+  [[ -n "$(compose ps -q --status running postgres)" ]] || die "Postgres is not running; run dxos start"
+  upto="$(date -u -d "$days days ago" +%Y-%m-%d)"
+  echo "==> $(date -u +%Y-%m-%dT%H:%M:%SZ) archiving records decided before $upto (ARCHIVE_AFTER_DAYS=$days)"
+  last="$(store_query "SELECT 'LAST|' || model || '|' || max(upTo)
+    FROM read_json('s3://$(archive_bucket)/*/*/manifest.json', columns = $MANIFEST_COLUMNS) GROUP BY model;")"
+  models="$(compose exec -T postgres psql -U "$(env_value POSTGRES_USER)" -d "$(env_value POSTGRES_DB)" -tAc \
+    "SELECT DISTINCT model FROM engine.model_version ORDER BY model")"
+  for model in $models; do
+    [[ -n "$(archive_entities "$model")" ]] || continue
+    local since
+    since="$(sed -n "s/^LAST|$model|\(.*\)$/\1/p" <<<"$last")"
+    if [[ -n "$since" && ! "$since" < "${upto}T00:00:00Z" ]]; then echo "==> $model: nothing new before $upto"; continue; fi
+    ( archive_model "$model" "$upto" "" 1 "$since" 1 ) || failed=1
+  done
+  (( failed == 0 )) || die "some models could not be archived"
+}
+
+cmd_archive_schedule() {
+  local units="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
+  case "${1:-}" in
+    install)
+      command -v systemctl >/dev/null 2>&1 || die "systemd is required; or run dxos archive auto from cron once a day"
+      mkdir -p "$units"
+      printf '%s\n' "[Unit]" "Description=Archive the finished records of DX-OS to the object store" "" "[Service]" "Type=oneshot" \
+        "ExecStart=$DEPLOY_DIR/dxos archive auto" "StandardOutput=append:$DEPLOY_DIR/archive.log" \
+        "StandardError=append:$DEPLOY_DIR/archive.log" >"$units/dxos-archive.service"
+      printf '%s\n' "[Unit]" "Description=Archive the finished records of DX-OS, every day" "" "[Timer]" \
+        "OnCalendar=*-*-* 03:30:00" "Persistent=true" "" "[Install]" "WantedBy=timers.target" >"$units/dxos-archive.timer"
+      systemctl --user daemon-reload
+      systemctl --user enable --now dxos-archive.timer
+      echo "dxos archive auto runs every day at 03:30; records decided more than $(env_value ARCHIVE_AFTER_DAYS | sed 's/^$/365/') days ago go to the object store, and the run is logged to $DEPLOY_DIR/archive.log."
+      echo "To keep it running after you log out: loginctl enable-linger $(id -un)" ;;
+    uninstall)
+      systemctl --user disable --now dxos-archive.timer 2>/dev/null || true
+      rm -f "$units/dxos-archive.service" "$units/dxos-archive.timer"
+      systemctl --user daemon-reload 2>/dev/null || true
+      echo "dxos archive no longer runs on its own." ;;
+    *) die "usage: dxos archive schedule install|uninstall" ;;
+  esac
+}
+
+cmd_archive() {
+  case "${1:-}" in
+    check) shift; archive_check "$@" ;;
+    list) archive_list ;;
+    auto) archive_auto ;;
+    schedule) shift; cmd_archive_schedule "$@" ;;
+    ""|-*) die "usage: dxos archive <model> [--before YYYY-MM-DD] [--out DIR | --store] | check | list | auto | schedule" ;;
+    *)
+      local model="$1" before="" out="" store=0
+      shift
+      while (( $# )); do
+        case "$1" in
+          --before) before="${2:?--before needs a date}"; shift 2 ;;
+          --before=*) before="${1#--before=}"; shift ;;
+          --out) out="${2:?--out needs a directory}"; shift 2 ;;
+          --out=*) out="${1#--out=}"; shift ;;
+          --store) store=1; shift ;;
+          *) die "unknown option: $1" ;;
+        esac
+      done
+      [[ -z "$out" || "$store" == 0 ]] || die "--out and --store exclude each other"
+      [[ -z "$out" ]] || out="$(from_caller "$out")"
+      archive_model "$model" "$before" "$out" "$store" ;;
+  esac
+}
+
+cmd_update() {
+  local source=() tag
+  case "${1:-}" in
+    "") ;;
+    --file) source=(--file "${2:?--file needs a value}") ;;
+    v*) source=(--version "$1") ;;
+    *) die "usage: dxos update [vX.Y.Z | --file dx-os-X.Y.Z.tar.gz]" ;;
+  esac
+  bash "$DEPLOY_DIR/get.sh" --upgrade --prefix "$PREFIX" ${source[@]+"${source[@]}"}
+  tag="$(env_value DXOS_IMAGE_TAG)"
+  "$DEPLOY_DIR/update.sh" "$tag"
+  wait_ready
+  print_addresses
+}
+
+cmd_uninstall() {
+  local purge=false yes=false arg answer
+  for arg in "$@"; do
+    case "$arg" in
+      --purge) purge=true ;;
+      --yes) yes=true ;;
+      *) die "unknown option: $arg" ;;
+    esac
+  done
+  if [[ "$purge" == true && "$yes" != true ]]; then
+    echo "This deletes every record, file and account of DX-OS in $PREFIX."
+    read -r -p "Type 'purge' to continue: " answer
+    [[ "$answer" == purge ]] || die "aborted"
+  fi
+  echo "==> Removing the containers"
+  if [[ "$purge" == true ]]; then
+    compose down --remove-orphans --volumes
+  else
+    compose down --remove-orphans
+  fi
+  if [[ "$purge" == true ]]; then
+    echo "==> Deleting the data and $PREFIX"
+    # deploy/data holds root-owned files, so it is emptied from a throwaway container.
+    if [[ -d "$DEPLOY_DIR/data" ]]; then
+      docker run --rm -v "$DEPLOY_DIR/data:/data" "$ALPINE" find /data -mindepth 1 -delete
+    fi
+    rm -rf "$PREFIX"
+  fi
+  if [[ -L "$BIN_LINK" && "$(readlink "$BIN_LINK")" == "$DEPLOY_DIR/dxos" ]]; then
+    rm -f "$BIN_LINK"
+  fi
+  if [[ "$purge" == true ]]; then
+    echo "DX-OS is removed."
+  else
+    echo "DX-OS is stopped and the dxos command removed; the data stays in $PREFIX (dxos uninstall --purge from $DEPLOY_DIR/dxos deletes it)."
+  fi
+}
+
+main() {
+  [[ -f "$DEPLOY_DIR/.env" ]] || die "$DEPLOY_DIR/.env is missing; install DX-OS with install.sh first"
+  cd "$DEPLOY_DIR"
+  local command="${1:-help}"
+  (( $# )) && shift
+  case "$command" in
+    start) cmd_start "$@" ;;
+    stop) touch "$STOPPED_MARK"; compose stop ;;
+    status) cmd_status ;;
+    logs) compose logs -f --tail 100 "$@" ;;
+    admin) cmd_admin ;;
+    update) cmd_update "$@" ;;
+    doctor) "$DEPLOY_DIR/doctor.sh" ;;
+    backup) "$DEPLOY_DIR/backup.sh" "$@" ;;
+    av) cmd_av "$@" ;;
+    plan) cmd_plan "$@" ;;
+    apply) cmd_apply "$@" ;;
+    history) cmd_history "$@" ;;
+    reconcile) cmd_reconcile "$@" ;;
+    archive) cmd_archive "$@" ;;
+    demo) "$DEPLOY_DIR/demo.sh" "$@" ;;
+    client) cmd_client "$@" ;;
+    uninstall) cmd_uninstall "$@" ;;
+    version) echo "DX-OS $(env_value DXOS_IMAGE_TAG) in $PREFIX" ;;
+    help|-h|--help) sed -n '3,33p' "$self" ;;
+    *) echo "dxos: unknown command: $command" >&2; sed -n '3,33p' "$self" >&2; exit 2 ;;
+  esac
+}
+
+# On one line, so an update that replaces this file cannot make bash read past the end of main.
+main "$@"; exit $?

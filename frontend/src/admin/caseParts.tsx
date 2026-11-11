@@ -1,0 +1,459 @@
+// SPDX-License-Identifier: Apache-2.0
+import { Fragment, useEffect, useState } from "react";
+import {
+  Autocomplete,
+  Avatar,
+  Box,
+  Button,
+  Card,
+  createFilterOptions,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  IconButton,
+  TextField as MuiTextField,
+  Tooltip,
+  Typography,
+  type ButtonProps,
+} from "@mui/material";
+import AttachFileIcon from "@mui/icons-material/AttachFile";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
+import { useGetIdentity, useNotify, useRecordContext, useRefresh } from "react-admin";
+import { translateBackend } from "../shell/backendMessages";
+import { formatDateTime, timeAgo } from "../shell/format";
+import { StatusChip, TONES } from "./StatusChip";
+import { conditionMet, conditionText } from "./condition";
+import { useNames } from "./people";
+import { assignRecord, fileLink, listEvents, listFiles, listHandlers, removeFile, takeAction, uploadFile } from "./api";
+import type { AttachmentItem, EntityMeta, FieldMeta, Person, ProcessAction, RecordEvent } from "./types";
+import { t, ta } from "../shell/t";
+
+interface Props {
+  model: string;
+  entity: EntityMeta;
+}
+
+const message = (error: unknown) => (error instanceof Error ? error.message : t("Không xử lý được"));
+
+// A titled card; a panel that has nothing to show returns null before it gets here.
+export function Section({ title, action, children }: { title: string; action?: JSX.Element; children: React.ReactNode }) {
+  return (
+    <Card sx={{ p: 2.5 }}>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+          {title}
+        </Typography>
+        {action}
+      </Box>
+      {children}
+    </Card>
+  );
+}
+
+// A decision reads by what it leads to: approving is the main button, rejecting is red.
+function actionStyle(action: ProcessAction): Pick<ButtonProps, "variant" | "color"> {
+  const tone = TONES[action.to];
+  const color = tone === "success" || tone === "error" || tone === "warning" ? tone : "primary";
+  return { variant: tone === "success" ? "contained" : "outlined", color };
+}
+
+// Withdrawing ends the record for good, so it asks for a confirmation and takes an optional reason.
+const WITHDRAW = "withdraw";
+
+// The actions of the process the signed-in user can take on this record now.
+export function ActionButtons({ model, entity }: Props) {
+  const record = useRecordContext();
+  const { data: identity } = useGetIdentity();
+  const notify = useNotify();
+  const refresh = useRefresh();
+  const [busy, setBusy] = useState(false);
+  const [noteFor, setNoteFor] = useState<ProcessAction | null>(null);
+  const [note, setNote] = useState("");
+  const process = entity.process;
+  if (!record || !process) return null;
+
+  const me = identity?.id;
+  const allowed = process.actions.filter((action) => {
+    if (!action.from.includes(record.status)) return false;
+    if (action.by === "OWNER") return record.created_by === me;
+    if (!entity.canHandle || entity.handlerActions?.includes(action.name) === false) return false;
+    if (!process.allowSelfDecision && record.created_by === me) return false;
+    return !record.assignee || record.assignee === me;
+  });
+
+  const send = async (action: ProcessAction, text?: string) => {
+    setBusy(true);
+    try {
+      await takeAction(model, entity.name, record.id, action.name, text);
+      notify(t("{action}: xong", { action: ta(action.label) }), { type: "success" });
+      setNoteFor(null);
+      setNote("");
+      refresh();
+    } catch (error) {
+      notify(message(error), { type: "error" });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <>
+      {allowed.map((action) => {
+        const waiting = !conditionMet(action.when, record);
+        const button = (
+          <Button
+            {...actionStyle(action)}
+            sx={{ ml: 1 }}
+            disabled={busy || waiting}
+            onClick={() => (action.needsNote || action.name === WITHDRAW ? setNoteFor(action) : send(action))}
+          >
+            {ta(action.label)}
+          </Button>
+        );
+        return waiting && action.when ? (
+          <Tooltip key={action.name} title={t("Chỉ thực hiện khi {condition}", { condition: conditionText(action.when, entity.fields) })}>
+            <span>{button}</span>
+          </Tooltip>
+        ) : (
+          <Fragment key={action.name}>{button}</Fragment>
+        );
+      })}
+      <Dialog open={noteFor !== null} onClose={() => setNoteFor(null)} fullWidth>
+        <DialogTitle>{noteFor ? ta(noteFor.label) : null}</DialogTitle>
+        <DialogContent>
+          {noteFor?.name === WITHDRAW && (
+            <DialogContentText sx={{ mb: 2 }}>{t("Hồ sơ đã rút lại sẽ dừng xử lý và không nộp lại được.")}</DialogContentText>
+          )}
+          <MuiTextField
+            autoFocus
+            fullWidth
+            multiline
+            minRows={3}
+            label={noteFor?.needsNote ? t("Ghi chú") : t("Lý do (không bắt buộc)")}
+            value={note}
+            onChange={(event) => setNote(event.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setNoteFor(null)}>{t("Hủy")}</Button>
+          <Button
+            disabled={busy || (noteFor?.needsNote === true && !note.trim())}
+            onClick={() => noteFor && send(noteFor, note.trim() || undefined)}
+          >
+            {noteFor?.name === WITHDRAW ? t("Rút lại") : t("Gửi")}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
+}
+
+// Only this many matches are drawn, so a list of thousands of people stays quick; typing narrows it.
+const FIRST_PEOPLE = createFilterOptions<Person>({ limit: 50 });
+
+// Who holds this record, for the users who can assign it.
+export function AssignPanel({ model, entity }: Props) {
+  const record = useRecordContext();
+  const { data: identity } = useGetIdentity();
+  const notify = useNotify();
+  const refresh = useRefresh();
+  const [people, setPeople] = useState<Person[]>([]);
+  const closed = entity.process?.states.find((state) => state.name === record?.status)?.terminal ?? false;
+  const id = record?.id;
+
+  useEffect(() => {
+    if (entity.canAssign && id !== undefined && !closed) {
+      listHandlers(model, entity.name, id).then(setPeople, () => setPeople([]));
+    }
+  }, [model, entity.name, entity.canAssign, id, closed]);
+
+  if (!record || !entity.canAssign || closed) return null;
+
+  const assign = async (assignee: string | null) => {
+    try {
+      await assignRecord(model, entity.name, record.id, assignee);
+      refresh();
+    } catch (error) {
+      notify(message(error), { type: "error" });
+    }
+  };
+
+  const me = identity?.id;
+  const holder = people.find((person) => person.id === record.assignee)?.name;
+  const canClaim = people.some((person) => person.id === me) && record.assignee !== me;
+  return (
+    <Section title={t("Người xử lý")}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
+        <Avatar sx={{ width: 36, height: 36, bgcolor: record.assignee ? "primary.main" : "action.disabledBackground" }}>
+          {record.assignee ? (holder ?? "?").charAt(0).toUpperCase() : "–"}
+        </Avatar>
+        <Box>
+          <Typography sx={{ fontWeight: 600 }}>{record.assignee ? (holder ?? t("Đã giao")) : t("Chưa giao ai")}</Typography>
+          <Typography variant="caption" color="text.secondary">
+            {record.assignee ? t("Đang giữ hồ sơ này") : t("Cả vai xử lý đều nhận được")}
+          </Typography>
+        </Box>
+      </Box>
+      <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap" }}>
+        {canClaim && (
+          <Button variant="contained" onClick={() => assign(String(me))}>
+            {t("Nhận việc")}
+          </Button>
+        )}
+        <Autocomplete<Person>
+          size="small"
+          sx={{ minWidth: 200, flex: 1 }}
+          options={people}
+          value={people.find((person) => person.id === record.assignee) ?? null}
+          filterOptions={FIRST_PEOPLE}
+          getOptionLabel={(person) => person.name}
+          isOptionEqualToValue={(a, b) => a.id === b.id}
+          onChange={(_, person) => person && assign(person.id)}
+          noOptionsText={t("Không có ai khớp")}
+          renderInput={(params) => <MuiTextField {...params} label={t("Giao cho")} placeholder={t("Gõ tên để tìm")} />}
+        />
+        {record.assignee && <Button onClick={() => assign(null)}>{t("Bỏ giao")}</Button>}
+      </Box>
+    </Section>
+  );
+}
+
+const EVENT_LABELS: Record<string, string> = {
+  created: t("Tạo hồ sơ"),
+  updated: t("Sửa thông tin"),
+  deleted: t("Xóa"),
+  assigned: t("Giao việc"),
+  file_added: t("Thêm tệp"),
+  file_removed: t("Gỡ tệp"),
+  overdue: t("Quá hạn xử lý"),
+  completion_skipped: t("Bỏ qua hành động hoàn tất"),
+  auto_closed: t("Tự đóng do người nộp chưa xác nhận"),
+};
+
+const OPERATION_LABEL: Record<string, string> = {
+  add_to_group: t("Thêm vào nhóm"),
+  remove_from_group: t("Gỡ khỏi nhóm"),
+};
+
+// Why a completion action was skipped, as the backend records it: "<operation> skipped: the record has no <what>".
+function skippedReason(detail: string, fieldLabel: (name: string) => string): string {
+  const match = /^(\S+) skipped: the record has no (?:user in field (\S+)|group in field (\S+)|group)$/.exec(detail);
+  if (!match) return translateBackend(detail);
+  const [, operation, userField, groupField] = match;
+  const what = userField
+    ? t('chưa có người dùng ở trường "{field}"', { field: fieldLabel(userField) })
+    : groupField
+      ? t('chưa có nhóm ở trường "{field}"', { field: fieldLabel(groupField) })
+      : t("chưa có nhóm");
+  return t("{operation} bị bỏ qua: hồ sơ {what}", { operation: OPERATION_LABEL[operation] ?? operation, what });
+}
+
+// What an "updated" event changed. A detail that is a JSON object maps each field to [old, new];
+// an older one is just the list of field names.
+function updatedDetail(
+  detail: string | null,
+  fields: FieldMeta[],
+  fieldLabel: (name: string) => string,
+  personNames: Record<string, string>,
+): string | null {
+  if (!detail) return null;
+  if (!detail.startsWith("{")) return detail.split(", ").map(fieldLabel).join(", ");
+  let changes: Record<string, [string | null, string | null]>;
+  try {
+    changes = JSON.parse(detail);
+  } catch {
+    return detail;
+  }
+  const show = (name: string, value: string | null) => {
+    if (value === null || value === undefined || value === "") return "—";
+    const type = fields.find((field) => field.name === name)?.type;
+    if (type === "user") return personNames[value] ?? value;
+    return type === "datetime" && !Number.isNaN(Date.parse(value)) ? formatDateTime(value) : value;
+  };
+  return Object.entries(changes)
+    .map(([name, [before, after]]) => `${fieldLabel(name)}: ${show(name, before)} → ${show(name, after)}`)
+    .join("\n");
+}
+
+// The account ids an "updated" event moved between in user fields.
+function userIdsOf(event: RecordEvent, userFields: Set<string>): string[] {
+  if (event.action !== "updated" || !event.detail?.startsWith("{") || userFields.size === 0) return [];
+  try {
+    const changes: Record<string, [string | null, string | null]> = JSON.parse(event.detail);
+    return Object.entries(changes)
+      .filter(([name]) => userFields.has(name))
+      .flatMap(([, pair]) => pair.filter((value): value is string => typeof value === "string" && value !== ""));
+  } catch {
+    return [];
+  }
+}
+
+// What happened to this record, newest first, as a timeline.
+export function HistoryPanel({ model, entity }: Props) {
+  const record = useRecordContext();
+  const [events, setEvents] = useState<RecordEvent[]>([]);
+  const id = record?.id;
+  const version = record?.version;
+
+  useEffect(() => {
+    if (id !== undefined) listEvents(model, entity.name, id).then(setEvents, () => setEvents([]));
+  }, [model, entity.name, id, version]);
+
+  const process = entity.process;
+  const actionLabel = (name: string) =>
+    EVENT_LABELS[name] ?? ta(process?.actions.find((action) => action.name === name)?.label ?? name);
+  const fieldLabel = (name: string) => entity.fields.find((field) => field.name === name)?.label ?? name;
+  const ordered = [...events].reverse();
+  const userFields = new Set(entity.fields.filter((field) => field.type === "user").map((field) => field.name));
+  const personNames = useNames(events.flatMap((event) => userIdsOf(event, userFields)));
+
+  return (
+    <Section title={t("Lịch sử xử lý")}>
+      {ordered.length === 0 && (
+        <Typography variant="body2" color="text.secondary">
+          {t("Chưa có hoạt động nào.")}
+        </Typography>
+      )}
+      <Box sx={{ position: "relative", pl: 3 }}>
+        <Box sx={{ position: "absolute", left: 7, top: 6, bottom: 6, width: 2, bgcolor: "divider" }} />
+        {ordered.map((event, index) => {
+          const detail =
+            event.note ??
+            (event.action === "updated"
+              ? updatedDetail(event.detail, entity.fields, fieldLabel, personNames)
+              : event.action === "completion_skipped" && event.detail
+                ? skippedReason(event.detail, fieldLabel)
+                : null);
+          const tone = event.to_status ? TONES[event.to_status] : undefined;
+          const color = !tone || tone === "default" ? "text.disabled" : `${tone}.main`;
+          return (
+            <Box key={event.id} sx={{ position: "relative", pb: index === ordered.length - 1 ? 0 : 2.25 }}>
+              <Box
+                sx={{ position: "absolute", left: -24, top: 5, width: 12, height: 12, borderRadius: "50%", bgcolor: color, border: 2, borderColor: "background.paper" }}
+              />
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+                <Typography sx={{ fontWeight: 600 }}>{actionLabel(event.action)}</Typography>
+                {event.to_status && event.to_status !== event.from_status && (
+                  <StatusChip entity={entity} status={event.to_status} />
+                )}
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                {event.actor_name} · {timeAgo(event.at)}
+                <Tooltip title={formatDateTime(event.at)}>
+                  <span> · {formatDateTime(event.at)}</span>
+                </Tooltip>
+              </Typography>
+              {(detail || (event.action === "assigned" && !event.detail)) && (
+                <Typography variant="body2" sx={{ mt: 0.5, p: 1, bgcolor: "action.hover", borderRadius: 1, whiteSpace: "pre-line", overflowWrap: "anywhere" }}>
+                  {event.action === "assigned" ? (event.detail ?? t("Bỏ giao")) : detail}
+                </Typography>
+              )}
+            </Box>
+          );
+        })}
+      </Box>
+    </Section>
+  );
+}
+
+// The files attached to this record, with a way to add one for each file field.
+export function FilesPanel({ model, entity }: Props) {
+  const record = useRecordContext();
+  const { data: identity } = useGetIdentity();
+  const notify = useNotify();
+  const refresh = useRefresh();
+  const [files, setFiles] = useState<AttachmentItem[]>([]);
+  const [busy, setBusy] = useState(false);
+  const id = record?.id;
+  const version = record?.version;
+  const fileFields = entity.fields.filter((field) => field.type === "file");
+
+  const load = () => {
+    if (id !== undefined) listFiles(model, entity.name, id).then(setFiles, () => setFiles([]));
+  };
+  useEffect(load, [model, entity.name, id, version]);
+
+  if (fileFields.length === 0 || id === undefined) return null;
+  const closed = entity.process?.states.find((state) => state.name === record?.status)?.terminal ?? false;
+  const canAdd = entity.canWrite && !closed;
+
+  const run = async (work: () => Promise<unknown>) => {
+    setBusy(true);
+    try {
+      await work();
+      load();
+      refresh();
+    } catch (error) {
+      notify(message(error), { type: "error" });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const open = (item: AttachmentItem) =>
+    run(async () => {
+      const link = await fileLink(model, entity.name, id, item.id);
+      window.open(link.url, "_blank", "noopener");
+    });
+
+  return (
+    <>
+      {fileFields.map((field) => {
+        const own = files.filter((item) => item.field === field.name);
+        return (
+          <Section
+            key={field.name}
+            title={field.label}
+            action={
+              canAdd ? (
+                <Button component="label" size="small" variant="outlined" startIcon={<UploadFileIcon />} disabled={busy}>
+                  {t("Tải lên")}
+                  <input
+                    hidden
+                    type="file"
+                    onChange={(event) => {
+                      const chosen = event.target.files?.[0];
+                      event.target.value = "";
+                      if (chosen) run(() => uploadFile(model, entity.name, id, field.name, chosen));
+                    }}
+                  />
+                </Button>
+              ) : undefined
+            }
+          >
+            {own.length === 0 && (
+              <Typography variant="body2" color="text.secondary">
+                {t("Chưa có tệp nào.")}
+              </Typography>
+            )}
+            {own.map((item) => (
+              <Box key={item.id} sx={{ display: "flex", alignItems: "center", gap: 1, py: 0.75 }}>
+                <AttachFileIcon fontSize="small" color="action" />
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Button size="small" disabled={busy} onClick={() => open(item)} sx={{ p: 0, minWidth: 0, textAlign: "left" }}>
+                    <Typography noWrap sx={{ fontWeight: 600 }}>
+                      {item.name}
+                    </Typography>
+                  </Button>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    {Math.max(1, Math.round(item.size / 1024))} KB
+                  </Typography>
+                </Box>
+                {canAdd && item.uploaded_by === identity?.id && (
+                  <Tooltip title={t("Gỡ tệp")}>
+                    <IconButton size="small" color="error" disabled={busy} onClick={() => run(() => removeFile(model, entity.name, id, item.id))}>
+                      <DeleteOutlineIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                )}
+              </Box>
+            ))}
+          </Section>
+        );
+      })}
+    </>
+  );
+}

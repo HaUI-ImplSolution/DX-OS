@@ -10,7 +10,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
-// Registers the shared services, entities and repositories, and migrates the core schema.
+// Registers the shared services, entities and repositories, and migrates the core tables in the
+// schema "public".
 @AutoConfiguration(
     beforeName = {"org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration",
         "org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration",
@@ -23,7 +24,7 @@ public class CoreAutoConfiguration {
 
   @Bean(initMethod = "migrate")
   public Flyway coreFlyway(DataSource dataSource) {
-    return Flyway.configure().dataSource(dataSource).locations("classpath:db/migration/core")
-        .table("flyway_schema_history_core").load();
+    return Flyway.configure().dataSource(dataSource).schemas("public").defaultSchema("public")
+        .locations("classpath:db/migration/core").table("flyway_schema_history_core").load();
   }
 }

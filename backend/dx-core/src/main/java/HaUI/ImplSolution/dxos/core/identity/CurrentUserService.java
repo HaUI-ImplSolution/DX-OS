@@ -2,10 +2,9 @@
 package HaUI.ImplSolution.dxos.core.identity;
 
 import HaUI.ImplSolution.dxos.core.api.user.UserContext;
-import HaUI.ImplSolution.dxos.core.api.workspace.WorkspaceDirectory;
-import HaUI.ImplSolution.dxos.core.api.workspace.WorkspaceView;
 import HaUI.ImplSolution.dxos.core.security.AppRoles;
-import java.util.Optional;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.security.core.Authentication;
@@ -14,17 +13,15 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
-// Actor cho reportedBy/decidedBy... lấy từ claim của token Keycloak đã xác thực.
+// The signed-in user, read from the claims of the verified Keycloak token.
 @Service
 public class CurrentUserService implements UserContext {
 
   private static final String ROLE_PREFIX = "ROLE_";
 
-  private final WorkspaceDirectory workspaceDirectory;
   private final AppRoles appRoles;
 
-  public CurrentUserService(WorkspaceDirectory workspaceDirectory, AppRoles appRoles) {
-    this.workspaceDirectory = workspaceDirectory;
+  public CurrentUserService(AppRoles appRoles) {
     this.appRoles = appRoles;
   }
 
@@ -50,11 +47,6 @@ public class CurrentUserService implements UserContext {
   }
 
   @Override
-  public Optional<WorkspaceView> currentWorkspace() {
-    return workspaceDirectory.findByAccount(currentUserId());
-  }
-
-  @Override
   public Set<String> roles() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null) {
@@ -69,6 +61,26 @@ public class CurrentUserService implements UserContext {
   @Override
   public boolean hasRole(String role) {
     return roles().contains(role);
+  }
+
+  @Override
+  public Set<String> clientRoles(String clientId) {
+    Map<String, Object> access = getCurrentJwt().getClaim("resource_access");
+    if (access == null || !(access.get(clientId) instanceof Map<?, ?> client)
+        || !(client.get("roles") instanceof List<?> roles)) {
+      return Set.of();
+    }
+    return roles.stream().map(String::valueOf).collect(Collectors.toUnmodifiableSet());
+  }
+
+  @Override
+  public Set<String> groups() {
+    List<String> groups = getCurrentJwt().getClaimAsStringList("groups");
+    if (groups == null) {
+      return Set.of();
+    }
+    return groups.stream().map(group -> group.startsWith("/") ? group.substring(1) : group)
+        .collect(Collectors.toUnmodifiableSet());
   }
 
   @Override

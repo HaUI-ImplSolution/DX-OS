@@ -5,6 +5,8 @@ run-name: Release package ${{ inputs.tag || github.ref_name }}
 # Attaches the release files to the GitHub Release of a vX.Y.Z tag: the source archive as .tar.gz,
 # its SHA-256 and the CycloneDX SBOMs. The Release is created from the CHANGELOG when it does not exist.
 # Run it by hand to add the files to a Release that already exists.
+# The tag must be vMAJOR.MINOR.PATCH and sit on main, the archive is checked before it is published,
+# and a tag-triggered run never overwrites a file that is already on the Release.
 on:
   push:
     tags:
@@ -28,21 +30,36 @@ concurrency:
 
 jobs:
   package:
-    runs-on: ubuntu-latest
+    name: Package the release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     env:
       TAG: ${{ inputs.tag || github.ref_name }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout the tag
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.tag || github.ref_name }}
+          # origin/main is needed to tell whether the tag is on it
+          fetch-depth: 0
+
+      # The tag name reaches the shell only through the environment: a git tag may contain $( ), ; or |
+      - name: Tag has the form vMAJOR.MINOR.PATCH and is on main
+        run: |
+          [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]] \
+            || { echo "::error::Tag '$TAG' is not of the form vMAJOR.MINOR.PATCH"; exit 1; }
+          git rev-parse -q --verify "refs/tags/$TAG^{commit}" > /dev/null \
+            || { echo "::error::There is no tag '$TAG'"; exit 1; }
+          git merge-base --is-ancestor "refs/tags/$TAG" origin/main \
+            || { echo "::error::Tag $TAG is not on main: merge the release into main and tag it there"; exit 1; }
 
       - name: Build the source archive, checksums and SBOM files
         run: |
           VERSION="${TAG#v}"
           mkdir dist
           git archive --format=tar.gz --prefix="dx-os-${VERSION}/" -o "dist/dx-os-${VERSION}.tar.gz" HEAD
+          cp deploy/get.sh dist/dxos-install.sh
           # Tags made before the SBOMs were committed have none.
           for sbom in sbom/*.cdx.json; do
             [[ -e "$sbom" ]] || continue
@@ -50,6 +67,11 @@ jobs:
           done
           (cd dist && sha256sum -- * > "dx-os-${VERSION}.sha256")
           cat "dist/dx-os-${VERSION}.sha256"
+
+      - name: Check the archive before it is published
+        run: |
+          VERSION="${TAG#v}"
+          .github/scripts/check_archive.sh "dist/dx-os-${VERSION}.tar.gz" "$VERSION"
 
       - name: Take the release notes from the CHANGELOG
         run: |
@@ -59,19 +81,47 @@ jobs:
             on && /^## \[/ { exit }
             on { print }
           ' CHANGELOG.md > notes.md
-          [[ -s notes.md ]] || echo "Xem CHANGELOG.md." > notes.md
+          # Without a section the notes are only a pointer; the next step refuses to create a Release with them.
+          [[ -s notes.md ]] || { echo "Xem CHANGELOG.md." > notes.md; touch notes.empty; }
           {
             echo
-            echo "Tệp kèm theo: \`dx-os-${VERSION}.tar.gz\` là gói mã nguồn phát hành chính thức; \`dx-os-${VERSION}.sha256\` chứa SHA-256 của mọi tệp; các tệp \`.cdx.json\` là SBOM CycloneDX."
+            echo "Cài trên máy có Docker: \`curl -fsSL https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/dxos-install.sh | bash -s -- --version ${TAG}\` rồi \`dxos start\`."
+            echo
+            echo "Tệp kèm theo: \`dx-os-${VERSION}.tar.gz\` là gói mã nguồn phát hành chính thức; \`dxos-install.sh\` là bộ cài; \`dx-os-${VERSION}.sha256\` chứa SHA-256 của mọi tệp; các tệp \`.cdx.json\` là SBOM CycloneDX."
           } >> notes.md
 
       - name: Create the Release, or add the files to the one that exists
+        env:
+          EVENT: ${{ github.event_name }}
+          REPLACE_NOTES: ${{ inputs.replace_notes }}
         run: |
           if gh release view "$TAG" > /dev/null 2>&1; then
-            gh release upload "$TAG" dist/* --clobber
-            if [[ "${{ inputs.replace_notes }}" == "true" ]]; then
+            if [[ "$EVENT" == "push" ]]; then
+              # A run triggered by the tag never replaces a file people may already have downloaded.
+              existing=$(gh release view "$TAG" --json assets --jq '.assets[].name')
+              clash=$(comm -12 <(cd dist && printf "%s\n" * | sort) <(sort <<< "$existing"))
+              if [[ -n "$clash" ]]; then
+                echo "::error::$TAG already has these files: $(tr '\n' ' ' <<< "$clash")- run the workflow by hand to replace them"
+                exit 1
+              fi
+              gh release upload "$TAG" dist/*
+            else
+              gh release upload "$TAG" dist/* --clobber
+            fi
+            if [[ "$REPLACE_NOTES" == "true" ]]; then
+              [[ ! -e notes.empty ]] || { echo "::error::CHANGELOG.md has no section for ${TAG#v}"; exit 1; }
               gh release edit "$TAG" --notes-file notes.md
             fi
           else
+            [[ ! -e notes.empty ]] || { echo "::error::CHANGELOG.md has no section for ${TAG#v}"; exit 1; }
             gh release create "$TAG" dist/* --verify-tag --title "$TAG" --notes-file notes.md
+          fi
+
+      - name: Every file is on the Release
+        run: |
+          existing=$(gh release view "$TAG" --json assets --jq '.assets[].name')
+          missing=$(comm -23 <(cd dist && printf "%s\n" * | sort) <(sort <<< "$existing"))
+          if [[ -n "$missing" ]]; then
+            echo "::error::Missing from the Release: $(tr '\n' ' ' <<< "$missing")"
+            exit 1
           fi

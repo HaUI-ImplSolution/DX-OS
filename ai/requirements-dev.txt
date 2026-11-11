@@ -1,3 +1,0 @@
-# Test dependencies on top of the runtime requirements (used by CI and local runs).
--r requirements.txt
-pytest>=8.0,<10.0

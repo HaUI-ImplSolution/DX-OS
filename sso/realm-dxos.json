@@ -48,20 +48,6 @@
           "priority": 20,
           "flowAlias": "dxos otp for ADMIN",
           "userSetupAllowed": false
-        },
-        {
-          "authenticatorFlow": true,
-          "requirement": "${STAFF_OTP_FLOW}",
-          "priority": 30,
-          "flowAlias": "dxos otp for ENGINEER",
-          "userSetupAllowed": false
-        },
-        {
-          "authenticatorFlow": true,
-          "requirement": "${STAFF_OTP_FLOW}",
-          "priority": 40,
-          "flowAlias": "dxos otp for TECHNICIAN",
-          "userSetupAllowed": false
         }
       ]
     },
@@ -88,54 +74,6 @@
           "userSetupAllowed": false
         }
       ]
-    },
-    {
-      "alias": "dxos otp for ENGINEER",
-      "description": "One-time code for users with the ENGINEER role",
-      "providerId": "basic-flow",
-      "topLevel": false,
-      "builtIn": false,
-      "authenticationExecutions": [
-        {
-          "authenticator": "conditional-user-role",
-          "authenticatorConfig": "dxos role ENGINEER",
-          "authenticatorFlow": false,
-          "requirement": "REQUIRED",
-          "priority": 10,
-          "userSetupAllowed": false
-        },
-        {
-          "authenticator": "auth-otp-form",
-          "authenticatorFlow": false,
-          "requirement": "REQUIRED",
-          "priority": 20,
-          "userSetupAllowed": false
-        }
-      ]
-    },
-    {
-      "alias": "dxos otp for TECHNICIAN",
-      "description": "One-time code for users with the TECHNICIAN role",
-      "providerId": "basic-flow",
-      "topLevel": false,
-      "builtIn": false,
-      "authenticationExecutions": [
-        {
-          "authenticator": "conditional-user-role",
-          "authenticatorConfig": "dxos role TECHNICIAN",
-          "authenticatorFlow": false,
-          "requirement": "REQUIRED",
-          "priority": 10,
-          "userSetupAllowed": false
-        },
-        {
-          "authenticator": "auth-otp-form",
-          "authenticatorFlow": false,
-          "requirement": "REQUIRED",
-          "priority": 20,
-          "userSetupAllowed": false
-        }
-      ]
     }
   ],
   "authenticatorConfig": [
@@ -143,20 +81,6 @@
       "alias": "dxos role ADMIN",
       "config": {
         "condUserRole": "ADMIN",
-        "negate": "false"
-      }
-    },
-    {
-      "alias": "dxos role ENGINEER",
-      "config": {
-        "condUserRole": "ENGINEER",
-        "negate": "false"
-      }
-    },
-    {
-      "alias": "dxos role TECHNICIAN",
-      "config": {
-        "condUserRole": "TECHNICIAN",
         "negate": "false"
       }
     }
@@ -188,9 +112,7 @@
   "adminEventsDetailsEnabled": true,
   "roles": {
     "realm": [
-      { "name": "ADMIN", "description": "Quản trị nền tảng" },
-      { "name": "ENGINEER", "description": "Kỹ sư" },
-      { "name": "TECHNICIAN", "description": "Kỹ thuật viên" }
+      { "name": "ADMIN", "description": "Quản trị nền tảng" }
     ]
   },
   "components": {
@@ -243,83 +165,23 @@
             "id.token.claim": "false",
             "access.token.claim": "true"
           }
-        }
-      ],
-      "defaultClientScopes": [
-        "basic",
-        "web-origins",
-        "acr",
-        "profile",
-        "roles",
-        "email"
-      ]
-    },
-    {
-      "clientId": "farm-mobile",
-      "name": "DX-Farm mobile",
-      "protocol": "openid-connect",
-      "publicClient": true,
-      "bearerOnly": false,
-      "standardFlowEnabled": true,
-      "implicitFlowEnabled": false,
-      "directAccessGrantsEnabled": false,
-      "serviceAccountsEnabled": false,
-      "consentRequired": false,
-      "redirectUris": [
-        "dxfarm://*",
-        "exp://*"
-      ],
-      "attributes": {
-        "pkce.code.challenge.method": "S256",
-        "post.logout.redirect.uris": "dxfarm://*##exp://*"
-      },
-      "protocolMappers": [
+        },
         {
-          "name": "dxos-api-audience",
+          "name": "groups",
           "protocol": "openid-connect",
-          "protocolMapper": "oidc-audience-mapper",
+          "protocolMapper": "oidc-group-membership-mapper",
           "consentRequired": false,
           "config": {
-            "included.custom.audience": "dxos-api",
+            "full.path": "false",
             "id.token.claim": "false",
-            "access.token.claim": "true"
+            "access.token.claim": "true",
+            "claim.name": "groups",
+            "userinfo.token.claim": "false"
           }
         }
       ],
       "defaultClientScopes": [
         "basic",
-        "web-origins",
-        "acr",
-        "profile",
-        "roles",
-        "email"
-      ]
-    },
-    {
-      "clientId": "dxos-superset",
-      "name": "DX-OS Superset",
-      "protocol": "openid-connect",
-      "publicClient": false,
-      "secret": "${SUPERSET_OIDC_CLIENT_SECRET}",
-      "standardFlowEnabled": true,
-      "implicitFlowEnabled": false,
-      "directAccessGrantsEnabled": false,
-      "serviceAccountsEnabled": false,
-      "consentRequired": false,
-      "redirectUris": [
-        "${SUPERSET_PUBLIC_URL}/oauth-authorized/keycloak",
-        "http://localhost:9081/oauth-authorized/keycloak"
-      ],
-      "webOrigins": [
-        "${SUPERSET_PUBLIC_URL}",
-        "http://localhost:9081"
-      ],
-      "frontchannelLogout": true,
-      "attributes": {
-        "post.logout.redirect.uris": "${SUPERSET_PUBLIC_URL}/*##http://localhost:9081/*",
-        "frontchannel.logout.url": "${SUPERSET_PUBLIC_URL}/logout/"
-      },
-      "defaultClientScopes": [
         "web-origins",
         "acr",
         "profile",
@@ -368,7 +230,41 @@
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": true,
+      "defaultClientScopes": ["web-origins", "acr", "profile", "roles", "email", "kc-admin-api"],
       "consentRequired": false
+    },
+    {
+      "clientId": "dxos-cli",
+      "name": "DX-OS command line (model plan and apply)",
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "${DXOS_CLI_SECRET}",
+      "bearerOnly": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "consentRequired": false,
+      "protocolMappers": [
+        {
+          "name": "dxos-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.custom.audience": "dxos-api",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ],
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "profile",
+        "roles",
+        "email"
+      ]
     }
   ],
   "users": [
@@ -377,8 +273,14 @@
       "enabled": true,
       "serviceAccountClientId": "dxos-backend-admin",
       "clientRoles": {
-        "realm-management": ["manage-users", "view-users", "view-realm", "manage-realm"]
+        "realm-management": ["manage-users", "view-users", "view-realm", "manage-realm", "manage-clients", "view-clients", "query-clients"]
       }
+    },
+    {
+      "username": "service-account-dxos-cli",
+      "enabled": true,
+      "serviceAccountClientId": "dxos-cli",
+      "realmRoles": ["ADMIN"]
     }
   ]
 }

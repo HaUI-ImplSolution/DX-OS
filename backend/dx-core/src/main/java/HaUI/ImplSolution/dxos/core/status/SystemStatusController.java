@@ -20,9 +20,8 @@ public class SystemStatusController {
   }
 
   @GetMapping("/status")
-  @Operation(summary = "Running app and status of the backend, AI service and photo storage",
-      description = "Public, no sign-in needed. app holds the id and name of the running app;"
-          + " each service is UP or DOWN.")
+  @Operation(summary = "Status of the backend and the services it depends on",
+      description = "Public, no sign-in needed. Each service is UP or DOWN.")
   public ApiResponse<ServiceStatusResponse> status() {
     return ApiResponse.success(systemStatusService.status());
   }

@@ -4,8 +4,11 @@ package HaUI.ImplSolution.dxos.core.storage;
 import HaUI.ImplSolution.dxos.core.api.storage.ObjectStorage;
 import jakarta.annotation.PreDestroy;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,8 +27,10 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
@@ -98,19 +103,52 @@ public class StorageService implements ObjectStorage {
   // caller used to reach the API, so it keeps working behind any address of the gateway.
   @Override
   public String presignedUrl(String key) {
-    return presign(requestBaseUrl(), key, presignTtl);
+    return presign(requestBaseUrl(), key, presignTtl, null);
+  }
+
+  @Override
+  public String presignedDownloadUrl(String key, String filename) {
+    String encoded = URLEncoder.encode(filename, StandardCharsets.UTF_8).replace("+", "%20");
+    return presign(requestBaseUrl(), key, presignTtl, "attachment; filename*=UTF-8''" + encoded);
+  }
+
+  @Override
+  public Optional<byte[]> getObject(String key) {
+    try {
+      return Optional
+          .of(client.getObjectAsBytes(GetObjectRequest.builder().bucket(bucket).key(key).build())
+              .asByteArray());
+    } catch (NoSuchKeyException e) {
+      return Optional.empty();
+    } catch (S3Exception e) {
+      if (e.statusCode() == 404) {
+        return Optional.empty();
+      }
+      throw new IllegalStateException("Failed to read object " + key, e);
+    } catch (RuntimeException e) {
+      throw new IllegalStateException("Failed to read object " + key, e);
+    }
+  }
+
+  @Override
+  public void deleteObject(String key) {
+    try {
+      client.deleteObject(DeleteObjectRequest.builder().bucket(bucket).key(key).build());
+    } catch (RuntimeException e) {
+      throw new IllegalStateException("Failed to delete object " + key, e);
+    }
   }
 
   // Link for a fixed public origin, for messages sent outside any request (e.g. chat).
   @Override
   public String presignedUrl(String baseUrl, String key, Duration ttl) {
-    return presign(trimTrailingSlash(baseUrl), key, ttl);
+    return presign(trimTrailingSlash(baseUrl), key, ttl, null);
   }
 
-  // Link for services inside the compose network (the AI service).
+  // Link for services inside the compose network.
   @Override
   public String internalPresignedUrl(String key, Duration ttl) {
-    return presign(endpoint, key, ttl);
+    return presign(endpoint, key, ttl, null);
   }
 
   @Override
@@ -142,10 +180,15 @@ public class StorageService implements ObjectStorage {
     }
   }
 
-  private String presign(String baseUrl, String key, Duration ttl) {
+  private String presign(String baseUrl, String key, Duration ttl, String disposition) {
     try {
+      GetObjectRequest.Builder object = GetObjectRequest.builder().bucket(bucket).key(key);
+      if (disposition != null) {
+        object.responseContentDisposition(disposition)
+            .responseContentType("application/octet-stream");
+      }
       GetObjectPresignRequest request = GetObjectPresignRequest.builder().signatureDuration(ttl)
-          .getObjectRequest(GetObjectRequest.builder().bucket(bucket).key(key).build()).build();
+          .getObjectRequest(object.build()).build();
       return signer(baseUrl).presignGetObject(request).url().toString();
     } catch (RuntimeException e) {
       throw new IllegalStateException("Failed to presign object " + key, e);

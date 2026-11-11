@@ -5,16 +5,12 @@
 	<parent>
 		<groupId>HaUI.ImplSolution</groupId>
 		<artifactId>dx-os-parent</artifactId>
-		<version>1.1.1</version>
+		<version>2.0.0</version>
 	</parent>
 	<artifactId>dx-core</artifactId>
 	<name>dx-core</name>
 	<description>Shared services: identity, workflow, storage, security, platform</description>
 	<dependencies>
-		<dependency>
-			<groupId>HaUI.ImplSolution</groupId>
-			<artifactId>dx-core-api</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -57,12 +53,6 @@
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>3.2.0</version>
 		</dependency>
-		<!-- Circuit breaker of the AI gateway; same version as the one app-farm uses -->
-		<dependency>
-			<groupId>io.github.resilience4j</groupId>
-			<artifactId>resilience4j-circuitbreaker</artifactId>
-			<version>2.4.0</version>
-		</dependency>
 		<!-- S3 client of the object store; the URL connection client replaces the default HTTP clients. -->
 		<dependency>
 			<groupId>software.amazon.awssdk</groupId>
@@ -87,6 +77,12 @@
 			<groupId>software.amazon.awssdk</groupId>
 			<artifactId>url-connection-client</artifactId>
 			<version>${awssdk.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.wiremock</groupId>
+			<artifactId>wiremock-standalone</artifactId>
+			<version>${wiremock.version}</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>

@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: Apache-2.0
+format: 0
+name: itaccess
+roles:
+  - name: EMPLOYEE
+    description: Nhân viên xin cấp quyền
+  - name: IT_ADMIN
+    description: Quản trị CNTT, duyệt yêu cầu cấp quyền
+    staff: true
+entities:
+  access_request:
+    label: Yêu cầu cấp quyền
+    fields:
+      access_group: {type: choice, label: Nhóm quyền, required: true, options: [GIT_USERS, VPN_USERS, WIKI_EDITORS]}
+      reason: {type: text, label: Lý do, required: true}
+      evidence: {type: file, label: Minh chứng}
+    access: {EMPLOYEE: own, IT_ADMIN: all}
+    process:
+      family: approval
+      handler: IT_ADMIN
+      deadline: 24h
+      after:
+        approved:
+          - {do: add_to_group, user: created_by, group_from: access_group}

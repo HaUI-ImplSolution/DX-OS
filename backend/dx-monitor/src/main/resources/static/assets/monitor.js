@@ -25,43 +25,28 @@
     ['backend', 'Backend API'],
     ['keycloak', 'Keycloak (đăng nhập)'],
     ['database', 'Cơ sở dữ liệu (PostgreSQL)'],
-    ['storage', 'Lưu trữ ảnh'],
+    ['storage', 'Lưu trữ tệp'],
     ['ai', 'Dịch vụ AI'],
-    ['bi', 'BI Dashboard'],
-    ['chat', 'Kênh chat'],
     ['portal', 'Trang cổng vào']
   ];
 
   var ACTION_NAMES = {
-    WORKSPACE_CREATED: 'Tạo đơn vị mới',
-    WORKSPACE_LINKED: 'Gắn tài khoản chủ cho đơn vị',
-    MEMBER_ADDED: 'Thêm thành viên vào đơn vị',
-    PARCEL_DELETED: 'Xóa thửa ruộng',
-    SEASON_DELETED: 'Xóa vụ mùa',
-    REPORT_DELETED: 'Xóa báo cáo bệnh',
-    HARVEST_OVERRIDE: 'Thu hoạch ngoài quy định',
-    TICKET_CATEGORY_CREATED: 'Tạo nhóm phiếu sự cố',
-    TICKET_CATEGORY_CHANGED: 'Sửa nhóm phiếu sự cố',
-    SLA_POLICY_CHANGED: 'Đổi thời hạn xử lý phiếu',
-    TICKET_ATTACHMENT_REMOVED: 'Xóa tệp đính kèm phiếu',
+    FILE_INFECTED: 'Chặn tệp nhiễm mã độc',
     ADMIN_ACTION_FAILED: 'Thao tác quản trị không thực hiện được'
   };
 
   // First match wins; the text is part of a request path.
   var FEATURES = [
-    ['/diagnosis', 'Chẩn đoán bệnh bằng AI'],
-    ['/knowledge', 'Hỏi đáp tri thức'],
-    ['/disease-reports', 'Báo cáo bệnh'],
-    ['/treatment', 'Ghi nhận phun thuốc'],
-    ['/parcels', 'Thửa ruộng'],
-    ['/crop-seasons', 'Vụ mùa'],
-    ['/tickets', 'Phiếu sự cố'],
-    ['/room-bookings', 'Đặt phòng máy'],
-    ['/device-loans', 'Mượn thiết bị'],
-    ['/workspaces', 'Đơn vị và tài khoản'],
-    ['/notifications', 'Thông báo'],
-    ['/system/status', 'Trạng thái hệ thống'],
-    ['/audit-logs', 'Nhật ký truy cập']
+    ['/files', 'Tệp đính kèm'],
+    ['/dxos-uploads/', 'Tải tệp'],
+    ['/actions/', 'Xử lý hồ sơ theo quy trình'],
+    ['/meta/', 'Cấu trúc mô hình cho giao diện'],
+    ['/models', 'Áp dụng và đổi mô hình'],
+    ['/data/', 'Dữ liệu hồ sơ'],
+    ['/inbox', 'Hộp việc'],
+    ['/outbox', 'Hàng đợi sự kiện'],
+    ['/realms/', 'Đăng nhập (Keycloak)'],
+    ['/system/status', 'Trạng thái hệ thống']
   ];
 
   var windowSelect = document.getElementById('window');

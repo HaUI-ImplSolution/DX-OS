@@ -20,7 +20,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 class AlertJobTest {
 
-  private final MattermostSender sender = mock(MattermostSender.class);
+  private final ChatWebhookSender sender = mock(ChatWebhookSender.class);
   private final AuthEventReader authEvents = mock(AuthEventReader.class);
   private final Instant now = Instant.parse("2026-10-28T08:00:00Z");
 

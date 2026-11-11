@@ -33,8 +33,6 @@ else
     major="${version%%.*}"; rest="${version#*.}"; minor="${rest%%.*}"
     if (( major < 2 )); then
       fail "Docker Compose $version is too old, v2 is required"
-    elif (( major == 2 && minor < 24 )); then
-      warn "Docker Compose $version: the E2E overlay (demo/docker-compose.e2e.yml) needs 2.24 or newer"
     else
       ok "Docker Compose $version"
     fi
@@ -51,7 +49,7 @@ if (( disk_free_gib < 40 )); then warn "${disk_free_gib} GiB of disk is free her
 
 echo "deploy/.env"
 if [[ ! -f .env ]]; then
-  fail ".env not found: run python3 demo/make_ci_env.py .env (random secrets), or cp .env.example .env and fill every blank variable"
+  fail ".env not found: run ./make_env.sh (random secrets), or cp .env.example .env and fill every blank variable"
 else
   compose_files=(docker-compose.yml)
   for f in $(env_value COMPOSE_FILE | tr ':' ' '); do [[ " ${compose_files[*]} " == *" $f "* ]] || compose_files+=("$f"); done
@@ -73,17 +71,17 @@ else
   done < <(grep -oE '^[A-Z][A-Z0-9_]*=' .env | tr -d '=' | sort -u)
   if (( ${#unknown[@]} )); then
     warn "in .env but not in .env.example (renamed or unused?): ${unknown[*]}"
-    if printf '%s\n' "${unknown[@]}" | grep -q 'MINIO'; then
-      warn "MINIO_* variables are now S3_*, APISIX_MINIO_HOST_PORT is APISIX_STORAGE_ADMIN_HOST_PORT and PORTAL_MINIO_URL is PORTAL_STORAGE_URL"
-    fi
   else
     ok "no variable outside .env.example"
   fi
 
-  app="$(env_value DXOS_APP)"
-  if [[ -n "$app" && "$app" != farm && "$app" != lab ]]; then fail "DXOS_APP must be farm or lab"; fi
-  if [[ "$(env_value COMPOSE_FILE)" == *cloudflared* && -z "$(env_value CLOUDFLARE_TUNNEL_TOKEN)" ]]; then
-    fail "COMPOSE_FILE includes the cloudflared overlay but CLOUDFLARE_TUNNEL_TOKEN is blank"
+  scan_host="$(env_value STORAGE_SCAN_HOST)"
+  if [[ -z "$scan_host" ]]; then
+    ok "virus scan of uploads is off (dxos av on, or COMPOSE_PROFILES=av and STORAGE_SCAN_HOST=clamav)"
+  elif [[ "$scan_host" == clamav && ",$(env_value COMPOSE_PROFILES)," != *,av,* ]]; then
+    fail "STORAGE_SCAN_HOST=clamav but COMPOSE_PROFILES has no av: ClamAV would not start and every upload would be refused"
+  else
+    ok "virus scan of uploads is on (clamd at $scan_host)"
   fi
 
   if docker compose config --quiet >/dev/null 2>&1; then ok "docker compose config is valid"; else fail "docker compose config fails: run it in deploy/ to see why"; fi
@@ -92,7 +90,7 @@ else
   if [[ -n "$(docker compose ps -q apisix 2>/dev/null)" ]]; then
     ok "the stack is running, port checks skipped"
   else
-    for key in APISIX_HOST_PORT APISIX_SUPERSET_HOST_PORT APISIX_STORAGE_ADMIN_HOST_PORT MATTERMOST_HOST_PORT POSTGRES_HOST_PORT; do
+    for key in APISIX_HOST_PORT POSTGRES_HOST_PORT; do
       value="$(env_value "$key")"
       [[ -n "$value" ]] || continue
       port="$(port_of "$value")"

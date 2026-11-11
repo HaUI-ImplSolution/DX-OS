@@ -11,7 +11,7 @@ Báo qua tính năng báo cáo riêng của GitHub: tab **Security**, rồi **Re
 
 Nội dung nên có:
 
-- Thành phần bị ảnh hưởng (web, mobile, backend, AI, gateway, SSO, BI, chat) và phiên bản hoặc commit.
+- Thành phần bị ảnh hưởng (web, backend, tệp mô hình, gateway, SSO, AI, deploy, trang docs) và phiên bản hoặc commit.
 - Các bước tái hiện hoặc đoạn mã chứng minh.
 - Ảnh hưởng theo đánh giá của người báo.
 
@@ -26,11 +26,11 @@ Không đưa dữ liệu thật của người dùng vào báo cáo.
 ## Phạm vi
 
 Trong phạm vi: mã nguồn của repository này và cấu hình triển khai ở `deploy/`.
-Ngoài phạm vi: lỗ hổng của phần mềm thượng nguồn (Keycloak, Apache APISIX, Apache Superset, Mattermost, PostgreSQL, SeaweedFS, Ollama) khi không do cấu hình của repository này gây ra; hãy báo cho dự án thượng nguồn.
+Ngoài phạm vi: lỗ hổng của phần mềm thượng nguồn (Keycloak, Apache APISIX, PostgreSQL, SeaweedFS, Flowable, ClamAV) khi không do cấu hình của repository này gây ra; hãy báo cho dự án thượng nguồn.
 
 ## Cơ chế đã có trong repository
 
 - Quét secret trong mã và lịch sử bằng gitleaks ở mỗi pull request.
 - Quét lỗ hổng của dependency và image bên thứ ba bằng Trivy khi file khai báo đổi và mỗi tuần.
 - Dependabot đề xuất cập nhật dependency.
-- Chi tiết mô hình phân quyền, giới hạn tốc độ, ghi vết và sao lưu ở [`ARCHITECTURE.md`](./ARCHITECTURE.md) và [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md).
+- Chi tiết mô hình phân quyền, giới hạn tốc độ, ghi vết và sao lưu ở [`ARCHITECTURE.md`](./ARCHITECTURE.md), [`deploy/MONITORING.md`](./deploy/MONITORING.md) (giới hạn tốc độ và ghi vết) và [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md) (sao lưu).

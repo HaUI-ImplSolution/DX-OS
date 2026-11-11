@@ -1,14 +1,12 @@
 # dx-monitor: màn hình giám sát và truy vết
 
 Dịch vụ Spring Boot riêng của DX-OS, chạy trong container `monitor`.
-Không phụ thuộc `dx-core-api` hay `dx-core` và không biết app nào đang chạy, nên dùng chung cho Farm và Lab.
+Không phụ thuộc `dx-core` hay `dx-engine`, nên vẫn chạy khi dịch vụ lõi dừng.
 Chạy riêng nên vẫn hoạt động khi backend dừng.
 
 Mở từ thẻ "Giám sát và truy vết" của portal hoặc tại `/monitor/`, đăng nhập SSO Keycloak; chỉ vai `ADMIN` vào được.
 Màn hình chỉ đọc, nền sáng, tự làm mới mỗi 30 giây.
 Nội dung viết cho người quản lý không chuyên IT: biểu đồ là chính và không hiện mã trạng thái.
-
-![Màn hình giám sát và truy vết](../../docs/images/demo/monitor.png)
 
 ## Chạy và build
 
@@ -16,7 +14,7 @@ Nội dung viết cho người quản lý không chuyên IT: biểu đồ là ch
 - Image build từ [`../Dockerfile`](../Dockerfile) với đích `monitor`: `docker build --target monitor backend`.
 - Service `monitor-init` và `monitor` khai báo trong [`../../deploy/docker-compose.yml`](../../deploy/docker-compose.yml).
 - Cấu hình ở [`src/main/resources/application.yaml`](./src/main/resources/application.yaml); biến môi trường ở mục Cấu hình bên dưới.
-- Log truy cập của gateway, sự kiện đăng nhập của Keycloak và giới hạn tốc độ nằm ở [`../../deploy/OPERATIONS.md`](../../deploy/OPERATIONS.md).
+- Log truy cập của gateway, sự kiện đăng nhập của Keycloak và giới hạn tốc độ nằm ở [`../../deploy/MONITORING.md`](../../deploy/MONITORING.md).
 
 ## Các khối trên màn hình
 
@@ -42,7 +40,7 @@ Nội dung viết cho người quản lý không chuyên IT: biểu đồ là ch
   Cả hai biểu đồ theo thời gian cùng phóng và chia cột mịn hơn.
   Bấm "Xem lại toàn bộ" hoặc đổi khoảng xem để trở về.
   Cột mới mọc lên khi biểu đồ đổi; hiệu ứng tắt khi hệ điều hành bật giảm chuyển động.
-- Ô dịch vụ mang tên như trên portal, xếp theo đường đi của một yêu cầu (Gateway, ứng dụng chính, Backend API, Keycloak, cơ sở dữ liệu, lưu trữ ảnh) rồi tới dịch vụ AI, BI, chat và trang cổng vào.
+- Ô dịch vụ mang tên như trên portal, xếp theo đường đi của một yêu cầu (Gateway, ứng dụng chính, Backend API, Keycloak, cơ sở dữ liệu, lưu trữ tệp) rồi tới dịch vụ AI và trang cổng vào.
 - Mỗi ô dịch vụ có thanh theo thời gian: xanh là Tốt, đỏ là Ngừng, vàng là Trống dữ liệu; rê chuột vào một khối để xem khoảng thời gian chính xác.
 - Ô dịch vụ liệt kê các lần ngừng (đỏ) và khoảng trống dữ liệu từ 5 phút (vàng), ví dụ `Ngừng 14:49 - 14:50 (1 phút)`; lần đang ngừng ghi `14:49 - nay`.
   Dịch vụ không có hai loại này ghi "Hoạt động tốt".
@@ -58,7 +56,7 @@ Nội dung viết cho người quản lý không chuyên IT: biểu đồ là ch
 
 ## Dữ liệu
 
-- Gateway gửi mọi request cho `monitor` theo đợt; `monitor` chỉ giữ `429`, `401`, `404`, `5xx` và request chậm từ 10 giây (trừ chẩn đoán AI và hỏi đáp).
+- Gateway gửi mọi request cho `monitor` theo đợt; `monitor` chỉ giữ `429`, `401`, `404`, `5xx` và request chậm từ 10 giây (`monitor.gateway.slow-exempt-paths` miễn các đường dẫn chậm có chủ đích).
   Bỏ qua `401` của chính `/monitor/` khi phiên hết hạn.
 - Mỗi địa chỉ giữ tối đa 100 bản ghi mỗi phút; phần dư cộng vào cột `suppressed` của bản ghi gần nhất cùng địa chỉ và loại, nên số tổng vẫn đủ.
 - Bảng `gateway_event` và `service_health_event` nằm ở schema `monitor` của database chính, xóa sau `monitor.retention-days` (30 ngày) lúc 03:30 mỗi đêm.
@@ -71,7 +69,7 @@ Nội dung viết cho người quản lý không chuyên IT: biểu đồ là ch
 
 ## Cảnh báo
 
-`monitor` gửi vào kênh Mattermost "Ban quản trị", cùng webhook với cảnh báo của backend:
+`monitor` gửi vào kênh quản trị qua webhook khi có cấu hình:
 
 | Điều kiện | Ngưỡng mặc định |
 |---|---|
@@ -93,7 +91,8 @@ Nội dung viết cho người quản lý không chuyên IT: biểu đồ là ch
 | `KEYCLOAK_READONLY_DB_PASSWORD` | Mật khẩu role `keycloak_ro` |
 | `MONITOR_OIDC_CLIENT_SECRET` | Secret của client `dxos-monitor` trong Keycloak |
 | `MONITOR_INGEST_KEY` | Khóa gateway dùng khi gửi sự kiện; chữ và số, không có `\|` hay `&` |
+| `ALERT_WEBHOOK_URL_ADMIN`, `ALERT_WEBHOOK_URL` | Địa chỉ webhook nhận cảnh báo, dạng `{"text": ...}` của Mattermost và Slack; dùng cái đầu nếu có, trống cả hai thì không gửi cảnh báo |
 
-- Gateway điền khóa vào cấu hình khi `apisix-config` chạy; đổi khóa thì chạy `./switch-app.sh <app>`.
+- Gateway điền khóa vào cấu hình khi `apisix-config` chạy; đổi khóa thì chạy `docker compose up -d --force-recreate apisix-config && docker compose restart apisix`.
 - Keycloak đang chạy chưa có client `dxos-monitor`: thêm client theo `sso/realm-dxos.json` trong Admin Console, hoặc dựng lại Keycloak từ đầu.
 - Đường nhận `/monitor/ingest/` chỉ dùng trong mạng Docker; gateway công khai trả `404` cho nó.

@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
-# DX-OS stack: the shared core plus the app chosen by DXOS_APP (farm or lab).
+# DX-OS stack: the shared core and the model-driven service.
 # Every ${VAR:?} must be set in deploy/.env (copy .env.example); Compose stops and names the
 # missing variable.
-# Published ports: the gateway (apisix), Postgres and Mattermost.
+# Published ports: the gateway (apisix) and Postgres.
 # Everything else is reached through the gateway.
 
 # Rotates the container logs so they cannot fill the disk; `docker compose logs` reads them.
@@ -25,34 +25,22 @@ x-postgres-env: &postgres-env
   POSTGRES_USER: ${POSTGRES_USER:?}
   POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
 
-x-ai-build: &ai-build
-  context: ../ai
-  dockerfile: Dockerfile
-
-x-ai-common-env: &ai-common-env
-  EMBEDDING_MODEL: ${AI_EMBEDDING_MODEL:?}
-  HF_HOME: /app/weights/huggingface
-
-x-mattermost-volumes: &mattermost-volumes
-  - ./data/mattermost/config:/mattermost/config
-  - ./data/mattermost/data:/mattermost/data
-  - ./data/mattermost/logs:/mattermost/logs
-  - ./data/mattermost/plugins:/mattermost/plugins
-  - ./data/mattermost/client-plugins:/mattermost/client/plugins
-  - ./data/mattermost/bleve-indexes:/mattermost/bleve-indexes
-  - ./data/mattermost/webhooks:/mattermost/webhooks
-
 services:
   # ---------------------------------------------------------------------------
   # Data and storage
   # ---------------------------------------------------------------------------
   postgres:
     logging: *default-logging
-    image: pgvector/pgvector:pg16@sha256:7b822b0aac60967beb1ea5e576b8602c94c300a157d187f385ae3e0da199b90a
+    # The bookworm variant keeps the C library of existing data directories; the default tag uses a newer one and reports a collation mismatch on them.
+    image: postgres:16-bookworm@sha256:5264710be20f409750ac6dc4e5706dcef929c87e241605463f0f9aefa932a8d9
+    restart: unless-stopped
     environment:
       <<: *postgres-env
+      # Password of the Keycloak role, created by postgres/init when the data directory is new.
+      KEYCLOAK_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?}
     volumes:
       - ${POSTGRES_DATA_DIR:?}:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
     ports:
       - "${POSTGRES_HOST_PORT:?}:5432"
     healthcheck:
@@ -86,25 +74,6 @@ services:
       timeout: 5s
       retries: 6
 
-  # Admin page of the object store, behind the login of the S3 key pair.
-  seaweedfs-admin:
-    logging: *default-logging
-    image: chrislusf/seaweedfs:4.51@sha256:f7a49e3f3972ebed5be2ed4befa4a0c68eb7bdddba6e692d42729ceb545134b8
-    # gRPC port below the Linux ephemeral range, so an outbound connection cannot take it first.
-    command: ["admin", "-master=seaweedfs:9333", "-port=23646", "-port.grpc=13646", "-dataDir=/data",
-      "-adminUser=${S3_ACCESS_KEY:?}", "-adminPassword=${S3_SECRET_KEY:?}"]
-    restart: unless-stopped
-    environment:
-      WEED_JWT_FILER_SIGNING_KEY: ${S3_SECRET_KEY:?}
-    depends_on:
-      seaweedfs:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:23646/login || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 6
-
   # ---------------------------------------------------------------------------
   # Backend, web and portal
   # ---------------------------------------------------------------------------
@@ -112,6 +81,7 @@ services:
     <<: *hardened
     logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-backend:${DXOS_IMAGE_TAG:-local}
+    restart: unless-stopped
     build:
       context: ../backend
       dockerfile: Dockerfile
@@ -120,66 +90,54 @@ services:
         condition: service_healthy
       seaweedfs:
         condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    volumes:
+      # The model files of dxos start <file>...; the backend applies each on start when it is new.
+      - ./model:/models:ro
+      # Webhook targets that models name in their file; targets.yml stays out of git
+      - ./webhooks:/webhooks:ro
     environment:
       <<: *postgres-env
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       SERVER_PORT: 8081
-      # The app this backend runs; any other value stops the start.
-      DXOS_APP: ${DXOS_APP:-farm}
-      # Photo storage
+      ENGINE_MODEL_DIR: /models
+      ENGINE_MODEL_FILE: ${DXOS_MODEL_FILE:-}
+      # Webhook for the history lines of records; a model that names no target uses this one and
+      # empty sends nothing
+      ENGINE_WEBHOOK_FILE: /webhooks/targets.yml
+      ENGINE_WEBHOOK_URL: ${DXOS_WEBHOOK_URL:-}
+      ENGINE_WEBHOOK_SECRET: ${DXOS_WEBHOOK_SECRET:-}
+      ENGINE_WEBHOOK_FORMAT: ${DXOS_WEBHOOK_FORMAT:-json}
+      # Tries of an outbox message before it stops and waits for a retry in the console
+      ENGINE_OUTBOX_MAX_ATTEMPTS: ${DXOS_OUTBOX_MAX_ATTEMPTS:-20}
+      # Milliseconds between two looks at the outbox and between two sweeps for overdue records
+      ENGINE_OUTBOX_POLL_MS: ${DXOS_OUTBOX_POLL_MS:-2000}
+      ENGINE_OVERDUE_SWEEP_MS: ${DXOS_OVERDUE_SWEEP_MS:-60000}
+      # How long before its deadline a record gets a due_soon line; a deadline not longer than this gets none
+      ENGINE_DUE_SOON_BEFORE: ${DXOS_DUE_SOON_BEFORE:-24h}
+      # File storage
       S3_ENDPOINT: ${S3_ENDPOINT:?}
       S3_ACCESS_KEY: ${S3_ACCESS_KEY:?}
       S3_SECRET_KEY: ${S3_SECRET_KEY:?}
       S3_BUCKET: ${S3_BUCKET:?}
       STORAGE_PUBLIC_URL: ${GATEWAY_PUBLIC_URL:?}
-      # Passwords of the Postgres roles the backend creates at startup
-      SUPERSET_RO_PASSWORD: ${SUPERSET_READONLY_DB_PASSWORD:?}
-      MATTERMOST_DB_PASSWORD: ${MATTERMOST_DB_PASSWORD:?}
-      KEYCLOAK_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?}
-      AI_VECTOR_DB_RO_PASSWORD: ${AI_VECTOR_DB_READONLY_PASSWORD:?}
-      AI_VECTOR_DB_INGEST_PASSWORD: ${AI_VECTOR_DB_INGEST_PASSWORD:?}
-      # AI service, both directions
-      AI_SERVICE_BASE_URL: ${AI_BASE_URL:?}
-      AI_SERVICE_API_KEY: ${BACKEND_TO_AI_API_KEY:?}
-      AI_SERVICE_CONNECT_TIMEOUT_MS: ${BACKEND_TO_AI_CONNECT_TIMEOUT_MS:?}
-      AI_SERVICE_READ_TIMEOUT_MS: ${BACKEND_TO_AI_READ_TIMEOUT_MS:?}
-      AI_SERVICE_INBOUND_API_KEY: ${AI_TO_BACKEND_API_KEY:?}
-      # Keycloak admin client (creates accounts and the roles of the app)
+      STORAGE_PRESIGN_TTL: ${STORAGE_PRESIGN_TTL:-15m}
+      # Wait before the object of a removed file is deleted; a backup shorter than this has every file
+      ENGINE_FILES_DELETE_DELAY: ${DXOS_FILE_DELETE_DELAY:-24h}
+      # Keycloak admin client (creates the client and roles of a model, manages users)
       KEYCLOAK_ADMIN_CLIENT_ID: ${KEYCLOAK_ADMIN_CLIENT_ID:?}
       KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET:?}
       # Virus scan of uploads: the host of clamd (service clamav, profile av); empty turns it off
       STORAGE_SCAN_HOST: ${STORAGE_SCAN_HOST:-}
-      # Chat notifications, both apps; a URL left empty is read from the file mattermost-bootstrap writes
-      MATTERMOST_WEBHOOK_DIR: /run/mattermost-webhooks
-      MATTERMOST_WEBHOOK_URL: ${MATTERMOST_WEBHOOK_URL:-}
-      MATTERMOST_WEBHOOK_URL_ADMIN: ${MATTERMOST_WEBHOOK_URL_ADMIN:-}
-      MATTERMOST_IMAGE_BASE_URL: ${MATTERMOST_IMAGE_BASE_URL:-}
-      MATTERMOST_APP_BASE_URL: ${MATTERMOST_APP_BASE_URL:-}
-      # Limits, both apps
-      MAX_PENDING_REQUESTS: ${MAX_PENDING_REQUESTS:-3}
       RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-true}
-      KNOWLEDGE_MIN_SCORE: ${KNOWLEDGE_MIN_SCORE:-0.40}
-      STORAGE_PRESIGN_TTL: ${STORAGE_PRESIGN_TTL:-15m}
-      # Farm only
-      MATTERMOST_WEBHOOK_URL_ENGINEER: ${MATTERMOST_WEBHOOK_URL_ENGINEER:-}
-      HTX_CODE: ${HTX_CODE:-HTX01}
-      WEATHER_BASE_URL: ${WEATHER_BASE_URL:-https://api.open-meteo.com}
-      GPS_MAX_ACCURACY_METERS: ${GPS_MAX_ACCURACY_METERS:-30}
-      HARVEST_REMINDER_CRON: ${HARVEST_REMINDER_CRON:-0 0 7 * * *}
-      HARVEST_REMINDER_MAX_DAYS: ${HARVEST_REMINDER_MAX_DAYS:-14}
-      TREATMENT_CONFIRMATION_REMINDER_CRON: ${TREATMENT_CONFIRMATION_REMINDER_CRON:-0 0 8 * * *}
-      TREATMENT_CONFIRMATION_WAIT_HOURS: ${TREATMENT_CONFIRMATION_WAIT_HOURS:-24}
-      # Lab only
-      MATTERMOST_WEBHOOK_URL_TECHNICIAN: ${MATTERMOST_WEBHOOK_URL_TECHNICIAN:-}
-      LAB_SLA_CHECK_CRON: ${LAB_SLA_CHECK_CRON:-0 */5 * * * *}
-      LAB_SLA_WARNING_RATIO: ${LAB_SLA_WARNING_RATIO:-0.8}
-      LAB_DEVICE_ALERT_THRESHOLD: ${LAB_DEVICE_ALERT_THRESHOLD:-3}
-      LAB_DEVICE_ALERT_WINDOW_DAYS: ${LAB_DEVICE_ALERT_WINDOW_DAYS:-30}
-      LAB_LOAN_REMINDER_CRON: ${LAB_LOAN_REMINDER_CRON:-0 0 7 * * *}
-      LAB_LOAN_DUE_SOON_DAYS: ${LAB_LOAN_DUE_SOON_DAYS:-1}
-    volumes:
-      - ./data/mattermost/webhooks:/run/mattermost-webhooks:ro
+      # Password of the read-only role for reports, created when a model is applied
+      ENGINE_REPORT_DB_PASSWORD: ${REPORT_DB_PASSWORD:?}
+      # Test only: fails a decision after the process step, to show both changes roll back
+      ENGINE_FAULT_AFTER_DECISION: ${ENGINE_FAULT_AFTER_DECISION:-false}
+      # Test only: fails the apply step of this kind, to show an apply that stops halfway
+      ENGINE_FAULT_APPLY_STEP: ${ENGINE_FAULT_APPLY_STEP:-}
     # No published port: clients reach the API through the gateway.
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8081/actuator/health || exit 1"]
@@ -193,6 +151,7 @@ services:
       - no-new-privileges:true
     logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-frontend:${DXOS_IMAGE_TAG:-local}
+    restart: unless-stopped
     build:
       context: ../frontend
       dockerfile: Dockerfile
@@ -215,13 +174,10 @@ services:
       - no-new-privileges:true
     logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-portal:${DXOS_IMAGE_TAG:-local}
+    restart: unless-stopped
     build:
       context: ../portal
       dockerfile: Dockerfile
-    environment:
-      PORTAL_BI_URL: ${PORTAL_BI_URL:-}
-      PORTAL_STORAGE_URL: ${PORTAL_STORAGE_URL:-}
-      PORTAL_CHAT_URL: ${PORTAL_CHAT_URL:-}
     # No published port: the gateway serves the portal under /portal.
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/ || exit 1"]
@@ -257,15 +213,19 @@ services:
       context: ../sso
       dockerfile: Dockerfile
     command: ["start-dev", "--import-realm"]
+    # With KEYCLOAK_HOSTNAME set, Keycloak gives browsers that address and keeps the internal address
+    # for the gateway and the backend; both options are set together because either one alone breaks it.
+    entrypoint:
+      - /bin/sh
+      - -c
+      - '[ -z "$$KEYCLOAK_HOSTNAME" ] || export KC_HOSTNAME="$$KEYCLOAK_HOSTNAME" KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true; exec /opt/keycloak/bin/kc.sh "$$@"'
+      - kc
     depends_on:
       postgres:
         condition: service_healthy
-      backend:
-        condition: service_healthy
-    # A healthy backend does not mean its seeders have created the Keycloak role and database yet;
-    # retry until the first Postgres connection succeeds.
-    restart: on-failure
+    restart: unless-stopped
     environment:
+      KEYCLOAK_HOSTNAME: ${KEYCLOAK_HOSTNAME:-}
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:?}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?}
       KC_DB: postgres
@@ -273,12 +233,13 @@ services:
       KC_DB_USERNAME: keycloak_app
       KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?}
       KC_HEALTH_ENABLED: "true"
+      # Keycloak 26.8 listens on localhost only unless told otherwise; the gateway reaches it over the compose network.
+      KC_HTTP_HOST: 0.0.0.0
       # Substituted into the placeholders of realm-dxos.json at import time.
       GATEWAY_PUBLIC_URL: ${GATEWAY_PUBLIC_URL:?}
-      SUPERSET_PUBLIC_URL: ${SUPERSET_PUBLIC_URL:?}
-      SUPERSET_OIDC_CLIENT_SECRET: ${SUPERSET_OIDC_CLIENT_SECRET:?}
       MONITOR_OIDC_CLIENT_SECRET: ${MONITOR_OIDC_CLIENT_SECRET:?}
       KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET:?}
+      DXOS_CLI_SECRET: ${DXOS_CLI_SECRET:?}
       STAFF_OTP_FLOW: ${STAFF_OTP_FLOW:-DISABLED}
     volumes:
       - ../sso/realm-dxos.json:/opt/keycloak/data/import/realm-dxos.json:ro
@@ -306,7 +267,7 @@ services:
   # and Keycloak (event_entity) because each creates its own tables.
   monitor-init:
     logging: *default-logging
-    image: pgvector/pgvector:pg16@sha256:7b822b0aac60967beb1ea5e576b8602c94c300a157d187f385ae3e0da199b90a
+    image: postgres:16-bookworm@sha256:5264710be20f409750ac6dc4e5706dcef929c87e241605463f0f9aefa932a8d9
     depends_on:
       postgres:
         condition: service_healthy
@@ -348,13 +309,9 @@ services:
       MONITOR_INGEST_KEY: ${MONITOR_INGEST_KEY:?}
       MONITOR_OIDC_CLIENT_SECRET: ${MONITOR_OIDC_CLIENT_SECRET:?}
       GATEWAY_PUBLIC_URL: ${GATEWAY_PUBLIC_URL:?}
-      # Alerts go to the administrators' channel; a URL left empty is read from the file
-      # mattermost-bootstrap writes.
-      MATTERMOST_WEBHOOK_DIR: /run/mattermost-webhooks
-      MATTERMOST_WEBHOOK_URL: ${MATTERMOST_WEBHOOK_URL:-}
-      MATTERMOST_WEBHOOK_URL_ADMIN: ${MATTERMOST_WEBHOOK_URL_ADMIN:-}
-    volumes:
-      - ./data/mattermost/webhooks:/run/mattermost-webhooks:ro
+      # Alerts go to the administrators' channel when a webhook is set.
+      ALERT_WEBHOOK_URL: ${ALERT_WEBHOOK_URL:-}
+      ALERT_WEBHOOK_URL_ADMIN: ${ALERT_WEBHOOK_URL_ADMIN:-}
     # No published port: the gateway forwards /monitor, and delivers its own events straight to it.
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8090/monitor/actuator/health || exit 1"]
@@ -366,22 +323,16 @@ services:
   # ---------------------------------------------------------------------------
   # Gateway
   # ---------------------------------------------------------------------------
-  # Builds the gateway routes of the running app: apisix/common.yaml followed by
-  # apisix/apps/<DXOS_APP>.yaml, with the delivery key of the monitor filled in. A value without a
-  # file stops here, before the gateway starts.
+  # Builds the gateway routes: apisix/common.yaml with the delivery key of the monitor filled in.
   apisix-config:
-    image: alpine:3.20@sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc
+    image: alpine:3.24@sha256:3f4d6b32e26703c6082839234f43769d5046b3ac7c910033911d1e71d8cd630a
     environment:
-      DXOS_APP: ${DXOS_APP:-farm}
       MONITOR_INGEST_KEY: ${MONITOR_INGEST_KEY:?}
     command:
       - sh
       - -c
       - >-
-        test -f /src/apps/$$DXOS_APP.yaml ||
-        { echo "No gateway routes for DXOS_APP=$$DXOS_APP (apisix/apps/$$DXOS_APP.yaml)" >&2; exit 1; };
-        cat /src/common.yaml /src/apps/$$DXOS_APP.yaml |
-        sed "s|__MONITOR_INGEST_KEY__|$$MONITOR_INGEST_KEY|g" > /out/apisix.yaml &&
+        sed "s|__MONITOR_INGEST_KEY__|$$MONITOR_INGEST_KEY|g" /src/common.yaml > /out/apisix.yaml &&
         echo '#END' >> /out/apisix.yaml
     volumes:
       - ./apisix:/src:ro
@@ -405,11 +356,7 @@ services:
         condition: service_healthy
       seaweedfs:
         condition: service_healthy
-      seaweedfs-admin:
-        condition: service_healthy
       frontend:
-        condition: service_healthy
-      superset:
         condition: service_healthy
       portal:
         condition: service_healthy
@@ -418,8 +365,6 @@ services:
       - ./data/apisix/apisix.yaml:/usr/local/apisix/conf/apisix.yaml:ro
     ports:
       - "${APISIX_HOST_PORT:?}:9080"
-      - "${APISIX_SUPERSET_HOST_PORT:?}:9081"
-      - "${APISIX_STORAGE_ADMIN_HOST_PORT:?}:9082"
     healthcheck:
       # The image has no curl; any answer below 500 on the web route means the gateway serves.
       test:
@@ -434,198 +379,5 @@ services:
       timeout: 5s
       retries: 6
 
-  # ---------------------------------------------------------------------------
-  # AI: local LLM, knowledge ingest and the AI service
-  # ---------------------------------------------------------------------------
-  ollama:
-    logging: *default-logging
-    image: ollama/ollama:0.34.2@sha256:da6e0dc5651df159e45686fd663c4dbe1624a52c44d7280eeac1551d8f865532
-    restart: unless-stopped
-    volumes:
-      - ollama_models:/root/.ollama
-    healthcheck:
-      test: ["CMD", "ollama", "list"]
-      interval: 5s
-      timeout: 5s
-      retries: 12
-
-  ollama-init:
-    image: ollama/ollama:0.34.2@sha256:da6e0dc5651df159e45686fd663c4dbe1624a52c44d7280eeac1551d8f865532
-    depends_on:
-      ollama:
-        condition: service_healthy
-    environment:
-      OLLAMA_HOST: http://ollama:11434
-    volumes:
-      - ollama_models:/root/.ollama
-    command: ["pull", "${OLLAMA_MODEL:?}"]
-
-  # Ingests the knowledge corpus of the app selected by DXOS_APP into its own namespace.
-  rag-ingest:
-    <<: *hardened
-    image: ${DXOS_IMAGE_PREFIX:-dxos}-ai:${DXOS_IMAGE_TAG:-local}
-    build:
-      <<: *ai-build
-    depends_on:
-      postgres:
-        condition: service_healthy
-      backend:
-        condition: service_healthy
-    restart: on-failure
-    environment:
-      <<: *ai-common-env
-      RAG_INGEST_DATABASE_URL: postgresql+psycopg://ai_vector_ingest:${AI_VECTOR_DB_INGEST_PASSWORD:?}@postgres:5432/dxos_ai_vector_db
-    volumes:
-      - ${AI_DATA_DIR:?}:/data:ro
-      - ai_weights:/app/weights
-    command: ["python", "-m", "scripts.ingest_diseases", "--corpus", "${DXOS_APP:-farm}"]
-
-  ai:
-    <<: *hardened
-    logging: *default-logging
-    image: ${DXOS_IMAGE_PREFIX:-dxos}-ai:${DXOS_IMAGE_TAG:-local}
-    build:
-      <<: *ai-build
-    depends_on:
-      rag-ingest:
-        condition: service_completed_successfully
-      ollama-init:
-        condition: service_completed_successfully
-    restart: on-failure
-    environment:
-      <<: *ai-common-env
-      # The read-only role and the vector database are created by the backend at startup
-      # (AiVectorDatabaseSeeder) and hold documents and chunks only, apart from the business data.
-      DATABASE_URL: postgresql+psycopg://ai_vector_ro:${AI_VECTOR_DB_READONLY_PASSWORD:?}@postgres:5432/dxos_ai_vector_db
-      BACKEND_BASE_URL: ${BACKEND_BASE_URL:?}
-      BACKEND_SERVICE_API_KEY: ${AI_TO_BACKEND_API_KEY:?}
-      AI_SERVICE_API_KEY: ${BACKEND_TO_AI_API_KEY:?}
-      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:?}
-      OLLAMA_MODEL: ${OLLAMA_MODEL:?}
-      ANSWER_GENERATION_ENABLED: ${AI_ANSWER_GENERATION:-true}
-      CHAT_CANDIDATE_COUNT: ${AI_CHAT_CANDIDATE_COUNT:-20}
-      CV_DEVICE: ${AI_CV_DEVICE:?}
-      CV_WEIGHTS_PATH: ${AI_CV_WEIGHTS_PATH:?}
-      CV_WEIGHTS_SHA256: ${AI_CV_WEIGHTS_SHA256:?}
-      CROP_CLASSIFIER_SHA256: ${AI_CROP_CLASSIFIER_SHA256:?}
-      LOG_LEVEL: ${AI_LOG_LEVEL:?}
-    volumes:
-      - ${AI_DATA_DIR:?}:/data:ro
-      - ai_weights:/app/weights
-      - type: bind
-        source: ${AI_CROP_CLASSIFIER_PATH:-../ai/weights/crop_classifier.onnx}
-        target: /app/weights/crop_classifier.onnx
-        read_only: true
-        bind:
-          create_host_path: false
-    # No published port: only the backend (and the ingest job) reach the AI service.
-
-  # ---------------------------------------------------------------------------
-  # BI: Superset
-  # ---------------------------------------------------------------------------
-  # Superset runs as uid 1000 but a new bind mount belongs to root; chown it once before it starts.
-  superset-init:
-    image: alpine:3.20@sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc
-    command: ["chown", "-R", "1000:1000", "/app/superset_home"]
-    volumes:
-      - ./data/superset:/app/superset_home
-
-  superset:
-    logging: *default-logging
-    image: apache/superset:3.1.3@sha256:7208d630cf38910c1146c31c10515c4f3f79ea44d8d6962570aac8f1c7b5548f
-    depends_on:
-      postgres:
-        condition: service_healthy
-      backend:
-        condition: service_healthy
-      keycloak:
-        condition: service_started
-      superset-init:
-        condition: service_completed_successfully
-    environment:
-      SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY:?}
-      SUPERSET_ADMIN_USERNAME: ${SUPERSET_ADMIN_USERNAME:?}
-      SUPERSET_ADMIN_PASSWORD: ${SUPERSET_ADMIN_PASSWORD:?}
-      SUPERSET_ADMIN_EMAIL: ${SUPERSET_ADMIN_EMAIL:?}
-      # Selects the datasets and the dashboard bundle to register.
-      DXOS_APP: ${DXOS_APP:-farm}
-      DXOS_DB_URI: postgresql+psycopg2://superset_ro:${SUPERSET_READONLY_DB_PASSWORD:?}@postgres:5432/${POSTGRES_DB:?}
-      GATEWAY_PUBLIC_URL: ${GATEWAY_PUBLIC_URL:?}
-      SUPERSET_PUBLIC_URL: ${SUPERSET_PUBLIC_URL:?}
-      KEYCLOAK_SUPERSET_CLIENT_ID: ${SUPERSET_OIDC_CLIENT_ID:?}
-      KEYCLOAK_SUPERSET_CLIENT_SECRET: ${SUPERSET_OIDC_CLIENT_SECRET:?}
-    volumes:
-      - ../bi/bootstrap.sh:/app/pythonpath/bootstrap.sh:ro
-      - ../bi/bootstrap_datasources.py:/app/pythonpath/bootstrap_datasources.py:ro
-      - ../bi/chart_query_context.py:/app/pythonpath/chart_query_context.py:ro
-      - ../bi/grant_engineer_access.py:/app/pythonpath/grant_engineer_access.py:ro
-      - ../bi/superset_config.py:/app/pythonpath/superset_config.py:ro
-      - ../bi/basemap_light.json:/app/superset/static/assets/basemap_light.json:ro
-      - ../bi/farm_dashboard_export.zip:/app/pythonpath/farm_dashboard_export.zip:ro
-      - ./data/superset:/app/superset_home
-    entrypoint: ["/bin/bash", "/app/pythonpath/bootstrap.sh"]
-    # The server only starts after the first metadata migration, which takes minutes on an empty volume.
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f \"http://localhost:$${SUPERSET_PORT}/health\""]
-      interval: 15s
-      timeout: 10s
-      retries: 5
-      start_period: 900s
-    # No published port: the gateway forwards its second listener (APISIX_SUPERSET_HOST_PORT) here.
-
-  # ---------------------------------------------------------------------------
-  # Chat: Mattermost
-  # ---------------------------------------------------------------------------
-  # Mattermost runs as uid 2000 but a new bind mount belongs to root; chown it once before it starts.
-  mattermost-init:
-    image: alpine:3.20@sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc
-    command:
-      ["chown", "-R", "2000:2000", "/mattermost/config", "/mattermost/data", "/mattermost/logs",
-        "/mattermost/plugins", "/mattermost/client/plugins", "/mattermost/bleve-indexes", "/mattermost/webhooks"]
-    volumes: *mattermost-volumes
-
-  mattermost:
-    logging: *default-logging
-    image: mattermost/mattermost-team-edition:10.5@sha256:e42ce95b1217d8ff178dad8d2ce1cb65e72ad7e19438ad3c32221cf5ad3918d2
-    # A healthy backend does not mean its seeders have created the Mattermost role and database yet;
-    # retry until the first Postgres connection succeeds.
-    restart: on-failure
-    depends_on:
-      postgres:
-        condition: service_healthy
-      backend:
-        condition: service_healthy
-      mattermost-init:
-        condition: service_completed_successfully
-    environment:
-      MM_SQLSETTINGS_DRIVERNAME: postgres
-      MM_SQLSETTINGS_DATASOURCE: "postgres://mattermost_app:${MATTERMOST_DB_PASSWORD:?}@postgres:5432/mattermost?sslmode=disable"
-      MM_SERVICESETTINGS_SITEURL: "http://${PUBLIC_HOST:?}:${MATTERMOST_HOST_PORT:?}"
-      MM_SERVICESETTINGS_ENABLEINCOMINGWEBHOOKS: "true"
-    volumes: *mattermost-volumes
-    ports:
-      - "${MATTERMOST_HOST_PORT:?}:8065"
-
-  # Creates the admin, team, default channels and one incoming webhook per channel once Mattermost is up
-  # (idempotent, see chat/bootstrap.sh); the webhook URLs are written to data/mattermost/webhooks.
-  mattermost-bootstrap:
-    image: mattermost/mattermost-team-edition:10.5@sha256:e42ce95b1217d8ff178dad8d2ce1cb65e72ad7e19438ad3c32221cf5ad3918d2
-    entrypoint: ["/bin/bash", "/bootstrap.sh"]
-    restart: on-failure
-    depends_on:
-      mattermost:
-        condition: service_started
-    environment:
-      MATTERMOST_URL: http://mattermost:8065
-      MATTERMOST_ADMIN_USERNAME: ${MATTERMOST_ADMIN_USERNAME:?}
-      MATTERMOST_ADMIN_EMAIL: ${MATTERMOST_ADMIN_EMAIL:?}
-      MATTERMOST_ADMIN_PASSWORD: ${MATTERMOST_ADMIN_PASSWORD:?}
-      WEBHOOKS_DIR: /mattermost/webhooks
-    volumes:
-      - ../chat/bootstrap.sh:/bootstrap.sh:ro
-      - ./data/mattermost/webhooks:/mattermost/webhooks
-
 volumes:
-  ai_weights:
   clamav_data:
-  ollama_models:

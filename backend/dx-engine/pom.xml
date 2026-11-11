@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>HaUI.ImplSolution</groupId>
+		<artifactId>dx-os-parent</artifactId>
+		<version>2.0.0</version>
+	</parent>
+	<artifactId>dx-engine</artifactId>
+	<name>dx-engine</name>
+	<description>Runnable service: the model-driven API, the control plane and the embedded workflow engine</description>
+	<dependencies>
+		<dependency>
+			<groupId>HaUI.ImplSolution</groupId>
+			<artifactId>dx-model</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>HaUI.ImplSolution</groupId>
+			<artifactId>dx-core</artifactId>
+		</dependency>
+		<!-- Embedded workflow engine, configured by hand so it shares the Spring transaction. -->
+		<dependency>
+			<groupId>org.flowable</groupId>
+			<artifactId>flowable-spring</artifactId>
+			<version>8.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.tngtech.archunit</groupId>
+			<artifactId>archunit</artifactId>
+			<version>1.5.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.wiremock</groupId>
+			<artifactId>wiremock-standalone</artifactId>
+			<version>${wiremock.version}</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<build>
+		<finalName>dx-engine</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

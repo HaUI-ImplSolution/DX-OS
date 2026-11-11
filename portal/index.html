@@ -107,6 +107,30 @@
     line-height: 1.6;
   }
 
+  /* Language switch: the same choice as the main app, kept under the same key */
+  .lang {
+    position: absolute;
+    top: 16px; right: 20px;
+    display: inline-flex;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--card-bg);
+  }
+
+  .lang button {
+    border: 0;
+    background: transparent;
+    padding: 4px 10px;
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--muted);
+    cursor: pointer;
+  }
+
+  .lang button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent-dark); }
+
   /* HPDI strip */
   .hpdi {
     display: flex;
@@ -211,14 +235,9 @@
   .app-icon svg { width: 22px; height: 22px; }
 
   .app-card.main .app-icon { background: var(--accent-soft); color: var(--accent-dark); }
-  .app-card.bi .app-icon { background: #e5eef8; color: #2a5f82; }
-  .app-card.chat .app-icon { background: var(--gold-soft); color: #8a6410; }
   .app-card.admin .app-icon { background: #efe9f8; color: #5a3d99; }
   .app-card.api .app-icon { background: #e3f3f0; color: #1f6b5e; }
-  .app-card.bi-admin .app-icon { background: #e5eef8; color: #2a5f82; }
   .app-card.monitor .app-icon { background: #f6e9e4; color: #8a3b22; }
-  .app-card.chat-admin .app-icon { background: var(--gold-soft); color: #8a6410; }
-  .app-card.storage-admin .app-icon { background: #fbe9e4; color: #a04a32; }
 
   .section-head.spaced { margin-top: 40px; }
 
@@ -311,27 +330,31 @@
 <body>
 
   <section class="hero">
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-lang="vi" aria-label="Tiếng Việt">VI</button>
+      <button type="button" data-lang="en" aria-label="English">EN</button>
+    </div>
     <div class="hero-inner">
-      <span class="eyebrow"><span class="dot"></span> DX-OS · Hệ điều hành chuyển đổi số nội bộ</span>
-      <h1>Cổng vào <span class="brand" id="app-name">DX-OS</span></h1>
-      <p class="subtitle">
+      <span class="eyebrow"><span class="dot"></span> <span data-en="DX-OS · Internal digital transformation system">DX-OS · Hệ điều hành chuyển đổi số nội bộ</span></span>
+      <h1><span data-en="Gateway to">Cổng vào</span> <span class="brand" id="app-name">DX-OS</span></h1>
+      <p class="subtitle" data-en="A single entry point to the organisation's whole digital transformation system: business applications, administration and monitoring.">
         Một điểm truy cập duy nhất cho toàn bộ hệ thống chuyển đổi số của đơn vị —
-        ứng dụng nghiệp vụ, thống kê dữ liệu và trao đổi nội bộ.
+        ứng dụng nghiệp vụ, quản trị và giám sát.
       </p>
 
       <div class="hpdi">
-        <div class="hpdi-item"><span class="badge">H</span><span class="label">Human · <b>Con người</b></span></div>
-        <div class="hpdi-item"><span class="badge">P</span><span class="label">Process · <b>Quy trình</b></span></div>
-        <div class="hpdi-item"><span class="badge">D</span><span class="label">Data · <b>Dữ liệu</b></span></div>
-        <div class="hpdi-item"><span class="badge">I</span><span class="label">Intelligence · <b>Trí tuệ</b></span></div>
+        <div class="hpdi-item"><span class="badge">H</span><span class="label">Human · <b data-en="People">Con người</b></span></div>
+        <div class="hpdi-item"><span class="badge">P</span><span class="label">Process · <b data-en="Process">Quy trình</b></span></div>
+        <div class="hpdi-item"><span class="badge">D</span><span class="label">Data · <b data-en="Data">Dữ liệu</b></span></div>
+        <div class="hpdi-item"><span class="badge">I</span><span class="label">Intelligence · <b data-en="Intelligence">Trí tuệ</b></span></div>
       </div>
     </div>
   </section>
 
   <main>
     <div class="section-head">
-      <h2>Ứng dụng</h2>
-      <span>Chọn ứng dụng cần dùng</span>
+      <h2 data-en="Applications">Ứng dụng</h2>
+      <span data-en="Pick the application to use">Chọn ứng dụng cần dùng</span>
     </div>
 
     <div class="apps">
@@ -340,44 +363,19 @@
         <div class="app-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 6v6c0 5 3.8 8.7 9 10 5.2-1.3 9-5 9-10V6l-9-4Z"/><path d="m9 12 2 2 4-4"/></svg>
         </div>
-        <div class="app-name">Ứng dụng chính</div>
-        <div class="app-desc">Ứng dụng nghiệp vụ đang chạy.</div>
+        <div class="app-name" data-en="Main application">Ứng dụng chính</div>
+        <div class="app-desc" data-en="The business application that is running.">Ứng dụng nghiệp vụ đang chạy.</div>
         <div class="app-meta">
           <span class="app-url">/</span>
-          <span class="app-cta">Mở →</span>
+          <span class="app-cta" data-en="Open →">Mở →</span>
         </div>
       </a>
 
-      <a class="app-card bi" href="http://localhost:9081/login/keycloak" data-base="bi" data-port="9081" data-service="bi" target="_blank" rel="noopener">
-        <span class="pill sso">SSO</span>
-        <div class="app-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12.5" y="8" width="3" height="10"/><rect x="18" y="5" width="3" height="13"/></svg>
-        </div>
-        <div class="app-name">BI Dashboard</div>
-        <div class="app-desc">Dashboard thống kê (Superset).</div>
-        <div class="app-meta">
-          <span class="app-url">localhost:9081</span>
-          <span class="app-cta">Mở →</span>
-        </div>
-      </a>
-
-      <a class="app-card chat" href="http://localhost:8065" data-base="chat" data-port="8065" data-service="chat" target="_blank" rel="noopener">
-        <span class="pill standalone">Riêng</span>
-        <div class="app-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg>
-        </div>
-        <div class="app-name">Kênh chat nội bộ</div>
-        <div class="app-desc">Trao đổi nội bộ (Mattermost).</div>
-        <div class="app-meta">
-          <span class="app-url">localhost:8065</span>
-          <span class="app-cta">Mở →</span>
-        </div>
-      </a>
     </div>
 
     <div class="section-head spaced">
-      <h2>Quản trị &amp; tài liệu</h2>
-      <span>Dành cho quản trị viên và lập trình viên</span>
+      <h2 data-en="Administration &amp; documentation">Quản trị &amp; tài liệu</h2>
+      <span data-en="For administrators and developers">Dành cho quản trị viên và lập trình viên</span>
     </div>
 
     <div class="apps">
@@ -387,10 +385,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9"/><path d="m16 7 3 3"/><path d="m14 9 2 2"/></svg>
         </div>
         <div class="app-name">Keycloak Admin</div>
-        <div class="app-desc">Quản lý người dùng và vai trò.</div>
+        <div class="app-desc" data-en="Manage users and roles.">Quản lý người dùng và vai trò.</div>
         <div class="app-meta">
           <span class="app-url">/admin/</span>
-          <span class="app-cta">Mở →</span>
+          <span class="app-cta" data-en="Open →">Mở →</span>
         </div>
       </a>
 
@@ -399,50 +397,11 @@
         <div class="app-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
         </div>
-        <div class="app-name">Giám sát và truy vết</div>
-        <div class="app-desc">Truy cập bị từ chối, lỗi hệ thống, đăng nhập sai và trạng thái dịch vụ (quản trị viên).</div>
+        <div class="app-name" data-en="Monitoring and tracing">Giám sát và truy vết</div>
+        <div class="app-desc" data-en="Denied access, system errors, failed sign-ins and service status (administrators).">Truy cập bị từ chối, lỗi hệ thống, đăng nhập sai và trạng thái dịch vụ (quản trị viên).</div>
         <div class="app-meta">
           <span class="app-url">/monitor/</span>
-          <span class="app-cta">Mở →</span>
-        </div>
-      </a>
-
-      <a class="app-card bi-admin" href="http://localhost:9081/users/list/" data-base="bi" data-port="9081" data-service="bi" target="_blank" rel="noopener">
-        <span class="pill sso">SSO</span>
-        <div class="app-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
-        </div>
-        <div class="app-name">Superset Admin</div>
-        <div class="app-desc">Quản lý người dùng của BI.</div>
-        <div class="app-meta">
-          <span class="app-url">localhost:9081/users/list</span>
-          <span class="app-cta">Mở →</span>
-        </div>
-      </a>
-
-      <a class="app-card chat-admin" href="http://localhost:8065/admin_console" data-base="chat" data-port="8065" data-service="chat" target="_blank" rel="noopener">
-        <span class="pill standalone">Riêng</span>
-        <div class="app-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
-        </div>
-        <div class="app-name">Mattermost Admin</div>
-        <div class="app-desc">Quản lý người dùng và team chat.</div>
-        <div class="app-meta">
-          <span class="app-url">localhost:8065/admin_console</span>
-          <span class="app-cta">Mở →</span>
-        </div>
-      </a>
-
-      <a class="app-card storage-admin" href="http://localhost:9082" data-base="storage" data-port="9082" target="_blank" rel="noopener">
-        <span class="pill standalone">Riêng</span>
-        <div class="app-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>
-        </div>
-        <div class="app-name">Quản trị lưu ảnh</div>
-        <div class="app-desc">Xem bucket và ảnh báo cáo.</div>
-        <div class="app-meta">
-          <span class="app-url">localhost:9082</span>
-          <span class="app-cta">Mở →</span>
+          <span class="app-cta" data-en="Open →">Mở →</span>
         </div>
       </a>
 
@@ -451,18 +410,18 @@
         <div class="app-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m8 7-5 5 5 5"/><path d="m16 7 5 5-5 5"/><path d="m14 4-4 16"/></svg>
         </div>
-        <div class="app-name">Tài liệu API</div>
-        <div class="app-desc">Endpoint của Backend (Swagger UI).</div>
+        <div class="app-name" data-en="API documentation">Tài liệu API</div>
+        <div class="app-desc" data-en="Endpoints of the backend (Swagger UI).">Endpoint của Backend (Swagger UI).</div>
         <div class="app-meta">
           <span class="app-url">/swagger-ui/</span>
-          <span class="app-cta">Mở →</span>
+          <span class="app-cta" data-en="Open →">Mở →</span>
         </div>
       </a>
     </div>
 
     <div class="section-head spaced">
-      <h2>Trạng thái dịch vụ</h2>
-      <span>Tự làm mới mỗi 30 giây</span>
+      <h2 data-en="Service status">Trạng thái dịch vụ</h2>
+      <span data-en="Refreshes every 30 seconds">Tự làm mới mỗi 30 giây</span>
     </div>
 
     <div class="status-list" id="status-list"></div>
@@ -470,27 +429,33 @@
 
 
   <footer>
-    <span class="foot-brand">DX-OS</span> — Hệ điều hành chuyển đổi số nội bộ · OLP Phần mềm nguồn mở 2026 (VFOSSA)
+    <span class="foot-brand">DX-OS</span> <span data-en="— Internal digital transformation system · OLP Open Source Software 2026 (VFOSSA)">— Hệ điều hành chuyển đổi số nội bộ · OLP Phần mềm nguồn mở 2026 (VFOSSA)</span>
   </footer>
 
-  <script src="config"></script>
   <script>
-    // Address of a service beside the app: the configured public URL, else the page host on its own port.
-    var serviceUrls = window.PORTAL_URLS || {};
+    // Language: the same key as the main app, which is served from the same address, so one choice
+    // covers both. Changing it reloads the page.
+    var LANGUAGE_KEY = "dxos.locale";
+    var english = false;
+    try { english = window.localStorage.getItem(LANGUAGE_KEY) === "en"; } catch (e) { /* default stays */ }
 
-    function serviceBase(key, port) {
-      return (serviceUrls[key] || location.protocol + "//" + location.hostname + ":" + port).replace(/\/+$/, "");
+    function text(vi, en) { return english ? en : vi; }
+
+    document.documentElement.lang = english ? "en" : "vi";
+    if (english) {
+      document.querySelectorAll("[data-en]").forEach(function (node) { node.textContent = node.dataset.en; });
     }
-
-    document.querySelectorAll("a[data-port]").forEach(function (link) {
-      var url = new URL(link.href);
-      link.href = serviceBase(link.dataset.base, link.dataset.port) + url.pathname + url.search;
-      var caption = link.querySelector(".app-url");
-      if (caption) caption.textContent = new URL(link.href).host + caption.textContent.replace(/^[^/]*/, "");
+    document.querySelectorAll(".lang button").forEach(function (button) {
+      button.setAttribute("aria-pressed", String((button.dataset.lang === "en") === english));
+      button.addEventListener("click", function () {
+        if ((button.dataset.lang === "en") === english) return;
+        try { window.localStorage.setItem(LANGUAGE_KEY, button.dataset.lang); } catch (e) { /* storage blocked */ }
+        window.location.reload();
+      });
     });
 
-    // Service status: same-origin services answer with their content, services on other ports are
-    // probed without reading the response (reachable or not).
+    // Service status: the monitor may sit behind an access proxy, so it is probed without reading
+    // the response (reachable or not).
     (function () {
       var list = document.getElementById("status-list");
       var rows = {};
@@ -499,28 +464,16 @@
         var item = document.createElement("div");
         item.className = "status-item";
         item.dataset.state = "unknown";
-        item.innerHTML = '<span class="status-dot"></span><span></span><span class="status-state">đang kiểm tra</span>';
+        item.innerHTML = '<span class="status-dot"></span><span></span><span class="status-state"></span>';
+        item.lastChild.textContent = text("đang kiểm tra", "checking");
         item.children[1].textContent = label;
         list.appendChild(item);
         rows[key] = item;
       }
 
-      // Services beside the app that the running app uses; the others are hidden.
-      var offered = { bi: true, chat: true };
-
-      function offer(list) {
-        ["bi", "chat"].forEach(function (key) {
-          offered[key] = list.indexOf(key) >= 0;
-          document.querySelectorAll('[data-service="' + key + '"]').forEach(function (card) {
-            card.hidden = !offered[key];
-          });
-          if (rows[key]) rows[key].hidden = !offered[key];
-        });
-      }
-
       function set(key, up) {
         rows[key].dataset.state = up ? "up" : "down";
-        rows[key].lastChild.textContent = up ? "hoạt động" : "ngừng";
+        rows[key].lastChild.textContent = up ? text("hoạt động", "running") : text("ngừng", "down");
       }
 
       function probe(key, url, sameOrigin) {
@@ -531,29 +484,24 @@
           function () { set(key, false); });
       }
 
-      [["web", "Ứng dụng chính"], ["backend", "Backend API"], ["ai", "Dịch vụ AI"],
-        ["storage", "Lưu trữ ảnh"], ["sso", "Keycloak (đăng nhập)"], ["bi", "BI Dashboard"],
-        ["chat", "Kênh chat"], ["monitor", "Giám sát"]].forEach(function (s) { row(s[0], s[1]); });
+      [["web", text("Ứng dụng chính", "Main application")], ["backend", "Backend API"],
+        ["storage", text("Lưu trữ tệp", "File storage")], ["sso", text("Keycloak (đăng nhập)", "Keycloak (sign-in)")],
+        ["monitor", text("Giám sát", "Monitoring")]].forEach(function (s) {
+        row(s[0], s[1]);
+      });
 
       function refresh() {
         probe("web", "/", true);
         probe("sso", "/realms/dxos/.well-known/openid-configuration", true);
         probe("monitor", "/monitor/actuator/health", false);
-        if (offered.bi) probe("bi", serviceBase("bi", 9081) + "/health", false);
-        if (offered.chat) probe("chat", serviceBase("chat", 8065) + "/api/v4/system/ping", false);
         fetch("/api/v1/system/status", { cache: "no-store" })
           .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
           .then(function (body) {
-            if (body.data.app && body.data.app.name) {
-              document.getElementById("app-name").textContent = body.data.app.name;
-              document.title = body.data.app.name + " — Portal";
-            }
-            if (body.data.app && body.data.app.portalServices) offer(body.data.app.portalServices);
             body.data.services.forEach(function (s) {
               if (rows[s.name]) set(s.name, s.status === "UP");
             });
           })
-          .catch(function () { ["backend", "ai", "storage"].forEach(function (k) { set(k, false); }); });
+          .catch(function () { ["backend", "storage"].forEach(function (k) { set(k, false); }); });
       }
 
       refresh();

@@ -30,11 +30,17 @@ class CorsOriginsTest {
 
   @Test
   void rejectsOriginsThatAreBroadOrNotOrigins() {
-    for (String origin : List.of("https://*.example.test", "http://ui.example.test",
-        "https://user@example.test", "https://example.test/callback",
-        "https://example.test?tenant=a", "https://example.test#fragment",
-        "https://example.test:99999")) {
-      assertThatThrownBy(() -> CorsOrigins.validate(origin)).as(origin)
+    for (String origin :
+        List.of(
+            "https://*.example.test",
+            "http://ui.example.test",
+            "https://user@example.test",
+            "https://example.test/callback",
+            "https://example.test?tenant=a",
+            "https://example.test#fragment",
+            "https://example.test:99999")) {
+      assertThatThrownBy(() -> CorsOrigins.validate(origin))
+          .as(origin)
           .isInstanceOf(IllegalArgumentException.class);
     }
   }

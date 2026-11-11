@@ -52,7 +52,7 @@ Phần còn lại của bảy cụm là tầm nhìn của đề, phủ thêm là
 | Bản phát hành | 5 | Bảy bản theo SemVer, mỗi bản có `.tar.gz`, `.sha256` và SBOM | Đạt |
 | Dịch từ mã nguồn | 10 | Cấu hình ở `.env` trước khi dựng, dựng bằng Docker, Maven và npm, cài ra ngoài thư mục mã nguồn, CI cài từ gói phát hành | Chạy lại trên máy sạch với image phát hành thật |
 | Thư viện và gói đính kèm | 10 | `DEPENDENCIES.txt`, SBOM khớp tệp khóa, image ghim digest, không chép và không vá mã của dự án khác | Một tệp của bên thứ ba chưa ghi nguồn |
-| Tài liệu và giao tiếp | 10 | README hai thứ tiếng, CHANGELOG, mẫu issue, CONTRIBUTING, SECURITY, trang docs | 39 issue so với 196 pull request; chưa có lộ trình và kênh trao đổi |
+| Tài liệu và giao tiếp | 10 | README hai thứ tiếng, CHANGELOG, mẫu issue, CONTRIBUTING, SECURITY, trang docs | 42 issue so với 165 pull request đã gộp; chưa có lộ trình và kênh trao đổi |
 
 Các việc ở cột cuối nằm ở `BACKLOG.md`, mục 2 và 3.
 

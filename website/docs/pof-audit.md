@@ -42,11 +42,11 @@ Không có lỗi loại trừ: repository công khai, có `LICENSE`, đã có re
 |---|---|---|---|
 | ✅ | Kho công khai trên Internet, có web viewer | GitHub: duyệt mã, lịch sử, blame trên trình duyệt | −3 |
 | ✅ | Truy cập mở, không cần đăng nhập | API không đăng nhập trả 200 cho repository, release, tag, `LICENSE` | −3 |
-| ✅ | Repository được dùng thật | 863 commit trên nhánh làm việc; 161 pull request đã gộp (GitHub); CI chạy trên mọi pull request | −5 |
+| ✅ | Repository được dùng thật | 877 commit trên nhánh làm việc; 165 pull request đã gộp (GitHub); CI chạy trên mọi pull request | −5 |
 | ✅ | Lịch sử trải đều | Mười một tuần ISO liên tiếp từ W36 đến W46 đều có commit: 3, 80, 82, 53, 93, 97, 85, 84, 136, 118, 32 | |
 | ✅ | Nhiều người đóng góp | 3 sinh viên: `KhuongSpring` 614, `nddKhanh` 125, `tung51652-alt` 119 commit, cộng `dependabot` 5 | |
 | ✅ | Nhận diện tác giả | `.mailmap` gom các danh tính về một tên mỗi người | |
-| ⚠️ | Bug tracker có lịch sử | 14 issue so với 161 pull request; phần lớn việc đã ghi ở `BACKLOG.md` và `CHANGELOG.md` thay vì issue | |
+| ⚠️ | Bug tracker có lịch sử | 42 issue (11 đã đóng) so với 165 pull request đã gộp; việc còn lại ghi ở `BACKLOG.md`, phần lớn đã có issue tương ứng | |
 
 ```bash
 git log --pretty='%h %ad %an %s' --date=short | tail -20     # lịch sử có trải đều không

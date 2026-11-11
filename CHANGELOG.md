@@ -9,12 +9,21 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Ứng dụng ngoài
 
-- Ứng dụng ngoài đổi sang vai khác của cùng mô hình bằng `dxos client role` hoặc `PUT /api/v1/clients/{name}`, giữ nguyên tên và mã bí mật.
+- Ứng dụng ngoài đổi sang vai khác của cùng mô hình bằng `dxos client role`, nút Đổi vai ở tab Ứng dụng ngoài hoặc `PUT /api/v1/clients/{name}`, giữ nguyên tên và mã bí mật; token đã cấp giữ vai cũ đến khi hết hạn.
 
 ### Tệp mô hình
 
 - Trường nhiều lựa chọn nhận `default` là một danh sách các lựa chọn.
 - Trường `date` làm nguồn của điều kiện `when` và `required_when`, so sánh bằng `==`, `!=`, `<`, `<=`, `>` và `>=`.
+
+### Giao diện
+
+- Trình sửa mô hình chọn `default` của trường nhiều lựa chọn từ danh sách `options`, và trình soạn YAML không còn cảnh báo khi `default` là danh sách.
+
+### Tài liệu
+
+- Mục Dữ liệu cá nhân ra nước ngoài ở `deploy/OPERATIONS.md` nêu khi nào cấu hình làm phát sinh nghĩa vụ đánh giá tác động theo Luật 91/2025/QH15 và Nghị định 356/2025/NĐ-CP, đối chiếu với bản đăng trên Công báo.
+- Điều kiện tải chữ ký virus của ClamAV và hạn hỗ trợ của image đang ghim ở `DEPENDENCIES.txt` và `deploy/OPERATIONS.md`.
 
 ## [2.0.0] - 2026-11-11
 

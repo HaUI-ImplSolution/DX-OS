@@ -42,7 +42,8 @@ final class CorsOrigins {
     if (host == null || host.isBlank() || uri.getRawUserInfo() != null) {
       throw invalid(origin, "a host without user information is required");
     }
-    if ((uri.getRawPath() != null && !uri.getRawPath().isEmpty()) || uri.getRawQuery() != null
+    if ((uri.getRawPath() != null && !uri.getRawPath().isEmpty())
+        || uri.getRawQuery() != null
         || uri.getRawFragment() != null) {
       throw invalid(origin, "an origin must not contain a path, query or fragment");
     }
@@ -62,7 +63,9 @@ final class CorsOrigins {
   }
 
   private static boolean isLoopback(String host) {
-    return host.equals("localhost") || host.equals("127.0.0.1") || host.equals("[::1]")
+    return host.equals("localhost")
+        || host.equals("127.0.0.1")
+        || host.equals("[::1]")
         || host.equals("::1");
   }
 

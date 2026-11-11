@@ -11,11 +11,21 @@ class CorsOriginsTest {
 
   @Test
   void acceptsExactHttpsAndLoopbackOrigins() {
-    assertThat(CorsOrigins.validate(List.of(" https://UI.Example.test:8443 ",
-        "https://ui.example.test:443", "http://localhost:80", "http://localhost:5173",
-        "http://127.0.0.1:5173", "https://ui.example.test:8443")))
-        .containsExactly("https://ui.example.test:8443", "https://ui.example.test",
-            "http://localhost", "http://localhost:5173", "http://127.0.0.1:5173");
+    assertThat(
+            CorsOrigins.validate(
+                List.of(
+                    " https://UI.Example.test:8443 ",
+                    "https://ui.example.test:443",
+                    "http://localhost:80",
+                    "http://localhost:5173",
+                    "http://127.0.0.1:5173",
+                    "https://ui.example.test:8443")))
+        .containsExactly(
+            "https://ui.example.test:8443",
+            "https://ui.example.test",
+            "http://localhost",
+            "http://localhost:5173",
+            "http://127.0.0.1:5173");
   }
 
   @Test

@@ -19,6 +19,7 @@ upstreams:
     type: roundrobin
     nodes:
       "seaweedfs:8333": 1
+  # app-tier:begin
   - id: frontend
     type: roundrobin
     nodes:
@@ -31,6 +32,7 @@ upstreams:
     type: roundrobin
     nodes:
       "monitor:8090": 1
+  # app-tier:end
 
 # Second check of the access token, on top of the one the backend does itself.
 plugin_configs:
@@ -63,6 +65,7 @@ global_rules:
       request-id:
         header_name: X-Request-Id
         include_in_response: true
+      # app-tier:begin
       # Every request is reported to the monitor in batches; it keeps the unusual ones (rate
       # limited, rejected, missing, failed, slow). apisix-config fills in the delivery key. A
       # monitor that is down only costs the batches that cannot be delivered.
@@ -87,6 +90,7 @@ global_rules:
           request_id: "$http_x_request_id"
           cf_ray: "$http_cf_ray"
           user_agent: "$http_user_agent"
+      # app-tier:end
 
 routes:
   # Service status for the portal: public, limited per client address.
@@ -156,8 +160,21 @@ routes:
   - id: api-docs
     vars: [["server_port", "==", "9080"]]
     priority: 5
-    uris: ["/swagger-ui.html", "/swagger-ui/*", "/v3/api-docs", "/v3/api-docs/*"]
+    uris: ["/v3/api-docs", "/v3/api-docs/*"]
     upstream_id: backend
+
+  # The core serves no Swagger UI; without this route the web app would answer these paths with its page.
+  - id: swagger-ui-removed
+    vars: [["server_port", "==", "9080"]]
+    priority: 20
+    uris: ["/swagger-ui.html", "/swagger-ui/*"]
+    plugins:
+      fault-injection:
+        abort:
+          http_status: 404
+          headers:
+            Content-Type: application/json
+          body: '{"success":false,"message":"Not found","errorCode":"ERR_NOT_FOUND"}'
 
   # Password form and token endpoint share one counter per client address, and a sign-in takes two
 # requests. Keycloak's brute force protection locks an account after repeated wrong passwords.
@@ -180,9 +197,32 @@ routes:
   - id: keycloak
     vars: [["server_port", "==", "9080"]]
     priority: 5
-    uris: ["/realms/*", "/resources/*", "/admin/*", "/js/*"]
+    uris: ["/realms/*", "/resources/*", "/js/*"]
     upstream_id: keycloak
     plugin_config_id: keycloak-client-address
+
+  # The Admin Console of Keycloak is opened by KEYCLOAK_ADMIN_CONSOLE=true; otherwise /admin answers 404.
+  # admin-console-on:begin
+  - id: keycloak-admin
+    vars: [["server_port", "==", "9080"]]
+    priority: 5
+    uris: ["/admin", "/admin/*"]
+    upstream_id: keycloak
+    plugin_config_id: keycloak-client-address
+  # admin-console-on:end
+  # admin-console-off:begin
+  - id: keycloak-admin-closed
+    vars: [["server_port", "==", "9080"]]
+    priority: 20
+    uris: ["/admin", "/admin/*"]
+    plugins:
+      fault-injection:
+        abort:
+          http_status: 404
+          headers:
+            Content-Type: application/json
+          body: '{"success":false,"message":"Not found","errorCode":"ERR_NOT_FOUND"}'
+  # admin-console-off:end
 
   # Presigned photo links: the path is /<bucket>/<object>, passed through unchanged because the
   # signature covers it.
@@ -193,6 +233,7 @@ routes:
     methods: ["GET", "HEAD"]
     upstream_id: storage
 
+  # app-tier:begin
   - id: portal-root
     vars: [["server_port", "==", "9080"]]
     priority: 5
@@ -242,4 +283,4 @@ routes:
     priority: -10
     uri: /*
     upstream_id: frontend
-
+  # app-tier:end

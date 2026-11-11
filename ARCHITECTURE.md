@@ -243,6 +243,7 @@ Người dùng cuối xem số liệu qua `GET /api/v1/data/{model}/{entity}/sta
 ## 12. Triển khai
 
 Compose chạy lõi (`postgres`, `keycloak`, `seaweedfs`, `backend`, `apisix`) và Tầng 2 (`frontend`, `portal`, `monitor`); `clamav` bật bằng profile `av`.
+`dxos start --core` chỉ chạy lõi, không có Tầng 2 và gateway không có route của nó; Keycloak Admin Console mặc định không mở ra gateway.
 Gateway kiểm token cho mọi route API; các route không kiểm token nằm trong danh sách công khai kiểm bởi `deploy/apisix/check_routes.py`.
 `dxos start <tệp>...` đưa các tệp mô hình vào qua `deploy/model/` và in kết quả của `ModelBootstrap` cho từng tệp.
 Chi tiết vận hành ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md), log và audit ở [`deploy/MONITORING.md`](./deploy/MONITORING.md), webhook và lịch sử chống sửa ở [`deploy/INTEGRATIONS.md`](./deploy/INTEGRATIONS.md).

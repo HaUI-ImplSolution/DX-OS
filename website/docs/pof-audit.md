@@ -130,7 +130,7 @@ git ls-files | grep -E '(^|/)(vendor|third_party|node_modules)/|\.patch$' && ech
 |---|---|---|---|
 | ✅ | Có bug tracker | GitHub Issues đã bật; mẫu `bug_report.yml`, `feature_request.yml`; 14 issue | −5 |
 | ✅ | Có changelog | `CHANGELOG.md` theo Keep a Changelog, mục `[Unreleased]` và mục cho mọi bản đến `[2.0.0]` | −5 |
-| ✅ | Có README và hướng dẫn | `README.md`, `README_EN.md`; `ARCHITECTURE.md`; `docs/TESTING.md`; `deploy/OPERATIONS.md`; API qua Swagger UI và `check_docs.py` kiểm tài liệu khớp OpenAPI; job `Check required files and scripts` báo lỗi nếu thiếu một tài liệu bắt buộc hoặc `CHANGELOG.md` mất mục `[Unreleased]`; job `Build the docs site` dựng trang docs và dừng khi có liên kết hỏng | −5 |
+| ✅ | Có README và hướng dẫn | `README.md`, `README_EN.md`; `ARCHITECTURE.md`; `docs/TESTING.md`; `deploy/OPERATIONS.md`; API qua đặc tả OpenAPI và `check_docs.py` kiểm tài liệu khớp OpenAPI; job `Check required files and scripts` báo lỗi nếu thiếu một tài liệu bắt buộc hoặc `CHANGELOG.md` mất mục `[Unreleased]`; job `Build the docs site` dựng trang docs và dừng khi có liên kết hỏng | −5 |
 | ✅ | Hướng dẫn đóng góp | `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, mẫu pull request | |
 | ✅ | Chính sách bảo mật | `SECURITY.md` | |
 | ⚠️ | Bảo vệ nhánh và tag | `.github/rulesets/main.json` (cấm xóa, cấm ghi đè lịch sử, chỉ nhận pull request gộp bằng merge, 16 check phải xanh) và `tags.json` (cấm sửa và xóa tag `v*`) có sẵn để nhập; chỉ có hiệu lực khi chủ repository nhập vào Settings → Rules | Nhập hai ruleset vào GitHub |

@@ -254,6 +254,7 @@ dxos apply model.yaml  # áp dụng
 ```
 
 Bộ cài và các lệnh vận hành của `dxos` mô tả ở [`deploy/OPERATIONS.md`](../../deploy/OPERATIONS.md#cài-đặt-và-lệnh-dxos); `dxos plan` và `dxos apply` đưa tệp mô hình vào hệ thống đang chạy với cùng kế hoạch và mức xác nhận như bảng điều khiển.
+`dxos start --core` chỉ chạy Tầng 1 làm nền tảng API cho ứng dụng bên ngoài, không có ứng dụng web, portal và giám sát; chi tiết ở [`deploy/OPERATIONS.md`](../../deploy/OPERATIONS.md#chế-độ-chỉ-lõi).
 `dxos demo` tạo bốn tài khoản thử theo vai của mô hình Một cửa sinh viên và nộp khoảng 40 hồ sơ mẫu qua API chung, để người xem đăng nhập là thấy hệ thống có việc đang chạy; kịch bản trình diễn 15 phút ở [`docs/DEMO.md`](../DEMO.md).
 
 

@@ -9,7 +9,7 @@ Kết nối công cụ báo cáo bằng vai PostgreSQL chỉ đọc ở [`REPORT
 
 Tab Người dùng của bảng điều khiển (`/console`, ADMIN) cho tìm người dùng, xem vai theo từng ứng dụng, gán và gỡ vai và đơn vị của các mô hình đang chạy, tạo người dùng, khóa và mở, đặt lại mật khẩu.
 Mật khẩu tạm do hệ thống sinh, hiện một lần và người dùng phải đổi ở lần đăng nhập đầu.
-Vai `ADMIN` của nền tảng không cấp được ở tab này; cấp ở Keycloak Admin Console (Users, Role mapping).
+Vai `ADMIN` của nền tảng không cấp được ở tab này; cấp ở Keycloak Admin Console (Users, Role mapping), mở theo [Keycloak Admin Console](#keycloak-admin-console).
 Người dùng đăng nhập bằng nhà cung cấp ngoài, chính sách mật khẩu và MFA do Keycloak quản lý.
 Backend cần tài khoản dịch vụ `dxos-backend-admin` có quyền client và scope `kc-admin-api`; `update.sh` gán scope này cho Keycloak dựng từ trước (xem [`sso/README.md`](../sso/README.md)).
 
@@ -39,7 +39,7 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 
 | Lệnh | Việc |
 |---|---|
-| `dxos start [tệp...]` | Chạy `doctor.sh`, tải image còn thiếu, khởi động, chờ mọi dịch vụ sẵn sàng; realm chưa có ai vai `ADMIN` thì tạo tài khoản `admin` với mật khẩu tạm in ra một lần; có tệp mô hình thì đưa các tệp vào và in kết quả của từng tệp (xem dưới); rồi in các địa chỉ |
+| `dxos start [--core\|--full] [tệp...]` | Chạy `doctor.sh`, tải image còn thiếu, khởi động, chờ mọi dịch vụ sẵn sàng (`--core` chỉ chạy Tầng 1, xem [Chế độ chỉ lõi](#chế-độ-chỉ-lõi)); realm chưa có ai vai `ADMIN` thì tạo tài khoản `admin` với mật khẩu tạm in ra một lần; có tệp mô hình thì đưa các tệp vào và in kết quả của từng tệp (xem dưới); rồi in các địa chỉ |
 | `dxos stop` | Dừng các container, giữ dữ liệu |
 | `dxos status` | Trạng thái từng dịch vụ, các địa chỉ và trạng thái quét mã độc |
 | `dxos logs [dịch vụ]` | Theo dõi log |
@@ -89,7 +89,7 @@ Việc kiểm lệch chỉ chạy khi xem kế hoạch hoặc áp dụng, không
 
 Lệnh đăng nhập bằng client `dxos-cli` của realm, dùng `DXOS_CLI_SECRET` trong `.env`; tài khoản dịch vụ của client giữ vai `ADMIN`, và lịch sử áp dụng ghi tên nó (`service-account-dxos-cli`).
 Bí mật nằm trong `.env` của máy chủ, nên chạy được trong pipeline GitOps trên chính máy đó.
-Realm đã import từ trước chưa có client này: thêm client `dxos-cli` ở Keycloak Admin Console hoặc dựng lại realm.
+Realm đã import từ trước chưa có client này: thêm client `dxos-cli` ở Keycloak Admin Console (mở theo [Keycloak Admin Console](#keycloak-admin-console)) hoặc dựng lại realm.
 
 ### Lần áp dụng dừng giữa chừng
 
@@ -125,10 +125,38 @@ Mỗi lượt ghi vào bucket `S3_ARCHIVE_BUCKET` của SeaweedFS các hồ sơ 
 Dữ liệu trong cơ sở dữ liệu giữ nguyên; `dxos archive list` xem các lần chạy, `dxos archive check --store <mô hình>/<lần chạy>` kiểm một lần.
 Lần chạy đầu cần mạng để DuckDB tải extension.
 
+## Chế độ chỉ lõi
+
+`dxos start --core` chỉ chạy Tầng 1: cổng vào APISIX, Keycloak, dịch vụ lõi, PostgreSQL và kho tệp SeaweedFS, thêm ClamAV khi bật quét mã độc.
+Ứng dụng web, portal và dịch vụ giám sát không chạy, và gateway không có route của chúng: `/`, `/portal/`, `/monitor/` và `/console` trả 404.
+Gateway cũng không gửi nhật ký truy cập tới dịch vụ giám sát.
+API, đăng nhập, áp dụng tệp mô hình, `/v3/api-docs`, OpenAPI theo mô hình và lưu tệp dùng như ở chế độ đầy đủ.
+
+Chế độ được lưu trong `deploy/.env` bằng `DXOS_MODE` và profile `app` của `COMPOSE_PROFILES`; `dxos` sửa cả hai cùng lúc.
+`dxos start --core` gỡ container của Tầng 2 nếu đang chạy, và `dxos start --full` chạy lại đủ.
+`dxos start`, `dxos stop`, `dxos status`, `dxos update` và `dxos reconcile` giữ chế độ đã lưu, nên không bật lại thành phần nào của Tầng 2; `docker compose up -d` chạy tay trong `deploy/` cũng theo `.env`.
+Không có `DXOS_MODE` thì là chế độ đầy đủ, như các bản cài trước.
+Không có bảng điều khiển ở chế độ lõi: áp dụng mô hình bằng `dxos apply` hoặc `POST /api/v1/models/apply`, và quản trị người dùng bằng API hoặc `dxos admin`.
+
+## Keycloak Admin Console
+
+Gateway không mở Keycloak Admin Console mặc định: `/admin` và `/admin/*` trả 404, và `/swagger-ui.html` cùng `/swagger-ui/*` cũng vậy vì lõi không kèm Swagger UI.
+Dịch vụ lõi gọi Admin API của Keycloak qua mạng nội bộ, nên quản lý tài khoản, vai và client không bị ảnh hưởng.
+`dxos admin` và `dxos start` đặt tài khoản `admin` của realm bằng `kcadm.sh` trong container, không cần gateway.
+
+Mở Admin Console khi cần vận hành:
+
+1. Đặt `KEYCLOAK_ADMIN_CONSOLE=true` trong `deploy/.env`.
+2. Chạy `docker compose up -d apisix-config` rồi `docker compose restart apisix` trong `deploy/`.
+3. Mở `<địa chỉ>/admin/` và đăng nhập bằng `KEYCLOAK_ADMIN_USERNAME` và `KEYCLOAK_ADMIN_PASSWORD`; `dxos status` in địa chỉ này khi cờ đang bật.
+
+Đặt lại `false` rồi làm lại bước 2 để đóng.
+Các script kiểm ở `deploy/dev` gọi Keycloak Admin API qua gateway nên cần cờ này bật (xem [`docs/TESTING.md`](../docs/TESTING.md)).
+
 ## Kiểm tra trước khi chạy
 
 `./doctor.sh` (trong `deploy/`) chỉ đọc, không đổi gì và không in giá trị nào của `.env`.
-Nó kiểm Docker và Compose, RAM, ổ đĩa, `deploy/.env` và các cổng.
+Nó kiểm Docker và Compose, RAM, ổ đĩa, `deploy/.env` (kể cả `DXOS_MODE` khớp với profile `app`) và các cổng.
 `.env` được so với các biến `${NAME:?}` mà Compose bắt buộc phải có: biến thiếu hoặc để trống bị báo `FAIL`.
 Biến có trong `.env` mà `.env.example` không liệt kê bị báo `WARN`.
 Các cổng đã bị chiếm chỉ được kiểm khi stack chưa chạy.
@@ -224,7 +252,7 @@ Tệp nhiễm bị từ chối với HTTP 422 `ERR_FILE_INFECTED` và lần ch�
 ClamAV không trả lời thì tệp không được lưu và người dùng nhận HTTP 503 `ERR_SCAN_UNAVAILABLE`, vì tệp chưa quét không được coi là sạch.
 Tắt mặc định vì ClamAV cần khoảng 1 GB RAM.
 Bật bằng `dxos av on`, tắt bằng `dxos av off`: lệnh sửa `COMPOSE_PROFILES` và `STORAGE_SCAN_HOST` trong `.env`, rồi khởi động hoặc gỡ ClamAV và tạo lại backend nếu stack đang chạy.
-Không dùng `dxos` thì bỏ dấu `#` ở `COMPOSE_PROFILES=av` và `STORAGE_SCAN_HOST=clamav` trong `deploy/.env`, rồi `docker compose up -d`.
+Không dùng `dxos` thì đặt `COMPOSE_PROFILES=app,av` (bỏ `app` ở chế độ lõi) và bỏ dấu `#` ở `STORAGE_SCAN_HOST=clamav` trong `deploy/.env`, rồi `docker compose up -d`.
 Chữ ký virus tải về lần đầu mất vài phút và được giữ trong volume `clamav_data`.
 Image chính thức tự cập nhật chữ ký một lần mỗi ngày từ mạng phân phối của ClamAV; không dùng `curl` hay script riêng để tải chúng, vì ClamAV có thể giới hạn hoặc chặn cách tải đó.
 Mã 429 trong log của `clamav` là bị giới hạn tốc độ (hay gặp ở IP máy chủ đám mây dùng chung), và chữ ký cũ vẫn dùng được cho đến lần cập nhật sau.

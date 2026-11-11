@@ -27,7 +27,8 @@ Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`web
 | Compose hợp lệ, dừng khi thiếu bí mật | `docker compose config` trong `deploy/` | `Validate the Compose file` của `Platform` |
 | Gói phát hành và bộ cài | `.github/scripts/check_archive.sh <gói> <phiên bản>` | `Install from the release archive` của `Platform` |
 | Sao lưu và khôi phục | `deploy/backup.sh` rồi `verify` | `Back up and restore` của `Platform` |
-| API trên stack thật | Các script `deploy/dev/check_*.py`, mục 4 | `API end-to-end` của `Platform`, hai nhóm |
+| API trên stack thật | Các script `deploy/dev/check_*.py`, mục 4 | `API end-to-end` của `Platform`, ba nhóm, một nhóm chạy ở chế độ lõi |
+| Bề mặt của gateway | `python3 deploy/dev/check_surface.py` | `Gateway surface` của `Platform`, hai chế độ |
 | Trình duyệt | Xem [`e2e/README.md`](../e2e/README.md) | `Browser end-to-end` của `Platform` |
 | Trang tài liệu | `cd website && npm ci && npm run build` | `Build the docs site` của `Docs` |
 | Kiểm tay | Mục 6 | Không |
@@ -52,6 +53,9 @@ Kiểm trên một stack riêng thì không đụng stack chính:
 - Dùng tệp env riêng và project Compose riêng, đổi cổng gateway và Postgres trong tệp env đó (`APISIX_HOST_PORT`, `POSTGRES_HOST_PORT`).
 - Các script đọc `DXOS_ENV_FILE`, `DXOS_BASE_URL` và `DXOS_PROJECT` (tên project Compose); đặt đủ ba biến thì lệnh `docker compose` của script chỉ chạm project đó.
 - Xóa project, volume và thư mục dữ liệu của nó sau khi kiểm.
+
+Các script gọi Keycloak Admin API qua gateway, mà gateway đóng `/admin` mặc định: đặt `KEYCLOAK_ADMIN_CONSOLE=true` trong env của stack kiểm rồi `docker compose up -d apisix-config` và `docker compose restart apisix`.
+Chế độ lõi thì đặt `DXOS_MODE=core` và `COMPOSE_PROFILES=` trong env đó, hoặc dùng `dxos start --core`.
 
 Cổng 9080 hoặc 5432 bị chiếm thì đổi `APISIX_HOST_PORT`, `POSTGRES_HOST_PORT` trong `deploy/.env`.
 
@@ -89,6 +93,7 @@ python3 deploy/dev/check_bootstrap.py
 | `check_cli.py` | Lệnh `dxos plan` và `apply --accept` (tệp giống, đổi an toàn, đổi mất dữ liệu bị từ chối khi `--accept` thấp hơn mức của kế hoạch), lịch sử ghi tài khoản của lệnh, `dxos archive` và `archive check` (sửa một byte Parquet thì mã 1), `archive --store` vào SeaweedFS, `archive check --store`, `archive list` và `archive auto` không ghi trùng, bộ mô phỏng IT/OT gửi lại cùng quan sát thì in `duplicate` và không thêm hồ sơ; cần Docker; tự áp dụng một mô hình riêng |
 | `check_events.py` | Webhook: thứ tự, chữ ký, thử lại, nội dung không lộ, nhắc hạn; chuỗi hash của lịch sử và bên nhận so hash |
 | `check_bootstrap.py` | Tệp mô hình lúc khởi động: `applied`, `unchanged`, `skipped`, `failed` |
+| `check_surface.py` | Không cần tài khoản, chạy được ở cả hai chế độ: `/v3/api-docs` trả JSON; `/swagger-ui*` và `/admin*` trả 404 không phải HTML (`/admin` mở khi `KEYCLOAK_ADMIN_CONSOLE=true`); đăng nhập Keycloak vẫn phục vụ; backend gọi được Keycloak Admin API; chế độ `core` không chạy container và không phục vụ trang nào của Tầng 2 |
 
 Các script tạo client Keycloak `dxos-check` (cho phép đăng nhập bằng mật khẩu, chỉ dùng cho máy dev) và các người dùng thử như `admin1`, `req1`, `keeper1`.
 Vai của mô hình được gán ở client `dxos-m-<mô hình>`, vai `ADMIN` ở realm.

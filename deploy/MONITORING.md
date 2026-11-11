@@ -46,7 +46,7 @@ Truy vết lâu dài cần dùng sự kiện của Keycloak (90 ngày) và dữ 
 
 ## Sự kiện đăng nhập của Keycloak
 
-Admin Console → realm `dxos` → **Events**:
+Admin Console (mở theo [`OPERATIONS.md`](./OPERATIONS.md#keycloak-admin-console)) → realm `dxos` → **Events**:
 
 - **User events**: đăng nhập, đăng nhập sai, đăng xuất, đổi hoặc đặt lại mật khẩu, tài khoản bị khóa; kèm IP và client; giữ 90 ngày.
 - **Admin events**: thao tác quản trị trong Keycloak, kèm nội dung thay đổi.
@@ -102,7 +102,7 @@ Thay đổi trên từng bản ghi nằm ở `engine.record_event`, lịch sử 
 Mỗi địa chỉ client có tối đa 20 bản ghi mỗi loại `ACCESS_DENIED`, `AUTH_FAILED`, `SERVER_ERROR` hoặc `ADMIN_ACTION_FAILED` mỗi phút (`audit.denied.max-per-minute` trong `application.yaml`).
 Số bản ghi bị bỏ qua nằm trong `metadata.suppressed` của bản ghi đầu phút kế tiếp.
 
-ADMIN tra cứu qua API (Swagger: `GET /api/v1/audit-logs`), lọc theo `actor` (user id hoặc username), `action`, `outcome`, `from`, `to`:
+ADMIN tra cứu qua API (`GET /api/v1/audit-logs`), lọc theo `actor` (user id hoặc username), `action`, `outcome`, `from`, `to`:
 
 ```
 GET /api/v1/audit-logs?outcome=DENIED&from=2026-10-23T00:00:00Z&size=50

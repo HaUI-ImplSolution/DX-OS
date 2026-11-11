@@ -39,14 +39,20 @@ if command -v flock >/dev/null 2>&1 && ! flock -w 300 9; then
   exit 1
 fi
 
-BEHIND_GATEWAY=(backend monitor frontend portal keycloak)
+# In core mode the web app, the portal and the monitor are not part of the stack, so they are neither pulled nor checked.
+if [[ "$(grep -E '^DXOS_MODE=' .env | tail -n1 | cut -d= -f2-)" == core ]]; then
+  SERVICES=(backend keycloak)
+else
+  SERVICES=(backend monitor frontend portal keycloak)
+fi
+BEHIND_GATEWAY=("${SERVICES[@]}")
 declare -A BEFORE
 for service in "${BEHIND_GATEWAY[@]}"; do
   BEFORE[$service]="$(docker compose ps -q "$service")"
 done
 
 echo "==> Pulling images"
-for service in backend monitor frontend portal keycloak; do
+for service in "${SERVICES[@]}"; do
   docker compose pull "$service"
 done
 

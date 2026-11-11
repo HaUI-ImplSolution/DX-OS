@@ -39,8 +39,7 @@ import tools.jackson.databind.ObjectMapper;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-  private static final String[] SWAGGER_ENDPOINTS =
-      {"/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**"};
+  private static final String[] OPENAPI_ENDPOINTS = {"/v3/api-docs/**"};
 
   // Docker healthcheck gọi endpoint này không kèm Authorization header.
   private static final String ACTUATOR_HEALTH_ENDPOINT = "/actuator/health/**";
@@ -86,7 +85,7 @@ public class SecurityConfig {
             .accessDeniedHandler(accessDeniedHandler))
         .authorizeHttpRequests(auth -> {
           auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-              .requestMatchers(SWAGGER_ENDPOINTS).permitAll()
+              .requestMatchers(OPENAPI_ENDPOINTS).permitAll()
               .requestMatchers(HttpMethod.GET, ACTUATOR_HEALTH_ENDPOINT, SYSTEM_STATUS_ENDPOINT)
               .permitAll();
           if (!publicGetPaths.isEmpty()) {

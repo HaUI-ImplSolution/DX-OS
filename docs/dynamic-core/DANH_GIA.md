@@ -16,7 +16,7 @@ Nguồn: [đề thi](https://vfossa.vn/tin-tuc/de-thi-phan-mem-nguon-mo-olp-2026
 | Dữ liệu có cấu trúc | PostgreSQL; lược đồ, ràng buộc và API có quyền theo dòng sinh từ mô hình | Đạt |
 | Dữ liệu phi cấu trúc | SeaweedFS, tệp đính kèm theo quyền của hồ sơ, ClamAV khi bật | Đạt; quét mã độc tắt mặc định |
 | Động cơ luồng công việc | Flowable nhúng, BPMN sinh từ mô hình, ba họ mẫu | Đạt |
-| Ít nhất một ứng dụng Tầng 2 trong H-P-D-I | Ứng dụng web dựng từ metadata và bảng điều khiển, chạm H, P và D | Đạt; chưa có I, và `README.md` chưa nói ứng dụng nằm ở không gian nào |
+| Ít nhất một ứng dụng Tầng 2 trong H-P-D-I | Ứng dụng web dựng từ metadata và bảng điều khiển, chạm H, P và D | Đạt; chưa có I; `README.md` có mục đối chiếu với đề |
 | Giấy phép OSI, mã công khai, có bản phát hành trước khi nộp | Apache-2.0; bảy bản `v1.0.0` đến `v2.0.0` | Đạt |
 
 ## 2. Bốn nguyên lý kỹ thuật
@@ -52,7 +52,7 @@ Phần còn lại của bảy cụm là tầm nhìn của đề, phủ thêm là
 | Bản phát hành | 5 | Bảy bản theo SemVer, mỗi bản có `.tar.gz`, `.sha256` và SBOM | Đạt |
 | Dịch từ mã nguồn | 10 | Cấu hình ở `.env` trước khi dựng, dựng bằng Docker, Maven và npm, cài ra ngoài thư mục mã nguồn, CI cài từ gói phát hành | Chạy lại trên máy sạch với image phát hành thật |
 | Thư viện và gói đính kèm | 10 | `DEPENDENCIES.txt`, SBOM khớp tệp khóa, image ghim digest, không chép và không vá mã của dự án khác | Một tệp của bên thứ ba chưa ghi nguồn |
-| Tài liệu và giao tiếp | 10 | README hai thứ tiếng, CHANGELOG, mẫu issue, CONTRIBUTING, SECURITY, trang docs | 42 issue so với 165 pull request đã gộp; chưa có lộ trình và kênh trao đổi |
+| Tài liệu và giao tiếp | 10 | README hai thứ tiếng, CHANGELOG, mẫu issue, CONTRIBUTING, SECURITY, trang docs | 43 issue so với 171 pull request đã gộp; chưa có lộ trình và kênh trao đổi |
 
 Các việc ở cột cuối nằm ở `BACKLOG.md`, mục 2 và 3.
 
@@ -78,7 +78,7 @@ Số liệu của họ ghi theo ngày họ tra.
 | Giám khảo vòng trường của họ nhận xét thêm một ứng dụng vẫn phải viết nhiều mã; họ đáp bằng bảng tạo không cần mã, mẫu in và báo cáo khai báo bằng dữ liệu | Hướng "khai báo là có" đang được đội khác đi theo; phần còn riêng của đội là vòng đời mô hình và quy tắc bất biến của quy trình |
 | Họ phủ rộng bảy cụm: két bí mật, tường lửa ứng dụng, che dữ liệu cá nhân, tìm toàn văn, NGSI-LD, kịch bản tự động | Đội đi sâu thay vì rộng; bài trình bày cần nói rõ đây là lựa chọn |
 | Kho mã của họ: mọi tệp đạt chuẩn REUSE, 209 issue, bảy bản phát hành, Discussions bật, bản chạy công khai được CI kiểm hằng ngày | Đội kém ở số issue, kênh trao đổi, phạm vi dòng giấy phép và bản công khai |
-| Họ đọc Tầng 2 là cổng dịch vụ dùng chung, còn ứng dụng ngành thuộc Tầng 3 | Cùng kết luận với dòng "Ứng dụng minh họa chưa định vị trong H-P-D-I" của `BACKLOG.md` |
+| Họ đọc Tầng 2 là cổng dịch vụ dùng chung, còn ứng dụng ngành thuộc Tầng 3 | Cùng kết luận với mục "Đối chiếu với đề thi" của `README.md` |
 | Bảng tham chiếu của đề có năm thành phần không đạt OSI: Vault, n8n, Redpanda, MongoDB, immudb | Đội không dùng thành phần nào trong số này; nên nêu thành một quyết định thiết kế khi trình bày |
 | Câu hội đồng dễ hỏi: lõi không giao diện mà sao có trang quản trị Keycloak | Trùng dòng "Giao diện đi ra từ Tầng 1" của `BACKLOG.md` |
 

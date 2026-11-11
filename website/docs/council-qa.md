@@ -145,7 +145,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 ## 13. Sao không dùng nền low-code có sẵn?
 
 - Nền cần tự sinh bảng, vai và quy trình từ một tệp khai báo, đổi được khi đã có dữ liệu, và là lõi không có giao diện cho người dùng cuối.
-- Hai sản phẩm đội xem xét đầu tiên bị loại vì giấy phép: NocoBase có điều khoản cấm cung cấp hoặc phân phối sản phẩm no-code, low-code hay PaaS xây trên nó; Directus theo giấy phép có điều kiện, không thuộc OSI.
+- Hai sản phẩm đội xem xét đầu tiên bị loại vì giấy phép: NocoBase có điều khoản cấm cung cấp hoặc phân phối sản phẩm no-code, low-code hay PaaS xây trên nó; Directus theo giấy phép có điều kiện, không thuộc OSI; Strapi trộn phần MIT với phần Enterprise đóng trong cùng kho.
 - Supabase được đọc để học kiến trúc; lõi tự viết phần API chung vì cần đọc mô hình lúc chạy và chặn đổi trạng thái ngoài quy trình.
 - Phần dùng được thì dùng lại nguyên bản: Keycloak, Flowable, APISIX, pgschema.
 - **Bằng chứng:** [Thành phần được chọn và không chọn](./dependencies.md) mục 3; `docs/dynamic-core/README.md` mục Tư tưởng thiết kế.

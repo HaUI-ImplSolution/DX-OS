@@ -6,6 +6,9 @@ import static HaUI.ImplSolution.dxos.engine.apply.Sql.ident;
 import static HaUI.ImplSolution.dxos.engine.apply.Sql.literal;
 import static HaUI.ImplSolution.dxos.engine.apply.Sql.table;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import HaUI.ImplSolution.dxos.model.FieldType;
 import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
@@ -64,8 +67,7 @@ public final class DdlGenerator {
       String name = names.getOrDefault(field.name(), field.name());
       StringBuilder column = new StringBuilder(ident(name)).append(' ').append(sqlType(field));
       if (field.defaultValue() != null) {
-        column.append(" DEFAULT ").append(field.type() == FieldType.NUMBER ? field.defaultValue()
-            : literal(field.defaultValue()));
+        column.append(" DEFAULT ").append(defaultSql(field));
       }
       if (field.required()) {
         column.append(" NOT NULL");
@@ -172,6 +174,22 @@ public final class DdlGenerator {
     return "DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = "
         + literal(REPORT_ROLE) + ") THEN CREATE ROLE " + ident(REPORT_ROLE) + " " + create
         + "; END IF; END $$";
+  }
+
+  // The default of a column: a number as written, a field with several values as an array of text
+  // from the JSON list the model keeps, anything else as a literal.
+  private static String defaultSql(Field field) {
+    if (field.multiple()) {
+      try {
+        List<String> values = new ObjectMapper().readValue(field.defaultValue(),
+            new TypeReference<List<String>>() {});
+        return "ARRAY[" + values.stream().map(Sql::literal).collect(Collectors.joining(", "))
+            + "]::text[]";
+      } catch (JsonProcessingException e) {
+        throw new IllegalStateException("The default of " + field.name() + " is not a list", e);
+      }
+    }
+    return field.type() == FieldType.NUMBER ? field.defaultValue() : literal(field.defaultValue());
   }
 
   // The column type of a field; a field with several values is an array of text.

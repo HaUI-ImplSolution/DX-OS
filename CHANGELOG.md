@@ -7,6 +7,11 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
+### Tệp mô hình
+
+- Trường nhiều lựa chọn nhận `default` là một danh sách các lựa chọn.
+- Trường `date` làm nguồn của điều kiện `when` và `required_when`, so sánh bằng `==`, `!=`, `<`, `<=`, `>` và `>=`.
+
 ## [2.0.0] - 2026-11-11
 
 Lõi dynamic thay cho hai ứng dụng nghiệp vụ viết tay của bản `1.1.1`.

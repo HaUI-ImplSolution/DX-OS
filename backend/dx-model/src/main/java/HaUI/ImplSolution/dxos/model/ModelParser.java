@@ -688,10 +688,11 @@ public final class ModelParser {
     if (node == null) {
       return null;
     }
-    String value = scalar(node);
     if (multiple) {
-      problem(node, "a field with several choices cannot have a default");
-    } else if (unique) {
+      return readChoicesDefault(options, unique, node);
+    }
+    String value = scalar(node);
+    if (unique) {
       problem(node, "a unique field cannot have a default");
     } else if (type == FieldType.NUMBER) {
       try {
@@ -717,6 +718,35 @@ public final class ModelParser {
       problem(node, "only text, number, choice, unit, boolean and date fields can have a default");
     }
     return value;
+  }
+
+  // The default of a field with several choices: a non-empty list of its options in the order of
+  // the options, kept as a JSON array of text so that no option can be mistaken for a separator.
+  private String readChoicesDefault(List<String> options, boolean unique, Node node) {
+    if (unique) {
+      problem(node, "a unique field cannot have a default");
+      return null;
+    }
+    if (!(node instanceof SequenceNode sequence) || sequence.getValue().isEmpty()) {
+      problem(node, "the default of a field with several choices is a non-empty list of options");
+      return null;
+    }
+    Set<String> chosen = new LinkedHashSet<>();
+    for (Node item : sequence.getValue()) {
+      String value = scalar(item);
+      if (!options.contains(value)) {
+        problem(item, "the default must be options of the field");
+      } else if (!chosen.add(value)) {
+        problem(item, "option " + value + " is listed twice in the default");
+      }
+    }
+    StringBuilder json = new StringBuilder("[");
+    for (String value : options.stream().filter(chosen::contains).toList()) {
+      json.append(json.length() > 1 ? "," : "").append('"').append(value.replace("\\", "\\\\")
+          .replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t"))
+          .append('"');
+    }
+    return json.append(']').toString();
   }
 
   // The ui block of an entity: the icon, the menu entry, the columns of the list, the groups of the
@@ -1309,15 +1339,25 @@ public final class ModelParser {
     }
     if (field == null || !comparable(field)) {
       problem(node,
-          key + " must name a number, choice, text or boolean field of this entity, fields: "
+          key + " must name a number, date, choice, text or boolean field of this entity, fields: "
               + fields.values().stream().filter(ModelParser::comparable).map(Field::name)
                   .collect(java.util.stream.Collectors.joining(", ")));
       return null;
     }
-    if (Condition.ordering(op) && field.type() != FieldType.NUMBER) {
+    if (Condition.ordering(op) && field.type() != FieldType.NUMBER
+        && field.type() != FieldType.DATE) {
       problem(node, key + " compares " + field.name() + " with " + op
-          + ", which only works on a number field");
+          + ", which only works on a number or date field");
       return null;
+    }
+    if (field.type() == FieldType.DATE) {
+      try {
+        LocalDate.parse(value);
+      } catch (DateTimeParseException notDate) {
+        problem(node, key + " compares the date field " + field.name() + " with '" + value
+            + "', which is not a date like 2026-01-31");
+        return null;
+      }
     }
     if (field.type() == FieldType.BOOLEAN && !"true".equals(value) && !"false".equals(value)) {
       problem(node, key + " compares the boolean field " + field.name() + " with '" + value
@@ -1341,11 +1381,12 @@ public final class ModelParser {
     return new Condition(field.name(), op, value);
   }
 
-  // The fields a condition can compare: a number, a text, a choice of one value or a boolean.
+  // The fields a condition can compare: a number, a date, a text, a choice of one value or a
+  // boolean.
   private static boolean comparable(Field field) {
-    return !field.multiple()
-        && (field.type() == FieldType.NUMBER || field.type() == FieldType.CHOICE
-            || field.type() == FieldType.TEXT || field.type() == FieldType.BOOLEAN);
+    return !field.multiple() && (field.type() == FieldType.NUMBER || field.type() == FieldType.DATE
+        || field.type() == FieldType.CHOICE || field.type() == FieldType.TEXT
+        || field.type() == FieldType.BOOLEAN);
   }
 
   // The rules that make a set of states and actions a process a record can run through.

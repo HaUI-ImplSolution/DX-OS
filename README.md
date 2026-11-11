@@ -67,6 +67,10 @@ Sơ đồ và luồng một yêu cầu đi qua hệ thống ở [`ARCHITECTURE.m
 
 Mười mẫu có sẵn, chọn được ngay ở bảng điều khiển: một cửa sinh viên, hỗ trợ kỹ thuật, sự cố thiết bị, đặt phòng, cấp quyền dịch vụ CNTT, mượn thiết bị, ghi chú, sổ tài sản, đặt lịch khám và đổi trả hàng.
 
+Supabase, Strapi và Directus là các nền dựng backend từ bảng dữ liệu hoặc nội dung.
+DX-OS tập trung vào hồ sơ có quy trình: một tệp mô hình khai luôn vai, quyền theo dòng, quy trình duyệt, hạn xử lý và lịch sử chống sửa.
+Lý do từng nền được đọc để học hoặc không dùng làm nền ở [trang thành phần](https://haui-implsolution.github.io/DX-OS/docs/dependencies).
+
 ## Chạy thử
 
 ### Dùng thử trực tuyến
@@ -130,6 +134,7 @@ Trang tài liệu: <https://haui-implsolution.github.io/DX-OS/>.
 
 | Cần gì | Xem |
 |---|---|
+| Dùng hệ thống theo vai | [người nộp](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-nop), [người xử lý](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-xu-ly), [người triển khai](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-trien-khai) |
 | Viết tệp mô hình | [`docs/MODEL.md`](./docs/MODEL.md) |
 | Gọi API | [`docs/API.md`](./docs/API.md) và đặc tả OpenAPI (`/v3/api-docs`) của backend đang chạy |
 | Phát triển dịch vụ, webhook và giao diện mở rộng | [`docs/EXTENSIONS.md`](./docs/EXTENSIONS.md) |
@@ -142,27 +147,30 @@ Trang tài liệu: <https://haui-implsolution.github.io/DX-OS/>.
 | Kịch bản trình diễn 15 phút | [`docs/DEMO.md`](./docs/DEMO.md) |
 | Hướng thiết kế và việc còn lại | [`docs/dynamic-core/README.md`](./docs/dynamic-core/README.md), [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md) |
 | Thay đổi theo phiên bản | [`CHANGELOG.md`](./CHANGELOG.md) |
+| Giữ tương thích giữa các bản | [`docs/COMPATIBILITY.md`](./docs/COMPATIBILITY.md) |
+| Hướng phát triển | [`ROADMAP.md`](./ROADMAP.md) |
 | Thành phần bên thứ ba và giấy phép | [`DEPENDENCIES.txt`](./DEPENDENCIES.txt), [`NOTICE`](./NOTICE), [`sbom/`](./sbom/README.md) |
 
 ## Cấu trúc repository
 
-| Thư mục | Nội dung |
-|---|---|
-| `backend/dx-model` | Định dạng tệp mô hình: đọc và kiểm tra |
-| `backend/dx-core` | Thư viện dùng chung: bảo mật, audit, lưu trữ, trạng thái, client Keycloak |
-| `backend/dx-engine` | Dịch vụ lõi: áp dụng mô hình, API chung, Flowable |
-| `backend/dx-monitor` | Màn hình giám sát và truy vết |
-| `frontend` | Giao diện react-admin dựng từ metadata, có tiếng Việt và tiếng Anh |
-| `deploy` | Compose, gateway APISIX, bộ cài và lệnh `dxos`, script vận hành, script kiểm tra ở `deploy/dev` |
-| `sso`, `portal`, `seaweedfs` | Keycloak realm, trang portal, lưu trữ tệp |
-| `models` | Tệp mô hình sai mẫu cho kiểm tự động; mô hình mẫu dùng được ở `backend/dx-engine/src/main/resources/templates/` |
-| `examples` | Chương trình mẫu: bên nhận sự kiện giữ hash lịch sử ([`history-witness`](./examples/history-witness/README.md)), giả lập hệ thống IT/OT ([`itot-simulator`](./examples/itot-simulator/README.md)) |
-| `e2e` | Kiểm giao diện web trên trình duyệt (Playwright) |
-| `website` | Trang tài liệu (Docusaurus), đăng lên GitHub Pages |
-| `docs` | Hướng dẫn kiểm thử, tệp mô hình, API; hướng thiết kế ở `dynamic-core/` |
-| `sbom` | Danh mục thành phần CycloneDX của backend, web, và trang tài liệu |
-| `LICENSES` | Toàn văn giấy phép của kho theo chuẩn REUSE |
-| `.github` | Workflow CI, mẫu issue và pull request, quy tắc nhánh, script kiểm tra |
+| Thư mục | Tầng | Nội dung |
+|---|---|---|
+| `backend/dx-model` | Lõi | Định dạng tệp mô hình: đọc và kiểm tra |
+| `backend/dx-core` | Lõi | Thư viện dùng chung: bảo mật, audit, lưu trữ, trạng thái, client Keycloak |
+| `backend/dx-engine` | Lõi | Dịch vụ lõi: áp dụng mô hình, API chung, Flowable |
+| `backend/dx-monitor` | Ứng dụng | Màn hình giám sát và truy vết |
+| `frontend` | Ứng dụng | Giao diện react-admin dựng từ metadata, có tiếng Việt và tiếng Anh |
+| `deploy` | Dùng chung | Compose, gateway APISIX, bộ cài và lệnh `dxos`, script vận hành, script kiểm tra ở `deploy/dev` |
+| `sso`, `seaweedfs` | Lõi | Keycloak realm, lưu trữ tệp |
+| `portal` | Ứng dụng | Trang liên kết các địa chỉ và trạng thái dịch vụ |
+| `models` | Mô hình | Tệp mô hình sai mẫu cho kiểm tự động; mô hình mẫu dùng được ở `backend/dx-engine/src/main/resources/templates/` |
+| `examples` | Ngoài lõi | Chương trình mẫu: bên nhận sự kiện giữ hash lịch sử ([`history-witness`](./examples/history-witness/README.md)), giả lập hệ thống IT/OT ([`itot-simulator`](./examples/itot-simulator/README.md)) |
+| `e2e` | Kiểm thử | Kiểm giao diện web trên trình duyệt (Playwright) |
+| `website` | Tài liệu | Trang tài liệu (Docusaurus), đăng lên GitHub Pages |
+| `docs` | Tài liệu | Hướng dẫn kiểm thử, tệp mô hình, API; hướng thiết kế ở `dynamic-core/` |
+| `sbom` | Giấy phép | Danh mục thành phần CycloneDX của backend, web, và trang tài liệu |
+| `LICENSES` | Giấy phép | Toàn văn giấy phép của kho theo chuẩn REUSE |
+| `.github` | Dùng chung | Workflow CI, mẫu issue và pull request, quy tắc nhánh, script kiểm tra |
 
 ## Đóng góp
 

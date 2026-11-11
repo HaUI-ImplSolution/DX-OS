@@ -67,6 +67,10 @@ The diagrams and the path of one request through the system are in [`ARCHITECTUR
 
 Ten templates are ready to pick in the control panel: student one-stop service, technical support, equipment incident, room booking, IT service access, equipment loan, notes, an asset register, clinic appointments and retail returns.
 
+Supabase, Strapi and Directus are foundations that build a backend from tables or content.
+DX-OS focuses on records with a workflow: one model file declares the roles, the row-level permissions, the approval workflow, the due dates and the tamper-evident history together.
+Why each one was read for ideas or not used as a base is on the [components page](https://haui-implsolution.github.io/DX-OS/docs/dependencies) (Vietnamese).
+
 ## Try it
 
 ### Try it online
@@ -131,6 +135,7 @@ The documents are written in Vietnamese; the API reference is the OpenAPI specif
 
 | You need | See |
 |---|---|
+| Using the system by role | [submitters](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-nop), [handlers](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-xu-ly), [deployers](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-trien-khai}) (Vietnamese) |
 | Writing a model file | [`docs/MODEL.md`](./docs/MODEL.md) |
 | Calling the API | [`docs/API.md`](./docs/API.md) and the OpenAPI specification (`/v3/api-docs`) of the running backend |
 | Building extension services, webhooks, and custom UIs | [`docs/EXTENSIONS.md`](./docs/EXTENSIONS.md) (Vietnamese) |
@@ -143,27 +148,30 @@ The documents are written in Vietnamese; the API reference is the OpenAPI specif
 | The 15-minute demonstration script | [`docs/DEMO.md`](./docs/DEMO.md) |
 | Design and remaining work | [`docs/dynamic-core/README.md`](./docs/dynamic-core/README.md), [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md) |
 | Changes by version | [`CHANGELOG.md`](./CHANGELOG.md) |
+| Compatibility between versions | [`docs/COMPATIBILITY.md`](./docs/COMPATIBILITY.md) (Vietnamese) |
+| Where the project is going | [`ROADMAP.md`](./ROADMAP.md) (Vietnamese) |
 | Third-party components and licenses | [`DEPENDENCIES.txt`](./DEPENDENCIES.txt), [`NOTICE`](./NOTICE), [`sbom/`](./sbom/README.md) |
 
 ## Repository structure
 
-| Folder | Content |
-|---|---|
-| `backend/dx-model` | The model file format: reading and checking |
-| `backend/dx-core` | Shared library: security, audit, storage, state, Keycloak client |
-| `backend/dx-engine` | The core service: applying models, the common API, Flowable |
-| `backend/dx-monitor` | The monitoring and tracing screen |
-| `frontend` | A react-admin interface built from metadata, in Vietnamese and English |
-| `deploy` | Compose, the APISIX gateway, the installer and the `dxos` command, operation scripts, check scripts in `deploy/dev` |
-| `sso`, `portal`, `seaweedfs` | The Keycloak realm, the portal page, file storage |
-| `models` | Invalid model files for automatic checks; usable sample models are in `backend/dx-engine/src/main/resources/templates/` |
-| `examples` | Sample programs: a receiver that keeps history hashes ([`history-witness`](./examples/history-witness/README.md)), an IT/OT system simulator ([`itot-simulator`](./examples/itot-simulator/README.md)) |
-| `e2e` | Browser tests of the web interface (Playwright) |
-| `website` | The docs site (Docusaurus), published on GitHub Pages |
-| `docs` | The testing guide, the model file and the API; the design is in `dynamic-core/` |
-| `sbom` | CycloneDX component lists of the backend, the web interface and the docs site |
-| `LICENSES` | The full text of the licenses of the repository, as the REUSE specification asks |
-| `.github` | CI workflows, issue and pull request templates, branch rules, check scripts |
+| Folder | Tier | Content |
+|---|---|---|
+| `backend/dx-model` | Core | The model file format: reading and checking |
+| `backend/dx-core` | Core | Shared library: security, audit, storage, state, Keycloak client |
+| `backend/dx-engine` | Core | The core service: applying models, the common API, Flowable |
+| `backend/dx-monitor` | Apps | The monitoring and tracing screen |
+| `frontend` | Apps | A react-admin interface built from metadata, in Vietnamese and English |
+| `deploy` | Shared | Compose, the APISIX gateway, the installer and the `dxos` command, operation scripts, check scripts in `deploy/dev` |
+| `sso`, `seaweedfs` | Core | The Keycloak realm, file storage |
+| `portal` | Apps | The page that links the addresses and the state of the services |
+| `models` | Models | Invalid model files for automatic checks; usable sample models are in `backend/dx-engine/src/main/resources/templates/` |
+| `examples` | Outside the core | Sample programs: a receiver that keeps history hashes ([`history-witness`](./examples/history-witness/README.md)), an IT/OT system simulator ([`itot-simulator`](./examples/itot-simulator/README.md)) |
+| `e2e` | Testing | Browser tests of the web interface (Playwright) |
+| `website` | Documentation | The docs site (Docusaurus), published on GitHub Pages |
+| `docs` | Documentation | The testing guide, the model file and the API; the design is in `dynamic-core/` |
+| `sbom` | Licenses | CycloneDX component lists of the backend, the web interface and the docs site |
+| `LICENSES` | Licenses | The full text of the licenses of the repository, as the REUSE specification asks |
+| `.github` | Shared | CI workflows, issue and pull request templates, branch rules, check scripts |
 
 ## Contributing
 

@@ -15,7 +15,7 @@ Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết t�
 |---|---|---|
 | 1 | Rà soát cuối của mục 2 trên bản `2.0.0` đã phát hành | Điều kiện để kho mã được chấm trên bản dự thi; bản phát hành 5, dịch từ mã nguồn 10 |
 | 2 | Lõi đúng đầu bài: `README.md` đối chiếu đề và H-P-D-I (mục 5) | Giấy phép 10 qua ghi chú "giải quyết đúng đầu bài" của thể lệ |
-| 3 | Tài liệu và giao tiếp: lịch sử issue, lộ trình, tài liệu sản phẩm trên trang docs (mục 2 và 3) | Tài liệu và giao tiếp 10, phát triển bền vững 10 |
+| 3 | Tài liệu và giao tiếp: lịch sử issue, tài liệu sản phẩm trên trang docs (mục 2 và 3) | Tài liệu và giao tiếp 10, phát triển bền vững 10 |
 | 4 | Bằng chứng lõi là PaaS: giao diện riêng ở tên miền khác, route của dịch vụ riêng, ứng dụng mẫu, đường ống mẫu cho kho mô hình (mục 3) | Nguyên gốc 10, phát triển bền vững 10 |
 | 5 | Bài trình bày, video (mục 2) | Hoàn thiện 10, trình diễn 10 |
 | 6 | Phần AI và chữ I của ứng dụng Tầng 2 (mục 3) | Hoàn thiện 10, nguyên gốc 10 |
@@ -25,7 +25,6 @@ Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết t�
 
 | Việc | Ghi chú |
 |---|---|
-| Lộ trình công khai | Chưa có `ROADMAP.md`; phần định hướng phát triển của buổi chung kết và tiêu chí phát triển bền vững mới chỉ có file này để dẫn |
 | Ảnh và video của sản phẩm | `README.md`, `README_EN.md` và trang docs không có ảnh hay video nào của sản phẩm, và kho không có tệp ảnh nào ngoài logo của trang docs; thêm ảnh bảng điều khiển, màn hình kế hoạch, hộp việc và lịch, cùng một video hoặc ảnh động ngắn |
 | Rà soát cuối trên bản phát hành | Trước 17:00 ngày 06/12: clone vào máy sạch rồi `deploy/make_env.sh` và `docker compose up -d --build` thành công; mở repository bằng trình duyệt ẩn danh thấy được không cần đăng nhập; trang Contributors hiện đủ ba thành viên (API `contributors` hiện chỉ trả hai người); `check_licenses.py` báo 0 vấn đề, `reuse lint` xanh và `gh api repos/HaUI-ImplSolution/DX-OS/license` vẫn trả Apache-2.0 khi có `LICENSES/`; CI xanh trên commit gắn tag (`Platform`, `Compliance`, `Backend`, `Frontend`, `Dependencies`); trang docs mô tả đúng bản `2.0.0`; số issue, pull request và commit ở `website/docs/pof-audit.md` lấy lại theo ngày gắn tag |
 | Gửi bài | Thư tới `olpvietnam@vaip.vn` và `thuky@vfossa.vn` trước 17:00 ngày 06/12/2026, tiêu đề `BÀI THI PMNM 2026 - [Tên Đội] - [Tên Trường]`, nội dung gồm thành viên đội, người hướng dẫn, đường dẫn kho mã nguồn và cam kết bản quyền theo mẫu trong đề; trước đó xác nhận với trường rằng đội đã có trong danh sách đăng ký gửi BTC, và ghi người hướng dẫn vào mục Nhóm phát triển của `README.md` |
@@ -40,9 +39,6 @@ Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết t�
 | Hồ dữ liệu | Chưa có lớp truy vấn riêng trên các tệp Parquet trong kho; công cụ báo cáo đọc dữ liệu đang chạy qua vai `report_ro`; hướng làm: `dxos archive query` chạy DuckDB đọc thẳng các tệp trong kho |
 | Phả hệ và chất lượng dữ liệu | Danh mục dữ liệu dừng ở mức thực thể; chưa có phả hệ đến từng trường, và chưa có số đo chất lượng dữ liệu mà nguyên lý (iii) của đề nêu |
 | Tài liệu sản phẩm trên trang docs | Trang docs chỉ có hồ sơ dự thi; cách viết tệp mô hình, API, vận hành và mở rộng đều là liên kết sang tệp trên GitHub |
-| Hướng dẫn theo vai | Chưa có hướng dẫn sử dụng cho người nộp, người xử lý và người triển khai; tài liệu hiện có viết cho người phát triển và người kiểm thử |
-| Chính sách tương thích | Chưa có văn bản nói `/api/v1`, `format` của tệp mô hình và dạng thông điệp webhook giữ tương thích thế nào giữa các bản, và báo trước ra sao khi bỏ một phần |
-| So với ba nền đề gợi ý | Đề nêu Supabase, Strapi và Directus; `website/docs/dependencies.md` ghi Strapi chưa được đánh giá, và `README.md` chưa nói lõi khác ba nền này ở đâu |
 | Giao diện trên điện thoại | Chưa kiểm ứng dụng web trên màn hình điện thoại, trong khi không gian H của đề có ứng dụng di động tác nghiệp |
 | Trang và thành phần riêng trong ứng dụng Tầng 2 | Ứng dụng web chưa có chỗ đăng ký trang hay thành phần form; thêm chúng là sửa mã nguồn và dựng lại image |
 | Ý từ Frappe | Tách phần tùy biến khỏi mô hình gốc: chưa đọc mã của Frappe để đối chiếu |
@@ -99,6 +95,5 @@ Chỗ bài làm hoặc cách trình bày chưa khớp câu chữ của đề.
 
 | Chỗ lệch | Ghi chú |
 |---|---|
-| Ranh giới tầng trong cây thư mục | `dx-monitor` có trang HTML và nằm trong `backend/` cạnh lõi, còn tài liệu xếp nó ở Tầng 2; người chấm kho mã đọc cây thư mục mà không có đội giải thích; thêm cột Tầng vào bảng Cấu trúc repository của `README.md`, hoặc chuyển thư mục |
 | Ứng dụng minh họa chưa định vị trong H-P-D-I | Đề đòi ứng dụng "nằm trong không gian H-P-D-I ở Tầng 2", và thể lệ gắn 10 điểm giấy phép với "giải quyết đúng đầu bài"; `README.md` không nhắc H-P-D-I và không có bảng đối chiếu với đề, còn kịch bản chính Một cửa sinh viên đọc như một ứng dụng ngành của Tầng 3; nói rõ ứng dụng Tầng 2 là bộ dựng giao diện và bảng điều khiển (P: soạn biểu mẫu và quy trình, cổng yêu cầu và phê duyệt; H: hộp việc, bảng theo trạng thái, lịch; D: thống kê, danh mục dữ liệu), còn Một cửa sinh viên là một tệp mô hình của Tầng 3 |
 | Kiểm dịch mã độc | Nguyên lý (iv) của đề viết "kiểm dịch mã độc nghiêm ngặt"; quét tắt mặc định, và kiểm tệp EICAR không nằm trong CI vì job `API end-to-end` không bật quét |

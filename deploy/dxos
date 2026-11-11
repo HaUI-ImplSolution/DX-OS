@@ -29,7 +29,7 @@
 #   dxos demo [--password PASSWORD] | dxos demo remove
 #                              create the accounts judge_student, judge_officer, judge_officer2 and
 #                              judge_supervisor and file sample requests; remove deletes the accounts
-#   dxos client add <name> --model M --role R | list | rotate <name> | remove <name>
+#   dxos client add <name> --model M --role R | list | role <name> --role R | rotate <name> | remove <name>
 #                              register an outside application that calls the API with its own secret and
 #                              one role of one model; the secret is shown once, rotate gives a new one
 #   dxos uninstall [--purge]   remove the containers and the dxos command; --purge also deletes the data
@@ -444,13 +444,32 @@ cmd_client() {
       if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
       print_client_secret "$(json_field clientId "$API_BODY")" "$(json_field secret "$API_BODY")" \
         "the old secret no longer works" ;;
+    role)
+      shift
+      name="${1:-}"
+      [[ "$name" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] || die "usage: dxos client role <name> --role R"
+      shift
+      while (( $# )); do
+        case "$1" in
+          --role) role="${2:?--role needs a role name}"; shift 2 ;;
+          --role=*) role="${1#--role=}"; shift ;;
+          *) die "unknown option: $1" ;;
+        esac
+      done
+      [[ "$role" =~ ^[A-Z][A-Z0-9_]*$ ]] || die "--role needs a role of the model of the application"
+      work="$(mktemp)"
+      printf '{"role":"%s"}' "$role" >"$work"
+      api PUT "/clients/$name" "$work" application/json
+      rm -f "$work"
+      if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
+      echo "dxos-app-$name now holds the role $role; its secret is unchanged and a token it got before lasts until it expires." ;;
     remove)
       (( $# == 2 )) || die "usage: dxos client remove <name>"
       [[ "$2" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] || die "not an application name: $2"
       api DELETE "/clients/$2"
       if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
       echo "Removed dxos-app-$2." ;;
-    *) die "usage: dxos client add <name> --model M --role R | list | rotate <name> | remove <name>" ;;
+    *) die "usage: dxos client add <name> --model M --role R | list | role <name> --role R | rotate <name> | remove <name>" ;;
   esac
 }
 

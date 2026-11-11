@@ -7,6 +7,15 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
+### Ứng dụng ngoài
+
+- Ứng dụng ngoài đổi sang vai khác của cùng mô hình bằng `dxos client role` hoặc `PUT /api/v1/clients/{name}`, giữ nguyên tên và mã bí mật.
+
+### Tệp mô hình
+
+- Trường nhiều lựa chọn nhận `default` là một danh sách các lựa chọn.
+- Trường `date` làm nguồn của điều kiện `when` và `required_when`, so sánh bằng `==`, `!=`, `<`, `<=`, `>` và `>=`.
+
 ## [2.0.0] - 2026-11-11
 
 Lõi dynamic thay cho hai ứng dụng nghiệp vụ viết tay của bản `1.1.1`.

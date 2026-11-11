@@ -561,14 +561,32 @@ export default function ModelForm({ schema, value, onChange }: Props) {
             )}
             <Collapse in={open}>
               <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", pb: 1 }}>
-                <TextField variant="outlined"
-                  size="small"
-                  label={t("Giá trị mặc định")}
-                  value={text(field.default)}
-                  helperText={t("Điền cho hồ sơ cũ khi thêm trường bắt buộc")}
-                  sx={{ ...DENSE, width: 240 }}
-                  onChange={(event) => setField(key, { default: type === "number" && event.target.value !== "" && !Number.isNaN(Number(event.target.value)) ? Number(event.target.value) : event.target.value })}
-                />
+                {type === "choice" && field.multiple === true ? (
+                  <Autocomplete
+                    multiple
+                    size="small"
+                    options={texts(field.options)}
+                    value={texts(field.default)}
+                    sx={{ width: 240 }}
+                    renderTags={(items: string[], getItemProps) =>
+                      items.map((item, index) => {
+                        const { key: itemKey, ...itemProps } = getItemProps({ index });
+                        return <Chip key={itemKey} size="small" label={item} {...itemProps} />;
+                      })
+                    }
+                    renderInput={(params) => <TextField variant="outlined" {...params} label={t("Giá trị mặc định")} helperText={t("Các lựa chọn điền sẵn cho hồ sơ mới")} sx={DENSE} />}
+                    onChange={(_, items) => setField(key, { default: items.length > 0 ? items : undefined })}
+                  />
+                ) : (
+                  <TextField variant="outlined"
+                    size="small"
+                    label={t("Giá trị mặc định")}
+                    value={text(field.default)}
+                    helperText={t("Điền cho hồ sơ cũ khi thêm trường bắt buộc")}
+                    sx={{ ...DENSE, width: 240 }}
+                    onChange={(event) => setField(key, { default: type === "number" && event.target.value !== "" && !Number.isNaN(Number(event.target.value)) ? Number(event.target.value) : event.target.value })}
+                  />
+                )}
                 <TextField variant="outlined"
                   size="small"
                   label={t("Tên cũ của trường")}
@@ -580,7 +598,7 @@ export default function ModelForm({ schema, value, onChange }: Props) {
                 />
                 {(type === "choice" || type === "unit") && (
                   <FormControlLabel
-                    control={<Checkbox size="small" checked={field.multiple === true} onChange={(event) => setField(key, { multiple: event.target.checked ? true : undefined })} />}
+                    control={<Checkbox size="small" checked={field.multiple === true} onChange={(event) => setField(key, { multiple: event.target.checked ? true : undefined, default: undefined })} />}
                     label={<Typography variant="body2">{t("Chọn nhiều giá trị")}</Typography>}
                   />
                 )}

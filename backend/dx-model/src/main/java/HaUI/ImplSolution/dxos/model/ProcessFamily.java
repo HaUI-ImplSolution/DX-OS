@@ -83,7 +83,9 @@ public record ProcessFamily(String name, String initial, List<State> states, Lis
   // action needs a note when the owner must learn why. Roles, when not empty, are the roles that
   // may take a handler action instead of the handler roles of the process. Require names the
   // fields that must hold a value before the action can be taken. When, if given, is a comparison
-  // of one field of the record that must hold before the action can be taken.
+  // of one field of the record that must hold before the action can be taken. Check, if given,
+  // names
+  // the webhook target that is asked before the action is taken and can refuse it.
   public record Action(
       String name,
       String label,
@@ -93,11 +95,12 @@ public record ProcessFamily(String name, String initial, List<State> states, Lis
       boolean needsNote,
       List<String> roles,
       List<String> require,
-      Condition when) {
+      Condition when,
+      String check) {
 
     public Action(
         String name, String label, List<String> from, String to, Actor by, boolean needsNote) {
-      this(name, label, from, to, by, needsNote, List.of(), List.of(), null);
+      this(name, label, from, to, by, needsNote, List.of(), List.of(), null, null);
     }
 
     public boolean allowedIn(String state) {

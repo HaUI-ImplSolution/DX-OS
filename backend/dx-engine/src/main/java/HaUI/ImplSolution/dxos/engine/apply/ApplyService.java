@@ -146,13 +146,15 @@ public class ApplyService {
 
   public Plan plan(String content) {
     Model model = ModelParser.parse(content);
-    return plan(model, hash(content), Map.of());
+    return leavingNoSchema(model, () -> plan(model, hash(content), Map.of()));
   }
 
   // What a return to the version before the running one would do.
   public Plan planRollback(String modelName) {
     Previous previous = previous(modelName);
-    return plan(previous.model(), hash(previous.content()), previous.renames());
+    return leavingNoSchema(
+        previous.model(),
+        () -> plan(previous.model(), hash(previous.content()), previous.renames()));
   }
 
   // Who applies a model: the token "sub" and the name shown in the version history.
@@ -734,6 +736,50 @@ public class ApplyService {
               reversed.put(entity, back);
             });
     return new Previous(target, content, reversed);
+  }
+
+  // A plan only reads, but the schema tool needs the schema of the model to compare with. When the
+  // schema was not there before the plan, the plan removes it again. The removal is skipped while
+  // an
+  // apply of the model holds its lock, and PostgreSQL refuses it once a table exists.
+  private <T> T leavingNoSchema(Model model, Supplier<T> work) {
+    if (schemaExists(model)) {
+      return work.get();
+    }
+    try {
+      return work.get();
+    } finally {
+      dropSchemaMadeByPlan(model);
+    }
+  }
+
+  private boolean schemaExists(Model model) {
+    return Boolean.TRUE.equals(
+        jdbc.queryForObject(
+            "SELECT EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = ?)",
+            Boolean.class,
+            model.schema()));
+  }
+
+  private void dropSchemaMadeByPlan(Model model) {
+    String key = "dxos.apply." + model.name();
+    try {
+      jdbc.execute(
+          (ConnectionCallback<Void>)
+              connection -> {
+                if (!advisoryLock(connection, "pg_try_advisory_lock", key)) {
+                  return null;
+                }
+                try (java.sql.Statement statement = connection.createStatement()) {
+                  statement.execute(DdlGenerator.dropEmptySchema(model));
+                } finally {
+                  advisoryLock(connection, "pg_advisory_unlock", key);
+                }
+                return null;
+              });
+    } catch (RuntimeException e) {
+      log.debug("The schema of model {} stays: {}", model.name(), e.getMessage());
+    }
   }
 
   // What the schema tool needs to exist before it can compare anything; harmless to repeat.

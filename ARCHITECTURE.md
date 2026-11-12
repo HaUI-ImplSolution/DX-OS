@@ -61,7 +61,7 @@ Keycloak giữ tài khoản, mật khẩu và vai; realm `dxos` được nhập 
 |---|---|
 | `dxos-web` | Người dùng đăng nhập vào ứng dụng web |
 | `dxos-monitor` | Đăng nhập vào màn hình giám sát |
-| `dxos-cli` | Lệnh `dxos plan` và `dxos apply`; tài khoản dịch vụ giữ vai `ADMIN` |
+| `dxos-cli` | Lệnh `dxos plan`, `dxos apply` và `dxos gitops`; tài khoản dịch vụ giữ vai `ADMIN` |
 | `dxos-backend-admin` | Tài khoản dịch vụ của backend gọi Admin API: tạo client, vai, nhóm và quản trị người dùng |
 | `dxos-m-<mô hình>` | Chỉ để chứa vai của mô hình, không cho ai đăng nhập |
 | `dxos-app-<tên>` | Một ứng dụng ngoài gọi API bằng token máy; tài khoản dịch vụ giữ đúng một vai của một mô hình |
@@ -190,6 +190,7 @@ Trạng thái của hồ sơ chỉ đổi qua quy trình.
 - Hành động hoàn tất của khối `after:` đi qua outbox đến `CompletionHandler`; hiện có các thao tác `add_to_group` và `remove_from_group` của Keycloak.
 - `OverdueSweep` ghi dòng quá hạn vào lịch sử, một lần cho mỗi hạn, và dòng `due_soon` khi hồ sơ còn dưới `ENGINE_DUE_SOON_BEFORE` trước hạn.
 - `EscalationSweep` ghi dòng `escalated` (mức và lần nhắc) vào lịch sử mỗi khi một mức của `escalate` đến hạn trên hồ sơ quá hạn chưa ai xử lý, cùng giao dịch với tin gửi webhook; sau lúc dịch vụ tắt chỉ ghi mức mới nhất đã đến hạn, và không đổi trạng thái hay người giữ hồ sơ.
+- Hành động khai `check: <tên đích>` thì `ActionCheck` hỏi đích đó trong `DataService.act`, sau `ProcessRules` và trước khi trạng thái đổi, trong giao dịch giữ khóa hồ sơ; đích từ chối hoặc không trả lời theo `on_error` thì hồ sơ giữ nguyên và dòng `check_denied` hoặc `check_unavailable` được ghi bằng giao dịch riêng.
 - Khi mô hình có đích webhook (khóa `webhook` hoặc `DXOS_WEBHOOK_URL`), mỗi dòng lịch sử có thêm một thông điệp chủ đề `record.event` trong outbox cùng giao dịch, và `WebhookHandler` gửi nó kèm chữ ký.
   Các dòng của một hồ sơ được giao theo thứ tự.
   Việc áp dụng mô hình và thay đổi tài khoản đi qua chủ đề `admin.event`.
@@ -220,6 +221,7 @@ Trạng thái của hồ sơ chỉ đổi qua quy trình.
   Chuỗi phát hiện chứ không ngăn việc sửa; bên nhận webhook giữ `hash` của tin đã nhận thì có thêm một điểm neo ngoài máy chủ (`examples/history-witness`).
 - **Hồ dữ liệu:** `dxos archive` xuất hồ sơ đã tới trạng thái cuối và lịch sử của chúng ra Parquet kèm `manifest.json` ghi số dòng và sha256, vào một thư mục hoặc (`--store`) vào bucket riêng của SeaweedFS; `dxos archive check` kiểm lại, `dxos archive auto` ghi mỗi hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS` một lần và `dxos archive schedule install` chạy nó mỗi ngày bằng systemd user timer.
 - **Tự phục hồi:** mọi service chạy lâu có `restart: unless-stopped`; `dxos reconcile` đưa stack về đúng khai báo và chạy mỗi phút bằng systemd user timer.
+- **GitOps:** `dxos gitops` kéo theo chu kỳ hạ tầng (`deploy/`, cấu hình cổng vào, tag image) từ một kho DX-OS và các tệp mô hình từ một kho của người triển khai, xác minh chữ ký commit nếu bật, rồi báo lệch, chờ duyệt hoặc tự áp dụng; nâng cấp hạ tầng đi qua `install.sh --upgrade` và `update.sh`.
 - **Sao lưu:** `deploy/backup.sh` chụp bản sao lưu mã hóa của Postgres và kho tệp; `verify` nạp bản dump vào Postgres tạm và kiểm mọi tệp đính kèm đều có.
 - Cách dùng từng việc ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md) và [`deploy/INTEGRATIONS.md`](./deploy/INTEGRATIONS.md).
 
@@ -269,4 +271,4 @@ Bốn nguyên lý kỹ thuật của đề:
 | Phân tách theo vòng đời dữ liệu, đẩy dữ liệu lịch sử xuống hồ dữ liệu | `dxos archive --store` ghi hồ sơ đã đóng và lịch sử của chúng ra Parquet vào một bucket riêng của SeaweedFS kèm manifest và hash; `dxos archive schedule install` đặt lịch hằng ngày theo `ARCHIVE_AFTER_DAYS` |
 | Hội tụ dữ liệu hành chính (IT) và vận hành (OT) | Chương trình giả lập thiết bị tạo hồ sơ sự cố qua API (`examples/itot-simulator`), đi qua cùng quy trình, quyền và lịch sử với hồ sơ hành chính |
 | Quản trị dữ liệu, phả hệ và nguồn gốc | Tệp mô hình là danh mục dữ liệu, trang Danh mục dữ liệu đọc từ đó nơi dữ liệu đi vào, đi ra và liên kết giữa các thực thể, cùng số đo chất lượng của từng thực thể; lịch sử hồ sơ chống sửa |
-| Zero-Trust, GitOps, kiểm dịch mã độc, tự phục hồi | Token kiểm ở gateway và backend; ClamAV quét tệp khi bật; tệp mô hình là khai báo, xem trước rồi áp dụng; `dxos reconcile` và `restart: unless-stopped` |
+| Zero-Trust, GitOps, kiểm dịch mã độc, tự phục hồi | Token kiểm ở gateway và backend; ClamAV quét tệp khi bật; tệp mô hình là khai báo, xem trước rồi áp dụng, `dxos gitops` kéo hạ tầng và các tệp mô hình từ git; `dxos reconcile` và `restart: unless-stopped` |

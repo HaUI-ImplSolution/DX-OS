@@ -191,7 +191,11 @@ public class DataController {
               + " actions that say so. 403 when the caller may not take it, or when the record is"
               + " assigned to someone else, with data.reason naming why (for example SELF_DECISION,"
               + " OWNER_ONLY, HANDLER_ONLY, ASSIGNED_TO_OTHER); 409 when the record is in another"
-              + " state, with data.reason WRONG_STATE or RECORD_CLOSED. A terminal state"
+              + " state, with data.reason WRONG_STATE or RECORD_CLOSED. An action that names a"
+              + " check target is first sent to that service: 403 with data.reason CHECK_DENIED and"
+              + " the data.code and message of the service when it refuses, 503 ERR_CHECK_UNAVAILABLE"
+              + " when it cannot be asked and the target does not allow the action then, the record"
+              + " left as it was. A terminal state"
               + " stores decided_by and decided_at. The owner can take the action withdraw from any"
               + " state that is not final. An Idempotency-Key header works as it does when creating a"
               + " record: a repeat gets the first answer instead of 409 WRONG_STATE.")

@@ -30,6 +30,7 @@ Phiên bản hiện tại là `2.0.0`, thay đổi theo từng phiên bản ở 
 ## Tính năng
 
 - **Từ một tệp đến hệ thống chạy được.** Hồ sơ, bảng dữ liệu, tài khoản, vai, màn hình danh sách và biểu mẫu đều được dựng từ tệp mô hình.
+  Tệp viết theo kiểu cũ vẫn chạy được, và có lệnh đưa nó lên kiểu mới sau khi xem trước những gì sẽ đổi.
 - **Phân quyền đến từng dòng.** Mỗi vai chỉ thấy và sửa phần việc của mình, của đơn vị mình hoặc được giao cho mình.
 - **Quy tắc dữ liệu ngay trong tệp.** Trường đúng hoặc sai, ngày, chọn nhiều giá trị, giới hạn giá trị, mẫu chuỗi và điều kiện bắt buộc đều khai báo trong tệp; cơ sở dữ liệu cũng từ chối giá trị sai.
 - **Quy trình tùy biến.** Chọn một trong ba mẫu có sẵn (phê duyệt, công việc cần xử lý, đặt chỗ theo khung giờ có kiểm sức chứa) rồi thêm bớt bước, giao từng bước cho vai riêng, hoặc tự khai báo quy trình từ đầu; một bước có thể chỉ mở khi hồ sơ đạt điều kiện, ví dụ số tiền vượt mức thì lên cấp duyệt cao hơn; từ chối và trả lại đều cần lý do, và không ai tự duyệt hồ sơ của mình.
@@ -41,7 +42,7 @@ Phiên bản hiện tại là `2.0.0`, thay đổi theo từng phiên bản ở 
 - **Giao diện theo khai báo.** Tệp mô hình chọn được biểu tượng, nhóm menu, cột và sắp xếp mặc định, cách chia nhóm biểu mẫu và lời gợi ý; cán bộ chọn nhiều hồ sơ rồi xử lý cùng lúc, mỗi hồ sơ vẫn qua đủ luật.
 - **Xem theo trạng thái và xuất danh sách.** Danh sách của hồ sơ có quy trình xem được như một bảng theo từng trạng thái, và xuất ra tệp CSV mà bảng tính đọc được, đúng phần người xem được quyền thấy.
 - **Danh mục dữ liệu.** Một trang cho biết dữ liệu của mỗi mô hình nằm ở đâu, ai được xem, các loại hồ sơ liên quan nhau thế nào, dữ liệu đi vào từ đâu và đi ra đâu, và dữ liệu hiện có đầy đủ và còn mới đến đâu.
-- **Lưu trữ hồ sơ cũ.** Hồ sơ đã đóng lâu được ghi sang kho lưu trữ theo lịch mỗi ngày, dữ liệu đang dùng vẫn giữ nguyên và bản lưu kiểm lại được.
+- **Lưu trữ hồ sơ cũ.** Hồ sơ đã đóng lâu được ghi sang kho lưu trữ theo lịch mỗi ngày, dữ liệu đang dùng vẫn giữ nguyên, bản lưu kiểm lại được và truy vấn trực tiếp bằng DuckDB.
 - **Hộp việc tự cập nhật.** Khi hồ sơ đổi, hộp việc, danh sách và trang chi tiết đang mở tự làm mới, không cần tải lại trang.
 - **Dùng thử ngay.** Một lệnh tạo tài khoản thử cho từng vai cùng hồ sơ mẫu ở nhiều trạng thái, để người xem đăng nhập là thấy hệ thống có việc đang chạy.
 - **Cài và vận hành đơn giản.** Một lệnh cài, một lệnh chạy; có sao lưu kiểm được, tự khởi động lại dịch vụ và quét mã độc cho tệp đính kèm khi bật.
@@ -163,6 +164,7 @@ Trang tài liệu: <https://haui-implsolution.github.io/DX-OS/>.
 | Webhook, lịch sử chống sửa, lưu trữ dài hạn | [`deploy/INTEGRATIONS.md`](./deploy/INTEGRATIONS.md) |
 | Kết nối công cụ báo cáo | [`deploy/REPORTING.md`](./deploy/REPORTING.md) |
 | Kiểm thử | [`docs/TESTING.md`](./docs/TESTING.md), [`e2e/README.md`](./e2e/README.md) |
+| Kiểm chứng chỉ số mục tiêu, chi phí tự cài | [`docs/TARGETS.md`](./docs/TARGETS.md) |
 | Kịch bản trình diễn 15 phút | [`docs/DEMO.md`](./docs/DEMO.md) |
 | Hướng thiết kế và việc còn lại | [`docs/dynamic-core/README.md`](./docs/dynamic-core/README.md), [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md) |
 | Thay đổi theo phiên bản | [`CHANGELOG.md`](./CHANGELOG.md) |

@@ -16,16 +16,29 @@
 #   dxos doctor                check this machine and deploy/.env
 #   dxos backup [args]         encrypted backup, see backup.sh
 #   dxos av [on|off]           turn the virus scan of uploads (ClamAV, about 1 GB of RAM) on or off, or show it
-#   dxos plan <model-file>     show what applying the file would change, without changing anything
+#   dxos plan [--check] <model-file>
+#                              show what applying the file would change, without changing anything;
+#                              --check exits 0 when nothing differs, 2 when the plan has changes, 1 when refused
 #   dxos apply <model-file> [--accept SAFE|MIGRATION|LOSS]
 #                              apply the file; a plan above SAFE needs --accept with its level
+#   dxos model upgrade [--write] <model-file>
+#                              preview the sequential upgrade to the current model format;
+#                              --write replaces the file atomically after printing the diff
 #   dxos history verify|anchor check that the history of records was not changed, or anchor it now
+#   dxos gitops sync [models|infra] | status [models|infra] | approve [infra] <commit> [--accept LEVEL] | install | uninstall
+#                              keep the models equal to the model files of a git repository, and this install
+#                              equal to the deployment of a DX-OS repository (GITOPS_* in .env): sync pulls,
+#                              verifies the commit and compares; the mode report only reports, approve waits
+#                              for approve, auto applies (models: SAFE plans; infra: a signed commit);
+#                              install runs sync every 5 minutes
 #   dxos reconcile [install|uninstall]
 #                              bring the stack back to what is declared (missing or changed containers);
 #                              install runs it every minute with a systemd user timer
 #   dxos archive <model> [--before YYYY-MM-DD] [--out DIR | --store] | dxos archive check <dir | --store model/run>
 #                              write the finished records of a model and their history to Parquet files,
 #                              to a directory (default deploy/archive) or to the object store (--store)
+#   dxos archive query <model/run> --file FILE [--param name=value ...] "SELECT ... FROM archive"
+#                              query one Parquet file of an object-store run with DuckDB (read only)
 #   dxos archive list | auto | schedule install|uninstall
 #                              list the runs in the store; archive what is older than ARCHIVE_AFTER_DAYS
 #                              (once per record); auto runs every day with a systemd user timer
@@ -61,6 +74,7 @@ STOPPED_MARK="$DEPLOY_DIR/.stopped"
 CALLER_DIR="$PWD"
 ALPINE="alpine:3.24@sha256:3f4d6b32e26703c6082839234f43769d5046b3ac7c910033911d1e71d8cd630a"
 source "$DEPLOY_DIR/lib/web-url.sh"
+source "$DEPLOY_DIR/lib/gitops.sh"
 
 die() { echo "dxos: $*" >&2; exit 1; }
 from_caller() { if [[ "$1" == /* ]]; then printf '%s\n' "$1"; else printf '%s\n' "$CALLER_DIR/$1"; fi; }
@@ -421,14 +435,19 @@ model_file_arg() {
   [[ -f "$1" && -r "$1" ]] || die "model file not found or not readable: $1"
 }
 
-# Prints the plan; exit code 1 when the plan is refused or the API says no.
+# Prints the plan; exit code 1 when the plan is refused or the API says no. With --check the exit code is
+# 0 when the running model equals the file and 2 when the plan has changes.
 cmd_plan() {
-  (( $# == 1 )) || die "usage: dxos plan <model-file>"
-  local file; file="$(from_caller "$1")"
+  local check=false file
+  if [[ "${1:-}" == --check ]]; then check=true; shift; fi
+  (( $# == 1 )) || die "usage: dxos plan [--check] <model-file>"
+  file="$(from_caller "$1")"
   model_file_arg "$file" plan
   api POST /models/plan "$file"
   pretty "$API_BODY"
   [[ "$API_STATUS" == 200 && "$(json_field action "$API_BODY")" != rejected ]] || return 1
+  if $check && [[ "$(json_field action "$API_BODY")" != unchanged ]]; then return 2; fi
+  return 0
 }
 
 # Plans, then applies with the version of that plan as base. The level is never raised on its own:
@@ -457,6 +476,63 @@ cmd_apply() {
   api POST "/models/apply?$query" "$file"
   pretty "$API_BODY"
   [[ "$API_STATUS" == 200 ]] || return 1
+}
+
+# Shows the complete format upgrade before an optional atomic replacement of the model file.
+cmd_model_upgrade() (
+  local write=false file="" target dir work upgraded diff_status=0
+  while (( $# )); do
+    case "$1" in
+      --write) write=true; shift ;;
+      -*) die "unknown option: $1" ;;
+      *) [[ -z "$file" ]] || die "usage: dxos model upgrade [--write] <model-file>"; file="$1"; shift ;;
+    esac
+  done
+  [[ -n "$file" ]] || die "usage: dxos model upgrade [--write] <model-file>"
+  file="$(from_caller "$file")"
+  model_file_arg "$file" "model upgrade"
+  api POST /models/upgrade "$file"
+  if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
+
+  # A symlinked model file is upgraded where it points; the link stays.
+  target="$(readlink -f -- "$file")"
+  dir="$(dirname "$target")"
+  work="$(mktemp -d "$dir/.dxos-model-upgrade.XXXXXX")"
+  trap 'rm -rf "$work"' EXIT
+  upgraded="$work/upgraded.yaml"
+  if command -v jq >/dev/null 2>&1; then
+    jq -ej '.data.content' <<<"$API_BODY" >"$upgraded"
+  elif command -v python3 >/dev/null 2>&1; then
+    python3 -c 'import json, sys; sys.stdout.write(json.load(sys.stdin)["data"]["content"])' \
+      <<<"$API_BODY" >"$upgraded"
+  else
+    die "jq or python3 is required to read the upgraded model"
+  fi
+
+  if cmp -s -- "$file" "$upgraded"; then
+    echo "The model already uses format $(json_field toFormat "$API_BODY")."
+    return 0
+  fi
+  diff -u --label "$file" --label "$file (upgraded)" -- "$file" "$upgraded" || diff_status=$?
+  (( diff_status == 1 )) || die "could not compare the upgraded model"
+  if [[ "$write" != true ]]; then
+    echo "Preview only; run with --write to replace the file."
+    return 0
+  fi
+  chmod --reference="$target" "$upgraded"
+  chown --reference="$target" "$upgraded" 2>/dev/null \
+    || echo "Warning: the owner and group of $file could not be kept." >&2
+  sync -- "$upgraded" 2>/dev/null || true
+  mv -f -- "$upgraded" "$target"
+  sync -- "$dir" 2>/dev/null || true
+  echo "Upgraded $file atomically."
+)
+
+cmd_model() {
+  case "${1:-}" in
+    upgrade) shift; cmd_model_upgrade "$@" ;;
+    *) die "usage: dxos model upgrade [--write] <model-file>" ;;
+  esac
 }
 
 # Runs one browser-client operation inside Keycloak without publishing its Admin API.
@@ -1031,6 +1107,95 @@ SELECT 'ROWS|$name|' || count(*) FROM read_parquet('$target/$name');"
   echo "Archive matches its manifest."
 }
 
+# Runs one read-only, parameterized query over one manifest-listed Parquet file of one object-store run.
+archive_query() {
+  local ref="${1:-}" file="" sql="" model run name value target query_input execute_args=""
+  local manifest_line manifest want_rows want_sum actual actual_rows actual_sum
+  local memory_limit threads temp_limit
+  local param_value_pattern="^(NULL|TRUE|FALSE|-?[0-9]+([.][0-9]+)?|'([^']|'')*')$"
+  local params=()
+  shift || true
+  model="${ref%%/*}"; run="${ref#*/}"
+  [[ "$model" =~ ^[a-z][a-z0-9_]*$ && "$run" =~ ^[0-9]{8}T[0-9]{6}Z$ ]] \
+    || die "not an archive run: $ref (expected model/YYYYMMDDTHHMMSSZ)"
+  while (( $# )); do
+    case "$1" in
+      --file) file="${2:?--file needs a Parquet file}"; shift 2 ;;
+      --file=*) file="${1#--file=}"; shift ;;
+      --param) params+=("${2:?--param needs name=value}"); shift 2 ;;
+      --param=*) params+=("${1#--param=}"); shift ;;
+      --) shift; sql="${1:-}"; shift; (( $# == 0 )) || die "query must be one SQL statement" ;;
+      -*) die "unknown option: $1" ;;
+      *) [[ -z "$sql" ]] || die "query must be one SQL statement"; sql="$1"; shift ;;
+    esac
+  done
+  [[ -n "$file" ]] || die "--file is required; choose one Parquet file in the selected archive run"
+  [[ "$file" =~ ^[A-Za-z0-9_]+\.parquet$ ]] \
+    || die "--file must name one Parquet file in the selected archive run"
+  [[ -n "$sql" ]] || die "usage: dxos archive query model/run --file FILE [--param name=value ...] \"SELECT ... FROM archive\""
+  sql="${sql%;}"
+  [[ "$sql" =~ ^[[:space:]]*(SELECT|WITH|EXPLAIN)([[:space:]]|$) ]] \
+    || die "archive query accepts SELECT, WITH, or EXPLAIN only"
+  [[ "$sql" != *';'* ]] || die "archive query accepts one SQL statement only"
+  for value in "${params[@]}"; do
+    name="${value%%=*}"
+    [[ "$value" == *=* && "$name" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] \
+      || die "--param must use name=value with a valid parameter name"
+    [[ "$value" != *$'\r'* && "$value" != *$'\n'* && "$value" != *';'* ]] \
+      || die "--param values cannot contain newlines or semicolons"
+    value="${value#*=}"
+    [[ "$value" =~ $param_value_pattern ]] \
+      || die "--param values must be NULL, TRUE, FALSE, a number, or a single-quoted string"
+    [[ -z "$execute_args" ]] || execute_args+=", "
+    execute_args+="$name := $value"
+  done
+  target="s3://$(archive_bucket)/$model/$run/$file"
+  manifest="$( { store_prelude
+    echo "SELECT 'FILE|' || f.rows || '|' || f.sha256 FROM (SELECT unnest(files) AS f FROM read_json('s3://$(archive_bucket)/$model/$run/manifest.json')) WHERE f.name = '$file';"
+    } | duckdb_store 2>&1)" \
+    || die "cannot read the manifest for $model/$run"
+  manifest_line="$(grep '^FILE|' <<<"$manifest" || true)"
+  [[ "$(grep -c '^FILE|' <<<"$manifest_line")" == 1 ]] \
+    || die "the Parquet file $file is not listed in the archive manifest"
+  IFS='|' read -r _ want_rows want_sum <<<"$manifest_line"
+  memory_limit="$(env_value ARCHIVE_QUERY_MEMORY_LIMIT)"; memory_limit="${memory_limit:-2GB}"
+  threads="$(env_value ARCHIVE_QUERY_THREADS)"; threads="${threads:-2}"
+  temp_limit="$(env_value ARCHIVE_QUERY_TEMP_LIMIT)"; temp_limit="${temp_limit:-4GB}"
+  [[ "$memory_limit" =~ ^[1-9][0-9]*(MB|GB|TB)$ ]] || die "ARCHIVE_QUERY_MEMORY_LIMIT must be a positive MB, GB, or TB value"
+  [[ "$threads" =~ ^[1-9][0-9]*$ ]] || die "ARCHIVE_QUERY_THREADS must be a positive integer"
+  [[ "$temp_limit" =~ ^[1-9][0-9]*(MB|GB|TB)$ ]] || die "ARCHIVE_QUERY_TEMP_LIMIT must be a positive MB, GB, or TB value"
+
+  # The checksum runs under the same limits as the query.
+  actual="$( { store_prelude
+    echo "SET memory_limit = '$memory_limit'; SET threads = $threads;"
+    echo "SELECT 'SUM|' || sha256(content) FROM read_blob('$target');"
+    echo "SELECT 'ROWS|' || count(*) FROM read_parquet('$target');"
+    } | duckdb_store 2>/dev/null)" \
+    || die "cannot verify $target against its archive manifest"
+  actual_sum="$(sed -n 's/^SUM|//p' <<<"$actual")"
+  actual_rows="$(sed -n 's/^ROWS|//p' <<<"$actual")"
+  [[ "$actual_sum" == "$want_sum" && "$actual_rows" == "$want_rows" ]] \
+    || die "the Parquet file $file does not match its archive manifest"
+
+  query_input="$(store_prelude)"
+  query_input+=$'\n'"SET allowed_paths = ['$target'];"$'\n'
+  query_input+="SET memory_limit = '$memory_limit';"$'\n'
+  query_input+="SET threads = $threads;"$'\n'
+  query_input+="SET max_temp_directory_size = '$temp_limit';"$'\n'
+  query_input+="SET enable_external_access=false;"$'\n'
+  query_input+="SET lock_configuration=true;"$'\n'
+  query_input+="CREATE OR REPLACE TEMP VIEW archive AS SELECT * FROM read_parquet('$target');"$'\n'
+  if (( ${#params[@]} )); then
+    query_input+="PREPARE archive_query AS $sql;"$'\n'
+    query_input+="EXECUTE archive_query($execute_args);"$'\n'
+  else
+    query_input+="$sql"$'\n'
+  fi
+  # CREATE SECRET in the prelude prints a first line "true"; drop it and keep the exit code of DuckDB.
+  duckdb_store <<<"$query_input" | sed '1{/^true$/d;}'
+  return "${PIPESTATUS[0]}"
+}
+
 # The runs in the object store, oldest first.
 archive_list() {
   local out rows model run since upto files
@@ -1094,10 +1259,11 @@ cmd_archive_schedule() {
 cmd_archive() {
   case "${1:-}" in
     check) shift; archive_check "$@" ;;
+    query) shift; archive_query "$@" ;;
     list) archive_list ;;
     auto) archive_auto ;;
     schedule) shift; cmd_archive_schedule "$@" ;;
-    ""|-*) die "usage: dxos archive <model> [--before YYYY-MM-DD] [--out DIR | --store] | check | list | auto | schedule" ;;
+    ""|-*) die "usage: dxos archive <model> [--before YYYY-MM-DD] [--out DIR | --store] | query | check | list | auto | schedule (query takes model/run --file FILE)" ;;
     *)
       local model="$1" before="" out="" store=0
       shift
@@ -1189,15 +1355,17 @@ main() {
     av) cmd_av "$@" ;;
     plan) cmd_plan "$@" ;;
     apply) cmd_apply "$@" ;;
+    model) cmd_model "$@" ;;
     history) cmd_history "$@" ;;
     reconcile) cmd_reconcile "$@" ;;
+    gitops) cmd_gitops "$@" ;;
     archive) cmd_archive "$@" ;;
     demo) "$DEPLOY_DIR/demo.sh" "$@" ;;
     client) cmd_client "$@" ;;
     uninstall) cmd_uninstall "$@" ;;
     version) echo "DX-OS $(env_value DXOS_IMAGE_TAG) in $PREFIX" ;;
-    help|-h|--help) sed -n '3,42p' "$self" ;;
-    *) echo "dxos: unknown command: $command" >&2; sed -n '3,42p' "$self" >&2; exit 2 ;;
+    help|-h|--help) sed -n '3,50p' "$self" ;;
+    *) echo "dxos: unknown command: $command" >&2; sed -n '3,50p' "$self" >&2; exit 2 ;;
   esac
 }
 

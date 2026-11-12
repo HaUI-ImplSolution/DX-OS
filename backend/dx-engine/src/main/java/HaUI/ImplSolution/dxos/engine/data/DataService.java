@@ -6,12 +6,14 @@ import static HaUI.ImplSolution.dxos.engine.apply.Sql.table;
 
 import HaUI.ImplSolution.dxos.core.api.dto.PageResponse;
 import HaUI.ImplSolution.dxos.core.api.exception.ActionNotAllowedException;
+import HaUI.ImplSolution.dxos.core.api.exception.CheckUnavailableException;
 import HaUI.ImplSolution.dxos.core.api.exception.InvalidStateException;
 import HaUI.ImplSolution.dxos.core.api.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.dxos.core.api.user.UserContext;
 import HaUI.ImplSolution.dxos.core.identity.KeycloakAdminClient;
 import HaUI.ImplSolution.dxos.core.identity.KeycloakAdminClient.Person;
 import HaUI.ImplSolution.dxos.engine.apply.DdlGenerator;
+import HaUI.ImplSolution.dxos.engine.event.ActionCheck;
 import HaUI.ImplSolution.dxos.engine.exception.ModelValidationException;
 import HaUI.ImplSolution.dxos.engine.files.AttachmentCleaner;
 import HaUI.ImplSolution.dxos.engine.process.BookingGuard;
@@ -47,7 +49,10 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 // Reads and writes the records of any entity of any applied model. Which tables, columns, rules
 // and roles apply all come from the model; the SQL text is built from its validated names and
@@ -93,6 +98,8 @@ public class DataService {
   private final EventLog events;
   private final KeycloakAdminClient keycloak;
   private final AttachmentCleaner attachments;
+  private final ActionCheck checks;
+  private final TransactionTemplate separate;
 
   public DataService(
       NamedParameterJdbcTemplate jdbc,
@@ -102,7 +109,9 @@ public class DataService {
       BookingGuard bookings,
       EventLog events,
       KeycloakAdminClient keycloak,
-      AttachmentCleaner attachments) {
+      AttachmentCleaner attachments,
+      ActionCheck checks,
+      PlatformTransactionManager transactions) {
     this.jdbc = jdbc;
     this.user = user;
     this.process = process;
@@ -111,6 +120,9 @@ public class DataService {
     this.events = events;
     this.keycloak = keycloak;
     this.attachments = attachments;
+    this.checks = checks;
+    this.separate = new TransactionTemplate(transactions);
+    this.separate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
   }
 
   public Access access(Model model, Entity entity) {
@@ -554,6 +566,9 @@ public class DataService {
     rules.checkAction(
         entity, action, record, me, user.clientRoles(ModelClient.of(model.name())), note);
     String status = (String) record.get("status");
+    if (action.check() != null) {
+      checkWithService(model, entity, id, action, status, me, note, record);
+    }
     if (ProcessFamily.WITHDRAW.equals(actionName)) {
       process.withdraw(model, entity, id, me);
     } else {
@@ -563,6 +578,56 @@ public class DataService {
     events.record(
         model, entity, id, actionName, status, (String) changed.get("status"), note, null);
     return changed;
+  }
+
+  // Asks the service the action names whether it may go on, and writes the outcome to the history
+  // when the service refused, could not be asked, or was skipped.
+  private void checkWithService(
+      Model model,
+      Entity entity,
+      long id,
+      Action action,
+      String status,
+      String me,
+      String note,
+      Map<String, Object> locked) {
+    String eventId =
+        model.name()
+            + ":"
+            + entity.name()
+            + ":"
+            + id
+            + ":"
+            + action.name()
+            + ":"
+            + locked.get("version");
+    ActionCheck.Verdict verdict =
+        checks.ask(
+            action,
+            eventId,
+            ActionCheck.body(
+                model.name(), entity.name(), id, action, status, me, note, get(model, entity, id)));
+    if (verdict.history() == null) {
+      return;
+    }
+    String detail =
+        verdict.detail() != null
+            ? verdict.detail()
+            : (verdict.code().isEmpty() ? "" : verdict.code() + ": ") + verdict.message();
+    if (!verdict.stops()) {
+      events.record(model, entity, id, verdict.history(), status, status, note, detail);
+      return;
+    }
+    // The refusal undoes the request, so its line is written in a transaction of its own.
+    separate.executeWithoutResult(
+        tx -> events.record(model, entity, id, verdict.history(), status, status, note, detail));
+    if (ActionCheck.DENIED.equals(verdict.history())) {
+      throw new ActionNotAllowedException(
+          verdict.message().isEmpty() ? "The action was refused by its check" : verdict.message(),
+          "CHECK_DENIED",
+          verdict.code().isEmpty() ? null : verdict.code());
+    }
+    throw new CheckUnavailableException("The check of " + action.name() + " could not be asked");
   }
 
   // Gives a record to a user who can handle it, or back to the handler role with null.
@@ -772,7 +837,7 @@ public class DataService {
     String extra = required.stream().map(name -> ", " + ident(name)).collect(Collectors.joining());
     List<Map<String, Object>> rows =
         jdbc.queryForList(
-            "SELECT status, created_by, assignee"
+            "SELECT status, created_by, assignee, version"
                 + extra
                 + " FROM "
                 + table(model, entity)

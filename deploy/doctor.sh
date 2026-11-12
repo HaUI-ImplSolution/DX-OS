@@ -90,6 +90,24 @@ else
     ok "CORS_ALLOWED_ORIGINS contains only exact safe origins"
   fi
 
+  # The GitOps settings are checked by the same code that sync runs, so a value doctor accepts is one sync accepts.
+  DEPLOY_DIR="$PWD"
+  source lib/gitops.sh
+  for gitops_kind in models infra; do
+    gitops_configured "$gitops_kind" || continue
+    if ! command -v git >/dev/null 2>&1; then
+      fail "GitOps $gitops_kind: git is not installed"
+    elif gitops_problem="$( ( die() { echo "$*"; exit 1; }; gitops_conf "$gitops_kind" ) 2>&1 )"; then
+      ok "GitOps $gitops_kind: settings are usable"
+    else
+      fail "GitOps $gitops_kind: $gitops_problem"
+    fi
+  done
+  gitops_key="$(env_value GITOPS_SSH_KEY)"
+  if [[ -n "$gitops_key" && -f "$gitops_key" && "$(stat -c %a "$gitops_key" 2>/dev/null)" =~ [0-7][1-7][0-7]|[0-7][0-7][1-7] ]]; then
+    warn "GITOPS_SSH_KEY is readable by others; ssh refuses a key with a mode above 600"
+  fi
+
   scan_host="$(env_value STORAGE_SCAN_HOST)"
   if [[ -z "$scan_host" ]]; then
     ok "virus scan of uploads is off (dxos av on, or av in COMPOSE_PROFILES and STORAGE_SCAN_HOST=clamav)"

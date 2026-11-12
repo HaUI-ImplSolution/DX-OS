@@ -65,6 +65,39 @@ Dòng `escalated` không đổi trạng thái hồ sơ, và các trường còn 
 Câu có tên mô hình, thực thể, số hồ sơ và trạng thái, không có nội dung hồ sơ.
 Hồ sơ của thực thể có quy trình vừa được tạo hoặc nộp lại đọc là "Việc mới", dòng `due_soon` là "Sắp đến hạn xử lý", dòng `overdue` là "Quá hạn xử lý", dòng `escalated` là "Leo thang mức" kèm các vai nhận, dòng giao việc là "Được giao"; các dòng khác ghi hành động và trạng thái trước, sau.
 
+### Kiểm tra trước khi chuyển trạng thái
+
+Hành động khai `check: <tên đích>` thì dịch vụ ở đích đó được hỏi trước khi hồ sơ chuyển trạng thái.
+Đích khai trong `deploy/webhooks/targets.yml` như đích của `webhook`, thêm hai khóa tùy chọn:
+
+```yaml
+targets:
+  audit_service:
+    url: https://audit.example.org/dxos/check
+    secret: change-me
+    on_error: deny
+    bypass: false
+```
+
+- `on_error` là `deny` (mặc định) hoặc `allow`, cho lúc dịch vụ không trả lời trong 3 giây, trả lỗi hoặc trả lời không đúng dạng.
+- `bypass: true` cho mọi hành động đi qua mà không hỏi, dùng khi bảo trì dịch vụ; sửa tệp là có hiệu lực, không cần tạo lại backend.
+- Tên đích chưa có trong tệp thì xem kế hoạch báo bị từ chối và áp dụng trả 409, như đích của `webhook`.
+
+Dịch vụ được hỏi sau khi người gọi đã đạt mọi quy tắc của quy trình, trong cùng giao dịch giữ khóa hồ sơ, nên hai hành động trên một hồ sơ không hỏi chồng nhau.
+Backend gửi `POST` JSON với `model`, `entity`, `record_id`, `action`, `from`, `to`, `actor`, `note` và `record` (các trường của hồ sơ).
+`X-Dxos-Event-Id` giống nhau ở mọi lần hỏi cùng một hành động trên cùng một phiên bản hồ sơ, để dịch vụ nhận ra lần lặp; `X-Dxos-Signature` có khi đích có `secret`, tính như ở webhook sự kiện.
+Dịch vụ trả `2xx` với `{"allow": true}` hoặc `{"allow": false, "code": "...", "message": "..."}`; `code` và `message` là của dịch vụ, tối đa 300 ký tự.
+
+| Kết quả | Hồ sơ | Người gọi nhận | Dòng lịch sử |
+|---|---|---|---|
+| `allow: true` | Chuyển trạng thái | Kết quả của hành động | Dòng của hành động |
+| `allow: false` | Giữ nguyên | 403 `ERR_ACTION_NOT_ALLOWED`, `data.reason` là `CHECK_DENIED`, `data.code` là mã của dịch vụ khi có, `message` là câu của dịch vụ | `check_denied` |
+| Không trả lời hoặc trả lời sai, `on_error: deny` | Giữ nguyên, thử lại được | 503 `ERR_CHECK_UNAVAILABLE`, `data.reason` là `CHECK_UNAVAILABLE` | `check_unavailable` |
+| Không trả lời hoặc trả lời sai, `on_error: allow` | Chuyển trạng thái | Kết quả của hành động | `check_skipped`, rồi dòng của hành động |
+| `bypass: true` | Chuyển trạng thái | Kết quả của hành động | `check_skipped`, rồi dòng của hành động |
+
+Hành động tự đóng của `auto_close` do hệ thống thực hiện nên không hỏi dịch vụ.
+
 ### Việc áp dụng mô hình và thay đổi tài khoản
 
 Các thay đổi này gửi thông điệp chủ đề `admin.event` với `eventId`, `kind`, `model`, `actor`, `actorName`, `at`, `facts` và `schemaVersion`; `eventId` là số của dòng trong nhật ký thay đổi của quản trị, tăng dần, và cũng nằm ở header `X-Dxos-Event-Id`.
@@ -107,6 +140,12 @@ Kho là một phần dữ liệu của SeaweedFS nên `dxos backup` sao lưu cù
 Số dòng và sha256 trong đó tính từ chính các byte đã nằm trong kho.
 `dxos archive list` liệt kê các lần chạy trong kho, `dxos archive check --store <mô hình>/<lần chạy>` đọc lại từng tệp từ kho và so với manifest; một tệp lệch hoặc không đọc được thì lệnh thoát với mã 1.
 Không đọc được kho (khóa sai, SeaweedFS không chạy) thì lệnh báo lỗi và thoát với mã 1, không coi là kho trống.
+
+`dxos archive query <mô hình>/<lần chạy> --file <tệp>.parquet` dựng bảng tạm `archive` từ đúng một tệp Parquet có trong manifest của lần chạy đó rồi nhận một câu `SELECT`, `WITH` hoặc `EXPLAIN`.
+Lệnh kiểm số dòng và SHA-256 của tệp với manifest trước khi chạy câu SQL; không có `--file`, có ký tự đại diện hoặc tệp không có trong manifest thì lệnh thoát với mã 1.
+Lệnh hỗ trợ tham số ràng buộc bằng `--param`, tắt truy cập đường dẫn ngoài trước khi chạy câu SQL và không cần cấp quyền cơ sở dữ liệu cho công cụ báo cáo.
+Lệnh chạy trên máy cài đặt bằng khóa kho đối tượng trong `.env`, nên chỉ người có quyền vận hành thư mục triển khai mới dùng được.
+Ví dụ và cú pháp tham số nằm trong [`OPERATIONS.md`](./OPERATIONS.md#lưu-trữ-hồ-sơ-đã-đóng).
 
 ### Theo lịch
 

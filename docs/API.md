@@ -7,6 +7,7 @@ Script `deploy/dev/check_docs.py` kiểm mọi đường dẫn nêu ở đây c�
 | Đường dẫn | Việc |
 |---|---|
 | `POST /api/v1/models/plan`, `/apply` | Xem trước và áp dụng tệp mô hình (ADMIN) |
+| `POST /api/v1/models/upgrade` | Chạy tuần tự các migration đến format hiện hành và trả nội dung để xem trước, không lưu tệp (ADMIN) |
 | `POST /api/v1/models/{model}/rollback/plan`, `/rollback` | Xem trước và quay về phiên bản trước (ADMIN) |
 | `POST /api/v1/models/{model}/resume`, `/abandon` | Hoàn tất hoặc hủy bỏ lần áp dụng đã dừng giữa chừng (ADMIN) |
 | `GET /api/v1/models`, `/models/{model}/runs` | Mô hình đã áp dụng và lịch sử từng bước (ADMIN) |

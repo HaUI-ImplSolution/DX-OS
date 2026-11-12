@@ -12,7 +12,7 @@ Nó không có nghĩa một mô hình có thể đổi trường mà mã tích h
 | Nhu cầu | Mức hỗ trợ | Ranh giới nâng cấp |
 |---|---|---|
 | Dịch vụ riêng gọi API của lõi | Ổn định | Dùng client riêng cho đúng một vai của một mô hình và đọc OpenAPI sinh từ mô hình đang chạy |
-| Bên nhận phản ứng sau thay đổi | Ổn định | Webhook có chữ ký, `schemaVersion` và API đọc bù; webhook không chặn được hành động trước khi trạng thái đổi |
+| Bên nhận phản ứng sau thay đổi | Ổn định | Webhook có chữ ký, `schemaVersion` và API đọc bù; chặn một hành động trước khi trạng thái đổi dùng khóa `check` của hành động |
 | Giao diện ngoài chạy ở origin riêng | Ổn định | Đăng ký public client bằng `dxos client browser add`; redirect và CORS dùng danh sách chính xác, không nhận wildcard |
 | Trang hoặc thành phần form trong web Tầng 2 | Tùy biến source | Phải sửa và dựng lại image frontend; chưa có registry plugin hay kiểm tra tương thích |
 | Route riêng dưới gateway DX-OS | Ổn định | `deploy/apisix/local.yaml` của bản cài được kiểm và ghép với cấu hình lõi; giữ nguyên khi nâng cấp |
@@ -124,7 +124,7 @@ Trước khi nâng DX-OS hoặc áp dụng phiên bản mô hình mới:
 ## Bên nhận webhook
 
 Webhook phù hợp cho thông báo, đồng bộ bất đồng bộ, lập chỉ mục hoặc kích hoạt công việc sau khi DX-OS đã ghi thay đổi.
-Webhook hiện không phải điểm kiểm tra đồng bộ và không thể từ chối một hành động trước khi trạng thái đổi.
+Webhook không từ chối được hành động; muốn dịch vụ riêng chặn một hành động trước khi trạng thái đổi thì dùng `check` ở hành động, xem [Kiểm tra trước khi chuyển trạng thái](../deploy/INTEGRATIONS.md#kiểm-tra-trước-khi-chuyển-trạng-thái).
 
 ### 1. Khai báo đích
 

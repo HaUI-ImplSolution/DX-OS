@@ -19,6 +19,13 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Keycloak Admin Console mặc định không mở ra gateway; đặt `KEYCLOAK_ADMIN_CONSOLE=true` trong `deploy/.env` để mở.
 - Job `Gateway surface` của workflow `Platform` kiểm bằng `deploy/dev/check_surface.py` rằng cả hai chế độ không trả Swagger UI hay Admin Console, và nhóm kiểm API chạy thêm trên chế độ lõi.
 - Portal bỏ thẻ Keycloak Admin và Swagger, thêm thẻ Bảng điều khiển.
+- `dxos gitops` kéo hạ tầng và tệp mô hình từ git. Nguồn hạ tầng so `deploy/`, cấu hình cổng vào và tag image của bản cài với một kho DX-OS, rồi nâng cấp bằng luồng của `dxos update`; `auto` cho hạ tầng chỉ nhận commit có chữ ký hợp lệ. Nguồn mô hình so từng tệp với mô hình đang chạy. Cả hai báo lệch, chờ `dxos gitops approve` hoặc tự áp dụng; `dxos gitops install` chạy mỗi 5 phút bằng systemd user timer và `dxos doctor` kiểm các biến `GITOPS_*`.
+- `dxos plan --check` thoát với mã 0 khi mô hình đang chạy giống tệp, 2 khi kế hoạch có thay đổi và 1 khi bị từ chối.
+- `examples/model-repo` là kho tệp mô hình mẫu, kèm workflow dán kế hoạch vào pull request.
+- Kế hoạch (`POST /api/v1/models/plan`, `dxos plan`) của một mô hình chưa chạy không để lại schema `m_<mô hình>` trong PostgreSQL; schema chỉ có khi áp dụng.
+- `deploy/dev/load_test.py` đo thông lượng, p50, p95, p99 và lỗi của API chung ở nhiều mức người dùng đồng thời, và đo đăng nhập riêng; `deploy/dev/load_override.yml` ghim mọi dịch vụ vào N nhân và đặt giới hạn bộ nhớ để một máy đóng vai máy nhỏ hơn. Kết quả theo số nhân và cấu hình nhỏ nhất đạt ngưỡng nằm ở `docs/SIZING.md`.
+- Flowable dùng id UUID sinh trong bộ nhớ, nên lấy id không cần thêm kết nối cơ sở dữ liệu và backend không còn treo khi có từ 50 người dùng đồng thời.
+- Hành động của quy trình có thêm khóa `check: <tên đích>`: dịch vụ riêng được hỏi trước khi trạng thái đổi và có thể từ chối (403, `CHECK_DENIED`). Đích có `on_error` (`deny` mặc định hoặc `allow`) cho lúc dịch vụ không trả lời (503, `CHECK_UNAVAILABLE`, hồ sơ giữ nguyên) và `bypass` cho vận hành. Lịch sử ghi `check_denied`, `check_unavailable`, `check_skipped`.
 
 ### Ứng dụng ngoài
 
@@ -29,6 +36,9 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Tệp mô hình
 
+- Format hiện hành là `1`; lõi tự nâng format `0` trong bộ nhớ, API `/models/upgrade` và `dxos model upgrade` cho xem diff trước khi tùy chọn ghi nguyên tử, còn format tương lai hoặc thiếu bước migration bị từ chối.
+- Lần áp dụng đầu của tệp đã nâng format tạo thêm một phiên bản không đổi bảng hay quyền nào, và `dxos plan --check` trả 2 cho đến lúc đó.
+- Mẫu trống và đặc tả cho trình soạn YAML của bảng điều khiển (`model-v1.schema.json`) dùng format `1`; tệp format `0` dán vào vẫn lập được kế hoạch, chỉ bị trình soạn gạch chân dòng `format`.
 - Thêm mẫu đặt lịch khám và phiếu đổi trả hàng trong thư viện mẫu của bảng điều khiển.
 - Trường nhiều lựa chọn nhận `default` là một danh sách các lựa chọn.
 - `escalate` trong quy trình khai các mức leo thang khi hồ sơ quá hạn, mỗi mức có thời gian sau hạn, vai nhận và số lần nhắc lại; mỗi thông báo là một dòng lịch sử `escalated` gửi qua webhook của mô hình, không đổi trạng thái hồ sơ, và sau lúc dịch vụ tắt chỉ gửi mức mới nhất đã đến hạn.
@@ -40,11 +50,13 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Giao diện
 
+- Lưu biểu mẫu bỏ trường tệp khỏi dữ liệu tạo/sửa hồ sơ, giữ tệp đính kèm hiện có khi sửa thông tin khác.
 - Trình sửa mô hình chọn `default` của trường nhiều lựa chọn từ danh sách `options`, và trình soạn YAML không còn cảnh báo khi `default` là danh sách.
 - Các mức leo thang hiện ở ghi chú dưới sơ đồ quy trình, ở dòng lịch sử của hồ sơ kèm vai được báo và lần nhắc, và ở kế hoạch khi tệp đổi các mức này; trình soạn YAML gợi ý các khóa `escalate`, `after`, `to` và `repeat`.
 
 ### Tài liệu
 
+- `docs/TARGETS.md` ghi cách đo và kết quả của các chỉ số mục tiêu: mức 1, 2 và 3 của một hệ thống, quy tắc đếm mã tự viết (`deploy/dev/count_own_code.py`), thời gian dựng và đổi, bài thử có hướng dẫn kèm một bản mô phỏng người mới, và chi phí hạ tầng của cấu hình tham chiếu.
 - Ba trang hướng dẫn sử dụng theo vai ở trang docs: người nộp hồ sơ, người xử lý hồ sơ và người triển khai.
 - `ROADMAP.md` nêu hướng phát triển theo nhóm, và `docs/COMPATIBILITY.md` nêu cách giữ tương thích giữa các bản cho API, tệp mô hình, webhook và cơ sở dữ liệu, kèm cách báo trước khi bỏ một phần.
 - `README.md` và `README_EN.md` có mục đối chiếu với đề thi theo bốn không gian H, P, D, I, cột Tầng trong bảng cấu trúc repository và đoạn nói DX-OS khác Supabase, Strapi, Directus ở chỗ nào.
@@ -138,6 +150,7 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
 - `examples/history-witness` cho bên nhận giữ `eventId` và `hash` rồi so với hệ thống.
 - `dxos archive` xuất hồ sơ đã xong ra Parquet kèm `manifest.json`; `dxos archive check` kiểm lại.
 - `dxos archive --store` ghi vào bucket riêng của SeaweedFS (`S3_ARCHIVE_BUCKET`); `archive list` liệt kê các lần chạy, `archive check --store` đọc lại từ kho và so với manifest.
+- `dxos archive query` truy vấn chỉ đọc một tệp Parquet của một lần chạy bằng DuckDB (`--file`), kiểm tệp với manifest trước khi chạy, hỗ trợ tham số ràng buộc, đặt giới hạn tài nguyên và chặn truy cập đường dẫn ngoài.
 - `dxos archive auto` ghi hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS` ngày, mỗi hồ sơ một lần; `dxos archive schedule install` chạy lệnh đó mỗi ngày bằng systemd user timer, `uninstall` gỡ; dữ liệu trong cơ sở dữ liệu giữ nguyên.
 - `GET /api/v1/models/{model}/data-catalog` (ADMIN) và tab Danh mục dữ liệu ở bảng điều khiển: nơi dữ liệu của một mô hình đi vào (vai, ứng dụng ngoài) và đi ra (webhook, hành động hoàn tất, dòng sự kiện, lưu trữ), liên kết giữa các thực thể, số bản ghi, quyền theo vai và danh sách trường.
 - `GET /api/v1/inbox/stream` báo cho giao diện khi một dòng lịch sử hồ sơ ghi xong, để hộp việc, danh sách và trang chi tiết đang mở tự đọc lại; khung không kèm nội dung hồ sơ, nhịp ping 20 giây, server đóng kênh sau 10 phút, tối đa 8 kênh cho mỗi người và 2000 kênh cùng lúc; route gateway giữ kiểm token và cho đọc 15 phút.

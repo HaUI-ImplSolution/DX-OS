@@ -21,7 +21,7 @@ import tools.jackson.databind.ObjectMapper;
 @Service
 public class CatalogService {
 
-  private static final String SCHEMA = "schema/model-v0.schema.json";
+  private static final String SCHEMA = "schema/model-v1.schema.json";
   private static final String TEMPLATES = "templates/";
 
   private final JdbcTemplate jdbc;

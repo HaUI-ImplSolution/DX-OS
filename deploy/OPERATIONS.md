@@ -69,10 +69,12 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos update [vX.Y.Z]` | Cài bản mới hơn (mặc định bản mới nhất): thay tệp chạy, giữ `.env`, `data/` và `apisix/local.yaml`, thêm biến mới, rồi chạy `update.sh`; script này gán cho `dxos-backend-admin` scope `kc-admin-api` mà Keycloak 26.8 đòi (`keycloak-admin-scope.sh`, chạy lại được), và nên sao lưu trước vì cơ sở dữ liệu của Keycloak không hạ phiên bản được |
 | `dxos doctor`, `dxos backup` | Chạy `doctor.sh`, `backup.sh` |
 | `dxos av [on\|off]` | Bật hoặc tắt quét mã độc tệp tải lên (xem dưới); không có đối số thì in trạng thái quét |
-| `dxos plan <tệp>`, `dxos apply <tệp> [--accept MỨC]` | In kế hoạch của một tệp mô hình, hoặc áp dụng nó (xem dưới) |
+| `dxos plan [--check] <tệp>`, `dxos apply <tệp> [--accept MỨC]` | In kế hoạch của một tệp mô hình, hoặc áp dụng nó (xem dưới) |
+| `dxos model upgrade [--write] <tệp>` | Xem diff nâng tuần tự tệp lên format hiện hành; `--write` thay tệp nguyên tử sau khi in diff (xem dưới) |
+| `dxos gitops sync [models\|infra]`, `status [models\|infra]`, `approve [infra] <commit> [--accept MỨC]`, `install`, `uninstall` | Kéo hạ tầng và tệp mô hình từ git, so với bản cài và mô hình đang chạy; `install` chạy mỗi 5 phút bằng systemd user timer (xem dưới) |
 | `dxos history verify`, `dxos history anchor` | Kiểm lịch sử hồ sơ chưa bị sửa, hoặc ghi điểm neo ngay (xem [`INTEGRATIONS.md`](./INTEGRATIONS.md#lịch-sử-chống-sửa)) |
 | `dxos reconcile [install\|uninstall]` | Đưa stack về đúng khai báo; `install` chạy mỗi phút bằng systemd user timer (xem dưới) |
-| `dxos archive <mô hình> [--before YYYY-MM-DD] [--out THƯ_MỤC \| --store]`, `dxos archive check <thư mục> \| --store <mô hình>/<lần chạy>`, `dxos archive list` | Xuất hồ sơ đã xong ra Parquet ở một thư mục hoặc ở kho đối tượng, kiểm một bản xuất, liệt kê các lần chạy trong kho (xem [`INTEGRATIONS.md`](./INTEGRATIONS.md#hồ-dữ-liệu)) |
+| `dxos archive <mô hình> [--before YYYY-MM-DD] [--out THƯ_MỤC \| --store]`, `dxos archive query <mô hình>/<lần chạy> ...`, `dxos archive check <thư mục> \| --store <mô hình>/<lần chạy>`, `dxos archive list` | Xuất hồ sơ đã xong ra Parquet, truy vấn chỉ đọc một lần chạy bằng DuckDB, kiểm một bản xuất, liệt kê các lần chạy trong kho (xem [`INTEGRATIONS.md`](./INTEGRATIONS.md#hồ-dữ-liệu)) |
 | `dxos archive auto`, `dxos archive schedule [install\|uninstall]` | Ghi vào kho hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS` ngày; `schedule install` chạy mỗi ngày bằng systemd user timer (xem dưới) |
 | `dxos demo [--password MẬT_KHẨU]`, `dxos demo remove` | Áp dụng mô hình Một cửa sinh viên nếu chưa chạy, tạo bốn tài khoản thử `judge_student`, `judge_officer`, `judge_officer2` và `judge_supervisor` với một mật khẩu (ngẫu nhiên nếu không nêu, in một lần; chạy lại thì đặt và in mật khẩu mới) và nộp khoảng 40 hồ sơ mẫu qua API chung, mỗi bước do đúng người làm; chạy lại không nộp thêm hồ sơ; `remove` chỉ gỡ bốn tài khoản, hồ sơ có quy trình không xóa được nên còn lại; cần client `dxos-cli` như `dxos plan`. Hạn xử lý 72 giờ của mô hình nên hồ sơ quá hạn chỉ có sau ba ngày kể từ lần nộp |
 | `dxos client add <tên> --model M --role R`, `dxos client list`, `dxos client role <tên> --role R`, `dxos client rotate <tên>`, `dxos client remove <tên>` | Đăng ký và quản lý ứng dụng ngoài gọi API bằng token máy (xem phần Ứng dụng ngoài ở trên) |
@@ -103,9 +105,21 @@ Backend chỉ đọc tệp khi khởi động, nên `dxos start` không tham s�
 Tệp hỏng vẫn nằm trong `.env` và được báo lại ở mỗi lần backend khởi động cho đến khi sửa hoặc thay.
 Cấu hình đặt tên các tệp ở `DXOS_MODEL_FILE`, cách nhau bằng dấu phẩy, và thư mục chứa chúng ở `ENGINE_MODEL_DIR` (`/models` trong container).
 
+### Nâng format tệp mô hình
+
+`dxos model upgrade <tệp>` gọi API nâng format và in unified diff mà không ghi tệp.
+`dxos model upgrade --write <tệp>` in cùng diff rồi ghi toàn bộ kết quả vào file tạm cùng thư mục và rename qua tệp gốc.
+Quyền, chủ sở hữu và nhóm của tệp được giữ lại (không giữ được chủ sở hữu thì lệnh cảnh báo), nội dung được ghi xuống đĩa trước khi rename, và tệp là liên kết mềm thì nâng tệp đích còn liên kết giữ nguyên.
+Format `0` được nâng tuần tự lên format hiện hành `1`; chạy lại format `1` không đổi nội dung, còn format mới hơn bản lõi hoặc thiếu một bước migration bị từ chối.
+Sau khi ghi tệp đã nâng, `dxos apply` lần đầu tạo thêm một phiên bản không đổi bảng hay quyền nào (kế hoạch báo SAFE, không có thay đổi), và `dxos plan --check` trả 2 cho đến lúc đó.
+
+Nếu lệnh lỗi trước rename, tệp gốc giữ nguyên.
+Xóa file `.dxos-model-upgrade.*` còn sót sau khi máy bị dừng đột ngột, sửa nguyên nhân rồi chạy lại; sau khi rename, khôi phục bằng Git hoặc bản sao lưu nếu cần.
+
 ### Đổi mô hình bằng dòng lệnh
 
 `dxos plan <tệp>` in kế hoạch của tệp mô hình mà không đổi gì; mã thoát 1 khi kế hoạch bị từ chối.
+`dxos plan --check <tệp>` thoát với mã 0 khi mô hình đang chạy giống tệp, 2 khi kế hoạch có thay đổi và 1 khi bị từ chối, để dùng trong pipeline.
 `dxos apply <tệp> [--accept SAFE|MIGRATION|LOSS]` lấy kế hoạch rồi áp dụng với phiên bản của kế hoạch làm `base`.
 Kế hoạch có mức cao hơn `--accept` (mặc định `SAFE`) thì bị từ chối với mã thoát 1 và không đổi gì; lệnh không bao giờ tự nâng mức.
 Tệp giống mô hình đang chạy và không có gì lệch thì in "Nothing to apply" và thoát với mã 0.
@@ -116,6 +130,65 @@ Việc kiểm lệch chỉ chạy khi xem kế hoạch hoặc áp dụng, không
 Lệnh đăng nhập bằng client `dxos-cli` của realm, dùng `DXOS_CLI_SECRET` trong `.env`; tài khoản dịch vụ của client giữ vai `ADMIN`, và lịch sử áp dụng ghi tên nó (`service-account-dxos-cli`).
 Bí mật nằm trong `.env` của máy chủ, nên chạy được trong pipeline GitOps trên chính máy đó.
 Realm đã import từ trước chưa có client này: thêm client `dxos-cli` ở Keycloak Admin Console (mở theo [Keycloak Admin Console](#keycloak-admin-console)) hoặc dựng lại realm.
+
+### Kéo từ git (GitOps)
+
+`dxos gitops sync` kéo từ git hai thứ, mỗi thứ một kho và một chế độ riêng, và cần `git` trên máy chạy `dxos` (thêm `ssh` cho địa chỉ SSH):
+
+- **Hạ tầng:** thư mục `deploy/`, cấu hình cổng vào và số phiên bản image của bản cài, từ một kho DX-OS.
+- **Mô hình:** các tệp mô hình nghiệp vụ, từ một kho của người triển khai.
+
+Cấu hình trong `deploy/.env`, mẫu ở `.env.example`:
+
+| Biến | Ý nghĩa |
+|---|---|
+| `GITOPS_INFRA_REPO` | Kho DX-OS chứa `deploy/` và `sso/`: `https://`, `ssh://`, `user@host:đường/dẫn`, `file://` hoặc đường dẫn tuyệt đối; để trống thì không kéo hạ tầng |
+| `GITOPS_INFRA_REF` | Tag phát hành `vX.Y.Z` (đổi luôn `DXOS_IMAGE_TAG` thành tag đó) hoặc nhánh (giữ nguyên `DXOS_IMAGE_TAG`), mặc định `main` |
+| `GITOPS_INFRA_MODE` | `report`, `approve` hoặc `auto`, mặc định `report` |
+| `GITOPS_REPO` | Kho chứa tệp mô hình, cùng dạng địa chỉ; để trống thì không kéo mô hình |
+| `GITOPS_REF`, `GITOPS_PATH`, `GITOPS_MODE` | Nhánh hoặc tag (mặc định `main`), thư mục chứa các tệp `.yaml` hoặc `.yml` không đệ quy (mặc định `models`), chế độ (mặc định `report`) |
+| `GITOPS_SSH_KEY`, `GITOPS_KNOWN_HOSTS` | Đường dẫn tuyệt đối tới deploy key chỉ đọc và tệp `known_hosts`, đặt ngoài git, dùng cho cả hai kho |
+| `GITOPS_REQUIRE_SIGNED`, `GITOPS_ALLOWED_SIGNERS` | `true` thì chỉ nhận commit có chữ ký SSH của người trong tệp `allowed_signers`, cho cả hai kho |
+
+`.env` chỉ giữ đường dẫn tới khóa, không giữ nội dung khóa.
+Nên dùng địa chỉ SSH với deploy key chỉ đọc; địa chỉ `https://` có token trong URL làm token nằm trong cấu hình của bản sao ở `deploy/gitops/`, thư mục chỉ chủ sở hữu đọc được.
+Địa chỉ SSH kiểm host theo `GITOPS_KNOWN_HOSTS` hoặc `~/.ssh/known_hosts`, không tự chấp nhận host lạ.
+
+Mỗi lượt kéo ref đã cấu hình, xác minh chữ ký nếu bật, rồi so với bản cài.
+Kết quả mỗi mục là một trong `in-sync`, `drift`, `pending`, `rejected`, `applied` và `failed`.
+Ba chế độ khác nhau ở việc có áp dụng hay không:
+
+- `report` chỉ báo lệch (`drift`) và không đổi gì.
+- `approve` để thay đổi nằm chờ (`pending`) cho đến khi người có quyền chạy `dxos gitops approve [infra] <commit>`.
+- `auto` tự áp dụng; chi tiết khác nhau giữa hai nguồn ở dưới.
+
+Commit không có chữ ký hợp lệ khi `GITOPS_REQUIRE_SIGNED=true` bị từ chối cả lượt, lệnh thoát với mã 1 và không áp dụng gì.
+Lượt lỗi, như kho không với tới được hay một lần áp dụng thất bại, được thử lại ở lượt sau.
+Sự duyệt gắn với một commit và hết khi thay đổi được áp dụng; một lệch khác về sau cần duyệt lại.
+`dxos gitops install` chạy `sync` mỗi 5 phút bằng systemd user timer, `uninstall` gỡ; lượt chạy bỏ qua khi stack đã dừng bằng `dxos stop`.
+`dxos doctor` kiểm các biến `GITOPS_*` khi một trong hai kho có giá trị.
+
+**Hạ tầng.**
+Lệnh so các tệp chạy của kho (cùng danh sách mà `install.sh` chép) với bản cài, và so tag image nếu `GITOPS_INFRA_REF` là tag phát hành.
+Mục `infra` báo số tệp đổi, thêm và bỏ.
+Áp dụng là chạy `install.sh --upgrade` từ bản sao trong kho rồi `update.sh`, đúng như `dxos update`: giữ `.env`, `data/` và `apisix/local.yaml`, kiểm cấu hình cổng vào trước khi thay container, chỉ tạo lại container có image đổi.
+Nếu `update.sh` lỗi, ví dụ kéo image thất bại, mục `infra` ở trạng thái `failed` và `update.sh` chạy lại ở lượt sau cho đến khi xong, dù tệp đã khớp kho.
+Stack đang dừng thì chỉ thay tệp, và stack dùng chúng khi khởi động.
+`auto` cho hạ tầng bắt buộc `GITOPS_REQUIRE_SIGNED=true`, vì đây là thay đổi không có người bấm.
+Nâng cấp không quay lui được cơ sở dữ liệu của Keycloak, nên cần sao lưu trước khi bật `auto`.
+`dxos reconcile` vẫn lo phần tự phục hồi từng phút: container bị xóa hay lệch được tạo lại theo khai báo.
+Áp dụng chạy `install.sh` lấy từ chính kho, tức mã trong kho chạy trên máy này; người chạy `dxos gitops approve infra` cần đọc diff của `deploy/` trước, và kho hạ tầng chỉ nên ghi được bởi người tin cậy.
+
+**Mô hình.**
+Mỗi tệp được lập kế hoạch rồi áp dụng bằng `dxos apply`.
+`auto` chỉ áp dụng kế hoạch mức `SAFE`; kế hoạch cao hơn nằm chờ như ở `approve`.
+`dxos gitops approve <commit> [--accept MỨC]` duyệt đến mức nêu (mặc định `SAFE`), và phải nêu mức của kế hoạch nếu cao hơn.
+Kế hoạch bị từ chối (`rejected`) không bao giờ được áp dụng, và một tệp lỗi không chặn các tệp khác.
+Muốn quay lại thì `git revert` ở kho rồi để lượt sau kéo về; kế hoạch mất dữ liệu vẫn phải được duyệt ở mức `LOSS`, và phiên bản mô hình cũ vẫn quay về được bằng API quay lui.
+
+`dxos gitops status [models|infra]` in lượt gần nhất và thoát với mã 0 khi mọi mục khớp, 2 khi còn mục lệch hoặc chờ duyệt, 1 khi lượt gần nhất lỗi.
+`deploy/gitops/<models|infra>/history.log` ghi một dòng mỗi khi commit hoặc kết quả của một mục đổi; lỗi của lần áp dụng gần nhất nằm ở `last-apply-error.log` cùng thư mục.
+Ví dụ kho mô hình kèm workflow dán kế hoạch vào pull request ở [`examples/model-repo`](../examples/model-repo/README.md).
 
 ### Lần áp dụng dừng giữa chừng
 
@@ -150,6 +223,12 @@ Timer của user chỉ chạy khi user còn phiên đăng nhập, trừ khi bậ
 Mỗi lượt ghi vào bucket `S3_ARCHIVE_BUCKET` của SeaweedFS các hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS` ngày (mặc định 365) mà kho chưa giữ, và ghi kết quả vào `deploy/archive.log`.
 Dữ liệu trong cơ sở dữ liệu giữ nguyên; `dxos archive list` xem các lần chạy, `dxos archive check --store <mô hình>/<lần chạy>` kiểm một lần.
 Lần chạy đầu cần mạng để DuckDB tải extension.
+
+Truy vấn hồ dữ liệu chỉ mở đúng một tệp Parquet, chọn bằng `--file`, của lần chạy được nêu trong `model/run`; tệp phải có trong manifest và khớp số dòng và SHA-256 của nó.
+Lệnh dựng bảng tạm `archive` từ tệp đó, tắt truy cập đường dẫn ngoài và chỉ nhận một câu `SELECT`, `WITH` hoặc `EXPLAIN` không chứa dấu `;`, kể cả trong chuỗi.
+Bộ nhớ, số thread và dung lượng tệp tạm lấy từ `ARCHIVE_QUERY_MEMORY_LIMIT`, `ARCHIVE_QUERY_THREADS` và `ARCHIVE_QUERY_TEMP_LIMIT`; bước kiểm SHA-256 cũng chạy trong giới hạn bộ nhớ và số thread đó, nên tệp lớn hơn giới hạn bị từ chối thay vì làm cạn bộ nhớ.
+Ví dụ: `dxos archive query onestop/20261111T030000Z --file request.parquet --param "status='CLOSED'" 'SELECT id, status FROM archive WHERE status = $status ORDER BY id'`.
+Tham số dùng cú pháp literal của DuckDB; giá trị chuỗi đặt trong dấu nháy đơn.
 
 ## Chế độ chỉ lõi
 
@@ -216,6 +295,7 @@ Số đo trên máy 12 CPU, 31 GB RAM, với stack tám service (không bật `c
 | `frontend`, `portal` | 11 mỗi service |
 
 Cả stack dùng khoảng 1,8 GiB RAM, CPU gần 0 lúc rảnh.
+Số nhân và RAM cần cho một số người dùng đồng thời nhất định, và cách đo lại trên máy của bạn, ở [`docs/SIZING.md`](../docs/SIZING.md).
 Image chiếm khoảng 3,5 GiB đĩa (kích thước `docker images` của tám service); cơ sở dữ liệu 12 MB.
 
 Dựng stack rỗng khi image đã có trên máy, với một tệp mô hình: stack lên và mô hình áp dụng xong sau khoảng 1 phút, và tài khoản ADMIN đầu tiên (`dxos admin`) thêm vài giây.

@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/HaUI-ImplSolution/DX-OS/schemas/model-v0.schema.json",
-  "title": "DX-OS model file, format 0",
+  "$id": "https://github.com/HaUI-ImplSolution/DX-OS/schemas/model-v1.schema.json",
+  "title": "DX-OS model file, format 1",
   "type": "object",
   "required": ["format", "name", "roles", "entities"],
   "additionalProperties": false,
   "properties": {
-    "format": { "const": 0 },
+    "format": { "const": 1 },
     "name": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$" },
     "webhook": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$" },
     "roles": {
@@ -185,6 +185,10 @@
                     "when": {
                       "type": ["string", "null"],
                       "pattern": "^\\s*[a-z][a-z0-9_]*\\s*(==|!=|<=|>=|<|>)\\s*\\S.*$"
+                    },
+                    "check": {
+                      "type": ["string", "null"],
+                      "pattern": "^[a-z][a-z0-9_]{0,39}$"
                     }
                   }
                 }

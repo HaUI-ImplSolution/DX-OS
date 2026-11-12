@@ -31,6 +31,7 @@ Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`web
 | Bề mặt của gateway | `python3 deploy/dev/check_surface.py` | `Gateway surface` của `Platform`, hai chế độ |
 | Trình duyệt | Xem [`e2e/README.md`](../e2e/README.md) | `Browser end-to-end` của `Platform` |
 | Trang tài liệu | `cd website && npm ci && npm run build` | `Build the docs site` của `Docs` |
+| Tải đồng thời và cấu hình nhỏ nhất | `python3 deploy/dev/load_test.py` trên stack tạm; các bước và kết quả ở [`SIZING.md`](SIZING.md) | Không |
 | Kiểm tay | Mục 6 | Không |
 
 `./mvnw verify` sau khi đổi tài nguyên nên chạy `clean verify`: tài nguyên cũ còn trong `target/` làm Flyway thấy hai migration cùng phiên bản.
@@ -91,7 +92,7 @@ python3 deploy/dev/check_bootstrap.py
 | `check_users.py` | Quản trị người dùng: gán và gỡ vai và đơn vị, tạo, khóa, đặt lại mật khẩu, audit |
 | `check_docs.py` | Mọi endpoint các tài liệu nêu có trong OpenAPI của backend đang chạy, đúng phương thức |
 | `check_conformance.py` | Rào chắn của lõi giữ với mọi mô hình đã áp dụng, hoặc các mô hình nêu tên: không ghi được `status`, không token thì 401, không đọc được dữ liệu mô hình khác |
-| `check_cli.py` | Lệnh `dxos plan` và `apply --accept` (tệp giống, đổi an toàn, đổi mất dữ liệu bị từ chối khi `--accept` thấp hơn mức của kế hoạch), lịch sử ghi tài khoản của lệnh, `dxos archive` và `archive check` (sửa một byte Parquet thì mã 1), `archive --store` vào SeaweedFS, `archive check --store`, `archive list` và `archive auto` không ghi trùng, bộ mô phỏng IT/OT gửi lại cùng quan sát thì in `duplicate` và không thêm hồ sơ; cần Docker; tự áp dụng một mô hình riêng |
+| `check_cli.py` | Lệnh `dxos plan` và `apply --accept` (tệp giống, đổi an toàn, đổi mất dữ liệu bị từ chối khi `--accept` thấp hơn mức của kế hoạch), `model upgrade` xem diff, ghi nguyên tử, chạy lặp và từ chối format tương lai, lịch sử ghi tài khoản của lệnh, `dxos archive` và `archive check` (sửa một byte Parquet thì mã 1), `archive --store` vào SeaweedFS, `archive check --store`, `archive query` chỉ đọc một run với tham số, `archive list` và `archive auto` không ghi trùng, bộ mô phỏng IT/OT gửi lại cùng quan sát thì in `duplicate` và không thêm hồ sơ; cần Docker; tự áp dụng một mô hình riêng |
 | `check_events.py` | Webhook: thứ tự, chữ ký, thử lại, nội dung không lộ, nhắc hạn; chuỗi hash của lịch sử và bên nhận so hash |
 | `check_bootstrap.py` | Tệp mô hình lúc khởi động: `applied`, `unchanged`, `skipped`, `failed` |
 | `check_surface.py` | Không cần tài khoản, chạy được ở cả hai chế độ: `/v3/api-docs` trả JSON; `/swagger-ui*` và `/admin*` trả 404 không phải HTML (`/admin` mở khi `KEYCLOAK_ADMIN_CONSOLE=true`); đăng nhập Keycloak vẫn phục vụ; backend gọi được Keycloak Admin API; chế độ `core` không chạy container và không phục vụ trang nào của Tầng 2 |
@@ -197,6 +198,23 @@ Lệnh `dxos` và các tính năng chạy ngoài stack kiểm:
 7. `dxos client add`, `list`, `role`, `rotate`, `remove` trên stack có `dxos-cli`: secret chỉ in ở `add` và `rotate`, `list` không có secret, `role` đổi vai mà secret cũ vẫn lấy được token và token mới mang vai mới, `rotate` làm secret cũ bị từ chối, `remove` làm client không lấy được token.
 8. `dxos client browser add` tạo public client chỉ dùng Authorization Code với PKCE S256, có mapper audience và nhóm, lưu origin chính xác vào `CORS_ALLOWED_ORIGINS`; preflight từ origin đó được nhận, đăng nhập đổi code PKCE lấy token rồi gọi được API, HTTP ngoài loopback và wildcard bị từ chối trước khi tạo client; `list` không in secret và `remove` xóa client.
 9. `dxos archive schedule install` rồi `systemctl --user start dxos-archive.service`: `deploy/archive.log` ghi lượt chạy, `dxos archive list` thấy lần chạy mới khi có hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS`, chạy lần nữa không ghi lại các hồ sơ đó; `dxos archive check --store` khớp manifest; khóa S3 sai thì `list` và `auto` thoát mã 1 và không in khóa; `schedule uninstall` gỡ hai tệp đơn vị.
+
+10. `dxos gitops`, nguồn mô hình, trên stack có `dxos-cli` với một kho git cục bộ có một tệp mô hình mới:
+    - `report`: `sync` ghi `drift`, `status` thoát mã 2, mô hình chưa đổi và không có schema `m_<mô hình>` trong PostgreSQL; `approve` bị từ chối khi chế độ không phải `approve`.
+    - `approve`: `sync` ghi `pending`, `approve` với commit khác bị từ chối, với đúng commit thì `applied` và `status` thoát mã 0; `dxos plan --check` trên tệp đó thoát mã 0.
+    - `auto`: một trường mới tùy chọn được áp dụng, xóa trường nằm chờ ở `pending`, `git revert` rồi `sync` thì về `in-sync`.
+    - Một tệp hỏng không chặn tệp khác: `failed` cho tệp hỏng, `sync` thoát mã 1, các tệp còn lại vẫn được xét.
+11. `dxos gitops`, nguồn hạ tầng, trên một bản cài thử đã chạy `install.sh` (đặt `COMPOSE_PROJECT_NAME` riêng để không đụng stack đang chạy) và một kho DX-OS cục bộ:
+    - Cùng nội dung thì `in-sync`; commit sửa một tệp, thêm một tệp và bỏ một tệp thì `drift` với đúng ba con số `changed`, `added`, `removed`.
+    - `approve`: `pending`, commit sai bị từ chối, đúng commit thì `applied`, tệp trong bản cài khớp kho, tệp bị bỏ không còn và `apisix/local.yaml` giữ nguyên.
+    - `GITOPS_INFRA_MODE=auto` thiếu `GITOPS_REQUIRE_SIGNED=true` bị từ chối; commit không ký bị từ chối với mã 1 và không đổi gì, commit ký đúng khóa được áp dụng.
+    - `GITOPS_INFRA_REF` là tag `vX.Y.Z`: `drift` ghi tag mới, sau khi áp dụng `DXOS_IMAGE_TAG` đổi theo; nhánh thì giữ nguyên `DXOS_IMAGE_TAG`.
+    - `update.sh` lỗi (stack đang chạy): lượt áp dụng báo `failed` và thoát mã 1, lượt sau chạy lại `update.sh` và vẫn `failed` cho đến khi nó thành công, rồi mới `in-sync`; `approve infra` với `--accept` mức khác `SAFE` bị từ chối.
+12. Chung cho hai nguồn:
+    - Nhánh không tồn tại thì `sync` thoát mã 1, `status` ghi lỗi nêu nguyên nhân và giữ các mục của lượt tốt trước; `GITOPS_*` sai bị `sync` và `doctor` từ chối với cùng thông báo.
+    - Địa chỉ SSH với host lạ, khóa sai hoặc khóa có quyền rộng bị từ chối, mỗi lỗi ghi nguyên nhân riêng.
+    - API tắt thì nguồn mô hình ghi `error` và thoát mã 1.
+    - `dxos gitops install` tạo timer và `uninstall` gỡ; `history.log` ghi mỗi lần commit hoặc kết quả đổi.
 
 ## 7. Hồi quy
 

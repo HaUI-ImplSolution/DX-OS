@@ -88,7 +88,7 @@ Các hàm ý sau là suy luận từ cách đề viết, người ra đề khôn
 | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | Tự động tạo API từ cơ sở dữ liệu, phân quyền tới cấp dòng | API chung đọc mô hình lúc chạy, phân quyền theo vai và theo dòng; tài liệu OpenAPI riêng cho từng mô hình; ứng dụng ngoài gọi bằng token máy của một vai |
 | Điều chỉnh quy trình không cần sửa mã nguồn, BPMN | Họ mẫu quy trình trên Flowable, hoặc tự khai báo trạng thái và hành động; BPMN sinh từ tệp mô hình |
-| GitOps, tự phục hồi                                                  | GitOps cho nghiệp vụ, tệp sai bị chặn, áp dụng dở được hoàn tất hoặc hủy bỏ |
+| GitOps, tự phục hồi                                                  | Triển khai hạ tầng và nghiệp vụ kéo từ git (`dxos gitops`), tệp sai bị chặn, áp dụng dở được hoàn tất hoặc hủy bỏ, `dxos reconcile` tự phục hồi |
 | Kiến trúc hướng sự kiện | Trục sự kiện bằng bảng outbox: webhook có chữ ký, API kéo theo `eventId`, kênh báo cho hộp việc đang mở |
 | Tác tử AI, Human-in-the-loop, RAG                                     | Tác tử có người duyệt và hỏi đáp kèm nguồn                                     |
 | Chống nguyên khối, chủ quyền số                                   | Thành phần thay được, dữ liệu trong PostgreSQL thuần                               |
@@ -99,10 +99,10 @@ Các hàm ý sau là suy luận từ cách đề viết, người ra đề khôn
 
 | Nguyên lý                                                                                               | Lõi đáp ứng                                                                                |
 | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Phân tách theo vòng đời và tốc độ của dữ liệu, đẩy dữ liệu lịch sử xuống hồ dữ liệu | `dxos archive --store` ghi hồ sơ đã đóng và lịch sử của chúng ra tệp Parquet vào một bucket riêng của SeaweedFS, kèm manifest và hash để kiểm lại; `dxos archive schedule install` đặt lịch chạy hằng ngày cho hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS`; dữ liệu trong cơ sở dữ liệu giữ nguyên; công cụ báo cáo đọc dữ liệu qua vai `report_ro` |
+| Phân tách theo vòng đời và tốc độ của dữ liệu, đẩy dữ liệu lịch sử xuống hồ dữ liệu | `dxos archive --store` ghi hồ sơ đã đóng và lịch sử của chúng ra tệp Parquet vào một bucket riêng của SeaweedFS, kèm manifest và hash để kiểm lại; `dxos archive query` đọc chỉ một lần chạy bằng DuckDB; `dxos archive schedule install` đặt lịch chạy hằng ngày cho hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS`; dữ liệu trong cơ sở dữ liệu giữ nguyên; công cụ báo cáo vẫn có thể đọc dữ liệu đang chạy qua vai `report_ro` |
 | Hội tụ dữ liệu hành chính và dữ liệu vận hành, bản sao số | `examples/itot-simulator` và mẫu `plant_incident` đưa số đo của thiết bị vào thành hồ sơ sự cố đi qua cùng quy trình, quyền và lịch sử với hồ sơ hành chính; lõi không giữ trạng thái thời gian thực của thiết bị, nên bản sao số chỉ được phủ một phần |
 | Quản trị dữ liệu, phả hệ và nguồn gốc | Mô hình là danh mục dữ liệu; tab Danh mục dữ liệu đọc từ đó nơi dữ liệu đi vào, nơi đi ra, liên kết giữa các thực thể, quyền theo vai, số bản ghi và số đo chất lượng của từng thực thể (độ điền, thiếu theo điều kiện, vi phạm ràng buộc, độ mới); lịch sử mỗi hồ sơ nối thành chuỗi hash |
-| Zero-Trust gắn với GitOps, kiểm dịch mã độc, tự phục hồi                                        | APISIX và API chung đều kiểm token, ClamAV quét tệp tải lên khi bật (`dxos av on`), GitOps cho nghiệp vụ    |
+| Zero-Trust gắn với GitOps, kiểm dịch mã độc, tự phục hồi                                        | APISIX và API chung đều kiểm token, ClamAV quét tệp tải lên khi bật (`dxos av on`), hạ tầng và nghiệp vụ kéo từ git    |
 
 ## Tư tưởng thiết kế
 
@@ -366,12 +366,12 @@ Trần dưới đây giữ cho tệp mô hình không biến thành ngôn ngữ 
 
 Một năng lực mới chỉ được thêm khi cần ở ít nhất 3 lĩnh vực, khai báo được mà không cần cú pháp mới, và không làm hỏng các mô hình đã có.
 Không đạt thì đi qua điểm mở rộng.
-Các kiểu `boolean` và `date`, `multiple`, `min`, `max`, `pattern`, `required_when` và khối `ui:` là ngoại lệ có chủ đích của điều kiện không cần cú pháp mới: mỗi thứ cần ở nhiều lĩnh vực, là khóa tùy chọn nên mô hình cũ giữ nguyên, và `format` vẫn là `0`.
+Các kiểu `boolean` và `date`, `multiple`, `min`, `max`, `pattern`, `required_when` và khối `ui:` là ngoại lệ có chủ đích của điều kiện không cần cú pháp mới: mỗi thứ cần ở nhiều lĩnh vực và là khóa tùy chọn nên mô hình cũ giữ nguyên; format hiện hành là `1`, còn format `0` được nâng tuần tự trong bộ nhớ.
 
 Ví dụ một tệp mô hình:
 
 ```yaml
-format: 0
+format: 1
 name: onestop
 roles:
   - name: STUDENT
@@ -402,7 +402,7 @@ Nghiệp vụ được khai báo trong git, lõi đưa toàn bộ hệ thống v
 
 | Bước            | Lõi làm gì                                                                            | Người dùng nhận được                                     |
 | ------------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
-| Khai báo         | Nhận tệp mô hình qua `dxos apply`                                                    | Một tệp duy nhất, lưu được trong git                     |
+| Khai báo         | Nhận tệp mô hình qua `dxos apply` hoặc kéo từ git bằng `dxos gitops`               | Một tệp duy nhất, lưu được trong git                     |
 | Kiểm tra         | Soát cú pháp, tham chiếu, vai, quy tắc; chưa đụng vào hệ thống                | Lỗi chỉ đúng dòng và đúng lý do                        |
 | Xem trước       | So với phiên bản đang chạy, lập kế hoạch cho từng provider, phân loại rủi ro | Biết sẽ đổi gì, ảnh hưởng bao nhiêu dòng              |
 | Áp dụng         | Thực hiện theo thứ tự, ghi lịch sử                                                 | Hệ thống đổi theo mô hình, không build lại              |
@@ -410,8 +410,9 @@ Nghiệp vụ được khai báo trong git, lõi đưa toàn bộ hệ thống v
 | Đổi phiên bản | Lặp lại từ đầu, giữ lịch sử                                                      | Biết ai đổi gì, khi nào                                    |
 | Quay lui          | Quay về phiên bản trước nếu an toàn                                               | Khôi phục được, hoặc được báo rõ vì sao không thể |
 
-Git là nơi lưu lịch sử của tệp mô hình; lõi nhận tệp qua `dxos apply` và không tự kéo từ git.
-Lõi tự kéo từ git để liên tục đối chiếu là hướng phát triển.
+Git là nơi lưu lịch sử của tệp mô hình.
+`dxos gitops` kéo theo chu kỳ hai thứ từ git, xác minh chữ ký commit nếu bật: hạ tầng (`deploy/`, cấu hình cổng vào, tag image) so với bản cài và nâng cấp bằng luồng của `dxos update`, và các tệp mô hình so với mô hình đang chạy.
+Mỗi nguồn báo lệch, chờ duyệt hoặc tự áp dụng; mô hình tự áp dụng kế hoạch mức `SAFE`, hạ tầng tự áp dụng khi commit có chữ ký.
 
 Thay đổi mô hình sai được xử lý như sau:
 
@@ -498,7 +499,7 @@ Mã dịch vụ và bên nhận webhook nằm ngoài lõi; trang hay thành ph�
 | Nhu cầu | Cách làm hiện tại |
 |---|---|
 | API riêng | Dịch vụ ngoài gọi API bằng client đúng một vai của một mô hình, đổi vai bằng `dxos client role`; OpenAPI sinh từ mô hình đang chạy |
-| Phản ứng theo nghiệp vụ | Webhook nhận sự kiện sau khi thay đổi đã ghi; không chặn đồng bộ một hành động |
+| Phản ứng theo nghiệp vụ | Webhook nhận sự kiện sau khi thay đổi đã ghi; hành động khai `check` thì dịch vụ riêng được hỏi trước khi chuyển trạng thái và có thể từ chối |
 | Giao diện riêng hoàn toàn | Đăng ký public client OIDC dùng PKCE bằng `dxos client browser add`; origin chính xác vào `CORS_ALLOWED_ORIGINS`, không nhận wildcard |
 | Trang riêng trong ứng dụng Tầng 2 | Sửa và dựng lại frontend; chưa có registry plugin |
 | Họ mẫu quy trình riêng | Khai báo `states` và `actions` trong tệp mô hình; vẫn chịu quy tắc bất biến và bị kiểm khi áp dụng |
@@ -561,17 +562,19 @@ Phần này là giả thuyết về khách hàng.
 - **Đối thủ thật:** bảng tính và thuê làm riêng; với người muốn trọn gói tự cài thì là Frappe.
 - **Lý do chọn:** thay đổi an toàn trên toàn hệ thống, dữ liệu ở máy chủ của mình, không tính phí theo đầu người.
 - **Pháp lý:** [Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15](https://congbao.chinhphu.vn/van-ban/luat-so-91-2025-qh15-45578.htm) và [Nghị định 356/2025/NĐ-CP](https://congbao.chinhphu.vn/van-ban/nghi-dinh-so-356-2025-nd-cp-468371.htm) có hiệu lực từ 2026-01-01; chuyển dữ liệu ra nước ngoài phải lập hồ sơ đánh giá tác động và gửi cơ quan chuyên trách trong 60 ngày (Điều 20 luật), chi tiết ở [`deploy/OPERATIONS.md`](../../deploy/OPERATIONS.md#dữ-liệu-cá-nhân-ra-nước-ngoài).
-- **Đo công sức:** so số dòng và thời gian dựng ứng dụng mới với phần Lab viết tay, gồm 5.792 dòng Java, 4.524 dòng giao diện và 8 migration.
+- **Đo công sức:** mười hệ thống mẫu cần 252 dòng khai báo và không dòng mã nào, hệ thống đề nghị mua sắm ba vai cần 23 dòng, còn phần Lab viết tay gồm 5.792 dòng Java, 4.524 dòng giao diện và 8 migration; số đo và cách đo ở [`docs/TARGETS.md`](../TARGETS.md).
 
 Mục tiêu:
 
 
-| Chỉ số                                                       | Mục tiêu                        |
-| ---------------------------------------------------------------- | ----------------------------------- |
-| Từ tệp mô hình đến hệ thống chạy, máy đã có image | Dưới 10 phút                   |
-| Người mới tự dựng xong hệ thống đầu tiên             | Trong một buổi                  |
-| Đổi một trường và áp dụng                              | Vài phút, không mất dữ liệu |
-| Mã tự viết cho một hệ thống thường gặp                | Bằng 0 ở mức 1 và 2           |
+| Chỉ số | Mục tiêu | Kết quả đo |
+|---|---|---|
+| Từ tệp mô hình đến hệ thống chạy, máy đã có image | Dưới 10 phút | 71 giây |
+| Người mới tự dựng xong hệ thống đầu tiên | Trong một buổi | Chưa có người thật thử; bản mô phỏng dựng được hệ thống, các bước kỹ thuật mất vài chục giây |
+| Đổi một trường và áp dụng | Vài phút, không mất dữ liệu | 0,7 giây, dữ liệu còn nguyên |
+| Mã tự viết cho một hệ thống thường gặp | Bằng 0 ở mức 1 và 2 | 0 dòng trên mười mẫu |
+
+Đo ngày 2026-11-12; cách đo, bài thử cho người thật và chi phí tự cài ở [`docs/TARGETS.md`](../TARGETS.md).
 
 Giá tham khảo cho 100 người dùng trong một năm, từ các trang tổng hợp giá nên cần đối chiếu với nhà cung cấp:
 
@@ -581,7 +584,7 @@ Giá tham khảo cho 100 người dùng trong một năm, từ các trang tổng
 | [AppSheet Core](https://www.capterra.com/p/149367/AppSheet/pricing/)                                                    | 10 USD một người một tháng                       | 12.000 USD                      |
 | [Power Apps Premium](https://www.licensingschool.co.uk/licensing-blog/2026/09/17/new-pricing-for-power-apps-premium/)   | 20 USD, tăng thêm 2 USD từ 2027-01-01              | 24.000 USD, 26.400 USD từ 2027 |
 | [Retool Business](https://www.jetadmin.io/blog/retool-pricing-explained-2026-guide-to-plans-user-types-and-total-cost/) | 3 người dựng ở 50 USD, 97 người dùng ở 15 USD | 19.260 USD                      |
-| Lõi tự cài                                                                                                           | Tiền máy chủ cộng công người vận hành        | Theo giá máy chủ và công vận hành |
+| Lõi tự cài                                                                                                           | Tiền máy chủ cộng công người vận hành        | Máy 4 vCPU, 8 GB khoảng 80 EUR đến 576 USD, cộng công vận hành |
 
 ## Cam kết nguồn mở
 

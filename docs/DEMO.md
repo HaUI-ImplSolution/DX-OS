@@ -109,7 +109,7 @@ Nói thẳng phần chưa có, theo [Việc tồn đọng](./dynamic-core/BACKLO
 
 - Chưa có phần AI, vì cần mô hình ngôn ngữ đạt định nghĩa Open Source AI của OSI.
 - Ứng dụng Tầng 2 chưa phủ chữ I của H-P-D-I.
-- Hồ dữ liệu là kho Parquet trong SeaweedFS, chưa có lớp truy vấn riêng.
+- Hồ dữ liệu là kho Parquet trong SeaweedFS; `dxos archive query` đọc một lần chạy bằng DuckDB mà không cần cấp quyền cơ sở dữ liệu.
 - Không có bản sao số: số đo của thiết bị vào lõi thành hồ sơ sự cố, lõi không giữ trạng thái thời gian thực của thiết bị.
 
 Kết bằng một câu: đổi nghiệp vụ là đổi tệp, không đổi mã.

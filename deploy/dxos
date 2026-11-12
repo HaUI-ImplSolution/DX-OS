@@ -16,10 +16,18 @@
 #   dxos doctor                check this machine and deploy/.env
 #   dxos backup [args]         encrypted backup, see backup.sh
 #   dxos av [on|off]           turn the virus scan of uploads (ClamAV, about 1 GB of RAM) on or off, or show it
-#   dxos plan <model-file>     show what applying the file would change, without changing anything
+#   dxos plan [--check] <model-file>
+#                              show what applying the file would change, without changing anything;
+#                              --check exits 0 when nothing differs, 2 when the plan has changes, 1 when refused
 #   dxos apply <model-file> [--accept SAFE|MIGRATION|LOSS]
 #                              apply the file; a plan above SAFE needs --accept with its level
 #   dxos history verify|anchor check that the history of records was not changed, or anchor it now
+#   dxos gitops sync [models|infra] | status [models|infra] | approve [infra] <commit> [--accept LEVEL] | install | uninstall
+#                              keep the models equal to the model files of a git repository, and this install
+#                              equal to the deployment of a DX-OS repository (GITOPS_* in .env): sync pulls,
+#                              verifies the commit and compares; the mode report only reports, approve waits
+#                              for approve, auto applies (models: SAFE plans; infra: a signed commit);
+#                              install runs sync every 5 minutes
 #   dxos reconcile [install|uninstall]
 #                              bring the stack back to what is declared (missing or changed containers);
 #                              install runs it every minute with a systemd user timer
@@ -61,6 +69,7 @@ STOPPED_MARK="$DEPLOY_DIR/.stopped"
 CALLER_DIR="$PWD"
 ALPINE="alpine:3.24@sha256:3f4d6b32e26703c6082839234f43769d5046b3ac7c910033911d1e71d8cd630a"
 source "$DEPLOY_DIR/lib/web-url.sh"
+source "$DEPLOY_DIR/lib/gitops.sh"
 
 die() { echo "dxos: $*" >&2; exit 1; }
 from_caller() { if [[ "$1" == /* ]]; then printf '%s\n' "$1"; else printf '%s\n' "$CALLER_DIR/$1"; fi; }
@@ -421,14 +430,19 @@ model_file_arg() {
   [[ -f "$1" && -r "$1" ]] || die "model file not found or not readable: $1"
 }
 
-# Prints the plan; exit code 1 when the plan is refused or the API says no.
+# Prints the plan; exit code 1 when the plan is refused or the API says no. With --check the exit code is
+# 0 when the running model equals the file and 2 when the plan has changes.
 cmd_plan() {
-  (( $# == 1 )) || die "usage: dxos plan <model-file>"
-  local file; file="$(from_caller "$1")"
+  local check=false file
+  if [[ "${1:-}" == --check ]]; then check=true; shift; fi
+  (( $# == 1 )) || die "usage: dxos plan [--check] <model-file>"
+  file="$(from_caller "$1")"
   model_file_arg "$file" plan
   api POST /models/plan "$file"
   pretty "$API_BODY"
   [[ "$API_STATUS" == 200 && "$(json_field action "$API_BODY")" != rejected ]] || return 1
+  if $check && [[ "$(json_field action "$API_BODY")" != unchanged ]]; then return 2; fi
+  return 0
 }
 
 # Plans, then applies with the version of that plan as base. The level is never raised on its own:
@@ -1191,13 +1205,14 @@ main() {
     apply) cmd_apply "$@" ;;
     history) cmd_history "$@" ;;
     reconcile) cmd_reconcile "$@" ;;
+    gitops) cmd_gitops "$@" ;;
     archive) cmd_archive "$@" ;;
     demo) "$DEPLOY_DIR/demo.sh" "$@" ;;
     client) cmd_client "$@" ;;
     uninstall) cmd_uninstall "$@" ;;
     version) echo "DX-OS $(env_value DXOS_IMAGE_TAG) in $PREFIX" ;;
-    help|-h|--help) sed -n '3,42p' "$self" ;;
-    *) echo "dxos: unknown command: $command" >&2; sed -n '3,42p' "$self" >&2; exit 2 ;;
+    help|-h|--help) sed -n '3,50p' "$self" ;;
+    *) echo "dxos: unknown command: $command" >&2; sed -n '3,50p' "$self" >&2; exit 2 ;;
   esac
 }
 

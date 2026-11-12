@@ -49,7 +49,6 @@ Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết t�
 | Nâng tệp mô hình cũ | Tệp ghi `format` để lõi tự nâng tệp cũ khi định dạng đổi, nhưng mới có `format: 0` nên chưa có bước nâng nào |
 | Nâng AWS SDK lên 2.57.8 | Pull request #239 của Dependabot chưa merge được vì `sbom/backend.cdx.json` còn ghi 2.57.6 và job `Scan the backend SBOM` đỏ; cần đổi `awssdk.version` và sinh lại SBOM theo `sbom/README.md` trong cùng một commit rồi đóng pull request |
 | Chỉ số mục tiêu | Chưa có người thật làm bài thử "trong một buổi" (bài thử và bản mô phỏng ở `docs/TARGETS.md`), chưa đo công vận hành mỗi tháng và thời gian lần cài đầu có tải image |
-| Tải | Chưa đo với nhiều người dùng đồng thời hay ít nhân hơn 12 |
 | Khách hàng | Chưa nói chuyện với khách hàng nào; mục Khách hàng và giá trị của `README.md` là giả thuyết |
 
 ## 4. Giới hạn chấp nhận
@@ -82,6 +81,7 @@ Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết t�
 | Tham chiếu sang mô hình khác | Trường `reference` chỉ trỏ tới thực thể cùng mô hình; trỏ sang mô hình khác thì mô hình không còn áp dụng và quay lui độc lập, và quyền của hai mô hình thuộc hai client khác nhau |
 | Kiểm tài liệu và OpenAPI chiều ngược | `check_docs.py` kiểm endpoint tài liệu nêu có trong OpenAPI; không kiểm chiều ngược vì `docs/API.md` chỉ liệt kê các đường dẫn chính và viết tắt đường dẫn, nên sẽ báo nhầm |
 | Kiểm thử tự động chưa phủ một số ý | Chưa phủ khe hở khi áp dụng (áp dụng một mô hình đổi bảng trong lúc có yêu cầu ghi hồ sơ), vì kiểm chạy đua dễ lúc đỏ lúc xanh; ý này kiểm tay theo mục 6 của `docs/TESTING.md`; bộ hẹn giờ của `dxos archive schedule`, tab Danh mục dữ liệu, ứng dụng ngoài loại máy (`dxos client`), kiểu và ràng buộc mới, `required_when`, `ui:`, tài liệu OpenAPI theo mô hình, giới hạn luồng thông báo, khóa chống chạy lặp, bảng theo trạng thái và xuất CSV cũng chỉ kiểm tay theo mục đó, chưa có script trong CI |
+| Thông lượng ghi lịch sử | Chuỗi hash nối mọi dòng theo thứ tự id trên toàn hệ thống nên các lần ghi lịch sử lần lượt qua một khóa tư vấn của PostgreSQL (`HistoryChain.lock()`), giữ đến hết giao dịch; thông lượng của API chung đứng dưới khoảng 1.000 yêu cầu mỗi giây dù CPU còn dư (`docs/SIZING.md`), ở 50 đến 100 người dùng đồng thời vẫn đạt p95 dưới 500 ms; chưa kiểm chứng riêng rằng khóa này là nguyên nhân; chuỗi theo từng hồ sơ hoặc nối hash bất đồng bộ bỏ được khóa nhưng đổi hợp đồng của chuỗi hash và của `hash` trong thông điệp webhook |
 
 ## 5. Lệch hướng so với đề thi
 

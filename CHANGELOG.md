@@ -23,6 +23,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - `dxos plan --check` thoát với mã 0 khi mô hình đang chạy giống tệp, 2 khi kế hoạch có thay đổi và 1 khi bị từ chối.
 - `examples/model-repo` là kho tệp mô hình mẫu, kèm workflow dán kế hoạch vào pull request.
 - Kế hoạch (`POST /api/v1/models/plan`, `dxos plan`) của một mô hình chưa chạy không để lại schema `m_<mô hình>` trong PostgreSQL; schema chỉ có khi áp dụng.
+- Hành động của quy trình có thêm khóa `check: <tên đích>`: dịch vụ riêng được hỏi trước khi trạng thái đổi và có thể từ chối (403, `CHECK_DENIED`). Đích có `on_error` (`deny` mặc định hoặc `allow`) cho lúc dịch vụ không trả lời (503, `CHECK_UNAVAILABLE`, hồ sơ giữ nguyên) và `bypass` cho vận hành. Lịch sử ghi `check_denied`, `check_unavailable`, `check_skipped`.
 
 ### Ứng dụng ngoài
 

@@ -3,8 +3,18 @@
 # secret stay here, outside git. Names match [a-z][a-z0-9_]*, urls are http or https.
 # format is json (the message as it is, the default) or chat (a sentence as {"text": ...}, which
 # Mattermost and Slack accept).
+# A name can also be given to an action with `check: <name>`: the service at that address is asked
+# before the action is taken and answers {"allow": true} or {"allow": false, "code": ...,
+# "message": ...}. on_error says what happens when it cannot be reached or answers wrongly: deny
+# (the default) refuses the action, allow lets it through. bypass: true lets every action through
+# without asking.
 targets:
   ops:
     url: https://chat.example.org/hooks/replace-me
     secret: replace-me
     format: chat
+  ledger:
+    url: https://ledger.example.org/check
+    secret: replace-me
+    on_error: deny
+    bypass: false

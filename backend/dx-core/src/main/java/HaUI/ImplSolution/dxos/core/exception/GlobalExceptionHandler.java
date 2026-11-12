@@ -3,6 +3,7 @@ package HaUI.ImplSolution.dxos.core.exception;
 
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
 import HaUI.ImplSolution.dxos.core.api.exception.ActionNotAllowedException;
+import HaUI.ImplSolution.dxos.core.api.exception.CheckUnavailableException;
 import HaUI.ImplSolution.dxos.core.api.exception.InvalidStateException;
 import HaUI.ImplSolution.dxos.core.api.exception.PokaYokeViolationException;
 import HaUI.ImplSolution.dxos.core.api.exception.ResourceNotFoundException;
@@ -114,6 +115,19 @@ public class GlobalExceptionHandler {
                 "Files cannot be checked right now, please try again later"));
   }
 
+  @ExceptionHandler(CheckUnavailableException.class)
+  public ResponseEntity<ApiResponse<Map<String, String>>> handleCheckUnavailable(
+      CheckUnavailableException ex) {
+    log.warn("Action check unavailable: {}", ex.getMessage());
+    auditService.recordServerError(HttpStatus.SERVICE_UNAVAILABLE.value(), ex);
+    return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+        .body(
+            ApiResponse.error(
+                "ERR_CHECK_UNAVAILABLE",
+                "The action cannot be checked right now, please try again later",
+                Map.of("reason", "CHECK_UNAVAILABLE")));
+  }
+
   @ExceptionHandler(PokaYokeViolationException.class)
   public ResponseEntity<ApiResponse<Map<String, Object>>> handlePokaYoke(
       PokaYokeViolationException ex) {
@@ -143,7 +157,14 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(ActionNotAllowedException.class)
   public ResponseEntity<ApiResponse<Map<String, String>>> handleActionNotAllowed(
       ActionNotAllowedException ex) {
-    Map<String, String> data = ex.getReason() == null ? null : Map.of("reason", ex.getReason());
+    Map<String, String> data = null;
+    if (ex.getReason() != null) {
+      data = new LinkedHashMap<>();
+      data.put("reason", ex.getReason());
+      if (ex.getCode() != null) {
+        data.put("code", ex.getCode());
+      }
+    }
     return ResponseEntity.status(HttpStatus.FORBIDDEN)
         .body(ApiResponse.error("ERR_ACTION_NOT_ALLOWED", ex.getMessage(), data));
   }

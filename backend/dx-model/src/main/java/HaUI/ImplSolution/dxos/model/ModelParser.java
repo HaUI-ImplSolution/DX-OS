@@ -45,7 +45,7 @@ import org.yaml.snakeyaml.nodes.Tag;
 // file is touched.
 public final class ModelParser {
 
-  public static final int FORMAT = 0;
+  public static final int FORMAT = ModelUpgrader.CURRENT_FORMAT;
 
   private static final Pattern NAME = Pattern.compile("[a-z][a-z0-9_]{0,39}");
   private static final Pattern DEADLINE = Pattern.compile("([0-9]{1,6})([mhd])");
@@ -75,7 +75,7 @@ public final class ModelParser {
 
   public static Model parse(String yaml) {
     ModelParser parser = new ModelParser();
-    Model model = parser.read(yaml);
+    Model model = parser.read(ModelUpgrader.upgrade(yaml).content());
     if (!parser.problems.isEmpty()) {
       throw new ModelException(parser.problems);
     }
@@ -1070,6 +1070,7 @@ public final class ModelParser {
     List<String> roles = List.of();
     List<String> require = List.of();
     Condition when;
+    String check;
     Node node;
     Node fromNode;
     Node toNode;
@@ -1084,6 +1085,7 @@ public final class ModelParser {
       draft.roles = action.roles();
       draft.require = action.require();
       draft.when = action.when();
+      draft.check = action.check();
       return draft;
     }
   }
@@ -1236,7 +1238,8 @@ public final class ModelParser {
                     draft.needsNote,
                     List.copyOf(draft.roles),
                     List.copyOf(draft.require),
-                    draft.when)));
+                    draft.when,
+                    draft.check)));
     List<State> builtStates = new ArrayList<>(states.values());
     if (actions.containsKey(ProcessFamily.WITHDRAW)) {
       builtStates.add(ProcessFamily.WITHDRAWN);
@@ -1426,6 +1429,13 @@ public final class ModelParser {
         problem(parts.get("when"), "when only applies to an action of the handler");
       } else {
         draft.when = readCondition(parts.get("when"), fields, "when");
+      }
+    }
+    if (parts.get("check") != null) {
+      if (isNull(parts.get("check"))) {
+        draft.check = null;
+      } else {
+        draft.check = readName(spec, parts.get("check"), "check");
       }
     }
     if (added && (draft.from.isEmpty() || (!withdraw && draft.to == null))) {

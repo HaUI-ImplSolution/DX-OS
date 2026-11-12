@@ -105,6 +105,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 ## 9. Từ 100 lên 100.000 người dùng thì sao?
 
 - Chưa đo tải ở quy mô đó.
+  Tải đồng thời đã đo đến 200 người dùng ảo ở các cấu hình 12, 8, 4 và 2 nhân: từ 4 nhân trở lên đạt ngưỡng p95 dưới 500 ms đến 100 người dùng đồng thời, 2 nhân đạt đến 75; chi tiết ở [`docs/SIZING.md`](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/SIZING.md).
   Số đã đo: danh sách 10.000 dòng có lọc và sắp xếp trả về ở phân vị 95 là 11 ms; cả tám dịch vụ dùng khoảng 1,8 GiB RAM lúc rảnh.
 - Backend chạy một bản.
   Thử hai bản sau gateway cho thấy cả hai nhận lưu lượng, nhưng sau một lần áp dụng mô hình, danh sách mô hình và trạng thái giữ lệch nhau giữa hai bản; vì vậy đây là giới hạn đã ghi, không phải khả năng đã có.
@@ -114,7 +115,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 ## 10. Cộng đồng muốn đóng góp thì làm thế nào?
 
 - Thêm một nghiệp vụ là thêm một tệp mô hình: đặt vào `backend/dx-engine/src/main/resources/templates/` và khai trong `index.json` để hiện ở thư viện mẫu; kiểm bằng `POST /api/v1/models/plan` hoặc `dxos plan`.
-  Đặc tả cho trình soạn thảo là `model-v0.schema.json`; tệp sai mẫu ở `models/invalid/`.
+  Đặc tả cho trình soạn thảo là `model-v1.schema.json`; tệp sai mẫu ở `models/invalid/`.
 - Thêm họ mẫu quy trình mới là thêm một `ProcessFamily` và tệp BPMN cùng tên trong `dx-engine`.
 - `CONTRIBUTING.md` nêu quy trình nhánh, pull request, kiểm trước khi gửi; có mẫu issue và pull request ở `.github/`; CI chạy riêng cho backend, web, nền tảng (kiểm đầu-cuối), phụ thuộc và tuân thủ.
 - **Bằng chứng:** `CONTRIBUTING.md`; `.github/ISSUE_TEMPLATE/`; `.github/workflows/`.
@@ -124,7 +125,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Chưa có phần AI: tìm kiếm tri thức có nguồn, hỏi đáp sinh câu trả lời và tác tử có người duyệt.
 - Điều kiện `when` của hành động chỉ là một phép so sánh trên một trường, chưa có và/hoặc.
   Duyệt nhiều cấp tuần tự và rẽ nhánh theo ngưỡng khai báo được bằng quy trình tự khai báo, mới kiểm tay trên stack tạm chứ chưa có kiểm tự động.
-- Ba nguyên lý đầu của đề mới được đáp ứng một phần: hồ dữ liệu có phần lưu trữ hồ sơ đã đóng theo lịch nhưng chưa có lớp truy vấn riêng; dữ liệu vận hành mới vào qua bộ mô phỏng IT/OT và chưa có bản sao số; phả hệ mới dừng ở danh mục dữ liệu của mô hình, chưa đến từng trường.
+- Hồ dữ liệu có phần lưu trữ hồ sơ đã đóng theo lịch và `dxos archive query` truy vấn từng lần chạy; hai nguyên lý kế tiếp của đề mới được đáp ứng một phần: dữ liệu vận hành mới vào qua bộ mô phỏng IT/OT và chưa có bản sao số; phả hệ mới dừng ở danh mục dữ liệu của mô hình, chưa đến từng trường.
 - Một bản backend; chưa chịu lỗi nhiều nút; chưa thử tải lớn.
 - Đích webhook dạng `chat` chưa thử với Mattermost và Slack thật.
 - Đổi vai hoặc đơn vị của người đang đăng nhập có hiệu lực sau tối đa khoảng 5 phút; không có quyền theo từng trường.

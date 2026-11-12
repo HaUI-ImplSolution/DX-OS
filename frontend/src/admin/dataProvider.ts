@@ -36,7 +36,10 @@ function toApiValue(meta: EntityMeta | undefined, name: string, value: unknown) 
 function body(meta: EntityMeta | undefined, data: Row) {
   const payload: Row = {};
   Object.entries(data).forEach(([name, value]) => {
-    if (!SYSTEM_FIELDS.includes(name)) payload[name] = toApiValue(meta, name, value);
+    const field = meta?.fields.find((field) => field.name === name);
+    if (!SYSTEM_FIELDS.includes(name) && field?.type !== "file") {
+      payload[name] = toApiValue(meta, name, value);
+    }
   });
   return payload;
 }

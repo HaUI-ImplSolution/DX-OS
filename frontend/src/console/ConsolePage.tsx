@@ -24,7 +24,7 @@ import { guardUnsavedWork } from "../shell/locale";
 import { t } from "../shell/t";
 
 const BLANK = `# SPDX-License-Identifier: Apache-2.0
-format: 0
+format: 1
 name: my_model
 roles:
   - name: USER

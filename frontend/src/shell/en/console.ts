@@ -375,7 +375,7 @@ export const console: Record<string, string> = {
   "Người tạo hồ sơ được tự quyết định hồ sơ của mình": "The creator of a record may decide on their own record",
   "Thời gian một vai xử lý có để xử lý hồ sơ, quá hạn thì được đánh dấu": "The time a handler role has to handle a record; past it the record is marked overdue",
   "Hồ sơ đã xử lý xong mà người nộp không xác nhận sau thời gian này thì hệ thống tự đóng": "A record that is handled but not confirmed by the submitter after this time is closed by the system",
-  "Phiên bản định dạng của tệp mô hình, hiện là 0.": "The format version of the model file, currently 0.",
+  "Phiên bản định dạng của tệp mô hình, hiện là 1.": "The format version of the model file, currently 1.",
   "Tên mô hình: chữ thường, số, gạch dưới, bắt đầu bằng chữ, tối đa 40 ký tự. Đặt tên bảng dữ liệu (schema m_<tên>) và đường dẫn API.": "Model name: lowercase letters, digits, underscores, starts with a letter, at most 40 characters. It names the data tables (schema m_<name>) and the API path.",
   "Tên đích nhận lịch sử hồ sơ, đã cấu hình ở máy chủ (không phải địa chỉ web). Bỏ trống thì dùng đích mặc định.": "Name of the target that receives the record history, configured on the server (not a web address). Empty means the default target.",
   "Danh sách vai: nhóm người có cùng quyền. Cần ít nhất một vai. Vai khai ở đây dùng được ở access, handler và role của hành động.": "List of roles: groups of people with the same access. At least one role is needed. A role declared here can be used in access, handler and the role of an action.",

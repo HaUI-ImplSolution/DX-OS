@@ -565,17 +565,26 @@ esac
 EOF
 }
 
+# Fills CORS_ORIGINS with the normalized origins of CORS_ALLOWED_ORIGINS and stops on an invalid one.
+read_cors_env() {
+  local configured existing
+  CORS_ORIGINS=()
+  configured="$(env_value CORS_ALLOWED_ORIGINS)"
+  [[ -n "$configured" ]] || return 0
+  IFS=',' read -ra configured_origins <<<"$configured"
+  for existing in "${configured_origins[@]}"; do
+    dxos_validate_web_url "$existing" origin \
+      || die "CORS_ALLOWED_ORIGINS is invalid: $DXOS_WEB_URL_ERROR"
+    CORS_ORIGINS+=("$DXOS_WEB_URL_ORIGIN")
+  done
+}
+
 # Adds exact origins without removing entries that may belong to another browser client.
 merge_cors_origins() {
-  local configured candidate existing joined changed=false origins=()
-  configured="$(env_value CORS_ALLOWED_ORIGINS)"
-  if [[ -n "$configured" ]]; then
-    IFS=',' read -ra origins <<<"$configured"
-    for existing in "${origins[@]}"; do
-      dxos_validate_web_url "$existing" origin \
-        || die "CORS_ALLOWED_ORIGINS is invalid: $DXOS_WEB_URL_ERROR"
-    done
-  fi
+  local candidate existing joined changed=false origins=()
+  read_cors_env
+  origins=("${CORS_ORIGINS[@]:-}")
+  [[ -n "${origins[0]:-}" ]] || origins=()
   for candidate in "$@"; do
     for existing in "${origins[@]:-}"; do [[ "$existing" == "$candidate" ]] && continue 2; done
     origins+=("$candidate")
@@ -624,6 +633,7 @@ cmd_browser_client() {
         -e "REDIRECT_COUNT=${#redirects[@]}" -e "ORIGIN_COUNT=${#origins[@]}")
       for index in "${!redirects[@]}"; do exec_env+=(-e "REDIRECT_$index=${redirects[$index]}"); done
       for index in "${!origins[@]}"; do exec_env+=(-e "ORIGIN_$index=${origins[$index]}"); done
+      read_cors_env
       browser_client_keycloak "${exec_env[@]}"
       merge_cors_origins "${origins[@]}"
       cat <<EOF

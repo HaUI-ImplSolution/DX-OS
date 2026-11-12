@@ -54,12 +54,12 @@ final class CorsOrigins {
     if (scheme.equals("http") && !isLoopback(lowerHost)) {
       throw invalid(origin, "http is allowed only for localhost or a loopback address");
     }
-    String authority = uri.getRawAuthority().toLowerCase(Locale.ROOT);
     int port = uri.getPort();
-    if ((scheme.equals("https") && port == 443) || (scheme.equals("http") && port == 80)) {
-      authority = authority.substring(0, authority.length() - Integer.toString(port).length() - 1);
-    }
-    return scheme + "://" + authority;
+    boolean defaultPort =
+        port == -1
+            || (scheme.equals("https") && port == 443)
+            || (scheme.equals("http") && port == 80);
+    return scheme + "://" + lowerHost + (defaultPort ? "" : ":" + port);
   }
 
   private static boolean isLoopback(String host) {

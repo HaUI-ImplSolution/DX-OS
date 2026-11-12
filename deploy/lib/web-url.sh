@@ -66,8 +66,8 @@ dxos_validate_web_url() {
     done
   fi
 
-  if [[ -n "$port" ]] && (( 10#$port < 1 || 10#$port > 65535 )); then
-    DXOS_WEB_URL_ERROR="the port must be between 1 and 65535"
+  if [[ -n "$port" ]] && { [[ ! "$port" =~ ^[1-9][0-9]{0,4}$ ]] || (( port > 65535 )); }; then
+    DXOS_WEB_URL_ERROR="the port must be a number from 1 to 65535 without leading zeros"
     return 1
   fi
   if [[ "$scheme" == https && "$port" == 443 || "$scheme" == http && "$port" == 80 ]]; then

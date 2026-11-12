@@ -289,7 +289,7 @@ Bảng điều khiển thuộc tầng 2, nằm ở tuyến `/console` của ứn
   Tab chỉ mở API mỏng trên Keycloak: chính sách mật khẩu, MFA, phiên và đăng nhập bằng nhà cung cấp ngoài để Keycloak lo.
   Người dùng cuối tự đổi mật khẩu, bật OTP và xem phiên ở Account Console của Keycloak, mở từ mục "Tài khoản của tôi" trong menu người dùng.
 
-- **Ứng dụng ngoài:** đăng ký một ứng dụng với đúng một vai của một mô hình, hiện mã bí mật một lần, đổi mã và xóa; ứng dụng không gọi được bảng điều khiển hay quản trị người dùng.
+- **Ứng dụng ngoài:** đăng ký một ứng dụng với đúng một vai của một mô hình, hiện mã bí mật một lần, đổi mã, đổi vai và xóa; ứng dụng không gọi được bảng điều khiển hay quản trị người dùng.
 
 Bảng điều khiển đọc và ghi đúng tệp mô hình, và tệp luôn là nguồn sự thật.
 Giao diện cho người dùng cuối do bộ dựng sinh từ metadata, đủ dùng, nhất quán và được chăm chút về hình thức.
@@ -320,7 +320,7 @@ Thêm năng lực mới nghĩa là thêm provider, không phải sửa lõi.
 
 | Năng lực                        | Thành phần                              | Đội tự viết                                                 |
 | ----------------------------------- | ------------------------------------------- | ----------------------------------------------------------------- |
-| Định danh, SSO                  | Keycloak                                  | Sinh client và vai từ mô hình, quản trị người dùng, đăng ký ứng dụng ngoài |
+| Định danh, SSO                  | Keycloak                                  | Sinh client và vai từ mô hình, quản trị người dùng, đăng ký ứng dụng ngoài và client trình duyệt |
 | Cổng API                         | APISIX                                    | Sinh route khi cần                                             |
 | Dữ liệu có cấu trúc          | PostgreSQL, pgschema                     | Sinh schema và ràng buộc; mỗi mô hình một schema         |
 | API dữ liệu, quyền từng dòng | API chung trong dịch vụ lõi            | Đọc mô hình, kiểm token Keycloak, dựng truy vấn an toàn |

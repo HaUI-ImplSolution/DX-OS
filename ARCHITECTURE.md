@@ -181,7 +181,7 @@ Trạng thái của hồ sơ chỉ đổi qua quy trình.
 - Hạn xử lý lưu ở cột `handle_by` khi hồ sơ chờ người xử lý; `overdue` được tính khi đọc.
 - `CatalogService` cấp cho bảng điều khiển schema của tệp mô hình, các họ mẫu, mẫu mô hình và phiên bản đã áp dụng.
 - `DataCatalogService` mô tả dữ liệu của một mô hình đang chạy ở `GET /api/v1/models/{model}/data-catalog` (ADMIN): trường, vai được truy cập, số dòng, liên kết giữa các thực thể, và nơi dữ liệu đi vào (vai, ứng dụng ngoài) và đi ra (webhook, hành động hoàn tất, dòng sự kiện, lưu trữ).
-- `ProcessDiagramService` đọc một tệp mô hình bằng `ModelParser` và trả trạng thái, hành động, hạn, `auto_close` và hành động `after` của từng quy trình, hoặc danh sách lỗi kèm dòng và cột; không so với mô hình đang chạy.
+- `ProcessDiagramService` đọc một tệp mô hình bằng `ModelParser` và trả trạng thái, hành động, hạn, các mức leo thang, `auto_close` và hành động `after` của từng quy trình, hoặc danh sách lỗi kèm dòng và cột; không so với mô hình đang chạy.
 
 ## 7. Sự kiện và hành động sau quyết định
 
@@ -189,6 +189,7 @@ Trạng thái của hồ sơ chỉ đổi qua quy trình.
 - `OutboxController` cho ADMIN xem thông điệp theo trạng thái cùng lỗi gần nhất và thử lại thông điệp chưa gửi; `OutboxCleanup` xóa thông điệp đã gửi sau 30 ngày.
 - Hành động hoàn tất của khối `after:` đi qua outbox đến `CompletionHandler`; hiện có các thao tác `add_to_group` và `remove_from_group` của Keycloak.
 - `OverdueSweep` ghi dòng quá hạn vào lịch sử, một lần cho mỗi hạn, và dòng `due_soon` khi hồ sơ còn dưới `ENGINE_DUE_SOON_BEFORE` trước hạn.
+- `EscalationSweep` ghi dòng `escalated` (mức và lần nhắc) vào lịch sử mỗi khi một mức của `escalate` đến hạn trên hồ sơ quá hạn chưa ai xử lý, cùng giao dịch với tin gửi webhook; sau lúc dịch vụ tắt chỉ ghi mức mới nhất đã đến hạn, và không đổi trạng thái hay người giữ hồ sơ.
 - Khi mô hình có đích webhook (khóa `webhook` hoặc `DXOS_WEBHOOK_URL`), mỗi dòng lịch sử có thêm một thông điệp chủ đề `record.event` trong outbox cùng giao dịch, và `WebhookHandler` gửi nó kèm chữ ký.
   Các dòng của một hồ sơ được giao theo thứ tự.
   Việc áp dụng mô hình và thay đổi tài khoản đi qua chủ đề `admin.event`.

@@ -188,8 +188,8 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 | reuse 6.3.0 (pipx run)               | Apache-2.0, GPL-3.0-or-later (mã);   | Kiểm chuẩn REUSE (reuse lint) trong  |
 |                                      | CC0-1.0, CC-BY-SA-4.0 (tài liệu)     | CI; không đóng gói vào sản phẩm      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| GitHub Actions (actions/*,           | MIT, Apache-2.0                      | Chỉ trong CI, ghim theo SHA          |
-| docker/*)                            |                                      |                                      |
+| GitHub Actions (actions/*,           | MIT, Apache-2.0, ISC, 0BSD,          | Chỉ trong CI, ghim theo SHA          |
+| docker/*)                            | BlueOak-1.0.0                        |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 
 5. GHI CHÚ

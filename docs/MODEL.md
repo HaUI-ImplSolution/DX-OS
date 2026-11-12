@@ -129,7 +129,7 @@ Ví dụ đầy đủ ở [`asset_register.yaml`](../backend/dx-engine/src/main/
 ### Tự khai báo hoặc mở rộng quy trình
 
 - `states` là bản đồ từ tên trạng thái sang `{label, terminal}`; `initial` là trạng thái hồ sơ mới vào, mặc định là trạng thái khai báo đầu tiên.
-- `actions` là bản đồ từ tên hành động sang `{label, from, to, by, role, needs_note, require, when}`.
+- `actions` là bản đồ từ tên hành động sang `{label, from, to, by, role, needs_note, require, when, check}`.
   `from` là một trạng thái hoặc một danh sách, `by` là `handler` (mặc định) hoặc `owner`.
   `role` giới hạn một hành động của người xử lý cho vai riêng thay vì cả `handler`.
   Vai ghi ở `role` không cần có trong `handler`; người giữ vai đó vẫn thực hiện được hành động.
@@ -145,9 +145,14 @@ Ví dụ đầy đủ ở [`asset_register.yaml`](../backend/dx-engine/src/main/
   `when` chỉ dùng cho hành động của người xử lý, nên không dùng được với `withdraw` và hành động của `auto_close`.
   Viết `when: null` để bỏ điều kiện của một hành động trong họ mẫu.
   Hành động không đạt điều kiện trả 409 `ERR_INVALID_STATE` với `data.reason` là `CONDITION_NOT_MET`.
+  `check: <tên đích>` cho một dịch vụ riêng quyết định hành động trước khi hồ sơ chuyển trạng thái.
+  Tên đích khai trong `deploy/webhooks/targets.yml` như đích của `webhook`; tên chưa có trong tệp thì mô hình bị từ chối.
+  Dịch vụ được hỏi sau khi mọi quy tắc của quy trình đã đạt và trước khi trạng thái đổi; hành động bị từ chối trả 403 `ERR_ACTION_NOT_ALLOWED` với `data.reason` là `CHECK_DENIED` và `data.code` là mã dịch vụ trả về.
+  Dịch vụ không trả lời hoặc trả lời sai thì cách xử lý do `on_error` của đích quyết định, cách khai và giao thức ở [`deploy/INTEGRATIONS.md`](../deploy/INTEGRATIONS.md#kiểm-tra-trước-khi-chuyển-trạng-thái).
+  Hành động tự đóng của `auto_close` không hỏi dịch vụ.
 - Khi có `family`, mục khai báo ghi đè từng khóa của khung; viết `null` để bỏ một trạng thái hoặc hành động của khung.
 - `withdraw` và trạng thái `withdrawn` là tên dành riêng: khai `withdraw: {from: [...]}` thì nền tảng tự thêm trạng thái `withdrawn`, và hành động này luôn do người nộp thực hiện.
-- Tên hành động `created`, `updated`, `deleted`, `assigned`, `file_added`, `file_removed`, `completion_skipped`, `auto_closed`, `overdue`, `due_soon` và `escalated` là tên dành riêng, vì lịch sử hồ sơ dùng chúng cho các dòng do nền tảng ghi.
+- Tên hành động `created`, `updated`, `deleted`, `assigned`, `file_added`, `file_removed`, `completion_skipped`, `auto_closed`, `overdue`, `due_soon`, `escalated`, `check_denied`, `check_unavailable` và `check_skipped` là tên dành riêng, vì lịch sử hồ sơ dùng chúng cho các dòng do nền tảng ghi.
 - Mỗi trạng thái không phải cuối phải có hành động đi ra, và ít nhất một hành động đi ra không có `when`, để hồ sơ luôn có lối đi; mọi trạng thái phải tới được từ `initial`, trạng thái cuối không có hành động đi ra, và phải có ít nhất một trạng thái cuối.
 - `auto_close` là thời gian chờ người nộp trước khi hệ thống thay họ làm một hành động.
   Họ `work_item` nhận dạng ngắn `auto_close: 7d` (hành động `confirm`); các trường hợp khác viết `auto_close: {after: 7d, action: <hành động của người nộp>}`.

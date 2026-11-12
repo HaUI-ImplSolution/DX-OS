@@ -216,13 +216,13 @@ jobs:
         include:
           # Each group runs on its own empty stack; the scripts of a group depend only on the ones before them in it.
           - group: model and process
-            checks: api recovery case change process booking demo guards users docs conformance cli
+            checks: api recovery case change process booking demo guards users docs conformance cli browser
           - group: events and bootstrap
             checks: events bootstrap
           # Core mode runs tier 1 only: no web app, portal or monitor.
           - group: core mode
             mode: core
-            checks: api recovery case change process booking demo guards users docs conformance cli
+            checks: api recovery case change process booking demo guards users docs conformance cli browser
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

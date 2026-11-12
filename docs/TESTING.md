@@ -65,7 +65,7 @@ Chạy trên stack mới dựng, cơ sở dữ liệu rỗng, vì script áp d�
 Mỗi script phụ thuộc các script đứng trước trong cùng nhóm, nên chạy đúng thứ tự:
 
 ```bash
-for c in api recovery case change process booking demo guards users docs conformance cli; do
+for c in api recovery case change process booking demo guards users docs conformance cli browser; do
   python3 deploy/dev/check_$c.py
 done
 ```
@@ -87,6 +87,7 @@ python3 deploy/dev/check_bootstrap.py
 | `check_booking.py` | Họ `reservation`, danh mục của bảng điều khiển, mọi mẫu áp dụng được |
 | `check_demo.py` | Tám tiêu chí của kịch bản trình diễn |
 | `check_guards.py` | Người giữ vai, vai của nền tảng, bỏ vai, xóa thực thể còn hồ sơ đang chạy, lần áp dụng dừng giữa chừng (tiếp tục và hủy bỏ) |
+| `check_browser.py` | Giao diện trình duyệt ngoài: `dxos client browser add` tạo public client PKCE S256, origin vào `CORS_ALLOWED_ORIGINS` và được CORS nhận, `list` không in secret, redirect không an toàn bị từ chối trước khi đổi Keycloak, đăng nhập PKCE gọi được API, `remove` xóa client |
 | `check_users.py` | Quản trị người dùng: gán và gỡ vai và đơn vị, tạo, khóa, đặt lại mật khẩu, audit |
 | `check_docs.py` | Mọi endpoint các tài liệu nêu có trong OpenAPI của backend đang chạy, đúng phương thức |
 | `check_conformance.py` | Rào chắn của lõi giữ với mọi mô hình đã áp dụng, hoặc các mô hình nêu tên: không ghi được `status`, không token thì 401, không đọc được dữ liệu mô hình khác |
@@ -194,7 +195,8 @@ Lệnh `dxos` và các tính năng chạy ngoài stack kiểm:
 5. Thống kê với vai `unit` và `own`, có và không có bộ lọc: `total` và tổng `byStatus` bằng số dòng của danh sách cùng bộ lọc.
 6. `dxos demo` trên stack có `dxos-cli`: tạo bốn tài khoản `judge_*` và 40 hồ sơ; `judge_student` thấy hồ sơ của mình, mỗi cán bộ chỉ thấy đơn vị mình, `judge_supervisor` thấy mọi hồ sơ và không có nút Tạo mới; chạy lại không nộp thêm hồ sơ và in mật khẩu mới; `dxos demo remove` gỡ bốn tài khoản.
 7. `dxos client add`, `list`, `role`, `rotate`, `remove` trên stack có `dxos-cli`: secret chỉ in ở `add` và `rotate`, `list` không có secret, `role` đổi vai mà secret cũ vẫn lấy được token và token mới mang vai mới, `rotate` làm secret cũ bị từ chối, `remove` làm client không lấy được token.
-8. `dxos archive schedule install` rồi `systemctl --user start dxos-archive.service`: `deploy/archive.log` ghi lượt chạy, `dxos archive list` thấy lần chạy mới khi có hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS`, chạy lần nữa không ghi lại các hồ sơ đó; `dxos archive check --store` khớp manifest; khóa S3 sai thì `list` và `auto` thoát mã 1 và không in khóa; `schedule uninstall` gỡ hai tệp đơn vị.
+8. `dxos client browser add` tạo public client chỉ dùng Authorization Code với PKCE S256, có mapper audience và nhóm, lưu origin chính xác vào `CORS_ALLOWED_ORIGINS`; preflight từ origin đó được nhận, đăng nhập đổi code PKCE lấy token rồi gọi được API, HTTP ngoài loopback và wildcard bị từ chối trước khi tạo client; `list` không in secret và `remove` xóa client.
+9. `dxos archive schedule install` rồi `systemctl --user start dxos-archive.service`: `deploy/archive.log` ghi lượt chạy, `dxos archive list` thấy lần chạy mới khi có hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS`, chạy lần nữa không ghi lại các hồ sơ đó; `dxos archive check --store` khớp manifest; khóa S3 sai thì `list` và `auto` thoát mã 1 và không in khóa; `schedule uninstall` gỡ hai tệp đơn vị.
 
 ## 7. Hồi quy
 

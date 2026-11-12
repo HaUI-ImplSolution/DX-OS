@@ -35,6 +35,9 @@
 #   dxos client add <name> --model M --role R | list | role <name> --role R | rotate <name> | remove <name>
 #                              register an outside application that calls the API with its own secret and
 #                              one role of one model; the secret is shown once, rotate gives a new one
+#   dxos client browser add <name> --redirect-uri URL [...] | list | remove <name>
+#                              manage public OIDC clients for browser applications; add enables PKCE S256
+#                              and adds each exact redirect origin to the API CORS allowlist
 #   dxos uninstall [--purge]   remove the containers and the dxos command; --purge also deletes the data
 #   dxos version | help
 set -euo pipefail
@@ -57,6 +60,7 @@ STOPPED_MARK="$DEPLOY_DIR/.stopped"
 # Where the command was typed; main moves to deploy/, so a relative path in an argument is resolved against this.
 CALLER_DIR="$PWD"
 ALPINE="alpine:3.24@sha256:3f4d6b32e26703c6082839234f43769d5046b3ac7c910033911d1e71d8cd630a"
+source "$DEPLOY_DIR/lib/web-url.sh"
 
 die() { echo "dxos: $*" >&2; exit 1; }
 from_caller() { if [[ "$1" == /* ]]; then printf '%s\n' "$1"; else printf '%s\n' "$CALLER_DIR/$1"; fi; }
@@ -455,11 +459,217 @@ cmd_apply() {
   [[ "$API_STATUS" == 200 ]] || return 1
 }
 
+# Runs one browser-client operation inside Keycloak without publishing its Admin API.
+browser_client_keycloak() {
+  compose exec -T "$@" keycloak bash -s <<'EOF'
+set -euo pipefail
+config=/tmp/dxos-browser-client.config
+definition=/tmp/dxos-browser-client.json
+trap 'rm -f "$config" "$definition"' EXIT
+kc() { /opt/keycloak/bin/kcadm.sh "$@" --config "$config"; }
+kc config credentials --server http://localhost:8080 --realm master \
+  --user "$KC_BOOTSTRAP_ADMIN_USERNAME" --password "$KC_BOOTSTRAP_ADMIN_PASSWORD" >/dev/null 2>&1 \
+  || { echo "dxos: cannot sign in to Keycloak as the bootstrap administrator" >&2; exit 3; }
+
+case "$ACTION" in
+  add)
+    if [[ -n "$(kc get clients -r dxos -q clientId="$CLIENT_ID" --fields id --format csv --noquotes)" ]]; then
+      echo "dxos: the browser client $CLIENT_ID already exists" >&2
+      exit 4
+    fi
+    json_array() {
+      local prefix="$1" count="$2" index variable first=true
+      printf '['
+      for ((index = 0; index < count; index++)); do
+        variable="${prefix}_$index"
+        $first || printf ','
+        printf '"%s"' "${!variable}"
+        first=false
+      done
+      printf ']'
+    }
+    redirects="$(json_array REDIRECT "$REDIRECT_COUNT")"
+    origins="$(json_array ORIGIN "$ORIGIN_COUNT")"
+    logout=""
+    for ((index = 0; index < REDIRECT_COUNT; index++)); do
+      variable="REDIRECT_$index"
+      logout+="${logout:+##}${!variable}"
+    done
+    cat >"$definition" <<JSON
+{
+  "clientId": "$CLIENT_ID",
+  "name": "DX-OS browser $CLIENT_NAME",
+  "protocol": "openid-connect",
+  "publicClient": true,
+  "bearerOnly": false,
+  "standardFlowEnabled": true,
+  "implicitFlowEnabled": false,
+  "directAccessGrantsEnabled": false,
+  "serviceAccountsEnabled": false,
+  "consentRequired": false,
+  "fullScopeAllowed": true,
+  "redirectUris": $redirects,
+  "webOrigins": $origins,
+  "attributes": {
+    "pkce.code.challenge.method": "S256",
+    "post.logout.redirect.uris": "$logout"
+  },
+  "protocolMappers": [
+    {
+      "name": "dxos-api-audience",
+      "protocol": "openid-connect",
+      "protocolMapper": "oidc-audience-mapper",
+      "consentRequired": false,
+      "config": {
+        "included.custom.audience": "dxos-api",
+        "id.token.claim": "false",
+        "access.token.claim": "true"
+      }
+    },
+    {
+      "name": "groups",
+      "protocol": "openid-connect",
+      "protocolMapper": "oidc-group-membership-mapper",
+      "consentRequired": false,
+      "config": {
+        "full.path": "false",
+        "id.token.claim": "false",
+        "access.token.claim": "true",
+        "claim.name": "groups",
+        "userinfo.token.claim": "false"
+      }
+    }
+  ],
+  "defaultClientScopes": ["basic", "web-origins", "acr", "profile", "roles", "email"]
+}
+JSON
+    kc create clients -r dxos -f "$definition" >/dev/null
+    ;;
+  list)
+    rows="$(kc get clients -r dxos --fields clientId,enabled --format csv --noquotes \
+      | awk -F, '$1 ~ /^dxos-browser-/ {print}' | sort)"
+    if [[ -z "$rows" ]]; then
+      echo "No browser client is registered."
+    else
+      printf '%-42s %s\n' CLIENT_ID ENABLED
+      while IFS=, read -r client enabled; do printf '%-42s %s\n' "$client" "$enabled"; done <<<"$rows"
+    fi
+    ;;
+  remove)
+    id="$(kc get clients -r dxos -q clientId="$CLIENT_ID" --fields id --format csv --noquotes)"
+    [[ -n "$id" ]] || { echo "dxos: no browser client called $CLIENT_ID" >&2; exit 4; }
+    kc delete "clients/$id" -r dxos >/dev/null
+    ;;
+  *) echo "dxos: unknown browser-client action: $ACTION" >&2; exit 2 ;;
+esac
+EOF
+}
+
+# Fills CORS_ORIGINS with the normalized origins of CORS_ALLOWED_ORIGINS and stops on an invalid one.
+read_cors_env() {
+  local configured existing
+  CORS_ORIGINS=()
+  configured="$(env_value CORS_ALLOWED_ORIGINS)"
+  [[ -n "$configured" ]] || return 0
+  IFS=',' read -ra configured_origins <<<"$configured"
+  for existing in "${configured_origins[@]}"; do
+    dxos_validate_web_url "$existing" origin \
+      || die "CORS_ALLOWED_ORIGINS is invalid: $DXOS_WEB_URL_ERROR"
+    CORS_ORIGINS+=("$DXOS_WEB_URL_ORIGIN")
+  done
+}
+
+# Adds exact origins without removing entries that may belong to another browser client.
+merge_cors_origins() {
+  local candidate existing joined changed=false origins=()
+  read_cors_env
+  origins=("${CORS_ORIGINS[@]:-}")
+  [[ -n "${origins[0]:-}" ]] || origins=()
+  for candidate in "$@"; do
+    for existing in "${origins[@]:-}"; do [[ "$existing" == "$candidate" ]] && continue 2; done
+    origins+=("$candidate")
+    changed=true
+  done
+  $changed || return 0
+  joined="$(IFS=,; echo "${origins[*]}")"
+  set_env CORS_ALLOWED_ORIGINS "$joined"
+  if [[ -n "$(compose ps -q --status running backend)" ]]; then
+    echo "==> Applying the CORS allowlist"
+    compose up -d --no-build --no-deps --force-recreate backend >/dev/null
+    wait_ready
+  fi
+}
+
+cmd_browser_client() {
+  local action="${1:-}" name client_id redirect origin index duplicate
+  local redirects=() origins=() exec_env=()
+  case "$action" in
+    add)
+      shift
+      name="${1:-}"
+      [[ "$name" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] \
+        || die "usage: dxos client browser add <name> --redirect-uri URL [...] (name: lower case letters, digits, - and _)"
+      client_id="dxos-browser-$name"
+      shift
+      while (( $# )); do
+        case "$1" in
+          --redirect-uri) redirect="${2:?--redirect-uri needs an absolute URL}"; shift 2 ;;
+          --redirect-uri=*) redirect="${1#--redirect-uri=}"; shift ;;
+          *) die "unknown option: $1" ;;
+        esac
+        dxos_validate_web_url "$redirect" redirect \
+          || die "invalid redirect URI: $DXOS_WEB_URL_ERROR"
+        duplicate=false
+        for existing in "${redirects[@]:-}"; do [[ "$existing" == "$redirect" ]] && duplicate=true; done
+        $duplicate || redirects+=("$redirect")
+        origin="$DXOS_WEB_URL_ORIGIN"
+        duplicate=false
+        for existing in "${origins[@]:-}"; do [[ "$existing" == "$origin" ]] && duplicate=true; done
+        $duplicate || origins+=("$origin")
+      done
+      (( ${#redirects[@]} )) || die "at least one --redirect-uri is required"
+      [[ -n "$(compose ps -q --status running keycloak)" ]] || die "Keycloak is not running; run dxos start"
+      exec_env=(-e ACTION=add -e "CLIENT_ID=$client_id" -e "CLIENT_NAME=$name"
+        -e "REDIRECT_COUNT=${#redirects[@]}" -e "ORIGIN_COUNT=${#origins[@]}")
+      for index in "${!redirects[@]}"; do exec_env+=(-e "REDIRECT_$index=${redirects[$index]}"); done
+      for index in "${!origins[@]}"; do exec_env+=(-e "ORIGIN_$index=${origins[$index]}"); done
+      read_cors_env
+      browser_client_keycloak "${exec_env[@]}"
+      merge_cors_origins "${origins[@]}"
+      cat <<EOF
+Registered browser client $client_id:
+  authority  $(public_url)/realms/dxos
+  client id  $client_id
+  flow       Authorization Code with PKCE S256
+  redirects  ${redirects[*]}
+  CORS       ${origins[*]}
+EOF
+      ;;
+    list)
+      (( $# == 1 )) || die "usage: dxos client browser list"
+      [[ -n "$(compose ps -q --status running keycloak)" ]] || die "Keycloak is not running; run dxos start"
+      browser_client_keycloak -e ACTION=list ;;
+    remove)
+      (( $# == 2 )) || die "usage: dxos client browser remove <name>"
+      name="$2"
+      [[ "$name" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] || die "not a browser client name: $name"
+      [[ -n "$(compose ps -q --status running keycloak)" ]] || die "Keycloak is not running; run dxos start"
+      client_id="dxos-browser-$name"
+      browser_client_keycloak -e ACTION=remove -e "CLIENT_ID=$client_id"
+      echo "Removed $client_id. CORS origins stay in deploy/.env because another client may share them."
+      ;;
+    *) die "usage: dxos client browser add <name> --redirect-uri URL [...] | list | remove <name>" ;;
+  esac
+}
+
 # Registers, lists, renews and removes the outside applications of the API; the work is the
 # API's, this only calls it.
 cmd_client() {
   local action="${1:-}" name model="" role="" body work
   case "$action" in
+    browser)
+      shift
+      cmd_browser_client "$@" ;;
     list)
       (( $# == 1 )) || die "usage: dxos client list"
       api GET /clients
@@ -520,7 +730,7 @@ cmd_client() {
       api DELETE "/clients/$2"
       if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
       echo "Removed dxos-app-$2." ;;
-    *) die "usage: dxos client add <name> --model M --role R | list | role <name> --role R | rotate <name> | remove <name>" ;;
+    *) die "usage: dxos client add <name> --model M --role R | list | role <name> --role R | rotate <name> | remove <name> | browser add|list|remove" ;;
   esac
 }
 
@@ -986,8 +1196,8 @@ main() {
     client) cmd_client "$@" ;;
     uninstall) cmd_uninstall "$@" ;;
     version) echo "DX-OS $(env_value DXOS_IMAGE_TAG) in $PREFIX" ;;
-    help|-h|--help) sed -n '3,39p' "$self" ;;
-    *) echo "dxos: unknown command: $command" >&2; sed -n '3,39p' "$self" >&2; exit 2 ;;
+    help|-h|--help) sed -n '3,42p' "$self" ;;
+    *) echo "dxos: unknown command: $command" >&2; sed -n '3,42p' "$self" >&2; exit 2 ;;
   esac
 }
 

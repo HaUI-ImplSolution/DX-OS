@@ -25,6 +25,28 @@ Token đã cấp trước khi đổi mã, đổi vai hoặc xóa ứng dụng v�
 Tài khoản dịch vụ của ứng dụng không hiện trong danh sách người dùng, và nhật ký quản trị ghi `CLIENT_CREATED`, `CLIENT_SECRET_ROTATED` và `CLIENT_DELETED` kèm tên ứng dụng, và mô hình và vai của nó khi tạo hoặc xóa.
 Lệnh dùng client `dxos-cli` như `dxos plan`, nên cần `DXOS_CLI_SECRET` trong `.env`.
 
+### Giao diện trình duyệt ngoài
+
+Đăng ký một giao diện ở tên miền khác bằng một hoặc nhiều redirect URI chính xác:
+
+```bash
+dxos client browser add partner-ui \
+  --redirect-uri https://partner.example/auth/callback \
+  --redirect-uri https://partner.example/silent-renew
+```
+
+Lệnh tạo public client `dxos-browser-partner-ui` dùng Authorization Code với PKCE S256, không có secret, password grant hay service account.
+Mỗi origin của redirect được thêm vào `CORS_ALLOWED_ORIGINS` trong `deploy/.env`; backend đang chạy được tạo lại để nhận cấu hình.
+Token có audience `dxos-api`, vai của người dùng và nhóm đơn vị như web chính.
+
+Redirect phải dùng HTTPS, trừ `localhost`, `127.0.0.1` và `[::1]` được dùng HTTP khi phát triển.
+Không nhận wildcard, user info, fragment, host hoặc cổng sai; `CORS_ALLOWED_ORIGINS` chỉ nhận origin, không có path, query hay dấu `/` cuối.
+`dxos doctor` kiểm allowlist trước khi khởi động.
+
+`dxos client browser list` liệt kê client trình duyệt.
+`dxos client browser remove partner-ui` xóa client nhưng giữ origin trong allowlist vì giao diện khác có thể dùng chung; xóa origin không còn dùng khỏi `CORS_ALLOWED_ORIGINS` rồi tạo lại backend.
+Hướng dẫn cấu hình ứng dụng từ đầu đến cuối ở [`docs/EXTENSIONS.md`](../docs/EXTENSIONS.md#giao-diện-ngoài).
+
 ## Cài đặt và lệnh `dxos`
 
 ```bash
@@ -54,6 +76,7 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos archive auto`, `dxos archive schedule [install\|uninstall]` | Ghi vào kho hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS` ngày; `schedule install` chạy mỗi ngày bằng systemd user timer (xem dưới) |
 | `dxos demo [--password MẬT_KHẨU]`, `dxos demo remove` | Áp dụng mô hình Một cửa sinh viên nếu chưa chạy, tạo bốn tài khoản thử `judge_student`, `judge_officer`, `judge_officer2` và `judge_supervisor` với một mật khẩu (ngẫu nhiên nếu không nêu, in một lần; chạy lại thì đặt và in mật khẩu mới) và nộp khoảng 40 hồ sơ mẫu qua API chung, mỗi bước do đúng người làm; chạy lại không nộp thêm hồ sơ; `remove` chỉ gỡ bốn tài khoản, hồ sơ có quy trình không xóa được nên còn lại; cần client `dxos-cli` như `dxos plan`. Hạn xử lý 72 giờ của mô hình nên hồ sơ quá hạn chỉ có sau ba ngày kể từ lần nộp |
 | `dxos client add <tên> --model M --role R`, `dxos client list`, `dxos client role <tên> --role R`, `dxos client rotate <tên>`, `dxos client remove <tên>` | Đăng ký và quản lý ứng dụng ngoài gọi API bằng token máy (xem phần Ứng dụng ngoài ở trên) |
+| `dxos client browser add <tên> --redirect-uri URL [...]`, `dxos client browser list`, `dxos client browser remove <tên>` | Đăng ký và quản lý public OIDC client dùng PKCE cho giao diện trình duyệt ở origin khác |
 | `dxos uninstall [--purge]` | Xóa container và lệnh `dxos`; `--purge` xóa cả dữ liệu và thư mục cài, phải gõ xác nhận |
 
 File route riêng `deploy/apisix/local.yaml` được giữ khi cập nhật và ghép với cấu hình lõi mới sau khi kiểm; cấu hình xung đột làm cập nhật dừng trước khi thay container.

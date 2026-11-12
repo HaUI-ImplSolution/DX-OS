@@ -13,8 +13,7 @@ Nó không có nghĩa một mô hình có thể đổi trường mà mã tích h
 |---|---|---|
 | Dịch vụ riêng gọi API của lõi | Ổn định | Dùng client riêng cho đúng một vai của một mô hình và đọc OpenAPI sinh từ mô hình đang chạy |
 | Bên nhận phản ứng sau thay đổi | Ổn định | Webhook có chữ ký, `schemaVersion` và API đọc bù; webhook không chặn được hành động trước khi trạng thái đổi |
-| Giao diện ngoài chạy ở `localhost` | Thử nghiệm cục bộ | Client `dxos-web` chỉ có redirect cho gateway, `localhost:9080` và `localhost:5173`; CORS nhận `localhost` và `127.0.0.1` |
-| Giao diện ngoài ở tên miền khác | Chưa có hợp đồng cài đặt | Chưa có lệnh đăng ký OIDC public client hoặc allowlist CORS cho tên miền tùy chọn |
+| Giao diện ngoài chạy ở origin riêng | Ổn định | Đăng ký public client bằng `dxos client browser add`; redirect và CORS dùng danh sách chính xác, không nhận wildcard |
 | Trang hoặc thành phần form trong web Tầng 2 | Tùy biến source | Phải sửa và dựng lại image frontend; chưa có registry plugin hay kiểm tra tương thích |
 | Route riêng dưới gateway DX-OS | Ổn định | `deploy/apisix/local.yaml` của bản cài được kiểm và ghép với cấu hình lõi; giữ nguyên khi nâng cấp |
 | Quy trình riêng | Ổn định bằng khai báo | Khai báo `states` và `actions` trong tệp mô hình, không viết plugin; xem [`MODEL.md`](./MODEL.md#tự-khai-báo-hoặc-mở-rộng-quy-trình) |
@@ -189,30 +188,44 @@ Theo dõi `schemaVersion`, kiểm payload thử trước khi nâng và triển k
 Giao diện trình duyệt phải đăng nhập người dùng bằng Authorization Code và PKCE.
 Không đặt client secret hoặc dùng `client_credentials` trong JavaScript gửi tới trình duyệt.
 
-### Nguyên mẫu local hiện hỗ trợ
+### Đăng ký client và origin
 
-Realm hiện có public client `dxos-web` cho gateway, `http://localhost:9080` và `http://localhost:5173`.
-Backend cho CORS từ `http://localhost:*` và `http://127.0.0.1:*`.
-Vì vậy một nguyên mẫu local có thể chạy ở `http://localhost:5173` với:
+Ví dụ giao diện phục vụ ở `https://partner.example` và nhận callback tại `/auth/callback`:
+
+```bash
+dxos client browser add partner-ui \
+  --redirect-uri https://partner.example/auth/callback
+```
+
+Lệnh tạo public client `dxos-browser-partner-ui`, bật Authorization Code với PKCE S256, thêm mapper audience `dxos-api` và claim nhóm, rồi thêm `https://partner.example` vào `CORS_ALLOWED_ORIGINS` trong `deploy/.env`.
+Nếu backend đang chạy, lệnh tạo lại riêng backend và chờ service sẵn sàng.
+Nêu nhiều `--redirect-uri` khi ứng dụng có callback và silent renew riêng; mỗi URI được giữ chính xác, không tự mở rộng bằng wildcard.
+
+Ứng dụng dùng:
 
 | Giá trị OIDC | Cấu hình |
 |---|---|
 | Authority | `http://localhost:9080/realms/dxos` |
-| Client id | `dxos-web` |
+| Client id | `dxos-browser-partner-ui` |
 | Flow | Authorization Code + PKCE |
-| Redirect và post-logout URI | Origin chính xác của ứng dụng |
+| Redirect và post-logout URI | Một URI chính xác đã đăng ký |
 | Scope | `openid profile` |
+
+Thay authority bằng địa chỉ gateway thật khi triển khai.
+Không đặt secret trong giao diện; client public không có secret.
+
+Redirect ngoài máy phát triển phải dùng HTTPS.
+HTTP chỉ nhận `localhost`, `127.0.0.1` hoặc `[::1]`; wildcard, user info, fragment, host hoặc cổng sai bị từ chối trước khi thay Keycloak.
+Allowlist `CORS_ALLOWED_ORIGINS` chỉ chứa các origin cách nhau bằng dấu phẩy, không có path, query hay dấu `/` cuối; backend kiểm lại cấu hình khi khởi động và `dxos doctor` báo trước giá trị sai.
 
 Sau đăng nhập, gửi access token ở `Authorization: Bearer <token>` và đọc `/api/v1/meta/models/{model}/openapi` bằng chính người dùng đó.
 Tài liệu sinh ra chỉ chứa thực thể người dùng được xem, nên giao diện vẫn phải xử lý `403` khi quyền đổi và không tự suy quyền từ nút đang hiển thị.
 
 Kiểm luồng đăng nhập, callback, refresh hoặc đăng nhập lại khi token hết hạn, single logout, `401`, `403` và việc quay về đúng trang ban đầu.
+Liệt kê bằng `dxos client browser list` và gỡ bằng `dxos client browser remove partner-ui`.
+Lệnh gỡ giữ origin trong `CORS_ALLOWED_ORIGINS` vì client khác có thể dùng chung; quản trị viên xóa origin không còn dùng rồi tạo lại backend.
 
-### Giới hạn triển khai thật
-
-Tên miền khác chưa có đường cấu hình được hỗ trợ: CORS không đọc danh sách từ `.env`, và chưa có lệnh đăng ký public client với redirect URI tùy chọn.
-Sửa tay Keycloak và source backend không được bộ cài kiểm hay bảo toàn khi nâng cấp.
-Phục vụ giao diện dưới cùng gateway cần thêm route riêng, chịu giới hạn của phần [Route riêng trong APISIX](#route-riêng-trong-apisix).
+Phục vụ giao diện dưới cùng gateway vẫn cần route riêng, chịu giới hạn của phần [Route riêng trong APISIX](#route-riêng-trong-apisix).
 
 ## Trang riêng trong web Tầng 2
 

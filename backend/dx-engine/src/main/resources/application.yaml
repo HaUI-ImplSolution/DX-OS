@@ -60,6 +60,9 @@ security:
   jwt:
     # Access tokens must carry this audience (added by the dxos-api client scope in Keycloak).
     audience: ${JWT_AUDIENCE:dxos-api}
+  cors:
+    # Exact browser origins; non-loopback origins must use HTTPS and wildcards are refused.
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}
   rate-limit:
     # Per signed-in user and minute, counted in memory.
     enabled: ${RATE_LIMIT_ENABLED:true}

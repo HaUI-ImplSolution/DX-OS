@@ -10,12 +10,12 @@ import HaUI.ImplSolution.dxos.model.Model.Ui.FormGroup;
 import HaUI.ImplSolution.dxos.model.Model.Ui.FormView;
 import HaUI.ImplSolution.dxos.model.Model.Ui.ListView;
 import HaUI.ImplSolution.dxos.model.Model.Ui.Menu;
+import HaUI.ImplSolution.dxos.model.Model.Unit;
+import HaUI.ImplSolution.dxos.model.ModelException.Problem;
 import HaUI.ImplSolution.dxos.model.ProcessFamily.Action;
 import HaUI.ImplSolution.dxos.model.ProcessFamily.Actor;
 import HaUI.ImplSolution.dxos.model.ProcessFamily.Condition;
 import HaUI.ImplSolution.dxos.model.ProcessFamily.State;
-import HaUI.ImplSolution.dxos.model.Model.Unit;
-import HaUI.ImplSolution.dxos.model.ModelException.Problem;
 import java.io.StringReader;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -53,8 +53,18 @@ public final class ModelParser {
   // Roles the platform owns: a model that declared one would hand platform rights to its users.
   private static final Set<String> RESERVED_ROLES = Set.of("ADMIN");
   private static final Set<String> RESERVED_FIELDS =
-      Set.of("id", "created_by", "created_at", "updated_at", "version", "status", "assignee",
-          "decided_by", "decided_at", "handle_by", "overdue");
+      Set.of(
+          "id",
+          "created_by",
+          "created_at",
+          "updated_at",
+          "version",
+          "status",
+          "assignee",
+          "decided_by",
+          "decided_at",
+          "handle_by",
+          "overdue");
 
   private final List<Problem> problems = new ArrayList<>();
 
@@ -146,7 +156,8 @@ public final class ModelParser {
       Node nameNode = keys.get("name");
       String unitName = nameNode instanceof ScalarNode s ? s.getValue() : null;
       if (unitName == null || !ROLE.matcher(unitName).matches()) {
-        problem(nameNode == null ? map : nameNode,
+        problem(
+            nameNode == null ? map : nameNode,
             "unit name must match [A-Z][A-Z0-9_]* and be at most 40 characters");
         continue;
       }
@@ -166,12 +177,14 @@ public final class ModelParser {
     for (Entity entity : entities.values()) {
       Entity holder = holder(entities, entity);
       if (entity.ownerVia() != null && loops(entities, entity)) {
-        problem(accessNodes.get(entity.name()),
+        problem(
+            accessNodes.get(entity.name()),
             "owner_via of " + entity.name() + " leads back to " + entity.name());
         continue;
       }
       if (entity.fields().values().stream().filter(f -> f.type() == FieldType.UNIT).count() > 1) {
-        problem(accessNodes.get(entity.name()),
+        problem(
+            accessNodes.get(entity.name()),
             "entity " + entity.name() + " has more than one unit field");
       }
       if (holder == null) {
@@ -179,11 +192,13 @@ public final class ModelParser {
       }
       for (Map.Entry<String, Scope> grant : entity.access().entrySet()) {
         if (grant.getValue() == Scope.UNIT && holder.unitField().isEmpty()) {
-          problem(accessNodes.get(entity.name()),
+          problem(
+              accessNodes.get(entity.name()),
               "access unit of " + grant.getKey() + " needs a unit field on " + holder.name());
         }
         if (grant.getValue() == Scope.ASSIGNED && holder.process() == null) {
-          problem(accessNodes.get(entity.name()),
+          problem(
+              accessNodes.get(entity.name()),
               "access assigned of " + grant.getKey() + " needs a process on " + holder.name());
         }
       }
@@ -266,7 +281,8 @@ public final class ModelParser {
       Node nameNode = keys.get("name");
       String roleName = nameNode instanceof ScalarNode s ? s.getValue() : null;
       if (roleName == null || !ROLE.matcher(roleName).matches()) {
-        problem(nameNode == null ? map : nameNode,
+        problem(
+            nameNode == null ? map : nameNode,
             "role name must match [A-Z][A-Z0-9_]* and be at most 40 characters");
         continue;
       }
@@ -323,14 +339,19 @@ public final class ModelParser {
     }
     for (Field field : fields.values()) {
       if (field.renamedFrom() != null && fields.containsKey(field.renamedFrom())) {
-        problem(keys.get("fields"), "field " + field.name() + " is renamed from "
-            + field.renamedFrom() + ", which still exists");
+        problem(
+            keys.get("fields"),
+            "field "
+                + field.name()
+                + " is renamed from "
+                + field.renamedFrom()
+                + ", which still exists");
       }
     }
     Ui ui = readUi(keys.get("ui"), fields, process != null);
     Node label = keys.get("label");
-    return new Entity(name, label == null ? name : scalar(label), fields, access, process, ownerVia,
-        ui);
+    return new Entity(
+        name, label == null ? name : scalar(label), fields, access, process, ownerVia, ui);
   }
 
   private Map<String, Field> readFields(Node parent, Node node, Set<String> entityNames) {
@@ -370,22 +391,51 @@ public final class ModelParser {
       }
     }
     // The condition names other fields of the entity, so it is read once every field is known.
-    requiredWhen.forEach((name, whenNode) -> {
-      Field field = fields.get(name);
-      Condition condition = readRequiredWhen(whenNode, field, fields);
-      if (condition != null) {
-        fields.put(name,
-            new Field(field.name(), field.type(), field.label(), field.required(), field.unique(),
-                field.options(), field.to(), field.renamedFrom(), field.defaultValue(),
-                field.multiple(), field.min(), field.max(), field.pattern(), condition));
-      }
-    });
+    requiredWhen.forEach(
+        (name, whenNode) -> {
+          Field field = fields.get(name);
+          Condition condition = readRequiredWhen(whenNode, field, fields);
+          if (condition != null) {
+            fields.put(
+                name,
+                new Field(
+                    field.name(),
+                    field.type(),
+                    field.label(),
+                    field.required(),
+                    field.unique(),
+                    field.options(),
+                    field.to(),
+                    field.renamedFrom(),
+                    field.defaultValue(),
+                    field.multiple(),
+                    field.min(),
+                    field.max(),
+                    field.pattern(),
+                    condition));
+          }
+        });
     return fields;
   }
 
   private Field readField(String name, MappingNode spec, Set<String> entityNames) {
-    Map<String, Node> keys = mapping(spec, Set.of("type", "label", "required", "unique", "options",
-        "to", "renamed_from", "default", "multiple", "min", "max", "pattern", "required_when"));
+    Map<String, Node> keys =
+        mapping(
+            spec,
+            Set.of(
+                "type",
+                "label",
+                "required",
+                "unique",
+                "options",
+                "to",
+                "renamed_from",
+                "default",
+                "multiple",
+                "min",
+                "max",
+                "pattern",
+                "required_when"));
     Node typeNode = keys.get("type");
     if (typeNode == null) {
       problem(spec, "field " + name + " has no type");
@@ -393,8 +443,11 @@ public final class ModelParser {
     }
     FieldType type = FieldType.of(scalar(typeNode)).orElse(null);
     if (type == null) {
-      problem(typeNode, "unknown type " + scalar(typeNode)
-          + ", use text, number, datetime, date, boolean, choice, reference, user, unit or file");
+      problem(
+          typeNode,
+          "unknown type "
+              + scalar(typeNode)
+              + ", use text, number, datetime, date, boolean, choice, reference, user, unit or file");
       return null;
     }
     List<String> options = List.of();
@@ -413,7 +466,8 @@ public final class ModelParser {
       Node toNode = keys.get("to");
       to = toNode == null ? null : scalar(toNode);
       if (to == null || !entityNames.contains(to)) {
-        problem(toNode == null ? spec : toNode,
+        problem(
+            toNode == null ? spec : toNode,
             "a reference field needs `to` naming an entity of this model");
       }
     } else if (keys.get("to") != null) {
@@ -433,8 +487,10 @@ public final class ModelParser {
       problem(spec, "a file field is filled by uploading, so it cannot be required or unique");
     }
     if (type == FieldType.BOOLEAN && (required || unique)) {
-      problem(spec, "a boolean field is always true or false, so it cannot be required or unique;"
-          + " give it a default instead");
+      problem(
+          spec,
+          "a boolean field is always true or false, so it cannot be required or unique;"
+              + " give it a default instead");
     }
     String renamedFrom = readRenamedFrom(name, keys.get("renamed_from"));
     String defaultValue = readDefault(type, options, unique, multiple, keys.get("default"));
@@ -446,8 +502,21 @@ public final class ModelParser {
     String pattern = readPattern(type, keys.get("pattern"));
     checkDefault(keys.get("default"), type, defaultValue, min, max, pattern);
     Node label = keys.get("label");
-    return new Field(name, type, label == null ? name : scalar(label), required, unique, options,
-        to, renamedFrom, defaultValue, multiple, min, max, pattern, null);
+    return new Field(
+        name,
+        type,
+        label == null ? name : scalar(label),
+        required,
+        unique,
+        options,
+        to,
+        renamedFrom,
+        defaultValue,
+        multiple,
+        min,
+        max,
+        pattern,
+        null);
   }
 
   // The bound of a number or date field, in the canonical text of the value.
@@ -483,8 +552,8 @@ public final class ModelParser {
   }
 
   // A default has to meet the bounds and the pattern of its own field.
-  private void checkDefault(Node node, FieldType type, String value, String min, String max,
-      String pattern) {
+  private void checkDefault(
+      Node node, FieldType type, String value, String min, String max, String pattern) {
     if (node == null || value == null) {
       return;
     }
@@ -576,15 +645,19 @@ public final class ModelParser {
         case '?' -> repeats = false;
         case '{' -> {
           int close = pattern.indexOf('}', i);
-          java.util.regex.Matcher count = close < 0 ? null
-              : Pattern.compile("([0-9]{1,4})(?:(,)([0-9]{0,4}))?")
-                  .matcher(pattern.substring(i + 1, close));
+          java.util.regex.Matcher count =
+              close < 0
+                  ? null
+                  : Pattern.compile("([0-9]{1,4})(?:(,)([0-9]{0,4}))?")
+                      .matcher(pattern.substring(i + 1, close));
           if (count == null || !count.matches()) {
             return "pattern has a { that is not a repeat like {3} or {2,5}";
           }
           int low = Integer.parseInt(count.group(1));
-          Integer high = count.group(2) == null ? Integer.valueOf(low)
-              : count.group(3).isEmpty() ? null : Integer.valueOf(count.group(3));
+          Integer high =
+              count.group(2) == null
+                  ? Integer.valueOf(low)
+                  : count.group(3).isEmpty() ? null : Integer.valueOf(count.group(3));
           if (low > PATTERN_REPEAT || high != null && high > PATTERN_REPEAT) {
             return "a repeat in pattern counts up to " + PATTERN_REPEAT;
           }
@@ -635,8 +708,7 @@ public final class ModelParser {
         case '^', '$' -> {
           return "pattern matches the whole value, so leave out ^ and $";
         }
-        default -> {
-        }
+        default -> {}
       }
     }
     if (inClass) {
@@ -683,15 +755,16 @@ public final class ModelParser {
     return value;
   }
 
-  private String readDefault(FieldType type, List<String> options, boolean unique, boolean multiple,
-      Node node) {
+  private String readDefault(
+      FieldType type, List<String> options, boolean unique, boolean multiple, Node node) {
     if (node == null) {
       return null;
     }
-    String value = scalar(node);
     if (multiple) {
-      problem(node, "a field with several choices cannot have a default");
-    } else if (unique) {
+      return readChoicesDefault(options, unique, node);
+    }
+    String value = scalar(node);
+    if (unique) {
       problem(node, "a unique field cannot have a default");
     } else if (type == FieldType.NUMBER) {
       try {
@@ -719,6 +792,42 @@ public final class ModelParser {
     return value;
   }
 
+  // The default of a field with several choices: a non-empty list of its options in the order of
+  // the options, kept as a JSON array of text so that no option can be mistaken for a separator.
+  private String readChoicesDefault(List<String> options, boolean unique, Node node) {
+    if (unique) {
+      problem(node, "a unique field cannot have a default");
+      return null;
+    }
+    if (!(node instanceof SequenceNode sequence) || sequence.getValue().isEmpty()) {
+      problem(node, "the default of a field with several choices is a non-empty list of options");
+      return null;
+    }
+    Set<String> chosen = new LinkedHashSet<>();
+    for (Node item : sequence.getValue()) {
+      String value = scalar(item);
+      if (!options.contains(value)) {
+        problem(item, "the default must be options of the field");
+      } else if (!chosen.add(value)) {
+        problem(item, "option " + value + " is listed twice in the default");
+      }
+    }
+    StringBuilder json = new StringBuilder("[");
+    for (String value : options.stream().filter(chosen::contains).toList()) {
+      json.append(json.length() > 1 ? "," : "")
+          .append('"')
+          .append(
+              value
+                  .replace("\\", "\\\\")
+                  .replace("\"", "\\\"")
+                  .replace("\n", "\\n")
+                  .replace("\r", "\\r")
+                  .replace("\t", "\\t"))
+          .append('"');
+    }
+    return json.append(']').toString();
+  }
+
   // The ui block of an entity: the icon, the menu entry, the columns of the list, the groups of the
   // form and the hints. It only chooses among the fields the entity has and changes no access.
   private Ui readUi(Node node, Map<String, Field> fields, boolean hasProcess) {
@@ -740,10 +849,15 @@ public final class ModelParser {
       }
     }
     Set<String> columns = new LinkedHashSet<>(fields.keySet());
-    Ui.LIST_COLUMNS.stream().filter(column -> hasProcess || column.endsWith("_at"))
+    Ui.LIST_COLUMNS.stream()
+        .filter(column -> hasProcess || column.endsWith("_at"))
         .forEach(columns::add);
-    return new Ui(icon, readMenu(keys.get("menu")), readListView(keys.get("list"), columns),
-        readFormView(keys.get("form"), fields), readHints(keys.get("hints"), fields));
+    return new Ui(
+        icon,
+        readMenu(keys.get("menu")),
+        readListView(keys.get("list"), columns),
+        readFormView(keys.get("form"), fields),
+        readHints(keys.get("hints"), fields));
   }
 
   private Menu readMenu(Node node) {
@@ -793,8 +907,12 @@ public final class ModelParser {
         for (Node item : sequence.getValue()) {
           String column = scalar(item);
           if (!columns.contains(column)) {
-            problem(item, "column " + column + " is not a field of this entity, use: "
-                + String.join(", ", columns));
+            problem(
+                item,
+                "column "
+                    + column
+                    + " is not a field of this entity, use: "
+                    + String.join(", ", columns));
           } else if (shown.contains(column)) {
             problem(item, "column " + column + " is listed twice");
           } else {
@@ -811,8 +929,10 @@ public final class ModelParser {
       if (columns.contains(column)) {
         sort = text;
       } else {
-        problem(sortNode, "sort is a column name, with a leading minus for descending, use: "
-            + String.join(", ", columns));
+        problem(
+            sortNode,
+            "sort is a column name, with a leading minus for descending, use: "
+                + String.join(", ", columns));
       }
     }
     return new ListView(List.copyOf(shown), sort);
@@ -829,7 +949,8 @@ public final class ModelParser {
     Map<String, Node> keys = mapping(map, Set.of("groups"));
     Node groupsNode = keys.get("groups");
     if (!(groupsNode instanceof SequenceNode sequence) || sequence.getValue().isEmpty()) {
-      problem(groupsNode == null ? node : groupsNode,
+      problem(
+          groupsNode == null ? node : groupsNode,
           "groups is a non-empty list of groups with a label and fields");
       return null;
     }
@@ -843,14 +964,15 @@ public final class ModelParser {
       Map<String, Node> parts = mapping(group, Set.of("label", "fields"));
       String label = parts.get("label") == null ? "" : scalar(parts.get("label"));
       if (label.isBlank() || label.length() > 60) {
-        problem(parts.get("label") == null ? item : parts.get("label"),
+        problem(
+            parts.get("label") == null ? item : parts.get("label"),
             "a group has a label of 1 to 60 characters");
       }
       List<String> names = new ArrayList<>();
       Node fieldsNode = parts.get("fields");
       if (!(fieldsNode instanceof SequenceNode list) || list.getValue().isEmpty()) {
-        problem(fieldsNode == null ? item : fieldsNode,
-            "a group has a non-empty list of field names");
+        problem(
+            fieldsNode == null ? item : fieldsNode, "a group has a non-empty list of field names");
         continue;
       }
       for (Node field : list.getValue()) {
@@ -926,7 +1048,8 @@ public final class ModelParser {
       }
       Scope scope = Scope.of(scalar(tuple.getValueNode()));
       if (scope == null) {
-        problem(tuple.getValueNode(),
+        problem(
+            tuple.getValueNode(),
             "access of " + role + " must be all, own, read, unit or assigned");
         continue;
       }
@@ -965,8 +1088,8 @@ public final class ModelParser {
     }
   }
 
-  private Process readProcess(Node node, Set<String> roleNames, Map<String, Scope> access,
-      Map<String, Field> fields) {
+  private Process readProcess(
+      Node node, Set<String> roleNames, Map<String, Scope> access, Map<String, Field> fields) {
     if (node == null) {
       return null;
     }
@@ -979,7 +1102,8 @@ public final class ModelParser {
     String family = familyNode == null ? null : scalar(familyNode);
     ProcessFamily template = family == null ? null : ProcessFamily.find(family).orElse(null);
     if (family != null && template == null) {
-      problem(familyNode,
+      problem(
+          familyNode,
           "unknown process family, available: " + String.join(", ", ProcessFamily.names()));
       return null;
     }
@@ -993,16 +1117,28 @@ public final class ModelParser {
       return null;
     }
     AutoClose autoClose = readAutoClose(keys.get("auto_close"), family, definition);
-    return new Process(family, handlers,
+    Duration deadline = deadline(keys.get("deadline"));
+    return new Process(
+        family,
+        handlers,
         flag(keys.get("allow_self_decision"), "allow_self_decision"),
-        deadline(keys.get("deadline")), autoClose.after(), autoClose.action(),
+        deadline,
+        readEscalations(keys.get("escalate"), deadline, roleNames, access),
+        autoClose.after(),
+        autoClose.action(),
         readAfter(keys.get("after"), definition, fields),
-        readBooking(map, keys.get("booking"), family, fields), definition);
+        readBooking(map, keys.get("booking"), family, fields),
+        definition);
   }
 
   // One role or a list of roles, each declared in roles and able to read the records of the entity.
-  private List<String> readRoles(Node parent, Node node, String key, String what,
-      Set<String> roleNames, Map<String, Scope> access) {
+  private List<String> readRoles(
+      Node parent,
+      Node node,
+      String key,
+      String what,
+      Set<String> roleNames,
+      Map<String, Scope> access) {
     if (node == null) {
       problem(parent, key + " must be a role declared in roles");
       return null;
@@ -1029,9 +1165,14 @@ public final class ModelParser {
     for (Node item : items) {
       String role = scalar(item);
       if (!roleNames.contains(role)) {
-        problem(item,
+        problem(
+            item,
             node instanceof SequenceNode
-                ? "role " + role + " in " + key + " is not declared in roles, declared: "
+                ? "role "
+                    + role
+                    + " in "
+                    + key
+                    + " is not declared in roles, declared: "
                     + String.join(", ", roleNames)
                 : key + " must be a role declared in roles");
       } else if (roles.contains(role)) {
@@ -1047,8 +1188,12 @@ public final class ModelParser {
 
   // The states and actions of the family with the declarations of the model applied, checked as a
   // whole. Null when something is wrong.
-  private ProcessFamily readDefinition(MappingNode process, Map<String, Node> keys,
-      ProcessFamily template, Set<String> roleNames, Map<String, Scope> access,
+  private ProcessFamily readDefinition(
+      MappingNode process,
+      Map<String, Node> keys,
+      ProcessFamily template,
+      Set<String> roleNames,
+      Map<String, Scope> access,
       Map<String, Field> fields) {
     int before = problems.size();
     Map<String, State> states = new LinkedHashMap<>();
@@ -1063,8 +1208,8 @@ public final class ModelParser {
       initial = template.initial();
     }
     readStates(process, keys.get("states"), template != null, states, nodes);
-    readActions(process, keys.get("actions"), template != null, actions, nodes, roleNames, access,
-        fields);
+    readActions(
+        process, keys.get("actions"), template != null, actions, nodes, roleNames, access, fields);
     Node initialNode = keys.get("initial");
     if (initialNode != null) {
       initial = scalar(initialNode);
@@ -1079,20 +1224,36 @@ public final class ModelParser {
       return null;
     }
     List<Action> built = new ArrayList<>();
-    actions.forEach((name,
-        draft) -> built.add(new Action(name, draft.label, List.copyOf(draft.from), draft.to,
-            draft.by, draft.needsNote, List.copyOf(draft.roles), List.copyOf(draft.require),
-            draft.when)));
+    actions.forEach(
+        (name, draft) ->
+            built.add(
+                new Action(
+                    name,
+                    draft.label,
+                    List.copyOf(draft.from),
+                    draft.to,
+                    draft.by,
+                    draft.needsNote,
+                    List.copyOf(draft.roles),
+                    List.copyOf(draft.require),
+                    draft.when)));
     List<State> builtStates = new ArrayList<>(states.values());
     if (actions.containsKey(ProcessFamily.WITHDRAW)) {
       builtStates.add(ProcessFamily.WITHDRAWN);
     }
-    return new ProcessFamily(template == null ? "custom" : template.name(), initial,
-        List.copyOf(builtStates), List.copyOf(built));
+    return new ProcessFamily(
+        template == null ? "custom" : template.name(),
+        initial,
+        List.copyOf(builtStates),
+        List.copyOf(built));
   }
 
-  private void readStates(MappingNode process, Node node, boolean fromFamily,
-      Map<String, State> states, Map<String, Node> nodes) {
+  private void readStates(
+      MappingNode process,
+      Node node,
+      boolean fromFamily,
+      Map<String, State> states,
+      Map<String, Node> nodes) {
     if (node == null) {
       if (!fromFamily) {
         problem(process, "a process without a family needs states");
@@ -1121,24 +1282,35 @@ public final class ModelParser {
         continue;
       }
       if (!(tuple.getValueNode() instanceof MappingNode spec)) {
-        problem(tuple.getValueNode(),
+        problem(
+            tuple.getValueNode(),
             "a state is a mapping with label and terminal, or null to remove it");
         continue;
       }
       Map<String, Node> parts = mapping(spec, ProcessSyntax.STATE);
       State existing = states.get(name);
-      String label = parts.get("label") != null ? scalar(parts.get("label"))
-          : existing != null ? existing.label() : name;
-      boolean terminal = parts.get("terminal") != null ? flag(parts.get("terminal"), "terminal")
-          : existing != null && existing.terminal();
+      String label =
+          parts.get("label") != null
+              ? scalar(parts.get("label"))
+              : existing != null ? existing.label() : name;
+      boolean terminal =
+          parts.get("terminal") != null
+              ? flag(parts.get("terminal"), "terminal")
+              : existing != null && existing.terminal();
       states.put(name, new State(name, label, terminal));
       nodes.put("state:" + name, keyNode);
     }
   }
 
-  private void readActions(MappingNode process, Node node, boolean fromFamily,
-      Map<String, ActionDraft> actions, Map<String, Node> nodes, Set<String> roleNames,
-      Map<String, Scope> access, Map<String, Field> fields) {
+  private void readActions(
+      MappingNode process,
+      Node node,
+      boolean fromFamily,
+      Map<String, ActionDraft> actions,
+      Map<String, Node> nodes,
+      Set<String> roleNames,
+      Map<String, Scope> access,
+      Map<String, Field> fields) {
     if (node == null) {
       if (!fromFamily) {
         problem(process, "a process without a family needs actions");
@@ -1157,8 +1329,12 @@ public final class ModelParser {
         continue;
       }
       if (ProcessSyntax.HISTORY_NAMES.contains(name)) {
-        problem(keyNode, "action name " + name + " is used by the history of a record, choose "
-            + "another name");
+        problem(
+            keyNode,
+            "action name "
+                + name
+                + " is used by the history of a record, choose "
+                + "another name");
         continue;
       }
       if (isNull(tuple.getValueNode())) {
@@ -1168,8 +1344,8 @@ public final class ModelParser {
         continue;
       }
       if (!(tuple.getValueNode() instanceof MappingNode spec)) {
-        problem(tuple.getValueNode(),
-            "an action is a mapping with from and to, or null to remove it");
+        problem(
+            tuple.getValueNode(), "an action is a mapping with from and to, or null to remove it");
         continue;
       }
       ActionDraft draft = actions.get(name);
@@ -1185,8 +1361,14 @@ public final class ModelParser {
     }
   }
 
-  private boolean readAction(String name, MappingNode spec, ActionDraft draft, boolean added,
-      Set<String> roleNames, Map<String, Scope> access, Map<String, Field> fields) {
+  private boolean readAction(
+      String name,
+      MappingNode spec,
+      ActionDraft draft,
+      boolean added,
+      Set<String> roleNames,
+      Map<String, Scope> access,
+      Map<String, Field> fields) {
     int before = problems.size();
     boolean withdraw = ProcessFamily.WITHDRAW.equals(name);
     Map<String, Node> parts = mapping(spec, ProcessSyntax.ACTION);
@@ -1199,7 +1381,8 @@ public final class ModelParser {
     }
     if (withdraw) {
       if (parts.get("to") != null || parts.get("by") != null || parts.get("role") != null) {
-        problem(spec,
+        problem(
+            spec,
             "withdraw is always taken by the owner and ends in " + ProcessFamily.WITHDRAWN_STATE);
       }
       draft.by = Actor.OWNER;
@@ -1223,8 +1406,9 @@ public final class ModelParser {
         if (draft.by != Actor.HANDLER) {
           problem(parts.get("role"), "role only applies to an action of the handler");
         } else {
-          List<String> roles = readRoles(spec, parts.get("role"), "role", "role of action " + name,
-              roleNames, access);
+          List<String> roles =
+              readRoles(
+                  spec, parts.get("role"), "role", "role of action " + name, roleNames, access);
           draft.roles = roles == null ? List.of() : roles;
         }
       }
@@ -1274,9 +1458,12 @@ public final class ModelParser {
       String value = scalar(item);
       Field field = fields.get(value);
       if (field == null || field.type() == FieldType.FILE) {
-        problem(item,
+        problem(
+            item,
             "require must name fields of this entity that are not files, fields: "
-                + fields.values().stream().filter(f -> f.type() != FieldType.FILE).map(Field::name)
+                + fields.values().stream()
+                    .filter(f -> f.type() != FieldType.FILE)
+                    .map(Field::name)
                     .collect(java.util.stream.Collectors.joining(", ")));
       } else if (!names.contains(value)) {
         names.add(value);
@@ -1303,54 +1490,110 @@ public final class ModelParser {
     Field field = fields.get(match.group(1));
     String op = match.group(2);
     String value = match.group(3);
-    if (value.length() > 1 && (value.startsWith("\"") && value.endsWith("\"")
-        || value.startsWith("'") && value.endsWith("'"))) {
+    if (value.length() > 1
+        && (value.startsWith("\"") && value.endsWith("\"")
+            || value.startsWith("'") && value.endsWith("'"))) {
       value = value.substring(1, value.length() - 1);
     }
     if (field == null || !comparable(field)) {
-      problem(node,
-          key + " must name a number, choice, text or boolean field of this entity, fields: "
-              + fields.values().stream().filter(ModelParser::comparable).map(Field::name)
+      problem(
+          node,
+          key
+              + " must name a number, date, choice, text or boolean field of this entity, fields: "
+              + fields.values().stream()
+                  .filter(ModelParser::comparable)
+                  .map(Field::name)
                   .collect(java.util.stream.Collectors.joining(", ")));
       return null;
     }
-    if (Condition.ordering(op) && field.type() != FieldType.NUMBER) {
-      problem(node, key + " compares " + field.name() + " with " + op
-          + ", which only works on a number field");
+    if (Condition.ordering(op)
+        && field.type() != FieldType.NUMBER
+        && field.type() != FieldType.DATE) {
+      problem(
+          node,
+          key
+              + " compares "
+              + field.name()
+              + " with "
+              + op
+              + ", which only works on a number or date field");
       return null;
     }
+    if (field.type() == FieldType.DATE) {
+      try {
+        LocalDate.parse(value);
+      } catch (DateTimeParseException notDate) {
+        problem(
+            node,
+            key
+                + " compares the date field "
+                + field.name()
+                + " with '"
+                + value
+                + "', which is not a date like 2026-01-31");
+        return null;
+      }
+    }
     if (field.type() == FieldType.BOOLEAN && !"true".equals(value) && !"false".equals(value)) {
-      problem(node, key + " compares the boolean field " + field.name() + " with '" + value
-          + "', which is not true or false");
+      problem(
+          node,
+          key
+              + " compares the boolean field "
+              + field.name()
+              + " with '"
+              + value
+              + "', which is not true or false");
       return null;
     }
     if (field.type() == FieldType.NUMBER) {
       try {
         return new Condition(field.name(), op, new java.math.BigDecimal(value));
       } catch (NumberFormatException notNumber) {
-        problem(node, key + " compares the number field " + field.name() + " with '" + value
-            + "', which is not a number");
+        problem(
+            node,
+            key
+                + " compares the number field "
+                + field.name()
+                + " with '"
+                + value
+                + "', which is not a number");
         return null;
       }
     }
     if (field.type() == FieldType.CHOICE && !field.options().contains(value)) {
-      problem(node, key + " compares " + field.name() + " with '" + value
-          + "', which is not one of its options: " + String.join(", ", field.options()));
+      problem(
+          node,
+          key
+              + " compares "
+              + field.name()
+              + " with '"
+              + value
+              + "', which is not one of its options: "
+              + String.join(", ", field.options()));
       return null;
     }
     return new Condition(field.name(), op, value);
   }
 
-  // The fields a condition can compare: a number, a text, a choice of one value or a boolean.
+  // The fields a condition can compare: a number, a date, a text, a choice of one value or a
+  // boolean.
   private static boolean comparable(Field field) {
     return !field.multiple()
-        && (field.type() == FieldType.NUMBER || field.type() == FieldType.CHOICE
-            || field.type() == FieldType.TEXT || field.type() == FieldType.BOOLEAN);
+        && (field.type() == FieldType.NUMBER
+            || field.type() == FieldType.DATE
+            || field.type() == FieldType.CHOICE
+            || field.type() == FieldType.TEXT
+            || field.type() == FieldType.BOOLEAN);
   }
 
   // The rules that make a set of states and actions a process a record can run through.
-  private void checkDefinition(MappingNode process, Node initialNode, String initial,
-      Map<String, State> states, Map<String, ActionDraft> actions, Map<String, Node> nodes) {
+  private void checkDefinition(
+      MappingNode process,
+      Node initialNode,
+      String initial,
+      Map<String, State> states,
+      Map<String, ActionDraft> actions,
+      Map<String, Node> nodes) {
     int before = problems.size();
     if (states.isEmpty()) {
       problem(process, "a process needs at least one state");
@@ -1358,7 +1601,8 @@ public final class ModelParser {
     }
     State start = states.get(initial);
     if (start == null) {
-      problem(initialNode == null ? process : initialNode,
+      problem(
+          initialNode == null ? process : initialNode,
           "initial must be one of the states: " + String.join(", ", states.keySet()));
     } else if (start.terminal()) {
       problem(initialNode == null ? process : initialNode, "the initial state cannot be final");
@@ -1374,11 +1618,17 @@ public final class ModelParser {
       for (String from : draft.from) {
         State state = states.get(from);
         if (state == null) {
-          problem(draft.fromNode == null ? at : draft.fromNode,
-              "action " + entry.getKey() + " leaves " + from + ", which is not a state, states: "
+          problem(
+              draft.fromNode == null ? at : draft.fromNode,
+              "action "
+                  + entry.getKey()
+                  + " leaves "
+                  + from
+                  + ", which is not a state, states: "
                   + String.join(", ", states.keySet()));
         } else if (state.terminal()) {
-          problem(draft.fromNode == null ? at : draft.fromNode,
+          problem(
+              draft.fromNode == null ? at : draft.fromNode,
               "action " + entry.getKey() + " leaves the final state " + from);
         } else if (!ProcessFamily.WITHDRAW.equals(entry.getKey())) {
           leaving.add(from);
@@ -1388,8 +1638,14 @@ public final class ModelParser {
         }
       }
       if (!ProcessFamily.WITHDRAW.equals(entry.getKey()) && !states.containsKey(draft.to)) {
-        problem(draft.toNode == null ? at : draft.toNode, "action " + entry.getKey() + " ends in "
-            + draft.to + ", which is not a state, states: " + String.join(", ", states.keySet()));
+        problem(
+            draft.toNode == null ? at : draft.toNode,
+            "action "
+                + entry.getKey()
+                + " ends in "
+                + draft.to
+                + ", which is not a state, states: "
+                + String.join(", ", states.keySet()));
       }
       if (draft.by == Actor.OWNER && !draft.roles.isEmpty()) {
         problem(at, "action " + entry.getKey() + " is taken by the owner, so it takes no role");
@@ -1400,11 +1656,15 @@ public final class ModelParser {
     }
     for (State state : states.values()) {
       if (!state.terminal() && !leaving.contains(state.name())) {
-        problem(nodes.getOrDefault("state:" + state.name(), process),
+        problem(
+            nodes.getOrDefault("state:" + state.name(), process),
             "state " + state.name() + " has no action leaving it, so a record would stay there");
       } else if (!state.terminal() && !leavingFreely.contains(state.name())) {
-        problem(nodes.getOrDefault("state:" + state.name(), process), "state " + state.name()
-            + " needs an action leaving it without when, or a record could stay there");
+        problem(
+            nodes.getOrDefault("state:" + state.name(), process),
+            "state "
+                + state.name()
+                + " needs an action leaving it without when, or a record could stay there");
       }
     }
     Set<String> reached = new HashSet<>(Set.of(initial));
@@ -1414,14 +1674,16 @@ public final class ModelParser {
       for (Map.Entry<String, ActionDraft> entry : actions.entrySet()) {
         ActionDraft draft = entry.getValue();
         if (!ProcessFamily.WITHDRAW.equals(entry.getKey())
-            && draft.from.stream().anyMatch(reached::contains) && reached.add(draft.to)) {
+            && draft.from.stream().anyMatch(reached::contains)
+            && reached.add(draft.to)) {
           grown = true;
         }
       }
     }
     for (State state : states.values()) {
       if (!reached.contains(state.name())) {
-        problem(nodes.getOrDefault("state:" + state.name(), process),
+        problem(
+            nodes.getOrDefault("state:" + state.name(), process),
             "state " + state.name() + " can never be reached from " + initial);
       }
     }
@@ -1431,8 +1693,8 @@ public final class ModelParser {
     return node instanceof ScalarNode scalar && Tag.NULL.equals(scalar.getTag());
   }
 
-  private Booking readBooking(MappingNode process, Node node, String family,
-      Map<String, Field> fields) {
+  private Booking readBooking(
+      MappingNode process, Node node, String family, Map<String, Field> fields) {
     boolean reservation = "reservation".equals(family);
     if (node == null) {
       if (reservation) {
@@ -1466,24 +1728,26 @@ public final class ModelParser {
         capacity = Integer.parseInt(text);
       }
     }
-    return resource == null || starts == null || ends == null ? null
+    return resource == null || starts == null || ends == null
+        ? null
         : new Booking(resource, starts, ends, capacity);
   }
 
-  private String bookingField(MappingNode booking, Node node, String key, FieldType type,
-      Map<String, Field> fields) {
+  private String bookingField(
+      MappingNode booking, Node node, String key, FieldType type, Map<String, Field> fields) {
     String name = node == null ? null : scalar(node);
     Field field = name == null ? null : fields.get(name);
     if (field == null || field.type() != type) {
-      problem(node == null ? booking : node,
+      problem(
+          node == null ? booking : node,
           key + " must name a " + type.key() + " field of this entity");
       return null;
     }
     return name;
   }
 
-  private Map<String, List<Completion>> readAfter(Node node, ProcessFamily family,
-      Map<String, Field> fields) {
+  private Map<String, List<Completion>> readAfter(
+      Node node, ProcessFamily family, Map<String, Field> fields) {
     Map<String, List<Completion>> after = new LinkedHashMap<>();
     if (node == null) {
       return after;
@@ -1523,15 +1787,18 @@ public final class ModelParser {
     Node doNode = keys.get("do");
     String operation = doNode == null ? null : scalar(doNode);
     if (operation == null || !Completion.OPERATIONS.contains(operation)) {
-      problem(doNode == null ? map : doNode, "unknown action, available: "
-          + String.join(", ", Completion.OPERATIONS.stream().sorted().toList()));
+      problem(
+          doNode == null ? map : doNode,
+          "unknown action, available: "
+              + String.join(", ", Completion.OPERATIONS.stream().sorted().toList()));
       return null;
     }
     Node userNode = keys.get("user");
     String user = userNode == null ? null : scalar(userNode);
     Field userField = user == null ? null : fields.get(user);
-    if (user == null || (!Completion.CREATOR.equals(user)
-        && (userField == null || userField.type() != FieldType.USER))) {
+    if (user == null
+        || (!Completion.CREATOR.equals(user)
+            && (userField == null || userField.type() != FieldType.USER))) {
       problem(userNode == null ? map : userNode, "user must be created_by or a user field");
       return null;
     }
@@ -1549,13 +1816,85 @@ public final class ModelParser {
         return null;
       }
     }
-    return new Completion(operation, user, groupNode == null ? null : scalar(groupNode),
-        groupField);
+    return new Completion(
+        operation, user, groupNode == null ? null : scalar(groupNode), groupField);
   }
 
   // A number followed by m (minutes), h (hours) or d (days), such as 90m, 72h or 3d.
   private Duration deadline(Node node) {
     return duration(node, "deadline", "72h");
+  }
+
+  // The notices sent to other roles while an overdue record stays unhandled: a list of levels,
+  // each with the time past the deadline, the roles to tell and how often to repeat.
+  private List<Escalation> readEscalations(
+      Node node, Duration deadline, Set<String> roleNames, Map<String, Scope> access) {
+    if (node == null) {
+      return List.of();
+    }
+    if (!(node instanceof SequenceNode sequence) || sequence.getValue().isEmpty()) {
+      problem(node, "escalate is a list of {after: 24h, to: MANAGER}");
+      return List.of();
+    }
+    if (deadline == null) {
+      problem(node, "escalate counts from the deadline, so the process needs a deadline");
+      return List.of();
+    }
+    if (sequence.getValue().size() > ProcessSyntax.MAX_ESCALATIONS) {
+      problem(node, "escalate has at most " + ProcessSyntax.MAX_ESCALATIONS + " levels");
+      return List.of();
+    }
+    List<Escalation> levels = new ArrayList<>();
+    for (Node item : sequence.getValue()) {
+      if (!(item instanceof MappingNode map)) {
+        problem(item, "a level of escalate is {after: 24h, to: MANAGER}");
+        continue;
+      }
+      Map<String, Node> keys = mapping(map, ProcessSyntax.ESCALATION);
+      if (keys.get("after") == null) {
+        problem(map, "an escalation level needs after, the time past the deadline");
+      }
+      Duration after =
+          keys.get("after") == null ? null : duration(keys.get("after"), "after", "24h");
+      List<String> to = readRoles(map, keys.get("to"), "to", "escalation role", roleNames, access);
+      int before = problems.size();
+      Duration every = null;
+      int times = 1;
+      if (keys.get("repeat") != null) {
+        if (keys.get("repeat") instanceof MappingNode repeat) {
+          Map<String, Node> parts = mapping(repeat, ProcessSyntax.REPEAT);
+          every = duration(parts.get("every"), "every", "12h");
+          times = repeatTimes(repeat, parts.get("times"));
+          if (parts.get("every") == null) {
+            problem(repeat, "repeat needs every, the time between two notices");
+          }
+        } else {
+          problem(keys.get("repeat"), "repeat is {every: 12h, times: 3}");
+        }
+      }
+      if (after != null && to != null && problems.size() == before) {
+        levels.add(new Escalation(after, to, times > 1 ? every : null, times));
+      }
+    }
+    return levels.size() == sequence.getValue().size() ? List.copyOf(levels) : List.of();
+  }
+
+  private int repeatTimes(Node repeat, Node node) {
+    if (node == null) {
+      problem(repeat, "repeat needs times, how many notices a level sends");
+      return 1;
+    }
+    String text = scalar(node);
+    try {
+      int times = Integer.parseInt(text);
+      if (times >= 1 && times <= ProcessSyntax.MAX_REPEATS) {
+        return times;
+      }
+    } catch (NumberFormatException e) {
+      // reported below
+    }
+    problem(node, "times is a whole number from 1 to " + ProcessSyntax.MAX_REPEATS);
+    return 1;
   }
 
   // How long a record waits for its owner before the system takes an action for them: a time
@@ -1582,15 +1921,15 @@ public final class ModelParser {
     String action =
         family == null ? null : ProcessFamily.defaultAutoCloseAction(family).orElse(null);
     if (action == null) {
-      problem(node,
-          "auto_close needs an action here, as auto_close: {after: 7d, action: <action>}");
+      problem(
+          node, "auto_close needs an action here, as auto_close: {after: 7d, action: <action>}");
       return new AutoClose(null, null);
     }
     return checkedAutoClose(after, action, node, definition);
   }
 
-  private AutoClose checkedAutoClose(Duration after, String action, Node node,
-      ProcessFamily definition) {
+  private AutoClose checkedAutoClose(
+      Duration after, String action, Node node, ProcessFamily definition) {
     Action found = definition.action(action).orElse(null);
     if (found == null || found.by() != Actor.OWNER || ProcessFamily.WITHDRAW.equals(action)) {
       problem(node, "the action of auto_close must be an action of the owner other than withdraw");
@@ -1640,8 +1979,12 @@ public final class ModelParser {
     for (NodeTuple tuple : node.getValue()) {
       String key = scalar(tuple.getKeyNode());
       if (!allowed.contains(key)) {
-        problem(tuple.getKeyNode(), "unknown key " + key + ", allowed: "
-            + String.join(", ", allowed.stream().sorted().toList()));
+        problem(
+            tuple.getKeyNode(),
+            "unknown key "
+                + key
+                + ", allowed: "
+                + String.join(", ", allowed.stream().sorted().toList()));
         continue;
       }
       keys.put(key, tuple.getValueNode());
@@ -1658,7 +2001,8 @@ public final class ModelParser {
       problems.add(new Problem(0, 0, message));
       return;
     }
-    problems.add(new Problem(node.getStartMark().getLine() + 1, node.getStartMark().getColumn() + 1,
-        message));
+    problems.add(
+        new Problem(
+            node.getStartMark().getLine() + 1, node.getStartMark().getColumn() + 1, message));
   }
 }

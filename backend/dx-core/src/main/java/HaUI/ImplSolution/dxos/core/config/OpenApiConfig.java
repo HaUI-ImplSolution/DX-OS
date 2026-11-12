@@ -17,16 +17,28 @@ public class OpenApiConfig {
 
   @Bean
   public OpenAPI dxosOpenApi() {
-    return new OpenAPI().info(new Info().title("DX-OS API").version("v1")
-        .description("DX-OS backend: model-driven records and approval workflow. A user who calls"
-            + " an endpoint too often in one minute gets 429 with a Retry-After header."))
-        .components(new Components()
-            .addSecuritySchemes(BEARER_SCHEME,
-                new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer")
-                    .bearerFormat("JWT"))
-            .addSecuritySchemes(SERVICE_API_KEY_SCHEME,
-                new SecurityScheme().type(SecurityScheme.Type.APIKEY).in(SecurityScheme.In.HEADER)
-                    .name("X-Service-Api-Key")))
+    return new OpenAPI()
+        .info(
+            new Info()
+                .title("DX-OS API")
+                .version("v1")
+                .description(
+                    "DX-OS backend: model-driven records and approval workflow. A user who calls"
+                        + " an endpoint too often in one minute gets 429 with a Retry-After header."))
+        .components(
+            new Components()
+                .addSecuritySchemes(
+                    BEARER_SCHEME,
+                    new SecurityScheme()
+                        .type(SecurityScheme.Type.HTTP)
+                        .scheme("bearer")
+                        .bearerFormat("JWT"))
+                .addSecuritySchemes(
+                    SERVICE_API_KEY_SCHEME,
+                    new SecurityScheme()
+                        .type(SecurityScheme.Type.APIKEY)
+                        .in(SecurityScheme.In.HEADER)
+                        .name("X-Service-Api-Key")))
         .addSecurityItem(new SecurityRequirement().addList(BEARER_SCHEME));
   }
 }

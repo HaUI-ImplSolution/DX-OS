@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 # Two images are built from this file, one per runnable module:
 #   docker build --target backend .   (default) the backend, dx-engine.jar
 #   docker build --target monitor .             the monitoring service, dx-monitor.jar
@@ -5,7 +6,7 @@ FROM eclipse-temurin:21-jdk-alpine AS base
 
 WORKDIR /app
 COPY .mvn/ .mvn/
-COPY mvnw pom.xml eclipse-java-google-style.xml ./
+COPY mvnw pom.xml ./
 COPY dx-model/pom.xml dx-model/pom.xml
 COPY dx-core/pom.xml dx-core/pom.xml
 COPY dx-engine/pom.xml dx-engine/pom.xml

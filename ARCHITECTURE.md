@@ -90,7 +90,7 @@ Mô hình đi qua một đường duy nhất, từ hệ thống rỗng hay từ 
 
 1. `RENAME_FIELD`: đổi tên cột theo `renamed_from`, cùng ràng buộc và chỉ mục mang tên trường.
 2. `CHANGE_SCHEMA`: pgschema đưa schema `m_<tên mô hình>` về trạng thái đích, gồm bảng, cột hệ thống, ràng buộc, chỉ mục và quyền đọc của `report_ro`.
-   Kiểu `boolean`, `date` và `choice` nhiều lựa chọn thành cột `BOOLEAN`, `DATE` và `TEXT[]`; `min`, `max`, `pattern` và các phần tử của `TEXT[]` thành ràng buộc `CHECK` mang tên `ck_<thực thể>_<trường>` kèm `$min`, `$max`, `$re`.
+   Kiểu `boolean`, `date` và `choice` nhiều lựa chọn thành cột `BOOLEAN`, `DATE` và `TEXT[]` (`default` của trường nhiều lựa chọn thành `DEFAULT ARRAY[...]`); `min`, `max`, `pattern` và các phần tử của `TEXT[]` thành ràng buộc `CHECK` mang tên `ck_<thực thể>_<trường>` kèm `$min`, `$max`, `$re`.
 3. `DROP_FILES`: xóa dòng và đối tượng tệp đính kèm của thực thể bị bỏ khỏi mô hình.
 4. `ENSURE_CLIENT`: client `dxos-m-<mô hình>` trong Keycloak, chỉ để chứa vai và không cho ai đăng nhập.
 5. `ENSURE_ROLE`: vai của mô hình, tạo dưới client đó.
@@ -159,6 +159,7 @@ sequenceDiagram
   Thực thể con (`owner_via`) xét các phạm vi này trên bản ghi cha, qua nhiều cấp tới thực thể đầu chuỗi, và không gắn được vào bản ghi cha ngoài tầm với (403).
 - **Quy tắc:** bắt buộc, duy nhất, lựa chọn, `min`, `max` và `pattern` vừa được API kiểm để báo lỗi theo từng trường, vừa là ràng buộc trong cơ sở dữ liệu.
   `required_when` chỉ kiểm ở API, trên hồ sơ sau khi gộp giá trị mới vào bản ghi hiện có.
+  Điều kiện của `required_when` và `when` so sánh trường `number`, `date`, `text`, `choice` một lựa chọn và `boolean`; `<`, `<=`, `>`, `>=` chỉ dùng cho `number` và `date`.
 - **Kiểu giá trị:** `date` là `YYYY-MM-DD`, `boolean` là `true` hay `false`, và trường nhiều lựa chọn là mảng chuỗi lưu theo thứ tự của `options`, không trùng; lọc trường đó bằng `contains`.
 - **Tài liệu API:** `GET /api/v1/meta/models/{model}/openapi` sinh tài liệu OpenAPI của mô hình đang chạy ngay lúc gọi, nên luôn khớp tệp mô hình; người có vai của mô hình đọc được.
 - **Gửi lại:** tạo hồ sơ và hành động nhận header `Idempotency-Key`; khóa được ghi vào `engine.idempotency` cùng giao dịch với việc làm, nên yêu cầu lỗi không giữ khóa và hai yêu cầu cùng khóa chạy cùng lúc chỉ làm một lần, yêu cầu sau chờ rồi nhận câu trả lời của yêu cầu trước.
@@ -180,7 +181,7 @@ Trạng thái của hồ sơ chỉ đổi qua quy trình.
 - Hạn xử lý lưu ở cột `handle_by` khi hồ sơ chờ người xử lý; `overdue` được tính khi đọc.
 - `CatalogService` cấp cho bảng điều khiển schema của tệp mô hình, các họ mẫu, mẫu mô hình và phiên bản đã áp dụng.
 - `DataCatalogService` mô tả dữ liệu của một mô hình đang chạy ở `GET /api/v1/models/{model}/data-catalog` (ADMIN): trường, vai được truy cập, số dòng, liên kết giữa các thực thể, và nơi dữ liệu đi vào (vai, ứng dụng ngoài) và đi ra (webhook, hành động hoàn tất, dòng sự kiện, lưu trữ).
-- `ProcessDiagramService` đọc một tệp mô hình bằng `ModelParser` và trả trạng thái, hành động, hạn, `auto_close` và hành động `after` của từng quy trình, hoặc danh sách lỗi kèm dòng và cột; không so với mô hình đang chạy.
+- `ProcessDiagramService` đọc một tệp mô hình bằng `ModelParser` và trả trạng thái, hành động, hạn, các mức leo thang, `auto_close` và hành động `after` của từng quy trình, hoặc danh sách lỗi kèm dòng và cột; không so với mô hình đang chạy.
 
 ## 7. Sự kiện và hành động sau quyết định
 
@@ -188,6 +189,7 @@ Trạng thái của hồ sơ chỉ đổi qua quy trình.
 - `OutboxController` cho ADMIN xem thông điệp theo trạng thái cùng lỗi gần nhất và thử lại thông điệp chưa gửi; `OutboxCleanup` xóa thông điệp đã gửi sau 30 ngày.
 - Hành động hoàn tất của khối `after:` đi qua outbox đến `CompletionHandler`; hiện có các thao tác `add_to_group` và `remove_from_group` của Keycloak.
 - `OverdueSweep` ghi dòng quá hạn vào lịch sử, một lần cho mỗi hạn, và dòng `due_soon` khi hồ sơ còn dưới `ENGINE_DUE_SOON_BEFORE` trước hạn.
+- `EscalationSweep` ghi dòng `escalated` (mức và lần nhắc) vào lịch sử mỗi khi một mức của `escalate` đến hạn trên hồ sơ quá hạn chưa ai xử lý, cùng giao dịch với tin gửi webhook; sau lúc dịch vụ tắt chỉ ghi mức mới nhất đã đến hạn, và không đổi trạng thái hay người giữ hồ sơ.
 - Khi mô hình có đích webhook (khóa `webhook` hoặc `DXOS_WEBHOOK_URL`), mỗi dòng lịch sử có thêm một thông điệp chủ đề `record.event` trong outbox cùng giao dịch, và `WebhookHandler` gửi nó kèm chữ ký.
   Các dòng của một hồ sơ được giao theo thứ tự.
   Việc áp dụng mô hình và thay đổi tài khoản đi qua chủ đề `admin.event`.
@@ -236,11 +238,15 @@ Truy vấn vào bảng ngoài `engine` vì vậy luôn ghi rõ schema.
 
 Dịch vụ lõi là kết nối ghi duy nhất vào dữ liệu nghiệp vụ; vai `report_ro` chỉ đọc.
 `report_ro` đọc được mọi dòng của mọi bảng nghiệp vụ và không áp quyền `own`, `unit`, `assigned` của người xem, nên chỉ cấp cho công cụ báo cáo của người vận hành.
+Cách kết nối, giới hạn mạng và xoay mật khẩu ở [`deploy/REPORTING.md`](./deploy/REPORTING.md).
 Người dùng cuối xem số liệu qua `GET /api/v1/data/{model}/{entity}/stats`, nơi quyền theo dòng được áp dụng.
+Chất lượng dữ liệu đo ở `GET /api/v1/data/{model}/{entity}/quality`, trên đúng những dòng đó (ADMIN đo mọi dòng của thực thể và chỉ nhận số đếm): `DataQualityService` chạy mọi bean `QualityMetric` (độ điền, thiếu theo điều kiện, kiểm lại ràng buộc, độ mới), nên thêm một số đo là thêm một lớp.
+Số đo này nói dữ liệu đang có tốt đến đâu, khác với phả hệ là nói dữ liệu đến từ đâu.
 
 ## 12. Triển khai
 
 Compose chạy lõi (`postgres`, `keycloak`, `seaweedfs`, `backend`, `apisix`) và Tầng 2 (`frontend`, `portal`, `monitor`); `clamav` bật bằng profile `av`.
+`dxos start --core` chỉ chạy lõi, không có Tầng 2 và gateway không có route của nó; Keycloak Admin Console mặc định không mở ra gateway.
 Gateway kiểm token cho mọi route API; các route không kiểm token nằm trong danh sách công khai kiểm bởi `deploy/apisix/check_routes.py`.
 `dxos start <tệp>...` đưa các tệp mô hình vào qua `deploy/model/` và in kết quả của `ModelBootstrap` cho từng tệp.
 Chi tiết vận hành ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md), log và audit ở [`deploy/MONITORING.md`](./deploy/MONITORING.md), webhook và lịch sử chống sửa ở [`deploy/INTEGRATIONS.md`](./deploy/INTEGRATIONS.md).
@@ -262,5 +268,5 @@ Bốn nguyên lý kỹ thuật của đề:
 |---|---|
 | Phân tách theo vòng đời dữ liệu, đẩy dữ liệu lịch sử xuống hồ dữ liệu | `dxos archive --store` ghi hồ sơ đã đóng và lịch sử của chúng ra Parquet vào một bucket riêng của SeaweedFS kèm manifest và hash; `dxos archive schedule install` đặt lịch hằng ngày theo `ARCHIVE_AFTER_DAYS` |
 | Hội tụ dữ liệu hành chính (IT) và vận hành (OT) | Chương trình giả lập thiết bị tạo hồ sơ sự cố qua API (`examples/itot-simulator`), đi qua cùng quy trình, quyền và lịch sử với hồ sơ hành chính |
-| Quản trị dữ liệu, phả hệ và nguồn gốc | Tệp mô hình là danh mục dữ liệu, trang Danh mục dữ liệu đọc từ đó nơi dữ liệu đi vào, đi ra và liên kết giữa các thực thể; lịch sử hồ sơ chống sửa |
+| Quản trị dữ liệu, phả hệ và nguồn gốc | Tệp mô hình là danh mục dữ liệu, trang Danh mục dữ liệu đọc từ đó nơi dữ liệu đi vào, đi ra và liên kết giữa các thực thể, cùng số đo chất lượng của từng thực thể; lịch sử hồ sơ chống sửa |
 | Zero-Trust, GitOps, kiểm dịch mã độc, tự phục hồi | Token kiểm ở gateway và backend; ClamAV quét tệp khi bật; tệp mô hình là khai báo, xem trước rồi áp dụng; `dxos reconcile` và `restart: unless-stopped` |

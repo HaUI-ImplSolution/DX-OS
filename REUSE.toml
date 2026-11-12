@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: Apache-2.0
+version = 1
+SPDX-PackageName = "DX-OS"
+SPDX-PackageDownloadLocation = "https://github.com/HaUI-ImplSolution/DX-OS"
+
+# Every file belongs to the team; a file keeps the license line it carries and takes the notice from here.
+[[annotations]]
+path = "**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 HaUI-ImplSolution"
+SPDX-License-Identifier = "Apache-2.0"
+
+# Maven Wrapper, copied unchanged from Apache Maven.
+[[annotations]]
+path = ["backend/mvnw", "backend/mvnw.cmd", "backend/.mvn/wrapper/maven-wrapper.properties"]
+precedence = "override"
+SPDX-FileCopyrightText = "The Apache Software Foundation"
+SPDX-License-Identifier = "Apache-2.0"
+
+# Applied by the 2.0.0 release: Flyway checks the checksum of every applied migration, so these files are not edited.
+[[annotations]]
+path = [
+  "backend/dx-core/src/main/resources/db/migration/core/V1__audit_log.sql",
+  "backend/dx-core/src/main/resources/db/migration/core/V2__audit_log_target.sql",
+  "backend/dx-monitor/src/main/resources/db/migration/monitor/V1__monitor_schema.sql",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 HaUI-ImplSolution"
+SPDX-License-Identifier = "Apache-2.0"

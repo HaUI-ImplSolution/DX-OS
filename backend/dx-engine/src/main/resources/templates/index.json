@@ -54,5 +54,19 @@
     "name": "Sổ tài sản",
     "family": "none",
     "description": "Danh mục tài sản không có quy trình, dùng kiểu đúng/sai, ngày, nhiều lựa chọn, giới hạn giá trị, bắt buộc có điều kiện và khối ui để sắp xếp giao diện."
+  },
+  {
+    "id": "clinic_appointment",
+    "file": "clinic_appointment.yaml",
+    "name": "Đặt lịch khám",
+    "family": "reservation",
+    "description": "Người dùng đặt lịch khám, nhân viên xác nhận, tiếp nhận và hoàn tất; mỗi phòng nhận một lịch trong cùng khung giờ."
+  },
+  {
+    "id": "retail_return",
+    "file": "retail_return.yaml",
+    "name": "Đổi trả hàng",
+    "family": "approval",
+    "description": "Khách hàng gửi phiếu đổi hoặc trả hàng; nhân viên duyệt, từ chối hoặc yêu cầu bổ sung để khách sửa và nộp lại."
   }
 ]

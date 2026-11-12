@@ -8,6 +8,7 @@
 set -uo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
+source lib/web-url.sh
 
 FAILS=0
 WARNS=0
@@ -75,13 +76,41 @@ else
     ok "no variable outside .env.example"
   fi
 
+  cors_origins="$(env_value CORS_ALLOWED_ORIGINS)"
+  cors_invalid=""
+  if [[ -n "$cors_origins" ]]; then
+    IFS=',' read -ra configured_origins <<<"$cors_origins"
+    for origin in "${configured_origins[@]}"; do
+      if ! dxos_validate_web_url "$origin" origin; then cors_invalid="$DXOS_WEB_URL_ERROR"; break; fi
+    done
+  fi
+  if [[ -n "$cors_invalid" ]]; then
+    fail "CORS_ALLOWED_ORIGINS is invalid: $cors_invalid"
+  else
+    ok "CORS_ALLOWED_ORIGINS contains only exact safe origins"
+  fi
+
   scan_host="$(env_value STORAGE_SCAN_HOST)"
   if [[ -z "$scan_host" ]]; then
-    ok "virus scan of uploads is off (dxos av on, or COMPOSE_PROFILES=av and STORAGE_SCAN_HOST=clamav)"
+    ok "virus scan of uploads is off (dxos av on, or av in COMPOSE_PROFILES and STORAGE_SCAN_HOST=clamav)"
   elif [[ "$scan_host" == clamav && ",$(env_value COMPOSE_PROFILES)," != *,av,* ]]; then
     fail "STORAGE_SCAN_HOST=clamav but COMPOSE_PROFILES has no av: ClamAV would not start and every upload would be refused"
   else
     ok "virus scan of uploads is on (clamd at $scan_host)"
+  fi
+
+  mode="$(env_value DXOS_MODE)"
+  profiles=",$(env_value COMPOSE_PROFILES),"
+  if [[ -z "$mode" ]]; then
+    ok "no DXOS_MODE: the full stack (dxos start sets DXOS_MODE and COMPOSE_PROFILES)"
+  elif [[ "$mode" != core && "$mode" != full ]]; then
+    fail "DXOS_MODE is '$mode' (it is core or full)"
+  elif [[ "$mode" == full && "$profiles" != *,app,* ]]; then
+    fail "DXOS_MODE=full but COMPOSE_PROFILES has no app: the web app, the portal and the monitor would not start (dxos start --full sets both)"
+  elif [[ "$mode" == core && "$profiles" == *,app,* ]]; then
+    fail "DXOS_MODE=core but COMPOSE_PROFILES has app: the web app, the portal and the monitor would start (dxos start --core sets both)"
+  else
+    ok "mode $mode"
   fi
 
   if docker compose config --quiet >/dev/null 2>&1; then ok "docker compose config is valid"; else fail "docker compose config fails: run it in deploy/ to see why"; fi

@@ -20,8 +20,8 @@ Image khai báo ở .github/component-catalog.json; .github/scripts/check_licens
 | sso, seaweedfs, e2e, examples               |                       |                                              |
 +---------------------------------------------+-----------------------+----------------------------------------------+
 
-Header của file mã nguồn là SPDX-License-Identifier: Apache-2.0.
-Dòng header nằm ở đầu file Java, TypeScript, JavaScript, Python, shell và YAML; các file còn lại (tài liệu, JSON, ảnh) theo giấy phép của thư mục chứa chúng.
+Header của file mã nguồn là một dòng SPDX-License-Identifier với giá trị Apache-2.0; `reuse lint` kiểm toàn bộ cây theo chuẩn REUSE.
+Dòng header nằm ở đầu file Java, TypeScript, JavaScript, Python, shell, YAML, CSS, HTML, SQL, XML, nginx.conf, Dockerfile, .env.example và .toml; file không chèn được chú thích (tài liệu, JSON, ảnh, tệp cấu hình của git) và hai nhóm file đặc biệt khai trong REUSE.toml: file của bên thứ ba và migration SQL đã phát hành.
 .github/scripts/check_licenses.py kiểm header, giấy phép của từng dependency trong sbom/ và danh mục image, mô hình, tệp dữ liệu ở mỗi pull request;
 ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 
@@ -34,7 +34,7 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 | Spring Boot, Spring Framework, Spring  | Apache-2.0                       | Khung ứng dụng, xác thực token         |
 | Security                               |                                  | Keycloak                               |
 +----------------------------------------+----------------------------------+----------------------------------------+
-| springdoc-openapi                      | Apache-2.0                       | Swagger UI và OpenAPI                  |
+| springdoc-openapi                      | Apache-2.0                       | Đặc tả OpenAPI, không kèm Swagger UI   |
 +----------------------------------------+----------------------------------+----------------------------------------+
 | Thymeleaf (cùng attoparser, unbescape) | Apache-2.0                       | Khung trang của màn hình giám sát      |
 +----------------------------------------+----------------------------------+----------------------------------------+
@@ -73,7 +73,11 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 |                                        | Apache-2.0, MIT, BSD-3-Clause,   |                                        |
 |                                        | EPL-2.0                          |                                        |
 +----------------------------------------+----------------------------------+----------------------------------------+
-| formatter-maven-plugin                 | Apache-2.0                       | Chỉ khi build, kiểm định dạng mã       |
+| spotless-maven-plugin [5]              | Apache-2.0; thư viện kèm theo:   | Chỉ khi build, kiểm định dạng mã Java  |
+|                                        | Apache-2.0, EPL-2.0,             |                                        |
+|                                        | BSD-3-Clause                     |                                        |
++----------------------------------------+----------------------------------+----------------------------------------+
+| google-java-format                     | Apache-2.0                       | Chỉ khi build, bộ định dạng mã Java    |
 +----------------------------------------+----------------------------------+----------------------------------------+
 | Eclipse Temurin (OpenJDK 21)           | GPL-2.0 with Classpath Exception | Base image build và runtime, chạy      |
 |                                        |                                  | nguyên bản                             |
@@ -181,8 +185,11 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 | CycloneDX (@cyclonedx/cyclonedx-npm, | Apache-2.0                           | Sinh SBOM                            |
 | cyclonedx-maven-plugin)              |                                      |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| GitHub Actions (actions/*,           | MIT, Apache-2.0                      | Chỉ trong CI, ghim theo SHA          |
-| docker/*)                            |                                      |                                      |
+| reuse 6.3.0 (pipx run)               | Apache-2.0, GPL-3.0-or-later (mã);   | Kiểm chuẩn REUSE (reuse lint) trong  |
+|                                      | CC0-1.0, CC-BY-SA-4.0 (tài liệu)     | CI; không đóng gói vào sản phẩm      |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| GitHub Actions (actions/*,           | MIT, Apache-2.0, ISC, 0BSD,          | Chỉ trong CI, ghim theo SHA          |
+| docker/*)                            | BlueOak-1.0.0                        |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 
 5. GHI CHÚ
@@ -192,7 +199,16 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
     Quét mã độc tắt mặc định, chỉ bật bằng `dxos av on`.
     Dự án kéo image chính thức nguyên bản khi chạy, không đóng gói, không sửa và không phân phối lại nó.
     Image kèm libclamunrar (giải nén RAR) theo giấy phép UnRAR, không phải mã mở; thư viện này nạp lúc chạy và không liên kết với libclamav, và thiếu nó thì ClamAV vẫn chạy, chỉ không giải nén RAR.
-    Điều khoản của kho chữ ký virus chưa có văn bản chính thức để xác nhận.
+    Chữ ký virus do image tự tải về từ mạng phân phối chính thức của ClamAV, qua freshclam trong container, và nằm trong volume `clamav_data` của từng bản cài.
+    Dự án không mirror, không cache chung và không đóng gói chữ ký.
+    Tài liệu chính thức không có văn bản điều khoản riêng cho kho chữ ký; điều kiện sử dụng nằm ở các trang sau (đọc ngày 2026-11-11):
+    - Chỉ freshclam và cvdupdate là hai cách tải được hỗ trợ, tải bằng wget, curl hay script khác có thể bị giới hạn hoặc chặn (https://docs.clamav.net/faq/faq-freshclam.html).
+    - Mã 429 là bị giới hạn tốc độ, thường gặp ở IP dùng chung như máy chủ đám mây; mã 403, 503 và 1020 là bị chặn hoặc dùng bản đã hết hỗ trợ (cùng trang).
+    - Image chính thức chạy freshclam mặc định một lần mỗi ngày (`FRESHCLAM_CHECKS`) (https://docs.clamav.net/manual/Installing/Docker.html).
+    - Mirror riêng chỉ nên dựng khi cần, và phải dùng freshclam hoặc cvdupdate (https://docs.clamav.net/appendix/CvdPrivateMirror.html).
+    - Bản hết hỗ trợ có thể bị chặn tải chữ ký: bản không phải LTS còn được tải thêm ít nhất bốn tháng sau khi bản "next-next" ra mắt (https://docs.clamav.net/faq/faq-eol.html).
+    Image đang ghim 1.5.4 nên phải nâng khi bản của nó hết thời hạn tải chữ ký.
+    Đây là đọc tài liệu của dự án, không phải tư vấn pháp lý.
 
 [2] WireMock đóng gói Jetty và Servlet API theo nhiều giấy phép.
     Dự án chọn Apache-2.0 cho Jetty và EPL-2.0 cho Servlet API, không chọn GPL-2.0 with Classpath Exception.
@@ -203,3 +219,6 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 [4] caniuse-lite (CC-BY-4.0) và mdn-data (CC0-1.0) là dữ liệu, không phải mã.
     Chúng chỉ được đọc lúc dựng trang tài liệu và không có trong trang đã dựng.
     Hai gói được nêu tên kèm lý do ở .github/dependency-exceptions.json.
+
+[5] Spotless chạy google-java-format; cả hai chỉ dùng lúc dựng và không nằm trong image chạy.
+    Thư viện kèm theo: JGit (BSD-3-Clause), Eclipse OSGi và Solstice (EPL-2.0), concurrent-trees, durian, plexus (Apache-2.0).

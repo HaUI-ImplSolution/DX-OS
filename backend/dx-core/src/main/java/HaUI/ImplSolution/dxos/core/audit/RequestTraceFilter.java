@@ -26,8 +26,9 @@ public class RequestTraceFilter extends OncePerRequestFilter {
   private static final int MAX_PATH = 512;
 
   @Override
-  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-      FilterChain filterChain) throws ServletException, IOException {
+  protected void doFilterInternal(
+      HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+      throws ServletException, IOException {
     String requestId = request.getHeader("X-Request-Id");
     if (requestId == null || !SAFE_ID.matcher(requestId).matches()) {
       requestId = UUID.randomUUID().toString();

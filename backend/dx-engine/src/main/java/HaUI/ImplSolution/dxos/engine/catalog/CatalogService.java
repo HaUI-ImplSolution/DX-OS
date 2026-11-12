@@ -65,10 +65,12 @@ public class CatalogService {
   }
 
   public List<Map<String, Object>> versions(String model) {
-    List<Map<String, Object>> versions = jdbc.queryForList(
-        "SELECT version, hash, applied_by, applied_by_name, applied_at FROM engine.model_version "
-            + "WHERE model = ? " + "ORDER BY version DESC",
-        model);
+    List<Map<String, Object>> versions =
+        jdbc.queryForList(
+            "SELECT version, hash, applied_by, applied_by_name, applied_at FROM engine.model_version "
+                + "WHERE model = ? "
+                + "ORDER BY version DESC",
+            model);
     if (versions.isEmpty()) {
       throw new ResourceNotFoundException("Model " + model + " not found");
     }
@@ -77,8 +79,12 @@ public class CatalogService {
 
   public Map<String, Object> version(String model, int version) {
     List<Map<String, Object>> rows =
-        jdbc.queryForList("SELECT version, hash, applied_by, applied_by_name, applied_at, content "
-            + "FROM engine.model_version " + "WHERE model = ? AND version = ?", model, version);
+        jdbc.queryForList(
+            "SELECT version, hash, applied_by, applied_by_name, applied_at, content "
+                + "FROM engine.model_version "
+                + "WHERE model = ? AND version = ?",
+            model,
+            version);
     if (rows.isEmpty()) {
       throw new ResourceNotFoundException("Model " + model + " has no version " + version);
     }
@@ -88,17 +94,28 @@ public class CatalogService {
   private static List<Map<String, Object>> params(String family) {
     List<Map<String, Object>> params = new ArrayList<>();
     params.add(param("handler", true, "The role that handles the records"));
-    params
-        .add(param("allow_self_decision", false, "Whether the creator of a record may handle it"));
+    params.add(
+        param("allow_self_decision", false, "Whether the creator of a record may handle it"));
     params.add(param("deadline", false, "How long a handler has, such as 72h, 90m or 3d"));
+    params.add(
+        param(
+            "escalate",
+            false,
+            "Notices to other roles while an overdue record stays unhandled, as a list of {after: 24h, to: MANAGER, repeat: {every: 12h, times: 3}}; needs a deadline"));
     if ("work_item".equals(family)) {
-      params.add(param("auto_close", false,
-          "How long a resolved record waits for its owner before the system closes it, such as 7d"));
+      params.add(
+          param(
+              "auto_close",
+              false,
+              "How long a resolved record waits for its owner before the system closes it, such as 7d"));
     }
     params.add(param("after", false, "Actions taken when a record reaches a final state"));
     if ("reservation".equals(family)) {
-      params.add(param("booking", true,
-          "The resource field, the start and end fields and the capacity of a resource"));
+      params.add(
+          param(
+              "booking",
+              true,
+              "The resource field, the start and end fields and the capacity of a resource"));
     }
     return params;
   }

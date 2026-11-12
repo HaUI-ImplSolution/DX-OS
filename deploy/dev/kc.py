@@ -77,7 +77,11 @@ def admin_token():
 
 def kc(method, path, body=None):
     token = admin_token()
-    return http(method, f"{BASE}/admin/realms/dxos{path}", body, {"Authorization": f"Bearer {token}"})
+    status, answer = http(method, f"{BASE}/admin/realms/dxos{path}", body, {"Authorization": f"Bearer {token}"})
+    # The gateway closes /admin unless KEYCLOAK_ADMIN_CONSOLE=true, and the scripts reach the Keycloak Admin API through it.
+    assert not (status == 404 and "Not found" in str(answer)[:120]), (
+        "The gateway does not open /admin; set KEYCLOAK_ADMIN_CONSOLE=true in deploy/.env and recreate apisix-config and apisix")
+    return status, answer
 
 
 def ensure_client():

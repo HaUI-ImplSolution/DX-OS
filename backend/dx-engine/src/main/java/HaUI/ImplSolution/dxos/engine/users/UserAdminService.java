@@ -65,8 +65,12 @@ public class UserAdminService {
   private final AdminEventPublisher events;
   private final SecureRandom random = new SecureRandom();
 
-  public UserAdminService(KeycloakAdminClient keycloak, ModelRegistry registry, UserContext user,
-      AuditRecorder audit, AdminEventPublisher events) {
+  public UserAdminService(
+      KeycloakAdminClient keycloak,
+      ModelRegistry registry,
+      UserContext user,
+      AuditRecorder audit,
+      AdminEventPublisher events) {
     this.keycloak = keycloak;
     this.registry = registry;
     this.user = user;
@@ -80,15 +84,22 @@ public class UserAdminService {
     int first = (int) Math.min((long) pageNumber * pageSize, Integer.MAX_VALUE);
     Accounts accounts = keycloak.searchAccounts(search, first, pageSize);
     int pages = (int) ((accounts.total() + pageSize - 1) / pageSize);
-    return new PageResponse<>(accounts.items().stream().map(UserAdminService::view).toList(),
-        pageNumber, pageSize, accounts.total(), pages);
+    return new PageResponse<>(
+        accounts.items().stream().map(UserAdminService::view).toList(),
+        pageNumber,
+        pageSize,
+        accounts.total(),
+        pages);
   }
 
   public UserDetail get(String id) {
     UserView view = view(require(id));
     Map<String, List<String>> roles = new LinkedHashMap<>();
-    keycloak.clientRolesOf(id).forEach(
-        (client, names) -> ModelClient.modelOf(client).ifPresent(model -> roles.put(model, names)));
+    keycloak
+        .clientRolesOf(id)
+        .forEach(
+            (client, names) ->
+                ModelClient.modelOf(client).ifPresent(model -> roles.put(model, names)));
     Set<String> declared =
         declaredUnits().stream().map(Model.Unit::name).collect(Collectors.toSet());
     List<String> units = keycloak.groupsOf(id).stream().filter(declared::contains).toList();
@@ -97,9 +108,16 @@ public class UserAdminService {
 
   // What can be given: the roles and units of the models that run now.
   public Options options() {
-    List<ModelRoles> models = registry.all().stream().map(model -> new ModelRoles(model.name(),
-        model.roles().stream().map(role -> new RoleInfo(role.name(), role.description())).toList()))
-        .toList();
+    List<ModelRoles> models =
+        registry.all().stream()
+            .map(
+                model ->
+                    new ModelRoles(
+                        model.name(),
+                        model.roles().stream()
+                            .map(role -> new RoleInfo(role.name(), role.description()))
+                            .toList()))
+            .toList();
     List<UnitInfo> units =
         declaredUnits().stream().map(unit -> new UnitInfo(unit.name(), unit.label())).toList();
     return new Options(models, units);
@@ -107,8 +125,10 @@ public class UserAdminService {
 
   public void grantRole(String id, String model, String role) {
     Account account = require(id);
-    Model running = registry.find(model)
-        .orElseThrow(() -> new ResourceNotFoundException("Model " + model + " is not applied"));
+    Model running =
+        registry
+            .find(model)
+            .orElseThrow(() -> new ResourceNotFoundException("Model " + model + " is not applied"));
     if (running.roles().stream().noneMatch(declared -> declared.name().equals(role))) {
       throw new ResourceNotFoundException("Model " + model + " has no role " + role);
     }
@@ -148,9 +168,10 @@ public class UserAdminService {
     if (!problems.isEmpty()) {
       throw new ModelValidationException(problems);
     }
-    String password = request.temporaryPassword() == null || request.temporaryPassword().isBlank()
-        ? generatePassword()
-        : request.temporaryPassword();
+    String password =
+        request.temporaryPassword() == null || request.temporaryPassword().isBlank()
+            ? generatePassword()
+            : request.temporaryPassword();
     String username = request.username().trim();
     String id = keycloak.createUser(username, request.fullName().trim(), request.email(), password);
     Map<String, Object> metadata = new LinkedHashMap<>();
@@ -201,7 +222,8 @@ public class UserAdminService {
   }
 
   private Account require(String id) {
-    return keycloak.findAccount(id)
+    return keycloak
+        .findAccount(id)
         .orElseThrow(() -> new ResourceNotFoundException("User " + id + " not found"));
   }
 
@@ -213,14 +235,15 @@ public class UserAdminService {
 
   private List<Model.Unit> declaredUnits() {
     Map<String, Model.Unit> units = new LinkedHashMap<>();
-    registry.all()
+    registry
+        .all()
         .forEach(model -> model.units().forEach(unit -> units.putIfAbsent(unit.name(), unit)));
     return List.copyOf(units.values());
   }
 
   private static UserView view(Account account) {
-    return new UserView(account.id(), account.username(), account.name(), account.email(),
-        account.enabled());
+    return new UserView(
+        account.id(), account.username(), account.name(), account.email(), account.enabled());
   }
 
   // A random password with a letter of each case and a digit, without look-alike characters.

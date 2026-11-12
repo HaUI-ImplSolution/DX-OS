@@ -20,20 +20,21 @@ Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`web
 |---|---|---|
 | Định dạng, biên dịch, test của backend | `cd backend && ./mvnw verify` | Workflow `Backend` |
 | Kiểu của web | `cd frontend && npx tsc --noEmit` | Workflow `Frontend` |
-| Giấy phép và header | `python3 .github/scripts/check_licenses.py` | `Check licenses` của `Compliance` |
+| Giấy phép và header | `python3 .github/scripts/check_licenses.py`; `pipx run --spec reuse==6.3.0 reuse lint` | `Check licenses` của `Compliance` |
 | Giấy phép của dự án gốc | `GITHUB_TOKEN=... python3 .github/scripts/check_upstream_licenses.py` | `Check upstream licenses` của `Compliance` |
 | SBOM khớp tệp khóa | `python3 .github/scripts/check_sbom_fresh.py` | `Check SBOMs against lockfiles` của `Compliance` |
 | Route của gateway | `python3 deploy/apisix/check_routes.py` | `Validate the gateway routes` của `Platform` |
 | Compose hợp lệ, dừng khi thiếu bí mật | `docker compose config` trong `deploy/` | `Validate the Compose file` của `Platform` |
 | Gói phát hành và bộ cài | `.github/scripts/check_archive.sh <gói> <phiên bản>` | `Install from the release archive` của `Platform` |
 | Sao lưu và khôi phục | `deploy/backup.sh` rồi `verify` | `Back up and restore` của `Platform` |
-| API trên stack thật | Các script `deploy/dev/check_*.py`, mục 4 | `API end-to-end` của `Platform`, hai nhóm |
+| API trên stack thật | Các script `deploy/dev/check_*.py`, mục 4 | `API end-to-end` của `Platform`, ba nhóm, một nhóm chạy ở chế độ lõi |
+| Bề mặt của gateway | `python3 deploy/dev/check_surface.py` | `Gateway surface` của `Platform`, hai chế độ |
 | Trình duyệt | Xem [`e2e/README.md`](../e2e/README.md) | `Browser end-to-end` của `Platform` |
 | Trang tài liệu | `cd website && npm ci && npm run build` | `Build the docs site` của `Docs` |
 | Kiểm tay | Mục 6 | Không |
 
 `./mvnw verify` sau khi đổi tài nguyên nên chạy `clean verify`: tài nguyên cũ còn trong `target/` làm Flyway thấy hai migration cùng phiên bản.
-`./mvnw formatter:format` sửa định dạng khi `formatter:validate` báo lỗi.
+`./mvnw spotless:apply` sửa định dạng khi `spotless:check` báo lỗi.
 Test của client Keycloak, bộ gửi webhook và bộ dò dịch vụ dùng WireMock, không cần Docker; test chậm gắn `@Tag("slow")`, bỏ qua bằng `-DexcludedGroups=slow`.
 
 ## 3. Dựng stack
@@ -53,6 +54,9 @@ Kiểm trên một stack riêng thì không đụng stack chính:
 - Các script đọc `DXOS_ENV_FILE`, `DXOS_BASE_URL` và `DXOS_PROJECT` (tên project Compose); đặt đủ ba biến thì lệnh `docker compose` của script chỉ chạm project đó.
 - Xóa project, volume và thư mục dữ liệu của nó sau khi kiểm.
 
+Các script gọi Keycloak Admin API qua gateway, mà gateway đóng `/admin` mặc định: đặt `KEYCLOAK_ADMIN_CONSOLE=true` trong env của stack kiểm rồi `docker compose up -d apisix-config` và `docker compose restart apisix`.
+Chế độ lõi thì đặt `DXOS_MODE=core` và `COMPOSE_PROFILES=` trong env đó, hoặc dùng `dxos start --core`.
+
 Cổng 9080 hoặc 5432 bị chiếm thì đổi `APISIX_HOST_PORT`, `POSTGRES_HOST_PORT` trong `deploy/.env`.
 
 ## 4. Kiểm API trên stack
@@ -61,7 +65,7 @@ Chạy trên stack mới dựng, cơ sở dữ liệu rỗng, vì script áp d�
 Mỗi script phụ thuộc các script đứng trước trong cùng nhóm, nên chạy đúng thứ tự:
 
 ```bash
-for c in api recovery case change process booking demo guards users docs conformance cli; do
+for c in api recovery case change process booking demo guards users docs conformance cli browser; do
   python3 deploy/dev/check_$c.py
 done
 ```
@@ -79,16 +83,18 @@ python3 deploy/dev/check_bootstrap.py
 | `check_recovery.py` | Quyết định lỗi sau bước quy trình thì hồ sơ và quy trình cùng quay về; áp dụng bị Keycloak làm gián đoạn rồi áp dụng lại |
 | `check_case.py` | Trạng thái và hành động, đơn vị, giao việc, hộp việc, dòng lịch sử kèm giá trị cũ và mới, mã lý do của lỗi 403 và 409 |
 | `check_change.py` | Đổi mô hình khi đã có dữ liệu: mức rủi ro, đổi tên giữ dữ liệu, dòng vi phạm, quay về |
-| `check_process.py` | Các họ mẫu, quy tắc chung của quy trình, hạn và quá hạn, hành động hoàn tất qua outbox, tệp đính kèm, thống kê, chống ghi đè |
+| `check_process.py` | Các họ mẫu, quy tắc chung của quy trình, hạn và quá hạn, hành động hoàn tất qua outbox, tệp đính kèm, thống kê, số đo chất lượng, chống ghi đè |
 | `check_booking.py` | Họ `reservation`, danh mục của bảng điều khiển, mọi mẫu áp dụng được |
 | `check_demo.py` | Tám tiêu chí của kịch bản trình diễn |
 | `check_guards.py` | Người giữ vai, vai của nền tảng, bỏ vai, xóa thực thể còn hồ sơ đang chạy, lần áp dụng dừng giữa chừng (tiếp tục và hủy bỏ) |
+| `check_browser.py` | Giao diện trình duyệt ngoài: `dxos client browser add` tạo public client PKCE S256, origin vào `CORS_ALLOWED_ORIGINS` và được CORS nhận, `list` không in secret, redirect không an toàn bị từ chối trước khi đổi Keycloak, đăng nhập PKCE gọi được API, `remove` xóa client |
 | `check_users.py` | Quản trị người dùng: gán và gỡ vai và đơn vị, tạo, khóa, đặt lại mật khẩu, audit |
 | `check_docs.py` | Mọi endpoint các tài liệu nêu có trong OpenAPI của backend đang chạy, đúng phương thức |
 | `check_conformance.py` | Rào chắn của lõi giữ với mọi mô hình đã áp dụng, hoặc các mô hình nêu tên: không ghi được `status`, không token thì 401, không đọc được dữ liệu mô hình khác |
 | `check_cli.py` | Lệnh `dxos plan` và `apply --accept` (tệp giống, đổi an toàn, đổi mất dữ liệu bị từ chối khi `--accept` thấp hơn mức của kế hoạch), lịch sử ghi tài khoản của lệnh, `dxos archive` và `archive check` (sửa một byte Parquet thì mã 1), `archive --store` vào SeaweedFS, `archive check --store`, `archive list` và `archive auto` không ghi trùng, bộ mô phỏng IT/OT gửi lại cùng quan sát thì in `duplicate` và không thêm hồ sơ; cần Docker; tự áp dụng một mô hình riêng |
 | `check_events.py` | Webhook: thứ tự, chữ ký, thử lại, nội dung không lộ, nhắc hạn; chuỗi hash của lịch sử và bên nhận so hash |
 | `check_bootstrap.py` | Tệp mô hình lúc khởi động: `applied`, `unchanged`, `skipped`, `failed` |
+| `check_surface.py` | Không cần tài khoản, chạy được ở cả hai chế độ: `/v3/api-docs` trả JSON; `/swagger-ui*` và `/admin*` trả 404 không phải HTML (`/admin` mở khi `KEYCLOAK_ADMIN_CONSOLE=true`); đăng nhập Keycloak vẫn phục vụ; backend gọi được Keycloak Admin API; chế độ `core` không chạy container và không phục vụ trang nào của Tầng 2 |
 
 Các script tạo client Keycloak `dxos-check` (cho phép đăng nhập bằng mật khẩu, chỉ dùng cho máy dev) và các người dùng thử như `admin1`, `req1`, `keeper1`.
 Vai của mô hình được gán ở client `dxos-m-<mô hình>`, vai `ADMIN` ở realm.
@@ -144,20 +150,41 @@ Giao diện, đăng nhập bằng `req1` (vai `BORROWER`), `keeper1` (vai `KEEPE
     Hồ sơ đóng sau hạn dù trước lần quét có dòng `overdue` đứng trước dòng quyết định và tính là muộn; hồ sơ đóng trước hạn không có dòng này; lần quét sau không ghi dòng thứ hai và outbox chỉ có một thông điệp.
     Hồ sơ quá hạn rồi được trả lại, nộp lại và duyệt vẫn tính là muộn; hồ sơ rút lại sau hạn không tính; hai quyết định đồng thời trên hai hồ sơ quá hạn không kẹt khóa; `GET /api/v1/history/verify` vẫn báo chuỗi nguyên vẹn.
     Số `closedOnTime` cộng `closedLate` bằng số hồ sơ đã quyết định và không rút lại khi đối chiếu bằng SQL, ở nhiều người xem và nhiều bộ lọc.
-    Tệp mô hình có hành động tên `overdue`, `due_soon`, `created`, `updated`, `deleted`, `assigned`, `file_added`, `file_removed`, `completion_skipped` hay `auto_closed` bị từ chối ở bước kiểm, kèm dòng và cột; tên thường như `review` được nhận.
+    Tệp mô hình có hành động tên `overdue`, `due_soon`, `created`, `updated`, `deleted`, `assigned`, `file_added`, `file_removed`, `completion_skipped`, `auto_closed` hay `escalated` bị từ chối ở bước kiểm, kèm dòng và cột; tên thường như `review` được nhận.
 23. Hộp việc thời gian thực: mở hộp việc của một cán bộ ở một cửa sổ, ở cửa sổ khác cho sinh viên nộp một hồ sơ gửi đơn vị của cán bộ đó: số "Việc đang chờ" tăng trong khoảng hai giây mà không tải lại trang, ở mọi tab của cán bộ.
     Trang chi tiết đang mở của một hồ sơ đổi trạng thái khi người khác duyệt; form tạo hoặc sửa đang gõ dở không bị làm mới.
     Khởi động lại `backend`: sau vài giây tab đang mở nhận lại thay đổi mới.
     `GET /api/v1/inbox/stream` không có token thì 401, có token thì 200 `text/event-stream` kèm `: ping` mỗi 20 giây, và server đóng sau 600 giây.
-24. Kiểu và quy tắc mới trên biểu mẫu: áp dụng mẫu Sổ tài sản; trường `boolean`, `date` và nhiều lựa chọn có ô nhập riêng; mã sai mẫu báo "Không đúng định dạng", giá trị ngoài khoảng bị từ chối, ghi chú bắt buộc khi loại là phần mềm và báo "Bắt buộc nhập khi"; hồ sơ lưu rồi hiện đủ ở chi tiết và lọc được theo từng trường.
+24. Kiểu và quy tắc mới trên biểu mẫu: áp dụng mẫu Sổ tài sản; trường `boolean`, `date` và nhiều lựa chọn có ô nhập riêng; mã sai mẫu báo "Không đúng định dạng", giá trị ngoài khoảng bị từ chối, ghi chú bắt buộc khi loại là phần mềm và báo "Bắt buộc nhập khi"; hồ sơ lưu rồi hiện đủ ở chi tiết và lọc được theo từng trường; trường nhiều lựa chọn có `default` là danh sách thì hồ sơ tạo không gửi trường đó nhận danh sách ấy, và `required_when: "due >= 2026-01-31"` trên trường ngày chặn hồ sơ có `due` từ mốc đó mà để trống trường bắt buộc; ở chế độ Điền form, ô mặc định của trường nhiều lựa chọn chọn từ `options` và YAML ghi danh sách.
 25. Khối `ui:`: menu hiện nhóm và biểu tượng khai báo; danh sách mở với đúng cột và thứ tự khai báo, nút Cột vẫn hiện đủ cột và lựa chọn của người dùng đè lên; biểu mẫu chia nhóm theo `ui.form` với nhóm Khác ở cuối và hiện lời gợi ý; đổi `ui:` khi còn hồ sơ mở vẫn áp dụng được.
 26. Hành động hàng loạt: chọn nhiều hồ sơ chờ xử lý, thanh phía trên bảng hiện các hành động hợp lệ, bấm Duyệt thì hộp xác nhận hiện số hồ sơ và bảng kết quả báo từng hồ sơ; một hồ sơ đã bị người khác xử lý trước thì báo lý do và các hồ sơ còn lại vẫn xong; hành động cần ghi chú bắt buộc nhập ghi chú; chọn hơn 50 hồ sơ thì nút mờ; vai không có quyền xử lý không có ô chọn.
-27. Tab Ứng dụng ngoài: đăng ký một ứng dụng với một vai của một mô hình, mã bí mật hiện một lần kèm nút sao chép; token lấy bằng mã đó đọc được mô hình đã gán, gọi bảng điều khiển hay quản trị người dùng thì 403; đổi mã thì mã cũ bị từ chối; xóa thì không lấy được token và hồ sơ đã tạo vẫn còn.
+27. Tab Ứng dụng ngoài: đăng ký một ứng dụng với một vai của một mô hình, mã bí mật hiện một lần kèm nút sao chép; token lấy bằng mã đó đọc được mô hình đã gán, gọi bảng điều khiển hay quản trị người dùng thì 403; đổi mã thì mã cũ bị từ chối; đổi vai bằng nút Đổi vai thì mã bí mật cũ vẫn lấy được token, token mới mang vai mới còn token cũ giữ vai cũ đến khi hết hạn; xóa thì không lấy được token và hồ sơ đã tạo vẫn còn.
 28. Tài liệu OpenAPI của mô hình: nhập vào một công cụ API hoặc trình sinh thư viện không lỗi; đổi một trường rồi áp dụng và quay về thì tài liệu đổi theo; người không có vai của mô hình nhận 404.
 29. Bảng theo trạng thái: ở danh sách một thực thể có quy trình bấm nút Bảng theo trạng thái; mỗi trạng thái là một cột có tổng số, tối đa 10 thẻ, thẻ mở đúng chi tiết hồ sơ, "Xem cả N hồ sơ" mở danh sách lọc theo trạng thái đó; tải lại trang vẫn ở chế độ bảng; bộ lọc đang đặt áp cho mọi cột; ở màn hình 360 px trang không tràn ngang và các cột cuộn bên trong.
 30. Xuất CSV: bấm Xuất CSV ở một danh sách có lọc; tệp `<thực thể>-<ngày>.csv` có BOM, một dòng tiêu đề và đúng số dòng của danh sách đã lọc; tạo hồ sơ có lý do `=1+1` hoặc `@SUM(A1)` thì ô trong tệp bắt đầu bằng dấu nháy; giá trị có dấu phẩy hoặc ngoặc kép được bao trong ngoặc kép; vai chỉ thấy hồ sơ của mình chỉ nhận được các dòng đó.
 31. Khóa chống chạy lặp: gọi `POST /api/v1/data/{model}/{entity}` hai lần với cùng `Idempotency-Key` và cùng nội dung thì cả hai trả cùng `id`, lần hai có header `Idempotent-Replayed: true` và không có thêm hồ sơ; cùng khóa với nội dung khác hoặc với hành động khác thì 409 `IDEMPOTENCY_KEY_REUSED`; khóa sai khuôn thì 400; một yêu cầu lỗi không giữ khóa nên gửi lại được.
-32. Danh mục dữ liệu: vào bảng điều khiển bằng ADMIN, mở tab Danh mục dữ liệu và chọn một mô hình có quy trình và tham chiếu; trang liệt kê vai và ứng dụng ngoài đi vào, nơi dữ liệu đi ra, các liên kết giữa thực thể, và mỗi thực thể có số bản ghi, quyền theo vai và danh sách trường. Đăng ký thêm một ứng dụng ngoài ở tab Ứng dụng ngoài rồi tải lại thì nó hiện ở "Dữ liệu đi vào từ". Gọi `GET /api/v1/models/{model}/data-catalog` bằng vai không phải ADMIN thì 403.
+32. Danh mục dữ liệu: vào bảng điều khiển bằng ADMIN, mở tab Danh mục dữ liệu và chọn một mô hình có quy trình và tham chiếu; trang liệt kê vai và ứng dụng ngoài đi vào, nơi dữ liệu đi ra, các liên kết giữa thực thể, và mỗi thực thể có số bản ghi, quyền theo vai và danh sách trường. Đăng ký thêm một ứng dụng ngoài ở tab Ứng dụng ngoài rồi tải lại thì nó hiện ở "Dữ liệu đi vào từ". Gọi `GET /api/v1/models/{model}/data-catalog` bằng vai không phải ADMIN thì 403. Mở một thực thể trong tab: hiện số đo chất lượng kèm thời điểm đo và số bản ghi được xét; độ điền của từng trường, thiếu theo điều kiện và vi phạm ràng buộc khác 0 được tô nổi bật, và độ mới nêu số bản ghi chưa đổi quá số ngày đã chọn ở ô "Không cập nhật quá (ngày)" (30, 90, 180 hoặc 365; mặc định 90). Với mô hình có `required_when`, bỏ một dòng khỏi điều kiện bằng SQL (`update <bảng> set <trường> = null`) rồi tải lại thì "thiếu theo điều kiện" tăng 1. Đặt `updated_at` của một bản ghi lùi 120 ngày thì số bản ghi chưa đổi tăng 1 với `staleDays=90` và về lại khi `staleDays=200`. Gọi `GET /api/v1/data/{model}/{entity}/quality` bằng ADMIN thì `sampleSize` bằng số dòng của bảng, bằng vai không phải ADMIN và không chạm thực thể thì 403, bằng vai chỉ thấy dòng của mình thì `sampleSize` bằng số dòng trong danh sách của họ, và `staleDays=0` thì 400.
+
+Hướng dẫn và mẫu mô hình, kiểm bằng đúng các lệnh và thao tác trong tài liệu:
+
+1. `deploy/REPORTING.md`, trên stack đã áp dụng `onestop` và `equipment`:
+   - Kết nối bằng `report_ro`; câu liệt kê quyền chỉ ra các bảng của `m_onestop` và `m_equipment`.
+   - Truy vấn nối hai mô hình trả một dòng cho mỗi người.
+   - `UPDATE` bị từ chối với `permission denied for table request`, và đọc `engine.outbox` bị từ chối.
+   - Đổi mật khẩu bằng `ALTER ROLE` làm mật khẩu cũ bị từ chối; áp dụng lại mô hình không đặt lại mật khẩu.
+2. `docs/EXTENSIONS.md`:
+   - Đăng ký một ứng dụng bằng `dxos client add`, lấy token từ tệp secret và tải OpenAPI của mô hình đúng như lệnh trong tài liệu.
+   - Mô hình khác và API quản trị trả 403.
+   - Hai lần tạo cùng `Idempotency-Key` và cùng nội dung trả cùng `id`, khác nội dung trả 409.
+   - Đặt upstream và route mẫu trong `deploy/apisix/local.yaml`, chạy `docker compose run --rm --no-deps apisix-config --check`: mẫu đạt; thiếu token check, trùng id hoặc đường dẫn lõi, plugin/schema sai và tham chiếu thiếu phải bị từ chối.
+   - Nạp cấu hình bằng cùng lệnh bỏ `--check`; sửa hoặc bỏ local rồi nạp lại, gateway đang chạy nhận cấu hình mới; cấu hình lỗi giữ nguyên file đầu ra.
+   - Nâng bản cài từ archive với file local có sẵn: nội dung file giữ nguyên, không có trong `.dxos-files`, route riêng vẫn được ghép với cấu hình lõi mới.
+   - Sau khi nạp lại cấu hình, không token và token sai trả 401, token đúng tới được dịch vụ với nguyên đường dẫn.
+3. Mẫu Đặt lịch khám và Đổi trả hàng, cấp vai theo mô hình cho tài khoản thử và chỉ dùng dữ liệu giả:
+   - Ở Thư viện mẫu bấm Dùng mẫu này rồi áp dụng từng mẫu.
+   - `clinic`: người đặt chỉ thấy lịch của mình; lịch trùng giờ trong cùng phòng bị từ chối lúc đặt, phòng khác thì nhận; người tiếp nhận đi qua xác nhận, tiếp nhận khám và hoàn tất.
+   - `retail`: số lượng dưới 1 và thiếu lý do bị từ chối; nhân viên trả phiếu về kèm ghi chú, khách nộp lại rồi nhân viên duyệt; khách không tự duyệt và không đọc được phiếu của người khác.
+   - `python3 deploy/dev/check_conformance.py clinic retail` đạt.
 
 Lệnh `dxos` và các tính năng chạy ngoài stack kiểm:
 
@@ -167,8 +194,9 @@ Lệnh `dxos` và các tính năng chạy ngoài stack kiểm:
 4. Áp dụng một mô hình đổi bảng trong lúc có yêu cầu ghi hồ sơ của mô hình đó: không có 500, không hồ sơ nào ghi sai cấu trúc.
 5. Thống kê với vai `unit` và `own`, có và không có bộ lọc: `total` và tổng `byStatus` bằng số dòng của danh sách cùng bộ lọc.
 6. `dxos demo` trên stack có `dxos-cli`: tạo bốn tài khoản `judge_*` và 40 hồ sơ; `judge_student` thấy hồ sơ của mình, mỗi cán bộ chỉ thấy đơn vị mình, `judge_supervisor` thấy mọi hồ sơ và không có nút Tạo mới; chạy lại không nộp thêm hồ sơ và in mật khẩu mới; `dxos demo remove` gỡ bốn tài khoản.
-7. `dxos client add`, `list`, `rotate`, `remove` trên stack có `dxos-cli`: secret chỉ in ở `add` và `rotate`, `list` không có secret, `rotate` làm secret cũ bị từ chối, `remove` làm client không lấy được token.
-8. `dxos archive schedule install` rồi `systemctl --user start dxos-archive.service`: `deploy/archive.log` ghi lượt chạy, `dxos archive list` thấy lần chạy mới khi có hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS`, chạy lần nữa không ghi lại các hồ sơ đó; `dxos archive check --store` khớp manifest; khóa S3 sai thì `list` và `auto` thoát mã 1 và không in khóa; `schedule uninstall` gỡ hai tệp đơn vị.
+7. `dxos client add`, `list`, `role`, `rotate`, `remove` trên stack có `dxos-cli`: secret chỉ in ở `add` và `rotate`, `list` không có secret, `role` đổi vai mà secret cũ vẫn lấy được token và token mới mang vai mới, `rotate` làm secret cũ bị từ chối, `remove` làm client không lấy được token.
+8. `dxos client browser add` tạo public client chỉ dùng Authorization Code với PKCE S256, có mapper audience và nhóm, lưu origin chính xác vào `CORS_ALLOWED_ORIGINS`; preflight từ origin đó được nhận, đăng nhập đổi code PKCE lấy token rồi gọi được API, HTTP ngoài loopback và wildcard bị từ chối trước khi tạo client; `list` không in secret và `remove` xóa client.
+9. `dxos archive schedule install` rồi `systemctl --user start dxos-archive.service`: `deploy/archive.log` ghi lượt chạy, `dxos archive list` thấy lần chạy mới khi có hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS`, chạy lần nữa không ghi lại các hồ sơ đó; `dxos archive check --store` khớp manifest; khóa S3 sai thì `list` và `auto` thoát mã 1 và không in khóa; `schedule uninstall` gỡ hai tệp đơn vị.
 
 ## 7. Hồi quy
 

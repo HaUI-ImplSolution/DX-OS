@@ -2,6 +2,7 @@
 
 Tài liệu cho người nối hệ thống ngoài với DX-OS: webhook sự kiện, API kéo sự kiện, lịch sử chống sửa và hồ dữ liệu.
 Cài đặt và các lệnh `dxos` ở [`OPERATIONS.md`](./OPERATIONS.md); log và audit ở [`MONITORING.md`](./MONITORING.md).
+Kết nối công cụ báo cáo trực tiếp tới dữ liệu nghiệp vụ bằng vai chỉ đọc ở [`REPORTING.md`](./REPORTING.md).
 
 ## Webhook sự kiện
 
@@ -55,12 +56,14 @@ Thay đổi của quản trị lấy lại bằng `GET /api/v1/events/admin?afte
 
 Hồ sơ có hạn xử lý dài hơn `DXOS_DUE_SOON_BEFORE` (mặc định `24h`, `0` để tắt) nhận một dòng `due_soon` khi còn chừng đó thời gian trước hạn, đúng một lần cho mỗi hạn.
 Hạn không dài hơn khoảng này thì không có dòng `due_soon`.
+Quy trình khai `escalate` thì hồ sơ quá hạn nhận thêm các dòng `escalated`, mỗi dòng cho một mức đến hạn hoặc một lần nhắc lại, kèm `level` (mức, từ 1) và `round` (lần nhắc, từ 0) trong thông điệp.
+Dòng `escalated` không đổi trạng thái hồ sơ, và các trường còn lại của thông điệp có dạng như mọi dòng lịch sử khác.
 
 ### Câu cho Mattermost và Slack
 
 Đích có `format: chat` nhận `{"text": "<một câu>"}` thay cho thông điệp nguyên văn; Mattermost và Slack đều nhận dạng này ở địa chỉ webhook đến của họ.
 Câu có tên mô hình, thực thể, số hồ sơ và trạng thái, không có nội dung hồ sơ.
-Hồ sơ của thực thể có quy trình vừa được tạo hoặc nộp lại đọc là "Việc mới", dòng `due_soon` là "Sắp đến hạn xử lý", dòng `overdue` là "Quá hạn xử lý", dòng giao việc là "Được giao"; các dòng khác ghi hành động và trạng thái trước, sau.
+Hồ sơ của thực thể có quy trình vừa được tạo hoặc nộp lại đọc là "Việc mới", dòng `due_soon` là "Sắp đến hạn xử lý", dòng `overdue` là "Quá hạn xử lý", dòng `escalated` là "Leo thang mức" kèm các vai nhận, dòng giao việc là "Được giao"; các dòng khác ghi hành động và trạng thái trước, sau.
 
 ### Việc áp dụng mô hình và thay đổi tài khoản
 

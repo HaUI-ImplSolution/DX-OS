@@ -54,6 +54,10 @@ jobs:
       - name: Every source file has its license header and every dependency in the SBOMs has an allowed license
         run: python3 .github/scripts/check_licenses.py
 
+      # reuse is a tool of this job only: Apache-2.0 and GPL-3.0-or-later code, CC0-1.0 and CC-BY-SA-4.0 documentation.
+      - name: Every file has its copyright and license under the REUSE rules
+        run: pipx run --spec reuse==6.3.0 reuse lint
+
   sbom:
     name: Check SBOMs against lockfiles
     runs-on: ubuntu-24.04

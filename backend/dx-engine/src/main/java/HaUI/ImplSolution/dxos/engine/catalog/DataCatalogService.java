@@ -20,12 +20,25 @@ import org.springframework.stereotype.Service;
 @Service
 public class DataCatalogService {
 
-  public record Field(String name, String label, String type, boolean required, boolean unique,
-      boolean multiple, String reference) {}
+  public record Field(
+      String name,
+      String label,
+      String type,
+      boolean required,
+      boolean unique,
+      boolean multiple,
+      String reference) {}
 
   // rows is -1 when the table cannot be read, for example while the model is being applied.
-  public record EntityInfo(String name, String label, long rows, boolean hasProcess, String family,
-      List<String> handlers, Map<String, String> access, List<Field> fields) {}
+  public record EntityInfo(
+      String name,
+      String label,
+      long rows,
+      boolean hasProcess,
+      String family,
+      List<String> handlers,
+      Map<String, String> access,
+      List<Field> fields) {}
 
   // via is the field that holds the reference, or the owner_via of the entity.
   public record Link(String from, String via, String to, String kind) {}
@@ -33,8 +46,12 @@ public class DataCatalogService {
   // kind is role, app, webhook, completion, feed or archive.
   public record Point(String kind, String name, String detail) {}
 
-  public record Catalog(String model, List<Point> origins, List<Point> destinations,
-      List<EntityInfo> entities, List<Link> links) {}
+  public record Catalog(
+      String model,
+      List<Point> origins,
+      List<Point> destinations,
+      List<EntityInfo> entities,
+      List<Link> links) {}
 
   private final JdbcTemplate jdbc;
   private final AppClientService apps;
@@ -49,12 +66,15 @@ public class DataCatalogService {
     List<Link> links = new ArrayList<>();
     for (Entity entity : model.entities().values()) {
       entities.add(describe(model, entity));
-      entity.fields().values().stream().filter(field -> field.type() == FieldType.REFERENCE)
+      entity.fields().values().stream()
+          .filter(field -> field.type() == FieldType.REFERENCE)
           .forEach(
               field -> links.add(new Link(entity.name(), field.name(), field.to(), "reference")));
       if (entity.ownerVia() != null) {
-        entity.fields().values().stream().filter(field -> entity.ownerVia().equals(field.name()))
-            .findFirst().ifPresent(
+        entity.fields().values().stream()
+            .filter(field -> entity.ownerVia().equals(field.name()))
+            .findFirst()
+            .ifPresent(
                 field -> links.add(new Link(entity.name(), field.name(), field.to(), "owner")));
       }
     }
@@ -63,16 +83,32 @@ public class DataCatalogService {
 
   private EntityInfo describe(Model model, Entity entity) {
     Map<String, String> access = new LinkedHashMap<>();
-    entity.access()
+    entity
+        .access()
         .forEach((role, scope) -> access.put(role, scope.name().toLowerCase(Locale.ROOT)));
-    List<Field> fields = entity
-        .fields().values().stream().map(field -> new Field(field.name(), field.label(),
-            field.type().key(), field.required(), field.unique(), field.multiple(), field.to()))
-        .toList();
+    List<Field> fields =
+        entity.fields().values().stream()
+            .map(
+                field ->
+                    new Field(
+                        field.name(),
+                        field.label(),
+                        field.type().key(),
+                        field.required(),
+                        field.unique(),
+                        field.multiple(),
+                        field.to()))
+            .toList();
     var process = entity.process();
-    return new EntityInfo(entity.name(), entity.label(), rows(model, entity), process != null,
-        process == null ? null : process.family(), process == null ? List.of() : process.handlers(),
-        access, fields);
+    return new EntityInfo(
+        entity.name(),
+        entity.label(),
+        rows(model, entity),
+        process != null,
+        process == null ? null : process.family(),
+        process == null ? List.of() : process.handlers(),
+        access,
+        fields);
   }
 
   private long rows(Model model, Entity entity) {
@@ -89,7 +125,8 @@ public class DataCatalogService {
   private List<Point> origins(Model model) {
     List<Point> origins = new ArrayList<>();
     model.roles().forEach(role -> origins.add(new Point("role", role.name(), role.description())));
-    apps.list().stream().filter(app -> model.name().equals(app.model()))
+    apps.list().stream()
+        .filter(app -> model.name().equals(app.model()))
         .forEach(app -> origins.add(new Point("app", app.clientId(), app.role())));
     return origins;
   }
@@ -104,8 +141,18 @@ public class DataCatalogService {
       if (entity.process() == null || entity.process().after() == null) {
         continue;
       }
-      entity.process().after().forEach((state, completions) -> completions.forEach(completion -> out
-          .add(new Point("completion", completion.operation(), entity.name() + "." + state))));
+      entity
+          .process()
+          .after()
+          .forEach(
+              (state, completions) ->
+                  completions.forEach(
+                      completion ->
+                          out.add(
+                              new Point(
+                                  "completion",
+                                  completion.operation(),
+                                  entity.name() + "." + state))));
     }
     out.add(new Point("feed", "events", null));
     out.add(new Point("archive", "dxos archive", null));

@@ -49,17 +49,22 @@ public class MonitorQueryService {
 
   public Summary summary(Window window) {
     Timestamp from = Timestamp.from(window.start());
-    long denied = count(
-        "SELECT count(*) FROM public.audit_log " + "WHERE outcome = 'DENIED' AND occurred_at >= ?",
-        from);
-    long backendErrors = count("SELECT count(*) FROM public.audit_log "
-        + "WHERE action = 'SERVER_ERROR' AND occurred_at >= ?", from);
+    long denied =
+        count(
+            "SELECT count(*) FROM public.audit_log "
+                + "WHERE outcome = 'DENIED' AND occurred_at >= ?",
+            from);
+    long backendErrors =
+        count(
+            "SELECT count(*) FROM public.audit_log "
+                + "WHERE action = 'SERVER_ERROR' AND occurred_at >= ?",
+            from);
     long serverErrors = gatewayCount("kind IN ('SERVER_ERROR', 'UPSTREAM_DOWN')", from);
     long rateLimited = gatewayCount("kind = 'RATE_LIMITED'", from);
     Long failedLogins = authEvents.countFailed(from.toInstant()).orElse(null);
     long down = health().services().stream().filter(s -> DOWN.equals(s.state())).count();
-    return new Summary(window.code(), denied, serverErrors, backendErrors, rateLimited,
-        failedLogins, down);
+    return new Summary(
+        window.code(), denied, serverErrors, backendErrors, rateLimited, failedLogins, down);
   }
 
   public Timeline timeline(Window window) {
@@ -68,7 +73,9 @@ public class MonitorQueryService {
 
   // A span the user zoomed into.
   public Timeline timeline(Instant from, Instant to) {
-    if (from == null || to == null || !to.isAfter(from.plusSeconds(60))
+    if (from == null
+        || to == null
+        || !to.isAfter(from.plusSeconds(60))
         || Duration.between(from, to).compareTo(Duration.ofDays(8)) > 0) {
       throw new IllegalArgumentException("from and to must span between 1 minute and 8 days");
     }
@@ -82,117 +89,194 @@ public class MonitorQueryService {
     Timestamp start = Timestamp.from(from);
     Timestamp end = Timestamp.from(to);
     Map<Instant, Counts> buckets = new TreeMap<>();
-    for (Instant cursor = bucketing.start(from); cursor.isBefore(to); cursor =
-        cursor.plusSeconds(bucketing.seconds())) {
+    for (Instant cursor = bucketing.start(from);
+        cursor.isBefore(to);
+        cursor = cursor.plusSeconds(bucketing.seconds())) {
       buckets.put(cursor, new Counts());
     }
-    jdbc.query("SELECT " + bucket + " AS bucket, count(*) AS total, min(occurred_at) AS first_at, "
-        + "max(occurred_at) AS last_at FROM public.audit_log WHERE outcome = 'DENIED' "
-        + "AND occurred_at >= ? AND occurred_at < ? GROUP BY bucket", rs -> {
+    jdbc.query(
+        "SELECT "
+            + bucket
+            + " AS bucket, count(*) AS total, min(occurred_at) AS first_at, "
+            + "max(occurred_at) AS last_at FROM public.audit_log WHERE outcome = 'DENIED' "
+            + "AND occurred_at >= ? AND occurred_at < ? GROUP BY bucket",
+        rs -> {
           Counts counts = buckets.get(rs.getTimestamp("bucket").toInstant());
           if (counts != null) {
             counts.denied += rs.getLong("total");
-            counts.seen(rs.getTimestamp("first_at").toInstant(),
-                rs.getTimestamp("last_at").toInstant());
-          }
-        }, start, end);
-    jdbc.query("SELECT " + bucket + " AS bucket, kind, count(*) + sum(suppressed) AS total, "
-        + "min(occurred_at) AS first_at, max(occurred_at) AS last_at FROM gateway_event "
-        + "WHERE occurred_at >= ? AND occurred_at < ? GROUP BY bucket, kind", rs -> {
-          Counts counts = buckets.get(rs.getTimestamp("bucket").toInstant());
-          if (counts != null) {
-            counts.add(rs.getString("kind"), rs.getLong("total"),
+            counts.seen(
                 rs.getTimestamp("first_at").toInstant(), rs.getTimestamp("last_at").toInstant());
           }
-        }, start, end);
+        },
+        start,
+        end);
+    jdbc.query(
+        "SELECT "
+            + bucket
+            + " AS bucket, kind, count(*) + sum(suppressed) AS total, "
+            + "min(occurred_at) AS first_at, max(occurred_at) AS last_at FROM gateway_event "
+            + "WHERE occurred_at >= ? AND occurred_at < ? GROUP BY bucket, kind",
+        rs -> {
+          Counts counts = buckets.get(rs.getTimestamp("bucket").toInstant());
+          if (counts != null) {
+            counts.add(
+                rs.getString("kind"),
+                rs.getLong("total"),
+                rs.getTimestamp("first_at").toInstant(),
+                rs.getTimestamp("last_at").toInstant());
+          }
+        },
+        start,
+        end);
     Map<Instant, AuthEventReader.BucketCount> failed =
         authEvents.failedPerBucket(from, to, bucketing.interval()).orElse(null);
     List<Bucket> result = new ArrayList<>();
-    buckets.forEach((at, counts) -> {
-      AuthEventReader.BucketCount logins = failed == null ? null : failed.get(at);
-      result.add(new Bucket(at, counts.denied, counts.rateLimited, counts.authRejected,
-          counts.notFound, counts.serverErrors, counts.slow,
-          failed == null ? null : logins == null ? 0L : logins.count(), counts.first, counts.last,
-          logins == null ? null : logins.first(), logins == null ? null : logins.last()));
-    });
+    buckets.forEach(
+        (at, counts) -> {
+          AuthEventReader.BucketCount logins = failed == null ? null : failed.get(at);
+          result.add(
+              new Bucket(
+                  at,
+                  counts.denied,
+                  counts.rateLimited,
+                  counts.authRejected,
+                  counts.notFound,
+                  counts.serverErrors,
+                  counts.slow,
+                  failed == null ? null : logins == null ? 0L : logins.count(),
+                  counts.first,
+                  counts.last,
+                  logins == null ? null : logins.first(),
+                  logins == null ? null : logins.last()));
+        });
     return new Timeline(label, from, to, bucketing.seconds(), result);
   }
 
   public Suspects suspects(Window window) {
     Timestamp from = Timestamp.from(window.start());
     Map<String, long[]> byIp = new HashMap<>();
-    jdbc.query("""
+    jdbc.query(
+        """
         SELECT ip, count(*) AS total FROM public.audit_log
         WHERE outcome = 'DENIED' AND occurred_at >= ? AND ip IS NOT NULL
         GROUP BY ip ORDER BY total DESC LIMIT 50
-        """, rs -> {
-      byIp.computeIfAbsent(rs.getString("ip"), k -> new long[5])[0] = rs.getLong("total");
-    }, from);
-    jdbc.query("""
+        """,
+        rs -> {
+          byIp.computeIfAbsent(rs.getString("ip"), k -> new long[5])[0] = rs.getLong("total");
+        },
+        from);
+    jdbc.query(
+        """
         SELECT ip, kind, count(*) + sum(suppressed) AS total FROM gateway_event
         WHERE occurred_at >= ? GROUP BY ip, kind ORDER BY total DESC LIMIT 200
-        """, rs -> {
-      int slot = switch (rs.getString("kind")) {
-        case "RATE_LIMITED" -> 1;
-        case "AUTH_REJECTED" -> 2;
-        case "NOT_FOUND" -> 3;
-        default -> -1;
-      };
-      if (slot > 0) {
-        byIp.computeIfAbsent(rs.getString("ip"), k -> new long[5])[slot] = rs.getLong("total");
-      }
-    }, from);
-    authEvents.failedPerIp(from.toInstant(), 50).ifPresent(counts -> counts
-        .forEach((ip, total) -> byIp.computeIfAbsent(ip, k -> new long[5])[4] = total));
-    List<Suspect> addresses = byIp.entrySet().stream()
-        .map(e -> new Suspect(e.getKey(), e.getValue()[0], e.getValue()[1], e.getValue()[2],
-            e.getValue()[3], e.getValue()[4]))
-        .sorted(Comparator.comparingLong(MonitorQueryService::score).reversed()
-            .thenComparing(Suspect::ip))
-        .limit(SUSPECT_LIMIT).toList();
-    List<ErrorPath> paths = jdbc.query("""
+        """,
+        rs -> {
+          int slot =
+              switch (rs.getString("kind")) {
+                case "RATE_LIMITED" -> 1;
+                case "AUTH_REJECTED" -> 2;
+                case "NOT_FOUND" -> 3;
+                default -> -1;
+              };
+          if (slot > 0) {
+            byIp.computeIfAbsent(rs.getString("ip"), k -> new long[5])[slot] = rs.getLong("total");
+          }
+        },
+        from);
+    authEvents
+        .failedPerIp(from.toInstant(), 50)
+        .ifPresent(
+            counts ->
+                counts.forEach(
+                    (ip, total) -> byIp.computeIfAbsent(ip, k -> new long[5])[4] = total));
+    List<Suspect> addresses =
+        byIp.entrySet().stream()
+            .map(
+                e ->
+                    new Suspect(
+                        e.getKey(),
+                        e.getValue()[0],
+                        e.getValue()[1],
+                        e.getValue()[2],
+                        e.getValue()[3],
+                        e.getValue()[4]))
+            .sorted(
+                Comparator.comparingLong(MonitorQueryService::score)
+                    .reversed()
+                    .thenComparing(Suspect::ip))
+            .limit(SUSPECT_LIMIT)
+            .toList();
+    List<ErrorPath> paths =
+        jdbc.query(
+            """
         SELECT path, count(*) + sum(suppressed) AS total FROM gateway_event
         WHERE kind IN ('SERVER_ERROR', 'UPSTREAM_DOWN') AND occurred_at >= ? AND path IS NOT NULL
         GROUP BY path ORDER BY total DESC, path LIMIT ?
-        """, (rs, i) -> new ErrorPath(rs.getString("path"), rs.getLong("total")), from, PATH_LIMIT);
+        """,
+            (rs, i) -> new ErrorPath(rs.getString("path"), rs.getLong("total")),
+            from,
+            PATH_LIMIT);
     return new Suspects(window.code(), addresses, paths);
   }
 
   public Health health() {
-    List<ServiceState> services = jdbc.query("""
+    List<ServiceState> services =
+        jdbc.query(
+            """
         SELECT DISTINCT ON (service) service, state, detail, occurred_at
         FROM service_health_event ORDER BY service, occurred_at DESC, id DESC
-        """, (rs, i) -> new ServiceState(rs.getString("service"), rs.getString("state"),
-        rs.getString("detail"), rs.getTimestamp("occurred_at").toInstant()));
-    List<StateChange> changes = jdbc.query(
-        """
+        """,
+            (rs, i) ->
+                new ServiceState(
+                    rs.getString("service"),
+                    rs.getString("state"),
+                    rs.getString("detail"),
+                    rs.getTimestamp("occurred_at").toInstant()));
+    List<StateChange> changes =
+        jdbc.query(
+            """
             SELECT service, state, detail, occurred_at,
               lead(occurred_at) OVER (PARTITION BY service ORDER BY occurred_at, id) AS next_at
             FROM service_health_event WHERE occurred_at >= ? ORDER BY occurred_at DESC, id DESC LIMIT 300
             """,
-        (rs, i) -> {
-          Timestamp next = rs.getTimestamp("next_at");
-          Instant at = rs.getTimestamp("occurred_at").toInstant();
-          Long downSeconds = DOWN.equals(rs.getString("state")) && next != null
-              ? next.toInstant().getEpochSecond() - at.getEpochSecond()
-              : null;
-          return new StateChange(rs.getString("service"), rs.getString("state"),
-              rs.getString("detail"), at, downSeconds);
-        }, Timestamp.from(Window.LAST_WEEK.start()));
+            (rs, i) -> {
+              Timestamp next = rs.getTimestamp("next_at");
+              Instant at = rs.getTimestamp("occurred_at").toInstant();
+              Long downSeconds =
+                  DOWN.equals(rs.getString("state")) && next != null
+                      ? next.toInstant().getEpochSecond() - at.getEpochSecond()
+                      : null;
+              return new StateChange(
+                  rs.getString("service"),
+                  rs.getString("state"),
+                  rs.getString("detail"),
+                  at,
+                  downSeconds);
+            },
+            Timestamp.from(Window.LAST_WEEK.start()));
     return new Health(
         services.stream().sorted(Comparator.comparing(ServiceState::service)).toList(), changes);
   }
 
   public List<AdminAction> adminActions(int limit) {
-    return jdbc.query("""
+    return jdbc.query(
+        """
         SELECT occurred_at, action, outcome, actor_name, actor_roles, target_type, target_id, ip,
           path, request_id
         FROM public.audit_log WHERE outcome <> 'DENIED' AND action <> 'SERVER_ERROR'
         ORDER BY id DESC LIMIT ?
-        """, (rs, i) -> new AdminAction(rs.getTimestamp("occurred_at").toInstant(),
-        rs.getString("action"), rs.getString("outcome"), rs.getString("actor_name"),
-        rs.getString("actor_roles"), target(rs.getString("target_type"), rs.getString("target_id")),
-        rs.getString("ip"), rs.getString("path"), rs.getString("request_id")),
+        """,
+        (rs, i) ->
+            new AdminAction(
+                rs.getTimestamp("occurred_at").toInstant(),
+                rs.getString("action"),
+                rs.getString("outcome"),
+                rs.getString("actor_name"),
+                rs.getString("actor_roles"),
+                target(rs.getString("target_type"), rs.getString("target_id")),
+                rs.getString("ip"),
+                rs.getString("path"),
+                rs.getString("request_id")),
         Math.min(Math.max(limit, 1), 100));
   }
 
@@ -220,7 +304,10 @@ public class MonitorQueryService {
     List<Object> all = new ArrayList<>(args);
     all.addAll(args);
     all.add(TRACE_LIMIT);
-    List<TraceEntry> entries = new ArrayList<>(jdbc.query("""
+    List<TraceEntry> entries =
+        new ArrayList<>(
+            jdbc.query(
+                """
         SELECT occurred_at, 'GATEWAY' AS source, kind AS what, status::text AS result, ip,
           method, path, request_id, host AS detail
         FROM gateway_event%1$s
@@ -229,17 +316,27 @@ public class MonitorQueryService {
           actor_name
         FROM public.audit_log%1$s
         ORDER BY occurred_at DESC LIMIT ?
-        """.formatted(where),
-        (rs, i) -> new TraceEntry(rs.getTimestamp("occurred_at").toInstant(),
-            rs.getString("source"), rs.getString("what"), rs.getString("result"),
-            rs.getString("ip"), rs.getString("method"), rs.getString("path"),
-            rs.getString("request_id"), rs.getString("detail")),
-        all.toArray()));
+        """
+                    .formatted(where),
+                (rs, i) ->
+                    new TraceEntry(
+                        rs.getTimestamp("occurred_at").toInstant(),
+                        rs.getString("source"),
+                        rs.getString("what"),
+                        rs.getString("result"),
+                        rs.getString("ip"),
+                        rs.getString("method"),
+                        rs.getString("path"),
+                        rs.getString("request_id"),
+                        rs.getString("detail")),
+                all.toArray()));
     if (request == null) {
       entries.addAll(authEvents.recent(address, TRACE_LIMIT));
     }
-    return entries.stream().sorted(Comparator.comparing(TraceEntry::at).reversed())
-        .limit(TRACE_LIMIT).toList();
+    return entries.stream()
+        .sorted(Comparator.comparing(TraceEntry::at).reversed())
+        .limit(TRACE_LIMIT)
+        .toList();
   }
 
   private static String blankToNull(String value) {
@@ -252,12 +349,18 @@ public class MonitorQueryService {
   }
 
   private long gatewayCount(String condition, Timestamp from) {
-    return count("SELECT count(*) + coalesce(sum(suppressed), 0) FROM gateway_event WHERE "
-        + condition + " AND occurred_at >= ?", from);
+    return count(
+        "SELECT count(*) + coalesce(sum(suppressed), 0) FROM gateway_event WHERE "
+            + condition
+            + " AND occurred_at >= ?",
+        from);
   }
 
   private static long score(Suspect suspect) {
-    return suspect.denied() + suspect.rateLimited() + suspect.authRejected() + suspect.notFound()
+    return suspect.denied()
+        + suspect.rateLimited()
+        + suspect.authRejected()
+        + suspect.notFound()
         + suspect.failedLogins();
   }
 

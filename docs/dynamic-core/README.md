@@ -101,7 +101,7 @@ Các hàm ý sau là suy luận từ cách đề viết, người ra đề khôn
 | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | Phân tách theo vòng đời và tốc độ của dữ liệu, đẩy dữ liệu lịch sử xuống hồ dữ liệu | `dxos archive --store` ghi hồ sơ đã đóng và lịch sử của chúng ra tệp Parquet vào một bucket riêng của SeaweedFS, kèm manifest và hash để kiểm lại; `dxos archive schedule install` đặt lịch chạy hằng ngày cho hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS`; dữ liệu trong cơ sở dữ liệu giữ nguyên; công cụ báo cáo đọc dữ liệu qua vai `report_ro` |
 | Hội tụ dữ liệu hành chính và dữ liệu vận hành, bản sao số | `examples/itot-simulator` và mẫu `plant_incident` đưa số đo của thiết bị vào thành hồ sơ sự cố đi qua cùng quy trình, quyền và lịch sử với hồ sơ hành chính; lõi không giữ trạng thái thời gian thực của thiết bị, nên bản sao số chỉ được phủ một phần |
-| Quản trị dữ liệu, phả hệ và nguồn gốc | Mô hình là danh mục dữ liệu; tab Danh mục dữ liệu đọc từ đó nơi dữ liệu đi vào, nơi đi ra, liên kết giữa các thực thể, quyền theo vai và số bản ghi; lịch sử mỗi hồ sơ nối thành chuỗi hash |
+| Quản trị dữ liệu, phả hệ và nguồn gốc | Mô hình là danh mục dữ liệu; tab Danh mục dữ liệu đọc từ đó nơi dữ liệu đi vào, nơi đi ra, liên kết giữa các thực thể, quyền theo vai, số bản ghi và số đo chất lượng của từng thực thể (độ điền, thiếu theo điều kiện, vi phạm ràng buộc, độ mới); lịch sử mỗi hồ sơ nối thành chuỗi hash |
 | Zero-Trust gắn với GitOps, kiểm dịch mã độc, tự phục hồi                                        | APISIX và API chung đều kiểm token, ClamAV quét tệp tải lên khi bật (`dxos av on`), GitOps cho nghiệp vụ    |
 
 ## Tư tưởng thiết kế
@@ -138,7 +138,7 @@ Miền là một năng lực dùng được ở nhiều ngành, không phải m�
 
 | Phần | Vai trò | Nội dung |
 |---|---|---|
-| **Quy trình chung** | Miền của lõi | Bản ghi đi qua các bước, có người tham gia, điều kiện chuyển, hạn và hành động hoàn tất |
+| **Quy trình chung** | Miền của lõi | Bản ghi đi qua các bước, có người tham gia, điều kiện chuyển, hạn, leo thang khi quá hạn và hành động hoàn tất |
 | **Vòng đời mô hình** | Điểm khác biệt của lõi | Xem trước, áp dụng, đổi phiên bản và quay lui trên hệ thống đang chạy |
 | **Mô hình nghiệp vụ** | Chạy trên lõi | Một cửa sinh viên, ticket hỗ trợ, đặt phòng, cấp phát dịch vụ IT |
 
@@ -212,10 +212,12 @@ Khi áp dụng mô hình, hệ thống còn kiểm tra không có trạng thái 
 | Tầng | Ví dụ | Ai quyết định |
 |---|---|---|
 | Bất biến | Bảy quy tắc trên | Lõi, mô hình không tắt được |
-| Tham số của quy trình | Vai xử lý, số cấp duyệt (các trạng thái và hành động khai báo), độ dài hạn, vòng trả lại, quyền tự quyết của người tạo | Người triển khai, trong tệp mô hình hoặc trên bảng điều khiển |
+| Tham số của quy trình | Vai xử lý, số cấp duyệt (các trạng thái và hành động khai báo), độ dài hạn, các mức leo thang, vòng trả lại, quyền tự quyết của người tạo | Người triển khai, trong tệp mô hình hoặc trên bảng điều khiển |
 | Ràng buộc nghiệp vụ | Giới hạn số lần đặt, điều kiện riêng của tổ chức | Người triển khai, trong mô hình |
 
-Hạn và leo thang không bắt buộc: mô hình có khai báo hạn thì quá hạn được ghi lại và nhắc.
+Hạn không bắt buộc: mô hình có khai báo hạn thì quá hạn được ghi lại và nhắc.
+Mô hình khai thêm các mức `escalate` thì hồ sơ quá hạn lâu được báo tiếp cho vai khác, mỗi mức một thời điểm và có thể nhắc lại.
+Leo thang chỉ thông báo, không đổi trạng thái hay người giữ hồ sơ, và đổi các mức này được ngay cả khi còn hồ sơ đang xử lý.
 Tham số của từng họ mẫu và cách tự khai báo quy trình ở [`docs/MODEL.md`](../MODEL.md#tự-khai-báo-hoặc-mở-rộng-quy-trình).
 
 **Quy trình nằm trong kế hoạch áp dụng:**
@@ -254,6 +256,7 @@ dxos apply model.yaml  # áp dụng
 ```
 
 Bộ cài và các lệnh vận hành của `dxos` mô tả ở [`deploy/OPERATIONS.md`](../../deploy/OPERATIONS.md#cài-đặt-và-lệnh-dxos); `dxos plan` và `dxos apply` đưa tệp mô hình vào hệ thống đang chạy với cùng kế hoạch và mức xác nhận như bảng điều khiển.
+`dxos start --core` chỉ chạy Tầng 1 làm nền tảng API cho ứng dụng bên ngoài, không có ứng dụng web, portal và giám sát; chi tiết ở [`deploy/OPERATIONS.md`](../../deploy/OPERATIONS.md#chế-độ-chỉ-lõi).
 `dxos demo` tạo bốn tài khoản thử theo vai của mô hình Một cửa sinh viên và nộp khoảng 40 hồ sơ mẫu qua API chung, để người xem đăng nhập là thấy hệ thống có việc đang chạy; kịch bản trình diễn 15 phút ở [`docs/DEMO.md`](../DEMO.md).
 
 
@@ -286,7 +289,7 @@ Bảng điều khiển thuộc tầng 2, nằm ở tuyến `/console` của ứn
   Tab chỉ mở API mỏng trên Keycloak: chính sách mật khẩu, MFA, phiên và đăng nhập bằng nhà cung cấp ngoài để Keycloak lo.
   Người dùng cuối tự đổi mật khẩu, bật OTP và xem phiên ở Account Console của Keycloak, mở từ mục "Tài khoản của tôi" trong menu người dùng.
 
-- **Ứng dụng ngoài:** đăng ký một ứng dụng với đúng một vai của một mô hình, hiện mã bí mật một lần, đổi mã và xóa; ứng dụng không gọi được bảng điều khiển hay quản trị người dùng.
+- **Ứng dụng ngoài:** đăng ký một ứng dụng với đúng một vai của một mô hình, hiện mã bí mật một lần, đổi mã, đổi vai và xóa; ứng dụng không gọi được bảng điều khiển hay quản trị người dùng.
 
 Bảng điều khiển đọc và ghi đúng tệp mô hình, và tệp luôn là nguồn sự thật.
 Giao diện cho người dùng cuối do bộ dựng sinh từ metadata, đủ dùng, nhất quán và được chăm chút về hình thức.
@@ -317,7 +320,7 @@ Thêm năng lực mới nghĩa là thêm provider, không phải sửa lõi.
 
 | Năng lực                        | Thành phần                              | Đội tự viết                                                 |
 | ----------------------------------- | ------------------------------------------- | ----------------------------------------------------------------- |
-| Định danh, SSO                  | Keycloak                                  | Sinh client và vai từ mô hình, quản trị người dùng, đăng ký ứng dụng ngoài |
+| Định danh, SSO                  | Keycloak                                  | Sinh client và vai từ mô hình, quản trị người dùng, đăng ký ứng dụng ngoài và client trình duyệt |
 | Cổng API                         | APISIX                                    | Sinh route khi cần                                             |
 | Dữ liệu có cấu trúc          | PostgreSQL, pgschema                     | Sinh schema và ràng buộc; mỗi mô hình một schema         |
 | API dữ liệu, quyền từng dòng | API chung trong dịch vụ lõi            | Đọc mô hình, kiểm token Keycloak, dựng truy vấn an toàn |
@@ -325,8 +328,8 @@ Thêm năng lực mới nghĩa là thêm provider, không phải sửa lõi.
 | Luồng công việc                | Flowable chạy nhúng                     | Các họ mẫu quy trình, API đổi trạng thái                          |
 | Vòng đời mô hình             | Git, phần điều khiển                  | **Phần tự viết chính**                                      |
 | Trục sự kiện                   | Bảng outbox trong PostgreSQL             | Webhook theo mô hình, API kéo sự kiện theo `eventId`, thông điệp của việc áp dụng mô hình và của tài khoản (chỉ qua webhook); kênh sự kiện `GET /api/v1/inbox/stream` báo cho giao diện khi hồ sơ đổi |
-| Thông báo                       | Mattermost hoặc Slack do người triển khai cấp | Đích webhook dạng `chat`: việc mới, sắp đến hạn, quá hạn |
-| Báo cáo | Công cụ báo cáo do người triển khai cấp | Vai `report_ro` chỉ đọc các bảng nghiệp vụ |
+| Thông báo                       | Mattermost hoặc Slack do người triển khai cấp | Đích webhook dạng `chat`: việc mới, sắp đến hạn, quá hạn, leo thang |
+| Báo cáo | Công cụ báo cáo do người triển khai cấp | Vai `report_ro` chỉ đọc các bảng nghiệp vụ, cách kết nối ở [`deploy/REPORTING.md`](../../deploy/REPORTING.md) |
 | AI | Mô hình ngôn ngữ và embedding mở hoàn toàn | Khai báo nguồn tri thức và tác tử |
 | Vận hành                        | `dx-monitor`, `deploy/backup.sh`          | Giữ nguyên                                                    |
 
@@ -460,13 +463,13 @@ Những chỗ khó:
 
 Flowable thay phần workflow viết tay, người dùng không đụng tới BPMN.
 Đội viết sẵn và kiểm thử các họ mẫu quy trình, người dùng chọn họ mẫu rồi điền tham số như ai duyệt, hạn bao lâu, báo cho ai, hoặc tự khai báo trạng thái và hành động; xem [Quy trình chung](#quy-trình-chung).
-Hạn xử lý lưu trên bản ghi và quá hạn được tính khi đọc, một tác vụ định kỳ ghi dòng quá hạn vào lịch sử; Flowable lo phiên bản quy trình.
+Hạn xử lý lưu trên bản ghi và quá hạn được tính khi đọc, một tác vụ định kỳ ghi dòng quá hạn và các dòng leo thang vào lịch sử; Flowable lo phiên bản quy trình.
 
 Trạng thái hồ sơ không thể bị đi vòng:
 
 - Flowable là nơi duy nhất được đổi trạng thái hồ sơ.
 - API chung từ chối mọi yêu cầu ghi cột trạng thái.
-- Dịch vụ lõi là kết nối ghi duy nhất vào dữ liệu nghiệp vụ; công cụ báo cáo dùng vai `report_ro` chỉ có quyền đọc.
+- Dịch vụ lõi là kết nối ghi duy nhất vào dữ liệu nghiệp vụ; công cụ báo cáo dùng vai `report_ro` chỉ có quyền đọc, cách kết nối ở [`deploy/REPORTING.md`](../../deploy/REPORTING.md).
 - Flowable chạy nhúng trong dịch vụ lõi dùng chung cơ sở dữ liệu, để đổi trạng thái và ghi hồ sơ nằm trong một giao dịch.
 
 Quy tắc khai báo được API chung kiểm để báo lỗi rõ và biên dịch thành ràng buộc trong cơ sở dữ liệu.
@@ -474,7 +477,7 @@ Mọi thay đổi hồ sơ và bước quy trình phát ra sự kiện vào tr�
 Tệp mô hình chọn đích webhook bằng `webhook: <tên đích>`; địa chỉ và bí mật của đích nằm ngoài tệp mô hình, trong một tệp cấu hình của bản cài.
 Các dòng của một hồ sơ tới đích theo đúng thứ tự, và bên nhận lỡ tin kéo lại theo `eventId`.
 
-Lõi có ba họ mẫu là chuỗi duyệt, công việc cần xử lý và chiếm dụng tài nguyên theo thời gian, cùng bộ quy tắc bất biến; có hộp việc, giao việc và quy tắc chặn; trục sự kiện có webhook theo mô hình, thông báo chat và nhắc hạn.
+Lõi có ba họ mẫu là chuỗi duyệt, công việc cần xử lý và chiếm dụng tài nguyên theo thời gian, cùng bộ quy tắc bất biến; có hộp việc, giao việc và quy tắc chặn; trục sự kiện có webhook theo mô hình, thông báo chat, nhắc hạn và leo thang khi quá hạn.
 Tham số của từng họ mẫu ở [`docs/MODEL.md`](../MODEL.md#tự-khai-báo-hoặc-mở-rộng-quy-trình).
 
 ### 3. Tác tử AI có người duyệt
@@ -488,18 +491,19 @@ Tìm kiếm tri thức có nguồn, hỏi đáp sinh câu trả lời và tác t
 
 ## Điểm mở rộng
 
-Người dùng có thể viết thêm API và giao diện khi cần, không bắt buộc.
-Mã mở rộng luôn nằm ngoài lõi, chỉ gọi lõi qua API và sự kiện, nên nâng cấp lõi không làm hỏng nó và lỗi của nó không kéo sập lõi.
+Hướng dẫn từ đăng ký quyền, chạy local, kiểm thử, đóng gói đến nâng cấp nằm ở [`docs/EXTENSIONS.md`](../EXTENSIONS.md).
+Mã dịch vụ và bên nhận webhook nằm ngoài lõi; trang hay thành phần form riêng hiện vẫn phải sửa source frontend và dựng lại image.
 
 
-| Nhu cầu                              | Cách làm                                                                                                |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| API riêng                            | Dịch vụ viết bằng ngôn ngữ tùy ý, gọi API của lõi bằng token Keycloak lấy qua `dxos client add` (đúng một vai của một mô hình) và đọc tài liệu OpenAPI riêng của mô hình; route thêm vào cấu hình APISIX của bản cài |
-| Phản ứng theo nghiệp vụ           | Webhook nhận sự kiện từ trục sự kiện                                                               |
-| Giao diện riêng hoàn toàn         | Ứng dụng tự viết, dùng API và đăng nhập Keycloak của lõi                                       |
-| Trang riêng trong ứng dụng Tầng 2 | Thêm trang vào ứng dụng web bằng mã; menu, nhóm menu và biểu tượng của thực thể khai báo trong khối `ui:`                                                                |
-| Họ mẫu quy trình riêng                | Khai báo `states` và `actions` trong tệp mô hình; vẫn chịu quy tắc bất biến và bị kiểm khi áp dụng |
-| Thành phần riêng trong form        | Đăng ký thành phần React vào bộ dựng giao diện                                                   |
+| Nhu cầu | Cách làm hiện tại |
+|---|---|
+| API riêng | Dịch vụ ngoài gọi API bằng client đúng một vai của một mô hình, đổi vai bằng `dxos client role`; OpenAPI sinh từ mô hình đang chạy |
+| Phản ứng theo nghiệp vụ | Webhook nhận sự kiện sau khi thay đổi đã ghi; không chặn đồng bộ một hành động |
+| Giao diện riêng hoàn toàn | Đăng ký public client OIDC dùng PKCE bằng `dxos client browser add`; origin chính xác vào `CORS_ALLOWED_ORIGINS`, không nhận wildcard |
+| Trang riêng trong ứng dụng Tầng 2 | Sửa và dựng lại frontend; chưa có registry plugin |
+| Họ mẫu quy trình riêng | Khai báo `states` và `actions` trong tệp mô hình; vẫn chịu quy tắc bất biến và bị kiểm khi áp dụng |
+| Thành phần riêng trong form | Chưa có điểm đăng ký; ưu tiên khối `ui:` của tệp mô hình |
+| Route riêng trong APISIX | Khai `deploy/apisix/local.yaml` của bản cài, kiểm rồi ghép với route lõi; giữ file riêng qua `dxos update` |
 
 Đổi tên trường có thể làm hỏng mã mở rộng đang dùng trường đó, nên kế hoạch nêu rõ các tên bị đổi.
 
@@ -556,7 +560,7 @@ Phần này là giả thuyết về khách hàng.
 - **Chưa phục vụ:** tổ chức không có ai vận hành máy chủ, lập trình viên muốn toàn quyền kiểm soát mã, doanh nghiệp cần ERP đầy đủ.
 - **Đối thủ thật:** bảng tính và thuê làm riêng; với người muốn trọn gói tự cài thì là Frappe.
 - **Lý do chọn:** thay đổi an toàn trên toàn hệ thống, dữ liệu ở máy chủ của mình, không tính phí theo đầu người.
-- **Pháp lý:** [Luật Bảo vệ dữ liệu cá nhân](https://digitalpolicyalert.org/event/36569-implementing-regulations-of-law-on-personal-data-protection-including-cross-border-data-transfer-regulation-entered-into-force) có hiệu lực từ 2026-01-01 và [theo nguồn thứ cấp](https://www.uniconsent.com/vietnam-pdpl) yêu cầu đánh giá khi chuyển dữ liệu ra nước ngoài.
+- **Pháp lý:** [Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15](https://congbao.chinhphu.vn/van-ban/luat-so-91-2025-qh15-45578.htm) và [Nghị định 356/2025/NĐ-CP](https://congbao.chinhphu.vn/van-ban/nghi-dinh-so-356-2025-nd-cp-468371.htm) có hiệu lực từ 2026-01-01; chuyển dữ liệu ra nước ngoài phải lập hồ sơ đánh giá tác động và gửi cơ quan chuyên trách trong 60 ngày (Điều 20 luật), chi tiết ở [`deploy/OPERATIONS.md`](../../deploy/OPERATIONS.md#dữ-liệu-cá-nhân-ra-nước-ngoài).
 - **Đo công sức:** so số dòng và thời gian dựng ứng dụng mới với phần Lab viết tay, gồm 5.792 dòng Java, 4.524 dòng giao diện và 8 migration.
 
 Mục tiêu:

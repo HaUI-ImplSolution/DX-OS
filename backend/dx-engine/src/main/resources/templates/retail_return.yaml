@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: Apache-2.0
+format: 0
+name: retail
+roles:
+  - name: CUSTOMER
+    description: Khách hàng gửi và theo dõi phiếu đổi trả của mình
+  - name: STORE_STAFF
+    description: Nhân viên cửa hàng, duyệt hoặc yêu cầu bổ sung phiếu đổi trả
+    staff: true
+entities:
+  product:
+    label: Sản phẩm
+    fields:
+      code: {type: text, label: Mã sản phẩm, required: true, unique: true}
+      name: {type: text, label: Tên sản phẩm, required: true}
+    access: {CUSTOMER: read, STORE_STAFF: all}
+  return_request:
+    label: Phiếu đổi trả
+    fields:
+      product: {type: reference, label: Sản phẩm, to: product, required: true}
+      receipt: {type: text, label: Mã hóa đơn, required: true}
+      kind: {type: choice, label: Yêu cầu, required: true, options: [Đổi hàng, Trả hàng]}
+      quantity: {type: number, label: Số lượng, required: true, min: 1}
+      reason: {type: text, label: Lý do, required: true}
+      evidence: {type: file, label: Minh chứng}
+    access: {CUSTOMER: own, STORE_STAFF: all}
+    process: {family: approval, handler: STORE_STAFF}

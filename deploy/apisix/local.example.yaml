@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copy to local.yaml in the installation; the service must share the gateway network.
+upstreams:
+  - id: extension-worker
+    type: roundrobin
+    nodes:
+      "extension-worker:8080": 1
+routes:
+  - id: extension-worker-api
+    uri: /extensions/worker/*
+    upstream_id: extension-worker
+    plugin_config_id: bearer-token

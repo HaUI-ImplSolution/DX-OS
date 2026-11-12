@@ -21,7 +21,8 @@ public class ClamAvScanner {
   private final int port;
   private final int timeoutMs;
 
-  public ClamAvScanner(@Value("${storage.scan.host:}") String host,
+  public ClamAvScanner(
+      @Value("${storage.scan.host:}") String host,
       @Value("${storage.scan.port:3310}") int port,
       @Value("${storage.scan.timeout-ms:30000}") int timeoutMs) {
     this.host = host == null ? "" : host.strip();
@@ -48,8 +49,10 @@ public class ClamAvScanner {
       }
       out.writeInt(0);
       out.flush();
-      String reply = new String(socket.getInputStream().readAllBytes(), StandardCharsets.US_ASCII)
-          .replace("\0", "").strip();
+      String reply =
+          new String(socket.getInputStream().readAllBytes(), StandardCharsets.US_ASCII)
+              .replace("\0", "")
+              .strip();
       if (reply.endsWith(" FOUND")) {
         return Optional.of(reply.substring(reply.indexOf(':') + 1, reply.length() - 6).strip());
       }

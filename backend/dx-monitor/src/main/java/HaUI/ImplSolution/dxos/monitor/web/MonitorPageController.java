@@ -18,11 +18,16 @@ public class MonitorPageController {
 
   private final String signOutUrl;
 
-  public MonitorPageController(MonitorProperties properties,
+  public MonitorPageController(
+      MonitorProperties properties,
       @Value("${spring.security.oauth2.client.registration.keycloak.client-id}") String clientId,
       @Value("${monitor.keycloak-logout-url}") String logoutUrl) {
-    this.signOutUrl = logoutUrl + "?client_id=" + encode(clientId) + "&post_logout_redirect_uri="
-        + encode(properties.publicUrl() + "/monitor/");
+    this.signOutUrl =
+        logoutUrl
+            + "?client_id="
+            + encode(clientId)
+            + "&post_logout_redirect_uri="
+            + encode(properties.publicUrl() + "/monitor/");
   }
 
   @GetMapping("/")

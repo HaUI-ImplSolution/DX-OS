@@ -30,10 +30,12 @@ public class AppClientService {
 
   public record NewApp(String name, String model, String role) {}
 
-  public record CreatedApp(String name, String clientId, String model, String role,
-      String secret) {}
+  public record CreatedApp(
+      String name, String clientId, String model, String role, String secret) {}
 
   public record RenewedApp(String name, String clientId, String secret) {}
+
+  public record ChangedRole(String role) {}
 
   private static final Pattern NAME = Pattern.compile("[a-z][a-z0-9_-]{0,39}");
   private static final Logger log = LoggerFactory.getLogger(AppClientService.class);
@@ -44,8 +46,12 @@ public class AppClientService {
   private final AuditRecorder audit;
   private final AdminEventPublisher events;
 
-  public AppClientService(KeycloakAdminClient keycloak, ModelRegistry registry, UserContext user,
-      AuditRecorder audit, AdminEventPublisher events) {
+  public AppClientService(
+      KeycloakAdminClient keycloak,
+      ModelRegistry registry,
+      UserContext user,
+      AuditRecorder audit,
+      AdminEventPublisher events) {
     this.keycloak = keycloak;
     this.registry = registry;
     this.user = user;
@@ -71,15 +77,20 @@ public class AppClientService {
     if (!errors.isEmpty()) {
       throw new ModelValidationException(errors);
     }
-    Model running = registry.find(request.model()).orElseThrow(
-        () -> new ResourceNotFoundException("Model " + request.model() + " is not applied"));
+    Model running =
+        registry
+            .find(request.model())
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException("Model " + request.model() + " is not applied"));
     if (running.roles().stream().noneMatch(declared -> declared.name().equals(request.role()))) {
       throw new ResourceNotFoundException(
           "Model " + request.model() + " has no role " + request.role());
     }
     String clientId = KeycloakAdminClient.APP_CLIENT_PREFIX + request.name();
-    String secret = keycloak.createAppClient(clientId, request.model(),
-        ModelClient.of(request.model()), request.role());
+    String secret =
+        keycloak.createAppClient(
+            clientId, request.model(), ModelClient.of(request.model()), request.role());
     audited("CLIENT_CREATED", clientId, Map.of("model", request.model(), "role", request.role()));
     return new CreatedApp(request.name(), clientId, request.model(), request.role(), secret);
   }
@@ -91,10 +102,41 @@ public class AppClientService {
     return new RenewedApp(name, clientId, secret);
   }
 
+  public AppView changeRole(String name, ChangedRole request) {
+    if (request == null || request.role() == null || request.role().isBlank()) {
+      throw new ModelValidationException(Map.of("role", "is required"));
+    }
+    String clientId = clientId(name);
+    AppClient app =
+        keycloak
+            .findAppClient(clientId)
+            .orElseThrow(() -> new ResourceNotFoundException("Application " + name + " not found"));
+    Model running =
+        registry
+            .find(app.model())
+            .orElseThrow(
+                () -> new ResourceNotFoundException("Model " + app.model() + " is not applied"));
+    if (running.roles().stream().noneMatch(declared -> declared.name().equals(request.role()))) {
+      throw new ResourceNotFoundException(
+          "Model " + app.model() + " has no role " + request.role());
+    }
+    AppClient changed =
+        keycloak.changeAppRole(clientId, ModelClient.of(app.model()), request.role());
+    if (!app.role().equals(changed.role())) {
+      audited(
+          "CLIENT_ROLE_CHANGED",
+          clientId,
+          Map.of("model", app.model(), "from", app.role(), "to", changed.role()));
+    }
+    return view(changed);
+  }
+
   public void remove(String name) {
     String clientId = clientId(name);
-    AppClient app = keycloak.findAppClient(clientId)
-        .orElseThrow(() -> new ResourceNotFoundException("Application " + name + " not found"));
+    AppClient app =
+        keycloak
+            .findAppClient(clientId)
+            .orElseThrow(() -> new ResourceNotFoundException("Application " + name + " not found"));
     keycloak.deleteAppClient(clientId);
     audited("CLIENT_DELETED", clientId, Map.of("model", app.model(), "role", app.role()));
   }
@@ -107,8 +149,12 @@ public class AppClientService {
   }
 
   private static AppView view(AppClient app) {
-    return new AppView(app.clientId().substring(KeycloakAdminClient.APP_CLIENT_PREFIX.length()),
-        app.clientId(), app.model(), app.role(), app.enabled());
+    return new AppView(
+        app.clientId().substring(KeycloakAdminClient.APP_CLIENT_PREFIX.length()),
+        app.clientId(),
+        app.model(),
+        app.role(),
+        app.enabled());
   }
 
   // Writes what the administrator changed; the facts name the application, never its secret.

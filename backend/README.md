@@ -19,8 +19,8 @@ Hướng thiết kế ở [`docs/dynamic-core/README.md`](../docs/dynamic-core/R
 Cần JDK 21 (`JAVA_HOME` trỏ tới JDK 21 nếu máy mặc định là bản khác).
 
 ```bash
-./mvnw formatter:format      # sửa định dạng mã khi formatter:validate báo lỗi
-./mvnw formatter:validate    # kiểm định dạng mã
+./mvnw spotless:apply       # sửa định dạng mã khi spotless:check báo lỗi
+./mvnw spotless:check       # kiểm định dạng mã
 ./mvnw verify                # compile, test, đóng gói (test tích hợp cần Docker cho Testcontainers)
 ```
 
@@ -40,6 +40,6 @@ Chạy cả stack ở [`deploy/`](../deploy/): `docker compose up -d`.
 
 ## API
 
-Swagger UI ở `/swagger-ui.html`, JSON ở `/v3/api-docs`, sinh từ annotation springdoc trong mã.
+Đặc tả OpenAPI dạng JSON ở `/v3/api-docs`, sinh từ annotation springdoc trong mã; lõi không có giao diện Swagger.
 Mọi response bọc trong `ApiResponse`; lỗi có `errorCode` ổn định.
 Một người dùng gọi quá ngưỡng một lệnh trong một phút thì nhận `429` với `ERR_TOO_MANY_REQUESTS` và header `Retry-After`; `RATE_LIMIT_ENABLED=false` tắt giới hạn này (xem [`deploy/MONITORING.md`](../deploy/MONITORING.md)).

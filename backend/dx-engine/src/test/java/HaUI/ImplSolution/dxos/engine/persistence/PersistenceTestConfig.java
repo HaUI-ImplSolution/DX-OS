@@ -10,5 +10,4 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @TestConfiguration
 @EntityScan(basePackages = "HaUI.ImplSolution.dxos")
 @EnableJpaRepositories(basePackages = "HaUI.ImplSolution.dxos")
-class PersistenceTestConfig {
-}
+class PersistenceTestConfig {}

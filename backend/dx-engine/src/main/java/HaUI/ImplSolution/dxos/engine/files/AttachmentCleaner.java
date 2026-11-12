@@ -30,7 +30,10 @@ public class AttachmentCleaner {
   private final Outbox outbox;
   private final Duration delay;
 
-  public AttachmentCleaner(JdbcTemplate jdbc, ObjectStorage storage, Outbox outbox,
+  public AttachmentCleaner(
+      JdbcTemplate jdbc,
+      ObjectStorage storage,
+      Outbox outbox,
       @Value("${engine.files.delete-delay:24h}") Duration delay) {
     this.jdbc = jdbc;
     this.storage = storage;
@@ -40,42 +43,61 @@ public class AttachmentCleaner {
 
   // Drops every file of a record: the rows now, the objects once the delay has passed.
   public void purge(Model model, Entity entity, long id) {
-    List<String> keys = jdbc.queryForList(
-        "DELETE FROM engine.attachment WHERE model = ? AND entity = ? AND record_id = ? "
-            + "RETURNING object_key",
-        String.class, model.name(), entity.name(), id);
+    List<String> keys =
+        jdbc.queryForList(
+            "DELETE FROM engine.attachment WHERE model = ? AND entity = ? AND record_id = ? "
+                + "RETURNING object_key",
+            String.class,
+            model.name(),
+            entity.name(),
+            id);
     keys.forEach(key -> deleteLater(model.name(), entity.name(), id, key));
   }
 
   // Drops every file of an entity whose table is going away, in the same way.
   public int purgeEntity(String model, String entity) {
     List<Map<String, Object>> rows =
-        jdbc.queryForList("DELETE FROM engine.attachment WHERE model = ? AND entity = ? "
-            + "RETURNING object_key, record_id", model, entity);
-    rows.forEach(row -> deleteLater(model, entity, ((Number) row.get("record_id")).longValue(),
-        (String) row.get("object_key")));
+        jdbc.queryForList(
+            "DELETE FROM engine.attachment WHERE model = ? AND entity = ? "
+                + "RETURNING object_key, record_id",
+            model,
+            entity);
+    rows.forEach(
+        row ->
+            deleteLater(
+                model,
+                entity,
+                ((Number) row.get("record_id")).longValue(),
+                (String) row.get("object_key")));
     return rows.size();
   }
 
   // Deletes the object of a dropped row after the delay; nothing is deleted when the change rolls
   // back, because the message is written in its transaction.
   public void deleteLater(String model, String entity, long recordId, String key) {
-    outbox.publishLater(FileDeleteHandler.TOPIC, FileDeleteHandler.TOPIC + ":" + key, model, entity,
-        recordId, Map.of("key", key), delay);
+    outbox.publishLater(
+        FileDeleteHandler.TOPIC,
+        FileDeleteHandler.TOPIC + ":" + key,
+        model,
+        entity,
+        recordId,
+        Map.of("key", key),
+        delay);
   }
 
   public void deleteIfRolledBack(String key) {
-    TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-      @Override
-      public void afterCompletion(int status) {
-        if (status != STATUS_COMMITTED) {
-          try {
-            storage.deleteObject(key);
-          } catch (RuntimeException e) {
-            log.warn("Could not delete object {}: {}", key, e.getMessage());
+    TransactionSynchronizationManager.registerSynchronization(
+        new TransactionSynchronization() {
+          @Override
+          public void afterCompletion(int status) {
+            if (status != STATUS_COMMITTED) {
+              try {
+                storage.deleteObject(key);
+              } catch (RuntimeException e) {
+                log.warn("Could not delete object {}: {}", key, e.getMessage());
+              }
+            }
           }
-        }
-      }
-    });
+        });
   }
 }

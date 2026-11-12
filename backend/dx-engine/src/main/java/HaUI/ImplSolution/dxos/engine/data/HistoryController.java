@@ -18,7 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/history")
 @PreAuthorize("hasRole('ADMIN')")
-@Tag(name = "History",
+@Tag(
+    name = "History",
     description = "Checks that the history of records was not changed; ADMIN only")
 public class HistoryController {
 
@@ -31,12 +32,14 @@ public class HistoryController {
   }
 
   @GetMapping("/verify")
-  @Operation(summary = "Check the history chain against itself and against the anchors",
-      description = "intact is true when every line matches its hash and the line before it, and"
-          + " every anchor in the object store matches the line it names. firstBreak names the"
-          + " first line that does not match and why; mismatchedAnchors lists the anchors whose"
-          + " line is gone or holds another hash, which is what a chain rewritten as a whole"
-          + " shows.")
+  @Operation(
+      summary = "Check the history chain against itself and against the anchors",
+      description =
+          "intact is true when every line matches its hash and the line before it, and"
+              + " every anchor in the object store matches the line it names. firstBreak names the"
+              + " first line that does not match and why; mismatchedAnchors lists the anchors whose"
+              + " line is gone or holds another hash, which is what a chain rewritten as a whole"
+              + " shows.")
   public ApiResponse<Map<String, Object>> verify() {
     Map<String, Object> firstBreak = chain.firstBreak();
     List<Map<String, Object>> anchors = anchor.anchors();
@@ -62,9 +65,11 @@ public class HistoryController {
   }
 
   @PostMapping("/anchor")
-  @Operation(summary = "Copy the head of the history chain to the object store now",
-      description = "The service also does this at a set interval. Returns the anchor, or null"
-          + " when there is no history yet.")
+  @Operation(
+      summary = "Copy the head of the history chain to the object store now",
+      description =
+          "The service also does this at a set interval. Returns the anchor, or null"
+              + " when there is no history yet.")
   public ApiResponse<Map<String, Object>> anchorNow() {
     return ApiResponse.success(anchor.anchor());
   }

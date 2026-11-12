@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 name: Platform
 
-# Checks that need the stack: the Compose file and gateway, the installer and the backup, and the API and the web console
-# running together on an empty stack.
+# Checks that need the stack: the Compose file and gateway, the installer and the backup, the API and the web console
+# running together on an empty stack, the API alone in core mode, and what the gateway shows of tier 1.
 on:
   push:
     branches:
@@ -54,21 +54,43 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: The gateway file is valid and has routes
+      - name: Validate the core routes and the installation example
         run: |
-          python3 - deploy/apisix/common.yaml <<'PY'
-          import sys
-          import yaml
+          for mode in full core; do
+            for admin in false true; do
+              args=(--mode "$mode")
+              if [[ "$admin" == true ]]; then args+=(--admin-console); fi
+              python3 deploy/apisix/check_routes.py "${args[@]}"
+              python3 deploy/apisix/check_routes.py "${args[@]}" --local deploy/apisix/local.example.yaml
+            done
+          done
 
-          config = yaml.safe_load(open(sys.argv[1], encoding="utf-8"))
-          ids = [route["id"] for route in config["routes"]]
-          assert len(ids) == len(set(ids)), f"duplicate route ids: {ids}"
-          assert {upstream["id"] for upstream in config["upstreams"]} >= {
-              route["upstream_id"] for route in config["routes"] if "upstream_id" in route}
-          PY
+      - name: Invalid installation routes are refused
+        run: |
+          python3 - <<'PYTHON'
+          import copy
+          import json
+          import pathlib
+          import subprocess
+          import tempfile
 
-      - name: Every route without a token check is on the public list
-        run: python3 deploy/apisix/check_routes.py
+          base = {"routes": [{"id": "extension", "uri": "/extensions/example/*",
+                              "upstream_id": "backend", "plugin_config_id": "bearer-token"}]}
+          with tempfile.TemporaryDirectory() as directory:
+              path = pathlib.Path(directory) / "local.yaml"
+              for change in ({"id": "api"}, {"uri": "/api/private"},
+                             {"upstream_id": "missing"}, {"plugin_config_id": "missing"},
+                             {"methods": ["INVALID"]}, {"plugin_config_id": None}):
+                  local = copy.deepcopy(base)
+                  for key, value in change.items():
+                      if value is None:
+                          local["routes"][0].pop(key, None)
+                      else:
+                          local["routes"][0][key] = value
+                  path.write_text(json.dumps(local))
+                  result = subprocess.run(["python3", "deploy/apisix/check_routes.py", "--local", str(path)])
+                  assert result.returncode != 0, f"accepted invalid installation route: {change}"
+          PYTHON
 
   install:
     name: Install from the release archive
@@ -90,6 +112,20 @@ jobs:
 
       - name: The archive passes the checks of the release workflow
         run: .github/scripts/check_archive.sh "$RUNNER_TEMP/dx-os-0.0.0.tar.gz" 0.0.0
+
+      - name: Upgrade preserves installation routes outside the runtime manifest
+        run: |
+          prefix="$RUNNER_TEMP/dx-os"
+          printf 'routes: []\n' > "$RUNNER_TEMP/local.yaml"
+          cp "$RUNNER_TEMP/local.yaml" "$prefix/deploy/apisix/local.yaml"
+          echo deploy/apisix/local.yaml >> "$prefix/.dxos-files"
+          bash deploy/get.sh --upgrade --file "$RUNNER_TEMP/dx-os-0.0.0.tar.gz" --prefix "$prefix"
+          cmp "$RUNNER_TEMP/local.yaml" "$prefix/deploy/apisix/local.yaml"
+          if grep -qx deploy/apisix/local.yaml "$prefix/.dxos-files"; then
+            echo "installation routes must not be managed runtime files"; exit 1
+          fi
+          test -f "$prefix/deploy/apisix/render.lua"
+          test -f "$prefix/deploy/apisix/local.example.yaml"
 
       - name: A changed archive is refused
         run: |
@@ -180,15 +216,27 @@ jobs:
         include:
           # Each group runs on its own empty stack; the scripts of a group depend only on the ones before them in it.
           - group: model and process
-            checks: api recovery case change process booking demo guards users docs conformance cli
+            checks: api recovery case change process booking demo guards users docs conformance cli browser
           - group: events and bootstrap
             checks: events bootstrap
+          # Core mode runs tier 1 only: no web app, portal or monitor.
+          - group: core mode
+            mode: core
+            checks: api recovery case change process booking demo guards users docs conformance cli browser
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Create an env file with random secrets
         run: deploy/make_env.sh deploy/.env
+
+      # The scripts reach the Keycloak Admin API through the gateway, which closes /admin by default.
+      - name: Open the Keycloak Admin Console for the scripts
+        run: sed -i 's/^KEYCLOAK_ADMIN_CONSOLE=.*/KEYCLOAK_ADMIN_CONSOLE=true/' deploy/.env
+
+      - name: Run core mode
+        if: matrix.mode == 'core'
+        run: sed -i 's/^DXOS_MODE=.*/DXOS_MODE=core/; s/^COMPOSE_PROFILES=.*/COMPOSE_PROFILES=/' deploy/.env
 
       - name: Build the images of this commit
         working-directory: deploy
@@ -235,10 +283,60 @@ jobs:
 
       - name: Keep the logs
         if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: api-e2e-logs-${{ strategy.job-index }}
           path: ${{ runner.temp }}/compose.log
+
+  gateway-surface:
+    name: "Gateway surface (${{ matrix.mode }} mode)"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [full, core]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Create an env file with random secrets
+        run: deploy/make_env.sh deploy/.env
+
+      - name: Run core mode
+        if: matrix.mode == 'core'
+        run: sed -i 's/^DXOS_MODE=.*/DXOS_MODE=core/; s/^COMPOSE_PROFILES=.*/COMPOSE_PROFILES=/' deploy/.env
+
+      - name: Build the images of this commit
+        working-directory: deploy
+        run: docker compose build
+
+      - name: Start an empty stack
+        working-directory: deploy
+        run: |
+          docker compose up -d
+          for _ in $(seq 1 90); do
+            curl -sf http://localhost:9080/api/v1/system/status > /dev/null && exit 0
+            sleep 5
+          done
+          docker compose ps; exit 1
+
+      - name: The default install serves no Swagger UI and no Admin Console
+        run: python3 deploy/dev/check_surface.py
+
+      - name: KEYCLOAK_ADMIN_CONSOLE=true opens the Admin Console
+        working-directory: deploy
+        run: |
+          sed -i 's/^KEYCLOAK_ADMIN_CONSOLE=.*/KEYCLOAK_ADMIN_CONSOLE=true/' .env
+          docker compose up -d apisix-config
+          docker compose restart apisix
+          sleep 10
+          python3 dev/check_surface.py
+
+      - name: Logs of the services
+        if: failure()
+        working-directory: deploy
+        run: docker compose logs --no-color --timestamps --tail=300 | tail -n 400
 
   browser-e2e:
     name: Browser end-to-end
@@ -257,6 +355,10 @@ jobs:
 
       - name: Create an env file with random secrets
         run: deploy/make_env.sh deploy/.env
+
+      # The script that creates the account reaches the Keycloak Admin API through the gateway, which closes /admin by default.
+      - name: Open the Keycloak Admin Console for the script
+        run: sed -i 's/^KEYCLOAK_ADMIN_CONSOLE=.*/KEYCLOAK_ADMIN_CONSOLE=true/' deploy/.env
 
       - name: Build the images of this commit
         working-directory: deploy
@@ -279,7 +381,14 @@ jobs:
         working-directory: e2e
         run: |
           npm ci --no-audit --no-fund --ignore-scripts
-          npx playwright install --with-deps chromium
+          # The apt mirror of the runner is sometimes unreachable. Try the full install three times, then
+          # install the browser alone: the runner image already holds the libraries it needs.
+          for attempt in 1 2 3; do
+            npx playwright install --with-deps chromium && exit 0
+            echo "::warning::playwright install --with-deps failed (attempt $attempt of 3)"
+            sleep $((attempt * 20))
+          done
+          npx playwright install chromium
 
       - name: Sign in, apply a template and walk through the console
         working-directory: e2e
@@ -287,7 +396,7 @@ jobs:
 
       - name: Keep the screenshots
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: console-screenshots-${{ github.run_attempt }}
           path: e2e/screenshots
@@ -295,7 +404,7 @@ jobs:
 
       - name: Keep the trace of a failed test
         if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: console-trace-${{ github.run_attempt }}
           path: e2e/test-results

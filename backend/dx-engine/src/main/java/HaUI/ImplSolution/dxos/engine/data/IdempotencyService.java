@@ -47,49 +47,62 @@ public class IdempotencyService {
   // Runs the work, or returns the answer kept for the key. kind and target name the request, body
   // is what the caller sent; without a key the work simply runs.
   @Transactional
-  public Outcome once(String key, String kind, String target, Object body,
-      Supplier<Map<String, Object>> work) {
+  public Outcome once(
+      String key, String kind, String target, Object body, Supplier<Map<String, Object>> work) {
     if (key == null) {
       return new Outcome(work.get(), false);
     }
     if (!KEY.matcher(key).matches()) {
-      throw new ModelValidationException(HEADER,
-          "must be 1 to 128 letters, digits, dots, dashes, underscores or colons");
+      throw new ModelValidationException(
+          HEADER, "must be 1 to 128 letters, digits, dots, dashes, underscores or colons");
     }
     String subject = user.currentUserId();
     String request = kind + " " + target + " " + hash(body);
     // A conflicting row of another transaction makes this wait until that one commits or rolls
     // back.
-    int inserted = jdbc.update("INSERT INTO engine.idempotency (subject, key, request) "
-        + "VALUES (?, ?, ?) ON CONFLICT (subject, key) DO NOTHING", subject, key, request);
+    int inserted =
+        jdbc.update(
+            "INSERT INTO engine.idempotency (subject, key, request) "
+                + "VALUES (?, ?, ?) ON CONFLICT (subject, key) DO NOTHING",
+            subject,
+            key,
+            request);
     if (inserted == 0) {
       Map<String, Object> kept =
-          jdbc.queryForMap("SELECT request, response::text AS response FROM engine.idempotency "
-              + "WHERE subject = ? AND key = ?", subject, key);
+          jdbc.queryForMap(
+              "SELECT request, response::text AS response FROM engine.idempotency "
+                  + "WHERE subject = ? AND key = ?",
+              subject,
+              key);
       if (!request.equals(kept.get("request"))) {
-        throw new InvalidStateException("The Idempotency-Key was used for a different request",
-            "IDEMPOTENCY_KEY_REUSED");
+        throw new InvalidStateException(
+            "The Idempotency-Key was used for a different request", "IDEMPOTENCY_KEY_REUSED");
       }
       return new Outcome(read((String) kept.get("response")), true);
     }
     Map<String, Object> answer = work.get();
-    jdbc.update("UPDATE engine.idempotency SET response = ?::jsonb WHERE subject = ? AND key = ?",
-        json.writeValueAsString(answer), subject, key);
+    jdbc.update(
+        "UPDATE engine.idempotency SET response = ?::jsonb WHERE subject = ? AND key = ?",
+        json.writeValueAsString(answer),
+        subject,
+        key);
     return new Outcome(answer, false);
   }
 
   // Numbers keep their written form, so the kept answer reads as the first one did.
   @SuppressWarnings("unchecked")
   private Map<String, Object> read(String text) {
-    return json.readerFor(Map.class).with(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
+    return json.readerFor(Map.class)
+        .with(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
         .readValue(text);
   }
 
   // The same body hashes the same however its fields are ordered.
   private String hash(Object body) {
     try {
-      byte[] digest = MessageDigest.getInstance("SHA-256")
-          .digest(json.writeValueAsString(sorted(body)).getBytes(StandardCharsets.UTF_8));
+      byte[] digest =
+          MessageDigest.getInstance("SHA-256")
+              .digest(json.writeValueAsString(sorted(body)).getBytes(StandardCharsets.UTF_8));
       return HexFormat.of().formatHex(digest);
     } catch (NoSuchAlgorithmException e) {
       throw new IllegalStateException(e);

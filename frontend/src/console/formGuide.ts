@@ -90,7 +90,8 @@ export const GUIDE: Record<Section, Guide> = {
       t("Thêm trạng thái hoặc hành động vào khung đã chọn; đổi nhãn, đổi trạng thái đích; bỏ hành động của khung bằng null."),
       t("Giao một hành động cho riêng một vai (duyệt nhiều cấp) và bắt buộc điền trường trước khi thực hiện hành động."),
       t("Đặt hạn xử lý, tự đóng hồ sơ bằng một hành động của người nộp, cho phép người tạo tự quyết định, thêm hành động hoàn tất."),
-      t("Đổi trạng thái hoặc hành động khi còn hồ sơ đang xử lý thì bị từ chối; đổi nhãn, vai, trường bắt buộc, hạn thì áp dụng ngay."),
+      t("Báo thêm vai khác khi hồ sơ quá hạn mà chưa ai xử lý: tối đa 5 cấp, mỗi cấp nhắc lại được; chỉ ghi lịch sử và gửi thông báo, không đổi trạng thái hay người giữ hồ sơ."),
+      t("Đổi trạng thái hoặc hành động khi còn hồ sơ đang xử lý thì bị từ chối; đổi nhãn, vai, trường bắt buộc, hạn, các cấp báo leo thang thì áp dụng ngay."),
     ],
     creates: [
       t("Quy trình hoàn toàn mới, không dựa khung nào: tự khai báo states, actions và trạng thái ban đầu (initial)."),
@@ -129,6 +130,7 @@ export const COMPLETION_LABEL: Record<string, string> = {
 export const PARAM_HELP: Record<string, string> = {
   allow_self_decision: t("Người tạo hồ sơ được tự quyết định hồ sơ của mình"),
   deadline: t("Thời gian một vai xử lý có để xử lý hồ sơ, quá hạn thì được đánh dấu"),
+  escalate: t("Quá hạn mà chưa ai xử lý thì báo thêm vai khác (khai trong tệp YAML)"),
   auto_close: t("Hồ sơ đã xử lý xong mà người nộp không xác nhận sau thời gian này thì hệ thống tự đóng"),
 };
 
@@ -156,7 +158,7 @@ export const SCHEMA_HELP: Record<string, string> = {
   "entities.fields.options": t("Danh sách lựa chọn của trường kiểu choice."),
   "entities.fields.to": t("Mã thực thể mà trường kiểu reference trỏ tới."),
   "entities.fields.renamed_from": t("Tên cũ của trường, khai khi đổi tên trường mà muốn giữ dữ liệu."),
-  "entities.fields.default": t("Giá trị điền cho hồ sơ cũ khi thêm trường bắt buộc."),
+  "entities.fields.default": t("Giá trị điền cho hồ sơ cũ khi thêm trường bắt buộc; trường nhiều lựa chọn chọn từ danh sách các lựa chọn."),
   "entities.access": t("Quyền của từng vai: all (đọc và ghi tất cả), own (của mình), read (tất cả, chỉ đọc), unit (của đơn vị mình), assigned (được giao cho mình). Vai không có dòng thì không thấy thực thể."),
   "entities.process": t("Quy trình của hồ sơ. Chọn family có sẵn rồi mở rộng, hoặc bỏ family và tự khai states và actions. Bỏ cả khối nếu thực thể chỉ là danh mục."),
   "entities.process.family": t("Khung có sẵn để bắt đầu: approval (duyệt), work_item (công việc xử lý), reservation (đặt chỗ). Bỏ trống thì phải tự khai states và actions."),
@@ -176,6 +178,12 @@ export const SCHEMA_HELP: Record<string, string> = {
   "entities.process.actions.require": t("Trường bắt buộc điền trước khi thực hiện hành động: một trường hoặc danh sách trường (không phải trường file)."),
   "entities.process.allow_self_decision": t("true nếu người tạo hồ sơ được tự xử lý hồ sơ của mình."),
   "entities.process.deadline": t("Thời gian vai xử lý có để xử lý, quá hạn thì bị đánh dấu. Số kèm m (phút), h (giờ) hoặc d (ngày), ví dụ 90m, 72h, 3d."),
+  "entities.process.escalate": t("Báo thêm vai khác khi hồ sơ quá hạn mà chưa ai xử lý: danh sách các cấp {after: 24h, to: MANAGER, repeat: {every: 12h, times: 3}}, tối đa 5 cấp. Cần có deadline."),
+  "entities.process.escalate.after": t("Thời gian sau khi quá hạn thì cấp này báo lần đầu, ví dụ 24h."),
+  "entities.process.escalate.to": t("Vai nhận báo: một vai hoặc danh sách vai, đã khai ở roles và có quyền all, read, unit hoặc assigned."),
+  "entities.process.escalate.repeat": t("Nhắc lại: {every: 12h, times: 3}. Bỏ khóa này thì cấp chỉ báo một lần."),
+  "entities.process.escalate.repeat.every": t("Khoảng cách giữa hai lần báo của cấp, ví dụ 12h."),
+  "entities.process.escalate.repeat.times": t("Số lần báo của cấp, từ 1 đến 20, lần đầu tính vào."),
   "entities.process.auto_close": t("Tự đóng hồ sơ chờ người nộp: 7d (khung work_item) hoặc {after: 7d, action: <hành động của người nộp>}."),
   "entities.process.auto_close.after": t("Thời gian chờ, ví dụ 7d."),
   "entities.process.auto_close.action": t("Hành động của người nộp mà hệ thống thực hiện thay họ khi hết thời gian chờ."),

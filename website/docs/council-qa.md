@@ -99,7 +99,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
   Từ mã nguồn: `deploy/make_env.sh`, rồi `cd deploy && docker compose up -d --build`; mật khẩu sinh ngẫu nhiên, thiếu bí mật thì Compose không chạy.
   Không cần mã nguồn: `dxos-install.sh` của bản phát hành tải gói, kiểm SHA-256, cài vào `~/.dxos`; `dxos start <tệp mô hình>` lên đủ dịch vụ, áp dụng tệp và in tài khoản `admin`.
 - Mọi cấu hình nằm ở `deploy/.env`, không sửa tệp mã.
-- Giới hạn: lệnh một dòng kéo image `v2.0.0` từ GHCR, mà bản này chưa phát hành; đến lúc đó phải chạy lại trên máy sạch.
+- Đã kiểm: `dxos-install.sh` của release `v2.0.0` cài và `dxos start` kéo image `v2.0.0` từ GHCR trên máy chủ đã xóa stack cũ, rồi áp dụng một tệp mô hình.
 - **Bằng chứng:** `README.md` mục Chạy thử; các job `Install from the release archive` và `Validate the Compose file` của workflow `Platform` (gói sai SHA-256 bị từ chối, mọi tệp Compose mount đều có); `docs/TESTING.md` mục 3.
 
 ## 9. Từ 100 lên 100.000 người dùng thì sao?
@@ -145,7 +145,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 ## 13. Sao không dùng nền low-code có sẵn?
 
 - Nền cần tự sinh bảng, vai và quy trình từ một tệp khai báo, đổi được khi đã có dữ liệu, và là lõi không có giao diện cho người dùng cuối.
-- Hai sản phẩm đội xem xét đầu tiên bị loại vì giấy phép: NocoBase có điều khoản cấm cung cấp hoặc phân phối sản phẩm no-code, low-code hay PaaS xây trên nó; Directus theo giấy phép có điều kiện, không thuộc OSI.
+- Hai sản phẩm đội xem xét đầu tiên bị loại vì giấy phép: NocoBase có điều khoản cấm cung cấp hoặc phân phối sản phẩm no-code, low-code hay PaaS xây trên nó; Directus theo giấy phép có điều kiện, không thuộc OSI; Strapi trộn phần MIT với phần Enterprise đóng trong cùng kho.
 - Supabase được đọc để học kiến trúc; lõi tự viết phần API chung vì cần đọc mô hình lúc chạy và chặn đổi trạng thái ngoài quy trình.
 - Phần dùng được thì dùng lại nguyên bản: Keycloak, Flowable, APISIX, pgschema.
 - **Bằng chứng:** [Thành phần được chọn và không chọn](./dependencies.md) mục 3; `docs/dynamic-core/README.md` mục Tư tưởng thiết kế.
@@ -154,7 +154,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 
 - "Không giao diện" nghĩa là lõi không có màn hình nghiệp vụ.
   Bảng điều khiển của người triển khai, giao diện hồ sơ, portal và màn hình giám sát thuộc Tầng 2: chúng gọi lõi bằng API sau APISIX như mọi ứng dụng khác.
-- Trang quản trị Keycloak và Swagger đi kèm phần mềm nguồn mở dùng nguyên bản, là bàn làm việc của người vận hành; không ứng dụng nào gọi tới.
+- Trang quản trị Keycloak đi kèm phần mềm nguồn mở dùng nguyên bản, là bàn làm việc của người vận hành; mặc định không mở ra gateway và không ứng dụng nào gọi tới.
 - `dx-engine` chỉ phục vụ API.
 - **Bằng chứng:** `ARCHITECTURE.md` mục 1 và 13; `frontend/src/console`; `deploy/apisix/`.
 

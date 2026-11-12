@@ -11,13 +11,16 @@ Lõi nhận một tệp mô hình khai báo thực thể, trường, vai, quyề
 
 | Nội dung | Nơi xem |
 |---|---|
+| Cách dùng theo vai: nộp, xử lý, triển khai | [Hướng dẫn sử dụng](./huong-dan/nguoi-nop.md) ở thanh bên của trang này |
 | Giới thiệu, cài đặt, mục lục tài liệu | [README](https://github.com/HaUI-ImplSolution/DX-OS#readme) trong repository |
 | Kiến trúc 3 tầng và luồng gọi dịch vụ | [ARCHITECTURE.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/ARCHITECTURE.md) |
 | Module backend, build, cấu hình | [backend/README.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/backend/README.md) |
 | Cài đặt, lệnh `dxos`, sao lưu, quét mã độc | [deploy/OPERATIONS.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/deploy/OPERATIONS.md) |
 | Log, giới hạn tốc độ, sự kiện đăng nhập, audit, giám sát | [deploy/MONITORING.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/deploy/MONITORING.md) |
 | Webhook sự kiện, lịch sử chống sửa, hồ dữ liệu | [deploy/INTEGRATIONS.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/deploy/INTEGRATIONS.md) |
-| Tham chiếu API | Swagger UI `/swagger-ui.html` và OpenAPI `/v3/api-docs` của backend đang chạy; bảng đường dẫn trong [docs/API.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/API.md) |
+| Kết nối công cụ báo cáo bằng `report_ro` | [deploy/REPORTING.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/deploy/REPORTING.md) |
+| Phát triển dịch vụ, webhook và giao diện mở rộng | [docs/EXTENSIONS.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/EXTENSIONS.md) |
+| Tham chiếu API | OpenAPI `/v3/api-docs` của backend đang chạy; bảng đường dẫn trong [docs/API.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/API.md) |
 | Thay đổi theo phiên bản | [CHANGELOG.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/CHANGELOG.md) và [Releases](https://github.com/HaUI-ImplSolution/DX-OS/releases) |
 | Viết tệp mô hình | [docs/MODEL.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/MODEL.md) |
 | Hướng dẫn kiểm thử | [docs/TESTING.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/TESTING.md) |
@@ -26,6 +29,7 @@ Lõi nhận một tệp mô hình khai báo thực thể, trường, vai, quyề
 
 ## Các mục trên trang này
 
+- **Hướng dẫn sử dụng:** ba trang theo vai: người nộp hồ sơ, người xử lý hồ sơ và người triển khai.
 - **Đánh giá:** ma trận bằng chứng cho từng tính năng và bảng rà soát PoF theo đề thi.
 - **Cuộc thi:** câu hỏi hội đồng, thành phần được chọn và không chọn.
 - **Mẫu tài liệu theo phase:** mẫu dùng khi mở một phase làm việc mới.

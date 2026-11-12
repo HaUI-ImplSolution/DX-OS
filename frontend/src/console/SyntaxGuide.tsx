@@ -27,6 +27,10 @@ const EXAMPLE = [
   `    escalate: {label: ${t("Chuyển cấp")}, from: [in_progress], to: escalated, role: LEAD}`,
   `    resolve: {require: [resolution]}   # ${t("ghi đè hành động của khung")}`,
   `    reopen: null                       # ${t("bỏ hành động của khung")}`,
+  `  deadline: 72h              # ${t("thời gian xử lý, quá hạn thì bị đánh dấu")}`,
+  `  escalate:                  # ${t("quá hạn thì báo thêm vai khác, tối đa 5 cấp")}`,
+  "    - {after: 24h, to: MANAGER}",
+  `    - {after: 48h, to: [DIRECTOR], repeat: {every: 12h, times: 3}}   # ${t("nhắc lại 3 lần")}`,
   "  auto_close: {after: 7d, action: confirm}",
 ].join("\n");
 

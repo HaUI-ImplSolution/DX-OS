@@ -3,7 +3,9 @@
 
     python3 .github/scripts/check_licenses.py
 
-1. Every tracked source file starts with an SPDX-License-Identifier: Apache-2.0 line.
+1. Every tracked source file starts with an SPDX license line that names Apache-2.0, unless REUSE.toml
+   states the license of that file itself (an override annotation: third-party files and released migrations).
+   `reuse lint` checks the rest of the tree.
 2. Every package in sbom/*.cdx.json has a license that is allowed below or
    an entry in .github/dependency-exceptions.json that gives the reason.
 3. No vendor/, third_party/ or node_modules/ directory is committed.
@@ -19,13 +21,20 @@ import json
 import re
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 
-SOURCE_EXTENSIONS = {"java", "ts", "tsx", "js", "jsx", "mjs", "cjs", "sh", "py", "yml", "yaml"}
+SOURCE_EXTENSIONS = {
+    "java", "ts", "tsx", "js", "jsx", "mjs", "cjs", "sh", "py", "yml", "yaml",
+    "css", "html", "sql", "xml", "conf", "toml", "example",
+}
+SOURCE_NAMES = {"Dockerfile"}
 HEADER_LINES = 6
+# REUSE-IgnoreStart
 SPDX_LINE = re.compile(r"SPDX-License-Identifier: *([\w.\-+]+)")
+# REUSE-IgnoreEnd
 
 # Licenses approved by the OSI. Data under CC-BY-4.0 or CC0-1.0 is not on that list,
 # so the few packages that carry it are named, with the reason, in .github/dependency-exceptions.json.
@@ -75,10 +84,38 @@ def tracked_files() -> list[str]:
     return subprocess.check_output(["git", "-C", str(ROOT), "ls-files"]).decode().split("\n")
 
 
+def glob_to_regex(pattern: str) -> re.Pattern:
+    """A REUSE.toml path: * stays inside a directory, ** crosses directories."""
+    out, index = "", 0
+    while index < len(pattern):
+        if pattern.startswith("**", index):
+            out, index = out + ".*", index + 2
+        elif pattern[index] == "*":
+            out, index = out + "[^/]*", index + 1
+        else:
+            out, index = out + re.escape(pattern[index]), index + 1
+    return re.compile(out + r"\Z")
+
+
+def declared_in_reuse(files: list[str]) -> set[str]:
+    """The files whose license REUSE.toml gives itself with an override annotation, so that they need no line of their own."""
+    annotations = tomllib.loads((ROOT / "REUSE.toml").read_text(encoding="utf-8")).get("annotations", [])
+    patterns = []
+    for annotation in annotations:
+        if annotation.get("precedence") == "override":
+            path = annotation["path"]
+            patterns += [path] if isinstance(path, str) else path
+    expressions = [glob_to_regex(pattern) for pattern in patterns]
+    return {rel for rel in files if any(expression.match(rel) for expression in expressions)}
+
+
 def check_headers() -> list[str]:
     problems = []
-    for rel in tracked_files():
-        if rel.rsplit(".", 1)[-1] not in SOURCE_EXTENSIONS or not (ROOT / rel).is_file():
+    files = tracked_files()
+    declared = declared_in_reuse(files)
+    for rel in files:
+        name = rel.rsplit("/", 1)[-1]
+        if rel in declared or not (name in SOURCE_NAMES or rel.rsplit(".", 1)[-1] in SOURCE_EXTENSIONS) or not (ROOT / rel).is_file():
             continue
         wanted = "Apache-2.0"
         head = (ROOT / rel).read_text(encoding="utf-8", errors="replace").split("\n")[:HEADER_LINES]

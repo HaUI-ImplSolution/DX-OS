@@ -5,6 +5,7 @@ Người sửa được cả cơ sở dữ liệu lẫn kho đối tượng có 
 Bên nhận webhook giữ `eventId` và `hash` của từng tin đã nhận, nên có chỗ để so: hash họ giữ không đổi theo.
 
 Công cụ này nằm ngoài lõi, chỉ đọc `GET /api/v1/events` và không cần thư viện ngoài (Python 3.9 trở lên).
+Quy trình chung cho bên nhận, chữ ký, khử trùng, đọc bù và nâng cấp nằm ở [`docs/EXTENSIONS.md`](../../docs/EXTENSIONS.md#bên-nhận-webhook).
 
 ## Cách dùng
 

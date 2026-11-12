@@ -32,7 +32,7 @@ cd ../frontend && npm install && npm run dev
 
 | Phần đổi | Lệnh kiểm |
 |---|---|
-| Backend | `./mvnw formatter:validate` rồi `./mvnw verify` trong `backend/` |
+| Backend | `./mvnw spotless:check` rồi `./mvnw verify` trong `backend/` |
 | Web | `npx tsc --noEmit` trong `frontend/` |
 | Toàn stack | Các script `deploy/dev/check_*.py` theo thứ tự ở [`docs/TESTING.md`](./docs/TESTING.md), mục 4, trên stack mới dựng |
 | Giấy phép | `python3 .github/scripts/check_licenses.py` |
@@ -44,12 +44,12 @@ cd ../frontend && npm install && npm run dev
 ## Quy ước
 
 - **Commit:** tiếng Anh, thể mệnh lệnh, ví dụ `feat: add the approval template`.
-- **Mã:** Java 21, định dạng theo `backend/eclipse-java-google-style.xml` (chạy `./mvnw formatter:format`); comment ngắn, nêu hành vi hiện tại, tiếng Anh.
+- **Mã:** Java 21, định dạng theo google-java-format (chạy `./mvnw spotless:apply`); comment ngắn, nêu hành vi hiện tại, tiếng Anh.
 - **API:** mô tả `@Operation` bằng tiếng Anh; mọi response bọc trong `ApiResponse`.
 - **Tài liệu:** tiếng Việt, mỗi câu một dòng, chỉ ghi trạng thái hiện tại.
 - **Thông báo của backend:** viết bằng tiếng Anh kèm `errorCode`; mỗi thông báo mới cần thêm một mẫu dịch ở `frontend/src/shell/backendMessages.ts`, nếu không giao diện hiện nguyên văn tiếng Anh.
 - **Mã lõi không chứa tên thực thể, vai hay luồng của một lĩnh vực**; nghiệp vụ nằm trong tệp mô hình.
-- **Header giấy phép:** `SPDX-License-Identifier: Apache-2.0` ở đầu mọi file mã nguồn.
+- **Header giấy phép:** dòng `SPDX-License-Identifier` với `Apache-2.0` ở đầu mọi file mã nguồn; file không chèn được chú thích (hoặc đã phát hành, như migration SQL) khai trong `REUSE.toml`; `reuse lint` kiểm cả hai.
 
 ## Dependency và dữ liệu
 

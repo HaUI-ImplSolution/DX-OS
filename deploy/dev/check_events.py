@@ -209,12 +209,14 @@ def main():
 
     start_backend({**webhook, "ENGINE_FAULT_AFTER_DECISION": "true"})
     status, fresh = kc.api(stu, "POST", BASE, {"reason": "rollback", "kind": "Hoãn thi", "department": "DAO_TAO"})
-    wait_for(lambda: False, SETTLE)
     # Only this record is counted: the sweep for overdue records may write lines of other records meanwhile.
     rid = fresh["data"]["id"]
     lines = f"select count(*) from engine.record_event where entity = 'request' and record_id = {rid}"
     messages = f"select count(*) from engine.outbox where topic = 'record.event' and entity = 'request' and record_id = {rid}"
     sent = lambda: len([r for r in received if r["body"]["recordId"] == rid])
+    # The line of the creation is delivered first; the snapshot is taken once it has arrived, however slow the runner is.
+    assert wait_for(lambda: sent() == 1, 60), "the creation line did not reach the receiver"
+    wait_for(lambda: False, SETTLE)
     before_lines = count(lines)
     before_messages = count(messages)
     seen = sent()

@@ -38,7 +38,8 @@ Các mẫu dùng được nằm ở [`templates/`](../backend/dx-engine/src/main
 - Trường `boolean` là đúng hoặc sai (`true`, `false`); không đặt `required` hay `unique`, muốn có giá trị ban đầu thì đặt `default`.
 - Trường `choice` kèm `multiple: true` giữ nhiều lựa chọn trong `options`.
   API nhận và trả một mảng, mỗi lựa chọn một lần và theo thứ tự của `options`, và lọc bằng `filter.<tên>.contains=<lựa chọn>`.
-  Trường này không đi cùng `unique` hay `default`.
+  `default` là một danh sách các lựa chọn của `options`, không trùng nhau và không rỗng, ví dụ `default: [Mới, Đã sửa]`; bản ghi tạo mà không gửi trường này nhận danh sách đó.
+  Trường này không đi cùng `unique`.
 - Trường `user` giữ id của một tài khoản; giao diện cho chọn theo tên, và API từ chối id không có thật.
 - Đơn vị khai báo ở `units`, mỗi đơn vị là một nhóm Keycloak; trường kiểu `unit` cho biết hồ sơ thuộc đơn vị nào.
   Ví dụ đầy đủ ở [`onestop.yaml`](../backend/dx-engine/src/main/resources/templates/onestop.yaml).
@@ -61,8 +62,9 @@ Các mẫu dùng được nằm ở [`templates/`](../backend/dx-engine/src/main
 note: {type: text, required_when: "kind == Phần mềm"}
 ```
 
-- Điều kiện là một phép so sánh, viết như `when` của hành động: `==` và `!=` cho mọi kiểu, `<`, `<=`, `>`, `>=` chỉ cho số.
-- Trường được so sánh là `number`, `text`, `choice` một lựa chọn hoặc `boolean` (`foreign == true`) của cùng thực thể.
+- Điều kiện là một phép so sánh, viết như `when` của hành động: `==` và `!=` cho mọi kiểu, `<`, `<=`, `>`, `>=` chỉ cho số và ngày.
+- Trường được so sánh là `number`, `date`, `text`, `choice` một lựa chọn hoặc `boolean` (`foreign == true`) của cùng thực thể.
+- Giá trị của trường `date` viết như `YYYY-MM-DD`, ví dụ `due >= 2026-01-31`; ngày không có thật bị từ chối khi đọc mô hình.
 - API kiểm khi tạo và khi sửa, trên hồ sơ sau khi gộp giá trị mới; trường còn trống thì báo `is required when kind == Phần mềm`.
 - Không đi cùng `required`, không đặt trên trường `boolean` hay `file`, và không so sánh trường với chính nó.
 - Chỉ kiểm ở API, cơ sở dữ liệu không có ràng buộc này.
@@ -114,6 +116,11 @@ Ví dụ đầy đủ ở [`asset_register.yaml`](../backend/dx-engine/src/main/
 - `handler` là vai xử lý, hoặc một danh sách vai như `[MANAGER, SELLER]`; ai giữ một trong các vai đó thì xử lý được.
 - `family` chọn một họ mẫu để bắt đầu: `approval`, `work_item` hoặc `reservation`; bỏ trống thì tự khai báo đủ `states` và `actions`.
 - `deadline` là hạn xử lý tùy chọn (ví dụ `72h`).
+- `escalate` là danh sách tối đa 5 mức leo thang tính từ lúc hồ sơ quá `deadline`, nên quy trình phải khai `deadline`.
+  Mỗi mức khai `after` (thời gian sau hạn) và `to` (một vai hoặc danh sách vai, mỗi vai phải đọc được hồ sơ), cùng `repeat: {every: 12h, times: 3}` nếu muốn nhắc lại; bỏ `repeat` thì mỗi mức gửi một lần.
+  Ví dụ: `escalate: [{after: 24h, to: MANAGER}, {after: 72h, to: [DIRECTOR], repeat: {every: 12h, times: 3}}]`.
+  Leo thang chỉ ghi dòng lịch sử `escalated` và gửi thông báo qua webhook của mô hình, không đổi trạng thái, người giữ hồ sơ hay quyền của ai.
+  Dịch vụ tắt rồi chạy lại thì chỉ gửi thông báo mới nhất đã đến hạn, và hồ sơ vào hạn mới thì tính lại từ đầu.
 - Họ mẫu bắt buộc có lý do khi từ chối và trả lại; quy trình tự khai báo đặt `needs_note: true` cho từng hành động cần lý do.
 - Người nộp chỉ rút lại được hồ sơ ở các trạng thái khai trong `withdraw`; quy trình không khai `withdraw` thì không cho rút lại.
 - Hồ sơ có quy trình không xóa được, hồ sơ đã được quyết định thì không sửa được, và hồ sơ đã giao thì chỉ người được giao xử lý được.
@@ -132,15 +139,15 @@ Ví dụ đầy đủ ở [`asset_register.yaml`](../backend/dx-engine/src/main/
   `when` là một phép so sánh một trường của hồ sơ với một giá trị, viết thành chuỗi `trường toán_tử giá trị`, ví dụ `when: "amount > 5000000"`.
   Hành động chỉ thực hiện được khi phép so sánh đúng với hồ sơ ở lúc thực hiện.
   Toán tử là `==`, `!=`, `<`, `<=`, `>` hoặc `>=`.
-  Trường là trường `number`, `choice` hoặc `text` của thực thể; `<`, `<=`, `>` và `>=` chỉ dùng cho trường `number`.
-  Giá trị của trường `number` là số, giá trị của trường `choice` là một trong `options` của nó.
+  Trường là trường `number`, `date`, `choice`, `text` hoặc `boolean` của thực thể; `<`, `<=`, `>` và `>=` chỉ dùng cho trường `number` và `date`.
+  Giá trị của trường `number` là số, của trường `date` là ngày `YYYY-MM-DD`, của trường `choice` là một trong `options` của nó.
   Trường chưa có giá trị thì không đạt điều kiện nào.
   `when` chỉ dùng cho hành động của người xử lý, nên không dùng được với `withdraw` và hành động của `auto_close`.
   Viết `when: null` để bỏ điều kiện của một hành động trong họ mẫu.
   Hành động không đạt điều kiện trả 409 `ERR_INVALID_STATE` với `data.reason` là `CONDITION_NOT_MET`.
 - Khi có `family`, mục khai báo ghi đè từng khóa của khung; viết `null` để bỏ một trạng thái hoặc hành động của khung.
 - `withdraw` và trạng thái `withdrawn` là tên dành riêng: khai `withdraw: {from: [...]}` thì nền tảng tự thêm trạng thái `withdrawn`, và hành động này luôn do người nộp thực hiện.
-- Tên hành động `created`, `updated`, `deleted`, `assigned`, `file_added`, `file_removed`, `completion_skipped`, `auto_closed`, `overdue` và `due_soon` là tên dành riêng, vì lịch sử hồ sơ dùng chúng cho các dòng do nền tảng ghi.
+- Tên hành động `created`, `updated`, `deleted`, `assigned`, `file_added`, `file_removed`, `completion_skipped`, `auto_closed`, `overdue`, `due_soon` và `escalated` là tên dành riêng, vì lịch sử hồ sơ dùng chúng cho các dòng do nền tảng ghi.
 - Mỗi trạng thái không phải cuối phải có hành động đi ra, và ít nhất một hành động đi ra không có `when`, để hồ sơ luôn có lối đi; mọi trạng thái phải tới được từ `initial`, trạng thái cuối không có hành động đi ra, và phải có ít nhất một trạng thái cuối.
 - `auto_close` là thời gian chờ người nộp trước khi hệ thống thay họ làm một hành động.
   Họ `work_item` nhận dạng ngắn `auto_close: 7d` (hành động `confirm`); các trường hợp khác viết `auto_close: {after: 7d, action: <hành động của người nộp>}`.
@@ -199,11 +206,12 @@ Mỗi hồ sơ giữ tối đa 20 tệp, đặt bằng `engine.files.max-per-rec
 Địa chỉ và bí mật của đích nằm trong `deploy/webhooks/targets.yml`, ngoài git; mẫu ở `deploy/webhooks/targets.example.yml`.
 Mô hình không khai báo thì dùng `DXOS_WEBHOOK_URL`, và tên đích chưa có trong tệp thì mô hình không áp dụng được.
 Mỗi đích có `format: json` (mặc định) hoặc `format: chat`.
+Tin của dòng `escalated` có thêm `level` (mức, từ 1) và `round` (lần nhắc, từ 0), và tin chat nêu vai nhận.
 
 ## Đổi mô hình khi đã có dữ liệu
 
 - `renamed_from` khai báo tên cũ khi đổi tên trường, để giữ nguyên dữ liệu.
-- `default` điền giá trị cho trường bắt buộc mới trên bảng đã có dòng.
+- `default` điền giá trị cho trường bắt buộc mới trên bảng đã có dòng; trường nhiều lựa chọn nhận một danh sách.
 - Đổi kiểu của một trường đang có (kể cả từ một lựa chọn sang nhiều lựa chọn) bị từ chối; thêm một trường mới thay vì đổi kiểu.
 - Đổi tên một trường có `min`, `max` hay `pattern` giữ nguyên dữ liệu và đổi tên cả các ràng buộc của nó.
 - Xem trước, áp dụng, quay về và các lệnh liên quan ở [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md#cài-đặt-và-lệnh-dxos) và [`API.md`](./API.md).

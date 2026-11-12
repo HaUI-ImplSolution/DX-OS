@@ -3,6 +3,7 @@ package HaUI.ImplSolution.dxos.core.storage;
 
 import HaUI.ImplSolution.dxos.core.api.storage.ObjectStorage;
 import jakarta.annotation.PreDestroy;
+import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -11,7 +12,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestAttributes;
@@ -30,8 +30,8 @@ import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
-import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
@@ -57,9 +57,11 @@ public class StorageService implements ObjectStorage {
   private final Duration presignTtl;
   private final Map<String, S3Presigner> signers = new ConcurrentHashMap<>();
 
-  public StorageService(@Value("${storage.endpoint}") String endpoint,
+  public StorageService(
+      @Value("${storage.endpoint}") String endpoint,
       @Value("${storage.access-key}") String accessKey,
-      @Value("${storage.secret-key}") String secretKey, @Value("${storage.bucket}") String bucket,
+      @Value("${storage.secret-key}") String secretKey,
+      @Value("${storage.bucket}") String bucket,
       @Value("${storage.public-url}") String publicUrl,
       @Value("${storage.presign-ttl}") Duration presignTtl) {
     this.endpoint = trimTrailingSlash(endpoint);
@@ -68,11 +70,16 @@ public class StorageService implements ObjectStorage {
     this.bucket = bucket;
     this.publicUrl = trimTrailingSlash(publicUrl);
     this.presignTtl = presignTtl;
-    this.client = S3Client.builder().endpointOverride(URI.create(this.endpoint)).region(REGION)
-        .credentialsProvider(credentials).serviceConfiguration(PATH_STYLE)
-        .requestChecksumCalculation(RequestChecksumCalculation.WHEN_REQUIRED)
-        .responseChecksumValidation(ResponseChecksumValidation.WHEN_REQUIRED)
-        .httpClientBuilder(UrlConnectionHttpClient.builder()).build();
+    this.client =
+        S3Client.builder()
+            .endpointOverride(URI.create(this.endpoint))
+            .region(REGION)
+            .credentialsProvider(credentials)
+            .serviceConfiguration(PATH_STYLE)
+            .requestChecksumCalculation(RequestChecksumCalculation.WHEN_REQUIRED)
+            .responseChecksumValidation(ResponseChecksumValidation.WHEN_REQUIRED)
+            .httpClientBuilder(UrlConnectionHttpClient.builder())
+            .build();
   }
 
   public String bucket() {
@@ -92,8 +99,14 @@ public class StorageService implements ObjectStorage {
   @Override
   public void putObject(String key, byte[] data, String contentType, Map<String, String> metadata) {
     try {
-      client.putObject(PutObjectRequest.builder().bucket(bucket).key(key).contentType(contentType)
-          .metadata(metadata).build(), RequestBody.fromBytes(data));
+      client.putObject(
+          PutObjectRequest.builder()
+              .bucket(bucket)
+              .key(key)
+              .contentType(contentType)
+              .metadata(metadata)
+              .build(),
+          RequestBody.fromBytes(data));
     } catch (RuntimeException e) {
       throw new IllegalStateException("Failed to store object " + key, e);
     }
@@ -115,8 +128,9 @@ public class StorageService implements ObjectStorage {
   @Override
   public Optional<byte[]> getObject(String key) {
     try {
-      return Optional
-          .of(client.getObjectAsBytes(GetObjectRequest.builder().bucket(bucket).key(key).build())
+      return Optional.of(
+          client
+              .getObjectAsBytes(GetObjectRequest.builder().bucket(bucket).key(key).build())
               .asByteArray());
     } catch (NoSuchKeyException e) {
       return Optional.empty();
@@ -184,11 +198,15 @@ public class StorageService implements ObjectStorage {
     try {
       GetObjectRequest.Builder object = GetObjectRequest.builder().bucket(bucket).key(key);
       if (disposition != null) {
-        object.responseContentDisposition(disposition)
+        object
+            .responseContentDisposition(disposition)
             .responseContentType("application/octet-stream");
       }
-      GetObjectPresignRequest request = GetObjectPresignRequest.builder().signatureDuration(ttl)
-          .getObjectRequest(object.build()).build();
+      GetObjectPresignRequest request =
+          GetObjectPresignRequest.builder()
+              .signatureDuration(ttl)
+              .getObjectRequest(object.build())
+              .build();
       return signer(baseUrl).presignGetObject(request).url().toString();
     } catch (RuntimeException e) {
       throw new IllegalStateException("Failed to presign object " + key, e);
@@ -200,8 +218,13 @@ public class StorageService implements ObjectStorage {
     if (cached != null) {
       return cached;
     }
-    S3Presigner created = S3Presigner.builder().endpointOverride(URI.create(baseUrl)).region(REGION)
-        .credentialsProvider(credentials).serviceConfiguration(PATH_STYLE).build();
+    S3Presigner created =
+        S3Presigner.builder()
+            .endpointOverride(URI.create(baseUrl))
+            .region(REGION)
+            .credentialsProvider(credentials)
+            .serviceConfiguration(PATH_STYLE)
+            .build();
     if (signers.size() < MAX_CACHED_SIGNERS) {
       signers.put(baseUrl, created);
     }

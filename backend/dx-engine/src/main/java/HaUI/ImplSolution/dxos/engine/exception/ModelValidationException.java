@@ -10,8 +10,10 @@ public class ModelValidationException extends RuntimeException {
   private final Map<String, String> fieldErrors;
 
   public ModelValidationException(Map<String, String> fieldErrors) {
-    super(fieldErrors.entrySet().stream().map(e -> e.getKey() + ": " + e.getValue())
-        .collect(Collectors.joining(", ")));
+    super(
+        fieldErrors.entrySet().stream()
+            .map(e -> e.getKey() + ": " + e.getValue())
+            .collect(Collectors.joining(", ")));
     this.fieldErrors = Map.copyOf(fieldErrors);
   }
 

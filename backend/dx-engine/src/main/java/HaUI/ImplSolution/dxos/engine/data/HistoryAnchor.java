@@ -55,23 +55,27 @@ public class HistoryAnchor {
     anchor.put("hash", head.get("hash"));
     anchor.put("at", String.valueOf(head.get("at")));
     StringBuilder content = new StringBuilder();
-    storage.getObject(KEY)
+    storage
+        .getObject(KEY)
         .ifPresent(bytes -> content.append(new String(bytes, StandardCharsets.UTF_8)));
     content.append(json.writeValueAsString(anchor)).append('\n');
-    storage.putObject(KEY, content.toString().getBytes(StandardCharsets.UTF_8),
-        "application/x-ndjson", Map.of());
+    storage.putObject(
+        KEY, content.toString().getBytes(StandardCharsets.UTF_8), "application/x-ndjson", Map.of());
     return anchor;
   }
 
   public List<Map<String, Object>> anchors() {
     List<Map<String, Object>> anchors = new ArrayList<>();
-    storage.getObject(KEY).ifPresent(bytes -> {
-      for (String line : new String(bytes, StandardCharsets.UTF_8).split("\n")) {
-        if (!line.isBlank()) {
-          anchors.add(json.readValue(line, new TypeReference<Map<String, Object>>() {}));
-        }
-      }
-    });
+    storage
+        .getObject(KEY)
+        .ifPresent(
+            bytes -> {
+              for (String line : new String(bytes, StandardCharsets.UTF_8).split("\n")) {
+                if (!line.isBlank()) {
+                  anchors.add(json.readValue(line, new TypeReference<Map<String, Object>>() {}));
+                }
+              }
+            });
     return anchors;
   }
 }

@@ -74,7 +74,7 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos gitops sync [models\|infra]`, `status [models\|infra]`, `approve [infra] <commit> [--accept MỨC]`, `install`, `uninstall` | Kéo hạ tầng và tệp mô hình từ git, so với bản cài và mô hình đang chạy; `install` chạy mỗi 5 phút bằng systemd user timer (xem dưới) |
 | `dxos history verify`, `dxos history anchor` | Kiểm lịch sử hồ sơ chưa bị sửa, hoặc ghi điểm neo ngay (xem [`INTEGRATIONS.md`](./INTEGRATIONS.md#lịch-sử-chống-sửa)) |
 | `dxos reconcile [install\|uninstall]` | Đưa stack về đúng khai báo; `install` chạy mỗi phút bằng systemd user timer (xem dưới) |
-| `dxos archive <mô hình> [--before YYYY-MM-DD] [--out THƯ_MỤC \| --store]`, `dxos archive check <thư mục> \| --store <mô hình>/<lần chạy>`, `dxos archive list` | Xuất hồ sơ đã xong ra Parquet ở một thư mục hoặc ở kho đối tượng, kiểm một bản xuất, liệt kê các lần chạy trong kho (xem [`INTEGRATIONS.md`](./INTEGRATIONS.md#hồ-dữ-liệu)) |
+| `dxos archive <mô hình> [--before YYYY-MM-DD] [--out THƯ_MỤC \| --store]`, `dxos archive query <mô hình>/<lần chạy> ...`, `dxos archive check <thư mục> \| --store <mô hình>/<lần chạy>`, `dxos archive list` | Xuất hồ sơ đã xong ra Parquet, truy vấn chỉ đọc một lần chạy bằng DuckDB, kiểm một bản xuất, liệt kê các lần chạy trong kho (xem [`INTEGRATIONS.md`](./INTEGRATIONS.md#hồ-dữ-liệu)) |
 | `dxos archive auto`, `dxos archive schedule [install\|uninstall]` | Ghi vào kho hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS` ngày; `schedule install` chạy mỗi ngày bằng systemd user timer (xem dưới) |
 | `dxos demo [--password MẬT_KHẨU]`, `dxos demo remove` | Áp dụng mô hình Một cửa sinh viên nếu chưa chạy, tạo bốn tài khoản thử `judge_student`, `judge_officer`, `judge_officer2` và `judge_supervisor` với một mật khẩu (ngẫu nhiên nếu không nêu, in một lần; chạy lại thì đặt và in mật khẩu mới) và nộp khoảng 40 hồ sơ mẫu qua API chung, mỗi bước do đúng người làm; chạy lại không nộp thêm hồ sơ; `remove` chỉ gỡ bốn tài khoản, hồ sơ có quy trình không xóa được nên còn lại; cần client `dxos-cli` như `dxos plan`. Hạn xử lý 72 giờ của mô hình nên hồ sơ quá hạn chỉ có sau ba ngày kể từ lần nộp |
 | `dxos client add <tên> --model M --role R`, `dxos client list`, `dxos client role <tên> --role R`, `dxos client rotate <tên>`, `dxos client remove <tên>` | Đăng ký và quản lý ứng dụng ngoài gọi API bằng token máy (xem phần Ứng dụng ngoài ở trên) |
@@ -223,6 +223,12 @@ Timer của user chỉ chạy khi user còn phiên đăng nhập, trừ khi bậ
 Mỗi lượt ghi vào bucket `S3_ARCHIVE_BUCKET` của SeaweedFS các hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS` ngày (mặc định 365) mà kho chưa giữ, và ghi kết quả vào `deploy/archive.log`.
 Dữ liệu trong cơ sở dữ liệu giữ nguyên; `dxos archive list` xem các lần chạy, `dxos archive check --store <mô hình>/<lần chạy>` kiểm một lần.
 Lần chạy đầu cần mạng để DuckDB tải extension.
+
+Truy vấn hồ dữ liệu chỉ mở đúng một tệp Parquet, chọn bằng `--file`, của lần chạy được nêu trong `model/run`; tệp phải có trong manifest và khớp số dòng và SHA-256 của nó.
+Lệnh dựng bảng tạm `archive` từ tệp đó, tắt truy cập đường dẫn ngoài và chỉ nhận một câu `SELECT`, `WITH` hoặc `EXPLAIN` không chứa dấu `;`, kể cả trong chuỗi.
+Bộ nhớ, số thread và dung lượng tệp tạm lấy từ `ARCHIVE_QUERY_MEMORY_LIMIT`, `ARCHIVE_QUERY_THREADS` và `ARCHIVE_QUERY_TEMP_LIMIT`; bước kiểm SHA-256 cũng chạy trong giới hạn bộ nhớ và số thread đó, nên tệp lớn hơn giới hạn bị từ chối thay vì làm cạn bộ nhớ.
+Ví dụ: `dxos archive query onestop/20261111T030000Z --file request.parquet --param "status='CLOSED'" 'SELECT id, status FROM archive WHERE status = $status ORDER BY id'`.
+Tham số dùng cú pháp literal của DuckDB; giá trị chuỗi đặt trong dấu nháy đơn.
 
 ## Chế độ chỉ lõi
 

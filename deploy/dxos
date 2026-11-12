@@ -37,6 +37,8 @@
 #   dxos archive <model> [--before YYYY-MM-DD] [--out DIR | --store] | dxos archive check <dir | --store model/run>
 #                              write the finished records of a model and their history to Parquet files,
 #                              to a directory (default deploy/archive) or to the object store (--store)
+#   dxos archive query <model/run> --file FILE [--param name=value ...] "SELECT ... FROM archive"
+#                              query one Parquet file of an object-store run with DuckDB (read only)
 #   dxos archive list | auto | schedule install|uninstall
 #                              list the runs in the store; archive what is older than ARCHIVE_AFTER_DAYS
 #                              (once per record); auto runs every day with a systemd user timer
@@ -1105,6 +1107,95 @@ SELECT 'ROWS|$name|' || count(*) FROM read_parquet('$target/$name');"
   echo "Archive matches its manifest."
 }
 
+# Runs one read-only, parameterized query over one manifest-listed Parquet file of one object-store run.
+archive_query() {
+  local ref="${1:-}" file="" sql="" model run name value target query_input execute_args=""
+  local manifest_line manifest want_rows want_sum actual actual_rows actual_sum
+  local memory_limit threads temp_limit
+  local param_value_pattern="^(NULL|TRUE|FALSE|-?[0-9]+([.][0-9]+)?|'([^']|'')*')$"
+  local params=()
+  shift || true
+  model="${ref%%/*}"; run="${ref#*/}"
+  [[ "$model" =~ ^[a-z][a-z0-9_]*$ && "$run" =~ ^[0-9]{8}T[0-9]{6}Z$ ]] \
+    || die "not an archive run: $ref (expected model/YYYYMMDDTHHMMSSZ)"
+  while (( $# )); do
+    case "$1" in
+      --file) file="${2:?--file needs a Parquet file}"; shift 2 ;;
+      --file=*) file="${1#--file=}"; shift ;;
+      --param) params+=("${2:?--param needs name=value}"); shift 2 ;;
+      --param=*) params+=("${1#--param=}"); shift ;;
+      --) shift; sql="${1:-}"; shift; (( $# == 0 )) || die "query must be one SQL statement" ;;
+      -*) die "unknown option: $1" ;;
+      *) [[ -z "$sql" ]] || die "query must be one SQL statement"; sql="$1"; shift ;;
+    esac
+  done
+  [[ -n "$file" ]] || die "--file is required; choose one Parquet file in the selected archive run"
+  [[ "$file" =~ ^[A-Za-z0-9_]+\.parquet$ ]] \
+    || die "--file must name one Parquet file in the selected archive run"
+  [[ -n "$sql" ]] || die "usage: dxos archive query model/run --file FILE [--param name=value ...] \"SELECT ... FROM archive\""
+  sql="${sql%;}"
+  [[ "$sql" =~ ^[[:space:]]*(SELECT|WITH|EXPLAIN)([[:space:]]|$) ]] \
+    || die "archive query accepts SELECT, WITH, or EXPLAIN only"
+  [[ "$sql" != *';'* ]] || die "archive query accepts one SQL statement only"
+  for value in "${params[@]}"; do
+    name="${value%%=*}"
+    [[ "$value" == *=* && "$name" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] \
+      || die "--param must use name=value with a valid parameter name"
+    [[ "$value" != *$'\r'* && "$value" != *$'\n'* && "$value" != *';'* ]] \
+      || die "--param values cannot contain newlines or semicolons"
+    value="${value#*=}"
+    [[ "$value" =~ $param_value_pattern ]] \
+      || die "--param values must be NULL, TRUE, FALSE, a number, or a single-quoted string"
+    [[ -z "$execute_args" ]] || execute_args+=", "
+    execute_args+="$name := $value"
+  done
+  target="s3://$(archive_bucket)/$model/$run/$file"
+  manifest="$( { store_prelude
+    echo "SELECT 'FILE|' || f.rows || '|' || f.sha256 FROM (SELECT unnest(files) AS f FROM read_json('s3://$(archive_bucket)/$model/$run/manifest.json')) WHERE f.name = '$file';"
+    } | duckdb_store 2>&1)" \
+    || die "cannot read the manifest for $model/$run"
+  manifest_line="$(grep '^FILE|' <<<"$manifest" || true)"
+  [[ "$(grep -c '^FILE|' <<<"$manifest_line")" == 1 ]] \
+    || die "the Parquet file $file is not listed in the archive manifest"
+  IFS='|' read -r _ want_rows want_sum <<<"$manifest_line"
+  memory_limit="$(env_value ARCHIVE_QUERY_MEMORY_LIMIT)"; memory_limit="${memory_limit:-2GB}"
+  threads="$(env_value ARCHIVE_QUERY_THREADS)"; threads="${threads:-2}"
+  temp_limit="$(env_value ARCHIVE_QUERY_TEMP_LIMIT)"; temp_limit="${temp_limit:-4GB}"
+  [[ "$memory_limit" =~ ^[1-9][0-9]*(MB|GB|TB)$ ]] || die "ARCHIVE_QUERY_MEMORY_LIMIT must be a positive MB, GB, or TB value"
+  [[ "$threads" =~ ^[1-9][0-9]*$ ]] || die "ARCHIVE_QUERY_THREADS must be a positive integer"
+  [[ "$temp_limit" =~ ^[1-9][0-9]*(MB|GB|TB)$ ]] || die "ARCHIVE_QUERY_TEMP_LIMIT must be a positive MB, GB, or TB value"
+
+  # The checksum runs under the same limits as the query.
+  actual="$( { store_prelude
+    echo "SET memory_limit = '$memory_limit'; SET threads = $threads;"
+    echo "SELECT 'SUM|' || sha256(content) FROM read_blob('$target');"
+    echo "SELECT 'ROWS|' || count(*) FROM read_parquet('$target');"
+    } | duckdb_store 2>/dev/null)" \
+    || die "cannot verify $target against its archive manifest"
+  actual_sum="$(sed -n 's/^SUM|//p' <<<"$actual")"
+  actual_rows="$(sed -n 's/^ROWS|//p' <<<"$actual")"
+  [[ "$actual_sum" == "$want_sum" && "$actual_rows" == "$want_rows" ]] \
+    || die "the Parquet file $file does not match its archive manifest"
+
+  query_input="$(store_prelude)"
+  query_input+=$'\n'"SET allowed_paths = ['$target'];"$'\n'
+  query_input+="SET memory_limit = '$memory_limit';"$'\n'
+  query_input+="SET threads = $threads;"$'\n'
+  query_input+="SET max_temp_directory_size = '$temp_limit';"$'\n'
+  query_input+="SET enable_external_access=false;"$'\n'
+  query_input+="SET lock_configuration=true;"$'\n'
+  query_input+="CREATE OR REPLACE TEMP VIEW archive AS SELECT * FROM read_parquet('$target');"$'\n'
+  if (( ${#params[@]} )); then
+    query_input+="PREPARE archive_query AS $sql;"$'\n'
+    query_input+="EXECUTE archive_query($execute_args);"$'\n'
+  else
+    query_input+="$sql"$'\n'
+  fi
+  # CREATE SECRET in the prelude prints a first line "true"; drop it and keep the exit code of DuckDB.
+  duckdb_store <<<"$query_input" | sed '1{/^true$/d;}'
+  return "${PIPESTATUS[0]}"
+}
+
 # The runs in the object store, oldest first.
 archive_list() {
   local out rows model run since upto files
@@ -1168,10 +1259,11 @@ cmd_archive_schedule() {
 cmd_archive() {
   case "${1:-}" in
     check) shift; archive_check "$@" ;;
+    query) shift; archive_query "$@" ;;
     list) archive_list ;;
     auto) archive_auto ;;
     schedule) shift; cmd_archive_schedule "$@" ;;
-    ""|-*) die "usage: dxos archive <model> [--before YYYY-MM-DD] [--out DIR | --store] | check | list | auto | schedule" ;;
+    ""|-*) die "usage: dxos archive <model> [--before YYYY-MM-DD] [--out DIR | --store] | query | check | list | auto | schedule (query takes model/run --file FILE)" ;;
     *)
       local model="$1" before="" out="" store=0
       shift

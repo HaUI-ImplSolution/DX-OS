@@ -172,6 +172,24 @@ def main():
         open(upgrade_file, "w", encoding="utf-8").write(future)
         code, out, err = dxos(work, "model", "upgrade", "--write", "upgrade.yaml")
         check("CLI-25 a future format is refused without changing the file", code == 1 and "unsupported format 2" in out and open(upgrade_file, encoding="utf-8").read() == future, f"{code} {out[-300:]} {err[-200:]}")
+
+        # archive query: one manifest-listed file, read only, limited to the selected run.
+        code, out, err = dxos(work, "archive", "query", run_id, "--file", "incident.parquet", "--param", "status='rejected'", "SELECT count(*) FROM archive WHERE status = $status")
+        check("CLI-26 archive query reads one run with a bound parameter", code == 0 and out.strip() == "1", f"{code} {out[-200:]} {err[-200:]}")
+        code, out, err = dxos(work, "archive", "query", run_id, "SELECT count(*) FROM archive")
+        check("CLI-27 archive query requires an explicit Parquet file", code == 1 and "--file is required" in err, f"{code} {out[-200:]} {err[-200:]}")
+        code, out, err = dxos(work, "archive", "query", run_id, "--file", "*.parquet", "SELECT 1")
+        check("CLI-28 archive query rejects a Parquet glob", code == 1 and "one Parquet file" in err, f"{code} {out[-200:]} {err[-200:]}")
+        code, out, err = dxos(work, "archive", "query", run_id, "--file", "missing.parquet", "SELECT 1")
+        check("CLI-29 archive query requires a manifest-listed file", code == 1 and "not listed in the archive manifest" in err, f"{code} {out[-200:]} {err[-200:]}")
+        code, out, err = dxos(work, "archive", "query", run_id, "--file", "../secret.parquet", "SELECT 1")
+        check("CLI-30 archive query rejects a path outside the selected run", code == 1 and "Parquet file" in err, f"{code} {out[-200:]} {err[-200:]}")
+        code, out, err = dxos(work, "archive", "query", run_id, "--file", "incident.parquet", "DELETE FROM archive")
+        check("CLI-31 archive query rejects a non-read statement", code == 1 and "SELECT, WITH, or EXPLAIN" in err, f"{code} {out[-200:]} {err[-200:]}")
+        code, out, err = dxos(work, "archive", "query", run_id, "--file", "incident.parquet", "SELECT * FROM read_parquet('s3://outside/secret.parquet')")
+        check("CLI-32 archive query blocks SQL from reading outside the selected run", code != 0 and "file system operations are disabled by configuration" in err.lower(), f"{code} {out[-200:]} {err[-200:]}")
+        code, out, err = dxos(work, "archive", "query", run_id, "--file", "incident.parquet", "SELECT count(*) FROM archive")
+        check("CLI-33 archive query without parameters prints only the result", code == 0 and out.strip() == "1", f"{code} {out[-200:]} {err[-200:]}")
     finally:
         shutil.rmtree(work, ignore_errors=True)
         uid = kc.kc("GET", "/users?username=cli_tech&exact=true")[1]

@@ -400,6 +400,15 @@ public final class ModelDiff {
               null,
               after.deadline() == null ? "none" : after.deadline().toString()));
     }
+    if (!Objects.equals(before.escalations(), after.escalations())) {
+      changes.add(
+          new Change(
+              Level.SAFE,
+              "CHANGE_ESCALATION",
+              entity.name(),
+              null,
+              after.escalations().isEmpty() ? "none" : String.valueOf(after.escalations().size())));
+    }
     if (!Objects.equals(before.autoClose(), after.autoClose())
         || !Objects.equals(before.autoCloseAction(), after.autoCloseAction())) {
       changes.add(

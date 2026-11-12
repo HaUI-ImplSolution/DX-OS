@@ -181,7 +181,7 @@ Trạng thái của hồ sơ chỉ đổi qua quy trình.
 - Hạn xử lý lưu ở cột `handle_by` khi hồ sơ chờ người xử lý; `overdue` được tính khi đọc.
 - `CatalogService` cấp cho bảng điều khiển schema của tệp mô hình, các họ mẫu, mẫu mô hình và phiên bản đã áp dụng.
 - `DataCatalogService` mô tả dữ liệu của một mô hình đang chạy ở `GET /api/v1/models/{model}/data-catalog` (ADMIN): trường, vai được truy cập, số dòng, liên kết giữa các thực thể, và nơi dữ liệu đi vào (vai, ứng dụng ngoài) và đi ra (webhook, hành động hoàn tất, dòng sự kiện, lưu trữ).
-- `ProcessDiagramService` đọc một tệp mô hình bằng `ModelParser` và trả trạng thái, hành động, hạn, `auto_close` và hành động `after` của từng quy trình, hoặc danh sách lỗi kèm dòng và cột; không so với mô hình đang chạy.
+- `ProcessDiagramService` đọc một tệp mô hình bằng `ModelParser` và trả trạng thái, hành động, hạn, các mức leo thang, `auto_close` và hành động `after` của từng quy trình, hoặc danh sách lỗi kèm dòng và cột; không so với mô hình đang chạy.
 
 ## 7. Sự kiện và hành động sau quyết định
 
@@ -189,6 +189,7 @@ Trạng thái của hồ sơ chỉ đổi qua quy trình.
 - `OutboxController` cho ADMIN xem thông điệp theo trạng thái cùng lỗi gần nhất và thử lại thông điệp chưa gửi; `OutboxCleanup` xóa thông điệp đã gửi sau 30 ngày.
 - Hành động hoàn tất của khối `after:` đi qua outbox đến `CompletionHandler`; hiện có các thao tác `add_to_group` và `remove_from_group` của Keycloak.
 - `OverdueSweep` ghi dòng quá hạn vào lịch sử, một lần cho mỗi hạn, và dòng `due_soon` khi hồ sơ còn dưới `ENGINE_DUE_SOON_BEFORE` trước hạn.
+- `EscalationSweep` ghi dòng `escalated` (mức và lần nhắc) vào lịch sử mỗi khi một mức của `escalate` đến hạn trên hồ sơ quá hạn chưa ai xử lý, cùng giao dịch với tin gửi webhook; sau lúc dịch vụ tắt chỉ ghi mức mới nhất đã đến hạn, và không đổi trạng thái hay người giữ hồ sơ.
 - Khi mô hình có đích webhook (khóa `webhook` hoặc `DXOS_WEBHOOK_URL`), mỗi dòng lịch sử có thêm một thông điệp chủ đề `record.event` trong outbox cùng giao dịch, và `WebhookHandler` gửi nó kèm chữ ký.
   Các dòng của một hồ sơ được giao theo thứ tự.
   Việc áp dụng mô hình và thay đổi tài khoản đi qua chủ đề `admin.event`.
@@ -239,6 +240,8 @@ Dịch vụ lõi là kết nối ghi duy nhất vào dữ liệu nghiệp vụ; 
 `report_ro` đọc được mọi dòng của mọi bảng nghiệp vụ và không áp quyền `own`, `unit`, `assigned` của người xem, nên chỉ cấp cho công cụ báo cáo của người vận hành.
 Cách kết nối, giới hạn mạng và xoay mật khẩu ở [`deploy/REPORTING.md`](./deploy/REPORTING.md).
 Người dùng cuối xem số liệu qua `GET /api/v1/data/{model}/{entity}/stats`, nơi quyền theo dòng được áp dụng.
+Chất lượng dữ liệu đo ở `GET /api/v1/data/{model}/{entity}/quality`, trên đúng những dòng đó (ADMIN đo mọi dòng của thực thể và chỉ nhận số đếm): `DataQualityService` chạy mọi bean `QualityMetric` (độ điền, thiếu theo điều kiện, kiểm lại ràng buộc, độ mới), nên thêm một số đo là thêm một lớp.
+Số đo này nói dữ liệu đang có tốt đến đâu, khác với phả hệ là nói dữ liệu đến từ đâu.
 
 ## 12. Triển khai
 
@@ -265,5 +268,5 @@ Bốn nguyên lý kỹ thuật của đề:
 |---|---|
 | Phân tách theo vòng đời dữ liệu, đẩy dữ liệu lịch sử xuống hồ dữ liệu | `dxos archive --store` ghi hồ sơ đã đóng và lịch sử của chúng ra Parquet vào một bucket riêng của SeaweedFS kèm manifest và hash; `dxos archive schedule install` đặt lịch hằng ngày theo `ARCHIVE_AFTER_DAYS` |
 | Hội tụ dữ liệu hành chính (IT) và vận hành (OT) | Chương trình giả lập thiết bị tạo hồ sơ sự cố qua API (`examples/itot-simulator`), đi qua cùng quy trình, quyền và lịch sử với hồ sơ hành chính |
-| Quản trị dữ liệu, phả hệ và nguồn gốc | Tệp mô hình là danh mục dữ liệu, trang Danh mục dữ liệu đọc từ đó nơi dữ liệu đi vào, đi ra và liên kết giữa các thực thể; lịch sử hồ sơ chống sửa |
+| Quản trị dữ liệu, phả hệ và nguồn gốc | Tệp mô hình là danh mục dữ liệu, trang Danh mục dữ liệu đọc từ đó nơi dữ liệu đi vào, đi ra và liên kết giữa các thực thể, cùng số đo chất lượng của từng thực thể; lịch sử hồ sơ chống sửa |
 | Zero-Trust, GitOps, kiểm dịch mã độc, tự phục hồi | Token kiểm ở gateway và backend; ClamAV quét tệp khi bật; tệp mô hình là khai báo, xem trước rồi áp dụng; `dxos reconcile` và `restart: unless-stopped` |

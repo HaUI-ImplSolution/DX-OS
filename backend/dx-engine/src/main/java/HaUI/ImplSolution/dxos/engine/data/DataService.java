@@ -182,6 +182,26 @@ public class DataService {
     return new PageResponse<>(rows, page, size, count, (int) ((count + size - 1) / size));
   }
 
+  // The rows a measure covers: those the roles of the caller reach, or every row for an
+  // administrator, narrowed by the filter.<field> parameters, as the tail of a query with its
+  // parameters. A measure returns counts only, never a record.
+  record Rows(String from, MapSqlParameterSource values) {}
+
+  Rows rows(Model model, Entity entity, Map<String, String> params) {
+    MapSqlParameterSource values = new MapSqlParameterSource();
+    List<String> where = new ArrayList<>();
+    if (user.hasRole("ADMIN")) {
+      where.add("TRUE");
+    } else {
+      Access access = access(model, entity);
+      requireRead(access);
+      where.add(scope(model, entity, access.reads(), values));
+    }
+    filters(entity, params, where, values);
+    return new Rows(
+        " FROM " + table(model, entity) + " WHERE " + String.join(" AND ", where), values);
+  }
+
   // Counts over the rows the caller can see, with the same filters as list: in all, per status,
   // past their deadline at computedAt (handle_by before it), and per unit when the entity has a
   // unit field. An entity with a deadline also counts the decided records that closed on time and

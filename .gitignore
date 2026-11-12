@@ -54,6 +54,7 @@ deploy/.stopped
 deploy/.reconcile.*
 deploy/archive/
 deploy/duckdb/
+deploy/apisix/local.yaml
 
 # Logs and temporary files
 *.log

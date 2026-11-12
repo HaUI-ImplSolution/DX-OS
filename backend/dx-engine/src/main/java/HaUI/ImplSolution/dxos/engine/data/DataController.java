@@ -38,12 +38,17 @@ public class DataController {
   private final ModelRegistry registry;
   private final DataService service;
   private final IdempotencyService idempotency;
+  private final DataQualityService quality;
 
   public DataController(
-      ModelRegistry registry, DataService service, IdempotencyService idempotency) {
+      ModelRegistry registry,
+      DataService service,
+      IdempotencyService idempotency,
+      DataQualityService quality) {
     this.registry = registry;
     this.service = service;
     this.idempotency = idempotency;
+    this.quality = quality;
   }
 
   @GetMapping
@@ -85,6 +90,30 @@ public class DataController {
       @RequestParam Map<String, String> params) {
     Model m = registry.require(model);
     return ApiResponse.success(service.stats(m, entity(m, entity), params));
+  }
+
+  @GetMapping("/quality")
+  @Operation(
+      summary = "Measure the quality of the records the caller can see",
+      description =
+          "Takes the filter.<field> parameters of the list and staleDays (1 to 3650,"
+              + " default 90). sampleSize is the number of records measured and measuredAt the moment;"
+              + " the rows are those the list returns for the same filters, and for an administrator"
+              + " every row of the entity; only counts and rates are returned, never a record."
+              + " metrics.completeness gives"
+              + " per field how many records hold a value (an empty text or list counts as missing)"
+              + " and the rate, null when sampleSize is 0; metrics.requiredWhen gives per field that"
+              + " is required when a condition holds how many records meet it and how many of those"
+              + " hold no value; metrics.constraints gives per field with choices, bounds or a pattern"
+              + " how many stored values break them; metrics.freshness gives the oldest and newest"
+              + " change and how many records, those of a finished process excluded, have not changed"
+              + " within staleDays days. A query that runs longer than 10 seconds is cut.")
+  public ApiResponse<Map<String, Object>> quality(
+      @PathVariable String model,
+      @PathVariable String entity,
+      @RequestParam Map<String, String> params) {
+    Model m = registry.require(model);
+    return ApiResponse.success(quality.quality(m, entity(m, entity), params));
   }
 
   @GetMapping("/{id}")

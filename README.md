@@ -13,7 +13,7 @@
 
 Bài dự thi **OLP Phần mềm nguồn mở 2026**, khối thi DX-OS (VFOSSA), của đội **HaUI-ImplSolution**, Trường Công nghệ Thông tin và Truyền thông, Đại học Công nghiệp Hà Nội.
 
-**Đọc nhanh:** [Giới thiệu](#giới-thiệu) · [Tính năng](#tính-năng) · [Cách hoạt động](#cách-hoạt-động) · [Chạy thử](#chạy-thử) · [Tài liệu](#tài-liệu) · [Cấu trúc](#cấu-trúc-repository) · [Đóng góp](#đóng-góp) · [Giấy phép](#giấy-phép)
+**Đọc nhanh:** [Giới thiệu](#giới-thiệu) · [Tính năng](#tính-năng) · [Cách hoạt động](#cách-hoạt-động) · [Đối chiếu với đề thi](#đối-chiếu-với-đề-thi) · [Chạy thử](#chạy-thử) · [Tài liệu](#tài-liệu) · [Cấu trúc](#cấu-trúc-repository) · [Đóng góp](#đóng-góp) · [Giấy phép](#giấy-phép)
 
 ## Giới thiệu
 
@@ -36,11 +36,11 @@ Phiên bản hiện tại là `2.0.0`, thay đổi theo từng phiên bản ở 
 - **Đổi nghiệp vụ khi đã có dữ liệu.** Hệ thống cho xem trước tác động, cảnh báo rủi ro, giữ nguyên dữ liệu khi đổi tên và cho quay về phiên bản trước.
 - **Dấu vết không sửa được.** Lịch sử hồ sơ nối thành một chuỗi có dấu kiểm; nếu ai sửa, xóa hoặc chèn một dòng thì một lệnh chỉ ra đúng dòng đó.
 - **Kết nối ra ngoài.** Mọi thay đổi của hồ sơ được báo tới địa chỉ web hoặc kênh chat (Mattermost, Slack) với chữ ký để bên nhận kiểm tra, và được gửi lại khi bên nhận lỗi.
-- **Mở cho ứng dụng bên ngoài.** Mỗi mô hình có tài liệu API riêng, tự đổi theo mô hình; một ứng dụng ngoài được đăng ký với đúng một vai của một mô hình và gọi bằng mã bí mật của nó.
+- **Mở cho ứng dụng bên ngoài.** Mỗi mô hình có tài liệu API riêng, tự đổi theo mô hình; dịch vụ ngoài được đăng ký với đúng một vai và mã bí mật riêng, còn giao diện ở tên miền khác đăng nhập người dùng bằng OIDC Authorization Code với PKCE.
 - **Bảng điều khiển cho người triển khai.** Thư viện mẫu, trình soạn mô hình (viết tệp hoặc điền form, có hướng dẫn nói rõ viết được và mở rộng được gì) kèm sơ đồ quy trình vẽ theo tệp đang soạn, xem kế hoạch, áp dụng, lịch sử, quản lý người dùng và thống kê hồ sơ.
 - **Giao diện theo khai báo.** Tệp mô hình chọn được biểu tượng, nhóm menu, cột và sắp xếp mặc định, cách chia nhóm biểu mẫu và lời gợi ý; cán bộ chọn nhiều hồ sơ rồi xử lý cùng lúc, mỗi hồ sơ vẫn qua đủ luật.
 - **Xem theo trạng thái và xuất danh sách.** Danh sách của hồ sơ có quy trình xem được như một bảng theo từng trạng thái, và xuất ra tệp CSV mà bảng tính đọc được, đúng phần người xem được quyền thấy.
-- **Danh mục dữ liệu.** Một trang cho biết dữ liệu của mỗi mô hình nằm ở đâu, ai được xem, các loại hồ sơ liên quan nhau thế nào, dữ liệu đi vào từ đâu và đi ra đâu.
+- **Danh mục dữ liệu.** Một trang cho biết dữ liệu của mỗi mô hình nằm ở đâu, ai được xem, các loại hồ sơ liên quan nhau thế nào, dữ liệu đi vào từ đâu và đi ra đâu, và dữ liệu hiện có đầy đủ và còn mới đến đâu.
 - **Lưu trữ hồ sơ cũ.** Hồ sơ đã đóng lâu được ghi sang kho lưu trữ theo lịch mỗi ngày, dữ liệu đang dùng vẫn giữ nguyên và bản lưu kiểm lại được.
 - **Hộp việc tự cập nhật.** Khi hồ sơ đổi, hộp việc, danh sách và trang chi tiết đang mở tự làm mới, không cần tải lại trang.
 - **Dùng thử ngay.** Một lệnh tạo tài khoản thử cho từng vai cùng hồ sơ mẫu ở nhiều trạng thái, để người xem đăng nhập là thấy hệ thống có việc đang chạy.
@@ -66,6 +66,29 @@ Hệ thống có ba tầng:
 Sơ đồ và luồng một yêu cầu đi qua hệ thống ở [`ARCHITECTURE.md`](./ARCHITECTURE.md); cách viết tệp mô hình ở [`docs/MODEL.md`](./docs/MODEL.md).
 
 Mười mẫu có sẵn, chọn được ngay ở bảng điều khiển: một cửa sinh viên, hỗ trợ kỹ thuật, sự cố thiết bị, đặt phòng, cấp quyền dịch vụ CNTT, mượn thiết bị, ghi chú, sổ tài sản, đặt lịch khám và đổi trả hàng.
+
+## Đối chiếu với đề thi
+
+Đề OLP 2026 chia hệ thống thành các tầng và nêu bốn không gian cần chạm tới: H (môi trường số chung), P (rào chắn và luồng tự động), D (một nguồn sự thật) và I (trí tuệ nhân tạo).
+DX-OS ở Tầng 1 là lõi không giao diện, ở Tầng 2 là giao diện web và bảng điều khiển dựng trên lõi, còn Một cửa sinh viên và các nghiệp vụ khác là tệp mô hình, tức ứng dụng của Tầng 3.
+
+| Không gian | DX-OS làm gì | Trạng thái |
+|---|---|---|
+| H, môi trường số chung | Một lần đăng nhập; vai và đơn vị khai trong mô hình; mỗi người chỉ thấy phần việc của mình trong hộp việc, bảng theo trạng thái và lịch | Có |
+| P, rào chắn và luồng tự động | Trạng thái chỉ đổi qua quy trình; từ chối và trả lại bắt buộc có lý do; người tạo không tự duyệt hồ sơ của mình; hạn xử lý, quá hạn và leo thang lên vai khác; việc sau khi duyệt chạy qua hàng đợi và được thử lại | Có |
+| D, một nguồn sự thật | Dữ liệu, lịch sử và hàng đợi cùng nằm ở một cơ sở dữ liệu; lịch sử nối thành chuỗi chống sửa; mọi thay đổi báo ra ngoài bằng webhook có chữ ký; thống kê và danh mục dữ liệu | Có |
+| I, trí tuệ nhân tạo | Chưa có; chỉ dùng mô hình mở hoàn toàn theo định nghĩa của OSI, chưa chọn được mô hình đạt | Chưa làm |
+
+Các giao diện đi kèm được tính như sau.
+Giao diện của DX-OS là giao diện web, bảng điều khiển, trang liên kết (portal) và màn hình giám sát, đều ở Tầng 2; lõi chạy riêng không kèm giao diện nào.
+Keycloak Admin Console là giao diện của dịch vụ nguồn mở đi kèm chứ không phải của DX-OS, và mặc định không mở ra cổng vào.
+Đây là cách đọc của đội, chưa có xác nhận của Ban tổ chức.
+
+Đối chiếu chi tiết từng ý của đề ở [`DANH_GIA.md`](./docs/dynamic-core/DANH_GIA.md), việc còn lại ở [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md).
+
+Supabase, Strapi và Directus là các nền dựng backend từ bảng dữ liệu hoặc nội dung.
+DX-OS tập trung vào hồ sơ có quy trình: một tệp mô hình khai luôn vai, quyền theo dòng, quy trình duyệt, hạn xử lý và lịch sử chống sửa.
+Lý do từng nền được đọc để học hoặc không dùng làm nền ở [trang thành phần](https://haui-implsolution.github.io/DX-OS/docs/dependencies).
 
 ## Chạy thử
 
@@ -130,6 +153,7 @@ Trang tài liệu: <https://haui-implsolution.github.io/DX-OS/>.
 
 | Cần gì | Xem |
 |---|---|
+| Dùng hệ thống theo vai | [người nộp](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-nop), [người xử lý](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-xu-ly), [người triển khai](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-trien-khai) |
 | Viết tệp mô hình | [`docs/MODEL.md`](./docs/MODEL.md) |
 | Gọi API | [`docs/API.md`](./docs/API.md) và đặc tả OpenAPI (`/v3/api-docs`) của backend đang chạy |
 | Phát triển dịch vụ, webhook và giao diện mở rộng | [`docs/EXTENSIONS.md`](./docs/EXTENSIONS.md) |
@@ -142,27 +166,30 @@ Trang tài liệu: <https://haui-implsolution.github.io/DX-OS/>.
 | Kịch bản trình diễn 15 phút | [`docs/DEMO.md`](./docs/DEMO.md) |
 | Hướng thiết kế và việc còn lại | [`docs/dynamic-core/README.md`](./docs/dynamic-core/README.md), [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md) |
 | Thay đổi theo phiên bản | [`CHANGELOG.md`](./CHANGELOG.md) |
+| Giữ tương thích giữa các bản | [`docs/COMPATIBILITY.md`](./docs/COMPATIBILITY.md) |
+| Hướng phát triển | [`ROADMAP.md`](./ROADMAP.md) |
 | Thành phần bên thứ ba và giấy phép | [`DEPENDENCIES.txt`](./DEPENDENCIES.txt), [`NOTICE`](./NOTICE), [`sbom/`](./sbom/README.md) |
 
 ## Cấu trúc repository
 
-| Thư mục | Nội dung |
-|---|---|
-| `backend/dx-model` | Định dạng tệp mô hình: đọc và kiểm tra |
-| `backend/dx-core` | Thư viện dùng chung: bảo mật, audit, lưu trữ, trạng thái, client Keycloak |
-| `backend/dx-engine` | Dịch vụ lõi: áp dụng mô hình, API chung, Flowable |
-| `backend/dx-monitor` | Màn hình giám sát và truy vết |
-| `frontend` | Giao diện react-admin dựng từ metadata, có tiếng Việt và tiếng Anh |
-| `deploy` | Compose, gateway APISIX, bộ cài và lệnh `dxos`, script vận hành, script kiểm tra ở `deploy/dev` |
-| `sso`, `portal`, `seaweedfs` | Keycloak realm, trang portal, lưu trữ tệp |
-| `models` | Tệp mô hình sai mẫu cho kiểm tự động; mô hình mẫu dùng được ở `backend/dx-engine/src/main/resources/templates/` |
-| `examples` | Chương trình mẫu: bên nhận sự kiện giữ hash lịch sử ([`history-witness`](./examples/history-witness/README.md)), giả lập hệ thống IT/OT ([`itot-simulator`](./examples/itot-simulator/README.md)) |
-| `e2e` | Kiểm giao diện web trên trình duyệt (Playwright) |
-| `website` | Trang tài liệu (Docusaurus), đăng lên GitHub Pages |
-| `docs` | Hướng dẫn kiểm thử, tệp mô hình, API; hướng thiết kế ở `dynamic-core/` |
-| `sbom` | Danh mục thành phần CycloneDX của backend, web, và trang tài liệu |
-| `LICENSES` | Toàn văn giấy phép của kho theo chuẩn REUSE |
-| `.github` | Workflow CI, mẫu issue và pull request, quy tắc nhánh, script kiểm tra |
+| Thư mục | Tầng | Nội dung |
+|---|---|---|
+| `backend/dx-model` | Lõi | Định dạng tệp mô hình: đọc và kiểm tra |
+| `backend/dx-core` | Lõi | Thư viện dùng chung: bảo mật, audit, lưu trữ, trạng thái, client Keycloak |
+| `backend/dx-engine` | Lõi | Dịch vụ lõi: áp dụng mô hình, API chung, Flowable |
+| `backend/dx-monitor` | Ứng dụng | Màn hình giám sát và truy vết |
+| `frontend` | Ứng dụng | Giao diện react-admin dựng từ metadata, có tiếng Việt và tiếng Anh |
+| `deploy` | Dùng chung | Compose, gateway APISIX, bộ cài và lệnh `dxos`, script vận hành, script kiểm tra ở `deploy/dev` |
+| `sso`, `seaweedfs` | Lõi | Keycloak realm, lưu trữ tệp |
+| `portal` | Ứng dụng | Trang liên kết các địa chỉ và trạng thái dịch vụ |
+| `models` | Mô hình | Tệp mô hình sai mẫu cho kiểm tự động; mô hình mẫu dùng được ở `backend/dx-engine/src/main/resources/templates/` |
+| `examples` | Ngoài lõi | Chương trình mẫu: bên nhận sự kiện giữ hash lịch sử ([`history-witness`](./examples/history-witness/README.md)), giả lập hệ thống IT/OT ([`itot-simulator`](./examples/itot-simulator/README.md)) |
+| `e2e` | Kiểm thử | Kiểm giao diện web trên trình duyệt (Playwright) |
+| `website` | Tài liệu | Trang tài liệu (Docusaurus), đăng lên GitHub Pages |
+| `docs` | Tài liệu | Hướng dẫn kiểm thử, tệp mô hình, API; hướng thiết kế ở `dynamic-core/` |
+| `sbom` | Giấy phép | Danh mục thành phần CycloneDX của backend, web, và trang tài liệu |
+| `LICENSES` | Giấy phép | Toàn văn giấy phép của kho theo chuẩn REUSE |
+| `.github` | Dùng chung | Workflow CI, mẫu issue và pull request, quy tắc nhánh, script kiểm tra |
 
 ## Đóng góp
 

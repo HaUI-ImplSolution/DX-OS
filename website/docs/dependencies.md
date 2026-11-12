@@ -45,8 +45,9 @@ Dự án kéo image chính thức nguyên bản khi chạy, không đóng gói v
 | Thành phần | Kết luận | Lý do |
 |---|---|---|
 | NocoBase | Không làm nền | Điều khoản 5.4 và 7.3 trong LICENSE cấm cung cấp hoặc phân phối sản phẩm no-code, low-code hay PaaS xây trên nó, dù nhãn là Apache-2.0 |
-| Directus | Không dùng | Giấy phép có điều kiện, không thuộc OSI |
-| Supabase | Chỉ đọc để học | Đề gợi ý tham khảo; kiến trúc của nó (PostgreSQL, API sinh từ bảng, xác thực, lưu trữ) là mẫu để đọc, nhưng lõi cần đọc mô hình lúc chạy, đổi tên trường giữ dữ liệu và chặn đổi trạng thái ngoài quy trình, nên dịch vụ lõi tự viết phần API chung |
+| Directus | Không dùng | Giấy phép MSCL-1.0-GPL của Monospace giới hạn mục đích sử dụng (loại trừ sử dụng cạnh tranh với bản thương mại của họ), không thuộc OSI |
+| Strapi | Không làm nền | Một hệ quản trị nội dung không giao diện (headless CMS); mã ngoài thư mục `ee/` theo MIT nhưng mã trong `ee/` theo giấy phép Enterprise riêng, và MIT chỉ áp dụng khi không dùng phần `ee/` và không có tài khoản trên dịch vụ đám mây của họ, nên một kho trộn cả hai phần không đạt điều kiện nguồn mở thuần; được đánh giá ở mức giấy phép và mục đích, chưa chạy thử |
+| Supabase | Chỉ đọc để học | Apache-2.0; đề gợi ý tham khảo; kiến trúc của nó (PostgreSQL, API sinh từ bảng, xác thực, lưu trữ) là mẫu để đọc, nhưng lõi cần đọc mô hình lúc chạy, đổi tên trường giữ dữ liệu và chặn đổi trạng thái ngoài quy trình, nên dịch vụ lõi tự viết phần API chung |
 | Frappe | Chỉ lấy ý tưởng | Một mô hình là nguồn sự thật cho bảng, form và quyền; không dùng làm nền vì đề yêu cầu lõi không có giao diện |
 | Trình thiết kế BPMN kéo thả | Không làm | Người triển khai nhập tham số, hệ thống sinh quy trình từ họ mẫu |
 | Mattermost | Đã gỡ khỏi cây mã | Giấy phép bản Team Edition bị tranh cãi (MIT cho bản build, AGPL cho mã nguồn) và bản 11 giới hạn 250 người dùng; thông báo chat đi qua webhook dạng `chat` nên đổi sang Zulip, Slack hay dịch vụ khác chỉ đổi địa chỉ |
@@ -58,7 +59,6 @@ Dự án kéo image chính thức nguyên bản khi chạy, không đóng gói v
 | Cloudflare Tunnel và Access | Ngoài repository | Hai dịch vụ là đóng. Máy chủ công khai của đội dùng chúng, cấu hình giữ ngoài repository; hệ thống chạy được không cần chúng |
 
 Mã của bản trước (hai ứng dụng nghiệp vụ viết tay, Superset, Mattermost) nằm ở tag `v1.1.1`.
-Strapi chưa được đánh giá riêng.
 
 ## 4. Kiểm bằng máy
 

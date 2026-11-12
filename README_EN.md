@@ -13,7 +13,7 @@
 
 Entry of the **OLP Open Source Software 2026** contest, DX-OS track (VFOSSA), by team **HaUI-ImplSolution**, School of Information and Communication Technology, Hanoi University of Industry.
 
-**Quick links:** [Overview](#overview) · [Features](#features) · [How it works](#how-it-works) · [Try it](#try-it) · [Documentation](#documentation) · [Structure](#repository-structure) · [Contributing](#contributing) · [License](#license)
+**Quick links:** [Overview](#overview) · [Features](#features) · [How it works](#how-it-works) · [Against the brief](#against-the-brief) · [Try it](#try-it) · [Documentation](#documentation) · [Structure](#repository-structure) · [Contributing](#contributing) · [License](#license)
 
 ## Overview
 
@@ -36,11 +36,11 @@ The current version is `2.0.0`, and the changes of each version are in [`CHANGEL
 - **Changing the business once data exists.** The system previews the impact, warns about risk, keeps the values when something is renamed, and can return to the previous version.
 - **A trace that cannot be edited.** The history of records is one chain with checks; if anyone edits, deletes or inserts a line, one command names that line.
 - **Connections to the outside.** Every change to a record is reported to a web address or a chat channel (Mattermost, Slack), signed so the receiver can check it and sent again when the receiver fails.
-- **Open to outside applications.** Each model has its own API document that follows the model, and an outside application is registered with exactly one role of one model and calls with its own secret.
+- **Open to outside applications.** Each model has its own API document that follows the model; an outside service gets one model role and its own secret, while a browser interface on another domain signs users in with OIDC Authorization Code and PKCE.
 - **A control panel for the person deploying.** Template library, model editor (write the file or fill a form, with guidance on what can be written and extended) with a process diagram drawn from the file being written, plan preview, apply, history, user management and record statistics.
 - **An interface set by declaration.** The model file can choose icons, menu groups, the default columns and sort, how forms are grouped and the hints; an officer selects several records and handles them at once, each still going through every rule.
 - **Board by state and list export.** The list of records with a process can be seen as a board with one column per state, and exported to a CSV file a spreadsheet can read, with exactly the rows the viewer may see.
-- **A data catalog.** One page shows where the data of each model lives, who may see it, how the kinds of records relate, where the data comes in from and where it goes out.
+- **A data catalog.** One page shows where the data of each model lives, who may see it, how the kinds of records relate, where the data comes in from and where it goes out, and how complete and recent the data is.
 - **Archive of old records.** Records closed long ago are written to an archive store on a daily schedule, the data in use stays as it is, and the copy can be checked again.
 - **An inbox that updates itself.** When a record changes, the inbox, the lists and the detail page that are open refresh without reloading the page.
 - **Try it at once.** One command creates a trial account for each role and sample records in several states, so a visitor who signs in finds a system with work in it.
@@ -66,6 +66,29 @@ The system has three tiers:
 The diagrams and the path of one request through the system are in [`ARCHITECTURE.md`](./ARCHITECTURE.md) (Vietnamese); how to write a model file is in [`docs/MODEL.md`](./docs/MODEL.md) (Vietnamese).
 
 Ten templates are ready to pick in the control panel: student one-stop service, technical support, equipment incident, room booking, IT service access, equipment loan, notes, an asset register, clinic appointments and retail returns.
+
+## Against the brief
+
+The OLP 2026 brief splits a system into tiers and names four spaces to reach: H (a shared digital environment), P (guard rails and automatic flows), D (one source of truth) and I (artificial intelligence).
+DX-OS is, in Tier 1, a headless core, in Tier 2 a web interface and a control panel built on the core, and the student one-stop service and the other businesses are model files, which are the applications of Tier 3.
+
+| Space | What DX-OS does | State |
+|---|---|---|
+| H, shared digital environment | One sign-in; roles and units declared in the model; each person sees only their own work in the inbox, the board by state and the calendar | Done |
+| P, guard rails and automatic flows | A state changes only through the workflow; rejecting and returning need a reason; the creator cannot approve their own record; due and overdue dates and escalation to other roles; work after an approval runs through a queue and is retried | Done |
+| D, one source of truth | Data, history and queue live in one database; the history is chained so tampering shows; every change is reported outside by a signed webhook; statistics and a data catalog | Done |
+| I, artificial intelligence | None yet; only fully open models by the OSI definition will be used, and none that qualifies has been chosen | Not done |
+
+The interfaces that come with the system are counted as follows.
+The interfaces of DX-OS are the web interface, the control panel, the links page (portal) and the monitoring screen, all in Tier 2; the core run alone has no interface.
+The Keycloak Admin Console is the interface of an open source service that ships with it, not of DX-OS, and it is not opened to the gateway by default.
+This is the reading of the team and has not been confirmed by the organizers.
+
+The detailed check of each point of the brief is in [`DANH_GIA.md`](./docs/dynamic-core/DANH_GIA.md) and the remaining work in [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md), both in Vietnamese.
+
+Supabase, Strapi and Directus are foundations that build a backend from tables or content.
+DX-OS focuses on records with a workflow: one model file declares the roles, the row-level permissions, the approval workflow, the due dates and the tamper-evident history together.
+Why each one was read for ideas or not used as a base is on the [components page](https://haui-implsolution.github.io/DX-OS/docs/dependencies) (Vietnamese).
 
 ## Try it
 
@@ -131,6 +154,7 @@ The documents are written in Vietnamese; the API reference is the OpenAPI specif
 
 | You need | See |
 |---|---|
+| Using the system by role | [submitters](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-nop), [handlers](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-xu-ly), [deployers](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-trien-khai}) (Vietnamese) |
 | Writing a model file | [`docs/MODEL.md`](./docs/MODEL.md) |
 | Calling the API | [`docs/API.md`](./docs/API.md) and the OpenAPI specification (`/v3/api-docs`) of the running backend |
 | Building extension services, webhooks, and custom UIs | [`docs/EXTENSIONS.md`](./docs/EXTENSIONS.md) (Vietnamese) |
@@ -143,27 +167,30 @@ The documents are written in Vietnamese; the API reference is the OpenAPI specif
 | The 15-minute demonstration script | [`docs/DEMO.md`](./docs/DEMO.md) |
 | Design and remaining work | [`docs/dynamic-core/README.md`](./docs/dynamic-core/README.md), [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md) |
 | Changes by version | [`CHANGELOG.md`](./CHANGELOG.md) |
+| Compatibility between versions | [`docs/COMPATIBILITY.md`](./docs/COMPATIBILITY.md) (Vietnamese) |
+| Where the project is going | [`ROADMAP.md`](./ROADMAP.md) (Vietnamese) |
 | Third-party components and licenses | [`DEPENDENCIES.txt`](./DEPENDENCIES.txt), [`NOTICE`](./NOTICE), [`sbom/`](./sbom/README.md) |
 
 ## Repository structure
 
-| Folder | Content |
-|---|---|
-| `backend/dx-model` | The model file format: reading and checking |
-| `backend/dx-core` | Shared library: security, audit, storage, state, Keycloak client |
-| `backend/dx-engine` | The core service: applying models, the common API, Flowable |
-| `backend/dx-monitor` | The monitoring and tracing screen |
-| `frontend` | A react-admin interface built from metadata, in Vietnamese and English |
-| `deploy` | Compose, the APISIX gateway, the installer and the `dxos` command, operation scripts, check scripts in `deploy/dev` |
-| `sso`, `portal`, `seaweedfs` | The Keycloak realm, the portal page, file storage |
-| `models` | Invalid model files for automatic checks; usable sample models are in `backend/dx-engine/src/main/resources/templates/` |
-| `examples` | Sample programs: a receiver that keeps history hashes ([`history-witness`](./examples/history-witness/README.md)), an IT/OT system simulator ([`itot-simulator`](./examples/itot-simulator/README.md)) |
-| `e2e` | Browser tests of the web interface (Playwright) |
-| `website` | The docs site (Docusaurus), published on GitHub Pages |
-| `docs` | The testing guide, the model file and the API; the design is in `dynamic-core/` |
-| `sbom` | CycloneDX component lists of the backend, the web interface and the docs site |
-| `LICENSES` | The full text of the licenses of the repository, as the REUSE specification asks |
-| `.github` | CI workflows, issue and pull request templates, branch rules, check scripts |
+| Folder | Tier | Content |
+|---|---|---|
+| `backend/dx-model` | Core | The model file format: reading and checking |
+| `backend/dx-core` | Core | Shared library: security, audit, storage, state, Keycloak client |
+| `backend/dx-engine` | Core | The core service: applying models, the common API, Flowable |
+| `backend/dx-monitor` | Apps | The monitoring and tracing screen |
+| `frontend` | Apps | A react-admin interface built from metadata, in Vietnamese and English |
+| `deploy` | Shared | Compose, the APISIX gateway, the installer and the `dxos` command, operation scripts, check scripts in `deploy/dev` |
+| `sso`, `seaweedfs` | Core | The Keycloak realm, file storage |
+| `portal` | Apps | The page that links the addresses and the state of the services |
+| `models` | Models | Invalid model files for automatic checks; usable sample models are in `backend/dx-engine/src/main/resources/templates/` |
+| `examples` | Outside the core | Sample programs: a receiver that keeps history hashes ([`history-witness`](./examples/history-witness/README.md)), an IT/OT system simulator ([`itot-simulator`](./examples/itot-simulator/README.md)) |
+| `e2e` | Testing | Browser tests of the web interface (Playwright) |
+| `website` | Documentation | The docs site (Docusaurus), published on GitHub Pages |
+| `docs` | Documentation | The testing guide, the model file and the API; the design is in `dynamic-core/` |
+| `sbom` | Licenses | CycloneDX component lists of the backend, the web interface and the docs site |
+| `LICENSES` | Licenses | The full text of the licenses of the repository, as the REUSE specification asks |
+| `.github` | Shared | CI workflows, issue and pull request templates, branch rules, check scripts |
 
 ## Contributing
 

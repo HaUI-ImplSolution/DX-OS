@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-# Gateway configuration. The `apisix-config` service of docker-compose.yml adds the delivery key
-# of the monitor and the #END marker to build the file APISIX loads.
+# Core gateway configuration. The apisix-config service merges local.yaml and fills the monitor key.
 #
 # Single entry point of the stack: port 9080 serves the web app, API, Keycloak, file storage,
 # portal and the monitor screen.

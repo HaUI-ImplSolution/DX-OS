@@ -1117,11 +1117,13 @@ public final class ModelParser {
       return null;
     }
     AutoClose autoClose = readAutoClose(keys.get("auto_close"), family, definition);
+    Duration deadline = deadline(keys.get("deadline"));
     return new Process(
         family,
         handlers,
         flag(keys.get("allow_self_decision"), "allow_self_decision"),
-        deadline(keys.get("deadline")),
+        deadline,
+        readEscalations(keys.get("escalate"), deadline, roleNames, access),
         autoClose.after(),
         autoClose.action(),
         readAfter(keys.get("after"), definition, fields),
@@ -1821,6 +1823,78 @@ public final class ModelParser {
   // A number followed by m (minutes), h (hours) or d (days), such as 90m, 72h or 3d.
   private Duration deadline(Node node) {
     return duration(node, "deadline", "72h");
+  }
+
+  // The notices sent to other roles while an overdue record stays unhandled: a list of levels,
+  // each with the time past the deadline, the roles to tell and how often to repeat.
+  private List<Escalation> readEscalations(
+      Node node, Duration deadline, Set<String> roleNames, Map<String, Scope> access) {
+    if (node == null) {
+      return List.of();
+    }
+    if (!(node instanceof SequenceNode sequence) || sequence.getValue().isEmpty()) {
+      problem(node, "escalate is a list of {after: 24h, to: MANAGER}");
+      return List.of();
+    }
+    if (deadline == null) {
+      problem(node, "escalate counts from the deadline, so the process needs a deadline");
+      return List.of();
+    }
+    if (sequence.getValue().size() > ProcessSyntax.MAX_ESCALATIONS) {
+      problem(node, "escalate has at most " + ProcessSyntax.MAX_ESCALATIONS + " levels");
+      return List.of();
+    }
+    List<Escalation> levels = new ArrayList<>();
+    for (Node item : sequence.getValue()) {
+      if (!(item instanceof MappingNode map)) {
+        problem(item, "a level of escalate is {after: 24h, to: MANAGER}");
+        continue;
+      }
+      Map<String, Node> keys = mapping(map, ProcessSyntax.ESCALATION);
+      if (keys.get("after") == null) {
+        problem(map, "an escalation level needs after, the time past the deadline");
+      }
+      Duration after =
+          keys.get("after") == null ? null : duration(keys.get("after"), "after", "24h");
+      List<String> to = readRoles(map, keys.get("to"), "to", "escalation role", roleNames, access);
+      int before = problems.size();
+      Duration every = null;
+      int times = 1;
+      if (keys.get("repeat") != null) {
+        if (keys.get("repeat") instanceof MappingNode repeat) {
+          Map<String, Node> parts = mapping(repeat, ProcessSyntax.REPEAT);
+          every = duration(parts.get("every"), "every", "12h");
+          times = repeatTimes(repeat, parts.get("times"));
+          if (parts.get("every") == null) {
+            problem(repeat, "repeat needs every, the time between two notices");
+          }
+        } else {
+          problem(keys.get("repeat"), "repeat is {every: 12h, times: 3}");
+        }
+      }
+      if (after != null && to != null && problems.size() == before) {
+        levels.add(new Escalation(after, to, times > 1 ? every : null, times));
+      }
+    }
+    return levels.size() == sequence.getValue().size() ? List.copyOf(levels) : List.of();
+  }
+
+  private int repeatTimes(Node repeat, Node node) {
+    if (node == null) {
+      problem(repeat, "repeat needs times, how many notices a level sends");
+      return 1;
+    }
+    String text = scalar(node);
+    try {
+      int times = Integer.parseInt(text);
+      if (times >= 1 && times <= ProcessSyntax.MAX_REPEATS) {
+        return times;
+      }
+    } catch (NumberFormatException e) {
+      // reported below
+    }
+    problem(node, "times is a whole number from 1 to " + ProcessSyntax.MAX_REPEATS);
+    return 1;
   }
 
   // How long a record waits for its owner before the system takes an action for them: a time

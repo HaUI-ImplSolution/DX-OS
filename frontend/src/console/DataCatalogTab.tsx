@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 import { useEffect, useState } from "react";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Alert,
   Box,
   Card,
@@ -15,6 +18,7 @@ import {
   Typography,
 } from "@mui/material";
 import { getDataCatalog, listApplied, type DataCatalog, type DataPoint } from "./api";
+import DataQualityPanel from "./DataQualityPanel";
 import { SCOPE_LABEL } from "./formGuide";
 import { t } from "../shell/t";
 
@@ -162,6 +166,12 @@ export default function DataCatalogTab() {
                   </TableBody>
                 </Table>
               </Box>
+              <Accordion disableGutters variant="outlined" sx={{ mt: 2 }} slotProps={{ transition: { unmountOnExit: true } }}>
+                <AccordionSummary>{t("Chất lượng dữ liệu")}</AccordionSummary>
+                <AccordionDetails>
+                  <DataQualityPanel key={`${catalog.model}-${entity.name}`} model={catalog.model} entity={entity.name} />
+                </AccordionDetails>
+              </Accordion>
             </Card>
           ))}
         </Box>

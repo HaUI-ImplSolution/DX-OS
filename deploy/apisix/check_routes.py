@@ -1,59 +1,37 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0
-"""Fails when a gateway route has no token check and is not on the list of public routes below.
-
-Run from anywhere: python3 deploy/apisix/check_routes.py
-A route counts as checked when it uses the bearer-token plugin config or the openid-connect plugin.
-"""
-import os
-import sys
+"""Checks gateway routes with the same renderer and APISIX image used at runtime."""
+import argparse
+import subprocess
+from pathlib import Path
 
 import yaml
 
-APISIX = os.path.dirname(os.path.abspath(__file__))
-
-# Route id -> why it may be reached without a token.
-PUBLIC = {
-    "api-system-status": "service status shown by the web client before sign-in",
-    "api-preflight": "CORS preflight carries no token",
-    "api-docs": "Swagger UI and OpenAPI document",
-    "keycloak-login": "sign-in and token exchange of Keycloak",
-    "keycloak": "Keycloak pages, which sign users in themselves",
-    "keycloak-admin": "Keycloak Admin Console, opened only by KEYCLOAK_ADMIN_CONSOLE=true; it signs users in itself",
-    "keycloak-admin-closed": "answers 404 where the Admin Console is closed",
-    "swagger-ui-removed": "answers 404 where the core had a Swagger UI",
-    "photos": "presigned links; the signature is the credential",
-    "portal-root": "static portal",
-    "portal": "static portal",
-    "monitor-ingest": "gateway events delivered with the monitor key",
-    "monitor": "monitor pages, which sign users in with Keycloak",
-    "web": "static web client",
-}
-
-
-def routes_of(path):
-    data = yaml.safe_load(open(path, encoding="utf-8"))
-    return (data.get("routes", []) if isinstance(data, dict) else data) or []
-
-
-def is_checked(route):
-    return (route.get("plugin_config_id") == "bearer-token"
-            or "openid-connect" in (route.get("plugins") or {}))
-
-
 def main():
-    routes = routes_of(os.path.join(APISIX, "common.yaml"))
-    unchecked = {route["id"] for route in routes if not is_checked(route)}
-    errors = [f"route {rid} has no token check and is not on the public list"
-              for rid in sorted(unchecked - PUBLIC.keys())]
-    errors += [f"public list names {rid}, which no longer exists or now has a token check"
-               for rid in sorted(PUBLIC.keys() - unchecked)]
-    for error in errors:
-        print(error, file=sys.stderr)
-    if errors:
-        sys.exit(1)
-    print(f"{len(routes)} routes; {len(unchecked)} public on purpose, the others check the token.")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--local", type=Path, help="installation routes to check instead of apisix/local.yaml")
+    parser.add_argument("--mode", choices=("full", "core"), default="full")
+    parser.add_argument("--admin-console", action="store_true", help="check with the Keycloak Admin Console enabled")
+    args = parser.parse_args()
+    source = Path(__file__).resolve().parent
+    compose = yaml.safe_load((source.parent / "docker-compose.yml").read_text())
+    command = ["docker", "run", "--rm", "--network", "none", "-v", f"{source}:/src:ro",
+               "-e", f"DXOS_MODE={args.mode}",
+               "-e", f"KEYCLOAK_ADMIN_CONSOLE={str(args.admin_console).lower()}"]
+    if args.local:
+        if not args.local.is_file():
+            parser.error("--local must name an existing file")
+        command += ["-v", f"{args.local.resolve()}:/local.yaml:ro"]
+    command += ["--entrypoint", "/usr/local/openresty/bin/resty", compose["services"]["apisix"]["image"],
+                "--errlog-level", "error", "-I", "/usr/local/apisix", "-I", "/usr/local/apisix/deps/share/lua/5.1",
+                "-I", "/usr/local/apisix/deps/lib/lua/5.1", "/src/render.lua", "--check"]
+    if args.local:
+        command += ["--local", "/local.yaml"]
+    try:
+        return subprocess.run(command, check=False).returncode
+    except OSError:
+        parser.exit(1, "Docker is required to check the gateway routes.\n")
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

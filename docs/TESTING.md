@@ -175,7 +175,9 @@ Hướng dẫn và mẫu mô hình, kiểm bằng đúng các lệnh và thao t�
    - Đăng ký một ứng dụng bằng `dxos client add`, lấy token từ tệp secret và tải OpenAPI của mô hình đúng như lệnh trong tài liệu.
    - Mô hình khác và API quản trị trả 403.
    - Hai lần tạo cùng `Idempotency-Key` và cùng nội dung trả cùng `id`, khác nội dung trả 409.
-   - Thêm upstream và route mẫu vào `deploy/apisix/common.yaml`: `check_routes.py` đạt, bỏ `plugin_config_id` thì báo thiếu kiểm token.
+   - Đặt upstream và route mẫu trong `deploy/apisix/local.yaml`, chạy `docker compose run --rm --no-deps apisix-config --check`: mẫu đạt; thiếu token check, trùng id hoặc đường dẫn lõi, plugin/schema sai và tham chiếu thiếu phải bị từ chối.
+   - Nạp cấu hình bằng cùng lệnh bỏ `--check`; sửa hoặc bỏ local rồi nạp lại, gateway đang chạy nhận cấu hình mới; cấu hình lỗi giữ nguyên file đầu ra.
+   - Nâng bản cài từ archive với file local có sẵn: nội dung file giữ nguyên, không có trong `.dxos-files`, route riêng vẫn được ghép với cấu hình lõi mới.
    - Sau khi nạp lại cấu hình, không token và token sai trả 401, token đúng tới được dịch vụ với nguyên đường dẫn.
 3. Mẫu Đặt lịch khám và Đổi trả hàng, cấp vai theo mô hình cho tài khoản thử và chỉ dùng dữ liệu giả:
    - Ở Thư viện mẫu bấm Dùng mẫu này rồi áp dụng từng mẫu.

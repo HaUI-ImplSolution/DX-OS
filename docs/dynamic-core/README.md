@@ -503,7 +503,7 @@ Mã dịch vụ và bên nhận webhook nằm ngoài lõi; trang hay thành ph�
 | Trang riêng trong ứng dụng Tầng 2 | Sửa và dựng lại frontend; chưa có registry plugin |
 | Họ mẫu quy trình riêng | Khai báo `states` và `actions` trong tệp mô hình; vẫn chịu quy tắc bất biến và bị kiểm khi áp dụng |
 | Thành phần riêng trong form | Chưa có điểm đăng ký; ưu tiên khối `ui:` của tệp mô hình |
-| Route riêng trong APISIX | Sửa tệp runtime do lõi quản lý; chưa được bảo toàn qua `dxos update` |
+| Route riêng trong APISIX | Khai `deploy/apisix/local.yaml` của bản cài, kiểm rồi ghép với route lõi; giữ file riêng qua `dxos update` |
 
 Đổi tên trường có thể làm hỏng mã mở rộng đang dùng trường đó, nên kế hoạch nêu rõ các tên bị đổi.
 

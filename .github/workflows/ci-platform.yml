@@ -54,21 +54,43 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: The gateway file is valid and has routes
+      - name: Validate the core routes and the installation example
         run: |
-          python3 - deploy/apisix/common.yaml <<'PY'
-          import sys
-          import yaml
+          for mode in full core; do
+            for admin in false true; do
+              args=(--mode "$mode")
+              if [[ "$admin" == true ]]; then args+=(--admin-console); fi
+              python3 deploy/apisix/check_routes.py "${args[@]}"
+              python3 deploy/apisix/check_routes.py "${args[@]}" --local deploy/apisix/local.example.yaml
+            done
+          done
 
-          config = yaml.safe_load(open(sys.argv[1], encoding="utf-8"))
-          ids = [route["id"] for route in config["routes"]]
-          assert len(ids) == len(set(ids)), f"duplicate route ids: {ids}"
-          assert {upstream["id"] for upstream in config["upstreams"]} >= {
-              route["upstream_id"] for route in config["routes"] if "upstream_id" in route}
-          PY
+      - name: Invalid installation routes are refused
+        run: |
+          python3 - <<'PYTHON'
+          import copy
+          import json
+          import pathlib
+          import subprocess
+          import tempfile
 
-      - name: Every route without a token check is on the public list
-        run: python3 deploy/apisix/check_routes.py
+          base = {"routes": [{"id": "extension", "uri": "/extensions/example/*",
+                              "upstream_id": "backend", "plugin_config_id": "bearer-token"}]}
+          with tempfile.TemporaryDirectory() as directory:
+              path = pathlib.Path(directory) / "local.yaml"
+              for change in ({"id": "api"}, {"uri": "/api/private"},
+                             {"upstream_id": "missing"}, {"plugin_config_id": "missing"},
+                             {"methods": ["INVALID"]}, {"plugin_config_id": None}):
+                  local = copy.deepcopy(base)
+                  for key, value in change.items():
+                      if value is None:
+                          local["routes"][0].pop(key, None)
+                      else:
+                          local["routes"][0][key] = value
+                  path.write_text(json.dumps(local))
+                  result = subprocess.run(["python3", "deploy/apisix/check_routes.py", "--local", str(path)])
+                  assert result.returncode != 0, f"accepted invalid installation route: {change}"
+          PYTHON
 
   install:
     name: Install from the release archive
@@ -90,6 +112,20 @@ jobs:
 
       - name: The archive passes the checks of the release workflow
         run: .github/scripts/check_archive.sh "$RUNNER_TEMP/dx-os-0.0.0.tar.gz" 0.0.0
+
+      - name: Upgrade preserves installation routes outside the runtime manifest
+        run: |
+          prefix="$RUNNER_TEMP/dx-os"
+          printf 'routes: []\n' > "$RUNNER_TEMP/local.yaml"
+          cp "$RUNNER_TEMP/local.yaml" "$prefix/deploy/apisix/local.yaml"
+          echo deploy/apisix/local.yaml >> "$prefix/.dxos-files"
+          bash deploy/get.sh --upgrade --file "$RUNNER_TEMP/dx-os-0.0.0.tar.gz" --prefix "$prefix"
+          cmp "$RUNNER_TEMP/local.yaml" "$prefix/deploy/apisix/local.yaml"
+          if grep -qx deploy/apisix/local.yaml "$prefix/.dxos-files"; then
+            echo "installation routes must not be managed runtime files"; exit 1
+          fi
+          test -f "$prefix/deploy/apisix/render.lua"
+          test -f "$prefix/deploy/apisix/local.example.yaml"
 
       - name: A changed archive is refused
         run: |

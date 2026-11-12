@@ -177,6 +177,8 @@ process:
 Hai hành động có `when` loại trừ nhau chia hồ sơ theo giá trị một trường; hành động không có `when` luôn là lối thoát:
 
 ```yaml
+states:
+  lead_approved: {label: Chờ giám đốc}
 actions:
   lead_approve: {from: submitted, to: approved, role: LEAD, when: "amount <= 5000000"}
   lead_forward: {from: submitted, to: lead_approved, role: LEAD, when: "amount > 5000000"}

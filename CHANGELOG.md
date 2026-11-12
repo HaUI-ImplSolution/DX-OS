@@ -52,6 +52,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Tài liệu
 
+- `docs/TARGETS.md` ghi cách đo và kết quả của các chỉ số mục tiêu: mức 1, 2 và 3 của một hệ thống, quy tắc đếm mã tự viết (`deploy/dev/count_own_code.py`), thời gian dựng và đổi, bài thử có hướng dẫn kèm một bản mô phỏng người mới, và chi phí hạ tầng của cấu hình tham chiếu.
 - Ba trang hướng dẫn sử dụng theo vai ở trang docs: người nộp hồ sơ, người xử lý hồ sơ và người triển khai.
 - `ROADMAP.md` nêu hướng phát triển theo nhóm, và `docs/COMPATIBILITY.md` nêu cách giữ tương thích giữa các bản cho API, tệp mô hình, webhook và cơ sở dữ liệu, kèm cách báo trước khi bỏ một phần.
 - `README.md` và `README_EN.md` có mục đối chiếu với đề thi theo bốn không gian H, P, D, I, cột Tầng trong bảng cấu trúc repository và đoạn nói DX-OS khác Supabase, Strapi, Directus ở chỗ nào.

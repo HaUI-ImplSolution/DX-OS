@@ -108,8 +108,10 @@ Cấu hình đặt tên các tệp ở `DXOS_MODEL_FILE`, cách nhau bằng dấ
 ### Nâng format tệp mô hình
 
 `dxos model upgrade <tệp>` gọi API nâng format và in unified diff mà không ghi tệp.
-`dxos model upgrade --write <tệp>` in cùng diff rồi ghi toàn bộ kết quả vào file tạm cùng thư mục và rename qua tệp gốc; quyền file được giữ lại.
+`dxos model upgrade --write <tệp>` in cùng diff rồi ghi toàn bộ kết quả vào file tạm cùng thư mục và rename qua tệp gốc.
+Quyền, chủ sở hữu và nhóm của tệp được giữ lại (không giữ được chủ sở hữu thì lệnh cảnh báo), nội dung được ghi xuống đĩa trước khi rename, và tệp là liên kết mềm thì nâng tệp đích còn liên kết giữ nguyên.
 Format `0` được nâng tuần tự lên format hiện hành `1`; chạy lại format `1` không đổi nội dung, còn format mới hơn bản lõi hoặc thiếu một bước migration bị từ chối.
+Sau khi ghi tệp đã nâng, `dxos apply` lần đầu tạo thêm một phiên bản không đổi bảng hay quyền nào (kế hoạch báo SAFE, không có thay đổi), và `dxos plan --check` trả 2 cho đến lúc đó.
 
 Nếu lệnh lỗi trước rename, tệp gốc giữ nguyên.
 Xóa file `.dxos-model-upgrade.*` còn sót sau khi máy bị dừng đột ngột, sửa nguyên nhân rồi chạy lại; sau khi rename, khôi phục bằng Git hoặc bản sao lưu nếu cần.

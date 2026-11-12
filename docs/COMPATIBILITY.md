@@ -29,11 +29,12 @@ Bên gọi nên bỏ qua trường mà mình không biết.
 
 ## Tệp mô hình
 
-Tệp mô hình ghi `format` là số của định dạng; hiện là `0`.
+Tệp mô hình ghi `format` là số của định dạng; hiện là `1`.
 
 - Thêm một khóa tùy chọn vào định dạng không đổi `format`.
 - Đổi định dạng theo cách làm tệp cũ không còn hợp lệ thì tăng `format`, và ghi cách chuyển ở `CHANGELOG.md`.
 - Trong cùng bản chính, một tệp hợp lệ ở bản trước vẫn hợp lệ.
+- Lõi tự nâng tệp format cũ trong bộ nhớ khi đọc; `dxos model upgrade` xem trước và ghi tệp đã nâng (xem `docs/MODEL.md`).
 
 Đổi một mô hình đang chạy đi qua kế hoạch: lõi nói trước thay đổi nào chuyển được dữ liệu, thay đổi nào bị từ chối và vì sao (xem [`docs/MODEL.md`](./MODEL.md)).
 

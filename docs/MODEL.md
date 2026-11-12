@@ -39,8 +39,9 @@ Lõi vẫn đọc format `0` bằng cách chạy migration `0 → 1` trong bộ 
 `dxos model upgrade <tệp>` gọi cùng pipeline migration và in unified diff mà không ghi tệp.
 Sau khi đọc diff, chạy `dxos model upgrade --write <tệp>` để thay tệp bằng kết quả hoàn chỉnh qua một lần rename nguyên tử.
 Chạy lại trên format hiện hành không đổi nội dung.
+Hệ thống nhận ra tệp đổi theo nội dung chữ, nên lần áp dụng đầu của tệp đã nâng tạo thêm một phiên bản không đổi bảng hay quyền nào, và `dxos plan --check` trả 2 cho đến lúc đó.
 
-File tạm nằm cùng thư mục với tệp gốc.
+File tạm nằm cùng thư mục với tệp gốc (với liên kết mềm là thư mục của tệp đích), giữ quyền, chủ sở hữu và nhóm của tệp.
 Nếu migration, API, trích xuất kết quả hoặc ghi file tạm lỗi thì tệp gốc giữ nguyên; nếu tiến trình dừng trước rename thì xóa file `.dxos-model-upgrade.*` còn sót và chạy lại.
 Sau rename, dùng lịch sử Git hoặc bản sao lưu để quay lại nếu không muốn giữ kết quả.
 

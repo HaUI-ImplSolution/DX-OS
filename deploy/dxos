@@ -478,7 +478,7 @@ cmd_apply() {
 
 # Shows the complete format upgrade before an optional atomic replacement of the model file.
 cmd_model_upgrade() (
-  local write=false file="" dir work upgraded diff_status=0
+  local write=false file="" target dir work upgraded diff_status=0
   while (( $# )); do
     case "$1" in
       --write) write=true; shift ;;
@@ -492,7 +492,9 @@ cmd_model_upgrade() (
   api POST /models/upgrade "$file"
   if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
 
-  dir="$(dirname "$file")"
+  # A symlinked model file is upgraded where it points; the link stays.
+  target="$(readlink -f -- "$file")"
+  dir="$(dirname "$target")"
   work="$(mktemp -d "$dir/.dxos-model-upgrade.XXXXXX")"
   trap 'rm -rf "$work"' EXIT
   upgraded="$work/upgraded.yaml"
@@ -515,8 +517,12 @@ cmd_model_upgrade() (
     echo "Preview only; run with --write to replace the file."
     return 0
   fi
-  chmod --reference="$file" "$upgraded"
-  mv -f -- "$upgraded" "$file"
+  chmod --reference="$target" "$upgraded"
+  chown --reference="$target" "$upgraded" 2>/dev/null \
+    || echo "Warning: the owner and group of $file could not be kept." >&2
+  sync -- "$upgraded" 2>/dev/null || true
+  mv -f -- "$upgraded" "$target"
+  sync -- "$dir" 2>/dev/null || true
   echo "Upgraded $file atomically."
 )
 

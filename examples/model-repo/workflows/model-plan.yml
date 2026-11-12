@@ -1,0 +1,47 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copy to .github/workflows/ of the model repository. The runner is a self-hosted runner on the DX-OS machine,
+# labelled "dxos", with the dxos command on its PATH. It plans the model files of a pull request and posts the plan.
+# The code of a pull request runs on that machine, where deploy/.env holds the ADMIN secret of dxos-cli: use this
+# only for a private repository and pull requests from branches of the same repository, never from forks.
+name: Plan the model files
+
+on:
+  pull_request:
+    paths:
+      - 'models/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  plan:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, dxos]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Plan every model file
+        run: |
+          failed=0
+          shopt -s nullglob
+          echo "Plan of the model files in this pull request, against the models that run now:" > plan.md
+          for file in models/*.yaml models/*.yml; do
+            code=0
+            output="$(dxos plan --check "$file" 2>&1)" || code=$?
+            case "$code" in
+              0) label="no change" ;;
+              2) label="has changes" ;;
+              *) label="refused"; failed=1 ;;
+            esac
+            printf '\n### %s: %s\n\n<details><summary>Plan</summary>\n\n```json\n%s\n```\n\n</details>\n' "$file" "$label" "$output" >> plan.md
+          done
+          exit "$failed"
+
+      - name: Post the plan
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PULL_REQUEST: ${{ github.event.pull_request.number }}
+        run: gh pr comment "$PULL_REQUEST" --body-file plan.md

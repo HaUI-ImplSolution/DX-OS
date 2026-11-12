@@ -19,6 +19,10 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Keycloak Admin Console mặc định không mở ra gateway; đặt `KEYCLOAK_ADMIN_CONSOLE=true` trong `deploy/.env` để mở.
 - Job `Gateway surface` của workflow `Platform` kiểm bằng `deploy/dev/check_surface.py` rằng cả hai chế độ không trả Swagger UI hay Admin Console, và nhóm kiểm API chạy thêm trên chế độ lõi.
 - Portal bỏ thẻ Keycloak Admin và Swagger, thêm thẻ Bảng điều khiển.
+- `dxos gitops` kéo hạ tầng và tệp mô hình từ git. Nguồn hạ tầng so `deploy/`, cấu hình cổng vào và tag image của bản cài với một kho DX-OS, rồi nâng cấp bằng luồng của `dxos update`; `auto` cho hạ tầng chỉ nhận commit có chữ ký hợp lệ. Nguồn mô hình so từng tệp với mô hình đang chạy. Cả hai báo lệch, chờ `dxos gitops approve` hoặc tự áp dụng; `dxos gitops install` chạy mỗi 5 phút bằng systemd user timer và `dxos doctor` kiểm các biến `GITOPS_*`.
+- `dxos plan --check` thoát với mã 0 khi mô hình đang chạy giống tệp, 2 khi kế hoạch có thay đổi và 1 khi bị từ chối.
+- `examples/model-repo` là kho tệp mô hình mẫu, kèm workflow dán kế hoạch vào pull request.
+- Kế hoạch (`POST /api/v1/models/plan`, `dxos plan`) của một mô hình chưa chạy không để lại schema `m_<mô hình>` trong PostgreSQL; schema chỉ có khi áp dụng.
 
 ### Ứng dụng ngoài
 

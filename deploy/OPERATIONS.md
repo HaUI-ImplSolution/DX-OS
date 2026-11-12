@@ -69,7 +69,8 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos update [vX.Y.Z]` | Cài bản mới hơn (mặc định bản mới nhất): thay tệp chạy, giữ `.env`, `data/` và `apisix/local.yaml`, thêm biến mới, rồi chạy `update.sh`; script này gán cho `dxos-backend-admin` scope `kc-admin-api` mà Keycloak 26.8 đòi (`keycloak-admin-scope.sh`, chạy lại được), và nên sao lưu trước vì cơ sở dữ liệu của Keycloak không hạ phiên bản được |
 | `dxos doctor`, `dxos backup` | Chạy `doctor.sh`, `backup.sh` |
 | `dxos av [on\|off]` | Bật hoặc tắt quét mã độc tệp tải lên (xem dưới); không có đối số thì in trạng thái quét |
-| `dxos plan <tệp>`, `dxos apply <tệp> [--accept MỨC]` | In kế hoạch của một tệp mô hình, hoặc áp dụng nó (xem dưới) |
+| `dxos plan [--check] <tệp>`, `dxos apply <tệp> [--accept MỨC]` | In kế hoạch của một tệp mô hình, hoặc áp dụng nó (xem dưới) |
+| `dxos gitops sync [models\|infra]`, `status [models\|infra]`, `approve [infra] <commit> [--accept MỨC]`, `install`, `uninstall` | Kéo hạ tầng và tệp mô hình từ git, so với bản cài và mô hình đang chạy; `install` chạy mỗi 5 phút bằng systemd user timer (xem dưới) |
 | `dxos history verify`, `dxos history anchor` | Kiểm lịch sử hồ sơ chưa bị sửa, hoặc ghi điểm neo ngay (xem [`INTEGRATIONS.md`](./INTEGRATIONS.md#lịch-sử-chống-sửa)) |
 | `dxos reconcile [install\|uninstall]` | Đưa stack về đúng khai báo; `install` chạy mỗi phút bằng systemd user timer (xem dưới) |
 | `dxos archive <mô hình> [--before YYYY-MM-DD] [--out THƯ_MỤC \| --store]`, `dxos archive check <thư mục> \| --store <mô hình>/<lần chạy>`, `dxos archive list` | Xuất hồ sơ đã xong ra Parquet ở một thư mục hoặc ở kho đối tượng, kiểm một bản xuất, liệt kê các lần chạy trong kho (xem [`INTEGRATIONS.md`](./INTEGRATIONS.md#hồ-dữ-liệu)) |
@@ -106,6 +107,7 @@ Cấu hình đặt tên các tệp ở `DXOS_MODEL_FILE`, cách nhau bằng dấ
 ### Đổi mô hình bằng dòng lệnh
 
 `dxos plan <tệp>` in kế hoạch của tệp mô hình mà không đổi gì; mã thoát 1 khi kế hoạch bị từ chối.
+`dxos plan --check <tệp>` thoát với mã 0 khi mô hình đang chạy giống tệp, 2 khi kế hoạch có thay đổi và 1 khi bị từ chối, để dùng trong pipeline.
 `dxos apply <tệp> [--accept SAFE|MIGRATION|LOSS]` lấy kế hoạch rồi áp dụng với phiên bản của kế hoạch làm `base`.
 Kế hoạch có mức cao hơn `--accept` (mặc định `SAFE`) thì bị từ chối với mã thoát 1 và không đổi gì; lệnh không bao giờ tự nâng mức.
 Tệp giống mô hình đang chạy và không có gì lệch thì in "Nothing to apply" và thoát với mã 0.
@@ -116,6 +118,65 @@ Việc kiểm lệch chỉ chạy khi xem kế hoạch hoặc áp dụng, không
 Lệnh đăng nhập bằng client `dxos-cli` của realm, dùng `DXOS_CLI_SECRET` trong `.env`; tài khoản dịch vụ của client giữ vai `ADMIN`, và lịch sử áp dụng ghi tên nó (`service-account-dxos-cli`).
 Bí mật nằm trong `.env` của máy chủ, nên chạy được trong pipeline GitOps trên chính máy đó.
 Realm đã import từ trước chưa có client này: thêm client `dxos-cli` ở Keycloak Admin Console (mở theo [Keycloak Admin Console](#keycloak-admin-console)) hoặc dựng lại realm.
+
+### Kéo từ git (GitOps)
+
+`dxos gitops sync` kéo từ git hai thứ, mỗi thứ một kho và một chế độ riêng, và cần `git` trên máy chạy `dxos` (thêm `ssh` cho địa chỉ SSH):
+
+- **Hạ tầng:** thư mục `deploy/`, cấu hình cổng vào và số phiên bản image của bản cài, từ một kho DX-OS.
+- **Mô hình:** các tệp mô hình nghiệp vụ, từ một kho của người triển khai.
+
+Cấu hình trong `deploy/.env`, mẫu ở `.env.example`:
+
+| Biến | Ý nghĩa |
+|---|---|
+| `GITOPS_INFRA_REPO` | Kho DX-OS chứa `deploy/` và `sso/`: `https://`, `ssh://`, `user@host:đường/dẫn`, `file://` hoặc đường dẫn tuyệt đối; để trống thì không kéo hạ tầng |
+| `GITOPS_INFRA_REF` | Tag phát hành `vX.Y.Z` (đổi luôn `DXOS_IMAGE_TAG` thành tag đó) hoặc nhánh (giữ nguyên `DXOS_IMAGE_TAG`), mặc định `main` |
+| `GITOPS_INFRA_MODE` | `report`, `approve` hoặc `auto`, mặc định `report` |
+| `GITOPS_REPO` | Kho chứa tệp mô hình, cùng dạng địa chỉ; để trống thì không kéo mô hình |
+| `GITOPS_REF`, `GITOPS_PATH`, `GITOPS_MODE` | Nhánh hoặc tag (mặc định `main`), thư mục chứa các tệp `.yaml` hoặc `.yml` không đệ quy (mặc định `models`), chế độ (mặc định `report`) |
+| `GITOPS_SSH_KEY`, `GITOPS_KNOWN_HOSTS` | Đường dẫn tuyệt đối tới deploy key chỉ đọc và tệp `known_hosts`, đặt ngoài git, dùng cho cả hai kho |
+| `GITOPS_REQUIRE_SIGNED`, `GITOPS_ALLOWED_SIGNERS` | `true` thì chỉ nhận commit có chữ ký SSH của người trong tệp `allowed_signers`, cho cả hai kho |
+
+`.env` chỉ giữ đường dẫn tới khóa, không giữ nội dung khóa.
+Nên dùng địa chỉ SSH với deploy key chỉ đọc; địa chỉ `https://` có token trong URL làm token nằm trong cấu hình của bản sao ở `deploy/gitops/`, thư mục chỉ chủ sở hữu đọc được.
+Địa chỉ SSH kiểm host theo `GITOPS_KNOWN_HOSTS` hoặc `~/.ssh/known_hosts`, không tự chấp nhận host lạ.
+
+Mỗi lượt kéo ref đã cấu hình, xác minh chữ ký nếu bật, rồi so với bản cài.
+Kết quả mỗi mục là một trong `in-sync`, `drift`, `pending`, `rejected`, `applied` và `failed`.
+Ba chế độ khác nhau ở việc có áp dụng hay không:
+
+- `report` chỉ báo lệch (`drift`) và không đổi gì.
+- `approve` để thay đổi nằm chờ (`pending`) cho đến khi người có quyền chạy `dxos gitops approve [infra] <commit>`.
+- `auto` tự áp dụng; chi tiết khác nhau giữa hai nguồn ở dưới.
+
+Commit không có chữ ký hợp lệ khi `GITOPS_REQUIRE_SIGNED=true` bị từ chối cả lượt, lệnh thoát với mã 1 và không áp dụng gì.
+Lượt lỗi, như kho không với tới được hay một lần áp dụng thất bại, được thử lại ở lượt sau.
+Sự duyệt gắn với một commit và hết khi thay đổi được áp dụng; một lệch khác về sau cần duyệt lại.
+`dxos gitops install` chạy `sync` mỗi 5 phút bằng systemd user timer, `uninstall` gỡ; lượt chạy bỏ qua khi stack đã dừng bằng `dxos stop`.
+`dxos doctor` kiểm các biến `GITOPS_*` khi một trong hai kho có giá trị.
+
+**Hạ tầng.**
+Lệnh so các tệp chạy của kho (cùng danh sách mà `install.sh` chép) với bản cài, và so tag image nếu `GITOPS_INFRA_REF` là tag phát hành.
+Mục `infra` báo số tệp đổi, thêm và bỏ.
+Áp dụng là chạy `install.sh --upgrade` từ bản sao trong kho rồi `update.sh`, đúng như `dxos update`: giữ `.env`, `data/` và `apisix/local.yaml`, kiểm cấu hình cổng vào trước khi thay container, chỉ tạo lại container có image đổi.
+Nếu `update.sh` lỗi, ví dụ kéo image thất bại, mục `infra` ở trạng thái `failed` và `update.sh` chạy lại ở lượt sau cho đến khi xong, dù tệp đã khớp kho.
+Stack đang dừng thì chỉ thay tệp, và stack dùng chúng khi khởi động.
+`auto` cho hạ tầng bắt buộc `GITOPS_REQUIRE_SIGNED=true`, vì đây là thay đổi không có người bấm.
+Nâng cấp không quay lui được cơ sở dữ liệu của Keycloak, nên cần sao lưu trước khi bật `auto`.
+`dxos reconcile` vẫn lo phần tự phục hồi từng phút: container bị xóa hay lệch được tạo lại theo khai báo.
+Áp dụng chạy `install.sh` lấy từ chính kho, tức mã trong kho chạy trên máy này; người chạy `dxos gitops approve infra` cần đọc diff của `deploy/` trước, và kho hạ tầng chỉ nên ghi được bởi người tin cậy.
+
+**Mô hình.**
+Mỗi tệp được lập kế hoạch rồi áp dụng bằng `dxos apply`.
+`auto` chỉ áp dụng kế hoạch mức `SAFE`; kế hoạch cao hơn nằm chờ như ở `approve`.
+`dxos gitops approve <commit> [--accept MỨC]` duyệt đến mức nêu (mặc định `SAFE`), và phải nêu mức của kế hoạch nếu cao hơn.
+Kế hoạch bị từ chối (`rejected`) không bao giờ được áp dụng, và một tệp lỗi không chặn các tệp khác.
+Muốn quay lại thì `git revert` ở kho rồi để lượt sau kéo về; kế hoạch mất dữ liệu vẫn phải được duyệt ở mức `LOSS`, và phiên bản mô hình cũ vẫn quay về được bằng API quay lui.
+
+`dxos gitops status [models|infra]` in lượt gần nhất và thoát với mã 0 khi mọi mục khớp, 2 khi còn mục lệch hoặc chờ duyệt, 1 khi lượt gần nhất lỗi.
+`deploy/gitops/<models|infra>/history.log` ghi một dòng mỗi khi commit hoặc kết quả của một mục đổi; lỗi của lần áp dụng gần nhất nằm ở `last-apply-error.log` cùng thư mục.
+Ví dụ kho mô hình kèm workflow dán kế hoạch vào pull request ở [`examples/model-repo`](../examples/model-repo/README.md).
 
 ### Lần áp dụng dừng giữa chừng
 

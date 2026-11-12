@@ -88,7 +88,7 @@ Các hàm ý sau là suy luận từ cách đề viết, người ra đề khôn
 | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | Tự động tạo API từ cơ sở dữ liệu, phân quyền tới cấp dòng | API chung đọc mô hình lúc chạy, phân quyền theo vai và theo dòng; tài liệu OpenAPI riêng cho từng mô hình; ứng dụng ngoài gọi bằng token máy của một vai |
 | Điều chỉnh quy trình không cần sửa mã nguồn, BPMN | Họ mẫu quy trình trên Flowable, hoặc tự khai báo trạng thái và hành động; BPMN sinh từ tệp mô hình |
-| GitOps, tự phục hồi                                                  | GitOps cho nghiệp vụ, tệp sai bị chặn, áp dụng dở được hoàn tất hoặc hủy bỏ |
+| GitOps, tự phục hồi                                                  | Triển khai hạ tầng và nghiệp vụ kéo từ git (`dxos gitops`), tệp sai bị chặn, áp dụng dở được hoàn tất hoặc hủy bỏ, `dxos reconcile` tự phục hồi |
 | Kiến trúc hướng sự kiện | Trục sự kiện bằng bảng outbox: webhook có chữ ký, API kéo theo `eventId`, kênh báo cho hộp việc đang mở |
 | Tác tử AI, Human-in-the-loop, RAG                                     | Tác tử có người duyệt và hỏi đáp kèm nguồn                                     |
 | Chống nguyên khối, chủ quyền số                                   | Thành phần thay được, dữ liệu trong PostgreSQL thuần                               |
@@ -102,7 +102,7 @@ Các hàm ý sau là suy luận từ cách đề viết, người ra đề khôn
 | Phân tách theo vòng đời và tốc độ của dữ liệu, đẩy dữ liệu lịch sử xuống hồ dữ liệu | `dxos archive --store` ghi hồ sơ đã đóng và lịch sử của chúng ra tệp Parquet vào một bucket riêng của SeaweedFS, kèm manifest và hash để kiểm lại; `dxos archive schedule install` đặt lịch chạy hằng ngày cho hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS`; dữ liệu trong cơ sở dữ liệu giữ nguyên; công cụ báo cáo đọc dữ liệu qua vai `report_ro` |
 | Hội tụ dữ liệu hành chính và dữ liệu vận hành, bản sao số | `examples/itot-simulator` và mẫu `plant_incident` đưa số đo của thiết bị vào thành hồ sơ sự cố đi qua cùng quy trình, quyền và lịch sử với hồ sơ hành chính; lõi không giữ trạng thái thời gian thực của thiết bị, nên bản sao số chỉ được phủ một phần |
 | Quản trị dữ liệu, phả hệ và nguồn gốc | Mô hình là danh mục dữ liệu; tab Danh mục dữ liệu đọc từ đó nơi dữ liệu đi vào, nơi đi ra, liên kết giữa các thực thể, quyền theo vai, số bản ghi và số đo chất lượng của từng thực thể (độ điền, thiếu theo điều kiện, vi phạm ràng buộc, độ mới); lịch sử mỗi hồ sơ nối thành chuỗi hash |
-| Zero-Trust gắn với GitOps, kiểm dịch mã độc, tự phục hồi                                        | APISIX và API chung đều kiểm token, ClamAV quét tệp tải lên khi bật (`dxos av on`), GitOps cho nghiệp vụ    |
+| Zero-Trust gắn với GitOps, kiểm dịch mã độc, tự phục hồi                                        | APISIX và API chung đều kiểm token, ClamAV quét tệp tải lên khi bật (`dxos av on`), hạ tầng và nghiệp vụ kéo từ git    |
 
 ## Tư tưởng thiết kế
 
@@ -402,7 +402,7 @@ Nghiệp vụ được khai báo trong git, lõi đưa toàn bộ hệ thống v
 
 | Bước            | Lõi làm gì                                                                            | Người dùng nhận được                                     |
 | ------------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
-| Khai báo         | Nhận tệp mô hình qua `dxos apply`                                                    | Một tệp duy nhất, lưu được trong git                     |
+| Khai báo         | Nhận tệp mô hình qua `dxos apply` hoặc kéo từ git bằng `dxos gitops`               | Một tệp duy nhất, lưu được trong git                     |
 | Kiểm tra         | Soát cú pháp, tham chiếu, vai, quy tắc; chưa đụng vào hệ thống                | Lỗi chỉ đúng dòng và đúng lý do                        |
 | Xem trước       | So với phiên bản đang chạy, lập kế hoạch cho từng provider, phân loại rủi ro | Biết sẽ đổi gì, ảnh hưởng bao nhiêu dòng              |
 | Áp dụng         | Thực hiện theo thứ tự, ghi lịch sử                                                 | Hệ thống đổi theo mô hình, không build lại              |
@@ -410,8 +410,9 @@ Nghiệp vụ được khai báo trong git, lõi đưa toàn bộ hệ thống v
 | Đổi phiên bản | Lặp lại từ đầu, giữ lịch sử                                                      | Biết ai đổi gì, khi nào                                    |
 | Quay lui          | Quay về phiên bản trước nếu an toàn                                               | Khôi phục được, hoặc được báo rõ vì sao không thể |
 
-Git là nơi lưu lịch sử của tệp mô hình; lõi nhận tệp qua `dxos apply` và không tự kéo từ git.
-Lõi tự kéo từ git để liên tục đối chiếu là hướng phát triển.
+Git là nơi lưu lịch sử của tệp mô hình.
+`dxos gitops` kéo theo chu kỳ hai thứ từ git, xác minh chữ ký commit nếu bật: hạ tầng (`deploy/`, cấu hình cổng vào, tag image) so với bản cài và nâng cấp bằng luồng của `dxos update`, và các tệp mô hình so với mô hình đang chạy.
+Mỗi nguồn báo lệch, chờ duyệt hoặc tự áp dụng; mô hình tự áp dụng kế hoạch mức `SAFE`, hạ tầng tự áp dụng khi commit có chữ ký.
 
 Thay đổi mô hình sai được xử lý như sau:
 

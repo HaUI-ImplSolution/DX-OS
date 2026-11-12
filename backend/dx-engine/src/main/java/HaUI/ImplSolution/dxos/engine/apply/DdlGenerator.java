@@ -30,6 +30,11 @@ public final class DdlGenerator {
     return "CREATE SCHEMA IF NOT EXISTS " + ident(model.schema());
   }
 
+  // Refused by PostgreSQL while the schema holds a table, so it never removes data.
+  public static String dropEmptySchema(Model model) {
+    return "DROP SCHEMA IF EXISTS " + ident(model.schema());
+  }
+
   // The tables, constraints, indexes and read access a model needs, for the schema tool to reach.
   // A renamed field keeps the column name given in names, which is how a preview sees it before
   // the rename has run.

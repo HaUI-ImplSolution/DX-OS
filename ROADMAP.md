@@ -21,7 +21,6 @@ Mọi việc dưới đây giữ hướng đó: thêm nghiệp vụ là thêm t�
 ## Sau đó
 
 - **Trí tuệ nhân tạo:** hỏi đáp có trích nguồn và tác tử đề xuất có người duyệt, chỉ dùng mô hình mở hoàn toàn theo định nghĩa của OSI.
-- **Kéo mô hình từ git:** lõi tự đối chiếu với kho mô hình thay vì chờ `dxos apply`.
 - **Quy trình:** một dịch vụ riêng chặn được một hành động trước khi chuyển trạng thái; thêm họ mẫu khi có đủ ba miền chạy được bằng tham số.
 - **Tệp mô hình:** nâng tệp cũ khi định dạng đổi.
 

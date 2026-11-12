@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: Apache-2.0
+format: 0
+name: tasks
+roles:
+  - name: MEMBER
+    description: Người nhận việc
+entities:
+  task:
+    label: Việc
+    fields:
+      title: {type: text, label: Tiêu đề, required: true}
+      note: {type: text, label: Ghi chú}
+    access: {MEMBER: all}

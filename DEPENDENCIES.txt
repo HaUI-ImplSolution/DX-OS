@@ -178,9 +178,9 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 |                                      |                                      | chạy trong container, không đóng gói |
 |                                      |                                      | trong runtime                        |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| DuckDB 1.4.1 (duckdb/duckdb)         | MIT                                  | dxos archive: xuất Parquet, chạy     |
-|                                      |                                      | trong container; tải extension       |
-|                                      |                                      | postgres từ mạng lần đầu             |
+| DuckDB 1.4.1 (duckdb/duckdb)         | MIT                                  | dxos archive: xuất và truy vấn       |
+|                                      |                                      | Parquet trong container; tải         |
+|                                      |                                      | postgres và httpfs từ mạng lần đầu   |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | CycloneDX (@cyclonedx/cyclonedx-npm, | Apache-2.0                           | Sinh SBOM                            |
 | cyclonedx-maven-plugin)              |                                      |                                      |

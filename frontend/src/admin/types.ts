@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
+import type { EscalationLevel } from "../console/api";
+
 export interface FieldMeta {
   name: string;
   label: string;
@@ -54,6 +56,7 @@ export interface ProcessInfo {
   handlers: string[];
   allowSelfDecision: boolean;
   deadlineSeconds: number | null;
+  escalations: EscalationLevel[];
   booking: { resource: string; starts: string; ends: string; capacity: number } | null;
   states: ProcessState[];
   actions: ProcessAction[];

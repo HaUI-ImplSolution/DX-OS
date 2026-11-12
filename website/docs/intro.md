@@ -11,6 +11,7 @@ Lõi nhận một tệp mô hình khai báo thực thể, trường, vai, quyề
 
 | Nội dung | Nơi xem |
 |---|---|
+| Cách dùng theo vai: nộp, xử lý, triển khai | [Hướng dẫn sử dụng](./huong-dan/nguoi-nop.md) ở thanh bên của trang này |
 | Giới thiệu, cài đặt, mục lục tài liệu | [README](https://github.com/HaUI-ImplSolution/DX-OS#readme) trong repository |
 | Kiến trúc 3 tầng và luồng gọi dịch vụ | [ARCHITECTURE.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/ARCHITECTURE.md) |
 | Module backend, build, cấu hình | [backend/README.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/backend/README.md) |
@@ -28,6 +29,7 @@ Lõi nhận một tệp mô hình khai báo thực thể, trường, vai, quyề
 
 ## Các mục trên trang này
 
+- **Hướng dẫn sử dụng:** ba trang theo vai: người nộp hồ sơ, người xử lý hồ sơ và người triển khai.
 - **Đánh giá:** ma trận bằng chứng cho từng tính năng và bảng rà soát PoF theo đề thi.
 - **Cuộc thi:** câu hỏi hội đồng, thành phần được chọn và không chọn.
 - **Mẫu tài liệu theo phase:** mẫu dùng khi mở một phase làm việc mới.

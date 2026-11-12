@@ -146,7 +146,9 @@ public record Model(
   // The process an entity runs: the family it started from (null when it declares every state and
   // action itself), the roles that handle its records, whether the creator of a record may handle
   // it,
-  // and how long a handler has before a record counts as overdue (null for no deadline). AutoClose
+  // and how long a handler has before a record counts as overdue (null for no deadline).
+  // Escalations are the notices sent to other roles as an overdue record stays unhandled (empty for
+  // none). AutoClose
   // is
   // how long a record waits for its owner before the system takes autoCloseAction for them (both
   // null for never). After maps a final state to the actions taken when a record reaches it.
@@ -158,6 +160,7 @@ public record Model(
       List<String> handlers,
       boolean allowSelfDecision,
       Duration deadline,
+      List<Escalation> escalations,
       Duration autoClose,
       String autoCloseAction,
       Map<String, List<Completion>> after,

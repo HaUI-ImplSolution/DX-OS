@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.engine.catalog;
 
+import HaUI.ImplSolution.dxos.engine.process.ProcessInfo;
 import HaUI.ImplSolution.dxos.model.Booking;
 import HaUI.ImplSolution.dxos.model.Completion;
 import HaUI.ImplSolution.dxos.model.Model;
@@ -25,8 +26,8 @@ public class ProcessDiagramService {
       String name, String label, boolean terminal, List<Completion> completions) {}
 
   // The process of one entity: its family's states and actions, and what the file adds to them.
-  // Seconds are null when the file sets no deadline or auto_close; awaiting lists the states where
-  // the deadline runs.
+  // Seconds are null when the file sets no deadline or auto_close; escalations are the notices sent
+  // as an overdue record stays unhandled; awaiting lists the states where the deadline runs.
   public record ProcessView(
       String entity,
       String label,
@@ -35,6 +36,7 @@ public class ProcessDiagramService {
       List<String> handlers,
       boolean allowSelfDecision,
       Long deadlineSeconds,
+      List<ProcessInfo.EscalationInfo> escalations,
       Long autoCloseSeconds,
       String autoCloseAction,
       Booking booking,
@@ -89,6 +91,7 @@ public class ProcessDiagramService {
         process.handlers(),
         process.allowSelfDecision(),
         seconds(process.deadline()),
+        ProcessInfo.EscalationInfo.of(process.escalations()),
         seconds(process.autoClose()),
         process.autoCloseAction(),
         process.booking(),

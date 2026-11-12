@@ -127,7 +127,7 @@ Lần chạy đầu cần mạng để DuckDB tải extension.
 
 Truy vấn hồ dữ liệu chỉ mở các tệp Parquet của đúng lần chạy được nêu trong `model/run`.
 Lệnh dựng bảng tạm `archive` từ run đã chọn, tắt truy cập đường dẫn ngoài và chỉ nhận một câu `SELECT`, `WITH` hoặc `EXPLAIN`.
-Ví dụ: `dxos archive query onestop/20261111T030000Z --file request.parquet --param status='CLOSED' "SELECT id, status FROM archive WHERE status = $status ORDER BY id"`.
+Ví dụ: `dxos archive query onestop/20261111T030000Z --file request.parquet --param "status='CLOSED'" 'SELECT id, status FROM archive WHERE status = $status ORDER BY id'`.
 Tham số dùng cú pháp literal của DuckDB; giá trị chuỗi đặt trong dấu nháy đơn.
 
 ## Chế độ chỉ lõi

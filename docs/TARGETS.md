@@ -118,7 +118,7 @@ Mô phỏng này không chứng minh được "trong một buổi" cho người 
 ## Chi phí hạ tầng của lõi tự cài
 
 Cấu hình tham chiếu gồm một máy ảo chạy toàn bộ stack bằng Docker Compose.
-Các phép đo tải trên 2, 4, 8 và 12 nhân cho thấy 4 nhân phục vụ được 100 người dùng đồng thời với p95 dưới 500 ms, và 2 nhân phục vụ được 75; RAM thật dùng của các dịch vụ chính đỉnh khoảng 2 GB.
+Các phép đo tải trên 2, 4, 8 và 12 nhân ([`SIZING.md`](./SIZING.md)) cho thấy 4 nhân phục vụ được 100 người dùng đồng thời với p95 dưới 500 ms, và 2 nhân phục vụ được 75; RAM thật dùng của các dịch vụ chính đỉnh khoảng 2 GB.
 Phép đo ghim các nhân riêng cho stack, còn vCPU dùng chung của nhà cung cấp có thể cho hiệu năng thấp hơn, nên cấu hình tham chiếu chỉ là ước lượng chưa kiểm trên máy ảo thật.
 Cấu hình tham chiếu là 4 vCPU, 8 GB RAM, ổ SSD 80 GB trở lên; 2 vCPU và 4 GB cho một nhóm nhỏ.
 

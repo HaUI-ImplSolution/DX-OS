@@ -212,8 +212,9 @@ Mỗi lượt ghi vào bucket `S3_ARCHIVE_BUCKET` của SeaweedFS các hồ sơ 
 Dữ liệu trong cơ sở dữ liệu giữ nguyên; `dxos archive list` xem các lần chạy, `dxos archive check --store <mô hình>/<lần chạy>` kiểm một lần.
 Lần chạy đầu cần mạng để DuckDB tải extension.
 
-Truy vấn hồ dữ liệu chỉ mở các tệp Parquet của đúng lần chạy được nêu trong `model/run`.
-Lệnh dựng bảng tạm `archive` từ run đã chọn, tắt truy cập đường dẫn ngoài và chỉ nhận một câu `SELECT`, `WITH` hoặc `EXPLAIN`.
+Truy vấn hồ dữ liệu chỉ mở đúng một tệp Parquet, chọn bằng `--file`, của lần chạy được nêu trong `model/run`; tệp phải có trong manifest và khớp số dòng và SHA-256 của nó.
+Lệnh dựng bảng tạm `archive` từ tệp đó, tắt truy cập đường dẫn ngoài và chỉ nhận một câu `SELECT`, `WITH` hoặc `EXPLAIN` không chứa dấu `;`, kể cả trong chuỗi.
+Bộ nhớ, số thread và dung lượng tệp tạm lấy từ `ARCHIVE_QUERY_MEMORY_LIMIT`, `ARCHIVE_QUERY_THREADS` và `ARCHIVE_QUERY_TEMP_LIMIT`; bước kiểm SHA-256 cũng chạy trong giới hạn bộ nhớ và số thread đó, nên tệp lớn hơn giới hạn bị từ chối thay vì làm cạn bộ nhớ.
 Ví dụ: `dxos archive query onestop/20261111T030000Z --file request.parquet --param "status='CLOSED'" 'SELECT id, status FROM archive WHERE status = $status ORDER BY id'`.
 Tham số dùng cú pháp literal của DuckDB; giá trị chuỗi đặt trong dấu nháy đơn.
 

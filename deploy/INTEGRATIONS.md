@@ -108,10 +108,11 @@ Số dòng và sha256 trong đó tính từ chính các byte đã nằm trong kh
 `dxos archive list` liệt kê các lần chạy trong kho, `dxos archive check --store <mô hình>/<lần chạy>` đọc lại từng tệp từ kho và so với manifest; một tệp lệch hoặc không đọc được thì lệnh thoát với mã 1.
 Không đọc được kho (khóa sai, SeaweedFS không chạy) thì lệnh báo lỗi và thoát với mã 1, không coi là kho trống.
 
-`dxos archive query <mô hình>/<lần chạy>` dựng bảng tạm `archive` từ các tệp Parquet của đúng lần chạy rồi nhận một câu `SELECT`, `WITH` hoặc `EXPLAIN`.
+`dxos archive query <mô hình>/<lần chạy> --file <tệp>.parquet` dựng bảng tạm `archive` từ đúng một tệp Parquet có trong manifest của lần chạy đó rồi nhận một câu `SELECT`, `WITH` hoặc `EXPLAIN`.
+Lệnh kiểm số dòng và SHA-256 của tệp với manifest trước khi chạy câu SQL; không có `--file`, có ký tự đại diện hoặc tệp không có trong manifest thì lệnh thoát với mã 1.
 Lệnh hỗ trợ tham số ràng buộc bằng `--param`, tắt truy cập đường dẫn ngoài trước khi chạy câu SQL và không cần cấp quyền cơ sở dữ liệu cho công cụ báo cáo.
 Lệnh chạy trên máy cài đặt bằng khóa kho đối tượng trong `.env`, nên chỉ người có quyền vận hành thư mục triển khai mới dùng được.
-Ví dụ và cú pháp tham số nằm trong [`OPERATIONS.md`](./OPERATIONS.md#hồ-dữ-liệu).
+Ví dụ và cú pháp tham số nằm trong [`OPERATIONS.md`](./OPERATIONS.md#lưu-trữ-hồ-sơ-đã-đóng).
 
 ### Theo lịch
 

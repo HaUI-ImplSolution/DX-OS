@@ -166,10 +166,12 @@ def main():
         check("CLI-26 archive query rejects a non-read statement", code == 1 and "SELECT, WITH, or EXPLAIN" in err, f"{code} {out[-200:]} {err[-200:]}")
         code, out, err = dxos(work, "archive", "query", run_id, "--file", "incident.parquet", "SELECT * FROM read_parquet('s3://outside/secret.parquet')")
         check("CLI-27 archive query blocks SQL from reading outside the selected run", code != 0 and "file system operations are disabled by configuration" in err.lower(), f"{code} {out[-200:]} {err[-200:]}")
+        code, out, err = dxos(work, "archive", "query", run_id, "--file", "incident.parquet", "SELECT count(*) FROM archive")
+        check("CLI-28 archive query without parameters prints only the result", code == 0 and out.strip() == "1", f"{code} {out[-200:]} {err[-200:]}")
         code, out, err = dxos(work, "archive", "auto")
         code_list, listing, _ = dxos(work, "archive", "list")
         runs_of_model = [line for line in listing.splitlines() if line.startswith(name + " ")]
-        check("CLI-25 archive auto writes nothing for records newer than ARCHIVE_AFTER_DAYS and list shows the one run", code == 0 and f"{name}: nothing" in out and len(runs_of_model) == 1, f"{code} {out[-200:]} {err[-200:]} {runs_of_model}")
+        check("CLI-29 archive auto writes nothing for records newer than ARCHIVE_AFTER_DAYS and list shows the one run", code == 0 and f"{name}: nothing" in out and len(runs_of_model) == 1, f"{code} {out[-200:]} {err[-200:]} {runs_of_model}")
     finally:
         shutil.rmtree(work, ignore_errors=True)
         uid = kc.kc("GET", "/users?username=cli_tech&exact=true")[1]

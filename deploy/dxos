@@ -1098,7 +1098,16 @@ archive_query() {
   [[ "$(grep -c '^FILE|' <<<"$manifest_line")" == 1 ]] \
     || die "the Parquet file $file is not listed in the archive manifest"
   IFS='|' read -r _ want_rows want_sum <<<"$manifest_line"
+  memory_limit="$(env_value ARCHIVE_QUERY_MEMORY_LIMIT)"; memory_limit="${memory_limit:-2GB}"
+  threads="$(env_value ARCHIVE_QUERY_THREADS)"; threads="${threads:-2}"
+  temp_limit="$(env_value ARCHIVE_QUERY_TEMP_LIMIT)"; temp_limit="${temp_limit:-4GB}"
+  [[ "$memory_limit" =~ ^[1-9][0-9]*(MB|GB|TB)$ ]] || die "ARCHIVE_QUERY_MEMORY_LIMIT must be a positive MB, GB, or TB value"
+  [[ "$threads" =~ ^[1-9][0-9]*$ ]] || die "ARCHIVE_QUERY_THREADS must be a positive integer"
+  [[ "$temp_limit" =~ ^[1-9][0-9]*(MB|GB|TB)$ ]] || die "ARCHIVE_QUERY_TEMP_LIMIT must be a positive MB, GB, or TB value"
+
+  # The checksum runs under the same limits as the query.
   actual="$( { store_prelude
+    echo "SET memory_limit = '$memory_limit'; SET threads = $threads;"
     echo "SELECT 'SUM|' || sha256(content) FROM read_blob('$target');"
     echo "SELECT 'ROWS|' || count(*) FROM read_parquet('$target');"
     } | duckdb_store 2>/dev/null)" \
@@ -1107,13 +1116,6 @@ archive_query() {
   actual_rows="$(sed -n 's/^ROWS|//p' <<<"$actual")"
   [[ "$actual_sum" == "$want_sum" && "$actual_rows" == "$want_rows" ]] \
     || die "the Parquet file $file does not match its archive manifest"
-
-  memory_limit="$(env_value ARCHIVE_QUERY_MEMORY_LIMIT)"; memory_limit="${memory_limit:-2GB}"
-  threads="$(env_value ARCHIVE_QUERY_THREADS)"; threads="${threads:-2}"
-  temp_limit="$(env_value ARCHIVE_QUERY_TEMP_LIMIT)"; temp_limit="${temp_limit:-4GB}"
-  [[ "$memory_limit" =~ ^[1-9][0-9]*(MB|GB|TB)$ ]] || die "ARCHIVE_QUERY_MEMORY_LIMIT must be a positive MB, GB, or TB value"
-  [[ "$threads" =~ ^[1-9][0-9]*$ ]] || die "ARCHIVE_QUERY_THREADS must be a positive integer"
-  [[ "$temp_limit" =~ ^[1-9][0-9]*(MB|GB|TB)$ ]] || die "ARCHIVE_QUERY_TEMP_LIMIT must be a positive MB, GB, or TB value"
 
   query_input="$(store_prelude)"
   query_input+=$'\n'"SET allowed_paths = ['$target'];"$'\n'
@@ -1126,11 +1128,12 @@ archive_query() {
   if (( ${#params[@]} )); then
     query_input+="PREPARE archive_query AS $sql;"$'\n'
     query_input+="EXECUTE archive_query($execute_args);"$'\n'
-    duckdb_store <<<"$query_input" | sed '1{/^true$/d;}'
   else
     query_input+="$sql"$'\n'
-    duckdb_store <<<"$query_input"
   fi
+  # CREATE SECRET in the prelude prints a first line "true"; drop it and keep the exit code of DuckDB.
+  duckdb_store <<<"$query_input" | sed '1{/^true$/d;}'
+  return "${PIPESTATUS[0]}"
 }
 
 # The runs in the object store, oldest first.
@@ -1200,7 +1203,7 @@ cmd_archive() {
     list) archive_list ;;
     auto) archive_auto ;;
     schedule) shift; cmd_archive_schedule "$@" ;;
-    ""|-*) die "usage: dxos archive <model> [--before YYYY-MM-DD] [--out DIR | --store] | query | check | list | auto | schedule" ;;
+    ""|-*) die "usage: dxos archive <model> [--before YYYY-MM-DD] [--out DIR | --store] | query | check | list | auto | schedule (query takes model/run --file FILE)" ;;
     *)
       local model="$1" before="" out="" store=0
       shift

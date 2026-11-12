@@ -182,6 +182,15 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 |                                      |                                      | Parquet trong container; tải         |
 |                                      |                                      | postgres và httpfs từ mạng lần đầu   |
 +--------------------------------------+--------------------------------------+--------------------------------------+
+| DuckDB httpfs (duckdb/duckdb-httpfs) | MIT                                  | Extension của DuckDB đọc kho đối     |
+|                                      |                                      | tượng S3; tải từ mạng lần đầu, không |
+|                                      |                                      | đóng gói trong repository            |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| DuckDB postgres (duckdb/duckdb-      | MIT                                  | Extension của DuckDB đọc PostgreSQL  |
+| postgres)                            |                                      | để xuất bảng ra Parquet; tải từ mạng |
+|                                      |                                      | lần đầu, không đóng gói trong        |
+|                                      |                                      | repository                           |
++--------------------------------------+--------------------------------------+--------------------------------------+
 | CycloneDX (@cyclonedx/cyclonedx-npm, | Apache-2.0                           | Sinh SBOM                            |
 | cyclonedx-maven-plugin)              |                                      |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+

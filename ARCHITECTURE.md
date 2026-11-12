@@ -190,6 +190,7 @@ Trạng thái của hồ sơ chỉ đổi qua quy trình.
 - Hành động hoàn tất của khối `after:` đi qua outbox đến `CompletionHandler`; hiện có các thao tác `add_to_group` và `remove_from_group` của Keycloak.
 - `OverdueSweep` ghi dòng quá hạn vào lịch sử, một lần cho mỗi hạn, và dòng `due_soon` khi hồ sơ còn dưới `ENGINE_DUE_SOON_BEFORE` trước hạn.
 - `EscalationSweep` ghi dòng `escalated` (mức và lần nhắc) vào lịch sử mỗi khi một mức của `escalate` đến hạn trên hồ sơ quá hạn chưa ai xử lý, cùng giao dịch với tin gửi webhook; sau lúc dịch vụ tắt chỉ ghi mức mới nhất đã đến hạn, và không đổi trạng thái hay người giữ hồ sơ.
+- Hành động khai `check: <tên đích>` thì `ActionCheck` hỏi đích đó trong `DataService.act`, sau `ProcessRules` và trước khi trạng thái đổi, trong giao dịch giữ khóa hồ sơ; đích từ chối hoặc không trả lời theo `on_error` thì hồ sơ giữ nguyên và dòng `check_denied` hoặc `check_unavailable` được ghi bằng giao dịch riêng.
 - Khi mô hình có đích webhook (khóa `webhook` hoặc `DXOS_WEBHOOK_URL`), mỗi dòng lịch sử có thêm một thông điệp chủ đề `record.event` trong outbox cùng giao dịch, và `WebhookHandler` gửi nó kèm chữ ký.
   Các dòng của một hồ sơ được giao theo thứ tự.
   Việc áp dụng mô hình và thay đổi tài khoản đi qua chủ đề `admin.event`.

@@ -23,6 +23,8 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - `dxos plan --check` thoát với mã 0 khi mô hình đang chạy giống tệp, 2 khi kế hoạch có thay đổi và 1 khi bị từ chối.
 - `examples/model-repo` là kho tệp mô hình mẫu, kèm workflow dán kế hoạch vào pull request.
 - Kế hoạch (`POST /api/v1/models/plan`, `dxos plan`) của một mô hình chưa chạy không để lại schema `m_<mô hình>` trong PostgreSQL; schema chỉ có khi áp dụng.
+- `deploy/dev/load_test.py` đo thông lượng, p50, p95, p99 và lỗi của API chung ở nhiều mức người dùng đồng thời, và đo đăng nhập riêng; `deploy/dev/load_override.yml` ghim mọi dịch vụ vào N nhân và đặt giới hạn bộ nhớ để một máy đóng vai máy nhỏ hơn. Kết quả theo số nhân và cấu hình nhỏ nhất đạt ngưỡng nằm ở `docs/SIZING.md`.
+- Flowable dùng id UUID sinh trong bộ nhớ, nên lấy id không cần thêm kết nối cơ sở dữ liệu và backend không còn treo khi có từ 50 người dùng đồng thời.
 
 ### Ứng dụng ngoài
 

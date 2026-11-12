@@ -34,8 +34,8 @@
 #   dxos archive <model> [--before YYYY-MM-DD] [--out DIR | --store] | dxos archive check <dir | --store model/run>
 #                              write the finished records of a model and their history to Parquet files,
 #                              to a directory (default deploy/archive) or to the object store (--store)
-#   dxos archive query <model/run> [--file FILE] [--param name=value ...] "SELECT ... FROM archive"
-#                              query the Parquet files of one object-store run with DuckDB (read only)
+#   dxos archive query <model/run> --file FILE [--param name=value ...] "SELECT ... FROM archive"
+#                              query one Parquet file of an object-store run with DuckDB (read only)
 #   dxos archive list | auto | schedule install|uninstall
 #                              list the runs in the store; archive what is older than ARCHIVE_AFTER_DAYS
 #                              (once per record); auto runs every day with a systemd user timer
@@ -1047,10 +1047,10 @@ SELECT 'ROWS|$name|' || count(*) FROM read_parquet('$target/$name');"
   echo "Archive matches its manifest."
 }
 
-# Runs one read-only, parameterized query over Parquet files of one object-store run.
+# Runs one read-only, parameterized query over one Parquet file of one object-store run.
 # The archive is materialized before external access is disabled, so the user's query cannot open another path.
 archive_query() {
-  local ref="${1:-}" file="*.parquet" sql="" model run name value target query_input execute_args=""
+  local ref="${1:-}" file="" sql="" model run name value target query_input execute_args=""
   local param_value_pattern="^(NULL|TRUE|FALSE|-?[0-9]+([.][0-9]+)?|'([^']|'')*')$"
   local params=()
   shift || true
@@ -1068,9 +1068,10 @@ archive_query() {
       *) [[ -z "$sql" ]] || die "query must be one SQL statement"; sql="$1"; shift ;;
     esac
   done
-  [[ "$file" =~ ^[A-Za-z0-9_*.]+\.parquet$ && "$file" != *..* ]] \
-    || die "--file must name a Parquet file in the selected archive run"
-  [[ -n "$sql" ]] || die "usage: dxos archive query model/run [--file FILE] [--param name=value ...] \"SELECT ... FROM archive\""
+  [[ -n "$file" ]] || die "--file is required; choose one Parquet file in the selected archive run"
+  [[ "$file" =~ ^[A-Za-z0-9_]+\.parquet$ ]] \
+    || die "--file must name one Parquet file in the selected archive run"
+  [[ -n "$sql" ]] || die "usage: dxos archive query model/run --file FILE [--param name=value ...] \"SELECT ... FROM archive\""
   sql="${sql%;}"
   [[ "$sql" =~ ^[[:space:]]*(SELECT|WITH|EXPLAIN)([[:space:]]|$) ]] \
     || die "archive query accepts SELECT, WITH, or EXPLAIN only"

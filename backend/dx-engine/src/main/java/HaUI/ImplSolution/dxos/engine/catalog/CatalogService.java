@@ -97,6 +97,11 @@ public class CatalogService {
     params.add(
         param("allow_self_decision", false, "Whether the creator of a record may handle it"));
     params.add(param("deadline", false, "How long a handler has, such as 72h, 90m or 3d"));
+    params.add(
+        param(
+            "escalate",
+            false,
+            "Notices to other roles while an overdue record stays unhandled, as a list of {after: 24h, to: MANAGER, repeat: {every: 12h, times: 3}}; needs a deadline"));
     if ("work_item".equals(family)) {
       params.add(
           param(

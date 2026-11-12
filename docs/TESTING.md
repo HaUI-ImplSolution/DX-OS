@@ -149,7 +149,7 @@ Giao diện, đăng nhập bằng `req1` (vai `BORROWER`), `keeper1` (vai `KEEPE
     Hồ sơ đóng sau hạn dù trước lần quét có dòng `overdue` đứng trước dòng quyết định và tính là muộn; hồ sơ đóng trước hạn không có dòng này; lần quét sau không ghi dòng thứ hai và outbox chỉ có một thông điệp.
     Hồ sơ quá hạn rồi được trả lại, nộp lại và duyệt vẫn tính là muộn; hồ sơ rút lại sau hạn không tính; hai quyết định đồng thời trên hai hồ sơ quá hạn không kẹt khóa; `GET /api/v1/history/verify` vẫn báo chuỗi nguyên vẹn.
     Số `closedOnTime` cộng `closedLate` bằng số hồ sơ đã quyết định và không rút lại khi đối chiếu bằng SQL, ở nhiều người xem và nhiều bộ lọc.
-    Tệp mô hình có hành động tên `overdue`, `due_soon`, `created`, `updated`, `deleted`, `assigned`, `file_added`, `file_removed`, `completion_skipped` hay `auto_closed` bị từ chối ở bước kiểm, kèm dòng và cột; tên thường như `review` được nhận.
+    Tệp mô hình có hành động tên `overdue`, `due_soon`, `created`, `updated`, `deleted`, `assigned`, `file_added`, `file_removed`, `completion_skipped`, `auto_closed` hay `escalated` bị từ chối ở bước kiểm, kèm dòng và cột; tên thường như `review` được nhận.
 23. Hộp việc thời gian thực: mở hộp việc của một cán bộ ở một cửa sổ, ở cửa sổ khác cho sinh viên nộp một hồ sơ gửi đơn vị của cán bộ đó: số "Việc đang chờ" tăng trong khoảng hai giây mà không tải lại trang, ở mọi tab của cán bộ.
     Trang chi tiết đang mở của một hồ sơ đổi trạng thái khi người khác duyệt; form tạo hoặc sửa đang gõ dở không bị làm mới.
     Khởi động lại `backend`: sau vài giây tab đang mở nhận lại thay đổi mới.

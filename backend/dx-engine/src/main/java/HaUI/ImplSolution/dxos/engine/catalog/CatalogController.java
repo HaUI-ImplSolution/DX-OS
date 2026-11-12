@@ -62,7 +62,7 @@ public class CatalogController {
               + " 0 for a problem without one) when the file is not a model. Otherwise one entry per"
               + " entity that has a process: the states and actions of its family, the completions of"
               + " each final state, the handler, the deadline and auto_close in seconds (null when"
-              + " not set), the booking, and the states where the deadline runs.")
+              + " not set), the escalations, the booking, and the states where the deadline runs.")
   public ApiResponse<ProcessDiagramService.Diagram> diagram(@RequestBody String content) {
     return ApiResponse.success(diagrams.diagram(content));
   }

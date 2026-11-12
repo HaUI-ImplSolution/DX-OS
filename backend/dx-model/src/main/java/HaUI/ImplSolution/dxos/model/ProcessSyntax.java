@@ -16,6 +16,7 @@ public final class ProcessSyntax {
           "actions",
           "allow_self_decision",
           "deadline",
+          "escalate",
           "auto_close",
           "after",
           "booking");
@@ -23,6 +24,10 @@ public final class ProcessSyntax {
   public static final Set<String> ACTION =
       Set.of("label", "from", "to", "by", "role", "needs_note", "require", "when");
   public static final Set<String> AUTO_CLOSE = Set.of("after", "action");
+  public static final Set<String> ESCALATION = Set.of("after", "to", "repeat");
+  public static final Set<String> REPEAT = Set.of("every", "times");
+  public static final int MAX_ESCALATIONS = 5;
+  public static final int MAX_REPEATS = 20;
 
   // Names the history of a record uses for the lines the platform writes, so an action cannot
   // take them: its own line would be taken for the one of the platform.
@@ -37,7 +42,8 @@ public final class ProcessSyntax {
           "completion_skipped",
           "auto_closed",
           "overdue",
-          "due_soon");
+          "due_soon",
+          "escalated");
 
   private ProcessSyntax() {}
 }

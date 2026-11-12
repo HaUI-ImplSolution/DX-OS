@@ -32,6 +32,7 @@ Hồ sơ chưa giao thì cả vai xử lý đều làm được.
 
 Nghiệp vụ có hạn thì hồ sơ quá hạn hiện nhãn **Quá hạn** và lên đầu hộp việc.
 Lịch sử ghi lúc hồ sơ sắp tới hạn và lúc quá hạn.
+Nghiệp vụ có khai leo thang thì lịch sử ghi thêm mỗi lần hồ sơ quá hạn được báo lên vai khác; việc này không đổi người giữ hồ sơ.
 
 ## Xử lý nhiều hồ sơ cùng lúc
 

@@ -152,7 +152,7 @@ def main():
         check("CLI-19 archive --store writes the finished records to the object store", code == 0 and "incident.parquet: 1 rows" in out and run_id.startswith(name + "/"), f"{code} {out[-300:]} {err[-300:]}")
         code, out, err = dxos(work, "archive", "check", "--store", run_id)
         check("CLI-20 archive check --store passes on the run in the store", code == 0 and "Archive matches its manifest" in out and "SHA-256 matches" in out, f"{code} {out[-200:]} {err[-200:]}")
-        code, out, err = dxos(work, "archive", "query", run_id, "--file", "incident.parquet", "--param", "status='REJECTED'", "SELECT count(*) FROM archive WHERE status = $status")
+        code, out, err = dxos(work, "archive", "query", run_id, "--file", "incident.parquet", "--param", "status='rejected'", "SELECT count(*) FROM archive WHERE status = $status")
         check("CLI-21 archive query reads one run with a bound parameter", code == 0 and out.strip() == "1", f"{code} {out[-200:]} {err[-200:]}")
         code, out, err = dxos(work, "archive", "query", run_id, "--file", "../secret.parquet", "SELECT 1")
         check("CLI-22 archive query rejects a path outside the selected run", code == 1 and "Parquet file" in err, f"{code} {out[-200:]} {err[-200:]}")

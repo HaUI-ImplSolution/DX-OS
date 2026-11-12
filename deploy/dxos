@@ -1094,10 +1094,11 @@ archive_query() {
   if (( ${#params[@]} )); then
     query_input+="PREPARE archive_query AS $sql;"$'\n'
     query_input+="EXECUTE archive_query($execute_args);"$'\n'
+    duckdb_store <<<"$query_input" | sed '1{/^true$/d;}'
   else
     query_input+="$sql"$'\n'
+    duckdb_store <<<"$query_input"
   fi
-  duckdb_store <<<"$query_input"
 }
 
 # The runs in the object store, oldest first.

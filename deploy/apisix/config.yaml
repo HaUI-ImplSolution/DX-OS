@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-# APISIX in standalone mode: routes live in apisix.yaml (common.yaml with the delivery key of the
-# monitor filled in by the apisix-config service), there is no etcd and no admin API.
+# Standalone routes are generated from common.yaml and optional local.yaml; no etcd or admin API.
 deployment:
   role: data_plane
   role_data_plane:

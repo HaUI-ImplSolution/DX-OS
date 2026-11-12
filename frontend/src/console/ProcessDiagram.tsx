@@ -25,6 +25,7 @@ import {
   PROCESS_NODE_WIDTH,
   type ProcessAnchor,
 } from "./processDiagramCore";
+import { formatDuration } from "../shell/format";
 import { t } from "../shell/t";
 
 const BOX_HEIGHT = 360;
@@ -268,6 +269,15 @@ function notes(process: ProcessView): string {
   if (process.booking) {
     const { resource, starts, ends, capacity } = process.booking;
     lines.push(t("Đặt chỗ: tài nguyên {resource}, từ {starts} đến {ends}, sức chứa {capacity}.", { resource, starts, ends, capacity }));
+  }
+  for (const level of process.escalations) {
+    const roles = level.to.join(", ");
+    const after = formatDuration(level.afterSeconds);
+    lines.push(
+      level.everySeconds === null
+        ? t("Quá hạn {after} thì báo {roles}.", { after, roles })
+        : t("Quá hạn {after} thì báo {roles}, nhắc {times} lần, cách nhau {every}.", { after, roles, times: level.times, every: formatDuration(level.everySeconds) }),
+    );
   }
   const withdraw = process.actions.find((action) => action.name === "withdraw");
   if (withdraw) {

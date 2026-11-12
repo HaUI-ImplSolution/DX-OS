@@ -62,7 +62,7 @@ public class EventFeedController {
     List<Map<String, Object>> rows =
         jdbc.queryForList(
             "SELECT id, model, entity, record_id, action, from_status, to_status, actor, actor_name, "
-                + "at, hash FROM engine.record_event WHERE id > ?"
+                + "at, hash, detail FROM engine.record_event WHERE id > ?"
                 + filter
                 + " ORDER BY id LIMIT ?",
             args);
@@ -81,7 +81,8 @@ public class EventFeedController {
               (String) row.get("actor"),
               (String) row.get("actor_name"),
               instant(row.get("at")),
-              (String) row.get("hash")));
+              (String) row.get("hash"),
+              (String) row.get("detail")));
     }
     return ApiResponse.success(page(items, after, more));
   }

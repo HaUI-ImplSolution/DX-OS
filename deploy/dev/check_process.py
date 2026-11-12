@@ -185,6 +185,52 @@ def main():
     rt.check("T8-09 a figure with no record behind it is null",
              status == 200 and data.get("total") == 0 and all(data.get(k) is None for k in ("avgDecisionSeconds", "avgOpenAgeSeconds", "oldestOpenAgeSeconds")), str(data))
 
+    # QL: the quality of an entity covers the rows the caller may read and nothing else.
+    status, quality = kc.api(agent, "GET", f"{TICKETS}/quality")
+    status_stats, stats = kc.api(agent, "GET", f"{TICKETS}/stats")
+    data = quality.get("data") or {}
+    metrics = data.get("metrics") or {}
+    title = next((f for f in (metrics.get("completeness") or {}).get("fields", []) if f["field"] == "title"), {})
+    rt.check("QL-01 the sample is the rows the list returns, with the moment of the measure",
+             status == 200 and data.get("sampleSize") == stats["data"]["total"] and data.get("measuredAt")
+             and set(metrics) == {"completeness", "requiredWhen", "constraints", "freshness"}, f"{status} {data}")
+    rt.check("QL-02 a required field is filled in every record", title.get("filled") == data.get("sampleSize") and title.get("rate") == 1.0, str(title))
+    status, quality = kc.api(asker, "GET", f"{TICKETS}/quality")
+    status_stats, stats = kc.api(asker, "GET", f"{TICKETS}/stats")
+    rt.check("QL-03 the owner's sample is the tickets the owner can list",
+             status == 200 and quality["data"]["sampleSize"] == stats["data"]["total"] and stats["data"]["total"] > 0,
+             f"{quality.get('data')} {stats.get('data')}")
+    status, quality = kc.api(agent, "GET", f"{TICKETS}/quality?filter.title=no-such-title")
+    empty = quality.get("data") or {}
+    title = next((f for f in empty["metrics"]["completeness"]["fields"] if f["field"] == "title"), {}) if empty else {}
+    rt.check("QL-04 with no record the measures are still defined: rate and dates are null, counts are 0",
+             status == 200 and empty.get("sampleSize") == 0 and title.get("rate") is None and title.get("filled") == 0
+             and empty["metrics"]["freshness"]["oldest"] is None and empty["metrics"]["freshness"]["stale"] == 0, str(empty))
+    rt.psql(f"update m_desk8.ticket set updated_at = now() - interval '100 days' where id = {older}")
+    status, quality = kc.api(agent, "GET", f"{TICKETS}/quality")
+    status_wide, wide = kc.api(agent, "GET", f"{TICKETS}/quality?staleDays=200")
+    fresh, fresh_wide = quality["data"]["metrics"]["freshness"], wide["data"]["metrics"]["freshness"]
+    rt.check("QL-05 a record not changed within staleDays is counted, and a longer period leaves it out",
+             fresh["staleDays"] == 90 and fresh["stale"] >= 1 and fresh_wide["staleDays"] == 200 and fresh_wide["stale"] < fresh["stale"],
+             f"{fresh} {fresh_wide}")
+    rt.check("QL-06 measuring again gives the same figures",
+             kc.api(agent, "GET", f"{TICKETS}/quality?staleDays=200")[1]["data"]["metrics"] == wide["data"]["metrics"], "")
+    rt.psql("update m_desk8.ticket set updated_at = now() - interval '300 days' where decided_at is not null")
+    status, quality = kc.api(agent, "GET", f"{TICKETS}/quality")
+    aged = quality["data"]["metrics"]["freshness"]
+    rt.check("QL-09 a record that reached its final state is not counted as stale",
+             aged["stale"] == fresh["stale"] and aged["oldest"] < fresh["oldest"], f"{fresh} {aged}")
+    status, body = kc.api(agent, "GET", f"{TICKETS}/quality?staleDays=0")
+    rt.check("QL-07 staleDays outside 1 to 3650 is refused", status == 400, f"{status} {body}")
+    kc.ensure_user("outsider8", [])
+    status, body = kc.api(kc.token("outsider8"), "GET", f"{TICKETS}/quality")
+    rt.check("QL-08 a caller whose roles do not reach the entity gets nothing", status == 403 and (body.get("data") or {}).get("reason") == "NO_ROLE_FOR_ENTITY", f"{status} {body}")
+
+    status, quality = kc.api(admin, "GET", f"{TICKETS}/quality")
+    code, stored = rt.psql("select count(*) from m_desk8.ticket")
+    rt.check("QL-10 an administrator is measured over every row, and gets counts only",
+             status == 200 and str(quality["data"]["sampleSize"]) == stored and "items" not in quality["data"], f"{status} {quality.get('data')} {stored}")
+
     # T8-10: an update that names the version it read does not overwrite a newer one.
     mine = create(asker, TICKETS, {"title": "Version"})
     status, body = kc.api(asker, "GET", f"{TICKETS}/{mine}")

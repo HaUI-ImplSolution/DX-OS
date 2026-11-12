@@ -15,7 +15,7 @@ Nó không có nghĩa một mô hình có thể đổi trường mà mã tích h
 | Bên nhận phản ứng sau thay đổi | Ổn định | Webhook có chữ ký, `schemaVersion` và API đọc bù; webhook không chặn được hành động trước khi trạng thái đổi |
 | Giao diện ngoài chạy ở origin riêng | Ổn định | Đăng ký public client bằng `dxos client browser add`; redirect và CORS dùng danh sách chính xác, không nhận wildcard |
 | Trang hoặc thành phần form trong web Tầng 2 | Tùy biến source | Phải sửa và dựng lại image frontend; chưa có registry plugin hay kiểm tra tương thích |
-| Route riêng dưới gateway DX-OS | Thử nghiệm | Phải sửa tệp APISIX do bộ cài quản lý; `dxos update` có thể thay tệp đó |
+| Route riêng dưới gateway DX-OS | Ổn định | `deploy/apisix/local.yaml` của bản cài được kiểm và ghép với cấu hình lõi; giữ nguyên khi nâng cấp |
 | Quy trình riêng | Ổn định bằng khai báo | Khai báo `states` và `actions` trong tệp mô hình, không viết plugin; xem [`MODEL.md`](./MODEL.md#tự-khai-báo-hoặc-mở-rộng-quy-trình) |
 
 Ưu tiên tệp mô hình và API chung trước khi viết mã.
@@ -251,42 +251,50 @@ Không tải JavaScript tùy ý từ mô hình hoặc từ một URL do người
 Dịch vụ chỉ gọi DX-OS không cần route này.
 Chỉ thêm route khi người dùng hoặc hệ thống khác phải gọi dịch vụ mở rộng qua cùng cổng vào.
 
-Tệp `deploy/apisix/common.yaml` có hai danh sách `upstreams` và `routes`.
-Ví dụ sau giả định container `extension-worker` cùng mạng Docker với APISIX; ghép từng phần vào danh sách tương ứng, không tạo khóa YAML thứ hai:
+Tạo `deploy/apisix/local.yaml` trong bản cài từ [`local.example.yaml`](../deploy/apisix/local.example.yaml); file này chỉ chứa phần bổ sung, còn `common.yaml` do lõi quản lý.
+Ví dụ sau giả định container `extension-worker` cùng mạng Docker với APISIX:
 
 ```yaml
-# Trong upstreams:
-- id: extension-worker
-  type: roundrobin
-  nodes:
-    "extension-worker:8080": 1
-
-# Trong routes:
-- id: extension-worker-api
-  priority: 10
-  uri: /extensions/worker/*
-  upstream_id: extension-worker
-  plugin_config_id: bearer-token
+upstreams:
+  - id: extension-worker
+    type: roundrobin
+    nodes:
+      "extension-worker:8080": 1
+routes:
+  - id: extension-worker-api
+    uri: /extensions/worker/*
+    upstream_id: extension-worker
+    plugin_config_id: bearer-token
 ```
 
-Route id và đường dẫn phải không trùng, và priority phải cao hơn route web bắt mọi đường dẫn.
-APISIX chuyển nguyên đường dẫn `/extensions/worker/...` tới dịch vụ, nên dịch vụ phục vụ đúng tiền tố đó.
-`bearer-token` chỉ xác thực token; dịch vụ mở rộng vẫn phải kiểm quyền cần thiết hoặc gọi API lõi bằng token của người dùng.
-Một route public phải được xem xét riêng và liệt kê lý do trong `deploy/apisix/check_routes.py`; không bỏ xác thực chỉ để phép kiểm đi qua.
+File local nhận `upstreams`, `routes` và tùy chọn `public_routes`, với một tài liệu YAML, tối đa 1 MiB, không khóa trùng, anchor hoặc alias.
+Route phải có id riêng, tham chiếu hợp lệ và priority lớn hơn `-10` của web fallback; mặc định là `0`.
+Các đường dẫn chính xác, tiền tố `*` ở cuối và tham số `:name` được kiểm giao nhau với route lõi và route local khác; không nhận đường có `%`, đoạn `.` hoặc bắt đầu bằng `..`, dấu gạch chéo kép hay ký tự điều khiển.
+Chỉ web fallback `/*` được phép giao với route local; host, methods và priority không cho phép ghi đè đường dẫn của lõi.
+Tên và đường dẫn của lõi được giữ chỗ cả khi thành phần tương ứng tắt trong chế độ `core`.
 
-Kiểm và nạp lại cấu hình:
+APISIX chuyển nguyên đường dẫn `/extensions/worker/...` tới dịch vụ.
+`bearer-token` xác thực token; dịch vụ mở rộng vẫn phải kiểm quyền nghiệp vụ.
+Route public khai tường minh `public_routes: {<id>: "lý do công khai"}` trong file local; id phải thuộc một route local không kiểm token.
+Metadata này chỉ phục vụ kiểm cấu hình, không được nạp thành resource APISIX.
+
+Kiểm và nạp lại từ thư mục `deploy` của bản cài:
 
 ```bash
-python3 deploy/apisix/check_routes.py
-cd deploy
-docker compose up --force-recreate apisix-config
-docker compose restart apisix
+docker compose run --rm --no-deps apisix-config --check
+docker compose run --rm --no-deps apisix-config
 ```
 
-Gọi thử không token, token sai và token đúng; đối chiếu `X-Request-Id` trong log.
+Trình kiểm dùng cùng image APISIX đã ghim với gateway, không cần cài Python trên máy triển khai.
+Trong source tree có thể chạy `python3 deploy/apisix/check_routes.py --local <tệp>` bằng Python, PyYAML và Docker; dùng `--mode core` hoặc `--admin-console` để kiểm cấu hình tương ứng.
+Cấu hình hợp lệ được ghép theo thứ tự lõi rồi local và thay file đầu ra nguyên tử; APISIX đang chạy tự đọc lại file.
+Lỗi schema, plugin, tham chiếu hoặc xung đột giữ file đầu ra hợp lệ trước đó; lỗi chỉ nêu file/resource và loại lỗi.
+Sau khi thay container upstream, khởi động lại APISIX để làm mới địa chỉ: `docker compose restart apisix`.
 
-Đây chưa phải điểm mở rộng bền qua nâng cấp.
-`deploy/install.sh --upgrade` thay các tệp runtime được phân phối, gồm `apisix/common.yaml` và `docker-compose.yml`, nên phải giữ patch riêng, xem lại diff của bản mới và áp dụng lại sau `dxos update`.
+`dxos update` giữ nguyên file local và kiểm nó với `common.yaml` mới trước khi thay container.
+Xung đột với bản lõi mới làm cập nhật dừng để người triển khai sửa local; bước nâng bộ cài có thể đã thay các file runtime, nên đây không phải hoàn tác toàn bộ lần cập nhật.
+Bỏ file local rồi nạp lại để gỡ các route riêng.
+Cất bản sao file local cùng cấu hình triển khai; bản sao lưu Postgres/SeaweedFS hiện không chứa file này.
 
 ## Danh sách kiểm trước khi phát hành phần mở rộng
 

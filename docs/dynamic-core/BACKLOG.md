@@ -14,18 +14,16 @@ Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết t�
 | Thứ tự | Việc | Điểm liên quan |
 |---|---|---|
 | 1 | Rà soát cuối của mục 2 trên bản `2.0.0` đã phát hành | Điều kiện để kho mã được chấm trên bản dự thi; bản phát hành 5, dịch từ mã nguồn 10 |
-| 2 | Lõi đúng đầu bài: `README.md` đối chiếu đề và H-P-D-I (mục 5) | Giấy phép 10 qua ghi chú "giải quyết đúng đầu bài" của thể lệ |
-| 3 | Tài liệu và giao tiếp: lịch sử issue, lộ trình, tài liệu sản phẩm trên trang docs (mục 2 và 3) | Tài liệu và giao tiếp 10, phát triển bền vững 10 |
-| 4 | Bằng chứng lõi là PaaS: giao diện riêng ở tên miền khác, route của dịch vụ riêng, ứng dụng mẫu, đường ống mẫu cho kho mô hình (mục 3) | Nguyên gốc 10, phát triển bền vững 10 |
-| 5 | Bài trình bày, video (mục 2) | Hoàn thiện 10, trình diễn 10 |
-| 6 | Phần AI và chữ I của ứng dụng Tầng 2 (mục 3) | Hoàn thiện 10, nguyên gốc 10 |
-| 7 | Phủ thêm bốn nguyên lý: truy vấn trên hồ dữ liệu, số đo chất lượng dữ liệu, kiểm EICAR trong CI, tự kéo từ git (mục 3 và 5) | Hoàn thiện 10 |
+| 2 | Tài liệu và giao tiếp: lịch sử issue, tài liệu sản phẩm trên trang docs (mục 2 và 3) | Tài liệu và giao tiếp 10, phát triển bền vững 10 |
+| 3 | Bằng chứng lõi là PaaS: giao diện riêng ở tên miền khác, ứng dụng mẫu, đường ống mẫu cho kho mô hình (mục 3) | Nguyên gốc 10, phát triển bền vững 10 |
+| 4 | Bài trình bày, video (mục 2) | Hoàn thiện 10, trình diễn 10 |
+| 5 | Phần AI và chữ I của ứng dụng Tầng 2 (mục 3) | Hoàn thiện 10, nguyên gốc 10 |
+| 6 | Phủ thêm ba nguyên lý: truy vấn trên hồ dữ liệu, kiểm EICAR trong CI, tự kéo từ git (mục 3 và 5) | Hoàn thiện 10 |
 
 ## 2. Phải xử lý trước khi phát hành
 
 | Việc | Ghi chú |
 |---|---|
-| Lộ trình công khai | Chưa có `ROADMAP.md`; phần định hướng phát triển của buổi chung kết và tiêu chí phát triển bền vững mới chỉ có file này để dẫn |
 | Ảnh và video của sản phẩm | `README.md`, `README_EN.md` và trang docs không có ảnh hay video nào của sản phẩm, và kho không có tệp ảnh nào ngoài logo của trang docs; thêm ảnh bảng điều khiển, màn hình kế hoạch, hộp việc và lịch, cùng một video hoặc ảnh động ngắn |
 | Rà soát cuối trên bản phát hành | Trước 17:00 ngày 06/12: clone vào máy sạch rồi `deploy/make_env.sh` và `docker compose up -d --build` thành công; mở repository bằng trình duyệt ẩn danh thấy được không cần đăng nhập; trang Contributors hiện đủ ba thành viên (API `contributors` hiện chỉ trả hai người); `check_licenses.py` báo 0 vấn đề, `reuse lint` xanh và `gh api repos/HaUI-ImplSolution/DX-OS/license` vẫn trả Apache-2.0 khi có `LICENSES/`; CI xanh trên commit gắn tag (`Platform`, `Compliance`, `Backend`, `Frontend`, `Dependencies`); trang docs mô tả đúng bản `2.0.0`; số issue, pull request và commit ở `website/docs/pof-audit.md` lấy lại theo ngày gắn tag |
 | Gửi bài | Thư tới `olpvietnam@vaip.vn` và `thuky@vfossa.vn` trước 17:00 ngày 06/12/2026, tiêu đề `BÀI THI PMNM 2026 - [Tên Đội] - [Tên Trường]`, nội dung gồm thành viên đội, người hướng dẫn, đường dẫn kho mã nguồn và cam kết bản quyền theo mẫu trong đề; trước đó xác nhận với trường rằng đội đã có trong danh sách đăng ký gửi BTC, và ghi người hướng dẫn vào mục Nhóm phát triển của `README.md` |
@@ -38,16 +36,12 @@ Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết t�
 | Phần AI | Chưa có mã: hỏi đáp sinh câu trả lời và tác tử đề xuất có người duyệt cần mô hình ngôn ngữ và embedding đạt định nghĩa Open Source AI của OSI (trọng số và dữ liệu huấn luyện đều mở), chưa chọn; khi làm sẽ là dịch vụ mới nối vào lõi; ứng viên LLM là Apertus 8B (Apache-2.0) và OLMo 2, cần thử tiếng Việt và tốc độ trên CPU; reranker và embedding phải thay bằng mô hình đạt chuẩn rồi đo lại chất lượng truy xuất; mô hình mở hoàn toàn có thể trả lời tiếng Việt kém và chậm hơn trên CPU nên cần đo trước khi trình diễn; không có LLM đạt thì Qwen chỉ là tùy chọn người dùng tự gắn, ghi rõ là mở trọng số; hỏi đáp quy chế cần một kho văn bản đạt cam kết nguồn mở (CC0, CC BY, ODbL hoặc không thuộc diện bảo hộ), vì kho văn bản của trường đã gỡ do thuộc bản quyền của trường |
 | Ứng dụng Tầng 2 | Chưa phủ I của H-P-D-I; hỏi BTC trên nhóm Telegram của họ xem ứng dụng minh họa có cần phủ cả bốn không gian H, P, D, I không |
 | Hồ dữ liệu | Chưa có lớp truy vấn riêng trên các tệp Parquet trong kho; công cụ báo cáo đọc dữ liệu đang chạy qua vai `report_ro`; hướng làm: `dxos archive query` chạy DuckDB đọc thẳng các tệp trong kho |
-| Phả hệ và chất lượng dữ liệu | Danh mục dữ liệu dừng ở mức thực thể; chưa có phả hệ đến từng trường, và chưa có số đo chất lượng dữ liệu mà nguyên lý (iii) của đề nêu |
+| Phả hệ dữ liệu | Danh mục dữ liệu dừng ở mức thực thể; chưa có phả hệ đến từng trường |
 | Tài liệu sản phẩm trên trang docs | Trang docs chỉ có hồ sơ dự thi; cách viết tệp mô hình, API, vận hành và mở rộng đều là liên kết sang tệp trên GitHub |
-| Hướng dẫn theo vai | Chưa có hướng dẫn sử dụng cho người nộp, người xử lý và người triển khai; tài liệu hiện có viết cho người phát triển và người kiểm thử |
-| Chính sách tương thích | Chưa có văn bản nói `/api/v1`, `format` của tệp mô hình và dạng thông điệp webhook giữ tương thích thế nào giữa các bản, và báo trước ra sao khi bỏ một phần |
-| So với ba nền đề gợi ý | Đề nêu Supabase, Strapi và Directus; `website/docs/dependencies.md` ghi Strapi chưa được đánh giá, và `README.md` chưa nói lõi khác ba nền này ở đâu |
 | Giao diện trên điện thoại | Chưa kiểm ứng dụng web trên màn hình điện thoại, trong khi không gian H của đề có ứng dụng di động tác nghiệp |
 | Trang và thành phần riêng trong ứng dụng Tầng 2 | Ứng dụng web chưa có chỗ đăng ký trang hay thành phần form; thêm chúng là sửa mã nguồn và dựng lại image |
 | Ý từ Frappe | Tách phần tùy biến khỏi mô hình gốc: chưa đọc mã của Frappe để đối chiếu |
 | Giáo trình DX-OS | Mới đọc tổng quan, mục lục chương và trang Hộp cát; đọc hết rồi đối chiếu thuật ngữ và kiến trúc với lõi, nhất là dự án DX-Ticket |
-| Route của dịch vụ riêng | Route nằm trong `deploy/apisix/common.yaml` do lõi quản, nên thêm route cho dịch vụ riêng là sửa tệp đó và mất khi `dxos update` thay tệp triển khai; hướng làm: một tệp route riêng của bản cài được nạp thêm |
 | Kiểm tra đồng bộ do dịch vụ riêng quyết định | Webhook chỉ báo sau khi hồ sơ đã chuyển; chưa có cách để dịch vụ riêng chặn một hành động trước khi chuyển trạng thái, nên logic đặc thù ở mức 3 chỉ phản ứng sau, không chặn được; nếu làm thì phải giữ quy tắc bất biến và hồ sơ không kẹt khi dịch vụ riêng không trả lời |
 | Ứng dụng mẫu gọi lõi từ bên ngoài | Chưa có ứng dụng có giao diện nào ngoài ứng dụng của đội gọi lõi qua API, nên câu "PaaS phục vụ các ứng dụng tầng trên" của đề chưa có bằng chứng chạy được; đã chốt làm một ứng dụng mẫu ở `examples/`, viết bằng khung khác react-admin, chỉ dùng OpenAPI theo mô hình và đăng nhập Keycloak |
 | Đường ống mẫu cho kho mô hình | Chưa có ví dụ cho thấy tệp mô hình sống trong git; `dxos plan` chưa có đầu ra máy đọc được và mã thoát phân biệt không đổi, có đổi, bị từ chối; đã chốt làm một ví dụ ở `examples/` chạy kế hoạch trên pull request, dán kế hoạch vào bình luận và áp dụng khi gộp |
@@ -55,7 +49,6 @@ Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết t�
 | GitOps kéo | Lõi nhận tệp qua `dxos apply` và chưa tự kéo từ git để liên tục đối chiếu với trạng thái đang chạy |
 | Hai họ mẫu mở rộng | Kiểm tra định kỳ (lịch sinh bản ghi, kiểm tra, khắc phục) và Đánh giá và chọn lọc (nhiều người chấm, chọn theo chỉ tiêu) chưa làm; chỉ giữ một họ khi có ít nhất ba miền chạy được bằng tham số |
 | Nâng tệp mô hình cũ | Tệp ghi `format` để lõi tự nâng tệp cũ khi định dạng đổi, nhưng mới có `format: 0` nên chưa có bước nâng nào |
-| Leo thang khi quá hạn | Chưa có; quá hạn chỉ được ghi vào lịch sử và nhắc qua `due_soon`, `overdue` |
 | Đo công sức | So số dòng và thời gian dựng ứng dụng mới trên lõi với phần Lab viết tay (5.792 dòng Java, 4.524 dòng giao diện, 8 migration) chưa làm |
 | Chỉ số mục tiêu | "Người mới tự dựng xong trong một buổi" cần một người chưa biết hệ thống thử; "mã tự viết bằng 0 ở mức 1 và 2" cần đếm trên một hệ thống thật; chưa có giá của lõi tự cài |
 | Tải | Chưa đo với nhiều người dùng đồng thời hay ít nhân hơn 12 |
@@ -98,6 +91,4 @@ Chỗ bài làm hoặc cách trình bày chưa khớp câu chữ của đề.
 
 | Chỗ lệch | Ghi chú |
 |---|---|
-| Ranh giới tầng trong cây thư mục | `dx-monitor` có trang HTML và nằm trong `backend/` cạnh lõi, còn tài liệu xếp nó ở Tầng 2; người chấm kho mã đọc cây thư mục mà không có đội giải thích; thêm cột Tầng vào bảng Cấu trúc repository của `README.md`, hoặc chuyển thư mục |
-| Ứng dụng minh họa chưa định vị trong H-P-D-I | Đề đòi ứng dụng "nằm trong không gian H-P-D-I ở Tầng 2", và thể lệ gắn 10 điểm giấy phép với "giải quyết đúng đầu bài"; `README.md` không nhắc H-P-D-I và không có bảng đối chiếu với đề, còn kịch bản chính Một cửa sinh viên đọc như một ứng dụng ngành của Tầng 3; nói rõ ứng dụng Tầng 2 là bộ dựng giao diện và bảng điều khiển (P: soạn biểu mẫu và quy trình, cổng yêu cầu và phê duyệt; H: hộp việc, bảng theo trạng thái, lịch; D: thống kê, danh mục dữ liệu), còn Một cửa sinh viên là một tệp mô hình của Tầng 3 |
 | Kiểm dịch mã độc | Nguyên lý (iv) của đề viết "kiểm dịch mã độc nghiêm ngặt"; quét tắt mặc định, và kiểm tệp EICAR không nằm trong CI vì job `API end-to-end` không bật quét |

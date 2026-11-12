@@ -83,7 +83,7 @@ python3 deploy/dev/check_bootstrap.py
 | `check_recovery.py` | Quyết định lỗi sau bước quy trình thì hồ sơ và quy trình cùng quay về; áp dụng bị Keycloak làm gián đoạn rồi áp dụng lại |
 | `check_case.py` | Trạng thái và hành động, đơn vị, giao việc, hộp việc, dòng lịch sử kèm giá trị cũ và mới, mã lý do của lỗi 403 và 409 |
 | `check_change.py` | Đổi mô hình khi đã có dữ liệu: mức rủi ro, đổi tên giữ dữ liệu, dòng vi phạm, quay về |
-| `check_process.py` | Các họ mẫu, quy tắc chung của quy trình, hạn và quá hạn, hành động hoàn tất qua outbox, tệp đính kèm, thống kê, chống ghi đè |
+| `check_process.py` | Các họ mẫu, quy tắc chung của quy trình, hạn và quá hạn, hành động hoàn tất qua outbox, tệp đính kèm, thống kê, số đo chất lượng, chống ghi đè |
 | `check_booking.py` | Họ `reservation`, danh mục của bảng điều khiển, mọi mẫu áp dụng được |
 | `check_demo.py` | Tám tiêu chí của kịch bản trình diễn |
 | `check_guards.py` | Người giữ vai, vai của nền tảng, bỏ vai, xóa thực thể còn hồ sơ đang chạy, lần áp dụng dừng giữa chừng (tiếp tục và hủy bỏ) |
@@ -149,7 +149,7 @@ Giao diện, đăng nhập bằng `req1` (vai `BORROWER`), `keeper1` (vai `KEEPE
     Hồ sơ đóng sau hạn dù trước lần quét có dòng `overdue` đứng trước dòng quyết định và tính là muộn; hồ sơ đóng trước hạn không có dòng này; lần quét sau không ghi dòng thứ hai và outbox chỉ có một thông điệp.
     Hồ sơ quá hạn rồi được trả lại, nộp lại và duyệt vẫn tính là muộn; hồ sơ rút lại sau hạn không tính; hai quyết định đồng thời trên hai hồ sơ quá hạn không kẹt khóa; `GET /api/v1/history/verify` vẫn báo chuỗi nguyên vẹn.
     Số `closedOnTime` cộng `closedLate` bằng số hồ sơ đã quyết định và không rút lại khi đối chiếu bằng SQL, ở nhiều người xem và nhiều bộ lọc.
-    Tệp mô hình có hành động tên `overdue`, `due_soon`, `created`, `updated`, `deleted`, `assigned`, `file_added`, `file_removed`, `completion_skipped` hay `auto_closed` bị từ chối ở bước kiểm, kèm dòng và cột; tên thường như `review` được nhận.
+    Tệp mô hình có hành động tên `overdue`, `due_soon`, `created`, `updated`, `deleted`, `assigned`, `file_added`, `file_removed`, `completion_skipped`, `auto_closed` hay `escalated` bị từ chối ở bước kiểm, kèm dòng và cột; tên thường như `review` được nhận.
 23. Hộp việc thời gian thực: mở hộp việc của một cán bộ ở một cửa sổ, ở cửa sổ khác cho sinh viên nộp một hồ sơ gửi đơn vị của cán bộ đó: số "Việc đang chờ" tăng trong khoảng hai giây mà không tải lại trang, ở mọi tab của cán bộ.
     Trang chi tiết đang mở của một hồ sơ đổi trạng thái khi người khác duyệt; form tạo hoặc sửa đang gõ dở không bị làm mới.
     Khởi động lại `backend`: sau vài giây tab đang mở nhận lại thay đổi mới.
@@ -162,7 +162,7 @@ Giao diện, đăng nhập bằng `req1` (vai `BORROWER`), `keeper1` (vai `KEEPE
 29. Bảng theo trạng thái: ở danh sách một thực thể có quy trình bấm nút Bảng theo trạng thái; mỗi trạng thái là một cột có tổng số, tối đa 10 thẻ, thẻ mở đúng chi tiết hồ sơ, "Xem cả N hồ sơ" mở danh sách lọc theo trạng thái đó; tải lại trang vẫn ở chế độ bảng; bộ lọc đang đặt áp cho mọi cột; ở màn hình 360 px trang không tràn ngang và các cột cuộn bên trong.
 30. Xuất CSV: bấm Xuất CSV ở một danh sách có lọc; tệp `<thực thể>-<ngày>.csv` có BOM, một dòng tiêu đề và đúng số dòng của danh sách đã lọc; tạo hồ sơ có lý do `=1+1` hoặc `@SUM(A1)` thì ô trong tệp bắt đầu bằng dấu nháy; giá trị có dấu phẩy hoặc ngoặc kép được bao trong ngoặc kép; vai chỉ thấy hồ sơ của mình chỉ nhận được các dòng đó.
 31. Khóa chống chạy lặp: gọi `POST /api/v1/data/{model}/{entity}` hai lần với cùng `Idempotency-Key` và cùng nội dung thì cả hai trả cùng `id`, lần hai có header `Idempotent-Replayed: true` và không có thêm hồ sơ; cùng khóa với nội dung khác hoặc với hành động khác thì 409 `IDEMPOTENCY_KEY_REUSED`; khóa sai khuôn thì 400; một yêu cầu lỗi không giữ khóa nên gửi lại được.
-32. Danh mục dữ liệu: vào bảng điều khiển bằng ADMIN, mở tab Danh mục dữ liệu và chọn một mô hình có quy trình và tham chiếu; trang liệt kê vai và ứng dụng ngoài đi vào, nơi dữ liệu đi ra, các liên kết giữa thực thể, và mỗi thực thể có số bản ghi, quyền theo vai và danh sách trường. Đăng ký thêm một ứng dụng ngoài ở tab Ứng dụng ngoài rồi tải lại thì nó hiện ở "Dữ liệu đi vào từ". Gọi `GET /api/v1/models/{model}/data-catalog` bằng vai không phải ADMIN thì 403.
+32. Danh mục dữ liệu: vào bảng điều khiển bằng ADMIN, mở tab Danh mục dữ liệu và chọn một mô hình có quy trình và tham chiếu; trang liệt kê vai và ứng dụng ngoài đi vào, nơi dữ liệu đi ra, các liên kết giữa thực thể, và mỗi thực thể có số bản ghi, quyền theo vai và danh sách trường. Đăng ký thêm một ứng dụng ngoài ở tab Ứng dụng ngoài rồi tải lại thì nó hiện ở "Dữ liệu đi vào từ". Gọi `GET /api/v1/models/{model}/data-catalog` bằng vai không phải ADMIN thì 403. Mở một thực thể trong tab: hiện số đo chất lượng kèm thời điểm đo và số bản ghi được xét; độ điền của từng trường, thiếu theo điều kiện và vi phạm ràng buộc khác 0 được tô nổi bật, và độ mới nêu số bản ghi chưa đổi quá số ngày đã chọn ở ô "Không cập nhật quá (ngày)" (30, 90, 180 hoặc 365; mặc định 90). Với mô hình có `required_when`, bỏ một dòng khỏi điều kiện bằng SQL (`update <bảng> set <trường> = null`) rồi tải lại thì "thiếu theo điều kiện" tăng 1. Đặt `updated_at` của một bản ghi lùi 120 ngày thì số bản ghi chưa đổi tăng 1 với `staleDays=90` và về lại khi `staleDays=200`. Gọi `GET /api/v1/data/{model}/{entity}/quality` bằng ADMIN thì `sampleSize` bằng số dòng của bảng, bằng vai không phải ADMIN và không chạm thực thể thì 403, bằng vai chỉ thấy dòng của mình thì `sampleSize` bằng số dòng trong danh sách của họ, và `staleDays=0` thì 400.
 
 Hướng dẫn và mẫu mô hình, kiểm bằng đúng các lệnh và thao tác trong tài liệu:
 
@@ -175,7 +175,9 @@ Hướng dẫn và mẫu mô hình, kiểm bằng đúng các lệnh và thao t�
    - Đăng ký một ứng dụng bằng `dxos client add`, lấy token từ tệp secret và tải OpenAPI của mô hình đúng như lệnh trong tài liệu.
    - Mô hình khác và API quản trị trả 403.
    - Hai lần tạo cùng `Idempotency-Key` và cùng nội dung trả cùng `id`, khác nội dung trả 409.
-   - Thêm upstream và route mẫu vào `deploy/apisix/common.yaml`: `check_routes.py` đạt, bỏ `plugin_config_id` thì báo thiếu kiểm token.
+   - Đặt upstream và route mẫu trong `deploy/apisix/local.yaml`, chạy `docker compose run --rm --no-deps apisix-config --check`: mẫu đạt; thiếu token check, trùng id hoặc đường dẫn lõi, plugin/schema sai và tham chiếu thiếu phải bị từ chối.
+   - Nạp cấu hình bằng cùng lệnh bỏ `--check`; sửa hoặc bỏ local rồi nạp lại, gateway đang chạy nhận cấu hình mới; cấu hình lỗi giữ nguyên file đầu ra.
+   - Nâng bản cài từ archive với file local có sẵn: nội dung file giữ nguyên, không có trong `.dxos-files`, route riêng vẫn được ghép với cấu hình lõi mới.
    - Sau khi nạp lại cấu hình, không token và token sai trả 401, token đúng tới được dịch vụ với nguyên đường dẫn.
 3. Mẫu Đặt lịch khám và Đổi trả hàng, cấp vai theo mô hình cho tài khoản thử và chỉ dùng dữ liệu giả:
    - Ở Thư viện mẫu bấm Dùng mẫu này rồi áp dụng từng mẫu.

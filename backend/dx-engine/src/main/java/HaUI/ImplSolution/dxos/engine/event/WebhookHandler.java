@@ -52,6 +52,20 @@ public class WebhookHandler implements OutboxHandler {
         target.get(),
         String.valueOf(payload.get("eventId")),
         payload,
-        ChatText.record(payload, hasProcess));
+        ChatText.record(payload, hasProcess) + escalatedTo(model.get(), payload));
+  }
+
+  // The roles an escalation notice is for, as a sentence tail; empty for any other message.
+  private static String escalatedTo(Model model, Map<String, Object> payload) {
+    if (!(payload.get("level") instanceof Number level)) {
+      return "";
+    }
+    return model
+        .entity(String.valueOf(payload.get("entity")))
+        .filter(entity -> entity.process() != null)
+        .map(entity -> entity.process().escalations())
+        .filter(levels -> level.intValue() >= 1 && level.intValue() <= levels.size())
+        .map(levels -> ", gửi tới vai " + String.join(", ", levels.get(level.intValue() - 1).to()))
+        .orElse("");
   }
 }

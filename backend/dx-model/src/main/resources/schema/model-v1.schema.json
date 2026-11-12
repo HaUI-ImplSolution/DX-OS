@@ -1,0 +1,270 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/HaUI-ImplSolution/DX-OS/schemas/model-v1.schema.json",
+  "title": "DX-OS model file, format 1",
+  "type": "object",
+  "required": ["format", "name", "roles", "entities"],
+  "additionalProperties": false,
+  "properties": {
+    "format": { "const": 1 },
+    "name": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$" },
+    "webhook": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$" },
+    "roles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]{0,39}$" },
+          "description": { "type": "string" },
+          "staff": { "type": "boolean" }
+        }
+      }
+    },
+    "units": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]{0,39}$" },
+          "label": { "type": "string" }
+        }
+      }
+    },
+    "entities": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "pattern": "^[a-z][a-z0-9_]{0,39}$" },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["fields", "access"],
+        "additionalProperties": false,
+        "properties": {
+          "label": { "type": "string" },
+          "owner_via": { "type": "string" },
+          "ui": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "icon": {
+                "enum": ["description", "folder", "inbox", "person", "group", "school", "assignment", "event", "room", "computer", "build", "inventory", "payments", "support", "shield", "settings", "list", "calendar", "chat", "local_shipping"]
+              },
+              "menu": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "group": { "type": "string", "minLength": 1, "maxLength": 40 },
+                  "order": { "type": "integer", "minimum": 0, "maximum": 9999 }
+                }
+              },
+              "list": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "columns": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
+                  "sort": { "type": "string" }
+                }
+              },
+              "form": {
+                "type": "object",
+                "required": ["groups"],
+                "additionalProperties": false,
+                "properties": {
+                  "groups": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "object",
+                      "required": ["label", "fields"],
+                      "additionalProperties": false,
+                      "properties": {
+                        "label": { "type": "string", "minLength": 1, "maxLength": 60 },
+                        "fields": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+                      }
+                    }
+                  }
+                }
+              },
+              "hints": {
+                "type": "object",
+                "additionalProperties": { "type": "string", "minLength": 1, "maxLength": 200 }
+              }
+            }
+          },
+          "fields": {
+            "type": "object",
+            "minProperties": 1,
+            "propertyNames": { "pattern": "^[a-z][a-z0-9_]{0,39}$" },
+            "additionalProperties": {
+              "type": "object",
+              "required": ["type"],
+              "additionalProperties": false,
+              "properties": {
+                "type": {
+                  "enum": ["text", "number", "datetime", "date", "boolean", "choice", "reference", "user", "unit", "file"]
+                },
+                "label": { "type": "string" },
+                "required": { "type": "boolean" },
+                "unique": { "type": "boolean" },
+                "options": { "type": "array", "minItems": 1, "items": {"type": "string"} },
+                "to": { "type": "string" },
+                "renamed_from": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$" },
+                "default": { "type": ["string", "number", "boolean", "array"], "items": { "type": "string" }, "minItems": 1 },
+                "multiple": { "type": "boolean" },
+                "min": { "type": ["number", "string"] },
+                "max": { "type": ["number", "string"] },
+                "pattern": { "type": "string", "minLength": 1, "maxLength": 200 },
+                "required_when": { "type": "string" }
+              }
+            }
+          },
+          "access": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": { "enum": ["all", "own", "read", "unit", "assigned"] }
+          },
+          "process": {
+            "type": "object",
+            "required": ["handler"],
+            "additionalProperties": false,
+            "properties": {
+              "family": { "enum": ["approval", "work_item", "reservation"] },
+              "handler": {
+                "anyOf": [{"type": "string"}, {"type": "array", "minItems": 1, "items": {"type": "string"}}]
+              },
+              "initial": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$" },
+              "states": {
+                "type": "object",
+                "minProperties": 1,
+                "propertyNames": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$" },
+                "additionalProperties": {
+                  "type": ["object", "null"],
+                  "additionalProperties": false,
+                  "properties": { "label": {"type": "string"}, "terminal": {"type": "boolean"} }
+                }
+              },
+              "actions": {
+                "type": "object",
+                "minProperties": 1,
+                "propertyNames": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$" },
+                "additionalProperties": {
+                  "type": ["object", "null"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "label": { "type": "string" },
+                    "from": {
+                      "anyOf": [
+                        { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$" },
+                        {
+                          "type": "array",
+                          "minItems": 1,
+                          "items": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$" }
+                        }
+                      ]
+                    },
+                    "to": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$" },
+                    "by": { "enum": ["handler", "owner"] },
+                    "role": {
+                      "anyOf": [
+                        { "type": "string" },
+                        { "type": "array", "minItems": 1, "items": {"type": "string"} }
+                      ]
+                    },
+                    "needs_note": { "type": "boolean" },
+                    "require": {
+                      "anyOf": [
+                        { "type": "string" },
+                        { "type": "array", "minItems": 1, "items": {"type": "string"} }
+                      ]
+                    },
+                    "when": {
+                      "type": ["string", "null"],
+                      "pattern": "^\\s*[a-z][a-z0-9_]*\\s*(==|!=|<=|>=|<|>)\\s*\\S.*$"
+                    }
+                  }
+                }
+              },
+              "allow_self_decision": { "type": "boolean" },
+              "deadline": { "type": "string", "pattern": "^[0-9]{1,6}[mhd]$" },
+              "escalate": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 5,
+                "items": {
+                  "type": "object",
+                  "required": ["after", "to"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "after": { "type": "string", "pattern": "^[0-9]{1,6}[mhd]$" },
+                    "to": {
+                      "anyOf": [
+                        { "type": "string" },
+                        { "type": "array", "minItems": 1, "items": { "type": "string" } }
+                      ]
+                    },
+                    "repeat": {
+                      "type": "object",
+                      "required": ["every", "times"],
+                      "additionalProperties": false,
+                      "properties": {
+                        "every": { "type": "string", "pattern": "^[0-9]{1,6}[mhd]$" },
+                        "times": { "type": "integer", "minimum": 1, "maximum": 20 }
+                      }
+                    }
+                  }
+                }
+              },
+              "auto_close": {
+                "anyOf": [
+                  { "type": "string", "pattern": "^[0-9]{1,6}[mhd]$" },
+                  {
+                    "type": "object",
+                    "required": ["after", "action"],
+                    "additionalProperties": false,
+                    "properties": {
+                      "after": { "type": "string", "pattern": "^[0-9]{1,6}[mhd]$" },
+                      "action": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$" }
+                    }
+                  }
+                ]
+              },
+              "booking": {
+                "type": "object",
+                "required": ["resource", "starts", "ends"],
+                "additionalProperties": false,
+                "properties": {
+                  "resource": { "type": "string" },
+                  "starts": { "type": "string" },
+                  "ends": { "type": "string" },
+                  "capacity": { "type": "integer", "minimum": 1 }
+                }
+              },
+              "after": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["do", "user"],
+                    "additionalProperties": false,
+                    "properties": {
+                      "do": { "enum": ["add_to_group", "remove_from_group"] },
+                      "user": { "type": "string" },
+                      "group": { "type": "string" },
+                      "group_from": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

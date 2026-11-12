@@ -21,6 +21,9 @@
 #                              --check exits 0 when nothing differs, 2 when the plan has changes, 1 when refused
 #   dxos apply <model-file> [--accept SAFE|MIGRATION|LOSS]
 #                              apply the file; a plan above SAFE needs --accept with its level
+#   dxos model upgrade [--write] <model-file>
+#                              preview the sequential upgrade to the current model format;
+#                              --write replaces the file atomically after printing the diff
 #   dxos history verify|anchor check that the history of records was not changed, or anchor it now
 #   dxos gitops sync [models|infra] | status [models|infra] | approve [infra] <commit> [--accept LEVEL] | install | uninstall
 #                              keep the models equal to the model files of a git repository, and this install
@@ -471,6 +474,57 @@ cmd_apply() {
   api POST "/models/apply?$query" "$file"
   pretty "$API_BODY"
   [[ "$API_STATUS" == 200 ]] || return 1
+}
+
+# Shows the complete format upgrade before an optional atomic replacement of the model file.
+cmd_model_upgrade() (
+  local write=false file="" dir work upgraded diff_status=0
+  while (( $# )); do
+    case "$1" in
+      --write) write=true; shift ;;
+      -*) die "unknown option: $1" ;;
+      *) [[ -z "$file" ]] || die "usage: dxos model upgrade [--write] <model-file>"; file="$1"; shift ;;
+    esac
+  done
+  [[ -n "$file" ]] || die "usage: dxos model upgrade [--write] <model-file>"
+  file="$(from_caller "$file")"
+  model_file_arg "$file" "model upgrade"
+  api POST /models/upgrade "$file"
+  if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
+
+  dir="$(dirname "$file")"
+  work="$(mktemp -d "$dir/.dxos-model-upgrade.XXXXXX")"
+  trap 'rm -rf "$work"' EXIT
+  upgraded="$work/upgraded.yaml"
+  if command -v jq >/dev/null 2>&1; then
+    jq -ej '.data.content' <<<"$API_BODY" >"$upgraded"
+  elif command -v python3 >/dev/null 2>&1; then
+    python3 -c 'import json, sys; sys.stdout.write(json.load(sys.stdin)["data"]["content"])' \
+      <<<"$API_BODY" >"$upgraded"
+  else
+    die "jq or python3 is required to read the upgraded model"
+  fi
+
+  if cmp -s -- "$file" "$upgraded"; then
+    echo "The model already uses format $(json_field toFormat "$API_BODY")."
+    return 0
+  fi
+  diff -u --label "$file" --label "$file (upgraded)" -- "$file" "$upgraded" || diff_status=$?
+  (( diff_status == 1 )) || die "could not compare the upgraded model"
+  if [[ "$write" != true ]]; then
+    echo "Preview only; run with --write to replace the file."
+    return 0
+  fi
+  chmod --reference="$file" "$upgraded"
+  mv -f -- "$upgraded" "$file"
+  echo "Upgraded $file atomically."
+)
+
+cmd_model() {
+  case "${1:-}" in
+    upgrade) shift; cmd_model_upgrade "$@" ;;
+    *) die "usage: dxos model upgrade [--write] <model-file>" ;;
+  esac
 }
 
 # Runs one browser-client operation inside Keycloak without publishing its Admin API.
@@ -1203,6 +1257,7 @@ main() {
     av) cmd_av "$@" ;;
     plan) cmd_plan "$@" ;;
     apply) cmd_apply "$@" ;;
+    model) cmd_model "$@" ;;
     history) cmd_history "$@" ;;
     reconcile) cmd_reconcile "$@" ;;
     gitops) cmd_gitops "$@" ;;

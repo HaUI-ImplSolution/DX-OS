@@ -366,12 +366,12 @@ Trần dưới đây giữ cho tệp mô hình không biến thành ngôn ngữ 
 
 Một năng lực mới chỉ được thêm khi cần ở ít nhất 3 lĩnh vực, khai báo được mà không cần cú pháp mới, và không làm hỏng các mô hình đã có.
 Không đạt thì đi qua điểm mở rộng.
-Các kiểu `boolean` và `date`, `multiple`, `min`, `max`, `pattern`, `required_when` và khối `ui:` là ngoại lệ có chủ đích của điều kiện không cần cú pháp mới: mỗi thứ cần ở nhiều lĩnh vực, là khóa tùy chọn nên mô hình cũ giữ nguyên, và `format` vẫn là `0`.
+Các kiểu `boolean` và `date`, `multiple`, `min`, `max`, `pattern`, `required_when` và khối `ui:` là ngoại lệ có chủ đích của điều kiện không cần cú pháp mới: mỗi thứ cần ở nhiều lĩnh vực và là khóa tùy chọn nên mô hình cũ giữ nguyên; format hiện hành là `1`, còn format `0` được nâng tuần tự trong bộ nhớ.
 
 Ví dụ một tệp mô hình:
 
 ```yaml
-format: 0
+format: 1
 name: onestop
 roles:
   - name: STUDENT

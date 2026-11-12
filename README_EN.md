@@ -29,7 +29,7 @@ The current version is `2.0.0`, and the changes of each version are in [`CHANGEL
 
 ## Features
 
-- **From one file to a running system.** Records, tables, accounts, roles, list screens and forms are all built from the model file.
+- **From one file to a running system.** Records, tables, accounts, roles, list screens and forms are all built from the model file; an old file format is upgraded step by step after the operator previews the diff.
 - **Permissions down to the row.** Each role sees and edits only its own work, the work of its unit, or the work assigned to it.
 - **Data rules in the file.** True or false, dates, several values at once, limits on values, text patterns and conditional requirements are all declared in the file, and the database refuses a wrong value as well.
 - **Customizable workflows.** Start from one of three ready made shapes (approval, work items, time-slot reservations with a capacity check) and add or remove steps, give each step to its own role, or declare a workflow from scratch; a step can open only when the record meets a condition, for example an amount above a limit goes to a higher approval level; rejecting and returning need a reason, and nobody approves their own record.

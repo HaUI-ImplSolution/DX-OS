@@ -70,6 +70,7 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos doctor`, `dxos backup` | Chạy `doctor.sh`, `backup.sh` |
 | `dxos av [on\|off]` | Bật hoặc tắt quét mã độc tệp tải lên (xem dưới); không có đối số thì in trạng thái quét |
 | `dxos plan [--check] <tệp>`, `dxos apply <tệp> [--accept MỨC]` | In kế hoạch của một tệp mô hình, hoặc áp dụng nó (xem dưới) |
+| `dxos model upgrade [--write] <tệp>` | Xem diff nâng tuần tự tệp lên format hiện hành; `--write` thay tệp nguyên tử sau khi in diff (xem dưới) |
 | `dxos gitops sync [models\|infra]`, `status [models\|infra]`, `approve [infra] <commit> [--accept MỨC]`, `install`, `uninstall` | Kéo hạ tầng và tệp mô hình từ git, so với bản cài và mô hình đang chạy; `install` chạy mỗi 5 phút bằng systemd user timer (xem dưới) |
 | `dxos history verify`, `dxos history anchor` | Kiểm lịch sử hồ sơ chưa bị sửa, hoặc ghi điểm neo ngay (xem [`INTEGRATIONS.md`](./INTEGRATIONS.md#lịch-sử-chống-sửa)) |
 | `dxos reconcile [install\|uninstall]` | Đưa stack về đúng khai báo; `install` chạy mỗi phút bằng systemd user timer (xem dưới) |
@@ -103,6 +104,15 @@ Hai tệp cùng tên mô hình thì tệp đứng sau là `skipped`.
 Backend chỉ đọc tệp khi khởi động, nên `dxos start` không tham số trên hệ thống đang chạy không đọc lại tệp.
 Tệp hỏng vẫn nằm trong `.env` và được báo lại ở mỗi lần backend khởi động cho đến khi sửa hoặc thay.
 Cấu hình đặt tên các tệp ở `DXOS_MODEL_FILE`, cách nhau bằng dấu phẩy, và thư mục chứa chúng ở `ENGINE_MODEL_DIR` (`/models` trong container).
+
+### Nâng format tệp mô hình
+
+`dxos model upgrade <tệp>` gọi API nâng format và in unified diff mà không ghi tệp.
+`dxos model upgrade --write <tệp>` in cùng diff rồi ghi toàn bộ kết quả vào file tạm cùng thư mục và rename qua tệp gốc; quyền file được giữ lại.
+Format `0` được nâng tuần tự lên format hiện hành `1`; chạy lại format `1` không đổi nội dung, còn format mới hơn bản lõi hoặc thiếu một bước migration bị từ chối.
+
+Nếu lệnh lỗi trước rename, tệp gốc giữ nguyên.
+Xóa file `.dxos-model-upgrade.*` còn sót sau khi máy bị dừng đột ngột, sửa nguyên nhân rồi chạy lại; sau khi rename, khôi phục bằng Git hoặc bản sao lưu nếu cần.
 
 ### Đổi mô hình bằng dòng lệnh
 

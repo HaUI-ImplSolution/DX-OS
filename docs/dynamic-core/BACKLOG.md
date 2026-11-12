@@ -39,6 +39,9 @@ Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết t�
 | Phả hệ dữ liệu | Danh mục dữ liệu dừng ở mức thực thể; chưa có phả hệ đến từng trường |
 | Tài liệu sản phẩm trên trang docs | Trang docs chỉ có hồ sơ dự thi; cách viết tệp mô hình, API, vận hành và mở rộng đều là liên kết sang tệp trên GitHub |
 | Giao diện trên điện thoại | Chưa kiểm ứng dụng web trên màn hình điện thoại, trong khi không gian H của đề có ứng dụng di động tác nghiệp |
+| Nâng format với thay đổi cấu trúc | Migration hiện tại chỉ đổi marker `format: 0` thành `format: 1`; khi format tiếp theo thay đổi tên trường, kiểu dữ liệu hoặc vị trí thuộc tính, cần thêm migration chuyển đổi thật và kiểm thử bảo toàn ngữ nghĩa |
+| Kiểm tra gián đoạn khi nâng tệp | Bộ test mới chỉ kiểm tra pipeline dừng khi một migration ném ngoại lệ; chưa có failure injection lúc ghi tệp tạm, gián đoạn tiến trình hoặc kiểm phục hồi từ bản sao lưu |
+| Bảo toàn metadata khi thay tệp nâng format | CLI thay tệp bằng rename nguyên tử cùng thư mục và chỉ sao chép mode; chưa xác định hoặc kiểm thử chính sách cho owner/group, symlink và độ bền sau sự cố hệ thống |
 | Trang và thành phần riêng trong ứng dụng Tầng 2 | Ứng dụng web chưa có chỗ đăng ký trang hay thành phần form; thêm chúng là sửa mã nguồn và dựng lại image |
 | Ý từ Frappe | Tách phần tùy biến khỏi mô hình gốc: chưa đọc mã của Frappe để đối chiếu |
 | Giáo trình DX-OS | Mới đọc tổng quan, mục lục chương và trang Hộp cát; đọc hết rồi đối chiếu thuật ngữ và kiến trúc với lõi, nhất là dự án DX-Ticket |

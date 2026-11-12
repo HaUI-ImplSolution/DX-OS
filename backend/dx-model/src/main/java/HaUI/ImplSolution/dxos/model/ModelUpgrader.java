@@ -101,8 +101,9 @@ public final class ModelUpgrader {
   }
 
   private static String replace(ScalarNode node, String content, int value) {
-    int start = node.getStartMark().getIndex();
-    int end = node.getEndMark().getIndex();
+    // SnakeYAML marks count Unicode code points; String.substring uses UTF-16 offsets.
+    int start = content.offsetByCodePoints(0, node.getStartMark().getIndex());
+    int end = content.offsetByCodePoints(0, node.getEndMark().getIndex());
     return content.substring(0, start) + value + content.substring(end);
   }
 

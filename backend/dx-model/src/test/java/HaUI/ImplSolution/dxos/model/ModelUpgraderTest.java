@@ -33,6 +33,16 @@ class ModelUpgraderTest {
   }
 
   @Test
+  void preservesSupplementaryCharactersBeforeTheFormatMarker() {
+    String old = "# \uD83D\uDE00\n" + MODEL;
+
+    ModelUpgrader.Result result = ModelUpgrader.upgrade(old);
+
+    assertEquals(
+        "# \uD83D\uDE00\nformat: 1\n" + MODEL.substring("format: 0\n".length()), result.content());
+  }
+
+  @Test
   void currentFormatIsIdempotent() {
     String current = MODEL.replace("format: 0", "format: 1");
 

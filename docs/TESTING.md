@@ -65,7 +65,7 @@ Chạy trên stack mới dựng, cơ sở dữ liệu rỗng, vì script áp d�
 Mỗi script phụ thuộc các script đứng trước trong cùng nhóm, nên chạy đúng thứ tự:
 
 ```bash
-for c in api recovery case change process booking demo guards users docs conformance cli; do
+for c in api recovery case change process booking demo guards users docs conformance cli browser; do
   python3 deploy/dev/check_$c.py
 done
 ```
@@ -87,6 +87,7 @@ python3 deploy/dev/check_bootstrap.py
 | `check_booking.py` | Họ `reservation`, danh mục của bảng điều khiển, mọi mẫu áp dụng được |
 | `check_demo.py` | Tám tiêu chí của kịch bản trình diễn |
 | `check_guards.py` | Người giữ vai, vai của nền tảng, bỏ vai, xóa thực thể còn hồ sơ đang chạy, lần áp dụng dừng giữa chừng (tiếp tục và hủy bỏ) |
+| `check_browser.py` | Giao diện trình duyệt ngoài: `dxos client browser add` tạo public client PKCE S256, origin vào `CORS_ALLOWED_ORIGINS` và được CORS nhận, `list` không in secret, redirect không an toàn bị từ chối trước khi đổi Keycloak, đăng nhập PKCE gọi được API, `remove` xóa client |
 | `check_users.py` | Quản trị người dùng: gán và gỡ vai và đơn vị, tạo, khóa, đặt lại mật khẩu, audit |
 | `check_docs.py` | Mọi endpoint các tài liệu nêu có trong OpenAPI của backend đang chạy, đúng phương thức |
 | `check_conformance.py` | Rào chắn của lõi giữ với mọi mô hình đã áp dụng, hoặc các mô hình nêu tên: không ghi được `status`, không token thì 401, không đọc được dữ liệu mô hình khác |

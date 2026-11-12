@@ -499,7 +499,7 @@ Mã dịch vụ và bên nhận webhook nằm ngoài lõi; trang hay thành ph�
 |---|---|
 | API riêng | Dịch vụ ngoài gọi API bằng client đúng một vai của một mô hình, đổi vai bằng `dxos client role`; OpenAPI sinh từ mô hình đang chạy |
 | Phản ứng theo nghiệp vụ | Webhook nhận sự kiện sau khi thay đổi đã ghi; không chặn đồng bộ một hành động |
-| Giao diện riêng hoàn toàn | Nguyên mẫu local dùng OIDC PKCE; tên miền khác chưa có cấu hình CORS và public client được hỗ trợ |
+| Giao diện riêng hoàn toàn | Đăng ký public client OIDC dùng PKCE bằng `dxos client browser add`; origin chính xác vào `CORS_ALLOWED_ORIGINS`, không nhận wildcard |
 | Trang riêng trong ứng dụng Tầng 2 | Sửa và dựng lại frontend; chưa có registry plugin |
 | Họ mẫu quy trình riêng | Khai báo `states` và `actions` trong tệp mô hình; vẫn chịu quy tắc bất biến và bị kiểm khi áp dụng |
 | Thành phần riêng trong form | Chưa có điểm đăng ký; ưu tiên khối `ui:` của tệp mô hình |

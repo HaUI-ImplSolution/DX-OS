@@ -25,6 +25,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Route riêng của bản cài nằm trong `apisix/local.yaml`, được kiểm trước khi ghép với cấu hình lõi và giữ nguyên qua cập nhật.
 - Ứng dụng ngoài đổi sang vai khác của cùng mô hình bằng `dxos client role`, nút Đổi vai ở tab Ứng dụng ngoài hoặc `PUT /api/v1/clients/{name}`, giữ nguyên tên và mã bí mật; token đã cấp giữ vai cũ đến khi hết hạn.
 - `dxos client browser add` đăng ký public OIDC client dùng Authorization Code với PKCE S256 cho giao diện ở tên miền khác, đồng thời thêm origin chính xác vào allowlist CORS; backend và `dxos doctor` từ chối wildcard, HTTP ngoài loopback, path hoặc URI không hợp lệ.
+- `CORS_ALLOWED_ORIGINS` mặc định chỉ nhận `http://localhost:5173` và `http://127.0.0.1:5173`; giao diện thử chạy ở cổng khác trên máy phát triển phải thêm origin của nó vào biến này.
 
 ### Tệp mô hình
 

@@ -101,7 +101,7 @@ public class EscalationSweep {
 
   // The records whose deadline has passed by at least the first notice, with the seconds they are
   // past it and the detail of the last notice sent for the current deadline.
-  private List<Map<String, Object>> unhandled(Model model, Entity entity, Slot first) {
+  List<Map<String, Object>> unhandled(Model model, Entity entity, Slot first) {
     return jdbc.queryForList(
         "SELECT t.id, EXTRACT(EPOCH FROM (now() - t.handle_by)) AS late, "
             + "(SELECT e.detail FROM engine.record_event e WHERE e.model = ? AND e.entity = ? "
@@ -115,7 +115,7 @@ public class EscalationSweep {
         (double) first.at().toSeconds());
   }
 
-  private static Slot latestDue(List<Slot> slots, double lateSeconds) {
+  static Slot latestDue(List<Slot> slots, double lateSeconds) {
     Slot due = null;
     for (Slot slot : slots) {
       if (slot.at().toSeconds() <= lateSeconds) {
@@ -127,7 +127,7 @@ public class EscalationSweep {
 
   // The time past the deadline of the last notice sent, below zero when none was sent for this
   // deadline or the detail names a notice the levels no longer have.
-  private static Duration sent(List<Slot> slots, String detail) {
+  static Duration sent(List<Slot> slots, String detail) {
     int[] step = parse("escalated", detail);
     if (step == null) {
       return Duration.ofSeconds(-1);

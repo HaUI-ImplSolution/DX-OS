@@ -1050,7 +1050,7 @@ SELECT 'ROWS|$name|' || count(*) FROM read_parquet('$target/$name');"
 # Runs one read-only, parameterized query over Parquet files of one object-store run.
 # The archive is materialized before external access is disabled, so the user's query cannot open another path.
 archive_query() {
-  local ref="${1:-}" file="*.parquet" sql="" model run name value target query_input
+  local ref="${1:-}" file="*.parquet" sql="" model run name value target query_input execute_args=""
   local param_value_pattern="^(NULL|TRUE|FALSE|-?[0-9]+([.][0-9]+)?|'([^']|'')*')$"
   local params=()
   shift || true
@@ -1084,16 +1084,19 @@ archive_query() {
     value="${value#*=}"
     [[ "$value" =~ $param_value_pattern ]] \
       || die "--param values must be NULL, TRUE, FALSE, a number, or a single-quoted string"
+    [[ -z "$execute_args" ]] || execute_args+=", "
+    execute_args+="$name := $value"
   done
   target="s3://$(archive_bucket)/$model/$run/$file"
   query_input="$(store_prelude)"
   query_input+=$'\n'"CREATE OR REPLACE TEMP TABLE archive AS SELECT * FROM read_parquet('$target', union_by_name = true);"$'\n'
   query_input+="SET enable_external_access=false;"$'\n'
-  for value in "${params[@]}"; do
-    name="${value%%=*}"; value="${value#*=}"
-    query_input+=".parameter set $name $value"$'\n'
-  done
-  query_input+="$sql"$'\n'
+  if (( ${#params[@]} )); then
+    query_input+="PREPARE archive_query AS $sql;"$'\n'
+    query_input+="EXECUTE archive_query($execute_args);"$'\n'
+  else
+    query_input+="$sql"$'\n'
+  fi
   duckdb_store <<<"$query_input"
 }
 

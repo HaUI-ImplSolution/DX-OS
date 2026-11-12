@@ -196,6 +196,19 @@ export interface DataCatalog {
   }[];
 }
 
+export interface DataQuality {
+  model: string;
+  entity: string;
+  measuredAt: string;
+  sampleSize: number;
+  metrics: {
+    completeness?: { fields: { field: string; required: boolean; filled: number; missing: number; rate: number | null }[] };
+    requiredWhen?: { fields: { field: string; when: string; applicable: number; missing: number }[] };
+    constraints?: { fields: { field: string; rules: string[]; violating: number }[] };
+    freshness?: { staleDays: number; oldest: string | null; newest: string | null; stale: number };
+  };
+}
+
 const yaml = (method: string, text: string): RequestInit => ({
   method,
   headers: { "Content-Type": "application/yaml" },
@@ -210,7 +223,9 @@ const query = (params: Record<string, string | number | undefined>) => {
 export const listApplied = () => request<AppliedModel[]>("/models");
 export const getSchema = () => request<Record<string, unknown>>("/models/schema");
 export const getDataCatalog = (model: string) => request<DataCatalog>(`/models/${model}/data-catalog`);
-export const listFamilies = () => request<Family[]>("/models/families");
+export const getDataQuality = (model: string, entity: string, staleDays: number) =>
+  request<DataQuality>(`/data/${model}/${entity}/quality${query({ staleDays })}`);
+export const listFamilies =() => request<Family[]>("/models/families");
 export const listTemplates = () => request<Template[]>("/models/templates");
 export const listVersions = (model: string) =>
   request<AppliedVersion[]>(`/models/${model}/versions`);

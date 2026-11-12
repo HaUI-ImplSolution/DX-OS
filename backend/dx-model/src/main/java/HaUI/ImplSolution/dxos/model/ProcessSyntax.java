@@ -22,7 +22,7 @@ public final class ProcessSyntax {
           "booking");
   public static final Set<String> STATE = Set.of("label", "terminal");
   public static final Set<String> ACTION =
-      Set.of("label", "from", "to", "by", "role", "needs_note", "require", "when");
+      Set.of("label", "from", "to", "by", "role", "needs_note", "require", "when", "check");
   public static final Set<String> AUTO_CLOSE = Set.of("after", "action");
   public static final Set<String> ESCALATION = Set.of("after", "to", "repeat");
   public static final Set<String> REPEAT = Set.of("every", "times");
@@ -43,7 +43,10 @@ public final class ProcessSyntax {
           "auto_closed",
           "overdue",
           "due_soon",
-          "escalated");
+          "escalated",
+          "check_denied",
+          "check_unavailable",
+          "check_skipped");
 
   private ProcessSyntax() {}
 }

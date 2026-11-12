@@ -73,6 +73,42 @@ public class WebhookSender {
     }
   }
 
+  // Posts a message and returns the body of the answer, for a target that decides something. The
+  // wait is limited to the given time; any answer but 2xx fails.
+  public String ask(Target target, String id, Map<String, Object> message, Duration limit) {
+    String body = json.writeValueAsString(message);
+    HttpRequest.Builder request =
+        HttpRequest.newBuilder(URI.create(target.url()))
+            .timeout(limit)
+            .header("Content-Type", "application/json")
+            .header("X-Dxos-Event-Id", id)
+            .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8));
+    if (!target.secret().isEmpty()) {
+      request.header("X-Dxos-Signature", "sha256=" + sign(body, target.secret()));
+    }
+    CompletableFuture<HttpResponse<String>> pending =
+        client.sendAsync(request.build(), HttpResponse.BodyHandlers.ofString());
+    try {
+      HttpResponse<String> answer =
+          pending.orTimeout(limit.toMillis(), TimeUnit.MILLISECONDS).get();
+      if (answer.statusCode() < 200 || answer.statusCode() >= 300) {
+        throw new IllegalStateException("The service answered " + answer.statusCode());
+      }
+      return answer.body();
+    } catch (ExecutionException e) {
+      pending.cancel(true);
+      if (e.getCause() instanceof IOException || e.getCause() instanceof TimeoutException) {
+        throw new TargetUnreachableException(
+            "The service could not be reached (" + e.getCause().getClass().getSimpleName() + ")");
+      }
+      throw new IllegalStateException("The service could not be asked", e.getCause());
+    } catch (InterruptedException e) {
+      pending.cancel(true);
+      Thread.currentThread().interrupt();
+      throw new TargetUnreachableException("Interrupted while asking the service");
+    }
+  }
+
   private static String sign(String body, String secret) {
     try {
       Mac mac = Mac.getInstance("HmacSHA256");

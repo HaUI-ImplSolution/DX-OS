@@ -274,6 +274,11 @@ public class ModelOpenApi {
             .append(action.when().value())
             .append('.');
       }
+      if (action.check() != null) {
+        text.append(
+            " A service checks the action before the record moves and can refuse it (403,"
+                + " reason CHECK_DENIED) or be unavailable (503, reason CHECK_UNAVAILABLE).");
+      }
       Operation operation =
           operation(
                   "action" + type + pascal(action.name()),

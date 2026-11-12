@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Keycloak from its release archive on Ubuntu, so it also starts on x86-64 CPUs without
 # x86-64-v2 (SSE4.2, POPCNT), such as the "Common KVM processor" of some VPS hosts.
-FROM eclipse-temurin:21-jre-jammy AS dist
+FROM eclipse-temurin:21-jre-jammy@sha256:dff6eb46527bd293a3c06bbbe9e64e8c9f91f01905b5abbdad31761c03059d2c AS dist
 ARG KEYCLOAK_VERSION=26.8.2
 ARG KEYCLOAK_SHA1=7918de2786c7db466152128bea350becbd40a58f
 ADD https://github.com/keycloak/keycloak/releases/download/${KEYCLOAK_VERSION}/keycloak-${KEYCLOAK_VERSION}.tar.gz /tmp/keycloak.tar.gz
@@ -11,7 +11,7 @@ RUN echo "${KEYCLOAK_SHA1}  /tmp/keycloak.tar.gz" | sha1sum -c - \
     && mkdir -p /opt/keycloak/data \
     && chmod -R g+rwX /opt/keycloak
 
-FROM eclipse-temurin:21-jre-jammy
+FROM eclipse-temurin:21-jre-jammy@sha256:dff6eb46527bd293a3c06bbbe9e64e8c9f91f01905b5abbdad31761c03059d2c
 RUN useradd --uid 1000 --gid 0 --home-dir /opt/keycloak --no-create-home --shell /usr/sbin/nologin keycloak
 COPY --from=dist --chown=1000:0 /opt/keycloak /opt/keycloak
 USER 1000

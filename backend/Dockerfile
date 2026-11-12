@@ -2,7 +2,7 @@
 # Two images are built from this file, one per runnable module:
 #   docker build --target backend .   (default) the backend, dx-engine.jar
 #   docker build --target monitor .             the monitoring service, dx-monitor.jar
-FROM eclipse-temurin:21-jdk-alpine AS base
+FROM eclipse-temurin:21-jdk-alpine@sha256:82801f9dcdcbad5a05082aba8c86d1da5b72ccb498e71318b1f91b5a477887b3 AS base
 
 WORKDIR /app
 COPY .mvn/ .mvn/
@@ -25,7 +25,7 @@ FROM base AS build-monitor
 COPY dx-monitor/src/ dx-monitor/src/
 RUN ./mvnw clean package -DskipTests -pl dx-monitor -am
 
-FROM eclipse-temurin:21-jre-alpine AS monitor
+FROM eclipse-temurin:21-jre-alpine@sha256:ac05c3c42b7c2f1a52c9bd52f01041fa1958231b15ebeae7420429cbc5baf474 AS monitor
 WORKDIR /app
 ENV TZ=Asia/Ho_Chi_Minh
 COPY --from=build-monitor /app/dx-monitor/target/dx-monitor.jar app.jar
@@ -36,7 +36,7 @@ EXPOSE 8090
 ENTRYPOINT ["java", "-jar", "app.jar"]
 
 # Last stage, so it is the default target.
-FROM eclipse-temurin:21-jre-alpine AS backend
+FROM eclipse-temurin:21-jre-alpine@sha256:ac05c3c42b7c2f1a52c9bd52f01041fa1958231b15ebeae7420429cbc5baf474 AS backend
 WORKDIR /app
 ENV TZ=Asia/Ho_Chi_Minh
 COPY --from=build-engine /app/dx-engine/target/dx-engine.jar app.jar

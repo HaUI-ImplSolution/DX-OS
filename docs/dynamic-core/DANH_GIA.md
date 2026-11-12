@@ -26,7 +26,7 @@ Nguồn: [đề thi](https://vfossa.vn/tin-tuc/de-thi-phan-mem-nguon-mo-olp-2026
 | (i) Tách theo vòng đời dữ liệu, đẩy lịch sử xuống hồ dữ liệu | Hồ sơ đã đóng tự ghi ra Parquet trong kho đối tượng theo lịch, kèm manifest và hash; `dxos archive query` truy vấn chỉ đọc từng lần chạy bằng DuckDB | Đủ trong phạm vi kho hồ sơ |
 | (ii) Hội tụ IT và OT, bản sao số | Số đo của thiết bị giả lập thành hồ sơ sự cố, đi cùng quy trình và quyền với hồ sơ hành chính | Minh họa: không có bản sao số |
 | (iii) Dòng chảy, phả hệ, chất lượng dữ liệu | Mô hình là danh mục dữ liệu, tab Danh mục dữ liệu, lịch sử nối chuỗi hash | Một phần: phả hệ dừng ở thực thể |
-| (iv) Zero-Trust, GitOps, kiểm dịch mã độc, tự phục hồi | Token kiểm ở cổng và ở lõi; mô hình áp dụng theo kế hoạch, phần lệch được sửa khi áp dụng lại; container bị xóa được chạy lại | Một phần: quét tắt mặc định, lõi chưa tự kéo từ git |
+| (iv) Zero-Trust, GitOps, kiểm dịch mã độc, tự phục hồi | Token kiểm ở cổng và ở lõi; mô hình áp dụng theo kế hoạch, phần lệch được sửa khi áp dụng lại; container bị xóa được chạy lại; hạ tầng và mô hình kéo từ git bằng `dxos gitops` | Một phần: quét tắt mặc định |
 
 ## 3. Bảy cụm dịch vụ của Tầng 1
 
@@ -40,7 +40,7 @@ Phần còn lại của bảy cụm là tầm nhìn của đề, phủ thêm là
 | Dữ liệu có cấu trúc | Giao dịch toàn vẹn, API sinh từ mô hình có quyền theo dòng, lịch sử giá trị từng trường, phiên bản mô hình | Số liệu đóng băng theo kỳ, lớp ngữ nghĩa cho báo cáo |
 | Dữ liệu phi cấu trúc | Lưu trữ đối tượng, tệp gắn với hồ sơ phê duyệt | Tìm toàn văn, trộn dữ liệu sinh biểu mẫu |
 | Quy trình, tự động hóa | BPMN sinh từ mô hình, hành động hoàn tất | Kịch bản serverless, nạp dữ liệu theo lô |
-| Vận hành, kiểm toán | Truy vết theo mã yêu cầu, nhật ký, chuỗi hash, sao lưu và khôi phục, GitOps cho nghiệp vụ | Tự kéo từ git, trục streaming riêng |
+| Vận hành, kiểm toán | Truy vết theo mã yêu cầu, nhật ký, chuỗi hash, sao lưu và khôi phục, GitOps cho nghiệp vụ | Trục streaming riêng |
 | Truyền thông | Hàng đợi gửi đi có thứ tự và chữ ký, webhook chat, kênh sự kiện cho hộp việc | Thông báo đa kênh tới từng người |
 
 ## 4. Điểm kho mã (50 điểm)
@@ -111,8 +111,6 @@ Cột Trạng thái ghi quyết định của đội: đề xuất đã chốt l
 
 | Đề xuất | Lý do | Làm gì | Lợi ích | Rủi ro | Trạng thái |
 |---|---|---|---|---|---|
-| **Đường ống mẫu cho kho mô hình** | GitOps cho nghiệp vụ là điểm nguyên gốc, nhưng kho chưa có ví dụ nào cho thấy tệp mô hình sống trong git ra sao | `dxos plan` thêm đầu ra máy đọc được và mã thoát phân biệt không đổi, có đổi, bị từ chối; một ví dụ ở `examples/` chạy kế hoạch trên pull request, dán kế hoạch vào bình luận, và áp dụng khi gộp | Người chấm thấy trọn vòng khai báo, xem trước, duyệt, áp dụng ngay trên GitHub; người triển khai chép về dùng | Token của `dxos-cli` giữ vai ADMIN nằm trong secret của CI; ví dụ phải được kiểm để không hỏng theo bản mới | Chốt làm |
-| **Tự kéo và kiểm lệch theo lịch** | Nguyên lý (iv) gắn GitOps với tự phục hồi; lõi chỉ nhận tệp khi có người gọi, và chỉ thấy lệch khi xem kế hoạch hoặc áp dụng | Một bộ hẹn giờ như `dxos archive schedule`: kéo kho mô hình, áp dụng khi tệp đổi ở mức `SAFE`, chạy kế hoạch định kỳ để báo `repair`; mức cao hơn chỉ báo, không tự áp dụng | Đóng dòng "GitOps kéo" của `BACKLOG.md`; trình diễn được: xóa tay một cột, hệ thống tự báo và sửa | Tự áp dụng là thay đổi không có người bấm, nên giới hạn ở `SAFE`; người và bộ hẹn giờ có thể áp dụng chồng nhau, dựa vào luật kế hoạch gắn với phiên bản gốc | Chờ chốt; nên làm |
 | **Kiểm tệp không cần hệ thống** | Kiểm một tệp mô hình cần cả hệ thống đang chạy; bộ kiểm chung cho mô hình mới nằm ở `deploy/dev` như script nội bộ | `dxos lint <tệp>` chạy phần đọc và kiểm của `dx-model` không cần cơ sở dữ liệu; `dxos conformance <mô hình>` đưa bộ kiểm chung thành lệnh cho người dùng | Lỗi tệp bị bắt ở máy người viết và ở pull request; là công cụ hỗ trợ mà tiêu chí phát triển bền vững chấm | Kiểm không cần hệ thống không thấy lỗi phụ thuộc dữ liệu đang có, nên phải nói rõ nó không thay cho kế hoạch | Chờ chốt; nên làm |
 
 ### 7.4. Kho mã và cộng đồng

@@ -198,6 +198,23 @@ Lệnh `dxos` và các tính năng chạy ngoài stack kiểm:
 8. `dxos client browser add` tạo public client chỉ dùng Authorization Code với PKCE S256, có mapper audience và nhóm, lưu origin chính xác vào `CORS_ALLOWED_ORIGINS`; preflight từ origin đó được nhận, đăng nhập đổi code PKCE lấy token rồi gọi được API, HTTP ngoài loopback và wildcard bị từ chối trước khi tạo client; `list` không in secret và `remove` xóa client.
 9. `dxos archive schedule install` rồi `systemctl --user start dxos-archive.service`: `deploy/archive.log` ghi lượt chạy, `dxos archive list` thấy lần chạy mới khi có hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS`, chạy lần nữa không ghi lại các hồ sơ đó; `dxos archive check --store` khớp manifest; khóa S3 sai thì `list` và `auto` thoát mã 1 và không in khóa; `schedule uninstall` gỡ hai tệp đơn vị.
 
+10. `dxos gitops`, nguồn mô hình, trên stack có `dxos-cli` với một kho git cục bộ có một tệp mô hình mới:
+    - `report`: `sync` ghi `drift`, `status` thoát mã 2, mô hình chưa đổi và không có schema `m_<mô hình>` trong PostgreSQL; `approve` bị từ chối khi chế độ không phải `approve`.
+    - `approve`: `sync` ghi `pending`, `approve` với commit khác bị từ chối, với đúng commit thì `applied` và `status` thoát mã 0; `dxos plan --check` trên tệp đó thoát mã 0.
+    - `auto`: một trường mới tùy chọn được áp dụng, xóa trường nằm chờ ở `pending`, `git revert` rồi `sync` thì về `in-sync`.
+    - Một tệp hỏng không chặn tệp khác: `failed` cho tệp hỏng, `sync` thoát mã 1, các tệp còn lại vẫn được xét.
+11. `dxos gitops`, nguồn hạ tầng, trên một bản cài thử đã chạy `install.sh` (đặt `COMPOSE_PROJECT_NAME` riêng để không đụng stack đang chạy) và một kho DX-OS cục bộ:
+    - Cùng nội dung thì `in-sync`; commit sửa một tệp, thêm một tệp và bỏ một tệp thì `drift` với đúng ba con số `changed`, `added`, `removed`.
+    - `approve`: `pending`, commit sai bị từ chối, đúng commit thì `applied`, tệp trong bản cài khớp kho, tệp bị bỏ không còn và `apisix/local.yaml` giữ nguyên.
+    - `GITOPS_INFRA_MODE=auto` thiếu `GITOPS_REQUIRE_SIGNED=true` bị từ chối; commit không ký bị từ chối với mã 1 và không đổi gì, commit ký đúng khóa được áp dụng.
+    - `GITOPS_INFRA_REF` là tag `vX.Y.Z`: `drift` ghi tag mới, sau khi áp dụng `DXOS_IMAGE_TAG` đổi theo; nhánh thì giữ nguyên `DXOS_IMAGE_TAG`.
+    - `update.sh` lỗi (stack đang chạy): lượt áp dụng báo `failed` và thoát mã 1, lượt sau chạy lại `update.sh` và vẫn `failed` cho đến khi nó thành công, rồi mới `in-sync`; `approve infra` với `--accept` mức khác `SAFE` bị từ chối.
+12. Chung cho hai nguồn:
+    - Nhánh không tồn tại thì `sync` thoát mã 1, `status` ghi lỗi nêu nguyên nhân và giữ các mục của lượt tốt trước; `GITOPS_*` sai bị `sync` và `doctor` từ chối với cùng thông báo.
+    - Địa chỉ SSH với host lạ, khóa sai hoặc khóa có quyền rộng bị từ chối, mỗi lỗi ghi nguyên nhân riêng.
+    - API tắt thì nguồn mô hình ghi `error` và thoát mã 1.
+    - `dxos gitops install` tạo timer và `uninstall` gỡ; `history.log` ghi mỗi lần commit hoặc kết quả đổi.
+
 ## 7. Hồi quy
 
 - Đăng nhập SSO qua Keycloak ở web hoạt động.

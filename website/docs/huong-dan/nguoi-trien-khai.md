@@ -36,6 +36,7 @@ Thêm một nghiệp vụ mới là thêm một tệp mô hình; cách viết �
 
 Kế hoạch bị từ chối không đổi gì; hệ thống vẫn chạy phiên bản cũ.
 Từ dòng lệnh dùng `dxos plan <tệp>` và `dxos apply <tệp>`.
+Muốn tệp mô hình nằm trong git và tự được đối chiếu với hệ thống đang chạy thì dùng `dxos gitops`.
 
 ## Người dùng và vai
 
@@ -58,3 +59,4 @@ Vai `ADMIN` của nền tảng không cấp ở tab này mà cấp ở Keycloak 
 - **Lưu trữ dài hạn:** `dxos archive` ghi hồ sơ đã đóng ra tệp để lưu và kiểm lại.
 - **Quét mã độc tệp tải lên:** `dxos av on` để bật.
 - **Cập nhật:** `dxos update` cài bản mới, giữ cấu hình và dữ liệu.
+- **Kéo từ git:** `dxos gitops` kéo hạ tầng từ một kho DX-OS và các tệp mô hình từ một kho của bạn, rồi báo lệch, chờ bạn duyệt hoặc tự áp dụng; cách cấu hình ở mục Kéo từ git của `deploy/OPERATIONS.md`.

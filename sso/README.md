@@ -15,7 +15,7 @@ Cơ sở dữ liệu `keycloak` và vai `keycloak_app` do [`deploy/postgres/init
 | Web | Client `dxos-web`, Authorization Code + PKCE, tự chuyển sang Keycloak khi chưa có phiên |
 | Giao diện ngoài | Public client `dxos-browser-<tên>` do `dxos client browser add` tạo, Authorization Code + PKCE S256, redirect URI và web origin chính xác |
 | Màn hình giám sát | Client `dxos-monitor`, chỉ cho vai `ADMIN` |
-| Dòng lệnh `dxos` | Client bí mật `dxos-cli`, client credentials; tài khoản dịch vụ giữ vai `ADMIN`; `dxos plan` và `dxos apply` lấy token bằng `DXOS_CLI_SECRET` trong `deploy/.env`, và lịch sử áp dụng ghi tài khoản dịch vụ này |
+| Dòng lệnh `dxos` | Client bí mật `dxos-cli`, client credentials; tài khoản dịch vụ giữ vai `ADMIN`; `dxos plan`, `dxos apply` và `dxos gitops` lấy token bằng `DXOS_CLI_SECRET` trong `deploy/.env`, và lịch sử áp dụng ghi tài khoản dịch vụ này |
 
 ## Realm `dxos`
 

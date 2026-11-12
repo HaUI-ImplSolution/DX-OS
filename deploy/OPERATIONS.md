@@ -289,6 +289,7 @@ Số đo trên máy 12 CPU, 31 GB RAM, với stack tám service (không bật `c
 | `frontend`, `portal` | 11 mỗi service |
 
 Cả stack dùng khoảng 1,8 GiB RAM, CPU gần 0 lúc rảnh.
+Số nhân và RAM cần cho một số người dùng đồng thời nhất định, và cách đo lại trên máy của bạn, ở [`docs/SIZING.md`](../docs/SIZING.md).
 Image chiếm khoảng 3,5 GiB đĩa (kích thước `docker images` của tám service); cơ sở dữ liệu 12 MB.
 
 Dựng stack rỗng khi image đã có trên máy, với một tệp mô hình: stack lên và mô hình áp dụng xong sau khoảng 1 phút, và tài khoản ADMIN đầu tiên (`dxos admin`) thêm vài giây.

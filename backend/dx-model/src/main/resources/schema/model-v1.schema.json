@@ -185,6 +185,10 @@
                     "when": {
                       "type": ["string", "null"],
                       "pattern": "^\\s*[a-z][a-z0-9_]*\\s*(==|!=|<=|>=|<|>)\\s*\\S.*$"
+                    },
+                    "check": {
+                      "type": ["string", "null"],
+                      "pattern": "^[a-z][a-z0-9_]{0,39}$"
                     }
                   }
                 }

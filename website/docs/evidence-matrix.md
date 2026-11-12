@@ -63,6 +63,7 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 | Quản trị người dùng: gán vai và đơn vị, tạo, khóa, đặt lại mật khẩu, nhật ký | `check_users.py` 41, `KeycloakAdminClientTest`; tab Người dùng kiểm bằng Chrome | `python3 deploy/dev/check_users.py` | Hoàn thiện | Thay đổi làm thẳng ở Keycloak Admin Console không qua đây |
 | Thống kê theo thực thể, kể cả thời gian xử lý | `check_process.py` | `python3 deploy/dev/check_process.py` | Hoàn thiện | Chưa có tỷ lệ hoàn tất trong hạn |
 | Tài liệu khớp với API thật | `check_docs.py` 3 | `python3 deploy/dev/check_docs.py` | Hoàn thiện | |
+| Chịu tải đồng thời và cấu hình nhỏ nhất | `deploy/dev/load_test.py` trên stack tạm giới hạn 12, 8, 4 và 2 nhân; kết quả ở `docs/SIZING.md` | `python3 deploy/dev/load_test.py --levels 1,10,25,50,75,100,200 --reset` | Dùng được | Chạy tay, không trong CI; số là cận dưới vì bộ tạo tải cùng máy và giới hạn tốc độ tắt khi đo; chưa đo 1 nhân, backend dưới 768 MB RAM và bảng trên 10.000 hồ sơ |
 | Lõi không trả Swagger UI, Admin Console mặc định đóng và mở được bằng `KEYCLOAK_ADMIN_CONSOLE=true` | `check_surface.py` 7; job `Gateway surface` của workflow `Platform`, hai chế độ | `python3 deploy/dev/check_surface.py` | Dùng được | Chưa có kết quả của job này trên pull request |
 | Chạy riêng Tầng 1 (`dxos start --core`) | Nhóm `core mode` của job `API end-to-end` trong workflow `Platform` | `dxos start --core` | Dùng được | Chưa có kết quả của job này trên pull request; chế độ lõi không có bảng điều khiển, nên không có kiểm giao diện |
 | Nạp mô hình lúc khởi động (`dxos start <tệp>`) | `check_bootstrap.py` 9; job `Install from the release archive` của workflow `Platform` | `python3 deploy/dev/check_bootstrap.py` | Dùng được | Chưa kiểm bằng image phát hành thật của bản `2.0.0` |
@@ -86,6 +87,7 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 | Khối `ui:` và hành động hàng loạt | Kiểm tay theo `docs/TESTING.md` mục 6, mục 25 và 26; `npx tsc --noEmit` | Mở danh sách và biểu mẫu của Sổ tài sản; chọn nhiều hồ sơ rồi Duyệt | Dùng được | Không có kiểm tự động của giao diện cho hai phần này |
 | Bảng theo trạng thái và xuất CSV | Kiểm tay theo `docs/TESTING.md` mục 6, mục 29 và 30; `npx tsc --noEmit` | Mở danh sách của một thực thể có quy trình, bấm Bảng theo trạng thái và Xuất CSV | Dùng được | Không có kiểm tự động của giao diện; bảng chỉ đọc, tối đa 10 thẻ mỗi cột; xuất tối đa 10.000 dòng |
 | Khóa chống chạy lặp (`Idempotency-Key`) | Kiểm tay theo `docs/TESTING.md` mục 6, mục 31 | Gửi hai lần cùng khóa | Dùng được | Không có kiểm tự động; chỉ cho tạo hồ sơ và hành động, khóa giữ 24 giờ |
+| Chỉ số mục tiêu: mã tự viết bằng 0 ở mức 1 và 2, dựng dưới 10 phút, đổi trường không mất dữ liệu | Đếm bằng script và đo tay, kết quả ở `docs/TARGETS.md` | `python3 deploy/dev/count_own_code.py <thư mục>`; `dxos start <tệp>` | Dùng được | Không chạy trong CI; mục "trong một buổi" mới có bản mô phỏng, chưa có người thật |
 
 ## 3. Giấy phép, chuỗi cung ứng, phát hành
 
@@ -111,6 +113,7 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 | Bản sao số | Chưa làm | Giới hạn chấp nhận, xem [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md), mục 4 |
 | Nhiều bản backend sau gateway | Chưa làm | Chạy một bản; hai bản thì danh sách mô hình giữ lệch nhau sau một lần áp dụng |
 | Thao tác hoàn tất gọi ra hệ thống ngoài | Chưa làm | Ghi ở giới hạn chấp nhận của Việc tồn đọng: webhook của mô hình đã gửi trạng thái cũ, mới và hành động |
+| Người thật thử dựng hệ thống đầu tiên | Chưa làm | Bài thử và bản mô phỏng ở `docs/TARGETS.md`; chưa có người quan sát |
 
 ## 5. Kiểm lại
 

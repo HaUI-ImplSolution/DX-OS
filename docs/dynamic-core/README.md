@@ -499,7 +499,7 @@ Mã dịch vụ và bên nhận webhook nằm ngoài lõi; trang hay thành ph�
 | Nhu cầu | Cách làm hiện tại |
 |---|---|
 | API riêng | Dịch vụ ngoài gọi API bằng client đúng một vai của một mô hình, đổi vai bằng `dxos client role`; OpenAPI sinh từ mô hình đang chạy |
-| Phản ứng theo nghiệp vụ | Webhook nhận sự kiện sau khi thay đổi đã ghi; không chặn đồng bộ một hành động |
+| Phản ứng theo nghiệp vụ | Webhook nhận sự kiện sau khi thay đổi đã ghi; hành động khai `check` thì dịch vụ riêng được hỏi trước khi chuyển trạng thái và có thể từ chối |
 | Giao diện riêng hoàn toàn | Đăng ký public client OIDC dùng PKCE bằng `dxos client browser add`; origin chính xác vào `CORS_ALLOWED_ORIGINS`, không nhận wildcard |
 | Trang riêng trong ứng dụng Tầng 2 | Sửa và dựng lại frontend; chưa có registry plugin |
 | Họ mẫu quy trình riêng | Khai báo `states` và `actions` trong tệp mô hình; vẫn chịu quy tắc bất biến và bị kiểm khi áp dụng |
@@ -562,17 +562,19 @@ Phần này là giả thuyết về khách hàng.
 - **Đối thủ thật:** bảng tính và thuê làm riêng; với người muốn trọn gói tự cài thì là Frappe.
 - **Lý do chọn:** thay đổi an toàn trên toàn hệ thống, dữ liệu ở máy chủ của mình, không tính phí theo đầu người.
 - **Pháp lý:** [Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15](https://congbao.chinhphu.vn/van-ban/luat-so-91-2025-qh15-45578.htm) và [Nghị định 356/2025/NĐ-CP](https://congbao.chinhphu.vn/van-ban/nghi-dinh-so-356-2025-nd-cp-468371.htm) có hiệu lực từ 2026-01-01; chuyển dữ liệu ra nước ngoài phải lập hồ sơ đánh giá tác động và gửi cơ quan chuyên trách trong 60 ngày (Điều 20 luật), chi tiết ở [`deploy/OPERATIONS.md`](../../deploy/OPERATIONS.md#dữ-liệu-cá-nhân-ra-nước-ngoài).
-- **Đo công sức:** so số dòng và thời gian dựng ứng dụng mới với phần Lab viết tay, gồm 5.792 dòng Java, 4.524 dòng giao diện và 8 migration.
+- **Đo công sức:** mười hệ thống mẫu cần 252 dòng khai báo và không dòng mã nào, hệ thống đề nghị mua sắm ba vai cần 23 dòng, còn phần Lab viết tay gồm 5.792 dòng Java, 4.524 dòng giao diện và 8 migration; số đo và cách đo ở [`docs/TARGETS.md`](../TARGETS.md).
 
 Mục tiêu:
 
 
-| Chỉ số                                                       | Mục tiêu                        |
-| ---------------------------------------------------------------- | ----------------------------------- |
-| Từ tệp mô hình đến hệ thống chạy, máy đã có image | Dưới 10 phút                   |
-| Người mới tự dựng xong hệ thống đầu tiên             | Trong một buổi                  |
-| Đổi một trường và áp dụng                              | Vài phút, không mất dữ liệu |
-| Mã tự viết cho một hệ thống thường gặp                | Bằng 0 ở mức 1 và 2           |
+| Chỉ số | Mục tiêu | Kết quả đo |
+|---|---|---|
+| Từ tệp mô hình đến hệ thống chạy, máy đã có image | Dưới 10 phút | 71 giây |
+| Người mới tự dựng xong hệ thống đầu tiên | Trong một buổi | Chưa có người thật thử; bản mô phỏng dựng được hệ thống, các bước kỹ thuật mất vài chục giây |
+| Đổi một trường và áp dụng | Vài phút, không mất dữ liệu | 0,7 giây, dữ liệu còn nguyên |
+| Mã tự viết cho một hệ thống thường gặp | Bằng 0 ở mức 1 và 2 | 0 dòng trên mười mẫu |
+
+Đo ngày 2026-11-12; cách đo, bài thử cho người thật và chi phí tự cài ở [`docs/TARGETS.md`](../TARGETS.md).
 
 Giá tham khảo cho 100 người dùng trong một năm, từ các trang tổng hợp giá nên cần đối chiếu với nhà cung cấp:
 
@@ -582,7 +584,7 @@ Giá tham khảo cho 100 người dùng trong một năm, từ các trang tổng
 | [AppSheet Core](https://www.capterra.com/p/149367/AppSheet/pricing/)                                                    | 10 USD một người một tháng                       | 12.000 USD                      |
 | [Power Apps Premium](https://www.licensingschool.co.uk/licensing-blog/2026/09/17/new-pricing-for-power-apps-premium/)   | 20 USD, tăng thêm 2 USD từ 2027-01-01              | 24.000 USD, 26.400 USD từ 2027 |
 | [Retool Business](https://www.jetadmin.io/blog/retool-pricing-explained-2026-guide-to-plans-user-types-and-total-cost/) | 3 người dựng ở 50 USD, 97 người dùng ở 15 USD | 19.260 USD                      |
-| Lõi tự cài                                                                                                           | Tiền máy chủ cộng công người vận hành        | Theo giá máy chủ và công vận hành |
+| Lõi tự cài                                                                                                           | Tiền máy chủ cộng công người vận hành        | Máy 4 vCPU, 8 GB khoảng 80 EUR đến 576 USD, cộng công vận hành |
 
 ## Cam kết nguồn mở
 

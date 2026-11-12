@@ -105,6 +105,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 ## 9. Từ 100 lên 100.000 người dùng thì sao?
 
 - Chưa đo tải ở quy mô đó.
+  Tải đồng thời đã đo đến 200 người dùng ảo ở các cấu hình 12, 8, 4 và 2 nhân: từ 4 nhân trở lên đạt ngưỡng p95 dưới 500 ms đến 100 người dùng đồng thời, 2 nhân đạt đến 75; chi tiết ở [`docs/SIZING.md`](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/SIZING.md).
   Số đã đo: danh sách 10.000 dòng có lọc và sắp xếp trả về ở phân vị 95 là 11 ms; cả tám dịch vụ dùng khoảng 1,8 GiB RAM lúc rảnh.
 - Backend chạy một bản.
   Thử hai bản sau gateway cho thấy cả hai nhận lưu lượng, nhưng sau một lần áp dụng mô hình, danh sách mô hình và trạng thái giữ lệch nhau giữa hai bản; vì vậy đây là giới hạn đã ghi, không phải khả năng đã có.

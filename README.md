@@ -164,6 +164,7 @@ Trang tài liệu: <https://haui-implsolution.github.io/DX-OS/>.
 | Webhook, lịch sử chống sửa, lưu trữ dài hạn | [`deploy/INTEGRATIONS.md`](./deploy/INTEGRATIONS.md) |
 | Kết nối công cụ báo cáo | [`deploy/REPORTING.md`](./deploy/REPORTING.md) |
 | Kiểm thử | [`docs/TESTING.md`](./docs/TESTING.md), [`e2e/README.md`](./e2e/README.md) |
+| Kiểm chứng chỉ số mục tiêu, chi phí tự cài | [`docs/TARGETS.md`](./docs/TARGETS.md) |
 | Kịch bản trình diễn 15 phút | [`docs/DEMO.md`](./docs/DEMO.md) |
 | Hướng thiết kế và việc còn lại | [`docs/dynamic-core/README.md`](./docs/dynamic-core/README.md), [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md) |
 | Thay đổi theo phiên bản | [`CHANGELOG.md`](./CHANGELOG.md) |

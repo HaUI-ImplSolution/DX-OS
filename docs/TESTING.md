@@ -31,6 +31,7 @@ Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`web
 | Bề mặt của gateway | `python3 deploy/dev/check_surface.py` | `Gateway surface` của `Platform`, hai chế độ |
 | Trình duyệt | Xem [`e2e/README.md`](../e2e/README.md) | `Browser end-to-end` của `Platform` |
 | Trang tài liệu | `cd website && npm ci && npm run build` | `Build the docs site` của `Docs` |
+| Tải đồng thời và cấu hình nhỏ nhất | `python3 deploy/dev/load_test.py` trên stack tạm; các bước và kết quả ở [`SIZING.md`](SIZING.md) | Không |
 | Kiểm tay | Mục 6 | Không |
 
 `./mvnw verify` sau khi đổi tài nguyên nên chạy `clean verify`: tài nguyên cũ còn trong `target/` làm Flyway thấy hai migration cùng phiên bản.

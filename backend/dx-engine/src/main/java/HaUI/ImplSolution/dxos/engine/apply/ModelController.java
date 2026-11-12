@@ -3,6 +3,8 @@ package HaUI.ImplSolution.dxos.engine.apply;
 
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
 import HaUI.ImplSolution.dxos.core.api.user.UserContext;
+import HaUI.ImplSolution.dxos.model.ModelParser;
+import HaUI.ImplSolution.dxos.model.ModelUpgrader;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
@@ -60,6 +62,21 @@ public class ModelController {
               + " REPAIR_ROLE and REPAIR_UNIT. No record or table changes.")
   public ApiResponse<ApplyService.Plan> plan(@RequestBody String content) {
     return ApiResponse.success(service.plan(content));
+  }
+
+  @PostMapping(
+      value = "/upgrade",
+      consumes = {YAML, "text/plain"})
+  @Operation(
+      summary = "Preview a model file upgraded to the current format",
+      description =
+          "Runs every format migration in order and returns the upgraded content without storing"
+              + " it. The result is unchanged when the body already uses the current format. 400"
+              + " lists invalid content, unsupported future formats, or a missing migration step.")
+  public ApiResponse<ModelUpgrader.Result> upgrade(@RequestBody String content) {
+    ModelUpgrader.Result result = ModelUpgrader.upgrade(content);
+    ModelParser.parse(result.content());
+    return ApiResponse.success(result);
   }
 
   @PostMapping(

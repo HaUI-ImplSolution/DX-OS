@@ -115,7 +115,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 ## 10. Cộng đồng muốn đóng góp thì làm thế nào?
 
 - Thêm một nghiệp vụ là thêm một tệp mô hình: đặt vào `backend/dx-engine/src/main/resources/templates/` và khai trong `index.json` để hiện ở thư viện mẫu; kiểm bằng `POST /api/v1/models/plan` hoặc `dxos plan`.
-  Đặc tả cho trình soạn thảo là `model-v0.schema.json`; tệp sai mẫu ở `models/invalid/`.
+  Đặc tả cho trình soạn thảo là `model-v1.schema.json`; tệp sai mẫu ở `models/invalid/`.
 - Thêm họ mẫu quy trình mới là thêm một `ProcessFamily` và tệp BPMN cùng tên trong `dx-engine`.
 - `CONTRIBUTING.md` nêu quy trình nhánh, pull request, kiểm trước khi gửi; có mẫu issue và pull request ở `.github/`; CI chạy riêng cho backend, web, nền tảng (kiểm đầu-cuối), phụ thuộc và tuân thủ.
 - **Bằng chứng:** `CONTRIBUTING.md`; `.github/ISSUE_TEMPLATE/`; `.github/workflows/`.

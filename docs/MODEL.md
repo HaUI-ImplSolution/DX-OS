@@ -2,14 +2,14 @@
 
 Một tệp YAML khai báo thực thể, trường, vai, quyền và quy trình của một nghiệp vụ.
 Lõi dựng bảng dữ liệu, vai Keycloak, API và giao diện từ tệp này, nên đổi nghiệp vụ là đổi tệp, không đổi mã.
-Đặc tả cho trình soạn thảo ở [`model-v0.schema.json`](../backend/dx-model/src/main/resources/schema/model-v0.schema.json), và tệp sai mẫu dùng cho kiểm tự động ở [`models/invalid/`](../models/invalid).
+Đặc tả hiện hành cho trình soạn thảo ở [`model-v1.schema.json`](../backend/dx-model/src/main/resources/schema/model-v1.schema.json), và tệp sai mẫu dùng cho kiểm tự động ở [`models/invalid/`](../models/invalid).
 
 ## Ví dụ
 
 Rút gọn từ [`equipment.yaml`](../backend/dx-engine/src/main/resources/templates/equipment.yaml):
 
 ```yaml
-format: 0
+format: 1
 name: equipment
 roles:
   - {name: BORROWER}
@@ -30,6 +30,20 @@ entities:
 ```
 
 Các mẫu dùng được nằm ở [`templates/`](../backend/dx-engine/src/main/resources/templates) và hiện trong tab Thư viện mẫu của bảng điều khiển.
+
+## Nâng định dạng
+
+Format hiện hành là `1`.
+Lõi vẫn đọc format `0` bằng cách chạy migration `0 → 1` trong bộ nhớ trước khi kiểm tệp; format mới hơn bản lõi bị từ chối.
+
+`dxos model upgrade <tệp>` gọi cùng pipeline migration và in unified diff mà không ghi tệp.
+Sau khi đọc diff, chạy `dxos model upgrade --write <tệp>` để thay tệp bằng kết quả hoàn chỉnh qua một lần rename nguyên tử.
+Chạy lại trên format hiện hành không đổi nội dung.
+Hệ thống nhận ra tệp đổi theo nội dung chữ, nên lần áp dụng đầu của tệp đã nâng tạo thêm một phiên bản không đổi bảng hay quyền nào, và `dxos plan --check` trả 2 cho đến lúc đó.
+
+File tạm nằm cùng thư mục với tệp gốc (với liên kết mềm là thư mục của tệp đích), giữ quyền, chủ sở hữu và nhóm của tệp.
+Nếu migration, API, trích xuất kết quả hoặc ghi file tạm lỗi thì tệp gốc giữ nguyên; nếu tiến trình dừng trước rename thì xóa file `.dxos-model-upgrade.*` còn sót và chạy lại.
+Sau rename, dùng lịch sử Git hoặc bản sao lưu để quay lại nếu không muốn giữ kết quả.
 
 ## Trường và đơn vị
 

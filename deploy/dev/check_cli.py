@@ -156,6 +156,22 @@ def main():
         code_list, listing, _ = dxos(work, "archive", "list")
         runs_of_model = [line for line in listing.splitlines() if line.startswith(name + " ")]
         check("CLI-21 archive auto writes nothing for records newer than ARCHIVE_AFTER_DAYS and list shows the one run", code == 0 and f"{name}: nothing" in out and len(runs_of_model) == 1, f"{code} {out[-200:]} {err[-200:]} {runs_of_model}")
+
+        # model format: preview first, replace atomically only on request, and keep future files intact.
+        upgrade_file = os.path.join(work, "upgrade.yaml")
+        write("upgrade.yaml", DETAIL)
+        original = open(upgrade_file, encoding="utf-8").read()
+        code, out, err = dxos(work, "model", "upgrade", "upgrade.yaml")
+        check("CLI-22 model upgrade previews format 0 to 1 without writing", code == 0 and "-format: 0" in out and "+format: 1" in out and open(upgrade_file, encoding="utf-8").read() == original, f"{code} {out[-300:]} {err[-200:]}")
+        code, out, err = dxos(work, "model", "upgrade", "--write", "upgrade.yaml")
+        upgraded = open(upgrade_file, encoding="utf-8").read()
+        check("CLI-23 model upgrade writes the complete current format", code == 0 and upgraded == original.replace("format: 0", "format: 1", 1), f"{code} {out[-300:]} {err[-200:]}")
+        code, out, err = dxos(work, "model", "upgrade", "--write", "upgrade.yaml")
+        check("CLI-24 upgrading the current format is idempotent", code == 0 and "already uses format 1" in out and open(upgrade_file, encoding="utf-8").read() == upgraded, f"{code} {out[-200:]} {err[-200:]}")
+        future = upgraded.replace("format: 1", "format: 2", 1)
+        open(upgrade_file, "w", encoding="utf-8").write(future)
+        code, out, err = dxos(work, "model", "upgrade", "--write", "upgrade.yaml")
+        check("CLI-25 a future format is refused without changing the file", code == 1 and "unsupported format 2" in out and open(upgrade_file, encoding="utf-8").read() == future, f"{code} {out[-300:]} {err[-200:]}")
     finally:
         shutil.rmtree(work, ignore_errors=True)
         uid = kc.kc("GET", "/users?username=cli_tech&exact=true")[1]

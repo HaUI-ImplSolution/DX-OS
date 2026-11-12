@@ -45,7 +45,7 @@ import org.yaml.snakeyaml.nodes.Tag;
 // file is touched.
 public final class ModelParser {
 
-  public static final int FORMAT = 0;
+  public static final int FORMAT = ModelUpgrader.CURRENT_FORMAT;
 
   private static final Pattern NAME = Pattern.compile("[a-z][a-z0-9_]{0,39}");
   private static final Pattern DEADLINE = Pattern.compile("([0-9]{1,6})([mhd])");
@@ -75,7 +75,7 @@ public final class ModelParser {
 
   public static Model parse(String yaml) {
     ModelParser parser = new ModelParser();
-    Model model = parser.read(yaml);
+    Model model = parser.read(ModelUpgrader.upgrade(yaml).content());
     if (!parser.problems.isEmpty()) {
       throw new ModelException(parser.problems);
     }

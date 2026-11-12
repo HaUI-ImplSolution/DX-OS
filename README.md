@@ -30,6 +30,7 @@ Phiên bản hiện tại là `2.0.0`, thay đổi theo từng phiên bản ở 
 ## Tính năng
 
 - **Từ một tệp đến hệ thống chạy được.** Hồ sơ, bảng dữ liệu, tài khoản, vai, màn hình danh sách và biểu mẫu đều được dựng từ tệp mô hình.
+  Tệp viết theo kiểu cũ vẫn chạy được, và có lệnh đưa nó lên kiểu mới sau khi xem trước những gì sẽ đổi.
 - **Phân quyền đến từng dòng.** Mỗi vai chỉ thấy và sửa phần việc của mình, của đơn vị mình hoặc được giao cho mình.
 - **Quy tắc dữ liệu ngay trong tệp.** Trường đúng hoặc sai, ngày, chọn nhiều giá trị, giới hạn giá trị, mẫu chuỗi và điều kiện bắt buộc đều khai báo trong tệp; cơ sở dữ liệu cũng từ chối giá trị sai.
 - **Quy trình tùy biến.** Chọn một trong ba mẫu có sẵn (phê duyệt, công việc cần xử lý, đặt chỗ theo khung giờ có kiểm sức chứa) rồi thêm bớt bước, giao từng bước cho vai riêng, hoặc tự khai báo quy trình từ đầu; một bước có thể chỉ mở khi hồ sơ đạt điều kiện, ví dụ số tiền vượt mức thì lên cấp duyệt cao hơn; từ chối và trả lại đều cần lý do, và không ai tự duyệt hồ sơ của mình.

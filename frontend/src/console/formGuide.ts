@@ -137,7 +137,7 @@ export const PARAM_HELP: Record<string, string> = {
 // The words the YAML editor shows when the pointer rests on a key. They are attached to the schema of
 // the model file by the path of the key, so the structure stays where the model format is defined.
 export const SCHEMA_HELP: Record<string, string> = {
-  format: t("Phiên bản định dạng của tệp mô hình, hiện là 0."),
+  format: t("Phiên bản định dạng của tệp mô hình, hiện là 1."),
   name: t("Tên mô hình: chữ thường, số, gạch dưới, bắt đầu bằng chữ, tối đa 40 ký tự. Đặt tên bảng dữ liệu (schema m_<tên>) và đường dẫn API."),
   webhook: t("Tên đích nhận lịch sử hồ sơ, đã cấu hình ở máy chủ (không phải địa chỉ web). Bỏ trống thì dùng đích mặc định."),
   roles: t("Danh sách vai: nhóm người có cùng quyền. Cần ít nhất một vai. Vai khai ở đây dùng được ở access, handler và role của hành động."),

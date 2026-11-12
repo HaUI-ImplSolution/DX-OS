@@ -36,7 +36,7 @@ export function useModelSchema(schema: Record<string, unknown>) {
     validate: true,
     completion: true,
     hover: true,
-    schemas: [{ uri: "https://dxos.local/model-v0.schema.json", fileMatch: ["*"], schema }],
+    schemas: [{ uri: "https://dxos.local/model-v1.schema.json", fileMatch: ["*"], schema }],
   };
   if (handle) void handle.update(config);
   else handle = configureMonacoYaml(yamlMonaco, config);

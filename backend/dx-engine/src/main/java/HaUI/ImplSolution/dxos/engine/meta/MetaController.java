@@ -152,6 +152,7 @@ public class MetaController {
                 entity.process().deadline() == null
                     ? null
                     : entity.process().deadline().toSeconds(),
+                ProcessInfo.EscalationInfo.of(entity.process().escalations()),
                 entity.process().booking(),
                 entity.process().definition().states(),
                 entity.process().definition().actions());

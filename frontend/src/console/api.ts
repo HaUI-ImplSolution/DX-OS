@@ -106,6 +106,14 @@ export interface Completion {
   groupField: string | null;
 }
 
+// A notice to other roles while an overdue record stays unhandled; everySeconds is null for one notice.
+export interface EscalationLevel {
+  afterSeconds: number;
+  to: string[];
+  everySeconds: number | null;
+  times: number;
+}
+
 export interface DiagramState extends FamilyState {
   completions: Completion[];
 }
@@ -120,6 +128,7 @@ export interface ProcessView {
   handlers: string[];
   allowSelfDecision: boolean;
   deadlineSeconds: number | null;
+  escalations: EscalationLevel[];
   autoCloseSeconds: number | null;
   autoCloseAction: string | null;
   booking: { resource: string; starts: string; ends: string; capacity: number } | null;

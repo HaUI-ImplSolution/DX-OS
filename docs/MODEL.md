@@ -116,6 +116,11 @@ Ví dụ đầy đủ ở [`asset_register.yaml`](../backend/dx-engine/src/main/
 - `handler` là vai xử lý, hoặc một danh sách vai như `[MANAGER, SELLER]`; ai giữ một trong các vai đó thì xử lý được.
 - `family` chọn một họ mẫu để bắt đầu: `approval`, `work_item` hoặc `reservation`; bỏ trống thì tự khai báo đủ `states` và `actions`.
 - `deadline` là hạn xử lý tùy chọn (ví dụ `72h`).
+- `escalate` là danh sách tối đa 5 mức leo thang tính từ lúc hồ sơ quá `deadline`, nên quy trình phải khai `deadline`.
+  Mỗi mức khai `after` (thời gian sau hạn) và `to` (một vai hoặc danh sách vai, mỗi vai phải đọc được hồ sơ), cùng `repeat: {every: 12h, times: 3}` nếu muốn nhắc lại; bỏ `repeat` thì mỗi mức gửi một lần.
+  Ví dụ: `escalate: [{after: 24h, to: MANAGER}, {after: 72h, to: [DIRECTOR], repeat: {every: 12h, times: 3}}]`.
+  Leo thang chỉ ghi dòng lịch sử `escalated` và gửi thông báo qua webhook của mô hình, không đổi trạng thái, người giữ hồ sơ hay quyền của ai.
+  Dịch vụ tắt rồi chạy lại thì chỉ gửi thông báo mới nhất đã đến hạn, và hồ sơ vào hạn mới thì tính lại từ đầu.
 - Họ mẫu bắt buộc có lý do khi từ chối và trả lại; quy trình tự khai báo đặt `needs_note: true` cho từng hành động cần lý do.
 - Người nộp chỉ rút lại được hồ sơ ở các trạng thái khai trong `withdraw`; quy trình không khai `withdraw` thì không cho rút lại.
 - Hồ sơ có quy trình không xóa được, hồ sơ đã được quyết định thì không sửa được, và hồ sơ đã giao thì chỉ người được giao xử lý được.
@@ -142,7 +147,7 @@ Ví dụ đầy đủ ở [`asset_register.yaml`](../backend/dx-engine/src/main/
   Hành động không đạt điều kiện trả 409 `ERR_INVALID_STATE` với `data.reason` là `CONDITION_NOT_MET`.
 - Khi có `family`, mục khai báo ghi đè từng khóa của khung; viết `null` để bỏ một trạng thái hoặc hành động của khung.
 - `withdraw` và trạng thái `withdrawn` là tên dành riêng: khai `withdraw: {from: [...]}` thì nền tảng tự thêm trạng thái `withdrawn`, và hành động này luôn do người nộp thực hiện.
-- Tên hành động `created`, `updated`, `deleted`, `assigned`, `file_added`, `file_removed`, `completion_skipped`, `auto_closed`, `overdue` và `due_soon` là tên dành riêng, vì lịch sử hồ sơ dùng chúng cho các dòng do nền tảng ghi.
+- Tên hành động `created`, `updated`, `deleted`, `assigned`, `file_added`, `file_removed`, `completion_skipped`, `auto_closed`, `overdue`, `due_soon` và `escalated` là tên dành riêng, vì lịch sử hồ sơ dùng chúng cho các dòng do nền tảng ghi.
 - Mỗi trạng thái không phải cuối phải có hành động đi ra, và ít nhất một hành động đi ra không có `when`, để hồ sơ luôn có lối đi; mọi trạng thái phải tới được từ `initial`, trạng thái cuối không có hành động đi ra, và phải có ít nhất một trạng thái cuối.
 - `auto_close` là thời gian chờ người nộp trước khi hệ thống thay họ làm một hành động.
   Họ `work_item` nhận dạng ngắn `auto_close: 7d` (hành động `confirm`); các trường hợp khác viết `auto_close: {after: 7d, action: <hành động của người nộp>}`.
@@ -201,6 +206,7 @@ Mỗi hồ sơ giữ tối đa 20 tệp, đặt bằng `engine.files.max-per-rec
 Địa chỉ và bí mật của đích nằm trong `deploy/webhooks/targets.yml`, ngoài git; mẫu ở `deploy/webhooks/targets.example.yml`.
 Mô hình không khai báo thì dùng `DXOS_WEBHOOK_URL`, và tên đích chưa có trong tệp thì mô hình không áp dụng được.
 Mỗi đích có `format: json` (mặc định) hoặc `format: chat`.
+Tin của dòng `escalated` có thêm `level` (mức, từ 1) và `round` (lần nhắc, từ 0), và tin chat nêu vai nhận.
 
 ## Đổi mô hình khi đã có dữ liệu
 

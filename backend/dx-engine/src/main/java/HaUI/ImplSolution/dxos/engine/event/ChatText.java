@@ -24,6 +24,13 @@ final class ChatText {
     return switch (action) {
       case "due_soon" -> "Sắp đến hạn xử lý: " + what + ", trạng thái " + message.get("toStatus");
       case "overdue" -> "Quá hạn xử lý: " + what + ", trạng thái " + message.get("toStatus");
+      case "escalated" ->
+          "Leo thang mức "
+              + message.get("level")
+              + ": "
+              + what
+              + " quá hạn xử lý, trạng thái "
+              + message.get("toStatus");
       case "assigned" -> "Được giao: " + what + by;
       default -> what + ": " + action + ", " + statuses + by;
     };

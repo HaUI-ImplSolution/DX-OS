@@ -8,7 +8,8 @@ Bản quyền và giấy phép của mã nguồn, thành phần bên thứ ba, m
 Văn bản giấy phép đầy đủ: LICENSE (Apache-2.0); thông báo ghi công: NOTICE.
 Danh mục đầy đủ theo phiên bản: thư mục sbom/ (CycloneDX).
 Bản build của ứng dụng web và của trang tài liệu kèm third-party-licenses.txt, chép thông báo bản quyền của từng thư viện npm đóng gói trong đó.
-Image khai báo ở .github/component-catalog.json; .github/scripts/check_licenses.py kiểm danh mục này ở mỗi pull request.
+Image khai báo ở .github/component-catalog.json; .github/scripts/check_licenses.py kiểm danh mục này ở mỗi pull request,
+và .github/scripts/check_upstream_licenses.py đọc giấy phép của dự án gốc ở đúng phiên bản đang dùng của từng image và bản tải về.
 
 1. GIẤY PHÉP CỦA MÃ NGUỒN
 =========================

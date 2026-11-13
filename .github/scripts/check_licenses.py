@@ -2,6 +2,7 @@
 """Check the licensing of the repository.
 
     python3 .github/scripts/check_licenses.py
+    python3 .github/scripts/check_licenses.py sbom FILE...   # only the licenses of the SBOMs given
 
 1. Every tracked source file starts with an SPDX license line that names Apache-2.0, unless REUSE.toml
    states the license of that file itself (an override annotation: third-party files and released migrations).
@@ -162,10 +163,11 @@ def expression_allowed(expression: str, allowed: set[str]) -> bool:
     return parse_or()
 
 
-def check_sboms() -> list[str]:
+def check_sboms(files: list[Path] | None = None) -> list[str]:
+    """The licenses of the packages of the SBOMs given, or of the committed ones in sbom/."""
     exceptions = json.loads((ROOT / ".github/dependency-exceptions.json").read_text(encoding="utf-8"))
     problems = []
-    for sbom in sorted((ROOT / "sbom").glob("*.cdx.json")):
+    for sbom in sorted(files if files is not None else (ROOT / "sbom").glob("*.cdx.json")):
         allowed = ALLOWED
         for component in json.loads(sbom.read_text(encoding="utf-8")).get("components", []):
             label = f"{component.get('group', '')}:{component['name']}".strip(":")
@@ -190,9 +192,9 @@ def image_name(reference: str) -> str:
     return "/".join(parts)
 
 
-def referenced_images() -> dict[str, str]:
-    """Image name to the file that uses it. Images built by this repository are skipped."""
-    found: dict[str, str] = {}
+def referenced_references() -> dict[str, list[tuple[str, str]]]:
+    """Image name to the (file, reference) pairs that use it. Images built by this repository are skipped."""
+    found: dict[str, list[tuple[str, str]]] = {}
     for rel in tracked_files():
         path = ROOT / rel
         if not path.is_file():
@@ -212,8 +214,13 @@ def referenced_images() -> dict[str, str]:
         else:
             continue
         for reference in references:
-            found.setdefault(image_name(reference), rel)
+            found.setdefault(image_name(reference), []).append((rel, reference))
     return found
+
+
+def referenced_images() -> dict[str, str]:
+    """Image name to the first file that uses it."""
+    return {name: uses[0][0] for name, uses in referenced_references().items()}
 
 
 def referenced_downloads() -> dict[str, str]:
@@ -265,6 +272,14 @@ def check_bundled() -> list[str]:
 
 
 def main() -> int:
+    # `sbom FILE...` checks the licenses of SBOMs generated from the pull request, which can differ from
+    # the committed ones until they are generated again.
+    if sys.argv[1:2] == ["sbom"]:
+        problems = check_sboms([Path(name) for name in sys.argv[2:]])
+        for problem in problems:
+            print(problem)
+        print(f"{len(problems)} problem(s)")
+        return 1 if problems else 0
     problems = check_headers() + check_sboms() + check_catalog() + check_bundled()
     for problem in problems:
         print(problem)

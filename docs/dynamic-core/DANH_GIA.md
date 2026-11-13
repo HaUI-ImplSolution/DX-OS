@@ -118,7 +118,7 @@ Cột Trạng thái ghi quyết định của đội: đề xuất đã chốt l
 | Đề xuất | Lý do | Làm gì | Lợi ích | Rủi ro | Trạng thái |
 |---|---|---|---|---|---|
 | **Chuẩn REUSE** | Thể lệ chấm giấy phép trong từng tệp; kiểm hiện tại bỏ sót loại tệp và không nói gì về tệp không chèn được chú thích | Thêm `REUSE.toml` và thư mục `LICENSES/`, khai giấy phép và bản quyền cho JSON, ảnh và tệp của bên thứ ba; chạy `reuse lint` trong job `Check licenses` | Một chuẩn có công cụ kiểm thay cho script tự viết; mọi tệp đều có giấy phép máy đọc được | REUSE đòi cả dòng bản quyền, tệp hiện chỉ có dòng giấy phép; phải kiểm GitHub vẫn nhận một giấy phép sau khi có `LICENSES/` | Đã làm |
-| **Trang docs là tài liệu sản phẩm** | Trang docs là hồ sơ dự thi; người mới không có đường đọc từ cài đặt tới mở rộng | Đưa bắt đầu nhanh, tệp mô hình, API, vận hành và hướng dẫn mở rộng lên trang; gắn nhãn `good first issue` cho vài việc nhỏ | Điểm tài liệu, phát triển bền vững và thu hút cộng đồng cùng dựa vào đây | Hai nơi chứa một nội dung dễ lệch nhau, nên trang docs phải dựng từ chính các tệp trong `docs/` | Chốt làm |
+| **Trang docs là tài liệu sản phẩm** | Trang docs là hồ sơ dự thi; người mới không có đường đọc từ cài đặt tới mở rộng | Đưa tệp mô hình, API, cài đặt và vận hành, giám sát, tích hợp, báo cáo, mở rộng, kiến trúc, tương thích và kịch bản trình diễn lên trang; một script chép chúng từ `docs/` và `deploy/` mỗi lần dựng trang | Điểm tài liệu và phát triển bền vững cùng dựa vào đây | Hai nơi chứa một nội dung dễ lệch nhau, nên trang docs dựng từ chính các tệp nguồn và không giữ bản riêng | Đã làm |
 
 ## 8. Đã cân nhắc, không đề xuất
 

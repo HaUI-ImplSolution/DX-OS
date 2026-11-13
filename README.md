@@ -183,6 +183,7 @@ Hướng dẫn kiểm thử đầy đủ ở [`docs/TESTING.md`](./docs/TESTING.
 ## Tài liệu
 
 Trang tài liệu: <https://haui-implsolution.github.io/DX-OS/>.
+Các tài liệu về viết tệp mô hình, API, vận hành, giám sát, tích hợp, mở rộng và kiến trúc cũng đọc được trên trang đó, có mục lục và liên kết giữa các trang.
 
 | Cần gì | Xem |
 |---|---|

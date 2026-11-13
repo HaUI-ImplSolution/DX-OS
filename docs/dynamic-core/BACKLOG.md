@@ -14,7 +14,7 @@ Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết t�
 | Thứ tự | Việc | Điểm liên quan |
 |---|---|---|
 | 1 | Rà soát cuối của mục 2 trên bản `2.0.0` đã phát hành | Điều kiện để kho mã được chấm trên bản dự thi; bản phát hành 5, dịch từ mã nguồn 10 |
-| 2 | Tài liệu và giao tiếp: lịch sử issue, tài liệu sản phẩm trên trang docs (mục 2 và 3) | Tài liệu và giao tiếp 10, phát triển bền vững 10 |
+| 2 | Tài liệu và giao tiếp: lịch sử issue (mục 3) | Tài liệu và giao tiếp 10, phát triển bền vững 10 |
 | 3 | Bằng chứng lõi là PaaS: ứng dụng mẫu (mục 3) | Nguyên gốc 10, phát triển bền vững 10 |
 | 4 | Bài trình bày chung kết (mục 2) | Hoàn thiện 10, trình diễn 10 |
 | 5 | Phần AI và chữ I của ứng dụng Tầng 2 (mục 3) | Hoàn thiện 10, nguyên gốc 10 |
@@ -45,7 +45,6 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 
 | Việc | Ghi chú |
 |---|---|
-| Tài liệu sản phẩm trên trang docs | Trang docs chỉ có hồ sơ dự thi; cách viết tệp mô hình, API, vận hành và mở rộng đều là liên kết sang tệp trên GitHub; chưa có issue nào gắn nhãn `good first issue` |
 | Ứng dụng mẫu gọi lõi từ bên ngoài | Chưa có ứng dụng có giao diện nào ngoài ứng dụng của đội gọi lõi qua API, nên câu "PaaS phục vụ các ứng dụng tầng trên" của đề chưa có bằng chứng chạy được; đã chốt làm một ứng dụng mẫu ở `examples/`, viết bằng khung khác react-admin, chỉ dùng OpenAPI theo mô hình và đăng nhập Keycloak |
 | Lịch sử issue | PoF chấm bug tracker có lịch sử; số issue và pull request lấy ở `website/docs/pof-audit.md`; mở issue cho việc phải sửa hoặc làm lại và đóng bằng pull request có `Closes #n`, còn việc phải thêm (giấy phép, lộ trình) chỉ ghi ở file này; issue chỉ mang nhãn `enhancement` hoặc `documentation`, chưa gắn milestone |
 | Chỉ số mục tiêu | Chưa có người thật làm bài thử "trong một buổi" (bài thử và bản mô phỏng ở `docs/TARGETS.md`), chưa đo công vận hành mỗi tháng và thời gian lần cài đầu có tải image |

@@ -14,6 +14,23 @@ const sidebars = {
     },
     {
       type: 'category',
+      label: 'Tài liệu sản phẩm',
+      collapsed: false,
+      items: [
+        'tai-lieu/viet-mo-hinh',
+        'tai-lieu/api',
+        'tai-lieu/van-hanh',
+        'tai-lieu/giam-sat',
+        'tai-lieu/tich-hop',
+        'tai-lieu/bao-cao',
+        'tai-lieu/mo-rong',
+        'tai-lieu/kien-truc',
+        'tai-lieu/tuong-thich',
+        'tai-lieu/trinh-dien',
+      ],
+    },
+    {
+      type: 'category',
       label: 'Hồ sơ dự thi',
       collapsed: false,
       items: ['evidence-matrix', 'pof-audit', 'council-qa', 'dependencies'],

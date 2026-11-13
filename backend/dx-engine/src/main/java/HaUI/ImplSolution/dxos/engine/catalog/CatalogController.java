@@ -89,7 +89,8 @@ public class CatalogController {
       description =
           "One entry per field with its version of the model. origins: input (a role that may write"
               + " the entity, with its scope), default, reference (the entity it points to), unit,"
-              + " file and renamed_from (the field name in the version before). uses: the rules that"
+              + " file, generated (the pattern of a code field) and renamed_from (the field name in the version"
+              + " before). uses: the rules that"
               + " read the field: required_when, require and when (a process action), owner and"
               + " unit_scope. destinations: history (the line written when the value changes), feed,"
               + " webhook and archive. The core does not transform values, so no entry is a"

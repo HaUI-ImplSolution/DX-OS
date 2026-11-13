@@ -23,6 +23,11 @@ Mỗi nghiệp vụ chọn một họ quy trình để bắt đầu:
 Từ chối và yêu cầu bổ sung bắt buộc có lý do; người nộp đọc lý do đó ở lịch sử.
 Nghiệp vụ có thể thêm hoặc đổi hành động, và có hành động chỉ hiện khi hồ sơ đạt điều kiện, ví dụ số tiền vượt mức thì phải chuyển lên cấp duyệt cao hơn.
 
+## Tìm hồ sơ theo mã
+
+Nếu nghiệp vụ cấp mã hồ sơ, danh sách có cột mã và ô tìm theo mã: gõ cả mã hoặc một phần của nó để lọc.
+Mã nằm ở đầu trang chi tiết kèm nút sao chép, tiện dán vào trao đổi hay biên bản.
+
 ## Nhận và giao việc
 
 Hồ sơ chưa giao thì cả vai xử lý đều làm được.

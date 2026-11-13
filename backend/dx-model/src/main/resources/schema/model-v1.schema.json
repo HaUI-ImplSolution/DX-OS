@@ -106,7 +106,7 @@
               "additionalProperties": false,
               "properties": {
                 "type": {
-                  "enum": ["text", "number", "datetime", "date", "boolean", "choice", "reference", "user", "unit", "file"]
+                  "enum": ["text", "number", "datetime", "date", "boolean", "choice", "reference", "user", "unit", "file", "code"]
                 },
                 "label": { "type": "string" },
                 "required": { "type": "boolean" },
@@ -116,6 +116,7 @@
                 "renamed_from": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$" },
                 "default": { "type": ["string", "number", "boolean", "array"], "items": { "type": "string" }, "minItems": 1 },
                 "multiple": { "type": "boolean" },
+                "format": { "type": "string", "minLength": 1, "maxLength": 120 },
                 "min": { "type": ["number", "string"] },
                 "max": { "type": ["number", "string"] },
                 "pattern": { "type": "string", "minLength": 1, "maxLength": 200 },

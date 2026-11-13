@@ -44,6 +44,7 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 | Tính năng | Kiểm | Lệnh | Mức | Giới hạn |
 |---|---|---|---|---|
 | Đọc và kiểm tệp mô hình, báo lỗi theo dòng và cột | `check_api.py` và `check_case.py` với bảy tệp sai mẫu ở `models/invalid/`; `check_cli.py` CLI-34 đến CLI-36 so `dxos lint` với `plan` | `python3 deploy/dev/check_api.py` | Hoàn thiện | |
+| Mã hồ sơ đọc được theo khuôn khai báo, duy nhất khi ghi đồng thời | `check_codes.py` | `python3 deploy/dev/check_codes.py` | Hoàn thiện | Mỗi thực thể một trường mã; hết số thì từ chối hồ sơ mới |
 | Xem trước và áp dụng mô hình, áp dụng lại không đổi gì, sửa phần lệch của bảng và Keycloak | `check_api.py`, `check_recovery.py` 19 | `python3 deploy/dev/check_recovery.py` | Hoàn thiện | Việc kiểm lệch chỉ chạy khi xem kế hoạch hoặc áp dụng, không chạy lúc khởi động |
 | Đổi mô hình khi đã có dữ liệu: mức rủi ro, đổi tên giữ dữ liệu, dòng vi phạm, xác nhận khi mất dữ liệu, quay về | `check_change.py` 65, `check_guards.py` 61 | `python3 deploy/dev/check_change.py` | Hoàn thiện | Đổi người xử lý, hạn xử lý, quyền tự quyết hoặc đặt chỗ chỉ được khi thực thể không còn hồ sơ đang xử lý |
 | Tiếp tục hoặc hủy bỏ lần áp dụng dừng giữa chừng | `check_recovery.py`, `check_guards.py`; thẻ "Đang dừng dở" kiểm bằng Chrome | `python3 deploy/dev/check_guards.py` | Hoàn thiện | |

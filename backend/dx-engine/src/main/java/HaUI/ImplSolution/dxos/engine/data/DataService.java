@@ -100,6 +100,7 @@ public class DataService {
   private final AttachmentCleaner attachments;
   private final ActionCheck checks;
   private final TransactionTemplate separate;
+  private final RecordCodes codes;
 
   public DataService(
       NamedParameterJdbcTemplate jdbc,
@@ -111,6 +112,7 @@ public class DataService {
       KeycloakAdminClient keycloak,
       AttachmentCleaner attachments,
       ActionCheck checks,
+      RecordCodes codes,
       PlatformTransactionManager transactions) {
     this.jdbc = jdbc;
     this.user = user;
@@ -121,6 +123,7 @@ public class DataService {
     this.keycloak = keycloak;
     this.attachments = attachments;
     this.checks = checks;
+    this.codes = codes;
     this.separate = new TransactionTemplate(transactions);
     this.separate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
   }
@@ -356,6 +359,11 @@ public class DataService {
     requireReachableParent(model, entity, access, values);
     requireCreatableUnit(entity, access, values);
     bookings.check(model, entity, values, null);
+    for (Field field : entity.fields().values()) {
+      if (field.type() == FieldType.CODE) {
+        values.put(field.name(), codes.next(model, entity, field));
+      }
+    }
     MapSqlParameterSource params = new MapSqlParameterSource("created_by", user.currentUserId());
     List<String> names = new ArrayList<>(List.of("created_by"));
     List<String> markers = new ArrayList<>(List.of(":created_by"));
@@ -1106,6 +1114,7 @@ public class DataService {
         where.add(column + " IN (:" + name + ")");
       } else if ("like".equals(operator)) {
         if (type != FieldType.TEXT
+            && type != FieldType.CODE
             && type != FieldType.CHOICE
             && type != FieldType.USER
             && type != FieldType.UNIT) {
@@ -1182,6 +1191,10 @@ public class DataService {
       Field field = entity.fields().get(name);
       if (field == null) {
         errors.put(name, "unknown field");
+        continue;
+      }
+      if (field.type() == FieldType.CODE) {
+        errors.put(name, "is assigned by the system");
         continue;
       }
       Object value = item.getValue();
@@ -1303,6 +1316,7 @@ public class DataService {
       case BOOLEAN -> parseBoolean(String.valueOf(value));
       case DATE -> parseLocalDate(String.valueOf(value));
       case FILE -> throw new IllegalArgumentException("is set by uploading a file");
+      case CODE -> throw new IllegalArgumentException("is assigned by the system");
     };
   }
 

@@ -29,7 +29,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class MetaController {
 
   // multiple, min, max, pattern and requiredWhen are null (multiple false) when the field does not
-  // declare them; min and max are text, a number as written or a date as YYYY-MM-DD.
+  // declare them; min and max are text, a number as written or a date as YYYY-MM-DD. format is the
+  // shape of the code of a code field.
   public record FieldMeta(
       String name,
       String label,
@@ -42,7 +43,8 @@ public class MetaController {
       String min,
       String max,
       String pattern,
-      ProcessFamily.Condition requiredWhen) {}
+      ProcessFamily.Condition requiredWhen,
+      String format) {}
 
   public record EntityMeta(
       String name,
@@ -140,7 +142,8 @@ public class MetaController {
                         f.min(),
                         f.max(),
                         f.pattern(),
-                        f.requiredWhen()))
+                        f.requiredWhen(),
+                        f.format()))
             .toList();
     ProcessInfo process =
         entity.process() == null

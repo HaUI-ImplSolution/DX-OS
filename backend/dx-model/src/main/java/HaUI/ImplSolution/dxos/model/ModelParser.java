@@ -324,6 +324,9 @@ public final class ModelParser {
         mapping(map, Set.of("label", "fields", "access", "process", "owner_via", "ui"));
 
     Map<String, Field> fields = readFields(map, keys.get("fields"), entityNames);
+    if (fields.values().stream().filter(field -> field.type() == FieldType.CODE).count() > 1) {
+      problem(keys.get("fields"), "an entity has one code field at most");
+    }
     Map<String, Scope> access = readAccess(map, keys.get("access"), roleNames);
     accessNodes.put(name, keys.get("access"));
     Process process = readProcess(keys.get("process"), roleNames, access, fields);
@@ -412,7 +415,8 @@ public final class ModelParser {
                     field.min(),
                     field.max(),
                     field.pattern(),
-                    condition));
+                    condition,
+                    field.format()));
           }
         });
     return fields;
@@ -435,7 +439,8 @@ public final class ModelParser {
                 "min",
                 "max",
                 "pattern",
-                "required_when"));
+                "required_when",
+                "format"));
     Node typeNode = keys.get("type");
     if (typeNode == null) {
       problem(spec, "field " + name + " has no type");
@@ -447,7 +452,8 @@ public final class ModelParser {
           typeNode,
           "unknown type "
               + scalar(typeNode)
-              + ", use text, number, datetime, date, boolean, choice, reference, user, unit or file");
+              + ", use text, number, datetime, date, boolean, choice, reference, user, unit, file"
+              + " or code");
       return null;
     }
     List<String> options = List.of();
@@ -473,8 +479,14 @@ public final class ModelParser {
     } else if (keys.get("to") != null) {
       problem(keys.get("to"), "to only applies to a reference field");
     }
+    String format = null;
+    if (type == FieldType.CODE) {
+      format = readCodeFormat(spec, keys);
+    } else if (keys.get("format") != null) {
+      problem(keys.get("format"), "format only applies to a code field");
+    }
     boolean required = flag(keys.get("required"), "required");
-    boolean unique = flag(keys.get("unique"), "unique");
+    boolean unique = flag(keys.get("unique"), "unique") || type == FieldType.CODE;
     boolean multiple = flag(keys.get("multiple"), "multiple");
     if (multiple && type != FieldType.CHOICE) {
       problem(keys.get("multiple"), "multiple only applies to a choice field");
@@ -493,7 +505,10 @@ public final class ModelParser {
               + " give it a default instead");
     }
     String renamedFrom = readRenamedFrom(name, keys.get("renamed_from"));
-    String defaultValue = readDefault(type, options, unique, multiple, keys.get("default"));
+    String defaultValue =
+        type == FieldType.CODE
+            ? null
+            : readDefault(type, options, unique, multiple, keys.get("default"));
     String min = readBound(type, keys.get("min"), "min");
     String max = readBound(type, keys.get("max"), "max");
     if (min != null && max != null && compareBounds(type, min, max) > 0) {
@@ -516,7 +531,41 @@ public final class ModelParser {
         min,
         max,
         pattern,
-        null);
+        null,
+        format);
+  }
+
+  // The format of a code field. The system assigns the value, so nothing that describes a value
+  // given by a person applies.
+  private String readCodeFormat(MappingNode spec, Map<String, Node> keys) {
+    for (String key :
+        List.of(
+            "required",
+            "unique",
+            "options",
+            "to",
+            "renamed_from",
+            "default",
+            "multiple",
+            "min",
+            "max",
+            "pattern",
+            "required_when")) {
+      if (keys.get(key) != null) {
+        problem(keys.get(key), key + " does not apply to a code field, which the system assigns");
+      }
+    }
+    Node node = keys.get("format");
+    if (node == null) {
+      problem(spec, "a code field needs a format such as HS-{year}-{seq:5}");
+      return null;
+    }
+    try {
+      return CodeFormat.parse(scalar(node)).text();
+    } catch (IllegalArgumentException e) {
+      problem(node, e.getMessage());
+      return null;
+    }
   }
 
   // The bound of a number or date field, in the canonical text of the value.
@@ -979,6 +1028,8 @@ public final class ModelParser {
         String name = scalar(field);
         if (!fields.containsKey(name)) {
           problem(field, "field " + name + " is not a field of this entity");
+        } else if (fields.get(name).type() == FieldType.CODE) {
+          problem(field, "field " + name + " is a code the system assigns, so it has no input");
         } else if (!placed.add(name)) {
           problem(field, "field " + name + " is in two groups");
         } else {

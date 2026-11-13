@@ -4,7 +4,7 @@ import type { EscalationLevel } from "../console/api";
 export interface FieldMeta {
   name: string;
   label: string;
-  type: "text" | "number" | "boolean" | "date" | "datetime" | "choice" | "reference" | "user" | "unit" | "file";
+  type: "text" | "number" | "boolean" | "date" | "datetime" | "choice" | "reference" | "user" | "unit" | "file" | "code";
   required: boolean;
   unique: boolean;
   options: string[];
@@ -17,6 +17,8 @@ export interface FieldMeta {
   pattern?: string | null;
   // The field is required while the comparison holds.
   requiredWhen?: ProcessCondition | null;
+  // The pattern a code field is made from, such as HS-{year}-{seq:5}.
+  format?: string | null;
 }
 
 // How an entity looks on screen, as the model file declares it; every part is optional.

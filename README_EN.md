@@ -32,6 +32,7 @@ The current version is `2.0.0`, and the changes of each version are in [`CHANGEL
 - **From one file to a running system.** Records, tables, accounts, roles, list screens and forms are all built from the model file.
   A file written in an older style still runs, and a command moves it to the new style after you preview what will change.
 - **Permissions down to the row.** Each role sees and edits only its own work, the work of its unit, or the work assigned to it.
+- **Readable record codes.** The model file declares a code format such as a prefix, the year and a sequence number; every record gets a code nobody else has, to read, print and look up, even when many people submit at once.
 - **Data rules in the file.** True or false, dates, several values at once, limits on values, text patterns and conditional requirements are all declared in the file, and the database refuses a wrong value as well.
 - **Customizable workflows.** Start from one of three ready made shapes (approval, work items, time-slot reservations with a capacity check) and add or remove steps, give each step to its own role, or declare a workflow from scratch; a step can open only when the record meets a condition, for example an amount above a limit goes to a higher approval level; rejecting and returning need a reason, and nobody approves their own record.
 - **Changing the business once data exists.** The system previews the impact, warns about risk, keeps the values when something is renamed, and can return to the previous version.

@@ -24,6 +24,13 @@ Mở hồ sơ rồi thêm tệp vào phần tệp đính kèm.
 Một số loại tệp bị từ chối, ví dụ tệp HTML.
 Chỉ người đã thêm một tệp mới gỡ được tệp đó.
 
+## Mã hồ sơ
+
+Nghiệp vụ có thể cho mỗi hồ sơ một mã ngắn, ví dụ `HS-2026-00007`.
+Mã hiện ở cột đầu của danh sách và ở đầu trang chi tiết, kèm nút sao chép; dùng nó khi hỏi hay tra cứu hồ sơ với người xử lý.
+Bạn không nhập mã: hệ thống tự cấp khi hồ sơ được tạo và mã không đổi nữa.
+Gõ một phần của mã vào ô tìm theo mã của danh sách thì chỉ còn các hồ sơ có mã đó.
+
 ## Theo dõi hồ sơ
 
 - Trạng thái của hồ sơ hiện ở danh sách và ở đầu trang chi tiết.

@@ -19,6 +19,7 @@ entities:
   request:
     label: Hồ sơ
     fields:
+      number: {type: code, label: Số hồ sơ, format: "HS-{year}-{seq:5}"}
       reason: {type: text, label: Lý do, required: true}
       kind: {type: choice, label: Loại hồ sơ, required: true, options: [Giấy xác nhận, Phúc khảo, Hoãn thi]}
       department: {type: unit, label: Đơn vị xử lý, required: true}

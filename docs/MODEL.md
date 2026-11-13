@@ -61,7 +61,7 @@ Kết quả lint hợp lệ không có nghĩa là `apply` thành công; kết qu
 
 ## Trường và đơn vị
 
-- Kiểu trường: `text`, `number`, `datetime`, `date`, `boolean`, `choice`, `reference`, `user`, `unit`.
+- Kiểu trường: `text`, `number`, `datetime`, `date`, `boolean`, `choice`, `reference`, `user`, `unit`, `code` (mục [Mã hồ sơ đọc được](#mã-hồ-sơ-đọc-được)).
 - Trường `date` giữ một ngày dạng `YYYY-MM-DD`, còn `datetime` giữ một thời điểm kèm múi giờ.
 - Trường `boolean` là đúng hoặc sai (`true`, `false`); không đặt `required` hay `unique`, muốn có giá trị ban đầu thì đặt `default`.
 - Trường `choice` kèm `multiple: true` giữ nhiều lựa chọn trong `options`.
@@ -71,6 +71,26 @@ Kết quả lint hợp lệ không có nghĩa là `apply` thành công; kết qu
 - Trường `user` giữ id của một tài khoản; giao diện cho chọn theo tên, và API từ chối id không có thật.
 - Đơn vị khai báo ở `units`, mỗi đơn vị là một nhóm Keycloak; trường kiểu `unit` cho biết hồ sơ thuộc đơn vị nào.
   Ví dụ đầy đủ ở [`onestop.yaml`](../backend/dx-engine/src/main/resources/templates/onestop.yaml).
+
+## Mã hồ sơ đọc được
+
+Trường `type: code` cho mỗi hồ sơ một mã ngắn để đọc, in và tra, ví dụ `HS-2026-00007`.
+
+```yaml
+fields:
+  ma_ho_so: {type: code, format: "HS-{year}-{seq:5}"}
+```
+
+- `format` gồm chữ cố định (chữ, số và `.` `_` `/` `-`), `{year}` là năm hồ sơ được tạo (4 chữ số, giờ Việt Nam) và đúng một `{seq:N}` là số thứ tự viết đủ `N` chữ số, từ 1 đến 9, thêm số 0 ở đầu.
+- Mỗi thực thể có tối đa một trường `code`; trường này luôn duy nhất và không đi cùng `required`, `unique`, `default`, `renamed_from` hay các ràng buộc giá trị.
+- Hệ thống gán mã một lần khi tạo hồ sơ; ghi hay sửa mã qua API bị từ chối (400), và sửa hồ sơ không đổi mã.
+- Số thứ tự đếm riêng cho từng mô hình, thực thể và trường; khuôn có `{year}` thì mỗi năm đếm lại từ 1, khuôn không có thì đếm tiếp mãi.
+  Hai hồ sơ tạo cùng lúc không bao giờ trùng mã, và hồ sơ tạo không thành không làm mất số.
+- Hết số (ví dụ `{seq:3}` đã đến 999) thì hồ sơ mới bị từ chối với 422 `ERR_CODE_EXHAUSTED`; tăng `N` trong khuôn.
+- Tra theo mã bằng `filter.<trường>=<mã>` hoặc `filter.<trường>.like=<một phần của mã>`; metadata ghi `type: code` kèm `format`, và OpenAPI của mô hình đánh dấu trường chỉ đọc.
+- Thêm trường `code` vào thực thể đã có hồ sơ là thay đổi `MIGRATION`: khi áp dụng, hồ sơ cũ nhận mã theo thứ tự `id`, đếm theo năm hồ sơ được tạo, và hồ sơ mới nối tiếp.
+- Đổi `format` là thay đổi `SAFE`: chỉ hồ sơ mới theo khuôn mới, số vẫn nối tiếp và mã cũ giữ nguyên.
+- Bỏ trường `code` rồi thêm lại (hoặc thêm trường khác cùng tên) thì số vẫn nối tiếp từ số cuối đã dùng, vì bộ đếm gắn với mô hình, thực thể và tên trường.
 
 ## Ràng buộc giá trị
 

@@ -64,6 +64,10 @@ public class LineageService {
   // The roles that may write the entity, the default, and what the value is taken from.
   private static List<Edge> origins(Model model, Entity entity, Field field) {
     List<Edge> out = new ArrayList<>();
+    if (field.type() == FieldType.CODE) {
+      out.add(new Edge("generated", field.format(), null));
+      return out;
+    }
     entity
         .access()
         .forEach(
@@ -126,7 +130,8 @@ public class LineageService {
   // The history line of a change, which the event feed and the webhook carry, and the archive.
   private static List<Edge> destinations(Model model, Entity entity, Field field) {
     List<Edge> out = new ArrayList<>();
-    if (field.type() != FieldType.FILE) {
+    // A file has no history line, and a code never changes after it is made.
+    if (field.type() != FieldType.FILE && field.type() != FieldType.CODE) {
       out.add(new Edge("history", "updated", null));
     }
     out.add(new Edge("feed", "events", null));

@@ -446,7 +446,7 @@ public class ModelOpenApi {
     ObjectSchema schema = new ObjectSchema();
     List<String> required = new ArrayList<>();
     for (FieldMeta field : entity.fields()) {
-      if ("file".equals(field.type())) {
+      if ("file".equals(field.type()) || "code".equals(field.type())) {
         continue;
       }
       schema.addProperty(field.name(), labelled(fieldSchema(model, field), field.label()));
@@ -486,12 +486,21 @@ public class ModelOpenApi {
                   .format("int64")
                   .description("The id of a record of " + field.reference());
           case "user" -> new StringSchema().description("The id of an account");
+          case "code" -> code(field);
           default -> text(field);
         };
     if (field.requiredWhen() != null) {
       schema.addExtension(
           "x-dxos-required-when", Json.mapper().convertValue(field.requiredWhen(), Object.class));
     }
+    return schema;
+  }
+
+  private Schema<?> code(FieldMeta field) {
+    StringSchema schema = new StringSchema();
+    schema.readOnly(true);
+    schema.description("Assigned when the record is created, in the form " + field.format());
+    schema.addExtension("x-dxos-code-format", field.format());
     return schema;
   }
 

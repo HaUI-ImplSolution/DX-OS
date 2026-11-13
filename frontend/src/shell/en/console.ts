@@ -21,6 +21,7 @@ export const console: Record<string, string> = {
   "Lấy từ hồ sơ của {name}": "Taken from a record of {name}",
   "Chọn từ các đơn vị: {name}": "Chosen from the units: {name}",
   "Tệp lưu ở kho tệp": "File kept in the file store",
+  "Sinh khi tạo hồ sơ: {name}": "Made when the record is created: {name}",
   "Trước đây là trường {name}": "Formerly the field {name}",
   "Quyết định trường {name} có bắt buộc không ({detail})": "Decides whether the field {name} is required ({detail})",
   "Hành động {name} đòi phải có giá trị": "The action {name} requires a value",

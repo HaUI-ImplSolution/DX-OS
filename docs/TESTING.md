@@ -85,6 +85,7 @@ python3 deploy/dev/check_bootstrap.py
 | `check_case.py` | Trạng thái và hành động, đơn vị, giao việc, hộp việc, dòng lịch sử kèm giá trị cũ và mới, mã lý do của lỗi 403 và 409 |
 | `check_change.py` | Đổi mô hình khi đã có dữ liệu: mức rủi ro, đổi tên giữ dữ liệu, dòng vi phạm, quay về |
 | `check_process.py` | Các họ mẫu, quy tắc chung của quy trình, hạn và quá hạn, hành động hoàn tất qua outbox, tệp đính kèm, thống kê, số đo chất lượng, chống ghi đè |
+| `check_codes.py` | Mã hồ sơ: mã đầu tiên của năm, đếm riêng theo thực thể và mô hình, hai mươi hồ sơ tạo cùng lúc, ghi và sửa mã bị từ chối, tra theo mã, metadata và OpenAPI, thêm trường mã vào hồ sơ có sẵn (chuyển năm), đổi khuôn, hết số |
 | `check_booking.py` | Họ `reservation`, danh mục của bảng điều khiển, mọi mẫu áp dụng được |
 | `check_demo.py` | Tám tiêu chí của kịch bản trình diễn |
 | `check_guards.py` | Người giữ vai, vai của nền tảng, bỏ vai, xóa thực thể còn hồ sơ đang chạy, lần áp dụng dừng giữa chừng (tiếp tục và hủy bỏ) |
@@ -122,6 +123,7 @@ Những mục dưới chưa có kiểm tự động.
 Giao diện, đăng nhập bằng `req1` (vai `BORROWER`), `keeper1` (vai `KEEPER`) và `admin1` (vai `ADMIN`) của script ở mục 4:
 
 1. Mở `http://localhost:9080/`, đăng nhập bằng `BORROWER`: menu có Thiết bị, Phiếu mượn, Ghi chú phiếu mượn; danh sách Thiết bị chỉ đọc, danh sách Phiếu mượn chỉ có phiếu của mình, biểu mẫu tạo có đủ trường theo kiểu của mô hình.
+   Với mẫu có trường `code` (mẫu `onestop` có "Số hồ sơ"): biểu mẫu tạo và sửa không có ô nhập mã; sau khi lưu, trang chi tiết nêu mã trên đầu và ở mục Thông tin kèm nút sao chép mã (bấm thì dán ra đúng mã); danh sách có cột mã đầu tiên và ô tìm theo một phần của mã, gõ "00002" chỉ còn hồ sơ có mã chứa số đó; ở màn hình điện thoại mã hiện trong thẻ của hồ sơ.
 2. Đăng nhập bằng `KEEPER`: thấy mọi phiếu; phiếu `Chờ duyệt` có nút Duyệt và Từ chối, bấm Duyệt thì trạng thái thành `Đã duyệt`.
 3. Bundle web không chứa tên thực thể hay vai nào của mô hình.
 4. Mọi chữ trên giao diện là tiếng Việt: nút, bộ lọc, thông báo bắt buộc nhập, lỗi tệp mô hình theo dòng và cột, nhãn các loại thay đổi trong kế hoạch.

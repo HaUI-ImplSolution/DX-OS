@@ -110,7 +110,7 @@ else
 
   scan_host="$(env_value STORAGE_SCAN_HOST)"
   if [[ -z "$scan_host" ]]; then
-    ok "virus scan of uploads is off (dxos av on, or av in COMPOSE_PROFILES and STORAGE_SCAN_HOST=clamav)"
+    warn "virus scan of uploads is off: infected files are stored (dxos av on, or av in COMPOSE_PROFILES and STORAGE_SCAN_HOST=clamav)"
   elif [[ "$scan_host" == clamav && ",$(env_value COMPOSE_PROFILES)," != *,av,* ]]; then
     fail "STORAGE_SCAN_HOST=clamav but COMPOSE_PROFILES has no av: ClamAV would not start and every upload would be refused"
   else

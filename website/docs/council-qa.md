@@ -61,7 +61,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 | Định danh và SSO | Keycloak; vai, client và nhóm đơn vị sinh từ mô hình; quản trị người dùng ngay ở bảng điều khiển; quản trị viên có thể bị bắt nhập mã một lần (`STAFF_OTP_FLOW=CONDITIONAL`) |
 | Cổng API | APISIX là cửa duy nhất: kiểm token, giới hạn tốc độ, định tuyến; route không kiểm token nằm trong danh sách công khai kiểm bởi `check_routes.py`; backend kiểm token lần hai |
 | Dữ liệu có cấu trúc | PostgreSQL, mỗi mô hình một schema `m_<tên>`; bảng, ràng buộc, chỉ mục sinh từ mô hình |
-| Dữ liệu phi cấu trúc | SeaweedFS qua API S3, trường `file` của mô hình, quét ClamAV khi bật, link tải có hạn |
+| Dữ liệu phi cấu trúc | SeaweedFS qua API S3, trường `file` của mô hình, quét ClamAV, link tải có hạn |
 | Luồng công việc | Flowable nhúng; ba họ mẫu `approval`, `work_item`, `reservation`; trạng thái hồ sơ chỉ đổi qua quy trình |
 
 - **Bằng chứng:** `ARCHITECTURE.md` mục 3 đến 6 và 13; `python3 deploy/apisix/check_routes.py`; `python3 deploy/dev/check_api.py`.
@@ -184,7 +184,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Quyền xét ở mọi đường: danh sách, bộ lọc, số đếm, lịch sử; thực thể con xét theo bản ghi cha; hồ sơ đã giao thì chỉ người được giao xử lý.
 - Token kiểm ở gateway và ở backend; không có token thì 401; người giữ vai của mô hình này không đọc được dữ liệu của mô hình khác.
 - Thay đổi tài khoản và áp dụng mô hình đều ghi `audit_log` kèm người thực hiện; mật khẩu không bao giờ được ghi; mật khẩu tạm do hệ thống sinh và phải đổi ở lần đăng nhập đầu.
-- Quét mã độc tệp tải lên có sẵn nhưng tắt mặc định; bí mật sinh ngẫu nhiên và gitleaks quét ở mọi pull request.
+- Quét mã độc tệp tải lên bật mặc định và chặn tệp khi chưa quét được; bí mật sinh ngẫu nhiên và gitleaks quét ở mọi pull request.
 - **Bằng chứng:** `python3 deploy/dev/check_conformance.py`, `check_demo.py` (tiêu chí 4), `check_users.py`; job `Scan for secrets` của workflow `Compliance`.
 
 ## 18. Giấy phép tuân thủ thế nào?
@@ -194,5 +194,5 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Mỗi bản phát hành có gói `.tar.gz` kèm `.sha256` và SBOM CycloneDX; không dùng định dạng đóng.
 - Job `Check licenses` của workflow `Compliance` chạy ở mọi pull request: kiểm header, giấy phép của từng gói trong SBOM, danh mục image.
 - Cam kết của đội chặt hơn thể lệ: cả công cụ, mô hình AI (khi có) và dữ liệu đều phải mở; thành phần không đạt đã gỡ khỏi bản phát hành.
-- Hai gói dữ liệu (CC-BY-4.0, CC0-1.0) chỉ dùng lúc dựng trang docs được nêu tên kèm lý do; ClamAV tùy chọn có image kèm `libclamunrar` theo giấy phép UnRAR, ghi rõ ở `DEPENDENCIES.txt`.
+- Hai gói dữ liệu (CC-BY-4.0, CC0-1.0) chỉ dùng lúc dựng trang docs được nêu tên kèm lý do; ClamAV có image kèm `libclamunrar` theo giấy phép UnRAR, ghi rõ ở `DEPENDENCIES.txt`.
 - **Bằng chứng:** `LICENSE`, `NOTICE`, `DEPENDENCIES.txt`; `python3 .github/scripts/check_licenses.py`; [Thành phần được chọn và không chọn](./dependencies.md); [Rà soát PoF](./pof-audit.md).

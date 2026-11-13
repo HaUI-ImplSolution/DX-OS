@@ -192,8 +192,8 @@ services:
       timeout: 5s
       retries: 6
 
-  # Virus scan of every upload before it is stored. Off by default (about 1 GB of RAM); start it
-  # with av in COMPOSE_PROFILES and STORAGE_SCAN_HOST=clamav in deploy/.env (dxos av on does both). The signatures are kept
+  # Virus scan of every upload before it is stored (about 1 GB of RAM). It runs with av in COMPOSE_PROFILES and
+  # STORAGE_SCAN_HOST=clamav in deploy/.env, which is how .env.example ships (dxos av off removes both). The signatures are kept
   # in a volume, and clamd answers no scan for about 10 seconds each time it reloads them.
   clamav:
     profiles:

@@ -10,7 +10,7 @@ Service `seaweedfs` khai báo trong [`deploy/docker-compose.yml`](../deploy/dock
 - Log của `seaweedfs` chỉ gồm cảnh báo và lỗi (`-v=-1` trong compose); đổi thành `-v=0` để xem log thông tin.
 - Bucket `S3_BUCKET` (mặc định `dxos-uploads`) riêng tư, Backend tự tạo lúc khởi động.
 - Khóa object là `<uuid>.<đuôi tệp>`, metadata `uploaded-by` (`sub` của người tải lên) và `source`.
-- Khi bật ClamAV (`STORAGE_SCAN_HOST`, xem [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md)), Backend quét mã độc tệp trước khi xử lý; tệp nhiễm bị từ chối và không chạm kho.
+- Backend quét mã độc tệp bằng ClamAV (`STORAGE_SCAN_HOST`, xem [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md)) trước khi xử lý; tệp nhiễm bị từ chối và không chạm kho.
 - Backend kiểm tên và loại tệp (`engine.files.allowed-extensions`) rồi mới lưu; client không ghi thẳng vào kho.
 - Client nhận link tải có hạn (mặc định 15 phút, `storage.presign-ttl`), ký theo địa chỉ client dùng gọi API nên tải được qua mọi địa chỉ của gateway.
 - Cổng S3 không publish ra host: link đi qua gateway (route `/<bucket>/*`, chỉ `GET` và `HEAD`, giữ nguyên đường dẫn vì chữ ký phủ cả đường dẫn).

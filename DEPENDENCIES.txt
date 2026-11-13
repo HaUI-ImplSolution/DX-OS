@@ -58,6 +58,11 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 +----------------------------------------+----------------------------------+----------------------------------------+
 | SnakeYAML                              | Apache-2.0                       | Đọc tệp mô hình                        |
 +----------------------------------------+----------------------------------+----------------------------------------+
+| Apache PDFBox (pdfbox, fontbox,        | Apache-2.0                       | Ghi PDF của mẫu in                     |
+| pdfbox-io), commons-logging            |                                  |                                        |
++----------------------------------------+----------------------------------+----------------------------------------+
+| Noto Sans [6] (phông, nhúng trong PDF) | OFL-1.1                          | Chữ tiếng Việt trong PDF của mẫu in    |
++----------------------------------------+----------------------------------+----------------------------------------+
 | AspectJ                                | EPL-2.0                          | Method security                        |
 +----------------------------------------+----------------------------------+----------------------------------------+
 | PostgreSQL JDBC Driver                 | BSD-2-Clause                     | Kết nối cơ sở dữ liệu                  |
@@ -233,3 +238,10 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 
 [5] Spotless chạy google-java-format; cả hai chỉ dùng lúc dựng và không nằm trong image chạy.
     Thư viện kèm theo: JGit (BSD-3-Clause), Eclipse OSGi và Solstice (EPL-2.0), concurrent-trees, durian, plexus (Apache-2.0).
+
+[6] Noto Sans 2.015, bản TTF đã hint, lấy nguyên và không sửa từ github.com/notofonts/notofonts.github.io, commit 28b15b4b43b7bed62b5cf6e6b0b5ff5846270535 (2024-11-21), thư mục fonts/NotoSans/hinted/ttf; nguồn của phông ở github.com/notofonts/latin-greek-cyrillic.
+    SHA-256 của backend/dx-engine/src/main/resources/fonts/NotoSans-Regular.ttf: 478c558ea716033cd60c03438f628dfa75694dcf6b5f6d505a2f05fd2b4f3823
+    SHA-256 của backend/dx-engine/src/main/resources/fonts/NotoSans-Bold.ttf: 1df075a380fc7cb898acf64c1f7b3b4dd780de3caa860178bf929de35817a913
+    Hai mã này trùng với mã của tệp cùng tên ở commit trên.
+    OFL-1.1 là giấy phép được OSI công nhận; phông không khai tên bảo lưu, nên nhúng và phân phối cùng phần mềm được khi kèm thông báo bản quyền và giấy phép (có trong tệp phông, LICENSES/OFL-1.1.txt và NOTICE).
+    Phông không được bán riêng, và bản sửa đổi phải giữ OFL; PDF chỉ nhúng một phần chữ của phông nên không chịu giấy phép này.

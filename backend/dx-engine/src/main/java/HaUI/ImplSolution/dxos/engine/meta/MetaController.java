@@ -58,7 +58,11 @@ public class MetaController {
       boolean canHandle,
       boolean canAssign,
       List<String> handlerActions,
-      Model.Ui ui) {}
+      Model.Ui ui,
+      List<DocumentMeta> documents) {}
+
+  // A print template as the screens need it: when is empty for a template of any state.
+  public record DocumentMeta(String name, String label, List<String> when) {}
 
   // held is true for a model that is being applied or needs reconciliation; it has no entities
   // then.
@@ -172,7 +176,10 @@ public class MetaController {
         data.canHandle(model, entity),
         data.canAssign(model, entity),
         handlerActions(model, entity),
-        entity.ui());
+        entity.ui(),
+        entity.documents().stream()
+            .map(d -> new DocumentMeta(d.name(), d.label(), d.when()))
+            .toList());
   }
 
   // The actions the roles of the caller may take on a record, as the process rules decide them.

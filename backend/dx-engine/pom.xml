@@ -20,6 +20,12 @@
 			<groupId>HaUI.ImplSolution</groupId>
 			<artifactId>dx-core</artifactId>
 		</dependency>
+		<!-- Writes the PDF of a print template; the fonts it embeds are in src/main/resources/fonts. -->
+		<dependency>
+			<groupId>org.apache.pdfbox</groupId>
+			<artifactId>pdfbox</artifactId>
+			<version>${pdfbox.version}</version>
+		</dependency>
 		<!-- Embedded workflow engine, configured by hand so it shares the Spring transaction. -->
 		<dependency>
 			<groupId>org.flowable</groupId>

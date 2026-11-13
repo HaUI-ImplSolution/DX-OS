@@ -11,6 +11,7 @@ import { Title } from "react-admin";
 import PageHeader from "../shell/PageHeader";
 import { formatDateTime, formatDuration } from "../shell/format";
 import { getStats, type EntityStats } from "./api";
+import ReportPanel from "./ReportPanel";
 import { TONES } from "./StatusChip";
 import { splitResource, type ModelMeta } from "./types";
 import { t } from "../shell/t";
@@ -187,6 +188,7 @@ export default function StatsPage({ models }: { models: ModelMeta[] }) {
               />
             )}
           </Box>
+          <ReportPanel model={model} entity={entity} />
         </Box>
       )}
     </Box>

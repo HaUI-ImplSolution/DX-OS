@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
-import { json, request } from "../shell/api";
-import type { AttachmentItem, EntityMeta, InboxItem, ModelMeta, Page, Person, RecordEvent } from "./types";
+import { json, queryString, request, requestFile } from "../shell/api";
+import type { AttachmentItem, EntityMeta, InboxItem, ModelMeta, Page, Person, PrintableDocument, RecordEvent } from "./types";
 
 export const listModels = () => request<ModelMeta[]>("/meta/models");
 
@@ -22,6 +22,23 @@ export interface EntityStats {
   oldestOpenAgeSeconds?: number | null;
   computedAt: string;
 }
+
+export interface ReportGroup {
+  key: string | null;
+  [figure: string]: string | number | boolean | null;
+}
+
+export interface EntityReport {
+  groupBy: string | null;
+  metrics: string[];
+  groups: ReportGroup[];
+  totals: Record<string, number | null>;
+  truncated: boolean;
+  computedAt: string;
+}
+
+export const getReport = (model: string, entity: string, groupBy: string, metrics: string[]) =>
+  request<EntityReport>(`/data/${model}/${entity}/report${queryString({ groupBy, metrics: metrics.join(",") })}`);
 
 export const getStats = (model: string, entity: string) => request<EntityStats>(`/data/${model}/${entity}/stats`);
 
@@ -47,6 +64,12 @@ export const uploadFile = (model: string, entity: string, id: number | string, f
     body: form,
   });
 };
+
+export const listDocuments = (model: string, entity: string, id: number | string) =>
+  request<PrintableDocument[]>(`${recordPath(model, entity, id)}/documents`);
+
+export const printDocument = (model: string, entity: string, id: number | string, name: string) =>
+  requestFile(`${recordPath(model, entity, id)}/documents/${encodeURIComponent(name)}`);
 
 export const fileLink = (model: string, entity: string, id: number | string, fileId: number) =>
   request<{ name: string; url: string }>(`${recordPath(model, entity, id)}/files/${fileId}/link`);

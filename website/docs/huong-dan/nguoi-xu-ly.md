@@ -23,6 +23,11 @@ Mỗi nghiệp vụ chọn một họ quy trình để bắt đầu:
 Từ chối và yêu cầu bổ sung bắt buộc có lý do; người nộp đọc lý do đó ở lịch sử.
 Nghiệp vụ có thể thêm hoặc đổi hành động, và có hành động chỉ hiện khi hồ sơ đạt điều kiện, ví dụ số tiền vượt mức thì phải chuyển lên cấp duyệt cao hơn.
 
+## In giấy tờ
+
+Nếu nghiệp vụ có mẫu in, trang chi tiết hồ sơ hiện nút **In** ở những trạng thái mẫu cho phép; ví dụ giấy xác nhận chỉ in được khi hồ sơ đã duyệt.
+Bấm nút để tải tệp PDF của hồ sơ.
+
 ## Tìm hồ sơ theo mã
 
 Nếu nghiệp vụ cấp mã hồ sơ, danh sách có cột mã và ô tìm theo mã: gõ cả mã hoặc một phần của nó để lọc.
@@ -48,7 +53,7 @@ Không có nút hoàn tác; hồ sơ xử lý nhầm thì xử lý tiếp theo �
 ## Các cách xem khác
 
 - **Theo trạng thái:** danh sách hiện như một bảng, mỗi cột là một trạng thái.
-- **Thống kê:** số hồ sơ theo trạng thái và đơn vị, thời gian xử lý trung bình, và tỉ lệ đóng đúng hạn khi nghiệp vụ có hạn.
+- **Thống kê:** số hồ sơ theo trạng thái và đơn vị, thời gian xử lý trung bình, và tỉ lệ đóng đúng hạn khi nghiệp vụ có hạn; mục Báo cáo theo trường gộp hồ sơ theo một trường hoặc theo tháng và tính số lượng, tổng hay trung bình của một trường số.
 - **Xuất CSV:** xuất danh sách ra tệp mà bảng tính đọc được, đúng phần bạn được quyền thấy.
 - **Lịch:** với nghiệp vụ đặt chỗ, các lượt đặt theo ngày và theo tài nguyên.
 

@@ -45,6 +45,23 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return body.data;
 }
 
+// A file the API answers with, read with the same token; its name is the one the server gave.
+export async function requestFile(path: string): Promise<{ blob: Blob; name: string }> {
+  const token = await getToken();
+  const headers = new Headers();
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+  const response = await fetch(`${API_V1}${path}`, { headers });
+  if (response.status === 401) clearSession();
+  if (!response.ok) {
+    const contentType = response.headers.get("content-type") ?? "";
+    const body: ApiResponse<unknown> | null = contentType.includes("application/json") ? await response.json() : null;
+    throw new ApiError(errorMessageFor(body?.errorCode, body?.message ?? statusMessageFor(response.status)), response.status, null);
+  }
+  const disposition = response.headers.get("content-disposition") ?? "";
+  const name = /filename="?([^";]+)"?/.exec(disposition)?.[1] ?? "document.pdf";
+  return { blob: await response.blob(), name };
+}
+
 export function json(method: string, payload: unknown): RequestInit {
   return {
     method,

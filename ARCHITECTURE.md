@@ -82,7 +82,7 @@ Mô hình đi qua một đường duy nhất, từ hệ thống rỗng hay từ 
 - Thay đổi theo ba mức, do `ModelDiff` so sánh hai phiên bản mô hình: `SAFE`, `MIGRATION`, `LOSS`; đổi kiểu trường và đổi họ mẫu quy trình bị từ chối.
 - Dòng đang vi phạm quy tắc mới, kèm một phần id.
   Siết hoặc thêm `min`, `max`, `pattern` hay danh sách lựa chọn của trường `multiple` trên bảng có dòng vi phạm là `MIGRATION` kèm số dòng (quy tắc `MIN`, `MAX`, `PATTERN`, `ELEMENTS`) và bị từ chối cho đến khi dữ liệu được sửa; nới hoặc bỏ là `SAFE`.
-- Đổi `required_when` hay khối `ui:` là thay đổi `SAFE`, không đụng dữ liệu; `ui:` không thuộc luật quy trình nên không bị chặn khi còn hồ sơ đang xử lý.
+- Đổi `required_when`, khối `ui:` hay khối `documents:` là thay đổi `SAFE`, không đụng dữ liệu; `ui:` và `documents:` không thuộc luật quy trình nên không bị chặn khi còn hồ sơ đang xử lý.
 - Số hồ sơ đang xử lý của các quy trình bị ảnh hưởng.
 - Các câu lệnh sẽ chạy, do pgschema lập từ trạng thái đích mà `DdlGenerator` sinh ra.
 
@@ -205,6 +205,12 @@ Trạng thái của hồ sơ chỉ đổi qua quy trình.
 - `AttachmentProcessor` chỉ nhận các phần mở rộng đã cấu hình, `AttachmentService` giữ mỗi hồ sơ tối đa số tệp đã cấu hình, và link tải luôn ở dạng đính kèm.
 - `AttachmentCleaner` xóa đối tượng khỏi kho khi tệp hoặc hồ sơ bị gỡ, qua thông điệp `file.delete` trong outbox sau một khoảng trễ, để bản sao lưu luôn có đủ tệp của mọi dòng trong bản dump.
 
+## 8b. Mẫu in
+
+- Khối `documents` của thực thể là các mẫu in có cấu trúc, đọc và kiểm bởi `ModelParser` (chỗ trống chỉ gồm trường của thực thể và các cột của hồ sơ, trạng thái `when` phải có trong quy trình).
+- `DocumentService` đọc hồ sơ bằng `DataService.get`, nên người không đọc được hồ sơ cũng không in được; nó kiểm trạng thái, điền chỗ trống, ghi `audit_log` rồi trả PDF.
+- `DocumentRenderer` và `PdfPages` dàn trang bằng Apache PDFBox với phông Noto Sans nhúng; mẫu không có điều kiện, vòng lặp hay biểu thức, nên không có gì để chạy.
+
 ## 9. Quản trị người dùng và nhật ký
 
 - `UserAdminController` (ADMIN) quản lý tài khoản qua Admin API của Keycloak, bằng tài khoản dịch vụ `dxos-backend-admin`; Keycloak vẫn là nơi giữ tài khoản, mật khẩu và vai.
@@ -244,6 +250,9 @@ Dịch vụ lõi là kết nối ghi duy nhất vào dữ liệu nghiệp vụ; 
 `report_ro` đọc được mọi dòng của mọi bảng nghiệp vụ và không áp quyền `own`, `unit`, `assigned` của người xem, nên chỉ cấp cho công cụ báo cáo của người vận hành.
 Cách kết nối, giới hạn mạng và xoay mật khẩu ở [`deploy/REPORTING.md`](./deploy/REPORTING.md).
 Người dùng cuối xem số liệu qua `GET /api/v1/data/{model}/{entity}/stats`, nơi quyền theo dòng được áp dụng.
+Báo cáo theo trường ở `GET /api/v1/data/{model}/{entity}/report`: `ReportService` đọc cùng các dòng và bộ lọc như `stats`, nhóm theo một trường lựa chọn, đơn vị, đúng/sai, trạng thái hoặc tháng của một ngày, và tính đếm, tổng, trung bình, nhỏ nhất, lớn nhất trên trường số.
+`ReportQuery` kiểm tên trường và phép tính theo mô hình trước khi chạy, nên không phần nào của yêu cầu thành SQL, và số nhóm bị giới hạn.
+Công cụ báo cáo cần quyền theo dòng dùng API này thay cho `report_ro`.
 Chất lượng dữ liệu đo ở `GET /api/v1/data/{model}/{entity}/quality`, trên đúng những dòng đó (ADMIN đo mọi dòng của thực thể và chỉ nhận số đếm): `DataQualityService` chạy mọi bean `QualityMetric` (độ điền, thiếu theo điều kiện, kiểm lại ràng buộc, độ mới), nên thêm một số đo là thêm một lớp.
 Phả hệ của từng trường đọc ở `GET /api/v1/models/{model}/data-lineage`: `LineageService` dựng từ tệp mô hình, với mỗi trường, nơi giá trị đi vào (vai được ghi, giá trị mặc định, thực thể tham chiếu, tên cũ), các quy tắc đọc nó và nơi nó đi ra (lịch sử, dòng sự kiện, webhook, lưu trữ).
 Lõi giữ nguyên giá trị đã nhập nên phả hệ không có bước biến đổi nào.

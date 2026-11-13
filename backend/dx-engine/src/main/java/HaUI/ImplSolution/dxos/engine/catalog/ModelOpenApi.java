@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.engine.catalog;
 
+import HaUI.ImplSolution.dxos.engine.meta.MetaController.DocumentMeta;
 import HaUI.ImplSolution.dxos.engine.meta.MetaController.EntityMeta;
 import HaUI.ImplSolution.dxos.engine.meta.MetaController.FieldMeta;
 import HaUI.ImplSolution.dxos.model.Model;
@@ -192,6 +193,21 @@ public class ModelOpenApi {
                                 "403",
                                 "409"))));
     paths.addPathItem(base, collection);
+    paths.addPathItem(
+        base + "/report",
+        new PathItem()
+            .get(
+                operation(
+                        "report" + type,
+                        "Group the records of " + label(entity) + " and compute figures",
+                        "Groups the records the caller can see by one field and gives a count, sum,"
+                            + " mean, minimum or maximum per group and over all. A role sees"
+                            + " figures of the rows its access reaches only. A sum, mean or bound"
+                            + " ignores empty values and is null for a group that has none. The"
+                            + " months are in UTC.")
+                    .parameters(reportParameters(entity))
+                    .responses(
+                        responses("ResponseObject", "200", "The groups", "400", "401", "403"))));
 
     PathItem record =
         new PathItem()
@@ -233,6 +249,59 @@ public class ModelOpenApi {
     if (entity.fields().stream().anyMatch(f -> "file".equals(f.type()))) {
       addFiles(entity, type, one, paths);
     }
+    if (!entity.documents().isEmpty()) {
+      addDocuments(entity, type, one, paths);
+    }
+  }
+
+  private void addDocuments(EntityMeta entity, String type, String one, Paths paths) {
+    paths.addPathItem(
+        one + "/documents",
+        new PathItem()
+            .get(
+                operation(
+                        "listDocuments" + type,
+                        "The print templates of a record",
+                        "Each template with the name of its download and whether the record can"
+                            + " be printed in its state now.")
+                    .addParametersItem(idParameter())
+                    .responses(
+                        responses("ResponseList", "200", "The templates", "401", "403", "404"))));
+    ApiResponses pdf = new ApiResponses();
+    pdf.addApiResponse(
+        "200",
+        new ApiResponse()
+            .description("The PDF")
+            .content(
+                new Content()
+                    .addMediaType(
+                        "application/pdf",
+                        new MediaType().schema(new StringSchema().format("binary")))));
+    for (String code : List.of("401", "403", "404", "409", "422", "429")) {
+      pdf.addApiResponse(code, errorResponse(code));
+    }
+    paths.addPathItem(
+        one + "/documents/{name}",
+        new PathItem()
+            .get(
+                operation(
+                        "printDocument" + type,
+                        "The PDF of a record made from a template",
+                        "Templates: "
+                            + String.join(
+                                ", ", entity.documents().stream().map(DocumentMeta::name).toList())
+                            + ". 409 when the record is in a state the template excludes.")
+                    .addParametersItem(idParameter())
+                    .addParametersItem(
+                        new PathParameter()
+                            .name("name")
+                            .schema(
+                                new StringSchema()
+                                    ._enum(
+                                        entity.documents().stream()
+                                            .map(DocumentMeta::name)
+                                            .toList())))
+                    .responses(pdf)));
   }
 
   private void addProcess(
@@ -574,6 +643,52 @@ public class ModelOpenApi {
     parameters.add(
         new QueryParameter()
             .name("size")
+            .schema(
+                new IntegerSchema()
+                    .minimum(java.math.BigDecimal.ONE)
+                    .maximum(java.math.BigDecimal.valueOf(200))));
+    return parameters;
+  }
+
+  private List<Parameter> reportParameters(EntityMeta entity) {
+    List<Parameter> parameters = new ArrayList<>(filterParameters(entity));
+    List<String> groupable = new ArrayList<>();
+    List<String> numbers = new ArrayList<>();
+    for (FieldMeta field : entity.fields()) {
+      switch (field.type()) {
+        case "choice", "unit", "boolean" -> {
+          if (!field.multiple()) {
+            groupable.add(field.name());
+          }
+        }
+        case "date", "datetime" -> groupable.add(field.name() + ":month");
+        case "number" -> numbers.add(field.name());
+        default -> {}
+      }
+    }
+    if (entity.hasProcess()) {
+      groupable.add("status");
+    }
+    groupable.add("created_at:month");
+    parameters.add(
+        new QueryParameter()
+            .name("groupBy")
+            .description("The field the records are grouped by; a date by its month")
+            .schema(new StringSchema()._enum(groupable)));
+    parameters.add(
+        new QueryParameter()
+            .name("metrics")
+            .description(
+                "Comma separated figures, count by default and at most 6: count"
+                    + (numbers.isEmpty()
+                        ? ""
+                        : ", and sum(f), avg(f), min(f) or max(f) with f one of "
+                            + String.join(", ", numbers)))
+            .schema(new StringSchema()));
+    parameters.add(
+        new QueryParameter()
+            .name("limit")
+            .description("The number of groups, 50 by default")
             .schema(
                 new IntegerSchema()
                     .minimum(java.math.BigDecimal.ONE)

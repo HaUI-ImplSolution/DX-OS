@@ -2,6 +2,7 @@
 
 Bài kiểm Playwright của bảng điều khiển, chạy trên một stack đang chạy.
 `tests/console.spec.ts` đăng nhập bằng tài khoản `ui_admin`, dùng một mẫu trong thư viện mẫu, xem kế hoạch, áp dụng, thấy mô hình chạy và đi qua các tab của bảng điều khiển.
+`tests/phone.spec.ts` chạy ở cỡ điện thoại 390 px và kiểm bảng điều khiển cùng hộp việc không rộng hơn màn hình.
 
 ## Chạy
 

@@ -24,6 +24,7 @@ import {
   SelectInput,
   Show,
   SimpleForm,
+  SimpleList,
   TextField,
   TextInput,
   SaveButton,
@@ -39,7 +40,7 @@ import {
   type Validator,
   useRecordContext,
 } from "react-admin";
-import { Box, Card, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from "@mui/material";
+import { Box, Card, ToggleButton, ToggleButtonGroup, Tooltip, Typography, useMediaQuery, type Theme } from "@mui/material";
 import ViewKanbanOutlinedIcon from "@mui/icons-material/ViewKanbanOutlined";
 import ViewListOutlinedIcon from "@mui/icons-material/ViewListOutlined";
 import EventIcon from "@mui/icons-material/Event";
@@ -473,6 +474,8 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
   const ListBody = () => {
     const [view, setView] = useStore<"list" | "board">(viewKey, "list");
     const { filterValues, setFilters } = useListContext();
+    // A phone shows each record as a row of text, not a table that needs sideways scrolling.
+    const phone = useMediaQuery((theme: Theme) => theme.breakpoints.down("sm"));
     if (view === "board" && entity.hasProcess) {
       return (
         <KanbanBoard
@@ -482,6 +485,30 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
             setFilters({ ...filterValues, status }, {});
             setView("list");
           }}
+        />
+      );
+    }
+    if (phone) {
+      const titleField = displayField(entity);
+      const detail = entity.fields.filter((field) => field.name !== titleField && ["text", "choice", "unit", "number", "date"].includes(field.type));
+      return (
+        <SimpleList
+          rowClick="show"
+          primaryText={(record: Record<string, unknown>) => String(record[titleField] ?? `#${record.id}`)}
+          secondaryText={(record: { status?: string; overdue?: boolean } & Record<string, unknown>) => (
+            <Box component="span" sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 0.5 }}>
+              {entity.hasProcess && record.status && <StatusChip entity={entity} status={record.status} overdue={record.overdue} />}
+              {detail
+                .filter((field) => record[field.name] != null && record[field.name] !== "")
+                .slice(0, 2)
+                .map((field) => (
+                  <Box component="span" key={field.name} sx={{ fontSize: 13 }}>
+                    {field.label}: {catalog.units[String(record[field.name])] ?? String(record[field.name])}
+                  </Box>
+                ))}
+            </Box>
+          )}
+          tertiaryText={(record: Record<string, unknown>) => (typeof record.updated_at === "string" ? timeAgo(record.updated_at) : "")}
         />
       );
     }

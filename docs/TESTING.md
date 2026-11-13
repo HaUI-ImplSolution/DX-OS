@@ -110,6 +110,7 @@ Mỗi kiểm in một dòng `PASS` hoặc `FAIL` kèm nhãn, cuối script in `N
 ## 5. Trình duyệt
 
 Bài Playwright của bảng điều khiển nằm ở `e2e/`; cách chạy, biến cấu hình và nơi có ảnh chụp ở [`e2e/README.md`](../e2e/README.md).
+Bài `phone.spec.ts` chạy ở cỡ điện thoại 390 px và kiểm bảng điều khiển cùng hộp việc không rộng hơn màn hình; hộp việc và danh sách có dữ liệu kiểm tay ở mục 6.
 CI chạy bài này ở job `Browser end-to-end` của workflow `Platform`.
 
 ## 6. Kiểm tay trước khi phát hành
@@ -122,7 +123,8 @@ Giao diện, đăng nhập bằng `req1` (vai `BORROWER`), `keeper1` (vai `KEEPE
 2. Đăng nhập bằng `KEEPER`: thấy mọi phiếu; phiếu `Chờ duyệt` có nút Duyệt và Từ chối, bấm Duyệt thì trạng thái thành `Đã duyệt`.
 3. Bundle web không chứa tên thực thể hay vai nào của mô hình.
 4. Mọi chữ trên giao diện là tiếng Việt: nút, bộ lọc, thông báo bắt buộc nhập, lỗi tệp mô hình theo dòng và cột, nhãn các loại thay đổi trong kế hoạch.
-5. Chế độ tối hiện đủ hộp việc, danh sách, chi tiết hồ sơ và bảng điều khiển; ở màn hình 360 px các ô xếp dọc, không tràn ngang.
+5. Chế độ tối hiện đủ hộp việc, danh sách, chi tiết hồ sơ và bảng điều khiển.
+   Ở màn hình điện thoại (390 px) hộp việc và danh sách hiện mỗi hồ sơ là một thẻ, tên trang trên thanh đầu không bị công tắc ngôn ngữ che, biểu mẫu tạo và các nút hành động dùng được, và không trang nào tràn ngang.
 6. Tab Hàng đợi sự kiện có ba danh sách Lỗi, Chờ gửi, Đã gửi; thông điệp lỗi hiện lỗi gần nhất và nút Thử lại ngay.
 7. Tải một tệp `.html` lên trường tệp: bị từ chối (400); tải một tệp `.pdf` rồi mở link tải: trình duyệt lưu thành tệp; gỡ tệp rồi mở lại link cũ: 404.
 8. Tab Soạn và áp dụng: sơ đồ quy trình vẽ lại sau 5 giây không gõ và đổi theo `deadline`, `auto_close` và `after` của tệp; tệp sai thì báo lỗi kèm dòng và cột và giữ sơ đồ đúng gần nhất; sơ đồ mở to thành hộp thoại; vai `ADMIN` khai báo trong tệp báo lỗi tiếng Việt kèm dòng và cột, không có nút Áp dụng; vai trùng tên với mô hình khác thì áp dụng được.

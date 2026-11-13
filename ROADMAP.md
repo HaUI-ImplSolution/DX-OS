@@ -16,7 +16,6 @@ Mọi việc dưới đây giữ hướng đó: thêm nghiệp vụ là thêm t�
 - **Hình ảnh sản phẩm:** ảnh bảng điều khiển, màn hình kế hoạch, hộp việc và lịch, cùng một đoạn video ngắn.
 - **Dữ liệu:** truy vấn trực tiếp trên kho lưu trữ dài hạn; phả hệ dữ liệu đến từng trường.
 - **Kiểm dịch mã độc:** kiểm tệp thử EICAR trong CI.
-- **Giao diện trên điện thoại:** kiểm và sửa cho màn hình nhỏ.
 
 ## Sau đó
 

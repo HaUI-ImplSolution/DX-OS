@@ -70,6 +70,8 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos doctor`, `dxos backup` | Chạy `doctor.sh`, `backup.sh` |
 | `dxos av [on\|off]` | Bật hoặc tắt quét mã độc tệp tải lên (xem dưới); không có đối số thì in trạng thái quét |
 | `dxos plan [--check] <tệp>`, `dxos apply <tệp> [--accept MỨC]` | In kế hoạch của một tệp mô hình, hoặc áp dụng nó (xem dưới) |
+| `dxos lint <tệp>...` | Kiểm tệp mô hình bằng bộ đọc của backend, không cần hệ thống đang chạy (xem dưới) |
+| `dxos conformance <mô hình> [--allow-test-users]` | Kiểm các rào chắn của lõi cho một mô hình đã áp dụng (xem dưới) |
 | `dxos model upgrade [--write] <tệp>` | Xem diff nâng tuần tự tệp lên format hiện hành; `--write` thay tệp nguyên tử sau khi in diff (xem dưới) |
 | `dxos gitops sync [models\|infra]`, `status [models\|infra]`, `approve [infra] <commit> [--accept MỨC]`, `install`, `uninstall` | Kéo hạ tầng và tệp mô hình từ git, so với bản cài và mô hình đang chạy; `install` chạy mỗi 5 phút bằng systemd user timer (xem dưới) |
 | `dxos history verify`, `dxos history anchor` | Kiểm lịch sử hồ sơ chưa bị sửa, hoặc ghi điểm neo ngay (xem [`INTEGRATIONS.md`](./INTEGRATIONS.md#lịch-sử-chống-sửa)) |
@@ -115,6 +117,21 @@ Sau khi ghi tệp đã nâng, `dxos apply` lần đầu tạo thêm một phiên
 
 Nếu lệnh lỗi trước rename, tệp gốc giữ nguyên.
 Xóa file `.dxos-model-upgrade.*` còn sót sau khi máy bị dừng đột ngột, sửa nguyên nhân rồi chạy lại; sau khi rename, khôi phục bằng Git hoặc bản sao lưu nếu cần.
+
+### Kiểm tệp mô hình và rào chắn của lõi
+
+`dxos lint <tệp>...` chạy được khi chưa có `deploy/.env`; hợp đồng đầu vào, đầu ra và mã thoát ở [`docs/MODEL.md`](../docs/MODEL.md#kiểm-tệp-trước-khi-áp-dụng).
+Nó chạy `dxos-lint.jar` trong image backend, hoặc trên Java 21 của máy khi đặt `DXOS_LINT_JAR`.
+
+`dxos conformance <mô hình>` chạy `deploy/dev/check_conformance.py` trên stack này, cho một mô hình đã áp dụng:
+- Trạng thái của hồ sơ có quy trình không ghi được qua API dữ liệu (403).
+- Yêu cầu không có token bị từ chối (401).
+- Người dùng của mô hình không chạm tới dữ liệu của mô hình khác.
+
+Mỗi kiểm in một dòng `PASS` hoặc `FAIL` kèm nhãn `CF-xx`, và mã thoát là 1 khi có kiểm hỏng, kể cả khi mô hình chưa được áp dụng.
+Lệnh cần stack đang chạy, Python 3 và `KEYCLOAK_ADMIN_CONSOLE=true` (xem [Keycloak Admin Console](#keycloak-admin-console)), vì nó gọi Keycloak Admin API qua gateway.
+Nó tạo client `dxos-check` (đăng nhập bằng mật khẩu) và người dùng thử `cf_<mô hình>` trong Keycloak, nên dùng trên stack tạm của CI hoặc máy dev.
+Stack có `PUBLIC_HOST` khác `localhost` từ chối chạy nếu thiếu `--allow-test-users`.
 
 ### Đổi mô hình bằng dòng lệnh
 

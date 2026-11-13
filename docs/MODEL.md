@@ -45,6 +45,20 @@ File tạm nằm cùng thư mục với tệp gốc (với liên kết mềm là
 Nếu migration, API, trích xuất kết quả hoặc ghi file tạm lỗi thì tệp gốc giữ nguyên; nếu tiến trình dừng trước rename thì xóa file `.dxos-model-upgrade.*` còn sót và chạy lại.
 Sau rename, dùng lịch sử Git hoặc bản sao lưu để quay lại nếu không muốn giữ kết quả.
 
+## Kiểm tệp trước khi áp dụng
+
+`dxos lint <tệp>...` đọc tệp bằng đúng bộ đọc của backend và không cần hệ thống đang chạy.
+Mỗi lỗi in một dòng `tệp:dòng:cột: nội dung`, hoặc `tệp: nội dung` khi lỗi không có một vị trí.
+Mã thoát là 0 khi mọi tệp hợp lệ, 1 khi có lỗi và 2 khi không đọc được tệp.
+Trên bản cài, lệnh chạy trong image backend đã cài, không mở mạng và không đổi tệp nào.
+Trên máy không có DX-OS, tải `dxos-lint.jar` ở trang Release và chạy `java -jar dxos-lint.jar <tệp>...` với Java 21; đặt `DXOS_LINT_JAR` thì `dxos lint` dùng tệp này thay cho image.
+Ví dụ workflow CI cho kho mô hình ở [`examples/model-repo`](../examples/model-repo).
+
+Lint chỉ kiểm tệp, nên `dxos plan` còn so tệp với mô hình đang chạy, đích webhook và dữ liệu hiện có.
+Kết quả lint hợp lệ không có nghĩa là `apply` thành công; kết quả lint có lỗi thì `plan` cũng từ chối đúng những lỗi đó.
+
+`dxos conformance <mô hình>` chạy trên hệ thống đang chạy và kiểm các rào chắn của lõi cho mô hình đã áp dụng; cách chạy và điều kiện ở [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md#kiểm-tệp-mô-hình-và-rào-chắn-của-lõi).
+
 ## Trường và đơn vị
 
 - Kiểu trường: `text`, `number`, `datetime`, `date`, `boolean`, `choice`, `reference`, `user`, `unit`.

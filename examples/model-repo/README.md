@@ -6,6 +6,14 @@ Ví dụ này cho thấy tệp mô hình sống trong một kho git riêng, qua 
 
 - `models/*.yaml`: mỗi tệp là một mô hình; mẫu ở [`models/tasks.yaml`](./models/tasks.yaml).
 - `.github/workflows/model-plan.yml`: chép từ [`workflows/model-plan.yml`](./workflows/model-plan.yml).
+- `.github/workflows/model-lint.yml`: chép từ [`workflows/model-lint.yml`](./workflows/model-lint.yml).
+
+## Kiểm tệp trên pull request
+
+Workflow `model-lint.yml` chạy trên runner của GitHub, không cần máy chạy DX-OS và không cần bí mật nào.
+Nó tải `dxos-lint.jar` của một bản phát hành DX-OS, kiểm SHA-256 của tệp rồi đọc mọi tệp trong `models/` bằng bộ đọc của backend.
+Một tệp có lỗi làm job đỏ, và mỗi lỗi in thành một dòng `tệp:dòng:cột: nội dung`.
+Đặt `DXOS_VERSION` trong workflow thành tag của bản phát hành bạn dùng.
 
 ## Kế hoạch trên pull request
 

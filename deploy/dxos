@@ -21,6 +21,13 @@
 #                              --check exits 0 when nothing differs, 2 when the plan has changes, 1 when refused
 #   dxos apply <model-file> [--accept SAFE|MIGRATION|LOSS]
 #                              apply the file; a plan above SAFE needs --accept with its level
+#   dxos lint <model-file>...  check model files with the reader of the backend, without a running system,
+#                              from the jar named by DXOS_LINT_JAR (needs Java 21) or else from the backend image;
+#                              prints FILE:LINE:COLUMN: MESSAGE, exit 0 when every file is valid, 1 when not, 2 when unreadable
+#   dxos conformance <model> [--allow-test-users]
+#                              check on the running stack that the barriers of the core hold for an applied model;
+#                              creates the test client dxos-check and test users, so a stack reached from outside
+#                              localhost refuses without --allow-test-users; needs KEYCLOAK_ADMIN_CONSOLE=true
 #   dxos model upgrade [--write] <model-file>
 #                              preview the sequential upgrade to the current model format;
 #                              --write replaces the file atomically after printing the diff
@@ -77,6 +84,8 @@ source "$DEPLOY_DIR/lib/web-url.sh"
 source "$DEPLOY_DIR/lib/gitops.sh"
 
 die() { echo "dxos: $*" >&2; exit 1; }
+# The usage text: the comment block at the top of this file.
+usage_text() { awk 'NR >= 3 && /^#/ { print; next } NR >= 3 { exit }' "$self"; }
 from_caller() { if [[ "$1" == /* ]]; then printf '%s\n' "$1"; else printf '%s\n' "$CALLER_DIR/$1"; fi; }
 # Value of KEY in .env (last assignment), empty when absent or blank.
 env_value() { grep -E "^$1=" "$DEPLOY_DIR/.env" | tail -n1 | cut -d= -f2- || true; }
@@ -476,6 +485,57 @@ cmd_apply() {
   api POST "/models/apply?$query" "$file"
   pretty "$API_BODY"
   [[ "$API_STATUS" == 200 ]] || return 1
+}
+
+# Checks model files with the reader of the backend; nothing runs on the stack and no file is changed. With
+# DXOS_LINT_JAR (the dxos-lint.jar of a release) it runs on the local Java, otherwise in the backend image.
+cmd_lint() {
+  local jar="${DXOS_LINT_JAR:-}" image="" arg file code=0 status
+  (( $# )) || die "usage: dxos lint <model-file>..."
+  if [[ -n "$jar" ]]; then
+    [[ -f "$jar" ]] || die "DXOS_LINT_JAR is not a file: $jar"
+    command -v java > /dev/null || die "Java 21 or newer is needed to run $jar"
+    java -jar "$jar" "$@"
+    return
+  fi
+  [[ -f "$DEPLOY_DIR/.env" ]] || die "no deploy/.env to name the backend image: set DXOS_LINT_JAR to the dxos-lint.jar of a release"
+  command -v docker > /dev/null || die "Docker or DXOS_LINT_JAR (the dxos-lint.jar of a release, with Java 21) is needed"
+  image="$(env_value DXOS_IMAGE_PREFIX)"
+  image="${image:-dxos}-backend:$(env_value DXOS_IMAGE_TAG)"
+  [[ "$image" == *: ]] && image="${image}local"
+  for arg in "$@"; do
+    file="$(from_caller "$arg")"
+    [[ -f "$file" && -r "$file" ]] || { echo "dxos: model file not found or not readable: $arg" >&2; code=2; continue; }
+    status=0
+    docker run --rm -i --network none --read-only --tmpfs /tmp --cap-drop ALL --entrypoint java "$image" \
+      -jar /opt/dxos/dxos-lint.jar --name "$arg" - < "$file" || status=$?
+    (( status <= code )) || code=$status
+  done
+  return "$code"
+}
+
+# Runs the barrier checks of the core (deploy/dev/check_conformance.py) for a model that is applied on this stack.
+# They sign in as test users of the model, so the command creates the client dxos-check and those users in Keycloak.
+cmd_conformance() {
+  local model="" allow=false host
+  while (( $# )); do
+    case "$1" in
+      --allow-test-users) allow=true; shift ;;
+      -*) die "unknown option: $1" ;;
+      *) [[ -z "$model" ]] || die "usage: dxos conformance <model> [--allow-test-users]"; model="$1"; shift ;;
+    esac
+  done
+  [[ -n "$model" ]] || die "usage: dxos conformance <model> [--allow-test-users]"
+  command -v python3 > /dev/null || die "python3 is required"
+  host="$(env_value PUBLIC_HOST)"
+  case "${host:-localhost}" in
+    localhost|127.0.0.1|::1) ;;
+    *) $allow || die "this stack is reached at $host: conformance creates the client dxos-check and test users in its Keycloak; run it with --allow-test-users to do so" ;;
+  esac
+  [[ "$(env_value KEYCLOAK_ADMIN_CONSOLE)" == true ]] \
+    || die "conformance reaches the Keycloak Admin API through the gateway: set KEYCLOAK_ADMIN_CONSOLE=true in deploy/.env, then run docker compose up -d apisix-config and docker compose restart apisix"
+  DXOS_ENV_FILE="$DEPLOY_DIR/.env" DXOS_BASE_URL="http://localhost:$(env_value APISIX_HOST_PORT)" \
+    python3 "$DEPLOY_DIR/dev/check_conformance.py" "$model"
 }
 
 # Shows the complete format upgrade before an optional atomic replacement of the model file.
@@ -1337,6 +1397,8 @@ cmd_uninstall() {
 }
 
 main() {
+  # Needs no stack, so it runs before the check for deploy/.env.
+  if [[ "${1:-}" == lint ]]; then shift; cmd_lint "$@"; return; fi
   [[ -f "$DEPLOY_DIR/.env" ]] || die "$DEPLOY_DIR/.env is missing; install DX-OS with install.sh first"
   cd "$DEPLOY_DIR"
   # An .env from before the modes has no DXOS_MODE: it runs the full stack, which needs the profile app.
@@ -1355,6 +1417,7 @@ main() {
     av) cmd_av "$@" ;;
     plan) cmd_plan "$@" ;;
     apply) cmd_apply "$@" ;;
+    conformance) cmd_conformance "$@" ;;
     model) cmd_model "$@" ;;
     history) cmd_history "$@" ;;
     reconcile) cmd_reconcile "$@" ;;
@@ -1364,8 +1427,8 @@ main() {
     client) cmd_client "$@" ;;
     uninstall) cmd_uninstall "$@" ;;
     version) echo "DX-OS $(env_value DXOS_IMAGE_TAG) in $PREFIX" ;;
-    help|-h|--help) sed -n '3,50p' "$self" ;;
-    *) echo "dxos: unknown command: $command" >&2; sed -n '3,50p' "$self" >&2; exit 2 ;;
+    help|-h|--help) usage_text ;;
+    *) echo "dxos: unknown command: $command" >&2; usage_text >&2; exit 2 ;;
   esac
 }
 

@@ -43,7 +43,7 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 
 | Tính năng | Kiểm | Lệnh | Mức | Giới hạn |
 |---|---|---|---|---|
-| Đọc và kiểm tệp mô hình, báo lỗi theo dòng và cột | `check_api.py` và `check_case.py` với bảy tệp sai mẫu ở `models/invalid/` | `python3 deploy/dev/check_api.py` | Hoàn thiện | |
+| Đọc và kiểm tệp mô hình, báo lỗi theo dòng và cột | `check_api.py` và `check_case.py` với bảy tệp sai mẫu ở `models/invalid/`; `check_cli.py` CLI-34 đến CLI-36 so `dxos lint` với `plan` | `python3 deploy/dev/check_api.py` | Hoàn thiện | |
 | Xem trước và áp dụng mô hình, áp dụng lại không đổi gì, sửa phần lệch của bảng và Keycloak | `check_api.py`, `check_recovery.py` 19 | `python3 deploy/dev/check_recovery.py` | Hoàn thiện | Việc kiểm lệch chỉ chạy khi xem kế hoạch hoặc áp dụng, không chạy lúc khởi động |
 | Đổi mô hình khi đã có dữ liệu: mức rủi ro, đổi tên giữ dữ liệu, dòng vi phạm, xác nhận khi mất dữ liệu, quay về | `check_change.py` 65, `check_guards.py` 61 | `python3 deploy/dev/check_change.py` | Hoàn thiện | Đổi người xử lý, hạn xử lý, quyền tự quyết hoặc đặt chỗ chỉ được khi thực thể không còn hồ sơ đang xử lý |
 | Tiếp tục hoặc hủy bỏ lần áp dụng dừng giữa chừng | `check_recovery.py`, `check_guards.py`; thẻ "Đang dừng dở" kiểm bằng Chrome | `python3 deploy/dev/check_guards.py` | Hoàn thiện | |
@@ -59,7 +59,7 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 | Chuỗi hash của lịch sử, điểm neo, lệnh kiểm | `check_events.py` 24 | `python3 deploy/dev/check_events.py` | Hoàn thiện | Phát hiện sửa chứ không ngăn sửa; người sửa được cả cơ sở dữ liệu lẫn kho thì chỉ bị lộ khi so với hash bên nhận giữ |
 | Webhook theo mô hình: chữ ký, thứ tự theo hồ sơ, thử lại, lấy lại phần đã lỡ | `check_events.py`, `WebhookSenderTest` | `python3 deploy/dev/check_events.py` | Hoàn thiện | Dạng `chat` chưa thử với Mattermost và Slack thật |
 | Bên nhận so hash lịch sử (`witness.py`) | `check_events.py`; chạy dòng lệnh kiểm tay | `python3 examples/history-witness/witness.py compare` | Hoàn thiện | |
-| Bộ kiểm chung cho mô hình mới | `check_conformance.py` 62 | `python3 deploy/dev/check_conformance.py` | Hoàn thiện | |
+| Bộ kiểm chung cho mô hình mới | `check_conformance.py` 62; `check_cli.py` CLI-37 và CLI-38 chạy nó qua `dxos conformance` | `python3 deploy/dev/check_conformance.py` hoặc `dxos conformance <mô hình>` | Hoàn thiện | |
 | Quản trị người dùng: gán vai và đơn vị, tạo, khóa, đặt lại mật khẩu, nhật ký | `check_users.py` 41, `KeycloakAdminClientTest`; tab Người dùng kiểm bằng Chrome | `python3 deploy/dev/check_users.py` | Hoàn thiện | Thay đổi làm thẳng ở Keycloak Admin Console không qua đây |
 | Thống kê theo thực thể, kể cả thời gian xử lý | `check_process.py` | `python3 deploy/dev/check_process.py` | Hoàn thiện | Chưa có tỷ lệ hoàn tất trong hạn |
 | Tài liệu khớp với API thật | `check_docs.py` 3 | `python3 deploy/dev/check_docs.py` | Hoàn thiện | |

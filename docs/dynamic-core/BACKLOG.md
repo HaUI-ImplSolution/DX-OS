@@ -56,7 +56,6 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 | Số đo theo định dạng Prometheus | Giám sát mới là màn hình riêng: chưa có endpoint số đo cho Prometheus và Grafana (hồ sơ theo trạng thái và quá hạn, độ trễ hàng đợi sự kiện, số lần áp dụng); đề xuất chờ chốt, lý do và rủi ro ở `DANH_GIA.md` mục 7.1 |
 | Mã hồ sơ đọc được | Hồ sơ chỉ có id là số tăng dần: chưa có kiểu trường sinh mã theo khuôn khai báo (tiền tố, năm, số thứ tự) để đọc, in và tra; đề xuất chờ chốt, lý do và rủi ro ở `DANH_GIA.md` mục 7.2 |
 | Truy vấn gộp theo trường | `GET /api/v1/data/{model}/{entity}/stats` mới đếm theo trạng thái và đơn vị: chưa nhóm theo trường lựa chọn hay ngày theo tháng, chưa tính tổng và trung bình trên trường số, nên báo cáo khác vẫn phải đọc cơ sở dữ liệu qua vai `report_ro`, ngoài quyền theo dòng; đề xuất chờ chốt, lý do và rủi ro ở `DANH_GIA.md` mục 7.2 |
-| Kiểm tệp không cần hệ thống | Kiểm một tệp mô hình cần cả hệ thống đang chạy: chưa có `dxos lint <tệp>` và `dxos conformance <mô hình>`, bộ kiểm chung vẫn là script nội bộ ở `deploy/dev`; đề xuất chờ chốt, lý do và rủi ro ở `DANH_GIA.md` mục 7.3 |
 | Mẫu in khai báo | Chưa có khóa `documents:` để trộn một hồ sơ vào mẫu và trả PDF theo quyền đọc của hồ sơ; đề xuất chờ chốt, lý do và rủi ro ở `DANH_GIA.md` mục 7.2 |
 
 ## 4. Giới hạn chấp nhận

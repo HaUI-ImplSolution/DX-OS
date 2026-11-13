@@ -40,6 +40,8 @@ FROM eclipse-temurin:21-jre-alpine@sha256:ac05c3c42b7c2f1a52c9bd52f01041fa195823
 WORKDIR /app
 ENV TZ=Asia/Ho_Chi_Minh
 COPY --from=build-engine /app/dx-engine/target/dx-engine.jar app.jar
+# dxos lint runs this jar in the image when the machine has Docker and no Java.
+COPY --from=build-engine /app/dx-model/target/dx-model-*-cli.jar /opt/dxos/dxos-lint.jar
 # pgschema compares the tables with what a model declares and changes them.
 COPY --from=pgplex/pgschema:1.13.4@sha256:4e77c22878120b38f8548d6ea62b3b1564438a5fbe84fcde3019684a638f60b7 /usr/local/bin/pgschema /usr/local/bin/pgschema
 # The service writes nothing outside /tmp, so it needs no privileges.

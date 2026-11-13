@@ -107,13 +107,7 @@ Cột Trạng thái ghi quyết định của đội: đề xuất đã chốt l
 | **Truy vấn gộp có phân quyền** | Thống kê cố định theo trạng thái và đơn vị; muốn số khác thì công cụ báo cáo đọc thẳng cơ sở dữ liệu bằng vai `report_ro`, đi vòng qua quyền theo dòng; đề nêu lớp ngữ nghĩa cho báo cáo | API gộp nhận trường nhóm (lựa chọn, đơn vị, trạng thái, ngày theo tháng) và phép tính (đếm, tổng, trung bình trên trường số), áp cùng bộ lọc và quyền theo dòng của danh sách; thực thể khai `reports:` để ứng dụng web vẽ sẵn | Ứng dụng ngoài và bảng số liệu lấy số mà không cần tài khoản cơ sở dữ liệu; chữ D của H-P-D-I có nội dung do mô hình khai báo | Truy vấn nặng trên bảng lớn, nên giới hạn số nhóm và dùng lại mức cắt 10 giây đang có; số gộp có thể lộ số lượng ngoài quyền nếu đặt lọc quyền sai chỗ | Chốt làm |
 | **Mẫu in khai báo** | Đề nêu "trộn dữ liệu tự động sinh biểu mẫu"; quy trình phê duyệt ở lĩnh vực nào cũng kết thúc bằng một tờ giấy: giấy xác nhận, phiếu đặt phòng, biên bản sự cố | Thực thể khai `documents:` trỏ tới tệp mẫu có chỗ trống theo tên trường; lõi trộn một hồ sơ vào mẫu và trả PDF qua API theo quyền đọc của hồ sơ; bản in mang hash của dòng lịch sử cuối để đối chiếu | Phủ thêm một năng lực đề nêu tên; nối với chuỗi hash thành bản in kiểm lại được | Mẫu dễ phình thành ngôn ngữ lập trình, nên chỉ cho chỗ trống, không điều kiện hay vòng lặp; phông tiếng Việt lấy lúc build chứ không chép vào kho; thư viện dựng PDF phải đạt giấy phép OSI và được kiểm trước khi thêm | Chốt làm, xếp cuối |
 
-### 7.3. GitOps trọn vòng và công cụ cho người viết mô hình
-
-| Đề xuất | Lý do | Làm gì | Lợi ích | Rủi ro | Trạng thái |
-|---|---|---|---|---|---|
-| **Kiểm tệp không cần hệ thống** | Kiểm một tệp mô hình cần cả hệ thống đang chạy; bộ kiểm chung cho mô hình mới nằm ở `deploy/dev` như script nội bộ | `dxos lint <tệp>` chạy phần đọc và kiểm của `dx-model` không cần cơ sở dữ liệu; `dxos conformance <mô hình>` đưa bộ kiểm chung thành lệnh cho người dùng | Lỗi tệp bị bắt ở máy người viết và ở pull request; là công cụ hỗ trợ mà tiêu chí phát triển bền vững chấm | Kiểm không cần hệ thống không thấy lỗi phụ thuộc dữ liệu đang có, nên phải nói rõ nó không thay cho kế hoạch | Chốt làm |
-
-### 7.4. Kho mã và cộng đồng
+### 7.3. Kho mã và cộng đồng
 
 | Đề xuất | Lý do | Làm gì | Lợi ích | Rủi ro | Trạng thái |
 |---|---|---|---|---|---|

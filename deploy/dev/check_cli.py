@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Checks of the command line of deploy/dxos (plan, apply, archive) and of the IT/OT simulator.
+"""Checks of the command line of deploy/dxos (plan, apply, lint, conformance, archive) and of the IT/OT simulator.
 
 They run the real scripts against the stack that deploy/.env describes and apply a model of their
 own, so they need nothing from the scripts before them:
@@ -7,8 +7,10 @@ own, so they need nothing from the scripts before them:
 Needs docker (the archive reads the database through a DuckDB container, which downloads its
 postgres and httpfs extensions on the first run). Settings: DXOS_ENV_FILE, DXOS_BASE_URL, DXOS_PROJECT.
 """
+import glob
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -17,6 +19,11 @@ import time
 
 import check_api as rt
 import kc
+
+YAML = "application/yaml"
+INVALID = sorted(glob.glob(os.path.join(kc.REPO, "models", "invalid", "*.yaml")))
+VALID = sorted(glob.glob(os.path.join(kc.REPO, "backend", "dx-engine", "src", "main", "resources", "templates", "*.yaml"))
+               + glob.glob(os.path.join(kc.REPO, "examples", "model-repo", "models", "*.yaml")))
 
 DXOS = os.path.join(os.path.dirname(kc.ENV_FILE), "dxos")
 SIMULATOR = os.path.join(kc.REPO, "examples", "itot-simulator", "simulator.py")
@@ -60,6 +67,27 @@ def plan(work, file):
         return code, {"raw": out + err}
 
 
+def plan_problems(body):
+    """The problems of a refused model file in the plan answer, as (line, column, message)."""
+    found = []
+    for text in body.get("data") or []:
+        match = re.match(r"line (\d+), column (\d+): (.*)$", text)
+        found.append((int(match[1]), int(match[2]), match[3]) if match else (0, 0, text))
+    return sorted(found)
+
+
+def lint_problems(out):
+    """The problems dxos lint printed, as (line, column, message)."""
+    found = []
+    for text in out.splitlines():
+        match = re.match(r".+?:(\d+):(\d+): (.*)$", text)
+        if match:
+            found.append((int(match[1]), int(match[2]), match[3]))
+        elif not text.endswith(": ok") and not text.startswith("Checked the file alone"):
+            found.append((0, 0, text.split(": ", 1)[1] if ": " in text else text))
+    return sorted(found)
+
+
 def versions(admin, name):
     status, body = kc.api(admin, "GET", f"/models/{name}/versions")
     return body["data"] if status == 200 else []
@@ -73,6 +101,25 @@ def incidents(token, name):
 def check(case, ok, detail=""):
     # The output of the commands is shown only for a check that fails.
     rt.check(case, ok, "" if ok else detail)
+
+
+def lint_and_conformance(admin, work, name):
+    # lint: the reader of the backend without the stack, and the same problems as a plan gives.
+    for path in INVALID:
+        status, refused = kc.api(admin, "POST", "/models/plan", open(path, encoding="utf-8").read(), YAML)
+        code, out, err = dxos(work, "lint", path)
+        check(f"CLI-34 lint gives the problems of a plan for {os.path.basename(path)}",
+              code == 1 and status == 400 and lint_problems(out) == plan_problems(refused) != [], f"{code} {out[-300:]} {err[-200:]} {status} {str(refused)[:300]}")
+    code, out, err = dxos(work, "lint", *VALID)
+    check("CLI-35 lint accepts the templates and the example models", code == 0 and out.count(": ok") == len(VALID), f"{code} {out[-300:]} {err[-200:]}")
+    code, out, err = dxos(work, "lint", "missing.yaml")
+    check("CLI-36 lint exits 2 for a file it cannot read", code == 2, f"{code} {out[-200:]} {err[-200:]}")
+
+    # conformance: the barriers of the core hold for the applied model.
+    code, out, err = dxos(work, "conformance", name)
+    check("CLI-37 conformance passes for the applied model", code == 0 and "FAIL" not in out and "passed" in out, f"{code} {out[-400:]} {err[-300:]}")
+    code, out, err = dxos(work, "conformance", f"{name}x")
+    check("CLI-38 conformance exits 1 for a model that is not applied", code == 1 and "FAIL" in out, f"{code} {out[-200:]} {err[-200:]}")
 
 
 def main():
@@ -190,11 +237,14 @@ def main():
         check("CLI-32 archive query blocks SQL from reading outside the selected run", code != 0 and "file system operations are disabled by configuration" in err.lower(), f"{code} {out[-200:]} {err[-200:]}")
         code, out, err = dxos(work, "archive", "query", run_id, "--file", "incident.parquet", "SELECT count(*) FROM archive")
         check("CLI-33 archive query without parameters prints only the result", code == 0 and out.strip() == "1", f"{code} {out[-200:]} {err[-200:]}")
+
+        lint_and_conformance(admin, work, name)
     finally:
         shutil.rmtree(work, ignore_errors=True)
-        uid = kc.kc("GET", "/users?username=cli_tech&exact=true")[1]
-        if uid:
-            kc.kc("DELETE", f"/users/{uid[0]['id']}")
+        for username in ("cli_tech", f"cf_{name}"[:40]):
+            uid = kc.kc("GET", f"/users?username={username}&exact=true")[1]
+            if uid:
+                kc.kc("DELETE", f"/users/{uid[0]['id']}")
 
     failed = [case for case, ok in rt.results if not ok]
     print(f"\n{len(rt.results) - len(failed)}/{len(rt.results)} passed", failed)

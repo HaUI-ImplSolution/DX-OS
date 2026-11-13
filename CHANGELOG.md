@@ -14,6 +14,9 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Lõi chạy ngầm
 
+- `dxos lint <tệp>...` kiểm tệp mô hình bằng bộ đọc của backend mà không cần hệ thống đang chạy, in `tệp:dòng:cột: nội dung` và thoát 0, 1 hoặc 2. Nó chạy `dxos-lint.jar` trong image backend, hoặc trên Java 21 qua `DXOS_LINT_JAR`; Release kèm `dxos-lint.jar`.
+- `dxos conformance <mô hình>` chạy các kiểm rào chắn của lõi trên hệ thống đang chạy và từ chối stack có `PUBLIC_HOST` khác `localhost` khi thiếu `--allow-test-users`.
+- `examples/model-repo` có workflow `model-lint.yml` kiểm tệp mô hình trên runner của GitHub bằng `dxos-lint.jar`.
 - Quét mã độc tệp tải lên bật sẵn trong `.env` sinh từ `.env.example` (`av` trong `COMPOSE_PROFILES`, `STORAGE_SCAN_HOST=clamav`); `dxos av off` tắt và `dxos doctor` báo `WARN` khi tắt. `install.sh --upgrade` giữ quét tắt ở bản chưa từng bật.
 - Nhóm chế độ lõi của job `API end-to-end` chạy với ClamAV: `check_demo.py` kiểm tệp sạch tải lên và tải về, tệp EICAR bị từ chối 422 và không lưu, tệp bị từ chối 503 khi ClamAV dừng, rồi tải lại được khi ClamAV chạy lại. `DXOS_REQUIRE_SCAN=1` làm script hỏng khi stack không quét.
 - `dxos start --core` chỉ chạy Tầng 1 (cổng vào, Keycloak, dịch vụ lõi, PostgreSQL, kho tệp); `dxos start --full` chạy đủ, và các lệnh `stop`, `status`, `update`, `reconcile` giữ chế độ đã lưu ở `DXOS_MODE`.
